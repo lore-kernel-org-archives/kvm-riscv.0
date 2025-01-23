@@ -4,39 +4,39 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 15410C02182
-	for <kvm-riscv@archiver.kernel.org>; Tue, 21 Jan 2025 16:50:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C1AEFC0218B
+	for <kvm-riscv@archiver.kernel.org>; Thu, 23 Jan 2025 14:09:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
 	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=sEu3DlDxmJuW6vV49tCxMtwrUTQNYwmrkDXQWjcFnME=; b=H66CXS+eGdsyST
-	Nz0rILJIb4foydKufwJjro3853e3LJgQeiq/DySENjdGGev0NMjDLldB6xLO0dl+56kKlU3Dq9Cdh
-	DRyR4bpG/gv9HUdsC0RwFMF8tqLG+iGVMY7RRqmKwpedg6r3KPxHswi8NC3WMkbQQlOq8+qDiPfuq
-	yuN2Ahqrvm4QDij59DV6xikyyVk7sbSzN+vnAt3s6hrqpd84/z3EnabY6Nd5dJ5evv+c03wEP9Pey
-	Ar8qzBZ9tsjfbYRubqAuEw+3GLjfcvUae1uNsc5APMKFhPu2ADd+n6mt1XfWzfFt2ogMoW7apCt7M
-	hPwJcIiNmuzCvD0JKA1w==;
+	List-Owner; bh=v944dYMmaWEkkbOWEyK4cB/ArV2bqVnUFyonhrObZNo=; b=Jlw2wGE89liM5S
+	tBy+Rd6u7ub7zOgy0ktwvZQTC4TJHriF68KmSi/iSPSATdbBTD2fTq8dO/tECzLQ0rpVhjMIrk36y
+	ogSD4RwMSwi4GwvDWCtWJir6WQKzRQJtyGxtebXXkHEjwDNMAZC2BIj887JyqN/mhruMQRBWj3wV0
+	Ha0V9qBH0J/+WD5glleYz5a5TXETp5xy19sDIa6Du+vA+xA/zgI0EDnANm19L1D2QI+tfpT5deWDs
+	JiyXv1RRCeqK9IOdPTezLVz+/TDTiDoVn9JA0KDRsCaDMj45ubeu/YxKuUpIZejlxeb6pyG8h/WFg
+	Dqv6DVKF4FuqOYL1t7fA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1taHSA-00000008Ouu-3Lgr;
-	Tue, 21 Jan 2025 16:50:14 +0000
-Received: from out-187.mta1.migadu.com ([2001:41d0:203:375::bb])
+	id 1taxtI-0000000CZqp-1g30;
+	Thu, 23 Jan 2025 14:09:04 +0000
+Received: from out-189.mta1.migadu.com ([2001:41d0:203:375::bd])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1taHS8-00000008OsJ-0HiF
+	id 1taxrm-0000000CZa3-3plJ
 	for kvm-riscv@lists.infradead.org;
-	Tue, 21 Jan 2025 16:50:13 +0000
-Date: Tue, 21 Jan 2025 17:50:02 +0100
+	Thu, 23 Jan 2025 14:07:32 +0000
+Date: Thu, 23 Jan 2025 15:07:18 +0100
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1737478209;
+	t=1737641243;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=9o9toXjXchxuXb1mbAx2+gmT8fvOBZnIXdfInm+D/aM=;
-	b=rtj0/bwzCyqvtrhaxqugGe2yTMMDMyQdQVt26GYW3LfnEZGr/FkaHtaK+9BBohA9Fer3GU
-	iQxCzAawmvRe5+YcIMPEJ0HfhT6HVkpz1//kiNxxGLa+cVveUDP9L5rTqnXsMZwW4m9nx1
-	34ELjNr9KI9WUusTseG9Fu9SnLCc+bY=
+	bh=wiYAC4Ucxcm7KuFAC5tUIQUTt4eAoBsu+z1SGcrkjzs=;
+	b=r41LZca+Sg/9Rc14gHPNbCgZPgDw6X/CzWbgkYZYXTZWfG9IYDtoDglUvjOpuR+psOcRFP
+	bVQkbsAuJLGvQhJcpWMAvbb5zRT6xkvAW9FFr+yMuz1EEAIFRpfQDHRFsRH80+9mTCqLQo
+	Qh+GFBQVRggjkwqI0l6xn+R27U6C8Ro=
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
 From: Andrew Jones <andrew.jones@linux.dev>
 To: Alexandru Elisei <alexandru.elisei@arm.com>
@@ -47,17 +47,18 @@ Cc: eric.auger@redhat.com, lvivier@redhat.com, thuth@redhat.com,
 	will@kernel.org, julien.thierry.kdev@gmail.com, maz@kernel.org, 
 	oliver.upton@linux.dev, suzuki.poulose@arm.com, yuzenghui@huawei.com, joey.gouly@arm.com, 
 	andre.przywara@arm.com
-Subject: Re: [kvm-unit-tests PATCH v2 11/18] arm/run: Add support for kvmtool
-Message-ID: <20250121-98b6da755bc353722fae5f1f@orel>
+Subject: Re: [kvm-unit-tests PATCH v2 12/18] scripts/runtime: Add default
+ arguments for kvmtool
+Message-ID: <20250121-16510b161f5b92ce9c5ae4e1@orel>
 References: <20250120164316.31473-1-alexandru.elisei@arm.com>
- <20250120164316.31473-12-alexandru.elisei@arm.com>
+ <20250120164316.31473-13-alexandru.elisei@arm.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20250120164316.31473-12-alexandru.elisei@arm.com>
+In-Reply-To: <20250120164316.31473-13-alexandru.elisei@arm.com>
 X-Migadu-Flow: FLOW_OUT
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250121_085012_253870_9C79A53C 
-X-CRM114-Status: GOOD (  18.81  )
+X-CRM114-CacheID: sfid-20250123_060731_359496_489D17FE 
+X-CRM114-Status: GOOD (  28.64  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -74,215 +75,108 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Mon, Jan 20, 2025 at 04:43:09PM +0000, Alexandru Elisei wrote:
-> Teach the arm runner to use kvmtool when kvm-unit-tests has been configured
-> appropriately.
+On Mon, Jan 20, 2025 at 04:43:10PM +0000, Alexandru Elisei wrote:
+> kvmtool, unless told otherwise, will do its best to make sure that a kernel
+> successfully boots in a virtual machine. Among things like automatically
+> creating a rootfs, it also adds extra parameters to the kernel command
+> line. This is actively harmful to kvm-unit-tests, because some tests parse
+> the kernel command line and they will fail if they encounter the options
+> added by kvmtool.
 > 
-> The test is ran using run_test_status() because kvmtool does not have a
-> testdev device to return the test exit code, so kvm-unit-tests must always
-> parse the "EXIT: STATUS" line for the exit code.
+> Fortunately for us, kvmtool commit 5613ae26b998 ("Add --nodefaults command
+> line argument") addded the --nodefaults kvmtool parameter which disables
+
+added
+
+> all the implicit virtual machine configuration that cannot be disabled by
+> using other parameters, like modifying the kernel command line. Always use
+> --nodefaults to allow a test to run.
+> 
+> kvmtool can be too verbose when running a virtual machine, and this is
+> controlled with parameters. Add those to the default kvmtool command line
+> to reduce this verbosity to a minimum.
+> 
+> Before:
+> 
+> $ vm run arm/selftest.flat --cpus 2 --mem 256 --params "setup smp=2 mem=256"
+>   Info: # lkvm run -k arm/selftest.flat -m 256 -c 2 --name guest-5035
+> Unknown subtest
+> 
+> EXIT: STATUS=127
+>   Warning: KVM compatibility warning.
+> 	virtio-9p device was not detected.
+> 	While you have requested a virtio-9p device, the guest kernel did not initialize it.
+> 	Please make sure that the guest kernel was compiled with CONFIG_NET_9P_VIRTIO=y enabled in .config.
+>   Warning: KVM compatibility warning.
+> 	virtio-net device was not detected.
+> 	While you have requested a virtio-net device, the guest kernel did not initialize it.
+> 	Please make sure that the guest kernel was compiled with CONFIG_VIRTIO_NET=y enabled in .config.
+>   Info: KVM session ended normally.
+> 
+> After:
+> 
+> $ vm run arm/selftest.flat --nodefaults --network mode=none --loglevel=warning --cpus 2 --mem 256 --params "setup smp=2 mem=256"
+
+On riscv I've noticed that with --nodefaults if I don't add parameters
+with --params then kvmtool segfaults. I have to add --params "" to
+avoid it. Does that also happen on arm? Anyway, that's something we
+should fix in kvmtool rather than workaround it here.
+
+> PASS: selftest: setup: smp: number of CPUs matches expectation
+> INFO: selftest: setup: smp: found 2 CPUs
+> PASS: selftest: setup: mem: memory size matches expectation
+> INFO: selftest: setup: mem: found 256 MB
+> SUMMARY: 2 tests
+> 
+> EXIT: STATUS=1
+> 
+> Note that KVMTOOL_DEFAULT_OPTS can be overwritten by an environment
+> variable with the same name, but it's not documented in the help string for
+> run_tests.sh. This has been done on purpose, since overwritting
+> KVMTOOL_DEFAULT_OPTS should only be necessary for debugging or development
+> purposes.
 > 
 > Signed-off-by: Alexandru Elisei <alexandru.elisei@arm.com>
 > ---
->  arm/run | 183 ++++++++++++++++++++++++++++++++++----------------------
->  1 file changed, 110 insertions(+), 73 deletions(-)
+>  scripts/runtime.bash | 13 ++++++++++++-
+>  1 file changed, 12 insertions(+), 1 deletion(-)
 > 
-> diff --git a/arm/run b/arm/run
-> index 9b11feafffdd..880d5afae86d 100755
-> --- a/arm/run
-> +++ b/arm/run
-> @@ -17,77 +17,114 @@ qemu)
->     exit 3
->  esac
+> diff --git a/scripts/runtime.bash b/scripts/runtime.bash
+> index 55d58eef9c7c..abfd1e67b2ef 100644
+> --- a/scripts/runtime.bash
+> +++ b/scripts/runtime.bash
+> @@ -2,6 +2,17 @@
+>  : "${MAX_SMP:=$(getconf _NPROCESSORS_ONLN)}"
+>  : "${TIMEOUT:=90s}"
 >  
-> -processor="$PROCESSOR"
-> +arch_run_qemu()
-> +{
-> +    processor="$PROCESSOR"
+> +# The following parameters are enabled by default when running a test with
+> +# kvmtool:
+> +# --nodefaults: suppress VM configuration that cannot be disabled otherwise
+> +#               (like modifying the supplied kernel command line). Tests that
+> +#               use the command line will fail without this parameter.
+> +# --network mode=none: do not create a network device. kvmtool tries to help the
+> +#                user by automatically create one, and then prints a warning
+> +#                when the VM terminates if the device hasn't been initialized.
+> +# --loglevel=warning: reduce verbosity
+> +: "${KVMTOOL_DEFAULT_OPTS:="--nodefaults --network mode=none --loglevel=warning"}"
 > +
-> +    if [ "$QEMU" ] && [ -z "$ACCEL" ] &&
-> +       [ "$HOST" = "aarch64" ] && [ "$ARCH" = "arm" ] &&
-> +       [ "$(basename $QEMU)" = "qemu-system-arm" ]; then
-> +        ACCEL="tcg"
-> +    fi
-> +
-> +    set_qemu_accelerator || exit $?
-> +    if [ "$ACCEL" = "kvm" ]; then
-> +        QEMU_ARCH=$HOST
-> +    fi
-> +
-> +    qemu=$(search_qemu_binary) ||
-> +        exit $?
-> +
-> +    if ! $qemu -machine '?' | grep -q 'ARM Virtual Machine'; then
-> +        echo "$qemu doesn't support mach-virt ('-machine virt'). Exiting."
-> +        exit 2
-> +    fi
-> +
-> +    M='-machine virt'
-> +
-> +    if [ "$ACCEL" = "kvm" ]; then
-> +        if $qemu $M,\? | grep -q gic-version; then
-> +            M+=',gic-version=host'
-> +        fi
-> +    fi
-> +
-> +    if [ "$ACCEL" = "kvm" ] || [ "$ACCEL" = "hvf" ]; then
-> +        if [ "$HOST" = "aarch64" ] || [ "$HOST" = "arm" ]; then
-> +            processor="host"
-> +            if [ "$ARCH" = "arm" ] && [ "$HOST" = "aarch64" ]; then
-> +                processor+=",aarch64=off"
-> +            fi
-> +        fi
-> +    fi
-> +
-> +    if [ "$ARCH" = "arm" ]; then
-> +        M+=",highmem=off"
-> +    fi
-> +
-> +    if ! $qemu $M -device '?' | grep -q virtconsole; then
-> +        echo "$qemu doesn't support virtio-console for chr-testdev. Exiting."
-> +        exit 2
-> +    fi
-> +
-> +    if ! $qemu $M -chardev '?' | grep -q testdev; then
-> +        echo "$qemu doesn't support chr-testdev. Exiting."
-> +        exit 2
-> +    fi
-> +
-> +    if [ "$UEFI_SHELL_RUN" != "y" ] && [ "$EFI_USE_ACPI" != "y" ]; then
-> +        chr_testdev='-device virtio-serial-device'
-> +        chr_testdev+=' -device virtconsole,chardev=ctd -chardev testdev,id=ctd'
-> +    fi
-> +
-> +    pci_testdev=
-> +    if $qemu $M -device '?' | grep -q pci-testdev; then
-> +        pci_testdev="-device pci-testdev"
-> +    fi
-> +
-> +    A="-accel $ACCEL$ACCEL_PROPS"
-> +    command="$qemu -nodefaults $M $A -cpu $processor $chr_testdev $pci_testdev"
-> +    command+=" -display none -serial stdio"
-> +    command="$(migration_cmd) $(timeout_cmd) $command"
-> +
-> +    if [ "$UEFI_SHELL_RUN" = "y" ]; then
-> +        ENVIRON_DEFAULT=n run_test_status $command "$@"
-> +    elif [ "$EFI_USE_ACPI" = "y" ]; then
-> +        run_test_status $command -kernel "$@"
-> +    else
-> +        run_qemu $command -kernel "$@"
-> +    fi
-> +}
-> +
-> +arch_run_kvmtool()
-> +{
-> +    local command
-> +
-> +    kvmtool=$(search_kvmtool_binary) ||
-> +        exit $?
-> +
-> +    if [ "$ACCEL" ] && [ "$ACCEL" != "kvm" ]; then
-> +        echo "kvmtool does not support $ACCEL" >&2
-> +        exit 2
-> +    fi
-> +
-> +    if ! kvm_available; then
-> +        echo "KVM required by kvmtool but not available on the host" >&2
-> +        exit 2
-> +    fi
-> +
-> +    command="$(timeout_cmd) $kvmtool run"
-> +    if [ "$HOST" = "aarch64" ] && [ "$ARCH" = "arm" ]; then
-> +	    run_test_status $command --kernel "$@" --aarch32
-> +    else
-> +	    run_test_status $command --kernel "$@"
-> +    fi
-> +}
+>  PASS() { echo -ne "\e[32mPASS\e[0m"; }
+>  SKIP() { echo -ne "\e[33mSKIP\e[0m"; }
+>  FAIL() { echo -ne "\e[31mFAIL\e[0m"; }
+> @@ -103,7 +114,7 @@ function run()
+>          opts="-smp $smp $qemu_opts"
+>          ;;
+>      kvmtool)
+> -        opts="--cpus $smp $kvmtool_opts"
+> +        opts="$KVMTOOL_DEFAULT_OPTS --cpus $smp $kvmtool_opts"
+>          ;;
+>      esac
 >  
-> -if [ "$QEMU" ] && [ -z "$ACCEL" ] &&
-> -   [ "$HOST" = "aarch64" ] && [ "$ARCH" = "arm" ] &&
-> -   [ "$(basename $QEMU)" = "qemu-system-arm" ]; then
-> -	ACCEL="tcg"
-> -fi
-> -
-> -set_qemu_accelerator || exit $?
-> -if [ "$ACCEL" = "kvm" ]; then
-> -	QEMU_ARCH=$HOST
-> -fi
-> -
-> -qemu=$(search_qemu_binary) ||
-> -	exit $?
-> -
-> -if ! $qemu -machine '?' | grep -q 'ARM Virtual Machine'; then
-> -	echo "$qemu doesn't support mach-virt ('-machine virt'). Exiting."
-> -	exit 2
-> -fi
-> -
-> -M='-machine virt'
-> -
-> -if [ "$ACCEL" = "kvm" ]; then
-> -	if $qemu $M,\? | grep -q gic-version; then
-> -		M+=',gic-version=host'
-> -	fi
-> -fi
-> -
-> -if [ "$ACCEL" = "kvm" ] || [ "$ACCEL" = "hvf" ]; then
-> -	if [ "$HOST" = "aarch64" ] || [ "$HOST" = "arm" ]; then
-> -		processor="host"
-> -		if [ "$ARCH" = "arm" ] && [ "$HOST" = "aarch64" ]; then
-> -			processor+=",aarch64=off"
-> -		fi
-> -	fi
-> -fi
-> -
-> -if [ "$ARCH" = "arm" ]; then
-> -	M+=",highmem=off"
-> -fi
-> -
-> -if ! $qemu $M -device '?' | grep -q virtconsole; then
-> -	echo "$qemu doesn't support virtio-console for chr-testdev. Exiting."
-> -	exit 2
-> -fi
-> -
-> -if ! $qemu $M -chardev '?' | grep -q testdev; then
-> -	echo "$qemu doesn't support chr-testdev. Exiting."
-> -	exit 2
-> -fi
-> -
-> -if [ "$UEFI_SHELL_RUN" != "y" ] && [ "$EFI_USE_ACPI" != "y" ]; then
-> -	chr_testdev='-device virtio-serial-device'
-> -	chr_testdev+=' -device virtconsole,chardev=ctd -chardev testdev,id=ctd'
-> -fi
-> -
-> -pci_testdev=
-> -if $qemu $M -device '?' | grep -q pci-testdev; then
-> -	pci_testdev="-device pci-testdev"
-> -fi
-> -
-> -A="-accel $ACCEL$ACCEL_PROPS"
-> -command="$qemu -nodefaults $M $A -cpu $processor $chr_testdev $pci_testdev"
-> -command+=" -display none -serial stdio"
-> -command="$(migration_cmd) $(timeout_cmd) $command"
-> -
-> -if [ "$UEFI_SHELL_RUN" = "y" ]; then
-> -	ENVIRON_DEFAULT=n run_test_status $command "$@"
-> -elif [ "$EFI_USE_ACPI" = "y" ]; then
-> -	run_test_status $command -kernel "$@"
-> -else
-> -	run_qemu $command -kernel "$@"
-> -fi
-> +case "$TARGET" in
-> +qemu)
-> +    arch_run_qemu "$@"
-> +    ;;
-> +kvmtool)
-> +    arch_run_kvmtool "$@"
-> +    ;;
-> +esac
 > -- 
 > 2.47.1
-> 
 >
+
+Otherwise,
 
 Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
 
