@@ -4,40 +4,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31054C0218D
-	for <kvm-riscv@archiver.kernel.org>; Wed, 29 Jan 2025 13:47:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 369E8C0218D
+	for <kvm-riscv@archiver.kernel.org>; Wed, 29 Jan 2025 14:17:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
 	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=p2p/vg6XS02WMweEcHi2g8OcZTW9jAirZLMZLa2ey4U=; b=hO8Jc3HFQoOoHn
-	vYnTk2ecFYEdLVrxYvjdAmn8tvtUT0ilojTEFbaoJjj8GWwHOkR5ynNsYFZ2BJNn+QZqAd2NxWUaQ
-	tBQnNehYaMIPyBtZqqKuGZmz6MyIFM8ayWaKgxME/pDf9mSR5CDgYwhxlCDZh7Cpqi3oRPUrN2Qcr
-	xPSUqMCcnWwO8QJsNgr1Sb+oO4mmdc5f0VvmoQhq8CA9dshCT8sl1O5IW5Helr+BRuf0X5T/WIGSb
-	FDs14JiAVJGpz0RUATbNk0PdYk+mGELkaDPWgZ/GGEzmP2/nGKDs2qES3D7mxkYKlEUye+I/CTc9t
-	U3UW0wH1BfiKFUTwa2gw==;
+	List-Owner; bh=RCxXDJHTjLkCoIPFzTU33CKZOBLeCV9kiIQRRqRcQig=; b=vRfBrVnm9/q/dG
+	bH3EfrK7CrPPwd04qjhsSDTD7dX0ti4CZCZ8Fv5Al8xNwiGLWtEz2QfneqLkxYqlSYLyCf1Fl5sqL
+	zsffyoZM4VWtW4lFVrHpcYbwUPRNGHLkET0//HrgVI0DQg3m+e9F8bx6/7N/mnjDYuYnRgDOUjSor
+	GOAScWzzxJ77XQ9YjSChnO2hs4pKWFkSa0Y65ZCfdY3uCjMvz8sJUaUN4nOfdt2435atUFjDHb5is
+	TSV4yO5VfoWVI+bd90ejN/bZr5s2kfvSGM1rIgK3x4P1y+jeDEbDLbt/gmN1O2Srh1er25tWHslOA
+	jwkMWDxoqjAwuS22Iojg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1td8Q5-000000072lU-36Em;
-	Wed, 29 Jan 2025 13:47:53 +0000
-Received: from out-178.mta0.migadu.com ([2001:41d0:1004:224b::b2])
+	id 1td8se-000000076bd-3uu1;
+	Wed, 29 Jan 2025 14:17:24 +0000
+Received: from out-170.mta1.migadu.com ([95.215.58.170])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1td8Q1-000000072l5-3liZ
+	id 1td8sa-000000076b2-37r7
 	for kvm-riscv@lists.infradead.org;
-	Wed, 29 Jan 2025 13:47:51 +0000
-Date: Wed, 29 Jan 2025 14:47:40 +0100
+	Wed, 29 Jan 2025 14:17:23 +0000
+Date: Wed, 29 Jan 2025 15:17:13 +0100
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1738158462;
+	t=1738160236;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=xjhAFNlfSdxxlXBrsa57d35+2hiHQN0ajkkjsYo+Rhs=;
-	b=MaQsoh8UvjI2JJgSnf7PQwgsiaNtY9AIet31ggSKhJWEux5nlvrydURGXDCe4KXykMbL6z
-	0+0rujxbrn5YQ+brTLOt43PUs6+yBEApYFnsyCl1urZQxVbQb1Ksnlfwcd453gDBWjjSHe
-	PS6EKuVlT6saVN7EAkbL9mNqJt5oLq4=
+	bh=3FYe50gT7/INRrDrvYureIAbDleSAcXQFfoib6AD7R4=;
+	b=OBPU4IEjGreOYYBuocl/PISwDOmNRejZFaLZ6Rph/amMKVcV9gjMxadWYzh2qQZr69rgzN
+	XYCHXy1M/Yt4Tu1h9GkiYouVTOcqw4gkt8WtrItZxhkQLhUQI4pilHAS4eelFDaxMhiYIE
+	SNL69s+Fw2Wpn5fSIybK+BzcDxuDu7A=
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
 From: Andrew Jones <andrew.jones@linux.dev>
 To: =?utf-8?B?Q2zDqW1lbnQgTMOpZ2Vy?= <cleger@rivosinc.com>
@@ -46,7 +46,7 @@ Cc: kvm@vger.kernel.org, kvm-riscv@lists.infradead.org,
 	Atish Patra <atishp@rivosinc.com>
 Subject: Re: [kvm-unit-tests PATCH v3 2/2] riscv: Add tests for SBI FWFT
  extension
-Message-ID: <20250129-a3f1f5e241901cbd54a82f3a@orel>
+Message-ID: <20250129-ab75148a5b1ce97ae8529532@orel>
 References: <20250128141543.1338677-1-cleger@rivosinc.com>
  <20250128141543.1338677-3-cleger@rivosinc.com>
 MIME-Version: 1.0
@@ -54,8 +54,8 @@ Content-Disposition: inline
 In-Reply-To: <20250128141543.1338677-3-cleger@rivosinc.com>
 X-Migadu-Flow: FLOW_OUT
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250129_054750_337545_00956C2D 
-X-CRM114-Status: GOOD (  26.12  )
+X-CRM114-CacheID: sfid-20250129_061721_937229_D202A89B 
+X-CRM114-Status: GOOD (  23.11  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -249,6 +249,14 @@ igned long flags)
 > +		ret =3D fwft_set_raw(BIT(32), 0, 0);
 > +		sbiret_report_error(&ret, SBI_ERR_INVALID_PARAM,
 > +				    "set feature 0x%lx error", BIT(32));
+
+At least with the compiler I'm using, the code inside this
+"if (__riscv_xlen > 32)" block is still getting compiled for
+rv32 and breaking on the BIT(). It doesn't help to use BIT_ULL() here
+since fwft_get/set_raw() take longs. I guess we'll have to use #if.
+
+Fixed on merge.
+
 > +	}
 > +
 > +	report_prefix_pop();
@@ -304,115 +312,8 @@ r"))
 > +		ret =3D fwft_misaligned_exc_set(0, BIT(32));
 > +		sbiret_report_error(&ret, SBI_ERR_INVALID_PARAM,
 > +				    "Set misaligned deleg with invalid flag > 32bits");
-> +	}
-> +
-> +	/* Set to 0 and check after with get */
-> +	ret =3D fwft_misaligned_exc_set(0, 0);
-> +	sbiret_report_error(&ret, 0, "Set misaligned deleg feature value 0 no e=
-rror");
-> +	ret =3D fwft_misaligned_exc_get();
-> +	sbiret_report(&ret, 0, 0, "Get misaligned deleg feature expected value =
-0");
-> +
-> +	/* Set to 1 and check after with get */
-> +	ret =3D fwft_misaligned_exc_set(1, 0);
-> +	sbiret_report_error(&ret, 0, "Set misaligned deleg feature value 1 no e=
-rror");
-> +	ret =3D fwft_misaligned_exc_get();
-> +	sbiret_report(&ret, 0, 1, "Get misaligned deleg feature expected value =
-1");
-> +
-> +	install_exception_handler(EXC_LOAD_MISALIGNED, misaligned_handler);
-> +
-> +	asm volatile (
-> +		".option push\n"
-> +		/*
-> +		 * Disable compression so the lw takes exactly 4 bytes and thus
-> +		 * can be skipped reliably from the exception handler.
-> +		 */
-> +		".option arch,-c\n"
-> +		"lw %[val], 1(%[val_addr])\n"
-> +		".option pop\n"
-> +		: [val] "+r" (ret.value)
-> +		: [val_addr] "r" (&ret.value)
-> +		: "memory");
-> +
-> +	/*
-> +	 * Even though the SBI delegated the misaligned exception to S-mode, it=
- might not trap on
-> +	 * misaligned load/store access, report that during tests.
-> +	 */
-> +	if (!misaligned_handled)
-> +		report_skip("Misaligned load exception does not trap in S-mode");
-> +	else
-> +		report_pass("Misaligned load exception trap in S-mode");
-> +
-> +	install_exception_handler(EXC_LOAD_MISALIGNED, NULL);
-> +
-> +	/* Lock the feature */
-> +	ret =3D fwft_misaligned_exc_set(0, SBI_FWFT_SET_FLAG_LOCK);
-> +	sbiret_report_error(&ret, 0, "Set misaligned deleg feature value 0 and =
-lock no error");
-> +	ret =3D fwft_misaligned_exc_set(1, 0);
-> +	sbiret_report_error(&ret, SBI_ERR_LOCKED,
-> +			    "Set misaligned deleg feature value 0 and lock no error");
 
-The error message is copy+pasted from the last one. I've changed it to
-
-"Set locked misaligned deleg feature to new value returns error"
-
-while merging.
-
-> +	ret =3D fwft_misaligned_exc_get();
-> +	sbiret_report(&ret, 0, 0, "Get misaligned deleg locked value 0 no error=
-");
-> +
-> +	report_prefix_pop();
-> +}
-> +
-> +void check_fwft(void)
-> +{
-> +	report_prefix_push("fwft");
-> +
-> +	if (!sbi_probe(SBI_EXT_FWFT)) {
-> +		report_skip("FWFT extension not available");
-> +		report_prefix_pop();
-> +		return;
-> +	}
-> +
-> +	fwft_check_base();
-> +	fwft_check_misaligned_exc_deleg();
-> +
-> +	report_prefix_pop();
-> +}
-> diff --git a/riscv/sbi.c b/riscv/sbi.c
-> index 3eca8c7e..7c7a2d2d 100644
-> --- a/riscv/sbi.c
-> +++ b/riscv/sbi.c
-> @@ -32,6 +32,8 @@
->  =
-
->  #define	HIGH_ADDR_BOUNDARY	((phys_addr_t)1 << 32)
->  =
-
-> +void check_fwft(void);
-> +
->  static long __labs(long a)
->  {
->  	return __builtin_labs(a);
-> @@ -1437,6 +1439,7 @@ int main(int argc, char **argv)
->  	check_hsm();
->  	check_dbcn();
->  	check_susp();
-> +	check_fwft();
->  =
-
->  	return report_summary();
->  }
-> -- =
-
-> 2.47.1
->
+Same comment as above and also fixed on merge.
 
 Thanks,
 drew
