@@ -4,87 +4,79 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C46D0C0218F
-	for <kvm-riscv@archiver.kernel.org>; Fri, 31 Jan 2025 16:53:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D184C0218F
+	for <kvm-riscv@archiver.kernel.org>; Fri, 31 Jan 2025 17:07:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
-	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
-	List-Unsubscribe:List-Id:In-Reply-To:References:Cc:To:From:Subject:
-	MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:Subject:Message-ID:Date:From:
+	In-Reply-To:References:MIME-Version:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=Kui1Yg1vAoaJzTDYVUU1HEXA0Xo2VCgp+i8y85c22Vc=; b=V4vd5rMjehjrKB
-	b4aytOtn/zLqpCqP7pv0WudJ+dAm/d0P1y5Hk1ouoOjQW25FWubsUf7gFC6oNM41vb0qomxlU1MPC
-	rD0YYu3xvMir1QyBchk6O+oWEP/gS9Hs5r6l9Ggt/ybVGBHOPfhM8UqQM/jUsPJ9g2JIlS4aMDefn
-	FwvQ+VqLuHPenbfd7cWd00O3l9RmcztTRpiDN1C0+kSzm+yVEu6c0bPVes15LEdFktWfi0/BLn6ky
-	cXIwX+4Cjm2EZVwrI/cfQCoLhh4WqHeslX0Z9ASZJ4dj+Z2YczvvtByOnTtwDzr7l8dFz178nbZyC
-	8t13FKBNptCwTvfGmhsw==;
+	List-Owner; bh=PFqi0U1GtPy/GUv2kfy1M7alTUGEOGZXC6CV1b/SEtE=; b=NA1CT7dj54Ei3l
+	9PgULt6RFn1DuTffU8g5Rcj+EoeEvX7WyMcjl/2XLPBVAibs5iZXzIMr5Jw3UHLazhuK3ELr7jmVG
+	pk6DgzTCqtgxgC5vFWBc4wjSt9Guxg69pHTM4qCEV+f7+dBI9KCQAwWdtJXvzfGEyRuSP62f7xUXZ
+	HRYBILxJqV36Px0/df03E3E0pnFyY/TOOxYUWbtwlzpTcQKWVYtN7zahwiEZlv9eAu3cmvi4yiFGW
+	OC9k09YyvyzGm+LDVLoHamyItZLn5Tpa+FAcRFbjNe5SyEKw2T55OMBI0twL+cBbHdbg13umq7eO6
+	WsU2icaSOqPmMAPpv4Bg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tduGp-0000000B34X-225H;
-	Fri, 31 Jan 2025 16:53:31 +0000
-Received: from mail-wm1-x32d.google.com ([2a00:1450:4864:20::32d])
+	id 1tduU1-0000000B4rV-33qn;
+	Fri, 31 Jan 2025 17:07:09 +0000
+Received: from mail-lf1-x130.google.com ([2a00:1450:4864:20::130])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1tduGl-0000000B33V-3931
+	id 1tduTz-0000000B4qX-2JxG
 	for kvm-riscv@lists.infradead.org;
-	Fri, 31 Jan 2025 16:53:29 +0000
-Received: by mail-wm1-x32d.google.com with SMTP id 5b1f17b1804b1-4362f61757fso22746165e9.2
-        for <kvm-riscv@lists.infradead.org>; Fri, 31 Jan 2025 08:53:27 -0800 (PST)
+	Fri, 31 Jan 2025 17:07:08 +0000
+Received: by mail-lf1-x130.google.com with SMTP id 2adb3069b0e04-543e4bbcd86so2567386e87.1
+        for <kvm-riscv@lists.infradead.org>; Fri, 31 Jan 2025 09:07:06 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=virtualopensystems-com.20230601.gappssmtp.com; s=20230601; t=1738342406; x=1738947206; darn=lists.infradead.org;
-        h=content-transfer-encoding:in-reply-to:content-language:references
-         :cc:to:from:subject:user-agent:mime-version:date:message-id:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=O/7pqHwaAnIanm04GYyRhADDzqvnZ5TFeSSUZVbAlv0=;
-        b=LIAwpLJUsChnZaD/7GK3kzWZrt5Z0Bx9Spq1VBBCVAfxcAoYrjRBsjTY19x7+xcRJs
-         Schzc9NqYbhCTCL+Lr94O49hYM5eZPR53vUBUyy8UjEQWELGPs7E4IJOll1n2aFTFsEW
-         w7Zmt+9kNkFwwgOdir/AXF0397iOmOtlQBdDih4FrdZmoFInQrF/i2kKKDV7WcHnpn6V
-         Hm10w0p73mq32/bQFtRGT7D+8MRx1GZmxnawm6mpS//5oZTuPP1+JhImzN2xd56rBIG9
-         UCDyICpMekGsjM0SYkq+DYqTW4DEvjLsKKIOLgYcjJFoHQolyIXe0Ou1FoIUA+/BvlGz
-         Ev2Q==
+        d=ventanamicro.com; s=google; t=1738343225; x=1738948025; darn=lists.infradead.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=K2ObSa2ktByBUTSMTXb6jDkF0AzkOuGCrmxpYzPmVH0=;
+        b=Txgtk0t36BMfZQcEXSNvkizbs4XylNLyYe1BRIRMH5yBH4YoqwiU8z9rUSSIQi8Bf6
+         u9q/awjaO+EqA83UmrTm4NpBEmknQag1XKHytXxdudWAvqTlrQYDRpdpI8PHkuLXM9g3
+         Fi+MzqeV5wB5Vw9zPALDXV9tcLEJ59yhl+kxv44JKurvFFV5O3NnsKTIFAgGUpacS9ba
+         OI6NVtiQtvtcambUZH+vfGl0kTZQVXxI7eM2WN7dE5YmFw6WdIMr+nXU9wzcMbwa3DOQ
+         4DQWVuq0/Tg0wr45NCn9Maoh16F+W0cSX/vPBIIA9caaQLIXQRT/afS89+D6I6qpXSAO
+         UGvQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1738342406; x=1738947206;
-        h=content-transfer-encoding:in-reply-to:content-language:references
-         :cc:to:from:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=O/7pqHwaAnIanm04GYyRhADDzqvnZ5TFeSSUZVbAlv0=;
-        b=e6hbuzSmZcLnLQHEybr12G9ZS0emOh425FhW2ZJoYhUUh6uQHlggoi7zE47rCX2cXy
-         PS2ZfKbN+l9k78BNllqQ/Xldl21SddJiFZwq8yCm5F5fB31paqJbL+bwfqCQ1Xi7JO4m
-         eMLOpdGhBFdLG5STBdkX09H/vZLIgh0f2QYvZM7auQSnvCmP4YtMtSUUiSMTxsbiFKUT
-         0DCcg6PkaSCouFWnLDpXff91zt2caGh0PQZwghadPJ0qmDIDyVFkbmMaY8kSdfNfwqRm
-         FFMs28FuHGF8Uxei4SVrzHSu6O6RfQwZtk2m35fGpz+Z02Vst9e2t16iQVkDSNCLiW3d
-         Vzfw==
-X-Gm-Message-State: AOJu0YzcRKMqod2HLcUFWamd7hgdWQYgWsFVIiIO8J22S6bk68JhoWmR
-	kUJDY5z1AtfYUbIqdRXdSu+bm+1qfN0IREFNUOS2SKAKZHjTk8B34IiZEgKQW+r8HfcTHFDHRlK
-	e/yvAfA==
-X-Gm-Gg: ASbGncssBpOLnLtZsFtt5Dej/GgLfKCBNL+3lj+a51iscbR4TjY8dz3/dLdyieO5HzO
-	abiDCOKZrL6QVJOBnvG/pRcbBrOiMjfaz9LaSSXUQNbkXDyaHQpgcCpSgQgGA4Dk4u48DnXsDe4
-	LJ+MHfsc12g4a8QuD3GhzusWxQeTmrjcRXbL+CKHpv6SLkDbkicdbFMXKGhh6eseOlFxYpkGb16
-	j7TzM0zjGz/vUIlGpYWJrwwXn9AxuAOsRuK3Nnau8AuFBF1E5lfWLzFPqD9lk27RZ47lvzOSxas
-	cEBtyzxG147cykxNhDEvJqvwbZq8HdsJZbIc8OdFvxkYCeRhA9wEH/m+Mw0EKM6BqMbMB3a3wzx
-	alQ==
-X-Google-Smtp-Source: AGHT+IG5MUb24gxL2Hj4S45s41ftGPvZJE3KP+mS1kM8iWNvamZyUtHGZGDfaF+azfvopCcp0AJwcg==
-X-Received: by 2002:a7b:c40e:0:b0:436:17e4:ad4c with SMTP id 5b1f17b1804b1-438dc3aa77amr104090405e9.6.1738342405668;
-        Fri, 31 Jan 2025 08:53:25 -0800 (PST)
-Received: from ?IPV6:2001:861:8b82:e3f0:652b:a6a1:f717:23c3? ([2001:861:8b82:e3f0:652b:a6a1:f717:23c3])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-438dcc265c0sm95944065e9.10.2025.01.31.08.53.24
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 31 Jan 2025 08:53:25 -0800 (PST)
-Message-ID: <3c661b0f-1ec7-4e4c-9998-9e07b7a3bf2c@virtualopensystems.com>
-Date: Fri, 31 Jan 2025 17:53:24 +0100
+        d=1e100.net; s=20230601; t=1738343225; x=1738948025;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=K2ObSa2ktByBUTSMTXb6jDkF0AzkOuGCrmxpYzPmVH0=;
+        b=YO770pOlEEEFtWpWOAhOKW+A/RWeHV8HFrsDMzAug5YpXDl4byfncQWYcMy6NdBcwG
+         82DzUXqyVvaMeQ57FadA0fbXXPHkVnsAxJ5m/dcHATDCtT5ivzgQyljeEmisBLaFrzLT
+         hQ91MwkP0jaVHyqUo0acccLUbhZn4AuQ1gMN/M/0DipssuEBoqxkJayCs9zSeMpruAGi
+         tjj8xOvFiJK8BxgmveaQPUg4vliG61t6SrYd5RE3FtI1L/gg4QqmRkAdPdMYoC9naaJf
+         s/fSMADxDRgKAfZtkV+H0xb7B4IclAFS0+qJOfrRKwFcFjxtKuls3sdZSrMVxZvdIAoA
+         Obdg==
+X-Gm-Message-State: AOJu0Yw9r6lUqheIeVXIALQYZHJxmUfrcziWGYhs+keGLQpbWT79jdpr
+	yv/Ey2HLMCcuq8z6qPMjiip+2ome6mD0FlUwuLDSlfXxQxZvaxET2Keg3Y3LMWCn6Q2ZiMA+an9
+	PSpN5H0l0GuV4SNTv92jbJrR4a3azvv8cYRfBdPwTj8lKzQDz1sM=
+X-Gm-Gg: ASbGncs9ucJPe75fqLaovvBOacwO16aeWvd+tHuewuxg3FpXeb/oOg7iItN11yhEAU5
+	vBf5VjgzxrcevFm9I6p+1TjfoMOyEEntfhuDchvULK/oNPcxDRaPgB0DWGYI+3hWuSEcWkT899Q
+	==
+X-Google-Smtp-Source: AGHT+IGu79+w/1iTydyOb3iR4taTuwPxtPcuXKJds6zRsSfn7JBghSM3G8ek0JWSy/1KVlrd+peqLwdyzoR9Y9aqHTI=
+X-Received: by 2002:a05:6512:3c9e:b0:53e:368c:ac48 with SMTP id
+ 2adb3069b0e04-543e4bd95damr4297791e87.11.1738343224864; Fri, 31 Jan 2025
+ 09:07:04 -0800 (PST)
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
+References: <CAK9SO09LZBL_tQpGX2f2PcZmEsSiaGcUg3yB6vGvQWWT3ze1XA@mail.gmail.com>
+In-Reply-To: <CAK9SO09LZBL_tQpGX2f2PcZmEsSiaGcUg3yB6vGvQWWT3ze1XA@mail.gmail.com>
+From: Anup Patel <apatel@ventanamicro.com>
+Date: Fri, 31 Jan 2025 22:36:53 +0530
+X-Gm-Features: AWEUYZmAAYp1I1YaZuO-UFbOAMkotZXa_YA6c-7ppPfxp4KftnBpqtExmyCnBXo
+Message-ID: <CAK9=C2UUnP0xV-p6NMH8ma2-hB2K52_5Ug-OKJWcSq1xwBXCFw@mail.gmail.com>
 Subject: Re: [QUESTION] Understanding in-kernel irqchip (APLIC + IMSIC)
  behavior with multiple devices and interrupt handling
-From: Samuele Paone <s.paone@virtualopensystems.com>
-To: kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>,
- andrew.jones@linux.dev
-Cc: Alvise Rigo <a.rigo@virtualopensystems.com>
-References: <CAK9SO09LZBL_tQpGX2f2PcZmEsSiaGcUg3yB6vGvQWWT3ze1XA@mail.gmail.com>
-Content-Language: en-US
-In-Reply-To: <CAK9SO09LZBL_tQpGX2f2PcZmEsSiaGcUg3yB6vGvQWWT3ze1XA@mail.gmail.com>
+To: Samuele Paone <s.paone@virtualopensystems.com>
+Cc: kvm-riscv@lists.infradead.org, Alvise Rigo <a.rigo@virtualopensystems.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250131_085327_971928_93BBE0E2 
-X-CRM114-Status: GOOD (  21.21  )
+X-CRM114-CacheID: sfid-20250131_090707_591482_1355FCD0 
+X-CRM114-Status: GOOD (  21.86  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -96,88 +88,71 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Hello,
-
-I was just wondering if you had the chance to take a look at this?
-
-Regards,
-
-Samuele
-
-On 1/7/25 5:36 PM, Samuele Paone wrote:
-> Hello everyone,
-> I have a few questions regarding the in-kernel irqchip
-> implementation, specifically in the context of APLIC and IMSIC for
-> RISC-V:
->
-> 1. **Behavior with Multiple Devices**: Does the current implementation
-> support the creation of a VM with both PCI devices (that use MSI) and
-> MMIO devices (that use wired interrupts)?
-> If such a scenario is not supported, how can I configure an MMIO
-> device to use MSI interrupts? Would it all boil down to some device
-> tree configuration
-> (i.e., the MMIO device tree node "interrupts" property referencing the
-> IMSIC rather than the APLIC directly)?
->
-> 2. I find unclear how the variable `level` is used inside function
-> `kvm_riscv_aia_aplic_inject` in `arch/riscv/kvm/aia_aplic.c`
->
-> ```
-> switch (irqd->sourcecfg & APLIC_SOURCECFG_SM_MASK) {
-> case APLIC_SOURCECFG_SM_EDGE_RISE:
-> if (level && !(irqd->state & APLIC_IRQ_STATE_INPUT) &&
->      !(irqd->state & APLIC_IRQ_STATE_PENDING))
-> irqd->state |= APLIC_IRQ_STATE_PENDING;
->                  level = 0;
-> break;
-> case APLIC_SOURCECFG_SM_EDGE_FALL:
-> if (!level && (irqd->state & APLIC_IRQ_STATE_INPUT) &&
->      !(irqd->state & APLIC_IRQ_STATE_PENDING))
-> irqd->state |= APLIC_IRQ_STATE_PENDING;
-> break;
-> case APLIC_SOURCECFG_SM_LEVEL_HIGH:
-> if (level && !(irqd->state & APLIC_IRQ_STATE_PENDING))
-> irqd->state |= APLIC_IRQ_STATE_PENDING;
-> break;
-> case APLIC_SOURCECFG_SM_LEVEL_LOW:
-> if (!level && !(irqd->state & APLIC_IRQ_STATE_PENDING))
-> irqd->state |= APLIC_IRQ_STATE_PENDING;
-> break;
-> }
->
-> if (level)
-> irqd->state |= APLIC_IRQ_STATE_INPUT;
-> else
-> irqd->state &= ~APLIC_IRQ_STATE_INPUT;
-> ```
->
-> Considering `edge_rise` interrupts, as far as I can see, the
-> APLIC_IRQ_STATE_INPUT is set only in the code above
->   but prevents edge_rise interrupts from being set pending.
-> Moreover, in a system emulator implementation that uses in-kernel IRQCHIP and
-> IrqFd, this variable is hard-coded (`virt/kvm/eventfd.c` in function
-> `irqfd_wakeup` when it calls `kvm_arch_set_irq_inatomic`)
-> in the kernel as 1.
->
-> 3. **MSI-only Support in the irqchip**: The in-kernel irqchip
-> documentation states that it only supports MSI. However, the RISC-V
-> hardware documentation mentions that APLIC can take wired interrupts
-> as input and convert them to MSI to forward to IMSIC. Could someone
-> clarify what is meant by "MSI-only" support in this context? Are there
-> specific constraints or implementation details that limit the irqchip
-> to only support MSI for virtualization?
->
-> 4. **Device tree node differences**: How would a device tree node backed
-> by MSI interrupt differ from a device backed by a wired interrupt?
->
-> Samuele
-
--- 
-kvm-riscv mailing list
-kvm-riscv@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/kvm-riscv
+T24gVHVlLCBKYW4gNywgMjAyNSBhdCAxMDozNuKAr1BNIFNhbXVlbGUgUGFvbmUKPHMucGFvbmVA
+dmlydHVhbG9wZW5zeXN0ZW1zLmNvbT4gd3JvdGU6Cj4KPiBIZWxsbyBldmVyeW9uZSwKPiBJIGhh
+dmUgYSBmZXcgcXVlc3Rpb25zIHJlZ2FyZGluZyB0aGUgaW4ta2VybmVsIGlycWNoaXAKPiBpbXBs
+ZW1lbnRhdGlvbiwgc3BlY2lmaWNhbGx5IGluIHRoZSBjb250ZXh0IG9mIEFQTElDIGFuZCBJTVNJ
+QyBmb3IKPiBSSVNDLVY6Cj4KPiAxLiAqKkJlaGF2aW9yIHdpdGggTXVsdGlwbGUgRGV2aWNlcyoq
+OiBEb2VzIHRoZSBjdXJyZW50IGltcGxlbWVudGF0aW9uCj4gc3VwcG9ydCB0aGUgY3JlYXRpb24g
+b2YgYSBWTSB3aXRoIGJvdGggUENJIGRldmljZXMgKHRoYXQgdXNlIE1TSSkgYW5kCj4gTU1JTyBk
+ZXZpY2VzICh0aGF0IHVzZSB3aXJlZCBpbnRlcnJ1cHRzKT8KClllcywgaXRzIHN1cHBvcnRlZC4K
+Ck1TSXMgZnJvbSBib3RoIFBDSWUgYW5kIFBsYXRmb3JtIGRldmljZXMgYXJlIHByb2Nlc3NlZCBi
+eSBJTVNJQy4KV2lyZWQgaW50ZXJydXB0cyBhcmUgaGFuZGxlZCB0aHJvdWdoIEFQTElDIE1TSS1t
+b2RlIHdoZXJlIHRoZQpBUExJQyBjb252ZXJ0cyBpbnRlcnJ1cHQgc3RhdGUgY2hhbmdlIGludG8g
+TVNJIHdyaXRlcy4KCj4gSWYgc3VjaCBhIHNjZW5hcmlvIGlzIG5vdCBzdXBwb3J0ZWQsIGhvdyBj
+YW4gSSBjb25maWd1cmUgYW4gTU1JTwo+IGRldmljZSB0byB1c2UgTVNJIGludGVycnVwdHM/IFdv
+dWxkIGl0IGFsbCBib2lsIGRvd24gdG8gc29tZSBkZXZpY2UKPiB0cmVlIGNvbmZpZ3VyYXRpb24K
+PiAoaS5lLiwgdGhlIE1NSU8gZGV2aWNlIHRyZWUgbm9kZSAiaW50ZXJydXB0cyIgcHJvcGVydHkg
+cmVmZXJlbmNpbmcgdGhlCj4gSU1TSUMgcmF0aGVyIHRoYW4gdGhlIEFQTElDIGRpcmVjdGx5KT8K
+ClBsYXRmb3JtIChvciBNTUlPKSBkZXZpY2VzIHdpdGggTVNJIHN1cHBvcnQgZG9uJ3QgbmVlZCB0
+aGUgImludGVycnVwdHMiCkRUIHByb3BlcnR5LCBpbnN0ZWFkIHRoZSAibXNpLXBhcmVudCIgRFQg
+cHJvcGVydHkgaXMgdXNlZCB0byBwb2ludCB0bwp0aGUgSU1TSUNzLgoKPgo+IDIuIEkgZmluZCB1
+bmNsZWFyIGhvdyB0aGUgdmFyaWFibGUgYGxldmVsYCBpcyB1c2VkIGluc2lkZSBmdW5jdGlvbgo+
+IGBrdm1fcmlzY3ZfYWlhX2FwbGljX2luamVjdGAgaW4gYGFyY2gvcmlzY3Yva3ZtL2FpYV9hcGxp
+Yy5jYAo+Cj4gYGBgCj4gc3dpdGNoIChpcnFkLT5zb3VyY2VjZmcgJiBBUExJQ19TT1VSQ0VDRkdf
+U01fTUFTSykgewo+IGNhc2UgQVBMSUNfU09VUkNFQ0ZHX1NNX0VER0VfUklTRToKPiBpZiAobGV2
+ZWwgJiYgIShpcnFkLT5zdGF0ZSAmIEFQTElDX0lSUV9TVEFURV9JTlBVVCkgJiYKPiAgICAgIShp
+cnFkLT5zdGF0ZSAmIEFQTElDX0lSUV9TVEFURV9QRU5ESU5HKSkKPiBpcnFkLT5zdGF0ZSB8PSBB
+UExJQ19JUlFfU1RBVEVfUEVORElORzsKPiAgICAgICAgICAgICAgICAgbGV2ZWwgPSAwOwo+IGJy
+ZWFrOwo+IGNhc2UgQVBMSUNfU09VUkNFQ0ZHX1NNX0VER0VfRkFMTDoKPiBpZiAoIWxldmVsICYm
+IChpcnFkLT5zdGF0ZSAmIEFQTElDX0lSUV9TVEFURV9JTlBVVCkgJiYKPiAgICAgIShpcnFkLT5z
+dGF0ZSAmIEFQTElDX0lSUV9TVEFURV9QRU5ESU5HKSkKPiBpcnFkLT5zdGF0ZSB8PSBBUExJQ19J
+UlFfU1RBVEVfUEVORElORzsKPiBicmVhazsKPiBjYXNlIEFQTElDX1NPVVJDRUNGR19TTV9MRVZF
+TF9ISUdIOgo+IGlmIChsZXZlbCAmJiAhKGlycWQtPnN0YXRlICYgQVBMSUNfSVJRX1NUQVRFX1BF
+TkRJTkcpKQo+IGlycWQtPnN0YXRlIHw9IEFQTElDX0lSUV9TVEFURV9QRU5ESU5HOwo+IGJyZWFr
+Owo+IGNhc2UgQVBMSUNfU09VUkNFQ0ZHX1NNX0xFVkVMX0xPVzoKPiBpZiAoIWxldmVsICYmICEo
+aXJxZC0+c3RhdGUgJiBBUExJQ19JUlFfU1RBVEVfUEVORElORykpCj4gaXJxZC0+c3RhdGUgfD0g
+QVBMSUNfSVJRX1NUQVRFX1BFTkRJTkc7Cj4gYnJlYWs7Cj4gfQo+Cj4gaWYgKGxldmVsKQo+IGly
+cWQtPnN0YXRlIHw9IEFQTElDX0lSUV9TVEFURV9JTlBVVDsKPiBlbHNlCj4gaXJxZC0+c3RhdGUg
+Jj0gfkFQTElDX0lSUV9TVEFURV9JTlBVVDsKPiBgYGAKPgo+IENvbnNpZGVyaW5nIGBlZGdlX3Jp
+c2VgIGludGVycnVwdHMsIGFzIGZhciBhcyBJIGNhbiBzZWUsIHRoZQo+IEFQTElDX0lSUV9TVEFU
+RV9JTlBVVCBpcyBzZXQgb25seSBpbiB0aGUgY29kZSBhYm92ZQo+ICBidXQgcHJldmVudHMgZWRn
+ZV9yaXNlIGludGVycnVwdHMgZnJvbSBiZWluZyBzZXQgcGVuZGluZy4KPiBNb3Jlb3ZlciwgaW4g
+YSBzeXN0ZW0gZW11bGF0b3IgaW1wbGVtZW50YXRpb24gdGhhdCB1c2VzIGluLWtlcm5lbCBJUlFD
+SElQIGFuZAo+IElycUZkLCB0aGlzIHZhcmlhYmxlIGlzIGhhcmQtY29kZWQgKGB2aXJ0L2t2bS9l
+dmVudGZkLmNgIGluIGZ1bmN0aW9uCj4gYGlycWZkX3dha2V1cGAgd2hlbiBpdCBjYWxscyBga3Zt
+X2FyY2hfc2V0X2lycV9pbmF0b21pY2ApCj4gaW4gdGhlIGtlcm5lbCBhcyAxLgoKVGhlIElOUFVU
+IGJpdCBpbiB0aGUgSVJRIHN0YXRlIHJlcHJlc2VudHMgdGhlIHJhdyBpbnB1dApzdGF0ZSB3aGVy
+ZWFzIHRoZSBQRU5ESU5HIGJpdCBpbiB0aGUgSVJRIHN0YXRlIHJlcHJlc2VudHMKdGhhdCBnaXZl
+biBJUlEgbmVlZHMgdG8gYmUgdGFrZW4gYnkgQ1BVLgoKPgo+IDMuICoqTVNJLW9ubHkgU3VwcG9y
+dCBpbiB0aGUgaXJxY2hpcCoqOiBUaGUgaW4ta2VybmVsIGlycWNoaXAKPiBkb2N1bWVudGF0aW9u
+IHN0YXRlcyB0aGF0IGl0IG9ubHkgc3VwcG9ydHMgTVNJLiBIb3dldmVyLCB0aGUgUklTQy1WCj4g
+aGFyZHdhcmUgZG9jdW1lbnRhdGlvbiBtZW50aW9ucyB0aGF0IEFQTElDIGNhbiB0YWtlIHdpcmVk
+IGludGVycnVwdHMKPiBhcyBpbnB1dCBhbmQgY29udmVydCB0aGVtIHRvIE1TSSB0byBmb3J3YXJk
+IHRvIElNU0lDLiBDb3VsZCBzb21lb25lCj4gY2xhcmlmeSB3aGF0IGlzIG1lYW50IGJ5ICJNU0kt
+b25seSIgc3VwcG9ydCBpbiB0aGlzIGNvbnRleHQ/IEFyZSB0aGVyZQo+IHNwZWNpZmljIGNvbnN0
+cmFpbnRzIG9yIGltcGxlbWVudGF0aW9uIGRldGFpbHMgdGhhdCBsaW1pdCB0aGUgaXJxY2hpcAo+
+IHRvIG9ubHkgc3VwcG9ydCBNU0kgZm9yIHZpcnR1YWxpemF0aW9uPwoKVGhlIEtWTSBpbi1rZXJu
+ZWwgQUlBIHZpcnR1YWxpemF0aW9uIG9ubHkgaGFzIEhXIGFjY2VsZXJhdGlvbiBmb3IKSU1TSUMg
+d2hlcmVhcyB0aGUgQVBMSUMgTVNJLW1vZGUgaXMgc3RpbGwgdHJhcC1uLWVtdWxhdGVkLgoKPgo+
+IDQuICoqRGV2aWNlIHRyZWUgbm9kZSBkaWZmZXJlbmNlcyoqOiBIb3cgd291bGQgYSBkZXZpY2Ug
+dHJlZSBub2RlIGJhY2tlZAo+IGJ5IE1TSSBpbnRlcnJ1cHQgZGlmZmVyIGZyb20gYSBkZXZpY2Ug
+YmFja2VkIGJ5IGEgd2lyZWQgaW50ZXJydXB0PwoKSXQgaXMgZGlmZmVyZW50aWF0ZWQgdXNpbmcg
+Im1zaS1wYXJlbnQiIGFuZCAiaW50ZXJydXB0cyIgRFQgcHJvcGVydHkuCgpSZWdhcmRzLApBbnVw
+CgotLSAKa3ZtLXJpc2N2IG1haWxpbmcgbGlzdAprdm0tcmlzY3ZAbGlzdHMuaW5mcmFkZWFkLm9y
+ZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2t2bS1yaXNjdgo=
