@@ -4,110 +4,104 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C64BC0218F
-	for <kvm-riscv@archiver.kernel.org>; Sun,  2 Feb 2025 21:34:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4727EC02190
+	for <kvm-riscv@archiver.kernel.org>; Mon,  3 Feb 2025 05:43:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:
+	Subject:MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=QtLRoS29CNJ+iwAclRXkZtMsbyuYplhkJpq8SsUZWh4=; b=hIkss2RhoD7cDO
-	CC8q+fNumQ54k/QxQFSiq5JL1DlRICK8j08U00rDpQs7I3Z1evAWAMkT8OJJKH1g/46tpzc0sIxSD
-	ztpKpq0+wkpV3yWkB7XJPEYUWYlrVo8LcWDOgO/dRwMVMdql35pwDpFFo7m/5pDsTJr1p2bkVeDAi
-	1WeUBia2EWtiB0/SJ60OnohreceuPmPuz/mPLGBR9zNxYDxbZul1kKR7RQk5MkJlrzVirwtK5WSRo
-	htA449YepB6LSGSdsNsAJc8wkpADRem5+YBX4d42P3m7lGz+uRC8xcs6XUjM/YD7y6zIjvGjBNpcu
-	yIc5WKU7tR62SLii7NGQ==;
+	List-Owner; bh=YLx0hH0wq+8Y2Nm+FYa3m6fhreECnoWY++dEYXtSvPs=; b=QiWMTZ1liDUCgm
+	Y2CsrrUzi/wfzyR84OkFOomO/W8ahKF4Qt4bumVOGvN2hUiqlELjA9QleL/VuDZebpk1kgaVNbJku
+	39ZCGzf5UNa64Xrmfw6SYEw6BYd62KqGLIQzEG4UboYszkAcCIVHWkH5tngeoUrhKfBoJJWRXYTZd
+	b95UQjWV6p1jBNN6AaElLkdIw8MdttKnahW8l0gLQ5gS2b4yAgNCNkTmVlr/Q0aQLz0Aruw15mHkg
+	YwX88b7bWUCkWUNqT0+eEd8xArEDEsnR0beZWIiNCvNp6x4s2qAgCs5uWbYfI1Fcb+Fok87Q6VBER
+	IRUiX6dem68Pu5davR1Q==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tehbg-0000000ECZL-26aV;
-	Sun, 02 Feb 2025 21:34:20 +0000
-Received: from mout.gmx.net ([212.227.15.15])
+	id 1tepF5-0000000Eb28-2CMe;
+	Mon, 03 Feb 2025 05:43:31 +0000
+Received: from mail-il1-x134.google.com ([2607:f8b0:4864:20::134])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1tehbd-0000000ECXw-0dpA;
-	Sun, 02 Feb 2025 21:34:19 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.net;
-	s=s31663417; t=1738532026; x=1739136826; i=j.neuschaefer@gmx.net;
-	bh=G2eHfhQuejodnDOibyT663weFQ71Yl8E8QZl/5oxVv0=;
-	h=X-UI-Sender-Class:Date:From:To:Cc:Subject:Message-ID:References:
-	 MIME-Version:Content-Type:Content-Transfer-Encoding:In-Reply-To:
-	 cc:content-transfer-encoding:content-type:date:from:message-id:
-	 mime-version:reply-to:subject:to;
-	b=lNI4wnLn373mkDHyreS/4go2WqLLFqysiF0LW3XiW1x/TglUrcPjkWZnauK8Ui1R
-	 XU0ggv4mZdMXv3WIM/qA8OqL7HzNFmRqsXPGeFv9qLqrDmBT9CieOrZXNo3TRsVwk
-	 5M5fmis0I0ZqKFicCRUGYCSGRY00DySlih9CvpHUYhrtW0TI+4+LHWAK3xKKq9uiR
-	 AF9sgaalNQduw0ptfF6P0GLSwGBTtZ2Sbnp0wUl9NT0xaO+o63RoPV2h2xRaj9KRH
-	 T47MTCEDaWQ9lzGI6z2ONFo/9+tBc9+MSvoR7Cu76PREt+9/X+8/eolBYqU9OY5tI
-	 ME/oP5Cwa5qXcTCPKA==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from probook ([89.1.210.218]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MAfYw-1tlHAA11D6-007KTC; Sun, 02
- Feb 2025 22:33:46 +0100
-Date: Sun, 2 Feb 2025 22:33:36 +0100
-From: =?utf-8?Q?J=2E_Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
-To: "A. Wilcox" <AWilcox@wilcox-tech.com>
-Cc: Arnd Bergmann <arnd@kernel.org>, kvm@vger.kernel.org,
-	Arnd Bergmann <arnd@arndb.de>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Huacai Chen <chenhuacai@kernel.org>,
-	Jiaxun Yang <jiaxun.yang@flygoat.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Naveen N Rao <naveen@kernel.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Alexander Graf <graf@amazon.com>, Crystal Wood <crwood@redhat.com>,
-	Anup Patel <anup@brainfault.org>,
-	Atish Patra <atishp@atishpatra.org>,
-	Paul Walmsley <paul.walmsley@sifive.com>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Sean Christopherson <seanjc@google.com>,
-	Paolo Bonzini <pbonzini@redhat.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Vitaly Kuznetsov <vkuznets@redhat.com>,
-	David Woodhouse <dwmw2@infradead.org>, Paul Durrant <paul@xen.org>,
-	Marc Zyngier <maz@kernel.org>, linux-kernel@vger.kernel.org,
-	linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org
-Subject: Re: [PATCH v2 4/5] powerpc: kvm: drop 32-bit book3s
-Message-ID: <Z5_ksID8Gv_Tg5F7@probook>
-References: <20241221214223.3046298-1-arnd@kernel.org>
- <20241221214223.3046298-5-arnd@kernel.org>
- <9B9E07F0-3373-4F59-BE4C-E6C425B3C36D@Wilcox-Tech.com>
+	id 1tepF1-0000000Eb11-2jcb
+	for kvm-riscv@lists.infradead.org;
+	Mon, 03 Feb 2025 05:43:29 +0000
+Received: by mail-il1-x134.google.com with SMTP id e9e14a558f8ab-3ce76b8d5bcso35601705ab.0
+        for <kvm-riscv@lists.infradead.org>; Sun, 02 Feb 2025 21:43:26 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=sifive.com; s=google; t=1738561406; x=1739166206; darn=lists.infradead.org;
+        h=content-transfer-encoding:in-reply-to:content-language:from
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=Abrmc3V+wCkg7+h5ECgKA37T7F550/MzIW2BgVmGe00=;
+        b=Ssh9fvDGwCBcH0vZo8c+EzvCo0BsqIOBT7cxgHyxr7/QQi2B+f5roKDVXKPFHm31rc
+         dzSFO57+Vulr1W+9xF+C23DpFtZ5vQyyQx2caArD0ZQ7/Edl63MobHuGH8NQTlOZTq5q
+         PMLgP8RHQbpqGwjk38T0V2hueQhuGWqcsh4nbD7wjcXW/XHawKrxjcFj89sF1M0M3snl
+         SUZstvewG4ZwoxotPmdWcq3y5NdILMEwOlDrNwmfFZPdy5/JkkQXKa393mA6kSSDqxQv
+         FMU0peGTGK3tXDj+ZVjqLJLl30pikZqGlvKh+8C7Ho9V7DX3vs7v+TkZ0qpzXNOkJEy3
+         tJMQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1738561406; x=1739166206;
+        h=content-transfer-encoding:in-reply-to:content-language:from
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=Abrmc3V+wCkg7+h5ECgKA37T7F550/MzIW2BgVmGe00=;
+        b=cwXHA8UB+sknmXeRf+jpdXq6NCPCU5Tz4KXtE/SjgP2ftvlGKrzvd2dQIP2JetfAQg
+         LWPwbu4HSUxbWadTMlSpr9kkBgVE8wOLRFQSojND4mDQPrWdMIetRluBU/gTfnFTv58d
+         SG7vs9V/Z8nCRHmbki1bdO4wC0y/VTfoomsKMeSOLoLJ5CXRlGbwlt0modHAK8LXAK93
+         63U+iUwwlMyR40vVtSH38xVRs1EuL2yPcXoo7bxj30xoXDoTFge8SonV+yq6uAqhf/mR
+         n8M1NNOqgq2AeRtrAlLcfQG5sXNueXqSTlH4XNKDz63w5slcXLVxGt7s/KjuyTH6OdLZ
+         84bQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXlfWjj/LPvPov4+C1Nk16/URzMCTmLxsGEVOweIFg3BODi2KsgnjvOPlNME92ACBWAC5DGoGqgpqE=@lists.infradead.org
+X-Gm-Message-State: AOJu0YwAOp2Zp5m5MW9tY94Yu0vVvoY2FoTjjZmXRJ2DsGdEy/v+SS7X
+	v21TgpYGp8yScyME6B5qrV4LuFvZHdkomg5KC4wfX8A8OE8vwWYJDfvzz34BWwQ=
+X-Gm-Gg: ASbGnctnLdEwYHVmQCESUgWZZt2Uu5PVQ/roh+Hox8jeppE8K5VszIxWy9/0/oh2Cun
+	70cF7N6ZavFwHRXTi4ROeDaSoP+K0SOwUKSY7ZgF4YuYvDmujsXroAmPrFMl4AR3mFFZmGxWNUv
+	91Uh5fEFIn+qMgL6Rwkzvr1Zl2vsy0Drd+KJZBEs/uMY99rC4BTFAhPnRu1BxrMOmI5rhkMKk+I
+	2n7n1pC94Y/ge1Y76mJMugstH0RXlzg5y38hNxNKFulTs4qEzGftG96vbIo0tW3Etcpasg2CuZD
+	udCypgy/4Sl1L3ONKr+SKFJjG51WtX3VonyLSX4=
+X-Google-Smtp-Source: AGHT+IHl4RRDfRdJ9K6Cx6v8dXThe6D880Ogx8BJ2U75l88ormi4P0wAtnHOCwaBHFLWcb6LIw7+7w==
+X-Received: by 2002:a05:6e02:1fc2:b0:3ce:78ab:dcd1 with SMTP id e9e14a558f8ab-3cffe4a7bf1mr175908815ab.19.1738561406189;
+        Sun, 02 Feb 2025 21:43:26 -0800 (PST)
+Received: from [100.64.0.1] ([165.188.116.9])
+        by smtp.gmail.com with ESMTPSA id e9e14a558f8ab-3d018c28ea5sm15310115ab.35.2025.02.02.21.43.22
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sun, 02 Feb 2025 21:43:25 -0800 (PST)
+Message-ID: <44468c97-06e6-4bfe-930d-444ab7ead90d@sifive.com>
+Date: Sun, 2 Feb 2025 23:43:22 -0600
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <9B9E07F0-3373-4F59-BE4C-E6C425B3C36D@Wilcox-Tech.com>
-X-Provags-ID: V03:K1:9/xKYk+mj967yFEydW37x3unDxvlzZDdriScJwSUFGFBVPwz408
- R4O7IVTtnXePPO+gVIX8jktVCSK3SLk5KSpqblHo9ocA7Uo1TTIFaSqN1IJ0B/nSnHdz+v4
- BQJUDyiTjBjastoDpF/hhIklw774C2Nk4pN/wxnwAA2nZ2/XzPYAWN671OjQUfPE/hjZF1w
- siMMlhFzAtG6iMd99XMIg==
-UI-OutboundReport: notjunk:1;M01:P0:lvJI8XggPhM=;4W9A0Oo2CZWjUIca1pWrNgsKvKX
- z8V5mRgOrYvpaHbx85mspd7QV2ItcjEq+fbuEkib8xY69HipoOK+VJcOAfiLKjAnQJa/cEWvo
- CyiUn1zvL9+XgfNLjZDQvyYLO0OegTg5uO6ds6wuAoImA3OZR02zmCDlQoBOZ9Os/C7ncaKHX
- 70bHqXPyIx5rnA5PX8W9/Gx/G2VS6JmbZloyyR+qYGwoXMa82ikMXsHgpXshd/zLqq4sSRHoV
- brXeZgfYB3/4Q/i8lba34oeUVPvRB47g7yr3WhGmhykJVM3QHf5w+IWCNM4T4JwjPSqcbUnBy
- pW5753Wdt1o3+XSulwpYV+SF3ehRAAk8zx7oc1eskQUwPEFPv3oL1tNRzd7KDJ7QGTMXKcMRR
- yJQnkoyomns15uYcWXEWc4eJ0Q3nqODjrT7/oPRM6PfF1axZPTcN9Ivt/coi8oAHzidpeZRw0
- 1Nj7DtAAuIiIqTiXFnM71/83afL3vQKgrXVDhbGQ1eHgcUKHDNURj8Ov+oopEjNcqjdlWGWoN
- y/06JKYTlBaAC0sx1Fr8k1oOerFxYn2v0A6Nocs597aQ1BLqzSDJUkMmq+p9P2Xm8dVSsGGu4
- +4an3otnMm7ZdorWY7g0UeLINMt1RvZyhf3fM1MuxetqEnqnIxXuoEaAUo/5g5Axxnc7d+90+
- CqQvSZiR32dd7HV8x/oBhj3492A7USPGpPBHD4yhGucmE0EQGVrTjkK8T9VYH8nj9cnnIYytQ
- c78FwW3q6Jv7eRX43bsv6QZUi4Y1zzlJYyE8P/w9Z+DTvFNbOjo4v0JtfT9UWCC2FhaBW9Oqe
- anaWkC6cv6od7SLhWicorQPsOM2UcDiSTAWA1JBBk92fj+U5TadCXASiSa9qQiymc4ZHM3yzO
- lM7OUKempveM0+57H8oZtb5No0NKCLwN9BQw0eLJ5IAWaDGAEIDJxt+ql7gxKacp5U/eU07Qj
- +x4rzmw88GtPCbybRi41JUDTYLunI5I5clPvmpGMh+Q+iArBl4xRCVHV5M51h1gBJZkv85dmD
- aH2sWMqQaEJ7FBWhGUSRu1GLj09VqIO7JAoY2C9TpRmf/ao9g02EJaYOiaCtGJWsPsri7Jq9g
- rHR6DYNhdqLKm2SF8kAE86rpcJ8B0HKl2UyhO/OCxLvlUOemuYGVqW3BDk5RgNpYgKaXWeuiW
- ThzTcYCT9+ztyzdFsFjgwtA56kVcQc7C+VVodKwz9RtObFvhrK1yC2CXdCA+KcPiSnCTKvqes
- 2EQX8ZYBWmYwZFGRWQrJtQmcKMRszV78bn8FnLMJ/9/2KEifFR7S9q34teR7+FFb4iUM9FW6x
- 3zyl/UGrzimjzwEO+HD7CetGSspTpweqegk7AqIu8he+lY=
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 2/5] riscv: kvm: drop 32-bit host support
+To: Arnd Bergmann <arnd@kernel.org>, kvm@vger.kernel.org
+Cc: Arnd Bergmann <arnd@arndb.de>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Huacai Chen <chenhuacai@kernel.org>, Jiaxun Yang <jiaxun.yang@flygoat.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Naveen N Rao <naveen@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Alexander Graf <graf@amazon.com>, Crystal Wood <crwood@redhat.com>,
+ Anup Patel <anup@brainfault.org>, Atish Patra <atishp@atishpatra.org>,
+ Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt
+ <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
+ Sean Christopherson <seanjc@google.com>, Paolo Bonzini
+ <pbonzini@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+ Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+ "H. Peter Anvin" <hpa@zytor.com>, Vitaly Kuznetsov <vkuznets@redhat.com>,
+ David Woodhouse <dwmw2@infradead.org>, Paul Durrant <paul@xen.org>,
+ Marc Zyngier <maz@kernel.org>, "A. Wilcox" <AWilcox@Wilcox-Tech.com>,
+ linux-kernel@vger.kernel.org, linux-mips@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, kvm-riscv@lists.infradead.org,
+ linux-riscv@lists.infradead.org
+References: <20241221214223.3046298-1-arnd@kernel.org>
+ <20241221214223.3046298-3-arnd@kernel.org>
+From: Samuel Holland <samuel.holland@sifive.com>
+Content-Language: en-US
+In-Reply-To: <20241221214223.3046298-3-arnd@kernel.org>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250202_133417_583924_67326F78 
-X-CRM114-Status: GOOD (  21.43  )
+X-CRM114-CacheID: sfid-20250202_214327_716188_43F6383A 
+X-CRM114-Status: GOOD (  24.63  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -119,40 +113,138 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-T24gU2F0LCBEZWMgMjEsIDIwMjQgYXQgMDg6MTM6MTJQTSAtMDYwMCwgQS4gV2lsY294IHdyb3Rl
-Ogo+IE9uIERlYyAyMSwgMjAyNCwgYXQgMzo0MuKAr1BNLCBBcm5kIEJlcmdtYW5uIDxhcm5kQGtl
-cm5lbC5vcmc+IHdyb3RlOgo+ID4KPiA+IEZyb206IEFybmQgQmVyZ21hbm4gPGFybmRAYXJuZGIu
-ZGU+Cj4gPgo+ID4gU3VwcG9ydCBmb3IgS1ZNIG9uIDMyLWJpdCBCb29rIElJSS1zIGltcGxlbWVu
-dGF0aW9ucyB3YXMgYWRkZWQgaW4gMjAxMAo+ID4gYW5kIHN1cHBvcnRzIFBvd2VyTWFjLCBDSFJQ
-LCBhbmQgZW1iZWRkZWQgcGxhdGZvcm1zIHVzaW5nIHRoZSBGcmVlc2NhbGUgRzQKPiA+IChtcGM3
-NHh4KSwgZTMwMCAobXBjODN4eCkgYW5kIGU2MDAgKG1wYzg2eHgpIENQVXMgZnJvbSAyMDAzIHRv
-IDIwMDkuCj4gPgo+ID4gRWFybGllciA2MDMvNjA0Lzc1MCBtYWNoaW5lcyBtaWdodCB3b3JrIGJ1
-dCB3b3VsZCBiZSBldmVuIG1vcmUgbGltaXRlZAo+ID4gYnkgdGhlaXIgYXZhaWxhYmxlIG1lbW9y
-eS4KPiA+Cj4gPiBUaGUgb25seSBsaWtlbHkgdXNlcnMgb2YgS1ZNIG9uIGFueSBvZiB0aGVzZSB3
-ZXJlIHRoZSBmaW5hbCBBcHBsZQo+ID4gUG93ZXJNYWMvUG93ZXJCb29rL2lCb29rIEc0IG1vZGVs
-cyB3aXRoIDJHQiBvZiBSQU0gdGhhdCB3ZXJlIGF0IHRoZSBoaWdoCj4gPiBlbmQgMjAgeWVhcnMg
-YWdvIGJ1dCBhcmUganVzdCBhcyBvYnNvbGV0ZSBhcyB0aGVpciB4ODYtMzIgY291bnRlcnBhcnRz
-Lgo+ID4gVGhlIGNvZGUgaGFzIGJlZW4gb3JwaGFuZWQgc2luY2UgMjAyMy4KPiA+Cj4gPiBUaGVy
-ZSBpcyBzdGlsbCBhIG5lZWQgdG8gc3VwcG9ydCAzMi1iaXQgZ3Vlc3RzIGluIG9yZGVyIHRvIGJl
-dHRlcgo+ID4gZGVidWcgcHJvYmxlbXMgb24gcHBjMzIga2VybmVscy4gVGhpcyBzaG91bGQgd29y
-ayBpbiB0aGVvcnkgb24gYm90aAo+ID4gNjQtYml0IGJvb2tlIGFuZCBvbiA2NC1iaXQgYm9vazNz
-IGhvc3RzLCBidXQgaXQgd291bGQgYmUgZ29vZCB0bwo+ID4gY29uZmlybSB0aGF0IHRoaXMgaXMg
-c3RpbGwgdGhlIGNhc2UgYmVmb3JlIHRoZSBrbm93biB3b3JraW5nIG9wdGlvbgo+ID4gZ2V0cyBy
-ZW1vdmVkLgpbLi4uXQo+IFRoYXQgc2FpZCwgSSB3b3VsZCBsaWtlIHRvIGtlZXAgdGhlIHN1cHBv
-cnQgYWxpdmUgZm9yIG1vcmUgdGhhbiBqdXN0Cj4gcHBjMzIga2VybmVsIHRlc3RpbmcuICBUaGVy
-ZSBhcmUgcGxlbnR5IG9mIFBvd2VyIE1hY3Mgd2l0aCBlbm91Z2gKPiBtZW1vcnkgdG8gcnVuIHNv
-bWUgZW52aXJvbm1lbnRzIHdpdGhpbiBLVk0uICBBZMOpbGll4oCZcyBuZXcgcmVsZWFzZQo+IGJv
-b3RzIGEgZnVsbCBYRkNFIGRlc2t0b3AgaW4gdW5kZXIgMzAwIE1CIFJBTSwgc28gZXZlbiBhIDEg
-R0IgbWFjaGluZQo+IGhhcyBlbm91Z2ggbWVtb3J5IHRvIHJ1biBBbWlnYU9TLCBNYWMgT1MgOSwg
-b3IgYW5vdGhlciBYRkNFIGluIEtWTS4KCkZXSVcsIEkgc2Vjb25kIHRoaXMuIEkgZG8gaW50ZW5k
-IHRvIGdldCBLVk0gdG8gcnVuIG9uIG15IGUzMDAtYmFzZWQKYm9hcmQgZm9yIHNvbWUgcmVsYXRp
-dmVseSBsaWdodCBndWVzdHMgc3VjaCBhcyBNYWMgT1MgOS4gSSBzdXNwZWN0IEkKd29uJ3QgYmUg
-YWJsZSB0byBjb250cmlidXRlIG11Y2ggdG8gdGhlIG1haW50ZW5hbmNlLCB0aG91Z2guCgpCZXN0
-IHJlZ2FyZHMsCkouIE5ldXNjaMOkZmVyCgotLSAKa3ZtLXJpc2N2IG1haWxpbmcgbGlzdAprdm0t
-cmlzY3ZAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWls
-bWFuL2xpc3RpbmZvL2t2bS1yaXNjdgo=
+Hi Arnd,
+
+On 2024-12-21 3:42 PM, Arnd Bergmann wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
+> 
+> KVM support on RISC-V includes both 32-bit and 64-bit host mode, but in
+> practice, all RISC-V SoCs that may use this are 64-bit:
+> 
+> As of linux-6.13, there is no mainline Linux support for any specific
+> 32-bit SoC in arch/riscv/, although the generic qemu model should work.
+> 
+> The available RV32 CPU implementations are mostly built for
+> microcontroller applications and are lacking a memory management
+> unit. There are a few CPU cores with an MMU, but those still lack the
+> hypervisor extensions needed for running KVM.
+> 
+> This is unlikely to change in the future, so remove the 32-bit host
+> code and simplify the test matrix.
+> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+>  arch/riscv/kvm/Kconfig            |   2 +-
+>  arch/riscv/kvm/aia.c              | 105 ------------------------------
+>  arch/riscv/kvm/aia_imsic.c        |  34 ----------
+>  arch/riscv/kvm/mmu.c              |   8 ---
+>  arch/riscv/kvm/vcpu_exit.c        |   4 --
+>  arch/riscv/kvm/vcpu_insn.c        |  12 ----
+>  arch/riscv/kvm/vcpu_sbi_pmu.c     |   8 ---
+>  arch/riscv/kvm/vcpu_sbi_replace.c |   4 --
+>  arch/riscv/kvm/vcpu_sbi_v01.c     |   4 --
+>  arch/riscv/kvm/vcpu_timer.c       |  20 ------
+>  10 files changed, 1 insertion(+), 200 deletions(-)
+> 
+> diff --git a/arch/riscv/kvm/Kconfig b/arch/riscv/kvm/Kconfig
+> index 0c3cbb0915ff..7405722e4433 100644
+> --- a/arch/riscv/kvm/Kconfig
+> +++ b/arch/riscv/kvm/Kconfig
+> @@ -19,7 +19,7 @@ if VIRTUALIZATION
+>  
+>  config KVM
+>  	tristate "Kernel-based Virtual Machine (KVM) support (EXPERIMENTAL)"
+> -	depends on RISCV_SBI && MMU
+> +	depends on RISCV_SBI && MMU && 64BIT
+>  	select HAVE_KVM_IRQCHIP
+>  	select HAVE_KVM_IRQ_ROUTING
+>  	select HAVE_KVM_MSI
+> diff --git a/arch/riscv/kvm/aia.c b/arch/riscv/kvm/aia.c
+> index 19afd1f23537..a399a5a9af0e 100644
+> --- a/arch/riscv/kvm/aia.c
+> +++ b/arch/riscv/kvm/aia.c
+> @@ -66,33 +66,6 @@ static inline unsigned long aia_hvictl_value(bool ext_irq_pending)
+>  	return hvictl;
+>  }
+>  
+> -#ifdef CONFIG_32BIT
+> -void kvm_riscv_vcpu_aia_flush_interrupts(struct kvm_vcpu *vcpu)
+> -{
+> -	struct kvm_vcpu_aia_csr *csr = &vcpu->arch.aia_context.guest_csr;
+> -	unsigned long mask, val;
+> -
+> -	if (!kvm_riscv_aia_available())
+> -		return;
+> -
+> -	if (READ_ONCE(vcpu->arch.irqs_pending_mask[1])) {
+> -		mask = xchg_acquire(&vcpu->arch.irqs_pending_mask[1], 0);
+> -		val = READ_ONCE(vcpu->arch.irqs_pending[1]) & mask;
+> -
+> -		csr->hviph &= ~mask;
+> -		csr->hviph |= val;
+> -	}
+> -}
+> -
+> -void kvm_riscv_vcpu_aia_sync_interrupts(struct kvm_vcpu *vcpu)
+> -{
+> -	struct kvm_vcpu_aia_csr *csr = &vcpu->arch.aia_context.guest_csr;
+> -
+> -	if (kvm_riscv_aia_available())
+> -		csr->vsieh = ncsr_read(CSR_VSIEH);
+> -}
+> -#endif
+> -
+>  bool kvm_riscv_vcpu_aia_has_interrupts(struct kvm_vcpu *vcpu, u64 mask)
+>  {
+>  	int hgei;
+> @@ -101,12 +74,6 @@ bool kvm_riscv_vcpu_aia_has_interrupts(struct kvm_vcpu *vcpu, u64 mask)
+>  	if (!kvm_riscv_aia_available())
+>  		return false;
+>  
+> -#ifdef CONFIG_32BIT
+> -	if (READ_ONCE(vcpu->arch.irqs_pending[1]) &
+> -	    (vcpu->arch.aia_context.guest_csr.vsieh & upper_32_bits(mask)))
+> -		return true;
+> -#endif
+> -
+>  	seip = vcpu->arch.guest_csr.vsie;
+>  	seip &= (unsigned long)mask;
+>  	seip &= BIT(IRQ_S_EXT);
+> @@ -128,9 +95,6 @@ void kvm_riscv_vcpu_aia_update_hvip(struct kvm_vcpu *vcpu)
+>  	if (!kvm_riscv_aia_available())
+>  		return;
+>  
+> -#ifdef CONFIG_32BIT
+> -	ncsr_write(CSR_HVIPH, vcpu->arch.aia_context.guest_csr.hviph);
+> -#endif
+>  	ncsr_write(CSR_HVICTL, aia_hvictl_value(!!(csr->hvip & BIT(IRQ_VS_EXT))));
+>  }
+>  
+> @@ -147,22 +111,10 @@ void kvm_riscv_vcpu_aia_load(struct kvm_vcpu *vcpu, int cpu)
+>  		nacl_csr_write(nsh, CSR_VSISELECT, csr->vsiselect);
+>  		nacl_csr_write(nsh, CSR_HVIPRIO1, csr->hviprio1);
+>  		nacl_csr_write(nsh, CSR_HVIPRIO2, csr->hviprio2);
+> -#ifdef CONFIG_32BIT
+> -		nacl_csr_write(nsh, CSR_VSIEH, csr->vsieh);
+> -		nacl_csr_write(nsh, CSR_HVIPH, csr->hviph);
+> -		nacl_csr_write(nsh, CSR_HVIPRIO1H, csr->hviprio1h);
+> -		nacl_csr_write(nsh, CSR_HVIPRIO2H, csr->hviprio2h);
+> -#endif
+
+One minor cleanup: since this patch removes all accesses to these 32-bit-only
+high-half CSRs, the corresponding members should also be removed from struct
+kvm_vcpu_aia_csr in asm/kvm_aia.h.
+
+Regards,
+Samuel
+
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
