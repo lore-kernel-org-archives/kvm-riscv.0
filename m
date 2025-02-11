@@ -4,107 +4,97 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ACBDFC0219E
-	for <kvm-riscv@archiver.kernel.org>; Tue, 11 Feb 2025 06:55:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A108C021A4
+	for <kvm-riscv@archiver.kernel.org>; Tue, 11 Feb 2025 09:25:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
-	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
-	List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:Message-ID:
-	Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:Resent-Date:
-	Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Owner;
-	bh=a0tV4cqKW/uQjG/Twy/TWWiIOO8jbvwniEef3bVKja8=; b=CRUbP4kwKe/l7mrTA/i1rgHox0
-	ZgbcDMrCpz78StHZpDZMw9iZVO5ka5EqJ8SPRqfEVqmJXR1TZrKeSgYNK43U76MnL4TYDf/230XYU
-	BMkPsoxXbLGxzcwjITuIHZP7NLUHGj1u4MWGuP5FyKUTJ5lJz1uCNXYi1+338XS/ko/2A2WZUIYfG
-	raEopee7aqtekDIrICt6YXMM8YygWBpoXa8a6uEt4lEBW204/qdwTpx1SonKRSRzVZSbgaSKhmKp1
-	jpaQs+GkCpJSgdKv9h9Af0lBZGDrAFfkRTI93b+/FgzliIInDbyKobYUoJ8x1Q8X3bIFNb06uBSbn
-	7+/twx1A==;
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Subject:Cc:To:From:Message-ID:Date:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=ckTW+EmpiHeu+GzyerW5U8zuIiS1fcp2YFjkXGFM3zU=; b=pgI5Fxe9MrjI4y
+	XBBbJedtKeCMy4yOL8ZkuOF4qsJqSIH/iPe6DzbPincZMmKkHCBRrJ4sB23SVE7xFC9zSof9/oSYQ
+	L36E8pOsW9eYLa7Cb5e3vxpUezEHlkvJ1n7zX2Xgac9eFBPIIfriVskEa64pKewFVFYlxhEdQrZAF
+	J3YWVIGCSNJOPXyH9m0/aKJEb9Ftahso1K/OzLVWwUxw0MzANHFWEwRPyUrRIKUHjFi03+s/kzKlm
+	UcFsUy4XX++DWI0gdEy7gPlDw+0kMD2XzcK5zANfk76QUUo0H0gl/5YrukWlmlyYbEW5RRMqdwWjQ
+	226xqKGr9/LrRy71sVAg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1thkBW-00000002l2w-08Fu;
-	Tue, 11 Feb 2025 06:55:54 +0000
-Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+	id 1thmVw-000000039jZ-2CyN;
+	Tue, 11 Feb 2025 09:25:08 +0000
+Received: from dfw.source.kernel.org ([2604:1380:4641:c500::1])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1thj3r-00000002cTf-11uO
-	for kvm-riscv@bombadil.infradead.org;
-	Tue, 11 Feb 2025 05:43:55 +0000
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Transfer-Encoding:
-	Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:
-	Sender:Reply-To:Content-ID:Content-Description;
-	bh=bQsQ+/o421QYPh8BJOWROcjn2xBlqUe9Xq6Aw4uiVNM=; b=loIBlQI3Fm8Z2mQ0vVI1pBzwW7
-	iYDUJdXQS1IOh/F0NgPsVUU63jszkvUMEYBFY1gJZDT8YRsE1sNAlkfaImT+TW7m5G9hicZjf2VKp
-	gwDZuVJQdobHKUN8Y2kwRrK71IzYnpD005ETc8kE5yoaDV60iv7SQ3lKLdE3FV5tZHWyu3MVoa6wD
-	J5mqNcHolFHzREc04vUIWNjsEIbAcvUCeqmja9p/JTLaxtvITiLA/ai1HVua0ZfvIQeeGkoCTSxdD
-	wXpzs2pZokhRHNGFBIJGPwUBNpFQCUV0KbDuax0Ae4y7647genlOxHhaCtPHBj9v1MA57pDdpxZ5+
-	7hQY95+w==;
-Received: from mail-pl1-x62b.google.com ([2607:f8b0:4864:20::62b])
-	by desiato.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1thj3o-00000000US3-04TS
-	for kvm-riscv@lists.infradead.org;
-	Tue, 11 Feb 2025 05:43:54 +0000
-Received: by mail-pl1-x62b.google.com with SMTP id d9443c01a7336-21f55fbb72bso62211835ad.2
-        for <kvm-riscv@lists.infradead.org>; Mon, 10 Feb 2025 21:43:50 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=rivosinc-com.20230601.gappssmtp.com; s=20230601; t=1739252629; x=1739857429; darn=lists.infradead.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=bQsQ+/o421QYPh8BJOWROcjn2xBlqUe9Xq6Aw4uiVNM=;
-        b=Zzagm+khDdpzHSiU+JdIihe81OD7fdv85NLjxvmApN/fsFVPqOSTy+YmlWCYN9mTHt
-         jrEhbUFsQ4DTHg75ODBURgBY28HayYCrnqxz/kParp8k/gR8fYLdU7s/LamDgJGkjxy0
-         KQqxYQ71NkJuxMQt5sSVDVgXwraUp1WWno4HmrBXj4UzPmdTu+9MMO0Vrfokah639Qe4
-         hCqbIIzpWhH+KvKaRdzNmKTgBjvlQO/F3UG9v5bZgtaYkMqYb1jxAGV8cfp1cMm5lWMK
-         mdwCsNYAjWjGcac8MmWFRd8OmiNBU4m3B8d0+2Y+H/gx+vqfW/r+iQQac52vTgKMFKhi
-         eeIQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1739252629; x=1739857429;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=bQsQ+/o421QYPh8BJOWROcjn2xBlqUe9Xq6Aw4uiVNM=;
-        b=QUnkZyqHx7HVGc/1LxrADY5q2VAfO4ztAkGpSk/pf37MlLWKh0LsrCCG/MNhNAiIf1
-         e51fKXyqmdF8FufMGJDpWPbvJ3UWTeS8ZCGwEwOB6nk8efLsoEMxKJUzT9H3rZGcniWj
-         G6obBHPqAvxyjREIm2S2tjo+ItXAMuUOvydPnuKY+Yhn1xcQoZPqcI5i+noI0oE7Jq3Z
-         wrKKghK6IVIKDa8ozrRxk+PEkCtirgdpKRDUXvxPswdhLsdrqxvR+t9yDe0t5WinBxYF
-         M736bHrStBqqdFkbIT6ruTL7T6UG+idvnn3dK7lD7guG82Lq3PE9sMvJ/IwZnuUXwzpF
-         Mpyg==
-X-Forwarded-Encrypted: i=1; AJvYcCUROlB6sAlpHn1iM7IY98I9dy9DqDquEjeBg27IN5/lezyIXrpQ+cW5MYnaP/0WRS9YEOh0saL+ldo=@lists.infradead.org
-X-Gm-Message-State: AOJu0YwiKqSLuQIO1FVBTXrm3QPwS8T0CdLCLRRueDE0+8SodJI+XOqh
-	oPFW5KRxWcv4KONYveqbO5zt3Qc1Kah/FaVC16+7LLaJl6QPNiAejVwGM/NvM/0=
-X-Gm-Gg: ASbGncvS9epqn96JLHfa4pzpG9Wg7Ha8+/QSyUIu7S3wySElVGCIcWPQtpwDR18AYG2
-	qyFUlqSNN3dtl0Ai3m66YmgNPQPWtcgo/q2N2dN6fHHujQpQkxzQGnSkXJF+Muo+6jfMBrDv1IP
-	wgAu0Eqjn1ogCccp1f85rkEqBGtbL+34Om2odxSQpzz1C5QVe4z0B5zxmbQk5giOm1cVDTKV+m/
-	3AGuXELqjT7Vj0hqHbgYFPEkPPT3yIwPIiywgc1EfgmONGntnVKc6gpX9vk8wmAXnGH3YGPWAA/
-	+Nb0GrlOXzboMSawdHSpvAl5wg==
-X-Google-Smtp-Source: AGHT+IEPKtHYtx0smpDpQgrDnTYBegghA1v5GIvgD0h4cr824ONo5mx4lRTjSLhr137zD0mY6UDmiw==
-X-Received: by 2002:a05:6a20:9f4a:b0:1e8:bd15:6819 with SMTP id adf61e73a8af0-1ee03a5f141mr31000422637.22.1739252629301;
-        Mon, 10 Feb 2025 21:43:49 -0800 (PST)
-Received: from debug.ba.rivosinc.com ([64.71.180.162])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-7308b102789sm3396914b3a.149.2025.02.10.21.43.48
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 10 Feb 2025 21:43:48 -0800 (PST)
-Date: Mon, 10 Feb 2025 21:43:46 -0800
-From: Deepak Gupta <debug@rivosinc.com>
-To: =?iso-8859-1?Q?Cl=E9ment_L=E9ger?= <cleger@rivosinc.com>
-Cc: Paul Walmsley <paul.walmsley@sifive.com>,
+	id 1thmVt-000000039hr-49nt;
+	Tue, 11 Feb 2025 09:25:07 +0000
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 8D09F5C03C1;
+	Tue, 11 Feb 2025 09:24:25 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AA367C4CEDD;
+	Tue, 11 Feb 2025 09:25:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1739265904;
+	bh=SR5LwxmHxJbxL8Gifp96GYWy5xT2GbIst98vLDN4fPM=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=nKQSqQblbizWzWsqck6Hc+bJ/6neD3u0R68/NnK5rihuQCNG77Xa8rUqHiFr6zsvw
+	 uaKplYQY9Mq/jgzYt0q5jiqsb7lU7WgWIOEScwVGVTAcNch+Q+f4I7ZBk0RDjyX0qr
+	 5sKta5E6pe+eqebn+Jk2rhlerAUMmr4GQyf7GrEusSZaOt645nVnyjvmE7hR3ET6dz
+	 teUdrQa7OcInc4drcdmLbmzwL7OqFhVNL5E/KjRg9zBUys3rsFMF5zL6oGZJSj02YP
+	 hp6pnbkEbr9ptXSbTIO07SqrSm068K3hQSrzRfqxQ6oLfetn9pv5Je0vmN0KZvrkSQ
+	 MvZ043GdJFFhQ==
+Received: from [104.132.45.111] (helo=wait-a-minute.misterjones.org)
+	by disco-boy.misterjones.org with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.95)
+	(envelope-from <maz@kernel.org>)
+	id 1thmVp-002uM5-Fz;
+	Tue, 11 Feb 2025 09:25:01 +0000
+Date: Tue, 11 Feb 2025 09:24:54 +0000
+Message-ID: <87seok25qx.wl-maz@kernel.org>
+From: Marc Zyngier <maz@kernel.org>
+To: Maxim Levitsky <mlevitsk@redhat.com>
+Cc: kvm@vger.kernel.org,
+	Paolo Bonzini <pbonzini@redhat.com>,
+	Jing Zhang <jingzhangos@google.com>,
+	Oliver Upton <oliver.upton@linux.dev>,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	Randy Dunlap <rdunlap@infradead.org>,
+	Suzuki K Poulose <suzuki.poulose@arm.com>,
 	Palmer Dabbelt <palmer@dabbelt.com>,
+	Zenghui Yu <yuzenghui@huawei.com>,
+	kvm-riscv@lists.infradead.org,
+	Ingo Molnar <mingo@redhat.com>,
+	linux-riscv@lists.infradead.org,
+	Joey Gouly <joey.gouly@arm.com>,
+	Paul Walmsley <paul.walmsley@sifive.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Albert Ou <aou@eecs.berkeley.edu>,
+	kvmarm@lists.linux.dev,
+	Alexander Potapenko <glider@google.com>,
+	x86@kernel.org,
+	Sean Christopherson <seanjc@google.com>,
 	Anup Patel <anup@brainfault.org>,
-	Atish Patra <atishp@atishpatra.org>, Shuah Khan <shuah@kernel.org>,
-	Jonathan Corbet <corbet@lwn.net>, linux-riscv@lists.infradead.org,
-	linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
-	kvm@vger.kernel.org, kvm-riscv@lists.infradead.org,
-	linux-kselftest@vger.kernel.org,
-	Samuel Holland <samuel.holland@sifive.com>
-Subject: Re: [PATCH v2 14/15] RISC-V: KVM: add support for FWFT SBI extension
-Message-ID: <Z6rjkk5JlMlqbl2j@debug.ba.rivosinc.com>
-References: <20250210213549.1867704-1-cleger@rivosinc.com>
- <20250210213549.1867704-15-cleger@rivosinc.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <20250210213549.1867704-15-cleger@rivosinc.com>
+	Kunkun Jiang <jiangkunkun@huawei.com>,
+	Atish Patra <atishp@atishpatra.org>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Will Deacon <will@kernel.org>,
+	Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	"H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 2/3] KVM: arm64: switch to using kvm_lock/unlock_all_vcpus
+In-Reply-To: <20250211000917.166856-3-mlevitsk@redhat.com>
+References: <20250211000917.166856-1-mlevitsk@redhat.com>	<20250211000917.166856-3-mlevitsk@redhat.com>
+User-Agent: Wanderlust/2.15.9 (Almost Unreal) SEMI-EPG/1.14.7 (Harue)
+ FLIM-LB/1.14.9 (=?UTF-8?B?R29qxY0=?=) APEL-LB/10.8 EasyPG/1.0.0 Emacs/29.4
+ (x86_64-pc-linux-gnu) MULE/6.0 (HANACHIRUSATO)
+MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
+X-SA-Exim-Connect-IP: 104.132.45.111
+X-SA-Exim-Rcpt-To: mlevitsk@redhat.com, kvm@vger.kernel.org, pbonzini@redhat.com, jingzhangos@google.com, oliver.upton@linux.dev, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, rdunlap@infradead.org, suzuki.poulose@arm.com, palmer@dabbelt.com, yuzenghui@huawei.com, kvm-riscv@lists.infradead.org, mingo@redhat.com, linux-riscv@lists.infradead.org, joey.gouly@arm.com, paul.walmsley@sifive.com, tglx@linutronix.de, bhelgaas@google.com, aou@eecs.berkeley.edu, kvmarm@lists.linux.dev, glider@google.com, x86@kernel.org, seanjc@google.com, anup@brainfault.org, jiangkunkun@huawei.com, atishp@atishpatra.org, catalin.marinas@arm.com, will@kernel.org, bp@alien8.de, dave.hansen@linux.intel.com, hpa@zytor.com
+X-SA-Exim-Mail-From: maz@kernel.org
+X-SA-Exim-Scanned: No (on disco-boy.misterjones.org); SAEximRunCond expanded to false
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250211_054352_375081_30018600 
-X-CRM114-Status: GOOD (  18.57  )
+X-CRM114-CacheID: sfid-20250211_012506_138702_A6B5DBAF 
+X-CRM114-Status: GOOD (  32.35  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -116,374 +106,173 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"; Format="flowed"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Mon, Feb 10, 2025 at 10:35:47PM +0100, Cl=E9ment L=E9ger wrote:
->Add basic infrastructure to support the FWFT extension in KVM.
->
->Signed-off-by: Cl=E9ment L=E9ger <cleger@rivosinc.com>
->---
-> arch/riscv/include/asm/kvm_host.h          |   4 +
-> arch/riscv/include/asm/kvm_vcpu_sbi.h      |   1 +
-> arch/riscv/include/asm/kvm_vcpu_sbi_fwft.h |  37 ++++
-> arch/riscv/include/uapi/asm/kvm.h          |   1 +
-> arch/riscv/kvm/Makefile                    |   1 +
-> arch/riscv/kvm/vcpu_sbi.c                  |   4 +
-> arch/riscv/kvm/vcpu_sbi_fwft.c             | 187 +++++++++++++++++++++
-> 7 files changed, 235 insertions(+)
-> create mode 100644 arch/riscv/include/asm/kvm_vcpu_sbi_fwft.h
-> create mode 100644 arch/riscv/kvm/vcpu_sbi_fwft.c
->
->diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kv=
-m_host.h
->index bb93d2995ea2..c0db61ba691a 100644
->--- a/arch/riscv/include/asm/kvm_host.h
->+++ b/arch/riscv/include/asm/kvm_host.h
->@@ -19,6 +19,7 @@
-> #include <asm/kvm_vcpu_fp.h>
-> #include <asm/kvm_vcpu_insn.h>
-> #include <asm/kvm_vcpu_sbi.h>
->+#include <asm/kvm_vcpu_sbi_fwft.h>
-> #include <asm/kvm_vcpu_timer.h>
-> #include <asm/kvm_vcpu_pmu.h>
->
->@@ -281,6 +282,9 @@ struct kvm_vcpu_arch {
-> 	/* Performance monitoring context */
-> 	struct kvm_pmu pmu_context;
->
->+	/* Firmware feature SBI extension context */
->+	struct kvm_sbi_fwft fwft_context;
->+
-> 	/* 'static' configurations which are set only once */
-> 	struct kvm_vcpu_config cfg;
->
->diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h b/arch/riscv/include/as=
-m/kvm_vcpu_sbi.h
->index cb68b3a57c8f..ffd03fed0c06 100644
->--- a/arch/riscv/include/asm/kvm_vcpu_sbi.h
->+++ b/arch/riscv/include/asm/kvm_vcpu_sbi.h
->@@ -98,6 +98,7 @@ extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_=
-hsm;
-> extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_dbcn;
-> extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_susp;
-> extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_sta;
->+extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_fwft;
-> extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_experimental;
-> extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_vendor;
->
->diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi_fwft.h b/arch/riscv/inclu=
-de/asm/kvm_vcpu_sbi_fwft.h
->new file mode 100644
->index 000000000000..5782517f6e08
->--- /dev/null
->+++ b/arch/riscv/include/asm/kvm_vcpu_sbi_fwft.h
->@@ -0,0 +1,37 @@
->+/* SPDX-License-Identifier: GPL-2.0-only */
->+/*
->+ * Copyright (c) 2025 Rivos Inc.
->+ *
->+ * Authors:
->+ *     Cl=E9ment L=E9ger <cleger@rivosinc.com>
->+ */
->+
->+#ifndef __KVM_VCPU_RISCV_FWFT_H
->+#define __KVM_VCPU_RISCV_FWFT_H
->+
->+#include <asm/sbi.h>
->+
->+struct kvm_sbi_fwft_config;
->+struct kvm_vcpu;
->+
->+struct kvm_sbi_fwft_feature {
->+	enum sbi_fwft_feature_t id;
->+	bool (*supported)(struct kvm_vcpu *vcpu);
->+	int (*set)(struct kvm_vcpu *vcpu, struct kvm_sbi_fwft_config *conf, unsi=
-gned long value);
->+	int (*get)(struct kvm_vcpu *vcpu, struct kvm_sbi_fwft_config *conf, unsi=
-gned long *value);
->+};
->+
->+struct kvm_sbi_fwft_config {
->+	const struct kvm_sbi_fwft_feature *feature;
->+	bool supported;
->+	unsigned long flags;
->+};
->+
->+/* FWFT data structure per vcpu */
->+struct kvm_sbi_fwft {
->+	struct kvm_sbi_fwft_config *configs;
->+};
->+
->+#define vcpu_to_fwft(vcpu) (&(vcpu)->arch.fwft_context)
->+
->+#endif /* !__KVM_VCPU_RISCV_FWFT_H */
->diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/a=
-sm/kvm.h
->index f06bc5efcd79..fa6eee1caf41 100644
->--- a/arch/riscv/include/uapi/asm/kvm.h
->+++ b/arch/riscv/include/uapi/asm/kvm.h
->@@ -202,6 +202,7 @@ enum KVM_RISCV_SBI_EXT_ID {
-> 	KVM_RISCV_SBI_EXT_DBCN,
-> 	KVM_RISCV_SBI_EXT_STA,
-> 	KVM_RISCV_SBI_EXT_SUSP,
->+	KVM_RISCV_SBI_EXT_FWFT,
-> 	KVM_RISCV_SBI_EXT_MAX,
-> };
->
->diff --git a/arch/riscv/kvm/Makefile b/arch/riscv/kvm/Makefile
->index 4e0bba91d284..06e2d52a9b88 100644
->--- a/arch/riscv/kvm/Makefile
->+++ b/arch/riscv/kvm/Makefile
->@@ -26,6 +26,7 @@ kvm-y +=3D vcpu_onereg.o
-> kvm-$(CONFIG_RISCV_PMU_SBI) +=3D vcpu_pmu.o
-> kvm-y +=3D vcpu_sbi.o
-> kvm-y +=3D vcpu_sbi_base.o
->+kvm-y +=3D vcpu_sbi_fwft.o
-> kvm-y +=3D vcpu_sbi_hsm.o
-> kvm-$(CONFIG_RISCV_PMU_SBI) +=3D vcpu_sbi_pmu.o
-> kvm-y +=3D vcpu_sbi_replace.o
->diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
->index f81f06f82650..3b37deaed4e7 100644
->--- a/arch/riscv/kvm/vcpu_sbi.c
->+++ b/arch/riscv/kvm/vcpu_sbi.c
->@@ -78,6 +78,10 @@ static const struct kvm_riscv_sbi_extension_entry sbi_e=
-xt[] =3D {
-> 		.ext_idx =3D KVM_RISCV_SBI_EXT_STA,
-> 		.ext_ptr =3D &vcpu_sbi_ext_sta,
-> 	},
->+	{
->+		.ext_idx =3D KVM_RISCV_SBI_EXT_FWFT,
->+		.ext_ptr =3D &vcpu_sbi_ext_fwft,
->+	},
-> 	{
-> 		.ext_idx =3D KVM_RISCV_SBI_EXT_EXPERIMENTAL,
-> 		.ext_ptr =3D &vcpu_sbi_ext_experimental,
->diff --git a/arch/riscv/kvm/vcpu_sbi_fwft.c b/arch/riscv/kvm/vcpu_sbi_fwft=
-.c
->new file mode 100644
->index 000000000000..fe608bf16558
->--- /dev/null
->+++ b/arch/riscv/kvm/vcpu_sbi_fwft.c
->@@ -0,0 +1,187 @@
->+// SPDX-License-Identifier: GPL-2.0
->+/*
->+ * Copyright (c) 2025 Rivos Inc.
->+ *
->+ * Authors:
->+ *     Cl=E9ment L=E9ger <cleger@rivosinc.com>
->+ */
->+
->+#include <linux/errno.h>
->+#include <linux/err.h>
->+#include <linux/kvm_host.h>
->+#include <asm/cpufeature.h>
->+#include <asm/sbi.h>
->+#include <asm/kvm_vcpu_sbi.h>
->+#include <asm/kvm_vcpu_sbi_fwft.h>
->+
->+static const enum sbi_fwft_feature_t kvm_fwft_defined_features[] =3D {
->+	SBI_FWFT_MISALIGNED_EXC_DELEG,
->+	SBI_FWFT_LANDING_PAD,
->+	SBI_FWFT_SHADOW_STACK,
->+	SBI_FWFT_DOUBLE_TRAP,
->+	SBI_FWFT_PTE_AD_HW_UPDATING,
->+	SBI_FWFT_POINTER_MASKING_PMLEN,
->+};
->+
->+static bool kvm_fwft_is_defined_feature(enum sbi_fwft_feature_t feature)
->+{
->+	int i;
->+
->+	for (i =3D 0; i < ARRAY_SIZE(kvm_fwft_defined_features); i++) {
->+		if (kvm_fwft_defined_features[i] =3D=3D feature)
->+			return true;
->+	}
->+
->+	return false;
->+}
->+
->+static const struct kvm_sbi_fwft_feature features[] =3D {
->+};
->+
->+static struct kvm_sbi_fwft_config *
->+kvm_sbi_fwft_get_config(struct kvm_vcpu *vcpu, enum sbi_fwft_feature_t fe=
-ature)
->+{
->+	int i =3D 0;
->+	struct kvm_sbi_fwft *fwft =3D vcpu_to_fwft(vcpu);
->+
->+	for (i =3D 0; i < ARRAY_SIZE(features); i++) {
->+		if (fwft->configs[i].feature->id =3D=3D feature)
->+			return &fwft->configs[i];
->+	}
->+
->+	return NULL;
->+}
->+
->+static int kvm_fwft_get_feature(struct kvm_vcpu *vcpu, unsigned long feat=
-ure,
->+				struct kvm_sbi_fwft_config **conf)
->+{
->+	struct kvm_sbi_fwft_config *tconf;
->+
->+	/* Feature are defined as 32 bits identifiers */
->+	if (feature & ~(BIT_ULL(32) - 1))
->+		return SBI_ERR_INVALID_PARAM;
->+
->+	tconf =3D kvm_sbi_fwft_get_config(vcpu, feature);
->+	if (!tconf) {
->+		if (kvm_fwft_is_defined_feature(feature))
->+			return SBI_ERR_NOT_SUPPORTED;
->+
->+		return SBI_ERR_DENIED;
->+	}
->+
->+	if (!tconf->supported)
->+		return SBI_ERR_NOT_SUPPORTED;
->+
->+	*conf =3D tconf;
->+
->+	return SBI_SUCCESS;
->+}
->+
->+static int kvm_sbi_fwft_set(struct kvm_vcpu *vcpu, unsigned long feature,
->+			    unsigned long value, unsigned long flags)
->+{
->+	int ret;
->+	struct kvm_sbi_fwft_config *conf;
->+
->+	ret =3D kvm_fwft_get_feature(vcpu, feature, &conf);
->+	if (ret)
->+		return ret;
->+
->+	if ((flags & ~SBI_FWFT_SET_FLAG_LOCK) !=3D 0)
->+		return SBI_ERR_INVALID_PARAM;
->+
->+	if (conf->flags & SBI_FWFT_SET_FLAG_LOCK)
->+		return SBI_ERR_DENIED_LOCKED;
->+
->+	conf->flags =3D flags;
->+
->+	return conf->feature->set(vcpu, conf, value);
->+}
->+
->+static int kvm_sbi_fwft_get(struct kvm_vcpu *vcpu, unsigned long feature,
->+			    unsigned long *value)
->+{
->+	int ret;
->+	struct kvm_sbi_fwft_config *conf;
->+
->+	ret =3D kvm_fwft_get_feature(vcpu, feature, &conf);
->+	if (ret)
->+		return ret;
->+
->+	return conf->feature->get(vcpu, conf, value);
->+}
->+
->+static int kvm_sbi_ext_fwft_handler(struct kvm_vcpu *vcpu, struct kvm_run=
- *run,
->+				    struct kvm_vcpu_sbi_return *retdata)
->+{
->+	int ret =3D 0;
->+	struct kvm_cpu_context *cp =3D &vcpu->arch.guest_context;
->+	unsigned long funcid =3D cp->a6;
->+
->+	switch (funcid) {
->+	case SBI_EXT_FWFT_SET:
->+		ret =3D kvm_sbi_fwft_set(vcpu, cp->a0, cp->a1, cp->a2);
->+		break;
->+	case SBI_EXT_FWFT_GET:
->+		ret =3D kvm_sbi_fwft_get(vcpu, cp->a0, &retdata->out_val);
->+		break;
->+	default:
->+		ret =3D SBI_ERR_NOT_SUPPORTED;
->+		break;
->+	}
->+
->+	retdata->err_val =3D ret;
->+
->+	return 0;
->+}
->+
->+static int kvm_sbi_ext_fwft_init(struct kvm_vcpu *vcpu)
->+{
->+	struct kvm_sbi_fwft *fwft =3D vcpu_to_fwft(vcpu);
->+	const struct kvm_sbi_fwft_feature *feature;
->+	struct kvm_sbi_fwft_config *conf;
->+	int i;
->+
->+	fwft->configs =3D kcalloc(ARRAY_SIZE(features), sizeof(struct kvm_sbi_fw=
-ft_config),
->+				GFP_KERNEL);
-nit:
+On Tue, 11 Feb 2025 00:09:16 +0000,
+Maxim Levitsky <mlevitsk@redhat.com> wrote:
+> 
+> Switch to kvm_lock/unlock_all_vcpus instead of arm's own
+> version.
+> 
+> This fixes lockdep warning about reaching maximum lock depth:
+> 
+> [  328.171264] BUG: MAX_LOCK_DEPTH too low!
+> [  328.175227] turning off the locking correctness validator.
+> [  328.180726] Please attach the output of /proc/lock_stat to the bug report
+> [  328.187531] depth: 48  max: 48!
+> [  328.190678] 48 locks held by qemu-kvm/11664:
+> [  328.194957]  #0: ffff800086de5ba0 (&kvm->lock){+.+.}-{3:3}, at: kvm_ioctl_create_device+0x174/0x5b0
+> [  328.204048]  #1: ffff0800e78800b8 (&vcpu->mutex){+.+.}-{3:3}, at: lock_all_vcpus+0x16c/0x2a0
+> [  328.212521]  #2: ffff07ffeee51e98 (&vcpu->mutex){+.+.}-{3:3}, at: lock_all_vcpus+0x16c/0x2a0
+> [  328.220991]  #3: ffff0800dc7d80b8 (&vcpu->mutex){+.+.}-{3:3}, at: lock_all_vcpus+0x16c/0x2a0
+> [  328.229463]  #4: ffff07ffe0c980b8 (&vcpu->mutex){+.+.}-{3:3}, at: lock_all_vcpus+0x16c/0x2a0
+> [  328.237934]  #5: ffff0800a3883c78 (&vcpu->mutex){+.+.}-{3:3}, at: lock_all_vcpus+0x16c/0x2a0
+> [  328.246405]  #6: ffff07fffbe480b8 (&vcpu->mutex){+.+.}-{3:3}, at: lock_all_vcpus+0x16c/0x2a0
+> 
+> No functional change intended.
 
-I understand that in next patch you grow the static array`features`. But in=
- this patch
-`ARRAY_SIZE(features)` evaluates to 0, thus kcalloc will be returning a poi=
-nter
-to some slab block (IIRC, kcalloc will not return NULL if size eventually e=
-vals to 0)
+Actually plenty of it. This sort of broad assertion is really an
+indication of the contrary.
 
-This probably won't result in some bad stuff. But still there is a pointer =
-in
-fwft->configs which is pointing to some random stuff if `features` turns ou=
-t to be
-empty.
+> 
+> Suggested-by: Paolo Bonzini <pbonzini@redhat.com>
+> Signed-off-by: Maxim Levitsky <mlevitsk@redhat.com>
+> ---
+>  arch/arm64/include/asm/kvm_host.h     |  3 ---
+>  arch/arm64/kvm/arch_timer.c           |  8 +++----
+>  arch/arm64/kvm/arm.c                  | 32 ---------------------------
+>  arch/arm64/kvm/vgic/vgic-init.c       | 11 +++++----
+>  arch/arm64/kvm/vgic/vgic-its.c        | 18 ++++++++-------
+>  arch/arm64/kvm/vgic/vgic-kvm-device.c | 21 ++++++++++--------
+>  6 files changed, 33 insertions(+), 60 deletions(-)
+> 
+> diff --git a/arch/arm64/include/asm/kvm_host.h b/arch/arm64/include/asm/kvm_host.h
+> index 7cfa024de4e3..bba97ea700ca 100644
+> --- a/arch/arm64/include/asm/kvm_host.h
+> +++ b/arch/arm64/include/asm/kvm_host.h
+> @@ -1234,9 +1234,6 @@ int __init populate_sysreg_config(const struct sys_reg_desc *sr,
+>  				  unsigned int idx);
+>  int __init populate_nv_trap_config(void);
+>  
+> -bool lock_all_vcpus(struct kvm *kvm);
+> -void unlock_all_vcpus(struct kvm *kvm);
+> -
+>  void kvm_calculate_traps(struct kvm_vcpu *vcpu);
+>  
+>  /* MMIO helpers */
+> diff --git a/arch/arm64/kvm/arch_timer.c b/arch/arm64/kvm/arch_timer.c
+> index 231c0cd9c7b4..3af1da807f9c 100644
+> --- a/arch/arm64/kvm/arch_timer.c
+> +++ b/arch/arm64/kvm/arch_timer.c
+> @@ -1769,7 +1769,9 @@ int kvm_vm_ioctl_set_counter_offset(struct kvm *kvm,
+>  
+>  	mutex_lock(&kvm->lock);
+>  
+> -	if (lock_all_vcpus(kvm)) {
+> +	ret = kvm_lock_all_vcpus(kvm);
+> +
+> +	if (!ret) {
+>  		set_bit(KVM_ARCH_FLAG_VM_COUNTER_OFFSET, &kvm->arch.flags);
+>  
+>  		/*
+> @@ -1781,9 +1783,7 @@ int kvm_vm_ioctl_set_counter_offset(struct kvm *kvm,
+>  		kvm->arch.timer_data.voffset = offset->counter_offset;
+>  		kvm->arch.timer_data.poffset = offset->counter_offset;
+>  
+> -		unlock_all_vcpus(kvm);
+> -	} else {
+> -		ret = -EBUSY;
+> +		kvm_unlock_all_vcpus(kvm);
+>  	}
 
-Let me know if I got that right or missing something.
+This is a userspace ABI change. This ioctl is documented as being able
+to return -EINVAL or -EBUSY, and nothing else other than 0. Yet the
+new helper returns -EINTR, which you blindly forward to userspace.
 
->+	if (!fwft->configs)
->+		return -ENOMEM;
->+
->+	for (i =3D 0; i < ARRAY_SIZE(features); i++) {
->+		feature =3D &features[i];
->+		conf =3D &fwft->configs[i];
->+		if (feature->supported)
->+			conf->supported =3D feature->supported(vcpu);
->+		else
->+			conf->supported =3D true;
->+
->+		conf->feature =3D feature;
->+	}
->+
->+	return 0;
->+}
->+
->+static void kvm_sbi_ext_fwft_deinit(struct kvm_vcpu *vcpu)
->+{
->+	struct kvm_sbi_fwft *fwft =3D vcpu_to_fwft(vcpu);
->+
->+	kfree(fwft->configs);
->+}
->+
->+static void kvm_sbi_ext_fwft_reset(struct kvm_vcpu *vcpu)
->+{
->+	int i =3D 0;
->+	struct kvm_sbi_fwft *fwft =3D vcpu_to_fwft(vcpu);
->+
->+	for (i =3D 0; i < ARRAY_SIZE(features); i++)
->+		fwft->configs[i].flags =3D 0;
->+}
->+
->+const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_fwft =3D {
->+	.extid_start =3D SBI_EXT_FWFT,
->+	.extid_end =3D SBI_EXT_FWFT,
->+	.handler =3D kvm_sbi_ext_fwft_handler,
->+	.init =3D kvm_sbi_ext_fwft_init,
->+	.deinit =3D kvm_sbi_ext_fwft_deinit,
->+	.reset =3D kvm_sbi_ext_fwft_reset,
->+};
->-- =
+>  
+>  	mutex_unlock(&kvm->lock);
+> diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
+> index 071a7d75be68..f58849c5b4f0 100644
+> --- a/arch/arm64/kvm/arm.c
+> +++ b/arch/arm64/kvm/arm.c
+> @@ -1895,38 +1895,6 @@ static void unlock_vcpus(struct kvm *kvm, int vcpu_lock_idx)
+>  	}
+>  }
+>  
+> -void unlock_all_vcpus(struct kvm *kvm)
+> -{
+> -	lockdep_assert_held(&kvm->lock);
+> -
+> -	unlock_vcpus(kvm, atomic_read(&kvm->online_vcpus) - 1);
+> -}
+> -
+> -/* Returns true if all vcpus were locked, false otherwise */
+> -bool lock_all_vcpus(struct kvm *kvm)
+> -{
+> -	struct kvm_vcpu *tmp_vcpu;
+> -	unsigned long c;
+> -
+> -	lockdep_assert_held(&kvm->lock);
+> -
+> -	/*
+> -	 * Any time a vcpu is in an ioctl (including running), the
+> -	 * core KVM code tries to grab the vcpu->mutex.
+> -	 *
+> -	 * By grabbing the vcpu->mutex of all VCPUs we ensure that no
+> -	 * other VCPUs can fiddle with the state while we access it.
+> -	 */
+> -	kvm_for_each_vcpu(c, tmp_vcpu, kvm) {
+> -		if (!mutex_trylock(&tmp_vcpu->mutex)) {
+> -			unlock_vcpus(kvm, c - 1);
+> -			return false;
+> -		}
+> -	}
+> -
+> -	return true;
+> -}
 
->2.47.2
->
->
+The semantics are different.
 
--- =
+Other than the return values mentioned above, the new version fails on
+signal delivery, which isn't expected.  The guarantee given to
+userspace is that unless a vcpu thread is currently in KVM, the
+locking will succeed. Not "will succeed unless something that is
+outside of your control happens".
 
+The arm64 version is also built around a mutex_trylock() because we
+don't want to wait forever until the vcpu's mutex is released. We want
+it now, or never. That's consistent with the above requirement on
+userspace.
+
+We can argue whether or not these are good guarantees (or
+requirements) to give to (or demand from) userspace, but that's what
+we have, and I'm not prepared to break any of it.
+
+At the end of the day, the x86 locking serves completely different
+purposes. It wants to gracefully wait for vcpus to exit and is happy
+to replay things, because migration (which is what x86 seems to be
+using this for) is a stupidly long process. Our locking is designed to
+either succeed or fail quickly, because some of the lock paths are on
+the critical path for VM startup and configuration.
+
+So for this series to be acceptable, you'd have to provide the same
+semantics. It is probably doable with a bit of macro magic, at the
+expense of readability.
+
+What I would also like to see is for this primitive to be usable with
+scoped_cond_guard(), which would make the code much more readable.
+
+Thanks,
+
+	M.
+
+-- 
+Without deviation from the norm, progress is not possible.
+
+-- 
 kvm-riscv mailing list
 kvm-riscv@lists.infradead.org
 http://lists.infradead.org/mailman/listinfo/kvm-riscv
