@@ -4,83 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6491FC0219B
-	for <kvm-riscv@archiver.kernel.org>; Tue, 11 Feb 2025 12:49:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C6355C0219B
+	for <kvm-riscv@archiver.kernel.org>; Tue, 11 Feb 2025 15:03:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:Subject:Message-ID:Date:From:
-	In-Reply-To:References:MIME-Version:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
+	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=Ndw+eF0zlVbyDfCM9jozElXbpfmLQoee2lATa0i3rCQ=; b=mMErs/+w1Se73L
-	JvpvXISIVadVAqW63veCR41oo87f6YEQqzLJraDD89WKdtYUceswr6csr6PPhjOIH86JlNN77r3bO
-	PBZWKrV/Uv1/IZPpL/UbutRrsF9SVs3FbBZ2PsqWqiYZ+HsN5juLJpQm0WdQFZmrye+nrg5WsXYz7
-	2qofjo3J/BbcuMp85Vxeawj7p4mUmiehj7yzAR/3zJwjxudFuN3d5VRH15IMl6ZLhMQd9SyoWVvkN
-	qUvdPphj4NuyGWmAmyPEZs9JOckMj42mIpsqOIFUGHw7iKyRx4wdrEZ0PFMMoDP/30phKZrs3l2s/
-	i2IrAsdAz/UQbl0zCTtQ==;
+	List-Owner; bh=FteGVfcoEuEKeIpWdN5yMJiEDlsxORjsAOMMrQ/A9ks=; b=hTwWE7Asu/CgTy
+	Kb5OzW1ZwgyXWrzD4rJdg8dgVDpas9yZa5WF9TMAccgFVhKQVkKCmH2WwbR7sXkj/d0R3MmxQQR+S
+	DLagct6AyazREqSpizZmyVReZx+JHAvFGDnmkSqlXQS6M512kAvrdQFJncbCHTNW7cApVezQBLUmd
+	eIlrNnmZb/x3kTXmTYHNGbITgaTj4Gcnw3MHYUUS3KJFJvCVGSiEMITFi/+C3cnZipnRcDrdP1ymN
+	GqDYv+6RuZoQIvgPqTj3ZrAuU7Lf8+/ZRuUUsDtWBuJq0ZS0fcUXFQ0xsrE/5VmJmFuQqnPLAN8+d
+	fnVpQt+CkkwQ7Fz0meCQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1thphy-00000003pkP-3sKx;
-	Tue, 11 Feb 2025 12:49:46 +0000
-Received: from mail-lj1-x229.google.com ([2a00:1450:4864:20::229])
-	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1thoup-00000003faE-00f4
+	id 1thrnF-00000004Dcn-1IX2;
+	Tue, 11 Feb 2025 15:03:21 +0000
+Received: from foss.arm.com ([217.140.110.172])
+	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
+	id 1thrnC-00000004Dbm-19PV
 	for kvm-riscv@lists.infradead.org;
-	Tue, 11 Feb 2025 11:59:00 +0000
-Received: by mail-lj1-x229.google.com with SMTP id 38308e7fff4ca-308f32984bdso14782851fa.1
-        for <kvm-riscv@lists.infradead.org>; Tue, 11 Feb 2025 03:58:57 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ventanamicro.com; s=google; t=1739275136; x=1739879936; darn=lists.infradead.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=YfrJOs3nOC/uZQWBsu2L0oE9KdKFjO9EW7o+/+NgYt8=;
-        b=Qrfzq069VoCRDp7/rmx3ox4qy2GKeJkKBf85gtXVhZQwrXMD5Or2MJ2tFkawIeKCM7
-         HaZL8+BLSNioCewhd1+JBQdoCGuWRmLjF6ft6MIqzddPhJyl/50P48zf9kzt81dIkcCX
-         LVYSdHoDXKJUQQbY2NTxRNDTmV8UdWEDTvyMEOmaS6iTqJowEbwOeg8aKd3hpLXvckvb
-         FU0mTQ7kirMPeGVViN6BJsLd9RD1SaW5HS2PUhRLZonUzyyaU91VMOaQ2skN86fRSnxZ
-         hVpxif5wsnZ8l0sxGCUUxts0SW9Q7aj+rJxllE3a2z3VfBAgTV2aoWvjUIyrf+H0lZDp
-         h0zQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1739275136; x=1739879936;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=YfrJOs3nOC/uZQWBsu2L0oE9KdKFjO9EW7o+/+NgYt8=;
-        b=pM/BmM1+e0s0L5docI5/Yff3jj9VDplMJTfLq+xhHrACcbq7NPtX1Pb6uviAxlAdd6
-         rACANaoQZE6oPUVTznApccxPRMzI9xeUzdPcFQRV4em9m7eAuSpQS6/fPLkLJ2qHPv/A
-         ZHWPzB9nbXxaLkv1tjfmr2eokFX2w0IpktgLosBf1ei50e5/qvcCCIEXJ6Pb434fCdpj
-         NPzPk5V6sny50u46Ed0RI326fVKnGIPuUFsfNLWTcuPH2Vl8gd4Sg+YGzrjSOhV74TIA
-         Y7iTDGSmQsUVQRf8j8YqdR5d3BkkJHkgaYY1xXb6eJX58F1Gbnt/FxPXGZWFCsGWBdhU
-         J11Q==
-X-Forwarded-Encrypted: i=1; AJvYcCWU7KBrJKd/jKi64CfL1UVN2LweU00bli6u10zZVZFE+zPY9/PRc4f8vR71FAJomRG4b9ZiTk2fwsM=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yxt/7IYZzvZScQF1jaDQwG1b0nJrFD746n/KYdfRCyrEOz/Ol8r
-	ZXVtKd2JZBOeEA008g1aFl4Ef9Ean69aCgr6qNTU4VqKM07D51WozhNmYw1NK7D17iPEavXbPgW
-	KxdDLstXv6WRzvybX5fPiSI2wP0DAONGQKcYQKA==
-X-Gm-Gg: ASbGncs4xxs+7I5RKynSUam/WvmpWaUHhtCH6irDQIsVAL0wKK9rGqIEbcuVvGIP1cT
-	clnZ4hoD+SUG0yh0Z6rpu05F+Tma/L+KXlNWJWFmxv2v9JocHEvjb9HK+LNy1MGVNr5ZvNYF7HA
-	==
-X-Google-Smtp-Source: AGHT+IHi9fRc7g4LXLMTTrfhBpjvIDawNVLbxz/VrpF9Ym/YVJUnNi9Ybh2IY4Q2sYmZ++mmturgtiMZM7nnBID564I=
-X-Received: by 2002:a05:6512:2316:b0:543:9a61:a2e5 with SMTP id
- 2adb3069b0e04-54414aa87c8mr5949576e87.23.1739275136403; Tue, 11 Feb 2025
- 03:58:56 -0800 (PST)
+	Tue, 11 Feb 2025 15:03:19 +0000
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 49B2213D5;
+	Tue, 11 Feb 2025 07:03:36 -0800 (PST)
+Received: from arm.com (e134078.arm.com [10.1.26.19])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id CC4863F5A1;
+	Tue, 11 Feb 2025 07:03:11 -0800 (PST)
+Date: Tue, 11 Feb 2025 15:03:09 +0000
+From: Alexandru Elisei <alexandru.elisei@arm.com>
+To: Andrew Jones <andrew.jones@linux.dev>
+Cc: eric.auger@redhat.com, lvivier@redhat.com, thuth@redhat.com,
+	frankja@linux.ibm.com, imbrenda@linux.ibm.com, nrb@linux.ibm.com,
+	david@redhat.com, pbonzini@redhat.com, kvm@vger.kernel.org,
+	kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+	kvm-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+	will@kernel.org, julien.thierry.kdev@gmail.com, maz@kernel.org,
+	oliver.upton@linux.dev, suzuki.poulose@arm.com,
+	yuzenghui@huawei.com, joey.gouly@arm.com, andre.przywara@arm.com
+Subject: Re: [kvm-unit-tests PATCH v2 15/18] Add kvmtool_params to test
+ specification
+Message-ID: <Z6tmrX8/+wzeFL1P@arm.com>
+References: <20250120164316.31473-1-alexandru.elisei@arm.com>
+ <20250120164316.31473-16-alexandru.elisei@arm.com>
+ <20250123-bbd289cfd7abfd93e9b67eef@orel>
 MIME-Version: 1.0
-References: <20250127132424.339957-1-apatel@ventanamicro.com>
- <20250127132424.339957-3-apatel@ventanamicro.com> <20250211114018.GB8965@willie-the-truck>
-In-Reply-To: <20250211114018.GB8965@willie-the-truck>
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Tue, 11 Feb 2025 17:28:43 +0530
-X-Gm-Features: AWEUYZkAL12uMf-9Tj-TWkSprxk8wj7zzxxQgrdbCiYSyAP6uq0zWoQGQGyineM
-Message-ID: <CAK9=C2VPs=VLPWupSjzz_y4QRtL56eQC3DCJVEjrREy-qmbHVQ@mail.gmail.com>
-Subject: Re: [kvmtool PATCH 2/6] Add __KERNEL_DIV_ROUND_UP() macro
-To: Will Deacon <will@kernel.org>
-Cc: julien.thierry.kdev@gmail.com, maz@kernel.org, 
-	Paolo Bonzini <pbonzini@redhat.com>, Atish Patra <atishp@atishpatra.org>, 
-	Andrew Jones <ajones@ventanamicro.com>, Anup Patel <anup@brainfault.org>, kvm@vger.kernel.org, 
-	kvm-riscv@lists.infradead.org
+Content-Disposition: inline
+In-Reply-To: <20250123-bbd289cfd7abfd93e9b67eef@orel>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250211_035859_045129_AEDEC5E6 
-X-CRM114-Status: GOOD (  15.54  )
+X-CRM114-CacheID: sfid-20250211_070318_404755_7EE39E4B 
+X-CRM114-Status: GOOD (  30.72  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -92,30 +67,318 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-T24gVHVlLCBGZWIgMTEsIDIwMjUgYXQgNToxMOKAr1BNIFdpbGwgRGVhY29uIDx3aWxsQGtlcm5l
-bC5vcmc+IHdyb3RlOgo+Cj4gT24gTW9uLCBKYW4gMjcsIDIwMjUgYXQgMDY6NTQ6MjBQTSArMDUz
-MCwgQW51cCBQYXRlbCB3cm90ZToKPiA+IFRoZSBsYXRlc3QgdmlydGlvX3BjaS5oIGhlYWRlciBm
-cm9tIExpbnV4LTYuMTMga2VybmVsIHJlcXVpcmVzCj4gPiBfX0tFUk5FTF9ESVZfUk9VTkRfVVAo
-KSBtYWNybyBzbyBkZWZpbmUgaXQgY29uZGl0aW9uYWxseSBpbgo+ID4gbGludXgva2VybmVsLmgu
-Cj4gPgo+ID4gU2lnbmVkLW9mZi1ieTogQW51cCBQYXRlbCA8YXBhdGVsQHZlbnRhbmFtaWNyby5j
-b20+Cj4gPiAtLS0KPiA+ICBpbmNsdWRlL2xpbnV4L2tlcm5lbC5oIHwgMyArKysKPiA+ICAxIGZp
-bGUgY2hhbmdlZCwgMyBpbnNlcnRpb25zKCspCj4gPgo+ID4gZGlmZiAtLWdpdCBhL2luY2x1ZGUv
-bGludXgva2VybmVsLmggYi9pbmNsdWRlL2xpbnV4L2tlcm5lbC5oCj4gPiBpbmRleCA2YzIyZjFj
-Li5kZjQyZDYzIDEwMDY0NAo+ID4gLS0tIGEvaW5jbHVkZS9saW51eC9rZXJuZWwuaAo+ID4gKysr
-IGIvaW5jbHVkZS9saW51eC9rZXJuZWwuaAo+ID4gQEAgLTgsNiArOCw5IEBACj4gPiAgI2RlZmlu
-ZSByb3VuZF9kb3duKHgsIHkpICAgICAoKHgpICYgfl9fcm91bmRfbWFzayh4LCB5KSkKPiA+Cj4g
-PiAgI2RlZmluZSBESVZfUk9VTkRfVVAobixkKSAoKChuKSArIChkKSAtIDEpIC8gKGQpKQo+ID4g
-KyNpZm5kZWYgX19LRVJORUxfRElWX1JPVU5EX1VQCj4gPiArI2RlZmluZSBfX0tFUk5FTF9ESVZf
-Uk9VTkRfVVAobixkKSAgIERJVl9ST1VORF9VUChuLGQpCj4gPiArI2VuZGlmCj4KPiBJJ20gaGFw
-cHkgdG8gdGFrZSB0aGlzIGZvciBub3csIGJ1dCBwZXJoYXBzIHdlIHNob3VsZCBiZSBwdWxsaW5n
-Cj4gaW4gdGhlIHVhcGkgY29uc3QuaCBoZWFkZXIgaW5zdGVhZCBvZiByb2xsaW5nIHRoaXMgb3Vy
-c2VsdmVzPyBJZGVhbGx5LAo+IGtlcm5lbC5oIHdvdWxkIGRpc2FwcGVhciBhbHRvZ2V0aGVyLgo+
-CgpTdXJlLCBuZXh0IHRpbWUgSSB3aWxsIHRyeSB0byBwdWxsIHRoZSB1YXBpIGNvbnN0LmggaGVh
-ZGVyIGludG8ga3ZtdG9vbC4KClRoYW5rcywKQW51cAoKLS0gCmt2bS1yaXNjdiBtYWlsaW5nIGxp
-c3QKa3ZtLXJpc2N2QGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5v
-cmcvbWFpbG1hbi9saXN0aW5mby9rdm0tcmlzY3YK
+Hi Drew,
+
+On Thu, Jan 23, 2025 at 04:53:29PM +0100, Andrew Jones wrote:
+> On Mon, Jan 20, 2025 at 04:43:13PM +0000, Alexandru Elisei wrote:
+> > arm/arm64 supports running tests under kvmtool, but kvmtool's syntax for
+> > running a virtual machine is different than qemu's. To run tests using the
+> > automated test infrastructure, add a new test parameter, kvmtool_params.
+> > The parameter serves the exact purpose as qemu_params/extra_params, but using
+> > kvmtool's syntax.
+> 
+> The need for qemu_params and kvmtool_params makes more sense to me now
+> that I see the use in unittests.cfg (I wonder if we can't rearrange this
+> series to help understand these things up front?). There's a lot of
+
+Certainly, I'll move it closer to the beginning of the series.
+
+> duplication, though, with having two sets of params since the test-
+> specific inputs always have to be duplicated. To avoid the duplication
+> I think we can use extra_params for '-append' and '--params' by
+> parametrizing the option name for "params" (-append / --params) and then
+> create qemu_opts and kvmtool_opts for extra options like --pmu, --mem,
+> and irqchip.
+
+How about something like this (I am using selftest-setup as an example, all the
+other test definitions would be similarly modified):
+
+diff --git a/arm/unittests.cfg b/arm/unittests.cfg
+index 2bdad67d5693..3009305ba2d3 100644
+--- a/arm/unittests.cfg
++++ b/arm/unittests.cfg
+@@ -15,7 +15,9 @@
+ [selftest-setup]
+ file = selftest.flat
+ smp = 2
+-extra_params = -m 256 -append 'setup smp=2 mem=256'
++test_args = setup smp=2 mem=256
++qemu_params = -m 256
++kvmtool_params = --mem 256
+ groups = selftest
+
+I was thinking about using 'test_args' instead of 'extra_params' to avoid any
+confusion between the two, and to match how they are passed to a test
+- they are in the argv main's argument.
+
+Also, should I change the test definitions for all the other architectures?
+It's not going to be possible for me to test all the changes.
+
+Thanks,
+Alex
+
+> 
+> Thanks,
+> drew
+> 
+> > 
+> > Signed-off-by: Alexandru Elisei <alexandru.elisei@arm.com>
+> > ---
+> >  arm/unittests.cfg   | 27 +++++++++++++++++++++++++++
+> >  docs/unittests.txt  |  8 ++++++++
+> >  scripts/common.bash |  4 ++++
+> >  3 files changed, 39 insertions(+)
+> > 
+> > diff --git a/arm/unittests.cfg b/arm/unittests.cfg
+> > index 2bdad67d5693..974a5a9e4113 100644
+> > --- a/arm/unittests.cfg
+> > +++ b/arm/unittests.cfg
+> > @@ -16,18 +16,21 @@
+> >  file = selftest.flat
+> >  smp = 2
+> >  extra_params = -m 256 -append 'setup smp=2 mem=256'
+> > +kvmtool_params = --mem 256 --params 'setup smp=2 mem=256'
+> >  groups = selftest
+> >  
+> >  # Test vector setup and exception handling (kernel mode).
+> >  [selftest-vectors-kernel]
+> >  file = selftest.flat
+> >  extra_params = -append 'vectors-kernel'
+> > +kvmtool_params = --params 'vectors-kernel'
+> >  groups = selftest
+> >  
+> >  # Test vector setup and exception handling (user mode).
+> >  [selftest-vectors-user]
+> >  file = selftest.flat
+> >  extra_params = -append 'vectors-user'
+> > +kvmtool_params = --params 'vectors-user'
+> >  groups = selftest
+> >  
+> >  # Test SMP support
+> > @@ -35,6 +38,7 @@ groups = selftest
+> >  file = selftest.flat
+> >  smp = $MAX_SMP
+> >  extra_params = -append 'smp'
+> > +kvmtool_params = --params 'smp'
+> >  groups = selftest
+> >  
+> >  # Test PCI emulation
+> > @@ -47,66 +51,77 @@ groups = pci
+> >  file = pmu.flat
+> >  groups = pmu
+> >  extra_params = -append 'cycle-counter 0'
+> > +kvmtool_params = --pmu --params 'cycle-counter 0'
+> >  
+> >  [pmu-event-introspection]
+> >  file = pmu.flat
+> >  groups = pmu
+> >  arch = arm64
+> >  extra_params = -append 'pmu-event-introspection'
+> > +kvmtool_params = --pmu --params 'pmu-event-introspection'
+> >  
+> >  [pmu-event-counter-config]
+> >  file = pmu.flat
+> >  groups = pmu
+> >  arch = arm64
+> >  extra_params = -append 'pmu-event-counter-config'
+> > +kvmtool_params = --pmu --params 'pmu-event-counter-config'
+> >  
+> >  [pmu-basic-event-count]
+> >  file = pmu.flat
+> >  groups = pmu
+> >  arch = arm64
+> >  extra_params = -append 'pmu-basic-event-count'
+> > +kvmtool_params = --pmu --params 'pmu-basic-event-count'
+> >  
+> >  [pmu-mem-access]
+> >  file = pmu.flat
+> >  groups = pmu
+> >  arch = arm64
+> >  extra_params = -append 'pmu-mem-access'
+> > +kvmtool_params = --pmu --params 'pmu-mem-access'
+> >  
+> >  [pmu-mem-access-reliability]
+> >  file = pmu.flat
+> >  groups = pmu
+> >  arch = arm64
+> >  extra_params = -append 'pmu-mem-access-reliability'
+> > +kvmtool_params = --pmu --params 'pmu-mem-access-reliability'
+> >  
+> >  [pmu-sw-incr]
+> >  file = pmu.flat
+> >  groups = pmu
+> >  arch = arm64
+> >  extra_params = -append 'pmu-sw-incr'
+> > +kvmtool_params = --pmu --params 'pmu-sw-incr'
+> >  
+> >  [pmu-chained-counters]
+> >  file = pmu.flat
+> >  groups = pmu
+> >  arch = arm64
+> >  extra_params = -append 'pmu-chained-counters'
+> > +kvmtool_params = --pmu --params 'pmu-chained-counters'
+> >  
+> >  [pmu-chained-sw-incr]
+> >  file = pmu.flat
+> >  groups = pmu
+> >  arch = arm64
+> >  extra_params = -append 'pmu-chained-sw-incr'
+> > +kvmtool_params = --pmu --params 'pmu-chained-sw-incr'
+> >  
+> >  [pmu-chain-promotion]
+> >  file = pmu.flat
+> >  groups = pmu
+> >  arch = arm64
+> >  extra_params = -append 'pmu-chain-promotion'
+> > +kvmtool_params = --pmu --params 'pmu-chain-promotion'
+> >  
+> >  [pmu-overflow-interrupt]
+> >  file = pmu.flat
+> >  groups = pmu
+> >  arch = arm64
+> >  extra_params = -append 'pmu-overflow-interrupt'
+> > +kvmtool_params = --pmu --params 'pmu-overflow-interrupt'
+> >  
+> >  # Test PMU support (TCG) with -icount IPC=1
+> >  #[pmu-tcg-icount-1]
+> > @@ -127,48 +142,56 @@ extra_params = -append 'pmu-overflow-interrupt'
+> >  file = gic.flat
+> >  smp = $((($MAX_SMP < 8)?$MAX_SMP:8))
+> >  extra_params = -machine gic-version=2 -append 'ipi'
+> > +kvmtool_params = --irqchip=gicv2 --params 'ipi'
+> >  groups = gic
+> >  
+> >  [gicv2-mmio]
+> >  file = gic.flat
+> >  smp = $((($MAX_SMP < 8)?$MAX_SMP:8))
+> >  extra_params = -machine gic-version=2 -append 'mmio'
+> > +kvmtool_params = --irqchip=gicv2 --params 'mmio'
+> >  groups = gic
+> >  
+> >  [gicv2-mmio-up]
+> >  file = gic.flat
+> >  smp = 1
+> >  extra_params = -machine gic-version=2 -append 'mmio'
+> > +kvmtool_params = --irqchip=gicv2 --params 'mmio'
+> >  groups = gic
+> >  
+> >  [gicv2-mmio-3p]
+> >  file = gic.flat
+> >  smp = $((($MAX_SMP < 3)?$MAX_SMP:3))
+> >  extra_params = -machine gic-version=2 -append 'mmio'
+> > +kvmtool_params = --irqchip=gicv2 --params 'mmio'
+> >  groups = gic
+> >  
+> >  [gicv3-ipi]
+> >  file = gic.flat
+> >  smp = $MAX_SMP
+> >  extra_params = -machine gic-version=3 -append 'ipi'
+> > +kvmtool_params = --irqchip=gicv3 --params 'ipi'
+> >  groups = gic
+> >  
+> >  [gicv2-active]
+> >  file = gic.flat
+> >  smp = $((($MAX_SMP < 8)?$MAX_SMP:8))
+> >  extra_params = -machine gic-version=2 -append 'active'
+> > +kvmtool_params = --irqchip=gicv2 --params 'active'
+> >  groups = gic
+> >  
+> >  [gicv3-active]
+> >  file = gic.flat
+> >  smp = $MAX_SMP
+> >  extra_params = -machine gic-version=3 -append 'active'
+> > +kvmtool_params = --irqchip=gicv3 --params 'active'
+> >  groups = gic
+> >  
+> >  [its-introspection]
+> >  file = gic.flat
+> >  smp = $MAX_SMP
+> >  extra_params = -machine gic-version=3 -append 'its-introspection'
+> > +kvmtool_params = --irqchip=gicv3-its --params 'its-introspection'
+> >  groups = its
+> >  arch = arm64
+> >  
+> > @@ -176,6 +199,7 @@ arch = arm64
+> >  file = gic.flat
+> >  smp = $MAX_SMP
+> >  extra_params = -machine gic-version=3 -append 'its-trigger'
+> > +kvmtool_params = --irqchip=gicv3-its --params 'its-trigger'
+> >  groups = its
+> >  arch = arm64
+> >  
+> > @@ -232,6 +256,7 @@ groups = cache
+> >  file = debug.flat
+> >  arch = arm64
+> >  extra_params = -append 'bp'
+> > +kvmtool_params = --params 'bp'
+> >  groups = debug
+> >  
+> >  [debug-bp-migration]
+> > @@ -244,6 +269,7 @@ groups = debug migration
+> >  file = debug.flat
+> >  arch = arm64
+> >  extra_params = -append 'wp'
+> > +kvmtool_params = --params 'wp'
+> >  groups = debug
+> >  
+> >  [debug-wp-migration]
+> > @@ -256,6 +282,7 @@ groups = debug migration
+> >  file = debug.flat
+> >  arch = arm64
+> >  extra_params = -append 'ss'
+> > +kvmtool_params = --params 'ss'
+> >  groups = debug
+> >  
+> >  [debug-sstep-migration]
+> > diff --git a/docs/unittests.txt b/docs/unittests.txt
+> > index 3e1a9e563016..ebb6994cab77 100644
+> > --- a/docs/unittests.txt
+> > +++ b/docs/unittests.txt
+> > @@ -69,6 +69,14 @@ extra_params
+> >  Alias for 'qemu_params', supported for compatibility purposes. Use
+> >  'qemu_params' for new tests.
+> >  
+> > +kvmtool_params
+> > +--------------
+> > +Extra parameters supplied to the kvmtool process. Works similarly to
+> > +qemu_params and extra_params, but uses kvmtool's syntax for command line
+> > +arguments. The example for qemu_params, applied to kvmtool, would be:
+> > +
+> > +kvmtool_params = --mem 256 --params 'smp=2'
+> > +
+> >  groups
+> >  ------
+> >  groups = <group_name1> <group_name2> ...
+> > diff --git a/scripts/common.bash b/scripts/common.bash
+> > index 1b5e0d667841..f54ffbd7a87b 100644
+> > --- a/scripts/common.bash
+> > +++ b/scripts/common.bash
+> > @@ -67,6 +67,10 @@ function for_each_unittest()
+> >  			qemu_opts=$(parse_opts ${BASH_REMATCH[2]}$'\n' $fd)
+> >  		elif [[ $line =~ ^(extra_params|qemu_params)\ *=\ *(.*)$ ]]; then
+> >  			qemu_opts=${BASH_REMATCH[2]}
+> > +		elif [[ $line =~ ^kvmtool_params\ *=\ *'"""'(.*)$ ]]; then
+> > +			kvmtool_opts=$(parse_opts ${BASH_REMATCH[1]}$'\n' $fd)
+> > +		elif [[ $line =~ ^kvmtool_params\ *=\ *(.*)$ ]]; then
+> > +			kvmtool_opts=${BASH_REMATCH[1]}
+> >  		elif [[ $line =~ ^groups\ *=\ *(.*)$ ]]; then
+> >  			groups=${BASH_REMATCH[1]}
+> >  		elif [[ $line =~ ^arch\ *=\ *(.*)$ ]]; then
+> > -- 
+> > 2.47.1
+> > 
+> > 
+> > -- 
+> > kvm-riscv mailing list
+> > kvm-riscv@lists.infradead.org
+> > http://lists.infradead.org/mailman/listinfo/kvm-riscv
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
