@@ -4,123 +4,94 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D6ADC0219B
-	for <kvm-riscv@archiver.kernel.org>; Tue, 11 Feb 2025 02:40:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 81BE7C0219E
+	for <kvm-riscv@archiver.kernel.org>; Tue, 11 Feb 2025 04:06:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
-	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
-	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=SumcYdl+1S6WX/X4m/j3cBE5kaxqoavLcvNaxXj2kxU=; b=Ir6jgj7fhRDBAT
-	EMl8JHBaIddU3F3D6W0DXonEYIImSv88DTSWD4Bb6qPd+AgmHT9ETn1eLbxk1Shp5nqTDfso0/V3r
-	0dZ122wqh2uPSS2MT2/ltzj91wcJ9NCoHRqeAY+fKH/AigNpfX8M2uN5npfI9iKv9oytT2mcvPI0d
-	LnpJ9SmILUd9b/jitun9rdQaN0XsjngxblQanurtt8clDwu5BXhg/viSF0yFMS7ZQL15WaPQ0aVS1
-	8QG8Ii/ZLar9813VE2f3guDhk+Fh87dpcgY9QLBGs+fupsyiOmN4/xcha7dJEoFzq7QzBwuPJWfn5
-	P1xkiER7kGi8+oL9t3AA==;
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
+	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
+	List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:Message-ID:
+	Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:Resent-Date:
+	Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Owner;
+	bh=WyVS/MPrHUMoeEpjhEWldKMIaThu/PsI9g+cmtQDuNE=; b=zu121EAgaYNGeFy9ber45DHMHD
+	GAkQ3rj7vjIPs0BjCo+OwZtcXtAh8KSDHWY7dpT6J5CBbws2Pmc6yoMSjqDf+2CAW87akxGA/qlHm
+	RNKAKgHwFzMFwJFlJZQI1kYFiORCMoSHfExDjOJB3H/WiPWohYPdm0PRJ5tsZXF9YJbK8uylajqBl
+	F6pqXnfRspCtVGLgDbgEeOQDwUcHcIm+4asxgRu8eMGMtPB4k9w6iR0LLzRDvHbQznv+YB8WXRyM7
+	9cMcA3GGgiWydxnISUVDqp1W/aMBuxRwZ+3HtFWMKq7SLuDRGHRosAdaZkNtiT59Vs/6nL7c2fSyt
+	iDh3HhJQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1thgCl-00000002ITZ-2g7j;
-	Tue, 11 Feb 2025 02:40:55 +0000
-Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+	id 1thhXP-00000002Sl4-0AQi;
+	Tue, 11 Feb 2025 04:06:19 +0000
+Received: from mail-pl1-x634.google.com ([2607:f8b0:4864:20::634])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1thdrx-00000001wVA-3DpB
-	for kvm-riscv@bombadil.infradead.org;
-	Tue, 11 Feb 2025 00:11:17 +0000
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:MIME-Version
-	:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
-	Content-Type:Content-ID:Content-Description;
-	bh=7d2yvMM2I9d/oyc1V0faCkOl8VeyuNqArkVlFzxUCDE=; b=htWxsMSxOZkUYkKiim7uZJ+aji
-	ySL47pS8m3x/C+Sb7Q2pgoXjNKbKT+vCpUjMLLtTBY+fK7lzsd6X597z2MWyYXYi3OpMXkAK9zgPg
-	nXDLHh42vnRxWNUbK7MR93WnaMm6BSvlcafQveB7G+EQwrU2ofFMzc10OYGwucVLbGc+8s017k/2N
-	JSa8nFqwvyB99Cnh2n3cJJKukh/t1JBBUsCjSsUtXv5BgjGRlRBxmuFdmoJ4LVVj+B0457dzhN0Ek
-	pp9wdxIZzH8W7f4p0mbrfd31L7On6V/J8M909QySVW3uOs6XYezrqEJ3rqSL6Rg8cYq4/VJQEoo0S
-	zlpZq5rA==;
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124])
-	by desiato.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1thdru-00000000O65-46cR
+	id 1thhXM-00000002SkQ-2P9c
 	for kvm-riscv@lists.infradead.org;
-	Tue, 11 Feb 2025 00:11:16 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1739232673;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=7d2yvMM2I9d/oyc1V0faCkOl8VeyuNqArkVlFzxUCDE=;
-	b=E4nLbpl0mk36PXAh+u/NG72rtuMf5aueB39HAsHkRY9yqz5vdftDsDJ0jAwhvN9QeZM8QB
-	LX4fuPNjO4ZzkcB2+GcM9wF0MW5m55F/XjYbMMVt0WDmqLjsPCzIo2EB0SVPJa1MAIxkST
-	AEPXQZfFc+pKJ0INv5AsvxgAW3r3qCk=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1739232674;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=7d2yvMM2I9d/oyc1V0faCkOl8VeyuNqArkVlFzxUCDE=;
-	b=YN23ExVcjZebPyxIBWwdJjp/M34iVlUDzfBMWEA9/gwDOMf34vNFAdR+47WKtZuIsmarKz
-	huYlHK/JxYURgPoy5f+t1i3ULo8YfOGcciRY7y27eoraRpCfovced853ITGL7GkFYypZLo
-	CaN4HAaIkikxa+ZiowWE8GIGcFXo7QE=
-Received: from mx-prod-mc-08.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-137-9uH7qvCwOL6Q2OM-ph_X4g-1; Mon,
- 10 Feb 2025 19:09:42 -0500
-X-MC-Unique: 9uH7qvCwOL6Q2OM-ph_X4g-1
-X-Mimecast-MFC-AGG-ID: 9uH7qvCwOL6Q2OM-ph_X4g
-Received: from mx-prod-int-04.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-04.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.40])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mx-prod-mc-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id B3B081800874;
-	Tue, 11 Feb 2025 00:09:38 +0000 (UTC)
-Received: from starship.lan (unknown [10.22.65.174])
-	by mx-prod-int-04.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id C1BF519560B0;
-	Tue, 11 Feb 2025 00:09:32 +0000 (UTC)
-From: Maxim Levitsky <mlevitsk@redhat.com>
-To: kvm@vger.kernel.org
-Cc: Paolo Bonzini <pbonzini@redhat.com>,
-	Jing Zhang <jingzhangos@google.com>,
-	Oliver Upton <oliver.upton@linux.dev>,
-	linux-arm-kernel@lists.infradead.org,
-	Marc Zyngier <maz@kernel.org>,
-	linux-kernel@vger.kernel.org,
-	Randy Dunlap <rdunlap@infradead.org>,
-	Suzuki K Poulose <suzuki.poulose@arm.com>,
+	Tue, 11 Feb 2025 04:06:17 +0000
+Received: by mail-pl1-x634.google.com with SMTP id d9443c01a7336-21f6022c2c3so47442775ad.0
+        for <kvm-riscv@lists.infradead.org>; Mon, 10 Feb 2025 20:06:16 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=rivosinc-com.20230601.gappssmtp.com; s=20230601; t=1739246776; x=1739851576; darn=lists.infradead.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=zyKn8f6FlNrtiJWD+T1fk3XzsKPAFPZ0BSNq2D6GOdI=;
+        b=AlY8hkkb/DHn7tazsgeOwhbtXQfuJORJ/bPYO7Phg0HxraFnR3HGTccuDZBVBh/VIA
+         dBvpEvDBZr/jvQaRQwO/50bcEHW/JOrwGlc1OIUK1k5oPVKi06qttqcDNji+KGNj9toi
+         2CtLIirVBsOxJRGAXriGqCN/qdwy01N8ku3Wr4mUVcSkz+3KzJG0ALffX7lEVfK5zCk2
+         rUcFGJgvxU8mnY6VumD8YHRAOGi4w54acRRDizGVCrTeYdf05Zl8n5KIoYyrkHMAGBab
+         fsh2qRR7cl+cEYqq6FcA5dr9Vg1E1Vm97Hp7TAkw4WxYQhPSDM/2DIRBcq37D9kuPOc7
+         oiIQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1739246776; x=1739851576;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=zyKn8f6FlNrtiJWD+T1fk3XzsKPAFPZ0BSNq2D6GOdI=;
+        b=tH8DV2u2IlUqv/luhIhi0EYXBsCGh3qrjaVuXmZ1gD9JmPLGkT+Cxvn6giFdBRrnle
+         la7E2xDwSv54fk4NLp5KKGzB5rQe9UPyY7YSoy8Zd0TLl89ePFtY6e59+sxSfbd3j9LL
+         YNnwr3MI1yL/G4NnlXxu101MgLPLyw9+0rB5rw1c8o1zCdzqMiNJhy/4dLKeadi4oGYf
+         SUGOmR1apkTiPo3OVeBIvX1gc2JkD9WHr1UnkwH6DM4rA6BprOl31fWa8PrVpxw0uTSU
+         evKCjmA51vgSKxXakLpXDhURSdjBCco1SzgFU5WtqIxaRMX/NVEBc2IsXIg8oWVmxbXi
+         qKAg==
+X-Forwarded-Encrypted: i=1; AJvYcCVxIGsQZybv6chwxlShjR6uQKWe4KiaTR+V8nZ2OnVNj1vuA1Mj/3BOBqKDtVJfWqQeiVmzvjx6EHM=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yzslh0bgD5fYRYv5+iXN62OBlyCKx52FkCGXngur4ih73NXfRs0
+	1PEHqYB360MJ3txa+7Hn7NKCsR1p7fRduXB9DvV2gRt79koXWw8yV2otGNqR3vI=
+X-Gm-Gg: ASbGncva4tcSAke8XmPPkpLJUVmD4rJjGtPcePOzr+aLcAgxZMKHyn/G44+m7TX/cje
+	LI1KBNMmkskDKmDw9KU/xY6jVN8FYdEJweIrM1773ecLGm8RG1HG48mSnEuYCKkb0Tk5S2i1xAB
+	LiZJOKtUrCBmMVjQVPz1McfYbypMxvD9QBxx5Iafi9NSDwfGXzngyMyVXnBJ3Xyj6LYCD7/Q3Gi
+	99g6Ud1NfmpRWGDd9HWixy+RmR299wUWcRvXaOgaAdNymZWh+qvU1mzUV0Ipin2fhuUxnF8qhOT
+	xw7vqHuuzATC1MaMmPzELRh9Tw==
+X-Google-Smtp-Source: AGHT+IGlh9j8ErK64T4ScD+I1yhp+hSLhhu8tQ8C1OBgFV46tBgTiWjpNTOBq5c7bhEw0dyoInj7tg==
+X-Received: by 2002:a05:6a20:1591:b0:1ed:a4b1:9124 with SMTP id adf61e73a8af0-1ee4b5bfde2mr2966111637.8.1739246775980;
+        Mon, 10 Feb 2025 20:06:15 -0800 (PST)
+Received: from debug.ba.rivosinc.com ([64.71.180.162])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-73085c8360asm3653872b3a.132.2025.02.10.20.06.14
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 10 Feb 2025 20:06:15 -0800 (PST)
+Date: Mon, 10 Feb 2025 20:06:12 -0800
+From: Deepak Gupta <debug@rivosinc.com>
+To: =?iso-8859-1?Q?Cl=E9ment_L=E9ger?= <cleger@rivosinc.com>
+Cc: Paul Walmsley <paul.walmsley@sifive.com>,
 	Palmer Dabbelt <palmer@dabbelt.com>,
-	Zenghui Yu <yuzenghui@huawei.com>,
-	kvm-riscv@lists.infradead.org,
-	Ingo Molnar <mingo@redhat.com>,
-	linux-riscv@lists.infradead.org,
-	Joey Gouly <joey.gouly@arm.com>,
-	Paul Walmsley <paul.walmsley@sifive.com>,
-	Maxim Levitsky <mlevitsk@redhat.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	kvmarm@lists.linux.dev,
-	Alexander Potapenko <glider@google.com>,
-	x86@kernel.org,
-	Sean Christopherson <seanjc@google.com>,
 	Anup Patel <anup@brainfault.org>,
-	Kunkun Jiang <jiangkunkun@huawei.com>,
-	Atish Patra <atishp@atishpatra.org>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	"H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH 2/3] KVM: arm64: switch to using kvm_lock/unlock_all_vcpus
-Date: Mon, 10 Feb 2025 19:09:16 -0500
-Message-Id: <20250211000917.166856-3-mlevitsk@redhat.com>
-In-Reply-To: <20250211000917.166856-1-mlevitsk@redhat.com>
-References: <20250211000917.166856-1-mlevitsk@redhat.com>
+	Atish Patra <atishp@atishpatra.org>, Shuah Khan <shuah@kernel.org>,
+	Jonathan Corbet <corbet@lwn.net>, linux-riscv@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
+	kvm@vger.kernel.org, kvm-riscv@lists.infradead.org,
+	linux-kselftest@vger.kernel.org,
+	Samuel Holland <samuel.holland@sifive.com>
+Subject: Re: [PATCH v2 01/15] riscv: add Firmware Feature (FWFT) SBI
+ extensions definitions
+Message-ID: <Z6rMtBud/hsKYYIw@debug.ba.rivosinc.com>
+References: <20250210213549.1867704-1-cleger@rivosinc.com>
+ <20250210213549.1867704-2-cleger@rivosinc.com>
 MIME-Version: 1.0
-X-Scanned-By: MIMEDefang 3.0 on 10.30.177.40
+Content-Disposition: inline
+In-Reply-To: <20250210213549.1867704-2-cleger@rivosinc.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250211_001115_223397_C95D5908 
-X-CRM114-Status: GOOD (  18.02  )
+X-CRM114-CacheID: sfid-20250210_200616_613501_E8DC09F4 
+X-CRM114-Status: UNSURE (   9.68  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -132,301 +103,94 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"; Format="flowed"
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Switch to kvm_lock/unlock_all_vcpus instead of arm's own
-version.
+On Mon, Feb 10, 2025 at 10:35:34PM +0100, Cl=E9ment L=E9ger wrote:
+>The Firmware Features extension (FWFT) was added as part of the SBI 3.0
+>specification. Add SBI definitions to use this extension.
+>
+>Signed-off-by: Cl=E9ment L=E9ger <cleger@rivosinc.com>
+>Reviewed-by: Samuel Holland <samuel.holland@sifive.com>
+>Tested-by: Samuel Holland <samuel.holland@sifive.com>
+>---
+> arch/riscv/include/asm/sbi.h | 33 +++++++++++++++++++++++++++++++++
+> 1 file changed, 33 insertions(+)
+>
+>diff --git a/arch/riscv/include/asm/sbi.h b/arch/riscv/include/asm/sbi.h
+>index 3d250824178b..d373b5c08039 100644
+>--- a/arch/riscv/include/asm/sbi.h
+>+++ b/arch/riscv/include/asm/sbi.h
+>@@ -35,6 +35,7 @@ enum sbi_ext_id {
+> 	SBI_EXT_DBCN =3D 0x4442434E,
+> 	SBI_EXT_STA =3D 0x535441,
+> 	SBI_EXT_NACL =3D 0x4E41434C,
+>+	SBI_EXT_FWFT =3D 0x46574654,
+>
+> 	/* Experimentals extensions must lie within this range */
+> 	SBI_EXT_EXPERIMENTAL_START =3D 0x08000000,
+>@@ -402,6 +403,33 @@ enum sbi_ext_nacl_feature {
+> #define SBI_NACL_SHMEM_SRET_X(__i)		((__riscv_xlen / 8) * (__i))
+> #define SBI_NACL_SHMEM_SRET_X_LAST		31
+>
+>+/* SBI function IDs for FW feature extension */
+>+#define SBI_EXT_FWFT_SET		0x0
+>+#define SBI_EXT_FWFT_GET		0x1
+>+
+>+enum sbi_fwft_feature_t {
+>+	SBI_FWFT_MISALIGNED_EXC_DELEG		=3D 0x0,
+>+	SBI_FWFT_LANDING_PAD			=3D 0x1,
+>+	SBI_FWFT_SHADOW_STACK			=3D 0x2,
+>+	SBI_FWFT_DOUBLE_TRAP			=3D 0x3,
+>+	SBI_FWFT_PTE_AD_HW_UPDATING		=3D 0x4,
+>+	SBI_FWFT_POINTER_MASKING_PMLEN		=3D 0x5,
+>+	SBI_FWFT_LOCAL_RESERVED_START		=3D 0x6,
+>+	SBI_FWFT_LOCAL_RESERVED_END		=3D 0x3fffffff,
+>+	SBI_FWFT_LOCAL_PLATFORM_START		=3D 0x40000000,
+>+	SBI_FWFT_LOCAL_PLATFORM_END		=3D 0x7fffffff,
+>+
+>+	SBI_FWFT_GLOBAL_RESERVED_START		=3D 0x80000000,
+>+	SBI_FWFT_GLOBAL_RESERVED_END		=3D 0xbfffffff,
+>+	SBI_FWFT_GLOBAL_PLATFORM_START		=3D 0xc0000000,
+>+	SBI_FWFT_GLOBAL_PLATFORM_END		=3D 0xffffffff,
+>+};
+>+
+>+#define SBI_FWFT_PLATFORM_FEATURE_BIT		(1 << 30)
+>+#define SBI_FWFT_GLOBAL_FEATURE_BIT		(1 << 31)
+>+
+>+#define SBI_FWFT_SET_FLAG_LOCK			(1 << 0)
+>+
+> /* SBI spec version fields */
+> #define SBI_SPEC_VERSION_DEFAULT	0x1
+> #define SBI_SPEC_VERSION_MAJOR_SHIFT	24
+>@@ -419,6 +447,11 @@ enum sbi_ext_nacl_feature {
+> #define SBI_ERR_ALREADY_STARTED -7
+> #define SBI_ERR_ALREADY_STOPPED -8
+> #define SBI_ERR_NO_SHMEM	-9
+>+#define SBI_ERR_INVALID_STATE	-10
+>+#define SBI_ERR_BAD_RANGE	-11
+>+#define SBI_ERR_TIMEOUT		-12
 
-This fixes lockdep warning about reaching maximum lock depth:
+nit: Space mis-aligned(^)	^
 
-[  328.171264] BUG: MAX_LOCK_DEPTH too low!
-[  328.175227] turning off the locking correctness validator.
-[  328.180726] Please attach the output of /proc/lock_stat to the bug report
-[  328.187531] depth: 48  max: 48!
-[  328.190678] 48 locks held by qemu-kvm/11664:
-[  328.194957]  #0: ffff800086de5ba0 (&kvm->lock){+.+.}-{3:3}, at: kvm_ioctl_create_device+0x174/0x5b0
-[  328.204048]  #1: ffff0800e78800b8 (&vcpu->mutex){+.+.}-{3:3}, at: lock_all_vcpus+0x16c/0x2a0
-[  328.212521]  #2: ffff07ffeee51e98 (&vcpu->mutex){+.+.}-{3:3}, at: lock_all_vcpus+0x16c/0x2a0
-[  328.220991]  #3: ffff0800dc7d80b8 (&vcpu->mutex){+.+.}-{3:3}, at: lock_all_vcpus+0x16c/0x2a0
-[  328.229463]  #4: ffff07ffe0c980b8 (&vcpu->mutex){+.+.}-{3:3}, at: lock_all_vcpus+0x16c/0x2a0
-[  328.237934]  #5: ffff0800a3883c78 (&vcpu->mutex){+.+.}-{3:3}, at: lock_all_vcpus+0x16c/0x2a0
-[  328.246405]  #6: ffff07fffbe480b8 (&vcpu->mutex){+.+.}-{3:3}, at: lock_all_vcpus+0x16c/0x2a0
+otherwise
+Reviewed-by: Deepak Gupta <debug@rivosinc.com>
 
-No functional change intended.
+>+#define SBI_ERR_IO		-13
+>+#define SBI_ERR_DENIED_LOCKED	-14
+>
+> extern unsigned long sbi_spec_version;
+> struct sbiret {
+>-- =
 
-Suggested-by: Paolo Bonzini <pbonzini@redhat.com>
-Signed-off-by: Maxim Levitsky <mlevitsk@redhat.com>
----
- arch/arm64/include/asm/kvm_host.h     |  3 ---
- arch/arm64/kvm/arch_timer.c           |  8 +++----
- arch/arm64/kvm/arm.c                  | 32 ---------------------------
- arch/arm64/kvm/vgic/vgic-init.c       | 11 +++++----
- arch/arm64/kvm/vgic/vgic-its.c        | 18 ++++++++-------
- arch/arm64/kvm/vgic/vgic-kvm-device.c | 21 ++++++++++--------
- 6 files changed, 33 insertions(+), 60 deletions(-)
+>2.47.2
+>
+>
 
-diff --git a/arch/arm64/include/asm/kvm_host.h b/arch/arm64/include/asm/kvm_host.h
-index 7cfa024de4e3..bba97ea700ca 100644
---- a/arch/arm64/include/asm/kvm_host.h
-+++ b/arch/arm64/include/asm/kvm_host.h
-@@ -1234,9 +1234,6 @@ int __init populate_sysreg_config(const struct sys_reg_desc *sr,
- 				  unsigned int idx);
- int __init populate_nv_trap_config(void);
- 
--bool lock_all_vcpus(struct kvm *kvm);
--void unlock_all_vcpus(struct kvm *kvm);
--
- void kvm_calculate_traps(struct kvm_vcpu *vcpu);
- 
- /* MMIO helpers */
-diff --git a/arch/arm64/kvm/arch_timer.c b/arch/arm64/kvm/arch_timer.c
-index 231c0cd9c7b4..3af1da807f9c 100644
---- a/arch/arm64/kvm/arch_timer.c
-+++ b/arch/arm64/kvm/arch_timer.c
-@@ -1769,7 +1769,9 @@ int kvm_vm_ioctl_set_counter_offset(struct kvm *kvm,
- 
- 	mutex_lock(&kvm->lock);
- 
--	if (lock_all_vcpus(kvm)) {
-+	ret = kvm_lock_all_vcpus(kvm);
-+
-+	if (!ret) {
- 		set_bit(KVM_ARCH_FLAG_VM_COUNTER_OFFSET, &kvm->arch.flags);
- 
- 		/*
-@@ -1781,9 +1783,7 @@ int kvm_vm_ioctl_set_counter_offset(struct kvm *kvm,
- 		kvm->arch.timer_data.voffset = offset->counter_offset;
- 		kvm->arch.timer_data.poffset = offset->counter_offset;
- 
--		unlock_all_vcpus(kvm);
--	} else {
--		ret = -EBUSY;
-+		kvm_unlock_all_vcpus(kvm);
- 	}
- 
- 	mutex_unlock(&kvm->lock);
-diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
-index 071a7d75be68..f58849c5b4f0 100644
---- a/arch/arm64/kvm/arm.c
-+++ b/arch/arm64/kvm/arm.c
-@@ -1895,38 +1895,6 @@ static void unlock_vcpus(struct kvm *kvm, int vcpu_lock_idx)
- 	}
- }
- 
--void unlock_all_vcpus(struct kvm *kvm)
--{
--	lockdep_assert_held(&kvm->lock);
--
--	unlock_vcpus(kvm, atomic_read(&kvm->online_vcpus) - 1);
--}
--
--/* Returns true if all vcpus were locked, false otherwise */
--bool lock_all_vcpus(struct kvm *kvm)
--{
--	struct kvm_vcpu *tmp_vcpu;
--	unsigned long c;
--
--	lockdep_assert_held(&kvm->lock);
--
--	/*
--	 * Any time a vcpu is in an ioctl (including running), the
--	 * core KVM code tries to grab the vcpu->mutex.
--	 *
--	 * By grabbing the vcpu->mutex of all VCPUs we ensure that no
--	 * other VCPUs can fiddle with the state while we access it.
--	 */
--	kvm_for_each_vcpu(c, tmp_vcpu, kvm) {
--		if (!mutex_trylock(&tmp_vcpu->mutex)) {
--			unlock_vcpus(kvm, c - 1);
--			return false;
--		}
--	}
--
--	return true;
--}
--
- static unsigned long nvhe_percpu_size(void)
- {
- 	return (unsigned long)CHOOSE_NVHE_SYM(__per_cpu_end) -
-diff --git a/arch/arm64/kvm/vgic/vgic-init.c b/arch/arm64/kvm/vgic/vgic-init.c
-index bc7e22ab5d81..8fbce4db5c2e 100644
---- a/arch/arm64/kvm/vgic/vgic-init.c
-+++ b/arch/arm64/kvm/vgic/vgic-init.c
-@@ -85,8 +85,8 @@ int kvm_vgic_create(struct kvm *kvm, u32 type)
- 	/* Must be held to avoid race with vCPU creation */
- 	lockdep_assert_held(&kvm->lock);
- 
--	ret = -EBUSY;
--	if (!lock_all_vcpus(kvm))
-+	ret = kvm_lock_all_vcpus(kvm);
-+	if (ret)
- 		return ret;
- 
- 	mutex_lock(&kvm->arch.config_lock);
-@@ -97,9 +97,12 @@ int kvm_vgic_create(struct kvm *kvm, u32 type)
- 	}
- 
- 	kvm_for_each_vcpu(i, vcpu, kvm) {
--		if (vcpu_has_run_once(vcpu))
-+		if (vcpu_has_run_once(vcpu)) {
-+			ret = -EBUSY;
- 			goto out_unlock;
-+		}
- 	}
-+
- 	ret = 0;
- 
- 	if (type == KVM_DEV_TYPE_ARM_VGIC_V2)
-@@ -124,7 +127,7 @@ int kvm_vgic_create(struct kvm *kvm, u32 type)
- 
- out_unlock:
- 	mutex_unlock(&kvm->arch.config_lock);
--	unlock_all_vcpus(kvm);
-+	kvm_unlock_all_vcpus(kvm);
- 	return ret;
- }
- 
-diff --git a/arch/arm64/kvm/vgic/vgic-its.c b/arch/arm64/kvm/vgic/vgic-its.c
-index fb96802799c6..02b02b4fff5d 100644
---- a/arch/arm64/kvm/vgic/vgic-its.c
-+++ b/arch/arm64/kvm/vgic/vgic-its.c
-@@ -1977,7 +1977,7 @@ static int vgic_its_attr_regs_access(struct kvm_device *dev,
- 	struct vgic_its *its;
- 	gpa_t addr, offset;
- 	unsigned int len;
--	int align, ret = 0;
-+	int align, ret;
- 
- 	its = dev->private;
- 	offset = attr->attr;
-@@ -1999,9 +1999,10 @@ static int vgic_its_attr_regs_access(struct kvm_device *dev,
- 
- 	mutex_lock(&dev->kvm->lock);
- 
--	if (!lock_all_vcpus(dev->kvm)) {
-+	ret = kvm_lock_all_vcpus(sdev->kvm);
-+	if (ret) {
- 		mutex_unlock(&dev->kvm->lock);
--		return -EBUSY;
-+		return ret;
- 	}
- 
- 	mutex_lock(&dev->kvm->arch.config_lock);
-@@ -2034,7 +2035,7 @@ static int vgic_its_attr_regs_access(struct kvm_device *dev,
- 	}
- out:
- 	mutex_unlock(&dev->kvm->arch.config_lock);
--	unlock_all_vcpus(dev->kvm);
-+	kvm_unlock_all_vcpus(dev->kvm);
- 	mutex_unlock(&dev->kvm->lock);
- 	return ret;
- }
-@@ -2697,16 +2698,17 @@ static int vgic_its_has_attr(struct kvm_device *dev,
- static int vgic_its_ctrl(struct kvm *kvm, struct vgic_its *its, u64 attr)
- {
- 	const struct vgic_its_abi *abi = vgic_its_get_abi(its);
--	int ret = 0;
-+	int ret;
- 
- 	if (attr == KVM_DEV_ARM_VGIC_CTRL_INIT) /* Nothing to do */
- 		return 0;
- 
- 	mutex_lock(&kvm->lock);
- 
--	if (!lock_all_vcpus(kvm)) {
-+	ret = kvm_lock_all_vcpus(kvm);
-+	if (ret) {
- 		mutex_unlock(&kvm->lock);
--		return -EBUSY;
-+		return ret;
- 	}
- 
- 	mutex_lock(&kvm->arch.config_lock);
-@@ -2726,7 +2728,7 @@ static int vgic_its_ctrl(struct kvm *kvm, struct vgic_its *its, u64 attr)
- 
- 	mutex_unlock(&its->its_lock);
- 	mutex_unlock(&kvm->arch.config_lock);
--	unlock_all_vcpus(kvm);
-+	kvm_unlock_all_vcpus(kvm);
- 	mutex_unlock(&kvm->lock);
- 	return ret;
- }
-diff --git a/arch/arm64/kvm/vgic/vgic-kvm-device.c b/arch/arm64/kvm/vgic/vgic-kvm-device.c
-index 5f4f57aaa23e..ee70a9d642ed 100644
---- a/arch/arm64/kvm/vgic/vgic-kvm-device.c
-+++ b/arch/arm64/kvm/vgic/vgic-kvm-device.c
-@@ -268,15 +268,16 @@ static int vgic_set_common_attr(struct kvm_device *dev,
- 				return -ENXIO;
- 			mutex_lock(&dev->kvm->lock);
- 
--			if (!lock_all_vcpus(dev->kvm)) {
-+			r = kvm_lock_all_vcpus(dev->kvm);
-+			if (r) {
- 				mutex_unlock(&dev->kvm->lock);
--				return -EBUSY;
-+				return r;
- 			}
- 
- 			mutex_lock(&dev->kvm->arch.config_lock);
- 			r = vgic_v3_save_pending_tables(dev->kvm);
- 			mutex_unlock(&dev->kvm->arch.config_lock);
--			unlock_all_vcpus(dev->kvm);
-+			kvm_unlock_all_vcpus(dev->kvm);
- 			mutex_unlock(&dev->kvm->lock);
- 			return r;
- 		}
-@@ -384,9 +385,10 @@ static int vgic_v2_attr_regs_access(struct kvm_device *dev,
- 
- 	mutex_lock(&dev->kvm->lock);
- 
--	if (!lock_all_vcpus(dev->kvm)) {
-+	ret = kvm_lock_all_vcpus(dev->kvm);
-+	if (ret) {
- 		mutex_unlock(&dev->kvm->lock);
--		return -EBUSY;
-+		return ret;
- 	}
- 
- 	mutex_lock(&dev->kvm->arch.config_lock);
-@@ -409,7 +411,7 @@ static int vgic_v2_attr_regs_access(struct kvm_device *dev,
- 
- out:
- 	mutex_unlock(&dev->kvm->arch.config_lock);
--	unlock_all_vcpus(dev->kvm);
-+	kvm_unlock_all_vcpus(dev->kvm);
- 	mutex_unlock(&dev->kvm->lock);
- 
- 	if (!ret && !is_write)
-@@ -545,9 +547,10 @@ static int vgic_v3_attr_regs_access(struct kvm_device *dev,
- 
- 	mutex_lock(&dev->kvm->lock);
- 
--	if (!lock_all_vcpus(dev->kvm)) {
-+	ret = kvm_lock_all_vcpus(dev->kvm);
-+	if (ret) {
- 		mutex_unlock(&dev->kvm->lock);
--		return -EBUSY;
-+		return ret;
- 	}
- 
- 	mutex_lock(&dev->kvm->arch.config_lock);
-@@ -589,7 +592,7 @@ static int vgic_v3_attr_regs_access(struct kvm_device *dev,
- 
- out:
- 	mutex_unlock(&dev->kvm->arch.config_lock);
--	unlock_all_vcpus(dev->kvm);
-+	kvm_unlock_all_vcpus(dev->kvm);
- 	mutex_unlock(&dev->kvm->lock);
- 
- 	if (!ret && uaccess && !is_write) {
--- 
-2.26.3
+-- =
 
-
--- 
 kvm-riscv mailing list
 kvm-riscv@lists.infradead.org
 http://lists.infradead.org/mailman/listinfo/kvm-riscv
