@@ -4,39 +4,39 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 12C3FC021A0
-	for <kvm-riscv@archiver.kernel.org>; Wed, 12 Feb 2025 16:20:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7EA5BC021A0
+	for <kvm-riscv@archiver.kernel.org>; Wed, 12 Feb 2025 16:22:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
 	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=2OQEsE3v7/j/IxnV4TeZtJd9P+SOyO2H8VHpANxgO5U=; b=iEGsSMGIv4INbm
-	No4Rj8bbpkYYOZyfycqTeyN34599WibUCeFo9LaYIl2diofun+QOIrb898rVJ4hx1/F5RJgk2Cnrk
-	81detoAhhkHqYmrErzEHix9x/uA1kXybvHhh7/wNhpHXzFpD2t1K8NfEsbdwfTqUqk3Fr37CdmIvW
-	/2eKX5G2SbOGcjAzrI3+/DX7ULVKCl8aiLgD+rKVK6v1qxkBc+g5rPzaNVyEEjuqe5UiSDZE9anLS
-	nJauINzufluaSiimrLA7epWi7zcyLD8Hz/Oi3tAWaEOx/DnMVcoaKPdX5SobyRJnjrzBeZNulUkSC
-	dNna5C41h89kiyJDrddA==;
+	List-Owner; bh=K6ILcBWlEEkO9KE2NYd8rgLrxAL+8LtClEboqsezxnw=; b=JEgBd2mzZzD1aO
+	ZQBg+TLTx0OvKE3T5U6NA6RxX6uEVoVhQa1VnxWmegSKpT5BRugGvurBMa90O7JR0xpOM0nF9S/tn
+	vcTHueGoN+W7/FsidgXLrMXpHNcfvaHAzVn7u9b4Udr6GqL4EodPidsxGRsUMBxTGc+0tjLF/w+55
+	e7YGUXaCDRYXujqmPCKsj2MtIO5sag/aIpxIRyevyt4+RpIEFpeBUkkhI4di2U7GHK/oGYIDbnqTD
+	pjsdfRJH0BrM8X46v5b9+npxhlo5NGzjVixSvD8skadNvn4thEowQ4JYFyzvFj6CW9n7XLp8uFGNb
+	wulfpbJxiLckY4MxgD9w==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tiFTp-0000000837J-2ljO;
-	Wed, 12 Feb 2025 16:20:53 +0000
-Received: from out-171.mta0.migadu.com ([91.218.175.171])
+	id 1tiFVE-000000083YP-11fY;
+	Wed, 12 Feb 2025 16:22:20 +0000
+Received: from out-176.mta1.migadu.com ([2001:41d0:203:375::b0])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1tiEyy-00000007vJe-1bWu
+	id 1tiF6X-00000007xZ3-0hG2
 	for kvm-riscv@lists.infradead.org;
-	Wed, 12 Feb 2025 15:49:01 +0000
-Date: Wed, 12 Feb 2025 16:48:47 +0100
+	Wed, 12 Feb 2025 15:56:50 +0000
+Date: Wed, 12 Feb 2025 16:56:42 +0100
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1739375333;
+	t=1739375806;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=Vmg0L/g3+q0yTaB9LWuHIF8QkwBzZd4h117MfIen5LQ=;
-	b=c/OgCsn7kQs98DTIPDKyRY9IWuczp96fsZXGkUJNCxyBQ3Vuz6s8GWJ62djGUbxKpC1yWk
-	I7zWfhyo8zlAy4AiQFrkZVib9LGSyoTypCUCRw8hliUvQPNi40nHB0vTSXQqKFW9IEIjL8
-	Z5yFO3yLd2b9eklxpPjom4HHbQciLf4=
+	bh=mlJEetX65r+ey75QsnS3ny//eDRch+TvDW9jPZ82TjI=;
+	b=LE7nPK0g4OKCBn2/Nf6tUruhiM+GsVGX3Bp8bq1qmc/zeAqXvBqY/Iuy4DrEB5FnrsOTlz
+	+Dj2g7jhpSoKZ9R4qtPc0/DJImOiuJNIj3rkAiu3j+LIBABXbr+S8td1zxdt5LhEVes36w
+	UdkI8uNya6OfrSRsjigth+2Pjdptt9I=
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
 From: Andrew Jones <andrew.jones@linux.dev>
 To: Alexandru Elisei <alexandru.elisei@arm.com>
@@ -47,20 +47,20 @@ Cc: eric.auger@redhat.com, lvivier@redhat.com, thuth@redhat.com,
 	will@kernel.org, julien.thierry.kdev@gmail.com, maz@kernel.org, 
 	oliver.upton@linux.dev, suzuki.poulose@arm.com, yuzenghui@huawei.com, joey.gouly@arm.com, 
 	andre.przywara@arm.com
-Subject: Re: [kvm-unit-tests PATCH v2 04/18] run_tests: Introduce unittest
- parameter 'qemu_params'
-Message-ID: <20250212-8427334ce25d709f70c4053c@orel>
+Subject: Re: [kvm-unit-tests PATCH v2 15/18] Add kvmtool_params to test
+ specification
+Message-ID: <20250212-77a312138f8b5931553ece38@orel>
 References: <20250120164316.31473-1-alexandru.elisei@arm.com>
- <20250120164316.31473-5-alexandru.elisei@arm.com>
- <20250121-82874afe4e52c828d21e7da2@orel>
- <Z6yk48JpsYKHwFye@arm.com>
+ <20250120164316.31473-16-alexandru.elisei@arm.com>
+ <20250123-bbd289cfd7abfd93e9b67eef@orel>
+ <Z6tmrX8/+wzeFL1P@arm.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <Z6yk48JpsYKHwFye@arm.com>
+In-Reply-To: <Z6tmrX8/+wzeFL1P@arm.com>
 X-Migadu-Flow: FLOW_OUT
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250212_074900_634075_3F313ED8 
-X-CRM114-Status: GOOD (  17.63  )
+X-CRM114-CacheID: sfid-20250212_075649_339968_A4200925 
+X-CRM114-Status: GOOD (  30.12  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -77,52 +77,64 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Wed, Feb 12, 2025 at 01:40:51PM +0000, Alexandru Elisei wrote:
-...
-> > > @@ -80,7 +80,7 @@ function run()
-> > >      local groups="$2"
-> > >      local smp="$3"
-> > >      local kernel="$4"
-> > > -    local opts="$5"
-> > > +    local qemu_opts="$5"
-> > >      local arch="$6"
-> > >      local machine="$7"
-> > >      local check="${CHECK:-$8}"
-> > > @@ -179,9 +179,9 @@ function run()
-> > >          echo $cmdline
-> > >      fi
-> > >  
-> > > -    # extra_params in the config file may contain backticks that need to be
-> > > -    # expanded, so use eval to start qemu.  Use "> >(foo)" instead of a pipe to
-> > > -    # preserve the exit status.
-> > > +    # qemu_params/extra_params in the config file may contain backticks that
-> > > +    # need to be expanded, so use eval to start qemu.  Use "> >(foo)" instead of
-> > > +    # a pipe to preserve the exit status.
-> > >      summary=$(eval "$cmdline" 2> >(RUNTIME_log_stderr $testname) \
-> > >                               > >(tee >(RUNTIME_log_stdout $testname $kernel) | extract_summary))
-> > >      ret=$?
-> > > -- 
-> > > 2.47.1
-> > >
-> > 
-> > Hmm, I'll keep reading the series, but it seems like we should be choosing
-> > generic names like 'extra_params' and 'opts' that we plan to use for both
-> > QEMU and kvmtool since they both have the concepts of "options" and "extra
-> > params".
+On Tue, Feb 11, 2025 at 03:03:09PM +0000, Alexandru Elisei wrote:
+> Hi Drew,
 > 
-> I'm afraid I don't follow you. 'qemu_params' was chosen because it uses
-> qemu-specific syntax. Same for 'kvmtool_params', introduced later in the
-> series. Are you referring to unittests.cfg or to something else?
->
+> On Thu, Jan 23, 2025 at 04:53:29PM +0100, Andrew Jones wrote:
+> > On Mon, Jan 20, 2025 at 04:43:13PM +0000, Alexandru Elisei wrote:
+> > > arm/arm64 supports running tests under kvmtool, but kvmtool's syntax for
+> > > running a virtual machine is different than qemu's. To run tests using the
+> > > automated test infrastructure, add a new test parameter, kvmtool_params.
+> > > The parameter serves the exact purpose as qemu_params/extra_params, but using
+> > > kvmtool's syntax.
+> > 
+> > The need for qemu_params and kvmtool_params makes more sense to me now
+> > that I see the use in unittests.cfg (I wonder if we can't rearrange this
+> > series to help understand these things up front?). There's a lot of
+> 
+> Certainly, I'll move it closer to the beginning of the series.
+> 
+> > duplication, though, with having two sets of params since the test-
+> > specific inputs always have to be duplicated. To avoid the duplication
+> > I think we can use extra_params for '-append' and '--params' by
+> > parametrizing the option name for "params" (-append / --params) and then
+> > create qemu_opts and kvmtool_opts for extra options like --pmu, --mem,
+> > and irqchip.
+> 
+> How about something like this (I am using selftest-setup as an example, all the
+> other test definitions would be similarly modified):
+> 
+> diff --git a/arm/unittests.cfg b/arm/unittests.cfg
+> index 2bdad67d5693..3009305ba2d3 100644
+> --- a/arm/unittests.cfg
+> +++ b/arm/unittests.cfg
+> @@ -15,7 +15,9 @@
+>  [selftest-setup]
+>  file = selftest.flat
+>  smp = 2
+> -extra_params = -m 256 -append 'setup smp=2 mem=256'
+> +test_args = setup smp=2 mem=256
+> +qemu_params = -m 256
+> +kvmtool_params = --mem 256
+>  groups = selftest
+> 
+> I was thinking about using 'test_args' instead of 'extra_params' to avoid any
+> confusion between the two, and to match how they are passed to a test
+> - they are in the argv main's argument.
 
-I didn't like the renaming of opts to qemu_opts since both kvmtool and
-qemu have "options", so it seems like we should be generalizing variable
-names rather than making them more specific. I see later how there may
-be a need for qemu_options, kvmtool_options, and unit test
-cmdline_options in the unittests.cfg, though. However, here, it seems
-like we could still use 'opts' for the variable and just use another
-variable to determine if we parse qemu_options or kvmtool_options, since
-there shouldn't be a need to parse both.
+Yes, this looks good and test_args is better than my suggestion in the
+other mail of 'cmdline_options' since "cmdline" would be ambiguous with
+the test's cmdline and the vmm's cmdline.
+
+> 
+> Also, should I change the test definitions for all the other architectures?
+> It's not going to be possible for me to test all the changes.
+
+We should be safe with an s/extra_params/qemu_params/ change for all
+architectures and CI is pretty good, so we'd have good confidence
+if it passes, but, I think we should keep extra_params as a qemu_params
+alias anyway since it's possible that people have wrapped kvm-unit-tests
+in test harnesses which generate unittests.cfg files.
 
 Thanks,
 drew
