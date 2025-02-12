@@ -4,94 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86E29C021A1
-	for <kvm-riscv@archiver.kernel.org>; Tue, 11 Feb 2025 16:24:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8FB64C021A4
+	for <kvm-riscv@archiver.kernel.org>; Wed, 12 Feb 2025 13:41:07 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
-	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
-	List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:Message-ID:
-	Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:Resent-Date:
-	Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Owner;
-	bh=oNZIyip8WxAQx1oj7nhenjzcQpF+8Qu6Eve4AqsPjfc=; b=f6CcELCcrLYqHakylUFZfAZA1v
-	UXP7XC90drtWlN07pE10OpWx8DwVtt8wifutT7Ad4ovGXWjM5Gsz+gr4e8AvUGnPirLy71+3KEjMK
-	OxbwPgS0Cmn+5p4XUTVBv2sBNHkspjf+ISZZN29LMcrmSxC/E2k3hOJpW+rsXKF24c/3dkfbn4P+s
-	b1QhHEbbLq0qDSJdvATo/mbBW6IGExen3ikCojz40cSB0SDTjqewzACgfKfc0FjCZ0u5gDD53K3l5
-	tP/ahlG/HNvS3VyO1bVHBHS7ftZLeN8f8sDuaCeJJ+f5Tj2pXyHbe0QyTVH76G2XM08uH3hjZ4KaB
-	zFKx7kgg==;
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
+	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=Ojh62Le7+jxpd/2t7zRVyqM+lXIHUBIHdQ6Xztg7+3E=; b=NjQnTk1tQDpjqq
+	vGqpj1340aYGqSYsT/rdfv6FZcL+tz4eYCcyFMdygT7JHLhuC3dkCBo+hwNge827J70be/r7clABf
+	s3lqDhMG/FVysWw3c9Ywolz0/2Sp7CaSej/pSPbq13SwD3f27FJ1mW0Q/8tbyn5EeOQnATYkHBik0
+	Sik+IaUeb7JzF8HrvP4TWiBf4P0wwgiMwyCjwYLx65bsu/KZK8W/8Rusj/MBhI50Wu4sGMIdaKw7u
+	2ejTrQZ6XGVSTyuUuHNOTQk/x6pA9KsKr5apaakFTNjigQurnTz1Og/Uv5AEOZ2deH6+DPhODmgN0
+	PPI/k8kZa1m+A9Tlkaiw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tht4D-00000004UaE-0Zgk;
-	Tue, 11 Feb 2025 16:24:57 +0000
-Received: from mail-pl1-x62d.google.com ([2607:f8b0:4864:20::62d])
-	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1thsok-00000004Qb6-1Epc
+	id 1tiCzC-00000007WAT-29dS;
+	Wed, 12 Feb 2025 13:41:06 +0000
+Received: from foss.arm.com ([217.140.110.172])
+	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
+	id 1tiCz9-00000007W9F-178o
 	for kvm-riscv@lists.infradead.org;
-	Tue, 11 Feb 2025 16:09:00 +0000
-Received: by mail-pl1-x62d.google.com with SMTP id d9443c01a7336-219f8263ae0so103143355ad.0
-        for <kvm-riscv@lists.infradead.org>; Tue, 11 Feb 2025 08:08:57 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=rivosinc-com.20230601.gappssmtp.com; s=20230601; t=1739290137; x=1739894937; darn=lists.infradead.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=fM6tMWdfzkcGZeMu8sbljrtpDaDJ3qlk57x3dLx9yP0=;
-        b=qFObyTMrjb5UH893h+bE7YUQMt5eE7ynv6iwQiXJaWGzKBVfg1H/epXaQzZw/rKrmW
-         nFcLXHWjbo82UPnwxK2shMwJUInAL9aWs/EHUMa1k8xuBu+/H52jU6FuOppv9dr71yQh
-         UNwKS1NUQD0yP2F4rC82EjXwj0Q5WH3S+xCYoW5lZVDhrnBhuL+YkR/QM5gV4PGTtNHB
-         AYAkdlhlhkORJ3Mpcd4gXJnZGpoqWhelLFJjnQoSy5NoOO61QeVRSFcOysD/m66RkXUS
-         p04inYlW91ey/JC82pKNC5jyl1+KJZjr+/nEz554UMHP515Eueu3J/n9j31WXErMB3nO
-         Wl0A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1739290137; x=1739894937;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=fM6tMWdfzkcGZeMu8sbljrtpDaDJ3qlk57x3dLx9yP0=;
-        b=h23WQB7bP92aw3J335Ggp78yym1IUi8OclMk/Xmhb9gl3hosjkhnT88yUf9X8uY1mS
-         dNFwe4LhzRZcQUhmyX29Rg2NEx83KhaVm+esq/LJtQoWJn7nfmGBhOb4l+2XSdmHEdcG
-         5gcZWCgpR7LjZD62FGGZey/0oJw49RW19ohqEhBmaDRLrMJ8fsyA8s5/9XUbV8zFKHc8
-         gA3aQXgDDDwX8Z9iJwQCPBilzNTK8qB6cNQAqCcWkZVm73RItQhZU6qrv/sCc95lPk3J
-         JoYUmVUqGd/mx9SzOfw2WCJTtJOw7RpIy7jKEejtVbYVsKyD0W4SPsThep/FnX8r+B2A
-         iyVg==
-X-Forwarded-Encrypted: i=1; AJvYcCVuLHSkUSGW69aFDkf01Idc7KAbYJ2v8Zdbazl6qB0Fs0GYKi+GbNzUhLmOwskueMJsckcPTz4cfLY=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yy+GaQp1pb2b8r7xxZ+5FE6upOBOU9QdFzzZnBB0cWWMmM+3SCC
-	VLUh/VYismtLslSE2u4w4uMA7+N/v3bVJEE98a0uJfp0VAX6XaNSxhSVzTX37pM=
-X-Gm-Gg: ASbGnctFnsq/H2k3+imXqYP/yGN0UoVD4R844C90j8aGWtEZP8rJfOMB++tNyYUmKss
-	tz2EG7CIHkO8kfElX68nfOmBDi9AwEfeS2G8KFkFgn1C/3wL5v3Yr/FRppcZM6mRln4PODkmdd3
-	FF2fmb3Pt8z8UxOX0Yxvx6cbbh9M5vXvqjPKO7NajFRKZOhiIXWBhSvRjjabCqJdSHg0unZU+Ae
-	ECqTnjukNivA+D0XDzpP+ZpayqE9G5rsASYwHgqRtRbcr4AxzDI+RBDdWiupu77NrJoyzXkr/S5
-	sBJXXXIQajtGjnYMKs69Cdd8AQ==
-X-Google-Smtp-Source: AGHT+IFZ7zG8kNq32XbGzHizA+/obYPBTcZQNtVCcsm+yZBTBiOP0hgDR8QeXXdRboljfbChEW5/qA==
-X-Received: by 2002:a05:6a20:6f9c:b0:1e1:c054:4c58 with SMTP id adf61e73a8af0-1ee03a22be8mr33720540637.2.1739290137163;
-        Tue, 11 Feb 2025 08:08:57 -0800 (PST)
-Received: from debug.ba.rivosinc.com ([64.71.180.162])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-730887b0fa8sm4433085b3a.8.2025.02.11.08.08.56
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 11 Feb 2025 08:08:56 -0800 (PST)
-Date: Tue, 11 Feb 2025 08:08:54 -0800
-From: Deepak Gupta <debug@rivosinc.com>
-To: =?iso-8859-1?Q?Cl=E9ment_L=E9ger?= <cleger@rivosinc.com>
-Cc: Paul Walmsley <paul.walmsley@sifive.com>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Anup Patel <anup@brainfault.org>,
-	Atish Patra <atishp@atishpatra.org>, Shuah Khan <shuah@kernel.org>,
-	Jonathan Corbet <corbet@lwn.net>, linux-riscv@lists.infradead.org,
-	linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
-	kvm@vger.kernel.org, kvm-riscv@lists.infradead.org,
-	linux-kselftest@vger.kernel.org,
-	Samuel Holland <samuel.holland@sifive.com>
-Subject: Re: [PATCH v2 14/15] RISC-V: KVM: add support for FWFT SBI extension
-Message-ID: <Z6t2FsP91rUNv64D@debug.ba.rivosinc.com>
-References: <20250210213549.1867704-1-cleger@rivosinc.com>
- <20250210213549.1867704-15-cleger@rivosinc.com>
- <Z6rjkk5JlMlqbl2j@debug.ba.rivosinc.com>
- <a8af5d3a-e739-4f65-9e2d-d92978be9a3d@rivosinc.com>
+	Wed, 12 Feb 2025 13:41:05 +0000
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 8F53A12FC;
+	Wed, 12 Feb 2025 05:41:20 -0800 (PST)
+Received: from arm.com (e134078.arm.com [10.1.26.19])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 47B593F58B;
+	Wed, 12 Feb 2025 05:40:55 -0800 (PST)
+Date: Wed, 12 Feb 2025 13:40:51 +0000
+From: Alexandru Elisei <alexandru.elisei@arm.com>
+To: Andrew Jones <andrew.jones@linux.dev>
+Cc: eric.auger@redhat.com, lvivier@redhat.com, thuth@redhat.com,
+	frankja@linux.ibm.com, imbrenda@linux.ibm.com, nrb@linux.ibm.com,
+	david@redhat.com, pbonzini@redhat.com, kvm@vger.kernel.org,
+	kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+	kvm-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+	will@kernel.org, julien.thierry.kdev@gmail.com, maz@kernel.org,
+	oliver.upton@linux.dev, suzuki.poulose@arm.com,
+	yuzenghui@huawei.com, joey.gouly@arm.com, andre.przywara@arm.com
+Subject: Re: [kvm-unit-tests PATCH v2 04/18] run_tests: Introduce unittest
+ parameter 'qemu_params'
+Message-ID: <Z6yk48JpsYKHwFye@arm.com>
+References: <20250120164316.31473-1-alexandru.elisei@arm.com>
+ <20250120164316.31473-5-alexandru.elisei@arm.com>
+ <20250121-82874afe4e52c828d21e7da2@orel>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <a8af5d3a-e739-4f65-9e2d-d92978be9a3d@rivosinc.com>
+In-Reply-To: <20250121-82874afe4e52c828d21e7da2@orel>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250211_080858_592161_96DBE06A 
-X-CRM114-Status: GOOD (  17.40  )
+X-CRM114-CacheID: sfid-20250212_054103_396103_55524DF8 
+X-CRM114-Status: GOOD (  36.97  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -103,108 +67,224 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"; Format="flowed"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Tue, Feb 11, 2025 at 11:31:28AM +0100, Cl=E9ment L=E9ger wrote:
->
->
->On 11/02/2025 06:43, Deepak Gupta wrote:
->>> +static int kvm_sbi_fwft_get(struct kvm_vcpu *vcpu, unsigned long
->>> feature,
->>> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 unsigned long *value)
->>> +{
->>> +=A0=A0=A0 int ret;
->>> +=A0=A0=A0 struct kvm_sbi_fwft_config *conf;
->>> +
->>> +=A0=A0=A0 ret =3D kvm_fwft_get_feature(vcpu, feature, &conf);
->>> +=A0=A0=A0 if (ret)
->>> +=A0=A0=A0=A0=A0=A0=A0 return ret;
->>> +
->>> +=A0=A0=A0 return conf->feature->get(vcpu, conf, value);
->>> +}
->>> +
->>> +static int kvm_sbi_ext_fwft_handler(struct kvm_vcpu *vcpu, struct
->>> kvm_run *run,
->>> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 struct kvm_v=
-cpu_sbi_return *retdata)
->>> +{
->>> +=A0=A0=A0 int ret =3D 0;
->>> +=A0=A0=A0 struct kvm_cpu_context *cp =3D &vcpu->arch.guest_context;
->>> +=A0=A0=A0 unsigned long funcid =3D cp->a6;
->>> +
->>> +=A0=A0=A0 switch (funcid) {
->>> +=A0=A0=A0 case SBI_EXT_FWFT_SET:
->>> +=A0=A0=A0=A0=A0=A0=A0 ret =3D kvm_sbi_fwft_set(vcpu, cp->a0, cp->a1, c=
-p->a2);
->>> +=A0=A0=A0=A0=A0=A0=A0 break;
->>> +=A0=A0=A0 case SBI_EXT_FWFT_GET:
->>> +=A0=A0=A0=A0=A0=A0=A0 ret =3D kvm_sbi_fwft_get(vcpu, cp->a0, &retdata-=
->out_val);
->>> +=A0=A0=A0=A0=A0=A0=A0 break;
->>> +=A0=A0=A0 default:
->>> +=A0=A0=A0=A0=A0=A0=A0 ret =3D SBI_ERR_NOT_SUPPORTED;
->>> +=A0=A0=A0=A0=A0=A0=A0 break;
->>> +=A0=A0=A0 }
->>> +
->>> +=A0=A0=A0 retdata->err_val =3D ret;
->>> +
->>> +=A0=A0=A0 return 0;
->>> +}
->>> +
->>> +static int kvm_sbi_ext_fwft_init(struct kvm_vcpu *vcpu)
->>> +{
->>> +=A0=A0=A0 struct kvm_sbi_fwft *fwft =3D vcpu_to_fwft(vcpu);
->>> +=A0=A0=A0 const struct kvm_sbi_fwft_feature *feature;
->>> +=A0=A0=A0 struct kvm_sbi_fwft_config *conf;
->>> +=A0=A0=A0 int i;
->>> +
->>> +=A0=A0=A0 fwft->configs =3D kcalloc(ARRAY_SIZE(features), sizeof(struct
->>> kvm_sbi_fwft_config),
->>> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 GFP_KERNEL);
->> nit:
->>
->> I understand that in next patch you grow the static array`features`. But
->> in this patch
->> `ARRAY_SIZE(features)` evaluates to 0, thus kcalloc will be returning a
->> pointer
->> to some slab block (IIRC, kcalloc will not return NULL if size
->> eventually evals to 0)
->>
->> This probably won't result in some bad stuff. But still there is a
->> pointer in
->> fwft->configs which is pointing to some random stuff if `features` turns
->> out to be
->> empty.
->>
->> Let me know if I got that right or missing something.
->
->So I actually searched into the kmalloc code to see what hapopens with a
->zero size allocation and it actually return ZERO_SIZE_PTR:
->
->/*
-> * ZERO_SIZE_PTR will be returned for zero sized kmalloc requests.
-> *
-> * Dereferencing ZERO_SIZE_PTR will lead to a distinct access fault.
-> *
-> * ZERO_SIZE_PTR can be passed to kfree though in the same way that NULL
->can.
-> * Both make kfree a no-op.
-> */
->
->Which seems like it's not really random and will fault if accessed. I
->think that's enough for that commit (which will be bisectable if needed
->then).
->
+Hi Drew,
 
-Awesome. Thanks for looking into it.
+On Tue, Jan 21, 2025 at 04:46:24PM +0100, Andrew Jones wrote:
+> On Mon, Jan 20, 2025 at 04:43:02PM +0000, Alexandru Elisei wrote:
+> > Tests for the arm and arm64 architectures can also be run with kvmtool, and
+> > work is under way to have it supported by the run_tests.sh test runner. Not
+> > suprisingly, kvmtool has a different syntax than qemu when configuring and
+> > running a virtual machine.
+> > 
+> > Add a new unittest parameter, 'qemu_params', with the goal to add a similar
+> > parameter for each virtual machine manager that run_tests.sh supports.
+> > 
+> > 'qemu_params' and 'extra_params' are interchangeable, but it is expected
+> > that going forward new tests will use 'qemu_params'. A test should have
+> > only one of the two parameters.
+> > 
+> > While we're at it, rename the variable opts to qemu_opts to match the new
+> > unit configuration name, and to make it easier to distinguish from the
+> > kvmtool parameters when they'll be added.
+> > 
+> > Signed-off-by: Alexandru Elisei <alexandru.elisei@arm.com>
+> > ---
+> >  docs/unittests.txt   | 17 +++++++++-----
+> >  scripts/common.bash  | 53 ++++++++++++++++++++++++++------------------
+> >  scripts/runtime.bash | 10 ++++-----
+> >  3 files changed, 47 insertions(+), 33 deletions(-)
+> > 
+> > diff --git a/docs/unittests.txt b/docs/unittests.txt
+> > index dbc2c11e3b59..3e1a9e563016 100644
+> > --- a/docs/unittests.txt
+> > +++ b/docs/unittests.txt
+> > @@ -24,9 +24,9 @@ param = value format.
+> >  
+> >  Available parameters
+> >  ====================
+> > -Note! Some parameters like smp and extra_params modify how a test is run,
+> > -while others like arch and accel restrict the configurations in which the
+> > -test is run.
+> > +Note! Some parameters like smp and qemu_params/extra_params modify how a
+> > +test is run, while others like arch and accel restrict the configurations
+> > +in which the test is run.
+> >  
+> >  file
+> >  ----
+> > @@ -56,13 +56,18 @@ smp = <number>
+> >  Optional, the number of processors created in the machine to run the test.
+> >  Defaults to 1. $MAX_SMP can be used to specify the maximum supported.
+> >  
+> > -extra_params
+> > -------------
+> > +qemu_params
+> > +-----------
+> >  These are extra parameters supplied to the QEMU process. -append '...' can
+> >  be used to pass arguments into the test case argv. Multiple parameters can
+> >  be added, for example:
+> >  
+> > -extra_params = -m 256 -append 'smp=2'
+> > +qemu_params = -m 256 -append 'smp=2'
+> > +
+> > +extra_params
+> > +------------
+> > +Alias for 'qemu_params', supported for compatibility purposes. Use
+> > +'qemu_params' for new tests.
+> >  
+> >  groups
+> >  ------
+> > diff --git a/scripts/common.bash b/scripts/common.bash
+> > index 3aa557c8c03d..a40c28121b6a 100644
+> > --- a/scripts/common.bash
+> > +++ b/scripts/common.bash
+> > @@ -1,5 +1,28 @@
+> >  source config.mak
+> >  
+> > +function parse_opts()
+> > +{
+> > +	local opts="$1"
+> > +	local fd="$2"
+> > +
+> > +	while read -r -u $fd; do
+> > +		#escape backslash newline, but not double backslash
+> > +		if [[ $opts =~ [^\\]*(\\*)$'\n'$ ]]; then
+> > +			if (( ${#BASH_REMATCH[1]} % 2 == 1 )); then
+> > +				opts=${opts%\\$'\n'}
+> > +			fi
+> > +		fi
+> > +		if [[ "$REPLY" =~ ^(.*)'"""'[:blank:]*$ ]]; then
+> > +			opts+=${BASH_REMATCH[1]}
+> > +			break
+> > +		else
+> > +			opts+=$REPLY$'\n'
+> > +		fi
+> > +	done
+> > +
+> > +	echo "$opts"
+> > +}
+> > +
+> >  function for_each_unittest()
+> >  {
+> >  	local unittests="$1"
+> > @@ -7,7 +30,7 @@ function for_each_unittest()
+> >  	local testname
+> >  	local smp
+> >  	local kernel
+> > -	local opts
+> > +	local qemu_opts
+> >  	local groups
+> >  	local arch
+> >  	local machine
+> > @@ -22,12 +45,12 @@ function for_each_unittest()
+> >  		if [[ "$line" =~ ^\[(.*)\]$ ]]; then
+> >  			rematch=${BASH_REMATCH[1]}
+> >  			if [ -n "${testname}" ]; then
+> > -				$(arch_cmd) "$cmd" "$testname" "$groups" "$smp" "$kernel" "$opts" "$arch" "$machine" "$check" "$accel" "$timeout"
+> > +				$(arch_cmd) "$cmd" "$testname" "$groups" "$smp" "$kernel" "$qemu_opts" "$arch" "$machine" "$check" "$accel" "$timeout"
+> >  			fi
+> >  			testname=$rematch
+> >  			smp=1
+> >  			kernel=""
+> > -			opts=""
+> > +			qemu_opts=""
+> >  			groups=""
+> >  			arch=""
+> >  			machine=""
+> > @@ -38,24 +61,10 @@ function for_each_unittest()
+> >  			kernel=$TEST_DIR/${BASH_REMATCH[1]}
+> >  		elif [[ $line =~ ^smp\ *=\ *(.*)$ ]]; then
+> >  			smp=${BASH_REMATCH[1]}
+> > -		elif [[ $line =~ ^extra_params\ *=\ *'"""'(.*)$ ]]; then
+> > -			opts=${BASH_REMATCH[1]}$'\n'
+> > -			while read -r -u $fd; do
+> > -				#escape backslash newline, but not double backslash
+> > -				if [[ $opts =~ [^\\]*(\\*)$'\n'$ ]]; then
+> > -					if (( ${#BASH_REMATCH[1]} % 2 == 1 )); then
+> > -						opts=${opts%\\$'\n'}
+> > -					fi
+> > -				fi
+> > -				if [[ "$REPLY" =~ ^(.*)'"""'[:blank:]*$ ]]; then
+> > -					opts+=${BASH_REMATCH[1]}
+> > -					break
+> > -				else
+> > -					opts+=$REPLY$'\n'
+> > -				fi
+> > -			done
+> > -		elif [[ $line =~ ^extra_params\ *=\ *(.*)$ ]]; then
+> > -			opts=${BASH_REMATCH[1]}
+> > +		elif [[ $line =~ ^(extra_params|qemu_params)\ *=\ *'"""'(.*)$ ]]; then
+> > +			qemu_opts=$(parse_opts ${BASH_REMATCH[2]}$'\n' $fd)
+> > +		elif [[ $line =~ ^(extra_params|qemu_params)\ *=\ *(.*)$ ]]; then
+> > +			qemu_opts=${BASH_REMATCH[2]}
+> >  		elif [[ $line =~ ^groups\ *=\ *(.*)$ ]]; then
+> >  			groups=${BASH_REMATCH[1]}
+> >  		elif [[ $line =~ ^arch\ *=\ *(.*)$ ]]; then
+> > @@ -71,7 +80,7 @@ function for_each_unittest()
+> >  		fi
+> >  	done
+> >  	if [ -n "${testname}" ]; then
+> > -		$(arch_cmd) "$cmd" "$testname" "$groups" "$smp" "$kernel" "$opts" "$arch" "$machine" "$check" "$accel" "$timeout"
+> > +		$(arch_cmd) "$cmd" "$testname" "$groups" "$smp" "$kernel" "$qemu_opts" "$arch" "$machine" "$check" "$accel" "$timeout"
+> >  	fi
+> >  	exec {fd}<&-
+> >  }
+> > diff --git a/scripts/runtime.bash b/scripts/runtime.bash
+> > index 4b9c7d6b7c39..e5d661684ceb 100644
+> > --- a/scripts/runtime.bash
+> > +++ b/scripts/runtime.bash
+> > @@ -34,7 +34,7 @@ premature_failure()
+> >  get_cmdline()
+> >  {
+> >      local kernel=$1
+> > -    echo "TESTNAME=$testname TIMEOUT=$timeout MACHINE=$machine ACCEL=$accel $RUNTIME_arch_run $kernel -smp $smp $opts"
+> > +    echo "TESTNAME=$testname TIMEOUT=$timeout MACHINE=$machine ACCEL=$accel $RUNTIME_arch_run $kernel -smp $smp $qemu_opts"
+> >  }
+> >  
+> >  skip_nodefault()
+> > @@ -80,7 +80,7 @@ function run()
+> >      local groups="$2"
+> >      local smp="$3"
+> >      local kernel="$4"
+> > -    local opts="$5"
+> > +    local qemu_opts="$5"
+> >      local arch="$6"
+> >      local machine="$7"
+> >      local check="${CHECK:-$8}"
+> > @@ -179,9 +179,9 @@ function run()
+> >          echo $cmdline
+> >      fi
+> >  
+> > -    # extra_params in the config file may contain backticks that need to be
+> > -    # expanded, so use eval to start qemu.  Use "> >(foo)" instead of a pipe to
+> > -    # preserve the exit status.
+> > +    # qemu_params/extra_params in the config file may contain backticks that
+> > +    # need to be expanded, so use eval to start qemu.  Use "> >(foo)" instead of
+> > +    # a pipe to preserve the exit status.
+> >      summary=$(eval "$cmdline" 2> >(RUNTIME_log_stderr $testname) \
+> >                               > >(tee >(RUNTIME_log_stdout $testname $kernel) | extract_summary))
+> >      ret=$?
+> > -- 
+> > 2.47.1
+> >
+> 
+> Hmm, I'll keep reading the series, but it seems like we should be choosing
+> generic names like 'extra_params' and 'opts' that we plan to use for both
+> QEMU and kvmtool since they both have the concepts of "options" and "extra
+> params".
 
->Cl=E9ment
+I'm afraid I don't follow you. 'qemu_params' was chosen because it uses
+qemu-specific syntax. Same for 'kvmtool_params', introduced later in the
+series. Are you referring to unittests.cfg or to something else?
 
--- =
+Thanks,
+Alex
 
+-- 
 kvm-riscv mailing list
 kvm-riscv@lists.infradead.org
 http://lists.infradead.org/mailman/listinfo/kvm-riscv
