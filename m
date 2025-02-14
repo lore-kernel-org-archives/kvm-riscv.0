@@ -4,80 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2532FC0219D
-	for <kvm-riscv@archiver.kernel.org>; Thu, 13 Feb 2025 14:05:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8AE0FC02198
+	for <kvm-riscv@archiver.kernel.org>; Fri, 14 Feb 2025 11:51:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=EDryHCrlbzmUnn0Ykujf1nhRabC8HADjOpZKh6HnN+E=; b=VGvNcMEy+1VUaX
-	l9KbpDQ4jROeDNHhbXbCcU1ABNZ99FQVCwJr2jHPNtjcoj82ljA3pOE3NauNbuTNWeW6ADs4FlDqp
-	gRbxanpe6LAxpoNh81l2bpLdHfsvOyWMePvfo+t2z75mAo2g+8qtfRTjwFe+Vo6EhCLudxM8dQKO+
-	FD7baabp8HkRpM3K1KjPYLg9dz7oQJC2xS0Ajyirc9Ie0LICauOttQWeaGoLOCAi5zZJrtGX0ZX5t
-	dcpH7WAZfy5XXQxGgUNjyduwxPs33rt08x3ZjHteVjlSEABSbe/+ijraLxN3ftmciDqu/UWb9qDB3
-	6r5v7cBtBvvs3UxsGnFg==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=XZKZPWl/cqA36bPxxT5GTqIk6RC680LaR9KOqIMhiyo=; b=FcVDjIwB+j7iFN
+	cAZso8pK3dmrpnUZPzwLzvVzGKsXEKbkK/PJbL37gvqIfUR/ZxdD03cvjgrahAcd0vkB0b9E5euxW
+	wNzYQq52FB28isNH68abOB762O4oNDkXYsqEIWrjb7ug7LSgk7PdLKOK0yUwa/JVHrS4F2//q+Gs5
+	cf0XSjkbSAtYiKdgOQxt7Z7ZXqNU3MI3z7VQWMdL0ED2G8MrpDgNw+NoC2BBMyp8oBG9VdPFuyRsx
+	61WsCeWF2bGjEAYLrM8Xzvp1RKAVuqJY7ucoX3eSbb3ocDARzy8Oa07gyfv9DGcXkKojCGivFsjDu
+	TuCGxFBqNy4pC4luYaXw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tiZq9-0000000BFmA-3DiS;
-	Thu, 13 Feb 2025 14:05:17 +0000
-Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+	id 1tiuEg-0000000EkZp-1Gqs;
+	Fri, 14 Feb 2025 11:51:58 +0000
+Received: from mail-pj1-x1030.google.com ([2607:f8b0:4864:20::1030])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1tiZkj-0000000BEYf-0wcz
-	for kvm-riscv@bombadil.infradead.org;
-	Thu, 13 Feb 2025 13:59:41 +0000
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=quCNt3rENXxq12lVNZV7KFjjQFYvI9uo2HoGXNuB/os=; b=mD135jRsjTFvv653qegBsFbUUJ
-	lb4IRAam8oacJgLPw3Bt6cbhq3iuC9JCg5O8fAf5b/rF+J1DPWyx1dY5N4FJJLq0pjWvtfGSq2zZP
-	YiL/qLTUDutp7wyj11Sb0m3is3/oAV7KmsGfuDemwfnhQgWGR3/iLyBQesPR51TrwZGn+cj/OTzEh
-	Dsh5pUlWk55wP3TyuVZzDbAx0er8IsQVcZ18pfv9ZNdjBvzyQiLRLEY4eDht1RhXXMV/N+tElLMqQ
-	iG7FIrjJ6SCx1pm4hgNUYYWQ+Fu8SyEKb0Ua8GSHTGxFW96MWGn5iIYgha6UhbJOpfcUMHuIhpQaO
-	wSfnfNaw==;
-Received: from out-187.mta0.migadu.com ([91.218.175.187])
-	by desiato.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1tiZkg-000000010nb-1Cci
+	id 1tiu7k-0000000EivO-12mR
 	for kvm-riscv@lists.infradead.org;
-	Thu, 13 Feb 2025 13:59:40 +0000
-Date: Thu, 13 Feb 2025 14:59:19 +0100
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1739455163;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=quCNt3rENXxq12lVNZV7KFjjQFYvI9uo2HoGXNuB/os=;
-	b=oxL4AOv2PByqQJRmy2LV/aaLcm7zlaNJBU3a6mZ4KiT1XwSVG9tf4Z3GzbapebfxcHiqJx
-	A7DPMUZTuDaWda9Ms+5FMzarxZGNtmgIgBHFlsikf73RqRVlrke009F2yKj0xwukbdTbKX
-	kTUfgGhAYWnCki1zK3SlWOvzxZvLrdU=
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Andrew Jones <andrew.jones@linux.dev>
-To: Alexandru Elisei <alexandru.elisei@arm.com>
-Cc: eric.auger@redhat.com, lvivier@redhat.com, thuth@redhat.com, 
-	frankja@linux.ibm.com, imbrenda@linux.ibm.com, nrb@linux.ibm.com, david@redhat.com, 
-	pbonzini@redhat.com, kvm@vger.kernel.org, kvmarm@lists.linux.dev, 
-	linuxppc-dev@lists.ozlabs.org, kvm-riscv@lists.infradead.org, linux-s390@vger.kernel.org, 
-	will@kernel.org, julien.thierry.kdev@gmail.com, maz@kernel.org, 
-	oliver.upton@linux.dev, suzuki.poulose@arm.com, yuzenghui@huawei.com, joey.gouly@arm.com, 
-	andre.przywara@arm.com
-Subject: Re: [kvm-unit-tests PATCH v2 15/18] Add kvmtool_params to test
- specification
-Message-ID: <20250213-a6741ec8fd32c34500327176@orel>
-References: <20250120164316.31473-1-alexandru.elisei@arm.com>
- <20250120164316.31473-16-alexandru.elisei@arm.com>
- <20250123-bbd289cfd7abfd93e9b67eef@orel>
- <Z6tmrX8/+wzeFL1P@arm.com>
- <20250212-77a312138f8b5931553ece38@orel>
- <Z6zNpF6mi5GgeDFE@arm.com>
+	Fri, 14 Feb 2025 11:44:49 +0000
+Received: by mail-pj1-x1030.google.com with SMTP id 98e67ed59e1d1-2f441791e40so2834066a91.3
+        for <kvm-riscv@lists.infradead.org>; Fri, 14 Feb 2025 03:44:47 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=rivosinc-com.20230601.gappssmtp.com; s=20230601; t=1739533487; x=1740138287; darn=lists.infradead.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=kTZ1eswZXwVwVz8vwigYFoyZQAJNHhwum6Jps7FH7Ec=;
+        b=CHkRycAtgni4r/FW6aBxsuLDLUeJfdnEg9oJwEAakjTp25MgBij3VZpNtvCIi7iu/z
+         ws2fVpVE3DX1ezLDxGHmAXD/qmth+NR0SuLYkj79AR55kH3bX/0YC91S2IfxxlWevEp3
+         Px4vlkw661NEqOWZN4pqxpkZ1Uf4bsBcVAjx73bLXIjjwxatCrQlS2zwjiCUd+qGWEmY
+         Rd1cAH8Zsj8j00aV7XnwJtFsXc0KHSqUneIJDvM3eJwzUsggxCWx0SJC31FT6skrGhRW
+         +Xe/s+aMtUfbdnOyc17SRwE7dpP5kxHEltLw8dylRo8R2F+fspmeCKdjuI5zLMpCOeHh
+         5fFg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1739533487; x=1740138287;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=kTZ1eswZXwVwVz8vwigYFoyZQAJNHhwum6Jps7FH7Ec=;
+        b=BxN4J8yx4S5oDGXd3jOM9CLnuKw8tGKQByYp1rb9eLSvC3Wn+Dd1tN2WmukGTTqta7
+         XjxOAgpYCG+Cqd6soK9XMjlwSv/AJYuyQQucJyAmXgmAKFc/Ual+z2YMZd/OtMS+gP2q
+         w+WOK5d6JU1UsARnHRzGIdCH/PLAEICpHD+ZC6c7e2R82Bo1fjFwwqcxgAMIXOh1/vDP
+         Bgi+NSeltT28ZOmb4GvPnSgmvtHB8uM+5qMiF6oANrAyaDhENiYbFjyffBpZmFmTRr57
+         xo9D7DlF7xfFBZfASKPxWq0eUkWfnqWDLZGOWHDFfxL6o/CirtIe1a01toUMjM3n2TXi
+         5q6A==
+X-Forwarded-Encrypted: i=1; AJvYcCUYxg3fqR9FxwpFMXjGbuRhoh+QA9aH5+pfzRAOVE1ddr3UgU3TKJODq9KztX+i10ZvTrwiLxqpsXo=@lists.infradead.org
+X-Gm-Message-State: AOJu0YxcZa5epHzWT7P36wHPtGQC6C+R0c1tjamPjrJhUYIxQmbYyaA3
+	Pk0T0wCXG6jiLttaoOeQaIYSp8fTwcxz/Y2jef1h3bVMcR6NKp4vebCVMM2LEeg=
+X-Gm-Gg: ASbGncvRIg6BzDhdPXgh3wkLrwvFxYR+Au/ReWoX9cTZXaP+VCUPhUzp1wbBrCT69mL
+	VzBCIcb9OyzF8NIsADblJZpJ/Cz5eA3B0QKqpaWFxv2kYute6T1hSKK+vRe85DNq7+YPqeMfFF8
+	TIPGbhTCEejC3zKfHiwXc3SdvfmrOzKJjxEhYddSIsTaP8+vFT/wL5uAsImJPhGuio0dRH6Hlgb
+	A7/O2JXtFZMdNgHaHMH1l2CVTx6DBc05OagqXTjXqDoapil+vQwdWk/89MG9miZtbGHlXPnAsZl
+	25HrhCqbo6Yuf7IE
+X-Google-Smtp-Source: AGHT+IHMJlRt+CJQtQ5FBvjSw8s0xL5dZPLJ6OoNwbaMnPzogi0MHb8vLEtn3RtAM95ptkeGqjkq0g==
+X-Received: by 2002:a17:90b:2d46:b0:2ee:c6c8:d89f with SMTP id 98e67ed59e1d1-2fbf5c009e7mr19113938a91.14.1739533487435;
+        Fri, 14 Feb 2025 03:44:47 -0800 (PST)
+Received: from carbon-x1.. ([2a01:e0a:e17:9700:16d2:7456:6634:9626])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-2fbf98f6965sm4948862a91.29.2025.02.14.03.44.42
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 14 Feb 2025 03:44:46 -0800 (PST)
+From: =?UTF-8?q?Cl=C3=A9ment=20L=C3=A9ger?= <cleger@rivosinc.com>
+To: kvm@vger.kernel.org,
+	kvm-riscv@lists.infradead.org
+Cc: =?UTF-8?q?Cl=C3=A9ment=20L=C3=A9ger?= <cleger@rivosinc.com>,
+	Andrew Jones <ajones@ventanamicro.com>,
+	Anup Patel <apatel@ventanamicro.com>,
+	Atish Patra <atishp@rivosinc.com>
+Subject: [kvm-unit-tests PATCH v7 0/6] riscv: add SBI SSE extension tests
+Date: Fri, 14 Feb 2025 12:44:13 +0100
+Message-ID: <20250214114423.1071621-1-cleger@rivosinc.com>
+X-Mailer: git-send-email 2.47.2
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <Z6zNpF6mi5GgeDFE@arm.com>
-X-Migadu-Flow: FLOW_OUT
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250213_135938_535599_A00D9CCD 
-X-CRM114-Status: GOOD (  37.70  )
+X-CRM114-CacheID: sfid-20250214_034448_475078_50325454 
+X-CRM114-Status: GOOD (  13.86  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -89,87 +93,63 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Wed, Feb 12, 2025 at 04:34:44PM +0000, Alexandru Elisei wrote:
-> Hi Drew,
-> 
-> On Wed, Feb 12, 2025 at 04:56:42PM +0100, Andrew Jones wrote:
-> > On Tue, Feb 11, 2025 at 03:03:09PM +0000, Alexandru Elisei wrote:
-> > > Hi Drew,
-> > > 
-> > > On Thu, Jan 23, 2025 at 04:53:29PM +0100, Andrew Jones wrote:
-> > > > On Mon, Jan 20, 2025 at 04:43:13PM +0000, Alexandru Elisei wrote:
-> > > > > arm/arm64 supports running tests under kvmtool, but kvmtool's syntax for
-> > > > > running a virtual machine is different than qemu's. To run tests using the
-> > > > > automated test infrastructure, add a new test parameter, kvmtool_params.
-> > > > > The parameter serves the exact purpose as qemu_params/extra_params, but using
-> > > > > kvmtool's syntax.
-> > > > 
-> > > > The need for qemu_params and kvmtool_params makes more sense to me now
-> > > > that I see the use in unittests.cfg (I wonder if we can't rearrange this
-> > > > series to help understand these things up front?). There's a lot of
-> > > 
-> > > Certainly, I'll move it closer to the beginning of the series.
-> > > 
-> > > > duplication, though, with having two sets of params since the test-
-> > > > specific inputs always have to be duplicated. To avoid the duplication
-> > > > I think we can use extra_params for '-append' and '--params' by
-> > > > parametrizing the option name for "params" (-append / --params) and then
-> > > > create qemu_opts and kvmtool_opts for extra options like --pmu, --mem,
-> > > > and irqchip.
-> > > 
-> > > How about something like this (I am using selftest-setup as an example, all the
-> > > other test definitions would be similarly modified):
-> > > 
-> > > diff --git a/arm/unittests.cfg b/arm/unittests.cfg
-> > > index 2bdad67d5693..3009305ba2d3 100644
-> > > --- a/arm/unittests.cfg
-> > > +++ b/arm/unittests.cfg
-> > > @@ -15,7 +15,9 @@
-> > >  [selftest-setup]
-> > >  file = selftest.flat
-> > >  smp = 2
-> > > -extra_params = -m 256 -append 'setup smp=2 mem=256'
-> > > +test_args = setup smp=2 mem=256
-> > > +qemu_params = -m 256
-> > > +kvmtool_params = --mem 256
-> > >  groups = selftest
-> > > 
-> > > I was thinking about using 'test_args' instead of 'extra_params' to avoid any
-> > > confusion between the two, and to match how they are passed to a test
-> > > - they are in the argv main's argument.
-> > 
-> > Yes, this looks good and test_args is better than my suggestion in the
-> > other mail of 'cmdline_options' since "cmdline" would be ambiguous with
-> > the test's cmdline and the vmm's cmdline.
-> > 
-> > > 
-> > > Also, should I change the test definitions for all the other architectures?
-> > > It's not going to be possible for me to test all the changes.
-> > 
-> > We should be safe with an s/extra_params/qemu_params/ change for all
-> > architectures and CI is pretty good, so we'd have good confidence
-> > if it passes, but, I think we should keep extra_params as a qemu_params
-> > alias anyway since it's possible that people have wrapped kvm-unit-tests
-> > in test harnesses which generate unittests.cfg files.
-> 
-> Sounds good, split extra_params into test_args and qemu_params in all
-> unittests.cfg files, and keep extra_params as an alias for qemu_params.
-> 
-> I was thinking that maybe I should send that as a separate patch, to make
-> sure it gets the visibility it deserves from the other maintainers, instead
-> of it being buried in a 18 patch series. What do you think?
-
-Sounds good.
-
-Thanks,
-drew
-
--- 
-kvm-riscv mailing list
-kvm-riscv@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/kvm-riscv
+VGhpcyBzZXJpZXMgYWRkcyBhbiBpbmRpdmlkdWFsIHRlc3QgZm9yIFNCSSBTU0UgZXh0ZW5zaW9u
+IGFzIHdlbGwgYXMKbmVlZGVkIGluZnJhc3RydWN0dXJlIGZvciBTU0Ugc3VwcG9ydC4gSXQgYWxz
+byBhZGRzIHRlc3Qgc3BlY2lmaWMKYXNtLW9mZnNldHMgZ2VuZXJhdGlvbiB0byB1c2UgY3VzdG9t
+IE9GRlNFVCBhbmQgREVGSU5FIGZyb20gdGhlIHRlc3QKZGlyZWN0b3J5LgoKLS0tCgpWNzoKIC0g
+VGVzdCBpZHMvYXR0cmlidXRlcy9hdHRyaWJ1dGVzIGNvdW50ID4gMzIgYml0cwogLSBSZW5hbWUg
+YWxsIFNTRSBmdW5jdGlvbiB0byBzYmlfc3NlXyoKIC0gVXNlIGV2ZW50X2lkIGluc3RlYWQgb2Yg
+ZXZlbnQvZXZ0CiAtIEZhY3Rvcml6ZSByZWFkL3dyaXRlIHRlc3QKIC0gVXNlIHZpcnRfdG9fcGh5
+cygpIGZvciBhdHRyaWJ1dGVzIHJlYWQvd3JpdGUuCiAtIEV4dGVuc2l2ZWx5IHVzZSBzYmlyZXRf
+cmVwb3J0X2Vycm9yKCkKIC0gQ2hhbmdlIGNoZWNrIGZ1bmN0aW9uIHJldHVybiB2YWx1ZXMgdG8g
+Ym9vbC4KIC0gQWRkZWQgYXNzZXJ0IGZvciBzdGFjayBzaXplIHRvIGJlIGJlbG93IG9yIGVxdWFs
+IHRvIFBBR0VfU0laRQogLSBVc2UgZW4gZW52IHZhcmlhYmxlIGZvciB0aGUgbWF4aW11bSBoYXJ0
+IElECiAtIENoZWNrIHRoYXQgaW5kaXZpZHVhbCByZWFkIGZyb20gYXR0cmlidXRlcyBtYXRjaGVz
+IHRoZSBtdWx0aXBsZQogICBhdHRyaWJ1dGVzIHJlYWQuCiAtIEFkZGVkIG11bHRpcGxlIGF0dHJp
+YnV0ZXMgd3JpdGUgYXQgb25jZQogLSBVc2VkIFJFQURfT05DRS9XUklURV9PTkNFCiAtIEluamVj
+dCBhbGwgbG9jYWwgZXZlbnQgYXQgb25jZSByYXRoZXIgdGhhbiBsb29waW5nIGZvcHIgZWFjaCBj
+b3JlLgogLSBTcGxpdCB0ZXN0X2FyZyBmb3IgbG9jYWxfZGlzcGF0Y2ggdGVzdCBzbyB0aGF0IGFs
+bCBDUFVzIGNhbiBydW4gYXQKICAgb25jZS4KIC0gTW92ZSBTU0UgZW50cnkgYW5kIGdlbmVyaWMg
+Y29kZSB0byBsaWIvcmlzY3YgZm9yIG90aGVyIHRlc3RzCiAtIEZpeCB1bm1hc2svbWFzayBzdGF0
+ZSBjaGVja2luZwoKVjY6CiAtIEFkZCBtaXNzaW5nICQoZ2VuZXJhdGVkLWZpbGUpIGRlcGVuZGVu
+Y2llcyBmb3IgIi1kZXBzIiBvYmplY3RzCiAtIFNwbGl0IFNTRSBlbnRyeSBmcm9tIHNiaS1hc20u
+UyB0byBzc2UtYXNtLlMgYW5kIGFsbCBTU0UgY29yZSBmdW5jdGlvbnMKICAgc2luY2UgaXQgd2ls
+bCBiZSB1c2VmdWwgZm9yIG90aGVyIHRlc3RzIGFzIHdlbGwgKGRibHRycCkuCgpWNToKIC0gVXBk
+YXRlIGV2ZW50IHJhbmdlcyBiYXNlZCBvbiBsYXRlc3Qgc3BlYwogLSBSZW5hbWUgYXNtLW9mZnNl
+dC10ZXN0LmMgdG8gc2JpLWFzbS1vZmZzZXQuYwoKVjQ6CiAtIEZpeCB0eXBvIHNiaV9leHRfc3Nf
+ZmlkIC0+IHNiaV9leHRfc3NlX2ZpZAogLSBBZGQgcHJvcGVyIGFzbS1vZmZzZXQgZ2VuZXJhdGlv
+biBmb3IgdGVzdHMKIC0gTW92ZSBTU0Ugc3BlY2lmaWMgZmlsZSBmcm9tIGxpYi9yaXNjdiB0byBy
+aXNjdi8KClYzOgogLSBBZGQgLWRlcHMgdmFyaWFibGUgZm9yIHRlc3Qgc3BlY2lmaWMgZGVwZW5k
+ZW5jaWVzCiAtIEZpeCBmb3JtYXR0aW5nIGVycm9ycy90eXBvIGluIHNiaS5oCiAtIEFkZCBtaXNz
+aW5nIGRvdWJsZSB0cmFwIGV2ZW50CiAtIEFscGhhYmV0aXplIHNiaS1zc2UuYyBpbmNsdWRlcwog
+LSBGaXggYTYgY29udGVudCBhZnRlciB1bm1hc2tpbmcgZXZlbnQKIC0gQWRkIFNTRSBIQVJUX01B
+U0svVU5NQVNLIHRlc3QKIC0gVXNlIG12IGluc3RlYWQgb2YgbW92ZQogLSBtb3ZlIHNiaV9jaGVj
+a19zc2UoKSBkZWZpbml0aW9uIGluIHNiaS5jCiAtIFJlbW92ZSBzYmlfc3NlIHRlc3QgZnJvbSB1
+bml0ZXN0cy5jZmcKClYyOgogLSBSZWJhc2VkIG9uIG9yaWdpbi9tYXN0ZXIgYW5kIGludGVncmF0
+ZSBpdCBpbnRvIHNiaS5jIHRlc3RzCgpDbMOpbWVudCBMw6lnZXIgKDYpOgogIGtidWlsZDogQWxs
+b3cgbXVsdGlwbGUgYXNtLW9mZnNldHMgZmlsZSB0byBiZSBnZW5lcmF0ZWQKICByaXNjdjogU2V0
+IC5hdXgubyBmaWxlcyBhcyAuUFJFQ0lPVVMKICByaXNjdjogVXNlIGFzbS1vZmZzZXRzIHRvIGdl
+bmVyYXRlIFNCSV9FWFRfSFNNIHZhbHVlcwogIHJpc2N2OiBsaWI6IEFkZCBTQkkgU1NFIGV4dGVu
+c2lvbiBkZWZpbml0aW9ucwogIGxpYjogcmlzY3Y6IEFkZCBTQkkgU1NFIHN1cHBvcnQKICByaXNj
+djogc2JpOiBBZGQgU1NFIGV4dGVuc2lvbiB0ZXN0cwoKIHNjcmlwdHMvYXNtLW9mZnNldHMubWFr
+IHwgICAyMiArLQogcmlzY3YvTWFrZWZpbGUgICAgICAgICAgfCAgICA2ICstCiBsaWIvcmlzY3Yv
+YXNtL2Nzci5oICAgICB8ICAgIDEgKwogbGliL3Jpc2N2L2FzbS9zYmktc3NlLmggfCAgIDQ4ICsr
+CiBsaWIvcmlzY3YvYXNtL3NiaS5oICAgICB8ICAxMDYgKysrLQogbGliL3Jpc2N2L3NiaS1zc2Ut
+YXNtLlMgfCAgMTAzICsrKysKIGxpYi9yaXNjdi9hc20tb2Zmc2V0cy5jIHwgICAgOSArCiBsaWIv
+cmlzY3Yvc2JpLXNzZS5jICAgICB8ICAgODQgKysrKwogcmlzY3Yvc2JpLWFzbS5TICAgICAgICAg
+fCAgICA2ICstCiByaXNjdi9zYmktYXNtLW9mZnNldHMuYyB8ICAgMTEgKwogcmlzY3Yvc2JpLXNz
+ZS5jICAgICAgICAgfCAxMDU0ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
+KwogcmlzY3Yvc2JpLmMgICAgICAgICAgICAgfCAgICAyICsKIHJpc2N2Ly5naXRpZ25vcmUgICAg
+ICAgIHwgICAgMSArCiAxMyBmaWxlcyBjaGFuZ2VkLCAxNDQyIGluc2VydGlvbnMoKyksIDExIGRl
+bGV0aW9ucygtKQogY3JlYXRlIG1vZGUgMTAwNjQ0IGxpYi9yaXNjdi9hc20vc2JpLXNzZS5oCiBj
+cmVhdGUgbW9kZSAxMDA2NDQgbGliL3Jpc2N2L3NiaS1zc2UtYXNtLlMKIGNyZWF0ZSBtb2RlIDEw
+MDY0NCBsaWIvcmlzY3Yvc2JpLXNzZS5jCiBjcmVhdGUgbW9kZSAxMDA2NDQgcmlzY3Yvc2JpLWFz
+bS1vZmZzZXRzLmMKIGNyZWF0ZSBtb2RlIDEwMDY0NCByaXNjdi9zYmktc3NlLmMKIGNyZWF0ZSBt
+b2RlIDEwMDY0NCByaXNjdi8uZ2l0aWdub3JlCgotLSAKMi40Ny4yCgoKLS0gCmt2bS1yaXNjdiBt
+YWlsaW5nIGxpc3QKa3ZtLXJpc2N2QGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmlu
+ZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9rdm0tcmlzY3YK
