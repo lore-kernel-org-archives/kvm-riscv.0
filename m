@@ -4,83 +4,89 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1EF9EC021A6
-	for <kvm-riscv@archiver.kernel.org>; Sat, 15 Feb 2025 01:04:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 30F55C021A4
+	for <kvm-riscv@archiver.kernel.org>; Mon, 17 Feb 2025 08:45:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID:
-	References:Mime-Version:In-Reply-To:Date:Reply-To:Content-ID:
-	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
-	:Resent-Message-ID:List-Owner;
-	bh=sVWIQm1PC/B7BvOaAr6U1D9lD5mVpfmQI0DI5cRLtko=; b=cEi01ovZEQeNqC8tibrDJ2+OUK
-	Y+Q8dKu5TaJEHSE9e4Nj0dTdfl9P2kUcA/fXiW+sTcbU6XMUscMbsqopS5WSkBmrmbcuPn5SgFrZ4
-	t8Ay8/0dLWd6/0dXAarrYsCPMawrw7zkqQdE81pMWQPAaUb74do8JoZ4blDYpcXuovzZTzRQJlJLu
-	NQzKxCRujNsyyHBkgNK8JvId8wlFl++VHJCgbL7h7JPhIm6hvgs+IKjk1cRz0jfP7s6RQ16yPLVpP
-	nvB75f1Y1vatowK8MX5na9b0DuyeAKROLNKpixyWZKfA4yVusyWIMPj5x8K+95EfVIkCyUy6Xc/gG
-	PRH6qTjA==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=4BJ2I4FBUFLLov3aFzCQa+b9RpgeYyc+lmqRVV3lwhw=; b=xkneT78Nlagjzo
+	IAKk8f0U4kGBvVQVQlQOFvXvkjurNQ02Gg5BMyNpgok4MiNNiOG5iA2hFEV/VlGgoRlDDt+sf8GSS
+	kVHtJiylX9tm/lkA6UezgeTbSh1cc66HcvcmSBUT8fSnFswx/cFG46brX3NmFY8v/ea1Es3tehrOW
+	vABYoqewht80uLL0SmRnEfXJ0O6nr1XatkCpE7Q9iEEA+svZ3sgEJTalSLYw9BIhNvQOluS3jXqjH
+	bb2bSGTm8LZftN6VMnQxIfzg9gQZ82SLaVAEQwtnVHBkPFe7MbaUJqnUyOpyNb/xpbifriS6v8qzV
+	2BvBNklTawDctie08MiQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tj6bx-0000000GhQH-1m4J;
-	Sat, 15 Feb 2025 01:04:49 +0000
-Received: from mail-pj1-x104a.google.com ([2607:f8b0:4864:20::104a])
+	id 1tjwkb-00000003nOE-3k6R;
+	Mon, 17 Feb 2025 08:45:13 +0000
+Received: from mail-wm1-x32c.google.com ([2a00:1450:4864:20::32c])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1tj6U4-0000000GfGm-0QFf
+	id 1tjwkY-00000003nL8-0tUY
 	for kvm-riscv@lists.infradead.org;
-	Sat, 15 Feb 2025 00:56:42 +0000
-Received: by mail-pj1-x104a.google.com with SMTP id 98e67ed59e1d1-2fa166cf656so5186468a91.2
-        for <kvm-riscv@lists.infradead.org>; Fri, 14 Feb 2025 16:56:39 -0800 (PST)
+	Mon, 17 Feb 2025 08:45:12 +0000
+Received: by mail-wm1-x32c.google.com with SMTP id 5b1f17b1804b1-43948f77f1aso25856355e9.0
+        for <kvm-riscv@lists.infradead.org>; Mon, 17 Feb 2025 00:45:09 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1739580999; x=1740185799; darn=lists.infradead.org;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=clvSOaTIwEa9bgc9cdZpN3zTDEuSaQ80Bs4rjxPQt4M=;
-        b=AFJxDJ6Khwmy7wDj9+R2Rg1oi84W4mZl/pnzBt48uX6MRRO5LkfmnObRsxNBB4l0ad
-         ZDo0Pj2yO37adfyWnakp3wSHh3UV75dsTW1Y/SwHlT/TrgIWR7qxV5oWTPojJAqmQjup
-         2mLZ/c7CPlqahC+B/VmbBWIGNGeEi3Gep1Nt1cKIWyORUBaBCqISHGsyqbY/MZmVkHr6
-         j91i5FXWVBB/NK0LMuWQvefJUvFL592xaOo58eFpYe3LR9V0+9Gs8TlSbveVWmO5qgcY
-         pC7/+w/LwoSYeDou6qrV1kKyCIWm7OxV9poX+t4R+b357o1YSLVp0oBQt95tVbeHvHHv
-         +qOw==
+        d=ventanamicro.com; s=google; t=1739781908; x=1740386708; darn=lists.infradead.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=+GPsKALm7Yq13goem1fMBJYo69c+TVWg7YcZfawoJnY=;
+        b=VxNRQfshyvf2wXPRJRxcQpHAObAci1U9WiG/Pfx6DvkgSjbl6qPAeBQyOrvka0O7vz
+         C/d8slZ6i2BsVVkUqjDgczQ40Dp//kuBc+bx7XxLSrXwJzlUEzHv57yGQrJlo0LLwgEV
+         pQWX8GmavRCvT5O7M4lnVGWDgWFIU3TXbRj/K2tuvkQZZZ4X0zdt/24T0gW4fy7/Tyuc
+         QH6U45CoEkCRt182k2LZ/42nhf31nTPi0tSyi8p5rQHp3UjwVi9/BzULB4+H9j8cxpof
+         0mJXBn1CgDloIFCUDj9VEwTPQ4U+yO7Ec9vedpWotI32q2C6cYd2WTO0G9tJVq89zlbi
+         b5YQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1739580999; x=1740185799;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=clvSOaTIwEa9bgc9cdZpN3zTDEuSaQ80Bs4rjxPQt4M=;
-        b=oIJB7pSjKrD5TKVul6gTAaZ547irK6s1uB9gx5U8LANrf6C7ao1ur3iaYrJsFjBQnX
-         wKuSNFW9HuNKOHpuQmVBSI1r2BsxOjmbv9d+31LAa2UEX3Rsh+c9RmiEk0N3omak61LZ
-         WLilcS+VMn53cBsiLIM3LBBvM5LxNPYwzN/5U91XnqPVl8jZdqwY2dQPqNNLYieHgP3k
-         +u5bulNZb9Y/beigK//kxSwz3yqHOFm+FMINH8JaRlmnlmhrrzpXjpS2YM8dDtc+zkgm
-         PCF+0UjPLhQO9Hwz6aUpB96oYvGLsDfBMYOBxpuDqOoTOJWVrC+E688pnAFTLcOqdN4g
-         m8HQ==
-X-Forwarded-Encrypted: i=1; AJvYcCXDxcYRzvKKnc606VhWXaK+gkwQ6o84FrxG0/hfAwGnTYYpvp4p+YeatYJIgUQwXCMbZL/DRuqq//4=@lists.infradead.org
-X-Gm-Message-State: AOJu0YwjpnSSNDYAdEn4cpcD5Ofi5jRcmlsWCNHdExNvMLIqjlT5l6l9
-	VegkJ4FkOKK6cUtdoTtwVCKr9sS4vbf6rV7M8NslWTbiYYaaBoBWa69ErLS8ecLQ3dHbBjaTOjs
-	pJg==
-X-Google-Smtp-Source: AGHT+IEDBkpXU3G4/lKZrs/PoISbfgAX1w1fyvpk5cFq3/CN1zXVNsLI9tdZL04a2XEND4anIVs8+UjqyEg=
-X-Received: from pjbsp4.prod.google.com ([2002:a17:90b:52c4:b0:2ef:8055:93d9])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:4a49:b0:2ea:aa56:499
- with SMTP id 98e67ed59e1d1-2fc40d13e61mr1911642a91.1.1739580998875; Fri, 14
- Feb 2025 16:56:38 -0800 (PST)
-Date: Fri, 14 Feb 2025 16:50:35 -0800
-In-Reply-To: <20250111005049.1247555-1-seanjc@google.com>
-Mime-Version: 1.0
-References: <20250111005049.1247555-1-seanjc@google.com>
-X-Mailer: git-send-email 2.48.1.601.g30ceb7b040-goog
-Message-ID: <173958028389.1189761.4728178272323667525.b4-ty@google.com>
-Subject: Re: [PATCH v2 0/9] KVM: selftests: Binary stats fixes and infra updates
-From: Sean Christopherson <seanjc@google.com>
-To: Sean Christopherson <seanjc@google.com>, Marc Zyngier <maz@kernel.org>, 
-	Oliver Upton <oliver.upton@linux.dev>, Anup Patel <anup@brainfault.org>, 
-	Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt <palmer@dabbelt.com>, 
-	Albert Ou <aou@eecs.berkeley.edu>, Christian Borntraeger <borntraeger@linux.ibm.com>, 
-	Janosch Frank <frankja@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, 
-	Paolo Bonzini <pbonzini@redhat.com>
-Cc: linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, 
-	kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
-	linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org
+        d=1e100.net; s=20230601; t=1739781908; x=1740386708;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=+GPsKALm7Yq13goem1fMBJYo69c+TVWg7YcZfawoJnY=;
+        b=J73lxk7tkQzdt9ixkmMUm5h/+LIeUwZsGdszPFck7/r+sQT6d2pt/OYsHnSIw7IZEE
+         Bhci8xSJSz1MFsIYR3l1gsWn4qPJKV2yYmXsvHQLKDkRJAP1soa1lkE1HUkc4PX+zMdy
+         MMQYXqu/Yq8wHtmSdIN6SgrKIJRzKDywFrwNPJgaMjMNygIU+dSoxdtqMVttNWi8b0D/
+         iOnzVKRjwzlpLw6z6/z2Fnz8x6kW1ebg0NBoTZJoMOE8LiSM9fNPct0tcY+24nuV3iSw
+         e8y36pfxeZGGC0tVo6njL/SYXI6+bBO9AFBEJaxeC7tBGwFL5znt8eQkKijheeYmEN5M
+         kYlQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUWOWp3qzOBsxsy4iIckpqICB4ScHTKk5xb+7WIGOHKWMPUJgViQQz1hqLlYz40d8hzIS/GUz+ZGsM=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yy7OeYa8xPngLUy3IHbjZf43pie20Z/OMANC3m+8hJzn1Awee56
+	cg1i5o3zt7DqDpf4VIZhBVEHqiVeecZBSR/I16lgWWvzmWPvrwv/1dfa0RYZYQM=
+X-Gm-Gg: ASbGnctCDSrSz52uFlH9B/gVM8jdH4F6FiBrd8OUF3UwQb2vu3wc5WMuQrP86W6fCG1
+	qE04PfIt5cr1Vpqb29I1tSPuNR1NAVMowmrMHP3HJpY9NtxGP3BpAGk9tSdupfPJbeyVjsGMYvn
+	2nFLpdxz5lE3u3OVhkmo9thciZjYNOeG6fVPN7suOCoQVZWGiMScmtvOixwCb7Nv1tS2XiRdE7h
+	9fIHHBW18GhPGb697ExXnccjMiqJxtGWIFsf3t2tEY3wb9N41uVikPJ7C4GVj6HBFNjMU+lAq1K
+	gbs=
+X-Google-Smtp-Source: AGHT+IHp9BY0m/Q6kFaedN0UGWMC/ZwJ9KU/eUOLSaZCeTXH+n6PgSUFQ/UOHrMVcwrNPsAg/8wITQ==
+X-Received: by 2002:a5d:47cf:0:b0:38f:38eb:fcff with SMTP id ffacd0b85a97d-38f38ebfe58mr5923816f8f.29.1739781908113;
+        Mon, 17 Feb 2025 00:45:08 -0800 (PST)
+Received: from localhost ([2a02:8308:a00c:e200::766e])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-38f259f771dsm11482660f8f.81.2025.02.17.00.45.07
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 17 Feb 2025 00:45:07 -0800 (PST)
+From: Andrew Jones <ajones@ventanamicro.com>
+To: kvm@vger.kernel.org,
+	kvm-riscv@lists.infradead.org,
+	linux-riscv@lists.infradead.org,
+	linux-kernel@vger.kernel.org
+Cc: anup@brainfault.org,
+	atishp@atishpatra.org,
+	paul.walmsley@sifive.com,
+	palmer@dabbelt.com,
+	aou@eecs.berkeley.edu,
+	cleger@rivosinc.com
+Subject: [PATCH 0/5] riscv: KVM: Fix a few SBI issues
+Date: Mon, 17 Feb 2025 09:45:07 +0100
+Message-ID: <20250217084506.18763-7-ajones@ventanamicro.com>
+X-Mailer: git-send-email 2.48.1
+MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250214_165640_137974_E64053AA 
-X-CRM114-Status: GOOD (  10.23  )
+X-CRM114-CacheID: sfid-20250217_004510_239881_D82C4164 
+X-CRM114-Status: UNSURE (   5.50  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -97,43 +103,26 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Fri, 10 Jan 2025 16:50:40 -0800, Sean Christopherson wrote:
-> Fix a handful of bugs in the binary stats infrastructure, expand support
-> to vCPU-scoped stats, enumerate all KVM stats in selftests, and use the
-> enumerated stats to assert at compile-time that {vm,vcpu}_get_stat() is
-> getting a stat that actually exists.
-> 
-> Most of the bugs are benign, and AFAICT, none actually cause problems in
-> the current code base.  The worst of the bugs is lack of validation that
-> the requested stat actually exists, which is quite annoying if someone
-> fat fingers a stat name, tries to get a vCPU stat on a VM FD, etc.
-> 
-> [...]
+Fix issues found with kvm-unit-tests[1], which is currently focused
+on SBI.
 
-Applied to kvm-x86 selftests (attempt #2).  Like the previous attempt, I skipped
-the compile-time assertions.
+[1] https://gitlab.com/jones-drew/kvm-unit-tests/-/commits/riscv/sbi
 
-[1/9] KVM: selftests: Fix mostly theoretical leak of VM's binary stats FD
-      https://github.com/kvm-x86/linux/commit/fd546aba1967
-[2/9] KVM: selftests: Close VM's binary stats FD when releasing VM
-      https://github.com/kvm-x86/linux/commit/f7f232a01f3d
-[3/9] KVM: selftests: Assert that __vm_get_stat() actually finds a stat
-      https://github.com/kvm-x86/linux/commit/eead13d493af
-[4/9] KVM: selftests: Macrofy vm_get_stat() to auto-generate stat name string
-      https://github.com/kvm-x86/linux/commit/b0c3f5df9291
-[5/9] KVM: selftests: Add struct and helpers to wrap binary stats cache
-      https://github.com/kvm-x86/linux/commit/e65faf71bd54
-[6/9] KVM: selftests: Get VM's binary stats FD when opening VM
-      https://github.com/kvm-x86/linux/commit/ea7179f99514
-[7/9] KVM: selftests: Adjust number of files rlimit for all "standard" VMs
-      https://github.com/kvm-x86/linux/commit/9b56532b8a59
-[8/9] KVM: selftests: Add infrastructure for getting vCPU binary stats
-      https://github.com/kvm-x86/linux/commit/16fc7cb406a5
-[9/9] KVM: selftests: Add compile-time assertions to guard against stats typos
-      (no commit info)
+Andrew Jones (5):
+  riscv: KVM: Fix hart suspend status check
+  riscv: KVM: Fix hart suspend_type use
+  riscv: KVM: Fix SBI IPI error generation
+  riscv: KVM: Fix SBI TIME error generation
+  riscv: KVM: Fix SBI sleep_type use
 
---
-https://github.com/kvm-x86/linux/tree/next
+ arch/riscv/kvm/vcpu_sbi_hsm.c     | 11 ++++++-----
+ arch/riscv/kvm/vcpu_sbi_replace.c | 15 ++++++++++++---
+ arch/riscv/kvm/vcpu_sbi_system.c  |  3 ++-
+ 3 files changed, 20 insertions(+), 9 deletions(-)
+
+-- 
+2.48.1
+
 
 -- 
 kvm-riscv mailing list
