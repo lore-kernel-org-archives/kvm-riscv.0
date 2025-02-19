@@ -4,85 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4B1ACC021AA
-	for <kvm-riscv@archiver.kernel.org>; Wed, 19 Feb 2025 08:52:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ED373C021AA
+	for <kvm-riscv@archiver.kernel.org>; Wed, 19 Feb 2025 09:16:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:References:Cc:Subject:From:
+	To:Message-Id:Date:Mime-Version:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=kDFVjLD1PCqhT+s89kxVz3DFvBiBmCMrW8MsbPydAu8=; b=wwAJqfEZlKUNf9
-	xHLdctnOChfC5h0FjSwyGJhN8nIJquwxZHKOS3mryDYI1RJsdkoLaBMlBee4J4QoB7pA3qaUbp2bf
-	O7nJU819U/65rVJ/PiFJ9xlq5bh0exTymz2ZlnPamQL4Q9E1+heI/KXteY5w33RCCaLI8MK6lWFWe
-	v3zDDysBYZfhSu6fx8JnQgFauNr7O2o06K+1gwvgB3uy0qL0/PYOorz/u8mT8ZYFh9xGnrk87i5TR
-	DXSEtIqJb4yMo+Ay/Wj2W7U2Ce+MbT3zieCRDm697HV6EHoij03Mz0b6BpfMwidaugdxqIcc/ixP6
-	Yc0pxKRnU/J/Y/KGiEIg==;
+	List-Owner; bh=SMVy/KNM1BDN+k2LlmrxBsoMmxuBytfr6Y3md1Kq7GQ=; b=x4fw83gfUixlS6
+	kKoN+PlzDFf9jE7VN6v4Ra/zoeOKsEX+Exm2ePlM26iSvnfTix750EkyIe0XLYxE8ilP/Sn/+FKdL
+	zCWfUOR0VENCzE7kldBpwxUcPofcp0iLVMOPCB21Dbrh1b+PU3w3t6IaKGRgBx39vf5aFbU/QHtj0
+	9htvVwW9gbWq71d1tFd5CvPfJlL7tpTlNn1auATJlNZWkK0ZahHHWQcsCjrlq42hfbAwLDstXb+uX
+	/eW1SsahLxKyf3fbI6AKSuAGsd0FI1Q462wHBjMo3KS5SlB9N9CsJekTHY29qLxFkdMVaaosIbLrq
+	uC7VqO6/Y+Ypkkx1OOOw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tkfoO-0000000Beiy-3nvL;
-	Wed, 19 Feb 2025 08:52:08 +0000
-Received: from mail-wr1-x429.google.com ([2a00:1450:4864:20::429])
+	id 1tkgBv-0000000BmXI-31O6;
+	Wed, 19 Feb 2025 09:16:27 +0000
+Received: from mail-wm1-x335.google.com ([2a00:1450:4864:20::335])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1tkfYv-0000000BZKX-02H3
+	id 1tkfnR-0000000BeE9-0ZMC
 	for kvm-riscv@lists.infradead.org;
-	Wed, 19 Feb 2025 08:36:10 +0000
-Received: by mail-wr1-x429.google.com with SMTP id ffacd0b85a97d-38f2b7ce2e5so2660340f8f.2
-        for <kvm-riscv@lists.infradead.org>; Wed, 19 Feb 2025 00:36:08 -0800 (PST)
+	Wed, 19 Feb 2025 08:51:10 +0000
+Received: by mail-wm1-x335.google.com with SMTP id 5b1f17b1804b1-43937d315abso8571005e9.2
+        for <kvm-riscv@lists.infradead.org>; Wed, 19 Feb 2025 00:51:08 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ventanamicro.com; s=google; t=1739954167; x=1740558967; darn=lists.infradead.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=hX5Pqy74HJXGhYd3EYVGCK1e+ORfs5MU+F8H+njiblE=;
-        b=fS3FjYJGyqCLb0dvezGwFk9jMFUMnrPk7ODT7E58EVlemFEZ1gTQmnzpkYfFu3Ja8X
-         flaISJ84q5/G07bYQ//XSWQYLbpah+ci3YsPOVP3y8iGNJISdx4SAbVofN9POyGKQNSt
-         c0poO3EMAdTnnuXDmujYjLvzCUJJX7gblPm1qJ/UnFer75hwgXLaMjviyTvLjYuaoNvR
-         zz2meWFblIST1mImdEXFfqfO+ksxwVOd9YZKZA/6bMvcfOS4SOGsZl2n4Mj4hy1T9UvF
-         QSUCQW2TQFCS9qbBFV5MvM+fqFojElHwu7bMl41OdYXUMU1hQ4jm0J5h7xB7+C0Lf3Ma
-         C1tg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1739954167; x=1740558967;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+        d=ventanamicro.com; s=google; t=1739955067; x=1740559867; darn=lists.infradead.org;
+        h=in-reply-to:references:cc:subject:from:to:message-id:date
+         :content-transfer-encoding:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=hX5Pqy74HJXGhYd3EYVGCK1e+ORfs5MU+F8H+njiblE=;
-        b=gbi2mQ0vyTCtzPsyuTOiXOkbYrW8XopH8L33NcURxsAjA1wboTqjhHdK3J/tKheU4c
-         cxR3Y/XYQpmquhsUX9HhOxFJGctKy4KSblPbMiCgE0NCAlfyYzAdzMhsB2Cw9KSsb8r0
-         tvWqddKe6Z5gJ4CpUSE0Mab4EDC72YC7oaDlXhNy0tiAm7f9ZfXrj+gcoHbJ8rdOpaWR
-         FsIfV2lcVhc5tYz6S20qdeW5qKLMFjVm/eRrMO4O8VD6V35FX2LaMzOcAg7v2K9ihOg2
-         J3NBOFQGNPOtHYNKqNUBEo8GDwLkzBtjvsbJOYqZOXm1WakbUeXw5j0Ev3Dw6S9iuPFS
-         /3/Q==
-X-Forwarded-Encrypted: i=1; AJvYcCUIPU7ChMAsdd7knNS6NNHmCNcwD2Fhi/LSqxTWuNNrt7SJ4claTf/YiIowpUnW4dzXKdyuW4wLuII=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yz0GXeExN7mIdc/TfpTqpQgN5386CLZvJ22dO9zieJS28myCi9v
-	9nqXunkOM1Bfy32hZwbSBs36LGDgs9Qc3BD8bhVDNwP4aUyl6tpGYLTHHbnZgvE=
-X-Gm-Gg: ASbGncvk7kfiBgfKGAlC72+LqkpTtSkzZpA2IdhgTBV/5bz68QkoK4ES4tTrAkqiT0j
-	Rr6PjU95sQvfGv3cIESiOoVDj4ZFszCbOJp+wsiQmUsBH96/k+mWDarg/MVV8X2BJrbAc32fli5
-	QuU4Kg+s3jvpyAYXKocRaCNSYc2Z5yTstlSZkzd6BEtpuM9P5FDzkubtq7yLFcwwIYyjzimb31L
-	dDBtN0D23kYgBSq1LqU0FcqB+18Jl1tl7hYpIIEqLdHmiPrpVjOZwWHcuA/HhsZHLsI9Q+FQexR
-	Q4o=
-X-Google-Smtp-Source: AGHT+IHs4kVPkFYUzWm7KaTrDUxtzlrgRhTgXt+SxWy9TWu9laptUSWnP8MSP8v1LxvgTwxXTCCeSQ==
-X-Received: by 2002:a5d:6484:0:b0:38f:4c30:7cdd with SMTP id ffacd0b85a97d-38f4c307ec0mr7919846f8f.37.1739954167212;
-        Wed, 19 Feb 2025 00:36:07 -0800 (PST)
-Received: from localhost ([2a02:8308:a00c:e200::766e])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-38f259d58f3sm17085819f8f.73.2025.02.19.00.36.06
+        bh=cyOr3ZD32WYQ578+kdBxZIoR9hORXh2QvsH9UB3Wz3E=;
+        b=UUl87dOwT7CPU20Kl5nZKqBoQrPnxPQfQBQcPOszUse+xrgQ+fdx6tBIOkDMjvx36l
+         OKlVVm/V4c2vkMkbsVJNFHMuQfXx1J3f+k/6VSCGcVOQE3wOpzkDkHtbduXQNybx6Kxb
+         W4wViD2NMUi6eM27GWcVBrHi9QwefY17VWdKPZ5i3ZItpJb/LWSldCWvlQ1elGG1ndm1
+         LzIvD5VfWJeefZhsfxykwBRN6jzcan2GLSP01H+IdZjyaffvcBc6RPUjfp62SsTcObNa
+         2k7IE/XSTf/6By4wR/384BVMr4SWahW+roKLIX1cPVm7Jtsz0s9W7CB2a9iq0xe/SAKc
+         dstQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1739955067; x=1740559867;
+        h=in-reply-to:references:cc:subject:from:to:message-id:date
+         :content-transfer-encoding:mime-version:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=cyOr3ZD32WYQ578+kdBxZIoR9hORXh2QvsH9UB3Wz3E=;
+        b=Owh5dndM//n+7RIE/qPkPTIGKUMuUClX1jClMs7FLUGWfIy9R/4yMMBXgcV3hJnG9h
+         g4EmBWVNJSX5zh5z8iri+3ioDhdv1iREAYzzZtXObll79fPPGPyLTyOJiLOub1l+sGkW
+         algMrfAchH3FT3afgcx+M6aZq2NN+8+ZgD0RhrB3/ULnxeJxg1sCFiTeTGkcXBdhKQWP
+         pvj4UKJcs/nAc/XpeNdlkv4FK6a1310hPnISt0M1yvyLD6JpattUZ0ZzDrSNqIQirdOt
+         fJ25pUK6vP6sD4M45NWmIUWybf+FtM3iNrXRHV8EYd98CNy2WvCgn69grtkaV6oYi4SF
+         U82w==
+X-Forwarded-Encrypted: i=1; AJvYcCUUvWMmBEKVdlvHNhMpr9RUeuG5TYMV+Ohx8VmaQEIc+P01DOtR4BRLMHOFiGfdYuldbp4DcTQ/SI0=@lists.infradead.org
+X-Gm-Message-State: AOJu0YyO0E23FKYpu5uIB5SIvTHuw1BFEv+5b78AQLI5fiW10gM5WWei
+	UH5Mmr0DsNGoM2pLQBiwr4citfyzoA1x8i7ZrDsxWNYKE+h8yscJIScwpY5AtN8=
+X-Gm-Gg: ASbGncvvqpkl7mTfKY5mJ0U/PsEErOravB23sLFwRlit4upcCFOl1bxDEwZpI86rDCj
+	YVHwnOySfl4Uo0JYmpoQkhsqn6JB5a9+qZJyOwuVWkW9nDwDhlutceFF/Jsz8MLnG6Z0XA6+C5n
+	666NpIE2BPQ5qiJmyR1ve0oD/H5xGtNNCYgr8QSvauszRjAP7R8/pq/ixtBbnIvP3M0No3EzQ30
+	iqAsb4pIWUcBFzWkDweXiBaOua1PozsId6ZEuM1WORIhZPT/B3IOkrUQaUNZOclprCr0z/PVF/q
+	n/9AABrDJeBT5vaDn81ZM/tY1W6i+cl0HtYCuJK0YHkq/xsGB2o=
+X-Google-Smtp-Source: AGHT+IH6D4plZNYfuEYjbGdATaVAlFztkIrp/rClPpYzS5dL67Gt7zhXEE8RN1q+8mV+NLcuY45v6A==
+X-Received: by 2002:a05:600c:524a:b0:439:4d1c:bf72 with SMTP id 5b1f17b1804b1-4396e77b89dmr62388815e9.6.1739955066877;
+        Wed, 19 Feb 2025 00:51:06 -0800 (PST)
+Received: from localhost (ip-89-103-73-235.bb.vodafone.cz. [89.103.73.235])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-38f259f8730sm17632219f8f.93.2025.02.19.00.51.06
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 19 Feb 2025 00:36:06 -0800 (PST)
-Date: Wed, 19 Feb 2025 09:36:05 +0100
-From: Andrew Jones <ajones@ventanamicro.com>
-To: BillXiang <xiangwencheng@lanxincomputing.com>
-Cc: anup@brainfault.org, kvm-riscv@lists.infradead.org, 
-	kvm@vger.kernel.org, linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, 
-	atishp@atishpatra.org, paul.walmsley@sifive.com, palmer@dabbelt.com, 
-	aou@eecs.berkeley.edu
+        Wed, 19 Feb 2025 00:51:06 -0800 (PST)
+Mime-Version: 1.0
+Date: Wed, 19 Feb 2025 09:51:05 +0100
+Message-Id: <D7WALEFMK28X.13HQ0UL1S3NM5@ventanamicro.com>
+To: "BillXiang" <xiangwencheng@lanxincomputing.com>, <anup@brainfault.org>
+From: =?utf-8?q?Radim_Kr=C4=8Dm=C3=A1=C5=99?= <rkrcmar@ventanamicro.com>
 Subject: Re: [PATCH] riscv: KVM: Remove unnecessary vcpu kick
-Message-ID: <20250219-badec60b9b12834cf534dcbf@orel>
+Cc: <ajones@ventanamicro.com>, <kvm-riscv@lists.infradead.org>,
+ <kvm@vger.kernel.org>, <linux-riscv@lists.infradead.org>,
+ <linux-kernel@vger.kernel.org>, <atishp@atishpatra.org>,
+ <paul.walmsley@sifive.com>, <palmer@dabbelt.com>, <aou@eecs.berkeley.edu>,
+ "linux-riscv" <linux-riscv-bounces@lists.infradead.org>
 References: <20250219015426.1939-1-xiangwencheng@lanxincomputing.com>
-MIME-Version: 1.0
-Content-Disposition: inline
 In-Reply-To: <20250219015426.1939-1-xiangwencheng@lanxincomputing.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250219_003609_055248_5DF57415 
-X-CRM114-Status: GOOD (  20.16  )
+X-CRM114-CacheID: sfid-20250219_005109_184984_D82317A6 
+X-CRM114-Status: GOOD (  19.86  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -99,42 +100,58 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Wed, Feb 19, 2025 at 09:54:26AM +0800, BillXiang wrote:
+2025-02-19T09:54:26+08:00, BillXiang <xiangwencheng@lanxincomputing.com>:
 > Thank you Andrew Jones, forgive my errors in the last email.
-
-From here down is all exactly the same as your first email, which I
-already completely replied to.
-
 > I'm wondering whether it's necessary to kick the virtual hart
 > after writing to the vsfile of IMSIC.
 > From my understanding, writing to the vsfile should directly
 > forward the interrupt as MSI to the virtual hart. This means that
 > an additional kick should not be necessary, as it would cause the
 > vCPU to exit unnecessarily and potentially degrade performance.
+
+Andrew proposed to avoid the exit overhead, but do a wakeup if the VCPU
+is "sleeping".  I talked with Andrew and thought so as well, but now I
+agree with you that we shouldn't have anything extra here.
+
+Direct MSIs from IOMMU or other harts won't perform anything afterwards,
+so what you want to do correct and KVM has to properly handle the memory
+write alone.
+
 > I've tested this behavior in QEMU, and it seems to work perfectly
 > fine without the extra kick.
+
+If the rest of KVM behaves correctly is a different question.
+A mistake might result in a very rare race condition, so it's better to
+do verification rather than generic testing.
+
+For example, is `vsfile_cpu >= 0` the right condition for using direct
+interrupts?
+
+I don't see KVM setting vsfile_cpu to -1 before descheduling after
+emulating WFI, which could cause a bug as a MSI would never cause a wake
+up.  It might still look like it works, because something else could be
+waking the VCPU up and then the VCPU would notice this MSI as well.
+
+Please note that I didn't actualy verify the KVM code, so it can be
+correct, I just used this to give you an example of what can go wrong
+without being able to see it in testing.
+
+I would like to know if KVM needs fixing before this change is accepted.
+(It could make bad things worse.)
+
 > Would appreciate any insights or confirmation on this!
-> Best regards.
-> 
-> Signed-off-by: BillXiang <xiangwencheng@lanxincomputing.com>
-> ---
->  arch/riscv/kvm/aia_imsic.c | 1 -
->  1 file changed, 1 deletion(-)
-> 
-> diff --git a/arch/riscv/kvm/aia_imsic.c b/arch/riscv/kvm/aia_imsic.c
-> index a8085cd8215e..29ef9c2133a9 100644
-> --- a/arch/riscv/kvm/aia_imsic.c
-> +++ b/arch/riscv/kvm/aia_imsic.c
-> @@ -974,7 +974,6 @@ int kvm_riscv_vcpu_aia_imsic_inject(struct kvm_vcpu *vcpu,
->  
->  	if (imsic->vsfile_cpu >= 0) {
->  		writel(iid, imsic->vsfile_va + IMSIC_MMIO_SETIPNUM_LE);
-> -		kvm_vcpu_kick(vcpu);
->  	} else {
->  		eix = &imsic->swfile->eix[iid / BITS_PER_TYPE(u64)];
->  		set_bit(iid & (BITS_PER_TYPE(u64) - 1), eix->eip);
-> -- 
-> 2.46.2
+
+Your patch is not acceptable because of its commit message, though.
+Please look again at the document that Andrew posted and always reply
+the previous thread if you do not send a new patch version.
+
+The commit message should be on point.
+Please avoid extraneous information that won't help anyone reading the
+commit.  Greeting and commentary can go below the "---" line.
+(And possibly above a "---8<---" line, although that is not official and
+ may cause issues with some maintainers.)
+
+Thanks.
 
 -- 
 kvm-riscv mailing list
