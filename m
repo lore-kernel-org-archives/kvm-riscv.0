@@ -4,55 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ED7E5C021B3
-	for <kvm-riscv@archiver.kernel.org>; Fri, 21 Feb 2025 15:56:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7FF80C021B3
+	for <kvm-riscv@archiver.kernel.org>; Fri, 21 Feb 2025 16:31:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
-	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=MGIkgsOUgeRbHtS5+c9FLaVLvhQcUmkmCIBkS9ICQY4=; b=0jpVtBGZl3l9p7
-	GxQvAu7HFOltAgVo4za8QPRlqBe+oKzh0ziY2hhoWo3KZST5yQmqGX29fFMnLJP6xWUnnQmiiHbMe
-	rnWDGeQPXJAs3N5hoXHqDMu7mJ/FyrT5EPFdRsHlKO42GlzNf4UAViW1rYXqvsInHxPNjvdxp/mzs
-	WtEHRSA/wvZCJZB5qVtw1wFmk+ZVG7KcyV2K0KyNSrX/3JFU0I8o+5fa9ESWPuWN//4AvuKOQKTz3
-	AVh2Rb6EcTDEucResBqQ4i+qzJ0+37kVcW9/sqXAtuQLo/f7Qtd1Mi/ltZ/0bze8zelv4hqoSI+Ow
-	K/XsfPLJpMzrHf5kSI/A==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=iYJvXg6787S7zBXqdUejg5JLy74O9gFvsskc7qGG75k=; b=VdGcXrPjwjbK9v
+	s2F6PN+e+FKUzRQrMb8ulE0z4+9UGnR/3qW3YhAF7fv5484o/4Izzmxc02RdqDTijoKIv0Dc6RP1l
+	F5Ww0SxCAUryJbVKtVwAKm2ycOjNDf3IM8Sc1mc5uvuf8X6rVSjs6OGdvCSKAYfEFwumtxAjaMWTY
+	q2hnoUQv/dLjzReDpk7NBTeRoULhvEhp68pYKhuZHwsLBvAOWIybJwSS1IWXo0kkj4dtSzTqbu5SV
+	RMNN+I/Mct0sHN8GPBBIP1NNVMJmzJPF4M4Gy4OXPJZceBKolYpbiNGLxYH22QB8EaAAKxhT07pW4
+	VJNjT7u2IBXVMlCvH1jw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tlVNq-000000063o7-359I;
-	Fri, 21 Feb 2025 15:56:10 +0000
-Received: from out-184.mta0.migadu.com ([91.218.175.184])
+	id 1tlVwR-00000006Bxq-0ViR;
+	Fri, 21 Feb 2025 16:31:55 +0000
+Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1tlVNo-000000063ks-0kbW
+	id 1tlVso-00000006BHl-1hFk
+	for kvm-riscv@bombadil.infradead.org;
+	Fri, 21 Feb 2025 16:28:10 +0000
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:MIME-Version
+	:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:
+	Content-Description:In-Reply-To:References;
+	bh=nvihCTLUnpjmg13KE8NiIArlIRl2NHcMe9sLvn5Y8Zc=; b=X19RPmgRuGtlpv8NeHsO2ZZW5a
+	k8uF3JNyjYsfuqxI7paC5a+OaQqFZTtyzX9q88bZMuhXFDkD3EmE5rYJUQxgAXS8O1tbjOi/lFw/A
+	ubyf5JusSdPTOvWb5gMLz/qebYNhSqmy1KlPDpzlt9dkJiCZvSH3oBgHWFSrRCdvi5V0ChTwq69nA
+	Abpt8tUqR72+6f9SmohfpvwfH+jZ1Fyzd4Vwh9ZVSW45u7DNYp+BEqHlvpAiiXcUIhYMbjkCaiVB3
+	hLFJbOcWpS1/zXWIEvM4ov8hY63wsAjtHSyjWXvYDTxgi49elhzk785tYTAVgA8/Pi9Xwr1UVUhQ5
+	bzVWpZIQ==;
+Received: from out-174.mta1.migadu.com ([2001:41d0:203:375::ae])
+	by desiato.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
+	id 1tlVsl-00000002gBU-20yF
 	for kvm-riscv@lists.infradead.org;
-	Fri, 21 Feb 2025 15:56:09 +0000
+	Fri, 21 Feb 2025 16:28:09 +0000
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1740153365;
+	t=1740155277;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Q+oaSOOI8Yd2HWIBS49b4BA+zi4xieW+ngNiIaFxp0w=;
-	b=Otq/2guYMfkv4At5zOQfEqZdAIYcnkXgXKLxwdZ3/vlKjdThaUu9kiO7zj/ZOzXQbojJj/
-	BEDIZKA9DflL+A4nrgLh+JaHe7xLVLrOI0Vqn/eUBbaXGf6eZhXJo4wbpBfaMrgK5pmOrr
-	kZFWerOodhEolEhgY3e5ZPXJwkC2/qk=
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=nvihCTLUnpjmg13KE8NiIArlIRl2NHcMe9sLvn5Y8Zc=;
+	b=D828hQ75x7LcOdaHJUuv76LZ+nhQ8J8i5aSAy56h5icG2a3z371jSsXKTo/xvKiOMfb03n
+	+n5E3c5bSCajtQAXd17J+nj4FAGLlOTFGxjBu1nKXL1xxRFVF3WoIyo/cEpDFsrYEqfKlV
+	O/MyDN77kIR7K5XqOhTjQ58Vd911NTI=
 From: Andrew Jones <andrew.jones@linux.dev>
-To: kvm-riscv@lists.infradead.org
-Cc: atishp@rivosinc.com,
+To: kvm@vger.kernel.org,
+	kvm-riscv@lists.infradead.org,
+	kvmarm@lists.linux.dev
+Cc: alexandru.elisei@arm.com,
+	eric.auger@redhat.com,
+	atishp@rivosinc.com,
 	cleger@rivosinc.com,
-	jamestiotio@gmail.com
-Subject: [kvm-unit-tests PATCH 10/10] riscv: sbi: Add bad fid tests
-Date: Fri, 21 Feb 2025 16:55:44 +0100
-Message-ID: <20250221155533.123418-22-andrew.jones@linux.dev>
-In-Reply-To: <20250221155533.123418-12-andrew.jones@linux.dev>
-References: <20250221155533.123418-12-andrew.jones@linux.dev>
+	pbonzini@redhat.com,
+	thuth@redhat.com
+Subject: [kvm-unit-tests PATCH 0/2] riscv: Run with other QEMU models
+Date: Fri, 21 Feb 2025 17:27:54 +0100
+Message-ID: <20250221162753.126290-4-andrew.jones@linux.dev>
 MIME-Version: 1.0
 X-Migadu-Flow: FLOW_OUT
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250221_075608_357172_F81F4A96 
-X-CRM114-Status: UNSURE (   9.59  )
+X-CRM114-CacheID: sfid-20250221_162807_733322_2BD2B08A 
+X-CRM114-Status: UNSURE (   4.69  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -70,112 +87,19 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Ensure we get the correct error code when attempting to use an
-invalid FID.
+Provide a couple patches allowing a QEMU machine model other than 'virt'
+to be used. We just need to be able to override 'virt' in the command
+line and it's also nice to be able to specify a different UART address
+for any early (pre DT parsing) outputs. 
 
-Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
----
- riscv/sbi-fwft.c  |  2 ++
- riscv/sbi-tests.h |  2 ++
- riscv/sbi.c       | 18 ++++++++++++++++++
- 3 files changed, 22 insertions(+)
+Andrew Jones (2):
+  configure: Allow earlycon for all architectures
+  riscv: Introduce MACHINE_OVERRIDE
 
-diff --git a/riscv/sbi-fwft.c b/riscv/sbi-fwft.c
-index 19340d6bb48c..005edec43403 100644
---- a/riscv/sbi-fwft.c
-+++ b/riscv/sbi-fwft.c
-@@ -194,6 +194,8 @@ void check_fwft(void)
- 		return;
- 	}
- 
-+	sbi_bad_fid(SBI_EXT_FWFT);
-+
- 	fwft_check_base();
- 	fwft_check_misaligned_exc_deleg();
- 
-diff --git a/riscv/sbi-tests.h b/riscv/sbi-tests.h
-index 7c7fe30541e4..f8ce3c269d48 100644
---- a/riscv/sbi-tests.h
-+++ b/riscv/sbi-tests.h
-@@ -70,5 +70,7 @@
- #define sbiret_check(ret, expected_error, expected_value) \
- 	sbiret_report(ret, expected_error, expected_value, "check sbi.error and sbi.value")
- 
-+void sbi_bad_fid(int ext);
-+
- #endif /* __ASSEMBLY__ */
- #endif /* _RISCV_SBI_TESTS_H_ */
-diff --git a/riscv/sbi.c b/riscv/sbi.c
-index 1d9d1871a28b..0404bb81317d 100644
---- a/riscv/sbi.c
-+++ b/riscv/sbi.c
-@@ -72,6 +72,12 @@ static struct sbiret sbi_system_suspend_raw(unsigned long sleep_type, unsigned l
- 	return sbi_ecall(SBI_EXT_SUSP, 0, sleep_type, resume_addr, opaque, 0, 0, 0);
- }
- 
-+void sbi_bad_fid(int ext)
-+{
-+	struct sbiret ret = sbi_ecall(ext, 0xbad, 0, 0, 0, 0, 0, 0);
-+	sbiret_report_error(&ret, SBI_ERR_NOT_SUPPORTED, "Bad FID");
-+}
-+
- static void start_cpu(void *data)
- {
- 	/* nothing to do */
-@@ -178,6 +184,8 @@ static void check_base(void)
- 
- 	report_prefix_push("base");
- 
-+	sbi_bad_fid(SBI_EXT_BASE);
-+
- 	ret = sbi_base(SBI_EXT_BASE_GET_SPEC_VERSION, 0);
- 
- 	report_prefix_push("spec_version");
-@@ -331,6 +339,8 @@ static void check_time(void)
- 		return;
- 	}
- 
-+	sbi_bad_fid(SBI_EXT_TIME);
-+
- 	report_prefix_push("set_timer");
- 
- 	install_irq_handler(IRQ_S_TIMER, timer_irq_handler);
-@@ -438,6 +448,8 @@ static void check_ipi(void)
- 		return;
- 	}
- 
-+	sbi_bad_fid(SBI_EXT_IPI);
-+
- 	if (nr_cpus_present < 2) {
- 		report_skip("At least 2 cpus required");
- 		report_prefix_pop();
-@@ -731,6 +743,8 @@ static void check_hsm(void)
- 		return;
- 	}
- 
-+	sbi_bad_fid(SBI_EXT_HSM);
-+
- 	report_prefix_push("hart_get_status");
- 
- 	hartid = current_thread_info()->hartid;
-@@ -1210,6 +1224,8 @@ static void check_dbcn(void)
- 		return;
- 	}
- 
-+	sbi_bad_fid(SBI_EXT_DBCN);
-+
- 	report_prefix_push("write");
- 
- 	dbcn_write_test(DBCN_WRITE_TEST_STRING, num_bytes, false);
-@@ -1475,6 +1491,8 @@ static void check_susp(void)
- 		return;
- 	}
- 
-+	sbi_bad_fid(SBI_EXT_SUSP);
-+
- 	timer_setup(susp_timer);
- 	local_irq_enable();
- 	timer_start(SBI_SUSP_TIMER_DURATION_US);
+ configure | 88 +++++++++++++++++++++++++++----------------------------
+ riscv/run |  6 ++--
+ 2 files changed, 47 insertions(+), 47 deletions(-)
+
 -- 
 2.48.1
 
