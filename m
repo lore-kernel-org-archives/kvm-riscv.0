@@ -4,7 +4,7 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9ED8EC021B6
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EB466C021BB
 	for <kvm-riscv@archiver.kernel.org>; Fri, 21 Feb 2025 16:31:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
@@ -12,32 +12,32 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=joScxqgBYhVS9B9YtME0qupr5au1wYD6iXPiMyX4dp8=; b=jIcrsW93B/8+5Y
-	RpFmZ8qUB4CkkiP+iVDMc8/0JMQSlu2XqLf0s9HN/akKSrKaRLS3O8y6T4AzRHYksWPkOOmnW4gFl
-	GN8XPbhxsdH6dOosrRQKrk6UodRXTdHtMbXc7HIYnGEZDj+ZMr/oiVsVCt4CU5M8nvHo+A7aa5rdR
-	nqHCx7ELj90yRxqxJ3fXNVCiJDFH5Rf4tT2O6WT4j7MwdPmi0MU2rjb1Amt/nEnW8ECQ7jfYrfxXg
-	yuYygX/2VYcR7x2Kau5r0sv7Wy+YlXrZ5blPmkQlPc2xl5Rh/HaO/vN1tCRXrzrZfzNmYzx6jWSvL
-	8k1EAlbjoEswCJPrX6wg==;
+	List-Owner; bh=9xDdxYHbVZSwb/s/PscHr8jUM7DKofFh3yDpB1rSTjg=; b=U25pJSKNm9/XFS
+	U6VyVAd1kXOYYYOWVvSZFu4bYd6QQGjs+80FOB5ZQuyyw7bXBzTExf/7ulgvxIHuOyBslJouX+C2A
+	219YXaEdIoT/yjlANvtg4otJ2iG5x0qm3jpvS17tKB38A5eu5mP7uQ3f/tZSe4mAlU5umw1WnLTy1
+	RgsGaU5TV0dRZtvtGztHeGnm0l4YopKpAeNfDOufpMVLqBK/ogM6iVwlg217XWaUAUQTX+4btzzAr
+	11gkORFjivNPwuuag0UJSP1BB7YZrA+VqumcCYnN7apyyzUqdmux1j0CoYaPnvxHFuKo0oDfQEXeU
+	c5xpAmhDloDYkyuy+kDg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tlVwR-00000006By1-1hJ2;
+	id 1tlVwR-00000006ByG-2xwU;
 	Fri, 21 Feb 2025 16:31:55 +0000
-Received: from out-171.mta1.migadu.com ([2001:41d0:203:375::ab])
+Received: from out-173.mta0.migadu.com ([2001:41d0:1004:224b::ad])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1tlVso-00000006BHT-00gw
+	id 1tlVsr-00000006BIp-2SyR
 	for kvm-riscv@lists.infradead.org;
-	Fri, 21 Feb 2025 16:28:11 +0000
+	Fri, 21 Feb 2025 16:28:14 +0000
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1740155288;
+	t=1740155291;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=8IPSvRUBRtTpCvRUq9nyj+UMlr4YW022ZUQVoIdr2zM=;
-	b=jZSS+1hJ8o5+w2CsroqJVude4/LswkFwuoNbl0UALqzivFafzKEtgS0nwTCU2g/CMr1pDl
-	QiZO1qQdBzm5+Jpg0qcdv/OpMNDSiEEMOPs46ApdSLSWksW3kTGwW5opZSjyM24C2g/0P9
-	livc6vD9NkxWsLhNgACnQmBOvMOmCOU=
+	bh=vn1FEnDRGik68LJLDBAQGF/TsL5Y6BbtDhdl0uXVpLU=;
+	b=CplyT0LAD8EI6ezTBgStuYQDrzqWjOBeNroi1+vA48eOwXqFbPa/tnzVBIBeHrPzsBGCT0
+	KKbcep5jgAwaFvxnAVbs0oKCz54DhV1qjdIaTV2s8lWB1Nfevni/khdah+WRlKE3vmcNXU
+	XcYA6E4LULrNAEwoT8IArkpDM+5+voI=
 From: Andrew Jones <andrew.jones@linux.dev>
 To: kvm@vger.kernel.org,
 	kvm-riscv@lists.infradead.org,
@@ -49,16 +49,17 @@ Cc: alexandru.elisei@arm.com,
 	pbonzini@redhat.com,
 	thuth@redhat.com,
 	Andrew Jones <ajones@ventanamicro.com>
-Subject: [kvm-unit-tests PATCH 1/2] configure: Allow earlycon for all architectures
-Date: Fri, 21 Feb 2025 17:27:55 +0100
-Message-ID: <20250221162753.126290-5-andrew.jones@linux.dev>
+Subject: [kvm-unit-tests PATCH 2/2] riscv: Introduce MACHINE_OVERRIDE
+Date: Fri, 21 Feb 2025 17:27:56 +0100
+Message-ID: <20250221162753.126290-6-andrew.jones@linux.dev>
 In-Reply-To: <20250221162753.126290-4-andrew.jones@linux.dev>
 References: <20250221162753.126290-4-andrew.jones@linux.dev>
 MIME-Version: 1.0
 X-Migadu-Flow: FLOW_OUT
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250221_082810_390969_3552D822 
-X-CRM114-Status: GOOD (  10.09  )
+X-CRM114-CacheID: sfid-20250221_082813_763606_D96B0816 
+X-CRM114-Status: UNSURE (   6.80  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -77,154 +78,44 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 From: Andrew Jones <ajones@ventanamicro.com>
 
-earlycon could be used by any architecture so check it outside the
-arm block and apply it to riscv right away.
+Allow riscv tests to use QEMU machine types other than virt.
 
 Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
 ---
- configure | 88 +++++++++++++++++++++++++++----------------------------
- 1 file changed, 43 insertions(+), 45 deletions(-)
+ riscv/run | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/configure b/configure
-index 86cf1da36467..7e462aaf1190 100755
---- a/configure
-+++ b/configure
-@@ -78,10 +78,9 @@ usage() {
- 	                           4k [default], 16k, 64k for arm64.
- 	                           4k [default], 64k for ppc64.
- 	    --earlycon=EARLYCON
--	                           Specify the UART name, type and address (optional, arm and
--	                           arm64 only). The specified address will overwrite the UART
--	                           address set by the --target option. EARLYCON can be one of
--	                           (case sensitive):
-+				   Specify the UART name, type and address (optional).
-+	                           The specified address will overwrite the UART address set by
-+	                           the --target option. EARLYCON can be one of (case sensitive):
- 	               uart[8250],mmio,ADDR
- 	                           Specify an 8250 compatible UART at address ADDR. Supported
- 	                           register stride is 8 bit only.
-@@ -283,6 +282,41 @@ else
-     fi
+diff --git a/riscv/run b/riscv/run
+index 73f2bf54dc32..e2f5a922728c 100755
+--- a/riscv/run
++++ b/riscv/run
+@@ -10,10 +10,12 @@ if [ -z "$KUT_STANDALONE" ]; then
  fi
  
-+if [ "$earlycon" ]; then
-+    IFS=, read -r name type_addr addr <<<"$earlycon"
-+    if [ "$name" != "uart" ] && [ "$name" != "uart8250" ] && [ "$name" != "pl011" ]; then
-+        echo "unknown earlycon name: $name"
-+        usage
-+    fi
-+
-+    if [ "$name" = "pl011" ]; then
-+        if [ -z "$addr" ]; then
-+            addr=$type_addr
-+        else
-+            if [ "$type_addr" != "mmio32" ]; then
-+                echo "unknown $name earlycon type: $type_addr"
-+                usage
-+            fi
-+        fi
-+    else
-+        if [ "$type_addr" != "mmio" ]; then
-+            echo "unknown $name earlycon type: $type_addr"
-+            usage
-+        fi
-+    fi
-+
-+    if [ -z "$addr" ]; then
-+        echo "missing $name earlycon address"
-+        usage
-+    fi
-+    if [[ $addr =~ ^0(x|X)[0-9a-fA-F]+$ ]] || [[ $addr =~ ^[0-9]+$ ]]; then
-+        uart_early_addr=$addr
-+    else
-+        echo "invalid $name earlycon address: $addr"
-+        usage
-+    fi
-+fi
-+
- [ -z "$processor" ] && processor="$arch"
+ # Allow user overrides of some config.mak variables
++mach=$MACHINE_OVERRIDE
+ processor=$PROCESSOR_OVERRIDE
+ firmware=$FIRMWARE_OVERRIDE
  
- if [ "$processor" = "arm64" ]; then
-@@ -296,51 +330,14 @@ if [ "$arch" = "i386" ] || [ "$arch" = "x86_64" ]; then
- elif [ "$arch" = "arm" ] || [ "$arch" = "arm64" ]; then
-     testdir=arm
-     if [ "$target" = "qemu" ]; then
--        arm_uart_early_addr=0x09000000
-+        : "${uart_early_addr:=0x9000000}"
-     elif [ "$target" = "kvmtool" ]; then
--        arm_uart_early_addr=0x1000000
-+        : "${uart_early_addr:=0x1000000}"
-         errata_force=1
-     else
-         echo "--target must be one of 'qemu' or 'kvmtool'!"
-         usage
-     fi
--
--    if [ "$earlycon" ]; then
--        IFS=, read -r name type_addr addr <<<"$earlycon"
--        if [ "$name" != "uart" ] && [ "$name" != "uart8250" ] &&
--                [ "$name" != "pl011" ]; then
--            echo "unknown earlycon name: $name"
--            usage
--        fi
--
--        if [ "$name" = "pl011" ]; then
--            if [ -z "$addr" ]; then
--                addr=$type_addr
--            else
--                if [ "$type_addr" != "mmio32" ]; then
--                    echo "unknown $name earlycon type: $type_addr"
--                    usage
--                fi
--            fi
--        else
--            if [ "$type_addr" != "mmio" ]; then
--                echo "unknown $name earlycon type: $type_addr"
--                usage
--            fi
--        fi
--
--        if [ -z "$addr" ]; then
--            echo "missing $name earlycon address"
--            usage
--        fi
--        if [[ $addr =~ ^0(x|X)[0-9a-fA-F]+$ ]] ||
--                [[ $addr =~ ^[0-9]+$ ]]; then
--            arm_uart_early_addr=$addr
--        else
--            echo "invalid $name earlycon address: $addr"
--            usage
--        fi
--    fi
- elif [ "$arch" = "ppc64" ]; then
-     testdir=powerpc
-     firmware="$testdir/boot_rom.bin"
-@@ -351,6 +348,7 @@ elif [ "$arch" = "ppc64" ]; then
- elif [ "$arch" = "riscv32" ] || [ "$arch" = "riscv64" ]; then
-     testdir=riscv
-     arch_libdir=riscv
-+    : "${uart_early_addr:=0x10000000}"
- elif [ "$arch" = "s390x" ]; then
-     testdir=s390x
- else
-@@ -491,7 +489,7 @@ EOF
- if [ "$arch" = "arm" ] || [ "$arch" = "arm64" ]; then
- cat <<EOF >> lib/config.h
+ [ "$PROCESSOR" = "$ARCH" ] && PROCESSOR="max"
++: "${mach:=virt}"
+ : "${processor:=$PROCESSOR}"
+ : "${firmware:=$FIRMWARE}"
+ [ "$firmware" ] && firmware="-bios $firmware"
+@@ -23,11 +25,11 @@ set_qemu_accelerator || exit $?
+ acc="-accel $ACCEL$ACCEL_PROPS"
  
--#define CONFIG_UART_EARLY_BASE ${arm_uart_early_addr}
-+#define CONFIG_UART_EARLY_BASE ${uart_early_addr}
- #define CONFIG_ERRATA_FORCE ${errata_force}
- 
- EOF
-@@ -506,7 +504,7 @@ EOF
- elif [ "$arch" = "riscv32" ] || [ "$arch" = "riscv64" ]; then
- cat <<EOF >> lib/config.h
- 
--#define CONFIG_UART_EARLY_BASE 0x10000000
-+#define CONFIG_UART_EARLY_BASE ${uart_early_addr}
- 
- EOF
+ qemu=$(search_qemu_binary) || exit $?
+-if ! $qemu -machine '?' | grep -q 'RISC-V VirtIO board'; then
++if [ "$mach" = 'virt' ] && ! $qemu -machine '?' | grep -q 'RISC-V VirtIO board'; then
+ 	echo "$qemu doesn't support mach-virt ('-machine virt'). Exiting."
+ 	exit 2
  fi
+-mach='-machine virt'
++mach="-machine $mach"
+ 
+ command="$qemu -nodefaults -nographic -serial mon:stdio"
+ command+=" $mach $acc $firmware -cpu $processor "
 -- 
 2.48.1
 
