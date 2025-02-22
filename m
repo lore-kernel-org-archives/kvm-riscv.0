@@ -4,67 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5E77EC021B3
-	for <kvm-riscv@archiver.kernel.org>; Sat, 22 Feb 2025 00:59:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1B087C021B5
+	for <kvm-riscv@archiver.kernel.org>; Sat, 22 Feb 2025 01:01:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID:
-	Mime-Version:Date:Reply-To:Content-ID:Content-Description:Resent-Date:
-	Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:
-	References:List-Owner; bh=y3bg2JcKFzedcY4CgZATAp65e/27yzQNSfoE+7a3Oss=; b=kWT
-	IS8sF4aK/jQXxTgDL1xRZP93Ijp0bZx0+Vx60EOt0g5J/2jeVsfak3Adn0uH0T5zJ4AxZWX3I4rVd
-	S2shgPjq+Qf1LtStUA/kyRe/w8Fl1tWK/6gpSYlcw7nFRxxw6Kxy0Dg3KjPj8hAITa14flfsZLB5f
-	hq/PWeyRybTFAi7tbkQNZ11RyF2sxMbPrsqrSRiSBa0bWpiskFjXR3RpcPN02Y7F4Tn/VlPEGRzot
-	aV3fvjeV37AwjCLjw6r3Q9bN7Yuth/VWbP4SGBfRLTXbCCQBMc2C2j8WO/mv/pOvfWsopkKITG0wJ
-	hz7jr6WzYpo77QJPIoRYm3JEQhhCZBg==;
+	References:Mime-Version:In-Reply-To:Date:Reply-To:Content-ID:
+	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+	:Resent-Message-ID:List-Owner;
+	bh=e8veM4mhlOK5H7G9TDpx9StGcNW3OtU0//8tQQh8QR8=; b=CbcLzV6odQ9I+8HkdrVoPQ7j1R
+	xp40+ShLNUbze1kHGkLA3/B5DbR+evcxY1IONpWZ8HtxCNcVUXytgDn9HT9UD9xnsB6HmarDxc5ZY
+	4p/g76+HYOrtlQYjF5U6rK763o4trMf520Br7VNJKQNjbSMSYjMwDywheM3cEE7MIwynG5eJJjpPJ
+	o9+1e7o+HKv8iMp9K2bJfE+vvoAmaKUY68YrYCj99/VHwIaZqIBaJl83aDNqmikwfEEUSoAjJetHG
+	yQdlLm4txZuFlvsYCcsSeheZa1dtbPtrzB67r6Aa1XawN4LOmuiIkc5vBR1n8Y5G1CPACkomNqR2u
+	QLV+qEqA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tlds0-00000007FzE-3t8X;
-	Sat, 22 Feb 2025 00:59:52 +0000
-Received: from mail-pj1-x1049.google.com ([2607:f8b0:4864:20::1049])
+	id 1tldtR-00000007GAF-3cab;
+	Sat, 22 Feb 2025 01:01:21 +0000
+Received: from mail-pj1-x104a.google.com ([2607:f8b0:4864:20::104a])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1tldrx-00000007Fxh-3HbC
+	id 1tlds0-00000007Fyg-1t4x
 	for kvm-riscv@lists.infradead.org;
-	Sat, 22 Feb 2025 00:59:51 +0000
-Received: by mail-pj1-x1049.google.com with SMTP id 98e67ed59e1d1-2f2a9f056a8so5872674a91.2
-        for <kvm-riscv@lists.infradead.org>; Fri, 21 Feb 2025 16:59:48 -0800 (PST)
+	Sat, 22 Feb 2025 00:59:53 +0000
+Received: by mail-pj1-x104a.google.com with SMTP id 98e67ed59e1d1-2fc2b258e82so5910043a91.0
+        for <kvm-riscv@lists.infradead.org>; Fri, 21 Feb 2025 16:59:51 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1740185988; x=1740790788; darn=lists.infradead.org;
-        h=cc:to:from:subject:message-id:mime-version:date:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=kBRd9F+mx4wFt4H+VE0Ydy83ogmyyqX60XghvKixac0=;
-        b=BKEEy8hx4C9Jbvs5Zt4T436K06Gl9S6fCi75QddCiWChyQ4kKuzQ4nXC4EYxOR/T4y
-         YKRsvj51foYLSe+SYvoX174z54urrtxW4qGKoMN5D9Iz0kwYNFJVpY8jIhwLlxT8Wrwt
-         FYPzioss7YtylFzLyBZthZoOZ7gPcO9GqJ/bxC4xY4iKv7CUK+3J88s+7NJvoeSyA0x4
-         VyB3BrDW7MPoxoIk0mTA86FVpIp9A3p4JXSnGM8vUT8pG6KvweJh9o/jpiAhKoUmo0YW
-         9UWtXSNKEq9tAQjlew0E9QqhwSXmtI3UHFfnymtRneMKofEJoMr88KqU6Me/GfRe8ZmG
-         qmrQ==
+        d=google.com; s=20230601; t=1740185991; x=1740790791; darn=lists.infradead.org;
+        h=content-transfer-encoding:cc:to:from:subject:message-id:references
+         :mime-version:in-reply-to:date:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=S9ETAjvvalTxJAz5WZGNMYcUgNTOmlxvFzAQwoX+eOc=;
+        b=vCSAO3gUq1QOp0/HlGElDxa04uWo/MnXIQ1rqVOnS4fVtMkK3aqKbkPw6GIXJ+/DNJ
+         ywuNv/gRx6DA0OArhxg+FbY0cacSe6D70vHeRjRmbinGLsJomZvtwnfFBpDUpwzDky+E
+         XXrLUwKe8MWwlmpIEh2eyRmJDTO/5ZqFVXsKQKffVXo8zYcJ9i66xX4wUlkkkCXEgUbh
+         kFacuU+dnH5U+WCK3W7i3y9/6yLreVmCWSYnV3Iz+bmVzOlGVysgV+jDytAu5J0Ch/a4
+         6cLl2nB7R9BhceCQktIXEI1RoKD4Aezw/RVntTXBSLcZhq4FsnOsy7fxatbc4N0v9Btv
+         BiTg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1740185988; x=1740790788;
-        h=cc:to:from:subject:message-id:mime-version:date:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=kBRd9F+mx4wFt4H+VE0Ydy83ogmyyqX60XghvKixac0=;
-        b=MWb+GaLHTGDjLoGvMoThxH0BL9cbtb0I1X2XcrbJedZXuZVsyu4cTHX8SuXg+1SWzT
-         OyMCBJKg1zHc5LhSjPAckDsDnSckBYKxSiWtgcNLQXszrX3E4OJzQTMMEQS5Cv3KHtna
-         0NdHpyW82fHm2sM24xIRj4VOWi0VB1ihvBm7wYx+tffdrOf2lIGEMiyb0iksU+vkaKzB
-         rHqM+8wXQ4cC+eAn5vfiX+829pp+FAVh1JqtlzTqhp9KKXyqvzI4Anmb5jDPkGcMWA8B
-         75ZUpg0SZiz9vLTS6BDfJO3WhKAPn5v4uZhffWa4TEZgvEBf8MTfbuPcF7hE/koky3KC
-         Vhog==
-X-Forwarded-Encrypted: i=1; AJvYcCVV6qe7B7ASP6K3Tt7lFO8RDvGqKx0e8wGv7ZM2BBfom4swiulaLywGEgXA/GJBdsCqELibdXu12RQ=@lists.infradead.org
-X-Gm-Message-State: AOJu0YzsPTmlkvW8p2WxjLCieeFOLtQRt3vv84p4KL2FmtAxgi7uK9jw
-	V7lYVK4OccBBddIS7w8nSEaOnQvEzqvF4Brt/G1Hoy9DhAfClREtcEUsWOljT81vk4olRcBOuYq
-	QM7WbcQ==
-X-Google-Smtp-Source: AGHT+IHFh+l8vBTEFEs3Y7eqKUizEgDHBm2dD/Rr3VO9twBVXR3MXf6pLXzxMgscxinv8InO1m/NzVZUfvdz
-X-Received: from pjbdb16.prod.google.com ([2002:a17:90a:d650:b0:2fa:1b0c:4150])
- (user=vipinsh job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:4b83:b0:2f8:b2c:5ef3
- with SMTP id 98e67ed59e1d1-2fce789cedamr10422060a91.14.1740185987890; Fri, 21
- Feb 2025 16:59:47 -0800 (PST)
-Date: Fri, 21 Feb 2025 16:59:28 -0800
+        d=1e100.net; s=20230601; t=1740185991; x=1740790791;
+        h=content-transfer-encoding:cc:to:from:subject:message-id:references
+         :mime-version:in-reply-to:date:x-gm-message-state:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=S9ETAjvvalTxJAz5WZGNMYcUgNTOmlxvFzAQwoX+eOc=;
+        b=r21awtUL6NS7bvDGC8ie9b0DQAlaOvGoeR8CZTQ7QOCv5pK6TCJQHc3d7Ta38FuXHS
+         ZFeiIdMUcECjTIoWq68J2chHeUtZpPC4VD+7JoMp40+XOs28CeYYS80TnxYmAFaboXa3
+         Gt3dYba8lsgM4vludNjnoqydi0IMKLA23Gv/ILvFpZ6NXdy71pSqwT2Jv2jzYKf50VeP
+         oeoCFK+TikaskHJXx69WyBrsinGwUbRjQGUUjj96mtDcwjMKHyfF9FnP1t1a/5mnIY87
+         a8sy2FRWfgQMp14xF655/gzyg4XfaMB++h2PShu0fFGssjzdiEjhgMwNIbemH8oVUsXO
+         sgFA==
+X-Forwarded-Encrypted: i=1; AJvYcCWXLjw+diXFCaV2BbM5Omm78eVlanE20ve/E3W1y2SyhlompJj3XRG38G0jzS9csO74TnpGfYfUVzk=@lists.infradead.org
+X-Gm-Message-State: AOJu0YywkEg/xvZxW0CiNTX7ELcuh1t8I76eUN5f3TCsWSp9IOsW+Y2p
+	ceU5vyHpztTm14xvRxkSS6/A3Ypot9p1wevZ16OQOeZ3QQSsgVkLPoHMMliXDIXuRXO9dj+5clU
+	bHZouEA==
+X-Google-Smtp-Source: AGHT+IHCI1eCveOzHRO9wymEe+6WfTHE/ANfyN9OtDD+61Q0zEDS7M7t5/7XLTAP4RotsZhFw+AuUixUqPQf
+X-Received: from pjg5.prod.google.com ([2002:a17:90b:3f45:b0:2ef:d136:17fc])
+ (user=vipinsh job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:41:b0:2fa:228d:5b03
+ with SMTP id 98e67ed59e1d1-2fce78abcd9mr8111088a91.19.1740185991168; Fri, 21
+ Feb 2025 16:59:51 -0800 (PST)
+Date: Fri, 21 Feb 2025 16:59:30 -0800
+In-Reply-To: <20250222005943.3348627-1-vipinsh@google.com>
 Mime-Version: 1.0
+References: <20250222005943.3348627-1-vipinsh@google.com>
 X-Mailer: git-send-email 2.48.1.601.g30ceb7b040-goog
-Message-ID: <20250222005943.3348627-1-vipinsh@google.com>
-Subject: [PATCH 0/2] Add KVM selftest runner
+Message-ID: <20250222005943.3348627-3-vipinsh@google.com>
+Subject: [PATCH 2/2] KVM: selftests: Create KVM selftest runner
 From: Vipin Sharma <vipinsh@google.com>
 To: kvm@vger.kernel.org, kvmarm@lists.linux.dev, kvm-riscv@lists.infradead.org, 
 	linux-arm-kernel@lists.infradead.org
@@ -72,9 +77,8 @@ Cc: seanjc@google.com, pbonzini@redhat.com, anup@brainfault.org,
 	borntraeger@linux.ibm.com, frankja@linux.ibm.com, imbrenda@linux.ibm.com, 
 	maz@kernel.org, oliver.upton@linux.dev, Vipin Sharma <vipinsh@google.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250221_165949_816301_8FECC31D 
-X-CRM114-Status: UNSURE (   9.03  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20250221_165952_494839_9FAE6927 
+X-CRM114-Status: GOOD (  18.66  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -86,275 +90,223 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Hello,
-
-This series in continuation of the selftest runner discussion we had
-some months ago.
-https://lore.kernel.org/kvm/20240821223012.3757828-1-vipinsh@google.com/
-
-Based on the discussion, this is phase 1 implementation of KVM selftest
-runner. Patch 1 is providing the testcase files and patch 2 is runner
-implementation which uses testcase files.
-
-This version has following features:
-- Parallel test execution.
-- Dumping separate output for each test.
-- Timeout for test execution
-- Specify single test or a test directory.
-
-Vipin Sharma (2):
-  KVM: selftests: Add default testfiles for KVM selftests runner
-  KVM: selftests: Create KVM selftest runner
-
- tools/testing/selftests/kvm/.gitignore        |  4 +-
- .../testing/selftests/kvm/runner/__main__.py  | 96 +++++++++++++++++++
- tools/testing/selftests/kvm/runner/command.py | 42 ++++++++
- .../testing/selftests/kvm/runner/selftest.py  | 49 ++++++++++
- .../selftests/kvm/runner/test_runner.py       | 40 ++++++++
- .../aarch64/aarch32_id_regs/default.test      |  1 +
- .../testcases/aarch64/arch_timer/default.test |  1 +
- .../arch_timer_edge_cases/default.test        |  1 +
- .../aarch64/debug-exceptions/default.test     |  1 +
- .../aarch64/get-reg-list/default.test         |  1 +
- .../testcases/aarch64/hypercalls/default.test |  1 +
- .../testcases/aarch64/no-vgic-v3/default.test |  1 +
- .../aarch64/page_fault_test/default.test      |  1 +
- .../testcases/aarch64/psci_test/default.test  |  1 +
- .../aarch64/set_id_regs/default.test          |  1 +
- .../aarch64/smccc_filter/default.test         |  1 +
- .../aarch64/vcpu_width_config/default.test    |  1 +
- .../testcases/aarch64/vgic_init/default.test  |  1 +
- .../testcases/aarch64/vgic_irq/default.test   |  1 +
- .../aarch64/vgic_lpi_stress/default.test      |  1 +
- .../aarch64/vpmu_counter_access/default.test  |  1 +
- .../access_tracking_perf_test/default.test    |  1 +
- .../testcases/coalesced_io_test/default.test  |  1 +
- .../testcases/demand_paging_test/default.test |  1 +
- .../dirty_log_perf_test/default.test          |  1 +
- .../kvm/testcases/dirty_log_test/default.test |  1 +
- .../testcases/guest_memfd_test/default.test   |  1 +
- .../testcases/guest_print_test/default.test   |  1 +
- .../hardware_disable_test/default.test        |  1 +
- .../kvm_binary_stats_test/default.test        |  1 +
- .../kvm_create_max_vcpus/default.test         |  1 +
- .../kvm_page_table_test/default.test          |  1 +
- .../max_guest_memory_test/default.test        |  1 +
- .../default.test                              |  1 +
- .../testcases/memslot_perf_test/default.test  |  1 +
- .../pre_fault_memory_test/default.test        |  1 +
- .../testcases/riscv/arch_timer/default.test   |  1 +
- .../testcases/riscv/ebreak_test/default.test  |  1 +
- .../testcases/riscv/get-reg-list/default.test |  1 +
- .../testcases/riscv/sbi_pmu_test/default.test |  1 +
- .../kvm/testcases/rseq_test/default.test      |  1 +
- .../testcases/s390x/cmma_test/default.test    |  1 +
- .../testcases/s390x/debug_test/default.test   |  1 +
- .../kvm/testcases/s390x/memop/default.test    |  1 +
- .../kvm/testcases/s390x/resets/default.test   |  1 +
- .../s390x/shared_zeropage_test/default.test   |  1 +
- .../s390x/sync_regs_test/default.test         |  1 +
- .../kvm/testcases/s390x/tprot/default.test    |  1 +
- .../s390x/ucontrol_test/default.test          |  1 +
- .../set_memory_region_test/default.test       |  1 +
- .../kvm/testcases/steal_time/default.test     |  1 +
- .../system_counter_offset_test/default.test   |  1 +
- .../testcases/x86_64/amx_test/default.test    |  1 +
- .../x86_64/apic_bus_clock_test/default.test   |  1 +
- .../testcases/x86_64/cpuid_test/default.test  |  1 +
- .../x86_64/cr4_cpuid_sync_test/default.test   |  1 +
- .../testcases/x86_64/debug_regs/default.test  |  1 +
- .../default.test                              |  1 +
- .../default.test                              |  1 +
- .../x86_64/feature_msrs_test/default.test     |  1 +
- .../x86_64/fix_hypercall_test/default.test    |  1 +
- .../x86_64/hwcr_msr_test/default.test         |  1 +
- .../x86_64/hyperv_clock/default.test          |  1 +
- .../x86_64/hyperv_cpuid/default.test          |  1 +
- .../x86_64/hyperv_evmcs/default.test          |  1 +
- .../hyperv_extended_hypercalls/default.test   |  1 +
- .../x86_64/hyperv_features/default.test       |  1 +
- .../testcases/x86_64/hyperv_ipi/default.test  |  1 +
- .../x86_64/hyperv_svm_test/default.test       |  1 +
- .../x86_64/hyperv_tlb_flush/default.test      |  1 +
- .../x86_64/kvm_clock_test/default.test        |  1 +
- .../testcases/x86_64/kvm_pv_test/default.test |  1 +
- .../x86_64/max_vcpuid_cap_test/default.test   |  1 +
- .../x86_64/monitor_mwait_test/default.test    |  1 +
- .../nested_exceptions_test/default.test       |  1 +
- .../x86_64/nx_huge_pages_test/default.test    |  1 +
- .../x86_64/platform_info_test/default.test    |  1 +
- .../x86_64/pmu_counters_test/default.test     |  1 +
- .../x86_64/pmu_event_filter_test/default.test |  1 +
- .../private_mem_conversions_test/default.test |  1 +
- .../private_mem_kvm_exits_test/default.test   |  1 +
- .../x86_64/recalc_apic_map_test/default.test  |  1 +
- .../x86_64/set_boot_cpu_id/default.test       |  1 +
- .../x86_64/set_sregs_test/default.test        |  1 +
- .../x86_64/sev_init2_tests/default.test       |  1 +
- .../x86_64/sev_migrate_tests/default.test     |  1 +
- .../x86_64/sev_smoke_test/default.test        |  1 +
- .../default.test                              |  1 +
- .../testcases/x86_64/smm_test/default.test    |  1 +
- .../testcases/x86_64/state_test/default.test  |  1 +
- .../x86_64/svm_int_ctl_test/default.test      |  1 +
- .../svm_nested_shutdown_test/default.test     |  1 +
- .../svm_nested_soft_inject_test/default.test  |  1 +
- .../x86_64/svm_vmcall_test/default.test       |  1 +
- .../x86_64/sync_regs_test/default.test        |  1 +
- .../triple_fault_event_test/default.test      |  1 +
- .../x86_64/tsc_msrs_test/default.test         |  1 +
- .../x86_64/tsc_scaling_sync/default.test      |  1 +
- .../x86_64/ucna_injection_test/default.test   |  1 +
- .../x86_64/userspace_io_test/default.test     |  1 +
- .../userspace_msr_exit_test/default.test      |  1 +
- .../x86_64/vmx_apic_access_test/default.test  |  1 +
- .../vmx_close_while_nested_test/default.test  |  1 +
- .../x86_64/vmx_dirty_log_test/default.test    |  1 +
- .../default.test                              |  1 +
- .../default.test                              |  1 +
- .../x86_64/vmx_msrs_test/default.test         |  1 +
- .../vmx_nested_tsc_scaling_test/default.test  |  1 +
- .../x86_64/vmx_pmu_caps_test/default.test     |  1 +
- .../vmx_preemption_timer_test/default.test    |  1 +
- .../vmx_set_nested_state_test/default.test    |  1 +
- .../x86_64/vmx_tsc_adjust_test/default.test   |  1 +
- .../x86_64/xapic_ipi_test/default.test        |  1 +
- .../x86_64/xapic_state_test/default.test      |  1 +
- .../x86_64/xcr0_cpuid_test/default.test       |  1 +
- .../x86_64/xen_shinfo_test/default.test       |  1 +
- .../x86_64/xen_vmcall_test/default.test       |  1 +
- .../x86_64/xss_msr_test/default.test          |  1 +
- 118 files changed, 343 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/kvm/runner/__main__.py
- create mode 100644 tools/testing/selftests/kvm/runner/command.py
- create mode 100644 tools/testing/selftests/kvm/runner/selftest.py
- create mode 100644 tools/testing/selftests/kvm/runner/test_runner.py
- create mode 100644 tools/testing/selftests/kvm/testcases/aarch64/aarch32_id_regs/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/aarch64/arch_timer/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/aarch64/arch_timer_edge_cases/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/aarch64/debug-exceptions/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/aarch64/get-reg-list/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/aarch64/hypercalls/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/aarch64/no-vgic-v3/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/aarch64/page_fault_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/aarch64/psci_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/aarch64/set_id_regs/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/aarch64/smccc_filter/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/aarch64/vcpu_width_config/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/aarch64/vgic_init/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/aarch64/vgic_irq/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/aarch64/vgic_lpi_stress/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/aarch64/vpmu_counter_access/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/access_tracking_perf_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/coalesced_io_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/demand_paging_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/dirty_log_perf_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/dirty_log_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/guest_memfd_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/guest_print_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/hardware_disable_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/kvm_binary_stats_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/kvm_create_max_vcpus/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/kvm_page_table_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/max_guest_memory_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/memslot_modification_stress_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/memslot_perf_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/pre_fault_memory_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/riscv/arch_timer/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/riscv/ebreak_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/riscv/get-reg-list/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/riscv/sbi_pmu_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/rseq_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/s390x/cmma_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/s390x/debug_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/s390x/memop/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/s390x/resets/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/s390x/shared_zeropage_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/s390x/sync_regs_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/s390x/tprot/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/s390x/ucontrol_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/set_memory_region_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/steal_time/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/system_counter_offset_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/amx_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/apic_bus_clock_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/cpuid_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/cr4_cpuid_sync_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/debug_regs/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/dirty_log_page_splitting_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/exit_on_emulation_failure_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/feature_msrs_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/fix_hypercall_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/hwcr_msr_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/hyperv_clock/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/hyperv_cpuid/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/hyperv_evmcs/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/hyperv_extended_hypercalls/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/hyperv_features/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/hyperv_ipi/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/hyperv_svm_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/hyperv_tlb_flush/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/kvm_clock_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/kvm_pv_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/max_vcpuid_cap_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/monitor_mwait_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/nested_exceptions_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/nx_huge_pages_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/platform_info_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/pmu_counters_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/pmu_event_filter_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/private_mem_conversions_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/private_mem_kvm_exits_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/recalc_apic_map_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/set_boot_cpu_id/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/set_sregs_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/sev_init2_tests/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/sev_migrate_tests/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/sev_smoke_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/smaller_maxphyaddr_emulation_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/smm_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/state_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/svm_int_ctl_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/svm_nested_shutdown_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/svm_nested_soft_inject_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/svm_vmcall_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/sync_regs_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/triple_fault_event_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/tsc_msrs_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/tsc_scaling_sync/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/ucna_injection_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/userspace_io_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/userspace_msr_exit_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/vmx_apic_access_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/vmx_close_while_nested_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/vmx_dirty_log_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/vmx_exception_with_invalid_guest_state/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/vmx_invalid_nested_guest_state/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/vmx_msrs_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/vmx_nested_tsc_scaling_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/vmx_pmu_caps_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/vmx_preemption_timer_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/vmx_set_nested_state_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/vmx_tsc_adjust_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/xapic_ipi_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/xapic_state_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/xcr0_cpuid_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/xen_shinfo_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/xen_vmcall_test/default.test
- create mode 100644 tools/testing/selftests/kvm/testcases/x86_64/xss_msr_test/default.test
-
-
-base-commit: fed48e2967f402f561d80075a20c5c9e16866e53
--- 
-2.48.1.601.g30ceb7b040-goog
-
-
--- 
-kvm-riscv mailing list
-kvm-riscv@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/kvm-riscv
+Q3JlYXRlIEtWTSBzZWxmdGVzdCBydW5uZXIgdG8gcnVuIHNlbGZ0ZXN0cyBhbmQgcHJvdmlkZSB2
+YXJpb3VzIG9wdGlvbnMKZm9yIGV4ZWN1dGlvbi4KClByb3ZpZGUgZm9sbG93aW5nIGZlYXR1cmVz
+IGluIHRoZSBydW5uZXI6CjEuIC0tdGltZW91dC8tdDogTWF4IHRpbWUgZWFjaCB0ZXN0IHNob3Vs
+ZCBmaW5pc2ggaW4gYmVmb3JlIGtpbGxpbmcgaXQuCjIuIC0tam9icy8tajogUnVuIHRoZXNlIG1h
+bnkgdGVzdHMgaW4gcGFyYWxsZWwuCjMuIC0tdGVzdHM6IFByb3ZpZGUgc3BhY2Ugc2VwYXJhdGVk
+IHBhdGggb2YgdGVzdHMgdG8gZXhlY3V0ZS4KNC4gLS10ZXN0X2RpcnM6IERpcmVjdG9yaWVzIHRv
+IHNlYXJjaCBmb3IgdGVzdCBmaWxlcyBhbmQgcnVuIHRoZW0uCjUuIC0tb3V0cHV0Ly1vOiBDcmVh
+dGUgdGhlIGZvbGRlciB3aXRoIGdpdmVuIG5hbWUgYW5kIGR1bXAgb3V0cHV0IG9mCiAgIGVhY2gg
+dGVzdCBpbiBhIGhpZXJhcmNoaWNhbCB3YXkuCjYuIEFkZCBzdW1tYXJ5IGF0IHRoZSBlbmQuCgpS
+dW5uZXIgbmVlZHMgdGVzdGNhc2UgZmlsZXMgd2hpY2ggYXJlIHByb3ZpZGVkIGluIHRoZSBwcmV2
+aW91cyBwYXRjaC4KRm9sbG93aW5nIGFyZSB0aGUgZXhhbXBsZXMgdG8gc3RhcnQgdGhlIHJ1bm5l
+ciAoY3dkIGlzCnRvb2xzL3Rlc3Rpbmcvc2VsZnRlc3RzL2t2bSkKCi0gQmFzaWMgcnVuOgogIHB5
+dGhvbjMgcnVubmVyIC0tdGVzdF9kaXJzIHRlc3RjYXNlcwoKLSBSdW4gc3BlY2lmaWMgdGVzdAog
+IHB5dGhvbjMgcnVubmVyIC0tdGVzdHMgLi90ZXN0Y2FzZXMvZGlydHlfbG9nX3BlcmZfdGVzdC9k
+ZWZhdWx0LnRlc3QKCi0gUnVuIHRlc3RzIHBhcmFsbGVsCiAgcHl0aG9uMyBydW5uZXIgLS10ZXN0
+X2RpcnMgdGVzdGNhc2VzIC1qIDEwCgotIFJ1biA1IHRlc3RzIHBhcmFsbGVseSBhdCBhIHRpbWUs
+IHdpdGggdGhlIHRpbWVvdXQgb2YgMTAgc2Vjb25kcyBhbmQKICBkdW1wIG91dHB1dCBpbiAicmVz
+dWx0IiBkaXJlY3RvcnkKICBweXRob24zIHJ1bm5lciAtLXRlc3RfZGlycyB0ZXN0Y2FzZXMgLWog
+NSAtdCAxMCAtLW91dHB1dCByZXN1bHQKClNhbXBsZSBvdXRwdXQgZnJvbSB0aGUgYWJvdmUgY29t
+bWFuZDoKCnB5dGhvbjNfYmluYXJ5IHJ1bm5lciAtLXRlc3RfZGlycyB0ZXN0Y2FzZXMgLWogNSAt
+dCAxMCAtLW91dHB1dCByZXN1bHQKCjIwMjUtMDItMjEgMTY6NDU6NDYsNzc0IHwgMTY4MDkgfCAg
+ICAgSU5GTyB8IFtQYXNzZWRdIHRlc3RjYXNlcy9ndWVzdF9wcmludF90ZXN0L2RlZmF1bHQudGVz
+dAoyMDI1LTAyLTIxIDE2OjQ1OjQ3LDA0MCB8IDE2ODA5IHwgICAgIElORk8gfCBbUGFzc2VkXSB0
+ZXN0Y2FzZXMva3ZtX2NyZWF0ZV9tYXhfdmNwdXMvZGVmYXVsdC50ZXN0CjIwMjUtMDItMjEgMTY6
+NDU6NDksMjQ0IHwgMTY4MDkgfCAgICAgSU5GTyB8IFtQYXNzZWRdIHRlc3RjYXNlcy9kaXJ0eV9s
+b2dfcGVyZl90ZXN0L2RlZmF1bHQudGVzdAouLi4KMjAyNS0wMi0yMSAxNjo0NjowNywyMjUgfCAx
+NjgwOSB8ICAgICBJTkZPIHwgW1Bhc3NlZF0gdGVzdGNhc2VzL3g4Nl82NC9wbXVfZXZlbnRfZmls
+dGVyX3Rlc3QvZGVmYXVsdC50ZXN0CjIwMjUtMDItMjEgMTY6NDY6MDgsMDIwIHwgMTY4MDkgfCAg
+ICAgSU5GTyB8IFtQYXNzZWRdIHRlc3RjYXNlcy94ODZfNjQvdm14X3ByZWVtcHRpb25fdGltZXJf
+dGVzdC9kZWZhdWx0LnRlc3QKMjAyNS0wMi0yMSAxNjo0NjowOSw3MzQgfCAxNjgwOSB8ICAgICBJ
+TkZPIHwgW1RpbWVkIG91dF0gdGVzdGNhc2VzL3g4Nl82NC9wbXVfY291bnRlcnNfdGVzdC9kZWZh
+dWx0LnRlc3QKMjAyNS0wMi0yMSAxNjo0NjoxMCwyMDIgfCAxNjgwOSB8ICAgICBJTkZPIHwgW1Bh
+c3NlZF0gdGVzdGNhc2VzL2hhcmR3YXJlX2Rpc2FibGVfdGVzdC9kZWZhdWx0LnRlc3QKMjAyNS0w
+Mi0yMSAxNjo0NjoxMCwyMDMgfCAxNjgwOSB8ICAgICBJTkZPIHwgVGVzdHMgcmFuOiA4NSB0ZXN0
+cwoyMDI1LTAyLTIxIDE2OjQ2OjEwLDIwNCB8IDE2ODA5IHwgICAgIElORk8gfCBQYXNzZWQ6IDYx
+CjIwMjUtMDItMjEgMTY6NDY6MTAsMjA0IHwgMTY4MDkgfCAgICAgSU5GTyB8IEZhaWxlZDogNAoy
+MDI1LTAyLTIxIDE2OjQ2OjEwLDIwNCB8IDE2ODA5IHwgICAgIElORk8gfCBTa2lwcGVkOiAxNwoy
+MDI1LTAyLTIxIDE2OjQ2OjEwLDIwNCB8IDE2ODA5IHwgICAgIElORk8gfCBUaW1lZCBvdXQ6IDMK
+MjAyNS0wMi0yMSAxNjo0NjoxMCwyMDQgfCAxNjgwOSB8ICAgICBJTkZPIHwgTm8gcnVuOiAwCgpP
+dXRwdXQgZHVtcGVkIGluIHJlc3VsdCBkaXJlY3RvcnkKCiQgdHJlZSByZXN1bHQvCnJlc3VsdC8K
+4pSc4pSA4pSAIGxvZwrilJTilIDilIAgdGVzdGNhc2VzCiAgICDilJzilIDilIAgYWNjZXNzX3Ry
+YWNraW5nX3BlcmZfdGVzdAogICAg4pSCwqDCoCDilJTilIDilIAgZGVmYXVsdC50ZXN0CiAgICDi
+lILCoMKgICAgICDilJzilIDilIAgc3RkZXJyCiAgICDilILCoMKgICAgICDilJTilIDilIAgc3Rk
+b3V0CiAgICDilJzilIDilIAgY29hbGVzY2VkX2lvX3Rlc3QKICAgIOKUgsKgwqAg4pSU4pSA4pSA
+IGRlZmF1bHQudGVzdAogICAg4pSCwqDCoCAgICAg4pSc4pSA4pSAIHN0ZGVycgogICAg4pSCwqDC
+oCAgICAg4pSU4pSA4pSAIHN0ZG91dAouLi4KCnJlc3VsdHMvbG9nIGZpbGUgd2lsbCBoYXZlIHRo
+ZSBzdGF0dXMgb2YgZWFjaCB0ZXN0IGxpa2UgdGhlIG9uZSBwcmludGVkCm9uIGNvbnNvbGUuIEVh
+Y2ggc3RkZXJyIGFuZCBzdGRvdXQgd2lsbCBoYXZlIGRhdGEgYmFzZWQgb24gdGhlCmV4ZWN1dGlv
+bi4KClJ1bm5lciBpcyBpbXBsZW1lbnRlZCBpbiBweXRob24gYW5kIG5lZWRzIGF0IGxlYXN0IDMu
+NiB2ZXJzaW9uLgoKU2lnbmVkLW9mZi1ieTogVmlwaW4gU2hhcm1hIDx2aXBpbnNoQGdvb2dsZS5j
+b20+Ci0tLQogdG9vbHMvdGVzdGluZy9zZWxmdGVzdHMva3ZtLy5naXRpZ25vcmUgICAgICAgIHwg
+IDEgKwogLi4uL3Rlc3Rpbmcvc2VsZnRlc3RzL2t2bS9ydW5uZXIvX19tYWluX18ucHkgIHwgOTYg
+KysrKysrKysrKysrKysrKysrKwogdG9vbHMvdGVzdGluZy9zZWxmdGVzdHMva3ZtL3J1bm5lci9j
+b21tYW5kLnB5IHwgNDIgKysrKysrKysKIC4uLi90ZXN0aW5nL3NlbGZ0ZXN0cy9rdm0vcnVubmVy
+L3NlbGZ0ZXN0LnB5ICB8IDQ5ICsrKysrKysrKysKIC4uLi9zZWxmdGVzdHMva3ZtL3J1bm5lci90
+ZXN0X3J1bm5lci5weSAgICAgICB8IDQwICsrKysrKysrCiA1IGZpbGVzIGNoYW5nZWQsIDIyOCBp
+bnNlcnRpb25zKCspCiBjcmVhdGUgbW9kZSAxMDA2NDQgdG9vbHMvdGVzdGluZy9zZWxmdGVzdHMv
+a3ZtL3J1bm5lci9fX21haW5fXy5weQogY3JlYXRlIG1vZGUgMTAwNjQ0IHRvb2xzL3Rlc3Rpbmcv
+c2VsZnRlc3RzL2t2bS9ydW5uZXIvY29tbWFuZC5weQogY3JlYXRlIG1vZGUgMTAwNjQ0IHRvb2xz
+L3Rlc3Rpbmcvc2VsZnRlc3RzL2t2bS9ydW5uZXIvc2VsZnRlc3QucHkKIGNyZWF0ZSBtb2RlIDEw
+MDY0NCB0b29scy90ZXN0aW5nL3NlbGZ0ZXN0cy9rdm0vcnVubmVyL3Rlc3RfcnVubmVyLnB5Cgpk
+aWZmIC0tZ2l0IGEvdG9vbHMvdGVzdGluZy9zZWxmdGVzdHMva3ZtLy5naXRpZ25vcmUgYi90b29s
+cy90ZXN0aW5nL3NlbGZ0ZXN0cy9rdm0vLmdpdGlnbm9yZQppbmRleCA1NTBiN2MyYjRhMGMuLmEy
+M2ZkNGIyY2I1ZiAxMDA2NDQKLS0tIGEvdG9vbHMvdGVzdGluZy9zZWxmdGVzdHMva3ZtLy5naXRp
+Z25vcmUKKysrIGIvdG9vbHMvdGVzdGluZy9zZWxmdGVzdHMva3ZtLy5naXRpZ25vcmUKQEAgLTEx
+LDMgKzExLDQgQEAKICFNYWtlZmlsZQogIU1ha2VmaWxlLmt2bQogISoudGVzdAorISoucHkKZGlm
+ZiAtLWdpdCBhL3Rvb2xzL3Rlc3Rpbmcvc2VsZnRlc3RzL2t2bS9ydW5uZXIvX19tYWluX18ucHkg
+Yi90b29scy90ZXN0aW5nL3NlbGZ0ZXN0cy9rdm0vcnVubmVyL19fbWFpbl9fLnB5Cm5ldyBmaWxl
+IG1vZGUgMTAwNjQ0CmluZGV4IDAwMDAwMDAwMDAwMC4uMDA4ZDg2Mjc1N2YyCi0tLSAvZGV2L251
+bGwKKysrIGIvdG9vbHMvdGVzdGluZy9zZWxmdGVzdHMva3ZtL3J1bm5lci9fX21haW5fXy5weQpA
+QCAtMCwwICsxLDk2IEBACisjIFNQRFgtTGljZW5zZS1JZGVudGlmaWVyOiBHUEwtMi4wCitpbXBv
+cnQgcGF0aGxpYgoraW1wb3J0IGFyZ3BhcnNlCitpbXBvcnQgcGxhdGZvcm0KK2ltcG9ydCBsb2dn
+aW5nCitpbXBvcnQgb3MKK2ltcG9ydCBlbnVtCitpbXBvcnQgdGVzdF9ydW5uZXIKKworCitkZWYg
+Y2xpKCk6CisgICAgcGFyc2VyID0gYXJncGFyc2UuQXJndW1lbnRQYXJzZXIoCisgICAgICAgIHBy
+b2c9IktWTSBTZWxmdGVzdHMgUnVubmVyIiwKKyAgICAgICAgZGVzY3JpcHRpb249IlJ1biBLVk0g
+c2VsZnRlc3RzIHdpdGggZGlmZmVyZW50IGNvbmZpZ3VyYXRpb25zIiwKKyAgICAgICAgZm9ybWF0
+dGVyX2NsYXNzPWFyZ3BhcnNlLlJhd1RleHRIZWxwRm9ybWF0dGVyCisgICAgKQorCisgICAgcGFy
+c2VyLmFkZF9hcmd1bWVudCgiLS10ZXN0cyIsCisgICAgICAgICAgICAgICAgICAgICAgICBuYXJn
+cz0iKiIsCisgICAgICAgICAgICAgICAgICAgICAgICBkZWZhdWx0PVtdLAorICAgICAgICAgICAg
+ICAgICAgICAgICAgaGVscD0iVGVzdCBjYXNlcyB0byBydW4uIFByb3ZpZGUgdGhlIHNwYWNlIHNl
+cGFyYXRlZCB0ZXN0IGNhc2UgZmlsZSBwYXRocyIpCisKKyAgICBwYXJzZXIuYWRkX2FyZ3VtZW50
+KCItLXRlc3RfZGlycyIsCisgICAgICAgICAgICAgICAgICAgICAgICBuYXJncz0iKiIsCisgICAg
+ICAgICAgICAgICAgICAgICAgICBkZWZhdWx0PVtdLAorICAgICAgICAgICAgICAgICAgICAgICAg
+aGVscD0iUnVuIHRlc3RzIGluIHRoZSBnaXZlbiBkaXJlY3RvcnkgYW5kIGFsbCBpdHMgc3ViIGRp
+cmVjdG9yaWVzLiBQcm92aWRlIHRoZSBzcGFjZSBzZXBhcmF0ZWQgcGF0aHMgdG8gYWRkIG11bHRp
+cGxlIGRpcmVjdG9yaWVzLiIpCisKKyAgICBwYXJzZXIuYWRkX2FyZ3VtZW50KCItaiIsCisgICAg
+ICAgICAgICAgICAgICAgICAgICAiLS1qb2JzIiwKKyAgICAgICAgICAgICAgICAgICAgICAgIGRl
+ZmF1bHQ9MSwKKyAgICAgICAgICAgICAgICAgICAgICAgIHR5cGU9aW50LAorICAgICAgICAgICAg
+ICAgICAgICAgICAgaGVscD0iTnVtYmVyIG9mIHBhcmFsbGVsIHRlc3QgcnVubmVycyB0byBzdGFy
+dCIpCisKKyAgICBwYXJzZXIuYWRkX2FyZ3VtZW50KCItdCIsCisgICAgICAgICAgICAgICAgICAg
+ICAgICAiLS10aW1lb3V0IiwKKyAgICAgICAgICAgICAgICAgICAgICAgIGRlZmF1bHQ9MTIwLAor
+ICAgICAgICAgICAgICAgICAgICAgICAgdHlwZT1pbnQsCisgICAgICAgICAgICAgICAgICAgICAg
+ICBoZWxwPSJIb3cgbG9uZyB0byB3YWl0IGZvciBhIHNpbmdsZSB0ZXN0IHRvIGZpbmlzaCBiZWZv
+cmUga2lsbGluZyBpdCIpCisKKyAgICBwYXJzZXIuYWRkX2FyZ3VtZW50KCItbyIsCisgICAgICAg
+ICAgICAgICAgICAgICAgICAiLS1vdXRwdXQiLAorICAgICAgICAgICAgICAgICAgICAgICAgbmFy
+Z3M9Jz8nLAorICAgICAgICAgICAgICAgICAgICAgICAgaGVscD0iT3V0cHV0IGRpcmVjdG9yeSBm
+b3IgdGVzdCByZXN1bHRzLiIpCisKKyAgICByZXR1cm4gcGFyc2VyLnBhcnNlX2FyZ3MoKQorCisK
+K2RlZiBzZXR1cF9sb2dnaW5nKGFyZ3MpOgorICAgIG91dHB1dCA9IGFyZ3Mub3V0cHV0CisgICAg
+aWYgb3V0cHV0ID09IE5vbmU6CisgICAgICAgIGxvZ2dpbmcuYmFzaWNDb25maWcobGV2ZWw9bG9n
+Z2luZy5JTkZPLAorICAgICAgICAgICAgICAgICAgICAgICAgICAgIGZvcm1hdD0iJShhc2N0aW1l
+KXMgfCAlKHByb2Nlc3MpZCB8ICUobGV2ZWxuYW1lKThzIHwgJShtZXNzYWdlKXMiKQorICAgIGVs
+c2U6CisgICAgICAgIGxvZ2dpbmdfZmlsZSA9IG9zLnBhdGguam9pbihvdXRwdXQsICJsb2ciKQor
+ICAgICAgICBwYXRobGliLlBhdGgob3V0cHV0KS5ta2RpcihwYXJlbnRzPVRydWUsIGV4aXN0X29r
+PVRydWUpCisgICAgICAgIGxvZ2dpbmcuYmFzaWNDb25maWcobGV2ZWw9bG9nZ2luZy5JTkZPLAor
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgIGZvcm1hdD0iJShhc2N0aW1lKXMgfCAlKHByb2Nl
+c3MpZCB8ICUobGV2ZWxuYW1lKThzIHwgJShtZXNzYWdlKXMiLAorICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgIGhhbmRsZXJzPVsKKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgbG9n
+Z2luZy5GaWxlSGFuZGxlcihsb2dnaW5nX2ZpbGUsIG1vZGU9J3cnKSwKKyAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgbG9nZ2luZy5TdHJlYW1IYW5kbGVyKCkKKyAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICBdKQorCisKK2RlZiBmZXRjaF90ZXN0c19mcm9tX2RpcnMoc2Nhbl9kaXJz
+LCBleGNsdWRlX2RpcnMpOgorICAgIHRlc3RfZmlsZXMgPSBbXQorICAgIGZvciBzY2FuX2RpciBp
+biBzY2FuX2RpcnM6CisgICAgICAgIGZvciByb290LCBkaXJzLCBmaWxlcyBpbiBvcy53YWxrKHNj
+YW5fZGlyKToKKyAgICAgICAgICAgIGRpcnNbOl0gPSBbZGlyIGZvciBkaXIgaW4gZGlycyBpZiBk
+aXIgbm90IGluIGV4Y2x1ZGVfZGlyc10KKyAgICAgICAgICAgIGZvciBmaWxlIGluIGZpbGVzOgor
+ICAgICAgICAgICAgICAgIHRlc3RfZmlsZXMuYXBwZW5kKG9zLnBhdGguam9pbihyb290LCBmaWxl
+KSkKKyAgICByZXR1cm4gdGVzdF9maWxlcworCisKK2RlZiBmZXRjaF90ZXN0X2ZpbGVzKGFyZ3Mp
+OgorICAgIGV4Y2x1ZGVfZGlycyA9IFsiYWFyY2g2NCIsICJ4ODZfNjQiLCAicmlzY3YiLCAiczM5
+MHgiXQorICAgICMgRG9uJ3QgZXhjbHVkZSB0ZXN0cyBvZiB0aGUgY3VycmVudCBwbGF0Zm9ybQor
+ICAgIGV4Y2x1ZGVfZGlycy5yZW1vdmUocGxhdGZvcm0ubWFjaGluZSgpKQorCisgICAgdGVzdF9m
+aWxlcyA9IGFyZ3MudGVzdHMKKyAgICB0ZXN0X2ZpbGVzLmV4dGVuZChmZXRjaF90ZXN0c19mcm9t
+X2RpcnMoYXJncy50ZXN0X2RpcnMsIGV4Y2x1ZGVfZGlycykpCisgICAgIyBSZW1vdmUgZHVwbGlj
+YXRlcworICAgIHRlc3RfZmlsZXMgPSBsaXN0KGRpY3QuZnJvbWtleXModGVzdF9maWxlcykpCisg
+ICAgcmV0dXJuIHRlc3RfZmlsZXMKKworCitkZWYgbWFpbigpOgorICAgIGFyZ3MgPSBjbGkoKQor
+ICAgIHNldHVwX2xvZ2dpbmcoYXJncykKKyAgICB0ZXN0X2ZpbGVzID0gZmV0Y2hfdGVzdF9maWxl
+cyhhcmdzKQorICAgIHRyID0gdGVzdF9ydW5uZXIuVGVzdFJ1bm5lcigKKyAgICAgICAgdGVzdF9m
+aWxlcywgYXJncy5vdXRwdXQsIGFyZ3MudGltZW91dCwgYXJncy5qb2JzKQorICAgIHRyLnN0YXJ0
+KCkKKworCitpZiBfX25hbWVfXyA9PSAiX19tYWluX18iOgorICAgIG1haW4oKQpkaWZmIC0tZ2l0
+IGEvdG9vbHMvdGVzdGluZy9zZWxmdGVzdHMva3ZtL3J1bm5lci9jb21tYW5kLnB5IGIvdG9vbHMv
+dGVzdGluZy9zZWxmdGVzdHMva3ZtL3J1bm5lci9jb21tYW5kLnB5Cm5ldyBmaWxlIG1vZGUgMTAw
+NjQ0CmluZGV4IDAwMDAwMDAwMDAwMC4uYTU4ZjE2ZmU0NTQyCi0tLSAvZGV2L251bGwKKysrIGIv
+dG9vbHMvdGVzdGluZy9zZWxmdGVzdHMva3ZtL3J1bm5lci9jb21tYW5kLnB5CkBAIC0wLDAgKzEs
+NDIgQEAKKyMgU1BEWC1MaWNlbnNlLUlkZW50aWZpZXI6IEdQTC0yLjAKK2ltcG9ydCBjb250ZXh0
+bGliCitpbXBvcnQgc3VicHJvY2VzcworaW1wb3J0IG9zCitpbXBvcnQgcGF0aGxpYgorCisKK2Ns
+YXNzIENvbW1hbmQ6CisgICAgIiIiRXhlY3V0ZXMgYSBjb21tYW5kCisKKyAgICBKdXN0IGV4ZWN1
+dGUgYSBjb21tYW5kLiBEdW1wIG91dHB1dCB0byB0aGUgZGlyZWN0b3J5IGlmIHByb3ZpZGVkLgor
+CisgICAgUmV0dXJucyB0aGUgZXhpdCBjb2RlIG9mIHRoZSBjb21tYW5kLgorICAgICIiIgorCisg
+ICAgZGVmIF9faW5pdF9fKHNlbGYsIGNvbW1hbmQsIHRpbWVvdXQ9Tm9uZSwgb3V0cHV0X2Rpcj1O
+b25lKToKKyAgICAgICAgc2VsZi5jb21tYW5kID0gY29tbWFuZAorICAgICAgICBzZWxmLnRpbWVv
+dXQgPSB0aW1lb3V0CisgICAgICAgIHNlbGYub3V0cHV0X2RpciA9IG91dHB1dF9kaXIKKworICAg
+IGRlZiBfX3J1bihzZWxmLCBvdXRwdXQ9Tm9uZSwgZXJyb3I9Tm9uZSk6CisgICAgICAgIHByb2Mg
+PSBzdWJwcm9jZXNzLnJ1bihzZWxmLmNvbW1hbmQsIHN0ZG91dD1vdXRwdXQsCisgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICBzdGRlcnI9ZXJyb3IsIHVuaXZlcnNhbF9uZXdsaW5lcz1UcnVl
+LAorICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgc2hlbGw9VHJ1ZSwgdGltZW91dD1zZWxm
+LnRpbWVvdXQpCisgICAgICAgIHJldHVybiBwcm9jLnJldHVybmNvZGUKKworICAgIGRlZiBydW4o
+c2VsZik6CisgICAgICAgIGlmIHNlbGYub3V0cHV0X2RpciBpcyBub3QgTm9uZToKKyAgICAgICAg
+ICAgIHBhdGhsaWIuUGF0aChzZWxmLm91dHB1dF9kaXIpLm1rZGlyKHBhcmVudHM9VHJ1ZSwgZXhp
+c3Rfb2s9VHJ1ZSkKKworICAgICAgICBvdXRwdXQgPSBOb25lCisgICAgICAgIGVycm9yID0gTm9u
+ZQorICAgICAgICB3aXRoIGNvbnRleHRsaWIuRXhpdFN0YWNrKCkgYXMgc3RhY2s6CisgICAgICAg
+ICAgICBpZiBzZWxmLm91dHB1dF9kaXIgaXMgbm90IE5vbmU6CisgICAgICAgICAgICAgICAgb3V0
+cHV0X3BhdGggPSBvcy5wYXRoLmpvaW4oc2VsZi5vdXRwdXRfZGlyLCAic3Rkb3V0IikKKyAgICAg
+ICAgICAgICAgICBvdXRwdXQgPSBzdGFjay5lbnRlcl9jb250ZXh0KAorICAgICAgICAgICAgICAg
+ICAgICBvcGVuKG91dHB1dF9wYXRoLCBlbmNvZGluZz0idXRmLTgiLCBtb2RlPSJ3IikpCisKKyAg
+ICAgICAgICAgICAgICBlcnJvcl9wYXRoID0gb3MucGF0aC5qb2luKHNlbGYub3V0cHV0X2Rpciwg
+InN0ZGVyciIpCisgICAgICAgICAgICAgICAgZXJyb3IgPSBzdGFjay5lbnRlcl9jb250ZXh0KAor
+ICAgICAgICAgICAgICAgICAgICBvcGVuKGVycm9yX3BhdGgsIGVuY29kaW5nPSJ1dGYtOCIsIG1v
+ZGU9InciKSkKKyAgICAgICAgICAgIHJldHVybiBzZWxmLl9fcnVuKG91dHB1dCwgZXJyb3IpCmRp
+ZmYgLS1naXQgYS90b29scy90ZXN0aW5nL3NlbGZ0ZXN0cy9rdm0vcnVubmVyL3NlbGZ0ZXN0LnB5
+IGIvdG9vbHMvdGVzdGluZy9zZWxmdGVzdHMva3ZtL3J1bm5lci9zZWxmdGVzdC5weQpuZXcgZmls
+ZSBtb2RlIDEwMDY0NAppbmRleCAwMDAwMDAwMDAwMDAuLmNkZjVkMTA4NWMwOAotLS0gL2Rldi9u
+dWxsCisrKyBiL3Rvb2xzL3Rlc3Rpbmcvc2VsZnRlc3RzL2t2bS9ydW5uZXIvc2VsZnRlc3QucHkK
+QEAgLTAsMCArMSw0OSBAQAorIyBTUERYLUxpY2Vuc2UtSWRlbnRpZmllcjogR1BMLTIuMAoraW1w
+b3J0IHN1YnByb2Nlc3MKK2ltcG9ydCBjb21tYW5kCitpbXBvcnQgcGF0aGxpYgoraW1wb3J0IGVu
+dW0KK2ltcG9ydCBvcworaW1wb3J0IGxvZ2dpbmcKKworCitjbGFzcyBTZWxmdGVzdFN0YXR1cyhz
+dHIsIGVudW0uRW51bSk6CisgICAgUEFTU0VEID0gIlBhc3NlZCIKKyAgICBGQUlMRUQgPSAiRmFp
+bGVkIgorICAgIFNLSVBQRUQgPSAiU2tpcHBlZCIKKyAgICBUSU1FRF9PVVQgPSAiVGltZWQgb3V0
+IgorICAgIE5PX1JVTiA9ICJObyBydW4iCisKKyAgICBkZWYgX19zdHJfXyhzZWxmKToKKyAgICAg
+ICAgcmV0dXJuIHN0ci5fX3N0cl9fKHNlbGYpCisKKworY2xhc3MgU2VsZnRlc3Q6CisgICAgIiIi
+QSBzaW5nbGUgdGVzdC4KKworICAgIEEgdGVzdCB3aGljaCBjYW4gYmUgcnVuIG9uIGl0cyBvd24u
+CisgICAgIiIiCisKKyAgICBkZWYgX19pbml0X18oc2VsZiwgdGVzdF9wYXRoLCBvdXRwdXRfZGly
+PU5vbmUsIHRpbWVvdXQ9Tm9uZSwpOgorICAgICAgICB0ZXN0X2NvbW1hbmQgPSBwYXRobGliLlBh
+dGgodGVzdF9wYXRoKS5yZWFkX3RleHQoKS5zdHJpcCgpCisgICAgICAgIGlmIG5vdCB0ZXN0X2Nv
+bW1hbmQ6CisgICAgICAgICAgICByYWlzZSBWYWx1ZUVycm9yKCJFbXB0eSB0ZXN0IGNvbW1hbmQg
+aW4gIiArIHRlc3RfcGF0aCkKKworICAgICAgICBpZiBvdXRwdXRfZGlyIGlzIG5vdCBOb25lOgor
+ICAgICAgICAgICAgb3V0cHV0X2RpciA9IG9zLnBhdGguam9pbihvdXRwdXRfZGlyLCB0ZXN0X3Bh
+dGgpCisgICAgICAgIHNlbGYudGVzdF9wYXRoID0gdGVzdF9wYXRoCisgICAgICAgIHNlbGYuY29t
+bWFuZCA9IGNvbW1hbmQuQ29tbWFuZCh0ZXN0X2NvbW1hbmQsIHRpbWVvdXQsIG91dHB1dF9kaXIp
+CisgICAgICAgIHNlbGYuc3RhdHVzID0gU2VsZnRlc3RTdGF0dXMuTk9fUlVOCisKKyAgICBkZWYg
+cnVuKHNlbGYpOgorICAgICAgICB0cnk6CisgICAgICAgICAgICByZXQgPSBzZWxmLmNvbW1hbmQu
+cnVuKCkKKyAgICAgICAgICAgIGlmIHJldCA9PSAwOgorICAgICAgICAgICAgICAgIHNlbGYuc3Rh
+dHVzID0gU2VsZnRlc3RTdGF0dXMuUEFTU0VECisgICAgICAgICAgICBlbGlmIHJldCA9PSA0Ogor
+ICAgICAgICAgICAgICAgIHNlbGYuc3RhdHVzID0gU2VsZnRlc3RTdGF0dXMuU0tJUFBFRAorICAg
+ICAgICAgICAgZWxzZToKKyAgICAgICAgICAgICAgICBzZWxmLnN0YXR1cyA9IFNlbGZ0ZXN0U3Rh
+dHVzLkZBSUxFRAorICAgICAgICBleGNlcHQgc3VicHJvY2Vzcy5UaW1lb3V0RXhwaXJlZCBhcyBl
+OgorICAgICAgICAgICAgIyBsb2dnaW5nLmVycm9yKHR5cGUoZSkuX19uYW1lX18gKyBzdHIoZSkp
+CisgICAgICAgICAgICBzZWxmLnN0YXR1cyA9IFNlbGZ0ZXN0U3RhdHVzLlRJTUVEX09VVApkaWZm
+IC0tZ2l0IGEvdG9vbHMvdGVzdGluZy9zZWxmdGVzdHMva3ZtL3J1bm5lci90ZXN0X3J1bm5lci5w
+eSBiL3Rvb2xzL3Rlc3Rpbmcvc2VsZnRlc3RzL2t2bS9ydW5uZXIvdGVzdF9ydW5uZXIucHkKbmV3
+IGZpbGUgbW9kZSAxMDA2NDQKaW5kZXggMDAwMDAwMDAwMDAwLi5iOWQzNGMyMGJmODgKLS0tIC9k
+ZXYvbnVsbAorKysgYi90b29scy90ZXN0aW5nL3NlbGZ0ZXN0cy9rdm0vcnVubmVyL3Rlc3RfcnVu
+bmVyLnB5CkBAIC0wLDAgKzEsNDAgQEAKKyMgU1BEWC1MaWNlbnNlLUlkZW50aWZpZXI6IEdQTC0y
+LjAKK2ltcG9ydCBxdWV1ZQoraW1wb3J0IGNvbmN1cnJlbnQuZnV0dXJlcworaW1wb3J0IGxvZ2dp
+bmcKK2ltcG9ydCB0aW1lCitpbXBvcnQgc2VsZnRlc3QKKworCitjbGFzcyBUZXN0UnVubmVyOgor
+ICAgIGRlZiBfX2luaXRfXyhzZWxmLCB0ZXN0X2ZpbGVzLCBvdXRwdXRfZGlyLCB0aW1lb3V0LCBw
+YXJhbGxlbGlzbSk6CisgICAgICAgIHNlbGYucGFyYWxsZWxpc20gPSBwYXJhbGxlbGlzbQorICAg
+ICAgICBzZWxmLnRlc3RzID0gW10KKworICAgICAgICBmb3IgdGVzdF9maWxlIGluIHRlc3RfZmls
+ZXM6CisgICAgICAgICAgICBzZWxmLnRlc3RzLmFwcGVuZChzZWxmdGVzdC5TZWxmdGVzdCgKKyAg
+ICAgICAgICAgICAgICB0ZXN0X2ZpbGUsIG91dHB1dF9kaXIsIHRpbWVvdXQpKQorCisgICAgZGVm
+IF9ydW4oc2VsZiwgdGVzdCk6CisgICAgICAgIHRlc3QucnVuKCkKKyAgICAgICAgcmV0dXJuIHRl
+c3QKKworICAgIGRlZiBzdGFydChzZWxmKToKKworICAgICAgICBzdGF0dXMgPSB7eDogMCBmb3Ig
+eCBpbiBzZWxmdGVzdC5TZWxmdGVzdFN0YXR1c30KKyAgICAgICAgY291bnQgPSAwCisgICAgICAg
+IHdpdGggY29uY3VycmVudC5mdXR1cmVzLlByb2Nlc3NQb29sRXhlY3V0b3IobWF4X3dvcmtlcnM9
+c2VsZi5wYXJhbGxlbGlzbSkgYXMgZXhlY3V0b3I6CisgICAgICAgICAgICBhbGxfZnV0dXJlcyA9
+IFtdCisgICAgICAgICAgICBmb3IgdGVzdCBpbiBzZWxmLnRlc3RzOgorICAgICAgICAgICAgICAg
+IGZ1dHVyZSA9IGV4ZWN1dG9yLnN1Ym1pdChzZWxmLl9ydW4sIHRlc3QpCisgICAgICAgICAgICAg
+ICAgYWxsX2Z1dHVyZXMuYXBwZW5kKGZ1dHVyZSkKKworICAgICAgICAgICAgZm9yIGZ1dHVyZSBp
+biBjb25jdXJyZW50LmZ1dHVyZXMuYXNfY29tcGxldGVkKGFsbF9mdXR1cmVzKToKKyAgICAgICAg
+ICAgICAgICB0ZXN0ID0gZnV0dXJlLnJlc3VsdCgpCisgICAgICAgICAgICAgICAgbG9nZ2luZy5p
+bmZvKGYiW3t0ZXN0LnN0YXR1c31dIHt0ZXN0LnRlc3RfcGF0aH0iKQorICAgICAgICAgICAgICAg
+IHN0YXR1c1t0ZXN0LnN0YXR1c10gKz0gMQorICAgICAgICAgICAgICAgIGNvdW50ICs9IDEKKwor
+ICAgICAgICBsb2dnaW5nLmluZm8oZiJUZXN0cyByYW46IHtjb3VudH0gdGVzdHMiKQorICAgICAg
+ICBmb3IgcmVzdWx0LCBjb3VudCBpbiBzdGF0dXMuaXRlbXMoKToKKyAgICAgICAgICAgIGxvZ2dp
+bmcuaW5mbyhmIntyZXN1bHR9OiB7Y291bnR9IikKLS0gCjIuNDguMS42MDEuZzMwY2ViN2IwNDAt
+Z29vZwoKCi0tIAprdm0tcmlzY3YgbWFpbGluZyBsaXN0Cmt2bS1yaXNjdkBsaXN0cy5pbmZyYWRl
+YWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8va3ZtLXJp
+c2N2Cg==
