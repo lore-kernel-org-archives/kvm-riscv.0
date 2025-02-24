@@ -4,71 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D45AEC021B6
-	for <kvm-riscv@archiver.kernel.org>; Tue, 25 Feb 2025 00:08:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EFB14C021A4
+	for <kvm-riscv@archiver.kernel.org>; Tue, 25 Feb 2025 01:07:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:Reply-To:List-Subscribe:List-Help:
 	List-Post:List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID
 	:References:Mime-Version:In-Reply-To:Date:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=HDIpPIxwOlVdhGRVim+m9vNRCa68+mmN3qFkYT5GgjQ=; b=eIt0NBqrFAsc2B
-	gbePoGErsP8r7wI8yuV69w5ATmUyf/SHvBzAeI+coHAHvnSknw57DlS0vgW8xpiYWQhNVzFYTfFYt
-	x4aqF+Zv5jZMYnf07TwgN+vYkFqdKRQ6ROulTeAOhrzdWwMv/APZxKai+xkPbE0m5FDGfXK6ZYloj
-	Fa7t9QRZRfjqICLsnPxI2wZ2lRwFbBFaP7MMwBadGKQSP5y90SZQVJaViM0u0oael5aYC+K2AI35f
-	qbvn3gkPO7Mx15jv/nzPtC7mEWZYarf2JFhXnlTrspOc7CfGShb3C2F9Va8G9oHwkhZOMW9O9oxe4
-	PvSpQrudSgfJSPb1FDcA==;
+	List-Owner; bh=C0Ft3GMnYSLnLeQNA2Bprhb6m2VBN+5tjexB/FRs5ig=; b=nJKEZ+/WP7nEUN
+	fLrexWQ1rDWWtmLzniTVm8OOAGcYglOfL5Wko/dzSsVJbgXvB/shO1wv4n3W20pLB6nJQGxrZ19y6
+	wQSiXynALLGWDdw6kApb4Nzx99Q1lfpIiWyNAOoIOCNlVxvJFLweNfosdRQb2bo0u62123xAFwwYV
+	nu+87309GV2OZOjMqgYVefDTzWatfZlMSDRuSTMgJ3179o6qAGkbJA3vCpf5P+0zF/INrhax9UsJ+
+	hkJcPXj1tsWluwKUg+jItxh9VSd4YMBrIPMI6cJrkfnaz/FPT4k1m8T1bpKR80HQGbZBY2j/p1V+I
+	k7mjm6E8L+f8CL5fLYUg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tmiUm-0000000FabZ-2Lyd;
-	Tue, 25 Feb 2025 00:08:20 +0000
-Received: from mail-pj1-x1049.google.com ([2607:f8b0:4864:20::1049])
+	id 1tmjQO-0000000Ffqo-278K;
+	Tue, 25 Feb 2025 01:07:52 +0000
+Received: from mail-pl1-x649.google.com ([2607:f8b0:4864:20::649])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1tmiIo-0000000FY2g-22Zd
+	id 1tmiIm-0000000FY1J-3GLP
 	for kvm-riscv@lists.infradead.org;
-	Mon, 24 Feb 2025 23:55:59 +0000
-Received: by mail-pj1-x1049.google.com with SMTP id 98e67ed59e1d1-2f83e54432dso16612151a91.2
-        for <kvm-riscv@lists.infradead.org>; Mon, 24 Feb 2025 15:55:58 -0800 (PST)
+	Mon, 24 Feb 2025 23:55:57 +0000
+Received: by mail-pl1-x649.google.com with SMTP id d9443c01a7336-2210121ac27so104241045ad.1
+        for <kvm-riscv@lists.infradead.org>; Mon, 24 Feb 2025 15:55:56 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1740441357; x=1741046157; darn=lists.infradead.org;
+        d=google.com; s=20230601; t=1740441356; x=1741046156; darn=lists.infradead.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:from:to:cc:subject:date:message-id:reply-to;
-        bh=N18ZDDRfnjFxKJiD7qnA09wciuUkX/DOLJoxqyHk2n8=;
-        b=Yy10rKFa/lH3k3losNjKOnBCxwJyn0jOvdyl9CDSTBwqyfDBh+iNMZcuwISp4tX8/B
-         jji1yMl//Y8LZvN749rzhnS482GMtDtT+Dw46/nSjRgEsaaQjgaOSfPo00iMwbXY+i6M
-         k2RJmFwyqr8/vf6MKZz2beMI1dmj2MFZeqVgt8TTxrdAQ6EnLZRLjrQJaFxfOtUQOrBh
-         AJGEFAEYQXzoTVlaViMUHBELOOKWLZvNUQ3bjhgH2+NdGjHYQiWSyzCT/AvlPE7Y2HjB
-         MLXso27ns115tmsIn6414qRye+0ZTj8rdbDu39t88ZToKB/Idu3epfsmx+VMq/812MfK
-         1zeg==
+        bh=TJTgZNhYY30nXxMYJRDXX1rx/rqsWdUW6nwlsEZr+Zo=;
+        b=s/EKz2bmKg1x/EOX4H7mnARQb/HNhdfz2Clx6VAHIYBvMOFInSfPKZO62yu6Gi/OXT
+         8pKnKCgi7yk+L7mIkmAUENtj2hQvYXTp5PXjcfKoUs1qTqEcrCjPrktvoUFm1Sd6s4GX
+         xkAMz5fkd8UXe19MxbGMO6n/o1sccehqi88yR0P+Vxo6le6VHO4w4w4hEcfqvhDa/qzN
+         JDhIIGV4ekYTmeoBTcu1uTCGPb+Jw2kzETYBHiXsxgx1p0FXP1NwwxuQRqSxjzyAVo+y
+         +5yeagx0x8UcTsSJ5lyMNO8pxmZwyXyHjwzfNerBllGmK+DhwNdL9T+NmBupkJc4IcOY
+         /NqQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1740441357; x=1741046157;
+        d=1e100.net; s=20230601; t=1740441356; x=1741046156;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=N18ZDDRfnjFxKJiD7qnA09wciuUkX/DOLJoxqyHk2n8=;
-        b=Uc1bpUxfs2vruTiGOyjs025VhBlJ2BAbZtDObvgaCIyA6yukZBe9jXGROIJujbQztu
-         lsLuzJqdIR1w50B6ZT9W2d5oCiIECvj5x1DEdPtUphmXV3LioQ8nBYiAR1hcmBt/RlBh
-         KxnKdOoga/WW/nD11jhL0+Vvkp82cr0w3YIkr9k2mfPx1g5NrZgGR+tlcIhRTOJUwv33
-         a9mlArdW9Pl+EFVoPk7SqMmNGSXpjXFKxsDxu+YXfYjyC+uvTu7Tj9YLd4wJXUnmibf8
-         LM6mASrOA/aAhiLgSVF07CmIOT+LW7gNinO0pc+hzDUBa5QmD+KNibXGAk+cVdpaG8dJ
-         GLBQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUMZ5J40TWmuGEZlWFXaZeG7wiMk2t8wgsTmqran5LQbfeylcG3LDRM3B22AFoOdtAi/Kc1wlIm8xY=@lists.infradead.org
-X-Gm-Message-State: AOJu0YwwYOHeIsyuY2FEsAcDeWNTfr8ry0eXpKxts0okEVavKAgi5L8S
-	xg2Ync3SZKooki0+LkdStDd6+PQa36SSqo6C5wo4jezsJKZyjga+9tWIKguSZC3H2oih1hIcanR
-	hKQ==
-X-Google-Smtp-Source: AGHT+IFBRvTh2AoRMsZzInrrN+gn6icsuEOKduQCozj1AYhvRpYSpNqeaxExZSkYlXTQzmgl2LLloh+gErw=
-X-Received: from pjbpb10.prod.google.com ([2002:a17:90b:3c0a:b0:2fc:11a0:c54d])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:4ec6:b0:2ee:70cb:a500
- with SMTP id 98e67ed59e1d1-2fce77a00c5mr23270511a91.1.1740441357604; Mon, 24
- Feb 2025 15:55:57 -0800 (PST)
-Date: Mon, 24 Feb 2025 15:55:42 -0800
+        bh=TJTgZNhYY30nXxMYJRDXX1rx/rqsWdUW6nwlsEZr+Zo=;
+        b=YJ/60L5369ITWH3PUwZewW3omdqzHR+k4kNJEucOqWwVEAwYqQVNrK/MUUpAfL9iP6
+         /fpMeeoFVoCR+Rwc91CCVnr3/BKGJyEduYMKDkHcdy5hiYrnLDIMS4Tk0YLK04nV29Hd
+         k+pvQhBrD8isYWOZ5xPQtEt7U0fPMuWJoKjF/p0LcczmkfY8S8WWfAjcTKkoEPN8Hx9b
+         cdVe/WoWY67gUbxD1OSraRKHwJIKgNYD14eMrcw8voaxK1QNJmzc3UN7Rba71IjyTZPu
+         ZlRno91QtfwsMLfX+KE4vjpTYqWtb8dHhUb/j0bTvwrW2sFjsDLwNtoEj5PQldw6xaRi
+         cUCQ==
+X-Forwarded-Encrypted: i=1; AJvYcCVN7r6MPX/2moBwpQOo4e8/lnsVBXeq1khOIhde3MAKK87ynL+o2u7CBDy+l87XE/QICG6EjqjWWSA=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yz+bAQ6qToE/PCr3Ibm3rkXYpGxzRT5WV0366CMWTTMLQkfocJX
+	efFXaNUoRd6F2x3a1fjRHdv3MrNy5BM7PNFRlz/noP+0NeMBS4355OUZI2cgpwbchDFR9b/HadQ
+	QKA==
+X-Google-Smtp-Source: AGHT+IHgthprmvsK7rAfh+PsqOM1pat7xQuGm72FmKpfdI+qTOt1cCxKN5aFSZszJT1EFJi9jy4pNoVXfJY=
+X-Received: from pfbig2.prod.google.com ([2002:a05:6a00:8b82:b0:730:7c03:35e1])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a00:1947:b0:732:623e:2bdc
+ with SMTP id d2e1a72fcca58-73426c84885mr24369761b3a.2.1740441355733; Mon, 24
+ Feb 2025 15:55:55 -0800 (PST)
+Date: Mon, 24 Feb 2025 15:55:41 -0800
 In-Reply-To: <20250224235542.2562848-1-seanjc@google.com>
 Mime-Version: 1.0
 References: <20250224235542.2562848-1-seanjc@google.com>
 X-Mailer: git-send-email 2.48.1.658.g4767266eb4-goog
-Message-ID: <20250224235542.2562848-8-seanjc@google.com>
-Subject: [PATCH 7/7] KVM: Drop kvm_arch_sync_events() now that all
- implementations are nops
+Message-ID: <20250224235542.2562848-7-seanjc@google.com>
+Subject: [PATCH 6/7] KVM: x86: Fold guts of kvm_arch_sync_events() into kvm_arch_pre_destroy_vm()
 From: Sean Christopherson <seanjc@google.com>
 To: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>, 
 	Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>, 
@@ -86,8 +85,8 @@ Cc: linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev,
 	Yan Zhao <yan.y.zhao@intel.com>, Rick P Edgecombe <rick.p.edgecombe@intel.com>, 
 	Kai Huang <kai.huang@intel.com>, Isaku Yamahata <isaku.yamahata@intel.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250224_155558_527968_0B3BBC5C 
-X-CRM114-Status: UNSURE (   9.17  )
+X-CRM114-CacheID: sfid-20250224_155556_815569_D53E0232 
+X-CRM114-Status: UNSURE (   8.69  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -106,138 +105,56 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Remove kvm_arch_sync_events() now that x86 no longer uses it (no other
-arch has ever used it).
+Fold the guts of kvm_arch_sync_events() into kvm_arch_pre_destroy_vm(), as
+the kvmclock and PIT background workers only need to be stopped before
+destroying vCPUs (to avoid accessing vCPUs as they are being freed); it's
+a-ok for them to be running while the VM is visible on the global vm_list.
 
-No functional change intended.
+Note, the PIT also needs to be stopped before IRQ routing is freed
+(because KVM's IRQ routing is garbage and assumes there is always non-NULL
+routing).
+
+Opportunistically add comments to explain why KVM stops/frees certain
+assets early.
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/arm64/include/asm/kvm_host.h     | 2 --
- arch/loongarch/include/asm/kvm_host.h | 1 -
- arch/mips/include/asm/kvm_host.h      | 1 -
- arch/powerpc/include/asm/kvm_host.h   | 1 -
- arch/riscv/include/asm/kvm_host.h     | 2 --
- arch/s390/include/asm/kvm_host.h      | 1 -
- arch/x86/kvm/x86.c                    | 5 -----
- include/linux/kvm_host.h              | 1 -
- virt/kvm/kvm_main.c                   | 1 -
- 9 files changed, 15 deletions(-)
+ arch/x86/kvm/x86.c | 15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
 
-diff --git a/arch/arm64/include/asm/kvm_host.h b/arch/arm64/include/asm/kvm_host.h
-index 7cfa024de4e3..40897bd2b4a3 100644
---- a/arch/arm64/include/asm/kvm_host.h
-+++ b/arch/arm64/include/asm/kvm_host.h
-@@ -1346,8 +1346,6 @@ static inline bool kvm_system_needs_idmapped_vectors(void)
- 	return cpus_have_final_cap(ARM64_SPECTRE_V3A);
- }
- 
--static inline void kvm_arch_sync_events(struct kvm *kvm) {}
--
- void kvm_init_host_debug_data(void);
- void kvm_vcpu_load_debug(struct kvm_vcpu *vcpu);
- void kvm_vcpu_put_debug(struct kvm_vcpu *vcpu);
-diff --git a/arch/loongarch/include/asm/kvm_host.h b/arch/loongarch/include/asm/kvm_host.h
-index 590982cd986e..ab5b7001e2ff 100644
---- a/arch/loongarch/include/asm/kvm_host.h
-+++ b/arch/loongarch/include/asm/kvm_host.h
-@@ -320,7 +320,6 @@ static inline bool kvm_is_ifetch_fault(struct kvm_vcpu_arch *arch)
- 
- /* Misc */
- static inline void kvm_arch_hardware_unsetup(void) {}
--static inline void kvm_arch_sync_events(struct kvm *kvm) {}
- static inline void kvm_arch_memslots_updated(struct kvm *kvm, u64 gen) {}
- static inline void kvm_arch_vcpu_blocking(struct kvm_vcpu *vcpu) {}
- static inline void kvm_arch_vcpu_unblocking(struct kvm_vcpu *vcpu) {}
-diff --git a/arch/mips/include/asm/kvm_host.h b/arch/mips/include/asm/kvm_host.h
-index f7222eb594ea..c14b10821817 100644
---- a/arch/mips/include/asm/kvm_host.h
-+++ b/arch/mips/include/asm/kvm_host.h
-@@ -886,7 +886,6 @@ extern unsigned long kvm_mips_get_ramsize(struct kvm *kvm);
- extern int kvm_vcpu_ioctl_interrupt(struct kvm_vcpu *vcpu,
- 			     struct kvm_mips_interrupt *irq);
- 
--static inline void kvm_arch_sync_events(struct kvm *kvm) {}
- static inline void kvm_arch_free_memslot(struct kvm *kvm,
- 					 struct kvm_memory_slot *slot) {}
- static inline void kvm_arch_memslots_updated(struct kvm *kvm, u64 gen) {}
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index 6e1108f8fce6..2d139c807577 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -902,7 +902,6 @@ struct kvm_vcpu_arch {
- #define __KVM_HAVE_ARCH_WQP
- #define __KVM_HAVE_CREATE_DEVICE
- 
--static inline void kvm_arch_sync_events(struct kvm *kvm) {}
- static inline void kvm_arch_memslots_updated(struct kvm *kvm, u64 gen) {}
- static inline void kvm_arch_flush_shadow_all(struct kvm *kvm) {}
- static inline void kvm_arch_vcpu_blocking(struct kvm_vcpu *vcpu) {}
-diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
-index cc33e35cd628..0e9c2fab6378 100644
---- a/arch/riscv/include/asm/kvm_host.h
-+++ b/arch/riscv/include/asm/kvm_host.h
-@@ -301,8 +301,6 @@ static inline bool kvm_arch_pmi_in_guest(struct kvm_vcpu *vcpu)
- 	return IS_ENABLED(CONFIG_GUEST_PERF_EVENTS) && !!vcpu;
- }
- 
--static inline void kvm_arch_sync_events(struct kvm *kvm) {}
--
- #define KVM_RISCV_GSTAGE_TLB_MIN_ORDER		12
- 
- void kvm_riscv_local_hfence_gvma_vmid_gpa(unsigned long vmid,
-diff --git a/arch/s390/include/asm/kvm_host.h b/arch/s390/include/asm/kvm_host.h
-index 9a367866cab0..424f899d8163 100644
---- a/arch/s390/include/asm/kvm_host.h
-+++ b/arch/s390/include/asm/kvm_host.h
-@@ -1056,7 +1056,6 @@ bool kvm_s390_pv_cpu_is_protected(struct kvm_vcpu *vcpu);
- extern int kvm_s390_gisc_register(struct kvm *kvm, u32 gisc);
- extern int kvm_s390_gisc_unregister(struct kvm *kvm, u32 gisc);
- 
--static inline void kvm_arch_sync_events(struct kvm *kvm) {}
- static inline void kvm_arch_free_memslot(struct kvm *kvm,
- 					 struct kvm_memory_slot *slot) {}
- static inline void kvm_arch_memslots_updated(struct kvm *kvm, u64 gen) {}
 diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index ea445e6579f1..454fd6b8f3db 100644
+index a61dbd1f0d01..ea445e6579f1 100644
 --- a/arch/x86/kvm/x86.c
 +++ b/arch/x86/kvm/x86.c
-@@ -12770,11 +12770,6 @@ int kvm_arch_init_vm(struct kvm *kvm, unsigned long type)
- 	return ret;
+@@ -12772,9 +12772,7 @@ int kvm_arch_init_vm(struct kvm *kvm, unsigned long type)
+ 
+ void kvm_arch_sync_events(struct kvm *kvm)
+ {
+-	cancel_delayed_work_sync(&kvm->arch.kvmclock_sync_work);
+-	cancel_delayed_work_sync(&kvm->arch.kvmclock_update_work);
+-	kvm_free_pit(kvm);
++
  }
  
--void kvm_arch_sync_events(struct kvm *kvm)
--{
--
--}
--
  /**
-  * __x86_set_memory_region: Setup KVM internal memory slot
-  *
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index c28a6aa1f2ed..5438a1b446a6 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -1747,7 +1747,6 @@ static inline void kvm_unregister_perf_callbacks(void) {}
+@@ -12855,6 +12853,17 @@ EXPORT_SYMBOL_GPL(__x86_set_memory_region);
  
- int kvm_arch_init_vm(struct kvm *kvm, unsigned long type);
- void kvm_arch_destroy_vm(struct kvm *kvm);
--void kvm_arch_sync_events(struct kvm *kvm);
+ void kvm_arch_pre_destroy_vm(struct kvm *kvm)
+ {
++	/*
++	 * Stop all background workers and kthreads before destroying vCPUs, as
++	 * iterating over vCPUs in a different task while vCPUs are being freed
++	 * is unsafe, i.e. will lead to use-after-free.  The PIT also needs to
++	 * be stopped before IRQ routing is freed.
++	 */
++	cancel_delayed_work_sync(&kvm->arch.kvmclock_sync_work);
++	cancel_delayed_work_sync(&kvm->arch.kvmclock_update_work);
++
++	kvm_free_pit(kvm);
++
+ 	kvm_mmu_pre_destroy_vm(kvm);
+ }
  
- int kvm_cpu_has_pending_timer(struct kvm_vcpu *vcpu);
- 
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 991e8111e88b..55153494ac70 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -1271,7 +1271,6 @@ static void kvm_destroy_vm(struct kvm *kvm)
- 	kvm_destroy_pm_notifier(kvm);
- 	kvm_uevent_notify_change(KVM_EVENT_DESTROY_VM, kvm);
- 	kvm_destroy_vm_debugfs(kvm);
--	kvm_arch_sync_events(kvm);
- 	mutex_lock(&kvm_lock);
- 	list_del(&kvm->vm_list);
- 	mutex_unlock(&kvm_lock);
 -- 
 2.48.1.658.g4767266eb4-goog
 
