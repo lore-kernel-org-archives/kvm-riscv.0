@@ -4,8 +4,8 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0951C021BB
-	for <kvm-riscv@archiver.kernel.org>; Tue, 25 Feb 2025 16:42:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 051E4C021BB
+	for <kvm-riscv@archiver.kernel.org>; Tue, 25 Feb 2025 16:42:46 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
@@ -13,62 +13,61 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	References:Mime-Version:In-Reply-To:Date:Reply-To:Content-ID:
 	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
 	:Resent-Message-ID:List-Owner;
-	bh=MN71AsLT4P414SFD0qPEOdUCJLfrYw/M21o96Ygj0lI=; b=1LYEraBMKZiSfDUJkbfbaPyMoE
-	HyKe63peP5dxC78MoTzTmscQV02dCPlDNCgSV7E39ludVUG7uy68QhugpNutAnFXEF7boBXTIwDWI
-	VGo6eZ8DWHw63Gs8eG8rWf9Q8oxJ6NCaa5/ot9r+n+SnEHeseL0odpmsf6iMSOu4Py/Nff5mU3Ne4
-	6UwwPMh+KReXt+M3VSUZycGO0MG56zh0Uz+Ny0GLriTZn2oicjSzbN8PYPcGGhP8xD9n+4OtSL5EH
-	TF6pWNdYmDeaDAbmGQm/Jm7Vd64w/vxq+fK+yo0/rv/nwwrp7zsj5H0B4EK2LZ5j2f0VmziSDHQwu
-	J7bDKySA==;
+	bh=mdthn4xDz2Sz/LS1a9RdVhLSkol/67cEIwRLeTkSvJk=; b=XJcQOYvQAnOCfLUxPs+00PlWb5
+	5e01QVxYCzp3KYWRsgZqxiU9Lie67kZL/ysF/2FeHAkZP/o1d2vZX/x4kUWsdgG/Ptur0u3DUaUuf
+	lMJ0R0x9hNdC6vKKjP0bJYbBTzSxu1KWdbRNVQCK1vmoUnLhizWcj5rIK1JiZ5MBjOPxPuh0moL7Q
+	7FexRaHt05FrJ83eIOyO05EjvO24WNlkrZZ/pluGYFgY2F3TWMaJftY5wCjAqB8oE/3EBcfex5L5+
+	K42MBNckK6hjHe5AaAimbvpIFgh1M+5eP12qQF2SPh9CWtYqCTW3LgQITeb4mzP7WpOnuXSkuQGyf
+	2Y1KJ5cA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tmy0b-00000000Kxe-3F5E;
-	Tue, 25 Feb 2025 16:42:13 +0000
+	id 1tmy17-00000000Lis-1Ezm;
+	Tue, 25 Feb 2025 16:42:45 +0000
 Received: from mail-pj1-x104a.google.com ([2607:f8b0:4864:20::104a])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1tmwBB-0000000HZSL-3VsT
+	id 1tmwUU-0000000011h-1bku
 	for kvm-riscv@lists.infradead.org;
-	Tue, 25 Feb 2025 14:45:03 +0000
-Received: by mail-pj1-x104a.google.com with SMTP id 98e67ed59e1d1-2fc1c7c8396so11799563a91.0
-        for <kvm-riscv@lists.infradead.org>; Tue, 25 Feb 2025 06:45:00 -0800 (PST)
+	Tue, 25 Feb 2025 15:05:00 +0000
+Received: by mail-pj1-x104a.google.com with SMTP id 98e67ed59e1d1-2f81a0d0a18so12372909a91.3
+        for <kvm-riscv@lists.infradead.org>; Tue, 25 Feb 2025 07:04:57 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1740494700; x=1741099500; darn=lists.infradead.org;
+        d=google.com; s=20230601; t=1740495897; x=1741100697; darn=lists.infradead.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=NffzjCDpuTmdNSnLuEbvoNsdUgp9uFncpWixfvcrqX0=;
-        b=mGclNGHSe414+aYtBhhtyG8IxFgnATbtV3N1JAp9Eo2lLq+kiRKVpPhqopkfIsKnKF
-         bKuC1cPwh1su3SICmMUFav5IvFRlHsSXkdGfv1u22Sv1qnSu9yRiBBUCWfHlXlhf9Ety
-         QBrJucrUCZMoy+FdZLdAKoZtVb0wNM2eVtohxrXG/mYIWiEXWfW8t53hYqx5Ds9cYf2t
-         uJ4B5EX4Lx+pCqkf8HPFP7OntEZvn8VuiGg0tH2HCaGdccNqYx44Am1Q9zU1CvHIEPGY
-         qjdXfma/F9uCHDzO007OEDnIyVI7ZlkoPzAT6ITp8RK0QtRQE8tj98vSapnOqgSMH1bQ
-         wB/g==
+        bh=SksBvCkZJsvM7Rmqh0mGEf+0QRJJwMrgdQAdOhKbL9I=;
+        b=EJuZi/Y9WKcejbG4SNkoKZArhM1GrOZIRmYClA7e55+X/nGOg2r9DdRVtTlwn9Exiq
+         wlBI0tFJOrR4i1s1x+kCkBH8Nw7inHcTvtg2jNGrweMgyTV+4sy/d333kY/00hKu2fG7
+         bjQ3VlZHgjixrm/s84mF9ImBHXVbj16hj4t5gHDraGL0Ri0gIl6cWDKJt/bq8QxoEcRK
+         xZSjjOpaVB9PtWIgLrsW4/8mcKphanUzi9ki/m8lq58rQtdm66PbekemrJmnmOGbGV5T
+         pJWGYdhNLafU3G5V/4JmpmUA7eif0M+aZgFZ36J5ukfCV1j1Co9G5IoCoj9R6djvjEVz
+         4Slg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1740494700; x=1741099500;
+        d=1e100.net; s=20230601; t=1740495897; x=1741100697;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=NffzjCDpuTmdNSnLuEbvoNsdUgp9uFncpWixfvcrqX0=;
-        b=JYqJNt4FZlSc2ayyQ4pvcQT57IEuIdtdBqebByCoh3TbgXe5/Rdahq+YZGEh8yltoy
-         AUZMJUJxNg93rQvAokOlQrBsjFUVccCWlmj7r7jNjBUrCnpCE01+d0sFrndKzZh6GJpF
-         Grtcj2B7jNmjmO800q6N0/vo4v5qH2jBgBhmZriUxn8N0vl0q+bif8x0QBovuUmOjn86
-         KNxH6UyWHWat/36NmmM3naGgv4ocD3wEqkW8pcD397/gQlatsi4j9cm5d1TSNx3LnTql
-         hq3KYBo0LSEzKfzSbHbGTBVMl7NlgkotnC31jKDnqYb8B8IzsG6CMQ2xnPJnus2IxQRf
-         NQIg==
-X-Forwarded-Encrypted: i=1; AJvYcCVGDXrnjvtpMYib1yFU43h4eIe3WsTAyn2SbIcaB+TIYX/EZciFtxfVvopr7ynseQD/JFLLnb19vWI=@lists.infradead.org
-X-Gm-Message-State: AOJu0YxT9sqc2iOwm0Kk4CPeqdM5h2mhkUck/rUk8GaucKrEFOdU8oc7
-	+nBn+25Fb9EO1B0Su5Ziqa0WsSeDSs3eTpA98yuqTlXie2hYd1A6OpMS4ztzoRugkI1VS86uBO+
-	uTA==
-X-Google-Smtp-Source: AGHT+IG2KruXetDYoI9qbCSWmcITW+yhg6mxBcrrqoCenX7IkOOc3aJKkHxPw+LBj1f6DGaIHr4WklpxusU=
-X-Received: from pjh14.prod.google.com ([2002:a17:90b:3f8e:b0:2ea:29de:af10])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:548f:b0:2ee:d7d3:3008
- with SMTP id 98e67ed59e1d1-2fce86ae5d0mr31991980a91.12.1740494700343; Tue, 25
- Feb 2025 06:45:00 -0800 (PST)
-Date: Tue, 25 Feb 2025 06:44:58 -0800
-In-Reply-To: <Z71tlzQJISk6PFAL@yzhao56-desk.sh.intel.com>
+        bh=SksBvCkZJsvM7Rmqh0mGEf+0QRJJwMrgdQAdOhKbL9I=;
+        b=oaNu4Pgh7X+NFjBmUiAu6xdwj1Zu50G+nqfV5Z/MRwdAL00etw4q8iVKWVrYWB2xCO
+         qIwkx9gfRpQRGsJa3vE5geVg3otDIcBmZpEOgHyJ+Fnevy4FO+QZXlZZWSu9ht3NNnOd
+         Su865AvMl5jgLkuA9pCu6ysfOSseur8W/iPDleOiqxGVQovfF+KjC3+zqV6tciXtPHlU
+         BsdSjS/IqM03EA6z9tY9xs4AIlSbyciFnQnBFOhWrJjwogX5EKWzYuJNvb4gpvY7YBBo
+         5M2whr0aoOUcACBs0EVM/9IyKuyso2uPFuEIFV/Ur4Y3W9LmYfcQQgXp9ZnTclm42qLS
+         we0A==
+X-Forwarded-Encrypted: i=1; AJvYcCVKFvJh311ANjqpvSLuwS9r9+DT8vwxCQQmk/NtO7a6pcfFserzEF9LqumFO5I9I6zmtOODseyWz1Y=@lists.infradead.org
+X-Gm-Message-State: AOJu0YxHWgqbKYYDtaGzepDOuuukU8icrRgX/PdyDdsmWkQKz4ui0jiw
+	k8WgkJ/nI3oHGE8unFV3dX5YZaZb/MVxkdxbTIk7kIvmA/1AmmxsgmNUmtLN/cXTo004i6oUKZ4
+	OxA==
+X-Google-Smtp-Source: AGHT+IGZHL7uZNM7BfQEbB7Kx7BtB5DxGYYXBfSiN251AAOj3wJWNSwzk9hwQvuFf2tqN0hxCASkCwncVrs=
+X-Received: from pgmm27.prod.google.com ([2002:a05:6a02:551b:b0:ad5:4c6b:ab72])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a20:9d8f:b0:1f0:e430:43f8
+ with SMTP id adf61e73a8af0-1f0fbff6f36mr6428815637.1.1740495896725; Tue, 25
+ Feb 2025 07:04:56 -0800 (PST)
+Date: Tue, 25 Feb 2025 07:04:55 -0800
+In-Reply-To: <Z71072F7FMz5aq/Q@yzhao56-desk.sh.intel.com>
 Mime-Version: 1.0
-References: <20250224235542.2562848-1-seanjc@google.com> <20250224235542.2562848-5-seanjc@google.com>
- <Z71tlzQJISk6PFAL@yzhao56-desk.sh.intel.com>
-Message-ID: <Z73XaiRZMIi_vyvK@google.com>
-Subject: Re: [PATCH 4/7] KVM: x86: Don't load/put vCPU when unloading its MMU
- during teardown
+References: <20250224235542.2562848-1-seanjc@google.com> <20250224235542.2562848-2-seanjc@google.com>
+ <Z71072F7FMz5aq/Q@yzhao56-desk.sh.intel.com>
+Message-ID: <Z73cF_pWIFMreOf5@google.com>
+Subject: Re: [PATCH 1/7] KVM: x86: Free vCPUs before freeing VM state
 From: Sean Christopherson <seanjc@google.com>
 To: Yan Zhao <yan.y.zhao@intel.com>
 Cc: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>, 
@@ -86,8 +85,8 @@ Cc: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>,
 	Rick P Edgecombe <rick.p.edgecombe@intel.com>, Kai Huang <kai.huang@intel.com>, 
 	Isaku Yamahata <isaku.yamahata@intel.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250225_064501_875208_2E4026A9 
-X-CRM114-Status: GOOD (  18.42  )
+X-CRM114-CacheID: sfid-20250225_070458_413940_70875835 
+X-CRM114-Status: GOOD (  17.01  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -105,53 +104,73 @@ Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 On Tue, Feb 25, 2025, Yan Zhao wrote:
-> On Mon, Feb 24, 2025 at 03:55:39PM -0800, Sean Christopherson wrote:
-> > Don't load (and then put) a vCPU when unloading its MMU during VM
-> > destruction, as nothing in kvm_mmu_unload() accesses vCPU state beyond the
-> > root page/address of each MMU, i.e. can't possible need to run with the
-> > vCPU loaded.
-> > 
-> > Signed-off-by: Sean Christopherson <seanjc@google.com>
-> > ---
-> >  arch/x86/kvm/x86.c | 9 +--------
-> >  1 file changed, 1 insertion(+), 8 deletions(-)
-> > 
 > > diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-> > index 045c61cc7e54..9978ed4c0917 100644
+> > index 58b82d6fd77c..045c61cc7e54 100644
 > > --- a/arch/x86/kvm/x86.c
 > > +++ b/arch/x86/kvm/x86.c
-> > @@ -12767,13 +12767,6 @@ int kvm_arch_init_vm(struct kvm *kvm, unsigned long type)
-> >  	return ret;
-> >  }
-> >  
-> > -static void kvm_unload_vcpu_mmu(struct kvm_vcpu *vcpu)
-> > -{
-> > -	vcpu_load(vcpu);
-> > -	kvm_mmu_unload(vcpu);
-> > -	vcpu_put(vcpu);
-> > -}
-> > -
-> >  static void kvm_unload_vcpu_mmus(struct kvm *kvm)
-> >  {
-> >  	unsigned long i;
-> > @@ -12781,7 +12774,7 @@ static void kvm_unload_vcpu_mmus(struct kvm *kvm)
-> >  
-> >  	kvm_for_each_vcpu(i, vcpu, kvm) {
-> >  		kvm_clear_async_pf_completion_queue(vcpu);
-> > -		kvm_unload_vcpu_mmu(vcpu);
-> > +		kvm_mmu_unload(vcpu);
-> What about just dropping kvm_unload_vcpu_mmu() here?
-> kvm_mmu_unload() will be invoked again in kvm_mmu_destroy().
+> > @@ -12890,11 +12890,11 @@ void kvm_arch_destroy_vm(struct kvm *kvm)
+> >  		mutex_unlock(&kvm->slots_lock);
+> >  	}
+> >  	kvm_unload_vcpu_mmus(kvm);
+> > +	kvm_destroy_vcpus(kvm);
+> >  	kvm_x86_call(vm_destroy)(kvm);
+> >  	kvm_free_msr_filter(srcu_dereference_check(kvm->arch.msr_filter, &kvm->srcu, 1));
+> >  	kvm_pic_destroy(kvm);
+> >  	kvm_ioapic_destroy(kvm);
+> > -	kvm_destroy_vcpus(kvm);
+> >  	kvfree(rcu_dereference_check(kvm->arch.apic_map, 1));
+> >  	kfree(srcu_dereference_check(kvm->arch.pmu_event_filter, &kvm->srcu, 1));
+> >  	kvm_mmu_uninit_vm(kvm);
+> After this change, now the sequence is that
 > 
-> kvm_arch_vcpu_destroy() --> kvm_mmu_destroy() --> kvm_mmu_unload().
+> 1. kvm_arch_pre_destroy_vm()
+> 2. kvm_arch_destroy_vm()
+>    2.1 kvm_destroy_vcpus()
+>    2.2 .vm_destroy hook
+>    2.3 kvm_mmu_uninit_vm() --> mirror root ref is 1 upon here. Zap the mirror
+>                                root and reclaim SETP page table pages.
+>    2.4 .vm_free hook
+> 
+> Since TDX needs to reclaim the TDR page after reclaiming all other pages, we
+> currently added a vm_free hook at 2.4, after 2.3.
+> 
+> Could we move kvm_mmu_uninit_vm() before the .vm_destroy hook and after
+> kvm_destroy_vcpus()?
+> 
+> Or move the .vm_destroy hook after kvm_mmu_uninit_vm(), e.g. after
+> kvm_page_track_cleanup()?
 
-Ugh, I missed that there's yet another call to kvm_mmu_unload().  I definitely
-agree with dropping the first kvm_mmu_load(), but I'll do it in a follow-up patch
-so that all three changes are isolated (not doing the load/put, doing unload as
-part of vCPU destruction, doing unload only once at the end).
+I would go for the first option.  I'll tack on a patch since I need to test all
+of these flows anyways, and I would much prefer to change course sooner rather
+than later if it doesn't work for whatever reason.
 
-And looking at both calls to kvm_mmu_unload(), I suspect that grabbing kvm->srcu
-around kvm_mmu_destroy() is unnecessary.  I'll try cleaning that up as well.
+Is this comment accurate?
+
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 1e5f6f820c0b..f5685f153e08 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -12874,13 +12874,19 @@ void kvm_arch_destroy_vm(struct kvm *kvm)
+                mutex_unlock(&kvm->slots_lock);
+        }
+        kvm_destroy_vcpus(kvm);
++
++       /*
++        * Do final MMU teardown prior to calling into vendor code.  All pages
++        * that were donated to the TDX module, e.g. for S-EPT tables, need to
++        * be reclaimed before the VM metadata page can be freed.
++        */
++       kvm_mmu_uninit_vm(kvm);
+        kvm_x86_call(vm_destroy)(kvm);
+        kvm_free_msr_filter(srcu_dereference_check(kvm->arch.msr_filter, &kvm->srcu, 1));
+        kvm_pic_destroy(kvm);
+        kvm_ioapic_destroy(kvm);
+        kvfree(rcu_dereference_check(kvm->arch.apic_map, 1));
+        kfree(srcu_dereference_check(kvm->arch.pmu_event_filter, &kvm->srcu, 1));
+-       kvm_mmu_uninit_vm(kvm);
+        kvm_page_track_cleanup(kvm);
+        kvm_xen_destroy_vm(kvm);
+        kvm_hv_destroy_vm(kvm);
 
 -- 
 kvm-riscv mailing list
