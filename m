@@ -4,90 +4,190 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EFB14C021A4
-	for <kvm-riscv@archiver.kernel.org>; Tue, 25 Feb 2025 01:07:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6AD35C021B2
+	for <kvm-riscv@archiver.kernel.org>; Tue, 25 Feb 2025 07:09:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:Reply-To:List-Subscribe:List-Help:
-	List-Post:List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID
-	:References:Mime-Version:In-Reply-To:Date:Content-ID:Content-Description:
+	List-Post:List-Archive:List-Unsubscribe:List-Id:MIME-Version:In-Reply-To:
+	References:Message-ID:Subject:CC:To:From:Date:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=C0Ft3GMnYSLnLeQNA2Bprhb6m2VBN+5tjexB/FRs5ig=; b=nJKEZ+/WP7nEUN
-	fLrexWQ1rDWWtmLzniTVm8OOAGcYglOfL5Wko/dzSsVJbgXvB/shO1wv4n3W20pLB6nJQGxrZ19y6
-	wQSiXynALLGWDdw6kApb4Nzx99Q1lfpIiWyNAOoIOCNlVxvJFLweNfosdRQb2bo0u62123xAFwwYV
-	nu+87309GV2OZOjMqgYVefDTzWatfZlMSDRuSTMgJ3179o6qAGkbJA3vCpf5P+0zF/INrhax9UsJ+
-	hkJcPXj1tsWluwKUg+jItxh9VSd4YMBrIPMI6cJrkfnaz/FPT4k1m8T1bpKR80HQGbZBY2j/p1V+I
-	k7mjm6E8L+f8CL5fLYUg==;
+	List-Owner; bh=xwwjyvOM0ErAAIBg+YHlsRihkgc84C8saCGX9P8mGLA=; b=tId2h1qLxx1gbW
+	qrWNFVoe42utrqNy1tvavcsS0enYPwuvUIZuLbZIMVnZbnK26+ug3sYL9ZPn1BUDHMerkHvd6aBh+
+	c9poKgCQN/gO+CrNfQzQSPg5Npj24MTgp5Xr7USR/HqkzZHVwtvKMdvNuPxIHcIZdyH1ThKNyhePh
+	3Q4w2RL6GlJq5AFcnfABRJ1q9Pp6HZ0Uq4yU4dD4s2pCEAihC1QCngTHL1wEBUJMLVt6LMSf61/Bi
+	p7DFqQYeQfRP2UlswoIkzypznwoccMrTrtxPaucRdbxuKZpumYxpzrKguDLuElNEahYkq83IN5M/r
+	sAifdJ701kkwTG+I4U3w==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tmjQO-0000000Ffqo-278K;
-	Tue, 25 Feb 2025 01:07:52 +0000
-Received: from mail-pl1-x649.google.com ([2607:f8b0:4864:20::649])
+	id 1tmp40-0000000GA9h-04v0;
+	Tue, 25 Feb 2025 07:09:08 +0000
+Received: from [192.198.163.18] (helo=mgamail.intel.com)
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1tmiIm-0000000FY1J-3GLP
-	for kvm-riscv@lists.infradead.org;
-	Mon, 24 Feb 2025 23:55:57 +0000
-Received: by mail-pl1-x649.google.com with SMTP id d9443c01a7336-2210121ac27so104241045ad.1
-        for <kvm-riscv@lists.infradead.org>; Mon, 24 Feb 2025 15:55:56 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1740441356; x=1741046156; darn=lists.infradead.org;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:reply-to:from:to:cc:subject:date:message-id:reply-to;
-        bh=TJTgZNhYY30nXxMYJRDXX1rx/rqsWdUW6nwlsEZr+Zo=;
-        b=s/EKz2bmKg1x/EOX4H7mnARQb/HNhdfz2Clx6VAHIYBvMOFInSfPKZO62yu6Gi/OXT
-         8pKnKCgi7yk+L7mIkmAUENtj2hQvYXTp5PXjcfKoUs1qTqEcrCjPrktvoUFm1Sd6s4GX
-         xkAMz5fkd8UXe19MxbGMO6n/o1sccehqi88yR0P+Vxo6le6VHO4w4w4hEcfqvhDa/qzN
-         JDhIIGV4ekYTmeoBTcu1uTCGPb+Jw2kzETYBHiXsxgx1p0FXP1NwwxuQRqSxjzyAVo+y
-         +5yeagx0x8UcTsSJ5lyMNO8pxmZwyXyHjwzfNerBllGmK+DhwNdL9T+NmBupkJc4IcOY
-         /NqQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1740441356; x=1741046156;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:reply-to:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=TJTgZNhYY30nXxMYJRDXX1rx/rqsWdUW6nwlsEZr+Zo=;
-        b=YJ/60L5369ITWH3PUwZewW3omdqzHR+k4kNJEucOqWwVEAwYqQVNrK/MUUpAfL9iP6
-         /fpMeeoFVoCR+Rwc91CCVnr3/BKGJyEduYMKDkHcdy5hiYrnLDIMS4Tk0YLK04nV29Hd
-         k+pvQhBrD8isYWOZ5xPQtEt7U0fPMuWJoKjF/p0LcczmkfY8S8WWfAjcTKkoEPN8Hx9b
-         cdVe/WoWY67gUbxD1OSraRKHwJIKgNYD14eMrcw8voaxK1QNJmzc3UN7Rba71IjyTZPu
-         ZlRno91QtfwsMLfX+KE4vjpTYqWtb8dHhUb/j0bTvwrW2sFjsDLwNtoEj5PQldw6xaRi
-         cUCQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVN7r6MPX/2moBwpQOo4e8/lnsVBXeq1khOIhde3MAKK87ynL+o2u7CBDy+l87XE/QICG6EjqjWWSA=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yz+bAQ6qToE/PCr3Ibm3rkXYpGxzRT5WV0366CMWTTMLQkfocJX
-	efFXaNUoRd6F2x3a1fjRHdv3MrNy5BM7PNFRlz/noP+0NeMBS4355OUZI2cgpwbchDFR9b/HadQ
-	QKA==
-X-Google-Smtp-Source: AGHT+IHgthprmvsK7rAfh+PsqOM1pat7xQuGm72FmKpfdI+qTOt1cCxKN5aFSZszJT1EFJi9jy4pNoVXfJY=
-X-Received: from pfbig2.prod.google.com ([2002:a05:6a00:8b82:b0:730:7c03:35e1])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a00:1947:b0:732:623e:2bdc
- with SMTP id d2e1a72fcca58-73426c84885mr24369761b3a.2.1740441355733; Mon, 24
- Feb 2025 15:55:55 -0800 (PST)
-Date: Mon, 24 Feb 2025 15:55:41 -0800
-In-Reply-To: <20250224235542.2562848-1-seanjc@google.com>
-Mime-Version: 1.0
+	id 1tmp3x-0000000GA9A-0mAd;
+	Tue, 25 Feb 2025 07:09:06 +0000
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1740467345; x=1772003345;
+  h=date:from:to:cc:subject:message-id:reply-to:references:
+   in-reply-to:mime-version;
+  bh=eTKW4tIj/TRozU+6PY5F6bbQAl+0TY6LvDgVxjRH2iM=;
+  b=Iurq/2ERzhzTB3ZuR7gj5IV3H45k2K79+bQ11WTCQUzXVhYB4r411sgy
+   JcRJKIwjDlw9+ly7g7fACngqS4xCXaC47HoKPA1RCQnFe3+GbGFvFtQp+
+   TO0JseQMnVqpSfBPoPMLgQ7W72NQVyfRJBBXw5B3YHgzj0iYQ8laNlnEv
+   WZFKpqTFwpw3RakxZdd1Mki1zN1kBe6lyURuVpnqxGP6ipcm9c29Npp8I
+   zcsC1C7WVNigsT3AOmmZjaERqjCV9XRCqDtzr8U10c3IlXPmMKdFMbY5B
+   60Wcz7/bUGjaJidZG7w6rMK42a6lTyvoW5NRRgWlAZZGBM8wc8GgFasSa
+   Q==;
+X-CSE-ConnectionGUID: gbodBdzGTGi6emZ5q5iRnQ==
+X-CSE-MsgGUID: /u7+7bZySbaVCMyKWXCRTA==
+X-IronPort-AV: E=McAfee;i="6700,10204,11355"; a="40494799"
+X-IronPort-AV: E=Sophos;i="6.13,313,1732608000"; 
+   d="scan'208";a="40494799"
+Received: from fmviesa004.fm.intel.com ([10.60.135.144])
+  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Feb 2025 23:09:04 -0800
+X-CSE-ConnectionGUID: hl0N50cyScCx0qmFJdRd1A==
+X-CSE-MsgGUID: pOYuvs0uSj60P8N/F5CYJQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.13,313,1732608000"; 
+   d="scan'208";a="121398313"
+Received: from orsmsx601.amr.corp.intel.com ([10.22.229.14])
+  by fmviesa004.fm.intel.com with ESMTP/TLS/AES256-GCM-SHA384; 24 Feb 2025 23:09:04 -0800
+Received: from ORSMSX901.amr.corp.intel.com (10.22.229.23) by
+ ORSMSX601.amr.corp.intel.com (10.22.229.14) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.44; Mon, 24 Feb 2025 23:09:03 -0800
+Received: from ORSEDG601.ED.cps.intel.com (10.7.248.6) by
+ ORSMSX901.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.14 via Frontend Transport; Mon, 24 Feb 2025 23:09:03 -0800
+Received: from NAM04-BN8-obe.outbound.protection.outlook.com (104.47.74.43) by
+ edgegateway.intel.com (134.134.137.102) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.44; Mon, 24 Feb 2025 23:09:02 -0800
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=VuAUjOU3BNEwz+lEczWn5mcBVF7o4zS9H/kq4VnhpqoPZFeHorMxSAykniqKJArlHba1af5AfoFruNCWoM6bbMLNmTVIIHM/Kj4wVA1mnfbSTtdA0D5b8xIZH5vFsnNBflU6+s30wgbmqfzFCCUGhSS9opFYPOu0X14j3ELcb/8MeQyGM7XOHc0kRX1hbtWMZwXY7JVbiJ0ELveH651W4gjDNeNpB2C2MOsFGhcz8jkKPniPnnAUNzXLR9fSnxhttP7V2rhDYlaL+85kraD41M4MKn+gwjjP854Lr0KfCZI4JAODapWYMInWzwsGUn9mMiQVoBkiiJ1EIHErFoZWog==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=SMcg7oV1LXKpFEumlGiY2hKhy5CGBtvnnB2HEmDiGfE=;
+ b=btgTtbW7n4RcQaYjQYPN5ddmtwtaYzwUUu5hcpSZ04X3noT2UW6b6tgW0AYP8aD/YUj5j+wV/40O5HuRVy2v7u9UTAqQiHbD1kCU+8himR8Ovs2iZIUFX5SSux2g2jnHkTGrYtqabmcnMGwGdIexwkakU6epmEWhPNCgnbKvVvzUNbTtqAtYQpkerCtjoEcpCV9CyUO8Fx5wEw/6RpdOOM/LuYGIn+xZ0lpPKBeCY3OWrKxZ65eIso0eYWLDSqds+n1w8MMoMAvwXzHt7hxWCbVS5x69Eej66Eo7NRErX2kitOEj+EwIsFG1n+yvghcTnnGl9drOuDrB3G5T9qfw/g==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Received: from DS7PR11MB5966.namprd11.prod.outlook.com (2603:10b6:8:71::6) by
+ CH2PR11MB8777.namprd11.prod.outlook.com (2603:10b6:610:283::6) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.8489.18; Tue, 25 Feb 2025 07:08:59 +0000
+Received: from DS7PR11MB5966.namprd11.prod.outlook.com
+ ([fe80::e971:d8f4:66c4:12ca]) by DS7PR11MB5966.namprd11.prod.outlook.com
+ ([fe80::e971:d8f4:66c4:12ca%4]) with mapi id 15.20.8466.016; Tue, 25 Feb 2025
+ 07:08:59 +0000
+Date: Tue, 25 Feb 2025 15:07:36 +0800
+From: Yan Zhao <yan.y.zhao@intel.com>
+To: Sean Christopherson <seanjc@google.com>
+CC: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>,
+	Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>,
+	Huacai Chen <chenhuacai@kernel.org>, Madhavan Srinivasan
+	<maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>, Paul Walmsley
+	<paul.walmsley@sifive.com>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou
+	<aou@eecs.berkeley.edu>, Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Janosch Frank <frankja@linux.ibm.com>, Claudio Imbrenda
+	<imbrenda@linux.ibm.com>, Paolo Bonzini <pbonzini@redhat.com>,
+	<linux-arm-kernel@lists.infradead.org>, <kvmarm@lists.linux.dev>,
+	<kvm@vger.kernel.org>, <loongarch@lists.linux.dev>,
+	<linux-mips@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+	<kvm-riscv@lists.infradead.org>, <linux-riscv@lists.infradead.org>,
+	<linux-kernel@vger.kernel.org>, Aaron Lewis <aaronlewis@google.com>, "Jim
+ Mattson" <jmattson@google.com>, Rick P Edgecombe
+	<rick.p.edgecombe@intel.com>, Kai Huang <kai.huang@intel.com>, Isaku Yamahata
+	<isaku.yamahata@intel.com>
+Subject: Re: [PATCH 3/7] KVM: Assert that a destroyed/freed vCPU is no longer
+ visible
+Message-ID: <Z71sOEu7/ewnWZU2@yzhao56-desk.sh.intel.com>
 References: <20250224235542.2562848-1-seanjc@google.com>
-X-Mailer: git-send-email 2.48.1.658.g4767266eb4-goog
-Message-ID: <20250224235542.2562848-7-seanjc@google.com>
-Subject: [PATCH 6/7] KVM: x86: Fold guts of kvm_arch_sync_events() into kvm_arch_pre_destroy_vm()
-From: Sean Christopherson <seanjc@google.com>
-To: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>, 
-	Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>, 
-	Huacai Chen <chenhuacai@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Anup Patel <anup@brainfault.org>, Paul Walmsley <paul.walmsley@sifive.com>, 
-	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
-	Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, 
-	Claudio Imbrenda <imbrenda@linux.ibm.com>, Sean Christopherson <seanjc@google.com>, 
-	Paolo Bonzini <pbonzini@redhat.com>
-Cc: linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, 
-	kvm@vger.kernel.org, loongarch@lists.linux.dev, linux-mips@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, kvm-riscv@lists.infradead.org, 
-	linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, 
-	Aaron Lewis <aaronlewis@google.com>, Jim Mattson <jmattson@google.com>, 
-	Yan Zhao <yan.y.zhao@intel.com>, Rick P Edgecombe <rick.p.edgecombe@intel.com>, 
-	Kai Huang <kai.huang@intel.com>, Isaku Yamahata <isaku.yamahata@intel.com>
+ <20250224235542.2562848-4-seanjc@google.com>
+Content-Disposition: inline
+In-Reply-To: <20250224235542.2562848-4-seanjc@google.com>
+X-ClientProxiedBy: SI2PR02CA0051.apcprd02.prod.outlook.com
+ (2603:1096:4:196::10) To DS7PR11MB5966.namprd11.prod.outlook.com
+ (2603:10b6:8:71::6)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DS7PR11MB5966:EE_|CH2PR11MB8777:EE_
+X-MS-Office365-Filtering-Correlation-Id: b7115154-ea32-41f4-6f38-08dd556b46cb
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|7416014|376014|366016|1800799024|7053199007;
+X-Microsoft-Antispam-Message-Info: =?us-ascii?Q?NNOpC3XG3aV5NG3Scy++IW05X2Frah4OjNFzgpiHW1pgoxathH2IyFCJOol/?=
+ =?us-ascii?Q?l5A2JC+R5dHfsL65olFA+tdvQE4r8PGMOS7Ju31vhrgZkZ9ehsK8VK4aatYv?=
+ =?us-ascii?Q?V39w8rQYnVjvN4DHdQ3IsjV5HbCDMOAgoQMJS/WzlC5mJ3cTAqdpu5oL1YZX?=
+ =?us-ascii?Q?820Be08zrpbD3Jk4DgTYYZIsCasA0Kbyl1RaTFaiNH/gMlUjmfkq+sOt8lvy?=
+ =?us-ascii?Q?C2/5uPFNKKpk2vYU7HTpsVvUpu5grrd236HkXB6QIM6j6i0phYmdOLW+rOlA?=
+ =?us-ascii?Q?JIMc7yd3fzqXyAYOR9mK/lGn3V3NSt8m6Z2TSYaYJaBhS8etsrGvgzA4/vHL?=
+ =?us-ascii?Q?UOb0FdIWys9AA+sda4isNxULMYm/xlzJKmnoNsgOQ1DtZqls2ZenEPucsj5l?=
+ =?us-ascii?Q?KS/4EDs28/Z4yyUKR51DfPTequdMoh7uImnNi25J9DvqPDYrOlaFFHayyQ4L?=
+ =?us-ascii?Q?Wqut3iNHk9gGmlaGLDDuFVOle+V2CeeJakfHZOG4gc9A9BWcPmxtjlOYnuE4?=
+ =?us-ascii?Q?69UFCrvIv+JgIz8hpWUoaLQCWjaUD7oEe3k6+xcNrxYlEZtfWgJ6Ibft8k2L?=
+ =?us-ascii?Q?ao9nWn7nQNt8BO+2HBCskGD0qmLPZxDv6PNa1R08qmynV3OZB1vrfNirfZPf?=
+ =?us-ascii?Q?+Kha8EaTzySU5YO9ENwA+SyYxirh+RMXtSDi565UuDCEESOXJY3pH6uDXZIp?=
+ =?us-ascii?Q?OCJz6nfGUclzikUCBELtP1AoA8sEyscjQLyQV6jJ03xXYr0nh6ZMX2wLTyX3?=
+ =?us-ascii?Q?FWjjc6YE4gdak/3K36yeAWohAgvMGun+p+Un1lTxL9+vAKknEdgCDKWBV46t?=
+ =?us-ascii?Q?pzcYxrWynJBFUCWrEnk+NBCnjFkYkCGI8iKNR7ZKR4VhqSuk4OxSO0CfKYb0?=
+ =?us-ascii?Q?/Tux+CqTPchiUHjy2GntWgexracKq8r6GEZ56OfrPZqKwcinPh3r6efHN3BD?=
+ =?us-ascii?Q?g+gNTObBuaWrfe4wRGieBGUvQHphALaldeCxDNtzIs5NhY0aaVB67kJQ3vP2?=
+ =?us-ascii?Q?G6J9+tPp2FeNCWtyc8NBWgZeZpdvf6S6bUkbjZQE4Mr1I6bOBGVSdGRFLiYv?=
+ =?us-ascii?Q?PFv+xUNQjJYOmE2qxisQ8YjR91VELEm420xYsDjgkBBptXMYpFA6JL8srFey?=
+ =?us-ascii?Q?M/DDp7IkeqBEMvIX6WU6AHoc8kMUcj3uQxu+yIPOdoq34wSjAh4NCnzwBXQG?=
+ =?us-ascii?Q?5Tw6eixuaoe9BLFvv5b09gGtrb8bncmuCkv3uJgr2LKLLFg+vryLXc30UmVB?=
+ =?us-ascii?Q?hVYvLcWjDlqHKc+qUv7eXa33S1fZMe6tWCBlFmC5n3K2z9zJ4AjRfojKUgcv?=
+ =?us-ascii?Q?5t97Eh7a4mX9Fwj5YKJfg14xIl1Oyb2GeMXqWMfuC1Xvg/RrXNTvA4zG0gZ8?=
+ =?us-ascii?Q?/fl+gvMHzMYaITfbfxEbljqbWFYF?=
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS7PR11MB5966.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(366016)(1800799024)(7053199007);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?7J1miUGVZAH/kHXubyQ4DNTdbAvP6CGGafgIvapufRQHwoOw5S3Wosk+pTEJ?=
+ =?us-ascii?Q?MdH/jxKtCkVfh5nobxWyBbiKcNm5jalMH3fRkYTD6kBpB6Fh+Ohd1rQN3p/W?=
+ =?us-ascii?Q?NUptsJp0TtuNy6jBn5Gi/DcB8Mp39cZd04cgO8wBPaT8JjZ/XYqB/X9uUP5h?=
+ =?us-ascii?Q?XnTmDVBhlcGDTCOaYlMYsRHZHekVO4wQCoqhRZg+VCeLz3IXnEPv1uv3UkwH?=
+ =?us-ascii?Q?YTOaGkngLVar9RmR1ONhTbcDqPaqeflnSSegjw2k/tpUXfJ4/jncPEn2B6qt?=
+ =?us-ascii?Q?S6F8/q2dWwClhkH84Feymy8RJ/R74FiAth7B+wrtxTLKkg4NYai02OA2hEmv?=
+ =?us-ascii?Q?Mfxv226mIvn6FHqcqHqKgROKX+I0i2i8zyWSfrcPJ3wEJqdSArfzS/GXsAji?=
+ =?us-ascii?Q?6J2rHIHsWYGyc1a1qRIJ6i2KR3t3P6gPH2KJeU6i9RH5YGpVhTwn5YD39p51?=
+ =?us-ascii?Q?CHnzSv4TNKul5sOngdp/F79MZddTVvqHDwdwWjGv4Ur4S6FcQvBBsFzIvpT7?=
+ =?us-ascii?Q?708+phKGxjRSzA+iV89JBN5KUFccLCuitR3jTEet3MSCfMcYU0OJ9iksq0wM?=
+ =?us-ascii?Q?OtkRcY6WxlOMyFLacXSyjrlaO7Yviyauqkwtg1EBwEeA5wDp88ZI4ZnQxMF7?=
+ =?us-ascii?Q?BZi2lh/Eq0FWwVf/3ajvQKl+GOFvpnmamjXF75vInwDvUyfAE5vLcF5Qq636?=
+ =?us-ascii?Q?Lzy+zA7UAfujSoMCglrd3q+zJnC76AaL/qowMXf30thWGhUeuuOedZaty6y4?=
+ =?us-ascii?Q?cv72mw2lQO+szcLsadrw+sZ59twIl25utQCAcayJP/BofC+ovsPmCKILknLH?=
+ =?us-ascii?Q?R1XTTIHBMHrSaGgdPjWoThm+kumG9zeaDc6L5d74uya9ur+5rPzQrlcL8uWd?=
+ =?us-ascii?Q?9VCPYuOIuXME+UGFx1ZJyX95B2afIC6/0ZZ2BT7bHbg2HgpEVYZstzBhXDAF?=
+ =?us-ascii?Q?LBKZcRSoxtkTCpLH0pUD6q4qO8KsPGRYsN+yU1cdMzA8TIUHx5GbypPmo812?=
+ =?us-ascii?Q?mpBXRy3dV4gMyKl6g4bf/345O+Ypfuef8y5VzCivj4IAlLzV7SBx3+RAaBgc?=
+ =?us-ascii?Q?8WRKb6StoLJXtsEN8fV2jG5nJu7qJofsXWOXpiQNdz7zAvarFqnDagfFp9mT?=
+ =?us-ascii?Q?TeE1ZTLgp9QpSJEuaguVkXE8ANyESEwzS6LttLj5x4nGwb/CpIKsAnuC05dQ?=
+ =?us-ascii?Q?koBmDcQq9aTfPPQTJLAGm7QYT0K6h8nBYVsxnT4kHW6BWLShvoHd7+9gBII9?=
+ =?us-ascii?Q?4Yw2XT2R2pRK5G83vaziWszCeBwb0LVLHHlbfDZD2pLiYq6jnitdeJpOoOVD?=
+ =?us-ascii?Q?1Eo4TmE30cjJ22uiBh4eV0FLpLw1DCZ//c/eRDTLYkIYoSrQTPsv/pZ+6hg7?=
+ =?us-ascii?Q?W8dodXkx8/FNTjWRFtA/exuTGsKTR/mIYeAJL2457/xtISxbfQog+38II9Nu?=
+ =?us-ascii?Q?ECaESGll+CsIzAWkmBDsWw+MT+G4WjbHXP+I8LKm0ceU2FuWkU/ulV/Xrh11?=
+ =?us-ascii?Q?dAV/VEqJbDiWMO27Lt6kxWVJLz8S9hW2SjwjgWpwEkKsO6XBYQ8t2o7XmbLA?=
+ =?us-ascii?Q?FnTmzGqPXHzSF9XapWxhgatdGZm52bil+brXstjf?=
+X-MS-Exchange-CrossTenant-Network-Message-Id: b7115154-ea32-41f4-6f38-08dd556b46cb
+X-MS-Exchange-CrossTenant-AuthSource: DS7PR11MB5966.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 Feb 2025 07:08:59.5466
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: Gm6KSgUaiPOqhmWPyuhNptHBci3vufBKWkhCUqaIhlJIfW0tRLSgHrpcqOleYUx1AtM6/jrSkN7eyQFRI8gNLA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH2PR11MB8777
+X-OriginatorOrg: intel.com
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250224_155556_815569_D53E0232 
-X-CRM114-Status: UNSURE (   8.69  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20250224_230905_248366_15F9025A 
+X-CRM114-Status: GOOD (  18.72  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -99,65 +199,56 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Reply-To: Sean Christopherson <seanjc@google.com>
+Reply-To: Yan Zhao <yan.y.zhao@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Fold the guts of kvm_arch_sync_events() into kvm_arch_pre_destroy_vm(), as
-the kvmclock and PIT background workers only need to be stopped before
-destroying vCPUs (to avoid accessing vCPUs as they are being freed); it's
-a-ok for them to be running while the VM is visible on the global vm_list.
+On Mon, Feb 24, 2025 at 03:55:38PM -0800, Sean Christopherson wrote:
+> After freeing a vCPU, assert that it is no longer reachable, and that
+> kvm_get_vcpu() doesn't return garbage or a pointer to some other vCPU.
+> While KVM obviously shouldn't be attempting to access a freed vCPU, it's
+> all too easy for KVM to make a VM-wide request, e.g. via KVM_BUG_ON() or
+> kvm_flush_remote_tlbs().
+> 
+> Alternatively, KVM could short-circuit problematic paths if the VM's
+> refcount has gone to zero, e.g. in kvm_make_all_cpus_request(), or KVM
+> could try disallow making global requests during teardown.  But given that
+> deleting the vCPU from the array Just Works, adding logic to the requests
+> path is unnecessary, and trying to make requests illegal during teardown
+> would be a fool's errand.
+> 
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
+> ---
+>  virt/kvm/kvm_main.c | 8 ++++++++
+>  1 file changed, 8 insertions(+)
+> 
+> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+> index 201c14ff476f..991e8111e88b 100644
+> --- a/virt/kvm/kvm_main.c
+> +++ b/virt/kvm/kvm_main.c
+> @@ -489,6 +489,14 @@ void kvm_destroy_vcpus(struct kvm *kvm)
+>  	kvm_for_each_vcpu(i, vcpu, kvm) {
+>  		kvm_vcpu_destroy(vcpu);
+>  		xa_erase(&kvm->vcpu_array, i);
+> +
+> +		/*
+> +		 * Assert that the vCPU isn't visible in any way, to ensure KVM
+> +		 * doesn't trigger a use-after-free if destroying vCPUs results
+> +		 * in VM-wide request, e.g. to flush remote TLBs when tearing
+> +		 * down MMUs, or to mark the VM dead if a KVM_BUG_ON() fires.
+> +		 */
+> +		WARN_ON_ONCE(xa_load(&kvm->vcpu_array, i) || kvm_get_vcpu(kvm, i));
+As xa_erase() says "After this function returns, loading from @index will return
+%NULL", is this checking of xa_load() necessary?
 
-Note, the PIT also needs to be stopped before IRQ routing is freed
-(because KVM's IRQ routing is garbage and assumes there is always non-NULL
-routing).
-
-Opportunistically add comments to explain why KVM stops/frees certain
-assets early.
-
-Signed-off-by: Sean Christopherson <seanjc@google.com>
----
- arch/x86/kvm/x86.c | 15 ++++++++++++---
- 1 file changed, 12 insertions(+), 3 deletions(-)
-
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index a61dbd1f0d01..ea445e6579f1 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -12772,9 +12772,7 @@ int kvm_arch_init_vm(struct kvm *kvm, unsigned long type)
- 
- void kvm_arch_sync_events(struct kvm *kvm)
- {
--	cancel_delayed_work_sync(&kvm->arch.kvmclock_sync_work);
--	cancel_delayed_work_sync(&kvm->arch.kvmclock_update_work);
--	kvm_free_pit(kvm);
-+
- }
- 
- /**
-@@ -12855,6 +12853,17 @@ EXPORT_SYMBOL_GPL(__x86_set_memory_region);
- 
- void kvm_arch_pre_destroy_vm(struct kvm *kvm)
- {
-+	/*
-+	 * Stop all background workers and kthreads before destroying vCPUs, as
-+	 * iterating over vCPUs in a different task while vCPUs are being freed
-+	 * is unsafe, i.e. will lead to use-after-free.  The PIT also needs to
-+	 * be stopped before IRQ routing is freed.
-+	 */
-+	cancel_delayed_work_sync(&kvm->arch.kvmclock_sync_work);
-+	cancel_delayed_work_sync(&kvm->arch.kvmclock_update_work);
-+
-+	kvm_free_pit(kvm);
-+
- 	kvm_mmu_pre_destroy_vm(kvm);
- }
- 
--- 
-2.48.1.658.g4767266eb4-goog
-
+>  	}
+>  
+>  	atomic_set(&kvm->online_vcpus, 0);
+> -- 
+> 2.48.1.658.g4767266eb4-goog
+> 
 
 -- 
 kvm-riscv mailing list
