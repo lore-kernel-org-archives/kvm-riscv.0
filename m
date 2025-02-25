@@ -4,91 +4,124 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C48D5C021B2
-	for <kvm-riscv@archiver.kernel.org>; Tue, 25 Feb 2025 16:44:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A1B4C021B8
+	for <kvm-riscv@archiver.kernel.org>; Tue, 25 Feb 2025 16:45:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:
-	Subject:MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=JATMTMGQWCVcWglektO04WM4pRpiVac8MfCGR6j8QGE=; b=O70QRxjIz3hGbu
-	qtJw8TS+31A2aBB9I/y4uaf88XIhPtgjXpIB2u9c2jGvxjnRolA34ixebqBpdMgeFhmsdgGvOhwgL
-	kr++BYQHVRvD9jr76odnedP8lHQ8GVSxUkASfFGBD57NZ0iTC7VDOLtN0+z1aidqx4bFw3LeReJxB
-	LQcYrM/04ZqtuxqdZVjPFdOJP1oSvgg9Upt8mB9sCRs5dZrUnGiYeagBaNWUh/Ddy9EDdu2s/gvB2
-	tSC+yscDtMoZ6t8rrAP5fUupfk30KUlYiDDvG8HGOMCRWatkrceudQJ61KA3KJUj+zmrcR3+u6zjy
-	fNWRo7GHSgFchvLNHXJw==;
+	List-Owner; bh=gB1xn6Y8s/KTcWXmOUigu7F3kfoTnLcnZyfu2RxB4l4=; b=0mB7TmG4ddMVTf
+	MC0eDDBzcU9wweLBGvSEX3CWVPvwvX82K7Cb0v8hDDdIIg6jHFlM3xL+HZLnyX6NwT/sNrGxxz77m
+	B+45XVeuARxgbWZXFVUM7CMeLSGsEN0ff36rAiZbYyE6YvQwovTT70ruuLiTfo00U2Er+PuNnMr+3
+	DnHObMVSPqbN0om7jjbw3IMQcUpnr6s1MKdJr15EUZC7RmoB4gYFNC/3vwKpFJOSr2TmEb1aC0nK+
+	oeBOSB51k0ZcT8AaPsFFF6X81odSYOkBRfjfFmqEqslNIGFXDrsPvxThYlgCeMLECsuJnwu3k0OwU
+	aBqSCHjjt3tu5qhoGukg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tmy2r-00000000OT6-0ORS;
-	Tue, 25 Feb 2025 16:44:33 +0000
-Received: from mail-pl1-x636.google.com ([2607:f8b0:4864:20::636])
+	id 1tmy3n-00000000PxG-3UZb;
+	Tue, 25 Feb 2025 16:45:31 +0000
+Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1tmxAy-000000007Pg-2eYU
-	for kvm-riscv@lists.infradead.org;
-	Tue, 25 Feb 2025 15:48:54 +0000
-Received: by mail-pl1-x636.google.com with SMTP id d9443c01a7336-2212a930001so45836475ad.0
-        for <kvm-riscv@lists.infradead.org>; Tue, 25 Feb 2025 07:48:52 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=rivosinc-com.20230601.gappssmtp.com; s=20230601; t=1740498532; x=1741103332; darn=lists.infradead.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=MsccQnrBt/HVKVRC76y+/X05SXbpgsZtc6uPmbR4+7s=;
-        b=l3W4MK0G1w1DfBd2BvvG9gVizav4pjaREtDPwA1zz55zLjznCBb4yX0cAnvgqNqnES
-         SwEapyxps0Fo/JkkbmcwsVYyhVCEPwpMU/C6OFGVlX97Jgu3pGN5iJRw8HR1xTX++Z9t
-         j7POb0IMTs6/kE3Pc/GJSYZBoEnhNE7yaZyoi+v83BGXFjT4GR38Osir7giQt63hwF2n
-         e2jQbap/5DyIlSNpityuobwDgJ2G3QDLy3RdUyt49ta6ZgONGHbukHn5ykkSRyA5aKWy
-         XPi+sKtwfyghSFggdqUkqKKqBkzoCfL6XByNu6VcdDouZeE9aIlqKAZGo26MTMpItdeU
-         wKbg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1740498532; x=1741103332;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=MsccQnrBt/HVKVRC76y+/X05SXbpgsZtc6uPmbR4+7s=;
-        b=cpaGEtci3Ywa3iSPrxyoClNBjFeAvQvXMs9MatDQ8E9Grd+St1Qfty3UUX8R/4sun6
-         aePqIj5zdge3goVE4mcGt2c2nO97A0z/i1uKBGtFU5UF9BOu1Q1o7L0X8x0CdIVmUpks
-         ZAC5MQKoylozDN+YDiIDcKDpOqI6y4qHarYdk+TdmWYVPYc5n3obQZtzD2CM5/IWiO0R
-         xH+FqrLrFFJMwLPuDFFL3zQxf/W+4bN8wKuK7F5Ao/I7KMFsIlzarADJdx/T2OczqKvH
-         oWDHZlmzA+GAXR9jl8dzxctuN4g4WGqeRFxlWWnXNQHqYsQm9DmZZ7iM9B+igknY8KSH
-         LKoA==
-X-Forwarded-Encrypted: i=1; AJvYcCWZ9xlTS3op6TtFuWOkFlbCQqEURz6GUVOl4wHu2VCHKyDgybSP5sanV7CIBNZzG/Z3U1dS+gRWNTU=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yz0HGT9Yuvcr95v+4SQ7kolopK+kx8ylXtbErtg4GjWsCwjsYEk
-	l2YsqhntjwKEK8cnG6nXDaRkGhv5Me+1lvrnFDybfiwgvgVvSXWE6k6koGHPc/zPrePudsA3i8w
-	+
-X-Gm-Gg: ASbGncsBBNE1Rgfk2PaNYaOFInOqgkfByvUhQWfwqv8mgc+cOuteEf/L5T00aLzFw8J
-	jHi4XxZFYmHAwQcDEt3xPYjjKQyrWxUcQIgVrD0GJmllHj85VJv+vG+bD7IAUNkp0Gf+h0eTctR
-	Aaak+xTRawn4XG0nXmJCwSkJH2GM6QvrCls01zr+94x8eRI0rVRFAZkWBrv3bl9lSrPquS3sSJK
-	ps17IN2jrKiYZ5PZeHpCEqP7sf2xKIJoeKbj02a/AOBZSEZkYTxA9ECiWmw2gg7cb2ipdZgVndn
-	M6rWeKJfj95EU6I3Y4jTtw33yXVs5lpK0PiMe+z+yaZd2IBIy3fUUas2pfTzZV2Du39iRhg=
-X-Google-Smtp-Source: AGHT+IEhIz2OpC6S1zU7L9ZSpzRjPuvZbv16D/e4mfEIQ+f8VyhZrUcr0a6FL6hjGn8XMZ/BFM+fwg==
-X-Received: by 2002:a17:902:e54e:b0:220:f1db:d96b with SMTP id d9443c01a7336-221a1148be7mr306836495ad.41.1740498530172;
-        Tue, 25 Feb 2025 07:48:50 -0800 (PST)
-Received: from ?IPV6:2a01:e0a:e17:9700:16d2:7456:6634:9626? ([2a01:e0a:e17:9700:16d2:7456:6634:9626])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-7347a6abaf5sm1657668b3a.21.2025.02.25.07.48.46
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 25 Feb 2025 07:48:49 -0800 (PST)
-Message-ID: <127ca898-82f9-4595-a3fe-22748818365f@rivosinc.com>
-Date: Tue, 25 Feb 2025 16:48:42 +0100
+	id 1tmxbN-00000000B4p-2DmU;
+	Tue, 25 Feb 2025 16:16:12 +0000
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 51PDjY8u011012;
+	Tue, 25 Feb 2025 16:15:55 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=EB5xjS
+	HoX3r4ods50zGkpSGZkJJvGI3sQjehgnGJBSo=; b=PePPDQuDji4R5cS+e2V1L2
+	z0JCj0LuK/xrDfeO46zmjIF3tGJgtoBeM4FgD5lYzomRRMeymyFRQ1N+COj4+n3z
+	zhEh1DIkK25owLsjddnGuriJp+VNxa6TBp8Rqe92T59nFrOI7ZEJ/STGVfcZT+f4
+	w5Vkh8iT36VQgba/UrWh/IbdwEpnNF1cpE72Ep3nuf6eryElWG6187EYNn2YUBzB
+	/xjn4vT9fw//W5Q2vkK1bLOBHbvGSrYvCT45nvnMlQfN9pA0ot3+nAKgP2j7p90s
+	BhZNP6wxViFEBdCttUtxJVgzsm+4N0qgG/8wgEaR+9yaWQmjIPQfV92dQlq6+8Eg
+	==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4514q0brm5-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 25 Feb 2025 16:15:55 +0000 (GMT)
+Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 51PG36en010783;
+	Tue, 25 Feb 2025 16:15:54 GMT
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4514q0brm3-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 25 Feb 2025 16:15:54 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 51PF0EdW002578;
+	Tue, 25 Feb 2025 16:15:53 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 44yu4jnfxu-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 25 Feb 2025 16:15:53 +0000
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 51PGFoBR33358422
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 25 Feb 2025 16:15:50 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E488120043;
+	Tue, 25 Feb 2025 16:15:49 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 3319720040;
+	Tue, 25 Feb 2025 16:15:48 +0000 (GMT)
+Received: from p-imbrenda (unknown [9.171.32.179])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with SMTP;
+	Tue, 25 Feb 2025 16:15:48 +0000 (GMT)
+Date: Tue, 25 Feb 2025 17:15:44 +0100
+From: Claudio Imbrenda <imbrenda@linux.ibm.com>
+To: Sean Christopherson <seanjc@google.com>
+Cc: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>,
+        Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>,
+        Huacai Chen <chenhuacai@kernel.org>,
+        Madhavan Srinivasan
+ <maddy@linux.ibm.com>,
+        Anup Patel <anup@brainfault.org>,
+        Paul Walmsley
+ <paul.walmsley@sifive.com>,
+        Palmer Dabbelt <palmer@dabbelt.com>,
+        Albert Ou
+ <aou@eecs.berkeley.edu>,
+        Christian Borntraeger <borntraeger@linux.ibm.com>,
+        Janosch Frank <frankja@linux.ibm.com>,
+        Paolo Bonzini <pbonzini@redhat.com>,
+        linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev,
+        kvm@vger.kernel.org, loongarch@lists.linux.dev,
+        linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
+        linux-kernel@vger.kernel.org, Aaron Lewis
+ <aaronlewis@google.com>,
+        Jim Mattson <jmattson@google.com>, Yan Zhao
+ <yan.y.zhao@intel.com>,
+        Rick P Edgecombe <rick.p.edgecombe@intel.com>,
+        Kai
+ Huang <kai.huang@intel.com>,
+        Isaku Yamahata <isaku.yamahata@intel.com>
+Subject: Re: [PATCH 7/7] KVM: Drop kvm_arch_sync_events() now that all
+ implementations are nops
+Message-ID: <20250225171544.40477437@p-imbrenda>
+In-Reply-To: <20250224235542.2562848-8-seanjc@google.com>
+References: <20250224235542.2562848-1-seanjc@google.com>
+	<20250224235542.2562848-8-seanjc@google.com>
+Organization: IBM
+X-Mailer: Claws Mail 4.3.0 (GTK 3.24.43; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [kvm-unit-tests PATCH 01/10] riscv: sbi: Mark known fwft failures
- as kfails
-To: Andrew Jones <ajones@ventanamicro.com>
-Cc: Andrew Jones <andrew.jones@linux.dev>, kvm-riscv@lists.infradead.org,
- atishp@rivosinc.com, jamestiotio@gmail.com
-References: <20250221155533.123418-12-andrew.jones@linux.dev>
- <20250221155533.123418-13-andrew.jones@linux.dev>
- <1bc65c8e-4d36-4ed4-8f9e-b7a14c09c08a@rivosinc.com>
- <20250225-e46d015c86d53c9a2dfc35ad@orel>
- <20250225-e2ac6882b637786a5712e24e@orel>
-Content-Language: en-US
-From: =?UTF-8?B?Q2zDqW1lbnQgTMOpZ2Vy?= <cleger@rivosinc.com>
-In-Reply-To: <20250225-e2ac6882b637786a5712e24e@orel>
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: 4oNEms2UIOy6dhSLXf3MQHQxp5QC-fsG
+X-Proofpoint-GUID: XwTFU_1fd0Y_Q4qJBAUmVROi_e0umdsT
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1057,Hydra:6.0.680,FMLib:17.12.68.34
+ definitions=2025-02-25_05,2025-02-25_03,2024-11-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
+ suspectscore=0 mlxscore=0 phishscore=0 bulkscore=0 impostorscore=0
+ spamscore=0 mlxlogscore=999 malwarescore=0 clxscore=1011
+ priorityscore=1501 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.19.0-2502100000 definitions=main-2502250103
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250225_074852_671688_7D3CC77B 
-X-CRM114-Status: GOOD (  18.31  )
+X-CRM114-CacheID: sfid-20250225_081609_702932_DAF080CF 
+X-CRM114-Status: GOOD (  18.01  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -100,53 +133,152 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-CgpPbiAyNS8wMi8yMDI1IDE2OjMyLCBBbmRyZXcgSm9uZXMgd3JvdGU6Cj4gT24gVHVlLCBGZWIg
-MjUsIDIwMjUgYXQgMTE6MjU6MTNBTSArMDEwMCwgQW5kcmV3IEpvbmVzIHdyb3RlOgo+PiBPbiBU
-dWUsIEZlYiAyNSwgMjAyNSBhdCAxMToxNDoxM0FNICswMTAwLCBDbMOpbWVudCBMw6lnZXIgd3Jv
-dGU6Cj4+Pgo+Pj4KPj4+IE9uIDIxLzAyLzIwMjUgMTY6NTUsIEFuZHJldyBKb25lcyB3cm90ZToK
-Pj4+PiBVbnRpbCB3ZSBmaXggb3BlbnNiaSBtYXJrIHRoZXNlIGtub3duIGZhaWx1cmVzIGFzIGtm
-YWlscyBzbyB3ZSBjYW4KPj4+PiBwYXNzIENJLgo+Pj4+Cj4+Pj4gU2lnbmVkLW9mZi1ieTogQW5k
-cmV3IEpvbmVzIDxhbmRyZXcuam9uZXNAbGludXguZGV2Pgo+Pj4+IC0tLQo+Pj4+ICByaXNjdi9z
-YmktZndmdC5jIHwgMTUgKysrKysrKysrKysrLS0tCj4+Pj4gIDEgZmlsZSBjaGFuZ2VkLCAxMiBp
-bnNlcnRpb25zKCspLCAzIGRlbGV0aW9ucygtKQo+Pj4+Cj4+Pj4gZGlmZiAtLWdpdCBhL3Jpc2N2
-L3NiaS1md2Z0LmMgYi9yaXNjdi9zYmktZndmdC5jCj4+Pj4gaW5kZXggYjEwYzE0N2YyMmRkLi4x
-OTM0MGQ2YmI0OGMgMTAwNjQ0Cj4+Pj4gLS0tIGEvcmlzY3Yvc2JpLWZ3ZnQuYwo+Pj4+ICsrKyBi
-L3Jpc2N2L3NiaS1md2Z0LmMKPj4+PiBAQCAtNjMsMTEgKzYzLDE3IEBAIHN0YXRpYyB2b2lkIGZ3
-ZnRfY2hlY2tfYmFzZSh2b2lkKQo+Pj4+ICAJCXN0cnVjdCBzYmlyZXQgcmV0Owo+Pj4+ICAKPj4+
-PiAgCQlyZXQgPSBmd2Z0X2dldF9yYXcoQklUKDMyKSk7Cj4+Pj4gLQkJc2JpcmV0X3JlcG9ydF9l
-cnJvcigmcmV0LCBTQklfRVJSX0lOVkFMSURfUEFSQU0sCj4+Pj4gKwkJaWYgKHJldC5lcnJvciA9
-PSAwKQo+Pj4+ICsJCQlyZXBvcnRfa2ZhaWwodHJ1ZSwgZmFsc2UsICJnZXQgZmVhdHVyZSB3aXRo
-IGJpdCAzMiBzZXQgZXJyb3I6IFNCSV9FUlJfSU5WQUxJRF9QQVJBTSIpOwo+Pj4+ICsJCWVsc2UK
-Pj4+PiArCQkJc2JpcmV0X3JlcG9ydF9lcnJvcigmcmV0LCBTQklfRVJSX0lOVkFMSURfUEFSQU0s
-Cj4+Pj4gIAkJCQkgICAgImdldCBmZWF0dXJlIHdpdGggYml0IDMyIHNldCBlcnJvciIpOwo+Pj4K
-Pj4+Cj4+PiBIZXkgQW5kcmV3LAo+Pj4KPj4+IEknbSBhY3R1YWxseSBhIGJpdCBjb25mdXNlZCBo
-ZXJlLiBBcyByYWlzZWQgYnkgQW51cCwgdGhlIHNwZWMgc3RhdGVzIHRoYXQ6Cj4+Pgo+Pj4gIkV2
-ZXJ5IFNCSSBmdW5jdGlvbiBzaG91bGQgcHJlZmVyIHVuc2lnbmVkIGxvbmcgYXMgdGhlIGRhdGEg
-dHlwZS4gSXQKPj4+IGtlZXBzIHRoZSBzcGVjaWZpY2F0aW9uIHNpbXBsZSBhbmQgZWFzaWx5IGFk
-YXB0YWJsZSBmb3IgYWxsIFJJU0MtViBJU0EKPj4+IHR5cGVzLiBJbiBjYXNlIHRoZSBkYXRhIGlz
-IGRlZmluZWQgYXMgMzJiaXQgd2lkZSwgaGlnaGVyIHByaXZpbGVnZQo+Pj4gc29mdHdhcmUgbXVz
-dCBlbnN1cmUgdGhhdCBpdCBvbmx5IHVzZXMgMzIgYml0IGRhdGEuIgo+Pj4KPj4+IERvZXMgdGhp
-cyBtZWFucyA2NCBiaXRzIHZhbHVlIGFyZSB0cnVuY2F0ZWQgdG8gMzIgYml0cyA/Cj4+Cj4+IEFo
-LCB5ZXMuIEkgaGFkIG5vdGljZWQgdGhhdCByZXF1aXJlZCB0cnVuY2F0aW9uIHdoaWxlIGRvaW5n
-IHNvbWUgS1ZNIGZpeGVzCj4+IGFuZCBwYXRjaCA5IG9mIHRoaXMgc2VyaWVzIGlzIGV2ZW4gYWRk
-aW5nIGEgdGVzdCBmb3IgaXQgZm9yIFNVU1AuIEkganVzdAo+PiBkaWRuJ3QgbG9vayBjbG9zZWx5
-IGVub3VnaCBhdCB3aHkgdGhpcyBGV0ZUIHRlc3Qgd2FzIGZhaWxpbmcuIFRoZSB0ZXN0Cj4+IHNo
-b3VsZCBnZXQgU0JJX1NVQ0NFU1MsIGFzIGl0IGRvZXMsIGJ1dCBpdCBzaG91bGQgYWxzbyBjaGVj
-ayB0aGF0Cj4+IGZlYXR1cmUgPSBCSVQoMzIpIGJlaGF2ZXMgdGhlIHNhbWUgYXMgZmVhdHVyZXMg
-PSAxLgo+IAo+IEVoLCAnLi4uYXMgZmVhdHVyZSA9IDAgKE1JU0FMSUdORURfRVhDX0RFTEVHKScu
-IEZvciBub3csIEkgdGhpbmsgd2Ugc2hvdWxkCj4ganVzdCBkcm9wIHRoZSB0ZXN0LCB0aG91Z2gs
-IGJlY2F1c2Ugd2UgbmVlZCBhIGZlYXR1cmUgdGhhdCwgd2hlbiBwcmVzZW50LAo+IGFsd2F5cyBh
-bGxvd3MgZW5hYmxlL2Rpc2FibGUgaW4gb3JkZXIgdG8gdGVzdCBmb3IgYSBjaGFuZ2UgaW4gYmVo
-YXZpb3IuCj4gV2hpbGUgd2UgbWF5IGJlIGFibGUgdG8gdG9nZ2xlIDAvMSBmb3IgTUlTQUxJR05F
-RF9FWENfREVMRUcsIHdlIGNhbid0Cj4gY291bnQgb24gdHJhcHMgZ2V0dGluZyBlbmFibGVkLiBJ
-J2xsIGFkZCBBRFVFIHRlc3RzIGFuZCBkbyBhIHRydW5jYXRlZAo+IGZlYXR1cmUgSUQgdGVzdCBm
-b3IgaXQuCgpBaCB5ZWFoIHRvdGFsbHkgbWFrZSBzZW5zZSAhIEknbGwgbW9kaWZ5IFNTRSB0ZXN0
-IGFzIHdlbGwgdG8gdGVzdCB0aGF0CjY0IGJpdHMgaWRlbnRpZmllciBhcmUgY29ycmVjdGx5IHRy
-dW5jYXRlZC4KClRoYW5rcywKCkNsw6ltZW50Cgo+IAo+IFRoYW5rcywKPiBkcmV3CgoKLS0gCmt2
-bS1yaXNjdiBtYWlsaW5nIGxpc3QKa3ZtLXJpc2N2QGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDov
-L2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9rdm0tcmlzY3YK
+On Mon, 24 Feb 2025 15:55:42 -0800
+Sean Christopherson <seanjc@google.com> wrote:
+
+> Remove kvm_arch_sync_events() now that x86 no longer uses it (no other
+> arch has ever used it).
+> 
+> No functional change intended.
+> 
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
+
+Acked-by: Claudio Imbrenda <imbrenda@linux.ibm.com>
+
+> ---
+>  arch/arm64/include/asm/kvm_host.h     | 2 --
+>  arch/loongarch/include/asm/kvm_host.h | 1 -
+>  arch/mips/include/asm/kvm_host.h      | 1 -
+>  arch/powerpc/include/asm/kvm_host.h   | 1 -
+>  arch/riscv/include/asm/kvm_host.h     | 2 --
+>  arch/s390/include/asm/kvm_host.h      | 1 -
+>  arch/x86/kvm/x86.c                    | 5 -----
+>  include/linux/kvm_host.h              | 1 -
+>  virt/kvm/kvm_main.c                   | 1 -
+>  9 files changed, 15 deletions(-)
+> 
+> diff --git a/arch/arm64/include/asm/kvm_host.h b/arch/arm64/include/asm/kvm_host.h
+> index 7cfa024de4e3..40897bd2b4a3 100644
+> --- a/arch/arm64/include/asm/kvm_host.h
+> +++ b/arch/arm64/include/asm/kvm_host.h
+> @@ -1346,8 +1346,6 @@ static inline bool kvm_system_needs_idmapped_vectors(void)
+>  	return cpus_have_final_cap(ARM64_SPECTRE_V3A);
+>  }
+>  
+> -static inline void kvm_arch_sync_events(struct kvm *kvm) {}
+> -
+>  void kvm_init_host_debug_data(void);
+>  void kvm_vcpu_load_debug(struct kvm_vcpu *vcpu);
+>  void kvm_vcpu_put_debug(struct kvm_vcpu *vcpu);
+> diff --git a/arch/loongarch/include/asm/kvm_host.h b/arch/loongarch/include/asm/kvm_host.h
+> index 590982cd986e..ab5b7001e2ff 100644
+> --- a/arch/loongarch/include/asm/kvm_host.h
+> +++ b/arch/loongarch/include/asm/kvm_host.h
+> @@ -320,7 +320,6 @@ static inline bool kvm_is_ifetch_fault(struct kvm_vcpu_arch *arch)
+>  
+>  /* Misc */
+>  static inline void kvm_arch_hardware_unsetup(void) {}
+> -static inline void kvm_arch_sync_events(struct kvm *kvm) {}
+>  static inline void kvm_arch_memslots_updated(struct kvm *kvm, u64 gen) {}
+>  static inline void kvm_arch_vcpu_blocking(struct kvm_vcpu *vcpu) {}
+>  static inline void kvm_arch_vcpu_unblocking(struct kvm_vcpu *vcpu) {}
+> diff --git a/arch/mips/include/asm/kvm_host.h b/arch/mips/include/asm/kvm_host.h
+> index f7222eb594ea..c14b10821817 100644
+> --- a/arch/mips/include/asm/kvm_host.h
+> +++ b/arch/mips/include/asm/kvm_host.h
+> @@ -886,7 +886,6 @@ extern unsigned long kvm_mips_get_ramsize(struct kvm *kvm);
+>  extern int kvm_vcpu_ioctl_interrupt(struct kvm_vcpu *vcpu,
+>  			     struct kvm_mips_interrupt *irq);
+>  
+> -static inline void kvm_arch_sync_events(struct kvm *kvm) {}
+>  static inline void kvm_arch_free_memslot(struct kvm *kvm,
+>  					 struct kvm_memory_slot *slot) {}
+>  static inline void kvm_arch_memslots_updated(struct kvm *kvm, u64 gen) {}
+> diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+> index 6e1108f8fce6..2d139c807577 100644
+> --- a/arch/powerpc/include/asm/kvm_host.h
+> +++ b/arch/powerpc/include/asm/kvm_host.h
+> @@ -902,7 +902,6 @@ struct kvm_vcpu_arch {
+>  #define __KVM_HAVE_ARCH_WQP
+>  #define __KVM_HAVE_CREATE_DEVICE
+>  
+> -static inline void kvm_arch_sync_events(struct kvm *kvm) {}
+>  static inline void kvm_arch_memslots_updated(struct kvm *kvm, u64 gen) {}
+>  static inline void kvm_arch_flush_shadow_all(struct kvm *kvm) {}
+>  static inline void kvm_arch_vcpu_blocking(struct kvm_vcpu *vcpu) {}
+> diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
+> index cc33e35cd628..0e9c2fab6378 100644
+> --- a/arch/riscv/include/asm/kvm_host.h
+> +++ b/arch/riscv/include/asm/kvm_host.h
+> @@ -301,8 +301,6 @@ static inline bool kvm_arch_pmi_in_guest(struct kvm_vcpu *vcpu)
+>  	return IS_ENABLED(CONFIG_GUEST_PERF_EVENTS) && !!vcpu;
+>  }
+>  
+> -static inline void kvm_arch_sync_events(struct kvm *kvm) {}
+> -
+>  #define KVM_RISCV_GSTAGE_TLB_MIN_ORDER		12
+>  
+>  void kvm_riscv_local_hfence_gvma_vmid_gpa(unsigned long vmid,
+> diff --git a/arch/s390/include/asm/kvm_host.h b/arch/s390/include/asm/kvm_host.h
+> index 9a367866cab0..424f899d8163 100644
+> --- a/arch/s390/include/asm/kvm_host.h
+> +++ b/arch/s390/include/asm/kvm_host.h
+> @@ -1056,7 +1056,6 @@ bool kvm_s390_pv_cpu_is_protected(struct kvm_vcpu *vcpu);
+>  extern int kvm_s390_gisc_register(struct kvm *kvm, u32 gisc);
+>  extern int kvm_s390_gisc_unregister(struct kvm *kvm, u32 gisc);
+>  
+> -static inline void kvm_arch_sync_events(struct kvm *kvm) {}
+>  static inline void kvm_arch_free_memslot(struct kvm *kvm,
+>  					 struct kvm_memory_slot *slot) {}
+>  static inline void kvm_arch_memslots_updated(struct kvm *kvm, u64 gen) {}
+> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+> index ea445e6579f1..454fd6b8f3db 100644
+> --- a/arch/x86/kvm/x86.c
+> +++ b/arch/x86/kvm/x86.c
+> @@ -12770,11 +12770,6 @@ int kvm_arch_init_vm(struct kvm *kvm, unsigned long type)
+>  	return ret;
+>  }
+>  
+> -void kvm_arch_sync_events(struct kvm *kvm)
+> -{
+> -
+> -}
+> -
+>  /**
+>   * __x86_set_memory_region: Setup KVM internal memory slot
+>   *
+> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+> index c28a6aa1f2ed..5438a1b446a6 100644
+> --- a/include/linux/kvm_host.h
+> +++ b/include/linux/kvm_host.h
+> @@ -1747,7 +1747,6 @@ static inline void kvm_unregister_perf_callbacks(void) {}
+>  
+>  int kvm_arch_init_vm(struct kvm *kvm, unsigned long type);
+>  void kvm_arch_destroy_vm(struct kvm *kvm);
+> -void kvm_arch_sync_events(struct kvm *kvm);
+>  
+>  int kvm_cpu_has_pending_timer(struct kvm_vcpu *vcpu);
+>  
+> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+> index 991e8111e88b..55153494ac70 100644
+> --- a/virt/kvm/kvm_main.c
+> +++ b/virt/kvm/kvm_main.c
+> @@ -1271,7 +1271,6 @@ static void kvm_destroy_vm(struct kvm *kvm)
+>  	kvm_destroy_pm_notifier(kvm);
+>  	kvm_uevent_notify_change(KVM_EVENT_DESTROY_VM, kvm);
+>  	kvm_destroy_vm_debugfs(kvm);
+> -	kvm_arch_sync_events(kvm);
+>  	mutex_lock(&kvm_lock);
+>  	list_del(&kvm->vm_list);
+>  	mutex_unlock(&kvm_lock);
+
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
