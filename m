@@ -4,88 +4,91 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 75BDFC021B2
-	for <kvm-riscv@archiver.kernel.org>; Tue, 25 Feb 2025 16:43:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C48D5C021B2
+	for <kvm-riscv@archiver.kernel.org>; Tue, 25 Feb 2025 16:44:34 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:
+	Subject:MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=8PyW78ggyanwO6xg3Oc3pMsa3jRTYqumZf1Uu8+qwkM=; b=UQTsCAVTq34vbl
-	QQrhrpzY9jAIE4DnXbjhlesX7G+s+DQFKN0TZcVwo48Pm4Lin7QeMO+IGsPtMDvHBd1FZU1yroxDD
-	h/QiZYSUX6xXQqQ7vOKRb4CRIsUx8lT/5xZenbLe+y2lEjESoP2wbaxOjxOyrIclZHKPe4kbU/ybh
-	B5eR3+MUFXk+esGTaE1hgv+1QCpb9yyb7cOi/vU41iAp4E+T6APgOlWidtSYNHxsAmh7LeL9DT7Rt
-	9PMlUWR5M6uegYoiIFyq69MEosjye9elkV65EsJ97NvzzfwsYgrU5jMnrEH/ZhLSLpYCacpuAqY/P
-	CQX/XM6+ISv5LSUZDr7Q==;
+	List-Owner; bh=JATMTMGQWCVcWglektO04WM4pRpiVac8MfCGR6j8QGE=; b=O70QRxjIz3hGbu
+	qtJw8TS+31A2aBB9I/y4uaf88XIhPtgjXpIB2u9c2jGvxjnRolA34ixebqBpdMgeFhmsdgGvOhwgL
+	kr++BYQHVRvD9jr76odnedP8lHQ8GVSxUkASfFGBD57NZ0iTC7VDOLtN0+z1aidqx4bFw3LeReJxB
+	LQcYrM/04ZqtuxqdZVjPFdOJP1oSvgg9Upt8mB9sCRs5dZrUnGiYeagBaNWUh/Ddy9EDdu2s/gvB2
+	tSC+yscDtMoZ6t8rrAP5fUupfk30KUlYiDDvG8HGOMCRWatkrceudQJ61KA3KJUj+zmrcR3+u6zjy
+	fNWRo7GHSgFchvLNHXJw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tmy2C-00000000NRw-3sy6;
-	Tue, 25 Feb 2025 16:43:52 +0000
-Received: from mail-wm1-x32b.google.com ([2a00:1450:4864:20::32b])
+	id 1tmy2r-00000000OT6-0ORS;
+	Tue, 25 Feb 2025 16:44:33 +0000
+Received: from mail-pl1-x636.google.com ([2607:f8b0:4864:20::636])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1tmwvV-000000005Cq-26Qy
+	id 1tmxAy-000000007Pg-2eYU
 	for kvm-riscv@lists.infradead.org;
-	Tue, 25 Feb 2025 15:32:54 +0000
-Received: by mail-wm1-x32b.google.com with SMTP id 5b1f17b1804b1-4397dff185fso50424745e9.2
-        for <kvm-riscv@lists.infradead.org>; Tue, 25 Feb 2025 07:32:53 -0800 (PST)
+	Tue, 25 Feb 2025 15:48:54 +0000
+Received: by mail-pl1-x636.google.com with SMTP id d9443c01a7336-2212a930001so45836475ad.0
+        for <kvm-riscv@lists.infradead.org>; Tue, 25 Feb 2025 07:48:52 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ventanamicro.com; s=google; t=1740497572; x=1741102372; darn=lists.infradead.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=gnH5e9Lma+Kmpu0f2X9COQpkiyn0hR0X1KyRrynBxqw=;
-        b=H7NIv5fJj6RflPS2d5OeHhag9Tyv5xNj57QTS24lN5nvt2YG3D09N6d3LcThpCh6t/
-         9ejEHAlwkLpPs5SXubzULXQsvzEKgXBc0TBB2GlNie7xvOcoWXXEKQzV5V4QyRMimwCa
-         TdGD7ZyKMDg7MxD5/yKZRjBsIurR/Ppr/WzACzwnE1UdgpcsI8BCAEFLvwEpb4PAPwJe
-         aC+xEMobfjrrrPsESsrcbPeoGwYx2nLueWx0WGLNQhSJkDqlpECVwL4mlQH4LfeVaYZ9
-         HaZBss5QHUc0541xEQZuX/uYgOpSOcBiuqEJZ1PH2zsCkmMTybnvk8mIQXmztcgcQw7D
-         pUUg==
+        d=rivosinc-com.20230601.gappssmtp.com; s=20230601; t=1740498532; x=1741103332; darn=lists.infradead.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=MsccQnrBt/HVKVRC76y+/X05SXbpgsZtc6uPmbR4+7s=;
+        b=l3W4MK0G1w1DfBd2BvvG9gVizav4pjaREtDPwA1zz55zLjznCBb4yX0cAnvgqNqnES
+         SwEapyxps0Fo/JkkbmcwsVYyhVCEPwpMU/C6OFGVlX97Jgu3pGN5iJRw8HR1xTX++Z9t
+         j7POb0IMTs6/kE3Pc/GJSYZBoEnhNE7yaZyoi+v83BGXFjT4GR38Osir7giQt63hwF2n
+         e2jQbap/5DyIlSNpityuobwDgJ2G3QDLy3RdUyt49ta6ZgONGHbukHn5ykkSRyA5aKWy
+         XPi+sKtwfyghSFggdqUkqKKqBkzoCfL6XByNu6VcdDouZeE9aIlqKAZGo26MTMpItdeU
+         wKbg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1740497572; x=1741102372;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date
+        d=1e100.net; s=20230601; t=1740498532; x=1741103332;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=gnH5e9Lma+Kmpu0f2X9COQpkiyn0hR0X1KyRrynBxqw=;
-        b=Zu+lR2a4jI+tE4HEBA4u8ufxdrLjx4rkMCQvS8mfItmDNsgDwrtrYby+Zac+9BdTwt
-         PB0gjOp4GvK/QLEc1Q/2Jr9CDahGfLmWc0AY6Iji5zy60LEbrLQPUtrglSohbWGNjrRB
-         mtb/Fv/ozmVWAKdDe986/N6vsxYXGCnBhnoWr8F6fJjKkyGX8cUQ8wk6uI9BpwIHrRGE
-         9vYCPtGp1+bRRBKlp5tiQIBQCpm/q3vXxK+dk0VgFnZEbMNsn0Zou61v3nad56/htYCN
-         HDqqerWg6yZCrWMyDmWuKpvzGSiJuU3U0yaV9s8Uzh6pbQIniCXoYCQnVBBrRnf7jJra
-         fEqQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWHcdUU21mHWO33lcSBiIsNfQluptZSqozb4OybGZsuH8z8OiO0VhtKUmK3Dr6iZjcp3IE0Ty1sXzM=@lists.infradead.org
-X-Gm-Message-State: AOJu0YyKd492RZCtXOQFNGyLGGE57hwkhirEqatuKjfKFkjAii92HP66
-	WGBB3Mfi+oMfHMZZ8riaQUPb7g+dwP2fPKodDJ0ZM6E573rS3WUprBkhoWt/vj0=
-X-Gm-Gg: ASbGncv4X18MQ5czv+8EfK6+2g0mgxCPMppSb32/3ywWdS1gGYSiqUjAmqhavGk8oi5
-	Ez4LZJB6tEP2Pux2dqvjmV84mLYdsHpLbGG9xoOMdgXVUAjgXyOCvZmZmYCt0NdmbJgDNh9KxiN
-	tv0LhCX6nneZzRVrcMjBFP3JyfA20uczQjHHfuL7nR1nS3+JyUWt6Yvl05qfCWFdqN6TxYetA/Z
-	U0sbjgQeVGvoAlNl5IkOHS5s8jZHeZo6hw/5iZYfXsRMPiglP4zvZXm2NKap/ThJCHkXX3zDSak
-	fvNABEpKe7VOvA==
-X-Google-Smtp-Source: AGHT+IE/10UNiDPWwtBBMEDEZV7Gh//geUwWPo2SV1VAb7jdOIPm2ysV0VQ74HMs2qTKqO6a/d5jbg==
-X-Received: by 2002:a05:600c:3c9f:b0:439:34dd:c3cc with SMTP id 5b1f17b1804b1-439ae2197d1mr127217955e9.22.1740497571656;
-        Tue, 25 Feb 2025 07:32:51 -0800 (PST)
-Received: from localhost ([2a02:8308:a00c:e200::766e])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-390cd8829cesm2645507f8f.49.2025.02.25.07.32.50
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 25 Feb 2025 07:32:51 -0800 (PST)
-Date: Tue, 25 Feb 2025 16:32:50 +0100
-From: Andrew Jones <ajones@ventanamicro.com>
-To: =?utf-8?B?Q2zDqW1lbnQgTMOpZ2Vy?= <cleger@rivosinc.com>
-Cc: Andrew Jones <andrew.jones@linux.dev>, kvm-riscv@lists.infradead.org, 
-	atishp@rivosinc.com, jamestiotio@gmail.com
-Subject: Re: [kvm-unit-tests PATCH 01/10] riscv: sbi: Mark known fwft
- failures as kfails
-Message-ID: <20250225-e2ac6882b637786a5712e24e@orel>
+        bh=MsccQnrBt/HVKVRC76y+/X05SXbpgsZtc6uPmbR4+7s=;
+        b=cpaGEtci3Ywa3iSPrxyoClNBjFeAvQvXMs9MatDQ8E9Grd+St1Qfty3UUX8R/4sun6
+         aePqIj5zdge3goVE4mcGt2c2nO97A0z/i1uKBGtFU5UF9BOu1Q1o7L0X8x0CdIVmUpks
+         ZAC5MQKoylozDN+YDiIDcKDpOqI6y4qHarYdk+TdmWYVPYc5n3obQZtzD2CM5/IWiO0R
+         xH+FqrLrFFJMwLPuDFFL3zQxf/W+4bN8wKuK7F5Ao/I7KMFsIlzarADJdx/T2OczqKvH
+         oWDHZlmzA+GAXR9jl8dzxctuN4g4WGqeRFxlWWnXNQHqYsQm9DmZZ7iM9B+igknY8KSH
+         LKoA==
+X-Forwarded-Encrypted: i=1; AJvYcCWZ9xlTS3op6TtFuWOkFlbCQqEURz6GUVOl4wHu2VCHKyDgybSP5sanV7CIBNZzG/Z3U1dS+gRWNTU=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yz0HGT9Yuvcr95v+4SQ7kolopK+kx8ylXtbErtg4GjWsCwjsYEk
+	l2YsqhntjwKEK8cnG6nXDaRkGhv5Me+1lvrnFDybfiwgvgVvSXWE6k6koGHPc/zPrePudsA3i8w
+	+
+X-Gm-Gg: ASbGncsBBNE1Rgfk2PaNYaOFInOqgkfByvUhQWfwqv8mgc+cOuteEf/L5T00aLzFw8J
+	jHi4XxZFYmHAwQcDEt3xPYjjKQyrWxUcQIgVrD0GJmllHj85VJv+vG+bD7IAUNkp0Gf+h0eTctR
+	Aaak+xTRawn4XG0nXmJCwSkJH2GM6QvrCls01zr+94x8eRI0rVRFAZkWBrv3bl9lSrPquS3sSJK
+	ps17IN2jrKiYZ5PZeHpCEqP7sf2xKIJoeKbj02a/AOBZSEZkYTxA9ECiWmw2gg7cb2ipdZgVndn
+	M6rWeKJfj95EU6I3Y4jTtw33yXVs5lpK0PiMe+z+yaZd2IBIy3fUUas2pfTzZV2Du39iRhg=
+X-Google-Smtp-Source: AGHT+IEhIz2OpC6S1zU7L9ZSpzRjPuvZbv16D/e4mfEIQ+f8VyhZrUcr0a6FL6hjGn8XMZ/BFM+fwg==
+X-Received: by 2002:a17:902:e54e:b0:220:f1db:d96b with SMTP id d9443c01a7336-221a1148be7mr306836495ad.41.1740498530172;
+        Tue, 25 Feb 2025 07:48:50 -0800 (PST)
+Received: from ?IPV6:2a01:e0a:e17:9700:16d2:7456:6634:9626? ([2a01:e0a:e17:9700:16d2:7456:6634:9626])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-7347a6abaf5sm1657668b3a.21.2025.02.25.07.48.46
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 25 Feb 2025 07:48:49 -0800 (PST)
+Message-ID: <127ca898-82f9-4595-a3fe-22748818365f@rivosinc.com>
+Date: Tue, 25 Feb 2025 16:48:42 +0100
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [kvm-unit-tests PATCH 01/10] riscv: sbi: Mark known fwft failures
+ as kfails
+To: Andrew Jones <ajones@ventanamicro.com>
+Cc: Andrew Jones <andrew.jones@linux.dev>, kvm-riscv@lists.infradead.org,
+ atishp@rivosinc.com, jamestiotio@gmail.com
 References: <20250221155533.123418-12-andrew.jones@linux.dev>
  <20250221155533.123418-13-andrew.jones@linux.dev>
  <1bc65c8e-4d36-4ed4-8f9e-b7a14c09c08a@rivosinc.com>
  <20250225-e46d015c86d53c9a2dfc35ad@orel>
-MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <20250225-e46d015c86d53c9a2dfc35ad@orel>
+ <20250225-e2ac6882b637786a5712e24e@orel>
+Content-Language: en-US
+From: =?UTF-8?B?Q2zDqW1lbnQgTMOpZ2Vy?= <cleger@rivosinc.com>
+In-Reply-To: <20250225-e2ac6882b637786a5712e24e@orel>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250225_073253_544994_9C29B47B 
-X-CRM114-Status: GOOD (  26.44  )
+X-CRM114-CacheID: sfid-20250225_074852_671688_7D3CC77B 
+X-CRM114-Status: GOOD (  18.31  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -97,82 +100,53 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Tue, Feb 25, 2025 at 11:25:13AM +0100, Andrew Jones wrote:
-> On Tue, Feb 25, 2025 at 11:14:13AM +0100, Cl=E9ment L=E9ger wrote:
-> > =
-
-> > =
-
-> > On 21/02/2025 16:55, Andrew Jones wrote:
-> > > Until we fix opensbi mark these known failures as kfails so we can
-> > > pass CI.
-> > > =
-
-> > > Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
-> > > ---
-> > >  riscv/sbi-fwft.c | 15 ++++++++++++---
-> > >  1 file changed, 12 insertions(+), 3 deletions(-)
-> > > =
-
-> > > diff --git a/riscv/sbi-fwft.c b/riscv/sbi-fwft.c
-> > > index b10c147f22dd..19340d6bb48c 100644
-> > > --- a/riscv/sbi-fwft.c
-> > > +++ b/riscv/sbi-fwft.c
-> > > @@ -63,11 +63,17 @@ static void fwft_check_base(void)
-> > >  		struct sbiret ret;
-> > >  =
-
-> > >  		ret =3D fwft_get_raw(BIT(32));
-> > > -		sbiret_report_error(&ret, SBI_ERR_INVALID_PARAM,
-> > > +		if (ret.error =3D=3D 0)
-> > > +			report_kfail(true, false, "get feature with bit 32 set error: SBI=
-_ERR_INVALID_PARAM");
-> > > +		else
-> > > +			sbiret_report_error(&ret, SBI_ERR_INVALID_PARAM,
-> > >  				    "get feature with bit 32 set error");
-> > =
-
-> > =
-
-> > Hey Andrew,
-> > =
-
-> > I'm actually a bit confused here. As raised by Anup, the spec states th=
-at:
-> > =
-
-> > "Every SBI function should prefer unsigned long as the data type. It
-> > keeps the specification simple and easily adaptable for all RISC-V ISA
-> > types. In case the data is defined as 32bit wide, higher privilege
-> > software must ensure that it only uses 32 bit data."
-> > =
-
-> > Does this means 64 bits value are truncated to 32 bits ?
-> =
-
-> Ah, yes. I had noticed that required truncation while doing some KVM fixes
-> and patch 9 of this series is even adding a test for it for SUSP. I just
-> didn't look closely enough at why this FWFT test was failing. The test
-> should get SBI_SUCCESS, as it does, but it should also check that
-> feature =3D BIT(32) behaves the same as features =3D 1.
-
-Eh, '...as feature =3D 0 (MISALIGNED_EXC_DELEG)'. For now, I think we should
-just drop the test, though, because we need a feature that, when present,
-always allows enable/disable in order to test for a change in behavior.
-While we may be able to toggle 0/1 for MISALIGNED_EXC_DELEG, we can't
-count on traps getting enabled. I'll add ADUE tests and do a truncated
-feature ID test for it.
-
-Thanks,
-drew
-
--- =
-
-kvm-riscv mailing list
-kvm-riscv@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/kvm-riscv
+CgpPbiAyNS8wMi8yMDI1IDE2OjMyLCBBbmRyZXcgSm9uZXMgd3JvdGU6Cj4gT24gVHVlLCBGZWIg
+MjUsIDIwMjUgYXQgMTE6MjU6MTNBTSArMDEwMCwgQW5kcmV3IEpvbmVzIHdyb3RlOgo+PiBPbiBU
+dWUsIEZlYiAyNSwgMjAyNSBhdCAxMToxNDoxM0FNICswMTAwLCBDbMOpbWVudCBMw6lnZXIgd3Jv
+dGU6Cj4+Pgo+Pj4KPj4+IE9uIDIxLzAyLzIwMjUgMTY6NTUsIEFuZHJldyBKb25lcyB3cm90ZToK
+Pj4+PiBVbnRpbCB3ZSBmaXggb3BlbnNiaSBtYXJrIHRoZXNlIGtub3duIGZhaWx1cmVzIGFzIGtm
+YWlscyBzbyB3ZSBjYW4KPj4+PiBwYXNzIENJLgo+Pj4+Cj4+Pj4gU2lnbmVkLW9mZi1ieTogQW5k
+cmV3IEpvbmVzIDxhbmRyZXcuam9uZXNAbGludXguZGV2Pgo+Pj4+IC0tLQo+Pj4+ICByaXNjdi9z
+YmktZndmdC5jIHwgMTUgKysrKysrKysrKysrLS0tCj4+Pj4gIDEgZmlsZSBjaGFuZ2VkLCAxMiBp
+bnNlcnRpb25zKCspLCAzIGRlbGV0aW9ucygtKQo+Pj4+Cj4+Pj4gZGlmZiAtLWdpdCBhL3Jpc2N2
+L3NiaS1md2Z0LmMgYi9yaXNjdi9zYmktZndmdC5jCj4+Pj4gaW5kZXggYjEwYzE0N2YyMmRkLi4x
+OTM0MGQ2YmI0OGMgMTAwNjQ0Cj4+Pj4gLS0tIGEvcmlzY3Yvc2JpLWZ3ZnQuYwo+Pj4+ICsrKyBi
+L3Jpc2N2L3NiaS1md2Z0LmMKPj4+PiBAQCAtNjMsMTEgKzYzLDE3IEBAIHN0YXRpYyB2b2lkIGZ3
+ZnRfY2hlY2tfYmFzZSh2b2lkKQo+Pj4+ICAJCXN0cnVjdCBzYmlyZXQgcmV0Owo+Pj4+ICAKPj4+
+PiAgCQlyZXQgPSBmd2Z0X2dldF9yYXcoQklUKDMyKSk7Cj4+Pj4gLQkJc2JpcmV0X3JlcG9ydF9l
+cnJvcigmcmV0LCBTQklfRVJSX0lOVkFMSURfUEFSQU0sCj4+Pj4gKwkJaWYgKHJldC5lcnJvciA9
+PSAwKQo+Pj4+ICsJCQlyZXBvcnRfa2ZhaWwodHJ1ZSwgZmFsc2UsICJnZXQgZmVhdHVyZSB3aXRo
+IGJpdCAzMiBzZXQgZXJyb3I6IFNCSV9FUlJfSU5WQUxJRF9QQVJBTSIpOwo+Pj4+ICsJCWVsc2UK
+Pj4+PiArCQkJc2JpcmV0X3JlcG9ydF9lcnJvcigmcmV0LCBTQklfRVJSX0lOVkFMSURfUEFSQU0s
+Cj4+Pj4gIAkJCQkgICAgImdldCBmZWF0dXJlIHdpdGggYml0IDMyIHNldCBlcnJvciIpOwo+Pj4K
+Pj4+Cj4+PiBIZXkgQW5kcmV3LAo+Pj4KPj4+IEknbSBhY3R1YWxseSBhIGJpdCBjb25mdXNlZCBo
+ZXJlLiBBcyByYWlzZWQgYnkgQW51cCwgdGhlIHNwZWMgc3RhdGVzIHRoYXQ6Cj4+Pgo+Pj4gIkV2
+ZXJ5IFNCSSBmdW5jdGlvbiBzaG91bGQgcHJlZmVyIHVuc2lnbmVkIGxvbmcgYXMgdGhlIGRhdGEg
+dHlwZS4gSXQKPj4+IGtlZXBzIHRoZSBzcGVjaWZpY2F0aW9uIHNpbXBsZSBhbmQgZWFzaWx5IGFk
+YXB0YWJsZSBmb3IgYWxsIFJJU0MtViBJU0EKPj4+IHR5cGVzLiBJbiBjYXNlIHRoZSBkYXRhIGlz
+IGRlZmluZWQgYXMgMzJiaXQgd2lkZSwgaGlnaGVyIHByaXZpbGVnZQo+Pj4gc29mdHdhcmUgbXVz
+dCBlbnN1cmUgdGhhdCBpdCBvbmx5IHVzZXMgMzIgYml0IGRhdGEuIgo+Pj4KPj4+IERvZXMgdGhp
+cyBtZWFucyA2NCBiaXRzIHZhbHVlIGFyZSB0cnVuY2F0ZWQgdG8gMzIgYml0cyA/Cj4+Cj4+IEFo
+LCB5ZXMuIEkgaGFkIG5vdGljZWQgdGhhdCByZXF1aXJlZCB0cnVuY2F0aW9uIHdoaWxlIGRvaW5n
+IHNvbWUgS1ZNIGZpeGVzCj4+IGFuZCBwYXRjaCA5IG9mIHRoaXMgc2VyaWVzIGlzIGV2ZW4gYWRk
+aW5nIGEgdGVzdCBmb3IgaXQgZm9yIFNVU1AuIEkganVzdAo+PiBkaWRuJ3QgbG9vayBjbG9zZWx5
+IGVub3VnaCBhdCB3aHkgdGhpcyBGV0ZUIHRlc3Qgd2FzIGZhaWxpbmcuIFRoZSB0ZXN0Cj4+IHNo
+b3VsZCBnZXQgU0JJX1NVQ0NFU1MsIGFzIGl0IGRvZXMsIGJ1dCBpdCBzaG91bGQgYWxzbyBjaGVj
+ayB0aGF0Cj4+IGZlYXR1cmUgPSBCSVQoMzIpIGJlaGF2ZXMgdGhlIHNhbWUgYXMgZmVhdHVyZXMg
+PSAxLgo+IAo+IEVoLCAnLi4uYXMgZmVhdHVyZSA9IDAgKE1JU0FMSUdORURfRVhDX0RFTEVHKScu
+IEZvciBub3csIEkgdGhpbmsgd2Ugc2hvdWxkCj4ganVzdCBkcm9wIHRoZSB0ZXN0LCB0aG91Z2gs
+IGJlY2F1c2Ugd2UgbmVlZCBhIGZlYXR1cmUgdGhhdCwgd2hlbiBwcmVzZW50LAo+IGFsd2F5cyBh
+bGxvd3MgZW5hYmxlL2Rpc2FibGUgaW4gb3JkZXIgdG8gdGVzdCBmb3IgYSBjaGFuZ2UgaW4gYmVo
+YXZpb3IuCj4gV2hpbGUgd2UgbWF5IGJlIGFibGUgdG8gdG9nZ2xlIDAvMSBmb3IgTUlTQUxJR05F
+RF9FWENfREVMRUcsIHdlIGNhbid0Cj4gY291bnQgb24gdHJhcHMgZ2V0dGluZyBlbmFibGVkLiBJ
+J2xsIGFkZCBBRFVFIHRlc3RzIGFuZCBkbyBhIHRydW5jYXRlZAo+IGZlYXR1cmUgSUQgdGVzdCBm
+b3IgaXQuCgpBaCB5ZWFoIHRvdGFsbHkgbWFrZSBzZW5zZSAhIEknbGwgbW9kaWZ5IFNTRSB0ZXN0
+IGFzIHdlbGwgdG8gdGVzdCB0aGF0CjY0IGJpdHMgaWRlbnRpZmllciBhcmUgY29ycmVjdGx5IHRy
+dW5jYXRlZC4KClRoYW5rcywKCkNsw6ltZW50Cgo+IAo+IFRoYW5rcywKPiBkcmV3CgoKLS0gCmt2
+bS1yaXNjdiBtYWlsaW5nIGxpc3QKa3ZtLXJpc2N2QGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDov
+L2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9rdm0tcmlzY3YK
