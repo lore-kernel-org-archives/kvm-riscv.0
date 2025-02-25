@@ -4,87 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14BEAC021B2
-	for <kvm-riscv@archiver.kernel.org>; Tue, 25 Feb 2025 10:55:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 098D1C021BB
+	for <kvm-riscv@archiver.kernel.org>; Tue, 25 Feb 2025 10:58:54 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:
-	Subject:MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
+	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=TlZH4pSLbwbg1GGfhl8KdC5h6ZT41sNVrP4IdmV9Ix8=; b=hux5lNF3Vdtj+G
-	+zwzV5qDOElKOBd8AjCxrtCCNx0pZm728zqPH4zFB2w1Mkx4wbUN619HMusz1oi4G9vu2aEtHIai0
-	NLAfHtf6WC/lQotaX5zEFmtoxOnvk6BPhBMguySQUzA8vcgcf5pIuZjLWc8+l191igpd30H9VlWp/
-	RtF7SALdFvQnEstotLAdsxRDY2yKZZsHYNYg7P0+l1K9GuvMAqF3KvkmLPS7h/AV0l3MA6H3eZj4K
-	quD/cC7Y7O7/XE7lLTttbFgeQmWUSX/mdpHaYnI3pEmJJ91Pw+g5VcDYLhmF3uumblpSYirSpcDWe
-	lNjh3/JQqm09ZVNmkSqQ==;
+	List-Owner; bh=JTq82V5fdRr/iQcRTg1otvW/V4/oJOX5e8RmGSPIDhQ=; b=bA46pEe1p93yCN
+	Zh5zGEjOT24+DO312ltj9qoAAA35puwvkit0f+sDGL7PUhl3giCYkpQqsV0zcBz/24iy+N0bjdKmk
+	/Ajiq1Y8QDypv/XhPZcSzPn0zr84wUtjq61CZQ/PHlaXwYDwHup6FOgEosxSrgwq+pK0eVgzknEd2
+	0XUk56i8PN9XcLtp7THR6JusSpzU6udOBACJEojk8dkUBlFqv/LeaWS7Zd2DSZMyVptExgbkapfZt
+	lizocMP6r+xOtjh6ObLA7hJstMPWcanifoc5Rg+GS2nbhADGD16lE9ij/foqUAe2HNVKmI6JajfZn
+	w1KEr/flD4GSyaItHwIQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tmsbG-0000000GunA-3VDd;
-	Tue, 25 Feb 2025 10:55:42 +0000
-Received: from mail-pj1-x1035.google.com ([2607:f8b0:4864:20::1035])
+	id 1tmseL-0000000Gvdk-3Fje;
+	Tue, 25 Feb 2025 10:58:53 +0000
+Received: from mail-wm1-x32e.google.com ([2a00:1450:4864:20::32e])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1tmrxF-0000000GmOB-2AfY
+	id 1tms7o-0000000GohO-3ER5
 	for kvm-riscv@lists.infradead.org;
-	Tue, 25 Feb 2025 10:14:22 +0000
-Received: by mail-pj1-x1035.google.com with SMTP id 98e67ed59e1d1-2fcc940bb14so7933593a91.3
-        for <kvm-riscv@lists.infradead.org>; Tue, 25 Feb 2025 02:14:21 -0800 (PST)
+	Tue, 25 Feb 2025 10:25:17 +0000
+Received: by mail-wm1-x32e.google.com with SMTP id 5b1f17b1804b1-439a1e8ba83so51092015e9.3
+        for <kvm-riscv@lists.infradead.org>; Tue, 25 Feb 2025 02:25:15 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=rivosinc-com.20230601.gappssmtp.com; s=20230601; t=1740478460; x=1741083260; darn=lists.infradead.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=EbX9Pu/WeNm22SYUGxmz8Ldnyc8CoEX0CwsWzQhitxo=;
-        b=P2gmA7rddE/Lh98TXmh6gKgOTBhHXHzZ0W2zdTrQbzLNVaa+de6SiJZZ2K0Vzk+HDm
-         RG1Pr7iBnGxZF1mHnsRLTPImFZEIBi+M1yroRI2TCMGYCcoFHy+P3zmsEgCbiHmL778k
-         auw10DkPLzF6b7woik/g6kgzZypepmE4/zjndAf2lNs3Y4htW7OvN/vGycpKksHLOJQf
-         Yp5DF9T6Zlzp60Zbu3VV18YvCnTNrhyx5F1ZuSOOUXWMoa1qUtPPgMgpI5UODO3Z4rSh
-         W8s8DzUlR6HW7fiHuxaDC2gOFuv44BZ/UrQsnmZNynR9jSqMaQGgy/eURPJV09L/EIv1
-         bt5w==
+        d=ventanamicro.com; s=google; t=1740479115; x=1741083915; darn=lists.infradead.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=fL1utdGcf1YtA95f8hT56+IP4cv4xhFtEjnPmOAPn/4=;
+        b=fxQyha4ynWRjA5BgZZ+IldO7619+PQ1ub02Qg1tH/DxxjYOhCO1d0eDannH+kOmrmN
+         BsJzrBG9/PvQNdngl3Eg1bAuTarqMeyiMMPu86NlmRP8Znkw67rg2QPEoBxb3ahTfjVL
+         Luc4uBk5zMV9eenfqEI0CQfRsM+DSbhWe35XJhg2XIIeUuBMPZGZg7gvNoIGnlM6BA+s
+         ADq8PvPZ6bwgHG19J4A4lgvEXoKpikEJVAp8g6PDXi3T0LHSIhfxnrhbaazMffhIPJFh
+         +1C33+pf5qADm3GKiJ9a0dDoOAkOyhl8N+8d/FE6TDXKq1nslRkgRvNIrvxhy85e3sMz
+         vu5g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1740478460; x=1741083260;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
+        d=1e100.net; s=20230601; t=1740479115; x=1741083915;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=EbX9Pu/WeNm22SYUGxmz8Ldnyc8CoEX0CwsWzQhitxo=;
-        b=qTOWcRfweOb4WAyIudtAvUnz0REyHMioKJWAw+n+v6erhvamFWGdzrXwhzKisV1/Z7
-         oLXEFXCTuFcnQogCpk3UtcslQ+S6uR/Q1HQ//Yoy+XygF0rkVfNninHVxr0sKfyHP+/k
-         8GWYOgQxXWcj5X9xMGtNtvyhxg1YIznC4O0ZmeRt8KaKG5O1BS+zFG9DKM9TzAZxlRoa
-         /NsXW63ypMRxbQMeWynKeWgMGApmKxkQXIFjTEPssVte9n73WWbEMcB3AcqGurmYZQyc
-         kjgpiWVVhmNmLIQ5MEjT+L8gF5MrzwhJ0PcpA9fzupanKBAe9JzbsYbFQAXlNt+/QurV
-         lPkg==
-X-Forwarded-Encrypted: i=1; AJvYcCX7Ah19vPHlC2jm0fW848iGPZVqhZNobsLSEWleVgOa7ROHmTXL9hO3pG6xkZ31FX1+26eFmfhLy3I=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yxl2Aoo23molOsWuqS7tZn2DbnBXWXr6EIi0K6eH4WYD1TDZPAf
-	ILcb0yTtGrlhmCxM8DKnwNR4ix2+Q03+ZaHwPghZZN80yttj8BK/oPyumj+5NT+wMyqJ7AtvDws
-	E
-X-Gm-Gg: ASbGncv8D27Yu+fvHx/247l5hyJHfpJb4Bk7oPKDSxc6f0zSaJZyKGd2qQYnInWqiBy
-	8jI5l4+I1jr/y61orzZAv+j41EgMKShnNVHXFJYeXHMqRwdpqA/FecBO0qvsgd1RuKNsDseP0k/
-	0TaAslaRyyTDLrDoiC/ttcTsD8mKmIuWLs+Wm4WyfitSXaK2kkhzpQ8yznAWsOWeZKWb2CG7qYR
-	x87/rR0OeXKbFLpQ7E/TCa6zWRa/mtCD4X/UDWC9Gb2KH3SW7LhtrYmw436OHwN7W9efGzD0Odl
-	42z1nGl5RyGH53Dtv0EoL3mVjjPiRp2JmnO0S0Qwqj3Maa8nCWMsG9jZJjGHtnQGq6rbKJI=
-X-Google-Smtp-Source: AGHT+IFbSw14Nhtw0A5+qQmlA5ez2iHqt7dRaRgYFFARjl6pYOx6MEbJedtd/BzvVA51Q+UEOenjbg==
-X-Received: by 2002:a17:90b:2792:b0:2f4:465d:5c94 with SMTP id 98e67ed59e1d1-2fce78a33cfmr29290662a91.11.1740478460601;
-        Tue, 25 Feb 2025 02:14:20 -0800 (PST)
-Received: from ?IPV6:2a01:e0a:e17:9700:16d2:7456:6634:9626? ([2a01:e0a:e17:9700:16d2:7456:6634:9626])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-2fe6a3dccf9sm1313689a91.18.2025.02.25.02.14.16
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 25 Feb 2025 02:14:19 -0800 (PST)
-Message-ID: <1bc65c8e-4d36-4ed4-8f9e-b7a14c09c08a@rivosinc.com>
-Date: Tue, 25 Feb 2025 11:14:13 +0100
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [kvm-unit-tests PATCH 01/10] riscv: sbi: Mark known fwft failures
- as kfails
-To: Andrew Jones <andrew.jones@linux.dev>, kvm-riscv@lists.infradead.org
-Cc: atishp@rivosinc.com, jamestiotio@gmail.com
+        bh=fL1utdGcf1YtA95f8hT56+IP4cv4xhFtEjnPmOAPn/4=;
+        b=qfFabkdHVxn5txfZOQ/3gA5lyF3nrll1/DQGXZE2Ioms9dyrXlVK+ueKZag871Uwls
+         aDqJe70n5XNT1sRmoVH+X1236ksBLYUdwQgTl9s9vdjtZ/T1u0DoccqmPc6+GDlBTekH
+         rQl5bex7SysOum2vtA8Iy6Mdn0mWuOohYmjISxKHTrvOnDeNMpvW1MnzHbxKyrt7hgwg
+         yyW4VxSAm3ISDFl/DuR2DIagixK0KdiJW1k3fEwbahCn5Axan2LQv5bqOmSnT2w+qGy0
+         50yrVPubEUvHGhvDUeHzYrvklw2GYewBx4+8X/sIlruduY+SwPhUoOao5Qv+sIh5LtAa
+         DqgA==
+X-Forwarded-Encrypted: i=1; AJvYcCUwcKON7XBRoO5ybRJQbIfl6MrYKiuh0+0W01KVBgdgS4MxhYRncu6T5ZVVJ7fRgalveYXe750baPw=@lists.infradead.org
+X-Gm-Message-State: AOJu0Ywdx7rpCrj2gBogJZop7r4mVaDRsty8xTlFaVpiZVJ7dMlPIExT
+	7wCmzQR4vzL/BlUUQ/nSDptwbpXU5he1lAkwLECOMt3F6r7Mn1fv3qibPZs+2jc=
+X-Gm-Gg: ASbGncvgcvMUJP8pOcAPA7SIwNyIRPzXe5CDm7U9fVoAVxJ0IhyOej37/uDW2cfwDVe
+	veVnWimHl758oB+0MLcyLovXOoARxCjsfb0b+SNiA5F6997bia6Hr4qb1pfxpzlCq7vYKNja8iI
+	9CUzjjepvXxHuuGDC0PSdADt/OLpazvUkcv5dPuYPcyGI/xJhElg7pOrWG4v07vR1K9xIczoDxg
+	4yotH6981mnF7PBIgsfYU42xRV88tJolsJ6pkf78ytdYun8OvvZ2SARC2RXVKrOJnZf9SF9XVuY
+	buKa6CxGgMiQ/vaB4Vfs3ojn4aw/P2ppbuDqKjU1ZheKWhthm8LXERU=
+X-Google-Smtp-Source: AGHT+IErMe6m3KpS+bd9ATkr0LAKvrSAsFwWu1TrtsVyNtZVZP0CkVjhpXAHkOf3YaM0aC4noPAjLw==
+X-Received: by 2002:a05:600c:5117:b0:439:8829:aa69 with SMTP id 5b1f17b1804b1-439aeb3556cmr143761965e9.17.1740479114445;
+        Tue, 25 Feb 2025 02:25:14 -0800 (PST)
+Received: from localhost (cst2-173-28.cust.vodafone.cz. [31.30.173.28])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-390cd8e7108sm1810318f8f.69.2025.02.25.02.25.13
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 25 Feb 2025 02:25:14 -0800 (PST)
+Date: Tue, 25 Feb 2025 11:25:13 +0100
+From: Andrew Jones <ajones@ventanamicro.com>
+To: =?utf-8?B?Q2zDqW1lbnQgTMOpZ2Vy?= <cleger@rivosinc.com>
+Cc: Andrew Jones <andrew.jones@linux.dev>, kvm-riscv@lists.infradead.org, 
+	atishp@rivosinc.com, jamestiotio@gmail.com
+Subject: Re: [kvm-unit-tests PATCH 01/10] riscv: sbi: Mark known fwft
+ failures as kfails
+Message-ID: <20250225-e46d015c86d53c9a2dfc35ad@orel>
 References: <20250221155533.123418-12-andrew.jones@linux.dev>
  <20250221155533.123418-13-andrew.jones@linux.dev>
-Content-Language: en-US
-From: =?UTF-8?B?Q2zDqW1lbnQgTMOpZ2Vy?= <cleger@rivosinc.com>
-In-Reply-To: <20250221155533.123418-13-andrew.jones@linux.dev>
+ <1bc65c8e-4d36-4ed4-8f9e-b7a14c09c08a@rivosinc.com>
+MIME-Version: 1.0
+Content-Disposition: inline
+In-Reply-To: <1bc65c8e-4d36-4ed4-8f9e-b7a14c09c08a@rivosinc.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250225_021421_566334_064C7ABC 
-X-CRM114-Status: GOOD (  14.95  )
+X-CRM114-CacheID: sfid-20250225_022516_819182_834BB79E 
+X-CRM114-Status: GOOD (  22.80  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -96,51 +96,110 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-CgpPbiAyMS8wMi8yMDI1IDE2OjU1LCBBbmRyZXcgSm9uZXMgd3JvdGU6Cj4gVW50aWwgd2UgZml4
-IG9wZW5zYmkgbWFyayB0aGVzZSBrbm93biBmYWlsdXJlcyBhcyBrZmFpbHMgc28gd2UgY2FuCj4g
-cGFzcyBDSS4KPiAKPiBTaWduZWQtb2ZmLWJ5OiBBbmRyZXcgSm9uZXMgPGFuZHJldy5qb25lc0Bs
-aW51eC5kZXY+Cj4gLS0tCj4gIHJpc2N2L3NiaS1md2Z0LmMgfCAxNSArKysrKysrKysrKystLS0K
-PiAgMSBmaWxlIGNoYW5nZWQsIDEyIGluc2VydGlvbnMoKyksIDMgZGVsZXRpb25zKC0pCj4gCj4g
-ZGlmZiAtLWdpdCBhL3Jpc2N2L3NiaS1md2Z0LmMgYi9yaXNjdi9zYmktZndmdC5jCj4gaW5kZXgg
-YjEwYzE0N2YyMmRkLi4xOTM0MGQ2YmI0OGMgMTAwNjQ0Cj4gLS0tIGEvcmlzY3Yvc2JpLWZ3ZnQu
-Ywo+ICsrKyBiL3Jpc2N2L3NiaS1md2Z0LmMKPiBAQCAtNjMsMTEgKzYzLDE3IEBAIHN0YXRpYyB2
-b2lkIGZ3ZnRfY2hlY2tfYmFzZSh2b2lkKQo+ICAJCXN0cnVjdCBzYmlyZXQgcmV0Owo+ICAKPiAg
-CQlyZXQgPSBmd2Z0X2dldF9yYXcoQklUKDMyKSk7Cj4gLQkJc2JpcmV0X3JlcG9ydF9lcnJvcigm
-cmV0LCBTQklfRVJSX0lOVkFMSURfUEFSQU0sCj4gKwkJaWYgKHJldC5lcnJvciA9PSAwKQo+ICsJ
-CQlyZXBvcnRfa2ZhaWwodHJ1ZSwgZmFsc2UsICJnZXQgZmVhdHVyZSB3aXRoIGJpdCAzMiBzZXQg
-ZXJyb3I6IFNCSV9FUlJfSU5WQUxJRF9QQVJBTSIpOwo+ICsJCWVsc2UKPiArCQkJc2JpcmV0X3Jl
-cG9ydF9lcnJvcigmcmV0LCBTQklfRVJSX0lOVkFMSURfUEFSQU0sCj4gIAkJCQkgICAgImdldCBm
-ZWF0dXJlIHdpdGggYml0IDMyIHNldCBlcnJvciIpOwoKCkhleSBBbmRyZXcsCgpJJ20gYWN0dWFs
-bHkgYSBiaXQgY29uZnVzZWQgaGVyZS4gQXMgcmFpc2VkIGJ5IEFudXAsIHRoZSBzcGVjIHN0YXRl
-cyB0aGF0OgoKIkV2ZXJ5IFNCSSBmdW5jdGlvbiBzaG91bGQgcHJlZmVyIHVuc2lnbmVkIGxvbmcg
-YXMgdGhlIGRhdGEgdHlwZS4gSXQKa2VlcHMgdGhlIHNwZWNpZmljYXRpb24gc2ltcGxlIGFuZCBl
-YXNpbHkgYWRhcHRhYmxlIGZvciBhbGwgUklTQy1WIElTQQp0eXBlcy4gSW4gY2FzZSB0aGUgZGF0
-YSBpcyBkZWZpbmVkIGFzIDMyYml0IHdpZGUsIGhpZ2hlciBwcml2aWxlZ2UKc29mdHdhcmUgbXVz
-dCBlbnN1cmUgdGhhdCBpdCBvbmx5IHVzZXMgMzIgYml0IGRhdGEuIgoKRG9lcyB0aGlzIG1lYW5z
-IDY0IGJpdHMgdmFsdWUgYXJlIHRydW5jYXRlZCB0byAzMiBiaXRzID8KClRoYW5rcywKCkNsw6lt
-ZW50Cgo+ICAKPiAgCQlyZXQgPSBmd2Z0X3NldF9yYXcoQklUKDMyKSwgMCwgMCk7Cj4gLQkJc2Jp
-cmV0X3JlcG9ydF9lcnJvcigmcmV0LCBTQklfRVJSX0lOVkFMSURfUEFSQU0sCj4gKwkJaWYgKHJl
-dC5lcnJvciA9PSAwKQo+ICsJCQlyZXBvcnRfa2ZhaWwodHJ1ZSwgZmFsc2UsICJzZXQgZmVhdHVy
-ZSB3aXRoIGJpdCAzMiBzZXQgZXJyb3I6IFNCSV9FUlJfSU5WQUxJRF9QQVJBTSIpOwo+ICsJCWVs
-c2UKPiArCQkJc2JpcmV0X3JlcG9ydF9lcnJvcigmcmV0LCBTQklfRVJSX0lOVkFMSURfUEFSQU0s
-Cj4gIAkJCQkgICAgInNldCBmZWF0dXJlIHdpdGggYml0IDMyIHNldCBlcnJvciIpOwo+ICAJfQo+
-ICAjZW5kaWYKPiBAQCAtMTY3LDcgKzE3MywxMCBAQCBzdGF0aWMgdm9pZCBmd2Z0X2NoZWNrX21p
-c2FsaWduZWRfZXhjX2RlbGVnKHZvaWQpCj4gIAlyZXQgPSBmd2Z0X21pc2FsaWduZWRfZXhjX3Nl
-dCgwLCBTQklfRldGVF9TRVRfRkxBR19MT0NLKTsKPiAgCXNiaXJldF9yZXBvcnRfZXJyb3IoJnJl
-dCwgU0JJX1NVQ0NFU1MsICJTZXQgbWlzYWxpZ25lZCBkZWxlZyBmZWF0dXJlIHZhbHVlIDAgYW5k
-IGxvY2siKTsKPiAgCXJldCA9IGZ3ZnRfbWlzYWxpZ25lZF9leGNfc2V0KDEsIDApOwo+IC0Jc2Jp
-cmV0X3JlcG9ydF9lcnJvcigmcmV0LCBTQklfRVJSX0xPQ0tFRCwKPiArCWlmIChyZXQuZXJyb3Ig
-PT0gU0JJX0VSUl9ERU5JRUQpCj4gKwkJcmVwb3J0X2tmYWlsKHRydWUsIGZhbHNlLCAiU2V0IGxv
-Y2tlZCBtaXNhbGlnbmVkIGRlbGVnIGZlYXR1cmUgdG8gbmV3IHZhbHVlOiBTQklfRVJSX0xPQ0tF
-RCIpOwo+ICsJZWxzZQo+ICsJCXNiaXJldF9yZXBvcnRfZXJyb3IoJnJldCwgU0JJX0VSUl9MT0NL
-RUQsCj4gIAkJCSAgICAiU2V0IGxvY2tlZCBtaXNhbGlnbmVkIGRlbGVnIGZlYXR1cmUgdG8gbmV3
-IHZhbHVlIik7Cj4gIAlyZXQgPSBmd2Z0X21pc2FsaWduZWRfZXhjX2dldCgpOwo+ICAJc2JpcmV0
-X3JlcG9ydCgmcmV0LCBTQklfU1VDQ0VTUywgMCwgIkdldCBtaXNhbGlnbmVkIGRlbGVnIGxvY2tl
-ZCB2YWx1ZSAwIik7CgoKLS0gCmt2bS1yaXNjdiBtYWlsaW5nIGxpc3QKa3ZtLXJpc2N2QGxpc3Rz
-LmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5m
-by9rdm0tcmlzY3YK
+On Tue, Feb 25, 2025 at 11:14:13AM +0100, Cl=E9ment L=E9ger wrote:
+> =
+
+> =
+
+> On 21/02/2025 16:55, Andrew Jones wrote:
+> > Until we fix opensbi mark these known failures as kfails so we can
+> > pass CI.
+> > =
+
+> > Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
+> > ---
+> >  riscv/sbi-fwft.c | 15 ++++++++++++---
+> >  1 file changed, 12 insertions(+), 3 deletions(-)
+> > =
+
+> > diff --git a/riscv/sbi-fwft.c b/riscv/sbi-fwft.c
+> > index b10c147f22dd..19340d6bb48c 100644
+> > --- a/riscv/sbi-fwft.c
+> > +++ b/riscv/sbi-fwft.c
+> > @@ -63,11 +63,17 @@ static void fwft_check_base(void)
+> >  		struct sbiret ret;
+> >  =
+
+> >  		ret =3D fwft_get_raw(BIT(32));
+> > -		sbiret_report_error(&ret, SBI_ERR_INVALID_PARAM,
+> > +		if (ret.error =3D=3D 0)
+> > +			report_kfail(true, false, "get feature with bit 32 set error: SBI_E=
+RR_INVALID_PARAM");
+> > +		else
+> > +			sbiret_report_error(&ret, SBI_ERR_INVALID_PARAM,
+> >  				    "get feature with bit 32 set error");
+> =
+
+> =
+
+> Hey Andrew,
+> =
+
+> I'm actually a bit confused here. As raised by Anup, the spec states that:
+> =
+
+> "Every SBI function should prefer unsigned long as the data type. It
+> keeps the specification simple and easily adaptable for all RISC-V ISA
+> types. In case the data is defined as 32bit wide, higher privilege
+> software must ensure that it only uses 32 bit data."
+> =
+
+> Does this means 64 bits value are truncated to 32 bits ?
+
+Ah, yes. I had noticed that required truncation while doing some KVM fixes
+and patch 9 of this series is even adding a test for it for SUSP. I just
+didn't look closely enough at why this FWFT test was failing. The test
+should get SBI_SUCCESS, as it does, but it should also check that
+feature =3D BIT(32) behaves the same as features =3D 1.
+
+Thanks,
+drew
+
+> =
+
+> Thanks,
+> =
+
+> Cl=E9ment
+> =
+
+> >  =
+
+> >  		ret =3D fwft_set_raw(BIT(32), 0, 0);
+> > -		sbiret_report_error(&ret, SBI_ERR_INVALID_PARAM,
+> > +		if (ret.error =3D=3D 0)
+> > +			report_kfail(true, false, "set feature with bit 32 set error: SBI_E=
+RR_INVALID_PARAM");
+> > +		else
+> > +			sbiret_report_error(&ret, SBI_ERR_INVALID_PARAM,
+> >  				    "set feature with bit 32 set error");
+> >  	}
+> >  #endif
+> > @@ -167,7 +173,10 @@ static void fwft_check_misaligned_exc_deleg(void)
+> >  	ret =3D fwft_misaligned_exc_set(0, SBI_FWFT_SET_FLAG_LOCK);
+> >  	sbiret_report_error(&ret, SBI_SUCCESS, "Set misaligned deleg feature =
+value 0 and lock");
+> >  	ret =3D fwft_misaligned_exc_set(1, 0);
+> > -	sbiret_report_error(&ret, SBI_ERR_LOCKED,
+> > +	if (ret.error =3D=3D SBI_ERR_DENIED)
+> > +		report_kfail(true, false, "Set locked misaligned deleg feature to ne=
+w value: SBI_ERR_LOCKED");
+> > +	else
+> > +		sbiret_report_error(&ret, SBI_ERR_LOCKED,
+> >  			    "Set locked misaligned deleg feature to new value");
+> >  	ret =3D fwft_misaligned_exc_get();
+> >  	sbiret_report(&ret, SBI_SUCCESS, 0, "Get misaligned deleg locked valu=
+e 0");
+> =
+
+
+-- =
+
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
