@@ -4,70 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F373CC021BE
-	for <kvm-riscv@archiver.kernel.org>; Thu, 27 Feb 2025 08:16:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9B52CC021BE
+	for <kvm-riscv@archiver.kernel.org>; Thu, 27 Feb 2025 08:45:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
 	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=ngG/M93pM+JjzPajLNYWLnDqnBUQQvwFRnTYpwVY+uI=; b=HXgY64DMdjf1oJ
-	4nT+UGV8lFAJqTauUPR10tkfuz80/z4ysJFqv3jHC6jEjSYFs1LuJo7K5/VUOOF9P1dclFQ5wMxU9
-	XnuPYXOohYORwLj8kmL5blWDF83DkSnQZN3+msNZdqE3Ww825Q34F31F82jHuyafjuhYCEUgLTzt1
-	+2KnP7qiLiDao/U5B+fCuO1KwwjXLeF1GoG1EvB7omKMjMqosL/pe+6mT91Bb8qPVQuHkwEAErXtg
-	Ylctts1g8WL6gjQ+TQiQ5whFz3KNqngpuDE1Rk59XmTk+puh4U9qCenDHC7oWAfC3J4JABGaoNOE8
-	J68Xw21RYaN234PaqLSA==;
+	List-Owner; bh=lVjdlyl841nQC0Ia2e3rYBd4VW4h/dMqkT1L06YjbQg=; b=vOX0pr9p/pPUrW
+	AvJAQASmq21ZAr+4sXxUsGgGWkMSjQ23ZEcJYD1g3JNTJf3RKhN3Y6pYYL8hifdUybFnaVWxB4+7R
+	53PmuMYkD44E+lPpsV1tipaewrIFv3adg3PqIMar0+QF9NnCvjxhpqoyzW6p9MKdWjtXvdjazAooU
+	aNIttDXJJCTIPyxjvppWfeWwP+RnLrflDYI6nQKymM8vyFFxXryhYuLtAy2FHHtoPFvyf6cUVIw/3
+	NbPts9xrRuiNJB++5cC8fB7xVv8NtmQ2hCqPdRBORya9EjuuxOzspp4p+uXSWZqY8s0BwLuODbakL
+	KnCRGOHMxDbtJXMAxPNA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tnZ4D-00000006fNx-2QG4;
-	Thu, 27 Feb 2025 08:16:25 +0000
-Received: from mail-wm1-x336.google.com ([2a00:1450:4864:20::336])
+	id 1tnZW6-00000006kUk-1WzV;
+	Thu, 27 Feb 2025 08:45:14 +0000
+Received: from mail-wm1-x330.google.com ([2a00:1450:4864:20::330])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1tnZ4A-00000006fMl-2BUn
+	id 1tnZVD-00000006kEC-1O2d
 	for kvm-riscv@lists.infradead.org;
-	Thu, 27 Feb 2025 08:16:23 +0000
-Received: by mail-wm1-x336.google.com with SMTP id 5b1f17b1804b1-4399d14334aso5917435e9.0
-        for <kvm-riscv@lists.infradead.org>; Thu, 27 Feb 2025 00:16:21 -0800 (PST)
+	Thu, 27 Feb 2025 08:44:20 +0000
+Received: by mail-wm1-x330.google.com with SMTP id 5b1f17b1804b1-439946a49e1so4156295e9.0
+        for <kvm-riscv@lists.infradead.org>; Thu, 27 Feb 2025 00:44:18 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ventanamicro.com; s=google; t=1740644181; x=1741248981; darn=lists.infradead.org;
+        d=ventanamicro.com; s=google; t=1740645858; x=1741250658; darn=lists.infradead.org;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=rNuCHwKGXQWAf4mt8sNekn31y9wTAPf53BsIAPyDFlg=;
-        b=pjzH44y7uDU6RuNg2KtJXspJ/Po+JWzfilS/SgqqyHMBa+k4bD/r8ja/IzHsnN4zSz
-         Ghe3q8bVU0EczKRgkhWJziXFJ6+rR+9NwaV7A6CZ2olHshqNntx/HWWehxZasGw9l/oW
-         6gsdpUJPVZpCZ2tKDrz1EFws5omwMftsaAjEhuGof2RvSstmwaCFMLAnQRuVYoZlHx/q
-         ATHv2Rv3Um3o51eeK6n1UooMY+JqLVqbJymPe1vQoEC996lQGNIW5JjMWDpTlNNzMcqT
-         TF0kBJs2YnZFb4gdwoNoH3/6kkpq9YiYHn6vWlS6NfJNB6fPBi8LfWtg2CibzpwW2QDq
-         FuEw==
+        bh=0eD4WdY2Ar0Qpt9c3iLvWQtqo0+f9AP00jRPqQ8lu4I=;
+        b=OKT6GhxdWfPDuOXDV1TN7i351aXz77WEsvwcWksK2W5k2S2/XppnhiloYuWwPxUk6f
+         Q7se1dHHgP9JajrfEFn9uOLc8SFL80hGUseyk6CFAOTPyEdgHgcSdfAR19REjaLNBmfD
+         WGO8sSXVpkgy2nN6Pu/kSvpxOnscmR7LL5pIAFyaoSXH9gvrfJOOTOrXlotRK5l3PMfr
+         I3xqvWEAGYuTnkhh00IPeMWlAjgry0GkHwHocG+g0MayY2aJVgnkaPTowHSNUa5ZTHjy
+         viZv//gaN0Or8ZWLfzqVybbQsbZaTEFmcbr4rzwBbeKHfkn4f8eR5ikSPR5po1XYmpyw
+         kfXQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1740644181; x=1741248981;
+        d=1e100.net; s=20230601; t=1740645858; x=1741250658;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=rNuCHwKGXQWAf4mt8sNekn31y9wTAPf53BsIAPyDFlg=;
-        b=Y3/VkCyS4O182Xxy8pqCGn9+27xlsaJ2c87ifyKgaodrW/VmS03Bmp+S4g2Q120dnY
-         T2xUS3nfy0ym/xc7CE9y7hsmpjJLBKG2YkOLqilgLBSyVD+EK5OTrTFZvz+g8FO5BuOF
-         DFpcf8UCT5BQAu3TUGtt5tmgb4RO425t+O00lHC39anXvv4WtGGr2eSiU8RnG4OOeI66
-         V8V2k3xj2C7s/UzKctnetwI+KNuYYqZwWisJ/R2xZaLXhc0sUbdlN4gOa+8OMjNEkph6
-         zsNZ0NbUjfwE6KYi049wSGYGhq+BxPalCdHT/frljNmgG2pcVB459/u+7Krh+WDgQEKD
-         AaSQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVXvTttlEgumHKggc7B5fBpn5jlicAddiEyPbtBB4M/39sbjDCWPrElIQSbPESUfWTfnm5O12903wQ=@lists.infradead.org
-X-Gm-Message-State: AOJu0YwdVcwc6qfFSvxn0DFOKfNI7axlyIazX+hDrzVB/ONw2dsDAydC
-	c0l7bMvxv/Gh3azzIb2Fb0c1/WD2DL39OEpoXE0CyXdye9YYi4hVvspuh7W66Ng=
-X-Gm-Gg: ASbGnctSFXAuR/fRdbCyEMLnRFiV5jloZ62xQ5pfjKIJGhorQ3gO6Lhkb9HPzN1VJY8
-	UteAJLP6hgVp8BKbmoEibxINV2WD7ISwTWAjaPmLmXCtKgj+mnlnMPg/CMUxw5puqqiGTgoTNuR
-	3PYh1Yy7Tems/5HRIhbD7g0pjEYNvsM/jDsCfLO8IfJwAw0J9WdxJOiGEQ2eYBsNR48WeTNkdG5
-	9FmAu0Z2l5BBvaXF+i7kiT4UVvKychYW660VP30LX6RqSzOOR1rBihuhAl3s76RuBEAxXvRlJRd
-	7HuIcpYJhj7RjQ==
-X-Google-Smtp-Source: AGHT+IGtkCGpzCQFwmHGo5aZlDGSlBp1jN55CoUYkN1FZsHypqajvqpmjpcHqYvMPO3dlRrienJsOQ==
-X-Received: by 2002:a05:600c:3588:b0:439:6304:e28a with SMTP id 5b1f17b1804b1-43ab8f6fe56mr58126325e9.0.1740644180644;
-        Thu, 27 Feb 2025 00:16:20 -0800 (PST)
+        bh=0eD4WdY2Ar0Qpt9c3iLvWQtqo0+f9AP00jRPqQ8lu4I=;
+        b=vP5S7U3eWH7RUDLJZCQQG76VNsDxwXfJ/f3KWXw9nCseRCjf2+PT7YymMiB6UfKH3y
+         O7JEru6VOTkH6HF9LnZ+MYL3eqF8QHexgeJ1bT7yeXNcVvkjTkebk1V55hEdwFyiDXgU
+         qtpKULvkpj2RyRzFDtsRjnmqtD5ehWH2zGxypKylsJc3oRekBMaHTXIw7GIAdtfxFQUj
+         QHURXw+UgyX7JYjQFZuDEcMhiGLBVcmdyx1pIEny6oInBXXmLbxB5YleHtR6wRHIsVjj
+         5NuxTghCfxYzUwyWwbwfcfZ9by9bMNfXXfN8Lneo6UABgjqdbm78zGCqCZTF7q5ED5lr
+         9t6Q==
+X-Forwarded-Encrypted: i=1; AJvYcCX1X684v0wvYF1EFgh+t9LNWI4m9jQhpHs2HeDyVNEy2NVG4N5TTCDG7HXsKV5KbrgfGXlYBJNNbJQ=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yx7wiMCsQY6+talLoYyQFLDnMXQ8j8rh//iAdLaQsuKAsolr8YD
+	GATV0ExTg90Z5ecF2FP7wSCNlPBj5MhVkZYEHzgmIf4Nqqb6aXjg+frOj+C000c=
+X-Gm-Gg: ASbGncsJVQRsPHOYicrEVV9jmnyoW5auDK8NFYlMtRgqDvmpaLc8HUS6SOzOLmQyjtK
+	e92SUw1p7uBSCPvmbKaNXfdI16ybSPkGup2btCss5DMpTLS5p+L6HK04nV9QbVqe8m9Pmnfg8WJ
+	IomlGlQxMPcf1K6aFUbW3S0GrObWJIXxsxCfF12Qvpq7hW0VIvqRt+ZvDZxz3bkfhnj3v+2jCnK
+	E+YepW4SCaHhAFpEOr1MZgOEoZSy33qEy2aySsFjoc7PGtnV2vXgRM8aQ9VMMFx5HQIjf/iwAqp
+	gjnYkmGMrwrGIg==
+X-Google-Smtp-Source: AGHT+IG7ml0QUrxxm1q148UuaevZWwyImW/BG/iHf4sSOi4FAdGUGP1loq2o5+xFJijpyPDy5kgSvA==
+X-Received: by 2002:a05:600c:3c86:b0:439:9377:fa29 with SMTP id 5b1f17b1804b1-43ab903fe5bmr54754285e9.31.1740645857622;
+        Thu, 27 Feb 2025 00:44:17 -0800 (PST)
 Received: from localhost ([2a02:8308:a00c:e200::8cf0])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-390e4796051sm1260460f8f.12.2025.02.27.00.16.20
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-43b736f990esm15612155e9.5.2025.02.27.00.44.16
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 27 Feb 2025 00:16:20 -0800 (PST)
-Date: Thu, 27 Feb 2025 09:16:19 +0100
+        Thu, 27 Feb 2025 00:44:16 -0800 (PST)
+Date: Thu, 27 Feb 2025 09:44:15 +0100
 From: Andrew Jones <ajones@ventanamicro.com>
 To: Atish Patra <atishp@rivosinc.com>
 Cc: Anup Patel <anup@brainfault.org>, Atish Patra <atishp@atishpatra.org>, 
@@ -75,17 +75,17 @@ Cc: Anup Patel <anup@brainfault.org>, Atish Patra <atishp@atishpatra.org>,
 	Paolo Bonzini <pbonzini@redhat.com>, Shuah Khan <shuah@kernel.org>, kvm@vger.kernel.org, 
 	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, 
 	linux-kselftest@vger.kernel.org
-Subject: Re: [PATCH 4/4] KVM: riscv: selftests: Allow number of interrupts to
- be configurable
-Message-ID: <20250227-f7b303813dab128b5060b0c3@orel>
+Subject: Re: [PATCH 2/4] KVM: riscv: selftests: Do not start the counter in
+ the overflow handler
+Message-ID: <20250227-3799414d0651c86f6a815046@orel>
 References: <20250226-kvm_pmu_improve-v1-0-74c058c2bf6d@rivosinc.com>
- <20250226-kvm_pmu_improve-v1-4-74c058c2bf6d@rivosinc.com>
+ <20250226-kvm_pmu_improve-v1-2-74c058c2bf6d@rivosinc.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20250226-kvm_pmu_improve-v1-4-74c058c2bf6d@rivosinc.com>
+In-Reply-To: <20250226-kvm_pmu_improve-v1-2-74c058c2bf6d@rivosinc.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250227_001622_559586_B5E19E0B 
-X-CRM114-Status: GOOD (  27.88  )
+X-CRM114-CacheID: sfid-20250227_004419_374421_3E415C46 
+X-CRM114-Status: GOOD (  19.17  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -102,136 +102,62 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Wed, Feb 26, 2025 at 12:25:06PM -0800, Atish Patra wrote:
-> It is helpful to vary the number of the LCOFI interrupts generated
-> by the overflow test. Allow additional argument for overflow test
-> to accommodate that. It can be easily cross-validated with
-> /proc/interrupts output in the host.
+On Wed, Feb 26, 2025 at 12:25:04PM -0800, Atish Patra wrote:
+> There is no need to start the counter in the overflow handler as we
+> intend to trigger precise number of LCOFI interrupts through these
+> tests. The overflow irq handler has already stopped the counter. As
+> a result, the stop call from the test function may return already
+> supported error which is fine as well.
+  ^ stopped
+
 > 
 > Signed-off-by: Atish Patra <atishp@rivosinc.com>
 > ---
->  tools/testing/selftests/kvm/riscv/sbi_pmu_test.c | 36 ++++++++++++++++++++----
->  1 file changed, 30 insertions(+), 6 deletions(-)
+>  tools/testing/selftests/kvm/riscv/sbi_pmu_test.c | 9 ++-------
+>  1 file changed, 2 insertions(+), 7 deletions(-)
 > 
 > diff --git a/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c b/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c
-> index 533b76d0de82..7c273a1adb17 100644
+> index f45c0ecc902d..284bc80193bd 100644
 > --- a/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c
 > +++ b/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c
-> @@ -39,8 +39,10 @@ static bool illegal_handler_invoked;
->  #define SBI_PMU_TEST_SNAPSHOT	BIT(2)
->  #define SBI_PMU_TEST_OVERFLOW	BIT(3)
+> @@ -118,8 +118,8 @@ static void stop_counter(unsigned long counter, unsigned long stop_flags)
 >  
-> +#define SBI_PMU_OVERFLOW_IRQNUM_DEFAULT 5
->  struct test_args {
->  	int disabled_tests;
-> +	int overflow_irqnum;
->  };
->  
->  static struct test_args targs;
-> @@ -478,7 +480,7 @@ static void test_pmu_events_snaphost(void)
->  
->  static void test_pmu_events_overflow(void)
->  {
-> -	int num_counters = 0;
-> +	int num_counters = 0, i = 0;
->  
->  	/* Verify presence of SBI PMU and minimum requrired SBI version */
->  	verify_sbi_requirement_assert();
-> @@ -495,11 +497,15 @@ static void test_pmu_events_overflow(void)
->  	 * Qemu supports overflow for cycle/instruction.
->  	 * This test may fail on any platform that do not support overflow for these two events.
->  	 */
-> -	test_pmu_event_overflow(SBI_PMU_HW_CPU_CYCLES);
-> -	GUEST_ASSERT_EQ(vcpu_shared_irq_count, 1);
-> +	for (i = 0; i < targs.overflow_irqnum; i++)
-> +		test_pmu_event_overflow(SBI_PMU_HW_CPU_CYCLES);
-> +	GUEST_ASSERT_EQ(vcpu_shared_irq_count, targs.overflow_irqnum);
-> +
-> +	vcpu_shared_irq_count = 0;
->  
-> -	test_pmu_event_overflow(SBI_PMU_HW_INSTRUCTIONS);
-> -	GUEST_ASSERT_EQ(vcpu_shared_irq_count, 2);
-> +	for (i = 0; i < targs.overflow_irqnum; i++)
-> +		test_pmu_event_overflow(SBI_PMU_HW_INSTRUCTIONS);
-> +	GUEST_ASSERT_EQ(vcpu_shared_irq_count, targs.overflow_irqnum);
->  
->  	GUEST_DONE();
->  }
-> @@ -621,8 +627,11 @@ static void test_vm_events_overflow(void *guest_code)
->  
->  static void test_print_help(char *name)
->  {
-> -	pr_info("Usage: %s [-h] [-t <test name>]\n", name);
-> +	pr_info("Usage: %s [-h] [-t <test name>] [-n <number of LCOFI interrupt for overflow test>]\n",
-> +		name);
->  	pr_info("\t-t: Test to run (default all). Available tests are 'basic', 'events', 'snapshot', 'overflow'\n");
-> +	pr_info("\t-n: Number of LCOFI interrupt to trigger for each event in overflow test (default: %d)\n",
-> +		SBI_PMU_OVERFLOW_IRQNUM_DEFAULT);
->  	pr_info("\t-h: print this help screen\n");
+>  	ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_STOP, counter, 1, stop_flags,
+>  			0, 0, 0);
+> -	__GUEST_ASSERT(ret.error == 0, "Unable to stop counter %ld error %ld\n",
+> -			       counter, ret.error);
+> +	__GUEST_ASSERT(ret.error == 0 || ret.error == SBI_ERR_ALREADY_STOPPED,
+> +		       "Unable to stop counter %ld error %ld\n", counter, ret.error);
 >  }
 >  
-> @@ -631,6 +640,8 @@ static bool parse_args(int argc, char *argv[])
->  	int opt;
->  	int temp_disabled_tests = SBI_PMU_TEST_BASIC | SBI_PMU_TEST_EVENTS | SBI_PMU_TEST_SNAPSHOT |
->  				  SBI_PMU_TEST_OVERFLOW;
-> +	int overflow_interrupts = -1;
-
-Initializing to -1 made me think that '-n 0' would be valid and a way to
-disable the overflow test, but...
-
-> +
->  	while ((opt = getopt(argc, argv, "h:t:n:")) != -1) {
->  		switch (opt) {
->  		case 't':
-> @@ -646,12 +657,24 @@ static bool parse_args(int argc, char *argv[])
->  				goto done;
->  			targs.disabled_tests = temp_disabled_tests;
->  			break;
-> +		case 'n':
-> +			overflow_interrupts = atoi_positive("Number of LCOFI", optarg);
-
-...here we use atoi_positive() and...
-
-> +			break;
->  		case 'h':
->  		default:
->  			goto done;
->  		}
->  	}
+>  static void guest_illegal_exception_handler(struct ex_regs *regs)
+> @@ -137,7 +137,6 @@ static void guest_irq_handler(struct ex_regs *regs)
+>  	unsigned int irq_num = regs->cause & ~CAUSE_IRQ_FLAG;
+>  	struct riscv_pmu_snapshot_data *snapshot_data = snapshot_gva;
+>  	unsigned long overflown_mask;
+> -	unsigned long counter_val = 0;
 >  
-> +	if (overflow_interrupts > 0) {
-
-...here we only change from the default of 5 for nonzero.
-
-Should we allow '-n 0'? Otherwise overflow_interrupts can be initialized
-to zero (not that it matters).
-
-> +		if (targs.disabled_tests & SBI_PMU_TEST_OVERFLOW) {
-> +			pr_info("-n option is only available for overflow test\n");
-> +			goto done;
-> +		} else {
-> +			targs.overflow_irqnum = overflow_interrupts;
-> +		}
-> +	}
-> +
->  	return true;
->  done:
->  	test_print_help(argv[0]);
-> @@ -661,6 +684,7 @@ static bool parse_args(int argc, char *argv[])
->  int main(int argc, char *argv[])
->  {
->  	targs.disabled_tests = 0;
-> +	targs.overflow_irqnum = SBI_PMU_OVERFLOW_IRQNUM_DEFAULT;
+>  	/* Validate that we are in the correct irq handler */
+>  	GUEST_ASSERT_EQ(irq_num, IRQ_PMU_OVF);
+> @@ -151,10 +150,6 @@ static void guest_irq_handler(struct ex_regs *regs)
+>  	GUEST_ASSERT(overflown_mask & 0x01);
 >  
->  	if (!parse_args(argc, argv))
->  		exit(KSFT_SKIP);
+>  	WRITE_ONCE(vcpu_shared_irq_count, vcpu_shared_irq_count+1);
+> -
+> -	counter_val = READ_ONCE(snapshot_data->ctr_values[0]);
+> -	/* Now start the counter to mimick the real driver behavior */
+> -	start_counter(counter_in_use, SBI_PMU_START_FLAG_SET_INIT_VALUE, counter_val);
+>  }
+>  
+>  static unsigned long get_counter_index(unsigned long cbase, unsigned long cmask,
 > 
 > -- 
 > 2.43.0
 >
 
-Thanks,
-drew
+Other than the commit message,
+
+Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 
 -- 
 kvm-riscv mailing list
