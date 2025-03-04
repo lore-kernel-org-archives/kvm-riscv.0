@@ -4,88 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AFC4EC021B8
-	for <kvm-riscv@archiver.kernel.org>; Tue,  4 Mar 2025 09:00:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 424ACC021B8
+	for <kvm-riscv@archiver.kernel.org>; Tue,  4 Mar 2025 09:12:49 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
 	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=X+9lYOQUPeh+aszkhYchSBLC+lpzM8xnIUS4nvM4Z0s=; b=xNTUbKIwH1tkw0
-	FIhaCigXXhKyYdtN0GfAeJgW3hnpiMfeEzNBmlO4lewLR3cXH9OTE+JQqasMQ/HoPIJ3E4h2xwxGm
-	BLqjYqWsFxqqLNB0N2/EWLCMt3OC2g2fV22X1uFaU7BWfp3idA94VYJxWrzjWIsbd7MuGobKHPDKB
-	OqCCG6BHJ6o0qllMRReKevgH7YgmjRjrOPEe4nkQjevJeYRtccWGa/YN8SVDbCwYTDyux6hWPykzz
-	fE8zKHVcB5a7TRXDemHkre76SZm3/9bIV5K2nl2glBSpFY2Ftaoyemln5r37WGz4o7A4Uv3V6cWBX
-	loGGa/cuanNT8/Q260lA==;
+	List-Owner; bh=gVYg1XdMNLiXbNZGngy44Utzab+2+obSHqZ/Az+m1Sc=; b=gsjMNQungleDp2
+	ZjHXze38Kxlf4QGM68g4S9w6E3oC8w89Kinm7LtitID9YPK86B4B1vDXKR1mbn0SQXjqWRxkUdFX6
+	8do1dTwTSBlNvo7nPSDhRS+QKpVwVUsg+hMaXKV6jQwVJdlsnEH1At3aAJfTRZz+gx4TNCZ53rk2Q
+	hsbp6YKcahCPh8Jy6lJ44Xm8YTs0yaoduQM5tjY+0d9srN51fa566b/GAb1uydOhjbjgwiLYn6Oeb
+	VXZeEHzj3XoomnVVUmsAyO3x4lqwoEBkaz3Xmxt7cpDJatJTuEN6YRrpVYndOx/j/tGtq0L/FYaTi
+	Ha5xDgyCwKl0odlZLc6w==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tpO8s-00000003kMv-1ykE;
-	Tue, 04 Mar 2025 09:00:46 +0000
-Received: from mail-wm1-x32f.google.com ([2a00:1450:4864:20::32f])
+	id 1tpOKW-00000003oR2-3g35;
+	Tue, 04 Mar 2025 09:12:48 +0000
+Received: from out-180.mta1.migadu.com ([2001:41d0:203:375::b4])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1tpO8q-00000003kL4-0BnP
+	id 1tpOKT-00000003oKx-47N7
 	for kvm-riscv@lists.infradead.org;
-	Tue, 04 Mar 2025 09:00:45 +0000
-Received: by mail-wm1-x32f.google.com with SMTP id 5b1f17b1804b1-43bcad638efso4049175e9.2
-        for <kvm-riscv@lists.infradead.org>; Tue, 04 Mar 2025 01:00:43 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ventanamicro.com; s=google; t=1741078842; x=1741683642; darn=lists.infradead.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=5UP7DmGMGEllBfFdaot9026+FUs+6/ByI4Mfm7p9ZUY=;
-        b=RVypVYBOVX3zpSzoUsQrPqbq4sJXta2AGOYdjZQCbBPmUcG254wkC+Y6Kt3QlwYQ8j
-         Kc61GBCSbIqeOlb1aFBJbXSjHDju7vS0s224CEtNn3R/wSAJIEi1VsF5bFPp7BWaQZ3g
-         MSTH+NhyVN0JZ7TtlBnbtsTjS/sp037NUYaQ8opJnYuTQ/kTQ9D/3BAkJqqTArmPlow7
-         GDQrB7zFin7v1R4NRJB8kgO7UWUAo91sLHXhYGv1kpOspXdB0ofBGi8ePpv9c/bN1GYr
-         qPfA9MnCegYD25UrzXBIKT92behBJD0lG7UPYUmAL9fEEZogaagXu8VHcuvZVXar9YVR
-         OaRQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1741078842; x=1741683642;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=5UP7DmGMGEllBfFdaot9026+FUs+6/ByI4Mfm7p9ZUY=;
-        b=NbI+EWURgEPjmDaaASUGGRnngpawDe/t1VLo2qALVpoZdlivPCes8IdzGIEUsehxGu
-         A2mhy/InXQkfjdutYLxRiKq6srWJZqmSeZxd3RsGBm8+4MPsu3LYkBBVRYaj7R8qmBmu
-         14uJ0zEmIgpgMdRKdPR2fObnhSvYdZuf30TnyXDQkuGM+5n3YKOkg9bct7hk2srEncJe
-         L7MMX6PZWSk7sD/pD0MZ0Jiq7JruBrvffak1yOxaIIgNh1ZIir+3DIKrYwE9gxoBRAcg
-         +rA0gCHxmgbP+mGfnC8l0NOyKmeaB8a9rfoVOOpM/+D4pjGQfgoiwkQto2AW+iGP8IhC
-         x/Tg==
-X-Forwarded-Encrypted: i=1; AJvYcCV4KJaeI8VhdalXvzbTA03YUY/MG88QU52aMnqbgasscgG5PZc6ClF91GkupCOsy/Ui5RvTNcjOKfU=@lists.infradead.org
-X-Gm-Message-State: AOJu0YwCk9fAQlqiEN8+m9mNNuQCnaIUXZl6ArxrKrw1p2Ktew3gf0cZ
-	WWLtw3wZ5gSpFSn7IfDXefz4E1xTP/D49L73PWCQdPmMZBfZsY+JaWN9tqnu8e0=
-X-Gm-Gg: ASbGnctG79Mum6tYGi+d+qzPWToR5bgEm6CgFrNVA7PtOyJ4yXwVtjDapzrFpnElyRS
-	Vey1c0c1PI1L9HNVrZ2sn3Up62Ontp+o0co5xByIb4XLWoh7Vfr5+LIjmYoP5fWk7ZfiL5FvIDQ
-	arABEQ8XxX4i4dX+vf98D2MmDplbwIa28zlThHlXN2jPZ7I2reFjyB8u7XlFrIMmVfaSPRMV7Ud
-	/te+1IXQt3IpY90lRXDgXxhpmIt4y2IqWe6tZRGjeAECGT+R5FnyRSPbv4lnCJmHkIcxnFgfGpP
-	+3/54wLCLRzztBo6n4AHuX8DUr7xCA1p
-X-Google-Smtp-Source: AGHT+IE98Wtw/qck2RNdbUy35iBZdcuCmo9BHlXLPhcqJEgVkq5LxR8GTapjzExbGuStv6PALsyUfQ==
-X-Received: by 2002:a05:600c:3b23:b0:439:98b0:f8ce with SMTP id 5b1f17b1804b1-43ba66e60f5mr143195855e9.7.1741078842210;
-        Tue, 04 Mar 2025 01:00:42 -0800 (PST)
-Received: from localhost ([2a02:8308:a00c:e200::688c])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-43bbf2edf84sm75715855e9.40.2025.03.04.01.00.41
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 04 Mar 2025 01:00:41 -0800 (PST)
-Date: Tue, 4 Mar 2025 10:00:41 +0100
-From: Andrew Jones <ajones@ventanamicro.com>
-To: Atish Patra <atishp@rivosinc.com>
-Cc: Anup Patel <anup@brainfault.org>, Atish Patra <atishp@atishpatra.org>, 
-	Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt <palmer@dabbelt.com>, 
-	Paolo Bonzini <pbonzini@redhat.com>, Shuah Khan <shuah@kernel.org>, kvm@vger.kernel.org, 
-	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, 
-	linux-kselftest@vger.kernel.org
-Subject: Re: [PATCH v2 4/4] KVM: riscv: selftests: Allow number of interrupts
- to be configurable
-Message-ID: <20250304-bb96798e9a1fd292430df3e8@orel>
-References: <20250303-kvm_pmu_improve-v2-0-41d177e45929@rivosinc.com>
- <20250303-kvm_pmu_improve-v2-4-41d177e45929@rivosinc.com>
+	Tue, 04 Mar 2025 09:12:47 +0000
+Date: Tue, 4 Mar 2025 10:12:30 +0100
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1741079558;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=yk65YCoknZT+htaDe9nqwacdmrTmjKV45m85/3fsFhE=;
+	b=sQPkZud9kSyo2eP4UHsTl0mo8Gijg6SRFTEvSNzOPWxVZ19igT2P901QlPfY1Uc1Xu/aAm
+	hmLNfw82SZlsDeYmKz/xB1QShkteULXP2sYggBN8gJfbIkYeaNr8A7a7Dv65HmgZ//hHTe
+	8TmwryZlyMbq+tdY/72ICKmL89aUX34=
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Andrew Jones <andrew.jones@linux.dev>
+To: kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
+	kvmarm@lists.linux.dev
+Cc: alexandru.elisei@arm.com, eric.auger@redhat.com, atishp@rivosinc.com, 
+	cleger@rivosinc.com, pbonzini@redhat.com, thuth@redhat.com, 
+	Andrew Jones <ajones@ventanamicro.com>
+Subject: Re: [kvm-unit-tests PATCH 1/2] configure: Allow earlycon for all
+ architectures
+Message-ID: <20250304-4e2ee456d30819f9a38239c8@orel>
+References: <20250221162753.126290-4-andrew.jones@linux.dev>
+ <20250221162753.126290-5-andrew.jones@linux.dev>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20250303-kvm_pmu_improve-v2-4-41d177e45929@rivosinc.com>
+In-Reply-To: <20250221162753.126290-5-andrew.jones@linux.dev>
+X-Migadu-Flow: FLOW_OUT
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250304_010044_081754_1C9936C6 
-X-CRM114-Status: GOOD (  11.78  )
+X-CRM114-CacheID: sfid-20250304_011246_298630_EBA09F41 
+X-CRM114-Status: GOOD (  20.94  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -102,19 +72,170 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Mon, Mar 03, 2025 at 02:53:09PM -0800, Atish Patra wrote:
-> It is helpful to vary the number of the LCOFI interrupts generated
-> by the overflow test. Allow additional argument for overflow test
-> to accommodate that. It can be easily cross-validated with
-> /proc/interrupts output in the host.
+On Fri, Feb 21, 2025 at 05:27:55PM +0100, Andrew Jones wrote:
+> From: Andrew Jones <ajones@ventanamicro.com>
 > 
-> Signed-off-by: Atish Patra <atishp@rivosinc.com>
+> earlycon could be used by any architecture so check it outside the
+> arm block and apply it to riscv right away.
+> 
+> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
 > ---
->  tools/testing/selftests/kvm/riscv/sbi_pmu_test.c | 38 +++++++++++++++++++-----
->  1 file changed, 31 insertions(+), 7 deletions(-)
->
+>  configure | 88 +++++++++++++++++++++++++++----------------------------
+>  1 file changed, 43 insertions(+), 45 deletions(-)
+> 
+> diff --git a/configure b/configure
+> index 86cf1da36467..7e462aaf1190 100755
+> --- a/configure
+> +++ b/configure
+> @@ -78,10 +78,9 @@ usage() {
+>  	                           4k [default], 16k, 64k for arm64.
+>  	                           4k [default], 64k for ppc64.
+>  	    --earlycon=EARLYCON
+> -	                           Specify the UART name, type and address (optional, arm and
+> -	                           arm64 only). The specified address will overwrite the UART
+> -	                           address set by the --target option. EARLYCON can be one of
+> -	                           (case sensitive):
+> +				   Specify the UART name, type and address (optional).
+> +	                           The specified address will overwrite the UART address set by
+> +	                           the --target option. EARLYCON can be one of (case sensitive):
 
-Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+I'll add
+                                   (arm/arm64 and riscv32/riscv64 only)
+
+since no other architecture is paying attention to the parameter at this
+time.
+
+Thanks,
+drew
+
+>  	               uart[8250],mmio,ADDR
+>  	                           Specify an 8250 compatible UART at address ADDR. Supported
+>  	                           register stride is 8 bit only.
+> @@ -283,6 +282,41 @@ else
+>      fi
+>  fi
+>  
+> +if [ "$earlycon" ]; then
+> +    IFS=, read -r name type_addr addr <<<"$earlycon"
+> +    if [ "$name" != "uart" ] && [ "$name" != "uart8250" ] && [ "$name" != "pl011" ]; then
+> +        echo "unknown earlycon name: $name"
+> +        usage
+> +    fi
+> +
+> +    if [ "$name" = "pl011" ]; then
+> +        if [ -z "$addr" ]; then
+> +            addr=$type_addr
+> +        else
+> +            if [ "$type_addr" != "mmio32" ]; then
+> +                echo "unknown $name earlycon type: $type_addr"
+> +                usage
+> +            fi
+> +        fi
+> +    else
+> +        if [ "$type_addr" != "mmio" ]; then
+> +            echo "unknown $name earlycon type: $type_addr"
+> +            usage
+> +        fi
+> +    fi
+> +
+> +    if [ -z "$addr" ]; then
+> +        echo "missing $name earlycon address"
+> +        usage
+> +    fi
+> +    if [[ $addr =~ ^0(x|X)[0-9a-fA-F]+$ ]] || [[ $addr =~ ^[0-9]+$ ]]; then
+> +        uart_early_addr=$addr
+> +    else
+> +        echo "invalid $name earlycon address: $addr"
+> +        usage
+> +    fi
+> +fi
+> +
+>  [ -z "$processor" ] && processor="$arch"
+>  
+>  if [ "$processor" = "arm64" ]; then
+> @@ -296,51 +330,14 @@ if [ "$arch" = "i386" ] || [ "$arch" = "x86_64" ]; then
+>  elif [ "$arch" = "arm" ] || [ "$arch" = "arm64" ]; then
+>      testdir=arm
+>      if [ "$target" = "qemu" ]; then
+> -        arm_uart_early_addr=0x09000000
+> +        : "${uart_early_addr:=0x9000000}"
+>      elif [ "$target" = "kvmtool" ]; then
+> -        arm_uart_early_addr=0x1000000
+> +        : "${uart_early_addr:=0x1000000}"
+>          errata_force=1
+>      else
+>          echo "--target must be one of 'qemu' or 'kvmtool'!"
+>          usage
+>      fi
+> -
+> -    if [ "$earlycon" ]; then
+> -        IFS=, read -r name type_addr addr <<<"$earlycon"
+> -        if [ "$name" != "uart" ] && [ "$name" != "uart8250" ] &&
+> -                [ "$name" != "pl011" ]; then
+> -            echo "unknown earlycon name: $name"
+> -            usage
+> -        fi
+> -
+> -        if [ "$name" = "pl011" ]; then
+> -            if [ -z "$addr" ]; then
+> -                addr=$type_addr
+> -            else
+> -                if [ "$type_addr" != "mmio32" ]; then
+> -                    echo "unknown $name earlycon type: $type_addr"
+> -                    usage
+> -                fi
+> -            fi
+> -        else
+> -            if [ "$type_addr" != "mmio" ]; then
+> -                echo "unknown $name earlycon type: $type_addr"
+> -                usage
+> -            fi
+> -        fi
+> -
+> -        if [ -z "$addr" ]; then
+> -            echo "missing $name earlycon address"
+> -            usage
+> -        fi
+> -        if [[ $addr =~ ^0(x|X)[0-9a-fA-F]+$ ]] ||
+> -                [[ $addr =~ ^[0-9]+$ ]]; then
+> -            arm_uart_early_addr=$addr
+> -        else
+> -            echo "invalid $name earlycon address: $addr"
+> -            usage
+> -        fi
+> -    fi
+>  elif [ "$arch" = "ppc64" ]; then
+>      testdir=powerpc
+>      firmware="$testdir/boot_rom.bin"
+> @@ -351,6 +348,7 @@ elif [ "$arch" = "ppc64" ]; then
+>  elif [ "$arch" = "riscv32" ] || [ "$arch" = "riscv64" ]; then
+>      testdir=riscv
+>      arch_libdir=riscv
+> +    : "${uart_early_addr:=0x10000000}"
+>  elif [ "$arch" = "s390x" ]; then
+>      testdir=s390x
+>  else
+> @@ -491,7 +489,7 @@ EOF
+>  if [ "$arch" = "arm" ] || [ "$arch" = "arm64" ]; then
+>  cat <<EOF >> lib/config.h
+>  
+> -#define CONFIG_UART_EARLY_BASE ${arm_uart_early_addr}
+> +#define CONFIG_UART_EARLY_BASE ${uart_early_addr}
+>  #define CONFIG_ERRATA_FORCE ${errata_force}
+>  
+>  EOF
+> @@ -506,7 +504,7 @@ EOF
+>  elif [ "$arch" = "riscv32" ] || [ "$arch" = "riscv64" ]; then
+>  cat <<EOF >> lib/config.h
+>  
+> -#define CONFIG_UART_EARLY_BASE 0x10000000
+> +#define CONFIG_UART_EARLY_BASE ${uart_early_addr}
+>  
+>  EOF
+>  fi
+> -- 
+> 2.48.1
+> 
 
 -- 
 kvm-riscv mailing list
