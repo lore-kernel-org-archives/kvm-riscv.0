@@ -4,57 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 496A5C19F32
-	for <kvm-riscv@archiver.kernel.org>; Fri,  7 Mar 2025 08:45:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 82F97C19F32
+	for <kvm-riscv@archiver.kernel.org>; Fri,  7 Mar 2025 09:21:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=ShqnfHaL6AHZmSS1/xLnrbuNWmNgmPwhA7Mi1K8UhIs=; b=AF4MvwOd++iAJa
-	5/ozeP+fL5ZfA4IZBlUZEHM/Vat9bfKrx2JlGkUdzvKaGKdVglAQQClx5h7bzn6sR3uaBadkMDfyi
-	PYG60ifMU3IGcCdHR1xhM0E1sTq29NkZQ5jJAtsXMUoMipND7NfCYMLESlkx14za3Wkynq3ZYZjPd
-	W0E9o/DeUintkcgJVg3cOeUq79HCBjkOW6ENnCQGubjxiFeG/TQNMNJ3c1KSOgdMMHuI4/j+BPIj9
-	d5KrIzChYkS/7+7jRtN+vxGKlQuCHMngvx3CIT/4XxG3VNlRoymi/0A1O9axWfPSoadDkUSkM8xmg
-	CkW1FEcbiL7YvjieRhGQ==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=ftBASHYIt1jFM31fHY/tc9Se1DwNTnXHjGZGtS91k1s=; b=ahGTHYG9Djcm/D
+	lyvd7FN+rjE0M5AlW1RFFd788IqMZNRa5TLI2bFYzJmysg2gmkBgGaq5O0dO0nM+WYzN1ZsgsZJT4
+	TFzJlmN7PEOsxU823ExyAqo4xIads3lu6GeGwggAh2x0WyUorQGvhyxNo2KnS8X3GCfJDMUaKTaxL
+	W8X+eosuayW3pEqadpo3NwsGgon1Rk7SyMQ2rKKIAk0IKzgsuqeZzWSKV3vJem5Mwd9jmrWOBotoc
+	rXnrp0daFMhZeHwW7nG4O+ifTyZSWdcBvViYDrxD78ckW6beIBYVAliOSPi9X5gr4FQ95CUhps463
+	cFE+EAT4pzmvVUi+oLtw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tqTL2-0000000DbW7-0CMa;
-	Fri, 07 Mar 2025 08:45:48 +0000
-Received: from out-188.mta1.migadu.com ([95.215.58.188])
+	id 1tqTtY-0000000Dgpq-0gfI;
+	Fri, 07 Mar 2025 09:21:28 +0000
+Received: from out-178.mta1.migadu.com ([95.215.58.178])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1tqTL0-0000000DbVM-0PGs
+	id 1tqTqj-0000000Dg6w-3Sqe
 	for kvm-riscv@lists.infradead.org;
-	Fri, 07 Mar 2025 08:45:47 +0000
-Date: Fri, 7 Mar 2025 09:45:39 +0100
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1741337143;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Kz7tr3Ef4wRK05z0FEwMWNGvCaeHxB4UKfPnpbiiwqw=;
-	b=c0U+srwrdTCvXelYlglJHrB+xNHlSsaPkftQptchw3kBq2mcWH0laSgUJd9NI8xpRCw5RL
-	HPnrvN6Ls7xPWYjkrH0453InwYF+4w5Hc7P/GBp1ns1alCRkIBkutpXKq6qO4A1vOxEG2T
-	Axzw8+2NADScVKg8Smqf+CZZwmg+GHA=
+	Fri, 07 Mar 2025 09:18:35 +0000
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1741339111;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=y2FBvybRQ7hGNDuactnNvnWlcdQr0dcjdCw8K+WSDT8=;
+	b=v/um14QjntUhD9/+RjAPoAqg5hVIFWfCDpaGuI3rZaVkVpnzjZ4cpDc2xZ3mkeysr6W9z2
+	xbw+4yumPwu7bH4NmlPTKPqXmnDnAh2JsHoY5L/yMVAZYEQMBt0P+TSM4mxRcP6MI3jdoT
+	lkxLHe4Zyn/2jMILuyMorKlQiFsHWWQ=
 From: Andrew Jones <andrew.jones@linux.dev>
-To: Thomas Huth <thuth@redhat.com>
-Cc: kvm@vger.kernel.org, kvmarm@lists.linux.dev, 
-	kvm-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, 
-	pbonzini@redhat.com, alexandru.elisei@arm.com, eric.auger@redhat.com, 
-	lvivier@redhat.com, frankja@linux.ibm.com, imbrenda@linux.ibm.com, nrb@linux.ibm.com
-Subject: Re: [kvm-unit-tests PATCH] Makefile: Use CFLAGS in cc-option
-Message-ID: <20250307-7a4556045a53c51e3150da2f@orel>
-References: <20250307083952.40999-2-andrew.jones@linux.dev>
- <2c0bd772-0132-4053-bd22-aac88a8dcfee@redhat.com>
+To: kvm@vger.kernel.org,
+	kvmarm@lists.linux.dev,
+	kvm-riscv@lists.infradead.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-s390@vger.kernel.org
+Cc: pbonzini@redhat.com,
+	thuth@redhat.com,
+	alexandru.elisei@arm.com,
+	eric.auger@redhat.com,
+	lvivier@redhat.com,
+	frankja@linux.ibm.com,
+	imbrenda@linux.ibm.com,
+	nrb@linux.ibm.com
+Subject: [kvm-unit-tests PATCH v2] Makefile: Use CFLAGS in cc-option
+Date: Fri,  7 Mar 2025 10:18:29 +0100
+Message-ID: <20250307091828.57933-2-andrew.jones@linux.dev>
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <2c0bd772-0132-4053-bd22-aac88a8dcfee@redhat.com>
 X-Migadu-Flow: FLOW_OUT
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250307_004546_292686_41C88324 
-X-CRM114-Status: GOOD (  14.57  )
+X-CRM114-CacheID: sfid-20250307_011834_020187_32CADE97 
+X-CRM114-Status: UNSURE (   7.72  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -71,40 +76,59 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Fri, Mar 07, 2025 at 09:42:03AM +0100, Thomas Huth wrote:
-> On 07/03/2025 09.39, Andrew Jones wrote:
-> > When cross compiling with clang we need to specify the target in
-> > CFLAGS and cc-option will fail to recognize target-specific options
-> > without it. Add CFLAGS to the CC invocation in cc-option.
-> > 
-> > Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
-> > ---
-> >   Makefile | 2 +-
-> >   1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > diff --git a/Makefile b/Makefile
-> > index 78352fced9d4..9dc5d2234e2a 100644
-> > --- a/Makefile
-> > +++ b/Makefile
-> > @@ -21,7 +21,7 @@ DESTDIR := $(PREFIX)/share/kvm-unit-tests/
-> >   # cc-option
-> >   # Usage: OP_CFLAGS+=$(call cc-option, -falign-functions=0, -malign-functions=0)
-> > -cc-option = $(shell if $(CC) -Werror $(1) -S -o /dev/null -xc /dev/null \
-> > +cc-option = $(shell if $(CC) $(CFLAGS) -Werror $(1) -S -o /dev/null -xc /dev/null \
-> >                 > /dev/null 2>&1; then echo "$(1)"; else echo "$(2)"; fi ;)
-> >   libcflat := lib/libcflat.a
-> 
-> Reviewed-by: Thomas Huth <thuth@redhat.com>
+When cross compiling with clang we need to specify the target in
+CFLAGS and cc-option will fail to recognize target-specific options
+without it. Add CFLAGS to the CC invocation in cc-option.
 
-Thanks, but I just found out that I was too hasty with this patch. I broke
-x86,
+The introduction of the realmode_bits variable is necessary to
+avoid make failing to build x86 due to CFLAGS referencing itself.
 
-/builds/jones-drew/kvm-unit-tests/x86/Makefile.common:105: *** Recursive variable 'CFLAGS' references itself (eventually).  Stop.
+Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
+---
+v2:
+ - Fixed x86 builds with the realmode_bits variable
 
-I'll try to sort that out and send a v2.
+ Makefile            | 2 +-
+ x86/Makefile.common | 3 ++-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
-Thanks,
-drew
+diff --git a/Makefile b/Makefile
+index 78352fced9d4..9dc5d2234e2a 100644
+--- a/Makefile
++++ b/Makefile
+@@ -21,7 +21,7 @@ DESTDIR := $(PREFIX)/share/kvm-unit-tests/
+ 
+ # cc-option
+ # Usage: OP_CFLAGS+=$(call cc-option, -falign-functions=0, -malign-functions=0)
+-cc-option = $(shell if $(CC) -Werror $(1) -S -o /dev/null -xc /dev/null \
++cc-option = $(shell if $(CC) $(CFLAGS) -Werror $(1) -S -o /dev/null -xc /dev/null \
+               > /dev/null 2>&1; then echo "$(1)"; else echo "$(2)"; fi ;)
+ 
+ libcflat := lib/libcflat.a
+diff --git a/x86/Makefile.common b/x86/Makefile.common
+index 0b7f35c8de85..e97464912e28 100644
+--- a/x86/Makefile.common
++++ b/x86/Makefile.common
+@@ -98,6 +98,7 @@ tests-common = $(TEST_DIR)/vmexit.$(exe) $(TEST_DIR)/tsc.$(exe) \
+ ifneq ($(CONFIG_EFI),y)
+ tests-common += $(TEST_DIR)/realmode.$(exe) \
+ 		$(TEST_DIR)/la57.$(exe)
++realmode_bits := $(if $(call cc-option,-m16,""),16,32)
+ endif
+ 
+ test_cases: $(tests-common) $(tests)
+@@ -108,7 +109,7 @@ $(TEST_DIR)/realmode.elf: $(TEST_DIR)/realmode.o
+ 	$(LD) -m elf_i386 -nostdlib -o $@ \
+ 	      -T $(SRCDIR)/$(TEST_DIR)/realmode.lds $^
+ 
+-$(TEST_DIR)/realmode.o: bits = $(if $(call cc-option,-m16,""),16,32)
++$(TEST_DIR)/realmode.o: bits = $(realmode_bits)
+ 
+ $(TEST_DIR)/access_test.$(bin): $(TEST_DIR)/access.o
+ 
+-- 
+2.48.1
+
 
 -- 
 kvm-riscv mailing list
