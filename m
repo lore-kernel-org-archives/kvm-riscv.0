@@ -4,7 +4,7 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37AB4C35FF3
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E315FC35FF6
 	for <kvm-riscv@archiver.kernel.org>; Fri, 14 Mar 2025 15:52:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
@@ -12,62 +12,62 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=PbWgiooI4xQofeVK7QeTMB1EP6CYWo6n1JuNQH3RfA8=; b=EMYY2lwNNvVjjb
-	3MT7mQIyO1kyvgq1FNtPwZ5vQz5QK0KHCZDLoxgOqlxzilE6Z0ONDakdxO+H64AAlONwmkpE9xH7G
-	llj6zYEMgd9CeqHrHd4ovAFTlZEvucUfXcQluEV/JZ3597h3g+Gn8lSYcSTZQn8zpJBuFgFBfsAUb
-	WDXAEmlcdAtePe0wWair170SW6x3w/H5wt84Nw/FqLZFOOMPzDRAk5vLe+dP5//CE0z9zUt4GGu5u
-	mG/wFnSPK0JAQSuwLRIkpOJSPyDWkXo7gGlSZDTYfTnonIfBdf6PS51yrVMo7T9iyPxVD0g/vbIZR
-	QoD9V9SbgZ/EnLuLZpHw==;
+	List-Owner; bh=hhXxdMCHtH2/18nQjMKTeIosnnBfs5NyOkAmHQgczio=; b=uodiZ6wXMBoDNv
+	NjO48AAfj3JbSs51KSiXAKaYdhUhkLKgCSLffh6uZ3pB61WOBfX0GeNylHpybA96JGKdMrF23ntG2
+	T8bwtafho95yhhXhG5wnEzXRyI+jDFWFc/FcwE/Ap6UnkVEq+mj+jp9uTRsFHIecBqdBcH5uFT5Gj
+	J+6waS21EZ1vxoVaOaMII+syy+mJO4aW9h+30TsgTUQqG79fVOnZdE0E/USnB3f4mEhT/rp9Zc5LE
+	+jXrnL512MPKzkSnhQfw/ogkmIgsD7V1geWq9lhEMRtm3jkzBC7e+afpSCiIzcBKM2f6sSDJ/4lOH
+	MSfMWtNWGMHdYd/45sUQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tt7Kn-0000000EdCA-3zHd;
-	Fri, 14 Mar 2025 15:52:29 +0000
-Received: from mail-wm1-x32d.google.com ([2a00:1450:4864:20::32d])
+	id 1tt7Ko-0000000EdD1-2fmS;
+	Fri, 14 Mar 2025 15:52:30 +0000
+Received: from mail-wm1-x32e.google.com ([2a00:1450:4864:20::32e])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1tt7Jd-0000000Ecwp-0VLB
+	id 1tt7Jd-0000000EcxA-3gIL
 	for kvm-riscv@lists.infradead.org;
-	Fri, 14 Mar 2025 15:51:18 +0000
-Received: by mail-wm1-x32d.google.com with SMTP id 5b1f17b1804b1-43cef035a3bso15811665e9.1
-        for <kvm-riscv@lists.infradead.org>; Fri, 14 Mar 2025 08:51:16 -0700 (PDT)
+	Fri, 14 Mar 2025 15:51:19 +0000
+Received: by mail-wm1-x32e.google.com with SMTP id 5b1f17b1804b1-4394036c0efso15274755e9.2
+        for <kvm-riscv@lists.infradead.org>; Fri, 14 Mar 2025 08:51:17 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1741967475; x=1742572275; darn=lists.infradead.org;
+        d=linaro.org; s=google; t=1741967476; x=1742572276; darn=lists.infradead.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=ZgQ0Ki7S7zg6nzRN4ZWX4z5ZVEFjxmGZvTrquNKZxZU=;
-        b=GAJbcfFrA5L0ccw4OREWCacxnSBhu8RV84jUGXcocC3s7FiijEFtcKjz5nxmCIgQ+K
-         +ilt5JdAJKSzQLrp68SQbnx3uVRHTLdHcSIUFjarPHo+1cEN1G5qQg0rB45l4md9SzVz
-         lMY8Yh9eMR1grocvrSgV8+wsqQnqzZm3p3/hWWpR8GoKyKVdrr8jqXG3kEcBlpmUuk/n
-         GLOS/I9nEm0JwDaC47o/JTgkokCydLtoXsy7UPAqrvVaYOFOlR7PMOJUXhElhyuiDYJp
-         tUUL9uq5gILeVH3PUr4F+CENpOzLoSr3j54INT98Mz3dNv6jdVYn/KjIJWMzMcMBB7A9
-         /VEw==
+        bh=+fRHRzXgCjmP/bnGMZgkYHknTcPw+tYfWwUZWqv1wRU=;
+        b=ACUIP/bZ62vacEEyeh3w5TgcyZYqxDmVVbJLciZtHGhD6NEaMImaQz75bzxTwBY3rA
+         uNTUzutJ5GI2u+lezGAT6eJygfToZz2S8EvWnRx6QMDyYUvZeCY6wGxlTuchizmvYjc9
+         mH3S0vlRDsqrYmsAqNXheD6/UfApL5tRG9E9qMEDTbJTKXNoHi2bp+jvXF+ao6zRFTDt
+         UnisIWV5b6idkZdWzaHymEt5LUPbZimyOS+P9whc5Fvfa6RE8wwb1xgszioLXcHh6zJ/
+         86hzWIWfk3YvXk5538CIQVh1eMou9c15XPBpIDfAVYfSwkriN2sfa0vEPhIzdPcs7UIj
+         +xzg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1741967475; x=1742572275;
+        d=1e100.net; s=20230601; t=1741967476; x=1742572276;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=ZgQ0Ki7S7zg6nzRN4ZWX4z5ZVEFjxmGZvTrquNKZxZU=;
-        b=nL+lO2u8ZSfynHHcdH2POrwhedw3MuzfevngxoT/M0mfMPMBTmAt4O97B9sJUGyAhx
-         dRHTpP1Nm+Os/Yw0KdXv+OxRnuXNQWZDX+VTQVu2qCIQqx8M+GjH2WC2Ma/BHbX8TiB9
-         sJh2TbVdlIEBY3NOeW/IzlsvsvP7J8O2c3qmnJj5Frb89GCs3GvdmgO9HoC54C2ydeIb
-         oHnXvGEFp9hT60BIxV7oNn82TKKqwAjOZQS/gnomjX4wYmYanx8qeRPHXjD/TLCWtcs8
-         9y2fbTFJzwIQaCDjJOXUOx65Q/SDkoZQEWZso6fyJ3dRe+u8q8FCJyd+sxq+CAoSZ44o
-         rkqg==
-X-Forwarded-Encrypted: i=1; AJvYcCWISR1q5KMQuXeaQLNJxqRdHO39+W5Cv8TdUiszy6NzbE7TGIT3wnrW0gxoFBVhaWIESvoMbSg5p3w=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yw2+wZDkseiCs/5ve20VF8vBbYEwjyDaGlfnBxji7MlgAjyT+Jc
-	WUNOoSTK6EAHboKBpF05FLKrK19o7u2W4GERgzuT8wIQ1VdXDDRiPmvwUWvtxjs=
-X-Gm-Gg: ASbGnct4ldAvlagxoVfWtmJOcg4QlWVJ/+2QKBnB+ircMQR7TiBX+Sr/HGrDsPcXBp1
-	uc3I0Rcc+NvD9ff9RGM5wj+vV23AhZwv2hrSZwGBX/HUULCmZoPoYD4SQvS6i+OBZVQwTTPioaR
-	YYVcx8RxJhx41+D4JONbYhA17z3XkAM3cxugQ1WAqJ8zio/YcTtZ4RbPUFg2pt2A0ULaaMbrlGJ
-	1CEwBBR68zQFCdo+Lr2uVaeDZj+iXhP4NxhAh2zk1bdR7DOgzM6kBi4p5oclC+65iEi6ETyykdw
-	ey07WqPoYKZUeqDtHYVdTGSnD07HzcJ2Y2Fp/q41NfYEbjHr6shGVsXsq9dFCIA=
-X-Google-Smtp-Source: AGHT+IFLNDlpPyRHd7THTJueCfShHv+cshQugLdnBwo9BUmrTvt7xn9ewfp+VyqjXp3lJ+1TO4LSpQ==
-X-Received: by 2002:a05:600c:3ba6:b0:43c:eea9:f45d with SMTP id 5b1f17b1804b1-43d1eccbba1mr38605875e9.18.1741967475088;
-        Fri, 14 Mar 2025 08:51:15 -0700 (PDT)
+        bh=+fRHRzXgCjmP/bnGMZgkYHknTcPw+tYfWwUZWqv1wRU=;
+        b=hto/o15xcBwQlN9AT01Ejd1g99A1XmfbeI+ROIAfCHvS35ToGJkOwTEW7ZzyxuUo38
+         1Fffv60RwPjCB28rZEQCvpqvXLwaK9lBI0DBU5E7Q9XfT0+uQVrFp7GC4TDJgIfCM4Yt
+         MEqJKprZBLXby89PDXupFXye5P05pnt7J2bvDYF07XiR1Gq0L7zxesqHXrhGBQmkvIA6
+         JrwtYoHaSsqVK6s3/beRb7RQz7QU68EDJbfwsnvBEFV1t0/6mtifYCcS7xMFO1D46HZT
+         1tKJNJRtadx/OR2c7asp2Gy4t+dWvNyzV9UhnU91L/MxjeJq9+jfCWS/BvKLBSdf08Hj
+         SEBQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUTR1O6iyOGFryGvrMl7hJ51FURtbItFJmxwjIqT+FpjiS7hV+tm7V1vOmeB7TuvaLkNSVGgjLZtoI=@lists.infradead.org
+X-Gm-Message-State: AOJu0YwzqNsc0L9UpS/3t7YTit3Tq0L9+IpGd9H0PkSDCVyC4v5GRsi+
+	bsBs1nEOJKJRROuh4d8mVApXLfee8n6rpA3fWYgEsuBQrmr4sudeqdGoUOcxDIE=
+X-Gm-Gg: ASbGnctv8/sbK0WW4eKE6vos4Dr6iN7um9I3m2x9cDLO4g3MTICwi6sjs9MVnM2zOuM
+	xql5jPLoDKfvRDxl6NcLGZaxwO2fLrU/bkX6jwST70Ppwl2wl/uhvY9PIozn71zaRTeayJlgBrY
+	fi1Zw/MSsWDO1HSSKQt6LnrP3Yfh9lCUP1ePtIiGByNJpc1Ro1gSgmZ5SW2AZsXN9GHjFQWn7L7
+	AOckQhtFA/TqTUwszOpXhJ/vsh/z/vctC/ssvXlzVf21NY3Nd6x++AY4D54qni2o+HhZ48w0zzi
+	d1doKkf8m1PdA/STP1SXDiWFcZYXPZjsUztT6Mmfo8O9C+fzYYTy9TrdtMnv1PM=
+X-Google-Smtp-Source: AGHT+IF0xfqiSOAD/aXN3C4RaUAgjkDnEUSmI0lHDHuOw3S7x9Ps8i6yZGeRqXqx/ijFDdbau6zaiw==
+X-Received: by 2002:a05:600c:350a:b0:43c:f70a:2af0 with SMTP id 5b1f17b1804b1-43d1ec8643amr43633015e9.16.1741967476398;
+        Fri, 14 Mar 2025 08:51:16 -0700 (PDT)
 Received: from localhost.localdomain ([2.221.137.100])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-43d21d67819sm15249945e9.21.2025.03.14.08.51.14
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-43d21d67819sm15249945e9.21.2025.03.14.08.51.15
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 14 Mar 2025 08:51:14 -0700 (PDT)
+        Fri, 14 Mar 2025 08:51:16 -0700 (PDT)
 From: Jean-Philippe Brucker <jean-philippe@linaro.org>
 To: andrew.jones@linux.dev,
 	alexandru.elisei@arm.com
@@ -76,16 +76,16 @@ Cc: eric.auger@redhat.com,
 	kvm@vger.kernel.org,
 	kvm-riscv@lists.infradead.org,
 	vladimir.murzin@arm.com
-Subject: [kvm-unit-tests PATCH v2 1/5] configure: arm64: Don't display 'aarch64' as the default architecture
-Date: Fri, 14 Mar 2025 15:49:01 +0000
-Message-ID: <20250314154904.3946484-3-jean-philippe@linaro.org>
+Subject: [kvm-unit-tests PATCH v2 3/5] arm64: Implement the ./configure --processor option
+Date: Fri, 14 Mar 2025 15:49:03 +0000
+Message-ID: <20250314154904.3946484-5-jean-philippe@linaro.org>
 X-Mailer: git-send-email 2.48.1
 In-Reply-To: <20250314154904.3946484-2-jean-philippe@linaro.org>
 References: <20250314154904.3946484-2-jean-philippe@linaro.org>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250314_085117_158879_B3FAB39B 
-X-CRM114-Status: GOOD (  11.65  )
+X-CRM114-CacheID: sfid-20250314_085117_932157_A1B35FAF 
+X-CRM114-Status: GOOD (  11.84  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -104,47 +104,50 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 From: Alexandru Elisei <alexandru.elisei@arm.com>
 
---arch=aarch64, intentional or not, has been supported since the initial
-arm64 support, commit 39ac3f8494be ("arm64: initial drop"). However,
-"aarch64" does not show up in the list of supported architectures, but
-it's displayed as the default architecture if doing ./configure --help
-on an arm64 machine.
+The help text for the ./configure --processor option says:
 
-Keep everything consistent and make sure that the default value for
-$arch is "arm64", but still allow --arch=aarch64, in case they are users
-that use this configuration for kvm-unit-tests.
+    --processor=PROCESSOR  processor to compile for (cortex-a57)
 
-The help text for --arch changes from:
+but, unlike arm, the build system does not pass a -mcpu argument to the
+compiler. Fix it, and bring arm64 at parity with arm.
 
-   --arch=ARCH            architecture to compile for (aarch64). ARCH can be one of:
-                           arm, arm64, i386, ppc64, riscv32, riscv64, s390x, x86_64
+Note that this introduces a regression, which is also present on arm: if
+the --processor argument is something that the compiler doesn't understand,
+but qemu does (like 'max'), then compilation fails. This will be fixed in a
+following patch; another fix is to specify a CPU model that gcc implements
+by using --cflags=-mcpu=<cpu>.
 
-to:
-
-    --arch=ARCH            architecture to compile for (arm64). ARCH can be one of:
-                           arm, arm64, i386, ppc64, riscv32, riscv64, s390x, x86_64
-
+Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
 Signed-off-by: Alexandru Elisei <alexandru.elisei@arm.com>
 ---
- configure | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ arm/Makefile.arm    | 1 -
+ arm/Makefile.common | 1 +
+ 2 files changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/configure b/configure
-index 06532a89..dc3413fc 100755
---- a/configure
-+++ b/configure
-@@ -15,8 +15,9 @@ objdump=objdump
- readelf=readelf
- ar=ar
- addr2line=addr2line
--arch=$(uname -m | sed -e 's/i.86/i386/;s/arm64/aarch64/;s/arm.*/arm/;s/ppc64.*/ppc64/')
--host=$arch
-+host=$(uname -m | sed -e 's/i.86/i386/;s/arm64/aarch64/;s/arm.*/arm/;s/ppc64.*/ppc64/')
-+arch=$host
-+[ "$arch" = "aarch64" ] && arch="arm64"
- cross_prefix=
- endian=""
- pretty_print_stacks=yes
+diff --git a/arm/Makefile.arm b/arm/Makefile.arm
+index 7fd39f3a..d6250b7f 100644
+--- a/arm/Makefile.arm
++++ b/arm/Makefile.arm
+@@ -12,7 +12,6 @@ $(error Cannot build arm32 tests as EFI apps)
+ endif
+ 
+ CFLAGS += $(machine)
+-CFLAGS += -mcpu=$(PROCESSOR)
+ CFLAGS += -mno-unaligned-access
+ 
+ ifeq ($(TARGET),qemu)
+diff --git a/arm/Makefile.common b/arm/Makefile.common
+index f828dbe0..a5d97bcf 100644
+--- a/arm/Makefile.common
++++ b/arm/Makefile.common
+@@ -25,6 +25,7 @@ AUXFLAGS ?= 0x0
+ # stack.o relies on frame pointers.
+ KEEP_FRAME_POINTER := y
+ 
++CFLAGS += -mcpu=$(PROCESSOR)
+ CFLAGS += -std=gnu99
+ CFLAGS += -ffreestanding
+ CFLAGS += -O2
 -- 
 2.48.1
 
