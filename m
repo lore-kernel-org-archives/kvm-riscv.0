@@ -4,56 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 46501C35FF1
-	for <kvm-riscv@archiver.kernel.org>; Fri, 14 Mar 2025 14:19:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ABE83C35FF1
+	for <kvm-riscv@archiver.kernel.org>; Fri, 14 Mar 2025 14:20:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
 	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=wQqb0r2BqCBQ9E49aThnhHFDmdeLRteNwjA14o37Ymg=; b=R8+qfmnYVb+Zwd
-	kilWjtbeyHb6vMnrB+4o7hmv2ccrrVBFsHY+I/Fm1iijLjxLMEVXnSJltIPgcp+qh2KwQj0hUXaap
-	AwH+V8ew/f6N/rJJ0SK/rCnVdUxB3hahkjXL6ww8MS4YGLYUv8j6W4lPvmvTtaciCX+9hQsmiUVd6
-	7XxAnYWlE2HlabHxvVWiDka+P+59VTCcQzPCpnvTDFXsATUI/AbVnxc1FxpkErhcUemfbak/ogdiG
-	MSACj+MbbwgRUDftBzWw9dWtXMArLsNIKQpNXFjm9Qd5EitwAWIxQcNWVsJiQjCfvwQtCf/WVpZky
-	xwbDyzp9d0XHJMQX1gMw==;
+	List-Owner; bh=HXsbBkNjiy9ZXMYinWq272a4ev1br+TmwPpkNgkA/Lo=; b=vn+PukgZaccqQM
+	KCbshnusx83B9wBjf0gYa5bjGdDaLm/KQk0HFGIHCQeaLp5GLoG3mPCERscihtD+F9qPsHLsrKbvh
+	YDCtsG+6LW8qSEqo9v+7MWA/ZdsQFiiDTb6xD4RXGE7P92g3R8yorBk/PFFHEJrbTcH7/577l3OF1
+	1ze8I6Wb+y5VisvL8Y3/ID4jc3S4JolUg6vFOowgKliUktxNHwrmWpBp3lKTW7KngujcCh4cjofB1
+	6xaPcLE30SXvd1UDYUs3NcC35vnx1CoMpV/xK6KLqdI/L7zKv4KX5HlOuNu526/GZw4TLQQmZKbgm
+	Z6h960xFR5Ww8HUqOidQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tt5si-0000000ENzw-3i7P;
-	Fri, 14 Mar 2025 14:19:24 +0000
-Received: from out-171.mta1.migadu.com ([95.215.58.171])
+	id 1tt5tY-0000000EO9I-1tPT;
+	Fri, 14 Mar 2025 14:20:16 +0000
+Received: from out-172.mta0.migadu.com ([91.218.175.172])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1tt5sg-0000000ENyQ-1Mt0
+	id 1tt5tW-0000000EO89-1uIQ
 	for kvm-riscv@lists.infradead.org;
-	Fri, 14 Mar 2025 14:19:23 +0000
-Date: Fri, 14 Mar 2025 15:19:14 +0100
+	Fri, 14 Mar 2025 14:20:15 +0000
+Date: Fri, 14 Mar 2025 15:20:08 +0100
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1741961960;
+	t=1741962010;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=rfm2SHJGPzpJqmbjHZGEFvTtcDzNAo8vTHZ0TBp3tm8=;
-	b=G+QwETGZPF4lpBTabTVHn1zefczMYLL6dFG3+c/eMhXR7n0U3UBekW0yg0x32f4eGA1wHt
-	WgjMjzrkcmE29qWfRBYBeqmyPDCct3uTmOChsyyikhgwLuWF/ugadzKU5He9E1tVfiz4A6
-	wRh2EBQsY2YPY4tMDxxTuBIivrX3pD8=
+	bh=GUcUJyznokWWPvm96+h7aNJY4n+o7HfWX5a4PXwb7DA=;
+	b=mgJp4B7/U32G0Owl7o+mMXkEW1f1F9EFGic4ntY1bWtoF8pTrrjpZ2TqvpKDg0Y45SuqS1
+	6b0ypbDQYDY5OWseTT7ArD6hV5dY/aDm5h4zPLdkwLJqHkYrqFMm0DFmECMwOrI/horsuK
+	WXqLaMDC6JV/0bOGhyYW5UHrIp+aT60=
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
 From: Andrew Jones <andrew.jones@linux.dev>
 To: =?utf-8?B?Q2zDqW1lbnQgTMOpZ2Vy?= <cleger@rivosinc.com>
 Cc: kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
 	Andrew Jones <ajones@ventanamicro.com>, Anup Patel <apatel@ventanamicro.com>, 
 	Atish Patra <atishp@rivosinc.com>
-Subject: Re: [kvm-unit-tests PATCH v9 0/6] riscv: add SBI SSE extension tests
-Message-ID: <20250314-eb8cf0b719942c912e254ab2@orel>
+Subject: Re: [kvm-unit-tests PATCH v9 6/6] riscv: sbi: Add SSE extension tests
+Message-ID: <20250314-378268547f75d0337f1a7836@orel>
 References: <20250314111030.3728671-1-cleger@rivosinc.com>
+ <20250314111030.3728671-7-cleger@rivosinc.com>
+ <20250314-0940c2c0dcd92b285f43e4ca@orel>
+ <56451a0e-7971-4619-8b2e-84c5129547b4@rivosinc.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20250314111030.3728671-1-cleger@rivosinc.com>
+In-Reply-To: <56451a0e-7971-4619-8b2e-84c5129547b4@rivosinc.com>
 X-Migadu-Flow: FLOW_OUT
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250314_071922_501607_EA78B5BF 
-X-CRM114-Status: UNSURE (   7.53  )
+X-CRM114-CacheID: sfid-20250314_072014_639229_27DD7314 
+X-CRM114-Status: UNSURE (   3.91  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -71,20 +74,11 @@ Content-Transfer-Encoding: quoted-printable
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Fri, Mar 14, 2025 at 12:10:23PM +0100, Cl=E9ment L=E9ger wrote:
-> This series adds tests for SBI SSE extension as well as needed
-> infrastructure for SSE support. It also adds test specific asm-offsets
-> generation to use custom OFFSET and DEFINE from the test directory.
+On Fri, Mar 14, 2025 at 03:13:07PM +0100, Cl=E9ment L=E9ger wrote:
+...
+> Missed it. I'll resend a V10 if you don't have any other comments.
 
-Is there an opensbi branch I should be using to test this? There are
-currently 54 failures reported with opensbi's master branch, and, with
-opensbi v1.5.1, which is the version provided by qemu's master branch,
-I get a crash which leads to a recursive stack walk. The crash occurs
-in what I'm guessing is sbi_sse_inject() by the last successful output.
-
-I can't merge this without it skipping/kfailing with qemu's opensbi,
-otherwise it'll fail CI. We could change CI to be more tolerant, but I'd
-rather use kfail instead, and of course not crash.
+Other comments are on the cover letter.
 
 Thanks,
 drew
