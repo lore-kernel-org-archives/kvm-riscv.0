@@ -4,7 +4,7 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E315FC35FF6
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 85695C35FF1
 	for <kvm-riscv@archiver.kernel.org>; Fri, 14 Mar 2025 15:52:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
@@ -12,62 +12,63 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=hhXxdMCHtH2/18nQjMKTeIosnnBfs5NyOkAmHQgczio=; b=uodiZ6wXMBoDNv
-	NjO48AAfj3JbSs51KSiXAKaYdhUhkLKgCSLffh6uZ3pB61WOBfX0GeNylHpybA96JGKdMrF23ntG2
-	T8bwtafho95yhhXhG5wnEzXRyI+jDFWFc/FcwE/Ap6UnkVEq+mj+jp9uTRsFHIecBqdBcH5uFT5Gj
-	J+6waS21EZ1vxoVaOaMII+syy+mJO4aW9h+30TsgTUQqG79fVOnZdE0E/USnB3f4mEhT/rp9Zc5LE
-	+jXrnL512MPKzkSnhQfw/ogkmIgsD7V1geWq9lhEMRtm3jkzBC7e+afpSCiIzcBKM2f6sSDJ/4lOH
-	MSfMWtNWGMHdYd/45sUQ==;
+	List-Owner; bh=6IFUUPLwpzHdgpyrmqyx7Ah6x804gHol3xcLLHEDD6s=; b=aXVM+bLUkBXiQu
+	NHsMj27oze4lip/cWt0fv8AlZizNUvt7Ha2sVjKgTQr6fkcEnowgcfkIHxQIjK+tuq3t2tHzy1OBm
+	xG9r/ZqGVkOJ21YZbl0y7EQnvXCtyF+FqrJDz+GlyTkPpMpM+mYuClmMBdnpaPctzGyNESlp+fYl7
+	+9qM8snVjsjQ4FeZnNaJ9M5yQx4SwlmDnHaYqTvmgIUUIBJzbdqwFIIB1B0KoqM1ZYsET8WPIQdGk
+	KfCH18EDIuTUyVFN5Plrs/tcDSpKDk9EDh6N9pjuaRagO8+RwrQO99i2/sij5jMS0SI3KdtCbPYu2
+	KSvztar4X0XxucHn/UHw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tt7Ko-0000000EdD1-2fmS;
+	id 1tt7Ko-0000000EdCX-15HQ;
 	Fri, 14 Mar 2025 15:52:30 +0000
-Received: from mail-wm1-x32e.google.com ([2a00:1450:4864:20::32e])
+Received: from mail-wm1-x32c.google.com ([2a00:1450:4864:20::32c])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1tt7Jd-0000000EcxA-3gIL
+	id 1tt7Jd-0000000Ecws-2CS7
 	for kvm-riscv@lists.infradead.org;
-	Fri, 14 Mar 2025 15:51:19 +0000
-Received: by mail-wm1-x32e.google.com with SMTP id 5b1f17b1804b1-4394036c0efso15274755e9.2
+	Fri, 14 Mar 2025 15:51:18 +0000
+Received: by mail-wm1-x32c.google.com with SMTP id 5b1f17b1804b1-43d0c18e84eso15262195e9.3
         for <kvm-riscv@lists.infradead.org>; Fri, 14 Mar 2025 08:51:17 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google; t=1741967476; x=1742572276; darn=lists.infradead.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=+fRHRzXgCjmP/bnGMZgkYHknTcPw+tYfWwUZWqv1wRU=;
-        b=ACUIP/bZ62vacEEyeh3w5TgcyZYqxDmVVbJLciZtHGhD6NEaMImaQz75bzxTwBY3rA
-         uNTUzutJ5GI2u+lezGAT6eJygfToZz2S8EvWnRx6QMDyYUvZeCY6wGxlTuchizmvYjc9
-         mH3S0vlRDsqrYmsAqNXheD6/UfApL5tRG9E9qMEDTbJTKXNoHi2bp+jvXF+ao6zRFTDt
-         UnisIWV5b6idkZdWzaHymEt5LUPbZimyOS+P9whc5Fvfa6RE8wwb1xgszioLXcHh6zJ/
-         86hzWIWfk3YvXk5538CIQVh1eMou9c15XPBpIDfAVYfSwkriN2sfa0vEPhIzdPcs7UIj
-         +xzg==
+        bh=x6KdM0HrFbl7EBCoEX5NDExMeE7MkqEbvD9eQdkyg/A=;
+        b=Mcmn6XFf57yBYa0fwQmvBLv3sAcrYDOA+fO6HA206qz2wQLSdHXnSFXsFKeZhhB0dN
+         NV3yRxrYXjv2w2YebGsE+w6q/PluPvjbzTmbCG/b11Fso/fER66jtMilRDk5KO+vCYpx
+         w7+cesxMbQOvuuGRQo0hZYr/MaY+SgWm+ct0ouyuvJ2JCdgA29+ZwvA46mnk0+4t6zs/
+         0LrhA3amrllogVcFqrsrrc3/oahqyUem/8HQHdb/snBkK3umlEUIj90mBe3uHtPUKu4f
+         mBWpAQEbXM6nlpUGcSXR/ZT9xKt9Pp0E2X1++wRgw2T36jcrFcxpzXYerd0NBOyA2pS+
+         r8bw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20230601; t=1741967476; x=1742572276;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=+fRHRzXgCjmP/bnGMZgkYHknTcPw+tYfWwUZWqv1wRU=;
-        b=hto/o15xcBwQlN9AT01Ejd1g99A1XmfbeI+ROIAfCHvS35ToGJkOwTEW7ZzyxuUo38
-         1Fffv60RwPjCB28rZEQCvpqvXLwaK9lBI0DBU5E7Q9XfT0+uQVrFp7GC4TDJgIfCM4Yt
-         MEqJKprZBLXby89PDXupFXye5P05pnt7J2bvDYF07XiR1Gq0L7zxesqHXrhGBQmkvIA6
-         JrwtYoHaSsqVK6s3/beRb7RQz7QU68EDJbfwsnvBEFV1t0/6mtifYCcS7xMFO1D46HZT
-         1tKJNJRtadx/OR2c7asp2Gy4t+dWvNyzV9UhnU91L/MxjeJq9+jfCWS/BvKLBSdf08Hj
-         SEBQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUTR1O6iyOGFryGvrMl7hJ51FURtbItFJmxwjIqT+FpjiS7hV+tm7V1vOmeB7TuvaLkNSVGgjLZtoI=@lists.infradead.org
-X-Gm-Message-State: AOJu0YwzqNsc0L9UpS/3t7YTit3Tq0L9+IpGd9H0PkSDCVyC4v5GRsi+
-	bsBs1nEOJKJRROuh4d8mVApXLfee8n6rpA3fWYgEsuBQrmr4sudeqdGoUOcxDIE=
-X-Gm-Gg: ASbGnctv8/sbK0WW4eKE6vos4Dr6iN7um9I3m2x9cDLO4g3MTICwi6sjs9MVnM2zOuM
-	xql5jPLoDKfvRDxl6NcLGZaxwO2fLrU/bkX6jwST70Ppwl2wl/uhvY9PIozn71zaRTeayJlgBrY
-	fi1Zw/MSsWDO1HSSKQt6LnrP3Yfh9lCUP1ePtIiGByNJpc1Ro1gSgmZ5SW2AZsXN9GHjFQWn7L7
-	AOckQhtFA/TqTUwszOpXhJ/vsh/z/vctC/ssvXlzVf21NY3Nd6x++AY4D54qni2o+HhZ48w0zzi
-	d1doKkf8m1PdA/STP1SXDiWFcZYXPZjsUztT6Mmfo8O9C+fzYYTy9TrdtMnv1PM=
-X-Google-Smtp-Source: AGHT+IF0xfqiSOAD/aXN3C4RaUAgjkDnEUSmI0lHDHuOw3S7x9Ps8i6yZGeRqXqx/ijFDdbau6zaiw==
-X-Received: by 2002:a05:600c:350a:b0:43c:f70a:2af0 with SMTP id 5b1f17b1804b1-43d1ec8643amr43633015e9.16.1741967476398;
-        Fri, 14 Mar 2025 08:51:16 -0700 (PDT)
+        bh=x6KdM0HrFbl7EBCoEX5NDExMeE7MkqEbvD9eQdkyg/A=;
+        b=Yh2bF1NDrUqnN7RHXrO0OlYSP3SWPfsQTdBWsGNzXkcDLwTKFS+keLJm58kS1sMRa2
+         fSnLE3EzIdtm4Oi9TwO9fBrkzetQTT7Q4a0jFBDMAIZKg3U7xmECqLth5YTyzV8VxxfM
+         9U9PFGOb3k8aBUzwqYrOyVkzJ6mWZ0w0K5WToNBnuQtEQ6+ODwa70N929+dvYFW6Cimg
+         eXK+ILgGfG0A9f06bexAZTdfqJz3abaDoj2Mpfa4d8d4w4B+pIgj94AJfU+hhb2K0Yy8
+         bc1ECuiQ8AFn1sz5ERwrKZ6AilSr+KiVmRlN+DyZV85ikwlWO5AUlDCTmrXotZ/lmxqE
+         O4EA==
+X-Forwarded-Encrypted: i=1; AJvYcCUKSYcjN0zZ/n3VYS+tpK4vPHz+DvAqiW7EPI0qd1uqQM9nqG9k7o4h4UegsydGpIIQYFBuAj7r5ZI=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yw1t16UBl0ga/6xTS6VGByZ1bEAc83UkqzgL+I2JscsgrWg1dM6
+	+pzJ4Marydz1RO7svxLZ8ZGyWUCKuHHUjPyBVibBZhgIsLE2PICc/olzgOPnyts=
+X-Gm-Gg: ASbGncsjxT9jLGGSDmYLUch6eTf+v+DLNCF4fec3AezfEfU4T2kZKJ6QK56RDmpUOd/
+	qdZehcUyo7op66gcBcZ0sBar9YeZhXmvf2gp3S733hwlnn4sdhX7rkrUFnmV3RAoASi75MKFVQj
+	gJAvQ1u0+04R2T4R4fdeLrUrfpKBArS2r7kAhsOX9FFUH1wIjOIj9aLDMaUfvuzfGhBAMYEfDav
+	KrxPOmrjf5BfqHdAw3hB3R7NPz+S5h/mT6uZmCdw8V3S7c05dkRnLHFzEHNElSBL/KUMwr4wP66
+	sBn2Ua3nRK6uFi0V7cORyfwGo9NCYb0E692hf9kQ9lGLDxoNY883flYsJaLUoEfaGtlGHJYexA=
+	=
+X-Google-Smtp-Source: AGHT+IGqjIk/FKjEZDkdrc3AqaWCRNKHzrwFDig+752nD7yLPvk8XeA3buiKLcR8gQHXba5VpmxCpA==
+X-Received: by 2002:a05:600c:3b10:b0:43d:ed:acd5 with SMTP id 5b1f17b1804b1-43d1ec78437mr43895775e9.10.1741967475876;
+        Fri, 14 Mar 2025 08:51:15 -0700 (PDT)
 Received: from localhost.localdomain ([2.221.137.100])
         by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-43d21d67819sm15249945e9.21.2025.03.14.08.51.15
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 14 Mar 2025 08:51:16 -0700 (PDT)
+        Fri, 14 Mar 2025 08:51:15 -0700 (PDT)
 From: Jean-Philippe Brucker <jean-philippe@linaro.org>
 To: andrew.jones@linux.dev,
 	alexandru.elisei@arm.com
@@ -76,16 +77,16 @@ Cc: eric.auger@redhat.com,
 	kvm@vger.kernel.org,
 	kvm-riscv@lists.infradead.org,
 	vladimir.murzin@arm.com
-Subject: [kvm-unit-tests PATCH v2 3/5] arm64: Implement the ./configure --processor option
-Date: Fri, 14 Mar 2025 15:49:03 +0000
-Message-ID: <20250314154904.3946484-5-jean-philippe@linaro.org>
+Subject: [kvm-unit-tests PATCH v2 2/5] configure: arm/arm64: Display the correct default processor
+Date: Fri, 14 Mar 2025 15:49:02 +0000
+Message-ID: <20250314154904.3946484-4-jean-philippe@linaro.org>
 X-Mailer: git-send-email 2.48.1
 In-Reply-To: <20250314154904.3946484-2-jean-philippe@linaro.org>
 References: <20250314154904.3946484-2-jean-philippe@linaro.org>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250314_085117_932157_A1B35FAF 
-X-CRM114-Status: GOOD (  11.84  )
+X-CRM114-CacheID: sfid-20250314_085117_567493_272BDB7F 
+X-CRM114-Status: GOOD (  10.76  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -104,50 +105,77 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 From: Alexandru Elisei <alexandru.elisei@arm.com>
 
-The help text for the ./configure --processor option says:
+The help text for the --processor option displays the architecture name as
+the default processor type. But the default for arm is cortex-a15, and for
+arm64 is cortex-a57. Teach configure to display the correct default
+processor type for these two architectures.
 
-    --processor=PROCESSOR  processor to compile for (cortex-a57)
-
-but, unlike arm, the build system does not pass a -mcpu argument to the
-compiler. Fix it, and bring arm64 at parity with arm.
-
-Note that this introduces a regression, which is also present on arm: if
-the --processor argument is something that the compiler doesn't understand,
-but qemu does (like 'max'), then compilation fails. This will be fixed in a
-following patch; another fix is to specify a CPU model that gcc implements
-by using --cflags=-mcpu=<cpu>.
-
-Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
 Signed-off-by: Alexandru Elisei <alexandru.elisei@arm.com>
 ---
- arm/Makefile.arm    | 1 -
- arm/Makefile.common | 1 +
- 2 files changed, 1 insertion(+), 1 deletion(-)
+ configure | 30 ++++++++++++++++++++++--------
+ 1 file changed, 22 insertions(+), 8 deletions(-)
 
-diff --git a/arm/Makefile.arm b/arm/Makefile.arm
-index 7fd39f3a..d6250b7f 100644
---- a/arm/Makefile.arm
-+++ b/arm/Makefile.arm
-@@ -12,7 +12,6 @@ $(error Cannot build arm32 tests as EFI apps)
- endif
+diff --git a/configure b/configure
+index dc3413fc..5306bad3 100755
+--- a/configure
++++ b/configure
+@@ -5,6 +5,24 @@ if [ -z "${BASH_VERSINFO[0]}" ] || [ "${BASH_VERSINFO[0]}" -lt 4 ] ; then
+     exit 1
+ fi
  
- CFLAGS += $(machine)
--CFLAGS += -mcpu=$(PROCESSOR)
- CFLAGS += -mno-unaligned-access
++function get_default_processor()
++{
++    local arch="$1"
++
++    case "$arch" in
++    "arm")
++        default_processor="cortex-a15"
++        ;;
++    "arm64")
++        default_processor="cortex-a57"
++        ;;
++    *)
++        default_processor=$arch
++    esac
++
++    echo "$default_processor"
++}
++
+ srcdir=$(cd "$(dirname "$0")"; pwd)
+ prefix=/usr/local
+ cc=gcc
+@@ -43,13 +61,14 @@ else
+ fi
  
- ifeq ($(TARGET),qemu)
-diff --git a/arm/Makefile.common b/arm/Makefile.common
-index f828dbe0..a5d97bcf 100644
---- a/arm/Makefile.common
-+++ b/arm/Makefile.common
-@@ -25,6 +25,7 @@ AUXFLAGS ?= 0x0
- # stack.o relies on frame pointers.
- KEEP_FRAME_POINTER := y
+ usage() {
++    [ -z "$processor" ] && processor=$(get_default_processor $arch)
+     cat <<-EOF
+ 	Usage: $0 [options]
  
-+CFLAGS += -mcpu=$(PROCESSOR)
- CFLAGS += -std=gnu99
- CFLAGS += -ffreestanding
- CFLAGS += -O2
+ 	Options include:
+ 	    --arch=ARCH            architecture to compile for ($arch). ARCH can be one of:
+ 	                           arm, arm64, i386, ppc64, riscv32, riscv64, s390x, x86_64
+-	    --processor=PROCESSOR  processor to compile for ($arch)
++	    --processor=PROCESSOR  processor to compile for ($processor)
+ 	    --target=TARGET        target platform that the tests will be running on (qemu or
+ 	                           kvmtool, default is qemu) (arm/arm64 only)
+ 	    --cross-prefix=PREFIX  cross compiler prefix
+@@ -319,13 +338,8 @@ if [ "$earlycon" ]; then
+     fi
+ fi
+ 
+-[ -z "$processor" ] && processor="$arch"
+-
+-if [ "$processor" = "arm64" ]; then
+-    processor="cortex-a57"
+-elif [ "$processor" = "arm" ]; then
+-    processor="cortex-a15"
+-fi
++# $arch will have changed when cross-compiling.
++[ -z "$processor" ] && processor=$(get_default_processor $arch)
+ 
+ if [ "$arch" = "i386" ] || [ "$arch" = "x86_64" ]; then
+     testdir=x86
 -- 
 2.48.1
 
