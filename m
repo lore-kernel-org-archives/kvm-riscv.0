@@ -4,56 +4,94 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F1EBCC28B30
-	for <kvm-riscv@archiver.kernel.org>; Thu, 20 Mar 2025 14:28:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CC861C28B30
+	for <kvm-riscv@archiver.kernel.org>; Thu, 20 Mar 2025 16:54:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:Subject:Message-ID:Date:From:
+	In-Reply-To:References:MIME-Version:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=2HY7zyytAAId3TZ3v7jZ2bQx8gFUane7AHQeW2L8YkA=; b=Tlm3O/mWGqdYHQ
-	2dJWlyUlnWCgLOHR50dwrZEXOjDAW0tdoiyTgZK1dElxXLvP6VrpeSgDGjrNsfge3hKT4UEODh/YK
-	FwiQQGO/7a2VvKuiIF/kd1i3FrSP+eAJsuyvm6a55wRuBmbPuOfkWllDSdKMAB9KYb13wt2dj20lV
-	LwHKuFxc8e7rjdOZs8J121o3XQEoLmUtugjlr+a0OOJkZYLJaFem77paTJdul+6KIJR66gjdeTtXJ
-	T5+IH2F6J4VZA0fupJGKqVrOsHZ5XmELJ/tE3OwinXY+bXomDZWcJL4zpZGlcejJ7RV1HoLVvBxGq
-	8yC4Iduc3fbe/js6puhw==;
+	List-Owner; bh=IdyMtXU6nQquL63KceAKJnH1BaK/qHwxOkdrMXX2EIM=; b=FvHaf0JQ7aN2pm
+	PHZCKu4Rae8PdsRR0TSR1eIY7/IDNy93a3ed4Bmp6MjW7NoTd3sZ5wWZ3COB4/F2rDxqj/rGZLCpd
+	1U+QfcAVPzn/8U2ztC5BXUDVIQ5IACsEf1MLj6F42DpQoF3Ub3dRmQmSgXBrAODq/qh3eXXat0vpe
+	ewBHjjkZDPYHRuiMLZiJVPxG5WbIzukLIosR6azfHtdqS+hKt+XRMjdr6sy4o9G/rrVryOXTKGHHL
+	R5Go08S7cNvs8b47YQkRnEUE5jTFl2Ms4nkuBr2kNXXhLWHmveujRMCU06zBiodCC0KtR/zbLKYr1
+	WB/gBEvIN6QBq8bS2/bA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tvGsX-0000000CNrM-34MF;
-	Thu, 20 Mar 2025 14:28:13 +0000
-Received: from out-186.mta1.migadu.com ([95.215.58.186])
+	id 1tvJ9y-0000000Cjct-1tav;
+	Thu, 20 Mar 2025 16:54:22 +0000
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1tvGrB-0000000CNha-0tPR
+	id 1tvJ9w-0000000Cjc7-1C8V
 	for kvm-riscv@lists.infradead.org;
-	Thu, 20 Mar 2025 14:26:51 +0000
-Date: Thu, 20 Mar 2025 15:26:44 +0100
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1742480807;
+	Thu, 20 Mar 2025 16:54:21 +0000
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1742489657;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=c65I6kNtFA1k1VBOi7FptW6z8Ux97R+lY3N7yYJXjr0=;
-	b=Fofr0KGhYTwvCgkbawgUoodEJwMObOfZexd2wzyBPsX31kX+3fiqN/XhtPw06/3sBypgai
-	wxfdyo18EcRyBoxaOj9+zkv2z04octnXQRrTH4wSLg5++BYV82KRBET7u5AFA35OsHgXwH
-	mKfclbatfx8wEVV7SXAEcE18nu5vQ5o=
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Andrew Jones <andrew.jones@linux.dev>
-To: =?utf-8?B?Q2zDqW1lbnQgTMOpZ2Vy?= <cleger@rivosinc.com>
-Cc: kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
-	Andrew Jones <ajones@ventanamicro.com>, Anup Patel <apatel@ventanamicro.com>, 
-	Atish Patra <atishp@rivosinc.com>
-Subject: Re: [kvm-unit-tests PATCH v11 0/8] riscv: add SBI SSE extension tests
-Message-ID: <20250320-55d10bb6d1d91dbe7b15501a@orel>
-References: <20250317164655.1120015-1-cleger@rivosinc.com>
+	bh=Qzs7lXSCEOdVamoYUmTO0qwA7wo38Km/t3XnMT38O6g=;
+	b=Ee0tncQ3C6nwDMRQriZRi2iqJCA33agwS2+uS260H3p2vFpQbJ/kPVke0sboe08yRBXQnN
+	GyteMCa47VFzo64NbgIG9sH9a/KvWSTXEgLIhxPQqsw3JvNGkStWvWVXXiiqVMLTylMPkw
+	pfZ9yjmaIVtwmUVgtKrI5Rr8ojhgigM=
+Received: from mail-wr1-f69.google.com (mail-wr1-f69.google.com
+ [209.85.221.69]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-428-gxuh3KW_PYKVa9YkynOjbw-1; Thu, 20 Mar 2025 12:54:16 -0400
+X-MC-Unique: gxuh3KW_PYKVa9YkynOjbw-1
+X-Mimecast-MFC-AGG-ID: gxuh3KW_PYKVa9YkynOjbw_1742489655
+Received: by mail-wr1-f69.google.com with SMTP id ffacd0b85a97d-39130f02631so452304f8f.2
+        for <kvm-riscv@lists.infradead.org>; Thu, 20 Mar 2025 09:54:16 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1742489655; x=1743094455;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=Qzs7lXSCEOdVamoYUmTO0qwA7wo38Km/t3XnMT38O6g=;
+        b=m6XhFiZA3s+GNrj2oMVCppSW5IugzHqsrJmODOi7Xw2+uWMmNUQgASmX1hietuO2MX
+         flHT5JwmgDAhRABnS7KAZkAJ58kUjn7WOvgxZC04Z4g+QbXcCBjBSi78Ebsb56vd2bDv
+         0o+msHoh25CEDTbaflkkn1HmYhiRkRw+i+JnwiKUxEi7iURAYFpdfOEcp1D+I60AqnvU
+         IxA2XMhzA+aLOk1OyaPsBREbbYqE53rBYy1MexHIBvt6DORZlyVUzsz0Ut4a06tyXIEb
+         2eO0PgNsDNDmazx77D+oH2HyvHlvRhSO37Cwp0ZqcCw2HkdpRffUQZ07khTt+7zbeTxg
+         CcNw==
+X-Forwarded-Encrypted: i=1; AJvYcCUFn2052dv8KAG2XPXTmeGtCPCFzJNMEQyKxaOqq6Cswvf9/0aZzLz0BmBtrP0AVyczN0SGUKuhHOo=@lists.infradead.org
+X-Gm-Message-State: AOJu0YyVTmU86ieJOoWUpVLOa0V6xblDuDFGj8voOYTWz9kQ/G02Sdfd
+	3rFpQn9+tB1wX23j48+6JKMRxfJFR5R85a1a1mbeW7wszIOuk0RjLb+gIBeiJ1NDulxsUzkA3eu
+	FJOW9Othvuqg2v2b6f6jnm3Bw3bZ+R7X8gcH76cQdBbu4y6kM0w52KCErkFY40YWAvHCXnhfuP4
+	dMKZBeBF2VX4KhIPp16ju+qM2dNmxY3LLviWTvWg==
+X-Gm-Gg: ASbGncufCO17Kmru+FCXCkkJOZnTRIFvnyE+F/R0e/WaOPz7gunLkKDz3drHiOj+QY8
+	wxB1H9ID8muGvhUdM4OioqoY3Ugwi3dLOI5JO/XWQm4cDCjxKWn9oxRIdFeTiy/9TJGwMGK9UWw
+	==
+X-Received: by 2002:a05:6000:4188:b0:391:4999:776c with SMTP id ffacd0b85a97d-3997f932c74mr219918f8f.40.1742489654947;
+        Thu, 20 Mar 2025 09:54:14 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IFj9pl7GARtWFq3jbXWirX8oR8zmkq+Vb5cM05rQzCwUuLwhvW30WXCS+Nl/XDDl7rMvPzTyG7iVBUS8ETq7S4=
+X-Received: by 2002:a05:6000:4188:b0:391:4999:776c with SMTP id
+ ffacd0b85a97d-3997f932c74mr219900f8f.40.1742489654526; Thu, 20 Mar 2025
+ 09:54:14 -0700 (PDT)
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <20250317164655.1120015-1-cleger@rivosinc.com>
-X-Migadu-Flow: FLOW_OUT
+References: <CAAhSdy380StEE03G=RPjKoxtY89nLeufpXbjYwbRypzzrkQN+g@mail.gmail.com>
+In-Reply-To: <CAAhSdy380StEE03G=RPjKoxtY89nLeufpXbjYwbRypzzrkQN+g@mail.gmail.com>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Date: Thu, 20 Mar 2025 17:54:01 +0100
+X-Gm-Features: AQ5f1Jp_WB0jgmaoJDDes32ApEWmT6Y0Q3VLmJo-2VN8hWbZcGCzV2rcn3utTOA
+Message-ID: <CABgObfYbgLN6aqDYTXq=t2G5+KsHjUmdFFCuwmzdEZSVDTrOxA@mail.gmail.com>
+Subject: Re: [GIT PULL] KVM/riscv changes for 6.15
+To: Anup Patel <anup@brainfault.org>
+Cc: Palmer Dabbelt <palmer@rivosinc.com>, Palmer Dabbelt <palmer@dabbelt.com>, 
+	Andrew Jones <ajones@ventanamicro.com>, Atish Patra <atishp@rivosinc.com>, 
+	Atish Patra <atishp@atishpatra.org>, 
+	"open list:KERNEL VIRTUAL MACHINE FOR RISC-V (KVM/riscv)" <kvm-riscv@lists.infradead.org>, KVM General <kvm@vger.kernel.org>, 
+	linux-riscv <linux-riscv@lists.infradead.org>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-MFC-PROC-ID: -13eeuMYvC7HK5X0GZD4uFLTVvGQ8zr1P-9rdNbJ6CI_1742489655
+X-Mimecast-Originator: redhat.com
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250320_072649_545492_B61AEAE2 
-X-CRM114-Status: GOOD (  24.04  )
+X-CRM114-CacheID: sfid-20250320_095420_389866_A0B8A2B4 
+X-CRM114-Status: UNSURE (   6.58  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -65,167 +103,16 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Mon, Mar 17, 2025 at 05:46:45PM +0100, Cl=E9ment L=E9ger wrote:
-> This series adds tests for SBI SSE extension as well as needed
-> infrastructure for SSE support. It also adds test specific asm-offsets
-> generation to use custom OFFSET and DEFINE from the test directory.
-> =
-
-> These tests can be run using an OpenSBI version that implements latest
-> specifications modification [1]
-> =
-
-> Link: https://github.com/rivosinc/opensbi/tree/dev/cleger/sse [1]
-
-Applied to riscv/sbi with the fixups pointed out.
-
-https://gitlab.com/jones-drew/kvm-unit-tests/-/commits/riscv/sbi
-
-Thanks,
-drew
-
-> =
-
-> ---
-> =
-
-> V11:
->  - Use mask inside sbi_impl_opensbi_mk_version()
->  - Mask the SBI version with a new mask
->  - Use assert inside sbi_get_impl_id/version()
->  - Remove sbi_check_impl()
->  - Increase completion timeout as events failed completing under 1000
->    micros when system is loaded.
-> =
-
-> V10:
->  - Use && instead of || for timeout handling
->  - Add SBI patches which introduce function to get implementer ID and
->    version as well as implementer ID defines.
->  - Skip injection tests in OpenSBI < v1.6
-> =
-
-> V9:
->  - Use __ASSEMBLER__ instead of __ASSEMBLY__
->  - Remove extra spaces
->  - Use assert to check global event in
->    sse_global_event_set_current_hart()
->  - Tabulate SSE events names table
->  - Use sbi_sse_register() instead of sbi_sse_register_raw() in error
->    testing
->  - Move a report_pass() out of error path
->  - Rework all injection tests with better error handling
->  - Use an env var for sse event completion timeout
->  - Add timeout for some potentially infinite while() loops
-> =
-
-> V8:
->  - Short circuit current event tests if failure happens
->  - Remove SSE from all report strings
->  - Indent .prio field
->  - Add cpu_relax()/smp_rmb() where needed
->  - Add timeout for global event ENABLED state check
->  - Added BIT(32) aliases tests for attribute/event_id.
-> =
-
-> V7:
->  - Test ids/attributes/attributes count > 32 bits
->  - Rename all SSE function to sbi_sse_*
->  - Use event_id instead of event/evt
->  - Factorize read/write test
->  - Use virt_to_phys() for attributes read/write.
->  - Extensively use sbiret_report_error()
->  - Change check function return values to bool.
->  - Added assert for stack size to be below or equal to PAGE_SIZE
->  - Use en env variable for the maximum hart ID
->  - Check that individual read from attributes matches the multiple
->    attributes read.
->  - Added multiple attributes write at once
->  - Used READ_ONCE/WRITE_ONCE
->  - Inject all local event at once rather than looping fopr each core.
->  - Split test_arg for local_dispatch test so that all CPUs can run at
->    once.
->  - Move SSE entry and generic code to lib/riscv for other tests
->  - Fix unmask/mask state checking
-> =
-
-> V6:
->  - Add missing $(generated-file) dependencies for "-deps" objects
->  - Split SSE entry from sbi-asm.S to sse-asm.S and all SSE core functions
->    since it will be useful for other tests as well (dbltrp).
-> =
-
-> V5:
->  - Update event ranges based on latest spec
->  - Rename asm-offset-test.c to sbi-asm-offset.c
-> =
-
-> V4:
->  - Fix typo sbi_ext_ss_fid -> sbi_ext_sse_fid
->  - Add proper asm-offset generation for tests
->  - Move SSE specific file from lib/riscv to riscv/
-> =
-
-> V3:
->  - Add -deps variable for test specific dependencies
->  - Fix formatting errors/typo in sbi.h
->  - Add missing double trap event
->  - Alphabetize sbi-sse.c includes
->  - Fix a6 content after unmasking event
->  - Add SSE HART_MASK/UNMASK test
->  - Use mv instead of move
->  - move sbi_check_sse() definition in sbi.c
->  - Remove sbi_sse test from unitests.cfg
-> =
-
-> V2:
->  - Rebased on origin/master and integrate it into sbi.c tests
-> =
-
-> Cl=E9ment L=E9ger (8):
->   kbuild: Allow multiple asm-offsets file to be generated
->   riscv: Set .aux.o files as .PRECIOUS
->   riscv: Use asm-offsets to generate SBI_EXT_HSM values
->   lib: riscv: Add functions for version checking
->   lib: riscv: Add functions to get implementer ID and version
->   riscv: lib: Add SBI SSE extension definitions
->   lib: riscv: Add SBI SSE support
->   riscv: sbi: Add SSE extension tests
-> =
-
->  scripts/asm-offsets.mak |   22 +-
->  riscv/Makefile          |    5 +-
->  lib/riscv/asm/csr.h     |    1 +
->  lib/riscv/asm/sbi.h     |  177 +++++-
->  lib/riscv/sbi-sse-asm.S |  102 ++++
->  lib/riscv/asm-offsets.c |    9 +
->  lib/riscv/sbi.c         |  105 +++-
->  riscv/sbi-tests.h       |    1 +
->  riscv/sbi-asm.S         |    6 +-
->  riscv/sbi-asm-offsets.c |   11 +
->  riscv/sbi-sse.c         | 1278 +++++++++++++++++++++++++++++++++++++++
->  riscv/sbi.c             |    2 +
->  riscv/.gitignore        |    1 +
->  13 files changed, 1707 insertions(+), 13 deletions(-)
->  create mode 100644 lib/riscv/sbi-sse-asm.S
->  create mode 100644 riscv/sbi-asm-offsets.c
->  create mode 100644 riscv/sbi-sse.c
->  create mode 100644 riscv/.gitignore
-> =
-
-> -- =
-
-> 2.47.2
-> =
-
-
--- =
-
-kvm-riscv mailing list
-kvm-riscv@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/kvm-riscv
+T24gVGh1LCBNYXIgMjAsIDIwMjUgYXQgMzoxNeKAr1BNIEFudXAgUGF0ZWwgPGFudXBAYnJhaW5m
+YXVsdC5vcmc+IHdyb3RlOgo+Cj4gSGkgUGFvbG8sCj4KPiBXZSBtYWlubHkgaGF2ZSB0d28gZml4
+ZXMgYW5kIGZldyBQTVUgc2VsZnRlc3RzIGltcHJvdmVtZW50cwo+IGZvciA2LjE1LiBUaGVyZSBh
+cmUgcXVpdGUgYSBmZXcgaW4tZmxpZ2h0IHBhdGNoZXMgZGVwZW5kZW50IG9uCj4gU0JJIHYzLjAg
+c3BlY2lmaWNhdGlvbiB3aGljaCB3aWxsIGZyZWV6ZSBzb29uLgo+Cj4gUGxlYXNlIHB1bGwuCgpQ
+dWxsZWQsIHRoYW5rcy4KClBhb2xvCgo+IFJlZ2FyZHMsCj4gQW51cAoKCi0tIAprdm0tcmlzY3Yg
+bWFpbGluZyBsaXN0Cmt2bS1yaXNjdkBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5p
+bmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8va3ZtLXJpc2N2Cg==
