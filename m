@@ -4,80 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 863F0C28B30
-	for <kvm-riscv@archiver.kernel.org>; Thu, 20 Mar 2025 14:15:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 46579C28B30
+	for <kvm-riscv@archiver.kernel.org>; Thu, 20 Mar 2025 14:26:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:Subject:Message-ID:Date:From:
-	MIME-Version:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=LNb3xmdWPVmc0ePJJyF8ihMskbEVbLN3OQKVJB9YCYo=; b=r36iaoEr2Rmybf
-	HObF8szdXAebSEgjLJw6XTEtIiLmGop+Mfg0TOB8ZVWSDYV8BcLoHW82SZUVH33IEVHUxkQ/eFFgP
-	JJDlp8lIiXd9IuzcbAfxHeHu0gleWxMUjHD248xwV93SEonDgLOWvCtsYLbGjRmPXMSU1cIVk5XUV
-	BaaErhAxGStesIewMPDedwxZl9o77c9MK1aQ56EaXYXenErZPVowrOf9u6YkZs8MgKatIZND9rMVP
-	ohyGCXL5FG30B7Oe/7WzVkR0t4cqbQu+byOj1oT3kt3KC5TCZh61VEn+cQc6M2zOWBeo5yF0Fjbny
-	+9tgilwbYPR/aEPrttAw==;
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
+	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=ba1VUZ8uUX0Xd4+KVhj2fDx8Cdv72Na4AgKxJQ3uj88=; b=2thLdWJvya2ry/
+	W6koy5Xt0iBwpzqImhKsmMtTCa54dvAcOnHmhVQKRlhOgxZ2T6N/7y89X1y1+7nCW7nuhClAMf/2k
+	rotA/fmTwByN81XcdaAf48VtNKQ4ENm79QOBJ17y3LHrfVRhpk2HKY7xOlvyIvn6aFKmhThUPITKA
+	LxSxHEbmFW97QKwePZwXBFGJNB3KP+d6hZ9/AkSEmeQKify6eH6u1+lFWN2REhRtJ66vW1EqNRoB1
+	r6cdEYr6CvCr/Ft30BIyFgIVLMQHoLnrpB2RsA0uRAY/oliVMhqMbQ2sfWN3SKiz9+FysSnAPqbC1
+	aBr1OA/RIOQxrM+c0Obg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tvGg9-0000000CLxn-0bay;
-	Thu, 20 Mar 2025 14:15:25 +0000
-Received: from mail-il1-x134.google.com ([2607:f8b0:4864:20::134])
+	id 1tvGqb-0000000CNcW-3CMp;
+	Thu, 20 Mar 2025 14:26:13 +0000
+Received: from out-181.mta1.migadu.com ([95.215.58.181])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1tvGg5-0000000CLwa-3OVq
+	id 1tvGqZ-0000000CNbD-0yfB
 	for kvm-riscv@lists.infradead.org;
-	Thu, 20 Mar 2025 14:15:23 +0000
-Received: by mail-il1-x134.google.com with SMTP id e9e14a558f8ab-3cf8e017abcso3824725ab.1
-        for <kvm-riscv@lists.infradead.org>; Thu, 20 Mar 2025 07:15:21 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=brainfault-org.20230601.gappssmtp.com; s=20230601; t=1742480121; x=1743084921; darn=lists.infradead.org;
-        h=cc:to:subject:message-id:date:from:mime-version:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=pOuUOTjtcVbSe8J5UUkNu5FVmT0qaTxwu9FnCnOOamg=;
-        b=b+mFVcj2Oa62ppvz2QktsH/anSjDt2Ca+nPvn4ryNFBk+VZiQQlRPGN4UtFxj/gHqo
-         nxCwyMAsMiPleGEthb5U9LuRE9D936ZgKxoJpW1phqRK2YAHbxleAPoTP7zVtn2B3hEJ
-         XrvZceKC1oypi5nBhzG1XufgYLlPo+iw8rBrwU+AJAUaq07idL7Siujau64VAKT1Tcf6
-         +cZhaQNGWdRX/z18Z+pLyFGNw5mVJDuDMcMWFddU2ZWmn3I+I7riZXXy3TQC/2ow4PPG
-         3l+iCHaZH6OIO32FhG0YQk7EiZ7sBphvhEV0Vlxg+TX+EYwjx24P9zJGaOJzp9GKTb7G
-         usPA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1742480121; x=1743084921;
-        h=cc:to:subject:message-id:date:from:mime-version:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=pOuUOTjtcVbSe8J5UUkNu5FVmT0qaTxwu9FnCnOOamg=;
-        b=bAyYiysZdlU8E8pksTykCO0uozHlUCNaokmzlSuopuoiR2PUWQRZC4F/AZWMEVvzDf
-         3lW42yaB2q4uSKyOQbQPBjrYFXQFMloxXHQViyoAVAIpt3uFYVN8siGxdC0oR8oFBo8v
-         bx2pmAiDmw7a23NCj7JyyeT3jDR94BSmHIhuVvSHSHj0AYFssMw7LeDJZAqt+xIEyAAk
-         ubMXGDEzjRAWUyef0Zjybp3CbprwCvYtTPfL+mOnp7F4BAG5Z372l/lSU2LaQEkZP6tq
-         bKsq2hflGJgcjkZzeID2eZKwF+PT3DPqlluQ/aIap2Qa146lXJfq7R8T5oTn4kBr0y78
-         Hpuw==
-X-Forwarded-Encrypted: i=1; AJvYcCXtBrvotZhiZkVukh9yGnWUCRxQeJpO9GkywlUnYVD4M15yfSBhfS6Cvr9EyNl2dkHCBPL48W7jPKw=@lists.infradead.org
-X-Gm-Message-State: AOJu0YzSu3b4qLydy9dJW1zkwE1EFjYYxA92pn/VK3yvUsRjvcNWr4q5
-	/vi/jzPn8HV+ZOJ8rVzWUrYFlpwBviX5Vxwo6eq6zeo+FTgVMj0iEDIisF65apjDAwikde4Xqv9
-	NHY0561IQuIOQCQuHbkOsXk3C2OtowdNcTGaP5w==
-X-Gm-Gg: ASbGnct5SooHehdktGv2bM8ZKXlFS1svuXzSO15xTS+FUEv3E3R+WljtMhREpzBmbC3
-	mqGVMR9cBywiHL9y0micQxBwsaOz54ztmsB8EUUjeA4PHpsX3QHuKlknJhWU2utUvH/8YWoMeh6
-	gL6OGetj+0Ui/0PTxXxPSAubGmI3M=
-X-Google-Smtp-Source: AGHT+IFK5YVWMg7oHmMx8fPJHlpZWuvdFWhVDFV08fjTW/MyiiCgPNx7YiNRyCTVAurBTzb3xFeOlwvq/fI1K8EDP74=
-X-Received: by 2002:a05:6e02:370a:b0:3cf:bac5:d90c with SMTP id
- e9e14a558f8ab-3d586baad39mr81833385ab.18.1742480120521; Thu, 20 Mar 2025
- 07:15:20 -0700 (PDT)
+	Thu, 20 Mar 2025 14:26:13 +0000
+Date: Thu, 20 Mar 2025 15:26:01 +0100
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1742480768;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=1vIGjxknwM537IifUr2X0NSBS/rX0+3PO3qnwvc2F18=;
+	b=h9GqdfP5hD5JkPgCVa1bfkgttRGygdTq94Hi2T1nZrPZZjLKtgV4QPtt7EQgDolLsSUtzI
+	0kBuYehTMM0TU8FNssKLM0ylYHSSsvmtLJ21T8EUCCRy89dyQwk10tS016id/CpCRxE3m0
+	ZS+S3NKhdlskFjSZawChW57AuS0M+rc=
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Andrew Jones <andrew.jones@linux.dev>
+To: kvm-riscv@lists.infradead.org
+Cc: Anup Patel <apatel@ventanamicro.com>, 
+	Atish Patra <atishp@rivosinc.com>, cleger@rivosinc.com
+Subject: Re: [kvm-unit-tests PATCH] riscv: sbi: Add no target ipi test
+Message-ID: <20250320-9bc7b1199845e3679cac3792@orel>
+References: <20250317120814.35241-2-andrew.jones@linux.dev>
 MIME-Version: 1.0
-From: Anup Patel <anup@brainfault.org>
-Date: Thu, 20 Mar 2025 19:45:09 +0530
-X-Gm-Features: AQ5f1Jrt7GwUjf0k1HKl9UBx8575Wok6_pgNuJLSWasl2rfXma4VEBXKWaRUvPU
-Message-ID: <CAAhSdy380StEE03G=RPjKoxtY89nLeufpXbjYwbRypzzrkQN+g@mail.gmail.com>
-Subject: [GIT PULL] KVM/riscv changes for 6.15
-To: Paolo Bonzini <pbonzini@redhat.com>
-Cc: Palmer Dabbelt <palmer@rivosinc.com>, Palmer Dabbelt <palmer@dabbelt.com>, 
-	Andrew Jones <ajones@ventanamicro.com>, Atish Patra <atishp@rivosinc.com>, 
-	Atish Patra <atishp@atishpatra.org>, 
-	"open list:KERNEL VIRTUAL MACHINE FOR RISC-V (KVM/riscv)" <kvm-riscv@lists.infradead.org>, KVM General <kvm@vger.kernel.org>, 
-	linux-riscv <linux-riscv@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <20250317120814.35241-2-andrew.jones@linux.dev>
+X-Migadu-Flow: FLOW_OUT
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250320_071522_116834_85E91B72 
-X-CRM114-Status: UNSURE (   7.13  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20250320_072611_551235_ECFFD3EF 
+X-CRM114-Status: GOOD (  13.72  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -94,53 +68,46 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Hi Paolo,
+On Mon, Mar 17, 2025 at 01:08:15PM +0100, Andrew Jones wrote:
+> While an hmask of zero without an hbase of -1 (which would mean
+> broadcast) is pointless, since nothing is targeted, the spec
+> doesn't say it should return an error. Maybe it should? Anyway,
+> for now, just confirm that it "works".
+> 
+> Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
+> ---
+>  riscv/sbi.c | 4 ++++
+>  1 file changed, 4 insertions(+)
+> 
+> diff --git a/riscv/sbi.c b/riscv/sbi.c
+> index 219f7187acf3..16d918d00848 100644
+> --- a/riscv/sbi.c
+> +++ b/riscv/sbi.c
+> @@ -507,6 +507,10 @@ end_two:
+>  			max_hartid = cpus[cpu].hartid;
+>  	}
+>  
+> +	/* Test no targets */
+> +	ret = sbi_send_ipi(0, 0);
+> +	sbiret_report_error(&ret, SBI_SUCCESS, "no targets");
+> +
+>  	/* Try the next higher hartid than the max */
+>  	ret = sbi_send_ipi(2, max_hartid);
+>  	report_kfail(true, ret.error == SBI_ERR_INVALID_PARAM, "hart_mask got expected error (%ld)", ret.error);
+> -- 
+> 2.48.1
+>
 
-We mainly have two fixes and few PMU selftests improvements
-for 6.15. There are quite a few in-flight patches dependent on
-SBI v3.0 specification which will freeze soon.
+Applied to riscv/sbi[1] with the test below added too just to make sure
+that a nonzero hbase with a zero hmask doesn't break things.
 
-Please pull.
+Thanks,
+drew
 
-Regards,
-Anup
+	ret = sbi_send_ipi(0, 1);
+	sbiret_report_error(&ret, SBI_SUCCESS, "no targets, hart_mask_base is 1");
 
-The following changes since commit 7eb172143d5508b4da468ed59ee857c6e5e01da6:
-
-  Linux 6.14-rc5 (2025-03-02 11:48:20 -0800)
-
-are available in the Git repository at:
-
-  https://github.com/kvm-riscv/linux.git tags/kvm-riscv-6.15-1
-
-for you to fetch changes up to b3f263a98d30fe2e33eefea297598c590ee3560e:
-
-  RISC-V: KVM: Optimize comments in kvm_riscv_vcpu_isa_disable_allowed
-(2025-03-20 11:33:56 +0530)
-
-----------------------------------------------------------------
-KVM/riscv changes for 6.15
-
-- Disable the kernel perf counter during configure
-- KVM selftests improvements for PMU
-- Fix warning at the time of KVM module removal
-
-----------------------------------------------------------------
-Atish Patra (5):
-      RISC-V: KVM: Disable the kernel perf counter during configure
-      KVM: riscv: selftests: Do not start the counter in the overflow handler
-      KVM: riscv: selftests: Change command line option
-      KVM: riscv: selftests: Allow number of interrupts to be configurable
-      RISC-V: KVM: Teardown riscv specific bits after kvm_exit
-
-Chao Du (1):
-      RISC-V: KVM: Optimize comments in kvm_riscv_vcpu_isa_disable_allowed
-
- arch/riscv/kvm/main.c                            |  4 +-
- arch/riscv/kvm/vcpu_onereg.c                     |  2 +-
- arch/riscv/kvm/vcpu_pmu.c                        |  1 +
- tools/testing/selftests/kvm/riscv/sbi_pmu_test.c | 81 ++++++++++++++++--------
- 4 files changed, 60 insertions(+), 28 deletions(-)
+[1] https://gitlab.com/jones-drew/kvm-unit-tests/-/commits/riscv/sbi
 
 -- 
 kvm-riscv mailing list
