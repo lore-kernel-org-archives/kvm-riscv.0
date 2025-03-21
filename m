@@ -4,56 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E90D9C36000
-	for <kvm-riscv@archiver.kernel.org>; Fri, 21 Mar 2025 16:54:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 43F18C36005
+	for <kvm-riscv@archiver.kernel.org>; Fri, 21 Mar 2025 16:54:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=4ix9WiuYWabTZMRTplfElf+jCCt9RrQxRbf7m/sqNhg=; b=ouhwua6vwVDe1W
-	9hzzr9wXiOpZSeytOXAefAusYEUzBQdAM71h09p/xU3uXVp2z4arBnilz0z3gNtxlWoB8rP154wkO
-	P6vdXEAWMZ8Giph3zEXiXedqn3+qjimSXIETJ07Ysb7MVQXSkDF6rKyJNHiUtskOHdvVkG0cSSUMH
-	hWa5Ac+yzKrLntxtaWdI3OEkmatuXtu3NDlFM9KqCN0vroANvsoFw3fPJpNZ0Jhgjvzt0KY7Y2Ztl
-	deszqPs1UqRXVz7k49/F5uCse/blfnVvv/8CX01boIlDzBKWVPDVGk8Ohnb1zYQ35UyT5MEUo5Vui
-	aB1qqD+8AD5j1dwHwdaQ==;
+	List-Owner; bh=ysSObuyh1e6G6BwiZDdGA/FWBufFkz9g3qXXwZVPwnk=; b=pmWhLdjx9z2wg2
+	Zeu6LBtM28oezekHVGV5ppi/FKamLhgivAvzA8e8TPYO7T375BW2hj1VJ6KSg7iEtWAHXlBRVYpRQ
+	cblaCPydWTRQCRAD8efdW5Ecli5RgrtkldkKKkm9mnUZ0MIYkrxaxGc1E9VGrkQDMl3Oqj+jndp4+
+	RYkEKC2+mVdm0TTQV+TgpYe03pFzt5uzF7HUsWeTABYjhKs+b2lPjgxGlVhWrBZEhrUCYXJv1izF6
+	1fSJh2gHPE3amicaLu4nvwYLXMcX/nhAM4oFFuvFpcNqI0n2z0k4flSFfrMFCstZg+LSCRY47g1zt
+	j7eGURHQihInwEqhjbGQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tvfdS-0000000FbIm-2yVA;
-	Fri, 21 Mar 2025 16:54:18 +0000
-Received: from out-186.mta0.migadu.com ([91.218.175.186])
+	id 1tvfdU-0000000FbKW-4C7i;
+	Fri, 21 Mar 2025 16:54:21 +0000
+Received: from out-182.mta0.migadu.com ([2001:41d0:1004:224b::b6])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1tvfdP-0000000FbGU-33XC
+	id 1tvfdP-0000000FbFv-3Yuj
 	for kvm-riscv@lists.infradead.org;
 	Fri, 21 Mar 2025 16:54:17 +0000
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1742576053;
+	t=1742576049;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=UIolc26Z9WyQwzj190zC3vU/7vb8zQejDnHfjjlS2TY=;
-	b=NnbjDHenGbSrKQVFGKgBN+CwdoxdxAfoFHK3CZWZKR0PiBVecIWj1ZLTqlBjykdDmPrHE7
-	GEEoHwnBwlYMhnSqtyBequ2VItBsBxe1svNQ4bF0TLyyfn6NcEOQ2/CfwGMy30iy0ItSpM
-	dbkGVD1B/QPMv0QrMAinnYfIGZxC06U=
+	bh=G9zKZEdfQYZeghDcnUUsQR01GtR2H7Xuam0AVo+Vzx0=;
+	b=DzV+ddJu0d7wt8hCmpHLUTZn0Jgcfy5vaXvNYtiEoXyOkAoIfE1oEiZ5an96GxNgoXf1aN
+	H0jyEm4J6YrP8XbtY6T/FwFPDtQpybRRKykQv/xLAOty5mBhqCPzofFBq/CE2P1TLT1IuV
+	tsF4wVQnnnV3wWG19aK0KJjxeZqJk04=
 From: Andrew Jones <andrew.jones@linux.dev>
 To: kvm-riscv@lists.infradead.org,
 	kvm@vger.kernel.org
 Cc: cleger@rivosinc.com,
 	atishp@rivosinc.com,
 	akshaybehl231@gmail.com
-Subject: [kvm-unit-tests PATCH 3/3] riscv: sbi: Use kfail for known opensbi failures
-Date: Fri, 21 Mar 2025 17:54:07 +0100
-Message-ID: <20250321165403.57859-8-andrew.jones@linux.dev>
+Subject: [kvm-unit-tests PATCH 1/3] lib/riscv: Also provide sbiret impl functions
+Date: Fri, 21 Mar 2025 17:54:05 +0100
+Message-ID: <20250321165403.57859-6-andrew.jones@linux.dev>
 In-Reply-To: <20250321165403.57859-5-andrew.jones@linux.dev>
 References: <20250321165403.57859-5-andrew.jones@linux.dev>
 MIME-Version: 1.0
 X-Migadu-Flow: FLOW_OUT
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250321_095415_912299_FE4AC024 
-X-CRM114-Status: UNSURE (   8.87  )
+X-CRM114-CacheID: sfid-20250321_095416_029391_12238ABD 
+X-CRM114-Status: UNSURE (   8.94  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -71,88 +71,92 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Use kfail for the opensbi s/SBI_ERR_DENIED/SBI_ERR_DENIED_LOCKED/
-change. We expect it to be fixed in 1.7, so only kfail for opensbi
-which has a version less than that. Also change the other uses of
-kfail to only kfail for opensbi versions less than 1.7.
+We almost always return sbiret from sbi wrapper functions so
+do that for sbi_get_imp_version() and sbi_get_imp_id(), but
+asserting no error and returning the value is also useful,
+so continue to provide those functions too, just with a slightly
+different name.
 
 Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
 ---
- riscv/sbi-fwft.c | 20 +++++++++++++-------
- riscv/sbi.c      |  6 ++++--
- 2 files changed, 17 insertions(+), 9 deletions(-)
+ lib/riscv/asm/sbi.h |  6 ++++--
+ lib/riscv/sbi.c     | 18 ++++++++++++++----
+ riscv/sbi-sse.c     |  4 ++--
+ 3 files changed, 20 insertions(+), 8 deletions(-)
 
-diff --git a/riscv/sbi-fwft.c b/riscv/sbi-fwft.c
-index 3d225997c0ec..c52fbd6e77a6 100644
---- a/riscv/sbi-fwft.c
-+++ b/riscv/sbi-fwft.c
-@@ -83,19 +83,21 @@ static void fwft_feature_lock_test_values(uint32_t feature, size_t nr_values,
+diff --git a/lib/riscv/asm/sbi.h b/lib/riscv/asm/sbi.h
+index edaee462c3fa..a5738a5ce209 100644
+--- a/lib/riscv/asm/sbi.h
++++ b/lib/riscv/asm/sbi.h
+@@ -260,9 +260,11 @@ struct sbiret sbi_send_ipi_cpumask(const cpumask_t *mask);
+ struct sbiret sbi_send_ipi_broadcast(void);
+ struct sbiret sbi_set_timer(unsigned long stime_value);
+ struct sbiret sbi_get_spec_version(void);
+-unsigned long sbi_get_imp_version(void);
+-unsigned long sbi_get_imp_id(void);
++struct sbiret sbi_get_imp_version(void);
++struct sbiret sbi_get_imp_id(void);
+ long sbi_probe(int ext);
++unsigned long __sbi_get_imp_version(void);
++unsigned long __sbi_get_imp_id(void);
  
- 	report_prefix_push("locked");
+ typedef void (*sbi_sse_handler_fn)(void *data, struct pt_regs *regs, unsigned int hartid);
  
-+	bool kfail = __sbi_get_imp_id() == SBI_IMPL_OPENSBI &&
-+		     __sbi_get_imp_version() < sbi_impl_opensbi_mk_version(1, 7);
+diff --git a/lib/riscv/sbi.c b/lib/riscv/sbi.c
+index 53d25489f905..2959378f64bb 100644
+--- a/lib/riscv/sbi.c
++++ b/lib/riscv/sbi.c
+@@ -183,21 +183,31 @@ struct sbiret sbi_set_timer(unsigned long stime_value)
+ 	return sbi_ecall(SBI_EXT_TIME, SBI_EXT_TIME_SET_TIMER, stime_value, 0, 0, 0, 0, 0);
+ }
+ 
+-unsigned long sbi_get_imp_version(void)
++struct sbiret sbi_get_imp_version(void)
++{
++	return sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_GET_IMP_VERSION, 0, 0, 0, 0, 0, 0);
++}
 +
- 	for (int i = 0; i < nr_values; ++i) {
- 		ret = fwft_set(feature, test_values[i], 0);
--		sbiret_report_error(&ret, SBI_ERR_DENIED_LOCKED,
--			"Set to %lu without lock flag", test_values[i]);
-+		sbiret_kfail_error(kfail, &ret, SBI_ERR_DENIED_LOCKED,
-+				   "Set to %lu without lock flag", test_values[i]);
++struct sbiret sbi_get_imp_id(void)
++{
++	return sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_GET_IMP_ID, 0, 0, 0, 0, 0, 0);
++}
++
++unsigned long __sbi_get_imp_version(void)
+ {
+ 	struct sbiret ret;
  
- 		ret = fwft_set(feature, test_values[i], SBI_FWFT_SET_FLAG_LOCK);
--		sbiret_report_error(&ret, SBI_ERR_DENIED_LOCKED,
--			"Set to %lu with lock flag", test_values[i]);
-+		sbiret_kfail_error(kfail, &ret, SBI_ERR_DENIED_LOCKED,
-+				   "Set to %lu with lock flag", test_values[i]);
+-	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_GET_IMP_VERSION, 0, 0, 0, 0, 0, 0);
++	ret = sbi_get_imp_version();
+ 	assert(!ret.error);
+ 
+ 	return ret.value;
+ }
+ 
+-unsigned long sbi_get_imp_id(void)
++unsigned long __sbi_get_imp_id(void)
+ {
+ 	struct sbiret ret;
+ 
+-	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_GET_IMP_ID, 0, 0, 0, 0, 0, 0);
++	ret = sbi_get_imp_id();
+ 	assert(!ret.error);
+ 
+ 	return ret.value;
+diff --git a/riscv/sbi-sse.c b/riscv/sbi-sse.c
+index 97e07725c359..bc6afaf5481e 100644
+--- a/riscv/sbi-sse.c
++++ b/riscv/sbi-sse.c
+@@ -1232,8 +1232,8 @@ void check_sse(void)
+ 		return;
  	}
  
- 	ret = fwft_get(feature);
--	sbiret_report(&ret, SBI_SUCCESS, locked_value,
--		"Get value %lu", locked_value);
-+	sbiret_report(&ret, SBI_SUCCESS, locked_value, "Get value %lu", locked_value);
- 
- 	report_prefix_pop();
- }
-@@ -103,6 +105,7 @@ static void fwft_feature_lock_test_values(uint32_t feature, size_t nr_values,
- static void fwft_feature_lock_test(uint32_t feature, unsigned long locked_value)
- {
- 	unsigned long values[] = {0, 1};
-+
- 	fwft_feature_lock_test_values(feature, 2, values, locked_value);
- }
- 
-@@ -317,7 +320,10 @@ static void fwft_check_pte_ad_hw_updating(void)
- 	report(ret.value == 0 || ret.value == 1, "first get value is 0/1");
- 
- 	enabled = ret.value;
--	report_kfail(true, !enabled, "resets to 0");
-+
-+	bool kfail = __sbi_get_imp_id() == SBI_IMPL_OPENSBI &&
-+		     __sbi_get_imp_version() < sbi_impl_opensbi_mk_version(1, 7);
-+	report_kfail(kfail, !enabled, "resets to 0");
- 
- 	install_exception_handler(EXC_LOAD_PAGE_FAULT, adue_read_handler);
- 	install_exception_handler(EXC_STORE_PAGE_FAULT, adue_write_handler);
-diff --git a/riscv/sbi.c b/riscv/sbi.c
-index 83bc55125d46..edb1a6bef1ac 100644
---- a/riscv/sbi.c
-+++ b/riscv/sbi.c
-@@ -515,10 +515,12 @@ end_two:
- 	sbiret_report_error(&ret, SBI_SUCCESS, "no targets, hart_mask_base is 1");
- 
- 	/* Try the next higher hartid than the max */
-+	bool kfail = __sbi_get_imp_id() == SBI_IMPL_OPENSBI &&
-+		     __sbi_get_imp_version() < sbi_impl_opensbi_mk_version(1, 7);
- 	ret = sbi_send_ipi(2, max_hartid);
--	report_kfail(true, ret.error == SBI_ERR_INVALID_PARAM, "hart_mask got expected error (%ld)", ret.error);
-+	sbiret_kfail_error(kfail, &ret, SBI_ERR_INVALID_PARAM, "hart_mask");
- 	ret = sbi_send_ipi(1, max_hartid + 1);
--	report_kfail(true, ret.error == SBI_ERR_INVALID_PARAM, "hart_mask_base got expected error (%ld)", ret.error);
-+	sbiret_kfail_error(kfail, &ret, SBI_ERR_INVALID_PARAM, "hart_mask_base");
- 
- 	report_prefix_pop();
- 
+-	if (sbi_get_imp_id() == SBI_IMPL_OPENSBI &&
+-	    sbi_get_imp_version() < sbi_impl_opensbi_mk_version(1, 7)) {
++	if (__sbi_get_imp_id() == SBI_IMPL_OPENSBI &&
++	    __sbi_get_imp_version() < sbi_impl_opensbi_mk_version(1, 7)) {
+ 		report_skip("OpenSBI < v1.7 detected, skipping tests");
+ 		report_prefix_pop();
+ 		return;
 -- 
 2.48.1
 
