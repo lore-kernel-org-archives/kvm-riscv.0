@@ -4,88 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 25A11C36007
-	for <kvm-riscv@archiver.kernel.org>; Fri, 21 Mar 2025 20:28:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1D020C35FFC
+	for <kvm-riscv@archiver.kernel.org>; Sat, 22 Mar 2025 07:40:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:
-	Subject:MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
+	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=07CVunCiDvil/lsdLG6mQJmREWeDa91SRuiay37uPwU=; b=NK+W7WPFcT3SIL
-	XMEDOaAeXyRq9q6V2dkXuzSiCHAycDLDkhZMijWj7vAIbcdHQAhVSZ/JD+Zorz4UWXRhgszVRCBAY
-	kvlcT7i2HQWxyCmvOp8tQFo+S+43d1CXP9HncDf8AJXWi35SLic4jdTiLwrAi1JtTFOqnE6Y3MCEu
-	/ZAlMXIeIF/znBxKtCT3iocPUqIwQAlYTjhtPKWrv4tZ76G350D44tH4YnYXoiNK2Aby4nO+8SHRW
-	7lZ2X4e+ZTeGcd2SDYbNzx75UMxoSdEcn8mkvEujdk5Kl0UvRD8HO7/YcwRBtSYiPTx5Cj5BwtEtt
-	dzzNA+yg0fKA2nke+vFg==;
+	List-Owner; bh=8EsqhLI0Vkg+odueJb/DDshBciXcSq1z9XwgSpRoRxE=; b=wEACyiQICbFh39
+	blQUkSEEa1aNt7S5mgKuQSoboIawOV6uqXSmpCXuaE/87XlnLtcum06dDZkuaEHOhU6BzTLErTd16
+	RDUTWnoIA8Q57BxWQUGmPdEpaPgPI24wJlwaqPROYFdhjqB4Q4OVckP+vw7XWj5UkbWjw1ipdI7XW
+	nHdGFXcPACPZyyaXuEBevwva/6Ue8p18cYHNSizBwEJiBOOqi1nD3ZGQ4sntYLjsIzVXYhq0ohtly
+	uGK3lSrGTtbhPR1IochDQ7oqv9mzx3pyi9iTOU3k9jAsMUrjMIUDcqb2GPUD3KBgiM1HtA06Qwmo2
+	CB/TjRQmQl2x409OD9og==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tviz5-0000000GAPa-3294;
-	Fri, 21 Mar 2025 20:28:51 +0000
-Received: from mail-wm1-x331.google.com ([2a00:1450:4864:20::331])
+	id 1tvtT3-0000000H2Qf-2cwj;
+	Sat, 22 Mar 2025 07:40:29 +0000
+Received: from out-170.mta0.migadu.com ([91.218.175.170])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1tviso-0000000G9Yz-0Fzp
+	id 1tvtRa-0000000H2EQ-2GeW
 	for kvm-riscv@lists.infradead.org;
-	Fri, 21 Mar 2025 20:22:23 +0000
-Received: by mail-wm1-x331.google.com with SMTP id 5b1f17b1804b1-43d07ca6a80so11709775e9.1
-        for <kvm-riscv@lists.infradead.org>; Fri, 21 Mar 2025 13:22:21 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=rivosinc-com.20230601.gappssmtp.com; s=20230601; t=1742588540; x=1743193340; darn=lists.infradead.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=Lzd4xG+2SwOBDBgUcXXvZKQ1fVJHEBo+Bv/RqZ5W6kU=;
-        b=efwdmrMgRurF3oCqj9Ka4M2q2AG1SESpRRJuFufGPn28BmaLh8t9v2hFXBqHWLos9e
-         o41ujGmQ/ItU3Ung2Hc4qv/k3FPzM5uxtK2PJaXMfVOESftACXJ6U/M43WOBVytqsMFS
-         SFTajVIKFCCd2C0FK+C4SlyimNbQedGyNvq+THADa61uZA+K4GeNEyab54ZICZ+nBZsH
-         n5/8bJtz/tBaRG+ncyjFa/KS7u8aoy+VCYCNYXb7KHJNhWUpCGbxMCVvoX/m6C+/Bz23
-         p/mkRe+p+5TrC6dFfWGptoeu5R45uvmnrY0v6/tsrGNEZEaiElum6ELVkOTrJYJYsZa4
-         ygrA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1742588540; x=1743193340;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=Lzd4xG+2SwOBDBgUcXXvZKQ1fVJHEBo+Bv/RqZ5W6kU=;
-        b=Sy0vpGlh1aa+FtTTZ10fvWkfAx+NOnGQuUmblwSFzVGEQYzwLZpML3ZftAFxgfNfjK
-         SnmSC8zS+UzSW0cjbmZVUa/Gi6OiP1INf+/oCTsc2ck/9MBP20BYKwYNdmwig9kB3oCc
-         6+Rql0l35cx+Wv+d2F/5Cxxp92UT02bS3xr5wcemNNOOmy9j+DOJ04zjVDbNNjHEl9+s
-         Auig/kAUROjg6sQ4dRk5/kIGRY7/tBCBCCsbGzzLmbeU7kPkN9H9xrVMeStpZd/CmMVp
-         YhJlNCjLZKnvF+0aU9nbEIQfZezhF90Hsq5mWR6emr5hDXIcoK7BSfHRdMMY/SQZE81b
-         aGtA==
-X-Forwarded-Encrypted: i=1; AJvYcCWQVTtR5vDVQxFzZxRAVn3QoixbVv0izTDiYsMACjosbDtb7GJcGajHKUN6td25mmBMskR9o1GjXS0=@lists.infradead.org
-X-Gm-Message-State: AOJu0YzyfRDQH82pycwZQEF4aRN6EHN65FCcDkgkwhpSMSesQKKfDgh9
-	V/H7lO7IN79x34MKEOGFi4WayRFYLkWBBmY9p5/T6NBdcQdoLbyiCGRgGVzBKfE=
-X-Gm-Gg: ASbGncvEOa7I+PPy0kaC56ceSeEtjDl1DBCpioghZ5uNPEMl/78EpfaTYGS87OJ/2QR
-	H9ipkZnvCbsrwUCArjKnH0kXAu4AJ/BtdbO1LDq9KoKVw74TMJhivKCZINt4wXnkmO/Eagf01mt
-	U1fMGDynQus/MuesIFxiLMgCywQg/+pcdHwpM77JGOtn/wnEyDzzOusaQ0eduIt9dqExYaMQbgo
-	7CgXBNUyfU2KvQL+pchNShJ1Sc5ea3ZHysX6sGHG7AHUaaS31qrbC59Pg1C72nsi/xhQqpjuD4w
-	abu1SaKZdXOyBeiFFn7RDIiPbm6rf7di68xRkCHN0oim29Rel0CpG2BY9jWSqgDxTrC47G7OQl4
-	9afy0L3+Crx0IxMWmWGuIaoBn
-X-Google-Smtp-Source: AGHT+IFMDdsZ0mN9HV7XN3ROBaSzzyRHTn5AWR0glOM3qL5vAkyivsz/PmDNRERlqpzG7S9gLmtOaw==
-X-Received: by 2002:a05:600c:1548:b0:43c:f513:9591 with SMTP id 5b1f17b1804b1-43d509f73admr46812415e9.14.1742588540177;
-        Fri, 21 Mar 2025 13:22:20 -0700 (PDT)
-Received: from ?IPV6:2a01:e0a:e17:9700:16d2:7456:6634:9626? ([2a01:e0a:e17:9700:16d2:7456:6634:9626])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-3997f9e6544sm3302589f8f.68.2025.03.21.13.22.19
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 21 Mar 2025 13:22:19 -0700 (PDT)
-Message-ID: <dba5ed81-6557-45aa-8246-0c9e6d6c18a0@rivosinc.com>
-Date: Fri, 21 Mar 2025 21:22:19 +0100
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
+	Sat, 22 Mar 2025 07:39:00 +0000
+Date: Sat, 22 Mar 2025 08:38:51 +0100
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1742629134;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=LfhLC5sqlQafvn+0xKuGq6lbyGDnAKhNMAnd1fBQhlg=;
+	b=VESwZjAtgGFlpg1o5TeXxmhOoUv1TwxNO0ti/JhuAwz1krBJf52IW9zCiXNJDk8mW2p76e
+	pcrSavYBy1rGVnZfNOyZdeWUaCMIK09C/X5kheZpCsKbJObdGzxgQWzBCPyd/jWzQlggb4
+	W9lRSOzDPnrlAGs+uOdkM2qdVbLgXoc=
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Andrew Jones <andrew.jones@linux.dev>
+To: =?utf-8?B?Q2zDqW1lbnQgTMOpZ2Vy?= <cleger@rivosinc.com>
+Cc: kvm-riscv@lists.infradead.org, kvm@vger.kernel.org, 
+	atishp@rivosinc.com, akshaybehl231@gmail.com
 Subject: Re: [kvm-unit-tests PATCH 3/3] riscv: sbi: Use kfail for known
  opensbi failures
-To: Andrew Jones <andrew.jones@linux.dev>, kvm-riscv@lists.infradead.org,
- kvm@vger.kernel.org
-Cc: atishp@rivosinc.com, akshaybehl231@gmail.com
+Message-ID: <20250322-3d41f407f8d352d262718c20@orel>
 References: <20250321165403.57859-5-andrew.jones@linux.dev>
  <20250321165403.57859-8-andrew.jones@linux.dev>
-Content-Language: en-US
-From: =?UTF-8?B?Q2zDqW1lbnQgTMOpZ2Vy?= <cleger@rivosinc.com>
-In-Reply-To: <20250321165403.57859-8-andrew.jones@linux.dev>
+ <dba5ed81-6557-45aa-8246-0c9e6d6c18a0@rivosinc.com>
+MIME-Version: 1.0
+Content-Disposition: inline
+In-Reply-To: <dba5ed81-6557-45aa-8246-0c9e6d6c18a0@rivosinc.com>
+X-Migadu-Flow: FLOW_OUT
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250321_132222_101874_488D20FA 
-X-CRM114-Status: GOOD (  16.92  )
+X-CRM114-CacheID: sfid-20250322_003859_231375_5F6DA0C9 
+X-CRM114-Status: GOOD (  26.20  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -97,77 +67,178 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-CgpPbiAyMS8wMy8yMDI1IDE3OjU0LCBBbmRyZXcgSm9uZXMgd3JvdGU6Cj4gVXNlIGtmYWlsIGZv
-ciB0aGUgb3BlbnNiaSBzL1NCSV9FUlJfREVOSUVEL1NCSV9FUlJfREVOSUVEX0xPQ0tFRC8KPiBj
-aGFuZ2UuIFdlIGV4cGVjdCBpdCB0byBiZSBmaXhlZCBpbiAxLjcsIHNvIG9ubHkga2ZhaWwgZm9y
-IG9wZW5zYmkKPiB3aGljaCBoYXMgYSB2ZXJzaW9uIGxlc3MgdGhhbiB0aGF0LiBBbHNvIGNoYW5n
-ZSB0aGUgb3RoZXIgdXNlcyBvZgo+IGtmYWlsIHRvIG9ubHkga2ZhaWwgZm9yIG9wZW5zYmkgdmVy
-c2lvbnMgbGVzcyB0aGFuIDEuNy4KPiAKPiBTaWduZWQtb2ZmLWJ5OiBBbmRyZXcgSm9uZXMgPGFu
-ZHJldy5qb25lc0BsaW51eC5kZXY+Cj4gLS0tCj4gIHJpc2N2L3NiaS1md2Z0LmMgfCAyMCArKysr
-KysrKysrKysrLS0tLS0tLQo+ICByaXNjdi9zYmkuYyAgICAgIHwgIDYgKysrKy0tCj4gIDIgZmls
-ZXMgY2hhbmdlZCwgMTcgaW5zZXJ0aW9ucygrKSwgOSBkZWxldGlvbnMoLSkKPiAKPiBkaWZmIC0t
-Z2l0IGEvcmlzY3Yvc2JpLWZ3ZnQuYyBiL3Jpc2N2L3NiaS1md2Z0LmMKPiBpbmRleCAzZDIyNTk5
-N2MwZWMuLmM1MmZiZDZlNzdhNiAxMDA2NDQKPiAtLS0gYS9yaXNjdi9zYmktZndmdC5jCj4gKysr
-IGIvcmlzY3Yvc2JpLWZ3ZnQuYwo+IEBAIC04MywxOSArODMsMjEgQEAgc3RhdGljIHZvaWQgZndm
-dF9mZWF0dXJlX2xvY2tfdGVzdF92YWx1ZXModWludDMyX3QgZmVhdHVyZSwgc2l6ZV90IG5yX3Zh
-bHVlcywKPiAgCj4gIAlyZXBvcnRfcHJlZml4X3B1c2goImxvY2tlZCIpOwo+ICAKPiArCWJvb2wg
-a2ZhaWwgPSBfX3NiaV9nZXRfaW1wX2lkKCkgPT0gU0JJX0lNUExfT1BFTlNCSSAmJgo+ICsJCSAg
-ICAgX19zYmlfZ2V0X2ltcF92ZXJzaW9uKCkgPCBzYmlfaW1wbF9vcGVuc2JpX21rX3ZlcnNpb24o
-MSwgNyk7Cj4gKwo+ICAJZm9yIChpbnQgaSA9IDA7IGkgPCBucl92YWx1ZXM7ICsraSkgewo+ICAJ
-CXJldCA9IGZ3ZnRfc2V0KGZlYXR1cmUsIHRlc3RfdmFsdWVzW2ldLCAwKTsKPiAtCQlzYmlyZXRf
-cmVwb3J0X2Vycm9yKCZyZXQsIFNCSV9FUlJfREVOSUVEX0xPQ0tFRCwKPiAtCQkJIlNldCB0byAl
-bHUgd2l0aG91dCBsb2NrIGZsYWciLCB0ZXN0X3ZhbHVlc1tpXSk7Cj4gKwkJc2JpcmV0X2tmYWls
-X2Vycm9yKGtmYWlsLCAmcmV0LCBTQklfRVJSX0RFTklFRF9MT0NLRUQsCj4gKwkJCQkgICAiU2V0
-IHRvICVsdSB3aXRob3V0IGxvY2sgZmxhZyIsIHRlc3RfdmFsdWVzW2ldKTsKPiAgCj4gIAkJcmV0
-ID0gZndmdF9zZXQoZmVhdHVyZSwgdGVzdF92YWx1ZXNbaV0sIFNCSV9GV0ZUX1NFVF9GTEFHX0xP
-Q0spOwo+IC0JCXNiaXJldF9yZXBvcnRfZXJyb3IoJnJldCwgU0JJX0VSUl9ERU5JRURfTE9DS0VE
-LAo+IC0JCQkiU2V0IHRvICVsdSB3aXRoIGxvY2sgZmxhZyIsIHRlc3RfdmFsdWVzW2ldKTsKPiAr
-CQlzYmlyZXRfa2ZhaWxfZXJyb3Ioa2ZhaWwsICZyZXQsIFNCSV9FUlJfREVOSUVEX0xPQ0tFRCwK
-PiArCQkJCSAgICJTZXQgdG8gJWx1IHdpdGggbG9jayBmbGFnIiwgdGVzdF92YWx1ZXNbaV0pOwo+
-ICAJfQo+ICAKPiAgCXJldCA9IGZ3ZnRfZ2V0KGZlYXR1cmUpOwo+IC0Jc2JpcmV0X3JlcG9ydCgm
-cmV0LCBTQklfU1VDQ0VTUywgbG9ja2VkX3ZhbHVlLAo+IC0JCSJHZXQgdmFsdWUgJWx1IiwgbG9j
-a2VkX3ZhbHVlKTsKPiArCXNiaXJldF9yZXBvcnQoJnJldCwgU0JJX1NVQ0NFU1MsIGxvY2tlZF92
-YWx1ZSwgIkdldCB2YWx1ZSAlbHUiLCBsb2NrZWRfdmFsdWUpOwoKUmVmb3JtYXR0aW5nID8KCj4g
-IAo+ICAJcmVwb3J0X3ByZWZpeF9wb3AoKTsKPiAgfQo+IEBAIC0xMDMsNiArMTA1LDcgQEAgc3Rh
-dGljIHZvaWQgZndmdF9mZWF0dXJlX2xvY2tfdGVzdF92YWx1ZXModWludDMyX3QgZmVhdHVyZSwg
-c2l6ZV90IG5yX3ZhbHVlcywKPiAgc3RhdGljIHZvaWQgZndmdF9mZWF0dXJlX2xvY2tfdGVzdCh1
-aW50MzJfdCBmZWF0dXJlLCB1bnNpZ25lZCBsb25nIGxvY2tlZF92YWx1ZSkKPiAgewo+ICAJdW5z
-aWduZWQgbG9uZyB2YWx1ZXNbXSA9IHswLCAxfTsKPiArCgpUaGF0J3Mgc29tZSBzcHVyaW91cyBu
-ZXdsaW5lIGhlcmUuCgoKPiAgCWZ3ZnRfZmVhdHVyZV9sb2NrX3Rlc3RfdmFsdWVzKGZlYXR1cmUs
-IDIsIHZhbHVlcywgbG9ja2VkX3ZhbHVlKTsKPiAgfQo+ICAKPiBAQCAtMzE3LDcgKzMyMCwxMCBA
-QCBzdGF0aWMgdm9pZCBmd2Z0X2NoZWNrX3B0ZV9hZF9od191cGRhdGluZyh2b2lkKQo+ICAJcmVw
-b3J0KHJldC52YWx1ZSA9PSAwIHx8IHJldC52YWx1ZSA9PSAxLCAiZmlyc3QgZ2V0IHZhbHVlIGlz
-IDAvMSIpOwo+ICAKPiAgCWVuYWJsZWQgPSByZXQudmFsdWU7Cj4gLQlyZXBvcnRfa2ZhaWwodHJ1
-ZSwgIWVuYWJsZWQsICJyZXNldHMgdG8gMCIpOwo+ICsKPiArCWJvb2wga2ZhaWwgPSBfX3NiaV9n
-ZXRfaW1wX2lkKCkgPT0gU0JJX0lNUExfT1BFTlNCSSAmJgo+ICsJCSAgICAgX19zYmlfZ2V0X2lt
-cF92ZXJzaW9uKCkgPCBzYmlfaW1wbF9vcGVuc2JpX21rX3ZlcnNpb24oMSwgNyk7Cj4gKwlyZXBv
-cnRfa2ZhaWwoa2ZhaWwsICFlbmFibGVkLCAicmVzZXRzIHRvIDAiKTsKPiAgCj4gIAlpbnN0YWxs
-X2V4Y2VwdGlvbl9oYW5kbGVyKEVYQ19MT0FEX1BBR0VfRkFVTFQsIGFkdWVfcmVhZF9oYW5kbGVy
-KTsKPiAgCWluc3RhbGxfZXhjZXB0aW9uX2hhbmRsZXIoRVhDX1NUT1JFX1BBR0VfRkFVTFQsIGFk
-dWVfd3JpdGVfaGFuZGxlcik7Cj4gZGlmZiAtLWdpdCBhL3Jpc2N2L3NiaS5jIGIvcmlzY3Yvc2Jp
-LmMKPiBpbmRleCA4M2JjNTUxMjVkNDYuLmVkYjFhNmJlZjFhYyAxMDA2NDQKPiAtLS0gYS9yaXNj
-di9zYmkuYwo+ICsrKyBiL3Jpc2N2L3NiaS5jCj4gQEAgLTUxNSwxMCArNTE1LDEyIEBAIGVuZF90
-d286Cj4gIAlzYmlyZXRfcmVwb3J0X2Vycm9yKCZyZXQsIFNCSV9TVUNDRVNTLCAibm8gdGFyZ2V0
-cywgaGFydF9tYXNrX2Jhc2UgaXMgMSIpOwo+ICAKPiAgCS8qIFRyeSB0aGUgbmV4dCBoaWdoZXIg
-aGFydGlkIHRoYW4gdGhlIG1heCAqLwo+ICsJYm9vbCBrZmFpbCA9IF9fc2JpX2dldF9pbXBfaWQo
-KSA9PSBTQklfSU1QTF9PUEVOU0JJICYmCj4gKwkJICAgICBfX3NiaV9nZXRfaW1wX3ZlcnNpb24o
-KSA8IHNiaV9pbXBsX29wZW5zYmlfbWtfdmVyc2lvbigxLCA3KTsKPiAgCXJldCA9IHNiaV9zZW5k
-X2lwaSgyLCBtYXhfaGFydGlkKTs+IC0JcmVwb3J0X2tmYWlsKHRydWUsIHJldC5lcnJvcgo9PSBT
-QklfRVJSX0lOVkFMSURfUEFSQU0sICJoYXJ0X21hc2sgZ290IGV4cGVjdGVkIGVycm9yICglbGQp
-IiwgcmV0LmVycm9yKTsKPiArCXNiaXJldF9rZmFpbF9lcnJvcihrZmFpbCwgJnJldCwgU0JJX0VS
-Ul9JTlZBTElEX1BBUkFNLCAiaGFydF9tYXNrIik7Cj4gIAlyZXQgPSBzYmlfc2VuZF9pcGkoMSwg
-bWF4X2hhcnRpZCArIDEpOwo+IC0JcmVwb3J0X2tmYWlsKHRydWUsIHJldC5lcnJvciA9PSBTQklf
-RVJSX0lOVkFMSURfUEFSQU0sICJoYXJ0X21hc2tfYmFzZSBnb3QgZXhwZWN0ZWQgZXJyb3IgKCVs
-ZCkiLCByZXQuZXJyb3IpOwo+ICsJc2JpcmV0X2tmYWlsX2Vycm9yKGtmYWlsLCAmcmV0LCBTQklf
-RVJSX0lOVkFMSURfUEFSQU0sICJoYXJ0X21hc2tfYmFzZSIpOwo+ICAKPiAgCXJlcG9ydF9wcmVm
-aXhfcG9wKCk7Cj4gIAoKSGkgQW5kcmV3LAoKSSB0cmllZCB0aGlua2luZyBvZiBzb21lIHdheSB0
-byBmYWN0b3JpemUgdGhlIHZlcnNpb24gY2hlY2sgYnV0IGNhbid0CnJlYWxseSBmaW5kIHNvbWV0
-aGluZyBlbGVnYW50LiBXaXRob3V0IHRoZSBzcHVyaW91cyBuZXdsaW5lOgoKUmV2aWV3ZWQtYnk6
-IENsw6ltZW50IEzDqWdlciA8Y2xlZ2VyQHJpdm9zaW5jLmNvbT4KClRoYW5rcywKCkNsw6ltZW50
-CgotLSAKa3ZtLXJpc2N2IG1haWxpbmcgbGlzdAprdm0tcmlzY3ZAbGlzdHMuaW5mcmFkZWFkLm9y
-ZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2t2bS1yaXNjdgo=
+On Fri, Mar 21, 2025 at 09:22:19PM +0100, Cl=E9ment L=E9ger wrote:
+> =
+
+> =
+
+> On 21/03/2025 17:54, Andrew Jones wrote:
+> > Use kfail for the opensbi s/SBI_ERR_DENIED/SBI_ERR_DENIED_LOCKED/
+> > change. We expect it to be fixed in 1.7, so only kfail for opensbi
+> > which has a version less than that. Also change the other uses of
+> > kfail to only kfail for opensbi versions less than 1.7.
+> > =
+
+> > Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
+> > ---
+> >  riscv/sbi-fwft.c | 20 +++++++++++++-------
+> >  riscv/sbi.c      |  6 ++++--
+> >  2 files changed, 17 insertions(+), 9 deletions(-)
+> > =
+
+> > diff --git a/riscv/sbi-fwft.c b/riscv/sbi-fwft.c
+> > index 3d225997c0ec..c52fbd6e77a6 100644
+> > --- a/riscv/sbi-fwft.c
+> > +++ b/riscv/sbi-fwft.c
+> > @@ -83,19 +83,21 @@ static void fwft_feature_lock_test_values(uint32_t =
+feature, size_t nr_values,
+> >  =
+
+> >  	report_prefix_push("locked");
+> >  =
+
+> > +	bool kfail =3D __sbi_get_imp_id() =3D=3D SBI_IMPL_OPENSBI &&
+> > +		     __sbi_get_imp_version() < sbi_impl_opensbi_mk_version(1, 7);
+> > +
+> >  	for (int i =3D 0; i < nr_values; ++i) {
+> >  		ret =3D fwft_set(feature, test_values[i], 0);
+> > -		sbiret_report_error(&ret, SBI_ERR_DENIED_LOCKED,
+> > -			"Set to %lu without lock flag", test_values[i]);
+> > +		sbiret_kfail_error(kfail, &ret, SBI_ERR_DENIED_LOCKED,
+> > +				   "Set to %lu without lock flag", test_values[i]);
+> >  =
+
+> >  		ret =3D fwft_set(feature, test_values[i], SBI_FWFT_SET_FLAG_LOCK);
+> > -		sbiret_report_error(&ret, SBI_ERR_DENIED_LOCKED,
+> > -			"Set to %lu with lock flag", test_values[i]);
+> > +		sbiret_kfail_error(kfail, &ret, SBI_ERR_DENIED_LOCKED,
+> > +				   "Set to %lu with lock flag", test_values[i]);
+> >  	}
+> >  =
+
+> >  	ret =3D fwft_get(feature);
+> > -	sbiret_report(&ret, SBI_SUCCESS, locked_value,
+> > -		"Get value %lu", locked_value);
+> > +	sbiret_report(&ret, SBI_SUCCESS, locked_value, "Get value %lu", locke=
+d_value);
+> =
+
+> Reformatting ?
+
+Yup, and the "Set..." strings above. I missed that the format was wrong
+when I applied the fwft_feature_lock_test_values patch and just lazily
+fixed it up with this patch. I still haven't merged to the master
+branch yet, so I can still squash a formatting fix into the
+fwft_feature_lock_test_values patch in order to make this patch cleaner.
+
+> =
+
+> >  =
+
+> >  	report_prefix_pop();
+> >  }
+> > @@ -103,6 +105,7 @@ static void fwft_feature_lock_test_values(uint32_t =
+feature, size_t nr_values,
+> >  static void fwft_feature_lock_test(uint32_t feature, unsigned long loc=
+ked_value)
+> >  {
+> >  	unsigned long values[] =3D {0, 1};
+> > +
+> =
+
+> That's some spurious newline here.
+
+It's also reformatting.
+
+> =
+
+> =
+
+> >  	fwft_feature_lock_test_values(feature, 2, values, locked_value);
+> >  }
+> >  =
+
+> > @@ -317,7 +320,10 @@ static void fwft_check_pte_ad_hw_updating(void)
+> >  	report(ret.value =3D=3D 0 || ret.value =3D=3D 1, "first get value is =
+0/1");
+> >  =
+
+> >  	enabled =3D ret.value;
+> > -	report_kfail(true, !enabled, "resets to 0");
+> > +
+> > +	bool kfail =3D __sbi_get_imp_id() =3D=3D SBI_IMPL_OPENSBI &&
+> > +		     __sbi_get_imp_version() < sbi_impl_opensbi_mk_version(1, 7);
+> > +	report_kfail(kfail, !enabled, "resets to 0");
+> >  =
+
+> >  	install_exception_handler(EXC_LOAD_PAGE_FAULT, adue_read_handler);
+> >  	install_exception_handler(EXC_STORE_PAGE_FAULT, adue_write_handler);
+> > diff --git a/riscv/sbi.c b/riscv/sbi.c
+> > index 83bc55125d46..edb1a6bef1ac 100644
+> > --- a/riscv/sbi.c
+> > +++ b/riscv/sbi.c
+> > @@ -515,10 +515,12 @@ end_two:
+> >  	sbiret_report_error(&ret, SBI_SUCCESS, "no targets, hart_mask_base is=
+ 1");
+> >  =
+
+> >  	/* Try the next higher hartid than the max */
+> > +	bool kfail =3D __sbi_get_imp_id() =3D=3D SBI_IMPL_OPENSBI &&
+> > +		     __sbi_get_imp_version() < sbi_impl_opensbi_mk_version(1, 7);
+> >  	ret =3D sbi_send_ipi(2, max_hartid);> -	report_kfail(true, ret.error
+> =3D=3D SBI_ERR_INVALID_PARAM, "hart_mask got expected error (%ld)", ret.e=
+rror);
+> > +	sbiret_kfail_error(kfail, &ret, SBI_ERR_INVALID_PARAM, "hart_mask");
+> >  	ret =3D sbi_send_ipi(1, max_hartid + 1);
+> > -	report_kfail(true, ret.error =3D=3D SBI_ERR_INVALID_PARAM, "hart_mask=
+_base got expected error (%ld)", ret.error);
+> > +	sbiret_kfail_error(kfail, &ret, SBI_ERR_INVALID_PARAM, "hart_mask_bas=
+e");
+> >  =
+
+> >  	report_prefix_pop();
+> >  =
+
+> =
+
+> Hi Andrew,
+> =
+
+> I tried thinking of some way to factorize the version check but can't
+> really find something elegant. Without the spurious newline:
+
+I'll move the reformatting to the fwft_feature_lock_test_values patch,
+but I'm generally not overly opposed to sneaking a couple reformatting
+fixes into patches when the reformatting is obvious enough.
+
+> =
+
+> Reviewed-by: Cl=E9ment L=E9ger <cleger@rivosinc.com>
+
+Thanks,
+drew
+
+> =
+
+> Thanks,
+> =
+
+> Cl=E9ment
+> =
+
+> -- =
+
+> kvm-riscv mailing list
+> kvm-riscv@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kvm-riscv
+
+-- =
+
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
