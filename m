@@ -4,90 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C1720C35FFC
-	for <kvm-riscv@archiver.kernel.org>; Sat, 22 Mar 2025 12:30:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C97A9C28B30
+	for <kvm-riscv@archiver.kernel.org>; Sun, 23 Mar 2025 11:16:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
 	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=wY8pzfK2RmBbKsXEAxEgeYtA/3XXUvtMNEOnLFZh1nc=; b=Qozo/evnJAOlZY
-	TJR7fRx84PxKmsY7Zma/RvFXoAZ5D58mxvF+Ri7+jiZ1iEGc7ZIe+nqMZh9psl89DfkdDNqiyNn1P
-	1ziqB70OsSO4r9ayV+t5fLFLoyAsqu4fWV7NsDweGoxleioqEKaRezSJ04Lndt9Vz3enxLcOZBqVs
-	cHArOCQ1jcs7TFBbuiFpVwuFhOSJ60ZTGjD2F1HnvbyHPpFXJLthF+Vl7iRICllDNzP5+VT+l+BMs
-	LREUV35DkLgILIQSOFP0CGxgc1+aztQgJiMR9sAnoiKhsgvWXymecPm/XycOZ49oj+DYoyrnmnniO
-	SxMvKPL38s9iAUTqQndA==;
+	List-Owner; bh=LJG6lBZsauxZEa30uTnDRWd0C5QL4D3k6WCCwqVD4aE=; b=sAAmG5vuSCL0OF
+	SqhNQJ3VNbEfASufoKpEuYqIHeI8VKItSQGVgmdI9UCGVrxNYKEk7VVzFx/U/z/jXefRe9ljwbH9E
+	Q2E2IO0xWVoJECUVZpcfcjQTxk37HdG0vYz3lmQTiGqp/tS8CnGAQ8qBy3sYn5m0bJpB8Eqbzf5Az
+	r2A7+5B/g9Vm/aZ2Abz7A0KSvXnYnF05he3cgUVe+1rIJJ2doYiunkBC62GtfeYQsWBBJP5xYI55f
+	o2wQ9f/K0VCgcw9mTGnOyN3fWpuTjqxjNKzUUs7EwegZoEdg/tDtoKkjDl7wh1/WEYqmOuQTfnu5b
+	NvQdr9WLR35v0Bk1IuJQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tvxzU-0000000HOlV-28PO;
-	Sat, 22 Mar 2025 12:30:16 +0000
-Received: from mail-wm1-x335.google.com ([2a00:1450:4864:20::335])
-	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1tvxzR-0000000HOkY-20b3
+	id 1twJJd-000000015RI-3KyJ;
+	Sun, 23 Mar 2025 11:16:29 +0000
+Received: from foss.arm.com ([217.140.110.172])
+	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
+	id 1twJJb-000000015PE-1Vwu
 	for kvm-riscv@lists.infradead.org;
-	Sat, 22 Mar 2025 12:30:14 +0000
-Received: by mail-wm1-x335.google.com with SMTP id 5b1f17b1804b1-43690d4605dso19021055e9.0
-        for <kvm-riscv@lists.infradead.org>; Sat, 22 Mar 2025 05:30:12 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ventanamicro.com; s=google; t=1742646612; x=1743251412; darn=lists.infradead.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=XK2TAqZG341EzHEinXnSfJT8xoYCNibzBDqkY726Y1s=;
-        b=HD/ba6OrPn9s8G1xTMZJOcl3CKHVjZExJipmBNIfPgFDE3Dlv10MLRQkTN11fX2um+
-         HL5JE9VZcdBRYLypmC2xIa24hW2CV93zjdxmPKI6Z6U3owQnItYSn8rwU5BgLU50U1Fc
-         dxyywRCuV8W09YFYDGXZgvPgBVbbq0/WK2DYfyaIgEY+3/okmA7ETQtaoLFsFrvNeN2J
-         uvufnT4QQ5v6tObTnyUSHFdVefNb/R8p4mztkt+XVlTuNyacyiLjsKBwZC/+QEYlVPf3
-         wEeB9LkqyWUjr07tQcgHmekgv7Qjkp8yKwA+i0A0FsaHqj+//I5NskdXNuURoaTN9TsE
-         LnMw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1742646612; x=1743251412;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=XK2TAqZG341EzHEinXnSfJT8xoYCNibzBDqkY726Y1s=;
-        b=BGJgNMpijtl78aEVlGOMUUufiyoSsDFtQmhmJHxdZhzoSK71Y288SBGdD5WiDfaM05
-         YNsIbwGMty6SKFDoCXjFFwgoRSwfCa0IJxBqUGH58h2ZyJQZg4X/wDeqpweGzSo8fRV/
-         yHy3cLNcGGSdnHtQXsP2DSUm+TnZOeSvllSrOKXZHuDQWurGF2t6nWeuWS4SP9UN/kyy
-         nhU02QcXwTP8gonhip2WKNEiGe/E/s8NfJsyrWhVHlAPdhGLWrJQ4gnx/PpHQzD+RQdZ
-         Q7NJiFwaelRWACMkjgzVAzz+3L05k1Bj/rxCYCdaX9HebjqtgclTvRmCjnhwZ+2j4XU9
-         hSow==
-X-Forwarded-Encrypted: i=1; AJvYcCWWQmMxC0BVvmt0EcZEM4FiL/ONsBfNHiWtJFCUNDZncXpWC64NEVbnTPoKYk+JpbP6SJp77S9kA1E=@lists.infradead.org
-X-Gm-Message-State: AOJu0YyX0iUYb+Uc4BzT4rS0FFTjhFK9dG4mYgs4f8+Bjf8Drpacsgvg
-	H29bE7qpkMUumNw494AscT8Q1d5LrfhYHwxuYVMd/NxVb3Ude7hU9eVzWSgkl8M=
-X-Gm-Gg: ASbGnctJ1VGnNJPtVopE3CtHHqfPTNO9do5bPQ/WxSyKTFf2BgC9OI/SYDrxKKuV+c1
-	ErwffhowLGCmK4FG7jfLOj6H9CVVUuWd2pQ/QZOLq4Y4o4N+Ek/5zzE5jWu6z2tY4DqILNgNNvh
-	1PJFbfIfMT/4LKnLx3GTaMIBTyWgtH7VgbLl9O6flKgtyMDbugrq7pebbvsrhH2zQ8xdjvKX9pt
-	3u6QymRFWK6F4XKJKs4y1RvXMW8pRDWH+/MeOQ4C+nrbTGhFcPPgIg0BBT1VW3lL0JDTxQAuR1a
-	V8YvZ9jEarRwFKvCGBa8Fe80yqDdnefPoc92ciQ4mivCWh0wYIlBRbUAwjEyRoj8JEp/l2V2jw=
-	=
-X-Google-Smtp-Source: AGHT+IG8oeOIoiATGf2n/eErF/v1UJz5jBt3u89DGuQOGIaGoIkUZOrdT8f7P/SGIIjTK+RAQA8QjA==
-X-Received: by 2002:a05:600c:83c4:b0:43c:fffc:7886 with SMTP id 5b1f17b1804b1-43d509ec52fmr59753085e9.8.1742646611632;
-        Sat, 22 Mar 2025 05:30:11 -0700 (PDT)
-Received: from localhost (cst2-173-28.cust.vodafone.cz. [31.30.173.28])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-43d440eda26sm106789645e9.36.2025.03.22.05.30.10
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 22 Mar 2025 05:30:11 -0700 (PDT)
-Date: Sat, 22 Mar 2025 13:30:10 +0100
-From: Andrew Jones <ajones@ventanamicro.com>
-To: =?utf-8?B?Q2zDqW1lbnQgTMOpZ2Vy?= <cleger@rivosinc.com>
-Cc: Paul Walmsley <paul.walmsley@sifive.com>, 
-	Palmer Dabbelt <palmer@dabbelt.com>, Anup Patel <anup@brainfault.org>, 
-	Atish Patra <atishp@atishpatra.org>, Shuah Khan <shuah@kernel.org>, Jonathan Corbet <corbet@lwn.net>, 
-	linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, 
-	kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, linux-kselftest@vger.kernel.org, 
-	Samuel Holland <samuel.holland@sifive.com>
-Subject: Re: [PATCH v4 17/18] RISC-V: KVM: add support for FWFT SBI extension
-Message-ID: <20250322-c4eaee71aa9c1f0b13ca8fef@orel>
-References: <20250317170625.1142870-1-cleger@rivosinc.com>
- <20250317170625.1142870-18-cleger@rivosinc.com>
+	Sun, 23 Mar 2025 11:16:29 +0000
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 74F92106F;
+	Sun, 23 Mar 2025 04:16:30 -0700 (PDT)
+Received: from raptor (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 8A9623F694;
+	Sun, 23 Mar 2025 04:16:22 -0700 (PDT)
+Date: Sun, 23 Mar 2025 11:16:19 +0000
+From: Alexandru Elisei <alexandru.elisei@arm.com>
+To: Andrew Jones <andrew.jones@linux.dev>
+Cc: Jean-Philippe Brucker <jean-philippe@linaro.org>, eric.auger@redhat.com,
+	kvmarm@lists.linux.dev, kvm@vger.kernel.org,
+	kvm-riscv@lists.infradead.org, vladimir.murzin@arm.com
+Subject: Re: [kvm-unit-tests PATCH v2 4/5] configure: Add --qemu-cpu option
+Message-ID: <Z9_tg6WhKvIJtBai@raptor>
+References: <20250314154904.3946484-2-jean-philippe@linaro.org>
+ <20250314154904.3946484-6-jean-philippe@linaro.org>
+ <20250322-91a8125ad8651b24246e5799@orel>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20250317170625.1142870-18-cleger@rivosinc.com>
+In-Reply-To: <20250322-91a8125ad8651b24246e5799@orel>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250322_053013_511430_1C401945 
-X-CRM114-Status: GOOD (  22.71  )
+X-CRM114-CacheID: sfid-20250323_041627_495565_3019A071 
+X-CRM114-Status: GOOD (  31.13  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -99,215 +61,195 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Mon, Mar 17, 2025 at 06:06:23PM +0100, Cl=E9ment L=E9ger wrote:
-> Add basic infrastructure to support the FWFT extension in KVM.
-> =
+Hi Drew,
 
-> Signed-off-by: Cl=E9ment L=E9ger <cleger@rivosinc.com>
-> Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
-> ---
->  arch/riscv/include/asm/kvm_host.h          |   4 +
->  arch/riscv/include/asm/kvm_vcpu_sbi.h      |   1 +
->  arch/riscv/include/asm/kvm_vcpu_sbi_fwft.h |  29 +++
->  arch/riscv/include/uapi/asm/kvm.h          |   1 +
->  arch/riscv/kvm/Makefile                    |   1 +
->  arch/riscv/kvm/vcpu_sbi.c                  |   4 +
->  arch/riscv/kvm/vcpu_sbi_fwft.c             | 216 +++++++++++++++++++++
->  7 files changed, 256 insertions(+)
->  create mode 100644 arch/riscv/include/asm/kvm_vcpu_sbi_fwft.h
->  create mode 100644 arch/riscv/kvm/vcpu_sbi_fwft.c
-> =
+On Sat, Mar 22, 2025 at 12:26:59PM +0100, Andrew Jones wrote:
+> On Fri, Mar 14, 2025 at 03:49:04PM +0000, Jean-Philippe Brucker wrote:
+> > Add the --qemu-cpu option to let users set the CPU type to run on.
+> > At the moment --processor allows to set both GCC -mcpu flag and QEMU
+> > -cpu. On Arm we'd like to pass `-cpu max` to QEMU in order to enable all
+> > the TCG features by default, and it could also be nice to let users
+> > modify the CPU capabilities by setting extra -cpu options.
+> > Since GCC -mcpu doesn't accept "max" or "host", separate the compiler
+> > and QEMU arguments.
+> > 
+> > `--processor` is now exclusively for compiler options, as indicated by
+> > its documentation ("processor to compile for"). So use $QEMU_CPU on
+> > RISC-V as well.
+> > 
+> > Suggested-by: Andrew Jones <andrew.jones@linux.dev>
+> > Signed-off-by: Jean-Philippe Brucker <jean-philippe@linaro.org>
+> > ---
+> >  scripts/mkstandalone.sh |  2 +-
+> >  arm/run                 | 17 +++++++++++------
+> >  riscv/run               |  8 ++++----
+> >  configure               |  7 +++++++
+> >  4 files changed, 23 insertions(+), 11 deletions(-)
+> > 
+> > diff --git a/scripts/mkstandalone.sh b/scripts/mkstandalone.sh
+> > index 2318a85f..6b5f725d 100755
+> > --- a/scripts/mkstandalone.sh
+> > +++ b/scripts/mkstandalone.sh
+> > @@ -42,7 +42,7 @@ generate_test ()
+> >  
+> >  	config_export ARCH
+> >  	config_export ARCH_NAME
+> > -	config_export PROCESSOR
+> > +	config_export QEMU_CPU
+> >  
+> >  	echo "echo BUILD_HEAD=$(cat build-head)"
+> >  
+> > diff --git a/arm/run b/arm/run
+> > index efdd44ce..561bafab 100755
+> > --- a/arm/run
+> > +++ b/arm/run
+> > @@ -8,7 +8,7 @@ if [ -z "$KUT_STANDALONE" ]; then
+> >  	source config.mak
+> >  	source scripts/arch-run.bash
+> >  fi
+> > -processor="$PROCESSOR"
+> > +qemu_cpu="$QEMU_CPU"
+> >  
+> >  if [ "$QEMU" ] && [ -z "$ACCEL" ] &&
+> >     [ "$HOST" = "aarch64" ] && [ "$ARCH" = "arm" ] &&
+> > @@ -37,12 +37,17 @@ if [ "$ACCEL" = "kvm" ]; then
+> >  	fi
+> >  fi
+> >  
+> > -if [ "$ACCEL" = "kvm" ] || [ "$ACCEL" = "hvf" ]; then
+> > -	if [ "$HOST" = "aarch64" ] || [ "$HOST" = "arm" ]; then
+> > -		processor="host"
+> > +if [ -z "$qemu_cpu" ]; then
+> > +	if ( [ "$ACCEL" = "kvm" ] || [ "$ACCEL" = "hvf" ] ) &&
+> > +	   ( [ "$HOST" = "aarch64" ] || [ "$HOST" = "arm" ] ); then
+> > +		qemu_cpu="host"
+> >  		if [ "$ARCH" = "arm" ] && [ "$HOST" = "aarch64" ]; then
+> > -			processor+=",aarch64=off"
+> > +			qemu_cpu+=",aarch64=off"
+> >  		fi
+> > +	elif [ "$ARCH" = "arm64" ]; then
+> > +		qemu_cpu="cortex-a57"
+> > +	else
+> > +		qemu_cpu="cortex-a15"
+> 
+> configure could set this in config.mak as DEFAULT_PROCESSOR, avoiding the
+> need to duplicate it here.
 
-> diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/k=
-vm_host.h
-> index bb93d2995ea2..c0db61ba691a 100644
-> --- a/arch/riscv/include/asm/kvm_host.h
-> +++ b/arch/riscv/include/asm/kvm_host.h
-> @@ -19,6 +19,7 @@
->  #include <asm/kvm_vcpu_fp.h>
->  #include <asm/kvm_vcpu_insn.h>
->  #include <asm/kvm_vcpu_sbi.h>
-> +#include <asm/kvm_vcpu_sbi_fwft.h>
->  #include <asm/kvm_vcpu_timer.h>
->  #include <asm/kvm_vcpu_pmu.h>
->  =
+That was my first instinct too, having the default value in config.mak seemed
+like the correct solution.
 
-> @@ -281,6 +282,9 @@ struct kvm_vcpu_arch {
->  	/* Performance monitoring context */
->  	struct kvm_pmu pmu_context;
->  =
+But the problem with this is that the default -cpu type depends on -accel (set
+via unittests.cfg or as an environment variable), host and test architecture
+combination. All of these variables are known only at runtime.
 
-> +	/* Firmware feature SBI extension context */
-> +	struct kvm_sbi_fwft fwft_context;
-> +
->  	/* 'static' configurations which are set only once */
->  	struct kvm_vcpu_config cfg;
->  =
+Let's say we have DEFAULT_QEMU_CPU=cortex-a57 in config.mak. If we keep the
+above heuristic, arm/run will override it with host,aarch64=off. IMO, having it
+in config.mak, but arm/run using it only under certain conditions is worse than
+not having it at all. arm/run choosing the default value **all the time** is at
+least consistent.
 
-> diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h b/arch/riscv/include/a=
-sm/kvm_vcpu_sbi.h
-> index cb68b3a57c8f..ffd03fed0c06 100644
-> --- a/arch/riscv/include/asm/kvm_vcpu_sbi.h
-> +++ b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-> @@ -98,6 +98,7 @@ extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext=
-_hsm;
->  extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_dbcn;
->  extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_susp;
->  extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_sta;
-> +extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_fwft;
->  extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_experimental;
->  extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_vendor;
->  =
-
-> diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi_fwft.h b/arch/riscv/incl=
-ude/asm/kvm_vcpu_sbi_fwft.h
-> new file mode 100644
-> index 000000000000..9ba841355758
-> --- /dev/null
-> +++ b/arch/riscv/include/asm/kvm_vcpu_sbi_fwft.h
-> @@ -0,0 +1,29 @@
-> +/* SPDX-License-Identifier: GPL-2.0-only */
-> +/*
-> + * Copyright (c) 2025 Rivos Inc.
-> + *
-> + * Authors:
-> + *     Cl=E9ment L=E9ger <cleger@rivosinc.com>
-> + */
-> +
-> +#ifndef __KVM_VCPU_RISCV_FWFT_H
-> +#define __KVM_VCPU_RISCV_FWFT_H
-> +
-> +#include <asm/sbi.h>
-> +
-> +struct kvm_sbi_fwft_feature;
-> +
-> +struct kvm_sbi_fwft_config {
-> +	const struct kvm_sbi_fwft_feature *feature;
-> +	bool supported;
-> +	unsigned long flags;
-> +};
-> +
-> +/* FWFT data structure per vcpu */
-> +struct kvm_sbi_fwft {
-> +	struct kvm_sbi_fwft_config *configs;
-> +};
-> +
-> +#define vcpu_to_fwft(vcpu) (&(vcpu)->arch.fwft_context)
-> +
-> +#endif /* !__KVM_VCPU_RISCV_FWFT_H */
-> diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/=
-asm/kvm.h
-> index f06bc5efcd79..fa6eee1caf41 100644
-> --- a/arch/riscv/include/uapi/asm/kvm.h
-> +++ b/arch/riscv/include/uapi/asm/kvm.h
-> @@ -202,6 +202,7 @@ enum KVM_RISCV_SBI_EXT_ID {
->  	KVM_RISCV_SBI_EXT_DBCN,
->  	KVM_RISCV_SBI_EXT_STA,
->  	KVM_RISCV_SBI_EXT_SUSP,
-> +	KVM_RISCV_SBI_EXT_FWFT,
->  	KVM_RISCV_SBI_EXT_MAX,
->  };
->  =
-
-> diff --git a/arch/riscv/kvm/Makefile b/arch/riscv/kvm/Makefile
-> index 4e0bba91d284..06e2d52a9b88 100644
-> --- a/arch/riscv/kvm/Makefile
-> +++ b/arch/riscv/kvm/Makefile
-> @@ -26,6 +26,7 @@ kvm-y +=3D vcpu_onereg.o
->  kvm-$(CONFIG_RISCV_PMU_SBI) +=3D vcpu_pmu.o
->  kvm-y +=3D vcpu_sbi.o
->  kvm-y +=3D vcpu_sbi_base.o
-> +kvm-y +=3D vcpu_sbi_fwft.o
->  kvm-y +=3D vcpu_sbi_hsm.o
->  kvm-$(CONFIG_RISCV_PMU_SBI) +=3D vcpu_sbi_pmu.o
->  kvm-y +=3D vcpu_sbi_replace.o
-> diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
-> index 50be079b5528..0748810c0252 100644
-> --- a/arch/riscv/kvm/vcpu_sbi.c
-> +++ b/arch/riscv/kvm/vcpu_sbi.c
-> @@ -78,6 +78,10 @@ static const struct kvm_riscv_sbi_extension_entry sbi_=
-ext[] =3D {
->  		.ext_idx =3D KVM_RISCV_SBI_EXT_STA,
->  		.ext_ptr =3D &vcpu_sbi_ext_sta,
->  	},
-> +	{
-> +		.ext_idx =3D KVM_RISCV_SBI_EXT_FWFT,
-> +		.ext_ptr =3D &vcpu_sbi_ext_fwft,
-> +	},
->  	{
->  		.ext_idx =3D KVM_RISCV_SBI_EXT_EXPERIMENTAL,
->  		.ext_ptr =3D &vcpu_sbi_ext_experimental,
-> diff --git a/arch/riscv/kvm/vcpu_sbi_fwft.c b/arch/riscv/kvm/vcpu_sbi_fwf=
-t.c
-> new file mode 100644
-> index 000000000000..8a7cfe1fe7a7
-> --- /dev/null
-> +++ b/arch/riscv/kvm/vcpu_sbi_fwft.c
-> @@ -0,0 +1,216 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * Copyright (c) 2025 Rivos Inc.
-> + *
-> + * Authors:
-> + *     Cl=E9ment L=E9ger <cleger@rivosinc.com>
-> + */
-> +
-> +#include <linux/errno.h>
-> +#include <linux/err.h>
-> +#include <linux/kvm_host.h>
-> +#include <asm/cpufeature.h>
-> +#include <asm/sbi.h>
-> +#include <asm/kvm_vcpu_sbi.h>
-> +#include <asm/kvm_vcpu_sbi_fwft.h>
-> +
-> +struct kvm_sbi_fwft_feature {
-> +	/**
-> +	 * @id: Feature ID
-> +	 */
-> +	enum sbi_fwft_feature_t id;
-> +
-> +	/**
-> +	 * @supported: Check if the feature is supported on the vcpu
-> +	 *
-> +	 * This callback is optional, if not provided the feature is assumed to
-> +	 * be supported
-> +	 */
-> +	bool (*supported)(struct kvm_vcpu *vcpu);
-> +
-> +	/**
-> +	 * @set: Set the feature value
-> +	 *
-> +	 * Return SBI_SUCCESS on success or an SBI error (SBI_ERR_*)
-> +	 *
-> +	 * This callback is mandatory
-> +	 */
-> +	long (*set)(struct kvm_vcpu *vcpu, struct kvm_sbi_fwft_config *conf, un=
-signed long value);
-> +
-> +	/**
-> +	 * @get: Get the feature current value
-> +	 *
-> +	 * Return SBI_SUCCESS on success or an SBI error (SBI_ERR_*)
-> +	 *
-> +	 * This callback is mandatory
-> +	 */
-> +	 long (*get)(struct kvm_vcpu *vcpu, struct kvm_sbi_fwft_config *conf, u=
-nsigned long *value);
-        ^ =
-
-	extra space here
-
+We could modify the help text for --qemu-cpu to say something like "If left
+unset, the $ARCH/run script will choose a best value based on the host system
+and test configuration."
 
 Thanks,
-drew
+Alex
 
--- =
+> 
+> >  	fi
+> >  fi
+> >  
+> > @@ -71,7 +76,7 @@ if $qemu $M -device '?' | grep -q pci-testdev; then
+> >  fi
+> >  
+> >  A="-accel $ACCEL$ACCEL_PROPS"
+> > -command="$qemu -nodefaults $M $A -cpu $processor $chr_testdev $pci_testdev"
+> > +command="$qemu -nodefaults $M $A -cpu $qemu_cpu $chr_testdev $pci_testdev"
+> >  command+=" -display none -serial stdio"
+> >  command="$(migration_cmd) $(timeout_cmd) $command"
+> >  
+> > diff --git a/riscv/run b/riscv/run
+> > index e2f5a922..02fcf0c0 100755
+> > --- a/riscv/run
+> > +++ b/riscv/run
+> > @@ -11,12 +11,12 @@ fi
+> >  
+> >  # Allow user overrides of some config.mak variables
+> >  mach=$MACHINE_OVERRIDE
+> > -processor=$PROCESSOR_OVERRIDE
+> > +qemu_cpu=$QEMU_CPU_OVERRIDE
+> >  firmware=$FIRMWARE_OVERRIDE
+> >  
+> > -[ "$PROCESSOR" = "$ARCH" ] && PROCESSOR="max"
+> > +[ -z "$QEMU_CPU" ] && QEMU_CPU="max"
+> >  : "${mach:=virt}"
+> > -: "${processor:=$PROCESSOR}"
+> > +: "${qemu_cpu:=$QEMU_CPU}"
+> >  : "${firmware:=$FIRMWARE}"
+> >  [ "$firmware" ] && firmware="-bios $firmware"
+> >  
+> > @@ -32,7 +32,7 @@ fi
+> >  mach="-machine $mach"
+> >  
+> >  command="$qemu -nodefaults -nographic -serial mon:stdio"
+> > -command+=" $mach $acc $firmware -cpu $processor "
+> > +command+=" $mach $acc $firmware -cpu $qemu_cpu "
+> >  command="$(migration_cmd) $(timeout_cmd) $command"
+> >  
+> >  if [ "$UEFI_SHELL_RUN" = "y" ]; then
+> > diff --git a/configure b/configure
+> > index 5306bad3..d25bd23e 100755
+> > --- a/configure
+> > +++ b/configure
+> > @@ -52,6 +52,7 @@ page_size=
+> >  earlycon=
+> >  efi=
+> >  efi_direct=
+> > +qemu_cpu=
+> >  
+> >  # Enable -Werror by default for git repositories only (i.e. developer builds)
+> >  if [ -e "$srcdir"/.git ]; then
+> > @@ -69,6 +70,8 @@ usage() {
+> >  	    --arch=ARCH            architecture to compile for ($arch). ARCH can be one of:
+> >  	                           arm, arm64, i386, ppc64, riscv32, riscv64, s390x, x86_64
+> >  	    --processor=PROCESSOR  processor to compile for ($processor)
+> > +	    --qemu-cpu=CPU         the CPU model to run on. The default depends on
+> > +	                           the configuration, usually it is "host" or "max".
+> >  	    --target=TARGET        target platform that the tests will be running on (qemu or
+> >  	                           kvmtool, default is qemu) (arm/arm64 only)
+> >  	    --cross-prefix=PREFIX  cross compiler prefix
+> > @@ -142,6 +145,9 @@ while [[ $optno -le $argc ]]; do
+> >          --processor)
+> >  	    processor="$arg"
+> >  	    ;;
+> > +	--qemu-cpu)
+> > +	    qemu_cpu="$arg"
+> > +	    ;;
+> >  	--target)
+> >  	    target="$arg"
+> >  	    ;;
+> > @@ -464,6 +470,7 @@ ARCH=$arch
+> >  ARCH_NAME=$arch_name
+> >  ARCH_LIBDIR=$arch_libdir
+> >  PROCESSOR=$processor
+> > +QEMU_CPU=$qemu_cpu
+> >  CC=$cc
+> >  CFLAGS=$cflags
+> >  LD=$cross_prefix$ld
+> > -- 
+> > 2.48.1
+> >
+> 
+> With the Alex's and Eric's requested changes to the help text,
+> 
+> Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
 
+-- 
 kvm-riscv mailing list
 kvm-riscv@lists.infradead.org
 http://lists.infradead.org/mailman/listinfo/kvm-riscv
