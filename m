@@ -4,7 +4,7 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D6CAC36002
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9DE6AC3600C
 	for <kvm-riscv@archiver.kernel.org>; Mon, 24 Mar 2025 15:52:34 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
@@ -12,80 +12,83 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
 	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=1OfbIHbCp/ih5p/SdwgpBkrj9CI6u7eABkd2CymyHos=; b=FdtJU8lQE5Zj7K
-	EduRj0tUq3oh6R/76SSM4M8RE55uy6Xc73rMPzbfm2mykxwtCRZeqLTnfg0f8Q1F5moYQYHBv3k2o
-	llNcqITUcLh0lFo2S9+vVCgNzECo7Uy3N7AljjYZAb94oEtNxiAtre9uGY76p354V+8PHN84F2qp1
-	bmow9DFDSKixfwPzFNyfpymZ07ME9x10hnEqiNWCXsWNt42V5lgR0PeD5kO0pS0Mx5LOuuv4e5Xt5
-	3usbr//j4j2qEU+3DUfMMXs4UbFdnvW1wRqWK9Va1Xa6quLrinEUCsZcPra9YN6T69PgrR8PXD/6m
-	LWXpoju3VZASA9CR48RA==;
+	List-Owner; bh=CQf23RG01o/14OuP355QZHR+aaqnR0H+RW38hy9z77s=; b=AIuSoZ8I5R5q6m
+	Yv0zSQrtw1r29qqUmjW8iIOBWEx2TZVIe9l1oC5n5bCvlmfy0rCEMMN4Err2KUOSmQpzLHCtP/oNk
+	fVTN4fDvUrFt6azjYD6DI+biJ0mmFiQkivdZt8xCkoQRrxdHhUNV73OYrDyUSV/yZttq+bd9R+RkQ
+	3grKi/awr9fQEcgBPPFW8a/6yOyjL+t6by7x0Lhwsb1Ru0w6hn9+FmgLeQwZMMpVpZAaxoQcoS/U+
+	98hHUvLDHfvhwY9HyKCbyXlbYyZIWDD+fXWizbH9R7bIOIEp54iuAabtE1VBCrLb7H7EubQYfW7u0
+	QlB/CjFmyVMmajBwQWYw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1twk6L-00000003Z6q-4Bxc;
+	id 1twk6M-00000003Z7A-1DO3;
 	Mon, 24 Mar 2025 15:52:34 +0000
-Received: from mail-wm1-x331.google.com ([2a00:1450:4864:20::331])
+Received: from mail-wm1-x32e.google.com ([2a00:1450:4864:20::32e])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1twk4e-00000003YWP-1tka
+	id 1twk5x-00000003Z3g-0RT4
 	for kvm-riscv@lists.infradead.org;
-	Mon, 24 Mar 2025 15:50:49 +0000
-Received: by mail-wm1-x331.google.com with SMTP id 5b1f17b1804b1-43ce70f9afbso46163315e9.0
-        for <kvm-riscv@lists.infradead.org>; Mon, 24 Mar 2025 08:50:48 -0700 (PDT)
+	Mon, 24 Mar 2025 15:52:10 +0000
+Received: by mail-wm1-x32e.google.com with SMTP id 5b1f17b1804b1-4393dc02b78so32354165e9.3
+        for <kvm-riscv@lists.infradead.org>; Mon, 24 Mar 2025 08:52:08 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1742831447; x=1743436247; darn=lists.infradead.org;
+        d=linaro.org; s=google; t=1742831527; x=1743436327; darn=lists.infradead.org;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=qXRhGeDkSWGWmmVuNBstp6OZum7jWU1CmWmtDqvRvak=;
-        b=fG8FzOKx501AMpmS52PWHWFgZERm6iiQ4m4tVlYciUEeZtlASsFoJva4j1mE2kfsPA
-         Y0r+4ETVzJxvApf0Jsl0AZGjZU5hiVht0SbKS44OLWiCeF0WwfrC3xaEUKfIh3xieRZ2
-         k6sbDr8xcrY2OtlsEFFT+RTqgDrqakpGPrnd9EWFBJ5E1OKljdPYW/+HNJr6X67OlcPO
-         z9B7nWoExiwj5KxHgUad2bEqpIhst85XHelCxT1c2+XLAl4+lmGP/t54m+ulrntqmd8a
-         CLwAhnU9XkYZlPM93EPIGIpG79v05lcoDdy/iYveoGfRN6TmLd3LOwngpeBvWv3mqCZI
-         bHDg==
+        bh=ZfspRdXGlgq6NyzVTJZAgVrhAb+j3MeBFls5zV5sjbk=;
+        b=PmES9LJwq5dCfX/BtiI8bEfwZOk5FJYQ885XoT9Gcu8kbjNW1UUc0oICaluxYETywb
+         68pv2SJaNO8oDIsh+5PV5mkKDjs5pUBJ4tUfUtaEWzB3udjv0hPPwxoL+Ej3gw/hQ2Yu
+         kPqIT72y+4cJVZSzuuVshBevnPRKCHjpxCAGyY3Emp7vFWj0+BCTmxOnEa41RvG+5ceA
+         +X4PToDec7pQm8fc34KJm6Sq72Rz9KpIpEa9Rp2rOohaGDiKKvFfFeA0gmSzlaYStS6O
+         PfTiK82UNnso47YkXZMhsAvrNz20Jt/eTq6/n0PAFhW1ShFMF12fQlQdu3rmokQrknJv
+         VCCg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1742831447; x=1743436247;
+        d=1e100.net; s=20230601; t=1742831527; x=1743436327;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=qXRhGeDkSWGWmmVuNBstp6OZum7jWU1CmWmtDqvRvak=;
-        b=VLqYhY7Ep1mDnElzgt0X/0TCWuOOIMEFEWfD757Iq1ZnQGQAy8xilpkZHJG9wazS9P
-         E8Yad46JnmRpNvZP8QkdGQORTlFhbSEpbP6IF0XXzBUhXumSKBTSIlemNYe7eBwpIsst
-         +ILjeLvVh6utg6nDV/ewezdWpxhuHYfFLUlT0Gc1qXFtxejvRZc4R23FnrdtA+KZsQ70
-         tSv54eDDcNDy0cRPvxYZJt+Qvn7A2VdSOTQW1cN64ashYaXfAS0L7717bCz6oYKfLSZM
-         sCDkpvTKNhMmlp5lZbQtTTfMHGY6mqe8D8LVf9MV1RcZ3DboDLRZ0NH0IqZlL/x9zsOw
-         dBTA==
-X-Forwarded-Encrypted: i=1; AJvYcCXpTEyOkCNtQjdNkM83rm+yCOAc4QlEXLrKUtBR7CNRQ0PT0HexCuab6f48ljP5sMP6wnbiVG615u4=@lists.infradead.org
-X-Gm-Message-State: AOJu0YzX13M1wC4M6Atwx/HQVXa3MypFq/iVgJuRW+oNRS8Q/qjjSHvo
-	ffgCHOb84r9UCvxHCgJOr6c4JWDpNCcyr1fWWRAjWxVgqa5lLPwnXaI9juVJd4d3+wSgUHmWfH9
-	0RAI=
-X-Gm-Gg: ASbGncs3kaC+QcQtsJXOoeN9fGvSLMqWV1droc+c2buZ9xp9WKWpCjNS3GrHXQKUhtM
-	MsFJ8PpZy4AWisUvTlk/7Bnoy8dNKRRwm3LCNACgVdGZtotB5OBxQDgFZoszgIBLU+v6VekVMyq
-	TsmcjSpSv8eSjuqq9NetzOmH1oy3L0XK/Y+yz1t3fAGE9fHrPB7P7DxThYlcGUorPuuKim9ucSQ
-	RCjKHVd4q19u0kl8UlVGPaziHvhXZmTz50bfaX1dH0z0BOYp+zJHaWgSm02rLuH+Z50180sEBL5
-	uMHKUaesUTfRXYbt/h46QtNtrJx9XBU+9bDBRxlkZzQ=
-X-Google-Smtp-Source: AGHT+IEZjj1zr6KjWFTQYscKYFXgO6ZuF3B36U9IG1e4c1569+owWLaEi5bGV7PTpDSJmekOGmMX4w==
-X-Received: by 2002:a05:6000:1a8d:b0:38f:2a32:abbb with SMTP id ffacd0b85a97d-3997f8f9d54mr10259058f8f.4.1742831446672;
-        Mon, 24 Mar 2025 08:50:46 -0700 (PDT)
+        bh=ZfspRdXGlgq6NyzVTJZAgVrhAb+j3MeBFls5zV5sjbk=;
+        b=KOzXTRZU5q25mQlLeerp94+/UiY2lNi2E5CMf2m5XNCUZMljBeIhvYIVSlHBS0K+0G
+         7J3D7a1Go/FKwlwlybv60/jPAG1subXqxcp3zVYa3g8x/NAI2dLeP8r4cgd6UblTZrLu
+         5PfKxNyhWVYskwxqV5G8C4O0/EnaIxFVXwZWgbKdPUCw1t4sQTibKogTkBG9rScy6hj3
+         RzDhBPKUCwZZ+ZJR8dsljrTIrkhAQJv95Z4zXrflYGiXUjk5M5GatYTiI0x5EiC3MqHQ
+         b5U54WgpJuOsuQMC5OuoGOAuy7gfa06w9rV0BHg3UYgVrnEC/3rcYxOTGnsw/fO2t0J+
+         k2YA==
+X-Forwarded-Encrypted: i=1; AJvYcCXyVoqlJjh4UKC9v4sXGDDCrZ99ANxREHWBDdBWbdRb3om4MX9QnVHeCMbeF+9CpnIBT6BUjMrOTSg=@lists.infradead.org
+X-Gm-Message-State: AOJu0YxnwyI79JhWKiWWGTPZSV3uJkkzOBNA7j3b6C+bASOCdcC+0ZOW
+	S2y8sJChjXXobXuN58k7EXxKkppovnakP/zL1odlChUOGD564Qdy7eBqvTV7bQl7HRCeZbPMpnV
+	NrIE=
+X-Gm-Gg: ASbGnct+DZ+w47eYOZP7hlgebZuomXTi77utvlUpowUJiKzDBGqMdy2RhLkPRH83IQA
+	q31rxQy20qSuvvCgnWhz40g6Jo9PQ7opcgY0InQN57wipJbGTRiT4xfOG6g4TKC9eli7JLHvy4a
+	TRqcsk5x+3AfE0iFgd3mFzdGy6e+UzmZPVSmX9R3U8ePgOkMNyUQlKpDkz69RyFvc+zvYmG8vFQ
+	9ZS4ukQ1x88le9Xxml1Zjz0iK0sOBCAHbunY+4qw6ppmLoaPCpgye+509FqR3+DaF0FAVkZiPRW
+	gDpQiMqnhhjq8xqKTmEXOHPj5Njc5WoICInYWa+XPZo=
+X-Google-Smtp-Source: AGHT+IFl7nFmYn4ImJin0UE8VO9TEBa7A4QjUDf+jR+LnIW0MqNGIXU4E97G8J6fG8YpTpqXzsYFRg==
+X-Received: by 2002:a05:600c:574b:b0:43c:fe90:1282 with SMTP id 5b1f17b1804b1-43d5703e686mr82814625e9.7.1742831527103;
+        Mon, 24 Mar 2025 08:52:07 -0700 (PDT)
 Received: from myrica ([2.221.137.100])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-3997f9a3f36sm11533049f8f.32.2025.03.24.08.50.46
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-43d43f556basm173837045e9.17.2025.03.24.08.52.06
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 24 Mar 2025 08:50:46 -0700 (PDT)
-Date: Mon, 24 Mar 2025 15:50:45 +0000
+        Mon, 24 Mar 2025 08:52:06 -0700 (PDT)
+Date: Mon, 24 Mar 2025 15:52:05 +0000
 From: Jean-Philippe Brucker <jean-philippe@linaro.org>
 To: Andrew Jones <andrew.jones@linux.dev>
-Cc: alexandru.elisei@arm.com, eric.auger@redhat.com, kvmarm@lists.linux.dev,
-	kvm@vger.kernel.org, kvm-riscv@lists.infradead.org,
-	vladimir.murzin@arm.com
-Subject: Re: [kvm-unit-tests PATCH v2 5/5] arm64: Use -cpu max as the default
- for TCG
-Message-ID: <20250324155045.GB1844993@myrica>
+Cc: Alexandru Elisei <alexandru.elisei@arm.com>, eric.auger@redhat.com,
+	kvmarm@lists.linux.dev, kvm@vger.kernel.org,
+	kvm-riscv@lists.infradead.org, vladimir.murzin@arm.com
+Subject: Re: [kvm-unit-tests PATCH v2 4/5] configure: Add --qemu-cpu option
+Message-ID: <20250324155205.GC1844993@myrica>
 References: <20250314154904.3946484-2-jean-philippe@linaro.org>
- <20250314154904.3946484-7-jean-philippe@linaro.org>
- <20250322-c669034d2100a75ab6e53882@orel>
+ <20250314154904.3946484-6-jean-philippe@linaro.org>
+ <20250322-91a8125ad8651b24246e5799@orel>
+ <Z9_tg6WhKvIJtBai@raptor>
+ <20250324-5d22d8ad79a9db37b1cf6961@orel>
+ <Z-E2v1sKiPG_pt9x@raptor>
+ <20250324-37628351a72ca339819b528d@orel>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20250322-c669034d2100a75ab6e53882@orel>
+In-Reply-To: <20250324-37628351a72ca339819b528d@orel>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250324_085048_540979_B1CA4E76 
-X-CRM114-Status: GOOD (  17.68  )
+X-CRM114-CacheID: sfid-20250324_085209_149478_6D7F0656 
+X-CRM114-Status: GOOD (  30.90  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -102,39 +105,59 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Sat, Mar 22, 2025 at 12:27:56PM +0100, Andrew Jones wrote:
-> On Fri, Mar 14, 2025 at 03:49:05PM +0000, Jean-Philippe Brucker wrote:
-> > In order to test all the latest features, default to "max" as the QEMU
-> > CPU type on arm64.
+On Mon, Mar 24, 2025 at 02:13:13PM +0100, Andrew Jones wrote:
+> On Mon, Mar 24, 2025 at 10:41:03AM +0000, Alexandru Elisei wrote:
+> > Hi Drew,
 > > 
-> > Signed-off-by: Jean-Philippe Brucker <jean-philippe@linaro.org>
-> > ---
-> >  arm/run | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > On Mon, Mar 24, 2025 at 09:19:27AM +0100, Andrew Jones wrote:
+> > > On Sun, Mar 23, 2025 at 11:16:19AM +0000, Alexandru Elisei wrote:
+> > > ...
+> > > > > > +if [ -z "$qemu_cpu" ]; then
+> > > > > > +	if ( [ "$ACCEL" = "kvm" ] || [ "$ACCEL" = "hvf" ] ) &&
+> > > > > > +	   ( [ "$HOST" = "aarch64" ] || [ "$HOST" = "arm" ] ); then
+> > > > > > +		qemu_cpu="host"
+> > > > > >  		if [ "$ARCH" = "arm" ] && [ "$HOST" = "aarch64" ]; then
+> > > > > > -			processor+=",aarch64=off"
+> > > > > > +			qemu_cpu+=",aarch64=off"
+> > > > > >  		fi
+> > > > > > +	elif [ "$ARCH" = "arm64" ]; then
+> > > > > > +		qemu_cpu="cortex-a57"
+> > > > > > +	else
+> > > > > > +		qemu_cpu="cortex-a15"
+> > > > > 
+> > > > > configure could set this in config.mak as DEFAULT_PROCESSOR, avoiding the
+> > > > > need to duplicate it here.
+> > > > 
+> > > > That was my first instinct too, having the default value in config.mak seemed
+> > > > like the correct solution.
+> > > > 
+> > > > But the problem with this is that the default -cpu type depends on -accel (set
+> > > > via unittests.cfg or as an environment variable), host and test architecture
+> > > > combination. All of these variables are known only at runtime.
+> > > > 
+> > > > Let's say we have DEFAULT_QEMU_CPU=cortex-a57 in config.mak. If we keep the
+> > > > above heuristic, arm/run will override it with host,aarch64=off. IMO, having it
+> > > > in config.mak, but arm/run using it only under certain conditions is worse than
+> > > > not having it at all. arm/run choosing the default value **all the time** is at
+> > > > least consistent.
+> > > 
+> > > I think having 'DEFAULT' in the name implies that it will only be used if
+> > > there's nothing better, and we don't require everything in config.mak to
+> > > be used (there's even some s390x-specific stuff in there for all
+> > > architectures...)
 > > 
-> > diff --git a/arm/run b/arm/run
-> > index 561bafab..84232e28 100755
-> > --- a/arm/run
-> > +++ b/arm/run
-> > @@ -45,7 +45,7 @@ if [ -z "$qemu_cpu" ]; then
-> >  			qemu_cpu+=",aarch64=off"
-> >  		fi
-> >  	elif [ "$ARCH" = "arm64" ]; then
-> > -		qemu_cpu="cortex-a57"
-> > +		qemu_cpu="max"
-> >  	else
-> >  		qemu_cpu="cortex-a15"
+> > I'm still leaning towards having the default value and the heuristics for
+> > when to pick it in one place ($ARCH/run) as being more convenient, but I
+> > can certainly see your point of view.
 > 
-> arm should also be able to default to 'max', right?
+> I wouldn't mind it only being in $ARCH/run, but this series adds the same
+> logic to $ARCH/run and to ./configure. I think an additional, potentially
+> unused, variable in config.mak is better than code duplication.
 
-Yes I'll change this.
-
-I didn't earlier because it failed when I tried it, but it looks like I
-had QEMU=.../qemu-system-aarch64 in my environment variables, overriding
-the default qemu-system-arm (32-bit only). "qemu-system-aarch64 -cpu max"
-doesn't boot 32-bit code, but "qemu-system-aarch64 -cpu cortex-a15" does.
-Anyway, without explicitly setting the wrong QEMU, "-cpu max" works for
-32-bit.
+I agree with this. However the next version ends up replacing both
+cortex-* types here with "max", so we won't need to pass these values in
+the end. The "processor" selection in configure will only be used by the
+Makefile for the compiler flag.
 
 Thanks,
 Jean
