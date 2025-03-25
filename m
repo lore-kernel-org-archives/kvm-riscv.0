@@ -4,43 +4,43 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AB8C1C3600D
-	for <kvm-riscv@archiver.kernel.org>; Tue, 25 Mar 2025 13:53:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F30B2C36012
+	for <kvm-riscv@archiver.kernel.org>; Tue, 25 Mar 2025 13:53:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=q2LPIz/772crY5K5+jSO5Y8XgzH5t3NwSjiPSQE7YNw=; b=yPV1jX7zP0wQHh
-	70xR4v7QGRjXEmnN+wULZ78n7U85Q7GVWBGto318PiNQcAUZZx1q4dS7AnzRRxo0SVHDai80TWoZz
-	ceqGnseyOdacyJC6c07itr5/ZV71GoYSS6weRvClcJd/vAO9pDG58vLVroAijOHZ3tTakOmVJg1oj
-	nBJvLPCRBYHPVWsgIYuL1rsoJ6Vgl8BtcKPjsVN+yYl2vp2d4DLqd8v0C/cWumvRqqtdFqd235iM0
-	eEBZo0FEd1Bn5QnEZAZ5x+0HfkjhCgC3e/263SKSxHUjOqmfwcTvK3rw+KBLyx3fvKRwA/tp//Xnf
-	PiVcQF3Acg/fILYef5pA==;
+	List-Owner; bh=6FoHLl5DiXk0ru/MrDmCwkSQPJqecHHq1idp6TOVYgw=; b=hkJ6gD9wxH2+3W
+	mcwJhfCEPbmYgrHtmTqNeQbuUKnht+aMAvI/lSKFpMOqFV1D/By/c/BsskTCB+Z0ZDP3EkLl3xns2
+	Os5sO+8Q+hhr/WgGRLWQSPCJB6FieH0JOBcgJsVnSVcFcqUYElzWRr0Xl9FsBinZLUBmaTgymRqHx
+	z9Jvi4SqOcmPGL6/ZAHMILY5TARcYpBg0q7xY/TERbYO5hHEgZosB9idzy8ZM7sG6gzDDNx4YLmcw
+	YbFiD3wszpq7gcW8uy55lXVbbgiOdA7sbN1Geet8WLW3Au373KBD4nrMPj6zm/jgQ/EXz6DClD7Me
+	Ukw4gn/hPs9Pq3PSBF3w==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.1 #2 (Red Hat Linux))
-	id 1tx4iu-000000066LA-1dcH;
-	Tue, 25 Mar 2025 13:53:44 +0000
+	id 1tx4iv-000000066N6-2vlX;
+	Tue, 25 Mar 2025 13:53:45 +0000
 Received: from tor.source.kernel.org ([2600:3c04:e001:324:0:1991:8:25])
 	by bombadil.infradead.org with esmtps (Exim 4.98.1 #2 (Red Hat Linux))
-	id 1tx3IO-00000005nRL-0y3V;
-	Tue, 25 Mar 2025 12:22:16 +0000
+	id 1tx3Ic-00000005nVz-1lBs;
+	Tue, 25 Mar 2025 12:22:30 +0000
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 758B86158F;
-	Tue, 25 Mar 2025 12:22:11 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6BE58C4CEED;
-	Tue, 25 Mar 2025 12:22:02 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id A03D061593;
+	Tue, 25 Mar 2025 12:22:25 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C6F4EC4CEE4;
+	Tue, 25 Mar 2025 12:22:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1742905335;
-	bh=Gba3zEmCGRsT82kSH4PvBGfFD1Y0z5mGbjQJQ/8lKIw=;
+	s=k20201202; t=1742905349;
+	bh=eZJhhLnjsJ5KjWkXGFxCn3MEvfIMBL+8sG27XCid5KE=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=YKbe7u9Xvh8isSihGt6kXF+4MLeubRmVXpDt87uyRN/SP7UllOiStMyrtlJQjIfsu
-	 1Hqtk5naMe0UheGZS80Sfa0zl11d6cST2bQbzQbQP6zp3JTlEhxFZ1+erShyWgpVv5
-	 m4OgxrFrdZWkRi8e5adLBRWw11xX6PZl4Esqh79r65lvkXVdx7361AQY5CaHF/wGsB
-	 E83s0iVJpTljmHXSCPSP2d0uzzX5JuGLn7J9OB6gQRtgkhW2o+6R7WFKdYQYdMxY96
-	 tsyLis/6rOdw68n8FLG2k9n+ahfkJr3B2G35UK8EUKDj+I6/B4BHklYbO/OqqvREWx
-	 amTO7iSypzjUw==
+	b=qevNB9uNRXUhGTfVJr+DKl6lS8FQeFJOY4f7ttg3jO2P7YXXcyp32FuamCgRbpfp6
+	 Tj8ZRiyJrxpkmlppbuR0aTZlagq4HpBxvwcxFyDkvXMwezEgXXrlUpqBLGrm+vhQVE
+	 9kwRr/BG5obSIi/E5vhu4AY8QmWoUzLcx2UvdyDSQLaiwaxvQJ5CeLSKOf3FwJJ5E/
+	 hXAzq1VCYp+EoL2e1cTTQa5pm9NoxQr4RcYtb1wSopiaMM/m+ZruEqXbAWZjV+7luh
+	 k16fsX64eUOJWO5eXZk1Sat/sU8lm9uDUQzukBAAtX2breq8iLsn6lrcBr2XGHy3Dn
+	 z3KzNteqnEguQ==
 From: guoren@kernel.org
 To: arnd@arndb.de,
 	gregkh@linuxfoundation.org,
@@ -114,9 +114,9 @@ Cc: ardb@kernel.org,
 	linux-sctp@vger.kernel.org,
 	linux-usb@vger.kernel.org,
 	linux-media@vger.kernel.org
-Subject: [RFC PATCH V3 23/43] rv64ilp32_abi: compat: Correct compat_ulong_t cast
-Date: Tue, 25 Mar 2025 08:16:04 -0400
-Message-Id: <20250325121624.523258-24-guoren@kernel.org>
+Subject: [RFC PATCH V3 24/43] rv64ilp32_abi: compiler_types: Add "long long" into __native_word()
+Date: Tue, 25 Mar 2025 08:16:05 -0400
+Message-Id: <20250325121624.523258-25-guoren@kernel.org>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20250325121624.523258-1-guoren@kernel.org>
 References: <20250325121624.523258-1-guoren@kernel.org>
@@ -139,73 +139,36 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 From: "Guo Ren (Alibaba DAMO Academy)" <guoren@kernel.org>
 
-RV64ILP32 ABI systems have BITS_PER_LONG set to 32, matching
-sizeof(compat_ulong_t). Adjust code involving compat_ulong_t
-accordingly.
+The rv64ilp32 abi supports native atomic64 operations. The
+atomic64_t is defined by "long long," so add "long long" into
+__native_word().
 
 Signed-off-by: Guo Ren (Alibaba DAMO Academy) <guoren@kernel.org>
 ---
- include/uapi/linux/auto_fs.h |  6 ++++++
- kernel/compat.c              | 15 ++++++++++++---
- 2 files changed, 18 insertions(+), 3 deletions(-)
+ include/linux/compiler_types.h | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/include/uapi/linux/auto_fs.h b/include/uapi/linux/auto_fs.h
-index 8081df849743..7d925ee810b6 100644
---- a/include/uapi/linux/auto_fs.h
-+++ b/include/uapi/linux/auto_fs.h
-@@ -80,9 +80,15 @@ enum {
- #define AUTOFS_IOC_SETTIMEOUT32 _IOWR(AUTOFS_IOCTL, \
- 				      AUTOFS_IOC_SETTIMEOUT_CMD, \
- 				      compat_ulong_t)
-+#if __riscv_xlen == 64
-+#define AUTOFS_IOC_SETTIMEOUT   _IOWR(AUTOFS_IOCTL, \
-+				      AUTOFS_IOC_SETTIMEOUT_CMD, \
-+				      unsigned long long)
-+#else
- #define AUTOFS_IOC_SETTIMEOUT   _IOWR(AUTOFS_IOCTL, \
- 				      AUTOFS_IOC_SETTIMEOUT_CMD, \
- 				      unsigned long)
-+#endif
- #define AUTOFS_IOC_EXPIRE       _IOR(AUTOFS_IOCTL, \
- 				     AUTOFS_IOC_EXPIRE_CMD, \
- 				     struct autofs_packet_expire)
-diff --git a/kernel/compat.c b/kernel/compat.c
-index fb50f29d9b36..46ffdc5e7cc4 100644
---- a/kernel/compat.c
-+++ b/kernel/compat.c
-@@ -203,11 +203,17 @@ long compat_get_bitmap(unsigned long *mask, const compat_ulong_t __user *umask,
- 		return -EFAULT;
+diff --git a/include/linux/compiler_types.h b/include/linux/compiler_types.h
+index 981cc3d7e3aa..6cf36a8e9570 100644
+--- a/include/linux/compiler_types.h
++++ b/include/linux/compiler_types.h
+@@ -505,9 +505,16 @@ struct ftrace_likely_data {
+ 			 default: (x)))
  
- 	while (nr_compat_longs > 1) {
--		compat_ulong_t l1, l2;
-+		compat_ulong_t l1;
- 		unsafe_get_user(l1, umask++, Efault);
-+		nr_compat_longs -= 1;
-+#if BITS_PER_LONG == 64
-+		compat_ulong_t l2;
- 		unsafe_get_user(l2, umask++, Efault);
- 		*mask++ = ((unsigned long)l2 << BITS_PER_COMPAT_LONG) | l1;
--		nr_compat_longs -= 2;
-+		nr_compat_longs -= 1;
+ /* Is this type a native word size -- useful for atomic operations */
++#ifdef CONFIG_64BIT
++#define __native_word(t) \
++	(sizeof(t) == sizeof(char) || sizeof(t) == sizeof(short) || \
++	 sizeof(t) == sizeof(int) || sizeof(t) == sizeof(long) || \
++	 sizeof(t) == sizeof(long long))
 +#else
-+		*mask++ = l1;
+ #define __native_word(t) \
+ 	(sizeof(t) == sizeof(char) || sizeof(t) == sizeof(short) || \
+ 	 sizeof(t) == sizeof(int) || sizeof(t) == sizeof(long))
 +#endif
- 	}
- 	if (nr_compat_longs)
- 		unsafe_get_user(*mask, umask++, Efault);
-@@ -234,8 +240,11 @@ long compat_put_bitmap(compat_ulong_t __user *umask, unsigned long *mask,
- 	while (nr_compat_longs > 1) {
- 		unsigned long m = *mask++;
- 		unsafe_put_user((compat_ulong_t)m, umask++, Efault);
-+		nr_compat_longs -= 1;
-+#if BITS_PER_LONG == 64
- 		unsafe_put_user(m >> BITS_PER_COMPAT_LONG, umask++, Efault);
--		nr_compat_longs -= 2;
-+		nr_compat_longs -= 1;
-+#endif
- 	}
- 	if (nr_compat_longs)
- 		unsafe_put_user((compat_ulong_t)*mask, umask++, Efault);
+ 
+ #ifdef __OPTIMIZE__
+ # define __compiletime_assert(condition, msg, prefix, suffix)		\
 -- 
 2.40.1
 
