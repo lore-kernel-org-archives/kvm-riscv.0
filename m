@@ -4,43 +4,43 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F108C3600B
-	for <kvm-riscv@archiver.kernel.org>; Tue, 25 Mar 2025 13:53:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 38E79C3600D
+	for <kvm-riscv@archiver.kernel.org>; Tue, 25 Mar 2025 13:53:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=QSnlGH2PBlQlR95kCHvR1HFerk3bWLgn12jyvkudcUs=; b=INKHU959k+B/Zu
-	8/o40jfmDk2SPHDGEizKSiYP8tcCDkGwhSFV5n5Ai2QKZ1GyM5hvoJiU0TmdkcX9TxQsHO9MI9Btn
-	HEmsravwc4695jcTwvQrOV4hwlWHC3YJAKMLt66EL+zOuqlsIXmKVjQWijjp1RVGDxf5AlnRD2XOL
-	zo1RKJl+wLSDxou5YXqbRC5mN7u6WksK3ghi+53aC8FRgI+fRzP9xJFoVtZU9mELCfCdGS+SwmIal
-	vJMMB9djCaxW5nB2TlOPNY3vPJUS/ogyJY6T1hFD17ItTUJw8HmBmI22aJYT3mRiGIKEwGuSL+hQc
-	aKnEwkzoaKoUyAhUAFGg==;
+	List-Owner; bh=nlnYucN3DuQsT1jFnMmfxWtMYD1iLSy7nCr3/0vOUow=; b=ru8NX+PVSVf0Fo
+	btxcxRU3/VZmXHYBFMAjTkWYZxH7wmRa4OtYhoZ1JiIHWyXgxiCkxr4xrvZ5oGtktnGDZJSme1aNZ
+	QM8kVqbccdbivixurfg8Fvwct594FxrVG2uOTF85KYBhsQUYQPkMdjToMvbxoigYCjVXo+rx7gseO
+	NVyv0ywteThHC91eGoWRIIXJRx59h0e1vP6fsLZPLxGnsJpy4gdVPnb1X1IFT/pT7DUrvoCkf39a7
+	NPD5ZJqroGkFRlecDtFzrDm7E09Lpht5MmwA840oVzlRmZbZIftKBJPey+owAqMQ6BWDHGoInUnaC
+	RZx3IdeaPH0EXwSe7lLQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.1 #2 (Red Hat Linux))
-	id 1tx4in-000000066Dj-3sNv;
-	Tue, 25 Mar 2025 13:53:37 +0000
-Received: from sea.source.kernel.org ([172.234.252.31])
+	id 1tx4ip-000000066Fw-46nm;
+	Tue, 25 Mar 2025 13:53:39 +0000
+Received: from nyc.source.kernel.org ([2604:1380:45d1:ec00::3])
 	by bombadil.infradead.org with esmtps (Exim 4.98.1 #2 (Red Hat Linux))
-	id 1tx3Gy-00000005n3a-3LZv;
-	Tue, 25 Mar 2025 12:20:49 +0000
+	id 1tx3HS-00000005nAi-0s0X;
+	Tue, 25 Mar 2025 12:21:19 +0000
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 29C784389C;
-	Tue, 25 Mar 2025 12:20:48 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 213B1C4CEE4;
-	Tue, 25 Mar 2025 12:20:34 +0000 (UTC)
+	by nyc.source.kernel.org (Postfix) with ESMTP id 62D99A43621;
+	Tue, 25 Mar 2025 12:15:48 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CE0C8C4CEED;
+	Tue, 25 Mar 2025 12:21:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1742905248;
-	bh=j18oLXPHFjnaGmgCwscTDaPTneiSyVqaoCKba61TqXg=;
+	s=k20201202; t=1742905277;
+	bh=2UWsq5ym5VI7/vPr12wsi4xJfQOhojxJV/AkLgh/hzg=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=Oz8iARGb8tr7htUnaAeUCJ6IYWmPD2sUy6Fahrj1eenZT1kKMM+eFWJiKMQdGqcqw
-	 rqWz1qpr3jo3lVxFFYwrBasJ+tHw3PWT4Rv+apRvPWQa/i4K/2vaflC0hzKnPuX+P4
-	 8bTM1EjGGpOTuQHdC8TBFwQkrFBcJI49u7thNpghWlOyMzJ3hMkq6mroidX2glUScJ
-	 uyG/XkFYIxn9NAsEUQSTt4TYvFJgoGc/h+TFjpPprvl74n7fsNLu4FNEPQT7I99tBn
-	 keJQj/Yhn5p3/N2C2J6YITPpmyRqNzvFWJV+jSwmuHsx+jq6dfD8Ek+CQ8ONbZxS8/
-	 mQmFdBGqaAdYQ==
+	b=CASldfZKFy6JxMfog2czdRUW400bjKu3qkIqf2g0bO4mAfdCAZJOHjQKj39cz8aqg
+	 XG1civv4o3gD3MK48Yhqik6WW027RRpl8DQvIB9Yob7C9kX6E9qV9uYudT8hhev5cL
+	 QTVrUoI6O6nkCMoTVAOPFZqdY9GzjntjKQO6ayze5oXkt5L0UWJbyNb4+aKdlWWzz3
+	 3BCk6+WJF49ZitzC7I5AW48N1eiiEebNx/f6MnTwAH2grSuKMLPrEypZXRY8Sm16qK
+	 mLSvyciL4KYAbVkJERD8dZPZNRmSFb8RH3/1NqleyW9uvgrIwTuaYlC1t3hgHEcd/Z
+	 SqwIoUbHe8uUw==
 From: guoren@kernel.org
 To: arnd@arndb.de,
 	gregkh@linuxfoundation.org,
@@ -114,16 +114,17 @@ Cc: ardb@kernel.org,
 	linux-sctp@vger.kernel.org,
 	linux-usb@vger.kernel.org,
 	linux-media@vger.kernel.org
-Subject: [RFC PATCH V3 17/43] rv64ilp32_abi: riscv: Adapt kasan memory layout
-Date: Tue, 25 Mar 2025 08:15:58 -0400
-Message-Id: <20250325121624.523258-18-guoren@kernel.org>
+Subject: [RFC PATCH V3 19/43] rv64ilp32_abi: irqchip: irq-riscv-intc: Use xlen_t instead of ulong
+Date: Tue, 25 Mar 2025 08:16:00 -0400
+Message-Id: <20250325121624.523258-20-guoren@kernel.org>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20250325121624.523258-1-guoren@kernel.org>
 References: <20250325121624.523258-1-guoren@kernel.org>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250325_052048_876390_FAF5A037 
-X-CRM114-Status: GOOD (  11.13  )
+X-CRM114-CacheID: sfid-20250325_052118_374495_D36C8583 
+X-CRM114-Status: UNSURE (   8.21  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -142,65 +143,42 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 From: "Guo Ren (Alibaba DAMO Academy)" <guoren@kernel.org>
 
-For generic KASAN, the size of each memory granule is 8, which
-needs 1/8 address space. The kernel space is 2GiB in rv64ilp32,
-so we need 256MiB range (0x80000000 ~ 0x90000000), and the offset
-is 0x7000000 for the whole 4GiB address space.
-
- Virtual kernel memory layout:
-       fixmap : 0x90a00000 - 0x90ffffff   (6144 kB)
-       pci io : 0x91000000 - 0x91ffffff   (  16 MB)
-      vmemmap : 0x92000000 - 0x93ffffff   (  32 MB)
-      vmalloc : 0x94000000 - 0xb3ffffff   ( 512 MB)
-      modules : 0xb4000000 - 0xb7ffffff   (  64 MB)
-       lowmem : 0xc0000000 - 0xc7ffffff   ( 128 MB)
-        kasan : 0x80000000 - 0x8fffffff   ( 256 MB) <=
-       kernel : 0xb8000000 - 0xbfffffff   ( 128 MB)
+The RV64ILP32 ABI is based on CONFIG_64BIT, so use xlen/xlen_t
+instead of BITS_PER_LONG/ulong.
 
 Signed-off-by: Guo Ren (Alibaba DAMO Academy) <guoren@kernel.org>
 ---
- arch/riscv/include/asm/kasan.h | 6 +++++-
- arch/riscv/mm/kasan_init.c     | 2 +-
- 2 files changed, 6 insertions(+), 2 deletions(-)
+ drivers/irqchip/irq-riscv-intc.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/arch/riscv/include/asm/kasan.h b/arch/riscv/include/asm/kasan.h
-index e6a0071bdb56..dd3a211bc5d0 100644
---- a/arch/riscv/include/asm/kasan.h
-+++ b/arch/riscv/include/asm/kasan.h
-@@ -21,7 +21,7 @@
-  * [KASAN_SHADOW_OFFSET, KASAN_SHADOW_END) cover all 64-bits of virtual
-  * addresses. So KASAN_SHADOW_OFFSET should satisfy the following equation:
-  *      KASAN_SHADOW_OFFSET = KASAN_SHADOW_END -
-- *                              (1ULL << (64 - KASAN_SHADOW_SCALE_SHIFT))
-+ *                              (1ULL << (BITS_PER_LONG - KASAN_SHADOW_SCALE_SHIFT))
-  */
- #define KASAN_SHADOW_SCALE_SHIFT	3
+diff --git a/drivers/irqchip/irq-riscv-intc.c b/drivers/irqchip/irq-riscv-intc.c
+index f653c13de62b..4fc7d5704acf 100644
+--- a/drivers/irqchip/irq-riscv-intc.c
++++ b/drivers/irqchip/irq-riscv-intc.c
+@@ -20,18 +20,19 @@
+ #include <linux/soc/andes/irq.h>
  
-@@ -31,7 +31,11 @@
-  * aligned on PGDIR_SIZE, so force its alignment to ease its population.
-  */
- #define KASAN_SHADOW_START	((KASAN_SHADOW_END - KASAN_SHADOW_SIZE) & PGDIR_MASK)
-+#if defined(CONFIG_64BIT) && (BITS_PER_LONG == 32)
-+#define KASAN_SHADOW_END	0x90000000UL
-+#else
- #define KASAN_SHADOW_END	MODULES_LOWEST_VADDR
-+#endif
+ #include <asm/hwcap.h>
++#include <asm/ptrace.h>
  
- #ifdef CONFIG_KASAN
- #define KASAN_SHADOW_OFFSET	_AC(CONFIG_KASAN_SHADOW_OFFSET, UL)
-diff --git a/arch/riscv/mm/kasan_init.c b/arch/riscv/mm/kasan_init.c
-index 41c635d6aca4..1e864598779a 100644
---- a/arch/riscv/mm/kasan_init.c
-+++ b/arch/riscv/mm/kasan_init.c
-@@ -324,7 +324,7 @@ asmlinkage void __init kasan_early_init(void)
- 	uintptr_t i;
+ static struct irq_domain *intc_domain;
+-static unsigned int riscv_intc_nr_irqs __ro_after_init = BITS_PER_LONG;
+-static unsigned int riscv_intc_custom_base __ro_after_init = BITS_PER_LONG;
++static unsigned int riscv_intc_nr_irqs __ro_after_init = __riscv_xlen;
++static unsigned int riscv_intc_custom_base __ro_after_init = __riscv_xlen;
+ static unsigned int riscv_intc_custom_nr_irqs __ro_after_init;
  
- 	BUILD_BUG_ON(KASAN_SHADOW_OFFSET !=
--		KASAN_SHADOW_END - (1UL << (64 - KASAN_SHADOW_SCALE_SHIFT)));
-+		KASAN_SHADOW_END - (1UL << (BITS_PER_LONG - KASAN_SHADOW_SCALE_SHIFT)));
+ static void riscv_intc_irq(struct pt_regs *regs)
+ {
+-	unsigned long cause = regs->cause & ~CAUSE_IRQ_FLAG;
++	xlen_t cause = regs->cause & ~CAUSE_IRQ_FLAG;
  
- 	for (i = 0; i < PTRS_PER_PTE; ++i)
- 		set_pte(kasan_early_shadow_pte + i,
+ 	if (generic_handle_domain_irq(intc_domain, cause))
+-		pr_warn_ratelimited("Failed to handle interrupt (cause: %ld)\n", cause);
++		pr_warn_ratelimited("Failed to handle interrupt (cause: " REG_FMT ")\n", cause);
+ }
+ 
+ static void riscv_intc_aia_irq(struct pt_regs *regs)
 -- 
 2.40.1
 
