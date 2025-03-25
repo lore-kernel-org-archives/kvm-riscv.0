@@ -4,43 +4,43 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E9B52C3600D
-	for <kvm-riscv@archiver.kernel.org>; Tue, 25 Mar 2025 13:53:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9B1C6C35FFC
+	for <kvm-riscv@archiver.kernel.org>; Tue, 25 Mar 2025 13:54:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=DpvM6T2Ecym1oMOtSTOtfNRsYs67KeXIk7GeOSSfLfg=; b=mx1aWR1ynezm46
-	LfSVDa2SQQ+BLHgTXL6StOj9wGX5OVwRQ/HnzLHAuma1iNl8hPlAIX8lKlS73juZG3hJ7Rqh8vzBF
-	qyEwcGyurPZEDv7k15qS0+fpHp5oUYzCIpEbzVooRCEzsyR64uYxXdUdTFvybQtHXYEfj84P7giXx
-	htj7mB/223WEYxv1Ccf/k7fp6wnQM4vQGhb164c0+9O1RFFAqYxtIv27RyLsDGu6lw2jRK+lImiGf
-	mvmuFQlPrI8Lv4PdT8ofhQPnY4tTL7tHhlyM36Nmbc5OlUrToD+qSGVO0cXkegADL8eLBCbATwyce
-	cKcrZ3Rc4WqBUVCZnlHQ==;
+	List-Owner; bh=E1t0jnZOkRv9pAJQpF3AKl0fb2vVa+dCw7lx0qPzBGg=; b=SqFD12sIKL3RXD
+	SEXT04VbmwI12Irt13D0/ZDQXLrbRIWlcQYXrhdzURdONZJVBH0oNwvx4eEzg/x/6aFL9lyLGOMEj
+	Z5/KeAuCW5j+gcrOIOhcQ9kNvufNpPuVTwy/jyYk8tkBZCeSL8NJOQWgZafL+9QgWk/H5UwmZSq3m
+	qIoJy1CVS7KhfxrdLQppF18F5+Ug1jfh/4NrujSGu18iKk76GmAZY7y6jZuXB4b9bb/w46I93zEM0
+	2gmXp728Wkb5Msqpp4BNXLOFmLssQ3iW7ozOnyIj5XR5OenODgD18A8BtEVXWJuk9Ac3fHb78trG7
+	6U5WLuONIDpk83p6lFlg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.1 #2 (Red Hat Linux))
-	id 1tx4j8-000000066j8-232d;
-	Tue, 25 Mar 2025 13:53:58 +0000
-Received: from dfw.source.kernel.org ([2604:1380:4641:c500::1])
+	id 1tx4jA-000000066ll-0kPn;
+	Tue, 25 Mar 2025 13:54:00 +0000
+Received: from nyc.source.kernel.org ([147.75.193.91])
 	by bombadil.infradead.org with esmtps (Exim 4.98.1 #2 (Red Hat Linux))
-	id 1tx3KE-00000005o1a-3hGF;
-	Tue, 25 Mar 2025 12:24:13 +0000
+	id 1tx3KT-00000005o5o-2IYx;
+	Tue, 25 Mar 2025 12:24:27 +0000
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 30A625C5DAA;
-	Tue, 25 Mar 2025 12:21:53 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 33EE3C4CEE9;
-	Tue, 25 Mar 2025 12:23:56 +0000 (UTC)
+	by nyc.source.kernel.org (Postfix) with ESMTP id B5ED2A4A682;
+	Tue, 25 Mar 2025 12:18:55 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B04FAC4CEE4;
+	Tue, 25 Mar 2025 12:24:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1742905449;
-	bh=YlFb6KkzVSGSuegSI2MJMuDKnOb+jmQgRm/aIyv4ASM=;
+	s=k20201202; t=1742905464;
+	bh=JPoN7MLEf8eR2nMyp8/thu8bst5//5Hk8VxE062lQ9Y=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=sWpvaUIxJ2xmK0FQF0ljHhlr/YashdPyYsTn7al4PxnIvUdy5/V+e9JCSqYjPiQ5E
-	 qVMLggXWg+4qFNOeniAE53fLZ1Prkl0/M6GeEuOJ+uT+3t3q7fV6UUS2UIgffUSeso
-	 wRSxhB5nlUaDz5ji9smEUpkoHf9ykZfP/NySchrJUTDEg5MhkdVVvAnNX4EACaRX4T
-	 pdKSFNThVJ1sR53X8HbMYhyVDRiX7Q6sFsJkcrdiRsi7pFRqIxw20GaRxB8ae45rL7
-	 7llPuKtxuxdA0NoRclxRUGq3TI+0zr3JNpZA7Af2b2pgVGyaoWF87wcU8ebw0LTt3d
-	 JLIfeJGTL7Z9g==
+	b=dEoFxhRXAgIXTk+izxMj8NAc58Z150abzTA52wVaUo6oYVdkPjOE5SSRWPRWeVTRZ
+	 U1/G1qYs1uREuzAoBzG0S14o2UVbqgxlA890HlC1yYQsuSNAzyB+Rmkj4zJV2ekZPy
+	 fzIcdDjyk24aWTyz20XnUJhgLKC2ybNiG3fcpWxbHC+p5onyj0QMYQr8LexFkeoHXi
+	 ika5eYC4afRp1Kftijmmo0sAT2pI8cXHBmJitbAMMAFNHKZ8/nrfoTyLZqlkraub3q
+	 7VNeoISO8HTPBn0sSZs3s+QMMmmB4sh2Efhd9ZKgZQ2gPqONiWgdp4ZF195RgbZqwa
+	 EQz1rLnxWUczg==
 From: guoren@kernel.org
 To: arnd@arndb.de,
 	gregkh@linuxfoundation.org,
@@ -114,17 +114,16 @@ Cc: ardb@kernel.org,
 	linux-sctp@vger.kernel.org,
 	linux-usb@vger.kernel.org,
 	linux-media@vger.kernel.org
-Subject: [RFC PATCH V3 31/43] rv64ilp32_abi: maple_tree: Use BITS_PER_LONG instead of CONFIG_64BIT
-Date: Tue, 25 Mar 2025 08:16:12 -0400
-Message-Id: <20250325121624.523258-32-guoren@kernel.org>
+Subject: [RFC PATCH V3 32/43] rv64ilp32_abi: mm: Remove _folio_nr_pages
+Date: Tue, 25 Mar 2025 08:16:13 -0400
+Message-Id: <20250325121624.523258-33-guoren@kernel.org>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20250325121624.523258-1-guoren@kernel.org>
 References: <20250325121624.523258-1-guoren@kernel.org>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250325_052411_020542_BDE91A87 
-X-CRM114-Status: UNSURE (   9.90  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20250325_052425_719569_CE33F8B8 
+X-CRM114-Status: GOOD (  11.54  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -143,28 +142,97 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 From: "Guo Ren (Alibaba DAMO Academy)" <guoren@kernel.org>
 
-The Maple tree algorithm uses ulong type for each element. The
-number of slots is based on BITS_PER_LONG for RV64ILP32 ABI, so
-use BITS_PER_LONG instead of CONFIG_64BIT.
+BITS_PER_LONG defines the layout of the struct page, and
+_folio_nr_pages would conflict with page->_mapcount for RV64ILP32
+ABI. Here is problem:
+
+BUG: Bad page state in process kworker/u4:0  pfn:61eed
+page: refcount:0 mapcount:5 mapping:00000000 index:0x0 pfn:0x61eed
+flags: 0x0(zone=0)
+raw: 00000000 00000000 ffffffff 00000000 00000000 00000000 00000004 00000000
+raw: 00000000 00000000
+page dumped because: nonzero mapcount
+Modules linked in:
+CPU: 0 UID: 0 PID: 11 Comm: kworker/u4:0 Not tainted 6.13.0-rc4
+Hardware name: riscv-virtio,qemu (DT)
+Workqueue: async async_run_entry_fn
+Call Trace:
+[<bc015096>] dump_backtrace+0x1e/0x26
+[<bc002330>] show_stack+0x2a/0x38
+[<bc00f38c>] dump_stack_lvl+0x4a/0x68
+[<bc00f3c0>] dump_stack+0x16/0x1e
+[<bc1cadd8>] bad_page+0x120/0x142
+[<bc1cf2c2>] free_unref_page+0x510/0x5f8
+[<bc17fb16>] __folio_put+0x6a/0xbc
+[<bc1d6090>] free_large_kmalloc+0x6a/0xb8
+[<bc1d9144>] kfree+0x23c/0x300
+[<bcc02834>] unpack_to_rootfs+0x27c/0x2c0
+[<bcc02e96>] do_populate_rootfs+0x24/0x12e
+[<bc04c80c>] async_run_entry_fn+0x26/0xcc
+[<bc03e116>] process_one_work+0x136/0x224
+[<bc03e9e4>] worker_thread+0x234/0x30a
+[<bc046334>] kthread+0xca/0xe6
+[<bca47bea>] ret_from_fork+0xe/0x18
+Disabling lock debugging due to kernel taint
+
+So, remove _folio_nr_pages just like CONFIG_32BIT and use
+"_flags_1 & 0xff" instead.
 
 Signed-off-by: Guo Ren (Alibaba DAMO Academy) <guoren@kernel.org>
 ---
- include/linux/maple_tree.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ include/linux/mm.h       | 4 ++--
+ include/linux/mm_types.h | 2 +-
+ mm/internal.h            | 2 +-
+ 3 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/include/linux/maple_tree.h b/include/linux/maple_tree.h
-index cbbcd18d4186..ff6265b6468b 100644
---- a/include/linux/maple_tree.h
-+++ b/include/linux/maple_tree.h
-@@ -24,7 +24,7 @@
-  *
-  * Nodes in the tree point to their parent unless bit 0 is set.
-  */
--#if defined(CONFIG_64BIT) || defined(BUILD_VDSO32_64)
-+#if (BITS_PER_LONG == 64) || defined(BUILD_VDSO32_64)
- /* 64bit sizes */
- #define MAPLE_NODE_SLOTS	31	/* 256 bytes including ->parent */
- #define MAPLE_RANGE64_SLOTS	16	/* 256 bytes */
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 7b1068ddcbb7..454fb8ca724c 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -2058,7 +2058,7 @@ static inline long folio_nr_pages(const struct folio *folio)
+ {
+ 	if (!folio_test_large(folio))
+ 		return 1;
+-#ifdef CONFIG_64BIT
++#if BITS_PER_LONG == 64
+ 	return folio->_folio_nr_pages;
+ #else
+ 	return 1L << (folio->_flags_1 & 0xff);
+@@ -2083,7 +2083,7 @@ static inline unsigned long compound_nr(struct page *page)
+ 
+ 	if (!test_bit(PG_head, &folio->flags))
+ 		return 1;
+-#ifdef CONFIG_64BIT
++#if BITS_PER_LONG == 64
+ 	return folio->_folio_nr_pages;
+ #else
+ 	return 1L << (folio->_flags_1 & 0xff);
+diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
+index 6b27db7f9496..da3ba1a79ad5 100644
+--- a/include/linux/mm_types.h
++++ b/include/linux/mm_types.h
+@@ -370,7 +370,7 @@ struct folio {
+ 			atomic_t _entire_mapcount;
+ 			atomic_t _nr_pages_mapped;
+ 			atomic_t _pincount;
+-#ifdef CONFIG_64BIT
++#if BITS_PER_LONG == 64
+ 			unsigned int _folio_nr_pages;
+ #endif
+ 	/* private: the union with struct page is transitional */
+diff --git a/mm/internal.h b/mm/internal.h
+index 109ef30fee11..c9372a8552ba 100644
+--- a/mm/internal.h
++++ b/mm/internal.h
+@@ -682,7 +682,7 @@ static inline void folio_set_order(struct folio *folio, unsigned int order)
+ 		return;
+ 
+ 	folio->_flags_1 = (folio->_flags_1 & ~0xffUL) | order;
+-#ifdef CONFIG_64BIT
++#if BITS_PER_LONG == 64
+ 	folio->_folio_nr_pages = 1U << order;
+ #endif
+ }
 -- 
 2.40.1
 
