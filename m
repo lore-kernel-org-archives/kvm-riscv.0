@@ -4,43 +4,43 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 92BA1C3600E
-	for <kvm-riscv@archiver.kernel.org>; Tue, 25 Mar 2025 12:43:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D87AC3600B
+	for <kvm-riscv@archiver.kernel.org>; Tue, 25 Mar 2025 12:43:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=ttZ0RE9urflcql/kuxC2a7fn1FjSkuwKQRF28j45fPc=; b=ROGyWR5sUxxJXd
-	jGHHS0JCCebC6x724MXcJijdzZ3CRuL+CMDSeSofao4xN4HPZRVmKGkMVtu3A29R6sCzOI85hzEdZ
-	UY3cA1dbSqe4S3Iy9lcduRQypAbyVYZwp+j5KENbTqVQwkKjS+hrVBOeG6E2DXAWwz9ZWrKeK4VL9
-	V8HR09R4dUZqjgFVlIrBb2f7wbB28z4plv3A7nUMGUo7ygIUvTSIbKbjBFUnCk5xBu1nif3KMnHUx
-	Uacz+KXwei4/nHcgC2ylhdvCPq4YtlEukDT1n95KWxuAybHQdR0eZayNABJHUShPDJNggOBT2cpu8
-	MLfeVXb6NI8C9dTA2nYQ==;
+	List-Owner; bh=rAN1V6F73xLDK6mXh7O1KEkep4pBjRqPvOiKrdzW1/I=; b=is5W3ciGgpfsSm
+	BTY2oEggXn2MYsJhyvZgdAOqVLP/alelSZn1+Mz8+EhyjfJl3cWeLDmVDC+hLsy1ejPxdn9ynA8wl
+	OE5R08isA0w8Zfz3sJRVZM1lSher41XpFfUh0hjZMfJfGV4GRY0bw6FEZamQo2/dJHEUWQNFnwTav
+	qeK7T6FpPgHwZ3CVmLiPzcwfTr/xFHz7LyPU93Py+KS37SWyCtkvTQSo4BNq3kcLnj2E/N4It/Gej
+	QqLQH07s0tSZr2lg9DDDvjeZgCHBB+ahitRT6q7++Bm4ABar1K37N1fzDEdldkXgbG3qu/JRQqHCS
+	qyhrQv+lrfwRKeB0VkWA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.1 #2 (Red Hat Linux))
-	id 1tx3dK-00000005ta9-1G36;
-	Tue, 25 Mar 2025 12:43:54 +0000
-Received: from nyc.source.kernel.org ([2604:1380:45d1:ec00::3])
+	id 1tx3dO-00000005tgT-09Rd;
+	Tue, 25 Mar 2025 12:43:58 +0000
+Received: from tor.source.kernel.org ([172.105.4.254])
 	by bombadil.infradead.org with esmtps (Exim 4.98.1 #2 (Red Hat Linux))
-	id 1tx3MS-00000005og1-02F2;
-	Tue, 25 Mar 2025 12:26:29 +0000
+	id 1tx3Mu-00000005oon-49E7;
+	Tue, 25 Mar 2025 12:26:57 +0000
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 2D989A4A68A;
-	Tue, 25 Mar 2025 12:20:58 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B719EC4CEED;
-	Tue, 25 Mar 2025 12:26:12 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 3B10A6159B;
+	Tue, 25 Mar 2025 12:26:52 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4AD52C4CEED;
+	Tue, 25 Mar 2025 12:26:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1742905586;
-	bh=CN5WMBcSq4ybkzYSZlZQi/bVyuOph6iTDFSpBV5o4N8=;
+	s=k20201202; t=1742905616;
+	bh=9rClAibepR5410hMymY5QyjFNfu9myyrJTkBJ7yJs84=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=JUZLlaeIY8Hwh6lRUruQPwQasNliWPwz7cJWB27ghj4+IZjN2b4GbBZ/fSSZ6XMji
-	 us+Hkvcz4IetM23aVYMu/AYs8cVXwsZBW7NeOsZgDbCgt6g5xqJd48sWMPOg1jFmZO
-	 dTGKmsr8CcSEXGjzQ6k8LM44Bk1+QDQseKg+PcX8rq6xmuSZhGjpiAtIF0iRessEj3
-	 aRKlIJp+k0H+q7J7Nwhehdmf4wV0LPBD/VdM8zp20s4PoYdcxn128IXf7LF6zj8Ai+
-	 3WimUJp5bM0Px6NuLSmw5Ey3muirnPyNTnJB+ycI51xStVOVnALDfDoGBxJW8uVnSm
-	 PDPGAqzidOZVg==
+	b=PSXvc+q07mYxURgabvhC0EDZ07GzmsdGsbFL99gOWwWn2P5z8FZ/BlJ02MvKw0oi0
+	 DebZmNXKJ2CXOdMnsWEWR3OoVOJMtpx5upcoqoGzimuBC7isnkYS1TqP5L1E6cxZU6
+	 4XrYv8tJiQ/yVO+KpHHDW9WJtvg1IAC6n5lPmXBEkrmtDpQIZKAsCw9ZnEWbQ7Gm8D
+	 EFr+OQdexB1ClgCWhZJhpf6cX91lUXmdACsoE7/AQufDa2ng7DPJR1k3C71ynpd+D/
+	 KrFEXsFArC7JDeWksZBrKc+/l/OmyTWBnHSzZmaXAgyqRcEOww2gygQgud3qZdqgXr
+	 KuA9Abd2ez09A==
 From: guoren@kernel.org
 To: arnd@arndb.de,
 	gregkh@linuxfoundation.org,
@@ -114,17 +114,13 @@ Cc: ardb@kernel.org,
 	linux-sctp@vger.kernel.org,
 	linux-usb@vger.kernel.org,
 	linux-media@vger.kernel.org
-Subject: [RFC PATCH V3 40/43] rv64ilp32_abi: tracepoint-defs: Using u64 for trace_print_flags.mask
-Date: Tue, 25 Mar 2025 08:16:21 -0400
-Message-Id: <20250325121624.523258-41-guoren@kernel.org>
+Subject: [RFC PATCH V3 42/43] rv64ilp32_abi: memfd: Use vm_flag_t
+Date: Tue, 25 Mar 2025 08:16:23 -0400
+Message-Id: <20250325121624.523258-43-guoren@kernel.org>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20250325121624.523258-1-guoren@kernel.org>
 References: <20250325121624.523258-1-guoren@kernel.org>
 MIME-Version: 1.0
-X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250325_052628_120649_B0A4320A 
-X-CRM114-Status: UNSURE (   7.78  )
-X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -143,31 +139,68 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 From: "Guo Ren (Alibaba DAMO Academy)" <guoren@kernel.org>
 
-The rv64ilp32 ABI relies on CONFIG_64BIT, and mmflags.h defines
-VMA flags with BIT_ULL. Consequently, use "unsigned long long"
-for trace_print_flags.mask to align with VMAflag's type size.
+RV64ILP32 ABI linux kernel is based on CONFIG_64BIT, and uses
+unsigned long long as vm_flags_t. Using unsigned long would
+break rv64ilp32 abi.
+
+The definition of vm_flag_t exists, hence its usage is
+preferred even if it's not essential.
 
 Signed-off-by: Guo Ren (Alibaba DAMO Academy) <guoren@kernel.org>
 ---
- include/linux/tracepoint-defs.h | 4 ++++
- 1 file changed, 4 insertions(+)
+ include/linux/memfd.h | 4 ++--
+ mm/memfd.c            | 8 ++++----
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/include/linux/tracepoint-defs.h b/include/linux/tracepoint-defs.h
-index aebf0571c736..3b51ede18e32 100644
---- a/include/linux/tracepoint-defs.h
-+++ b/include/linux/tracepoint-defs.h
-@@ -14,7 +14,11 @@
- struct static_call_key;
+diff --git a/include/linux/memfd.h b/include/linux/memfd.h
+index 246daadbfde8..6f606d9573c3 100644
+--- a/include/linux/memfd.h
++++ b/include/linux/memfd.h
+@@ -14,7 +14,7 @@ struct folio *memfd_alloc_folio(struct file *memfd, pgoff_t idx);
+  * We also update VMA flags if appropriate by manipulating the VMA flags pointed
+  * to by vm_flags_ptr.
+  */
+-int memfd_check_seals_mmap(struct file *file, unsigned long *vm_flags_ptr);
++int memfd_check_seals_mmap(struct file *file, vm_flags_t *vm_flags_ptr);
+ #else
+ static inline long memfd_fcntl(struct file *f, unsigned int c, unsigned int a)
+ {
+@@ -25,7 +25,7 @@ static inline struct folio *memfd_alloc_folio(struct file *memfd, pgoff_t idx)
+ 	return ERR_PTR(-EINVAL);
+ }
+ static inline int memfd_check_seals_mmap(struct file *file,
+-					 unsigned long *vm_flags_ptr)
++					 vm_flags_t *vm_flags_ptr)
+ {
+ 	return 0;
+ }
+diff --git a/mm/memfd.c b/mm/memfd.c
+index 37f7be57c2f5..50dad90ffedc 100644
+--- a/mm/memfd.c
++++ b/mm/memfd.c
+@@ -332,10 +332,10 @@ static inline bool is_write_sealed(unsigned int seals)
+ 	return seals & (F_SEAL_WRITE | F_SEAL_FUTURE_WRITE);
+ }
  
- struct trace_print_flags {
-+#ifdef CONFIG_64BIT
-+	unsigned long long	mask;
-+#else
- 	unsigned long		mask;
-+#endif
- 	const char		*name;
- };
+-static int check_write_seal(unsigned long *vm_flags_ptr)
++static int check_write_seal(vm_flags_t *vm_flags_ptr)
+ {
+-	unsigned long vm_flags = *vm_flags_ptr;
+-	unsigned long mask = vm_flags & (VM_SHARED | VM_WRITE);
++	vm_flags_t vm_flags = *vm_flags_ptr;
++	vm_flags_t mask = vm_flags & (VM_SHARED | VM_WRITE);
  
+ 	/* If a private matting then writability is irrelevant. */
+ 	if (!(mask & VM_SHARED))
+@@ -357,7 +357,7 @@ static int check_write_seal(unsigned long *vm_flags_ptr)
+ 	return 0;
+ }
+ 
+-int memfd_check_seals_mmap(struct file *file, unsigned long *vm_flags_ptr)
++int memfd_check_seals_mmap(struct file *file, vm_flags_t *vm_flags_ptr)
+ {
+ 	int err = 0;
+ 	unsigned int *seals_ptr = memfd_file_seals_ptr(file);
 -- 
 2.40.1
 
