@@ -4,43 +4,43 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F30B2C36012
-	for <kvm-riscv@archiver.kernel.org>; Tue, 25 Mar 2025 13:53:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 805D8C36005
+	for <kvm-riscv@archiver.kernel.org>; Tue, 25 Mar 2025 13:53:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=6FoHLl5DiXk0ru/MrDmCwkSQPJqecHHq1idp6TOVYgw=; b=hkJ6gD9wxH2+3W
-	mcwJhfCEPbmYgrHtmTqNeQbuUKnht+aMAvI/lSKFpMOqFV1D/By/c/BsskTCB+Z0ZDP3EkLl3xns2
-	Os5sO+8Q+hhr/WgGRLWQSPCJB6FieH0JOBcgJsVnSVcFcqUYElzWRr0Xl9FsBinZLUBmaTgymRqHx
-	z9Jvi4SqOcmPGL6/ZAHMILY5TARcYpBg0q7xY/TERbYO5hHEgZosB9idzy8ZM7sG6gzDDNx4YLmcw
-	YbFiD3wszpq7gcW8uy55lXVbbgiOdA7sbN1Geet8WLW3Au373KBD4nrMPj6zm/jgQ/EXz6DClD7Me
-	Ukw4gn/hPs9Pq3PSBF3w==;
+	List-Owner; bh=gLgX+3FHHCu2IoASqC4OdmTXenBnBIBplDplKlb94FA=; b=K4I5ua8Na4Wlh+
+	34NVCZfQa6SNHc9woO3K67phcUH4pQoL/Lkg5wYLLwavvt0qINjw1BxtgI1gTW8JZIO3xjTsNiTcY
+	lR+y1zt17Sa1bb8uR/RMPLmL0L8U56Psl438wtEkYy0B1oRKGPe2ssWxrGfQUC7I9NGtEckcvb3AK
+	UaqcOCeLkSvUhhtJJNWMwidflyJbNn5Q1Ss6NPejFU1G62U5oJ3gi5PkH/Q84mSUcCvWwQmgvWQ3E
+	aodSoet7llOtVZuCpofMoRw/ycWXBl9x6shXgIYfNHOAIqEbeXcz25dHzkAqx9PlxnybSYAKsz/Hb
+	9JpHaky7sbUWKkWoEZ4w==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.1 #2 (Red Hat Linux))
-	id 1tx4iv-000000066N6-2vlX;
-	Tue, 25 Mar 2025 13:53:45 +0000
-Received: from tor.source.kernel.org ([2600:3c04:e001:324:0:1991:8:25])
+	id 1tx4ix-000000066Pb-0knp;
+	Tue, 25 Mar 2025 13:53:47 +0000
+Received: from sea.source.kernel.org ([172.234.252.31])
 	by bombadil.infradead.org with esmtps (Exim 4.98.1 #2 (Red Hat Linux))
-	id 1tx3Ic-00000005nVz-1lBs;
-	Tue, 25 Mar 2025 12:22:30 +0000
+	id 1tx3Iq-00000005nap-0wjJ;
+	Tue, 25 Mar 2025 12:22:46 +0000
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id A03D061593;
-	Tue, 25 Mar 2025 12:22:25 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C6F4EC4CEE4;
-	Tue, 25 Mar 2025 12:22:15 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 742AE4368C;
+	Tue, 25 Mar 2025 12:22:43 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id ED6B6C4CEE9;
+	Tue, 25 Mar 2025 12:22:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1742905349;
-	bh=eZJhhLnjsJ5KjWkXGFxCn3MEvfIMBL+8sG27XCid5KE=;
+	s=k20201202; t=1742905363;
+	bh=pRtaUMiFeAu+95a3CJwIpLTg/ZslxDoQ016dR5ldst0=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=qevNB9uNRXUhGTfVJr+DKl6lS8FQeFJOY4f7ttg3jO2P7YXXcyp32FuamCgRbpfp6
-	 Tj8ZRiyJrxpkmlppbuR0aTZlagq4HpBxvwcxFyDkvXMwezEgXXrlUpqBLGrm+vhQVE
-	 9kwRr/BG5obSIi/E5vhu4AY8QmWoUzLcx2UvdyDSQLaiwaxvQJ5CeLSKOf3FwJJ5E/
-	 hXAzq1VCYp+EoL2e1cTTQa5pm9NoxQr4RcYtb1wSopiaMM/m+ZruEqXbAWZjV+7luh
-	 k16fsX64eUOJWO5eXZk1Sat/sU8lm9uDUQzukBAAtX2breq8iLsn6lrcBr2XGHy3Dn
-	 z3KzNteqnEguQ==
+	b=p2sof5deaUnKxXsdbuejLa7cMfsQ/jfo9NR4yzxltIbGt9I7LGg3viUZpXT1k8RFw
+	 9WTRwz7YQbBmvTKk30sv6fC7V/LIHte4FG9qKAIedqe9Y/ickF0YMfyR54zTwhm5BQ
+	 obpUACKtQgLFBumRgfvC3WYEeXtPc/EwoiH4j3URzIqNlAo4TJWEvolJgwku1sqkJx
+	 7rKaKFTW+8U8evbqHZ+v5cGHZoXKojJ2sQX8sVgxL7kldYux1laci0G+UGSLEZ94Hd
+	 tb6MX1/sRkfPX52VC52FXAgkrmJ6qByYnTyzQlY4MscJzEO+hWOnTRGT/1TDXE8C38
+	 5yNfgh3K5oAwg==
 From: guoren@kernel.org
 To: arnd@arndb.de,
 	gregkh@linuxfoundation.org,
@@ -114,13 +114,17 @@ Cc: ardb@kernel.org,
 	linux-sctp@vger.kernel.org,
 	linux-usb@vger.kernel.org,
 	linux-media@vger.kernel.org
-Subject: [RFC PATCH V3 24/43] rv64ilp32_abi: compiler_types: Add "long long" into __native_word()
-Date: Tue, 25 Mar 2025 08:16:05 -0400
-Message-Id: <20250325121624.523258-25-guoren@kernel.org>
+Subject: [RFC PATCH V3 25/43] rv64ilp32_abi: exec: Adapt 64lp64 env and argv
+Date: Tue, 25 Mar 2025 08:16:06 -0400
+Message-Id: <20250325121624.523258-26-guoren@kernel.org>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20250325121624.523258-1-guoren@kernel.org>
 References: <20250325121624.523258-1-guoren@kernel.org>
 MIME-Version: 1.0
+X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
+X-CRM114-CacheID: sfid-20250325_052244_302225_29AE870C 
+X-CRM114-Status: UNSURE (   7.70  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -139,36 +143,29 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 From: "Guo Ren (Alibaba DAMO Academy)" <guoren@kernel.org>
 
-The rv64ilp32 abi supports native atomic64 operations. The
-atomic64_t is defined by "long long," so add "long long" into
-__native_word().
+The rv64ilp32 abi reuses the env and argv memory layout of the
+lp64 abi, so leave the space to fit the lp64 struct layout.
 
 Signed-off-by: Guo Ren (Alibaba DAMO Academy) <guoren@kernel.org>
 ---
- include/linux/compiler_types.h | 7 +++++++
- 1 file changed, 7 insertions(+)
+ fs/exec.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/include/linux/compiler_types.h b/include/linux/compiler_types.h
-index 981cc3d7e3aa..6cf36a8e9570 100644
---- a/include/linux/compiler_types.h
-+++ b/include/linux/compiler_types.h
-@@ -505,9 +505,16 @@ struct ftrace_likely_data {
- 			 default: (x)))
+diff --git a/fs/exec.c b/fs/exec.c
+index 506cd411f4ac..548d18b7ae92 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -424,6 +424,10 @@ static const char __user *get_user_arg_ptr(struct user_arg_ptr argv, int nr)
+ 	}
+ #endif
  
- /* Is this type a native word size -- useful for atomic operations */
-+#ifdef CONFIG_64BIT
-+#define __native_word(t) \
-+	(sizeof(t) == sizeof(char) || sizeof(t) == sizeof(short) || \
-+	 sizeof(t) == sizeof(int) || sizeof(t) == sizeof(long) || \
-+	 sizeof(t) == sizeof(long long))
-+#else
- #define __native_word(t) \
- 	(sizeof(t) == sizeof(char) || sizeof(t) == sizeof(short) || \
- 	 sizeof(t) == sizeof(int) || sizeof(t) == sizeof(long))
++#if defined(CONFIG_64BIT) && (BITS_PER_LONG == 32)
++	nr = nr * 2;
 +#endif
++
+ 	if (get_user(native, argv.ptr.native + nr))
+ 		return ERR_PTR(-EFAULT);
  
- #ifdef __OPTIMIZE__
- # define __compiletime_assert(condition, msg, prefix, suffix)		\
 -- 
 2.40.1
 
