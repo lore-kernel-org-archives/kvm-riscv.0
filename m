@@ -4,43 +4,43 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7996EC3600E
-	for <kvm-riscv@archiver.kernel.org>; Tue, 25 Mar 2025 13:53:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84B64C3600B
+	for <kvm-riscv@archiver.kernel.org>; Tue, 25 Mar 2025 13:53:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=NaDRY5DJHCrOE3sXpiLPaYZj8z++CiLddbTJ5TYRZkg=; b=buki0vTkbCJPnT
-	SveLdLgc+opSFZej0RXGD7Az195+uOC/AxOAcn+AJt1aLmN2A1JPKaJfo0HdrT8evc2gv53ppfVQ2
-	qK322GCeomvFgJOPE+nqqECzONrFwvaInXM5qPNLpXt6fAbgEocQORYTEA6T5wyI5J2mB9VrfWYuU
-	j8E44fYOPHoHgOccbBvd9EItcg1fozcvzIsT1/hy6RiEribX8P6oPamBLWn3ozs8Ams3EATJW5qRT
-	dwecxeDKs5A0zvNaJf46DoUNRz7yGUvW9kY65yNNvOpIj0R7ELZg2vUEFwZE5ON+vdZ8mON0dc0VA
-	Gzg6mpB6s5x4e2P9fUfQ==;
+	List-Owner; bh=rMi6g18NeubEidOaSKMWFSQnH65zqd7x6402fPYSFoQ=; b=CIVZGYRbsfpv78
+	4x86M1ZQDl7306P3tF6nKoBTcvqZWfpe97EYq4cVNujPFTfpyXgm5qCbmlAV84JT/EhJ2kkcVdkN0
+	I2uPAul3Y5z4NsQDUdtcwlq3/kEziSsHHLmLTw7AMAf4MpF+JaHopu8WCpPElazionfQMhlgptE3v
+	GuKRESgqEBAvYvY/P+tFLDiPGFkqckLbN26ZbB0nbeZkQU9cHBNjcaSHrORxE6GrRwV/ziatLYXw2
+	wZFgr9L/ZXLqGtOMOtZctJHel/MyEEtclo9axJEJ49iDUUAKydBVO/c0jx5z6Ea3qU9rnwvvgPN6U
+	iUqRQdC96TmjwFDQoA3A==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.1 #2 (Red Hat Linux))
-	id 1tx4is-000000066Iw-0wsZ;
-	Tue, 25 Mar 2025 13:53:42 +0000
-Received: from nyc.source.kernel.org ([2604:1380:45d1:ec00::3])
+	id 1tx4it-000000066Jw-1BKh;
+	Tue, 25 Mar 2025 13:53:43 +0000
+Received: from tor.source.kernel.org ([172.105.4.254])
 	by bombadil.infradead.org with esmtps (Exim 4.98.1 #2 (Red Hat Linux))
-	id 1tx3Hv-00000005nI7-3cuy;
-	Tue, 25 Mar 2025 12:21:49 +0000
+	id 1tx3IB-00000005nN0-0BYh;
+	Tue, 25 Mar 2025 12:22:03 +0000
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 121CCA43621;
-	Tue, 25 Mar 2025 12:16:18 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CBB6BC4CEEE;
-	Tue, 25 Mar 2025 12:21:32 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 1FED16158D;
+	Tue, 25 Mar 2025 12:21:58 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3ED79C4CEE9;
+	Tue, 25 Mar 2025 12:21:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1742905306;
-	bh=CZdS/GvkA90YU/kEAB36wBveXCqjeNawAvE607HO4+w=;
+	s=k20201202; t=1742905322;
+	bh=EOiooLZvwzRM6FHGKB7Ghuvoq/JlTjUJTDs6W9lVozk=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=Yclr6uQ+H+fwk4FeZuO/o1L+d44Ijt8+G1fy933XmRQHqYsRSsd0sTScvUWf8jhFn
-	 posU+nxR0I0CJubB8JpreHpWy/aH5nvKFU2hJMpWF6yA979un6JU7n1rYErPHMB+OE
-	 1HtLAfDLBJWL5lUcfbf0A+xaNH26BIwc5uqCly6rbYZnlIoX+horQoW9v4j5Sryd9B
-	 XXw3PX/jNNQJEowJrGs9ycLTX55S8tjuI6nqYWKt5HT846Iutyoxz4uQ/nads2ZfRN
-	 d2AZWWzbzkjb2I7at8nkI5Hq2azsuTC7jh77lOOfoH2dxmDMXNH64ns6YpTd/KRsOD
-	 WXp0YdnLwIufw==
+	b=YiNwDozbmDOug84APDztOZ2kil/O/36KZmxFYgseIvSYpf80jP5BkPovMatjpEwF7
+	 9Mq3kmZ4ePc7RYLpMw9NEaSm0LGSMxns79AzH45x1KmUkZqWo4Skq6zfdG3Tlcxage
+	 +k81YCl4yto0KufO7fU24VbbmT5HpsiwnQ/LJNEbWscleUqJq17+j1b39fWz8LWMSg
+	 Uuit3b1JS+cJhBplzgf1jYyOjOrjET/O1rJQILxC4gg7nPXrpSCtouxe46dwFeFif2
+	 9u1eZQAL0xJs37uoPehOJHR0ac4C+89etNoi3+6KrTYRMMOEqLazYSIyboQBbBmP0S
+	 sxGJTKjz/HGow==
 From: guoren@kernel.org
 To: arnd@arndb.de,
 	gregkh@linuxfoundation.org,
@@ -114,17 +114,13 @@ Cc: ardb@kernel.org,
 	linux-sctp@vger.kernel.org,
 	linux-usb@vger.kernel.org,
 	linux-media@vger.kernel.org
-Subject: [RFC PATCH V3 21/43] rv64ilp32_abi: asm-generic: Add custom BITS_PER_LONG definition
-Date: Tue, 25 Mar 2025 08:16:02 -0400
-Message-Id: <20250325121624.523258-22-guoren@kernel.org>
+Subject: [RFC PATCH V3 22/43] rv64ilp32_abi: bpf: Change KERN_ARENA_SZ to 256MiB
+Date: Tue, 25 Mar 2025 08:16:03 -0400
+Message-Id: <20250325121624.523258-23-guoren@kernel.org>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20250325121624.523258-1-guoren@kernel.org>
 References: <20250325121624.523258-1-guoren@kernel.org>
 MIME-Version: 1.0
-X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250325_052148_035401_63F3924D 
-X-CRM114-Status: UNSURE (   7.88  )
-X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -143,47 +139,77 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 From: "Guo Ren (Alibaba DAMO Academy)" <guoren@kernel.org>
 
-The RV64ILP32 ABI linux kernel is based on CONFIG_64BIT, but
-BITS_PER_LONG is 32. So, give a custom architectural definition
-of BITS_PER_LONG to match the correct macro definition.
+The RV64ILP32 ABI limits the vmalloc range to 512MB, hence the
+arena kernel range is set to 256MiB instead of 4GiB.
 
 Signed-off-by: Guo Ren (Alibaba DAMO Academy) <guoren@kernel.org>
 ---
- arch/riscv/include/uapi/asm/bitsperlong.h | 6 ++++++
- include/asm-generic/bitsperlong.h         | 2 ++
- 2 files changed, 8 insertions(+)
+ kernel/bpf/arena.c | 19 ++++++++++++++-----
+ 1 file changed, 14 insertions(+), 5 deletions(-)
 
-diff --git a/arch/riscv/include/uapi/asm/bitsperlong.h b/arch/riscv/include/uapi/asm/bitsperlong.h
-index 7d0b32e3b701..fec2ad91597c 100644
---- a/arch/riscv/include/uapi/asm/bitsperlong.h
-+++ b/arch/riscv/include/uapi/asm/bitsperlong.h
-@@ -9,6 +9,12 @@
+diff --git a/kernel/bpf/arena.c b/kernel/bpf/arena.c
+index 870aeb51d70a..4eb99f83d4a1 100644
+--- a/kernel/bpf/arena.c
++++ b/kernel/bpf/arena.c
+@@ -40,7 +40,14 @@
  
- #define __BITS_PER_LONG (__SIZEOF_POINTER__ * 8)
- 
-+#if __BITS_PER_LONG == 64
-+#define BITS_PER_LONG 64
+ /* number of bytes addressable by LDX/STX insn with 16-bit 'off' field */
+ #define GUARD_SZ (1ull << sizeof_field(struct bpf_insn, off) * 8)
+-#define KERN_VM_SZ (SZ_4G + GUARD_SZ)
++
++#if BITS_PER_LONG == 64
++#define KERN_ARENA_SZ SZ_4G
 +#else
-+#define BITS_PER_LONG 32
++#define KERN_ARENA_SZ SZ_256M
 +#endif
 +
- #include <asm-generic/bitsperlong.h>
++#define KERN_VM_SZ (KERN_ARENA_SZ + GUARD_SZ)
  
- #endif /* _UAPI_ASM_RISCV_BITSPERLONG_H */
-diff --git a/include/asm-generic/bitsperlong.h b/include/asm-generic/bitsperlong.h
-index 1023e2a4bd37..7ccbb7ce6610 100644
---- a/include/asm-generic/bitsperlong.h
-+++ b/include/asm-generic/bitsperlong.h
-@@ -6,7 +6,9 @@
+ struct bpf_arena {
+ 	struct bpf_map map;
+@@ -115,7 +122,7 @@ static struct bpf_map *arena_map_alloc(union bpf_attr *attr)
+ 		return ERR_PTR(-EINVAL);
  
+ 	vm_range = (u64)attr->max_entries * PAGE_SIZE;
+-	if (vm_range > SZ_4G)
++	if (vm_range > KERN_ARENA_SZ)
+ 		return ERR_PTR(-E2BIG);
  
- #ifdef CONFIG_64BIT
-+#ifndef BITS_PER_LONG
- #define BITS_PER_LONG 64
+ 	if ((attr->map_extra >> 32) != ((attr->map_extra + vm_range - 1) >> 32))
+@@ -321,7 +328,7 @@ static unsigned long arena_get_unmapped_area(struct file *filp, unsigned long ad
+ 
+ 	if (pgoff)
+ 		return -EINVAL;
+-	if (len > SZ_4G)
++	if (len > KERN_ARENA_SZ)
+ 		return -E2BIG;
+ 
+ 	/* if user_vm_start was specified at arena creation time */
+@@ -337,12 +344,14 @@ static unsigned long arena_get_unmapped_area(struct file *filp, unsigned long ad
+ 	ret = mm_get_unmapped_area(current->mm, filp, addr, len * 2, 0, flags);
+ 	if (IS_ERR_VALUE(ret))
+ 		return ret;
++#if BITS_PER_LONG == 64
+ 	if ((ret >> 32) == ((ret + len - 1) >> 32))
+ 		return ret;
 +#endif
- #else
- #define BITS_PER_LONG 32
- #endif /* CONFIG_64BIT */
+ 	if (WARN_ON_ONCE(arena->user_vm_start))
+ 		/* checks at map creation time should prevent this */
+ 		return -EFAULT;
+-	return round_up(ret, SZ_4G);
++	return round_up(ret, KERN_ARENA_SZ);
+ }
+ 
+ static int arena_map_mmap(struct bpf_map *map, struct vm_area_struct *vma)
+@@ -366,7 +375,7 @@ static int arena_map_mmap(struct bpf_map *map, struct vm_area_struct *vma)
+ 		return -EBUSY;
+ 
+ 	/* Earlier checks should prevent this */
+-	if (WARN_ON_ONCE(vma->vm_end - vma->vm_start > SZ_4G || vma->vm_pgoff))
++	if (WARN_ON_ONCE(vma->vm_end - vma->vm_start > KERN_ARENA_SZ || vma->vm_pgoff))
+ 		return -EFAULT;
+ 
+ 	if (remember_vma(arena, vma))
 -- 
 2.40.1
 
