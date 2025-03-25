@@ -4,43 +4,43 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3DA28C3600B
-	for <kvm-riscv@archiver.kernel.org>; Tue, 25 Mar 2025 12:38:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D5617C36005
+	for <kvm-riscv@archiver.kernel.org>; Tue, 25 Mar 2025 12:38:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=+uzD4TAaXw8ASzBWhywF/d7VMw/izP4527SeLv4KzCM=; b=xy7S7IVVkjpjqO
-	x7agtD9X2Lldb/aTIAei/SmED14gRMRu/hAuBPERxwAWrfAhmY6QMqyAVn/3RN95Rzlfhhc+uOr14
-	VxIS3slwoVBL0e6ai7DX0wXD2R42R8jY3VnhEODmAI4pI9Cl3qz+gfgWNZwwbOnU6G6vxbPx1r41w
-	7Hjc+t0MTOVslvBog5jsppLMZs3PGooc7JFT5WVLRL2x1IO61NYcu+8pdLxan1fuK58nUmVQ3uVI/
-	/Zm2Sn71IticWVao/vlXg5XirOXEY0daeT0t4ZcvMb83mi0EikHM3XQogXZ2Fx2fg7lNy5piRsrwD
-	yM1LgEqQc+oPnM+yP/dA==;
+	List-Owner; bh=Jf6FcPYpDIj6Z9E9RX4YG4osIRuxhe1jBDsDWqnV05c=; b=0IJrMIB9n2IOy6
+	Q2F9v8GuUUl8xjoJLlUO5BVpB3He/bnGv5e1eiKdnj4LxWuYqigK7YexoNJR3AuLpm/1uPQYgZO1X
+	XtGbiwhwNtyAykVYUqwoF0RccDP9UycTPkCaHMzCY9a2tCnX4ChFJnDbjgsK91B8nLtlBV484pMEa
+	uKEs/2sQsCkIqcuCwp5lJ5mcHW7vPQZf+fBjzN8l2Nzs0u8IIrWmyfCyhFJE+ncP84fn5fZaVwgtY
+	xsuXtkkaGuMTc+WGg5efjZrMDs0/8XxD0xtKUio49HD4sZuRvCgBn6ojIGEB+NkTlH/nPNnQnGt4C
+	B4p3pNQ4ugF5SkRNDb1Q==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.1 #2 (Red Hat Linux))
-	id 1tx3YO-00000005rGH-00uX;
-	Tue, 25 Mar 2025 12:38:48 +0000
-Received: from tor.source.kernel.org ([2600:3c04:e001:324:0:1991:8:25])
+	id 1tx3YR-00000005rKn-2Qhi;
+	Tue, 25 Mar 2025 12:38:51 +0000
+Received: from sea.source.kernel.org ([172.234.252.31])
 	by bombadil.infradead.org with esmtps (Exim 4.98.1 #2 (Red Hat Linux))
-	id 1tx3Db-00000005m48-1Lnc;
-	Tue, 25 Mar 2025 12:17:19 +0000
+	id 1tx3EI-00000005mHb-0rEw;
+	Tue, 25 Mar 2025 12:18:03 +0000
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 8EAAB6158C;
-	Tue, 25 Mar 2025 12:17:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 89036C4CEEF;
-	Tue, 25 Mar 2025 12:17:05 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 8CCB3434D7;
+	Tue, 25 Mar 2025 12:18:01 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5B2FDC4CEF0;
+	Tue, 25 Mar 2025 12:17:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1742905038;
-	bh=LCI/yc1ahl/Zp9x+QUBbqr6DoNgqTtvLT0+YbqUE8Kc=;
+	s=k20201202; t=1742905081;
+	bh=iWYi5/d3lIOrxHNI1EIVP5k9hUi9+eK2hLYPYcT89jg=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=M7zSCa31T5EIDOyp2pisnsb36omDKGCK3CtmKd0jmWms5JTGy4cL6gqroHU+U6Do3
-	 GF5N76/FLWX7xtVasdLhKMcInuvkPjYr3/XnVSZ0Pobo+jSDrMTbHwC4OV0hO+sPFI
-	 ioSKnCYcXTCDbUuV2wyGraJbUwJ9AzzjW2UTGrk2nCywWovoornRX4ZXKz0LVTxi7r
-	 qUcDCGXPxGB7Nv/XpwP22Vm+8YPGohVwdZX0Qz0dza/5WXPU3SnFd3lRUYrc4XYmk2
-	 cIekIVLnOX0Kw3qDsIdU2cHos9atrofsQ8fmXPfl7xnlXnTI5oe/zK85/xe5ly8pgc
-	 65J8Dyq0AYcUQ==
+	b=mJnrUfpQU3tRiz/k25gw4Uqd12Aw8TcM6cjFO/pD8K+3ShkeSS04mnHDe7BpyS9ke
+	 O8z/kOa0aXdpl9GLvZpnTK+Xx+g5W6fJjabNS4JH2Wwvd5+2wgVNE54fuiymHoC1wG
+	 50KxnfqoOdtuha4aPxrF6rszRIRlwHFNHlIfbWoUlSci7i3a1tzNjs60WJvLsFt2CL
+	 k4uREm/BjGR8keu0URF80UT0E0VmN+e0XoVL0J9C2x4l4RFyOLnqNqNi9ALPjHGSGJ
+	 JkfPLCYVJWSPzMY2y47OjruYC0XtjptJeJQjpc7rLp5TYbe0YDu+bublV7qn3GnUev
+	 yahK8zT/PrMfQ==
 From: guoren@kernel.org
 To: arnd@arndb.de,
 	gregkh@linuxfoundation.org,
@@ -114,13 +114,16 @@ Cc: ardb@kernel.org,
 	linux-sctp@vger.kernel.org,
 	linux-usb@vger.kernel.org,
 	linux-media@vger.kernel.org
-Subject: [RFC PATCH V3 02/43] rv64ilp32_abi: riscv: Adapt Makefile and Kconfig
-Date: Tue, 25 Mar 2025 08:15:43 -0400
-Message-Id: <20250325121624.523258-3-guoren@kernel.org>
+Subject: [RFC PATCH V3 05/43] rv64ilp32_abi: riscv: crc32: Utilize 64-bit width to improve the performance
+Date: Tue, 25 Mar 2025 08:15:46 -0400
+Message-Id: <20250325121624.523258-6-guoren@kernel.org>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20250325121624.523258-1-guoren@kernel.org>
 References: <20250325121624.523258-1-guoren@kernel.org>
 MIME-Version: 1.0
+X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
+X-CRM114-CacheID: sfid-20250325_051802_291741_338FDA0F 
+X-CRM114-Status: GOOD (  10.95  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -139,127 +142,144 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 From: "Guo Ren (Alibaba DAMO Academy)" <guoren@kernel.org>
 
-Extend the ARCH_RV64I base with ABI_RV64ILP32 to compile the Linux
-kernel self into ILP32 on CONFIG_64BIT=y, minimizing the kernel's
-memory footprint and cache occupation.
-
-The 'cmd_cpp_lds_S' in scripts/Makefile.build uses cpp_flags for
-ld.s generation, so add "-mabi=xxx" to KBUILD_CPPFLAGS, just like
-what we've done in KBUILD_CLFAGS and KBUILD_AFLAGS.
-
-cmd_cpp_lds_S = $(CPP) $(cpp_flags) -P -U$(ARCH)
-
-The rv64ilp32 ABI reuses an rv64 toolchain whose default "-mabi="
-is lp64, so add "-mabi=ilp32" to correct it.
-
-Add config entry with rv64ilp32.config fragment in Makefile:
- - rv64ilp32_defconfig
+The RV64ILP32 ABI, derived from a 64-bit ISA, uses 32-bit
+BITS_PER_LONG. Therefore, crc32 algorithm could utilize 64-bit width
+to improve the performance.
 
 Signed-off-by: Guo Ren (Alibaba DAMO Academy) <guoren@kernel.org>
 ---
- arch/riscv/Kconfig                  | 12 ++++++++++--
- arch/riscv/Makefile                 | 17 +++++++++++++++++
- arch/riscv/configs/rv64ilp32.config |  1 +
- 3 files changed, 28 insertions(+), 2 deletions(-)
- create mode 100644 arch/riscv/configs/rv64ilp32.config
+ arch/riscv/lib/crc32-riscv.c | 35 ++++++++++++++++++-----------------
+ 1 file changed, 18 insertions(+), 17 deletions(-)
 
-diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-index 7612c52e9b1e..da2111b0111c 100644
---- a/arch/riscv/Kconfig
-+++ b/arch/riscv/Kconfig
-@@ -213,7 +213,7 @@ config RISCV
- 	select TRACE_IRQFLAGS_SUPPORT
- 	select UACCESS_MEMCPY if !MMU
- 	select USER_STACKTRACE_SUPPORT
--	select ZONE_DMA32 if 64BIT
-+	select ZONE_DMA32 if 64BIT && !ABI_RV64ILP32
+diff --git a/arch/riscv/lib/crc32-riscv.c b/arch/riscv/lib/crc32-riscv.c
+index 53d56ab422c7..68dfb0565696 100644
+--- a/arch/riscv/lib/crc32-riscv.c
++++ b/arch/riscv/lib/crc32-riscv.c
+@@ -8,6 +8,7 @@
+ #include <asm/hwcap.h>
+ #include <asm/alternative-macros.h>
+ #include <asm/byteorder.h>
++#include <asm/csr.h>
  
- config RUSTC_SUPPORTS_RISCV
- 	def_bool y
-@@ -298,6 +298,7 @@ config PAGE_OFFSET
- config KASAN_SHADOW_OFFSET
- 	hex
- 	depends on KASAN_GENERIC
-+	default 0x70000000 if ABI_RV64ILP32
- 	default 0xdfffffff00000000 if 64BIT
- 	default 0xffffffff if 32BIT
+ #include <linux/types.h>
+ #include <linux/minmax.h>
+@@ -59,12 +60,12 @@
+  */
+ # define CRC32_POLY_QT_BE	0x04d101df481b4e5a
  
-@@ -341,7 +342,7 @@ config FIX_EARLYCON_MEM
+-static inline u64 crc32_le_prep(u32 crc, unsigned long const *ptr)
++static inline u64 crc32_le_prep(u32 crc, u64 const *ptr)
+ {
+ 	return (u64)crc ^ (__force u64)__cpu_to_le64(*ptr);
+ }
  
- config ILLEGAL_POINTER_VALUE
- 	hex
--	default 0 if 32BIT
-+	default 0 if 32BIT || ABI_RV64ILP32
- 	default 0xdead000000000000 if 64BIT
+-static inline u32 crc32_le_zbc(unsigned long s, u32 poly, unsigned long poly_qt)
++static inline u32 crc32_le_zbc(u64 s, u32 poly, u64 poly_qt)
+ {
+ 	u32 crc;
  
- config PGTABLE_LEVELS
-@@ -418,6 +419,13 @@ config ARCH_RV64I
+@@ -85,7 +86,7 @@ static inline u32 crc32_le_zbc(unsigned long s, u32 poly, unsigned long poly_qt)
+ 	return crc;
+ }
  
- endchoice
+-static inline u64 crc32_be_prep(u32 crc, unsigned long const *ptr)
++static inline u64 crc32_be_prep(u32 crc, u64 const *ptr)
+ {
+ 	return ((u64)crc << 32) ^ (__force u64)__cpu_to_be64(*ptr);
+ }
+@@ -131,7 +132,7 @@ static inline u32 crc32_be_prep(u32 crc, unsigned long const *ptr)
+ # error "Unexpected __riscv_xlen"
+ #endif
  
-+config ABI_RV64ILP32
-+	bool "ABI RV64ILP32"
-+	depends on 64BIT
-+	help
-+	  Compile linux kernel self into RV64ILP32 ABI of RISC-V psabi
-+	  specification.
-+
- # We must be able to map all physical memory into the kernel, but the compiler
- # is still a bit more efficient when generating code if it's setup in a manner
- # such that it can only map 2GiB of memory.
-diff --git a/arch/riscv/Makefile b/arch/riscv/Makefile
-index 13fbc0f94238..76db01020a22 100644
---- a/arch/riscv/Makefile
-+++ b/arch/riscv/Makefile
-@@ -30,10 +30,21 @@ ifeq ($(CONFIG_ARCH_RV64I),y)
- 	BITS := 64
- 	UTS_MACHINE := riscv64
+-static inline u32 crc32_be_zbc(unsigned long s)
++static inline u32 crc32_be_zbc(xlen_t s)
+ {
+ 	u32 crc;
  
-+ifeq ($(CONFIG_ABI_RV64ILP32),y)
-+	KBUILD_CPPFLAGS += -mabi=ilp32
-+
-+	KBUILD_CFLAGS += -mabi=ilp32
-+	KBUILD_AFLAGS += -mabi=ilp32
-+
-+	KBUILD_LDFLAGS += -melf32lriscv
-+else
-+	KBUILD_CPPFLAGS += -mabi=lp64
-+
- 	KBUILD_CFLAGS += -mabi=lp64
- 	KBUILD_AFLAGS += -mabi=lp64
+@@ -156,16 +157,16 @@ typedef u32 (*fallback)(u32 crc, unsigned char const *p, size_t len);
  
- 	KBUILD_LDFLAGS += -melf64lriscv
-+endif
+ static inline u32 crc32_le_unaligned(u32 crc, unsigned char const *p,
+ 				     size_t len, u32 poly,
+-				     unsigned long poly_qt)
++				     xlen_t poly_qt)
+ {
+ 	size_t bits = len * 8;
+-	unsigned long s = 0;
++	xlen_t s = 0;
+ 	u32 crc_low = 0;
  
- 	KBUILD_RUSTFLAGS += -Ctarget-cpu=generic-rv64 --target=riscv64imac-unknown-none-elf \
- 			    -Cno-redzone
-@@ -41,6 +52,8 @@ else
- 	BITS := 32
- 	UTS_MACHINE := riscv32
+ 	for (int i = 0; i < len; i++)
+-		s = ((unsigned long)*p++ << (__riscv_xlen - 8)) | (s >> 8);
++		s = ((xlen_t)*p++ << (__riscv_xlen - 8)) | (s >> 8);
  
-+	KBUILD_CPPFLAGS += -mabi=ilp32
-+
- 	KBUILD_CFLAGS += -mabi=ilp32
- 	KBUILD_AFLAGS += -mabi=ilp32
- 	KBUILD_LDFLAGS += -melf32lriscv
-@@ -224,6 +237,10 @@ PHONY += rv32_nommu_virt_defconfig
- rv32_nommu_virt_defconfig:
- 	$(Q)$(MAKE) -f $(srctree)/Makefile nommu_virt_defconfig 32-bit.config
+-	s ^= (unsigned long)crc << (__riscv_xlen - bits);
++	s ^= (xlen_t)crc << (__riscv_xlen - bits);
+ 	if (__riscv_xlen == 32 || len < sizeof(u32))
+ 		crc_low = crc >> bits;
  
-+PHONY += rv64ilp32_defconfig
-+rv64ilp32_defconfig:
-+	$(Q)$(MAKE) -f $(srctree)/Makefile defconfig rv64ilp32.config
-+
- define archhelp
-   echo  '  Image		- Uncompressed kernel image (arch/riscv/boot/Image)'
-   echo  '  Image.gz	- Compressed kernel image (arch/riscv/boot/Image.gz)'
-diff --git a/arch/riscv/configs/rv64ilp32.config b/arch/riscv/configs/rv64ilp32.config
-new file mode 100644
-index 000000000000..07536586e169
---- /dev/null
-+++ b/arch/riscv/configs/rv64ilp32.config
-@@ -0,0 +1 @@
-+CONFIG_ABI_RV64ILP32=y
+@@ -177,12 +178,12 @@ static inline u32 crc32_le_unaligned(u32 crc, unsigned char const *p,
+ 
+ static inline u32 __pure crc32_le_generic(u32 crc, unsigned char const *p,
+ 					  size_t len, u32 poly,
+-					  unsigned long poly_qt,
++					  xlen_t poly_qt,
+ 					  fallback crc_fb)
+ {
+ 	size_t offset, head_len, tail_len;
+-	unsigned long const *p_ul;
+-	unsigned long s;
++	xlen_t const *p_ul;
++	xlen_t s;
+ 
+ 	asm goto(ALTERNATIVE("j %l[legacy]", "nop", 0,
+ 			     RISCV_ISA_EXT_ZBC, 1)
+@@ -199,7 +200,7 @@ static inline u32 __pure crc32_le_generic(u32 crc, unsigned char const *p,
+ 
+ 	tail_len = len & OFFSET_MASK;
+ 	len = len >> STEP_ORDER;
+-	p_ul = (unsigned long const *)p;
++	p_ul = (xlen_t const *)p;
+ 
+ 	for (int i = 0; i < len; i++) {
+ 		s = crc32_le_prep(crc, p_ul);
+@@ -236,7 +237,7 @@ static inline u32 crc32_be_unaligned(u32 crc, unsigned char const *p,
+ 				     size_t len)
+ {
+ 	size_t bits = len * 8;
+-	unsigned long s = 0;
++	xlen_t s = 0;
+ 	u32 crc_low = 0;
+ 
+ 	s = 0;
+@@ -247,7 +248,7 @@ static inline u32 crc32_be_unaligned(u32 crc, unsigned char const *p,
+ 		s ^= crc >> (32 - bits);
+ 		crc_low = crc << bits;
+ 	} else {
+-		s ^= (unsigned long)crc << (bits - 32);
++		s ^= (xlen_t)crc << (bits - 32);
+ 	}
+ 
+ 	crc = crc32_be_zbc(s);
+@@ -259,8 +260,8 @@ static inline u32 crc32_be_unaligned(u32 crc, unsigned char const *p,
+ u32 __pure crc32_be_arch(u32 crc, const u8 *p, size_t len)
+ {
+ 	size_t offset, head_len, tail_len;
+-	unsigned long const *p_ul;
+-	unsigned long s;
++	xlen_t const *p_ul;
++	xlen_t s;
+ 
+ 	asm goto(ALTERNATIVE("j %l[legacy]", "nop", 0,
+ 			     RISCV_ISA_EXT_ZBC, 1)
+@@ -277,7 +278,7 @@ u32 __pure crc32_be_arch(u32 crc, const u8 *p, size_t len)
+ 
+ 	tail_len = len & OFFSET_MASK;
+ 	len = len >> STEP_ORDER;
+-	p_ul = (unsigned long const *)p;
++	p_ul = (xlen_t const *)p;
+ 
+ 	for (int i = 0; i < len; i++) {
+ 		s = crc32_be_prep(crc, p_ul);
 -- 
 2.40.1
 
