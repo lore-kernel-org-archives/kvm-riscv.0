@@ -4,56 +4,96 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28F53C3600B
-	for <kvm-riscv@archiver.kernel.org>; Thu, 27 Mar 2025 08:27:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B9E3C3600B
+	for <kvm-riscv@archiver.kernel.org>; Thu, 27 Mar 2025 12:47:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=cy2c3T5DUWCPkR7oYwNxl+Z36Z2XFKuZgQBmgKrlczk=; b=U+r59KvzdF1Duh
-	h4iz19Gd1/DlcLe3rZoNWtMNI3Vouo2i1yMFBbLg2XICkSJzjKKIswGQQ70M4b9Q/N8zA+IVq0XCC
-	V2bGx7PevtvS0/7qonPNsz9/rDsH0PaAbVeSNP+eTfXf4b2zwXQLRWYky9wVf9TNFankXY0qRHSjO
-	RQ2iyid8uoc/GVOf4F8HtYqXHFOWdSSiCM/AcD7RP6VI7s1JMiLYeFtdesXvN7/NnO5TrQBl1N6+/
-	vlhTolT5lR/26IRKvhRTej07HXcFzObvyJAeYkGoegrrDQ40iUeDQkXrmorKqeXeVkLim9Zvutob6
-	mbYD76qWvD/CiCVqoh9g==;
+	List-Archive:List-Unsubscribe:List-Id:To:Subject:Message-ID:Date:From:
+	In-Reply-To:References:MIME-Version:Reply-To:Cc:Content-ID:
+	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+	:Resent-Message-ID:List-Owner;
+	bh=HbJa6DliJja4JfHZVvrXfeheXJDlwJu6Dn0gtOb4vnY=; b=dWWE5vkTfsgdD6aBtWOZqdQgWK
+	tXrawx2sJnOTSmvVfdzkkcFqGY1P383Eh5LHpklIf+1FxrfralfQGvoz6UFpPNtG80s0tTPNYKHTc
+	IcrXb0VoBKSEUz7ST48kqgfKWv5zjfuaSZ68tjkJp16nPT5ButJBut4nfbTJIbJo5qyn3CyptC/x/
+	9rRe4ZPfYoJD41y6Ylr6UbRhRDlQl42uuWJm7I86eIVI1dIv+sP46mtJIIksitfpyMCi3XZvLLNrT
+	74bM89uc8k6wmcXashEqQHXHrLfb+9wh/NfIfIhx59Gfoq8jEoSY0WpVPmON85LEWJ1izmx1wPweN
+	lMSHKImg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.1 #2 (Red Hat Linux))
-	id 1txiZu-0000000AS2v-3EL3;
-	Thu, 27 Mar 2025 08:27:06 +0000
-Received: from out-179.mta0.migadu.com ([91.218.175.179])
+	id 1txmdy-0000000Axxj-1ykB;
+	Thu, 27 Mar 2025 12:47:34 +0000
+Received: from sea.source.kernel.org ([172.234.252.31])
 	by bombadil.infradead.org with esmtps (Exim 4.98.1 #2 (Red Hat Linux))
-	id 1txiYm-0000000ARrK-3Zu6
-	for kvm-riscv@lists.infradead.org;
-	Thu, 27 Mar 2025 08:25:58 +0000
-Date: Thu, 27 Mar 2025 09:25:42 +0100
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1743063944;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=NEt0aiytcktruPAw6HXBqRFKUOE4nJxqyXPJB1e/qLA=;
-	b=k0OWUjXyssoB8n/xGrlSbPBbPiM9eAyalAfD9ZbQETMOqsbjcwqDHzKpTDW1kV2F+kZBIf
-	gBEaWL/EXxvIM20UTXiBogTvLRN17NnSZ7oHseSS9cx0vho/pseSKoLWBQ+GOJ+2zulMs/
-	bJfxjCBIcS3QbagiFYnO/EKtjlrYRGc=
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Andrew Jones <andrew.jones@linux.dev>
-To: Jean-Philippe Brucker <jean-philippe@linaro.org>
-Cc: alexandru.elisei@arm.com, eric.auger@redhat.com, 
-	kvmarm@lists.linux.dev, kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
-	vladimir.murzin@arm.com
-Subject: Re: [kvm-unit-tests PATCH v3 4/5] configure: Add --qemu-cpu option
-Message-ID: <20250327-96bca62a41b4bb0aa44303d4@orel>
-References: <20250325160031.2390504-3-jean-philippe@linaro.org>
- <20250325160031.2390504-7-jean-philippe@linaro.org>
+	id 1txmdw-0000000Axx5-0Qy0;
+	Thu, 27 Mar 2025 12:47:33 +0000
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 94E5444B4F;
+	Thu, 27 Mar 2025 12:47:30 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BB168C4CEF1;
+	Thu, 27 Mar 2025 12:47:30 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1743079650;
+	bh=tWRtgxQFfYLGIe+M3bP4npfrIUeWm1/2DsIIszdvZ1Y=;
+	h=References:In-Reply-To:From:Date:Subject:To:From;
+	b=ry+3lJ4jOXxi94y5mI1NbXnalzo+G/pnZhSjrID66dTcLVpvSN5jxYLjoTFSpm8t2
+	 RVmKewcN7zdZNd9LKSrvUmI7Bitb6RSvE7xtBxsyaXOJotG+IzA+4cSiX8s5XJcd4a
+	 Gflk19wroRN6hPkMWa+MtGfvaJAZL2ppLItlCErXCvjy0HVn2BGenZE8FkLMdyZJYX
+	 btnwncSVrJy5++ND3g+6x3gmSehP4lsafQ7UigXG8+8I+Idsw/U+sgz5n2nwr8zWSp
+	 H++QkUGRCbXL4b+bUxPVKQyPP9wfeJA4D52pvQD5Qmb8PrgNvDFT5Gco7rpxg0Rv5D
+	 +Xv0BqRwjjbZg==
+Received: by mail-wm1-f41.google.com with SMTP id 5b1f17b1804b1-43cf680d351so11855505e9.0;
+        Thu, 27 Mar 2025 05:47:30 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCUigzAUC9JP9008qeguM/UBhEib1kMhnhTSZSzWlX25BVh/MhtmK1tEoRYOXghyqqbFZNY9oo96yxRyFg==@lists.infradead.org, AJvYcCV74/n3AdnSn6Gxt35wcEdMbBd+LEeyfGb2nWEx8HBFqaTAcKEOgO+E1RxJPhbXJ1aFbg/5FZx5zio=@lists.infradead.org, AJvYcCWu8GdBcL0Ff9wUwmv/5/1mveCL1QA51+rcDhVvlOXeOjFV6krvdRDGIg4sigjVXoM2aARSwDwuNGrXLPg=@lists.infradead.org
+X-Gm-Message-State: AOJu0YwK3SVIetyKpknFU+pCRu4UrAGdE6m7iwhFkKjyPa1QwXztO46g
+	UQ0FYd6HIsiBCP34r+Q8f+TNKPldb1bLFPOQuDi1481vmp9DmDjx6nPZDr1K84KTOziv0ZNyuXo
+	/JxMUZeiwRGbP3cp6yXHHP2igS3c=
+X-Google-Smtp-Source: AGHT+IHmUYVhD/X+fFCk9mo6iUY3GGy6zSlwPlvt9V5E3bXgq4+AzDcNpwzxGBSsif+BeffRslEST7FtUwPlgXmmxiQ=
+X-Received: by 2002:a5d:5f43:0:b0:391:65c:1b05 with SMTP id
+ ffacd0b85a97d-39c099cd2bbmr115764f8f.11.1743079648810; Thu, 27 Mar 2025
+ 05:47:28 -0700 (PDT)
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <20250325160031.2390504-7-jean-philippe@linaro.org>
-X-Migadu-Flow: FLOW_OUT
+References: <20250325121624.523258-1-guoren@kernel.org> <20250325121624.523258-32-guoren@kernel.org>
+ <4gph4xikdbg6loy2id72uyxgldsldecc7gquhymusl3vreiw3a@ephk5ahhrdw7>
+In-Reply-To: <4gph4xikdbg6loy2id72uyxgldsldecc7gquhymusl3vreiw3a@ephk5ahhrdw7>
+From: Guo Ren <guoren@kernel.org>
+Date: Thu, 27 Mar 2025 20:47:15 +0800
+X-Gmail-Original-Message-ID: <CAJF2gTSR+jh04BT7rCjALL6eWek=VWm7nFTW57vzwshkTbrtVg@mail.gmail.com>
+X-Gm-Features: AQ5f1JoN57xvarY3Pp887PY64wPP4HS8fDT1YiKKfNiabWlzF5M2aRc4_YpAz7M
+Message-ID: <CAJF2gTSR+jh04BT7rCjALL6eWek=VWm7nFTW57vzwshkTbrtVg@mail.gmail.com>
+Subject: Re: [RFC PATCH V3 31/43] rv64ilp32_abi: maple_tree: Use BITS_PER_LONG
+ instead of CONFIG_64BIT
+To: "Liam R. Howlett" <Liam.Howlett@oracle.com>, guoren@kernel.org, arnd@arndb.de, 
+	gregkh@linuxfoundation.org, torvalds@linux-foundation.org, 
+	paul.walmsley@sifive.com, palmer@dabbelt.com, anup@brainfault.org, 
+	atishp@atishpatra.org, oleg@redhat.com, kees@kernel.org, tglx@linutronix.de, 
+	will@kernel.org, mark.rutland@arm.com, brauner@kernel.org, 
+	akpm@linux-foundation.org, rostedt@goodmis.org, edumazet@google.com, 
+	unicorn_wang@outlook.com, inochiama@outlook.com, gaohan@iscas.ac.cn, 
+	shihua@iscas.ac.cn, jiawei@iscas.ac.cn, wuwei2016@iscas.ac.cn, drew@pdp7.com, 
+	prabhakar.mahadev-lad.rj@bp.renesas.com, ctsai390@andestech.com, 
+	wefu@redhat.com, kuba@kernel.org, pabeni@redhat.com, josef@toxicpanda.com, 
+	dsterba@suse.com, mingo@redhat.com, peterz@infradead.org, 
+	boqun.feng@gmail.com, xiao.w.wang@intel.com, qingfang.deng@siflower.com.cn, 
+	leobras@redhat.com, jszhang@kernel.org, conor.dooley@microchip.com, 
+	samuel.holland@sifive.com, yongxuan.wang@sifive.com, 
+	luxu.kernel@bytedance.com, david@redhat.com, ruanjinjie@huawei.com, 
+	cuiyunhui@bytedance.com, wangkefeng.wang@huawei.com, qiaozhe@iscas.ac.cn, 
+	ardb@kernel.org, ast@kernel.org, linux-kernel@vger.kernel.org, 
+	linux-riscv@lists.infradead.org, kvm@vger.kernel.org, 
+	kvm-riscv@lists.infradead.org, linux-mm@kvack.org, 
+	linux-crypto@vger.kernel.org, bpf@vger.kernel.org, 
+	linux-input@vger.kernel.org, linux-perf-users@vger.kernel.org, 
+	linux-serial@vger.kernel.org, linux-fsdevel@vger.kernel.org, 
+	linux-arch@vger.kernel.org, maple-tree@lists.infradead.org, 
+	linux-trace-kernel@vger.kernel.org, netdev@vger.kernel.org, 
+	linux-atm-general@lists.sourceforge.net, linux-btrfs@vger.kernel.org, 
+	netfilter-devel@vger.kernel.org, coreteam@netfilter.org, 
+	linux-nfs@vger.kernel.org, linux-sctp@vger.kernel.org, 
+	linux-usb@vger.kernel.org, linux-media@vger.kernel.org
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250327_012557_325136_484D16A8 
-X-CRM114-Status: GOOD (  31.59  )
+X-CRM114-CacheID: sfid-20250327_054732_184820_11CE1E03 
+X-CRM114-Status: GOOD (  26.05  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -65,210 +105,70 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Tue, Mar 25, 2025 at 04:00:32PM +0000, Jean-Philippe Brucker wrote:
-> Add the --qemu-cpu option to let users set the CPU type to run on.
-> At the moment --processor allows to set both GCC -mcpu flag and QEMU
-> -cpu. On Arm we'd like to pass `-cpu max` to QEMU in order to enable all
-> the TCG features by default, and it could also be nice to let users
-> modify the CPU capabilities by setting extra -cpu options.  Since GCC
-> -mcpu doesn't accept "max" or "host", separate the compiler and QEMU
-> arguments.
-> 
-> `--processor` is now exclusively for compiler options, as indicated by
-> its documentation ("processor to compile for"). So use $QEMU_CPU on
-> RISC-V as well.
-> 
-> Suggested-by: Andrew Jones <andrew.jones@linux.dev>
-> Signed-off-by: Jean-Philippe Brucker <jean-philippe@linaro.org>
-> ---
->  scripts/mkstandalone.sh |  3 ++-
->  arm/run                 | 15 +++++++++------
->  riscv/run               |  8 ++++----
->  configure               | 24 ++++++++++++++++++++++++
->  4 files changed, 39 insertions(+), 11 deletions(-)
-> 
-> diff --git a/scripts/mkstandalone.sh b/scripts/mkstandalone.sh
-> index 2318a85f..9b4f983d 100755
-> --- a/scripts/mkstandalone.sh
-> +++ b/scripts/mkstandalone.sh
-> @@ -42,7 +42,8 @@ generate_test ()
->  
->  	config_export ARCH
->  	config_export ARCH_NAME
-> -	config_export PROCESSOR
-> +	config_export QEMU_CPU
-> +	config_export DEFAULT_QEMU_CPU
->  
->  	echo "echo BUILD_HEAD=$(cat build-head)"
->  
-> diff --git a/arm/run b/arm/run
-> index efdd44ce..4675398f 100755
-> --- a/arm/run
-> +++ b/arm/run
-> @@ -8,7 +8,7 @@ if [ -z "$KUT_STANDALONE" ]; then
->  	source config.mak
->  	source scripts/arch-run.bash
->  fi
-> -processor="$PROCESSOR"
-> +qemu_cpu="$QEMU_CPU"
->  
->  if [ "$QEMU" ] && [ -z "$ACCEL" ] &&
->     [ "$HOST" = "aarch64" ] && [ "$ARCH" = "arm" ] &&
-> @@ -37,12 +37,15 @@ if [ "$ACCEL" = "kvm" ]; then
->  	fi
->  fi
->  
-> -if [ "$ACCEL" = "kvm" ] || [ "$ACCEL" = "hvf" ]; then
-> -	if [ "$HOST" = "aarch64" ] || [ "$HOST" = "arm" ]; then
-> -		processor="host"
-> +if [ -z "$qemu_cpu" ]; then
-> +	if ( [ "$ACCEL" = "kvm" ] || [ "$ACCEL" = "hvf" ] ) &&
-> +	   ( [ "$HOST" = "aarch64" ] || [ "$HOST" = "arm" ] ); then
-> +		qemu_cpu="host"
->  		if [ "$ARCH" = "arm" ] && [ "$HOST" = "aarch64" ]; then
-> -			processor+=",aarch64=off"
-> +			qemu_cpu+=",aarch64=off"
->  		fi
-> +	else
-> +		qemu_cpu="$DEFAULT_QEMU_CPU"
->  	fi
->  fi
->  
-> @@ -71,7 +74,7 @@ if $qemu $M -device '?' | grep -q pci-testdev; then
->  fi
->  
->  A="-accel $ACCEL$ACCEL_PROPS"
-> -command="$qemu -nodefaults $M $A -cpu $processor $chr_testdev $pci_testdev"
-> +command="$qemu -nodefaults $M $A -cpu $qemu_cpu $chr_testdev $pci_testdev"
->  command+=" -display none -serial stdio"
->  command="$(migration_cmd) $(timeout_cmd) $command"
->  
-> diff --git a/riscv/run b/riscv/run
-> index e2f5a922..02fcf0c0 100755
-> --- a/riscv/run
-> +++ b/riscv/run
-> @@ -11,12 +11,12 @@ fi
->  
->  # Allow user overrides of some config.mak variables
->  mach=$MACHINE_OVERRIDE
-> -processor=$PROCESSOR_OVERRIDE
-> +qemu_cpu=$QEMU_CPU_OVERRIDE
->  firmware=$FIRMWARE_OVERRIDE
->  
-> -[ "$PROCESSOR" = "$ARCH" ] && PROCESSOR="max"
-> +[ -z "$QEMU_CPU" ] && QEMU_CPU="max"
->  : "${mach:=virt}"
-> -: "${processor:=$PROCESSOR}"
-> +: "${qemu_cpu:=$QEMU_CPU}"
->  : "${firmware:=$FIRMWARE}"
->  [ "$firmware" ] && firmware="-bios $firmware"
->  
-> @@ -32,7 +32,7 @@ fi
->  mach="-machine $mach"
->  
->  command="$qemu -nodefaults -nographic -serial mon:stdio"
-> -command+=" $mach $acc $firmware -cpu $processor "
-> +command+=" $mach $acc $firmware -cpu $qemu_cpu "
->  command="$(migration_cmd) $(timeout_cmd) $command"
->  
->  if [ "$UEFI_SHELL_RUN" = "y" ]; then
-> diff --git a/configure b/configure
-> index b4875ef3..b79145a5 100755
-> --- a/configure
-> +++ b/configure
-> @@ -23,6 +23,21 @@ function get_default_processor()
->      esac
->  }
->  
-> +# Return the default CPU type to run on
-> +function get_default_qemu_cpu()
-> +{
-> +    local arch="$1"
-> +
-> +    case "$arch" in
-> +    "arm")
-> +        echo "cortex-a15"
-> +        ;;
-> +    "arm64")
-> +        echo "cortex-a57"
-> +        ;;
-> +    esac
-> +}
-> +
->  srcdir=$(cd "$(dirname "$0")"; pwd)
->  prefix=/usr/local
->  cc=gcc
-> @@ -52,6 +67,7 @@ earlycon=
->  console=
->  efi=
->  efi_direct=
-> +qemu_cpu=
->  
->  # Enable -Werror by default for git repositories only (i.e. developer builds)
->  if [ -e "$srcdir"/.git ]; then
-> @@ -70,6 +86,9 @@ usage() {
->  	    --arch=ARCH            architecture to compile for ($arch). ARCH can be one of:
->  	                           arm, arm64, i386, ppc64, riscv32, riscv64, s390x, x86_64
->  	    --processor=PROCESSOR  processor to compile for ($processor)
-> +	    --qemu-cpu=CPU         the CPU model to run on. If left unset, the run script
-> +	                           selects the best value based on the host system and the
-> +	                           test configuration.
-
-I'm starting to think we should name this '--target-cpu'. We already have
-'--target' which allows us to change the target to kvmtool and we may
-support other emulators/vmms someday. riscv kvmtool is already gaining
-support for different cpu types[1] and other vmms we add may have that
-support as well. There's no reason to add a separate configure command
-line option for each.
-
-So let's rename QEMU_CPU to TARGET_CPU, but keep DEFAULT_QEMU_CPU as it
-is, since that's qemu specific. run scripts will need to check TARGET
-is "qemu" to decide if it should use DEFAULT_QEMU_CPU when TARGET_CPU
-isn't set. Since TARGET is currently arm-only we can drop the riscv
-changes from this patch. I can do them with a follow-on series.
-
-[1] https://lore.kernel.org/all/20250326065644.73765-1-apatel@ventanamicro.com/
-
-Thanks,
-drew
-
->  	    --target=TARGET        target platform that the tests will be running on (qemu or
->  	                           kvmtool, default is qemu) (arm/arm64 only)
->  	    --cross-prefix=PREFIX  cross compiler prefix
-> @@ -146,6 +165,9 @@ while [[ $optno -le $argc ]]; do
->          --processor)
->  	    processor="$arg"
->  	    ;;
-> +	--qemu-cpu)
-> +	    qemu_cpu="$arg"
-> +	    ;;
->  	--target)
->  	    target="$arg"
->  	    ;;
-> @@ -471,6 +493,8 @@ ARCH=$arch
->  ARCH_NAME=$arch_name
->  ARCH_LIBDIR=$arch_libdir
->  PROCESSOR=$processor
-> +QEMU_CPU=$qemu_cpu
-> +DEFAULT_QEMU_CPU=$(get_default_qemu_cpu $arch)
->  CC=$cc
->  CFLAGS=$cflags
->  LD=$cross_prefix$ld
-> -- 
-> 2.49.0
-> 
-> 
-> -- 
-> kvm-riscv mailing list
-> kvm-riscv@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/kvm-riscv
-
--- 
-kvm-riscv mailing list
-kvm-riscv@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/kvm-riscv
+T24gV2VkLCBNYXIgMjYsIDIwMjUgYXQgMzoxMOKAr0FNIExpYW0gUi4gSG93bGV0dCA8TGlhbS5I
+b3dsZXR0QG9yYWNsZS5jb20+IHdyb3RlOgo+Cj4gKiBndW9yZW5Aa2VybmVsLm9yZyA8Z3VvcmVu
+QGtlcm5lbC5vcmc+IFsyNTAzMjUgMDg6MjRdOgo+ID4gRnJvbTogIkd1byBSZW4gKEFsaWJhYmEg
+REFNTyBBY2FkZW15KSIgPGd1b3JlbkBrZXJuZWwub3JnPgo+ID4KPiA+IFRoZSBNYXBsZSB0cmVl
+IGFsZ29yaXRobSB1c2VzIHVsb25nIHR5cGUgZm9yIGVhY2ggZWxlbWVudC4gVGhlCj4gPiBudW1i
+ZXIgb2Ygc2xvdHMgaXMgYmFzZWQgb24gQklUU19QRVJfTE9ORyBmb3IgUlY2NElMUDMyIEFCSSwg
+c28KPiA+IHVzZSBCSVRTX1BFUl9MT05HIGluc3RlYWQgb2YgQ09ORklHXzY0QklULgo+ID4KPiA+
+IFNpZ25lZC1vZmYtYnk6IEd1byBSZW4gKEFsaWJhYmEgREFNTyBBY2FkZW15KSA8Z3VvcmVuQGtl
+cm5lbC5vcmc+Cj4gPiAtLS0KPiA+ICBpbmNsdWRlL2xpbnV4L21hcGxlX3RyZWUuaCB8IDIgKy0K
+PiA+ICAxIGZpbGUgY2hhbmdlZCwgMSBpbnNlcnRpb24oKyksIDEgZGVsZXRpb24oLSkKPiA+Cj4g
+PiBkaWZmIC0tZ2l0IGEvaW5jbHVkZS9saW51eC9tYXBsZV90cmVlLmggYi9pbmNsdWRlL2xpbnV4
+L21hcGxlX3RyZWUuaAo+ID4gaW5kZXggY2JiY2QxOGQ0MTg2Li5mZjYyNjViNjQ2OGIgMTAwNjQ0
+Cj4gPiAtLS0gYS9pbmNsdWRlL2xpbnV4L21hcGxlX3RyZWUuaAo+ID4gKysrIGIvaW5jbHVkZS9s
+aW51eC9tYXBsZV90cmVlLmgKPiA+IEBAIC0yNCw3ICsyNCw3IEBACj4gPiAgICoKPiA+ICAgKiBO
+b2RlcyBpbiB0aGUgdHJlZSBwb2ludCB0byB0aGVpciBwYXJlbnQgdW5sZXNzIGJpdCAwIGlzIHNl
+dC4KPiA+ICAgKi8KPiA+IC0jaWYgZGVmaW5lZChDT05GSUdfNjRCSVQpIHx8IGRlZmluZWQoQlVJ
+TERfVkRTTzMyXzY0KQo+ID4gKyNpZiAoQklUU19QRVJfTE9ORyA9PSA2NCkgfHwgZGVmaW5lZChC
+VUlMRF9WRFNPMzJfNjQpCj4KPiBUaGlzIHdpbGwgYnJlYWsgbXkgdXNlcnNwYWNlIHRlc3Rpbmcs
+IGlmIHlvdSBkbyBub3QgdXBkYXRlIHRoZSB0ZXN0aW5nIGFzCj4gd2VsbC4gIFRoaXMgY2FuIGJl
+IGZvdW5kIGluIHRvb2xzL3Rlc3RpbmcvcmFkaXgtdHJlZS4gIFBsZWFzZSBhbHNvIGxvb2sKPiBh
+dCB0aGUgTWFrZWZpbGUgYXMgd2VsbCBzaW5jZSBpdCB3aWxsIGdlbmVyYXRlIGEgYnVpbGQgZmxh
+ZyBmb3IgdGhlCj4gdXNlcnNwYWNlLgpJIHRoaW5rIHlvdSBhcmUgdGFsa2luZyBhYm91dCB0aGUg
+Zm9sbG93aW5nOgo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT0KLi4vc2hhcmVkL3NoYXJlZC5tazoKaWZuZGVmIExPTkdfQklUCkxPTkdf
+QklUIDo9ICQoc2hlbGwgZ2V0Y29uZiBMT05HX0JJVCkKZW5kaWYKCmdlbmVyYXRlZC9iaXQtbGVu
+Z3RoLmg6IEZPUkNFCiAgICAgICAgQG1rZGlyIC1wIGdlbmVyYXRlZAogICAgICAgIEBpZiAhIGdy
+ZXAgLXF3cyBDT05GSUdfJChMT05HX0JJVClCSVQgZ2VuZXJhdGVkL2JpdC1sZW5ndGguaDsgdGhl
+biAgIFwKICAgICAgICAgICAgICAgIGVjaG8gIkdlbmVyYXRpbmcgJEAiOyAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICBcCiAgICAgICAgICAgICAgICBlY2hvICIjZGVmaW5l
+IENPTkZJR18kKExPTkdfQklUKUJJVCAxIiA+ICRAOyAgICAgICAgICAgICAgICAgXAogICAgICAg
+ICAgICAgICAgZWNobyAiI2RlZmluZSBDT05GSUdfUEhZU19BRERSX1RfJChMT05HX0JJVClCSVQg
+MSIgPj4gJEA7ICAgIFwKICAgICAgICBmaQoKJCBncmVwIENPTkZJR182NEJJVCAqIC1yIC1BIDIK
+Z2VuZXJhdGVkL2JpdC1sZW5ndGguaDojZGVmaW5lIENPTkZJR182NEJJVCAxCmdlbmVyYXRlZC9i
+aXQtbGVuZ3RoLmgtI2RlZmluZSBDT05GSUdfUEhZU19BRERSX1RfNjRCSVQgMQotLQptYXBsZS5j
+OiNpZiBkZWZpbmVkKENPTkZJR182NEJJVCkKbWFwbGUuYy1zdGF0aWMgbm9pbmxpbmUgdm9pZCBf
+X2luaXQgY2hlY2tfZXJhc2UyX3Rlc3RzZXQoc3RydWN0IG1hcGxlX3RyZWUgKm10LAptYXBsZS5j
+LSAgICAgICAgICAgICAgICBjb25zdCB1bnNpZ25lZCBsb25nICpzZXQsIHVuc2lnbmVkIGxvbmcg
+c2l6ZSkKLS0KbWFwbGUuYzojaWYgQ09ORklHXzY0QklUCm1hcGxlLmMtICAgICAgICBNVF9CVUdf
+T04obXQsIGRhdGFfZW5kICE9IG1hc19kYXRhX2VuZCgmbWFzKSk7Cm1hcGxlLmMtI2VuZGlmCi0t
+Cm1hcGxlLmM6I2lmIENPTkZJR182NEJJVAptYXBsZS5jLSAgICAgICAgTVRfQlVHX09OKG10LCBk
+YXRhX2VuZCAtIDIgIT0gbWFzX2RhdGFfZW5kKCZtYXMpKTsKbWFwbGUuYy0jZW5kaWYKLS0KbWFw
+bGUuYzojaWYgQ09ORklHXzY0QklUCm1hcGxlLmMtICAgICAgICBNVF9CVUdfT04obXQsIGRhdGFf
+ZW5kIC0gNCAhPSBtYXNfZGF0YV9lbmQoJm1hcykpOwptYXBsZS5jLSNlbmRpZgotLQptYXBsZS5j
+OiNpZiBkZWZpbmVkKENPTkZJR182NEJJVCkKbWFwbGUuYy0gICAgICAgIC8qIENhcHR1cmVzIGZy
+b20gVk1zIHRoYXQgZm91bmQgcHJldmlvdXMgZXJyb3JzICovCm1hcGxlLmMtICAgICAgICBtdF9p
+bml0X2ZsYWdzKCZ0cmVlLCAwKTsKPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09CgpGaXJzdCwgd2UgZG9uJ3QgaW50cm9kdWNlIHJ2NjRp
+bHAzMi1hYmkgdXNlciBzcGFjZSwgd2hpY2ggbWVhbnMgdGhlc2UKdGVzdGluZyBjb2RlcyBjYW4n
+dCBydW4gb24gcnY2NGlscDMyLWFiaSB1c2Vyc3BhY2UgY3VycmVudGx5LiBTbywgdGhlCnByb2Js
+ZW0geW91IG1lbnRpb25lZCBkb2Vzbid0IGV4aXN0LgoKU2Vjb25kLCBDT05GSUdfMzJCSVQgaXMg
+ZGV0ZXJtaW5lZCBieSBMT05HX0JJVCwgc28gdGhlcmUncyBubyBpc3N1ZSBpbgptYXBsZS5jIHdp
+dGggZnV0dXJlIHJ2NjRpbHAzMi1hYmkgdXNlcnNwYWNlLgpUaGF0IG1lYW5zIHJ2NjRpbHAzMi1h
+YmkgdXNlcnNwYWNlIHdvdWxkIHVzZSBDT05GSUdfMzJCSVQgdG8gdGVzdApyYWRpeC10cmVlLiBJ
+dCdzIG9rYXkuCgo+Cj4gVGhpcyByYWlzZXMgb3RoZXIgY29uY2VybnMgYXMgdGhlIGNvZGUgaXMg
+Zm91bmQgd2l0aCBhIGdyZXAgY29tbWFuZCwgc28KPiBJJ20gbm90IHN1cmUgd2h5IGl0IHdhcyBt
+aXNzZWQgYW5kIGlmIGFueXRoaW5nIGVsc2UgaXMgbWlzc2VkPwo+Cj4gSWYgeW91IGNvbnNpZGVy
+IHRoaXMgZW1haWwgdG8gYmUgdGhlICh1bmFza2VkKSBxdWVzdGlvbiBhYm91dCB3aGF0IHRvIGRv
+Cj4gaGVyZSwgdGhlbiBwbGVhc2UgQ0MgbWUsIHRoZSBtYWludGFpbmVyIG9mIHRoZSBmaWxlcyBp
+bmNsdWRpbmcgdGhlIG9uZQo+IHlvdSBhcmUgdXBkYXRpbmcgaGVyZS4KPgo+IFRoYW5rIHlvdSwK
+PiBMaWFtCj4KCgotLSAKQmVzdCBSZWdhcmRzCiBHdW8gUmVuCgotLSAKa3ZtLXJpc2N2IG1haWxp
+bmcgbGlzdAprdm0tcmlzY3ZAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFk
+ZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2t2bS1yaXNjdgo=
