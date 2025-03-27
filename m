@@ -4,111 +4,98 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DEEFCC3600B
-	for <kvm-riscv@archiver.kernel.org>; Thu, 27 Mar 2025 21:06:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7C8EFC3600B
+	for <kvm-riscv@archiver.kernel.org>; Thu, 27 Mar 2025 21:23:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Message-Id
+	:MIME-Version:Subject:Date:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=IDOQLfcZ2scaqTQZuz7i9rIk36WHe8KKg+dUB2nhIyk=; b=JM/1Pm9u0nhHco
-	FBZAxzhSDtf6lQ98ZM1GDa0kyybX56cMeLz5gZetd/QusLyt5uzIjYxKLArbBB1P4YgRZ6QQI520j
-	f3mtsJRvCDDyIWG0hx0QNMtakCRAXMOfrutdXyc/v29DHrGgzwaVRhTTxqPLfo3B+mL2p7GgWbXy2
-	gPV59aONmiVfpW6tK16nY80z036Rp1MAvaR0EJFRYmC3gWaxcK/f2KrKdYcHmSz4MKQ4ywWB8qfMb
-	WPFZIJTImj2ecASwmuasYhSHNRCO/R2W1FmhCsyDf+uUEJJgWhHuPruBWv62nSLpoHavzH9rH5Ofq
-	1jd3SMnvDwkMJXwgAXLA==;
+	List-Owner; bh=mh+8Tdmf4EtwRgl9fu86r9PZLe2j2pnQWsIwAzAVZig=; b=DKvBfEv6nlGWp4
+	aGFHG6GS86RM2QGSHIt/6QsG00cFqs1OY5jMzlqRqdNF3kSJAGnWmaRzAziKlqlroega/KtliOWgW
+	Ga35jXyoxZLazFcFQbmTp+OZW2/I5x6NGD7lMXnV9pirqYdPfV/BsuMvDmY4gUtbI+a5DMKslvO/i
+	KHxxyP6nKmHFNjrr1tqF1/4F8Ci2M3J5Dpn1k4e2JFZfiutPO32tqZBSDTc5gtsnty3I45EXldri2
+	SwVE7qr1WuyDJR1NaqMZsWsSbCSv2N/kwKHHybqsjQvWkOOYDgbYT8sFJERzkLbWgkftDVK+2nia0
+	l6Ow5G4t84ij6HmXxrpA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.1 #2 (Red Hat Linux))
-	id 1txuQv-0000000C20S-1cmC;
-	Thu, 27 Mar 2025 21:06:37 +0000
-Received: from mail-wm1-x333.google.com ([2a00:1450:4864:20::333])
+	id 1txuhg-0000000C4C3-09wv;
+	Thu, 27 Mar 2025 21:23:56 +0000
+Received: from mail-pj1-x1036.google.com ([2607:f8b0:4864:20::1036])
 	by bombadil.infradead.org with esmtps (Exim 4.98.1 #2 (Red Hat Linux))
-	id 1txuQs-0000000C1yv-231m;
-	Thu, 27 Mar 2025 21:06:35 +0000
-Received: by mail-wm1-x333.google.com with SMTP id 5b1f17b1804b1-43d07ca6a80so8144005e9.1;
-        Thu, 27 Mar 2025 14:06:33 -0700 (PDT)
+	id 1txt1x-0000000Bpvl-0XE1
+	for kvm-riscv@lists.infradead.org;
+	Thu, 27 Mar 2025 19:36:46 +0000
+Received: by mail-pj1-x1036.google.com with SMTP id 98e67ed59e1d1-30332dfc821so2018188a91.3
+        for <kvm-riscv@lists.infradead.org>; Thu, 27 Mar 2025 12:36:45 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1743109592; x=1743714392; darn=lists.infradead.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:subject:cc:to:from:date:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=JFrrEKOtsin+8uVvD5v18PtpdZsRPpaDruCArBuJl1k=;
-        b=WqUw9qDK1G4wEJstxoecDV5CLcfxgjFbg5Mht3o1f5kXQoMc6DRl3kaXNiTV6lr4xZ
-         hldW/Qa5vc+JmUXbBNZRQ9fA4DNeXfr9K4bnDyZs05itw08MAR6O2750qv1UeX01yQuS
-         fE7FIKLZJwzMcgbQ3q538qpV5ZUl9+BNeVxSYLQwfJLQGhmSotJiH66X1XBhP+CLo9PH
-         cTHWPpOhs3ae3XiBkHk3lGdnn8+elLDxEQnjj54ZWpuLK4GZ3ipPno516wb7IBT//QWj
-         U/2L8VPYlQd6l66tcFNEu78VtpTrQ3oXmuk32kwGxeXohxFR03JgCdfTHJK9Do2UQoSl
-         rSWg==
+        d=rivosinc-com.20230601.gappssmtp.com; s=20230601; t=1743104204; x=1743709004; darn=lists.infradead.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=prlp5XqgI/Khif6kUiv5FMK3OMCI6nzVA7nLGH/Y3s4=;
+        b=WmT5DqthND+pjKic26cmthSC3RR9tqQHHwX1OQ+ci6w4D5MYoW2aYccRDknpClMV8R
+         AON28wGSOdyADemHRVeM1jnaRjukuRyJDQ9RCe/SvInFiiKqAGZmgCtGYSDyM45jSlZ7
+         dWpTCcl2vzq+A0tyBICfyadWhCF0L4sYsqjE7XkqzbbeDBEMjy3ctSr7D8Sfdni5UQ7A
+         EhAXIL4kVDHAfyKTEN1Shr083uLOJKuiSTMCmxcvmXgQ/kVt3iKdjM+qSA7z6YI70quY
+         Oua+HtTEmcAZ/t/KGQtC67ptUsnnQfFpuXGH/AA+Fq3zlOyZdfPgTO3sybWOMsMEzJk7
+         ZxlA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1743109592; x=1743714392;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:subject:cc:to:from:date:x-gm-message-state:from:to:cc
+        d=1e100.net; s=20230601; t=1743104204; x=1743709004;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=JFrrEKOtsin+8uVvD5v18PtpdZsRPpaDruCArBuJl1k=;
-        b=CiPzy2ERCTO9zaXRUrKDJ/eERox+dNRe+ky9GMwjz81u0EBYY/hmxOydvP/LEzy5EY
-         DPQxdyVglhA5WXjRVEI53s8rYLX0F9JRZtmp7OgnXD6RfUD5e0Jnf33E/PjOQOKjhIlX
-         DEojlz6cDJsSI+8hnYbiYzdneTEdxhcXiNUSi8TmcgjA1z45Cg2wXIHssvQ/iJeKgK2E
-         T5R7qJX8zWM5AuNAIuaedvDnMP6oi4JU6yHL/EEwSQsg4leGEAp7iGFlAjqaEx8gsIDq
-         7+RughIRfBK69l7XVRb0soo6UvI2+PgW6gddRmFdSOJJ+QFDV7i4IMfH97W5ccuBm0W6
-         aEDQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVgCp2gPOcduIPAz7a2HEeLiX4ob+IMFNTARb9weHm7hmr1s29siS6ZRRrVZvIh6+d9buROs3jHJLX2Tw==@lists.infradead.org, AJvYcCWWIm46b0v3jnL+S3u4vkFdlhtxyAmkXglEOlPaxG2O25mASlVkHA75TPT/LYv4YXW5Chol5OwBqLlO9JU=@lists.infradead.org, AJvYcCXS46L9YN5joxfyW49h1PEFNqwo/t6P+tGjHgI/y5ek+grrdO2PPrWRgtSzGZu1TVkNq7lYRSEHZlA=@lists.infradead.org
-X-Gm-Message-State: AOJu0YzCG2wkRSuh0mrQ6jhWpAqzJVSZm876cpewMXsELjFjI0p6PY/y
-	Daj6xrrvQvE5eOcsk5bN+i17RNsxBoyqPykNmWfJobTPaLrIQ1IG
-X-Gm-Gg: ASbGncsjfI+nAGcxSVNDzTzVJ8llesemV9qG3zv8Xgo3MUacKzQVSzZ7CSBjjWeiCkB
-	QX7SKavVduyjBNYd7ilo2e200RWBRCFfF+AUXRKTp/jPahX6m7W2zbYF954X6gAYl5qe7IQlUGI
-	ys6VEAI1PkClRnOXm18mD6iISDquWaOGTRMFUtc2rLiCHWQZunfbY4SMpV/3503KuTSyaBaym4S
-	vaPBVwxqk25gAUrWTUq0LvrMIH1YUmQPO5OK9HqD9aNMHuZ+W07MlnUmhzuKURaU9d45jXM2G6C
-	cwpee1nHul9JeUDo/sCNWa7GBCB5gTWv7STr9rPQ3vhuzGG+QaeZ8ERps4mdj1u/Tv29+HdMaOg
-	CmVFFZT0=
-X-Google-Smtp-Source: AGHT+IF3JVFu2jCYFxmmspP8DgX1SusdSEIsW7Os+9zvssuS6MfQig2v8nl6xgtDIG4B7nUqszDWww==
-X-Received: by 2002:a05:600c:4e05:b0:43d:26e3:f2f6 with SMTP id 5b1f17b1804b1-43d84f5e5bcmr60988395e9.5.1743109592161;
-        Thu, 27 Mar 2025 14:06:32 -0700 (PDT)
-Received: from pumpkin (82-69-66-36.dsl.in-addr.zen.co.uk. [82.69.66.36])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-43d82dedc2dsm49307315e9.2.2025.03.27.14.06.27
+        bh=prlp5XqgI/Khif6kUiv5FMK3OMCI6nzVA7nLGH/Y3s4=;
+        b=aGN8ILED1ok8vVn7YtylOSy0IVsypOZjIzmSSTGSz2E+kvsgkZgjR3ZRmxLk1kgsTo
+         Ke3xTj3vMMEV6e8MQfMLXqy0FP7ZYWKjnIswju1bpcMNbMoxBhTnFbDEX13Othx0POkH
+         AtThLBP9oy+QwZQ+PULgszVRr2o8kwkNbhaZYYSvupLj7qFoRPEfniQBXXkQqdfEfcaQ
+         NDV13Bsb0/qQmB81yrDI6FUx1qxYCdLMWdnmv1t9zWhY08EgKj842NH4aXIH2r+VHNTx
+         iP8j7x1xwSGIgTXsBU+ZPr4mIrNRu/qtHDLwEYWY8CqBBGomgeoCcl8dEONCeb4CrEBS
+         giNw==
+X-Forwarded-Encrypted: i=1; AJvYcCXMGCDorTZFj7/SAccMofaKt63MoJ4/RbUAPCqWWIes3sfxZObUm5IVNBIaFldltPeAcMqTPy5u8ho=@lists.infradead.org
+X-Gm-Message-State: AOJu0YxjgNuWkfaRAqhjtfd9IcunLdmYlUoA3LUIgSvn+j7je0nnWKR+
+	h/F90BskqoBQWjXZmxImpDIqWpcJ3KPOT4oHgHVX05/QoLjV6E6YcD42+rE1ZBU=
+X-Gm-Gg: ASbGncvLxkcJ1kfLiqnpe2+ejMpi3lmHvV0X0c+4smPdgsOeq3bJMfqWYhqwpS5lW8S
+	OrrTbQdxfOb5CbIrf+fEpIIUjLI2q6nGWdk9p3QO/sxNiM178yQoYCDQKEVRsCkT7G1ZP+QJq5L
+	An9IhibG+dZPAm2c0J7BCg8OlM/QX18d217AVH7gtoz2ahIq8yd16svX/djaqWBSng+o75+ACzn
+	K9XI+CCfLCmz3InYnKBtUXQzpgmTFnHwDIZbRUYWuXAEG6BQuAAZUtsNKXck4uDxOelh4ozv1eF
+	PWhrMMEo85fp9iO/KzyfAJu1HT6YIuwtJ+nuYJBBTLnE3b0WEnMZgSD/5IsQKQTbloLR
+X-Google-Smtp-Source: AGHT+IE9RAtJmcVuiq+zzbza3XZnuj5S63rmVXq5BX9kQPkvxkIEVWCCAKOhZGnJte5v86VybNNn7Q==
+X-Received: by 2002:a17:90b:2dd2:b0:2f6:d266:f45e with SMTP id 98e67ed59e1d1-303a7d5b6b6mr8384578a91.2.1743104204412;
+        Thu, 27 Mar 2025 12:36:44 -0700 (PDT)
+Received: from atishp.ba.rivosinc.com ([64.71.180.162])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3039f6b638csm2624220a91.44.2025.03.27.12.36.43
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 27 Mar 2025 14:06:31 -0700 (PDT)
-Date: Thu, 27 Mar 2025 21:06:25 +0000
-From: David Laight <david.laight.linux@gmail.com>
-To: guoren@kernel.org
-Cc: arnd@arndb.de, gregkh@linuxfoundation.org,
- torvalds@linux-foundation.org, paul.walmsley@sifive.com,
- palmer@dabbelt.com, anup@brainfault.org, atishp@atishpatra.org,
- oleg@redhat.com, kees@kernel.org, tglx@linutronix.de, will@kernel.org,
- mark.rutland@arm.com, brauner@kernel.org, akpm@linux-foundation.org,
- rostedt@goodmis.org, edumazet@google.com, unicorn_wang@outlook.com,
- inochiama@outlook.com, gaohan@iscas.ac.cn, shihua@iscas.ac.cn,
- jiawei@iscas.ac.cn, wuwei2016@iscas.ac.cn, drew@pdp7.com,
- prabhakar.mahadev-lad.rj@bp.renesas.com, ctsai390@andestech.com,
- wefu@redhat.com, kuba@kernel.org, pabeni@redhat.com, josef@toxicpanda.com,
- dsterba@suse.com, mingo@redhat.com, peterz@infradead.org,
- boqun.feng@gmail.com, xiao.w.wang@intel.com, qingfang.deng@siflower.com.cn,
- leobras@redhat.com, jszhang@kernel.org, conor.dooley@microchip.com,
- samuel.holland@sifive.com, yongxuan.wang@sifive.com,
- luxu.kernel@bytedance.com, david@redhat.com, ruanjinjie@huawei.com,
- cuiyunhui@bytedance.com, wangkefeng.wang@huawei.com, qiaozhe@iscas.ac.cn,
- ardb@kernel.org, ast@kernel.org, linux-kernel@vger.kernel.org,
- linux-riscv@lists.infradead.org, kvm@vger.kernel.org,
- kvm-riscv@lists.infradead.org, linux-mm@kvack.org,
- linux-crypto@vger.kernel.org, bpf@vger.kernel.org,
- linux-input@vger.kernel.org, linux-perf-users@vger.kernel.org,
- linux-serial@vger.kernel.org, linux-fsdevel@vger.kernel.org,
- linux-arch@vger.kernel.org, maple-tree@lists.infradead.org,
- linux-trace-kernel@vger.kernel.org, netdev@vger.kernel.org,
- linux-atm-general@lists.sourceforge.net, linux-btrfs@vger.kernel.org,
- netfilter-devel@vger.kernel.org, coreteam@netfilter.org,
- linux-nfs@vger.kernel.org, linux-sctp@vger.kernel.org,
- linux-usb@vger.kernel.org, linux-media@vger.kernel.org
-Subject: Re: [RFC PATCH V3 00/43] rv64ilp32_abi: Build CONFIG_64BIT
- kernel-self with ILP32 ABI
-Message-ID: <20250327210625.7a3021d0@pumpkin>
-In-Reply-To: <20250325121624.523258-1-guoren@kernel.org>
-References: <20250325121624.523258-1-guoren@kernel.org>
-X-Mailer: Claws Mail 4.1.1 (GTK 3.24.38; arm-unknown-linux-gnueabihf)
+        Thu, 27 Mar 2025 12:36:44 -0700 (PDT)
+From: Atish Patra <atishp@rivosinc.com>
+Date: Thu, 27 Mar 2025 12:36:01 -0700
+Subject: [PATCH v5 20/21] tools/perf: Pass the Counter constraint values in
+ the pmu events
 MIME-Version: 1.0
+Message-Id: <20250327-counter_delegation-v5-20-1ee538468d1b@rivosinc.com>
+References: <20250327-counter_delegation-v5-0-1ee538468d1b@rivosinc.com>
+In-Reply-To: <20250327-counter_delegation-v5-0-1ee538468d1b@rivosinc.com>
+To: Paul Walmsley <paul.walmsley@sifive.com>, 
+ Palmer Dabbelt <palmer@dabbelt.com>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Anup Patel <anup@brainfault.org>, 
+ Atish Patra <atishp@atishpatra.org>, Will Deacon <will@kernel.org>, 
+ Mark Rutland <mark.rutland@arm.com>, Peter Zijlstra <peterz@infradead.org>, 
+ Ingo Molnar <mingo@redhat.com>, Arnaldo Carvalho de Melo <acme@kernel.org>, 
+ Namhyung Kim <namhyung@kernel.org>, 
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>, 
+ Jiri Olsa <jolsa@kernel.org>, Ian Rogers <irogers@google.com>, 
+ Adrian Hunter <adrian.hunter@intel.com>, weilin.wang@intel.com
+Cc: linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, 
+ Conor Dooley <conor@kernel.org>, devicetree@vger.kernel.org, 
+ kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
+ linux-arm-kernel@lists.infradead.org, linux-perf-users@vger.kernel.org, 
+ Atish Patra <atishp@rivosinc.com>
+X-Mailer: b4 0.15-dev-42535
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250327_140634_529310_4ECCFF56 
-X-CRM114-Status: GOOD (  12.01  )
+X-CRM114-CacheID: sfid-20250327_123645_279615_0EE08EC9 
+X-CRM114-Status: GOOD (  11.75  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -125,28 +112,53 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Tue, 25 Mar 2025 08:15:41 -0400
-guoren@kernel.org wrote:
+RISC-V doesn't have any standard event to counter mapping discovery
+mechanism in the ISA. The ISA defines 29 programmable counters and
+platforms can choose to implement any number of them and map any
+events to any counters. Thus, the perf tool need to inform the driver
+about the counter mapping of each events.
 
-> From: "Guo Ren (Alibaba DAMO Academy)" <guoren@kernel.org>
-> 
-> Since 2001, the CONFIG_64BIT kernel has been built with the LP64 ABI,
-> but this patchset allows the CONFIG_64BIT kernel to use an ILP32 ABI
-> for construction to reduce cache & memory footprint (Compared to
-> kernel-lp64-abi, kernel-rv64ilp32-abi decreased the used memory by
-> about 20%, as shown in "free -h" in the following demo.)
-...
+The current perf infrastructure only parses the 'Counter' constraints
+in metrics. This patch extends that to pass in the pmu events so that
+any driver can retrieve those values via perf attributes if defined
+accordingly.
 
-Why on earth would you want to run a 64bit application on a 32bit kernel.
-IIRC the main justification for 64bit was to get a larger address space.
+Signed-off-by: Atish Patra <atishp@rivosinc.com>
+---
+ tools/perf/pmu-events/jevents.py | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-Now you might want to compile a 32bit (ILP32) system that actually
-runs in 64bit mode (c/f x32) so that 64bit maths (long long) is
-more efficient - but that is a different issue.
-(I suspect you'd need to change the process switch code to save
-all 64bits of the registers - but maybe not much else??)
+diff --git a/tools/perf/pmu-events/jevents.py b/tools/perf/pmu-events/jevents.py
+index fdb7ddf093d2..f9f274678a32 100755
+--- a/tools/perf/pmu-events/jevents.py
++++ b/tools/perf/pmu-events/jevents.py
+@@ -274,6 +274,11 @@ class JsonEvent:
+         return fixed[name.lower()]
+       return event
+ 
++    def counter_list_to_bitmask(counterlist):
++      counter_ids = list(map(int, counterlist.split(',')))
++      bitmask = sum(1 << pos for pos in counter_ids)
++      return bitmask
++
+     def unit_to_pmu(unit: str) -> Optional[str]:
+       """Convert a JSON Unit to Linux PMU name."""
+       if not unit or unit == "core":
+@@ -427,6 +432,10 @@ class JsonEvent:
+       else:
+         raise argparse.ArgumentTypeError('Cannot find arch std event:', arch_std)
+ 
++    if self.counters['list']:
++      bitmask = counter_list_to_bitmask(self.counters['list'])
++      event += f',counterid_mask={bitmask:#x}'
++
+     self.event = real_event(self.name, event)
+ 
+   def __repr__(self) -> str:
 
-	David
+-- 
+2.43.0
+
 
 -- 
 kvm-riscv mailing list
