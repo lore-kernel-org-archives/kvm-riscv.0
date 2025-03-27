@@ -4,52 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 45C74C3600B
-	for <kvm-riscv@archiver.kernel.org>; Thu, 27 Mar 2025 17:11:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8A33DC3600B
+	for <kvm-riscv@archiver.kernel.org>; Thu, 27 Mar 2025 17:11:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
 	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=zAHWc9oWR8FH6YNJYn0UNlY5W9SION0+za89fMFokk4=; b=gEZ+9IoeqTwI08
-	ZJIk5cA3w3m9nSN18a8iu2FbUOVDTkYRCZiehZAsCrtpbRFRLcVXA+dgilEVZ0Dn2Fbi/Y5ZKwjZ+
-	zV3pPAPM9FChIDxmO9LSdMldt58O8bMtU62PNnUc0BeMmh7MmigwUXm3cIaVX2b8XSwVIG0MTxm7J
-	uJON4asB5++kwAnoxz2R/9T7sLDS1h1AeEzPpuJd351bGKOOwAamijXzbZ6FIdD5WUTmJ88shgwIw
-	WLQl8Z1Mwziuw/YjhiLnq6mMZ0PC2I69tdxOVWuHXQIp2wIiQJ4HaJqslu63yhygriki4G4Ee5kUC
-	WMpwXRXwp4NSr5mHfkYw==;
+	List-Owner; bh=zSZ6QDPuVGQ5XVDQEMTzMQymNZQq0O4U7GmOYAfVb6w=; b=plZUq+4CYDTmoA
+	aFnlbHW6UnKzOEOw4GKlwEefu3+5YtLGJaZDAeAPIxEUE9XYMB4rSgePsLvebrOy/JJgaBPK1ZtnC
+	HV1ZGfqPt9+LZWh3XHCirU+HuGIj3VYWioAh6llWlC1FxCOi8nhns9PqSuc0EmB67RhFeVpasCL01
+	LbjOUDum32EAregLT6VpIo/kIrkZcLZJ8Hjyw71pfY1se62FnNanZVoRm6A5dLL/4i40uW2yPL6E2
+	bDVl7IDJBcHw6TFT2jLebmdKFj0ZUZWHhKFT+PdWWB9gsPVOFay95eejd8xd1n2bbLuhVbBw+Ld50
+	BqGq5Lr6tIQAGgxw3vbA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.1 #2 (Red Hat Linux))
-	id 1txqlR-0000000BctA-4AqI;
-	Thu, 27 Mar 2025 17:11:33 +0000
+	id 1txqld-0000000Bcwh-1N9n;
+	Thu, 27 Mar 2025 17:11:45 +0000
 Received: from foss.arm.com ([217.140.110.172])
 	by bombadil.infradead.org with esmtp (Exim 4.98.1 #2 (Red Hat Linux))
-	id 1txqlO-0000000BcsL-3RmS
+	id 1txqla-0000000Bcw5-3s1s
 	for kvm-riscv@lists.infradead.org;
-	Thu, 27 Mar 2025 17:11:32 +0000
+	Thu, 27 Mar 2025 17:11:44 +0000
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id BDCD81063;
-	Thu, 27 Mar 2025 10:11:32 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 923F61063;
+	Thu, 27 Mar 2025 10:11:47 -0700 (PDT)
 Received: from raptor (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 645FE3F63F;
-	Thu, 27 Mar 2025 10:11:26 -0700 (PDT)
-Date: Thu, 27 Mar 2025 17:11:23 +0000
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 3AB1B3F63F;
+	Thu, 27 Mar 2025 10:11:41 -0700 (PDT)
+Date: Thu, 27 Mar 2025 17:11:38 +0000
 From: Alexandru Elisei <alexandru.elisei@arm.com>
 To: Jean-Philippe Brucker <jean-philippe@linaro.org>
 Cc: andrew.jones@linux.dev, eric.auger@redhat.com, kvmarm@lists.linux.dev,
 	kvm@vger.kernel.org, kvm-riscv@lists.infradead.org,
 	vladimir.murzin@arm.com
-Subject: Re: [kvm-unit-tests PATCH v3 1/5] configure: arm64: Don't display
- 'aarch64' as the default architecture
-Message-ID: <Z-WGuyzy4qxAcJD4@raptor>
+Subject: Re: [kvm-unit-tests PATCH v3 2/5] configure: arm/arm64: Display the
+ correct default processor
+Message-ID: <Z-WGygaYIs4RLoJk@raptor>
 References: <20250325160031.2390504-3-jean-philippe@linaro.org>
- <20250325160031.2390504-4-jean-philippe@linaro.org>
+ <20250325160031.2390504-5-jean-philippe@linaro.org>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20250325160031.2390504-4-jean-philippe@linaro.org>
+In-Reply-To: <20250325160031.2390504-5-jean-philippe@linaro.org>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250327_101130_931010_EA068721 
-X-CRM114-Status: GOOD (  17.40  )
+X-CRM114-CacheID: sfid-20250327_101143_003047_2D605E4C 
+X-CRM114-Status: GOOD (  18.85  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -66,25 +66,17 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Hi Jean-Philippe
+Hi Jean-Philippe,
 
-On Tue, Mar 25, 2025 at 04:00:29PM +0000, Jean-Philippe Brucker wrote:
+On Tue, Mar 25, 2025 at 04:00:30PM +0000, Jean-Philippe Brucker wrote:
 > From: Alexandru Elisei <alexandru.elisei@arm.com>
 > 
-> --arch=aarch64, intentional or not, has been supported since the initial
-> arm64 support, commit 39ac3f8494be ("arm64: initial drop"). However,
-> "aarch64" does not show up in the list of supported architectures, but
-> it's displayed as the default architecture if doing ./configure --help
-> on an arm64 machine.
-> 
-> Keep everything consistent and make sure that the default value for
-> $arch is "arm64", but still allow --arch=aarch64, in case they are users
-> that use this configuration for kvm-unit-tests.
+> The help text for the --processor option displays the architecture name as
+> the default processor type. But the default for arm is cortex-a15, and for
+> arm64 is cortex-a57. Teach configure to display the correct default
+> processor type for these two architectures.
 
-You can drop this paragraph, since the change to the default value for $arch was
-dropped.
-
-With this change:
+Looks good to me:
 
 Reviewed-by: Alexandru Elisei <alexandru.elisei@arm.com>
 
@@ -92,34 +84,73 @@ Thanks,
 Alex
 
 > 
-> The help text for --arch changes from:
-> 
->    --arch=ARCH            architecture to compile for (aarch64). ARCH can be one of:
->                            arm, arm64, i386, ppc64, riscv32, riscv64, s390x, x86_64
-> 
-> to:
-> 
->     --arch=ARCH            architecture to compile for (arm64). ARCH can be one of:
->                            arm, arm64, i386, ppc64, riscv32, riscv64, s390x, x86_64
-> 
 > Signed-off-by: Alexandru Elisei <alexandru.elisei@arm.com>
 > Signed-off-by: Jean-Philippe Brucker <jean-philippe@linaro.org>
 > ---
->  configure | 1 +
->  1 file changed, 1 insertion(+)
+>  configure | 30 ++++++++++++++++++++++--------
+>  1 file changed, 22 insertions(+), 8 deletions(-)
 > 
 > diff --git a/configure b/configure
-> index 52904d3a..010c68ff 100755
+> index 010c68ff..b4875ef3 100755
 > --- a/configure
 > +++ b/configure
-> @@ -43,6 +43,7 @@ else
+> @@ -5,6 +5,24 @@ if [ -z "${BASH_VERSINFO[0]}" ] || [ "${BASH_VERSINFO[0]}" -lt 4 ] ; then
+>      exit 1
 >  fi
 >  
+> +# Return the default CPU type to compile for
+> +function get_default_processor()
+> +{
+> +    local arch="$1"
+> +
+> +    case "$arch" in
+> +    "arm")
+> +        echo "cortex-a15"
+> +        ;;
+> +    "arm64")
+> +        echo "cortex-a57"
+> +        ;;
+> +    *)
+> +        echo "$arch"
+> +        ;;
+> +    esac
+> +}
+> +
+>  srcdir=$(cd "$(dirname "$0")"; pwd)
+>  prefix=/usr/local
+>  cc=gcc
+> @@ -44,13 +62,14 @@ fi
+>  
 >  usage() {
-> +    [ "$arch" = "aarch64" ] && arch="arm64"
+>      [ "$arch" = "aarch64" ] && arch="arm64"
+> +    [ -z "$processor" ] && processor=$(get_default_processor $arch)
 >      cat <<-EOF
 >  	Usage: $0 [options]
 >  
+>  	Options include:
+>  	    --arch=ARCH            architecture to compile for ($arch). ARCH can be one of:
+>  	                           arm, arm64, i386, ppc64, riscv32, riscv64, s390x, x86_64
+> -	    --processor=PROCESSOR  processor to compile for ($arch)
+> +	    --processor=PROCESSOR  processor to compile for ($processor)
+>  	    --target=TARGET        target platform that the tests will be running on (qemu or
+>  	                           kvmtool, default is qemu) (arm/arm64 only)
+>  	    --cross-prefix=PREFIX  cross compiler prefix
+> @@ -326,13 +345,8 @@ if [ "$earlycon" ]; then
+>      fi
+>  fi
+>  
+> -[ -z "$processor" ] && processor="$arch"
+> -
+> -if [ "$processor" = "arm64" ]; then
+> -    processor="cortex-a57"
+> -elif [ "$processor" = "arm" ]; then
+> -    processor="cortex-a15"
+> -fi
+> +# $arch will have changed when cross-compiling.
+> +[ -z "$processor" ] && processor=$(get_default_processor $arch)
+>  
+>  if [ "$arch" = "i386" ] || [ "$arch" = "x86_64" ]; then
+>      testdir=x86
 > -- 
 > 2.49.0
 > 
