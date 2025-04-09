@@ -4,55 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8BA40C369A2
-	for <kvm-riscv@archiver.kernel.org>; Wed,  9 Apr 2025 01:45:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 36C1DC36010
+	for <kvm-riscv@archiver.kernel.org>; Wed,  9 Apr 2025 01:47:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=VELloUVkPWUVY+stx+wQGXXBWHNCtbXvpjb7Rguqh0M=; b=YZgkg4+jL9eVAr
-	cws/AS/LxCNKQczzon0gNxFAtFZDzoxF6+0w3TEOSarxZjH4YUBzIfzv6Qcb4DR9aO/PHPW3jHbNe
-	CFRpr9bxXO7gVb0yKTqZwwBbycA7Lw449NxB5gu9TF/vZD74TgRGFh5YUR1a7zwe7BqnhEdL+n8sj
-	eXMVM0YL5OPpbalrQ2b8ESG0KJKps5gWI8Amm7UdiP/fVZJjkBvljDDRvMrxom4GR2p7IrBo3aCdP
-	aVnzdN0Np9miBlQboWkkAM4BASsM2XEFRBl50/8ya1rGlluhEz8C5nZ4EPYhT9537gxLmK519z5oU
-	MiseVX99xogzrJiLwMPg==;
+	List-Owner; bh=f/FjYQovUmcL1tNsCyrkBRnxhxT4Rbn2hkZbf3akqYU=; b=Kc6azqoE1DcbkS
+	D0u8/Hjk9jT/xJiapqHe9X/RDx1JM5onhvlE154Jep9L7EH3QSgyK9ywg9S3DebZXk1d0ds5jY4Bs
+	WpK4qW1z97XOikv5yRxIURqWSogD31yZbJHVm7+T0BnJnRxN+ZZUxRM335ch3UgLk0MdAclogvUFb
+	k19JmgJvX8l81J7HYAQMO2QuK5cmARqiMir2SG65HnEgJ50PnMZK9QJuJ0wineSqAgqXoby0QBSEO
+	Kf6n23cvP7T6ZjZhFq6KSMss573NnY2VnmhEdI8NIB0vduxsytwDe5dRVKlUuihyakEftpccxszTR
+	tNdfkO1gbNsoPXblJVmw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1u2KVG-00000005s3A-0bPF;
-	Wed, 09 Apr 2025 01:45:22 +0000
+	id 1u2KWz-00000005sFH-445S;
+	Wed, 09 Apr 2025 01:47:09 +0000
 Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1u2KTZ-00000005rcm-1Jr4
+	id 1u2KTf-00000005rfq-1XqU
 	for kvm-riscv@lists.infradead.org;
-	Wed, 09 Apr 2025 01:43:38 +0000
+	Wed, 09 Apr 2025 01:43:45 +0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1744163016;
+	s=mimecast20190719; t=1744163022;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=vdWJa1iWuf75Z3WwaZMFwx3loSaLxfrrFv/72IaVBE4=;
-	b=UaSWL6hJufzucrf43TOrkhssxOF1Ys0dNEaL8GaNgt2z4PvYoH2ASjeRwACeQHyEUGzMk0
-	EO6f3tRGG7RS8HH07vQXxmRpfAtZ0nidxI68oDRLDX0WYwkEQm4UikzLABwSqKraRAh/io
-	VXpk+BZbQj3ZNMbcTriYGlIqDTe/uOo=
-Received: from mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com
+	bh=z1kcoAyb5oE1yadCC0yo8lvxmOIeYp6wUMScV/KBS/Y=;
+	b=SCDFH7BNJ+BoNts416iQ0X/qde0a5hs051hSgtfEmfn1YwpThReGoNQevsc3R++oEI+LhA
+	WPyRZXDl4ijqK4LOdv8Rn+0rGUnG7m0A/JEdBtiAUcTiNoamKQVhR5pFrQ/KNj7XiaXLoi
+	r+UL9mz5CBBtQgKh2mag84GNPjlFFmE=
+Received: from mx-prod-mc-08.mail-002.prod.us-west-2.aws.redhat.com
  (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
  relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-25-SCjKqFNoPX2Alb788oTNSg-1; Tue,
- 08 Apr 2025 21:42:08 -0400
-X-MC-Unique: SCjKqFNoPX2Alb788oTNSg-1
-X-Mimecast-MFC-AGG-ID: SCjKqFNoPX2Alb788oTNSg_1744162925
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-204-FfZk7JGCPmS8NemWl-m-0g-1; Tue,
+ 08 Apr 2025 21:42:14 -0400
+X-MC-Unique: FfZk7JGCPmS8NemWl-m-0g-1
+X-Mimecast-MFC-AGG-ID: FfZk7JGCPmS8NemWl-m-0g_1744162930
 Received: from mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.111])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id A72A0180035E;
-	Wed,  9 Apr 2025 01:42:04 +0000 (UTC)
+	by mx-prod-mc-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id E85E0180899B;
+	Wed,  9 Apr 2025 01:42:09 +0000 (UTC)
 Received: from starship.lan (unknown [10.22.65.191])
-	by mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id DB6BC180174E;
-	Wed,  9 Apr 2025 01:41:58 +0000 (UTC)
+	by mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id C53151801766;
+	Wed,  9 Apr 2025 01:42:04 +0000 (UTC)
 From: Maxim Levitsky <mlevitsk@redhat.com>
 To: kvm@vger.kernel.org
 Cc: Alexander Potapenko <glider@google.com>,
@@ -93,16 +93,16 @@ Cc: Alexander Potapenko <glider@google.com>,
 	Catalin Marinas <catalin.marinas@arm.com>,
 	Maxim Levitsky <mlevitsk@redhat.com>,
 	Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH v2 3/4] KVM: arm64: switch to using kvm_lock/unlock_all_vcpus
-Date: Tue,  8 Apr 2025 21:41:35 -0400
-Message-Id: <20250409014136.2816971-4-mlevitsk@redhat.com>
+Subject: [PATCH v2 4/4] RISC-V: KVM: switch to kvm_lock/unlock_all_vcpus
+Date: Tue,  8 Apr 2025 21:41:36 -0400
+Message-Id: <20250409014136.2816971-5-mlevitsk@redhat.com>
 In-Reply-To: <20250409014136.2816971-1-mlevitsk@redhat.com>
 References: <20250409014136.2816971-1-mlevitsk@redhat.com>
 MIME-Version: 1.0
 X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.111
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250408_184337_462774_F45C407D 
-X-CRM114-Status: GOOD (  16.43  )
+X-CRM114-CacheID: sfid-20250408_184343_580971_19507DC6 
+X-CRM114-Status: GOOD (  12.69  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -119,80 +119,26 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Switch to kvm_lock/unlock_all_vcpus instead of arm's own
-version.
+use kvm_lock/unlock_all_vcpus instead of riscv's own
+implementation.
 
-This fixes lockdep warning about reaching maximum lock depth:
-
-[  328.171264] BUG: MAX_LOCK_DEPTH too low!
-[  328.175227] turning off the locking correctness validator.
-[  328.180726] Please attach the output of /proc/lock_stat to the bug report
-[  328.187531] depth: 48  max: 48!
-[  328.190678] 48 locks held by qemu-kvm/11664:
-[  328.194957]  #0: ffff800086de5ba0 (&kvm->lock){+.+.}-{3:3}, at: kvm_ioctl_create_device+0x174/0x5b0
-[  328.204048]  #1: ffff0800e78800b8 (&vcpu->mutex){+.+.}-{3:3}, at: lock_all_vcpus+0x16c/0x2a0
-[  328.212521]  #2: ffff07ffeee51e98 (&vcpu->mutex){+.+.}-{3:3}, at: lock_all_vcpus+0x16c/0x2a0
-[  328.220991]  #3: ffff0800dc7d80b8 (&vcpu->mutex){+.+.}-{3:3}, at: lock_all_vcpus+0x16c/0x2a0
-[  328.229463]  #4: ffff07ffe0c980b8 (&vcpu->mutex){+.+.}-{3:3}, at: lock_all_vcpus+0x16c/0x2a0
-[  328.237934]  #5: ffff0800a3883c78 (&vcpu->mutex){+.+.}-{3:3}, at: lock_all_vcpus+0x16c/0x2a0
-[  328.246405]  #6: ffff07fffbe480b8 (&vcpu->mutex){+.+.}-{3:3}, at: lock_all_vcpus+0x16c/0x2a0
+Note that this does introduce a slight functional change - now vCPUs are
+unlocked in the same order they were locked and not in the opposite order.
 
 Suggested-by: Paolo Bonzini <pbonzini@redhat.com>
 Signed-off-by: Maxim Levitsky <mlevitsk@redhat.com>
 ---
- arch/arm64/include/asm/kvm_host.h     |  3 --
- arch/arm64/kvm/arch_timer.c           |  4 +--
- arch/arm64/kvm/arm.c                  | 43 ---------------------------
- arch/arm64/kvm/vgic/vgic-init.c       |  4 +--
- arch/arm64/kvm/vgic/vgic-its.c        |  8 ++---
- arch/arm64/kvm/vgic/vgic-kvm-device.c | 12 ++++----
- 6 files changed, 14 insertions(+), 60 deletions(-)
+ arch/riscv/kvm/aia_device.c | 34 ++--------------------------------
+ 1 file changed, 2 insertions(+), 32 deletions(-)
 
-diff --git a/arch/arm64/include/asm/kvm_host.h b/arch/arm64/include/asm/kvm_host.h
-index e98cfe7855a6..96ce0b01a61e 100644
---- a/arch/arm64/include/asm/kvm_host.h
-+++ b/arch/arm64/include/asm/kvm_host.h
-@@ -1263,9 +1263,6 @@ int __init populate_sysreg_config(const struct sys_reg_desc *sr,
- 				  unsigned int idx);
- int __init populate_nv_trap_config(void);
+diff --git a/arch/riscv/kvm/aia_device.c b/arch/riscv/kvm/aia_device.c
+index 39cd26af5a69..a4599de98c6b 100644
+--- a/arch/riscv/kvm/aia_device.c
++++ b/arch/riscv/kvm/aia_device.c
+@@ -12,36 +12,6 @@
+ #include <linux/kvm_host.h>
+ #include <linux/uaccess.h>
  
--bool lock_all_vcpus(struct kvm *kvm);
--void unlock_all_vcpus(struct kvm *kvm);
--
- void kvm_calculate_traps(struct kvm_vcpu *vcpu);
- 
- /* MMIO helpers */
-diff --git a/arch/arm64/kvm/arch_timer.c b/arch/arm64/kvm/arch_timer.c
-index 5133dcbfe9f7..1c71ce9a5e73 100644
---- a/arch/arm64/kvm/arch_timer.c
-+++ b/arch/arm64/kvm/arch_timer.c
-@@ -1766,7 +1766,7 @@ int kvm_vm_ioctl_set_counter_offset(struct kvm *kvm,
- 
- 	mutex_lock(&kvm->lock);
- 
--	if (lock_all_vcpus(kvm)) {
-+	if (!kvm_lock_all_vcpus(kvm, true)) {
- 		set_bit(KVM_ARCH_FLAG_VM_COUNTER_OFFSET, &kvm->arch.flags);
- 
- 		/*
-@@ -1778,7 +1778,7 @@ int kvm_vm_ioctl_set_counter_offset(struct kvm *kvm,
- 		kvm->arch.timer_data.voffset = offset->counter_offset;
- 		kvm->arch.timer_data.poffset = offset->counter_offset;
- 
--		unlock_all_vcpus(kvm);
-+		kvm_unlock_all_vcpus(kvm);
- 	} else {
- 		ret = -EBUSY;
- 	}
-diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
-index 68fec8c95fee..d31f42a71bdc 100644
---- a/arch/arm64/kvm/arm.c
-+++ b/arch/arm64/kvm/arm.c
-@@ -1914,49 +1914,6 @@ int kvm_arch_vm_ioctl(struct file *filp, unsigned int ioctl, unsigned long arg)
- 	}
- }
- 
--/* unlocks vcpus from @vcpu_lock_idx and smaller */
 -static void unlock_vcpus(struct kvm *kvm, int vcpu_lock_idx)
 -{
 -	struct kvm_vcpu *tmp_vcpu;
@@ -203,28 +149,16 @@ index 68fec8c95fee..d31f42a71bdc 100644
 -	}
 -}
 -
--void unlock_all_vcpus(struct kvm *kvm)
+-static void unlock_all_vcpus(struct kvm *kvm)
 -{
--	lockdep_assert_held(&kvm->lock);
--
 -	unlock_vcpus(kvm, atomic_read(&kvm->online_vcpus) - 1);
 -}
 -
--/* Returns true if all vcpus were locked, false otherwise */
--bool lock_all_vcpus(struct kvm *kvm)
+-static bool lock_all_vcpus(struct kvm *kvm)
 -{
 -	struct kvm_vcpu *tmp_vcpu;
 -	unsigned long c;
 -
--	lockdep_assert_held(&kvm->lock);
--
--	/*
--	 * Any time a vcpu is in an ioctl (including running), the
--	 * core KVM code tries to grab the vcpu->mutex.
--	 *
--	 * By grabbing the vcpu->mutex of all VCPUs we ensure that no
--	 * other VCPUs can fiddle with the state while we access it.
--	 */
 -	kvm_for_each_vcpu(c, tmp_vcpu, kvm) {
 -		if (!mutex_trylock(&tmp_vcpu->mutex)) {
 -			unlock_vcpus(kvm, c - 1);
@@ -235,129 +169,27 @@ index 68fec8c95fee..d31f42a71bdc 100644
 -	return true;
 -}
 -
- static unsigned long nvhe_percpu_size(void)
+ static int aia_create(struct kvm_device *dev, u32 type)
  {
- 	return (unsigned long)CHOOSE_NVHE_SYM(__per_cpu_end) -
-diff --git a/arch/arm64/kvm/vgic/vgic-init.c b/arch/arm64/kvm/vgic/vgic-init.c
-index 1f33e71c2a73..8241a57e3f96 100644
---- a/arch/arm64/kvm/vgic/vgic-init.c
-+++ b/arch/arm64/kvm/vgic/vgic-init.c
-@@ -88,7 +88,7 @@ int kvm_vgic_create(struct kvm *kvm, u32 type)
- 	lockdep_assert_held(&kvm->lock);
+ 	int ret;
+@@ -53,7 +23,7 @@ static int aia_create(struct kvm_device *dev, u32 type)
+ 		return -EEXIST;
  
  	ret = -EBUSY;
 -	if (!lock_all_vcpus(kvm))
 +	if (kvm_lock_all_vcpus(kvm, true))
  		return ret;
  
- 	mutex_lock(&kvm->arch.config_lock);
-@@ -142,7 +142,7 @@ int kvm_vgic_create(struct kvm *kvm, u32 type)
+ 	kvm_for_each_vcpu(i, vcpu, kvm) {
+@@ -65,7 +35,7 @@ static int aia_create(struct kvm_device *dev, u32 type)
+ 	kvm->arch.aia.in_kernel = true;
  
  out_unlock:
- 	mutex_unlock(&kvm->arch.config_lock);
 -	unlock_all_vcpus(kvm);
 +	kvm_unlock_all_vcpus(kvm);
  	return ret;
  }
  
-diff --git a/arch/arm64/kvm/vgic/vgic-its.c b/arch/arm64/kvm/vgic/vgic-its.c
-index fb96802799c6..a06d554cb8a2 100644
---- a/arch/arm64/kvm/vgic/vgic-its.c
-+++ b/arch/arm64/kvm/vgic/vgic-its.c
-@@ -1999,7 +1999,7 @@ static int vgic_its_attr_regs_access(struct kvm_device *dev,
- 
- 	mutex_lock(&dev->kvm->lock);
- 
--	if (!lock_all_vcpus(dev->kvm)) {
-+	if (kvm_lock_all_vcpus(dev->kvm, true)) {
- 		mutex_unlock(&dev->kvm->lock);
- 		return -EBUSY;
- 	}
-@@ -2034,7 +2034,7 @@ static int vgic_its_attr_regs_access(struct kvm_device *dev,
- 	}
- out:
- 	mutex_unlock(&dev->kvm->arch.config_lock);
--	unlock_all_vcpus(dev->kvm);
-+	kvm_unlock_all_vcpus(dev->kvm);
- 	mutex_unlock(&dev->kvm->lock);
- 	return ret;
- }
-@@ -2704,7 +2704,7 @@ static int vgic_its_ctrl(struct kvm *kvm, struct vgic_its *its, u64 attr)
- 
- 	mutex_lock(&kvm->lock);
- 
--	if (!lock_all_vcpus(kvm)) {
-+	if (kvm_lock_all_vcpus(kvm, true)) {
- 		mutex_unlock(&kvm->lock);
- 		return -EBUSY;
- 	}
-@@ -2726,7 +2726,7 @@ static int vgic_its_ctrl(struct kvm *kvm, struct vgic_its *its, u64 attr)
- 
- 	mutex_unlock(&its->its_lock);
- 	mutex_unlock(&kvm->arch.config_lock);
--	unlock_all_vcpus(kvm);
-+	kvm_unlock_all_vcpus(kvm);
- 	mutex_unlock(&kvm->lock);
- 	return ret;
- }
-diff --git a/arch/arm64/kvm/vgic/vgic-kvm-device.c b/arch/arm64/kvm/vgic/vgic-kvm-device.c
-index 359094f68c23..232838891464 100644
---- a/arch/arm64/kvm/vgic/vgic-kvm-device.c
-+++ b/arch/arm64/kvm/vgic/vgic-kvm-device.c
-@@ -268,7 +268,7 @@ static int vgic_set_common_attr(struct kvm_device *dev,
- 				return -ENXIO;
- 			mutex_lock(&dev->kvm->lock);
- 
--			if (!lock_all_vcpus(dev->kvm)) {
-+			if (kvm_lock_all_vcpus(dev->kvm, true)) {
- 				mutex_unlock(&dev->kvm->lock);
- 				return -EBUSY;
- 			}
-@@ -276,7 +276,7 @@ static int vgic_set_common_attr(struct kvm_device *dev,
- 			mutex_lock(&dev->kvm->arch.config_lock);
- 			r = vgic_v3_save_pending_tables(dev->kvm);
- 			mutex_unlock(&dev->kvm->arch.config_lock);
--			unlock_all_vcpus(dev->kvm);
-+			kvm_unlock_all_vcpus(dev->kvm);
- 			mutex_unlock(&dev->kvm->lock);
- 			return r;
- 		}
-@@ -390,7 +390,7 @@ static int vgic_v2_attr_regs_access(struct kvm_device *dev,
- 
- 	mutex_lock(&dev->kvm->lock);
- 
--	if (!lock_all_vcpus(dev->kvm)) {
-+	if (kvm_lock_all_vcpus(dev->kvm, true)) {
- 		mutex_unlock(&dev->kvm->lock);
- 		return -EBUSY;
- 	}
-@@ -415,7 +415,7 @@ static int vgic_v2_attr_regs_access(struct kvm_device *dev,
- 
- out:
- 	mutex_unlock(&dev->kvm->arch.config_lock);
--	unlock_all_vcpus(dev->kvm);
-+	kvm_unlock_all_vcpus(dev->kvm);
- 	mutex_unlock(&dev->kvm->lock);
- 
- 	if (!ret && !is_write)
-@@ -554,7 +554,7 @@ static int vgic_v3_attr_regs_access(struct kvm_device *dev,
- 
- 	mutex_lock(&dev->kvm->lock);
- 
--	if (!lock_all_vcpus(dev->kvm)) {
-+	if (kvm_lock_all_vcpus(dev->kvm, true)) {
- 		mutex_unlock(&dev->kvm->lock);
- 		return -EBUSY;
- 	}
-@@ -611,7 +611,7 @@ static int vgic_v3_attr_regs_access(struct kvm_device *dev,
- 
- out:
- 	mutex_unlock(&dev->kvm->arch.config_lock);
--	unlock_all_vcpus(dev->kvm);
-+	kvm_unlock_all_vcpus(dev->kvm);
- 	mutex_unlock(&dev->kvm->lock);
- 
- 	if (!ret && uaccess && !is_write) {
 -- 
 2.26.3
 
