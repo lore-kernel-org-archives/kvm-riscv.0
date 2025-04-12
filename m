@@ -4,87 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47E58C369A1
-	for <kvm-riscv@archiver.kernel.org>; Sat, 12 Apr 2025 12:37:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 73786C369AE
+	for <kvm-riscv@archiver.kernel.org>; Sat, 12 Apr 2025 13:15:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
 	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=U92y3i7ErsONm8oqNWmJNOgqaXRtUaHXmSJbMQnfMc4=; b=bekzUWprt2LkSq
-	DvlPdeE8alkWYYnr5Sbo6FJEomw+JA47sCxt706TqKuI+wLffKpzpMYGmTmF1wchTB1HS5kTzfK8v
-	wUwg/8LGlML+VPI0w+3UU7KVjWXY/qU3GGtNbdJEKvb3xL2gS8WiBSjjlpQDU/8Vqf1VHf040nADK
-	5Uo94iI1mxi/yOKmaJlXYnIqhqiQa3Sm97fBLsVZrYSWQgUEledmHReNs2KlGCV3I+xlIa+NCxBOQ
-	Wy77UF2aQ/sDASFJcy4fXYSB6KRvhIKop3VslwvqmAOoyWjO18pohGJx/jSJzoRVu6N6+BB795KwF
-	8YhKzGPE0K/MZB0crY7w==;
+	List-Owner; bh=23YxUVJxcgZiQQU/J6RRcaspepbftCtmstuuPMQZ2gg=; b=QwVXrSOAg5zaJF
+	0JXgXmrpVnnIYaWaCnY4GIuzJYVprp7Yu7AScrvDWTTOVH0+uDMq7p7AldUOFjnTt6PY6wk5beIhM
+	rXo+0pIHNFslJRJy/4ELApQLxhEh3fQOYVG+ac4B6Uc9INbh2bFG/PBdQrFNpfj3pHR6fXHDZJw0K
+	PV+dmq/jrSlccK83rFXr0x7tjvxZzQYQv/yPVwt1rJAWBnGJk1MVvk6GvDvkE1kmVHNlp31n19vj1
+	+Qcr+MLiLRC1EXBdfYIaQAoNb6r7LhAUrEchlqpB7JDlZQ/jOxAVVuycmDjaswRNHPNy/XoNBVQ4F
+	2K8u3qPqPAKYtthctXdg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1u3a6X-0000000Fsk8-29vB;
-	Sat, 12 Apr 2025 12:37:01 +0000
-Received: from mail-wm1-x335.google.com ([2a00:1450:4864:20::335])
+	id 1u3ahZ-0000000Fupe-09TR;
+	Sat, 12 Apr 2025 13:15:17 +0000
+Received: from mail-wm1-x32c.google.com ([2a00:1450:4864:20::32c])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1u3a6V-0000000Fsjn-40nO
+	id 1u3ahW-0000000FupB-0ILW
 	for kvm-riscv@lists.infradead.org;
-	Sat, 12 Apr 2025 12:37:01 +0000
-Received: by mail-wm1-x335.google.com with SMTP id 5b1f17b1804b1-43cef035a3bso19940265e9.1
-        for <kvm-riscv@lists.infradead.org>; Sat, 12 Apr 2025 05:36:59 -0700 (PDT)
+	Sat, 12 Apr 2025 13:15:15 +0000
+Received: by mail-wm1-x32c.google.com with SMTP id 5b1f17b1804b1-4394a823036so29103575e9.0
+        for <kvm-riscv@lists.infradead.org>; Sat, 12 Apr 2025 06:15:13 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ventanamicro.com; s=google; t=1744461418; x=1745066218; darn=lists.infradead.org;
+        d=ventanamicro.com; s=google; t=1744463712; x=1745068512; darn=lists.infradead.org;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=/1tdUSTul8z3uG62hCB/hUKnbhFABs23IMaLfOAkzGc=;
-        b=OOI2XqLCs+HsVaOJTvr+vL1nj9xseTjcczKOnaDxmQb7W+BAvcUdVAZEqbYn8qOL6d
-         WPFZ0IK7MoIiuwel2F+o8ag9JXeYWMLw6blecyQuUwBsdKh2DnfKGXfOnD8iGC4jyvyv
-         I2bNdxZ4PVCI5z860LHCs2nUwkb25VM/QvKtxJdOZasPEsL/AAZ6/w3SmfSG58MeROpE
-         vxLuehuu/vmYfjdMIPbHjDWReiV77vtdZY7bDCBzhPcJNYzZqoQjCfsO+MLYMSNM/cmb
-         Hhy5X6Pdl6L2wtRjCQx4da9JqaTGZpN8xjeYPshMe4NhRe1DvXNW62FuXiMThqAn7Bd8
-         TRtA==
+        bh=vk9M9cv/yZtQ1Q/cI8rdvJlhirTLHRA9AIIrEpRwkgA=;
+        b=WmY141S3jdXTfKZvIv/mG2H0rYDwyyiaiyFeamRyM7KVTWCCnokI+oYL2Ney6L1jLc
+         SSOtakHNOuos0NmfHnAEH1wa8R2Si3bYrN0MvvlrwV6Bq+akxxprU27xQ5cXjTJro2vA
+         t9/8i2T951sOUEjGu7Fz755i7Jvan6jxz+ZzMFNdDXhmJOiAPiiIv32LxAI873+utqUX
+         h8U7oZ06uKdOBhgz4p6iwd8sokGviVp8hYnck4+x79h+u8XJrI0Mkb6rSVzKZ7xONd+2
+         KmTcqbjPqqUu5BJxmv1ujM7mGWFvmB2ffu8FC7q/r4sG8q8KXCCcz8KqzafV6d3dJqDI
+         da6g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1744461418; x=1745066218;
+        d=1e100.net; s=20230601; t=1744463712; x=1745068512;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=/1tdUSTul8z3uG62hCB/hUKnbhFABs23IMaLfOAkzGc=;
-        b=Nm4EammBpJX7vUeSFZhwyH4a0cbCn4YrE0vOHoGVT2Zmm97reF1iWTFvGcm9owksTe
-         ktXYxsrG2wt5hJza1E/j1Buo1FO6iPVLLZkA2KMqYnOzrLAn7xhQtO6jp8hUo+6Vjksm
-         MLR6ubxnRuiTshhcn48Bk1ZZWPT4bNaG83zsRrdAlIWA5OzSW0VzfmoHjqoAg7wMZkvU
-         iU7jO6q7x8gGFEdILvgfF5LQeUeboEX5GM+HBJQXmjiDGUYH0TYeKF+epr5xpnGLLX85
-         jyNuGAgarlYJtAbtqJeSauKMsYWIZk8xm9+E/EQWA1PhPU0QdDgJMezaggnqmf3xZMOC
-         dyiw==
-X-Forwarded-Encrypted: i=1; AJvYcCWBCZjyJ/JJIcpnXMmcee9qKLqK0b/8btqSrUQcdTR/PKo+GN7jH3bTFIbEBe8F5Mtfu6DiZkOk66c=@lists.infradead.org
-X-Gm-Message-State: AOJu0YxOKPEctIKWyTSiecvWcZzxSbJTvMcUbkRs1YdIXQ1IgMBEAMIj
-	U3UdHS7D9NhSuOTrUt7OnaTYc7Xzfft5j3ZlzHb5bwGazec983rgPIDSk6kgHXM=
-X-Gm-Gg: ASbGncs1ESWii+caRxWoFeiTyPJiyAw+Di3AhyW3YVUeGNXyjIkrzoviICp/M3lGpV/
-	fdo0Y+d9scdW8+66LtsQFbuWSfXix1fI5atdiIPPMjK1tHd8ywVk8rzeyr70VuNE3qFIEtzU0OU
-	H4qYdVisGfMsocsV+bpgS63vJrKa6MUFJE+3IfTpAVLreuYaV5Ju0tcBrq15qVgzfgn/UvxOT0n
-	SgTgZeOkjSEZoBtqEEy+nT3UrT8YROnW8uGlam3zwx85VHLJsXUy6en/eqF3pl4N/Y9SzUlqza3
-	sQzb+tmpZjgPcjqR2QQ4E4j/PR1NNrzn266vCnsPJmQSgJIPN4cxEv93IpEND/b6+aehRQ==
-X-Google-Smtp-Source: AGHT+IFWJhMIxLAuhZFAH4iIc1JQxXlXQ42GIrirxlIB2AWxuYEwvVobTKAyVC9cwelW41i1/PuHVA==
-X-Received: by 2002:a05:600c:4f90:b0:43c:f689:dd with SMTP id 5b1f17b1804b1-43f3a95aeb3mr16009775e9.19.1744461417526;
-        Sat, 12 Apr 2025 05:36:57 -0700 (PDT)
+        bh=vk9M9cv/yZtQ1Q/cI8rdvJlhirTLHRA9AIIrEpRwkgA=;
+        b=nDYJ0223GJy7n0dFgenAM4qUd+9GrNZNER2ln7M+S26XPHMDIGRg/MrQ0+lad1aByt
+         F5p6AJC+SSjTvnMg1mOeZjLOlbv/c4kkiKP+FtX2+IGd1DgF2l+JLkz3mDy16aVAlsb3
+         5cgHvLAmM17DMnesMD1IoEP0Rei2bPO3tCu2DXK20CJDcDGyyPr8Uv1n8zhGjuKjnent
+         M77YkBN71j/icT+Ch5tUDMyJzf2KFomlJa5VqcyQ/8LlUCcUPhm9qOKsuOvALDKIA+KR
+         UYOM+ikvaYU8nF6F83wxXKdXlo5oOjhz2A8LNTwJTGOLUGFF0jan3Gdh4cSQ2Qa6gV67
+         Mcig==
+X-Forwarded-Encrypted: i=1; AJvYcCXTM+QKV2F7uQSdVJg4sUtZsgvP/ApM0Hwu3ZeKS0mSzztPbcZUNkA0YlXZyyxSl+uS1w5o4abhT78=@lists.infradead.org
+X-Gm-Message-State: AOJu0YzgVCiSNfxvFGgeOMb/TAPsnVoKA0fIrxkIlXKCD3TG9+EUk9ji
+	4XqarBJPSHTpVLA4jOveYW+DItNjuSCLcQD2ZT1CBmVywYOB9o474h3XDs2Y/T0=
+X-Gm-Gg: ASbGncscUlNwwUPfVhUyNaVdEAVaJMyNirsdqooMgw/LBgJ2LCEsxnLX2ItT2rxd5bx
+	OCLL07lUhoScQNQVJmMq8atLHzK3ikSPijt1jU5CDjQHNTzqgdlPfDfuw1ghYnexXu5sRwHlVFR
+	lKIjT7YksPmn8EN+IZYGdyClaV4girQr1bncs260Km///uANX8Ii7zmtqj97FHv848vie6++E3Y
+	+3M+193tWe3x+050wP6MKGbq8Ige2HsKXSNGlHmSDvP8WzcRNN2RpkJJ/0dMUDX+7GavPZasG7s
+	gcqctPhx/46O5qlQGJMXebvETbbcJrbdM7dRHneYxEmN8OHdY2qyRyC2MPNajg5B1IOS8Q==
+X-Google-Smtp-Source: AGHT+IE9OkevdIYrGwJunEmMap5IGHkQ2yzwRVq7OO6cwa+zFIHDZ9wb3Q5aKAqPtVNGxVyInCUcUg==
+X-Received: by 2002:a05:6000:4305:b0:385:fd07:8616 with SMTP id ffacd0b85a97d-39e9f3c933amr4770129f8f.0.1744463711955;
+        Sat, 12 Apr 2025 06:15:11 -0700 (PDT)
 Received: from localhost (cst2-173-28.cust.vodafone.cz. [31.30.173.28])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-43f2338d6ebsm119063895e9.2.2025.04.12.05.36.56
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-39eae96bf97sm4968707f8f.25.2025.04.12.06.15.11
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 12 Apr 2025 05:36:57 -0700 (PDT)
-Date: Sat, 12 Apr 2025 14:36:56 +0200
+        Sat, 12 Apr 2025 06:15:11 -0700 (PDT)
+Date: Sat, 12 Apr 2025 15:15:10 +0200
 From: Andrew Jones <ajones@ventanamicro.com>
 To: Anup Patel <apatel@ventanamicro.com>
 Cc: Will Deacon <will@kernel.org>, julien.thierry.kdev@gmail.com, 
 	maz@kernel.org, Paolo Bonzini <pbonzini@redhat.com>, 
 	Atish Patra <atishp@atishpatra.org>, Anup Patel <anup@brainfault.org>, kvm@vger.kernel.org, 
 	kvm-riscv@lists.infradead.org
-Subject: Re: [kvmtool PATCH 08/10] riscv: Include single-letter extensions in
- isa_info_arr[]
-Message-ID: <20250412-bafd9ea6c4e3314f8da06a26@orel>
+Subject: Re: [kvmtool PATCH 09/10] riscv: Add cpu-type command-line option
+Message-ID: <20250412-6eb18b693df1bd8959bcdfc6@orel>
 References: <20250326065644.73765-1-apatel@ventanamicro.com>
- <20250326065644.73765-9-apatel@ventanamicro.com>
+ <20250326065644.73765-10-apatel@ventanamicro.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20250326065644.73765-9-apatel@ventanamicro.com>
+In-Reply-To: <20250326065644.73765-10-apatel@ventanamicro.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250412_053700_006770_A3EE5806 
-X-CRM114-Status: GOOD (  19.72  )
+X-CRM114-CacheID: sfid-20250412_061514_119668_4363E306 
+X-CRM114-Status: GOOD (  37.90  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -101,204 +100,310 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Wed, Mar 26, 2025 at 12:26:42PM +0530, Anup Patel wrote:
-> Currently, the isa_info_arr[] only include multi-letter extensions but
-> the KVM ONE_REG interface covers both single-letter and multi-letter
-> extensions so extend isa_info_arr[] to include single-letter extensions.
+On Wed, Mar 26, 2025 at 12:26:43PM +0530, Anup Patel wrote:
+> Currently, the KVMTOOL always creates a VM with all available
+> ISA extensions virtualized by the in-kernel KVM module.
+> 
+> For better flexibility, add cpu-type command-line option using
+> which users can select one of the available CPU types for VM.
+> 
+> There are two CPU types supported at the moment namely "min"
+> and "max". The "min" CPU type implies VCPU with rv[64|32]imafdc
+> ISA whereas the "max" CPU type implies VCPU with all available
+> ISA extensions.
 > 
 > Signed-off-by: Anup Patel <apatel@ventanamicro.com>
 > ---
->  riscv/fdt.c | 138 +++++++++++++++++++++++++++++-----------------------
->  1 file changed, 76 insertions(+), 62 deletions(-)
+>  riscv/aia.c                         |   2 +-
+>  riscv/fdt.c                         | 220 +++++++++++++++++-----------
+>  riscv/include/kvm/kvm-arch.h        |   2 +
+>  riscv/include/kvm/kvm-config-arch.h |   5 +
+>  riscv/kvm.c                         |   2 +
+>  5 files changed, 143 insertions(+), 88 deletions(-)
 > 
+> diff --git a/riscv/aia.c b/riscv/aia.c
+> index 21d9704..cad53d4 100644
+> --- a/riscv/aia.c
+> +++ b/riscv/aia.c
+> @@ -209,7 +209,7 @@ void aia__create(struct kvm *kvm)
+>  		.flags = 0,
+>  	};
+>  
+> -	if (kvm->cfg.arch.ext_disabled[KVM_RISCV_ISA_EXT_SSAIA])
+> +	if (riscv__isa_extension_disabled(kvm, KVM_RISCV_ISA_EXT_SSAIA))
+>  		return;
+>  
+>  	err = ioctl(kvm->vm_fd, KVM_CREATE_DEVICE, &aia_device);
 > diff --git a/riscv/fdt.c b/riscv/fdt.c
-> index 251821e..46efb47 100644
+> index 46efb47..4c018c8 100644
 > --- a/riscv/fdt.c
 > +++ b/riscv/fdt.c
-> @@ -12,71 +12,81 @@
->  struct isa_ext_info {
+> @@ -13,82 +13,134 @@ struct isa_ext_info {
 >  	const char *name;
 >  	unsigned long ext_id;
-> +	bool multi_letter;
+>  	bool multi_letter;
+> +	bool min_cpu_included;
 >  };
 >  
 >  struct isa_ext_info isa_info_arr[] = {
-> -	/* sorted alphabetically */
-> -	{"smnpm", KVM_RISCV_ISA_EXT_SMNPM},
-> -	{"smstateen", KVM_RISCV_ISA_EXT_SMSTATEEN},
-> -	{"ssaia", KVM_RISCV_ISA_EXT_SSAIA},
-> -	{"sscofpmf", KVM_RISCV_ISA_EXT_SSCOFPMF},
-> -	{"ssnpm", KVM_RISCV_ISA_EXT_SSNPM},
-> -	{"sstc", KVM_RISCV_ISA_EXT_SSTC},
-> -	{"svade", KVM_RISCV_ISA_EXT_SVADE},
-> -	{"svadu", KVM_RISCV_ISA_EXT_SVADU},
-> -	{"svinval", KVM_RISCV_ISA_EXT_SVINVAL},
-> -	{"svnapot", KVM_RISCV_ISA_EXT_SVNAPOT},
-> -	{"svpbmt", KVM_RISCV_ISA_EXT_SVPBMT},
-> -	{"svvptc", KVM_RISCV_ISA_EXT_SVVPTC},
-> -	{"zabha", KVM_RISCV_ISA_EXT_ZABHA},
-> -	{"zacas", KVM_RISCV_ISA_EXT_ZACAS},
-> -	{"zawrs", KVM_RISCV_ISA_EXT_ZAWRS},
-> -	{"zba", KVM_RISCV_ISA_EXT_ZBA},
-> -	{"zbb", KVM_RISCV_ISA_EXT_ZBB},
-> -	{"zbc", KVM_RISCV_ISA_EXT_ZBC},
-> -	{"zbkb", KVM_RISCV_ISA_EXT_ZBKB},
-> -	{"zbkc", KVM_RISCV_ISA_EXT_ZBKC},
-> -	{"zbkx", KVM_RISCV_ISA_EXT_ZBKX},
-> -	{"zbs", KVM_RISCV_ISA_EXT_ZBS},
-> -	{"zca", KVM_RISCV_ISA_EXT_ZCA},
-> -	{"zcb", KVM_RISCV_ISA_EXT_ZCB},
-> -	{"zcd", KVM_RISCV_ISA_EXT_ZCD},
-> -	{"zcf", KVM_RISCV_ISA_EXT_ZCF},
-> -	{"zcmop", KVM_RISCV_ISA_EXT_ZCMOP},
-> -	{"zfa", KVM_RISCV_ISA_EXT_ZFA},
-> -	{"zfh", KVM_RISCV_ISA_EXT_ZFH},
-> -	{"zfhmin", KVM_RISCV_ISA_EXT_ZFHMIN},
-> -	{"zicbom", KVM_RISCV_ISA_EXT_ZICBOM},
-> -	{"zicboz", KVM_RISCV_ISA_EXT_ZICBOZ},
-> -	{"ziccrse", KVM_RISCV_ISA_EXT_ZICCRSE},
-> -	{"zicntr", KVM_RISCV_ISA_EXT_ZICNTR},
-> -	{"zicond", KVM_RISCV_ISA_EXT_ZICOND},
-> -	{"zicsr", KVM_RISCV_ISA_EXT_ZICSR},
-> -	{"zifencei", KVM_RISCV_ISA_EXT_ZIFENCEI},
-> -	{"zihintntl", KVM_RISCV_ISA_EXT_ZIHINTNTL},
-> -	{"zihintpause", KVM_RISCV_ISA_EXT_ZIHINTPAUSE},
-> -	{"zihpm", KVM_RISCV_ISA_EXT_ZIHPM},
-> -	{"zimop", KVM_RISCV_ISA_EXT_ZIMOP},
-> -	{"zknd", KVM_RISCV_ISA_EXT_ZKND},
-> -	{"zkne", KVM_RISCV_ISA_EXT_ZKNE},
-> -	{"zknh", KVM_RISCV_ISA_EXT_ZKNH},
-> -	{"zkr", KVM_RISCV_ISA_EXT_ZKR},
-> -	{"zksed", KVM_RISCV_ISA_EXT_ZKSED},
-> -	{"zksh", KVM_RISCV_ISA_EXT_ZKSH},
-> -	{"zkt", KVM_RISCV_ISA_EXT_ZKT},
-> -	{"ztso", KVM_RISCV_ISA_EXT_ZTSO},
-> -	{"zvbb", KVM_RISCV_ISA_EXT_ZVBB},
-> -	{"zvbc", KVM_RISCV_ISA_EXT_ZVBC},
-> -	{"zvfh", KVM_RISCV_ISA_EXT_ZVFH},
-> -	{"zvfhmin", KVM_RISCV_ISA_EXT_ZVFHMIN},
-> -	{"zvkb", KVM_RISCV_ISA_EXT_ZVKB},
-> -	{"zvkg", KVM_RISCV_ISA_EXT_ZVKG},
-> -	{"zvkned", KVM_RISCV_ISA_EXT_ZVKNED},
-> -	{"zvknha", KVM_RISCV_ISA_EXT_ZVKNHA},
-> -	{"zvknhb", KVM_RISCV_ISA_EXT_ZVKNHB},
-> -	{"zvksed", KVM_RISCV_ISA_EXT_ZVKSED},
-> -	{"zvksh", KVM_RISCV_ISA_EXT_ZVKSH},
-> -	{"zvkt", KVM_RISCV_ISA_EXT_ZVKT},
-> +	/* single-letter */
-> +	{"a", KVM_RISCV_ISA_EXT_A, false},
-> +	{"c", KVM_RISCV_ISA_EXT_C, false},
-> +	{"d", KVM_RISCV_ISA_EXT_D, false},
-> +	{"f", KVM_RISCV_ISA_EXT_F, false},
-> +	{"h", KVM_RISCV_ISA_EXT_H, false},
-> +	{"i", KVM_RISCV_ISA_EXT_I, false},
-> +	{"m", KVM_RISCV_ISA_EXT_M, false},
-> +	{"v", KVM_RISCV_ISA_EXT_V, false},
-> +	/* multi-letter sorted alphabetically */
-> +	{"smnpm", KVM_RISCV_ISA_EXT_SMNPM, true},
-> +	{"smstateen", KVM_RISCV_ISA_EXT_SMSTATEEN, true},
-> +	{"ssaia", KVM_RISCV_ISA_EXT_SSAIA, true},
-> +	{"sscofpmf", KVM_RISCV_ISA_EXT_SSCOFPMF, true},
-> +	{"ssnpm", KVM_RISCV_ISA_EXT_SSNPM, true},
-> +	{"sstc", KVM_RISCV_ISA_EXT_SSTC, true},
-> +	{"svade", KVM_RISCV_ISA_EXT_SVADE, true},
-> +	{"svadu", KVM_RISCV_ISA_EXT_SVADU, true},
-> +	{"svinval", KVM_RISCV_ISA_EXT_SVINVAL, true},
-> +	{"svnapot", KVM_RISCV_ISA_EXT_SVNAPOT, true},
-> +	{"svpbmt", KVM_RISCV_ISA_EXT_SVPBMT, true},
-> +	{"svvptc", KVM_RISCV_ISA_EXT_SVVPTC, true},
-> +	{"zabha", KVM_RISCV_ISA_EXT_ZABHA, true},
-> +	{"zacas", KVM_RISCV_ISA_EXT_ZACAS, true},
-> +	{"zawrs", KVM_RISCV_ISA_EXT_ZAWRS, true},
-> +	{"zba", KVM_RISCV_ISA_EXT_ZBA, true},
-> +	{"zbb", KVM_RISCV_ISA_EXT_ZBB, true},
-> +	{"zbc", KVM_RISCV_ISA_EXT_ZBC, true},
-> +	{"zbkb", KVM_RISCV_ISA_EXT_ZBKB, true},
-> +	{"zbkc", KVM_RISCV_ISA_EXT_ZBKC, true},
-> +	{"zbkx", KVM_RISCV_ISA_EXT_ZBKX, true},
-> +	{"zbs", KVM_RISCV_ISA_EXT_ZBS, true},
-> +	{"zca", KVM_RISCV_ISA_EXT_ZCA, true},
-> +	{"zcb", KVM_RISCV_ISA_EXT_ZCB, true},
-> +	{"zcd", KVM_RISCV_ISA_EXT_ZCD, true},
-> +	{"zcf", KVM_RISCV_ISA_EXT_ZCF, true},
-> +	{"zcmop", KVM_RISCV_ISA_EXT_ZCMOP, true},
-> +	{"zfa", KVM_RISCV_ISA_EXT_ZFA, true},
-> +	{"zfh", KVM_RISCV_ISA_EXT_ZFH, true},
-> +	{"zfhmin", KVM_RISCV_ISA_EXT_ZFHMIN, true},
-> +	{"zicbom", KVM_RISCV_ISA_EXT_ZICBOM, true},
-> +	{"zicboz", KVM_RISCV_ISA_EXT_ZICBOZ, true},
-> +	{"ziccrse", KVM_RISCV_ISA_EXT_ZICCRSE, true},
-> +	{"zicntr", KVM_RISCV_ISA_EXT_ZICNTR, true},
-> +	{"zicond", KVM_RISCV_ISA_EXT_ZICOND, true},
-> +	{"zicsr", KVM_RISCV_ISA_EXT_ZICSR, true},
-> +	{"zifencei", KVM_RISCV_ISA_EXT_ZIFENCEI, true},
-> +	{"zihintntl", KVM_RISCV_ISA_EXT_ZIHINTNTL, true},
-> +	{"zihintpause", KVM_RISCV_ISA_EXT_ZIHINTPAUSE, true},
-> +	{"zihpm", KVM_RISCV_ISA_EXT_ZIHPM, true},
-> +	{"zimop", KVM_RISCV_ISA_EXT_ZIMOP, true},
-> +	{"zknd", KVM_RISCV_ISA_EXT_ZKND, true},
-> +	{"zkne", KVM_RISCV_ISA_EXT_ZKNE, true},
-> +	{"zknh", KVM_RISCV_ISA_EXT_ZKNH, true},
-> +	{"zkr", KVM_RISCV_ISA_EXT_ZKR, true},
-> +	{"zksed", KVM_RISCV_ISA_EXT_ZKSED, true},
-> +	{"zksh", KVM_RISCV_ISA_EXT_ZKSH, true},
-> +	{"zkt", KVM_RISCV_ISA_EXT_ZKT, true},
-> +	{"ztso", KVM_RISCV_ISA_EXT_ZTSO, true},
-> +	{"zvbb", KVM_RISCV_ISA_EXT_ZVBB, true},
-> +	{"zvbc", KVM_RISCV_ISA_EXT_ZVBC, true},
-> +	{"zvfh", KVM_RISCV_ISA_EXT_ZVFH, true},
-> +	{"zvfhmin", KVM_RISCV_ISA_EXT_ZVFHMIN, true},
-> +	{"zvkb", KVM_RISCV_ISA_EXT_ZVKB, true},
-> +	{"zvkg", KVM_RISCV_ISA_EXT_ZVKG, true},
-> +	{"zvkned", KVM_RISCV_ISA_EXT_ZVKNED, true},
-> +	{"zvknha", KVM_RISCV_ISA_EXT_ZVKNHA, true},
-> +	{"zvknhb", KVM_RISCV_ISA_EXT_ZVKNHB, true},
-> +	{"zvksed", KVM_RISCV_ISA_EXT_ZVKSED, true},
-> +	{"zvksh", KVM_RISCV_ISA_EXT_ZVKSH, true},
-> +	{"zvkt", KVM_RISCV_ISA_EXT_ZVKT, true},
+> -	/* single-letter */
+> -	{"a", KVM_RISCV_ISA_EXT_A, false},
+> -	{"c", KVM_RISCV_ISA_EXT_C, false},
+> -	{"d", KVM_RISCV_ISA_EXT_D, false},
+> -	{"f", KVM_RISCV_ISA_EXT_F, false},
+> -	{"h", KVM_RISCV_ISA_EXT_H, false},
+> -	{"i", KVM_RISCV_ISA_EXT_I, false},
+> -	{"m", KVM_RISCV_ISA_EXT_M, false},
+> -	{"v", KVM_RISCV_ISA_EXT_V, false},
+> +	/* single-letter ordered canonically as "IEMAFDQCLBJTPVNSUHKORWXYZG" */
 
-nit: I think I would add a 'misa' boolean member instead of 'multi_letter'
-and then rework this table to look like this
+The comment change and the tabulation should go in the previous patch.
 
-	{"a",		KVM_RISCV_ISA_EXT_A, .misa = true	},
-	{"c",		KVM_RISCV_ISA_EXT_C, .misa = true	},
-	{"d",		KVM_RISCV_ISA_EXT_D, .misa = true	},
-	{"f",		KVM_RISCV_ISA_EXT_F, .misa = true	},
-	{"h",		KVM_RISCV_ISA_EXT_H, .misa = true	},
-	{"i",		KVM_RISCV_ISA_EXT_I, .misa = true	},
-	{"m",		KVM_RISCV_ISA_EXT_M, .misa = true	},
-	{"v",		KVM_RISCV_ISA_EXT_V, .misa = true	},
+> +	{"i",		KVM_RISCV_ISA_EXT_I,		false, true},
+> +	{"m",		KVM_RISCV_ISA_EXT_M,		false, true},
+> +	{"a",		KVM_RISCV_ISA_EXT_A,		false, true},
+> +	{"f",		KVM_RISCV_ISA_EXT_F,		false, true},
+> +	{"d",		KVM_RISCV_ISA_EXT_D,		false, true},
+> +	{"c",		KVM_RISCV_ISA_EXT_C,		false, true},
+> +	{"v",		KVM_RISCV_ISA_EXT_V,		false, false},
+> +	{"h",		KVM_RISCV_ISA_EXT_H,		false, false},
 
-	/* multi-letter sorted alphabetically */
-	{"smnpm",	KVM_RISCV_ISA_EXT_SMNPM,		},
-	{"smstateen",	KVM_RISCV_ISA_EXT_SMSTATEEN,		},
-	...
+To avoid keeping track of which boolean means what (and taking my .misa
+suggestion from the last patch), we can write these as, e.g.
 
-The benefit is that only the misa extensions need another field.
+  {"c",		KVM_RISCV_ISA_EXT_C, .misa = true, .min_enabled = true	},
+  {"v",		KVM_RISCV_ISA_EXT_V, .misa = true,			},
 
+(Also renamed min_cpu_included to min_enabled since it better matches
+ the enabled/disabled concept we use everywhere else.)
+
+And we don't need to change any of the multi-letter extension entries
+since we're adding something false for them.
+
+>  	/* multi-letter sorted alphabetically */
+> -	{"smnpm", KVM_RISCV_ISA_EXT_SMNPM, true},
+...
 >  };
 >  
+> +static bool __isa_ext_disabled(struct kvm *kvm, struct isa_ext_info *info)
+> +{
+> +	if (!strncmp(kvm->cfg.arch.cpu_type, "min", 3) &&
+
+kvm->cfg.arch.cpu_type can never be anything other than NULL, "min",
+"max", so we can just use strcmp.
+
+> +	    !info->min_cpu_included)
+> +		return true;
+
+If 'min_cpu_included' (or 'min_enabled') is all we plan to check for
+whether or not an extension is enabled for the 'min' cpu type, then
+we should write this as
+
+ if (!strcmp(kvm->cfg.arch.cpu_type, "min"))
+    return !info->min_enabled;
+
+Otherwise when min_enabled is true we'd still check
+kvm->cfg.arch.ext_disabled[info->ext_id].
+
+> +
+> +	return kvm->cfg.arch.ext_disabled[info->ext_id];
+> +}
+> +
+> +static bool __isa_ext_warn_disable_failure(struct kvm *kvm, struct isa_ext_info *info)
+> +{
+> +	if (!strncmp(kvm->cfg.arch.cpu_type, "min", 3) &&
+
+same strcmp comment
+
+> +	    !info->min_cpu_included)
+> +		return false;
+> +
+> +	return true;
+> +}
+> +
+> +bool riscv__isa_extension_disabled(struct kvm *kvm, unsigned long isa_ext_id)
+> +{
+> +	struct isa_ext_info *info = NULL;
+> +	unsigned long i;
+> +
+> +	for (i = 0; i < ARRAY_SIZE(isa_info_arr); i++) {
+> +		if (isa_info_arr[i].ext_id == isa_ext_id) {
+> +			info = &isa_info_arr[i];
+> +			break;
+> +		}
+> +	}
+> +	if (!info)
+> +		return true;
+> +
+> +	return __isa_ext_disabled(kvm, info);
+> +}
+> +
+> +int riscv__cpu_type_parser(const struct option *opt, const char *arg, int unset)
+> +{
+> +	struct kvm *kvm = opt->ptr;
+> +
+> +	if ((strncmp(arg, "min", 3) && strncmp(arg, "max", 3)) || strlen(arg) != 3)
+> +		die("Invalid CPU type %s\n", arg);
+> +
+> +	if (!strncmp(arg, "max", 3))
+> +		kvm->cfg.arch.cpu_type = "max";
+> +
+> +	if (!strncmp(arg, "min", 3))
+
+We can use strcmp for these two checks since we already checked strlen
+above. We also already know it's either 'min' or 'max' so we can just
+check one and default to the other.
+
+> +		kvm->cfg.arch.cpu_type = "min";
+> +
+> +	return 0;
+> +}
+> +
 >  static void dump_fdt(const char *dtb_file, void *fdt)
-> @@ -129,6 +139,10 @@ static void generate_cpu_nodes(void *fdt, struct kvm *kvm)
->  		}
+>  {
+>  	int count, fd;
+> @@ -108,10 +160,8 @@ static void dump_fdt(const char *dtb_file, void *fdt)
+>  #define CPU_NAME_MAX_LEN 15
+>  static void generate_cpu_nodes(void *fdt, struct kvm *kvm)
+>  {
+> -	int cpu, pos, i, index, valid_isa_len;
+> -	const char *valid_isa_order = "IEMAFDQCLBJTPVNSUHKORWXYZG";
+> -	int arr_sz = ARRAY_SIZE(isa_info_arr);
+>  	unsigned long cbom_blksz = 0, cboz_blksz = 0, satp_mode = 0;
+> +	int i, cpu, pos, arr_sz = ARRAY_SIZE(isa_info_arr);
+>  
+>  	_FDT(fdt_begin_node(fdt, "cpus"));
+>  	_FDT(fdt_property_cell(fdt, "#address-cells", 0x1));
+> @@ -131,18 +181,8 @@ static void generate_cpu_nodes(void *fdt, struct kvm *kvm)
+>  
+>  		snprintf(cpu_isa, CPU_ISA_MAX_LEN, "rv%ld", vcpu->riscv_xlen);
+>  		pos = strlen(cpu_isa);
+> -		valid_isa_len = strlen(valid_isa_order);
+> -		for (i = 0; i < valid_isa_len; i++) {
+> -			index = valid_isa_order[i] - 'A';
+> -			if (vcpu->riscv_isa & (1 << (index)))
+> -				cpu_isa[pos++] = 'a' + index;
+> -		}
 >  
 >  		for (i = 0; i < arr_sz; i++) {
-> +			/* Skip single-letter extensions since these are taken care */
-
-We should finish the comment with 'of by "whatever takes care of them"'
-
-> +			if (!isa_info_arr[i].multi_letter)
-> +				continue;
-> +
+> -			/* Skip single-letter extensions since these are taken care */
+> -			if (!isa_info_arr[i].multi_letter)
+> -				continue;
+> -
 >  			reg.id = RISCV_ISA_EXT_REG(isa_info_arr[i].ext_id);
 >  			reg.addr = (unsigned long)&isa_ext_out;
 >  			if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-> -- 
-> 2.43.0
->
+> @@ -151,9 +191,10 @@ static void generate_cpu_nodes(void *fdt, struct kvm *kvm)
+>  				/* This extension is not available in hardware */
+>  				continue;
+>  
+> -			if (kvm->cfg.arch.ext_disabled[isa_info_arr[i].ext_id]) {
+> +			if (__isa_ext_disabled(kvm, &isa_info_arr[i])) {
+>  				isa_ext_out = 0;
+> -				if (ioctl(vcpu->vcpu_fd, KVM_SET_ONE_REG, &reg) < 0)
+> +				if ((ioctl(vcpu->vcpu_fd, KVM_SET_ONE_REG, &reg) < 0) &&
+
+Unnecessary () around the first expression.
+
+> +				     __isa_ext_warn_disable_failure(kvm, &isa_info_arr[i]))
+>  					pr_warning("Failed to disable %s ISA exension\n",
+>  						   isa_info_arr[i].name);
+>  				continue;
+> @@ -178,8 +219,13 @@ static void generate_cpu_nodes(void *fdt, struct kvm *kvm)
+>  					   isa_info_arr[i].name);
+>  				break;
+>  			}
+> -			pos += snprintf(cpu_isa + pos, CPU_ISA_MAX_LEN - pos, "_%s",
+> -					isa_info_arr[i].name);
+> +
+> +			if (isa_info_arr[i].multi_letter)
+> +				pos += snprintf(cpu_isa + pos, CPU_ISA_MAX_LEN - pos, "_%s",
+> +						isa_info_arr[i].name);
+> +			else
+> +				pos += snprintf(cpu_isa + pos, CPU_ISA_MAX_LEN - pos, "%s",
+> +						isa_info_arr[i].name);
+
+Can write this as
+
+                        pos += snprintf(cpu_isa + pos, CPU_ISA_MAX_LEN - pos, "%s%s",
+                                        isa_info_arr[i].misa ? "" : "_",
+					isa_info_arr[i].name);
+
+>  		}
+>  		cpu_isa[pos] = '\0';
+>  
+> diff --git a/riscv/include/kvm/kvm-arch.h b/riscv/include/kvm/kvm-arch.h
+> index f0f469f..1bb2d32 100644
+> --- a/riscv/include/kvm/kvm-arch.h
+> +++ b/riscv/include/kvm/kvm-arch.h
+> @@ -90,6 +90,8 @@ enum irqchip_type {
+>  	IRQCHIP_AIA
+>  };
+>  
+> +bool riscv__isa_extension_disabled(struct kvm *kvm, unsigned long ext_id);
+> +
+>  extern enum irqchip_type riscv_irqchip;
+>  extern bool riscv_irqchip_inkernel;
+>  extern void (*riscv_irqchip_trigger)(struct kvm *kvm, int irq,
+> diff --git a/riscv/include/kvm/kvm-config-arch.h b/riscv/include/kvm/kvm-config-arch.h
+> index 7e54d8a..26b1b50 100644
+> --- a/riscv/include/kvm/kvm-config-arch.h
+> +++ b/riscv/include/kvm/kvm-config-arch.h
+> @@ -4,6 +4,7 @@
+>  #include "kvm/parse-options.h"
+>  
+>  struct kvm_config_arch {
+> +	const char	*cpu_type;
+>  	const char	*dump_dtb_filename;
+>  	u64		suspend_seconds;
+>  	u64		custom_mvendorid;
+> @@ -13,8 +14,12 @@ struct kvm_config_arch {
+>  	bool		sbi_ext_disabled[KVM_RISCV_SBI_EXT_MAX];
+>  };
+>  
+> +int riscv__cpu_type_parser(const struct option *opt, const char *arg, int unset);
+> +
+>  #define OPT_ARCH_RUN(pfx, cfg)						\
+>  	pfx,								\
+> +	OPT_CALLBACK('\0', "cpu-type", kvm, "min or max",		\
+> +		     "Choose the cpu type (default is max).", riscv__cpu_type_parser, kvm),\
+
+I had to look ahead at the next patch to understand why we're setting kvm
+as the opt pointer here. I think it should be added in the next patch
+where it's used. Also, we don't use opt->value so we cna set that to NULL.
+
+>  	OPT_STRING('\0', "dump-dtb", &(cfg)->dump_dtb_filename,		\
+>  		   ".dtb file", "Dump generated .dtb to specified file"),\
+>  	OPT_U64('\0', "suspend-seconds",				\
+> diff --git a/riscv/kvm.c b/riscv/kvm.c
+> index 1d49479..6a1b154 100644
+> --- a/riscv/kvm.c
+> +++ b/riscv/kvm.c
+> @@ -20,6 +20,8 @@ u64 kvm__arch_default_ram_address(void)
+>  
+>  void kvm__arch_validate_cfg(struct kvm *kvm)
+>  {
+> +	if (!kvm->cfg.arch.cpu_type)
+> +		kvm->cfg.arch.cpu_type = "max";
+>  }
+
+Hmm, seems like we're missing the right place for this. A validate
+function shouln't be setting defaults. I think we should rename
+kvm__arch_default_ram_address() to
+
+  void kvm__arch_set_defaults(struct kvm_config *cfg)
+
+and set cfg->ram_addr inside it. Then add the cpu_type default
+setting to riscv's impl.
 
 Thanks,
 drew
+
+>  
+>  bool kvm__arch_cpu_supports_vm(void)
+> -- 
+> 2.43.0
+> 
 
 -- 
 kvm-riscv mailing list
