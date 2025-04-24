@@ -4,84 +4,90 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 081F5C369D8
-	for <kvm-riscv@archiver.kernel.org>; Thu, 24 Apr 2025 16:07:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2C34AC369D8
+	for <kvm-riscv@archiver.kernel.org>; Thu, 24 Apr 2025 16:07:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:Subject:Message-ID:Date:From:
-	In-Reply-To:References:MIME-Version:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=4wc3TMwz2WBPcLL8r8lZFTCo7mN2ZAQ0nGwifHDv6r0=; b=xEfIj1J/JDInSL
-	Nqc71zXsv06ujimfHdLHTYDm/I6C62g6lO04qiWOUbl7znoPVo9DtepoHZP2w3tkR1PqDQmYEx1fQ
-	UseRjH5Lh0U/OMXhIzMe4k03sTas35cewhmOIZyJ4dt304TWHjom3+kU1hYSoMkIIvDbAmIhU2M23
-	OiPvUoY6OyxKRAaUsPVAlZHIui17X6Qmp0qYlYhqv3s30C6H7LV0CBZjjbr/ilnzwmTyrOzEQTrWk
-	i7GaUvoWa82CrQinkhR9DdBvh3oJ8tEvRaaUL0VFqJ2ZSdhTwNYDiOiGFZ/qKmGPu2wFM73FkEW+Z
-	4eOFSJR8Mgbn8h2ufN5Q==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=PdYgjLn8gm0MnLv521XdU9oAEEvRCj1f8Ps8U0ocvLc=; b=jjG50HgYhGLvD1
+	Yhg8LBpUggWCzMWEPe/aVayViDMj6WBgCN9D+ijUHMA/52B6uSAtwdzWdT48iIz/ev/c0WrOnOxFc
+	wLpgp3eCX9PokU8xUx5OVsHFRfFFFIm3eOxLslCaN9YHLJJiPrh4e6pyZzalh+Zq9gNTQWG7AvW2V
+	DSlliOB8GujwGE3Hwyzk19f+XVSGi3y4M5q/Eg7Jee/I/Rnh7vClCjFG74p3W8huTL23banlCFtNW
+	ZMKtrYaOKseO0SbXp6795SvqEc4DntO223tQVNvksNsiq8QqFuOoXQDfzKeaPr232L3NVLSc+xZaW
+	/tcXrfIZA7dmzlqN+nvg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1u7z6f-0000000EfM7-29nr;
-	Thu, 24 Apr 2025 16:07:21 +0000
-Received: from mail-lf1-x129.google.com ([2a00:1450:4864:20::129])
+	id 1u7z6p-0000000EfcY-1DDW;
+	Thu, 24 Apr 2025 16:07:31 +0000
+Received: from mail-pf1-x443.google.com ([2607:f8b0:4864:20::443])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1u7yKC-0000000ET8M-3EvF
+	id 1u7yYb-0000000EVCZ-2kNl
 	for kvm-riscv@lists.infradead.org;
-	Thu, 24 Apr 2025 15:17:17 +0000
-Received: by mail-lf1-x129.google.com with SMTP id 2adb3069b0e04-54998f865b8so1148329e87.3
-        for <kvm-riscv@lists.infradead.org>; Thu, 24 Apr 2025 08:17:16 -0700 (PDT)
+	Thu, 24 Apr 2025 15:32:11 +0000
+Received: by mail-pf1-x443.google.com with SMTP id d2e1a72fcca58-736c3e7b390so1213111b3a.2
+        for <kvm-riscv@lists.infradead.org>; Thu, 24 Apr 2025 08:32:09 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ventanamicro.com; s=google; t=1745507835; x=1746112635; darn=lists.infradead.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=bkX8L9FmNiooLHGCaRLkArZ3Rbkys/Ef4Mr2QS/rQm4=;
-        b=UXmgFzs00qvm4Qf0eOxDr/UFdqcYKnD9OSXQfUabwW7cxiqohk84Y82htum6WUFb0h
-         Lh4nVPeY4pmsY8S94Rs061CrC6hZEq8xxWPHjfHO8LMKJ4/Sr/FrUesuJ01josE6bT06
-         GIEqYPe+7KkhhWDMzrslLiO4fPuWX0CB7Q3ISKMZtQZ2Zu+tKIXwzvQO+/1pYsE7vFl1
-         CMyGsKj7jDGCzcYILkvH7fACoXttfBMPjS+L+TCErWh3i+pBWC23XTIJjQz1Qg8Wgy1X
-         +wDRZ/W2TE5jhuR4sX4zJ5ssL2fbt+iXQZumi2Su9zx7a2ti5VuN6Rhq7Z02Mr2oXBL0
-         X35w==
+        d=ventanamicro.com; s=google; t=1745508728; x=1746113528; darn=lists.infradead.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=0oClxd3Eqcg8INMrYeT0VTSG7eSwzuIOPz2EiOMFj4Q=;
+        b=fbqDhgeWcQMQRk0kCZzULTiSvcXgzBDQEn6pemeQmWRKsQJe7D/8sPWrId2/MXpBxS
+         LKgrxUFa5X08NfKphg4M9ksQazhLYWwldb6kuzaj9CzsrnoHmeHVAcyNFPNEIpVvvEWq
+         rxZAAqlNFlWuWEKHRcEtW9f7ILCsQ6zJk3Ax6ofEmD6eVk+JSAAaCIeoySnbQzFzYpLQ
+         2ru8Yxh4WhafBSVlbfDHFnFuN7OczRPFM9mavEVcK5x69hM45KUQcwPX69M6fKMiKipg
+         doAYA5vxIDkevczqA1CaTlzzeORlz/f1epEuuhuqYRxCCdQWjrBtULYGEusaJIgkoOyb
+         ft8g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1745507835; x=1746112635;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=bkX8L9FmNiooLHGCaRLkArZ3Rbkys/Ef4Mr2QS/rQm4=;
-        b=LAghiKWx6VrCcnuD36hBmYQ6xHGvTtsXybxZ5Bi6aUH383p/FL3zctzGahvttuX2Db
-         WLGBajdUTnWmkL8VY94b5E1L0wPGJufBk705cu3PIIkwGA07FBt1ebeHJthWQ5RC1Ig0
-         hJYlGJcvzmVIinRKLTZ/20hGEEN864AJaQ6pl6Zg3PEsdcwlhRxx3ZGbpS0fiM9/wUpS
-         rNalka9SzPKnP9NJ1c+0rMa9s6nb2a1/26ZzlZyIPZrv43uzS11RYB1r1jGSqDpw/xar
-         QinZOlbRfgdwi5mMfHo/+5zp44eC13gYdv06xBPBkwHXMvkkucp1Cb/za5EmWVfzVaI9
-         TJIw==
-X-Forwarded-Encrypted: i=1; AJvYcCWz7/SBcqi7ddjB4rwwmzFrq6gKD4d4dD+fyy3zQRf1D+dHO4pP0OVg4J5eGpsSxAcsBCz0SZHsMH0=@lists.infradead.org
-X-Gm-Message-State: AOJu0YxAg6iLCrTngkcHkoz+hetnxGfwrvxrKPdyRCFkK5r4dkO1GmMr
-	IrFcqP0H09FpICOKF7EmjXcc4T0c3EVPABF9lyUIxADPHkl1uvfzfhgTbTi4lobzFSd+nAvNMbD
-	bGwZoXMlO5pFXrZDzUqdFLidFtfM/Sx428vNK/w==
-X-Gm-Gg: ASbGncv9lfk2gZ4CZyb5uuYg2iyYndVvmVhrQ/IHJigkpolfSPudFf6wy/bJuQYFtu2
-	wPdMPZiQZWTgKs+67sw82fZwUHbu9A33v/awpzbIOOy6GcOsqawB3746Y2sK+cHOWUpJkBp8CR+
-	UHDhEqAPpTpDyCrakPfxkXXDIrsIOlYbwJsA==
-X-Google-Smtp-Source: AGHT+IEq2nDdTYCCuLC8CvG8Nu1G2tLTs9KyL8Oc/Ly8gBV/Sos+3gNM1kuYagtuyh2a1lvS7wE4XaXBUz4iSISWl4U=
-X-Received: by 2002:a05:6512:b99:b0:549:6759:3982 with SMTP id
- 2adb3069b0e04-54e7c44cc36mr1090314e87.37.1745507834576; Thu, 24 Apr 2025
- 08:17:14 -0700 (PDT)
-MIME-Version: 1.0
-References: <20250326065644.73765-1-apatel@ventanamicro.com>
- <20250326065644.73765-11-apatel@ventanamicro.com> <20250412-bc81866c2227ed98429f86b5@orel>
- <CAK9=C2UxikXyX_VEn7txnfXVjCdLE7Awn=yjs_Ye2dc8VP=DRg@mail.gmail.com> <20250424-153e6b09d5f0ccdee057a0d9@orel>
-In-Reply-To: <20250424-153e6b09d5f0ccdee057a0d9@orel>
+        d=1e100.net; s=20230601; t=1745508728; x=1746113528;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=0oClxd3Eqcg8INMrYeT0VTSG7eSwzuIOPz2EiOMFj4Q=;
+        b=dQkF9+SIWwVvS5s7pdXp5Dc63QzX//IiSf7+V+b27EIDZ7C6AE3XaKXnXXDSHW/V2/
+         BGVDMStCyfzoV2FMU4mqFxIDTz19DBS1nz1JP54/P6KwKRTlF5y2qmRJz/zhdrxeLxMF
+         hX/EKLjVf1h2AY7SYsl5tTSSvkdvoiD2fSYxVh1w4tkbFlSxLwaAz06VF8jS5Tklxf6t
+         Os4PXSdYN437oudn9OPq83HthPNhWEL3MLdXLZztQRmc8GaXeUBCKScPcbjfNKN6u//P
+         HNjBwuPpb0TarGJ1Ci8UT1IkuormvG7pahr65IJ7EGkjja6U0MBf2AGz8Wu7xzj72zfc
+         9KHA==
+X-Forwarded-Encrypted: i=1; AJvYcCVz7YqLI7mJoUtK9qn+GjgJeswz/79BBE/PL0GNcJnv/EsfeIyYcV6dbb64QroLvqZ0XsIZnl78XwQ=@lists.infradead.org
+X-Gm-Message-State: AOJu0YwBiLioQoszhlSi+HxYho8bwHaNi2zzZ8zXrtqfYSMqvD1WTwd/
+	16LQFfeZghwPSe3c2UQobgOo0bqVBuTOlgRpiDKD93qUYYkH6Qpfc2hcrO76Y28=
+X-Gm-Gg: ASbGncujh1ff6gWpJAZ4cB54XJZvp/Ib0B76o8MJpSJxMQhiFvK9TmcdLrIVugmskeT
+	Cffkf+OQx3RYO/4UzrjIEvWedLjNuY7SVwhEtiFabWduFLsLnRHAhrX1bslRu/kBbLV1HfQgb8W
+	A+zILMO5hJQEK0mBYVGY7xHwrudXXFM6yETZ8dFPUuxlHBv2NSf9hJulKmFnI3aF7SKvA/EJygW
+	YNQXcIaf0Nk+/zzwTunQhjn8lPsJTqUyTR2n/zPeXQGKq7vDowkCU5zvb/WC7+KcF0pxo3RtWrA
+	FZefP5uHSwx8g6gmLGqS0ff42zP16pRzZQy7/Kr28PCaWg6KvwaFvp67yTpp+nULKXden5Xa0IH
+	/b8rF
+X-Google-Smtp-Source: AGHT+IGn2lMxrkFCENEf07ZZ1qMSmFt5r0YXLBuVTZeTQRd8e6liRvutCssLcoZZasc3BOr9s7qAbA==
+X-Received: by 2002:a05:6a20:9189:b0:1ee:8435:6b69 with SMTP id adf61e73a8af0-20444e7ac6dmr3777420637.1.1745508728437;
+        Thu, 24 Apr 2025 08:32:08 -0700 (PDT)
+Received: from anup-ubuntu-vm.localdomain ([103.97.166.196])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-b15f8597f5csm1360610a12.43.2025.04.24.08.32.04
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 24 Apr 2025 08:32:07 -0700 (PDT)
 From: Anup Patel <apatel@ventanamicro.com>
-Date: Thu, 24 Apr 2025 20:47:02 +0530
-X-Gm-Features: ATxdqUEEIROQU0mWFtLvZ77bUroGqt47muzTW4_uxC9olgu_IqcHhHi2hGHp7K0
-Message-ID: <CAK9=C2VCvE34hdTa2h2_Yr78HO-m5fWw-EzM2L9AAgaE9dDs+Q@mail.gmail.com>
-Subject: Re: [kvmtool PATCH 10/10] riscv: Allow including extensions in the
- min CPU type using command-line
-To: Andrew Jones <ajones@ventanamicro.com>
-Cc: Will Deacon <will@kernel.org>, julien.thierry.kdev@gmail.com, maz@kernel.org, 
-	Paolo Bonzini <pbonzini@redhat.com>, Atish Patra <atishp@atishpatra.org>, 
-	Anup Patel <anup@brainfault.org>, kvm@vger.kernel.org, kvm-riscv@lists.infradead.org
+To: Will Deacon <will@kernel.org>,
+	julien.thierry.kdev@gmail.com,
+	maz@kernel.org
+Cc: Paolo Bonzini <pbonzini@redhat.com>,
+	Atish Patra <atishp@atishpatra.org>,
+	Andrew Jones <ajones@ventanamicro.com>,
+	Anup Patel <anup@brainfault.org>,
+	kvm@vger.kernel.org,
+	kvm-riscv@lists.infradead.org,
+	Anup Patel <apatel@ventanamicro.com>
+Subject: [kvmtool PATCH v2 00/10] Add SBI system suspend and cpu-type option
+Date: Thu, 24 Apr 2025 21:01:49 +0530
+Message-ID: <20250424153159.289441-1-apatel@ventanamicro.com>
+X-Mailer: git-send-email 2.43.0
+MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250424_081716_809532_180BE8DC 
-X-CRM114-Status: GOOD (  13.10  )
+X-CRM114-CacheID: sfid-20250424_083209_694134_A8368F8B 
+X-CRM114-Status: UNSURE (   9.51  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -93,38 +99,57 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-T24gVGh1LCBBcHIgMjQsIDIwMjUgYXQgNzozN+KAr1BNIEFuZHJldyBKb25lcyA8YWpvbmVzQHZl
-bnRhbmFtaWNyby5jb20+IHdyb3RlOgo+Cj4gT24gVGh1LCBBcHIgMjQsIDIwMjUgYXQgMDc6MDI6
-MThQTSArMDUzMCwgQW51cCBQYXRlbCB3cm90ZToKPiA+IE9uIFNhdCwgQXByIDEyLCAyMDI1IGF0
-IDc6MTXigK9QTSBBbmRyZXcgSm9uZXMgPGFqb25lc0B2ZW50YW5hbWljcm8uY29tPiB3cm90ZToK
-PiA+ID4gPiAgYm9vbCByaXNjdl9faXNhX2V4dGVuc2lvbl9kaXNhYmxlZChzdHJ1Y3Qga3ZtICpr
-dm0sIHVuc2lnbmVkIGxvbmcgaXNhX2V4dF9pZCkKPiA+ID4gPiAgewo+ID4gPiA+ICAgICAgIHN0
-cnVjdCBpc2FfZXh0X2luZm8gKmluZm8gPSBOVUxMOwo+ID4gPiA+IEBAIC0xMjgsMTYgKzE0Miwz
-OSBAQCBib29sIHJpc2N2X19pc2FfZXh0ZW5zaW9uX2Rpc2FibGVkKHN0cnVjdCBrdm0gKmt2bSwg
-dW5zaWduZWQgbG9uZyBpc2FfZXh0X2lkKQo+ID4gPiA+ICBpbnQgcmlzY3ZfX2NwdV90eXBlX3Bh
-cnNlcihjb25zdCBzdHJ1Y3Qgb3B0aW9uICpvcHQsIGNvbnN0IGNoYXIgKmFyZywgaW50IHVuc2V0
-KQo+ID4gPiA+ICB7Cj4gPiA+ID4gICAgICAgc3RydWN0IGt2bSAqa3ZtID0gb3B0LT5wdHI7Cj4g
-PiA+ID4gKyAgICAgY29uc3QgY2hhciAqc3RyLCAqbnN0cjsKPiA+ID4gPiArICAgICBpbnQgbGVu
-Owo+ID4gPiA+Cj4gPiA+ID4gLSAgICAgaWYgKChzdHJuY21wKGFyZywgIm1pbiIsIDMpICYmIHN0
-cm5jbXAoYXJnLCAibWF4IiwgMykpIHx8IHN0cmxlbihhcmcpICE9IDMpCj4gPiA+ID4gKyAgICAg
-aWYgKChzdHJuY21wKGFyZywgIm1pbiIsIDMpIHx8IHN0cmxlbihhcmcpIDwgMykgJiYKPiA+ID4K
-PiA+ID4gSWYgYXJnID09ICdtaW4nLCB0aGVuIGl0IGNhbid0IGJlIGxlc3MgdGhhbiAzIHNvIHRo
-ZSAnfHwgc3RybGVuKGFyZykgPCAzJwo+ID4gPiBpcyBkZWFkIGNvZGUuCj4gPiA+Cj4gPiA+ID4g
-KyAgICAgICAgIChzdHJuY21wKGFyZywgIm1heCIsIDMpIHx8IHN0cmxlbihhcmcpICE9IDMpKQo+
-ID4gPgo+ID4gPiBJIHRoaW5rIHdlIHdhbnQKPiA+ID4KPiA+ID4gIGlmIChzdHJsZW4oYXJnKSA8
-IDMgfHwKPiA+ID4gICAgICAoc3RybGVuKGFyZykgPT0gMyAmJiBzdHJjbXAoYXJnLCAibWluIikg
-JiYgc3RyY21wKGFyZywgIm1heCIpKSB8fAo+ID4gPiAgICAgIHN0cm5jbXAoYXJnLCAibWluIiwg
-MykpCj4gPgo+ID4gTm9wZSwgZm9yIGNwdS10eXBlID0gIm1pbiIgdGhlIHN0cmxlbihhcmcpIGNh
-biBiZSBncmVhdGVyIHRoYW4gMwo+ID4gYmVjYXVzZSBvZiBjb21tYSBzZXBhcmF0ZWQgZXh0ZW5z
-aW9ucyBwcm92aWRlZCBhcyBwYXJ0IG9mCj4gPiBjcHUtdHlwZSB2YWx1ZS4KPgo+IFRoYXQncyB3
-aGF0IHRoZSBsYXN0IGNvbmRpdGlvbiAnc3RybmNtcChhcmcsICJtaW4iLCAzKScgb2YgbXkgcHJv
-cG9zZWQKPiBjb21wb3VuZC1jb25kaXRpb24gaXMgY29uZmlybWluZy4gVGhhdCBjb25kaXRpb24g
-aXMgb25seSBjaGVja2VkIGZvcgo+IHN0cmxlbihhcmcpID4gMy4KPgoKVGhpcyBsYXN0IGNvbmRp
-dGlvbiBjYXVzZXMgIi0tY3B1LXR5cGUgbWF4IiB0byBmYWlsLgoKUmVnYXJkcywKQW51cAoKLS0g
-Cmt2bS1yaXNjdiBtYWlsaW5nIGxpc3QKa3ZtLXJpc2N2QGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0
-cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9rdm0tcmlzY3YK
+This series does the following improvements:
+1) Add Svvptc, Zabha, and Ziccrse extension support (PATCH2 to PATCH3)
+2) Add SBI system suspend support (PATCH5 to PATCH6)
+3) Add "--cpu-type" command-line option supporting "min" and "max"
+   CPU types where "max" is the default (PATCH8 to PATCH10)
+
+These patches can also be found in the riscv_more_exts_round6_v2 branch
+at: https://github.com/avpatel/kvmtool.git
+
+Changes since v1:
+ - Rebased on latest KVMTOOL commit d410d9a16f91458ae2b912cc088015396f22dfad
+ - Addressed comments on PATCH8, PATCH9, and PATCH10
+
+Andrew Jones (3):
+  riscv: Add SBI system suspend support
+  riscv: Make system suspend time configurable
+  riscv: Fix no params with nodefault segfault
+
+Anup Patel (7):
+  Sync-up headers with Linux-6.14 kernel
+  riscv: Add Svvptc extension support
+  riscv: Add Zabha extension support
+  riscv: Add Ziccrse extension support
+  riscv: Include single-letter extensions in isa_info_arr[]
+  riscv: Add cpu-type command-line option
+  riscv: Allow including extensions in the min CPU type using
+    command-line
+
+ arm64/include/asm/kvm.h             |   3 -
+ include/linux/kvm.h                 |   8 +-
+ include/linux/virtio_pci.h          |  14 ++
+ riscv/aia.c                         |   2 +-
+ riscv/fdt.c                         | 241 +++++++++++++++++++---------
+ riscv/include/asm/kvm.h             |   7 +-
+ riscv/include/kvm/kvm-arch.h        |   2 +
+ riscv/include/kvm/kvm-config-arch.h |  26 +++
+ riscv/include/kvm/sbi.h             |   9 ++
+ riscv/kvm-cpu.c                     |  36 +++++
+ x86/include/asm/kvm.h               |   1 +
+ 11 files changed, 266 insertions(+), 83 deletions(-)
+
+-- 
+2.43.0
+
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
