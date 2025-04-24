@@ -4,71 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9B8CBC369C2
-	for <kvm-riscv@archiver.kernel.org>; Thu, 24 Apr 2025 16:07:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 756F5C369D5
+	for <kvm-riscv@archiver.kernel.org>; Thu, 24 Apr 2025 16:07:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=LXbhtHzYMkir09O/f5ZJYkLduwfLZ9W9tQF4PWX4z4Q=; b=nahC/fHvx1SIiG
-	f5SlFa0xefnexP3QvOeKZqvPNICnFISC0HspXe9O3/Yiub5M2HXm+BH0j5QLyZGB73ePcZqcWpUBS
-	XTIVqqqLe+FCuCxgJjTm+vKfPei6xXRcguo8+JMxrcn7TLs3/xRXlH1iG60NzzxC+F5pmgS0Aj9Gx
-	rHepi1wFWePVuc0Ko6EC24GUmQx979WNXHqztvr7SAA5mnbUhJYQOvJjIXxIW9zLfrfISQqac/RHp
-	AWoaJCuFuUNBeUF9G9py8Sija6D4JH+2lHODwzWMQNoDtFvQUFijeiU5Inr9dg74JM081qErUV7kD
-	+TmW0xlrxDvRcd02ptRw==;
+	List-Owner; bh=y4/zTpEh5H7tgQYMzsmLliN6lcx6mNCcdAp8V3vX0Mg=; b=SOAY99Zow+R2qW
+	reGsqNNUeMBH1qM0Cwj2eb+BgC19eanBCYMv6WIyqHh+1+7E9sldeH960HXeptXPLcrXW0z4nNFtd
+	1OA04kCThclZ4uaCaLRbXzEDFUz0rOEJtfiLHJMb8Vq+76maQpHeyTalsCGh4iIgU72UEZB6lGsfQ
+	BcPkpE3bezVr/Mj95YXlDQ5yAcIbqqZAcM0svq7Iwp70AJ0gDSN+vbTDE1oqt81jWlx/OrLGfojXS
+	hpsi0otJfFL+OqOiWUEbM/K98cmjIvOuPNhUu0nAKHuB3XZW+xgHJRzRqP/306eOldKfRWTueP5Re
+	ND+C8vDxFRtIYq6cSkcw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1u7z6t-0000000Efkc-4AIM;
+	id 1u7z6u-0000000Efll-2i4u;
 	Thu, 24 Apr 2025 16:07:36 +0000
-Received: from mail-pf1-x42d.google.com ([2607:f8b0:4864:20::42d])
+Received: from mail-pf1-x444.google.com ([2607:f8b0:4864:20::444])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1u7yZ4-0000000EVKM-0EBe
+	id 1u7yZ8-0000000EVLc-1F1q
 	for kvm-riscv@lists.infradead.org;
-	Thu, 24 Apr 2025 15:32:39 +0000
-Received: by mail-pf1-x42d.google.com with SMTP id d2e1a72fcca58-736c277331eso2325839b3a.1
-        for <kvm-riscv@lists.infradead.org>; Thu, 24 Apr 2025 08:32:37 -0700 (PDT)
+	Thu, 24 Apr 2025 15:32:44 +0000
+Received: by mail-pf1-x444.google.com with SMTP id d2e1a72fcca58-7376dd56f8fso1551257b3a.2
+        for <kvm-riscv@lists.infradead.org>; Thu, 24 Apr 2025 08:32:41 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ventanamicro.com; s=google; t=1745508757; x=1746113557; darn=lists.infradead.org;
+        d=ventanamicro.com; s=google; t=1745508761; x=1746113561; darn=lists.infradead.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=qpgStyTcu6ohuguHcXTsVTGNp1bnGO1cAa+NtUp6vks=;
-        b=TNbt9qOwbGdi6oYQDRp92/xEgnhUGTfjP6hqNEgvrD3BCeim4daD2yQfiXxF9R2xiY
-         7OqJipRDethYou+Mh3ILRiz9RBHLt9nLF8EJkIVKCD3NChPR7UzMCBAhnuY+0AxhCcSB
-         GwQW+ntRm8Dt1cr+e/FrlwipbVQhaNIF/2jc9pwvvFm3C2zWMEBU3smoikuqvpwWSZqY
-         Wf2bJOxzRPT2rMoQxUULyFsU8nAwMAIjG/a8BKTnx2HX3rNjHFztYoMtBjUChRhggiiE
-         HIH47XzkEu3E9MnDEQrK3IMHK38wqHLctiHIWA2GxeaIxYijwR6jJlzZCWlNnfiCpfTv
-         SRlg==
+        bh=y9/1qWtDS6xTLdJMtcRPhkRNGwQw4N6MsnqnwpODYYU=;
+        b=b02ccjAu5yUAuc71PbB7iH3/YC7hQH527oeOLKGAdHwP59lv+mQncjO1AvJKJLUW7R
+         13oVtoPjq6VWzetFiZKb9uLN/fOhygptQYfV3P/eYyAXsxyVNikg21TYqO1Vr8K+DJOp
+         SizCce8q3wurOvFHzZPPur9h2g7yEQDRsBGPeuCU3Iy9SIIQrHEMX1sB8dWNrKxg6Fcg
+         Ef8QCKvoly+EAoNU79TUZh4BAOSOUdp17Y1zPiJTQDy5c0QrZqMLm82tOOOQ3FvjLoYr
+         WqduWhQx6taZP5NLxLdn0+PGNi2leJE4dtLmhrycLP2TIvDB04dwJL1UKk6fctFiFE0c
+         OFVw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1745508757; x=1746113557;
+        d=1e100.net; s=20230601; t=1745508761; x=1746113561;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=qpgStyTcu6ohuguHcXTsVTGNp1bnGO1cAa+NtUp6vks=;
-        b=BgDe0rXUO6GBPHd9nJLwFG6K5HzRGjIeIhjvv+WuxMSd2iZ0IVat+iHhhtmLfIe61W
-         CcXcXg1xQe0FnHvaL/lnx2Z45SXP/lH9MljwCe4SeMWTQgUqb+0VmQfDdTm/HbZnVwHM
-         omvgGVNsW5bjQAe5+JT+dCoGgWKhpr45hZNE05UoOkkfn79FRnc5ajwmJYFzuNt8pp9L
-         gUljPmeSMxeTnKpFE6xr/2sCFP9mxB/45EnSsfCFiQNCs1VMLs2DjGooy45XhfbIq2O9
-         RKAdNd1FP9UoMUuicefWpB5YbgchAJAVnJiSa3mZBEw3EhI2FmXllJf1UaQwsT3i1q6F
-         8m2w==
-X-Forwarded-Encrypted: i=1; AJvYcCW99Y/9wOfcOP9Rn0uqAsVeoQrTRmP7NylNLmUuBGs0+4mO2cbuXMOS3LTZSmazLPo0Hd4wHe5T3O0=@lists.infradead.org
-X-Gm-Message-State: AOJu0YzVZjELiAKCFPb1qw9Ev2ZOF/lLCFw1Dnf++yw5QqTfz7Cn9oiu
-	AhEdhsqGiGpHkMGJc4UwVUiB98Cqojnvw0Qf55nzTVmNuxpMQdK5nhFYSDibnMw=
-X-Gm-Gg: ASbGncsZfrfSco0jO4QG4dzogCVaAk3A7Sz45NlQonH+tGlOtBSUkd+a4mN4xI+1lMF
-	8BnmEOyKwrDrgsSeSrG7gga6uU2gSXpVi/RH8fN8VcNUGuOBFKmjFnudi8rAu4Z1Nn20gP76YZ8
-	fJNs2hYOiLMg7sRW289D5yrBe5jkq3RGfXRsFHuGHNyq3VjfImZXQIqdMYe535RQO9xO2rNOXyJ
-	tNIlo1YkrwnGKMD/8cbyYbl9mhWKMyOCmV9ac2AEXVOtHNg453rWJz9CoTFaorYhPCHVhVfWkQS
-	Q25dN6SFXe+B32gw1T2LWjW2vYeF5Qe8KUAoe2jyCgEkSCdUX2fAobzKNpM+BYsVbEWQnyUvr4I
-	GyNLN
-X-Google-Smtp-Source: AGHT+IHy7AXxJJDzsDWie0QeRPdRL7g7CgsUCpA59V55wQzkBFyCEffrYZI1d0c7ntvg/j0t9yrGTw==
-X-Received: by 2002:a05:6a21:8dc7:b0:1ee:450a:8259 with SMTP id adf61e73a8af0-20446024261mr3667887637.18.1745508756859;
-        Thu, 24 Apr 2025 08:32:36 -0700 (PDT)
+        bh=y9/1qWtDS6xTLdJMtcRPhkRNGwQw4N6MsnqnwpODYYU=;
+        b=B3dhKaty70JXWWvZPrsUgmSc1CWb4nVuAuykYGPCHvKdKkrkW5f0S4RWYHEtEszw+q
+         mTtuWrTMrAsBeJLZvLY/AfABNfaT/LkYQkiINoSWr4QBq020mS3KYoueLRj332WVHOLo
+         z1k3OJWrD6pK3eIl+axrRyZfMxTz84/RWajqleCaH0h53vBrXo8pRL5bF4x6eGAsVnZG
+         Xvi4PH0CGnRXC5s7MY+1jk2QwXEgUVbCMVOHQh68CZaLTipEvnMSkkCJHp+G/py1SSxI
+         Lbr6PQb0LVTesKXrDxUtMROEygS8j2bvz4gb0/T2wa9Os/EZoYrJbUS0Io/rHVbj8KFl
+         9Z8w==
+X-Forwarded-Encrypted: i=1; AJvYcCVwpU1FaaTzi8YuyY63yQKgfhAzVnHbw2iqMLkLYjnm1/tuVOq9rip4Q6gEVKKn1ZwP6Yo395E85Ms=@lists.infradead.org
+X-Gm-Message-State: AOJu0YyHkbS6gHSwcIURNe3am9rFbHCSAlqQ6MgFbuMxVt3BCo2e5aTA
+	RTD64iES/D+rwIF9jGp1/EDQdoH2xXt0FUZ8H53b42F3grceVnc2Dk9+tcr+L3U=
+X-Gm-Gg: ASbGncuBU6BHOTB7d7lNJ4gaAy7k5VR5crG7rCanfWpuZbOIY4lD4hFFPcpEKJwRZr5
+	9H3FgeBWnfTqzqmJP6//zJlrYNwL0fJz3g3E5rw9EwUQzcjwcRiQgB3xEwFTTMtz7ktXNyndicn
+	j8pq9UdUuq8+9+hgGBpEqFrqY46vaXS2HQd5ZmVl28lelEImNzcnhXmYPv08EsCbtIVCKs3xkjw
+	umgTAc6KDS/ib30ca1oibn3+CgDTq2QzWcmj8BUDIIjYd8EKSvC+lXq5iKk1y9/KoKeQj0LsaLC
+	v90Mdk0Y7X5E3i0MnLH/iMrEiXdTMj4B6gDd4gTkuTDA+7LWACJkH8SZ7r8LvzmP29McXEuNbxe
+	kJ8IU
+X-Google-Smtp-Source: AGHT+IF7K2bMCBebnT9LwgduuidxGRgYFCLYLlDVmnaUdkMWDHmiUi/EPjiSU66dMxFVcXl3y3OAOA==
+X-Received: by 2002:a05:6a00:22c2:b0:736:eb7e:df39 with SMTP id d2e1a72fcca58-73e24ae669dmr4974975b3a.24.1745508761140;
+        Thu, 24 Apr 2025 08:32:41 -0700 (PDT)
 Received: from anup-ubuntu-vm.localdomain ([103.97.166.196])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-b15f8597f5csm1360610a12.43.2025.04.24.08.32.31
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-b15f8597f5csm1360610a12.43.2025.04.24.08.32.37
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 24 Apr 2025 08:32:36 -0700 (PDT)
+        Thu, 24 Apr 2025 08:32:40 -0700 (PDT)
 From: Anup Patel <apatel@ventanamicro.com>
 To: Will Deacon <will@kernel.org>,
 	julien.thierry.kdev@gmail.com,
@@ -79,17 +79,19 @@ Cc: Paolo Bonzini <pbonzini@redhat.com>,
 	Anup Patel <anup@brainfault.org>,
 	kvm@vger.kernel.org,
 	kvm-riscv@lists.infradead.org,
+	Alexandru Elisei <alexandru.elisei@arm.com>,
 	Anup Patel <apatel@ventanamicro.com>
-Subject: [kvmtool PATCH v2 06/10] riscv: Make system suspend time configurable
-Date: Thu, 24 Apr 2025 21:01:55 +0530
-Message-ID: <20250424153159.289441-7-apatel@ventanamicro.com>
+Subject: [kvmtool PATCH v2 07/10] riscv: Fix no params with nodefault segfault
+Date: Thu, 24 Apr 2025 21:01:56 +0530
+Message-ID: <20250424153159.289441-8-apatel@ventanamicro.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20250424153159.289441-1-apatel@ventanamicro.com>
 References: <20250424153159.289441-1-apatel@ventanamicro.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250424_083238_090129_083EADD5 
-X-CRM114-Status: GOOD (  10.50  )
+X-CRM114-CacheID: sfid-20250424_083242_333011_FDC83B72 
+X-CRM114-Status: UNSURE (   8.91  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -108,51 +110,34 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 From: Andrew Jones <ajones@ventanamicro.com>
 
-If the default of 5 seconds for a system suspend test is too long or
-too short, then feel free to change it.
+Fix segfault received when using --nodefault without --params.
 
+Fixes: 7c9aac003925 ("riscv: Generate FDT at runtime for Guest/VM")
+Suggested-by: Alexandru Elisei <alexandru.elisei@arm.com>
 Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+Reviewed-by: Alexandru Elisei <alexandru.elisei@arm.com>
+Link: https://lore.kernel.org/r/20250123151339.185908-2-ajones@ventanamicro.com
 Signed-off-by: Anup Patel <apatel@ventanamicro.com>
 ---
- riscv/include/kvm/kvm-config-arch.h | 4 ++++
- riscv/kvm-cpu.c                     | 2 +-
- 2 files changed, 5 insertions(+), 1 deletion(-)
+ riscv/fdt.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/riscv/include/kvm/kvm-config-arch.h b/riscv/include/kvm/kvm-config-arch.h
-index 0553004..7e54d8a 100644
---- a/riscv/include/kvm/kvm-config-arch.h
-+++ b/riscv/include/kvm/kvm-config-arch.h
-@@ -5,6 +5,7 @@
+diff --git a/riscv/fdt.c b/riscv/fdt.c
+index 3ee20a9..251821e 100644
+--- a/riscv/fdt.c
++++ b/riscv/fdt.c
+@@ -263,9 +263,10 @@ static int setup_fdt(struct kvm *kvm)
+ 		if (kvm->cfg.kernel_cmdline)
+ 			_FDT(fdt_property_string(fdt, "bootargs",
+ 						 kvm->cfg.kernel_cmdline));
+-	} else
++	} else if (kvm->cfg.real_cmdline) {
+ 		_FDT(fdt_property_string(fdt, "bootargs",
+ 					 kvm->cfg.real_cmdline));
++	}
  
- struct kvm_config_arch {
- 	const char	*dump_dtb_filename;
-+	u64		suspend_seconds;
- 	u64		custom_mvendorid;
- 	u64		custom_marchid;
- 	u64		custom_mimpid;
-@@ -16,6 +17,9 @@ struct kvm_config_arch {
- 	pfx,								\
- 	OPT_STRING('\0', "dump-dtb", &(cfg)->dump_dtb_filename,		\
- 		   ".dtb file", "Dump generated .dtb to specified file"),\
-+	OPT_U64('\0', "suspend-seconds",				\
-+		&(cfg)->suspend_seconds,				\
-+		"Number of seconds to suspend for system suspend (default is 5)"), \
- 	OPT_U64('\0', "custom-mvendorid",				\
- 		&(cfg)->custom_mvendorid,				\
- 		"Show custom mvendorid to Guest VCPU"),			\
-diff --git a/riscv/kvm-cpu.c b/riscv/kvm-cpu.c
-index ad68b58..7a86d71 100644
---- a/riscv/kvm-cpu.c
-+++ b/riscv/kvm-cpu.c
-@@ -228,7 +228,7 @@ static bool kvm_cpu_riscv_sbi(struct kvm_cpu *vcpu)
- 				break;
- 			}
+ 	_FDT(fdt_property_string(fdt, "stdout-path", "serial0"));
  
--			sleep(5);
-+			sleep(vcpu->kvm->cfg.arch.suspend_seconds ? : 5);
- 
- 			break;
- 		default:
 -- 
 2.43.0
 
