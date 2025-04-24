@@ -4,110 +4,91 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 97D8CC369C2
-	for <kvm-riscv@archiver.kernel.org>; Thu, 24 Apr 2025 13:49:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A378C369AB
+	for <kvm-riscv@archiver.kernel.org>; Thu, 24 Apr 2025 13:50:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:
-	Subject:MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
+	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=NkWslZpqgq0Mq5P2sqr3ktJLNlJeE4wbDCWNcXx/wDA=; b=urC2hxgMsUBPBE
-	I0epxEmeNm4eNZQlggKerdViM4JsmSAdNbDEHFqLEOBfXDGQI2fVrl7eWChp71aQqg3nouPCGN1yt
-	+L6srq6MiW3REUotmLbzPbP6xjuTTR1yrhE53y5YgFYjvw92Y0OrosMSMtkVCzm85WFI7x2d47ITp
-	41BmcxvCz6sq8uVSrS8vvaxLTmgw/EDXMxLd57BnwLhSaTIcUQu7glQAk5yBQPkDFCKJZUY375ivk
-	pEl2VWnJtOP6HL3jEZKkHiNlqNw5VfFjIHyOd3tlLoO5Kvxa7q1oyoYH7eFZ4LkkIth3UJPdgU8vj
-	57pgknvcLbxIETmExb2w==;
+	List-Owner; bh=AvgjMaOBvRTasdmAWQd3xxSIVy9FBWN232YAmjALrhw=; b=lPdzxcrW0gWLF8
+	MHne1Cwb188XugFjxkdT0+91O2QbEOR06A7WGq/kbbyb26GUTVXtqbOghb5L7YtMP6F8PWwowLPWB
+	iYAYdHXGdn7pwZr//aiJ4gsFegdPX994veWrsD+C39qTqHCvdDfs5RCtjfTQpedqlMfWHXbe3JHck
+	2p8l4OHMMLzA0ajXQQngJNFoILAWzEu3c0eSsfEH6ii20LOpxrl/3fJMxTEppr4a3senztaRKZ00m
+	WpU+qCfOlXdjqusHx5L6CQioM3Choj3kv3WDVKt915pY/rE8OQo27CEHHj4KDt1f8nTZlhK0sjDlt
+	PyL8o0lOPXLm8hwrSM1g==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1u7wx7-0000000EFTM-0zfN;
-	Thu, 24 Apr 2025 13:49:21 +0000
-Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+	id 1u7wxn-0000000EFr8-349i;
+	Thu, 24 Apr 2025 13:50:03 +0000
+Received: from mail-wr1-x42f.google.com ([2a00:1450:4864:20::42f])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1u7vpP-0000000E3Rj-1XoU
-	for kvm-riscv@bombadil.infradead.org;
-	Thu, 24 Apr 2025 12:37:19 +0000
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:Content-Type
-	:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:Message-ID:
-	Sender:Reply-To:Content-ID:Content-Description;
-	bh=mXBQ/2qXvZB57eFvN07u42A0vH9tPCFMfppvAtJvXGM=; b=DNGyRwh7oOkJ4NigSgPeqyq0VO
-	EY9i314/aosoVipUHQe9Q3KOUFngjo9WLnENSlI5gcWn0EqW8zIl9oAg1QHAxB4UO9WREh/pTwSYY
-	ZfcijkwgqBBXB+x2p7ZBs4rPOp/EkylU5Vq19siSrnlFPqWyRCDhyFgPMnIOGr+wfLmC6AQmyVkk4
-	cv1p9jSE7J6myeqXMqXJNUEB/d8L2lip6nchH6+P5HPDur7W3Pb91Ay768CacjqIkxjelL3uJgCf9
-	RShUnnknVVwXboAc78Cv1vMCBog4TTugdRLXrBVKBdVafp4uxggiXGw1dPxVgfryTAXtFvezu/Vnf
-	J3vH1Ghg==;
-Received: from mail-wr1-x42e.google.com ([2a00:1450:4864:20::42e])
-	by desiato.infradead.org with esmtps (Exim 4.98.1 #2 (Red Hat Linux))
-	id 1u7vpK-0000000Bn4I-3uHv
+	id 1u7w99-0000000E730-0PpZ
 	for kvm-riscv@lists.infradead.org;
-	Thu, 24 Apr 2025 12:37:18 +0000
-Received: by mail-wr1-x42e.google.com with SMTP id ffacd0b85a97d-39c266c2dd5so1041037f8f.3
-        for <kvm-riscv@lists.infradead.org>; Thu, 24 Apr 2025 05:37:13 -0700 (PDT)
+	Thu, 24 Apr 2025 12:57:45 +0000
+Received: by mail-wr1-x42f.google.com with SMTP id ffacd0b85a97d-3914bc3e01aso604967f8f.2
+        for <kvm-riscv@lists.infradead.org>; Thu, 24 Apr 2025 05:57:42 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=rivosinc-com.20230601.gappssmtp.com; s=20230601; t=1745498232; x=1746103032; darn=lists.infradead.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=mXBQ/2qXvZB57eFvN07u42A0vH9tPCFMfppvAtJvXGM=;
-        b=W2DjgAu5AzVZYmXa2yrPmKM848vlmiXBH7nXQQZIEWb8PKiLuMDjLOmT0T2ILDgEkW
-         j+SYVByQy9/KZumGILIjUoM8DJhURUvwUJftBHAVT+gLJuKibP/iNHoh/SyUNgRqwOZg
-         GwrHRdFi+uZn1FSes0UtwUKpKLL3OfWfgG6o8CfCV0PDg3c6xS+vxzxNB4sX5J6oJDGJ
-         LTuPM2W3fLcAlDHdtk55BHs7yfTbrnHJP0fnrpoas9KSAeR0bCoD8cRTwT1DtecRohJ7
-         aVYcrTgf0ZWCGmze0Ln5XT3w1xJR0HbJGES50trnqDQOmXrVlUBpS1SiFldia9RRNXD4
-         vpxw==
+        d=ventanamicro.com; s=google; t=1745499461; x=1746104261; darn=lists.infradead.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=oPQSBVtSMsvYsAl+gZRdiR2fvyhUD5u3wJ4ZqhPNu8A=;
+        b=Ppf+BWCDbwCltei5tLeZlJEtKcWqDaFbb17B8VdIqkGO6XzdmKtgXSNQqOtDrXTObJ
+         XpPKZs5ZQD1Z6NhbbFjogMhPIXHm5dCPB/hJbaHOCK53CuJmbSTJAa9apMmEfLea9PpF
+         75apwmRavbZAEOH3ngI0jYLc8glJjhuyD4IRoGIPVJrtIt19K978fV6coSCxCK/h0PIo
+         U4191qW+3iUewNQABE3RuqKzdsLHSBqtg+RMJXe78Qzi3qRiJdkLOeADXF0IljnmFhV2
+         ZJkCvBlcire9BPosSDQ/fXcS6XKEWwmq44NuCw7qBhjrW718Sg+gNpPzK4mSYbXBI6OD
+         3q5w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1745498232; x=1746103032;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
+        d=1e100.net; s=20230601; t=1745499461; x=1746104261;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=mXBQ/2qXvZB57eFvN07u42A0vH9tPCFMfppvAtJvXGM=;
-        b=OKIK2plxTL5VYnzaDWg4HUwS/jtmwecoGDLQNBSBelNcQSotB8Ux6UtCgVVqAX/j/d
-         azXBVKVQaSuALQ2ZRVc1OAoEdIMjku2iANhQu/CGABEo9fzegd3W9O1Nm0N1wEVIQ5vS
-         GtSCMdzSHY0GRkSTaRFMlZlnSb+htItH8F8dFFmfwC6TYVE3v2itKXGOlb/WgDMPTPNV
-         ATdoSaa6CfM4Xzc6zarFsPQD5D5I9O0a57DCqu7Qe5jPki9+Nd+K9CskC/dV9EgBYktJ
-         M+gI/nLa6K+TyMcmtWWxX1+x0zGDs4lylSTLX1b/JVa49utsPVF9xIHGQpIX8zE/PD6Z
-         FBJg==
-X-Forwarded-Encrypted: i=1; AJvYcCXLxPHTxK+vZwzDKBi2mAW380fShJGINB+wLQxu7oxdOD4rcNTNYKtiQUmzrVRia9UakcXNCt1qxgs=@lists.infradead.org
-X-Gm-Message-State: AOJu0YylVMZXWZII9qmONXRmkwO8HJluAeHq6iOW/ldHfQpNOkn6YxDJ
-	YQlBA+GJgtCUbxvTGb4DyGGODFyYeQ51DPzX2bCyQ4/h207MtBCfFODP7MrgS4k=
-X-Gm-Gg: ASbGncuk/Y38FFYcQbDNkoNEzuYqeBqeumF99e16Qtu42sh15SDCVPHiShtxjX46YBw
-	npaL+C3hynFm+L39FuzMDcCFOb7sEoiLRKG0eXGFu7Oyo7kyW0NUeoKFNrl+hSY/czuxMeejzj3
-	kZf0an/a/fR/vbrYAiPL7vojgTWavC9pVF2WjwJqUGs/C9nQc3XmmGdUDEGEANyaZYVnyBAgsTl
-	Cy8G3ZK1SopvSN031kPK2LwX0J4Ue6toQm4fjTLlR+HtStEbviyevv9LzJ0zJ9Ix6Ui2mxrG0EV
-	J89y0Ge21DfwmUEnPtb3Dmp6bCcC3bzOEDJEyPbRhrG209tO8OQhEsiKfSQJIwaEUREG3rsrhfO
-	S61p3dJgqyQ==
-X-Google-Smtp-Source: AGHT+IFQHcJdwFRaXmEWb0g3t5DToUnDgaUuyc1wuadZLcOAY6FK4EOtEA/saYPalIta+MsOsrAKYA==
-X-Received: by 2002:a05:6000:18a8:b0:391:241d:a13e with SMTP id ffacd0b85a97d-3a06cfab52fmr1726627f8f.48.1745498232082;
-        Thu, 24 Apr 2025 05:37:12 -0700 (PDT)
-Received: from ?IPV6:2a01:e0a:e17:9700:16d2:7456:6634:9626? ([2a01:e0a:e17:9700:16d2:7456:6634:9626])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-3a06d532551sm2004598f8f.65.2025.04.24.05.37.11
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 24 Apr 2025 05:37:11 -0700 (PDT)
-Message-ID: <ddd4ba8a-27cf-4174-a578-b28961bdf1a5@rivosinc.com>
-Date: Thu, 24 Apr 2025 14:37:11 +0200
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 13/13] RISC-V: KVM: add support for
- SBI_FWFT_MISALIGNED_DELEG
-To: Andrew Jones <ajones@ventanamicro.com>
-Cc: Paul Walmsley <paul.walmsley@sifive.com>,
- Palmer Dabbelt <palmer@dabbelt.com>, Anup Patel <anup@brainfault.org>,
- Atish Patra <atishp@atishpatra.org>, Shuah Khan <shuah@kernel.org>,
- Jonathan Corbet <corbet@lwn.net>, linux-riscv@lists.infradead.org,
- linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
- kvm@vger.kernel.org, kvm-riscv@lists.infradead.org,
- linux-kselftest@vger.kernel.org, Samuel Holland <samuel.holland@sifive.com>,
- Deepak Gupta <debug@rivosinc.com>
+        bh=oPQSBVtSMsvYsAl+gZRdiR2fvyhUD5u3wJ4ZqhPNu8A=;
+        b=pBA9JQjYtD55l+bBFewFxFfcy6AcJjqcwt3WxrsYwCZfRkR/oZD1j685Q0r4N7MLLJ
+         aeZyx5/rWmUQooBdGLqydqTZ5h/K/jyZyT0V4GuQC1lXygE3Pj57vDiYEPneCPHMTbQH
+         H/n7McJjY8Ug8k41uEx91pVIvb/eC2QDCjidUL0K2t8gZrb41SIo/tCpnMtrq1XMQB91
+         OetHneRiY+jtsqM8JTpe8b4CCNonKh1iH3EsTRelynzw+diqt2ZzZErgKpvAUGzKoeXe
+         c7h3sL37mxsIwbIJffylwp6ogkUdNmbE9mqRaNP/v3pnkKicPvOcup95W/69zapvgukQ
+         Jczg==
+X-Forwarded-Encrypted: i=1; AJvYcCU4HwYNVkzOMFOREq9F/4nYjMILoR1zr30Mxll2TO7u4/BnbDpZFx+tnYC8vqORr9xsYztLzGKhD9M=@lists.infradead.org
+X-Gm-Message-State: AOJu0YyrzpOC1cwYCjfA5xron1sPoIdvCxukzcPgvdu4fKSlIgP/Brwt
+	NgGuA5Y1GjC+zQD8k3EcmusXz1vZk64l6kcS4x8VQkJ3hF36X4R1HdlsRiM1skg=
+X-Gm-Gg: ASbGncu/t7T+hzAqhWIcCZnpS1ck8eOPhY1TjceJYrZ43NHXj4qFkaNuzEHArhapkYJ
+	NpDBO4vb//leO6yFm0OqBmIV6Ht0vKfalee4H9t1j7nicjJC67+ofTU8sv9ZjExIxL5F9l0UFcZ
+	ebpJ5IDWgjnZJTIk0jpqvNIL5SuruB4NRGQXMwLZt9LLm9PPpzs9h6vqUHrLZkFpJpk6hdldArA
+	9n5PGDxmfr4tHMbJJ1/xaTU1V6a4ZYPJWhF2UvCqvxpd6/WQahF7L3cZEGa9uy1jYjQTVRNta3d
+	ZzLLA3dqVOehjAAWZcu9+gkVejGQ
+X-Google-Smtp-Source: AGHT+IGWv3/WPoD+1AaHzmJVHKE9pYWAl7MImqfR1l23ycVK/8svQHojX4uoV4n0a06YqpUIKi6wnQ==
+X-Received: by 2002:a05:6000:1e48:b0:391:3cb7:d441 with SMTP id ffacd0b85a97d-3a06cf5f657mr1695750f8f.25.1745499461227;
+        Thu, 24 Apr 2025 05:57:41 -0700 (PDT)
+Received: from localhost ([2a02:8308:a00c:e200::f716])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-3a06d54f019sm2068909f8f.96.2025.04.24.05.57.40
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 24 Apr 2025 05:57:40 -0700 (PDT)
+Date: Thu, 24 Apr 2025 14:57:39 +0200
+From: Andrew Jones <ajones@ventanamicro.com>
+To: =?utf-8?B?Q2zDqW1lbnQgTMOpZ2Vy?= <cleger@rivosinc.com>
+Cc: Paul Walmsley <paul.walmsley@sifive.com>, 
+	Palmer Dabbelt <palmer@dabbelt.com>, Anup Patel <anup@brainfault.org>, 
+	Atish Patra <atishp@atishpatra.org>, Shuah Khan <shuah@kernel.org>, Jonathan Corbet <corbet@lwn.net>, 
+	linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, 
+	kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, linux-kselftest@vger.kernel.org, 
+	Samuel Holland <samuel.holland@sifive.com>
+Subject: Re: [PATCH v5 03/13] riscv: sbi: add FWFT extension interface
+Message-ID: <20250424-dc96e54988e25abfc2bb9cf8@orel>
 References: <20250417122337.547969-1-cleger@rivosinc.com>
- <20250417122337.547969-14-cleger@rivosinc.com>
- <20250424-ae24464169f7143c509cbab5@orel>
-Content-Language: en-US
-From: =?UTF-8?B?Q2zDqW1lbnQgTMOpZ2Vy?= <cleger@rivosinc.com>
-In-Reply-To: <20250424-ae24464169f7143c509cbab5@orel>
+ <20250417122337.547969-4-cleger@rivosinc.com>
+ <20250424-c85c9d2f189fe4470038b519@orel>
+ <67e81f13-5e5e-4630-9a3f-73856b952e6e@rivosinc.com>
+MIME-Version: 1.0
+Content-Disposition: inline
+In-Reply-To: <67e81f13-5e5e-4630-9a3f-73856b952e6e@rivosinc.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250424_133715_094628_96068341 
-X-CRM114-Status: GOOD (  16.10  )
+X-CRM114-CacheID: sfid-20250424_055743_144772_8D108196 
+X-CRM114-Status: GOOD (  20.12  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -119,73 +100,84 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-CgpPbiAyNC8wNC8yMDI1IDEzOjM0LCBBbmRyZXcgSm9uZXMgd3JvdGU6Cj4gT24gVGh1LCBBcHIg
-MTcsIDIwMjUgYXQgMDI6MjA6MDBQTSArMDIwMCwgQ2zDqW1lbnQgTMOpZ2VyIHdyb3RlOgo+PiBT
-QklfRldGVF9NSVNBTElHTkVEX0RFTEVHIG5lZWRzIGhlZGVsZWcgdG8gYmUgbW9kaWZpZWQgdG8g
-ZGVsZWdhdGUKPj4gbWlzYWxpZ25lZCBsb2FkL3N0b3JlIGV4Y2VwdGlvbnMuIFNhdmUgYW5kIHJl
-c3RvcmUgaXQgZHVyaW5nIENQVQo+PiBsb2FkL3B1dC4KPj4KPj4gU2lnbmVkLW9mZi1ieTogQ2zD
-qW1lbnQgTMOpZ2VyIDxjbGVnZXJAcml2b3NpbmMuY29tPgo+PiBSZXZpZXdlZC1ieTogRGVlcGFr
-IEd1cHRhIDxkZWJ1Z0ByaXZvc2luYy5jb20+Cj4+IFJldmlld2VkLWJ5OiBBbmRyZXcgSm9uZXMg
-PGFqb25lc0B2ZW50YW5hbWljcm8uY29tPgo+PiAtLS0KPj4gIGFyY2gvcmlzY3Yva3ZtL3ZjcHUu
-YyAgICAgICAgICB8ICAzICsrKwo+PiAgYXJjaC9yaXNjdi9rdm0vdmNwdV9zYmlfZndmdC5jIHwg
-MzYgKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKwo+PiAgMiBmaWxlcyBjaGFuZ2Vk
-LCAzOSBpbnNlcnRpb25zKCspCj4+Cj4+IGRpZmYgLS1naXQgYS9hcmNoL3Jpc2N2L2t2bS92Y3B1
-LmMgYi9hcmNoL3Jpc2N2L2t2bS92Y3B1LmMKPj4gaW5kZXggNTQyNzQ3ZTJjN2Y1Li5kOThlMzc5
-OTQ1YzMgMTAwNjQ0Cj4+IC0tLSBhL2FyY2gvcmlzY3Yva3ZtL3ZjcHUuYwo+PiArKysgYi9hcmNo
-L3Jpc2N2L2t2bS92Y3B1LmMKPj4gQEAgLTY0Niw2ICs2NDYsNyBAQCB2b2lkIGt2bV9hcmNoX3Zj
-cHVfcHV0KHN0cnVjdCBrdm1fdmNwdSAqdmNwdSkKPj4gIHsKPj4gIAl2b2lkICpuc2g7Cj4+ICAJ
-c3RydWN0IGt2bV92Y3B1X2NzciAqY3NyID0gJnZjcHUtPmFyY2guZ3Vlc3RfY3NyOwo+PiArCXN0
-cnVjdCBrdm1fdmNwdV9jb25maWcgKmNmZyA9ICZ2Y3B1LT5hcmNoLmNmZzsKPj4gIAo+PiAgCXZj
-cHUtPmNwdSA9IC0xOwo+PiAgCj4+IEBAIC02NzEsNiArNjcyLDcgQEAgdm9pZCBrdm1fYXJjaF92
-Y3B1X3B1dChzdHJ1Y3Qga3ZtX3ZjcHUgKnZjcHUpCj4+ICAJCWNzci0+dnN0dmFsID0gbmFjbF9j
-c3JfcmVhZChuc2gsIENTUl9WU1RWQUwpOwo+PiAgCQljc3ItPmh2aXAgPSBuYWNsX2Nzcl9yZWFk
-KG5zaCwgQ1NSX0hWSVApOwo+PiAgCQljc3ItPnZzYXRwID0gbmFjbF9jc3JfcmVhZChuc2gsIENT
-Ul9WU0FUUCk7Cj4+ICsJCWNmZy0+aGVkZWxlZyA9IG5hY2xfY3NyX3JlYWQobnNoLCBDU1JfSEVE
-RUxFRyk7Cj4+ICAJfSBlbHNlIHsKPj4gIAkJY3NyLT52c3N0YXR1cyA9IGNzcl9yZWFkKENTUl9W
-U1NUQVRVUyk7Cj4+ICAJCWNzci0+dnNpZSA9IGNzcl9yZWFkKENTUl9WU0lFKTsKPj4gQEAgLTY4
-MSw2ICs2ODMsNyBAQCB2b2lkIGt2bV9hcmNoX3ZjcHVfcHV0KHN0cnVjdCBrdm1fdmNwdSAqdmNw
-dSkKPj4gIAkJY3NyLT52c3R2YWwgPSBjc3JfcmVhZChDU1JfVlNUVkFMKTsKPj4gIAkJY3NyLT5o
-dmlwID0gY3NyX3JlYWQoQ1NSX0hWSVApOwo+PiAgCQljc3ItPnZzYXRwID0gY3NyX3JlYWQoQ1NS
-X1ZTQVRQKTsKPj4gKwkJY2ZnLT5oZWRlbGVnID0gY3NyX3JlYWQoQ1NSX0hFREVMRUcpOwo+PiAg
-CX0KPj4gIH0KPj4gIAo+PiBkaWZmIC0tZ2l0IGEvYXJjaC9yaXNjdi9rdm0vdmNwdV9zYmlfZndm
-dC5jIGIvYXJjaC9yaXNjdi9rdm0vdmNwdV9zYmlfZndmdC5jCj4+IGluZGV4IGIwZjY2YzdiZjAx
-MC4uMjM3ZWRhZWZhMjY3IDEwMDY0NAo+PiAtLS0gYS9hcmNoL3Jpc2N2L2t2bS92Y3B1X3NiaV9m
-d2Z0LmMKPj4gKysrIGIvYXJjaC9yaXNjdi9rdm0vdmNwdV9zYmlfZndmdC5jCj4+IEBAIC0xNCw2
-ICsxNCw4IEBACj4+ICAjaW5jbHVkZSA8YXNtL2t2bV92Y3B1X3NiaS5oPgo+PiAgI2luY2x1ZGUg
-PGFzbS9rdm1fdmNwdV9zYmlfZndmdC5oPgo+PiAgCj4+ICsjZGVmaW5lIE1JU19ERUxFRyAoQklU
-X1VMTChFWENfTE9BRF9NSVNBTElHTkVEKSB8IEJJVF9VTEwoRVhDX1NUT1JFX01JU0FMSUdORUQp
-KQo+PiArCj4+ICBzdHJ1Y3Qga3ZtX3NiaV9md2Z0X2ZlYXR1cmUgewo+PiAgCS8qKgo+PiAgCSAq
-IEBpZDogRmVhdHVyZSBJRAo+PiBAQCAtNjgsNyArNzAsNDEgQEAgc3RhdGljIGJvb2wga3ZtX2Z3
-ZnRfaXNfZGVmaW5lZF9mZWF0dXJlKGVudW0gc2JpX2Z3ZnRfZmVhdHVyZV90IGZlYXR1cmUpCj4+
-ICAJcmV0dXJuIGZhbHNlOwo+PiAgfQo+PiAgCj4+ICtzdGF0aWMgYm9vbCBrdm1fc2JpX2Z3ZnRf
-bWlzYWxpZ25lZF9kZWxlZ2F0aW9uX3N1cHBvcnRlZChzdHJ1Y3Qga3ZtX3ZjcHUgKnZjcHUpCj4+
-ICt7Cj4+ICsJcmV0dXJuIG1pc2FsaWduZWRfdHJhcHNfY2FuX2RlbGVnYXRlKCk7Cj4+ICt9Cj4+
-ICsKPj4gK3N0YXRpYyBsb25nIGt2bV9zYmlfZndmdF9zZXRfbWlzYWxpZ25lZF9kZWxlZ2F0aW9u
-KHN0cnVjdCBrdm1fdmNwdSAqdmNwdSwKPj4gKwkJCQkJc3RydWN0IGt2bV9zYmlfZndmdF9jb25m
-aWcgKmNvbmYsCj4+ICsJCQkJCXVuc2lnbmVkIGxvbmcgdmFsdWUpCj4+ICt7Cj4+ICsJaWYgKHZh
-bHVlID09IDEpCj4+ICsJCWNzcl9zZXQoQ1NSX0hFREVMRUcsIE1JU19ERUxFRyk7Cj4+ICsJZWxz
-ZSBpZiAodmFsdWUgPT0gMCkKPj4gKwkJY3NyX2NsZWFyKENTUl9IRURFTEVHLCBNSVNfREVMRUcp
-Owo+PiArCWVsc2UKPj4gKwkJcmV0dXJuIFNCSV9FUlJfSU5WQUxJRF9QQVJBTTsKPj4gKwo+PiAr
-CXJldHVybiBTQklfU1VDQ0VTUzsKPj4gK30KPj4gKwo+PiArc3RhdGljIGxvbmcga3ZtX3NiaV9m
-d2Z0X2dldF9taXNhbGlnbmVkX2RlbGVnYXRpb24oc3RydWN0IGt2bV92Y3B1ICp2Y3B1LAo+PiAr
-CQkJCQlzdHJ1Y3Qga3ZtX3NiaV9md2Z0X2NvbmZpZyAqY29uZiwKPj4gKwkJCQkJdW5zaWduZWQg
-bG9uZyAqdmFsdWUpCj4+ICt7Cj4+ICsJKnZhbHVlID0gKGNzcl9yZWFkKENTUl9IRURFTEVHKSAm
-IE1JU19ERUxFRykgIT0gMDsKPiAKPiBUaGlzIHNob3VsZCBiZQo+IAo+ICAgKGNzcl9yZWFkKENT
-Ul9IRURFTEVHKSAmIE1JU19ERUxFRykgPT0gTUlTX0RFTEVHOwoKSHVtIHllYWggaW5kZWVkLCBJ
-IGRpZG4ndCB0aG91Z2h0IHRoYXQgc29tZW9uZSB3b3VsZCBvbnkgZGVsZWdhdGUgbG9hZApvciBz
-dG9yZXMuCgpJJ2xsIGZpeCB0aGF0LAoKVGhhbmtzLAoKQ2zDqW1lbnQKCj4gCj4+ICsKPj4gKwly
-ZXR1cm4gU0JJX1NVQ0NFU1M7Cj4+ICt9Cj4+ICsKPj4gIHN0YXRpYyBjb25zdCBzdHJ1Y3Qga3Zt
-X3NiaV9md2Z0X2ZlYXR1cmUgZmVhdHVyZXNbXSA9IHsKPj4gKwl7Cj4+ICsJCS5pZCA9IFNCSV9G
-V0ZUX01JU0FMSUdORURfRVhDX0RFTEVHLAo+PiArCQkuc3VwcG9ydGVkID0ga3ZtX3NiaV9md2Z0
-X21pc2FsaWduZWRfZGVsZWdhdGlvbl9zdXBwb3J0ZWQsCj4+ICsJCS5zZXQgPSBrdm1fc2JpX2Z3
-ZnRfc2V0X21pc2FsaWduZWRfZGVsZWdhdGlvbiwKPj4gKwkJLmdldCA9IGt2bV9zYmlfZndmdF9n
-ZXRfbWlzYWxpZ25lZF9kZWxlZ2F0aW9uLAo+PiArCX0sCj4+ICB9Owo+PiAgCj4+ICBzdGF0aWMg
-c3RydWN0IGt2bV9zYmlfZndmdF9jb25maWcgKgo+PiAtLSAKPj4gMi40OS4wCj4+Cj4gCj4gVGhh
-bmtzLAo+IGRyZXcKCgotLSAKa3ZtLXJpc2N2IG1haWxpbmcgbGlzdAprdm0tcmlzY3ZAbGlzdHMu
-aW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZv
-L2t2bS1yaXNjdgo=
+On Thu, Apr 24, 2025 at 02:32:01PM +0200, Cl=E9ment L=E9ger wrote:
+> =
+
+> =
+
+> On 24/04/2025 13:00, Andrew Jones wrote:
+> > On Thu, Apr 17, 2025 at 02:19:50PM +0200, Cl=E9ment L=E9ger wrote:
+> >> This SBI extensions enables supervisor mode to control feature that are
+> >> under M-mode control (For instance, Svadu menvcfg ADUE bit, Ssdbltrp
+> >> DTE, etc). Add an interface to set local features for a specific cpu
+> >> mask as well as for the online cpu mask.
+> >>
+> >> Signed-off-by: Cl=E9ment L=E9ger <cleger@rivosinc.com>
+> >> Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+> >> ---
+> >>  arch/riscv/include/asm/sbi.h | 17 +++++++++++
+> >>  arch/riscv/kernel/sbi.c      | 57 ++++++++++++++++++++++++++++++++++++
+> >>  2 files changed, 74 insertions(+)
+> >>
+> >> diff --git a/arch/riscv/include/asm/sbi.h b/arch/riscv/include/asm/sbi=
+.h
+> >> index 7ec249fea880..c8eab315c80e 100644
+> >> --- a/arch/riscv/include/asm/sbi.h
+> >> +++ b/arch/riscv/include/asm/sbi.h
+> >> @@ -503,6 +503,23 @@ int sbi_remote_hfence_vvma_asid(const struct cpum=
+ask *cpu_mask,
+> >>  				unsigned long asid);
+> >>  long sbi_probe_extension(int ext);
+> >>  =
+
+> >> +int sbi_fwft_set(u32 feature, unsigned long value, unsigned long flag=
+s);
+> >> +int sbi_fwft_local_set_cpumask(const cpumask_t *mask, u32 feature,
+> >> +			       unsigned long value, unsigned long flags);
+> > =
+
+> > I'm confused by the naming that includes 'local' and 'cpumask' together
+> > and...
+> > =
+
+> >> +/**
+> >> + * sbi_fwft_local_set() - Set a feature on all online cpus
+> >> + * @feature: The feature to be set
+> >> + * @value: The feature value to be set
+> >> + * @flags: FWFT feature set flags
+> >> + *
+> >> + * Return: 0 on success, appropriate linux error code otherwise.
+> >> + */
+> >> +static inline int sbi_fwft_local_set(u32 feature, unsigned long value,
+> >> +				     unsigned long flags)
+> >> +{
+> >> +	return sbi_fwft_local_set_cpumask(cpu_online_mask, feature, value, f=
+lags);
+> > =
+
+> > ...that something named with just 'local' is applied to all online cpus.
+> > I've always considered 'local' functions to only affect the calling cpu.
+> =
+
+> Yeah I thought of that as well, local here refers to the fact that this
+> function applies for a local feature (as described in the SBI
+> documentation) but agreed that it's really missleading. Any idea for a
+> better naming ?
+
+I'd drop 'local' from these names and when we deal with global features we
+can add 'global' to their function names. If we really must have something
+now, then maybe 'per_cpu' instead of 'local'.
+
+Thanks,
+drew
+
+-- =
+
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
