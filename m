@@ -4,83 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7B667C369C2
-	for <kvm-riscv@archiver.kernel.org>; Fri, 25 Apr 2025 13:31:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 716CCC369C2
+	for <kvm-riscv@archiver.kernel.org>; Fri, 25 Apr 2025 13:33:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:Subject:Message-ID:Date:From:
-	In-Reply-To:References:MIME-Version:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
+	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=DySkBaQAuuSeDmFp5lqZvvST2wBaJ3Vn5WaaW0GvG8E=; b=laZOyEFTn7MmqO
-	jiR8NyFDG6zIV9+oBNkOcEYakhB6uIHfEVL83DjZAYC2BwTh8PnJIrYGo8IAi7roXrXj+76gwmst0
-	IKGES2Fq4qxeoEdDEqV4ghrVPbZncHUm1ls0AlSoFa0K6qkZqd0loCh4N4v7x2twHoSMPSqEQLcLe
-	m5BYgyYAP8gbJc2TcYEujIKut+PZUTtfLYrV4xi3A8NCJ6N5GdiSgxMVK4YxsWGAtOET/3R1eaShj
-	w/BEcgUamu2HgW8c7ao2RnqXJ0gwdHNBrRfOccOx8++F1EIK6cHvz92CaIRousHGWHEcRZgZGTVRx
-	BjGPHVWqhbd3iewamuRg==;
+	List-Owner; bh=LHYjhqY9nNRAz4kkMEaWwtsaugzqS5TNhhomLlpG4wU=; b=yCXrIjzYYg289Q
+	vNgeBgROHmxxLvaCDZPsNqX1zvwWWFl/7Uo0aDsiOq3YooR7Jy17emcuTKKYh/feqmKgRKfHzTP1j
+	9WauFfleJHqRyJR3OH+zTYGzGaRrI16BPwUicqKzXT21jYRCLdlxJIbZc5XSqykb76p7RM9FADZXJ
+	d5oIdvLNOcjuULvguplIMtx1Zf0v++ceTHsaEK00e2u3yEDkcu7+1BcGdvQFsD15Z67kf/xemDB1L
+	aWdp9rgfjJNrtomPnx9DOgXxsdLO6hOsEKmiJn2k0XXyQOCfXjL1QNWFnHYQhVwW3Xum6sMU0D4vs
+	3l1e+vIgra5yz8gS5Zgg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1u8J9K-0000000HHvN-0qhg;
-	Fri, 25 Apr 2025 13:31:26 +0000
-Received: from mail-il1-x134.google.com ([2607:f8b0:4864:20::134])
+	id 1u8JBC-0000000HIRA-0rfQ;
+	Fri, 25 Apr 2025 13:33:22 +0000
+Received: from mail-wr1-x432.google.com ([2a00:1450:4864:20::432])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1u8IKM-0000000H95N-3pFB
+	id 1u8IOd-0000000H9ip-44dd
 	for kvm-riscv@lists.infradead.org;
-	Fri, 25 Apr 2025 12:38:48 +0000
-Received: by mail-il1-x134.google.com with SMTP id e9e14a558f8ab-3d5e2606a1bso19468545ab.0
-        for <kvm-riscv@lists.infradead.org>; Fri, 25 Apr 2025 05:38:46 -0700 (PDT)
+	Fri, 25 Apr 2025 12:43:13 +0000
+Received: by mail-wr1-x432.google.com with SMTP id ffacd0b85a97d-3913b539aabso1206904f8f.2
+        for <kvm-riscv@lists.infradead.org>; Fri, 25 Apr 2025 05:43:11 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=brainfault-org.20230601.gappssmtp.com; s=20230601; t=1745584726; x=1746189526; darn=lists.infradead.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Y49ecCcPZ27vKY56UjG6VNDfh5EOeWUeZzzvy6PanTw=;
-        b=25sbKMOiooZcJqI+fzWXANcwrRpOp2aQN8XL9PoJ9+vKxd2BgUnjyGi+89i3QBp6LV
-         7lOn3RMMLwl+T4kTV6age6Zd6x3aT5pM+b1Kg7UI+KwnjBl95ChNA9+26y/ghZntvLP3
-         eWkQV0y/FHjxziygJrdUXzS5CE5C4npeO/fPyY2v7TP8LhhNVpSFNx05bWNOgwxa0cm1
-         rbOnxPojgq+HTPuyYTAlia3RDFMRBFpBwxTp5LdgIyevQ0TLK3moagh6sks0E5a0YIfU
-         kX1Q96+79ygxK0K4tWUgfskQBkV/SYs1lvmkGQIbasORgsyH+BhlrWfcR5nTYzWMfCVU
-         S47A==
+        d=ventanamicro.com; s=google; t=1745584990; x=1746189790; darn=lists.infradead.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=Cf3d2/UTjuBhFnPBgj+LsDiH4ilx2WtXI91CDZT02q8=;
+        b=pNzw0iletNudS8fcK3FmhlI2aK2LslhB2FvdQ0xF5LFXM/Fh8crWDAKrtaaID8RzWm
+         4dSklyucdofFDzZo0r1+VcdNwkusF41Y+uysNlSaxERrZQgfs0xgWwqMUhOzmnFSKr50
+         tSbTUIBZvLjt0KR+3nRxBkXogK8AWa6F4eSpsSuMkQFxUs7UNjUq7KznIYfuproRrM/q
+         WqcS4K+64lfs6Chv/+nNz9Pt/gnq3qGxyL10XwIr1ooi2+1mtgZ39GQHuzapYzZEht7w
+         gw1Y0DVOxmvJr+lGa6Z9KSgiIrUYBIyJkMFs+IoIZPVYwb9rHEoWgVBCOU9A8tiJesiF
+         11MA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1745584726; x=1746189526;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=Y49ecCcPZ27vKY56UjG6VNDfh5EOeWUeZzzvy6PanTw=;
-        b=bazP1BdZ4ExqsYNb71SIYAvQgtQZxRdfPmcybw9SW8Mi98+/0hjRn2eCH7n5dJJY3Q
-         wL/itoOZ/2ZhXZM4TeOglIAfp80xuSGHQRxumaGDpV07XSDuMvQffVDuT6pwHGQiihJG
-         0SBl+0UBQM0luzu1QWVvxO89mvrhCjgN7vMO9I04C7L9cK73UWQXXPmqp/8FogyAoky/
-         DQl7VHtEDUr3cIs0D1MQswuyYQ5acujaBjC1nQmctave+8WAnlwF3xCne/2d7rxofbPn
-         18616HV8c2rZBX9VEEoR889ygwe8SxS/S63qtO8d4v4DKfhUI6+NsVSGpUWY9H8BCp+X
-         al9Q==
-X-Gm-Message-State: AOJu0YzoT6NRakVodNJlLJzZWQIYxuX7didujMrymELvAeJ5ydZWPcHw
-	jFEIUmpIf4SCEOc9LsLa5QFfylAtGKG3ha7ya9j/QKr7jmEfqDRXl7ylQ3u6hrdI7UL4FIJG3ar
-	f+D0mqaZHKMnmuFlS9zhcpnv8PZIiXMdnHozvyA==
-X-Gm-Gg: ASbGncsxG5a0f3J0HtWie7P+Vhq9wHpKWr00p5cyUgaJN5QCXA/PmBqBN7FrdiGuRIG
-	tPDyhTXTpZbKSeGkkJfOhc4t8juQr8VMZUwoTeleda56+GOAxP9FaPJ+UPj9s5T1ExCuZsUfukK
-	iXf1qd6eIZ9rNJXYfZvI+6FjWHbmbXQRyOvQ==
-X-Google-Smtp-Source: AGHT+IHCBpc2B5Wy9lcw08NfHNFF6DJA1zf4wJ9kwK39XfuRau2F7l0ThkxP7bLnPHEwO5HGzNURDb7ye8N+KXdSdhA=
-X-Received: by 2002:a05:6e02:160c:b0:3a7:88f2:cfa9 with SMTP id
- e9e14a558f8ab-3d93b46c840mr18166585ab.11.1745584725718; Fri, 25 Apr 2025
- 05:38:45 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1745584990; x=1746189790;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Cf3d2/UTjuBhFnPBgj+LsDiH4ilx2WtXI91CDZT02q8=;
+        b=s5yIjoGowFnHe6w2yhlCGt2kyEhGLV8iZicncIivMTuFdyfbvEOsxYr8g1px3CUTsi
+         UU6FXJehz5KKqvdTkbhesthngoFsIeZ3hhQzG8J1LpVUG+x05MSRDmZvJXV6pBpXreys
+         lKBRuuhCFwxX6ObOa9jACPlGTQR10kaM+D6rSZCk2IyYXlJYitRgR8xiBlv8qgUZdmHg
+         E2r9IvMclUsmUFmfJ3oKBCPwfM/ZzhL4W7quhG1KTKv5Q4Afdk4e3KymHgqhkwscz4WP
+         hHOdw6Ob4eyRS0PVxtjEtQNZfYQvilOdN/10yP1Fiwj4O/5lHSmT13vAwvRS3hmEWdRj
+         8VnA==
+X-Forwarded-Encrypted: i=1; AJvYcCUPbRn88CVggswHPQQvD0BsWiQlrLnB+cROIVLdChvf8+HiBwqwIJa0qOSaYQI1/xQz7+mDLx2z7Jk=@lists.infradead.org
+X-Gm-Message-State: AOJu0YytBiYxD0MeCFxGUFedW6jXqlvFa6ObERuv3CtQ+8q1SMnJR/2q
+	2sKqZb27LaeTes0Q5vQHNNrTTn4wu0m3OtdatWjNIBu4xsTMvQoewUGG85AST40=
+X-Gm-Gg: ASbGnctQcXChvCLX7bscPmQKbkJ1n6ZqI+E6lGRSW2sKoxt8JLd+fTvJDFf7qp13WNh
+	fKhZR6wsM4T8eXnm3bwBr7kkW6H0wM6yYHYzYYwQzZugLXzIOaHu3dIQ36D0V6RA3L3c5FRELga
+	sj79efZ/xh212vPuQhYNmwx4WDr3DaFrQiSQkaFyPIGZlIMePNxfdyPvDt5fOobU7kUcYnA3eF0
+	ArZ/0kneQondEyUEl+a9DL837aAc4OwdPAYRueMmj/9wBO2Isk2A7MWUL7kWL7/mmhpgKGdyQnk
+	UFT9hdkemo2sWXNQzVcDjXk9tpIM
+X-Google-Smtp-Source: AGHT+IFA1AA7xPcXMcnBbdezLvvwEkVdUlNYNFgLV6mE5BuEB/JqAab31HMxgk/sqPZatMB0xTSnSg==
+X-Received: by 2002:a05:6000:402c:b0:39e:f89b:85dc with SMTP id ffacd0b85a97d-3a074e1eda0mr1619995f8f.17.1745584990421;
+        Fri, 25 Apr 2025 05:43:10 -0700 (PDT)
+Received: from localhost ([2a02:8308:a00c:e200::f716])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-3a073ca543bsm2312071f8f.34.2025.04.25.05.43.09
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 25 Apr 2025 05:43:09 -0700 (PDT)
+Date: Fri, 25 Apr 2025 14:43:09 +0200
+From: Andrew Jones <ajones@ventanamicro.com>
+To: Anup Patel <apatel@ventanamicro.com>
+Cc: Will Deacon <will@kernel.org>, julien.thierry.kdev@gmail.com, 
+	maz@kernel.org, Paolo Bonzini <pbonzini@redhat.com>, 
+	Atish Patra <atishp@atishpatra.org>, Anup Patel <anup@brainfault.org>, kvm@vger.kernel.org, 
+	kvm-riscv@lists.infradead.org
+Subject: Re: [kvmtool PATCH v2 10/10] riscv: Allow including extensions in
+ the min CPU type using command-line
+Message-ID: <20250425-c0a3a93239d39b73ff176697@orel>
+References: <20250424153159.289441-1-apatel@ventanamicro.com>
+ <20250424153159.289441-11-apatel@ventanamicro.com>
 MIME-Version: 1.0
-References: <20250403112522.1566629-3-rkrcmar@ventanamicro.com> <20250403112522.1566629-8-rkrcmar@ventanamicro.com>
-In-Reply-To: <20250403112522.1566629-8-rkrcmar@ventanamicro.com>
-From: Anup Patel <anup@brainfault.org>
-Date: Fri, 25 Apr 2025 18:08:32 +0530
-X-Gm-Features: ATxdqUGBDZlnKKA6uFKMGKbX7_uvZC9RQt2w-oNtOWxKHL92YM2ym7Hd58gV9nQ
-Message-ID: <CAAhSdy0+C34zZbYR3_B9x6xHihwfLxeTBOfrdRfLRjFUN=78gA@mail.gmail.com>
-Subject: Re: [PATCH 5/5] KVM: RISC-V: reset smstateen CSRs
-To: =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@ventanamicro.com>
-Cc: kvm-riscv@lists.infradead.org, kvm@vger.kernel.org, 
-	linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, 
-	Atish Patra <atishp@atishpatra.org>, Paul Walmsley <paul.walmsley@sifive.com>, 
-	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
-	Alexandre Ghiti <alex@ghiti.fr>, Andrew Jones <ajones@ventanamicro.com>, 
-	Mayuresh Chitale <mchitale@ventanamicro.com>
+Content-Disposition: inline
+In-Reply-To: <20250424153159.289441-11-apatel@ventanamicro.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250425_053846_952503_A6A7CC7E 
-X-CRM114-Status: GOOD (  13.78  )
+X-CRM114-CacheID: sfid-20250425_054312_014722_8C3E0BC6 
+X-CRM114-Status: GOOD (  24.59  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -92,30 +96,117 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-T24gVGh1LCBBcHIgMywgMjAyNSBhdCA1OjAy4oCvUE0gUmFkaW0gS3LEjW3DocWZIDxya3JjbWFy
-QHZlbnRhbmFtaWNyby5jb20+IHdyb3RlOgo+Cj4gTm90IHJlc2V0dGluZyBzbXN0YXRlZW4gaXMg
-YSBwb3RlbnRpYWwgc2VjdXJpdHkgaG9sZSwgYmVjYXVzZSBWVSBtaWdodAo+IGJlIGFibGUgdG8g
-YWNjZXNzIHN0YXRlIHRoYXQgVlMgZG9lcyBub3QgcHJvcGVybHkgY29udGV4dC1zd2l0Y2guCj4K
-PiBGaXhlczogODFmMGYzMTRmZWM5ICgiUklTQ1Y6IEtWTTogQWRkIHNzdGF0ZWVuMCBjb250ZXh0
-IHNhdmUvcmVzdG9yZSIpCj4gU2lnbmVkLW9mZi1ieTogUmFkaW0gS3LEjW3DocWZIDxya3JjbWFy
-QHZlbnRhbmFtaWNyby5jb20+CgpUaGlzIHNob3VsZCBiZSB0aGUgZmlyc3QgcGF0Y2ggb2YgdGhl
-IHNlcmllcyB3aGljaCBjYW4KYmUgYXBwbGllZCBpbmRlcGVuZGVudGx5LgoKSSBoYXZlIHJlYmFz
-ZWQgYW5kIHF1ZXVlZCBpdCBhcyBhIGZpeCBmb3IgTGludXgtNi4xNS4KClJlZ2FyZHMsCkFudXAK
-Cj4gLS0tCj4gIGFyY2gvcmlzY3Yva3ZtL3ZjcHUuYyB8IDEgKwo+ICAxIGZpbGUgY2hhbmdlZCwg
-MSBpbnNlcnRpb24oKykKPgo+IGRpZmYgLS1naXQgYS9hcmNoL3Jpc2N2L2t2bS92Y3B1LmMgYi9h
-cmNoL3Jpc2N2L2t2bS92Y3B1LmMKPiBpbmRleCA0NTc4ODYzYTM5ZTMuLmFjMGZhNTBiYzQ4OSAx
-MDA2NDQKPiAtLS0gYS9hcmNoL3Jpc2N2L2t2bS92Y3B1LmMKPiArKysgYi9hcmNoL3Jpc2N2L2t2
-bS92Y3B1LmMKPiBAQCAtNjUsNiArNjUsNyBAQCBzdGF0aWMgdm9pZCBrdm1fcmlzY3ZfdmNwdV9j
-b250ZXh0X3Jlc2V0KHN0cnVjdCBrdm1fdmNwdSAqdmNwdSkKPgo+ICAgICAgICAgbWVtc2V0KGNu
-dHgsIDAsIHNpemVvZigqY250eCkpOwo+ICAgICAgICAgbWVtc2V0KGNzciwgMCwgc2l6ZW9mKCpj
-c3IpKTsKPiArICAgICAgIG1lbXNldCgmdmNwdS0+YXJjaC5zbXN0YXRlZW5fY3NyLCAwLCBzaXpl
-b2YodmNwdS0+YXJjaC5zbXN0YXRlZW5fY3NyKSk7Cj4KPiAgICAgICAgIC8qIFJlc3RvcmUgZGF0
-YXAgYXMgaXQncyBub3QgYSBwYXJ0IG9mIHRoZSBndWVzdCBjb250ZXh0LiAqLwo+ICAgICAgICAg
-Y250eC0+dmVjdG9yLmRhdGFwID0gdmVjdG9yX2RhdGFwOwo+IC0tCj4gMi40OC4xCj4KCi0tIApr
-dm0tcmlzY3YgbWFpbGluZyBsaXN0Cmt2bS1yaXNjdkBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6
-Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8va3ZtLXJpc2N2Cg==
+On Thu, Apr 24, 2025 at 09:01:59PM +0530, Anup Patel wrote:
+> It is useful to allow including extensions in the min CPU type on need
+> basis via command-line. To achieve this, parse extension names as comma
+> separated values appended to the "min" CPU type using command-line.
+> 
+> For example, to include Sstc and Ssaia in the min CPU type use
+> "--cpu-type min,sstc,ssaia" command-line option.
+> 
+> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+> ---
+>  riscv/fdt.c | 43 ++++++++++++++++++++++++++++++++++++++++---
+>  1 file changed, 40 insertions(+), 3 deletions(-)
+> 
+> diff --git a/riscv/fdt.c b/riscv/fdt.c
+> index 5d9b9bf..722493a 100644
+> --- a/riscv/fdt.c
+> +++ b/riscv/fdt.c
+> @@ -108,6 +108,20 @@ static bool __isa_ext_warn_disable_failure(struct kvm *kvm, struct isa_ext_info
+>  	return true;
+>  }
+>  
+> +static void __min_enable(const char *ext, size_t ext_len)
+> +{
+> +	struct isa_ext_info *info;
+> +	unsigned long i;
+> +
+> +	for (i = 0; i < ARRAY_SIZE(isa_info_arr); i++) {
+> +		info = &isa_info_arr[i];
+> +		if (strlen(info->name) != ext_len)
+> +			continue;
+> +		if (!strncmp(ext, info->name, ext_len))
+
+Just strcmp since we already checked the length and wouldn't want
+something like info->name = mmmmnnnn to match ext = mmmm anyway.
+
+> +			info->min_enabled = true;
+> +	}
+> +}
+> +
+>  bool riscv__isa_extension_disabled(struct kvm *kvm, unsigned long isa_ext_id)
+>  {
+>  	struct isa_ext_info *info = NULL;
+> @@ -128,15 +142,38 @@ bool riscv__isa_extension_disabled(struct kvm *kvm, unsigned long isa_ext_id)
+>  int riscv__cpu_type_parser(const struct option *opt, const char *arg, int unset)
+>  {
+>  	struct kvm *kvm = opt->ptr;
+> +	const char *str, *nstr;
+> +	int len;
+>  
+> -	if ((strncmp(arg, "min", 3) && strncmp(arg, "max", 3)) || strlen(arg) != 3)
+> +	if ((strncmp(arg, "min", 3) || strlen(arg) < 3) &&
+
+The strlen(arg) < 3 will never be true because if strncmp(arg, "min", 3)
+returns 0 (false), then that means arg starts with 'min', and therefore
+can't have a length less than 3. And, if strncmp(arg, "min", 3) returns
+nonzero, then the '|| expression' will be short-circuited.
+
+> +	    (strncmp(arg, "max", 3) || strlen(arg) != 3))
+
+So
+
+ if (strncmp(arg, "min", 3) && (strncmp(arg, "max", 3) || strlen(arg) != 3))
+
+should do it.
+
+>  		die("Invalid CPU type %s\n", arg);
+>  
+> -	if (!strcmp(arg, "max"))
+> +	if (!strcmp(arg, "max")) {
+>  		kvm->cfg.arch.cpu_type = RISCV__CPU_TYPE_MAX;
+> -	else
+> +	} else {
+>  		kvm->cfg.arch.cpu_type = RISCV__CPU_TYPE_MIN;
+>  
+> +		str = arg;
+> +		str += 3;
+> +		while (*str) {
+> +			if (*str == ',') {
+> +				str++;
+> +				continue;
+> +			}
+> +
+> +			nstr = strchr(str, ',');
+> +			if (!nstr)
+> +				nstr = str + strlen(str);
+> +
+> +			len = nstr - str;
+> +			if (len) {
+> +				__min_enable(str, len);
+> +				str += len;
+> +			}
+> +		}
+> +	}
+> +
+>  	return 0;
+>  }
+>  
+> -- 
+> 2.43.0
+>
+
+Otherwise,
+
+Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
