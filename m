@@ -4,71 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ECC01C369D5
-	for <kvm-riscv@archiver.kernel.org>; Sat, 26 Apr 2025 11:04:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47C84C369D5
+	for <kvm-riscv@archiver.kernel.org>; Sat, 26 Apr 2025 11:04:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=pRLe7O4/0ppYvy5XLx4MkgJ57uyLIjfs+SX21NWxPXc=; b=eykajYmviiiTIB
-	7EW3EsMkv3Zykdl4gQwNU8Ai49KJ4Hbo3RvBZHX2FODy7UIcGHqbAMRUEP6IsfCXIIBf7ihubsldz
-	kqDusHPefKUYeiiwApzkXK+lDhGxdAUbyZ7PuPj4Y9yx137hKCVroTEumAFADuAjNn1dP76FpJUY3
-	vDaEikkSzy0L7WzkytnCVTVMBkhRyPPlXgfr1iV10UgVGdD3OjBRUhBtsgE0/1AEyQGUytfBXxN7o
-	HRQB9OkrLdCs3uR9Rwqx6mIHW/l6oXlez+A1VBcwpOixJc32trwEtJ6tHSP8uihPm6udtyMYwWTuH
-	KMcopnjegBts1ZYVD2Gw==;
+	List-Owner; bh=jmqEWEWZ+afNypt3xjXOIydy3HEhttZTjXrXlLPw6Gg=; b=Ped3elI0PRK0pY
+	G0RYCWGW1WY1O7Jczn+nnfXs7iQ1wEiikHP9UzHhq53NKs4sH0yM6NTAWVhtnIO1J5ZGfXJUc7Qi/
+	6sR79JTWwzEEbf40oBx1i3zkCzD69oucwdnpTBd9ZODnOsJuZpDcVuHLj6JDQLwcCXH8OQYQKdLAQ
+	fMkUQgHHhH6e971sZr15ZByBRvNGwoE12K13qJBWrIVy0HH0QsVF8ln8R8RigOUqFEJNqiO0coRQW
+	x8Hr2n2AJRMg0FoDwGMGGUBZNKz4UFqZmXR3IDafAhXo122dpMBnrkkYOpQpVfjyXHsiYW/vOUPA1
+	5ESn5ZYbmIKQXCZQLKsw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1u8dKW-00000001txP-310n;
-	Sat, 26 Apr 2025 11:04:20 +0000
-Received: from mail-pg1-x533.google.com ([2607:f8b0:4864:20::533])
+	id 1u8dKb-00000001tzv-02P4;
+	Sat, 26 Apr 2025 11:04:25 +0000
+Received: from mail-pl1-x644.google.com ([2607:f8b0:4864:20::644])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1u8dKU-00000001tw4-1KDf
+	id 1u8dKY-00000001tyk-3iPs
 	for kvm-riscv@lists.infradead.org;
-	Sat, 26 Apr 2025 11:04:19 +0000
-Received: by mail-pg1-x533.google.com with SMTP id 41be03b00d2f7-b0b2ce7cc81so3167836a12.3
-        for <kvm-riscv@lists.infradead.org>; Sat, 26 Apr 2025 04:04:17 -0700 (PDT)
+	Sat, 26 Apr 2025 11:04:24 +0000
+Received: by mail-pl1-x644.google.com with SMTP id d9443c01a7336-2255003f4c6so34818965ad.0
+        for <kvm-riscv@lists.infradead.org>; Sat, 26 Apr 2025 04:04:22 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ventanamicro.com; s=google; t=1745665457; x=1746270257; darn=lists.infradead.org;
+        d=ventanamicro.com; s=google; t=1745665462; x=1746270262; darn=lists.infradead.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=izVZE3MINqb+sB5P+aMg5WCU4bsWOfV4in60wkm/uDE=;
-        b=UMBvfFX7UOaeCcIOfkJRC/pugFYcO3fy24W1zLBh/ARm/iWKJTVh1iCQdRJJzLU50y
-         Z+W9Td8scbVLtBNJ6Rbrv3d+z8xVkFML4V4t+vOmkWDOWuYfpcJMlzxRgLmo2CUPQfCV
-         QqACMGwqY0XyLQ9YJOJC3YAwkDy+5et7lkJRdI/2uYXa8hohQcMYN4A1N/FYVm0llN3R
-         TAyMpKgH65tRC8R6iuqAX4L0Kd8dHHGSrW/8Sd0Ci8UM8/LL+gtvVYoTDv5a8XpSHfN0
-         bPlREtBXNqr7JYhZqcbGC+kVJ0uY8s3JZQMcHcArxN9VKMBCn45ah1BP6W2XL8nTel11
-         krlw==
+        bh=ryJkTbKAwtM59V1O1MS/WywWNtwvLqWzyl4I1jgJpkI=;
+        b=O5BZhVospnBtigaPNjbvtCQu944sDuK18iNG2CxzjFAIx+CNZVyYSPWk8Y//L8pgMm
+         nwxvUGo/UsksPj+ER+UzD0Z/JbzJF+ctl1k4JhDXzabFC30mH7m/BHiiNaw/UxvL1epm
+         uJLh9fV7Pyk7mOeHkUe5SO0k7rVQuXLo+492O7PNZLloFbmFqqD/HqJNiC4Zm2MuYCxn
+         txsdo5RmY3/j/VlgH+nPxRfZMRnm01rhg4lgY9iwSA39Re5hIfMXrYJmA1WApjfmpMNW
+         bQg8omstIXiaCKJgIEmXdkPUE3TQ5IeJERWtS4mKVINtrp9MBrXjt9sxyEUQaAaQsAy/
+         fC9w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1745665457; x=1746270257;
+        d=1e100.net; s=20230601; t=1745665462; x=1746270262;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=izVZE3MINqb+sB5P+aMg5WCU4bsWOfV4in60wkm/uDE=;
-        b=VIkolu7NRcnHxECOK+QLIhZgbuFlIGIW+IH3IWIXqnNPgVW89FvNQSqJ0zxRD7Ha/X
-         cL8y4iCygcr1+g+aWeL4Vp4leKSzHQxmptTMv53OpI3aT2sZwBdz5NOY8zxBbsAEtXJ6
-         SWr2YyFr63+JmOvuZsVtbbqyBtonDiNmpJdY97Kp2mKQRa5BOVYVqAoJXciVNUYwaFb6
-         MPXaWJiAiPySJGiDn4hnuQOOiAM8NisuTinYl4JcVY3TZYe0WHfaS/JAMFC02KPz/2Tx
-         p9M/K+sQtzp9r2aAKAkGAdTJx3WmvVyedANyS21VSoh3vIWR9Ys4qCJ3xqGZOpu2TPGT
-         f2CQ==
-X-Forwarded-Encrypted: i=1; AJvYcCXiNiU4BlAwUTN4TkmRh+G/qcxXeMP7nhhVNL7KwoXlVFOhbGACrVWE1nlpz84L8Oi2+VOEBjk1cy0=@lists.infradead.org
-X-Gm-Message-State: AOJu0YzF32DGjnJZteZuIktSUECzxkQFRyaU2uBIDkrptXinwC5NevnL
-	yatojn/EDo0U1p5bXoC5ug/nTcHTJ78yvdV4R43anPe6div72Qmx/LvMjnfdh9E=
-X-Gm-Gg: ASbGncsewoVTyHmBj4Ho74btT61hh0pmDkeaKitCJ6sjnGnLL1aq+i2CBcjKsAMwt3E
-	Os8BCp1AFm9Gj9KHK30tKRCqgUFEaqgloKAN85pcDAER2Kh1FLRdJdu1oiCKK24mwUImpl1+S9y
-	0yYxu7iU6hoeKYPgVtx5SKtsMgT8EwygsQa9nUbQKReZJvZlcpthlbR22p3Hpijma4AigSDIUfP
-	wCHBAyZjmw2eT/xC+FV2qeht/C//EA3RVTVwiDcJoK7LNSyFZKvHSzXEElKxr5HF2eyr2yEL83p
-	G8kdrABWoLz/iV903tiwzcOW17wj0b2HjWMyPKcLo4B6yo1hqnjI/Uq+MHIPsmsc6S0P80HxtFJ
-	85Y3o
-X-Google-Smtp-Source: AGHT+IG9EHq/xB2zNOXuLSF9BV0SIkfLVwrgKN8lCCWUKGV9wk6lqP9f2yss0VbScLNDw+w5niQchg==
-X-Received: by 2002:a17:902:fc46:b0:224:179a:3b8f with SMTP id d9443c01a7336-22dbf5fa5c1mr85746525ad.23.1745665457249;
-        Sat, 26 Apr 2025 04:04:17 -0700 (PDT)
+        bh=ryJkTbKAwtM59V1O1MS/WywWNtwvLqWzyl4I1jgJpkI=;
+        b=Qz+tytYagF7VwIBnkKMARusugFZaofPT95w8qs0aLULNVXN3ZGluJHUJJX7pSnJKFE
+         qijJSjdwlTzKJy6ZVAZTvwFmawieCfl4uEe6KzB65Fu7dNVAOKIa3Z9xPtNanTDWs8wH
+         tl8T8Vm9u13vNesPVn00mCWJthkhNcMXDRv0lmZNwg85hE55J6ZLYho1W42zPIP8YeX5
+         RK7sIE45AC+2qQ3RuD92JhHVfleQ029qvQojREvNJjyPi3EK7HZuvzJTZOE+j1Kwcz0d
+         T0o9Xcx82gaJQGwDik5wp3fcbS0Wy+maFWUBQAuagjgvH4onrb8G1qg6QLBoUDSlfU/S
+         gnkw==
+X-Forwarded-Encrypted: i=1; AJvYcCXgoPaew0rFtia4mqr/xQiZPpgUyN2tVs6QEBF1+ffyFAHfqXQQe6x5po2sZusKCHs/Xcu9v8SC1qc=@lists.infradead.org
+X-Gm-Message-State: AOJu0YyMDwR0l4DizoUKtlEPL4Ew8c5AxzSWaXOIjq4GXTJeGHMSdf1t
+	IwuhkOq+mxDwJmo6roupasNs2f/9RJP6dr/8xVC0VelESs+znBCctv7lyx7yQ5g=
+X-Gm-Gg: ASbGncu4QJspN6zXj22OZZFMRSwOUv0Ldp/PZ9K3baHCe4mtfEzZex9JnfG02+cS1Aq
+	9bb5bxZdcE1o+UHm1+faO5zEVrY7g0dlJEP9OD6Y9x6huPRS30TybvleWprSk/479ZkyPWfuYbi
+	2VAqCXVJGY0cbvE9YEWXtVox8Pt/EHK1WHK09kj0qS24RxEK655XhpHFI0pD8WMCsfFs40xkgEh
+	mHFe2K4xWvmT6yxgpZaNQ1Ye+USgmaN6MyeyPiU+WLXSqEWqt48TjVnKPoX45q5tLgshgw8J1Lq
+	RzFXfDjFY00+YXNl6OKq4KEVgo8lWaYuKfgzpLnT+HQkHLQesPCVHQFtLK9MEPih1sTW1Z2yJyE
+	dAo2n
+X-Google-Smtp-Source: AGHT+IFcbP/Gobc6EdjKBAcvU+RbmU/cZM/5SJ5fwyrfRrG6jZo/BtTL/v6N4krlr/CO4FcXcUIsxw==
+X-Received: by 2002:a17:902:e74b:b0:21f:136a:a374 with SMTP id d9443c01a7336-22dbf742daamr91092785ad.43.1745665461875;
+        Sat, 26 Apr 2025 04:04:21 -0700 (PDT)
 Received: from anup-ubuntu-vm.localdomain ([103.97.166.196])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-22dc8e24231sm10956725ad.125.2025.04.26.04.04.12
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-22dc8e24231sm10956725ad.125.2025.04.26.04.04.17
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 26 Apr 2025 04:04:16 -0700 (PDT)
+        Sat, 26 Apr 2025 04:04:21 -0700 (PDT)
 From: Anup Patel <apatel@ventanamicro.com>
 To: Will Deacon <will@kernel.org>,
 	julien.thierry.kdev@gmail.com,
@@ -80,17 +80,16 @@ Cc: Paolo Bonzini <pbonzini@redhat.com>,
 	kvm@vger.kernel.org,
 	kvm-riscv@lists.infradead.org,
 	Anup Patel <apatel@ventanamicro.com>
-Subject: [kvmtool PATCH v3 04/10] riscv: Add Ziccrse extension support
-Date: Sat, 26 Apr 2025 16:33:41 +0530
-Message-ID: <20250426110348.338114-5-apatel@ventanamicro.com>
+Subject: [kvmtool PATCH v3 05/10] riscv: Add SBI system suspend support
+Date: Sat, 26 Apr 2025 16:33:42 +0530
+Message-ID: <20250426110348.338114-6-apatel@ventanamicro.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20250426110348.338114-1-apatel@ventanamicro.com>
 References: <20250426110348.338114-1-apatel@ventanamicro.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250426_040418_349701_B7C4D4CB 
-X-CRM114-Status: UNSURE (   9.27  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20250426_040422_919841_0D9A540A 
+X-CRM114-Status: GOOD (  13.74  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -107,42 +106,128 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-When the Ziccrse extension is available expose it to the guest
-via device tree so that guest can use it.
+From: Andrew Jones <ajones@ventanamicro.com>
 
+Provide a handler for SBI system suspend requests forwarded to the
+VMM by KVM and enable system suspend by default. This is just for
+testing purposes, so the handler only sleeps 5 seconds before
+resuming the guest. Resuming a system suspend only requires running
+the system suspend invoking hart again, everything else is handled by
+KVM.
+
+Note, resuming after a suspend doesn't work with 9p used for the
+guest's rootfs. Testing with a disk works though, e.g.
+
+  lkvm-static run --nodefaults -m 256 -c 2 -d rootfs.ext2 -k Image \
+    -p 'console=ttyS0 rootwait root=/dev/vda ro no_console_suspend'
+
+Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
 Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 ---
- riscv/fdt.c                         | 1 +
- riscv/include/kvm/kvm-config-arch.h | 3 +++
- 2 files changed, 4 insertions(+)
+ riscv/include/kvm/kvm-config-arch.h |  3 +++
+ riscv/include/kvm/sbi.h             |  9 ++++++++
+ riscv/kvm-cpu.c                     | 36 +++++++++++++++++++++++++++++
+ 3 files changed, 48 insertions(+)
 
-diff --git a/riscv/fdt.c b/riscv/fdt.c
-index ddd0b28..3ee20a9 100644
---- a/riscv/fdt.c
-+++ b/riscv/fdt.c
-@@ -48,6 +48,7 @@ struct isa_ext_info isa_info_arr[] = {
- 	{"zfhmin", KVM_RISCV_ISA_EXT_ZFHMIN},
- 	{"zicbom", KVM_RISCV_ISA_EXT_ZICBOM},
- 	{"zicboz", KVM_RISCV_ISA_EXT_ZICBOZ},
-+	{"ziccrse", KVM_RISCV_ISA_EXT_ZICCRSE},
- 	{"zicntr", KVM_RISCV_ISA_EXT_ZICNTR},
- 	{"zicond", KVM_RISCV_ISA_EXT_ZICOND},
- 	{"zicsr", KVM_RISCV_ISA_EXT_ZICSR},
 diff --git a/riscv/include/kvm/kvm-config-arch.h b/riscv/include/kvm/kvm-config-arch.h
-index d86158d..5badb74 100644
+index 5badb74..0553004 100644
 --- a/riscv/include/kvm/kvm-config-arch.h
 +++ b/riscv/include/kvm/kvm-config-arch.h
-@@ -121,6 +121,9 @@ struct kvm_config_arch {
- 	OPT_BOOLEAN('\0', "disable-zicboz",				\
- 		    &(cfg)->ext_disabled[KVM_RISCV_ISA_EXT_ZICBOZ],	\
- 		    "Disable Zicboz Extension"),			\
-+	OPT_BOOLEAN('\0', "disable-ziccrse",				\
-+		    &(cfg)->ext_disabled[KVM_RISCV_ISA_EXT_ZICCRSE],	\
-+		    "Disable Ziccrse Extension"),			\
- 	OPT_BOOLEAN('\0', "disable-zicntr",				\
- 		    &(cfg)->ext_disabled[KVM_RISCV_ISA_EXT_ZICNTR],	\
- 		    "Disable Zicntr Extension"),			\
+@@ -238,6 +238,9 @@ struct kvm_config_arch {
+ 	OPT_BOOLEAN('\0', "disable-sbi-dbcn",				\
+ 		    &(cfg)->sbi_ext_disabled[KVM_RISCV_SBI_EXT_DBCN],	\
+ 		    "Disable SBI DBCN Extension"),			\
++	OPT_BOOLEAN('\0', "disable-sbi-susp",				\
++		    &(cfg)->sbi_ext_disabled[KVM_RISCV_SBI_EXT_SUSP],	\
++		    "Disable SBI SUSP Extension"),			\
+ 	OPT_BOOLEAN('\0', "disable-sbi-sta",				\
+ 		    &(cfg)->sbi_ext_disabled[KVM_RISCV_SBI_EXT_STA],	\
+ 		    "Disable SBI STA Extension"),
+diff --git a/riscv/include/kvm/sbi.h b/riscv/include/kvm/sbi.h
+index a0f2c70..10bbe1b 100644
+--- a/riscv/include/kvm/sbi.h
++++ b/riscv/include/kvm/sbi.h
+@@ -21,6 +21,7 @@ enum sbi_ext_id {
+ 	SBI_EXT_0_1_SHUTDOWN = 0x8,
+ 	SBI_EXT_BASE = 0x10,
+ 	SBI_EXT_DBCN = 0x4442434E,
++	SBI_EXT_SUSP = 0x53555350,
+ };
+ 
+ enum sbi_ext_base_fid {
+@@ -39,6 +40,14 @@ enum sbi_ext_dbcn_fid {
+ 	SBI_EXT_DBCN_CONSOLE_WRITE_BYTE = 2,
+ };
+ 
++enum sbi_ext_susp_fid {
++	SBI_EXT_SUSP_SYSTEM_SUSPEND = 0,
++};
++
++enum sbi_ext_susp_sleep_type {
++	SBI_SUSP_SLEEP_TYPE_SUSPEND_TO_RAM = 0,
++};
++
+ #define SBI_SPEC_VERSION_DEFAULT	0x1
+ #define SBI_SPEC_VERSION_MAJOR_OFFSET	24
+ #define SBI_SPEC_VERSION_MAJOR_MASK	0x7f
+diff --git a/riscv/kvm-cpu.c b/riscv/kvm-cpu.c
+index 0c171da..ad68b58 100644
+--- a/riscv/kvm-cpu.c
++++ b/riscv/kvm-cpu.c
+@@ -1,3 +1,5 @@
++#include <unistd.h>
++
+ #include "kvm/csr.h"
+ #include "kvm/kvm-cpu.h"
+ #include "kvm/kvm.h"
+@@ -117,6 +119,17 @@ struct kvm_cpu *kvm_cpu__arch_init(struct kvm *kvm, unsigned long cpu_id)
+ 				   KVM_RISCV_SBI_EXT_DBCN);
+ 	}
+ 
++	/* Force enable SBI system suspend if not disabled from command line */
++	if (!kvm->cfg.arch.sbi_ext_disabled[KVM_RISCV_SBI_EXT_SUSP]) {
++		id = 1;
++		reg.id = RISCV_SBI_EXT_REG(KVM_REG_RISCV_SBI_SINGLE,
++					   KVM_RISCV_SBI_EXT_SUSP);
++		reg.addr = (unsigned long)&id;
++		if (ioctl(vcpu->vcpu_fd, KVM_SET_ONE_REG, &reg) < 0)
++			pr_warning("KVM_SET_ONE_REG failed (sbi_ext %d)",
++				   KVM_RISCV_SBI_EXT_SUSP);
++	}
++
+ 	/* Populate the vcpu structure. */
+ 	vcpu->kvm		= kvm;
+ 	vcpu->cpu_id		= cpu_id;
+@@ -203,6 +216,29 @@ static bool kvm_cpu_riscv_sbi(struct kvm_cpu *vcpu)
+ 			break;
+ 		}
+ 		break;
++	case SBI_EXT_SUSP:
++	{
++		unsigned long susp_type, ret = SBI_SUCCESS;
++
++		switch (vcpu->kvm_run->riscv_sbi.function_id) {
++		case SBI_EXT_SUSP_SYSTEM_SUSPEND:
++			susp_type = vcpu->kvm_run->riscv_sbi.args[0];
++			if (susp_type != SBI_SUSP_SLEEP_TYPE_SUSPEND_TO_RAM) {
++				ret = SBI_ERR_INVALID_PARAM;
++				break;
++			}
++
++			sleep(5);
++
++			break;
++		default:
++			ret = SBI_ERR_NOT_SUPPORTED;
++			break;
++		}
++
++		vcpu->kvm_run->riscv_sbi.ret[0] = ret;
++		break;
++	}
+ 	default:
+ 		dprintf(dfd, "Unhandled SBI call\n");
+ 		dprintf(dfd, "extension_id=0x%lx function_id=0x%lx\n",
 -- 
 2.43.0
 
