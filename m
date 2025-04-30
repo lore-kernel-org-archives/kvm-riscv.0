@@ -4,44 +4,43 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E82E2C3ABA9
-	for <kvm-riscv@archiver.kernel.org>; Wed, 30 Apr 2025 07:32:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 76336C369DC
+	for <kvm-riscv@archiver.kernel.org>; Wed, 30 Apr 2025 07:32:59 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
 	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
 	List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:Subject:
 	MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=/S5t56GegHWXfUQBeREDR3kGPJwvHxDpua/DFdJrPDs=; b=e9KXxctyI2109b
-	sFjg9h5mGAsJagSlYd2bnZuhIbbGXFt7XpGdQ/7nm10r9foaTTkCzX+SIuOgrxGzKkfbZbFbT4ABi
-	abzaSzQRTzKgPc4/o36lXU/7JjI6s8WdUK9hqWS9OMQjXD5qPG66mD45e8P2JU0UTmd0SyLzTuRjz
-	hm7oodCzT67ix3sg1o3L925oC8lq6lVB0yOzMsRKuyyhp2EUXVBjpc6+MTMoPeEnijdMJLr+HQiCN
-	PfsLp5C6eu6a6hIDEGZgDNztFq2NVz/fBDM+UzFhV9HqvlQmg3b4qdm9fhotbNlPIXOShADJk6qyf
-	CoQAzqh2FcJ95wEssZ6Q==;
+	List-Owner; bh=1AdMZnwBpQCQf2+BUNmvsghd3bbgzcZmwnx1Om8EVoY=; b=L8G6NwO1wMBMms
+	ztccW8Qjlbm1gUQILQV1nRxFCPmo8Ww22zZhABuBsLYVc9On0LOKwvZ+clXQCqyd5V4YjWA5lddbP
+	8XozO0xgqdFiEVU3rHv18RILBOBjSKGg6q6il8CTjY9nYjXF5QWR9STxy134FrixOaStbSGm4m53v
+	FEGCQdJmZ5amlNOPt4wGz/98eWJBTSsjAH4QNvNJG88avJwlizx1IwpJPSmkST4y5xSVrB4dbHj/e
+	XTkVOaXPrZGo9xxJTDRDI2DEZF4ViUdNkaQfpQorntpe9ufwYD/yzH/s7+Ov/Mcpe8U404y9b5XT/
+	INHcHSBBTZGL4iyd6fPA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uA1w8-0000000C0AJ-2Rwg;
-	Wed, 30 Apr 2025 07:32:56 +0000
-Received: from out-180.mta1.migadu.com ([95.215.58.180])
+	id 1uA1wB-0000000C0DB-0M3x;
+	Wed, 30 Apr 2025 07:32:59 +0000
+Received: from out-177.mta1.migadu.com ([2001:41d0:203:375::b1])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uA1kd-0000000By9F-3vL8
+	id 1uA1lq-0000000ByOJ-2Cbd
 	for kvm-riscv@lists.infradead.org;
-	Wed, 30 Apr 2025 07:21:05 +0000
-Message-ID: <a6cb0396-4bc5-4215-9e2e-a68be83c1c94@linux.dev>
+	Wed, 30 Apr 2025 07:22:19 +0000
+Message-ID: <f1a917d9-b225-4453-899b-4c8aa531d3a1@linux.dev>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1745997661;
+	t=1745997736;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=OuZnX2BRFmICCR806hXS16BUkH/lmlas9chN4sIYfsU=;
-	b=bPJx5QNDt0UOh1b+z/teoeW8pSlsLjqvN8xsIZ7LxxCrsjwdSOitJftIIG28PfVJ0lU720
-	Kq7KISGQs3uESsgO2qFARs4nDrGziShEw2urNKkH/45pLX6V9hvHF4uNfOHFNdimWASxXn
-	WxZsi9Cy1Lkr7N7P2Zm1fFMkaf5y8BI=
-Date: Wed, 30 Apr 2025 00:20:48 -0700
+	bh=GnwDRkFSU3cnku32BLVBhrZjOy1GqIkDBCu3BBxR2u8=;
+	b=qpBXWR6rpXVjzMOmhaNdn0QDVX38Jlyd5/IFVdjFZMlbV0amPuPZExqqvWUeon6Vax62VV
+	H3L9WXFE/CYJ894jiwT84kY47YDADwTVo7d2ceSsLmf8+t93UBT8BMstlmzPztP4NnW0wt
+	06zqNFSLPryhkWkPnlkyp5MQUYQIpFE=
+Date: Wed, 30 Apr 2025 00:22:11 -0700
 MIME-Version: 1.0
-Subject: Re: [PATCH v2 2/3] KVM: riscv: selftests: Decode stval to identify
- exact exception type
+Subject: Re: [PATCH v2 3/3] KVM: riscv: selftests: Add vector extension tests
 To: Andrew Jones <ajones@ventanamicro.com>
 Cc: Anup Patel <anup@brainfault.org>, Atish Patra <atishp@atishpatra.org>,
  Paolo Bonzini <pbonzini@redhat.com>, Shuah Khan <shuah@kernel.org>,
@@ -50,16 +49,16 @@ Cc: Anup Patel <anup@brainfault.org>, Atish Patra <atishp@atishpatra.org>,
  kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
  linux-kselftest@vger.kernel.org, linux-kernel@vger.kernel.org
 References: <20250429-kvm_selftest_improve-v2-0-51713f91e04a@rivosinc.com>
- <20250429-kvm_selftest_improve-v2-2-51713f91e04a@rivosinc.com>
- <20250430-b40cd14818cc9264506e61f2@orel>
+ <20250429-kvm_selftest_improve-v2-3-51713f91e04a@rivosinc.com>
+ <20250430-4790c7c3ea3623243f2d22ac@orel>
 Content-Language: en-US
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
 From: Atish Patra <atish.patra@linux.dev>
-In-Reply-To: <20250430-b40cd14818cc9264506e61f2@orel>
+In-Reply-To: <20250430-4790c7c3ea3623243f2d22ac@orel>
 X-Migadu-Flow: FLOW_OUT
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250430_002104_115859_B7B71BE7 
-X-CRM114-Status: GOOD (  14.08  )
+X-CRM114-CacheID: sfid-20250430_002218_703050_9ED4C47F 
+X-CRM114-Status: GOOD (  20.52  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -77,88 +76,236 @@ Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 
-On 4/30/25 12:09 AM, Andrew Jones wrote:
-> On Tue, Apr 29, 2025 at 05:18:46PM -0700, Atish Patra wrote:
->> Currently, the sbi_pmu_test continues if the exception type is illegal
->> instruction because access to hpmcounter will generate that. However
->> illegal instruction exception may occur due to the other reasons
->> which should result in test assertion.
->>
->> Use the stval to decode the exact type of instructions and which csrs are
->> being accessed if it is csr access instructions. Assert in all cases
->> except if it is a csr access instructions that access valid PMU related
->> registers.
+On 4/30/25 12:17 AM, Andrew Jones wrote:
+> On Tue, Apr 29, 2025 at 05:18:47PM -0700, Atish Patra wrote:
+>> Add vector related tests with the ISA extension standard template.
+>> However, the vector registers are bit tricky as the register length is
+>> variable based on vlenb value of the system. That's why the macros are
+>> defined with a default and overidden with actual value at runtime.
 >>
 >> Reviewed-by: Anup Patel <anup@brainfault.org>
 >> Signed-off-by: Atish Patra <atishp@rivosinc.com>
 >> ---
->>   .../testing/selftests/kvm/include/riscv/processor.h  | 13 +++++++++++++
->>   tools/testing/selftests/kvm/riscv/sbi_pmu_test.c     | 20 ++++++++++++++++++++
->>   2 files changed, 33 insertions(+)
+>>   tools/testing/selftests/kvm/riscv/get-reg-list.c | 133 +++++++++++++++++++++++
+>>   1 file changed, 133 insertions(+)
 >>
->> diff --git a/tools/testing/selftests/kvm/include/riscv/processor.h b/tools/testing/selftests/kvm/include/riscv/processor.h
->> index 1b5aef87de0f..162f303d9daa 100644
->> --- a/tools/testing/selftests/kvm/include/riscv/processor.h
->> +++ b/tools/testing/selftests/kvm/include/riscv/processor.h
->> @@ -11,6 +11,19 @@
->>   #include <asm/csr.h>
->>   #include "kvm_util.h"
+>> diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
+>> index 569f2d67c9b8..814dd981ce0b 100644
+>> --- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
+>> +++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
+>> @@ -17,6 +17,15 @@ enum {
+>>   	VCPU_FEATURE_SBI_EXT,
+>>   };
 >>   
->> +#define INSN_OPCODE_MASK	0x007c
->> +#define INSN_OPCODE_SHIFT	2
->> +#define INSN_OPCODE_SYSTEM	28
+>> +enum {
+>> +	KVM_RISC_V_REG_OFFSET_VSTART = 0,
+>> +	KVM_RISC_V_REG_OFFSET_VL,
+>> +	KVM_RISC_V_REG_OFFSET_VTYPE,
+>> +	KVM_RISC_V_REG_OFFSET_VCSR,
+>> +	KVM_RISC_V_REG_OFFSET_VLENB,
+>> +	KVM_RISC_V_REG_OFFSET_MAX,
+>> +};
 >> +
->> +#define INSN_MASK_FUNCT3	0x7000
->> +#define INSN_SHIFT_FUNCT3	12
+>>   static bool isa_ext_cant_disable[KVM_RISCV_ISA_EXT_MAX];
+>>   
+>>   bool filter_reg(__u64 reg)
+>> @@ -143,6 +152,39 @@ bool check_reject_set(int err)
+>>   	return err == EINVAL;
+>>   }
+>>   
+>> +static int override_vector_reg_size(struct kvm_vcpu *vcpu, struct vcpu_reg_sublist *s,
+>> +				    uint64_t feature)
+>> +{
+>> +	unsigned long vlenb_reg = 0;
+>> +	int rc;
+>> +	u64 reg, size;
 >> +
->> +#define INSN_CSR_MASK		0xfff00000
->> +#define INSN_CSR_SHIFT		20
+>> +	/* Enable V extension so that we can get the vlenb register */
+>> +	rc = __vcpu_set_reg(vcpu, feature, 1);
+>> +	if (rc)
+>> +		return rc;
 >> +
->> +#define GET_RM(insn)            (((insn) & INSN_MASK_FUNCT3) >> INSN_SHIFT_FUNCT3)
->> +#define GET_CSR_NUM(insn)       (((insn) & INSN_CSR_MASK) >> INSN_CSR_SHIFT)
+>> +	__vcpu_get_reg(vcpu, s->regs[KVM_RISC_V_REG_OFFSET_VLENB], &vlenb_reg);
+> We can remove the underscores from this call since it shouldn't fail, as
+> we know we've successfully enabled the V extension at this point.
+good point. I will remove it.
 >> +
->>   static inline uint64_t __kvm_reg_id(uint64_t type, uint64_t subtype,
->>   				    uint64_t idx, uint64_t size)
+>> +	if (!vlenb_reg) {
+>> +		TEST_FAIL("Can't compute vector register size from zero vlenb\n");
+>> +		return -EPERM;
+>> +	}
+>> +
+>> +	size = __builtin_ctzl(vlenb_reg);
+>> +	size <<= KVM_REG_SIZE_SHIFT;
+>> +
+>> +	for (int i = 0; i < 32; i++) {
+>> +		reg = KVM_REG_RISCV | KVM_REG_RISCV_VECTOR | size | KVM_REG_RISCV_VECTOR_REG(i);
+>> +		s->regs[KVM_RISC_V_REG_OFFSET_MAX + i] = reg;
+>> +	}
+>> +
+>> +	/* We should assert if disabling failed here while enabling succeeded before */
+>> +	vcpu_set_reg(vcpu, feature, 0);
+>> +
+>> +	return 0;
+>> +}
+>> +
+>>   void finalize_vcpu(struct kvm_vcpu *vcpu, struct vcpu_reg_list *c)
 >>   {
->> diff --git a/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c b/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c
->> index 6e66833e5941..3c47268df262 100644
->> --- a/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c
->> +++ b/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c
->> @@ -130,9 +130,29 @@ static void stop_counter(unsigned long counter, unsigned long stop_flags)
+>>   	unsigned long isa_ext_state[KVM_RISCV_ISA_EXT_MAX] = { 0 };
+>> @@ -172,6 +214,13 @@ void finalize_vcpu(struct kvm_vcpu *vcpu, struct vcpu_reg_list *c)
+>>   		if (!s->feature)
+>>   			continue;
 >>   
->>   static void guest_illegal_exception_handler(struct pt_regs *regs)
->>   {
->> +	unsigned long insn;
->> +	int opcode, csr_num, funct3;
+>> +		if (s->feature == KVM_RISCV_ISA_EXT_V) {
+>> +			feature = RISCV_ISA_EXT_REG(s->feature);
+>> +			rc = override_vector_reg_size(vcpu, s, feature);
+>> +			if (rc)
+>> +				goto skip;
+>> +		}
 >> +
->>   	__GUEST_ASSERT(regs->cause == EXC_INST_ILLEGAL,
->>   		       "Unexpected exception handler %lx\n", regs->cause);
+>>   		switch (s->feature_type) {
+>>   		case VCPU_FEATURE_ISA_EXT:
+>>   			feature = RISCV_ISA_EXT_REG(s->feature);
+>> @@ -186,6 +235,7 @@ void finalize_vcpu(struct kvm_vcpu *vcpu, struct vcpu_reg_list *c)
+>>   		/* Try to enable the desired extension */
+>>   		__vcpu_set_reg(vcpu, feature, 1);
 >>   
->> +	insn = regs->badaddr;
->> +	opcode = (insn & INSN_OPCODE_MASK) >> INSN_OPCODE_SHIFT;
->> +	__GUEST_ASSERT(opcode == INSN_OPCODE_SYSTEM,
->> +		       "Unexpected instruction with opcode 0x%x insn 0x%lx\n", opcode, insn);
+>> +skip:
+>>   		/* Double check whether the desired extension was enabled */
+>>   		__TEST_REQUIRE(__vcpu_has_ext(vcpu, feature),
+>>   			       "%s not available, skipping tests", s->name);
+>> @@ -410,6 +460,35 @@ static const char *fp_d_id_to_str(const char *prefix, __u64 id)
+>>   	return strdup_printf("%lld /* UNKNOWN */", reg_off);
+>>   }
+>>   
+>> +static const char *vector_id_to_str(const char *prefix, __u64 id)
+>> +{
+>> +	/* reg_off is the offset into struct __riscv_v_ext_state */
+>> +	__u64 reg_off = id & ~(REG_MASK | KVM_REG_RISCV_VECTOR);
+>> +	int reg_index = 0;
 >> +
->> +	csr_num = GET_CSR_NUM(insn);
->> +	funct3 = GET_RM(insn);
->> +	/* Validate if it is a CSR read/write operation */
->> +	__GUEST_ASSERT(funct3 <= 7 && (funct3 != 0 && funct3 != 4),
->> +		       "Unexpected system opcode with funct3 0x%x csr_num 0x%x\n",
->> +		       funct3, csr_num);
+>> +	assert((id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_VECTOR);
 >> +
->> +	/* Validate if it is a HPMCOUNTER CSR operation */
->> +	__GUEST_ASSERT((csr_num >= CSR_CYCLE && csr_num <= CSR_HPMCOUNTER31) ||
->> +		       (csr_num >= CSR_CYCLEH && csr_num <= CSR_HPMCOUNTER31H),
-> We should never get csr accesses to the rv32 high registers since we only
-> support 64-bit.
-
-Sure. I will remove that along with CSR_CYCLEH in pmu_csr_read_num.
-
->> +		       "Unexpected csr_num 0x%x\n", csr_num);
+>> +	if (reg_off >= KVM_REG_RISCV_VECTOR_REG(0))
+>> +		reg_index = reg_off -  KVM_REG_RISCV_VECTOR_REG(0);
+>> +	switch (reg_off) {
+>> +	case KVM_REG_RISCV_VECTOR_REG(0) ...
+>> +	     KVM_REG_RISCV_VECTOR_REG(31):
+>> +		return strdup_printf("KVM_REG_RISCV_VECTOR_REG(%d)", reg_index);
+>> +	case KVM_REG_RISCV_VECTOR_CSR_REG(vstart):
+>> +		return "KVM_REG_RISCV_VECTOR_CSR_REG(vstart)";
+>> +	case KVM_REG_RISCV_VECTOR_CSR_REG(vl):
+>> +		return "KVM_REG_RISCV_VECTOR_CSR_REG(vl)";
+>> +	case KVM_REG_RISCV_VECTOR_CSR_REG(vtype):
+>> +		return "KVM_REG_RISCV_VECTOR_CSR_REG(vtype)";
+>> +	case KVM_REG_RISCV_VECTOR_CSR_REG(vcsr):
+>> +		return "KVM_REG_RISCV_VECTOR_CSR_REG(vcsr)";
+>> +	case KVM_REG_RISCV_VECTOR_CSR_REG(vlenb):
+>> +		return "KVM_REG_RISCV_VECTOR_CSR_REG(vlenb)";
+>> +	}
 >> +
->>   	illegal_handler_invoked = true;
->>   	/* skip the trapping instruction */
->>   	regs->epc += 4;
+>> +	return strdup_printf("%lld /* UNKNOWN */", reg_off);
+>> +}
+>> +
+>>   #define KVM_ISA_EXT_ARR(ext)		\
+>>   [KVM_RISCV_ISA_EXT_##ext] = "KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_" #ext
+>>   
+>> @@ -639,6 +718,9 @@ void print_reg(const char *prefix, __u64 id)
+>>   	case KVM_REG_SIZE_U128:
+>>   		reg_size = "KVM_REG_SIZE_U128";
+>>   		break;
+>> +	case KVM_REG_SIZE_U256:
+>> +		reg_size = "KVM_REG_SIZE_U256";
+>> +		break;
+>>   	default:
+>>   		printf("\tKVM_REG_RISCV | (%lld << KVM_REG_SIZE_SHIFT) | 0x%llx /* UNKNOWN */,\n",
+>>   		       (id & KVM_REG_SIZE_MASK) >> KVM_REG_SIZE_SHIFT, id & ~REG_MASK);
+>> @@ -670,6 +752,10 @@ void print_reg(const char *prefix, __u64 id)
+>>   		printf("\tKVM_REG_RISCV | %s | KVM_REG_RISCV_FP_D | %s,\n",
+>>   				reg_size, fp_d_id_to_str(prefix, id));
+>>   		break;
+>> +	case KVM_REG_RISCV_VECTOR:
+>> +		printf("\tKVM_REG_RISCV | %s | KVM_REG_RISCV_VECTOR | %s,\n",
+>> +		       reg_size, vector_id_to_str(prefix, id));
+>> +		break;
+>>   	case KVM_REG_RISCV_ISA_EXT:
+>>   		printf("\tKVM_REG_RISCV | %s | KVM_REG_RISCV_ISA_EXT | %s,\n",
+>>   				reg_size, isa_ext_id_to_str(prefix, id));
+>> @@ -874,6 +960,48 @@ static __u64 fp_d_regs[] = {
+>>   	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_D,
+>>   };
+>>   
+>> +/* Define a default vector registers with length. This will be overwritten at runtime */
+>> +static __u64 vector_regs[] = {
+>> +	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_VECTOR | KVM_REG_RISCV_VECTOR_CSR_REG(vstart),
+>> +	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_VECTOR | KVM_REG_RISCV_VECTOR_CSR_REG(vl),
+>> +	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_VECTOR | KVM_REG_RISCV_VECTOR_CSR_REG(vtype),
+>> +	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_VECTOR | KVM_REG_RISCV_VECTOR_CSR_REG(vcsr),
+>> +	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_VECTOR | KVM_REG_RISCV_VECTOR_CSR_REG(vlenb),
+>> +	KVM_REG_RISCV | KVM_REG_SIZE_U128 | KVM_REG_RISCV_VECTOR | KVM_REG_RISCV_VECTOR_REG(0),
+>> +	KVM_REG_RISCV | KVM_REG_SIZE_U128 | KVM_REG_RISCV_VECTOR | KVM_REG_RISCV_VECTOR_REG(1),
+>> +	KVM_REG_RISCV | KVM_REG_SIZE_U128 | KVM_REG_RISCV_VECTOR | KVM_REG_RISCV_VECTOR_REG(2),
+>> +	KVM_REG_RISCV | KVM_REG_SIZE_U128 | KVM_REG_RISCV_VECTOR | KVM_REG_RISCV_VECTOR_REG(3),
+>> +	KVM_REG_RISCV | KVM_REG_SIZE_U128 | KVM_REG_RISCV_VECTOR | KVM_REG_RISCV_VECTOR_REG(4),
+>> +	KVM_REG_RISCV | KVM_REG_SIZE_U128 | KVM_REG_RISCV_VECTOR | KVM_REG_RISCV_VECTOR_REG(5),
+>> +	KVM_REG_RISCV | KVM_REG_SIZE_U128 | KVM_REG_RISCV_VECTOR | KVM_REG_RISCV_VECTOR_REG(6),
+>> +	KVM_REG_RISCV | KVM_REG_SIZE_U128 | KVM_REG_RISCV_VECTOR | KVM_REG_RISCV_VECTOR_REG(7),
+>> +	KVM_REG_RISCV | KVM_REG_SIZE_U128 | KVM_REG_RISCV_VECTOR | KVM_REG_RISCV_VECTOR_REG(8),
+>> +	KVM_REG_RISCV | KVM_REG_SIZE_U128 | KVM_REG_RISCV_VECTOR | KVM_REG_RISCV_VECTOR_REG(9),
+>> +	KVM_REG_RISCV | KVM_REG_SIZE_U128 | KVM_REG_RISCV_VECTOR | KVM_REG_RISCV_VECTOR_REG(10),
+>> +	KVM_REG_RISCV | KVM_REG_SIZE_U128 | KVM_REG_RISCV_VECTOR | KVM_REG_RISCV_VECTOR_REG(11),
+>> +	KVM_REG_RISCV | KVM_REG_SIZE_U128 | KVM_REG_RISCV_VECTOR | KVM_REG_RISCV_VECTOR_REG(12),
+>> +	KVM_REG_RISCV | KVM_REG_SIZE_U128 | KVM_REG_RISCV_VECTOR | KVM_REG_RISCV_VECTOR_REG(13),
+>> +	KVM_REG_RISCV | KVM_REG_SIZE_U128 | KVM_REG_RISCV_VECTOR | KVM_REG_RISCV_VECTOR_REG(14),
+>> +	KVM_REG_RISCV | KVM_REG_SIZE_U128 | KVM_REG_RISCV_VECTOR | KVM_REG_RISCV_VECTOR_REG(15),
+>> +	KVM_REG_RISCV | KVM_REG_SIZE_U128 | KVM_REG_RISCV_VECTOR | KVM_REG_RISCV_VECTOR_REG(16),
+>> +	KVM_REG_RISCV | KVM_REG_SIZE_U128 | KVM_REG_RISCV_VECTOR | KVM_REG_RISCV_VECTOR_REG(17),
+>> +	KVM_REG_RISCV | KVM_REG_SIZE_U128 | KVM_REG_RISCV_VECTOR | KVM_REG_RISCV_VECTOR_REG(18),
+>> +	KVM_REG_RISCV | KVM_REG_SIZE_U128 | KVM_REG_RISCV_VECTOR | KVM_REG_RISCV_VECTOR_REG(19),
+>> +	KVM_REG_RISCV | KVM_REG_SIZE_U128 | KVM_REG_RISCV_VECTOR | KVM_REG_RISCV_VECTOR_REG(20),
+>> +	KVM_REG_RISCV | KVM_REG_SIZE_U128 | KVM_REG_RISCV_VECTOR | KVM_REG_RISCV_VECTOR_REG(21),
+>> +	KVM_REG_RISCV | KVM_REG_SIZE_U128 | KVM_REG_RISCV_VECTOR | KVM_REG_RISCV_VECTOR_REG(22),
+>> +	KVM_REG_RISCV | KVM_REG_SIZE_U128 | KVM_REG_RISCV_VECTOR | KVM_REG_RISCV_VECTOR_REG(23),
+>> +	KVM_REG_RISCV | KVM_REG_SIZE_U128 | KVM_REG_RISCV_VECTOR | KVM_REG_RISCV_VECTOR_REG(24),
+>> +	KVM_REG_RISCV | KVM_REG_SIZE_U128 | KVM_REG_RISCV_VECTOR | KVM_REG_RISCV_VECTOR_REG(25),
+>> +	KVM_REG_RISCV | KVM_REG_SIZE_U128 | KVM_REG_RISCV_VECTOR | KVM_REG_RISCV_VECTOR_REG(26),
+>> +	KVM_REG_RISCV | KVM_REG_SIZE_U128 | KVM_REG_RISCV_VECTOR | KVM_REG_RISCV_VECTOR_REG(27),
+>> +	KVM_REG_RISCV | KVM_REG_SIZE_U128 | KVM_REG_RISCV_VECTOR | KVM_REG_RISCV_VECTOR_REG(28),
+>> +	KVM_REG_RISCV | KVM_REG_SIZE_U128 | KVM_REG_RISCV_VECTOR | KVM_REG_RISCV_VECTOR_REG(29),
+>> +	KVM_REG_RISCV | KVM_REG_SIZE_U128 | KVM_REG_RISCV_VECTOR | KVM_REG_RISCV_VECTOR_REG(30),
+>> +	KVM_REG_RISCV | KVM_REG_SIZE_U128 | KVM_REG_RISCV_VECTOR | KVM_REG_RISCV_VECTOR_REG(31),
+>> +	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_V,
+>> +};
+>> +
+>>   #define SUBLIST_BASE \
+>>   	{"base", .regs = base_regs, .regs_n = ARRAY_SIZE(base_regs), \
+>>   	 .skips_set = base_skips_set, .skips_set_n = ARRAY_SIZE(base_skips_set),}
+>> @@ -898,6 +1026,9 @@ static __u64 fp_d_regs[] = {
+>>   	{"fp_d", .feature = KVM_RISCV_ISA_EXT_D, .regs = fp_d_regs, \
+>>   		.regs_n = ARRAY_SIZE(fp_d_regs),}
+>>   
+>> +#define SUBLIST_V \
+>> +	{"v", .feature = KVM_RISCV_ISA_EXT_V, .regs = vector_regs, .regs_n = ARRAY_SIZE(vector_regs),}
+>> +
+>>   #define KVM_ISA_EXT_SIMPLE_CONFIG(ext, extu)			\
+>>   static __u64 regs_##ext[] = {					\
+>>   	KVM_REG_RISCV | KVM_REG_SIZE_ULONG |			\
+>> @@ -966,6 +1097,7 @@ KVM_SBI_EXT_SIMPLE_CONFIG(susp, SUSP);
+>>   KVM_ISA_EXT_SUBLIST_CONFIG(aia, AIA);
+>>   KVM_ISA_EXT_SUBLIST_CONFIG(fp_f, FP_F);
+>>   KVM_ISA_EXT_SUBLIST_CONFIG(fp_d, FP_D);
+>> +KVM_ISA_EXT_SUBLIST_CONFIG(v, V);
+>>   KVM_ISA_EXT_SIMPLE_CONFIG(h, H);
+>>   KVM_ISA_EXT_SIMPLE_CONFIG(smnpm, SMNPM);
+>>   KVM_ISA_EXT_SUBLIST_CONFIG(smstateen, SMSTATEEN);
+>> @@ -1040,6 +1172,7 @@ struct vcpu_reg_list *vcpu_configs[] = {
+>>   	&config_fp_f,
+>>   	&config_fp_d,
+>>   	&config_h,
+>> +	&config_v,
+>>   	&config_smnpm,
+>>   	&config_smstateen,
+>>   	&config_sscofpmf,
 >>
 >> -- 
 >> 2.43.0
