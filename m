@@ -4,94 +4,93 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3692AC369D9
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DAEC1C3ABAA
 	for <kvm-riscv@archiver.kernel.org>; Wed, 30 Apr 2025 05:16:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:MIME-Version:Message-Id:Date:
-	Subject:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=Hhj1oqR0/rjFPO+n+EetkJIcPSJ7fNZJr7FnNnQomi4=; b=vHbVNAKf9KKSFu
-	AKLBEz+cIzIXlvymCfkmvUpdHW7smki+sHwDV4nCArmdCpcrEXWJ5cuCdoy1DzS80pMDiHps5Tvp7
-	t3m2jmboUYMp6EvjN/x5qv/bVObF4NiOVKujIJRbZldpc438JoLdDEmUhsS/sYicdZbIkTF59HQmw
-	oKAa9Kf174JzZZ8hW9XloBnqoUm6Jqp6cVYCevv20N/u3ocYrTZDFa9FV8qiffxD8YU/VnpQmGapL
-	HkBt9V/uUHG76FsXEAeQ/vfPbkUf3ZAXQKgbbkCSzBOC6kHaQhYKUAuIG1j1G7BfN4Tx+nA/tIBl0
-	e9E48tJA9OeNSKQcQgAg==;
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Message-Id
+	:MIME-Version:Subject:Date:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=AuW2DtjUpn7wZ0pJEdhz2ds3/EQodHrIGW5UE9ivVno=; b=j6oaDmlHqGOI3K
+	/5AEfTSgOBXn8+Fr5hq6oi7X7+EgVXrC653Rq4c0zikeXJPWRtoBSTK4t+KZzHC8jDtcEe+b0r8MV
+	YC8xBUonGaCo0yeI05ghVWLHs8CSnB0kUNgV3BHMhx47JnfEXxZba/dFfnPP6/4oCWrQuCCwZZa5h
+	YuNL/eLV8b79NjticXEOk3RIFrYpBGem1b/ZMjUxeyND+LYAk0JDXveLETmjsWmRQ0elTppzdxbBF
+	rLJbuSdy+ioVL1TKggt44/8PYorM9nRWHCh80cY/0+bkgle1o+K7kTn5kYBsqixvCxOkG/rCg2Z+Q
+	XhtpE7Y6HpCW4X/6XUqQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1u9znx-0000000Bj4K-30MY;
-	Wed, 30 Apr 2025 05:16:21 +0000
+	id 1u9zny-0000000Bj4c-2FkU;
+	Wed, 30 Apr 2025 05:16:22 +0000
 Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1u9vAA-0000000BHx3-3aY2
+	id 1u9vAK-0000000BHz4-25gh
 	for kvm-riscv@bombadil.infradead.org;
-	Wed, 30 Apr 2025 00:18:58 +0000
+	Wed, 30 Apr 2025 00:19:08 +0000
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=Cc:To:Content-Transfer-Encoding:
-	Content-Type:MIME-Version:Message-Id:Date:Subject:From:Sender:Reply-To:
-	Content-ID:Content-Description:In-Reply-To:References;
-	bh=h9CDC77dPHm0sLL9zARbZU/pLEdmRrLjaN9hFpvRuxw=; b=QAqy2pROC2Up81o5gFIsYenNSL
-	NqSSxGxuKJOlO1zLvgvFnAdWfC1IVDa5JJY5yNtolLn5lxro2FvqZWT+3ZUu1HTM17h0T9yKftafB
-	Jr2vAXLqB9MFMM+mTWz/2j1VJGAagzuNnL51A0iqxiEFBqjcEmv4FeW0g2d6xpk8SYM6BudH3u+OG
-	oCeWWwGXnT2/rRtbcspHlPfuqEsjRbxqhvlji5RgZBJPCh5cCK4k/sOW4wa+mIfd/K1NDTpcO0WOn
-	9K3zt9yw1Q/qsNoSunlaAZay6hdU4lENU81ms8d2G3LYYZ9XVO8vs5t4TCmOY8CPhbCajw1Nu1lPu
-	7afsx25w==;
-Received: from mail-pl1-x630.google.com ([2607:f8b0:4864:20::630])
+	d=infradead.org; s=desiato.20200630; h=Cc:To:In-Reply-To:References:
+	Message-Id:Content-Transfer-Encoding:Content-Type:MIME-Version:Subject:Date:
+	From:Sender:Reply-To:Content-ID:Content-Description;
+	bh=PXzfu17kptCXUybkiNKPVF1lS3Ix7IXO5RDr+gMnAkc=; b=KYPEcfyPbu8YprHpacx8IDwpRA
+	Vcsxo+tx87/W1FNV6wSmQEuYTQkXY2AjdT58OH4KkM9FefE5hsRRtlKlAMoM9vxVhgnDgoqZMaB56
+	AGarEmE7p2DC2y7WVif/7Aa74UlRu2VolNGfWKURe/ZzxJo9GcNyiyGJSVN/I26wbSrcbP633nonx
+	HA7zR75fvmB1ZjPu79fv83HGbzZuxl9n/O28Xy2zYFHGegt+L1A0SjIOIHtw+IOwVEkcyr7ZrN6bx
+	MUDiP0jOsVHjipgY8uTzWgUwLi+l8cIBCXmPqeXUwNf6EfKzm2IlqKe2fULJCfS7ZbgEC0Iv9aRI9
+	Nc654oag==;
+Received: from mail-pf1-x432.google.com ([2607:f8b0:4864:20::432])
 	by desiato.infradead.org with esmtps (Exim 4.98.1 #2 (Red Hat Linux))
-	id 1u9vA6-0000000DYK5-1NzN
+	id 1u9vA9-0000000DYKj-2g3R
 	for kvm-riscv@lists.infradead.org;
-	Wed, 30 Apr 2025 00:18:57 +0000
-Received: by mail-pl1-x630.google.com with SMTP id d9443c01a7336-22c33ac23edso61529495ad.0
-        for <kvm-riscv@lists.infradead.org>; Tue, 29 Apr 2025 17:18:53 -0700 (PDT)
+	Wed, 30 Apr 2025 00:19:06 +0000
+Received: by mail-pf1-x432.google.com with SMTP id d2e1a72fcca58-736aaeed234so5554971b3a.0
+        for <kvm-riscv@lists.infradead.org>; Tue, 29 Apr 2025 17:18:56 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=rivosinc-com.20230601.gappssmtp.com; s=20230601; t=1745972332; x=1746577132; darn=lists.infradead.org;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=h9CDC77dPHm0sLL9zARbZU/pLEdmRrLjaN9hFpvRuxw=;
-        b=TnqN8N3UcsiIaiMlXkKQCz25bU1Ob1EeTUVHqXQFCt4gIe8in79u/KY0+r2+XiHmTB
-         f3z06pg/Xiup3iFqcbpidC7qwTYB6qEd4UlYrUGF4kWFdfjqgq0kvhQt4rKGuIGDMBSJ
-         CyN+47QaF+O59bX7L1XLqNXIzHMQ8wXCzALbtM8KR12vT6+BtT6p4k1ZdQovnKYhpa9a
-         6muSiLVhEAiW7AijaGNGTxg4aQLCr3kZ0xJzm8wT/NDlZ6sjGhvN304w2lDJGoQ7eCbZ
-         qvt51iHakHE/JnblQRZL1pjwb8cTs2gNrWKD3xgBtFAyM0W2IkKe/5Hw+YMrxgsVtd3s
-         +zHg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1745972332; x=1746577132;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:x-gm-message-state:from:to:cc:subject:date:message-id
+        d=rivosinc-com.20230601.gappssmtp.com; s=20230601; t=1745972334; x=1746577134; darn=lists.infradead.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=h9CDC77dPHm0sLL9zARbZU/pLEdmRrLjaN9hFpvRuxw=;
-        b=GwMgLjgQNjb+bqd6OzaaJImdXsMudEY+gRPV6O9BTpvFXjR6zqUGZ3o94RC5XTNrL6
-         2CTTrIHoND6JDxpw309wvB+yBdiZD95KREIEbJTkv60KhK4J8ClwoqfODrzR4Ep3VhYF
-         QAK2XHpXevDpvJc0MFB5n0SYBd1/Zn/oVgzIXeNHHhM4Z8BeuhLWrLLTJjwgDRTeV+aK
-         /NjKh7fjw3rVOAFbShbwBazgwSiH6CRtR6MJV29kqjwsX76SLDzF6bB/x3rgt2UKy1O3
-         UzgjN9PUJEl7GtmpZt6T8RJlUQXrcnP39VIiDVXRd0P9qqL7hk6nT3r1ByScrN4QzFoY
-         h4Mg==
-X-Forwarded-Encrypted: i=1; AJvYcCX7LB2RU9aIOscv+AwZh3sK1zz1EIq96RsLSNFk1dgWFif0JE940cmfDDCTVfAshlhqPdQNi0Qgp1A=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yz2QFrayI/RPhz0sq33fDFbUy86lHyaobpiaMxd+rTbpMWmWH9k
-	VZE4Hcl3ZGRKwiYu4SSqyePrX7g62Xx4Hi9BfP8FQKc4LAvHhYwSa/UvHheKij8=
-X-Gm-Gg: ASbGnctqcIidOdFY2mmOm0gBSQgstRBMReX/MzS88MhHAJwPbKbSaJSlpU7JjRrv3N4
-	gorI08ZSbY5e5VXhIan9jPg3oXoHbLMreHSkuD4FZDVrX95nIERmuBlizwxhWdwZQO4+Rfp8i7K
-	woaTvPddH+60QmI5gEwl6JKoNZIojEzxfzf8HPn84cdd7/ryyJpGSefL7mOh+YJ8NS9F25Do9kJ
-	5QdNHjj75qnx5jxUlMOEca2K5oEsOZfFyp1uEB90G0oKRGpV62s81HT7XmvwlytzDTbASM8SoNq
-	M22eionhgtDzg1kSauxS3G/zYuQab68ve0fcjUcSbV4ZMHEmdw3CWw==
-X-Google-Smtp-Source: AGHT+IGcjNS30ZUbgOqbJ+3hZtDKq2g7yhYNKy+e5TbCHxGgjZoKOda+bZdglX1wUFE80tZeA/2XMA==
-X-Received: by 2002:a17:903:1aaf:b0:224:1e7a:43fe with SMTP id d9443c01a7336-22df3585814mr19158975ad.46.1745972332359;
-        Tue, 29 Apr 2025 17:18:52 -0700 (PDT)
+        bh=PXzfu17kptCXUybkiNKPVF1lS3Ix7IXO5RDr+gMnAkc=;
+        b=Z3Emd9t886Wutw70BOpTtv7IuOa1uygQ4Dfw6CwNoDBXlYxsBOsawP+EEDw2TvbEdc
+         xZ+xMnHh5H/L1MB8mnnHfzVva1D0rYTvFs/4R10lZG8+xk8HMsQNM6PH70/bA4wgE8su
+         e6ICStSC3vomL+pdEdQq8w52rE9BSaA3fEOQpLwHfR3CsmDgJ4A3iEYHVYmtVpLgQguL
+         tWKZhoD2rt76hodZCQP6AYgbis4U9jmBhTp0iIJofAi7VnHOKJFzc8hwM/cCOADa4b+v
+         jwBq3EEZsanYb+J8iH/y6sTM28VsLszU6K8JLpilxIBA59Gi45Gc6aBI0BLsEjMUekc2
+         s14w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1745972334; x=1746577134;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=PXzfu17kptCXUybkiNKPVF1lS3Ix7IXO5RDr+gMnAkc=;
+        b=J9Auk/47BIsTQ+NbC85wh4duMR+tFNxNXP2IfNGuN11ioNn6cKEYS5GBhzePmQHkDP
+         gbqKxmR5fKdaMGOQ58ilXWho7JcTt07JJEFT1gGvQS0zecDbfmuQ2sy0IPZkL/YUhnz5
+         ZE1ACVmwdvDAUahnE9Cu+sC88L5PqgX/0mBwphzJ+PcVgOS5czQThNnayuK6LCbYYa1y
+         AYmAR3xQj05QrVJeIW5+nnaXL2one6QUkXYh7KQ8Z7tCijJQ2vN5cRf4JAZs438q6FZl
+         8rEeoF76z6n3Dnw69heDBh8hoLO1/60IH6RPGNnlLOsk5JEQ9dZkTO/qkDrfk7Y3rIoO
+         H8cQ==
+X-Forwarded-Encrypted: i=1; AJvYcCVmpmRJ7xfesQxDRJ5AYTMpBcQjPVUdLUIJMizPgEYvVUi+ow6Ax8BhelYryOgOz/eTgsgUw1dILfo=@lists.infradead.org
+X-Gm-Message-State: AOJu0YwDNSPRB8GK8EUnfRytdh3hmcg9rBEyiG3OgqUWxjB9SYnUOpGi
+	0/gtEJJjzwNWjeCT7DzV2t1k4FD9uid4CR8jmPQROXxl3aPL2XWPJGcmirSTEts=
+X-Gm-Gg: ASbGnctDq74TuA4gq7PTqu6h5YB5+38D9DJUp6/gWHMxWlGEs6OPD0/Wwj0ZYvrnh5f
+	WGVx8rPODwiZwndXQVnb8NOtdj3N7nL3/GGCU6UXsjEyGH6aTD4IXTnIzLoiD2T3sCYv+ciGy5D
+	hH90vPGELcZdhenW+z27PmWi0UQe0NXDJd5heGCPaLRHX2C/aozj7KF6Vs/sOLH2KIFviVRmYRK
+	j++0DGeodLNpd9EACnctPND70+weKgrI0I/4FaH8fr2F+FHBPgdLu9jbmsWFAeeMsL7M2dortKJ
+	lZr91R1xJXZ8F/VA/dSPJu+79NqfanXY+C0E6B+Qs4QZ+NtRHRbbNA==
+X-Google-Smtp-Source: AGHT+IE5FGxbdrNxcaxfBpPfWj8KR2q9JaLnQXvsvsKUG6zRtpkDcoXAsF7QbIKH9zgJl0KjaYQMgA==
+X-Received: by 2002:a05:6a21:6711:b0:1f5:5ed0:4d75 with SMTP id adf61e73a8af0-20a88e1cf7cmr1303250637.31.1745972334596;
+        Tue, 29 Apr 2025 17:18:54 -0700 (PDT)
 Received: from atishp.ba.rivosinc.com ([64.71.180.162])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-b1f68988ca4sm1907790a12.74.2025.04.29.17.18.51
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-b1f68988ca4sm1907790a12.74.2025.04.29.17.18.53
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 29 Apr 2025 17:18:52 -0700 (PDT)
+        Tue, 29 Apr 2025 17:18:54 -0700 (PDT)
 From: Atish Patra <atishp@rivosinc.com>
-Subject: [PATCH v2 0/3] RISC-V KVM selftests improvements
-Date: Tue, 29 Apr 2025 17:18:44 -0700
-Message-Id: <20250429-kvm_selftest_improve-v2-0-51713f91e04a@rivosinc.com>
+Date: Tue, 29 Apr 2025 17:18:46 -0700
+Subject: [PATCH v2 2/3] KVM: riscv: selftests: Decode stval to identify
+ exact exception type
 MIME-Version: 1.0
-X-B4-Tracking: v=1; b=H4sIAGRsEWgC/4WNXQ6CMBCEr0L22ZpSfiI+eQ9DCLRb2Sgt6TaNh
- nB3Kxfw8ZvMfLMBYyBkuBYbBEzE5F0GdSpAz6N7oCCTGZRUjaxULZ5pGRhfNiLHgZY1+ISim9B
- MnZVjayrI0zWgpfehvfeZZ+Low+d4SeUv/SNMpZCiuVRtrpWdqe0tUPJMTp+1X6Df9/0LFkf1c
- rsAAAA=
-X-Change-ID: 20250324-kvm_selftest_improve-9bedb9f0a6d3
+Message-Id: <20250429-kvm_selftest_improve-v2-2-51713f91e04a@rivosinc.com>
+References: <20250429-kvm_selftest_improve-v2-0-51713f91e04a@rivosinc.com>
+In-Reply-To: <20250429-kvm_selftest_improve-v2-0-51713f91e04a@rivosinc.com>
 To: Anup Patel <anup@brainfault.org>, Atish Patra <atishp@atishpatra.org>, 
  Paolo Bonzini <pbonzini@redhat.com>, Shuah Khan <shuah@kernel.org>, 
  Paul Walmsley <paul.walmsley@sifive.com>, 
@@ -102,9 +101,8 @@ Cc: kvm@vger.kernel.org, kvm-riscv@lists.infradead.org,
  linux-kernel@vger.kernel.org, Atish Patra <atishp@rivosinc.com>
 X-Mailer: b4 0.15-dev-42535
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250430_011854_435791_AD5CB9DF 
-X-CRM114-Status: UNSURE (   8.74  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20250430_011857_846223_5DD8C1AA 
+X-CRM114-Status: GOOD (  10.92  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -121,43 +119,84 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-This series improves the following tests.
-1. Get-reg-list : Adds vector support
-2. SBI PMU test : Distinguish between different types of illegal exception
+Currently, the sbi_pmu_test continues if the exception type is illegal
+instruction because access to hpmcounter will generate that. However
+illegal instruction exception may occur due to the other reasons
+which should result in test assertion.
 
-The first patch is just helper patch that adds stval support during
-exception handling.
+Use the stval to decode the exact type of instructions and which csrs are
+being accessed if it is csr access instructions. Assert in all cases
+except if it is a csr access instructions that access valid PMU related
+registers.
 
+Reviewed-by: Anup Patel <anup@brainfault.org>
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
-Changes in v2:
-- Rebased on top of Linux 6.15-rc4
-- Changed from ex_regs to pt_regs based on Drew's suggestion. 
-- Dropped Anup's review on PATCH1 as it is significantly changed from last review.
-- Moved the instruction decoding macros to a common header file.
-- Improved the vector reg list test as per the feedback.
-- Link to v1: https://lore.kernel.org/r/20250324-kvm_selftest_improve-v1-0-583620219d4f@rivosinc.com
+ .../testing/selftests/kvm/include/riscv/processor.h  | 13 +++++++++++++
+ tools/testing/selftests/kvm/riscv/sbi_pmu_test.c     | 20 ++++++++++++++++++++
+ 2 files changed, 33 insertions(+)
 
----
-Atish Patra (3):
-      KVM: riscv: selftests: Align the trap information wiht pt_regs
-      KVM: riscv: selftests: Decode stval to identify exact exception type
-      KVM: riscv: selftests: Add vector extension tests
+diff --git a/tools/testing/selftests/kvm/include/riscv/processor.h b/tools/testing/selftests/kvm/include/riscv/processor.h
+index 1b5aef87de0f..162f303d9daa 100644
+--- a/tools/testing/selftests/kvm/include/riscv/processor.h
++++ b/tools/testing/selftests/kvm/include/riscv/processor.h
+@@ -11,6 +11,19 @@
+ #include <asm/csr.h>
+ #include "kvm_util.h"
+ 
++#define INSN_OPCODE_MASK	0x007c
++#define INSN_OPCODE_SHIFT	2
++#define INSN_OPCODE_SYSTEM	28
++
++#define INSN_MASK_FUNCT3	0x7000
++#define INSN_SHIFT_FUNCT3	12
++
++#define INSN_CSR_MASK		0xfff00000
++#define INSN_CSR_SHIFT		20
++
++#define GET_RM(insn)            (((insn) & INSN_MASK_FUNCT3) >> INSN_SHIFT_FUNCT3)
++#define GET_CSR_NUM(insn)       (((insn) & INSN_CSR_MASK) >> INSN_CSR_SHIFT)
++
+ static inline uint64_t __kvm_reg_id(uint64_t type, uint64_t subtype,
+ 				    uint64_t idx, uint64_t size)
+ {
+diff --git a/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c b/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c
+index 6e66833e5941..3c47268df262 100644
+--- a/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c
++++ b/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c
+@@ -130,9 +130,29 @@ static void stop_counter(unsigned long counter, unsigned long stop_flags)
+ 
+ static void guest_illegal_exception_handler(struct pt_regs *regs)
+ {
++	unsigned long insn;
++	int opcode, csr_num, funct3;
++
+ 	__GUEST_ASSERT(regs->cause == EXC_INST_ILLEGAL,
+ 		       "Unexpected exception handler %lx\n", regs->cause);
+ 
++	insn = regs->badaddr;
++	opcode = (insn & INSN_OPCODE_MASK) >> INSN_OPCODE_SHIFT;
++	__GUEST_ASSERT(opcode == INSN_OPCODE_SYSTEM,
++		       "Unexpected instruction with opcode 0x%x insn 0x%lx\n", opcode, insn);
++
++	csr_num = GET_CSR_NUM(insn);
++	funct3 = GET_RM(insn);
++	/* Validate if it is a CSR read/write operation */
++	__GUEST_ASSERT(funct3 <= 7 && (funct3 != 0 && funct3 != 4),
++		       "Unexpected system opcode with funct3 0x%x csr_num 0x%x\n",
++		       funct3, csr_num);
++
++	/* Validate if it is a HPMCOUNTER CSR operation */
++	__GUEST_ASSERT((csr_num >= CSR_CYCLE && csr_num <= CSR_HPMCOUNTER31) ||
++		       (csr_num >= CSR_CYCLEH && csr_num <= CSR_HPMCOUNTER31H),
++		       "Unexpected csr_num 0x%x\n", csr_num);
++
+ 	illegal_handler_invoked = true;
+ 	/* skip the trapping instruction */
+ 	regs->epc += 4;
 
- .../selftests/kvm/include/riscv/processor.h        |  23 ++-
- tools/testing/selftests/kvm/lib/riscv/handlers.S   | 164 ++++++++++++---------
- tools/testing/selftests/kvm/lib/riscv/processor.c  |   2 +-
- tools/testing/selftests/kvm/riscv/arch_timer.c     |   2 +-
- tools/testing/selftests/kvm/riscv/ebreak_test.c    |   2 +-
- tools/testing/selftests/kvm/riscv/get-reg-list.c   | 133 +++++++++++++++++
- tools/testing/selftests/kvm/riscv/sbi_pmu_test.c   |  24 ++-
- 7 files changed, 270 insertions(+), 80 deletions(-)
----
-base-commit: f15d97df5afae16f40ecef942031235d1c6ba14f
-change-id: 20250324-kvm_selftest_improve-9bedb9f0a6d3
---
-Regards,
-Atish patra
+-- 
+2.43.0
 
 
 -- 
