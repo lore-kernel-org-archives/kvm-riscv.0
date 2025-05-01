@@ -4,105 +4,82 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EE2A4C369DC
-	for <kvm-riscv@archiver.kernel.org>; Thu,  1 May 2025 12:57:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 36F52C369DC
+	for <kvm-riscv@archiver.kernel.org>; Thu,  1 May 2025 13:13:23 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
-	Subject:Cc:To:From:Message-ID:Date:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:Subject:Message-ID:Date:From:
+	In-Reply-To:References:MIME-Version:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=Sxs+JFzmifb2FtiHrzy6ifDq8StUwcn6lai+XFW7Pv8=; b=UerincdI+1XFPd
-	AAiO1CM0TqPnTVbDVHDwKNJNAU5K61/I80PMUKRzP+UTnfUa/3IZa5bzDq5y/hPoPDz1dn6bBzPKL
-	L74INiw3SHoLrXgshojbGFJAu7TTmtpyqUz/QXVQnszJP4xoiUd7qlxGubDlwTHzRIy1Gz8uOk1Pv
-	b7473wEBYiOep/Xz5mDWev1ymxqyh4u0eR/dIvYhUkbKQ6zRekMZo+UjKdISh9ERRNo8oI2Kk4Z5F
-	5A771rIbIt7udlM+TbUzAwtjLZ55hWzKp+W75ZK9zbv7Cx3IR/NNKeyobbANXOkojp8BJB7LEbTWz
-	ZtQjZS2C3ZbQ+mIs1jWQ==;
+	List-Owner; bh=Q75QXu3s7XBbv9PztSqcMbPIs8XDlt3OsaKcfLVqPDk=; b=Dy3nybbR7EPpjx
+	PEGuKqM4BC2Oe0z2zuOaLQQYg4LhJRMXXkr3PApTvctZAYfrDKQ4vCPx+NsciInwHLT+88k5rEofB
+	5AJ4hK5AXGtR8iiTySFPHQeDYE6LvTS5g8Ps1IEiEvrhGZxB+GF744j+znFQDpnhtBtMzKot/Twsz
+	ydMV3zzXxegZjS9HXILpT8IYkWN8whPxBCl87Lolv8lbptmX/LQ7sO8KzO/xFfZRztyOuYN/q6jZ6
+	BsI9XE6Vc8gZtY8AfQlTBHJaNzmSt1oeMe4I6ABmxMg7QWLFN/my0/YsdoBp/bXzx4ecitXDrbwJF
+	aMsVvCHYYhzKOZUx9afw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uATTq-0000000FkC0-2ROo;
-	Thu, 01 May 2025 12:57:34 +0000
-Received: from tor.source.kernel.org ([172.105.4.254])
+	id 1uATj8-0000000Fn7S-3AA9;
+	Thu, 01 May 2025 13:13:22 +0000
+Received: from mail-il1-x12c.google.com ([2607:f8b0:4864:20::12c])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uATHF-0000000FiqG-21ZP;
-	Thu, 01 May 2025 12:44:33 +0000
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id B208261136;
-	Thu,  1 May 2025 12:44:04 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1D40FC4CEE3;
-	Thu,  1 May 2025 12:44:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1746103472;
-	bh=WPG4ItA0UQzz9G5Wed/nsDRuYNB8SmpWf7d7wvrM4Ig=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=QxDjMdGBaO7OILE121xxXL/ZOnOaqCLtEBXhMWqkB+3PJ/81e/MmSvY1wUToCrhj4
-	 o09UND4kIgR1FXBbOv/55FCd/OzVBwRgoBGOKRqd4tO9c5cjsRV1GlGty2ybIey98M
-	 Lg+nMO5pZgEPqvPhdAFXoifIaxQoyNf5AIQ+1z0cDZWJ9kRunCBuAPEBO/FXXum7lW
-	 W1LmcTN82A52L8g5iIa5Ucd/iUs8WO+yyP/I650zIl0luAwZDGv+aVLdfXY2xUanJs
-	 d03TuxAlnXfTT8Rtp+TeEMdJfupvUktoh6E1sLRqamQNoOxsDebivNk/cK+bAp+RnI
-	 Bf6br0mFislfA==
-Received: from sofa.misterjones.org ([185.219.108.64] helo=goblin-girl.misterjones.org)
-	by disco-boy.misterjones.org with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.95)
-	(envelope-from <maz@kernel.org>)
-	id 1uATHB-00AZcw-3q;
-	Thu, 01 May 2025 13:44:29 +0100
-Date: Thu, 01 May 2025 13:44:28 +0100
-Message-ID: <861pt8ijpv.wl-maz@kernel.org>
-From: Marc Zyngier <maz@kernel.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Maxim Levitsky <mlevitsk@redhat.com>,
-	kvm@vger.kernel.org,
-	linux-riscv@lists.infradead.org,
-	Kunkun Jiang <jiangkunkun@huawei.com>,
-	Waiman Long <longman@redhat.com>,
-	linux-kernel@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	Boqun Feng <boqun.feng@gmail.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Anup Patel <anup@brainfault.org>,
-	Paul Walmsley <paul.walmsley@sifive.com>,
-	Suzuki K Poulose <suzuki.poulose@arm.com>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Alexandre Ghiti <alex@ghiti.fr>,
-	Alexander Potapenko <glider@google.com>,
-	Oliver Upton <oliver.upton@linux.dev>,
-	Andre Przywara <andre.przywara@arm.com>,
-	x86@kernel.org,
-	Joey Gouly <joey.gouly@arm.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	kvm-riscv@lists.infradead.org,
-	Atish Patra <atishp@atishpatra.org>,
-	Ingo Molnar <mingo@redhat.com>,
-	Jing Zhang <jingzhangos@google.com>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	kvmarm@lists.linux.dev,
-	Will Deacon <will@kernel.org>,
-	Keisuke Nishimura <keisuke.nishimura@inria.fr>,
-	Sebastian Ott <sebott@redhat.com>,
-	Shusen Li <lishusen2@huawei.com>,
-	Paolo Bonzini <pbonzini@redhat.com>,
-	Randy Dunlap <rdunlap@infradead.org>,
-	Sean Christopherson <seanjc@google.com>,
-	Zenghui Yu <yuzenghui@huawei.com>
-Subject: Re: [PATCH v4 2/5] arm64: KVM: use mutex_trylock_nest_lock when locking all vCPUs
-In-Reply-To: <20250501111552.GO4198@noisy.programming.kicks-ass.net>
-References: <20250430203013.366479-1-mlevitsk@redhat.com>
-	<20250430203013.366479-3-mlevitsk@redhat.com>
-	<864iy4ivro.wl-maz@kernel.org>
-	<20250501111552.GO4198@noisy.programming.kicks-ass.net>
-User-Agent: Wanderlust/2.15.9 (Almost Unreal) SEMI-EPG/1.14.7 (Harue)
- FLIM-LB/1.14.9 (=?UTF-8?B?R29qxY0=?=) APEL-LB/10.8 EasyPG/1.0.0 Emacs/30.1
- (aarch64-unknown-linux-gnu) MULE/6.0 (HANACHIRUSATO)
-MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
-X-SA-Exim-Connect-IP: 185.219.108.64
-X-SA-Exim-Rcpt-To: peterz@infradead.org, mlevitsk@redhat.com, kvm@vger.kernel.org, linux-riscv@lists.infradead.org, jiangkunkun@huawei.com, longman@redhat.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, catalin.marinas@arm.com, bhelgaas@google.com, boqun.feng@gmail.com, bp@alien8.de, aou@eecs.berkeley.edu, anup@brainfault.org, paul.walmsley@sifive.com, suzuki.poulose@arm.com, palmer@dabbelt.com, alex@ghiti.fr, glider@google.com, oliver.upton@linux.dev, andre.przywara@arm.com, x86@kernel.org, joey.gouly@arm.com, tglx@linutronix.de, kvm-riscv@lists.infradead.org, atishp@atishpatra.org, mingo@redhat.com, jingzhangos@google.com, hpa@zytor.com, dave.hansen@linux.intel.com, kvmarm@lists.linux.dev, will@kernel.org, keisuke.nishimura@inria.fr, sebott@redhat.com, lishusen2@huawei.com, pbonzini@redhat.com, rdunlap@infradead.org, seanjc@google.com, yuzenghui@huawei.com
-X-SA-Exim-Mail-From: maz@kernel.org
-X-SA-Exim-Scanned: No (on disco-boy.misterjones.org); SAEximRunCond expanded to false
+	id 1uATj6-0000000Fn6y-3ETG
+	for kvm-riscv@lists.infradead.org;
+	Thu, 01 May 2025 13:13:22 +0000
+Received: by mail-il1-x12c.google.com with SMTP id e9e14a558f8ab-3d6d6d82633so3006655ab.0
+        for <kvm-riscv@lists.infradead.org>; Thu, 01 May 2025 06:13:19 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=brainfault-org.20230601.gappssmtp.com; s=20230601; t=1746105199; x=1746709999; darn=lists.infradead.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=i8cnw7gES+2CPKoNFqxe9oNSToGNtvAVlGUfutI0aoo=;
+        b=Na8DUoFpQpWHP7GixN5BWPFB8dQcfC7iNlJjOKbskHr+vGyKhAmRizTG+cpVTlK1CL
+         yUJMuUfqBaCXxHXp7cNsxBga8nx13AZ9UxA7QxgsQA/FCjG1dJmLH6dV1Qm0AKvFJZKY
+         nyo9I9dLxuxpvIpydlRmyxSxHy+Jd+JcvFdw70hZO6KauI4ZeZX56Ary9YEMmvkCSnre
+         FSk3ODaTRW1qrzH5S/fRUXLAZJuR48vWStCqP9nkYy+UyXgq5xP2w0PANHJ0l1Mprmt3
+         sDNO3D0rPhLoBRUOFnOgybL/4yp5Vooh6OIUbzPklwICLMS5ZUiKvT6NuYiYtDzgsNTU
+         WCiA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1746105199; x=1746709999;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=i8cnw7gES+2CPKoNFqxe9oNSToGNtvAVlGUfutI0aoo=;
+        b=LKeFbqSlmBSFm9ho6Tt3Cwj1EY5s4eB/AfTmOqvhkB+5/ReLXubT4+jYgQFiAbkfnt
+         5cBcjcRRZ65CvcO1TWz31T48GgrgO5+1El/9bnb9hTebxcOMSJqF9gbSKiYXSBFuOlIA
+         Ihv+HIT+uWHedy3qc3xyXVwxWJcrPX2+IOf+KEJlJKY+kvGU0Ja5Vm+m8IS0N07JwYST
+         D8Kl0zDI5EZyCkqYhWn3d3exy7ajJ67WhnvONLm2RxNPqAY5CQ0lZHEML5/tOPZKEV3k
+         0J2D/0bBYPXi1xKDik/+lrFNdM4qy7RWPRDqJ5DoV3SiV0MCTcVL6o8e+6Vha11T1357
+         g+pA==
+X-Forwarded-Encrypted: i=1; AJvYcCW3duLvsBV138boVlIvmOOHeV8S3qf1Z29oSUQceJMtrE6t//7q/O7PVvBQRJR9BqZ9deW24NXyR3A=@lists.infradead.org
+X-Gm-Message-State: AOJu0Ywybi8yv3IbdQLJUq0aZAYxQAbdI9hYP2UNCXVEYRlJU2f7wNsA
+	e7vfzFDjW/G+rD02OHZH0zltvsUPSb2e5gQ9TGnupvgRHGzOvWqUBhcI1M9Wf1TbY1Ailm5hdj5
+	CSq1s6jrTvPzXwp8G4O5REOFKuZIDpAZ5Tnm5UQ==
+X-Gm-Gg: ASbGncts6pVqt8IRxcpVYgE1vWXVG3Ex55+yCgvw/GPFAyohIrqo8gIxL4LMIuItJ3s
+	/IlnfIvnE6/SSSIh9T8IdhhK52qwqPjcbukYYJD9nJpthcEJZviEiltZDWPyaIbKEJZyuPA6i4n
+	WrRVpeITRu+8LZH/M86iZOG4uDXD2NaB0MvA==
+X-Google-Smtp-Source: AGHT+IFYH/yz9ETM9NLPFlE2pVkQwoPg56TQHPQR5mOU/5lz7nNUj+hk9/rsWp5zS5jnU2+qLzeLlD75PGhwF7yzJJc=
+X-Received: by 2002:a05:6e02:1aaf:b0:3d9:24a7:db0c with SMTP id
+ e9e14a558f8ab-3d96f1b20ddmr38261815ab.8.1746105199109; Thu, 01 May 2025
+ 06:13:19 -0700 (PDT)
+MIME-Version: 1.0
+References: <20250426110348.338114-1-apatel@ventanamicro.com>
+In-Reply-To: <20250426110348.338114-1-apatel@ventanamicro.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Thu, 1 May 2025 18:43:07 +0530
+X-Gm-Features: ATxdqUFKSjteFgCBlQofgGe5rmP86z7GpzG9AH1PpGwKFUlwJL4JNjmeLly_eRQ
+Message-ID: <CAAhSdy3VJUyR=9KKQrHLpn_dqnyqpDore4CCC0SGPM4pjZ3opQ@mail.gmail.com>
+Subject: Re: [kvmtool PATCH v3 00/10] Add SBI system suspend and cpu-type option
+To: Will Deacon <will@kernel.org>
+Cc: julien.thierry.kdev@gmail.com, maz@kernel.org, 
+	Paolo Bonzini <pbonzini@redhat.com>, Atish Patra <atishp@atishpatra.org>, 
+	Andrew Jones <ajones@ventanamicro.com>, kvm@vger.kernel.org, 
+	kvm-riscv@lists.infradead.org, Anup Patel <apatel@ventanamicro.com>
+X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
+X-CRM114-CacheID: sfid-20250501_061321_075559_987EBE2B 
+X-CRM114-Status: GOOD (  15.08  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -114,72 +91,44 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Thu, 01 May 2025 12:15:52 +0100,
-Peter Zijlstra <peterz@infradead.org> wrote:
-> 
-> > > + */
-> > > +int kvm_trylock_all_vcpus(struct kvm *kvm)
-> > > +{
-> > > +	struct kvm_vcpu *vcpu;
-> > > +	unsigned long i, j;
-> > > +
-> > > +	kvm_for_each_vcpu(i, vcpu, kvm)
-> > > +		if (!mutex_trylock_nest_lock(&vcpu->mutex, &kvm->lock))
-> 
-> This one includes an assertion that kvm->lock is actually held.
-
-Ah, cunning. Thanks.
-
-> That said, I'm not at all sure what the purpose of all this trylock
-> stuff is here.
-> 
-> Can someone explain? Last time I asked someone said something about
-> multiple VMs, but I don't know enough about kvm to know what that means.
-
-Multiple VMs? That'd be real fun. Not.
-
-> Are those vcpu->mutex another class for other VMs? Or what gives?
-
-Nah. This is firmly single VM.
-
-The purpose of this contraption is that there are some rare cases
-where we need to make sure that if we update some global state, all
-the vcpus of a VM need to see, or none of them.
-
-For these cases, the guarantee comes from luserspace, and it gives the
-pinky promise that none of the vcpus are running at that point. But
-being of a suspicious nature, we assert that this is true by trying to
-take all the vcpu mutexes in one go. This will fail if a vcpu is
-running, as KVM itself takes the vcpu mutex before doing anything.
-
-Similar requirement exists if we need to synthesise some state for
-userspace from all the individual vcpu states.
-
-If the global locking fails, we return to userspace with a middle
-finger indication, and all is well. Of course, this is pretty
-expensive, which is why it is only done in setup phases, when the VMM
-configures the guest.
-
-The splat this is trying to address is that when you have more than 48
-vcpus in a single VM, lockdep gets upset seeing up to 512 locks of a
-similar class being taken.
-
-Disclaimer: all the above is completely arm64-specific, and I didn't
-even try to understand what other architectures are doing.
-
-HTH,
-
-	M.
-
--- 
-Without deviation from the norm, progress is not possible.
-
--- 
-kvm-riscv mailing list
-kvm-riscv@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/kvm-riscv
+SGkgV2lsbCwKCk9uIFNhdCwgQXByIDI2LCAyMDI1IGF0IDQ6MzPigK9QTSBBbnVwIFBhdGVsIDxh
+cGF0ZWxAdmVudGFuYW1pY3JvLmNvbT4gd3JvdGU6Cj4KPiBUaGlzIHNlcmllcyBkb2VzIHRoZSBm
+b2xsb3dpbmcgaW1wcm92ZW1lbnRzOgo+IDEpIEFkZCBTdnZwdGMsIFphYmhhLCBhbmQgWmljY3Jz
+ZSBleHRlbnNpb24gc3VwcG9ydCAoUEFUQ0gyIHRvIFBBVENIMykKPiAyKSBBZGQgU0JJIHN5c3Rl
+bSBzdXNwZW5kIHN1cHBvcnQgKFBBVENINSB0byBQQVRDSDYpCj4gMykgQWRkICItLWNwdS10eXBl
+IiBjb21tYW5kLWxpbmUgb3B0aW9uIHN1cHBvcnRpbmcgIm1pbiIgYW5kICJtYXgiCj4gICAgQ1BV
+IHR5cGVzIHdoZXJlICJtYXgiIGlzIHRoZSBkZWZhdWx0IChQQVRDSDggdG8gUEFUQ0gxMCkKPgo+
+IFRoZXNlIHBhdGNoZXMgY2FuIGFsc28gYmUgZm91bmQgaW4gdGhlIHJpc2N2X21vcmVfZXh0c19y
+b3VuZDZfdjMgYnJhbmNoCj4gYXQ6IGh0dHBzOi8vZ2l0aHViLmNvbS9hdnBhdGVsL2t2bXRvb2wu
+Z2l0Cj4KPiBDaGFuZ2VzIHNpbmNlIHYyOgo+ICAtIEFkZHJlc3NlZCBjb21tZW50cyBvbiBQQVRD
+SDEwCj4KPiBDaGFuZ2VzIHNpbmNlIHYxOgo+ICAtIFJlYmFzZWQgb24gbGF0ZXN0IEtWTVRPT0wg
+Y29tbWl0IGQ0MTBkOWExNmY5MTQ1OGFlMmI5MTJjYzA4ODAxNTM5NmYyMmRmYWQKPiAgLSBBZGRy
+ZXNzZWQgY29tbWVudHMgb24gUEFUQ0g4LCBQQVRDSDksIGFuZCBQQVRDSDEwCj4KPiBBbmRyZXcg
+Sm9uZXMgKDMpOgo+ICAgcmlzY3Y6IEFkZCBTQkkgc3lzdGVtIHN1c3BlbmQgc3VwcG9ydAo+ICAg
+cmlzY3Y6IE1ha2Ugc3lzdGVtIHN1c3BlbmQgdGltZSBjb25maWd1cmFibGUKPiAgIHJpc2N2OiBG
+aXggbm8gcGFyYW1zIHdpdGggbm9kZWZhdWx0IHNlZ2ZhdWx0Cj4KPiBBbnVwIFBhdGVsICg3KToK
+PiAgIFN5bmMtdXAgaGVhZGVycyB3aXRoIExpbnV4LTYuMTQga2VybmVsCj4gICByaXNjdjogQWRk
+IFN2dnB0YyBleHRlbnNpb24gc3VwcG9ydAo+ICAgcmlzY3Y6IEFkZCBaYWJoYSBleHRlbnNpb24g
+c3VwcG9ydAo+ICAgcmlzY3Y6IEFkZCBaaWNjcnNlIGV4dGVuc2lvbiBzdXBwb3J0Cj4gICByaXNj
+djogSW5jbHVkZSBzaW5nbGUtbGV0dGVyIGV4dGVuc2lvbnMgaW4gaXNhX2luZm9fYXJyW10KPiAg
+IHJpc2N2OiBBZGQgY3B1LXR5cGUgY29tbWFuZC1saW5lIG9wdGlvbgo+ICAgcmlzY3Y6IEFsbG93
+IGluY2x1ZGluZyBleHRlbnNpb25zIGluIHRoZSBtaW4gQ1BVIHR5cGUgdXNpbmcKPiAgICAgY29t
+bWFuZC1saW5lCj4KPiAgYXJtNjQvaW5jbHVkZS9hc20va3ZtLmggICAgICAgICAgICAgfCAgIDMg
+LQo+ICBpbmNsdWRlL2xpbnV4L2t2bS5oICAgICAgICAgICAgICAgICB8ICAgOCArLQo+ICBpbmNs
+dWRlL2xpbnV4L3ZpcnRpb19wY2kuaCAgICAgICAgICB8ICAxNCArKwo+ICByaXNjdi9haWEuYyAg
+ICAgICAgICAgICAgICAgICAgICAgICB8ICAgMiArLQo+ICByaXNjdi9mZHQuYyAgICAgICAgICAg
+ICAgICAgICAgICAgICB8IDI0MCArKysrKysrKysrKysrKysrKysrLS0tLS0tLS0tCj4gIHJpc2N2
+L2luY2x1ZGUvYXNtL2t2bS5oICAgICAgICAgICAgIHwgICA3ICstCj4gIHJpc2N2L2luY2x1ZGUv
+a3ZtL2t2bS1hcmNoLmggICAgICAgIHwgICAyICsKPiAgcmlzY3YvaW5jbHVkZS9rdm0va3ZtLWNv
+bmZpZy1hcmNoLmggfCAgMjYgKysrCj4gIHJpc2N2L2luY2x1ZGUva3ZtL3NiaS5oICAgICAgICAg
+ICAgIHwgICA5ICsrCj4gIHJpc2N2L2t2bS1jcHUuYyAgICAgICAgICAgICAgICAgICAgIHwgIDM2
+ICsrKysrCj4gIHg4Ni9pbmNsdWRlL2FzbS9rdm0uaCAgICAgICAgICAgICAgIHwgICAxICsKPiAg
+MTEgZmlsZXMgY2hhbmdlZCwgMjY1IGluc2VydGlvbnMoKyksIDgzIGRlbGV0aW9ucygtKQo+Cj4g
+LS0KPiAyLjQzLjAKPgoKRnJpZW5kbHkgcGluZyA/CgpSZWdhcmRzLApBbnVwCgotLSAKa3ZtLXJp
+c2N2IG1haWxpbmcgbGlzdAprdm0tcmlzY3ZAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlz
+dHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2t2bS1yaXNjdgo=
