@@ -4,107 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A421CC3ABA3
-	for <kvm-riscv@archiver.kernel.org>; Thu,  1 May 2025 13:55:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C276C369DC
+	for <kvm-riscv@archiver.kernel.org>; Thu,  1 May 2025 18:33:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
-	Subject:Cc:To:From:Message-ID:Date:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=1kZwyCpGWpE7QSbaHB0+NeGXum0zzsshEtEYs3LkF0M=; b=SSFfqMxzTOQQAh
-	vDSJ+E8UmqkreyothU/CZOAeOAvrUQGrnXPVm2uU1CePuyUKsRxf7jQNUQOR/h7uwRGk85eDyvsJv
-	lk4wqyxdDk/S4MEA4Y3kZELSLXgSntSh8O6zBNUSg6jeDoVnuRnrA4Q8PM9IBJ73arEZktSibKDQd
-	KfeT+Zm9MA6yghW2eYXoIOD73HdxNwC6DD0NMIl/JY+1xC1TQOD51f5KO4KMyZCydELMGXnhth7jj
-	iu/KDskkEvDkuvM/rjVt9D1It7Fyat1RZpF8ZpYtl/9Me7GHBI+ac+bPH65Fu525qcLEKNzBXEkDF
-	Wi3/+hrR1JY2E6614BvQ==;
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID:
+	Mime-Version:Date:Reply-To:Content-ID:Content-Description:Resent-Date:
+	Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:
+	References:List-Owner; bh=aBOIUuL8MIcAF558YggRF2THkvwOiDyiwGIVPad4ZGc=; b=EyN
+	m/OBiBDrqyWTjlRHqNLV5Tj+hX21vL5Y+i0Ti+mEw5xbkm72ApSE9PLBt6HFNmDmvtpY/LPVTczjF
+	zlUppne4bcvUGn913eucbPD/pX3a2jejpj6i7mLbMvMATXNU8pqhvg1SFUMSwjEuZgitlvQbvMr0L
+	JDWhE7ONaIg6EMbvd/PF+u7zW2Enjf4fUcoCedMeey44Y9Sv5Vzu09zoLfTDZ1aHAXjxhHplAaDML
+	aL6gZPr2IYbqHbpSJCsZfq2/+HGxDOqcs1JNFcImCWJfBiW2woakKSRinRnHgHIyQ8KUm7TzKPdmX
+	TzkW0gy1iH/vy5IyyP95dxh4wfL/05w==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uAUNf-0000000FtFP-1ZG7;
-	Thu, 01 May 2025 13:55:15 +0000
-Received: from tor.source.kernel.org ([172.105.4.254])
+	id 1uAYik-0000000GMw0-2yNS;
+	Thu, 01 May 2025 18:33:18 +0000
+Received: from mail-pg1-x54a.google.com ([2607:f8b0:4864:20::54a])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uAUNd-0000000FtEa-3hkD;
-	Thu, 01 May 2025 13:55:13 +0000
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 11D4E68463;
-	Thu,  1 May 2025 13:54:45 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7E48EC4CEE3;
-	Thu,  1 May 2025 13:55:12 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1746107712;
-	bh=HP9qPQcXPFBaNtd0LbBqA0JNCPyQw698ggOHjYeim0Y=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=Pfk1ZFoGFQBcJbn4eAazqmyuBJ6TkiGf2ekSQDgoa5Fjia9S2lMt5efsrXyzq1Vvm
-	 ULeuC83dmMDOduBWW3xv2ptavXQm1vdoGdMaOq6foW7rtSQf8ouqLVTIFegJWn1fzS
-	 EorN2jN0LePdF11Vpm6UW5UyEsjAfLLhsNMAJTWfxtw7S29pRommXhIjicwQXKd09K
-	 dja4faMd/aLvbeN4QKFNqUIDiiz0PK5zIlRXOlq9ONM7WY09BvtawseMmekfxpdUph
-	 231yeafldT6FquJnpqz72EltQ8Tb6TsqSFX9obyV9riRozvuNYg8YfhJH7B6vS3/oQ
-	 Lfve/zxbzhOzw==
-Received: from sofa.misterjones.org ([185.219.108.64] helo=goblin-girl.misterjones.org)
-	by disco-boy.misterjones.org with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.95)
-	(envelope-from <maz@kernel.org>)
-	id 1uAUNa-00AakJ-3R;
-	Thu, 01 May 2025 14:55:10 +0100
-Date: Thu, 01 May 2025 14:55:08 +0100
-Message-ID: <86v7qkh1vn.wl-maz@kernel.org>
-From: Marc Zyngier <maz@kernel.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Maxim Levitsky <mlevitsk@redhat.com>,
-	kvm@vger.kernel.org,
-	linux-riscv@lists.infradead.org,
-	Kunkun Jiang <jiangkunkun@huawei.com>,
-	Waiman Long <longman@redhat.com>,
-	linux-kernel@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	Boqun Feng <boqun.feng@gmail.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Anup Patel <anup@brainfault.org>,
-	Paul Walmsley <paul.walmsley@sifive.com>,
-	Suzuki K Poulose <suzuki.poulose@arm.com>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Alexandre Ghiti <alex@ghiti.fr>,
-	Alexander Potapenko <glider@google.com>,
-	Oliver Upton <oliver.upton@linux.dev>,
-	Andre Przywara <andre.przywara@arm.com>,
-	x86@kernel.org,
-	Joey Gouly <joey.gouly@arm.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	kvm-riscv@lists.infradead.org,
-	Atish Patra <atishp@atishpatra.org>,
-	Ingo Molnar <mingo@redhat.com>,
-	Jing Zhang <jingzhangos@google.com>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	kvmarm@lists.linux.dev,
-	Will Deacon <will@kernel.org>,
-	Keisuke Nishimura <keisuke.nishimura@inria.fr>,
-	Sebastian Ott <sebott@redhat.com>,
-	Shusen Li <lishusen2@huawei.com>,
-	Paolo Bonzini <pbonzini@redhat.com>,
-	Randy Dunlap <rdunlap@infradead.org>,
-	Sean Christopherson <seanjc@google.com>,
-	Zenghui Yu <yuzenghui@huawei.com>
-Subject: Re: [PATCH v4 2/5] arm64: KVM: use mutex_trylock_nest_lock when locking all vCPUs
-In-Reply-To: <20250501134126.GT4439@noisy.programming.kicks-ass.net>
-References: <20250430203013.366479-1-mlevitsk@redhat.com>
-	<20250430203013.366479-3-mlevitsk@redhat.com>
-	<864iy4ivro.wl-maz@kernel.org>
-	<20250501111552.GO4198@noisy.programming.kicks-ass.net>
-	<861pt8ijpv.wl-maz@kernel.org>
-	<20250501134126.GT4439@noisy.programming.kicks-ass.net>
-User-Agent: Wanderlust/2.15.9 (Almost Unreal) SEMI-EPG/1.14.7 (Harue)
- FLIM-LB/1.14.9 (=?UTF-8?B?R29qxY0=?=) APEL-LB/10.8 EasyPG/1.0.0 Emacs/30.1
- (aarch64-unknown-linux-gnu) MULE/6.0 (HANACHIRUSATO)
-MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
-X-SA-Exim-Connect-IP: 185.219.108.64
-X-SA-Exim-Rcpt-To: peterz@infradead.org, mlevitsk@redhat.com, kvm@vger.kernel.org, linux-riscv@lists.infradead.org, jiangkunkun@huawei.com, longman@redhat.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, catalin.marinas@arm.com, bhelgaas@google.com, boqun.feng@gmail.com, bp@alien8.de, aou@eecs.berkeley.edu, anup@brainfault.org, paul.walmsley@sifive.com, suzuki.poulose@arm.com, palmer@dabbelt.com, alex@ghiti.fr, glider@google.com, oliver.upton@linux.dev, andre.przywara@arm.com, x86@kernel.org, joey.gouly@arm.com, tglx@linutronix.de, kvm-riscv@lists.infradead.org, atishp@atishpatra.org, mingo@redhat.com, jingzhangos@google.com, hpa@zytor.com, dave.hansen@linux.intel.com, kvmarm@lists.linux.dev, will@kernel.org, keisuke.nishimura@inria.fr, sebott@redhat.com, lishusen2@huawei.com, pbonzini@redhat.com, rdunlap@infradead.org, seanjc@google.com, yuzenghui@huawei.com
-X-SA-Exim-Mail-From: maz@kernel.org
-X-SA-Exim-Scanned: No (on disco-boy.misterjones.org); SAEximRunCond expanded to false
+	id 1uAYih-0000000GMtp-3dk4
+	for kvm-riscv@lists.infradead.org;
+	Thu, 01 May 2025 18:33:16 +0000
+Received: by mail-pg1-x54a.google.com with SMTP id 41be03b00d2f7-b048d1abbbfso1090584a12.0
+        for <kvm-riscv@lists.infradead.org>; Thu, 01 May 2025 11:33:14 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1746124394; x=1746729194; darn=lists.infradead.org;
+        h=cc:to:from:subject:message-id:mime-version:date:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=V4GbBX4m3F40HkG5QMMrGH567MTyfbhtitHqIKhSnmM=;
+        b=qPtf1Bcve1xwBx1zHdiz38ECEGJBAypyzeBTyFR8KSzOfHYXlE5XbruUWmrJHFinsy
+         CcljFqKPWIPF2T1JlVjzWVrfvVtpOS9hj9L96bQC1LB1XH+wgiX7rJBhk9Emag7wHdkG
+         vHgdJCumjKKX/XmMZPuV2R0V3O2RGApUjhaLfWRGulO7qgKq9jnYv5qo6ua3wW2e4Sv9
+         a7kiNsn+AuVOXqQeHPSdjgPoJdS65sDnFJ54UiGlXGItS7oPoNLuqlySiUuavW96zzUe
+         wrBa6wBSXreQInGIopOwon33TmfiNOslrjGWsMYhGEkNwkdf+yFImxd2n27imM3fl6CA
+         AGMQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1746124394; x=1746729194;
+        h=cc:to:from:subject:message-id:mime-version:date:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=V4GbBX4m3F40HkG5QMMrGH567MTyfbhtitHqIKhSnmM=;
+        b=VbUBi6nIu0cD2ctsPndNPtym64U1ihDulH5j3sGdu2YdT7nec+YsPlIqsL08o6JVQX
+         OD3C6b/q8cT5sgoTDOBwHBBxG7vlSWV7hVDWA8doZh0W04B86ctD0oz+ha9XfBjLeJxP
+         +wEdALTcuYrN20c5LpZJE3/5W5yaHSPPl0oz91nO07N8uMxNo2A78rB2ecpZDd6ahmJv
+         cq7qrtwYsghdmaq6i/y+dWHa4BwxQNzO5sXEHX2LoUXUDsDj/JAg4iRvJXzVB/ReHIS6
+         vg0yCyM+jhF43eeP+mF7epBeWpLddh+u0rH0e1DkOysF9s3LoeDJp5e2Cs2+jUq3r+NW
+         we0Q==
+X-Forwarded-Encrypted: i=1; AJvYcCXfT3wlVTlM/wx1xLHSUYN8ZHnA4/l2qbSTG62cC0bWTOqUBB4CGTrYfvug/1Gj6A54GDtjbWmoH3M=@lists.infradead.org
+X-Gm-Message-State: AOJu0YwmNgFYyrrnZT1uRZ7pttQLlPN7hUUHLsft4PuD3NP01NyQj4Xt
+	/9039lIqxkJYbtz5SluGMb2UEwnIDHRMf3Sct0t/BtnQIRZAyqTIotdWQAEiws+g0ktJdNAlsiL
+	b3W4KUrvhtA==
+X-Google-Smtp-Source: AGHT+IGXwYAIoxVS4EV4qeDqzJEpC/WOH4jZUp4diHaNWDhCf+MASol5shMUc/fTmqZrQNaV64K5SlkNqDWjzw==
+X-Received: from pgmt15.prod.google.com ([2002:a63:224f:0:b0:af8:cf0d:14cd])
+ (user=dmatlack job=prod-delivery.src-stubby-dispatcher) by
+ 2002:a05:6a21:1fc1:b0:1f5:9175:2596 with SMTP id adf61e73a8af0-20cde952c49mr22469637.13.1746124394234;
+ Thu, 01 May 2025 11:33:14 -0700 (PDT)
+Date: Thu,  1 May 2025 11:32:54 -0700
+Mime-Version: 1.0
+X-Mailer: git-send-email 2.49.0.906.g1f30a19c02-goog
+Message-ID: <20250501183304.2433192-1-dmatlack@google.com>
+Subject: [PATCH 00/10] KVM: selftests: Convert to kernel-style types
+From: David Matlack <dmatlack@google.com>
+To: Paolo Bonzini <pbonzini@redhat.com>
+Cc: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>, 
+	Joey Gouly <joey.gouly@arm.com>, Suzuki K Poulose <suzuki.poulose@arm.com>, 
+	Zenghui Yu <yuzenghui@huawei.com>, Anup Patel <anup@brainfault.org>, 
+	Atish Patra <atishp@atishpatra.org>, Paul Walmsley <paul.walmsley@sifive.com>, 
+	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+	Alexandre Ghiti <alex@ghiti.fr>, Christian Borntraeger <borntraeger@linux.ibm.com>, 
+	Janosch Frank <frankja@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, 
+	David Hildenbrand <david@redhat.com>, Sean Christopherson <seanjc@google.com>, 
+	David Matlack <dmatlack@google.com>, Andrew Jones <ajones@ventanamicro.com>, 
+	Isaku Yamahata <isaku.yamahata@intel.com>, Reinette Chatre <reinette.chatre@intel.com>, 
+	Eric Auger <eric.auger@redhat.com>, James Houghton <jthoughton@google.com>, 
+	Colin Ian King <colin.i.king@gmail.com>, kvm@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, 
+	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org
+X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
+X-CRM114-CacheID: sfid-20250501_113315_900766_0B950C17 
+X-CRM114-Status: GOOD (  12.41  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -121,77 +100,216 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Thu, 01 May 2025 14:41:26 +0100,
-Peter Zijlstra <peterz@infradead.org> wrote:
-> 
-> On Thu, May 01, 2025 at 01:44:28PM +0100, Marc Zyngier wrote:
-> > On Thu, 01 May 2025 12:15:52 +0100,
-> > Peter Zijlstra <peterz@infradead.org> wrote:
-> > > 
-> > > > > + */
-> > > > > +int kvm_trylock_all_vcpus(struct kvm *kvm)
-> > > > > +{
-> > > > > +	struct kvm_vcpu *vcpu;
-> > > > > +	unsigned long i, j;
-> > > > > +
-> > > > > +	kvm_for_each_vcpu(i, vcpu, kvm)
-> > > > > +		if (!mutex_trylock_nest_lock(&vcpu->mutex, &kvm->lock))
-> > > 
-> > > This one includes an assertion that kvm->lock is actually held.
-> > 
-> > Ah, cunning. Thanks.
-> > 
-> > > That said, I'm not at all sure what the purpose of all this trylock
-> > > stuff is here.
-> > > 
-> > > Can someone explain? Last time I asked someone said something about
-> > > multiple VMs, but I don't know enough about kvm to know what that means.
-> > 
-> > Multiple VMs? That'd be real fun. Not.
-> > 
-> > > Are those vcpu->mutex another class for other VMs? Or what gives?
-> > 
-> > Nah. This is firmly single VM.
-> > 
-> > The purpose of this contraption is that there are some rare cases
-> > where we need to make sure that if we update some global state, all
-> > the vcpus of a VM need to see, or none of them.
-> > 
-> > For these cases, the guarantee comes from luserspace, and it gives the
-> > pinky promise that none of the vcpus are running at that point. But
-> > being of a suspicious nature, we assert that this is true by trying to
-> > take all the vcpu mutexes in one go. This will fail if a vcpu is
-> > running, as KVM itself takes the vcpu mutex before doing anything.
-> > 
-> > Similar requirement exists if we need to synthesise some state for
-> > userspace from all the individual vcpu states.
-> 
-> Ah, okay. Because x86 is simply doing mutex_lock() instead of
-> mutex_trylock() -- which would end up waiting for this activity to
-> subside I suppose.
-> 
-> Hence the use of the killable variant I suppose, for when they get tired
-> of waiting.
+This series renames types across all KVM selftests to more align with
+types used in the kernel:
 
-Yeah, I remember some debate around that when this refactoring was
-first posted. I quickly paged it out.
+  vm_vaddr_t -> gva_t
+  vm_paddr_t -> gpa_t
 
-> If all the architectures are basically doing the same thing, it might
-> make sense to unify this particular behaviour. But what do I know.
+  uint64_t -> u64
+  uint32_t -> u32
+  uint16_t -> u16
+  uint8_t  -> u8
 
-I don't know either. The trylock behaviour has been there since day-1
-on the arm side, and changing it would have userspace visible effects.
-So I'm pretty keen on preserving it, warts and all. The last thing I
-need is a VMM person hitting my inbox on the grounds that their toy is
-broken.
+  int64_t -> s64
+  int32_t -> s32
+  int16_t -> s16
+  int8_t  -> s8
 
-On the other hand, we're talking about virtualisation, so everything
-is more or less broken by design...
+The goal of this series is to make the KVM selftests code more concise
+(the new type names are shorter) and more similar to the kernel, since
+selftests are developed by kernel developers.
 
-	M.
+I know broad changes like this series can be difficult to merge and also
+muddies up the git-blame history, so if there isn't appetite for this we
+can drop it. But if there is I would be happy to help with rebasing and
+resolving merge conflicts to get it in.
 
+Most of the commits in this series are auto-generated with a single
+command (see commit messages), aside from whitespace fixes, so rebasing
+onto a different base isn't terrible.
+
+David Matlack (10):
+  KVM: selftests: Use gva_t instead of vm_vaddr_t
+  KVM: selftests: Use gpa_t instead of vm_paddr_t
+  KVM: selftests: Use gpa_t for GPAs in Hyper-V selftests
+  KVM: selftests: Use u64 instead of uint64_t
+  KVM: selftests: Use s64 instead of int64_t
+  KVM: selftests: Use u32 instead of uint32_t
+  KVM: selftests: Use s32 instead of int32_t
+  KVM: selftests: Use u16 instead of uint16_t
+  KVM: selftests: Use s16 instead of int16_t
+  KVM: selftests: Use u8 instead of uint8_t
+
+ .../selftests/kvm/access_tracking_perf_test.c |  40 +--
+ tools/testing/selftests/kvm/arch_timer.c      |   6 +-
+ .../selftests/kvm/arm64/aarch32_id_regs.c     |  14 +-
+ .../testing/selftests/kvm/arm64/arch_timer.c  |   8 +-
+ .../kvm/arm64/arch_timer_edge_cases.c         | 159 +++++----
+ .../selftests/kvm/arm64/debug-exceptions.c    |  73 ++--
+ .../testing/selftests/kvm/arm64/hypercalls.c  |  24 +-
+ .../testing/selftests/kvm/arm64/no-vgic-v3.c  |   6 +-
+ .../selftests/kvm/arm64/page_fault_test.c     |  82 ++---
+ tools/testing/selftests/kvm/arm64/psci_test.c |  26 +-
+ .../testing/selftests/kvm/arm64/set_id_regs.c |  58 ++--
+ .../selftests/kvm/arm64/smccc_filter.c        |  10 +-
+ tools/testing/selftests/kvm/arm64/vgic_init.c |  56 ++--
+ tools/testing/selftests/kvm/arm64/vgic_irq.c  | 116 +++----
+ .../selftests/kvm/arm64/vgic_lpi_stress.c     |  20 +-
+ .../selftests/kvm/arm64/vpmu_counter_access.c |  62 ++--
+ .../testing/selftests/kvm/coalesced_io_test.c |  38 +--
+ .../selftests/kvm/demand_paging_test.c        |  10 +-
+ .../selftests/kvm/dirty_log_perf_test.c       |  14 +-
+ tools/testing/selftests/kvm/dirty_log_test.c  |  82 ++---
+ tools/testing/selftests/kvm/get-reg-list.c    |   2 +-
+ .../testing/selftests/kvm/guest_memfd_test.c  |   2 +-
+ .../testing/selftests/kvm/guest_print_test.c  |  22 +-
+ .../selftests/kvm/hardware_disable_test.c     |   6 +-
+ .../selftests/kvm/include/arm64/arch_timer.h  |  30 +-
+ .../selftests/kvm/include/arm64/delay.h       |   4 +-
+ .../testing/selftests/kvm/include/arm64/gic.h |   8 +-
+ .../selftests/kvm/include/arm64/gic_v3_its.h  |   8 +-
+ .../selftests/kvm/include/arm64/processor.h   |  20 +-
+ .../selftests/kvm/include/arm64/ucall.h       |   4 +-
+ .../selftests/kvm/include/arm64/vgic.h        |  20 +-
+ .../testing/selftests/kvm/include/kvm_util.h  | 311 +++++++++---------
+ .../selftests/kvm/include/kvm_util_types.h    |   4 +-
+ .../testing/selftests/kvm/include/memstress.h |  30 +-
+ .../selftests/kvm/include/riscv/arch_timer.h  |  22 +-
+ .../selftests/kvm/include/riscv/processor.h   |   9 +-
+ .../selftests/kvm/include/riscv/ucall.h       |   4 +-
+ .../kvm/include/s390/diag318_test_handler.h   |   2 +-
+ .../selftests/kvm/include/s390/facility.h     |   4 +-
+ .../selftests/kvm/include/s390/ucall.h        |   4 +-
+ .../testing/selftests/kvm/include/sparsebit.h |   6 +-
+ .../testing/selftests/kvm/include/test_util.h |  40 +--
+ .../selftests/kvm/include/timer_test.h        |  18 +-
+ .../selftests/kvm/include/ucall_common.h      |  22 +-
+ .../selftests/kvm/include/userfaultfd_util.h  |   6 +-
+ .../testing/selftests/kvm/include/x86/apic.h  |  22 +-
+ .../testing/selftests/kvm/include/x86/evmcs.h |  22 +-
+ .../selftests/kvm/include/x86/hyperv.h        |  28 +-
+ .../selftests/kvm/include/x86/kvm_util_arch.h |  12 +-
+ tools/testing/selftests/kvm/include/x86/pmu.h |   6 +-
+ .../selftests/kvm/include/x86/processor.h     | 272 ++++++++-------
+ tools/testing/selftests/kvm/include/x86/sev.h |  14 +-
+ .../selftests/kvm/include/x86/svm_util.h      |  10 +-
+ .../testing/selftests/kvm/include/x86/ucall.h |   2 +-
+ tools/testing/selftests/kvm/include/x86/vmx.h |  80 ++---
+ .../selftests/kvm/kvm_page_table_test.c       |  54 +--
+ tools/testing/selftests/kvm/lib/arm64/gic.c   |   6 +-
+ .../selftests/kvm/lib/arm64/gic_private.h     |  24 +-
+ .../testing/selftests/kvm/lib/arm64/gic_v3.c  |  84 ++---
+ .../selftests/kvm/lib/arm64/gic_v3_its.c      |  12 +-
+ .../selftests/kvm/lib/arm64/processor.c       | 126 +++----
+ tools/testing/selftests/kvm/lib/arm64/ucall.c |  12 +-
+ tools/testing/selftests/kvm/lib/arm64/vgic.c  |  38 +--
+ tools/testing/selftests/kvm/lib/elf.c         |   8 +-
+ tools/testing/selftests/kvm/lib/guest_modes.c |   2 +-
+ .../testing/selftests/kvm/lib/guest_sprintf.c |  18 +-
+ tools/testing/selftests/kvm/lib/kvm_util.c    | 222 +++++++------
+ tools/testing/selftests/kvm/lib/memstress.c   |  38 +--
+ .../selftests/kvm/lib/riscv/processor.c       |  56 ++--
+ .../kvm/lib/s390/diag318_test_handler.c       |  12 +-
+ .../testing/selftests/kvm/lib/s390/facility.c |   2 +-
+ .../selftests/kvm/lib/s390/processor.c        |  42 +--
+ tools/testing/selftests/kvm/lib/sparsebit.c   |  18 +-
+ tools/testing/selftests/kvm/lib/test_util.c   |  30 +-
+ .../testing/selftests/kvm/lib/ucall_common.c  |  30 +-
+ .../selftests/kvm/lib/userfaultfd_util.c      |  14 +-
+ tools/testing/selftests/kvm/lib/x86/apic.c    |   2 +-
+ tools/testing/selftests/kvm/lib/x86/hyperv.c  |  14 +-
+ .../testing/selftests/kvm/lib/x86/memstress.c |  10 +-
+ tools/testing/selftests/kvm/lib/x86/pmu.c     |   4 +-
+ .../testing/selftests/kvm/lib/x86/processor.c | 178 +++++-----
+ tools/testing/selftests/kvm/lib/x86/sev.c     |  14 +-
+ tools/testing/selftests/kvm/lib/x86/svm.c     |  16 +-
+ tools/testing/selftests/kvm/lib/x86/ucall.c   |   4 +-
+ tools/testing/selftests/kvm/lib/x86/vmx.c     | 108 +++---
+ .../kvm/memslot_modification_stress_test.c    |  10 +-
+ .../testing/selftests/kvm/memslot_perf_test.c | 164 ++++-----
+ tools/testing/selftests/kvm/mmu_stress_test.c |  28 +-
+ .../selftests/kvm/pre_fault_memory_test.c     |  12 +-
+ .../testing/selftests/kvm/riscv/arch_timer.c  |   8 +-
+ .../testing/selftests/kvm/riscv/ebreak_test.c |   6 +-
+ .../selftests/kvm/riscv/get-reg-list.c        |   2 +-
+ .../selftests/kvm/riscv/sbi_pmu_test.c        |   8 +-
+ tools/testing/selftests/kvm/s390/debug_test.c |   8 +-
+ tools/testing/selftests/kvm/s390/memop.c      |  94 +++---
+ tools/testing/selftests/kvm/s390/resets.c     |   6 +-
+ .../selftests/kvm/s390/shared_zeropage_test.c |   2 +-
+ tools/testing/selftests/kvm/s390/tprot.c      |  24 +-
+ .../selftests/kvm/s390/ucontrol_test.c        |   2 +-
+ .../selftests/kvm/set_memory_region_test.c    |  40 +--
+ tools/testing/selftests/kvm/steal_time.c      |  52 +--
+ .../kvm/system_counter_offset_test.c          |  12 +-
+ tools/testing/selftests/kvm/x86/amx_test.c    |  14 +-
+ .../selftests/kvm/x86/apic_bus_clock_test.c   |  24 +-
+ tools/testing/selftests/kvm/x86/cpuid_test.c  |   6 +-
+ tools/testing/selftests/kvm/x86/debug_regs.c  |   4 +-
+ .../kvm/x86/dirty_log_page_splitting_test.c   |  16 +-
+ .../selftests/kvm/x86/feature_msrs_test.c     |  12 +-
+ .../selftests/kvm/x86/fix_hypercall_test.c    |  20 +-
+ .../selftests/kvm/x86/flds_emulation.h        |   6 +-
+ .../testing/selftests/kvm/x86/hwcr_msr_test.c |  10 +-
+ .../testing/selftests/kvm/x86/hyperv_clock.c  |   6 +-
+ .../testing/selftests/kvm/x86/hyperv_evmcs.c  |  10 +-
+ .../kvm/x86/hyperv_extended_hypercalls.c      |  20 +-
+ .../selftests/kvm/x86/hyperv_features.c       |  26 +-
+ tools/testing/selftests/kvm/x86/hyperv_ipi.c  |  12 +-
+ .../selftests/kvm/x86/hyperv_svm_test.c       |  10 +-
+ .../selftests/kvm/x86/hyperv_tlb_flush.c      |  36 +-
+ .../selftests/kvm/x86/kvm_clock_test.c        |  14 +-
+ tools/testing/selftests/kvm/x86/kvm_pv_test.c |  10 +-
+ .../selftests/kvm/x86/monitor_mwait_test.c    |   2 +-
+ .../selftests/kvm/x86/nested_emulation_test.c |  20 +-
+ .../kvm/x86/nested_exceptions_test.c          |   6 +-
+ .../selftests/kvm/x86/nx_huge_pages_test.c    |  18 +-
+ .../selftests/kvm/x86/platform_info_test.c    |   6 +-
+ .../selftests/kvm/x86/pmu_counters_test.c     | 108 +++---
+ .../selftests/kvm/x86/pmu_event_filter_test.c | 102 +++---
+ .../kvm/x86/private_mem_conversions_test.c    |  78 ++---
+ .../kvm/x86/private_mem_kvm_exits_test.c      |  14 +-
+ .../selftests/kvm/x86/set_boot_cpu_id.c       |   6 +-
+ .../selftests/kvm/x86/set_sregs_test.c        |   6 +-
+ .../selftests/kvm/x86/sev_init2_tests.c       |   6 +-
+ .../selftests/kvm/x86/sev_smoke_test.c        |  14 +-
+ .../x86/smaller_maxphyaddr_emulation_test.c   |  10 +-
+ tools/testing/selftests/kvm/x86/smm_test.c    |   8 +-
+ tools/testing/selftests/kvm/x86/state_test.c  |  14 +-
+ .../selftests/kvm/x86/svm_int_ctl_test.c      |   2 +-
+ .../kvm/x86/svm_nested_shutdown_test.c        |   2 +-
+ .../kvm/x86/svm_nested_soft_inject_test.c     |  10 +-
+ .../selftests/kvm/x86/svm_vmcall_test.c       |   2 +-
+ .../selftests/kvm/x86/sync_regs_test.c        |   2 +-
+ .../kvm/x86/triple_fault_event_test.c         |   4 +-
+ .../testing/selftests/kvm/x86/tsc_msrs_test.c |   2 +-
+ .../selftests/kvm/x86/tsc_scaling_sync.c      |   4 +-
+ .../selftests/kvm/x86/ucna_injection_test.c   |  45 +--
+ .../selftests/kvm/x86/userspace_io_test.c     |   4 +-
+ .../kvm/x86/userspace_msr_exit_test.c         |  58 ++--
+ .../selftests/kvm/x86/vmx_apic_access_test.c  |   4 +-
+ .../kvm/x86/vmx_close_while_nested_test.c     |   2 +-
+ .../selftests/kvm/x86/vmx_dirty_log_test.c    |   4 +-
+ .../kvm/x86/vmx_invalid_nested_guest_state.c  |   2 +-
+ .../testing/selftests/kvm/x86/vmx_msrs_test.c |  22 +-
+ .../kvm/x86/vmx_nested_tsc_scaling_test.c     |  26 +-
+ .../selftests/kvm/x86/vmx_pmu_caps_test.c     |  12 +-
+ .../kvm/x86/vmx_preemption_timer_test.c       |   2 +-
+ .../selftests/kvm/x86/vmx_tsc_adjust_test.c   |  12 +-
+ .../selftests/kvm/x86/xapic_ipi_test.c        |  58 ++--
+ .../selftests/kvm/x86/xapic_state_test.c      |  20 +-
+ .../selftests/kvm/x86/xcr0_cpuid_test.c       |   8 +-
+ .../selftests/kvm/x86/xen_shinfo_test.c       |  22 +-
+ .../testing/selftests/kvm/x86/xss_msr_test.c  |   2 +-
+ 161 files changed, 2323 insertions(+), 2338 deletions(-)
+
+
+base-commit: 45eb29140e68ffe8e93a5471006858a018480a45
+prerequisite-patch-id: 3bae97c9e1093148763235f47a84fa040b512d04
 -- 
-Without deviation from the norm, progress is not possible.
+2.49.0.906.g1f30a19c02-goog
+
 
 -- 
 kvm-riscv mailing list
