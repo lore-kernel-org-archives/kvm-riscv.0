@@ -4,8 +4,8 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 242C3C369DC
-	for <kvm-riscv@archiver.kernel.org>; Thu,  1 May 2025 18:41:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2FA6FC3ABA3
+	for <kvm-riscv@archiver.kernel.org>; Thu,  1 May 2025 18:43:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
@@ -13,61 +13,61 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	References:Mime-Version:In-Reply-To:Date:Reply-To:Content-ID:
 	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
 	:Resent-Message-ID:List-Owner;
-	bh=VrJquMWMl40kWjXJOoqC3zLEIvSKlro7upFEHy8UZJU=; b=sKhhS00DoPm95Q2kdJnCIOOfCB
-	EwTRc506P6/0UiH4A+z7cqpnNB+LPKCrMxOdC88kJ9+THTdyr3822g0UdCkrWaXhSA7Y+fdWLItmy
-	4lVaNG0srHkuyAMPYWqXPAnS9ANRSZSuz1Dwjp2AwpPOV4bB4JbFx/91Ol/SOnWSg+Yl4H0KPlVwa
-	O77+VKQ90+C5gplFvo+FKQOdG94+s4QVQz7pJ0JNpfGmqQHMpQQTqUM42AyfP6yYPgvkjDfKkeOVV
-	Ow4CPKvFaZpsKc/mLHqYJwQovzJ8sv0tHttJWz5VtB9zJmmO8ZBjHiO09KUPv+PYFlJVNCntIz877
-	85nlmGPQ==;
+	bh=OQdwKU382ahEypI+fJzeapHxYUfgwRBsu5B4+AydFvI=; b=nstlOVe261D+5yTLVI/roDr3xL
+	uZLIDiqAzwsMGVp0px8D5X3FXGaBaaO+456/wAvg14WdJDbhLnnCzB+wZUfU+B5jD+75680VpX0cE
+	apv4aBAPTrodRStVP6hn1BJToOIC/rzD8IomMGrivBh8xYSXja7UKG9BX1fHnMSQ23TsKW3cECdCQ
+	LmgsD+iRgu8j3RvnH3DmuHFHguz3dB4oKuYmceJv/kD8wM6s9PuNsDyp2mOXAHRkOMDD3O7luOsIR
+	+/HZAMc11DbCWVUYhPQl30hHvcSdS0b7Sf4nHPK8lfdrnENPRj8AR5He5C05/tjM4sFQyPUoYtpRS
+	axp8I2Yw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uAYqK-0000000GOkv-3a3S;
-	Thu, 01 May 2025 18:41:08 +0000
-Received: from mail-pj1-x104a.google.com ([2607:f8b0:4864:20::104a])
+	id 1uAYsD-0000000GP3e-3v6l;
+	Thu, 01 May 2025 18:43:05 +0000
+Received: from mail-pf1-x44a.google.com ([2607:f8b0:4864:20::44a])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uAYil-0000000GMvR-0MHX
+	id 1uAYis-0000000GN0s-3zaR
 	for kvm-riscv@lists.infradead.org;
-	Thu, 01 May 2025 18:33:22 +0000
-Received: by mail-pj1-x104a.google.com with SMTP id 98e67ed59e1d1-2ff8119b436so1074200a91.0
-        for <kvm-riscv@lists.infradead.org>; Thu, 01 May 2025 11:33:17 -0700 (PDT)
+	Thu, 01 May 2025 18:33:28 +0000
+Received: by mail-pf1-x44a.google.com with SMTP id d2e1a72fcca58-736c0306242so1768452b3a.1
+        for <kvm-riscv@lists.infradead.org>; Thu, 01 May 2025 11:33:26 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1746124397; x=1746729197; darn=lists.infradead.org;
+        d=google.com; s=20230601; t=1746124406; x=1746729206; darn=lists.infradead.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=7i/6AHA3eZkCG1jysMcZvnPndxc/slissml3q+d5SBw=;
-        b=fVy3bS/7LZcuir3XPDf5FWaMXZ4gSqwk4JaWz9RfxgW3ZlA0fc/nWiO3lt6cYT9KBa
-         uSV2XKvz0rEUxr2g/XiPKKjP++TLczdXK6wkf18UBASqHZbiS3dibeiW/ss1emw0OqYV
-         JManTFzkmX/txkNF7AUlQcAytc24nZEdcfv26rdOQGHiRPelqEE7KdhUv54fWv3uHKSH
-         w6FPH8o6q5pPEDhoMLHoyJF5ST/B7ZqsPrGz+3BO6zJzdEcY1CuWfKsBbRDLP2CI7B8O
-         SP0UTsr2JPt6Z5O5dzz3iq5QMaIMR3CoMXAfIGMALrjiuT8LfxzkJ0GZpA6ykeYFW9ii
-         vmlQ==
+        bh=8qNHq0SIhTmNxKhTx3tC44zxjWyK0Dj0ScUzyvuVNlQ=;
+        b=KRRTewA9bBPYqyElY01Roa55VIrwr2lLxf1HIhpXFAmvnKDhacVglDdjXx0bXtP8t5
+         03TPsLihMnXM6m9eezA/94iFXMl1gVWeK0T1xoQz29Kq7iSkuA5aHgbnf34OILlyOZk1
+         xtydgJ5qh5fVj7XGtXJ3TFcVy0DmhFl1rQkDeK2d/B8YGlDii91OZbsboFF5DtJWj7uT
+         eKxtzJgB7lg5qWe9wGvwxWppdGU41nm40xhM9Xf/0Y2cErS9NQ74WiLoSoiENGRYC+Qu
+         dBTavU9GgCtlqxVuYIxQc7/1T7As/E6A31HZfWFmo6C2STyRBzT74pi+I2SKs2pL3J0Y
+         DeBg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1746124397; x=1746729197;
+        d=1e100.net; s=20230601; t=1746124406; x=1746729206;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=7i/6AHA3eZkCG1jysMcZvnPndxc/slissml3q+d5SBw=;
-        b=dojWip9y83PXYVjmbnysIvZmnRQ0p7fvqy0v9ACM2MBJxV9lIirbls9X0fSPUwo+PM
-         kklm7ij6vwGgtwgzB5sJrelGYqtWnPs7URun+93mhUO5/GBYT4AY3vZoBym4UQr+rqde
-         FAmee/I9zazxFvcHQDfdiu/ZDHJJt96ZPA5KYpsRjTWqlKi36BttnxUqfS1sHPW5m5es
-         mABES8daPLd4SxX5oJChmnd22XiSjl5UplX7IlKtzGHfAUEgibvXJ3MWNzItSIaF/R2x
-         WOtXQM07V5dT+sa/so9DAbUr8pPv5G4uCeRbiMW+aIUahS73BLps4AbqmOV/wnjiATlX
-         PNUA==
-X-Forwarded-Encrypted: i=1; AJvYcCUjuXIEnQXcP7v1bQ/BR8MtryHjtuZ2yEGho2moykS6hVXDtKStMDTJANNfZzkAnQa2DewgkhxMUzE=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yz4qTG8V3DtYN7o17ZELA1q3iG8aviDXkFoXBt4FmsUZfU6QZgX
-	dffdXQn2xyBPH2/QmENdBJ5bFoLKdi7pEND6QMf22vs+i0i1X6+Vrj9c6BCEI4kP0b+KZpprb8j
-	t572rJkD9mQ==
-X-Google-Smtp-Source: AGHT+IGUo/AnViO59tFfwHLnZghyustUCItXoiR9VXiwCzA3MoONpQDNNc8+fFtBEfWcc27wVlSRjIGNaB+pvQ==
-X-Received: from pjbqo15.prod.google.com ([2002:a17:90b:3dcf:b0:2fc:201d:6026])
+        bh=8qNHq0SIhTmNxKhTx3tC44zxjWyK0Dj0ScUzyvuVNlQ=;
+        b=qXPAC1xPnJQOkWj8ojpZpeyqbP98eSq9PmwS/GBhXr3kkvTBPy7BCFtBBh0+ebatZH
+         W4XDOtlv1t/XAPonhM7p9TlkWuYWemppmS4gOqHecF6wBck8qYUDsKjrIKdJvSKix6VX
+         XadbtS7/LYCmNUqm2YOXvDqe75u7d2emzVelIc38o5SVKTyRoi1Ihp7nhnOWtHYLPhNJ
+         5pKqfajjkz6o7ifLK4zVD2N5QoMTRJmeZvNt5/uAsKRWknKcEJP9UtMq3gWTAKS5tjsA
+         gAAPPoI4W70bN5+pZbcCfSamJUsWIdbXM0RS9CFeLRM1ap7gkrzoeGCAroTPY9bl0I/I
+         L5pw==
+X-Forwarded-Encrypted: i=1; AJvYcCX3CD9v8z/Sz2Pt/zwOudvBhkadx2Z47CQSr6MLybeGP/omgmQIEExEssR46PmnOT2ExxHIoIXLFUE=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yxw2C60v7qncaKJiGVRxRwcl2tC+HlHEMnNr0HtI9wh5Y6chsJm
+	WP03i3q5Gwjduu5WeWmV4SNQH5krGnQprOxMExIxO165t4oYAC4VJNznxq4IzcaWZLPTrm110YS
+	eS4fdj4fxRg==
+X-Google-Smtp-Source: AGHT+IFKCJy5QtPU13VuKMr9mFb8aJkCwRtWAJ+xW0sweTVsenbE6xlefcq15jGKqhd6hJdIsGl1FFtKDY+i1w==
+X-Received: from pfun12.prod.google.com ([2002:a05:6a00:7cc:b0:73c:28d4:aca4])
  (user=dmatlack job=prod-delivery.src-stubby-dispatcher) by
- 2002:a17:90b:5147:b0:2ef:114d:7bf8 with SMTP id 98e67ed59e1d1-30a4e5854c9mr258461a91.6.1746124397377;
- Thu, 01 May 2025 11:33:17 -0700 (PDT)
-Date: Thu,  1 May 2025 11:32:56 -0700
+ 2002:a05:6a00:928e:b0:736:2a73:6756 with SMTP id d2e1a72fcca58-7403a831702mr10825890b3a.21.1746124406032;
+ Thu, 01 May 2025 11:33:26 -0700 (PDT)
+Date: Thu,  1 May 2025 11:33:01 -0700
 In-Reply-To: <20250501183304.2433192-1-dmatlack@google.com>
 Mime-Version: 1.0
 References: <20250501183304.2433192-1-dmatlack@google.com>
 X-Mailer: git-send-email 2.49.0.906.g1f30a19c02-goog
-Message-ID: <20250501183304.2433192-3-dmatlack@google.com>
-Subject: [PATCH 02/10] KVM: selftests: Use gpa_t instead of vm_paddr_t
+Message-ID: <20250501183304.2433192-8-dmatlack@google.com>
+Subject: [PATCH 07/10] KVM: selftests: Use s32 instead of int32_t
 From: David Matlack <dmatlack@google.com>
 To: Paolo Bonzini <pbonzini@redhat.com>
 Cc: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>, 
@@ -85,8 +85,8 @@ Cc: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>,
 	linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, 
 	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250501_113319_153596_36AA16EE 
-X-CRM114-Status: GOOD (  17.25  )
+X-CRM114-CacheID: sfid-20250501_113327_020372_D607D4AE 
+X-CRM114-Status: GOOD (  14.67  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -103,14 +103,13 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Replace all occurrences of vm_paddr_t with gpa_t to align with KVM code
-and with the conversion helpers (e.g. addr_hva2gpa()). Also replace
-vm_paddr in function names with gpa to align with the new type name.
+Use s32 instead of int32_t to make the KVM selftests code more concise
+and more similar to the kernel (since selftests are primarily developed
+by kernel developers).
 
 This commit was generated with the following command:
 
-  git ls-files tools/testing/selftests/kvm | \
-          xargs sed -i 's/vm_paddr_/gpa_/g'
+  git ls-files tools/testing/selftests/kvm | xargs sed -i 's/int32_t/s32/g'
 
 Then by manually adjusting whitespace to make checkpatch.pl happy.
 
@@ -118,730 +117,132 @@ No functional change intended.
 
 Signed-off-by: David Matlack <dmatlack@google.com>
 ---
- .../selftests/kvm/arm64/vgic_lpi_stress.c     | 20 +++++------
- tools/testing/selftests/kvm/dirty_log_test.c  |  2 +-
- .../testing/selftests/kvm/include/arm64/gic.h |  4 +--
- .../selftests/kvm/include/arm64/gic_v3_its.h  |  8 ++---
- .../testing/selftests/kvm/include/kvm_util.h  | 33 +++++++++----------
- .../selftests/kvm/include/kvm_util_types.h    |  2 +-
- .../selftests/kvm/include/riscv/ucall.h       |  2 +-
- .../selftests/kvm/include/s390/ucall.h        |  2 +-
- .../selftests/kvm/include/ucall_common.h      |  4 +--
- tools/testing/selftests/kvm/include/x86/sev.h |  2 +-
- .../testing/selftests/kvm/include/x86/ucall.h |  2 +-
- .../selftests/kvm/kvm_page_table_test.c       |  2 +-
- .../testing/selftests/kvm/lib/arm64/gic_v3.c  |  4 +--
- .../selftests/kvm/lib/arm64/gic_v3_its.c      | 12 +++----
- .../selftests/kvm/lib/arm64/processor.c       |  2 +-
- tools/testing/selftests/kvm/lib/arm64/ucall.c |  2 +-
- tools/testing/selftests/kvm/lib/kvm_util.c    | 23 +++++++------
- tools/testing/selftests/kvm/lib/memstress.c   |  2 +-
- .../selftests/kvm/lib/riscv/processor.c       |  2 +-
- .../selftests/kvm/lib/s390/processor.c        |  4 +--
- .../testing/selftests/kvm/lib/ucall_common.c  |  2 +-
- .../testing/selftests/kvm/lib/x86/processor.c |  2 +-
- tools/testing/selftests/kvm/lib/x86/sev.c     |  2 +-
- .../selftests/kvm/riscv/sbi_pmu_test.c        |  4 +--
- .../selftests/kvm/s390/ucontrol_test.c        |  2 +-
- tools/testing/selftests/kvm/steal_time.c      |  4 +--
- .../testing/selftests/kvm/x86/hyperv_clock.c  |  2 +-
- .../kvm/x86/hyperv_extended_hypercalls.c      |  2 +-
- .../selftests/kvm/x86/hyperv_tlb_flush.c      |  8 ++---
- .../selftests/kvm/x86/kvm_clock_test.c        |  4 +--
- 30 files changed, 82 insertions(+), 84 deletions(-)
+ .../kvm/arm64/arch_timer_edge_cases.c         | 24 +++++++++----------
+ .../selftests/kvm/include/arm64/arch_timer.h  |  4 ++--
+ 2 files changed, 14 insertions(+), 14 deletions(-)
 
-diff --git a/tools/testing/selftests/kvm/arm64/vgic_lpi_stress.c b/tools/testing/selftests/kvm/arm64/vgic_lpi_stress.c
-index fc4fe52fb6f8..3cb3f5d6ea8b 100644
---- a/tools/testing/selftests/kvm/arm64/vgic_lpi_stress.c
-+++ b/tools/testing/selftests/kvm/arm64/vgic_lpi_stress.c
-@@ -23,7 +23,7 @@
- #define GIC_LPI_OFFSET	8192
+diff --git a/tools/testing/selftests/kvm/arm64/arch_timer_edge_cases.c b/tools/testing/selftests/kvm/arm64/arch_timer_edge_cases.c
+index 2d799823a366..b99eb6b4b314 100644
+--- a/tools/testing/selftests/kvm/arm64/arch_timer_edge_cases.c
++++ b/tools/testing/selftests/kvm/arm64/arch_timer_edge_cases.c
+@@ -24,8 +24,8 @@
  
- static size_t nr_iterations = 1000;
--static vm_paddr_t gpa_base;
-+static gpa_t gpa_base;
+ static const u64 CVAL_MAX = ~0ULL;
+ /* tval is a signed 32-bit int. */
+-static const int32_t TVAL_MAX = INT32_MAX;
+-static const int32_t TVAL_MIN = INT32_MIN;
++static const s32 TVAL_MAX = INT32_MAX;
++static const s32 TVAL_MIN = INT32_MIN;
  
- static struct kvm_vm *vm;
- static struct kvm_vcpu **vcpus;
-@@ -35,14 +35,14 @@ static struct test_data {
- 	u32		nr_devices;
- 	u32		nr_event_ids;
- 
--	vm_paddr_t	device_table;
--	vm_paddr_t	collection_table;
--	vm_paddr_t	cmdq_base;
-+	gpa_t		device_table;
-+	gpa_t		collection_table;
-+	gpa_t		cmdq_base;
- 	void		*cmdq_base_va;
--	vm_paddr_t	itt_tables;
-+	gpa_t		itt_tables;
- 
--	vm_paddr_t	lpi_prop_table;
--	vm_paddr_t	lpi_pend_tables;
-+	gpa_t		lpi_prop_table;
-+	gpa_t		lpi_pend_tables;
- } test_data =  {
- 	.nr_cpus	= 1,
- 	.nr_devices	= 1,
-@@ -73,7 +73,7 @@ static void guest_setup_its_mappings(void)
- 	/* Round-robin the LPIs to all of the vCPUs in the VM */
- 	coll_id = 0;
- 	for (device_id = 0; device_id < nr_devices; device_id++) {
--		vm_paddr_t itt_base = test_data.itt_tables + (device_id * SZ_64K);
-+		gpa_t itt_base = test_data.itt_tables + (device_id * SZ_64K);
- 
- 		its_send_mapd_cmd(test_data.cmdq_base_va, device_id,
- 				  itt_base, SZ_64K, true);
-@@ -183,7 +183,7 @@ static void setup_test_data(void)
- 	size_t pages_per_64k = vm_calc_num_guest_pages(vm->mode, SZ_64K);
- 	u32 nr_devices = test_data.nr_devices;
- 	u32 nr_cpus = test_data.nr_cpus;
--	vm_paddr_t cmdq_base;
-+	gpa_t cmdq_base;
- 
- 	test_data.device_table = vm_phy_pages_alloc(vm, pages_per_64k,
- 						    gpa_base,
-@@ -222,7 +222,7 @@ static void setup_gic(void)
- 
- static void signal_lpi(u32 device_id, u32 event_id)
- {
--	vm_paddr_t db_addr = GITS_BASE_GPA + GITS_TRANSLATER;
-+	gpa_t db_addr = GITS_BASE_GPA + GITS_TRANSLATER;
- 
- 	struct kvm_msi msi = {
- 		.address_lo	= db_addr,
-diff --git a/tools/testing/selftests/kvm/dirty_log_test.c b/tools/testing/selftests/kvm/dirty_log_test.c
-index 23593d9eeba9..a7744974663b 100644
---- a/tools/testing/selftests/kvm/dirty_log_test.c
-+++ b/tools/testing/selftests/kvm/dirty_log_test.c
-@@ -669,7 +669,7 @@ static void run_test(enum vm_guest_mode mode, void *arg)
- 	virt_map(vm, guest_test_virt_mem, guest_test_phys_mem, guest_num_pages);
- 
- 	/* Cache the HVA pointer of the region */
--	host_test_mem = addr_gpa2hva(vm, (vm_paddr_t)guest_test_phys_mem);
-+	host_test_mem = addr_gpa2hva(vm, (gpa_t)guest_test_phys_mem);
- 
- 	/* Export the shared variables to the guest */
- 	sync_global_to_guest(vm, host_page_size);
-diff --git a/tools/testing/selftests/kvm/include/arm64/gic.h b/tools/testing/selftests/kvm/include/arm64/gic.h
-index baeb3c859389..7dbecc6daa4e 100644
---- a/tools/testing/selftests/kvm/include/arm64/gic.h
-+++ b/tools/testing/selftests/kvm/include/arm64/gic.h
-@@ -58,7 +58,7 @@ void gic_irq_clear_pending(unsigned int intid);
- bool gic_irq_get_pending(unsigned int intid);
- void gic_irq_set_config(unsigned int intid, bool is_edge);
- 
--void gic_rdist_enable_lpis(vm_paddr_t cfg_table, size_t cfg_table_size,
--			   vm_paddr_t pend_table);
-+void gic_rdist_enable_lpis(gpa_t cfg_table, size_t cfg_table_size,
-+			   gpa_t pend_table);
- 
- #endif /* SELFTEST_KVM_GIC_H */
-diff --git a/tools/testing/selftests/kvm/include/arm64/gic_v3_its.h b/tools/testing/selftests/kvm/include/arm64/gic_v3_its.h
-index 3722ed9c8f96..57eabcd64104 100644
---- a/tools/testing/selftests/kvm/include/arm64/gic_v3_its.h
-+++ b/tools/testing/selftests/kvm/include/arm64/gic_v3_its.h
-@@ -5,11 +5,11 @@
- 
- #include <linux/sizes.h>
- 
--void its_init(vm_paddr_t coll_tbl, size_t coll_tbl_sz,
--	      vm_paddr_t device_tbl, size_t device_tbl_sz,
--	      vm_paddr_t cmdq, size_t cmdq_size);
-+void its_init(gpa_t coll_tbl, size_t coll_tbl_sz,
-+	      gpa_t device_tbl, size_t device_tbl_sz,
-+	      gpa_t cmdq, size_t cmdq_size);
- 
--void its_send_mapd_cmd(void *cmdq_base, u32 device_id, vm_paddr_t itt_base,
-+void its_send_mapd_cmd(void *cmdq_base, u32 device_id, gpa_t itt_base,
- 		       size_t itt_size, bool valid);
- void its_send_mapc_cmd(void *cmdq_base, u32 vcpu_id, u32 collection_id, bool valid);
- void its_send_mapti_cmd(void *cmdq_base, u32 device_id, u32 event_id,
-diff --git a/tools/testing/selftests/kvm/include/kvm_util.h b/tools/testing/selftests/kvm/include/kvm_util.h
-index 4b7012bd8041..67ac59f66b6e 100644
---- a/tools/testing/selftests/kvm/include/kvm_util.h
-+++ b/tools/testing/selftests/kvm/include/kvm_util.h
-@@ -98,8 +98,8 @@ struct kvm_vm {
- 	struct sparsebit *vpages_mapped;
- 	bool has_irqchip;
- 	bool pgd_created;
--	vm_paddr_t ucall_mmio_addr;
--	vm_paddr_t pgd;
-+	gpa_t ucall_mmio_addr;
-+	gpa_t pgd;
- 	gva_t handlers;
- 	uint32_t dirty_ring_size;
- 	uint64_t gpa_tag_mask;
-@@ -616,16 +616,16 @@ gva_t gva_alloc_page(struct kvm_vm *vm);
- 
- void virt_map(struct kvm_vm *vm, uint64_t vaddr, uint64_t paddr,
- 	      unsigned int npages);
--void *addr_gpa2hva(struct kvm_vm *vm, vm_paddr_t gpa);
-+void *addr_gpa2hva(struct kvm_vm *vm, gpa_t gpa);
- void *addr_gva2hva(struct kvm_vm *vm, gva_t gva);
--vm_paddr_t addr_hva2gpa(struct kvm_vm *vm, void *hva);
--void *addr_gpa2alias(struct kvm_vm *vm, vm_paddr_t gpa);
-+gpa_t addr_hva2gpa(struct kvm_vm *vm, void *hva);
-+void *addr_gpa2alias(struct kvm_vm *vm, gpa_t gpa);
- 
- #ifndef vcpu_arch_put_guest
- #define vcpu_arch_put_guest(mem, val) do { (mem) = (val); } while (0)
- #endif
- 
--static inline vm_paddr_t vm_untag_gpa(struct kvm_vm *vm, vm_paddr_t gpa)
-+static inline gpa_t vm_untag_gpa(struct kvm_vm *vm, gpa_t gpa)
- {
- 	return gpa & ~vm->gpa_tag_mask;
+ /* After how much time we say there is no IRQ. */
+ static const u32 TIMEOUT_NO_IRQ_US = 50000;
+@@ -354,7 +354,7 @@ static void test_timer_cval(enum arch_timer timer, u64 cval,
+ 	test_timer_xval(timer, cval, TIMER_CVAL, wm, reset_state, reset_cnt);
  }
-@@ -876,15 +876,14 @@ void kvm_gsi_routing_write(struct kvm_vm *vm, struct kvm_irq_routing *routing);
  
- const char *exit_reason_str(unsigned int exit_reason);
- 
--vm_paddr_t vm_phy_page_alloc(struct kvm_vm *vm, vm_paddr_t paddr_min,
--			     uint32_t memslot);
--vm_paddr_t __vm_phy_pages_alloc(struct kvm_vm *vm, size_t num,
--				vm_paddr_t paddr_min, uint32_t memslot,
--				bool protected);
--vm_paddr_t vm_alloc_page_table(struct kvm_vm *vm);
-+gpa_t vm_phy_page_alloc(struct kvm_vm *vm, gpa_t paddr_min, uint32_t memslot);
-+gpa_t __vm_phy_pages_alloc(struct kvm_vm *vm, size_t num,
-+			   gpa_t paddr_min, uint32_t memslot,
-+			   bool protected);
-+gpa_t vm_alloc_page_table(struct kvm_vm *vm);
- 
--static inline vm_paddr_t vm_phy_pages_alloc(struct kvm_vm *vm, size_t num,
--					    vm_paddr_t paddr_min, uint32_t memslot)
-+static inline gpa_t vm_phy_pages_alloc(struct kvm_vm *vm, size_t num,
-+				       gpa_t paddr_min, uint32_t memslot)
+-static void test_timer_tval(enum arch_timer timer, int32_t tval,
++static void test_timer_tval(enum arch_timer timer, s32 tval,
+ 			    irq_wait_method_t wm, bool reset_state,
+ 			    u64 reset_cnt)
  {
- 	/*
- 	 * By default, allocate memory as protected for VMs that support
-@@ -1104,9 +1103,9 @@ static inline void virt_pg_map(struct kvm_vm *vm, uint64_t vaddr, uint64_t paddr
-  * Returns the VM physical address of the translated VM virtual
-  * address given by @gva.
+@@ -384,10 +384,10 @@ static void test_cval_no_irq(enum arch_timer timer, u64 cval,
+ 	test_xval_check_no_irq(timer, cval, usec, TIMER_CVAL, wm);
+ }
+ 
+-static void test_tval_no_irq(enum arch_timer timer, int32_t tval, u64 usec,
++static void test_tval_no_irq(enum arch_timer timer, s32 tval, u64 usec,
+ 			     sleep_method_t wm)
+ {
+-	/* tval will be cast to an int32_t in test_xval_check_no_irq */
++	/* tval will be cast to an s32 in test_xval_check_no_irq */
+ 	test_xval_check_no_irq(timer, (u64)tval, usec, TIMER_TVAL, wm);
+ }
+ 
+@@ -462,7 +462,7 @@ static void test_timers_fired_multiple_times(enum arch_timer timer)
+  * timeout for the wait: we use the wfi instruction.
   */
--vm_paddr_t addr_arch_gva2gpa(struct kvm_vm *vm, gva_t gva);
-+gpa_t addr_arch_gva2gpa(struct kvm_vm *vm, gva_t gva);
- 
--static inline vm_paddr_t addr_gva2gpa(struct kvm_vm *vm, gva_t gva)
-+static inline gpa_t addr_gva2gpa(struct kvm_vm *vm, gva_t gva)
+ static void test_reprogramming_timer(enum arch_timer timer, irq_wait_method_t wm,
+-				     int32_t delta_1_ms, int32_t delta_2_ms)
++				     s32 delta_1_ms, s32 delta_2_ms)
  {
- 	return addr_arch_gva2gpa(vm, gva);
- }
-@@ -1148,7 +1147,7 @@ void kvm_selftest_arch_init(void);
+ 	local_irq_disable();
+ 	reset_timer_state(timer, DEF_CNT);
+@@ -503,7 +503,7 @@ static void test_reprogram_timers(enum arch_timer timer)
  
- void kvm_arch_vm_post_create(struct kvm_vm *vm);
- 
--bool vm_is_gpa_protected(struct kvm_vm *vm, vm_paddr_t paddr);
-+bool vm_is_gpa_protected(struct kvm_vm *vm, gpa_t paddr);
- 
- uint32_t guest_get_vcpuid(void);
- 
-diff --git a/tools/testing/selftests/kvm/include/kvm_util_types.h b/tools/testing/selftests/kvm/include/kvm_util_types.h
-index a53e04286554..224a29cea790 100644
---- a/tools/testing/selftests/kvm/include/kvm_util_types.h
-+++ b/tools/testing/selftests/kvm/include/kvm_util_types.h
-@@ -14,7 +14,7 @@
- #define __kvm_static_assert(expr, msg, ...) _Static_assert(expr, msg)
- #define kvm_static_assert(expr, ...) __kvm_static_assert(expr, ##__VA_ARGS__, #expr)
- 
--typedef uint64_t vm_paddr_t; /* Virtual Machine (Guest) physical address */
-+typedef uint64_t gpa_t; /* Virtual Machine (Guest) physical address */
- typedef uint64_t gva_t; /* Virtual Machine (Guest) virtual address */
- 
- #endif /* SELFTEST_KVM_UTIL_TYPES_H */
-diff --git a/tools/testing/selftests/kvm/include/riscv/ucall.h b/tools/testing/selftests/kvm/include/riscv/ucall.h
-index 41d56254968e..2de7c6a36096 100644
---- a/tools/testing/selftests/kvm/include/riscv/ucall.h
-+++ b/tools/testing/selftests/kvm/include/riscv/ucall.h
-@@ -7,7 +7,7 @@
- 
- #define UCALL_EXIT_REASON       KVM_EXIT_RISCV_SBI
- 
--static inline void ucall_arch_init(struct kvm_vm *vm, vm_paddr_t mmio_gpa)
-+static inline void ucall_arch_init(struct kvm_vm *vm, gpa_t mmio_gpa)
+ static void test_basic_functionality(enum arch_timer timer)
  {
- }
- 
-diff --git a/tools/testing/selftests/kvm/include/s390/ucall.h b/tools/testing/selftests/kvm/include/s390/ucall.h
-index befee84c4609..3907d629304f 100644
---- a/tools/testing/selftests/kvm/include/s390/ucall.h
-+++ b/tools/testing/selftests/kvm/include/s390/ucall.h
-@@ -6,7 +6,7 @@
- 
- #define UCALL_EXIT_REASON       KVM_EXIT_S390_SIEIC
- 
--static inline void ucall_arch_init(struct kvm_vm *vm, vm_paddr_t mmio_gpa)
-+static inline void ucall_arch_init(struct kvm_vm *vm, gpa_t mmio_gpa)
- {
- }
- 
-diff --git a/tools/testing/selftests/kvm/include/ucall_common.h b/tools/testing/selftests/kvm/include/ucall_common.h
-index e5499f170834..1db399c00d02 100644
---- a/tools/testing/selftests/kvm/include/ucall_common.h
-+++ b/tools/testing/selftests/kvm/include/ucall_common.h
-@@ -29,7 +29,7 @@ struct ucall {
- 	struct ucall *hva;
- };
- 
--void ucall_arch_init(struct kvm_vm *vm, vm_paddr_t mmio_gpa);
-+void ucall_arch_init(struct kvm_vm *vm, gpa_t mmio_gpa);
- void ucall_arch_do_ucall(gva_t uc);
- void *ucall_arch_get_ucall(struct kvm_vcpu *vcpu);
- 
-@@ -39,7 +39,7 @@ __printf(5, 6) void ucall_assert(uint64_t cmd, const char *exp,
- 				 const char *file, unsigned int line,
- 				 const char *fmt, ...);
- uint64_t get_ucall(struct kvm_vcpu *vcpu, struct ucall *uc);
--void ucall_init(struct kvm_vm *vm, vm_paddr_t mmio_gpa);
-+void ucall_init(struct kvm_vm *vm, gpa_t mmio_gpa);
- int ucall_nr_pages_required(uint64_t page_size);
- 
- /*
-diff --git a/tools/testing/selftests/kvm/include/x86/sev.h b/tools/testing/selftests/kvm/include/x86/sev.h
-index 82c11c81a956..9aefe83e16b8 100644
---- a/tools/testing/selftests/kvm/include/x86/sev.h
-+++ b/tools/testing/selftests/kvm/include/x86/sev.h
-@@ -82,7 +82,7 @@ static inline void sev_register_encrypted_memory(struct kvm_vm *vm,
- 	vm_ioctl(vm, KVM_MEMORY_ENCRYPT_REG_REGION, &range);
- }
- 
--static inline void sev_launch_update_data(struct kvm_vm *vm, vm_paddr_t gpa,
-+static inline void sev_launch_update_data(struct kvm_vm *vm, gpa_t gpa,
- 					  uint64_t size)
- {
- 	struct kvm_sev_launch_update_data update_data = {
-diff --git a/tools/testing/selftests/kvm/include/x86/ucall.h b/tools/testing/selftests/kvm/include/x86/ucall.h
-index d3825dcc3cd9..0e4950041e3e 100644
---- a/tools/testing/selftests/kvm/include/x86/ucall.h
-+++ b/tools/testing/selftests/kvm/include/x86/ucall.h
-@@ -6,7 +6,7 @@
- 
- #define UCALL_EXIT_REASON       KVM_EXIT_IO
- 
--static inline void ucall_arch_init(struct kvm_vm *vm, vm_paddr_t mmio_gpa)
-+static inline void ucall_arch_init(struct kvm_vm *vm, gpa_t mmio_gpa)
- {
- }
- 
-diff --git a/tools/testing/selftests/kvm/kvm_page_table_test.c b/tools/testing/selftests/kvm/kvm_page_table_test.c
-index 6e909a96b095..6cf1fa092752 100644
---- a/tools/testing/selftests/kvm/kvm_page_table_test.c
-+++ b/tools/testing/selftests/kvm/kvm_page_table_test.c
-@@ -284,7 +284,7 @@ static struct kvm_vm *pre_init_before_test(enum vm_guest_mode mode, void *arg)
- 	virt_map(vm, guest_test_virt_mem, guest_test_phys_mem, guest_num_pages);
- 
- 	/* Cache the HVA pointer of the region */
--	host_test_mem = addr_gpa2hva(vm, (vm_paddr_t)guest_test_phys_mem);
-+	host_test_mem = addr_gpa2hva(vm, (gpa_t)guest_test_phys_mem);
- 
- 	/* Export shared structure test_args to guest */
- 	sync_global_to_guest(vm, test_args);
-diff --git a/tools/testing/selftests/kvm/lib/arm64/gic_v3.c b/tools/testing/selftests/kvm/lib/arm64/gic_v3.c
-index 66d05506f78b..911650132446 100644
---- a/tools/testing/selftests/kvm/lib/arm64/gic_v3.c
-+++ b/tools/testing/selftests/kvm/lib/arm64/gic_v3.c
-@@ -402,8 +402,8 @@ const struct gic_common_ops gicv3_ops = {
- 	.gic_irq_set_config = gicv3_irq_set_config,
- };
- 
--void gic_rdist_enable_lpis(vm_paddr_t cfg_table, size_t cfg_table_size,
--			   vm_paddr_t pend_table)
-+void gic_rdist_enable_lpis(gpa_t cfg_table, size_t cfg_table_size,
-+			   gpa_t pend_table)
- {
- 	volatile void *rdist_base = gicr_base_cpu(guest_get_vcpuid());
- 
-diff --git a/tools/testing/selftests/kvm/lib/arm64/gic_v3_its.c b/tools/testing/selftests/kvm/lib/arm64/gic_v3_its.c
-index 09f270545646..37ef53b8fa33 100644
---- a/tools/testing/selftests/kvm/lib/arm64/gic_v3_its.c
-+++ b/tools/testing/selftests/kvm/lib/arm64/gic_v3_its.c
-@@ -52,7 +52,7 @@ static unsigned long its_find_baser(unsigned int type)
- 	return -1;
- }
- 
--static void its_install_table(unsigned int type, vm_paddr_t base, size_t size)
-+static void its_install_table(unsigned int type, gpa_t base, size_t size)
- {
- 	unsigned long offset = its_find_baser(type);
- 	u64 baser;
-@@ -67,7 +67,7 @@ static void its_install_table(unsigned int type, vm_paddr_t base, size_t size)
- 	its_write_u64(offset, baser);
- }
- 
--static void its_install_cmdq(vm_paddr_t base, size_t size)
-+static void its_install_cmdq(gpa_t base, size_t size)
- {
- 	u64 cbaser;
- 
-@@ -80,9 +80,9 @@ static void its_install_cmdq(vm_paddr_t base, size_t size)
- 	its_write_u64(GITS_CBASER, cbaser);
- }
- 
--void its_init(vm_paddr_t coll_tbl, size_t coll_tbl_sz,
--	      vm_paddr_t device_tbl, size_t device_tbl_sz,
--	      vm_paddr_t cmdq, size_t cmdq_size)
-+void its_init(gpa_t coll_tbl, size_t coll_tbl_sz,
-+	      gpa_t device_tbl, size_t device_tbl_sz,
-+	      gpa_t cmdq, size_t cmdq_size)
- {
- 	u32 ctlr;
- 
-@@ -197,7 +197,7 @@ static void its_send_cmd(void *cmdq_base, struct its_cmd_block *cmd)
- 	}
- }
- 
--void its_send_mapd_cmd(void *cmdq_base, u32 device_id, vm_paddr_t itt_base,
-+void its_send_mapd_cmd(void *cmdq_base, u32 device_id, gpa_t itt_base,
- 		       size_t itt_size, bool valid)
- {
- 	struct its_cmd_block cmd = {};
-diff --git a/tools/testing/selftests/kvm/lib/arm64/processor.c b/tools/testing/selftests/kvm/lib/arm64/processor.c
-index 102b0b829420..e57b757b4256 100644
---- a/tools/testing/selftests/kvm/lib/arm64/processor.c
-+++ b/tools/testing/selftests/kvm/lib/arm64/processor.c
-@@ -223,7 +223,7 @@ uint64_t *virt_get_pte_hva(struct kvm_vm *vm, gva_t gva)
- 	exit(EXIT_FAILURE);
- }
- 
--vm_paddr_t addr_arch_gva2gpa(struct kvm_vm *vm, gva_t gva)
-+gpa_t addr_arch_gva2gpa(struct kvm_vm *vm, gva_t gva)
- {
- 	uint64_t *ptep = virt_get_pte_hva(vm, gva);
- 
-diff --git a/tools/testing/selftests/kvm/lib/arm64/ucall.c b/tools/testing/selftests/kvm/lib/arm64/ucall.c
-index a1a3b4dcdce1..62109407a1ff 100644
---- a/tools/testing/selftests/kvm/lib/arm64/ucall.c
-+++ b/tools/testing/selftests/kvm/lib/arm64/ucall.c
-@@ -8,7 +8,7 @@
- 
- gva_t *ucall_exit_mmio_addr;
- 
--void ucall_arch_init(struct kvm_vm *vm, vm_paddr_t mmio_gpa)
-+void ucall_arch_init(struct kvm_vm *vm, gpa_t mmio_gpa)
- {
- 	gva_t mmio_gva = gva_unused_gap(vm, vm->page_size, KVM_UTIL_MIN_VADDR);
- 
-diff --git a/tools/testing/selftests/kvm/lib/kvm_util.c b/tools/testing/selftests/kvm/lib/kvm_util.c
-index 2e6d275d4ba0..6dd2755fdb7b 100644
---- a/tools/testing/selftests/kvm/lib/kvm_util.c
-+++ b/tools/testing/selftests/kvm/lib/kvm_util.c
-@@ -1446,7 +1446,7 @@ static gva_t ____gva_alloc(struct kvm_vm *vm, size_t sz,
- 	uint64_t pages = (sz >> vm->page_shift) + ((sz % vm->page_size) != 0);
- 
- 	virt_pgd_alloc(vm);
--	vm_paddr_t paddr = __vm_phy_pages_alloc(vm, pages,
-+	gpa_t paddr = __vm_phy_pages_alloc(vm, pages,
- 						KVM_UTIL_MIN_PFN * vm->page_size,
- 						vm->memslots[type], protected);
- 
-@@ -1600,7 +1600,7 @@ void virt_map(struct kvm_vm *vm, uint64_t vaddr, uint64_t paddr,
-  * address providing the memory to the vm physical address is returned.
-  * A TEST_ASSERT failure occurs if no region containing gpa exists.
-  */
--void *addr_gpa2hva(struct kvm_vm *vm, vm_paddr_t gpa)
-+void *addr_gpa2hva(struct kvm_vm *vm, gpa_t gpa)
- {
- 	struct userspace_mem_region *region;
- 
-@@ -1633,7 +1633,7 @@ void *addr_gpa2hva(struct kvm_vm *vm, vm_paddr_t gpa)
-  * VM physical address is returned. A TEST_ASSERT failure occurs if no
-  * region containing hva exists.
-  */
--vm_paddr_t addr_hva2gpa(struct kvm_vm *vm, void *hva)
-+gpa_t addr_hva2gpa(struct kvm_vm *vm, void *hva)
- {
- 	struct rb_node *node;
- 
-@@ -1644,7 +1644,7 @@ vm_paddr_t addr_hva2gpa(struct kvm_vm *vm, void *hva)
- 		if (hva >= region->host_mem) {
- 			if (hva <= (region->host_mem
- 				+ region->region.memory_size - 1))
--				return (vm_paddr_t)((uintptr_t)
-+				return (gpa_t)((uintptr_t)
- 					region->region.guest_phys_addr
- 					+ (hva - (uintptr_t)region->host_mem));
- 
-@@ -1676,7 +1676,7 @@ vm_paddr_t addr_hva2gpa(struct kvm_vm *vm, void *hva)
-  * memory without mapping said memory in the guest's address space. And, for
-  * userfaultfd-based demand paging, to do so without triggering userfaults.
-  */
--void *addr_gpa2alias(struct kvm_vm *vm, vm_paddr_t gpa)
-+void *addr_gpa2alias(struct kvm_vm *vm, gpa_t gpa)
- {
- 	struct userspace_mem_region *region;
- 	uintptr_t offset;
-@@ -2069,9 +2069,9 @@ const char *exit_reason_str(unsigned int exit_reason)
-  * and their base address is returned. A TEST_ASSERT failure occurs if
-  * not enough pages are available at or above paddr_min.
-  */
--vm_paddr_t __vm_phy_pages_alloc(struct kvm_vm *vm, size_t num,
--				vm_paddr_t paddr_min, uint32_t memslot,
--				bool protected)
-+gpa_t __vm_phy_pages_alloc(struct kvm_vm *vm, size_t num,
-+			   gpa_t paddr_min, uint32_t memslot,
-+			   bool protected)
- {
- 	struct userspace_mem_region *region;
- 	sparsebit_idx_t pg, base;
-@@ -2115,13 +2115,12 @@ vm_paddr_t __vm_phy_pages_alloc(struct kvm_vm *vm, size_t num,
- 	return base * vm->page_size;
- }
- 
--vm_paddr_t vm_phy_page_alloc(struct kvm_vm *vm, vm_paddr_t paddr_min,
--			     uint32_t memslot)
-+gpa_t vm_phy_page_alloc(struct kvm_vm *vm, gpa_t paddr_min, uint32_t memslot)
- {
- 	return vm_phy_pages_alloc(vm, 1, paddr_min, memslot);
- }
- 
--vm_paddr_t vm_alloc_page_table(struct kvm_vm *vm)
-+gpa_t vm_alloc_page_table(struct kvm_vm *vm)
- {
- 	return vm_phy_page_alloc(vm, KVM_GUEST_PAGE_TABLE_MIN_PADDR,
- 				 vm->memslots[MEM_REGION_PT]);
-@@ -2303,7 +2302,7 @@ void __attribute((constructor)) kvm_selftest_init(void)
- 	kvm_selftest_arch_init();
- }
- 
--bool vm_is_gpa_protected(struct kvm_vm *vm, vm_paddr_t paddr)
-+bool vm_is_gpa_protected(struct kvm_vm *vm, gpa_t paddr)
- {
- 	sparsebit_idx_t pg = 0;
- 	struct userspace_mem_region *region;
-diff --git a/tools/testing/selftests/kvm/lib/memstress.c b/tools/testing/selftests/kvm/lib/memstress.c
-index 313277486a1d..d51680509839 100644
---- a/tools/testing/selftests/kvm/lib/memstress.c
-+++ b/tools/testing/selftests/kvm/lib/memstress.c
-@@ -207,7 +207,7 @@ struct kvm_vm *memstress_create_vm(enum vm_guest_mode mode, int nr_vcpus,
- 	/* Add extra memory slots for testing */
- 	for (i = 0; i < slots; i++) {
- 		uint64_t region_pages = guest_num_pages / slots;
--		vm_paddr_t region_start = args->gpa + region_pages * args->guest_page_size * i;
-+		gpa_t region_start = args->gpa + region_pages * args->guest_page_size * i;
- 
- 		vm_userspace_mem_region_add(vm, backing_src, region_start,
- 					    MEMSTRESS_MEM_SLOT_INDEX + i,
-diff --git a/tools/testing/selftests/kvm/lib/riscv/processor.c b/tools/testing/selftests/kvm/lib/riscv/processor.c
-index 3ba5163c72b3..c4717aad1b3c 100644
---- a/tools/testing/selftests/kvm/lib/riscv/processor.c
-+++ b/tools/testing/selftests/kvm/lib/riscv/processor.c
-@@ -123,7 +123,7 @@ void virt_arch_pg_map(struct kvm_vm *vm, uint64_t vaddr, uint64_t paddr)
- 		PGTBL_PTE_PERM_MASK | PGTBL_PTE_VALID_MASK;
- }
- 
--vm_paddr_t addr_arch_gva2gpa(struct kvm_vm *vm, gva_t gva)
-+gpa_t addr_arch_gva2gpa(struct kvm_vm *vm, gva_t gva)
- {
- 	uint64_t *ptep;
- 	int level = vm->pgtable_levels - 1;
-diff --git a/tools/testing/selftests/kvm/lib/s390/processor.c b/tools/testing/selftests/kvm/lib/s390/processor.c
-index a6438e3ea8e7..2baafbe608ac 100644
---- a/tools/testing/selftests/kvm/lib/s390/processor.c
-+++ b/tools/testing/selftests/kvm/lib/s390/processor.c
-@@ -12,7 +12,7 @@
- 
- void virt_arch_pgd_alloc(struct kvm_vm *vm)
- {
--	vm_paddr_t paddr;
-+	gpa_t paddr;
- 
- 	TEST_ASSERT(vm->page_size == PAGE_SIZE, "Unsupported page size: 0x%x",
- 		    vm->page_size);
-@@ -86,7 +86,7 @@ void virt_arch_pg_map(struct kvm_vm *vm, uint64_t gva, uint64_t gpa)
- 	entry[idx] = gpa;
- }
- 
--vm_paddr_t addr_arch_gva2gpa(struct kvm_vm *vm, gva_t gva)
-+gpa_t addr_arch_gva2gpa(struct kvm_vm *vm, gva_t gva)
- {
- 	int ri, idx;
- 	uint64_t *entry;
-diff --git a/tools/testing/selftests/kvm/lib/ucall_common.c b/tools/testing/selftests/kvm/lib/ucall_common.c
-index 3a72169b61ac..60297819d508 100644
---- a/tools/testing/selftests/kvm/lib/ucall_common.c
-+++ b/tools/testing/selftests/kvm/lib/ucall_common.c
-@@ -25,7 +25,7 @@ int ucall_nr_pages_required(uint64_t page_size)
-  */
- static struct ucall_header *ucall_pool;
- 
--void ucall_init(struct kvm_vm *vm, vm_paddr_t mmio_gpa)
-+void ucall_init(struct kvm_vm *vm, gpa_t mmio_gpa)
- {
- 	struct ucall_header *hdr;
- 	struct ucall *uc;
-diff --git a/tools/testing/selftests/kvm/lib/x86/processor.c b/tools/testing/selftests/kvm/lib/x86/processor.c
-index 3ff61033790e..5a97cf829291 100644
---- a/tools/testing/selftests/kvm/lib/x86/processor.c
-+++ b/tools/testing/selftests/kvm/lib/x86/processor.c
-@@ -463,7 +463,7 @@ static void kvm_seg_set_kernel_data_64bit(struct kvm_segment *segp)
- 	segp->present = true;
- }
- 
--vm_paddr_t addr_arch_gva2gpa(struct kvm_vm *vm, gva_t gva)
-+gpa_t addr_arch_gva2gpa(struct kvm_vm *vm, gva_t gva)
- {
- 	int level = PG_LEVEL_NONE;
- 	uint64_t *pte = __vm_get_page_table_entry(vm, gva, &level);
-diff --git a/tools/testing/selftests/kvm/lib/x86/sev.c b/tools/testing/selftests/kvm/lib/x86/sev.c
-index e9535ee20b7f..5fcd26ac2def 100644
---- a/tools/testing/selftests/kvm/lib/x86/sev.c
-+++ b/tools/testing/selftests/kvm/lib/x86/sev.c
-@@ -17,7 +17,7 @@
- static void encrypt_region(struct kvm_vm *vm, struct userspace_mem_region *region)
- {
- 	const struct sparsebit *protected_phy_pages = region->protected_phy_pages;
--	const vm_paddr_t gpa_base = region->region.guest_phys_addr;
-+	const gpa_t gpa_base = region->region.guest_phys_addr;
- 	const sparsebit_idx_t lowest_page_in_region = gpa_base >> vm->page_shift;
- 	sparsebit_idx_t i, j;
- 
-diff --git a/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c b/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c
-index e166e20544d3..c0ec7b284a3d 100644
---- a/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c
-+++ b/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c
-@@ -24,7 +24,7 @@ union sbi_pmu_ctr_info ctrinfo_arr[RISCV_MAX_PMU_COUNTERS];
- /* Snapshot shared memory data */
- #define PMU_SNAPSHOT_GPA_BASE		BIT(30)
- static void *snapshot_gva;
--static vm_paddr_t snapshot_gpa;
-+static gpa_t snapshot_gpa;
- 
- static int vcpu_shared_irq_count;
- static int counter_in_use;
-@@ -241,7 +241,7 @@ static inline void verify_sbi_requirement_assert(void)
- 		__GUEST_ASSERT(0, "SBI implementation version doesn't support PMU Snapshot");
- }
- 
--static void snapshot_set_shmem(vm_paddr_t gpa, unsigned long flags)
-+static void snapshot_set_shmem(gpa_t gpa, unsigned long flags)
- {
- 	unsigned long lo = (unsigned long)gpa;
- #if __riscv_xlen == 32
-diff --git a/tools/testing/selftests/kvm/s390/ucontrol_test.c b/tools/testing/selftests/kvm/s390/ucontrol_test.c
-index d265b34c54be..d9f0584978a9 100644
---- a/tools/testing/selftests/kvm/s390/ucontrol_test.c
-+++ b/tools/testing/selftests/kvm/s390/ucontrol_test.c
-@@ -111,7 +111,7 @@ FIXTURE(uc_kvm)
- 	uintptr_t base_hva;
- 	uintptr_t code_hva;
- 	int kvm_run_size;
--	vm_paddr_t pgd;
-+	gpa_t pgd;
- 	void *vm_mem;
- 	int vcpu_fd;
- 	int kvm_fd;
-diff --git a/tools/testing/selftests/kvm/steal_time.c b/tools/testing/selftests/kvm/steal_time.c
-index 24eaabe372bc..fd931243b6ce 100644
---- a/tools/testing/selftests/kvm/steal_time.c
-+++ b/tools/testing/selftests/kvm/steal_time.c
-@@ -210,7 +210,7 @@ static void steal_time_dump(struct kvm_vm *vm, uint32_t vcpu_idx)
- /* SBI STA shmem must have 64-byte alignment */
- #define STEAL_TIME_SIZE		((sizeof(struct sta_struct) + 63) & ~63)
- 
--static vm_paddr_t st_gpa[NR_VCPUS];
-+static gpa_t st_gpa[NR_VCPUS];
- 
- struct sta_struct {
- 	uint32_t sequence;
-@@ -220,7 +220,7 @@ struct sta_struct {
- 	uint8_t pad[47];
- } __packed;
- 
--static void sta_set_shmem(vm_paddr_t gpa, unsigned long flags)
-+static void sta_set_shmem(gpa_t gpa, unsigned long flags)
- {
- 	unsigned long lo = (unsigned long)gpa;
- #if __riscv_xlen == 32
-diff --git a/tools/testing/selftests/kvm/x86/hyperv_clock.c b/tools/testing/selftests/kvm/x86/hyperv_clock.c
-index 046d33ec69fc..dd8ce5686736 100644
---- a/tools/testing/selftests/kvm/x86/hyperv_clock.c
-+++ b/tools/testing/selftests/kvm/x86/hyperv_clock.c
-@@ -98,7 +98,7 @@ static inline void check_tsc_msr_tsc_page(struct ms_hyperv_tsc_page *tsc_page)
- 	GUEST_ASSERT(r2 >= t1 && r2 - t2 < 100000);
- }
- 
--static void guest_main(struct ms_hyperv_tsc_page *tsc_page, vm_paddr_t tsc_page_gpa)
-+static void guest_main(struct ms_hyperv_tsc_page *tsc_page, gpa_t tsc_page_gpa)
- {
- 	u64 tsc_scale, tsc_offset;
- 
-diff --git a/tools/testing/selftests/kvm/x86/hyperv_extended_hypercalls.c b/tools/testing/selftests/kvm/x86/hyperv_extended_hypercalls.c
-index 43e1c5149d97..f2d990ce4e2b 100644
---- a/tools/testing/selftests/kvm/x86/hyperv_extended_hypercalls.c
-+++ b/tools/testing/selftests/kvm/x86/hyperv_extended_hypercalls.c
-@@ -15,7 +15,7 @@
- /* Any value is fine */
- #define EXT_CAPABILITIES 0xbull
- 
--static void guest_code(vm_paddr_t in_pg_gpa, vm_paddr_t out_pg_gpa,
-+static void guest_code(gpa_t in_pg_gpa, gpa_t out_pg_gpa,
- 		       gva_t out_pg_gva)
- {
- 	uint64_t *output_gva;
-diff --git a/tools/testing/selftests/kvm/x86/hyperv_tlb_flush.c b/tools/testing/selftests/kvm/x86/hyperv_tlb_flush.c
-index aa795f9a5950..bc5828ce505e 100644
---- a/tools/testing/selftests/kvm/x86/hyperv_tlb_flush.c
-+++ b/tools/testing/selftests/kvm/x86/hyperv_tlb_flush.c
-@@ -62,7 +62,7 @@ struct hv_tlb_flush_ex {
-  */
- struct test_data {
- 	gva_t hcall_gva;
--	vm_paddr_t hcall_gpa;
-+	gpa_t hcall_gpa;
- 	gva_t test_pages;
- 	gva_t test_pages_pte[NTEST_PAGES];
- };
-@@ -133,7 +133,7 @@ static void set_expected_val(void *addr, u64 val, int vcpu_id)
-  * Update PTEs swapping two test pages.
-  * TODO: use swap()/xchg() when these are provided.
-  */
--static void swap_two_test_pages(vm_paddr_t pte_gva1, vm_paddr_t pte_gva2)
-+static void swap_two_test_pages(gpa_t pte_gva1, gpa_t pte_gva2)
- {
- 	uint64_t tmp = *(uint64_t *)pte_gva1;
- 
-@@ -201,7 +201,7 @@ static void sender_guest_code(gva_t test_data)
- 	struct test_data *data = (struct test_data *)test_data;
- 	struct hv_tlb_flush *flush = (struct hv_tlb_flush *)data->hcall_gva;
- 	struct hv_tlb_flush_ex *flush_ex = (struct hv_tlb_flush_ex *)data->hcall_gva;
--	vm_paddr_t hcall_gpa = data->hcall_gpa;
-+	gpa_t hcall_gpa = data->hcall_gpa;
- 	int i, stage = 1;
- 
- 	wrmsr(HV_X64_MSR_GUEST_OS_ID, HYPERV_LINUX_OS_ID);
-@@ -582,7 +582,7 @@ int main(int argc, char *argv[])
- 	struct kvm_vcpu *vcpu[3];
- 	pthread_t threads[2];
- 	gva_t test_data_page, gva;
--	vm_paddr_t gpa;
-+	gpa_t gpa;
- 	uint64_t *pte;
- 	struct test_data *data;
- 	struct ucall uc;
-diff --git a/tools/testing/selftests/kvm/x86/kvm_clock_test.c b/tools/testing/selftests/kvm/x86/kvm_clock_test.c
-index b335ee2a8e97..ada4b2abf55d 100644
---- a/tools/testing/selftests/kvm/x86/kvm_clock_test.c
-+++ b/tools/testing/selftests/kvm/x86/kvm_clock_test.c
-@@ -31,7 +31,7 @@ static struct test_case test_cases[] = {
- #define GUEST_SYNC_CLOCK(__stage, __val)			\
- 		GUEST_SYNC_ARGS(__stage, __val, 0, 0, 0)
- 
--static void guest_main(vm_paddr_t pvti_pa, struct pvclock_vcpu_time_info *pvti)
-+static void guest_main(gpa_t pvti_pa, struct pvclock_vcpu_time_info *pvti)
- {
+-	int32_t tval = (int32_t) msec_to_cycles(test_args.wait_ms);
++	s32 tval = (s32)msec_to_cycles(test_args.wait_ms);
+ 	u64 cval = DEF_CNT + msec_to_cycles(test_args.wait_ms);
  	int i;
  
-@@ -136,7 +136,7 @@ int main(void)
- {
- 	struct kvm_vcpu *vcpu;
- 	gva_t pvti_gva;
--	vm_paddr_t pvti_gpa;
-+	gpa_t pvti_gpa;
- 	struct kvm_vm *vm;
- 	int flags;
+@@ -684,7 +684,7 @@ static void test_set_cnt_after_xval_no_irq(enum arch_timer timer,
+ }
  
+ static void test_set_cnt_after_tval(enum arch_timer timer, u64 cnt_1,
+-				    int32_t tval, u64 cnt_2,
++				    s32 tval, u64 cnt_2,
+ 				    irq_wait_method_t wm)
+ {
+ 	test_set_cnt_after_xval(timer, cnt_1, tval, cnt_2, wm, TIMER_TVAL);
+@@ -698,7 +698,7 @@ static void test_set_cnt_after_cval(enum arch_timer timer, u64 cnt_1,
+ }
+ 
+ static void test_set_cnt_after_tval_no_irq(enum arch_timer timer,
+-					   u64 cnt_1, int32_t tval,
++					   u64 cnt_1, s32 tval,
+ 					   u64 cnt_2, sleep_method_t wm)
+ {
+ 	test_set_cnt_after_xval_no_irq(timer, cnt_1, tval, cnt_2, wm,
+@@ -717,7 +717,7 @@ static void test_set_cnt_after_cval_no_irq(enum arch_timer timer,
+ static void test_move_counters_ahead_of_timers(enum arch_timer timer)
+ {
+ 	int i;
+-	int32_t tval;
++	s32 tval;
+ 
+ 	for (i = 0; i < ARRAY_SIZE(irq_wait_method); i++) {
+ 		irq_wait_method_t wm = irq_wait_method[i];
+@@ -758,7 +758,7 @@ static void test_move_counters_behind_timers(enum arch_timer timer)
+ 
+ static void test_timers_in_the_past(enum arch_timer timer)
+ {
+-	int32_t tval = -1 * (int32_t) msec_to_cycles(test_args.wait_ms);
++	s32 tval = -1 * (s32)msec_to_cycles(test_args.wait_ms);
+ 	u64 cval;
+ 	int i;
+ 
+@@ -794,7 +794,7 @@ static void test_timers_in_the_past(enum arch_timer timer)
+ 
+ static void test_long_timer_delays(enum arch_timer timer)
+ {
+-	int32_t tval = (int32_t) msec_to_cycles(test_args.long_wait_ms);
++	s32 tval = (s32)msec_to_cycles(test_args.long_wait_ms);
+ 	u64 cval = DEF_CNT + msec_to_cycles(test_args.long_wait_ms);
+ 	int i;
+ 
+diff --git a/tools/testing/selftests/kvm/include/arm64/arch_timer.h b/tools/testing/selftests/kvm/include/arm64/arch_timer.h
+index 600ee9163604..9d32c196c7ab 100644
+--- a/tools/testing/selftests/kvm/include/arm64/arch_timer.h
++++ b/tools/testing/selftests/kvm/include/arm64/arch_timer.h
+@@ -79,7 +79,7 @@ static inline u64 timer_get_cval(enum arch_timer timer)
+ 	return 0;
+ }
+ 
+-static inline void timer_set_tval(enum arch_timer timer, int32_t tval)
++static inline void timer_set_tval(enum arch_timer timer, s32 tval)
+ {
+ 	switch (timer) {
+ 	case VIRTUAL:
+@@ -95,7 +95,7 @@ static inline void timer_set_tval(enum arch_timer timer, int32_t tval)
+ 	isb();
+ }
+ 
+-static inline int32_t timer_get_tval(enum arch_timer timer)
++static inline s32 timer_get_tval(enum arch_timer timer)
+ {
+ 	isb();
+ 	switch (timer) {
 -- 
 2.49.0.906.g1f30a19c02-goog
 
