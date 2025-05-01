@@ -4,87 +4,107 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CB1C9C369DC
-	for <kvm-riscv@archiver.kernel.org>; Thu,  1 May 2025 13:41:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A421CC3ABA3
+	for <kvm-riscv@archiver.kernel.org>; Thu,  1 May 2025 13:55:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Subject:Cc:To:From:Message-ID:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=AE8MHS/WgpDgepXEq8dAJkNMvQQiS/pE+GaoAN9zO3s=; b=ruohRuTXXQZ5fG
-	UCBUoioTS45R/B4fYbLSfBcxoyJ84kRXyS3vOvh2wlPk+fsNL2LUsHp+1rco9CtLN0iyU2BWcPFJJ
-	x0uIVQUj+ikvGFTB92VXPYcXBV0nn6llrG/yJR5Qjvue1c61dRyrdbZomd3O1cwPVYw6B9a47yH0z
-	rF22jXxcStnJysY7BvM4XCDBCw0jm2yFpwFxmMI0leqQR6oXaFvJil4jj4izT/V9Dmvst3ZjPowne
-	1Y1KNiPzhYPo4NIuoBasSVAqkAVXMqAT++O6DGkt4lwCknKRcciAGM7FA/+yshdPJdcLBoXzKRILD
-	HHijmUyJQd5w4ZBKt68g==;
+	List-Owner; bh=1kZwyCpGWpE7QSbaHB0+NeGXum0zzsshEtEYs3LkF0M=; b=SSFfqMxzTOQQAh
+	vDSJ+E8UmqkreyothU/CZOAeOAvrUQGrnXPVm2uU1CePuyUKsRxf7jQNUQOR/h7uwRGk85eDyvsJv
+	lk4wqyxdDk/S4MEA4Y3kZELSLXgSntSh8O6zBNUSg6jeDoVnuRnrA4Q8PM9IBJ73arEZktSibKDQd
+	KfeT+Zm9MA6yghW2eYXoIOD73HdxNwC6DD0NMIl/JY+1xC1TQOD51f5KO4KMyZCydELMGXnhth7jj
+	iu/KDskkEvDkuvM/rjVt9D1It7Fyat1RZpF8ZpYtl/9Me7GHBI+ac+bPH65Fu525qcLEKNzBXEkDF
+	Wi3/+hrR1JY2E6614BvQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uAUAU-0000000FrBr-2Sqo;
-	Thu, 01 May 2025 13:41:38 +0000
-Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+	id 1uAUNf-0000000FtFP-1ZG7;
+	Thu, 01 May 2025 13:55:15 +0000
+Received: from tor.source.kernel.org ([172.105.4.254])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uAUAT-0000000FrBJ-12zt;
-	Thu, 01 May 2025 13:41:37 +0000
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=xowpOTNHZuGO7hdiOZBA1ktd0ANINI9wdxjSaNfAYr4=; b=Q9FCL2T2yxtlsZmsHNZUwJ8del
-	DL8laA78CDwP4h6JIEK8DYCPbAEn5jqEbbLSZWIhOKuDrIy1I6OqTo9KD9RydEXs9LtTQP7JwdVeq
-	4saOXLHsvs5AkFnJ22A0h3WN+8CgiXYNQ/0f8sG5/dYNuYkLxnqAaR+vvCg/5l2w8jZZCo7FHKQiW
-	f288JWqa60gzVN2mzNjAgCr3QbhjMXdNy9WwPnwoi3VTWwB8wMrcCtefnZGM/Bk0zwdWtETejY/nF
-	8yoxbchPCJPBA6ar0KmslCX7gVXF+rtiSA7clAWpkSlgnj6PDZkABXJr1Y2KN+tXGm4cSTkn3K4kE
-	LaXMEXvg==;
-Received: from 77-249-17-252.cable.dynamic.v4.ziggo.nl ([77.249.17.252] helo=noisy.programming.kicks-ass.net)
-	by desiato.infradead.org with esmtpsa (Exim 4.98.1 #2 (Red Hat Linux))
-	id 1uAUAJ-0000000E13k-38FL;
-	Thu, 01 May 2025 13:41:28 +0000
-Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
-	id 2B30630035E; Thu,  1 May 2025 15:41:27 +0200 (CEST)
-Date: Thu, 1 May 2025 15:41:26 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Marc Zyngier <maz@kernel.org>
-Cc: Maxim Levitsky <mlevitsk@redhat.com>, kvm@vger.kernel.org,
+	id 1uAUNd-0000000FtEa-3hkD;
+	Thu, 01 May 2025 13:55:13 +0000
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 11D4E68463;
+	Thu,  1 May 2025 13:54:45 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7E48EC4CEE3;
+	Thu,  1 May 2025 13:55:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1746107712;
+	bh=HP9qPQcXPFBaNtd0LbBqA0JNCPyQw698ggOHjYeim0Y=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=Pfk1ZFoGFQBcJbn4eAazqmyuBJ6TkiGf2ekSQDgoa5Fjia9S2lMt5efsrXyzq1Vvm
+	 ULeuC83dmMDOduBWW3xv2ptavXQm1vdoGdMaOq6foW7rtSQf8ouqLVTIFegJWn1fzS
+	 EorN2jN0LePdF11Vpm6UW5UyEsjAfLLhsNMAJTWfxtw7S29pRommXhIjicwQXKd09K
+	 dja4faMd/aLvbeN4QKFNqUIDiiz0PK5zIlRXOlq9ONM7WY09BvtawseMmekfxpdUph
+	 231yeafldT6FquJnpqz72EltQ8Tb6TsqSFX9obyV9riRozvuNYg8YfhJH7B6vS3/oQ
+	 Lfve/zxbzhOzw==
+Received: from sofa.misterjones.org ([185.219.108.64] helo=goblin-girl.misterjones.org)
+	by disco-boy.misterjones.org with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.95)
+	(envelope-from <maz@kernel.org>)
+	id 1uAUNa-00AakJ-3R;
+	Thu, 01 May 2025 14:55:10 +0100
+Date: Thu, 01 May 2025 14:55:08 +0100
+Message-ID: <86v7qkh1vn.wl-maz@kernel.org>
+From: Marc Zyngier <maz@kernel.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Maxim Levitsky <mlevitsk@redhat.com>,
+	kvm@vger.kernel.org,
 	linux-riscv@lists.infradead.org,
 	Kunkun Jiang <jiangkunkun@huawei.com>,
-	Waiman Long <longman@redhat.com>, linux-kernel@vger.kernel.org,
+	Waiman Long <longman@redhat.com>,
+	linux-kernel@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	Catalin Marinas <catalin.marinas@arm.com>,
 	Bjorn Helgaas <bhelgaas@google.com>,
-	Boqun Feng <boqun.feng@gmail.com>, Borislav Petkov <bp@alien8.de>,
-	Albert Ou <aou@eecs.berkeley.edu>, Anup Patel <anup@brainfault.org>,
+	Boqun Feng <boqun.feng@gmail.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Albert Ou <aou@eecs.berkeley.edu>,
+	Anup Patel <anup@brainfault.org>,
 	Paul Walmsley <paul.walmsley@sifive.com>,
 	Suzuki K Poulose <suzuki.poulose@arm.com>,
 	Palmer Dabbelt <palmer@dabbelt.com>,
 	Alexandre Ghiti <alex@ghiti.fr>,
 	Alexander Potapenko <glider@google.com>,
 	Oliver Upton <oliver.upton@linux.dev>,
-	Andre Przywara <andre.przywara@arm.com>, x86@kernel.org,
+	Andre Przywara <andre.przywara@arm.com>,
+	x86@kernel.org,
 	Joey Gouly <joey.gouly@arm.com>,
-	Thomas Gleixner <tglx@linutronix.de>, kvm-riscv@lists.infradead.org,
-	Atish Patra <atishp@atishpatra.org>, Ingo Molnar <mingo@redhat.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	kvm-riscv@lists.infradead.org,
+	Atish Patra <atishp@atishpatra.org>,
+	Ingo Molnar <mingo@redhat.com>,
 	Jing Zhang <jingzhangos@google.com>,
 	"H. Peter Anvin" <hpa@zytor.com>,
-	Dave Hansen <dave.hansen@linux.intel.com>, kvmarm@lists.linux.dev,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	kvmarm@lists.linux.dev,
 	Will Deacon <will@kernel.org>,
 	Keisuke Nishimura <keisuke.nishimura@inria.fr>,
-	Sebastian Ott <sebott@redhat.com>, Shusen Li <lishusen2@huawei.com>,
+	Sebastian Ott <sebott@redhat.com>,
+	Shusen Li <lishusen2@huawei.com>,
 	Paolo Bonzini <pbonzini@redhat.com>,
 	Randy Dunlap <rdunlap@infradead.org>,
 	Sean Christopherson <seanjc@google.com>,
 	Zenghui Yu <yuzenghui@huawei.com>
-Subject: Re: [PATCH v4 2/5] arm64: KVM: use mutex_trylock_nest_lock when
- locking all vCPUs
-Message-ID: <20250501134126.GT4439@noisy.programming.kicks-ass.net>
+Subject: Re: [PATCH v4 2/5] arm64: KVM: use mutex_trylock_nest_lock when locking all vCPUs
+In-Reply-To: <20250501134126.GT4439@noisy.programming.kicks-ass.net>
 References: <20250430203013.366479-1-mlevitsk@redhat.com>
- <20250430203013.366479-3-mlevitsk@redhat.com>
- <864iy4ivro.wl-maz@kernel.org>
- <20250501111552.GO4198@noisy.programming.kicks-ass.net>
- <861pt8ijpv.wl-maz@kernel.org>
-MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <861pt8ijpv.wl-maz@kernel.org>
+	<20250430203013.366479-3-mlevitsk@redhat.com>
+	<864iy4ivro.wl-maz@kernel.org>
+	<20250501111552.GO4198@noisy.programming.kicks-ass.net>
+	<861pt8ijpv.wl-maz@kernel.org>
+	<20250501134126.GT4439@noisy.programming.kicks-ass.net>
+User-Agent: Wanderlust/2.15.9 (Almost Unreal) SEMI-EPG/1.14.7 (Harue)
+ FLIM-LB/1.14.9 (=?UTF-8?B?R29qxY0=?=) APEL-LB/10.8 EasyPG/1.0.0 Emacs/30.1
+ (aarch64-unknown-linux-gnu) MULE/6.0 (HANACHIRUSATO)
+MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
+X-SA-Exim-Connect-IP: 185.219.108.64
+X-SA-Exim-Rcpt-To: peterz@infradead.org, mlevitsk@redhat.com, kvm@vger.kernel.org, linux-riscv@lists.infradead.org, jiangkunkun@huawei.com, longman@redhat.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, catalin.marinas@arm.com, bhelgaas@google.com, boqun.feng@gmail.com, bp@alien8.de, aou@eecs.berkeley.edu, anup@brainfault.org, paul.walmsley@sifive.com, suzuki.poulose@arm.com, palmer@dabbelt.com, alex@ghiti.fr, glider@google.com, oliver.upton@linux.dev, andre.przywara@arm.com, x86@kernel.org, joey.gouly@arm.com, tglx@linutronix.de, kvm-riscv@lists.infradead.org, atishp@atishpatra.org, mingo@redhat.com, jingzhangos@google.com, hpa@zytor.com, dave.hansen@linux.intel.com, kvmarm@lists.linux.dev, will@kernel.org, keisuke.nishimura@inria.fr, sebott@redhat.com, lishusen2@huawei.com, pbonzini@redhat.com, rdunlap@infradead.org, seanjc@google.com, yuzenghui@huawei.com
+X-SA-Exim-Mail-From: maz@kernel.org
+X-SA-Exim-Scanned: No (on disco-boy.misterjones.org); SAEximRunCond expanded to false
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -101,59 +121,77 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Thu, May 01, 2025 at 01:44:28PM +0100, Marc Zyngier wrote:
-> On Thu, 01 May 2025 12:15:52 +0100,
-> Peter Zijlstra <peterz@infradead.org> wrote:
+On Thu, 01 May 2025 14:41:26 +0100,
+Peter Zijlstra <peterz@infradead.org> wrote:
+> 
+> On Thu, May 01, 2025 at 01:44:28PM +0100, Marc Zyngier wrote:
+> > On Thu, 01 May 2025 12:15:52 +0100,
+> > Peter Zijlstra <peterz@infradead.org> wrote:
+> > > 
+> > > > > + */
+> > > > > +int kvm_trylock_all_vcpus(struct kvm *kvm)
+> > > > > +{
+> > > > > +	struct kvm_vcpu *vcpu;
+> > > > > +	unsigned long i, j;
+> > > > > +
+> > > > > +	kvm_for_each_vcpu(i, vcpu, kvm)
+> > > > > +		if (!mutex_trylock_nest_lock(&vcpu->mutex, &kvm->lock))
+> > > 
+> > > This one includes an assertion that kvm->lock is actually held.
 > > 
-> > > > + */
-> > > > +int kvm_trylock_all_vcpus(struct kvm *kvm)
-> > > > +{
-> > > > +	struct kvm_vcpu *vcpu;
-> > > > +	unsigned long i, j;
-> > > > +
-> > > > +	kvm_for_each_vcpu(i, vcpu, kvm)
-> > > > +		if (!mutex_trylock_nest_lock(&vcpu->mutex, &kvm->lock))
+> > Ah, cunning. Thanks.
 > > 
-> > This one includes an assertion that kvm->lock is actually held.
-> 
-> Ah, cunning. Thanks.
-> 
-> > That said, I'm not at all sure what the purpose of all this trylock
-> > stuff is here.
+> > > That said, I'm not at all sure what the purpose of all this trylock
+> > > stuff is here.
+> > > 
+> > > Can someone explain? Last time I asked someone said something about
+> > > multiple VMs, but I don't know enough about kvm to know what that means.
 > > 
-> > Can someone explain? Last time I asked someone said something about
-> > multiple VMs, but I don't know enough about kvm to know what that means.
+> > Multiple VMs? That'd be real fun. Not.
+> > 
+> > > Are those vcpu->mutex another class for other VMs? Or what gives?
+> > 
+> > Nah. This is firmly single VM.
+> > 
+> > The purpose of this contraption is that there are some rare cases
+> > where we need to make sure that if we update some global state, all
+> > the vcpus of a VM need to see, or none of them.
+> > 
+> > For these cases, the guarantee comes from luserspace, and it gives the
+> > pinky promise that none of the vcpus are running at that point. But
+> > being of a suspicious nature, we assert that this is true by trying to
+> > take all the vcpu mutexes in one go. This will fail if a vcpu is
+> > running, as KVM itself takes the vcpu mutex before doing anything.
+> > 
+> > Similar requirement exists if we need to synthesise some state for
+> > userspace from all the individual vcpu states.
 > 
-> Multiple VMs? That'd be real fun. Not.
+> Ah, okay. Because x86 is simply doing mutex_lock() instead of
+> mutex_trylock() -- which would end up waiting for this activity to
+> subside I suppose.
 > 
-> > Are those vcpu->mutex another class for other VMs? Or what gives?
-> 
-> Nah. This is firmly single VM.
-> 
-> The purpose of this contraption is that there are some rare cases
-> where we need to make sure that if we update some global state, all
-> the vcpus of a VM need to see, or none of them.
-> 
-> For these cases, the guarantee comes from luserspace, and it gives the
-> pinky promise that none of the vcpus are running at that point. But
-> being of a suspicious nature, we assert that this is true by trying to
-> take all the vcpu mutexes in one go. This will fail if a vcpu is
-> running, as KVM itself takes the vcpu mutex before doing anything.
-> 
-> Similar requirement exists if we need to synthesise some state for
-> userspace from all the individual vcpu states.
+> Hence the use of the killable variant I suppose, for when they get tired
+> of waiting.
 
-Ah, okay. Because x86 is simply doing mutex_lock() instead of
-mutex_trylock() -- which would end up waiting for this activity to
-subside I suppose.
+Yeah, I remember some debate around that when this refactoring was
+first posted. I quickly paged it out.
 
-Hence the use of the killable variant I suppose, for when they get tired
-of waiting.
+> If all the architectures are basically doing the same thing, it might
+> make sense to unify this particular behaviour. But what do I know.
 
-If all the architectures are basically doing the same thing, it might
-make sense to unify this particular behaviour. But what do I know.
+I don't know either. The trylock behaviour has been there since day-1
+on the arm side, and changing it would have userspace visible effects.
+So I'm pretty keen on preserving it, warts and all. The last thing I
+need is a VMM person hitting my inbox on the grounds that their toy is
+broken.
 
+On the other hand, we're talking about virtualisation, so everything
+is more or less broken by design...
 
+	M.
+
+-- 
+Without deviation from the norm, progress is not possible.
 
 -- 
 kvm-riscv mailing list
