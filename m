@@ -4,91 +4,90 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0887C3ABB9
-	for <kvm-riscv@archiver.kernel.org>; Mon,  5 May 2025 21:41:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 19D1FC3ABC0
+	for <kvm-riscv@archiver.kernel.org>; Mon,  5 May 2025 21:41:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Message-Id
 	:MIME-Version:Subject:Date:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=mUIS+czOvzPMuFwRJuZMSI0pdX1WgP2NIlu40mB0FCg=; b=aiW+kcSmzXm9oF
-	a4mc6KDBwobS6yV7OmgYocTY8HwFUBdfEA2emtlM/0DP9YzV8Wr0WP6rLVfkIK0b6x8T+yVhJ1LUE
-	dtnra8tYNQoI9tGkPSywXxlAoZIPdS6yti2BImHZsrIyBeafQVdP73+OuMgnmAPJuVMi7jOBOUrle
-	iFLU8OYNP7QSb909YP4/tbizRFUe2/ZxY7a4wETuwvfZcYQiwFXt/oYq4KnFCpkzsvmW1MwWreebU
-	7VsOW3Nqb6e8WDcVtqaFiHHh9dzvIjRzkRDGEFyW1kkbFt1Rjm/5ticq69opHzB3SBpq8txZUWkrR
-	RYMQnqgrYDBH/btlGfLA==;
+	List-Owner; bh=03a2xElfPmcybnqAF/9IaBqjXnX0CtOvWAcJkNfWg0A=; b=hm0GwUOcsIzajB
+	ts1mKjf3jSvI+EwcV0XDooyI9keQqlrXlqsipQx2jRePjKN8tgmX+46NT0rhjgn3uVs9r7W8apHtY
+	pb7hUk3JxMrgzNBUoaYXQNBI8CpXaK0A+p9XJPGpvnl8Zm8gv+LNzh+0kuC0uHMdBTh50QuJBeXKe
+	IFSvL0EkrFloPI0ljHmQjW402tNeN7s6LhDa/4+w9kg1dcLJ0jtlpjQv5+kNK0ZnX+aQvj9gCABSw
+	PR8SJ3hR29xH5SPJpfXSCrCPDPwyTIxkUU15D2iuvwAxTUhYX7nb+jjZqfKhoYC35C4wEnJvZzcYt
+	29eG4i6Pg9nJYEs1mVWQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uC3Yz-00000008drp-1ysa;
+	id 1uC3Yz-00000008dsM-3LAZ;
 	Mon, 05 May 2025 21:41:25 +0000
 Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uC3XP-00000008dN6-0NLq
+	id 1uC3XP-00000008dN5-0NdC
 	for kvm-riscv@bombadil.infradead.org;
 	Mon, 05 May 2025 21:39:47 +0000
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=desiato.20200630; h=Cc:To:In-Reply-To:References:
 	Message-Id:Content-Transfer-Encoding:Content-Type:MIME-Version:Subject:Date:
 	From:Sender:Reply-To:Content-ID:Content-Description;
-	bh=AS5RZ2dErdCUnakbj1eEwsrgZNqL04KOmjC/MeeOuAI=; b=TCYcWQqGG/dKccNWIk3wdj6WdQ
-	mP4TveklMV14+l5IQIybQ+xh2MJR+bIZWj5kPl9zgk8YIFobQbdXTZgXqr7NqBRYN9t5El8BtoWgA
-	42DGLW9vRH1lq6G/nVPNVvSjL1hZKCQRmVX1tn/oVfthAAWBR9bZXLaMtFbgnC+WdSD8zfETwB7x6
-	e1UuBELp+LPnh4IqP/Uow14qEfPZ6H7WA2RAPpSu9jNvE7K/Ioio6MkkIjstH7nq/DQZ7lX6s5yvZ
-	cnf6YMB9C9H2JNh50s5K63st+vfun4Z6zr2+6N59qJKiPYLYIGGPeXcB6BzlbGCJY6n4gKZUwCdX+
-	R+PBbdHg==;
-Received: from mail-pl1-x62b.google.com ([2607:f8b0:4864:20::62b])
+	bh=zfFMvCaGxkt3NeGE85EC76Mka/3yXyXq5JViUm/gzpM=; b=lEStJjeRPd4AsLgS/fFoFyRvr7
+	RLC7ocO1t35Ex7G2DlpdvZVHJL+yRkwS3CDbNEE/Bk1ZzJGW/2KjuAcq/fNMlkpQR9Iob4j5Y36+A
+	gYMt6J/TYsyXLejHyUHTh9CV0yHQ6gK1K5lDMeyHzO0lcR7uB+HW+7nZtHmYtFDl+ZQGEjrHzVwui
+	37fxfcVVjccrGCw2ltwj9NTqCMaS0n9GGZFggcQwgy9YRB5czCrUdEtpyYbMFpkMWAOWhZRALqO4e
+	qVtDsG3pKHA69FCqg6C9X+fMaljwaptnSaW2zAQT+b/nGe8TOX230RlQErQs0mu741NCFVCfFmWxp
+	O4VQ3+Hg==;
+Received: from mail-pf1-x42b.google.com ([2607:f8b0:4864:20::42b])
 	by desiato.infradead.org with esmtps (Exim 4.98.1 #2 (Red Hat Linux))
-	id 1uC3XL-0000000FYCi-2a2E
+	id 1uC3XL-0000000FYCh-1hmh
 	for kvm-riscv@lists.infradead.org;
 	Mon, 05 May 2025 21:39:45 +0000
-Received: by mail-pl1-x62b.google.com with SMTP id d9443c01a7336-227b828de00so56848155ad.1
-        for <kvm-riscv@lists.infradead.org>; Mon, 05 May 2025 14:39:42 -0700 (PDT)
+Received: by mail-pf1-x42b.google.com with SMTP id d2e1a72fcca58-736bfa487c3so4481935b3a.1
+        for <kvm-riscv@lists.infradead.org>; Mon, 05 May 2025 14:39:41 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=rivosinc-com.20230601.gappssmtp.com; s=20230601; t=1746481180; x=1747085980; darn=lists.infradead.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=AS5RZ2dErdCUnakbj1eEwsrgZNqL04KOmjC/MeeOuAI=;
-        b=J6tJm97rYmgYEtSNDtDEa5rPqKqQVzxMWzOFPYYZHJkJbsfVIlopc2vYbxRK3nrq+N
-         3zAeVJqtMZP99mRrPK7EnYxrF6kb0zfqBNsuxxZk2PagP3qalJoJDTI177levASD1pMi
-         dOIBugxxv2fxQmT20tXv++YakUXuQE1ZR4uDtxHeQiX5swsQTD83GPrlHNxPfPebR7Nr
-         5hQ6NQn2H0v1GrN+o5v2UTdX3Nt8UhBLFPpfPos5t/TGN0iwB13yLpWsgvKhrNGOYKwg
-         L4YCjCaH4eSIwFlloI8owWTjycFIMWlsU/XN5tNEhV0a8DD+rgIUBCCQrRWli/735UNr
-         +gkw==
+        bh=zfFMvCaGxkt3NeGE85EC76Mka/3yXyXq5JViUm/gzpM=;
+        b=GV3ztlbgIUSI3SBPZ4DUON0dZDNc3lU8iqxRc4WC+nDGxyGlkWq+OGQsk43jl2VJ02
+         LeWvSvzP7NwSvKcuGOD8UyoCugjAoiSm1mlqMUnne2vLwvTRttBnzuy7unveTFZCEMJE
+         W5urCw7eU7mjg9dMQYRdaY3D0x/s1+FtE4i1N9ZVLN1DG+J6OoO+qu075+RBlIX692Xr
+         q2s6bn/WrVJhg6sMS6gogThdMXKAeZO3pZB+UJI8L2tNdBZvmh0fp+Qv05cDwtvQiawn
+         yVjEvMHZcjgGRCY5N5zTTtRCm4IBdWcjUqnT0V4HsRleZ7h4C3GhartpPjaFHRF3EqBQ
+         r5xw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20230601; t=1746481180; x=1747085980;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=AS5RZ2dErdCUnakbj1eEwsrgZNqL04KOmjC/MeeOuAI=;
-        b=r5u8QNQd7Fnw7WyeJscbp+valw3tQ/GxB35jaMlqJBR48kP9susa3WS21I6MSNU8WH
-         OTZMCw0gx2rHcEvT0V1zbY+EDpt0s05YNN14rnK573t8lwA/7cMOyZjBIzEiB2PFnkYG
-         cLGYt1WbVJTAY/91hL5bwKFaw3IJFlzPZbkbsdV/WsL2zjtrcW53VHaWPBdlw4ArHlME
-         OeUXDoMSTuDoeWJbIpdAlqbgGy/kI5Bx9UgmdPbEU7ebY0CcqtoHSG3VJKdq71r90vHv
-         WFhL7dfdaZz164XEL+pd1Es5l9yPuBxPl0Nbgvht+VtKuygt5BaipNLpZ1U4BOzLVnVf
-         yBGA==
-X-Forwarded-Encrypted: i=1; AJvYcCWedvm7GnzzsdbsEGVG8XrGsxjn7eQCDE9AW7Pel8tEuL4aOQRFYZceQHXHOiWK366Qrm9zRmj2FXw=@lists.infradead.org
-X-Gm-Message-State: AOJu0YyVXVAy7m9lppJ7PyRb7+QV0yAPKB8Zns8ocdJK2ghFeRRqB5XV
-	8Fv32pXJZ5TX4YMtU7S63PksIzP0vIIiXeeJOeazNdfqdpgJTSR6tPvDSnsY5ww=
-X-Gm-Gg: ASbGncvcAByGi8Ae4JSvkcG1WFuDUtV8IF5EI8N3MEG+u5d5HZQilBjBD22C3Qz1kPy
-	4SoiWMIHaKxa4Imr6sEAZUlGqyHW2dykvQXplIvGQlhKywm67jiepL8N412kTC5abQRkfuWez/i
-	+nCtTjJXT9GjS+gwVy+Z1cZM4txft3kJanOtASRvcfaeoDi9QyO17HQy902b9wCEvaurmZXR1xE
-	2X7FbVGyW9rLmacexAbsixIDWZTJD3zefne0x2b1+zO9Qr3UIqYNLBWFAvgaitL6qidJ2ESZ53o
-	2tWBmy62mCLAZNOx0d0nGGsaywYfor6X/h/ZJ/tm1gQRgbmdXvvHWg==
-X-Google-Smtp-Source: AGHT+IF0cdGfyegYWS2h3g8K1ylrRO9RH/TBuX+Z6nJcjOdwQsA79eqmv6Tj/3cv8UZxiuHtVwsgFA==
-X-Received: by 2002:a17:903:22c7:b0:225:abd2:5e39 with SMTP id d9443c01a7336-22e3633a6abmr7949715ad.30.1746481180682;
-        Mon, 05 May 2025 14:39:40 -0700 (PDT)
+        bh=zfFMvCaGxkt3NeGE85EC76Mka/3yXyXq5JViUm/gzpM=;
+        b=se6ohdfgGNOPQwzJo718UGIArD43d6WZpGk9o1x5le+6iNaUIeomDqdXL9qHi5gVRP
+         RqQsC7sQhqkQgXSh+RbSgXab2ldQ73C2PRHfeRUObZYd3OFJGIRm612DIIRyc9vHFhtO
+         JHBUBL81Kxs6B3wrBEZe14qjmvYKIM6CQ9ayc5TXM7lPG5FUzYjPhmnc4Fc2ix0Qb7e0
+         KlKMUXgcLQ6ULwncVOx4bRZTpd/ICwEhNrp1yQ4+Es47jQXYJ33vK3adAFkaBbyHQBG0
+         V1vv4GaUA8Xp9MIWMQ8NsPE4CinYzXRsm2i0zU4w4/zG9o7BOme/f/caHAiY4l/f8MXa
+         0MPA==
+X-Forwarded-Encrypted: i=1; AJvYcCVvIZ1phAimS3cbXHvPNBjKk0pP7JXcfJGGGa72gFfxkzyJ9YJBgzgUMHcCmasBadpyv/mdwszBP20=@lists.infradead.org
+X-Gm-Message-State: AOJu0YzsZHArDEtDEfwbYmgMPTY1yiO8KOgXGN8O6wwO18BcT2B6A04J
+	hxXizdnGNeejFu7D9grDbPHeglvmaEqDr6EXDu8O0gggkpxJHn4VKgUq9hgfO2Y=
+X-Gm-Gg: ASbGncvyhqJQTMbBFAxcP0ngmpYu2I8qEr+WdPT5Zg07o9dbmjATcER5n6sI9aMRcO1
+	iA9NPZR1Misv59V482zeO7U8d3wZXk0xKtXX+u3mtViLv7+tUN/PR+hJZBeudWz95VU0ZnGgvoG
+	pThUlC+v9PBAZtDNKX26WmGFno/qalvFYnc6IVOnCbprWD1RooMsFSP7z3MLtSabV81Cpsc/u3+
+	he114+/R8ZSEmOFED2bB82tyur7mRbZWORTWlquF0VI1Umjj+8nC9WmpUwC00Tfx+X1+TgoY170
+	+QhChBRV5MNSX7u5Sp8m50tMpiw43B+HxJjMoaK7r7IUFelAixJSBg==
+X-Google-Smtp-Source: AGHT+IHaY1/wqoejX+c2irF8o4c25FVRdJ7OcAVhO20N1cFEts/lKwVCx4wh1gNDM2vBI71ScyuV8g==
+X-Received: by 2002:a05:6a00:2793:b0:73e:10ea:1196 with SMTP id d2e1a72fcca58-740919bcf33mr1106942b3a.8.1746481179845;
+        Mon, 05 May 2025 14:39:39 -0700 (PDT)
 Received: from atishp.ba.rivosinc.com ([64.71.180.162])
         by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-74058df12d8sm7388599b3a.78.2025.05.05.14.39.39
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 05 May 2025 14:39:40 -0700 (PDT)
+        Mon, 05 May 2025 14:39:39 -0700 (PDT)
 From: Atish Patra <atishp@rivosinc.com>
-Date: Mon, 05 May 2025 14:39:30 -0700
-Subject: [PATCH 5/5] RISC-V: KVM: Remove the boot time enabling of hstateen
- bits
+Date: Mon, 05 May 2025 14:39:29 -0700
+Subject: [PATCH 4/5] RISC-V: KVM: Enable envcfg and sstateen bits lazily
 MIME-Version: 1.0
-Message-Id: <20250505-kvm_lazy_enable_stateen-v1-5-3bfc4008373c@rivosinc.com>
+Message-Id: <20250505-kvm_lazy_enable_stateen-v1-4-3bfc4008373c@rivosinc.com>
 References: <20250505-kvm_lazy_enable_stateen-v1-0-3bfc4008373c@rivosinc.com>
 In-Reply-To: <20250505-kvm_lazy_enable_stateen-v1-0-3bfc4008373c@rivosinc.com>
 To: Anup Patel <anup@brainfault.org>, Atish Patra <atishp@atishpatra.org>, 
@@ -99,8 +98,8 @@ Cc: kvm@vger.kernel.org, kvm-riscv@lists.infradead.org,
  Atish Patra <atishp@rivosinc.com>
 X-Mailer: b4 0.15-dev-42535
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250505_223943_922340_F3FD3307 
-X-CRM114-Status: UNSURE (   7.58  )
+X-CRM114-CacheID: sfid-20250505_223943_923329_5C8BF8CB 
+X-CRM114-Status: UNSURE (   8.25  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -118,35 +117,57 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-All the existing hstateen bits can be enabled at runtime upon
-first access now. Remove the default enabling at bootime now.
+SENVCFG and SSTATEEN CSRs are controlled by HSENVCFG(62) and
+SSTATEEN0(63) bits in hstateen. Enable them lazily at runtime
+instead of bootime.
 
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- arch/riscv/kvm/vcpu.c | 10 ----------
- 1 file changed, 10 deletions(-)
+ arch/riscv/kvm/vcpu_insn.c | 28 ++++++++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
 
-diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index 60d684c76c58..0aaa9e0e4a01 100644
---- a/arch/riscv/kvm/vcpu.c
-+++ b/arch/riscv/kvm/vcpu.c
-@@ -560,16 +560,6 @@ static void kvm_riscv_vcpu_setup_config(struct kvm_vcpu *vcpu)
- 	    !riscv_isa_extension_available(isa, SVADE))
- 		cfg->henvcfg |= ENVCFG_ADUE;
+diff --git a/arch/riscv/kvm/vcpu_insn.c b/arch/riscv/kvm/vcpu_insn.c
+index c46907bfe42f..ed6302b1992b 100644
+--- a/arch/riscv/kvm/vcpu_insn.c
++++ b/arch/riscv/kvm/vcpu_insn.c
+@@ -256,9 +256,37 @@ int kvm_riscv_vcpu_hstateen_lazy_enable(struct kvm_vcpu *vcpu, unsigned int csr_
+ 	return KVM_INSN_CONTINUE_SAME_SEPC;
+ }
  
--	if (riscv_has_extension_unlikely(RISCV_ISA_EXT_SMSTATEEN)) {
--		cfg->hstateen0 |= SMSTATEEN0_HSENVCFG;
--		if (riscv_isa_extension_available(isa, SSAIA))
--			cfg->hstateen0 |= SMSTATEEN0_AIA_IMSIC |
--					  SMSTATEEN0_AIA |
--					  SMSTATEEN0_AIA_ISEL;
--		if (riscv_isa_extension_available(isa, SMSTATEEN))
--			cfg->hstateen0 |= SMSTATEEN0_SSTATEEN0;
--	}
--
- 	cfg->hedeleg = KVM_HEDELEG_DEFAULT;
- 	if (vcpu->guest_debug)
- 		cfg->hedeleg &= ~BIT(EXC_BREAKPOINT);
++static int kvm_riscv_vcpu_hstateen_enable_senvcfg(struct kvm_vcpu *vcpu,
++						  unsigned int csr_num,
++						  unsigned long *val,
++						  unsigned long new_val,
++						  unsigned long wr_mask)
++{
++	return kvm_riscv_vcpu_hstateen_lazy_enable(vcpu, csr_num, SMSTATEEN0_HSENVCFG);
++}
++
++static int kvm_riscv_vcpu_hstateen_enable_stateen(struct kvm_vcpu *vcpu,
++						  unsigned int csr_num,
++						  unsigned long *val,
++						  unsigned long new_val,
++						  unsigned long wr_mask)
++{
++	const unsigned long *isa = vcpu->arch.isa;
++
++	if (riscv_isa_extension_available(isa, SMSTATEEN))
++		return kvm_riscv_vcpu_hstateen_lazy_enable(vcpu, csr_num, SMSTATEEN0_SSTATEEN0);
++	else
++		return KVM_INSN_EXIT_TO_USER_SPACE;
++}
++
++#define KVM_RISCV_VCPU_STATEEN_CSR_FUNCS \
++{ .base = CSR_SENVCFG,    .count = 1, .func = kvm_riscv_vcpu_hstateen_enable_senvcfg }, \
++{ .base = CSR_SSTATEEN0,  .count = 1, .func = kvm_riscv_vcpu_hstateen_enable_stateen },\
++
+ static const struct csr_func csr_funcs[] = {
+ 	KVM_RISCV_VCPU_AIA_CSR_FUNCS
+ 	KVM_RISCV_VCPU_HPMCOUNTER_CSR_FUNCS
++	KVM_RISCV_VCPU_STATEEN_CSR_FUNCS
+ 	{ .base = CSR_SEED, .count = 1, .func = seed_csr_rmw },
+ #ifdef CONFIG_32BIT
+ 	KVM_RISCV_VCPU_AIA_CSR_32BIT_FUNCS
 
 -- 
 2.43.0
