@@ -4,39 +4,39 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7D01BC3ABBF
-	for <kvm-riscv@archiver.kernel.org>; Wed,  7 May 2025 17:26:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 59EE3C3ABBF
+	for <kvm-riscv@archiver.kernel.org>; Wed,  7 May 2025 17:27:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
 	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=I9l4aJlvmxkuRxqqYF1P+aQc/b74DCGfrphRBJLmu4M=; b=B3iYy316KiT9Yi
-	nR2jCmTtPnbRWDnqY8EyTdeccsjYwUnls8ehgfQWG292UBobwL+7e8Vqp3MCkniyLlvWvq10tMEzy
-	3LoPTYvBUk67coGoPPBsNIM5pj6kwWn9u6MpZrmRdGMKgMb5fJLAF4U9xcMHwlxIme7mBnYAqPAKU
-	zxLQ/RF1Rt8+ZER/yVNqXIKKHrl5/87ibPh30BnkOx+0IokS3V5nxkYIC7NrMF0Iuk7mljzW/XxQS
-	cn+HlAwWW7EeQCFkgRy2goGINJ5mVlZGTaS7IfpgB3/5+C680uMCLj+gkcctj2yA7fjz+q/dPC0Qe
-	T6BuVXBxdpe5eRMuGDcg==;
+	List-Owner; bh=/ML1pJoOBOwUDqIS7r/Gc4n94f4tUZm+qaKyFViS/q4=; b=vfQCYXGJoryBBL
+	rR7lu9ZVi7dLfdlI1eQXbA2hAwTeZHpv2I/KRFH5MG/ou4lL+a/T8D3WQqXgBtp4vC2NvTVH9MMNo
+	16yajv1/QDuaA/60NnKJzzIGH7yok7tludAP1sv1oYdoP8mi1Nske38OFggBxayh51hXhJQCXLKTB
+	Wqx9uM9yCwxHH92l9BsVvQZl0jAv/TA/MtZrIBOMd7jWHCqMCRScLb5fR/CXADMcNqZ2kge3e6Ndl
+	2CiW2k9sF/X4xVvg5XWEAUyR6AfyksrvZHwAiCvodpu66TOtmTmfKa0xdJX+gRJDY9YwFZgDrmD0V
+	5toQ6+lwddxClvznFPXQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uCiXl-0000000GKDH-26E6;
-	Wed, 07 May 2025 17:26:53 +0000
-Received: from out-185.mta0.migadu.com ([91.218.175.185])
+	id 1uCiXu-0000000GKUX-2Tn0;
+	Wed, 07 May 2025 17:27:02 +0000
+Received: from out-171.mta1.migadu.com ([95.215.58.171])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uChvN-0000000GCOD-2NLD
+	id 1uChx3-0000000GCaH-0iAe
 	for kvm-riscv@lists.infradead.org;
-	Wed, 07 May 2025 16:47:14 +0000
-Date: Wed, 7 May 2025 18:47:08 +0200
+	Wed, 07 May 2025 16:49:01 +0000
+Date: Wed, 7 May 2025 18:48:49 +0200
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1746636431;
+	t=1746636535;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=nq0jvPXcCaXcZzDjqmWJrmU0XBhQs2iQrx8JeAPfxmg=;
-	b=xjTaAO9U8LQ4Kd2hRhF3e7XyPcfoUKEneZZEGF63X62j83ZwidnhiT0cNab9+CxKKAinqs
-	tQrsKIMffkrdIVznOheKfefvPn0Cvws33o9gx/1+kb6bnqYhrsToL/MFO8XcsBXols2z6S
-	vS0CRp0fg8fKA82L2HYyV6KJxOp4Rvo=
+	bh=2RpamE2srlpqeXHrljbpcOM2Ay/589KHDerW4ekHgUI=;
+	b=pZjO/Dq1wiCjg2M3GtCbh5dD3dLgzdP6L3Kwa+o1eEo5wqwXY9g4EhJqMQY/Bi/EpxnfA0
+	558VvSquXY1JzId+uqGR9L0c8F8U/bW2i0cbPFE5/5UzbATwdBpa9GCxfLKSp/MNrFT22H
+	+23vVs422Ir3vA6F77jcwbdE2AsR2Cc=
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
 From: Andrew Jones <andrew.jones@linux.dev>
 To: Alexandru Elisei <alexandru.elisei@arm.com>
@@ -47,18 +47,18 @@ Cc: eric.auger@redhat.com, lvivier@redhat.com, thuth@redhat.com,
 	will@kernel.org, julien.thierry.kdev@gmail.com, maz@kernel.org, 
 	oliver.upton@linux.dev, suzuki.poulose@arm.com, yuzenghui@huawei.com, joey.gouly@arm.com, 
 	andre.przywara@arm.com
-Subject: Re: [kvm-unit-tests PATCH v3 12/16] scripts: Detect kvmtool failure
- in premature_failure()
-Message-ID: <20250507-44b6574c7e69e3c56d762552@orel>
+Subject: Re: [kvm-unit-tests PATCH v3 13/16] scripts: Do not probe for
+ maximum number of VCPUs when using kvmtool
+Message-ID: <20250507-71bfb831e524b5c437c6a828@orel>
 References: <20250507151256.167769-1-alexandru.elisei@arm.com>
- <20250507151256.167769-13-alexandru.elisei@arm.com>
+ <20250507151256.167769-14-alexandru.elisei@arm.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20250507151256.167769-13-alexandru.elisei@arm.com>
+In-Reply-To: <20250507151256.167769-14-alexandru.elisei@arm.com>
 X-Migadu-Flow: FLOW_OUT
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250507_094713_755620_82563D86 
-X-CRM114-Status: GOOD (  18.70  )
+X-CRM114-CacheID: sfid-20250507_094857_347221_DC4BF174 
+X-CRM114-Status: GOOD (  18.69  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -75,88 +75,121 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Wed, May 07, 2025 at 04:12:52PM +0100, Alexandru Elisei wrote:
-> kvm-unit-tests assumes that if the VMM is able to get to where it tries to
-> load the kernel, then the VMM and the configuration parameters will also
-> work for running the test. All of this is done in premature_failure().
+On Wed, May 07, 2025 at 04:12:53PM +0100, Alexandru Elisei wrote:
+> The --probe-maxsmp parameter updates MAX_SMP with the maximum number of
+> VCPUs that the host supports. Qemu will exit with an error when creating a
+> virtual machine if the number of VCPUs is exceeded.
 > 
-> Teach premature_failure() about the kvmtool's error message when it fails
-> to load the dummy kernel.
+> kvmtool behaves differently: it will automatically limit the number of
+> VCPUs to the what KVM supports, which is exactly what --probe-maxsmp wants
+> to achieve. When doing --probe-maxsmp with kvmtool, print a message
+> explaining why it's redundant and don't do anything else.
 > 
 > Signed-off-by: Alexandru Elisei <alexandru.elisei@arm.com>
 > ---
->  scripts/runtime.bash |  8 +++-----
->  scripts/vmm.bash     | 23 +++++++++++++++++++++++
->  2 files changed, 26 insertions(+), 5 deletions(-)
+>  run_tests.sh         |  3 ++-
+>  scripts/runtime.bash | 16 ----------------
+>  scripts/vmm.bash     | 24 ++++++++++++++++++++++++
+>  3 files changed, 26 insertions(+), 17 deletions(-)
 > 
+> diff --git a/run_tests.sh b/run_tests.sh
+> index 150a06a91064..a69c3665b7a4 100755
+> --- a/run_tests.sh
+> +++ b/run_tests.sh
+> @@ -10,6 +10,7 @@ if [ ! -f config.mak ]; then
+>  fi
+>  source config.mak
+>  source scripts/common.bash
+> +source scripts/vmm.bash
+>  
+>  function usage()
+>  {
+> @@ -90,7 +91,7 @@ while [ $# -gt 0 ]; do
+>              list_tests="yes"
+>              ;;
+>          --probe-maxsmp)
+> -            probe_maxsmp
+> +            ${vmm_opts[$TARGET:probe_maxsmp]}
+>              ;;
+>          --)
+>              ;;
 > diff --git a/scripts/runtime.bash b/scripts/runtime.bash
-> index 86d8a2cd8528..01ec8eae2bba 100644
+> index 01ec8eae2bba..a802686c511d 100644
 > --- a/scripts/runtime.bash
 > +++ b/scripts/runtime.bash
-> @@ -1,3 +1,5 @@
-> +source scripts/vmm.bash
-> +
->  : "${RUNTIME_arch_run?}"
->  : "${MAX_SMP:=$(getconf _NPROCESSORS_ONLN)}"
->  : "${TIMEOUT:=90s}"
-> @@ -19,11 +21,7 @@ premature_failure()
+> @@ -209,19 +209,3 @@ function run()
 >  
->      log="$(eval "$(get_cmdline _NO_FILE_4Uhere_)" 2>&1)"
->  
-> -    echo "$log" | grep "_NO_FILE_4Uhere_" |
-> -        grep -q -e "[Cc]ould not \(load\|open\) kernel" \
-> -                -e "error loading" \
-> -                -e "failed to load" &&
-> -        return 1
-> +    ${vmm_opts[$TARGET:parse_premature_failure]} "$log" || return 1
->  
->      RUNTIME_log_stderr <<< "$log"
->  
+>      return $ret
+>  }
+> -
+> -#
+> -# Probe for MAX_SMP, in case it's less than the number of host cpus.
+> -#
+> -function probe_maxsmp()
+> -{
+> -	local smp
+> -
+> -	if smp=$($RUNTIME_arch_run _NO_FILE_4Uhere_ -smp $MAX_SMP |& grep 'SMP CPUs'); then
+> -		smp=${smp##* }
+> -		smp=${smp/\(}
+> -		smp=${smp/\)}
+> -		echo "Restricting MAX_SMP from ($MAX_SMP) to the max supported ($smp)" >&2
+> -		MAX_SMP=$smp
+> -	fi
+> -}
 > diff --git a/scripts/vmm.bash b/scripts/vmm.bash
-> index d24a4c4b8713..a1d50ed51981 100644
+> index a1d50ed51981..ef9819f4132c 100644
 > --- a/scripts/vmm.bash
 > +++ b/scripts/vmm.bash
-> @@ -93,6 +93,27 @@ kvmtool_fixup_return_code()
->  	echo $ret
+> @@ -105,6 +105,22 @@ function qemu_parse_premature_failure()
+>  	return 0
 >  }
 >  
-> +function qemu_parse_premature_failure()
+> +#
+> +# Probe for MAX_SMP, in case it's less than the number of host cpus.
+> +#
+> +function qemu_probe_maxsmp()
 > +{
-> +	local log="$@"
+> +	local smp
 > +
-> +	echo "$log" | grep "_NO_FILE_4Uhere_" |
-> +		grep -q -e "[Cc]ould not \(load\|open\) kernel" \
-> +			-e "error loading" \
-> +			-e "failed to load" &&
-> +		return 1
-> +	return 0
+> +	if smp=$($RUNTIME_arch_run _NO_FILE_4Uhere_ -smp $MAX_SMP |& grep 'SMP CPUs'); then
+> +		smp=${smp##* }
+> +		smp=${smp/\(}
+> +		smp=${smp/\)}
+> +		echo "Restricting MAX_SMP from ($MAX_SMP) to the max supported ($smp)" >&2
+> +		MAX_SMP=$smp
+> +	fi
 > +}
 > +
-> +function kvmtool_parse_premature_failure()
+>  function kvmtool_parse_premature_failure()
+>  {
+>  	local log="$@"
+> @@ -114,6 +130,12 @@ function kvmtool_parse_premature_failure()
+>  	return 0
+>  }
+>  
+> +function kvmtool_probe_maxsmp()
 > +{
-> +	local log="$@"
-> +
-> +	echo "$log" | grep "Fatal: Unable to open kernel _NO_FILE_4Uhere_" &&
-> +		return 1
-> +	return 0
+> +	echo "kvmtool automatically limits the number of VCPUs to maximum supported"
+> +	echo "The 'smp' test parameter won't be modified"
 > +}
 > +
 >  declare -A vmm_opts=(
 >  	[qemu:nr_cpus]='-smp'
 >  	[qemu:kernel]='-kernel'
-> @@ -100,6 +121,7 @@ declare -A vmm_opts=(
->  	[qemu:initrd]='-initrd'
+> @@ -122,6 +144,7 @@ declare -A vmm_opts=(
 >  	[qemu:default_opts]=''
 >  	[qemu:fixup_return_code]=qemu_fixup_return_code
-> +	[qemu:parse_premature_failure]=qemu_parse_premature_failure
+>  	[qemu:parse_premature_failure]=qemu_parse_premature_failure
+> +	[qemu:probe_maxsmp]=qemu_probe_maxsmp
 >  
 >  	[kvmtool:nr_cpus]='--cpus'
 >  	[kvmtool:kernel]='--kernel'
-> @@ -107,6 +129,7 @@ declare -A vmm_opts=(
->  	[kvmtool:initrd]='--initrd'
+> @@ -130,6 +153,7 @@ declare -A vmm_opts=(
 >  	[kvmtool:default_opts]="$KVMTOOL_DEFAULT_OPTS"
 >  	[kvmtool:fixup_return_code]=kvmtool_fixup_return_code
-> +	[kvmtool:parse_premature_failure]=kvmtool_parse_premature_failure
+>  	[kvmtool:parse_premature_failure]=kvmtool_parse_premature_failure
+> +	[kvmtool:probe_maxsmp]=kvmtool_probe_maxsmp
 >  )
 >  
 >  function check_vmm_supported()
