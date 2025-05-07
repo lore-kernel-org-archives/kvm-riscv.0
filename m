@@ -4,7 +4,7 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62BF8C3ABCA
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AD8B3C3ABCB
 	for <kvm-riscv@archiver.kernel.org>; Wed,  7 May 2025 15:48:54 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
@@ -12,27 +12,27 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=t3H8C0HZQe/5YJNLfs+RR1a3D8gZybnhrjYDxce5hH8=; b=KZm7tqF4DI/cQ6
-	H6aHY15lgnphCMIJK/pdBV+13zs3KfD35Dv1rfg//WuD9/cBYJq0QPHfTYKWd3AmQzv5Jt2ePbHWB
-	60Z5BlNf/B+i/RlRwKjUvoxfWfKSiyTfMvNi0tTtWplrHGz4pUB+YFcg1+7xpEH2Q3p8NjPOko8Xx
-	AB0rr0C7JFvRFHszvLC7lxTfW2o8mPQqQFYpsxfyEX1t/EiCfZhcd7XjlWh1Gbm0jIzr/W8uyghbd
-	WunDfxYQQ/AsiVfkhQd1Iti4FC+MHJmVJANW6o48KgsZFeuLlVP3G+1WQ0FKm6e07tDY5GWMDcEiv
-	uAPmec9EgP8hqjNmvNsA==;
+	List-Owner; bh=XyGDiqox7v5ndKzMaPN9ofqnO9c92g2zUbKWFMFXtOQ=; b=gApa4mOczL8spG
+	ClqxBIyzRhzCdpAp5nfjZ/7f7wsAt3ZA2yUR/gf6Hi+00Ub7Ki0kUL7JB17NFm7mnpLXQAVaCchT6
+	fPj2aBk0BleIftsfC4oag0XnHM344hEH+fT395+2aRbKdYslIlPWRW2DzQ2w40xNGeAGnFUnEDO4X
+	jU8abv7Q0LcnT7yOnbASFAeEK3pOLrMSjpMSlbNtrgG25lV9xCpOMFWv3Ov0+cdoFWwHpT9DXXasE
+	bRZaXIHzj+01Wc35rsRAxXfgjOOhJCtx9/xXuwBC9gnZRSwyjq85aUPhyzRGGpb0ogGvmKD0euf8f
+	Jitjyg3p3BinJCCFYPNg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uCh0w-0000000G2G0-0cbt;
+	id 1uCh0w-0000000G2GM-1vJf;
 	Wed, 07 May 2025 15:48:54 +0000
 Received: from foss.arm.com ([217.140.110.172])
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uCgSe-0000000FusL-0gzn
+	id 1uCgSj-0000000FuuH-0KSV
 	for kvm-riscv@lists.infradead.org;
-	Wed, 07 May 2025 15:13:29 +0000
+	Wed, 07 May 2025 15:13:34 +0000
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 8E6692050;
-	Wed,  7 May 2025 08:13:17 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 3B19620E3;
+	Wed,  7 May 2025 08:13:21 -0700 (PDT)
 Received: from localhost.localdomain (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 6B3303F58B;
-	Wed,  7 May 2025 08:13:24 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 026B03F58B;
+	Wed,  7 May 2025 08:13:27 -0700 (PDT)
 From: Alexandru Elisei <alexandru.elisei@arm.com>
 To: andrew.jones@linux.dev,
 	eric.auger@redhat.com,
@@ -55,17 +55,18 @@ Cc: kvm@vger.kernel.org,
 	suzuki.poulose@arm.com,
 	yuzenghui@huawei.com,
 	joey.gouly@arm.com,
-	andre.przywara@arm.com
-Subject: [kvm-unit-tests PATCH v3 04/16] run_tests.sh: Document --probe-maxsmp argument
-Date: Wed,  7 May 2025 16:12:44 +0100
-Message-ID: <20250507151256.167769-5-alexandru.elisei@arm.com>
+	andre.przywara@arm.com,
+	Andrew Jones <drjones@redhat.com>
+Subject: [kvm-unit-tests PATCH v3 05/16] scripts: Document environment variables
+Date: Wed,  7 May 2025 16:12:45 +0100
+Message-ID: <20250507151256.167769-6-alexandru.elisei@arm.com>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20250507151256.167769-1-alexandru.elisei@arm.com>
 References: <20250507151256.167769-1-alexandru.elisei@arm.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250507_081328_255212_D0D95575 
-X-CRM114-Status: UNSURE (   8.16  )
+X-CRM114-CacheID: sfid-20250507_081333_165433_E07FA187 
+X-CRM114-Status: UNSURE (   9.82  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -83,44 +84,60 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Commit 5dd20ec76ea63 ("runtime: Update MAX_SMP probe") added the
---probe-maxmp argument, but the help message for run_tests.sh wasn't
-updated. Document --probe-maxsmp.
+Document the environment variables that influence how a test is executed
+by the run_tests.sh test runner.
 
+Suggested-by: Andrew Jones <drjones@redhat.com>
 Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
 Signed-off-by: Alexandru Elisei <alexandru.elisei@arm.com>
 ---
- run_tests.sh | 17 +++++++++--------
- 1 file changed, 9 insertions(+), 8 deletions(-)
+ docs/unittests.txt |  5 ++++-
+ run_tests.sh       | 12 +++++++++---
+ 2 files changed, 13 insertions(+), 4 deletions(-)
 
+diff --git a/docs/unittests.txt b/docs/unittests.txt
+index 6eb315618dbd..ea0da959f008 100644
+--- a/docs/unittests.txt
++++ b/docs/unittests.txt
+@@ -102,7 +102,8 @@ timeout
+ -------
+ timeout = <duration>
+ 
+-Optional timeout in seconds, after which the test will be killed and fail.
++Optional timeout in seconds, after which the test will be killed and fail. Can
++be overwritten with the TIMEOUT=<duration> environment variable.
+ 
+ check
+ -----
+@@ -113,3 +114,5 @@ can contain multiple files to check separated by a space, but each check
+ parameter needs to be of the form <path>=<value>
+ 
+ The path and value cannot contain space, =, or shell wildcard characters.
++
++Can be overwritten with the CHECK environment variable with the same syntax.
 diff --git a/run_tests.sh b/run_tests.sh
-index 152323ffc8a2..f30b6dbd131c 100755
+index f30b6dbd131c..dd9d27377905 100755
 --- a/run_tests.sh
 +++ b/run_tests.sh
-@@ -17,14 +17,15 @@ cat <<EOF
+@@ -27,9 +27,15 @@ Usage: $0 [-h] [-v] [-a] [-g group] [-j NUM-TASKS] [-t] [-l]
+     -l, --list          Only output all tests list
+         --probe-maxsmp  Update the maximum number of VCPUs supported by host
  
- Usage: $0 [-h] [-v] [-a] [-g group] [-j NUM-TASKS] [-t] [-l]
+-Set the environment variable QEMU=/path/to/qemu-system-ARCH to
+-specify the appropriate qemu binary for ARCH-run.
+-
++The following environment variables are used:
++
++    QEMU            Path to QEMU binary for ARCH-run
++    ACCEL           QEMU accelerator to use, e.g. 'kvm', 'hvf' or 'tcg'
++    ACCEL_PROPS     Extra argument(s) to ACCEL
++    MACHINE         QEMU machine type
++    TIMEOUT         Timeout duration for the timeout(1) command
++    CHECK           Overwrites the 'check' unit test parameter (see
++                    docs/unittests.txt)
+ EOF
+ }
  
--    -h, --help      Output this help text
--    -v, --verbose   Enables verbose mode
--    -a, --all       Run all tests, including those flagged as 'nodefault'
--                    and those guarded by errata.
--    -g, --group     Only execute tests in the given group
--    -j, --parallel  Execute tests in parallel
--    -t, --tap13     Output test results in TAP format
--    -l, --list      Only output all tests list
-+    -h, --help          Output this help text
-+    -v, --verbose       Enables verbose mode
-+    -a, --all           Run all tests, including those flagged as 'nodefault'
-+                        and those guarded by errata.
-+    -g, --group         Only execute tests in the given group
-+    -j, --parallel      Execute tests in parallel
-+    -t, --tap13         Output test results in TAP format
-+    -l, --list          Only output all tests list
-+        --probe-maxsmp  Update the maximum number of VCPUs supported by host
- 
- Set the environment variable QEMU=/path/to/qemu-system-ARCH to
- specify the appropriate qemu binary for ARCH-run.
 -- 
 2.49.0
 
