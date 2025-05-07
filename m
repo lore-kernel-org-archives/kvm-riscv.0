@@ -4,7 +4,7 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 765D0C3ABBF
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B880BC3ABC5
 	for <kvm-riscv@archiver.kernel.org>; Wed,  7 May 2025 17:29:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
@@ -12,31 +12,31 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
 	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=QE0bQ1FuDoxQ0qQIi/AizPy6Kom/5Il9Jb3BI3X7c5Q=; b=1LTns2ilEFwV/u
-	esJW1sLSO1uxLRHj1UYVvzofx667k5Uo2uLQBIjEKL2aJ8VNxrMAQEKSdXQXR1ITBdMOfWH24jZP7
-	SX+hj9YSHYGpCt5sTkGO1U7PzQRkDXLWBzJiGCYhGc+Vpng+KJECFvc3BS1B/nPjQs6AnjXakFaOU
-	n8qK3SG9TWQxcSd4xgGj9Db2dXC73LGSOVOFY7bm0oVmXvYfCdeEi3Bvq4JbzDyqTWUfDSko6zhDu
-	L0Mbi0JHMxJeOLrQDqGsOyVRTZPbKhG+eaCthD0dwS9tNZKrWaoN7+lOVtZk+SyI8S4F6LUZVXVhw
-	BTVmJ/TrKaGrHkj4IRAA==;
+	List-Owner; bh=aXUJXr0cUrUfLflD4gOghYFRX7hBtp//RoEdRLSwlJQ=; b=maCUokg8Lwgfv0
+	mVv7EZw5z+uFh6wP84ckXAz+ppR2guAwOizry8IoyRo//gzdJ9P6dohXg2+VXp+4WnaPVIp71Ovzu
+	xgvDKsAW15caXZA/TVGxEaIyIp95eWTvi0VuLvx/UDTedUhjtou6U48hDz+Uc8TlPAHLIOk9pzAOf
+	Xice27HtSl75YtqzbgAhHCwiWymmkW+cN9KJPlShFuuzPMooXrZxRQTtKn6cfXfmZVGzQU27CtRnL
+	St9d+R+sy8xW/g09vkaYwCU74fnBweHxGPAFaXmek+SDzt3TXXwkHzNDhVydCmZ0TewRQStaMXLtw
+	EW/tYwvGjOlFS34p5W9g==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uCiai-0000000GLTA-0w5Q;
+	id 1uCiai-0000000GLTM-28IV;
 	Wed, 07 May 2025 17:29:56 +0000
-Received: from out-177.mta0.migadu.com ([91.218.175.177])
+Received: from out-182.mta1.migadu.com ([2001:41d0:203:375::b6])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uCi4W-0000000GDsm-2pRS
+	id 1uCi7l-0000000GEcp-2Wwx
 	for kvm-riscv@lists.infradead.org;
-	Wed, 07 May 2025 16:56:42 +0000
-Date: Wed, 7 May 2025 18:56:30 +0200
+	Wed, 07 May 2025 17:00:03 +0000
+Date: Wed, 7 May 2025 18:59:46 +0200
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1746636997;
+	t=1746637199;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=RqKe5S+kBJ5g+psmAnNRDncbPoduelQxWvprqMMN8Z0=;
-	b=V6wxGd5lb06gQoaxfsbumMEc/Q5nPDxudOK3MIErovCU5r8uaDQVrtNYIVNLIglV/yEQ18
-	lbnSOXsvJ4kaNeQ7VxExajSM+0ycBh4/Nu2k78IuUZv1jLqSf8vsY4KpITNz/pDEBw+O7I
-	e9rURqI7OGGLmkoOnHfmne/5sCmIKvI=
+	bh=W7RbClqZDTLPIsrG1S6Ef3Cx9TH5IxacJLeHcWQor0Q=;
+	b=iPQgkEJ+LZyyl/HYCCjGx+TlqTyj6+oXTCTr2iCCajrejVHdrHtoSUQVkfrZVnDUIOQHug
+	4GyuA2SK4xRhYb5L+TI1iB+OvEMac6eC/bhzcaI40imZ2TaCvfZ6j1ie7uTbqZXV4Rlg+R
+	AWMOBZDFdZBSB15+VhsrVqDGy7MjiKQ=
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
 From: Andrew Jones <andrew.jones@linux.dev>
 To: Alexandru Elisei <alexandru.elisei@arm.com>
@@ -47,18 +47,17 @@ Cc: eric.auger@redhat.com, lvivier@redhat.com, thuth@redhat.com,
 	will@kernel.org, julien.thierry.kdev@gmail.com, maz@kernel.org, 
 	oliver.upton@linux.dev, suzuki.poulose@arm.com, yuzenghui@huawei.com, joey.gouly@arm.com, 
 	andre.przywara@arm.com
-Subject: Re: [kvm-unit-tests PATCH v3 15/16] scripts: Add 'disabled_if' test
- definition parameter for kvmtool to use
-Message-ID: <20250507-8159aa2cb83d6a5b44c810d3@orel>
+Subject: Re: [kvm-unit-tests PATCH v3 16/16] scripts: Enable kvmtool
+Message-ID: <20250507-41058efcb1f4f05fd98d8deb@orel>
 References: <20250507151256.167769-1-alexandru.elisei@arm.com>
- <20250507151256.167769-16-alexandru.elisei@arm.com>
+ <20250507151256.167769-17-alexandru.elisei@arm.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20250507151256.167769-16-alexandru.elisei@arm.com>
+In-Reply-To: <20250507151256.167769-17-alexandru.elisei@arm.com>
 X-Migadu-Flow: FLOW_OUT
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250507_095641_120439_FECE6FE7 
-X-CRM114-Status: GOOD (  19.63  )
+X-CRM114-CacheID: sfid-20250507_100001_826382_E5EE6144 
+X-CRM114-Status: GOOD (  11.98  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -75,42 +74,31 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Wed, May 07, 2025 at 04:12:55PM +0100, Alexandru Elisei wrote:
-> The pci-test is qemu specific. Other tests perform migration, which
-> isn't supported by kvmtool. In general, kvmtool is not as feature-rich
-> as qemu, so add a new unittest parameter, 'disabled_if', that causes a
-> test to be skipped if the condition evaluates to true.
+On Wed, May 07, 2025 at 04:12:56PM +0100, Alexandru Elisei wrote:
+> Everything is in place to run the tests using kvmtool:
+> 
+> $ ./configure --target=kvmtool
+> $ make clean && make
+> $ KVMTOOL=<path/to/kvmtool> ./run_tests.sh
+> 
+> so enable it, and remove ERRATA_FORCE=y when configuring for kvmtool,
+> because the runner will generate and pass the correct environment to
+> kvmtool.
+> 
+> Missing is support for EFI tests. That's because distros don't ship a
+> EDK2 binary compiled for kvmtool, and on top of that kvm-unit-tests as
+> an EFI app hasn't been tested to work with kvmtool.
 > 
 > Signed-off-by: Alexandru Elisei <alexandru.elisei@arm.com>
 > ---
-> 
-> This is what Drew said about the patch in the previous iteration [1]:
-> 
-> 'I like disabled_if because I like the lambda-like thing it's doing, but I
-> wonder if it wouldn't be better to make TARGET a first class citizen by
-> adding a 'targets' unittest parameter which allows listing all targets the
-> test can run on [..]
-> 
-> If targets isn't present then the default is only qemu.'
-> 
-> Like I've said on the cover letter, I think making qemu the default (if
-> 'targets' isn't specified in the test definition) will mean that new tests
-> will not run with kvmtool. I was thinking something along the lines
-> 'excluded_targets', with the default (when left unspecified) being that the
-> tests run with all the vmms that the architecture support (or, to put it
-> another way, no vmms are excluded).
-> 
-> Or we could go with 'targets' and say that when left empty it means 'all
-> the vmms that the architecture supports' - though in my opinion this
-> semantic is somewhat better conveyed with the name 'excluded_targets'.
-
-excluded_targets sounds good, but disabled_if is growing on me. So, unless
-you or others also prefer excluded_targets, then
+>  README.md        | 18 +++++++++++++++++-
+>  arm/efi/run      |  5 +++++
+>  configure        |  1 -
+>  scripts/vmm.bash |  2 +-
+>  4 files changed, 23 insertions(+), 3 deletions(-)
+>
 
 Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
-
-Thanks,
-drew
 
 -- 
 kvm-riscv mailing list
