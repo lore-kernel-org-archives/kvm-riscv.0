@@ -4,7 +4,7 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27343C3ABC3
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 713FAC3ABCB
 	for <kvm-riscv@archiver.kernel.org>; Mon, 12 May 2025 18:21:13 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
@@ -12,47 +12,47 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=VInfhdhe1xNPq230847lAHP5MaKGgIY2yzQiNi/J+Z8=; b=wZFw8J4DLgNmif
-	WWpQ7pBPxJlrwvf0e51InT8VB7Iay9lR5lqCDA4GN0pApyyQZcD8ogbFHlwxJ2aFvsahmYI+PemJH
-	NkZjTAFi42AfW15K5z1myse9NESqH2zfk0C7BmfLwH+yiKzpaW/PJbqsI19cTwOYjwcnUCzC80In2
-	BwcyQ0pyuDCm9GDogCDbM9pzKBBOlbT5DBGa7+AoWa2AfkbtQ0rCSAF3945U3DsgVLMIxwfs+oxqq
-	AvRT2gldhMNSdDIPcCZKyvrEneBsd1DOJRdiBKNp0LKfpknEkuAPepylrpWpuel0lK6pyRYBoIEcb
-	V6u3tIJOtNEfIaC/QedA==;
+	List-Owner; bh=2cBB63Mm4J+jspEH5L08dkrmalN7pOcVSjOzk/jdTAc=; b=x6ulpWpT3TR7Tv
+	nagwWYkX2RpZ01BxMLmwU1mvi9ZhEydd3oAuJsVwUlLLCUFTsaBdZdV/flmbVysIVLO0AcZWfl2y0
+	Ve0l+Sj+4+pkDwasITN8xTYVnK63iUf1gFTb2rV5TXS5NSWIDdh0YJtpF+swCjymzhUxVefq9RbxB
+	MVJ/uFwCj1KyfXNr/siRVRol89wH2imjf81lhVFylI30aGgE5wddWfut8mECMpJakqOM1++mW/R2+
+	glJkIaWZmixNHdsKMgtLLNsSgvmv6kF6M9yUoSuH38oHH8OcdzMNwTctx9AdzT4wq3auw4X03JxJ4
+	bSTBd5hCGHKOlOfKUXzg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uEXm4-0000000AM7r-3r06;
-	Mon, 12 May 2025 18:21:12 +0000
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.129.124])
+	id 1uEXm5-0000000AM82-0tUG;
+	Mon, 12 May 2025 18:21:13 +0000
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uEXWF-0000000AHM7-06WD
+	id 1uEXWH-0000000AHNZ-0aEh
 	for kvm-riscv@lists.infradead.org;
-	Mon, 12 May 2025 18:04:52 +0000
+	Mon, 12 May 2025 18:04:54 +0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1747073090;
+	s=mimecast20190719; t=1747073092;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=g9ERlWy//d3vXfM6qe6RwNpiSNHM8JyZPnWWfaO2iUE=;
-	b=ORjz4nKCoEhAv2/NW1XfVt37sTXggz90Ji7IexEJ2NtW05Ep6CJzHY23zP9/8xORApfxwi
-	3kdvShInV7XsfoSiFTJ/+j9fwxS2DrdSFMSqgIwL8hhB2/rXvxacyVmOcb4BQdMwfRE8q9
-	tFWe6OaB51DRCwVlXhIREyilKwqReTg=
-Received: from mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com
+	bh=Q6PrbmwQ6A0Seyvbao8fqw7a8VX7wKunfxAgqBK7Cp0=;
+	b=Apk/Xh7NFOfKJdFj5CFU6PTe9KWg0I1abF0K5KDhztxjt49f7GLIBxBQE5CCrM1Ll+gzKZ
+	Buld5XH3V1+H7EFx9JkG6En4HzAT02FiYZWifk3HO8Q3RSybEibXj/TCcCNSNSglIXIxyq
+	4nVih+7cCMV9zQR5rWgS4GYa3+nrTfw=
+Received: from mx-prod-mc-08.mail-002.prod.us-west-2.aws.redhat.com
  (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
  relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-515-9fb_4R8jOiSlXgEcXCHh-w-1; Mon,
- 12 May 2025 14:04:44 -0400
-X-MC-Unique: 9fb_4R8jOiSlXgEcXCHh-w-1
-X-Mimecast-MFC-AGG-ID: 9fb_4R8jOiSlXgEcXCHh-w_1747073080
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-130-mGHcVdicNDaIEHmdxj9Oxw-1; Mon,
+ 12 May 2025 14:04:49 -0400
+X-MC-Unique: mGHcVdicNDaIEHmdxj9Oxw-1
+X-Mimecast-MFC-AGG-ID: mGHcVdicNDaIEHmdxj9Oxw_1747073085
 Received: from mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.4])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id A6C0C18002A5;
-	Mon, 12 May 2025 18:04:39 +0000 (UTC)
+	by mx-prod-mc-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 894251800373;
+	Mon, 12 May 2025 18:04:45 +0000 (UTC)
 Received: from intellaptop.lan (unknown [10.22.80.5])
-	by mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id 2C18530001A1;
-	Mon, 12 May 2025 18:04:33 +0000 (UTC)
+	by mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id E1A5830002D4;
+	Mon, 12 May 2025 18:04:39 +0000 (UTC)
 From: Maxim Levitsky <mlevitsk@redhat.com>
 To: kvm@vger.kernel.org
 Cc: Suzuki K Poulose <suzuki.poulose@arm.com>,
@@ -94,16 +94,16 @@ Cc: Suzuki K Poulose <suzuki.poulose@arm.com>,
 	Ingo Molnar <mingo@redhat.com>,
 	Paul Walmsley <paul.walmsley@sifive.com>,
 	Albert Ou <aou@eecs.berkeley.edu>
-Subject: [PATCH v5 3/6] KVM: add kvm_lock_all_vcpus and kvm_trylock_all_vcpus
-Date: Mon, 12 May 2025 14:04:04 -0400
-Message-ID: <20250512180407.659015-4-mlevitsk@redhat.com>
+Subject: [PATCH v5 4/6] x86: KVM: SVM: use kvm_lock_all_vcpus instead of a custom implementation
+Date: Mon, 12 May 2025 14:04:05 -0400
+Message-ID: <20250512180407.659015-5-mlevitsk@redhat.com>
 In-Reply-To: <20250512180407.659015-1-mlevitsk@redhat.com>
 References: <20250512180407.659015-1-mlevitsk@redhat.com>
 MIME-Version: 1.0
 X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.4
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250512_110451_143475_A110D95F 
-X-CRM114-Status: GOOD (  16.68  )
+X-CRM114-CacheID: sfid-20250512_110453_244402_81EDF23C 
+X-CRM114-Status: GOOD (  14.63  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -120,119 +120,120 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-In a few cases, usually in the initialization code, KVM locks all vCPUs
-of a VM to ensure that userspace doesn't do funny things while KVM performs
-an operation that affects the whole VM.
+Use kvm_lock_all_vcpus instead of sev's own implementation.
 
-Until now, all these operations were implemented using custom code,
-and all of them share the same problem:
+Because kvm_lock_all_vcpus uses the _nest_lock feature of lockdep, which
+ignores subclasses, there is no longer a need to use separate subclasses
+for source and target VMs.
 
-Lockdep can't cope with simultaneous locking of a large number of locks of
-the same class.
-
-However if these locks are taken while another lock is already held,
-which is luckily the case, it is possible to take advantage of little known
-_nest_lock feature of lockdep which allows in this case to have an
-unlimited number of locks of same class to be taken.
-
-To implement this, create two functions:
-kvm_lock_all_vcpus() and kvm_trylock_all_vcpus()
-
-Both functions are needed because some code that will be replaced in
-the subsequent patches, uses mutex_trylock, instead of regular mutex_lock.
+No functional change intended.
 
 Suggested-by: Paolo Bonzini <pbonzini@redhat.com>
 Signed-off-by: Maxim Levitsky <mlevitsk@redhat.com>
 ---
- include/linux/kvm_host.h |  4 +++
- virt/kvm/kvm_main.c      | 59 ++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 63 insertions(+)
+ arch/x86/kvm/svm/sev.c | 72 +++---------------------------------------
+ 1 file changed, 4 insertions(+), 68 deletions(-)
 
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 1dedc421b3e3..a6140415c693 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -1015,6 +1015,10 @@ static inline struct kvm_vcpu *kvm_get_vcpu_by_id(struct kvm *kvm, int id)
- 
- void kvm_destroy_vcpus(struct kvm *kvm);
- 
-+int kvm_trylock_all_vcpus(struct kvm *kvm);
-+int kvm_lock_all_vcpus(struct kvm *kvm);
-+void kvm_unlock_all_vcpus(struct kvm *kvm);
-+
- void vcpu_load(struct kvm_vcpu *vcpu);
- void vcpu_put(struct kvm_vcpu *vcpu);
- 
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 69782df3617f..d660a7da3baa 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -1368,6 +1368,65 @@ static int kvm_vm_release(struct inode *inode, struct file *filp)
- 	return 0;
+diff --git a/arch/x86/kvm/svm/sev.c b/arch/x86/kvm/svm/sev.c
+index 0bc708ee2788..16db6179013d 100644
+--- a/arch/x86/kvm/svm/sev.c
++++ b/arch/x86/kvm/svm/sev.c
+@@ -1882,70 +1882,6 @@ static void sev_unlock_two_vms(struct kvm *dst_kvm, struct kvm *src_kvm)
+ 	atomic_set_release(&src_sev->migration_in_progress, 0);
  }
  
-+int kvm_trylock_all_vcpus(struct kvm *kvm)
-+{
-+	struct kvm_vcpu *vcpu;
-+	unsigned long i, j;
-+
-+	lockdep_assert_held(&kvm->lock);
-+
-+	kvm_for_each_vcpu(i, vcpu, kvm)
-+		if (!mutex_trylock_nest_lock(&vcpu->mutex, &kvm->lock))
-+			goto out_unlock;
-+	return 0;
-+
-+out_unlock:
-+	kvm_for_each_vcpu(j, vcpu, kvm) {
-+		if (i == j)
-+			break;
-+		mutex_unlock(&vcpu->mutex);
-+	}
-+	return -EINTR;
-+}
-+EXPORT_SYMBOL_GPL(kvm_trylock_all_vcpus);
-+
-+int kvm_lock_all_vcpus(struct kvm *kvm)
-+{
-+	struct kvm_vcpu *vcpu;
-+	unsigned long i, j;
-+	int r;
-+
-+	lockdep_assert_held(&kvm->lock);
-+
-+	kvm_for_each_vcpu(i, vcpu, kvm) {
-+		r = mutex_lock_killable_nest_lock(&vcpu->mutex, &kvm->lock);
-+		if (r)
-+			goto out_unlock;
-+	}
-+	return 0;
-+
-+out_unlock:
-+	kvm_for_each_vcpu(j, vcpu, kvm) {
-+		if (i == j)
-+			break;
-+		mutex_unlock(&vcpu->mutex);
-+	}
-+	return r;
-+}
-+EXPORT_SYMBOL_GPL(kvm_lock_all_vcpus);
-+
-+void kvm_unlock_all_vcpus(struct kvm *kvm)
-+{
-+	struct kvm_vcpu *vcpu;
-+	unsigned long i;
-+
-+	lockdep_assert_held(&kvm->lock);
-+
-+	kvm_for_each_vcpu(i, vcpu, kvm)
-+		mutex_unlock(&vcpu->mutex);
-+}
-+EXPORT_SYMBOL_GPL(kvm_unlock_all_vcpus);
-+
- /*
-  * Allocation size is twice as large as the actual dirty bitmap size.
-  * See kvm_vm_ioctl_get_dirty_log() why this is needed.
+-/* vCPU mutex subclasses.  */
+-enum sev_migration_role {
+-	SEV_MIGRATION_SOURCE = 0,
+-	SEV_MIGRATION_TARGET,
+-	SEV_NR_MIGRATION_ROLES,
+-};
+-
+-static int sev_lock_vcpus_for_migration(struct kvm *kvm,
+-					enum sev_migration_role role)
+-{
+-	struct kvm_vcpu *vcpu;
+-	unsigned long i, j;
+-
+-	kvm_for_each_vcpu(i, vcpu, kvm) {
+-		if (mutex_lock_killable_nested(&vcpu->mutex, role))
+-			goto out_unlock;
+-
+-#ifdef CONFIG_PROVE_LOCKING
+-		if (!i)
+-			/*
+-			 * Reset the role to one that avoids colliding with
+-			 * the role used for the first vcpu mutex.
+-			 */
+-			role = SEV_NR_MIGRATION_ROLES;
+-		else
+-			mutex_release(&vcpu->mutex.dep_map, _THIS_IP_);
+-#endif
+-	}
+-
+-	return 0;
+-
+-out_unlock:
+-
+-	kvm_for_each_vcpu(j, vcpu, kvm) {
+-		if (i == j)
+-			break;
+-
+-#ifdef CONFIG_PROVE_LOCKING
+-		if (j)
+-			mutex_acquire(&vcpu->mutex.dep_map, role, 0, _THIS_IP_);
+-#endif
+-
+-		mutex_unlock(&vcpu->mutex);
+-	}
+-	return -EINTR;
+-}
+-
+-static void sev_unlock_vcpus_for_migration(struct kvm *kvm)
+-{
+-	struct kvm_vcpu *vcpu;
+-	unsigned long i;
+-	bool first = true;
+-
+-	kvm_for_each_vcpu(i, vcpu, kvm) {
+-		if (first)
+-			first = false;
+-		else
+-			mutex_acquire(&vcpu->mutex.dep_map,
+-				      SEV_NR_MIGRATION_ROLES, 0, _THIS_IP_);
+-
+-		mutex_unlock(&vcpu->mutex);
+-	}
+-}
+-
+ static void sev_migrate_from(struct kvm *dst_kvm, struct kvm *src_kvm)
+ {
+ 	struct kvm_sev_info *dst = to_kvm_sev_info(dst_kvm);
+@@ -2083,10 +2019,10 @@ int sev_vm_move_enc_context_from(struct kvm *kvm, unsigned int source_fd)
+ 		charged = true;
+ 	}
+ 
+-	ret = sev_lock_vcpus_for_migration(kvm, SEV_MIGRATION_SOURCE);
++	ret = kvm_lock_all_vcpus(kvm);
+ 	if (ret)
+ 		goto out_dst_cgroup;
+-	ret = sev_lock_vcpus_for_migration(source_kvm, SEV_MIGRATION_TARGET);
++	ret = kvm_lock_all_vcpus(source_kvm);
+ 	if (ret)
+ 		goto out_dst_vcpu;
+ 
+@@ -2100,9 +2036,9 @@ int sev_vm_move_enc_context_from(struct kvm *kvm, unsigned int source_fd)
+ 	ret = 0;
+ 
+ out_source_vcpu:
+-	sev_unlock_vcpus_for_migration(source_kvm);
++	kvm_unlock_all_vcpus(source_kvm);
+ out_dst_vcpu:
+-	sev_unlock_vcpus_for_migration(kvm);
++	kvm_unlock_all_vcpus(kvm);
+ out_dst_cgroup:
+ 	/* Operates on the source on success, on the destination on failure.  */
+ 	if (charged)
 -- 
 2.46.0
 
