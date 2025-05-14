@@ -4,103 +4,106 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 490CCC3ABD9
-	for <kvm-riscv@archiver.kernel.org>; Wed, 14 May 2025 08:17:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2EEDBC3ABD8
+	for <kvm-riscv@archiver.kernel.org>; Wed, 14 May 2025 12:18:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
-	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
-	List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:Subject:
-	MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Subject:Cc:To:From:Message-ID:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=U0TuE39/b6LOkGOVzHOM86um8mnSC4CZasesakt4P/M=; b=G2mA2gBWvr/etK
-	5c4ilJX5woMN1DFLRt5P1BVlmCD78bL9yahfisLtxDhy5PNA/9ia3vLx7uD0lpdBHB+JMa7KVemYJ
-	L3hesRQepmGetr/QEkQyUH0kXZQ7Lu1OjzGMItp9In85SwSNmAqTgvyZWyhDklaLUxrQ6psTzqTWX
-	Kdd8N0M9hK++hsoIn7wYYLj11WI6qiyh31lcBbpnMyZTxZ4KsFOD/tQblBDTRZj26oejid51rf10W
-	oQ1DLL3HQ4KxbEAS3HJZNwVC3u2dr9aqwTxSwZ7xk3pLOD4GzSA5T49KwJxSCZX9VgnEOY0YTaCbc
-	ApQ0DL7FeJuy3ZQAWJpQ==;
+	List-Owner; bh=aWnXd+TVmpcQGPH9OiwxXJHAfG/nBv6ckmYJUX0UCeM=; b=aBsCnpUUpxrMik
+	5zrBzlrd/zMxjDV+EczzHdRV43ZOMg4a5j4paAgoxRQ6wsKBqrscpzrx6Hty1H3L6gDGAcWNupiyG
+	2ZsOZMj3NI601Hd+uXbrAoivO45pV2H3rmRJM1/DJD4NAOl9Ehm0Dveb9i1jJmJ9/GB8ttlvcEAy+
+	qyShnTrytM8/nZK2tY5yTIAlfgAnRSU0jxCSGspVhL3RkwOY6Byp+QhIh8dVgTcLjkX52H21YDI3L
+	oinv//v2l5Ph8Ba8no8wizkmKqtvg/mczmaoQHx/XhGi/uInwLQoQrnBl7oybKeYtfq4SpI2xVbxR
+	X15bOaOVrpomg1EaorCQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uF7It-0000000ET4g-3fMh;
-	Wed, 14 May 2025 08:17:27 +0000
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124])
+	id 1uFB4E-0000000F0wt-26mz;
+	Wed, 14 May 2025 12:18:34 +0000
+Received: from dfw.source.kernel.org ([139.178.84.217])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uF74Q-0000000EQJn-2j1K
-	for kvm-riscv@lists.infradead.org;
-	Wed, 14 May 2025 08:02:31 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1747209749;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=ET5iCd8MyKLHEGzFDUiYbW8pYPvNTTRlK86QIMS0syE=;
-	b=DaNi4QjmDZag9fvwmgNXFnMFMOj2FZGRo3mVc+hVeS3NC20k24uOjtn9GiWmMVi/qrpxYy
-	9DC0xLhfkW3RP0IgZNmlzujqy6bYDP/d0C3kcfHvLFMkDE2PYOXjovrPecHc8s8eqFa/LF
-	wp0yCzoUSArX9ppxYgvHML6dWohD6Ik=
-Received: from mail-pf1-f200.google.com (mail-pf1-f200.google.com
- [209.85.210.200]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-544-nrmGE2ibONeyYfHkAkhAog-1; Wed, 14 May 2025 04:02:28 -0400
-X-MC-Unique: nrmGE2ibONeyYfHkAkhAog-1
-X-Mimecast-MFC-AGG-ID: nrmGE2ibONeyYfHkAkhAog_1747209748
-Received: by mail-pf1-f200.google.com with SMTP id d2e1a72fcca58-7425efba1a3so598782b3a.0
-        for <kvm-riscv@lists.infradead.org>; Wed, 14 May 2025 01:02:28 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1747209747; x=1747814547;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=ET5iCd8MyKLHEGzFDUiYbW8pYPvNTTRlK86QIMS0syE=;
-        b=GlgRrun0e3YHmUWuqLvg65wDYw962bGl686poz06qpi+MmGLy4SZhJ79lR4R4rQtaw
-         EQucfyVFoVsOVOm07boEL0p25Rpnv2wjEMjX2fXvvsBHBfDRHMqQacOGKoQ1RMgj0UD1
-         yNh5rm+zIPM3W0KVvd8ZVhTgL1/qrp03OFdgJzIvbh+z0qTA49VRle13QKDm5RQf71RE
-         ttlDhPFYj/g3ci2m8huRhjHr4oUj9/TncD5Q8So1xs1FSDEC0FwX7FzIsZ1zaHG3rrLT
-         DVjynXX+qb93X/O/HMVLWu772PGHmIsrc7bji2h///qpwcC/YtOxUL04CNcOkp1ua/8j
-         atjg==
-X-Forwarded-Encrypted: i=1; AJvYcCU84chkzrpddxwBHkFZ1rMEhrNj4nwtyl6N38BtvCqYFKg22ArT75yUvKA25JR2exRpZEUwdbVjpM0=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yx+332scvik2rkPm42paDSiYELox5y3z2Di1nd/IBuU4pPj56fm
-	rqU0IP7oWZyBFwIPago6k+S0l7yrrZQwZwY1GXz0mx8dJnbtb/2BQ1BTVz1+PpC47sNUBFzQfzj
-	cF5G5Ln6YpHPUe+jS8nnsCAUG8KbERsOeoQayl92K2AgPgT2q/AbNg+tUxP17NxQ=
-X-Gm-Gg: ASbGncupL3MDrJePAr1SH8wITYQp9R+R+hzbfuL8+B1aabJ/5Coj7b5tCxn+E8eNwPL
-	Hx2mgjh35ufL9Rr1+7QoEkcIKtKrxMgic/WWWGbykIxmDTSRZfmMaoLoS7xUNwSar3z9nQ8Ur4M
-	gLREA97OA33y2vTcob7aHXIMZXSwsSIeDb/nTsc21H9i+9zPebJHVPIgCBKSEDkDvQvkZsmRXPo
-	El0HFIYGFL5OH0kSg2taKsrQTe3K4tnqQ0w9Ts1UwQRRW8FPjsuvOScBMgrbYYJtzmnOZF2b+e0
-	a/6ImGwHB0USIhYV
-X-Received: by 2002:a05:6a00:811a:b0:736:4c3d:2cba with SMTP id d2e1a72fcca58-7427917883cmr7436410b3a.9.1747209747411;
-        Wed, 14 May 2025 01:02:27 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IEwhqdQhP9GhHKMFywwgH/LIw6XImxil66dwro2onM7heCubGabPHGV/eyERLOa/TP3h81BbA==
-X-Received: by 2002:a05:6a00:811a:b0:736:4c3d:2cba with SMTP id d2e1a72fcca58-7427917883cmr7436362b3a.9.1747209747028;
-        Wed, 14 May 2025 01:02:27 -0700 (PDT)
-Received: from [10.72.116.125] ([209.132.188.88])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-7423772752csm8775799b3a.45.2025.05.14.01.02.18
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 14 May 2025 01:02:26 -0700 (PDT)
-Message-ID: <74a90a55-80ae-45ff-9b37-7cb2771ed0e0@redhat.com>
-Date: Wed, 14 May 2025 16:02:17 +0800
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [kvm-unit-tests PATCH v3 07/16] scripts: Use an associative array
- for qemu argument names
-To: Alexandru Elisei <alexandru.elisei@arm.com>, andrew.jones@linux.dev,
- eric.auger@redhat.com, lvivier@redhat.com, thuth@redhat.com,
- frankja@linux.ibm.com, imbrenda@linux.ibm.com, nrb@linux.ibm.com,
- david@redhat.com, pbonzini@redhat.com
-Cc: kvm@vger.kernel.org, kvmarm@lists.linux.dev,
- linuxppc-dev@lists.ozlabs.org, kvm-riscv@lists.infradead.org,
- linux-s390@vger.kernel.org, will@kernel.org, julien.thierry.kdev@gmail.com,
- maz@kernel.org, oliver.upton@linux.dev, suzuki.poulose@arm.com,
- yuzenghui@huawei.com, joey.gouly@arm.com, andre.przywara@arm.com
-References: <20250507151256.167769-1-alexandru.elisei@arm.com>
- <20250507151256.167769-8-alexandru.elisei@arm.com>
-From: Shaoqin Huang <shahuang@redhat.com>
-In-Reply-To: <20250507151256.167769-8-alexandru.elisei@arm.com>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: L4ec0ZG3OMiywGYQIuNzNJfJQwGylsm4WSNuDusRLG8_1747209748
-X-Mimecast-Originator: redhat.com
-Content-Language: en-US
+	id 1uF8Ut-0000000EgDZ-0epl;
+	Wed, 14 May 2025 09:33:56 +0000
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 4E5FB5C6443;
+	Wed, 14 May 2025 09:31:37 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 45060C4CEE9;
+	Wed, 14 May 2025 09:33:54 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1747215234;
+	bh=001qyor2xDVXczQ1I1uPsfetah7D3sKu1ILOVywqFnk=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=oAqFqcpmzH/13hbR8m/oQ4XroGsKo3tle3aJJsWrsQtLYro2z+PLvjOsuG88n/OxJ
+	 34FvuHxK9/XH2rEkDkqevKA3Zm4RLx3TeYfuRmhdCmm/8LPM9f2joGVL1/H9yAQ2w7
+	 qw+hk6NEElGhiwaleELGFNnRJkOZ8sTl5xHlheBLypOX+6C8a5S5AV5fGR3Ea5F2Iz
+	 3/OiHuAPYPcgR16yDChngd6pC8mELRDahRp+jzf2AFxHuz/0wOYB28RUt92XcHMVGT
+	 V5A4ofsYMhlnn1DcsOUps8IUWyew4W6IuckFhHB5U55kOM/su9P9yW9kj58iy2KjS3
+	 ibRlwfrHxQdpg==
+Received: from sofa.misterjones.org ([185.219.108.64] helo=goblin-girl.misterjones.org)
+	by disco-boy.misterjones.org with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.95)
+	(envelope-from <maz@kernel.org>)
+	id 1uF8Up-00Ennz-DL;
+	Wed, 14 May 2025 10:33:51 +0100
+Date: Wed, 14 May 2025 10:33:50 +0100
+Message-ID: <86o6vvfse9.wl-maz@kernel.org>
+From: Marc Zyngier <maz@kernel.org>
+To: Maxim Levitsky <mlevitsk@redhat.com>
+Cc: kvm@vger.kernel.org,
+	Suzuki K Poulose <suzuki.poulose@arm.com>,
+	Jing Zhang <jingzhangos@google.com>,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Sebastian Ott <sebott@redhat.com>,
+	Shusen Li <lishusen2@huawei.com>,
+	Waiman Long <longman@redhat.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	linux-arm-kernel@lists.infradead.org,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Anup Patel <anup@brainfault.org>,
+	Will Deacon <will@kernel.org>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Alexander Potapenko <glider@google.com>,
+	kvmarm@lists.linux.dev,
+	Keisuke Nishimura <keisuke.nishimura@inria.fr>,
+	Zenghui Yu <yuzenghui@huawei.com>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Atish Patra <atishp@atishpatra.org>,
+	Joey Gouly <joey.gouly@arm.com>,
+	x86@kernel.org,
+	Sean Christopherson <seanjc@google.com>,
+	Andre Przywara <andre.przywara@arm.com>,
+	Kunkun Jiang <jiangkunkun@huawei.com>,
+	linux-riscv@lists.infradead.org,
+	Randy Dunlap <rdunlap@infradead.org>,
+	Paolo Bonzini <pbonzini@redhat.com>,
+	Boqun Feng <boqun.feng@gmail.com>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Alexandre Ghiti <alex@ghiti.fr>,
+	linux-kernel@vger.kernel.org,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	Oliver Upton <oliver.upton@linux.dev>,
+	kvm-riscv@lists.infradead.org,
+	Ingo Molnar <mingo@redhat.com>,
+	Paul Walmsley <paul.walmsley@sifive.com>,
+	Albert Ou <aou@eecs.berkeley.edu>
+Subject: Re: [PATCH v5 3/6] KVM: add kvm_lock_all_vcpus and kvm_trylock_all_vcpus
+In-Reply-To: <20250512180407.659015-4-mlevitsk@redhat.com>
+References: <20250512180407.659015-1-mlevitsk@redhat.com>
+	<20250512180407.659015-4-mlevitsk@redhat.com>
+User-Agent: Wanderlust/2.15.9 (Almost Unreal) SEMI-EPG/1.14.7 (Harue)
+ FLIM-LB/1.14.9 (=?UTF-8?B?R29qxY0=?=) APEL-LB/10.8 EasyPG/1.0.0 Emacs/30.1
+ (aarch64-unknown-linux-gnu) MULE/6.0 (HANACHIRUSATO)
+MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
+X-SA-Exim-Connect-IP: 185.219.108.64
+X-SA-Exim-Rcpt-To: mlevitsk@redhat.com, kvm@vger.kernel.org, suzuki.poulose@arm.com, jingzhangos@google.com, hpa@zytor.com, sebott@redhat.com, lishusen2@huawei.com, longman@redhat.com, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org, bhelgaas@google.com, bp@alien8.de, anup@brainfault.org, will@kernel.org, palmer@dabbelt.com, glider@google.com, kvmarm@lists.linux.dev, keisuke.nishimura@inria.fr, yuzenghui@huawei.com, peterz@infradead.org, atishp@atishpatra.org, joey.gouly@arm.com, x86@kernel.org, seanjc@google.com, andre.przywara@arm.com, jiangkunkun@huawei.com, linux-riscv@lists.infradead.org, rdunlap@infradead.org, pbonzini@redhat.com, boqun.feng@gmail.com, catalin.marinas@arm.com, alex@ghiti.fr, linux-kernel@vger.kernel.org, dave.hansen@linux.intel.com, oliver.upton@linux.dev, kvm-riscv@lists.infradead.org, mingo@redhat.com, paul.walmsley@sifive.com, aou@eecs.berkeley.edu
+X-SA-Exim-Mail-From: maz@kernel.org
+X-SA-Exim-Scanned: No (on disco-boy.misterjones.org); SAEximRunCond expanded to false
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250514_010230_761366_1047F899 
-X-CRM114-Status: GOOD (  19.57  )
+X-CRM114-CacheID: sfid-20250514_023355_278041_886038AA 
+X-CRM114-Status: GOOD (  18.01  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -112,111 +115,44 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-
-
-On 5/7/25 11:12 PM, Alexandru Elisei wrote:
-> Move away from hardcoded qemu arguments and use instead an associative
-> array to get the needed arguments. This paves the way for adding kvmtool
-> support to the scripts, which has a different syntax for the same VM
-> configuration parameters.
+On Mon, 12 May 2025 19:04:04 +0100,
+Maxim Levitsky <mlevitsk@redhat.com> wrote:
 > 
-> Suggested-by: Andrew Jones <andrew.jones@linux.dev>
-> Signed-off-by: Alexandru Elisei <alexandru.elisei@arm.com>
-
-Reviewed-by: Shaoqin Huang <shahuang@redhat.com>
-
-> ---
->   scripts/common.bash  | 10 +++++++---
->   scripts/runtime.bash |  7 +------
->   scripts/vmm.bash     |  7 +++++++
->   3 files changed, 15 insertions(+), 9 deletions(-)
+> In a few cases, usually in the initialization code, KVM locks all vCPUs
+> of a VM to ensure that userspace doesn't do funny things while KVM performs
+> an operation that affects the whole VM.
 > 
-> diff --git a/scripts/common.bash b/scripts/common.bash
-> index 9deb87d4050d..649f1c737617 100644
-> --- a/scripts/common.bash
-> +++ b/scripts/common.bash
-> @@ -1,4 +1,5 @@
->   source config.mak
-> +source scripts/vmm.bash
->   
->   function for_each_unittest()
->   {
-> @@ -26,8 +27,11 @@ function for_each_unittest()
->   				$(arch_cmd) "$cmd" "$testname" "$groups" "$smp" "$kernel" "$test_args" "$opts" "$arch" "$machine" "$check" "$accel" "$timeout"
->   			fi
->   			testname=$rematch
-> -			smp=1
-> +			smp="${vmm_opts[$TARGET:nr_cpus]} 1"
->   			kernel=""
-> +			# Intentionally don't use -append if test_args is empty
-> +			# because qemu interprets the first argument after
-> +			# -append as a kernel parameter.
->   			test_args=""
->   			opts=""
->   			groups=""
-> @@ -39,9 +43,9 @@ function for_each_unittest()
->   		elif [[ $line =~ ^file\ *=\ *(.*)$ ]]; then
->   			kernel=$TEST_DIR/${BASH_REMATCH[1]}
->   		elif [[ $line =~ ^smp\ *=\ *(.*)$ ]]; then
-> -			smp=${BASH_REMATCH[1]}
-> +			smp="${vmm_opts[$TARGET:nr_cpus]} ${BASH_REMATCH[1]}"
->   		elif [[ $line =~ ^test_args\ *=\ *(.*)$ ]]; then
-> -			test_args=${BASH_REMATCH[1]}
-> +			test_args="${vmm_opts[$TARGET:args]} ${BASH_REMATCH[1]}"
->   		elif [[ $line =~ ^(extra_params|qemu_params)\ *=\ *'"""'(.*)$ ]]; then
->   			opts=${BASH_REMATCH[2]}$'\n'
->   			while read -r -u $fd; do
-> diff --git a/scripts/runtime.bash b/scripts/runtime.bash
-> index 06cc58e79b69..86d8a2cd8528 100644
-> --- a/scripts/runtime.bash
-> +++ b/scripts/runtime.bash
-> @@ -34,7 +34,7 @@ premature_failure()
->   get_cmdline()
->   {
->       local kernel=$1
-> -    echo "TESTNAME=$testname TIMEOUT=$timeout MACHINE=$machine ACCEL=$accel $RUNTIME_arch_run $kernel -smp $smp $opts"
-> +    echo "TESTNAME=$testname TIMEOUT=$timeout MACHINE=$machine ACCEL=$accel $RUNTIME_arch_run $kernel $smp $test_args $opts"
->   }
->   
->   skip_nodefault()
-> @@ -88,11 +88,6 @@ function run()
->       local accel="${10}"
->       local timeout="${11:-$TIMEOUT}" # unittests.cfg overrides the default
->   
-> -    # If $test_args is empty, qemu will interpret the first option after -append
-> -    # as a kernel parameter instead of a qemu option, so make sure the -append
-> -    # option is used only if $test_args is not empy.
-> -    [ -n "$test_args" ] && opts="-append $test_args $opts"
-> -
->       if [ "${CONFIG_EFI}" == "y" ]; then
->           kernel=${kernel/%.flat/.efi}
->       fi
-> diff --git a/scripts/vmm.bash b/scripts/vmm.bash
-> index 39325858c6b3..b02055a5c0b6 100644
-> --- a/scripts/vmm.bash
-> +++ b/scripts/vmm.bash
-> @@ -1,5 +1,12 @@
->   source config.mak
->   
-> +declare -A vmm_opts=(
-> +	[qemu:nr_cpus]='-smp'
-> +	[qemu:kernel]='-kernel'
-> +	[qemu:args]='-append'
-> +	[qemu:initrd]='-initrd'
-> +)
-> +
->   function check_vmm_supported()
->   {
->   	case "$TARGET" in
+> Until now, all these operations were implemented using custom code,
+> and all of them share the same problem:
+> 
+> Lockdep can't cope with simultaneous locking of a large number of locks of
+> the same class.
+> 
+> However if these locks are taken while another lock is already held,
+> which is luckily the case, it is possible to take advantage of little known
+> _nest_lock feature of lockdep which allows in this case to have an
+> unlimited number of locks of same class to be taken.
+> 
+> To implement this, create two functions:
+> kvm_lock_all_vcpus() and kvm_trylock_all_vcpus()
+> 
+> Both functions are needed because some code that will be replaced in
+> the subsequent patches, uses mutex_trylock, instead of regular mutex_lock.
+> 
+> Suggested-by: Paolo Bonzini <pbonzini@redhat.com>
+> Signed-off-by: Maxim Levitsky <mlevitsk@redhat.com>
+
+Acked-by: Marc Zyngier <maz@kernel.org>
+
+	M.
 
 -- 
-Shaoqin
-
+Without deviation from the norm, progress is not possible.
 
 -- 
 kvm-riscv mailing list
