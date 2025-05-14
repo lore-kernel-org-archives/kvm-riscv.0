@@ -4,104 +4,88 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EA503C3ABC5
-	for <kvm-riscv@archiver.kernel.org>; Wed, 14 May 2025 03:37:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 42056C3ABCB
+	for <kvm-riscv@archiver.kernel.org>; Wed, 14 May 2025 06:43:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
-	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
-	List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:Subject:
-	MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=uBvlSQ9+8wRBAOeC9kTxB3qnSwbKkrEcDP7xizXrlKc=; b=2jGsZ5EVEMqFTR
-	NvLL1Yq6x3715GLcCpImeIRUN2cC2k8pb7Ml5PeHAVrcQnSKrb0VRxqrJIPsRn7Ioz9JbzVuClmYa
-	Cs9HLroC9mm54amDiI+c1sxEzQfrki27wlUkAvPnYkcbFXqXKY2ln6eMQnP6W4wjnpFYFVincxipX
-	YSJwWhFKApeFCnaXnDLseoucDGjeGK8bkf/5nXelGz7b1v+DzUsTDn7xHGDTN1T5uHFJLurn+wtiq
-	F86KFnrUm7jWHzkN2FBWUnSDpUiiW29t7Jdo0kChkBsGSFDBaO+QXSMYZveP39tt0Vjciw+UXx+R/
-	u3yBUef7Q5m4d6Cw5rGA==;
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:Message-Id:MIME-Version:Subject:
+	Date:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=4KkofVJ3dMRkAo+dT5InPj8DAPzZ7hZPtcsf12o+/Lo=; b=wLzDNeMYu3Efjp
+	WXAptIbeMoKeZmEiUtuMVuSg8wfYr6jJxA4uuFqFvhIkJbREbxbBqbVTbKdsanZytTt6aZT4VZgrp
+	BPnu3qoyGpjaZhGeEWMDKoTKUCPHiotWKRDybaIXmQUK1cpSEPPgUi/4wYCV253c6n5FSMPMwSuW3
+	4y62o1tTpVYdjoEh5CAPzJGfuyJ9FZChwbWJk6TLl6Hu0D64J+lZJjFkfc02NgafoFSTMX65WQOqN
+	T/DB2C3Q3dgACsCQxgR+8s8Anykp5T7MGvBTGy0+6ar7sXqBZ8sFPPNQNJNX0tlhEOFZ7ZBVrRj6z
+	W6MB+k2/BbV0firtJgwA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uF2vk-0000000DxQU-2K5g;
-	Wed, 14 May 2025 03:37:16 +0000
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.129.124])
+	id 1uF5q9-0000000ECon-3iuF;
+	Wed, 14 May 2025 06:43:41 +0000
+Received: from mail-pl1-x633.google.com ([2607:f8b0:4864:20::633])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uF2vh-0000000DxQ2-2EUD
+	id 1uF5q7-0000000ECnj-1ZzS
 	for kvm-riscv@lists.infradead.org;
-	Wed, 14 May 2025 03:37:14 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1747193831;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=sXnHSZ0Yk0pjB03hExnA/yD4CkvPU5te8D9VFkvGbRE=;
-	b=GosP4vXsN218zv4s5OohvZUcl4xx8C/iM0l2XopyKMp++Gf0pMRKMkrjhEre2EHQdxg3j1
-	s/4hfxbeNyCth419v5BulI9SF5V7H+T6n4q3qv4+JutDwM/ZV89AolvzJyrxKD7WsGqjTC
-	gFiRnt2a9zN6WBvqwT6KUx/cTb42tQs=
-Received: from mail-pj1-f69.google.com (mail-pj1-f69.google.com
- [209.85.216.69]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-393-DB89KUJMO6izTLGV0MRG1w-1; Tue, 13 May 2025 23:37:10 -0400
-X-MC-Unique: DB89KUJMO6izTLGV0MRG1w-1
-X-Mimecast-MFC-AGG-ID: DB89KUJMO6izTLGV0MRG1w_1747193829
-Received: by mail-pj1-f69.google.com with SMTP id 98e67ed59e1d1-30a80fe759bso8343668a91.1
-        for <kvm-riscv@lists.infradead.org>; Tue, 13 May 2025 20:37:10 -0700 (PDT)
+	Wed, 14 May 2025 06:43:40 +0000
+Received: by mail-pl1-x633.google.com with SMTP id d9443c01a7336-22e70a9c6bdso90273705ad.3
+        for <kvm-riscv@lists.infradead.org>; Tue, 13 May 2025 23:43:38 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=rivosinc-com.20230601.gappssmtp.com; s=20230601; t=1747205018; x=1747809818; darn=lists.infradead.org;
+        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
+         :date:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=yONrDaNM2oGU1RPbJmb0bt05qkmK93VY4fZWYkh3HDI=;
+        b=uBaTnvF8pMstesS2VewF3Qdj2IwM7EEKSjJ15I4whRVauzNAO8VWY7bEGlHE9D/MyK
+         dFuQ8yY5xWlxI5Wa6ub5LGlmoym0JO3DJ5+Rt6Kqm1fTGLdTsW/FxMUCjzlGsQwnzFun
+         Gld1ti2i7A0Yi++9SgAKo63Rkabe8QZdPnMiqR91zAxTYgBOYc0MmM22cAou0Cueu5qT
+         JKZKLnDa9B6qBK4QANeQuN09FuL0Jdse5fHJ3AYuqbyLYN/kTZVDSkhFl08KTwy0fSMK
+         f1fvp4PQkEnALNVJxUwcx6GFeTJJp4M3mH6sIwTz08a3tcfMbpv3QEj6qVlIK5hBi4ee
+         CGQA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1747193829; x=1747798629;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=sXnHSZ0Yk0pjB03hExnA/yD4CkvPU5te8D9VFkvGbRE=;
-        b=DAe/FGBUbl6zcBPlgmDIq9xSXuoETr5R3ZRGBMFwpDK5/ht9AWxr/egzHsuf7YgRoj
-         IYyHT/zzQHAW5oWi2GOm+wZz9NpvdTqH95H33Cgh2Ka8vCt8pBp8vQLccDe8MzqcaBrv
-         wksJ9WYPu5C4M/e82n085rndKqRi6uRR6Vkgx0q1/Jwu1WZFxf3pp47IOZSD8J75eoxF
-         J7+/DMI35N+o7QsOLAmnKfxJcck4oYWCjet/+iv8F6CtZN77W7DFyWNVJOZ8Ymw6K5P6
-         VTRo9rmXslcnVR6wBE++QsuaKajUQbhxvdspYZHyafeH/vVH+F9FAofoTaK8BTLePJy6
-         ccOQ==
-X-Forwarded-Encrypted: i=1; AJvYcCV10XicebMaDrInyU0UEJtuto920O6P+ru1wKyCkwYqZEMvBm7MG8Fkd8CmxVndl7OyoHTtPvNwp4c=@lists.infradead.org
-X-Gm-Message-State: AOJu0YyM2mjOf8AncZTCGYaZG1pGPQbC6A5oNJR+2s2VP9VZe+j9ZL+c
-	/fH18Ua3emKlUKBGm3XD+fWjf5RKDZiQzV5KrpLlsdjrZLk1qwHDgvIN7xcMD+4b2g/rbGnJna/
-	R4Y8qcrl/73XtfvgYX/+eB7Q24nWAfT2W9NNAYEWyDwhNxmyA1BAn9/9JyJk0Kyc=
-X-Gm-Gg: ASbGncu5RB9tt2DJkW0ZEOy6OIWRX490L5N2UOdJ9jgpnQMBK0Zly4LDFJuroBZYNGI
-	R8e/1NzPQCpgy8cy1xKnLDsFBez6gOI5+HXO9/KWuO6xZXPBdA7Qde92UOqi/6aQF46VNOjOFXJ
-	amCmUwp/Bq0Ez6qsXlWQtcESQlZ7HHNIwQZgrj7V06NDS8ZBo7+W8kfoBktjvWxP7XNxXJyyKtm
-	0fDzTHnsmoTcKZTT4tkDUlQExjGbIrrprqa81nX68ffrqSf41oBce7+mSiUindJWf79scSCP0Lr
-	xDkqABIpiHi8qsTv
-X-Received: by 2002:a17:90b:5590:b0:2ee:f687:6acb with SMTP id 98e67ed59e1d1-30e2e5c24b0mr3049821a91.13.1747193829183;
-        Tue, 13 May 2025 20:37:09 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IHEMic3JZfqHUduiY6RIFo4rKxWJxbdw/r/LByh2iH/VAXRKkC+svCTuRA6EfZQjPLBCUxbkg==
-X-Received: by 2002:a17:90b:5590:b0:2ee:f687:6acb with SMTP id 98e67ed59e1d1-30e2e5c24b0mr3049782a91.13.1747193828788;
-        Tue, 13 May 2025 20:37:08 -0700 (PDT)
-Received: from [10.72.116.125] ([209.132.188.88])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-30e334e2503sm434299a91.31.2025.05.13.20.37.00
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 13 May 2025 20:37:08 -0700 (PDT)
-Message-ID: <1ac10d00-c21c-44fd-9973-c32fd89b4ba1@redhat.com>
-Date: Wed, 14 May 2025 11:36:58 +0800
+        d=1e100.net; s=20230601; t=1747205018; x=1747809818;
+        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
+         :date:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=yONrDaNM2oGU1RPbJmb0bt05qkmK93VY4fZWYkh3HDI=;
+        b=sTG5K/i6nfdicWy12KpMxqlvri6lwIVbiVZX32IDo1TuD5gtIeazWHPJRwxbjGHaSa
+         erYMSFKiDkSsXvTNOflVs0EXFQx7ME+hPSkvHektSqFKDBczRsdePdTYfrsrY+7wN8lb
+         YuclCqxdCPvoovtq/N5iIaVZkBtFblnQQyZtywUbf+RpbodFtBsF9HcPFswBZVLLcbFY
+         Q/YHa+Tzyp+KPGx6kZhsjirYxZQS/YGpiBWKat1apSgNa340vSXF62TXMmrRass0hdMd
+         LgrXQSo1M4SdulwZGBs0JZ0j//TDHEEbApvufrUgEx9FXQVZ7SbhLbeOVdPa5l3IU0ET
+         6MLw==
+X-Forwarded-Encrypted: i=1; AJvYcCVg1ZuHrGZipt7TjzW+GIIaBI9wFiNQLtcj5EwcKiTMx23CfGq2BQ9xFCFx4LB87dl1U9H0DgvfoAM=@lists.infradead.org
+X-Gm-Message-State: AOJu0YwNnGZLcfb1WLnzR+XgsyxO3KAdYMw2/8o7mjd0p9VYiwoviZIp
+	bwkfoZ7Ab/+WcSbJmW1V2d9jeReadTyQHl0u27TbX5vLPwHnzSznWwRlVC2F8AE=
+X-Gm-Gg: ASbGnctHb8FhzMNbk/VxiTENNjBwyd6yju08+TCg3exS9r2J/dfN2A9FcvIxo/Bym5a
+	VNqh/unkoJ3hI2sP+1LNxkvGSx6j/JDAYV0UCp5XtX6Q6X+9ynnEEzh+3MxUJm3WTA+GuW7JryW
+	uJFL7UFYEJSGqCMfmgqgH75oIOeoPd1lrRmdG1cLpFhiEixsolpUyOyId7gHEWloLyZnbOiE1aQ
+	NYc81dNE6OwGSyeMOEnFgOdY/kVX8ZyQ1o2pXxoHazbGdbD7qpKxhgkwLrA1g4gCvh27k4Rp/4Q
+	R3Fz785rzqlRlceIYzA3tcohCkHiMGAtC52UsZ2AGvPy2M3/ea/m7e5NPTs8ddOg
+X-Google-Smtp-Source: AGHT+IEoClrF6lVQwqc84P3HpmaPMlZK//yuTk+XbXPKwiAjohsYztxOGGMEpufYrZ8rdGMMsjvwEA==
+X-Received: by 2002:a17:903:2f85:b0:223:5ca8:5ecb with SMTP id d9443c01a7336-23198143b9bmr30190855ad.42.1747205018359;
+        Tue, 13 May 2025 23:43:38 -0700 (PDT)
+Received: from atishp.ba.rivosinc.com ([64.71.180.162])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-22fc7544e49sm91978485ad.51.2025.05.13.23.43.37
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 13 May 2025 23:43:37 -0700 (PDT)
+From: Atish Patra <atishp@rivosinc.com>
+Date: Tue, 13 May 2025 23:43:30 -0700
+Subject: [PATCH] RISC-V: KVM: Disable instret/cycle for VU mode by default
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [kvm-unit-tests PATCH v3 05/16] scripts: Document environment
- variables
-To: Alexandru Elisei <alexandru.elisei@arm.com>, andrew.jones@linux.dev,
- eric.auger@redhat.com, lvivier@redhat.com, thuth@redhat.com,
- frankja@linux.ibm.com, imbrenda@linux.ibm.com, nrb@linux.ibm.com,
- david@redhat.com, pbonzini@redhat.com
-Cc: kvm@vger.kernel.org, kvmarm@lists.linux.dev,
- linuxppc-dev@lists.ozlabs.org, kvm-riscv@lists.infradead.org,
- linux-s390@vger.kernel.org, will@kernel.org, julien.thierry.kdev@gmail.com,
- maz@kernel.org, oliver.upton@linux.dev, suzuki.poulose@arm.com,
- yuzenghui@huawei.com, joey.gouly@arm.com, andre.przywara@arm.com,
- Andrew Jones <drjones@redhat.com>
-References: <20250507151256.167769-1-alexandru.elisei@arm.com>
- <20250507151256.167769-6-alexandru.elisei@arm.com>
-From: Shaoqin Huang <shahuang@redhat.com>
-In-Reply-To: <20250507151256.167769-6-alexandru.elisei@arm.com>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: 5YduNy9g71coz1WhPmO2j5VbqcOZlF2GbRYzOcOg0ZA_1747193829
-X-Mimecast-Originator: redhat.com
-Content-Language: en-US
+Message-Id: <20250513-fix_scounteren_vs-v1-1-c1f52af93c79@rivosinc.com>
+X-B4-Tracking: v=1; b=H4sIAJE7JGgC/x2MQQqAIBAAvxJ7TijDjL4SIaVr7cXCLQmkvycdB
+ 2YmA2MkZBirDBETMR2hQFtXYPclbCjIFQbZSNWothOeHsP2uMOFEYNJLLxzQy+VsnrVULozYpH
+ +5zS/7wdhSXygYwAAAA==
+X-Change-ID: 20250513-fix_scounteren_vs-fdd86255c7b7
+To: Anup Patel <anup@brainfault.org>, Atish Patra <atishp@atishpatra.org>, 
+ Paul Walmsley <paul.walmsley@sifive.com>, 
+ Palmer Dabbelt <palmer@dabbelt.com>, Alexandre Ghiti <alex@ghiti.fr>
+Cc: kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
+ linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, 
+ Atish Patra <atishp@rivosinc.com>
+X-Mailer: b4 0.15-dev-42535
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250513_203713_659397_8078C41F 
-X-CRM114-Status: GOOD (  17.01  )
+X-CRM114-CacheID: sfid-20250513_234339_496772_ED182738 
+X-CRM114-Status: GOOD (  10.48  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -113,74 +97,45 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
+The KVM virtualizes PMU in RISC-V and disables all counter access except
+TM bit by default vi hstateen CSR. There is no benefit in enabling CY/TM
+bits in scounteren for the guest user space as it can't be run without
+hcounteren anyways.
 
+Allow only TM bit which matches the hcounteren default setting.
 
-On 5/7/25 11:12 PM, Alexandru Elisei wrote:
-> Document the environment variables that influence how a test is executed
-> by the run_tests.sh test runner.
-> 
-> Suggested-by: Andrew Jones <drjones@redhat.com>
-> Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
-> Signed-off-by: Alexandru Elisei <alexandru.elisei@arm.com>
+Signed-off-by: Atish Patra <atishp@rivosinc.com>
+---
+ arch/riscv/kvm/vcpu.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Reviewed-by: Shaoqin Huang <shahuang@redhat.com>
+diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+index 60d684c76c58..873593bfe610 100644
+--- a/arch/riscv/kvm/vcpu.c
++++ b/arch/riscv/kvm/vcpu.c
+@@ -146,8 +146,8 @@ int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
+ 	if (kvm_riscv_vcpu_alloc_vector_context(vcpu, cntx))
+ 		return -ENOMEM;
+ 
+-	/* By default, make CY, TM, and IR counters accessible in VU mode */
+-	reset_csr->scounteren = 0x7;
++	/* By default, only TM should be accessible in VU mode */
++	reset_csr->scounteren = 0x2;
+ 
+ 	/* Setup VCPU timer */
+ 	kvm_riscv_vcpu_timer_init(vcpu);
 
-> ---
->   docs/unittests.txt |  5 ++++-
->   run_tests.sh       | 12 +++++++++---
->   2 files changed, 13 insertions(+), 4 deletions(-)
-> 
-> diff --git a/docs/unittests.txt b/docs/unittests.txt
-> index 6eb315618dbd..ea0da959f008 100644
-> --- a/docs/unittests.txt
-> +++ b/docs/unittests.txt
-> @@ -102,7 +102,8 @@ timeout
->   -------
->   timeout = <duration>
->   
-> -Optional timeout in seconds, after which the test will be killed and fail.
-> +Optional timeout in seconds, after which the test will be killed and fail. Can
-> +be overwritten with the TIMEOUT=<duration> environment variable.
->   
->   check
->   -----
-> @@ -113,3 +114,5 @@ can contain multiple files to check separated by a space, but each check
->   parameter needs to be of the form <path>=<value>
->   
->   The path and value cannot contain space, =, or shell wildcard characters.
-> +
-> +Can be overwritten with the CHECK environment variable with the same syntax.
-> diff --git a/run_tests.sh b/run_tests.sh
-> index f30b6dbd131c..dd9d27377905 100755
-> --- a/run_tests.sh
-> +++ b/run_tests.sh
-> @@ -27,9 +27,15 @@ Usage: $0 [-h] [-v] [-a] [-g group] [-j NUM-TASKS] [-t] [-l]
->       -l, --list          Only output all tests list
->           --probe-maxsmp  Update the maximum number of VCPUs supported by host
->   
-> -Set the environment variable QEMU=/path/to/qemu-system-ARCH to
-> -specify the appropriate qemu binary for ARCH-run.
-> -
-> +The following environment variables are used:
-> +
-> +    QEMU            Path to QEMU binary for ARCH-run
-> +    ACCEL           QEMU accelerator to use, e.g. 'kvm', 'hvf' or 'tcg'
-> +    ACCEL_PROPS     Extra argument(s) to ACCEL
-> +    MACHINE         QEMU machine type
-> +    TIMEOUT         Timeout duration for the timeout(1) command
-> +    CHECK           Overwrites the 'check' unit test parameter (see
-> +                    docs/unittests.txt)
->   EOF
->   }
->   
-
--- 
-Shaoqin
+---
+base-commit: 01f95500a162fca88cefab9ed64ceded5afabc12
+change-id: 20250513-fix_scounteren_vs-fdd86255c7b7
+--
+Regards,
+Atish patra
 
 
 -- 
