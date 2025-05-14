@@ -4,51 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2EEDBC3ABD8
-	for <kvm-riscv@archiver.kernel.org>; Wed, 14 May 2025 12:18:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3E329C3ABD9
+	for <kvm-riscv@archiver.kernel.org>; Wed, 14 May 2025 12:18:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Subject:Cc:To:From:Message-ID:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=aWnXd+TVmpcQGPH9OiwxXJHAfG/nBv6ckmYJUX0UCeM=; b=aBsCnpUUpxrMik
-	5zrBzlrd/zMxjDV+EczzHdRV43ZOMg4a5j4paAgoxRQ6wsKBqrscpzrx6Hty1H3L6gDGAcWNupiyG
-	2ZsOZMj3NI601Hd+uXbrAoivO45pV2H3rmRJM1/DJD4NAOl9Ehm0Dveb9i1jJmJ9/GB8ttlvcEAy+
-	qyShnTrytM8/nZK2tY5yTIAlfgAnRSU0jxCSGspVhL3RkwOY6Byp+QhIh8dVgTcLjkX52H21YDI3L
-	oinv//v2l5Ph8Ba8no8wizkmKqtvg/mczmaoQHx/XhGi/uInwLQoQrnBl7oybKeYtfq4SpI2xVbxR
-	X15bOaOVrpomg1EaorCQ==;
+	List-Owner; bh=DTVdW8aDXBnQCCKZJ3sj89h3f0paEW0n0JSQK+NBNNo=; b=ghuAK0Jd5b73sf
+	ZYpxhbpHxL7wMz0UNn6hckDlmpIhy0b2AKyuJSpG/UAITw5O/U4NykDgdYrKyw4DnnKIFJPfuGWqt
+	XGOnkLWsZ7EsR6FYsLmAxxDy7nMKvZjlCd8eyG+ZVW3EfKxkqImUaNfidLghLDFQBGHnOMVNv+S6k
+	+bug9F9RJ+m5t/kafbo5MZgACuJLv4w9qfsuBR7noBJ6JawfGvr54nHBEdCnIFX5oVMEgwHwOpmr9
+	9AouEuqFbUnSc/KI4X69jh8xqTZPaCc5gM4of4giu83Lm6cgF1Borcbs9i8eiG7g4P4hKuVL9+nEI
+	PXsyhbEeC0rBMLW23o8w==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uFB4E-0000000F0wt-26mz;
-	Wed, 14 May 2025 12:18:34 +0000
-Received: from dfw.source.kernel.org ([139.178.84.217])
+	id 1uFB4J-0000000F16p-3N9x;
+	Wed, 14 May 2025 12:18:39 +0000
+Received: from nyc.source.kernel.org ([147.75.193.91])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uF8Ut-0000000EgDZ-0epl;
-	Wed, 14 May 2025 09:33:56 +0000
+	id 1uF8Wa-0000000Egbd-28Ef;
+	Wed, 14 May 2025 09:35:41 +0000
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 4E5FB5C6443;
-	Wed, 14 May 2025 09:31:37 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 45060C4CEE9;
-	Wed, 14 May 2025 09:33:54 +0000 (UTC)
+	by nyc.source.kernel.org (Postfix) with ESMTP id A1AEEA4C7E5;
+	Wed, 14 May 2025 09:35:39 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3CEC1C4CEE9;
+	Wed, 14 May 2025 09:35:39 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1747215234;
-	bh=001qyor2xDVXczQ1I1uPsfetah7D3sKu1ILOVywqFnk=;
+	s=k20201202; t=1747215339;
+	bh=N2PyXM6FROVcSjSIaLYgCMb3dTsbrl7AJSDQN1U1u04=;
 	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=oAqFqcpmzH/13hbR8m/oQ4XroGsKo3tle3aJJsWrsQtLYro2z+PLvjOsuG88n/OxJ
-	 34FvuHxK9/XH2rEkDkqevKA3Zm4RLx3TeYfuRmhdCmm/8LPM9f2joGVL1/H9yAQ2w7
-	 qw+hk6NEElGhiwaleELGFNnRJkOZ8sTl5xHlheBLypOX+6C8a5S5AV5fGR3Ea5F2Iz
-	 3/OiHuAPYPcgR16yDChngd6pC8mELRDahRp+jzf2AFxHuz/0wOYB28RUt92XcHMVGT
-	 V5A4ofsYMhlnn1DcsOUps8IUWyew4W6IuckFhHB5U55kOM/su9P9yW9kj58iy2KjS3
-	 ibRlwfrHxQdpg==
+	b=sdb0oWYGPRGVW14S3qNFZmDkY9UlrzgIiVO2KW3FIHise3aozpuClrVvg29x5PCuh
+	 sA8kwGptwEpyb7KayZQCIuStyDbL/xBbLe3pxmOPlZwWD6odYjxty0XwWKh+8un3LZ
+	 hVtwNKNkiPlVRZbFvrsa6Vg9WmK5sutPdaUztj/YtaRfyjDglPrnoLqtbB4+uL4/XA
+	 kffcDcNjRtEIwbIaA5yQU28F4FHBTdKqRG93lwktG1yguWMZl0Zrl8ig4FMknu9NFm
+	 a/rZx8I2ciedLFbT9r4p43cQCag6PXZlU6X1NpHcANKW/DWt2RkaWLgydaGgQMHMjN
+	 9R4o4hpyLrVmw==
 Received: from sofa.misterjones.org ([185.219.108.64] helo=goblin-girl.misterjones.org)
 	by disco-boy.misterjones.org with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
 	(Exim 4.95)
 	(envelope-from <maz@kernel.org>)
-	id 1uF8Up-00Ennz-DL;
-	Wed, 14 May 2025 10:33:51 +0100
-Date: Wed, 14 May 2025 10:33:50 +0100
-Message-ID: <86o6vvfse9.wl-maz@kernel.org>
+	id 1uF8WW-00Ens4-VE;
+	Wed, 14 May 2025 10:35:37 +0100
+Date: Wed, 14 May 2025 10:35:36 +0100
+Message-ID: <86msbffsbb.wl-maz@kernel.org>
 From: Marc Zyngier <maz@kernel.org>
 To: Maxim Levitsky <mlevitsk@redhat.com>
 Cc: kvm@vger.kernel.org,
@@ -89,10 +89,10 @@ Cc: kvm@vger.kernel.org,
 	Ingo Molnar <mingo@redhat.com>,
 	Paul Walmsley <paul.walmsley@sifive.com>,
 	Albert Ou <aou@eecs.berkeley.edu>
-Subject: Re: [PATCH v5 3/6] KVM: add kvm_lock_all_vcpus and kvm_trylock_all_vcpus
-In-Reply-To: <20250512180407.659015-4-mlevitsk@redhat.com>
+Subject: Re: [PATCH v5 5/6] KVM: arm64: use kvm_trylock_all_vcpus when locking all vCPUs
+In-Reply-To: <20250512180407.659015-6-mlevitsk@redhat.com>
 References: <20250512180407.659015-1-mlevitsk@redhat.com>
-	<20250512180407.659015-4-mlevitsk@redhat.com>
+	<20250512180407.659015-6-mlevitsk@redhat.com>
 User-Agent: Wanderlust/2.15.9 (Almost Unreal) SEMI-EPG/1.14.7 (Harue)
  FLIM-LB/1.14.9 (=?UTF-8?B?R29qxY0=?=) APEL-LB/10.8 EasyPG/1.0.0 Emacs/30.1
  (aarch64-unknown-linux-gnu) MULE/6.0 (HANACHIRUSATO)
@@ -102,8 +102,8 @@ X-SA-Exim-Rcpt-To: mlevitsk@redhat.com, kvm@vger.kernel.org, suzuki.poulose@arm.
 X-SA-Exim-Mail-From: maz@kernel.org
 X-SA-Exim-Scanned: No (on disco-boy.misterjones.org); SAEximRunCond expanded to false
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250514_023355_278041_886038AA 
-X-CRM114-Status: GOOD (  18.01  )
+X-CRM114-CacheID: sfid-20250514_023540_682162_39FF3E3B 
+X-CRM114-Status: GOOD (  16.96  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -120,34 +120,37 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Mon, 12 May 2025 19:04:04 +0100,
+On Mon, 12 May 2025 19:04:06 +0100,
 Maxim Levitsky <mlevitsk@redhat.com> wrote:
 > 
-> In a few cases, usually in the initialization code, KVM locks all vCPUs
-> of a VM to ensure that userspace doesn't do funny things while KVM performs
-> an operation that affects the whole VM.
+> Use kvm_trylock_all_vcpus instead of a custom implementation when locking
+> all vCPUs of a VM, to avoid triggering a lockdep warning, in the case in
+> which the VM is configured to have more than MAX_LOCK_DEPTH vCPUs.
 > 
-> Until now, all these operations were implemented using custom code,
-> and all of them share the same problem:
+> This fixes the following false lockdep warning:
 > 
-> Lockdep can't cope with simultaneous locking of a large number of locks of
-> the same class.
-> 
-> However if these locks are taken while another lock is already held,
-> which is luckily the case, it is possible to take advantage of little known
-> _nest_lock feature of lockdep which allows in this case to have an
-> unlimited number of locks of same class to be taken.
-> 
-> To implement this, create two functions:
-> kvm_lock_all_vcpus() and kvm_trylock_all_vcpus()
-> 
-> Both functions are needed because some code that will be replaced in
-> the subsequent patches, uses mutex_trylock, instead of regular mutex_lock.
+> [  328.171264] BUG: MAX_LOCK_DEPTH too low!
+> [  328.175227] turning off the locking correctness validator.
+> [  328.180726] Please attach the output of /proc/lock_stat to the bug report
+> [  328.187531] depth: 48  max: 48!
+> [  328.190678] 48 locks held by qemu-kvm/11664:
+> [  328.194957]  #0: ffff800086de5ba0 (&kvm->lock){+.+.}-{3:3}, at: kvm_ioctl_create_device+0x174/0x5b0
+> [  328.204048]  #1: ffff0800e78800b8 (&vcpu->mutex){+.+.}-{3:3}, at: lock_all_vcpus+0x16c/0x2a0
+> [  328.212521]  #2: ffff07ffeee51e98 (&vcpu->mutex){+.+.}-{3:3}, at: lock_all_vcpus+0x16c/0x2a0
+> [  328.220991]  #3: ffff0800dc7d80b8 (&vcpu->mutex){+.+.}-{3:3}, at: lock_all_vcpus+0x16c/0x2a0
+> [  328.229463]  #4: ffff07ffe0c980b8 (&vcpu->mutex){+.+.}-{3:3}, at: lock_all_vcpus+0x16c/0x2a0
+> [  328.237934]  #5: ffff0800a3883c78 (&vcpu->mutex){+.+.}-{3:3}, at: lock_all_vcpus+0x16c/0x2a0
+> [  328.246405]  #6: ffff07fffbe480b8 (&vcpu->mutex){+.+.}-{3:3}, at: lock_all_vcpus+0x16c/0x2a0
 > 
 > Suggested-by: Paolo Bonzini <pbonzini@redhat.com>
 > Signed-off-by: Maxim Levitsky <mlevitsk@redhat.com>
 
 Acked-by: Marc Zyngier <maz@kernel.org>
+
+Paolo: if you are queuing this for 6.16, please put it on a stable
+branch so that I can merge it back in case of conflicts.
+
+Thanks,
 
 	M.
 
