@@ -4,83 +4,83 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32935C3ABD9
-	for <kvm-riscv@archiver.kernel.org>; Wed, 14 May 2025 07:50:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 490CCC3ABD9
+	for <kvm-riscv@archiver.kernel.org>; Wed, 14 May 2025 08:17:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
 	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
 	List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:Subject:
 	MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=JBxN4h3N4L2Tnc4DUQck0CuRWOPgLsxQvpb1/lbrb3A=; b=U2I8IVu0maNOfY
-	6ESj2OcAYCJG8AHI+jF0MGfDfW/Kyqax1eqNCMXeNtFmphhmtjIKZIvCXXF/KNA2zamQdA5ZYfV9a
-	JDGkdZa+MZ6LddO2VT5/0YI9J5KvbEgiC36OBhXUFd9XyW+EJ8YFU2hfOqCNIxCNE6R56muoMCWKS
-	SeD2SCee3v/oJ9m3U170RfW/4n86HRN4l9deqDgwaCguhw/roDbjVi1p+zT7L36fMOjnV2xDtdWra
-	piKRAmoy/kRIZnsaJD9PEDrMt49oUPx7OzxA1BSyTCsk9lzVxIL15tvi3b1q8ceuRp1xoFoywHrDF
-	uIX1qpP+u4OH7Z4UtIcw==;
+	List-Owner; bh=U0TuE39/b6LOkGOVzHOM86um8mnSC4CZasesakt4P/M=; b=G2mA2gBWvr/etK
+	5c4ilJX5woMN1DFLRt5P1BVlmCD78bL9yahfisLtxDhy5PNA/9ia3vLx7uD0lpdBHB+JMa7KVemYJ
+	L3hesRQepmGetr/QEkQyUH0kXZQ7Lu1OjzGMItp9In85SwSNmAqTgvyZWyhDklaLUxrQ6psTzqTWX
+	Kdd8N0M9hK++hsoIn7wYYLj11WI6qiyh31lcBbpnMyZTxZ4KsFOD/tQblBDTRZj26oejid51rf10W
+	oQ1DLL3HQ4KxbEAS3HJZNwVC3u2dr9aqwTxSwZ7xk3pLOD4GzSA5T49KwJxSCZX9VgnEOY0YTaCbc
+	ApQ0DL7FeJuy3ZQAWJpQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uF6sM-0000000EOYL-3mpv;
-	Wed, 14 May 2025 07:50:02 +0000
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.129.124])
+	id 1uF7It-0000000ET4g-3fMh;
+	Wed, 14 May 2025 08:17:27 +0000
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uF6rf-0000000EOUn-1gJz
+	id 1uF74Q-0000000EQJn-2j1K
 	for kvm-riscv@lists.infradead.org;
-	Wed, 14 May 2025 07:49:20 +0000
+	Wed, 14 May 2025 08:02:31 +0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1747208958;
+	s=mimecast20190719; t=1747209749;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=GY5pVLDJBE/QxHoyRscYKOYBVWh0U1cYp7B4seYFbNI=;
-	b=TSvDgPEblC++i+VlYfi9KqqD9zjTR+XyQj48v3Jxqk2Ehy8cKuig1gfpKJZHCFKQjPJl3f
-	C3JWtl4AloFshAmWSDJGzJWrW/fbbjj5Ik9LE52ocQtZPb8atY0eXe8sbJ3PODVoRaP30P
-	HpJJtyn7p8zHHjoFKyo/G5sXBtAyGjQ=
-Received: from mail-pf1-f197.google.com (mail-pf1-f197.google.com
- [209.85.210.197]) by relay.mimecast.com with ESMTP with STARTTLS
+	bh=ET5iCd8MyKLHEGzFDUiYbW8pYPvNTTRlK86QIMS0syE=;
+	b=DaNi4QjmDZag9fvwmgNXFnMFMOj2FZGRo3mVc+hVeS3NC20k24uOjtn9GiWmMVi/qrpxYy
+	9DC0xLhfkW3RP0IgZNmlzujqy6bYDP/d0C3kcfHvLFMkDE2PYOXjovrPecHc8s8eqFa/LF
+	wp0yCzoUSArX9ppxYgvHML6dWohD6Ik=
+Received: from mail-pf1-f200.google.com (mail-pf1-f200.google.com
+ [209.85.210.200]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-563-9pj4bEcXMVm_v-cpAklzKA-1; Wed, 14 May 2025 03:49:15 -0400
-X-MC-Unique: 9pj4bEcXMVm_v-cpAklzKA-1
-X-Mimecast-MFC-AGG-ID: 9pj4bEcXMVm_v-cpAklzKA_1747208954
-Received: by mail-pf1-f197.google.com with SMTP id d2e1a72fcca58-74089884644so5848542b3a.3
-        for <kvm-riscv@lists.infradead.org>; Wed, 14 May 2025 00:49:14 -0700 (PDT)
+ us-mta-544-nrmGE2ibONeyYfHkAkhAog-1; Wed, 14 May 2025 04:02:28 -0400
+X-MC-Unique: nrmGE2ibONeyYfHkAkhAog-1
+X-Mimecast-MFC-AGG-ID: nrmGE2ibONeyYfHkAkhAog_1747209748
+Received: by mail-pf1-f200.google.com with SMTP id d2e1a72fcca58-7425efba1a3so598782b3a.0
+        for <kvm-riscv@lists.infradead.org>; Wed, 14 May 2025 01:02:28 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1747208954; x=1747813754;
+        d=1e100.net; s=20230601; t=1747209747; x=1747814547;
         h=content-transfer-encoding:in-reply-to:from:content-language
          :references:cc:to:subject:user-agent:mime-version:date:message-id
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=GY5pVLDJBE/QxHoyRscYKOYBVWh0U1cYp7B4seYFbNI=;
-        b=LziYjUVXUkly/IjE8jFFyFy0w+FKCZhkDvZRWUhqdMJoBhiOY8XpG0KNnt15bWuX21
-         3uplBpYOqBQa3+nLWSTXk23t36xrGjhSzEJZgAGRKXxHa87iKHECXBdfLhvmoGlZgcrO
-         jhvYLhHvKNnG364ctfBFlBjljVmBbK07SriT3AkDO8VBNAqi+Kqh/PqLanMVzU5q2GcI
-         B3CGJ8GnbQ81wvKI6W5kmV4mH7A2MlC8Towk8kd2+uZmIR5mUVjorSJCkuiwllsNpyS6
-         bMZmhs9Xrj20TMk6DDKz/Bj/wsoKZaBpBhV7V8I8COykd3d2l7lOyAue2FK/XIblN0A8
-         IybQ==
-X-Forwarded-Encrypted: i=1; AJvYcCX7bCWVkvKZ91ECh2KKdYOtoVaGNphYh/eHH27pSWUe+pLKglRuE82B3+kL34JKa4LdS+U8BuqDxic=@lists.infradead.org
-X-Gm-Message-State: AOJu0YxdnlMf0uOfDov/XyifneFQoOJcpgSorTIfLW3rWC6FcvDI3fcn
-	5qCrA9PjFxVwLC/1OkxyVloQe8EkLJ0IT38jhbDUTXt77YYxk7FimdHD87Zn45cG3KMeqnsZ9gn
-	XTcXZ5+UjBtr4+aWoJvn4HUuVUSs+y9eqBywYGMw6E8qBmknkrNCPdjjlkt22xKc=
-X-Gm-Gg: ASbGncupLW12jiyRiOTgDAyUM7xKMJABDyQkDi87dNLBJcIaz5L58ElVSn6x4b3joVP
-	24qfKIixFImNPfyhtIAeFKJ/jsomRwz69pAUaY5lSR2kZ1C3+OiGeB0YGQ2GZgx0em90hv98jd1
-	BnDyn5dRBLVdErq/1XsFmD1z9fuml6j0K363CQ28x6T1Q1OW2VvhwYV6oPFDo61mbdb4xpaYS/x
-	zUhGPcsa7knY53vOdSTgstrel2DdIUakmJtxY6PMMB6v510Oa3bpySzxj+4U5ZOYwY70uWHe9Ce
-	vDsgbgYo0KSyeAwW
-X-Received: by 2002:a05:6a00:a83:b0:740:596e:1489 with SMTP id d2e1a72fcca58-74289373d91mr3716635b3a.23.1747208953940;
-        Wed, 14 May 2025 00:49:13 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IGxNAnjJT+LSzbpKrbMZgFeI/1Abe8EQQBbch700DZ2BLpon2TmE4Xe4l7GJrieZh9Qyjgk0Q==
-X-Received: by 2002:a05:6a00:a83:b0:740:596e:1489 with SMTP id d2e1a72fcca58-74289373d91mr3716602b3a.23.1747208953574;
-        Wed, 14 May 2025 00:49:13 -0700 (PDT)
+        bh=ET5iCd8MyKLHEGzFDUiYbW8pYPvNTTRlK86QIMS0syE=;
+        b=GlgRrun0e3YHmUWuqLvg65wDYw962bGl686poz06qpi+MmGLy4SZhJ79lR4R4rQtaw
+         EQucfyVFoVsOVOm07boEL0p25Rpnv2wjEMjX2fXvvsBHBfDRHMqQacOGKoQ1RMgj0UD1
+         yNh5rm+zIPM3W0KVvd8ZVhTgL1/qrp03OFdgJzIvbh+z0qTA49VRle13QKDm5RQf71RE
+         ttlDhPFYj/g3ci2m8huRhjHr4oUj9/TncD5Q8So1xs1FSDEC0FwX7FzIsZ1zaHG3rrLT
+         DVjynXX+qb93X/O/HMVLWu772PGHmIsrc7bji2h///qpwcC/YtOxUL04CNcOkp1ua/8j
+         atjg==
+X-Forwarded-Encrypted: i=1; AJvYcCU84chkzrpddxwBHkFZ1rMEhrNj4nwtyl6N38BtvCqYFKg22ArT75yUvKA25JR2exRpZEUwdbVjpM0=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yx+332scvik2rkPm42paDSiYELox5y3z2Di1nd/IBuU4pPj56fm
+	rqU0IP7oWZyBFwIPago6k+S0l7yrrZQwZwY1GXz0mx8dJnbtb/2BQ1BTVz1+PpC47sNUBFzQfzj
+	cF5G5Ln6YpHPUe+jS8nnsCAUG8KbERsOeoQayl92K2AgPgT2q/AbNg+tUxP17NxQ=
+X-Gm-Gg: ASbGncupL3MDrJePAr1SH8wITYQp9R+R+hzbfuL8+B1aabJ/5Coj7b5tCxn+E8eNwPL
+	Hx2mgjh35ufL9Rr1+7QoEkcIKtKrxMgic/WWWGbykIxmDTSRZfmMaoLoS7xUNwSar3z9nQ8Ur4M
+	gLREA97OA33y2vTcob7aHXIMZXSwsSIeDb/nTsc21H9i+9zPebJHVPIgCBKSEDkDvQvkZsmRXPo
+	El0HFIYGFL5OH0kSg2taKsrQTe3K4tnqQ0w9Ts1UwQRRW8FPjsuvOScBMgrbYYJtzmnOZF2b+e0
+	a/6ImGwHB0USIhYV
+X-Received: by 2002:a05:6a00:811a:b0:736:4c3d:2cba with SMTP id d2e1a72fcca58-7427917883cmr7436410b3a.9.1747209747411;
+        Wed, 14 May 2025 01:02:27 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IEwhqdQhP9GhHKMFywwgH/LIw6XImxil66dwro2onM7heCubGabPHGV/eyERLOa/TP3h81BbA==
+X-Received: by 2002:a05:6a00:811a:b0:736:4c3d:2cba with SMTP id d2e1a72fcca58-7427917883cmr7436362b3a.9.1747209747028;
+        Wed, 14 May 2025 01:02:27 -0700 (PDT)
 Received: from [10.72.116.125] ([209.132.188.88])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-74237a10881sm9212477b3a.106.2025.05.14.00.49.05
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-7423772752csm8775799b3a.45.2025.05.14.01.02.18
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 14 May 2025 00:49:12 -0700 (PDT)
-Message-ID: <67fb8130-94fd-46d0-8f59-1c047ff0a881@redhat.com>
-Date: Wed, 14 May 2025 15:49:03 +0800
+        Wed, 14 May 2025 01:02:26 -0700 (PDT)
+Message-ID: <74a90a55-80ae-45ff-9b37-7cb2771ed0e0@redhat.com>
+Date: Wed, 14 May 2025 16:02:17 +0800
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [kvm-unit-tests PATCH v3 06/16] scripts: Refuse to run the tests
- if not configured for qemu
+Subject: Re: [kvm-unit-tests PATCH v3 07/16] scripts: Use an associative array
+ for qemu argument names
 To: Alexandru Elisei <alexandru.elisei@arm.com>, andrew.jones@linux.dev,
  eric.auger@redhat.com, lvivier@redhat.com, thuth@redhat.com,
  frankja@linux.ibm.com, imbrenda@linux.ibm.com, nrb@linux.ibm.com,
@@ -91,16 +91,16 @@ Cc: kvm@vger.kernel.org, kvmarm@lists.linux.dev,
  maz@kernel.org, oliver.upton@linux.dev, suzuki.poulose@arm.com,
  yuzenghui@huawei.com, joey.gouly@arm.com, andre.przywara@arm.com
 References: <20250507151256.167769-1-alexandru.elisei@arm.com>
- <20250507151256.167769-7-alexandru.elisei@arm.com>
+ <20250507151256.167769-8-alexandru.elisei@arm.com>
 From: Shaoqin Huang <shahuang@redhat.com>
-In-Reply-To: <20250507151256.167769-7-alexandru.elisei@arm.com>
+In-Reply-To: <20250507151256.167769-8-alexandru.elisei@arm.com>
 X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: 3TG4Exz1ceQmiwas44rpsudFA9DVWlaGXemRm3khNhw_1747208954
+X-Mimecast-MFC-PROC-ID: L4ec0ZG3OMiywGYQIuNzNJfJQwGylsm4WSNuDusRLG8_1747209748
 X-Mimecast-Originator: redhat.com
 Content-Language: en-US
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250514_004919_527151_B9523EF2 
-X-CRM114-Status: GOOD (  31.47  )
+X-CRM114-CacheID: sfid-20250514_010230_761366_1047F899 
+X-CRM114-Status: GOOD (  19.57  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -120,115 +120,99 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 
 On 5/7/25 11:12 PM, Alexandru Elisei wrote:
-> Arm and arm64 support running the tests under kvmtool. kvmtool has a
-> different command line syntax for configuring and running a virtual
-> machine, and the automated scripts know only how to use qemu.
+> Move away from hardcoded qemu arguments and use instead an associative
+> array to get the needed arguments. This paves the way for adding kvmtool
+> support to the scripts, which has a different syntax for the same VM
+> configuration parameters.
 > 
-> One issue with that is even though the tests have been configured for
-> kvmtool (with ./configure --target=kvmtool), the scripts will use qemu to
-> run the tests, and without looking at the logs there is no indication that
-> the tests haven't been run with kvmtool, as configured.
-> 
-> Another issue is that kvmtool uses a different address for the UART and
-> when running the tests with qemu via the scripts, this warning is
-> displayed:
-> 
-> WARNING: early print support may not work. Found uart at 0x9000000, but early base is 0x1000000.
-> 
-> which might trip up an unsuspected user.
-> 
-> There are four different ways to run a test using the test infrastructure:
-> with run_tests.sh, by invoking arm/run or arm/efi/run with the correct
-> parameters (only the arm directory is mentioned here because the tests can
-> be configured for kvmtool only on arm and arm64), and by creating
-> standalone tests.
-> 
-> run_tests.sh ends up execuing either arm/run or arm/efi/run, so add a check
-> to these two scripts for the test target, and refuse to run the test if
-> kvm-unit-tests has been configured for kvmtool.
-> 
-> mkstandalone.sh also executes arm/run or arm/efi run, but the usual use
-> case for standalone tests is to compile them on one machine, and then to
-> run them on a different machine. This two step process can be time
-> consuming, so save the user time (and frustration!) and add a check
-> directly to mkstandalone.sh.
-> 
+> Suggested-by: Andrew Jones <andrew.jones@linux.dev>
 > Signed-off-by: Alexandru Elisei <alexandru.elisei@arm.com>
 
 Reviewed-by: Shaoqin Huang <shahuang@redhat.com>
 
 > ---
->   arm/efi/run             |  3 +++
->   arm/run                 |  4 ++++
->   scripts/mkstandalone.sh |  3 +++
->   scripts/vmm.bash        | 14 ++++++++++++++
->   4 files changed, 24 insertions(+)
->   create mode 100644 scripts/vmm.bash
+>   scripts/common.bash  | 10 +++++++---
+>   scripts/runtime.bash |  7 +------
+>   scripts/vmm.bash     |  7 +++++++
+>   3 files changed, 15 insertions(+), 9 deletions(-)
 > 
-> diff --git a/arm/efi/run b/arm/efi/run
-> index 8f41fc02df31..53d71297cc52 100755
-> --- a/arm/efi/run
-> +++ b/arm/efi/run
-> @@ -11,6 +11,9 @@ if [ ! -f config.mak ]; then
->   fi
+> diff --git a/scripts/common.bash b/scripts/common.bash
+> index 9deb87d4050d..649f1c737617 100644
+> --- a/scripts/common.bash
+> +++ b/scripts/common.bash
+> @@ -1,4 +1,5 @@
 >   source config.mak
->   source scripts/arch-run.bash
 > +source scripts/vmm.bash
-> +
-> +check_vmm_supported
 >   
->   if [ -f /usr/share/qemu-efi-aarch64/QEMU_EFI.fd ]; then
->   	DEFAULT_UEFI=/usr/share/qemu-efi-aarch64/QEMU_EFI.fd
-> diff --git a/arm/run b/arm/run
-> index ef58558231b7..56562ed1628f 100755
-> --- a/arm/run
-> +++ b/arm/run
-> @@ -7,7 +7,11 @@ if [ -z "$KUT_STANDALONE" ]; then
->   	fi
->   	source config.mak
->   	source scripts/arch-run.bash
-> +	source scripts/vmm.bash
->   fi
-> +
-> +check_vmm_supported
-> +
->   qemu_cpu="$TARGET_CPU"
->   
->   if [ "$QEMU" ] && [ -z "$ACCEL" ] &&
-> diff --git a/scripts/mkstandalone.sh b/scripts/mkstandalone.sh
-> index c4ba81f18935..4f666cefe076 100755
-> --- a/scripts/mkstandalone.sh
-> +++ b/scripts/mkstandalone.sh
-> @@ -6,6 +6,9 @@ if [ ! -f config.mak ]; then
->   fi
->   source config.mak
->   source scripts/common.bash
-> +source scripts/vmm.bash
-> +
-> +check_vmm_supported
->   
->   temp_file ()
+>   function for_each_unittest()
 >   {
+> @@ -26,8 +27,11 @@ function for_each_unittest()
+>   				$(arch_cmd) "$cmd" "$testname" "$groups" "$smp" "$kernel" "$test_args" "$opts" "$arch" "$machine" "$check" "$accel" "$timeout"
+>   			fi
+>   			testname=$rematch
+> -			smp=1
+> +			smp="${vmm_opts[$TARGET:nr_cpus]} 1"
+>   			kernel=""
+> +			# Intentionally don't use -append if test_args is empty
+> +			# because qemu interprets the first argument after
+> +			# -append as a kernel parameter.
+>   			test_args=""
+>   			opts=""
+>   			groups=""
+> @@ -39,9 +43,9 @@ function for_each_unittest()
+>   		elif [[ $line =~ ^file\ *=\ *(.*)$ ]]; then
+>   			kernel=$TEST_DIR/${BASH_REMATCH[1]}
+>   		elif [[ $line =~ ^smp\ *=\ *(.*)$ ]]; then
+> -			smp=${BASH_REMATCH[1]}
+> +			smp="${vmm_opts[$TARGET:nr_cpus]} ${BASH_REMATCH[1]}"
+>   		elif [[ $line =~ ^test_args\ *=\ *(.*)$ ]]; then
+> -			test_args=${BASH_REMATCH[1]}
+> +			test_args="${vmm_opts[$TARGET:args]} ${BASH_REMATCH[1]}"
+>   		elif [[ $line =~ ^(extra_params|qemu_params)\ *=\ *'"""'(.*)$ ]]; then
+>   			opts=${BASH_REMATCH[2]}$'\n'
+>   			while read -r -u $fd; do
+> diff --git a/scripts/runtime.bash b/scripts/runtime.bash
+> index 06cc58e79b69..86d8a2cd8528 100644
+> --- a/scripts/runtime.bash
+> +++ b/scripts/runtime.bash
+> @@ -34,7 +34,7 @@ premature_failure()
+>   get_cmdline()
+>   {
+>       local kernel=$1
+> -    echo "TESTNAME=$testname TIMEOUT=$timeout MACHINE=$machine ACCEL=$accel $RUNTIME_arch_run $kernel -smp $smp $opts"
+> +    echo "TESTNAME=$testname TIMEOUT=$timeout MACHINE=$machine ACCEL=$accel $RUNTIME_arch_run $kernel $smp $test_args $opts"
+>   }
+>   
+>   skip_nodefault()
+> @@ -88,11 +88,6 @@ function run()
+>       local accel="${10}"
+>       local timeout="${11:-$TIMEOUT}" # unittests.cfg overrides the default
+>   
+> -    # If $test_args is empty, qemu will interpret the first option after -append
+> -    # as a kernel parameter instead of a qemu option, so make sure the -append
+> -    # option is used only if $test_args is not empy.
+> -    [ -n "$test_args" ] && opts="-append $test_args $opts"
+> -
+>       if [ "${CONFIG_EFI}" == "y" ]; then
+>           kernel=${kernel/%.flat/.efi}
+>       fi
 > diff --git a/scripts/vmm.bash b/scripts/vmm.bash
-> new file mode 100644
-> index 000000000000..39325858c6b3
-> --- /dev/null
+> index 39325858c6b3..b02055a5c0b6 100644
+> --- a/scripts/vmm.bash
 > +++ b/scripts/vmm.bash
-> @@ -0,0 +1,14 @@
-> +source config.mak
+> @@ -1,5 +1,12 @@
+>   source config.mak
+>   
+> +declare -A vmm_opts=(
+> +	[qemu:nr_cpus]='-smp'
+> +	[qemu:kernel]='-kernel'
+> +	[qemu:args]='-append'
+> +	[qemu:initrd]='-initrd'
+> +)
 > +
-> +function check_vmm_supported()
-> +{
-> +	case "$TARGET" in
-> +	qemu)
-> +		return 0
-> +		;;
-> +	*)
-> +		echo "$0 does not support target '$TARGET'"
-> +		exit 2
-> +		;;
-> +	esac
-> +}
+>   function check_vmm_supported()
+>   {
+>   	case "$TARGET" in
 
 -- 
 Shaoqin
