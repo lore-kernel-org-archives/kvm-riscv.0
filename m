@@ -4,90 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1497DC2D0CD
-	for <kvm-riscv@archiver.kernel.org>; Thu, 15 May 2025 23:11:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E01CBC3ABD8
+	for <kvm-riscv@archiver.kernel.org>; Fri, 16 May 2025 09:58:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:Message-Id:MIME-Version:Subject:
-	Date:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=VXaSOXsspis0f6dzUazp2t8blCSs5quIma2aRoCc0n0=; b=s6auFi3qC6aLSw
-	xZdF4OKxZUSbY54NJhIoNEnJuZH1i9+0FKSoNt8c/pg+SS/KJQKjndB1e3cqxZxdG2i/wwD7mNxip
-	sWKBnCXcmJwQv3S+rQcwahZbOc5+3NippJaPUW78WrjEjAQmejPFumB2w4Uo4da/A7Zu0DAShnCEm
-	vplql361h/HwZzg4qSXZAOTqA4gREjQEBHtmrXk1hQEyteA3VoetOTGscef+N0YMBFnoaFg0lampT
-	+EpLC0TUq0YKdhqb4C+5O/BqsBWzuxsl0BNXvguG5l13WJ1qRbjIzB4v+YhzZF1KHZKjguRmeV8ID
-	taCU33rXvD3LAYv1AXuA==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:References:
+	In-Reply-To:Subject:CC:To:From:Date:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=Z3Gcdao2uXiXt/5/8RGWVJppjw0BN1l3Z6DfxSgaFGc=; b=3xypt8iVeVSRdG
+	6c/92xzwMu18awkQH/CoPCZfNCtzCaVh5aPFuZHikg5i7+GTBwn/fASx8kPPcwe2atVCovZMJC2xo
+	BO6VNLoM/DG30CFAE4W3lvaP0EhtS7mwTXnGMgezeX65W+Ve1lKh76rSEX7lya/P0vCW92MRyA1H4
+	WGUm7y5rTkWxpxgvYHjw5n7yJ3hdVdBV3sGPy5EwBr2ltoQzPGOFAJ4w58p2Icz/8FfUGWYEwkInQ
+	nX0NhwXfw0fzKk/x/r4DbEdi0NRKQlmuMIB8z1pVYAsAq+fcAl3B0LR+TrLf29++csGN6jKQI3bIO
+	ur8g/M5LOVdGY25703pA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uFhjc-000000022bs-0pOQ;
-	Thu, 15 May 2025 23:11:28 +0000
-Received: from mail-pj1-x1036.google.com ([2607:f8b0:4864:20::1036])
+	id 1uFrpr-000000034Hf-2Fg6;
+	Fri, 16 May 2025 09:58:35 +0000
+Received: from mail-ej1-x62c.google.com ([2a00:1450:4864:20::62c])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uFhjZ-000000022bA-07jc
+	id 1uFrny-000000033w4-370h
 	for kvm-riscv@lists.infradead.org;
-	Thu, 15 May 2025 23:11:26 +0000
-Received: by mail-pj1-x1036.google.com with SMTP id 98e67ed59e1d1-30e7bfef27dso385100a91.0
-        for <kvm-riscv@lists.infradead.org>; Thu, 15 May 2025 16:11:24 -0700 (PDT)
+	Fri, 16 May 2025 09:56:40 +0000
+Received: by mail-ej1-x62c.google.com with SMTP id a640c23a62f3a-acbb85ce788so379971466b.3
+        for <kvm-riscv@lists.infradead.org>; Fri, 16 May 2025 02:56:38 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=rivosinc-com.20230601.gappssmtp.com; s=20230601; t=1747350684; x=1747955484; darn=lists.infradead.org;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=cWXRh7r2vJxZ/1lbG9aXXgAmYeOBerYG9mBks7QssNI=;
-        b=1ROOnr0wrOFiI1mvbEvKzX/IHJZMe/nFLCGRu870ggGGV5H9EgJBF84z4JyqzD+yGw
-         CTvLTOqBxKpmPr3QPVA1Yi/+Xv1rkEG98SlfxuMAXZ7vAv0y/g5Ie6J8jU2WI8UgH4pg
-         V8Upge4SKbZfvrzgoYVjwcM9wB22mGNh4S8xS3xRK3/hbrGtM+G1XVThImui3VkG+szh
-         +0/08BXLZuI63tENNmWztezvyZ6ZOAqK+Av0XXYm3MqMyNPcWP+uoWYyY1fVnszJSoTw
-         k0OJUrQoSRgZYO2wtodDHkvO0HkQKBC9UHAtUA3b4/cbU2AAGtuPudU/A32ACJ4L2SW8
-         a0Zg==
+        d=ventanamicro.com; s=google; t=1747389397; x=1747994197; darn=lists.infradead.org;
+        h=content-transfer-encoding:mime-version:message-id:references
+         :in-reply-to:subject:cc:to:from:date:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Ti4ZqP+Hl0JDcB2DFZd59wj7uwh2SBcukM1irTJ/QT8=;
+        b=YIRQEk3OKTMn5R1eGEIYEm69RGCQ1/mpFnAUupyclnLffIa0hCeDgbEKtR7/5WuoyA
+         EPUqS/xpNeZWtnv33cD3Sm9wnc6fAQqvwM6/7j8YXl73mvvQXc0NCUIkjF8yzvz4VHvO
+         TsEUEgNiRNHEVuiJz9mtL0mdGZGKmoD1dl5jRTyqJQH86+ZojFclY+3wlyCAjj1i65iZ
+         lbIjCcKHkUBDDBb1t21CvDtjNvlWp4qR0c8s7xUAxfXY5A6BmYiaBYzi3VHcBWK8ggEv
+         f+Ow4LOrZFEsliq5Dc6iuHREeV7tHHufUPRp44pwA2luQo+5CimUM0OLRoZ/igzmymnq
+         r+Tw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1747350684; x=1747955484;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=cWXRh7r2vJxZ/1lbG9aXXgAmYeOBerYG9mBks7QssNI=;
-        b=UtvTFnibVa68VCgLJMa2PkSt6ZUHylMhrqdotDFqVUzx+YGT5x0eQa7Gj2yK4aoigo
-         18HLjAw66T6/GuaF33xtKUFI1AQh2z10QmiHGU9NMig5rL+MuK3bgV3b93d+hmPjKiZB
-         Nw4V5uWsYsK+3xNfZbb67jTlRd8CyhUO4xDoBp03zHaK0/bTrK2F5H3GhjDJos+225AT
-         8smC+yJmWU5zWwAd0Dxlb0k/quZtct5Ag50bRVAYU58PHvepbPf2q1NhJg7NG+bqmE1U
-         lQwJKxHFSskS4jSiAu4+FCc4KAnvkRGdla2KFV3TDL0OZEhS66b7QcKQ80ksyx04Ps8s
-         qSNQ==
-X-Forwarded-Encrypted: i=1; AJvYcCViIThcHkEqZ0ycKBlWf4pktm8Im9J35d89naLzVbr5toqyZRrvXuDdf+ITol+bL9pE/ynlRpJjMsI=@lists.infradead.org
-X-Gm-Message-State: AOJu0YzjDOPaI0ICWRuz08OlfwjOKYHii/1nOgFpeNwU8eoOdx2LldII
-	iUV4K6h7elJeyy+7aVr/RG7bZ2K7ctIsOiIp4sGVnFCfY7lITP0zNJpPqj5VIFmykXo=
-X-Gm-Gg: ASbGncuGBlAm2oJbP4sWs0X/NXJF2RfzcZEddy9xIqd1+wHKgTxvxMU6qDgbwMGdSc2
-	QDvA4wCHl9Jb6ssenuQTpU/NDx4QXdYpb0iUHkvBzOFKcxxeQn1RfjLVFmgxvwNH9FDl+s5nSoh
-	xf+/o8duNogGraEcgD4KfQSQLxHLDklV28/MHc1RzfKZCXln9DhQBbOiC/aOV6HTivSHaXtRtJY
-	wmkP/8Zac9l9Vu2qKnDeWgPucipwx3x8RPt8reO4f/2CuxW51VljLuLQix6x7m0IZTBTcnpSICo
-	UNTTTTboMueAzfMVE4aMXO5Z6a8zDFGw2aqdEF4uUlEnKMDpIpSj+Soq59m0yn8SEUpgWIgs45A
-	=
-X-Google-Smtp-Source: AGHT+IGAW4cvTanI5pu+NrHheJagZj7AR+lLIMA5PpkVtQFo51HmALe79lqxHvRdT0WW08MROjTyIQ==
-X-Received: by 2002:a17:90b:548f:b0:2ff:7ad4:77b1 with SMTP id 98e67ed59e1d1-30e830c50a5mr457868a91.2.1747350683748;
-        Thu, 15 May 2025 16:11:23 -0700 (PDT)
-Received: from atishp.ba.rivosinc.com ([64.71.180.162])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-30e7d46f4bfsm406016a91.5.2025.05.15.16.11.22
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 15 May 2025 16:11:23 -0700 (PDT)
-From: Atish Patra <atishp@rivosinc.com>
-Date: Thu, 15 May 2025 16:11:18 -0700
-Subject: [PATCH v3] RISC-V: KVM: Remove scounteren initialization
-MIME-Version: 1.0
-Message-Id: <20250515-fix_scounteren_vs-v3-1-729dc088943e@rivosinc.com>
-X-B4-Tracking: v=1; b=H4sIAJV0JmgC/33NzQ7CIAzA8VdZOIsZEPbhyfcwZpmluB4EA5NoF
- t5dtpMxxuO/aX9dWMRAGNmhWljARJG8K6F2FYNpdFfkZEozWUtda6G4pecQwT/cjAHdkCK3xnS
- N1BraS8vK3T1gWdrM07n0RHH24bW9SGKd/tOS4IKDsFqOtlfQ9sdAyUdysAd/YyuY5CeifyGyI
- MKazkDd9Aq7LyTn/Aa1I//2+gAAAA==
-X-Change-ID: 20250513-fix_scounteren_vs-fdd86255c7b7
-To: Anup Patel <anup@brainfault.org>, Atish Patra <atishp@atishpatra.org>, 
- Paul Walmsley <paul.walmsley@sifive.com>, 
+        d=1e100.net; s=20230601; t=1747389397; x=1747994197;
+        h=content-transfer-encoding:mime-version:message-id:references
+         :in-reply-to:subject:cc:to:from:date:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=Ti4ZqP+Hl0JDcB2DFZd59wj7uwh2SBcukM1irTJ/QT8=;
+        b=Bl3C7H+kYiG2ozskXZEn265YzY8ZsHSQVWxsjWfkItOM0z2JaoCvJMZlA2owkeHUTA
+         KTzvFq+2k7W0oOCvsG8/JnQYhwsfl8WtZk+zVm3eGaYCMfyIi28qOLCtnnnUCVHR0K25
+         knHuq36lbaXsPMS9ItmAIzZSEq1dUT53Hvg6uv9VPIzj1V+3j4u9oVF1A4rGwh9z3iaX
+         MeupmTixrUEAtqsVJQuSeIAzEGzqdsqZRrqPyV9AmTqzmcx/3TnFS+j8Jq6eYowsvFW7
+         yG2KkmDqy6YFIubCtCzhXFZNGxKJemf1efNSpDRYNs0D/ONRu31VYwJeSUelJBWPOzvo
+         PSSw==
+X-Gm-Message-State: AOJu0YykrSFOQ48RkE0tDBb/FUe/HDnyOjbFWUd6vP8LY+G2MxT7Mz+T
+	0N6S9MydCExSNsonJwhHsohwCdeNSBBtQL8P9AfjRnDZauTbeI0fAjIpYNAKHxrK9XLTT+aeHc6
+	F80ray6eo8A==
+X-Gm-Gg: ASbGncu1tNkKTBHylQsbZEzcMb6WHSPQ5/SkaN4ZtLyN1HaR4GytW2jYWb4oHNMWv86
+	CB9E3AaXMtnu+rBFtO8hqGkBdq55BGKCgU6cCikv2KEn+yjWwmZT+L3c1vjs6w7/CushLlu8iwr
+	w83ASz7+itPsPs8wxOtl5Vj7OV3X/H1oyR02MBs1WcV/qKs8TtOWPJ9WEGR9qFp6VQya+qqCse6
+	JNws5tnAjBTYYruLb3hq1AYR9HbtBA7w/IsSojG6NiqVFXZYiLxwnGf3SxSHLdBwHYxMchib563
+	U5waQSUmQ00tz77IloYW+JSoVNXpM7iLae+DQ3Hn7Ly+hF36nKdrK4cxd5GFleZnC8lh
+X-Google-Smtp-Source: AGHT+IFh2zAJl1Uj5Dr32GIK/RqZ9T0owi1RiR8KLA1E0llsHrNCCqszm3h/QZEbyvFvfkdXsmjKfg==
+X-Received: by 2002:a17:907:9624:b0:ad2:4da6:f573 with SMTP id a640c23a62f3a-ad52d5ba810mr300923366b.41.1747389396719;
+        Fri, 16 May 2025 02:56:36 -0700 (PDT)
+Received: from ?IPv6:::1? ([2a00:11b1:101e:447e:2959:9e3d:ac05:c19d])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-ad52d490789sm127955866b.130.2025.05.16.02.56.35
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 16 May 2025 02:56:36 -0700 (PDT)
+Date: Fri, 16 May 2025 11:56:31 +0200
+From: Andrew Jones <ajones@ventanamicro.com>
+To: kvm-riscv@lists.infradead.org, Atish Patra <atishp@rivosinc.com>,
+ Anup Patel <anup@brainfault.org>, Atish Patra <atishp@atishpatra.org>,
+ Paul Walmsley <paul.walmsley@sifive.com>,
  Palmer Dabbelt <palmer@dabbelt.com>, Alexandre Ghiti <alex@ghiti.fr>
-Cc: kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
- linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, 
- Atish Patra <atishp@rivosinc.com>
-X-Mailer: b4 0.15-dev-42535
+CC: kvm@vger.kernel.org, linux-riscv@lists.infradead.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3] RISC-V: KVM: Remove scounteren initialization
+In-Reply-To: <20250515-fix_scounteren_vs-v3-1-729dc088943e@rivosinc.com>
+References: <20250515-fix_scounteren_vs-v3-1-729dc088943e@rivosinc.com>
+Message-ID: <C74B29B0-FB1F-4E67-AFDF-FAD7C86FB329@ventanamicro.com>
+MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250515_161125_173273_A68DD310 
-X-CRM114-Status: GOOD (  10.13  )
+X-CRM114-CacheID: sfid-20250516_025638_782407_C7495B85 
+X-CRM114-Status: UNSURE (   9.79  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -104,54 +101,58 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Scounteren CSR controls the direct access the hpmcounters and cycle/
-instret/time from the userspace. It's the supervisor's responsibility
-to set it up correctly for it's user space. They hypervisor doesn't
-need to decide the policy on behalf of the supervisor.
+On May 16, 2025 1:11:18 AM GMT+02:00, Atish Patra <atishp@rivosinc.com> wrote:
+>Scounteren CSR controls the direct access the hpmcounters and cycle/
+>instret/time from the userspace. It's the supervisor's responsibility
+>to set it up correctly for it's user space. They hypervisor doesn't
+>need to decide the policy on behalf of the supervisor.
+>
+>Signed-off-by: Atish Patra <atishp@rivosinc.com>
+>---
+>Changes in v3:
+>- Removed the redundant declaration 
+>- Link to v2: https://lore.kernel.org/r/20250515-fix_scounteren_vs-v2-1-1fd8dc0693e8@rivosinc.com
+>
+>Changes in v2:
+>- Remove the scounteren initialization instead of just setting the TM bit. 
+>- Link to v1: https://lore.kernel.org/r/20250513-fix_scounteren_vs-v1-1-c1f52af93c79@rivosinc.com
+>---
+> arch/riscv/kvm/vcpu.c | 4 ----
+> 1 file changed, 4 deletions(-)
+>
+>diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+>index 60d684c76c58..9bfaae9a11ea 100644
+>--- a/arch/riscv/kvm/vcpu.c
+>+++ b/arch/riscv/kvm/vcpu.c
+>@@ -111,7 +111,6 @@ int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
+> {
+> 	int rc;
+> 	struct kvm_cpu_context *cntx;
+>-	struct kvm_vcpu_csr *reset_csr = &vcpu->arch.guest_reset_csr;
+> 
+> 	spin_lock_init(&vcpu->arch.mp_state_lock);
+> 
+>@@ -146,9 +145,6 @@ int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
+> 	if (kvm_riscv_vcpu_alloc_vector_context(vcpu, cntx))
+> 		return -ENOMEM;
+> 
+>-	/* By default, make CY, TM, and IR counters accessible in VU mode */
+>-	reset_csr->scounteren = 0x7;
+>-
+> 	/* Setup VCPU timer */
+> 	kvm_riscv_vcpu_timer_init(vcpu);
+> 
+>
+>---
+>base-commit: 01f95500a162fca88cefab9ed64ceded5afabc12
+>change-id: 20250513-fix_scounteren_vs-fdd86255c7b7
+>--
+>Regards,
+>Atish patra
+>
+>
 
-Signed-off-by: Atish Patra <atishp@rivosinc.com>
----
-Changes in v3:
-- Removed the redundant declaration 
-- Link to v2: https://lore.kernel.org/r/20250515-fix_scounteren_vs-v2-1-1fd8dc0693e8@rivosinc.com
-
-Changes in v2:
-- Remove the scounteren initialization instead of just setting the TM bit. 
-- Link to v1: https://lore.kernel.org/r/20250513-fix_scounteren_vs-v1-1-c1f52af93c79@rivosinc.com
----
- arch/riscv/kvm/vcpu.c | 4 ----
- 1 file changed, 4 deletions(-)
-
-diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index 60d684c76c58..9bfaae9a11ea 100644
---- a/arch/riscv/kvm/vcpu.c
-+++ b/arch/riscv/kvm/vcpu.c
-@@ -111,7 +111,6 @@ int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
- {
- 	int rc;
- 	struct kvm_cpu_context *cntx;
--	struct kvm_vcpu_csr *reset_csr = &vcpu->arch.guest_reset_csr;
- 
- 	spin_lock_init(&vcpu->arch.mp_state_lock);
- 
-@@ -146,9 +145,6 @@ int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
- 	if (kvm_riscv_vcpu_alloc_vector_context(vcpu, cntx))
- 		return -ENOMEM;
- 
--	/* By default, make CY, TM, and IR counters accessible in VU mode */
--	reset_csr->scounteren = 0x7;
--
- 	/* Setup VCPU timer */
- 	kvm_riscv_vcpu_timer_init(vcpu);
- 
-
----
-base-commit: 01f95500a162fca88cefab9ed64ceded5afabc12
-change-id: 20250513-fix_scounteren_vs-fdd86255c7b7
---
-Regards,
-Atish patra
-
+Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
 
 -- 
 kvm-riscv mailing list
