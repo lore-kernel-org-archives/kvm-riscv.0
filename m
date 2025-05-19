@@ -4,102 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 988BEC3DA6D
-	for <kvm-riscv@archiver.kernel.org>; Mon, 19 May 2025 08:57:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9DB9BC2D0CD
+	for <kvm-riscv@archiver.kernel.org>; Mon, 19 May 2025 12:37:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
-	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
-	List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:Subject:
-	MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:References:From:To:Cc:
+	Subject:Message-Id:Date:Mime-Version:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=Wl0/Nl8ZJUTme7wsyxGnN+42EkXov2JgGj02lNVymSc=; b=Q+mcWbS11hqdO8
-	BDJELC6HzWF1zT3MJwSa5grmO/bB6WkTkFZ+DT9YbDmsIeIVwloPRU81zuvmS9i/H+HHDEzClQsDv
-	yUGJcg1dKMpiPJWfxXGUFEe3CBYrPtdhnkr/S/HnhvSz39ktz1tbYLhi5BhDCb8Dc6jE0eqY958Jd
-	nK4QzXbE/eLb5mN2B4RP5l6ehXvLGoyG+17760/jLo45iC++t+3Ts0vWHmxrXsRAsOWIpn5CJ6/kv
-	Rw3mj3xuEZ/mdJrj25PXGpch+NXFCupvCBweifox3M+8TNxjxAxLOB5pjNYKxYwZVYpSUMzTkCDZQ
-	E9I5aLv3O+EXVzudAb/A==;
+	List-Owner; bh=OWZwTsxKZQreT5vzAk09RlXjsDvkYxXc09ybvrdfoxQ=; b=EtyxaNPC83NvER
+	oonEWYA4wXNyy0oQm+SW3fzKCHO84Wo4cgzKEY6IlSl/1ssj+d9bx/wPTwu+xxV64E784n6Exz5J5
+	nCFp/tJfc9NgRtCyOMFqxlA+nCjRaVhdhp/1C3QBpoEHXgVq18gbBOKknGrhgY3jk+RMjJCL0Qk5L
+	/Xr/xADlQyIW5BtFrrnYpkzV4rWQaVSXv98UYGqUoqct5rt5zkhv1zjnafh/dbN8+PNnKEUdzu/HK
+	Bj7Q+sdeqJg3s9Qfa7ztOuyXd0SET0Sy1VHFM5dRudaf9dqZhj4tU9UcyaYe+YrkF+1adhBqZFrGz
+	lJJaW5ogvjZiFMFjRyqQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uGwJ7-00000008RrK-1dkZ;
-	Mon, 19 May 2025 08:57:13 +0000
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124])
+	id 1uGzkU-00000009Ark-1Ag1;
+	Mon, 19 May 2025 12:37:42 +0000
+Received: from mail-wr1-x432.google.com ([2a00:1450:4864:20::432])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uGwJ4-00000008Rq7-2QGO
+	id 1uGzYr-000000098i6-1Cwv
 	for kvm-riscv@lists.infradead.org;
-	Mon, 19 May 2025 08:57:12 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1747645029;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=57lbWIGpAZjDd2L3740mwnHRJL/CETq+opyWz0J1phk=;
-	b=PTqzLJeo5vUrtkO71KkM4IBSXUjycyceNiFzu2/i02w8NxFgd7gGL8ykyiWsFw4aLp0dG1
-	SCRDP248IoR6T3sI9WRwf6Aj9naKNtrXl+pkz0HAdKKtwJmJPlp56n5Qs9cn8sSg7dVSvj
-	q4Zsed/Rd8OcIfkTC1/9W6PMV7CSvdk=
-Received: from mail-pg1-f199.google.com (mail-pg1-f199.google.com
- [209.85.215.199]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-46-izlS_adcMZOD4YTaqGepKQ-1; Mon, 19 May 2025 04:57:08 -0400
-X-MC-Unique: izlS_adcMZOD4YTaqGepKQ-1
-X-Mimecast-MFC-AGG-ID: izlS_adcMZOD4YTaqGepKQ_1747645027
-Received: by mail-pg1-f199.google.com with SMTP id 41be03b00d2f7-af9564001cbso2723650a12.3
-        for <kvm-riscv@lists.infradead.org>; Mon, 19 May 2025 01:57:07 -0700 (PDT)
+	Mon, 19 May 2025 12:25:43 +0000
+Received: by mail-wr1-x432.google.com with SMTP id ffacd0b85a97d-3a374754e03so34239f8f.1
+        for <kvm-riscv@lists.infradead.org>; Mon, 19 May 2025 05:25:40 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ventanamicro.com; s=google; t=1747657539; x=1748262339; darn=lists.infradead.org;
+        h=in-reply-to:references:from:to:cc:subject:message-id:date
+         :content-transfer-encoding:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=dYOuWvhD2IrISJ7Y8B2LTWIZ7qteHjlohGpX67eP4RQ=;
+        b=eZq7Qg2HmFge7j1Bg+LArnOETapdvlx5NBFfQPx3KCYWih7nmk6WfA5tQR7LjlXjit
+         9h77ReL7k9/fhBvMo2uo+1YlXFp/yC7sDqDbR+f1HDAF9ABtfHzVjzDsIsfAZsq960JS
+         H6+PI1kKIDD3ssQL4odwYiYPeHjq+cmjSrm5CvfSMRjb8FatCbTa6HRVGqWfjPSzVoOh
+         SaECn3F7XeQCfrajvbjPTj3Z0tiXyM80mPzNf0LDevYviz2oXvpF8o2pBu4e83c/n9Q5
+         8tBbznyDSi8vhrrNlAQKIcNAR5Fdi3J3IeBWERyB9gmxQFQN06CfXrCqAIFvkZq4iIqK
+         vdfw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1747645027; x=1748249827;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=57lbWIGpAZjDd2L3740mwnHRJL/CETq+opyWz0J1phk=;
-        b=e7JvyiTdRWKbCwNEkRLkGno/10tbTyNdtsjAFseTXKlLYwfTQcf+k1EiCIA2Pd7e/D
-         rxv/gEoW/uIA5fTANI4IAXXpGae56bWYs2YC+so7spb2ygQdz8AbNyZUIaotRnnqaeW2
-         tOFhh9m4fZoTkLrdtS4nE4uNwdC5NRLSXG6gNVdNL2AvT5UtEAYslxaG7uOL/W7dyR5E
-         cCAsHpPBGhO9rVTTy5t+LhjkRyJS6xbqxl959wIduz5sDNmC1ttuPG6Day/Mf0F0eiIA
-         UQP6vheLbAs7TfTO2pmvO04mFS996JD+Ro5P0yHQmqxyOX8Ec3knvDvlwi266FMX9yap
-         1i5w==
-X-Forwarded-Encrypted: i=1; AJvYcCWyZbYFqQLpD4NXMDE+PLqwc9z7mIWgZdrEXZFBwoSOhk2uNFqDfLhgMlb7BnQQimV53I1XbLL76WI=@lists.infradead.org
-X-Gm-Message-State: AOJu0YwUlq0+iHi/xT8PaE0Rol2fy1WGR4K9n4R6CqMubpqVtdO0zUzQ
-	QYxfk5waNAsKfxxBCUam2/BFGMmyArdDhLO8mRmbuEq4uBYK1s10vQOirwcNXIYgI0SSOqjY+IK
-	JFJEKO2L5TO7G0j8JlXf68YR+9PCDtMOr3xYyou5PIxNmHpefmq5xFuiYDxe+Dea78YU=
-X-Gm-Gg: ASbGncsuP55Uv8NURlTCRnSJKn516Z+nREk/ysT/QpUjDH1pmFeSC21b0sVPUWNzlqT
-	kSak3teOmmMO9gDu9QzdK8Ip7bpyB2rP0nwqfaUGqTRle9hkWJdkhfMzVMUSPWVGrMkkVCmdNOT
-	bgNPFG0tEKjT+eiMYL0Mit9R9zJBrm+bJ+pfwo0cRhiJlI0I4CFglnZcnenIfw47gsFeehgXHne
-	j899hRFdjY+TQRERBrikKsbpa8zopJ5UOxSSVVgomAw+RQYhCKgB1+QR59OLF7XjKQRAX5dRkmB
-	dljKyTVbL+tD9Kvd
-X-Received: by 2002:a05:6a21:a341:b0:1f6:6539:e026 with SMTP id adf61e73a8af0-216218e668fmr19448400637.15.1747645026959;
-        Mon, 19 May 2025 01:57:06 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IE+BBkV0dSDFn9S/kO/xVvSG5+nt7BjgxgmMpQUjhktNCq5vzK536Q0m1eaNG4mx2NI/khDRA==
-X-Received: by 2002:a05:6a21:a341:b0:1f6:6539:e026 with SMTP id adf61e73a8af0-216218e668fmr19448372637.15.1747645026548;
-        Mon, 19 May 2025 01:57:06 -0700 (PDT)
-Received: from [10.72.116.146] ([209.132.188.88])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-b26eb0a89edsm5672369a12.67.2025.05.19.01.56.57
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 19 May 2025 01:57:05 -0700 (PDT)
-Message-ID: <1ecedde8-8d18-43f1-a3b7-e8bcc82a61f0@redhat.com>
-Date: Mon, 19 May 2025 16:56:56 +0800
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [kvm-unit-tests PATCH v3 00/16] arm/arm64: Add kvmtool to the
- runner script
-To: Alexandru Elisei <alexandru.elisei@arm.com>, andrew.jones@linux.dev,
- eric.auger@redhat.com, lvivier@redhat.com, thuth@redhat.com,
- frankja@linux.ibm.com, imbrenda@linux.ibm.com, nrb@linux.ibm.com,
- david@redhat.com, pbonzini@redhat.com
-Cc: kvm@vger.kernel.org, kvmarm@lists.linux.dev,
- linuxppc-dev@lists.ozlabs.org, kvm-riscv@lists.infradead.org,
- linux-s390@vger.kernel.org, will@kernel.org, julien.thierry.kdev@gmail.com,
- maz@kernel.org, oliver.upton@linux.dev, suzuki.poulose@arm.com,
- yuzenghui@huawei.com, joey.gouly@arm.com, andre.przywara@arm.com
-References: <20250507151256.167769-1-alexandru.elisei@arm.com>
-From: Shaoqin Huang <shahuang@redhat.com>
-In-Reply-To: <20250507151256.167769-1-alexandru.elisei@arm.com>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: lss_N8bNCRhs_t27pyvpb3om5bF7zCeAjqlzmwiZ9SM_1747645027
-X-Mimecast-Originator: redhat.com
-Content-Language: en-US
+        d=1e100.net; s=20230601; t=1747657539; x=1748262339;
+        h=in-reply-to:references:from:to:cc:subject:message-id:date
+         :content-transfer-encoding:mime-version:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=dYOuWvhD2IrISJ7Y8B2LTWIZ7qteHjlohGpX67eP4RQ=;
+        b=QgNHuHVxBT2Jubtv3UW+lUl5Zr/IzNMrYOre3UdTGjHMQCgnr3Nu6tJpGUg3pFfiPV
+         A1YttIQb7Ni8IeQJQ0gouQgHNHwhEIhJ3sLeBHpjfmsnFjoU1Dc/btQNTyGKvPRYQYIr
+         B6+LW4NTaUNq0laygeXRl/uwdXdd3pRodYsUN7yxsM+8d11vBjrpugYxvTfir8s2a8Ao
+         TxCXIWPv8TFSvvdrK7HpHCn1/ggkxTFOQsU6ip6N1aaJxR8z+hHN0EramUOeo8Wd2UVe
+         iBZAPZZm4IJyxe2KQ2qONPRetefRFL76lvsGbtXPnH7cUlPI0xhcUkjrvGI9m5JEcPXs
+         6CsA==
+X-Gm-Message-State: AOJu0YzFhaD9C4QBU7IY38bzOlvaU9/73c2z1886RIBLLYdmA8gJcMJh
+	f36Dmkpmqx7v65JX+Pb7JnFMe1g+/nk6Z2GVR4BDEFeO9dyMyG6v67FxZYdOt085+20=
+X-Gm-Gg: ASbGncuyZqZezQ4Q4Tbv8LTmhJepjF9Bi5oAeDfwMFHS1vkm2TjV+eOJe013FJ4OlUC
+	PdSn6Bo0JohDSl93OUGe7QOgEl31lvzPLbQ+rAmoMVoSazGgr3qvBsc/W9Iap42k6Pzf+hdiPAi
+	sbgnrZcn2osrhEwqrB/yYiudc28nB0xrEnquYq3ucWwVHn5vA3FewCq7d/fmYF09b8jkwhVy65i
+	6/Uf77bYtKuxU8mpsg+k68pMzyIqEq5JEW6Gfqlw67bdkVUjhA2xRcSMHVfcoEr6MWmy1OHVoSG
+	xIJPzIa29sjGei4VwEDfva54v09YNqVmeOmt2Xgs9lj/SgkN4DVsjsHQK5o=
+X-Google-Smtp-Source: AGHT+IGD0SGS0rGbL2ckKskUyJdOJSyzovDYQ2VXjwxG5bR2UNb0kyCq4qlYyH1RbivwrICgl0vwjQ==
+X-Received: by 2002:a5d:5888:0:b0:3a3:7351:6f39 with SMTP id ffacd0b85a97d-3a373517245mr709772f8f.15.1747657539155;
+        Mon, 19 May 2025 05:25:39 -0700 (PDT)
+Received: from localhost ([2a02:8308:a00c:e200:29b7:4911:a29c:2135])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-442f33804d9sm209160935e9.12.2025.05.19.05.25.37
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 19 May 2025 05:25:38 -0700 (PDT)
+Mime-Version: 1.0
+Date: Mon, 19 May 2025 14:25:36 +0200
+Message-Id: <DA04W4PO99EJ.1XWOAUMZV4BXG@ventanamicro.com>
+Subject: Re: [PATCH v3 1/2] RISC-V: KVM: add KVM_CAP_RISCV_MP_STATE_RESET
+Cc: <kvm-riscv@lists.infradead.org>, <kvm@vger.kernel.org>,
+ <linux-riscv@lists.infradead.org>, <linux-kernel@vger.kernel.org>, "Atish
+ Patra" <atishp@atishpatra.org>, "Paul Walmsley" <paul.walmsley@sifive.com>,
+ "Palmer Dabbelt" <palmer@dabbelt.com>, "Albert Ou" <aou@eecs.berkeley.edu>,
+ "Alexandre Ghiti" <alex@ghiti.fr>, "Andrew Jones" <ajones@ventanamicro.com>
+To: "Anup Patel" <anup@brainfault.org>
+From: =?utf-8?q?Radim_Kr=C4=8Dm=C3=A1=C5=99?= <rkrcmar@ventanamicro.com>
+References: <20250515143723.2450630-4-rkrcmar@ventanamicro.com>
+ <20250515143723.2450630-5-rkrcmar@ventanamicro.com>
+ <CAAhSdy1Z43xRC7tGS21-5rcX7uMeuWCHhABSuqNzELbp26aj0Q@mail.gmail.com>
+In-Reply-To: <CAAhSdy1Z43xRC7tGS21-5rcX7uMeuWCHhABSuqNzELbp26aj0Q@mail.gmail.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250519_015710_694602_0DB3CE8F 
-X-CRM114-Status: GOOD (  35.02  )
+X-CRM114-CacheID: sfid-20250519_052541_316799_9DEE316F 
+X-CRM114-Status: GOOD (  14.84  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -111,143 +96,35 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Hi Alexandru,
-
-For this series, I've tested it, everything works good.
-
-On 5/7/25 11:12 PM, Alexandru Elisei wrote:
-> v2 can be found here [1].
-> 
-> To goal is to allow the user to do:
-> 
-> $ ./configure --target=kvmtool
-> $ make clean && make
-> $ ./run_tests.sh
-> 
-> to run all the tests automatically with kvmtool.
-> 
-> Reasons to use kvmtool:
-> 
-> * kvmtool is smaller and a lot easier to hack than qemu, which means
-> developers may prefer it when adding or prototyping new features to KVM.
-> Being able to run all the tests reliably and automatically is very useful
-> in the development process.
-> 
-> * kvmtool is faster to run the tests (a couple of times faster on
-> my rockpro64), making for a quick turnaround. But do keep in mind that not
-> all tests work on kvmtool because of missing features compared to qemu.
-> 
-> * kvmtool does things differently than qemu: different memory layout,
-> different uart, PMU emulation is disabled by default, etc. This makes it a
-> good testing vehicule for kvm-unit-tests itself.
-> 
-> Changes in v3
-> -------------
-> 
-> Lots of changes following the excellent feedback I got. A bird's eye view:
-> 
-> * Split extra_params into qemu_params and test_args: qemu_params for qemu
-> arguments and test_args for the test's main() function.
-> 
-> Now that I'm putting the cover letter together I'm considering that maybe
-> having qemu_params, kvmtool_params and test_params (instead of test_args)
-> might be a better naming scheme.
-> 
-> * TARGET is now exported unconditionally. Unfortunately a side effect of
-> this is that checking out these series and running the tests will end up
-> with an error because the scripts now expect TARGET to be defined in
-> config.mak.
-> 
-> If it's unacceptable, I can drop this and handle everything in vmm.bash by
-> converting direct accesses to vmm_opts with functions defined in vmm.bash
-> (vmm_opts[$TARGET:parse_premature_failure] becomes
-> vmm_parse_premature_failure(), for example).
-> 
-> * Introduced scripts/vmm.bash to keep the vmm stuff contained. As a
-> consequence there's very little $TARGET stuff in scripts/runtime.bash (only
-> for premature_failure(), and no more 'case' statements anywhere) and
-> instead scripts/common.bash passes the correct arguments directly to
-> runtime.bash::run().
-> 
-> Unfortunately, because of all the changes, I decided not to keep some of
-> the Reviewed-by tags. That's not to say that the effort is not appreciated,
-> on the contrary, these changes are a direct result of the review; I dropped
-> the tags because I was worried they might not apply to the current content
-> of the patches.
-> 
-> If no major changes are needed following this round of review, for the next
-> iteration I'm planning to send the first two patches (extra_params renamed
-> to qemu_params and the new test_args) separately, to make sure it gets the
-> review it deserves from the rest of the architectures.
-> 
-> Still haven't managed to get EDK2 to work with kvmtool, so I've decided to
-> explicitely disabled UEFI tests in the last patch ("scripts: Enable
-> kvmtool") - this is new.
-> 
-> I would also like to point out that despite Drew's comment I kept the
-> 'disabled_if' test definition because I think using 'targets', with the
-> default value of 'qemu', will probably lead to most, if not all, of the new
-> tests which will be added never being run or tested with kvmtool. More
-> details in patch #15 ("scripts: Add 'disabled_if' test definition parameter
-> for kvmtool to use").
-> 
-> [1] https://lore.kernel.org/kvm/20250120164316.31473-1-alexandru.elisei@arm.com/
-> 
-> Alexandru Elisei (16):
->    scripts: unittests.cfg: Rename 'extra_params' to 'qemu_params'
->    scripts: Add 'test_args' test definition parameter
->    configure: Export TARGET unconditionally
->    run_tests.sh: Document --probe-maxsmp argument
->    scripts: Document environment variables
->    scripts: Refuse to run the tests if not configured for qemu
->    scripts: Use an associative array for qemu argument names
->    scripts: Add 'kvmtool_params' to test definition
->    scripts: Add support for kvmtool
->    scripts: Add default arguments for kvmtool
->    scripts: Add KVMTOOL environment variable for kvmtool binary path
->    scripts: Detect kvmtool failure in premature_failure()
->    scripts: Do not probe for maximum number of VCPUs when using kvmtool
->    scripts/mkstandalone: Export $TARGET
->    scripts: Add 'disabled_if' test definition parameter for kvmtool to
->      use
->    scripts: Enable kvmtool
-> 
->   README.md               |  18 ++++-
->   arm/efi/run             |   8 ++
->   arm/run                 | 161 +++++++++++++++++++++++--------------
->   arm/unittests.cfg       | 125 ++++++++++++++++++++---------
->   configure               |  37 ++++++---
->   docs/unittests.txt      |  54 +++++++++++--
->   powerpc/run             |   4 +-
->   powerpc/unittests.cfg   |  21 ++---
->   riscv/run               |   4 +-
->   riscv/unittests.cfg     |   2 +-
->   run_tests.sh            |  35 ++++++---
->   s390x/run               |   2 +-
->   s390x/unittests.cfg     |  53 +++++++------
->   scripts/arch-run.bash   | 113 ++++++++++----------------
->   scripts/common.bash     |  71 +++++++++++------
->   scripts/mkstandalone.sh |   4 +
->   scripts/runtime.bash    |  51 +++++-------
->   scripts/vmm.bash        | 170 ++++++++++++++++++++++++++++++++++++++++
->   x86/run                 |   4 +-
->   x86/unittests.cfg       | 164 +++++++++++++++++++++-----------------
->   20 files changed, 730 insertions(+), 371 deletions(-)
->   create mode 100644 scripts/vmm.bash
-> 
-> 
-> base-commit: 08db0f5cfbca16b36f200b7bc54a78fa4941bcce
-
--- 
-Shaoqin
-
-
--- 
-kvm-riscv mailing list
-kvm-riscv@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/kvm-riscv
+MjAyNS0wNS0xNlQxNzo1NTowNSswNTozMCwgQW51cCBQYXRlbCA8YW51cEBicmFpbmZhdWx0Lm9y
+Zz46Cj4gT24gVGh1LCBNYXkgMTUsIDIwMjUgYXQgODoyMuKAr1BNIFJhZGltIEtyxI1tw6HFmSA8
+cmtyY21hckB2ZW50YW5hbWljcm8uY29tPiB3cm90ZToKPj4KPj4gQWRkIGEgdG9nZ2xlYWJsZSBW
+TSBjYXBhYmlsaXR5IHRvIHJlc2V0IHRoZSBWQ1BVIGZyb20gdXNlcnNwYWNlIGJ5Cj4+IHNldHRp
+bmcgTVBfU1RBVEVfSU5JVF9SRUNFSVZFRCB0aHJvdWdoIElPQ1RMLgo+Pgo+PiBSZXNldCB0aHJv
+dWdoIGEgbXBfc3RhdGUgdG8gYXZvaWQgYWRkaW5nIGEgbmV3IElPQ1RMLgo+PiBEbyBub3QgcmVz
+ZXQgb24gYSB0cmFuc2l0aW9uIGZyb20gU1RPUFBFRCB0byBSVU5OQUJMRSwgYmVjYXVzZSBpdCdz
+Cj4+IGJldHRlciB0byBhdm9pZCBzaWRlIGVmZmVjdHMgdGhhdCB3b3VsZCBjb21wbGljYXRlIHVz
+ZXJzcGFjZSBhZG9wdGlvbi4KPj4gVGhlIE1QX1NUQVRFX0lOSVRfUkVDRUlWRUQgaXMgbm90IGEg
+cGVybWFuZW50IG1wX3N0YXRlIC0tIElPQ1RMIHJlc2V0cwo+PiB0aGUgVkNQVSB3aGlsZSBwcmVz
+ZXJ2aW5nIHRoZSBvcmlnaW5hbCBtcF9zdGF0ZSAtLSBiZWNhdXNlIHdlIHdvdWxkbid0Cj4+IGdh
+aW4gbXVjaCBmcm9tIGhhdmluZyBhIG5ldyBzdGF0ZSBpdCBpbiB0aGUgcmVzdCBvZiBLVk0sIGJ1
+dCBpdCdzIGEgdmVyeQo+PiBub24tc3RhbmRhcmQgdXNlIG9mIHRoZSBJT0NUTC4KPj4KPj4gU2ln
+bmVkLW9mZi1ieTogUmFkaW0gS3LEjW3DocWZIDxya3JjbWFyQHZlbnRhbmFtaWNyby5jb20+Cj4+
+IC0tLQo+PiBJZiB3ZSB3YW50IGEgcGVybWFuZW50IG1wX3N0YXRlLCBJIHRoaW5rIHRoYXQgTVBf
+U1RBVEVfVU5JTklUSUFMSVpFRAo+PiB3b3VsZCBiZSByZWFzb25hYmxlLiAgS1ZNIGNvdWxkIHJl
+c2V0IG9uIHRyYW5zaXRpb24gdG8gYW55IG90aGVyIHN0YXRlLgo+Cj4gWWVzLCBNUF9TVEFURV9V
+TklOSVRJQUxJWkVEIGxvb2tzIGJldHRlci4gSSBhbHNvIHN1Z2dlc3QKPiB0aGF0IFZDUFUgc2hv
+dWxkIGJlIHJlc2V0IHdoZW4gc2V0X21wc3RhdGUoKSBpcyBjYWxsZWQgd2l0aAo+IE1QX1NUQVRF
+X1VOSU5JVElBTElaRUQgYW5kIHRoZSBjdXJyZW50IHN0YXRlIGlzCj4gTVBfU1RBVEVfU1RPUFBF
+RC4KClRoYXQgd291bGQgcmVzdWx0IGluIHR3byByZXNldHMgKHN0b3BwZWQgLT4gdW5pbml0aWFs
+aXplZCAtPiAqKSwgdW5sZXNzCndlIGNoYW5nZWQgdGhlIGxvZ2ljLgoKV291bGQgeW91IHByZWZl
+ciB0byByZXNldCBvbiB0cmFuc2l0aW9uIHRvIHRoZSBuZXcgcGVybWFuZW50IG1wX3N0YXRlPwpN
+UF9TVEFURV9JTklUX1JFQ0VJVkVEIHNlZW1zIGEgbW9yZSBmaXR0aW5nIG5hbWUgZm9yIHRoZSBz
+dGF0ZSwgdGhlbi4KClRoYW5rcy4KCi0tIAprdm0tcmlzY3YgbWFpbGluZyBsaXN0Cmt2bS1yaXNj
+dkBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4v
+bGlzdGluZm8va3ZtLXJpc2N2Cg==
