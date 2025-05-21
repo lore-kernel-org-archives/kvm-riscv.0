@@ -4,97 +4,103 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3EAE6C3ABDD
-	for <kvm-riscv@archiver.kernel.org>; Tue, 20 May 2025 17:10:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 82269C2D0CD
+	for <kvm-riscv@archiver.kernel.org>; Wed, 21 May 2025 03:38:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
-	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
+	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
+	List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:Subject:
+	MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=G4BpxkuT88+zmuE+dvpeZZ57joIbvPqfL6Wwy6+9WNg=; b=hgWdeDSlELaFov
-	CGUQYlnSSrLBBfHsUet65nRdE6TVFIM0KDCRMKgWWIoMJcr2oFtHjMoHo/tMeX43vk2KpAzC7R98/
-	Pwv4Bhaos9JDxAS3frQwhjHEFqV9ona0S6edhoXg5mBLMAn4HqqBArHLKaW/4OOSbnHtjXtNGUYwC
-	9ILLxAU+1Vt0/FPCssXUkY4DZM0xQdMc5f3Qk6avqcG7P+eYcV0NdbszytwAqlk3Yor2hsLV1Y0Gp
-	bsm5zq0WkvLYCGZgpw5E84TjNHL1hb17m/aAVv8tHIqIOvVmTYwzwIYkn3e+I0FdbksGYc00ZjtDz
-	zs2OFCfrLC7o5C3gWWyw==;
+	List-Owner; bh=+aEK45WJ4SVTFWp1X1r660uTA+BeVx7SA7Cq3IfDvXo=; b=WgtugJt6mf802u
+	oADsfkCmEMfK38IVhLCazOWTK13llKrkeGw2Y/M04gp0FavqF8f2D0jKIxZFTuSjGIaexL4IAw7Su
+	1sIde72g8TGM75MQtutAwhmHWZRX6xUZlbV0p5yIwKVQylb1rF+VcGu1H2+pOle3RsfQKd6Ph3Ob5
+	F4yPFB5UhoRR/P8t7mDltIlNQTzPV5pYs1M+G7AQtaFrqJUXmKKLbSw+3n0HWSG/bDmGi/w88yC9q
+	BWPKTDdn07esVg71xJjaeJ1XEDFmK93MJPLMGEOQASGn69iDmtxnB1xoSnHU5VG+uWX35+QauxoFs
+	BBSqD8RnnkCfIkCiEHTQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uHQU2-0000000DeNe-2grK;
-	Tue, 20 May 2025 17:10:30 +0000
-Received: from mail-pf1-x433.google.com ([2607:f8b0:4864:20::433])
+	id 1uHaID-0000000EhAe-3MYW;
+	Wed, 21 May 2025 03:38:57 +0000
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uHQRz-0000000DdwK-1ZY7
+	id 1uHa1b-0000000Efkx-3UUY
 	for kvm-riscv@lists.infradead.org;
-	Tue, 20 May 2025 17:08:24 +0000
-Received: by mail-pf1-x433.google.com with SMTP id d2e1a72fcca58-742c9563fafso2579169b3a.0
-        for <kvm-riscv@lists.infradead.org>; Tue, 20 May 2025 10:08:22 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=rivosinc-com.20230601.gappssmtp.com; s=20230601; t=1747760902; x=1748365702; darn=lists.infradead.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=DDjRFmO/FlIqGEtWUGUmfdfKllur189aWobDQoyjRQs=;
-        b=YPcLxDXJYQwckavrHXEShc6253VEbwlRtz5hz5mIbZvuKWckpe7Ma+3RtSJVvulE0t
-         g8tyUM2WYEhxy3LWK9woZAV3+NfVPOAw4uFOzJ2b9lRuu5hrPj2De6AejHCwpJXkF1zs
-         Ui2BNjr+8m8KXlcAITGt9ARC1zlKJpWEIYwa3U5kJBr4TIr9u2DV/Q0sJF7bPOFB5/eP
-         rXm7fdH5o97QRlQX1KF9FGlYOPjVAvw1kJR6d84Qm/y4n6AfiYOEgGvYNNzD1Bq2gNUv
-         rciXkuC6F0M5u5xw/PXhb8GG09lPe1D7vSIVORuCMv7g94xUziV7dkPvd03nHtP/KdT0
-         Z5NA==
+	Wed, 21 May 2025 03:21:50 +0000
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1747797704;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=jUSOmA0/3Qa3aXRPXfKpDedwfKwE88WYumy/XPPRjQc=;
+	b=Yk1eRWUg+8aP5V7Q/RPQn5iKM+ypyPmDn+zd/rfLApBHQ6I9MuOXMxC16lgoiXuNERdx+W
+	xmUYtnRer5vGzAWqKpoB/sFXDR8rsI36Ucbh5/SHV2ZxMLFHU3GemL+uI6Evkcpe3s/GI/
+	wXA/jVuzWzeuTMUPVrXVTINAgPqaRaM=
+Received: from mail-pl1-f197.google.com (mail-pl1-f197.google.com
+ [209.85.214.197]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-338-GO84UnNlMVKTYSSbwCxsrA-1; Tue, 20 May 2025 23:21:40 -0400
+X-MC-Unique: GO84UnNlMVKTYSSbwCxsrA-1
+X-Mimecast-MFC-AGG-ID: GO84UnNlMVKTYSSbwCxsrA_1747797699
+Received: by mail-pl1-f197.google.com with SMTP id d9443c01a7336-22c31b55ac6so99742995ad.0
+        for <kvm-riscv@lists.infradead.org>; Tue, 20 May 2025 20:21:40 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1747760902; x=1748365702;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date
+        d=1e100.net; s=20230601; t=1747797699; x=1748402499;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=DDjRFmO/FlIqGEtWUGUmfdfKllur189aWobDQoyjRQs=;
-        b=tzWV2USSno5HwQFTnGSKB0bFB4aJ8lH1u/pV7MujI+YRs+s9/meMv64u0UPGBqZwD7
-         R6I1pgRmJfDLo/Y8qFJT1BVEcCLnrxDX5aC5ZM+zOzVWgOl0UiF9iTi32QfdDSi4k8Qs
-         BkOP13XdA59SAwngzqVwXMzq8ch+c72acSiDOo+osnz/V4QXfitjy3uzs68/lM4Z/Lnn
-         i8RRWAoCMHCCcRM79AC8iO8sWwIhBHN/tYyoNYikw8HdCOpeCuy0+jxYDLI8AsasbF+Q
-         d41Zk7fjWSjP2jqj1gFPV2ZVI2rL1LrOMRZTgXw8PBLo5t1DLF8aODX+Irl8USD3QJa+
-         KkFQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVreFv/pG7fckhqPD4bmRI4Rxu+Xqozmh1OyL79hlZuuremK6grXo2nrA5qT8b/q/eG2Ga+L/Tgz4s=@lists.infradead.org
-X-Gm-Message-State: AOJu0YzBz3xKlzpKgoQjuY7tHOwXBxXUSr81PG4Wg5Xkl4LhmjBMDW+v
-	eL3UeHkKEW8ZuzzxvTZy1I0xkDWu1vdNlDiqJrT/0jrrHicPWL8IRvOEWfxmCKsDvM8=
-X-Gm-Gg: ASbGnctc6BCgCXz4ozfnPnolG75n9ZhuCpNSsKf9IUbhAInuw/U8VHLjdMwqo55AHCf
-	u6muy+n6vDABkHOnnIocFYsj+lHO6VItrNkcyk4rgDY+pjz1ghoysLz9MEmSPKjAJ8V7DzsqxNr
-	0WH62txc5zy8d1RFbdfCDRLsFeO//X7ZvBhLQvHEprBR3zS7EIypp9Pau7oCqfcSu+T7xE+aMYG
-	enzbg+ln6h6L4Ii+H/FXigdU+a45YGPPrV5RLmZUKJc0WCN4/BsT8FhW01TQ2i3KvmnUJd4F/Eg
-	LgG8uqmD1FIA2nNTklEgL2XW1YbelROiqewGwbCEwVH/LFM=
-X-Google-Smtp-Source: AGHT+IHuT79L0+UrgKSwtY58fOb+r5axNp9Bh0rhvhNRM5zmWiTrh0ZXIgCZQR8QM+4Pdq9KGT4FDg==
-X-Received: by 2002:a05:6a20:2d07:b0:1ee:a914:1d64 with SMTP id adf61e73a8af0-216219bd3a5mr27575586637.28.1747760902322;
-        Tue, 20 May 2025 10:08:22 -0700 (PDT)
-Received: from ghost ([2601:647:6700:64d0:17b4:8663:3229:f2dd])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-b26eaf96573sm8189882a12.43.2025.05.20.10.08.20
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 20 May 2025 10:08:21 -0700 (PDT)
-Date: Tue, 20 May 2025 10:08:19 -0700
-From: Charlie Jenkins <charlie@rivosinc.com>
-To: =?iso-8859-1?Q?Cl=E9ment_L=E9ger?= <cleger@rivosinc.com>
-Cc: Paul Walmsley <paul.walmsley@sifive.com>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Anup Patel <anup@brainfault.org>,
-	Atish Patra <atishp@atishpatra.org>, Shuah Khan <shuah@kernel.org>,
-	Jonathan Corbet <corbet@lwn.net>, linux-riscv@lists.infradead.org,
-	linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
-	kvm@vger.kernel.org, kvm-riscv@lists.infradead.org,
-	linux-kselftest@vger.kernel.org,
-	Samuel Holland <samuel.holland@sifive.com>,
-	Andrew Jones <ajones@ventanamicro.com>,
-	Deepak Gupta <debug@rivosinc.com>
-Subject: Re: [PATCH v7 09/14] riscv: misaligned: move emulated access
- uniformity check in a function
-Message-ID: <aCy3A6uUbnWoO9uC@ghost>
-References: <20250515082217.433227-1-cleger@rivosinc.com>
- <20250515082217.433227-10-cleger@rivosinc.com>
- <aCu_ce-kVQsyjrh5@ghost>
- <126762fc-17ca-4e9d-94d0-3aed1ae321ff@rivosinc.com>
+        bh=jUSOmA0/3Qa3aXRPXfKpDedwfKwE88WYumy/XPPRjQc=;
+        b=N4dvsdzf2wwEjL2SJE/eCZKRS1s12AnevY33Tur8XSQmxXIYKziKDSUTKnG2GKsIDm
+         tEoRbaFak5pj3S6TmcwdHWocu95kK20HchYW8sveFc7ybHEqrBWmpR2xuvm0EODOtVjI
+         yR3VDZSNY0C3x9W8YHXKeqLUKYXtHZObOlGxmJ/evj7Go2Gda6PFXSQOnCKDtTCSAB3m
+         5rIseUWZ9QuCkHoCFAo5Ylh7yfFPlYztFx520Y56sYNxTzauQTaZA4U9kczho1dqOfGL
+         e4krJnId7Ttl0+Zt31J03klBKiGNmSltSeY4RonDXYzfssCRMRoTjDS2GMEwJPjg+0XK
+         BBTQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXkFMJjOzNd2tjVYdHfOb4b6GrmFO5fIjRHuTN2X3bGq5XMKeWKvE5sOKf0MXGQ1idxFBB8d1OoIHk=@lists.infradead.org
+X-Gm-Message-State: AOJu0YxGgDaooqWekAV+kQGn3MLc27Qb8YR4hsahojBrXVOdMZQaBsZl
+	YM/ZCrEeiKZ51utDfedjmZU2B/i3f580mAV6w5PU3KgmG8bs+8gT2nKSJkNppoPAb5kMACHXMQk
+	PEPjiqDSgwnTFd9+Z8g/YSHW9tmU9Zsb2rFVCoNBQEnAXeTs+FBBPE7sPiLt6jnkzj6s=
+X-Gm-Gg: ASbGnctl8t+TAedf39sW5V2ycRI4rA4L93sEu4XQlYCFSHWhTjlW+Jn04KwCclnArg4
+	TTDc+JWf81L7uWvAIdbyHfac8mPRlT+m9tfFpODgkhaqvCls8Z3l0dNfZR4NErkm7bgpLd/FE1w
+	Coc2V9UFKux+3f8gitP5b/p5yGvP3LzPPNqHQqufyO96aIjdXFm9nbSfaGU83nKHVi3o+pX4aMN
+	URZ6hgzzYT/n8JS7NULj41EYZMCvglumRfyfl5WFoHcEdS5m29zqZUKtry8NxJd07iMjbDkch3t
+	P8WNacddpY185Iw=
+X-Received: by 2002:a17:902:d481:b0:232:4f8c:1b01 with SMTP id d9443c01a7336-2324f8c1cb2mr137961405ad.43.1747797699242;
+        Tue, 20 May 2025 20:21:39 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IHlhvOC0UNtRC7lIlfulUbJxFqkdOC7pIWuh5IMs24BhyaPmpuqy0MrBWfWyaOHGCOUkRmRPA==
+X-Received: by 2002:a17:902:d481:b0:232:4f8c:1b01 with SMTP id d9443c01a7336-2324f8c1cb2mr137961065ad.43.1747797698773;
+        Tue, 20 May 2025 20:21:38 -0700 (PDT)
+Received: from [10.72.116.61] ([209.132.188.88])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-231d4e9784bsm83924955ad.113.2025.05.20.20.21.29
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 20 May 2025 20:21:38 -0700 (PDT)
+Message-ID: <79d7ee71-a68a-4cde-8796-fb42df59cfce@redhat.com>
+Date: Wed, 21 May 2025 11:21:28 +0800
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <126762fc-17ca-4e9d-94d0-3aed1ae321ff@rivosinc.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [kvm-unit-tests PATCH v3 10/16] scripts: Add default arguments
+ for kvmtool
+To: Alexandru Elisei <alexandru.elisei@arm.com>, andrew.jones@linux.dev,
+ eric.auger@redhat.com, lvivier@redhat.com, thuth@redhat.com,
+ frankja@linux.ibm.com, imbrenda@linux.ibm.com, nrb@linux.ibm.com,
+ david@redhat.com, pbonzini@redhat.com
+Cc: kvm@vger.kernel.org, kvmarm@lists.linux.dev,
+ linuxppc-dev@lists.ozlabs.org, kvm-riscv@lists.infradead.org,
+ linux-s390@vger.kernel.org, will@kernel.org, julien.thierry.kdev@gmail.com,
+ maz@kernel.org, oliver.upton@linux.dev, suzuki.poulose@arm.com,
+ yuzenghui@huawei.com, joey.gouly@arm.com, andre.przywara@arm.com
+References: <20250507151256.167769-1-alexandru.elisei@arm.com>
+ <20250507151256.167769-11-alexandru.elisei@arm.com>
+From: Shaoqin Huang <shahuang@redhat.com>
+In-Reply-To: <20250507151256.167769-11-alexandru.elisei@arm.com>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-MFC-PROC-ID: 5Zo-1f3t84KT_2r7pCrE1kj3da7Zv0u-sCl80qpz5Dg_1747797699
+X-Mimecast-Originator: redhat.com
+Content-Language: en-US
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250520_100823_426126_7C3AFE75 
-X-CRM114-Status: GOOD (  36.36  )
+X-CRM114-CacheID: sfid-20250520_202147_948227_50B81164 
+X-CRM114-Status: GOOD (  29.78  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -106,201 +112,157 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Tue, May 20, 2025 at 10:19:47AM +0200, Cl=E9ment L=E9ger wrote:
-> =
-
-> =
-
-> On 20/05/2025 01:32, Charlie Jenkins wrote:
-> > On Thu, May 15, 2025 at 10:22:10AM +0200, Cl=E9ment L=E9ger wrote:
-> >> Split the code that check for the uniformity of misaligned accesses
-> >> performance on all cpus from check_unaligned_access_emulated_all_cpus()
-> >> to its own function which will be used for delegation check. No
-> >> functional changes intended.
-> >>
-> >> Signed-off-by: Cl=E9ment L=E9ger <cleger@rivosinc.com>
-> >> Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
-> >> ---
-> >>  arch/riscv/kernel/traps_misaligned.c | 20 ++++++++++++++------
-> >>  1 file changed, 14 insertions(+), 6 deletions(-)
-> >>
-> >> diff --git a/arch/riscv/kernel/traps_misaligned.c b/arch/riscv/kernel/=
-traps_misaligned.c
-> >> index e551ba17f557..287ec37021c8 100644
-> >> --- a/arch/riscv/kernel/traps_misaligned.c
-> >> +++ b/arch/riscv/kernel/traps_misaligned.c
-> >> @@ -647,6 +647,18 @@ bool __init check_vector_unaligned_access_emulate=
-d_all_cpus(void)
-> >>  }
-> >>  #endif
-> >>  =
-
-> >> +static bool all_cpus_unaligned_scalar_access_emulated(void)
-> >> +{
-> >> +	int cpu;
-> >> +
-> >> +	for_each_online_cpu(cpu)
-> >> +		if (per_cpu(misaligned_access_speed, cpu) !=3D
-> > =
-
-> > misaligned_access_speed is only defined when
-> > CONFIG_RISCV_SCALAR_MISALIGNED. This function should return false when
-> > !CONFIG_RISCV_SCALAR_MISALIGNED and only use this logic otherwise.
-> =
-
-> Hi Charlie,
-> =
-
-> misaligned_access_speed is defined in unaligned_access_speed.c which is
-> compiled based on CONFIG_RISCV_MISALIGNED (ditto for trap_misaligned.c)
-> =
-
-> obj-$(CONFIG_RISCV_MISALIGNED)	+=3D unaligned_access_speed.o
-> =
-
-> However, the declaration for it in the header cpu-feature.h however is
-> under a CONFIG_RISCV_SCALAR_MISALIGNED ifdef. So either the declaration
-> or the definition is wrong but the ifdefery soup makes it quite
-> difficult to understand what's going on.
-> =
-
-> I would suggest to move the DECLARE_PER_CPU under
-> CONFIG_RISCV_MISALIGNED so that it reduces ifdef in traps_misaligned as
-> well.
-
-Here is the patch I am using locally for testing purposes, but if there
-is a way to reduce the number of ifdefs that is probably the better way to =
-go:
-
-From 18f9a056d3b597934c931abdf72fb6e775ccb714 Mon Sep 17 00:00:00 2001
-From: Charlie Jenkins <charlie@rivosinc.com>
-Date: Mon, 19 May 2025 16:35:51 -0700
-Subject: [PATCH] fixup! riscv: misaligned: move emulated access uniformity
- check in a function
-
----
- arch/riscv/kernel/traps_misaligned.c | 12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
-
-diff --git a/arch/riscv/kernel/traps_misaligned.c b/arch/riscv/kernel/traps=
-_misaligned.c
-index f3ab84bc4632..1449c6a4ac21 100644
---- a/arch/riscv/kernel/traps_misaligned.c
-+++ b/arch/riscv/kernel/traps_misaligned.c
-@@ -647,6 +647,10 @@ bool __init check_vector_unaligned_access_emulated_all=
-_cpus(void)
- }
- #endif
- =
-
-+#ifdef CONFIG_RISCV_SCALAR_MISALIGNED
-+
-+static bool unaligned_ctl __read_mostly;
-+
- static bool all_cpus_unaligned_scalar_access_emulated(void)
- {
- 	int cpu;
-@@ -659,10 +663,6 @@ static bool all_cpus_unaligned_scalar_access_emulated(=
-void)
- 	return true;
- }
- =
-
--#ifdef CONFIG_RISCV_SCALAR_MISALIGNED
--
--static bool unaligned_ctl __read_mostly;
--
- static void check_unaligned_access_emulated(void *arg __always_unused)
- {
- 	int cpu =3D smp_processor_id();
-@@ -716,6 +716,10 @@ bool unaligned_ctl_available(void)
- 	return unaligned_ctl;
- }
- #else
-+static bool all_cpus_unaligned_scalar_access_emulated(void)
-+{
-+	return false;
-+}
- bool __init check_unaligned_access_emulated_all_cpus(void)
- {
- 	return false;
--- =
-
-2.43.0
 
 
-- Charlie
+On 5/7/25 11:12 PM, Alexandru Elisei wrote:
+> kvmtool, unless told otherwise, will do its best to make sure that a kernel
+> successfully boots in a virtual machine. It does things like automatically
+> creating a rootfs and adding extra parameters to the kernel command line.
+> This is actively harmful to kvm-unit-tests, because some tests parse the
+> kernel command line and they will fail if they encounter the options added
+> by kvmtool.
+> 
+> Fortunately for us, kvmtool commit 5613ae26b998 ("Add --nodefaults command
+> line argument") addded the --nodefaults kvmtool parameter which disables
+> all the implicit virtual machine configuration that cannot be disabled by
+> using other parameters, like modifying the kernel command line. So always
+> use --nodefaults to allow a test to run.
+> 
+> kvmtool can also be too verbose when running a virtual machine, and this is
+> controlled by several parameters. Add those to the default kvmtool command
+> line to reduce this verbosity to a minimum.
+> 
+> Before:
+> 
+> $ vm run arm/selftest.flat --cpus 2 --mem 256 --params "setup smp=2 mem=256"
+> Info: # lkvm run -k arm/selftest.flat -m 256 -c 2 --name guest-5035
+> Unknown subtest
+> 
+> EXIT: STATUS=127
+> Warning: KVM compatibility warning.
+>      virtio-9p device was not detected.
+>      While you have requested a virtio-9p device, the guest kernel did not initialize it.
+>      Please make sure that the guest kernel was compiled with CONFIG_NET_9P_VIRTIO=y enabled in .config.
+> Warning: KVM compatibility warning.
+>      virtio-net device was not detected.
+>      While you have requested a virtio-net device, the guest kernel did not initialize it.
+>      Please make sure that the guest kernel was compiled with CONFIG_VIRTIO_NET=y enabled in .config.
+> Info: KVM session ended normally.
+> 
+> After:
+> 
+> $ vm run arm/selftest.flat --nodefaults --network mode=none --loglevel=warning --cpus 2 --mem 256 --params "setup smp=2 mem=256"
+> PASS: selftest: setup: smp: number of CPUs matches expectation
+> INFO: selftest: setup: smp: found 2 CPUs
+> PASS: selftest: setup: mem: memory size matches expectation
+> INFO: selftest: setup: mem: found 256 MB
+> SUMMARY: 2 tests
+> 
+> EXIT: STATUS=1
+> 
+> Note that KVMTOOL_DEFAULT_OPTS can be overwritten by an environment
+> variable with the same name, but it's not documented in the help string for
+> run_tests.sh. This has been done on purpose, since overwritting
+> KVMTOOL_DEFAULT_OPTS should only be necessary for debugging or development
+> purposes.
+> 
+> Signed-off-by: Alexandru Elisei <alexandru.elisei@arm.com>
+> ---
+>   scripts/common.bash | 10 +++++-----
+>   scripts/vmm.bash    | 13 +++++++++++++
+>   2 files changed, 18 insertions(+), 5 deletions(-)
+> 
+> diff --git a/scripts/common.bash b/scripts/common.bash
+> index 0645235d8baa..ee0ae71948c2 100644
+> --- a/scripts/common.bash
+> +++ b/scripts/common.bash
+> @@ -56,7 +56,7 @@ function for_each_unittest()
+>   			# because qemu interprets the first argument after
+>   			# -append as a kernel parameter.
+>   			test_args=""
+> -			opts=""
+> +			opts="${vmm_opts[$TARGET:default_opts]}"
+>   			groups=""
+>   			arch=""
+>   			machine=""
+> @@ -70,13 +70,13 @@ function for_each_unittest()
+>   		elif [[ $line =~ ^test_args\ *=\ *(.*)$ ]]; then
+>   			test_args="${vmm_opts[$TARGET:args]} ${BASH_REMATCH[1]}"
+>   		elif [[ $TARGET = "qemu" ]] && [[ $line =~ ^(extra_params|qemu_params)\ *=\ *'"""'(.*)$ ]]; then
+> -			opts=$(parse_opts ${BASH_REMATCH[2]}$'\n' $fd)
+> +			opts="${vmm_opts[$TARGET:default_opts]} $(parse_opts ${BASH_REMATCH[2]}$'\n' $fd)"
+>   		elif [[ $TARGET  = "qemu" ]] && [[ $line =~ ^(extra_params|qemu_params)\ *=\ *(.*)$ ]]; then
+> -			opts=${BASH_REMATCH[2]}
+> +			opts="${vmm_opts[$TARGET:default_opts]} ${BASH_REMATCH[2]}"
+>   		elif [[ $TARGET = "kvmtool" ]] && [[ $line =~ ^kvmtool_params\ *=\ *'"""'(.*)$ ]]; then
+> -			opts=$(parse_opts ${BASH_REMATCH[1]}$'\n' $fd)
+> +			opts="${vmm_opts[$TARGET:default_opts]} $(parse_opts ${BASH_REMATCH[1]}$'\n' $fd)"
+>   		elif [[ $TARGET = "kvmtool" ]] && [[ $line =~ ^kvmtool_params\ *=\ *(.*)$ ]]; then
+> -			opts=${BASH_REMATCH[1]}
+> +			opts="${vmm_opts[$TARGET:default_opts]} ${BASH_REMATCH[1]}"
+>   		elif [[ $line =~ ^groups\ *=\ *(.*)$ ]]; then
+>   			groups=${BASH_REMATCH[1]}
+>   		elif [[ $line =~ ^arch\ *=\ *(.*)$ ]]; then
+> diff --git a/scripts/vmm.bash b/scripts/vmm.bash
+> index 20968f2e6b10..d24a4c4b8713 100644
+> --- a/scripts/vmm.bash
+> +++ b/scripts/vmm.bash
+> @@ -1,5 +1,16 @@
+>   source config.mak
+>   
+> +# The following parameters are enabled by default when running a test with
+> +# kvmtool:
+> +# --nodefaults: suppress VM configuration that cannot be disabled otherwise
+> +#               (like modifying the supplied kernel command line). Tests that
+> +#               use the command line will fail without this parameter.
 
-> =
+Maybe change it to below is better? (Put the 'Otherwise' to the next 
+paragraph)
 
-> Thanks,
->
-> Cl=E9ment
-> =
+# --nodefaults: suppress VM configuration that cannot be disabled
+#               (like modifying the supplied kernel command line). 	# 
+            Otherwise tests that use the command line will fail
+#               without this parameter.
 
-> > =
+Others looks good to me.
 
-> > - Charlie
-> > =
+Reviewed-by: Shaoqin Huang <shahuang@redhat.com>
 
-> >> +		    RISCV_HWPROBE_MISALIGNED_SCALAR_EMULATED)
-> >> +			return false;
-> >> +
-> >> +	return true;
-> >> +}
-> >> +
-> >>  #ifdef CONFIG_RISCV_SCALAR_MISALIGNED
-> >>  =
+> +# --network mode=none: do not create a network device. kvmtool tries to help the
+> +#               user by automatically create one, and then prints a warning
+> +#               when the VM terminates if the device hasn't been initialized.
+> +# --loglevel=warning: reduce verbosity
+> +: "${KVMTOOL_DEFAULT_OPTS:="--nodefaults --network mode=none --loglevel=warning"}"
+> +
+>   ##############################################################################
+>   # qemu_fixup_return_code translates the ambiguous exit status in Table1 to that
+>   # in Table2.  Table3 simply documents the complete status table.
+> @@ -87,12 +98,14 @@ declare -A vmm_opts=(
+>   	[qemu:kernel]='-kernel'
+>   	[qemu:args]='-append'
+>   	[qemu:initrd]='-initrd'
+> +	[qemu:default_opts]=''
+>   	[qemu:fixup_return_code]=qemu_fixup_return_code
+>   
+>   	[kvmtool:nr_cpus]='--cpus'
+>   	[kvmtool:kernel]='--kernel'
+>   	[kvmtool:args]='--params'
+>   	[kvmtool:initrd]='--initrd'
+> +	[kvmtool:default_opts]="$KVMTOOL_DEFAULT_OPTS"
+>   	[kvmtool:fixup_return_code]=kvmtool_fixup_return_code
+>   )
+>   
 
-> >>  static bool unaligned_ctl __read_mostly;
-> >> @@ -685,8 +697,6 @@ static int cpu_online_check_unaligned_access_emula=
-ted(unsigned int cpu)
-> >>  =
-
-> >>  bool __init check_unaligned_access_emulated_all_cpus(void)
-> >>  {
-> >> -	int cpu;
-> >> -
-> >>  	/*
-> >>  	 * We can only support PR_UNALIGN controls if all CPUs have misalign=
-ed
-> >>  	 * accesses emulated since tasks requesting such control can run on =
-any
-> >> @@ -694,10 +704,8 @@ bool __init check_unaligned_access_emulated_all_c=
-pus(void)
-> >>  	 */
-> >>  	on_each_cpu(check_unaligned_access_emulated, NULL, 1);
-> >>  =
-
-> >> -	for_each_online_cpu(cpu)
-> >> -		if (per_cpu(misaligned_access_speed, cpu)
-> >> -		    !=3D RISCV_HWPROBE_MISALIGNED_SCALAR_EMULATED)
-> >> -			return false;
-> >> +	if (!all_cpus_unaligned_scalar_access_emulated())
-> >> +		return false;
-> >>  =
-
-> >>  	unaligned_ctl =3D true;
-> >>  	return true;
-> >> -- =
-
-> >> 2.49.0
-> >>
-> >>
-> >> _______________________________________________
-> >> linux-riscv mailing list
-> >> linux-riscv@lists.infradead.org
-> >> http://lists.infradead.org/mailman/listinfo/linux-riscv
-> =
+-- 
+Shaoqin
 
 
--- =
-
+-- 
 kvm-riscv mailing list
 kvm-riscv@lists.infradead.org
 http://lists.infradead.org/mailman/listinfo/kvm-riscv
