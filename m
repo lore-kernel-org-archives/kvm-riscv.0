@@ -4,83 +4,82 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 404A3C2D0CD
-	for <kvm-riscv@archiver.kernel.org>; Wed, 21 May 2025 06:16:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CA2ADC54E71
+	for <kvm-riscv@archiver.kernel.org>; Wed, 21 May 2025 06:22:59 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
 	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
 	List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:Subject:
 	MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=G8lDKvoncEGmDrc7qmBeBlgp7s5EfruT3oneJEh1bPQ=; b=xgm9xbhlJI33WX
-	TbCwhFWTYci2hjip7OJZ+FQwdTysWq7WXclLG0P3wbqqXTqGD36tAQX4dFijjkuq0H9Msz65y8fCJ
-	/57EAxInU/c575x+xGarLo/JpNW1OMo7mpRoFT/ELBaoMGZkj/uR9EMn8qWpNS56ow1/DpgSOsmQ/
-	Hr+UqSkP8k9EwNC1lxfyCL0ka6DFsw7jw018wAX/YAc2I6BYxyOOEYAaSo4w8TuFalHWwjPF5Ci5g
-	p4zN2ViNu40IsshHDTAfd6eDdPzKnYEI9gcsAIi6qQrU+y090KWAEQI698Q680iUbZsVwuH1MRzPS
-	Vn2wdkAOvKQ28z6k2yvw==;
+	List-Owner; bh=Azk04b1FEKWRkC2zdoHSv9lLqKZ0l2PAr5uVqbgN+O4=; b=mObBXyelYysg3H
+	x1hExzHLB1+UmJuVgPqnvOOFrYcZq/MebZM2Fv6I3TJMoptNf7K5GgTOq+SkYN6/2GQVadCfy0bW+
+	XsUvft7j9ivJ+I1aNX5Mk73Fmn4st7zWQXBCAUChLvntvZqsau3UhsRd86sL9obgY8PLhDzf8/+C6
+	jVDeU5PT4r2wKlnCKvu4Od8pN82pfVZlBR6DYq1LKKdXbRE7jIK+Zr8vVElVLwESuPF9K8kvisjWP
+	NqpgQlLPUsP5WiXf33axrMEZcfOE7/8FDlGCPXFcSHm+NkuqXgLSwvj7K5qgbrGnyRk2Jw7/lNp2+
+	fPnwxHZ7XaUwv8uipcCw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uHckj-0000000EvEH-0593;
-	Wed, 21 May 2025 06:16:33 +0000
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124])
+	id 1uHcqx-0000000Evkj-1dEs;
+	Wed, 21 May 2025 06:22:59 +0000
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.129.124])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uHckg-0000000EvDT-3EjS
+	id 1uHcou-0000000EvXp-1QOc
 	for kvm-riscv@lists.infradead.org;
-	Wed, 21 May 2025 06:16:32 +0000
+	Wed, 21 May 2025 06:20:53 +0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1747808189;
+	s=mimecast20190719; t=1747808450;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=iw5uJHJc2V+sRbe4e4Tg6n7ubVHazSs+sdmDhxZTg8c=;
-	b=TeK0SRylKw6bqqRQR/W2tLODo9FlqzcXeLoplIikBeadKsSB+4+yQ4mRcztllaBxXi/UnZ
-	IBvv/TOQH2rTKoRHf8UTeQKgt9Q9oTR+efKb+jGiCCtzuv1PgPii0ZD7sSv6X7mGm/y6Rz
-	Bidqo+NBLAA8j4VQE4szs2m/PArwsJ4=
-Received: from mail-pg1-f197.google.com (mail-pg1-f197.google.com
- [209.85.215.197]) by relay.mimecast.com with ESMTP with STARTTLS
+	bh=27vdWwqXm6Qw7dfKd1dwnOUfre6U0zDeEbDFMcZZEZY=;
+	b=YO8ZZB3TTR/zXjMFSbg+PGXI8w8Lihatm6FXuPBn5/5PBI8yqnb5xYV7dOyH7Ckvh4QBda
+	La5ewSn0ZDmWnSvbHbsA/QxQ611ubsQbnbkV1Xf4Q/YNKjhy5i74p+bKFV4SwZhBZZrkv4
+	8BF7d6INgvTMorkM1fIA6fa6srhVvuU=
+Received: from mail-pj1-f71.google.com (mail-pj1-f71.google.com
+ [209.85.216.71]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-668-3cuhnd2kMZe1qxr7wh5D8g-1; Wed, 21 May 2025 02:16:28 -0400
-X-MC-Unique: 3cuhnd2kMZe1qxr7wh5D8g-1
-X-Mimecast-MFC-AGG-ID: 3cuhnd2kMZe1qxr7wh5D8g_1747808187
-Received: by mail-pg1-f197.google.com with SMTP id 41be03b00d2f7-6c8f99fef10so6749218a12.3
-        for <kvm-riscv@lists.infradead.org>; Tue, 20 May 2025 23:16:28 -0700 (PDT)
+ us-mta-41-Q70fi8AXM7Sh1kFufCeLUQ-1; Wed, 21 May 2025 02:20:49 -0400
+X-MC-Unique: Q70fi8AXM7Sh1kFufCeLUQ-1
+X-Mimecast-MFC-AGG-ID: Q70fi8AXM7Sh1kFufCeLUQ_1747808448
+Received: by mail-pj1-f71.google.com with SMTP id 98e67ed59e1d1-30e8425926eso7069496a91.1
+        for <kvm-riscv@lists.infradead.org>; Tue, 20 May 2025 23:20:48 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1747808187; x=1748412987;
+        d=1e100.net; s=20230601; t=1747808448; x=1748413248;
         h=content-transfer-encoding:in-reply-to:from:content-language
          :references:cc:to:subject:user-agent:mime-version:date:message-id
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=iw5uJHJc2V+sRbe4e4Tg6n7ubVHazSs+sdmDhxZTg8c=;
-        b=qClr4btlQyKm4HYJUOD0TuHM3Tkr2rYNbCev1h8Twhx4/eD/IrfGJM9LeceyryXEc+
-         tqaBQzjem086EPPdCQLqVb+vvaxDrKU33WwbYXv6ucsEcuXHLMtx6wdCu4EYq5wCh5Qr
-         1FnH8SEZ0qeYvggZNP4dcQzZ9wnk6hKkemx5PVO2imn9gofWOsT40i9CQR6oFqh8orj7
-         Z3qbcoV6LDElW9NO7DUEmDE5minDSH0LLK4hZlC3PfYJXddqcNbCgj8Sqe4bzK0PMYJn
-         bI82vYLcDmYFCCwk9GP/2cBQMWGTEgG/RZ7am8Z+zX+vxyeiVDwBpUT5RYJuEVKVNQv7
-         p3Zw==
-X-Forwarded-Encrypted: i=1; AJvYcCWwTnVCcX32Z7PjnPvt9SzQl3onUX5GfeGNZA5+k/GnKz2DYZaW3L9htKL1oVBQ7qS2uiIBDefppTM=@lists.infradead.org
-X-Gm-Message-State: AOJu0YxVgK8o9pSxtuTCQ+KZ3bu1wr3ZptW8IflnGoHTSi2puvUKyulZ
-	00k0ZlGRGp99JUIGnc0WSLxSsolvWdN1Vt1TWg/e+dn8xuYZtO9xP2dybHXPrgdpZeSyRp/BuC2
-	iaCzn+pEWWdS/VRNxNo22pekM3Vn2xxyQ2ybRJKPGgisY7YNx1sbWKW76f79H9dSW1wc=
-X-Gm-Gg: ASbGncvs32vHTKlYUoUOP8pOuE7rsQjzUQESmCjIEKJFC8k9h25+cK5svB4Iv+Jkk0z
-	6uyqM7hyqw9Mc9/uOxca7BQa3zJAzzIkR7wGZThbkHi3LbANdg/+3mt95rXhdvmVs0xzU7IZxOe
-	SWBuMzoLOfXZv85QsubvGR6FHc3YWtk/n7KS9Yoqt5WQBnQZIfXW2g2YH62hATsmV6As/iF+KRp
-	udY8b5YNOmlIE/Qn1BkNxvTYxgFy8tKZQNRzf/JU/v+mOEvyXZ/BiOPXcdfuXzKuHJc74UGPbKM
-	Nvmgud+mAqN0MhI=
-X-Received: by 2002:a17:902:fc46:b0:231:bf74:e1df with SMTP id d9443c01a7336-231de3515demr258862285ad.7.1747808187199;
-        Tue, 20 May 2025 23:16:27 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IGMaGJi9XZe04iIaqoT0LCToE4EYldNnY+Yj53uJr8Djqjif4zPPKYkEdeIkY17gXv01FY1iA==
-X-Received: by 2002:a17:902:fc46:b0:231:bf74:e1df with SMTP id d9443c01a7336-231de3515demr258862005ad.7.1747808186859;
-        Tue, 20 May 2025 23:16:26 -0700 (PDT)
+        bh=27vdWwqXm6Qw7dfKd1dwnOUfre6U0zDeEbDFMcZZEZY=;
+        b=w7D6DAPESQHIYGsmUNNxa5fEAD/nxh0+gpgftRsivU8rAtshAfrAYHckDJYHXhJqXd
+         9PcmPrM7O8IM37BsUaL9rV+8w51qj/0+2yVwlDPp63PRp0RDNOzUOxewIv+rf1VJJIoI
+         iWWc6zqQgjX+Y9rsCMO2L7JKz/WmlUuqAuGxnNbejhs8drMFRO/R4K0hDrhPWmCUIMpU
+         Ocxk6RfsBEH9+bokfJqGTg4io2U76Rc+6LZ4Z0pvE8tB0Zjr6uJ6aLgjGfgNTDh48n3K
+         xypdrMcQhkNxsCV923qmVmzKXHadzLt0f9jE0N+svGRCcuPM0X/9rzfHXnxJ47MoP5u/
+         kC5w==
+X-Forwarded-Encrypted: i=1; AJvYcCXvkb0MEwv1CHNI9enugSKDS6pVQeEc2F5PEUhwhbXRVtDcwJNwp45t+6v/Xc2Z/diBFxNglrf29QE=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yy2SeQVUHbkhYWP4LEYNrtGfrP3smOemBbeJQeMY4yt3eNB7nDh
+	GfbysVMfEdqY3UJrYn6MO0QDrfT38RZ9c77OKlZOoPbu+ywY5FK/lCvvOnspB+evZNUvVsZWUNg
+	L5NEHt9651CzbNjcCcVh16b/VV4r6N6EZIfxB1cLdFF8H6ukHkvx3lxBFXDJgjM1Zix4=
+X-Gm-Gg: ASbGnctxP1LHQ0bHbZCg7IlByTTLUEU+az+O1QKt2HDNCVB+VKoUIq3UBysqf7eetfi
+	YUBqN55zGLbfYbGguELfml+oJwVv4vn4KHmFnCwdL5RpgzkdiD4a0cdPiEVZn0LvXQczYN7TP9Z
+	GgDqzZVmXkjeO/RbOSKzvVHuo6a0Jw5uKPwWbxWoB/XFbv+WhvDJsCCJMl8WuFJM+xJF/7PcG59
+	hXU1nV6rHiCeg81Qefp5L4soUDHVBoqLPjiRD8iaTp7VbT9BRYlJnFtzESjRnqApXihaIpsCbUN
+	NjRL7H6z9RFHAvQ=
+X-Received: by 2002:a17:90b:35ca:b0:2fe:baa3:b8bc with SMTP id 98e67ed59e1d1-30e832258eamr23096808a91.23.1747808447860;
+        Tue, 20 May 2025 23:20:47 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IGCcJqZvem5ZOsw0GUieRAaMuIKN6FQwGBBKSGgLmmfZRpS0KvtQJGPwRUgMl3I4UcNRsWE9Q==
+X-Received: by 2002:a17:90b:35ca:b0:2fe:baa3:b8bc with SMTP id 98e67ed59e1d1-30e832258eamr23096785a91.23.1747808447373;
+        Tue, 20 May 2025 23:20:47 -0700 (PDT)
 Received: from [10.72.116.61] ([209.132.188.88])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-231d4ed5460sm85707015ad.241.2025.05.20.23.16.19
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-30f365b2d8fsm2847557a91.7.2025.05.20.23.20.38
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 20 May 2025 23:16:26 -0700 (PDT)
-Message-ID: <b5d2d946-7f46-4908-b44a-6ce80b67c46c@redhat.com>
-Date: Wed, 21 May 2025 14:16:18 +0800
+        Tue, 20 May 2025 23:20:46 -0700 (PDT)
+Message-ID: <5b284638-2082-4d85-9e4d-4514ee15e193@redhat.com>
+Date: Wed, 21 May 2025 14:20:37 +0800
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [kvm-unit-tests PATCH v3 14/16] scripts/mkstandalone: Export
- $TARGET
+Subject: Re: [kvm-unit-tests PATCH v3 16/16] scripts: Enable kvmtool
 To: Alexandru Elisei <alexandru.elisei@arm.com>, andrew.jones@linux.dev,
  eric.auger@redhat.com, lvivier@redhat.com, thuth@redhat.com,
  frankja@linux.ibm.com, imbrenda@linux.ibm.com, nrb@linux.ibm.com,
@@ -91,16 +90,16 @@ Cc: kvm@vger.kernel.org, kvmarm@lists.linux.dev,
  maz@kernel.org, oliver.upton@linux.dev, suzuki.poulose@arm.com,
  yuzenghui@huawei.com, joey.gouly@arm.com, andre.przywara@arm.com
 References: <20250507151256.167769-1-alexandru.elisei@arm.com>
- <20250507151256.167769-15-alexandru.elisei@arm.com>
+ <20250507151256.167769-17-alexandru.elisei@arm.com>
 From: Shaoqin Huang <shahuang@redhat.com>
-In-Reply-To: <20250507151256.167769-15-alexandru.elisei@arm.com>
+In-Reply-To: <20250507151256.167769-17-alexandru.elisei@arm.com>
 X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: M1jEKIxFJYBI24-zJYehZTCem2hYsPD0X2hkho-xD9c_1747808187
+X-Mimecast-MFC-PROC-ID: lu1iPVio_EQt5DIiOjYxflqTDjFJPclqcfsJXE6AoRU_1747808448
 X-Mimecast-Originator: redhat.com
 Content-Language: en-US
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250520_231630_887964_7D904315 
-X-CRM114-Status: GOOD (  11.01  )
+X-CRM114-CacheID: sfid-20250520_232052_453493_8882C61E 
+X-CRM114-Status: GOOD (  25.38  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -120,30 +119,116 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 
 On 5/7/25 11:12 PM, Alexandru Elisei wrote:
-> $TARGET is needed for the test runner to decide if it should use qemu or
-> kvmtool, so export it.
+> Everything is in place to run the tests using kvmtool:
 > 
-> Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
+> $ ./configure --target=kvmtool
+> $ make clean && make
+> $ KVMTOOL=<path/to/kvmtool> ./run_tests.sh
+> 
+> so enable it, and remove ERRATA_FORCE=y when configuring for kvmtool,
+> because the runner will generate and pass the correct environment to
+> kvmtool.
+> 
+> Missing is support for EFI tests. That's because distros don't ship a
+
+Missing should be Nothing?
+
+> EDK2 binary compiled for kvmtool, and on top of that kvm-unit-tests as
+> an EFI app hasn't been tested to work with kvmtool.
+> 
 > Signed-off-by: Alexandru Elisei <alexandru.elisei@arm.com>
 
 Reviewed-by: Shaoqin Huang <shahuang@redhat.com>
 
 > ---
->   scripts/mkstandalone.sh | 1 +
->   1 file changed, 1 insertion(+)
+>   README.md        | 18 +++++++++++++++++-
+>   arm/efi/run      |  5 +++++
+>   configure        |  1 -
+>   scripts/vmm.bash |  2 +-
+>   4 files changed, 23 insertions(+), 3 deletions(-)
 > 
-> diff --git a/scripts/mkstandalone.sh b/scripts/mkstandalone.sh
-> index 4f666cefe076..3b2caf198b00 100755
-> --- a/scripts/mkstandalone.sh
-> +++ b/scripts/mkstandalone.sh
-> @@ -47,6 +47,7 @@ generate_test ()
->   	config_export ARCH_NAME
->   	config_export TARGET_CPU
->   	config_export DEFAULT_QEMU_CPU
-> +	config_export TARGET
+> diff --git a/README.md b/README.md
+> index be07dc28a094..723ce04cd978 100644
+> --- a/README.md
+> +++ b/README.md
+> @@ -65,6 +65,9 @@ or:
 >   
->   	echo "echo BUILD_HEAD=$(cat build-head)"
+>   to run them all.
 >   
+> +All tests can be run using QEMU. On arm and arm64, tests can also be run using
+> +kvmtool.
+> +
+>   By default the runner script searches for a suitable QEMU binary in the system.
+>   To select a specific QEMU binary though, specify the QEMU=path/to/binary
+>   environment variable:
+> @@ -78,12 +81,25 @@ ACCEL=name environment variable:
+>   
+>   For running tests that involve migration from one QEMU instance to another
+>   you also need to have the "ncat" binary (from the nmap.org project) installed,
+> -otherwise the related tests will be skipped.
+> +otherwise the related tests will be skipped. kvmtool does not support migration.
+> +
+> +As for running a test with kvmtool, please configure kvm-unit-tests accordingly
+> +first:
+> +
+> +   ./configure --arch=arm64 --target=kvmtool
+> +
+> +then run the test(s) like with QEMU above.
+> +
+> +To select a kvmtool binary, specify the KVMTOOL=path/to/binary environment
+> +variable. kvmtool supports only kvm as the accelerator.
+>   
+>   ## Running the tests with UEFI
+>   
+>   Check [x86/efi/README.md](./x86/efi/README.md).
+>   
+> +On arm and arm64, this is only supported with QEMU; kvmtool cannot run the
+> +tests under UEFI.
+> +
+>   # Tests configuration file
+>   
+>   The test case may need specific runtime configurations, for
+> diff --git a/arm/efi/run b/arm/efi/run
+> index 53d71297cc52..0843725ec360 100755
+> --- a/arm/efi/run
+> +++ b/arm/efi/run
+> @@ -15,6 +15,11 @@ source scripts/vmm.bash
+>   
+>   check_vmm_supported
+>   
+> +if [[ $TARGET = "kvmtool" ]]; then
+> +	echo "kvmtool does not support EFI tests."
+> +	exit 2
+> +fi
+> +
+>   if [ -f /usr/share/qemu-efi-aarch64/QEMU_EFI.fd ]; then
+>   	DEFAULT_UEFI=/usr/share/qemu-efi-aarch64/QEMU_EFI.fd
+>   elif [ -f /usr/share/edk2/aarch64/QEMU_EFI.silent.fd ]; then
+> diff --git a/configure b/configure
+> index 8c4400db42bc..d5f9995172f8 100755
+> --- a/configure
+> +++ b/configure
+> @@ -392,7 +392,6 @@ elif [ "$arch" = "arm" ] || [ "$arch" = "arm64" ]; then
+>           : "${uart_early_addr:=0x9000000}"
+>       elif [ "$target" = "kvmtool" ]; then
+>           : "${uart_early_addr:=0x1000000}"
+> -        errata_force=1
+>       else
+>           echo "--target must be one of 'qemu' or 'kvmtool'!"
+>           usage
+> diff --git a/scripts/vmm.bash b/scripts/vmm.bash
+> index ef9819f4132c..4ae60c37a6e8 100644
+> --- a/scripts/vmm.bash
+> +++ b/scripts/vmm.bash
+> @@ -159,7 +159,7 @@ declare -A vmm_opts=(
+>   function check_vmm_supported()
+>   {
+>   	case "$TARGET" in
+> -	qemu)
+> +	qemu | kvmtool)
+>   		return 0
+>   		;;
+>   	*)
 
 -- 
 Shaoqin
