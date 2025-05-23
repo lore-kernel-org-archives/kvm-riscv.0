@@ -4,94 +4,91 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EB3D9C54ED0
-	for <kvm-riscv@archiver.kernel.org>; Fri, 23 May 2025 13:22:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31F4BC54F2E
+	for <kvm-riscv@archiver.kernel.org>; Fri, 23 May 2025 13:35:31 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:References:To:Cc:Subject:
-	From:Message-Id:Date:Mime-Version:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:References:From:To:Cc:
+	Subject:Message-Id:Date:Mime-Version:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=bNHsnFlGlEuCLHVYz+df7qwmrBiWPtyG4BDP5wBxHEQ=; b=NfVThhqWDbddrv
-	DhvWAGMSWTcKh82J2UHaBN8BDOMZM5IWkD61mM713t7pO+OdRmehz3Rd4OUOZxnLDwBfTKJP8Z9tQ
-	OXCg/xQxC8t4AXjHpji1mmQMo5F7tc8+DtwJbfHHQj8LKNmpcBdA8cORQo1CnwHubC0bTLxRQ+v0o
-	STcuC6B3LEklhdsKvVLgsJuDZR/hcPdSbClJqU0lDLX70oJ/NMK8bCx58CHFiV1kkuVy8tTg0o0sR
-	rHULP9kY9FRKB9kEpWuvYbf2OnpadjVeuJpxwCJbe9Xw8gMjST2xjlzK9lROObGgRg6fXcHrAWqLG
-	FgqoemXzmR3iK0kx1gJA==;
+	List-Owner; bh=ReOgdmCWjw9Efw1pAOTeQpepFZWIDJH9Akw9K18Q71I=; b=ckS3N4b2OMOjwU
+	6pLCUPTBbftU94UW7fE3+9NQvvf8GYd++c840VhrMQ2YXAumzJN/H9qycAqCwZ2PhlU29VcwalpJ9
+	517W8LKqT8yjXKMMZbokXLe/uzoXScr8H45F+vcKKurDpK7zNBNrbj2WKzCc8NUNVCtLpomHUStM1
+	ImbL6eFjgJ3wLjohfHvSGRu0D2D1hm8CoKwJjrRmPi7eTQmtZyN3ubpNj4BRKJn97OTIC5U7xS5z+
+	ORD/+IPDP4bdH0VMYHqFJXZUXu3J0md11Sy3opO2JdkvcpXxEl+nEa4Q/ULZKBxXZLRue2gqf73Hn
+	STFpVEwWjhRJezBUFDCg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uISMB-00000003wLX-3121;
-	Fri, 23 May 2025 13:22:39 +0000
+	id 1uISYc-00000003yTt-3o6w;
+	Fri, 23 May 2025 13:35:30 +0000
 Received: from mail-wr1-x435.google.com ([2a00:1450:4864:20::435])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uIS87-00000003uFj-1rNe
+	id 1uISUp-00000003xjW-31sa
 	for kvm-riscv@lists.infradead.org;
-	Fri, 23 May 2025 13:08:08 +0000
-Received: by mail-wr1-x435.google.com with SMTP id ffacd0b85a97d-3a365bc0af8so729562f8f.3
-        for <kvm-riscv@lists.infradead.org>; Fri, 23 May 2025 06:08:07 -0700 (PDT)
+	Fri, 23 May 2025 13:31:36 +0000
+Received: by mail-wr1-x435.google.com with SMTP id ffacd0b85a97d-3a361c8a830so1182308f8f.0
+        for <kvm-riscv@lists.infradead.org>; Fri, 23 May 2025 06:31:35 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ventanamicro.com; s=google; t=1748005686; x=1748610486; darn=lists.infradead.org;
-        h=in-reply-to:references:to:cc:subject:from:message-id:date
+        d=ventanamicro.com; s=google; t=1748007094; x=1748611894; darn=lists.infradead.org;
+        h=in-reply-to:references:from:to:cc:subject:message-id:date
          :content-transfer-encoding:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=KARpSC0ktVs2EmfgMj89WaDgPQ701M83Nyx3KMNRgAE=;
-        b=VNDsC4xvgbD6BbHVSz6LWeKGWiidBLndkaKvXUXuwayw2QAnnobCtFmrh0gWzl5eV2
-         4awzhFPwIictErP/srjajt/geetLyDohejYN6gBUcM0HxX40o42PXeZf5MKJKBlxNt4x
-         hN7+MbIf5fL6lbhwkuz3rme6vD4esUbHNfUch4K6V25c4KefUw/zRlHmsD4DxrsrwaTb
-         jyEwIwNjgURVR20r/khSABCAtqtV4cdrqtKGm2v+uMCHTZ+kx6VT4LHz1ILgGvc+JOhE
-         F6ES1ZM6ICx0nRUvS3hQyAVsSkmRtQiQSxydSHdw5VZHqMr/0RTiQz6Tu4tJmlpSRBL6
-         6zcQ==
+        bh=sE7NSB29qsmfs0sI4wgf6B6ZQGe4IKQtX92E6yxep1o=;
+        b=aWuxvYiguhPiVqddRe9ITBvF8r4rjy64XUYWh1yWPa+pKQKY99eSWcqPmH+DkM6bp6
+         1wD21+cLj//1lQX/BZja0p0otlO+efKw3GfhEM5qvuTykBJanixNzRhXs97+doqV9buN
+         rvlVvggYiDbnOrY7I9Xl7saxs8CvPvJkwOsyIgv3R0XZM5MpdUEU8sBpHNUfl4Y609wK
+         SW3PFa9NqU6h9iCspWnQi4xQ+5qyr//+A8NuLMuZT0vfXcdR6jCUGNWyoleH/u1UWF1+
+         iQORVQDYJkXzKJriJOHlxaDiew/xd+eFjln9kng8+9BpPvnYnFqC5cFtRP2Iw5wvN76o
+         9FFQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1748005686; x=1748610486;
-        h=in-reply-to:references:to:cc:subject:from:message-id:date
+        d=1e100.net; s=20230601; t=1748007094; x=1748611894;
+        h=in-reply-to:references:from:to:cc:subject:message-id:date
          :content-transfer-encoding:mime-version:x-gm-message-state:from:to
          :cc:subject:date:message-id:reply-to;
-        bh=KARpSC0ktVs2EmfgMj89WaDgPQ701M83Nyx3KMNRgAE=;
-        b=uIMRyTYVDfabG4TQyCwrUhXNndQQCV9Uj8z8riR4ZbI05yV0OxgN5NEQTrW+TtiXA7
-         uHzSPPoTIIlpXG4ItTEBWLeOz+mJHFWiVgAUwQefyK7bKQo62eqlANO8/lncAlEGaO0u
-         rh38BIJOkdu8luTCjlLlvP+ydiiDHu7028HEzCZBq8TrIEvg3PXh1Yrcgh01MCgb3D/v
-         K1bJ8cIOiEaoLOUcaLhyNc5tMeKVPbplkWaK4b73HkpHnJDIO2T+VowmwVc89mko/4rJ
-         4rQRmgb8TpoEwu9PWXk2iRViplF6Dm+D+xEOY0nmR5nyyAhWzhqRtDALZ/UDJgAvGp1D
-         4zIQ==
-X-Forwarded-Encrypted: i=1; AJvYcCU5dP9ASe+FUBTbgWgRxyVtIvxJfA2I7oEkAI4Q6sxzdYXogYi446J7/o9sC04Uv0LLe3YHGOvclI4=@lists.infradead.org
-X-Gm-Message-State: AOJu0YwytQyS42hiV5DDOGajEB9PPURnkiz75KWyJLmv5cZ4UC/m0rod
-	RVajS8GbitZXi6NHVdeuOUO/fcLxgT22xvVSbV/xY0cffUv+ku3MOM7/NVH+kd7+YJs=
-X-Gm-Gg: ASbGncsWHRH7qzNCTRnQzJ+wvsKilIwkT26UA9NMuHhzRjTRnDoko4Rs2AoN6/wIRx6
-	e0fhSQCsD7lztf3ZNmvDeObXtS+dLeyeVNiGeziyeDHJxCP6PjJmg2rUkYeUhCvYCQXI1bRjSCV
-	UKoDnYgmPKNJpySk4qkJjM8Jssf8x+ncd1W5qb9lwI1V71g1rFEonNyc9pFElDtNpTc5ZDpQ1ML
-	ZWrPcgUM5l234T5qOzg0FgSZxAHRV1iCCTxNOmR+cCSMX8NXE4ws5H/kRaC8lH7+g2P7ilfTeTD
-	CTn2PCkqc5e1W5LZ/EOiCpc9OTwYuqrV0+E5PkOyC0Eg0Z5OzB3MKeJPgTB8rZ0c/i03Ow==
-X-Google-Smtp-Source: AGHT+IEQlpZ+MHYlhIdSbIKkOQ9vfMtZ42DEnpA7EqlzBwx2H4tZNz3AtELJClLMWV4vaH5ju8V/Tg==
-X-Received: by 2002:a05:6000:184d:b0:39f:728:4324 with SMTP id ffacd0b85a97d-3a4c2d327a9mr972266f8f.9.1748005685763;
-        Fri, 23 May 2025 06:08:05 -0700 (PDT)
+        bh=sE7NSB29qsmfs0sI4wgf6B6ZQGe4IKQtX92E6yxep1o=;
+        b=aeGNu1yP0zWQWds7KEo/gf00NrL6FsAo3kL3vFJOcgAsBpeXcqEBaYDSlHPg9lnYUG
+         M4GAcW5RpB+SuibznmwGiCrAsXf6zUFMHgSzR+xxY62J9vGZ9tlexwH1b216Nnea175I
+         NR/AGf+jVEkPQuvAZRE6at10OkJAfbUo6qlz8vlAG6uxwAEfHUfYAcmeYhEk6ApXrMhk
+         uVNlv1jE1gBj7x+k0NKs6+spMJXlenPCRKQdQyR28ESllGkRP+l31+KiRGIkuV270XU4
+         vnin/dr90Zh102qo8frMlF1fM1ofL9Ik2iEelXv3xw+Yvq+kmstckjMbGkUHEdBEsz6S
+         nGcw==
+X-Forwarded-Encrypted: i=1; AJvYcCXi2rCzL+jKQvhUe8oOnoAqG9LKVtrtBsmpdbvV492vFghBLzqbsDaJpK1BalFuXwp+kgOHnteL/es=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yy8tb0ae2D+hHauQBZR/OHwrg91MZaFpGAjmKYAtOUfKNmRTicX
+	b/xkaqWTo4H2vxk02BU/aPCCUCnfNulwcomaMmOFQUvzaeEtmiGlKQsEdOzlpHz4xjE=
+X-Gm-Gg: ASbGncthZ4bkuZMaJkWdUj/eEoxq6YXS8oY+/Ph1Ay/xz95qYKxhX8ICI9yqlaQ/n13
+	3e7GdlTh+Q5OPrf90XsbSc5IJLHmU0CFqDmum8URt7PWwyUDbVzSvmG3cAm5/jNu16ZElbdTv6O
+	pwtMwuKPlM8CK58E0CaJIYhUcvF7rAc66Xbt7gWhn0Fz4CS6MU2GUR9hZzwSYxHqRi/+Psnerd4
+	vMLd84nphuZH5sUJRbhXrwaXC/qUslsjxATdbkY4hoEGim9GZJFLuO2XToDpEZf5T/8sX/1TyIG
+	iTqZA46TNRqWdZ7mKGjsjQ4sIXK505mFD9jETF2nWDilKBvtZy6Bu0dQJH8=
+X-Google-Smtp-Source: AGHT+IH4B5YjATsLpzFQConVuBPC8YzXe6dS/7DO0gd92eFJugpX4BslSSwZcD/zqo2WMw5EUo7NzA==
+X-Received: by 2002:a05:6000:400f:b0:39c:1401:6ede with SMTP id ffacd0b85a97d-3a4c2b3a659mr992493f8f.3.1748007094151;
+        Fri, 23 May 2025 06:31:34 -0700 (PDT)
 Received: from localhost ([2a02:8308:a00c:e200:be84:d9ad:e5e6:f60b])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-3a35ca8874bsm26894531f8f.67.2025.05.23.06.08.05
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-3a35ca8d005sm27248141f8f.90.2025.05.23.06.31.33
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 23 May 2025 06:08:05 -0700 (PDT)
+        Fri, 23 May 2025 06:31:33 -0700 (PDT)
 Mime-Version: 1.0
-Date: Fri, 23 May 2025 15:08:04 +0200
-Message-Id: <DA3KATTIZQ99.2M1SWQ64M9WX8@ventanamicro.com>
+Date: Fri, 23 May 2025 15:31:32 +0200
+Message-Id: <DA3KSSN3MJW5.2CM40VEWBWDHQ@ventanamicro.com>
+Subject: Re: [PATCH v3 9/9] RISC-V: KVM: Upgrade the supported SBI version
+ to 3.0
+Cc: <linux-riscv@lists.infradead.org>,
+ <linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
+ "Palmer Dabbelt" <palmer@rivosinc.com>, <kvm@vger.kernel.org>,
+ <kvm-riscv@lists.infradead.org>, "linux-riscv"
+ <linux-riscv-bounces@lists.infradead.org>
+To: "Atish Patra" <atishp@rivosinc.com>, "Anup Patel" <anup@brainfault.org>,
+ "Will Deacon" <will@kernel.org>, "Mark Rutland" <mark.rutland@arm.com>,
+ "Paul Walmsley" <paul.walmsley@sifive.com>, "Palmer Dabbelt"
+ <palmer@dabbelt.com>, "Mayuresh Chitale" <mchitale@ventanamicro.com>
 From: =?utf-8?q?Radim_Kr=C4=8Dm=C3=A1=C5=99?= <rkrcmar@ventanamicro.com>
-Subject: Re: [PATCH v8 14/14] RISC-V: KVM: add support for
- SBI_FWFT_MISALIGNED_DELEG
-Cc: "Samuel Holland" <samuel.holland@sifive.com>, "Andrew Jones"
- <ajones@ventanamicro.com>, "Deepak Gupta" <debug@rivosinc.com>, "Charlie
- Jenkins" <charlie@rivosinc.com>, "Atish Patra" <atishp@rivosinc.com>,
- "linux-riscv" <linux-riscv-bounces@lists.infradead.org>
-To: =?utf-8?q?Cl=C3=A9ment_L=C3=A9ger?= <cleger@rivosinc.com>, "Paul
- Walmsley" <paul.walmsley@sifive.com>, "Palmer Dabbelt"
- <palmer@dabbelt.com>, "Anup Patel" <anup@brainfault.org>, "Atish Patra"
- <atishp@atishpatra.org>, "Shuah Khan" <shuah@kernel.org>, "Jonathan Corbet"
- <corbet@lwn.net>, <linux-riscv@lists.infradead.org>,
- <linux-kernel@vger.kernel.org>, <linux-doc@vger.kernel.org>,
- <kvm@vger.kernel.org>, <kvm-riscv@lists.infradead.org>,
- <linux-kselftest@vger.kernel.org>
-References: <20250523101932.1594077-1-cleger@rivosinc.com>
- <20250523101932.1594077-15-cleger@rivosinc.com>
-In-Reply-To: <20250523101932.1594077-15-cleger@rivosinc.com>
+References: <20250522-pmu_event_info-v3-0-f7bba7fd9cfe@rivosinc.com>
+ <20250522-pmu_event_info-v3-9-f7bba7fd9cfe@rivosinc.com>
+In-Reply-To: <20250522-pmu_event_info-v3-9-f7bba7fd9cfe@rivosinc.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250523_060807_477899_4218059A 
-X-CRM114-Status: UNSURE (   4.89  )
+X-CRM114-CacheID: sfid-20250523_063135_752550_DEE8D8A8 
+X-CRM114-Status: UNSURE (   9.48  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -104,17 +101,31 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-MjAyNS0wNS0yM1QxMjoxOTozMSswMjowMCwgQ2zDqW1lbnQgTMOpZ2VyIDxjbGVnZXJAcml2b3Np
-bmMuY29tPjoKPiBTQklfRldGVF9NSVNBTElHTkVEX0RFTEVHIG5lZWRzIGhlZGVsZWcgdG8gYmUg
-bW9kaWZpZWQgdG8gZGVsZWdhdGUKPiBtaXNhbGlnbmVkIGxvYWQvc3RvcmUgZXhjZXB0aW9ucy4g
-U2F2ZSBhbmQgcmVzdG9yZSBpdCBkdXJpbmcgQ1BVCj4gbG9hZC9wdXQuCgpIb3cgZG8geW91IHBs
-YW4gdG8gYWNjZXNzIHRoZSB2YWx1ZSBvZiBoZWRlbGVnICYgTUlTX0RFTEVHIGZyb20KdXNlcnNw
-YWNlPwoKKEkgdGhpbmsgdGhhdCBtb2RlbGluZyBtZWRlbGVnIGluIE9ORV9SRUcgaXMgYSBjbGVh
-biBzb2x1dGlvbi4pCgpUaGFua3MuCgotLSAKa3ZtLXJpc2N2IG1haWxpbmcgbGlzdAprdm0tcmlz
-Y3ZAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFu
-L2xpc3RpbmZvL2t2bS1yaXNjdgo=
+2025-05-22T12:03:43-07:00, Atish Patra <atishp@rivosinc.com>:
+> Upgrade the SBI version to v3.0 so that corresponding features
+> can be enabled in the guest.
+>
+> Signed-off-by: Atish Patra <atishp@rivosinc.com>
+> ---
+> diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h b/arch/riscv/include/asm/kvm_vcpu_sbi.h
+> -#define KVM_SBI_VERSION_MAJOR 2
+> +#define KVM_SBI_VERSION_MAJOR 3
+
+I think it's time to add versioning to KVM SBI implementation.
+Userspace should be able to select the desired SBI version and KVM would
+tell the guest that newer features are not supported.
+
+We could somewhat get away with the userspace_sbi patch I posted,
+because userspace would at least be in control of the SBI version, but
+it would still be incorrect without a KVM enforcement, because a
+misbehaving guest could use features that should not be supported.
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
