@@ -4,67 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 790FBC5AD49
-	for <kvm-riscv@archiver.kernel.org>; Thu, 29 May 2025 22:19:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A5FE8C54FB3
+	for <kvm-riscv@archiver.kernel.org>; Thu, 29 May 2025 22:19:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:Reply-To:List-Subscribe:List-Help:
 	List-Post:List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID
-	:Mime-Version:Date:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=Kfv88ndq0YYMEu1ie8j8K9/4YycVSuTTvtJRCNsLO6I=; b=k3GtgPS7E9zwdd
-	IYDhUCed7atWh0fX00cAFOA3pG4bax6P+j1hwuvo75hWnQKmZCEkLedjfdZA4LLkJTyp8TjKw0rDY
-	WtIaRDgiXZ4034hN2QgyraEjN6GQxCUf4EIxsdHCvVlG0yJOMjlukMDkSTtmJtQq5CvuatTIyyp6E
-	2DL//oNGwxOyzP76GW3aejAEsMZL13qWH1f6vr5FpVTXl/fnkJWCft6fXHJCVgjs36QRoJ8tKd5TP
-	keJMJR7h8D6l/JF6GkL9y+NB04vT70jnPa3IwVfkdDAY69D6V+KSzFJ+7nkMgTV1BRc5IvR2FViVd
-	g/kJq/O+HsPqlgcXaTtQ==;
+	:References:Mime-Version:In-Reply-To:Date:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=aS/DY80cLWubY2ROKeX86+3kbrp8EeICvYVIgZ1XK0Y=; b=zgq9EVaDDAcgKj
+	vgB/WMyaqiDQ7F2nr3ZgOjkauXznmKWb1rsbuDpGo02o9JNgZQdBKvbXpS+HzQ07DMg0GVkH2mTm5
+	8dwP02migRDaNtqjJsc/8rD1SBdyWrQNTQSAyLdvhUvsRtfZJ28WRXtZ6HfsAPLcRsmjM50mTz6n2
+	5KuG5zq447WQ6iyxIBBkvIv2dKn/24tvvlzvWxMrA4dBPJWgSWRGZ8M5u7TOtUXbNtbKzG3jXLRuC
+	QOSZ8I/531j/VTHz44/uKBYeEM1FRDEYmuRuLGxC0Zb+1L8aDR8Bld3vwHnumflEdAVNyO4ZSQ3/4
+	CM0AYsXkcWCuxL04QMmA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uKlbD-0000000GcLF-45Wd;
-	Thu, 29 May 2025 22:19:43 +0000
-Received: from mail-pl1-x64a.google.com ([2607:f8b0:4864:20::64a])
+	id 1uKlbF-0000000GcMB-1Dea;
+	Thu, 29 May 2025 22:19:45 +0000
+Received: from mail-pj1-x104a.google.com ([2607:f8b0:4864:20::104a])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uKlbB-0000000GcJf-2utm
+	id 1uKlbD-0000000GcKV-1glY
 	for kvm-riscv@lists.infradead.org;
-	Thu, 29 May 2025 22:19:42 +0000
-Received: by mail-pl1-x64a.google.com with SMTP id d9443c01a7336-23228c09e14so18814775ad.1
-        for <kvm-riscv@lists.infradead.org>; Thu, 29 May 2025 15:19:40 -0700 (PDT)
+	Thu, 29 May 2025 22:19:44 +0000
+Received: by mail-pj1-x104a.google.com with SMTP id 98e67ed59e1d1-30ea0e890ccso1274332a91.2
+        for <kvm-riscv@lists.infradead.org>; Thu, 29 May 2025 15:19:42 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1748557180; x=1749161980; darn=lists.infradead.org;
-        h=cc:to:from:subject:message-id:mime-version:date:reply-to:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=2WiZvL65gJWBhQxETywMJkkZAmvBLGCJuVJmqPemzNU=;
-        b=XLg3nMRt20z3Ug5xs+FYL15Kz+tHwwpIH9CzAtWSLQglPDiVeka3ipOeDw9JhjsGCA
-         3vYTW9kQjl58GdG64MOjVN4dxAyv0VQpXoqyHXV0Wt07GgZ5t9OzOfLFp3kP33tG9zFF
-         FbAOUFpfyIghHh0JPdecW+2LVGwsf2ZqvqEGmDNs8gl2PpHbWUcweUq6A3Zq0GhuGgkr
-         t0/HDTcrQYSyD/bMIJHiKn5QnLVo/9WvwwVyYDlxY26/HRLz3s51QPJA/OmPQVKdPNf5
-         leT7lre0F5pyUZb/9bDHQVXEv86+EQMPRfBMq/altfAc9tKeDgGsxfMAk9zfqTBxHb3B
-         RtNw==
+        d=google.com; s=20230601; t=1748557182; x=1749161982; darn=lists.infradead.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:reply-to:from:to:cc:subject:date:message-id:reply-to;
+        bh=rpZO/SNMSsOcnIVwvmjBs9Kka2MdSZSqrGAzddRxVBc=;
+        b=n9BA7zadPPs3FxqpOhAaDs81SOW8UOZXenb/6yYYBSDrFBclMHwpUmOBj3gOniVjQ/
+         s0GoehmGRjRI7r6UB7SfCHuWUiHONysUXQtHcrzI4UfugTEJsMri+cmEOJigSD6qCj8n
+         aY2/qnhig1MY2plYyCZLKztGCGIiBo8cQmhXHpuAjkjy+mVmpetiDppxVro4097UwVDD
+         hutVEMOjHydpfQWKdl3CCIsfk/4z6ZaDXMQbzUMQvCaj4vZcJsreuY0Fm3Y2G/fAvaZb
+         EhgNvDbUlKoHV1bbhhTfHNJtMXJmbAXSSa6+8bFOrU539clv3hLYLHugCMybDlkYOfxh
+         4P2w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1748557180; x=1749161980;
-        h=cc:to:from:subject:message-id:mime-version:date:reply-to
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=2WiZvL65gJWBhQxETywMJkkZAmvBLGCJuVJmqPemzNU=;
-        b=EVLVs/TqH68dxLjlByjJbZzFrk/dUOl38uI7H6Sx4TaLh85gujlYMn7IhxLoW9FzaF
-         X2dqUFd/UdV1wMZSxigCSy2V41cpPP5rVWZOD4uUAUxykJDXa2RIG6RO2OHOwMNsjGWN
-         OxIGKEWXC0+6f6KyCXZhld2FxtEmX7ZE0rJXnZhvyQljjVdUIoNDjjpq9aMtiKndP+IQ
-         EXu0bXftEfCrXkfzNDir+klIdjV9n94OeNGeejBnjZXM/Hv284ckriLlKvE8Tq41nGmA
-         mxJV100oioTfLqa0czZgvkwBMdQstkikHml14xFh1z5gvjbZNZ53OXslj54pE+06L2o6
-         NsCA==
-X-Gm-Message-State: AOJu0YzfUOkHoHndCVKrfXyzs9I5QhSH3RB8s0bbr7G0If3W7XUJhRFm
-	Jd5DLJ3LPDt9zvHil21DZ6cJucDQ6e333s289uFrjIrJxT0O2l4Uii8QdFlec7wayR9XbyCcBCB
-	ywqYyXA==
-X-Google-Smtp-Source: AGHT+IE/KnIFPcTR33Ni+A0ag2QlB6J3OqTksKtrH9lZLuske3p06HrhdBLvdwE6B6sOh/7FJilM1pbp4Qk=
-X-Received: from plhc1.prod.google.com ([2002:a17:903:2341:b0:234:d7c5:a0e3])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:903:19cb:b0:234:f1ac:c036
- with SMTP id d9443c01a7336-23529a1357amr17181895ad.50.1748557180372; Thu, 29
- May 2025 15:19:40 -0700 (PDT)
-Date: Thu, 29 May 2025 15:19:13 -0700
+        d=1e100.net; s=20230601; t=1748557182; x=1749161982;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:reply-to:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=rpZO/SNMSsOcnIVwvmjBs9Kka2MdSZSqrGAzddRxVBc=;
+        b=kLuaxas3URRB69mpwppd1XV5LEPwYvef6Xrhqgf0TNNreyPVXJu0ZW9yQmS96ZW9Us
+         QXVi6TYWtYEWMdnMQtjp0WivwTM3YY9ns2CAw7ou+o/usNWgrKOPCKYFC3pIbi5GoBTe
+         KhUuBS8nIDDShtkDISIo7iHUMD+F2TOVC3uZgitiRRkE5m6+1Vim8t1jAoxp+eGzZW7L
+         KRPesbH52nQTxM2W/0SNMYkoBvpmonCFfFy+3wSGcuGFkoRR3SD3wOaVYXcycjKzx3aQ
+         fJBmWUtLcyYKi9TURpKNzQngqLhMt8hsVGUgAO2LsLw6w6al/QctJWCwpcbABpahuLm5
+         vzCg==
+X-Gm-Message-State: AOJu0YzR7cS2ey/UH5u7cF5Y9KylatuByQg7xMSiwyk84ne4l4k3SV0f
+	S1Rz/m7KNM51yl+UnhvwOFDLqKDFs4IQyr0P9xAZd6jFFy3eLbiElWOzrqwXZVJ7JXcCEeV5U6l
+	CS6OFuw==
+X-Google-Smtp-Source: AGHT+IEFFQIS9pAD1OtOGGAF6xmOZ0qMis9t3+vFz2wQSGrnYMTgXB8pN/6JJfuvmcH9p/ci+jWPOkR4qYg=
+X-Received: from pjtq15.prod.google.com ([2002:a17:90a:c10f:b0:311:e9bb:f8d4])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:510c:b0:311:e8cc:4264
+ with SMTP id 98e67ed59e1d1-3124152923amr1943106a91.12.1748557182148; Thu, 29
+ May 2025 15:19:42 -0700 (PDT)
+Date: Thu, 29 May 2025 15:19:14 -0700
+In-Reply-To: <20250529221929.3807680-1-seanjc@google.com>
 Mime-Version: 1.0
+References: <20250529221929.3807680-1-seanjc@google.com>
 X-Mailer: git-send-email 2.49.0.1204.g71687c7c1d-goog
-Message-ID: <20250529221929.3807680-1-seanjc@google.com>
-Subject: [kvm-unit-tests PATCH 00/16] x86: Add CPUID properties, clean up
- related code
+Message-ID: <20250529221929.3807680-2-seanjc@google.com>
+Subject: [kvm-unit-tests PATCH 01/16] lib: Add and use static_assert()
+ convenience wrappers
 From: Sean Christopherson <seanjc@google.com>
 To: Andrew Jones <andrew.jones@linux.dev>, Janosch Frank <frankja@linux.ibm.com>, 
 	Claudio Imbrenda <imbrenda@linux.ibm.com>, "=?UTF-8?q?Nico=20B=C3=B6hr?=" <nrb@linux.ibm.com>, 
@@ -72,9 +75,8 @@ To: Andrew Jones <andrew.jones@linux.dev>, Janosch Frank <frankja@linux.ibm.com>
 Cc: kvm-riscv@lists.infradead.org, linux-s390@vger.kernel.org, 
 	kvm@vger.kernel.org, Sean Christopherson <seanjc@google.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250529_151941_733981_89C158A3 
-X-CRM114-Status: UNSURE (   8.65  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20250529_151943_441361_4FD21A97 
+X-CRM114-Status: GOOD (  15.15  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -92,57 +94,134 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Copy KVM selftests' X86_PROPERTY_* infrastructure (multi-bit CPUID
-fields), and use the properties to clean up various warts.  The SEV code
-is particular makes things much harder than they need to be (I went down
-this rabbit hole purely because the stupid MSR_SEV_STATUS definition was
-buried behind CONFIG_EFI=y, *sigh*).
+Add static_assert() to wrap _Static_assert() with stringification of the
+tested expression as the assert message.  In most cases, the failed
+expression is far more helpful than a human-generated message (usually
+because the developer is forced to add _something_ for the message).
 
-The first patch is a common change to add static_assert() as a wrapper
-to _Static_assert().  Forcing code to provide an error message just leads
-to useless error messages.
+For API consistency, provide a double-underscore variant for specifying a
+custom message.
 
-Compile tested on arm64, riscv64, and s390x.
+Signed-off-by: Sean Christopherson <seanjc@google.com>
+---
+ lib/riscv/asm/isa.h      | 4 +++-
+ lib/s390x/asm/arch_def.h | 6 ++++--
+ lib/s390x/fault.c        | 3 ++-
+ lib/util.h               | 3 +++
+ x86/lam.c                | 4 ++--
+ 5 files changed, 14 insertions(+), 6 deletions(-)
 
-Sean Christopherson (16):
-  lib: Add and use static_assert() convenience wrappers
-  x86: Encode X86_FEATURE_* definitions using a structure
-  x86: Add X86_PROPERTY_* framework to retrieve CPUID values
-  x86: Use X86_PROPERTY_MAX_VIRT_ADDR in is_canonical()
-  x86: Implement get_supported_xcr0() using
-    X86_PROPERTY_SUPPORTED_XCR0_{LO,HI}
-  x86: Add and use X86_PROPERTY_INTEL_PT_NR_RANGES
-  x86/pmu: Rename pmu_gp_counter_is_available() to
-    pmu_arch_event_is_available()
-  x86/pmu: Rename gp_counter_mask_length to arch_event_mask_length
-  x86/pmu: Mark all arch events as available on AMD
-  x86/pmu: Use X86_PROPERTY_PMU_* macros to retrieve PMU information
-  x86/sev: Use VC_VECTOR from processor.h
-  x86/sev: Skip the AMD SEV test if SEV is unsupported/disabled
-  x86/sev: Define and use X86_FEATURE_* flags for CPUID 0x8000001F
-  x86/sev: Use X86_PROPERTY_SEV_C_BIT to get the AMD SEV C-bit location
-  x86/sev: Use amd_sev_es_enabled() to detect if SEV-ES is enabled
-  x86: Move SEV MSR definitions to msr.h
-
- lib/riscv/asm/isa.h      |   4 +-
- lib/s390x/asm/arch_def.h |   6 +-
- lib/s390x/fault.c        |   3 +-
- lib/util.h               |   3 +
- lib/x86/amd_sev.c        |  48 ++----
- lib/x86/amd_sev.h        |  29 ----
- lib/x86/msr.h            |   6 +
- lib/x86/pmu.c            |  22 ++-
- lib/x86/pmu.h            |   8 +-
- lib/x86/processor.h      | 312 ++++++++++++++++++++++++++++-----------
- x86/amd_sev.c            |  63 ++------
- x86/la57.c               |   2 +-
- x86/lam.c                |   4 +-
- x86/pmu.c                |   8 +-
- x86/xsave.c              |  11 +-
- 15 files changed, 284 insertions(+), 245 deletions(-)
-
-
-base-commit: 72d110d8286baf1b355301cc8c8bdb42be2663fb
+diff --git a/lib/riscv/asm/isa.h b/lib/riscv/asm/isa.h
+index df874173..fb3af67d 100644
+--- a/lib/riscv/asm/isa.h
++++ b/lib/riscv/asm/isa.h
+@@ -1,7 +1,9 @@
+ /* SPDX-License-Identifier: GPL-2.0-only */
+ #ifndef _ASMRISCV_ISA_H_
+ #define _ASMRISCV_ISA_H_
++
+ #include <bitops.h>
++#include <util.h>
+ #include <asm/setup.h>
+ 
+ /*
+@@ -14,7 +16,7 @@ enum {
+ 	ISA_SSTC,
+ 	ISA_MAX,
+ };
+-_Static_assert(ISA_MAX <= __riscv_xlen, "Need to increase thread_info.isa");
++__static_assert(ISA_MAX <= __riscv_xlen, "Need to increase thread_info.isa");
+ 
+ static inline bool cpu_has_extension(int cpu, int ext)
+ {
+diff --git a/lib/s390x/asm/arch_def.h b/lib/s390x/asm/arch_def.h
+index 03adcd3c..4c11df74 100644
+--- a/lib/s390x/asm/arch_def.h
++++ b/lib/s390x/asm/arch_def.h
+@@ -8,6 +8,8 @@
+ #ifndef _ASMS390X_ARCH_DEF_H_
+ #define _ASMS390X_ARCH_DEF_H_
+ 
++#include <util.h>
++
+ struct stack_frame {
+ 	struct stack_frame *back_chain;
+ 	uint64_t reserved;
+@@ -62,7 +64,7 @@ struct psw {
+ 	};
+ 	uint64_t	addr;
+ };
+-_Static_assert(sizeof(struct psw) == 16, "PSW size");
++static_assert(sizeof(struct psw) == 16);
+ 
+ #define PSW(m, a) ((struct psw){ .mask = (m), .addr = (uint64_t)(a) })
+ 
+@@ -194,7 +196,7 @@ struct lowcore {
+ 	uint8_t		pad_0x1400[0x1800 - 0x1400];	/* 0x1400 */
+ 	uint8_t		pgm_int_tdb[0x1900 - 0x1800];	/* 0x1800 */
+ } __attribute__ ((__packed__));
+-_Static_assert(sizeof(struct lowcore) == 0x1900, "Lowcore size");
++static_assert(sizeof(struct lowcore) == 0x1900);
+ 
+ extern struct lowcore lowcore;
+ 
+diff --git a/lib/s390x/fault.c b/lib/s390x/fault.c
+index a882d5d9..ad5a5f66 100644
+--- a/lib/s390x/fault.c
++++ b/lib/s390x/fault.c
+@@ -9,6 +9,7 @@
+  */
+ #include <libcflat.h>
+ #include <bitops.h>
++#include <util.h>
+ #include <asm/arch_def.h>
+ #include <asm/page.h>
+ #include <fault.h>
+@@ -40,7 +41,7 @@ static void print_decode_pgm_prot(union teid teid)
+ 			"LAP",
+ 			"IEP",
+ 		};
+-		_Static_assert(ARRAY_SIZE(prot_str) == PROT_NUM_CODES, "ESOP2 prot codes");
++		static_assert(ARRAY_SIZE(prot_str) == PROT_NUM_CODES);
+ 		int prot_code = teid_esop2_prot_code(teid);
+ 
+ 		printf("Type: %s\n", prot_str[prot_code]);
+diff --git a/lib/util.h b/lib/util.h
+index f86af6d3..00d0b47d 100644
+--- a/lib/util.h
++++ b/lib/util.h
+@@ -8,6 +8,9 @@
+  * This work is licensed under the terms of the GNU LGPL, version 2.
+  */
+ 
++#define static_assert(expr, ...) __static_assert(expr, ##__VA_ARGS__, #expr)
++#define __static_assert(expr, msg, ...) _Static_assert(expr, msg)
++
+ /*
+  * parse_keyval extracts the integer from a string formatted as
+  * string=integer. This is useful for passing expected values to
+diff --git a/x86/lam.c b/x86/lam.c
+index a1c98949..ad91deaf 100644
+--- a/x86/lam.c
++++ b/x86/lam.c
+@@ -13,6 +13,7 @@
+ #include "libcflat.h"
+ #include "processor.h"
+ #include "desc.h"
++#include <util.h>
+ #include "vmalloc.h"
+ #include "alloc_page.h"
+ #include "vm.h"
+@@ -236,8 +237,7 @@ static void test_lam_user(void)
+ 	 * address for both LAM48 and LAM57.
+ 	 */
+ 	vaddr = alloc_pages_flags(0, AREA_NORMAL);
+-	_Static_assert((AREA_NORMAL_PFN & GENMASK(63, 47)) == 0UL,
+-			"Identical mapping range check");
++	static_assert((AREA_NORMAL_PFN & GENMASK(63, 47)) == 0UL);
+ 
+ 	/*
+ 	 * Note, LAM doesn't have a global control bit to turn on/off LAM
 -- 
 2.49.0.1204.g71687c7c1d-goog
 
