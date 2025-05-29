@@ -4,70 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4A497C5AD49
-	for <kvm-riscv@archiver.kernel.org>; Thu, 29 May 2025 22:20:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 89CC3C54FB3
+	for <kvm-riscv@archiver.kernel.org>; Thu, 29 May 2025 22:20:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:Reply-To:List-Subscribe:List-Help:
 	List-Post:List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID
 	:References:Mime-Version:In-Reply-To:Date:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=ZIqv7H+1OSzHXunqKkwasHSg8sfFK3qPq3wLXMbyFvs=; b=KKTZgMU8qwpUUo
-	jW3UPBlXyVdwlqe5c01sn34aN6ejoQLhWdehNgpw0dSJ5/9iMhbkFzcOijaRVewb6OcgE8MkIZTES
-	w/fho8DWpvzQEd2B4eTZD1AH9t/1UCgwhom4y9OJUY8CSt33w5I1fMq1Z0QMKTigPp78Zc3MnCx8F
-	fTYHCeQ4IS8+7CmwOHcVZUNNff/s3SbqPOpd2CksfDCsIF7bL4atjnJVaTClIr6hNtix+hpIL7lWy
-	m872cfcFzfUI3TVAeRg+Ib+1UYg76vRSvfran42Hq9UXyj94ktN0Xw7mLi+q3BDhnevIMCjr8HUhj
-	lUH7MCvXGhb/PlWxDMEA==;
+	List-Owner; bh=yPlkNogyay6pBlE0O3vVchAIta7cKbIRgW9W8FqpW+0=; b=ddtJAYbMj+3IsA
+	o3F7ubFOYjAWqfCNzXQwbNGxN0FfBJvOL5F68pXoD9pANM4YXD5htpLYf0Aoyit6k4LZfH0MJB59I
+	LvRjbMpEONep5cItHAZvcuVfUPTqo8NFNxWmg+YZYXqld3WYLkHGuFEnWq3ueZHMunmunS0YGY2N6
+	logFvQNlgx9ZjjfgyG2CIvj4e71yZNXN7tNPZZ5jTBIA/kXoo6nTjT00P2aCvAWL+581/Z/GMuM7U
+	WGZOgv7mrGZUMVY6Z8Ygnlz12dIowOaWYYNuG9GBdZ4a0tbrfHM3RB8j68WxXQnCnjaWo8yFEgk/0
+	uwemQZLNJGeR+nPvMFSQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uKlbV-0000000GcbY-4A8U;
-	Thu, 29 May 2025 22:20:01 +0000
-Received: from mail-pj1-x1049.google.com ([2607:f8b0:4864:20::1049])
+	id 1uKlbY-0000000GcdI-1INM;
+	Thu, 29 May 2025 22:20:04 +0000
+Received: from mail-pl1-x649.google.com ([2607:f8b0:4864:20::649])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uKlbT-0000000GcXa-1bh1
+	id 1uKlbV-0000000GcZb-29rB
 	for kvm-riscv@lists.infradead.org;
-	Thu, 29 May 2025 22:20:00 +0000
-Received: by mail-pj1-x1049.google.com with SMTP id 98e67ed59e1d1-310c5c2c38cso1384460a91.1
-        for <kvm-riscv@lists.infradead.org>; Thu, 29 May 2025 15:19:58 -0700 (PDT)
+	Thu, 29 May 2025 22:20:03 +0000
+Received: by mail-pl1-x649.google.com with SMTP id d9443c01a7336-22e3b03cd64so12397475ad.3
+        for <kvm-riscv@lists.infradead.org>; Thu, 29 May 2025 15:20:00 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1748557198; x=1749161998; darn=lists.infradead.org;
+        d=google.com; s=20230601; t=1748557200; x=1749162000; darn=lists.infradead.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:from:to:cc:subject:date:message-id:reply-to;
-        bh=vNslUGWw1CMVPjS9VIQPMuWCe949NCq6H3qTd+RjZjs=;
-        b=OgAw4CFQvH84g0DhYWnXOoMdjpWw47xYjiPmKzCFlKFfcL3yLi6/RAKsgP2L9xxTwD
-         RLyVH1aPXaEtQ6KcQ7W88fAfYwUSxPfYYSyjf31iS4h0w3NIslIq6M1fPAL4y4F583r8
-         HXS166G+2Ky+grAFHcFpF7jYpBP3amRlMp9+GgIe8kb4JgfHW5E1ygesTJ14IzOYcq+S
-         1HVQANLQb2W/JFnAJjAd2dOn7y3mpieNQa7ZRZ5pkFWEvP3E/ByB8SeyLBML0/QEiZWZ
-         bhWXOOHWohgTGMQ6znbbmMD1UiOOK7iHlNR/eav0MIEOmrOJBhLsyrRuKXcFWZIqhCFu
-         qeEQ==
+        bh=F38+KAgpKihumolRGdL78BPKTYJ8ucUVHkNHVQ83xHA=;
+        b=VfymsAc3/88lSsLJ3DN59sVPrHFtgWUhpgKhmma+Qc2MKJ1KOq4YK9gXkAJJEbD24K
+         Be94K3VG90o4D6K9tzMYgmrhrCdCXb0LWEoAw0bO5GUf/epDrQEt9As6lz9gE5QSVQAZ
+         dOyytVU+eirLJweS+jdglF1SYridi8yi9FDLYMPjnmC5u75ZlGGRqBp+n1bN104Pk4LL
+         +QY9/hMJtkdE8tYDStBy/XE6n5qJ8OeGDFbuonv+V8hYwcZqvu3EpIS7OxpU9JIeWG1h
+         tA2C2w0zX84oC2xV6JBQl+FnRakUBFnuaXzBt3+e4qf/9w8YoTOMrBeejIL2afs00nUr
+         /+jA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1748557198; x=1749161998;
+        d=1e100.net; s=20230601; t=1748557200; x=1749162000;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=vNslUGWw1CMVPjS9VIQPMuWCe949NCq6H3qTd+RjZjs=;
-        b=ROcYaufmEbYjdYWQsGT4q7/r7J9qM+AsTbqcOKzJLQ/f0JTTkNKyU9bjEtfWFlcz2v
-         GDoPmP7JN3TU6kxt/0gXronzFq8B1W/f1AB+zbD+25zH3TxE6U2e/VHWH5g6YmeXpEyu
-         yjd1+o326jFH4/2Yfw8FHRsjHn7olRL4qAoa8fo0nP+6xEuL0Mz/M7FkGjCdPJSyUQvP
-         TdmM8ecdc0paiMX6tkezbg6JEBkE6zmSLkVbSYc2xO5q38EG2DwmOynfZ9xKJd95NvYN
-         /WJbRPNHyckpF3h1ryEP9wlknrT25uyBFAQH/2cBrh5QW+jpqlXMkvQ3yU8GZhimnj8F
-         mFCg==
-X-Gm-Message-State: AOJu0Yx6jycL4YPJC4F41TpVxfsllj1N9sFtPBwGVHixXML4N7ofyj4Y
-	s7TyiRYhQrBUEmkMiBeIqUs+MZyPHWQTulI7My9e3PiElyRCNjD9/n455PXhY+zobCNwadyUQAM
-	EPnJoyA==
-X-Google-Smtp-Source: AGHT+IHrGNPA7Fjoti9Yh7zCMe8Ut+1HXp93j1eoloOFL1oI/TXxq/AiO9jim6fDWY8a2L2xOX3pv7ki0x0=
-X-Received: from pjbqj13.prod.google.com ([2002:a17:90b:28cd:b0:30a:2020:e2bd])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:3c90:b0:311:c1ec:7cfd
- with SMTP id 98e67ed59e1d1-3124198ae5cmr1481581a91.26.1748557197961; Thu, 29
- May 2025 15:19:57 -0700 (PDT)
-Date: Thu, 29 May 2025 15:19:23 -0700
+        bh=F38+KAgpKihumolRGdL78BPKTYJ8ucUVHkNHVQ83xHA=;
+        b=NrwiPufVi0SJ/b6urxB+8vTP2TF/FFXgGb2EfhTtDssoCnB76yRqAwVdByCCJRKUgj
+         eg6NuvRlso46np7zj7/67c/3XPolmRdOY8UfERIH4QDkhBSQLR6d6pvkeaqyoPjNdl7H
+         M+36YLTYpXHPvGHJQMiFCZmn5qjlJE5RvpSu9oFyabn+5ow6MDb1TBcCSBMbBZnf4ZaJ
+         5nnS41uuFM+3vDTgKhz0w5FskD+sR4eciqdG+NYetXomsr/ppQ1nSIqcikjh+/g+CRew
+         CNXXYyGDNWiKp8ok6saNg9WDXO1Dpwez23tmhfNcySYEmrBcBMAc2cXnkTUn8wDeZ7uH
+         2Big==
+X-Gm-Message-State: AOJu0Yw23Jp/O0QUqRcIU5nBVRcIEFhku8dRXS0A5VcCbUas1VJNKNxQ
+	UCQ5vf9KKZiRISgq5Q134qmKJJr452y3FXZTcUvRYexhnrrA+nrl6DX471+Vg+WgMzxR4+fiT6T
+	oDUxAEA==
+X-Google-Smtp-Source: AGHT+IFLH7+ndNiW16k0m8bZig1m+3YmdXN8wU8pUnGfkU01dcr6pQf/olLFZd/rzUJORoXz3AV9rcYLfE4=
+X-Received: from plblh14.prod.google.com ([2002:a17:903:290e:b0:234:d2a4:ddf])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:902:e5c5:b0:226:38ff:1d6a
+ with SMTP id d9443c01a7336-235289c81f8mr15314225ad.7.1748557199757; Thu, 29
+ May 2025 15:19:59 -0700 (PDT)
+Date: Thu, 29 May 2025 15:19:24 -0700
 In-Reply-To: <20250529221929.3807680-1-seanjc@google.com>
 Mime-Version: 1.0
 References: <20250529221929.3807680-1-seanjc@google.com>
 X-Mailer: git-send-email 2.49.0.1204.g71687c7c1d-goog
-Message-ID: <20250529221929.3807680-11-seanjc@google.com>
-Subject: [kvm-unit-tests PATCH 10/16] x86/pmu: Use X86_PROPERTY_PMU_* macros
- to retrieve PMU information
+Message-ID: <20250529221929.3807680-12-seanjc@google.com>
+Subject: [kvm-unit-tests PATCH 11/16] x86/sev: Use VC_VECTOR from processor.h
 From: Sean Christopherson <seanjc@google.com>
 To: Andrew Jones <andrew.jones@linux.dev>, Janosch Frank <frankja@linux.ibm.com>, 
 	Claudio Imbrenda <imbrenda@linux.ibm.com>, "=?UTF-8?q?Nico=20B=C3=B6hr?=" <nrb@linux.ibm.com>, 
@@ -75,8 +74,8 @@ To: Andrew Jones <andrew.jones@linux.dev>, Janosch Frank <frankja@linux.ibm.com>
 Cc: kvm-riscv@lists.infradead.org, linux-s390@vger.kernel.org, 
 	kvm@vger.kernel.org, Sean Christopherson <seanjc@google.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250529_151959_428969_121019DB 
-X-CRM114-Status: UNSURE (   9.57  )
+X-CRM114-CacheID: sfid-20250529_152001_586018_C9325F69 
+X-CRM114-Status: UNSURE (   7.94  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -95,58 +94,50 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Use the recently introduced X86_PROPERTY_PMU_* macros to get PMU
-information instead of open coding equivalent functionality.
+Use VC_VECTOR (defined in processor.h along with all other known vectors)
+and drop the one-off SEV_ES_VC_HANDLER_VECTOR macro.
 
 No functional change intended.
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- lib/x86/pmu.c | 18 ++++++++----------
- 1 file changed, 8 insertions(+), 10 deletions(-)
+ lib/x86/amd_sev.c | 4 ++--
+ lib/x86/amd_sev.h | 6 ------
+ 2 files changed, 2 insertions(+), 8 deletions(-)
 
-diff --git a/lib/x86/pmu.c b/lib/x86/pmu.c
-index 44449372..c7f7da14 100644
---- a/lib/x86/pmu.c
-+++ b/lib/x86/pmu.c
-@@ -7,21 +7,19 @@ void pmu_init(void)
- 	pmu.is_intel = is_intel();
+diff --git a/lib/x86/amd_sev.c b/lib/x86/amd_sev.c
+index 66722141..6c0a66ac 100644
+--- a/lib/x86/amd_sev.c
++++ b/lib/x86/amd_sev.c
+@@ -111,9 +111,9 @@ efi_status_t setup_amd_sev_es(void)
+ 	 */
+ 	sidt(&idtr);
+ 	idt = (idt_entry_t *)idtr.base;
+-	vc_handler_idt = idt[SEV_ES_VC_HANDLER_VECTOR];
++	vc_handler_idt = idt[VC_VECTOR];
+ 	vc_handler_idt.selector = KERNEL_CS;
+-	boot_idt[SEV_ES_VC_HANDLER_VECTOR] = vc_handler_idt;
++	boot_idt[VC_VECTOR] = vc_handler_idt;
  
- 	if (pmu.is_intel) {
--		struct cpuid cpuid_10 = cpuid(10);
+ 	return EFI_SUCCESS;
+ }
+diff --git a/lib/x86/amd_sev.h b/lib/x86/amd_sev.h
+index ed6e3385..ca7216d4 100644
+--- a/lib/x86/amd_sev.h
++++ b/lib/x86/amd_sev.h
+@@ -39,12 +39,6 @@
+ bool amd_sev_enabled(void);
+ efi_status_t setup_amd_sev(void);
+ 
+-/*
+- * AMD Programmer's Manual Volume 2
+- *   - Section "#VC Exception"
+- */
+-#define SEV_ES_VC_HANDLER_VECTOR 29
 -
--		pmu.version = cpuid_10.a & 0xff;
-+		pmu.version = this_cpu_property(X86_PROPERTY_PMU_VERSION);
- 
- 		if (pmu.version > 1) {
--			pmu.nr_fixed_counters = cpuid_10.d & 0x1f;
--			pmu.fixed_counter_width = (cpuid_10.d >> 5) & 0xff;
-+			pmu.nr_fixed_counters = this_cpu_property(X86_PROPERTY_PMU_NR_FIXED_COUNTERS);
-+			pmu.fixed_counter_width = this_cpu_property(X86_PROPERTY_PMU_FIXED_COUNTERS_BIT_WIDTH);
- 		}
- 
--		pmu.nr_gp_counters = (cpuid_10.a >> 8) & 0xff;
--		pmu.gp_counter_width = (cpuid_10.a >> 16) & 0xff;
--		pmu.arch_event_mask_length = (cpuid_10.a >> 24) & 0xff;
-+		pmu.nr_gp_counters = this_cpu_property(X86_PROPERTY_PMU_NR_GP_COUNTERS);
-+		pmu.gp_counter_width = this_cpu_property(X86_PROPERTY_PMU_GP_COUNTERS_BIT_WIDTH);
-+		pmu.arch_event_mask_length = this_cpu_property(X86_PROPERTY_PMU_EBX_BIT_VECTOR_LENGTH);
- 
- 		/* CPUID.0xA.EBX bit is '1' if a counter is NOT available. */
--		pmu.arch_event_available = ~cpuid_10.b;
-+		pmu.arch_event_available = ~this_cpu_property(X86_PROPERTY_PMU_EVENTS_MASK);
- 
- 		if (this_cpu_has(X86_FEATURE_PDCM))
- 			pmu.perf_cap = rdmsr(MSR_IA32_PERF_CAPABILITIES);
-@@ -38,7 +36,7 @@ void pmu_init(void)
- 			/* Performance Monitoring Version 2 Supported */
- 			if (this_cpu_has(X86_FEATURE_AMD_PMU_V2)) {
- 				pmu.version = 2;
--				pmu.nr_gp_counters = cpuid(0x80000022).b & 0xf;
-+				pmu.nr_gp_counters = this_cpu_property(X86_PROPERTY_NR_PERFCTR_CORE);
- 			} else {
- 				pmu.nr_gp_counters = AMD64_NUM_COUNTERS_CORE;
- 			}
+ /*
+  * AMD Programmer's Manual Volume 2
+  *   - Section "GHCB"
 -- 
 2.49.0.1204.g71687c7c1d-goog
 
