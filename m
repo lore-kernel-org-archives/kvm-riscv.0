@@ -4,58 +4,155 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DB883C54F30
-	for <kvm-riscv@archiver.kernel.org>; Fri, 30 May 2025 06:05:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3CBDEC5B552
+	for <kvm-riscv@archiver.kernel.org>; Fri, 30 May 2025 09:01:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
-	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
+	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
+	List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:Subject:
+	MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=8rgTT0JYTFcajYNsrZNakhmE0OiV2fPI8QfYPlV94zM=; b=EC09owFlcMqb/H
-	ti0dwo48ovytSdh+tSCHnq2ZwrpktEYGBLIGtJvYyt2sgb9v5zOtkZNR1kq3CuiZUdfNc5I4oagvE
-	qqSYi5zeMYr2+UXylhV/s1SxyrUpRnptmuptW43Ochr0H1UAdj0iZvf7imLpgujC96+7qqIbmRpfn
-	YsRmnOOOmE2hEihm5SOy7yin/pSAp6NDnLunSzveqrAxGh2bUBvEFMVd824eSA4PVGCQBPI6SgbBa
-	Cf6MZKaH9tLmJJ8fjcJ7nByktlIKgLT7HOhpdGXhTKy1ElopZdqPLAfGouqEu5UvU3gSPiJzngAuM
-	xNbW8HZFFt/a8JSwPZdg==;
+	List-Owner; bh=1T969jqCbYM5Pj+kXaHU4/oanTF8SzmwXb1msmyu7uY=; b=Nxt8xK9dsog0JP
+	GV/c8EN2v5ha/BbIMKP53z9KufRtGHqPeeVOg/uEaCMG26LO1qHWszJy3uJe1HpVQBmtcV8UEXmY3
+	nO1Umv8DuMXsUF0jL/i56WvFCqZ6WFAvtcayWPsDBf7k0oPGjNBuOFsGxq0OZJQEbd3mSEkj5G0oL
+	UjkmhdknNn9G49BK4WgAzcL+D0sdgQ9iKt+r15sPjOgNhONGlyX+FWVaX6IGmtkBDub2mFI3BGMt9
+	8yQD44U1sVM/lbQKbIns9jV6xHHZMuZplxzmkjVcKMNQd6lBs8GN6U0EQ/bAVrsIw1byKYtWIKso/
+	B4zTDazlGodmMgjLOObQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uKssM-0000000HKZP-1fsV;
-	Fri, 30 May 2025 06:05:54 +0000
-Received: from out-177.mta1.migadu.com ([95.215.58.177])
+	id 1uKvcY-0000000048P-3x5l;
+	Fri, 30 May 2025 09:01:46 +0000
+Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uKsqZ-0000000HKQo-0Poc
+	id 1uKvcW-0000000047w-2cvX
 	for kvm-riscv@lists.infradead.org;
-	Fri, 30 May 2025 06:04:04 +0000
-Date: Fri, 30 May 2025 08:03:55 +0200
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1748585039;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Kt+Vc3qTvvhvRuKl8DLuOB5hRxkIZdLx7zBcCNyOWIg=;
-	b=KwCSC3mc9hChL91h8ijG31sFo6JZLkOHVU3kPqunRa9nvZkRj9H/0XekGqrcYFI8mMTOXx
-	74DS+TacKbnBgQ57OMcvSQ3yCBOT18ruxjWgXZ40tWNPnWyApnUZEyw3Xde839qzuQPDpx
-	/dKeHpvhzaPHRVmJGD1AfWNgR1Pj3zQ=
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Andrew Jones <andrew.jones@linux.dev>
-To: Sean Christopherson <seanjc@google.com>
-Cc: Janosch Frank <frankja@linux.ibm.com>, 
-	Claudio Imbrenda <imbrenda@linux.ibm.com>, Nico =?utf-8?B?QsO2aHI=?= <nrb@linux.ibm.com>, 
-	Paolo Bonzini <pbonzini@redhat.com>, kvm-riscv@lists.infradead.org, linux-s390@vger.kernel.org, 
-	kvm@vger.kernel.org
+	Fri, 30 May 2025 09:01:46 +0000
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 54U3mYmm013493;
+	Fri, 30 May 2025 09:01:34 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=cvKmnh
+	bvQugOgJmwHlqzzGiYtpVlCxG3UmaLP47V/7g=; b=r15qq0IzX+jbw1eNNDI7+z
+	63CU+JgBrGDACYDIEcYTEdAOdusfTzuTJivmH4lE6jrAZfxsOnBDrCjQC3OCy2J1
+	XRaVAFSH8rc9dGJXK2H2XSCEQOdjD3O3MUxiCx/H2LHOdzYRbf9YevTOMqFsPz4L
+	fbaym82Jbc7g4GaRDltXFhm670XuCaBnsYBpvnDO6tqfNFY2Z652q3oMwHyhsOCB
+	ScEdVWoiF06SIeKqeUUcCzFqpWjq7iR3vmZpN4c173w6WsjaREsLhMaHw2U5/nsD
+	6hDbDLszcPEVRaTTNXjJhvcXwFVwH+qh4OWTnD1OeimIbxUQ/IFdcMkTaZXiGn8g
+	==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 46x40kjgu7-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 30 May 2025 09:01:34 +0000 (GMT)
+Received: from m0360083.ppops.net (m0360083.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 54U8wdWf010112;
+	Fri, 30 May 2025 09:01:33 GMT
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 46x40kjgu2-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 30 May 2025 09:01:33 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 54U6k3S7001577;
+	Fri, 30 May 2025 09:01:32 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 46utnn0dnx-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 30 May 2025 09:01:32 +0000
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 54U91Tmd34275926
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 30 May 2025 09:01:29 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 6344E20040;
+	Fri, 30 May 2025 09:01:29 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E3B6A2004E;
+	Fri, 30 May 2025 09:01:28 +0000 (GMT)
+Received: from [9.111.57.132] (unknown [9.111.57.132])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 30 May 2025 09:01:28 +0000 (GMT)
+Message-ID: <99fedb03-fcf5-4bf9-80fb-ca2ddd192d4d@linux.ibm.com>
+Date: Fri, 30 May 2025 11:01:28 +0200
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
 Subject: Re: [kvm-unit-tests PATCH 01/16] lib: Add and use static_assert()
  convenience wrappers
-Message-ID: <20250530-02c84c0db9cd2199b2cf6d28@orel>
+To: Sean Christopherson <seanjc@google.com>,
+        Andrew Jones <andrew.jones@linux.dev>,
+        Claudio Imbrenda <imbrenda@linux.ibm.com>,
+        =?UTF-8?Q?Nico_B=C3=B6hr?=
+ <nrb@linux.ibm.com>,
+        Paolo Bonzini <pbonzini@redhat.com>
+Cc: kvm-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+        kvm@vger.kernel.org
 References: <20250529221929.3807680-1-seanjc@google.com>
  <20250529221929.3807680-2-seanjc@google.com>
-MIME-Version: 1.0
-Content-Disposition: inline
+Content-Language: en-US
+From: Janosch Frank <frankja@linux.ibm.com>
+Autocrypt: addr=frankja@linux.ibm.com; keydata=
+ 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
 In-Reply-To: <20250529221929.3807680-2-seanjc@google.com>
-X-Migadu-Flow: FLOW_OUT
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: EqBGWOFJXgaoO3Ow94Nr8ddaXYhNtNXD
+X-Authority-Analysis: v=2.4 cv=fuPcZE4f c=1 sm=1 tr=0 ts=683973ee cx=c_pps a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17 a=IkcTkHD0fZMA:10 a=dt9VzEwgFbYA:10 a=1XWaLZrsAAAA:8 a=VnNF1IyMAAAA:8 a=MIZ-Z9qH2iArDYU4K_cA:9
+ a=NqO74GWdXPXpGKcKHaDJD/ajO6k=:19 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: 4LWOXh_1k8eAqK_Pv6X25Z7NSK3Q7Cl-
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNTMwMDA3MSBTYWx0ZWRfXxdeNyF540oIZ qklE/6L4nZddP2n+iCvjCwBQ8HwUtuB1Xg8107QoNuiNT3wVHbJbj0ha2yqOGCYoLvc2fi9+dgA wY7wNohzY1R2A2lGn0ZCye8WifIkEFYO/LaqWjlv2SEu5C9DWowPIHrZS+jl0dmBdrwVwAbLggK
+ MLtOuOelpKuSJxS3RdZ3j3CID8N3SUG+QomTtIXqo74GDbMvb517IiohDJ2nOljJ4S5DaApC+Ex mc+a7uKQk//Kd8mQqA8LhyrHs5xWzNSfq/1ZNANuGvkipJmMEs+5BVEKU50XOxdVT171GjIS1TB jLZIy6/gxBNW92Ti/xodZVBqYUE0qvo+Jrj2im4O1YIVrT71JoR5HBTgM6YSHHx6zJ7CRjnxCMe
+ 4+sXKbnwdvL7x6Rf0R8Jb//5YmabQRgemkqZH66TzIGQqdT2A7lXM+8VueqmqUaK4wh8nDdP
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.0.736,FMLib:17.12.80.40
+ definitions=2025-05-30_03,2025-05-29_01,2025-03-28_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1011 suspectscore=0
+ mlxlogscore=955 priorityscore=1501 malwarescore=0 mlxscore=0 phishscore=0
+ impostorscore=0 lowpriorityscore=0 bulkscore=0 spamscore=0 adultscore=0
+ classifier=spam authscore=0 authtc=n/a authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.19.0-2505160000
+ definitions=main-2505300071
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250529_230403_288657_35B9B499 
-X-CRM114-Status: GOOD (  10.51  )
+X-CRM114-CacheID: sfid-20250530_020145_025510_A2CDD21D 
+X-CRM114-Status: UNSURE (   9.49  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -67,12 +164,12 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Thu, May 29, 2025 at 03:19:14PM -0700, Sean Christopherson wrote:
+On 5/30/25 12:19 AM, Sean Christopherson wrote:
 > Add static_assert() to wrap _Static_assert() with stringification of the
 > tested expression as the assert message.  In most cases, the failed
 > expression is far more helpful than a human-generated message (usually
@@ -82,16 +179,9 @@ On Thu, May 29, 2025 at 03:19:14PM -0700, Sean Christopherson wrote:
 > custom message.
 > 
 > Signed-off-by: Sean Christopherson <seanjc@google.com>
-> ---
->  lib/riscv/asm/isa.h      | 4 +++-
->  lib/s390x/asm/arch_def.h | 6 ++++--
->  lib/s390x/fault.c        | 3 ++-
->  lib/util.h               | 3 +++
->  x86/lam.c                | 4 ++--
->  5 files changed, 14 insertions(+), 6 deletions(-)
->
 
-Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
+
+Reviewed-by: Janosch Frank <frankja@linux.ibm.com>
 
 -- 
 kvm-riscv mailing list
