@@ -4,88 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B4E42C5AD49
-	for <kvm-riscv@archiver.kernel.org>; Tue,  3 Jun 2025 08:22:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9513FC5AD49
+	for <kvm-riscv@archiver.kernel.org>; Tue,  3 Jun 2025 09:25:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:
-	Subject:MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
+	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=i7zjIqDxbDlPeLKh13R49gL/AeR3UQ9cxWMYNfXIFpo=; b=AWg62oFtccf6tq
-	VgBuetsJxBnNy0cf6cPeIqdBMfMK/oXb4CC00diM3KNWsm5Yz0I9CGoiktmlj3kLJpYDYEZWKn/1B
-	h6Ru3w8O+DZi8FFil52dzjuvYq5yVodOSo8IP4RYheIBJoh6gpqlrIjC+9qLMgBJ4cTPPNWr5FDm3
-	DdQjsitF434jQQleLkZA9yuAQ6mNF8mMpNf5MsBZz5JEMk0n4d6r7dt95avHVkdVIHIeP5Zv/Yowt
-	Mzjs7XQ8x+kZNnD3xjAXAYK+8kJANUqWHTEddRQF4OYLa/LnPLUJHKhEuPRs+jxMU0fKQtuIjZppy
-	xL/+cbesRbbw9Eei4R2w==;
+	List-Owner; bh=ANgtwJT6TGfJwpjt5Q3cv64NZZ+7DqsCKmif5hvMwd0=; b=rYFgPR1yxSFeLE
+	4kmWQg17WXljGDdFvZM8V7i8cJotOm0CLLWaX0rvgZ+UeL2vYoUgX/LoKb8GUw/KWMR+zbqUlN2hF
+	f280XuKo6bznE/M52PcwCurzSvPrb8pHpBmb1jQv1BznABJyloBUcCcT4HdkYeQQXCu+lnFqNZfo+
+	G9G0/9oaecwURRb0wT8hueyaAIzfnXR7vOEXpi4DQKA2uN4P4N6unX2PBRym/KGMDXFV7F1atsxIL
+	GrZca3tZFJZTMYTJYCDLQLFy2k0/zT6yBR8yZoecJMeCEhSjcdraRDEfUPzXbIeRFUXjFQ13I/6n2
+	pFe8fWzt71P1UMVUWZNQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uMMuT-0000000AJYc-1I5I;
-	Tue, 03 Jun 2025 08:22:13 +0000
-Received: from mail-wm1-x32a.google.com ([2a00:1450:4864:20::32a])
+	id 1uMNts-0000000AVYD-0Jhb;
+	Tue, 03 Jun 2025 09:25:40 +0000
+Received: from out-178.mta0.migadu.com ([2001:41d0:1004:224b::b2])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uMMuQ-0000000AJXa-373G
+	id 1uMNeM-0000000ASBN-380N
 	for kvm-riscv@lists.infradead.org;
-	Tue, 03 Jun 2025 08:22:11 +0000
-Received: by mail-wm1-x32a.google.com with SMTP id 5b1f17b1804b1-450ce671a08so33439805e9.3
-        for <kvm-riscv@lists.infradead.org>; Tue, 03 Jun 2025 01:22:10 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=rivosinc-com.20230601.gappssmtp.com; s=20230601; t=1748938929; x=1749543729; darn=lists.infradead.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=K2XTvhxjYdBUQTznG5NYPYGKHAJcGp6Opc492M0PGhM=;
-        b=X8fXwUfxoaJ21dBPEyJupBN/wa+Mu4jXPMfD4QuG2u289uZe988dCtza+QEWcG2Dhd
-         xaqSh3kYL9aF24qoNv9JbYRqZRtCBWLjg7f8kClFavXSsLmL93DszRy+Fud0iL5dK8fU
-         qVHX7Oe36E4d8jzagUeTJXxzjJ+DJu+J+e984k2FcCAaWMaNwqVYNjVc35vVmq9K+FZa
-         9Oa7c9C6d9dsFqi3+7wgE37SUujrQ2UBw72u76Tr4/F5G6DA5OV9U4ftN7FFCWz0ZFha
-         8fKNBzOwZ/F/YPUPQGSfx5f6YEq4JgOzMUuwZYtkkRD8NifBsym+dGBmpd9mcPqlDmUN
-         OIIQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1748938929; x=1749543729;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=K2XTvhxjYdBUQTznG5NYPYGKHAJcGp6Opc492M0PGhM=;
-        b=wiLmBFXulIt5ZpcsCt/kWcDLn9nqWrbxLDWEXi2/v5Gq7kv2NBXhQtpKy6f58DGez+
-         sQ2xnY7YydMjr0I1jXUttV4MxCW1Xb1ioJjG2GHLgZi6fFxgGCvcIK6KCdTDJMWCcNG4
-         nFGLceZLU444FPa5HoRmkyzFM20O6haSyeyFxXNaKvyIb5jegrnw/52mqIWfRYIvRrIO
-         RSgssPbqFdAEilwBWyTM3zocsLY/UZZLQ8nCvMYIa9u0nL1wn/F9emWvdNGCyGtmO8UT
-         XwIbcLrCaRGuf9v96NNV5ziqVmU+hFWT+648IhGDeE0p+lzB4W3x3o9tyna+Gnja6CVC
-         TNAg==
-X-Forwarded-Encrypted: i=1; AJvYcCXZd4cpOm4Ar0rbhANh9YN7nBaiwVRgUPYXlLBvW21zTJCEusA9GI4dqR/BIKSrOA7BCwNiPyrM1bY=@lists.infradead.org
-X-Gm-Message-State: AOJu0YzhlBnujCy6PUJeK7SrFbRB2TxFG7SX7aTdDBn6EX6C4vLpukP0
-	r2JCBajK+DvpwuN2IIi5sV4NSEVYiXI92eR+IBCKNde8ZyFrwiWlAsm1isuqAlI8tOY=
-X-Gm-Gg: ASbGnctXRwg0V2SPH7gK6e5nNQqePy2J3asJ1jC+WTESfb1dFYTbJ7ck4/Noj/Qk6+i
-	Lo7wzWb+ui1ipAHZOPetW3NMq9Vmlo1VbmsiwD4X5ykkkHR6ZQ4yT4d0D6bswBpRdc/uXHChQjB
-	wbdniHgwexhr/iFP6Ihm1pBNiLcMQObgKrlEcqKeuLqY3rYDb0VHCxam/3twhIbXXzZZDgNjkWd
-	gHt75VyrwawWn8w3ZXYutbxXYnWAzyUZK1vXp/FLTE7POS8iZPoDspo7ua4dW39AXCb/bh+EJer
-	w0cXzkEHbIIL1rALifoJank3idswoHRmDKpoHF5J37N9gqFGdglnDPgx7+SUV89tdwbHlefJgTD
-	AILqFMGGUNN0RHI046nse
-X-Google-Smtp-Source: AGHT+IH6bSE/uSlwylASDQl8d49pwO7PohjcuR9xazY2IRh+dA9DL0f7PpSdjTGS8b2Znt9Rspe7bw==
-X-Received: by 2002:a05:600c:8b8a:b0:43c:fffc:786c with SMTP id 5b1f17b1804b1-4511edd3dadmr94180225e9.19.1748938929076;
-        Tue, 03 Jun 2025 01:22:09 -0700 (PDT)
-Received: from ?IPV6:2a01:e0a:e17:9700:16d2:7456:6634:9626? ([2a01:e0a:e17:9700:16d2:7456:6634:9626])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-450d7f8edf9sm151056295e9.3.2025.06.03.01.22.08
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 03 Jun 2025 01:22:08 -0700 (PDT)
-Message-ID: <bcb3cffe-5fca-45fc-aa30-c167f6cf3c5c@rivosinc.com>
-Date: Tue, 3 Jun 2025 10:22:07 +0200
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 2/3] lib/riscv: clear SDT when entering exception handling
-To: Andrew Jones <andrew.jones@linux.dev>
-Cc: kvm@vger.kernel.org, kvm-riscv@lists.infradead.org,
- Andrew Jones <ajones@ventanamicro.com>, Ved Shanbhogue <ved@rivosinc.com>
+	Tue, 03 Jun 2025 09:09:40 +0000
+Date: Tue, 3 Jun 2025 11:09:33 +0200
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1748941775;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=HosKKhKaeAxS0BiblgoplCxniIg8FN66wGDmGUgRL0s=;
+	b=KCT0BjQjtCVrutQNA760Pedbb11ZG6XjGVOCuAczocX6KAEUJyT273u3DiHowXFp8hnIKx
+	gbNDhJKE6Gca+oVUrcCAVzTw+oAcMOLyeji4xJyCzlpyUIeIOyTCt8EmzFrxJk2lHegR+9
+	tFXXrr2FbM+wWYF6oM35ZXzxphbenYo=
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Andrew Jones <andrew.jones@linux.dev>
+To: =?utf-8?B?Q2zDqW1lbnQgTMOpZ2Vy?= <cleger@rivosinc.com>
+Cc: kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
+	Andrew Jones <ajones@ventanamicro.com>, Ved Shanbhogue <ved@rivosinc.com>
+Subject: Re: [PATCH 3/3] riscv: Add ISA double trap extension testing
+Message-ID: <20250603-46e84d5167307b38c90a06b5@orel>
 References: <20250523075341.1355755-1-cleger@rivosinc.com>
- <20250523075341.1355755-3-cleger@rivosinc.com>
- <20250603-8e4c2aa217e6be3b3ee43972@orel>
-Content-Language: en-US
-From: =?UTF-8?B?Q2zDqW1lbnQgTMOpZ2Vy?= <cleger@rivosinc.com>
-In-Reply-To: <20250603-8e4c2aa217e6be3b3ee43972@orel>
+ <20250523075341.1355755-4-cleger@rivosinc.com>
+MIME-Version: 1.0
+Content-Disposition: inline
+In-Reply-To: <20250523075341.1355755-4-cleger@rivosinc.com>
+X-Migadu-Flow: FLOW_OUT
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250603_012210_779877_C94F77AB 
-X-CRM114-Status: GOOD (  21.48  )
+X-CRM114-CacheID: sfid-20250603_020938_999338_91DD1716 
+X-CRM114-Status: GOOD (  41.45  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -97,53 +65,371 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-CgpPbiAwMy8wNi8yMDI1IDEwOjE2LCBBbmRyZXcgSm9uZXMgd3JvdGU6Cj4gT24gRnJpLCBNYXkg
-MjMsIDIwMjUgYXQgMDk6NTM6MDlBTSArMDIwMCwgQ2zDqW1lbnQgTMOpZ2VyIHdyb3RlOgo+PiBJ
-biBvcmRlciB0byBhdm9pZCB0YWtpbmcgZG91YmxlIHRyYXAgb25jZSB3ZSBoYXZlIGVudGVyZWQg
-YSB0cmFwIGFuZAo+PiBzYXZlZCBldmVyeXRoaW5nLCBjbGVhciBTRFQgYXQgdGhlIGVuZCBvZiBl
-bnRyeS4gVGhpcyBpcyBub3QgZXhhY3RseQo+PiByZXF1aXJlZCB3aGVuIGRvdWJsZSB0cmFwIGlz
-IGRpc2FibGVkIChwcm9iYWJseSBtb3N0IG9mIHRoZSB0aW1lKSwgYnV0Cj4+IHRoYXQncyBub3Qg
-aGFybWZ1bC4KPiAKPiBIbW0uLi4gSSB3b25kZXIgaWYgdGhpcyBzaG91bGRuJ3QgYmUgbGVmdCB0
-byB0aGUgaGFuZGxlcnMuIE1heWJlCj4gd2Ugc2hvdWxkIGp1c3QgcHJvdmlkZSBhIGNvdXBsZSBo
-ZWxwZXJzIGluIHByb2Nlc3Nvci5oLCBzdWNoIGFzCj4gCj4gbG9jYWxfZGxidHJwX2VuYWJsZSgp
-Cj4gbG9jYWxfZGxidHJwX2Rpc2FibGUoKQoKSGkgRHJldywKClllYWggaW5kZWVkLCB0aGF0IG1h
-a2VzIHNlbnNlLCBzb21lIG9mIHRoZW0gbWlnaHQgaGF2ZSB0byBzYXZlIG1vcmUgaW5mbwpiZWZv
-cmUgcmUtZW5hYmxpbmcgdHJhcCBpbiBhIG5lYXIgZnV0dXJlLgoKSSdsbCBkcm9wIHRoaXMgcGF0
-Y2ggYW5kIHVzZSB0aGF0IHByb3Bvc2FsLgoKPiAKPiBJZiB3ZSBkbyBuZWVkIHRvIG1hbmFnZSB0
-aGlzIGF0IHNhdmVfY29udGV4dCB0aW1lLCB0aGVuIEkgaGF2ZQo+IGEgY291cGxlIGNvbW1lbnRz
-IGJlbG93Cj4gCj4+Cj4+IFNpZ25lZC1vZmYtYnk6IENsw6ltZW50IEzDqWdlciA8Y2xlZ2VyQHJp
-dm9zaW5jLmNvbT4KPj4gLS0tCj4+ICByaXNjdi9jc3RhcnQuUyB8IDkgKysrKystLS0tCj4+ICAx
-IGZpbGUgY2hhbmdlZCwgNSBpbnNlcnRpb25zKCspLCA0IGRlbGV0aW9ucygtKQo+Pgo+PiBkaWZm
-IC0tZ2l0IGEvcmlzY3YvY3N0YXJ0LlMgYi9yaXNjdi9jc3RhcnQuUwo+PiBpbmRleCA1NzVmOTI5
-Yi4uYTg2Zjk3ZjAgMTAwNjQ0Cj4+IC0tLSBhL3Jpc2N2L2NzdGFydC5TCj4+ICsrKyBiL3Jpc2N2
-L2NzdGFydC5TCj4+IEBAIC0yMTIsMTQgKzIxMiwxNSBAQCBzZWNvbmRhcnlfZW50cnk6Cj4+ICAJ
-UkVHX1MJdDYsIFBUX1Q2KGEwKQkJCS8vIHgzMQo+PiAgCWNzcnIJYTEsIENTUl9TRVBDCj4+ICAJ
-UkVHX1MJYTEsIFBUX0VQQyhhMCkKPj4gLQljc3JyCWExLCBDU1JfU1NUQVRVUwo+PiAtCVJFR19T
-CWExLCBQVF9TVEFUVVMoYTApCj4+ICAJY3NycglhMSwgQ1NSX1NUVkFMCj4+ICAJUkVHX1MJYTEs
-IFBUX0JBREFERFIoYTApCj4+ICAJY3NycglhMSwgQ1NSX1NDQVVTRQo+PiAgCVJFR19TCWExLCBQ
-VF9DQVVTRShhMCkKPj4gIAlSRUdfTAlhMSwgUFRfT1JJR19BMChhMCkKPj4gIAlSRUdfUwlhMSwg
-UFRfQTAoYTApCj4+ICsJbGkgdDAsIAlTUl9TRFQKPiAgICAgICAgICAgXiAgICBeIHNob3VsZCBu
-b3QgYmUgYSB0YWIKPiAgICAgICAgICAgXiBzaG91bGQgYmUgdGFicwo+IAo+IFNSX1NEVCBpc24n
-dCBkZWZpbmVkIHVudGlsIHRoZSBuZXh0IHBhdGNoIHNvIHRoaXMgYnJlYWtzIGNvbXBpbGluZyBh
-dCB0aGlzCj4gcG9pbnQsIHdoaWNoIGNvdWxkIGJyZWFrIGJpc2VjdGlvbi4gWW91IGNhbiBkbyBh
-IHF1aWNrIGNoZWNrIG9mIGEgc2VyaWVzCj4gZm9yIHRoaXMgd2l0aAo+IAo+ICBnaXQgcmViYXNl
-IC1pIC14ICdtYWtlJyA8YmFzZT4KCk1pc3NlZCB0aGF0LCBzb3JyeSwgSSdsbCBjaGVjayBuZXh0
-IHRpbWUuCgpUaGFua3MsCgpDbMOpbWVudAoKPiAKPj4gKwljc3JyYyAJYTEsIENTUl9TU1RBVFVT
-LCB0MAo+PiArCVJFR19TCWExLCBQVF9TVEFUVVMoYTApCj4+ICAuZW5kbQo+PiAgCj4+ICAvKgo+
-PiBAQCAtMjI3LDYgKzIyOCw4IEBAIHNlY29uZGFyeV9lbnRyeToKPj4gICAqIEFsc28gcmVzdG9y
-ZXMgYTAuCj4+ICAgKi8KPj4gIC5tYWNybyByZXN0b3JlX2NvbnRleHQKPj4gKwlSRUdfTAlhMSwg
-UFRfU1RBVFVTKGEwKQo+PiArCWNzcncJQ1NSX1NTVEFUVVMsIGExCj4+ICAJUkVHX0wJcmEsIFBU
-X1JBKGEwKQkJCS8vIHgxCj4+ICAJUkVHX0wJc3AsIFBUX1NQKGEwKQkJCS8vIHgyCj4+ICAJUkVH
-X0wJZ3AsIFBUX0dQKGEwKQkJCS8vIHgzCj4+IEBAIC0yNjAsOCArMjYzLDYgQEAgc2Vjb25kYXJ5
-X2VudHJ5Ogo+PiAgCVJFR19MCXQ2LCBQVF9UNihhMCkJCQkvLyB4MzEKPj4gIAlSRUdfTAlhMSwg
-UFRfRVBDKGEwKQo+PiAgCWNzcncJQ1NSX1NFUEMsIGExCj4+IC0JUkVHX0wJYTEsIFBUX1NUQVRV
-UyhhMCkKPj4gLQljc3J3CUNTUl9TU1RBVFVTLCBhMQo+PiAgCVJFR19MCWExLCBQVF9CQURBRERS
-KGEwKQo+PiAgCWNzcncJQ1NSX1NUVkFMLCBhMQo+PiAgCVJFR19MCWExLCBQVF9DQVVTRShhMCkK
-Pj4gLS0gCj4+IDIuNDkuMAo+Pgo+IAo+IFRoYW5rcywKPiBkcmV3CgoKLS0gCmt2bS1yaXNjdiBt
-YWlsaW5nIGxpc3QKa3ZtLXJpc2N2QGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmlu
-ZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9rdm0tcmlzY3YK
+On Fri, May 23, 2025 at 09:53:10AM +0200, Cl=E9ment L=E9ger wrote:
+> This test allows to test the double trap implementation of hardware as
+> well as the SBI FWFT and SSE support for double trap. The tests will try
+> to trigger double trap using various sequences and will test to receive
+> the SSE double trap event if supported.
+> =
+
+> It is provided as a separate test from the SBI one for two reasons:
+> - It isn't specifically testing SBI "per se".
+> - It ends up by trying to crash into in M-mode.
+> =
+
+> Currently, the test uses a page fault to raise a trap programatically.
+> Some concern was raised by a github user on the original branch [1]
+> saying that the spec doesn't mandate any trap to be delegatable and that
+> we would need a way to detect which ones are delegatable. I think we can
+> safely assume that PAGE FAULT is delagatable and if a hardware that does
+> not have support comes up then it will probably be the vendor
+> responsibility to provide a way to do so.
+> =
+
+> Link: https://github.com/clementleger/kvm-unit-tests/issues/1 [1]
+> Signed-off-by: Cl=E9ment L=E9ger <cleger@rivosinc.com>
+> ---
+>  riscv/Makefile      |   1 +
+>  lib/riscv/asm/csr.h |   1 +
+>  riscv/isa-dbltrp.c  | 189 ++++++++++++++++++++++++++++++++++++++++++++
+>  riscv/unittests.cfg |   5 ++
+>  4 files changed, 196 insertions(+)
+>  create mode 100644 riscv/isa-dbltrp.c
+> =
+
+> diff --git a/riscv/Makefile b/riscv/Makefile
+> index 11e68eae..d71c9d2e 100644
+> --- a/riscv/Makefile
+> +++ b/riscv/Makefile
+> @@ -14,6 +14,7 @@ tests =3D
+>  tests +=3D $(TEST_DIR)/sbi.$(exe)
+>  tests +=3D $(TEST_DIR)/selftest.$(exe)
+>  tests +=3D $(TEST_DIR)/sieve.$(exe)
+> +tests +=3D $(TEST_DIR)/isa-dbltrp.$(exe)
+>  =
+
+>  all: $(tests)
+>  =
+
+> diff --git a/lib/riscv/asm/csr.h b/lib/riscv/asm/csr.h
+> index 3e4b5fca..6a8e0578 100644
+> --- a/lib/riscv/asm/csr.h
+> +++ b/lib/riscv/asm/csr.h
+> @@ -18,6 +18,7 @@
+>  =
+
+>  #define SR_SIE			_AC(0x00000002, UL)
+>  #define SR_SPP			_AC(0x00000100, UL)
+> +#define SR_SDT			_AC(0x01000000, UL) /* Supervisor Double Trap */
+>  =
+
+>  /* Exception cause high bit - is an interrupt if set */
+>  #define CAUSE_IRQ_FLAG		(_AC(1, UL) << (__riscv_xlen - 1))
+> diff --git a/riscv/isa-dbltrp.c b/riscv/isa-dbltrp.c
+> new file mode 100644
+> index 00000000..174aee2a
+> --- /dev/null
+> +++ b/riscv/isa-dbltrp.c
+> @@ -0,0 +1,189 @@
+> +// SPDX-License-Identifier: GPL-2.0-only
+> +/*
+> + * SBI verification
+> + *
+> + * Copyright (C) 2025, Rivos Inc., Cl=E9ment L=E9ger <cleger@rivosinc.co=
+m>
+> + */
+> +#include <alloc.h>
+> +#include <alloc_page.h>
+> +#include <libcflat.h>
+> +#include <stdlib.h>
+> +
+> +#include <asm/csr.h>
+> +#include <asm/page.h>
+> +#include <asm/processor.h>
+> +#include <asm/ptrace.h>
+> +#include <asm/sbi.h>
+> +
+> +#include <sbi-tests.h>
+> +
+> +static bool double_trap;
+> +static bool set_sdt =3D true;
+> +
+> +#define GEN_TRAP()								\
+> +do {										\
+> +	void *ptr =3D NULL;							\
+> +	unsigned long value =3D 0;						\
+> +	asm volatile(								\
+> +	"	.option push\n"							\
+> +	"	.option arch,-c\n"						\
+> +	"	sw %0, 0(%1)\n"							\
+> +	"	.option pop\n"							\
+> +	: : "r"(value), "r"(ptr) : "memory");					\
+
+nit: need some spaces
+
+ "r" (value), "r" (ptr)
+
+> +} while (0)
+> +
+> +static void syscall_trap_handler(struct pt_regs *regs)
+
+This is a page fault handler, not a syscall.
+
+> +{
+> +	if (set_sdt)
+> +		csr_set(CSR_SSTATUS, SR_SDT);
+> +
+> +	if (double_trap) {
+> +		double_trap =3D false;
+> +		GEN_TRAP();
+> +	}
+> +
+> +	/* Skip trapping instruction */
+> +	regs->epc +=3D 4;
+> +}
+> +
+> +static bool sse_dbltrp_called;
+> +
+> +static void sse_dbltrp_handler(void *data, struct pt_regs *regs, unsigne=
+d int hartid)
+> +{
+> +	struct sbiret ret;
+> +	unsigned long flags;
+> +	unsigned long expected_flags =3D SBI_SSE_ATTR_INTERRUPTED_FLAGS_SSTATUS=
+_SPP |
+> +				       SBI_SSE_ATTR_INTERRUPTED_FLAGS_SSTATUS_SDT;
+> +
+> +	ret =3D sbi_sse_read_attrs(SBI_SSE_EVENT_LOCAL_DOUBLE_TRAP, SBI_SSE_ATT=
+R_INTERRUPTED_FLAGS, 1,
+> +				 &flags);
+> +	sbiret_report_error(&ret, SBI_SUCCESS, "Get double trap event flags");
+> +	report(flags =3D=3D expected_flags, "SSE flags =3D=3D 0x%lx", expected_=
+flags);
+> +
+> +	sse_dbltrp_called =3D true;
+> +
+> +	/* Skip trapping instruction */
+> +	regs->epc +=3D 4;
+> +}
+> +
+> +static void sse_double_trap(void)
+> +{
+> +	struct sbiret ret;
+> +
+> +	struct sbi_sse_handler_arg handler_arg =3D {
+> +		.handler =3D sse_dbltrp_handler,
+> +		.stack =3D alloc_page() + PAGE_SIZE,
+> +	};
+> +
+> +	report_prefix_push("sse");
+> +
+> +	ret =3D sbi_sse_hart_unmask();
+> +	if (!sbiret_report_error(&ret, SBI_SUCCESS, "SSE hart unmask ok"))
+> +		goto out;
+
+The unmasking failed, but the out label takes us to a mask.
+
+> +
+> +	ret =3D sbi_sse_register(SBI_SSE_EVENT_LOCAL_DOUBLE_TRAP, &handler_arg);
+> +	if (ret.error =3D=3D SBI_ERR_NOT_SUPPORTED) {
+> +		report_skip("SSE double trap event is not supported");
+> +		goto out;
+> +	}
+> +	sbiret_report_error(&ret, SBI_SUCCESS, "SSE double trap register");
+> +
+> +	ret =3D sbi_sse_enable(SBI_SSE_EVENT_LOCAL_DOUBLE_TRAP);
+> +	if (!sbiret_report_error(&ret, SBI_SUCCESS, "SSE double trap enable"))
+> +		goto out_unregister;
+> +
+> +	/*
+> +	 * Generate a double crash so that an SSE event should be generated. Th=
+e SPEC (ISA nor SBI)
+> +	 * does not explicitly tell that if supported it should generate an SSE=
+ event but that's
+> +	 * a reasonable assumption to do so if both FWFT and SSE are supported.
+
+This is something to raise in a tech-prs call, because it sounds like we
+need another paragraph for FWFT which states when DOUBLE_TRAP is enabled
+and SSE is supported that SSE local double trap events will be raised. Or,
+we need another FWFT feature that allows S-mode to request that behavior
+be enabled/disabled when SSE is supported (and M-mode can decide yes/no
+to that request).
+
+> +	 */
+> +	set_sdt =3D true;
+> +	double_trap =3D true;
+
+WRITE_ONCE(set_sdt, true);
+WRITE_ONCE(double_trap, true);
+
+> +	GEN_TRAP();
+> +
+> +	report(sse_dbltrp_called, "SSE double trap event generated");
+
+READ_ONCE(sse_dbltrp_called)
+
+> +
+> +	ret =3D sbi_sse_disable(SBI_SSE_EVENT_LOCAL_DOUBLE_TRAP);
+> +	sbiret_report_error(&ret, SBI_SUCCESS, "SSE double trap disable");
+> +out_unregister:
+> +	ret =3D sbi_sse_unregister(SBI_SSE_EVENT_LOCAL_DOUBLE_TRAP);
+> +	sbiret_report_error(&ret, SBI_SUCCESS, "SSE double trap unregister");
+> +
+> +out:
+> +	sbi_sse_hart_mask();
+> +	free_page(handler_arg.stack - PAGE_SIZE);
+> +
+> +	report_prefix_pop();
+> +}
+> +
+> +static void check_double_trap(void)
+> +{
+> +	struct sbiret ret;
+> +
+> +	/* Disable double trap */
+> +	ret =3D sbi_fwft_set(SBI_FWFT_DOUBLE_TRAP, 0, 0);
+> +	sbiret_report_error(&ret, SBI_SUCCESS, "Set double trap enable feature =
+value =3D=3D 0");
+> +	ret =3D sbi_fwft_get(SBI_FWFT_DOUBLE_TRAP);
+> +	sbiret_report(&ret, SBI_SUCCESS, 0, "Get double trap enable feature val=
+ue =3D=3D 0");
+> +
+> +	install_exception_handler(EXC_STORE_PAGE_FAULT, syscall_trap_handler);
+> +
+> +	double_trap =3D true;
+
+WRITE_ONCE(double_trap, true);
+
+> +	GEN_TRAP();
+> +	report_pass("Double trap disabled, trap first time ok");
+> +
+> +	/* Enable double trap */
+> +	ret =3D sbi_fwft_set(SBI_FWFT_DOUBLE_TRAP, 1, 1);
+
+Why lock it?
+
+> +	sbiret_report_error(&ret, SBI_SUCCESS, "Set double trap enable feature =
+value =3D=3D 1");
+> +	ret =3D sbi_fwft_get(SBI_FWFT_DOUBLE_TRAP);
+> +	if (!sbiret_report(&ret, SBI_SUCCESS, 1, "Get double trap enable featur=
+e value =3D=3D 1"))
+> +		return;
+> +
+> +	/* First time, clear the double trap flag (SDT) so that it doesn't gene=
+rate a double trap */
+> +	set_sdt =3D false;
+> +	double_trap =3D true;
+
+WRITE_ONCE(set_sdt, true);
+WRITE_ONCE(double_trap, true);
+
+> +	GEN_TRAP();
+> +	report_pass("Trapped twice allowed ok");
+> +
+> +	if (sbi_probe(SBI_EXT_SSE))
+> +		sse_double_trap();
+> +	else
+> +		report_skip("SSE double trap event will not be tested, extension is no=
+t available");
+> +
+> +	/*
+> +	 * Second time, keep the double trap flag (SDT) and generate another tr=
+ap, this should
+
+Third time if we did the SSE test.
+
+> +	 * generate a double trap. Since there is no SSE handler registered, it=
+ should crash to
+> +	 * M-mode.
+
+No SSE handler that we know of... sse_double_trap() should return
+some error if it fails to unregister and then we should skip this
+test in that case.
+
+> +	 */
+> +	set_sdt =3D true;
+> +	double_trap =3D true;
+
+WRITE_ONCE(set_sdt, true);
+WRITE_ONCE(double_trap, true);
+
+> +	report_info("Should generate a double trap and crash !");
+> +	GEN_TRAP();
+> +	report_fail("Should have crashed !");
+
+nit: Put the '!' next to the last word.
+
+I think this M-mode crash test should be optional. We can make it optional
+on an environment variable since we already use environment variables for
+other optional tests. We even have env_or_skip() in riscv/sbi-tests.h for
+that purpose.
+
+> +}
+> +
+> +int main(int argc, char **argv)
+> +{
+> +	struct sbiret ret;
+> +
+> +	report_prefix_push("dbltrp");
+> +
+> +	if (!sbi_probe(SBI_EXT_FWFT)) {
+> +		report_skip("FWFT extension is not available, can not enable double tr=
+aps");
+> +		goto out;
+> +	}
+> +
+> +	ret =3D sbi_fwft_get(SBI_FWFT_DOUBLE_TRAP);
+> +	if (ret.value =3D=3D SBI_ERR_NOT_SUPPORTED) {
+> +		report_skip("SBI_FWFT_DOUBLE_TRAP is not supported !");
+
+nit: Put the '!' next to the last word.
+
+> +		goto out;
+> +	}
+> +
+> +	if (sbiret_report_error(&ret, SBI_SUCCESS, "SBI_FWFT_DOUBLE_TRAP get va=
+lue"))
+> +		check_double_trap();
+> +
+> +out:
+> +	report_prefix_pop();
+> +
+> +	return report_summary();
+> +}
+> diff --git a/riscv/unittests.cfg b/riscv/unittests.cfg
+> index 2eb760ec..757e6027 100644
+> --- a/riscv/unittests.cfg
+> +++ b/riscv/unittests.cfg
+> @@ -18,3 +18,8 @@ groups =3D selftest
+>  file =3D sbi.flat
+>  smp =3D $MAX_SMP
+>  groups =3D sbi
+> +
+> +[dbltrp]
+> +file =3D isa-dbltrp.flat
+> +smp =3D $MAX_SMP
+
+The test doesn't appear to require multiple harts.
+
+> +groups =3D isa
+
+groups =3D isa sbi
+
+> -- =
+
+> 2.49.0
+>
+
+Thanks,
+drew
+
+-- =
+
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
