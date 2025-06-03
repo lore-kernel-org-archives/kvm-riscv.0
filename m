@@ -4,56 +4,88 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9513FC5AD49
-	for <kvm-riscv@archiver.kernel.org>; Tue,  3 Jun 2025 09:25:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DFF3CC5AD49
+	for <kvm-riscv@archiver.kernel.org>; Tue,  3 Jun 2025 09:41:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:
+	Subject:MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=ANgtwJT6TGfJwpjt5Q3cv64NZZ+7DqsCKmif5hvMwd0=; b=rYFgPR1yxSFeLE
-	4kmWQg17WXljGDdFvZM8V7i8cJotOm0CLLWaX0rvgZ+UeL2vYoUgX/LoKb8GUw/KWMR+zbqUlN2hF
-	f280XuKo6bznE/M52PcwCurzSvPrb8pHpBmb1jQv1BznABJyloBUcCcT4HdkYeQQXCu+lnFqNZfo+
-	G9G0/9oaecwURRb0wT8hueyaAIzfnXR7vOEXpi4DQKA2uN4P4N6unX2PBRym/KGMDXFV7F1atsxIL
-	GrZca3tZFJZTMYTJYCDLQLFy2k0/zT6yBR8yZoecJMeCEhSjcdraRDEfUPzXbIeRFUXjFQ13I/6n2
-	pFe8fWzt71P1UMVUWZNQ==;
+	List-Owner; bh=3NH5Sq5svqD3n86LinLwdX28SomCZAXthcjVnoO0pKk=; b=0r6/scSqrd9zo8
+	HJG3kI+w2tzvMnqpYLBQrVmbzm6IRmMApK5ZoWsVBLrwP9nrCC4xHC67ch9DgULqzkAx6iRjG9/h7
+	JEah5CS1fU+7eLHfdLaXHNgf+3qHii5TNdxcUhir1J5sIWMcEEc8EcbZih+PYB975p+NllKKEl3hC
+	LHb2rbqHlKGg1hEyK8TloXO7hSRWcKXgXumPb/M6HysTUA8KjavnYDcnNM8NycN/SrnYVkJE7LiQu
+	tFgP/F/Knv1VsXCyWJPEvh4BXHB/+SzY3oY+/dsCO4k/gyFB4pcznAHEt00YXpIGFdDYBPCv/bTLe
+	YtYBkiHccMyEpUplrzeQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uMNts-0000000AVYD-0Jhb;
-	Tue, 03 Jun 2025 09:25:40 +0000
-Received: from out-178.mta0.migadu.com ([2001:41d0:1004:224b::b2])
+	id 1uMO9U-0000000AZIk-21os;
+	Tue, 03 Jun 2025 09:41:48 +0000
+Received: from mail-wr1-x431.google.com ([2a00:1450:4864:20::431])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uMNeM-0000000ASBN-380N
+	id 1uMO7Q-0000000AYoE-0u3o
 	for kvm-riscv@lists.infradead.org;
-	Tue, 03 Jun 2025 09:09:40 +0000
-Date: Tue, 3 Jun 2025 11:09:33 +0200
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1748941775;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=HosKKhKaeAxS0BiblgoplCxniIg8FN66wGDmGUgRL0s=;
-	b=KCT0BjQjtCVrutQNA760Pedbb11ZG6XjGVOCuAczocX6KAEUJyT273u3DiHowXFp8hnIKx
-	gbNDhJKE6Gca+oVUrcCAVzTw+oAcMOLyeji4xJyCzlpyUIeIOyTCt8EmzFrxJk2lHegR+9
-	tFXXrr2FbM+wWYF6oM35ZXzxphbenYo=
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Andrew Jones <andrew.jones@linux.dev>
-To: =?utf-8?B?Q2zDqW1lbnQgTMOpZ2Vy?= <cleger@rivosinc.com>
-Cc: kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
-	Andrew Jones <ajones@ventanamicro.com>, Ved Shanbhogue <ved@rivosinc.com>
+	Tue, 03 Jun 2025 09:39:41 +0000
+Received: by mail-wr1-x431.google.com with SMTP id ffacd0b85a97d-3a361b8a664so5177476f8f.3
+        for <kvm-riscv@lists.infradead.org>; Tue, 03 Jun 2025 02:39:39 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=rivosinc-com.20230601.gappssmtp.com; s=20230601; t=1748943578; x=1749548378; darn=lists.infradead.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=ayLqPCugi//yFqn+B/ihiY+QIzVCkAIVDSi6CRkF8vA=;
+        b=vmadKdo9EuD/4cJgzlluNCCy8Uo8hKt6oXpBZT4TjDxryewjNbc2z2eCfwUpTviE6R
+         VpuZSJHZT91+d2xPgQZlc3Rj5vAgN6kBS77SkF7bpsfLAGzPyD9p5YiXiD6sDqto2OaF
+         4QX286qUglNKtG8IHiryi4xuNxE4/fZO28ikDJpT1RUjTvufPp1QHvrekuw7jOCd4b38
+         IJQxjORWNgzE2eTavVE0cmIHKD/A03zw9bdv7acUTU4/Q9vyNxEm14IDol+oTqpe5PIx
+         c9k2k7COHY7DoNIIKqNfG7ggHQGF51hldmjajV7lSO4WnJPFGC7zZVZymNfxQJTZrjcg
+         4Ntw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1748943578; x=1749548378;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=ayLqPCugi//yFqn+B/ihiY+QIzVCkAIVDSi6CRkF8vA=;
+        b=iUBvZ3xw32iSHQZVDwlPxgZ14OuNvHJ5A8ihKQgmikijHXm3zDQvOQ+lIq3xtHH4VS
+         eAhG6co8AlqA4WrzrbwXk1Wk4bREkjCGzvznI7kg6krtV4qRHbhNktdNpEuWztp/nNAi
+         1yScCxF5/LXL9G/NBUHYcAtAJeM2zb8/l6GEmSMwwCOGb3cmCM7iSABqn7aPydsio2Ec
+         Ck6ByP01qFhw+r+3HF7x3AysTthJb0vnQJ6RGxtgIG+ghho5sFrqonff9AThCCo+Oacd
+         CCWAkGsZXaR9h+xyD/eFtiXTSfEd1mnnLzw/7RdMF48keVMwl4IcZvhZD4GGVUl4ngg5
+         Aybw==
+X-Forwarded-Encrypted: i=1; AJvYcCU/+hgsIUwAgOotqnfQjC00ra5Ftx8xGIOzbIgHhPLRvHh5UVesjxivebTJvlKdOXrsmcqwWsxdJN4=@lists.infradead.org
+X-Gm-Message-State: AOJu0YzWteX9FuP11AuGkNqEoXcUtJs0Zv/g1wTmscuMQU/3Nhe00DWF
+	znxyrZgSjQIWeEczxaKllfA2niaQKn9kMxCoK4voqqoWqynWQo5ZYP19INlVzXeNI5A=
+X-Gm-Gg: ASbGncuNdIqDnYom8Gn3WwOSKTD0hY1JGShsuZLD7D5RnLNsbks80An3lByj6w7Bb1V
+	1qseHKSXkVAx9P07V28KB+2r4r/Ps09du346WtDTbkO/9zmg7nAbtam4PF8ymYpp5Wy3tH90j6g
+	H+iGrPaCFYtRuMDqy8Xv62CvmZlKvm9MB+yjwp5dnezU4eJjZihkh5PHGUBgPKOyG8O9A8B2WJ2
+	3i6j04f/tHPIo05+wIKoZ6+DjX66PPKNRN4y+5RYOATfAuehJeZNkQDNnQcLPOsvFhrMGLcgN41
+	yHFsTXOP76xBOtF+YUG/m++4MrHZtI0QFIJxg8Wx0j4OJA8rA1et/B76ZL+O/jLDAVjs9OVXKf7
+	UGcjts5OaO+01W7Afbvxf
+X-Google-Smtp-Source: AGHT+IFcea6hN76MOIQI/+9F3NsPsMXQ4LSnJaMZ0puhT/uVpcczwGPv9UZv0RfeI7sq7BJnHJCv2A==
+X-Received: by 2002:a5d:5846:0:b0:3a0:7d39:c23f with SMTP id ffacd0b85a97d-3a4f7a4d6b8mr12923490f8f.21.1748943578293;
+        Tue, 03 Jun 2025 02:39:38 -0700 (PDT)
+Received: from ?IPV6:2a01:e0a:e17:9700:16d2:7456:6634:9626? ([2a01:e0a:e17:9700:16d2:7456:6634:9626])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-3a4efe6c4f2sm17444573f8f.22.2025.06.03.02.39.37
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 03 Jun 2025 02:39:37 -0700 (PDT)
+Message-ID: <032926ca-ee2c-4483-bd5f-196c83de9a7b@rivosinc.com>
+Date: Tue, 3 Jun 2025 11:39:37 +0200
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH 3/3] riscv: Add ISA double trap extension testing
-Message-ID: <20250603-46e84d5167307b38c90a06b5@orel>
+To: Andrew Jones <andrew.jones@linux.dev>
+Cc: kvm@vger.kernel.org, kvm-riscv@lists.infradead.org,
+ Andrew Jones <ajones@ventanamicro.com>, Ved Shanbhogue <ved@rivosinc.com>
 References: <20250523075341.1355755-1-cleger@rivosinc.com>
  <20250523075341.1355755-4-cleger@rivosinc.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <20250523075341.1355755-4-cleger@rivosinc.com>
-X-Migadu-Flow: FLOW_OUT
+ <20250603-46e84d5167307b38c90a06b5@orel>
+Content-Language: en-US
+From: =?UTF-8?B?Q2zDqW1lbnQgTMOpZ2Vy?= <cleger@rivosinc.com>
+In-Reply-To: <20250603-46e84d5167307b38c90a06b5@orel>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250603_020938_999338_91DD1716 
-X-CRM114-Status: GOOD (  41.45  )
+X-CRM114-CacheID: sfid-20250603_023940_504181_2126C403 
+X-CRM114-Status: GOOD (  41.37  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -65,371 +97,193 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Fri, May 23, 2025 at 09:53:10AM +0200, Cl=E9ment L=E9ger wrote:
-> This test allows to test the double trap implementation of hardware as
-> well as the SBI FWFT and SSE support for double trap. The tests will try
-> to trigger double trap using various sequences and will test to receive
-> the SSE double trap event if supported.
-> =
-
-> It is provided as a separate test from the SBI one for two reasons:
-> - It isn't specifically testing SBI "per se".
-> - It ends up by trying to crash into in M-mode.
-> =
-
-> Currently, the test uses a page fault to raise a trap programatically.
-> Some concern was raised by a github user on the original branch [1]
-> saying that the spec doesn't mandate any trap to be delegatable and that
-> we would need a way to detect which ones are delegatable. I think we can
-> safely assume that PAGE FAULT is delagatable and if a hardware that does
-> not have support comes up then it will probably be the vendor
-> responsibility to provide a way to do so.
-> =
-
-> Link: https://github.com/clementleger/kvm-unit-tests/issues/1 [1]
-> Signed-off-by: Cl=E9ment L=E9ger <cleger@rivosinc.com>
-> ---
->  riscv/Makefile      |   1 +
->  lib/riscv/asm/csr.h |   1 +
->  riscv/isa-dbltrp.c  | 189 ++++++++++++++++++++++++++++++++++++++++++++
->  riscv/unittests.cfg |   5 ++
->  4 files changed, 196 insertions(+)
->  create mode 100644 riscv/isa-dbltrp.c
-> =
-
-> diff --git a/riscv/Makefile b/riscv/Makefile
-> index 11e68eae..d71c9d2e 100644
-> --- a/riscv/Makefile
-> +++ b/riscv/Makefile
-> @@ -14,6 +14,7 @@ tests =3D
->  tests +=3D $(TEST_DIR)/sbi.$(exe)
->  tests +=3D $(TEST_DIR)/selftest.$(exe)
->  tests +=3D $(TEST_DIR)/sieve.$(exe)
-> +tests +=3D $(TEST_DIR)/isa-dbltrp.$(exe)
->  =
-
->  all: $(tests)
->  =
-
-> diff --git a/lib/riscv/asm/csr.h b/lib/riscv/asm/csr.h
-> index 3e4b5fca..6a8e0578 100644
-> --- a/lib/riscv/asm/csr.h
-> +++ b/lib/riscv/asm/csr.h
-> @@ -18,6 +18,7 @@
->  =
-
->  #define SR_SIE			_AC(0x00000002, UL)
->  #define SR_SPP			_AC(0x00000100, UL)
-> +#define SR_SDT			_AC(0x01000000, UL) /* Supervisor Double Trap */
->  =
-
->  /* Exception cause high bit - is an interrupt if set */
->  #define CAUSE_IRQ_FLAG		(_AC(1, UL) << (__riscv_xlen - 1))
-> diff --git a/riscv/isa-dbltrp.c b/riscv/isa-dbltrp.c
-> new file mode 100644
-> index 00000000..174aee2a
-> --- /dev/null
-> +++ b/riscv/isa-dbltrp.c
-> @@ -0,0 +1,189 @@
-> +// SPDX-License-Identifier: GPL-2.0-only
-> +/*
-> + * SBI verification
-> + *
-> + * Copyright (C) 2025, Rivos Inc., Cl=E9ment L=E9ger <cleger@rivosinc.co=
-m>
-> + */
-> +#include <alloc.h>
-> +#include <alloc_page.h>
-> +#include <libcflat.h>
-> +#include <stdlib.h>
-> +
-> +#include <asm/csr.h>
-> +#include <asm/page.h>
-> +#include <asm/processor.h>
-> +#include <asm/ptrace.h>
-> +#include <asm/sbi.h>
-> +
-> +#include <sbi-tests.h>
-> +
-> +static bool double_trap;
-> +static bool set_sdt =3D true;
-> +
-> +#define GEN_TRAP()								\
-> +do {										\
-> +	void *ptr =3D NULL;							\
-> +	unsigned long value =3D 0;						\
-> +	asm volatile(								\
-> +	"	.option push\n"							\
-> +	"	.option arch,-c\n"						\
-> +	"	sw %0, 0(%1)\n"							\
-> +	"	.option pop\n"							\
-> +	: : "r"(value), "r"(ptr) : "memory");					\
-
-nit: need some spaces
-
- "r" (value), "r" (ptr)
-
-> +} while (0)
-> +
-> +static void syscall_trap_handler(struct pt_regs *regs)
-
-This is a page fault handler, not a syscall.
-
-> +{
-> +	if (set_sdt)
-> +		csr_set(CSR_SSTATUS, SR_SDT);
-> +
-> +	if (double_trap) {
-> +		double_trap =3D false;
-> +		GEN_TRAP();
-> +	}
-> +
-> +	/* Skip trapping instruction */
-> +	regs->epc +=3D 4;
-> +}
-> +
-> +static bool sse_dbltrp_called;
-> +
-> +static void sse_dbltrp_handler(void *data, struct pt_regs *regs, unsigne=
-d int hartid)
-> +{
-> +	struct sbiret ret;
-> +	unsigned long flags;
-> +	unsigned long expected_flags =3D SBI_SSE_ATTR_INTERRUPTED_FLAGS_SSTATUS=
-_SPP |
-> +				       SBI_SSE_ATTR_INTERRUPTED_FLAGS_SSTATUS_SDT;
-> +
-> +	ret =3D sbi_sse_read_attrs(SBI_SSE_EVENT_LOCAL_DOUBLE_TRAP, SBI_SSE_ATT=
-R_INTERRUPTED_FLAGS, 1,
-> +				 &flags);
-> +	sbiret_report_error(&ret, SBI_SUCCESS, "Get double trap event flags");
-> +	report(flags =3D=3D expected_flags, "SSE flags =3D=3D 0x%lx", expected_=
-flags);
-> +
-> +	sse_dbltrp_called =3D true;
-> +
-> +	/* Skip trapping instruction */
-> +	regs->epc +=3D 4;
-> +}
-> +
-> +static void sse_double_trap(void)
-> +{
-> +	struct sbiret ret;
-> +
-> +	struct sbi_sse_handler_arg handler_arg =3D {
-> +		.handler =3D sse_dbltrp_handler,
-> +		.stack =3D alloc_page() + PAGE_SIZE,
-> +	};
-> +
-> +	report_prefix_push("sse");
-> +
-> +	ret =3D sbi_sse_hart_unmask();
-> +	if (!sbiret_report_error(&ret, SBI_SUCCESS, "SSE hart unmask ok"))
-> +		goto out;
-
-The unmasking failed, but the out label takes us to a mask.
-
-> +
-> +	ret =3D sbi_sse_register(SBI_SSE_EVENT_LOCAL_DOUBLE_TRAP, &handler_arg);
-> +	if (ret.error =3D=3D SBI_ERR_NOT_SUPPORTED) {
-> +		report_skip("SSE double trap event is not supported");
-> +		goto out;
-> +	}
-> +	sbiret_report_error(&ret, SBI_SUCCESS, "SSE double trap register");
-> +
-> +	ret =3D sbi_sse_enable(SBI_SSE_EVENT_LOCAL_DOUBLE_TRAP);
-> +	if (!sbiret_report_error(&ret, SBI_SUCCESS, "SSE double trap enable"))
-> +		goto out_unregister;
-> +
-> +	/*
-> +	 * Generate a double crash so that an SSE event should be generated. Th=
-e SPEC (ISA nor SBI)
-> +	 * does not explicitly tell that if supported it should generate an SSE=
- event but that's
-> +	 * a reasonable assumption to do so if both FWFT and SSE are supported.
-
-This is something to raise in a tech-prs call, because it sounds like we
-need another paragraph for FWFT which states when DOUBLE_TRAP is enabled
-and SSE is supported that SSE local double trap events will be raised. Or,
-we need another FWFT feature that allows S-mode to request that behavior
-be enabled/disabled when SSE is supported (and M-mode can decide yes/no
-to that request).
-
-> +	 */
-> +	set_sdt =3D true;
-> +	double_trap =3D true;
-
-WRITE_ONCE(set_sdt, true);
-WRITE_ONCE(double_trap, true);
-
-> +	GEN_TRAP();
-> +
-> +	report(sse_dbltrp_called, "SSE double trap event generated");
-
-READ_ONCE(sse_dbltrp_called)
-
-> +
-> +	ret =3D sbi_sse_disable(SBI_SSE_EVENT_LOCAL_DOUBLE_TRAP);
-> +	sbiret_report_error(&ret, SBI_SUCCESS, "SSE double trap disable");
-> +out_unregister:
-> +	ret =3D sbi_sse_unregister(SBI_SSE_EVENT_LOCAL_DOUBLE_TRAP);
-> +	sbiret_report_error(&ret, SBI_SUCCESS, "SSE double trap unregister");
-> +
-> +out:
-> +	sbi_sse_hart_mask();
-> +	free_page(handler_arg.stack - PAGE_SIZE);
-> +
-> +	report_prefix_pop();
-> +}
-> +
-> +static void check_double_trap(void)
-> +{
-> +	struct sbiret ret;
-> +
-> +	/* Disable double trap */
-> +	ret =3D sbi_fwft_set(SBI_FWFT_DOUBLE_TRAP, 0, 0);
-> +	sbiret_report_error(&ret, SBI_SUCCESS, "Set double trap enable feature =
-value =3D=3D 0");
-> +	ret =3D sbi_fwft_get(SBI_FWFT_DOUBLE_TRAP);
-> +	sbiret_report(&ret, SBI_SUCCESS, 0, "Get double trap enable feature val=
-ue =3D=3D 0");
-> +
-> +	install_exception_handler(EXC_STORE_PAGE_FAULT, syscall_trap_handler);
-> +
-> +	double_trap =3D true;
-
-WRITE_ONCE(double_trap, true);
-
-> +	GEN_TRAP();
-> +	report_pass("Double trap disabled, trap first time ok");
-> +
-> +	/* Enable double trap */
-> +	ret =3D sbi_fwft_set(SBI_FWFT_DOUBLE_TRAP, 1, 1);
-
-Why lock it?
-
-> +	sbiret_report_error(&ret, SBI_SUCCESS, "Set double trap enable feature =
-value =3D=3D 1");
-> +	ret =3D sbi_fwft_get(SBI_FWFT_DOUBLE_TRAP);
-> +	if (!sbiret_report(&ret, SBI_SUCCESS, 1, "Get double trap enable featur=
-e value =3D=3D 1"))
-> +		return;
-> +
-> +	/* First time, clear the double trap flag (SDT) so that it doesn't gene=
-rate a double trap */
-> +	set_sdt =3D false;
-> +	double_trap =3D true;
-
-WRITE_ONCE(set_sdt, true);
-WRITE_ONCE(double_trap, true);
-
-> +	GEN_TRAP();
-> +	report_pass("Trapped twice allowed ok");
-> +
-> +	if (sbi_probe(SBI_EXT_SSE))
-> +		sse_double_trap();
-> +	else
-> +		report_skip("SSE double trap event will not be tested, extension is no=
-t available");
-> +
-> +	/*
-> +	 * Second time, keep the double trap flag (SDT) and generate another tr=
-ap, this should
-
-Third time if we did the SSE test.
-
-> +	 * generate a double trap. Since there is no SSE handler registered, it=
- should crash to
-> +	 * M-mode.
-
-No SSE handler that we know of... sse_double_trap() should return
-some error if it fails to unregister and then we should skip this
-test in that case.
-
-> +	 */
-> +	set_sdt =3D true;
-> +	double_trap =3D true;
-
-WRITE_ONCE(set_sdt, true);
-WRITE_ONCE(double_trap, true);
-
-> +	report_info("Should generate a double trap and crash !");
-> +	GEN_TRAP();
-> +	report_fail("Should have crashed !");
-
-nit: Put the '!' next to the last word.
-
-I think this M-mode crash test should be optional. We can make it optional
-on an environment variable since we already use environment variables for
-other optional tests. We even have env_or_skip() in riscv/sbi-tests.h for
-that purpose.
-
-> +}
-> +
-> +int main(int argc, char **argv)
-> +{
-> +	struct sbiret ret;
-> +
-> +	report_prefix_push("dbltrp");
-> +
-> +	if (!sbi_probe(SBI_EXT_FWFT)) {
-> +		report_skip("FWFT extension is not available, can not enable double tr=
-aps");
-> +		goto out;
-> +	}
-> +
-> +	ret =3D sbi_fwft_get(SBI_FWFT_DOUBLE_TRAP);
-> +	if (ret.value =3D=3D SBI_ERR_NOT_SUPPORTED) {
-> +		report_skip("SBI_FWFT_DOUBLE_TRAP is not supported !");
-
-nit: Put the '!' next to the last word.
-
-> +		goto out;
-> +	}
-> +
-> +	if (sbiret_report_error(&ret, SBI_SUCCESS, "SBI_FWFT_DOUBLE_TRAP get va=
-lue"))
-> +		check_double_trap();
-> +
-> +out:
-> +	report_prefix_pop();
-> +
-> +	return report_summary();
-> +}
-> diff --git a/riscv/unittests.cfg b/riscv/unittests.cfg
-> index 2eb760ec..757e6027 100644
-> --- a/riscv/unittests.cfg
-> +++ b/riscv/unittests.cfg
-> @@ -18,3 +18,8 @@ groups =3D selftest
->  file =3D sbi.flat
->  smp =3D $MAX_SMP
->  groups =3D sbi
-> +
-> +[dbltrp]
-> +file =3D isa-dbltrp.flat
-> +smp =3D $MAX_SMP
-
-The test doesn't appear to require multiple harts.
-
-> +groups =3D isa
-
-groups =3D isa sbi
-
-> -- =
-
-> 2.49.0
->
-
-Thanks,
-drew
-
--- =
-
-kvm-riscv mailing list
-kvm-riscv@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/kvm-riscv
+CgpPbiAwMy8wNi8yMDI1IDExOjA5LCBBbmRyZXcgSm9uZXMgd3JvdGU6Cj4gT24gRnJpLCBNYXkg
+MjMsIDIwMjUgYXQgMDk6NTM6MTBBTSArMDIwMCwgQ2zDqW1lbnQgTMOpZ2VyIHdyb3RlOgo+PiBU
+aGlzIHRlc3QgYWxsb3dzIHRvIHRlc3QgdGhlIGRvdWJsZSB0cmFwIGltcGxlbWVudGF0aW9uIG9m
+IGhhcmR3YXJlIGFzCj4+IHdlbGwgYXMgdGhlIFNCSSBGV0ZUIGFuZCBTU0Ugc3VwcG9ydCBmb3Ig
+ZG91YmxlIHRyYXAuIFRoZSB0ZXN0cyB3aWxsIHRyeQo+PiB0byB0cmlnZ2VyIGRvdWJsZSB0cmFw
+IHVzaW5nIHZhcmlvdXMgc2VxdWVuY2VzIGFuZCB3aWxsIHRlc3QgdG8gcmVjZWl2ZQo+PiB0aGUg
+U1NFIGRvdWJsZSB0cmFwIGV2ZW50IGlmIHN1cHBvcnRlZC4KPj4KPj4gSXQgaXMgcHJvdmlkZWQg
+YXMgYSBzZXBhcmF0ZSB0ZXN0IGZyb20gdGhlIFNCSSBvbmUgZm9yIHR3byByZWFzb25zOgo+PiAt
+IEl0IGlzbid0IHNwZWNpZmljYWxseSB0ZXN0aW5nIFNCSSAicGVyIHNlIi4KPj4gLSBJdCBlbmRz
+IHVwIGJ5IHRyeWluZyB0byBjcmFzaCBpbnRvIGluIE0tbW9kZS4KPj4KPj4gQ3VycmVudGx5LCB0
+aGUgdGVzdCB1c2VzIGEgcGFnZSBmYXVsdCB0byByYWlzZSBhIHRyYXAgcHJvZ3JhbWF0aWNhbGx5
+Lgo+PiBTb21lIGNvbmNlcm4gd2FzIHJhaXNlZCBieSBhIGdpdGh1YiB1c2VyIG9uIHRoZSBvcmln
+aW5hbCBicmFuY2ggWzFdCj4+IHNheWluZyB0aGF0IHRoZSBzcGVjIGRvZXNuJ3QgbWFuZGF0ZSBh
+bnkgdHJhcCB0byBiZSBkZWxlZ2F0YWJsZSBhbmQgdGhhdAo+PiB3ZSB3b3VsZCBuZWVkIGEgd2F5
+IHRvIGRldGVjdCB3aGljaCBvbmVzIGFyZSBkZWxlZ2F0YWJsZS4gSSB0aGluayB3ZSBjYW4KPj4g
+c2FmZWx5IGFzc3VtZSB0aGF0IFBBR0UgRkFVTFQgaXMgZGVsYWdhdGFibGUgYW5kIGlmIGEgaGFy
+ZHdhcmUgdGhhdCBkb2VzCj4+IG5vdCBoYXZlIHN1cHBvcnQgY29tZXMgdXAgdGhlbiBpdCB3aWxs
+IHByb2JhYmx5IGJlIHRoZSB2ZW5kb3IKPj4gcmVzcG9uc2liaWxpdHkgdG8gcHJvdmlkZSBhIHdh
+eSB0byBkbyBzby4KPj4KPj4gTGluazogaHR0cHM6Ly9naXRodWIuY29tL2NsZW1lbnRsZWdlci9r
+dm0tdW5pdC10ZXN0cy9pc3N1ZXMvMSBbMV0KPj4gU2lnbmVkLW9mZi1ieTogQ2zDqW1lbnQgTMOp
+Z2VyIDxjbGVnZXJAcml2b3NpbmMuY29tPgo+PiAtLS0KPj4gIHJpc2N2L01ha2VmaWxlICAgICAg
+fCAgIDEgKwo+PiAgbGliL3Jpc2N2L2FzbS9jc3IuaCB8ICAgMSArCj4+ICByaXNjdi9pc2EtZGJs
+dHJwLmMgIHwgMTg5ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
+Cj4+ICByaXNjdi91bml0dGVzdHMuY2ZnIHwgICA1ICsrCj4+ICA0IGZpbGVzIGNoYW5nZWQsIDE5
+NiBpbnNlcnRpb25zKCspCj4+ICBjcmVhdGUgbW9kZSAxMDA2NDQgcmlzY3YvaXNhLWRibHRycC5j
+Cj4+Cj4+IGRpZmYgLS1naXQgYS9yaXNjdi9NYWtlZmlsZSBiL3Jpc2N2L01ha2VmaWxlCj4+IGlu
+ZGV4IDExZTY4ZWFlLi5kNzFjOWQyZSAxMDA2NDQKPj4gLS0tIGEvcmlzY3YvTWFrZWZpbGUKPj4g
+KysrIGIvcmlzY3YvTWFrZWZpbGUKPj4gQEAgLTE0LDYgKzE0LDcgQEAgdGVzdHMgPQo+PiAgdGVz
+dHMgKz0gJChURVNUX0RJUikvc2JpLiQoZXhlKQo+PiAgdGVzdHMgKz0gJChURVNUX0RJUikvc2Vs
+ZnRlc3QuJChleGUpCj4+ICB0ZXN0cyArPSAkKFRFU1RfRElSKS9zaWV2ZS4kKGV4ZSkKPj4gK3Rl
+c3RzICs9ICQoVEVTVF9ESVIpL2lzYS1kYmx0cnAuJChleGUpCj4+ICAKPj4gIGFsbDogJCh0ZXN0
+cykKPj4gIAo+PiBkaWZmIC0tZ2l0IGEvbGliL3Jpc2N2L2FzbS9jc3IuaCBiL2xpYi9yaXNjdi9h
+c20vY3NyLmgKPj4gaW5kZXggM2U0YjVmY2EuLjZhOGUwNTc4IDEwMDY0NAo+PiAtLS0gYS9saWIv
+cmlzY3YvYXNtL2Nzci5oCj4+ICsrKyBiL2xpYi9yaXNjdi9hc20vY3NyLmgKPj4gQEAgLTE4LDYg
+KzE4LDcgQEAKPj4gIAo+PiAgI2RlZmluZSBTUl9TSUUJCQlfQUMoMHgwMDAwMDAwMiwgVUwpCj4+
+ICAjZGVmaW5lIFNSX1NQUAkJCV9BQygweDAwMDAwMTAwLCBVTCkKPj4gKyNkZWZpbmUgU1JfU0RU
+CQkJX0FDKDB4MDEwMDAwMDAsIFVMKSAvKiBTdXBlcnZpc29yIERvdWJsZSBUcmFwICovCj4+ICAK
+Pj4gIC8qIEV4Y2VwdGlvbiBjYXVzZSBoaWdoIGJpdCAtIGlzIGFuIGludGVycnVwdCBpZiBzZXQg
+Ki8KPj4gICNkZWZpbmUgQ0FVU0VfSVJRX0ZMQUcJCShfQUMoMSwgVUwpIDw8IChfX3Jpc2N2X3hs
+ZW4gLSAxKSkKPj4gZGlmZiAtLWdpdCBhL3Jpc2N2L2lzYS1kYmx0cnAuYyBiL3Jpc2N2L2lzYS1k
+Ymx0cnAuYwo+PiBuZXcgZmlsZSBtb2RlIDEwMDY0NAo+PiBpbmRleCAwMDAwMDAwMC4uMTc0YWVl
+MmEKPj4gLS0tIC9kZXYvbnVsbAo+PiArKysgYi9yaXNjdi9pc2EtZGJsdHJwLmMKPj4gQEAgLTAs
+MCArMSwxODkgQEAKPj4gKy8vIFNQRFgtTGljZW5zZS1JZGVudGlmaWVyOiBHUEwtMi4wLW9ubHkK
+Pj4gKy8qCj4+ICsgKiBTQkkgdmVyaWZpY2F0aW9uCj4+ICsgKgo+PiArICogQ29weXJpZ2h0IChD
+KSAyMDI1LCBSaXZvcyBJbmMuLCBDbMOpbWVudCBMw6lnZXIgPGNsZWdlckByaXZvc2luYy5jb20+
+Cj4+ICsgKi8KPj4gKyNpbmNsdWRlIDxhbGxvYy5oPgo+PiArI2luY2x1ZGUgPGFsbG9jX3BhZ2Uu
+aD4KPj4gKyNpbmNsdWRlIDxsaWJjZmxhdC5oPgo+PiArI2luY2x1ZGUgPHN0ZGxpYi5oPgo+PiAr
+Cj4+ICsjaW5jbHVkZSA8YXNtL2Nzci5oPgo+PiArI2luY2x1ZGUgPGFzbS9wYWdlLmg+Cj4+ICsj
+aW5jbHVkZSA8YXNtL3Byb2Nlc3Nvci5oPgo+PiArI2luY2x1ZGUgPGFzbS9wdHJhY2UuaD4KPj4g
+KyNpbmNsdWRlIDxhc20vc2JpLmg+Cj4+ICsKPj4gKyNpbmNsdWRlIDxzYmktdGVzdHMuaD4KPj4g
+Kwo+PiArc3RhdGljIGJvb2wgZG91YmxlX3RyYXA7Cj4+ICtzdGF0aWMgYm9vbCBzZXRfc2R0ID0g
+dHJ1ZTsKPj4gKwo+PiArI2RlZmluZSBHRU5fVFJBUCgpCQkJCQkJCQlcCj4+ICtkbyB7CQkJCQkJ
+CQkJCVwKPj4gKwl2b2lkICpwdHIgPSBOVUxMOwkJCQkJCQlcCj4+ICsJdW5zaWduZWQgbG9uZyB2
+YWx1ZSA9IDA7CQkJCQkJXAo+PiArCWFzbSB2b2xhdGlsZSgJCQkJCQkJCVwKPj4gKwkiCS5vcHRp
+b24gcHVzaFxuIgkJCQkJCQlcCj4+ICsJIgkub3B0aW9uIGFyY2gsLWNcbiIJCQkJCQlcCj4+ICsJ
+IglzdyAlMCwgMCglMSlcbiIJCQkJCQkJXAo+PiArCSIJLm9wdGlvbiBwb3BcbiIJCQkJCQkJXAo+
+PiArCTogOiAiciIodmFsdWUpLCAiciIocHRyKSA6ICJtZW1vcnkiKTsJCQkJCVwKPiAKPiBuaXQ6
+IG5lZWQgc29tZSBzcGFjZXMKPiAKPiAgInIiICh2YWx1ZSksICJyIiAocHRyKQo+IAo+PiArfSB3
+aGlsZSAoMCkKPj4gKwo+PiArc3RhdGljIHZvaWQgc3lzY2FsbF90cmFwX2hhbmRsZXIoc3RydWN0
+IHB0X3JlZ3MgKnJlZ3MpCj4gCj4gVGhpcyBpcyBhIHBhZ2UgZmF1bHQgaGFuZGxlciwgbm90IGEg
+c3lzY2FsbC4KPiA+PiArewo+PiArCWlmIChzZXRfc2R0KQo+PiArCQljc3Jfc2V0KENTUl9TU1RB
+VFVTLCBTUl9TRFQpOwo+PiArCj4+ICsJaWYgKGRvdWJsZV90cmFwKSB7Cj4+ICsJCWRvdWJsZV90
+cmFwID0gZmFsc2U7Cj4+ICsJCUdFTl9UUkFQKCk7Cj4+ICsJfQo+PiArCj4+ICsJLyogU2tpcCB0
+cmFwcGluZyBpbnN0cnVjdGlvbiAqLwo+PiArCXJlZ3MtPmVwYyArPSA0Owo+PiArfQo+PiArCj4+
+ICtzdGF0aWMgYm9vbCBzc2VfZGJsdHJwX2NhbGxlZDsKPj4gKwo+PiArc3RhdGljIHZvaWQgc3Nl
+X2RibHRycF9oYW5kbGVyKHZvaWQgKmRhdGEsIHN0cnVjdCBwdF9yZWdzICpyZWdzLCB1bnNpZ25l
+ZCBpbnQgaGFydGlkKQo+PiArewo+PiArCXN0cnVjdCBzYmlyZXQgcmV0Owo+PiArCXVuc2lnbmVk
+IGxvbmcgZmxhZ3M7Cj4+ICsJdW5zaWduZWQgbG9uZyBleHBlY3RlZF9mbGFncyA9IFNCSV9TU0Vf
+QVRUUl9JTlRFUlJVUFRFRF9GTEFHU19TU1RBVFVTX1NQUCB8Cj4+ICsJCQkJICAgICAgIFNCSV9T
+U0VfQVRUUl9JTlRFUlJVUFRFRF9GTEFHU19TU1RBVFVTX1NEVDsKPj4gKwo+PiArCXJldCA9IHNi
+aV9zc2VfcmVhZF9hdHRycyhTQklfU1NFX0VWRU5UX0xPQ0FMX0RPVUJMRV9UUkFQLCBTQklfU1NF
+X0FUVFJfSU5URVJSVVBURURfRkxBR1MsIDEsCj4+ICsJCQkJICZmbGFncyk7Cj4+ICsJc2JpcmV0
+X3JlcG9ydF9lcnJvcigmcmV0LCBTQklfU1VDQ0VTUywgIkdldCBkb3VibGUgdHJhcCBldmVudCBm
+bGFncyIpOwo+PiArCXJlcG9ydChmbGFncyA9PSBleHBlY3RlZF9mbGFncywgIlNTRSBmbGFncyA9
+PSAweCVseCIsIGV4cGVjdGVkX2ZsYWdzKTsKPj4gKwo+PiArCXNzZV9kYmx0cnBfY2FsbGVkID0g
+dHJ1ZTsKPj4gKwo+PiArCS8qIFNraXAgdHJhcHBpbmcgaW5zdHJ1Y3Rpb24gKi8KPj4gKwlyZWdz
+LT5lcGMgKz0gNDsKPj4gK30KPj4gKwo+PiArc3RhdGljIHZvaWQgc3NlX2RvdWJsZV90cmFwKHZv
+aWQpCj4+ICt7Cj4+ICsJc3RydWN0IHNiaXJldCByZXQ7Cj4+ICsKPj4gKwlzdHJ1Y3Qgc2JpX3Nz
+ZV9oYW5kbGVyX2FyZyBoYW5kbGVyX2FyZyA9IHsKPj4gKwkJLmhhbmRsZXIgPSBzc2VfZGJsdHJw
+X2hhbmRsZXIsCj4+ICsJCS5zdGFjayA9IGFsbG9jX3BhZ2UoKSArIFBBR0VfU0laRSwKPj4gKwl9
+Owo+PiArCj4+ICsJcmVwb3J0X3ByZWZpeF9wdXNoKCJzc2UiKTsKPj4gKwo+PiArCXJldCA9IHNi
+aV9zc2VfaGFydF91bm1hc2soKTsKPj4gKwlpZiAoIXNiaXJldF9yZXBvcnRfZXJyb3IoJnJldCwg
+U0JJX1NVQ0NFU1MsICJTU0UgaGFydCB1bm1hc2sgb2siKSkKPj4gKwkJZ290byBvdXQ7Cj4gCj4g
+VGhlIHVubWFza2luZyBmYWlsZWQsIGJ1dCB0aGUgb3V0IGxhYmVsIHRha2VzIHVzIHRvIGEgbWFz
+ay4KCkhpIERyZXcsCgpZZWFoIG1hc2tpbmcgaXQgZXZlbiBpZiB1bm1hc2sgd2Fzbid0IHNvIGlt
+cG9ydGFudCBzaW5jZSBpdCdzIHRoZSBib290CnN0YXRlLiBJJ2xsIGFkZCBhIHNlcGFyYXRlIGxh
+YmVsIHRob3VnaC4KCj4gCj4+ICsKPj4gKwlyZXQgPSBzYmlfc3NlX3JlZ2lzdGVyKFNCSV9TU0Vf
+RVZFTlRfTE9DQUxfRE9VQkxFX1RSQVAsICZoYW5kbGVyX2FyZyk7Cj4+ICsJaWYgKHJldC5lcnJv
+ciA9PSBTQklfRVJSX05PVF9TVVBQT1JURUQpIHsKPj4gKwkJcmVwb3J0X3NraXAoIlNTRSBkb3Vi
+bGUgdHJhcCBldmVudCBpcyBub3Qgc3VwcG9ydGVkIik7Cj4+ICsJCWdvdG8gb3V0Owo+PiArCX0K
+Pj4gKwlzYmlyZXRfcmVwb3J0X2Vycm9yKCZyZXQsIFNCSV9TVUNDRVNTLCAiU1NFIGRvdWJsZSB0
+cmFwIHJlZ2lzdGVyIik7Cj4+ICsKPj4gKwlyZXQgPSBzYmlfc3NlX2VuYWJsZShTQklfU1NFX0VW
+RU5UX0xPQ0FMX0RPVUJMRV9UUkFQKTsKPj4gKwlpZiAoIXNiaXJldF9yZXBvcnRfZXJyb3IoJnJl
+dCwgU0JJX1NVQ0NFU1MsICJTU0UgZG91YmxlIHRyYXAgZW5hYmxlIikpCj4+ICsJCWdvdG8gb3V0
+X3VucmVnaXN0ZXI7Cj4+ICsKPj4gKwkvKgo+PiArCSAqIEdlbmVyYXRlIGEgZG91YmxlIGNyYXNo
+IHNvIHRoYXQgYW4gU1NFIGV2ZW50IHNob3VsZCBiZSBnZW5lcmF0ZWQuIFRoZSBTUEVDIChJU0Eg
+bm9yIFNCSSkKPj4gKwkgKiBkb2VzIG5vdCBleHBsaWNpdGx5IHRlbGwgdGhhdCBpZiBzdXBwb3J0
+ZWQgaXQgc2hvdWxkIGdlbmVyYXRlIGFuIFNTRSBldmVudCBidXQgdGhhdCdzCj4+ICsJICogYSBy
+ZWFzb25hYmxlIGFzc3VtcHRpb24gdG8gZG8gc28gaWYgYm90aCBGV0ZUIGFuZCBTU0UgYXJlIHN1
+cHBvcnRlZC4KPiAKPiBUaGlzIGlzIHNvbWV0aGluZyB0byByYWlzZSBpbiBhIHRlY2gtcHJzIGNh
+bGwsIGJlY2F1c2UgaXQgc291bmRzIGxpa2Ugd2UKPiBuZWVkIGFub3RoZXIgcGFyYWdyYXBoIGZv
+ciBGV0ZUIHdoaWNoIHN0YXRlcyB3aGVuIERPVUJMRV9UUkFQIGlzIGVuYWJsZWQKPiBhbmQgU1NF
+IGlzIHN1cHBvcnRlZCB0aGF0IFNTRSBsb2NhbCBkb3VibGUgdHJhcCBldmVudHMgd2lsbCBiZSBy
+YWlzZWQuIE9yLAo+IHdlIG5lZWQgYW5vdGhlciBGV0ZUIGZlYXR1cmUgdGhhdCBhbGxvd3MgUy1t
+b2RlIHRvIHJlcXVlc3QgdGhhdCBiZWhhdmlvcgo+IGJlIGVuYWJsZWQvZGlzYWJsZWQgd2hlbiBT
+U0UgaXMgc3VwcG9ydGVkIChhbmQgTS1tb2RlIGNhbiBkZWNpZGUgeWVzL25vCj4gdG8gdGhhdCBy
+ZXF1ZXN0KS4KClRoYXQncyBhIGdvb2QgcG9pbnQsIEknbGwgc3VibWl0IGEgcGF0Y2ggdG8gbW9k
+aWZ5IHRoZSBTQkkgZG9jIGluIHRoYXQgd2F5LgoKCj4gCj4+ICsJICovCj4+ICsJc2V0X3NkdCA9
+IHRydWU7Cj4+ICsJZG91YmxlX3RyYXAgPSB0cnVlOwo+IAo+IFdSSVRFX09OQ0Uoc2V0X3NkdCwg
+dHJ1ZSk7Cj4gV1JJVEVfT05DRShkb3VibGVfdHJhcCwgdHJ1ZSk7Cj4gCj4+ICsJR0VOX1RSQVAo
+KTsKPj4gKwo+PiArCXJlcG9ydChzc2VfZGJsdHJwX2NhbGxlZCwgIlNTRSBkb3VibGUgdHJhcCBl
+dmVudCBnZW5lcmF0ZWQiKTsKPiAKPiBSRUFEX09OQ0Uoc3NlX2RibHRycF9jYWxsZWQpCj4gCj4+
+ICsKPj4gKwlyZXQgPSBzYmlfc3NlX2Rpc2FibGUoU0JJX1NTRV9FVkVOVF9MT0NBTF9ET1VCTEVf
+VFJBUCk7Cj4+ICsJc2JpcmV0X3JlcG9ydF9lcnJvcigmcmV0LCBTQklfU1VDQ0VTUywgIlNTRSBk
+b3VibGUgdHJhcCBkaXNhYmxlIik7Cj4+ICtvdXRfdW5yZWdpc3RlcjoKPj4gKwlyZXQgPSBzYmlf
+c3NlX3VucmVnaXN0ZXIoU0JJX1NTRV9FVkVOVF9MT0NBTF9ET1VCTEVfVFJBUCk7Cj4+ICsJc2Jp
+cmV0X3JlcG9ydF9lcnJvcigmcmV0LCBTQklfU1VDQ0VTUywgIlNTRSBkb3VibGUgdHJhcCB1bnJl
+Z2lzdGVyIik7Cj4+ICsKPj4gK291dDoKPj4gKwlzYmlfc3NlX2hhcnRfbWFzaygpOwo+PiArCWZy
+ZWVfcGFnZShoYW5kbGVyX2FyZy5zdGFjayAtIFBBR0VfU0laRSk7Cj4+ICsKPj4gKwlyZXBvcnRf
+cHJlZml4X3BvcCgpOwo+PiArfQo+PiArCj4+ICtzdGF0aWMgdm9pZCBjaGVja19kb3VibGVfdHJh
+cCh2b2lkKQo+PiArewo+PiArCXN0cnVjdCBzYmlyZXQgcmV0Owo+PiArCj4+ICsJLyogRGlzYWJs
+ZSBkb3VibGUgdHJhcCAqLwo+PiArCXJldCA9IHNiaV9md2Z0X3NldChTQklfRldGVF9ET1VCTEVf
+VFJBUCwgMCwgMCk7Cj4+ICsJc2JpcmV0X3JlcG9ydF9lcnJvcigmcmV0LCBTQklfU1VDQ0VTUywg
+IlNldCBkb3VibGUgdHJhcCBlbmFibGUgZmVhdHVyZSB2YWx1ZSA9PSAwIik7Cj4+ICsJcmV0ID0g
+c2JpX2Z3ZnRfZ2V0KFNCSV9GV0ZUX0RPVUJMRV9UUkFQKTsKPj4gKwlzYmlyZXRfcmVwb3J0KCZy
+ZXQsIFNCSV9TVUNDRVNTLCAwLCAiR2V0IGRvdWJsZSB0cmFwIGVuYWJsZSBmZWF0dXJlIHZhbHVl
+ID09IDAiKTsKPj4gKwo+PiArCWluc3RhbGxfZXhjZXB0aW9uX2hhbmRsZXIoRVhDX1NUT1JFX1BB
+R0VfRkFVTFQsIHN5c2NhbGxfdHJhcF9oYW5kbGVyKTsKPj4gKwo+PiArCWRvdWJsZV90cmFwID0g
+dHJ1ZTsKPiAKPiBXUklURV9PTkNFKGRvdWJsZV90cmFwLCB0cnVlKTsKPiAKPj4gKwlHRU5fVFJB
+UCgpOwo+PiArCXJlcG9ydF9wYXNzKCJEb3VibGUgdHJhcCBkaXNhYmxlZCwgdHJhcCBmaXJzdCB0
+aW1lIG9rIik7Cj4+ICsKPj4gKwkvKiBFbmFibGUgZG91YmxlIHRyYXAgKi8KPj4gKwlyZXQgPSBz
+YmlfZndmdF9zZXQoU0JJX0ZXRlRfRE9VQkxFX1RSQVAsIDEsIDEpOwo+IAo+IFdoeSBsb2NrIGl0
+PwoKVGhhdCdzIGEgbWlzdGFrZS4KCj4gCj4+ICsJc2JpcmV0X3JlcG9ydF9lcnJvcigmcmV0LCBT
+QklfU1VDQ0VTUywgIlNldCBkb3VibGUgdHJhcCBlbmFibGUgZmVhdHVyZSB2YWx1ZSA9PSAxIik7
+Cj4+ICsJcmV0ID0gc2JpX2Z3ZnRfZ2V0KFNCSV9GV0ZUX0RPVUJMRV9UUkFQKTsKPj4gKwlpZiAo
+IXNiaXJldF9yZXBvcnQoJnJldCwgU0JJX1NVQ0NFU1MsIDEsICJHZXQgZG91YmxlIHRyYXAgZW5h
+YmxlIGZlYXR1cmUgdmFsdWUgPT0gMSIpKQo+PiArCQlyZXR1cm47Cj4+ICsKPj4gKwkvKiBGaXJz
+dCB0aW1lLCBjbGVhciB0aGUgZG91YmxlIHRyYXAgZmxhZyAoU0RUKSBzbyB0aGF0IGl0IGRvZXNu
+J3QgZ2VuZXJhdGUgYSBkb3VibGUgdHJhcCAqLwo+PiArCXNldF9zZHQgPSBmYWxzZTsKPj4gKwlk
+b3VibGVfdHJhcCA9IHRydWU7Cj4gCj4gV1JJVEVfT05DRShzZXRfc2R0LCB0cnVlKTsKPiBXUklU
+RV9PTkNFKGRvdWJsZV90cmFwLCB0cnVlKTsKPiAKPj4gKwlHRU5fVFJBUCgpOwo+PiArCXJlcG9y
+dF9wYXNzKCJUcmFwcGVkIHR3aWNlIGFsbG93ZWQgb2siKTsKPj4gKwo+PiArCWlmIChzYmlfcHJv
+YmUoU0JJX0VYVF9TU0UpKQo+PiArCQlzc2VfZG91YmxlX3RyYXAoKTsKPj4gKwllbHNlCj4+ICsJ
+CXJlcG9ydF9za2lwKCJTU0UgZG91YmxlIHRyYXAgZXZlbnQgd2lsbCBub3QgYmUgdGVzdGVkLCBl
+eHRlbnNpb24gaXMgbm90IGF2YWlsYWJsZSIpOwo+PiArCj4+ICsJLyoKPj4gKwkgKiBTZWNvbmQg
+dGltZSwga2VlcCB0aGUgZG91YmxlIHRyYXAgZmxhZyAoU0RUKSBhbmQgZ2VuZXJhdGUgYW5vdGhl
+ciB0cmFwLCB0aGlzIHNob3VsZAo+IAo+IFRoaXJkIHRpbWUgaWYgd2UgZGlkIHRoZSBTU0UgdGVz
+dC4KPiAKPj4gKwkgKiBnZW5lcmF0ZSBhIGRvdWJsZSB0cmFwLiBTaW5jZSB0aGVyZSBpcyBubyBT
+U0UgaGFuZGxlciByZWdpc3RlcmVkLCBpdCBzaG91bGQgY3Jhc2ggdG8KPj4gKwkgKiBNLW1vZGUu
+Cj4gCj4gTm8gU1NFIGhhbmRsZXIgdGhhdCB3ZSBrbm93IG9mLi4uIHNzZV9kb3VibGVfdHJhcCgp
+IHNob3VsZCByZXR1cm4KPiBzb21lIGVycm9yIGlmIGl0IGZhaWxzIHRvIHVucmVnaXN0ZXIgYW5k
+IHRoZW4gd2Ugc2hvdWxkIHNraXAgdGhpcwo+IHRlc3QgaW4gdGhhdCBjYXNlLgoKSW5kZWVkLCBn
+b29kIGNhdGNoLgoKPiAKPj4gKwkgKi8KPj4gKwlzZXRfc2R0ID0gdHJ1ZTsKPj4gKwlkb3VibGVf
+dHJhcCA9IHRydWU7Cj4gCj4gV1JJVEVfT05DRShzZXRfc2R0LCB0cnVlKTsKPiBXUklURV9PTkNF
+KGRvdWJsZV90cmFwLCB0cnVlKTsKPiAKPj4gKwlyZXBvcnRfaW5mbygiU2hvdWxkIGdlbmVyYXRl
+IGEgZG91YmxlIHRyYXAgYW5kIGNyYXNoICEiKTsKPj4gKwlHRU5fVFJBUCgpOwo+PiArCXJlcG9y
+dF9mYWlsKCJTaG91bGQgaGF2ZSBjcmFzaGVkICEiKTsKPiAKPiBuaXQ6IFB1dCB0aGUgJyEnIG5l
+eHQgdG8gdGhlIGxhc3Qgd29yZC4KPiAKPiBJIHRoaW5rIHRoaXMgTS1tb2RlIGNyYXNoIHRlc3Qg
+c2hvdWxkIGJlIG9wdGlvbmFsLiBXZSBjYW4gbWFrZSBpdCBvcHRpb25hbAo+IG9uIGFuIGVudmly
+b25tZW50IHZhcmlhYmxlIHNpbmNlIHdlIGFscmVhZHkgdXNlIGVudmlyb25tZW50IHZhcmlhYmxl
+cyBmb3IKPiBvdGhlciBvcHRpb25hbCB0ZXN0cy4gV2UgZXZlbiBoYXZlIGVudl9vcl9za2lwKCkg
+aW4gcmlzY3Yvc2JpLXRlc3RzLmggZm9yCj4gdGhhdCBwdXJwb3NlLgoKQWNrZWQsIEknbGwgdXNl
+IGVudl9vcl9za2lwKCkuCgpUaGFua3MsCgpDbMOpbWVudAoKPiAKPj4gK30KPj4gKwo+PiAraW50
+IG1haW4oaW50IGFyZ2MsIGNoYXIgKiphcmd2KQo+PiArewo+PiArCXN0cnVjdCBzYmlyZXQgcmV0
+Owo+PiArCj4+ICsJcmVwb3J0X3ByZWZpeF9wdXNoKCJkYmx0cnAiKTsKPj4gKwo+PiArCWlmICgh
+c2JpX3Byb2JlKFNCSV9FWFRfRldGVCkpIHsKPj4gKwkJcmVwb3J0X3NraXAoIkZXRlQgZXh0ZW5z
+aW9uIGlzIG5vdCBhdmFpbGFibGUsIGNhbiBub3QgZW5hYmxlIGRvdWJsZSB0cmFwcyIpOwo+PiAr
+CQlnb3RvIG91dDsKPj4gKwl9Cj4+ICsKPj4gKwlyZXQgPSBzYmlfZndmdF9nZXQoU0JJX0ZXRlRf
+RE9VQkxFX1RSQVApOwo+PiArCWlmIChyZXQudmFsdWUgPT0gU0JJX0VSUl9OT1RfU1VQUE9SVEVE
+KSB7Cj4+ICsJCXJlcG9ydF9za2lwKCJTQklfRldGVF9ET1VCTEVfVFJBUCBpcyBub3Qgc3VwcG9y
+dGVkICEiKTsKPiAKPiBuaXQ6IFB1dCB0aGUgJyEnIG5leHQgdG8gdGhlIGxhc3Qgd29yZC4KPiAK
+Pj4gKwkJZ290byBvdXQ7Cj4+ICsJfQo+PiArCj4+ICsJaWYgKHNiaXJldF9yZXBvcnRfZXJyb3Io
+JnJldCwgU0JJX1NVQ0NFU1MsICJTQklfRldGVF9ET1VCTEVfVFJBUCBnZXQgdmFsdWUiKSkKPj4g
+KwkJY2hlY2tfZG91YmxlX3RyYXAoKTsKPj4gKwo+PiArb3V0Ogo+PiArCXJlcG9ydF9wcmVmaXhf
+cG9wKCk7Cj4+ICsKPj4gKwlyZXR1cm4gcmVwb3J0X3N1bW1hcnkoKTsKPj4gK30KPj4gZGlmZiAt
+LWdpdCBhL3Jpc2N2L3VuaXR0ZXN0cy5jZmcgYi9yaXNjdi91bml0dGVzdHMuY2ZnCj4+IGluZGV4
+IDJlYjc2MGVjLi43NTdlNjAyNyAxMDA2NDQKPj4gLS0tIGEvcmlzY3YvdW5pdHRlc3RzLmNmZwo+
+PiArKysgYi9yaXNjdi91bml0dGVzdHMuY2ZnCj4+IEBAIC0xOCwzICsxOCw4IEBAIGdyb3VwcyA9
+IHNlbGZ0ZXN0Cj4+ICBmaWxlID0gc2JpLmZsYXQKPj4gIHNtcCA9ICRNQVhfU01QCj4+ICBncm91
+cHMgPSBzYmkKPj4gKwo+PiArW2RibHRycF0KPj4gK2ZpbGUgPSBpc2EtZGJsdHJwLmZsYXQKPj4g
+K3NtcCA9ICRNQVhfU01QCj4gCj4gVGhlIHRlc3QgZG9lc24ndCBhcHBlYXIgdG8gcmVxdWlyZSBt
+dWx0aXBsZSBoYXJ0cy4KPiAKPj4gK2dyb3VwcyA9IGlzYQo+IAo+IGdyb3VwcyA9IGlzYSBzYmkK
+PiAKPj4gLS0gCj4+IDIuNDkuMAo+Pgo+IAo+IFRoYW5rcywKPiBkcmV3CgoKLS0gCmt2bS1yaXNj
+diBtYWlsaW5nIGxpc3QKa3ZtLXJpc2N2QGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3Rz
+LmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9rdm0tcmlzY3YK
