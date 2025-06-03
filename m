@@ -4,86 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 196A8C61CE5
-	for <kvm-riscv@archiver.kernel.org>; Tue,  3 Jun 2025 15:56:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D38D0C5AD49
+	for <kvm-riscv@archiver.kernel.org>; Tue,  3 Jun 2025 16:26:34 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
-	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
+	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=n1gmHrNd/9k+9vIZZb8iJZD+8fd5pumdY6vU2i0oEn4=; b=qPm/E5t+I8cwDJ
-	NC1A3jhBIUEfHGrxLsjuVJvYiIicCWrTvCaQcIL80ctA/OgAdxkXxYUY3Ubxg5xboaPa9a8jbudj2
-	bUIq1/BiWRCA4QASFvn8ozcE7vaOFzH8/HTKI3LGz6O8Zpps76jFOYmK3vXqsaYRdj1fkofTcH5eN
-	mNJk3hUCR52EF2l9GOAu4kbDrVr9bWNTx0Cd7OMaeBpSBtvP1TcfZgo1OzH/9RWgDtKBLh9jCYwwO
-	cfZFIWrb/U0EbpVwm7TIY3lwiL/igd1x2MLk1pxEn+grE2SkJBfK2TPvRH86G+DQvor9IiJnoYDkb
-	KVETrDXrG3B58abanFtQ==;
+	List-Owner; bh=Idy3B9y0G3WB3JugF8xwKpk739aa4QZ7EKKGQV2ncTE=; b=gPuGySIZsvMPUf
+	BgJVSEDeaaiNJa6tpnzUtDejYfemd0LZHTpOe1x9VgRGtsr3o//Iu02x1uJrYrF4Aq+TGe+v3y9+0
+	fJjDcvLzHk79dg6bLMJESRe3S0vFOJFS6foN9DP+4nHLwYAxcqzpehn4n8eth+KHFQ0mFbHfDX1Qg
+	Tgg/EiUJuBJ9CIoMGwYQYhg2GdVx5OSIIQoQ7XqJDbcyarpODU8Pj/Xm/u2AXu2lT+v+lMdTrrwbU
+	R8lZ9sO0Y25fYsURk6QwE9bEI1oqLAD6n2K0T3++YmCP9RoWQVRLXQ0z0U8LoETtfuA65lJZpVfgH
+	1i/bwf+5NR+wi5TiLKlw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uMU0S-0000000BLXN-2u3p;
-	Tue, 03 Jun 2025 15:56:52 +0000
-Received: from mail-pf1-x42e.google.com ([2607:f8b0:4864:20::42e])
+	id 1uMUTC-0000000BOWe-1vWi;
+	Tue, 03 Jun 2025 16:26:34 +0000
+Received: from out-179.mta0.migadu.com ([91.218.175.179])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uMTrF-0000000BK8S-1MbY
+	id 1uMUSj-0000000BOP9-0ZQg
 	for kvm-riscv@lists.infradead.org;
-	Tue, 03 Jun 2025 15:47:22 +0000
-Received: by mail-pf1-x42e.google.com with SMTP id d2e1a72fcca58-747abb3cd0bso4280101b3a.1
-        for <kvm-riscv@lists.infradead.org>; Tue, 03 Jun 2025 08:47:20 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=rivosinc-com.20230601.gappssmtp.com; s=20230601; t=1748965640; x=1749570440; darn=lists.infradead.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=yo/3tvwjFOO626619CjpvhLZRvOqcBCa1jAuaGABh0Q=;
-        b=kxoCLKVite3LBtXG8nENa+2F8mfUpgeLJt+xvp1BZ8oylEC6IC8/slX5tiCNjyd+Xf
-         K+OqdgrG6pauPaRXo2tPkWaONU7/DX3xC0i+0y8+Mt7kdW7VcYWlTghhq18Y/2xDiZAX
-         8zB3tGEAJW3eTVC64mxA89YL1QvKOsMDNDh8KhLlpd4+m55DxxTqnHgyFCUL+9CzoCVB
-         HpMjYQTjbTbzXY9YmEeWV/Xb+AwaRcD3V29qPdZCyHSxO+Cyro66PHAV5tBzsy8m7/yv
-         onP7lSha0Z31PpyGkPt0NQDYsknc8m7hlrRAyYWSaXGjG7YcT5OvVTqnzDVsCt2VeR/W
-         l+xg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1748965640; x=1749570440;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=yo/3tvwjFOO626619CjpvhLZRvOqcBCa1jAuaGABh0Q=;
-        b=DaMJ2f5Wv1P+T/lJKOUcmQxArOnuEijacwAC3pakYfp/6ZANxdxRREqaLHsylPCQJi
-         Kxg/Qz806eQbpH1cHvUEfUQlGdryCwZrV68rulDqEBtHOvLIZBF3Ar1cp2bJrtSM6tCt
-         rS0QHdprHidNE97zB511w1XUAW4aiz1TKbwLqru6bELvlzLZrtQR54WIOzU0/dAEUha1
-         lkbMlvTdHheZ+yDff5ADPx9cOwBwk6TW3l7t9I0h1Zh6jqQOp9zqoqY0MvCqqnjaxIvC
-         KfmArdc20BaISlTwwu41zm9OrlDqb97oL/yUXM/5Qm/VqCrHdxwisMDCcr/ZMz+n7Fl8
-         BtEg==
-X-Forwarded-Encrypted: i=1; AJvYcCV01kU2p6Aqz64r7Y+6G1PNQAQN/h80yzLDCLeRnUqXAQwWCevVvLI3fIIaithBLlKGVAZ7gRQbnEM=@lists.infradead.org
-X-Gm-Message-State: AOJu0YwAWMKZVNTnvKGd/5+3BYyYLhSsgEGr2XnCN5MAFsB7yexGC3vl
-	ZM+nfQvX3M3qcaziW99UfIKMWPjW9fY6dbEUU+4OA3ig0o7OU9Azi94l9vAEXFl7R28=
-X-Gm-Gg: ASbGncseProKCRKWNZyzy79Am02tZUBnt7WbvlpnvfS1y98jHXONWtDZcizFoifX6he
-	F4PwD5x5ARntE73Ruh+X6UVmrGd1IliKvDR6jw1vTD9u0HXXuPb5Ka/YPBxJqNbJfOFN+FcpocJ
-	i0qFPD6jwk4CEUgigRebysBvBf9HkbfoUpO2LLImBSvtNWXpvGAVMgVXvy4XaFSuEEDeVRriW2r
-	6I7pzizIxG1Sz2Jd75nwJ+UEGZo+pMWyHavRaisqvVeZZQJRWTfId2HNDE2IgozU0w8FFjwtfDz
-	XKRUPANVUWxU93m/09Zc4wEbRJiVGaSuGuNrqJHbYyifxlXudGcS
-X-Google-Smtp-Source: AGHT+IHAHTjzXFU0v2HzDxi0Y/7t33hwMRIFeU2hUk18fzwHy/DPqfc8qzxjHlntTiEpwOfPNHRLAA==
-X-Received: by 2002:a05:6a21:b93:b0:218:1340:154 with SMTP id adf61e73a8af0-21d0cbe9868mr4205395637.15.1748965640201;
-        Tue, 03 Jun 2025 08:47:20 -0700 (PDT)
-Received: from carbon-x1.. ([2a01:e0a:e17:9700:16d2:7456:6634:9626])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-b2eceb9711asm6306066a12.57.2025.06.03.08.47.16
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 03 Jun 2025 08:47:19 -0700 (PDT)
-From: =?UTF-8?q?Cl=C3=A9ment=20L=C3=A9ger?= <cleger@rivosinc.com>
-To: kvm@vger.kernel.org,
-	kvm-riscv@lists.infradead.org
-Cc: =?UTF-8?q?Cl=C3=A9ment=20L=C3=A9ger?= <cleger@rivosinc.com>,
-	Andrew Jones <ajones@ventanamicro.com>,
-	Ved Shanbhogue <ved@rivosinc.com>
-Subject: [kvm-unit-tests v2 2/2] riscv: Add ISA double trap extension testing
-Date: Tue,  3 Jun 2025 17:46:50 +0200
-Message-ID: <20250603154652.1712459-3-cleger@rivosinc.com>
-X-Mailer: git-send-email 2.49.0
-In-Reply-To: <20250603154652.1712459-1-cleger@rivosinc.com>
+	Tue, 03 Jun 2025 16:26:08 +0000
+Date: Tue, 3 Jun 2025 18:25:59 +0200
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1748967961;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=ZBAniNnGiElPg6mOkY82dWGbV7a3yKmZ4sg11NxT1WY=;
+	b=KQkJyGm5Qrl8fLvpuyX0P7CKRdbSAL5suxcTKEGgfMEP+4LARluTvrfY9ONB0Vra7zFIMa
+	D7ciX/ORgsTeBvIBqcC3P9Er77LwBh5mddYDtVrv3Q7Su3Ic9/xXYh5UtYriIiTLcIS6Mv
+	fFYckZ5amTjUrfqvX7EQlpvlriP4VkE=
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Andrew Jones <andrew.jones@linux.dev>
+To: =?utf-8?B?Q2zDqW1lbnQgTMOpZ2Vy?= <cleger@rivosinc.com>
+Cc: kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
+	Andrew Jones <ajones@ventanamicro.com>, Ved Shanbhogue <ved@rivosinc.com>
+Subject: Re: [kvm-unit-tests v2 2/2] riscv: Add ISA double trap extension
+ testing
+Message-ID: <20250603-1e175dd9e60c1bf2a52dbfc9@orel>
 References: <20250603154652.1712459-1-cleger@rivosinc.com>
+ <20250603154652.1712459-3-cleger@rivosinc.com>
 MIME-Version: 1.0
+Content-Disposition: inline
+In-Reply-To: <20250603154652.1712459-3-cleger@rivosinc.com>
+X-Migadu-Flow: FLOW_OUT
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250603_084721_382580_1801987A 
-X-CRM114-Status: GOOD (  27.89  )
+X-CRM114-CacheID: sfid-20250603_092607_258026_BE6E26F2 
+X-CRM114-Status: GOOD (  38.67  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -95,168 +66,380 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-VGhpcyB0ZXN0IGFsbG93cyB0byB0ZXN0IHRoZSBkb3VibGUgdHJhcCBpbXBsZW1lbnRhdGlvbiBv
-ZiBoYXJkd2FyZSBhcwp3ZWxsIGFzIHRoZSBTQkkgRldGVCBhbmQgU1NFIHN1cHBvcnQgZm9yIGRv
-dWJsZSB0cmFwLiBUaGUgdGVzdHMgd2lsbCB0cnkKdG8gdHJpZ2dlciBkb3VibGUgdHJhcCB1c2lu
-ZyB2YXJpb3VzIHNlcXVlbmNlcyBhbmQgd2lsbCB0ZXN0IHRvIHJlY2VpdmUKdGhlIFNTRSBkb3Vi
-bGUgdHJhcCBldmVudCBpZiBzdXBwb3J0ZWQuCgpJdCBpcyBwcm92aWRlZCBhcyBhIHNlcGFyYXRl
-IHRlc3QgZnJvbSB0aGUgU0JJIG9uZSBmb3IgdHdvIHJlYXNvbnM6Ci0gSXQgaXNuJ3Qgc3BlY2lm
-aWNhbGx5IHRlc3RpbmcgU0JJICJwZXIgc2UiLgotIEl0IGVuZHMgdXAgYnkgdHJ5aW5nIHRvIGNy
-YXNoIGludG8gaW4gTS1tb2RlLgoKQ3VycmVudGx5LCB0aGUgdGVzdCB1c2VzIGEgcGFnZSBmYXVs
-dCB0byByYWlzZSBhIHRyYXAgcHJvZ3JhbWF0aWNhbGx5LgpTb21lIGNvbmNlcm4gd2FzIHJhaXNl
-ZCBieSBhIGdpdGh1YiB1c2VyIG9uIHRoZSBvcmlnaW5hbCBicmFuY2ggWzFdCnNheWluZyB0aGF0
-IHRoZSBzcGVjIGRvZXNuJ3QgbWFuZGF0ZSBhbnkgdHJhcCB0byBiZSBkZWxlZ2F0YWJsZSBhbmQg
-dGhhdAp3ZSB3b3VsZCBuZWVkIGEgd2F5IHRvIGRldGVjdCB3aGljaCBvbmVzIGFyZSBkZWxlZ2F0
-YWJsZS4gSSB0aGluayB3ZSBjYW4Kc2FmZWx5IGFzc3VtZSB0aGF0IFBBR0UgRkFVTFQgaXMgZGVs
-ZWdhdGFibGUgYW5kIGlmIGEgaGFyZHdhcmUgdGhhdCBkb2VzCm5vdCBoYXZlIHN1cHBvcnQgY29t
-ZXMgdXAgdGhlbiBpdCB3aWxsIHByb2JhYmx5IGJlIHRoZSB2ZW5kb3IKcmVzcG9uc2liaWxpdHkg
-dG8gcHJvdmlkZSBhIHdheSB0byBkbyBzby4KCkxpbms6IGh0dHBzOi8vZ2l0aHViLmNvbS9jbGVt
-ZW50bGVnZXIva3ZtLXVuaXQtdGVzdHMvaXNzdWVzLzEgWzFdClNpZ25lZC1vZmYtYnk6IENsw6lt
-ZW50IEzDqWdlciA8Y2xlZ2VyQHJpdm9zaW5jLmNvbT4KLS0tCiByaXNjdi9NYWtlZmlsZSAgICAg
-ICAgICAgIHwgICAxICsKIGxpYi9yaXNjdi9hc20vY3NyLmggICAgICAgfCAgIDEgKwogbGliL3Jp
-c2N2L2FzbS9wcm9jZXNzb3IuaCB8ICAxMCArKwogcmlzY3YvaXNhLWRibHRycC5jICAgICAgICB8
-IDIxMSArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKwogcmlzY3YvdW5pdHRl
-c3RzLmNmZyAgICAgICB8ICAgNCArCiA1IGZpbGVzIGNoYW5nZWQsIDIyNyBpbnNlcnRpb25zKCsp
-CiBjcmVhdGUgbW9kZSAxMDA2NDQgcmlzY3YvaXNhLWRibHRycC5jCgpkaWZmIC0tZ2l0IGEvcmlz
-Y3YvTWFrZWZpbGUgYi9yaXNjdi9NYWtlZmlsZQppbmRleCAxMWU2OGVhZS4uZDcxYzlkMmUgMTAw
-NjQ0Ci0tLSBhL3Jpc2N2L01ha2VmaWxlCisrKyBiL3Jpc2N2L01ha2VmaWxlCkBAIC0xNCw2ICsx
-NCw3IEBAIHRlc3RzID0KIHRlc3RzICs9ICQoVEVTVF9ESVIpL3NiaS4kKGV4ZSkKIHRlc3RzICs9
-ICQoVEVTVF9ESVIpL3NlbGZ0ZXN0LiQoZXhlKQogdGVzdHMgKz0gJChURVNUX0RJUikvc2lldmUu
-JChleGUpCit0ZXN0cyArPSAkKFRFU1RfRElSKS9pc2EtZGJsdHJwLiQoZXhlKQogCiBhbGw6ICQo
-dGVzdHMpCiAKZGlmZiAtLWdpdCBhL2xpYi9yaXNjdi9hc20vY3NyLmggYi9saWIvcmlzY3YvYXNt
-L2Nzci5oCmluZGV4IDNlNGI1ZmNhLi42YThlMDU3OCAxMDA2NDQKLS0tIGEvbGliL3Jpc2N2L2Fz
-bS9jc3IuaAorKysgYi9saWIvcmlzY3YvYXNtL2Nzci5oCkBAIC0xOCw2ICsxOCw3IEBACiAKICNk
-ZWZpbmUgU1JfU0lFCQkJX0FDKDB4MDAwMDAwMDIsIFVMKQogI2RlZmluZSBTUl9TUFAJCQlfQUMo
-MHgwMDAwMDEwMCwgVUwpCisjZGVmaW5lIFNSX1NEVAkJCV9BQygweDAxMDAwMDAwLCBVTCkgLyog
-U3VwZXJ2aXNvciBEb3VibGUgVHJhcCAqLwogCiAvKiBFeGNlcHRpb24gY2F1c2UgaGlnaCBiaXQg
-LSBpcyBhbiBpbnRlcnJ1cHQgaWYgc2V0ICovCiAjZGVmaW5lIENBVVNFX0lSUV9GTEFHCQkoX0FD
-KDEsIFVMKSA8PCAoX19yaXNjdl94bGVuIC0gMSkpCmRpZmYgLS1naXQgYS9saWIvcmlzY3YvYXNt
-L3Byb2Nlc3Nvci5oIGIvbGliL3Jpc2N2L2FzbS9wcm9jZXNzb3IuaAppbmRleCA0MDEwNDI3Mi4u
-ODdhNDEzMTIgMTAwNjQ0Ci0tLSBhL2xpYi9yaXNjdi9hc20vcHJvY2Vzc29yLmgKKysrIGIvbGli
-L3Jpc2N2L2FzbS9wcm9jZXNzb3IuaApAQCAtNDgsNiArNDgsMTYgQEAgc3RhdGljIGlubGluZSB2
-b2lkIGlwaV9hY2sodm9pZCkKIAljc3JfY2xlYXIoQ1NSX1NJUCwgSUVfU1NJRSk7CiB9CiAKK3N0
-YXRpYyBpbmxpbmUgdm9pZCBsb2NhbF9kbGJ0cnBfZW5hYmxlKHZvaWQpCit7CisJY3NyX3NldChD
-U1JfU1NUQVRVUywgU1JfU0RUKTsKK30KKworc3RhdGljIGlubGluZSB2b2lkIGxvY2FsX2RsYnRy
-cF9kaXNhYmxlKHZvaWQpCit7CisJY3NyX2NsZWFyKENTUl9TU1RBVFVTLCBTUl9TRFQpOworfQor
-CiB2b2lkIGluc3RhbGxfZXhjZXB0aW9uX2hhbmRsZXIodW5zaWduZWQgbG9uZyBjYXVzZSwgdm9p
-ZCAoKmhhbmRsZXIpKHN0cnVjdCBwdF9yZWdzICopKTsKIHZvaWQgaW5zdGFsbF9pcnFfaGFuZGxl
-cih1bnNpZ25lZCBsb25nIGNhdXNlLCB2b2lkICgqaGFuZGxlcikoc3RydWN0IHB0X3JlZ3MgKikp
-Owogdm9pZCBkb19oYW5kbGVfZXhjZXB0aW9uKHN0cnVjdCBwdF9yZWdzICpyZWdzKTsKZGlmZiAt
-LWdpdCBhL3Jpc2N2L2lzYS1kYmx0cnAuYyBiL3Jpc2N2L2lzYS1kYmx0cnAuYwpuZXcgZmlsZSBt
-b2RlIDEwMDY0NAppbmRleCAwMDAwMDAwMC4uYTQ1NDUwOTYKLS0tIC9kZXYvbnVsbAorKysgYi9y
-aXNjdi9pc2EtZGJsdHJwLmMKQEAgLTAsMCArMSwyMTEgQEAKKy8vIFNQRFgtTGljZW5zZS1JZGVu
-dGlmaWVyOiBHUEwtMi4wLW9ubHkKKy8qCisgKiBTQkkgdmVyaWZpY2F0aW9uCisgKgorICogQ29w
-eXJpZ2h0IChDKSAyMDI1LCBSaXZvcyBJbmMuLCBDbMOpbWVudCBMw6lnZXIgPGNsZWdlckByaXZv
-c2luYy5jb20+CisgKi8KKyNpbmNsdWRlIDxhbGxvYy5oPgorI2luY2x1ZGUgPGFsbG9jX3BhZ2Uu
-aD4KKyNpbmNsdWRlIDxsaWJjZmxhdC5oPgorI2luY2x1ZGUgPHN0ZGxpYi5oPgorCisjaW5jbHVk
-ZSA8YXNtL2Nzci5oPgorI2luY2x1ZGUgPGFzbS9wYWdlLmg+CisjaW5jbHVkZSA8YXNtL3Byb2Nl
-c3Nvci5oPgorI2luY2x1ZGUgPGFzbS9wdHJhY2UuaD4KKyNpbmNsdWRlIDxhc20vc2JpLmg+CisK
-KyNpbmNsdWRlIDxzYmktdGVzdHMuaD4KKworc3RhdGljIGJvb2wgZG91YmxlX3RyYXA7CitzdGF0
-aWMgYm9vbCBjbGVhcl9zZHQ7CisKKyNkZWZpbmUgSU5TTl9MRU4oaW5zbikJCQkoKCgoaW5zbikg
-JiAweDMpIDwgMHgzKSA/IDIgOiA0KQorCisjZGVmaW5lIEdFTl9UUkFQKCkJCQkJCQkJCVwKK2Rv
-IHsJCQkJCQkJCQkJXAorCXZvaWQgKnB0ciA9IE5VTEw7CQkJCQkJCVwKKwl1bnNpZ25lZCBsb25n
-IHZhbHVlID0gMDsJCQkJCQlcCisJYXNtIHZvbGF0aWxlKAkJCQkJCQkJXAorCSIJLm9wdGlvbiBw
-dXNoXG4iCQkJCQkJCVwKKwkiCS5vcHRpb24gYXJjaCwtY1xuIgkJCQkJCVwKKwkiCXN3ICUwLCAw
-KCUxKVxuIgkJCQkJCQlcCisJIgkub3B0aW9uIHBvcFxuIgkJCQkJCQlcCisJOiA6ICJyIiAodmFs
-dWUpLCAiciIgKHB0cikgOiAibWVtb3J5Iik7CQkJCQlcCit9IHdoaWxlICgwKQorCitzdGF0aWMg
-dm9pZCBwYWdlZmF1bHRfdHJhcF9oYW5kbGVyKHN0cnVjdCBwdF9yZWdzICpyZWdzKQoreworCWlm
-IChSRUFEX09OQ0UoY2xlYXJfc2R0KSkKKwkJbG9jYWxfZGxidHJwX2Rpc2FibGUoKTsKKworCWlm
-IChSRUFEX09OQ0UoZG91YmxlX3RyYXApKSB7CisJCVdSSVRFX09OQ0UoZG91YmxlX3RyYXAsIGZh
-bHNlKTsKKwkJR0VOX1RSQVAoKTsKKwl9CisKKwkvKiBTa2lwIHRyYXBwaW5nIGluc3RydWN0aW9u
-ICovCisJcmVncy0+ZXBjICs9IDQ7CisKKwlsb2NhbF9kbGJ0cnBfZW5hYmxlKCk7Cit9CisKK3N0
-YXRpYyBib29sIHNzZV9kYmx0cnBfY2FsbGVkOworCitzdGF0aWMgdm9pZCBzc2VfZGJsdHJwX2hh
-bmRsZXIodm9pZCAqZGF0YSwgc3RydWN0IHB0X3JlZ3MgKnJlZ3MsIHVuc2lnbmVkIGludCBoYXJ0
-aWQpCit7CisJc3RydWN0IHNiaXJldCByZXQ7CisJdW5zaWduZWQgbG9uZyBmbGFnczsKKwl1bnNp
-Z25lZCBsb25nIGV4cGVjdGVkX2ZsYWdzID0gU0JJX1NTRV9BVFRSX0lOVEVSUlVQVEVEX0ZMQUdT
-X1NTVEFUVVNfU1BQIHwKKwkJCQkgICAgICAgU0JJX1NTRV9BVFRSX0lOVEVSUlVQVEVEX0ZMQUdT
-X1NTVEFUVVNfU0RUOworCisJcmV0ID0gc2JpX3NzZV9yZWFkX2F0dHJzKFNCSV9TU0VfRVZFTlRf
-TE9DQUxfRE9VQkxFX1RSQVAsIFNCSV9TU0VfQVRUUl9JTlRFUlJVUFRFRF9GTEFHUywgMSwKKwkJ
-CQkgJmZsYWdzKTsKKwlzYmlyZXRfcmVwb3J0X2Vycm9yKCZyZXQsIFNCSV9TVUNDRVNTLCAiR2V0
-IGRvdWJsZSB0cmFwIGV2ZW50IGZsYWdzIik7CisJcmVwb3J0KGZsYWdzID09IGV4cGVjdGVkX2Zs
-YWdzLCAiU1NFIGZsYWdzID09IDB4JWx4IiwgZXhwZWN0ZWRfZmxhZ3MpOworCisJV1JJVEVfT05D
-RShzc2VfZGJsdHJwX2NhbGxlZCwgdHJ1ZSk7CisKKwkvKiBTa2lwIHRyYXBwaW5nIGluc3RydWN0
-aW9uICovCisJcmVncy0+ZXBjICs9IDQ7Cit9CisKK3N0YXRpYyBpbnQgc3NlX2RvdWJsZV90cmFw
-KHZvaWQpCit7CisJc3RydWN0IHNiaXJldCByZXQ7CisJaW50IGVyciA9IDA7CisKKwlzdHJ1Y3Qg
-c2JpX3NzZV9oYW5kbGVyX2FyZyBoYW5kbGVyX2FyZyA9IHsKKwkJLmhhbmRsZXIgPSBzc2VfZGJs
-dHJwX2hhbmRsZXIsCisJCS5zdGFjayA9IGFsbG9jX3BhZ2UoKSArIFBBR0VfU0laRSwKKwl9Owor
-CisJcmVwb3J0X3ByZWZpeF9wdXNoKCJzc2UiKTsKKworCXJldCA9IHNiaV9zc2VfaGFydF91bm1h
-c2soKTsKKwlpZiAoIXNiaXJldF9yZXBvcnRfZXJyb3IoJnJldCwgU0JJX1NVQ0NFU1MsICJTU0Ug
-aGFydCB1bm1hc2sgb2siKSkgeworCQlyZXBvcnRfc2tpcCgiRmFpbGVkIHRvIHVubWFzayBTU0Ug
-ZXZlbnRzLCBza2lwcGluZyB0ZXN0Iik7CisJCWdvdG8gb3V0X2ZyZWVfcGFnZTsKKwl9CisKKwly
-ZXQgPSBzYmlfc3NlX3JlZ2lzdGVyKFNCSV9TU0VfRVZFTlRfTE9DQUxfRE9VQkxFX1RSQVAsICZo
-YW5kbGVyX2FyZyk7CisJaWYgKHJldC5lcnJvciA9PSBTQklfRVJSX05PVF9TVVBQT1JURUQpIHsK
-KwkJcmVwb3J0X3NraXAoIlNTRSBkb3VibGUgdHJhcCBldmVudCBpcyBub3Qgc3VwcG9ydGVkIik7
-CisJCWdvdG8gb3V0X21hc2tfc3NlOworCX0KKwlzYmlyZXRfcmVwb3J0X2Vycm9yKCZyZXQsIFNC
-SV9TVUNDRVNTLCAiU1NFIGRvdWJsZSB0cmFwIHJlZ2lzdGVyIik7CisKKwlyZXQgPSBzYmlfc3Nl
-X2VuYWJsZShTQklfU1NFX0VWRU5UX0xPQ0FMX0RPVUJMRV9UUkFQKTsKKwlpZiAoIXNiaXJldF9y
-ZXBvcnRfZXJyb3IoJnJldCwgU0JJX1NVQ0NFU1MsICJTU0UgZG91YmxlIHRyYXAgZW5hYmxlIikp
-IHsKKwkJZXJyID0gcmV0LmVycm9yOworCQlnb3RvIG91dF91bnJlZ2lzdGVyOworCX0KKworCS8q
-CisJICogR2VuZXJhdGUgYSBkb3VibGUgY3Jhc2ggc28gdGhhdCBhbiBTU0UgZXZlbnQgc2hvdWxk
-IGJlIGdlbmVyYXRlZC4gVGhlIFNQRUMgKElTQSBub3IgU0JJKQorCSAqIGRvZXMgbm90IGV4cGxp
-Y2l0bHkgdGVsbCB0aGF0IGlmIHN1cHBvcnRlZCBpdCBzaG91bGQgZ2VuZXJhdGUgYW4gU1NFIGV2
-ZW50IGJ1dCB0aGF0J3MKKwkgKiBhIHJlYXNvbmFibGUgYXNzdW1wdGlvbiB0byBkbyBzbyBpZiBi
-b3RoIEZXRlQgYW5kIFNTRSBhcmUgc3VwcG9ydGVkLgorCSAqLworCVdSSVRFX09OQ0UoY2xlYXJf
-c2R0LCBmYWxzZSk7CisJV1JJVEVfT05DRShkb3VibGVfdHJhcCwgdHJ1ZSk7CisJR0VOX1RSQVAo
-KTsKKworCXJlcG9ydChSRUFEX09OQ0Uoc3NlX2RibHRycF9jYWxsZWQpLCAiU1NFIGRvdWJsZSB0
-cmFwIGV2ZW50IGdlbmVyYXRlZCIpOworCisJcmV0ID0gc2JpX3NzZV9kaXNhYmxlKFNCSV9TU0Vf
-RVZFTlRfTE9DQUxfRE9VQkxFX1RSQVApOworCXNiaXJldF9yZXBvcnRfZXJyb3IoJnJldCwgU0JJ
-X1NVQ0NFU1MsICJTU0UgZG91YmxlIHRyYXAgZGlzYWJsZSIpOworCitvdXRfdW5yZWdpc3RlcjoK
-KwlyZXQgPSBzYmlfc3NlX3VucmVnaXN0ZXIoU0JJX1NTRV9FVkVOVF9MT0NBTF9ET1VCTEVfVFJB
-UCk7CisJc2JpcmV0X3JlcG9ydF9lcnJvcigmcmV0LCBTQklfU1VDQ0VTUywgIlNTRSBkb3VibGUg
-dHJhcCB1bnJlZ2lzdGVyIik7CisKK291dF9tYXNrX3NzZToKKwlzYmlfc3NlX2hhcnRfbWFzaygp
-OworCitvdXRfZnJlZV9wYWdlOgorCWZyZWVfcGFnZShoYW5kbGVyX2FyZy5zdGFjayAtIFBBR0Vf
-U0laRSk7CisJcmVwb3J0X3ByZWZpeF9wb3AoKTsKKworCXJldHVybiBlcnI7Cit9CisKK3N0YXRp
-YyB2b2lkIGNoZWNrX2RvdWJsZV90cmFwKHZvaWQpCit7CisJc3RydWN0IHNiaXJldCByZXQ7CisK
-KwkvKiBEaXNhYmxlIGRvdWJsZSB0cmFwICovCisJcmV0ID0gc2JpX2Z3ZnRfc2V0KFNCSV9GV0ZU
-X0RPVUJMRV9UUkFQLCAwLCAwKTsKKwlzYmlyZXRfcmVwb3J0X2Vycm9yKCZyZXQsIFNCSV9TVUND
-RVNTLCAiU2V0IGRvdWJsZSB0cmFwIGVuYWJsZSBmZWF0dXJlIHZhbHVlID09IDAiKTsKKwlyZXQg
-PSBzYmlfZndmdF9nZXQoU0JJX0ZXRlRfRE9VQkxFX1RSQVApOworCXNiaXJldF9yZXBvcnQoJnJl
-dCwgU0JJX1NVQ0NFU1MsIDAsICJHZXQgZG91YmxlIHRyYXAgZW5hYmxlIGZlYXR1cmUgdmFsdWUg
-PT0gMCIpOworCisJaW5zdGFsbF9leGNlcHRpb25faGFuZGxlcihFWENfU1RPUkVfUEFHRV9GQVVM
-VCwgcGFnZWZhdWx0X3RyYXBfaGFuZGxlcik7CisKKwlXUklURV9PTkNFKGNsZWFyX3NkdCwgdHJ1
-ZSk7CisJV1JJVEVfT05DRShkb3VibGVfdHJhcCwgdHJ1ZSk7CisJR0VOX1RSQVAoKTsKKwlyZXBv
-cnRfcGFzcygiRG91YmxlIHRyYXAgZGlzYWJsZWQsIHRyYXAgZmlyc3QgdGltZSBvayIpOworCisJ
-LyogRW5hYmxlIGRvdWJsZSB0cmFwICovCisJcmV0ID0gc2JpX2Z3ZnRfc2V0KFNCSV9GV0ZUX0RP
-VUJMRV9UUkFQLCAxLCAwKTsKKwlzYmlyZXRfcmVwb3J0X2Vycm9yKCZyZXQsIFNCSV9TVUNDRVNT
-LCAiU2V0IGRvdWJsZSB0cmFwIGVuYWJsZSBmZWF0dXJlIHZhbHVlID09IDEiKTsKKwlyZXQgPSBz
-YmlfZndmdF9nZXQoU0JJX0ZXRlRfRE9VQkxFX1RSQVApOworCWlmICghc2JpcmV0X3JlcG9ydCgm
-cmV0LCBTQklfU1VDQ0VTUywgMSwgIkdldCBkb3VibGUgdHJhcCBlbmFibGUgZmVhdHVyZSB2YWx1
-ZSA9PSAxIikpCisJCXJldHVybjsKKworCS8qIEZpcnN0IHRpbWUsIGNsZWFyIHRoZSBkb3VibGUg
-dHJhcCBmbGFnIChTRFQpIHNvIHRoYXQgaXQgZG9lc24ndCBnZW5lcmF0ZSBhIGRvdWJsZSB0cmFw
-ICovCisJV1JJVEVfT05DRShjbGVhcl9zZHQsIHRydWUpOworCVdSSVRFX09OQ0UoZG91YmxlX3Ry
-YXAsIHRydWUpOworCisJR0VOX1RSQVAoKTsKKwlyZXBvcnRfcGFzcygiVHJhcHBlZCB0d2ljZSBh
-bGxvd2VkIG9rIik7CisKKwlpZiAoc2JpX3Byb2JlKFNCSV9FWFRfU1NFKSkgeworCQlpZiAoc3Nl
-X2RvdWJsZV90cmFwKCkpIHsKKwkJCXJlcG9ydF9za2lwKCJDb3VsZCBub3QgY29ycmVjdGx5IHVu
-cmVnaXN0ZXIgU1NFIGV2ZW50LCBza2lwcGluZyBsYXN0IHRlc3QiKTsKKwkJCXJldHVybjsKKwkJ
-fQorCX0gZWxzZSB7CisJCXJlcG9ydF9za2lwKCJTU0UgZG91YmxlIHRyYXAgZXZlbnQgd2lsbCBu
-b3QgYmUgdGVzdGVkLCBleHRlbnNpb24gaXMgbm90IGF2YWlsYWJsZSIpOworCX0KKworCWlmICgh
-ZW52X29yX3NraXAoIkRPVUJMRV9UUkFQX1RFU1RfQ1JBU0giKSkKKwkJcmV0dXJuOworCisJLyoK
-KwkgKiBUaGlyZCB0aW1lLCBrZWVwIHRoZSBkb3VibGUgdHJhcCBmbGFnIChTRFQpIGFuZCBnZW5l
-cmF0ZSBhbm90aGVyIHRyYXAsIHRoaXMgc2hvdWxkCisJICogZ2VuZXJhdGUgYSBkb3VibGUgdHJh
-cC4gU2luY2UgdGhlcmUgaXMgbm8gU1NFIGhhbmRsZXIgcmVnaXN0ZXJlZCwgaXQgc2hvdWxkIGNy
-YXNoIHRvCisJICogTS1tb2RlLgorCSAqLworCVdSSVRFX09OQ0UoY2xlYXJfc2R0LCBmYWxzZSk7
-CisJV1JJVEVfT05DRShkb3VibGVfdHJhcCwgdHJ1ZSk7CisJcmVwb3J0X2luZm8oIlNob3VsZCBn
-ZW5lcmF0ZSBhIGRvdWJsZSB0cmFwIGFuZCBjcmFzaCEiKTsKKwlHRU5fVFJBUCgpOworCXJlcG9y
-dF9mYWlsKCJTaG91bGQgaGF2ZSBjcmFzaGVkISIpOworfQorCitpbnQgbWFpbihpbnQgYXJnYywg
-Y2hhciAqKmFyZ3YpCit7CisJc3RydWN0IHNiaXJldCByZXQ7CisKKwlyZXBvcnRfcHJlZml4X3B1
-c2goImRibHRycCIpOworCisJaWYgKCFzYmlfcHJvYmUoU0JJX0VYVF9GV0ZUKSkgeworCQlyZXBv
-cnRfc2tpcCgiRldGVCBleHRlbnNpb24gaXMgbm90IGF2YWlsYWJsZSwgY2FuIG5vdCBlbmFibGUg
-ZG91YmxlIHRyYXBzIik7CisJCWdvdG8gb3V0OworCX0KKworCXJldCA9IHNiaV9md2Z0X2dldChT
-QklfRldGVF9ET1VCTEVfVFJBUCk7CisJaWYgKHJldC5lcnJvciA9PSBTQklfRVJSX05PVF9TVVBQ
-T1JURUQpIHsKKwkJcmVwb3J0X3NraXAoIlNCSV9GV0ZUX0RPVUJMRV9UUkFQIGlzIG5vdCBzdXBw
-b3J0ZWQhIik7CisJCWdvdG8gb3V0OworCX0KKworCWlmIChzYmlyZXRfcmVwb3J0X2Vycm9yKCZy
-ZXQsIFNCSV9TVUNDRVNTLCAiU0JJX0ZXRlRfRE9VQkxFX1RSQVAgZ2V0IHZhbHVlIikpCisJCWNo
-ZWNrX2RvdWJsZV90cmFwKCk7CisKK291dDoKKwlyZXBvcnRfcHJlZml4X3BvcCgpOworCisJcmV0
-dXJuIHJlcG9ydF9zdW1tYXJ5KCk7Cit9CmRpZmYgLS1naXQgYS9yaXNjdi91bml0dGVzdHMuY2Zn
-IGIvcmlzY3YvdW5pdHRlc3RzLmNmZwppbmRleCAyZWI3NjBlYy4uMjg2ZTFjYzcgMTAwNjQ0Ci0t
-LSBhL3Jpc2N2L3VuaXR0ZXN0cy5jZmcKKysrIGIvcmlzY3YvdW5pdHRlc3RzLmNmZwpAQCAtMTgs
-MyArMTgsNyBAQCBncm91cHMgPSBzZWxmdGVzdAogZmlsZSA9IHNiaS5mbGF0CiBzbXAgPSAkTUFY
-X1NNUAogZ3JvdXBzID0gc2JpCisKK1tkYmx0cnBdCitmaWxlID0gaXNhLWRibHRycC5mbGF0Citn
-cm91cHMgPSBpc2Egc2JpCi0tIAoyLjQ5LjAKCgotLSAKa3ZtLXJpc2N2IG1haWxpbmcgbGlzdApr
-dm0tcmlzY3ZAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9t
-YWlsbWFuL2xpc3RpbmZvL2t2bS1yaXNjdgo=
+On Tue, Jun 03, 2025 at 05:46:50PM +0200, Cl=E9ment L=E9ger wrote:
+> This test allows to test the double trap implementation of hardware as
+> well as the SBI FWFT and SSE support for double trap. The tests will try
+> to trigger double trap using various sequences and will test to receive
+> the SSE double trap event if supported.
+> =
+
+> It is provided as a separate test from the SBI one for two reasons:
+> - It isn't specifically testing SBI "per se".
+> - It ends up by trying to crash into in M-mode.
+> =
+
+> Currently, the test uses a page fault to raise a trap programatically.
+> Some concern was raised by a github user on the original branch [1]
+> saying that the spec doesn't mandate any trap to be delegatable and that
+> we would need a way to detect which ones are delegatable. I think we can
+> safely assume that PAGE FAULT is delegatable and if a hardware that does
+> not have support comes up then it will probably be the vendor
+> responsibility to provide a way to do so.
+> =
+
+> Link: https://github.com/clementleger/kvm-unit-tests/issues/1 [1]
+> Signed-off-by: Cl=E9ment L=E9ger <cleger@rivosinc.com>
+> ---
+>  riscv/Makefile            |   1 +
+>  lib/riscv/asm/csr.h       |   1 +
+>  lib/riscv/asm/processor.h |  10 ++
+>  riscv/isa-dbltrp.c        | 211 ++++++++++++++++++++++++++++++++++++++
+>  riscv/unittests.cfg       |   4 +
+>  5 files changed, 227 insertions(+)
+>  create mode 100644 riscv/isa-dbltrp.c
+> =
+
+> diff --git a/riscv/Makefile b/riscv/Makefile
+> index 11e68eae..d71c9d2e 100644
+> --- a/riscv/Makefile
+> +++ b/riscv/Makefile
+> @@ -14,6 +14,7 @@ tests =3D
+>  tests +=3D $(TEST_DIR)/sbi.$(exe)
+>  tests +=3D $(TEST_DIR)/selftest.$(exe)
+>  tests +=3D $(TEST_DIR)/sieve.$(exe)
+> +tests +=3D $(TEST_DIR)/isa-dbltrp.$(exe)
+>  =
+
+>  all: $(tests)
+>  =
+
+> diff --git a/lib/riscv/asm/csr.h b/lib/riscv/asm/csr.h
+> index 3e4b5fca..6a8e0578 100644
+> --- a/lib/riscv/asm/csr.h
+> +++ b/lib/riscv/asm/csr.h
+> @@ -18,6 +18,7 @@
+>  =
+
+>  #define SR_SIE			_AC(0x00000002, UL)
+>  #define SR_SPP			_AC(0x00000100, UL)
+> +#define SR_SDT			_AC(0x01000000, UL) /* Supervisor Double Trap */
+>  =
+
+>  /* Exception cause high bit - is an interrupt if set */
+>  #define CAUSE_IRQ_FLAG		(_AC(1, UL) << (__riscv_xlen - 1))
+> diff --git a/lib/riscv/asm/processor.h b/lib/riscv/asm/processor.h
+> index 40104272..87a41312 100644
+> --- a/lib/riscv/asm/processor.h
+> +++ b/lib/riscv/asm/processor.h
+> @@ -48,6 +48,16 @@ static inline void ipi_ack(void)
+>  	csr_clear(CSR_SIP, IE_SSIE);
+>  }
+>  =
+
+> +static inline void local_dlbtrp_enable(void)
+> +{
+> +	csr_set(CSR_SSTATUS, SR_SDT);
+> +}
+> +
+> +static inline void local_dlbtrp_disable(void)
+> +{
+> +	csr_clear(CSR_SSTATUS, SR_SDT);
+> +}
+> +
+>  void install_exception_handler(unsigned long cause, void (*handler)(stru=
+ct pt_regs *));
+>  void install_irq_handler(unsigned long cause, void (*handler)(struct pt_=
+regs *));
+>  void do_handle_exception(struct pt_regs *regs);
+> diff --git a/riscv/isa-dbltrp.c b/riscv/isa-dbltrp.c
+> new file mode 100644
+> index 00000000..a4545096
+> --- /dev/null
+> +++ b/riscv/isa-dbltrp.c
+> @@ -0,0 +1,211 @@
+> +// SPDX-License-Identifier: GPL-2.0-only
+> +/*
+> + * SBI verification
+> + *
+> + * Copyright (C) 2025, Rivos Inc., Cl=E9ment L=E9ger <cleger@rivosinc.co=
+m>
+> + */
+> +#include <alloc.h>
+> +#include <alloc_page.h>
+> +#include <libcflat.h>
+> +#include <stdlib.h>
+> +
+> +#include <asm/csr.h>
+> +#include <asm/page.h>
+> +#include <asm/processor.h>
+> +#include <asm/ptrace.h>
+> +#include <asm/sbi.h>
+> +
+> +#include <sbi-tests.h>
+> +
+> +static bool double_trap;
+> +static bool clear_sdt;
+> +
+> +#define INSN_LEN(insn)			((((insn) & 0x3) < 0x3) ? 2 : 4)
+> +
+> +#define GEN_TRAP()								\
+> +do {										\
+> +	void *ptr =3D NULL;							\
+> +	unsigned long value =3D 0;						\
+> +	asm volatile(								\
+> +	"	.option push\n"							\
+> +	"	.option arch,-c\n"						\
+> +	"	sw %0, 0(%1)\n"							\
+> +	"	.option pop\n"							\
+> +	: : "r" (value), "r" (ptr) : "memory");					\
+> +} while (0)
+> +
+> +static void pagefault_trap_handler(struct pt_regs *regs)
+> +{
+> +	if (READ_ONCE(clear_sdt))
+> +		local_dlbtrp_disable();
+> +
+> +	if (READ_ONCE(double_trap)) {
+> +		WRITE_ONCE(double_trap, false);
+> +		GEN_TRAP();
+> +	}
+> +
+> +	/* Skip trapping instruction */
+> +	regs->epc +=3D 4;
+> +
+> +	local_dlbtrp_enable();
+> +}
+> +
+> +static bool sse_dbltrp_called;
+> +
+> +static void sse_dbltrp_handler(void *data, struct pt_regs *regs, unsigne=
+d int hartid)
+> +{
+> +	struct sbiret ret;
+> +	unsigned long flags;
+> +	unsigned long expected_flags =3D SBI_SSE_ATTR_INTERRUPTED_FLAGS_SSTATUS=
+_SPP |
+> +				       SBI_SSE_ATTR_INTERRUPTED_FLAGS_SSTATUS_SDT;
+> +
+> +	ret =3D sbi_sse_read_attrs(SBI_SSE_EVENT_LOCAL_DOUBLE_TRAP, SBI_SSE_ATT=
+R_INTERRUPTED_FLAGS, 1,
+> +				 &flags);
+> +	sbiret_report_error(&ret, SBI_SUCCESS, "Get double trap event flags");
+> +	report(flags =3D=3D expected_flags, "SSE flags =3D=3D 0x%lx", expected_=
+flags);
+> +
+> +	WRITE_ONCE(sse_dbltrp_called, true);
+> +
+> +	/* Skip trapping instruction */
+> +	regs->epc +=3D 4;
+> +}
+> +
+> +static int sse_double_trap(void)
+> +{
+> +	struct sbiret ret;
+> +	int err =3D 0;
+> +
+> +	struct sbi_sse_handler_arg handler_arg =3D {
+> +		.handler =3D sse_dbltrp_handler,
+> +		.stack =3D alloc_page() + PAGE_SIZE,
+> +	};
+> +
+> +	report_prefix_push("sse");
+> +
+> +	ret =3D sbi_sse_hart_unmask();
+> +	if (!sbiret_report_error(&ret, SBI_SUCCESS, "SSE hart unmask ok")) {
+> +		report_skip("Failed to unmask SSE events, skipping test");
+> +		goto out_free_page;
+> +	}
+> +
+> +	ret =3D sbi_sse_register(SBI_SSE_EVENT_LOCAL_DOUBLE_TRAP, &handler_arg);
+> +	if (ret.error =3D=3D SBI_ERR_NOT_SUPPORTED) {
+> +		report_skip("SSE double trap event is not supported");
+> +		goto out_mask_sse;
+> +	}
+> +	sbiret_report_error(&ret, SBI_SUCCESS, "SSE double trap register");
+> +
+> +	ret =3D sbi_sse_enable(SBI_SSE_EVENT_LOCAL_DOUBLE_TRAP);
+> +	if (!sbiret_report_error(&ret, SBI_SUCCESS, "SSE double trap enable")) {
+> +		err =3D ret.error;
+
+I'm not sure we need to return an error for this case. We won't be leaving
+an SSE event handler registered.
+
+> +		goto out_unregister;
+> +	}
+> +
+> +	/*
+> +	 * Generate a double crash so that an SSE event should be generated. Th=
+e SPEC (ISA nor SBI)
+> +	 * does not explicitly tell that if supported it should generate an SSE=
+ event but that's
+> +	 * a reasonable assumption to do so if both FWFT and SSE are supported.
+> +	 */
+> +	WRITE_ONCE(clear_sdt, false);
+> +	WRITE_ONCE(double_trap, true);
+> +	GEN_TRAP();
+> +
+> +	report(READ_ONCE(sse_dbltrp_called), "SSE double trap event generated");
+> +
+> +	ret =3D sbi_sse_disable(SBI_SSE_EVENT_LOCAL_DOUBLE_TRAP);
+> +	sbiret_report_error(&ret, SBI_SUCCESS, "SSE double trap disable");
+> +
+> +out_unregister:
+> +	ret =3D sbi_sse_unregister(SBI_SSE_EVENT_LOCAL_DOUBLE_TRAP);
+> +	sbiret_report_error(&ret, SBI_SUCCESS, "SSE double trap unregister");
+
+Needs to be
+
+ if (!sbiret_report_error(&ret, SBI_SUCCESS, "SSE double trap unregister"))
+    err =3D ret.error;
+
+> +
+> +out_mask_sse:
+> +	sbi_sse_hart_mask();
+> +
+> +out_free_page:
+> +	free_page(handler_arg.stack - PAGE_SIZE);
+> +	report_prefix_pop();
+> +
+> +	return err;
+> +}
+> +
+> +static void check_double_trap(void)
+> +{
+> +	struct sbiret ret;
+> +
+> +	/* Disable double trap */
+> +	ret =3D sbi_fwft_set(SBI_FWFT_DOUBLE_TRAP, 0, 0);
+> +	sbiret_report_error(&ret, SBI_SUCCESS, "Set double trap enable feature =
+value =3D=3D 0");
+> +	ret =3D sbi_fwft_get(SBI_FWFT_DOUBLE_TRAP);
+> +	sbiret_report(&ret, SBI_SUCCESS, 0, "Get double trap enable feature val=
+ue =3D=3D 0");
+> +
+> +	install_exception_handler(EXC_STORE_PAGE_FAULT, pagefault_trap_handler);
+> +
+> +	WRITE_ONCE(clear_sdt, true);
+> +	WRITE_ONCE(double_trap, true);
+> +	GEN_TRAP();
+> +	report_pass("Double trap disabled, trap first time ok");
+> +
+> +	/* Enable double trap */
+> +	ret =3D sbi_fwft_set(SBI_FWFT_DOUBLE_TRAP, 1, 0);
+> +	sbiret_report_error(&ret, SBI_SUCCESS, "Set double trap enable feature =
+value =3D=3D 1");
+> +	ret =3D sbi_fwft_get(SBI_FWFT_DOUBLE_TRAP);
+> +	if (!sbiret_report(&ret, SBI_SUCCESS, 1, "Get double trap enable featur=
+e value =3D=3D 1"))
+> +		return;
+> +
+> +	/* First time, clear the double trap flag (SDT) so that it doesn't gene=
+rate a double trap */
+> +	WRITE_ONCE(clear_sdt, true);
+> +	WRITE_ONCE(double_trap, true);
+> +
+> +	GEN_TRAP();
+> +	report_pass("Trapped twice allowed ok");
+> +
+> +	if (sbi_probe(SBI_EXT_SSE)) {
+> +		if (sse_double_trap()) {
+> +			report_skip("Could not correctly unregister SSE event, skipping last =
+test");
+> +			return;
+> +		}
+> +	} else {
+> +		report_skip("SSE double trap event will not be tested, extension is no=
+t available");
+
+Missing return
+
+> +	}
+
+How about rearranging as
+
+ if (!sbi_probe(SBI_EXT_SSE)) {
+    report_skip("SSE double trap event will not be tested, extension is not=
+ available");
+    return;
+ }
+ if (sse_double_trap()) {
+    report_skip("Could not correctly unregister SSE event, skipping last te=
+st");
+    return;
+ }
+
+> +
+> +	if (!env_or_skip("DOUBLE_TRAP_TEST_CRASH"))
+> +		return;
+> +
+> +	/*
+> +	 * Third time, keep the double trap flag (SDT) and generate another tra=
+p, this should
+> +	 * generate a double trap. Since there is no SSE handler registered, it=
+ should crash to
+> +	 * M-mode.
+> +	 */
+> +	WRITE_ONCE(clear_sdt, false);
+> +	WRITE_ONCE(double_trap, true);
+> +	report_info("Should generate a double trap and crash!");
+> +	GEN_TRAP();
+> +	report_fail("Should have crashed!");
+> +}
+> +
+> +int main(int argc, char **argv)
+> +{
+> +	struct sbiret ret;
+> +
+> +	report_prefix_push("dbltrp");
+> +
+> +	if (!sbi_probe(SBI_EXT_FWFT)) {
+> +		report_skip("FWFT extension is not available, can not enable double tr=
+aps");
+> +		goto out;
+> +	}
+> +
+> +	ret =3D sbi_fwft_get(SBI_FWFT_DOUBLE_TRAP);
+> +	if (ret.error =3D=3D SBI_ERR_NOT_SUPPORTED) {
+> +		report_skip("SBI_FWFT_DOUBLE_TRAP is not supported!");
+> +		goto out;
+> +	}
+> +
+> +	if (sbiret_report_error(&ret, SBI_SUCCESS, "SBI_FWFT_DOUBLE_TRAP get va=
+lue"))
+> +		check_double_trap();
+> +
+> +out:
+> +	report_prefix_pop();
+> +
+> +	return report_summary();
+> +}
+> diff --git a/riscv/unittests.cfg b/riscv/unittests.cfg
+> index 2eb760ec..286e1cc7 100644
+> --- a/riscv/unittests.cfg
+> +++ b/riscv/unittests.cfg
+> @@ -18,3 +18,7 @@ groups =3D selftest
+>  file =3D sbi.flat
+>  smp =3D $MAX_SMP
+>  groups =3D sbi
+> +
+> +[dbltrp]
+> +file =3D isa-dbltrp.flat
+> +groups =3D isa sbi
+> -- =
+
+> 2.49.0
+>
+
+Thanks,
+drew
+
+-- =
+
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
