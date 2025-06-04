@@ -4,86 +4,106 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E8CF6C5B543
-	for <kvm-riscv@archiver.kernel.org>; Wed,  4 Jun 2025 18:02:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1F9B1C5B543
+	for <kvm-riscv@archiver.kernel.org>; Wed,  4 Jun 2025 20:43:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
-	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
-	List-Unsubscribe:List-Id:Mime-Version:Message-ID:To:From:CC:In-Reply-To:
-	Subject:Date:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:References:List-Owner;
-	bh=/CTPL+k6YjYyy/GwjZXvx4KRz+slAGQ0FYm8bfPrPXk=; b=nKL7dnV0vg30/cO1/UKf7bewaF
-	gX1BLOlYq5na1si2E2b5aoauv+lHe82HSphAe0QOgrhCiOYtUHk0IcWzF/VO6HOFSm6TAMc1xpHcw
-	7i4H9RtzdaS37I9svfijwxwSfQwGxik96OIv1e/qkNxIs+Y8zGghIA2AAh7hK6mCLtbERXsvB1B5C
-	ic5ldIHGapQEdRiaAF6hvw9FRrtD0x7F1TGvZHpWVW6mmoCh5Ve79+pRKq8HeFD31NwDFRDNevfgc
-	YGc/6QanhEBHu8QyeI+VIiHeVGHr5pUQnAeKBIhoMVUgt1iMlf80TV5xiov3Y7x4Iq1v8p5WktvIL
-	sA54gzuw==;
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
+	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=ADdTGF3+tglOcQ4bz2mlB+ikYoOXzFhgIXOerXtNKCk=; b=ntuWhECqPpj0L8
+	H7DT3HkmZfNrYijdRCVD7n9uDjaxL75jJCB9YlhTwQdxHBwSqxFgyl7IRSQgIb9nv6v+mQoz4qv+G
+	9EFUBACsKycr6+jfNwkf6bVgpeht30F5NKLu5Mlhro9PtrowdmClWgakSuYC2b1ocnGfljWxSH1T2
+	IRqmCKduut3blQW3s7x01x8M/6ic9BEVsKDAkKXU1xAKy2CHPVSsIBawQISYIFbLeroDmzMB/gFAk
+	i+CnDb92QxSalydOVvm6K5k9efUswZ+9qHSAml/fQZvWvk3dqiZz+sRbyvOj8TVCIvIbWZkOwoa+D
+	ofqkyDXn5IXZWlopC3Mg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uMsRn-0000000Dz4A-0cI5;
-	Wed, 04 Jun 2025 18:02:43 +0000
-Received: from mail-pg1-x52e.google.com ([2607:f8b0:4864:20::52e])
+	id 1uMuxY-0000000ECrX-2p9F;
+	Wed, 04 Jun 2025 20:43:40 +0000
+Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uMsRi-0000000Dz3J-2o9a
+	id 1uMtqi-0000000E5uZ-1scw
+	for kvm-riscv@bombadil.infradead.org;
+	Wed, 04 Jun 2025 19:32:32 +0000
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Transfer-Encoding:
+	Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:
+	Sender:Reply-To:Content-ID:Content-Description;
+	bh=NX/Z2ZCFXvF2DvUI6aHShSd2vbVmdhiwIYLPP28K2UE=; b=eeX3KWxHtqIw9GpAEgHE9nk5hL
+	d/92ane67tEyj44xqgzCQkRF+UAcLhUSAqWiK3PbUUBPlGIxgNf0GUqFQ3157xr1J5v0LAfCP91fN
+	AZiAJH1+Epdbjz2s6rqbFW6i1jCUZWM05QCgfdkDTOfjZDM+RE04e+TIirwW8gL75bSY+K9kx0BSK
+	N34cQOkdpscFwFIFMaMfJg183JNZytFPa0+H+9UEg++xnrm1iPBWHpGJc5dtP0vaRuiw3TVd8PD8k
+	roIIyt1yLc0ivI1uBemm1gIdZn2sMWCmPyDtJXeEnzOWdK5v4VCqmebj/cMRyHFKBHlfIJvCcypHu
+	zNxw//CA==;
+Received: from mail-pg1-x530.google.com ([2607:f8b0:4864:20::530])
+	by desiato.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1uMtqe-00000000zfa-0kyW
 	for kvm-riscv@lists.infradead.org;
-	Wed, 04 Jun 2025 18:02:40 +0000
-Received: by mail-pg1-x52e.google.com with SMTP id 41be03b00d2f7-b1ff9b276c2so52587a12.1
-        for <kvm-riscv@lists.infradead.org>; Wed, 04 Jun 2025 11:02:37 -0700 (PDT)
+	Wed, 04 Jun 2025 19:32:30 +0000
+Received: by mail-pg1-x530.google.com with SMTP id 41be03b00d2f7-b1fde81de05so93781a12.1
+        for <kvm-riscv@lists.infradead.org>; Wed, 04 Jun 2025 12:32:25 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=dabbelt-com.20230601.gappssmtp.com; s=20230601; t=1749060157; x=1749664957; darn=lists.infradead.org;
-        h=content-transfer-encoding:mime-version:message-id:to:from:cc
-         :in-reply-to:subject:date:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=4sb9NtYIBm94y/rjJYszo90EtKu9XX4CPTVA/wAKQT8=;
-        b=hLSHpqwaYNnE4bI+w79VSYrgLePdkZx9pwFG1EmNzf2WY/ei5I1BnHF5Txnh8sd+Sr
-         oDLN/9t0aWE8PWQwjlVDMDrGH3vkisWN2rUmsz3nz0X0Q2dFtqr6Or5sXSJSJt89hzRN
-         E74qeMJHz0S+gvDtXLz+rbsPVTk9XM87awiLDr1beRWFCp7sqGGkzOpP/8QJqaBWwm4x
-         vmLo4DbrjH0SvPZtLC9Tg/ITtNJ+Rqf+KiU3gybWZx8d4DxH87ajfv32hyQKyUI8s37r
-         +NNhgqqhhocK7Jv3+NUSKYBTtC4FqGBghgOlPYFclQQXXyc4zOUQ0vjVmGH4zXPRTwvy
-         WNBA==
+        d=rivosinc-com.20230601.gappssmtp.com; s=20230601; t=1749065544; x=1749670344; darn=lists.infradead.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=NX/Z2ZCFXvF2DvUI6aHShSd2vbVmdhiwIYLPP28K2UE=;
+        b=2m4JsvE/LnJfq7KL5ja0+6a4Zt54PzTYgh+YDfHDtPji26h6fAnPB/q6NOhZu9yonD
+         Z0MJUvz5crWnaQ7P572USJ8d5fixqGMqhlvi9Ob82Bmmg3xxdksr1ZOHhQkypLw2FbFy
+         ek1CtsmteKin0x2kxcEH2yu4volATgqz7sIQugTT1exNn+ybgOzvbYFhbwPjFoEUPvTD
+         zMj5ZbMzXynit6AVok0bN0LFgm8XzEQBAd5IKNgpAEdhlmNDmA0wKMNnKRSiuTOaZefR
+         aksITegeS9wYmt2rE9SM+4Ds8jh1u2dcnlUgMgn/twB/JwlbKQp8S54LyrK4HS9NOJAO
+         j/6g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1749060157; x=1749664957;
-        h=content-transfer-encoding:mime-version:message-id:to:from:cc
-         :in-reply-to:subject:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=4sb9NtYIBm94y/rjJYszo90EtKu9XX4CPTVA/wAKQT8=;
-        b=sjT5FRozYVLsigzZaweB1K82KxX+y5bZ+xmXS3zUJgv79O5ttSnc+5Thrj/kAwgg4q
-         mbMluSAYVdlvxCvA7Mpp2OxHIzZTsBduXxM1ypQDMM4Mc5YcyC76Cub0Oq8Hkk19rQrS
-         IIOLDmE9PtVBDlL93gp1u5cIn68d31gr6XHYr3b33rSwxub0MVPHThKpweRmKOiV/1h3
-         iFIzY1+IlM4hKwl++dIrGUpiZ8knCYlnTMEZ7k7iYMTPoawj6Zp+i9zZcnfkJcqqn/R+
-         zr+x89TVUplCQ5joA18tcXQBo9Rucke7Lxen3lH9GkX8vWt74cCgptrJALNmbpDGksB9
-         KbDQ==
-X-Forwarded-Encrypted: i=1; AJvYcCXB+U49gv4ZimwgGpqumR5+q1Xx8VfNGXnOxFO8R8Sdij73/d4/JKiDfiDWVAmPK1mRryiKt94/5fo=@lists.infradead.org
-X-Gm-Message-State: AOJu0YwPqDT5sSSVWJLGNocdjXrVhjSWjzmOASNkPVHMUSqjFGuaXGKI
-	SKxS+2CdidHyUkIHLouCrNUmOJDBYoR9BeB++dXAX639r73DcdafaxBew8BX/dliQmw=
-X-Gm-Gg: ASbGncv2Mzk5/ANY7hkBSOyY8pOCTi/6n8NM2lcMAcwN0/ougTeSStk+CHcKzrtde39
-	Ajcxy5QEdqxw5WvBqhi+6kcSo1g8b3qnq4GV71PYqeZBdQiqROJmqTac12yhEb8mvJzfqmycac/
-	wjFzhoJl0cK64zhhg62qNaGf4C86jbNb2fwiAjN0H6/VHECBlRbS/bsBp8wmIBF6KAHRHTxp/7r
-	pI7B25e7940iDcsnQqgII7p56apD73TgByJXovoZ99FyRHWSlv2k6l4lNz0flnKK5BBTFZOmfDC
-	J+51ts64dtPqI9wIpOdIzWq3IH/QMBdnWgnpsMZjgIW+6kSRhvirZgI=
-X-Google-Smtp-Source: AGHT+IGzoLjlPGLsxX/VcQAibjCHSuGjPNjwdnzeCXTcDSgTlXsCpPwGWWh1fCsXTwlbhq/KM2w0wQ==
-X-Received: by 2002:a05:6a21:48f:b0:1fd:f4df:96ed with SMTP id adf61e73a8af0-21d22ce22c7mr5169223637.26.1749060156608;
-        Wed, 04 Jun 2025 11:02:36 -0700 (PDT)
-Received: from localhost ([2620:10d:c090:500::4:3cec])
-        by smtp.gmail.com with UTF8SMTPSA id d2e1a72fcca58-747afff72bcsm11485461b3a.166.2025.06.04.11.02.35
+        d=1e100.net; s=20230601; t=1749065544; x=1749670344;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=NX/Z2ZCFXvF2DvUI6aHShSd2vbVmdhiwIYLPP28K2UE=;
+        b=XOjozcxPPCaKvsTH11uKWn1NRS0fiPYFfcOfxzdmbyY6otC5fYM8QOFwit2rlX5qwT
+         YlLt1e4GkVn92sDRYAukhugY3c5fJY2mfV1B87W1vnxyAkZfp0dQcrAbyGvzFUO89Esv
+         o73/FD9M9c0jsfcrwtzljOyTNL4IjwZDCwPQZlvBzFSIVxJylo/d8tc3ZuOtLfEBPS7Z
+         17zpyxlemz1n0dSROwOglImsWpu0bAw6vjydf1hhNps5fOg8dt5eBuSOORBxxfCczUR5
+         ef4fAUM8PEnmCvQ+8PRS2ntcrrKJyhpCLlS7jVbDttoRrfzG3Dh8HS0czMfEy6E/kQ9q
+         cOtw==
+X-Forwarded-Encrypted: i=1; AJvYcCWNA62E/djTItSPsHXtlUQbjuq7LLD0ZongYrOd1ipLL+x8f21JYXD0GrqpPmFg5ZVvSe/F3RBbgbo=@lists.infradead.org
+X-Gm-Message-State: AOJu0YwXfZRtYYC7BqEslX1eA6q0YVeRbdMVJRt5UPYAax4Dj9ylMjhn
+	HGHe2Adwza6bJge1sILj8njjxoejdbAX+vnLtimjqWl3F3Tb8CovUmbwKgD/VqAGwAo=
+X-Gm-Gg: ASbGncv1c/hQeFft5+1q9f1xYy3zLM+4gSzvUfvzRL/9g15JdtWbsLMGs8UEu3310P7
+	a2B4wHAI7ZPXM56WnpFwpUHSMuPRaLZw50SzHgOQl/vyDZ9nud7sbvaGzTJKD6U8eMuWivxeAoC
+	I7083wGwqbr9u+HPa+Un2McznA/dBn9gAM+RMSz9VYdFt+61BvXyPOi2aygOB/7rYJ3VTRi58mI
+	6P4YylFNFYqD8eEo3tg1YOG+wV7k/Edy4tAvvlfz57WDUteLsILZPoilSFH7phAHnZdhptACKLE
+	Vepn8yYNZ6Fyd9jW5AEJaMTGqMePsa+XBobtTR3fDQ==
+X-Google-Smtp-Source: AGHT+IFLeN5tBysOV9rnQFTJ45qBsmpEqs3WhKfupnGpcc7ue7whOvYTzRW3AaxeC9M+Me0Ca9V3Ig==
+X-Received: by 2002:a17:90b:1e07:b0:2fe:e9c6:689e with SMTP id 98e67ed59e1d1-31310fff2d3mr4850333a91.8.1749065543993;
+        Wed, 04 Jun 2025 12:32:23 -0700 (PDT)
+Received: from ghost ([50.145.13.30])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3132bff67ddsm39458a91.2.2025.06.04.12.32.23
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 04 Jun 2025 11:02:35 -0700 (PDT)
-Date: Wed, 04 Jun 2025 11:02:35 -0700 (PDT)
-X-Google-Original-Date: Wed, 04 Jun 2025 11:02:33 PDT (-0700)
-Subject: Re: [PATCH v8 00/14] riscv: add SBI FWFT misaligned exception delegation support
-In-Reply-To: <20250523101932.1594077-1-cleger@rivosinc.com>
-CC: Paul Walmsley <paul.walmsley@sifive.com>, anup@brainfault.org,
-  atishp@atishpatra.org, shuah@kernel.org, corbet@lwn.net, linux-riscv@lists.infradead.org,
-  linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, kvm@vger.kernel.org, kvm-riscv@lists.infradead.org,
-  linux-kselftest@vger.kernel.org, cleger@rivosinc.com, samuel.holland@sifive.com, ajones@ventanamicro.com,
-  debug@rivosinc.com, Charlie Jenkins <charlie@rivosinc.com>
-From: Palmer Dabbelt <palmer@dabbelt.com>
-To: cleger@rivosinc.com
-Message-ID: <mhng-C1CE13EE-C4E6-490D-ABF4-CE7BD84737C3@palmerdabbelt-mac>
-Mime-Version: 1.0 (MHng)
+        Wed, 04 Jun 2025 12:32:23 -0700 (PDT)
+Date: Wed, 4 Jun 2025 12:32:21 -0700
+From: Charlie Jenkins <charlie@rivosinc.com>
+To: Palmer Dabbelt <palmer@dabbelt.com>
+Cc: cleger@rivosinc.com, Paul Walmsley <paul.walmsley@sifive.com>,
+	anup@brainfault.org, atishp@atishpatra.org, shuah@kernel.org,
+	corbet@lwn.net, linux-riscv@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
+	kvm@vger.kernel.org, kvm-riscv@lists.infradead.org,
+	linux-kselftest@vger.kernel.org, samuel.holland@sifive.com,
+	ajones@ventanamicro.com, debug@rivosinc.com
+Subject: Re: [PATCH v8 00/14] riscv: add SBI FWFT misaligned exception
+ delegation support
+Message-ID: <aECfReNdxc1ERz6K@ghost>
+References: <20250523101932.1594077-1-cleger@rivosinc.com>
+ <mhng-C1CE13EE-C4E6-490D-ABF4-CE7BD84737C3@palmerdabbelt-mac>
+MIME-Version: 1.0
+Content-Disposition: inline
+In-Reply-To: <mhng-C1CE13EE-C4E6-490D-ABF4-CE7BD84737C3@palmerdabbelt-mac>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250604_110238_887110_9895DFE6 
-X-CRM114-Status: GOOD (  32.13  )
+X-CRM114-CacheID: sfid-20250604_203228_672024_6FFBA71F 
+X-CRM114-Status: GOOD (  35.24  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -95,207 +115,319 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-T24gRnJpLCAyMyBNYXkgMjAyNSAwMzoxOToxNyBQRFQgKC0wNzAwKSwgY2xlZ2VyQHJpdm9zaW5j
-LmNvbSB3cm90ZToKPiBUaGUgU0JJIEZpcm13YXJlIEZlYXR1cmUgZXh0ZW5zaW9uIGFsbG93cyB0
-aGUgUy1tb2RlIHRvIHJlcXVlc3Qgc29tZQo+IHNwZWNpZmljIGZlYXR1cmVzIChlaXRoZXIgaGFy
-ZHdhcmUgb3Igc29mdHdhcmUpIHRvIGJlIGVuYWJsZWQuIFRoaXMKPiBzZXJpZXMgdXNlcyB0aGlz
-IGV4dGVuc2lvbiB0byByZXF1ZXN0IG1pc2FsaWduZWQgYWNjZXNzIGV4Y2VwdGlvbgo+IGRlbGVn
-YXRpb24gdG8gUy1tb2RlIGluIG9yZGVyIHRvIGxldCB0aGUga2VybmVsIGhhbmRsZSBpdC4gSXQg
-YWxzbyBhZGRzCj4gc3VwcG9ydCBmb3IgdGhlIEtWTSBGV0ZUIFNCSSBleHRlbnNpb24gYmFzZWQg
-b24gdGhlIG1pc2FsaWduZWQgYWNjZXNzCj4gaGFuZGxpbmcgaW5mcmFzdHJ1Y3R1cmUuCj4KPiBG
-V0ZUIFNCSSBleHRlbnNpb24gaXMgcGFydCBvZiB0aGUgU0JJIFYzLjAgc3BlY2lmaWNhdGlvbnMg
-WzFdLiBJdCBjYW4gYmUKPiB0ZXN0ZWQgdXNpbmcgdGhlIHFlbXUgcHJvdmlkZWQgYXQgWzJdIHdo
-aWNoIGNvbnRhaW5zIHRoZSBzZXJpZXMgZnJvbQo+IFszXS4gVXBzdHJlYW0ga3ZtLXVuaXQtdGVz
-dHMgY2FuIGJlIHVzZWQgaW5zaWRlIGt2bSB0byB0ZXN0cyB0aGUgY29ycmVjdAo+IGRlbGVnYXRp
-b24gb2YgbWlzYWxpZ25lZCBleGNlcHRpb25zLiBVcHN0cmVhbSBPcGVuU0JJIGNhbiBiZSB1c2Vk
-Lgo+Cj4gTm90ZTogU2luY2UgU0JJIFYzLjAgaXMgbm90IHlldCByYXRpZmllZCwgRldGVCBleHRl
-bnNpb24gQVBJIGlzIHNwbGl0Cj4gYmV0d2VlbiBpbnRlcmZhY2Ugb25seSBhbmQgaW1wbGVtZW50
-YXRpb24sIGFsbG93aW5nIHRvIHBpY2sgb25seSB0aGUKPiBpbnRlcmZhY2Ugd2hpY2ggZG8gbm90
-IGhhdmUgaGFyZCBkZXBlbmRlbmNpZXMgb24gU0JJLgo+Cj4gVGhlIHRlc3RzIGNhbiBiZSBydW4g
-dXNpbmcgdGhlIGtzZWxmdGVzdCBmcm9tIHNlcmllcyBbNF0uCj4KPiAkIHFlbXUtc3lzdGVtLXJp
-c2N2NjQgXAo+IAktY3B1IHJ2NjQsdHJhcC1taXNhbGlnbmVkLWFjY2Vzcz10cnVlLHY9dHJ1ZSBc
-Cj4gCS1NIHZpcnQgXAo+IAktbSAxMDI0TSBcCj4gCS1iaW9zIGZ3X2R5bmFtaWMuYmluIFwKPiAJ
-LWtlcm5lbCBJbWFnZQo+ICAuLi4KPgo+ICAjIC4vbWlzYWxpZ25lZAo+ICBUQVAgdmVyc2lvbiAx
-Mwo+ICAxLi4yMwo+ICAjIFN0YXJ0aW5nIDIzIHRlc3RzIGZyb20gMSB0ZXN0IGNhc2VzLgo+ICAj
-ICBSVU4gICAgICAgICAgIGdsb2JhbC5ncF9sb2FkX2xoIC4uLgo+ICAjICAgICAgICAgICAgT0sg
-IGdsb2JhbC5ncF9sb2FkX2xoCj4gIG9rIDEgZ2xvYmFsLmdwX2xvYWRfbGgKPiAgIyAgUlVOICAg
-ICAgICAgICBnbG9iYWwuZ3BfbG9hZF9saHUgLi4uCj4gICMgICAgICAgICAgICBPSyAgZ2xvYmFs
-LmdwX2xvYWRfbGh1Cj4gIG9rIDIgZ2xvYmFsLmdwX2xvYWRfbGh1Cj4gICMgIFJVTiAgICAgICAg
-ICAgZ2xvYmFsLmdwX2xvYWRfbHcgLi4uCj4gICMgICAgICAgICAgICBPSyAgZ2xvYmFsLmdwX2xv
-YWRfbHcKPiAgb2sgMyBnbG9iYWwuZ3BfbG9hZF9sdwo+ICAjICBSVU4gICAgICAgICAgIGdsb2Jh
-bC5ncF9sb2FkX2x3dSAuLi4KPiAgIyAgICAgICAgICAgIE9LICBnbG9iYWwuZ3BfbG9hZF9sd3UK
-PiAgb2sgNCBnbG9iYWwuZ3BfbG9hZF9sd3UKPiAgIyAgUlVOICAgICAgICAgICBnbG9iYWwuZ3Bf
-bG9hZF9sZCAuLi4KPiAgIyAgICAgICAgICAgIE9LICBnbG9iYWwuZ3BfbG9hZF9sZAo+ICBvayA1
-IGdsb2JhbC5ncF9sb2FkX2xkCj4gICMgIFJVTiAgICAgICAgICAgZ2xvYmFsLmdwX2xvYWRfY19s
-dyAuLi4KPiAgIyAgICAgICAgICAgIE9LICBnbG9iYWwuZ3BfbG9hZF9jX2x3Cj4gIG9rIDYgZ2xv
-YmFsLmdwX2xvYWRfY19sdwo+ICAjICBSVU4gICAgICAgICAgIGdsb2JhbC5ncF9sb2FkX2NfbGQg
-Li4uCj4gICMgICAgICAgICAgICBPSyAgZ2xvYmFsLmdwX2xvYWRfY19sZAo+ICBvayA3IGdsb2Jh
-bC5ncF9sb2FkX2NfbGQKPiAgIyAgUlVOICAgICAgICAgICBnbG9iYWwuZ3BfbG9hZF9jX2xkc3Ag
-Li4uCj4gICMgICAgICAgICAgICBPSyAgZ2xvYmFsLmdwX2xvYWRfY19sZHNwCj4gIG9rIDggZ2xv
-YmFsLmdwX2xvYWRfY19sZHNwCj4gICMgIFJVTiAgICAgICAgICAgZ2xvYmFsLmdwX2xvYWRfc2gg
-Li4uCj4gICMgICAgICAgICAgICBPSyAgZ2xvYmFsLmdwX2xvYWRfc2gKPiAgb2sgOSBnbG9iYWwu
-Z3BfbG9hZF9zaAo+ICAjICBSVU4gICAgICAgICAgIGdsb2JhbC5ncF9sb2FkX3N3IC4uLgo+ICAj
-ICAgICAgICAgICAgT0sgIGdsb2JhbC5ncF9sb2FkX3N3Cj4gIG9rIDEwIGdsb2JhbC5ncF9sb2Fk
-X3N3Cj4gICMgIFJVTiAgICAgICAgICAgZ2xvYmFsLmdwX2xvYWRfc2QgLi4uCj4gICMgICAgICAg
-ICAgICBPSyAgZ2xvYmFsLmdwX2xvYWRfc2QKPiAgb2sgMTEgZ2xvYmFsLmdwX2xvYWRfc2QKPiAg
-IyAgUlVOICAgICAgICAgICBnbG9iYWwuZ3BfbG9hZF9jX3N3IC4uLgo+ICAjICAgICAgICAgICAg
-T0sgIGdsb2JhbC5ncF9sb2FkX2Nfc3cKPiAgb2sgMTIgZ2xvYmFsLmdwX2xvYWRfY19zdwo+ICAj
-ICBSVU4gICAgICAgICAgIGdsb2JhbC5ncF9sb2FkX2Nfc2QgLi4uCj4gICMgICAgICAgICAgICBP
-SyAgZ2xvYmFsLmdwX2xvYWRfY19zZAo+ICBvayAxMyBnbG9iYWwuZ3BfbG9hZF9jX3NkCj4gICMg
-IFJVTiAgICAgICAgICAgZ2xvYmFsLmdwX2xvYWRfY19zZHNwIC4uLgo+ICAjICAgICAgICAgICAg
-T0sgIGdsb2JhbC5ncF9sb2FkX2Nfc2RzcAo+ICBvayAxNCBnbG9iYWwuZ3BfbG9hZF9jX3Nkc3AK
-PiAgIyAgUlVOICAgICAgICAgICBnbG9iYWwuZnB1X2xvYWRfZmx3IC4uLgo+ICAjICAgICAgICAg
-ICAgT0sgIGdsb2JhbC5mcHVfbG9hZF9mbHcKPiAgb2sgMTUgZ2xvYmFsLmZwdV9sb2FkX2Zsdwo+
-ICAjICBSVU4gICAgICAgICAgIGdsb2JhbC5mcHVfbG9hZF9mbGQgLi4uCj4gICMgICAgICAgICAg
-ICBPSyAgZ2xvYmFsLmZwdV9sb2FkX2ZsZAo+ICBvayAxNiBnbG9iYWwuZnB1X2xvYWRfZmxkCj4g
-ICMgIFJVTiAgICAgICAgICAgZ2xvYmFsLmZwdV9sb2FkX2NfZmxkIC4uLgo+ICAjICAgICAgICAg
-ICAgT0sgIGdsb2JhbC5mcHVfbG9hZF9jX2ZsZAo+ICBvayAxNyBnbG9iYWwuZnB1X2xvYWRfY19m
-bGQKPiAgIyAgUlVOICAgICAgICAgICBnbG9iYWwuZnB1X2xvYWRfY19mbGRzcCAuLi4KPiAgIyAg
-ICAgICAgICAgIE9LICBnbG9iYWwuZnB1X2xvYWRfY19mbGRzcAo+ICBvayAxOCBnbG9iYWwuZnB1
-X2xvYWRfY19mbGRzcAo+ICAjICBSVU4gICAgICAgICAgIGdsb2JhbC5mcHVfc3RvcmVfZnN3IC4u
-Lgo+ICAjICAgICAgICAgICAgT0sgIGdsb2JhbC5mcHVfc3RvcmVfZnN3Cj4gIG9rIDE5IGdsb2Jh
-bC5mcHVfc3RvcmVfZnN3Cj4gICMgIFJVTiAgICAgICAgICAgZ2xvYmFsLmZwdV9zdG9yZV9mc2Qg
-Li4uCj4gICMgICAgICAgICAgICBPSyAgZ2xvYmFsLmZwdV9zdG9yZV9mc2QKPiAgb2sgMjAgZ2xv
-YmFsLmZwdV9zdG9yZV9mc2QKPiAgIyAgUlVOICAgICAgICAgICBnbG9iYWwuZnB1X3N0b3JlX2Nf
-ZnNkIC4uLgo+ICAjICAgICAgICAgICAgT0sgIGdsb2JhbC5mcHVfc3RvcmVfY19mc2QKPiAgb2sg
-MjEgZ2xvYmFsLmZwdV9zdG9yZV9jX2ZzZAo+ICAjICBSVU4gICAgICAgICAgIGdsb2JhbC5mcHVf
-c3RvcmVfY19mc2RzcCAuLi4KPiAgIyAgICAgICAgICAgIE9LICBnbG9iYWwuZnB1X3N0b3JlX2Nf
-ZnNkc3AKPiAgb2sgMjIgZ2xvYmFsLmZwdV9zdG9yZV9jX2ZzZHNwCj4gICMgIFJVTiAgICAgICAg
-ICAgZ2xvYmFsLmdlbl9zaWdidXMgLi4uCj4gIFsxMjc5Ny45ODg2NDddIG1pc2FsaWduZWRbNjE4
-XTogdW5oYW5kbGVkIHNpZ25hbCA3IGNvZGUgMHgxIGF0IDB4MDAwMDAwMDAwMDAxNGRjMCBpbiBt
-aXNhbGlnbmVkWzRkYzAsMTAwMDArNzYwMDBdCj4gIFsxMjc5Ny45ODg5OTBdIENQVTogMCBVSUQ6
-IDAgUElEOiA2MTggQ29tbTogbWlzYWxpZ25lZCBOb3QgdGFpbnRlZCA2LjEzLjAtcmM2LTAwMDA4
-LWc0ZWM0NDY4OTY3YzktZGlydHkgIzUxCj4gIFsxMjc5Ny45ODkxNjldIEhhcmR3YXJlIG5hbWU6
-IHJpc2N2LXZpcnRpbyxxZW11IChEVCkKPiAgWzEyNzk3Ljk4OTI2NF0gZXBjIDogMDAwMDAwMDAw
-MDAxNGRjMCByYSA6IDAwMDAwMDAwMDAwMTRkMDAgc3AgOiAwMDAwN2ZmZmUxNjVkMTAwCj4gIFsx
-Mjc5Ny45ODk0MDddICBncCA6IDAwMDAwMDAwMDAwOGY2ZTggdHAgOiAwMDAwMDAwMDAwMDk1NzYw
-IHQwIDogMDAwMDAwMDAwMDAwMDAwOAo+ICBbMTI3OTcuOTg5NTQ0XSAgdDEgOiAwMDAwMDAwMDAw
-MDk2NWQ4IHQyIDogMDAwMDAwMDAwMDA4ZTgzMCBzMCA6IDAwMDA3ZmZmZTE2NWQxNjAKPiAgWzEy
-Nzk3Ljk4OTY5Ml0gIHMxIDogMDAwMDAwMDAwMDAwMDAxYSBhMCA6IDAwMDAwMDAwMDAwMDAwMDAg
-YTEgOiAwMDAwMDAwMDAwMDAwMDAyCj4gIFsxMjc5Ny45ODk4MzFdICBhMiA6IDAwMDAwMDAwMDAw
-MDAwMDAgYTMgOiAwMDAwMDAwMDAwMDAwMDAwIGE0IDogZmZmZmZmZmZkZWFkYmVlZgo+ICBbMTI3
-OTcuOTg5OTY0XSAgYTUgOiAwMDAwMDAwMDAwMDhlZjYxIGE2IDogNjI2NzY5NzM1ZjZlMDAwMCBh
-NyA6IGZmZmZmZmZmZmZmZmYwMDAKPiAgWzEyNzk3Ljk5MDA5NF0gIHMyIDogMDAwMDAwMDAwMDAw
-MDAwMSBzMyA6IDAwMDA3ZmZmZTE2NWQ4MzggczQgOiAwMDAwN2ZmZmUxNjVkODQ4Cj4gIFsxMjc5
-Ny45OTAyMzhdICBzNSA6IDAwMDAwMDAwMDAwMDAwMWEgczYgOiAwMDAwMDAwMDAwMDEwNDQyIHM3
-IDogMDAwMDAwMDAwMDAxMDIwMAo+ICBbMTI3OTcuOTkwMzkxXSAgczggOiAwMDAwMDAwMDAwMDAw
-MDNhIHM5IDogMDAwMDAwMDAwMDA5NDUwOCBzMTA6IDAwMDAwMDAwMDAwMDAwMDAKPiAgWzEyNzk3
-Ljk5MDUyNl0gIHMxMTogMDAwMDU1NTU2NzQ2MDY2OCB0MyA6IDAwMDA3ZmZmZTE2NWQwNzAgdDQg
-OiAwMDAwMDAwMDAwMDk2NWQwCj4gIFsxMjc5Ny45OTA2NTZdICB0NSA6IGZlZmVmZWZlZmVmZWZl
-ZmYgdDYgOiAwMDAwMDAwMDAwMDAwMDczCj4gIFsxMjc5Ny45OTA3NTZdIHN0YXR1czogMDAwMDAw
-MDIwMDAwNDAyMCBiYWRhZGRyOiAwMDAwMDAwMDAwMDhlZjYxIGNhdXNlOiAwMDAwMDAwMDAwMDAw
-MDA2Cj4gIFsxMjc5Ny45OTA5MTFdIENvZGU6IDg3OTMgODc5MSAzNDIzIGZjZjQgMzc4MyBmYzg0
-IGM3MzcgZGVhZCAwNzEzIGVlZjcgKGMzOTgpIDAwMDEKPiAgIyAgICAgICAgICAgIE9LICBnbG9i
-YWwuZ2VuX3NpZ2J1cwo+ICBvayAyMyBnbG9iYWwuZ2VuX3NpZ2J1cwo+ICAjIFBBU1NFRDogMjMg
-LyAyMyB0ZXN0cyBwYXNzZWQuCj4gICMgVG90YWxzOiBwYXNzOjIzIGZhaWw6MCB4ZmFpbDowIHhw
-YXNzOjAgc2tpcDowIGVycm9yOjAKPgo+IFdpdGgga3ZtLXRvb2xzOgo+Cj4gICMgbGt2bSBydW4g
-LWsgc2JpLmZsYXQgLW0gMTI4Cj4gICBJbmZvOiAjIGxrdm0gcnVuIC1rIHNiaS5mbGF0IC1tIDEy
-OCAtYyAxIC0tbmFtZSBndWVzdC05Nwo+ICAgSW5mbzogUmVtb3ZlZCBnaG9zdCBzb2NrZXQgZmls
-ZSAiL3Jvb3QvLmxrdm0vL2d1ZXN0LTk3LnNvY2siLgo+Cj4gICMjIyMjIyMjIyMjIyMjIyMjIyMj
-IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjCj4g
-ICMgICAga3ZtLXVuaXQtdGVzdHMKPiAgIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
-IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKPgo+ICAuLi4gW3Rlc3Qg
-bWVzc2FnZXMgZWxpZGVkXQo+ICBQQVNTOiBzYmk6IGZ3ZnQ6IEZXRlQgZXh0ZW5zaW9uIHByb2Jp
-bmcgbm8gZXJyb3IKPiAgUEFTUzogc2JpOiBmd2Z0OiBnZXQvc2V0IHJlc2VydmVkIGZlYXR1cmUg
-MHg2IGVycm9yID09IFNCSV9FUlJfREVOSUVECj4gIFBBU1M6IHNiaTogZndmdDogZ2V0L3NldCBy
-ZXNlcnZlZCBmZWF0dXJlIDB4M2ZmZmZmZmYgZXJyb3IgPT0gU0JJX0VSUl9ERU5JRUQKPiAgUEFT
-Uzogc2JpOiBmd2Z0OiBnZXQvc2V0IHJlc2VydmVkIGZlYXR1cmUgMHg4MDAwMDAwMCBlcnJvciA9
-PSBTQklfRVJSX0RFTklFRAo+ICBQQVNTOiBzYmk6IGZ3ZnQ6IGdldC9zZXQgcmVzZXJ2ZWQgZmVh
-dHVyZSAweGJmZmZmZmZmIGVycm9yID09IFNCSV9FUlJfREVOSUVECj4gIFBBU1M6IHNiaTogZndm
-dDogbWlzYWxpZ25lZF9kZWxlZzogR2V0IG1pc2FsaWduZWQgZGVsZWcgZmVhdHVyZSBubyBlcnJv
-cgo+ICBQQVNTOiBzYmk6IGZ3ZnQ6IG1pc2FsaWduZWRfZGVsZWc6IFNldCBtaXNhbGlnbmVkIGRl
-bGVnIGZlYXR1cmUgaW52YWxpZCB2YWx1ZSBlcnJvcgo+ICBQQVNTOiBzYmk6IGZ3ZnQ6IG1pc2Fs
-aWduZWRfZGVsZWc6IFNldCBtaXNhbGlnbmVkIGRlbGVnIGZlYXR1cmUgaW52YWxpZCB2YWx1ZSBl
-cnJvcgo+ICBQQVNTOiBzYmk6IGZ3ZnQ6IG1pc2FsaWduZWRfZGVsZWc6IFNldCBtaXNhbGlnbmVk
-IGRlbGVnIGZlYXR1cmUgdmFsdWUgbm8gZXJyb3IKPiAgUEFTUzogc2JpOiBmd2Z0OiBtaXNhbGln
-bmVkX2RlbGVnOiBTZXQgbWlzYWxpZ25lZCBkZWxlZyBmZWF0dXJlIHZhbHVlIDAKPiAgUEFTUzog
-c2JpOiBmd2Z0OiBtaXNhbGlnbmVkX2RlbGVnOiBTZXQgbWlzYWxpZ25lZCBkZWxlZyBmZWF0dXJl
-IHZhbHVlIG5vIGVycm9yCj4gIFBBU1M6IHNiaTogZndmdDogbWlzYWxpZ25lZF9kZWxlZzogU2V0
-IG1pc2FsaWduZWQgZGVsZWcgZmVhdHVyZSB2YWx1ZSAxCj4gIFBBU1M6IHNiaTogZndmdDogbWlz
-YWxpZ25lZF9kZWxlZzogVmVyaWZ5IG1pc2FsaWduZWQgbG9hZCBleGNlcHRpb24gdHJhcCBpbiBz
-dXBlcnZpc29yCj4gIFNVTU1BUlk6IDUwIHRlc3RzLCAyIHVuZXhwZWN0ZWQgZmFpbHVyZXMsIDEy
-IHNraXBwZWQKPgo+IFRoaXMgc2VyaWVzIGlzIGF2YWlsYWJsZSBhdCBbNV0uCj4KPiBMaW5rOiBo
-dHRwczovL2dpdGh1Yi5jb20vcmlzY3Ytbm9uLWlzYS9yaXNjdi1zYmktZG9jL3JlbGVhc2VzL2Rv
-d25sb2FkL3Z2My4wLXJjMi9yaXNjdi1zYmkucGRmIFsxXQo+IExpbms6IGh0dHBzOi8vZ2l0aHVi
-LmNvbS9yaXZvc2luYy9xZW11L3RyZWUvZGV2L2NsZWdlci9taXNhbGlnbmVkIFsyXQo+IExpbms6
-IGh0dHBzOi8vbG9yZS5rZXJuZWwub3JnL2FsbC8yMDI0MTIxMTIxMTkzMy4xOTg3OTItMy1ma29u
-cmFkQGFtZC5jb20vVC8gWzNdCj4gTGluazogaHR0cHM6Ly9sb3JlLmtlcm5lbC5vcmcvbGludXgt
-cmlzY3YvMjAyNTA0MTQxMjM1NDMuMTYxNTQ3OC0xLWNsZWdlckByaXZvc2luYy5jb20gWzRdCj4g
-TGluazogaHR0cHM6Ly9naXRodWIuY29tL3Jpdm9zaW5jL2xpbnV4L3RyZWUvZGV2L2NsZWdlci9m
-d2Z0IFs1XQo+IC0tLQo+Cj4gVjg6Cj4gIC0gTW92ZSBtaXNhbGlnbmVkX2FjY2Vzc19zcGVlZCB1
-bmRlciBDT05GSUdfUklTQ1ZfTUlTQUxJR05FRCBhbmQgYWRkIGEKPiAgICBzZXBhcmF0ZSBjb21t
-aXQgZm9yIHRoYXQuCj4KPiBWNzoKPiAgLSBGaXggaWZkZWZlcnkgYnVpbGQgcHJvYmxlbXMKPiAg
-LSBNb3ZlIHNiaV9md2Z0X2lzX3N1cHBvcnRlZCB3aXRoIGZ3ZnRfc2V0X3JlcSBzdHJ1Y3QKPiAg
-LSBBZGRlZCBBdGlzaCBSZXZpZXdlZC1ieQo+ICAtIFVwZGF0ZWQgS1ZNIHZjcHUgY2ZnIGhlZGVs
-ZWcgdmFsdWUgaW4gc2V0X2RlbGVnYXRpb24KPiAgLSBDaGFuZ2VkIFNCSSBFVElNRSBlcnJvciBt
-YXBwaW5nIHRvIEVUSU1FRE9VVAo+ICAtIEZpeGVkIGEgZmV3IHR5cG8gcmVwb3J0ZWQgYnkgQWxv
-awo+Cj4gVjY6Cj4gIC0gUmVuYW1lIEZXRlQgaW50ZXJmYWNlIHRvIHJlbW92ZSAiX2xvY2FsIgo+
-ICAtIEZpeCB0ZXN0IGZvciBNRURFTEVHIHZhbHVlcyBpbiBLVk0gRldGVCBzdXBwb3J0Cj4gIC0g
-QWRkIF9faW5pdCBmb3IgdW5hbGlnbmVkX2FjY2Vzc19pbml0KCkKPiAgLSBSZWJhc2VkIG9uIG1h
-c3Rlcgo+Cj4gVjU6Cj4gIC0gUmV0dXJuIEVSQU5HRSBhcyBtYXBwaW5nIGZvciBTQklfRVJSX0JB
-RF9SQU5HRQo+ICAtIFJlbW92ZWQgdW51c2VkIHNiaV9md2Z0X2dldCgpCj4gIC0gRml4IGtlcm5l
-bCBmb3Igc2JpX2Z3ZnRfbG9jYWxfc2V0X2NwdW1hc2soKQo+ICAtIEZpeCBpbmRlbnRhdGlvbiBm
-b3Igc2JpX2Z3ZnRfbG9jYWxfc2V0KCkKPiAgLSBSZW1vdmUgc3B1cmlvdXMgc3BhY2UgaW4ga3Zt
-X3NiaV9md2Z0X29wcy4KPiAgLSBSZWJhc2VkIG9uIG9yaWdpbi9tYXN0ZXIKPiAgLSBSZW1vdmUg
-Zml4ZXMgY29tbWl0cyBhbmQgc2VudCB0aGVtIGFzIGEgc2VwYXJhdGUgc2VyaWVzIFs0XQo+Cj4g
-VjQ6Cj4gIC0gQ2hlY2sgU0JJIHZlcnNpb24gMy4wIGluc3RlYWQgb2YgMi4wIGZvciBGV0ZUIHBy
-ZXNlbmNlCj4gIC0gVXNlIGxvbmcgZm9yIGt2bV9zYmlfZndmdCBvcGVyYXRpb24gcmV0dXJuIHZh
-bHVlCj4gIC0gSW5pdCBLVk0gc2JpIGV4dGVuc2lvbiBldmVuIGlmIGRlZmF1bHRfZGlzYWJsZWQK
-PiAgLSBSZW1vdmUgcmV2ZXJ0X29uX2ZhaWwgcGFyYW1ldGVyIGZvciBzYmlfZndmdF9mZWF0dXJl
-X3NldCgpLgo+ICAtIEZpeCBjb21tZW50cyBmb3Igc2JpX2Z3ZnRfc2V0L2dldCgpCj4gIC0gT25s
-eSBoYW5kbGUgbG9jYWwgZmVhdHVyZXMgKHRoZXJlIGFyZSBubyBnbG9iYWxzIHlldCBpbiB0aGUg
-c3BlYykKPiAgLSBBZGQgbmV3IFNCSSBlcnJvcnMgdG8gc2JpX2Vycl9tYXBfbGludXhfZXJybm8o
-KQo+Cj4gVjM6Cj4gIC0gQWRkZWQgY29tbWVudCBhYm91dCBrdm0gc2JpIGZ3ZnQgc3VwcG9ydGVk
-L3NldC9nZXQgY2FsbGJhY2sKPiAgICByZXF1aXJlbWVudHMKPiAgLSBNb3ZlIHN0cnVjdCBrdm1f
-c2JpX2Z3ZnRfZmVhdHVyZSBpbiBrdm1fc2JpX2Z3ZnQuYwo+ICAtIEFkZCBhIEZXRlQgaW50ZXJm
-YWNlCj4KPiBWMjoKPiAgLSBBZGRlZCBLc2VsZnRlc3QgZm9yIG1pc2FsaWduZWQgdGVzdGluZwo+
-ICAtIEFkZGVkIGdldF91c2VyKCkgdXNhZ2UgaW5zdGVhZCBvZiBfX2dldF91c2VyKCkKPiAgLSBS
-ZWVuYWJsZSBpbnRlcnJ1cHQgd2hlbiBwb3NzaWJsZSBpbiBtaXNhbGlnbmVkIGFjY2VzcyBoYW5k
-bGluZwo+ICAtIERvY3VtZW50IHRoYXQgcmlzY3Ygc3VwcG9ydHMgdW5hbGlnbmVkLXRyYXBzCj4g
-IC0gRml4IEtWTSBleHRlbnNpb24gc3RhdGUgd2hlbiBhbiBpbml0IGZ1bmN0aW9uIGlzIHByZXNl
-bnQKPiAgLSBSZXdvcmsgU0JJIG1pc2FsaWduZWQgYWNjZXNzZXMgdHJhcCBkZWxlZ2F0aW9uIGNv
-ZGUKPiAgLSBBZGRlZCBzdXBwb3J0IGZvciBDUFUgaG90cGx1Z2dpbmcKPiAgLSBBZGRlZCBLVk0g
-U0JJIHJlc2V0IGNhbGxiYWNrCj4gIC0gQWRkZWQgcmVzZXQgZm9yIEtWTSBTQkkgRldGVCBsb2Nr
-Cj4gIC0gUmV0dXJuIFNCSV9FUlJfREVOSUVEX0xPQ0tFRCB3aGVuIExPQ0sgZmxhZyBpcyBzZXQK
-Pgo+IENsw6ltZW50IEzDqWdlciAoMTQpOgo+ICAgcmlzY3Y6IHNiaTogYWRkIEZpcm13YXJlIEZl
-YXR1cmUgKEZXRlQpIFNCSSBleHRlbnNpb25zIGRlZmluaXRpb25zCj4gICByaXNjdjogc2JpOiBy
-ZW1vdmUgdXNlbGVzcyBwYXJlbnRoZXNpcwo+ICAgcmlzY3Y6IHNiaTogYWRkIG5ldyBTQkkgZXJy
-b3IgbWFwcGluZ3MKPiAgIHJpc2N2OiBzYmk6IGFkZCBGV0ZUIGV4dGVuc2lvbiBpbnRlcmZhY2UK
-PiAgIHJpc2N2OiBzYmk6IGFkZCBTQkkgRldGVCBleHRlbnNpb24gY2FsbHMKPiAgIHJpc2N2OiBt
-aXNhbGlnbmVkOiByZXF1ZXN0IG1pc2FsaWduZWQgZXhjZXB0aW9uIGZyb20gU0JJCj4gICByaXNj
-djogbWlzYWxpZ25lZDogdXNlIG9uX2VhY2hfY3B1KCkgZm9yIHNjYWxhciBtaXNhbGlnbmVkIGFj
-Y2Vzcwo+ICAgICBwcm9iaW5nCj4gICByaXNjdjogbWlzYWxpZ25lZDogZGVjbGFyZSBtaXNhbGln
-bmVkX2FjY2Vzc19zcGVlZCB1bmRlcgo+ICAgICBDT05GSUdfUklTQ1ZfTUlTQUxJR05FRAo+ICAg
-cmlzY3Y6IG1pc2FsaWduZWQ6IG1vdmUgZW11bGF0ZWQgYWNjZXNzIHVuaWZvcm1pdHkgY2hlY2sg
-aW4gYSBmdW5jdGlvbgo+ICAgcmlzY3Y6IG1pc2FsaWduZWQ6IGFkZCBhIGZ1bmN0aW9uIHRvIGNo
-ZWNrIG1pc2FsaWduIHRyYXAgZGVsZWdhYmlsaXR5Cj4gICBSSVNDLVY6IEtWTTogYWRkIFNCSSBl
-eHRlbnNpb24gaW5pdCgpL2RlaW5pdCgpIGZ1bmN0aW9ucwo+ICAgUklTQy1WOiBLVk06IGFkZCBT
-QkkgZXh0ZW5zaW9uIHJlc2V0IGNhbGxiYWNrCj4gICBSSVNDLVY6IEtWTTogYWRkIHN1cHBvcnQg
-Zm9yIEZXRlQgU0JJIGV4dGVuc2lvbgo+ICAgUklTQy1WOiBLVk06IGFkZCBzdXBwb3J0IGZvciBT
-QklfRldGVF9NSVNBTElHTkVEX0RFTEVHCj4KPiAgYXJjaC9yaXNjdi9pbmNsdWRlL2FzbS9jcHVm
-ZWF0dXJlLmggICAgICAgIHwgIDE0ICstCj4gIGFyY2gvcmlzY3YvaW5jbHVkZS9hc20va3ZtX2hv
-c3QuaCAgICAgICAgICB8ICAgNSArLQo+ICBhcmNoL3Jpc2N2L2luY2x1ZGUvYXNtL2t2bV92Y3B1
-X3NiaS5oICAgICAgfCAgMTIgKwo+ICBhcmNoL3Jpc2N2L2luY2x1ZGUvYXNtL2t2bV92Y3B1X3Ni
-aV9md2Z0LmggfCAgMjkgKysrCj4gIGFyY2gvcmlzY3YvaW5jbHVkZS9hc20vc2JpLmggICAgICAg
-ICAgICAgICB8ICA2MCArKysrKwo+ICBhcmNoL3Jpc2N2L2luY2x1ZGUvdWFwaS9hc20va3ZtLmgg
-ICAgICAgICAgfCAgIDEgKwo+ICBhcmNoL3Jpc2N2L2tlcm5lbC9zYmkuYyAgICAgICAgICAgICAg
-ICAgICAgfCAgODEgKysrKysrLQo+ICBhcmNoL3Jpc2N2L2tlcm5lbC90cmFwc19taXNhbGlnbmVk
-LmMgICAgICAgfCAxMTIgKysrKysrKystCj4gIGFyY2gvcmlzY3Yva2VybmVsL3VuYWxpZ25lZF9h
-Y2Nlc3Nfc3BlZWQuYyB8ICAgOCArLQo+ICBhcmNoL3Jpc2N2L2t2bS9NYWtlZmlsZSAgICAgICAg
-ICAgICAgICAgICAgfCAgIDEgKwo+ICBhcmNoL3Jpc2N2L2t2bS92Y3B1LmMgICAgICAgICAgICAg
-ICAgICAgICAgfCAgIDQgKy0KPiAgYXJjaC9yaXNjdi9rdm0vdmNwdV9zYmkuYyAgICAgICAgICAg
-ICAgICAgIHwgIDU0ICsrKysrCj4gIGFyY2gvcmlzY3Yva3ZtL3ZjcHVfc2JpX2Z3ZnQuYyAgICAg
-ICAgICAgICB8IDI1NyArKysrKysrKysrKysrKysrKysrKysKPiAgYXJjaC9yaXNjdi9rdm0vdmNw
-dV9zYmlfc3RhLmMgICAgICAgICAgICAgIHwgICAzICstCj4gIDE0IGZpbGVzIGNoYW5nZWQsIDYy
-MCBpbnNlcnRpb25zKCspLCAyMSBkZWxldGlvbnMoLSkKPiAgY3JlYXRlIG1vZGUgMTAwNjQ0IGFy
-Y2gvcmlzY3YvaW5jbHVkZS9hc20va3ZtX3ZjcHVfc2JpX2Z3ZnQuaAo+ICBjcmVhdGUgbW9kZSAx
-MDA2NDQgYXJjaC9yaXNjdi9rdm0vdmNwdV9zYmlfZndmdC5jCgpTb3JyeSBJJ20gc3RpbGwga2lu
-ZCBvZiBvdXQgb2YgaXQgaGVyZSwgYnV0IEkgdGhpbmsgQWxleCB3YXMgc2F5aW5nIHRoaXMgCmhh
-cyBkZXBlbmRlbmNpZXMgaW4gdGhlIHBhdGNod29yayBjYWxsIHRoaXMgbW9ybmluZz8KCi0tIApr
-dm0tcmlzY3YgbWFpbGluZyBsaXN0Cmt2bS1yaXNjdkBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6
-Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8va3ZtLXJpc2N2Cg==
+On Wed, Jun 04, 2025 at 11:02:35AM -0700, Palmer Dabbelt wrote:
+> On Fri, 23 May 2025 03:19:17 PDT (-0700), cleger@rivosinc.com wrote:
+> > The SBI Firmware Feature extension allows the S-mode to request some
+> > specific features (either hardware or software) to be enabled. This
+> > series uses this extension to request misaligned access exception
+> > delegation to S-mode in order to let the kernel handle it. It also adds
+> > support for the KVM FWFT SBI extension based on the misaligned access
+> > handling infrastructure.
+> > =
+
+> > FWFT SBI extension is part of the SBI V3.0 specifications [1]. It can be
+> > tested using the qemu provided at [2] which contains the series from
+> > [3]. Upstream kvm-unit-tests can be used inside kvm to tests the correct
+> > delegation of misaligned exceptions. Upstream OpenSBI can be used.
+> > =
+
+> > Note: Since SBI V3.0 is not yet ratified, FWFT extension API is split
+> > between interface only and implementation, allowing to pick only the
+> > interface which do not have hard dependencies on SBI.
+> > =
+
+> > The tests can be run using the kselftest from series [4].
+> > =
+
+> > $ qemu-system-riscv64 \
+> > 	-cpu rv64,trap-misaligned-access=3Dtrue,v=3Dtrue \
+> > 	-M virt \
+> > 	-m 1024M \
+> > 	-bios fw_dynamic.bin \
+> > 	-kernel Image
+> >  ...
+> > =
+
+> >  # ./misaligned
+> >  TAP version 13
+> >  1..23
+> >  # Starting 23 tests from 1 test cases.
+> >  #  RUN           global.gp_load_lh ...
+> >  #            OK  global.gp_load_lh
+> >  ok 1 global.gp_load_lh
+> >  #  RUN           global.gp_load_lhu ...
+> >  #            OK  global.gp_load_lhu
+> >  ok 2 global.gp_load_lhu
+> >  #  RUN           global.gp_load_lw ...
+> >  #            OK  global.gp_load_lw
+> >  ok 3 global.gp_load_lw
+> >  #  RUN           global.gp_load_lwu ...
+> >  #            OK  global.gp_load_lwu
+> >  ok 4 global.gp_load_lwu
+> >  #  RUN           global.gp_load_ld ...
+> >  #            OK  global.gp_load_ld
+> >  ok 5 global.gp_load_ld
+> >  #  RUN           global.gp_load_c_lw ...
+> >  #            OK  global.gp_load_c_lw
+> >  ok 6 global.gp_load_c_lw
+> >  #  RUN           global.gp_load_c_ld ...
+> >  #            OK  global.gp_load_c_ld
+> >  ok 7 global.gp_load_c_ld
+> >  #  RUN           global.gp_load_c_ldsp ...
+> >  #            OK  global.gp_load_c_ldsp
+> >  ok 8 global.gp_load_c_ldsp
+> >  #  RUN           global.gp_load_sh ...
+> >  #            OK  global.gp_load_sh
+> >  ok 9 global.gp_load_sh
+> >  #  RUN           global.gp_load_sw ...
+> >  #            OK  global.gp_load_sw
+> >  ok 10 global.gp_load_sw
+> >  #  RUN           global.gp_load_sd ...
+> >  #            OK  global.gp_load_sd
+> >  ok 11 global.gp_load_sd
+> >  #  RUN           global.gp_load_c_sw ...
+> >  #            OK  global.gp_load_c_sw
+> >  ok 12 global.gp_load_c_sw
+> >  #  RUN           global.gp_load_c_sd ...
+> >  #            OK  global.gp_load_c_sd
+> >  ok 13 global.gp_load_c_sd
+> >  #  RUN           global.gp_load_c_sdsp ...
+> >  #            OK  global.gp_load_c_sdsp
+> >  ok 14 global.gp_load_c_sdsp
+> >  #  RUN           global.fpu_load_flw ...
+> >  #            OK  global.fpu_load_flw
+> >  ok 15 global.fpu_load_flw
+> >  #  RUN           global.fpu_load_fld ...
+> >  #            OK  global.fpu_load_fld
+> >  ok 16 global.fpu_load_fld
+> >  #  RUN           global.fpu_load_c_fld ...
+> >  #            OK  global.fpu_load_c_fld
+> >  ok 17 global.fpu_load_c_fld
+> >  #  RUN           global.fpu_load_c_fldsp ...
+> >  #            OK  global.fpu_load_c_fldsp
+> >  ok 18 global.fpu_load_c_fldsp
+> >  #  RUN           global.fpu_store_fsw ...
+> >  #            OK  global.fpu_store_fsw
+> >  ok 19 global.fpu_store_fsw
+> >  #  RUN           global.fpu_store_fsd ...
+> >  #            OK  global.fpu_store_fsd
+> >  ok 20 global.fpu_store_fsd
+> >  #  RUN           global.fpu_store_c_fsd ...
+> >  #            OK  global.fpu_store_c_fsd
+> >  ok 21 global.fpu_store_c_fsd
+> >  #  RUN           global.fpu_store_c_fsdsp ...
+> >  #            OK  global.fpu_store_c_fsdsp
+> >  ok 22 global.fpu_store_c_fsdsp
+> >  #  RUN           global.gen_sigbus ...
+> >  [12797.988647] misaligned[618]: unhandled signal 7 code 0x1 at 0x00000=
+00000014dc0 in misaligned[4dc0,10000+76000]
+> >  [12797.988990] CPU: 0 UID: 0 PID: 618 Comm: misaligned Not tainted 6.1=
+3.0-rc6-00008-g4ec4468967c9-dirty #51
+> >  [12797.989169] Hardware name: riscv-virtio,qemu (DT)
+> >  [12797.989264] epc : 0000000000014dc0 ra : 0000000000014d00 sp : 00007=
+fffe165d100
+> >  [12797.989407]  gp : 000000000008f6e8 tp : 0000000000095760 t0 : 00000=
+00000000008
+> >  [12797.989544]  t1 : 00000000000965d8 t2 : 000000000008e830 s0 : 00007=
+fffe165d160
+> >  [12797.989692]  s1 : 000000000000001a a0 : 0000000000000000 a1 : 00000=
+00000000002
+> >  [12797.989831]  a2 : 0000000000000000 a3 : 0000000000000000 a4 : fffff=
+fffdeadbeef
+> >  [12797.989964]  a5 : 000000000008ef61 a6 : 626769735f6e0000 a7 : fffff=
+ffffffff000
+> >  [12797.990094]  s2 : 0000000000000001 s3 : 00007fffe165d838 s4 : 00007=
+fffe165d848
+> >  [12797.990238]  s5 : 000000000000001a s6 : 0000000000010442 s7 : 00000=
+00000010200
+> >  [12797.990391]  s8 : 000000000000003a s9 : 0000000000094508 s10: 00000=
+00000000000
+> >  [12797.990526]  s11: 0000555567460668 t3 : 00007fffe165d070 t4 : 00000=
+000000965d0
+> >  [12797.990656]  t5 : fefefefefefefeff t6 : 0000000000000073
+> >  [12797.990756] status: 0000000200004020 badaddr: 000000000008ef61 caus=
+e: 0000000000000006
+> >  [12797.990911] Code: 8793 8791 3423 fcf4 3783 fc84 c737 dead 0713 eef7=
+ (c398) 0001
+> >  #            OK  global.gen_sigbus
+> >  ok 23 global.gen_sigbus
+> >  # PASSED: 23 / 23 tests passed.
+> >  # Totals: pass:23 fail:0 xfail:0 xpass:0 skip:0 error:0
+> > =
+
+> > With kvm-tools:
+> > =
+
+> >  # lkvm run -k sbi.flat -m 128
+> >   Info: # lkvm run -k sbi.flat -m 128 -c 1 --name guest-97
+> >   Info: Removed ghost socket file "/root/.lkvm//guest-97.sock".
+> > =
+
+> >  ######################################################################=
+####
+> >  #    kvm-unit-tests
+> >  ######################################################################=
+####
+> > =
+
+> >  ... [test messages elided]
+> >  PASS: sbi: fwft: FWFT extension probing no error
+> >  PASS: sbi: fwft: get/set reserved feature 0x6 error =3D=3D SBI_ERR_DEN=
+IED
+> >  PASS: sbi: fwft: get/set reserved feature 0x3fffffff error =3D=3D SBI_=
+ERR_DENIED
+> >  PASS: sbi: fwft: get/set reserved feature 0x80000000 error =3D=3D SBI_=
+ERR_DENIED
+> >  PASS: sbi: fwft: get/set reserved feature 0xbfffffff error =3D=3D SBI_=
+ERR_DENIED
+> >  PASS: sbi: fwft: misaligned_deleg: Get misaligned deleg feature no err=
+or
+> >  PASS: sbi: fwft: misaligned_deleg: Set misaligned deleg feature invali=
+d value error
+> >  PASS: sbi: fwft: misaligned_deleg: Set misaligned deleg feature invali=
+d value error
+> >  PASS: sbi: fwft: misaligned_deleg: Set misaligned deleg feature value =
+no error
+> >  PASS: sbi: fwft: misaligned_deleg: Set misaligned deleg feature value 0
+> >  PASS: sbi: fwft: misaligned_deleg: Set misaligned deleg feature value =
+no error
+> >  PASS: sbi: fwft: misaligned_deleg: Set misaligned deleg feature value 1
+> >  PASS: sbi: fwft: misaligned_deleg: Verify misaligned load exception tr=
+ap in supervisor
+> >  SUMMARY: 50 tests, 2 unexpected failures, 12 skipped
+> > =
+
+> > This series is available at [5].
+> > =
+
+> > Link: https://github.com/riscv-non-isa/riscv-sbi-doc/releases/download/=
+vv3.0-rc2/riscv-sbi.pdf [1]
+> > Link: https://github.com/rivosinc/qemu/tree/dev/cleger/misaligned [2]
+> > Link: https://lore.kernel.org/all/20241211211933.198792-3-fkonrad@amd.c=
+om/T/ [3]
+> > Link: https://lore.kernel.org/linux-riscv/20250414123543.1615478-1-cleg=
+er@rivosinc.com [4]
+> > Link: https://github.com/rivosinc/linux/tree/dev/cleger/fwft [5]
+> > ---
+> > =
+
+> > V8:
+> >  - Move misaligned_access_speed under CONFIG_RISCV_MISALIGNED and add a
+> >    separate commit for that.
+> > =
+
+> > V7:
+> >  - Fix ifdefery build problems
+> >  - Move sbi_fwft_is_supported with fwft_set_req struct
+> >  - Added Atish Reviewed-by
+> >  - Updated KVM vcpu cfg hedeleg value in set_delegation
+> >  - Changed SBI ETIME error mapping to ETIMEDOUT
+> >  - Fixed a few typo reported by Alok
+> > =
+
+> > V6:
+> >  - Rename FWFT interface to remove "_local"
+> >  - Fix test for MEDELEG values in KVM FWFT support
+> >  - Add __init for unaligned_access_init()
+> >  - Rebased on master
+> > =
+
+> > V5:
+> >  - Return ERANGE as mapping for SBI_ERR_BAD_RANGE
+> >  - Removed unused sbi_fwft_get()
+> >  - Fix kernel for sbi_fwft_local_set_cpumask()
+> >  - Fix indentation for sbi_fwft_local_set()
+> >  - Remove spurious space in kvm_sbi_fwft_ops.
+> >  - Rebased on origin/master
+> >  - Remove fixes commits and sent them as a separate series [4]
+> > =
+
+> > V4:
+> >  - Check SBI version 3.0 instead of 2.0 for FWFT presence
+> >  - Use long for kvm_sbi_fwft operation return value
+> >  - Init KVM sbi extension even if default_disabled
+> >  - Remove revert_on_fail parameter for sbi_fwft_feature_set().
+> >  - Fix comments for sbi_fwft_set/get()
+> >  - Only handle local features (there are no globals yet in the spec)
+> >  - Add new SBI errors to sbi_err_map_linux_errno()
+> > =
+
+> > V3:
+> >  - Added comment about kvm sbi fwft supported/set/get callback
+> >    requirements
+> >  - Move struct kvm_sbi_fwft_feature in kvm_sbi_fwft.c
+> >  - Add a FWFT interface
+> > =
+
+> > V2:
+> >  - Added Kselftest for misaligned testing
+> >  - Added get_user() usage instead of __get_user()
+> >  - Reenable interrupt when possible in misaligned access handling
+> >  - Document that riscv supports unaligned-traps
+> >  - Fix KVM extension state when an init function is present
+> >  - Rework SBI misaligned accesses trap delegation code
+> >  - Added support for CPU hotplugging
+> >  - Added KVM SBI reset callback
+> >  - Added reset for KVM SBI FWFT lock
+> >  - Return SBI_ERR_DENIED_LOCKED when LOCK flag is set
+> > =
+
+> > Cl=E9ment L=E9ger (14):
+> >   riscv: sbi: add Firmware Feature (FWFT) SBI extensions definitions
+> >   riscv: sbi: remove useless parenthesis
+> >   riscv: sbi: add new SBI error mappings
+> >   riscv: sbi: add FWFT extension interface
+> >   riscv: sbi: add SBI FWFT extension calls
+> >   riscv: misaligned: request misaligned exception from SBI
+> >   riscv: misaligned: use on_each_cpu() for scalar misaligned access
+> >     probing
+> >   riscv: misaligned: declare misaligned_access_speed under
+> >     CONFIG_RISCV_MISALIGNED
+> >   riscv: misaligned: move emulated access uniformity check in a function
+> >   riscv: misaligned: add a function to check misalign trap delegability
+> >   RISC-V: KVM: add SBI extension init()/deinit() functions
+> >   RISC-V: KVM: add SBI extension reset callback
+> >   RISC-V: KVM: add support for FWFT SBI extension
+> >   RISC-V: KVM: add support for SBI_FWFT_MISALIGNED_DELEG
+> > =
+
+> >  arch/riscv/include/asm/cpufeature.h        |  14 +-
+> >  arch/riscv/include/asm/kvm_host.h          |   5 +-
+> >  arch/riscv/include/asm/kvm_vcpu_sbi.h      |  12 +
+> >  arch/riscv/include/asm/kvm_vcpu_sbi_fwft.h |  29 +++
+> >  arch/riscv/include/asm/sbi.h               |  60 +++++
+> >  arch/riscv/include/uapi/asm/kvm.h          |   1 +
+> >  arch/riscv/kernel/sbi.c                    |  81 ++++++-
+> >  arch/riscv/kernel/traps_misaligned.c       | 112 ++++++++-
+> >  arch/riscv/kernel/unaligned_access_speed.c |   8 +-
+> >  arch/riscv/kvm/Makefile                    |   1 +
+> >  arch/riscv/kvm/vcpu.c                      |   4 +-
+> >  arch/riscv/kvm/vcpu_sbi.c                  |  54 +++++
+> >  arch/riscv/kvm/vcpu_sbi_fwft.c             | 257 +++++++++++++++++++++
+> >  arch/riscv/kvm/vcpu_sbi_sta.c              |   3 +-
+> >  14 files changed, 620 insertions(+), 21 deletions(-)
+> >  create mode 100644 arch/riscv/include/asm/kvm_vcpu_sbi_fwft.h
+> >  create mode 100644 arch/riscv/kvm/vcpu_sbi_fwft.c
+> =
+
+> Sorry I'm still kind of out of it here, but I think Alex was saying this =
+has
+> dependencies in the patchwork call this morning?
+
+The "dependency" is that the kvm tree will not accept patches this late.
+The KVM patches can be dropped and the riscv patches can be merged, but
+it is pretty late now.
+
+- Charlie
+
+
+-- =
+
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
