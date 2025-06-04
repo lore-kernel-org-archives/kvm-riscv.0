@@ -4,57 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C4714C5B549
-	for <kvm-riscv@archiver.kernel.org>; Wed,  4 Jun 2025 15:40:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E8CF6C5B543
+	for <kvm-riscv@archiver.kernel.org>; Wed,  4 Jun 2025 18:02:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
-	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=puMm7WuijmKzh9PKPt+SD+ObCUaM1RM97GvErAOwyMU=; b=KBAOh4Oxl6ClDp
-	iJzgujQ4yGPbPUFoskWFW7ZlWKc/8fNfA9AORACG8y/MJy+d2MToq+Y05XtacCDtheh4H0CrwBbQL
-	XjZPPJVUVrF2J4sq2raVF4XOCAcQAD5qHo5qY6KTBQunmmDcINlew7fwRJZKKzTbEDIMp20p4WD8L
-	DBv/AGLdDmKmNQPGggmlxMe7l3D7RGrXA5hqrA/Tu8Nq6Ni3SuAO5X1qBLFitRmKV3/axk8thhh4N
-	fcxxDL9iv0MBdrOUlxpZ5eHfTdx1rnASaNcRKv36kwzxMZc6Cn9r0fyTMU7NXmKzL4Z+icfT2CJC6
-	7bbUNoA9TABdLUptkqTQ==;
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
+	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
+	List-Unsubscribe:List-Id:Mime-Version:Message-ID:To:From:CC:In-Reply-To:
+	Subject:Date:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:References:List-Owner;
+	bh=/CTPL+k6YjYyy/GwjZXvx4KRz+slAGQ0FYm8bfPrPXk=; b=nKL7dnV0vg30/cO1/UKf7bewaF
+	gX1BLOlYq5na1si2E2b5aoauv+lHe82HSphAe0QOgrhCiOYtUHk0IcWzF/VO6HOFSm6TAMc1xpHcw
+	7i4H9RtzdaS37I9svfijwxwSfQwGxik96OIv1e/qkNxIs+Y8zGghIA2AAh7hK6mCLtbERXsvB1B5C
+	ic5ldIHGapQEdRiaAF6hvw9FRrtD0x7F1TGvZHpWVW6mmoCh5Ve79+pRKq8HeFD31NwDFRDNevfgc
+	YGc/6QanhEBHu8QyeI+VIiHeVGHr5pUQnAeKBIhoMVUgt1iMlf80TV5xiov3Y7x4Iq1v8p5WktvIL
+	sA54gzuw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uMqEW-0000000Diob-0MIT;
-	Wed, 04 Jun 2025 15:40:52 +0000
-Received: from out-181.mta0.migadu.com ([2001:41d0:1004:224b::b5])
+	id 1uMsRn-0000000Dz4A-0cI5;
+	Wed, 04 Jun 2025 18:02:43 +0000
+Received: from mail-pg1-x52e.google.com ([2607:f8b0:4864:20::52e])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uMqES-0000000DimM-2LBE
+	id 1uMsRi-0000000Dz3J-2o9a
 	for kvm-riscv@lists.infradead.org;
-	Wed, 04 Jun 2025 15:40:50 +0000
-Date: Wed, 4 Jun 2025 17:40:21 +0200
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1749051624;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=dI/AoEAVyJNWcNlrDjkugKkhwJPVG0BOgGP9jAFrfqo=;
-	b=fbfQiirm2dH4KzJS4fXyXhNU4gNDoqcV6B7acQ5h9awVJHKMgRa3o9R9EjZ6tAUOFDOrtE
-	35edXtdIHyYdvm3cl8aHCJw5CXM4OwmTQwoxbNdbDT+3OcvF1U0OiIQPokd4DlTpHvp9LM
-	6o1EqURT/8fTjw9L2VCd9o97aB/b6x0=
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Andrew Jones <andrew.jones@linux.dev>
-To: Jesse Taube <jesse@rivosinc.com>
-Cc: kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
-	linux-kselftest@vger.kernel.org, Atish Patra <atishp@atishpatra.org>, 
-	Anup Patel <anup@brainfault.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
-	=?utf-8?B?Q2zDqW1lbnQgTMOpZ2Vy?= <cleger@rivosinc.com>, Himanshu Chauhan <hchauhan@ventanamicro.com>, 
-	Charlie Jenkins <charlie@rivosinc.com>
-Subject: Re: [PATCH v2] riscv: sbi: Add SBI Debug Triggers Extension tests
-Message-ID: <20250604-b598bc8ab654038c642397a1@orel>
-References: <20250603195931.831463-1-jesse@rivosinc.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <20250603195931.831463-1-jesse@rivosinc.com>
-X-Migadu-Flow: FLOW_OUT
+	Wed, 04 Jun 2025 18:02:40 +0000
+Received: by mail-pg1-x52e.google.com with SMTP id 41be03b00d2f7-b1ff9b276c2so52587a12.1
+        for <kvm-riscv@lists.infradead.org>; Wed, 04 Jun 2025 11:02:37 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=dabbelt-com.20230601.gappssmtp.com; s=20230601; t=1749060157; x=1749664957; darn=lists.infradead.org;
+        h=content-transfer-encoding:mime-version:message-id:to:from:cc
+         :in-reply-to:subject:date:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=4sb9NtYIBm94y/rjJYszo90EtKu9XX4CPTVA/wAKQT8=;
+        b=hLSHpqwaYNnE4bI+w79VSYrgLePdkZx9pwFG1EmNzf2WY/ei5I1BnHF5Txnh8sd+Sr
+         oDLN/9t0aWE8PWQwjlVDMDrGH3vkisWN2rUmsz3nz0X0Q2dFtqr6Or5sXSJSJt89hzRN
+         E74qeMJHz0S+gvDtXLz+rbsPVTk9XM87awiLDr1beRWFCp7sqGGkzOpP/8QJqaBWwm4x
+         vmLo4DbrjH0SvPZtLC9Tg/ITtNJ+Rqf+KiU3gybWZx8d4DxH87ajfv32hyQKyUI8s37r
+         +NNhgqqhhocK7Jv3+NUSKYBTtC4FqGBghgOlPYFclQQXXyc4zOUQ0vjVmGH4zXPRTwvy
+         WNBA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1749060157; x=1749664957;
+        h=content-transfer-encoding:mime-version:message-id:to:from:cc
+         :in-reply-to:subject:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=4sb9NtYIBm94y/rjJYszo90EtKu9XX4CPTVA/wAKQT8=;
+        b=sjT5FRozYVLsigzZaweB1K82KxX+y5bZ+xmXS3zUJgv79O5ttSnc+5Thrj/kAwgg4q
+         mbMluSAYVdlvxCvA7Mpp2OxHIzZTsBduXxM1ypQDMM4Mc5YcyC76Cub0Oq8Hkk19rQrS
+         IIOLDmE9PtVBDlL93gp1u5cIn68d31gr6XHYr3b33rSwxub0MVPHThKpweRmKOiV/1h3
+         iFIzY1+IlM4hKwl++dIrGUpiZ8knCYlnTMEZ7k7iYMTPoawj6Zp+i9zZcnfkJcqqn/R+
+         zr+x89TVUplCQ5joA18tcXQBo9Rucke7Lxen3lH9GkX8vWt74cCgptrJALNmbpDGksB9
+         KbDQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXB+U49gv4ZimwgGpqumR5+q1Xx8VfNGXnOxFO8R8Sdij73/d4/JKiDfiDWVAmPK1mRryiKt94/5fo=@lists.infradead.org
+X-Gm-Message-State: AOJu0YwPqDT5sSSVWJLGNocdjXrVhjSWjzmOASNkPVHMUSqjFGuaXGKI
+	SKxS+2CdidHyUkIHLouCrNUmOJDBYoR9BeB++dXAX639r73DcdafaxBew8BX/dliQmw=
+X-Gm-Gg: ASbGncv2Mzk5/ANY7hkBSOyY8pOCTi/6n8NM2lcMAcwN0/ougTeSStk+CHcKzrtde39
+	Ajcxy5QEdqxw5WvBqhi+6kcSo1g8b3qnq4GV71PYqeZBdQiqROJmqTac12yhEb8mvJzfqmycac/
+	wjFzhoJl0cK64zhhg62qNaGf4C86jbNb2fwiAjN0H6/VHECBlRbS/bsBp8wmIBF6KAHRHTxp/7r
+	pI7B25e7940iDcsnQqgII7p56apD73TgByJXovoZ99FyRHWSlv2k6l4lNz0flnKK5BBTFZOmfDC
+	J+51ts64dtPqI9wIpOdIzWq3IH/QMBdnWgnpsMZjgIW+6kSRhvirZgI=
+X-Google-Smtp-Source: AGHT+IGzoLjlPGLsxX/VcQAibjCHSuGjPNjwdnzeCXTcDSgTlXsCpPwGWWh1fCsXTwlbhq/KM2w0wQ==
+X-Received: by 2002:a05:6a21:48f:b0:1fd:f4df:96ed with SMTP id adf61e73a8af0-21d22ce22c7mr5169223637.26.1749060156608;
+        Wed, 04 Jun 2025 11:02:36 -0700 (PDT)
+Received: from localhost ([2620:10d:c090:500::4:3cec])
+        by smtp.gmail.com with UTF8SMTPSA id d2e1a72fcca58-747afff72bcsm11485461b3a.166.2025.06.04.11.02.35
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 04 Jun 2025 11:02:35 -0700 (PDT)
+Date: Wed, 04 Jun 2025 11:02:35 -0700 (PDT)
+X-Google-Original-Date: Wed, 04 Jun 2025 11:02:33 PDT (-0700)
+Subject: Re: [PATCH v8 00/14] riscv: add SBI FWFT misaligned exception delegation support
+In-Reply-To: <20250523101932.1594077-1-cleger@rivosinc.com>
+CC: Paul Walmsley <paul.walmsley@sifive.com>, anup@brainfault.org,
+  atishp@atishpatra.org, shuah@kernel.org, corbet@lwn.net, linux-riscv@lists.infradead.org,
+  linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, kvm@vger.kernel.org, kvm-riscv@lists.infradead.org,
+  linux-kselftest@vger.kernel.org, cleger@rivosinc.com, samuel.holland@sifive.com, ajones@ventanamicro.com,
+  debug@rivosinc.com, Charlie Jenkins <charlie@rivosinc.com>
+From: Palmer Dabbelt <palmer@dabbelt.com>
+To: cleger@rivosinc.com
+Message-ID: <mhng-C1CE13EE-C4E6-490D-ABF4-CE7BD84737C3@palmerdabbelt-mac>
+Mime-Version: 1.0 (MHng)
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250604_084048_898507_1D0C44EC 
-X-CRM114-Status: GOOD (  31.56  )
+X-CRM114-CacheID: sfid-20250604_110238_887110_9895DFE6 
+X-CRM114-Status: GOOD (  32.13  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -66,554 +95,207 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Hi Jesse,
-
-Thanks for this patch, but please see the README of the repository,
-section "Patches", where we ask that a 'kvm-unit-tests' patch prefix is
-used. Also please see the RISCV section of the MAINTAINERS file for where
-to send the patches. You got the kvm-riscv list, but I'd appreciate a CC
-to my linux.dev account provided there as well.
-
-I'm just taking a quick review pass to look for superficial stuff, since
-I think others such as Himanshu will look at it from a "does it cover the
-spec" perspective.
-
-On Tue, Jun 03, 2025 at 12:59:31PM -0700, Jesse Taube wrote:
-> Add tests for the DBTR SBI extension.
-> 
-> Signed-off-by: Jesse Taube <jesse@rivosinc.com>
-> ---
-> V1 -> V2:
->  - Call report_prefix_pop before returning
->  - Disable compressed instructions in exec_call, update related comment
->  - Remove extra "| 1" in dbtr_test_load
->  - Remove extra newlines
->  - Remove extra tabs in check_exec
->  - Remove typedefs from enums
->  - Return when dbtr_install_trigger fails
->  - s/avalible/available/g
->  - s/unistall/uninstall/g
-> ---
->  lib/riscv/asm/sbi.h |  28 ++
->  lib/riscv/sbi.c     |  58 ++++
->  riscv/Makefile      |   1 +
->  riscv/sbi-dbtr.c    | 751 ++++++++++++++++++++++++++++++++++++++++++++
->  riscv/sbi-tests.h   |   1 +
->  riscv/sbi.c         |   1 +
->  6 files changed, 840 insertions(+)
->  create mode 100644 riscv/sbi-dbtr.c
-> 
-> diff --git a/lib/riscv/asm/sbi.h b/lib/riscv/asm/sbi.h
-> index a5738a5c..ce19ab89 100644
-> --- a/lib/riscv/asm/sbi.h
-> +++ b/lib/riscv/asm/sbi.h
-> @@ -51,6 +51,7 @@ enum sbi_ext_id {
->  	SBI_EXT_SUSP = 0x53555350,
->  	SBI_EXT_FWFT = 0x46574654,
->  	SBI_EXT_SSE = 0x535345,
-> +	SBI_EXT_DBTR = 0x44425452,
->  };
->  
->  enum sbi_ext_base_fid {
-> @@ -125,6 +126,17 @@ enum sbi_ext_fwft_fid {
->  
->  #define SBI_FWFT_SET_FLAG_LOCK			BIT(0)
->  
-> +enum sbi_ext_dbtr_fid {
-> +	SBI_EXT_DBTR_NUM_TRIGGERS = 0,
-> +	SBI_EXT_DBTR_SETUP_SHMEM,
-> +	SBI_EXT_DBTR_TRIGGER_READ,
-> +	SBI_EXT_DBTR_TRIGGER_INSTALL,
-> +	SBI_EXT_DBTR_TRIGGER_UPDATE,
-> +	SBI_EXT_DBTR_TRIGGER_UNINSTALL,
-> +	SBI_EXT_DBTR_TRIGGER_ENABLE,
-> +	SBI_EXT_DBTR_TRIGGER_DISABLE,
-> +};
-
-I think we can put these and all the dbtr function wrappers below in
-riscv/sbi-dbtr.c, as I doubt we'll use them outside their test cases.
-
-> +
->  enum sbi_ext_sse_fid {
->  	SBI_EXT_SSE_READ_ATTRS = 0,
->  	SBI_EXT_SSE_WRITE_ATTRS,
-> @@ -282,6 +294,22 @@ static inline bool sbi_sse_event_is_global(uint32_t event_id)
->  	return !!(event_id & SBI_SSE_EVENT_GLOBAL_BIT);
->  }
->  
-> +struct sbiret sbi_debug_num_triggers(unsigned long trig_tdata1);
-> +struct sbiret sbi_debug_set_shmem(void *shmem);
-> +struct sbiret sbi_debug_set_shmem_raw(unsigned long shmem_phys_lo,
-> +				      unsigned long shmem_phys_hi,
-> +				      unsigned long flags);
-> +struct sbiret sbi_debug_read_triggers(unsigned long trig_idx_base,
-> +				      unsigned long trig_count);
-> +struct sbiret sbi_debug_install_triggers(unsigned long trig_count);
-> +struct sbiret sbi_debug_update_triggers(unsigned long trig_count);
-> +struct sbiret sbi_debug_uninstall_triggers(unsigned long trig_idx_base,
-> +					   unsigned long trig_idx_mask);
-> +struct sbiret sbi_debug_enable_triggers(unsigned long trig_idx_base,
-> +					unsigned long trig_idx_mask);
-> +struct sbiret sbi_debug_disable_triggers(unsigned long trig_idx_base,
-> +					 unsigned long trig_idx_mask);
-
-We won't need these once we've moved the function wrappers.
-
-> +
->  struct sbiret sbi_sse_read_attrs_raw(unsigned long event_id, unsigned long base_attr_id,
->  				     unsigned long attr_count, unsigned long phys_lo,
->  				     unsigned long phys_hi);
-> diff --git a/lib/riscv/sbi.c b/lib/riscv/sbi.c
-> index 2959378f..39c0d3bd 100644
-> --- a/lib/riscv/sbi.c
-> +++ b/lib/riscv/sbi.c
-> @@ -32,6 +32,64 @@ struct sbiret sbi_ecall(int ext, int fid, unsigned long arg0,
->  	return ret;
->  }
->  
-> +struct sbiret sbi_debug_num_triggers(unsigned long trig_tdata1)
-> +{
-> +	return sbi_ecall(SBI_EXT_DBTR, SBI_EXT_DBTR_NUM_TRIGGERS, trig_tdata1, 0, 0, 0, 0, 0);
-> +}
-> +
-> +struct sbiret sbi_debug_set_shmem(void *shmem)
-> +{
-> +	phys_addr_t p = virt_to_phys(shmem);
-> +
-> +	return sbi_debug_set_shmem_raw(lower_32_bits(p), upper_32_bits(p), 0);
-> +}
-> +
-> +struct sbiret sbi_debug_set_shmem_raw(unsigned long shmem_phys_lo,
-> +				      unsigned long shmem_phys_hi,
-> +				      unsigned long flags)
-> +{
-> +	return sbi_ecall(SBI_EXT_DBTR, SBI_EXT_DBTR_SETUP_SHMEM, shmem_phys_lo,
-> +			 shmem_phys_hi, flags, 0, 0, 0);
-> +}
-> +
-> +struct sbiret sbi_debug_read_triggers(unsigned long trig_idx_base,
-> +				      unsigned long trig_count)
-> +{
-> +	return sbi_ecall(SBI_EXT_DBTR, SBI_EXT_DBTR_TRIGGER_READ, trig_idx_base,
-> +			 trig_count, 0, 0, 0, 0);
-> +}
-> +
-> +struct sbiret sbi_debug_install_triggers(unsigned long trig_count)
-> +{
-> +	return sbi_ecall(SBI_EXT_DBTR, SBI_EXT_DBTR_TRIGGER_INSTALL, trig_count, 0, 0, 0, 0, 0);
-> +}
-> +
-> +struct sbiret sbi_debug_update_triggers(unsigned long trig_count)
-> +{
-> +	return sbi_ecall(SBI_EXT_DBTR, SBI_EXT_DBTR_TRIGGER_UPDATE, trig_count, 0, 0, 0, 0, 0);
-> +}
-> +
-> +struct sbiret sbi_debug_uninstall_triggers(unsigned long trig_idx_base,
-> +					   unsigned long trig_idx_mask)
-> +{
-> +	return sbi_ecall(SBI_EXT_DBTR, SBI_EXT_DBTR_TRIGGER_UNINSTALL, trig_idx_base,
-> +			 trig_idx_mask, 0, 0, 0, 0);
-> +}
-> +
-> +struct sbiret sbi_debug_enable_triggers(unsigned long trig_idx_base,
-> +					unsigned long trig_idx_mask)
-> +{
-> +	return sbi_ecall(SBI_EXT_DBTR, SBI_EXT_DBTR_TRIGGER_ENABLE, trig_idx_base,
-> +			 trig_idx_mask, 0, 0, 0, 0);
-> +}
-> +
-> +struct sbiret sbi_debug_disable_triggers(unsigned long trig_idx_base,
-> +					 unsigned long trig_idx_mask)
-> +{
-> +	return sbi_ecall(SBI_EXT_DBTR, SBI_EXT_DBTR_TRIGGER_DISABLE, trig_idx_base,
-> +			 trig_idx_mask, 0, 0, 0, 0);
-> +}
-
-When moving these, they'll of course become static, but I don't mind
-keeping the sbi_ prefix since that's consistent with the other wrappers
-and the names in the spec.
-
-> +
->  struct sbiret sbi_sse_read_attrs_raw(unsigned long event_id, unsigned long base_attr_id,
->  				     unsigned long attr_count, unsigned long phys_lo,
->  				     unsigned long phys_hi)
-> diff --git a/riscv/Makefile b/riscv/Makefile
-> index 11e68eae..55c7ac93 100644
-> --- a/riscv/Makefile
-> +++ b/riscv/Makefile
-> @@ -20,6 +20,7 @@ all: $(tests)
->  $(TEST_DIR)/sbi-deps += $(TEST_DIR)/sbi-asm.o
->  $(TEST_DIR)/sbi-deps += $(TEST_DIR)/sbi-fwft.o
->  $(TEST_DIR)/sbi-deps += $(TEST_DIR)/sbi-sse.o
-> +$(TEST_DIR)/sbi-deps += $(TEST_DIR)/sbi-dbtr.o
->  
->  all_deps += $($(TEST_DIR)/sbi-deps)
->  
-> diff --git a/riscv/sbi-dbtr.c b/riscv/sbi-dbtr.c
-> new file mode 100644
-> index 00000000..fe323f0f
-> --- /dev/null
-> +++ b/riscv/sbi-dbtr.c
-> @@ -0,0 +1,751 @@
-> +// SPDX-License-Identifier: GPL-2.0-only
-> +/*
-> + * SBI DBTR testsuite
-> + *
-> + * Copyright (C) 2025, Rivos Inc., Jesse Taube <jesse@rivosinc.com>
-> + */
-> +
-> +#include <asm/io.h>
-
-Looks pretty light for the #include list... I prefer we try to add the
-appropriate includes for everything we use. We don't have to be perfect,
-but I think a best effort is better than the minimalist approach.
-
-> +
-> +#include "sbi-tests.h"
-> +
-> +#define INSN_LEN(insn)			((((insn) & 0x3) < 0x3) ? 2 : 4)
-
-Clement just introduced this in the dbltrp test too. Let's add it to
-lib/riscv/asm/processor.h instead as RV_INSN_LEN()
-
-> +
-> +#if __riscv_xlen == 64
-> +#define SBI_DBTR_SHMEM_INVALID_ADDR	0xFFFFFFFFFFFFFFFFUL
-> +#elif __riscv_xlen == 32
-> +#define SBI_DBTR_SHMEM_INVALID_ADDR	0xFFFFFFFFUL
-> +#else
-> +#error "Unexpected __riscv_xlen"
-> +#endif
-
-No need for the #if, just use
-
-#define SBI_DBTR_SHMEM_INVALID_ADDR -1UL
-
-but, we've been giving the users the ability to define invalid addresses
-themselves (see get_invalid_addr() in riscv/sbi.c). We can export that
-function (along with get_highest_addr()) and then put their prototypes
-in riscv/sbi-tests.h.
-
-> +
-> +#define RV_MAX_TRIGGERS		32
-> +
-> +#define SBI_DBTR_TRIG_STATE_MAPPED		BIT(0)
-> +#define SBI_DBTR_TRIG_STATE_U			BIT(1)
-> +#define SBI_DBTR_TRIG_STATE_S			BIT(2)
-> +#define SBI_DBTR_TRIG_STATE_VU			BIT(3)
-> +#define SBI_DBTR_TRIG_STATE_VS			BIT(4)
-> +#define SBI_DBTR_TRIG_STATE_HAVE_HW_TRIG	BIT(5)
-> +
-> +#define SBI_DBTR_TRIG_STATE_HW_TRIG_IDX_SHIFT		8
-> +#define SBI_DBTR_TRIG_STATE_HW_TRIG_IDX(trig_state)	(trig_state >> SBI_DBTR_TRIG_STATE_HW_TRIG_IDX_SHIFT)
-> +
-> +#define SBI_DBTR_TDATA1_TYPE_SHIFT		(__riscv_xlen - 4)
-> +
-> +#define SBI_DBTR_TDATA1_MCONTROL6_LOAD_BIT	BIT(0)
-> +#define SBI_DBTR_TDATA1_MCONTROL6_STORE_BIT	BIT(1)
-> +#define SBI_DBTR_TDATA1_MCONTROL6_EXECUTE_BIT	BIT(2)
-> +#define SBI_DBTR_TDATA1_MCONTROL6_U_BIT		BIT(3)
-> +#define SBI_DBTR_TDATA1_MCONTROL6_S_BIT		BIT(4)
-> +#define SBI_DBTR_TDATA1_MCONTROL6_SELECT_BIT	BIT(21)
-> +#define SBI_DBTR_TDATA1_MCONTROL6_VS_BIT	BIT(23)
-> +#define SBI_DBTR_TDATA1_MCONTROL6_VU_BIT	BIT(24)
-> +
-> +#define SBI_DBTR_TDATA1_MCONTROL_LOAD_BIT	BIT(0)
-> +#define SBI_DBTR_TDATA1_MCONTROL_STORE_BIT	BIT(1)
-> +#define SBI_DBTR_TDATA1_MCONTROL_EXECUTE_BIT	BIT(2)
-> +#define SBI_DBTR_TDATA1_MCONTROL_U_BIT		BIT(3)
-> +#define SBI_DBTR_TDATA1_MCONTROL_S_BIT		BIT(4)
-> +#define SBI_DBTR_TDATA1_MCONTROL_SELECT_BIT	BIT(19)
-> +
-> +enum McontrolType {
-> +	SBI_DBTR_TDATA1_TYPE_NONE =		(0UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_LEGACY =		(1UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_MCONTROL =		(2UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_ICOUNT =		(3UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_ITRIGGER =		(4UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_ETRIGGER =		(5UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_MCONTROL6 =	(6UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_TMEXTTRIGGER =	(7UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_RESERVED0 =	(8UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_RESERVED1 =	(9UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_RESERVED2 =	(10UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_RESERVED3 =	(11UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_CUSTOM0 =		(12UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_CUSTOM1 =		(13UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_CUSTOM2 =		(14UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_DISABLED =		(15UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +};
-> +
-> +enum Tdata1Value {
-> +	VALUE_NONE =	0,
-> +	VALUE_LOAD =	BIT(0),
-> +	VALUE_STORE =	BIT(1),
-> +	VALUE_EXECUTE =	BIT(2),
-> +};
-> +
-> +enum Tdata1Mode {
-> +	MODE_NONE =	0,
-> +	MODE_M =	BIT(0),
-> +	MODE_U =	BIT(1),
-> +	MODE_S =	BIT(2),
-> +	MODE_VU =	BIT(3),
-> +	MODE_VS =	BIT(4),
-> +};
-> +
-> +struct sbi_dbtr_data_msg {
-> +	unsigned long tstate;
-> +	unsigned long tdata1;
-> +	unsigned long tdata2;
-> +	unsigned long tdata3;
-> +};
-> +
-> +struct sbi_dbtr_id_msg {
-> +	unsigned long idx;
-> +};
-> +
-> +/* SBI shared mem messages layout */
-> +struct sbi_dbtr_shmem_entry {
-> +	union {
-> +		struct sbi_dbtr_data_msg data;
-> +		struct sbi_dbtr_id_msg id;
-> +	};
-> +};
-> +
-> +static bool dbtr_handled;
-> +
-> +// Expected to be leaf function as not to disrupt frame-pointer
-
-nit: Use /* */
-
-> +static __attribute__((naked)) void exec_call(void)
-> +{
-> +	// skip over nop when triggered instead of ret.
-
-same nit
-
-> +	asm volatile (".option push\n"
-> +		      ".option arch, -c\n"
-> +		      "nop\n"
-> +		      "ret\n"
-> +		      ".option pop\n");
-> +}
-> +
-> +static void dbtr_exception_handler(struct pt_regs *regs)
-> +{
-> +	dbtr_handled = true;
-> +
-> +	/* Reading *epc may cause a fault, skip over nop */
-> +	if ((void *)regs->epc == exec_call) {
-> +		regs->epc += 4;
-> +		return;
-> +	}
-> +
-> +	/* WARNING: Skips over the trapped intruction */
-> +	regs->epc += INSN_LEN(readw((void *)regs->epc));
-> +}
-> +
-> +static bool do_save(void *tdata2)
-> +{
-> +	bool ret;
-> +
-> +	writel(0, tdata2);
-> +
-> +	ret = dbtr_handled;
-> +	dbtr_handled = false;
-> +
-> +	return ret;
-> +}
-> +
-> +static bool do_load(void *tdata2)
-> +{
-> +	bool ret;
-> +
-> +	readl(tdata2);
-> +
-> +	ret = dbtr_handled;
-> +	dbtr_handled = false;
-> +
-> +	return ret;
-> +}
-> +
-> +static bool do_exec(void)
-> +{
-> +	bool ret;
-> +
-> +	exec_call();
-> +
-> +	ret = dbtr_handled;
-> +	dbtr_handled = false;
-> +
-> +	return ret;
-> +}
-> +
-> +static unsigned long gen_tdata1_mcontrol(enum Tdata1Mode mode, enum Tdata1Value value)
-> +{
-> +	unsigned long tdata1 = SBI_DBTR_TDATA1_TYPE_MCONTROL;
-> +
-> +	if (value & VALUE_LOAD)
-> +		tdata1 |= SBI_DBTR_TDATA1_MCONTROL_LOAD_BIT;
-> +
-> +	if (value & VALUE_STORE)
-> +		tdata1 |= SBI_DBTR_TDATA1_MCONTROL_STORE_BIT;
-> +
-> +	if (value & VALUE_EXECUTE)
-> +		tdata1 |= SBI_DBTR_TDATA1_MCONTROL_EXECUTE_BIT;
-> +
-> +	if (mode & MODE_M)
-> +		tdata1 |= SBI_DBTR_TDATA1_MCONTROL_U_BIT;
-> +
-> +	if (mode & MODE_U)
-> +		tdata1 |= SBI_DBTR_TDATA1_MCONTROL_U_BIT;
-> +
-> +	if (mode & MODE_S)
-> +		tdata1 |= SBI_DBTR_TDATA1_MCONTROL_S_BIT;
-> +
-> +	return tdata1;
-> +}
-> +
-> +static unsigned long gen_tdata1_mcontrol6(enum Tdata1Mode mode, enum Tdata1Value value)
-> +{
-> +	unsigned long tdata1 = SBI_DBTR_TDATA1_TYPE_MCONTROL6;
-> +
-> +	if (value & VALUE_LOAD)
-> +		tdata1 |= SBI_DBTR_TDATA1_MCONTROL6_LOAD_BIT;
-> +
-> +	if (value & VALUE_STORE)
-> +		tdata1 |= SBI_DBTR_TDATA1_MCONTROL6_STORE_BIT;
-> +
-> +	if (value & VALUE_EXECUTE)
-> +		tdata1 |= SBI_DBTR_TDATA1_MCONTROL6_EXECUTE_BIT;
-> +
-> +	if (mode & MODE_M)
-> +		tdata1 |= SBI_DBTR_TDATA1_MCONTROL6_U_BIT;
-> +
-> +	if (mode & MODE_U)
-> +		tdata1 |= SBI_DBTR_TDATA1_MCONTROL6_U_BIT;
-> +
-> +	if (mode & MODE_S)
-> +		tdata1 |= SBI_DBTR_TDATA1_MCONTROL6_S_BIT;
-> +
-> +	if (mode & MODE_VU)
-> +		tdata1 |= SBI_DBTR_TDATA1_MCONTROL6_VU_BIT;
-> +
-> +	if (mode & MODE_VS)
-> +		tdata1 |= SBI_DBTR_TDATA1_MCONTROL6_VS_BIT;
-> +
-> +	return tdata1;
-> +}
-> +
-> +static unsigned long gen_tdata1(enum McontrolType type, enum Tdata1Value value, enum Tdata1Mode mode)
-> +{
-> +	switch (type) {
-> +	case SBI_DBTR_TDATA1_TYPE_MCONTROL:
-> +		return gen_tdata1_mcontrol(mode, value);
-> +	case SBI_DBTR_TDATA1_TYPE_MCONTROL6:
-> +		return gen_tdata1_mcontrol6(mode, value);
-> +	default:
-> +		return 0;
-> +	}
-> +}
-> +
-> +static bool dbtr_install_trigger(struct sbi_dbtr_shmem_entry *shmem, void *tdata2,
-> +				 unsigned long tdata1)
-> +{
-> +	struct sbiret sbi_ret;
-> +	bool ret;
-> +
-> +	shmem->data.tdata1 = tdata1;
-> +	shmem->data.tdata2 = (unsigned long)tdata2;
-> +
-> +	sbi_ret = sbi_debug_install_triggers(1);
-> +	ret = sbiret_report_error(&sbi_ret, SBI_SUCCESS, "sbi_debug_install_triggers");
-> +	if (ret)
-> +		install_exception_handler(EXC_BREAKPOINT, dbtr_exception_handler);
-> +
-> +	return ret;
-> +}
-> +
-> +static bool dbtr_uninstall_trigger(void)
-> +{
-> +	struct sbiret ret;
-> +
-> +	install_exception_handler(EXC_BREAKPOINT, NULL);
-> +
-> +	ret = sbi_debug_uninstall_triggers(0, 1);
-> +	return sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_uninstall_triggers");
-> +}
-> +
-> +static unsigned long dbtr_test_num_triggers(void)
-> +{
-> +	struct sbiret ret;
-> +	//sbi_debug_num_triggers will return trig_max in sbiret.value when trig_tdata1 == 0
-
-/**/ and maybe don't break the variable declaration list.
-
-> +	unsigned long tdata1 = 0;
-> +
-> +	// should be atleast one trigger.
-
-/**/
-
-> +	ret = sbi_debug_num_triggers(tdata1);
-> +	sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_num_triggers");
-> +
-> +	if (ret.value == 0)
-> +		report_fail("sbi_debug_num_triggers: Returned 0 triggers available");
-> +	else
-> +		report_pass("sbi_debug_num_triggers: Returned %lu triggers available", ret.value);
-> +
-> +	return ret.value;
-> +}
-> +
-> +static enum McontrolType dbtr_test_type(unsigned long *num_trig)
-> +{
-> +	struct sbiret ret;
-> +
-> +	//sbi_debug_num_triggers will return trig_max in sbiret.value when trig_tdata1 == 0
-
-/**/ and maybe don't break the variable declaration list.
-
-> +	unsigned long tdata1 = SBI_DBTR_TDATA1_TYPE_MCONTROL6;
-> +
-> +	ret = sbi_debug_num_triggers(tdata1);
-> +	sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_num_triggers");
-> +	if (ret.value > 0) {
-> +		report_pass("sbi_debug_num_triggers: Returned %lu mcontrol6 triggers available",
-> +			    ret.value);
-> +		*num_trig = ret.value;
-> +		return tdata1;
-> +	}
-> +
-> +	tdata1 = SBI_DBTR_TDATA1_TYPE_MCONTROL;
-> +
-> +	ret = sbi_debug_num_triggers(tdata1);
-> +	sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_num_triggers");
-> +	*num_trig = ret.value;
-> +	if (ret.value > 0) {
-> +		report_pass("sbi_debug_num_triggers: Returned %lu mcontrol triggers available",
-> +			    ret.value);
-> +		return tdata1;
-> +	}
-> +
-> +	report_fail("sbi_debug_num_triggers: Returned 0 mcontrol(6) triggers available");
-> +
-> +	return SBI_DBTR_TDATA1_TYPE_NONE;
-> +}
-> +
-
-The rest looked good (from a superficial perspective). Nice!
-
-Thanks,
-drew
-
--- 
-kvm-riscv mailing list
-kvm-riscv@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/kvm-riscv
+T24gRnJpLCAyMyBNYXkgMjAyNSAwMzoxOToxNyBQRFQgKC0wNzAwKSwgY2xlZ2VyQHJpdm9zaW5j
+LmNvbSB3cm90ZToKPiBUaGUgU0JJIEZpcm13YXJlIEZlYXR1cmUgZXh0ZW5zaW9uIGFsbG93cyB0
+aGUgUy1tb2RlIHRvIHJlcXVlc3Qgc29tZQo+IHNwZWNpZmljIGZlYXR1cmVzIChlaXRoZXIgaGFy
+ZHdhcmUgb3Igc29mdHdhcmUpIHRvIGJlIGVuYWJsZWQuIFRoaXMKPiBzZXJpZXMgdXNlcyB0aGlz
+IGV4dGVuc2lvbiB0byByZXF1ZXN0IG1pc2FsaWduZWQgYWNjZXNzIGV4Y2VwdGlvbgo+IGRlbGVn
+YXRpb24gdG8gUy1tb2RlIGluIG9yZGVyIHRvIGxldCB0aGUga2VybmVsIGhhbmRsZSBpdC4gSXQg
+YWxzbyBhZGRzCj4gc3VwcG9ydCBmb3IgdGhlIEtWTSBGV0ZUIFNCSSBleHRlbnNpb24gYmFzZWQg
+b24gdGhlIG1pc2FsaWduZWQgYWNjZXNzCj4gaGFuZGxpbmcgaW5mcmFzdHJ1Y3R1cmUuCj4KPiBG
+V0ZUIFNCSSBleHRlbnNpb24gaXMgcGFydCBvZiB0aGUgU0JJIFYzLjAgc3BlY2lmaWNhdGlvbnMg
+WzFdLiBJdCBjYW4gYmUKPiB0ZXN0ZWQgdXNpbmcgdGhlIHFlbXUgcHJvdmlkZWQgYXQgWzJdIHdo
+aWNoIGNvbnRhaW5zIHRoZSBzZXJpZXMgZnJvbQo+IFszXS4gVXBzdHJlYW0ga3ZtLXVuaXQtdGVz
+dHMgY2FuIGJlIHVzZWQgaW5zaWRlIGt2bSB0byB0ZXN0cyB0aGUgY29ycmVjdAo+IGRlbGVnYXRp
+b24gb2YgbWlzYWxpZ25lZCBleGNlcHRpb25zLiBVcHN0cmVhbSBPcGVuU0JJIGNhbiBiZSB1c2Vk
+Lgo+Cj4gTm90ZTogU2luY2UgU0JJIFYzLjAgaXMgbm90IHlldCByYXRpZmllZCwgRldGVCBleHRl
+bnNpb24gQVBJIGlzIHNwbGl0Cj4gYmV0d2VlbiBpbnRlcmZhY2Ugb25seSBhbmQgaW1wbGVtZW50
+YXRpb24sIGFsbG93aW5nIHRvIHBpY2sgb25seSB0aGUKPiBpbnRlcmZhY2Ugd2hpY2ggZG8gbm90
+IGhhdmUgaGFyZCBkZXBlbmRlbmNpZXMgb24gU0JJLgo+Cj4gVGhlIHRlc3RzIGNhbiBiZSBydW4g
+dXNpbmcgdGhlIGtzZWxmdGVzdCBmcm9tIHNlcmllcyBbNF0uCj4KPiAkIHFlbXUtc3lzdGVtLXJp
+c2N2NjQgXAo+IAktY3B1IHJ2NjQsdHJhcC1taXNhbGlnbmVkLWFjY2Vzcz10cnVlLHY9dHJ1ZSBc
+Cj4gCS1NIHZpcnQgXAo+IAktbSAxMDI0TSBcCj4gCS1iaW9zIGZ3X2R5bmFtaWMuYmluIFwKPiAJ
+LWtlcm5lbCBJbWFnZQo+ICAuLi4KPgo+ICAjIC4vbWlzYWxpZ25lZAo+ICBUQVAgdmVyc2lvbiAx
+Mwo+ICAxLi4yMwo+ICAjIFN0YXJ0aW5nIDIzIHRlc3RzIGZyb20gMSB0ZXN0IGNhc2VzLgo+ICAj
+ICBSVU4gICAgICAgICAgIGdsb2JhbC5ncF9sb2FkX2xoIC4uLgo+ICAjICAgICAgICAgICAgT0sg
+IGdsb2JhbC5ncF9sb2FkX2xoCj4gIG9rIDEgZ2xvYmFsLmdwX2xvYWRfbGgKPiAgIyAgUlVOICAg
+ICAgICAgICBnbG9iYWwuZ3BfbG9hZF9saHUgLi4uCj4gICMgICAgICAgICAgICBPSyAgZ2xvYmFs
+LmdwX2xvYWRfbGh1Cj4gIG9rIDIgZ2xvYmFsLmdwX2xvYWRfbGh1Cj4gICMgIFJVTiAgICAgICAg
+ICAgZ2xvYmFsLmdwX2xvYWRfbHcgLi4uCj4gICMgICAgICAgICAgICBPSyAgZ2xvYmFsLmdwX2xv
+YWRfbHcKPiAgb2sgMyBnbG9iYWwuZ3BfbG9hZF9sdwo+ICAjICBSVU4gICAgICAgICAgIGdsb2Jh
+bC5ncF9sb2FkX2x3dSAuLi4KPiAgIyAgICAgICAgICAgIE9LICBnbG9iYWwuZ3BfbG9hZF9sd3UK
+PiAgb2sgNCBnbG9iYWwuZ3BfbG9hZF9sd3UKPiAgIyAgUlVOICAgICAgICAgICBnbG9iYWwuZ3Bf
+bG9hZF9sZCAuLi4KPiAgIyAgICAgICAgICAgIE9LICBnbG9iYWwuZ3BfbG9hZF9sZAo+ICBvayA1
+IGdsb2JhbC5ncF9sb2FkX2xkCj4gICMgIFJVTiAgICAgICAgICAgZ2xvYmFsLmdwX2xvYWRfY19s
+dyAuLi4KPiAgIyAgICAgICAgICAgIE9LICBnbG9iYWwuZ3BfbG9hZF9jX2x3Cj4gIG9rIDYgZ2xv
+YmFsLmdwX2xvYWRfY19sdwo+ICAjICBSVU4gICAgICAgICAgIGdsb2JhbC5ncF9sb2FkX2NfbGQg
+Li4uCj4gICMgICAgICAgICAgICBPSyAgZ2xvYmFsLmdwX2xvYWRfY19sZAo+ICBvayA3IGdsb2Jh
+bC5ncF9sb2FkX2NfbGQKPiAgIyAgUlVOICAgICAgICAgICBnbG9iYWwuZ3BfbG9hZF9jX2xkc3Ag
+Li4uCj4gICMgICAgICAgICAgICBPSyAgZ2xvYmFsLmdwX2xvYWRfY19sZHNwCj4gIG9rIDggZ2xv
+YmFsLmdwX2xvYWRfY19sZHNwCj4gICMgIFJVTiAgICAgICAgICAgZ2xvYmFsLmdwX2xvYWRfc2gg
+Li4uCj4gICMgICAgICAgICAgICBPSyAgZ2xvYmFsLmdwX2xvYWRfc2gKPiAgb2sgOSBnbG9iYWwu
+Z3BfbG9hZF9zaAo+ICAjICBSVU4gICAgICAgICAgIGdsb2JhbC5ncF9sb2FkX3N3IC4uLgo+ICAj
+ICAgICAgICAgICAgT0sgIGdsb2JhbC5ncF9sb2FkX3N3Cj4gIG9rIDEwIGdsb2JhbC5ncF9sb2Fk
+X3N3Cj4gICMgIFJVTiAgICAgICAgICAgZ2xvYmFsLmdwX2xvYWRfc2QgLi4uCj4gICMgICAgICAg
+ICAgICBPSyAgZ2xvYmFsLmdwX2xvYWRfc2QKPiAgb2sgMTEgZ2xvYmFsLmdwX2xvYWRfc2QKPiAg
+IyAgUlVOICAgICAgICAgICBnbG9iYWwuZ3BfbG9hZF9jX3N3IC4uLgo+ICAjICAgICAgICAgICAg
+T0sgIGdsb2JhbC5ncF9sb2FkX2Nfc3cKPiAgb2sgMTIgZ2xvYmFsLmdwX2xvYWRfY19zdwo+ICAj
+ICBSVU4gICAgICAgICAgIGdsb2JhbC5ncF9sb2FkX2Nfc2QgLi4uCj4gICMgICAgICAgICAgICBP
+SyAgZ2xvYmFsLmdwX2xvYWRfY19zZAo+ICBvayAxMyBnbG9iYWwuZ3BfbG9hZF9jX3NkCj4gICMg
+IFJVTiAgICAgICAgICAgZ2xvYmFsLmdwX2xvYWRfY19zZHNwIC4uLgo+ICAjICAgICAgICAgICAg
+T0sgIGdsb2JhbC5ncF9sb2FkX2Nfc2RzcAo+ICBvayAxNCBnbG9iYWwuZ3BfbG9hZF9jX3Nkc3AK
+PiAgIyAgUlVOICAgICAgICAgICBnbG9iYWwuZnB1X2xvYWRfZmx3IC4uLgo+ICAjICAgICAgICAg
+ICAgT0sgIGdsb2JhbC5mcHVfbG9hZF9mbHcKPiAgb2sgMTUgZ2xvYmFsLmZwdV9sb2FkX2Zsdwo+
+ICAjICBSVU4gICAgICAgICAgIGdsb2JhbC5mcHVfbG9hZF9mbGQgLi4uCj4gICMgICAgICAgICAg
+ICBPSyAgZ2xvYmFsLmZwdV9sb2FkX2ZsZAo+ICBvayAxNiBnbG9iYWwuZnB1X2xvYWRfZmxkCj4g
+ICMgIFJVTiAgICAgICAgICAgZ2xvYmFsLmZwdV9sb2FkX2NfZmxkIC4uLgo+ICAjICAgICAgICAg
+ICAgT0sgIGdsb2JhbC5mcHVfbG9hZF9jX2ZsZAo+ICBvayAxNyBnbG9iYWwuZnB1X2xvYWRfY19m
+bGQKPiAgIyAgUlVOICAgICAgICAgICBnbG9iYWwuZnB1X2xvYWRfY19mbGRzcCAuLi4KPiAgIyAg
+ICAgICAgICAgIE9LICBnbG9iYWwuZnB1X2xvYWRfY19mbGRzcAo+ICBvayAxOCBnbG9iYWwuZnB1
+X2xvYWRfY19mbGRzcAo+ICAjICBSVU4gICAgICAgICAgIGdsb2JhbC5mcHVfc3RvcmVfZnN3IC4u
+Lgo+ICAjICAgICAgICAgICAgT0sgIGdsb2JhbC5mcHVfc3RvcmVfZnN3Cj4gIG9rIDE5IGdsb2Jh
+bC5mcHVfc3RvcmVfZnN3Cj4gICMgIFJVTiAgICAgICAgICAgZ2xvYmFsLmZwdV9zdG9yZV9mc2Qg
+Li4uCj4gICMgICAgICAgICAgICBPSyAgZ2xvYmFsLmZwdV9zdG9yZV9mc2QKPiAgb2sgMjAgZ2xv
+YmFsLmZwdV9zdG9yZV9mc2QKPiAgIyAgUlVOICAgICAgICAgICBnbG9iYWwuZnB1X3N0b3JlX2Nf
+ZnNkIC4uLgo+ICAjICAgICAgICAgICAgT0sgIGdsb2JhbC5mcHVfc3RvcmVfY19mc2QKPiAgb2sg
+MjEgZ2xvYmFsLmZwdV9zdG9yZV9jX2ZzZAo+ICAjICBSVU4gICAgICAgICAgIGdsb2JhbC5mcHVf
+c3RvcmVfY19mc2RzcCAuLi4KPiAgIyAgICAgICAgICAgIE9LICBnbG9iYWwuZnB1X3N0b3JlX2Nf
+ZnNkc3AKPiAgb2sgMjIgZ2xvYmFsLmZwdV9zdG9yZV9jX2ZzZHNwCj4gICMgIFJVTiAgICAgICAg
+ICAgZ2xvYmFsLmdlbl9zaWdidXMgLi4uCj4gIFsxMjc5Ny45ODg2NDddIG1pc2FsaWduZWRbNjE4
+XTogdW5oYW5kbGVkIHNpZ25hbCA3IGNvZGUgMHgxIGF0IDB4MDAwMDAwMDAwMDAxNGRjMCBpbiBt
+aXNhbGlnbmVkWzRkYzAsMTAwMDArNzYwMDBdCj4gIFsxMjc5Ny45ODg5OTBdIENQVTogMCBVSUQ6
+IDAgUElEOiA2MTggQ29tbTogbWlzYWxpZ25lZCBOb3QgdGFpbnRlZCA2LjEzLjAtcmM2LTAwMDA4
+LWc0ZWM0NDY4OTY3YzktZGlydHkgIzUxCj4gIFsxMjc5Ny45ODkxNjldIEhhcmR3YXJlIG5hbWU6
+IHJpc2N2LXZpcnRpbyxxZW11IChEVCkKPiAgWzEyNzk3Ljk4OTI2NF0gZXBjIDogMDAwMDAwMDAw
+MDAxNGRjMCByYSA6IDAwMDAwMDAwMDAwMTRkMDAgc3AgOiAwMDAwN2ZmZmUxNjVkMTAwCj4gIFsx
+Mjc5Ny45ODk0MDddICBncCA6IDAwMDAwMDAwMDAwOGY2ZTggdHAgOiAwMDAwMDAwMDAwMDk1NzYw
+IHQwIDogMDAwMDAwMDAwMDAwMDAwOAo+ICBbMTI3OTcuOTg5NTQ0XSAgdDEgOiAwMDAwMDAwMDAw
+MDk2NWQ4IHQyIDogMDAwMDAwMDAwMDA4ZTgzMCBzMCA6IDAwMDA3ZmZmZTE2NWQxNjAKPiAgWzEy
+Nzk3Ljk4OTY5Ml0gIHMxIDogMDAwMDAwMDAwMDAwMDAxYSBhMCA6IDAwMDAwMDAwMDAwMDAwMDAg
+YTEgOiAwMDAwMDAwMDAwMDAwMDAyCj4gIFsxMjc5Ny45ODk4MzFdICBhMiA6IDAwMDAwMDAwMDAw
+MDAwMDAgYTMgOiAwMDAwMDAwMDAwMDAwMDAwIGE0IDogZmZmZmZmZmZkZWFkYmVlZgo+ICBbMTI3
+OTcuOTg5OTY0XSAgYTUgOiAwMDAwMDAwMDAwMDhlZjYxIGE2IDogNjI2NzY5NzM1ZjZlMDAwMCBh
+NyA6IGZmZmZmZmZmZmZmZmYwMDAKPiAgWzEyNzk3Ljk5MDA5NF0gIHMyIDogMDAwMDAwMDAwMDAw
+MDAwMSBzMyA6IDAwMDA3ZmZmZTE2NWQ4MzggczQgOiAwMDAwN2ZmZmUxNjVkODQ4Cj4gIFsxMjc5
+Ny45OTAyMzhdICBzNSA6IDAwMDAwMDAwMDAwMDAwMWEgczYgOiAwMDAwMDAwMDAwMDEwNDQyIHM3
+IDogMDAwMDAwMDAwMDAxMDIwMAo+ICBbMTI3OTcuOTkwMzkxXSAgczggOiAwMDAwMDAwMDAwMDAw
+MDNhIHM5IDogMDAwMDAwMDAwMDA5NDUwOCBzMTA6IDAwMDAwMDAwMDAwMDAwMDAKPiAgWzEyNzk3
+Ljk5MDUyNl0gIHMxMTogMDAwMDU1NTU2NzQ2MDY2OCB0MyA6IDAwMDA3ZmZmZTE2NWQwNzAgdDQg
+OiAwMDAwMDAwMDAwMDk2NWQwCj4gIFsxMjc5Ny45OTA2NTZdICB0NSA6IGZlZmVmZWZlZmVmZWZl
+ZmYgdDYgOiAwMDAwMDAwMDAwMDAwMDczCj4gIFsxMjc5Ny45OTA3NTZdIHN0YXR1czogMDAwMDAw
+MDIwMDAwNDAyMCBiYWRhZGRyOiAwMDAwMDAwMDAwMDhlZjYxIGNhdXNlOiAwMDAwMDAwMDAwMDAw
+MDA2Cj4gIFsxMjc5Ny45OTA5MTFdIENvZGU6IDg3OTMgODc5MSAzNDIzIGZjZjQgMzc4MyBmYzg0
+IGM3MzcgZGVhZCAwNzEzIGVlZjcgKGMzOTgpIDAwMDEKPiAgIyAgICAgICAgICAgIE9LICBnbG9i
+YWwuZ2VuX3NpZ2J1cwo+ICBvayAyMyBnbG9iYWwuZ2VuX3NpZ2J1cwo+ICAjIFBBU1NFRDogMjMg
+LyAyMyB0ZXN0cyBwYXNzZWQuCj4gICMgVG90YWxzOiBwYXNzOjIzIGZhaWw6MCB4ZmFpbDowIHhw
+YXNzOjAgc2tpcDowIGVycm9yOjAKPgo+IFdpdGgga3ZtLXRvb2xzOgo+Cj4gICMgbGt2bSBydW4g
+LWsgc2JpLmZsYXQgLW0gMTI4Cj4gICBJbmZvOiAjIGxrdm0gcnVuIC1rIHNiaS5mbGF0IC1tIDEy
+OCAtYyAxIC0tbmFtZSBndWVzdC05Nwo+ICAgSW5mbzogUmVtb3ZlZCBnaG9zdCBzb2NrZXQgZmls
+ZSAiL3Jvb3QvLmxrdm0vL2d1ZXN0LTk3LnNvY2siLgo+Cj4gICMjIyMjIyMjIyMjIyMjIyMjIyMj
+IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjCj4g
+ICMgICAga3ZtLXVuaXQtdGVzdHMKPiAgIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
+IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKPgo+ICAuLi4gW3Rlc3Qg
+bWVzc2FnZXMgZWxpZGVkXQo+ICBQQVNTOiBzYmk6IGZ3ZnQ6IEZXRlQgZXh0ZW5zaW9uIHByb2Jp
+bmcgbm8gZXJyb3IKPiAgUEFTUzogc2JpOiBmd2Z0OiBnZXQvc2V0IHJlc2VydmVkIGZlYXR1cmUg
+MHg2IGVycm9yID09IFNCSV9FUlJfREVOSUVECj4gIFBBU1M6IHNiaTogZndmdDogZ2V0L3NldCBy
+ZXNlcnZlZCBmZWF0dXJlIDB4M2ZmZmZmZmYgZXJyb3IgPT0gU0JJX0VSUl9ERU5JRUQKPiAgUEFT
+Uzogc2JpOiBmd2Z0OiBnZXQvc2V0IHJlc2VydmVkIGZlYXR1cmUgMHg4MDAwMDAwMCBlcnJvciA9
+PSBTQklfRVJSX0RFTklFRAo+ICBQQVNTOiBzYmk6IGZ3ZnQ6IGdldC9zZXQgcmVzZXJ2ZWQgZmVh
+dHVyZSAweGJmZmZmZmZmIGVycm9yID09IFNCSV9FUlJfREVOSUVECj4gIFBBU1M6IHNiaTogZndm
+dDogbWlzYWxpZ25lZF9kZWxlZzogR2V0IG1pc2FsaWduZWQgZGVsZWcgZmVhdHVyZSBubyBlcnJv
+cgo+ICBQQVNTOiBzYmk6IGZ3ZnQ6IG1pc2FsaWduZWRfZGVsZWc6IFNldCBtaXNhbGlnbmVkIGRl
+bGVnIGZlYXR1cmUgaW52YWxpZCB2YWx1ZSBlcnJvcgo+ICBQQVNTOiBzYmk6IGZ3ZnQ6IG1pc2Fs
+aWduZWRfZGVsZWc6IFNldCBtaXNhbGlnbmVkIGRlbGVnIGZlYXR1cmUgaW52YWxpZCB2YWx1ZSBl
+cnJvcgo+ICBQQVNTOiBzYmk6IGZ3ZnQ6IG1pc2FsaWduZWRfZGVsZWc6IFNldCBtaXNhbGlnbmVk
+IGRlbGVnIGZlYXR1cmUgdmFsdWUgbm8gZXJyb3IKPiAgUEFTUzogc2JpOiBmd2Z0OiBtaXNhbGln
+bmVkX2RlbGVnOiBTZXQgbWlzYWxpZ25lZCBkZWxlZyBmZWF0dXJlIHZhbHVlIDAKPiAgUEFTUzog
+c2JpOiBmd2Z0OiBtaXNhbGlnbmVkX2RlbGVnOiBTZXQgbWlzYWxpZ25lZCBkZWxlZyBmZWF0dXJl
+IHZhbHVlIG5vIGVycm9yCj4gIFBBU1M6IHNiaTogZndmdDogbWlzYWxpZ25lZF9kZWxlZzogU2V0
+IG1pc2FsaWduZWQgZGVsZWcgZmVhdHVyZSB2YWx1ZSAxCj4gIFBBU1M6IHNiaTogZndmdDogbWlz
+YWxpZ25lZF9kZWxlZzogVmVyaWZ5IG1pc2FsaWduZWQgbG9hZCBleGNlcHRpb24gdHJhcCBpbiBz
+dXBlcnZpc29yCj4gIFNVTU1BUlk6IDUwIHRlc3RzLCAyIHVuZXhwZWN0ZWQgZmFpbHVyZXMsIDEy
+IHNraXBwZWQKPgo+IFRoaXMgc2VyaWVzIGlzIGF2YWlsYWJsZSBhdCBbNV0uCj4KPiBMaW5rOiBo
+dHRwczovL2dpdGh1Yi5jb20vcmlzY3Ytbm9uLWlzYS9yaXNjdi1zYmktZG9jL3JlbGVhc2VzL2Rv
+d25sb2FkL3Z2My4wLXJjMi9yaXNjdi1zYmkucGRmIFsxXQo+IExpbms6IGh0dHBzOi8vZ2l0aHVi
+LmNvbS9yaXZvc2luYy9xZW11L3RyZWUvZGV2L2NsZWdlci9taXNhbGlnbmVkIFsyXQo+IExpbms6
+IGh0dHBzOi8vbG9yZS5rZXJuZWwub3JnL2FsbC8yMDI0MTIxMTIxMTkzMy4xOTg3OTItMy1ma29u
+cmFkQGFtZC5jb20vVC8gWzNdCj4gTGluazogaHR0cHM6Ly9sb3JlLmtlcm5lbC5vcmcvbGludXgt
+cmlzY3YvMjAyNTA0MTQxMjM1NDMuMTYxNTQ3OC0xLWNsZWdlckByaXZvc2luYy5jb20gWzRdCj4g
+TGluazogaHR0cHM6Ly9naXRodWIuY29tL3Jpdm9zaW5jL2xpbnV4L3RyZWUvZGV2L2NsZWdlci9m
+d2Z0IFs1XQo+IC0tLQo+Cj4gVjg6Cj4gIC0gTW92ZSBtaXNhbGlnbmVkX2FjY2Vzc19zcGVlZCB1
+bmRlciBDT05GSUdfUklTQ1ZfTUlTQUxJR05FRCBhbmQgYWRkIGEKPiAgICBzZXBhcmF0ZSBjb21t
+aXQgZm9yIHRoYXQuCj4KPiBWNzoKPiAgLSBGaXggaWZkZWZlcnkgYnVpbGQgcHJvYmxlbXMKPiAg
+LSBNb3ZlIHNiaV9md2Z0X2lzX3N1cHBvcnRlZCB3aXRoIGZ3ZnRfc2V0X3JlcSBzdHJ1Y3QKPiAg
+LSBBZGRlZCBBdGlzaCBSZXZpZXdlZC1ieQo+ICAtIFVwZGF0ZWQgS1ZNIHZjcHUgY2ZnIGhlZGVs
+ZWcgdmFsdWUgaW4gc2V0X2RlbGVnYXRpb24KPiAgLSBDaGFuZ2VkIFNCSSBFVElNRSBlcnJvciBt
+YXBwaW5nIHRvIEVUSU1FRE9VVAo+ICAtIEZpeGVkIGEgZmV3IHR5cG8gcmVwb3J0ZWQgYnkgQWxv
+awo+Cj4gVjY6Cj4gIC0gUmVuYW1lIEZXRlQgaW50ZXJmYWNlIHRvIHJlbW92ZSAiX2xvY2FsIgo+
+ICAtIEZpeCB0ZXN0IGZvciBNRURFTEVHIHZhbHVlcyBpbiBLVk0gRldGVCBzdXBwb3J0Cj4gIC0g
+QWRkIF9faW5pdCBmb3IgdW5hbGlnbmVkX2FjY2Vzc19pbml0KCkKPiAgLSBSZWJhc2VkIG9uIG1h
+c3Rlcgo+Cj4gVjU6Cj4gIC0gUmV0dXJuIEVSQU5HRSBhcyBtYXBwaW5nIGZvciBTQklfRVJSX0JB
+RF9SQU5HRQo+ICAtIFJlbW92ZWQgdW51c2VkIHNiaV9md2Z0X2dldCgpCj4gIC0gRml4IGtlcm5l
+bCBmb3Igc2JpX2Z3ZnRfbG9jYWxfc2V0X2NwdW1hc2soKQo+ICAtIEZpeCBpbmRlbnRhdGlvbiBm
+b3Igc2JpX2Z3ZnRfbG9jYWxfc2V0KCkKPiAgLSBSZW1vdmUgc3B1cmlvdXMgc3BhY2UgaW4ga3Zt
+X3NiaV9md2Z0X29wcy4KPiAgLSBSZWJhc2VkIG9uIG9yaWdpbi9tYXN0ZXIKPiAgLSBSZW1vdmUg
+Zml4ZXMgY29tbWl0cyBhbmQgc2VudCB0aGVtIGFzIGEgc2VwYXJhdGUgc2VyaWVzIFs0XQo+Cj4g
+VjQ6Cj4gIC0gQ2hlY2sgU0JJIHZlcnNpb24gMy4wIGluc3RlYWQgb2YgMi4wIGZvciBGV0ZUIHBy
+ZXNlbmNlCj4gIC0gVXNlIGxvbmcgZm9yIGt2bV9zYmlfZndmdCBvcGVyYXRpb24gcmV0dXJuIHZh
+bHVlCj4gIC0gSW5pdCBLVk0gc2JpIGV4dGVuc2lvbiBldmVuIGlmIGRlZmF1bHRfZGlzYWJsZWQK
+PiAgLSBSZW1vdmUgcmV2ZXJ0X29uX2ZhaWwgcGFyYW1ldGVyIGZvciBzYmlfZndmdF9mZWF0dXJl
+X3NldCgpLgo+ICAtIEZpeCBjb21tZW50cyBmb3Igc2JpX2Z3ZnRfc2V0L2dldCgpCj4gIC0gT25s
+eSBoYW5kbGUgbG9jYWwgZmVhdHVyZXMgKHRoZXJlIGFyZSBubyBnbG9iYWxzIHlldCBpbiB0aGUg
+c3BlYykKPiAgLSBBZGQgbmV3IFNCSSBlcnJvcnMgdG8gc2JpX2Vycl9tYXBfbGludXhfZXJybm8o
+KQo+Cj4gVjM6Cj4gIC0gQWRkZWQgY29tbWVudCBhYm91dCBrdm0gc2JpIGZ3ZnQgc3VwcG9ydGVk
+L3NldC9nZXQgY2FsbGJhY2sKPiAgICByZXF1aXJlbWVudHMKPiAgLSBNb3ZlIHN0cnVjdCBrdm1f
+c2JpX2Z3ZnRfZmVhdHVyZSBpbiBrdm1fc2JpX2Z3ZnQuYwo+ICAtIEFkZCBhIEZXRlQgaW50ZXJm
+YWNlCj4KPiBWMjoKPiAgLSBBZGRlZCBLc2VsZnRlc3QgZm9yIG1pc2FsaWduZWQgdGVzdGluZwo+
+ICAtIEFkZGVkIGdldF91c2VyKCkgdXNhZ2UgaW5zdGVhZCBvZiBfX2dldF91c2VyKCkKPiAgLSBS
+ZWVuYWJsZSBpbnRlcnJ1cHQgd2hlbiBwb3NzaWJsZSBpbiBtaXNhbGlnbmVkIGFjY2VzcyBoYW5k
+bGluZwo+ICAtIERvY3VtZW50IHRoYXQgcmlzY3Ygc3VwcG9ydHMgdW5hbGlnbmVkLXRyYXBzCj4g
+IC0gRml4IEtWTSBleHRlbnNpb24gc3RhdGUgd2hlbiBhbiBpbml0IGZ1bmN0aW9uIGlzIHByZXNl
+bnQKPiAgLSBSZXdvcmsgU0JJIG1pc2FsaWduZWQgYWNjZXNzZXMgdHJhcCBkZWxlZ2F0aW9uIGNv
+ZGUKPiAgLSBBZGRlZCBzdXBwb3J0IGZvciBDUFUgaG90cGx1Z2dpbmcKPiAgLSBBZGRlZCBLVk0g
+U0JJIHJlc2V0IGNhbGxiYWNrCj4gIC0gQWRkZWQgcmVzZXQgZm9yIEtWTSBTQkkgRldGVCBsb2Nr
+Cj4gIC0gUmV0dXJuIFNCSV9FUlJfREVOSUVEX0xPQ0tFRCB3aGVuIExPQ0sgZmxhZyBpcyBzZXQK
+Pgo+IENsw6ltZW50IEzDqWdlciAoMTQpOgo+ICAgcmlzY3Y6IHNiaTogYWRkIEZpcm13YXJlIEZl
+YXR1cmUgKEZXRlQpIFNCSSBleHRlbnNpb25zIGRlZmluaXRpb25zCj4gICByaXNjdjogc2JpOiBy
+ZW1vdmUgdXNlbGVzcyBwYXJlbnRoZXNpcwo+ICAgcmlzY3Y6IHNiaTogYWRkIG5ldyBTQkkgZXJy
+b3IgbWFwcGluZ3MKPiAgIHJpc2N2OiBzYmk6IGFkZCBGV0ZUIGV4dGVuc2lvbiBpbnRlcmZhY2UK
+PiAgIHJpc2N2OiBzYmk6IGFkZCBTQkkgRldGVCBleHRlbnNpb24gY2FsbHMKPiAgIHJpc2N2OiBt
+aXNhbGlnbmVkOiByZXF1ZXN0IG1pc2FsaWduZWQgZXhjZXB0aW9uIGZyb20gU0JJCj4gICByaXNj
+djogbWlzYWxpZ25lZDogdXNlIG9uX2VhY2hfY3B1KCkgZm9yIHNjYWxhciBtaXNhbGlnbmVkIGFj
+Y2Vzcwo+ICAgICBwcm9iaW5nCj4gICByaXNjdjogbWlzYWxpZ25lZDogZGVjbGFyZSBtaXNhbGln
+bmVkX2FjY2Vzc19zcGVlZCB1bmRlcgo+ICAgICBDT05GSUdfUklTQ1ZfTUlTQUxJR05FRAo+ICAg
+cmlzY3Y6IG1pc2FsaWduZWQ6IG1vdmUgZW11bGF0ZWQgYWNjZXNzIHVuaWZvcm1pdHkgY2hlY2sg
+aW4gYSBmdW5jdGlvbgo+ICAgcmlzY3Y6IG1pc2FsaWduZWQ6IGFkZCBhIGZ1bmN0aW9uIHRvIGNo
+ZWNrIG1pc2FsaWduIHRyYXAgZGVsZWdhYmlsaXR5Cj4gICBSSVNDLVY6IEtWTTogYWRkIFNCSSBl
+eHRlbnNpb24gaW5pdCgpL2RlaW5pdCgpIGZ1bmN0aW9ucwo+ICAgUklTQy1WOiBLVk06IGFkZCBT
+QkkgZXh0ZW5zaW9uIHJlc2V0IGNhbGxiYWNrCj4gICBSSVNDLVY6IEtWTTogYWRkIHN1cHBvcnQg
+Zm9yIEZXRlQgU0JJIGV4dGVuc2lvbgo+ICAgUklTQy1WOiBLVk06IGFkZCBzdXBwb3J0IGZvciBT
+QklfRldGVF9NSVNBTElHTkVEX0RFTEVHCj4KPiAgYXJjaC9yaXNjdi9pbmNsdWRlL2FzbS9jcHVm
+ZWF0dXJlLmggICAgICAgIHwgIDE0ICstCj4gIGFyY2gvcmlzY3YvaW5jbHVkZS9hc20va3ZtX2hv
+c3QuaCAgICAgICAgICB8ICAgNSArLQo+ICBhcmNoL3Jpc2N2L2luY2x1ZGUvYXNtL2t2bV92Y3B1
+X3NiaS5oICAgICAgfCAgMTIgKwo+ICBhcmNoL3Jpc2N2L2luY2x1ZGUvYXNtL2t2bV92Y3B1X3Ni
+aV9md2Z0LmggfCAgMjkgKysrCj4gIGFyY2gvcmlzY3YvaW5jbHVkZS9hc20vc2JpLmggICAgICAg
+ICAgICAgICB8ICA2MCArKysrKwo+ICBhcmNoL3Jpc2N2L2luY2x1ZGUvdWFwaS9hc20va3ZtLmgg
+ICAgICAgICAgfCAgIDEgKwo+ICBhcmNoL3Jpc2N2L2tlcm5lbC9zYmkuYyAgICAgICAgICAgICAg
+ICAgICAgfCAgODEgKysrKysrLQo+ICBhcmNoL3Jpc2N2L2tlcm5lbC90cmFwc19taXNhbGlnbmVk
+LmMgICAgICAgfCAxMTIgKysrKysrKystCj4gIGFyY2gvcmlzY3Yva2VybmVsL3VuYWxpZ25lZF9h
+Y2Nlc3Nfc3BlZWQuYyB8ICAgOCArLQo+ICBhcmNoL3Jpc2N2L2t2bS9NYWtlZmlsZSAgICAgICAg
+ICAgICAgICAgICAgfCAgIDEgKwo+ICBhcmNoL3Jpc2N2L2t2bS92Y3B1LmMgICAgICAgICAgICAg
+ICAgICAgICAgfCAgIDQgKy0KPiAgYXJjaC9yaXNjdi9rdm0vdmNwdV9zYmkuYyAgICAgICAgICAg
+ICAgICAgIHwgIDU0ICsrKysrCj4gIGFyY2gvcmlzY3Yva3ZtL3ZjcHVfc2JpX2Z3ZnQuYyAgICAg
+ICAgICAgICB8IDI1NyArKysrKysrKysrKysrKysrKysrKysKPiAgYXJjaC9yaXNjdi9rdm0vdmNw
+dV9zYmlfc3RhLmMgICAgICAgICAgICAgIHwgICAzICstCj4gIDE0IGZpbGVzIGNoYW5nZWQsIDYy
+MCBpbnNlcnRpb25zKCspLCAyMSBkZWxldGlvbnMoLSkKPiAgY3JlYXRlIG1vZGUgMTAwNjQ0IGFy
+Y2gvcmlzY3YvaW5jbHVkZS9hc20va3ZtX3ZjcHVfc2JpX2Z3ZnQuaAo+ICBjcmVhdGUgbW9kZSAx
+MDA2NDQgYXJjaC9yaXNjdi9rdm0vdmNwdV9zYmlfZndmdC5jCgpTb3JyeSBJJ20gc3RpbGwga2lu
+ZCBvZiBvdXQgb2YgaXQgaGVyZSwgYnV0IEkgdGhpbmsgQWxleCB3YXMgc2F5aW5nIHRoaXMgCmhh
+cyBkZXBlbmRlbmNpZXMgaW4gdGhlIHBhdGNod29yayBjYWxsIHRoaXMgbW9ybmluZz8KCi0tIApr
+dm0tcmlzY3YgbWFpbGluZyBsaXN0Cmt2bS1yaXNjdkBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6
+Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8va3ZtLXJpc2N2Cg==
