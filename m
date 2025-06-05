@@ -4,71 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3FA84C5AE59
-	for <kvm-riscv@archiver.kernel.org>; Thu,  5 Jun 2025 06:15:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BABBBC5AE59
+	for <kvm-riscv@archiver.kernel.org>; Thu,  5 Jun 2025 06:15:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=+RLMUQ/ZVPmqAFEVPID51MPLMfVi8nvyf79jI9EaGeg=; b=R+S8czxLNMUxNh
-	SPcS1SAoRr7rycd+37bZyNjAUiWA6+sr0+UN0yKCXoolFYkQ/xvKFX2QhPvOiUr69Es90J71BWTF6
-	RmCxlTMZxBQGuEHez5SYHDPybnzP9/9YB9V+alriz2XkXzBbJ6Q55wEK8EuuqbfswAwTKCev/E4Qm
-	HrxTy/IBkryo51PUFA7h/2YPr6Qjj1IMTf97cPp93eCqbSOfw0Ylzlku5efIl7BVOJB88cbIEktcq
-	+J/vMIa0YjRWZDMncfwsJQec86CtObq8v8AxlHWMaRkxLELDq4OlslYq2WKdgDCxzeFpHX5Ifq/iX
-	pbe9aYvZ/MY5G432B6RQ==;
+	List-Owner; bh=DZTJfCoG6YEUXqjSnRzgVnfVEVPnv704tlzPP9u2oqE=; b=RNPg62CTmL4I+H
+	q3xAjUFZwATPMoQjb0zQCycK3PKwnzt0Rlu4wWp2vgxxdPV2OnHUtM0SD8Daf0yuyMFPCKPFBOUt/
+	hs06eX/bz8aYPzWC3mMvYUOgMzyEY67jcu+Xn8vDCgir3b0IJu2PLG/vxwVXrPSCjYpRkq7CGIdrT
+	fSTRuabkGU9JFlHXkLQT793yTwvZKol/qZxoLOpbsYGc9lwXk6i0NH5xHUUlmAlC/eiP9ONUXYjVD
+	B1wfJB867vCRrMV9YUSJ8DtCebi3HgCoBr0BcCxVqN4sL82tJ1LII93/diX6CEUlX/tFU+fyyTBiF
+	I8TKzO/o11Dpeh/gQayQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uN3t6-0000000EpCt-46uW;
-	Thu, 05 Jun 2025 06:15:40 +0000
-Received: from mail-pj1-x1030.google.com ([2607:f8b0:4864:20::1030])
+	id 1uN3tB-0000000EpJC-291E;
+	Thu, 05 Jun 2025 06:15:45 +0000
+Received: from mail-pg1-x532.google.com ([2607:f8b0:4864:20::532])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uN3t2-0000000Ep7F-314v
+	id 1uN3t7-0000000EpCb-0TVx
 	for kvm-riscv@lists.infradead.org;
-	Thu, 05 Jun 2025 06:15:39 +0000
-Received: by mail-pj1-x1030.google.com with SMTP id 98e67ed59e1d1-3109f106867so766306a91.1
-        for <kvm-riscv@lists.infradead.org>; Wed, 04 Jun 2025 23:15:36 -0700 (PDT)
+	Thu, 05 Jun 2025 06:15:44 +0000
+Received: by mail-pg1-x532.google.com with SMTP id 41be03b00d2f7-b1fd59851baso337361a12.0
+        for <kvm-riscv@lists.infradead.org>; Wed, 04 Jun 2025 23:15:40 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ventanamicro.com; s=google; t=1749104136; x=1749708936; darn=lists.infradead.org;
+        d=ventanamicro.com; s=google; t=1749104140; x=1749708940; darn=lists.infradead.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=PBw4EHffUTV31O6B+TCgyeA+gw4sP4Qg6j7rVTIEdxU=;
-        b=gjEbppLbVa6F/Dy6SrnUV+iJyjSjw13nF1xxRvRTSuvkFLVnsjXJgEpWlc24ilT69t
-         oLKm1goDuaYphz4yzKnH+tJPViVcwVKOlNS3j2nWXX70pCr7ejdqGVFnMceTDyAuhxNv
-         JNb3wqqTBw2zr9wXAFf3jYC0Ro8ZROuJqGvn24cpvjGwHZY1ue7Ow+NsHEaZZ2Br6VK4
-         eJ0/k94IMlC+5yKV+amg6jnU/n0dzW8vKi74d4hm6QwF3EqywWxDHj14aRZjzYd26nKF
-         LDs2wcaf+6wfR+VPNdE2T+o8D2PBQ8w3+oyvf7QOC/wtOL2JpyvRf6p4lbWYVIVHdbi8
-         FWIw==
+        bh=/5L0+ykOWiXelXLICAGslkImYlGqzZkgVfyp6ia3O1g=;
+        b=MRYuc8DsrNAabXkC40qzMFIHrBWmiPRQlmVus18kMsWUwZWMszgjZ0VCnjjW48XG1s
+         7cpBfzJf9yCiS0Tx/UWKFhqMywKqDHMf8xfkisY/iWTEREz9MB6Ig4NeQ342N4TS9AZf
+         vsfUTFc1IzSIjE5RpfLSUedkCtQax5oiDRwck8NbqtyD5qzjvTlY4X7C7P/SM/cUSp8h
+         1uji7wqtKOr9BnfwucrVw4G3uhmqrrxm6Jit5c6NuUKr8tTYp/GhE2qPEns5AK5RZrgB
+         csfivoJyhrwAkcgpAfMQUWY2CZ6iLKWwbXjFea0zHo6F62F9Y7TxwJWDbbu+0SvCT9ZF
+         tQ1w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1749104136; x=1749708936;
+        d=1e100.net; s=20230601; t=1749104140; x=1749708940;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=PBw4EHffUTV31O6B+TCgyeA+gw4sP4Qg6j7rVTIEdxU=;
-        b=FDRxa3mINHhaRuPljtRtdXnSJErnnQo3YcUoYU2WZB676ECE8KZbJFeYR2LDiAMnGU
-         W5G2tT00NAppBq/69B4+g6XLc21bmui5t8IQZf1IbsnEtHTs17oshS5Up1TqB17ZDDKM
-         9MQUJWxmYGT2PWL6J2C79/0i24/gos3qDcLmlFKnQugylOyABs4tq8tDRnw7X7yUginA
-         h8ITXR6ZA9hZw024ynjy2Lf7mNV614cMUDuL+4M89wYeFFvMDP4xO0a67n0UFMIzalZQ
-         XYNQ4sRWqAkE4vBNtCYCkwwwpTQ/flWSyAXBKY+fUv0NBYXm3sYBheQBQptLNCMUioCr
-         DLzg==
-X-Forwarded-Encrypted: i=1; AJvYcCU2o7Zla/a7GfSVj8kffm3diQR/Lt/sKumkD6ifv7EQZ6pzDeCQJkzL4i3Bo8F3c4huwV6IvD+GBo4=@lists.infradead.org
-X-Gm-Message-State: AOJu0YxGGos2h3TTZWD0tgJWv5/knlPPX36kmSsLMhCVeGHt/SitUtQ3
-	ydLigMJrHdk74fbkYGFa2YZflh2S8w9J8yTpY2sS+QPsU1RqhZMKJlFgAGWLsb7UR80=
-X-Gm-Gg: ASbGncvQG6vj8W+YAiLnSIrt8VOLyuQ8skn6jE3yIKTSPHE1NJKND2pg2WgTowfUjQB
-	momQeXgUfmKyLFOJJvwfLrxnasrqhmsthB4vs+LqyLyKLDOJNAx8PwgbxhdXDP298fV+DM0nqux
-	hF6FL7CVfFUpsGTTtFvOrTbkvmoXSUxD5RZMiWhE4Mw6qbMDrc6g2X79WeFpLxovt2INM/quQZ2
-	e/8QgSotKNC+Hh9uLIdMIbxSKI4I4Zfo2CriIjCTGogJhGG6HanMuO8I/UNufjSvOxKU6QK2gCp
-	/0NmKDMrtC5K98p2QBE76gbpibgHTAFw/HmkUGYFJZRpGq2rSuLXPcy3YzTpHyy3yzJTnfuVsGS
-	GXyy6BRojaRae3Lz7yM6G3oy20Y4=
-X-Google-Smtp-Source: AGHT+IFD6i36g3dYe1k+gDLGsx1D0hcp/ZxtNU3y3iDfAyRruAl8oD12KxZBz84WYVYtRaZXIXAJqw==
-X-Received: by 2002:a17:90b:3ec7:b0:311:9c9a:58da with SMTP id 98e67ed59e1d1-3130cd12ba3mr8390187a91.8.1749104135972;
-        Wed, 04 Jun 2025 23:15:35 -0700 (PDT)
+        bh=/5L0+ykOWiXelXLICAGslkImYlGqzZkgVfyp6ia3O1g=;
+        b=B0xT3q6iD0RZxMNkQeMyjTHFcZ7d/+y54S4NVs3A+/Ejvuy1hRJ5NoJMvXoFDQkI5N
+         vpzkZcPPBk7NJc7ASkYy0clmETYebb6gzzkXi5hscwABV9Y3/rsemxDY/3czSdA4eLnn
+         5UmJEhE6UHGLCzCZe1LnLri4z30qDQvFeLbKJ8DXJFFbrIznZ8iCY3IqGomle3F4i6ec
+         pT6jVjQW1/oTOWyMz1Az+ExRypnf/WCJHVSlkQyQiSnfaxcxbHMAUDddBYKgVh8yUff4
+         AHe3ykr2k33v6cSKH3NK8/7g3sYfSrGgn/6LwnM40NR02vQxdP3FwM4xPLJmWqsHRYyP
+         uF6g==
+X-Forwarded-Encrypted: i=1; AJvYcCXBKohR2Q/2Ah8RXHhZth+9Nnawfgt9mYqu19MSkGLYQgAitz4/mFnu3I0vEpF9o/0XaHMnTLioTBI=@lists.infradead.org
+X-Gm-Message-State: AOJu0YzVFDNdebyxKM6m6VvpBw0c0IWeY1kWd3MeWKdcaYhD9yAECcXl
+	AXO/dQlMB7baCbxnH3SZSUHiwB8M07NNDx2MSNomqj3KWIQqpArYKx7jUotqKJ78HY4=
+X-Gm-Gg: ASbGncvfGYGpQZohqChoFsMtnFN7AgEDElbCYKVL8z82g3ex5ZWV9aBhlVZHZpSgHNx
+	SKMlq7on0pqRDLb9iGb2jKgFehtoRqtBB9taHs0x8Vr5rX51gVXT3DKD0qfVUsnTZ+Xnm3+G8bs
+	My5377AoUNJpXuVuHgiZVAYDU150mvgm/AmiFusl44tLL2CuOuHORHGsYt6LAlnzkly7YIGPo9s
+	R809V+x1W5dcRQT/BVP/3wVw+oALJGFoHA+NOSnGuvDzfW4Kag6ZQSrxwQuVR/vKGEq5IKMjmIW
+	xDiRwTmfW7zqikPsda5cF5Cubstmgz+Z9PkX7MnKwAIDoT3I6pApDBpPug7gQpye172h4sGGcHg
+	VZnBcrg==
+X-Google-Smtp-Source: AGHT+IGeCP7yjnGqfjqlB4ks6ph12/2Dcv3NbYOPrnzOV1SF+VtBogS3QcmQr2cFbHhenw53773/UA==
+X-Received: by 2002:a17:90b:1d51:b0:313:2464:ad20 with SMTP id 98e67ed59e1d1-3132464ad44mr5168665a91.13.1749104140057;
+        Wed, 04 Jun 2025 23:15:40 -0700 (PDT)
 Received: from localhost.localdomain ([14.141.91.70])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3132c0bedc7sm716026a91.49.2025.06.04.23.15.32
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3132c0bedc7sm716026a91.49.2025.06.04.23.15.36
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 04 Jun 2025 23:15:35 -0700 (PDT)
+        Wed, 04 Jun 2025 23:15:39 -0700 (PDT)
 From: Anup Patel <apatel@ventanamicro.com>
 To: Atish Patra <atish.patra@linux.dev>
 Cc: Palmer Dabbelt <palmer@dabbelt.com>,
@@ -81,16 +81,16 @@ Cc: Palmer Dabbelt <palmer@dabbelt.com>,
 	linux-riscv@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	Anup Patel <apatel@ventanamicro.com>
-Subject: [PATCH 08/13] RISC-V: KVM: Implement kvm_arch_flush_remote_tlbs_range()
-Date: Thu,  5 Jun 2025 11:44:53 +0530
-Message-ID: <20250605061458.196003-9-apatel@ventanamicro.com>
+Subject: [PATCH 09/13] RISC-V: KVM: Factor-out MMU related declarations into separate headers
+Date: Thu,  5 Jun 2025 11:44:54 +0530
+Message-ID: <20250605061458.196003-10-apatel@ventanamicro.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20250605061458.196003-1-apatel@ventanamicro.com>
 References: <20250605061458.196003-1-apatel@ventanamicro.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250604_231536_763348_F99D9D0C 
-X-CRM114-Status: GOOD (  11.23  )
+X-CRM114-CacheID: sfid-20250604_231541_176330_64D756D2 
+X-CRM114-Status: GOOD (  16.70  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -107,63 +107,408 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-The kvm_arch_flush_remote_tlbs_range() expected by KVM core can be
-easily implemented for RISC-V using kvm_riscv_hfence_gvma_vmid_gpa()
-hence provide it.
-
-Also with kvm_arch_flush_remote_tlbs_range() available for RISC-V, the
-mmu_wp_memory_region() can happily use kvm_flush_remote_tlbs_memslot()
-instead of kvm_flush_remote_tlbs().
+The MMU, TLB, and VMID management for KVM RISC-V already exists as
+seprate sources so create separate headers along these lines. This
+further simplifies asm/kvm_host.h header.
 
 Signed-off-by: Anup Patel <apatel@ventanamicro.com>
 ---
- arch/riscv/include/asm/kvm_host.h | 2 ++
- arch/riscv/kvm/mmu.c              | 2 +-
- arch/riscv/kvm/tlb.c              | 8 ++++++++
- 3 files changed, 11 insertions(+), 1 deletion(-)
+ arch/riscv/include/asm/kvm_host.h | 100 +-----------------------------
+ arch/riscv/include/asm/kvm_mmu.h  |  26 ++++++++
+ arch/riscv/include/asm/kvm_tlb.h  |  78 +++++++++++++++++++++++
+ arch/riscv/include/asm/kvm_vmid.h |  27 ++++++++
+ arch/riscv/kvm/aia_imsic.c        |   1 +
+ arch/riscv/kvm/main.c             |   1 +
+ arch/riscv/kvm/mmu.c              |   1 +
+ arch/riscv/kvm/tlb.c              |   2 +
+ arch/riscv/kvm/vcpu.c             |   1 +
+ arch/riscv/kvm/vcpu_exit.c        |   1 +
+ arch/riscv/kvm/vm.c               |   1 +
+ arch/riscv/kvm/vmid.c             |   2 +
+ 12 files changed, 143 insertions(+), 98 deletions(-)
+ create mode 100644 arch/riscv/include/asm/kvm_mmu.h
+ create mode 100644 arch/riscv/include/asm/kvm_tlb.h
+ create mode 100644 arch/riscv/include/asm/kvm_vmid.h
 
 diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
-index afaf25f2c5ab..b9e241c46209 100644
+index b9e241c46209..8d7a59274386 100644
 --- a/arch/riscv/include/asm/kvm_host.h
 +++ b/arch/riscv/include/asm/kvm_host.h
-@@ -42,6 +42,8 @@
- 	KVM_ARCH_REQ_FLAGS(5, KVM_REQUEST_WAIT | KVM_REQUEST_NO_WAKEUP)
- #define KVM_REQ_STEAL_UPDATE		KVM_ARCH_REQ(6)
+@@ -16,6 +16,8 @@
+ #include <asm/hwcap.h>
+ #include <asm/kvm_aia.h>
+ #include <asm/ptrace.h>
++#include <asm/kvm_tlb.h>
++#include <asm/kvm_vmid.h>
+ #include <asm/kvm_vcpu_fp.h>
+ #include <asm/kvm_vcpu_insn.h>
+ #include <asm/kvm_vcpu_sbi.h>
+@@ -55,24 +57,6 @@
+ 					 BIT(IRQ_VS_TIMER) | \
+ 					 BIT(IRQ_VS_EXT))
  
-+#define __KVM_HAVE_ARCH_FLUSH_REMOTE_TLBS_RANGE
+-enum kvm_riscv_hfence_type {
+-	KVM_RISCV_HFENCE_UNKNOWN = 0,
+-	KVM_RISCV_HFENCE_GVMA_VMID_GPA,
+-	KVM_RISCV_HFENCE_VVMA_ASID_GVA,
+-	KVM_RISCV_HFENCE_VVMA_ASID_ALL,
+-	KVM_RISCV_HFENCE_VVMA_GVA,
+-};
+-
+-struct kvm_riscv_hfence {
+-	enum kvm_riscv_hfence_type type;
+-	unsigned long asid;
+-	unsigned long order;
+-	gpa_t addr;
+-	gpa_t size;
+-};
+-
+-#define KVM_RISCV_VCPU_MAX_HFENCE	64
+-
+ struct kvm_vm_stat {
+ 	struct kvm_vm_stat_generic generic;
+ };
+@@ -98,15 +82,6 @@ struct kvm_vcpu_stat {
+ struct kvm_arch_memory_slot {
+ };
+ 
+-struct kvm_vmid {
+-	/*
+-	 * Writes to vmid_version and vmid happen with vmid_lock held
+-	 * whereas reads happen without any lock held.
+-	 */
+-	unsigned long vmid_version;
+-	unsigned long vmid;
+-};
+-
+ struct kvm_arch {
+ 	/* G-stage vmid */
+ 	struct kvm_vmid vmid;
+@@ -307,77 +282,6 @@ static inline bool kvm_arch_pmi_in_guest(struct kvm_vcpu *vcpu)
+ 	return IS_ENABLED(CONFIG_GUEST_PERF_EVENTS) && !!vcpu;
+ }
+ 
+-#define KVM_RISCV_GSTAGE_TLB_MIN_ORDER		12
+-
+-void kvm_riscv_local_hfence_gvma_vmid_gpa(unsigned long vmid,
+-					  gpa_t gpa, gpa_t gpsz,
+-					  unsigned long order);
+-void kvm_riscv_local_hfence_gvma_vmid_all(unsigned long vmid);
+-void kvm_riscv_local_hfence_gvma_gpa(gpa_t gpa, gpa_t gpsz,
+-				     unsigned long order);
+-void kvm_riscv_local_hfence_gvma_all(void);
+-void kvm_riscv_local_hfence_vvma_asid_gva(unsigned long vmid,
+-					  unsigned long asid,
+-					  unsigned long gva,
+-					  unsigned long gvsz,
+-					  unsigned long order);
+-void kvm_riscv_local_hfence_vvma_asid_all(unsigned long vmid,
+-					  unsigned long asid);
+-void kvm_riscv_local_hfence_vvma_gva(unsigned long vmid,
+-				     unsigned long gva, unsigned long gvsz,
+-				     unsigned long order);
+-void kvm_riscv_local_hfence_vvma_all(unsigned long vmid);
+-
+-void kvm_riscv_tlb_flush_process(struct kvm_vcpu *vcpu);
+-
+-void kvm_riscv_fence_i_process(struct kvm_vcpu *vcpu);
+-void kvm_riscv_hfence_vvma_all_process(struct kvm_vcpu *vcpu);
+-void kvm_riscv_hfence_process(struct kvm_vcpu *vcpu);
+-
+-void kvm_riscv_fence_i(struct kvm *kvm,
+-		       unsigned long hbase, unsigned long hmask);
+-void kvm_riscv_hfence_gvma_vmid_gpa(struct kvm *kvm,
+-				    unsigned long hbase, unsigned long hmask,
+-				    gpa_t gpa, gpa_t gpsz,
+-				    unsigned long order);
+-void kvm_riscv_hfence_gvma_vmid_all(struct kvm *kvm,
+-				    unsigned long hbase, unsigned long hmask);
+-void kvm_riscv_hfence_vvma_asid_gva(struct kvm *kvm,
+-				    unsigned long hbase, unsigned long hmask,
+-				    unsigned long gva, unsigned long gvsz,
+-				    unsigned long order, unsigned long asid);
+-void kvm_riscv_hfence_vvma_asid_all(struct kvm *kvm,
+-				    unsigned long hbase, unsigned long hmask,
+-				    unsigned long asid);
+-void kvm_riscv_hfence_vvma_gva(struct kvm *kvm,
+-			       unsigned long hbase, unsigned long hmask,
+-			       unsigned long gva, unsigned long gvsz,
+-			       unsigned long order);
+-void kvm_riscv_hfence_vvma_all(struct kvm *kvm,
+-			       unsigned long hbase, unsigned long hmask);
+-
+-int kvm_riscv_gstage_ioremap(struct kvm *kvm, gpa_t gpa,
+-			     phys_addr_t hpa, unsigned long size,
+-			     bool writable, bool in_atomic);
+-void kvm_riscv_gstage_iounmap(struct kvm *kvm, gpa_t gpa,
+-			      unsigned long size);
+-int kvm_riscv_gstage_map(struct kvm_vcpu *vcpu,
+-			 struct kvm_memory_slot *memslot,
+-			 gpa_t gpa, unsigned long hva, bool is_write);
+-int kvm_riscv_gstage_alloc_pgd(struct kvm *kvm);
+-void kvm_riscv_gstage_free_pgd(struct kvm *kvm);
+-void kvm_riscv_gstage_update_hgatp(struct kvm_vcpu *vcpu);
+-void __init kvm_riscv_gstage_mode_detect(void);
+-unsigned long __init kvm_riscv_gstage_mode(void);
+-int kvm_riscv_gstage_gpa_bits(void);
+-
+-void __init kvm_riscv_gstage_vmid_detect(void);
+-unsigned long kvm_riscv_gstage_vmid_bits(void);
+-int kvm_riscv_gstage_vmid_init(struct kvm *kvm);
+-bool kvm_riscv_gstage_vmid_ver_changed(struct kvm_vmid *vmid);
+-void kvm_riscv_gstage_vmid_update(struct kvm_vcpu *vcpu);
+-void kvm_riscv_gstage_vmid_sanitize(struct kvm_vcpu *vcpu);
+-
+ int kvm_riscv_setup_default_irq_routing(struct kvm *kvm, u32 lines);
+ 
+ void __kvm_riscv_unpriv_trap(void);
+diff --git a/arch/riscv/include/asm/kvm_mmu.h b/arch/riscv/include/asm/kvm_mmu.h
+new file mode 100644
+index 000000000000..4e1654282ee4
+--- /dev/null
++++ b/arch/riscv/include/asm/kvm_mmu.h
+@@ -0,0 +1,26 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * Copyright (c) 2025 Ventana Micro Systems Inc.
++ */
 +
- #define KVM_HEDELEG_DEFAULT		(BIT(EXC_INST_MISALIGNED) | \
- 					 BIT(EXC_BREAKPOINT)      | \
- 					 BIT(EXC_SYSCALL)         | \
++#ifndef __RISCV_KVM_MMU_H_
++#define __RISCV_KVM_MMU_H_
++
++#include <linux/kvm_types.h>
++
++int kvm_riscv_gstage_ioremap(struct kvm *kvm, gpa_t gpa,
++			     phys_addr_t hpa, unsigned long size,
++			     bool writable, bool in_atomic);
++void kvm_riscv_gstage_iounmap(struct kvm *kvm, gpa_t gpa,
++			      unsigned long size);
++int kvm_riscv_gstage_map(struct kvm_vcpu *vcpu,
++			 struct kvm_memory_slot *memslot,
++			 gpa_t gpa, unsigned long hva, bool is_write);
++int kvm_riscv_gstage_alloc_pgd(struct kvm *kvm);
++void kvm_riscv_gstage_free_pgd(struct kvm *kvm);
++void kvm_riscv_gstage_update_hgatp(struct kvm_vcpu *vcpu);
++void kvm_riscv_gstage_mode_detect(void);
++unsigned long kvm_riscv_gstage_mode(void);
++int kvm_riscv_gstage_gpa_bits(void);
++
++#endif
+diff --git a/arch/riscv/include/asm/kvm_tlb.h b/arch/riscv/include/asm/kvm_tlb.h
+new file mode 100644
+index 000000000000..cd00c9a46cb1
+--- /dev/null
++++ b/arch/riscv/include/asm/kvm_tlb.h
+@@ -0,0 +1,78 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * Copyright (c) 2025 Ventana Micro Systems Inc.
++ */
++
++#ifndef __RISCV_KVM_TLB_H_
++#define __RISCV_KVM_TLB_H_
++
++#include <linux/kvm_types.h>
++
++enum kvm_riscv_hfence_type {
++	KVM_RISCV_HFENCE_UNKNOWN = 0,
++	KVM_RISCV_HFENCE_GVMA_VMID_GPA,
++	KVM_RISCV_HFENCE_VVMA_ASID_GVA,
++	KVM_RISCV_HFENCE_VVMA_ASID_ALL,
++	KVM_RISCV_HFENCE_VVMA_GVA,
++};
++
++struct kvm_riscv_hfence {
++	enum kvm_riscv_hfence_type type;
++	unsigned long asid;
++	unsigned long order;
++	gpa_t addr;
++	gpa_t size;
++};
++
++#define KVM_RISCV_VCPU_MAX_HFENCE	64
++
++#define KVM_RISCV_GSTAGE_TLB_MIN_ORDER		12
++
++void kvm_riscv_local_hfence_gvma_vmid_gpa(unsigned long vmid,
++					  gpa_t gpa, gpa_t gpsz,
++					  unsigned long order);
++void kvm_riscv_local_hfence_gvma_vmid_all(unsigned long vmid);
++void kvm_riscv_local_hfence_gvma_gpa(gpa_t gpa, gpa_t gpsz,
++				     unsigned long order);
++void kvm_riscv_local_hfence_gvma_all(void);
++void kvm_riscv_local_hfence_vvma_asid_gva(unsigned long vmid,
++					  unsigned long asid,
++					  unsigned long gva,
++					  unsigned long gvsz,
++					  unsigned long order);
++void kvm_riscv_local_hfence_vvma_asid_all(unsigned long vmid,
++					  unsigned long asid);
++void kvm_riscv_local_hfence_vvma_gva(unsigned long vmid,
++				     unsigned long gva, unsigned long gvsz,
++				     unsigned long order);
++void kvm_riscv_local_hfence_vvma_all(unsigned long vmid);
++
++void kvm_riscv_tlb_flush_process(struct kvm_vcpu *vcpu);
++
++void kvm_riscv_fence_i_process(struct kvm_vcpu *vcpu);
++void kvm_riscv_hfence_vvma_all_process(struct kvm_vcpu *vcpu);
++void kvm_riscv_hfence_process(struct kvm_vcpu *vcpu);
++
++void kvm_riscv_fence_i(struct kvm *kvm,
++		       unsigned long hbase, unsigned long hmask);
++void kvm_riscv_hfence_gvma_vmid_gpa(struct kvm *kvm,
++				    unsigned long hbase, unsigned long hmask,
++				    gpa_t gpa, gpa_t gpsz,
++				    unsigned long order);
++void kvm_riscv_hfence_gvma_vmid_all(struct kvm *kvm,
++				    unsigned long hbase, unsigned long hmask);
++void kvm_riscv_hfence_vvma_asid_gva(struct kvm *kvm,
++				    unsigned long hbase, unsigned long hmask,
++				    unsigned long gva, unsigned long gvsz,
++				    unsigned long order, unsigned long asid);
++void kvm_riscv_hfence_vvma_asid_all(struct kvm *kvm,
++				    unsigned long hbase, unsigned long hmask,
++				    unsigned long asid);
++void kvm_riscv_hfence_vvma_gva(struct kvm *kvm,
++			       unsigned long hbase, unsigned long hmask,
++			       unsigned long gva, unsigned long gvsz,
++			       unsigned long order);
++void kvm_riscv_hfence_vvma_all(struct kvm *kvm,
++			       unsigned long hbase, unsigned long hmask);
++
++#endif
+diff --git a/arch/riscv/include/asm/kvm_vmid.h b/arch/riscv/include/asm/kvm_vmid.h
+new file mode 100644
+index 000000000000..ab98e1434fb7
+--- /dev/null
++++ b/arch/riscv/include/asm/kvm_vmid.h
+@@ -0,0 +1,27 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * Copyright (c) 2025 Ventana Micro Systems Inc.
++ */
++
++#ifndef __RISCV_KVM_VMID_H_
++#define __RISCV_KVM_VMID_H_
++
++#include <linux/kvm_types.h>
++
++struct kvm_vmid {
++	/*
++	 * Writes to vmid_version and vmid happen with vmid_lock held
++	 * whereas reads happen without any lock held.
++	 */
++	unsigned long vmid_version;
++	unsigned long vmid;
++};
++
++void __init kvm_riscv_gstage_vmid_detect(void);
++unsigned long kvm_riscv_gstage_vmid_bits(void);
++int kvm_riscv_gstage_vmid_init(struct kvm *kvm);
++bool kvm_riscv_gstage_vmid_ver_changed(struct kvm_vmid *vmid);
++void kvm_riscv_gstage_vmid_update(struct kvm_vcpu *vcpu);
++void kvm_riscv_gstage_vmid_sanitize(struct kvm_vcpu *vcpu);
++
++#endif
+diff --git a/arch/riscv/kvm/aia_imsic.c b/arch/riscv/kvm/aia_imsic.c
+index 29ef9c2133a9..40b469c0a01f 100644
+--- a/arch/riscv/kvm/aia_imsic.c
++++ b/arch/riscv/kvm/aia_imsic.c
+@@ -16,6 +16,7 @@
+ #include <linux/swab.h>
+ #include <kvm/iodev.h>
+ #include <asm/csr.h>
++#include <asm/kvm_mmu.h>
+ 
+ #define IMSIC_MAX_EIX	(IMSIC_MAX_ID / BITS_PER_TYPE(u64))
+ 
+diff --git a/arch/riscv/kvm/main.c b/arch/riscv/kvm/main.c
+index 4b24705dc63a..b861a5dd7bd9 100644
+--- a/arch/riscv/kvm/main.c
++++ b/arch/riscv/kvm/main.c
+@@ -11,6 +11,7 @@
+ #include <linux/module.h>
+ #include <linux/kvm_host.h>
+ #include <asm/cpufeature.h>
++#include <asm/kvm_mmu.h>
+ #include <asm/kvm_nacl.h>
+ #include <asm/sbi.h>
+ 
 diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-index d4eb1999b794..834d855b0478 100644
+index 834d855b0478..c9d87e7472fb 100644
 --- a/arch/riscv/kvm/mmu.c
 +++ b/arch/riscv/kvm/mmu.c
-@@ -342,7 +342,7 @@ static void gstage_wp_memory_region(struct kvm *kvm, int slot)
- 	spin_lock(&kvm->mmu_lock);
- 	gstage_wp_range(kvm, start, end);
- 	spin_unlock(&kvm->mmu_lock);
--	kvm_flush_remote_tlbs(kvm);
-+	kvm_flush_remote_tlbs_memslot(kvm, memslot);
- }
- 
- int kvm_riscv_gstage_ioremap(struct kvm *kvm, gpa_t gpa,
+@@ -15,6 +15,7 @@
+ #include <linux/vmalloc.h>
+ #include <linux/kvm_host.h>
+ #include <linux/sched/signal.h>
++#include <asm/kvm_mmu.h>
+ #include <asm/kvm_nacl.h>
+ #include <asm/page.h>
+ #include <asm/pgtable.h>
 diff --git a/arch/riscv/kvm/tlb.c b/arch/riscv/kvm/tlb.c
-index da98ca801d31..f46a27658c2e 100644
+index f46a27658c2e..6fc4361c3d75 100644
 --- a/arch/riscv/kvm/tlb.c
 +++ b/arch/riscv/kvm/tlb.c
-@@ -403,3 +403,11 @@ void kvm_riscv_hfence_vvma_all(struct kvm *kvm,
- 	make_xfence_request(kvm, hbase, hmask, KVM_REQ_HFENCE_VVMA_ALL,
- 			    KVM_REQ_HFENCE_VVMA_ALL, NULL);
- }
-+
-+int kvm_arch_flush_remote_tlbs_range(struct kvm *kvm, gfn_t gfn, u64 nr_pages)
-+{
-+	kvm_riscv_hfence_gvma_vmid_gpa(kvm, -1UL, 0,
-+				       gfn << PAGE_SHIFT, nr_pages << PAGE_SHIFT,
-+				       PAGE_SHIFT);
-+	return 0;
-+}
+@@ -15,6 +15,8 @@
+ #include <asm/cpufeature.h>
+ #include <asm/insn-def.h>
+ #include <asm/kvm_nacl.h>
++#include <asm/kvm_tlb.h>
++#include <asm/kvm_vmid.h>
+ 
+ #define has_svinval()	riscv_has_extension_unlikely(RISCV_ISA_EXT_SVINVAL)
+ 
+diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+index 684efaf5cee9..bfe4d1369b24 100644
+--- a/arch/riscv/kvm/vcpu.c
++++ b/arch/riscv/kvm/vcpu.c
+@@ -18,6 +18,7 @@
+ #include <linux/fs.h>
+ #include <linux/kvm_host.h>
+ #include <asm/cacheflush.h>
++#include <asm/kvm_mmu.h>
+ #include <asm/kvm_nacl.h>
+ #include <asm/kvm_vcpu_vector.h>
+ 
+diff --git a/arch/riscv/kvm/vcpu_exit.c b/arch/riscv/kvm/vcpu_exit.c
+index 6e0c18412795..cc82bbab0e24 100644
+--- a/arch/riscv/kvm/vcpu_exit.c
++++ b/arch/riscv/kvm/vcpu_exit.c
+@@ -9,6 +9,7 @@
+ #include <linux/kvm_host.h>
+ #include <asm/csr.h>
+ #include <asm/insn-def.h>
++#include <asm/kvm_mmu.h>
+ 
+ static int gstage_page_fault(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ 			     struct kvm_cpu_trap *trap)
+diff --git a/arch/riscv/kvm/vm.c b/arch/riscv/kvm/vm.c
+index b27ec8f96697..8601cf29e5f8 100644
+--- a/arch/riscv/kvm/vm.c
++++ b/arch/riscv/kvm/vm.c
+@@ -11,6 +11,7 @@
+ #include <linux/module.h>
+ #include <linux/uaccess.h>
+ #include <linux/kvm_host.h>
++#include <asm/kvm_mmu.h>
+ 
+ const struct _kvm_stats_desc kvm_vm_stats_desc[] = {
+ 	KVM_GENERIC_VM_STATS()
+diff --git a/arch/riscv/kvm/vmid.c b/arch/riscv/kvm/vmid.c
+index 92c01255f86f..3b426c800480 100644
+--- a/arch/riscv/kvm/vmid.c
++++ b/arch/riscv/kvm/vmid.c
+@@ -14,6 +14,8 @@
+ #include <linux/smp.h>
+ #include <linux/kvm_host.h>
+ #include <asm/csr.h>
++#include <asm/kvm_tlb.h>
++#include <asm/kvm_vmid.h>
+ 
+ static unsigned long vmid_version = 1;
+ static unsigned long vmid_next;
 -- 
 2.43.0
 
