@@ -4,8 +4,8 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7E659C61CE7
-	for <kvm-riscv@archiver.kernel.org>; Sat,  7 Jun 2025 00:20:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 76F53C61CE7
+	for <kvm-riscv@archiver.kernel.org>; Sat,  7 Jun 2025 00:22:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
@@ -13,62 +13,62 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	References:Mime-Version:In-Reply-To:Date:Reply-To:Content-ID:
 	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
 	:Resent-Message-ID:List-Owner;
-	bh=Jj48PBsYIhw2dLCOFYqupZW4ytbc7aFiV56V43GarEs=; b=rODCERu0bop7NOzlyOwo1du5sv
-	gv8ook+nae0On1jB+Tq8TZlm5FkYnMVOPZItczOI3lpNAgOSXkAziwB9/FwBdQ0mQMwly8bK5ti7R
-	Yy/Tdsi8RY3TZXJ7N3cGpnJNwOee3IMSvM1pq59OhIsS8r0kaZOfzJwDM3qoW9uftB8nM7srySo31
-	68utxyin799XpLBHAVB1EJcjSWjPj5SR05rB/PKEX3etX5uEnWMl+x7k3eiBkguLsOof2llHFSBuD
-	8i5rwhnoizveHIIDLHO4CWbVFKph0ewgwyha/otGbEQ4CTjDA96YLUx3W891mwxd5/f3rAwOxAPSH
-	WCGPROrg==;
+	bh=T2anXQeKOoRmeeJrefSqKjXuOTknp+PyoOVVeYkuafA=; b=RA3/3ac+/tt96dkStXgHwONeso
+	Qereuf49kdeSfdVXfm7bvvoodziS3qom4d0mIuI9Q4HaAOruKg2WN27Y7OsvI5zcNMjUeVLRpUgVa
+	4FjuB8fY7c+IRv/zGLMq5ETAWvLorGnVoB6qeM0juE8ReFBfAMEZ4kQzEH6ELeYk6FsO//pHENOkN
+	6c1fZ4Iew/7Enj6lyWE5OIKKLafcMLJD9lcJV0e3TeAFLwoHvwkPKrUvy13zQAwHaKJIsF+mfnfg5
+	L9T+Er0dzHtSxfr+zCQHoWjmZtUx3jsdnaAb9+HnnQ6+E4Anttr+rgJHITzePUqq9ETqzgVvujelm
+	u7hV16ZA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uNhIQ-00000001B2d-0rBa;
-	Sat, 07 Jun 2025 00:20:26 +0000
-Received: from mail-pl1-x64a.google.com ([2607:f8b0:4864:20::64a])
+	id 1uNhKV-00000001BB0-0xIy;
+	Sat, 07 Jun 2025 00:22:35 +0000
+Received: from mail-pf1-x449.google.com ([2607:f8b0:4864:20::449])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uNgvY-000000019CB-2E9o
+	id 1uNgvZ-000000019D9-3JeP
 	for kvm-riscv@lists.infradead.org;
-	Fri, 06 Jun 2025 23:56:49 +0000
-Received: by mail-pl1-x64a.google.com with SMTP id d9443c01a7336-2323bd7f873so22564255ad.1
-        for <kvm-riscv@lists.infradead.org>; Fri, 06 Jun 2025 16:56:47 -0700 (PDT)
+	Fri, 06 Jun 2025 23:56:51 +0000
+Received: by mail-pf1-x449.google.com with SMTP id d2e1a72fcca58-742a091d290so1959695b3a.3
+        for <kvm-riscv@lists.infradead.org>; Fri, 06 Jun 2025 16:56:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1749254207; x=1749859007; darn=lists.infradead.org;
+        d=google.com; s=20230601; t=1749254209; x=1749859009; darn=lists.infradead.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=2YvWqyMXWbV+Eh1iT8lLaW4K5z1z2+DMYGYssKn0fVI=;
-        b=Q9Ayik2EcMjAqKfumovSxvRrvhbZOPsm1i06a4sjZPMqRzBmp+/g97RZf/O5OPOYGm
-         Y7aNoUEZonh004QBSk13yzkuoXzBvnwn99zf/C5gqewe/uoNE6j6tTJ2l+A4gCgLfkAH
-         bi1MJ9rzk0ZPkR/jmMLbyMejriyeTpYK9PJRhtg0OXhZofWRdq63Jx8oLtcdCcnuTJbZ
-         dMQqAnZPBzJN3qGEv3PniYTIvzZ8xyBoUkKHfAzPEGOXX03AyPeuzTVPD58ZR+bCERmi
-         tZG+g2Cj3G8qmoquC7GnI2kH199u5rCNWxh/uiFwxV5FE1NVBDbSF9pZ3BdC1HU9xu9C
-         uKBA==
+        bh=+L9DXCjLorTxOh1B5xNStH2dnZ/sReG4cpxDvwmWD0Y=;
+        b=nvYv9AESqWri0ecLfY9/hO4JxTdboeIaPvruFljiVhZA1ktyaXN0Rr0V9cNPBfTieF
+         Mc2UdPaaNeyFuz61aHGQzUmpuMvF3twrtP37hOtfyTmnaAzR1zZLorw0L+1l78Uty+hw
+         YGnpJLsM0W5GbAMrUrA2ktZthKjb5cISFbKke557h/fZjfaRt+W0V744X3r99a6hcqUw
+         Szioc2vOqtPbCBVkUPUi7Qd/LZ1N4YNe84DMgJiuvTro70k/7RlrBuzQ3LSAKGwRmQYm
+         xjwYj8gY+SmFo4IjhB5oefJYDNbFMo4CjasAOwmhE6xMEr/aylklJk4xDxOXOHfxcBXt
+         gOCg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1749254207; x=1749859007;
+        d=1e100.net; s=20230601; t=1749254209; x=1749859009;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=2YvWqyMXWbV+Eh1iT8lLaW4K5z1z2+DMYGYssKn0fVI=;
-        b=gJeliVMjOWB4bVU4CuFEeYtJ5bbngED6+SvBUWH0J5aIu2D1tq1jK4ZsaCzaSzUiZV
-         xL9AcuhZqd8MqIk3cChC10UGH0/dpenFcjZc/An+ZjVZOPEB/EDj8XdTFddJYHPhBGUG
-         ruTUyGkePCRrf30RNyiu6iO6YsfA4j3+rwCEk+VKXitcko3mlwCmIDcXlzQtMrf0FBRa
-         NMn/OPd62EZE2jF/p/GZP8dFJp8ZiSgi5FCWvzIVcPegErbONJ4dqpL6k7x+//b2vJG1
-         5OHpD1uTJxYPPKSZA/keqc/FiI+7qFIqqxMMxAUYsDbIHQbVZmesZrqx2fQzr/+dKMl4
-         rggg==
-X-Forwarded-Encrypted: i=1; AJvYcCXWxXlOaTJkPOP4PfJBYPFF/R/E6puLcIt2MlH334fFq8FPv6EwUr77qO6LAN0YBBvJzhxtZXn1fKE=@lists.infradead.org
-X-Gm-Message-State: AOJu0YxfYJ3SnwJwAwPDUPQRqTUjHctbmK7VVyLGFdi+MYeW6rF+/6Y+
-	greqvB2/9SfPzF61CLgxfryti0LO0neTvqD7tmut1jWD1DDVspaLUwlkcCnk+jLIRA9Mfrv+zr5
-	BXM68TB8Eiw==
-X-Google-Smtp-Source: AGHT+IECcAGloB9eLcQGrexwmZ6dfzE2vnPa3s6mRZgo8fAz19L92je+kXfcgU8ZDEV3rQMzp1fI/Bkas3Ar
-X-Received: from pjbcz12.prod.google.com ([2002:a17:90a:d44c:b0:30a:31eb:ec8e])
- (user=vipinsh job=prod-delivery.src-stubby-dispatcher) by 2002:a17:902:f686:b0:224:1af1:87f4
- with SMTP id d9443c01a7336-23601cfec20mr73817855ad.22.1749254207363; Fri, 06
- Jun 2025 16:56:47 -0700 (PDT)
-Date: Fri,  6 Jun 2025 16:56:14 -0700
+        bh=+L9DXCjLorTxOh1B5xNStH2dnZ/sReG4cpxDvwmWD0Y=;
+        b=toYgoLAtjmgbO1Jj51Z0yduFuv4QQv8iZPqHzxOxyzf45LOBUOZ/XQUjgm49LhZQiX
+         QehBrF0v1auPHNFXs3RfA+Fk1LSWQ2O7BXu+rPT/tVQBP6OVmWIcP2qtgVh34AzdURji
+         XEmAFgGpJXgeXtO55K6RnBCmnEup92cpRapGDUS652NcPgtaFf4JpAuzQn365aOuSBqh
+         Zg46CQo0/27id49G17RZjKjPcuk32RlhkI6VJS2TJRMRjeoMPvGZAJVXNRw8uW0MENlt
+         U/UCLP2BgZiExDLH5KfrTt6Lv8VBUBNtVD/pAyJLqLqAZDNr3McuKGvABrHE9EXdnwFC
+         sqlg==
+X-Forwarded-Encrypted: i=1; AJvYcCXRj3XNc1I8Eaqw4Zzdh4yyVZesw5NJWPWQxBpBjd4LMPa7Kd9DpsKuGUyr3QxzgvSqrXeKPXLaG1A=@lists.infradead.org
+X-Gm-Message-State: AOJu0YxDwVHhpq/3GxKqPjNspCq7VbZNVY9KTYyaajvMjnX9TnqUoy7S
+	z651WPAW7lTpcs5+Oq7u+UUatk/zDEU/hpx4EMI1R9+rGPSCW2rqZ7GpgvPsRPE5poljzbnuniB
+	5eIQSDz+AwA==
+X-Google-Smtp-Source: AGHT+IG03XZnvqZOkOqBwMRzzNhIPgcN1ZsHQWgIs4EPRw8vsSrtSnCZF4xjJkBMv/LE7Ar4ODi53Kp40Xk2
+X-Received: from pfbdw13.prod.google.com ([2002:a05:6a00:368d:b0:746:30f0:9b33])
+ (user=vipinsh job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a00:3016:b0:742:a23e:2a67
+ with SMTP id d2e1a72fcca58-74827f14a6dmr7102295b3a.16.1749254208946; Fri, 06
+ Jun 2025 16:56:48 -0700 (PDT)
+Date: Fri,  6 Jun 2025 16:56:15 -0700
 In-Reply-To: <20250606235619.1841595-1-vipinsh@google.com>
 Mime-Version: 1.0
 References: <20250606235619.1841595-1-vipinsh@google.com>
 X-Mailer: git-send-email 2.50.0.rc0.604.gd4ff7b7c86-goog
-Message-ID: <20250606235619.1841595-11-vipinsh@google.com>
-Subject: [PATCH v2 10/15] KVM: selftests: Add flag to suppress all output from
- Selftest KVM Runner
+Message-ID: <20250606235619.1841595-12-vipinsh@google.com>
+Subject: [PATCH v2 11/15] KVM: selftests: Auto generate default tests for KVM
+ Selftests Runner
 From: Vipin Sharma <vipinsh@google.com>
 To: kvm@vger.kernel.org, kvmarm@lists.linux.dev, kvm-riscv@lists.infradead.org, 
 	linux-arm-kernel@lists.infradead.org
@@ -77,8 +77,9 @@ Cc: seanjc@google.com, pbonzini@redhat.com, anup@brainfault.org,
 	maz@kernel.org, oliver.upton@linux.dev, dmatlack@google.com, 
 	Vipin Sharma <vipinsh@google.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250606_165648_623377_47BE3D85 
-X-CRM114-Status: GOOD (  10.80  )
+X-CRM114-CacheID: sfid-20250606_165649_862905_5A52ACBB 
+X-CRM114-Status: UNSURE (   9.69  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -95,89 +96,44 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Add a command line flag, --quiet, to suppress all of the output from
-runner to terminal.
+Add logic in Makefile.kvm to auto generate default test files for KVM
+Selftests Runner. Preserve the hierarchy of test executables for
+autogenerated files.
+
+Autogeneration of default test files guards against missing these files
+for new tests cases or rename of existing ones. These autogenerated
+files will be checked in so that during git-diff one can easily identify
+if the existing test files for the same test binary also needs an
+update. It also add new tests automatically in the default coverage.
+
+These files will be auto generated with each make invocation but
+overhead should be very small as these are very small files and won't
+be shown in git-diff unless test name changes.
 
 Signed-off-by: Vipin Sharma <vipinsh@google.com>
 ---
- .../testing/selftests/kvm/runner/__main__.py  |  8 ++++++-
- .../selftests/kvm/runner/test_runner.py       | 21 ++++++++++++-------
- 2 files changed, 20 insertions(+), 9 deletions(-)
+ tools/testing/selftests/kvm/Makefile.kvm | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/tools/testing/selftests/kvm/runner/__main__.py b/tools/testing/selftests/kvm/runner/__main__.py
-index 2dcac1f4d1c4..c02035a62873 100644
---- a/tools/testing/selftests/kvm/runner/__main__.py
-+++ b/tools/testing/selftests/kvm/runner/__main__.py
-@@ -129,6 +129,12 @@ def cli():
-                         default=False,
-                         help="Print only the summary status line.")
+diff --git a/tools/testing/selftests/kvm/Makefile.kvm b/tools/testing/selftests/kvm/Makefile.kvm
+index 307ef31d3557..a76502406123 100644
+--- a/tools/testing/selftests/kvm/Makefile.kvm
++++ b/tools/testing/selftests/kvm/Makefile.kvm
+@@ -201,6 +201,14 @@ TEST_GEN_PROGS += $(TEST_GEN_PROGS_$(ARCH))
+ TEST_GEN_PROGS_EXTENDED += $(TEST_GEN_PROGS_EXTENDED_$(ARCH))
+ LIBKVM += $(LIBKVM_$(ARCH))
  
-+    parser.add_argument("-q",
-+                        "--quiet",
-+                        action="store_true",
-+                        default=False,
-+                        help="Suppress all of the output to terminal")
++$(foreach tc, $(TEST_PROGS), $(shell mkdir -p tests/$(patsubst %.sh,%,$(tc))))
++$(foreach tc, $(TEST_PROGS), \
++	$(shell echo $(tc) > $(patsubst %.sh,tests/%/default.test,$(tc))))
 +
-     return parser.parse_args()
- 
- 
-@@ -136,7 +142,7 @@ def level_filters(args):
-     # Levels added here will be printed by logger.
-     levels = set()
- 
--    if args.sticky_summary_only:
-+    if args.sticky_summary_only or args.quiet:
-         return levels
- 
-     if args.print_passed or args.print_passed_status or args.print_status:
-diff --git a/tools/testing/selftests/kvm/runner/test_runner.py b/tools/testing/selftests/kvm/runner/test_runner.py
-index e0da30d216a2..e7730880907d 100644
---- a/tools/testing/selftests/kvm/runner/test_runner.py
-+++ b/tools/testing/selftests/kvm/runner/test_runner.py
-@@ -18,6 +18,7 @@ class TestRunner:
-         self.status = {x: 0 for x in SelftestStatus}
-         self.output_dir = args.output
-         self.jobs = args.jobs
-+        self.quiet = args.quiet
-         self.print_status = args.print_status
-         self.print_stds = {
-             SelftestStatus.PASSED: args.print_passed,
-@@ -35,17 +36,21 @@ class TestRunner:
-         test.run()
-         return test
- 
-+    def _print(self, text, end="\n"):
-+        if not self.quiet:
-+            print(text, end=end)
++$(foreach tc, $(TEST_GEN_PROGS), $(shell mkdir -p tests/$(tc)))
++$(foreach tc, $(TEST_GEN_PROGS), \
++	$(shell echo $(tc) > $(patsubst %,tests/%/default.test,$(tc))))
 +
-     def _sticky_update(self):
--        print(f"\r\033[1mTotal: {self.tests_ran}/{len(self.tests)}" \
--                f"\033[32;1m Passed: {self.status[SelftestStatus.PASSED]}" \
--                f"\033[31;1m Failed: {self.status[SelftestStatus.FAILED]}" \
--                f"\033[33;1m Skipped: {self.status[SelftestStatus.SKIPPED]}"\
--                f"\033[91;1m Timed Out: {self.status[SelftestStatus.TIMED_OUT]}"\
--                f"\033[34;1m No Run: {self.status[SelftestStatus.NO_RUN]}\033[0m", end="\r")
-+        self._print(f"\r\033[1mTotal: {self.tests_ran}/{len(self.tests)}"
-+                    f"\033[32;1m Passed: {self.status[SelftestStatus.PASSED]}"
-+                    f"\033[31;1m Failed: {self.status[SelftestStatus.FAILED]}"
-+                    f"\033[33;1m Skipped: {self.status[SelftestStatus.SKIPPED]}"
-+                    f"\033[91;1m Timed Out: {self.status[SelftestStatus.TIMED_OUT]}"
-+                    f"\033[34;1m No Run: {self.status[SelftestStatus.NO_RUN]}\033[0m", end="\r")
+ OVERRIDE_TARGETS = 1
  
-     def _log_result(self, test_result):
-         # Clear the status line
--        print("\033[2K", end="\r")
-+        self._print("\033[2K", end="\r")
-         logger.log(test_result.status,
-                    f"[{test_result.status}] {test_result.test_path}")
-         if (self.output_dir is None and self.print_status is False
-@@ -79,5 +84,5 @@ class TestRunner:
-                                                SelftestStatus.NO_RUN,
-                                                SelftestStatus.SKIPPED]):
-                     ret = 1
--        print("\n")
-+        self._print("")
-         return ret
+ # lib.mak defines $(OUTPUT), prepends $(OUTPUT)/ to $(TEST_GEN_PROGS), and most
 -- 
 2.50.0.rc0.604.gd4ff7b7c86-goog
 
