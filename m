@@ -4,90 +4,77 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 72662C61CE7
-	for <kvm-riscv@archiver.kernel.org>; Fri,  6 Jun 2025 19:45:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EECE7C5AD49
+	for <kvm-riscv@archiver.kernel.org>; Fri,  6 Jun 2025 23:58:46 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
-	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=/V7FMoFLf5Jv1Albu0/a4LB0AsuOCS7n/7fOLZheEVA=; b=ToRI8IVrESd8p6
-	1t8f6dJbxIVaiYcb+ik5f68sm/yH+mMrmByI6+X7YuoeNymHm7f6BQ26bmjWNhnG3WOQ84TBaZy+w
-	9fPlt7T1WF9N91zXJuO2Kg1eEagagzta8QoefOziZF6hP/Dg11E7lpVkgGpdtznoJX9Uv3Af2ImsQ
-	+84VUdE35QUuQEPlUxiX+FqlowesrtOhXCa6KFxKRiQ9fcCaCFs9ds1rZ2ahnDFWJAlu7zaM8m9ee
-	hnQsqw7V2Nk9k7TLUrd21Ch66sedVeZ/UpgQ30KKNVMPiN9EwnNaL05kqYcoGhpOmDlVksQPlMmdC
-	34raBPYblZ/rJbb0/dgg==;
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID:
+	Mime-Version:Date:Reply-To:Content-ID:Content-Description:Resent-Date:
+	Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:
+	References:List-Owner; bh=pC/XMS3K5/oairEevckNOvBlr+V8n0LNnecG6OPUYGc=; b=ePW
+	q72VLWHtuWM3kbMig+MV3pke/bNrlv4fTt+V4SkIT7Cft48MvSwtjNzSmtf9vhZJXQXPw6Abc4yiA
+	b7ZoUGlbwe2TS+n7ElepaEFtnIqX57G/cuyuys4Q9f74AdjOaf5FRYXXWtl9Mqt4sUcVHUArbbq2M
+	akaOwGxdzCgLt33EWOSOB7k3EwzPliWrTPf8YoSC5SDjR4LHTSDUFIECM8oxhf5UVblAlva14SMNQ
+	ryOfgW6iCupBJMuPFieqMZJ0Ieo5GS9IZeO5mU9i0G3IJsDxFrxwnN2z97KJhspxqiU6RY3paqYNT
+	6y7lcOMSVLJdX5DElMnkhGf3qR24BPg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uNd01-00000000tzh-0P0g;
-	Fri, 06 Jun 2025 19:45:09 +0000
-Received: from mail-qt1-x832.google.com ([2607:f8b0:4864:20::832])
+	id 1uNgxS-000000019bB-1fo7;
+	Fri, 06 Jun 2025 23:58:46 +0000
+Received: from mail-pg1-x54a.google.com ([2607:f8b0:4864:20::54a])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uNczy-00000000tzM-2Icj
+	id 1uNgvI-0000000193r-3Q6S
 	for kvm-riscv@lists.infradead.org;
-	Fri, 06 Jun 2025 19:45:08 +0000
-Received: by mail-qt1-x832.google.com with SMTP id d75a77b69052e-4a5a196f057so47000061cf.3
-        for <kvm-riscv@lists.infradead.org>; Fri, 06 Jun 2025 12:45:05 -0700 (PDT)
+	Fri, 06 Jun 2025 23:56:34 +0000
+Received: by mail-pg1-x54a.google.com with SMTP id 41be03b00d2f7-b26e0fee459so1927499a12.1
+        for <kvm-riscv@lists.infradead.org>; Fri, 06 Jun 2025 16:56:32 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=rivosinc-com.20230601.gappssmtp.com; s=20230601; t=1749239104; x=1749843904; darn=lists.infradead.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=FNE4vqKG4oc21x5jajC1nXKC3LtbUyjtsX298mgjNWw=;
-        b=cx/wjvKHPQyODWNS8M0uuu/hbI5Ti/nhfkVs9s1ScoSBHU1KNannJZktbWDMRYnBm8
-         tj0FpGiZ5hZGTPyicg9AxQF42rqeqV7W95J1W6g5D0+CbrI/IXPK0DaVcpkwewdg4d/t
-         KRQT3Udu9lkBunOXEfzRBvhR27JLZwxfZMxb2enRCN3hroROcS7AfezKDHl61TRS81lq
-         7wJmQqGZutamFwQMxvDF0innzzqxVPToTuvw3N1WYDDqBRv5AOMD3YLAXWRkE0JugV2D
-         dcSvwdg9SQjrcj5pjoFv0oAMi2mryXblruV2BpCL3/ICXt/+YpIauFtPhWHHrwman0Es
-         tXLA==
+        d=google.com; s=20230601; t=1749254191; x=1749858991; darn=lists.infradead.org;
+        h=cc:to:from:subject:message-id:mime-version:date:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=XN0VAsCT1CWdgagP9CPqT2NYJ16ltbDcNqmn3oGzFBA=;
+        b=B3CRH8ITKxKR2eya5dSLUyEkYrCKt95wgfm60WRt2+a/vZz9668TlgSnTjjWZIFc+L
+         hZetu9l8Kj8O721mMhxxiPRv+1zeavsMWYPOGPv7vaGr2RsdsNSgiNySfSSNwujmVVDn
+         f4RKdyYKGJk/tkeCgqzkp//hPwh8uLtDtpIXDbbLoMcevYXw7PfZZI/zalyUJGoWqOEg
+         KQOhGzwTcGSvw4vYQIqZGJLxd/PPD0zZ9xc2bBl+OsfsNmkaHyZfuEdLTDHmblmUkpnc
+         BV4xnL/ekg/SaSaEMnQmL2OqQZq/9rjykhZ+Oo3IUc5OWlj6kWnFALLue22n5BBh9qIS
+         HiNQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1749239104; x=1749843904;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=FNE4vqKG4oc21x5jajC1nXKC3LtbUyjtsX298mgjNWw=;
-        b=nsf65A/wDQrrY/z6DlMYcCTN3cH9SUmFNSx139VcVd/DcrcLxDI3bN6e7HeZ3ubYdo
-         F0Sh3y6nb92OHbJyhRDwYZp3hBA1Ll23TmBD1XejVBrQcI9R7G16BwC8xIvU4Kwfcou2
-         zho8NQCrnyRG4HsqFwXRInGndKR8MvsDt9azX9gGc6D1ysgbd6iADzW5xFY30Ui9GP+u
-         GNjS94dCiSkWkg4WInflBe4Rol/F+diDD9e1+KwElasbr68njBNOWOHSv3/zj/CgPYjR
-         kuEhwrx0Q3LsmaIKr5/WgTd9bJOsnF1U32zU+EJydsfY/MC1ydPGGrzkDknEvQXcYUIt
-         a5zA==
-X-Forwarded-Encrypted: i=1; AJvYcCXgysgHgk1xhWgUXd0EhrR82ORG+08fSM/Qn6NcGvzSCzXItAwKu1gw10uoj/Lipy96E/5knydEcXg=@lists.infradead.org
-X-Gm-Message-State: AOJu0YwapqdY7MQ/sYNdlu8yiE4AGJEKepMI7+U8WYl/wxWugNQu/lhW
-	7qfdrIif8g0x6HETLkROGLI0ct4O1jePI/uUsv+HQgqXuFmaoHw5/S6qkR6Isx2mOqg=
-X-Gm-Gg: ASbGncsGW0mxvJzyIlSvhqOVM1fLwhnWQIoCi+rPrXcKQJhygQF8HLDdJoR20eAcdwC
-	ZmOIPa9NHd8jNOKhdGf2JdzQ42QA/8uSE0uLeyHYycC/PFQAZQ5TOxhkeegTnGQQ0Oqb1WTJqZj
-	LDi0etws3Mycr/QlJifdZiwcJZACE73UQYApxgxSoYj5jAASe2UyC57T2hDaAckGp0DJqlo5L0U
-	eSSlYGakki1X+Oc+d0rSUge9SDaksD2Rhz4UoY6/tf+4VNOouOWDt1spkvBB/Wj+MRAiN3T/EL9
-	JcQfbzqwHBshR227UON9B8MDUUABk5yt3TyspcMMXLygW8T5NX9iQSQG5/Lohs1z20kIVznveA9
-	gVyvQuoT17jWVTIbcS9tJ6kL0Tfdz7Aet5PQ02CnRQxeDqvjo
-X-Google-Smtp-Source: AGHT+IGS6mYRFI9uteKca7Gp4Dxhg9Vwkq5Hrd67uT+o6oH0EN2GlDM0WqkMw44G87Oy4A/3TVPTFw==
-X-Received: by 2002:a05:622a:4d04:b0:4a4:31e2:2e73 with SMTP id d75a77b69052e-4a5b9dafcbcmr74129161cf.45.1749239104321;
-        Fri, 06 Jun 2025 12:45:04 -0700 (PDT)
-Received: from jesse-lt.ba.rivosinc.com (pool-108-26-224-24.bstnma.fios.verizon.net. [108.26.224.24])
-        by smtp.gmail.com with ESMTPSA id d75a77b69052e-4a619865e74sm17662291cf.61.2025.06.06.12.45.03
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 06 Jun 2025 12:45:04 -0700 (PDT)
-From: Jesse Taube <jesse@rivosinc.com>
-To: kvm@vger.kernel.org,
-	kvm-riscv@lists.infradead.org,
-	linux-kselftest@vger.kernel.org
-Cc: Atish Patra <atish.patra@linux.dev>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	=?UTF-8?q?Cl=C3=A9ment=20L=C3=A9ger?= <cleger@rivosinc.com>,
-	Himanshu Chauhan <hchauhan@ventanamicro.com>,
-	Anup Patel <anup@brainfault.org>,
-	Charlie Jenkins <charlie@rivosinc.com>,
-	Jesse Taube <jesse@rivosinc.com>,
-	Andrew Jones <andrew.jones@linux.dev>
-Subject: [PATCH v4] riscv: sbi: Add SBI Debug Triggers Extension tests
-Date: Fri,  6 Jun 2025 12:45:03 -0700
-Message-ID: <20250606194503.2857119-1-jesse@rivosinc.com>
-X-Mailer: git-send-email 2.43.0
-MIME-Version: 1.0
+        d=1e100.net; s=20230601; t=1749254191; x=1749858991;
+        h=cc:to:from:subject:message-id:mime-version:date:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=XN0VAsCT1CWdgagP9CPqT2NYJ16ltbDcNqmn3oGzFBA=;
+        b=IGVuaBCvVFjOorJ0knVzcgyX0p+j9X/KftZu5A8hEvmZklBQpIsfcjfz5cWSO7a6RA
+         lDHynbaiDiO5r4Lz5WRJyDczbmYvp31jyt35EganmFUYwj2+78g0fCI5dHQbHAXip+95
+         0YvbJwzkCXX4GG2d+EPa5Rf2pHKvLFcxRw6MpN8vg6VpFIkBGppy7mkfovdP10RBFxAo
+         nrqchYWrnWXc4JwI3pPwbEq9wexROHamj1eDsekRr8QPmqnU/4rgzR+uqQ2vzGPzsLcj
+         OAjvNEova7Lyz5trrcgm0bFisutHqWtsEMEYvwiLZhEOXipwNx6lJret5LrUcLZXqwOd
+         q6Ag==
+X-Forwarded-Encrypted: i=1; AJvYcCWhDKyAQb6Y4UB63K0HbYqSPTH44ZBDiJmKkGvpMWJwDs6ukCsL2nbbQQWUOY3xcpTnMtVovDfcQ4A=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yzgb4dxUPT/rR9oNW9fxcZkoruhjKmBUAwcrqC8YotOWd62dGYx
+	Lsks1bn8GHDiQVD+PpmupoAQ8js+F10RSyFBvg012vgBsPKnARt3jGEoszRrU143n5EpmXPZpJd
+	Pxem70OCzEw==
+X-Google-Smtp-Source: AGHT+IHeEVfH9wv5FWIJzUeYXcQ/zi0u5Uf0vhP1yOhYLsqyKUu35wm23VvWwVGse0eCH5m6iscBFYWFXqXu
+X-Received: from pfgs41.prod.google.com ([2002:a05:6a00:17a9:b0:747:9faf:ed39])
+ (user=vipinsh job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a21:6494:b0:215:d41d:9183
+ with SMTP id adf61e73a8af0-21ee2559addmr6535389637.1.1749254191550; Fri, 06
+ Jun 2025 16:56:31 -0700 (PDT)
+Date: Fri,  6 Jun 2025 16:56:04 -0700
+Mime-Version: 1.0
+X-Mailer: git-send-email 2.50.0.rc0.604.gd4ff7b7c86-goog
+Message-ID: <20250606235619.1841595-1-vipinsh@google.com>
+Subject: [PATCH v2 00/15] Add KVM Selftests runner
+From: Vipin Sharma <vipinsh@google.com>
+To: kvm@vger.kernel.org, kvmarm@lists.linux.dev, kvm-riscv@lists.infradead.org, 
+	linux-arm-kernel@lists.infradead.org
+Cc: seanjc@google.com, pbonzini@redhat.com, anup@brainfault.org, 
+	borntraeger@linux.ibm.com, frankja@linux.ibm.com, imbrenda@linux.ibm.com, 
+	maz@kernel.org, oliver.upton@linux.dev, dmatlack@google.com, 
+	Vipin Sharma <vipinsh@google.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250606_124506_838014_2D4B6513 
-X-CRM114-Status: GOOD (  20.30  )
+X-CRM114-CacheID: sfid-20250606_165632_857699_698D1FC1 
+X-CRM114-Status: GOOD (  17.97  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -104,905 +91,338 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Add tests for the DBTR SBI extension.
+Hello,
 
-Signed-off-by: Jesse Taube <jesse@rivosinc.com>
----
-V1 -> V2:
- - Call report_prefix_pop before returning
- - Disable compressed instructions in exec_call, update related comment
- - Remove extra "| 1" in dbtr_test_load
- - Remove extra newlines
- - Remove extra tabs in check_exec
- - Remove typedefs from enums
- - Return when dbtr_install_trigger fails
- - s/avalible/available/g
- - s/unistall/uninstall/g
-V2 -> V3:
- - Change SBI_DBTR_SHMEM_INVALID_ADDR to -1UL
- - Move all dbtr functions to sbi-dbtr.c
- - Move INSN_LEN to processor.h
- - Update include list
- - Use C-style comments
-V3 -> V4:
- - Include libcflat.h
- - Remove #define SBI_DBTR_SHMEM_INVALID_ADDR
----
- lib/riscv/asm/sbi.h |   1 +
- riscv/Makefile      |   1 +
- riscv/sbi-dbtr.c    | 811 ++++++++++++++++++++++++++++++++++++++++++++
- riscv/sbi-tests.h   |   1 +
- riscv/sbi.c         |   1 +
- 5 files changed, 815 insertions(+)
- create mode 100644 riscv/sbi-dbtr.c
+Create KVM Selftest Runner which allows running KVM selftests with added
+features not present in default selftest runner provided by selftests
+framework.
 
-diff --git a/lib/riscv/asm/sbi.h b/lib/riscv/asm/sbi.h
-index a5738a5c..78fd6e2a 100644
---- a/lib/riscv/asm/sbi.h
-+++ b/lib/riscv/asm/sbi.h
-@@ -51,6 +51,7 @@ enum sbi_ext_id {
- 	SBI_EXT_SUSP = 0x53555350,
- 	SBI_EXT_FWFT = 0x46574654,
- 	SBI_EXT_SSE = 0x535345,
-+	SBI_EXT_DBTR = 0x44425452,
- };
- 
- enum sbi_ext_base_fid {
-diff --git a/riscv/Makefile b/riscv/Makefile
-index 11e68eae..55c7ac93 100644
---- a/riscv/Makefile
-+++ b/riscv/Makefile
-@@ -20,6 +20,7 @@ all: $(tests)
- $(TEST_DIR)/sbi-deps += $(TEST_DIR)/sbi-asm.o
- $(TEST_DIR)/sbi-deps += $(TEST_DIR)/sbi-fwft.o
- $(TEST_DIR)/sbi-deps += $(TEST_DIR)/sbi-sse.o
-+$(TEST_DIR)/sbi-deps += $(TEST_DIR)/sbi-dbtr.o
- 
- all_deps += $($(TEST_DIR)/sbi-deps)
- 
-diff --git a/riscv/sbi-dbtr.c b/riscv/sbi-dbtr.c
-new file mode 100644
-index 00000000..b254f84e
---- /dev/null
-+++ b/riscv/sbi-dbtr.c
-@@ -0,0 +1,811 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * SBI DBTR testsuite
-+ *
-+ * Copyright (C) 2025, Rivos Inc., Jesse Taube <jesse@rivosinc.com>
-+ */
-+
-+#include <asm/io.h>
-+#include <bitops.h>
-+#include <asm/processor.h>
-+#include <libcflat.h>
-+
-+#include "sbi-tests.h"
-+
-+#define RV_MAX_TRIGGERS			32
-+
-+#define SBI_DBTR_TRIG_STATE_MAPPED		BIT(0)
-+#define SBI_DBTR_TRIG_STATE_U			BIT(1)
-+#define SBI_DBTR_TRIG_STATE_S			BIT(2)
-+#define SBI_DBTR_TRIG_STATE_VU			BIT(3)
-+#define SBI_DBTR_TRIG_STATE_VS			BIT(4)
-+#define SBI_DBTR_TRIG_STATE_HAVE_HW_TRIG	BIT(5)
-+
-+#define SBI_DBTR_TRIG_STATE_HW_TRIG_IDX_SHIFT		8
-+#define SBI_DBTR_TRIG_STATE_HW_TRIG_IDX(trig_state)	(trig_state >> SBI_DBTR_TRIG_STATE_HW_TRIG_IDX_SHIFT)
-+
-+#define SBI_DBTR_TDATA1_TYPE_SHIFT		(__riscv_xlen - 4)
-+
-+#define SBI_DBTR_TDATA1_MCONTROL6_LOAD_BIT	BIT(0)
-+#define SBI_DBTR_TDATA1_MCONTROL6_STORE_BIT	BIT(1)
-+#define SBI_DBTR_TDATA1_MCONTROL6_EXECUTE_BIT	BIT(2)
-+#define SBI_DBTR_TDATA1_MCONTROL6_U_BIT		BIT(3)
-+#define SBI_DBTR_TDATA1_MCONTROL6_S_BIT		BIT(4)
-+#define SBI_DBTR_TDATA1_MCONTROL6_SELECT_BIT	BIT(21)
-+#define SBI_DBTR_TDATA1_MCONTROL6_VS_BIT	BIT(23)
-+#define SBI_DBTR_TDATA1_MCONTROL6_VU_BIT	BIT(24)
-+
-+#define SBI_DBTR_TDATA1_MCONTROL_LOAD_BIT	BIT(0)
-+#define SBI_DBTR_TDATA1_MCONTROL_STORE_BIT	BIT(1)
-+#define SBI_DBTR_TDATA1_MCONTROL_EXECUTE_BIT	BIT(2)
-+#define SBI_DBTR_TDATA1_MCONTROL_U_BIT		BIT(3)
-+#define SBI_DBTR_TDATA1_MCONTROL_S_BIT		BIT(4)
-+#define SBI_DBTR_TDATA1_MCONTROL_SELECT_BIT	BIT(19)
-+
-+enum McontrolType {
-+	SBI_DBTR_TDATA1_TYPE_NONE =		(0UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-+	SBI_DBTR_TDATA1_TYPE_LEGACY =		(1UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-+	SBI_DBTR_TDATA1_TYPE_MCONTROL =		(2UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-+	SBI_DBTR_TDATA1_TYPE_ICOUNT =		(3UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-+	SBI_DBTR_TDATA1_TYPE_ITRIGGER =		(4UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-+	SBI_DBTR_TDATA1_TYPE_ETRIGGER =		(5UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-+	SBI_DBTR_TDATA1_TYPE_MCONTROL6 =	(6UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-+	SBI_DBTR_TDATA1_TYPE_TMEXTTRIGGER =	(7UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-+	SBI_DBTR_TDATA1_TYPE_RESERVED0 =	(8UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-+	SBI_DBTR_TDATA1_TYPE_RESERVED1 =	(9UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-+	SBI_DBTR_TDATA1_TYPE_RESERVED2 =	(10UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-+	SBI_DBTR_TDATA1_TYPE_RESERVED3 =	(11UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-+	SBI_DBTR_TDATA1_TYPE_CUSTOM0 =		(12UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-+	SBI_DBTR_TDATA1_TYPE_CUSTOM1 =		(13UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-+	SBI_DBTR_TDATA1_TYPE_CUSTOM2 =		(14UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-+	SBI_DBTR_TDATA1_TYPE_DISABLED =		(15UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-+};
-+
-+enum Tdata1Value {
-+	VALUE_NONE =	0,
-+	VALUE_LOAD =	BIT(0),
-+	VALUE_STORE =	BIT(1),
-+	VALUE_EXECUTE =	BIT(2),
-+};
-+
-+enum Tdata1Mode {
-+	MODE_NONE =	0,
-+	MODE_M =	BIT(0),
-+	MODE_U =	BIT(1),
-+	MODE_S =	BIT(2),
-+	MODE_VU =	BIT(3),
-+	MODE_VS =	BIT(4),
-+};
-+
-+enum sbi_ext_dbtr_fid {
-+	SBI_EXT_DBTR_NUM_TRIGGERS = 0,
-+	SBI_EXT_DBTR_SETUP_SHMEM,
-+	SBI_EXT_DBTR_TRIGGER_READ,
-+	SBI_EXT_DBTR_TRIGGER_INSTALL,
-+	SBI_EXT_DBTR_TRIGGER_UPDATE,
-+	SBI_EXT_DBTR_TRIGGER_UNINSTALL,
-+	SBI_EXT_DBTR_TRIGGER_ENABLE,
-+	SBI_EXT_DBTR_TRIGGER_DISABLE,
-+};
-+
-+struct sbi_dbtr_data_msg {
-+	unsigned long tstate;
-+	unsigned long tdata1;
-+	unsigned long tdata2;
-+	unsigned long tdata3;
-+};
-+
-+struct sbi_dbtr_id_msg {
-+	unsigned long idx;
-+};
-+
-+/* SBI shared mem messages layout */
-+struct sbi_dbtr_shmem_entry {
-+	union {
-+		struct sbi_dbtr_data_msg data;
-+		struct sbi_dbtr_id_msg id;
-+	};
-+};
-+
-+static bool dbtr_handled;
-+
-+/* Expected to be leaf function as not to disrupt frame-pointer */
-+static __attribute__((naked)) void exec_call(void)
-+{
-+	/* skip over nop when triggered instead of ret. */
-+	asm volatile (".option push\n"
-+		      ".option arch, -c\n"
-+		      "nop\n"
-+		      "ret\n"
-+		      ".option pop\n");
-+}
-+
-+static void dbtr_exception_handler(struct pt_regs *regs)
-+{
-+	dbtr_handled = true;
-+
-+	/* Reading *epc may cause a fault, skip over nop */
-+	if ((void *)regs->epc == exec_call) {
-+		regs->epc += 4;
-+		return;
-+	}
-+
-+	/* WARNING: Skips over the trapped intruction */
-+	regs->epc += RV_INSN_LEN(readw((void *)regs->epc));
-+}
-+
-+static bool do_save(void *tdata2)
-+{
-+	bool ret;
-+
-+	writel(0, tdata2);
-+
-+	ret = dbtr_handled;
-+	dbtr_handled = false;
-+
-+	return ret;
-+}
-+
-+static bool do_load(void *tdata2)
-+{
-+	bool ret;
-+
-+	readl(tdata2);
-+
-+	ret = dbtr_handled;
-+	dbtr_handled = false;
-+
-+	return ret;
-+}
-+
-+static bool do_exec(void)
-+{
-+	bool ret;
-+
-+	exec_call();
-+
-+	ret = dbtr_handled;
-+	dbtr_handled = false;
-+
-+	return ret;
-+}
-+
-+static unsigned long gen_tdata1_mcontrol(enum Tdata1Mode mode, enum Tdata1Value value)
-+{
-+	unsigned long tdata1 = SBI_DBTR_TDATA1_TYPE_MCONTROL;
-+
-+	if (value & VALUE_LOAD)
-+		tdata1 |= SBI_DBTR_TDATA1_MCONTROL_LOAD_BIT;
-+
-+	if (value & VALUE_STORE)
-+		tdata1 |= SBI_DBTR_TDATA1_MCONTROL_STORE_BIT;
-+
-+	if (value & VALUE_EXECUTE)
-+		tdata1 |= SBI_DBTR_TDATA1_MCONTROL_EXECUTE_BIT;
-+
-+	if (mode & MODE_M)
-+		tdata1 |= SBI_DBTR_TDATA1_MCONTROL_U_BIT;
-+
-+	if (mode & MODE_U)
-+		tdata1 |= SBI_DBTR_TDATA1_MCONTROL_U_BIT;
-+
-+	if (mode & MODE_S)
-+		tdata1 |= SBI_DBTR_TDATA1_MCONTROL_S_BIT;
-+
-+	return tdata1;
-+}
-+
-+static unsigned long gen_tdata1_mcontrol6(enum Tdata1Mode mode, enum Tdata1Value value)
-+{
-+	unsigned long tdata1 = SBI_DBTR_TDATA1_TYPE_MCONTROL6;
-+
-+	if (value & VALUE_LOAD)
-+		tdata1 |= SBI_DBTR_TDATA1_MCONTROL6_LOAD_BIT;
-+
-+	if (value & VALUE_STORE)
-+		tdata1 |= SBI_DBTR_TDATA1_MCONTROL6_STORE_BIT;
-+
-+	if (value & VALUE_EXECUTE)
-+		tdata1 |= SBI_DBTR_TDATA1_MCONTROL6_EXECUTE_BIT;
-+
-+	if (mode & MODE_M)
-+		tdata1 |= SBI_DBTR_TDATA1_MCONTROL6_U_BIT;
-+
-+	if (mode & MODE_U)
-+		tdata1 |= SBI_DBTR_TDATA1_MCONTROL6_U_BIT;
-+
-+	if (mode & MODE_S)
-+		tdata1 |= SBI_DBTR_TDATA1_MCONTROL6_S_BIT;
-+
-+	if (mode & MODE_VU)
-+		tdata1 |= SBI_DBTR_TDATA1_MCONTROL6_VU_BIT;
-+
-+	if (mode & MODE_VS)
-+		tdata1 |= SBI_DBTR_TDATA1_MCONTROL6_VS_BIT;
-+
-+	return tdata1;
-+}
-+
-+static unsigned long gen_tdata1(enum McontrolType type, enum Tdata1Value value, enum Tdata1Mode mode)
-+{
-+	switch (type) {
-+	case SBI_DBTR_TDATA1_TYPE_MCONTROL:
-+		return gen_tdata1_mcontrol(mode, value);
-+	case SBI_DBTR_TDATA1_TYPE_MCONTROL6:
-+		return gen_tdata1_mcontrol6(mode, value);
-+	default:
-+		return 0;
-+	}
-+}
-+
-+static struct sbiret sbi_debug_num_triggers(unsigned long trig_tdata1)
-+{
-+	return sbi_ecall(SBI_EXT_DBTR, SBI_EXT_DBTR_NUM_TRIGGERS, trig_tdata1, 0, 0, 0, 0, 0);
-+}
-+
-+static struct sbiret sbi_debug_set_shmem_raw(unsigned long shmem_phys_lo,
-+				      unsigned long shmem_phys_hi,
-+				      unsigned long flags)
-+{
-+	return sbi_ecall(SBI_EXT_DBTR, SBI_EXT_DBTR_SETUP_SHMEM, shmem_phys_lo,
-+			 shmem_phys_hi, flags, 0, 0, 0);
-+}
-+
-+static struct sbiret sbi_debug_set_shmem(void *shmem)
-+{
-+	phys_addr_t p = virt_to_phys(shmem);
-+
-+	return sbi_debug_set_shmem_raw(lower_32_bits(p), upper_32_bits(p), 0);
-+}
-+
-+static struct sbiret sbi_debug_read_triggers(unsigned long trig_idx_base,
-+				      unsigned long trig_count)
-+{
-+	return sbi_ecall(SBI_EXT_DBTR, SBI_EXT_DBTR_TRIGGER_READ, trig_idx_base,
-+			 trig_count, 0, 0, 0, 0);
-+}
-+
-+static struct sbiret sbi_debug_install_triggers(unsigned long trig_count)
-+{
-+	return sbi_ecall(SBI_EXT_DBTR, SBI_EXT_DBTR_TRIGGER_INSTALL, trig_count, 0, 0, 0, 0, 0);
-+}
-+
-+static struct sbiret sbi_debug_update_triggers(unsigned long trig_count)
-+{
-+	return sbi_ecall(SBI_EXT_DBTR, SBI_EXT_DBTR_TRIGGER_UPDATE, trig_count, 0, 0, 0, 0, 0);
-+}
-+
-+static struct sbiret sbi_debug_uninstall_triggers(unsigned long trig_idx_base,
-+					   unsigned long trig_idx_mask)
-+{
-+	return sbi_ecall(SBI_EXT_DBTR, SBI_EXT_DBTR_TRIGGER_UNINSTALL, trig_idx_base,
-+			 trig_idx_mask, 0, 0, 0, 0);
-+}
-+
-+static struct sbiret sbi_debug_enable_triggers(unsigned long trig_idx_base,
-+					unsigned long trig_idx_mask)
-+{
-+	return sbi_ecall(SBI_EXT_DBTR, SBI_EXT_DBTR_TRIGGER_ENABLE, trig_idx_base,
-+			 trig_idx_mask, 0, 0, 0, 0);
-+}
-+
-+static struct sbiret sbi_debug_disable_triggers(unsigned long trig_idx_base,
-+					 unsigned long trig_idx_mask)
-+{
-+	return sbi_ecall(SBI_EXT_DBTR, SBI_EXT_DBTR_TRIGGER_DISABLE, trig_idx_base,
-+			 trig_idx_mask, 0, 0, 0, 0);
-+}
-+
-+static bool dbtr_install_trigger(struct sbi_dbtr_shmem_entry *shmem, void *tdata2,
-+				 unsigned long tdata1)
-+{
-+	struct sbiret sbi_ret;
-+	bool ret;
-+
-+	shmem->data.tdata1 = tdata1;
-+	shmem->data.tdata2 = (unsigned long)tdata2;
-+
-+	sbi_ret = sbi_debug_install_triggers(1);
-+	ret = sbiret_report_error(&sbi_ret, SBI_SUCCESS, "sbi_debug_install_triggers");
-+	if (ret)
-+		install_exception_handler(EXC_BREAKPOINT, dbtr_exception_handler);
-+
-+	return ret;
-+}
-+
-+static bool dbtr_uninstall_trigger(void)
-+{
-+	struct sbiret ret;
-+
-+	install_exception_handler(EXC_BREAKPOINT, NULL);
-+
-+	ret = sbi_debug_uninstall_triggers(0, 1);
-+	return sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_uninstall_triggers");
-+}
-+
-+static unsigned long dbtr_test_num_triggers(void)
-+{
-+	struct sbiret ret;
-+	unsigned long tdata1 = 0;
-+	/* sbi_debug_num_triggers will return trig_max in sbiret.value when trig_tdata1 == 0 */
-+
-+	/* should be at least one trigger. */
-+	ret = sbi_debug_num_triggers(tdata1);
-+	sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_num_triggers");
-+
-+	if (ret.value == 0)
-+		report_fail("sbi_debug_num_triggers: Returned 0 triggers available");
-+	else
-+		report_pass("sbi_debug_num_triggers: Returned %lu triggers available", ret.value);
-+
-+	return ret.value;
-+}
-+
-+static enum McontrolType dbtr_test_type(unsigned long *num_trig)
-+{
-+	struct sbiret ret;
-+	unsigned long tdata1 = SBI_DBTR_TDATA1_TYPE_MCONTROL6;
-+
-+	ret = sbi_debug_num_triggers(tdata1);
-+	sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_num_triggers");
-+	if (ret.value > 0) {
-+		report_pass("sbi_debug_num_triggers: Returned %lu mcontrol6 triggers available",
-+			    ret.value);
-+		*num_trig = ret.value;
-+		return tdata1;
-+	}
-+
-+	tdata1 = SBI_DBTR_TDATA1_TYPE_MCONTROL;
-+
-+	ret = sbi_debug_num_triggers(tdata1);
-+	sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_num_triggers");
-+	*num_trig = ret.value;
-+	if (ret.value > 0) {
-+		report_pass("sbi_debug_num_triggers: Returned %lu mcontrol triggers available",
-+			    ret.value);
-+		return tdata1;
-+	}
-+
-+	report_fail("sbi_debug_num_triggers: Returned 0 mcontrol(6) triggers available");
-+
-+	return SBI_DBTR_TDATA1_TYPE_NONE;
-+}
-+
-+static struct sbiret dbtr_test_save_install_uninstall(struct sbi_dbtr_shmem_entry *shmem,
-+						      enum McontrolType type)
-+{
-+	static unsigned long test;
-+	struct sbiret ret;
-+
-+	report_prefix_push("save_trigger");
-+
-+	shmem->data.tdata1 = gen_tdata1(type, VALUE_STORE, MODE_S | MODE_S);
-+	shmem->data.tdata2 = (unsigned long)&test;
-+
-+	ret = sbi_debug_install_triggers(1);
-+	if (!sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_install_triggers")) {
-+		report_prefix_pop();
-+		return ret;
-+	}
-+
-+	install_exception_handler(EXC_BREAKPOINT, dbtr_exception_handler);
-+
-+	report(do_save(&test), "triggered");
-+
-+	if (do_load(&test))
-+		report_fail("triggered by load");
-+
-+	ret = sbi_debug_uninstall_triggers(0, 1);
-+	sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_uninstall_triggers");
-+
-+	if (do_save(&test))
-+		report_fail("triggered after uninstall");
-+
-+	install_exception_handler(EXC_BREAKPOINT, NULL);
-+	report_prefix_pop();
-+
-+	return ret;
-+}
-+
-+static void dbtr_test_update(struct sbi_dbtr_shmem_entry *shmem, enum McontrolType type)
-+{
-+	static unsigned long test;
-+	struct sbiret ret;
-+
-+	report_prefix_push("update_trigger");
-+
-+	if (!dbtr_install_trigger(shmem, NULL, gen_tdata1(type, VALUE_NONE, MODE_NONE))) {
-+		report_prefix_pop();
-+		return;
-+	}
-+
-+	shmem->id.idx = 0;
-+	shmem->data.tdata1 = gen_tdata1(type, VALUE_STORE, MODE_S);
-+	shmem->data.tdata2 = (unsigned long)&test;
-+
-+	ret = sbi_debug_update_triggers(1);
-+	sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_update_triggers");
-+
-+	report(do_save(&test), "triggered");
-+
-+	dbtr_uninstall_trigger();
-+	report_prefix_pop();
-+}
-+
-+static void dbtr_test_load(struct sbi_dbtr_shmem_entry *shmem, enum McontrolType type)
-+{
-+	static unsigned long test;
-+
-+	report_prefix_push("load_trigger");
-+	if (!dbtr_install_trigger(shmem, &test, gen_tdata1(type, VALUE_LOAD, MODE_S))) {
-+		report_prefix_pop();
-+		return;
-+	}
-+
-+	report(do_load(&test), "triggered");
-+
-+	if (do_save(&test))
-+		report_fail("triggered by save");
-+
-+	dbtr_uninstall_trigger();
-+	report_prefix_pop();
-+}
-+
-+static void dbtr_test_disable_enable(struct sbi_dbtr_shmem_entry *shmem, enum McontrolType type)
-+{
-+	static unsigned long test;
-+	struct sbiret ret;
-+
-+	report_prefix_push("sbi_debug_disable_triggers");
-+	if (!dbtr_install_trigger(shmem, &test, gen_tdata1(type, VALUE_STORE, MODE_S))) {
-+		report_prefix_pop();
-+		return;
-+	}
-+
-+	ret = sbi_debug_disable_triggers(0, 1);
-+	sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_disable_triggers");
-+
-+	if (do_save(&test)) {
-+		report_fail("should not trigger");
-+
-+		dbtr_uninstall_trigger();
-+		report_prefix_pop();
-+		report_skip("sbi_debug_enable_triggers: no disable");
-+
-+		return;
-+	}
-+
-+	report_pass("should not trigger");
-+
-+	report_prefix_pop();
-+	report_prefix_push("sbi_debug_enable_triggers");
-+
-+	ret = sbi_debug_enable_triggers(0, 1);
-+	sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_enable_triggers");
-+
-+	report(do_save(&test), "triggered");
-+
-+	dbtr_uninstall_trigger();
-+	report_prefix_pop();
-+}
-+
-+static void dbtr_test_exec(struct sbi_dbtr_shmem_entry *shmem, enum McontrolType type)
-+{
-+	static unsigned long test;
-+
-+	report_prefix_push("exec_trigger");
-+	/* check if loads and saves trigger exec */
-+	if (!dbtr_install_trigger(shmem, &test, gen_tdata1(type, VALUE_EXECUTE, MODE_S))) {
-+		report_prefix_pop();
-+		return;
-+	}
-+
-+	if (do_load(&test))
-+		report_fail("triggered by load");
-+
-+	if (do_save(&test))
-+		report_fail("triggered by save");
-+
-+	dbtr_uninstall_trigger();
-+
-+	/* Check if exec works */
-+	if (!dbtr_install_trigger(shmem, exec_call, gen_tdata1(type, VALUE_EXECUTE, MODE_S))) {
-+		report_prefix_pop();
-+		return;
-+	}
-+	report(do_exec(), "exec trigger");
-+
-+	dbtr_uninstall_trigger();
-+	report_prefix_pop();
-+}
-+
-+static void dbtr_test_read(struct sbi_dbtr_shmem_entry *shmem, enum McontrolType type)
-+{
-+	const unsigned long tstatus_expected = SBI_DBTR_TRIG_STATE_S | SBI_DBTR_TRIG_STATE_MAPPED;
-+	const unsigned long tdata1 = gen_tdata1(type, VALUE_STORE, MODE_S);
-+	static unsigned long test;
-+	struct sbiret ret;
-+
-+	report_prefix_push("sbi_debug_read_triggers");
-+	if (!dbtr_install_trigger(shmem, &test, tdata1)) {
-+		report_prefix_pop();
-+		return;
-+	}
-+
-+	ret = sbi_debug_read_triggers(0, 1);
-+	sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_read_triggers");
-+
-+	report(shmem->data.tdata1 == tdata1, "tdata1 expected: 0x%016lx, found: 0x%016lx",
-+	       tdata1, shmem->data.tdata1);
-+	report(shmem->data.tdata2 == ((unsigned long)&test),
-+	       "tdata2 expected: 0x%016lx, found: 0x%016lx", ((unsigned long)&test),
-+	       shmem->data.tdata2);
-+	report(shmem->data.tstate == tstatus_expected, "tstate expected: 0x%016lx, found: 0x%016lx",
-+	       tstatus_expected, shmem->data.tstate);
-+
-+	dbtr_uninstall_trigger();
-+	report_prefix_pop();
-+}
-+
-+static void check_exec(unsigned long base)
-+{
-+	struct sbiret ret;
-+
-+	report(do_exec(), "exec triggered");
-+
-+	ret = sbi_debug_uninstall_triggers(base, 1);
-+	sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_uninstall_triggers");
-+}
-+
-+static void dbtr_test_multiple(struct sbi_dbtr_shmem_entry *shmem, enum McontrolType type,
-+			       unsigned long num_trigs)
-+{
-+	static unsigned long test[2];
-+	struct sbiret ret;
-+	bool have_three = num_trigs > 2;
-+
-+	if (num_trigs < 2)
-+		return;
-+
-+	report_prefix_push("test_multiple");
-+
-+	if (!dbtr_install_trigger(shmem, &test[0], gen_tdata1(type, VALUE_STORE, MODE_S))) {
-+		report_prefix_pop();
-+		return;
-+	}
-+	if (!dbtr_install_trigger(shmem, &test[1], gen_tdata1(type, VALUE_LOAD, MODE_S)))
-+		goto error;
-+	if (have_three &&
-+	    !dbtr_install_trigger(shmem, exec_call, gen_tdata1(type, VALUE_EXECUTE, MODE_S))) {
-+		ret = sbi_debug_uninstall_triggers(1, 1);
-+		sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_uninstall_triggers");
-+		goto error;
-+	}
-+
-+	report(do_save(&test[0]), "save triggered");
-+
-+	if (do_load(&test[0]))
-+		report_fail("save triggered by load");
-+
-+	report(do_load(&test[1]), "load triggered");
-+
-+	if (do_save(&test[1]))
-+		report_fail("load triggered by save");
-+
-+	if (have_three)
-+		check_exec(2);
-+
-+	ret = sbi_debug_uninstall_triggers(1, 1);
-+	sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_uninstall_triggers");
-+
-+	if (do_load(&test[1]))
-+		report_fail("load triggered after uninstall");
-+
-+	report(do_save(&test[0]), "save triggered");
-+
-+	if (!have_three &&
-+	    dbtr_install_trigger(shmem, exec_call, gen_tdata1(type, VALUE_EXECUTE, MODE_S)))
-+		check_exec(1);
-+
-+error:
-+	ret = sbi_debug_uninstall_triggers(0, 1);
-+	sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_uninstall_triggers");
-+
-+	install_exception_handler(EXC_BREAKPOINT, NULL);
-+	report_prefix_pop();
-+}
-+
-+static void dbtr_test_multiple_types(struct sbi_dbtr_shmem_entry *shmem, unsigned long type)
-+{
-+	static unsigned long test;
-+
-+	report_prefix_push("dbtr_test_multiple_types");
-+
-+	/* check if loads and saves trigger exec */
-+	if (!dbtr_install_trigger(shmem, &test,
-+			     gen_tdata1(type, VALUE_EXECUTE | VALUE_LOAD | VALUE_STORE, MODE_S))) {
-+		report_prefix_pop();
-+		return;
-+	}
-+
-+	report(do_load(&test), "load trigger");
-+
-+	report(do_save(&test), "save trigger");
-+
-+	dbtr_uninstall_trigger();
-+
-+	/* Check if exec works */
-+	if (!dbtr_install_trigger(shmem, exec_call,
-+			     gen_tdata1(type, VALUE_EXECUTE | VALUE_LOAD | VALUE_STORE, MODE_S))) {
-+		report_prefix_pop();
-+		return;
-+	}
-+
-+	report(do_exec(), "exec trigger");
-+
-+	dbtr_uninstall_trigger();
-+	report_prefix_pop();
-+}
-+
-+static void dbtr_test_disable_uninstall(struct sbi_dbtr_shmem_entry *shmem, enum McontrolType type)
-+{
-+	static unsigned long test;
-+	struct sbiret ret;
-+
-+	report_prefix_push("disable uninstall");
-+	if (!dbtr_install_trigger(shmem, &test, gen_tdata1(type, VALUE_STORE, MODE_S))) {
-+		report_prefix_pop();
-+		return;
-+	}
-+
-+	ret = sbi_debug_disable_triggers(0, 1);
-+	sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_disable_triggers");
-+
-+	dbtr_uninstall_trigger();
-+
-+	if (!dbtr_install_trigger(shmem, &test, gen_tdata1(type, VALUE_STORE, MODE_S))) {
-+		report_prefix_pop();
-+		return;
-+	}
-+
-+	report(do_save(&test), "triggered");
-+
-+	dbtr_uninstall_trigger();
-+	report_prefix_pop();
-+}
-+
-+static void dbtr_test_uninstall_enable(struct sbi_dbtr_shmem_entry *shmem, enum McontrolType type)
-+{
-+	static unsigned long test;
-+	struct sbiret ret;
-+
-+	report_prefix_push("uninstall enable");
-+	if (!dbtr_install_trigger(shmem, &test, gen_tdata1(type, VALUE_STORE, MODE_S))) {
-+		report_prefix_pop();
-+		return;
-+	}
-+	dbtr_uninstall_trigger();
-+
-+	ret = sbi_debug_enable_triggers(0, 1);
-+	sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_enable_triggers");
-+
-+	install_exception_handler(EXC_BREAKPOINT, dbtr_exception_handler);
-+
-+	report(!do_save(&test), "should not trigger");
-+
-+	install_exception_handler(EXC_BREAKPOINT, NULL);
-+	report_prefix_pop();
-+}
-+
-+static void dbtr_test_uninstall_update(struct sbi_dbtr_shmem_entry *shmem, enum McontrolType type)
-+{
-+	static unsigned long test;
-+	struct sbiret ret;
-+
-+	report_prefix_push("uninstall update");
-+	if (!dbtr_install_trigger(shmem, NULL, gen_tdata1(type, VALUE_NONE, MODE_NONE))) {
-+		report_prefix_pop();
-+		return;
-+	}
-+
-+	dbtr_uninstall_trigger();
-+
-+	shmem->id.idx = 0;
-+	shmem->data.tdata1 = gen_tdata1(type, VALUE_STORE, MODE_S);
-+	shmem->data.tdata2 = (unsigned long)&test;
-+
-+	ret = sbi_debug_update_triggers(1);
-+	sbiret_report_error(&ret, SBI_ERR_FAILURE, "sbi_debug_update_triggers");
-+
-+	install_exception_handler(EXC_BREAKPOINT, dbtr_exception_handler);
-+
-+	report(!do_save(&test), "should not trigger");
-+
-+	install_exception_handler(EXC_BREAKPOINT, NULL);
-+	report_prefix_pop();
-+}
-+
-+static void dbtr_test_disable_read(struct sbi_dbtr_shmem_entry *shmem, enum McontrolType type)
-+{
-+	const unsigned long tstatus_expected = SBI_DBTR_TRIG_STATE_S | SBI_DBTR_TRIG_STATE_MAPPED;
-+	const unsigned long tdata1 = gen_tdata1(type, VALUE_STORE, MODE_NONE);
-+	static unsigned long test;
-+	struct sbiret ret;
-+
-+	report_prefix_push("disable_read");
-+	if (!dbtr_install_trigger(shmem, &test, gen_tdata1(type, VALUE_STORE, MODE_S))) {
-+		report_prefix_pop();
-+		return;
-+	}
-+
-+	ret = sbi_debug_disable_triggers(0, 1);
-+	sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_disable_triggers");
-+
-+	ret = sbi_debug_read_triggers(0, 1);
-+	sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_read_triggers");
-+
-+	report(shmem->data.tdata1 == tdata1, "tdata1 expected: 0x%016lx, found: 0x%016lx",
-+	       tdata1, shmem->data.tdata1);
-+	report(shmem->data.tdata2 == ((unsigned long)&test),
-+	       "tdata2 expected: 0x%016lx, found: 0x%016lx",
-+	       ((unsigned long)&test), shmem->data.tdata2);
-+	report(shmem->data.tstate == tstatus_expected, "tstate expected: 0x%016lx, found: 0x%016lx",
-+	       tstatus_expected, shmem->data.tstate);
-+
-+	dbtr_uninstall_trigger();
-+	report_prefix_pop();
-+}
-+
-+void check_dbtr(void)
-+{
-+	static struct sbi_dbtr_shmem_entry shmem[RV_MAX_TRIGGERS] = {};
-+	unsigned long num_trigs;
-+	enum McontrolType trig_type;
-+	struct sbiret ret;
-+
-+	report_prefix_push("dbtr");
-+
-+	if (!sbi_probe(SBI_EXT_DBTR)) {
-+		report_skip("extension not available");
-+		report_prefix_pop();
-+		return;
-+	}
-+
-+	if (__sbi_get_imp_id() == SBI_IMPL_OPENSBI &&
-+	    __sbi_get_imp_version() < sbi_impl_opensbi_mk_version(1, 6)) {
-+		report_skip("OpenSBI < v1.7 detected, skipping tests");
-+		report_prefix_pop();
-+		return;
-+	}
-+
-+	num_trigs = dbtr_test_num_triggers();
-+	if (!num_trigs)
-+		goto error;
-+
-+	trig_type = dbtr_test_type(&num_trigs);
-+	if (trig_type == SBI_DBTR_TDATA1_TYPE_NONE)
-+		goto error;
-+
-+	ret = sbi_debug_set_shmem(shmem);
-+	sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_set_shmem");
-+
-+	ret = dbtr_test_save_install_uninstall(&shmem[0], trig_type);
-+	/* install or uninstall failed */
-+	if (ret.error != SBI_SUCCESS)
-+		goto error;
-+
-+	dbtr_test_load(&shmem[0], trig_type);
-+	dbtr_test_exec(&shmem[0], trig_type);
-+	dbtr_test_read(&shmem[0], trig_type);
-+	dbtr_test_disable_enable(&shmem[0], trig_type);
-+	dbtr_test_update(&shmem[0], trig_type);
-+	dbtr_test_multiple_types(&shmem[0], trig_type);
-+	dbtr_test_multiple(shmem, trig_type, num_trigs);
-+	dbtr_test_disable_uninstall(&shmem[0], trig_type);
-+	dbtr_test_uninstall_enable(&shmem[0], trig_type);
-+	dbtr_test_uninstall_update(&shmem[0], trig_type);
-+	dbtr_test_disable_read(&shmem[0], trig_type);
-+
-+error:
-+	report_prefix_pop();
-+}
-diff --git a/riscv/sbi-tests.h b/riscv/sbi-tests.h
-index d5c4ae70..6a227745 100644
---- a/riscv/sbi-tests.h
-+++ b/riscv/sbi-tests.h
-@@ -99,6 +99,7 @@ static inline bool env_enabled(const char *env)
- 
- void sbi_bad_fid(int ext);
- void check_sse(void);
-+void check_dbtr(void);
- 
- #endif /* __ASSEMBLER__ */
- #endif /* _RISCV_SBI_TESTS_H_ */
-diff --git a/riscv/sbi.c b/riscv/sbi.c
-index edb1a6be..5bd496d0 100644
---- a/riscv/sbi.c
-+++ b/riscv/sbi.c
-@@ -1561,6 +1561,7 @@ int main(int argc, char **argv)
- 	check_susp();
- 	check_sse();
- 	check_fwft();
-+	check_dbtr();
- 
- 	return report_summary();
- }
+This Runner has two broad goals:
+1. Make it easier for contributors and maintainers to run various
+   configuration of tests with features like preserving output,
+   controlling output verbosity, parallelism, different combinations of
+   command line arguments.
+2. Provide common place to write interesting and useful combinations of
+   tests command line arguments to improve KVM test coverage. Default
+   selftests runner provide little to no control over this.
+
+Patch 1 adds a very basic sefltest runner.
+Patches 2-10 add various features to runner.
+Patch 11 provides a way to auto generate test files.
+Patch 12-15 commits the generated files for each architecture supported
+by KVM selftests.
+
+This version doesn't have all of the features envisioned in RFC and v1.
+Future patches will add features like:
+
+- Print process id of the test in execution.
+- Skip other platform tests. Currently, runner expects test binary will
+  not be available and it marks that test as it didn't run in the
+  output. This can be handled by either hardcoding paths in runner or
+  extending *.test schema. I will work on it in the next version.
+- CTRL+C currently spits out lots of warning (depending on --job value).
+  This will be fixed in the next version.
+- Add more tests configurations.
+- Provide a way to set the environment in which runner will start tests. For
+  example, setting huge pages, stress testing based on resources
+  available on host.
+
+
+v2:
+- Automatic default test generation.
+- Command line flag to provide executables location
+- Dump output to filesystem with timestamp
+- Accept absolute path of *.test files/directory location
+- Sticky status at bottom for the current state of runner.
+- Knobs to control output verbosity
+- Colored output for terminals.
+
+v1: https://lore.kernel.org/kvm/20250222005943.3348627-1-vipinsh@google.com/
+- Parallel test execution.
+- Dumping separate output for each test.
+- Timeout for test execution
+- Specify single test or a test directory.
+
+RFC: https://lore.kernel.org/kvm/20240821223012.3757828-1-vipinsh@google.com/
+
+Vipin Sharma (15):
+  KVM: selftest: Create KVM selftest runner
+  KVM: selftests: Enable selftests runner to find executables in
+    different path
+  KVM: selftests: Add timeout option in selftests runner
+  KVM: selftests: Add option to save selftest runner output to a
+    directory
+  KVM: selftests: Run tests concurrently in KVM selftests runner
+  KVM: selftests: Add a flag to print only test status in KVM Selftests
+    run
+  KVM: selftests: Add various print flags to KVM Selftest Runner
+  KVM: selftests: Print sticky KVM Selftests Runner status at bottom
+  KVM: selftests: Add a flag to print only sticky summary in the
+    selftests runner
+  KVM: selftests: Add flag to suppress all output from Selftest KVM
+    Runner
+  KVM: selftests: Auto generate default tests for KVM Selftests Runner
+  KVM: selftests: Add x86 auto generated test files for KVM Selftests
+    Runner
+  KVM: selftests: Add arm64 auto generated test files for KVM Selftests
+    Runner
+  KVM: selftests: Add s390 auto generated test files for KVM Selftests
+    Runner
+  KVM: selftests: Add riscv auto generated test files for KVM Selftests
+    Runner
+
+ tools/testing/selftests/kvm/.gitignore        |   4 +-
+ tools/testing/selftests/kvm/Makefile.kvm      |   8 +
+ .../testing/selftests/kvm/runner/__main__.py  | 271 ++++++++++++++++++
+ tools/testing/selftests/kvm/runner/command.py |  53 ++++
+ .../testing/selftests/kvm/runner/selftest.py  |  66 +++++
+ .../selftests/kvm/runner/test_runner.py       |  88 ++++++
+ .../access_tracking_perf_test/default.test    |   1 +
+ .../kvm/tests/arch_timer/default.test         |   1 +
+ .../tests/arm64/aarch32_id_regs/default.test  |   1 +
+ .../arm64/arch_timer_edge_cases/default.test  |   1 +
+ .../tests/arm64/debug-exceptions/default.test |   1 +
+ .../kvm/tests/arm64/hypercalls/default.test   |   1 +
+ .../kvm/tests/arm64/mmio_abort/default.test   |   1 +
+ .../kvm/tests/arm64/no-vgic-v3/default.test   |   1 +
+ .../tests/arm64/page_fault_test/default.test  |   1 +
+ .../kvm/tests/arm64/psci_test/default.test    |   1 +
+ .../kvm/tests/arm64/set_id_regs/default.test  |   1 +
+ .../kvm/tests/arm64/smccc_filter/default.test |   1 +
+ .../arm64/vcpu_width_config/default.test      |   1 +
+ .../kvm/tests/arm64/vgic_init/default.test    |   1 +
+ .../kvm/tests/arm64/vgic_irq/default.test     |   1 +
+ .../tests/arm64/vgic_lpi_stress/default.test  |   1 +
+ .../arm64/vpmu_counter_access/default.test    |   1 +
+ .../kvm/tests/coalesced_io_test/default.test  |   1 +
+ .../kvm/tests/demand_paging_test/default.test |   1 +
+ .../2slot_5vcpu_10iter.test                   |   1 +
+ .../tests/dirty_log_perf_test/default.test    |   1 +
+ .../no_dirty_log_protect.test                 |   1 +
+ .../kvm/tests/dirty_log_test/default.test     |   1 +
+ .../kvm/tests/get-reg-list/default.test       |   1 +
+ .../kvm/tests/guest_memfd_test/default.test   |   1 +
+ .../kvm/tests/guest_print_test/default.test   |   1 +
+ .../tests/hardware_disable_test/default.test  |   1 +
+ .../tests/kvm_binary_stats_test/default.test  |   1 +
+ .../tests/kvm_create_max_vcpus/default.test   |   1 +
+ .../tests/kvm_page_table_test/default.test    |   1 +
+ .../default.test                              |   1 +
+ .../kvm/tests/memslot_perf_test/default.test  |   1 +
+ .../kvm/tests/mmu_stress_test/default.test    |   1 +
+ .../tests/pre_fault_memory_test/default.test  |   1 +
+ .../kvm/tests/riscv/ebreak_test/default.test  |   1 +
+ .../kvm/tests/riscv/sbi_pmu_test/default.test |   1 +
+ .../kvm/tests/rseq_test/default.test          |   1 +
+ .../kvm/tests/s390/cmma_test/default.test     |   1 +
+ .../s390/cpumodel_subfuncs_test/default.test  |   1 +
+ .../kvm/tests/s390/debug_test/default.test    |   1 +
+ .../kvm/tests/s390/memop/default.test         |   1 +
+ .../kvm/tests/s390/resets/default.test        |   1 +
+ .../s390/shared_zeropage_test/default.test    |   1 +
+ .../tests/s390/sync_regs_test/default.test    |   1 +
+ .../kvm/tests/s390/tprot/default.test         |   1 +
+ .../kvm/tests/s390/ucontrol_test/default.test |   1 +
+ .../tests/set_memory_region_test/default.test |   1 +
+ .../kvm/tests/steal_time/default.test         |   1 +
+ .../system_counter_offset_test/default.test   |   1 +
+ .../kvm/tests/x86/amx_test/default.test       |   1 +
+ .../x86/apic_bus_clock_test/default.test      |   1 +
+ .../kvm/tests/x86/cpuid_test/default.test     |   1 +
+ .../x86/cr4_cpuid_sync_test/default.test      |   1 +
+ .../kvm/tests/x86/debug_regs/default.test     |   1 +
+ .../default.test                              |   1 +
+ .../default.test                              |   1 +
+ .../kvm/tests/x86/fastops_test/default.test   |   1 +
+ .../tests/x86/feature_msrs_test/default.test  |   1 +
+ .../tests/x86/fix_hypercall_test/default.test |   1 +
+ .../kvm/tests/x86/hwcr_msr_test/default.test  |   1 +
+ .../kvm/tests/x86/hyperv_clock/default.test   |   1 +
+ .../kvm/tests/x86/hyperv_cpuid/default.test   |   1 +
+ .../kvm/tests/x86/hyperv_evmcs/default.test   |   1 +
+ .../hyperv_extended_hypercalls/default.test   |   1 +
+ .../tests/x86/hyperv_features/default.test    |   1 +
+ .../kvm/tests/x86/hyperv_ipi/default.test     |   1 +
+ .../tests/x86/hyperv_svm_test/default.test    |   1 +
+ .../tests/x86/hyperv_tlb_flush/default.test   |   1 +
+ .../tests/x86/kvm_buslock_test/default.test   |   1 +
+ .../kvm/tests/x86/kvm_clock_test/default.test |   1 +
+ .../kvm/tests/x86/kvm_pv_test/default.test    |   1 +
+ .../x86/max_vcpuid_cap_test/default.test      |   1 +
+ .../tests/x86/monitor_mwait_test/default.test |   1 +
+ .../x86/nested_emulation_test/default.test    |   1 +
+ .../x86/nested_exceptions_test/default.test   |   1 +
+ .../tests/x86/nx_huge_pages_test/default.test |   1 +
+ .../tests/x86/platform_info_test/default.test |   1 +
+ .../tests/x86/pmu_counters_test/default.test  |   1 +
+ .../x86/pmu_event_filter_test/default.test    |   1 +
+ .../private_mem_conversions_test/default.test |   1 +
+ .../private_mem_kvm_exits_test/default.test   |   1 +
+ .../x86/recalc_apic_map_test/default.test     |   1 +
+ .../tests/x86/set_boot_cpu_id/default.test    |   1 +
+ .../kvm/tests/x86/set_sregs_test/default.test |   1 +
+ .../tests/x86/sev_init2_tests/default.test    |   1 +
+ .../tests/x86/sev_migrate_tests/default.test  |   1 +
+ .../kvm/tests/x86/sev_smoke_test/default.test |   1 +
+ .../default.test                              |   1 +
+ .../kvm/tests/x86/smm_test/default.test       |   1 +
+ .../kvm/tests/x86/state_test/default.test     |   1 +
+ .../tests/x86/svm_int_ctl_test/default.test   |   1 +
+ .../x86/svm_nested_shutdown_test/default.test |   1 +
+ .../svm_nested_soft_inject_test/default.test  |   1 +
+ .../tests/x86/svm_vmcall_test/default.test    |   1 +
+ .../kvm/tests/x86/sync_regs_test/default.test |   1 +
+ .../x86/triple_fault_event_test/default.test  |   1 +
+ .../kvm/tests/x86/tsc_msrs_test/default.test  |   1 +
+ .../tests/x86/tsc_scaling_sync/default.test   |   1 +
+ .../x86/ucna_injection_test/default.test      |   1 +
+ .../tests/x86/userspace_io_test/default.test  |   1 +
+ .../x86/userspace_msr_exit_test/default.test  |   1 +
+ .../x86/vmx_apic_access_test/default.test     |   1 +
+ .../vmx_close_while_nested_test/default.test  |   1 +
+ .../tests/x86/vmx_dirty_log_test/default.test |   1 +
+ .../default.test                              |   1 +
+ .../default.test                              |   1 +
+ .../kvm/tests/x86/vmx_msrs_test/default.test  |   1 +
+ .../vmx_nested_tsc_scaling_test/default.test  |   1 +
+ .../tests/x86/vmx_pmu_caps_test/default.test  |   1 +
+ .../vmx_preemption_timer_test/default.test    |   1 +
+ .../vmx_set_nested_state_test/default.test    |   1 +
+ .../x86/vmx_tsc_adjust_test/default.test      |   1 +
+ .../kvm/tests/x86/xapic_ipi_test/default.test |   1 +
+ .../tests/x86/xapic_state_test/default.test   |   1 +
+ .../tests/x86/xcr0_cpuid_test/default.test    |   1 +
+ .../tests/x86/xen_shinfo_test/default.test    |   1 +
+ .../tests/x86/xen_vmcall_test/default.test    |   1 +
+ .../kvm/tests/x86/xss_msr_test/default.test   |   1 +
+ 124 files changed, 607 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/kvm/runner/__main__.py
+ create mode 100644 tools/testing/selftests/kvm/runner/command.py
+ create mode 100644 tools/testing/selftests/kvm/runner/selftest.py
+ create mode 100644 tools/testing/selftests/kvm/runner/test_runner.py
+ create mode 100644 tools/testing/selftests/kvm/tests/access_tracking_perf_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/arch_timer/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/arm64/aarch32_id_regs/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/arm64/arch_timer_edge_cases/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/arm64/debug-exceptions/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/arm64/hypercalls/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/arm64/mmio_abort/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/arm64/no-vgic-v3/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/arm64/page_fault_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/arm64/psci_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/arm64/set_id_regs/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/arm64/smccc_filter/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/arm64/vcpu_width_config/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/arm64/vgic_init/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/arm64/vgic_irq/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/arm64/vgic_lpi_stress/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/arm64/vpmu_counter_access/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/coalesced_io_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/demand_paging_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/dirty_log_perf_test/2slot_5vcpu_10iter.test
+ create mode 100644 tools/testing/selftests/kvm/tests/dirty_log_perf_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/dirty_log_perf_test/no_dirty_log_protect.test
+ create mode 100644 tools/testing/selftests/kvm/tests/dirty_log_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/get-reg-list/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/guest_memfd_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/guest_print_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/hardware_disable_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/kvm_binary_stats_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/kvm_create_max_vcpus/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/kvm_page_table_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/memslot_modification_stress_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/memslot_perf_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/mmu_stress_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/pre_fault_memory_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/riscv/ebreak_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/riscv/sbi_pmu_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/rseq_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/s390/cmma_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/s390/cpumodel_subfuncs_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/s390/debug_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/s390/memop/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/s390/resets/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/s390/shared_zeropage_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/s390/sync_regs_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/s390/tprot/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/s390/ucontrol_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/set_memory_region_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/steal_time/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/system_counter_offset_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/amx_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/apic_bus_clock_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/cpuid_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/cr4_cpuid_sync_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/debug_regs/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/dirty_log_page_splitting_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/exit_on_emulation_failure_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/fastops_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/feature_msrs_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/fix_hypercall_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/hwcr_msr_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/hyperv_clock/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/hyperv_cpuid/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/hyperv_evmcs/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/hyperv_extended_hypercalls/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/hyperv_features/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/hyperv_ipi/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/hyperv_svm_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/hyperv_tlb_flush/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/kvm_buslock_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/kvm_clock_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/kvm_pv_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/max_vcpuid_cap_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/monitor_mwait_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/nested_emulation_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/nested_exceptions_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/nx_huge_pages_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/platform_info_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/pmu_counters_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/pmu_event_filter_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/private_mem_conversions_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/private_mem_kvm_exits_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/recalc_apic_map_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/set_boot_cpu_id/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/set_sregs_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/sev_init2_tests/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/sev_migrate_tests/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/sev_smoke_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/smaller_maxphyaddr_emulation_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/smm_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/state_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/svm_int_ctl_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/svm_nested_shutdown_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/svm_nested_soft_inject_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/svm_vmcall_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/sync_regs_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/triple_fault_event_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/tsc_msrs_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/tsc_scaling_sync/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/ucna_injection_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/userspace_io_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/userspace_msr_exit_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/vmx_apic_access_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/vmx_close_while_nested_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/vmx_dirty_log_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/vmx_exception_with_invalid_guest_state/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/vmx_invalid_nested_guest_state/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/vmx_msrs_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/vmx_nested_tsc_scaling_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/vmx_pmu_caps_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/vmx_preemption_timer_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/vmx_set_nested_state_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/vmx_tsc_adjust_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/xapic_ipi_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/xapic_state_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/xcr0_cpuid_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/xen_shinfo_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/xen_vmcall_test/default.test
+ create mode 100644 tools/testing/selftests/kvm/tests/x86/xss_msr_test/default.test
+
+
+base-commit: 3f7b307757ecffc1c18ede9ee3cf9ce8101f3cc9
 -- 
-2.43.0
+2.50.0.rc0.604.gd4ff7b7c86-goog
 
 
 -- 
