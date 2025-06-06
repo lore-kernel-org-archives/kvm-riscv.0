@@ -4,8 +4,8 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D3651C61CE7
-	for <kvm-riscv@archiver.kernel.org>; Sat,  7 Jun 2025 00:03:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 21BD9C61CE7
+	for <kvm-riscv@archiver.kernel.org>; Sat,  7 Jun 2025 00:05:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
@@ -13,62 +13,61 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	References:Mime-Version:In-Reply-To:Date:Reply-To:Content-ID:
 	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
 	:Resent-Message-ID:List-Owner;
-	bh=tHc4nMtNLD+Q6imDlbCljBIKy5TKM4wOXCZQfrPOhnk=; b=04lRelsu0FR5RTQeFLAkeSoBgj
-	a4xYr4gS7qNs3kSTHiDeym+hmM8u1StH+h70Lz5sE3dTqCHC7KPelVMR2zqZJBkRQhGeWeAx9C3om
-	S9J2NJmxupn/NteDeAZhgp6Do+kZzml2yJVzRgDOuXeVtJiQTNjBQBZXz+bI5HK6rGHOvMTM6Sncv
-	7E0em26xeZwkeF8d+Kzqs93sctsP/3bIcXuSVoFAd5ZmGWOA1wwB82TjKSYIZEKy4vSqSs5YE2h2s
-	GaqSTm7gHilY6EvPHxykDHsnZmajYN1BLNGDhOG4knF3ReyQqVL+PD5oMzhBmEKDnIXImC8YRZ50z
-	Na8PCy6A==;
+	bh=FCmv63T1FLZDHbwI3Ao3giqjq2uii9LM2OqajHsQAXM=; b=4D0WiUjNxB/RhSgaJ0lVcErVlK
+	eSeKpLlhRu4U/fIpDZyiDPMNE+V7nPcyaJ9Mzz2/PS207G0lYCEZPQPVpGTyKjxic1xIQ+NcVFKJe
+	ukXkTssrira8VU8bOHPOfLXH4/JbzdnMHFxybH+lZyV29K46Itk+oQSiyyv8O+TxxjpHlNCUH8ytO
+	iM8WNPDruzPb2gv94iq0Dhg8J9NoWiDNWpVsjzic3qG81U9FzFXPTYjwVmfdWO3chTBYBlXM69Vue
+	BewddUA0fJHbpOBdYF7moykAeL/reBVncfJF+6gLUuJkhTZtt3RdUKXdtuKku/R+sx0zyRMzcp4Y6
+	sCk69xjw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uNh1d-000000019pZ-2brA;
-	Sat, 07 Jun 2025 00:03:05 +0000
-Received: from mail-pf1-x44a.google.com ([2607:f8b0:4864:20::44a])
+	id 1uNh3j-000000019z3-2ki7;
+	Sat, 07 Jun 2025 00:05:15 +0000
+Received: from mail-pg1-x549.google.com ([2607:f8b0:4864:20::549])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uNgvM-00000001956-16TS
+	id 1uNgvN-0000000195l-3MPg
 	for kvm-riscv@lists.infradead.org;
-	Fri, 06 Jun 2025 23:56:37 +0000
-Received: by mail-pf1-x44a.google.com with SMTP id d2e1a72fcca58-742951722b3so2169921b3a.2
-        for <kvm-riscv@lists.infradead.org>; Fri, 06 Jun 2025 16:56:35 -0700 (PDT)
+	Fri, 06 Jun 2025 23:56:38 +0000
+Received: by mail-pg1-x549.google.com with SMTP id 41be03b00d2f7-b2f4c436301so1695765a12.0
+        for <kvm-riscv@lists.infradead.org>; Fri, 06 Jun 2025 16:56:37 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1749254195; x=1749858995; darn=lists.infradead.org;
+        d=google.com; s=20230601; t=1749254196; x=1749858996; darn=lists.infradead.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=J5qPyWDdZjBYrNiWpTSfn3gp6ZZ42Mm3+G5MVBiOPg4=;
-        b=3CYBaXPpOQOIGJhasPC0NK9VvgIwEsHaoVla5FUHljY6YbxHsy0OsQ1jJx8GSga08g
-         mR2y33xPjXC4VhmFk7faj3ORXrPmZNc494/xyl3g7ME34vl4Y5YUt/TqwgVrjemOkFs1
-         v7jfboyg4HHopEhBRel8+HJczpSa8Zv+VoTcs+oBgUEay91lwk4LxU+53+1pNRlb4h2D
-         8QVUVmTUwthUs2P2FvfMG0gTF5HS/cvjyANCLF4T0rVDvdFf0ug8FlawNhjgfyRDF1mR
-         CoV4huhuZALJrjnQUb24JApuSgXCC0IHTwltI0Bnk1IsPP06hAhcNlZ45DB80tfjsJqa
-         dTrg==
+        bh=bGljYTvaXC7QnacTzvG5Nj4iX8W+IqA3xJgvnGBwRTM=;
+        b=NkW+EfpTejGIvabNcLHXqquvxurHcmB3nJ4xvUTOrP4hqlkih2uy0naoBqJIvtgfTz
+         9vEqJgQKs1yKnPGOB57q+ArHW8NrpVp2ZsuTfsTHtsBsSChgRHGmb90xnaqiLoeHaVWs
+         truCDAtdGBMojU5H14IBa26ppV9pzQ68Ip3z6+UbUzZTGqnJgwoghOyL4uwSw01iA7qx
+         XLDhug+WnVH0B4qLNliS/XNiAonBHLRfmz/reyr1Cdfd5tFhpGB3k2ii8EhPznOl/3L+
+         ZfiosjcJcx8lfMppfnSQp/8zpyARj7lnatsG+9vhN/t6CbBtU3PXwjU6Wd6NTCBZuuiR
+         EXGQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1749254195; x=1749858995;
+        d=1e100.net; s=20230601; t=1749254196; x=1749858996;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=J5qPyWDdZjBYrNiWpTSfn3gp6ZZ42Mm3+G5MVBiOPg4=;
-        b=tjGLMhVurnW5TpDPPMsWQQd2P0OQI3Op/hmJ0+5akWC07GkNxMxKx0eSeqoU05NeKd
-         tyYeg/CluiUF6hoQ0N5bsU/ThsrnHr6xSll9NUZYCsPNg00/kcWQSzkYsox5aZCHMRvz
-         JjBnAQuaHgUsNgJIUZHtp8jxaPgp5nW0U2LQTZdvD8QU0GjnqUmF1e1PSrLMi6ZD7SBa
-         XXQ5pUu+P3DplIparu5K9tFo97IQSfk6vNrIwwebd2iplLEOT2wPUzR7nLSW/ZjZoZda
-         /XmbBu3SmWGWIV35zM/MZ7GtY8SJ9TFNVcvR5SdBiojtKdN41m2oGE898NhVHRSSnZaz
-         nPZw==
-X-Forwarded-Encrypted: i=1; AJvYcCUqppjcS+w4/ZKhCGIPrmOdDP1l72OAoK649jWs/Z6Zlig4A/AIBxRNGr6UCFpa8aqCYv+pFmg7vmw=@lists.infradead.org
-X-Gm-Message-State: AOJu0YzjS49N459g6TgZyhtbJfkoFOGQcNTAEltjqXL0lUtF/b4SOjMQ
-	hYRHOqoiFruVnhHDI+hZiTlh5JNcr3u/+dj/jocsdmUmpd/moh3a+5Bh2H1jb/HDb5jQj1VJoFJ
-	8Od6ixPPKjw==
-X-Google-Smtp-Source: AGHT+IGPFN25sf5fBQuUahDsniRulhDsp5/A6v15vwSgp1kUKeD/wcPxz2MlbUSH1xlqTKiLIES98JHHfcZB
-X-Received: from pfbhm22.prod.google.com ([2002:a05:6a00:6716:b0:746:2bf3:e5e8])
- (user=vipinsh job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a00:13a4:b0:736:5725:59b4
- with SMTP id d2e1a72fcca58-74827e51491mr7448173b3a.3.1749254194854; Fri, 06
- Jun 2025 16:56:34 -0700 (PDT)
-Date: Fri,  6 Jun 2025 16:56:06 -0700
+        bh=bGljYTvaXC7QnacTzvG5Nj4iX8W+IqA3xJgvnGBwRTM=;
+        b=gruhvU7LZYIrXJrMzs3sPcmgeuCTuAFZ/7jMZxcVtB0CVJjvtAioIerzMkO8l+gArK
+         zUXlFlIz0+IFrG/LUdv2zs0E+Eys/umPNxqZbh3tVeKAzCodXH6gq6Ut5fSAZsJ58UEj
+         /4Um/x/92PV1hUSl8hA+pdfN0RzeCAcKejZIHPiOhhq0wXro5PKzUAoCnPNyCYDFCAsV
+         sNgRhu2yJZPXC0pBba7FfDP8r06eO/B8sG+rdUMsecSSe+a3JAVhmQ5oJOnkqfxSbaW/
+         a5/d203zOS5l82bzYzJlqC24RBYNRPxe5XHRDo7NASs9sTkP/78M5qHFhEL+T3aPbfMN
+         BoDA==
+X-Forwarded-Encrypted: i=1; AJvYcCUcXbUBgn3hSQzTNIf92jxcgr4eSju35hUFpztCT6XtkkWbQD+KaYj+r7MZq+qcDbzWIBcfxQAJZIM=@lists.infradead.org
+X-Gm-Message-State: AOJu0YxNveAVEc/SU1P97qf3LiAoe3T802MabCtcbRgTUGYsfYwoMDEO
+	xCe5mqzT6l111HiHe85XfIGVtS4RblOPtTkna3veq/EDtKfoFArXUQmYVVAZdYohGdaLloaLOA7
+	d19fu8b13VQ==
+X-Google-Smtp-Source: AGHT+IEf6/EQQaFCn2+ilqOXhsd43GYZymP8LG9LnvyyGFrCPkId69cOH/yRMcziE3S42F6gZpobhUsXtO4j
+X-Received: from pfhx2.prod.google.com ([2002:a05:6a00:1882:b0:747:abae:78e8])
+ (user=vipinsh job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a20:3942:b0:215:e44c:831f
+ with SMTP id adf61e73a8af0-21ee2559924mr7260991637.4.1749254196463; Fri, 06
+ Jun 2025 16:56:36 -0700 (PDT)
+Date: Fri,  6 Jun 2025 16:56:07 -0700
 In-Reply-To: <20250606235619.1841595-1-vipinsh@google.com>
 Mime-Version: 1.0
 References: <20250606235619.1841595-1-vipinsh@google.com>
 X-Mailer: git-send-email 2.50.0.rc0.604.gd4ff7b7c86-goog
-Message-ID: <20250606235619.1841595-3-vipinsh@google.com>
-Subject: [PATCH v2 02/15] KVM: selftests: Enable selftests runner to find
- executables in different path
+Message-ID: <20250606235619.1841595-4-vipinsh@google.com>
+Subject: [PATCH v2 03/15] KVM: selftests: Add timeout option in selftests runner
 From: Vipin Sharma <vipinsh@google.com>
 To: kvm@vger.kernel.org, kvmarm@lists.linux.dev, kvm-riscv@lists.infradead.org, 
 	linux-arm-kernel@lists.infradead.org
@@ -77,8 +76,8 @@ Cc: seanjc@google.com, pbonzini@redhat.com, anup@brainfault.org,
 	maz@kernel.org, oliver.upton@linux.dev, dmatlack@google.com, 
 	Vipin Sharma <vipinsh@google.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250606_165636_295682_54A5BC57 
-X-CRM114-Status: GOOD (  10.95  )
+X-CRM114-CacheID: sfid-20250606_165637_831875_4AA1D268 
+X-CRM114-Status: GOOD (  14.65  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -95,82 +94,147 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Add command line option, --executable/-e, to specify a directory where
-test binaries are present. If this option is not provided then default
-to the current directory.
+Add a command line argument in KVM selftest runner to limit amount of
+time (seconds) given to a test for execution. Kill the test if it exceeds the
+given value. Define a new SelftestStatus.TIMED_OUT to denote a selftest
+final result. Add terminal color for status messages of timed out tests.
 
-Example:
-  python3 runner --test-dirs test -e ~/build/selftests
-
-This option enables executing tests from out-of-tree builds.
+Set the default value of 120 seconds for all tests.
 
 Signed-off-by: Vipin Sharma <vipinsh@google.com>
 ---
- tools/testing/selftests/kvm/runner/__main__.py    | 8 +++++++-
- tools/testing/selftests/kvm/runner/selftest.py    | 4 ++--
- tools/testing/selftests/kvm/runner/test_runner.py | 4 ++--
- 3 files changed, 11 insertions(+), 5 deletions(-)
+ .../testing/selftests/kvm/runner/__main__.py  | 10 +++++++-
+ tools/testing/selftests/kvm/runner/command.py |  4 +++-
+ .../testing/selftests/kvm/runner/selftest.py  | 23 +++++++++++--------
+ .../selftests/kvm/runner/test_runner.py       |  2 +-
+ 4 files changed, 27 insertions(+), 12 deletions(-)
 
 diff --git a/tools/testing/selftests/kvm/runner/__main__.py b/tools/testing/selftests/kvm/runner/__main__.py
-index b2c85606c516..599300831504 100644
+index 599300831504..f7f679be0e03 100644
 --- a/tools/testing/selftests/kvm/runner/__main__.py
 +++ b/tools/testing/selftests/kvm/runner/__main__.py
-@@ -29,6 +29,12 @@ def cli():
-                         default=[],
-                         help="Run tests in the given directory and all of its sub directories. Provide the space separated paths to add multiple directories.")
+@@ -35,6 +35,12 @@ def cli():
+                         default=".",
+                         help="Finds the test executables in the given directory. Default is the current directory.")
  
-+    parser.add_argument("-e",
-+                        "--executable",
-+                        nargs='?',
-+                        default=".",
-+                        help="Finds the test executables in the given directory. Default is the current directory.")
++    parser.add_argument("-t",
++                        "--timeout",
++                        default=120,
++                        type=int,
++                        help="Timeout, in seconds, before runner kills the running test. (Default: 120 seconds)")
 +
      return parser.parse_args()
  
  
-@@ -85,7 +91,7 @@ def main():
-     args = cli()
-     setup_logging(args)
-     test_files = fetch_test_files(args)
--    return TestRunner(test_files).start()
-+    return TestRunner(test_files, args).start()
+@@ -42,6 +48,7 @@ def setup_logging(args):
+     class TerminalColorFormatter(logging.Formatter):
+         reset = "\033[0m"
+         red_bold = "\033[31;1m"
++        red = "\033[31;1m"
+         green = "\033[32m"
+         yellow = "\033[33m"
+         blue = "\033[34m"
+@@ -50,7 +57,8 @@ def setup_logging(args):
+             SelftestStatus.PASSED: green,
+             SelftestStatus.NO_RUN: blue,
+             SelftestStatus.SKIPPED: yellow,
+-            SelftestStatus.FAILED: red_bold
++            SelftestStatus.FAILED: red_bold,
++            SelftestStatus.TIMED_OUT: red
+         }
  
+         def __init__(self, fmt=None, datefmt=None):
+diff --git a/tools/testing/selftests/kvm/runner/command.py b/tools/testing/selftests/kvm/runner/command.py
+index a63ff53a92b3..44c8e0875779 100644
+--- a/tools/testing/selftests/kvm/runner/command.py
++++ b/tools/testing/selftests/kvm/runner/command.py
+@@ -12,14 +12,16 @@ class Command:
+     Returns the exit code, std output and std error of the command.
+     """
  
- if __name__ == "__main__":
+-    def __init__(self, command):
++    def __init__(self, command, timeout):
+         self.command = command
++        self.timeout = timeout
+ 
+     def run(self):
+         run_args = {
+             "universal_newlines": True,
+             "shell": True,
+             "capture_output": True,
++            "timeout": self.timeout,
+         }
+ 
+         proc = subprocess.run(self.command, **run_args)
 diff --git a/tools/testing/selftests/kvm/runner/selftest.py b/tools/testing/selftests/kvm/runner/selftest.py
-index cc56c45b1c93..a0b06f150087 100644
+index a0b06f150087..4c72108c47de 100644
 --- a/tools/testing/selftests/kvm/runner/selftest.py
 +++ b/tools/testing/selftests/kvm/runner/selftest.py
-@@ -30,12 +30,12 @@ class Selftest:
+@@ -7,6 +7,7 @@ import command
+ import pathlib
+ import enum
+ import os
++import subprocess
+ 
+ 
+ class SelftestStatus(enum.IntEnum):
+@@ -18,6 +19,7 @@ class SelftestStatus(enum.IntEnum):
+     NO_RUN = 22
+     SKIPPED = 23
+     FAILED = 24
++    TIMED_OUT = 25
+ 
+     def __str__(self):
+         return str.__str__(self.name)
+@@ -30,7 +32,7 @@ class Selftest:
      Extract the test execution command from test file and executes it.
      """
  
--    def __init__(self, test_path):
-+    def __init__(self, test_path, executable_dir):
+-    def __init__(self, test_path, executable_dir):
++    def __init__(self, test_path, executable_dir, timeout):
          test_command = pathlib.Path(test_path).read_text().strip()
          if not test_command:
              raise ValueError("Empty test command in " + test_path)
- 
--        test_command = os.path.join(".", test_command)
-+        test_command = os.path.join(executable_dir, test_command)
+@@ -38,7 +40,7 @@ class Selftest:
+         test_command = os.path.join(executable_dir, test_command)
          self.exists = os.path.isfile(test_command.split(maxsplit=1)[0])
          self.test_path = test_path
-         self.command = command.Command(test_command)
+-        self.command = command.Command(test_command)
++        self.command = command.Command(test_command, timeout)
+         self.status = SelftestStatus.NO_RUN
+         self.stdout = ""
+         self.stderr = ""
+@@ -48,10 +50,13 @@ class Selftest:
+             self.stderr = "File doesn't exists."
+             return
+ 
+-        ret, self.stdout, self.stderr = self.command.run()
+-        if ret == 0:
+-            self.status = SelftestStatus.PASSED
+-        elif ret == 4:
+-            self.status = SelftestStatus.SKIPPED
+-        else:
+-            self.status = SelftestStatus.FAILED
++        try:
++            ret, self.stdout, self.stderr = self.command.run()
++            if ret == 0:
++                self.status = SelftestStatus.PASSED
++            elif ret == 4:
++                self.status = SelftestStatus.SKIPPED
++            else:
++                self.status = SelftestStatus.FAILED
++        except subprocess.TimeoutExpired as e:
++            self.status = SelftestStatus.TIMED_OUT
 diff --git a/tools/testing/selftests/kvm/runner/test_runner.py b/tools/testing/selftests/kvm/runner/test_runner.py
-index 20ea523629de..104f0b4c2e4e 100644
+index 104f0b4c2e4e..1409e1cfe7d5 100644
 --- a/tools/testing/selftests/kvm/runner/test_runner.py
 +++ b/tools/testing/selftests/kvm/runner/test_runner.py
-@@ -11,11 +11,11 @@ logger = logging.getLogger("runner")
- 
- 
- class TestRunner:
--    def __init__(self, test_files):
-+    def __init__(self, test_files, args):
+@@ -15,7 +15,7 @@ class TestRunner:
          self.tests = []
  
          for test_file in test_files:
--            self.tests.append(Selftest(test_file))
-+            self.tests.append(Selftest(test_file, args.executable))
+-            self.tests.append(Selftest(test_file, args.executable))
++            self.tests.append(Selftest(test_file, args.executable, args.timeout))
  
      def _log_result(self, test_result):
          logger.log(test_result.status,
