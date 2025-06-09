@@ -4,88 +4,79 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DD6F2C5B552
-	for <kvm-riscv@archiver.kernel.org>; Mon,  9 Jun 2025 12:54:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24938C61CE8
+	for <kvm-riscv@archiver.kernel.org>; Mon,  9 Jun 2025 23:09:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=jF4OJcvcFm7Ii55rfTsg3CC50lmas6EstV2VFwHBA5U=; b=yzXmZh1AdbnSWA
-	EwMAhi69xuqtqo0oE0tQCDiy2bUrJHyZ0njNWRq878Z+GVRoyfQx9sh/V8et59MvCSgc5WjFiHxD9
-	l24lnFaFwdBzrQay+iW1oHg6BY+OV3EGqpA9DaXmEvcoUygvxz9zxxWQCciPiNm1kQaZrMd8H01mR
-	1qs3L/bR1o8DlsP+OX5rRre/z8fapV5tDWcLxGZbhIk7m7YzwMIBxfNHYp7sTKQGzdK6y8ZZ5mySV
-	lKndAMiCusle5S+mEZcvaWxx91afzmyAU9DJBGlbuxV9z1+uzbD8svB0v3iJfvM44GGbDgW1IoQK8
-	QgmU5wB23gHeR0YqpbjQ==;
+	List-Archive:List-Unsubscribe:List-Id:To:Subject:Message-ID:Date:From:
+	In-Reply-To:References:MIME-Version:Reply-To:Cc:Content-ID:
+	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+	:Resent-Message-ID:List-Owner;
+	bh=Z7EQd6T3P2qksCEhCoiQu3qIugyyqsAmIut9N0JFAyo=; b=4s53+4BT37CuiKYDMYuwdah1Nq
+	chp7Cok2KVYPZ5YI8Th1bcza7v0BKvYBcHIBE1mEFi7pHsYBYaoMrOmIP7clOTtRGfb3185MQFeOe
+	9DELsrfJu6/JjbZ53VSMimC/4naVdEkKUw8ht/TsZRlUaAmEOod9Anz5WFUU7xFtQ2TzdowvIpa/D
+	zLqE3hsSCPhdc03xT8IxJSQNl9R/8zQjMsJ+DVz7V5WXAj9vLhrcJnZDmEOuM4pnnLJenxMyhvqHp
+	biKRyBXi0maMvfdV03p9x3hT/XqipfL9osIL9dXtnk146wYmyAcb2nNNwXtLu9WEeLyxP+3aIou8F
+	c3RV697g==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uOc1J-00000004B3R-2YOy;
-	Mon, 09 Jun 2025 12:54:33 +0000
-Received: from mail-wr1-x435.google.com ([2a00:1450:4864:20::435])
+	id 1uOlcU-00000005QC9-3AW7;
+	Mon, 09 Jun 2025 23:09:34 +0000
+Received: from mail-lj1-x235.google.com ([2a00:1450:4864:20::235])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uOc1G-00000004B2U-2d4i
+	id 1uOlcS-00000005QBk-0dQ1
 	for kvm-riscv@lists.infradead.org;
-	Mon, 09 Jun 2025 12:54:32 +0000
-Received: by mail-wr1-x435.google.com with SMTP id ffacd0b85a97d-3a4fea34e07so2461836f8f.1
-        for <kvm-riscv@lists.infradead.org>; Mon, 09 Jun 2025 05:54:30 -0700 (PDT)
+	Mon, 09 Jun 2025 23:09:33 +0000
+Received: by mail-lj1-x235.google.com with SMTP id 38308e7fff4ca-32aabfd3813so39615971fa.3
+        for <kvm-riscv@lists.infradead.org>; Mon, 09 Jun 2025 16:09:31 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ventanamicro.com; s=google; t=1749473669; x=1750078469; darn=lists.infradead.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=xB2zG2k1G4WQxpgsH4LuYksFLvv8C8C4QIYaKBnq/b4=;
-        b=b/FwLbth8ep6r5HlHy7qv9xDslPQf8RcZR5LswlIHESokYyXt8Hia9GrIJJBD3Pm0K
-         2/BHgpJiRKkN5Qys5ZkhIPXvqsDB1yQc8C+HvE7gBRRpo/Rnz0UmTSWG6G5Bjdspf5Oe
-         0MY26Q7OhsHXZ48rwhoowJ5PKLXp3UBNkEt3yO4MB6HAF+dC9Szxy+KDly4+2XTzED4u
-         OC4+0ELiCE2tWTTNntzKGVBrXuoGAYl0mq1lB4CDu2eUQjJgdqzN+pvVSXgCnRZwZLDn
-         B6PmW+s0Y1C9WtsNQoS5tmxoLzB+96j0o7ZMU8CW8j/K3YrhZSOmDPi2oL+EzIX7Ll0C
-         PEAQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1749473669; x=1750078469;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+        d=atishpatra.org; s=google; t=1749510570; x=1750115370; darn=lists.infradead.org;
+        h=content-transfer-encoding:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=xB2zG2k1G4WQxpgsH4LuYksFLvv8C8C4QIYaKBnq/b4=;
-        b=hiwbFPZKRZrM1XIYSbkklDrQzuh3gXX935OfMPSL7gniKtIMhFD/EDUBQ50v7At6AJ
-         lluxrqxAjDdZAVsMlDP06M+viKDAXypeEZHoX8ek6qwHLUgGNpNyM0zjW8K7E3GM2plA
-         Q0mBatu2LJvyPtIC2EeoWKzF1xkCNnoruJETRZCBIqzjEXwIkCbz8Rf8hd+WIvUPfoT0
-         7LBY//cLloTvk4iRlDI4HmB/TeugCpOfF5rnpP2YgnYJ3OzXYGdwyN+a/26fwMY2mKrj
-         iFQOWpn74FFIcQieHgJrfwUp6cGENHQJCRTstQvJV/VYSvIOFSnfbW/1rm36cQcOa9fL
-         VbKg==
-X-Forwarded-Encrypted: i=1; AJvYcCX9B6czfcWLIBEbYBTSpuEsJbtMhu9OllAWyAVpql2j2kqy53rRfodzR9ZdkenR1P/t8xszVDvCOHY=@lists.infradead.org
-X-Gm-Message-State: AOJu0YzcJ0V1kRJxE3x7mFXsB1VyXtukbb0Bpug05AnNjbbapGCbuGs7
-	nRSutmXtOW3/Lr5OIuSTDQuk6pqV8JpRdv/qFV9HpNSgjswNOfBDMx6IitGceNuI9bw=
-X-Gm-Gg: ASbGncuB2z+GOKCt6CDZ0vik7T15qSmqZn6/pfui5nJx/4q4ZrGDpf+OypbtGGKuTGf
-	5LunUeQL5MBjGN2sHfXAR9uc/pMp+mbrIpk9WNTo2VwO2oa54bipIstD54GPJeMM9m7+g0XfKdG
-	8/4/MDmI9b1abM+LSpazJM8Tw/jP4iZkz6IfSQKrMX6FzNmn1mpH/GI9oiliAGnFRzDgxvCqyDC
-	zjaZ8OfWB3tyD41wXzkI5MmoRLT9fQzd6eb7h38fGSnzkjUaEOdIn2aQPfis9BVGfU+kWZ8lc/R
-	S2meIx2syqk/+J5OAkD2NSDII8NsdPjC7rgIRSn9evNuuEvT6g==
-X-Google-Smtp-Source: AGHT+IEC/1dBxgIFgGAmnWpdiKwEZouvKkkuBZf9Ps4mzSz9CyCY930v5yHNcYS1Azk34Z4raHel5g==
-X-Received: by 2002:a5d:5f94:0:b0:3a4:eecf:b8cb with SMTP id ffacd0b85a97d-3a5318a7648mr10575693f8f.28.1749473668526;
-        Mon, 09 Jun 2025 05:54:28 -0700 (PDT)
-Received: from localhost ([2a02:8308:a00c:e200::2f2d])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4530748870bsm62109445e9.33.2025.06.09.05.54.27
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 09 Jun 2025 05:54:28 -0700 (PDT)
-Date: Mon, 9 Jun 2025 14:54:27 +0200
-From: Andrew Jones <ajones@ventanamicro.com>
-To: Vipin Sharma <vipinsh@google.com>
-Cc: kvm@vger.kernel.org, kvmarm@lists.linux.dev, 
-	kvm-riscv@lists.infradead.org, linux-arm-kernel@lists.infradead.org, seanjc@google.com, 
-	pbonzini@redhat.com, anup@brainfault.org, borntraeger@linux.ibm.com, 
-	frankja@linux.ibm.com, imbrenda@linux.ibm.com, maz@kernel.org, oliver.upton@linux.dev, 
-	dmatlack@google.com
-Subject: Re: [PATCH v2 15/15] KVM: selftests: Add riscv auto generated test
- files for KVM Selftests Runner
-Message-ID: <20250609-cb3c80fbe1fe702668830b1b@orel>
-References: <20250606235619.1841595-1-vipinsh@google.com>
- <20250606235619.1841595-16-vipinsh@google.com>
+        bh=m7W8szO//zDzhBhYgLCrpR6jY+WOXvSIWny+9NgxWUk=;
+        b=pVZSe9L3YuH9Ua2J22a4Xlyj3DoFLcgmSfBlU9Eofvz2bcUhyNYQC1sk1OUXSuysmU
+         CY1Y89P6DHzVTIbt0wYPzkN3zOa0SL3IsLi8vqh0v4JxMjHZfvoq7Dz6yVmmZ+z+suVW
+         /5tZHgSvR+EXViw5xsFtBT+GcPky9DI6CROpw=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1749510570; x=1750115370;
+        h=content-transfer-encoding:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=m7W8szO//zDzhBhYgLCrpR6jY+WOXvSIWny+9NgxWUk=;
+        b=Q/i7i8/VoWqR1Hd9vuC7bCKoZS9Jd/SK4WFTcK5rnvd4gSW4bcNyx+fS9tMEA39n09
+         uLlx36Kb/SwN8w//50H+QvD4Qb20q+kPGp4f7SbdgE7tSMuC6gtaNc0G2gyOrGTnMkmN
+         pI6V+lsTg7aKt/AlD51u3pIBoYWNn9ERZRePMLhuT+suJwlEFfrNNxXp9CqayclnoN9O
+         5NV01xVmHuvHdFpkRENYzV2ED5r7GaMx9AD8boxiwLMHmjRswScyS9oM0AzVbgcFwcEl
+         mRFF+bbiILRHOdub8xC4h9sv9q1040LTMYAMKABC3Ww6fYpdvSV4kV++9VjooTy4bZ5M
+         WAKw==
+X-Forwarded-Encrypted: i=1; AJvYcCVxf/gWFOTn1l4urp6884xxFmFQU3RybFZRi3hRNZkkgQ4u00suhfxuqvLJ+VVMSnBuarNj2O+WUQI=@lists.infradead.org
+X-Gm-Message-State: AOJu0YzmTRb4N5NxnMvFZIApzTyL+ISmWjLfo2Ea2n8AXvDuFM0y8Kxa
+	QYhfpvdpGep7gHUj7VOf5hNy75xn/sImB7THgSjg65DTMrOmBcEpXPuOI4D4Mak8FGJfjKAmvO3
+	T+PYo4p2MmoBWikK9hWxoU8QMEZ6+BK6ZHusZYice
+X-Gm-Gg: ASbGncuVqvkvEnlngkvZLs03ybRTWz8bC7NEzBbneBrOteMmpCXHrV5LlMXCjAFqGNm
+	HCuWQi6w7t0ZVykSA3Ncp1Sbj8kxIPeWXR+pj/UNgVN65uReUwANzRWVDeEdPSfWrBaD95wRxmT
+	fhe7v/V0AP4tjV3C72LF6S+wzWkRCmzPGjTymsAMqE
+X-Google-Smtp-Source: AGHT+IEWMMff+VYQVsGpjnaXm/Rn+Jul0YvV4ACZEai3Uq0Vho3uDx8M4RM6ygBBdbc10Ja/CaIYRVTgzwggqMG9dMg=
+X-Received: by 2002:a2e:8645:0:b0:32a:6c16:d3a5 with SMTP id
+ 38308e7fff4ca-32adfd369bcmr31191401fa.3.1749510569768; Mon, 09 Jun 2025
+ 16:09:29 -0700 (PDT)
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <20250606235619.1841595-16-vipinsh@google.com>
+References: <CAOnJCUJz6p6b0WK_7=qowe8_pCHnv5WJXNYMa-uzFy0PHc7Dvg@mail.gmail.com>
+In-Reply-To: <CAOnJCUJz6p6b0WK_7=qowe8_pCHnv5WJXNYMa-uzFy0PHc7Dvg@mail.gmail.com>
+From: Atish Patra <atishp@atishpatra.org>
+Date: Mon, 9 Jun 2025 16:09:18 -0700
+X-Gm-Features: AX0GCFvzzx0sgQlTBgQqz1aYTf9FCOEcA5zF6GsJeLGQOky_JUzsDZRXZjmq3RA
+Message-ID: <CAOnJCUJ-VusA8E4-ABvXPZOReD3nq6_jvqNF5bscfDY89_BoRw@mail.gmail.com>
+Subject: Re: Public Review : RISC-V Supervisor Binary Interface (SBI) version v3.0
+To: OpenSBI <opensbi@lists.infradead.org>, 
+	linux-riscv <linux-riscv@lists.infradead.org>, 
+	"open list:KERNEL VIRTUAL MACHINE FOR RISC-V (KVM/riscv)" <kvm-riscv@lists.infradead.org>, isa-dev@groups.riscv.org, 
+	"open list:RISC-V" <qemu-riscv@nongnu.org>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250609_055430_656218_0D96DE7C 
-X-CRM114-Status: GOOD (  14.33  )
+X-CRM114-CacheID: sfid-20250609_160932_331488_E9AF65B2 
+X-CRM114-Status: GOOD (  13.86  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -97,51 +88,43 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Fri, Jun 06, 2025 at 04:56:19PM -0700, Vipin Sharma wrote:
-> Add auto generated test files for s390 platforms.
-                                    ^ riscv
-
-Thanks,
-drew
-
-> 
-> Signed-off-by: Vipin Sharma <vipinsh@google.com>
-> ---
->  tools/testing/selftests/kvm/tests/riscv/ebreak_test/default.test | 1 +
->  .../testing/selftests/kvm/tests/riscv/sbi_pmu_test/default.test  | 1 +
->  2 files changed, 2 insertions(+)
->  create mode 100644 tools/testing/selftests/kvm/tests/riscv/ebreak_test/default.test
->  create mode 100644 tools/testing/selftests/kvm/tests/riscv/sbi_pmu_test/default.test
-> 
-> diff --git a/tools/testing/selftests/kvm/tests/riscv/ebreak_test/default.test b/tools/testing/selftests/kvm/tests/riscv/ebreak_test/default.test
-> new file mode 100644
-> index 000000000000..d34b4b9b77ae
-> --- /dev/null
-> +++ b/tools/testing/selftests/kvm/tests/riscv/ebreak_test/default.test
-> @@ -0,0 +1 @@
-> +riscv/ebreak_test
-> diff --git a/tools/testing/selftests/kvm/tests/riscv/sbi_pmu_test/default.test b/tools/testing/selftests/kvm/tests/riscv/sbi_pmu_test/default.test
-> new file mode 100644
-> index 000000000000..5abb62c51097
-> --- /dev/null
-> +++ b/tools/testing/selftests/kvm/tests/riscv/sbi_pmu_test/default.test
-> @@ -0,0 +1 @@
-> +riscv/sbi_pmu_test
-> -- 
-> 2.50.0.rc0.604.gd4ff7b7c86-goog
-> 
-> 
-> -- 
-> kvm-riscv mailing list
-> kvm-riscv@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/kvm-riscv
-
--- 
-kvm-riscv mailing list
-kvm-riscv@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/kvm-riscv
+SGkgQWxsLApUaGUgcmV2aWV3IHBlcmlvZCBpcyBub3cgb2ZmaWNpYWxseSBjbG9zZWQuIFdlIGFw
+cHJlY2lhdGUgeW91cgpwYXJ0aWNpcGF0aW9uIGluIHRoZSByZXZpZXcgcHJvY2Vzcy4KClJlZ2Fy
+ZHMsCkF0aXNoCk9uIGJlaGFsZiBvZiBQUlMgVEcKCk9uIEZyaSwgTWF5IDksIDIwMjUgYXQgNToy
+N+KAr1BNIEF0aXNoIFBhdHJhIDxhdGlzaHBAYXRpc2hwYXRyYS5vcmc+IHdyb3RlOgo+Cj4gV2Ug
+YXJlIGV4Y2l0ZWQgdG8gYW5ub3VuY2UgdGhlIHB1YmxpYyByZXZpZXcgb2YgdGhlIFJJU0MtViBT
+dXBlcnZpc29yCj4gQmluYXJ5IEludGVyZmFjZSAoU0JJKSB2ZXJzaW9uIDMuMC4gVGhpcyAzMC1k
+YXkgcmV2aWV3IHBlcmlvZCBiZWdpbnMKPiB0b2RheSwgOSBNYXkgMjAyNSwgYW5kIGNvbmNsdWRl
+cyBvbiA4IEp1bmUgMjAyNS4KPgo+IFNwZWNpZmljYXRpb24gRGV0YWlsczoKPgo+IERvd25sb2Fk
+YWJsZSBQREYgVmVyc2lvbjoKPiBodHRwczovL2dpdGh1Yi5jb20vcmlzY3Ytbm9uLWlzYS9yaXNj
+di1zYmktZG9jL3JlbGVhc2VzL2Rvd25sb2FkL3YzLjAtcmM3L3Jpc2N2LXNiaS5wZGYKPiBTb3Vy
+Y2UgQ29kZTogaHR0cHM6Ly9naXRodWIuY29tL3Jpc2N2LW5vbi1pc2EvcmlzY3Ytc2JpLWRvYwo+
+Cj4gSG93IHRvIEdpdmUgRmVlZGJhY2s6Cj4gRW1haWwgeW91ciBjb21tZW50cyB0byBvbmUgb2Yg
+dGhlIGZvbGxvd2luZyBtYWlsaW5nIGxpc3RzOgo+Cj4gcHVibGljIGlzYS1kZXYgbWFpbGluZyBs
+aXN0KGlzYS1kZXZAZ3JvdXBzLnJpc2N2Lm9yZykKPiBQUlMgbWFpbGluZyBsaXN0ICh0ZWNoLXBy
+c0BsaXN0cy5yaXNjdi5vcmcpLgo+IE9wZW4gYW4gSXNzdWUgb3IgUHVsbCBSZXF1ZXN0IHRvIFNC
+SSBHaXRIdWIgcmVwb3NpdG9yeS4KPgo+IFJldmlldyBhbmQgUmF0aWZpY2F0aW9uIFByb2Nlc3M6
+Cj4KPiBEdXJpbmcgdGhlIHJldmlldyBwZXJpb2QsIHdlIHdpbGwgY29sbGVjdCBhbGwgZmVlZGJh
+Y2sgKGNvbW1lbnRzLAo+IGNvcnJlY3Rpb25zLCBhbmQgc3VnZ2VzdGlvbnMpIGZvciBjb25zaWRl
+cmF0aW9uIGJ5IHRoZSBQbGF0Zm9ybQo+IFJ1bnRpbWUgU2VydmljZXMgVGFzayBHcm91cCAoUFJT
+IFRHKS4gTWlub3IgY29ycmVjdGlvbnMgYW5kCj4gbm9uLWNvbnRyb3ZlcnNpYWwgY2hhbmdlcyB3
+aWxsIGJlIGluY29ycG9yYXRlZCBpbnRvIHRoZSBzcGVjaWZpY2F0aW9uCj4gZGlyZWN0bHkuIEFu
+eSB1bnJlc29sdmVkIGlzc3VlcyBvciBwcm9wb3NlZCBtb2RpZmljYXRpb25zIHdpbGwgYmUKPiBk
+ZXRhaWxlZCBpbiB0aGUgcHVibGljIHJldmlldyBzdW1tYXJ5IHJlcG9ydC4gQXNzdW1pbmcgbm8g
+aXNzdWVzCj4gbmVjZXNzaXRhdGUgaW5jb21wYXRpYmxlIGNoYW5nZXMgdG8gdGhlIHNwZWNpZmlj
+YXRpb24gdW5kZXIgcmV2aWV3LAo+IHRoZSBQUlMgVEcgd2lsbCBwcm9wb3NlIHRoYXQgdGhlIHVw
+ZGF0ZWQgc3BlY2lmaWNhdGlvbnMgYmUgcmF0aWZpZWQgYnkKPiBib3RoIHRoZSBSSVNDLVYgVGVj
+aG5pY2FsIFN0ZWVyaW5nIENvbW1pdHRlZSBhbmQgdGhlIFJJU0MtViBCb2FyZCBvZgo+IERpcmVj
+dG9ycy4KPgo+IFdlIGV4dGVuZCBvdXIgZ3JhdGl0dWRlIHRvIGFsbCBjb250cmlidXRvcnMgZm9y
+IHRoZWlyIGRlZGljYXRlZCBlZmZvcnRzLgo+Cj4gQ29udGFjdCwKPiBUYXNrIEdyb3VwOiBodHRw
+czovL2xpc3RzLnJpc2N2Lm9yZy9nL3RlY2gtcHJzCj4gVGFzayBHcm91cCBDaGFpcjogQXRpc2gg
+UGF0cmEgKGF0aXNocEByaXZvc2luYy5jb20pCj4gVGFzayBHcm91cCBWaWNlLWNoYWlyOiBTdW5p
+bCBWIEwgKHN1bmlsdmxAdmVudGFuYW1pY3JvLmNvbSkKPgo+Cj4gUmVnYXJkcywKPiBBdGlzaAo+
+IE9uIGJlaGFsZiBvZiBQUlMgVEcKCi0tIAprdm0tcmlzY3YgbWFpbGluZyBsaXN0Cmt2bS1yaXNj
+dkBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4v
+bGlzdGluZm8va3ZtLXJpc2N2Cg==
