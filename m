@@ -4,62 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F444C5B552
-	for <kvm-riscv@archiver.kernel.org>; Tue, 10 Jun 2025 06:19:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 464E9C5B543
+	for <kvm-riscv@archiver.kernel.org>; Tue, 10 Jun 2025 06:22:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:
 	Subject:MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=Nd7RvbUKbfJLXRBuaWMcD+gbOAKIy3LTLZRsglGzVYo=; b=ZHm65kR8AAifaQ
-	28SVUC15AwphE0/zZpxfZA48kTXaF/HnBEVTBxKjiIKtG2ogCqPi3wn2K9IQyfdtoqj9iv323lITr
-	kjxS2LeeDZHIvvdAizkLsH5f7wM0YTwgjQi58EnOgVMdh1MYTTNgp86SqnO/FPCyRpSwsIYPmbIBK
-	JRivmNeraWCgjituA2l6d0ctXlEhP7VLS4IwQowq2TrUw/h0WDsugkzPuPW+Pu1SdfkG+91b8D7sN
-	4hRowyzP9yxBpUTjazEE46KjvhWm7XZgkKi4er2DllnlEdd+ieXx/TX5ZsDBsCtbPFRPIgGHd0rZm
-	slHWCISqDDnek0+t9qSw==;
+	List-Owner; bh=uKnoIks7hLiLwEHqVjkGwQfdajfjhOA3iOf/abJ9xIw=; b=4vPnV8pn4bJoBy
+	laKctjjiiFvhN0WWaoJeMBaHLARO/KNycwkzmnh4fSC+9qIBbspdw5QMKZYez3YhcCsk4i8AfJCSx
+	XVMGuq3c29CTaAsRp30Yfz0bijaxAk0AQ8INRemaH/+KDKFP3daz6bg0ZRbYMNp/o0elQl3Gbs2WS
+	+Ok/1z0/PPDFaSuTmnuRbTyEGXIduvsobBBbVU5I4PZXlv5upn0y7IuEuqFmhSUSOlY/qh34FnDLx
+	NKxjsulrZ+28uW1X8/N6fVnA/CEohXwEwvjnGwMUeRWJiMk9m4ZckpWMrc+15p5XpD/w88vaVX2k4
+	D6S6hZ4tLHsMNVSXwXHw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uOsK5-00000005um9-3OYa;
-	Tue, 10 Jun 2025 06:19:01 +0000
-Received: from mgamail.intel.com ([198.175.65.21])
+	id 1uOsNb-00000005v6E-3mcb;
+	Tue, 10 Jun 2025 06:22:39 +0000
+Received: from mgamail.intel.com ([198.175.65.18])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uOsJq-00000005ujx-2lHX
+	id 1uOsMA-00000005uzV-15DD
 	for kvm-riscv@lists.infradead.org;
-	Tue, 10 Jun 2025 06:18:47 +0000
+	Tue, 10 Jun 2025 06:21:11 +0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1749536327; x=1781072327;
+  t=1749536471; x=1781072471;
   h=message-id:date:mime-version:subject:to:cc:references:
    from:in-reply-to:content-transfer-encoding;
-  bh=aqaF2FH8CbMEb7CF0tc3Ez2NC3jhnDqME0bWTPyhxqg=;
-  b=Tgw2BpLmC7SlE2iqWtiZ5PU5fC9Vl9tXNSQD20oOym7ARgsGKrxOHwOm
-   GKPgZ4gFE/AyR2AXhlKPHCht4ZhMKfZjjFuIy8Rdkvq2DEFf72vbOzZ65
-   JNhZPPU4EDDHBmmbcy37SYDbS54TOCRWOZHjMhK0XL2pFvaA6kVmiRSHV
-   Ao8jdt9U/2uU5ElI4FH2ifNcekYZmr1mjJbkADQsThXwdbFN55AG2K+Wz
-   51H6ttUjHVBfKtlDb0n0FE2PGc6/7MSt0R+JcWxInALU9qa3yesoUur0x
-   lH+Nee6d3am3tnus+GvcjvPNZFe1ymLejsyzX+4YhPAwa5Gvc0BUrGMWt
-   A==;
-X-CSE-ConnectionGUID: TiGYy93CQGCK0KmhEHDpwg==
-X-CSE-MsgGUID: T+TCxtjCTH+FVzT3BzuR/A==
-X-IronPort-AV: E=McAfee;i="6800,10657,11459"; a="51487129"
+  bh=0PAdnlXmh5hKwjgU6sUS3J6AWlqP+z7tw2yaNPyNdOA=;
+  b=Q6wCvyw1isnaGX2faGh/bZR6US5U1W1fxbOj+4F67vvSSxaSWgjMFbWq
+   eBfibbzc9ICmT+d2FMrCDqoxuIIEuQfGgqMUw1JlFpjWziq0S75bsJvgn
+   fGiGSCGG2ujRzJ5E6yzQb4/2QClLnuWJ8TYbRAAjMlew95hsR07/vX4hQ
+   BO3E37PPqwLhmVbaDnJvw85af2RXkbEpXgv79U4Co6v2qjEorYML3tOre
+   ZUiss9HUd270hoJIPto3muM9qi9g49gUtuFzfl3hi1AbYMoHnQ6GPd8Me
+   thecgiBB4Z8S2gDgIDRHzTfAvCTLzB6ujNrpfkWuP0NN7CO6+tSsk5uoC
+   Q==;
+X-CSE-ConnectionGUID: 1u6pCGiXRg2uwtBaU7+Yew==
+X-CSE-MsgGUID: KAhftjayRPmAOUF645IGVw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11459"; a="51771261"
 X-IronPort-AV: E=Sophos;i="6.16,224,1744095600"; 
-   d="scan'208";a="51487129"
-Received: from orviesa004.jf.intel.com ([10.64.159.144])
-  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Jun 2025 23:18:46 -0700
-X-CSE-ConnectionGUID: ANAFZMdBRW+xc9QcNP75aw==
-X-CSE-MsgGUID: 7eTE/kRZScapcKfNoDAhxw==
+   d="scan'208";a="51771261"
+Received: from fmviesa007.fm.intel.com ([10.60.135.147])
+  by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Jun 2025 23:21:10 -0700
+X-CSE-ConnectionGUID: EvT91XccR8qL2MtfgcrCnQ==
+X-CSE-MsgGUID: DP1cOW1pSV+4XWpQL/wpYQ==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.16,224,1744095600"; 
-   d="scan'208";a="151743551"
+   d="scan'208";a="146656509"
 Received: from dapengmi-mobl1.ccr.corp.intel.com (HELO [10.124.245.144]) ([10.124.245.144])
-  by orviesa004-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Jun 2025 23:18:43 -0700
-Message-ID: <e48708a0-d7d8-41bd-8d90-d7f7482489f3@linux.intel.com>
-Date: Tue, 10 Jun 2025 14:18:40 +0800
+  by fmviesa007-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Jun 2025 23:21:07 -0700
+Message-ID: <92b737d4-4584-4e8c-89dc-e2a5308449ec@linux.intel.com>
+Date: Tue, 10 Jun 2025 14:21:04 +0800
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [kvm-unit-tests PATCH 05/16] x86: Implement get_supported_xcr0()
- using X86_PROPERTY_SUPPORTED_XCR0_{LO,HI}
+Subject: Re: [kvm-unit-tests PATCH 06/16] x86: Add and use
+ X86_PROPERTY_INTEL_PT_NR_RANGES
 To: Sean Christopherson <seanjc@google.com>,
  Andrew Jones <andrew.jones@linux.dev>, Janosch Frank
  <frankja@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>,
@@ -68,13 +68,13 @@ To: Sean Christopherson <seanjc@google.com>,
 Cc: kvm-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
  kvm@vger.kernel.org
 References: <20250529221929.3807680-1-seanjc@google.com>
- <20250529221929.3807680-6-seanjc@google.com>
+ <20250529221929.3807680-7-seanjc@google.com>
 Content-Language: en-US
 From: "Mi, Dapeng" <dapeng1.mi@linux.intel.com>
-In-Reply-To: <20250529221929.3807680-6-seanjc@google.com>
+In-Reply-To: <20250529221929.3807680-7-seanjc@google.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250609_231846_747043_9618848A 
-X-CRM114-Status: GOOD (  13.65  )
+X-CRM114-CacheID: sfid-20250609_232110_345182_261570BE 
+X-CRM114-Status: GOOD (  14.91  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -93,65 +93,45 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 
 On 5/30/2025 6:19 AM, Sean Christopherson wrote:
-> Use X86_PROPERTY_SUPPORTED_XCR0_{LO,HI} to implement get_supported_xcr0().
+> Add a definition for X86_PROPERTY_INTEL_PT_NR_RANGES, and use it instead
+> of open coding equivalent logic in the LA57 testcase that verifies the
+> canonical address behavior of PT MSRs.
 >
-> Opportunistically rename the helper and move it to processor.h.
+> No functional change intended.
 >
 > Signed-off-by: Sean Christopherson <seanjc@google.com>
 > ---
->  lib/x86/processor.h |  9 +++++++++
->  x86/xsave.c         | 11 +----------
->  2 files changed, 10 insertions(+), 10 deletions(-)
+>  lib/x86/processor.h | 3 +++
+>  x86/la57.c          | 2 +-
+>  2 files changed, 4 insertions(+), 1 deletion(-)
 >
 > diff --git a/lib/x86/processor.h b/lib/x86/processor.h
-> index 8c6f28a3..cbfd2ee1 100644
+> index cbfd2ee1..3b02a966 100644
 > --- a/lib/x86/processor.h
 > +++ b/lib/x86/processor.h
-> @@ -442,6 +442,15 @@ static inline u8 cpuid_maxphyaddr(void)
->  	return this_cpu_property(X86_PROPERTY_MAX_PHY_ADDR);
->  }
+> @@ -370,6 +370,9 @@ struct x86_cpu_property {
 >  
-> +static inline u64 this_cpu_supported_xcr0(void)
-> +{
-> +	if (!this_cpu_has_p(X86_PROPERTY_SUPPORTED_XCR0_LO))
-> +		return 0;
+>  #define X86_PROPERTY_XSTATE_TILE_SIZE		X86_CPU_PROPERTY(0xd, 18, EAX,  0, 31)
+>  #define X86_PROPERTY_XSTATE_TILE_OFFSET		X86_CPU_PROPERTY(0xd, 18, EBX,  0, 31)
 > +
-> +	return (u64)this_cpu_property(X86_PROPERTY_SUPPORTED_XCR0_LO) |
-> +	       ((u64)this_cpu_property(X86_PROPERTY_SUPPORTED_XCR0_HI) << 32);
-> +}
+> +#define X86_PROPERTY_INTEL_PT_NR_RANGES		X86_CPU_PROPERTY(0x14, 1, EAX,  0, 2)
 > +
->  struct far_pointer32 {
->  	u32 offset;
->  	u16 selector;
-> diff --git a/x86/xsave.c b/x86/xsave.c
-> index 5d80f245..cc8e3a0a 100644
-> --- a/x86/xsave.c
-> +++ b/x86/xsave.c
-> @@ -8,15 +8,6 @@
->  #define uint64_t unsigned long long
->  #endif
+>  #define X86_PROPERTY_AMX_MAX_PALETTE_TABLES	X86_CPU_PROPERTY(0x1d, 0, EAX,  0, 31)
+>  #define X86_PROPERTY_AMX_TOTAL_TILE_BYTES	X86_CPU_PROPERTY(0x1d, 1, EAX,  0, 15)
+>  #define X86_PROPERTY_AMX_BYTES_PER_TILE		X86_CPU_PROPERTY(0x1d, 1, EAX, 16, 31)
+> diff --git a/x86/la57.c b/x86/la57.c
+> index 41764110..1161a5bf 100644
+> --- a/x86/la57.c
+> +++ b/x86/la57.c
+> @@ -288,7 +288,7 @@ static void __test_canonical_checks(bool force_emulation)
 >  
-> -static uint64_t get_supported_xcr0(void)
-> -{
-> -    struct cpuid r;
-> -    r = cpuid_indexed(0xd, 0);
-> -    printf("eax %x, ebx %x, ecx %x, edx %x\n",
-> -            r.a, r.b, r.c, r.d);
-> -    return r.a + ((u64)r.d << 32);
-> -}
-> -
->  #define XCR_XFEATURE_ENABLED_MASK       0x00000000
->  #define XCR_XFEATURE_ILLEGAL_MASK       0x00000010
+>  	/* PT filter ranges */
+>  	if (this_cpu_has(X86_FEATURE_INTEL_PT)) {
+> -		int n_ranges = cpuid_indexed(0x14, 0x1).a & 0x7;
+> +		int n_ranges = this_cpu_property(X86_PROPERTY_INTEL_PT_NR_RANGES);
+>  		int i;
 >  
-> @@ -33,7 +24,7 @@ static void test_xsave(void)
->  
->      printf("Legal instruction testing:\n");
->  
-> -    supported_xcr0 = get_supported_xcr0();
-> +    supported_xcr0 = this_cpu_supported_xcr0();
->      printf("Supported XCR0 bits: %#lx\n", supported_xcr0);
->  
->      test_bits = XSTATE_FP | XSTATE_SSE;
+>  		for (i = 0 ; i < n_ranges ; i++) {
 
 Reviewed-by: Dapeng Mi <dapeng1.mi@linux.intel.com>
 
