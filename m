@@ -4,77 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 918C9C5B552
-	for <kvm-riscv@archiver.kernel.org>; Tue, 10 Jun 2025 07:29:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 56740C61DB2
+	for <kvm-riscv@archiver.kernel.org>; Tue, 10 Jun 2025 08:45:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:
-	Subject:MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
+	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=yAFpGxNulqW6lE4fYIzHoP/Q4dXMEJ1R5X2xRNrex6k=; b=IByt9lt/GlcQF0
-	6oiTZfEzdTntORnfd/rwlSkyt5riuMCnaDKzfYYnKjc4sVOxPGJcTcssB4edWNMgFwJuqhBFZtkI0
-	AvqCP9gyW0bjFZse4jz9iPTG56blbiDVz6Cb8UGJjJYW2aK630bdY8P7xy78fwscnjy2x63os1ZT4
-	4uty9lylGkBSYuAeSeT1UIoGtIHvDAPofNoPZxKs1l6Ir4VR4ngFDhE6EaUcrbw5iTOMd/bIzChef
-	EjAwSzTFoxgOpNb80GgRt7DwFuJBJBt7ykmm3X3zrkSWvtTBpsECR6iho7tosymMXsnwBwTqjBHHk
-	EKbOfFGvj7i5R12nGJvw==;
+	List-Owner; bh=SUQSjzDoIyQL6BVOnn0Lr1dYCMgxgZ1g5E4/TKK2hbc=; b=QEK8zMLQuLLxFS
+	0DIfoKa3+Cj+pe+LrsKOrUZYdz1fYACk/nSGrW7dR2/uYourKFAebsnOjUa80c/gLauwaDkA6Iv+v
+	N+VahxYrjAeJK+k3RUdD1RW/Rkqj78CPwuIwp/PfaLHtkihXgxeaqHgK8gQsyzOvtlXV71IL92IDO
+	BgIkFwCKzkrcoIn+AcM7/FEB6+/86e1khmVfa7qlpLdCzT79fjg+YIyx586jzaaIGQgAEQrjSOLB9
+	gfMZxi8DdI6eRH8tcwc2q6P+e15tEA1ik2LzITuiUh1D1lTky3kL24XXU1fzImqUHvvCgN1XcWLT2
+	Uui0h87Vqm1i6rR8guwg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uOtQV-000000061ex-0xkU;
-	Tue, 10 Jun 2025 07:29:43 +0000
-Received: from mgamail.intel.com ([198.175.65.12])
+	id 1uOubO-00000006DN0-3Z1H;
+	Tue, 10 Jun 2025 08:45:02 +0000
+Received: from out-173.mta0.migadu.com ([91.218.175.173])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uOtQS-000000061e0-3CrX
+	id 1uOuPA-00000006BmS-17i3
 	for kvm-riscv@lists.infradead.org;
-	Tue, 10 Jun 2025 07:29:42 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1749540580; x=1781076580;
-  h=message-id:date:mime-version:subject:to:cc:references:
-   from:in-reply-to:content-transfer-encoding;
-  bh=lAAtMSan3afQSwOuXOhzP3QPjgP54f8sQlMRzRkaed8=;
-  b=MJWWUo2UvhkSoHxRBguU6hLWPzArwXuAKwtO6sI9oDDmgLtKkDclh62Z
-   AhIAN7h4NBfJMD7qEoF0roR+pbf6v2FsDsdf8/RIr1Xd1/QYrnqBSVFe/
-   Y0YDapkgOR+/oD7CN24+4V/JrEW9eHuup3xGXhbnn9GgHP7llM8mvFOUd
-   MAbfsk/Eq0ApyHOcd746qCKhar7NBhzHs4gBuIs94iWCE/rEJamJD++ZB
-   nyFR6zQXaweAn4tsKaFmrdlP9DAhFZz9iboxzuMnTa5Y5FC6pVLPpvJLa
-   z+Qr7Gcpc9C84itytvcwCNFC7OMj+lw/lOsE35nbwcBQwrZNUPqbSEDGF
-   Q==;
-X-CSE-ConnectionGUID: HXq+DKlbR6KSbyAugwxalg==
-X-CSE-MsgGUID: u3d1M3naTtqWo8DyFJynTw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11459"; a="63040640"
-X-IronPort-AV: E=Sophos;i="6.16,224,1744095600"; 
-   d="scan'208";a="63040640"
-Received: from orviesa008.jf.intel.com ([10.64.159.148])
-  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Jun 2025 00:29:39 -0700
-X-CSE-ConnectionGUID: YLgeloFCR52uw2jpg7GNVA==
-X-CSE-MsgGUID: GWVg24xgTO6ptJ1pznfgfg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.16,224,1744095600"; 
-   d="scan'208";a="147718065"
-Received: from dapengmi-mobl1.ccr.corp.intel.com (HELO [10.124.245.144]) ([10.124.245.144])
-  by orviesa008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Jun 2025 00:29:37 -0700
-Message-ID: <0072b2bd-5b3b-46b4-bd60-8b7579aba5c4@linux.intel.com>
-Date: Tue, 10 Jun 2025 15:29:34 +0800
+	Tue, 10 Jun 2025 08:32:25 +0000
+Date: Tue, 10 Jun 2025 10:32:14 +0200
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1749544339;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=bXQheftAQ39YV+WhThrh+6a/P9QjNT7PuajEJay5IMQ=;
+	b=nov2F1o5ZiG7xNJ6c3T5U9DOAfnyHrDeZWVGyGim4Z4GlUXYZH1tIzM8XmIOs41c3rT6p2
+	ivX9zAWa+0QOk9oMGkI9JztqKAdg7+3QFVQddmdDiuvyztJ0WQwpyMoj/l02V3tPJno1HE
+	kl3IlyvNigy8lG2VFF+ReKB0cRuC2bo=
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Andrew Jones <andrew.jones@linux.dev>
+To: Jesse Taube <jesse@rivosinc.com>
+Cc: kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
+	linux-kselftest@vger.kernel.org, Atish Patra <atish.patra@linux.dev>, 
+	Palmer Dabbelt <palmer@dabbelt.com>, =?utf-8?B?Q2zDqW1lbnQgTMOpZ2Vy?= <cleger@rivosinc.com>, 
+	Himanshu Chauhan <hchauhan@ventanamicro.com>, Anup Patel <anup@brainfault.org>, 
+	Charlie Jenkins <charlie@rivosinc.com>
+Subject: Re: [PATCH v4] riscv: sbi: Add SBI Debug Triggers Extension tests
+Message-ID: <20250610-c3dda7f117f889a8da55b092@orel>
+References: <20250606194503.2857119-1-jesse@rivosinc.com>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [kvm-unit-tests PATCH 10/16] x86/pmu: Use X86_PROPERTY_PMU_*
- macros to retrieve PMU information
-To: Sean Christopherson <seanjc@google.com>,
- Andrew Jones <andrew.jones@linux.dev>, Janosch Frank
- <frankja@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>,
- =?UTF-8?Q?Nico_B=C3=B6hr?= <nrb@linux.ibm.com>,
- Paolo Bonzini <pbonzini@redhat.com>
-Cc: kvm-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
- kvm@vger.kernel.org
-References: <20250529221929.3807680-1-seanjc@google.com>
- <20250529221929.3807680-11-seanjc@google.com>
-Content-Language: en-US
-From: "Mi, Dapeng" <dapeng1.mi@linux.intel.com>
-In-Reply-To: <20250529221929.3807680-11-seanjc@google.com>
+Content-Disposition: inline
+In-Reply-To: <20250606194503.2857119-1-jesse@rivosinc.com>
+X-Migadu-Flow: FLOW_OUT
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250610_002940_856378_198EB06F 
-X-CRM114-Status: GOOD (  13.19  )
+X-CRM114-CacheID: sfid-20250610_013224_832282_0DAF7F76 
+X-CRM114-Status: GOOD (  18.51  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -91,64 +71,102 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-
-On 5/30/2025 6:19 AM, Sean Christopherson wrote:
-> Use the recently introduced X86_PROPERTY_PMU_* macros to get PMU
-> information instead of open coding equivalent functionality.
->
-> No functional change intended.
->
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
+On Fri, Jun 06, 2025 at 12:45:03PM -0700, Jesse Taube wrote:
+> Add tests for the DBTR SBI extension.
+> 
+> Signed-off-by: Jesse Taube <jesse@rivosinc.com>
 > ---
->  lib/x86/pmu.c | 18 ++++++++----------
->  1 file changed, 8 insertions(+), 10 deletions(-)
->
-> diff --git a/lib/x86/pmu.c b/lib/x86/pmu.c
-> index 44449372..c7f7da14 100644
-> --- a/lib/x86/pmu.c
-> +++ b/lib/x86/pmu.c
-> @@ -7,21 +7,19 @@ void pmu_init(void)
->  	pmu.is_intel = is_intel();
+> V1 -> V2:
+>  - Call report_prefix_pop before returning
+>  - Disable compressed instructions in exec_call, update related comment
+>  - Remove extra "| 1" in dbtr_test_load
+>  - Remove extra newlines
+>  - Remove extra tabs in check_exec
+>  - Remove typedefs from enums
+>  - Return when dbtr_install_trigger fails
+>  - s/avalible/available/g
+>  - s/unistall/uninstall/g
+> V2 -> V3:
+>  - Change SBI_DBTR_SHMEM_INVALID_ADDR to -1UL
+>  - Move all dbtr functions to sbi-dbtr.c
+>  - Move INSN_LEN to processor.h
+>  - Update include list
+>  - Use C-style comments
+> V3 -> V4:
+>  - Include libcflat.h
+>  - Remove #define SBI_DBTR_SHMEM_INVALID_ADDR
+> ---
+>  lib/riscv/asm/sbi.h |   1 +
+>  riscv/Makefile      |   1 +
+>  riscv/sbi-dbtr.c    | 811 ++++++++++++++++++++++++++++++++++++++++++++
+>  riscv/sbi-tests.h   |   1 +
+>  riscv/sbi.c         |   1 +
+>  5 files changed, 815 insertions(+)
+>  create mode 100644 riscv/sbi-dbtr.c
+> 
+> diff --git a/lib/riscv/asm/sbi.h b/lib/riscv/asm/sbi.h
+> index a5738a5c..78fd6e2a 100644
+> --- a/lib/riscv/asm/sbi.h
+> +++ b/lib/riscv/asm/sbi.h
+> @@ -51,6 +51,7 @@ enum sbi_ext_id {
+>  	SBI_EXT_SUSP = 0x53555350,
+>  	SBI_EXT_FWFT = 0x46574654,
+>  	SBI_EXT_SSE = 0x535345,
+> +	SBI_EXT_DBTR = 0x44425452,
+>  };
 >  
->  	if (pmu.is_intel) {
-> -		struct cpuid cpuid_10 = cpuid(10);
-> -
-> -		pmu.version = cpuid_10.a & 0xff;
-> +		pmu.version = this_cpu_property(X86_PROPERTY_PMU_VERSION);
+>  enum sbi_ext_base_fid {
+> diff --git a/riscv/Makefile b/riscv/Makefile
+> index 11e68eae..55c7ac93 100644
+> --- a/riscv/Makefile
+> +++ b/riscv/Makefile
+> @@ -20,6 +20,7 @@ all: $(tests)
+>  $(TEST_DIR)/sbi-deps += $(TEST_DIR)/sbi-asm.o
+>  $(TEST_DIR)/sbi-deps += $(TEST_DIR)/sbi-fwft.o
+>  $(TEST_DIR)/sbi-deps += $(TEST_DIR)/sbi-sse.o
+> +$(TEST_DIR)/sbi-deps += $(TEST_DIR)/sbi-dbtr.o
 >  
->  		if (pmu.version > 1) {
-> -			pmu.nr_fixed_counters = cpuid_10.d & 0x1f;
-> -			pmu.fixed_counter_width = (cpuid_10.d >> 5) & 0xff;
-> +			pmu.nr_fixed_counters = this_cpu_property(X86_PROPERTY_PMU_NR_FIXED_COUNTERS);
-> +			pmu.fixed_counter_width = this_cpu_property(X86_PROPERTY_PMU_FIXED_COUNTERS_BIT_WIDTH);
->  		}
+>  all_deps += $($(TEST_DIR)/sbi-deps)
 >  
-> -		pmu.nr_gp_counters = (cpuid_10.a >> 8) & 0xff;
-> -		pmu.gp_counter_width = (cpuid_10.a >> 16) & 0xff;
-> -		pmu.arch_event_mask_length = (cpuid_10.a >> 24) & 0xff;
-> +		pmu.nr_gp_counters = this_cpu_property(X86_PROPERTY_PMU_NR_GP_COUNTERS);
-> +		pmu.gp_counter_width = this_cpu_property(X86_PROPERTY_PMU_GP_COUNTERS_BIT_WIDTH);
-> +		pmu.arch_event_mask_length = this_cpu_property(X86_PROPERTY_PMU_EBX_BIT_VECTOR_LENGTH);
->  
->  		/* CPUID.0xA.EBX bit is '1' if a counter is NOT available. */
-> -		pmu.arch_event_available = ~cpuid_10.b;
-> +		pmu.arch_event_available = ~this_cpu_property(X86_PROPERTY_PMU_EVENTS_MASK);
->  
->  		if (this_cpu_has(X86_FEATURE_PDCM))
->  			pmu.perf_cap = rdmsr(MSR_IA32_PERF_CAPABILITIES);
-> @@ -38,7 +36,7 @@ void pmu_init(void)
->  			/* Performance Monitoring Version 2 Supported */
->  			if (this_cpu_has(X86_FEATURE_AMD_PMU_V2)) {
->  				pmu.version = 2;
-> -				pmu.nr_gp_counters = cpuid(0x80000022).b & 0xf;
-> +				pmu.nr_gp_counters = this_cpu_property(X86_PROPERTY_NR_PERFCTR_CORE);
->  			} else {
->  				pmu.nr_gp_counters = AMD64_NUM_COUNTERS_CORE;
->  			}
+> diff --git a/riscv/sbi-dbtr.c b/riscv/sbi-dbtr.c
+> new file mode 100644
+> index 00000000..b254f84e
+> --- /dev/null
+> +++ b/riscv/sbi-dbtr.c
+> @@ -0,0 +1,811 @@
+> +// SPDX-License-Identifier: GPL-2.0-only
+> +/*
+> + * SBI DBTR testsuite
+> + *
+> + * Copyright (C) 2025, Rivos Inc., Jesse Taube <jesse@rivosinc.com>
+> + */
+> +
+> +#include <asm/io.h>
+> +#include <bitops.h>
+> +#include <asm/processor.h>
+> +#include <libcflat.h>
+> +
+> +#include "sbi-tests.h"
 
-Reviewed-by: Dapeng Mi <dapeng1.mi@linux.intel.com>
+The includes should have the asm/ headers grouped separately below the
+non-asm, and we typically use alphabetic order because of OCD issues,
+except for libcflat.h, which typically comes first, since it's a mess of
+stuff, and the idea is to order from most general to most specific. So,
 
+ #include <libcflat.h>
+ #include <bitops.h>
 
+ #include <asm/io.h>
+ #include <asm/processor.h>
+
+ #include "sbi-tests.h"
+
+But don't respin for just this change. I'm still hoping we'll get more
+reviews of the tests wrt the spec (which I haven't yet done). If we don't
+get anymore reviews in a week or so then I'll find some time for it.
+
+Thanks,
+drew
 
 -- 
 kvm-riscv mailing list
