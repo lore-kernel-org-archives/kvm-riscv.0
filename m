@@ -4,85 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 050A0C677C4
-	for <kvm-riscv@archiver.kernel.org>; Wed, 11 Jun 2025 00:28:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F668C61DB2
+	for <kvm-riscv@archiver.kernel.org>; Wed, 11 Jun 2025 00:28:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:Reply-To:List-Subscribe:List-Help:
 	List-Post:List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID
 	:References:Mime-Version:In-Reply-To:Date:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=ae7brZKHrFAxo/0GPblBp187l7I0RPZFSv6o6IWGXrs=; b=s27PNmhlD/kh6k
-	vAUApkXaSYIlYXHcvkavXqiCOJk/0WHBEkNExUecnu1LC9nSobVs9sGkmID/lvdPlcUrO126eRVtL
-	TxJ9ptTIwmLGiyVrjfiUNAc1w232IEc2JKwVoET2yIwkcUSvqONgOlEX6Jz+raQzRO0wBG5HMSzXg
-	jjnxua99suJCrN7mJSBOA6B+YtK481XwyqlNSJXbUtUyXWFS58nFg05FpgkXTx1JPBFzHK809U6Ge
-	u1QKF9nOhLCHqtuqTEdxsO6ve1egHdIS1Vb1GMaKEHC+Hy43qhiC02h4M57Qs4ZhEXKQcFfywnRxR
-	InlhOE6NUrSYSgS8z8NQ==;
+	List-Owner; bh=P3JzLLzQVUg2w7vqBO1f9R236KFs3EhAStnwxs1EC6U=; b=rj0naeW2MktXsy
+	taOUm74wah8/AcwhY2+dQ2BUMQxGZERUayqwR467OrtR0UuTgpyY4vCU30D49GYpob1iC28KWz/JL
+	fYsR5grS1mJx1jgqy9n3b3Es6JuQVTlU28KbqILwHE7i2rWbiyjIQIywDY+Qmbc16EDZVBK95PbwL
+	IpitCySA9FVBwsEGDljbLZtutjQ0PEa5Nu0frA5FZ7sq9hdjCfvOe5msAF/SydXSWigLng0ydqFUf
+	BHWWuC7UR4JoZcM340EXZHKql5QAWocaEOUZWpmiJsdb9VCa/xyhQihTQvaNpz8q7nVg1kzJI9LLR
+	Xj6JMHDK1EzOhc/L4qFA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uP9KN-00000008UAW-3BbE;
-	Wed, 11 Jun 2025 00:28:27 +0000
+	id 1uP9KO-00000008UAh-0HhS;
+	Wed, 11 Jun 2025 00:28:28 +0000
 Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uP93X-00000008SFP-0WWJ
+	id 1uP93Y-00000008SFh-01Cd
 	for kvm-riscv@bombadil.infradead.org;
-	Wed, 11 Jun 2025 00:11:03 +0000
+	Wed, 11 Jun 2025 00:11:04 +0000
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=desiato.20200630; h=Content-Type:Cc:To:From:Subject:
 	Message-ID:References:Mime-Version:In-Reply-To:Date:Reply-To:Sender:
 	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=VlZgeHA644QawbjAzxLvevk+0CPgkFNL80WvPP4oWa8=; b=Pe4XpWdzTQ+1aWHwAWnzkVnTyv
-	ofr4PGFe4+MXB2dDjfGlnvhna9YqFVF1TD8B7nrOVaUUxYNb5AMKgxSbL+OSr1n4lBPXN6NP6UpQQ
-	9vUtn+Mq8MVKXQ2d0rnGeWq3RUScuHfKXEF1wOKWBF4A9TZwUkb9QIoaM5eJax4xf9fu79trDzGoi
-	Nhm1skkn5+qhcRQSH7d8RPRrBAlD10Y278ON33mUqruvjX62jBBAqNoACOOigMBfZqC4wum2O4L+0
-	Wfub6PA0h2DJcOJgNJ9FE8maGRFJ7kVnc9EQ54w+spmT7pOOC/P62hjDTVYbx7giIgDlDkGKg+kSj
-	HCKIK20Q==;
-Received: from mail-pg1-x549.google.com ([2607:f8b0:4864:20::549])
+	bh=t+Mj+r8r7UAjF4+0LNUZhsvI8NJHwfinPsCt24LIifo=; b=HnMazRVk1jCWTt5l39Bvkc8+aq
+	uYsLfKraF7kT4VrwuFOnjcMHPbE8zV7Gc4fvA2KaeqwRQ3reWM3ZMWLr1Og8rUU7aUeZOT1t3rdJ0
+	sNUoObEtnh+NI9LH2Im+tm/UdbbPhajFV6M4fP015wJ/zX5y34JhY31x6wKNHN2xpDM33OtH6IgX7
+	bkUwoTEH0p8DHbclRZnlUcoByMUpLBFgU1qb6d85uXBZBuhAQzq3wSxF/00ZgdM5s9ovmdxGTrOoj
+	nRZj3y7aRu1Ow54nkqt1u6YONYBMdqAsMI7J9t5vK1WOWvGYN7yT55OQ3YFDL81DxXyjivBbu9JU1
+	bc/JVbyg==;
+Received: from mail-pf1-x44a.google.com ([2607:f8b0:4864:20::44a])
 	by desiato.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uP93U-000000022UI-3rzJ
+	id 1uP93W-000000022Uj-0hMm
 	for kvm-riscv@lists.infradead.org;
-	Wed, 11 Jun 2025 00:11:02 +0000
-Received: by mail-pg1-x549.google.com with SMTP id 41be03b00d2f7-b26cdc70befso4024504a12.1
-        for <kvm-riscv@lists.infradead.org>; Tue, 10 Jun 2025 17:10:58 -0700 (PDT)
+	Wed, 11 Jun 2025 00:11:03 +0000
+Received: by mail-pf1-x44a.google.com with SMTP id d2e1a72fcca58-748475d2a79so2410162b3a.3
+        for <kvm-riscv@lists.infradead.org>; Tue, 10 Jun 2025 17:11:00 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1749600657; x=1750205457; darn=lists.infradead.org;
+        d=google.com; s=20230601; t=1749600659; x=1750205459; darn=lists.infradead.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:from:to:cc:subject:date:message-id:reply-to;
-        bh=VlZgeHA644QawbjAzxLvevk+0CPgkFNL80WvPP4oWa8=;
-        b=toDodBwHOgmoWdmI9T0U/bcaQ00c6ii2Dh1HxcPH79y6LZyKmplIjIFqnYTxU8Qus7
-         VfTa7jY5UkACe3m4mwtQ2cN28HpzCZqzHqEFn/zEM9FU18yn6trnI09D1SSW63JxwU5q
-         jb8lcnglUWHSggJc9kUIFD30nUqCUgYxQU5Mlv6Y06Z8Z/9PU3OpgBvja5F/bkqLCMVT
-         rXMBfs0DLlZ5HB16NPLvHugI89kb8jcxbmMWNE7M52RKy5CtY7h5Xi72PX7ZFM8XkslS
-         bPUUM3BurFrLh5AzTIkDLZ6YlvOmuzcO/qNnzf4I1bpcbTdFK34DpdIU2FxiZxSMKoxY
-         PIxQ==
+        bh=t+Mj+r8r7UAjF4+0LNUZhsvI8NJHwfinPsCt24LIifo=;
+        b=oAYpn/luT59nFlYSjGzpktDwLlRXQTfsjcsmFitCxyb9WCwlW/CbvTeDWSM1WDKElh
+         EZmzjyKLEPA6QgSDOg7UigrzEP56K7eI0HK9Dy0Ce9luvI8TPfF7aaCZ8u+Dl+6nIEtu
+         VrhztOu9kVUSyfje40ks1tz2r9KwmjyW3eV/dSee8Cn6ayUvZgDWQSJgYAdMwP4WdDny
+         D44S7KSiEk8sJEtbbYyUeQRLW2mnzWrLfUfrqMK5+PA5DM3lMjY/4U79cM1I6ejrIv5y
+         RGz376rBDodo0MlWpiVJO2et9vigL+jkZ4i+AG3PEcF0whqN0RSQePuLHuCSuKvj611V
+         IdIQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1749600657; x=1750205457;
+        d=1e100.net; s=20230601; t=1749600659; x=1750205459;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=VlZgeHA644QawbjAzxLvevk+0CPgkFNL80WvPP4oWa8=;
-        b=pAb/QNhDWMKOFrBhr2oFh/MMdjOaBuoW3ZtwtspJuKmtqdmrnKfzQCNt4+yajfVYJ+
-         2BYqvbbeSuKA2cFvoi/Ag3pvd1FklW0JiZHUl93y2xKgyin9mDWR1Fw/Q2uQLOY8TKol
-         y+Qjb6ZvUY/Rz5WNFQ2JoeNQMEvNMFGvi4Ztd8zqH1d+8koZ25LhQU4QquQ9B4gAQytq
-         18R3QBEzfn9K2xrIhus0EJpQzdNy1Pk/nt4dqwJhAoFCl2KWkfDHoDzDAVU2hMXw1qk9
-         tJQY4quEwQ0AQk++XSgAge6qSyGnByFH0KM8OKHjysxV/uPKvyhSdFbocLeJTm15AfDD
-         acgQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUw1UXhTaxp5l1+sNp1VIRg2jMEsAF6Nta3dEHPAOawCnqrZlo/Gw2qXqGAxqnPd1Mrtj4ldotMa00=@lists.infradead.org
-X-Gm-Message-State: AOJu0YyWSSqdUppstiAcIwG56vuqcHDrTOoNcP13c7iwzbNkPuYAz163
-	Lo0srX68nvZQHedP5hOjZtGFRy8R2Fd8NPlc5/8v71eYAlAN0XmIACwagS62X/4vUljDOuBANZj
-	zQ243Xg==
-X-Google-Smtp-Source: AGHT+IEo+A1iKKp/d15/c3Y8CK62vwTvYQUmq5gUOhKzuXVKftWt1+9sRfxp1GZ6dnQl+d5j2tHzGoYEsqQ=
-X-Received: from pjboh5.prod.google.com ([2002:a17:90b:3a45:b0:2fb:fa85:1678])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:2643:b0:312:29e:9ec9
- with SMTP id 98e67ed59e1d1-313af1dd043mr2232849a91.24.1749600657225; Tue, 10
- Jun 2025 17:10:57 -0700 (PDT)
-Date: Tue, 10 Jun 2025 17:10:41 -0700
+        bh=t+Mj+r8r7UAjF4+0LNUZhsvI8NJHwfinPsCt24LIifo=;
+        b=MUfYAadRAE58vXtHSMfhBiHQsUuj6QXPZ4J94UXtcoFHK/JG3Bc7udVaQJlxs5GRBc
+         O9b4MkU3n/WLSj8JR6K/pr/SiJgzQlKOqnToktFvA9D1eemB8SMtLmloVbd3af+FYrQA
+         9tp70lC0rt1ROOjm4DJ4A+bDWIguJEZ9paUgo1db2ySJEXNA87GSMoq1sm6hXg9UL20U
+         eho1nzsCI+l4Kvo6TyhxuS1IbHKPIEmSG3Ss3a12pSXQ8yYKeVhzesnXnGK1b1Rk3tFr
+         Bz8O2404iy5RUKRpRrjASAemRK6YuE/4gsVdTQHAXEsxSNpAEcYflN4op2SuNbKSCJMR
+         9htw==
+X-Forwarded-Encrypted: i=1; AJvYcCXpbeANl0Z7/tYAqJU/OEZJ4gH/Jbi8yyskg+Ems7DxPOBCYiCsN8gy3QMVWEjqyt7TVPGRRweb7rI=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yz4hf14sqv4PfVGTErjgbBeBKF0lOln7O4bHO366XI+KTnu69CR
+	G+VGZkLtWyIH6v8DI8veEdVCamfB/xerI3sgmwjYLcgIoUpI+6fVt58d9H1edPghPk9b7m6DBe8
+	qccXwqw==
+X-Google-Smtp-Source: AGHT+IHdKstC+XlYUus8Wdm0HR7HPxHMBlUy5ahB8xm3L+Y1hmecIZTBPJ5vhN4Gi0qdwz1eVbXtQ9xfH68=
+X-Received: from pgam16.prod.google.com ([2002:a05:6a02:2b50:b0:b2f:6348:f715])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a21:9012:b0:1f5:8f7f:8f19
+ with SMTP id adf61e73a8af0-21f8663f76dmr1960513637.10.1749600659002; Tue, 10
+ Jun 2025 17:10:59 -0700 (PDT)
+Date: Tue, 10 Jun 2025 17:10:42 -0700
 In-Reply-To: <20250611001042.170501-1-seanjc@google.com>
 Mime-Version: 1.0
 References: <20250611001042.170501-1-seanjc@google.com>
 X-Mailer: git-send-email 2.50.0.rc0.642.g800a2b2222-goog
-Message-ID: <20250611001042.170501-8-seanjc@google.com>
-Subject: [PATCH 7/8] KVM: s390: Stop adding virt/kvm to the arch include path
+Message-ID: <20250611001042.170501-9-seanjc@google.com>
+Subject: [PATCH 8/8] KVM: Standardize include paths across all architectures
 From: Sean Christopherson <seanjc@google.com>
 To: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>, 
 	Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>, 
@@ -99,8 +99,8 @@ Cc: linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev,
 	Anish Ghulati <aghulati@google.com>, Colton Lewis <coltonlewis@google.com>, 
 	Thomas Huth <thuth@redhat.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250611_011101_095175_F24CE6BC 
-X-CRM114-Status: GOOD (  10.70  )
+X-CRM114-CacheID: sfid-20250611_011102_253965_E6733F7D 
+X-CRM114-Status: GOOD (  10.81  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -118,36 +118,125 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Don't add virt/kvm to KVM s390's include path, the headers in virt/kvm are
-intended to be used only by other code in virt/kvm, i.e. are "private" to
-the core KVM code.  It's not clear that s390 *ever* included a header from
-virt/kvm, i.e. odds are good the "-Ivirt/kvm" was copied from a x86's
-Makefile when s390 support was first added.
+Standardize KVM's include paths across all architectures by declaring
+the KVM-specific includes in the common Makefile.kvm.  Having common KVM
+"own" the included paths reduces the temptation to unnecessarily add
+virt/kvm to arch include paths, and conversely if allowing arch code to
+grab headers from virt/kvm becomes desirable, virt/kvm can be added to
+all architecture's include path with a single line update.
 
-The only headers in virt/kvm at the time were the x86 specific ioapic.h,
-and iodev.h, neither of which shows up as an #include in the diff for the
-commit range 37817f2982d0f..e976a2b997fc4.
+Having the common KVM makefile append to ccflags also provides a
+convenient location to append other things, e.g. KVM-specific #defines.
 
-Acked-by: Claudio Imbrenda <imbrenda@linux.ibm.com>
-Reviewed-by: Thomas Huth <thuth@redhat.com>
+Note, this changes the behavior of s390 and PPC, as s390 and PPC
+previously overwrote ccflags-y instead of adding on.  There is no evidence
+that overwriting ccflags-y was necessary or even deliberate, as both s390
+and PPC switched to the overwrite behavior without so much as a passing
+mention when EXTRA_CFLAGS was replaced with ccflags-y (commit c73028a02887
+("s390: change to new flag variable") and commit 4108d9ba9091
+("powerpc/Makefiles: Change to new flag variables")).
+
+Acked-by: Anup Patel <anup@brainfault.org>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/s390/kvm/Makefile | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/arm64/kvm/Makefile   | 2 --
+ arch/mips/kvm/Makefile    | 2 --
+ arch/powerpc/kvm/Makefile | 2 --
+ arch/riscv/kvm/Makefile   | 2 --
+ arch/s390/kvm/Makefile    | 2 --
+ arch/x86/kvm/Makefile     | 1 -
+ virt/kvm/Makefile.kvm     | 2 ++
+ 7 files changed, 2 insertions(+), 11 deletions(-)
 
-diff --git a/arch/s390/kvm/Makefile b/arch/s390/kvm/Makefile
-index 9a723c48b05a..b742e08c036b 100644
---- a/arch/s390/kvm/Makefile
-+++ b/arch/s390/kvm/Makefile
-@@ -5,7 +5,7 @@
+diff --git a/arch/arm64/kvm/Makefile b/arch/arm64/kvm/Makefile
+index 7c329e01c557..86035b311269 100644
+--- a/arch/arm64/kvm/Makefile
++++ b/arch/arm64/kvm/Makefile
+@@ -3,8 +3,6 @@
+ # Makefile for Kernel-based Virtual Machine module
+ #
+ 
+-ccflags-y += -I $(src)
+-
+ include $(srctree)/virt/kvm/Makefile.kvm
+ 
+ obj-$(CONFIG_KVM) += kvm.o
+diff --git a/arch/mips/kvm/Makefile b/arch/mips/kvm/Makefile
+index 96a7cd21b140..d198e1addea7 100644
+--- a/arch/mips/kvm/Makefile
++++ b/arch/mips/kvm/Makefile
+@@ -4,8 +4,6 @@
  
  include $(srctree)/virt/kvm/Makefile.kvm
  
--ccflags-y := -Ivirt/kvm -Iarch/s390/kvm
-+ccflags-y := -Iarch/s390/kvm
+-ccflags-y += -Iarch/mips/kvm
+-
+ kvm-$(CONFIG_CPU_HAS_MSA) += msa.o
  
+ kvm-y +=    mips.o emulate.o entry.o \
+diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
+index 1a575db2666e..6f12edd465df 100644
+--- a/arch/powerpc/kvm/Makefile
++++ b/arch/powerpc/kvm/Makefile
+@@ -3,8 +3,6 @@
+ # Makefile for Kernel-based Virtual Machine module
+ #
+ 
+-ccflags-y := -Iarch/powerpc/kvm
+-
+ include $(srctree)/virt/kvm/Makefile.kvm
+ 
+ common-objs-y += powerpc.o emulate_loadstore.o
+diff --git a/arch/riscv/kvm/Makefile b/arch/riscv/kvm/Makefile
+index 4e0bba91d284..dbe61a398cc8 100644
+--- a/arch/riscv/kvm/Makefile
++++ b/arch/riscv/kvm/Makefile
+@@ -3,8 +3,6 @@
+ # Makefile for RISC-V KVM support
+ #
+ 
+-ccflags-y += -I $(src)
+-
+ include $(srctree)/virt/kvm/Makefile.kvm
+ 
+ obj-$(CONFIG_KVM) += kvm.o
+diff --git a/arch/s390/kvm/Makefile b/arch/s390/kvm/Makefile
+index b742e08c036b..5cbcaa7f241a 100644
+--- a/arch/s390/kvm/Makefile
++++ b/arch/s390/kvm/Makefile
+@@ -5,8 +5,6 @@
+ 
+ include $(srctree)/virt/kvm/Makefile.kvm
+ 
+-ccflags-y := -Iarch/s390/kvm
+-
  kvm-y += kvm-s390.o intercept.o interrupt.o priv.o sigp.o
  kvm-y += diag.o gaccess.o guestdbg.o vsie.o pv.o gmap-vsie.o
+ 
+diff --git a/arch/x86/kvm/Makefile b/arch/x86/kvm/Makefile
+index a5d362c7b504..f78f11b582d2 100644
+--- a/arch/x86/kvm/Makefile
++++ b/arch/x86/kvm/Makefile
+@@ -1,6 +1,5 @@
+ # SPDX-License-Identifier: GPL-2.0
+ 
+-ccflags-y += -I $(srctree)/arch/x86/kvm
+ ccflags-$(CONFIG_KVM_WERROR) += -Werror
+ 
+ include $(srctree)/virt/kvm/Makefile.kvm
+diff --git a/virt/kvm/Makefile.kvm b/virt/kvm/Makefile.kvm
+index 724c89af78af..0e7ba49026fc 100644
+--- a/virt/kvm/Makefile.kvm
++++ b/virt/kvm/Makefile.kvm
+@@ -3,6 +3,8 @@
+ # Makefile for Kernel-based Virtual Machine module
+ #
+ 
++ccflags-y += -I$(src)
++
+ KVM ?= ../../../virt/kvm
+ 
+ kvm-y := $(KVM)/kvm_main.o $(KVM)/eventfd.o $(KVM)/binary_stats.o
 -- 
 2.50.0.rc0.642.g800a2b2222-goog
 
