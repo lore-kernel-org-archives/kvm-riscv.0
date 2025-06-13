@@ -4,31 +4,31 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1DEFCC71135
-	for <kvm-riscv@archiver.kernel.org>; Fri, 13 Jun 2025 11:38:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 096B1C71135
+	for <kvm-riscv@archiver.kernel.org>; Fri, 13 Jun 2025 11:39:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=LQH+dl9wHUc42nN6ckCVDpKNi0Z1o6sBOtelWYteTNs=; b=08VxBWOa2KDjwk
-	x+ORRB90CEtfAHZjG2t33UVAXCjjNp1fQDURO/yxJOk59XMZS3Lepo7d2vxkNsWUrL2mdVxK+zfVG
-	8UDIS1pfK20hCe8fczDnbuy+m7hhi07llU7NiPTJU9HDIgAVwZyu7y3NTxMntLQz94k3jMHj3pKgS
-	P0vMzE+iHcUu73hnJS9WYVM8W+d3Y7XtlIODEFUH5Z6WCIdAVynumXwZPn8Iw3QWpFMGooyvsQtKz
-	QTL+KiMod1gksMCRDGD9T1C4gRgot0+nQcQmIUhdTs96G8qzPKuecLSUuy0syXa8MdQAtsUXiwMnx
-	F3ctl1G8ZJhqsQ3j0Ydw==;
+	List-Owner; bh=FWSBLLG1c0cFDcZ/pJj67FO5vebIbcAY99Fe701qAmI=; b=S/+jOeyeo4EEK7
+	NuI2JclB0zMqliY6sCIRXE1pQAgqmlnbFfKWg3BbbE9fHFzCwwirH+Qngfzhz4lhkru+cXCe1hYwk
+	w3zfZdhJD9Q63K53zeNNFQknvFQEXwPJkFNZ6sk/YNg2IiJhCJ7UwgDq08/6nW9RQoyRfH/xicqTn
+	pvYtM1BrlmH+CwnsH6+AZEtxzD54Oc1umeUAWQUttMQ1OHdyhfMRmG6cw/knyR8w7x8izYjK48PZ0
+	o5FSVfzQEy8xxu2hGke4vPB/K+x35qzf33GdHnK2DLR8waeiyK5O3WUvIy1MuHaIx1HkWUlNRoE/e
+	SbhhtVB/lGF47Ej1zHLA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uQ2kH-0000000GEhe-3fOf;
-	Fri, 13 Jun 2025 11:38:53 +0000
+	id 1uQ2kS-0000000GEmr-3LAy;
+	Fri, 13 Jun 2025 11:39:04 +0000
 Received: from smtp81.cstnet.cn ([159.226.251.81] helo=cstnet.cn)
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uQ2kE-0000000GEgV-41oj;
-	Fri, 13 Jun 2025 11:38:52 +0000
+	id 1uQ2kP-0000000GEkw-1TJD;
+	Fri, 13 Jun 2025 11:39:02 +0000
 Received: from zq-Legion-Y7000.smartont.net (unknown [180.110.114.155])
-	by APP-03 (Coremail) with SMTP id rQCowADXJ1DFDUxoRw05Bg--.50527S2;
-	Fri, 13 Jun 2025 19:38:45 +0800 (CST)
+	by APP-03 (Coremail) with SMTP id rQCowADXJ1DPDUxowQ45Bg--.50528S2;
+	Fri, 13 Jun 2025 19:38:55 +0800 (CST)
 From: zhouquan@iscas.ac.cn
 To: anup@brainfault.org,
 	ajones@ventanamicro.com,
@@ -40,18 +40,18 @@ Cc: linux-kernel@vger.kernel.org,
 	kvm@vger.kernel.org,
 	kvm-riscv@lists.infradead.org,
 	Quan Zhou <zhouquan@iscas.ac.cn>
-Subject: [PATCH 1/2] RISC-V: KVM: Enable ring-based dirty memory tracking
-Date: Fri, 13 Jun 2025 19:29:57 +0800
-Message-Id: <20e116efb1f7aff211dd8e3cf8990c5521ed5f34.1749810735.git.zhouquan@iscas.ac.cn>
+Subject: [PATCH 2/2] KVM: riscv: selftests: Add common supported test cases
+Date: Fri, 13 Jun 2025 19:30:13 +0800
+Message-Id: <7e8f1272337e8d03851fd3bb7f6fc739e604309e.1749810736.git.zhouquan@iscas.ac.cn>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <cover.1749810735.git.zhouquan@iscas.ac.cn>
 References: <cover.1749810735.git.zhouquan@iscas.ac.cn>
 MIME-Version: 1.0
-X-CM-TRANSID: rQCowADXJ1DFDUxoRw05Bg--.50527S2
-X-Coremail-Antispam: 1UD129KBjvJXoWxXF1fGryUurWUWw4UXFy8uFg_yoW5tw4rpF
-	s3CrZava1rGF4fG34SyrWkur4UWrZ3Kr43XrWUZFyrGr1YyFWkArsYg348JryUJFy8Xa4I
-	kF1FgFyY9Fs0qwUanT9S1TB71UUUUUDqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUUPY14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+X-CM-TRANSID: rQCowADXJ1DPDUxowQ45Bg--.50528S2
+X-Coremail-Antispam: 1UD129KBjvJXoWxCr4Uur1xXFy7Ww4fAFyrJFb_yoW5tr47p3
+	W8Cryj9F1kCF47Jw1fGr1kZFWxK395Kr409Fy2gw4UuF1UJF4xJrsagay2kFnagw4Yvwnx
+	Za43Gr429ayDtw7anT9S1TB71UUUUUDqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUUBj14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
 	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
 	1l84ACjcxK6xIIjxv20xvE14v26r4j6ryUM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26F4j
 	6r4UJwA2z4x0Y4vEx4A2jsIE14v26rxl6s0DM28EF7xvwVC2z280aVCY1x0267AKxVW0oV
@@ -59,17 +59,17 @@ X-Coremail-Antispam: 1UD129KBjvJXoWxXF1fGryUurWUWw4UXFy8uFg_yoW5tw4rpF
 	I7IYx2IY67AKxVWUAVWUtwAv7VC2z280aVAFwI0_Gr1j6F4UJwAm72CE4IkC6x0Yz7v_Jr
 	0_Gr1lF7xvr2IYc2Ij64vIr41lF7I21c0EjII2zVCS5cI20VAGYxC7M4IIrI8v6xkF7I0E
 	8cxan2IY04v7M4kE6xkIj40Ew7xC0wCY1x0262kKe7AKxVWUtVW8ZwCF04k20xvY0x0EwI
-	xGrwCFx2IqxVCFs4IE7xkEbVWUJVW8JwCFI7km07C267AKxVWUXVWUAwC20s026c02F40E
-	14v26r1j6r18MI8I3I0E7480Y4vE14v26r106r1rMI8E67AF67kF1VAFwI0_Jw0_GFylIx
-	kGc2Ij64vIr41lIxAIcVC0I7IYx2IY67AKxVWUJVWUCwCI42IY6xIIjxv20xvEc7CjxVAF
-	wI0_Gr0_Cr1lIxAIcVCF04k26cxKx2IYs7xG6r1j6r1xMIIF0xvEx4A2jsIE14v26r1j6r
-	4UMIIF0xvEx4A2jsIEc7CjxVAFwI0_Gr0_Gr1UYxBIdaVFxhVjvjDU0xZFpf9x0JUl-erU
-	UUUU=
+	xGrwCFx2IqxVCFs4IE7xkEbVWUJVW8JwC20s026c02F40E14v26r1j6r18MI8I3I0E7480
+	Y4vE14v26r106r1rMI8E67AF67kF1VAFwI0_Jw0_GFylIxkGc2Ij64vIr41lIxAIcVC0I7
+	IYx2IY67AKxVWUCVW8JwCI42IY6xIIjxv20xvEc7CjxVAFwI0_Gr0_Cr1lIxAIcVCF04k2
+	6cxKx2IYs7xG6r1j6r1xMIIF0xvEx4A2jsIE14v26r4j6F4UMIIF0xvEx4A2jsIEc7CjxV
+	AFwI0_Gr0_Gr1UYxBIdaVFxhVjvjDU0xZFpf9x0JUl-erUUUUU=
 X-Originating-IP: [180.110.114.155]
-X-CM-SenderInfo: 52kr31xxdqqxpvfd2hldfou0/1tbiBgsMBmhL72JrwwAAsB
+X-CM-SenderInfo: 52kr31xxdqqxpvfd2hldfou0/1tbiBgoMBmhL72Jr2AAAsb
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250613_043851_366218_7CF1A779 
-X-CRM114-Status: GOOD (  13.99  )
+X-CRM114-CacheID: sfid-20250613_043901_772693_1B06EE1F 
+X-CRM114-Status: UNSURE (   8.80  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -88,108 +88,89 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 From: Quan Zhou <zhouquan@iscas.ac.cn>
 
-Enable ring-based dirty memory tracking on riscv:
+Some common KVM test cases are supported on riscv now as following:
 
-- Enable CONFIG_HAVE_KVM_DIRTY_RING_ACQ_REL as riscv is weakly
-  ordered.
-- Set KVM_DIRTY_LOG_PAGE_OFFSET for the ring buffer's physical page
-  offset.
-- Add a check to kvm_vcpu_kvm_riscv_check_vcpu_requests for checking
-  whether the dirty ring is soft full.
+    access_tracking_perf_test
+    demand_paging_test
+    dirty_log_perf_test
+    dirty_log_test
+    guest_print_test
+    kvm_binary_stats_test
+    kvm_create_max_vcpus
+    kvm_page_table_test
+    memslot_modification_stress_test
+    memslot_perf_test
+    rseq_test
+    set_memory_region_test
 
-To handle vCPU requests that cause exits to userspace, modified the
-`kvm_riscv_check_vcpu_requests` to return a value (currently only
-returns 0 or 1).
+Add missing headers for tests and fix RISCV_FENCE redefinition
+in `rseq-riscv.h` by using the existing macro from <asm/fence.h>.
 
 Signed-off-by: Quan Zhou <zhouquan@iscas.ac.cn>
 ---
- Documentation/virt/kvm/api.rst    |  2 +-
- arch/riscv/include/uapi/asm/kvm.h |  1 +
- arch/riscv/kvm/Kconfig            |  1 +
- arch/riscv/kvm/vcpu.c             | 18 ++++++++++++++++--
- 4 files changed, 19 insertions(+), 3 deletions(-)
+ tools/testing/selftests/kvm/Makefile.kvm             | 12 ++++++++++++
+ .../testing/selftests/kvm/include/riscv/processor.h  |  2 ++
+ tools/testing/selftests/rseq/rseq-riscv.h            |  3 +--
+ 3 files changed, 15 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.rst
-index 1bd2d42e6424..5de0fbfe2fc0 100644
---- a/Documentation/virt/kvm/api.rst
-+++ b/Documentation/virt/kvm/api.rst
-@@ -8316,7 +8316,7 @@ core crystal clock frequency, if a non-zero CPUID 0x15 is exposed to the guest.
- 7.36 KVM_CAP_DIRTY_LOG_RING/KVM_CAP_DIRTY_LOG_RING_ACQ_REL
- ----------------------------------------------------------
+diff --git a/tools/testing/selftests/kvm/Makefile.kvm b/tools/testing/selftests/kvm/Makefile.kvm
+index 38b95998e1e6..565e191e99c8 100644
+--- a/tools/testing/selftests/kvm/Makefile.kvm
++++ b/tools/testing/selftests/kvm/Makefile.kvm
+@@ -197,6 +197,18 @@ TEST_GEN_PROGS_riscv += arch_timer
+ TEST_GEN_PROGS_riscv += coalesced_io_test
+ TEST_GEN_PROGS_riscv += get-reg-list
+ TEST_GEN_PROGS_riscv += steal_time
++TEST_GEN_PROGS_riscv += access_tracking_perf_test
++TEST_GEN_PROGS_riscv += demand_paging_test
++TEST_GEN_PROGS_riscv += dirty_log_perf_test
++TEST_GEN_PROGS_riscv += dirty_log_test
++TEST_GEN_PROGS_riscv += guest_print_test
++TEST_GEN_PROGS_riscv += kvm_binary_stats_test
++TEST_GEN_PROGS_riscv += kvm_create_max_vcpus
++TEST_GEN_PROGS_riscv += kvm_page_table_test
++TEST_GEN_PROGS_riscv += memslot_modification_stress_test
++TEST_GEN_PROGS_riscv += memslot_perf_test
++TEST_GEN_PROGS_riscv += rseq_test
++TEST_GEN_PROGS_riscv += set_memory_region_test
  
--:Architectures: x86, arm64
-+:Architectures: x86, arm64, riscv
- :Type: vm
- :Parameters: args[0] - size of the dirty log ring
+ TEST_GEN_PROGS_loongarch += coalesced_io_test
+ TEST_GEN_PROGS_loongarch += demand_paging_test
+diff --git a/tools/testing/selftests/kvm/include/riscv/processor.h b/tools/testing/selftests/kvm/include/riscv/processor.h
+index 162f303d9daa..4cf5ae11760f 100644
+--- a/tools/testing/selftests/kvm/include/riscv/processor.h
++++ b/tools/testing/selftests/kvm/include/riscv/processor.h
+@@ -9,7 +9,9 @@
  
-diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-index 5f59fd226cc5..ef27d4289da1 100644
---- a/arch/riscv/include/uapi/asm/kvm.h
-+++ b/arch/riscv/include/uapi/asm/kvm.h
-@@ -18,6 +18,7 @@
- #define __KVM_HAVE_IRQ_LINE
+ #include <linux/stringify.h>
+ #include <asm/csr.h>
++#include <asm/vdso/processor.h>
+ #include "kvm_util.h"
++#include "ucall_common.h"
  
- #define KVM_COALESCED_MMIO_PAGE_OFFSET 1
-+#define KVM_DIRTY_LOG_PAGE_OFFSET 64
+ #define INSN_OPCODE_MASK	0x007c
+ #define INSN_OPCODE_SHIFT	2
+diff --git a/tools/testing/selftests/rseq/rseq-riscv.h b/tools/testing/selftests/rseq/rseq-riscv.h
+index 67d544aaa9a3..06c840e81c8b 100644
+--- a/tools/testing/selftests/rseq/rseq-riscv.h
++++ b/tools/testing/selftests/rseq/rseq-riscv.h
+@@ -8,6 +8,7 @@
+  * exception when executed in all modes.
+  */
+ #include <endian.h>
++#include <asm/fence.h>
  
- #define KVM_INTERRUPT_SET	-1U
- #define KVM_INTERRUPT_UNSET	-2U
-diff --git a/arch/riscv/kvm/Kconfig b/arch/riscv/kvm/Kconfig
-index 704c2899197e..5a62091b0809 100644
---- a/arch/riscv/kvm/Kconfig
-+++ b/arch/riscv/kvm/Kconfig
-@@ -25,6 +25,7 @@ config KVM
- 	select HAVE_KVM_MSI
- 	select HAVE_KVM_VCPU_ASYNC_IOCTL
- 	select HAVE_KVM_READONLY_MEM
-+	select HAVE_KVM_DIRTY_RING_ACQ_REL
- 	select KVM_COMMON
- 	select KVM_GENERIC_DIRTYLOG_READ_PROTECT
- 	select KVM_GENERIC_HARDWARE_ENABLING
-diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index e0a01af426ff..0502125efb30 100644
---- a/arch/riscv/kvm/vcpu.c
-+++ b/arch/riscv/kvm/vcpu.c
-@@ -690,7 +690,14 @@ void kvm_arch_vcpu_put(struct kvm_vcpu *vcpu)
- 	}
- }
+ #if defined(__BYTE_ORDER) ? (__BYTE_ORDER == __LITTLE_ENDIAN) : defined(__LITTLE_ENDIAN)
+ #define RSEQ_SIG   0xf1401073  /* csrr mhartid, x0 */
+@@ -24,8 +25,6 @@
+ #define REG_L	__REG_SEL("ld ", "lw ")
+ #define REG_S	__REG_SEL("sd ", "sw ")
  
--static void kvm_riscv_check_vcpu_requests(struct kvm_vcpu *vcpu)
-+/**
-+ * check_vcpu_requests - check and handle pending vCPU requests
-+ * @vcpu:	the VCPU pointer
-+ *
-+ * Return: 1 if we should enter the guest
-+ *	    0 if we should exit to userspace
-+ */
-+static int kvm_riscv_check_vcpu_requests(struct kvm_vcpu *vcpu)
- {
- 	struct rcuwait *wait = kvm_arch_vcpu_get_wait(vcpu);
- 
-@@ -735,7 +742,12 @@ static void kvm_riscv_check_vcpu_requests(struct kvm_vcpu *vcpu)
- 
- 		if (kvm_check_request(KVM_REQ_STEAL_UPDATE, vcpu))
- 			kvm_riscv_vcpu_record_steal_time(vcpu);
-+
-+		if (kvm_dirty_ring_check_request(vcpu))
-+			return 0;
- 	}
-+
-+	return 1;
- }
- 
- static void kvm_riscv_update_hvip(struct kvm_vcpu *vcpu)
-@@ -917,7 +929,9 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
- 
- 		kvm_riscv_gstage_vmid_update(vcpu);
- 
--		kvm_riscv_check_vcpu_requests(vcpu);
-+		ret = kvm_riscv_check_vcpu_requests(vcpu);
-+		if (ret <= 0)
-+			continue;
- 
- 		preempt_disable();
- 
+-#define RISCV_FENCE(p, s) \
+-	__asm__ __volatile__ ("fence " #p "," #s : : : "memory")
+ #define rseq_smp_mb()	RISCV_FENCE(rw, rw)
+ #define rseq_smp_rmb()	RISCV_FENCE(r, r)
+ #define rseq_smp_wmb()	RISCV_FENCE(w, w)
 -- 
 2.34.1
 
