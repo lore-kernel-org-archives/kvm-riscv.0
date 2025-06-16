@@ -4,73 +4,83 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E6A5EC71136
-	for <kvm-riscv@archiver.kernel.org>; Mon, 16 Jun 2025 12:07:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ADD7DC71155
+	for <kvm-riscv@archiver.kernel.org>; Mon, 16 Jun 2025 13:19:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:Date:
-	Message-ID:From:References:CC:To:Subject:Reply-To:Content-ID:
-	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
-	:Resent-Message-ID:List-Owner;
-	bh=NWH6aoU3Xfp7MFO5suvs6rKcxzzmd1IhjsxGuKbQ17o=; b=aZ/Qu9TaS0oMG5VEJN6EtOvlur
-	mB/us5doYYmjN4MY29lhmE7DzVwy0ka6WI16KTS0SMQZiH7BFjBJk/LCKRT5upZ3jIDie9QRnCuVA
-	R5MQi4XYc4udNEgOqEvXbv1PNDWuViwSsTonm8sFOEic+1SaKv+86kZwp89Ce1qY2c288eirtmUQh
-	p0pjQMGEjk+ecvsTtcmAgXeEnyFBm4ww+V8YGA9UUJUQ9UiqHnmaKNBP7lGTFxUkSVqZevigfZsIw
-	ip0DKANVNa0odeiV6a1M6OXp0xOida7O4fDo8eRycFQYKErG7QiAHWHpZuVMdGlyuMWEfpz2qJAfF
-	BdfMVNRQ==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=OjV0hcXPUqUP8L09KptMM5K53qvAQ5Kq23S84L3hUaw=; b=BTiyQI78cnZFbl
+	ct6e+62l7Go0wfSj1bTAXOj5juqSUeFtd1MOKqX34DLhloAGoi144fsmEExrGKAvXEN0OBSQWwe7S
+	M6VF+XRuMNxSBm2lBxuQEJVTvMP0hoiRAknTnO7AviG8Gl4SFPvqqvPHxxae1GGucP+08rtNi5pDe
+	K/ijd2SvDs/chih+HL01jO80VaHJd5hwNLbTc9CUe6bwVEmRLT1skLfRKFm43PL4oixWmgDKpab7V
+	KDB7bXdc3Wf8IUWB+L84oXx7YwgqZ5MlE/fhODTwwrjG0pmszSTJQOVLQ5/fPb6dFSmilqKDRJFdt
+	eCHNTztUcQCMN/LWQQCA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uR8ca-00000004JVX-13Ae;
-	Mon, 16 Jun 2025 12:07:28 +0000
-Received: from szxga05-in.huawei.com ([45.249.212.191])
+	id 1uR9jr-00000004WDL-14nb;
+	Mon, 16 Jun 2025 13:19:03 +0000
+Received: from mail-wm1-x32a.google.com ([2a00:1450:4864:20::32a])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uR7jF-00000004A23-2SXm;
-	Mon, 16 Jun 2025 11:10:19 +0000
-Received: from mail.maildlp.com (unknown [172.19.88.163])
-	by szxga05-in.huawei.com (SkyGuard) with ESMTP id 4bLRzy28PLz1V43x;
-	Mon, 16 Jun 2025 19:07:42 +0800 (CST)
-Received: from kwepemk200017.china.huawei.com (unknown [7.202.194.83])
-	by mail.maildlp.com (Postfix) with ESMTPS id 287C3180044;
-	Mon, 16 Jun 2025 19:10:06 +0800 (CST)
-Received: from [10.174.178.219] (10.174.178.219) by
- kwepemk200017.china.huawei.com (7.202.194.83) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.11; Mon, 16 Jun 2025 19:10:04 +0800
-Subject: Re: [PATCH 3/8] KVM: arm64: Move ARM specific headers in include/kvm
- to arch directory
-To: Sean Christopherson <seanjc@google.com>
-CC: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>,
-	Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>,
-	Huacai Chen <chenhuacai@kernel.org>, Madhavan Srinivasan
-	<maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>, Paul Walmsley
-	<paul.walmsley@sifive.com>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou
-	<aou@eecs.berkeley.edu>, Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Janosch Frank <frankja@linux.ibm.com>, Claudio Imbrenda
-	<imbrenda@linux.ibm.com>, Paolo Bonzini <pbonzini@redhat.com>,
-	<linux-arm-kernel@lists.infradead.org>, <kvmarm@lists.linux.dev>,
-	<kvm@vger.kernel.org>, <loongarch@lists.linux.dev>,
-	<linux-mips@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
-	<kvm-riscv@lists.infradead.org>, <linux-riscv@lists.infradead.org>,
-	<linux-kernel@vger.kernel.org>, Anish Ghulati <aghulati@google.com>, Colton
- Lewis <coltonlewis@google.com>, Thomas Huth <thuth@redhat.com>
-References: <20250611001042.170501-1-seanjc@google.com>
- <20250611001042.170501-4-seanjc@google.com>
-From: Zenghui Yu <yuzenghui@huawei.com>
-Message-ID: <a5032f01-9f54-eff9-ee72-b159ed56ca70@huawei.com>
-Date: Mon, 16 Jun 2025 19:10:04 +0800
-User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:68.0) Gecko/20100101
- Thunderbird/68.12.1
+	id 1uR8Un-00000004HDt-09zq
+	for kvm-riscv@lists.infradead.org;
+	Mon, 16 Jun 2025 11:59:26 +0000
+Received: by mail-wm1-x32a.google.com with SMTP id 5b1f17b1804b1-451e2f0d9c2so37944775e9.1
+        for <kvm-riscv@lists.infradead.org>; Mon, 16 Jun 2025 04:59:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=rivosinc-com.20230601.gappssmtp.com; s=20230601; t=1750075163; x=1750679963; darn=lists.infradead.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=v7RJ7RnL5M/B3X2GFoans1bgjidQp403I4C/vgaiXPA=;
+        b=AXz8XIGLtwJPCGWp6I1UXazOL8aOZ7+V3yK1AOPxP+xt842AA96OaYdl4VPsUdCP4U
+         OMT5dC3pRizQ2hsJ3j9uysguTc2iSBX3xy8z2btreCIidxwN8GIZoXano24CY4vpJ7cW
+         uKeIZN+zcfKfdIRSk82I3gKwvYxJXZ/I+kYwlQVOCCFZViuFbC98FEOeul8ZXnf5HHFd
+         wEk1HS8lw2lPiJPG4Kr0fcjwzRSfh2tEh2m8wIadaxc/qL7SqXDS68HReAMdoJAvMwBH
+         7z0IQMUHz0BL8/iRa3wyYHBk4oq64q2nJC+n/VOvlmcZvMkOUFi3NzrQedAYDa/FkC3H
+         /WHg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1750075163; x=1750679963;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=v7RJ7RnL5M/B3X2GFoans1bgjidQp403I4C/vgaiXPA=;
+        b=VbpUgVhrBIJpp2jv2c1lXzzNV/qb/dRhF1MV3CIx4AqIpuSUDFVJdq31szoPgIR+qN
+         9WOVlYu4G4dQ294ImqYW+XZTbQie0SjrdvTQW6HaImqvjjK9xWEZw6Y44xm65+i2jCt6
+         CQNo4nO6J6yAcb2SNRMo9dxR1B6NhKimR3HfCkVDtSeoOdSxOUW1g5VLh7HjY9PYBMID
+         NQgI9f9e6A31T1jj406QEk3TPj41xRTlcz498LUNrWy0q+dwRM6Exgo4ol+TMFCF5vu3
+         qZZTjPM177zPiwG34FpjryFMvOOhdQ0BKhK5VdHqP5MwrspoxBrD5UZPfns0iuDOR41P
+         vzLQ==
+X-Forwarded-Encrypted: i=1; AJvYcCWqBQ+YxkMVihOGxOCx1on+YMylguLkBhgKwCq2ksv6dr/x/FF+x4bmY+pLi322tgb/YS5ViPiZlus=@lists.infradead.org
+X-Gm-Message-State: AOJu0YxO5NRQs6nVC0x3uQy0ZB23O9R5F8c7ZOuL1A1TS7FjrPh6mX1z
+	W8W55GPBRHSD6jb0GppvJH+QwTOqeKQ4xsh0a0OuRHKdMGE9eGD0UoB2zhCIqVFOA+s=
+X-Gm-Gg: ASbGnctQ6gU0cY8kxEqqu99ZFbuxlPCKNr5J7aAlA7aSJJsdm7QCTr/2w5dudubc09j
+	X3Hnq0MeEDkAyjoU3O6Xc64YH3AWhN5VkT+I03sar/fLmCRt1MKEtHMkTcUgN92bCqdBbUcD59P
+	/eqxhC4PZLcmjd/gZV4ozPOYQpVCfSBmAQ6aR05gRnP4tKkj6bDujpub3uN4QPdtsrZ+1VJo/nT
+	A14A5LLfjDnXnALsIG1sAKNPSU+l/ghYPxffl/dPaMB6yzecubqUVJTN+fZ2Iba+h3dgVmMmFqX
+	XJI30hUz8jzHG3V+fRLHR4tHFprN35pNGJxG89VsxDU5Iz1SVRj7wkRQttb6A/ozZelZ56xv0w=
+	=
+X-Google-Smtp-Source: AGHT+IELLNm92LFRldfmnL4vF0QIZqp/HsDDpvz3MyBbTA9HBXfroUmvQynilHVSzS3W30Ny6doK4Q==
+X-Received: by 2002:a05:600c:5908:b0:453:827:d0b1 with SMTP id 5b1f17b1804b1-4533b235e16mr61208595e9.2.1750075162941;
+        Mon, 16 Jun 2025 04:59:22 -0700 (PDT)
+Received: from carbon-x1.. ([2a01:e0a:e17:9700:16d2:7456:6634:9626])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-3a579808c24sm6198786f8f.43.2025.06.16.04.59.22
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 16 Jun 2025 04:59:22 -0700 (PDT)
+From: =?UTF-8?q?Cl=C3=A9ment=20L=C3=A9ger?= <cleger@rivosinc.com>
+To: kvm@vger.kernel.org,
+	kvm-riscv@lists.infradead.org
+Cc: =?UTF-8?q?Cl=C3=A9ment=20L=C3=A9ger?= <cleger@rivosinc.com>,
+	Andrew Jones <ajones@ventanamicro.com>
+Subject: [kvm-unit-tests v3 0/2] riscv: Add double trap testing
+Date: Mon, 16 Jun 2025 13:58:58 +0200
+Message-ID: <20250616115900.957266-1-cleger@rivosinc.com>
+X-Mailer: git-send-email 2.49.0
 MIME-Version: 1.0
-In-Reply-To: <20250611001042.170501-4-seanjc@google.com>
-Content-Language: en-US
-X-Originating-IP: [10.174.178.219]
-X-ClientProxiedBy: kwepems200001.china.huawei.com (7.221.188.67) To
- kwepemk200017.china.huawei.com (7.202.194.83)
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250616_041017_947874_FB9A2C6F 
-X-CRM114-Status: UNSURE (   8.45  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20250616_045925_162844_286E479E 
+X-CRM114-Status: GOOD (  11.33  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -82,54 +92,33 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On 2025/6/11 8:10, Sean Christopherson wrote:
-> Move kvm/arm_{arch_timer,pmu,vgic}.h to arch/arm64/include/asm and drop
-> the "arm" prefix from all file names.  Now that KVM no longer supports
-> 32-bit ARM, there is no reason to expose ARM specific headers to other
-> architectures beyond arm64.
-> 
-> Cc: Colton Lewis <coltonlewis@google.com>
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
-> ---
->  .../arm64/include/asm/kvm_arch_timer.h                     | 0
->  arch/arm64/include/asm/kvm_host.h                          | 7 +++----
->  include/kvm/arm_pmu.h => arch/arm64/include/asm/kvm_pmu.h  | 0
->  .../kvm/arm_vgic.h => arch/arm64/include/asm/kvm_vgic.h    | 0
->  arch/arm64/kvm/arch_timer.c                                | 5 ++---
->  arch/arm64/kvm/arm.c                                       | 3 +--
->  arch/arm64/kvm/pmu-emul.c                                  | 4 ++--
->  arch/arm64/kvm/reset.c                                     | 3 +--
->  arch/arm64/kvm/trace_arm.h                                 | 2 +-
->  arch/arm64/kvm/vgic/vgic-debug.c                           | 2 +-
->  arch/arm64/kvm/vgic/vgic-init.c                            | 2 +-
->  arch/arm64/kvm/vgic/vgic-irqfd.c                           | 2 +-
->  arch/arm64/kvm/vgic/vgic-kvm-device.c                      | 2 +-
->  arch/arm64/kvm/vgic/vgic-mmio-v2.c                         | 2 +-
->  arch/arm64/kvm/vgic/vgic-mmio-v3.c                         | 2 +-
->  arch/arm64/kvm/vgic/vgic-mmio.c                            | 4 ++--
->  arch/arm64/kvm/vgic/vgic-v2.c                              | 2 +-
->  arch/arm64/kvm/vgic/vgic-v3-nested.c                       | 3 +--
->  arch/arm64/kvm/vgic/vgic-v3.c                              | 2 +-
->  19 files changed, 21 insertions(+), 26 deletions(-)
->  rename include/kvm/arm_arch_timer.h => arch/arm64/include/asm/kvm_arch_timer.h (100%)
->  rename include/kvm/arm_pmu.h => arch/arm64/include/asm/kvm_pmu.h (100%)
->  rename include/kvm/arm_vgic.h => arch/arm64/include/asm/kvm_vgic.h (100%)
-
-Nitpick:
-
-|F:	include/kvm/arm_*
-
-can be deleted from the KVM/arm64 MAINTAINERS entry now.
-
-Thanks,
-Zenghui
-
--- 
-kvm-riscv mailing list
-kvm-riscv@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/kvm-riscv
+QWRkIGEgdGVzdCB0aGF0IHRyaWdnZXJzIGRvdWJsZSB0cmFwIGFuZCB2ZXJpZnkgdGhhdCBpdCdz
+IGJlaGF2aW9yCmNvbmZvcm1zIHRvIHRoZSBzcGVjLiBBbHNvIHVzZSBTU0UgdG8gdmVyaWZ5IHRo
+YXQgYW4gU1NFIGV2ZW50IGlzCmNvcnJlY3RseSBzZW50IHVwb24gZG91YmxlIHRyYXAuCgpJbiBv
+cmRlciB0byBydW4gdGhpcyB0ZXN0LCBvbmUgY2FuIHVzZSB0aGUgZm9sbG93aW5nIGNvbW1hbmQg
+dXNpbmcgYW4KdXBzdHJlYW0gdmVyc2lvbiBvZiBPcGVuU0JJOgoKJCBRRU1VPXFlbXUtc3lzdGVt
+LXJpc2N2NjQgXAogIEZJUk1XQVJFX09WRVJSSURFPTxvcGVuc2JpPi9md19keW5hbWljLmJpbiBc
+CiAgLi9yaXNjdi1ydW4gcmlzY3YvaXNhLWRibHRycC5mbGF0CgotLS0KCnYzOgogLSBSZXR1cm4g
+YW4gZXJyb3Igb25seSBpZiBTU0UgZXZlbnQgd2Fzbid0IHVucmVnaXN0ZXJlZCBzdWNjZXNzZnVs
+bHkKCnYyOgogLSBVc2UgV1JJVEVfT05DRS9SRUFEX09OQ0UgZm9yIHNoYXJlZCB2YXJpYWJsZXMK
+IC0gUmVtb3ZlIGxvY2tpbmcgZmxhZyBmb3IgbGFzdCB0ZXN0CiAtIEZpeCBhIGZldyB0eXBvcwog
+LSBTa2lwIGNyYXNoIHRlc3QgaWYgZW52IHZhciBET1VCTEVfVFJBUF9URVNUX0NSQVNIIGlzbid0
+IHNldAogLSBTa2lwIGNyYXNoIHRlc3QgaWYgU1NFIGV2ZW50IHVucmVnaXN0ZXJpbmcgZmFpbGVk
+CiAtIFJlbW92ZSBTRFQgY2xlYXJpbmcgcGF0Y2gKIC0gRml4IHdyb25nIGNoZWNrIHVzaW5nIHJl
+dC52YWx1ZSBuc3RlYWQgb2YgcmV0LmVycm9yCgpDbMOpbWVudCBMw6lnZXIgKDIpOgogIGxpYi9y
+aXNjdjogZXhwb3J0IEZXRlQgZnVuY3Rpb25zCiAgcmlzY3Y6IEFkZCBJU0EgZG91YmxlIHRyYXAg
+ZXh0ZW5zaW9uIHRlc3RpbmcKCiByaXNjdi9NYWtlZmlsZSAgICAgICAgICAgIHwgICAxICsKIGxp
+Yi9yaXNjdi9hc20vY3NyLmggICAgICAgfCAgIDEgKwogbGliL3Jpc2N2L2FzbS9wcm9jZXNzb3Iu
+aCB8ICAxMCArKwogbGliL3Jpc2N2L2FzbS9zYmkuaCAgICAgICB8ICAgNSArCiBsaWIvcmlzY3Yv
+c2JpLmMgICAgICAgICAgIHwgIDIwICsrKysKIHJpc2N2L2lzYS1kYmx0cnAuYyAgICAgICAgfCAy
+MTAgKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysKIHJpc2N2L3NiaS1md2Z0
+LmMgICAgICAgICAgfCAgNDkgKysrLS0tLS0tCiByaXNjdi91bml0dGVzdHMuY2ZnICAgICAgIHwg
+ICA0ICsKIDggZmlsZXMgY2hhbmdlZCwgMjY1IGluc2VydGlvbnMoKyksIDM1IGRlbGV0aW9ucygt
+KQogY3JlYXRlIG1vZGUgMTAwNjQ0IHJpc2N2L2lzYS1kYmx0cnAuYwoKLS0gCjIuNDkuMAoKCi0t
+IAprdm0tcmlzY3YgbWFpbGluZyBsaXN0Cmt2bS1yaXNjdkBsaXN0cy5pbmZyYWRlYWQub3JnCmh0
+dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8va3ZtLXJpc2N2Cg==
