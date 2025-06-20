@@ -4,92 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A8AB2C71155
-	for <kvm-riscv@archiver.kernel.org>; Fri, 20 Jun 2025 10:22:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E343CC71155
+	for <kvm-riscv@archiver.kernel.org>; Fri, 20 Jun 2025 10:36:46 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-Id:Date:Subject:Cc
-	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=4UHWAej129cf3enJ5zh3S0k5Hdivs2gvJAmbYYFRRpE=; b=xCrB1ddmepGaNg
-	NhknZAAZUn8uZYfjXQyrolftxBQQiDnJVB/mk5kzyAgajShpB/+ndUyg5AwSj2WtrJbN6icEngizJ
-	PwM6FkiPs49UO+mlPu7/c+7AT8L5NX/gitNyRFhg1CwdeV3s6g2viG7KrWF07WleyMkWOosOkQPxa
-	6GgxUrdEyAQ75vweTWWIXmWuM1tql25szAw6mpPapM7L/1CyA/CqEv2V4a2xpXa4ccPX+9fF0u2Em
-	Ppma2XvFV2thZKBNTlaqhmmMr4UOEQloHT2Qg0NzPlf92joCFJ1Z+gSZaWqCB94Ivg2LIqmp6gp4l
-	rlgfXyt3kEfnkoB/Tb2Q==;
+	List-Archive:List-Unsubscribe:List-Id:References:In-Reply-To:Mime-Version:
+	Message-Id:Date:From:Cc:To:Subject:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=thZg1lSPCKKrkA+0QmKCrAu+4Lf7DzFI9W+Dhd922Eo=; b=oTxcvOEl51ZFsa
+	DjzXYGMZdwnEkIJnQ5WT0gHH3uQhUPkjSC3+/NQ7WiveYNayEqLQrefcYnhOMQzMU4blzbRYZRIhI
+	sQ9psSARYL5Eu1UcMGi8HkCpmb8B2s8bFVrpcrMwMvBhynjRA2Wzrdovan372TWlz35Q6Qj9ZM/1A
+	IwFStC6TFk319dqaMIfglbhzEZfgy4zYRuTiMJI4+1710uN5p/yErgNTqg2hl1X7nvvS2rM5JNLoQ
+	q7WIHk5fyphtTQy605cow4Skk5WRDlWf3lQEbPnSDpS2DctUwtGyB9ijNmtOEmTXCTtbHRLm+GMDf
+	BCsbUiWThWXq4n9O7jVg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uSYtJ-0000000FK50-0caI;
-	Fri, 20 Jun 2025 10:22:37 +0000
-Received: from mail-pf1-x42e.google.com ([2607:f8b0:4864:20::42e])
+	id 1uSZ70-0000000FLmM-1zMn;
+	Fri, 20 Jun 2025 10:36:46 +0000
+Received: from sg-3-18.ptr.tlmpb.com ([101.45.255.18])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uSXsN-0000000FAWg-1iQk
+	id 1uSYBL-0000000FCpi-1GYg
 	for kvm-riscv@lists.infradead.org;
-	Fri, 20 Jun 2025 09:17:36 +0000
-Received: by mail-pf1-x42e.google.com with SMTP id d2e1a72fcca58-73c17c770a7so1844140b3a.2
-        for <kvm-riscv@lists.infradead.org>; Fri, 20 Jun 2025 02:17:29 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bytedance.com; s=google; t=1750411049; x=1751015849; darn=lists.infradead.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=dNLJBKjnEtfhUDU8FDwmcm2NO13Gl9xrFkTR60m39TU=;
-        b=Ve3aO1oW0WWHLcj1cWbPc9KY48EKpgq7G298mexjgZ8QiN9cD/DpHqYUJm3n6Bp7NE
-         9WynzfmB1D1C+hWvUMbJenzDtF6tBLrrUrb7fKk9i2XlN0w7+UW0QuYhGO+zXcSDwBIe
-         LnG7yKQMvrtDqocGpSG95mBnHu0WGLiPu8vSmf2KXtERU1FMBgx4R2zvN910R/jMOd6c
-         /4KKSzmZWdIg9ASN7Q+Kn8Y1Ob6HEDK2fVAU2vY4VnzAWpFyPjREqKCClGTr6Om6qauk
-         4dtfeJgI1ZCMpaepPq0/QBwN2oTCrsy/bAAvSU5pvEMn47LDZJo0E7nmY5CI+6Xg/duu
-         8xFQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1750411049; x=1751015849;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=dNLJBKjnEtfhUDU8FDwmcm2NO13Gl9xrFkTR60m39TU=;
-        b=qKRn2HjYAE+LUHSRNrvgyvtagT9svvj/6wr4vT0OVCDBCdPePdzTJuBsdoti2HpZgc
-         UtqaPUj3KqdLW/EesFpcQg7BEDA5rIATZBEKoTzttjWKS67AsTvPF57oz1CAFb46+mz7
-         oCOsoCtTIkwqGhnXnlCk15hkL6AhKy/L2frl3ZQzN0O3eDzetAoYrHSa28iNECPEjeA3
-         n/WhWMZsbbqDZrfE/bisTgYejao4VrDYrwaXTa2tH0pxWbM+HUFpmLrnCH5UaNv7CTZc
-         DReh9yVq+Q4SUnLvv/P1ET7vIZIs1vq24vzS2ykTfv8xSOKAT/MepoYSxpOYyhEWhIXC
-         KS+g==
-X-Forwarded-Encrypted: i=1; AJvYcCW1BhnAZfxAe7JQZ6IN08uaWAgLIDzWs056dsKV3aOcIznTYPvvkZ1hXBy7glUAS0hakOLfn83UwZE=@lists.infradead.org
-X-Gm-Message-State: AOJu0YyyL84aEahB67la3ImUQVhVXxh43fnLaIp1RyRNU5oPTOQEw5iN
-	gg/gVoaSSa/eoSrpABOT5/PvU0Ff7II0Yq20sAJHUDk2jIMt+MaiHaovCAit4L0KwR79MrEAgxz
-	HBrxkNDO1T5V1
-X-Gm-Gg: ASbGncv1IL4hCl6QBfVNa9svMqnToHN5pNAAjaKOj0uUdwbZpEQLbM6Js1OW6XSGc7i
-	xOLcMwpGCRPCpg0QToPGv+UxXB/NdmRDAZ8++neP0ZzmYWxCpO1VFsZYl/8QZ/K2dZ1k5v7XGKo
-	krSG6VRM0k0PY8L+aYk2z6NUKg4WlHLpuLVYQcxtR7F8sq6Izhbo9v18rbjMcTXoaV2YMq4Di80
-	yE7KYI6x1r312jxxeTbXDE6l80fIIuo9Q6fbQZ32VAur55uIS6KqXZhhYVOaJ9EFld01niOTynn
-	DgvMeyY24R+93NkpjbkrFN/Sn6EPfRz+4NrCpAn3I+2O4Y+NjeXeVkCgu8KTHiCih0g3KSVwaKe
-	zHHBsY+AIwDViNGhf/WXqK6Kce/0+BzN7UCZzvyHn2zeBkSwAbDPHMdE=
-X-Google-Smtp-Source: AGHT+IFl+mvsVS8E+myUXJyeRA0NPyQGQ4vLveBBEzuD3+Qemhmjod5mWIqNQeJQuwr4ZVik1pW6cw==
-X-Received: by 2002:a05:6a00:2789:b0:730:95a6:3761 with SMTP id d2e1a72fcca58-7490d4f533amr4072727b3a.3.1750411049294;
-        Fri, 20 Jun 2025 02:17:29 -0700 (PDT)
-Received: from J9GPGXL7NT.bytedance.net ([61.213.176.56])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-7490a4a488esm1643231b3a.63.2025.06.20.02.17.25
-        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Fri, 20 Jun 2025 02:17:28 -0700 (PDT)
-From: Xu Lu <luxu.kernel@bytedance.com>
-To: anup@brainfault.org,
-	atish.patra@linux.dev,
-	paul.walmsley@sifive.com,
-	palmer@dabbelt.com,
-	aou@eecs.berkeley.edu,
-	alex@ghiti.fr
-Cc: kvm@vger.kernel.org,
-	kvm-riscv@lists.infradead.org,
-	linux-riscv@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	Xu Lu <luxu.kernel@bytedance.com>
-Subject: [PATCH] RISC-V: KVM: Delegate illegal instruction fault
-Date: Fri, 20 Jun 2025 17:17:20 +0800
-Message-Id: <20250620091720.85633-1-luxu.kernel@bytedance.com>
-X-Mailer: git-send-email 2.39.5 (Apple Git-154)
-MIME-Version: 1.0
+	Fri, 20 Jun 2025 09:37:14 +0000
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ s=s1; d=lanxincomputing-com.20200927.dkim.feishu.cn; t=1750412220;
+  h=from:subject:mime-version:from:date:message-id:subject:to:cc:
+ reply-to:content-type:mime-version:in-reply-to:message-id;
+ bh=oeXxAIqzohSWPmedTEZHs1J1ce2tPrIZS+IBTNkDcr8=;
+ b=AF1ceC70Y+GV1+D5xXqF8udpzakQZUwAaNT0se6YcyniphkrwbqLYF07pg7LFWVsj6AXhn
+ ucJsWNwhk0Pc2leTiU3TP4ZBO0g4f+bhz/5VpimV1wsuuPGV6k2pz9hDJGEoxrE7C7mDpo
+ iBduWSrtu80KrA7BPBWMls5kAbnv8Md5ytYL/Jwu2SSRatUNpYL7ykWF4yEIdpdxAaQx/Q
+ nVP91BdtnmUaNCozzGXNhqk3byAgjosMXepeX01JU7vEDOugHXFNEn50O1VHKIXNsR5YNo
+ bOSZBeeGmtEeFPk5krB62IYteWYdUdyYO7h6qi2K/Bc48uRVg7XsYRo0eBo80w==
+Subject: Re: [PATCH 1/5] RISC-V: KVM: Provide UAPI for Zicbop block size
+X-Original-From: Nutty Liu <liujingqi@lanxincomputing.com>
+X-Lms-Return-Path: <lba+268552bba+6dd456+lists.infradead.org+liujingqi@lanxincomputing.com>
+Content-Language: en-US
+User-Agent: Mozilla Thunderbird
+To: <zhouquan@iscas.ac.cn>, <anup@brainfault.org>, <ajones@ventanamicro.com>, 
+	<atishp@atishpatra.org>, <paul.walmsley@sifive.com>, 
+	<palmer@dabbelt.com>
+Cc: <linux-kernel@vger.kernel.org>, <linux-riscv@lists.infradead.org>, 
+	<kvm@vger.kernel.org>, <kvm-riscv@lists.infradead.org>
+From: "Nutty Liu" <liujingqi@lanxincomputing.com>
+Date: Fri, 20 Jun 2025 17:36:55 +0800
+Message-Id: <193a6972-2498-4661-8b76-4303819ca0b2@lanxincomputing.com>
+Mime-Version: 1.0
+Received: from [127.0.0.1] ([180.165.3.105]) by smtp.feishu.cn with ESMTPS; Fri, 20 Jun 2025 17:36:57 +0800
+In-Reply-To: <553bacc4f66e815975bb8ee0e4696397407b0a82.1750164414.git.zhouquan@iscas.ac.cn>
+References: <cover.1750164414.git.zhouquan@iscas.ac.cn> <553bacc4f66e815975bb8ee0e4696397407b0a82.1750164414.git.zhouquan@iscas.ac.cn>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250620_021735_438229_8DB5132B 
-X-CRM114-Status: UNSURE (   6.29  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20250620_023712_045109_B69F1191 
+X-CRM114-Status: GOOD (  14.77  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -106,29 +73,70 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Delegate illegal instruction fault to VS mode in default to avoid such
-exceptions being trapped to HS and redirected back to VS.
+On 6/17/2025 9:10 PM, zhouquan@iscas.ac.cn wrote:
+> From: Quan Zhou <zhouquan@iscas.ac.cn>
+>
+> We're about to allow guests to use the Zicbop extension.
+> KVM userspace needs to know the cache block size in order to
+> properly advertise it to the guest. Provide a virtual config
+> register for userspace to get it with the GET_ONE_REG API, but
+> setting it cannot be supported, so disallow SET_ONE_REG.
+>
+> Signed-off-by: Quan Zhou <zhouquan@iscas.ac.cn>
+> ---
+>   arch/riscv/include/uapi/asm/kvm.h |  1 +
+>   arch/riscv/kvm/vcpu_onereg.c      | 11 +++++++++++
+>   2 files changed, 12 insertions(+)
+>
+> diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+> index 5f59fd226cc5..0863ca178066 100644
+> --- a/arch/riscv/include/uapi/asm/kvm.h
+> +++ b/arch/riscv/include/uapi/asm/kvm.h
+> @@ -55,6 +55,7 @@ struct kvm_riscv_config {
+>   	unsigned long mimpid;
+>   	unsigned long zicboz_block_size;
+>   	unsigned long satp_mode;
+> +	unsigned long zicbop_block_size;
+>   };
+>   
+>   /* CORE registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
+> diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
+> index 2e1b646f0d61..b08a22eaa7a7 100644
+> --- a/arch/riscv/kvm/vcpu_onereg.c
+> +++ b/arch/riscv/kvm/vcpu_onereg.c
+> @@ -256,6 +256,11 @@ static int kvm_riscv_vcpu_get_reg_config(struct kvm_vcpu *vcpu,
+>   			return -ENOENT;
+>   		reg_val = riscv_cboz_block_size;
+>   		break;
+> +	case KVM_REG_RISCV_CONFIG_REG(zicbop_block_size):
+> +		if (!riscv_isa_extension_available(vcpu->arch.isa, ZICBOP))
+> +			return -ENOENT;
+> +		reg_val = riscv_cbop_block_size;
+> +		break;
+>   	case KVM_REG_RISCV_CONFIG_REG(mvendorid):
+>   		reg_val = vcpu->arch.mvendorid;
+>   		break;
+> @@ -347,6 +352,12 @@ static int kvm_riscv_vcpu_set_reg_config(struct kvm_vcpu *vcpu,
+>   		if (reg_val != riscv_cboz_block_size)
+>   			return -EINVAL;
+>   		break;
+> +	case KVM_REG_RISCV_CONFIG_REG(zicbop_block_size):
+> +		if (!riscv_isa_extension_available(vcpu->arch.isa, ZICBOP))
+> +			return -ENOENT;
+> +		if (reg_val != riscv_cbop_block_size)
 
-Signed-off-by: Xu Lu <luxu.kernel@bytedance.com>
----
- arch/riscv/include/asm/kvm_host.h | 1 +
- 1 file changed, 1 insertion(+)
+Seems "riscv_cbop_block_size" has not been declared.
+Otherwise,
+Reviewed-by: Nutty Liu<liujingqi@lanxincomputing.com>
 
-diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
-index 85cfebc32e4cf..97cc2c0dba73a 100644
---- a/arch/riscv/include/asm/kvm_host.h
-+++ b/arch/riscv/include/asm/kvm_host.h
-@@ -48,6 +48,7 @@
- 					 BIT(EXC_SYSCALL)         | \
- 					 BIT(EXC_INST_PAGE_FAULT) | \
- 					 BIT(EXC_LOAD_PAGE_FAULT) | \
-+					 BIT(EXC_INST_ILLEGAL)    | \
- 					 BIT(EXC_STORE_PAGE_FAULT))
- 
- #define KVM_HIDELEG_DEFAULT		(BIT(IRQ_VS_SOFT)  | \
--- 
-2.20.1
+Thanks,
+Nutty
 
+> +			return -EINVAL;
+> +		break;
+>   	case KVM_REG_RISCV_CONFIG_REG(mvendorid):
+>   		if (reg_val == vcpu->arch.mvendorid)
+>   			break;
 
 -- 
 kvm-riscv mailing list
