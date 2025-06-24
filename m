@@ -4,86 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B8EC3C7EE33
-	for <kvm-riscv@archiver.kernel.org>; Tue, 24 Jun 2025 14:14:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B6A61C77B7C
+	for <kvm-riscv@archiver.kernel.org>; Tue, 24 Jun 2025 16:00:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
 	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=WOv1WcRr06Xi6KIj8HOLdZI1B/6CjiuE91iQx+h62As=; b=KMh37gy8EJtB3x
-	EFDEK1Jb86oB7F1xSUs0xXmRkBZDXbYuenUoHU84/M++HlT/YsB1PP2StQdZqjQI79xie9+uBgdaC
-	DmxcGyZjIom5rTKntUWrtiCc0DF31oYz4xnjp2U/9dLJlba18aa2X3TaK4tCcqWxnl1qSb8y/cZIf
-	tD9uiECKM12rVDenB8/Hvee/LEa3a9HDznnQCvGdjp4PB9ovvnZCLekO2eKsmmLpMZzM172h2lKtz
-	Doy539YRNviE+icI5wmCKnFa8q6DFzl1Yf7oB/ywXZqLZYO8awMDjy37cMIVEf0c26Z0gfCD0bJp1
-	jyjWWLzIkF4U0NC5EAbw==;
+	List-Owner; bh=65yeEcxgDcoELZei8ZJTfuZ2UCGB2J/IOD+UDDo8yU4=; b=Q+eKG+FPOWR3YG
+	PIkP8xNENNzT6QDBW3roqlpla5k7R8zA7mhtB+jZQ8/6clJ9L5x80cFAf6qGbN098fv4ohYJbU26c
+	NNQ0t4IwnsAAHbF3fpay5vV9mY29RbcNmX5DWbveBfRHrrhUEcbz7OrssNFrD+au4dICm7XslSkBT
+	HVvOoU1LFbT9fGuTL6fU11MVP2B0QbqyFLrw1kExk6PWjeXw26UetT4Yk9DEvpWcFR4LdHwpkPUIn
+	uyGOYTiHwOBINrzLsf2fvb+VHHMlR+u8XlRURFcm6fqOwFVhpyAUmAseqi18VsluQaNSyOxfC2ROD
+	ZHqwpc1zT8rVBb+ZP3xg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uU4Pf-00000005r7N-1VeY;
-	Tue, 24 Jun 2025 14:14:15 +0000
-Received: from mail-wr1-x42a.google.com ([2a00:1450:4864:20::42a])
+	id 1uU64T-00000006D7Y-0Xbu;
+	Tue, 24 Jun 2025 16:00:29 +0000
+Received: from mail-wm1-x32d.google.com ([2a00:1450:4864:20::32d])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uU3zk-00000005lfH-2J9C
+	id 1uU4Lg-00000005qFn-2ycS
 	for kvm-riscv@lists.infradead.org;
-	Tue, 24 Jun 2025 13:47:29 +0000
-Received: by mail-wr1-x42a.google.com with SMTP id ffacd0b85a97d-3a6d77b43c9so2860543f8f.3
-        for <kvm-riscv@lists.infradead.org>; Tue, 24 Jun 2025 06:47:28 -0700 (PDT)
+	Tue, 24 Jun 2025 14:10:10 +0000
+Received: by mail-wm1-x32d.google.com with SMTP id 5b1f17b1804b1-450cfb79177so3088145e9.0
+        for <kvm-riscv@lists.infradead.org>; Tue, 24 Jun 2025 07:10:08 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ventanamicro.com; s=google; t=1750772847; x=1751377647; darn=lists.infradead.org;
+        d=ventanamicro.com; s=google; t=1750774207; x=1751379007; darn=lists.infradead.org;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=ycq0kX3Vn1ZpP7yxI/jdDggIlJCstgVkDpgaYIcdwgY=;
-        b=gcoHkq15RRXCuJ19UwOdDmcuBQEhZei3RubzsGZCKQxCB4Fdgld0OMukw+D0WXewSS
-         mnR2cvooIDxSf4or2cJamrLP97nIVDfbm7DtjLrx8iV+urMN8nIEmcgHlzY6wEd0RTCL
-         WDEFfbBEhlQWJlh4v0+P3wh7qmfd24jiY2Gz/gvMU6vJfadbW7sWf0K34qRBAItpnaen
-         VBFeneOZb29GMnnapiRJ7zqluNMvXPE6fw+RqJ41RVbjtOin6082RFSvmxc3nWpuRLSd
-         SVCyUGwhyA63zs38+rbs6nDoR7OgCbHMDJB4AFvqXhKWYijVdhkn8lAzqL0RoSZVuVo3
-         /zgw==
+        bh=MQ7CvyZIlkZs87gjY0NM1qz59baVwPwR/W8k37uo164=;
+        b=gM2pdsdhagcp/QNjInHERc0podCBCawoWJq533YKIQMFL/WGoVkxKeaDLvokRKBIrt
+         Ym1iqGRWWX4CiYwW1K9/OAS/KYjcpc+Je9qieqZfPvDoN1iWwCDRYEKoTiKG6C2cOEmx
+         Opc1RYxT1L8nZp3hPGiTqFtX4LnpkYF+qMrWrC879wc4nPRyZhIAoKXG149NuFNK2mMP
+         l0HgnzYsfn1edPb9gowG7V7Tm5Uy4TKnwHWAF1XG/lS+GfpyTfTsbYv01LbVm+mafUpb
+         PBJIOVxuJiw9H/WRoH6B/EhYaxIKFl8EH6GCjhngwZ8fE2f9QMuzZGv3trUWDjTqNzw+
+         Lrbg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1750772847; x=1751377647;
+        d=1e100.net; s=20230601; t=1750774207; x=1751379007;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=ycq0kX3Vn1ZpP7yxI/jdDggIlJCstgVkDpgaYIcdwgY=;
-        b=ccoK07AI9STtC+BcJ+iseKIjMHr8/2GxvDY6Zk8YUipOc6VgNEnZb889tUe3mbGivu
-         +m1PbgqW0xpxZTW19cmwaB18n4gEVhJwg3znz+XV/BQWMDnxSXpbR5qT+eb0BwdBWp5a
-         Sc4sVmQWzZQoKB+L6caEXkdsP9dkMmCCQ6mlghT0zXbHjF/0YisLzRoEgcQD7Y+JdNfP
-         gWWGvjT53mLYPJQoOmTIYQhRgQ9pPZVJ7U/9GH3kjMZk6QEmea8UsyXY7u8aiRK7vYK3
-         YPvvrhfOlUn5VLkNAHzRkAinEJTUtPRprRHwsYPKdeA7qpTBqa2KuWZRyZxbBTXWzu6y
-         C9dg==
-X-Forwarded-Encrypted: i=1; AJvYcCXIitg1p2d5EqfNwwMqtmD5D9FWYbU4ouF/ieiszr6QG/ttK5AqCbH5C1xlxHSAlb7ydKt+F3NQAFg=@lists.infradead.org
-X-Gm-Message-State: AOJu0YyOOGcUCcSMhXIe0dymw3WDgFGdQYwdLu3baeLjSoP8gZivDy8B
-	OwJxqj8lWY+qTK0SWQzagriii9Lgj7fb+tHOob62Kjmta/NrcoVafa46l4u9kltTRs8=
-X-Gm-Gg: ASbGncsPdZjoVyRT+rSmecLimQbUfrMwAeWGdJ8jXGwcnwBDubnIlZhsxOGPOBQYTA6
-	88B/lN8JLX0eEbyPIGM0j4XL4ixh+VexsgFlxeiC7Ib4kndFBcsduFlNmPaCqLZER/6e7CW/P43
-	abknwmsHPLf6WvwZEde3chIw9P6G0YaYEWymI3Jr+eEISF+eCRGtR/XX8NrjcznEOR6++8GDAvB
-	PxH11y4JN6PmYPqR4Giz3sGtYBqInvVxapz0L5BCdOJIf1Xg2Lg1Yb9Jj9zwKRI2dnaTOL4q/Tg
-	JQx61kW5Vj/0d7fUcd7QOkdGhY00gJLmt0XfgqenR3PuhyxoKQ==
-X-Google-Smtp-Source: AGHT+IHb76B6ik9Yt3pkD/SAdLPqXg65db3i1R0WxXLtr/BPlZTDKztKX7BSnwY0vPSiL+IcBDUqLw==
-X-Received: by 2002:a05:6000:2211:b0:3a4:ed62:c7e1 with SMTP id ffacd0b85a97d-3a6d12c455cmr12967179f8f.12.1750772847157;
-        Tue, 24 Jun 2025 06:47:27 -0700 (PDT)
+        bh=MQ7CvyZIlkZs87gjY0NM1qz59baVwPwR/W8k37uo164=;
+        b=BbYqJyhLvgqmFAc/Ud2G/wyrrIjEzKSI0gXLHJAzqF54x8ffHs3B6OmpcOk6sGyMmR
+         j7oQDm7agKm3IY7b3XV2193Id/5vIx4RsvKlNaVEWy0k9mY2PMtm/TFHiHJA43sEU+QE
+         HCZCXyTLpMApKu/9453b5cJyk3XP2WPn9wYo0ShMZvcTUXh4QvGSTw7zkUmhuyVQJYtQ
+         +Ed7E56HCF4/OQXxi8E9+wK+rFLeANgTQExRAHGRaRn9+tA+q/wKOLzDfRR5KAvZEaIQ
+         k9KB7tNupm9rw/vqnYMwxqPFqnW+JGos3qpk8ZXLE/2lvsOrlOSMiV/k8/n1NdMwM0fq
+         WXpA==
+X-Forwarded-Encrypted: i=1; AJvYcCUu7KfVOaVG9AAsuI3crx8Fgq49GcVitdpMufsvT2PpxwHqREG73clyQX1GgDcJFF1rNN9/QeJ7am8=@lists.infradead.org
+X-Gm-Message-State: AOJu0YxPP/zikcwBBF5hABhw4iLEC8gzV7SN+G+bo7uP0m/wh5hbRM7I
+	g5CDoBVMU0swDgXZDzpQ+Q7zNxABEZ2BkB9bSAqp3jbyTPCGcEYQwIDM4cLrw+pEiH8=
+X-Gm-Gg: ASbGnctCCUFFDsDvrqfPejMkiGkYDx1N2WLKkyKboz4eL/dT6jS+cU8dqC+Q28Bno3V
+	0MHnSptNY2BEzaLFg1N8POhPR3pKEVDppSvnWjGmoL26KBvbw3JiTsafuawTOahvGsLdniKY19r
+	SZIeSDRvwwPdh/yrpS4KdRml+khp49ByCnTvmEMmqBS6GfAzY2sVWilDRbXqkNpfsPQa34YzGo6
+	WWxg0W47nSYHGWazQlPqfcdXaz89mdNjsSirVkSXatV/ZrnenrqroeAn4lt92ApWpvC2WWH8/on
+	190vHuu2WzkB9bUOiUwrHV3WX7z5Dc1p1gAT4EDGudhYjACq7A==
+X-Google-Smtp-Source: AGHT+IEJeX4diRkZ29kEnrmPsfhU9TcNr2AZ9X1Thlmc1YkCR6UEhFhLrNxHaOV0+h9u10fRDQFJlw==
+X-Received: by 2002:a05:600c:3b24:b0:453:c39:d0a7 with SMTP id 5b1f17b1804b1-453653cf416mr150568745e9.5.1750774206936;
+        Tue, 24 Jun 2025 07:10:06 -0700 (PDT)
 Received: from localhost ([2a02:8308:a00c:e200::5485])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-3a6e80f259dsm2035419f8f.50.2025.06.24.06.47.26
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-3a6e81106b8sm2090841f8f.91.2025.06.24.07.10.05
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 24 Jun 2025 06:47:26 -0700 (PDT)
-Date: Tue, 24 Jun 2025 15:47:26 +0200
+        Tue, 24 Jun 2025 07:10:05 -0700 (PDT)
+Date: Tue, 24 Jun 2025 16:10:04 +0200
 From: Andrew Jones <ajones@ventanamicro.com>
 To: zhouquan@iscas.ac.cn
 Cc: anup@brainfault.org, atishp@atishpatra.org, paul.walmsley@sifive.com, 
 	palmer@dabbelt.com, linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org, 
 	kvm@vger.kernel.org, kvm-riscv@lists.infradead.org
-Subject: Re: [PATCH 5/5] KVM: riscv: selftests: Add bfloat16 extension to
- get-reg-list test
-Message-ID: <20250624-044127e80c3700d93f114280@orel>
-References: <cover.1750164414.git.zhouquan@iscas.ac.cn>
- <65752029ed1ae331a9ac867a6fef2e63a797569e.1750164414.git.zhouquan@iscas.ac.cn>
+Subject: Re: [PATCH 2/2] KVM: riscv: selftests: Add common supported test
+ cases
+Message-ID: <20250624-d7b4b9ba702fcaf2f42695b1@orel>
+References: <cover.1749810735.git.zhouquan@iscas.ac.cn>
+ <7e8f1272337e8d03851fd3bb7f6fc739e604309e.1749810736.git.zhouquan@iscas.ac.cn>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <65752029ed1ae331a9ac867a6fef2e63a797569e.1750164414.git.zhouquan@iscas.ac.cn>
+In-Reply-To: <7e8f1272337e8d03851fd3bb7f6fc739e604309e.1749810736.git.zhouquan@iscas.ac.cn>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250624_064728_613619_9F3EBF55 
-X-CRM114-Status: GOOD (  14.83  )
+X-CRM114-CacheID: sfid-20250624_071008_752120_4F915F1B 
+X-CRM114-Status: GOOD (  18.29  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -100,94 +100,109 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Tue, Jun 17, 2025 at 09:10:50PM +0800, zhouquan@iscas.ac.cn wrote:
+On Fri, Jun 13, 2025 at 07:30:13PM +0800, zhouquan@iscas.ac.cn wrote:
 > From: Quan Zhou <zhouquan@iscas.ac.cn>
 > 
-> The KVM RISC-V allows Zfbfmin/Zvfbfmin/Zvfbfwma extensions for Guest/VM
-> so add them to get-reg-list test.
+> Some common KVM test cases are supported on riscv now as following:
+> 
+>     access_tracking_perf_test
+>     demand_paging_test
+>     dirty_log_perf_test
+>     dirty_log_test
+>     guest_print_test
+>     kvm_binary_stats_test
+>     kvm_create_max_vcpus
+>     kvm_page_table_test
+>     memslot_modification_stress_test
+>     memslot_perf_test
+>     rseq_test
+>     set_memory_region_test
+
+Half this list is already build for riscv since they're common. See
+TEST_GEN_PROGS_COMMON. If the other half can be built and run then
+please send a separate patch, not something tacked onto this series,
+since they're all unrelated to the series.
+
+> 
+> Add missing headers for tests and fix RISCV_FENCE redefinition
+> in `rseq-riscv.h` by using the existing macro from <asm/fence.h>.
 > 
 > Signed-off-by: Quan Zhou <zhouquan@iscas.ac.cn>
 > ---
->  tools/testing/selftests/kvm/riscv/get-reg-list.c | 12 ++++++++++++
->  1 file changed, 12 insertions(+)
+>  tools/testing/selftests/kvm/Makefile.kvm             | 12 ++++++++++++
+>  .../testing/selftests/kvm/include/riscv/processor.h  |  2 ++
+>  tools/testing/selftests/rseq/rseq-riscv.h            |  3 +--
+>  3 files changed, 15 insertions(+), 2 deletions(-)
 > 
-> diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> index ebdc34b58bad..e5a07e000b66 100644
-> --- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> +++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> @@ -80,6 +80,7 @@ bool filter_reg(__u64 reg)
->  	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZCF:
->  	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZCMOP:
->  	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZFA:
-> +	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZFBFMIN:
->  	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZFH:
->  	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZFHMIN:
->  	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZICBOM:
-> @@ -104,6 +105,8 @@ bool filter_reg(__u64 reg)
->  	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZTSO:
->  	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZVBB:
->  	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZVBC:
-> +	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZVFBFMIN:
-> +	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZVFBFWMA:
->  	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZVFH:
->  	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZVFHMIN:
->  	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZVKB:
-> @@ -535,6 +538,7 @@ static const char *isa_ext_single_id_to_str(__u64 reg_off)
->  		KVM_ISA_EXT_ARR(ZCF),
->  		KVM_ISA_EXT_ARR(ZCMOP),
->  		KVM_ISA_EXT_ARR(ZFA),
-> +		KVM_ISA_EXT_ARR(ZFBFMIN),
->  		KVM_ISA_EXT_ARR(ZFH),
->  		KVM_ISA_EXT_ARR(ZFHMIN),
->  		KVM_ISA_EXT_ARR(ZICBOM),
-> @@ -559,6 +563,8 @@ static const char *isa_ext_single_id_to_str(__u64 reg_off)
->  		KVM_ISA_EXT_ARR(ZTSO),
->  		KVM_ISA_EXT_ARR(ZVBB),
->  		KVM_ISA_EXT_ARR(ZVBC),
-> +		KVM_ISA_EXT_ARR(ZVFBFMIN),
-> +		KVM_ISA_EXT_ARR(ZVFBFWMA),
->  		KVM_ISA_EXT_ARR(ZVFH),
->  		KVM_ISA_EXT_ARR(ZVFHMIN),
->  		KVM_ISA_EXT_ARR(ZVKB),
-> @@ -1138,6 +1144,7 @@ KVM_ISA_EXT_SIMPLE_CONFIG(zcd, ZCD);
->  KVM_ISA_EXT_SIMPLE_CONFIG(zcf, ZCF);
->  KVM_ISA_EXT_SIMPLE_CONFIG(zcmop, ZCMOP);
->  KVM_ISA_EXT_SIMPLE_CONFIG(zfa, ZFA);
-> +KVM_ISA_EXT_SIMPLE_CONFIG(zfbfmin, ZFBFMIN);
->  KVM_ISA_EXT_SIMPLE_CONFIG(zfh, ZFH);
->  KVM_ISA_EXT_SIMPLE_CONFIG(zfhmin, ZFHMIN);
->  KVM_ISA_EXT_SUBLIST_CONFIG(zicbom, ZICBOM);
-> @@ -1162,6 +1169,8 @@ KVM_ISA_EXT_SIMPLE_CONFIG(zkt, ZKT);
->  KVM_ISA_EXT_SIMPLE_CONFIG(ztso, ZTSO);
->  KVM_ISA_EXT_SIMPLE_CONFIG(zvbb, ZVBB);
->  KVM_ISA_EXT_SIMPLE_CONFIG(zvbc, ZVBC);
-> +KVM_ISA_EXT_SIMPLE_CONFIG(zvfbfmin, ZVFBFMIN);
-> +KVM_ISA_EXT_SIMPLE_CONFIG(zvfbfwma, ZVFBFWMA);
->  KVM_ISA_EXT_SIMPLE_CONFIG(zvfh, ZVFH);
->  KVM_ISA_EXT_SIMPLE_CONFIG(zvfhmin, ZVFHMIN);
->  KVM_ISA_EXT_SIMPLE_CONFIG(zvkb, ZVKB);
-> @@ -1213,6 +1222,7 @@ struct vcpu_reg_list *vcpu_configs[] = {
->  	&config_zcf,
->  	&config_zcmop,
->  	&config_zfa,
-> +	&config_zfbfmin,
->  	&config_zfh,
->  	&config_zfhmin,
->  	&config_zicbom,
-> @@ -1237,6 +1247,8 @@ struct vcpu_reg_list *vcpu_configs[] = {
->  	&config_ztso,
->  	&config_zvbb,
->  	&config_zvbc,
-> +	&config_zvfbfmin,
-> +	&config_zvfbfwma,
->  	&config_zvfh,
->  	&config_zvfhmin,
->  	&config_zvkb,
+> diff --git a/tools/testing/selftests/kvm/Makefile.kvm b/tools/testing/selftests/kvm/Makefile.kvm
+> index 38b95998e1e6..565e191e99c8 100644
+> --- a/tools/testing/selftests/kvm/Makefile.kvm
+> +++ b/tools/testing/selftests/kvm/Makefile.kvm
+> @@ -197,6 +197,18 @@ TEST_GEN_PROGS_riscv += arch_timer
+>  TEST_GEN_PROGS_riscv += coalesced_io_test
+>  TEST_GEN_PROGS_riscv += get-reg-list
+>  TEST_GEN_PROGS_riscv += steal_time
+> +TEST_GEN_PROGS_riscv += access_tracking_perf_test
+> +TEST_GEN_PROGS_riscv += demand_paging_test
+> +TEST_GEN_PROGS_riscv += dirty_log_perf_test
+> +TEST_GEN_PROGS_riscv += dirty_log_test
+> +TEST_GEN_PROGS_riscv += guest_print_test
+> +TEST_GEN_PROGS_riscv += kvm_binary_stats_test
+> +TEST_GEN_PROGS_riscv += kvm_create_max_vcpus
+> +TEST_GEN_PROGS_riscv += kvm_page_table_test
+> +TEST_GEN_PROGS_riscv += memslot_modification_stress_test
+> +TEST_GEN_PROGS_riscv += memslot_perf_test
+> +TEST_GEN_PROGS_riscv += rseq_test
+> +TEST_GEN_PROGS_riscv += set_memory_region_test
+>  
+>  TEST_GEN_PROGS_loongarch += coalesced_io_test
+>  TEST_GEN_PROGS_loongarch += demand_paging_test
+> diff --git a/tools/testing/selftests/kvm/include/riscv/processor.h b/tools/testing/selftests/kvm/include/riscv/processor.h
+> index 162f303d9daa..4cf5ae11760f 100644
+> --- a/tools/testing/selftests/kvm/include/riscv/processor.h
+> +++ b/tools/testing/selftests/kvm/include/riscv/processor.h
+> @@ -9,7 +9,9 @@
+>  
+>  #include <linux/stringify.h>
+>  #include <asm/csr.h>
+> +#include <asm/vdso/processor.h>
+>  #include "kvm_util.h"
+> +#include "ucall_common.h"
+
+These should be included directly from the tests that need them.
+
+>  
+>  #define INSN_OPCODE_MASK	0x007c
+>  #define INSN_OPCODE_SHIFT	2
+> diff --git a/tools/testing/selftests/rseq/rseq-riscv.h b/tools/testing/selftests/rseq/rseq-riscv.h
+> index 67d544aaa9a3..06c840e81c8b 100644
+> --- a/tools/testing/selftests/rseq/rseq-riscv.h
+> +++ b/tools/testing/selftests/rseq/rseq-riscv.h
+> @@ -8,6 +8,7 @@
+>   * exception when executed in all modes.
+>   */
+>  #include <endian.h>
+> +#include <asm/fence.h>
+>  
+>  #if defined(__BYTE_ORDER) ? (__BYTE_ORDER == __LITTLE_ENDIAN) : defined(__LITTLE_ENDIAN)
+>  #define RSEQ_SIG   0xf1401073  /* csrr mhartid, x0 */
+> @@ -24,8 +25,6 @@
+>  #define REG_L	__REG_SEL("ld ", "lw ")
+>  #define REG_S	__REG_SEL("sd ", "sw ")
+>  
+> -#define RISCV_FENCE(p, s) \
+> -	__asm__ __volatile__ ("fence " #p "," #s : : : "memory")
+>  #define rseq_smp_mb()	RISCV_FENCE(rw, rw)
+>  #define rseq_smp_rmb()	RISCV_FENCE(r, r)
+>  #define rseq_smp_wmb()	RISCV_FENCE(w, w)
 > -- 
 > 2.34.1
->
 
-Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+tools/testing/selftests/rseq isn't under KVM's purview, so this should be
+a separate patch CC'ing the appropriate people and lists.
+
+Thanks,
+drew
 
 -- 
 kvm-riscv mailing list
