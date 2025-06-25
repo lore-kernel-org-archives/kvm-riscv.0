@@ -4,60 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40F5AC7EE31
-	for <kvm-riscv@archiver.kernel.org>; Wed, 25 Jun 2025 19:38:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9918FC83013
+	for <kvm-riscv@archiver.kernel.org>; Wed, 25 Jun 2025 19:38:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=O2cG2dD4qDAOTFiZJQVGiDnN4MSvhuFB+yFwUPyiGpE=; b=a/Nzuux+kAo7IS
-	IidKfzjyHq6AZOSV94dLG4AJFqOGO2h1xjggKXb2LpHNXA3pOYXls7IG+QFMDx8IJxVwDUvYCJ0Qw
-	e9r8dQrbr/vyeIOEgT/kw49CfYdrOWZuYD4TUl6qORuyk4vRcJYDO1y7FHDhm9TKYZd0UbMs+pAsX
-	Wdr40k5/3sASjb2EXfJKr4Am/VWOzButhT891G1Wx5sAHMDEXpMJQ3oOEFcsPguYZXHJa/VnB21hJ
-	bkG0vdFZkcH5V6aIn/lS+2UznLm74uNoOLSqttVcKKB8udtSZ/gqOEDT9ojzbeLocU8QfOnR6pY6v
-	z9FFYjdl86b2IFMvP1tQ==;
+	List-Owner; bh=6Ch6N7ocun9HDC4oWbMKBGroyv+3pLg/LqONrdYFDzk=; b=bcG0zmniL4nHZw
+	qQkrhXzHyBLn/SjDNGCAdO3jNYCn4Eh6e+I9U2Ia+GJ0rAYVWkiNyLtgzuBXj52BOhkFv20a8n8+R
+	txqwByiDLziwzRquuBttLNVtY96hRHaC1ov4WxuXYYVOHg42veKFlv3O1cQcyZ6O3oP8lGKhiEBtu
+	nxgDZ724QaHYekMehl0yxmE3VOT3Q/+j5Vu/57OIFb7h6LL2JvPgI8iSyVl+EDcasnpVZi2peOoji
+	+Ecir7aZQcVISMq5Df73qOnYzStp5kiN7BRPVBEV4xwjbXczC17FeGNeApeF0MQVS7DwoQ+FPCkjj
+	GXKMaZOjnrJwAxt1KqDQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uUVxM-00000009lRr-3dVJ;
-	Wed, 25 Jun 2025 19:38:52 +0000
-Received: from out-174.mta0.migadu.com ([2001:41d0:1004:224b::ae])
-	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uUSLc-00000009AXT-3KaK
+	id 1uUVxO-00000009lTQ-1DRn;
+	Wed, 25 Jun 2025 19:38:54 +0000
+Received: from foss.arm.com ([217.140.110.172])
+	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1uUSN8-00000009Aym-2sIa
 	for kvm-riscv@lists.infradead.org;
-	Wed, 25 Jun 2025 15:47:43 +0000
-Date: Wed, 25 Jun 2025 17:47:33 +0200
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1750866457;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=qVs0TQ6LDv86rPHaG+xh8Q0xxxW4Qg4t45LzYEhUjQQ=;
-	b=FCWvxbicUcT2NwvTSs2RCWF+oIGoyAmdVAqTku4ck1SSFx2tLFoDWuxhCfXcoHN6VfCfM0
-	OMaA/keFB/bQQ+Z9wLeTiHaaITt5/0ryYsuZ6CoRDR44IUxAF2gtR0PiEx/3oJ+xNnqiW9
-	FBIlv5zO+Tkv5q3f11Jhsp2JTQ2vlWw=
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Andrew Jones <andrew.jones@linux.dev>
-To: Jesse Taube <jesse@rivosinc.com>
-Cc: kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
-	linux-kselftest@vger.kernel.org, =?utf-8?B?Q2zDqW1lbnQgTMOpZ2Vy?= <cleger@rivosinc.com>, 
-	Charlie Jenkins <charlie@rivosinc.com>, James Raphael Tiovalen <jamestiotio@gmail.com>, 
-	Sean Christopherson <seanjc@google.com>, Cade Richard <cade.richard@gmail.com>
-Subject: Re: [kvm-unit-tests PATCH v2] riscv: lib: sbi_shutdown add pass/fail
- exit code.
-Message-ID: <20250625-9b8a7fd71ce4924eca101cb1@orel>
-References: <20250624192317.278437-1-jesse@rivosinc.com>
- <20250625-fc81fec2cf6d7ee195c0eb6c@orel>
- <CALSpo=ZsEEQeoYz2dby9B4zgbFcxCzmjN9SH8Jch4Avvm14Cog@mail.gmail.com>
+	Wed, 25 Jun 2025 15:49:15 +0000
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0FF2720E3;
+	Wed, 25 Jun 2025 08:48:56 -0700 (PDT)
+Received: from raptor (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id D09AD3F58B;
+	Wed, 25 Jun 2025 08:49:09 -0700 (PDT)
+From: Alexandru Elisei <alexandru.elisei@arm.com>
+To: andrew.jones@linux.dev,
+	eric.auger@redhat.com,
+	lvivier@redhat.com,
+	thuth@redhat.com,
+	frankja@linux.ibm.com,
+	imbrenda@linux.ibm.com,
+	nrb@linux.ibm.com,
+	david@redhat.com,
+	pbonzini@redhat.com
+Cc: kvm@vger.kernel.org,
+	kvmarm@lists.linux.dev,
+	linuxppc-dev@lists.ozlabs.org,
+	kvm-riscv@lists.infradead.org,
+	linux-s390@vger.kernel.org,
+	will@kernel.org,
+	julien.thierry.kdev@gmail.com,
+	maz@kernel.org,
+	oliver.upton@linux.dev,
+	suzuki.poulose@arm.com,
+	yuzenghui@huawei.com,
+	joey.gouly@arm.com,
+	andre.przywara@arm.com,
+	shahuang@redhat.com
+Subject: [kvm-unit-tests PATCH v4 10/13] scripts: Do not probe for maximum number of VCPUs when using kvmtool
+Date: Wed, 25 Jun 2025 16:48:10 +0100
+Message-ID: <20250625154813.27254-11-alexandru.elisei@arm.com>
+X-Mailer: git-send-email 2.50.0
+In-Reply-To: <20250625154813.27254-1-alexandru.elisei@arm.com>
+References: <20250625154813.27254-1-alexandru.elisei@arm.com>
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <CALSpo=ZsEEQeoYz2dby9B4zgbFcxCzmjN9SH8Jch4Avvm14Cog@mail.gmail.com>
-X-Migadu-Flow: FLOW_OUT
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250625_084741_749475_B13F2F52 
-X-CRM114-Status: GOOD (  36.54  )
+X-CRM114-CacheID: sfid-20250625_084914_798697_227D5E4F 
+X-CRM114-Status: GOOD (  10.61  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -69,93 +78,153 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-T24gV2VkLCBKdW4gMjUsIDIwMjUgYXQgMDc6MzE6MjdBTSAtMDcwMCwgSmVzc2UgVGF1YmUgd3Jv
-dGU6Cj4gT24gV2VkLCBKdW4gMjUsIDIwMjUgYXQgMTozM+KAr0FNIEFuZHJldyBKb25lcyA8YW5k
-cmV3LmpvbmVzQGxpbnV4LmRldj4gd3JvdGU6Cj4gPgo+ID4gT24gVHVlLCBKdW4gMjQsIDIwMjUg
-YXQgMTI6MjM6MTdQTSAtMDcwMCwgSmVzc2UgVGF1YmUgd3JvdGU6Cj4gPiA+IFdoZW4gZXhpdGlu
-ZyBpdCBtYXkgYmUgdXNlZnVsIGZvciB0aGUgc2JpIGltcGxlbWVudGF0aW9uIHRvIGtub3cgaWYK
-PiA+ID4ga3ZtLXVuaXQtdGVzdHMgcGFzc2VkIG9yIGZhaWxlZC4KPiA+ID4gQWRkIGV4aXQgY29k
-ZSB0byBzYmlfc2h1dGRvd24sIGFuZCB1c2UgaXQgaW4gZXhpdCgpIHRvIHBhc3MKPiA+ID4gc3Vj
-Y2Vzcy9mYWlsdXJlICgwLzEpIHRvIHNiaS4KPiA+ID4KPiA+ID4gU2lnbmVkLW9mZi1ieTogSmVz
-c2UgVGF1YmUgPGplc3NlQHJpdm9zaW5jLmNvbT4KPiA+ID4gLS0tCj4gPiA+ICBsaWIvcmlzY3Yv
-YXNtL3NiaS5oIHwgMiArLQo+ID4gPiAgbGliL3Jpc2N2L2lvLmMgICAgICB8IDIgKy0KPiA+ID4g
-IGxpYi9yaXNjdi9zYmkuYyAgICAgfCA0ICsrLS0KPiA+ID4gIDMgZmlsZXMgY2hhbmdlZCwgNCBp
-bnNlcnRpb25zKCspLCA0IGRlbGV0aW9ucygtKQo+ID4gPgo+ID4gPiBkaWZmIC0tZ2l0IGEvbGli
-L3Jpc2N2L2FzbS9zYmkuaCBiL2xpYi9yaXNjdi9hc20vc2JpLmgKPiA+ID4gaW5kZXggYTU3Mzhh
-NWMuLmRlMTFjMTA5IDEwMDY0NAo+ID4gPiAtLS0gYS9saWIvcmlzY3YvYXNtL3NiaS5oCj4gPiA+
-ICsrKyBiL2xpYi9yaXNjdi9hc20vc2JpLmgKPiA+ID4gQEAgLTI1MCw3ICsyNTAsNyBAQCBzdHJ1
-Y3Qgc2JpcmV0IHNiaV9lY2FsbChpbnQgZXh0LCBpbnQgZmlkLCB1bnNpZ25lZCBsb25nIGFyZzAs
-Cj4gPiA+ICAgICAgICAgICAgICAgICAgICAgICB1bnNpZ25lZCBsb25nIGFyZzMsIHVuc2lnbmVk
-IGxvbmcgYXJnNCwKPiA+ID4gICAgICAgICAgICAgICAgICAgICAgIHVuc2lnbmVkIGxvbmcgYXJn
-NSk7Cj4gPiA+Cj4gPiA+IC12b2lkIHNiaV9zaHV0ZG93bih2b2lkKTsKPiA+ID4gK3ZvaWQgc2Jp
-X3NodXRkb3duKHVuc2lnbmVkIGludCBjb2RlKTsKPiA+ID4gIHN0cnVjdCBzYmlyZXQgc2JpX2hh
-cnRfc3RhcnQodW5zaWduZWQgbG9uZyBoYXJ0aWQsIHVuc2lnbmVkIGxvbmcgZW50cnksIHVuc2ln
-bmVkIGxvbmcgc3ApOwo+ID4gPiAgc3RydWN0IHNiaXJldCBzYmlfaGFydF9zdG9wKHZvaWQpOwo+
-ID4gPiAgc3RydWN0IHNiaXJldCBzYmlfaGFydF9nZXRfc3RhdHVzKHVuc2lnbmVkIGxvbmcgaGFy
-dGlkKTsKPiA+ID4gZGlmZiAtLWdpdCBhL2xpYi9yaXNjdi9pby5jIGIvbGliL3Jpc2N2L2lvLmMK
-PiA+ID4gaW5kZXggZmI0MGFkYjcuLjBiZGUyNWQ0IDEwMDY0NAo+ID4gPiAtLS0gYS9saWIvcmlz
-Y3YvaW8uYwo+ID4gPiArKysgYi9saWIvcmlzY3YvaW8uYwo+ID4gPiBAQCAtMTUwLDcgKzE1MCw3
-IEBAIHZvaWQgaGFsdChpbnQgY29kZSk7Cj4gPiA+ICB2b2lkIGV4aXQoaW50IGNvZGUpCj4gPiA+
-ICB7Cj4gPiA+ICAgICAgIHByaW50ZigiXG5FWElUOiBTVEFUVVM9JWRcbiIsICgoY29kZSkgPDwg
-MSkgfCAxKTsKPiA+ID4gLSAgICAgc2JpX3NodXRkb3duKCk7Cj4gPiA+ICsgICAgIHNiaV9zaHV0
-ZG93bighIWNvZGUpOwo+ID4gPiAgICAgICBoYWx0KGNvZGUpOwo+ID4gPiAgICAgICBfX2J1aWx0
-aW5fdW5yZWFjaGFibGUoKTsKPiA+ID4gIH0KPiA+ID4gZGlmZiAtLWdpdCBhL2xpYi9yaXNjdi9z
-YmkuYyBiL2xpYi9yaXNjdi9zYmkuYwo+ID4gPiBpbmRleCAyOTU5Mzc4Zi4uOWRkMTFlOWQgMTAw
-NjQ0Cj4gPiA+IC0tLSBhL2xpYi9yaXNjdi9zYmkuYwo+ID4gPiArKysgYi9saWIvcmlzY3Yvc2Jp
-LmMKPiA+ID4gQEAgLTEwNyw5ICsxMDcsOSBAQCBzdHJ1Y3Qgc2JpcmV0IHNiaV9zc2VfaW5qZWN0
-KHVuc2lnbmVkIGxvbmcgZXZlbnRfaWQsIHVuc2lnbmVkIGxvbmcgaGFydF9pZCkKPiA+ID4gICAg
-ICAgcmV0dXJuIHNiaV9lY2FsbChTQklfRVhUX1NTRSwgU0JJX0VYVF9TU0VfSU5KRUNULCBldmVu
-dF9pZCwgaGFydF9pZCwgMCwgMCwgMCwgMCk7Cj4gPiA+ICB9Cj4gPiA+Cj4gPiA+IC12b2lkIHNi
-aV9zaHV0ZG93bih2b2lkKQo+ID4gPiArdm9pZCBzYmlfc2h1dGRvd24odW5zaWduZWQgaW50IGNv
-ZGUpCj4gPiA+ICB7Cj4gPiA+IC0gICAgIHNiaV9lY2FsbChTQklfRVhUX1NSU1QsIDAsIDAsIDAs
-IDAsIDAsIDAsIDApOwo+ID4gPiArICAgICBzYmlfZWNhbGwoU0JJX0VYVF9TUlNULCAwLCAwLCBj
-b2RlLCAwLCAwLCAwLCAwKTsKPiA+ID4gICAgICAgcHV0cygiU0JJIHNodXRkb3duIGZhaWxlZCFc
-biIpOwo+ID4gPiAgfQo+ID4gPgo+ID4gPiAtLQo+ID4gPiAyLjQzLjAKPiA+ID4KPiA+Cj4gPiBJ
-IGVuaGFuY2VkIHRoZSBjb21taXQgbWVzc2FnZSwgY2hhbmdlZCB0aGUgcGFyYW1ldGVyIHRvIGEg
-Ym9vbGVhbiwgYW5kCj4gPiBhcHBsaWVkIHRvIHJpc2N2L3NiaQo+ID4KPiA+IGh0dHBzOi8vZ2l0
-bGFiLmNvbS9qb25lcy1kcmV3L2t2bS11bml0LXRlc3RzLy0vY29tbWl0cy9yaXNjdi9zYmkKPiA+
-Cj4gPiBidXQgSSdtIGhhdmluZyBzb21lIHNlY29uZCB0aG91Z2h0cyBvbiBpdC4gSXQgbG9va3Mg
-bGlrZSBvcGVuc2JpIGFuZCB0aGUKPiA+IHR3byBLVk0gVk1NcyBJIGxvb2tlZCBhdCAoUUVNVSBh
-bmQga3ZtdG9vbCkgYWxsIGN1cnJlbnRseSBpZ25vcmUgdGhpcwo+ID4gcGFyYW1ldGVyIGFuZCB3
-ZSBkb24ndCBrbm93IHdoYXQgdGhleSBtaWdodCBjaG9vc2UgdG8gZG8gaWYgdGhleSBzdG9wCj4g
-PiBpZ25vcmluZyBpdC4KPiAKPiBGb3IgdGhlIGRlZmF1bHQgc3lzY29uIFFFTVUgZG9lc24ndCBp
-Z25vcmUgaXQgYW5kIGV4aXRzIHdpdGggdGhlIGV4aXQKPiBjb2RlIGdpdmVuLgo+IGh0dHBzOi8v
-Z2l0bGFiLmNvbS9xZW11LXByb2plY3QvcWVtdS8tL2Jsb2IvbWFzdGVyL2h3L21pc2Mvc2lmaXZl
-X3Rlc3QuYz9yZWZfdHlwZT1oZWFkcyNMNDQKPiAKPiBCb3RoIFJ1c3RTQkkgYW5kIEJCTCBpbXBs
-ZW1lbnQgdGhlIHNpZml2ZV90ZXN0IGRldmljZSBjb3JyZWN0bHkgYW5kCj4gcHJvdmlkZSBhbiBl
-eGl0IGNvZGUsCj4gT3BlblNCSSBpZ25vcmVzIGl0LCB0aG91Z2ggaXQgaXMgdHJpdmlhbCB0byBh
-ZGQgaXQuCj4gaHR0cHM6Ly9naXRodWIuY29tL3J1c3RzYmkvcnVzdHNiaS9ibG9iL21haW4vcHJv
-dG90eXBlci9wcm90b3R5cGVyL3NyYy9wbGF0Zm9ybS9yZXNldC5ycyNMMjEKPiBodHRwczovL2dp
-dGh1Yi5jb20vcmlzY3Ytc29mdHdhcmUtc3JjL3Jpc2N2LXBrL2Jsb2IvbWFzdGVyL21hY2hpbmUv
-ZmluaXNoZXIuYyNMMTUKPiAKPiA+IEZvciBleGFtcGxlLCB0aGV5IGNvdWxkIGNob29zZSB0byBo
-YW5nLCByYXRoZXIgdGhhbiBjb21wbGV0ZQo+ID4gdGhlIHNodXRkb3duIHdoZW4gdGhleSBzZWUg
-YSAic3lzdGVtIGZhaWx1cmUiIHJlYXNvbi4gSXQgbWF5IG1ha2Ugc2Vuc2UKPiA+IHRvIGluZGlj
-YXRlIHN5c3RlbSBmYWlsdXJlIGlmIHRoZSB0ZXN0IGFib3J0cywgc2luY2UsIGluIHRob3NlIGNh
-c2VzLAo+ID4gc29tZXRoaW5nIHVuZXhwZWN0ZWQgd2l0aCB0aGUgdGVzdGluZyBvY2N1cnJlZC4g
-SG93ZXZlciwgc3VjY2Vzc2Z1bGx5Cj4gPiBydW5uaW5nIHRlc3RzIHdoaWNoIGZpbmQgYW5kIHJl
-cG9ydCBmYWlsdXJlcyBpc24ndCB1bmV4cGVjdGVkLCBzbyBpdAo+ID4gc2hvdWxkbid0IHJhaXNl
-IGFuIGFsYXJtIHRvIHRoZSBTQkkgaW1wbGVtZW50YXRpb24gaW4gdGhvc2UgY2FzZXMuCj4gPgo+
-ID4gRG8geW91IGFscmVhZHkgaGF2ZSBhIHVzZWNhc2UgZm9yIHRoaXMgaW4gbWluZD8KPiAKPiBZ
-ZXMgbWFraW5nIENJIGVhc2llciwgYXMgdGhlIGV4aXQgY29kZSBpcyBwYXNzZWQgdG8gUUVNVSBy
-YXRoZXIgdGhhbgo+IGhhdmluZyB0byBwYXJzZSB0aGUgdGV4dC4KCk9LCgo+IAo+ID4gSWYgc28s
-IHdlIGNvdWxkIG1ha2UKPiA+IHRoZSBiZWhhdmlvciBvcHRpb25hbCB0byBlbmFibGUgdGhhdCB1
-c2UgY2FzZSBhbmQgdXNlIGNhc2VzIGxpa2UgaXQKPiA+IGJ1dCB3ZSdkIGtlZXAgdGhhdCBiZWhh
-dmlvciBvZmYgYnkgZGVmYXVsdCB0byBhdm9pZCBwcm9ibGVtcyB3aXRoIFNCSQo+ID4gaW1wbGVt
-ZW50YXRpb25zIHRoYXQgZG8gdGhpbmdzIHdpdGggdGhlICJzeXN0ZW0gZmFpbHVyZSIgaW5mb3Jt
-YXRpb24gd2UnZAo+ID4gcmF0aGVyIHRoZXkgbm90IGRvLgo+IAo+IFN1cmUsIGRvIHlvdSB3YW50
-IGl0IHRvIGJlIGEgY29uZmlndXJlIGZsYWcgbGlrZSAgLS1jb25zb2xlPwoKWWVhaC4gSSdkIHBy
-ZWZlciB0byBoYXZlIGNvbmZpZ3VyYWJsZSBiZWhhdmlvciBjb250cm9sbGVkIGJ5IGVudmlyb25t
-ZW50CnZhcmlhYmxlcywgaW4gb3JkZXIgdG8gYWxsb3cgdGhlIHNhbWUgYmluYXJpZXMgdG8gcnVu
-IG9uIG11bHRpcGxlIHRhcmdldHMsCmJ1dCBzb21ldGhpbmcgbGlrZSB0aGlzIHdpbGwgbmVlZCB0
-byBrbm93IHdoYXQgdG8gZG8gYmVmb3JlIHZhcmlhYmxlcyBhcmUKaW5pdGlhbGl6ZWQuIEhtbSwg
-bWF5YmUgd2UgY2FuIGRvIGJvdGguIEEgY29uZmlndXJlIGZsYWcgdG8gc2V0IHRoZQpkZWZhdWx0
-IGFuZCBhbiBlbnZpcm9ubWVudCB2YXJpYWJsZSBhbGxvd2luZyBpdCB0byBiZSBvdmVycmlkZGVu
-LiBJdApzaG91bGQgYmUgcG9zc2libGUgdG8gZG8gdGhhdCBmb3IgdGhlIGNvbnNvbGUgYXMgd2Vs
-bC4KClRoYW5rcywKZHJldwoKLS0gCmt2bS1yaXNjdiBtYWlsaW5nIGxpc3QKa3ZtLXJpc2N2QGxp
-c3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0
-aW5mby9rdm0tcmlzY3YK
+The --probe-maxsmp parameter updates MAX_SMP with the maximum number of
+VCPUs that the host supports. Qemu will exit with an error when creating a
+virtual machine if the number of VCPUs is exceeded.
+
+kvmtool behaves differently: it will automatically limit the number of
+VCPUs to the what KVM supports, which is exactly what --probe-maxsmp wants
+to achieve. When doing --probe-maxsmp with kvmtool, print a message
+explaining why it's redundant and don't do anything else.
+
+Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
+Reviewed-by: Shaoqin Huang <shahuang@redhat.com>
+Signed-off-by: Alexandru Elisei <alexandru.elisei@arm.com>
+---
+
+Changes v3->v4:
+
+* Use vmmm_probe_maxsmp() instead of indexing vmm_optname in run_tests.sh.
+
+ run_tests.sh         |  3 ++-
+ scripts/runtime.bash | 16 ----------------
+ scripts/vmm.bash     | 30 ++++++++++++++++++++++++++++++
+ 3 files changed, 32 insertions(+), 17 deletions(-)
+
+diff --git a/run_tests.sh b/run_tests.sh
+index 150a06a91064..4cfc3cd9e4cf 100755
+--- a/run_tests.sh
++++ b/run_tests.sh
+@@ -10,6 +10,7 @@ if [ ! -f config.mak ]; then
+ fi
+ source config.mak
+ source scripts/common.bash
++source scripts/vmm.bash
+ 
+ function usage()
+ {
+@@ -90,7 +91,7 @@ while [ $# -gt 0 ]; do
+             list_tests="yes"
+             ;;
+         --probe-maxsmp)
+-            probe_maxsmp
++            vmm_probe_maxsmp $RUNTIME_arch_run
+             ;;
+         --)
+             ;;
+diff --git a/scripts/runtime.bash b/scripts/runtime.bash
+index 5839ca5ca665..766d1d28fb75 100644
+--- a/scripts/runtime.bash
++++ b/scripts/runtime.bash
+@@ -207,19 +207,3 @@ function run()
+ 
+     return $ret
+ }
+-
+-#
+-# Probe for MAX_SMP, in case it's less than the number of host cpus.
+-#
+-function probe_maxsmp()
+-{
+-	local smp
+-
+-	if smp=$($RUNTIME_arch_run _NO_FILE_4Uhere_ -smp $MAX_SMP |& grep 'SMP CPUs'); then
+-		smp=${smp##* }
+-		smp=${smp/\(}
+-		smp=${smp/\)}
+-		echo "Restricting MAX_SMP from ($MAX_SMP) to the max supported ($smp)" >&2
+-		MAX_SMP=$smp
+-	fi
+-}
+diff --git a/scripts/vmm.bash b/scripts/vmm.bash
+index 44954a711cad..724c96f9e665 100644
+--- a/scripts/vmm.bash
++++ b/scripts/vmm.bash
+@@ -91,6 +91,23 @@ function qemu_parse_premature_failure()
+ 	return 0
+ }
+ 
++#
++# Probe for MAX_SMP, in case it's less than the number of host cpus.
++#
++function qemu_probe_maxsmp()
++{
++	local runtime_arch_run="$1"
++	local smp
++
++	if smp=$($runtime_arch_run _NO_FILE_4Uhere_ -smp $MAX_SMP |& grep 'SMP CPUs'); then
++		smp=${smp##* }
++		smp=${smp/\(}
++		smp=${smp/\)}
++		echo "Restricting MAX_SMP from ($MAX_SMP) to the max supported ($smp)" >&2
++		MAX_SMP=$smp
++	fi
++}
++
+ function kvmtool_fixup_return_code()
+ {
+ 	local ret=$1
+@@ -112,6 +129,12 @@ function kvmtool_parse_premature_failure()
+ 	return 0
+ }
+ 
++function kvmtool_probe_maxsmp()
++{
++	echo "kvmtool automatically limits the number of VCPUs to maximum supported"
++	echo "The 'smp' test parameter won't be modified"
++}
++
+ declare -A vmm_optname=(
+ 	[qemu,args]='-append'
+ 	[qemu,default_opts]=''
+@@ -119,6 +142,7 @@ declare -A vmm_optname=(
+ 	[qemu,initrd]='-initrd'
+ 	[qemu,nr_cpus]='-smp'
+ 	[qemu,parse_premature_failure]=qemu_parse_premature_failure
++	[qemu,probe_maxsmp]=qemu_probe_maxsmp
+ 
+ 	[kvmtool,args]='--params'
+ 	[kvmtool,default_opts]="$KVMTOOL_DEFAULT_OPTS"
+@@ -126,6 +150,7 @@ declare -A vmm_optname=(
+ 	[kvmtool,initrd]='--initrd'
+ 	[kvmtool,nr_cpus]='--cpus'
+ 	[kvmtool,parse_premature_failure]=kvmtool_parse_premature_failure
++	[kvmtool,probe_maxsmp]=kvmtool_probe_maxsmp
+ )
+ 
+ function vmm_optname_args()
+@@ -158,6 +183,11 @@ function vmm_parse_premature_failure()
+ 	${vmm_optname[$(vmm_get_target),parse_premature_failure]} "$@"
+ }
+ 
++function vmm_probe_maxsmp()
++{
++	${vmm_optname[$(vmm_get_target),probe_maxsmp]} "$1"
++}
++
+ function vmm_get_target()
+ {
+ 	if [[ -z "$TARGET" ]]; then
+-- 
+2.50.0
+
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
