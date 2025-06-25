@@ -4,35 +4,35 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51415C7EE30
-	for <kvm-riscv@archiver.kernel.org>; Wed, 25 Jun 2025 18:29:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5B589C77B7C
+	for <kvm-riscv@archiver.kernel.org>; Wed, 25 Jun 2025 18:29:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=xamXBJkTaB2ym9zY9kdtL2rvLHYiUsrckUelI8RmkLM=; b=unUyfsvv9g3382
-	Rrkj0Aevqdvo3+fqLOqPy2+9KuJb8vgy9DQSOsfreixzpkDXXqLLbk9beCIVbpO4Gqze/aF21xlM1
-	2MXpU59Er+P4WGxR/Xi+iAaKVg8A0EFv52uPyyM3h+2wQAaygNQP9qN8DZ3nY7967OLd4ex/bzcP3
-	1msp2i9ElyRKE14sVZpgZT+vsrInXll4Aq1L5Ggvok324ZRRTmvH2y5XFpo6iMj4olI4wu/I2gSJQ
-	mO1mvkoqciqvdbxOwg50r/lBq9EOcJRryFJb08AR9W3EJa2FTxWQLD9ioNFTnO06U9R6+l6iKKVx7
-	KqDfgLxcJS4yF/s1uaCQ==;
+	List-Owner; bh=2lOkl5rq0+uYoWA+3mZbsU161DTy27KXnKabKPYbJjQ=; b=SLxUVmypk55Nrv
+	MlOIaPGyF+5kvhViy/IKbZjtddu2s5//5o0WL5e5YNUbJkB9suMKSjXYMUcpJFfloPSpO1JW5vMws
+	60pncPtNzLKAA5qXtMPKaLFUH8OAjlUeMy1fSk3t9FPONa3AvUBNLo8bamo5tGplYuAnWdWEv1DhR
+	IaSSZ8VksmwfVbTQMqaDtH0IktovJmMPamiAHRacU/SEaZQm9Zqz1ZZ3l0pVxM25ukGTLykkn1Grl
+	V/feNkrX+ykbeBLJIhzvTCG40ibZXlB85A2SQ6DqUB5Pf7C7TIX7Ui+cXAuI0YePz40B3zxZXd5Ya
+	/cEkguT1LE9/imNv15Kw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uUUsN-00000009aPo-45g7;
-	Wed, 25 Jun 2025 18:29:39 +0000
+	id 1uUUsO-00000009aQk-1gc0;
+	Wed, 25 Jun 2025 18:29:40 +0000
 Received: from foss.arm.com ([217.140.110.172])
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uUSMV-00000009Aki-3P9g
+	id 1uUSMa-00000009Ala-2vL4
 	for kvm-riscv@lists.infradead.org;
-	Wed, 25 Jun 2025 15:48:36 +0000
+	Wed, 25 Jun 2025 15:48:42 +0000
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 3C33E2050;
-	Wed, 25 Jun 2025 08:48:17 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0CA0C20E3;
+	Wed, 25 Jun 2025 08:48:22 -0700 (PDT)
 Received: from raptor (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id CACDE3F58B;
-	Wed, 25 Jun 2025 08:48:30 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id CA1A43F58B;
+	Wed, 25 Jun 2025 08:48:35 -0700 (PDT)
 From: Alexandru Elisei <alexandru.elisei@arm.com>
 To: andrew.jones@linux.dev,
 	eric.auger@redhat.com,
@@ -56,19 +56,17 @@ Cc: kvm@vger.kernel.org,
 	yuzenghui@huawei.com,
 	joey.gouly@arm.com,
 	andre.przywara@arm.com,
-	shahuang@redhat.com,
-	Andrew Jones <drjones@redhat.com>
-Subject: [kvm-unit-tests PATCH v4 02/13] scripts: Document environment variables
-Date: Wed, 25 Jun 2025 16:48:02 +0100
-Message-ID: <20250625154813.27254-3-alexandru.elisei@arm.com>
+	shahuang@redhat.com
+Subject: [kvm-unit-tests PATCH v4 03/13] scripts: Refuse to run the tests if not configured for qemu
+Date: Wed, 25 Jun 2025 16:48:03 +0100
+Message-ID: <20250625154813.27254-4-alexandru.elisei@arm.com>
 X-Mailer: git-send-email 2.50.0
 In-Reply-To: <20250625154813.27254-1-alexandru.elisei@arm.com>
 References: <20250625154813.27254-1-alexandru.elisei@arm.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250625_084835_886822_1FDDBAE7 
-X-CRM114-Status: UNSURE (   9.84  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20250625_084840_938713_EB596C4B 
+X-CRM114-Status: GOOD (  22.51  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -85,61 +83,142 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Document the environment variables that influence how a test is executed
-by the run_tests.sh test runner.
+Arm and arm64 support running the tests under kvmtool. kvmtool has a
+different command line syntax for configuring and running a virtual
+machine, and the automated scripts know only how to use qemu.
 
-Suggested-by: Andrew Jones <drjones@redhat.com>
-Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
+One issue with that is even though the tests have been configured for
+kvmtool (with ./configure --target=kvmtool), the scripts will use qemu to
+run the tests, and without looking at the logs there is no indication that
+the tests haven't been run with kvmtool, as configured.
+
+Another issue is that kvmtool uses a different address for the UART and
+when running the tests with qemu via the scripts, this warning is
+displayed:
+
+WARNING: early print support may not work. Found uart at 0x9000000, but early base is 0x1000000.
+
+which might trip up an unsuspected user.
+
+There are four different ways to run a test using the test infrastructure:
+with run_tests.sh, by invoking arm/run or arm/efi/run with the correct
+parameters (only the arm directory is mentioned here because the tests can
+be configured for kvmtool only on arm and arm64), and by creating
+standalone tests.
+
+run_tests.sh ends up executing either arm/run or arm/efi/run, so add a
+check to these two scripts for the test target, and refuse to run the test
+if kvm-unit-tests has been configured for kvmtool.
+
+mkstandalone.sh also executes arm/run or arm/efi run, but the usual use
+case for standalone tests is to compile them on one machine, and then to
+run them on a different machine. This two step process can be time
+consuming, so save the user time (and frustration!) and add a check
+directly to mkstandalone.sh.
+
 Reviewed-by: Shaoqin Huang <shahuang@redhat.com>
 Signed-off-by: Alexandru Elisei <alexandru.elisei@arm.com>
 ---
- docs/unittests.txt |  5 ++++-
- run_tests.sh       | 12 +++++++++---
- 2 files changed, 13 insertions(+), 4 deletions(-)
 
-diff --git a/docs/unittests.txt b/docs/unittests.txt
-index 6eb315618dbd..ea0da959f008 100644
---- a/docs/unittests.txt
-+++ b/docs/unittests.txt
-@@ -102,7 +102,8 @@ timeout
- -------
- timeout = <duration>
- 
--Optional timeout in seconds, after which the test will be killed and fail.
-+Optional timeout in seconds, after which the test will be killed and fail. Can
-+be overwritten with the TIMEOUT=<duration> environment variable.
- 
- check
- -----
-@@ -113,3 +114,5 @@ can contain multiple files to check separated by a space, but each check
- parameter needs to be of the form <path>=<value>
- 
- The path and value cannot contain space, =, or shell wildcard characters.
+Changes v3->v4:
+
+* Renamed check_vmm_supported() to vmm_check_supported().
+* Added function vmm_get_target().
+* Added Reviewed-by from Shaoqin.
+* Fixed typo s/execuing/executing (Drew).
+
+ arm/efi/run             |  3 +++
+ arm/run                 |  4 ++++
+ scripts/mkstandalone.sh |  6 +++++-
+ scripts/vmm.bash        | 25 +++++++++++++++++++++++++
+ 4 files changed, 37 insertions(+), 1 deletion(-)
+ create mode 100644 scripts/vmm.bash
+
+diff --git a/arm/efi/run b/arm/efi/run
+index 8f41fc02df31..38800e8bfa13 100755
+--- a/arm/efi/run
++++ b/arm/efi/run
+@@ -11,6 +11,9 @@ if [ ! -f config.mak ]; then
+ fi
+ source config.mak
+ source scripts/arch-run.bash
++source scripts/vmm.bash
 +
-+Can be overwritten with the CHECK environment variable with the same syntax.
-diff --git a/run_tests.sh b/run_tests.sh
-index f30b6dbd131c..dd9d27377905 100755
---- a/run_tests.sh
-+++ b/run_tests.sh
-@@ -27,9 +27,15 @@ Usage: $0 [-h] [-v] [-a] [-g group] [-j NUM-TASKS] [-t] [-l]
-     -l, --list          Only output all tests list
-         --probe-maxsmp  Update the maximum number of VCPUs supported by host
++vmm_check_supported
  
--Set the environment variable QEMU=/path/to/qemu-system-ARCH to
--specify the appropriate qemu binary for ARCH-run.
--
-+The following environment variables are used:
+ if [ -f /usr/share/qemu-efi-aarch64/QEMU_EFI.fd ]; then
+ 	DEFAULT_UEFI=/usr/share/qemu-efi-aarch64/QEMU_EFI.fd
+diff --git a/arm/run b/arm/run
+index ef58558231b7..edf0c1dd1b41 100755
+--- a/arm/run
++++ b/arm/run
+@@ -7,7 +7,11 @@ if [ -z "$KUT_STANDALONE" ]; then
+ 	fi
+ 	source config.mak
+ 	source scripts/arch-run.bash
++	source scripts/vmm.bash
+ fi
 +
-+    QEMU            Path to QEMU binary for ARCH-run
-+    ACCEL           QEMU accelerator to use, e.g. 'kvm', 'hvf' or 'tcg'
-+    ACCEL_PROPS     Extra argument(s) to ACCEL
-+    MACHINE         QEMU machine type
-+    TIMEOUT         Timeout duration for the timeout(1) command
-+    CHECK           Overwrites the 'check' unit test parameter (see
-+                    docs/unittests.txt)
- EOF
- }
++vmm_check_supported
++
+ qemu_cpu="$TARGET_CPU"
  
+ if [ "$QEMU" ] && [ -z "$ACCEL" ] &&
+diff --git a/scripts/mkstandalone.sh b/scripts/mkstandalone.sh
+index c4ba81f18935..9c5768563757 100755
+--- a/scripts/mkstandalone.sh
++++ b/scripts/mkstandalone.sh
+@@ -6,6 +6,9 @@ if [ ! -f config.mak ]; then
+ fi
+ source config.mak
+ source scripts/common.bash
++source scripts/vmm.bash
++
++vmm_check_supported
+ 
+ temp_file ()
+ {
+@@ -71,7 +74,8 @@ generate_test ()
+ 	args[3]='$bin'
+ 
+ 	(echo "#!/usr/bin/env bash"
+-	 cat scripts/arch-run.bash "$TEST_DIR/run") | temp_file RUNTIME_arch_run
++	 cat scripts/vmm.bash scripts/arch-run.bash "$TEST_DIR/run") \
++		| temp_file RUNTIME_arch_run
+ 
+ 	echo "exec {stdout}>&1"
+ 	echo "RUNTIME_log_stdout () { cat >&\$stdout; }"
+diff --git a/scripts/vmm.bash b/scripts/vmm.bash
+new file mode 100644
+index 000000000000..8365c1424a3f
+--- /dev/null
++++ b/scripts/vmm.bash
+@@ -0,0 +1,25 @@
++function vmm_get_target()
++{
++	if [[ -z "$TARGET" ]]; then
++		echo "qemu"
++	else
++		echo "$TARGET"
++	fi
++}
++
++function vmm_check_supported()
++{
++	# We're not interested in the return code for vmm_get_target().
++	# shellcheck disable=SC2155
++	local target=$(vmm_get_target)
++
++	case "$target" in
++	qemu)
++		return 0
++		;;
++	*)
++		echo "$0 does not support target '$target'"
++		exit 2
++		;;
++	esac
++}
 -- 
 2.50.0
 
