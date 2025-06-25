@@ -4,7 +4,7 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1040BC77B7C
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D9B6FC7EE31
 	for <kvm-riscv@archiver.kernel.org>; Wed, 25 Jun 2025 18:29:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
@@ -12,27 +12,27 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=TgucH69vsznq0vh/k3iC0ESxwzLhVSAQ5M+pV+Osw38=; b=e2FB5rcgxFennP
-	qJQ19GeMBKZ4ula4/Ry3SVBUyCis+6/tLLIMrp3PqEjrBtrvesggY5xb7R7XwS5chEmBJpu+S1AZw
-	SwPk3M4A/L8ZAWY11PSrM88VRDAXCS2K5FoIS/3gZh/dyevQ+uVx1P/J5dN0ftz8mP6wouca5SQrY
-	utS4qZWa4vqf/a+lhuvU/T0cLVcObtm49OqwHfur/8x4yfdk4v6r0c1BZe4TLvQ847NDHfMKOI+zT
-	KKO6Uj6Rua4+Pf2JmL6oaWDeqHzaF6xdpPpMktGCwc95mhkzk+YI/lFvXHOTC7ZoiMULosvua6CPR
-	BDc43A4cBUM4a1NwGokQ==;
+	List-Owner; bh=MdXzuCPuR0Q3PayR6OQvQ3AFdjxFTu6U0EI296ROzJQ=; b=FNcrb9q3bg6Pvu
+	IwLg58HcDHRv67nuERrruybjYHcvUmHkpjYZcgMxHI91BcvbjTh3WLPdAbkMhKzh8BzQF/Mwei/ZS
+	yhnh7A0jBMPxQ1N1J+DgbXZaVxtuPk3pd8wpB5ugv/0rEFvqfQWnMHD1YJOyio+VzUkDRBLRjV5ii
+	u5xVxIzEfQ+cizepurBi6nZDFzgIj3UDqyaDcthp4dNQBVnCsQuCydmzlKFRn0usCvAY/U0hOJvlu
+	T+0LhfrVLjidbhddxA98ztVYjcTRqW87VVBAd2eKxugbabShKRM6OniIDWJM7giig9ZpACqXX9aJ5
+	TaeRMBwawzbm2/UH/4ZQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uUUsV-00000009aec-2Y6W;
-	Wed, 25 Jun 2025 18:29:47 +0000
+	id 1uUUsW-00000009afl-0dO9;
+	Wed, 25 Jun 2025 18:29:48 +0000
 Received: from foss.arm.com ([217.140.110.172])
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uUSNI-00000009B2Q-1N9b
+	id 1uUSNN-00000009B3h-0I4T
 	for kvm-riscv@lists.infradead.org;
-	Wed, 25 Jun 2025 15:49:25 +0000
+	Wed, 25 Jun 2025 15:49:30 +0000
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 9BB352681;
-	Wed, 25 Jun 2025 08:49:05 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 698912682;
+	Wed, 25 Jun 2025 08:49:10 -0700 (PDT)
 Received: from raptor (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 67E833F58B;
-	Wed, 25 Jun 2025 08:49:19 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 3571D3F58B;
+	Wed, 25 Jun 2025 08:49:24 -0700 (PDT)
 From: Alexandru Elisei <alexandru.elisei@arm.com>
 To: andrew.jones@linux.dev,
 	eric.auger@redhat.com,
@@ -57,16 +57,16 @@ Cc: kvm@vger.kernel.org,
 	joey.gouly@arm.com,
 	andre.przywara@arm.com,
 	shahuang@redhat.com
-Subject: [kvm-unit-tests PATCH v4 12/13] scripts: Add 'disabled_if' test definition parameter for kvmtool to use
-Date: Wed, 25 Jun 2025 16:48:12 +0100
-Message-ID: <20250625154813.27254-13-alexandru.elisei@arm.com>
+Subject: [kvm-unit-tests PATCH v4 13/13] scripts: Enable kvmtool
+Date: Wed, 25 Jun 2025 16:48:13 +0100
+Message-ID: <20250625154813.27254-14-alexandru.elisei@arm.com>
 X-Mailer: git-send-email 2.50.0
 In-Reply-To: <20250625154813.27254-1-alexandru.elisei@arm.com>
 References: <20250625154813.27254-1-alexandru.elisei@arm.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250625_084924_443919_C1B9A480 
-X-CRM114-Status: GOOD (  14.38  )
+X-CRM114-CacheID: sfid-20250625_084929_227901_752B107C 
+X-CRM114-Status: GOOD (  13.51  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -83,163 +83,112 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-The pci-test is qemu specific. Other tests perform migration, which
-isn't supported by kvmtool. In general, kvmtool is not as feature-rich
-as qemu, so add a new unittest parameter, 'disabled_if', that causes a
-test to be skipped if the condition evaluates to true.
+Everything is in place to run the tests using kvmtool:
+
+$ ./configure --target=kvmtool
+$ make clean && make
+$ KVMTOOL=<path/to/kvmtool> ./run_tests.sh
+
+so enable it, and remove ERRATA_FORCE=y when configuring for kvmtool,
+because the runner will generate and pass the correct environment to
+kvmtool.
+
+Support for EFI tests is missing. That's because distros don't ship a
+EDK2 binary compiled for kvmtool, and on top of that kvm-unit-tests as
+an EFI app hasn't been tested to work with kvmtool.
 
 Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
+Reviewed-by: Shaoqin Huang <shahuang@redhat.com>
 Signed-off-by: Alexandru Elisei <alexandru.elisei@arm.com>
 ---
- arm/unittests.cfg    |  7 +++++++
- docs/unittests.txt   | 13 +++++++++++++
- scripts/common.bash  |  6 +++++-
- scripts/runtime.bash |  6 ++++++
- 4 files changed, 31 insertions(+), 1 deletion(-)
+ README.md        | 18 +++++++++++++++++-
+ arm/efi/run      |  5 +++++
+ configure        |  1 -
+ scripts/vmm.bash |  2 +-
+ 4 files changed, 23 insertions(+), 3 deletions(-)
 
-diff --git a/arm/unittests.cfg b/arm/unittests.cfg
-index 343c14567f27..12fc4468d0fd 100644
---- a/arm/unittests.cfg
-+++ b/arm/unittests.cfg
-@@ -43,6 +43,7 @@ groups = selftest
- [pci-test]
- file = pci-test.flat
- groups = pci
-+disabled_if = [[ "$TARGET" != qemu ]]
+diff --git a/README.md b/README.md
+index be07dc28a094..723ce04cd978 100644
+--- a/README.md
++++ b/README.md
+@@ -65,6 +65,9 @@ or:
  
- # Test PMU support
- [pmu-cycle-counter]
-@@ -219,6 +220,7 @@ test_args = its-migration
- qemu_params = -machine gic-version=3
- kvmtool_params = --irqchip=gicv3
- groups = its migration
-+disabled_if = [[ "$TARGET" != qemu ]]
- arch = arm64
+ to run them all.
  
- [its-pending-migration]
-@@ -228,6 +230,7 @@ test_args = its-pending-migration
- qemu_params = -machine gic-version=3
- kvmtool_params = --irqchip=gicv3
- groups = its migration
-+disabled_if = [[ "$TARGET" != qemu ]]
- arch = arm64
- 
- [its-migrate-unmapped-collection]
-@@ -237,6 +240,7 @@ test_args = its-migrate-unmapped-collection
- qemu_params = -machine gic-version=3
- kvmtool_params = --irqchip=gicv3
- groups = its migration
-+disabled_if = [[ "$TARGET" != qemu ]]
- arch = arm64
- 
- # Test PSCI emulation
-@@ -278,6 +282,7 @@ file = debug.flat
- arch = arm64
- test_args = bp-migration
- groups = debug migration
-+disabled_if = [[ "$TARGET" != qemu ]]
- 
- [debug-wp]
- file = debug.flat
-@@ -290,6 +295,7 @@ file = debug.flat
- arch = arm64
- test_args = wp-migration
- groups = debug migration
-+disabled_if = [[ "$TARGET" != qemu ]]
- 
- [debug-sstep]
- file = debug.flat
-@@ -302,6 +308,7 @@ file = debug.flat
- arch = arm64
- test_args = ss-migration
- groups = debug migration
-+disabled_if = [[ "$TARGET" != qemu ]]
- 
- # FPU/SIMD test
- [fpu-context]
-diff --git a/docs/unittests.txt b/docs/unittests.txt
-index a9164bccc24c..921318a6d85a 100644
---- a/docs/unittests.txt
-+++ b/docs/unittests.txt
-@@ -124,3 +124,16 @@ parameter needs to be of the form <path>=<value>
- The path and value cannot contain space, =, or shell wildcard characters.
- 
- Can be overwritten with the CHECK environment variable with the same syntax.
++All tests can be run using QEMU. On arm and arm64, tests can also be run using
++kvmtool.
 +
-+disabled_if
-+-----------
-+disabled_if = <condition>
-+
-+Do not run the test if <condition> is met. <condition> will be fed unmodified
-+to a bash 'if' statement and follows the same syntax.
-+
-+This can be used to prevent running a test when kvm-unit-tests is configured a
-+certain way. For example, it can be used to skip a qemu specific test when
-+using another VMM and using UEFI:
-+
-+disabled_if = [[ "$TARGET" != qemu ]] && [[ "$CONFIG_EFI" = y ]]
-diff --git a/scripts/common.bash b/scripts/common.bash
-index d5d3101c8089..283fb30f5533 100644
---- a/scripts/common.bash
-+++ b/scripts/common.bash
-@@ -16,6 +16,7 @@ function for_each_unittest()
- 	local check
- 	local accel
- 	local timeout
-+	local disabled_if
- 	local rematch
+ By default the runner script searches for a suitable QEMU binary in the system.
+ To select a specific QEMU binary though, specify the QEMU=path/to/binary
+ environment variable:
+@@ -78,12 +81,25 @@ ACCEL=name environment variable:
  
- 	# shellcheck disable=SC2155
-@@ -27,7 +28,7 @@ function for_each_unittest()
- 		if [[ "$line" =~ ^\[(.*)\]$ ]]; then
- 			rematch=${BASH_REMATCH[1]}
- 			if [ -n "${testname}" ]; then
--				$(arch_cmd) "$cmd" "$testname" "$groups" "$smp" "$kernel" "$test_args" "$opts" "$arch" "$machine" "$check" "$accel" "$timeout"
-+				$(arch_cmd) "$cmd" "$testname" "$groups" "$smp" "$kernel" "$test_args" "$opts" "$arch" "$machine" "$check" "$accel" "$timeout" "$disabled_if"
- 			fi
- 			testname=$rematch
- 			smp="$(vmm_optname_nr_cpus) 1"
-@@ -44,6 +45,7 @@ function for_each_unittest()
- 			check=""
- 			accel=""
- 			timeout=""
-+			disabled_if=""
- 		elif [[ $line =~ ^file\ *=\ *(.*)$ ]]; then
- 			kernel=$TEST_DIR/${BASH_REMATCH[1]}
- 		elif [[ $line =~ ^smp\ *=\ *(.*)$ ]]; then
-@@ -76,6 +78,8 @@ function for_each_unittest()
- 			machine=${BASH_REMATCH[1]}
- 		elif [[ $line =~ ^check\ *=\ *(.*)$ ]]; then
- 			check=${BASH_REMATCH[1]}
-+		elif [[ $line =~ ^disabled_if\ *=\ *(.*)$ ]]; then
-+			disabled_if=${BASH_REMATCH[1]}
- 		elif [[ $line =~ ^accel\ *=\ *(.*)$ ]]; then
- 			accel=${BASH_REMATCH[1]}
- 		elif [[ $line =~ ^timeout\ *=\ *(.*)$ ]]; then
-diff --git a/scripts/runtime.bash b/scripts/runtime.bash
-index 766d1d28fb75..0ff8ad08bf1d 100644
---- a/scripts/runtime.bash
-+++ b/scripts/runtime.bash
-@@ -83,6 +83,7 @@ function run()
-     local check="${CHECK:-$9}"
-     local accel="${10}"
-     local timeout="${11:-$TIMEOUT}" # unittests.cfg overrides the default
-+    local disabled_if="${12}"
- 
-     if [ "${CONFIG_EFI}" == "y" ]; then
-         kernel=${kernel/%.flat/.efi}
-@@ -130,6 +131,11 @@ function run()
-         accel="$ACCEL"
-     fi
- 
-+    if [[ "$disabled_if" ]] && (eval $disabled_if); then
-+        print_result "SKIP" $testname "" "disabled because: $disabled_if"
-+	return 2
-+    fi
+ For running tests that involve migration from one QEMU instance to another
+ you also need to have the "ncat" binary (from the nmap.org project) installed,
+-otherwise the related tests will be skipped.
++otherwise the related tests will be skipped. kvmtool does not support migration.
 +
-     # check a file for a particular value before running a test
-     # the check line can contain multiple files to check separated by a space
-     # but each check parameter needs to be of the form <path>=<value>
++As for running a test with kvmtool, please configure kvm-unit-tests accordingly
++first:
++
++   ./configure --arch=arm64 --target=kvmtool
++
++then run the test(s) like with QEMU above.
++
++To select a kvmtool binary, specify the KVMTOOL=path/to/binary environment
++variable. kvmtool supports only kvm as the accelerator.
+ 
+ ## Running the tests with UEFI
+ 
+ Check [x86/efi/README.md](./x86/efi/README.md).
+ 
++On arm and arm64, this is only supported with QEMU; kvmtool cannot run the
++tests under UEFI.
++
+ # Tests configuration file
+ 
+ The test case may need specific runtime configurations, for
+diff --git a/arm/efi/run b/arm/efi/run
+index 38800e8bfa13..12d7a4186230 100755
+--- a/arm/efi/run
++++ b/arm/efi/run
+@@ -15,6 +15,11 @@ source scripts/vmm.bash
+ 
+ vmm_check_supported
+ 
++if [[ $(vmm_get_target) == "kvmtool" ]]; then
++	echo "kvmtool does not support EFI tests."
++	exit 2
++fi
++
+ if [ -f /usr/share/qemu-efi-aarch64/QEMU_EFI.fd ]; then
+ 	DEFAULT_UEFI=/usr/share/qemu-efi-aarch64/QEMU_EFI.fd
+ elif [ -f /usr/share/edk2/aarch64/QEMU_EFI.silent.fd ]; then
+diff --git a/configure b/configure
+index 20bf5042cb9e..470f9d7cdb3b 100755
+--- a/configure
++++ b/configure
+@@ -378,7 +378,6 @@ elif [ "$arch" = "arm" ] || [ "$arch" = "arm64" ]; then
+         : "${uart_early_addr:=0x9000000}"
+     elif [ "$target" = "kvmtool" ]; then
+         : "${uart_early_addr:=0x1000000}"
+-        errata_force=1
+     else
+         echo "--target must be one of 'qemu' or 'kvmtool'!"
+         usage
+diff --git a/scripts/vmm.bash b/scripts/vmm.bash
+index 724c96f9e665..f2c987d92405 100644
+--- a/scripts/vmm.bash
++++ b/scripts/vmm.bash
+@@ -204,7 +204,7 @@ function vmm_check_supported()
+ 	local target=$(vmm_get_target)
+ 
+ 	case "$target" in
+-	qemu)
++	qemu | kvmtool)
+ 		return 0
+ 		;;
+ 	*)
 -- 
 2.50.0
 
