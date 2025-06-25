@@ -4,35 +4,35 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7826DC7EE30
-	for <kvm-riscv@archiver.kernel.org>; Wed, 25 Jun 2025 18:29:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1040BC77B7C
+	for <kvm-riscv@archiver.kernel.org>; Wed, 25 Jun 2025 18:29:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=Q9fqZi/k4i/8WcBAQheWaHGHQgB4Io+C99hes7lOElY=; b=wvDhywKM2C2NpB
-	hRSk9vQxDLK5k35vCRkpDEnO5QR4iN9y8199YB0Rvu5FTCuNu7/yIB8N4ObYeAToJZr6c8b8DasyM
-	QnitpqwN+NcmXem1wpp3/hYXmAvMztAzwgc+rUOKTykkhlGfhoRiPd6V+F5pTgeSQ7a8bWv6cNioT
-	eyc48Zc6BMEjORxfgg/STqVl87mi3VJbSCNBatcKnNQyZI9L02NYUiP3goQ7IQLwkbGpNZJyPuCUg
-	rLDyC/54SGzR0T0nmaUG1wisAwz6V59CnhzYBuIiK+Rhc6vb/EIu13BLRn3NdkS1Z7st06kiHTMt4
-	43dIOAfguSWbFdsDtz1w==;
+	List-Owner; bh=TgucH69vsznq0vh/k3iC0ESxwzLhVSAQ5M+pV+Osw38=; b=e2FB5rcgxFennP
+	qJQ19GeMBKZ4ula4/Ry3SVBUyCis+6/tLLIMrp3PqEjrBtrvesggY5xb7R7XwS5chEmBJpu+S1AZw
+	SwPk3M4A/L8ZAWY11PSrM88VRDAXCS2K5FoIS/3gZh/dyevQ+uVx1P/J5dN0ftz8mP6wouca5SQrY
+	utS4qZWa4vqf/a+lhuvU/T0cLVcObtm49OqwHfur/8x4yfdk4v6r0c1BZe4TLvQ847NDHfMKOI+zT
+	KKO6Uj6Rua4+Pf2JmL6oaWDeqHzaF6xdpPpMktGCwc95mhkzk+YI/lFvXHOTC7ZoiMULosvua6CPR
+	BDc43A4cBUM4a1NwGokQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uUUsU-00000009acq-2vRl;
-	Wed, 25 Jun 2025 18:29:46 +0000
+	id 1uUUsV-00000009aec-2Y6W;
+	Wed, 25 Jun 2025 18:29:47 +0000
 Received: from foss.arm.com ([217.140.110.172])
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uUSND-00000009B0V-1ftI
+	id 1uUSNI-00000009B2Q-1N9b
 	for kvm-riscv@lists.infradead.org;
-	Wed, 25 Jun 2025 15:49:20 +0000
+	Wed, 25 Jun 2025 15:49:25 +0000
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id CE1A32680;
-	Wed, 25 Jun 2025 08:49:00 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 9BB352681;
+	Wed, 25 Jun 2025 08:49:05 -0700 (PDT)
 Received: from raptor (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 9D6E13F58B;
-	Wed, 25 Jun 2025 08:49:14 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 67E833F58B;
+	Wed, 25 Jun 2025 08:49:19 -0700 (PDT)
 From: Alexandru Elisei <alexandru.elisei@arm.com>
 To: andrew.jones@linux.dev,
 	eric.auger@redhat.com,
@@ -57,17 +57,16 @@ Cc: kvm@vger.kernel.org,
 	joey.gouly@arm.com,
 	andre.przywara@arm.com,
 	shahuang@redhat.com
-Subject: [kvm-unit-tests PATCH v4 11/13] scripts/mkstandalone: Export $TARGET
-Date: Wed, 25 Jun 2025 16:48:11 +0100
-Message-ID: <20250625154813.27254-12-alexandru.elisei@arm.com>
+Subject: [kvm-unit-tests PATCH v4 12/13] scripts: Add 'disabled_if' test definition parameter for kvmtool to use
+Date: Wed, 25 Jun 2025 16:48:12 +0100
+Message-ID: <20250625154813.27254-13-alexandru.elisei@arm.com>
 X-Mailer: git-send-email 2.50.0
 In-Reply-To: <20250625154813.27254-1-alexandru.elisei@arm.com>
 References: <20250625154813.27254-1-alexandru.elisei@arm.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250625_084919_473990_28BB0CDC 
-X-CRM114-Status: UNSURE (   6.48  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20250625_084924_443919_C1B9A480 
+X-CRM114-Status: GOOD (  14.38  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -84,28 +83,163 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-$TARGET is needed for the test runner to decide if it should use qemu or
-kvmtool, so export it.
+The pci-test is qemu specific. Other tests perform migration, which
+isn't supported by kvmtool. In general, kvmtool is not as feature-rich
+as qemu, so add a new unittest parameter, 'disabled_if', that causes a
+test to be skipped if the condition evaluates to true.
 
 Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
-Reviewed-by: Shaoqin Huang <shahuang@redhat.com>
 Signed-off-by: Alexandru Elisei <alexandru.elisei@arm.com>
 ---
- scripts/mkstandalone.sh | 1 +
- 1 file changed, 1 insertion(+)
+ arm/unittests.cfg    |  7 +++++++
+ docs/unittests.txt   | 13 +++++++++++++
+ scripts/common.bash  |  6 +++++-
+ scripts/runtime.bash |  6 ++++++
+ 4 files changed, 31 insertions(+), 1 deletion(-)
 
-diff --git a/scripts/mkstandalone.sh b/scripts/mkstandalone.sh
-index ebf425564af5..5a23bb59879e 100755
---- a/scripts/mkstandalone.sh
-+++ b/scripts/mkstandalone.sh
-@@ -47,6 +47,7 @@ generate_test ()
- 	config_export ARCH_NAME
- 	config_export TARGET_CPU
- 	config_export DEFAULT_QEMU_CPU
-+	config_export TARGET
+diff --git a/arm/unittests.cfg b/arm/unittests.cfg
+index 343c14567f27..12fc4468d0fd 100644
+--- a/arm/unittests.cfg
++++ b/arm/unittests.cfg
+@@ -43,6 +43,7 @@ groups = selftest
+ [pci-test]
+ file = pci-test.flat
+ groups = pci
++disabled_if = [[ "$TARGET" != qemu ]]
  
- 	echo "echo BUILD_HEAD=$(cat build-head)"
+ # Test PMU support
+ [pmu-cycle-counter]
+@@ -219,6 +220,7 @@ test_args = its-migration
+ qemu_params = -machine gic-version=3
+ kvmtool_params = --irqchip=gicv3
+ groups = its migration
++disabled_if = [[ "$TARGET" != qemu ]]
+ arch = arm64
  
+ [its-pending-migration]
+@@ -228,6 +230,7 @@ test_args = its-pending-migration
+ qemu_params = -machine gic-version=3
+ kvmtool_params = --irqchip=gicv3
+ groups = its migration
++disabled_if = [[ "$TARGET" != qemu ]]
+ arch = arm64
+ 
+ [its-migrate-unmapped-collection]
+@@ -237,6 +240,7 @@ test_args = its-migrate-unmapped-collection
+ qemu_params = -machine gic-version=3
+ kvmtool_params = --irqchip=gicv3
+ groups = its migration
++disabled_if = [[ "$TARGET" != qemu ]]
+ arch = arm64
+ 
+ # Test PSCI emulation
+@@ -278,6 +282,7 @@ file = debug.flat
+ arch = arm64
+ test_args = bp-migration
+ groups = debug migration
++disabled_if = [[ "$TARGET" != qemu ]]
+ 
+ [debug-wp]
+ file = debug.flat
+@@ -290,6 +295,7 @@ file = debug.flat
+ arch = arm64
+ test_args = wp-migration
+ groups = debug migration
++disabled_if = [[ "$TARGET" != qemu ]]
+ 
+ [debug-sstep]
+ file = debug.flat
+@@ -302,6 +308,7 @@ file = debug.flat
+ arch = arm64
+ test_args = ss-migration
+ groups = debug migration
++disabled_if = [[ "$TARGET" != qemu ]]
+ 
+ # FPU/SIMD test
+ [fpu-context]
+diff --git a/docs/unittests.txt b/docs/unittests.txt
+index a9164bccc24c..921318a6d85a 100644
+--- a/docs/unittests.txt
++++ b/docs/unittests.txt
+@@ -124,3 +124,16 @@ parameter needs to be of the form <path>=<value>
+ The path and value cannot contain space, =, or shell wildcard characters.
+ 
+ Can be overwritten with the CHECK environment variable with the same syntax.
++
++disabled_if
++-----------
++disabled_if = <condition>
++
++Do not run the test if <condition> is met. <condition> will be fed unmodified
++to a bash 'if' statement and follows the same syntax.
++
++This can be used to prevent running a test when kvm-unit-tests is configured a
++certain way. For example, it can be used to skip a qemu specific test when
++using another VMM and using UEFI:
++
++disabled_if = [[ "$TARGET" != qemu ]] && [[ "$CONFIG_EFI" = y ]]
+diff --git a/scripts/common.bash b/scripts/common.bash
+index d5d3101c8089..283fb30f5533 100644
+--- a/scripts/common.bash
++++ b/scripts/common.bash
+@@ -16,6 +16,7 @@ function for_each_unittest()
+ 	local check
+ 	local accel
+ 	local timeout
++	local disabled_if
+ 	local rematch
+ 
+ 	# shellcheck disable=SC2155
+@@ -27,7 +28,7 @@ function for_each_unittest()
+ 		if [[ "$line" =~ ^\[(.*)\]$ ]]; then
+ 			rematch=${BASH_REMATCH[1]}
+ 			if [ -n "${testname}" ]; then
+-				$(arch_cmd) "$cmd" "$testname" "$groups" "$smp" "$kernel" "$test_args" "$opts" "$arch" "$machine" "$check" "$accel" "$timeout"
++				$(arch_cmd) "$cmd" "$testname" "$groups" "$smp" "$kernel" "$test_args" "$opts" "$arch" "$machine" "$check" "$accel" "$timeout" "$disabled_if"
+ 			fi
+ 			testname=$rematch
+ 			smp="$(vmm_optname_nr_cpus) 1"
+@@ -44,6 +45,7 @@ function for_each_unittest()
+ 			check=""
+ 			accel=""
+ 			timeout=""
++			disabled_if=""
+ 		elif [[ $line =~ ^file\ *=\ *(.*)$ ]]; then
+ 			kernel=$TEST_DIR/${BASH_REMATCH[1]}
+ 		elif [[ $line =~ ^smp\ *=\ *(.*)$ ]]; then
+@@ -76,6 +78,8 @@ function for_each_unittest()
+ 			machine=${BASH_REMATCH[1]}
+ 		elif [[ $line =~ ^check\ *=\ *(.*)$ ]]; then
+ 			check=${BASH_REMATCH[1]}
++		elif [[ $line =~ ^disabled_if\ *=\ *(.*)$ ]]; then
++			disabled_if=${BASH_REMATCH[1]}
+ 		elif [[ $line =~ ^accel\ *=\ *(.*)$ ]]; then
+ 			accel=${BASH_REMATCH[1]}
+ 		elif [[ $line =~ ^timeout\ *=\ *(.*)$ ]]; then
+diff --git a/scripts/runtime.bash b/scripts/runtime.bash
+index 766d1d28fb75..0ff8ad08bf1d 100644
+--- a/scripts/runtime.bash
++++ b/scripts/runtime.bash
+@@ -83,6 +83,7 @@ function run()
+     local check="${CHECK:-$9}"
+     local accel="${10}"
+     local timeout="${11:-$TIMEOUT}" # unittests.cfg overrides the default
++    local disabled_if="${12}"
+ 
+     if [ "${CONFIG_EFI}" == "y" ]; then
+         kernel=${kernel/%.flat/.efi}
+@@ -130,6 +131,11 @@ function run()
+         accel="$ACCEL"
+     fi
+ 
++    if [[ "$disabled_if" ]] && (eval $disabled_if); then
++        print_result "SKIP" $testname "" "disabled because: $disabled_if"
++	return 2
++    fi
++
+     # check a file for a particular value before running a test
+     # the check line can contain multiple files to check separated by a space
+     # but each check parameter needs to be of the form <path>=<value>
 -- 
 2.50.0
 
