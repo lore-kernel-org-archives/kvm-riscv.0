@@ -4,58 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7EEE4C7EE31
-	for <kvm-riscv@archiver.kernel.org>; Thu, 26 Jun 2025 16:48:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 18623C7EE30
+	for <kvm-riscv@archiver.kernel.org>; Thu, 26 Jun 2025 17:24:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
 	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=+Oh1meU+wNtmA6Nj+SnOirv1QBOfrwIoT5jzrp6WMJw=; b=gEBooF69J37Pwd
-	5GSVgX0hWx47Bqfq6lD5A6CZQHnRBYzGEAn8agabW9TQyh9tehb/9j3Y805JAN2gufCgbDazvJfO6
-	uT60X/F60t2mo/+t9417FlmPtQMO7NmJnUjWr2iGNQ6ywsnNFA0ZyF3AU6d/JfJARGEEcpAacowh3
-	MZH2NsDQdLzayu25PeOn+KSHSedgHPalxT9DJZSrCE9+dQ5TC8gkll9t3eCZq5mPpafTCvNshYi+b
-	EhqEYb0wzigu2twH14ryQ3x8SuPy6pU6zWE3rwf2B1JYcXlhl5WYSDOM2zCn3uMvJYRHTN2kUAIH/
-	u1tQ+8HU5XAqpWEADMAg==;
+	List-Owner; bh=n0n6LfFNQB0IzDf12VGamM9UvYhEVkOTWpgOvsUxAQ4=; b=NQHUTWqY3gnqvQ
+	xCiY8QvQi7941FZgWjxxwG3g8I2bzEEXgGWrsiPlqv1CHbMu8GkkQyJOPX4i9DGBOWr5z2UXXHYgz
+	B8xPr9mhCZEdhaLd+3Z8JMBpfwCDcEbJrX2tGd5t7TgS8wgCXGN3JTnKmGD9/QmgAsSa8hiebwDzQ
+	qesYBtIDYr0mxRce3SFy+V0aH4T+jb3KVqDkR7eUH0MrvMfX/A6h/cBaL/U3Kp5zP8FtNNIofTjbu
+	qI50B7tf2I8J5xpDr55RxVhswWbAQLHdVF3i4G8ZKkowT7mU0BHF91Z4zbOc99P+7448FyInuGV81
+	Dx25KUqL5QbYBMPORa8A==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uUply-0000000CJ6p-0sCg;
-	Thu, 26 Jun 2025 16:48:26 +0000
-Received: from foss.arm.com ([217.140.110.172])
-	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uUplv-0000000CJ46-1gKi
+	id 1uUqKS-0000000CMgS-3Ugi;
+	Thu, 26 Jun 2025 17:24:04 +0000
+Received: from out-170.mta0.migadu.com ([2001:41d0:1004:224b::aa])
+	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1uUoc8-0000000C8iG-0PPv
 	for kvm-riscv@lists.infradead.org;
-	Thu, 26 Jun 2025 16:48:25 +0000
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id D19971758;
-	Thu, 26 Jun 2025 09:48:02 -0700 (PDT)
-Received: from raptor (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 7B45F3F66E;
-	Thu, 26 Jun 2025 09:48:15 -0700 (PDT)
-Date: Thu, 26 Jun 2025 17:48:03 +0100
-From: Alexandru Elisei <alexandru.elisei@arm.com>
-To: Andrew Jones <andrew.jones@linux.dev>
-Cc: eric.auger@redhat.com, lvivier@redhat.com, thuth@redhat.com,
-	frankja@linux.ibm.com, imbrenda@linux.ibm.com, nrb@linux.ibm.com,
-	david@redhat.com, pbonzini@redhat.com, kvm@vger.kernel.org,
-	kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
-	kvm-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
-	will@kernel.org, julien.thierry.kdev@gmail.com, maz@kernel.org,
-	oliver.upton@linux.dev, suzuki.poulose@arm.com,
-	yuzenghui@huawei.com, joey.gouly@arm.com, andre.przywara@arm.com,
-	shahuang@redhat.com
-Subject: Re: [kvm-unit-tests PATCH v4 00/13] arm/arm64: Add kvmtool to the
- runner script
-Message-ID: <aF15wzSHKxYZig3N@raptor>
+	Thu, 26 Jun 2025 15:34:13 +0000
+Date: Thu, 26 Jun 2025 17:34:05 +0200
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1750952049;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=MTzNaxET0ChI04GPtqPBTqvxpAjkYbCN9vCfFYsRF38=;
+	b=VbAk0zVY3LpVMPdjT1q9dlT77cCaKVIQfwS+uoJPiRLBafmsyB2B1R08LAelYTxPDUkXf7
+	aTDYMyOKol3oE7o8dx41P4mNEt1G45xZFYhNxQwHmo17JA3igEXvGaxKvBnRBgIQW62Av8
+	/NfH0hk9/ARpm/tHc9wIWCUNV6u6hzI=
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Andrew Jones <andrew.jones@linux.dev>
+To: Alexandru Elisei <alexandru.elisei@arm.com>
+Cc: eric.auger@redhat.com, lvivier@redhat.com, thuth@redhat.com, 
+	frankja@linux.ibm.com, imbrenda@linux.ibm.com, nrb@linux.ibm.com, david@redhat.com, 
+	pbonzini@redhat.com, kvm@vger.kernel.org, kvmarm@lists.linux.dev, 
+	linuxppc-dev@lists.ozlabs.org, kvm-riscv@lists.infradead.org, linux-s390@vger.kernel.org, 
+	will@kernel.org, julien.thierry.kdev@gmail.com, maz@kernel.org, 
+	oliver.upton@linux.dev, suzuki.poulose@arm.com, yuzenghui@huawei.com, joey.gouly@arm.com, 
+	andre.przywara@arm.com, shahuang@redhat.com
+Subject: Re: [kvm-unit-tests PATCH v4 05/13] scripts: Add 'kvmtool_params' to
+ test definition
+Message-ID: <20250626-536c0af00aa655d6e647df44@orel>
 References: <20250625154813.27254-1-alexandru.elisei@arm.com>
- <20250626-f9239a18e811ef67ae5a9686@orel>
+ <20250625154813.27254-6-alexandru.elisei@arm.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20250626-f9239a18e811ef67ae5a9686@orel>
+In-Reply-To: <20250625154813.27254-6-alexandru.elisei@arm.com>
+X-Migadu-Flow: FLOW_OUT
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250626_094823_540519_977102F8 
-X-CRM114-Status: GOOD (  37.50  )
+X-CRM114-CacheID: sfid-20250626_083412_289712_BC710CD2 
+X-CRM114-Status: GOOD (  21.94  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -72,250 +75,308 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Hi Drew,
-
-On Thu, Jun 26, 2025 at 06:42:01PM +0200, Andrew Jones wrote:
-> On Wed, Jun 25, 2025 at 04:48:00PM +0100, Alexandru Elisei wrote:
-> > v3 can be found here [1]. Based on top of the series that add qemu_params and
-> > test_args [2].
-> > 
-> > To goal is to allow the user to do:
-> > 
-> > $ ./configure --target=kvmtool
-> > $ make clean && make
-> > $ ./run_tests.sh
-> > 
-> > to run all the tests automatically with kvmtool.
-> > 
-> > Reasons to use kvmtool:
-> > 
-> > * kvmtool is smaller and a lot easier to modify compared to qemu, which
-> > means developers may prefer it when adding or prototyping new features to
-> > KVM, and being able to run all the tests reliably and automatically is very
-> > useful.
-> > 
-> > * kvmtool is faster to run the tests (a couple of times faster on
-> > my rockpro64), making for a quick turnaround. But do keep in mind that not
-> > all tests work on kvmtool because of missing features compared to qemu.
-> > 
-> > * kvmtool does things differently than qemu: different memory layout,
-> > different uart, PMU emulation is disabled by default, etc. This makes it a
-> > good testing vehicule for kvm-unit-tests itself.
+On Wed, Jun 25, 2025 at 04:48:05PM +0100, Alexandru Elisei wrote:
+> arm/arm64 supports running tests under kvmtool, but kvmtool's syntax for
+> running and configuring a virtual machine is different to qemu. To run
+> tests using the automated test infrastructure, add a new test parameter,
+> 'kvmtool_params'. The parameter serves the exact purpose as 'qemu_params',
+> but using kvmtool's syntax.
 > 
-> Thanks for this Alex! I didn't test it on arm yet, but I did test it on
-> riscv with the quick patch below. It works great.
-
-From a glance, the patch looks ok to me.
-
+> Signed-off-by: Alexandru Elisei <alexandru.elisei@arm.com>
+> ---
 > 
-> Applied to arm/queue
+> Changes v3->v4:
 > 
-> https://gitlab.com/jones-drew/kvm-unit-tests/-/commits/arm/queue
-
-Thanks!
-
-Alex
-
+> * Added params_name in scripts/common.bash::for_each_unittest() to avoid
+> checking for $TARGET when deciding to parse kvmtool_params or
+> {qemu,extra}_params.
+> * Dropped factoring out parse_opts() in for_each_unittest().
 > 
-> drew
+>  arm/unittests.cfg   | 24 ++++++++++++++++++++++++
+>  docs/unittests.txt  |  8 ++++++++
+>  scripts/common.bash | 11 +++++++----
+>  scripts/vmm.bash    | 16 ++++++++++++++++
+>  4 files changed, 55 insertions(+), 4 deletions(-)
 > 
-> 
-> diff --git a/README.md b/README.md
-> index 723ce04cd978..cbd8a9940ec4 100644
-> --- a/README.md
-> +++ b/README.md
-> @@ -65,8 +65,8 @@ or:
+> diff --git a/arm/unittests.cfg b/arm/unittests.cfg
+> index 384af983cd88..343c14567f27 100644
+> --- a/arm/unittests.cfg
+> +++ b/arm/unittests.cfg
+> @@ -17,6 +17,7 @@ file = selftest.flat
+>  smp = 2
+>  test_args = 'setup smp=2 mem=256'
+>  qemu_params = -m 256
+> +kvmtool_params = --mem 256
+>  groups = selftest
 >  
->  to run them all.
+>  # Test vector setup and exception handling (kernel mode).
+> @@ -48,66 +49,77 @@ groups = pci
+>  file = pmu.flat
+>  groups = pmu
+>  test_args = "cycle-counter 0"
+> +kvmtool_params = --pmu
 >  
-> -All tests can be run using QEMU. On arm and arm64, tests can also be run using
-> -kvmtool.
-> +All tests can be run using QEMU. On arm, arm64, riscv32, and riscv64 tests can
-> +also be run using kvmtool.
+>  [pmu-event-introspection]
+>  file = pmu.flat
+>  groups = pmu
+>  arch = arm64
+>  test_args = pmu-event-introspection
+> +kvmtool_params = --pmu
 >  
->  By default the runner script searches for a suitable QEMU binary in the system.
->  To select a specific QEMU binary though, specify the QEMU=path/to/binary
-> @@ -97,8 +97,7 @@ variable. kvmtool supports only kvm as the accelerator.
+>  [pmu-event-counter-config]
+>  file = pmu.flat
+>  groups = pmu
+>  arch = arm64
+>  test_args = pmu-event-counter-config
+> +kvmtool_params = --pmu
 >  
->  Check [x86/efi/README.md](./x86/efi/README.md).
+>  [pmu-basic-event-count]
+>  file = pmu.flat
+>  groups = pmu
+>  arch = arm64
+>  test_args = pmu-basic-event-count
+> +kvmtool_params = --pmu
 >  
-> -On arm and arm64, this is only supported with QEMU; kvmtool cannot run the
-> -tests under UEFI.
-> +This is only supported with QEMU; kvmtool cannot run the tests under UEFI.
+>  [pmu-mem-access]
+>  file = pmu.flat
+>  groups = pmu
+>  arch = arm64
+>  test_args = pmu-mem-access
+> +kvmtool_params = --pmu
 >  
->  # Tests configuration file
+>  [pmu-mem-access-reliability]
+>  file = pmu.flat
+>  groups = pmu
+>  arch = arm64
+>  test_args = pmu-mem-access-reliability
+> +kvmtool_params = --pmu
 >  
-> diff --git a/configure b/configure
-> index 470f9d7cdb3b..4a9af4e0af30 100755
-> --- a/configure
-> +++ b/configure
-> @@ -90,7 +90,7 @@ usage() {
->  	                           selects the best value based on the host system and the
->  	                           test configuration.
->  	    --target=TARGET        target platform that the tests will be running on (qemu or
-> -	                           kvmtool, default is qemu) (arm/arm64 only)
-> +	                           kvmtool, default is qemu) (arm/arm64 and riscv32/riscv64 only)
->  	    --cross-prefix=PREFIX  cross compiler prefix
->  	    --cc=CC                c compiler to use ($cc)
->  	    --cflags=FLAGS         extra options to be passed to the c compiler
-> @@ -284,7 +284,8 @@ fi
->  if [ -z "$target" ]; then
->      target="qemu"
->  else
-> -    if [ "$arch" != "arm64" ] && [ "$arch" != "arm" ]; then
-> +    if [ "$arch" != "arm64" ] && [ "$arch" != "arm" ] &&
-> +       [ "$arch" != "riscv32" ] && [ "$arch" != "riscv64" ]; then
->          echo "--target is not supported for $arch"
->          usage
->      fi
-> @@ -393,6 +394,10 @@ elif [ "$arch" = "riscv32" ] || [ "$arch" = "riscv64" ]; then
->      testdir=riscv
->      arch_libdir=riscv
->      : "${uart_early_addr:=0x10000000}"
-> +    if [ "$target" != "qemu" ] && [ "$target" != "kvmtool" ]; then
-> +        echo "--target must be one of 'qemu' or 'kvmtool'!"
-> +        usage
-> +    fi
->  elif [ "$arch" = "s390x" ]; then
->      testdir=s390x
->  else
-> @@ -519,7 +524,8 @@ EFI_DIRECT=$efi_direct
->  CONFIG_WERROR=$werror
->  GEN_SE_HEADER=$gen_se_header
->  EOF
-> -if [ "$arch" = "arm" ] || [ "$arch" = "arm64" ]; then
-> +if [ "$arch" = "arm" ] || [ "$arch" = "arm64" ] ||
-> +   [ "$arch" = "riscv32" ] || [ "$arch" = "riscv64" ]; then
->      echo "TARGET=$target" >> config.mak
->  fi
+>  [pmu-sw-incr]
+>  file = pmu.flat
+>  groups = pmu
+>  arch = arm64
+>  test_args = pmu-sw-incr
+> +kvmtool_params = --pmu
 >  
-> diff --git a/riscv/efi/run b/riscv/efi/run
-> index 5a72683a6ef5..b9b75440c659 100755
-> --- a/riscv/efi/run
-> +++ b/riscv/efi/run
-> @@ -11,6 +11,12 @@ if [ ! -f config.mak ]; then
->  fi
->  source config.mak
->  source scripts/arch-run.bash
-> +source scripts/vmm.bash
+>  [pmu-chained-counters]
+>  file = pmu.flat
+>  groups = pmu
+>  arch = arm64
+>  test_args = pmu-chained-counters
+> +kvmtool_params = --pmu
+>  
+>  [pmu-chained-sw-incr]
+>  file = pmu.flat
+>  groups = pmu
+>  arch = arm64
+>  test_args = pmu-chained-sw-incr
+> +kvmtool_params = --pmu
+>  
+>  [pmu-chain-promotion]
+>  file = pmu.flat
+>  groups = pmu
+>  arch = arm64
+>  test_args = pmu-chain-promotion
+> +kvmtool_params = --pmu
+>  
+>  [pmu-overflow-interrupt]
+>  file = pmu.flat
+>  groups = pmu
+>  arch = arm64
+>  test_args = pmu-overflow-interrupt
+> +kvmtool_params = --pmu
+>  
+>  # Test PMU support (TCG) with -icount IPC=1
+>  #[pmu-tcg-icount-1]
+> @@ -131,6 +143,7 @@ file = gic.flat
+>  smp = $((($MAX_SMP < 8)?$MAX_SMP:8))
+>  test_args = ipi
+>  qemu_params = -machine gic-version=2
+> +kvmtool_params = --irqchip=gicv2
+>  groups = gic
+>  
+>  [gicv2-mmio]
+> @@ -138,6 +151,7 @@ file = gic.flat
+>  smp = $((($MAX_SMP < 8)?$MAX_SMP:8))
+>  test_args = mmio
+>  qemu_params = -machine gic-version=2
+> +kvmtool_params = --irqchip=gicv2
+>  groups = gic
+>  
+>  [gicv2-mmio-up]
+> @@ -145,6 +159,7 @@ file = gic.flat
+>  smp = 1
+>  test_args = mmio
+>  qemu_params = -machine gic-version=2
+> +kvmtool_params = --irqchip=gicv2
+>  groups = gic
+>  
+>  [gicv2-mmio-3p]
+> @@ -152,6 +167,7 @@ file = gic.flat
+>  smp = $((($MAX_SMP < 3)?$MAX_SMP:3))
+>  test_args = mmio
+>  qemu_params = -machine gic-version=2
+> +kvmtool_params = --irqchip=gicv2
+>  groups = gic
+>  
+>  [gicv3-ipi]
+> @@ -159,6 +175,7 @@ file = gic.flat
+>  smp = $MAX_SMP
+>  test_args = ipi
+>  qemu_params = -machine gic-version=3
+> +kvmtool_params = --irqchip=gicv3
+>  groups = gic
+>  
+>  [gicv2-active]
+> @@ -166,6 +183,7 @@ file = gic.flat
+>  smp = $((($MAX_SMP < 8)?$MAX_SMP:8))
+>  test_args = active
+>  qemu_params = -machine gic-version=2
+> +kvmtool_params = --irqchip=gicv2
+>  groups = gic
+>  
+>  [gicv3-active]
+> @@ -173,6 +191,7 @@ file = gic.flat
+>  smp = $MAX_SMP
+>  test_args = active
+>  qemu_params = -machine gic-version=3
+> +kvmtool_params = --irqchip=gicv3
+>  groups = gic
+>  
+>  [its-introspection]
+> @@ -180,6 +199,7 @@ file = gic.flat
+>  smp = $MAX_SMP
+>  test_args = its-introspection
+>  qemu_params = -machine gic-version=3
+> +kvmtool_params = --irqchip=gicv3-its
+>  groups = its
+>  arch = arm64
+>  
+> @@ -188,6 +208,7 @@ file = gic.flat
+>  smp = $MAX_SMP
+>  test_args = its-trigger
+>  qemu_params = -machine gic-version=3
+> +kvmtool_params = --irqchip=gicv3-its
+>  groups = its
+>  arch = arm64
+>  
+> @@ -196,6 +217,7 @@ file = gic.flat
+>  smp = $MAX_SMP
+>  test_args = its-migration
+>  qemu_params = -machine gic-version=3
+> +kvmtool_params = --irqchip=gicv3
+>  groups = its migration
+>  arch = arm64
+>  
+> @@ -204,6 +226,7 @@ file = gic.flat
+>  smp = $MAX_SMP
+>  test_args = its-pending-migration
+>  qemu_params = -machine gic-version=3
+> +kvmtool_params = --irqchip=gicv3
+>  groups = its migration
+>  arch = arm64
+>  
+> @@ -212,6 +235,7 @@ file = gic.flat
+>  smp = $MAX_SMP
+>  test_args = its-migrate-unmapped-collection
+>  qemu_params = -machine gic-version=3
+> +kvmtool_params = --irqchip=gicv3
+>  groups = its migration
+>  arch = arm64
+>  
+> diff --git a/docs/unittests.txt b/docs/unittests.txt
+> index ea0da959f008..a9164bccc24c 100644
+> --- a/docs/unittests.txt
+> +++ b/docs/unittests.txt
+> @@ -78,6 +78,14 @@ extra_params
+>  Alias for 'qemu_params', supported for compatibility purposes. Use
+>  'qemu_params' for new tests.
+>  
+> +kvmtool_params
+> +--------------
+> +Extra parameters supplied to the kvmtool process. Works similarly to
+> +'qemu_params', but uses kvmtool's syntax for command line arguments. The
+> +example for 'qemu_params', applied to kvmtool, would be:
 > +
-> +if [[ $(vmm_get_target) == "kvmtool" ]]; then
-> +	echo "kvmtool does not support EFI tests."
-> +	exit 2
-> +fi
+> +kvmtool_params = --mem 256
+> +
+>  groups
+>  ------
+>  groups = <group_name1> <group_name2> ...
+> diff --git a/scripts/common.bash b/scripts/common.bash
+> index ae127bd4e208..7c1b89f1b3c2 100644
+> --- a/scripts/common.bash
+> +++ b/scripts/common.bash
+> @@ -18,6 +18,9 @@ function for_each_unittest()
+>  	local timeout
+>  	local rematch
 >  
->  if [ -f RISCV_VIRT_CODE.fd ]; then
->  	DEFAULT_UEFI=RISCV_VIRT_CODE.fd
-> diff --git a/riscv/run b/riscv/run
-> index 0f000f0d82c6..3c242923412c 100755
-> --- a/riscv/run
-> +++ b/riscv/run
-> @@ -10,35 +10,75 @@ if [ -z "$KUT_STANDALONE" ]; then
->  	source scripts/vmm.bash
->  fi
+> +	# shellcheck disable=SC2155
+> +	local params_name=$(vmm_unittest_params_name)
+> +
+>  	exec {fd}<"$unittests"
 >  
-> -# Allow user overrides of some config.mak variables
-> -mach=$MACHINE_OVERRIDE
-> -qemu_cpu=$TARGET_CPU_OVERRIDE
-> -firmware=$FIRMWARE_OVERRIDE
-> -
-> -: "${mach:=virt}"
-> -: "${qemu_cpu:=$TARGET_CPU}"
-> -: "${qemu_cpu:=$DEFAULT_QEMU_CPU}"
-> -: "${firmware:=$FIRMWARE}"
-> -[ "$firmware" ] && firmware="-bios $firmware"
-> -
-> -set_qemu_accelerator || exit $?
-> -[ "$ACCEL" = "kvm" ] && QEMU_ARCH=$HOST
-> -acc="-accel $ACCEL$ACCEL_PROPS"
-> -
-> -qemu=$(search_qemu_binary) || exit $?
-> -if [ "$mach" = 'virt' ] && ! $qemu -machine '?' | grep -q 'RISC-V VirtIO board'; then
-> -	echo "$qemu doesn't support mach-virt ('-machine virt'). Exiting."
-> -	exit 2
-> -fi
-> -mach="-machine $mach"
-> +vmm_check_supported
->  
-> -command="$qemu -nodefaults -nographic -serial mon:stdio"
-> -command+=" $mach $acc $firmware -cpu $qemu_cpu "
-> -command="$(migration_cmd) $(timeout_cmd) $command"
-> +function arch_run_qemu()
+>  	while read -r -u $fd line; do
+> @@ -47,8 +50,8 @@ function for_each_unittest()
+>  			smp="$(vmm_optname_nr_cpus) ${BASH_REMATCH[1]}"
+>  		elif [[ $line =~ ^test_args\ *=\ *(.*)$ ]]; then
+>  			test_args="$(vmm_optname_args) ${BASH_REMATCH[1]}"
+> -		elif [[ $line =~ ^(extra_params|qemu_params)\ *=\ *'"""'(.*)$ ]]; then
+> -			opts=${BASH_REMATCH[2]}$'\n'
+> +		elif [[ $line =~ ^$params_name\ *=\ *'"""'(.*)$ ]]; then
+> +			opts=${BASH_REMATCH[1]}$'\n'
+>  			while read -r -u $fd; do
+>  				#escape backslash newline, but not double backslash
+>  				if [[ $opts =~ [^\\]*(\\*)$'\n'$ ]]; then
+> @@ -63,8 +66,8 @@ function for_each_unittest()
+>  					opts+=$REPLY$'\n'
+>  				fi
+>  			done
+> -		elif [[ $line =~ ^(extra_params|qemu_params)\ *=\ *(.*)$ ]]; then
+> -			opts=${BASH_REMATCH[2]}
+> +		elif [[ $line =~ ^$params_name\ *=\ *(.*)$ ]]; then
+> +			opts=${BASH_REMATCH[1]}
+>  		elif [[ $line =~ ^groups\ *=\ *(.*)$ ]]; then
+>  			groups=${BASH_REMATCH[1]}
+>  		elif [[ $line =~ ^arch\ *=\ *(.*)$ ]]; then
+> diff --git a/scripts/vmm.bash b/scripts/vmm.bash
+> index 7629b2b9146e..9a2608eb3fd4 100644
+> --- a/scripts/vmm.bash
+> +++ b/scripts/vmm.bash
+> @@ -38,3 +38,19 @@ function vmm_check_supported()
+>  		;;
+>  	esac
+>  }
+> +
+> +function vmm_unittest_params_name()
 > +{
-> +	# Allow user overrides of some config.mak variables
-> +	mach=$MACHINE_OVERRIDE
-> +	qemu_cpu=$TARGET_CPU_OVERRIDE
-> +	firmware=$FIRMWARE_OVERRIDE
->  
-> -if [ "$UEFI_SHELL_RUN" = "y" ]; then
-> -	ENVIRON_DEFAULT=n run_test_status $command "$@"
-> -else
-> -	# We return the exit code via stdout, not via the QEMU return code
-> -	run_test_status $command -kernel "$@"
-> -fi
-> +	: "${mach:=virt}"
-> +	: "${qemu_cpu:=$TARGET_CPU}"
-> +	: "${qemu_cpu:=$DEFAULT_QEMU_CPU}"
-> +	: "${firmware:=$FIRMWARE}"
-> +	[ "$firmware" ] && firmware="-bios $firmware"
+> +	# shellcheck disable=SC2155
+> +	local target=$(vmm_get_target)
 > +
-> +	set_qemu_accelerator || exit $?
-> +	[ "$ACCEL" = "kvm" ] && QEMU_ARCH=$HOST
-> +	acc="-accel $ACCEL$ACCEL_PROPS"
-> +
-> +	qemu=$(search_qemu_binary) || exit $?
-> +	if [ "$mach" = 'virt' ] && ! $qemu -machine '?' | grep -q 'RISC-V VirtIO board'; then
-> +		echo "$qemu doesn't support mach-virt ('-machine virt'). Exiting."
+> +	case "$target" in
+> +	qemu)
+> +		echo "extra_params|qemu_params"
+> +		;;
+> +	*)
+> +		echo "$0 does not support '$target'"
 > +		exit 2
-> +	fi
-> +	mach="-machine $mach"
-> +
-> +	command="$qemu -nodefaults -nographic -serial mon:stdio"
-> +	command+=" $mach $acc $firmware -cpu $qemu_cpu "
-> +	command="$(migration_cmd) $(timeout_cmd) $command"
-> +
-> +	if [ "$UEFI_SHELL_RUN" = "y" ]; then
-> +		ENVIRON_DEFAULT=n run_test_status $command "$@"
-> +	else
-> +		# We return the exit code via stdout, not via the QEMU return code
-> +		run_test_status $command -kernel "$@"
-> +	fi
+> +		;;
+
+It seems a bit odd that we've introduced kvmtool_params and applied it to
+arm in this patch, but we still don't support it. Not a huge deal, though.
+
+Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
+
+> +	esac
 > +}
-> +
-> +function arch_run_kvmtool()
-> +{
-> +	local command
-> +
-> +	kvmtool=$(search_kvmtool_binary) ||
-> +		exit $?
-> +
-> +	if [ "$ACCEL" ] && [ "$ACCEL" != "kvm" ]; then
-> +		echo "kvmtool does not support $ACCEL" >&2
-> +		exit 2
-> +	fi
-> +
-> +	if ! kvm_available; then
-> +		echo "kvmtool requires KVM but not available on the host" >&2
-> +		exit 2
-> +	fi
-> +
-> +	command="$(timeout_cmd) $kvmtool run"
-> +	if [ "$HOST" = "riscv64" ] && [ "$ARCH" = "riscv32" ]; then
-> +		echo "Cannot run riscv32 on riscv64" >&2
-> +		exit 2
-> +	else
-> +		run_test_status $command --kernel "$@"
-> +	fi
-> +}
-> +
-> +case $(vmm_get_target) in
-> +qemu)
-> +	arch_run_qemu "$@"
-> +	;;
-> +kvmtool)
-> +	arch_run_kvmtool "$@"
-> +	;;
-> +esac
+> -- 
+> 2.50.0
+> 
+> 
+> -- 
+> kvm-riscv mailing list
+> kvm-riscv@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kvm-riscv
 
 -- 
 kvm-riscv mailing list
