@@ -4,58 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 97CABC7EE31
-	for <kvm-riscv@archiver.kernel.org>; Fri, 27 Jun 2025 13:37:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CD994C7EE2A
+	for <kvm-riscv@archiver.kernel.org>; Fri, 27 Jun 2025 19:33:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:Subject:Message-ID:Date:From:
+	In-Reply-To:References:MIME-Version:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=efQJVkCRCHqMtc1gJrdvGN4D5kEhqAE7Lwm6xfJVX/M=; b=PpviaOUaH9GUGJ
-	s9NPhY/tnFSNdIiuhugDuVlG0sP+XtvTqYmxzvYuZAut/rqwP844uim+/vaEsIGKW6zenAGrTs3lI
-	M0lEkaUoltCzei7NH7PPmvlCSueXqNvfcvA1wWfhp3NG2X2duW9LaqjCh5ZLHJFvoYRwS8tP0T6T4
-	O1xZ1qM0F+JLI0EODXvQw47HfjSRWI9r3ZUM0eMuHgccfuQq3q69UBYETuuyj+9wLoUkJh0XUBiQT
-	tz1alExwiMnMms/8V3zTEvTAYTrhkWF4losYhovb8zMfoWDUDAmP5G09mIkEABsjQxRdI//tCqlj+
-	Z6EI7BX+Z/gpqCziwB5g==;
+	List-Owner; bh=Zwlv53P3oVC7lcAQl6h2o4NbpFR2gjxvs4ro0dPe7nk=; b=FZfu8hXhjqSprC
+	7hh7IUVJ1UFikPhz5pbQOjMR1nE4E6OOGz+Lq7BB+BTOugH4LHd9fTdstRKUJfCATchKrxImz7hzN
+	2Zg9YwYqxYtp8rgdNk0J31cwUFpgSOWXYLN9X+uSrp56nmLDlUN6b1OmSeCuNtS9IXcgdqrIDtsJt
+	tcTmYq3xRjuD4L4479uMhZ6fKpW3klTYrT8eK3YQRLNSBgnYodQgEZQFdQl7iw9CqUPNbotUCssGd
+	GmNeQwUuyH9AyuCMyebA/FU5C1ko4vrc8JYIjSMFJ2XWiMrhxpzQ9pPJhtECWgi7AvjPG/SRcZjcI
+	3f+ENq4BiirZvLb/teIw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uV9Gc-0000000EnXk-0tuI;
-	Fri, 27 Jun 2025 13:37:22 +0000
-Received: from out-189.mta0.migadu.com ([91.218.175.189])
+	id 1uVEp2-0000000FeBA-29sL;
+	Fri, 27 Jun 2025 19:33:16 +0000
+Received: from mail-qk1-x72a.google.com ([2607:f8b0:4864:20::72a])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uV8iz-0000000Eih0-1Mh0
+	id 1uVEOs-0000000FamW-3u0j
 	for kvm-riscv@lists.infradead.org;
-	Fri, 27 Jun 2025 13:02:39 +0000
-Date: Fri, 27 Jun 2025 15:02:31 +0200
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1751029354;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=zC3YpsI2juIFXpYJGTYCRpgoPv/M4d1AB2F3L9vAJMM=;
-	b=mOvMlx8AApg2eDBnNY3ZMLXBz9RFGjwYdomZeaOoBlF8ekke5F8p3uCXj0XQyRi7FERQgF
-	pAezaNotOv61/mdFZNw/XmY99IPVD9DuZcpX85D6swVbArznNpH8ZiG3HRwEbDQMUsWpXZ
-	NiL9eOIhK4BEVI/dMwg3iJMpWBdzsZI=
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Andrew Jones <andrew.jones@linux.dev>
-To: Jesse Taube <jesse@rivosinc.com>
+	Fri, 27 Jun 2025 19:06:16 +0000
+Received: by mail-qk1-x72a.google.com with SMTP id af79cd13be357-7d425fc4e5fso205100985a.0
+        for <kvm-riscv@lists.infradead.org>; Fri, 27 Jun 2025 12:06:14 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=rivosinc-com.20230601.gappssmtp.com; s=20230601; t=1751051173; x=1751655973; darn=lists.infradead.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=zSkB72+T4isnYxkdoUwFbLQg1JfirF1haClLK5jr+4A=;
+        b=rsx1na+9vk4l9Dw3qn2clqFOV+8q0AaLsES//mUjGn6uvVLcChveBfWvk3a+aTLVHm
+         y1zaNqQXGzBtclGeVJldvgvRpUpnWcbZ4WvG21VCQaMjfW6gF7d4SyPmZQk2/QGulRzw
+         WLzmou+sHZakOrfRDMgBHsPAv9CL/CyvTttgYm5pbkOBENmCoBOUag/7aiz3bp4yFzBq
+         7mHLPpuBRvCyiE27DuHqwgPGNcAB1AttDP+pJyZcrx2KKD8ddQl0YXELPW9xSEZYT/I/
+         1gyUlpJhShxt2UVbzuyVUJqcskW6du5Y8uR3Sd3JaSF3mygRiR9ep1LXifFuJTG/iXkN
+         niCA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1751051173; x=1751655973;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=zSkB72+T4isnYxkdoUwFbLQg1JfirF1haClLK5jr+4A=;
+        b=QeKwRGiHKCYzXUO0zK9O22BaTuMaMyKn2YxkYVQWyCZhzK8z4OIhytQNg06NbkF9n/
+         WvKM+8IlHD41Mt+98U+T4t917CedtbtKoHdAVShL0YXmaKCpCyZEoA5x87c9tN5tPzEQ
+         9jciRrSwv61pUkmJgQLXRWQoKVREPZEeEZY/S057bgTHEbgiPq4pSQOUK3JCYG+W+c2V
+         9ZSoMniM108PrJ7r9lfw9TjtRat5FlvTI00hz90UHLpSP1aVYByq3P+csisFvFLBSn5c
+         69uKiZwrkHVpKwH/HORg+0GAQ/YHnCIlIMc5M8bnqqEUE1jfp5Yp14TXtjy+E4nN7TI5
+         O0zg==
+X-Forwarded-Encrypted: i=1; AJvYcCX8U/0j80gyAkBqs48W0wVWRYf27tAKIJMU7W221zLv8KMuLI/fabSBb/arUCGoOr+777vRUwyledE=@lists.infradead.org
+X-Gm-Message-State: AOJu0YzXqREEhJnjtCUzpjL1B1dDV/jYz5Z0iFWM+ZuU6/VrSaFaAxHP
+	5bN1r1tq4VYALfGi/FEuchhEs8j/pVyxJ2TES6pFCPEYe8utby6Tr1Z32yXendTWyzV4tLLdEMV
+	53h/mwT40VRj6E4CpJTadeCc00lWSRfCayO62qlRX/Q==
+X-Gm-Gg: ASbGncvZKRl95/FZ7/Liq+lXJxm5EyPeE0DWIIy2N5Ydk+8gcTQsoXV6pgOy5GrqSIA
+	Hfvn8NxYZv8jbly2Hz0tPD/oAkYmcM7swXf2iLEphVrzCfTLxMlUoBFDqHoKBelbVevE2iJgvfz
+	XUSfL8KgCIA9XfOl1spZehKjDu7Vb4srM2FnZLpXUQdg==
+X-Google-Smtp-Source: AGHT+IG5UvYD/xYa1ZxR9Qj+vG2WiVWthmiQDDTfWeTyMogmvZHJrSSSwJfb1D7q55PRbuMkJ2BpcY5wRZdLDBGfJ7s=
+X-Received: by 2002:ae9:e106:0:b0:7d4:46d0:75cd with SMTP id
+ af79cd13be357-7d446d07677mr349639885a.8.1751051173092; Fri, 27 Jun 2025
+ 12:06:13 -0700 (PDT)
+MIME-Version: 1.0
+References: <20250618154452.2136345-1-jesse@rivosinc.com> <20250627-c6a984395c94f8281954ab21@orel>
+In-Reply-To: <20250627-c6a984395c94f8281954ab21@orel>
+From: Jesse Taube <jesse@rivosinc.com>
+Date: Fri, 27 Jun 2025 12:06:02 -0700
+X-Gm-Features: Ac12FXyHA0ZvpCFuSW3W3qXL-WDm1XG2SMoS1KmQ0_Eg7G8aXZxzhD-9zdXpXNY
+Message-ID: <CALSpo=bFJyf+Y1w-a7U++Zx_yCH8h6nP7dToAPBGPnYciHbVkQ@mail.gmail.com>
+Subject: Re: [kvm-unit-tests PATCH v6] riscv: sbi: Add SBI Debug Triggers
+ Extension tests
+To: Andrew Jones <andrew.jones@linux.dev>
 Cc: kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
 	linux-kselftest@vger.kernel.org, Atish Patra <atish.patra@linux.dev>, 
 	Anup Patel <anup@brainfault.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
-	=?utf-8?B?Q2zDqW1lbnQgTMOpZ2Vy?= <cleger@rivosinc.com>, Himanshu Chauhan <hchauhan@ventanamicro.com>, 
-	Charlie Jenkins <charlie@rivosinc.com>
-Subject: Re: [kvm-unit-tests PATCH v6] riscv: sbi: Add SBI Debug Triggers
- Extension tests
-Message-ID: <20250627-c6a984395c94f8281954ab21@orel>
-References: <20250618154452.2136345-1-jesse@rivosinc.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <20250618154452.2136345-1-jesse@rivosinc.com>
-X-Migadu-Flow: FLOW_OUT
+	=?UTF-8?B?Q2zDqW1lbnQgTMOpZ2Vy?= <cleger@rivosinc.com>, 
+	Himanshu Chauhan <hchauhan@ventanamicro.com>, Charlie Jenkins <charlie@rivosinc.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250627_060238_141095_BF20670A 
-X-CRM114-Status: GOOD (  30.42  )
+X-CRM114-CacheID: sfid-20250627_120615_223782_DF50E05B 
+X-CRM114-Status: GOOD (  31.61  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -67,1016 +93,647 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Wed, Jun 18, 2025 at 08:44:52AM -0700, Jesse Taube wrote:
-> Add tests for the DBTR SBI extension.
-> 
-> Signed-off-by: Jesse Taube <jesse@rivosinc.com>
-> Reviewed-by: Charlie Jenkins <charlie@rivosinc.com>
-> Tested-by: Charlie Jenkins <charlie@rivosinc.com>
-> ---
-> V1 -> V2:
->  - Call report_prefix_pop before returning
->  - Disable compressed instructions in exec_call, update related comment
->  - Remove extra "| 1" in dbtr_test_load
->  - Remove extra newlines
->  - Remove extra tabs in check_exec
->  - Remove typedefs from enums
->  - Return when dbtr_install_trigger fails
->  - s/avalible/available/g
->  - s/unistall/uninstall/g
-> V2 -> V3:
->  - Change SBI_DBTR_SHMEM_INVALID_ADDR to -1UL
->  - Move all dbtr functions to sbi-dbtr.c
->  - Move INSN_LEN to processor.h
->  - Update include list
->  - Use C-style comments
-> V3 -> V4:
->  - Include libcflat.h
->  - Remove #define SBI_DBTR_SHMEM_INVALID_ADDR
-> V4 -> V5:
->  - Sort includes
->  - Add kfail for update triggers
-> V5 -> V6:
->  - Add assert in gen_tdata1
->  - Add prefix to dbtr_test_type
->  - Add TRIG_STATE_DMODE
->  - Add TRIG_STATE_RESERVED
->  - Align function paramaters with opening parenthesis
->  - Change OpenSBI < v1.7 to < v1.5
->  - Constantly use spaces in prefix rather than _
->  - Export split_phys_addr
->  - Fix MCONTROL_U and MCONTROL_M mix up
->  - Fix swapped VU and VS
->  - Move /* to own line
->  - Print type in dbtr_test_type
->  - Remove _BIT suffix from macros
->  - Remove duplicate MODE_S
->  - Remove spaces before include
->  - Rename tdata1,2 to trigger and control in dbtr_install_trigger
->  - Report skip in dbtr_test_multiple
->  - Report variables in info not pass or fail
->  - s/save/store/g
->  - sbi_debug_set_shmem use split_phys_addr
->  - Use if (!report(... in dbtr_test_disable_enable
-> ---
->  lib/riscv/asm/sbi.h |   1 +
->  riscv/Makefile      |   1 +
->  riscv/sbi-dbtr.c    | 839 ++++++++++++++++++++++++++++++++++++++++++++
->  riscv/sbi-tests.h   |   2 +
->  riscv/sbi.c         |   3 +-
->  5 files changed, 845 insertions(+), 1 deletion(-)
->  create mode 100644 riscv/sbi-dbtr.c
-> 
-> diff --git a/lib/riscv/asm/sbi.h b/lib/riscv/asm/sbi.h
-> index a5738a5c..78fd6e2a 100644
-> --- a/lib/riscv/asm/sbi.h
-> +++ b/lib/riscv/asm/sbi.h
-> @@ -51,6 +51,7 @@ enum sbi_ext_id {
->  	SBI_EXT_SUSP = 0x53555350,
->  	SBI_EXT_FWFT = 0x46574654,
->  	SBI_EXT_SSE = 0x535345,
-> +	SBI_EXT_DBTR = 0x44425452,
->  };
->  
->  enum sbi_ext_base_fid {
-> diff --git a/riscv/Makefile b/riscv/Makefile
-> index 11e68eae..55c7ac93 100644
-> --- a/riscv/Makefile
-> +++ b/riscv/Makefile
-> @@ -20,6 +20,7 @@ all: $(tests)
->  $(TEST_DIR)/sbi-deps += $(TEST_DIR)/sbi-asm.o
->  $(TEST_DIR)/sbi-deps += $(TEST_DIR)/sbi-fwft.o
->  $(TEST_DIR)/sbi-deps += $(TEST_DIR)/sbi-sse.o
-> +$(TEST_DIR)/sbi-deps += $(TEST_DIR)/sbi-dbtr.o
-
-My OCD says this should come after the sbi-asm to be alphabetical.
-
->  
->  all_deps += $($(TEST_DIR)/sbi-deps)
->  
-> diff --git a/riscv/sbi-dbtr.c b/riscv/sbi-dbtr.c
-> new file mode 100644
-> index 00000000..7837553f
-> --- /dev/null
-> +++ b/riscv/sbi-dbtr.c
-> @@ -0,0 +1,839 @@
-> +// SPDX-License-Identifier: GPL-2.0-only
-> +/*
-> + * SBI DBTR testsuite
-> + *
-> + * Copyright (C) 2025, Rivos Inc., Jesse Taube <jesse@rivosinc.com>
-> + */
-> +
-> +#include <libcflat.h>
-> +#include <bitops.h>
-> +
-> +#include <asm/io.h>
-> +#include <asm/processor.h>
-> +
-> +#include "sbi-tests.h"
-> +
-> +#define RV_MAX_TRIGGERS			32
-> +
-> +#define SBI_DBTR_TRIG_STATE_MAPPED		BIT(0)
-> +#define SBI_DBTR_TRIG_STATE_U			BIT(1)
-> +#define SBI_DBTR_TRIG_STATE_S			BIT(2)
-> +#define SBI_DBTR_TRIG_STATE_VU			BIT(3)
-> +#define SBI_DBTR_TRIG_STATE_VS			BIT(4)
-> +#define SBI_DBTR_TRIG_STATE_HAVE_HW_TRIG	BIT(5)
-> +#define SBI_DBTR_TRIG_STATE_RESERVED		GENMASK(7, 6)
-> +
-> +#define SBI_DBTR_TRIG_STATE_HW_TRIG_IDX_SHIFT		8
-> +#define SBI_DBTR_TRIG_STATE_HW_TRIG_IDX(trig_state)	(trig_state >> SBI_DBTR_TRIG_STATE_HW_TRIG_IDX_SHIFT)
-> +
-> +#define SBI_DBTR_TDATA1_TYPE_SHIFT		(__riscv_xlen - 4)
-> +#define SBI_DBTR_TDATA1_DMODE			BIT_UL(__riscv_xlen - 5)
-> +
-> +#define SBI_DBTR_TDATA1_MCONTROL6_LOAD		BIT(0)
-> +#define SBI_DBTR_TDATA1_MCONTROL6_STORE		BIT(1)
-> +#define SBI_DBTR_TDATA1_MCONTROL6_EXECUTE	BIT(2)
-> +#define SBI_DBTR_TDATA1_MCONTROL6_U		BIT(3)
-> +#define SBI_DBTR_TDATA1_MCONTROL6_S		BIT(4)
-> +#define SBI_DBTR_TDATA1_MCONTROL6_M		BIT(6)
-> +#define SBI_DBTR_TDATA1_MCONTROL6_SELECT	BIT(21)
-> +#define SBI_DBTR_TDATA1_MCONTROL6_VU		BIT(23)
-> +#define SBI_DBTR_TDATA1_MCONTROL6_VS		BIT(24)
-> +
-> +#define SBI_DBTR_TDATA1_MCONTROL_LOAD		BIT(0)
-> +#define SBI_DBTR_TDATA1_MCONTROL_STORE		BIT(1)
-> +#define SBI_DBTR_TDATA1_MCONTROL_EXECUTE	BIT(2)
-> +#define SBI_DBTR_TDATA1_MCONTROL_U		BIT(3)
-> +#define SBI_DBTR_TDATA1_MCONTROL_S		BIT(4)
-> +#define SBI_DBTR_TDATA1_MCONTROL_M		BIT(6)
-> +#define SBI_DBTR_TDATA1_MCONTROL_SELECT		BIT(19)
-> +
-> +enum McontrolType {
-> +	SBI_DBTR_TDATA1_TYPE_NONE =		(0UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_LEGACY =		(1UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_MCONTROL =		(2UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_ICOUNT =		(3UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_ITRIGGER =		(4UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_ETRIGGER =		(5UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_MCONTROL6 =	(6UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_TMEXTTRIGGER =	(7UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_RESERVED0 =	(8UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_RESERVED1 =	(9UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_RESERVED2 =	(10UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_RESERVED3 =	(11UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_CUSTOM0 =		(12UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_CUSTOM1 =		(13UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_CUSTOM2 =		(14UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_DISABLED =		(15UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +};
-> +
-> +enum Tdata1Value {
-> +	VALUE_NONE =	0,
-> +	VALUE_LOAD =	BIT(0),
-> +	VALUE_STORE =	BIT(1),
-> +	VALUE_EXECUTE =	BIT(2),
-> +};
-> +
-> +enum Tdata1Mode {
-> +	MODE_NONE =	0,
-> +	MODE_M =	BIT(0),
-> +	MODE_U =	BIT(1),
-> +	MODE_S =	BIT(2),
-> +	MODE_VU =	BIT(3),
-> +	MODE_VS =	BIT(4),
-> +};
-> +
-> +enum sbi_ext_dbtr_fid {
-> +	SBI_EXT_DBTR_NUM_TRIGGERS = 0,
-> +	SBI_EXT_DBTR_SETUP_SHMEM,
-> +	SBI_EXT_DBTR_TRIGGER_READ,
-> +	SBI_EXT_DBTR_TRIGGER_INSTALL,
-> +	SBI_EXT_DBTR_TRIGGER_UPDATE,
-> +	SBI_EXT_DBTR_TRIGGER_UNINSTALL,
-> +	SBI_EXT_DBTR_TRIGGER_ENABLE,
-> +	SBI_EXT_DBTR_TRIGGER_DISABLE,
-> +};
-> +
-> +struct sbi_dbtr_data_msg {
-> +	unsigned long tstate;
-> +	unsigned long tdata1;
-> +	unsigned long tdata2;
-> +	unsigned long tdata3;
-> +};
-> +
-> +struct sbi_dbtr_id_msg {
-> +	unsigned long idx;
-> +};
-> +
-> +/* SBI shared mem messages layout */
-> +struct sbi_dbtr_shmem_entry {
-> +	union {
-> +		struct sbi_dbtr_data_msg data;
-> +		struct sbi_dbtr_id_msg id;
-> +	};
-> +};
-> +
-> +static bool dbtr_handled;
-> +
-> +/* Expected to be leaf function as not to disrupt frame-pointer */
-> +static __attribute__((naked)) void exec_call(void)
-> +{
-> +	/* skip over nop when triggered instead of ret. */
-> +	asm volatile (".option push\n"
-> +		      ".option arch, -c\n"
-> +		      "nop\n"
-> +		      "ret\n"
-> +		      ".option pop\n");
-> +}
-> +
-> +static void dbtr_exception_handler(struct pt_regs *regs)
-> +{
-> +	dbtr_handled = true;
-> +
-> +	/* Reading *epc may cause a fault, skip over nop */
-> +	if ((void *)regs->epc == exec_call) {
-> +		regs->epc += 4;
-> +		return;
-> +	}
-> +
-> +	/* WARNING: Skips over the trapped intruction */
-> +	regs->epc += RV_INSN_LEN(readw((void *)regs->epc));
-> +}
-> +
-> +static bool do_store(void *tdata2)
-> +{
-> +	bool ret;
-> +
-> +	writel(0, tdata2);
-> +
-> +	ret = dbtr_handled;
-> +	dbtr_handled = false;
-> +
-> +	return ret;
-> +}
-> +
-> +static bool do_load(void *tdata2)
-> +{
-> +	bool ret;
-> +
-> +	readl(tdata2);
-> +
-> +	ret = dbtr_handled;
-> +	dbtr_handled = false;
-> +
-> +	return ret;
-> +}
-> +
-> +static bool do_exec(void)
-> +{
-> +	bool ret;
-> +
-> +	exec_call();
-> +
-> +	ret = dbtr_handled;
-> +	dbtr_handled = false;
-> +
-> +	return ret;
-> +}
-> +
-> +static unsigned long gen_tdata1_mcontrol(enum Tdata1Mode mode, enum Tdata1Value value)
-> +{
-> +	unsigned long tdata1 = SBI_DBTR_TDATA1_TYPE_MCONTROL;
-> +
-> +	if (value & VALUE_LOAD)
-> +		tdata1 |= SBI_DBTR_TDATA1_MCONTROL_LOAD;
-> +
-> +	if (value & VALUE_STORE)
-> +		tdata1 |= SBI_DBTR_TDATA1_MCONTROL_STORE;
-> +
-> +	if (value & VALUE_EXECUTE)
-> +		tdata1 |= SBI_DBTR_TDATA1_MCONTROL_EXECUTE;
-> +
-> +	if (mode & MODE_M)
-> +		tdata1 |= SBI_DBTR_TDATA1_MCONTROL_M;
-> +
-> +	if (mode & MODE_U)
-> +		tdata1 |= SBI_DBTR_TDATA1_MCONTROL_U;
-> +
-> +	if (mode & MODE_S)
-> +		tdata1 |= SBI_DBTR_TDATA1_MCONTROL_S;
-> +
-> +	return tdata1;
-> +}
-> +
-> +static unsigned long gen_tdata1_mcontrol6(enum Tdata1Mode mode, enum Tdata1Value value)
-> +{
-> +	unsigned long tdata1 = SBI_DBTR_TDATA1_TYPE_MCONTROL6;
-> +
-> +	if (value & VALUE_LOAD)
-> +		tdata1 |= SBI_DBTR_TDATA1_MCONTROL6_LOAD;
-> +
-> +	if (value & VALUE_STORE)
-> +		tdata1 |= SBI_DBTR_TDATA1_MCONTROL6_STORE;
-> +
-> +	if (value & VALUE_EXECUTE)
-> +		tdata1 |= SBI_DBTR_TDATA1_MCONTROL6_EXECUTE;
-> +
-> +	if (mode & MODE_M)
-> +		tdata1 |= SBI_DBTR_TDATA1_MCONTROL6_M;
-> +
-> +	if (mode & MODE_U)
-> +		tdata1 |= SBI_DBTR_TDATA1_MCONTROL6_U;
-> +
-> +	if (mode & MODE_S)
-> +		tdata1 |= SBI_DBTR_TDATA1_MCONTROL6_S;
-> +
-> +	if (mode & MODE_VU)
-> +		tdata1 |= SBI_DBTR_TDATA1_MCONTROL6_VU;
-> +
-> +	if (mode & MODE_VS)
-> +		tdata1 |= SBI_DBTR_TDATA1_MCONTROL6_VS;
-> +
-> +	return tdata1;
-> +}
-> +
-> +static unsigned long gen_tdata1(enum McontrolType type, enum Tdata1Value value, enum Tdata1Mode mode)
-> +{
-> +	switch (type) {
-> +	case SBI_DBTR_TDATA1_TYPE_MCONTROL:
-> +		return gen_tdata1_mcontrol(mode, value);
-> +	case SBI_DBTR_TDATA1_TYPE_MCONTROL6:
-> +		return gen_tdata1_mcontrol6(mode, value);
-> +	default:
-> +		assert_msg(false, "Invalid mcontrol type: %lu", type);
-> +		return 0;
-
-Can drop the 'return 0' line now that there's an unconditional assert.
-
-> +	}
-> +}
-> +
-> +static struct sbiret sbi_debug_num_triggers(unsigned long trig_tdata1)
-> +{
-> +	return sbi_ecall(SBI_EXT_DBTR, SBI_EXT_DBTR_NUM_TRIGGERS, trig_tdata1, 0, 0, 0, 0, 0);
-> +}
-> +
-> +static struct sbiret sbi_debug_set_shmem_raw(unsigned long shmem_phys_lo,
-> +					     unsigned long shmem_phys_hi,
-> +					     unsigned long flags)
-> +{
-> +	return sbi_ecall(SBI_EXT_DBTR, SBI_EXT_DBTR_SETUP_SHMEM, shmem_phys_lo,
-> +			 shmem_phys_hi, flags, 0, 0, 0);
-> +}
-> +
-> +static struct sbiret sbi_debug_set_shmem(void *shmem)
-> +{
-> +	unsigned long base_addr_lo, base_addr_hi;
-> +
-> +	split_phys_addr(virt_to_phys(shmem), &base_addr_hi, &base_addr_lo);
-> +	return sbi_debug_set_shmem_raw(base_addr_lo, base_addr_hi, 0);
-> +}
-> +
-> +static struct sbiret sbi_debug_read_triggers(unsigned long trig_idx_base,
-> +					     unsigned long trig_count)
-> +{
-> +	return sbi_ecall(SBI_EXT_DBTR, SBI_EXT_DBTR_TRIGGER_READ, trig_idx_base,
-> +			 trig_count, 0, 0, 0, 0);
-> +}
-> +
-> +static struct sbiret sbi_debug_install_triggers(unsigned long trig_count)
-> +{
-> +	return sbi_ecall(SBI_EXT_DBTR, SBI_EXT_DBTR_TRIGGER_INSTALL, trig_count, 0, 0, 0, 0, 0);
-> +}
-> +
-> +static struct sbiret sbi_debug_update_triggers(unsigned long trig_count)
-> +{
-> +	return sbi_ecall(SBI_EXT_DBTR, SBI_EXT_DBTR_TRIGGER_UPDATE, trig_count, 0, 0, 0, 0, 0);
-> +}
-> +
-> +static struct sbiret sbi_debug_uninstall_triggers(unsigned long trig_idx_base,
-> +						  unsigned long trig_idx_mask)
-> +{
-> +	return sbi_ecall(SBI_EXT_DBTR, SBI_EXT_DBTR_TRIGGER_UNINSTALL, trig_idx_base,
-> +			 trig_idx_mask, 0, 0, 0, 0);
-> +}
-> +
-> +static struct sbiret sbi_debug_enable_triggers(unsigned long trig_idx_base,
-> +					       unsigned long trig_idx_mask)
-> +{
-> +	return sbi_ecall(SBI_EXT_DBTR, SBI_EXT_DBTR_TRIGGER_ENABLE, trig_idx_base,
-> +			 trig_idx_mask, 0, 0, 0, 0);
-> +}
-> +
-> +static struct sbiret sbi_debug_disable_triggers(unsigned long trig_idx_base,
-> +						unsigned long trig_idx_mask)
-> +{
-> +	return sbi_ecall(SBI_EXT_DBTR, SBI_EXT_DBTR_TRIGGER_DISABLE, trig_idx_base,
-> +			 trig_idx_mask, 0, 0, 0, 0);
-> +}
-> +
-> +static bool dbtr_install_trigger(struct sbi_dbtr_shmem_entry *shmem, void *trigger,
-> +				 unsigned long control)
-> +{
-> +	struct sbiret sbi_ret;
-> +	bool ret;
-> +
-> +	shmem->data.tdata1 = control;
-> +	shmem->data.tdata2 = (unsigned long)trigger;
-> +
-> +	sbi_ret = sbi_debug_install_triggers(1);
-> +	ret = sbiret_report_error(&sbi_ret, SBI_SUCCESS, "sbi_debug_install_triggers");
-> +	if (ret)
-> +		install_exception_handler(EXC_BREAKPOINT, dbtr_exception_handler);
-> +
-> +	return ret;
-> +}
-> +
-> +static bool dbtr_uninstall_trigger(void)
-> +{
-> +	struct sbiret ret;
-> +
-> +	install_exception_handler(EXC_BREAKPOINT, NULL);
-> +
-> +	ret = sbi_debug_uninstall_triggers(0, 1);
-> +	return sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_uninstall_triggers");
-> +}
-> +
-> +static unsigned long dbtr_test_num_triggers(void)
-> +{
-> +	struct sbiret ret;
-> +	unsigned long tdata1 = 0;
-> +	/* sbi_debug_num_triggers will return trig_max in sbiret.value when trig_tdata1 == 0 */
-> +
-> +	/* should be at least one trigger. */
-> +	ret = sbi_debug_num_triggers(tdata1);
-> +	sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_num_triggers");
-> +
-> +	if (ret.value == 0) {
-> +		report_fail("sbi_debug_num_triggers: Returned 0 triggers available");
-> +	} else {
-> +		report_pass("sbi_debug_num_triggers: Returned triggers available");
-> +		report_info("sbi_debug_num_triggers: Returned %lu triggers available", ret.value);
-
-Rather than put the sbi_debug_num_triggers prefix in each report call, we
-can just push it.
-
-> +	}
-> +
-> +	return ret.value;
-> +}
-> +
-> +static enum McontrolType dbtr_test_type(unsigned long *num_trig)
-> +{
-> +	struct sbiret ret;
-> +	unsigned long tdata1 = SBI_DBTR_TDATA1_TYPE_MCONTROL6;
-> +
-> +	report_prefix_push("test type");
-> +
-> +	ret = sbi_debug_num_triggers(tdata1);
-> +	sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_num_triggers: mcontrol6");
-> +	*num_trig = ret.value;
-> +	if (ret.value > 0) {
-> +		report_pass("sbi_debug_num_triggers: Returned mcontrol6 triggers available");
-> +		report_info("sbi_debug_num_triggers: Returned %lu mcontrol6 triggers available",
-
-Same comment about pushing "sbi_debug_num_triggers".
-
-> +			    ret.value);
-> +		report_prefix_pop();
-
-If we push sbi_debug_num_triggers, then this can be a report_prefix_popn(2).
-
-> +		return tdata1;
-> +	}
-> +
-> +	tdata1 = SBI_DBTR_TDATA1_TYPE_MCONTROL;
-> +
-> +	ret = sbi_debug_num_triggers(tdata1);
-> +	sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_num_triggers: mcontrol");
-> +	*num_trig = ret.value;
-> +	if (ret.value > 0) {
-> +		report_pass("sbi_debug_num_triggers: Returned mcontrol triggers available");
-> +		report_info("sbi_debug_num_triggers: Returned %lu mcontrol triggers available",
-> +			    ret.value);
-> +		report_prefix_pop();
-> +		return tdata1;
-> +	}
-> +
-> +	report_fail("sbi_debug_num_triggers: Returned 0 mcontrol(6) triggers available");
-> +	report_prefix_pop();
-> +
-> +	return SBI_DBTR_TDATA1_TYPE_NONE;
-> +}
-> +
-> +static struct sbiret dbtr_test_store_install_uninstall(struct sbi_dbtr_shmem_entry *shmem,
-> +						      enum McontrolType type)
-> +{
-> +	static unsigned long test;
-> +	struct sbiret ret;
-> +
-> +	report_prefix_push("store trigger");
-> +
-> +	shmem->data.tdata1 = gen_tdata1(type, VALUE_STORE, MODE_S);
-> +	shmem->data.tdata2 = (unsigned long)&test;
-> +
-> +	ret = sbi_debug_install_triggers(1);
-> +	if (!sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_install_triggers")) {
-> +		report_prefix_pop();
-> +		return ret;
-> +	}
-> +
-> +	install_exception_handler(EXC_BREAKPOINT, dbtr_exception_handler);
-> +
-> +	report(do_store(&test), "triggered");
-> +
-> +	if (do_load(&test))
-> +		report_fail("triggered by load");
-> +
-> +	ret = sbi_debug_uninstall_triggers(0, 1);
-> +	sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_uninstall_triggers");
-> +
-> +	if (do_store(&test))
-> +		report_fail("triggered after uninstall");
-> +
-> +	install_exception_handler(EXC_BREAKPOINT, NULL);
-> +	report_prefix_pop();
-> +
-> +	return ret;
-> +}
-> +
-> +static void dbtr_test_update(struct sbi_dbtr_shmem_entry *shmem, enum McontrolType type)
-> +{
-> +	static unsigned long test;
-> +	struct sbiret ret;
-> +	bool kfail;
-> +
-> +	report_prefix_push("update trigger");
-> +
-> +	if (!dbtr_install_trigger(shmem, NULL, gen_tdata1(type, VALUE_NONE, MODE_NONE))) {
-> +		report_prefix_pop();
-> +		return;
-> +	}
-> +
-> +	shmem->id.idx = 0;
-> +	shmem->data.tdata1 = gen_tdata1(type, VALUE_STORE, MODE_S);
-> +	shmem->data.tdata2 = (unsigned long)&test;
-> +
-> +	ret = sbi_debug_update_triggers(1);
-> +	sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_update_triggers");
-> +
-> +	/*
-> +	 * Known broken update_triggers.
-> +	 * https://lore.kernel.org/opensbi/aDdp1UeUh7GugeHp@ghost/T/#t
-> +	 */
-> +	kfail = __sbi_get_imp_id() == SBI_IMPL_OPENSBI &&
-> +		__sbi_get_imp_version() < sbi_impl_opensbi_mk_version(1, 7);
-> +	report_kfail(kfail, do_store(&test), "triggered");
-> +
-> +	dbtr_uninstall_trigger();
-> +	report_prefix_pop();
-> +}
-> +
-> +static void dbtr_test_load(struct sbi_dbtr_shmem_entry *shmem, enum McontrolType type)
-> +{
-> +	static unsigned long test;
-> +
-> +	report_prefix_push("load trigger");
-> +	if (!dbtr_install_trigger(shmem, &test, gen_tdata1(type, VALUE_LOAD, MODE_S))) {
-> +		report_prefix_pop();
-> +		return;
-> +	}
-> +
-> +	report(do_load(&test), "triggered");
-> +
-> +	if (do_store(&test))
-> +		report_fail("triggered by store");
-> +
-> +	dbtr_uninstall_trigger();
-> +	report_prefix_pop();
-> +}
-> +
-> +static void dbtr_test_disable_enable(struct sbi_dbtr_shmem_entry *shmem, enum McontrolType type)
-> +{
-> +	static unsigned long test;
-> +	struct sbiret ret;
-> +
-> +	report_prefix_push("disable trigger");
-> +	if (!dbtr_install_trigger(shmem, &test, gen_tdata1(type, VALUE_STORE, MODE_S))) {
-> +		report_prefix_pop();
-> +		return;
-> +	}
-> +
-> +	ret = sbi_debug_disable_triggers(0, 1);
-> +	sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_disable_triggers");
-> +
-> +	if (!report(!do_store(&test), "should not trigger")) {
-> +		dbtr_uninstall_trigger();
-> +		report_prefix_pop();
-> +		report_skip("enable trigger: no disable");
-> +
-> +		return;
-> +	}
-> +
-> +	report_prefix_pop();
-> +	report_prefix_push("enable trigger");
-> +
-> +	ret = sbi_debug_enable_triggers(0, 1);
-> +	sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_enable_triggers");
-> +
-> +	report(do_store(&test), "triggered");
-> +
-> +	dbtr_uninstall_trigger();
-> +	report_prefix_pop();
-> +}
-> +
-> +static void dbtr_test_exec(struct sbi_dbtr_shmem_entry *shmem, enum McontrolType type)
-> +{
-> +	static unsigned long test;
-> +
-> +	report_prefix_push("exec trigger");
-> +	/* check if loads and stores trigger exec */
-> +	if (!dbtr_install_trigger(shmem, &test, gen_tdata1(type, VALUE_EXECUTE, MODE_S))) {
-> +		report_prefix_pop();
-> +		return;
-> +	}
-> +
-> +	if (do_load(&test))
-> +		report_fail("triggered by load");
-> +
-> +	if (do_store(&test))
-> +		report_fail("triggered by store");
-> +
-> +	dbtr_uninstall_trigger();
-> +
-> +	/* Check if exec works */
-> +	if (!dbtr_install_trigger(shmem, exec_call, gen_tdata1(type, VALUE_EXECUTE, MODE_S))) {
-> +		report_prefix_pop();
-> +		return;
-> +	}
-> +	report(do_exec(), "triggered");
-> +
-> +	dbtr_uninstall_trigger();
-> +	report_prefix_pop();
-> +}
-> +
-> +static void dbtr_test_read(struct sbi_dbtr_shmem_entry *shmem, enum McontrolType type)
-> +{
-> +	const unsigned long tstatus_expected = SBI_DBTR_TRIG_STATE_S | SBI_DBTR_TRIG_STATE_MAPPED;
-> +	const unsigned long tdata1 = gen_tdata1(type, VALUE_STORE, MODE_S);
-> +	static unsigned long test;
-> +	struct sbiret ret;
-> +
-> +	report_prefix_push("read trigger");
-> +	if (!dbtr_install_trigger(shmem, &test, tdata1)) {
-> +		report_prefix_pop();
-> +		return;
-> +	}
-> +
-> +	ret = sbi_debug_read_triggers(0, 1);
-> +	sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_read_triggers");
-> +
-> +	report(shmem->data.tdata1 == tdata1, "tdata1 expected: 0x%016lx", tdata1);
-> +	report_info("tdata1 found: 0x%016lx", shmem->data.tdata1);
-> +	report(shmem->data.tdata2 == ((unsigned long)&test), "tdata2 expected: 0x%016lx",
-> +	       (unsigned long)&test);
-> +	report_info("tdata2 found: 0x%016lx", shmem->data.tdata2);
-> +	report(shmem->data.tstate == tstatus_expected, "tstate expected: 0x%016lx", tstatus_expected);
-> +	report_info("tstate found: 0x%016lx", shmem->data.tstate);
-
-These don't need to be split into report/report_info pairs because the
-report is checking for a specific value. We only split when report is
-checking for some nonzero value and we also want to output what that
-specific value was for informational purposes.
-
-> +
-> +	dbtr_uninstall_trigger();
-> +	report_prefix_pop();
-> +}
-> +
-> +static void check_exec(unsigned long base)
-> +{
-> +	struct sbiret ret;
-> +
-> +	report(do_exec(), "exec triggered");
-> +
-> +	ret = sbi_debug_uninstall_triggers(base, 1);
-> +	sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_uninstall_triggers");
-> +}
-> +
-> +static void dbtr_test_multiple(struct sbi_dbtr_shmem_entry *shmem, enum McontrolType type,
-> +			       unsigned long num_trigs)
-> +{
-> +	static unsigned long test[2];
-> +	struct sbiret ret;
-> +	bool have_three = num_trigs > 2;
-> +
-> +	if (num_trigs < 2) {
-> +		report_skip("test multiple");
-> +		return;
-> +	}
-> +
-> +	report_prefix_push("test multiple");
-> +
-> +	if (!dbtr_install_trigger(shmem, &test[0], gen_tdata1(type, VALUE_STORE, MODE_S))) {
-> +		report_prefix_pop();
-> +		return;
-> +	}
-> +	if (!dbtr_install_trigger(shmem, &test[1], gen_tdata1(type, VALUE_LOAD, MODE_S)))
-> +		goto error;
-> +	if (have_three &&
-> +	    !dbtr_install_trigger(shmem, exec_call, gen_tdata1(type, VALUE_EXECUTE, MODE_S))) {
-> +		ret = sbi_debug_uninstall_triggers(1, 1);
-> +		sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_uninstall_triggers");
-> +		goto error;
-> +	}
-> +
-> +	report(do_store(&test[0]), "store triggered");
-> +
-> +	if (do_load(&test[0]))
-> +		report_fail("store triggered by load");
-> +
-> +	report(do_load(&test[1]), "load triggered");
-> +
-> +	if (do_store(&test[1]))
-> +		report_fail("load triggered by store");
-> +
-> +	if (have_three)
-> +		check_exec(2);
-> +
-> +	ret = sbi_debug_uninstall_triggers(1, 1);
-> +	sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_uninstall_triggers");
-> +
-> +	if (do_load(&test[1]))
-> +		report_fail("load triggered after uninstall");
-> +
-> +	report(do_store(&test[0]), "store triggered");
-> +
-> +	if (!have_three &&
-> +	    dbtr_install_trigger(shmem, exec_call, gen_tdata1(type, VALUE_EXECUTE, MODE_S)))
-> +		check_exec(1);
-> +
-> +error:
-> +	ret = sbi_debug_uninstall_triggers(0, 1);
-> +	sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_uninstall_triggers");
-> +
-> +	install_exception_handler(EXC_BREAKPOINT, NULL);
-> +	report_prefix_pop();
-> +}
-> +
-> +static void dbtr_test_multiple_types(struct sbi_dbtr_shmem_entry *shmem, unsigned long type)
-> +{
-> +	static unsigned long test;
-> +
-> +	report_prefix_push("test multiple types");
-> +
-> +	/* check if loads and stores trigger exec */
-> +	if (!dbtr_install_trigger(shmem, &test,
-> +			     gen_tdata1(type, VALUE_EXECUTE | VALUE_LOAD | VALUE_STORE, MODE_S))) {
-> +		report_prefix_pop();
-> +		return;
-> +	}
-> +
-> +	report(do_load(&test), "load triggered");
-> +
-> +	report(do_store(&test), "store triggered");
-> +
-> +	dbtr_uninstall_trigger();
-> +
-> +	/* Check if exec works */
-> +	if (!dbtr_install_trigger(shmem, exec_call,
-> +			     gen_tdata1(type, VALUE_EXECUTE | VALUE_LOAD | VALUE_STORE, MODE_S))) {
-> +		report_prefix_pop();
-> +		return;
-> +	}
-> +
-> +	report(do_exec(), "exec triggered");
-> +
-> +	dbtr_uninstall_trigger();
-> +	report_prefix_pop();
-> +}
-> +
-> +static void dbtr_test_disable_uninstall(struct sbi_dbtr_shmem_entry *shmem, enum McontrolType type)
-> +{
-> +	static unsigned long test;
-> +	struct sbiret ret;
-> +
-> +	report_prefix_push("disable uninstall");
-> +	if (!dbtr_install_trigger(shmem, &test, gen_tdata1(type, VALUE_STORE, MODE_S))) {
-> +		report_prefix_pop();
-> +		return;
-> +	}
-> +
-> +	ret = sbi_debug_disable_triggers(0, 1);
-> +	sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_disable_triggers");
-> +
-> +	dbtr_uninstall_trigger();
-> +
-> +	if (!dbtr_install_trigger(shmem, &test, gen_tdata1(type, VALUE_STORE, MODE_S))) {
-> +		report_prefix_pop();
-> +		return;
-> +	}
-> +
-> +	report(do_store(&test), "triggered");
-> +
-> +	dbtr_uninstall_trigger();
-> +	report_prefix_pop();
-> +}
-> +
-> +static void dbtr_test_uninstall_enable(struct sbi_dbtr_shmem_entry *shmem, enum McontrolType type)
-> +{
-> +	static unsigned long test;
-> +	struct sbiret ret;
-> +
-> +	report_prefix_push("uninstall enable");
-> +	if (!dbtr_install_trigger(shmem, &test, gen_tdata1(type, VALUE_STORE, MODE_S))) {
-> +		report_prefix_pop();
-> +		return;
-> +	}
-> +	dbtr_uninstall_trigger();
-> +
-> +	ret = sbi_debug_enable_triggers(0, 1);
-> +	sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_enable_triggers");
-> +
-> +	install_exception_handler(EXC_BREAKPOINT, dbtr_exception_handler);
-> +
-> +	report(!do_store(&test), "should not trigger");
-> +
-> +	install_exception_handler(EXC_BREAKPOINT, NULL);
-> +	report_prefix_pop();
-> +}
-> +
-> +static void dbtr_test_uninstall_update(struct sbi_dbtr_shmem_entry *shmem, enum McontrolType type)
-> +{
-> +	static unsigned long test;
-> +	struct sbiret ret;
-> +	bool kfail;
-> +
-> +	report_prefix_push("uninstall update");
-> +	if (!dbtr_install_trigger(shmem, NULL, gen_tdata1(type, VALUE_NONE, MODE_NONE))) {
-> +		report_prefix_pop();
-> +		return;
-> +	}
-> +
-> +	dbtr_uninstall_trigger();
-> +
-> +	shmem->id.idx = 0;
-> +	shmem->data.tdata1 = gen_tdata1(type, VALUE_STORE, MODE_S);
-> +	shmem->data.tdata2 = (unsigned long)&test;
-> +
-> +	/*
-> +	 * Known broken update_triggers.
-> +	 * https://lore.kernel.org/opensbi/aDdp1UeUh7GugeHp@ghost/T/#t
-> +	 */
-> +	kfail = __sbi_get_imp_id() == SBI_IMPL_OPENSBI &&
-> +		__sbi_get_imp_version() < sbi_impl_opensbi_mk_version(1, 7);
-> +	ret = sbi_debug_update_triggers(1);
-> +	sbiret_kfail_error(kfail, &ret, SBI_ERR_FAILURE, "sbi_debug_update_triggers");
-> +
-> +	install_exception_handler(EXC_BREAKPOINT, dbtr_exception_handler);
-> +
-> +	report(!do_store(&test), "should not trigger");
-> +
-> +	install_exception_handler(EXC_BREAKPOINT, NULL);
-> +	report_prefix_pop();
-> +}
-> +
-> +static void dbtr_test_disable_read(struct sbi_dbtr_shmem_entry *shmem, enum McontrolType type)
-> +{
-> +	const unsigned long tstatus_expected = SBI_DBTR_TRIG_STATE_S | SBI_DBTR_TRIG_STATE_MAPPED;
-> +	const unsigned long tdata1 = gen_tdata1(type, VALUE_STORE, MODE_NONE);
-> +	static unsigned long test;
-> +	struct sbiret ret;
-> +
-> +	report_prefix_push("disable read");
-> +	if (!dbtr_install_trigger(shmem, &test, gen_tdata1(type, VALUE_STORE, MODE_S))) {
-> +		report_prefix_pop();
-> +		return;
-> +	}
-> +
-> +	ret = sbi_debug_disable_triggers(0, 1);
-> +	sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_disable_triggers");
-> +
-> +	ret = sbi_debug_read_triggers(0, 1);
-> +	sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_read_triggers");
-> +
-> +	report(shmem->data.tdata1 == tdata1, "tdata1 expected: 0x%016lx", tdata1);
-> +	report_info("tdata1 found: 0x%016lx", shmem->data.tdata1);
-> +	report(shmem->data.tdata2 == ((unsigned long)&test), "tdata2 expected: 0x%016lx",
-> +	       (unsigned long)&test);
-> +	report_info("tdata2 found: 0x%016lx", shmem->data.tdata2);
-> +	report(shmem->data.tstate == tstatus_expected, "tstate expected: 0x%016lx", tstatus_expected);
-> +	report_info("tstate found: 0x%016lx", shmem->data.tstate);
-
-Same comment about not needing to split this.
-
-> +
-> +	dbtr_uninstall_trigger();
-> +	report_prefix_pop();
-> +}
-> +
-> +void check_dbtr(void)
-> +{
-> +	static struct sbi_dbtr_shmem_entry shmem[RV_MAX_TRIGGERS] = {};
-> +	unsigned long num_trigs;
-> +	enum McontrolType trig_type;
-> +	struct sbiret ret;
-> +
-> +	report_prefix_push("dbtr");
-> +
-> +	if (!sbi_probe(SBI_EXT_DBTR)) {
-> +		report_skip("extension not available");
-> +		report_prefix_pop();
-> +		return;
-
-Could rename the 'error' label to something else and goto it from here
-too.
-
-> +	}
-> +
-> +	if (__sbi_get_imp_id() == SBI_IMPL_OPENSBI &&
-> +	    __sbi_get_imp_version() < sbi_impl_opensbi_mk_version(1, 5)) {
-> +		report_skip("OpenSBI < v1.5 detected, skipping tests");
-> +		report_prefix_pop();
-> +		return;
-
-Why do we need to do this? Isn't the DBTR probe above enough?
-
-> +	}
-> +
-> +	num_trigs = dbtr_test_num_triggers();
-> +	if (!num_trigs)
-> +		goto error;
-> +
-> +	trig_type = dbtr_test_type(&num_trigs);
-> +	if (trig_type == SBI_DBTR_TDATA1_TYPE_NONE)
-> +		goto error;
-> +
-> +	ret = sbi_debug_set_shmem(shmem);
-> +	sbiret_report_error(&ret, SBI_SUCCESS, "sbi_debug_set_shmem");
-> +
-> +	ret = dbtr_test_store_install_uninstall(&shmem[0], trig_type);
-> +	/* install or uninstall failed */
-> +	if (ret.error != SBI_SUCCESS)
-> +		goto error;
-> +
-> +	dbtr_test_load(&shmem[0], trig_type);
-> +	dbtr_test_exec(&shmem[0], trig_type);
-> +	dbtr_test_read(&shmem[0], trig_type);
-> +	dbtr_test_disable_enable(&shmem[0], trig_type);
-> +	dbtr_test_update(&shmem[0], trig_type);
-> +	dbtr_test_multiple_types(&shmem[0], trig_type);
-> +	dbtr_test_multiple(shmem, trig_type, num_trigs);
-> +	dbtr_test_disable_uninstall(&shmem[0], trig_type);
-> +	dbtr_test_uninstall_enable(&shmem[0], trig_type);
-> +	dbtr_test_uninstall_update(&shmem[0], trig_type);
-> +	dbtr_test_disable_read(&shmem[0], trig_type);
-> +
-> +error:
-> +	report_prefix_pop();
-> +}
-> diff --git a/riscv/sbi-tests.h b/riscv/sbi-tests.h
-> index d5c4ae70..c1ebf016 100644
-> --- a/riscv/sbi-tests.h
-> +++ b/riscv/sbi-tests.h
-> @@ -97,8 +97,10 @@ static inline bool env_enabled(const char *env)
->  	return s && (*s == '1' || *s == 'y' || *s == 'Y');
->  }
->  
-> +void split_phys_addr(phys_addr_t paddr, unsigned long *hi, unsigned long *lo);
->  void sbi_bad_fid(int ext);
->  void check_sse(void);
-> +void check_dbtr(void);
->  
->  #endif /* __ASSEMBLER__ */
->  #endif /* _RISCV_SBI_TESTS_H_ */
-> diff --git a/riscv/sbi.c b/riscv/sbi.c
-> index edb1a6be..3b8aadce 100644
-> --- a/riscv/sbi.c
-> +++ b/riscv/sbi.c
-> @@ -105,7 +105,7 @@ static int rand_online_cpu(prng_state *ps)
->  	return cpu;
->  }
->  
-> -static void split_phys_addr(phys_addr_t paddr, unsigned long *hi, unsigned long *lo)
-> +void split_phys_addr(phys_addr_t paddr, unsigned long *hi, unsigned long *lo)
->  {
->  	*lo = (unsigned long)paddr;
->  	*hi = 0;
-> @@ -1561,6 +1561,7 @@ int main(int argc, char **argv)
->  	check_susp();
->  	check_sse();
->  	check_fwft();
-> +	check_dbtr();
->  
->  	return report_summary();
->  }
-> -- 
-> 2.43.0
->
-
-Thanks,
-drew
-
--- 
-kvm-riscv mailing list
-kvm-riscv@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/kvm-riscv
+T24gRnJpLCBKdW4gMjcsIDIwMjUgYXQgNjowMuKAr0FNIEFuZHJldyBKb25lcyA8YW5kcmV3Lmpv
+bmVzQGxpbnV4LmRldj4gd3JvdGU6Cj4KPiBPbiBXZWQsIEp1biAxOCwgMjAyNSBhdCAwODo0NDo1
+MkFNIC0wNzAwLCBKZXNzZSBUYXViZSB3cm90ZToKPiA+IEFkZCB0ZXN0cyBmb3IgdGhlIERCVFIg
+U0JJIGV4dGVuc2lvbi4KPiA+Cj4gPiBTaWduZWQtb2ZmLWJ5OiBKZXNzZSBUYXViZSA8amVzc2VA
+cml2b3NpbmMuY29tPgo+ID4gUmV2aWV3ZWQtYnk6IENoYXJsaWUgSmVua2lucyA8Y2hhcmxpZUBy
+aXZvc2luYy5jb20+Cj4gPiBUZXN0ZWQtYnk6IENoYXJsaWUgSmVua2lucyA8Y2hhcmxpZUByaXZv
+c2luYy5jb20+Cj4gPiAtLS0KPiA+IFYxIC0+IFYyOgo+ID4gIC0gQ2FsbCByZXBvcnRfcHJlZml4
+X3BvcCBiZWZvcmUgcmV0dXJuaW5nCj4gPiAgLSBEaXNhYmxlIGNvbXByZXNzZWQgaW5zdHJ1Y3Rp
+b25zIGluIGV4ZWNfY2FsbCwgdXBkYXRlIHJlbGF0ZWQgY29tbWVudAo+ID4gIC0gUmVtb3ZlIGV4
+dHJhICJ8IDEiIGluIGRidHJfdGVzdF9sb2FkCj4gPiAgLSBSZW1vdmUgZXh0cmEgbmV3bGluZXMK
+PiA+ICAtIFJlbW92ZSBleHRyYSB0YWJzIGluIGNoZWNrX2V4ZWMKPiA+ICAtIFJlbW92ZSB0eXBl
+ZGVmcyBmcm9tIGVudW1zCj4gPiAgLSBSZXR1cm4gd2hlbiBkYnRyX2luc3RhbGxfdHJpZ2dlciBm
+YWlscwo+ID4gIC0gcy9hdmFsaWJsZS9hdmFpbGFibGUvZwo+ID4gIC0gcy91bmlzdGFsbC91bmlu
+c3RhbGwvZwo+ID4gVjIgLT4gVjM6Cj4gPiAgLSBDaGFuZ2UgU0JJX0RCVFJfU0hNRU1fSU5WQUxJ
+RF9BRERSIHRvIC0xVUwKPiA+ICAtIE1vdmUgYWxsIGRidHIgZnVuY3Rpb25zIHRvIHNiaS1kYnRy
+LmMKPiA+ICAtIE1vdmUgSU5TTl9MRU4gdG8gcHJvY2Vzc29yLmgKPiA+ICAtIFVwZGF0ZSBpbmNs
+dWRlIGxpc3QKPiA+ICAtIFVzZSBDLXN0eWxlIGNvbW1lbnRzCj4gPiBWMyAtPiBWNDoKPiA+ICAt
+IEluY2x1ZGUgbGliY2ZsYXQuaAo+ID4gIC0gUmVtb3ZlICNkZWZpbmUgU0JJX0RCVFJfU0hNRU1f
+SU5WQUxJRF9BRERSCj4gPiBWNCAtPiBWNToKPiA+ICAtIFNvcnQgaW5jbHVkZXMKPiA+ICAtIEFk
+ZCBrZmFpbCBmb3IgdXBkYXRlIHRyaWdnZXJzCj4gPiBWNSAtPiBWNjoKPiA+ICAtIEFkZCBhc3Nl
+cnQgaW4gZ2VuX3RkYXRhMQo+ID4gIC0gQWRkIHByZWZpeCB0byBkYnRyX3Rlc3RfdHlwZQo+ID4g
+IC0gQWRkIFRSSUdfU1RBVEVfRE1PREUKPiA+ICAtIEFkZCBUUklHX1NUQVRFX1JFU0VSVkVECj4g
+PiAgLSBBbGlnbiBmdW5jdGlvbiBwYXJhbWF0ZXJzIHdpdGggb3BlbmluZyBwYXJlbnRoZXNpcwo+
+ID4gIC0gQ2hhbmdlIE9wZW5TQkkgPCB2MS43IHRvIDwgdjEuNQo+ID4gIC0gQ29uc3RhbnRseSB1
+c2Ugc3BhY2VzIGluIHByZWZpeCByYXRoZXIgdGhhbiBfCj4gPiAgLSBFeHBvcnQgc3BsaXRfcGh5
+c19hZGRyCj4gPiAgLSBGaXggTUNPTlRST0xfVSBhbmQgTUNPTlRST0xfTSBtaXggdXAKPiA+ICAt
+IEZpeCBzd2FwcGVkIFZVIGFuZCBWUwo+ID4gIC0gTW92ZSAvKiB0byBvd24gbGluZQo+ID4gIC0g
+UHJpbnQgdHlwZSBpbiBkYnRyX3Rlc3RfdHlwZQo+ID4gIC0gUmVtb3ZlIF9CSVQgc3VmZml4IGZy
+b20gbWFjcm9zCj4gPiAgLSBSZW1vdmUgZHVwbGljYXRlIE1PREVfUwo+ID4gIC0gUmVtb3ZlIHNw
+YWNlcyBiZWZvcmUgaW5jbHVkZQo+ID4gIC0gUmVuYW1lIHRkYXRhMSwyIHRvIHRyaWdnZXIgYW5k
+IGNvbnRyb2wgaW4gZGJ0cl9pbnN0YWxsX3RyaWdnZXIKPiA+ICAtIFJlcG9ydCBza2lwIGluIGRi
+dHJfdGVzdF9tdWx0aXBsZQo+ID4gIC0gUmVwb3J0IHZhcmlhYmxlcyBpbiBpbmZvIG5vdCBwYXNz
+IG9yIGZhaWwKPiA+ICAtIHMvc2F2ZS9zdG9yZS9nCj4gPiAgLSBzYmlfZGVidWdfc2V0X3NobWVt
+IHVzZSBzcGxpdF9waHlzX2FkZHIKPiA+ICAtIFVzZSBpZiAoIXJlcG9ydCguLi4gaW4gZGJ0cl90
+ZXN0X2Rpc2FibGVfZW5hYmxlCj4gPiAtLS0KPiA+ICBsaWIvcmlzY3YvYXNtL3NiaS5oIHwgICAx
+ICsKPiA+ICByaXNjdi9NYWtlZmlsZSAgICAgIHwgICAxICsKPiA+ICByaXNjdi9zYmktZGJ0ci5j
+ICAgIHwgODM5ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrCj4g
+PiAgcmlzY3Yvc2JpLXRlc3RzLmggICB8ICAgMiArCj4gPiAgcmlzY3Yvc2JpLmMgICAgICAgICB8
+ICAgMyArLQo+ID4gIDUgZmlsZXMgY2hhbmdlZCwgODQ1IGluc2VydGlvbnMoKyksIDEgZGVsZXRp
+b24oLSkKPiA+ICBjcmVhdGUgbW9kZSAxMDA2NDQgcmlzY3Yvc2JpLWRidHIuYwo+ID4KPiA+IGRp
+ZmYgLS1naXQgYS9saWIvcmlzY3YvYXNtL3NiaS5oIGIvbGliL3Jpc2N2L2FzbS9zYmkuaAo+ID4g
+aW5kZXggYTU3MzhhNWMuLjc4ZmQ2ZTJhIDEwMDY0NAo+ID4gLS0tIGEvbGliL3Jpc2N2L2FzbS9z
+YmkuaAo+ID4gKysrIGIvbGliL3Jpc2N2L2FzbS9zYmkuaAo+ID4gQEAgLTUxLDYgKzUxLDcgQEAg
+ZW51bSBzYmlfZXh0X2lkIHsKPiA+ICAgICAgIFNCSV9FWFRfU1VTUCA9IDB4NTM1NTUzNTAsCj4g
+PiAgICAgICBTQklfRVhUX0ZXRlQgPSAweDQ2NTc0NjU0LAo+ID4gICAgICAgU0JJX0VYVF9TU0Ug
+PSAweDUzNTM0NSwKPiA+ICsgICAgIFNCSV9FWFRfREJUUiA9IDB4NDQ0MjU0NTIsCj4gPiAgfTsK
+PiA+Cj4gPiAgZW51bSBzYmlfZXh0X2Jhc2VfZmlkIHsKPiA+IGRpZmYgLS1naXQgYS9yaXNjdi9N
+YWtlZmlsZSBiL3Jpc2N2L01ha2VmaWxlCj4gPiBpbmRleCAxMWU2OGVhZS4uNTVjN2FjOTMgMTAw
+NjQ0Cj4gPiAtLS0gYS9yaXNjdi9NYWtlZmlsZQo+ID4gKysrIGIvcmlzY3YvTWFrZWZpbGUKPiA+
+IEBAIC0yMCw2ICsyMCw3IEBAIGFsbDogJCh0ZXN0cykKPiA+ICAkKFRFU1RfRElSKS9zYmktZGVw
+cyArPSAkKFRFU1RfRElSKS9zYmktYXNtLm8KPiA+ICAkKFRFU1RfRElSKS9zYmktZGVwcyArPSAk
+KFRFU1RfRElSKS9zYmktZndmdC5vCj4gPiAgJChURVNUX0RJUikvc2JpLWRlcHMgKz0gJChURVNU
+X0RJUikvc2JpLXNzZS5vCj4gPiArJChURVNUX0RJUikvc2JpLWRlcHMgKz0gJChURVNUX0RJUikv
+c2JpLWRidHIubwo+Cj4gTXkgT0NEIHNheXMgdGhpcyBzaG91bGQgY29tZSBhZnRlciB0aGUgc2Jp
+LWFzbSB0byBiZSBhbHBoYWJldGljYWwuCj4KPiA+Cj4gPiAgYWxsX2RlcHMgKz0gJCgkKFRFU1Rf
+RElSKS9zYmktZGVwcykKPiA+Cj4gPiBkaWZmIC0tZ2l0IGEvcmlzY3Yvc2JpLWRidHIuYyBiL3Jp
+c2N2L3NiaS1kYnRyLmMKPiA+IG5ldyBmaWxlIG1vZGUgMTAwNjQ0Cj4gPiBpbmRleCAwMDAwMDAw
+MC4uNzgzNzU1M2YKPiA+IC0tLSAvZGV2L251bGwKPiA+ICsrKyBiL3Jpc2N2L3NiaS1kYnRyLmMK
+PiA+IEBAIC0wLDAgKzEsODM5IEBACj4gPiArLy8gU1BEWC1MaWNlbnNlLUlkZW50aWZpZXI6IEdQ
+TC0yLjAtb25seQo+ID4gKy8qCj4gPiArICogU0JJIERCVFIgdGVzdHN1aXRlCj4gPiArICoKPiA+
+ICsgKiBDb3B5cmlnaHQgKEMpIDIwMjUsIFJpdm9zIEluYy4sIEplc3NlIFRhdWJlIDxqZXNzZUBy
+aXZvc2luYy5jb20+Cj4gPiArICovCj4gPiArCj4gPiArI2luY2x1ZGUgPGxpYmNmbGF0Lmg+Cj4g
+PiArI2luY2x1ZGUgPGJpdG9wcy5oPgo+ID4gKwo+ID4gKyNpbmNsdWRlIDxhc20vaW8uaD4KPiA+
+ICsjaW5jbHVkZSA8YXNtL3Byb2Nlc3Nvci5oPgo+ID4gKwo+ID4gKyNpbmNsdWRlICJzYmktdGVz
+dHMuaCIKPiA+ICsKPiA+ICsjZGVmaW5lIFJWX01BWF9UUklHR0VSUyAgICAgICAgICAgICAgICAg
+ICAgICAzMgo+ID4gKwo+ID4gKyNkZWZpbmUgU0JJX0RCVFJfVFJJR19TVEFURV9NQVBQRUQgICAg
+ICAgICAgIEJJVCgwKQo+ID4gKyNkZWZpbmUgU0JJX0RCVFJfVFJJR19TVEFURV9VICAgICAgICAg
+ICAgICAgICAgICAgICAgQklUKDEpCj4gPiArI2RlZmluZSBTQklfREJUUl9UUklHX1NUQVRFX1Mg
+ICAgICAgICAgICAgICAgICAgICAgICBCSVQoMikKPiA+ICsjZGVmaW5lIFNCSV9EQlRSX1RSSUdf
+U1RBVEVfVlUgICAgICAgICAgICAgICAgICAgICAgIEJJVCgzKQo+ID4gKyNkZWZpbmUgU0JJX0RC
+VFJfVFJJR19TVEFURV9WUyAgICAgICAgICAgICAgICAgICAgICAgQklUKDQpCj4gPiArI2RlZmlu
+ZSBTQklfREJUUl9UUklHX1NUQVRFX0hBVkVfSFdfVFJJRyAgICAgQklUKDUpCj4gPiArI2RlZmlu
+ZSBTQklfREJUUl9UUklHX1NUQVRFX1JFU0VSVkVEICAgICAgICAgR0VOTUFTSyg3LCA2KQo+ID4g
+Kwo+ID4gKyNkZWZpbmUgU0JJX0RCVFJfVFJJR19TVEFURV9IV19UUklHX0lEWF9TSElGVCAgICAg
+ICAgICAgICAgICA4Cj4gPiArI2RlZmluZSBTQklfREJUUl9UUklHX1NUQVRFX0hXX1RSSUdfSURY
+KHRyaWdfc3RhdGUpICAodHJpZ19zdGF0ZSA+PiBTQklfREJUUl9UUklHX1NUQVRFX0hXX1RSSUdf
+SURYX1NISUZUKQo+ID4gKwo+ID4gKyNkZWZpbmUgU0JJX0RCVFJfVERBVEExX1RZUEVfU0hJRlQg
+ICAgICAgICAgIChfX3Jpc2N2X3hsZW4gLSA0KQo+ID4gKyNkZWZpbmUgU0JJX0RCVFJfVERBVEEx
+X0RNT0RFICAgICAgICAgICAgICAgICAgICAgICAgQklUX1VMKF9fcmlzY3ZfeGxlbiAtIDUpCj4g
+PiArCj4gPiArI2RlZmluZSBTQklfREJUUl9UREFUQTFfTUNPTlRST0w2X0xPQUQgICAgICAgICAg
+ICAgICBCSVQoMCkKPiA+ICsjZGVmaW5lIFNCSV9EQlRSX1REQVRBMV9NQ09OVFJPTDZfU1RPUkUg
+ICAgICAgICAgICAgIEJJVCgxKQo+ID4gKyNkZWZpbmUgU0JJX0RCVFJfVERBVEExX01DT05UUk9M
+Nl9FWEVDVVRFICAgIEJJVCgyKQo+ID4gKyNkZWZpbmUgU0JJX0RCVFJfVERBVEExX01DT05UUk9M
+Nl9VICAgICAgICAgIEJJVCgzKQo+ID4gKyNkZWZpbmUgU0JJX0RCVFJfVERBVEExX01DT05UUk9M
+Nl9TICAgICAgICAgIEJJVCg0KQo+ID4gKyNkZWZpbmUgU0JJX0RCVFJfVERBVEExX01DT05UUk9M
+Nl9NICAgICAgICAgIEJJVCg2KQo+ID4gKyNkZWZpbmUgU0JJX0RCVFJfVERBVEExX01DT05UUk9M
+Nl9TRUxFQ1QgICAgIEJJVCgyMSkKPiA+ICsjZGVmaW5lIFNCSV9EQlRSX1REQVRBMV9NQ09OVFJP
+TDZfVlUgICAgICAgICBCSVQoMjMpCj4gPiArI2RlZmluZSBTQklfREJUUl9UREFUQTFfTUNPTlRS
+T0w2X1ZTICAgICAgICAgQklUKDI0KQo+ID4gKwo+ID4gKyNkZWZpbmUgU0JJX0RCVFJfVERBVEEx
+X01DT05UUk9MX0xPQUQgICAgICAgICAgICAgICAgQklUKDApCj4gPiArI2RlZmluZSBTQklfREJU
+Ul9UREFUQTFfTUNPTlRST0xfU1RPUkUgICAgICAgICAgICAgICBCSVQoMSkKPiA+ICsjZGVmaW5l
+IFNCSV9EQlRSX1REQVRBMV9NQ09OVFJPTF9FWEVDVVRFICAgICBCSVQoMikKPiA+ICsjZGVmaW5l
+IFNCSV9EQlRSX1REQVRBMV9NQ09OVFJPTF9VICAgICAgICAgICBCSVQoMykKPiA+ICsjZGVmaW5l
+IFNCSV9EQlRSX1REQVRBMV9NQ09OVFJPTF9TICAgICAgICAgICBCSVQoNCkKPiA+ICsjZGVmaW5l
+IFNCSV9EQlRSX1REQVRBMV9NQ09OVFJPTF9NICAgICAgICAgICBCSVQoNikKPiA+ICsjZGVmaW5l
+IFNCSV9EQlRSX1REQVRBMV9NQ09OVFJPTF9TRUxFQ1QgICAgICAgICAgICAgIEJJVCgxOSkKPiA+
+ICsKPiA+ICtlbnVtIE1jb250cm9sVHlwZSB7Cj4gPiArICAgICBTQklfREJUUl9UREFUQTFfVFlQ
+RV9OT05FID0gICAgICAgICAgICAgKDBVTCA8PCBTQklfREJUUl9UREFUQTFfVFlQRV9TSElGVCks
+Cj4gPiArICAgICBTQklfREJUUl9UREFUQTFfVFlQRV9MRUdBQ1kgPSAgICAgICAgICAgKDFVTCA8
+PCBTQklfREJUUl9UREFUQTFfVFlQRV9TSElGVCksCj4gPiArICAgICBTQklfREJUUl9UREFUQTFf
+VFlQRV9NQ09OVFJPTCA9ICAgICAgICAgKDJVTCA8PCBTQklfREJUUl9UREFUQTFfVFlQRV9TSElG
+VCksCj4gPiArICAgICBTQklfREJUUl9UREFUQTFfVFlQRV9JQ09VTlQgPSAgICAgICAgICAgKDNV
+TCA8PCBTQklfREJUUl9UREFUQTFfVFlQRV9TSElGVCksCj4gPiArICAgICBTQklfREJUUl9UREFU
+QTFfVFlQRV9JVFJJR0dFUiA9ICAgICAgICAgKDRVTCA8PCBTQklfREJUUl9UREFUQTFfVFlQRV9T
+SElGVCksCj4gPiArICAgICBTQklfREJUUl9UREFUQTFfVFlQRV9FVFJJR0dFUiA9ICAgICAgICAg
+KDVVTCA8PCBTQklfREJUUl9UREFUQTFfVFlQRV9TSElGVCksCj4gPiArICAgICBTQklfREJUUl9U
+REFUQTFfVFlQRV9NQ09OVFJPTDYgPSAgICAgICAgKDZVTCA8PCBTQklfREJUUl9UREFUQTFfVFlQ
+RV9TSElGVCksCj4gPiArICAgICBTQklfREJUUl9UREFUQTFfVFlQRV9UTUVYVFRSSUdHRVIgPSAg
+ICAgKDdVTCA8PCBTQklfREJUUl9UREFUQTFfVFlQRV9TSElGVCksCj4gPiArICAgICBTQklfREJU
+Ul9UREFUQTFfVFlQRV9SRVNFUlZFRDAgPSAgICAgICAgKDhVTCA8PCBTQklfREJUUl9UREFUQTFf
+VFlQRV9TSElGVCksCj4gPiArICAgICBTQklfREJUUl9UREFUQTFfVFlQRV9SRVNFUlZFRDEgPSAg
+ICAgICAgKDlVTCA8PCBTQklfREJUUl9UREFUQTFfVFlQRV9TSElGVCksCj4gPiArICAgICBTQklf
+REJUUl9UREFUQTFfVFlQRV9SRVNFUlZFRDIgPSAgICAgICAgKDEwVUwgPDwgU0JJX0RCVFJfVERB
+VEExX1RZUEVfU0hJRlQpLAo+ID4gKyAgICAgU0JJX0RCVFJfVERBVEExX1RZUEVfUkVTRVJWRUQz
+ID0gICAgICAgICgxMVVMIDw8IFNCSV9EQlRSX1REQVRBMV9UWVBFX1NISUZUKSwKPiA+ICsgICAg
+IFNCSV9EQlRSX1REQVRBMV9UWVBFX0NVU1RPTTAgPSAgICAgICAgICAoMTJVTCA8PCBTQklfREJU
+Ul9UREFUQTFfVFlQRV9TSElGVCksCj4gPiArICAgICBTQklfREJUUl9UREFUQTFfVFlQRV9DVVNU
+T00xID0gICAgICAgICAgKDEzVUwgPDwgU0JJX0RCVFJfVERBVEExX1RZUEVfU0hJRlQpLAo+ID4g
+KyAgICAgU0JJX0RCVFJfVERBVEExX1RZUEVfQ1VTVE9NMiA9ICAgICAgICAgICgxNFVMIDw8IFNC
+SV9EQlRSX1REQVRBMV9UWVBFX1NISUZUKSwKPiA+ICsgICAgIFNCSV9EQlRSX1REQVRBMV9UWVBF
+X0RJU0FCTEVEID0gICAgICAgICAoMTVVTCA8PCBTQklfREJUUl9UREFUQTFfVFlQRV9TSElGVCks
+Cj4gPiArfTsKPiA+ICsKPiA+ICtlbnVtIFRkYXRhMVZhbHVlIHsKPiA+ICsgICAgIFZBTFVFX05P
+TkUgPSAgICAwLAo+ID4gKyAgICAgVkFMVUVfTE9BRCA9ICAgIEJJVCgwKSwKPiA+ICsgICAgIFZB
+TFVFX1NUT1JFID0gICBCSVQoMSksCj4gPiArICAgICBWQUxVRV9FWEVDVVRFID0gQklUKDIpLAo+
+ID4gK307Cj4gPiArCj4gPiArZW51bSBUZGF0YTFNb2RlIHsKPiA+ICsgICAgIE1PREVfTk9ORSA9
+ICAgICAwLAo+ID4gKyAgICAgTU9ERV9NID0gICAgICAgIEJJVCgwKSwKPiA+ICsgICAgIE1PREVf
+VSA9ICAgICAgICBCSVQoMSksCj4gPiArICAgICBNT0RFX1MgPSAgICAgICAgQklUKDIpLAo+ID4g
+KyAgICAgTU9ERV9WVSA9ICAgICAgIEJJVCgzKSwKPiA+ICsgICAgIE1PREVfVlMgPSAgICAgICBC
+SVQoNCksCj4gPiArfTsKPiA+ICsKPiA+ICtlbnVtIHNiaV9leHRfZGJ0cl9maWQgewo+ID4gKyAg
+ICAgU0JJX0VYVF9EQlRSX05VTV9UUklHR0VSUyA9IDAsCj4gPiArICAgICBTQklfRVhUX0RCVFJf
+U0VUVVBfU0hNRU0sCj4gPiArICAgICBTQklfRVhUX0RCVFJfVFJJR0dFUl9SRUFELAo+ID4gKyAg
+ICAgU0JJX0VYVF9EQlRSX1RSSUdHRVJfSU5TVEFMTCwKPiA+ICsgICAgIFNCSV9FWFRfREJUUl9U
+UklHR0VSX1VQREFURSwKPiA+ICsgICAgIFNCSV9FWFRfREJUUl9UUklHR0VSX1VOSU5TVEFMTCwK
+PiA+ICsgICAgIFNCSV9FWFRfREJUUl9UUklHR0VSX0VOQUJMRSwKPiA+ICsgICAgIFNCSV9FWFRf
+REJUUl9UUklHR0VSX0RJU0FCTEUsCj4gPiArfTsKPiA+ICsKPiA+ICtzdHJ1Y3Qgc2JpX2RidHJf
+ZGF0YV9tc2cgewo+ID4gKyAgICAgdW5zaWduZWQgbG9uZyB0c3RhdGU7Cj4gPiArICAgICB1bnNp
+Z25lZCBsb25nIHRkYXRhMTsKPiA+ICsgICAgIHVuc2lnbmVkIGxvbmcgdGRhdGEyOwo+ID4gKyAg
+ICAgdW5zaWduZWQgbG9uZyB0ZGF0YTM7Cj4gPiArfTsKPiA+ICsKPiA+ICtzdHJ1Y3Qgc2JpX2Ri
+dHJfaWRfbXNnIHsKPiA+ICsgICAgIHVuc2lnbmVkIGxvbmcgaWR4Owo+ID4gK307Cj4gPiArCj4g
+PiArLyogU0JJIHNoYXJlZCBtZW0gbWVzc2FnZXMgbGF5b3V0ICovCj4gPiArc3RydWN0IHNiaV9k
+YnRyX3NobWVtX2VudHJ5IHsKPiA+ICsgICAgIHVuaW9uIHsKPiA+ICsgICAgICAgICAgICAgc3Ry
+dWN0IHNiaV9kYnRyX2RhdGFfbXNnIGRhdGE7Cj4gPiArICAgICAgICAgICAgIHN0cnVjdCBzYmlf
+ZGJ0cl9pZF9tc2cgaWQ7Cj4gPiArICAgICB9Owo+ID4gK307Cj4gPiArCj4gPiArc3RhdGljIGJv
+b2wgZGJ0cl9oYW5kbGVkOwo+ID4gKwo+ID4gKy8qIEV4cGVjdGVkIHRvIGJlIGxlYWYgZnVuY3Rp
+b24gYXMgbm90IHRvIGRpc3J1cHQgZnJhbWUtcG9pbnRlciAqLwo+ID4gK3N0YXRpYyBfX2F0dHJp
+YnV0ZV9fKChuYWtlZCkpIHZvaWQgZXhlY19jYWxsKHZvaWQpCj4gPiArewo+ID4gKyAgICAgLyog
+c2tpcCBvdmVyIG5vcCB3aGVuIHRyaWdnZXJlZCBpbnN0ZWFkIG9mIHJldC4gKi8KPiA+ICsgICAg
+IGFzbSB2b2xhdGlsZSAoIi5vcHRpb24gcHVzaFxuIgo+ID4gKyAgICAgICAgICAgICAgICAgICAi
+Lm9wdGlvbiBhcmNoLCAtY1xuIgo+ID4gKyAgICAgICAgICAgICAgICAgICAibm9wXG4iCj4gPiAr
+ICAgICAgICAgICAgICAgICAgICJyZXRcbiIKPiA+ICsgICAgICAgICAgICAgICAgICAgIi5vcHRp
+b24gcG9wXG4iKTsKPiA+ICt9Cj4gPiArCj4gPiArc3RhdGljIHZvaWQgZGJ0cl9leGNlcHRpb25f
+aGFuZGxlcihzdHJ1Y3QgcHRfcmVncyAqcmVncykKPiA+ICt7Cj4gPiArICAgICBkYnRyX2hhbmRs
+ZWQgPSB0cnVlOwo+ID4gKwo+ID4gKyAgICAgLyogUmVhZGluZyAqZXBjIG1heSBjYXVzZSBhIGZh
+dWx0LCBza2lwIG92ZXIgbm9wICovCj4gPiArICAgICBpZiAoKHZvaWQgKilyZWdzLT5lcGMgPT0g
+ZXhlY19jYWxsKSB7Cj4gPiArICAgICAgICAgICAgIHJlZ3MtPmVwYyArPSA0Owo+ID4gKyAgICAg
+ICAgICAgICByZXR1cm47Cj4gPiArICAgICB9Cj4gPiArCj4gPiArICAgICAvKiBXQVJOSU5HOiBT
+a2lwcyBvdmVyIHRoZSB0cmFwcGVkIGludHJ1Y3Rpb24gKi8KPiA+ICsgICAgIHJlZ3MtPmVwYyAr
+PSBSVl9JTlNOX0xFTihyZWFkdygodm9pZCAqKXJlZ3MtPmVwYykpOwo+ID4gK30KPiA+ICsKPiA+
+ICtzdGF0aWMgYm9vbCBkb19zdG9yZSh2b2lkICp0ZGF0YTIpCj4gPiArewo+ID4gKyAgICAgYm9v
+bCByZXQ7Cj4gPiArCj4gPiArICAgICB3cml0ZWwoMCwgdGRhdGEyKTsKPiA+ICsKPiA+ICsgICAg
+IHJldCA9IGRidHJfaGFuZGxlZDsKPiA+ICsgICAgIGRidHJfaGFuZGxlZCA9IGZhbHNlOwo+ID4g
+Kwo+ID4gKyAgICAgcmV0dXJuIHJldDsKPiA+ICt9Cj4gPiArCj4gPiArc3RhdGljIGJvb2wgZG9f
+bG9hZCh2b2lkICp0ZGF0YTIpCj4gPiArewo+ID4gKyAgICAgYm9vbCByZXQ7Cj4gPiArCj4gPiAr
+ICAgICByZWFkbCh0ZGF0YTIpOwo+ID4gKwo+ID4gKyAgICAgcmV0ID0gZGJ0cl9oYW5kbGVkOwo+
+ID4gKyAgICAgZGJ0cl9oYW5kbGVkID0gZmFsc2U7Cj4gPiArCj4gPiArICAgICByZXR1cm4gcmV0
+Owo+ID4gK30KPiA+ICsKPiA+ICtzdGF0aWMgYm9vbCBkb19leGVjKHZvaWQpCj4gPiArewo+ID4g
+KyAgICAgYm9vbCByZXQ7Cj4gPiArCj4gPiArICAgICBleGVjX2NhbGwoKTsKPiA+ICsKPiA+ICsg
+ICAgIHJldCA9IGRidHJfaGFuZGxlZDsKPiA+ICsgICAgIGRidHJfaGFuZGxlZCA9IGZhbHNlOwo+
+ID4gKwo+ID4gKyAgICAgcmV0dXJuIHJldDsKPiA+ICt9Cj4gPiArCj4gPiArc3RhdGljIHVuc2ln
+bmVkIGxvbmcgZ2VuX3RkYXRhMV9tY29udHJvbChlbnVtIFRkYXRhMU1vZGUgbW9kZSwgZW51bSBU
+ZGF0YTFWYWx1ZSB2YWx1ZSkKPiA+ICt7Cj4gPiArICAgICB1bnNpZ25lZCBsb25nIHRkYXRhMSA9
+IFNCSV9EQlRSX1REQVRBMV9UWVBFX01DT05UUk9MOwo+ID4gKwo+ID4gKyAgICAgaWYgKHZhbHVl
+ICYgVkFMVUVfTE9BRCkKPiA+ICsgICAgICAgICAgICAgdGRhdGExIHw9IFNCSV9EQlRSX1REQVRB
+MV9NQ09OVFJPTF9MT0FEOwo+ID4gKwo+ID4gKyAgICAgaWYgKHZhbHVlICYgVkFMVUVfU1RPUkUp
+Cj4gPiArICAgICAgICAgICAgIHRkYXRhMSB8PSBTQklfREJUUl9UREFUQTFfTUNPTlRST0xfU1RP
+UkU7Cj4gPiArCj4gPiArICAgICBpZiAodmFsdWUgJiBWQUxVRV9FWEVDVVRFKQo+ID4gKyAgICAg
+ICAgICAgICB0ZGF0YTEgfD0gU0JJX0RCVFJfVERBVEExX01DT05UUk9MX0VYRUNVVEU7Cj4gPiAr
+Cj4gPiArICAgICBpZiAobW9kZSAmIE1PREVfTSkKPiA+ICsgICAgICAgICAgICAgdGRhdGExIHw9
+IFNCSV9EQlRSX1REQVRBMV9NQ09OVFJPTF9NOwo+ID4gKwo+ID4gKyAgICAgaWYgKG1vZGUgJiBN
+T0RFX1UpCj4gPiArICAgICAgICAgICAgIHRkYXRhMSB8PSBTQklfREJUUl9UREFUQTFfTUNPTlRS
+T0xfVTsKPiA+ICsKPiA+ICsgICAgIGlmIChtb2RlICYgTU9ERV9TKQo+ID4gKyAgICAgICAgICAg
+ICB0ZGF0YTEgfD0gU0JJX0RCVFJfVERBVEExX01DT05UUk9MX1M7Cj4gPiArCj4gPiArICAgICBy
+ZXR1cm4gdGRhdGExOwo+ID4gK30KPiA+ICsKPiA+ICtzdGF0aWMgdW5zaWduZWQgbG9uZyBnZW5f
+dGRhdGExX21jb250cm9sNihlbnVtIFRkYXRhMU1vZGUgbW9kZSwgZW51bSBUZGF0YTFWYWx1ZSB2
+YWx1ZSkKPiA+ICt7Cj4gPiArICAgICB1bnNpZ25lZCBsb25nIHRkYXRhMSA9IFNCSV9EQlRSX1RE
+QVRBMV9UWVBFX01DT05UUk9MNjsKPiA+ICsKPiA+ICsgICAgIGlmICh2YWx1ZSAmIFZBTFVFX0xP
+QUQpCj4gPiArICAgICAgICAgICAgIHRkYXRhMSB8PSBTQklfREJUUl9UREFUQTFfTUNPTlRST0w2
+X0xPQUQ7Cj4gPiArCj4gPiArICAgICBpZiAodmFsdWUgJiBWQUxVRV9TVE9SRSkKPiA+ICsgICAg
+ICAgICAgICAgdGRhdGExIHw9IFNCSV9EQlRSX1REQVRBMV9NQ09OVFJPTDZfU1RPUkU7Cj4gPiAr
+Cj4gPiArICAgICBpZiAodmFsdWUgJiBWQUxVRV9FWEVDVVRFKQo+ID4gKyAgICAgICAgICAgICB0
+ZGF0YTEgfD0gU0JJX0RCVFJfVERBVEExX01DT05UUk9MNl9FWEVDVVRFOwo+ID4gKwo+ID4gKyAg
+ICAgaWYgKG1vZGUgJiBNT0RFX00pCj4gPiArICAgICAgICAgICAgIHRkYXRhMSB8PSBTQklfREJU
+Ul9UREFUQTFfTUNPTlRST0w2X007Cj4gPiArCj4gPiArICAgICBpZiAobW9kZSAmIE1PREVfVSkK
+PiA+ICsgICAgICAgICAgICAgdGRhdGExIHw9IFNCSV9EQlRSX1REQVRBMV9NQ09OVFJPTDZfVTsK
+PiA+ICsKPiA+ICsgICAgIGlmIChtb2RlICYgTU9ERV9TKQo+ID4gKyAgICAgICAgICAgICB0ZGF0
+YTEgfD0gU0JJX0RCVFJfVERBVEExX01DT05UUk9MNl9TOwo+ID4gKwo+ID4gKyAgICAgaWYgKG1v
+ZGUgJiBNT0RFX1ZVKQo+ID4gKyAgICAgICAgICAgICB0ZGF0YTEgfD0gU0JJX0RCVFJfVERBVEEx
+X01DT05UUk9MNl9WVTsKPiA+ICsKPiA+ICsgICAgIGlmIChtb2RlICYgTU9ERV9WUykKPiA+ICsg
+ICAgICAgICAgICAgdGRhdGExIHw9IFNCSV9EQlRSX1REQVRBMV9NQ09OVFJPTDZfVlM7Cj4gPiAr
+Cj4gPiArICAgICByZXR1cm4gdGRhdGExOwo+ID4gK30KPiA+ICsKPiA+ICtzdGF0aWMgdW5zaWdu
+ZWQgbG9uZyBnZW5fdGRhdGExKGVudW0gTWNvbnRyb2xUeXBlIHR5cGUsIGVudW0gVGRhdGExVmFs
+dWUgdmFsdWUsIGVudW0gVGRhdGExTW9kZSBtb2RlKQo+ID4gK3sKPiA+ICsgICAgIHN3aXRjaCAo
+dHlwZSkgewo+ID4gKyAgICAgY2FzZSBTQklfREJUUl9UREFUQTFfVFlQRV9NQ09OVFJPTDoKPiA+
+ICsgICAgICAgICAgICAgcmV0dXJuIGdlbl90ZGF0YTFfbWNvbnRyb2wobW9kZSwgdmFsdWUpOwo+
+ID4gKyAgICAgY2FzZSBTQklfREJUUl9UREFUQTFfVFlQRV9NQ09OVFJPTDY6Cj4gPiArICAgICAg
+ICAgICAgIHJldHVybiBnZW5fdGRhdGExX21jb250cm9sNihtb2RlLCB2YWx1ZSk7Cj4gPiArICAg
+ICBkZWZhdWx0Ogo+ID4gKyAgICAgICAgICAgICBhc3NlcnRfbXNnKGZhbHNlLCAiSW52YWxpZCBt
+Y29udHJvbCB0eXBlOiAlbHUiLCB0eXBlKTsKPiA+ICsgICAgICAgICAgICAgcmV0dXJuIDA7Cj4K
+PiBDYW4gZHJvcCB0aGUgJ3JldHVybiAwJyBsaW5lIG5vdyB0aGF0IHRoZXJlJ3MgYW4gdW5jb25k
+aXRpb25hbCBhc3NlcnQuCj4KPiA+ICsgICAgIH0KPiA+ICt9Cj4gPiArCj4gPiArc3RhdGljIHN0
+cnVjdCBzYmlyZXQgc2JpX2RlYnVnX251bV90cmlnZ2Vycyh1bnNpZ25lZCBsb25nIHRyaWdfdGRh
+dGExKQo+ID4gK3sKPiA+ICsgICAgIHJldHVybiBzYmlfZWNhbGwoU0JJX0VYVF9EQlRSLCBTQklf
+RVhUX0RCVFJfTlVNX1RSSUdHRVJTLCB0cmlnX3RkYXRhMSwgMCwgMCwgMCwgMCwgMCk7Cj4gPiAr
+fQo+ID4gKwo+ID4gK3N0YXRpYyBzdHJ1Y3Qgc2JpcmV0IHNiaV9kZWJ1Z19zZXRfc2htZW1fcmF3
+KHVuc2lnbmVkIGxvbmcgc2htZW1fcGh5c19sbywKPiA+ICsgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICB1bnNpZ25lZCBsb25nIHNobWVtX3BoeXNfaGksCj4gPiArICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgdW5zaWduZWQgbG9uZyBmbGFn
+cykKPiA+ICt7Cj4gPiArICAgICByZXR1cm4gc2JpX2VjYWxsKFNCSV9FWFRfREJUUiwgU0JJX0VY
+VF9EQlRSX1NFVFVQX1NITUVNLCBzaG1lbV9waHlzX2xvLAo+ID4gKyAgICAgICAgICAgICAgICAg
+ICAgICBzaG1lbV9waHlzX2hpLCBmbGFncywgMCwgMCwgMCk7Cj4gPiArfQo+ID4gKwo+ID4gK3N0
+YXRpYyBzdHJ1Y3Qgc2JpcmV0IHNiaV9kZWJ1Z19zZXRfc2htZW0odm9pZCAqc2htZW0pCj4gPiAr
+ewo+ID4gKyAgICAgdW5zaWduZWQgbG9uZyBiYXNlX2FkZHJfbG8sIGJhc2VfYWRkcl9oaTsKPiA+
+ICsKPiA+ICsgICAgIHNwbGl0X3BoeXNfYWRkcih2aXJ0X3RvX3BoeXMoc2htZW0pLCAmYmFzZV9h
+ZGRyX2hpLCAmYmFzZV9hZGRyX2xvKTsKPiA+ICsgICAgIHJldHVybiBzYmlfZGVidWdfc2V0X3No
+bWVtX3JhdyhiYXNlX2FkZHJfbG8sIGJhc2VfYWRkcl9oaSwgMCk7Cj4gPiArfQo+ID4gKwo+ID4g
+K3N0YXRpYyBzdHJ1Y3Qgc2JpcmV0IHNiaV9kZWJ1Z19yZWFkX3RyaWdnZXJzKHVuc2lnbmVkIGxv
+bmcgdHJpZ19pZHhfYmFzZSwKPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICB1bnNpZ25lZCBsb25nIHRyaWdfY291bnQpCj4gPiArewo+ID4gKyAgICAgcmV0dXJu
+IHNiaV9lY2FsbChTQklfRVhUX0RCVFIsIFNCSV9FWFRfREJUUl9UUklHR0VSX1JFQUQsIHRyaWdf
+aWR4X2Jhc2UsCj4gPiArICAgICAgICAgICAgICAgICAgICAgIHRyaWdfY291bnQsIDAsIDAsIDAs
+IDApOwo+ID4gK30KPiA+ICsKPiA+ICtzdGF0aWMgc3RydWN0IHNiaXJldCBzYmlfZGVidWdfaW5z
+dGFsbF90cmlnZ2Vycyh1bnNpZ25lZCBsb25nIHRyaWdfY291bnQpCj4gPiArewo+ID4gKyAgICAg
+cmV0dXJuIHNiaV9lY2FsbChTQklfRVhUX0RCVFIsIFNCSV9FWFRfREJUUl9UUklHR0VSX0lOU1RB
+TEwsIHRyaWdfY291bnQsIDAsIDAsIDAsIDAsIDApOwo+ID4gK30KPiA+ICsKPiA+ICtzdGF0aWMg
+c3RydWN0IHNiaXJldCBzYmlfZGVidWdfdXBkYXRlX3RyaWdnZXJzKHVuc2lnbmVkIGxvbmcgdHJp
+Z19jb3VudCkKPiA+ICt7Cj4gPiArICAgICByZXR1cm4gc2JpX2VjYWxsKFNCSV9FWFRfREJUUiwg
+U0JJX0VYVF9EQlRSX1RSSUdHRVJfVVBEQVRFLCB0cmlnX2NvdW50LCAwLCAwLCAwLCAwLCAwKTsK
+PiA+ICt9Cj4gPiArCj4gPiArc3RhdGljIHN0cnVjdCBzYmlyZXQgc2JpX2RlYnVnX3VuaW5zdGFs
+bF90cmlnZ2Vycyh1bnNpZ25lZCBsb25nIHRyaWdfaWR4X2Jhc2UsCj4gPiArICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB1bnNpZ25lZCBsb25nIHRyaWdfaWR4
+X21hc2spCj4gPiArewo+ID4gKyAgICAgcmV0dXJuIHNiaV9lY2FsbChTQklfRVhUX0RCVFIsIFNC
+SV9FWFRfREJUUl9UUklHR0VSX1VOSU5TVEFMTCwgdHJpZ19pZHhfYmFzZSwKPiA+ICsgICAgICAg
+ICAgICAgICAgICAgICAgdHJpZ19pZHhfbWFzaywgMCwgMCwgMCwgMCk7Cj4gPiArfQo+ID4gKwo+
+ID4gK3N0YXRpYyBzdHJ1Y3Qgc2JpcmV0IHNiaV9kZWJ1Z19lbmFibGVfdHJpZ2dlcnModW5zaWdu
+ZWQgbG9uZyB0cmlnX2lkeF9iYXNlLAo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgdW5zaWduZWQgbG9uZyB0cmlnX2lkeF9tYXNrKQo+ID4gK3sKPiA+ICsg
+ICAgIHJldHVybiBzYmlfZWNhbGwoU0JJX0VYVF9EQlRSLCBTQklfRVhUX0RCVFJfVFJJR0dFUl9F
+TkFCTEUsIHRyaWdfaWR4X2Jhc2UsCj4gPiArICAgICAgICAgICAgICAgICAgICAgIHRyaWdfaWR4
+X21hc2ssIDAsIDAsIDAsIDApOwo+ID4gK30KPiA+ICsKPiA+ICtzdGF0aWMgc3RydWN0IHNiaXJl
+dCBzYmlfZGVidWdfZGlzYWJsZV90cmlnZ2Vycyh1bnNpZ25lZCBsb25nIHRyaWdfaWR4X2Jhc2Us
+Cj4gPiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgdW5zaWdu
+ZWQgbG9uZyB0cmlnX2lkeF9tYXNrKQo+ID4gK3sKPiA+ICsgICAgIHJldHVybiBzYmlfZWNhbGwo
+U0JJX0VYVF9EQlRSLCBTQklfRVhUX0RCVFJfVFJJR0dFUl9ESVNBQkxFLCB0cmlnX2lkeF9iYXNl
+LAo+ID4gKyAgICAgICAgICAgICAgICAgICAgICB0cmlnX2lkeF9tYXNrLCAwLCAwLCAwLCAwKTsK
+PiA+ICt9Cj4gPiArCj4gPiArc3RhdGljIGJvb2wgZGJ0cl9pbnN0YWxsX3RyaWdnZXIoc3RydWN0
+IHNiaV9kYnRyX3NobWVtX2VudHJ5ICpzaG1lbSwgdm9pZCAqdHJpZ2dlciwKPiA+ICsgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICB1bnNpZ25lZCBsb25nIGNvbnRyb2wpCj4gPiArewo+ID4g
+KyAgICAgc3RydWN0IHNiaXJldCBzYmlfcmV0Owo+ID4gKyAgICAgYm9vbCByZXQ7Cj4gPiArCj4g
+PiArICAgICBzaG1lbS0+ZGF0YS50ZGF0YTEgPSBjb250cm9sOwo+ID4gKyAgICAgc2htZW0tPmRh
+dGEudGRhdGEyID0gKHVuc2lnbmVkIGxvbmcpdHJpZ2dlcjsKPiA+ICsKPiA+ICsgICAgIHNiaV9y
+ZXQgPSBzYmlfZGVidWdfaW5zdGFsbF90cmlnZ2VycygxKTsKPiA+ICsgICAgIHJldCA9IHNiaXJl
+dF9yZXBvcnRfZXJyb3IoJnNiaV9yZXQsIFNCSV9TVUNDRVNTLCAic2JpX2RlYnVnX2luc3RhbGxf
+dHJpZ2dlcnMiKTsKPiA+ICsgICAgIGlmIChyZXQpCj4gPiArICAgICAgICAgICAgIGluc3RhbGxf
+ZXhjZXB0aW9uX2hhbmRsZXIoRVhDX0JSRUFLUE9JTlQsIGRidHJfZXhjZXB0aW9uX2hhbmRsZXIp
+Owo+ID4gKwo+ID4gKyAgICAgcmV0dXJuIHJldDsKPiA+ICt9Cj4gPiArCj4gPiArc3RhdGljIGJv
+b2wgZGJ0cl91bmluc3RhbGxfdHJpZ2dlcih2b2lkKQo+ID4gK3sKPiA+ICsgICAgIHN0cnVjdCBz
+YmlyZXQgcmV0Owo+ID4gKwo+ID4gKyAgICAgaW5zdGFsbF9leGNlcHRpb25faGFuZGxlcihFWENf
+QlJFQUtQT0lOVCwgTlVMTCk7Cj4gPiArCj4gPiArICAgICByZXQgPSBzYmlfZGVidWdfdW5pbnN0
+YWxsX3RyaWdnZXJzKDAsIDEpOwo+ID4gKyAgICAgcmV0dXJuIHNiaXJldF9yZXBvcnRfZXJyb3Io
+JnJldCwgU0JJX1NVQ0NFU1MsICJzYmlfZGVidWdfdW5pbnN0YWxsX3RyaWdnZXJzIik7Cj4gPiAr
+fQo+ID4gKwo+ID4gK3N0YXRpYyB1bnNpZ25lZCBsb25nIGRidHJfdGVzdF9udW1fdHJpZ2dlcnMo
+dm9pZCkKPiA+ICt7Cj4gPiArICAgICBzdHJ1Y3Qgc2JpcmV0IHJldDsKPiA+ICsgICAgIHVuc2ln
+bmVkIGxvbmcgdGRhdGExID0gMDsKPiA+ICsgICAgIC8qIHNiaV9kZWJ1Z19udW1fdHJpZ2dlcnMg
+d2lsbCByZXR1cm4gdHJpZ19tYXggaW4gc2JpcmV0LnZhbHVlIHdoZW4gdHJpZ190ZGF0YTEgPT0g
+MCAqLwo+ID4gKwo+ID4gKyAgICAgLyogc2hvdWxkIGJlIGF0IGxlYXN0IG9uZSB0cmlnZ2VyLiAq
+Lwo+ID4gKyAgICAgcmV0ID0gc2JpX2RlYnVnX251bV90cmlnZ2Vycyh0ZGF0YTEpOwo+ID4gKyAg
+ICAgc2JpcmV0X3JlcG9ydF9lcnJvcigmcmV0LCBTQklfU1VDQ0VTUywgInNiaV9kZWJ1Z19udW1f
+dHJpZ2dlcnMiKTsKPiA+ICsKPiA+ICsgICAgIGlmIChyZXQudmFsdWUgPT0gMCkgewo+ID4gKyAg
+ICAgICAgICAgICByZXBvcnRfZmFpbCgic2JpX2RlYnVnX251bV90cmlnZ2VyczogUmV0dXJuZWQg
+MCB0cmlnZ2VycyBhdmFpbGFibGUiKTsKPiA+ICsgICAgIH0gZWxzZSB7Cj4gPiArICAgICAgICAg
+ICAgIHJlcG9ydF9wYXNzKCJzYmlfZGVidWdfbnVtX3RyaWdnZXJzOiBSZXR1cm5lZCB0cmlnZ2Vy
+cyBhdmFpbGFibGUiKTsKPiA+ICsgICAgICAgICAgICAgcmVwb3J0X2luZm8oInNiaV9kZWJ1Z19u
+dW1fdHJpZ2dlcnM6IFJldHVybmVkICVsdSB0cmlnZ2VycyBhdmFpbGFibGUiLCByZXQudmFsdWUp
+Owo+Cj4gUmF0aGVyIHRoYW4gcHV0IHRoZSBzYmlfZGVidWdfbnVtX3RyaWdnZXJzIHByZWZpeCBp
+biBlYWNoIHJlcG9ydCBjYWxsLCB3ZQo+IGNhbiBqdXN0IHB1c2ggaXQuCj4KPiA+ICsgICAgIH0K
+PiA+ICsKPiA+ICsgICAgIHJldHVybiByZXQudmFsdWU7Cj4gPiArfQo+ID4gKwo+ID4gK3N0YXRp
+YyBlbnVtIE1jb250cm9sVHlwZSBkYnRyX3Rlc3RfdHlwZSh1bnNpZ25lZCBsb25nICpudW1fdHJp
+ZykKPiA+ICt7Cj4gPiArICAgICBzdHJ1Y3Qgc2JpcmV0IHJldDsKPiA+ICsgICAgIHVuc2lnbmVk
+IGxvbmcgdGRhdGExID0gU0JJX0RCVFJfVERBVEExX1RZUEVfTUNPTlRST0w2Owo+ID4gKwo+ID4g
+KyAgICAgcmVwb3J0X3ByZWZpeF9wdXNoKCJ0ZXN0IHR5cGUiKTsKPiA+ICsKPiA+ICsgICAgIHJl
+dCA9IHNiaV9kZWJ1Z19udW1fdHJpZ2dlcnModGRhdGExKTsKPiA+ICsgICAgIHNiaXJldF9yZXBv
+cnRfZXJyb3IoJnJldCwgU0JJX1NVQ0NFU1MsICJzYmlfZGVidWdfbnVtX3RyaWdnZXJzOiBtY29u
+dHJvbDYiKTsKPiA+ICsgICAgICpudW1fdHJpZyA9IHJldC52YWx1ZTsKPiA+ICsgICAgIGlmIChy
+ZXQudmFsdWUgPiAwKSB7Cj4gPiArICAgICAgICAgICAgIHJlcG9ydF9wYXNzKCJzYmlfZGVidWdf
+bnVtX3RyaWdnZXJzOiBSZXR1cm5lZCBtY29udHJvbDYgdHJpZ2dlcnMgYXZhaWxhYmxlIik7Cj4g
+PiArICAgICAgICAgICAgIHJlcG9ydF9pbmZvKCJzYmlfZGVidWdfbnVtX3RyaWdnZXJzOiBSZXR1
+cm5lZCAlbHUgbWNvbnRyb2w2IHRyaWdnZXJzIGF2YWlsYWJsZSIsCj4KPiBTYW1lIGNvbW1lbnQg
+YWJvdXQgcHVzaGluZyAic2JpX2RlYnVnX251bV90cmlnZ2VycyIuCj4KPiA+ICsgICAgICAgICAg
+ICAgICAgICAgICAgICAgcmV0LnZhbHVlKTsKPiA+ICsgICAgICAgICAgICAgcmVwb3J0X3ByZWZp
+eF9wb3AoKTsKPgo+IElmIHdlIHB1c2ggc2JpX2RlYnVnX251bV90cmlnZ2VycywgdGhlbiB0aGlz
+IGNhbiBiZSBhIHJlcG9ydF9wcmVmaXhfcG9wbigyKS4KPgo+ID4gKyAgICAgICAgICAgICByZXR1
+cm4gdGRhdGExOwo+ID4gKyAgICAgfQo+ID4gKwo+ID4gKyAgICAgdGRhdGExID0gU0JJX0RCVFJf
+VERBVEExX1RZUEVfTUNPTlRST0w7Cj4gPiArCj4gPiArICAgICByZXQgPSBzYmlfZGVidWdfbnVt
+X3RyaWdnZXJzKHRkYXRhMSk7Cj4gPiArICAgICBzYmlyZXRfcmVwb3J0X2Vycm9yKCZyZXQsIFNC
+SV9TVUNDRVNTLCAic2JpX2RlYnVnX251bV90cmlnZ2VyczogbWNvbnRyb2wiKTsKPiA+ICsgICAg
+ICpudW1fdHJpZyA9IHJldC52YWx1ZTsKPiA+ICsgICAgIGlmIChyZXQudmFsdWUgPiAwKSB7Cj4g
+PiArICAgICAgICAgICAgIHJlcG9ydF9wYXNzKCJzYmlfZGVidWdfbnVtX3RyaWdnZXJzOiBSZXR1
+cm5lZCBtY29udHJvbCB0cmlnZ2VycyBhdmFpbGFibGUiKTsKPiA+ICsgICAgICAgICAgICAgcmVw
+b3J0X2luZm8oInNiaV9kZWJ1Z19udW1fdHJpZ2dlcnM6IFJldHVybmVkICVsdSBtY29udHJvbCB0
+cmlnZ2VycyBhdmFpbGFibGUiLAo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICByZXQudmFs
+dWUpOwo+ID4gKyAgICAgICAgICAgICByZXBvcnRfcHJlZml4X3BvcCgpOwo+ID4gKyAgICAgICAg
+ICAgICByZXR1cm4gdGRhdGExOwo+ID4gKyAgICAgfQo+ID4gKwo+ID4gKyAgICAgcmVwb3J0X2Zh
+aWwoInNiaV9kZWJ1Z19udW1fdHJpZ2dlcnM6IFJldHVybmVkIDAgbWNvbnRyb2woNikgdHJpZ2dl
+cnMgYXZhaWxhYmxlIik7Cj4gPiArICAgICByZXBvcnRfcHJlZml4X3BvcCgpOwo+ID4gKwo+ID4g
+KyAgICAgcmV0dXJuIFNCSV9EQlRSX1REQVRBMV9UWVBFX05PTkU7Cj4gPiArfQo+ID4gKwo+ID4g
+K3N0YXRpYyBzdHJ1Y3Qgc2JpcmV0IGRidHJfdGVzdF9zdG9yZV9pbnN0YWxsX3VuaW5zdGFsbChz
+dHJ1Y3Qgc2JpX2RidHJfc2htZW1fZW50cnkgKnNobWVtLAo+ID4gKyAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGVudW0gTWNvbnRyb2xUeXBlIHR5cGUp
+Cj4gPiArewo+ID4gKyAgICAgc3RhdGljIHVuc2lnbmVkIGxvbmcgdGVzdDsKPiA+ICsgICAgIHN0
+cnVjdCBzYmlyZXQgcmV0Owo+ID4gKwo+ID4gKyAgICAgcmVwb3J0X3ByZWZpeF9wdXNoKCJzdG9y
+ZSB0cmlnZ2VyIik7Cj4gPiArCj4gPiArICAgICBzaG1lbS0+ZGF0YS50ZGF0YTEgPSBnZW5fdGRh
+dGExKHR5cGUsIFZBTFVFX1NUT1JFLCBNT0RFX1MpOwo+ID4gKyAgICAgc2htZW0tPmRhdGEudGRh
+dGEyID0gKHVuc2lnbmVkIGxvbmcpJnRlc3Q7Cj4gPiArCj4gPiArICAgICByZXQgPSBzYmlfZGVi
+dWdfaW5zdGFsbF90cmlnZ2VycygxKTsKPiA+ICsgICAgIGlmICghc2JpcmV0X3JlcG9ydF9lcnJv
+cigmcmV0LCBTQklfU1VDQ0VTUywgInNiaV9kZWJ1Z19pbnN0YWxsX3RyaWdnZXJzIikpIHsKPiA+
+ICsgICAgICAgICAgICAgcmVwb3J0X3ByZWZpeF9wb3AoKTsKPiA+ICsgICAgICAgICAgICAgcmV0
+dXJuIHJldDsKPiA+ICsgICAgIH0KPiA+ICsKPiA+ICsgICAgIGluc3RhbGxfZXhjZXB0aW9uX2hh
+bmRsZXIoRVhDX0JSRUFLUE9JTlQsIGRidHJfZXhjZXB0aW9uX2hhbmRsZXIpOwo+ID4gKwo+ID4g
+KyAgICAgcmVwb3J0KGRvX3N0b3JlKCZ0ZXN0KSwgInRyaWdnZXJlZCIpOwo+ID4gKwo+ID4gKyAg
+ICAgaWYgKGRvX2xvYWQoJnRlc3QpKQo+ID4gKyAgICAgICAgICAgICByZXBvcnRfZmFpbCgidHJp
+Z2dlcmVkIGJ5IGxvYWQiKTsKPiA+ICsKPiA+ICsgICAgIHJldCA9IHNiaV9kZWJ1Z191bmluc3Rh
+bGxfdHJpZ2dlcnMoMCwgMSk7Cj4gPiArICAgICBzYmlyZXRfcmVwb3J0X2Vycm9yKCZyZXQsIFNC
+SV9TVUNDRVNTLCAic2JpX2RlYnVnX3VuaW5zdGFsbF90cmlnZ2VycyIpOwo+ID4gKwo+ID4gKyAg
+ICAgaWYgKGRvX3N0b3JlKCZ0ZXN0KSkKPiA+ICsgICAgICAgICAgICAgcmVwb3J0X2ZhaWwoInRy
+aWdnZXJlZCBhZnRlciB1bmluc3RhbGwiKTsKPiA+ICsKPiA+ICsgICAgIGluc3RhbGxfZXhjZXB0
+aW9uX2hhbmRsZXIoRVhDX0JSRUFLUE9JTlQsIE5VTEwpOwo+ID4gKyAgICAgcmVwb3J0X3ByZWZp
+eF9wb3AoKTsKPiA+ICsKPiA+ICsgICAgIHJldHVybiByZXQ7Cj4gPiArfQo+ID4gKwo+ID4gK3N0
+YXRpYyB2b2lkIGRidHJfdGVzdF91cGRhdGUoc3RydWN0IHNiaV9kYnRyX3NobWVtX2VudHJ5ICpz
+aG1lbSwgZW51bSBNY29udHJvbFR5cGUgdHlwZSkKPiA+ICt7Cj4gPiArICAgICBzdGF0aWMgdW5z
+aWduZWQgbG9uZyB0ZXN0Owo+ID4gKyAgICAgc3RydWN0IHNiaXJldCByZXQ7Cj4gPiArICAgICBi
+b29sIGtmYWlsOwo+ID4gKwo+ID4gKyAgICAgcmVwb3J0X3ByZWZpeF9wdXNoKCJ1cGRhdGUgdHJp
+Z2dlciIpOwo+ID4gKwo+ID4gKyAgICAgaWYgKCFkYnRyX2luc3RhbGxfdHJpZ2dlcihzaG1lbSwg
+TlVMTCwgZ2VuX3RkYXRhMSh0eXBlLCBWQUxVRV9OT05FLCBNT0RFX05PTkUpKSkgewo+ID4gKyAg
+ICAgICAgICAgICByZXBvcnRfcHJlZml4X3BvcCgpOwo+ID4gKyAgICAgICAgICAgICByZXR1cm47
+Cj4gPiArICAgICB9Cj4gPiArCj4gPiArICAgICBzaG1lbS0+aWQuaWR4ID0gMDsKPiA+ICsgICAg
+IHNobWVtLT5kYXRhLnRkYXRhMSA9IGdlbl90ZGF0YTEodHlwZSwgVkFMVUVfU1RPUkUsIE1PREVf
+Uyk7Cj4gPiArICAgICBzaG1lbS0+ZGF0YS50ZGF0YTIgPSAodW5zaWduZWQgbG9uZykmdGVzdDsK
+PiA+ICsKPiA+ICsgICAgIHJldCA9IHNiaV9kZWJ1Z191cGRhdGVfdHJpZ2dlcnMoMSk7Cj4gPiAr
+ICAgICBzYmlyZXRfcmVwb3J0X2Vycm9yKCZyZXQsIFNCSV9TVUNDRVNTLCAic2JpX2RlYnVnX3Vw
+ZGF0ZV90cmlnZ2VycyIpOwo+ID4gKwo+ID4gKyAgICAgLyoKPiA+ICsgICAgICAqIEtub3duIGJy
+b2tlbiB1cGRhdGVfdHJpZ2dlcnMuCj4gPiArICAgICAgKiBodHRwczovL2xvcmUua2VybmVsLm9y
+Zy9vcGVuc2JpL2FEZHAxVWVVaDdHdWdlSHBAZ2hvc3QvVC8jdAo+ID4gKyAgICAgICovCj4gPiAr
+ICAgICBrZmFpbCA9IF9fc2JpX2dldF9pbXBfaWQoKSA9PSBTQklfSU1QTF9PUEVOU0JJICYmCj4g
+PiArICAgICAgICAgICAgIF9fc2JpX2dldF9pbXBfdmVyc2lvbigpIDwgc2JpX2ltcGxfb3BlbnNi
+aV9ta192ZXJzaW9uKDEsIDcpOwo+ID4gKyAgICAgcmVwb3J0X2tmYWlsKGtmYWlsLCBkb19zdG9y
+ZSgmdGVzdCksICJ0cmlnZ2VyZWQiKTsKPiA+ICsKPiA+ICsgICAgIGRidHJfdW5pbnN0YWxsX3Ry
+aWdnZXIoKTsKPiA+ICsgICAgIHJlcG9ydF9wcmVmaXhfcG9wKCk7Cj4gPiArfQo+ID4gKwo+ID4g
+K3N0YXRpYyB2b2lkIGRidHJfdGVzdF9sb2FkKHN0cnVjdCBzYmlfZGJ0cl9zaG1lbV9lbnRyeSAq
+c2htZW0sIGVudW0gTWNvbnRyb2xUeXBlIHR5cGUpCj4gPiArewo+ID4gKyAgICAgc3RhdGljIHVu
+c2lnbmVkIGxvbmcgdGVzdDsKPiA+ICsKPiA+ICsgICAgIHJlcG9ydF9wcmVmaXhfcHVzaCgibG9h
+ZCB0cmlnZ2VyIik7Cj4gPiArICAgICBpZiAoIWRidHJfaW5zdGFsbF90cmlnZ2VyKHNobWVtLCAm
+dGVzdCwgZ2VuX3RkYXRhMSh0eXBlLCBWQUxVRV9MT0FELCBNT0RFX1MpKSkgewo+ID4gKyAgICAg
+ICAgICAgICByZXBvcnRfcHJlZml4X3BvcCgpOwo+ID4gKyAgICAgICAgICAgICByZXR1cm47Cj4g
+PiArICAgICB9Cj4gPiArCj4gPiArICAgICByZXBvcnQoZG9fbG9hZCgmdGVzdCksICJ0cmlnZ2Vy
+ZWQiKTsKPiA+ICsKPiA+ICsgICAgIGlmIChkb19zdG9yZSgmdGVzdCkpCj4gPiArICAgICAgICAg
+ICAgIHJlcG9ydF9mYWlsKCJ0cmlnZ2VyZWQgYnkgc3RvcmUiKTsKPiA+ICsKPiA+ICsgICAgIGRi
+dHJfdW5pbnN0YWxsX3RyaWdnZXIoKTsKPiA+ICsgICAgIHJlcG9ydF9wcmVmaXhfcG9wKCk7Cj4g
+PiArfQo+ID4gKwo+ID4gK3N0YXRpYyB2b2lkIGRidHJfdGVzdF9kaXNhYmxlX2VuYWJsZShzdHJ1
+Y3Qgc2JpX2RidHJfc2htZW1fZW50cnkgKnNobWVtLCBlbnVtIE1jb250cm9sVHlwZSB0eXBlKQo+
+ID4gK3sKPiA+ICsgICAgIHN0YXRpYyB1bnNpZ25lZCBsb25nIHRlc3Q7Cj4gPiArICAgICBzdHJ1
+Y3Qgc2JpcmV0IHJldDsKPiA+ICsKPiA+ICsgICAgIHJlcG9ydF9wcmVmaXhfcHVzaCgiZGlzYWJs
+ZSB0cmlnZ2VyIik7Cj4gPiArICAgICBpZiAoIWRidHJfaW5zdGFsbF90cmlnZ2VyKHNobWVtLCAm
+dGVzdCwgZ2VuX3RkYXRhMSh0eXBlLCBWQUxVRV9TVE9SRSwgTU9ERV9TKSkpIHsKPiA+ICsgICAg
+ICAgICAgICAgcmVwb3J0X3ByZWZpeF9wb3AoKTsKPiA+ICsgICAgICAgICAgICAgcmV0dXJuOwo+
+ID4gKyAgICAgfQo+ID4gKwo+ID4gKyAgICAgcmV0ID0gc2JpX2RlYnVnX2Rpc2FibGVfdHJpZ2dl
+cnMoMCwgMSk7Cj4gPiArICAgICBzYmlyZXRfcmVwb3J0X2Vycm9yKCZyZXQsIFNCSV9TVUNDRVNT
+LCAic2JpX2RlYnVnX2Rpc2FibGVfdHJpZ2dlcnMiKTsKPiA+ICsKPiA+ICsgICAgIGlmICghcmVw
+b3J0KCFkb19zdG9yZSgmdGVzdCksICJzaG91bGQgbm90IHRyaWdnZXIiKSkgewo+ID4gKyAgICAg
+ICAgICAgICBkYnRyX3VuaW5zdGFsbF90cmlnZ2VyKCk7Cj4gPiArICAgICAgICAgICAgIHJlcG9y
+dF9wcmVmaXhfcG9wKCk7Cj4gPiArICAgICAgICAgICAgIHJlcG9ydF9za2lwKCJlbmFibGUgdHJp
+Z2dlcjogbm8gZGlzYWJsZSIpOwo+ID4gKwo+ID4gKyAgICAgICAgICAgICByZXR1cm47Cj4gPiAr
+ICAgICB9Cj4gPiArCj4gPiArICAgICByZXBvcnRfcHJlZml4X3BvcCgpOwo+ID4gKyAgICAgcmVw
+b3J0X3ByZWZpeF9wdXNoKCJlbmFibGUgdHJpZ2dlciIpOwo+ID4gKwo+ID4gKyAgICAgcmV0ID0g
+c2JpX2RlYnVnX2VuYWJsZV90cmlnZ2VycygwLCAxKTsKPiA+ICsgICAgIHNiaXJldF9yZXBvcnRf
+ZXJyb3IoJnJldCwgU0JJX1NVQ0NFU1MsICJzYmlfZGVidWdfZW5hYmxlX3RyaWdnZXJzIik7Cj4g
+PiArCj4gPiArICAgICByZXBvcnQoZG9fc3RvcmUoJnRlc3QpLCAidHJpZ2dlcmVkIik7Cj4gPiAr
+Cj4gPiArICAgICBkYnRyX3VuaW5zdGFsbF90cmlnZ2VyKCk7Cj4gPiArICAgICByZXBvcnRfcHJl
+Zml4X3BvcCgpOwo+ID4gK30KPiA+ICsKPiA+ICtzdGF0aWMgdm9pZCBkYnRyX3Rlc3RfZXhlYyhz
+dHJ1Y3Qgc2JpX2RidHJfc2htZW1fZW50cnkgKnNobWVtLCBlbnVtIE1jb250cm9sVHlwZSB0eXBl
+KQo+ID4gK3sKPiA+ICsgICAgIHN0YXRpYyB1bnNpZ25lZCBsb25nIHRlc3Q7Cj4gPiArCj4gPiAr
+ICAgICByZXBvcnRfcHJlZml4X3B1c2goImV4ZWMgdHJpZ2dlciIpOwo+ID4gKyAgICAgLyogY2hl
+Y2sgaWYgbG9hZHMgYW5kIHN0b3JlcyB0cmlnZ2VyIGV4ZWMgKi8KPiA+ICsgICAgIGlmICghZGJ0
+cl9pbnN0YWxsX3RyaWdnZXIoc2htZW0sICZ0ZXN0LCBnZW5fdGRhdGExKHR5cGUsIFZBTFVFX0VY
+RUNVVEUsIE1PREVfUykpKSB7Cj4gPiArICAgICAgICAgICAgIHJlcG9ydF9wcmVmaXhfcG9wKCk7
+Cj4gPiArICAgICAgICAgICAgIHJldHVybjsKPiA+ICsgICAgIH0KPiA+ICsKPiA+ICsgICAgIGlm
+IChkb19sb2FkKCZ0ZXN0KSkKPiA+ICsgICAgICAgICAgICAgcmVwb3J0X2ZhaWwoInRyaWdnZXJl
+ZCBieSBsb2FkIik7Cj4gPiArCj4gPiArICAgICBpZiAoZG9fc3RvcmUoJnRlc3QpKQo+ID4gKyAg
+ICAgICAgICAgICByZXBvcnRfZmFpbCgidHJpZ2dlcmVkIGJ5IHN0b3JlIik7Cj4gPiArCj4gPiAr
+ICAgICBkYnRyX3VuaW5zdGFsbF90cmlnZ2VyKCk7Cj4gPiArCj4gPiArICAgICAvKiBDaGVjayBp
+ZiBleGVjIHdvcmtzICovCj4gPiArICAgICBpZiAoIWRidHJfaW5zdGFsbF90cmlnZ2VyKHNobWVt
+LCBleGVjX2NhbGwsIGdlbl90ZGF0YTEodHlwZSwgVkFMVUVfRVhFQ1VURSwgTU9ERV9TKSkpIHsK
+PiA+ICsgICAgICAgICAgICAgcmVwb3J0X3ByZWZpeF9wb3AoKTsKPiA+ICsgICAgICAgICAgICAg
+cmV0dXJuOwo+ID4gKyAgICAgfQo+ID4gKyAgICAgcmVwb3J0KGRvX2V4ZWMoKSwgInRyaWdnZXJl
+ZCIpOwo+ID4gKwo+ID4gKyAgICAgZGJ0cl91bmluc3RhbGxfdHJpZ2dlcigpOwo+ID4gKyAgICAg
+cmVwb3J0X3ByZWZpeF9wb3AoKTsKPiA+ICt9Cj4gPiArCj4gPiArc3RhdGljIHZvaWQgZGJ0cl90
+ZXN0X3JlYWQoc3RydWN0IHNiaV9kYnRyX3NobWVtX2VudHJ5ICpzaG1lbSwgZW51bSBNY29udHJv
+bFR5cGUgdHlwZSkKPiA+ICt7Cj4gPiArICAgICBjb25zdCB1bnNpZ25lZCBsb25nIHRzdGF0dXNf
+ZXhwZWN0ZWQgPSBTQklfREJUUl9UUklHX1NUQVRFX1MgfCBTQklfREJUUl9UUklHX1NUQVRFX01B
+UFBFRDsKPiA+ICsgICAgIGNvbnN0IHVuc2lnbmVkIGxvbmcgdGRhdGExID0gZ2VuX3RkYXRhMSh0
+eXBlLCBWQUxVRV9TVE9SRSwgTU9ERV9TKTsKPiA+ICsgICAgIHN0YXRpYyB1bnNpZ25lZCBsb25n
+IHRlc3Q7Cj4gPiArICAgICBzdHJ1Y3Qgc2JpcmV0IHJldDsKPiA+ICsKPiA+ICsgICAgIHJlcG9y
+dF9wcmVmaXhfcHVzaCgicmVhZCB0cmlnZ2VyIik7Cj4gPiArICAgICBpZiAoIWRidHJfaW5zdGFs
+bF90cmlnZ2VyKHNobWVtLCAmdGVzdCwgdGRhdGExKSkgewo+ID4gKyAgICAgICAgICAgICByZXBv
+cnRfcHJlZml4X3BvcCgpOwo+ID4gKyAgICAgICAgICAgICByZXR1cm47Cj4gPiArICAgICB9Cj4g
+PiArCj4gPiArICAgICByZXQgPSBzYmlfZGVidWdfcmVhZF90cmlnZ2VycygwLCAxKTsKPiA+ICsg
+ICAgIHNiaXJldF9yZXBvcnRfZXJyb3IoJnJldCwgU0JJX1NVQ0NFU1MsICJzYmlfZGVidWdfcmVh
+ZF90cmlnZ2VycyIpOwo+ID4gKwo+ID4gKyAgICAgcmVwb3J0KHNobWVtLT5kYXRhLnRkYXRhMSA9
+PSB0ZGF0YTEsICJ0ZGF0YTEgZXhwZWN0ZWQ6IDB4JTAxNmx4IiwgdGRhdGExKTsKPiA+ICsgICAg
+IHJlcG9ydF9pbmZvKCJ0ZGF0YTEgZm91bmQ6IDB4JTAxNmx4Iiwgc2htZW0tPmRhdGEudGRhdGEx
+KTsKPiA+ICsgICAgIHJlcG9ydChzaG1lbS0+ZGF0YS50ZGF0YTIgPT0gKCh1bnNpZ25lZCBsb25n
+KSZ0ZXN0KSwgInRkYXRhMiBleHBlY3RlZDogMHglMDE2bHgiLAo+ID4gKyAgICAgICAgICAgICh1
+bnNpZ25lZCBsb25nKSZ0ZXN0KTsKPiA+ICsgICAgIHJlcG9ydF9pbmZvKCJ0ZGF0YTIgZm91bmQ6
+IDB4JTAxNmx4Iiwgc2htZW0tPmRhdGEudGRhdGEyKTsKPiA+ICsgICAgIHJlcG9ydChzaG1lbS0+
+ZGF0YS50c3RhdGUgPT0gdHN0YXR1c19leHBlY3RlZCwgInRzdGF0ZSBleHBlY3RlZDogMHglMDE2
+bHgiLCB0c3RhdHVzX2V4cGVjdGVkKTsKPiA+ICsgICAgIHJlcG9ydF9pbmZvKCJ0c3RhdGUgZm91
+bmQ6IDB4JTAxNmx4Iiwgc2htZW0tPmRhdGEudHN0YXRlKTsKPgo+IFRoZXNlIGRvbid0IG5lZWQg
+dG8gYmUgc3BsaXQgaW50byByZXBvcnQvcmVwb3J0X2luZm8gcGFpcnMgYmVjYXVzZSB0aGUKPiBy
+ZXBvcnQgaXMgY2hlY2tpbmcgZm9yIGEgc3BlY2lmaWMgdmFsdWUuIFdlIG9ubHkgc3BsaXQgd2hl
+biByZXBvcnQgaXMKPiBjaGVja2luZyBmb3Igc29tZSBub256ZXJvIHZhbHVlIGFuZCB3ZSBhbHNv
+IHdhbnQgdG8gb3V0cHV0IHdoYXQgdGhhdAo+IHNwZWNpZmljIHZhbHVlIHdhcyBmb3IgaW5mb3Jt
+YXRpb25hbCBwdXJwb3Nlcy4KCkknbSBhIGJpdCBjb25mdXNlZC4gU2hvdWxkIGl0IG9ubHkgcmVw
+b3J0X2luZm8gd2hlbiB0aGUgdGVzdCBmYWlscz8KCj4KPiA+ICsKPiA+ICsgICAgIGRidHJfdW5p
+bnN0YWxsX3RyaWdnZXIoKTsKPiA+ICsgICAgIHJlcG9ydF9wcmVmaXhfcG9wKCk7Cj4gPiArfQo+
+ID4gKwo+ID4gK3N0YXRpYyB2b2lkIGNoZWNrX2V4ZWModW5zaWduZWQgbG9uZyBiYXNlKQo+ID4g
+K3sKPiA+ICsgICAgIHN0cnVjdCBzYmlyZXQgcmV0Owo+ID4gKwo+ID4gKyAgICAgcmVwb3J0KGRv
+X2V4ZWMoKSwgImV4ZWMgdHJpZ2dlcmVkIik7Cj4gPiArCj4gPiArICAgICByZXQgPSBzYmlfZGVi
+dWdfdW5pbnN0YWxsX3RyaWdnZXJzKGJhc2UsIDEpOwo+ID4gKyAgICAgc2JpcmV0X3JlcG9ydF9l
+cnJvcigmcmV0LCBTQklfU1VDQ0VTUywgInNiaV9kZWJ1Z191bmluc3RhbGxfdHJpZ2dlcnMiKTsK
+PiA+ICt9Cj4gPiArCj4gPiArc3RhdGljIHZvaWQgZGJ0cl90ZXN0X211bHRpcGxlKHN0cnVjdCBz
+YmlfZGJ0cl9zaG1lbV9lbnRyeSAqc2htZW0sIGVudW0gTWNvbnRyb2xUeXBlIHR5cGUsCj4gPiAr
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgIHVuc2lnbmVkIGxvbmcgbnVtX3RyaWdzKQo+ID4g
+K3sKPiA+ICsgICAgIHN0YXRpYyB1bnNpZ25lZCBsb25nIHRlc3RbMl07Cj4gPiArICAgICBzdHJ1
+Y3Qgc2JpcmV0IHJldDsKPiA+ICsgICAgIGJvb2wgaGF2ZV90aHJlZSA9IG51bV90cmlncyA+IDI7
+Cj4gPiArCj4gPiArICAgICBpZiAobnVtX3RyaWdzIDwgMikgewo+ID4gKyAgICAgICAgICAgICBy
+ZXBvcnRfc2tpcCgidGVzdCBtdWx0aXBsZSIpOwo+ID4gKyAgICAgICAgICAgICByZXR1cm47Cj4g
+PiArICAgICB9Cj4gPiArCj4gPiArICAgICByZXBvcnRfcHJlZml4X3B1c2goInRlc3QgbXVsdGlw
+bGUiKTsKPiA+ICsKPiA+ICsgICAgIGlmICghZGJ0cl9pbnN0YWxsX3RyaWdnZXIoc2htZW0sICZ0
+ZXN0WzBdLCBnZW5fdGRhdGExKHR5cGUsIFZBTFVFX1NUT1JFLCBNT0RFX1MpKSkgewo+ID4gKyAg
+ICAgICAgICAgICByZXBvcnRfcHJlZml4X3BvcCgpOwo+ID4gKyAgICAgICAgICAgICByZXR1cm47
+Cj4gPiArICAgICB9Cj4gPiArICAgICBpZiAoIWRidHJfaW5zdGFsbF90cmlnZ2VyKHNobWVtLCAm
+dGVzdFsxXSwgZ2VuX3RkYXRhMSh0eXBlLCBWQUxVRV9MT0FELCBNT0RFX1MpKSkKPiA+ICsgICAg
+ICAgICAgICAgZ290byBlcnJvcjsKPiA+ICsgICAgIGlmIChoYXZlX3RocmVlICYmCj4gPiArICAg
+ICAgICAgIWRidHJfaW5zdGFsbF90cmlnZ2VyKHNobWVtLCBleGVjX2NhbGwsIGdlbl90ZGF0YTEo
+dHlwZSwgVkFMVUVfRVhFQ1VURSwgTU9ERV9TKSkpIHsKPiA+ICsgICAgICAgICAgICAgcmV0ID0g
+c2JpX2RlYnVnX3VuaW5zdGFsbF90cmlnZ2VycygxLCAxKTsKPiA+ICsgICAgICAgICAgICAgc2Jp
+cmV0X3JlcG9ydF9lcnJvcigmcmV0LCBTQklfU1VDQ0VTUywgInNiaV9kZWJ1Z191bmluc3RhbGxf
+dHJpZ2dlcnMiKTsKPiA+ICsgICAgICAgICAgICAgZ290byBlcnJvcjsKPiA+ICsgICAgIH0KPiA+
+ICsKPiA+ICsgICAgIHJlcG9ydChkb19zdG9yZSgmdGVzdFswXSksICJzdG9yZSB0cmlnZ2VyZWQi
+KTsKPiA+ICsKPiA+ICsgICAgIGlmIChkb19sb2FkKCZ0ZXN0WzBdKSkKPiA+ICsgICAgICAgICAg
+ICAgcmVwb3J0X2ZhaWwoInN0b3JlIHRyaWdnZXJlZCBieSBsb2FkIik7Cj4gPiArCj4gPiArICAg
+ICByZXBvcnQoZG9fbG9hZCgmdGVzdFsxXSksICJsb2FkIHRyaWdnZXJlZCIpOwo+ID4gKwo+ID4g
+KyAgICAgaWYgKGRvX3N0b3JlKCZ0ZXN0WzFdKSkKPiA+ICsgICAgICAgICAgICAgcmVwb3J0X2Zh
+aWwoImxvYWQgdHJpZ2dlcmVkIGJ5IHN0b3JlIik7Cj4gPiArCj4gPiArICAgICBpZiAoaGF2ZV90
+aHJlZSkKPiA+ICsgICAgICAgICAgICAgY2hlY2tfZXhlYygyKTsKPiA+ICsKPiA+ICsgICAgIHJl
+dCA9IHNiaV9kZWJ1Z191bmluc3RhbGxfdHJpZ2dlcnMoMSwgMSk7Cj4gPiArICAgICBzYmlyZXRf
+cmVwb3J0X2Vycm9yKCZyZXQsIFNCSV9TVUNDRVNTLCAic2JpX2RlYnVnX3VuaW5zdGFsbF90cmln
+Z2VycyIpOwo+ID4gKwo+ID4gKyAgICAgaWYgKGRvX2xvYWQoJnRlc3RbMV0pKQo+ID4gKyAgICAg
+ICAgICAgICByZXBvcnRfZmFpbCgibG9hZCB0cmlnZ2VyZWQgYWZ0ZXIgdW5pbnN0YWxsIik7Cj4g
+PiArCj4gPiArICAgICByZXBvcnQoZG9fc3RvcmUoJnRlc3RbMF0pLCAic3RvcmUgdHJpZ2dlcmVk
+Iik7Cj4gPiArCj4gPiArICAgICBpZiAoIWhhdmVfdGhyZWUgJiYKPiA+ICsgICAgICAgICBkYnRy
+X2luc3RhbGxfdHJpZ2dlcihzaG1lbSwgZXhlY19jYWxsLCBnZW5fdGRhdGExKHR5cGUsIFZBTFVF
+X0VYRUNVVEUsIE1PREVfUykpKQo+ID4gKyAgICAgICAgICAgICBjaGVja19leGVjKDEpOwo+ID4g
+Kwo+ID4gK2Vycm9yOgo+ID4gKyAgICAgcmV0ID0gc2JpX2RlYnVnX3VuaW5zdGFsbF90cmlnZ2Vy
+cygwLCAxKTsKPiA+ICsgICAgIHNiaXJldF9yZXBvcnRfZXJyb3IoJnJldCwgU0JJX1NVQ0NFU1Ms
+ICJzYmlfZGVidWdfdW5pbnN0YWxsX3RyaWdnZXJzIik7Cj4gPiArCj4gPiArICAgICBpbnN0YWxs
+X2V4Y2VwdGlvbl9oYW5kbGVyKEVYQ19CUkVBS1BPSU5ULCBOVUxMKTsKPiA+ICsgICAgIHJlcG9y
+dF9wcmVmaXhfcG9wKCk7Cj4gPiArfQo+ID4gKwo+ID4gK3N0YXRpYyB2b2lkIGRidHJfdGVzdF9t
+dWx0aXBsZV90eXBlcyhzdHJ1Y3Qgc2JpX2RidHJfc2htZW1fZW50cnkgKnNobWVtLCB1bnNpZ25l
+ZCBsb25nIHR5cGUpCj4gPiArewo+ID4gKyAgICAgc3RhdGljIHVuc2lnbmVkIGxvbmcgdGVzdDsK
+PiA+ICsKPiA+ICsgICAgIHJlcG9ydF9wcmVmaXhfcHVzaCgidGVzdCBtdWx0aXBsZSB0eXBlcyIp
+Owo+ID4gKwo+ID4gKyAgICAgLyogY2hlY2sgaWYgbG9hZHMgYW5kIHN0b3JlcyB0cmlnZ2VyIGV4
+ZWMgKi8KPiA+ICsgICAgIGlmICghZGJ0cl9pbnN0YWxsX3RyaWdnZXIoc2htZW0sICZ0ZXN0LAo+
+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgZ2VuX3RkYXRhMSh0eXBlLCBWQUxVRV9FWEVD
+VVRFIHwgVkFMVUVfTE9BRCB8IFZBTFVFX1NUT1JFLCBNT0RFX1MpKSkgewo+ID4gKyAgICAgICAg
+ICAgICByZXBvcnRfcHJlZml4X3BvcCgpOwo+ID4gKyAgICAgICAgICAgICByZXR1cm47Cj4gPiAr
+ICAgICB9Cj4gPiArCj4gPiArICAgICByZXBvcnQoZG9fbG9hZCgmdGVzdCksICJsb2FkIHRyaWdn
+ZXJlZCIpOwo+ID4gKwo+ID4gKyAgICAgcmVwb3J0KGRvX3N0b3JlKCZ0ZXN0KSwgInN0b3JlIHRy
+aWdnZXJlZCIpOwo+ID4gKwo+ID4gKyAgICAgZGJ0cl91bmluc3RhbGxfdHJpZ2dlcigpOwo+ID4g
+Kwo+ID4gKyAgICAgLyogQ2hlY2sgaWYgZXhlYyB3b3JrcyAqLwo+ID4gKyAgICAgaWYgKCFkYnRy
+X2luc3RhbGxfdHJpZ2dlcihzaG1lbSwgZXhlY19jYWxsLAo+ID4gKyAgICAgICAgICAgICAgICAg
+ICAgICAgICAgZ2VuX3RkYXRhMSh0eXBlLCBWQUxVRV9FWEVDVVRFIHwgVkFMVUVfTE9BRCB8IFZB
+TFVFX1NUT1JFLCBNT0RFX1MpKSkgewo+ID4gKyAgICAgICAgICAgICByZXBvcnRfcHJlZml4X3Bv
+cCgpOwo+ID4gKyAgICAgICAgICAgICByZXR1cm47Cj4gPiArICAgICB9Cj4gPiArCj4gPiArICAg
+ICByZXBvcnQoZG9fZXhlYygpLCAiZXhlYyB0cmlnZ2VyZWQiKTsKPiA+ICsKPiA+ICsgICAgIGRi
+dHJfdW5pbnN0YWxsX3RyaWdnZXIoKTsKPiA+ICsgICAgIHJlcG9ydF9wcmVmaXhfcG9wKCk7Cj4g
+PiArfQo+ID4gKwo+ID4gK3N0YXRpYyB2b2lkIGRidHJfdGVzdF9kaXNhYmxlX3VuaW5zdGFsbChz
+dHJ1Y3Qgc2JpX2RidHJfc2htZW1fZW50cnkgKnNobWVtLCBlbnVtIE1jb250cm9sVHlwZSB0eXBl
+KQo+ID4gK3sKPiA+ICsgICAgIHN0YXRpYyB1bnNpZ25lZCBsb25nIHRlc3Q7Cj4gPiArICAgICBz
+dHJ1Y3Qgc2JpcmV0IHJldDsKPiA+ICsKPiA+ICsgICAgIHJlcG9ydF9wcmVmaXhfcHVzaCgiZGlz
+YWJsZSB1bmluc3RhbGwiKTsKPiA+ICsgICAgIGlmICghZGJ0cl9pbnN0YWxsX3RyaWdnZXIoc2ht
+ZW0sICZ0ZXN0LCBnZW5fdGRhdGExKHR5cGUsIFZBTFVFX1NUT1JFLCBNT0RFX1MpKSkgewo+ID4g
+KyAgICAgICAgICAgICByZXBvcnRfcHJlZml4X3BvcCgpOwo+ID4gKyAgICAgICAgICAgICByZXR1
+cm47Cj4gPiArICAgICB9Cj4gPiArCj4gPiArICAgICByZXQgPSBzYmlfZGVidWdfZGlzYWJsZV90
+cmlnZ2VycygwLCAxKTsKPiA+ICsgICAgIHNiaXJldF9yZXBvcnRfZXJyb3IoJnJldCwgU0JJX1NV
+Q0NFU1MsICJzYmlfZGVidWdfZGlzYWJsZV90cmlnZ2VycyIpOwo+ID4gKwo+ID4gKyAgICAgZGJ0
+cl91bmluc3RhbGxfdHJpZ2dlcigpOwo+ID4gKwo+ID4gKyAgICAgaWYgKCFkYnRyX2luc3RhbGxf
+dHJpZ2dlcihzaG1lbSwgJnRlc3QsIGdlbl90ZGF0YTEodHlwZSwgVkFMVUVfU1RPUkUsIE1PREVf
+UykpKSB7Cj4gPiArICAgICAgICAgICAgIHJlcG9ydF9wcmVmaXhfcG9wKCk7Cj4gPiArICAgICAg
+ICAgICAgIHJldHVybjsKPiA+ICsgICAgIH0KPiA+ICsKPiA+ICsgICAgIHJlcG9ydChkb19zdG9y
+ZSgmdGVzdCksICJ0cmlnZ2VyZWQiKTsKPiA+ICsKPiA+ICsgICAgIGRidHJfdW5pbnN0YWxsX3Ry
+aWdnZXIoKTsKPiA+ICsgICAgIHJlcG9ydF9wcmVmaXhfcG9wKCk7Cj4gPiArfQo+ID4gKwo+ID4g
+K3N0YXRpYyB2b2lkIGRidHJfdGVzdF91bmluc3RhbGxfZW5hYmxlKHN0cnVjdCBzYmlfZGJ0cl9z
+aG1lbV9lbnRyeSAqc2htZW0sIGVudW0gTWNvbnRyb2xUeXBlIHR5cGUpCj4gPiArewo+ID4gKyAg
+ICAgc3RhdGljIHVuc2lnbmVkIGxvbmcgdGVzdDsKPiA+ICsgICAgIHN0cnVjdCBzYmlyZXQgcmV0
+Owo+ID4gKwo+ID4gKyAgICAgcmVwb3J0X3ByZWZpeF9wdXNoKCJ1bmluc3RhbGwgZW5hYmxlIik7
+Cj4gPiArICAgICBpZiAoIWRidHJfaW5zdGFsbF90cmlnZ2VyKHNobWVtLCAmdGVzdCwgZ2VuX3Rk
+YXRhMSh0eXBlLCBWQUxVRV9TVE9SRSwgTU9ERV9TKSkpIHsKPiA+ICsgICAgICAgICAgICAgcmVw
+b3J0X3ByZWZpeF9wb3AoKTsKPiA+ICsgICAgICAgICAgICAgcmV0dXJuOwo+ID4gKyAgICAgfQo+
+ID4gKyAgICAgZGJ0cl91bmluc3RhbGxfdHJpZ2dlcigpOwo+ID4gKwo+ID4gKyAgICAgcmV0ID0g
+c2JpX2RlYnVnX2VuYWJsZV90cmlnZ2VycygwLCAxKTsKPiA+ICsgICAgIHNiaXJldF9yZXBvcnRf
+ZXJyb3IoJnJldCwgU0JJX1NVQ0NFU1MsICJzYmlfZGVidWdfZW5hYmxlX3RyaWdnZXJzIik7Cj4g
+PiArCj4gPiArICAgICBpbnN0YWxsX2V4Y2VwdGlvbl9oYW5kbGVyKEVYQ19CUkVBS1BPSU5ULCBk
+YnRyX2V4Y2VwdGlvbl9oYW5kbGVyKTsKPiA+ICsKPiA+ICsgICAgIHJlcG9ydCghZG9fc3RvcmUo
+JnRlc3QpLCAic2hvdWxkIG5vdCB0cmlnZ2VyIik7Cj4gPiArCj4gPiArICAgICBpbnN0YWxsX2V4
+Y2VwdGlvbl9oYW5kbGVyKEVYQ19CUkVBS1BPSU5ULCBOVUxMKTsKPiA+ICsgICAgIHJlcG9ydF9w
+cmVmaXhfcG9wKCk7Cj4gPiArfQo+ID4gKwo+ID4gK3N0YXRpYyB2b2lkIGRidHJfdGVzdF91bmlu
+c3RhbGxfdXBkYXRlKHN0cnVjdCBzYmlfZGJ0cl9zaG1lbV9lbnRyeSAqc2htZW0sIGVudW0gTWNv
+bnRyb2xUeXBlIHR5cGUpCj4gPiArewo+ID4gKyAgICAgc3RhdGljIHVuc2lnbmVkIGxvbmcgdGVz
+dDsKPiA+ICsgICAgIHN0cnVjdCBzYmlyZXQgcmV0Owo+ID4gKyAgICAgYm9vbCBrZmFpbDsKPiA+
+ICsKPiA+ICsgICAgIHJlcG9ydF9wcmVmaXhfcHVzaCgidW5pbnN0YWxsIHVwZGF0ZSIpOwo+ID4g
+KyAgICAgaWYgKCFkYnRyX2luc3RhbGxfdHJpZ2dlcihzaG1lbSwgTlVMTCwgZ2VuX3RkYXRhMSh0
+eXBlLCBWQUxVRV9OT05FLCBNT0RFX05PTkUpKSkgewo+ID4gKyAgICAgICAgICAgICByZXBvcnRf
+cHJlZml4X3BvcCgpOwo+ID4gKyAgICAgICAgICAgICByZXR1cm47Cj4gPiArICAgICB9Cj4gPiAr
+Cj4gPiArICAgICBkYnRyX3VuaW5zdGFsbF90cmlnZ2VyKCk7Cj4gPiArCj4gPiArICAgICBzaG1l
+bS0+aWQuaWR4ID0gMDsKPiA+ICsgICAgIHNobWVtLT5kYXRhLnRkYXRhMSA9IGdlbl90ZGF0YTEo
+dHlwZSwgVkFMVUVfU1RPUkUsIE1PREVfUyk7Cj4gPiArICAgICBzaG1lbS0+ZGF0YS50ZGF0YTIg
+PSAodW5zaWduZWQgbG9uZykmdGVzdDsKPiA+ICsKPiA+ICsgICAgIC8qCj4gPiArICAgICAgKiBL
+bm93biBicm9rZW4gdXBkYXRlX3RyaWdnZXJzLgo+ID4gKyAgICAgICogaHR0cHM6Ly9sb3JlLmtl
+cm5lbC5vcmcvb3BlbnNiaS9hRGRwMVVlVWg3R3VnZUhwQGdob3N0L1QvI3QKPiA+ICsgICAgICAq
+Lwo+ID4gKyAgICAga2ZhaWwgPSBfX3NiaV9nZXRfaW1wX2lkKCkgPT0gU0JJX0lNUExfT1BFTlNC
+SSAmJgo+ID4gKyAgICAgICAgICAgICBfX3NiaV9nZXRfaW1wX3ZlcnNpb24oKSA8IHNiaV9pbXBs
+X29wZW5zYmlfbWtfdmVyc2lvbigxLCA3KTsKPiA+ICsgICAgIHJldCA9IHNiaV9kZWJ1Z191cGRh
+dGVfdHJpZ2dlcnMoMSk7Cj4gPiArICAgICBzYmlyZXRfa2ZhaWxfZXJyb3Ioa2ZhaWwsICZyZXQs
+IFNCSV9FUlJfRkFJTFVSRSwgInNiaV9kZWJ1Z191cGRhdGVfdHJpZ2dlcnMiKTsKPiA+ICsKPiA+
+ICsgICAgIGluc3RhbGxfZXhjZXB0aW9uX2hhbmRsZXIoRVhDX0JSRUFLUE9JTlQsIGRidHJfZXhj
+ZXB0aW9uX2hhbmRsZXIpOwo+ID4gKwo+ID4gKyAgICAgcmVwb3J0KCFkb19zdG9yZSgmdGVzdCks
+ICJzaG91bGQgbm90IHRyaWdnZXIiKTsKPiA+ICsKPiA+ICsgICAgIGluc3RhbGxfZXhjZXB0aW9u
+X2hhbmRsZXIoRVhDX0JSRUFLUE9JTlQsIE5VTEwpOwo+ID4gKyAgICAgcmVwb3J0X3ByZWZpeF9w
+b3AoKTsKPiA+ICt9Cj4gPiArCj4gPiArc3RhdGljIHZvaWQgZGJ0cl90ZXN0X2Rpc2FibGVfcmVh
+ZChzdHJ1Y3Qgc2JpX2RidHJfc2htZW1fZW50cnkgKnNobWVtLCBlbnVtIE1jb250cm9sVHlwZSB0
+eXBlKQo+ID4gK3sKPiA+ICsgICAgIGNvbnN0IHVuc2lnbmVkIGxvbmcgdHN0YXR1c19leHBlY3Rl
+ZCA9IFNCSV9EQlRSX1RSSUdfU1RBVEVfUyB8IFNCSV9EQlRSX1RSSUdfU1RBVEVfTUFQUEVEOwo+
+ID4gKyAgICAgY29uc3QgdW5zaWduZWQgbG9uZyB0ZGF0YTEgPSBnZW5fdGRhdGExKHR5cGUsIFZB
+TFVFX1NUT1JFLCBNT0RFX05PTkUpOwo+ID4gKyAgICAgc3RhdGljIHVuc2lnbmVkIGxvbmcgdGVz
+dDsKPiA+ICsgICAgIHN0cnVjdCBzYmlyZXQgcmV0Owo+ID4gKwo+ID4gKyAgICAgcmVwb3J0X3By
+ZWZpeF9wdXNoKCJkaXNhYmxlIHJlYWQiKTsKPiA+ICsgICAgIGlmICghZGJ0cl9pbnN0YWxsX3Ry
+aWdnZXIoc2htZW0sICZ0ZXN0LCBnZW5fdGRhdGExKHR5cGUsIFZBTFVFX1NUT1JFLCBNT0RFX1Mp
+KSkgewo+ID4gKyAgICAgICAgICAgICByZXBvcnRfcHJlZml4X3BvcCgpOwo+ID4gKyAgICAgICAg
+ICAgICByZXR1cm47Cj4gPiArICAgICB9Cj4gPiArCj4gPiArICAgICByZXQgPSBzYmlfZGVidWdf
+ZGlzYWJsZV90cmlnZ2VycygwLCAxKTsKPiA+ICsgICAgIHNiaXJldF9yZXBvcnRfZXJyb3IoJnJl
+dCwgU0JJX1NVQ0NFU1MsICJzYmlfZGVidWdfZGlzYWJsZV90cmlnZ2VycyIpOwo+ID4gKwo+ID4g
+KyAgICAgcmV0ID0gc2JpX2RlYnVnX3JlYWRfdHJpZ2dlcnMoMCwgMSk7Cj4gPiArICAgICBzYmly
+ZXRfcmVwb3J0X2Vycm9yKCZyZXQsIFNCSV9TVUNDRVNTLCAic2JpX2RlYnVnX3JlYWRfdHJpZ2dl
+cnMiKTsKPiA+ICsKPiA+ICsgICAgIHJlcG9ydChzaG1lbS0+ZGF0YS50ZGF0YTEgPT0gdGRhdGEx
+LCAidGRhdGExIGV4cGVjdGVkOiAweCUwMTZseCIsIHRkYXRhMSk7Cj4gPiArICAgICByZXBvcnRf
+aW5mbygidGRhdGExIGZvdW5kOiAweCUwMTZseCIsIHNobWVtLT5kYXRhLnRkYXRhMSk7Cj4gPiAr
+ICAgICByZXBvcnQoc2htZW0tPmRhdGEudGRhdGEyID09ICgodW5zaWduZWQgbG9uZykmdGVzdCks
+ICJ0ZGF0YTIgZXhwZWN0ZWQ6IDB4JTAxNmx4IiwKPiA+ICsgICAgICAgICAgICAodW5zaWduZWQg
+bG9uZykmdGVzdCk7Cj4gPiArICAgICByZXBvcnRfaW5mbygidGRhdGEyIGZvdW5kOiAweCUwMTZs
+eCIsIHNobWVtLT5kYXRhLnRkYXRhMik7Cj4gPiArICAgICByZXBvcnQoc2htZW0tPmRhdGEudHN0
+YXRlID09IHRzdGF0dXNfZXhwZWN0ZWQsICJ0c3RhdGUgZXhwZWN0ZWQ6IDB4JTAxNmx4IiwgdHN0
+YXR1c19leHBlY3RlZCk7Cj4gPiArICAgICByZXBvcnRfaW5mbygidHN0YXRlIGZvdW5kOiAweCUw
+MTZseCIsIHNobWVtLT5kYXRhLnRzdGF0ZSk7Cj4KPiBTYW1lIGNvbW1lbnQgYWJvdXQgbm90IG5l
+ZWRpbmcgdG8gc3BsaXQgdGhpcy4KPgo+ID4gKwo+ID4gKyAgICAgZGJ0cl91bmluc3RhbGxfdHJp
+Z2dlcigpOwo+ID4gKyAgICAgcmVwb3J0X3ByZWZpeF9wb3AoKTsKPiA+ICt9Cj4gPiArCj4gPiAr
+dm9pZCBjaGVja19kYnRyKHZvaWQpCj4gPiArewo+ID4gKyAgICAgc3RhdGljIHN0cnVjdCBzYmlf
+ZGJ0cl9zaG1lbV9lbnRyeSBzaG1lbVtSVl9NQVhfVFJJR0dFUlNdID0ge307Cj4gPiArICAgICB1
+bnNpZ25lZCBsb25nIG51bV90cmlnczsKPiA+ICsgICAgIGVudW0gTWNvbnRyb2xUeXBlIHRyaWdf
+dHlwZTsKPiA+ICsgICAgIHN0cnVjdCBzYmlyZXQgcmV0Owo+ID4gKwo+ID4gKyAgICAgcmVwb3J0
+X3ByZWZpeF9wdXNoKCJkYnRyIik7Cj4gPiArCj4gPiArICAgICBpZiAoIXNiaV9wcm9iZShTQklf
+RVhUX0RCVFIpKSB7Cj4gPiArICAgICAgICAgICAgIHJlcG9ydF9za2lwKCJleHRlbnNpb24gbm90
+IGF2YWlsYWJsZSIpOwo+ID4gKyAgICAgICAgICAgICByZXBvcnRfcHJlZml4X3BvcCgpOwo+ID4g
+KyAgICAgICAgICAgICByZXR1cm47Cj4KPiBDb3VsZCByZW5hbWUgdGhlICdlcnJvcicgbGFiZWwg
+dG8gc29tZXRoaW5nIGVsc2UgYW5kIGdvdG8gaXQgZnJvbSBoZXJlCj4gdG9vLgoKSXMgYGR0YnJf
+ZXhpdF90ZXN0YCBvaz8KCj4KPiA+ICsgICAgIH0KPiA+ICsKPiA+ICsgICAgIGlmIChfX3NiaV9n
+ZXRfaW1wX2lkKCkgPT0gU0JJX0lNUExfT1BFTlNCSSAmJgo+ID4gKyAgICAgICAgIF9fc2JpX2dl
+dF9pbXBfdmVyc2lvbigpIDwgc2JpX2ltcGxfb3BlbnNiaV9ta192ZXJzaW9uKDEsIDUpKSB7Cj4g
+PiArICAgICAgICAgICAgIHJlcG9ydF9za2lwKCJPcGVuU0JJIDwgdjEuNSBkZXRlY3RlZCwgc2tp
+cHBpbmcgdGVzdHMiKTsKPiA+ICsgICAgICAgICAgICAgcmVwb3J0X3ByZWZpeF9wb3AoKTsKPiA+
+ICsgICAgICAgICAgICAgcmV0dXJuOwo+Cj4gV2h5IGRvIHdlIG5lZWQgdG8gZG8gdGhpcz8gSXNu
+J3QgdGhlIERCVFIgcHJvYmUgYWJvdmUgZW5vdWdoPwoKSSBjb3BpZWQgaXQgZnJvbSB0aGUgc2Jp
+LXNzZS5jIGZpbGUgbm9uZSBvZiB0aGUgb3RoZXIgdGVzdHMgZG8gdGhpcyBzbwpJJ2xsIHJlbW92
+ZSBpdC4KClRoYW5rcywKSmVzc2UgVGF1YmUKCj4KPiA+ICsgICAgIH0KPiA+ICsKPiA+ICsgICAg
+IG51bV90cmlncyA9IGRidHJfdGVzdF9udW1fdHJpZ2dlcnMoKTsKPiA+ICsgICAgIGlmICghbnVt
+X3RyaWdzKQo+ID4gKyAgICAgICAgICAgICBnb3RvIGVycm9yOwo+ID4gKwo+ID4gKyAgICAgdHJp
+Z190eXBlID0gZGJ0cl90ZXN0X3R5cGUoJm51bV90cmlncyk7Cj4gPiArICAgICBpZiAodHJpZ190
+eXBlID09IFNCSV9EQlRSX1REQVRBMV9UWVBFX05PTkUpCj4gPiArICAgICAgICAgICAgIGdvdG8g
+ZXJyb3I7Cj4gPiArCj4gPiArICAgICByZXQgPSBzYmlfZGVidWdfc2V0X3NobWVtKHNobWVtKTsK
+PiA+ICsgICAgIHNiaXJldF9yZXBvcnRfZXJyb3IoJnJldCwgU0JJX1NVQ0NFU1MsICJzYmlfZGVi
+dWdfc2V0X3NobWVtIik7Cj4gPiArCj4gPiArICAgICByZXQgPSBkYnRyX3Rlc3Rfc3RvcmVfaW5z
+dGFsbF91bmluc3RhbGwoJnNobWVtWzBdLCB0cmlnX3R5cGUpOwo+ID4gKyAgICAgLyogaW5zdGFs
+bCBvciB1bmluc3RhbGwgZmFpbGVkICovCj4gPiArICAgICBpZiAocmV0LmVycm9yICE9IFNCSV9T
+VUNDRVNTKQo+ID4gKyAgICAgICAgICAgICBnb3RvIGVycm9yOwo+ID4gKwo+ID4gKyAgICAgZGJ0
+cl90ZXN0X2xvYWQoJnNobWVtWzBdLCB0cmlnX3R5cGUpOwo+ID4gKyAgICAgZGJ0cl90ZXN0X2V4
+ZWMoJnNobWVtWzBdLCB0cmlnX3R5cGUpOwo+ID4gKyAgICAgZGJ0cl90ZXN0X3JlYWQoJnNobWVt
+WzBdLCB0cmlnX3R5cGUpOwo+ID4gKyAgICAgZGJ0cl90ZXN0X2Rpc2FibGVfZW5hYmxlKCZzaG1l
+bVswXSwgdHJpZ190eXBlKTsKPiA+ICsgICAgIGRidHJfdGVzdF91cGRhdGUoJnNobWVtWzBdLCB0
+cmlnX3R5cGUpOwo+ID4gKyAgICAgZGJ0cl90ZXN0X211bHRpcGxlX3R5cGVzKCZzaG1lbVswXSwg
+dHJpZ190eXBlKTsKPiA+ICsgICAgIGRidHJfdGVzdF9tdWx0aXBsZShzaG1lbSwgdHJpZ190eXBl
+LCBudW1fdHJpZ3MpOwo+ID4gKyAgICAgZGJ0cl90ZXN0X2Rpc2FibGVfdW5pbnN0YWxsKCZzaG1l
+bVswXSwgdHJpZ190eXBlKTsKPiA+ICsgICAgIGRidHJfdGVzdF91bmluc3RhbGxfZW5hYmxlKCZz
+aG1lbVswXSwgdHJpZ190eXBlKTsKPiA+ICsgICAgIGRidHJfdGVzdF91bmluc3RhbGxfdXBkYXRl
+KCZzaG1lbVswXSwgdHJpZ190eXBlKTsKPiA+ICsgICAgIGRidHJfdGVzdF9kaXNhYmxlX3JlYWQo
+JnNobWVtWzBdLCB0cmlnX3R5cGUpOwo+ID4gKwo+ID4gK2Vycm9yOgo+ID4gKyAgICAgcmVwb3J0
+X3ByZWZpeF9wb3AoKTsKPiA+ICt9Cj4gPiBkaWZmIC0tZ2l0IGEvcmlzY3Yvc2JpLXRlc3RzLmgg
+Yi9yaXNjdi9zYmktdGVzdHMuaAo+ID4gaW5kZXggZDVjNGFlNzAuLmMxZWJmMDE2IDEwMDY0NAo+
+ID4gLS0tIGEvcmlzY3Yvc2JpLXRlc3RzLmgKPiA+ICsrKyBiL3Jpc2N2L3NiaS10ZXN0cy5oCj4g
+PiBAQCAtOTcsOCArOTcsMTAgQEAgc3RhdGljIGlubGluZSBib29sIGVudl9lbmFibGVkKGNvbnN0
+IGNoYXIgKmVudikKPiA+ICAgICAgIHJldHVybiBzICYmICgqcyA9PSAnMScgfHwgKnMgPT0gJ3kn
+IHx8ICpzID09ICdZJyk7Cj4gPiAgfQo+ID4KPiA+ICt2b2lkIHNwbGl0X3BoeXNfYWRkcihwaHlz
+X2FkZHJfdCBwYWRkciwgdW5zaWduZWQgbG9uZyAqaGksIHVuc2lnbmVkIGxvbmcgKmxvKTsKPiA+
+ICB2b2lkIHNiaV9iYWRfZmlkKGludCBleHQpOwo+ID4gIHZvaWQgY2hlY2tfc3NlKHZvaWQpOwo+
+ID4gK3ZvaWQgY2hlY2tfZGJ0cih2b2lkKTsKPiA+Cj4gPiAgI2VuZGlmIC8qIF9fQVNTRU1CTEVS
+X18gKi8KPiA+ICAjZW5kaWYgLyogX1JJU0NWX1NCSV9URVNUU19IXyAqLwo+ID4gZGlmZiAtLWdp
+dCBhL3Jpc2N2L3NiaS5jIGIvcmlzY3Yvc2JpLmMKPiA+IGluZGV4IGVkYjFhNmJlLi4zYjhhYWRj
+ZSAxMDA2NDQKPiA+IC0tLSBhL3Jpc2N2L3NiaS5jCj4gPiArKysgYi9yaXNjdi9zYmkuYwo+ID4g
+QEAgLTEwNSw3ICsxMDUsNyBAQCBzdGF0aWMgaW50IHJhbmRfb25saW5lX2NwdShwcm5nX3N0YXRl
+ICpwcykKPiA+ICAgICAgIHJldHVybiBjcHU7Cj4gPiAgfQo+ID4KPiA+IC1zdGF0aWMgdm9pZCBz
+cGxpdF9waHlzX2FkZHIocGh5c19hZGRyX3QgcGFkZHIsIHVuc2lnbmVkIGxvbmcgKmhpLCB1bnNp
+Z25lZCBsb25nICpsbykKPiA+ICt2b2lkIHNwbGl0X3BoeXNfYWRkcihwaHlzX2FkZHJfdCBwYWRk
+ciwgdW5zaWduZWQgbG9uZyAqaGksIHVuc2lnbmVkIGxvbmcgKmxvKQo+ID4gIHsKPiA+ICAgICAg
+ICpsbyA9ICh1bnNpZ25lZCBsb25nKXBhZGRyOwo+ID4gICAgICAgKmhpID0gMDsKPiA+IEBAIC0x
+NTYxLDYgKzE1NjEsNyBAQCBpbnQgbWFpbihpbnQgYXJnYywgY2hhciAqKmFyZ3YpCj4gPiAgICAg
+ICBjaGVja19zdXNwKCk7Cj4gPiAgICAgICBjaGVja19zc2UoKTsKPiA+ICAgICAgIGNoZWNrX2Z3
+ZnQoKTsKPiA+ICsgICAgIGNoZWNrX2RidHIoKTsKPiA+Cj4gPiAgICAgICByZXR1cm4gcmVwb3J0
+X3N1bW1hcnkoKTsKPiA+ICB9Cj4gPiAtLQo+ID4gMi40My4wCj4gPgo+Cj4gVGhhbmtzLAo+IGRy
+ZXcKCi0tIAprdm0tcmlzY3YgbWFpbGluZyBsaXN0Cmt2bS1yaXNjdkBsaXN0cy5pbmZyYWRlYWQu
+b3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8va3ZtLXJpc2N2
+Cg==
