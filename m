@@ -4,59 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A8D78C8303C
-	for <kvm-riscv@archiver.kernel.org>; Wed,  2 Jul 2025 11:31:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BEDC7C77B7C
+	for <kvm-riscv@archiver.kernel.org>; Wed,  2 Jul 2025 14:37:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
 	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=fKyhAmDVRcAs5o66TMUOS1p96NGSeJ/GvjSica0MKmM=; b=YIm98auw05hFLb
-	9Ja+FZ6cJOsQYWJz+2KWJa0/AegTyXy3S2bKoEDF7F9vBNdmsI/kqubMM+c9EXEv6ybxIgN44seQ2
-	YbIKHbYKiTq6e9eTnE8JIaDytebk3E45lKX2ki6oEEExEMSOOpCqbs6JZEaHjPeBPxaOyBlp0fmoE
-	oMNqbcwMDuBxDqXttmuG5U1E4sVgr4Iicod+8hTu9tKzsp5cgMd7iX4/cQEYQkIbQ3q79+T1CB5b3
-	58pYzBVv9ocDshs4POmcjmYXtmd7bOusqdKaCZeTvhfVgBnXu+nZavoF3+/Q6QTT2if7ShTIt3EG0
-	OVgH/NTsIGNaqSWYVt5A==;
+	List-Owner; bh=WzhCBxUIP1tNa3xKd1QK41e/9J/5H78WB5htMxiays4=; b=vvBv+0eYPqyOnU
+	4aPUMZJPTaH+YQQ9g0JvAPlWimVrjEXzW12txBX0imevfXeUXDfRCQl9iPCceI6O5XUcTNZ5i+Hjg
+	3tf5jJomITfXLkSyvEVgLXdZBY16KV/ZaR8I8jckmZZbQTqWq1Gy9qi1uZqIANsWE/qdmql1CHMEy
+	ByNv4WDpa7MKBVEt5hMhaKU4yf7+o0O2DBU/ES9d4Z4pwk1NngSwebY2Vg718/NC0o6c3pcWP+x7n
+	sOvagbkT2FftJNliCqsCV0swosBB30swkl9050w5JPoRWjvGQu4Jnfjh6x7SyXnKttTuemhqaE8ED
+	HQAbph0Zk5dXRtH0Ho8A==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uWvg9-000000088kZ-0Erx;
-	Wed, 02 Jul 2025 11:31:05 +0000
-Received: from out-178.mta1.migadu.com ([2001:41d0:203:375::b2])
+	id 1uWyag-00000008eB0-1Sxg;
+	Wed, 02 Jul 2025 14:37:38 +0000
+Received: from out-189.mta1.migadu.com ([2001:41d0:203:375::bd])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uWuzd-00000007zlg-2x6L
+	id 1uWxRZ-00000008RSC-3eac
 	for kvm-riscv@lists.infradead.org;
-	Wed, 02 Jul 2025 10:47:12 +0000
-Date: Wed, 2 Jul 2025 12:46:55 +0200
+	Wed, 02 Jul 2025 13:24:12 +0000
+Date: Wed, 2 Jul 2025 15:23:58 +0200
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1751453223;
+	t=1751462643;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=lGt6az+NvJ14ljwTTt5to9cmtNUkKbD4VgZIkyAJvCs=;
-	b=q53ARjP+zZ09C7DsmED/JE5lQEtVYZqhbaHZ7PPf01CV+97+OnO7//+Qbc/YmT9kloXRU/
-	MLSMjEUVNqRmvO6TV0VoYncC+bEMWnqkZGlZtwU3E0WhiPTtqTtsA7qIKbHJrmwLIWVC2Q
-	UpubvSNopJSX4IBuMkbaLuszmCWfeDE=
+	bh=NawVbpSzRrmU/5OP7w4Gd875xIZHo3tZ7VQMBiyqhsU=;
+	b=njUl/S1J5KSb4kx5muBTkGIWSbXrroDfp86PXT14WPw5N7Hu/x/hpj7G9kte4LDcww6tj1
+	sLFenV29ksanu71IRWzpzXNj3kRSc4qywDU4NFLZJM7H9cWGJsHjGlArX7DoAw9afh/IVk
+	ghR3vKM0KttIIQr6AY6akrhIyQ1vgu4=
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
 From: Andrew Jones <andrew.jones@linux.dev>
-To: Jesse Taube <jesse@rivosinc.com>
-Cc: kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
-	linux-kselftest@vger.kernel.org, Atish Patra <atish.patra@linux.dev>, 
-	Anup Patel <anup@brainfault.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
-	=?utf-8?B?Q2zDqW1lbnQgTMOpZ2Vy?= <cleger@rivosinc.com>, Himanshu Chauhan <hchauhan@ventanamicro.com>, 
-	Charlie Jenkins <charlie@rivosinc.com>
-Subject: Re: [kvm-unit-tests PATCH v8] riscv: sbi: Add SBI Debug Triggers
- Extension tests
-Message-ID: <20250702-f6f3fde8cfecdb6901edfc76@orel>
-References: <20250701200047.1367077-1-jesse@rivosinc.com>
+To: Alexandru Elisei <alexandru.elisei@arm.com>
+Cc: kvm@vger.kernel.org, lvivier@redhat.com, thuth@redhat.com, 
+	frankja@linux.ibm.com, imbrenda@linux.ibm.com, nrb@linux.ibm.com, pbonzini@redhat.com, 
+	eric.auger@redhat.com, kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
+	kvm-riscv@lists.infradead.org, david@redhat.com, linux-s390@vger.kernel.org
+Subject: Re: [kvm-unit-tests PATCH 0/2] scripts: extra_params rework
+Message-ID: <20250702-4e182ba58316d478d49a1ee3@orel>
+References: <20250625154354.27015-1-alexandru.elisei@arm.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20250701200047.1367077-1-jesse@rivosinc.com>
+In-Reply-To: <20250625154354.27015-1-alexandru.elisei@arm.com>
 X-Migadu-Flow: FLOW_OUT
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250702_034710_668467_8F3355B3 
-X-CRM114-Status: UNSURE (   8.22  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20250702_062410_402622_7CB75534 
+X-CRM114-Status: GOOD (  18.26  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -73,52 +70,55 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Tue, Jul 01, 2025 at 01:00:47PM -0700, Jesse Taube wrote:
-> +#define SBI_DBTR_TDATA1_TYPE_SHIFT		(__riscv_xlen - 4)
+Hi Paolo, Thomas, and others,
 
-I just double checked and see that this shift is 4 less than xlen, so...
-
-> +enum McontrolType {
-> +	SBI_DBTR_TDATA1_TYPE_NONE =		(0UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_LEGACY =		(1UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_MCONTROL =		(2UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_ICOUNT =		(3UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_ITRIGGER =		(4UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_ETRIGGER =		(5UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_MCONTROL6 =	(6UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_TMEXTTRIGGER =	(7UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_RESERVED0 =	(8UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_RESERVED1 =	(9UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_RESERVED2 =	(10UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_RESERVED3 =	(11UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_CUSTOM0 =		(12UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_CUSTOM1 =		(13UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_CUSTOM2 =		(14UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-> +	SBI_DBTR_TDATA1_TYPE_DISABLED =		(15UL << SBI_DBTR_TDATA1_TYPE_SHIFT),
-
-...all these will require unsigned long (as the UL's provide), but that
-means...
-
-> +static unsigned long gen_tdata1(enum McontrolType type, enum Tdata1Value value, enum Tdata1Mode mode)
-> +{
-> +	switch (type) {
-> +	case SBI_DBTR_TDATA1_TYPE_MCONTROL:
-> +		return gen_tdata1_mcontrol(mode, value) | mcontrol_size(SIZE_32BIT);
-> +	case SBI_DBTR_TDATA1_TYPE_MCONTROL6:
-> +		return gen_tdata1_mcontrol6(mode, value) | mcontrol6_size(SIZE_32BIT);
-> +	default:
-> +		assert_msg(false, "Invalid mcontrol type: %u", (int)type);
-
-...my suggestion here was wrong for rv64. We need
-
-  assert_msg(false, "Invalid mcontrol type: %lu", (unsigned long)type);
-
-I've fixed it up while applying to riscv/sbi
-
-https://gitlab.com/jones-drew/kvm-unit-tests/-/commits/riscv/sbi
+Can I get an ack on this? I'd like to merge it.
 
 Thanks,
 drew
+
+On Wed, Jun 25, 2025 at 04:43:52PM +0100, Alexandru Elisei wrote:
+> This series was split from the series that adds support to use kvmtool when
+> using the scripts to run the tests [1]. kvmtool will be supported only for arm
+> and arm64, as they are the only architectures that compile the tests to run with
+> kvmtool.
+> 
+> The justification for these changes is to be able to introduce
+> kvmtool_params for kvmtool specific command line options, and to make a
+> clear distinction between the qemu options and the kvmtool options. This is
+> why qemu_params was added as a replacement for extra_params. extra_params
+> was kept for compatibility purposes for user's custom test definitions.
+> 
+> To avoid duplication of the arguments that are passed to a test's main()
+> function, test_args has been split from qemu_params. The same test_args
+> will be used by both qemu and kvmtool.
+> 
+> [1] https://lore.kernel.org/kvm/20250507151256.167769-1-alexandru.elisei@arm.com/
+> 
+> Alexandru Elisei (2):
+>   scripts: unittests.cfg: Rename 'extra_params' to 'qemu_params'
+>   scripts: Add 'test_args' test definition parameter
+> 
+>  arm/unittests.cfg     |  94 ++++++++++++++----------
+>  docs/unittests.txt    |  30 +++++---
+>  powerpc/unittests.cfg |  21 +++---
+>  riscv/unittests.cfg   |   2 +-
+>  s390x/unittests.cfg   |  53 +++++++-------
+>  scripts/common.bash   |  16 +++--
+>  scripts/runtime.bash  |  24 ++++---
+>  x86/unittests.cfg     | 164 ++++++++++++++++++++++++------------------
+>  8 files changed, 237 insertions(+), 167 deletions(-)
+> 
+> 
+> base-commit: 507612326c9417b6330b91f7931678a4c6866395
+> -- 
+> 2.50.0
+> 
+> 
+> -- 
+> kvm-riscv mailing list
+> kvm-riscv@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kvm-riscv
 
 -- 
 kvm-riscv mailing list
