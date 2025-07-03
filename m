@@ -4,145 +4,89 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9DBFBC83F03
-	for <kvm-riscv@archiver.kernel.org>; Wed,  2 Jul 2025 17:48:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6202C83F03
+	for <kvm-riscv@archiver.kernel.org>; Thu,  3 Jul 2025 15:33:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
-	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
-	List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:Subject:
-	MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=KeQyuM/wZuW3l5YJfKCxPX5sXpALc0anYhPxNDG3KFE=; b=wy09jjHKyNlymR
-	O+iD4OtctZ1ypwP7kiNFkY7sNMDYxHb9Mtf3Zfo8LHeUj0bjnHhqZQFbw9eNxE9Yx/Sjgby6su/Kd
-	EtIC05idUFc7+USxDdftUoQI52ZMqQ0eTzy9GPn6Tj1nKctbiSiUlW8VdartqTh+btRjtg/ugGVLK
-	EEItxkr6hw39ZC5wIXSIH+PmXk+Ss8MFah9Y5BwgfAAjiiRgyS2v94hRAHHOxherA8lKtGoB6E7/t
-	hB8JU2z+moDXEMftchR3BtUR5vUY+ckavsq/cw6j3OZsr+Wsq43PzMcOoK/XAc4IkP1BUYCiIqG1H
-	GD7Q1ioMxYegozRe8h6g==;
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=VnkF1wwdwazCSwP9VhQRCAd1BL7Jcp2vj21Mtjs+Oqs=; b=dLGwPYo+7//pGs
+	L9svthB72pQFoNStovnrC61PcN8hGrciqUaQAQHglrCs1FgvPGfvFKIKnZXD0+bW/CnCJ+8cFJRuA
+	szFdAqlCyGBsbpQ4Z24Uq7nARxy5LNYrpJ46AP0x9llCivscJimG7+u1R/O7t3xXqblqKpSZkCt8e
+	sNO0gtopnEfdFEP/AtkxEuiiUCRVHF0w9bZ67EJlKJsQ5gtVjla75u5NNvnJIeiE2CYbpRGUClfGg
+	nf7uI3y+Ymq3YDNsZZSRxaPRYie9RuvGetxtP+1hRpR4EVqpJ7YNCqyAbp/pTuiPequDgHEmZBGcE
+	OZfMhSe9AIPV5qum6vvQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uX1ZA-00000009ADF-3hgq;
-	Wed, 02 Jul 2025 17:48:16 +0000
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124])
+	id 1uXLw3-0000000BpzU-12kt;
+	Thu, 03 Jul 2025 15:33:15 +0000
+Received: from mail-qv1-xf29.google.com ([2607:f8b0:4864:20::f29])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uWy7o-00000008a02-3XPR
+	id 1uXK6d-0000000BW7x-3qwm
 	for kvm-riscv@lists.infradead.org;
-	Wed, 02 Jul 2025 14:07:50 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1751465266;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=QtugXBwpmof8PtjrVGSF5iQiiRq53WoQXJVBl10e0QY=;
-	b=TOMCJzdeTs6knaxCuSnSUVXvuFm/Yj41wQQYc4MIvwGtkb5MBoIQJSdo0XX0AFV0vcfeiQ
-	scIDOaZ3gK3plLGl+lelfirlAfb/bokpF9XXvfouMu01RMmgJnf/189AhzJZ2SrAQXavxI
-	PzouxnJ5LuZFXuRsqSUgBFCsEAOA+Ug=
-Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
- [209.85.128.70]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-440-I4t-14iMMLujJ_qXaFF4BA-1; Wed, 02 Jul 2025 10:07:44 -0400
-X-MC-Unique: I4t-14iMMLujJ_qXaFF4BA-1
-X-Mimecast-MFC-AGG-ID: I4t-14iMMLujJ_qXaFF4BA_1751465263
-Received: by mail-wm1-f70.google.com with SMTP id 5b1f17b1804b1-450d64026baso37578345e9.1
-        for <kvm-riscv@lists.infradead.org>; Wed, 02 Jul 2025 07:07:44 -0700 (PDT)
+	Thu, 03 Jul 2025 13:36:07 +0000
+Received: by mail-qv1-xf29.google.com with SMTP id 6a1803df08f44-6fad79433bbso52650886d6.0
+        for <kvm-riscv@lists.infradead.org>; Thu, 03 Jul 2025 06:36:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=rivosinc-com.20230601.gappssmtp.com; s=20230601; t=1751549762; x=1752154562; darn=lists.infradead.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=AybLdMIaTX7u240+QRHcmMiae8oJPe3j6zxp6xpwSS4=;
+        b=D3A4ARGON0mofBqZCtzB20kXF3Kab7t2KJold5zshohD6TRSMASS5dROuwaTo4oP1c
+         wN/Ziz8AA0ailbSdFgo4tY/pkHRPOKeQL29nw1t6O3FT4z4ZDm8m3WMZpzSwfnKor/xQ
+         +DF02X2ukGwYjo4KJ+NW5Iy3FyYItoRYdU7FFpBEzVyYuuIZzYsUjYJqOve0jGdJyDQT
+         1lb1KA4lYQ+CuVFGYzjMNQK+e8VxD3HFkcKtDz6wZHHFBaYC9YWpsz0w3uklNqYRg0iN
+         N+gIBVQjkQweHm66/G4tZgslYctsIAYZkEtCF5FiukLBfXyxVRHCAoxWu0SRxGOsZIya
+         Up0A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1751465263; x=1752070063;
-        h=content-transfer-encoding:in-reply-to:autocrypt:content-language
-         :from:references:cc:to:subject:user-agent:mime-version:date
-         :message-id:x-gm-message-state:from:to:cc:subject:date:message-id
+        d=1e100.net; s=20230601; t=1751549762; x=1752154562;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=QtugXBwpmof8PtjrVGSF5iQiiRq53WoQXJVBl10e0QY=;
-        b=ZCvnkJw+hPa9qgfE5Q8zSTLra1RsF/U/3vaKnzGk4F2G1p8X35xBS7tIgF7rCvX1wc
-         ldNKlv7r2dZp/wHhI+Hmp9X8HoYVMWjhPbc3VfmH8KavceY0OyVx8WHoSKW7Z4qkpF8m
-         IHIqQ26Xe7QZfET9b4hDair8cYuePZ40W7nfuw3qvBKyyDZOan3z/o0crL8nMkTeHJCG
-         YP+Ke2bcHo1nb25frpyBq4RYsgLoTGd3D9Y9qOkWA7J4dhxA10m+VQBuN+FBHZaj1TBC
-         u4bpL5mqupVJVJM6jMEOvXNaOhwljjKozHXAKGwZgoxhD/eieJmtKNJWaCSishedSsL3
-         bIqA==
-X-Forwarded-Encrypted: i=1; AJvYcCVreHhCkaK/KzjvWmh1wIBTtt+RMV/4V6d+xXk5LM/qHjVTYOGPtkRghVBmHMB7czywmMSTKl5OJMw=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yzdr4q+hp6cGzWGnYAn6x/+QgGXiA8OuXowng1z5qoTI2aqVzJn
-	zGA7tweQUfFlItT/g1aaoFUAJY6kfFs75dlHElxd0AoS2cnZV8GXV22lwOP0k1cxLkutWhnu/mZ
-	nq/AUwgs0bAxvrAd2OPgO1o1ZRElgCO+cm7mwh6GR9zxZNWuze4cJ8gZ3ItnA/ddwhE5qI3QV3c
-	A=
-X-Gm-Gg: ASbGncvhuTJ/SJ6Gh6bLDldbj8XtX1eA/nZhrfZPaFPN5nfNJnvRdUXcb6MitNEED4W
-	fwT4NCKFhjhIh8WIbY8Ao0O3oeSeT7Umf9FrR5aOVFadT1Qr5pAVVnxRLA0PeaBWnO4AHC2Q8d3
-	jJqANG1ag6pQXWvnJnzFBqPaRsFm4Y83BZup3UdfsSrMaB7eVYVsdfSMNVDvGdB6vNXeMi6BnzY
-	GbcMJofEWWHoix0r0oYYWK4k4K3O9c57/xrPi5stLNmk430amrTMb4D5h2irKxtaOH2eVEA/aD3
-	wCAOVVS9G+8PWas8U2G0qYR9Qic0fTVlWu35FxMhRYU0oTk870CkhJOn0Xn5Lg==
-X-Received: by 2002:a05:600c:3b01:b0:453:99f:b1b0 with SMTP id 5b1f17b1804b1-454a3706e45mr28815095e9.20.1751465263148;
-        Wed, 02 Jul 2025 07:07:43 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IF5YuCq5rpUy6RMv0jfgdQbgLyOb/XAUKuoXtz40yFdPi0MgOsaJG33C7l4K2KM2eHAFCoDsQ==
-X-Received: by 2002:a05:600c:3b01:b0:453:99f:b1b0 with SMTP id 5b1f17b1804b1-454a3706e45mr28812865e9.20.1751465261164;
-        Wed, 02 Jul 2025 07:07:41 -0700 (PDT)
-Received: from [192.168.0.6] (ltea-047-064-114-041.pools.arcor-ip.net. [47.64.114.41])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-453a85b3d44sm36303505e9.0.2025.07.02.07.07.39
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 02 Jul 2025 07:07:40 -0700 (PDT)
-Message-ID: <69c1b5df-2b49-4a3c-811c-ad6141a22dbe@redhat.com>
-Date: Wed, 2 Jul 2025 16:07:39 +0200
+        bh=AybLdMIaTX7u240+QRHcmMiae8oJPe3j6zxp6xpwSS4=;
+        b=EYQduXs1I7LFj9kk3vGRRkBoKyiZhWabQpNZXhKc4zRQ71YIqYsTCN2PxYvMLMEX2p
+         8viLPy8da+jN8atC9wQEyPu7Ar7QVnXYhtOZ0fcL+8Un792ccTq7v9rSB5hnXy6eOAm+
+         RAbOXWtEy7WWDscjwKFyzXXoob0WGXKnScMUwR0VEKUIK/H2k/JtgoUrWHY6fODLRiYG
+         5uV6f85vo1D2cgWPL90+2V0sdnvNX+I+7tPV5lufPWXRa0sGXS2AhuSDK80vFLksO9uI
+         FnQg7+4URwl1Bq3GBxnvDKLs5FXGHgTo2pbxGt+dEp9j6Zsom1SmYasnBCgLVoedQbGp
+         eAXQ==
+X-Forwarded-Encrypted: i=1; AJvYcCWRwbCrBxKm2KCSZSEkFmGW4MjwLfnzorfSxy4toG5fVFpkAVVOCNkaA7DRXDwqNhERq56gNQu3hTY=@lists.infradead.org
+X-Gm-Message-State: AOJu0YwP4Xr2yKDLHUJJbeT1pozstJrqCmkpgMP9LFFY/eqTTCcr9Olq
+	4Mqn/2pxVe7Qb55b6JpB922CPMWp+qQqc9B56HE6D/9KR7QWLTN/IOhML/oxif7XSxo=
+X-Gm-Gg: ASbGnctHYcXIWNbXLXP+uEQDaayTwoflFOip3v/WYEd3Z/eVQ6QAMQIsU1yWjfdsoF/
+	Jj9VLROYOwiJ0c+QmGq5EtqoANl9grstI2I+iIZ9xuf7Ekkqm0Fr4ktOCLd11crORCSJnzXJ/6T
+	xait3fW3M4TbhLX2U6/DqMqpe2/LNqUm+6d1FO9OQv5LRYZemeJhW4vkV0XwCGk6NgnOVxO5vGX
+	sCwKJtCrGq5YjCV+xaLfQJf24yg23ZATx55kQQII9bi4RzljvajEIAHLzd5ph1ZUlngEQJkxst0
+	TKhBMCGPxMkqs1laG951bGJw+bbUJ9yodjPlty/r+z95YVcQIPvN1qnRB1tyruXzVLmqsn/qRWI
+	=
+X-Google-Smtp-Source: AGHT+IGHeqWTScI42ieZ9hlCd88aWLNR5bd/wuHidBIbPxL/tKCuhIsA4xmBVc4nHMWIIMW8e4W9lA==
+X-Received: by 2002:a05:6214:5a0c:b0:6f5:106a:270e with SMTP id 6a1803df08f44-702b1c118e8mr103093756d6.44.1751549762212;
+        Thu, 03 Jul 2025 06:36:02 -0700 (PDT)
+Received: from jesse-lt.ba.rivosinc.com ([96.224.57.66])
+        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-6fd7730af00sm118166016d6.113.2025.07.03.06.36.01
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 03 Jul 2025 06:36:01 -0700 (PDT)
+From: Jesse Taube <jesse@rivosinc.com>
+To: kvm@vger.kernel.org,
+	kvm-riscv@lists.infradead.org,
+	linux-kselftest@vger.kernel.org
+Cc: =?UTF-8?q?Cl=C3=A9ment=20L=C3=A9ger?= <cleger@rivosinc.com>,
+	Charlie Jenkins <charlie@rivosinc.com>,
+	Jesse Taube <jesse@rivosinc.com>,
+	Andrew Jones <andrew.jones@linux.dev>,
+	James Raphael Tiovalen <jamestiotio@gmail.com>,
+	Sean Christopherson <seanjc@google.com>,
+	Cade Richard <cade.richard@gmail.com>
+Subject: [kvm-unit-tests PATCH] riscv: lib: Add sbi-exit-code to configure and environment
+Date: Thu,  3 Jul 2025 06:36:00 -0700
+Message-ID: <20250703133601.1396848-1-jesse@rivosinc.com>
+X-Mailer: git-send-email 2.43.0
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [kvm-unit-tests PATCH 1/2] scripts: unittests.cfg: Rename
- 'extra_params' to 'qemu_params'
-To: Alexandru Elisei <alexandru.elisei@arm.com>, kvm@vger.kernel.org,
- andrew.jones@linux.dev, lvivier@redhat.com, frankja@linux.ibm.com,
- imbrenda@linux.ibm.com, nrb@linux.ibm.com, pbonzini@redhat.com,
- eric.auger@redhat.com, kvmarm@lists.linux.dev,
- linuxppc-dev@lists.ozlabs.org, kvm-riscv@lists.infradead.org,
- david@redhat.com, linux-s390@vger.kernel.org
-Cc: Shaoqin Huang <shahuang@redhat.com>
-References: <20250625154354.27015-1-alexandru.elisei@arm.com>
- <20250625154354.27015-2-alexandru.elisei@arm.com>
-From: Thomas Huth <thuth@redhat.com>
-Autocrypt: addr=thuth@redhat.com; keydata=
- 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
-In-Reply-To: <20250625154354.27015-2-alexandru.elisei@arm.com>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: 0C6wY0cKH-GrfYIA7npx5Ebe50SDjyf53FxXVDVERM4_1751465263
-X-Mimecast-Originator: redhat.com
-Content-Language: en-US
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250702_070749_064116_E28FF7D9 
-X-CRM114-Status: GOOD (  18.90  )
+X-CRM114-CacheID: sfid-20250703_063604_064726_25E0272E 
+X-CRM114-Status: GOOD (  12.22  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -154,58 +98,92 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On 25/06/2025 17.43, Alexandru Elisei wrote:
-> The arm and arm64 architectures can also be run with kvmtool, and work is
-> under way to have it supported by the run_tests.sh test runner. Not
-> suprisingly, kvmtool's syntax for running a virtual machine is different to
-> qemu's.
-> 
-> Add a new unittest parameter, 'qemu_params', with the goal to add a similar
-> parameter for kvmtool, when that's supported.
-> 
-> 'extra_params' has been kept in the scripts as an alias for 'qemu_params'
-> to preserve compatibility with custom test definition, but it is expected
-> that going forward new tests will use 'qemu_params'.
-> 
-> Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
-> Reviewed-by: Shaoqin Huang <shahuang@redhat.com>
-> Signed-off-by: Alexandru Elisei <alexandru.elisei@arm.com>
-> ---
-...
-> diff --git a/docs/unittests.txt b/docs/unittests.txt
-> index c4269f6230c8..3d19fd70953f 100644
-> --- a/docs/unittests.txt
-> +++ b/docs/unittests.txt
-> @@ -24,9 +24,9 @@ param = value format.
->   
->   Available parameters
->   ====================
-> -Note! Some parameters like smp and extra_params modify how a test is run,
-> -while others like arch and accel restrict the configurations in which the
-> -test is run.
-> +Note! Some parameters like smp and qemu_params/extra_params modify how a
-> +test is run, while others like arch and accel restrict the configurations
-> +in which the test is run.
->   
->   file
->   ----
-> @@ -56,13 +56,18 @@ smp = <number>
->  Optional, the number of processors created in the machine to run the test.
->  Defaults to 1. $MAX_SMP can be used to specify the maximum supported.
->   
-> -extra_params
-> +qemu_params
->  ------------
+Add --[enable|disable]-sbi-exit-code to configure script.
+With the default value disabled.
+Add a check for SBI_PASS_EXIT_CODE in the environment, so that passing
+of the test status is configurable from both the
+environment and the configure script
 
-Please adjust the length of the "---" line now, too.
+Signed-off-by: Jesse Taube <jesse@rivosinc.com>
+---
+ configure      | 11 +++++++++++
+ lib/riscv/io.c | 12 +++++++++++-
+ 2 files changed, 22 insertions(+), 1 deletion(-)
 
-With that nit fixed:
-Acked-by: Thomas Huth <thuth@redhat.com>
+diff --git a/configure b/configure
+index 20bf5042..7c949bdc 100755
+--- a/configure
++++ b/configure
+@@ -67,6 +67,7 @@ earlycon=
+ console=
+ efi=
+ efi_direct=
++sbi_exit_code=0
+ target_cpu=
+ 
+ # Enable -Werror by default for git repositories only (i.e. developer builds)
+@@ -141,6 +142,9 @@ usage() {
+ 	                           system and run from the UEFI shell. Ignored when efi isn't enabled
+ 	                           and defaults to enabled when efi is enabled for riscv64.
+ 	                           (arm64 and riscv64 only)
++	    --[enable|disable]-sbi-exit-code
++	                           Enable or disable sending pass/fail exit code to SBI SRST.
++	                           (disabled by default, riscv only)
+ EOF
+     exit 1
+ }
+@@ -236,6 +240,12 @@ while [[ $optno -le $argc ]]; do
+ 	--disable-efi-direct)
+ 	    efi_direct=n
+ 	    ;;
++	--enable-sbi-exit-code)
++	    sbi_exit_code=1
++	    ;;
++	--disable-sbi-exit-code)
++	    sbi_exit_code=0
++	    ;;
+ 	--enable-werror)
+ 	    werror=-Werror
+ 	    ;;
+@@ -551,6 +561,7 @@ EOF
+ elif [ "$arch" = "riscv32" ] || [ "$arch" = "riscv64" ]; then
+     echo "#define CONFIG_UART_EARLY_BASE ${uart_early_addr}" >> lib/config.h
+     [ "$console" = "sbi" ] && echo "#define CONFIG_SBI_CONSOLE" >> lib/config.h
++    echo "#define CONFIG_SBI_EXIT_CODE ${sbi_exit_code}" >> lib/config.h
+     echo >> lib/config.h
+ fi
+ echo "#endif" >> lib/config.h
+diff --git a/lib/riscv/io.c b/lib/riscv/io.c
+index b1163404..0e666009 100644
+--- a/lib/riscv/io.c
++++ b/lib/riscv/io.c
+@@ -162,8 +162,18 @@ void halt(int code);
+ 
+ void exit(int code)
+ {
++	char *s = getenv("SBI_PASS_EXIT_CODE");
++	bool pass_exit = CONFIG_SBI_EXIT_CODE;
++
+ 	printf("\nEXIT: STATUS=%d\n", ((code) << 1) | 1);
+-	sbi_shutdown(code == 0);
++
++	if (s)
++		pass_exit = (*s == '1' || *s == 'y' || *s == 'Y');
++
++	if (pass_exit)
++		sbi_shutdown(code == 0);
++	else
++		sbi_shutdown(true);
+ 	halt(code);
+ 	__builtin_unreachable();
+ }
+-- 
+2.43.0
 
 
 -- 
