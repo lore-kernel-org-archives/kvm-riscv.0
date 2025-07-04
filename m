@@ -4,56 +4,75 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8A5C5C83F0D
-	for <kvm-riscv@archiver.kernel.org>; Fri,  4 Jul 2025 11:21:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3108BC8303D
+	for <kvm-riscv@archiver.kernel.org>; Fri,  4 Jul 2025 11:21:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
 	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=WM+wFazBs4C00neub6EEDVD4Zf77VOK4n/XRFOkdWEo=; b=43TYp0Pkq7PuwI
-	liuBOEp0Q7ad7FsC7j/PD5JZEaHbLcYmBEECZpJXO4PM8s28sOpExijM8jbk+unq/WLgO/QgOF9zM
-	RD9+dgycQNEuRSjv8UqkHu2/AZXOD48qUkgWHxSL7XMW63f0o4oVmLeUk28qzRNBvmttycnqOCkVJ
-	AmBZfa74FgbNPJ0QS2mQD/p3y3QTWnqNr5vNw8mo7AJ15yGCptLFEoRrArtsgxALbWrwvJg2XWOJl
-	onhRxj3DIIUiPaTehrBMvEusCBMAcMMLB7NdUm+abiYXK1X6k5RCWY7E1DQl+qaaQb9cRUIuN/v/B
-	N8Z93CWtmTdQjWWGfyPQ==;
+	List-Owner; bh=Q7TaDeofQfJtkycUiTYeanS79CHqhLSpEfOKN2/bHCc=; b=ZEPQTWKFuC+b/H
+	zJQziH2ZxWijMMMAsWv66Z+TgZBR7za6FGHrz6jaJm1/BxgbYgkGkpfzK4xkhyTJ/8KNPZOVn7nVq
+	ngoJOXXXQJeBtO3GRk9Y7ugeW1xE/CKvr4iHmbeadkZH3cWT4XflUJEM50aXAtG0Q7zux3i89EoAq
+	AZbNyXJwF5a/xTX1txIou56ckxKEkIwgMGbiZZSZxnlA15a4NoXYjn7NZJ2/LF9mTEGJKJwewe+cW
+	gWijWQvm+J/rqO0DAVCk9HJAzAznbCvBwtWE6++1RPNt6DR6h0rvjVMp+A7TB+fbewM116yqjUpem
+	jUzuHn/tk2a0Dp4PWSaw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uXeUE-0000000EC6z-0nCE;
-	Fri, 04 Jul 2025 11:21:46 +0000
-Received: from out-178.mta0.migadu.com ([2001:41d0:1004:224b::b2])
+	id 1uXeUJ-0000000ECGn-3EN4;
+	Fri, 04 Jul 2025 11:21:51 +0000
+Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uXbzN-0000000DlvF-0yuj
+	id 1uXc02-0000000Dm5F-1T7N
+	for kvm-riscv@bombadil.infradead.org;
+	Fri, 04 Jul 2025 08:42:26 +0000
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=3PnaSGtLpzW5dir2K2BrEyMD5UpUXb/WyC+H8PujG7Q=; b=j/RcBM7Q+mgzNAg/Na2LqDW+iQ
+	n/jVRCyq4rZxbddQpCFI4x2RCpCNYfJnGi75J4PkbTJdkb/DWGx0jNfkisxsidRyIMvDpqC7nDszX
+	xqyrr1XqyeTsoawk5YctyDNyoFUOooTybG4Tp9Uh6nC8FLX5GZmulv6NMW6iqJNEt1ypShQPeVWMi
+	Se8lKLLBnbu3Qljv000fVlrKFirV9OF3PE5fSAdWIlsMJiNgEJ04lmZiJNZuduiVXsvqNyEsmlZHe
+	4HVB+bDXqcOJTaM2hSc6yza+6rlp/4RX5OnjkabaKUnA5KoBgwKKIvv82xryHL8uD45kr7sNQldix
+	JIXRuWmA==;
+Received: from out-181.mta1.migadu.com ([2001:41d0:203:375::b5])
+	by desiato.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1uXbzx-00000007ruZ-2Hxi
 	for kvm-riscv@lists.infradead.org;
-	Fri, 04 Jul 2025 08:41:46 +0000
-Date: Fri, 4 Jul 2025 10:41:37 +0200
+	Fri, 04 Jul 2025 08:42:25 +0000
+Date: Fri, 4 Jul 2025 10:41:57 +0200
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1751618501;
+	t=1751618521;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=0nXKe78bJmwzJOAxzdkpWlH9hViLj7pZKD4QXBLZx/k=;
-	b=Q7128TEGQ2hcKvCx4yEy1Ahh3+yoiOVqN3TXOpexskc2XR+3JlQvpFTMJORpSn787fKPIK
-	ftl3NIwUqWE2TSzITeOG3myzVnDI9sE5cF3F1uacBZAaGUzzo9cNxASQ1HMVng2Mnk1DD0
-	Sbajc7oU/LN3U5XrBduq3ev575Q8MoA=
+	bh=3PnaSGtLpzW5dir2K2BrEyMD5UpUXb/WyC+H8PujG7Q=;
+	b=urgOd1aZHEwU+HOxLQWi5GvXP2k5P56SbDD8NDOc49RcISR8mr1EFZbcesPVRdbN1m7oAh
+	kUPg88LuxHtjy2dAyNloPJXePywzyt89TRKSuW8cK4SqhYp1NAMI2dsOwHn9bbuihdkScS
+	hMJrMblwswPleTxW+/PJzf6Xl6mDONM=
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
 From: Andrew Jones <andrew.jones@linux.dev>
 To: Alexandru Elisei <alexandru.elisei@arm.com>
-Cc: kvm@vger.kernel.org, lvivier@redhat.com, thuth@redhat.com, 
-	frankja@linux.ibm.com, imbrenda@linux.ibm.com, nrb@linux.ibm.com, pbonzini@redhat.com, 
-	eric.auger@redhat.com, kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
-	kvm-riscv@lists.infradead.org, david@redhat.com, linux-s390@vger.kernel.org
-Subject: Re: [kvm-unit-tests PATCH 0/2] scripts: extra_params rework
-Message-ID: <20250704-d2d19c247731e5252e9c700e@orel>
-References: <20250625154354.27015-1-alexandru.elisei@arm.com>
+Cc: eric.auger@redhat.com, lvivier@redhat.com, thuth@redhat.com, 
+	frankja@linux.ibm.com, imbrenda@linux.ibm.com, nrb@linux.ibm.com, david@redhat.com, 
+	pbonzini@redhat.com, kvm@vger.kernel.org, kvmarm@lists.linux.dev, 
+	linuxppc-dev@lists.ozlabs.org, kvm-riscv@lists.infradead.org, linux-s390@vger.kernel.org, 
+	will@kernel.org, julien.thierry.kdev@gmail.com, maz@kernel.org, 
+	oliver.upton@linux.dev, suzuki.poulose@arm.com, yuzenghui@huawei.com, joey.gouly@arm.com, 
+	andre.przywara@arm.com, shahuang@redhat.com
+Subject: Re: [kvm-unit-tests PATCH v4 00/13] arm/arm64: Add kvmtool to the
+ runner script
+Message-ID: <20250704-ca0e2f54c803b35428c13e0d@orel>
+References: <20250625154813.27254-1-alexandru.elisei@arm.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20250625154354.27015-1-alexandru.elisei@arm.com>
+In-Reply-To: <20250625154813.27254-1-alexandru.elisei@arm.com>
 X-Migadu-Flow: FLOW_OUT
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250704_014145_415909_DE6EAE77 
-X-CRM114-Status: GOOD (  16.00  )
+X-CRM114-CacheID: sfid-20250704_094222_587396_82EBDA9A 
+X-CRM114-Status: GOOD (  15.29  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -70,42 +89,32 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Wed, Jun 25, 2025 at 04:43:52PM +0100, Alexandru Elisei wrote:
-> This series was split from the series that adds support to use kvmtool when
-> using the scripts to run the tests [1]. kvmtool will be supported only for arm
-> and arm64, as they are the only architectures that compile the tests to run with
-> kvmtool.
+On Wed, Jun 25, 2025 at 04:48:00PM +0100, Alexandru Elisei wrote:
+> v3 can be found here [1]. Based on top of the series that add qemu_params and
+> test_args [2].
 > 
-> The justification for these changes is to be able to introduce
-> kvmtool_params for kvmtool specific command line options, and to make a
-> clear distinction between the qemu options and the kvmtool options. This is
-> why qemu_params was added as a replacement for extra_params. extra_params
-> was kept for compatibility purposes for user's custom test definitions.
+> To goal is to allow the user to do:
 > 
-> To avoid duplication of the arguments that are passed to a test's main()
-> function, test_args has been split from qemu_params. The same test_args
-> will be used by both qemu and kvmtool.
+> $ ./configure --target=kvmtool
+> $ make clean && make
+> $ ./run_tests.sh
 > 
-> [1] https://lore.kernel.org/kvm/20250507151256.167769-1-alexandru.elisei@arm.com/
+> to run all the tests automatically with kvmtool.
 > 
-> Alexandru Elisei (2):
->   scripts: unittests.cfg: Rename 'extra_params' to 'qemu_params'
->   scripts: Add 'test_args' test definition parameter
+> Reasons to use kvmtool:
 > 
->  arm/unittests.cfg     |  94 ++++++++++++++----------
->  docs/unittests.txt    |  30 +++++---
->  powerpc/unittests.cfg |  21 +++---
->  riscv/unittests.cfg   |   2 +-
->  s390x/unittests.cfg   |  53 +++++++-------
->  scripts/common.bash   |  16 +++--
->  scripts/runtime.bash  |  24 ++++---
->  x86/unittests.cfg     | 164 ++++++++++++++++++++++++------------------
->  8 files changed, 237 insertions(+), 167 deletions(-)
+> * kvmtool is smaller and a lot easier to modify compared to qemu, which
+> means developers may prefer it when adding or prototyping new features to
+> KVM, and being able to run all the tests reliably and automatically is very
+> useful.
 > 
+> * kvmtool is faster to run the tests (a couple of times faster on
+> my rockpro64), making for a quick turnaround. But do keep in mind that not
+> all tests work on kvmtool because of missing features compared to qemu.
 > 
-> base-commit: 507612326c9417b6330b91f7931678a4c6866395
-> -- 
-> 2.50.0
+> * kvmtool does things differently than qemu: different memory layout,
+> different uart, PMU emulation is disabled by default, etc. This makes it a
+> good testing vehicule for kvm-unit-tests itself.
 >
 
 Merged. Thanks
