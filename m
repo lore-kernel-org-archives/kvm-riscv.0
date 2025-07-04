@@ -4,57 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 48DBEC83F03
-	for <kvm-riscv@archiver.kernel.org>; Fri,  4 Jul 2025 09:01:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7F8B6C83F0C
+	for <kvm-riscv@archiver.kernel.org>; Fri,  4 Jul 2025 09:01:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
 	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=z2+JX/qgJXrPGPK+5I0k7Emhs9dh8JRyXvjarylJBF0=; b=2P6NsaKML1caxP
-	j8KPPBF1AxLlmdeWDnWk5K9RvS1bheFZSYoO0G1GuSh/0s8eTx5TnvwD4JqFECmWQI0fPdhgc1DCc
-	xWMVpgRZwom21YygDfwo1DDekDRBeHdoUd4zl5++wm8XzvG5fXIFXegg15dlK5ww0SI5gfyImIJyb
-	ko0ZypEhehGNT8tCKJrORuZ+Xwz+6K3GLuxY+TEDAR/e1IlW1Rn1NrNWIbG6T3l2VYVEsUAsBCqAC
-	Lw/CahMEUTzpv1p/FiXMIpWK9REz/LPt42SIdp+hKVan3reTlllS28odyY7tcuXvfjdlNpdgRP1y/
-	BND/acCs188zJuI8M97g==;
+	List-Owner; bh=lumNeYu3c2V+JPwwdPby37VibfXnUGjZzemF9D9du+E=; b=dhOFAxufUi+ooi
+	KalvsOydRyDpqN/llmw23k81UP697iL28fEAVKUWusp+lXhoE/9aCj5iI2bMOyDoy0wdKtP/Hph+z
+	meV/HIacy7XWeOYnyaoQ0I/dgleS0YriP5hTtc530I0UjmH3LLWmvasM3viCya1WxgONnk11xUyPj
+	yXsRgwidVKRNKCv6QgKMcRTzWOa4T+SMR23GrpPdX60vNcpZr45OLXSux2U5EbhpB3XsHlId8zjz4
+	joOyIAeiO9EQPcc7mFkux9EppiRdJIF+KhQt4EmOXaztHPL8GJFN5RaJ9+vK6W0WDHFql7Tn/4h65
+	X34XmBtxm3jr0C7v1vNw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uXcIG-0000000Dqny-4AdW;
-	Fri, 04 Jul 2025 09:01:17 +0000
-Received: from out-186.mta1.migadu.com ([2001:41d0:203:375::ba])
+	id 1uXcIK-0000000Dqqj-0xP0;
+	Fri, 04 Jul 2025 09:01:20 +0000
+Received: from out-186.mta0.migadu.com ([2001:41d0:1004:224b::ba])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uXbc9-0000000DhPE-364j
+	id 1uXbkY-0000000DjVO-3GmS
 	for kvm-riscv@lists.infradead.org;
-	Fri, 04 Jul 2025 08:17:47 +0000
-Date: Fri, 4 Jul 2025 10:17:36 +0200
+	Fri, 04 Jul 2025 08:26:28 +0000
+Date: Fri, 4 Jul 2025 10:26:20 +0200
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1751617061;
+	t=1751617582;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=ASASzrlKQboUIkLWluBZCrMel/BU8gIUIO5M+yGTLBA=;
-	b=DOepv9ob4oyEgjlwBbB1vq7+7jS4+iMelHgcPgmwT+0LSL9PngbsDS1WFEIz7g4iXTIm+h
-	CFrbZdLKyj25uRPSu+SLUGfRvUj1rC8DDIzz0Ts5LjZT+kFlTd5/M3CDq6L6LiazYQ/G8B
-	iPQxH8ltXx5yJQYujzO5OLz2R9awH1w=
+	bh=BLuiC3GK+gBvNhBFSKYbY6othCmyRdGRrBJ98b0dw2g=;
+	b=O/KeGp18sv8U3Wmy1pNjriUFJ4BC0DT1Oy4toWt8ZaSSRugTLk8eYxb9ib8a/0X8+ORC96
+	vOL53MvzvpprNrxEisYnpILjJGsEU/qmzD9pDV3cNqXY1ZH1KhdXDRov0PfT66tAAUBHkK
+	3hcFcu0FMwtFvH/zG8Gv+D4EvmZS9fM=
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
 From: Andrew Jones <andrew.jones@linux.dev>
 To: Jesse Taube <jesse@rivosinc.com>
 Cc: kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
 	linux-kselftest@vger.kernel.org, =?utf-8?B?Q2zDqW1lbnQgTMOpZ2Vy?= <cleger@rivosinc.com>, 
-	Charlie Jenkins <charlie@rivosinc.com>, James Raphael Tiovalen <jamestiotio@gmail.com>, 
-	Sean Christopherson <seanjc@google.com>, Cade Richard <cade.richard@gmail.com>
-Subject: Re: [kvm-unit-tests PATCH] riscv: lib: Add sbi-exit-code to
- configure and environment
-Message-ID: <20250704-d2ca01be799a71427b5163f9@orel>
-References: <20250703133601.1396848-1-jesse@rivosinc.com>
+	Charlie Jenkins <charlie@rivosinc.com>
+Subject: Re: [kvm-unit-tests PATCH] riscv: Use norvc over arch, -c
+Message-ID: <20250704-d34a50590233beaf67e66044@orel>
+References: <20250704015837.1700249-1-jesse@rivosinc.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20250703133601.1396848-1-jesse@rivosinc.com>
+In-Reply-To: <20250704015837.1700249-1-jesse@rivosinc.com>
 X-Migadu-Flow: FLOW_OUT
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250704_011746_202166_80D4AECD 
-X-CRM114-Status: GOOD (  25.15  )
+X-CRM114-CacheID: sfid-20250704_012626_958162_3CB8326B 
+X-CRM114-Status: GOOD (  14.79  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -66,122 +65,86 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Thu, Jul 03, 2025 at 06:36:00AM -0700, Jesse Taube wrote:
-> Add --[enable|disable]-sbi-exit-code to configure script.
-> With the default value disabled.
-> Add a check for SBI_PASS_EXIT_CODE in the environment, so that passing
-> of the test status is configurable from both the
-> environment and the configure script
-> 
+On Thu, Jul 03, 2025 at 06:58:37PM -0700, Jesse Taube wrote:
+> The Linux kernel main tree uses "norvc" over
+> "arch, -c" change to match this.
+> =
+
+> GCC 15 started to add _zca_zcd to the assembler flags causing a bug
+> which made "arch, -c" generate a compressed instruction.
+> =
+
+> Link: https://sourceware.org/bugzilla/show_bug.cgi?id=3D33128
+> Cc: Cl=E9ment L=E9ger <cleger@rivosinc.com>
 > Signed-off-by: Jesse Taube <jesse@rivosinc.com>
 > ---
->  configure      | 11 +++++++++++
->  lib/riscv/io.c | 12 +++++++++++-
->  2 files changed, 22 insertions(+), 1 deletion(-)
-> 
-> diff --git a/configure b/configure
-> index 20bf5042..7c949bdc 100755
-> --- a/configure
-> +++ b/configure
-> @@ -67,6 +67,7 @@ earlycon=
->  console=
->  efi=
->  efi_direct=
-> +sbi_exit_code=0
->  target_cpu=
->  
->  # Enable -Werror by default for git repositories only (i.e. developer builds)
-> @@ -141,6 +142,9 @@ usage() {
->  	                           system and run from the UEFI shell. Ignored when efi isn't enabled
->  	                           and defaults to enabled when efi is enabled for riscv64.
->  	                           (arm64 and riscv64 only)
-> +	    --[enable|disable]-sbi-exit-code
-> +	                           Enable or disable sending pass/fail exit code to SBI SRST.
-> +	                           (disabled by default, riscv only)
->  EOF
->      exit 1
->  }
-> @@ -236,6 +240,12 @@ while [[ $optno -le $argc ]]; do
->  	--disable-efi-direct)
->  	    efi_direct=n
->  	    ;;
-> +	--enable-sbi-exit-code)
-> +	    sbi_exit_code=1
-> +	    ;;
-> +	--disable-sbi-exit-code)
-> +	    sbi_exit_code=0
-> +	    ;;
->  	--enable-werror)
->  	    werror=-Werror
->  	    ;;
-> @@ -551,6 +561,7 @@ EOF
->  elif [ "$arch" = "riscv32" ] || [ "$arch" = "riscv64" ]; then
->      echo "#define CONFIG_UART_EARLY_BASE ${uart_early_addr}" >> lib/config.h
->      [ "$console" = "sbi" ] && echo "#define CONFIG_SBI_CONSOLE" >> lib/config.h
-> +    echo "#define CONFIG_SBI_EXIT_CODE ${sbi_exit_code}" >> lib/config.h
->      echo >> lib/config.h
->  fi
->  echo "#endif" >> lib/config.h
-> diff --git a/lib/riscv/io.c b/lib/riscv/io.c
-> index b1163404..0e666009 100644
-> --- a/lib/riscv/io.c
-> +++ b/lib/riscv/io.c
-> @@ -162,8 +162,18 @@ void halt(int code);
->  
->  void exit(int code)
+>  riscv/isa-dbltrp.c | 2 +-
+>  riscv/sbi-dbtr.c   | 2 +-
+>  riscv/sbi-fwft.c   | 2 +-
+>  3 files changed, 3 insertions(+), 3 deletions(-)
+> =
+
+> diff --git a/riscv/isa-dbltrp.c b/riscv/isa-dbltrp.c
+> index b7e21589..af12860c 100644
+> --- a/riscv/isa-dbltrp.c
+> +++ b/riscv/isa-dbltrp.c
+> @@ -26,7 +26,7 @@ do {										\
+>  	unsigned long value =3D 0;						\
+>  	asm volatile(								\
+>  	"	.option push\n"							\
+> -	"	.option arch,-c\n"						\
+> +	"	.option norvc\n"						\
+>  	"	sw %0, 0(%1)\n"							\
+>  	"	.option pop\n"							\
+>  	: : "r" (value), "r" (ptr) : "memory");					\
+> diff --git a/riscv/sbi-dbtr.c b/riscv/sbi-dbtr.c
+> index c4ccd81d..129f79b8 100644
+> --- a/riscv/sbi-dbtr.c
+> +++ b/riscv/sbi-dbtr.c
+> @@ -134,7 +134,7 @@ static __attribute__((naked)) void exec_call(void)
 >  {
-> +	char *s = getenv("SBI_PASS_EXIT_CODE");
-> +	bool pass_exit = CONFIG_SBI_EXIT_CODE;
+>  	/* skip over nop when triggered instead of ret. */
+>  	asm volatile (".option push\n"
+> -		      ".option arch, -c\n"
+> +		      ".option norvc\n"
+>  		      "nop\n"
+>  		      "ret\n"
+>  		      ".option pop\n");
+> diff --git a/riscv/sbi-fwft.c b/riscv/sbi-fwft.c
+> index 8920bcb5..fda7eb52 100644
+> --- a/riscv/sbi-fwft.c
+> +++ b/riscv/sbi-fwft.c
+> @@ -174,7 +174,7 @@ static void fwft_check_misaligned_exc_deleg(void)
+>  		 * Disable compression so the lw takes exactly 4 bytes and thus
+>  		 * can be skipped reliably from the exception handler.
+>  		 */
+> -		".option arch,-c\n"
+> +		".option norvc\n"
+>  		"lw %[val], 1(%[val_addr])\n"
+>  		".option pop\n"
+>  		: [val] "+r" (ret.value)
+> -- =
 
-This is the first case of what may become more common - a config variable
-which also has an env override. I think it may be good convention to
-name them the same, i.e. the env name would also be CONFIG_SBI_EXIT_CODE,
-unless you think that would be confusing for some reason?
-
-> +
->  	printf("\nEXIT: STATUS=%d\n", ((code) << 1) | 1);
-> -	sbi_shutdown(code == 0);
-> +
-> +	if (s)
-> +		pass_exit = (*s == '1' || *s == 'y' || *s == 'Y');
-
-We now have this logic in four places[1]. I think it's time we factor it,
-and it's counterpart "!(s && (*s == '0' || *s == 'n' || *s == 'N'))"
-into a couple helper macros. I'm not sure where the best place for
-those macros to live is, though. I guess libcflat.h, but we really
-ought to split that thing apart someday...
-
-[1]
- - twice in lib/errata.h
- - once in riscv/sbi-tests.ha
- - and now here
-
-> +
-> +	if (pass_exit)
-> +		sbi_shutdown(code == 0);
-> +	else
-> +		sbi_shutdown(true);
-
-nit: can be written more concisely as
-
- sbi_shutdown(pass_exit ? code == 0 : true)
-
->  	halt(code);
->  	__builtin_unreachable();
->  }
-> -- 
 > 2.43.0
->
+> =
 
-Thanks,
-drew
+> =
 
--- 
+> -- =
+
+> kvm-riscv mailing list
+> kvm-riscv@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kvm-riscv
+
+Merged. Thanks
+
+-- =
+
 kvm-riscv mailing list
 kvm-riscv@lists.infradead.org
 http://lists.infradead.org/mailman/listinfo/kvm-riscv
