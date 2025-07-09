@@ -4,39 +4,39 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68450C83F0A
-	for <kvm-riscv@archiver.kernel.org>; Wed,  9 Jul 2025 12:03:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0FBCC83F12
+	for <kvm-riscv@archiver.kernel.org>; Wed,  9 Jul 2025 12:03:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
 	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=eXeVixmK88SUQKte9RfrEy1Ug7ssMXHqpFZy0MH1pKM=; b=RJFgHk7uyy8/t/
-	W0m4MRv5E9ZYN6PRwh2WgRL8dZb8L27mKoRWtVvXSsjmg+51L0S6I8NZqocI95etkad3Y5dFHZujE
-	pjrE4S4BCQmAn9EWr0LVPCGgYNKiQ+6ikSeKVI3PVFIobMPPENQhWLbyFfM4QKMSaOlib5RM6aFW1
-	Mn2XZwg3wymMQLRqjAkAnajM6S7z5GbR9Bf9/uNEMFQMb7tm3BPvv5PrmwxKxEXz6BBUK7jZzUjv8
-	85W6H6l5LB6nNxt2IBSwUJ1x9F6XpKkLd0XyUY5V3szdIHF104xAuPabYznER+8wDs96ueLDNgDBE
-	CrRVJtiuvK43msQ7K0IA==;
+	List-Owner; bh=FwtF38DeSUm9JaTUXdFzybMwj2fh4yjEdiMZiO9XW5E=; b=LOsg87kbYt2aWd
+	gQNBB7q+OfNtZLnmLNwBiDwTJX29wUsKOxG0S55rG+T7QnRieh8RR36SNH7Lj/+2zUkjwa035CPcn
+	yGg42N0oDK+X5TGmWRohqlXSP/Nu3dZWpU8NM+9q1lKQVIHIDkdKAKkrLms2If1FDtx/ubnEifscu
+	hxlN7czGLbWiHfz/N8ZOiYab2d2bE2ALr6SOn27xv4XjE+JkGdpQZx6MyN8ofTNxLjDwVfzaLRkr1
+	sPtUj7N8Leg0ekKxXK7M0XCxGA/O3Lddrb0ppz4Iu9Rnzu+g5kwTyT+pAcCIBAqOZIG/IcDR9fe7H
+	5CVnrD1iPNNlomks/9BQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uZTW1-00000008Zlc-325x;
-	Wed, 09 Jul 2025 12:03:09 +0000
-Received: from out-179.mta0.migadu.com ([91.218.175.179])
+	id 1uZTW3-00000008Zma-21To;
+	Wed, 09 Jul 2025 12:03:11 +0000
+Received: from out-180.mta1.migadu.com ([2001:41d0:203:375::b4])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uZRkG-00000008Fsi-2n3j
+	id 1uZRp3-00000008H99-3gTI
 	for kvm-riscv@lists.infradead.org;
-	Wed, 09 Jul 2025 10:09:46 +0000
-Date: Wed, 9 Jul 2025 12:09:36 +0200
+	Wed, 09 Jul 2025 10:14:43 +0000
+Date: Wed, 9 Jul 2025 12:14:34 +0200
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1752055779;
+	t=1752056079;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=T/m36q47DzH0sZai6UBloJIaV9zTL7B9oaqtL4C7wzU=;
-	b=mD+1PGqtDf42qbyO1yo0DC3cSlUh9yJBWScJ/iE5gE0yjCggTZ3XEAVOFz0mp9OgGKi9RK
-	HhXXex9A+nWWC4qQHOGekyAXg4sckQUeXKPQot9BXqTg/pdQYLOw12LZE4PJGBitM+cx8M
-	iU/2fynj3fbKnrE8sjKOQMwoENGNZgw=
+	bh=GKEeOEkJgKa8SgaaGBKi6AgnPwQW6DS02b4hY16t4/U=;
+	b=tHnLE4r2hNVILR7jbWLs+nVFNl/zCL4zo6R7QFE1rGFvNtXDbBlKOEBpSFCTHFVli9tOQh
+	WWrgObcEnGxJoNsPbtNjWmvrmQPZmiVqwNkrD4jFWxDt9raqit0kzgLnyn0z9Nx3au9y+H
+	i7L5YZs8CdX2qdb2KojPliu2OQ7An48=
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
 From: Andrew Jones <andrew.jones@linux.dev>
 To: Jesse Taube <jesse@rivosinc.com>
@@ -46,15 +46,15 @@ Cc: kvm@vger.kernel.org, kvm-riscv@lists.infradead.org,
 	Sean Christopherson <seanjc@google.com>, Cade Richard <cade.richard@gmail.com>
 Subject: Re: [kvm-unit-tests PATCH v2 1/2] lib: Add STR_IS_Y and STR_IS_N for
  checking env vars
-Message-ID: <20250709-a6dd287628433e8bdf5ea51c@orel>
+Message-ID: <20250709-146e598f21c7cc1fb99f88e0@orel>
 References: <20250708154811.1888319-1-jesse@rivosinc.com>
 MIME-Version: 1.0
 Content-Disposition: inline
 In-Reply-To: <20250708154811.1888319-1-jesse@rivosinc.com>
 X-Migadu-Flow: FLOW_OUT
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250709_030945_151686_D44E79FD 
-X-CRM114-Status: GOOD (  19.66  )
+X-CRM114-CacheID: sfid-20250709_031442_058795_3D67C5BA 
+X-CRM114-Status: GOOD (  19.85  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -75,7 +75,6 @@ On Tue, Jul 08, 2025 at 08:48:10AM -0700, Jesse Taube wrote:
 > the line:
 > (s && (*s == '1' || *s == 'y' || *s == 'Y'))
 > is used in a few places add a macro for it and it's 'n' counterpart.
-                                                 ^ its
 > 
 > Add GET_CONFIG_OR_ENV for CONFIG values which can be overridden by
 > the environment.
@@ -104,14 +103,16 @@ On Tue, Jul 08, 2025 at 08:48:10AM -0700, Jesse Taube wrote:
 > + * variable in the environment if present.
 > + */
 > +#define GET_CONFIG_OR_ENV(name) ({		\
+
+This should be named GET_ENV_OR_CONFIG since the "first_or_second" naming
+implies that if the first thing doesn't succeed, then try the second.
+
+Thanks,
+drew
+
 > +	const char *s = getenv(#name);		\
 > +	s ? STR_IS_Y(s) : CONFIG_##name;	\
 > +})
-
-This requires CONFIG_##name to be defined, even if it's a 'no'. That's
-probably OK, but a solution that allows it to be undefined, which then
-means 'no' would be nice.
-
 > +
 >  #endif
 > diff --git a/lib/errata.h b/lib/errata.h
@@ -176,11 +177,12 @@ means 'no' would be nice.
 >  void split_phys_addr(phys_addr_t paddr, unsigned long *hi, unsigned long *lo);
 > -- 
 > 2.43.0
->
-
-Besides the typo, LGTM
-
-Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
+> 
+> 
+> -- 
+> kvm-riscv mailing list
+> kvm-riscv@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kvm-riscv
 
 -- 
 kvm-riscv mailing list
