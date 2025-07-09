@@ -4,57 +4,80 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 67907C83F0A
-	for <kvm-riscv@archiver.kernel.org>; Wed,  9 Jul 2025 19:15:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4A6CDC83F19
+	for <kvm-riscv@archiver.kernel.org>; Wed,  9 Jul 2025 22:57:31 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=NBknV6sufjx4s0Du04Z/at6/lO0XHSE7Tq/JKie3L1Y=; b=37fKLMITWrxxoC
-	I95YRIocYhJB1VDXoaNfyW1MKJv0cz8P6BbBUY1Z8x3HbJUd6TasFkFUDq7Bqjcwe6VSaXu+hK8NT
-	yMZTBW/G90n86YXaKz3kj9bU+SgPRkEmz2KyrilfvQ73/5sRU8qUAVJJVR6d3YIbL4Ud4u20Z/js0
-	Ef5I5delK18vOqI6ad7zTY7afWgoKK02xXQK+Kbfp/pR05vJs1dRlB/AR/uGeLG6xlJjkaUWhLDRh
-	pOnV9qgKdT73Bzkpf8aPwLQ7Y3LM4Zhkn7Ly31fnzRJyoIeuj4v6pe1AGP5glt+HlwaFiq/xNCjJ2
-	EJGfZTImgD09S7uVZ8EQ==;
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID:
+	References:Mime-Version:In-Reply-To:Date:Reply-To:Content-ID:
+	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+	:Resent-Message-ID:List-Owner;
+	bh=/LKs/0L0hlpNLUrCM4v6D49+dmw9fxfftcXBxp+6U4Q=; b=SpJEVXyzoL2mnX0miiH58ivGvQ
+	Q4Esh8QS5ysABrT2O+7r9ySQQQKJpatntvIdAGqiGjiycg9IsVafksyS/2OzZ/232Q656DwqBH2BL
+	cEdFez3RkN1XdUbvJHKPx8GOGBIKcQYb4u9ynxI3obqIKBDY3iZMUT4h2121Sqk8mEkrHsRGUzrkx
+	jEXbnwWA9vYJn16f9Q5ec0azV0jIDxSDRDPvnM4dDbmxjtYot+Vdp6Fg6ji4Ob8guKJVZss4yHZpF
+	9zV8r0dYPAAN5m8bajx5gZXqUEtxu0u2kTNkpA+wPSXevdcA255rWA0H3v6b7qIrL5SgDj7TTTPJA
+	8/eCU9Bw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uZaFy-00000009gWJ-3EFZ;
-	Wed, 09 Jul 2025 19:15:02 +0000
-Received: from out-170.mta0.migadu.com ([2001:41d0:1004:224b::aa])
+	id 1uZdjG-0000000AAEl-2kFj;
+	Wed, 09 Jul 2025 22:57:30 +0000
+Received: from mail-pj1-x104a.google.com ([2607:f8b0:4864:20::104a])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uZY8I-00000009NPe-1QM7
+	id 1uZcVQ-00000009vhY-2M5h
 	for kvm-riscv@lists.infradead.org;
-	Wed, 09 Jul 2025 16:59:00 +0000
-Date: Wed, 9 Jul 2025 18:58:42 +0200
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1752080334;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=SmTSwGokE6/pfKrE9j0nZ7Ups7+XDSSuEFqTSsIVIX0=;
-	b=xqiZ1pRUBftM4W7jFWkb3PN9Y7YNdP4pql/jWxdTKgjnbNVYMiT2PdwtMxj9NBRnEeFYa5
-	dIZjC1CFfoDh/9NUI2KSHmf3N/dTOgjnUPnytA0Er+hvkQ0pXSzI2JKtnz/BthyJDNeRZR
-	H8bb2mxP6DRQpgUX1qfh5DGDMU72eRw=
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Andrew Jones <andrew.jones@linux.dev>
-To: Jesse Taube <jesse@rivosinc.com>
-Cc: kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
-	linux-kselftest@vger.kernel.org, =?utf-8?B?Q2zDqW1lbnQgTMOpZ2Vy?= <cleger@rivosinc.com>, 
-	Charlie Jenkins <charlie@rivosinc.com>, James Raphael Tiovalen <jamestiotio@gmail.com>, 
-	Sean Christopherson <seanjc@google.com>, Cade Richard <cade.richard@gmail.com>
-Subject: Re: [kvm-unit-tests PATCH v3 1/2] lib: Add STR_IS_Y and STR_IS_N for
- checking env vars
-Message-ID: <20250709-bf1dae41ebcc5c636afdab9d@orel>
-References: <20250709134707.1931882-1-jesse@rivosinc.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <20250709134707.1931882-1-jesse@rivosinc.com>
-X-Migadu-Flow: FLOW_OUT
+	Wed, 09 Jul 2025 21:39:09 +0000
+Received: by mail-pj1-x104a.google.com with SMTP id 98e67ed59e1d1-31215090074so602413a91.0
+        for <kvm-riscv@lists.infradead.org>; Wed, 09 Jul 2025 14:39:07 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1752097147; x=1752701947; darn=lists.infradead.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=tRjFnmCzYN+qn8kF+o9IzfpkXQ4+JquW4HupC73fftA=;
+        b=J7Qe2R+9zmMU9OTAePT8F51wCm8asXrtCKd+YX7EQ+tn+JF7hj4KiAmQ8oT81Ks/0R
+         2J1Z6wYtiD/AnMZ5ZZCT3UkZO2qSZWrOLbBgBTTy4LW11tx2FStUDVondryQX/BzvFbD
+         bcvYvG/h/se2Y5Py+jMLTnVrWlSRTRHeK7uEnZTPhkKGpVX9tjGLlOYkDVMcUh1fCmv+
+         gk6T62thmxwPwYNFtwEVVh4ePmgsedSjaRUu9ewCY/LKuh9Bfbzq3IaZmO38Kn/2f0Kp
+         IFoDoV2C8hRya0hqpn92kJkW6O8s8XdFfnhv12dUXmQUhzARYR3gHYYGkIUZZ4LxzUAV
+         etmQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1752097147; x=1752701947;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=tRjFnmCzYN+qn8kF+o9IzfpkXQ4+JquW4HupC73fftA=;
+        b=Ottr9lygYDT6LBmtq3T+zG3o1TlEnGzsvh6FHkhzs3jl2sGsmgcuOic2alLv1zCMc0
+         VwOW66kcanfBsw6GsBCV5r/vxcqydi2Km6zSTQyNv/LM1XmSqsIqMaIaOd1jIj7HLReY
+         M1eM83f71hi/pLdfkXO7JHZTTpO2OkLVirLFP/FvHT1GO5FxcchQh8yCDjGzxJB3/eBu
+         aQMEqYMO0nNNg4ArBxyzBiRQHaOfLHbLafO+ji+In3bqpTJGUIJKso5N+5HVLxN3LhVB
+         O1z7o3jNm5HNPSWAhEYf0bsFPm2vxyLXlQIKRaNMM9puERpUNOoeJp+CD9DZm3olm39Z
+         yLSg==
+X-Forwarded-Encrypted: i=1; AJvYcCUJ+jDVt9J5U3Pkui8YaXsY67Jne/j7F0kEYjBL7GTK0/CBhyPNZ0geDKbAuD3oIqWpfFYZkw6qHxg=@lists.infradead.org
+X-Gm-Message-State: AOJu0YxkH8EWl++vXogkGV9p3opdIO2ZpNT3wDPLcHhxcUQkcSVTHkqy
+	4Si5mAH54TsTPx+CFtrgDr+ZeYoZ93zeEktVdWAyoIXtN7tRbuVwKXARVfT3YYUXgDN1WITHsLh
+	txd2S4g==
+X-Google-Smtp-Source: AGHT+IGqLtd25jQcDPlbBnyHm57aZXVZqGANjf8aQ+PHIDAz5DerrzktIfl+GNc39oHL/0frC4tukw2+CLQ=
+X-Received: from pjbqn6.prod.google.com ([2002:a17:90b:3d46:b0:312:2b3:7143])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:5344:b0:313:62ee:45a
+ with SMTP id 98e67ed59e1d1-31c3ef2308emr245837a91.13.1752097147476; Wed, 09
+ Jul 2025 14:39:07 -0700 (PDT)
+Date: Wed, 9 Jul 2025 14:39:05 -0700
+In-Reply-To: <20250606235619.1841595-3-vipinsh@google.com>
+Mime-Version: 1.0
+References: <20250606235619.1841595-1-vipinsh@google.com> <20250606235619.1841595-3-vipinsh@google.com>
+Message-ID: <aG7heUe_zBf83tlJ@google.com>
+Subject: Re: [PATCH v2 02/15] KVM: selftests: Enable selftests runner to find
+ executables in different path
+From: Sean Christopherson <seanjc@google.com>
+To: Vipin Sharma <vipinsh@google.com>
+Cc: kvm@vger.kernel.org, kvmarm@lists.linux.dev, kvm-riscv@lists.infradead.org, 
+	linux-arm-kernel@lists.infradead.org, pbonzini@redhat.com, 
+	anup@brainfault.org, borntraeger@linux.ibm.com, frankja@linux.ibm.com, 
+	imbrenda@linux.ibm.com, maz@kernel.org, oliver.upton@linux.dev, 
+	dmatlack@google.com
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250709_095859_246441_4675061D 
-X-CRM114-Status: GOOD (  27.49  )
+X-CRM114-CacheID: sfid-20250709_143908_593282_FDD9B3B4 
+X-CRM114-Status: GOOD (  13.53  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -71,144 +94,36 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Wed, Jul 09, 2025 at 06:47:06AM -0700, Jesse Taube wrote:
-> the line:
-> (s && (*s == '1' || *s == 'y' || *s == 'Y'))
-> is used in a few places add a macro for it and its 'n' counterpart.
+On Fri, Jun 06, 2025, Vipin Sharma wrote:
+> Add command line option, --executable/-e, to specify a directory where
+> test binaries are present. If this option is not provided then default
+> to the current directory.
 > 
-> Add a copy of Linux's IS_ENABLED macro to be used in GET_ENV_OR_CONFIG.
-> Add GET_ENV_OR_CONFIG for CONFIG values which can be overridden by
-> the environment.
+> Example:
+>   python3 runner --test-dirs test -e ~/build/selftests
 > 
-> Signed-off-by: Jesse Taube <jesse@rivosinc.com>
+> This option enables executing tests from out-of-tree builds.
+> 
+> Signed-off-by: Vipin Sharma <vipinsh@google.com>
 > ---
-> V1 -> V2:
->  - New commit
-> V2 -> V3:
->  - Add IS_ENABLED so CONFIG_##name can be undefined
->  - Change GET_ENV_OR_CONFIG to GET_CONFIG_OR_ENV
->  - Fix it's to its
-> ---
->  lib/argv.h        | 38 ++++++++++++++++++++++++++++++++++++++
->  lib/errata.h      |  7 ++++---
->  riscv/sbi-tests.h |  3 ++-
->  3 files changed, 44 insertions(+), 4 deletions(-)
+>  tools/testing/selftests/kvm/runner/__main__.py    | 8 +++++++-
+>  tools/testing/selftests/kvm/runner/selftest.py    | 4 ++--
+>  tools/testing/selftests/kvm/runner/test_runner.py | 4 ++--
+>  3 files changed, 11 insertions(+), 5 deletions(-)
 > 
-> diff --git a/lib/argv.h b/lib/argv.h
-> index 0fa77725..111af078 100644
-> --- a/lib/argv.h
-> +++ b/lib/argv.h
-> @@ -14,4 +14,42 @@ extern void setup_args_progname(const char *args);
->  extern void setup_env(char *env, int size);
->  extern void add_setup_arg(const char *arg);
+> diff --git a/tools/testing/selftests/kvm/runner/__main__.py b/tools/testing/selftests/kvm/runner/__main__.py
+> index b2c85606c516..599300831504 100644
+> --- a/tools/testing/selftests/kvm/runner/__main__.py
+> +++ b/tools/testing/selftests/kvm/runner/__main__.py
+> @@ -29,6 +29,12 @@ def cli():
+>                          default=[],
+>                          help="Run tests in the given directory and all of its sub directories. Provide the space separated paths to add multiple directories.")
 >  
-> +/*
-> + * Helper macros to use CONFIG_ options in C/CPP expressions. Note that
-> + * these only work with boolean and tristate options.
-> + */
-> +
-> +/*
-> + * Getting something that works in C and CPP for an arg that may or may
-> + * not be defined is tricky.  Here, if we have "#define CONFIG_BOOGER 1"
-> + * we match on the placeholder define, insert the "0," for arg1 and generate
-> + * the triplet (0, 1, 0).  Then the last step cherry picks the 2nd arg (a one).
-> + * When CONFIG_BOOGER is not defined, we generate a (... 1, 0) pair, and when
-> + * the last step cherry picks the 2nd arg, we get a zero.
-> + */
-> +#define __ARG_PLACEHOLDER_1 0,
-> +#define __take_second_arg(__ignored, val, ...) val
-> +#define __is_defined(x)			___is_defined(x)
-> +#define ___is_defined(val)		____is_defined(__ARG_PLACEHOLDER_##val)
-> +#define ____is_defined(arg1_or_junk)	__take_second_arg(arg1_or_junk 1, 0)
-> +
-> +/*
-> + * IS_ENABLED(CONFIG_FOO) evaluates to 1 if CONFIG_FOO is set to '1', 0
-> + * otherwise.
-> + */
-> +#define IS_ENABLED(option) __is_defined(option)
+> +    parser.add_argument("-e",
+> +                        "--executable",
 
-I'm tempted to say this belongs in lib/linux/kconfig.h, but since we don't
-have any other kconfig stuff, then I guess argv.h is fine.
-
-> +
-> +#define STR_IS_Y(s) (s && (*s == '1' || *s == 'y' || *s == 'Y'))
-> +#define STR_IS_N(s) (s && (*s == '0' || *s == 'n' || *s == 'N'))
-> +
-> +/*
-> + * Get the boolean value of CONFIG_{name}
-> + * which can be overridden by the {name}
-> + * variable in the environment if present.
-> + */
-> +#define GET_ENV_OR_CONFIG(name) ({				\
-> +	const char *genv_s = getenv(#name);			\
-> +	genv_s ? STR_IS_Y(genv_s) : IS_ENABLED(CONFIG_##name);	\
-> +})
-> +
->  #endif
-> diff --git a/lib/errata.h b/lib/errata.h
-> index de8205d8..78007243 100644
-> --- a/lib/errata.h
-> +++ b/lib/errata.h
-> @@ -7,6 +7,7 @@
->  #ifndef _ERRATA_H_
->  #define _ERRATA_H_
->  #include <libcflat.h>
-> +#include <argv.h>
->  
->  #include "config.h"
->  
-> @@ -28,7 +29,7 @@ static inline bool errata_force(void)
->  		return true;
->  
->  	s = getenv("ERRATA_FORCE");
-> -	return s && (*s == '1' || *s == 'y' || *s == 'Y');
-> +	return STR_IS_Y(s);
->  }
->  
->  static inline bool errata(const char *erratum)
-> @@ -40,7 +41,7 @@ static inline bool errata(const char *erratum)
->  
->  	s = getenv(erratum);
->  
-> -	return s && (*s == '1' || *s == 'y' || *s == 'Y');
-> +	return STR_IS_Y(s);
->  }
->  
->  static inline bool errata_relaxed(const char *erratum)
-> @@ -52,7 +53,7 @@ static inline bool errata_relaxed(const char *erratum)
->  
->  	s = getenv(erratum);
->  
-> -	return !(s && (*s == '0' || *s == 'n' || *s == 'N'));
-> +	return !STR_IS_N(s);
->  }
->  
->  #endif
-> diff --git a/riscv/sbi-tests.h b/riscv/sbi-tests.h
-> index c1ebf016..4e051dca 100644
-> --- a/riscv/sbi-tests.h
-> +++ b/riscv/sbi-tests.h
-> @@ -37,6 +37,7 @@
->  
->  #ifndef __ASSEMBLER__
->  #include <libcflat.h>
-> +#include <argv.h>
->  #include <asm/sbi.h>
->  
->  #define __sbiret_report(kfail, ret, expected_error, expected_value,						\
-> @@ -94,7 +95,7 @@ static inline bool env_enabled(const char *env)
->  {
->  	char *s = getenv(env);
->  
-> -	return s && (*s == '1' || *s == 'y' || *s == 'Y');
-> +	return STR_IS_Y(s);
->  }
->  
->  void split_phys_addr(phys_addr_t paddr, unsigned long *hi, unsigned long *lo);
-> -- 
-> 2.43.0
-
-Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
+"executable" is kinda odd to me, as that suggests a single, specific executable.
+-p/--path seems more aligned with how this concept is typically described in Linux.
 
 -- 
 kvm-riscv mailing list
