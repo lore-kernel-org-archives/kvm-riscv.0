@@ -4,69 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8E697C83F1B
-	for <kvm-riscv@archiver.kernel.org>; Thu, 17 Jul 2025 09:41:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7E3A5C83F1A
+	for <kvm-riscv@archiver.kernel.org>; Thu, 17 Jul 2025 09:41:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
 	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
 	List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:Subject:
 	MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=96izcO5R8xexFogq8TGa0pWXLqaefI4o+zz8o5XoPl8=; b=K/1PzSYpoKW0VD
-	lz7RE5RiSWjBNrXES2aU+D7U+DtUl8VwTaEv8I7a3dxC12/OF8GYMK8j0cytYd8qX7pceSSmxObAr
-	k5mekbHn1oEjkM/8sA+2dBPREFbiKV+V++fcG5ofCwkd372iiyTf4hoZ9FI3/T/KLMwMwWskl6pUc
-	FBPuXvqE8z1jly8v7mcRdJM5qVSnG6Q5iumLm091FIn8VnOws7yioLC8e27kJluip3Q2HJpgsgb+f
-	gWOsO6yeULvr+0QF1UoWC21Tq0ERL00j+Vcwy/+qqlOd53TJV662gd5R2NNrS+vF0BTr77CbnPv1G
-	4UQQmQORGpS8mXi+I3Mw==;
+	List-Owner; bh=HEDuQ+Co/q3qM4XwG+TE55Qe2cA3wdCn95NsJkwcMvM=; b=j6z7FJRwczr7dM
+	dXnZ1kM4MAm8KGQNNOB5ZipAcHETVqSp/RJMHBLNTAFJFLa8c2/oCmB22H+LBk0yOI6pv5EDWfM67
+	yhYJIg1oJV2JAcyJHmh0WEAd1FxD+5LRZtzTy8bFq0Qlf2LAvSoJhYFthdzPbYoVRsIEbSgk+6Y8A
+	6kUTt/Pab1HFhutSQd/02IscX7zT6+FD6REIVygkZKfInbKUlQSktvZm0LoPyMv4dkIBkTYL/TxS6
+	J7D4uPFJladel5wJTMgDmdHT8lOKwqma4+uIO9B4bc3X6G4X/YI4XgK6wiwGWs/Ar3hstRMbd1GD9
+	KvvpN+Z7VKOMQL5TJaYg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1ucL7E-00000009lLk-0PHm;
-	Thu, 17 Jul 2025 09:41:24 +0000
+	id 1ucL7F-00000009lMp-0jld;
+	Thu, 17 Jul 2025 09:41:25 +0000
 Received: from smtp84.cstnet.cn ([159.226.251.84] helo=cstnet.cn)
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1ucKzY-00000009jfq-3HRR;
-	Thu, 17 Jul 2025 09:33:31 +0000
+	id 1ucL2B-00000009k1o-3oDK;
+	Thu, 17 Jul 2025 09:36:13 +0000
 Received: from [10.69.1.138] (unknown [180.111.100.227])
-	by APP-05 (Coremail) with SMTP id zQCowABXr19cw3hoqajDBA--.6027S2;
-	Thu, 17 Jul 2025 17:33:17 +0800 (CST)
-Message-ID: <3950374f-8eef-447d-8c09-ae1e888ed51e@iscas.ac.cn>
-Date: Thu, 17 Jul 2025 17:21:54 +0800
+	by APP-05 (Coremail) with SMTP id zQCowAC3SVoFxHhoW9PDBA--.4361S2;
+	Thu, 17 Jul 2025 17:36:06 +0800 (CST)
+Message-ID: <3eabf9a8-d518-4d22-bb66-cc891176d820@iscas.ac.cn>
+Date: Thu, 17 Jul 2025 17:24:43 +0800
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH 2/2] KVM: riscv: selftests: Add common supported test
  cases
-To: Anup Patel <anup@brainfault.org>
-Cc: ajones@ventanamicro.com, atishp@atishpatra.org, paul.walmsley@sifive.com,
+To: Andrew Jones <ajones@ventanamicro.com>
+Cc: anup@brainfault.org, atishp@atishpatra.org, paul.walmsley@sifive.com,
  palmer@dabbelt.com, linux-kernel@vger.kernel.org,
  linux-riscv@lists.infradead.org, kvm@vger.kernel.org,
  kvm-riscv@lists.infradead.org
 References: <cover.1749810735.git.zhouquan@iscas.ac.cn>
  <7e8f1272337e8d03851fd3bb7f6fc739e604309e.1749810736.git.zhouquan@iscas.ac.cn>
- <CAAhSdy3aj_x02cpgxZDfn7tNu5HRfKA8VSZHpE1xJpY_2fABUw@mail.gmail.com>
+ <20250624-d7b4b9ba702fcaf2f42695b1@orel>
 Content-Language: en-US
 From: Quan Zhou <zhouquan@iscas.ac.cn>
-In-Reply-To: <CAAhSdy3aj_x02cpgxZDfn7tNu5HRfKA8VSZHpE1xJpY_2fABUw@mail.gmail.com>
-X-CM-TRANSID: zQCowABXr19cw3hoqajDBA--.6027S2
-X-Coremail-Antispam: 1UD129KBjvJXoWxCr1fCr4fAF1DWw17tF4fZrb_yoWrXF48p3
-	W0yFyjkF4kCF17Jw4fGrsrZFW8K39Ygr40kr1jg3yUZr1UJF4xJrn7Kay3CrnYqrs0vr13
-	Ca43WF4a93yDtw7anT9S1TB71UUUUUDqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUUk2b7Iv0xC_Cr1lb4IE77IF4wAFF20E14v26r4j6ryUM7CY07I2
+In-Reply-To: <20250624-d7b4b9ba702fcaf2f42695b1@orel>
+X-CM-TRANSID: zQCowAC3SVoFxHhoW9PDBA--.4361S2
+X-Coremail-Antispam: 1UD129KBjvJXoWxArWfGF1Dur17Xr1fCryrtFb_yoWrCF43p3
+	WFyFyjkF4kCF17Jw1fGrsrZFWxK395KF48Kr1Yg3yUZr1UJF4xJrn3Kayakrnaqws0vr1S
+	ka4agF4a9ayDtw7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUUkIb7Iv0xC_Cr1lb4IE77IF4wAFF20E14v26r4j6ryUM7CY07I2
 	0VC2zVCF04k26cxKx2IYs7xG6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rw
 	A2F7IY1VAKz4vEj48ve4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Xr0_Ar1l84ACjcxK6xII
 	jxv20xvEc7CjxVAFwI0_Cr0_Gr1UM28EF7xvwVC2z280aVAFwI0_GcCE3s1l84ACjcxK6I
 	8E87Iv6xkF7I0E14v26rxl6s0DM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI
-	64kE6c02F40Ex7xfMcIj6xIIjxv20xvE14v26r1Y6r17McIj6I8E87Iv67AKxVWxJVW8Jr
+	64kE6c02F40Ex7xfMcIj6xIIjxv20xvE14v26r126r1DMcIj6I8E87Iv67AKxVWxJVW8Jr
 	1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48IcVAKI48JMxkF7I0En4kS14v26r1q6r43MxAI
 	w28IcxkI7VAKI48JMxC20s026xCaFVCjc4AY6r1j6r4UMI8I3I0E5I8CrVAFwI0_Jr0_Jr
 	4lx2IqxVCjr7xvwVAFwI0_JrI_JrWlx4CE17CEb7AF67AKxVWUtVW8ZwCIc40Y0x0EwIxG
-	rwCI42IY6xIIjxv20xvE14v26r1j6r1xMIIF0xvE2Ix0cI8IcVCY1x0267AKxVWUJVW8Jw
+	rwCI42IY6xIIjxv20xvE14v26r1j6r1xMIIF0xvE2Ix0cI8IcVCY1x0267AKxVW8JVWxJw
 	CI42IY6xAIw20EY4v20xvaj40_Jr0_JF4lIxAIcVC2z280aVAFwI0_Jr0_Gr1lIxAIcVC2
-	z280aVCY1x0267AKxVWUJVW8JbIYCTnIWIevJa73UjIFyTuYvjxUw2NtUUUUU
+	z280aVCY1x0267AKxVW8JVW8JrUvcSsGvfC2KfnxnUUI43ZEXa7IU1m0PDUUUUU==
 X-Originating-IP: [180.111.100.227]
-X-CM-SenderInfo: 52kr31xxdqqxpvfd2hldfou0/1tbiBgsGBmh4vScaoQAAs8
+X-CM-SenderInfo: 52kr31xxdqqxpvfd2hldfou0/1tbiDAUGBmh4vWsbGQAAsN
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250717_023329_188699_C5E70876 
-X-CRM114-Status: GOOD (  10.35  )
+X-CRM114-CacheID: sfid-20250717_023612_323651_D0763CE7 
+X-CRM114-Status: GOOD (  15.41  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -78,78 +78,125 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-CgpPbiAyMDI1LzcvMTcgMTQ6MTIsIEFudXAgUGF0ZWwgd3JvdGU6Cj4gT24gRnJpLCBKdW4gMTMs
-IDIwMjUgYXQgNTowOOKAr1BNIDx6aG91cXVhbkBpc2Nhcy5hYy5jbj4gd3JvdGU6Cj4+Cj4+IEZy
-b206IFF1YW4gWmhvdSA8emhvdXF1YW5AaXNjYXMuYWMuY24+Cj4+Cj4+IFNvbWUgY29tbW9uIEtW
-TSB0ZXN0IGNhc2VzIGFyZSBzdXBwb3J0ZWQgb24gcmlzY3Ygbm93IGFzIGZvbGxvd2luZzoKPj4K
-Pj4gICAgICBhY2Nlc3NfdHJhY2tpbmdfcGVyZl90ZXN0Cj4+ICAgICAgZGVtYW5kX3BhZ2luZ190
-ZXN0Cj4+ICAgICAgZGlydHlfbG9nX3BlcmZfdGVzdAo+PiAgICAgIGRpcnR5X2xvZ190ZXN0Cj4+
-ICAgICAgZ3Vlc3RfcHJpbnRfdGVzdAo+PiAgICAgIGt2bV9iaW5hcnlfc3RhdHNfdGVzdAo+PiAg
-ICAgIGt2bV9jcmVhdGVfbWF4X3ZjcHVzCj4+ICAgICAga3ZtX3BhZ2VfdGFibGVfdGVzdAo+PiAg
-ICAgIG1lbXNsb3RfbW9kaWZpY2F0aW9uX3N0cmVzc190ZXN0Cj4+ICAgICAgbWVtc2xvdF9wZXJm
-X3Rlc3QKPj4gICAgICByc2VxX3Rlc3QKPj4gICAgICBzZXRfbWVtb3J5X3JlZ2lvbl90ZXN0Cj4+
-Cj4+IEFkZCBtaXNzaW5nIGhlYWRlcnMgZm9yIHRlc3RzIGFuZCBmaXggUklTQ1ZfRkVOQ0UgcmVk
-ZWZpbml0aW9uCj4+IGluIGByc2VxLXJpc2N2LmhgIGJ5IHVzaW5nIHRoZSBleGlzdGluZyBtYWNy
-byBmcm9tIDxhc20vZmVuY2UuaD4uCj4+Cj4+IFNpZ25lZC1vZmYtYnk6IFF1YW4gWmhvdSA8emhv
-dXF1YW5AaXNjYXMuYWMuY24+Cj4gCj4gUGxlYXNlIGFkZHJlc3MgRHJldydzIGNvbW1lbnRzIGFu
-ZCBzZW5kIHYyIG9mIG9ubHkgdGhpcyBwYXRjaC4KPiBUaGUgZmlyc3QgcGF0Y2ggb2YgdGhpcyBz
-ZXJpZXMgaXMgYWxyZWFkeSBxdWV1ZWQuCj4gCj4gUmVnYXJkcywKPiBBbnVwCgpPa2F5LCBJJ2xs
-IHNwbGl0IGFuZCBtb2RpZnkgdGhpcyBzZXQgb2YgcGF0Y2hlcy4gVGhhbmtzLgoKUmVnYXJkcywK
-UXVhbgoKPiAKPj4gLS0tCj4+ICAgdG9vbHMvdGVzdGluZy9zZWxmdGVzdHMva3ZtL01ha2VmaWxl
-Lmt2bSAgICAgICAgICAgICB8IDEyICsrKysrKysrKysrKwo+PiAgIC4uLi90ZXN0aW5nL3NlbGZ0
-ZXN0cy9rdm0vaW5jbHVkZS9yaXNjdi9wcm9jZXNzb3IuaCAgfCAgMiArKwo+PiAgIHRvb2xzL3Rl
-c3Rpbmcvc2VsZnRlc3RzL3JzZXEvcnNlcS1yaXNjdi5oICAgICAgICAgICAgfCAgMyArLS0KPj4g
-ICAzIGZpbGVzIGNoYW5nZWQsIDE1IGluc2VydGlvbnMoKyksIDIgZGVsZXRpb25zKC0pCj4+Cj4+
-IGRpZmYgLS1naXQgYS90b29scy90ZXN0aW5nL3NlbGZ0ZXN0cy9rdm0vTWFrZWZpbGUua3ZtIGIv
-dG9vbHMvdGVzdGluZy9zZWxmdGVzdHMva3ZtL01ha2VmaWxlLmt2bQo+PiBpbmRleCAzOGI5NTk5
-OGUxZTYuLjU2NWUxOTFlOTljOCAxMDA2NDQKPj4gLS0tIGEvdG9vbHMvdGVzdGluZy9zZWxmdGVz
-dHMva3ZtL01ha2VmaWxlLmt2bQo+PiArKysgYi90b29scy90ZXN0aW5nL3NlbGZ0ZXN0cy9rdm0v
-TWFrZWZpbGUua3ZtCj4+IEBAIC0xOTcsNiArMTk3LDE4IEBAIFRFU1RfR0VOX1BST0dTX3Jpc2N2
-ICs9IGFyY2hfdGltZXIKPj4gICBURVNUX0dFTl9QUk9HU19yaXNjdiArPSBjb2FsZXNjZWRfaW9f
-dGVzdAo+PiAgIFRFU1RfR0VOX1BST0dTX3Jpc2N2ICs9IGdldC1yZWctbGlzdAo+PiAgIFRFU1Rf
-R0VOX1BST0dTX3Jpc2N2ICs9IHN0ZWFsX3RpbWUKPj4gK1RFU1RfR0VOX1BST0dTX3Jpc2N2ICs9
-IGFjY2Vzc190cmFja2luZ19wZXJmX3Rlc3QKPj4gK1RFU1RfR0VOX1BST0dTX3Jpc2N2ICs9IGRl
-bWFuZF9wYWdpbmdfdGVzdAo+PiArVEVTVF9HRU5fUFJPR1NfcmlzY3YgKz0gZGlydHlfbG9nX3Bl
-cmZfdGVzdAo+PiArVEVTVF9HRU5fUFJPR1NfcmlzY3YgKz0gZGlydHlfbG9nX3Rlc3QKPj4gK1RF
-U1RfR0VOX1BST0dTX3Jpc2N2ICs9IGd1ZXN0X3ByaW50X3Rlc3QKPj4gK1RFU1RfR0VOX1BST0dT
-X3Jpc2N2ICs9IGt2bV9iaW5hcnlfc3RhdHNfdGVzdAo+PiArVEVTVF9HRU5fUFJPR1NfcmlzY3Yg
-Kz0ga3ZtX2NyZWF0ZV9tYXhfdmNwdXMKPj4gK1RFU1RfR0VOX1BST0dTX3Jpc2N2ICs9IGt2bV9w
-YWdlX3RhYmxlX3Rlc3QKPj4gK1RFU1RfR0VOX1BST0dTX3Jpc2N2ICs9IG1lbXNsb3RfbW9kaWZp
-Y2F0aW9uX3N0cmVzc190ZXN0Cj4+ICtURVNUX0dFTl9QUk9HU19yaXNjdiArPSBtZW1zbG90X3Bl
-cmZfdGVzdAo+PiArVEVTVF9HRU5fUFJPR1NfcmlzY3YgKz0gcnNlcV90ZXN0Cj4+ICtURVNUX0dF
-Tl9QUk9HU19yaXNjdiArPSBzZXRfbWVtb3J5X3JlZ2lvbl90ZXN0Cj4+Cj4+ICAgVEVTVF9HRU5f
-UFJPR1NfbG9vbmdhcmNoICs9IGNvYWxlc2NlZF9pb190ZXN0Cj4+ICAgVEVTVF9HRU5fUFJPR1Nf
-bG9vbmdhcmNoICs9IGRlbWFuZF9wYWdpbmdfdGVzdAo+PiBkaWZmIC0tZ2l0IGEvdG9vbHMvdGVz
-dGluZy9zZWxmdGVzdHMva3ZtL2luY2x1ZGUvcmlzY3YvcHJvY2Vzc29yLmggYi90b29scy90ZXN0
-aW5nL3NlbGZ0ZXN0cy9rdm0vaW5jbHVkZS9yaXNjdi9wcm9jZXNzb3IuaAo+PiBpbmRleCAxNjJm
-MzAzZDlkYWEuLjRjZjVhZTExNzYwZiAxMDA2NDQKPj4gLS0tIGEvdG9vbHMvdGVzdGluZy9zZWxm
-dGVzdHMva3ZtL2luY2x1ZGUvcmlzY3YvcHJvY2Vzc29yLmgKPj4gKysrIGIvdG9vbHMvdGVzdGlu
-Zy9zZWxmdGVzdHMva3ZtL2luY2x1ZGUvcmlzY3YvcHJvY2Vzc29yLmgKPj4gQEAgLTksNyArOSw5
-IEBACj4+Cj4+ICAgI2luY2x1ZGUgPGxpbnV4L3N0cmluZ2lmeS5oPgo+PiAgICNpbmNsdWRlIDxh
-c20vY3NyLmg+Cj4+ICsjaW5jbHVkZSA8YXNtL3Zkc28vcHJvY2Vzc29yLmg+Cj4+ICAgI2luY2x1
-ZGUgImt2bV91dGlsLmgiCj4+ICsjaW5jbHVkZSAidWNhbGxfY29tbW9uLmgiCj4+Cj4+ICAgI2Rl
-ZmluZSBJTlNOX09QQ09ERV9NQVNLICAgICAgIDB4MDA3Ywo+PiAgICNkZWZpbmUgSU5TTl9PUENP
-REVfU0hJRlQgICAgICAyCj4+IGRpZmYgLS1naXQgYS90b29scy90ZXN0aW5nL3NlbGZ0ZXN0cy9y
-c2VxL3JzZXEtcmlzY3YuaCBiL3Rvb2xzL3Rlc3Rpbmcvc2VsZnRlc3RzL3JzZXEvcnNlcS1yaXNj
-di5oCj4+IGluZGV4IDY3ZDU0NGFhYTlhMy4uMDZjODQwZTgxYzhiIDEwMDY0NAo+PiAtLS0gYS90
-b29scy90ZXN0aW5nL3NlbGZ0ZXN0cy9yc2VxL3JzZXEtcmlzY3YuaAo+PiArKysgYi90b29scy90
-ZXN0aW5nL3NlbGZ0ZXN0cy9yc2VxL3JzZXEtcmlzY3YuaAo+PiBAQCAtOCw2ICs4LDcgQEAKPj4g
-ICAgKiBleGNlcHRpb24gd2hlbiBleGVjdXRlZCBpbiBhbGwgbW9kZXMuCj4+ICAgICovCj4+ICAg
-I2luY2x1ZGUgPGVuZGlhbi5oPgo+PiArI2luY2x1ZGUgPGFzbS9mZW5jZS5oPgo+Pgo+PiAgICNp
-ZiBkZWZpbmVkKF9fQllURV9PUkRFUikgPyAoX19CWVRFX09SREVSID09IF9fTElUVExFX0VORElB
-TikgOiBkZWZpbmVkKF9fTElUVExFX0VORElBTikKPj4gICAjZGVmaW5lIFJTRVFfU0lHICAgMHhm
-MTQwMTA3MyAgLyogY3NyciBtaGFydGlkLCB4MCAqLwo+PiBAQCAtMjQsOCArMjUsNiBAQAo+PiAg
-ICNkZWZpbmUgUkVHX0wgIF9fUkVHX1NFTCgibGQgIiwgImx3ICIpCj4+ICAgI2RlZmluZSBSRUdf
-UyAgX19SRUdfU0VMKCJzZCAiLCAic3cgIikKPj4KPj4gLSNkZWZpbmUgUklTQ1ZfRkVOQ0UocCwg
-cykgXAo+PiAtICAgICAgIF9fYXNtX18gX192b2xhdGlsZV9fICgiZmVuY2UgIiAjcCAiLCIgI3Mg
-OiA6IDogIm1lbW9yeSIpCj4+ICAgI2RlZmluZSByc2VxX3NtcF9tYigpICBSSVNDVl9GRU5DRShy
-dywgcncpCj4+ICAgI2RlZmluZSByc2VxX3NtcF9ybWIoKSBSSVNDVl9GRU5DRShyLCByKQo+PiAg
-ICNkZWZpbmUgcnNlcV9zbXBfd21iKCkgUklTQ1ZfRkVOQ0UodywgdykKPj4gLS0KPj4gMi4zNC4x
-Cj4+CgoKLS0gCmt2bS1yaXNjdiBtYWlsaW5nIGxpc3QKa3ZtLXJpc2N2QGxpc3RzLmluZnJhZGVh
-ZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9rdm0tcmlz
-Y3YK
+
+
+On 2025/6/24 22:10, Andrew Jones wrote:
+> On Fri, Jun 13, 2025 at 07:30:13PM +0800, zhouquan@iscas.ac.cn wrote:
+>> From: Quan Zhou <zhouquan@iscas.ac.cn>
+>>
+>> Some common KVM test cases are supported on riscv now as following:
+>>
+>>      access_tracking_perf_test
+>>      demand_paging_test
+>>      dirty_log_perf_test
+>>      dirty_log_test
+>>      guest_print_test
+>>      kvm_binary_stats_test
+>>      kvm_create_max_vcpus
+>>      kvm_page_table_test
+>>      memslot_modification_stress_test
+>>      memslot_perf_test
+>>      rseq_test
+>>      set_memory_region_test
+> 
+> Half this list is already build for riscv since they're common. See
+> TEST_GEN_PROGS_COMMON. If the other half can be built and run then
+> please send a separate patch, not something tacked onto this series,
+> since they're all unrelated to the series.
+> 
+>>
+>> Add missing headers for tests and fix RISCV_FENCE redefinition
+>> in `rseq-riscv.h` by using the existing macro from <asm/fence.h>.
+>>
+>> Signed-off-by: Quan Zhou <zhouquan@iscas.ac.cn>
+>> ---
+>>   tools/testing/selftests/kvm/Makefile.kvm             | 12 ++++++++++++
+>>   .../testing/selftests/kvm/include/riscv/processor.h  |  2 ++
+>>   tools/testing/selftests/rseq/rseq-riscv.h            |  3 +--
+>>   3 files changed, 15 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/tools/testing/selftests/kvm/Makefile.kvm b/tools/testing/selftests/kvm/Makefile.kvm
+>> index 38b95998e1e6..565e191e99c8 100644
+>> --- a/tools/testing/selftests/kvm/Makefile.kvm
+>> +++ b/tools/testing/selftests/kvm/Makefile.kvm
+>> @@ -197,6 +197,18 @@ TEST_GEN_PROGS_riscv += arch_timer
+>>   TEST_GEN_PROGS_riscv += coalesced_io_test
+>>   TEST_GEN_PROGS_riscv += get-reg-list
+>>   TEST_GEN_PROGS_riscv += steal_time
+>> +TEST_GEN_PROGS_riscv += access_tracking_perf_test
+>> +TEST_GEN_PROGS_riscv += demand_paging_test
+>> +TEST_GEN_PROGS_riscv += dirty_log_perf_test
+>> +TEST_GEN_PROGS_riscv += dirty_log_test
+>> +TEST_GEN_PROGS_riscv += guest_print_test
+>> +TEST_GEN_PROGS_riscv += kvm_binary_stats_test
+>> +TEST_GEN_PROGS_riscv += kvm_create_max_vcpus
+>> +TEST_GEN_PROGS_riscv += kvm_page_table_test
+>> +TEST_GEN_PROGS_riscv += memslot_modification_stress_test
+>> +TEST_GEN_PROGS_riscv += memslot_perf_test
+>> +TEST_GEN_PROGS_riscv += rseq_test
+>> +TEST_GEN_PROGS_riscv += set_memory_region_test
+>>   
+>>   TEST_GEN_PROGS_loongarch += coalesced_io_test
+>>   TEST_GEN_PROGS_loongarch += demand_paging_test
+>> diff --git a/tools/testing/selftests/kvm/include/riscv/processor.h b/tools/testing/selftests/kvm/include/riscv/processor.h
+>> index 162f303d9daa..4cf5ae11760f 100644
+>> --- a/tools/testing/selftests/kvm/include/riscv/processor.h
+>> +++ b/tools/testing/selftests/kvm/include/riscv/processor.h
+>> @@ -9,7 +9,9 @@
+>>   
+>>   #include <linux/stringify.h>
+>>   #include <asm/csr.h>
+>> +#include <asm/vdso/processor.h>
+>>   #include "kvm_util.h"
+>> +#include "ucall_common.h"
+> 
+> These should be included directly from the tests that need them.
+> 
+>>   
+>>   #define INSN_OPCODE_MASK	0x007c
+>>   #define INSN_OPCODE_SHIFT	2
+>> diff --git a/tools/testing/selftests/rseq/rseq-riscv.h b/tools/testing/selftests/rseq/rseq-riscv.h
+>> index 67d544aaa9a3..06c840e81c8b 100644
+>> --- a/tools/testing/selftests/rseq/rseq-riscv.h
+>> +++ b/tools/testing/selftests/rseq/rseq-riscv.h
+>> @@ -8,6 +8,7 @@
+>>    * exception when executed in all modes.
+>>    */
+>>   #include <endian.h>
+>> +#include <asm/fence.h>
+>>   
+>>   #if defined(__BYTE_ORDER) ? (__BYTE_ORDER == __LITTLE_ENDIAN) : defined(__LITTLE_ENDIAN)
+>>   #define RSEQ_SIG   0xf1401073  /* csrr mhartid, x0 */
+>> @@ -24,8 +25,6 @@
+>>   #define REG_L	__REG_SEL("ld ", "lw ")
+>>   #define REG_S	__REG_SEL("sd ", "sw ")
+>>   
+>> -#define RISCV_FENCE(p, s) \
+>> -	__asm__ __volatile__ ("fence " #p "," #s : : : "memory")
+>>   #define rseq_smp_mb()	RISCV_FENCE(rw, rw)
+>>   #define rseq_smp_rmb()	RISCV_FENCE(r, r)
+>>   #define rseq_smp_wmb()	RISCV_FENCE(w, w)
+>> -- 
+>> 2.34.1
+> 
+> tools/testing/selftests/rseq isn't under KVM's purview, so this should be
+> a separate patch CC'ing the appropriate people and lists.
+> 
+> Thanks,
+> drew
+
+Thanks so much for your review, I'll split and modify this set of patches.
+
+Regards,
+Quan
+
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
