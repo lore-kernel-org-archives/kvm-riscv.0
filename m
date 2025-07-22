@@ -4,82 +4,78 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B7285C83F25
-	for <kvm-riscv@archiver.kernel.org>; Tue, 22 Jul 2025 03:18:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 418D3C83F1A
+	for <kvm-riscv@archiver.kernel.org>; Tue, 22 Jul 2025 03:20:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:MIME-Version:Message-Id:Date:
-	Subject:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=IDERt1TLZKXTlxJ5msi6giY5ejAOsjJgdco7CEavwUU=; b=ZjlyCefQBTxlTF
-	8BcPD0/cwNH7LVW1eLjQE682nhe3+XMi+HFZ0L6FSeugJMDJAWSsI7/UfgShU/dCWkvnEsFdkHBUo
-	cj9OwFUFlXs83YVIEplPscSZnSv2V6ktWBvdvnA6zrQSmZ7Wu1d23WldFEEY5wB+EWNUkaFwo/4Vn
-	JwDEL9xolZteubmvLJmjs+nE0L4dpi9QDGUIaGWxNEMAYllkCg0TtQfiZsTwYcdh6uj2mcyTST4Px
-	Kqn7zSlkEk9qTAaQR698TwVMRkCVM3GNB8RDcsBas+rt7nl1EE9ktfFCV8uo6Oav0WPSNWjyKqnon
-	2lqpZ043sNH11lyufwxA==;
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Message-Id
+	:MIME-Version:Subject:Date:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=XJysyysaNxB/8Qnyp8fCX3IKhOK5wlRPCnR/7p6DvX0=; b=0bKxZDXXS1b2ae
+	8vmADwl65ZEVdWABOG09SdtWNa7rVC9qtroR5uA9c+faOwXxkcvsVClF4NnQqHKd1yDWaVmpJgkzm
+	DvFA3lT00qzPT4NDxiOufghP6q9W2QjVkTvvZcUFEPNeuFDMNsIEVsD/3Bxh7zTqFj0gH4a9sl9KI
+	IF2eE2xfV+aM6VGdKRXLAIax6JUTaK/fygopZZI0Rqk+qdtnezcL/v7hj36SIdmaQfioS0F8M1eqS
+	gmgaHilNNejsUT9hMRKyz4zYkJtr94QsbVLZMRaKIlo8sVe6aq3l+5RkP3zrFhSgAu08+FVPC5TPt
+	AYUs1twM4MmjEx0viANA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1ue3W0-000000019jv-0qEB;
-	Tue, 22 Jul 2025 03:18:04 +0000
-Received: from mail-pg1-x533.google.com ([2607:f8b0:4864:20::533])
+	id 1ue3YT-00000001A4r-3H9u;
+	Tue, 22 Jul 2025 03:20:37 +0000
+Received: from mail-pg1-x52f.google.com ([2607:f8b0:4864:20::52f])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1ue3TS-00000001936-1ZtC
+	id 1ue3TT-0000000193p-0dwx
 	for kvm-riscv@lists.infradead.org;
-	Tue, 22 Jul 2025 03:15:28 +0000
-Received: by mail-pg1-x533.google.com with SMTP id 41be03b00d2f7-b34c068faf8so5155360a12.2
-        for <kvm-riscv@lists.infradead.org>; Mon, 21 Jul 2025 20:15:25 -0700 (PDT)
+	Tue, 22 Jul 2025 03:15:29 +0000
+Received: by mail-pg1-x52f.google.com with SMTP id 41be03b00d2f7-b34a6d0c9a3so5082920a12.3
+        for <kvm-riscv@lists.infradead.org>; Mon, 21 Jul 2025 20:15:26 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=rivosinc-com.20230601.gappssmtp.com; s=20230601; t=1753154125; x=1753758925; darn=lists.infradead.org;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=N3ro4Yyao5uXofBVuxsMuyd3IafrNj++K0PwR4Tt2N0=;
-        b=yQHqSx/w1TjFbWVaoQnJt6TvC4Ika00CttVb6Pn3faV8qX1H2nGIhEzeFwV0KeVP1L
-         RDYUiksyyStOn8ODQoY5zZoNwfL5Fauk4XxfUFk4IpB0EaW0JXZd9uYl8XoujFtZIvGx
-         3DXk8785t+Xcr9RTtvKCQobRzx58lzMpkgBui1OX1Bp4WOy5NDW+W6S8LTvg7Rp6fHNo
-         YUZGhSw0I/k+2lEFRh8CAI9j95b347rSVGF+3jqv03/uN7rvZh6iYcNafqRaiRZZTb9N
-         Tjkfh8b44hE9dnXt5P6ze0ExKS3ac5cr8YuBs3xJS2q5jVaEQi8HnfkkcHCyEPd0cLk3
-         K1rQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1753154125; x=1753758925;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:x-gm-message-state:from:to:cc:subject:date:message-id
+        d=rivosinc-com.20230601.gappssmtp.com; s=20230601; t=1753154126; x=1753758926; darn=lists.infradead.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=N3ro4Yyao5uXofBVuxsMuyd3IafrNj++K0PwR4Tt2N0=;
-        b=NknzjhDZLt0qO4Yeaakhuoe65tcfmfOHd5232yfQPlQg7s7KJhpOZ91qwJ0fRb8qK/
-         wPe3WDIq9QyOlvjrFLV66BsAKWcsK0xGtJ6+iEnKUSV5t3+i9YUAQGonKx6uRliSmnEz
-         RC5iZdBj0rzbro3ddIHRymVouiwLio/0Eve21RyrUssoTWAMArmBdP2bHurZxFKI3yj/
-         dPm2GP4mqfZtOMwuYpEdt/NEDhYAD94agY9//hpGI3UUZwaTdmssRdzP+Xnmjf4haT8c
-         UNegplll8Jsp2t/z8wAscg//vH7V5hvT1pDa65/OdL1/NqD+NRmq2O7ksmGZydXRKrqi
-         LuXQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVfEdO+i5EhPZdzrCSBPf3fv8eqwyOUno7P2La0nEG9GmReqJnRVexB+crUvgjaMMGJcH45a9kvYP0=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yy5mzjPUBGWViB1G62arA/+qJsEstnDIhW5Xce6TS6LRAKVV9Hd
-	um4bEOmT2Up6Bdd/igFLr9qU9OtNIXXrYJkYVd7hC36qLcRA6d5wLYT8cBhD0BqQKk2Y1mlT2er
-	BEi/2
-X-Gm-Gg: ASbGncsVEqFCjLlhIk6K4jfKuXgDybv25qxEwecnZag9AMY2jjpwORuec82ugmNtrKJ
-	INzkKGgesk+UiNRC2plPKuaHRByTPIKpWt84L2NzjxCrXKXA8d3+WdxpUenuval8ikQ8d7s3s49
-	jJs1ZAd2ysEshAI7FbhE8hhv6vNJuu2TXXzant2C8hvUmswM9kOT7kAJ971gsgvU0dCwXeyd+il
-	XeB/jjMtMcDgokXIptYOCPfSH2ldVBpbGgZ8sMNH8GhzHZR0PZjtbLwRq8UUNwO73/SdC5ggQNP
-	m5XzQV0WyhMGeaLf/52MeyTnurbGS+g8grCihcsoYgWdohGxAXeSWLHJj3JfFCzToAyz5snHN5M
-	00IqARdQe/4VmU++hBNJ2giaL6C7LvCs8iEU=
-X-Google-Smtp-Source: AGHT+IE5Vc7OGRx4QhLjcitwZKIWZGvajhiltbo4bWSxvPQDoCrplva3mLaEOWP7EA2twj6pT6oskw==
-X-Received: by 2002:a05:6a21:6b02:b0:21f:5598:4c2c with SMTP id adf61e73a8af0-2390db673cfmr29574196637.13.1753154125053;
-        Mon, 21 Jul 2025 20:15:25 -0700 (PDT)
+        bh=QppemwXg72umVaHol/lc8lTgDOnrssZANvnDyByXBzA=;
+        b=fooP1swjwOSmtVGGDiKs6DY0oSLNPKjhw89u6B67jH+kk6+pOZnmI+9M/1hJglc+tE
+         DC8duauvhWd+THnmpSDzjU8SqIGih7ABuntZORs3tnHQBKT0e+UGJkTe9FXDy4UuSU24
+         IPTIc7xpppx/Wmn2iDAKJY7rwv1mhi9N6R58qp0oWz3Kvyq6hmfmWe1Iboy9WujVhYH6
+         fvnjzFR42qDu3I0L8LCki7I31k1AYa54WjhBw3OVR3AWWv3fEIA68mAPh7MEeew0keOK
+         pxNa0kO+i1po/fe13sqtNsuPzSOrFhUYJdl1A+Dmj6oeOlMvF5l+TTYkWvZ4Qfi+AESN
+         BcOQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1753154126; x=1753758926;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=QppemwXg72umVaHol/lc8lTgDOnrssZANvnDyByXBzA=;
+        b=Pn1LUoCArQkKzgQssDPYYR25TUCubKa4P8HecTUtPjSdLMRRrvvjz/Xcoxydra5bob
+         /u4ODd6mBZdRRnn/dFx+Ux0zaxyznv10e0NVKJ6EXOUcnMFpZt3yxpWP9230SpNPmYxU
+         i2AhMKpuK03Q6KfIZLb/Iua20Ng8Y2xIfv4oYmYXaxqEJK3X9wZnixQtngHMlSZTreOr
+         cO2hHQENoWi6JaBX75lenAer502GEz9hi60Ka/biBLjG1bJt7qGfX7UKx9wynz4I/2m0
+         QWqzxv4waHkvt/pCYx8j9eHoy5pQr9TOw1LJ7Crbd1rz6hG/aIgSXeMug1htB19W6Czv
+         SZZQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXQdZZUZHjtz1+++a+Z7GAhmP+sB3+a/avbnqpM8aE/D+6INTrpt3N/HQJ0nVVkCn0H9RCHXtcJUaY=@lists.infradead.org
+X-Gm-Message-State: AOJu0YyAIl22fB8i/MeASpwzx1U6JrdHHtOqDC82PBqLXbv7WigdJMdT
+	lD9sGkJaoADvPDtgW5XbAiBppfXJ6uMHXjVzGruoGh0rafCWcxOfjpdazY914OnoPrI=
+X-Gm-Gg: ASbGnctcCVF/5zagssrImYVp/e/FGRX1Ki/7FB73ncz2O7TLa1Qi8Z9IivTxLovc/uk
+	g791DuQ5LVcCQkqrvRrnqo6ZL3Nurmly/ANtoRNlV2w8il7VZ1BzjSCG/OiCYzN7OajEO49lOoL
+	YUy723xEBBQALu6FDs6WPDygEGy997bjXbeP9muUxoDoNZtEZHxJ68aobndiXfWs6AW2izPhmAn
+	f8yFRtBLOOA+VLDjydUqJDSPoIgFH0q0E4L3ZvRHlwufGOxA5y7QPeonH/lih/0XW51i3PtAdBN
+	YulCBRlAzDY5WzWr+T1pu2dze40QSaDvn1qT0H7CFAJPL16bElBbe8rb3iReciu7/aF2OUuJi02
+	avx2XtcbaZ2RJkwkabVCIJIFylx4dkptXYk8=
+X-Google-Smtp-Source: AGHT+IFGWxj3iUKxSSdZKPT9lOfiDcRTnkWskcnNV9b0jBWk2yItlB0Jg7U1GDfAal+i2ahxkqkLKQ==
+X-Received: by 2002:a05:6a21:6daa:b0:1f5:8a1d:3904 with SMTP id adf61e73a8af0-23810b4dd3dmr37662781637.7.1753154126114;
+        Mon, 21 Jul 2025 20:15:26 -0700 (PDT)
 Received: from atishp.ba.rivosinc.com ([64.71.180.162])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-b3f2feac065sm6027612a12.33.2025.07.21.20.15.24
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-b3f2feac065sm6027612a12.33.2025.07.21.20.15.25
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 21 Jul 2025 20:15:24 -0700 (PDT)
+        Mon, 21 Jul 2025 20:15:25 -0700 (PDT)
 From: Atish Patra <atishp@rivosinc.com>
-Subject: [PATCH v4 0/9] Add SBI v3.0 PMU enhancements
-Date: Mon, 21 Jul 2025 20:15:16 -0700
-Message-Id: <20250721-pmu_event_info-v4-0-ac76758a4269@rivosinc.com>
+Date: Mon, 21 Jul 2025 20:15:17 -0700
+Subject: [PATCH v4 1/9] drivers/perf: riscv: Add SBI v3.0 flag
 MIME-Version: 1.0
-X-B4-Tracking: v=1; b=H4sIAEQCf2gC/23Q3U7EIBAF4FdpuJZNB/oDjTG+hzFNoYPLRekKX
- aLZ7Ls7bWPUXS8PCR+cc2EJo8fEuuLCImaf/BwoVA8Fs8chvCH3I2UmSlFBCYqfpnOPGcPS++B
- mrlWDAiw2ZpSMLp0iOv+xgS+vlI8+LXP83PwM6+lOAehbKgMv+VA53WioBDj1HH2ekw/2YOeJr
- VoW30JdAtR3giBBVQpq05ZSSfOPIH+EWog7QZLgWmOG1o3aOrwRrnvFiO9nmmrZe7IJUxq2qbr
- icasn4De9LdLT7/YPgkRFPWvdiD/80zqgGRJyCpNfuiI3B5A8WkEvX78A6qJO7qwBAAA=
-X-Change-ID: 20241018-pmu_event_info-986e21ce6bd3
+Message-Id: <20250721-pmu_event_info-v4-1-ac76758a4269@rivosinc.com>
+References: <20250721-pmu_event_info-v4-0-ac76758a4269@rivosinc.com>
+In-Reply-To: <20250721-pmu_event_info-v4-0-ac76758a4269@rivosinc.com>
 To: Anup Patel <anup@brainfault.org>, Will Deacon <will@kernel.org>, 
  Mark Rutland <mark.rutland@arm.com>, 
  Paul Walmsley <paul.walmsley@sifive.com>, 
@@ -90,8 +86,9 @@ Cc: linux-riscv@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
  kvm-riscv@lists.infradead.org, Atish Patra <atishp@rivosinc.com>
 X-Mailer: b4 0.15-dev-42535
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250721_201526_622481_A40C2DAD 
-X-CRM114-Status: GOOD (  12.88  )
+X-CRM114-CacheID: sfid-20250721_201527_387863_DB2C2C64 
+X-CRM114-Status: UNSURE (   9.24  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -108,74 +105,41 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-SBI v3.0 specification[1] added two new improvements to the PMU chaper.
-The SBI v3.0 specification is frozen and under public review phase as
-per the RISC-V International guidelines. 
+There are new PMU related features introduced in SBI v3.0.
+1. Raw Event v2 which allows mhpmeventX value to be 56 bit wide.
+2. Get Event info function to do a bulk query at one shot.
 
-1. Added an additional get_event_info function to query event availablity
-in bulk instead of individual SBI calls for each event. This helps in
-improving the boot time.
-
-2. Raw event width allowed by the platform is widened to have 56 bits
-with RAW event v2 as per new clarification in the priv ISA[2].
-
-Apart from implementing these new features, this series improves the gpa
-range check in KVM and updates the kvm SBI implementation to SBI v3.0.
-
-The opensbi patches have been merged. This series can be found at [3].
-
-[1] https://github.com/riscv-non-isa/riscv-sbi-doc/releases/download/v3.0-rc7/riscv-sbi.pdf 
-[2] https://github.com/riscv/riscv-isa-manual/issues/1578
-[3] https://github.com/atishp04/linux/tree/b4/pmu_event_info_v4
-
+Reviewed-by: Anup Patel <anup@brainfault.org>
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
-Changes in v4:
-- Rebased on top of v6.16-rc7 
-- Fixed a potential compilation issue in PATCH5.
-- Minor typos fixed PATCH2 and PATCH3.
-- Fixed variable ordering in PATCH6 
-- Link to v3: https://lore.kernel.org/r/20250522-pmu_event_info-v3-0-f7bba7fd9cfe@rivosinc.com
+ drivers/perf/riscv_pmu_sbi.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-Changes in v3:
-- Rebased on top of v6.15-rc7 
-- Link to v2: https://lore.kernel.org/r/20250115-pmu_event_info-v2-0-84815b70383b@rivosinc.com
+diff --git a/drivers/perf/riscv_pmu_sbi.c b/drivers/perf/riscv_pmu_sbi.c
+index 698de8ddf895..cfd6946fca42 100644
+--- a/drivers/perf/riscv_pmu_sbi.c
++++ b/drivers/perf/riscv_pmu_sbi.c
+@@ -63,6 +63,7 @@ PMU_FORMAT_ATTR(event, "config:0-47");
+ PMU_FORMAT_ATTR(firmware, "config:62-63");
+ 
+ static bool sbi_v2_available;
++static bool sbi_v3_available;
+ static DEFINE_STATIC_KEY_FALSE(sbi_pmu_snapshot_available);
+ #define sbi_pmu_snapshot_available() \
+ 	static_branch_unlikely(&sbi_pmu_snapshot_available)
+@@ -1452,6 +1453,9 @@ static int __init pmu_sbi_devinit(void)
+ 	if (sbi_spec_version >= sbi_mk_version(2, 0))
+ 		sbi_v2_available = true;
+ 
++	if (sbi_spec_version >= sbi_mk_version(3, 0))
++		sbi_v3_available = true;
++
+ 	ret = cpuhp_setup_state_multi(CPUHP_AP_PERF_RISCV_STARTING,
+ 				      "perf/riscv/pmu:starting",
+ 				      pmu_sbi_starting_cpu, pmu_sbi_dying_cpu);
 
-Changes in v2:
-- Dropped PATCH 2 to be taken during rcX.
-- Improved gpa range check validation by introducing a helper function
-  and checking the entire range.
-- Link to v1: https://lore.kernel.org/r/20241119-pmu_event_info-v1-0-a4f9691421f8@rivosinc.com
-
----
-Atish Patra (9):
-      drivers/perf: riscv: Add SBI v3.0 flag
-      drivers/perf: riscv: Add raw event v2 support
-      RISC-V: KVM: Add support for Raw event v2
-      drivers/perf: riscv: Implement PMU event info function
-      drivers/perf: riscv: Export PMU event info function
-      KVM: Add a helper function to validate vcpu gpa range
-      RISC-V: KVM: Use the new gpa range validate helper function
-      RISC-V: KVM: Implement get event info function
-      RISC-V: KVM: Upgrade the supported SBI version to 3.0
-
- arch/riscv/include/asm/kvm_vcpu_pmu.h |   3 +
- arch/riscv/include/asm/kvm_vcpu_sbi.h |   2 +-
- arch/riscv/include/asm/sbi.h          |  13 +++
- arch/riscv/kvm/vcpu_pmu.c             |  75 ++++++++++++-
- arch/riscv/kvm/vcpu_sbi_pmu.c         |   3 +
- arch/riscv/kvm/vcpu_sbi_sta.c         |   6 +-
- drivers/perf/riscv_pmu_sbi.c          | 191 +++++++++++++++++++++++++---------
- include/linux/kvm_host.h              |   2 +
- include/linux/perf/riscv_pmu.h        |   1 +
- virt/kvm/kvm_main.c                   |  21 ++++
- 10 files changed, 258 insertions(+), 59 deletions(-)
----
-base-commit: e32a80927434907f973f38a88cd19d7e51991d24
-change-id: 20241018-pmu_event_info-986e21ce6bd3
---
-Regards,
-Atish patra
+-- 
+2.43.0
 
 
 -- 
