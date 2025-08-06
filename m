@@ -4,70 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C13D2C87FDA
-	for <kvm-riscv@archiver.kernel.org>; Wed,  6 Aug 2025 21:44:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6AE3CC87FCB
+	for <kvm-riscv@archiver.kernel.org>; Wed,  6 Aug 2025 21:47:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:Reply-To:List-Subscribe:List-Help:
 	List-Post:List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID
 	:References:Mime-Version:In-Reply-To:Date:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=ycBDbm4NJhpdiruhf7O2CeVg4+GI6EF/s9cRXELuPj0=; b=YYmm7o5cgIPHUu
-	Hl9DcPWKWKrvpTWywc4v8BAwU5ateda5g+bLaHHTnCfimUzRcBn6kGKVfZrPA3+OHXLmWX7IiocA1
-	Z4jizDrs5fUOMSWvzAkO/kxhWmuzX06aroT0koxtfGZCnXkuUGAY1VvtDNeugfRxao8aB61tKmYJn
-	873Q/oC7gHER13GV/Vg9/Kf2LVdBKlZtxuW29g+GKGl6pdksXc6zqoL9/P9MyIf1IHHfsPIK7LEsR
-	xyK4d1s/fwVi46Ihs/wNyPq9Q6+P7eoBbjtD0jqSnsMZKAFki1B5/K0Z/tLZVlwvq4vDtvgJswSh0
-	GlgTG+CQBCdWbqNl4QAw==;
+	List-Owner; bh=WAVWZWuOB304b007kLSaV7DP2/43lwXo4c7ZXqNKkMw=; b=CGT50iVnH9yQ6G
+	1L2pNZvLzUGF+eLBIxrfiLktEd0fKIFvB/Tj6uKSxQYLAZcISLEKYQVGROP7ohZvhr2VvyrdLoVXQ
+	Hp2+wkZordwEs7ul8oLkxYONQ8d7TfhNUfRi6aFFG/ttDUUMyckEv5m6Nr3S2fxccONVpwNrUKcbU
+	aIWijhrjcdOHgUirfJnOuTo/58YNq/96vEKK36qsuOxpKFoFPPItaGB6DlTNKJopRP6nhiMYwUslD
+	Y/jQMQsgDILLUJ6CRDgNFBvIJgXckL+XE43/KLwUcAnVxh5WQkcy+uxfwQD8ZDAtXxAzgxxWxlrsZ
+	X8dW8xXmyvDGR9tjSPqA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1ujlwN-0000000Gc83-2DzM;
-	Wed, 06 Aug 2025 21:44:55 +0000
-Received: from mail-pl1-x64a.google.com ([2607:f8b0:4864:20::64a])
+	id 1ujlyg-0000000Gcrz-0Ikz;
+	Wed, 06 Aug 2025 21:47:18 +0000
+Received: from mail-pg1-x54a.google.com ([2607:f8b0:4864:20::54a])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1ujkGp-0000000GGP1-0ioB
+	id 1ujkHc-0000000GHBl-0jXa
 	for kvm-riscv@lists.infradead.org;
-	Wed, 06 Aug 2025 19:57:56 +0000
-Received: by mail-pl1-x64a.google.com with SMTP id d9443c01a7336-23fe98c50daso1497425ad.3
-        for <kvm-riscv@lists.infradead.org>; Wed, 06 Aug 2025 12:57:54 -0700 (PDT)
+	Wed, 06 Aug 2025 19:58:46 +0000
+Received: by mail-pg1-x54a.google.com with SMTP id 41be03b00d2f7-b4227538a47so135137a12.1
+        for <kvm-riscv@lists.infradead.org>; Wed, 06 Aug 2025 12:58:43 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1754510274; x=1755115074; darn=lists.infradead.org;
+        d=google.com; s=20230601; t=1754510323; x=1755115123; darn=lists.infradead.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:from:to:cc:subject:date:message-id:reply-to;
-        bh=0uQwWV7lYMOxBil53zyDkn96gfX2tt2/DqWsDrl/9hs=;
-        b=MYvvQAf5hNTIHqJrf0uNqUg3j7PVQN02RFJ0LRY0SZktB+EoNM6kWHH71jydVBycev
-         C9AD4tu1jCcxWb5qlrKztTEEot6IvuhuUgGiXldUZVfoHarlqURz3OkVkhT1qt9o5MEb
-         dxu62LftXc1CoU5KFYxnsRw1QxOZOo9uwglhvXF90loXJWsW7zOujzuX9o11H85qpgxY
-         Hc8uW/Un02xGmv+uSlenKchr6QU1+KOqJKG6bt270EwDsXLkjW1OXM5yJBaDdRECs48I
-         Q9Wp+cqoF8bko3hXqB3NJ7s8goRTF6enbGqKg3Jnl/b+QWLuw3rrJeDfOqru4+4S9ps0
-         P0JA==
+        bh=AqSoz/ys0/nDwriVLA2HvcSasFXIo2nt11bZwmhw7W4=;
+        b=rQPe1xgLr0WYWegdjyg3F7223rHQdUiSWs/lrrsR/p0KeCbCJzTF0byjzLriqwXDHX
+         Okj2++j5bhVozeIgRWS3rkkOleldBTpHH6dOR0b9rlGkKSUqk8ABKZMIkSHRyqZluM1q
+         86lP4HRVj5CbTkZv+0F/IdDAVwSNU7RB0OSM7dlEgzUVcFfnqxeQAOph14J3sAWGBGG5
+         Riqn0J39AbLHc69jrHQuH/ratg46koHFMNjfKO2/lMerB00WoDxxvIvPg/hAUpKHH1kC
+         I180DBLz+fulwb9fi1+siGNtb+ktGcRZc3PCg6e4mfrQiQXoN7VnVYonV372/waqqNPV
+         LVmg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1754510274; x=1755115074;
+        d=1e100.net; s=20230601; t=1754510323; x=1755115123;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=0uQwWV7lYMOxBil53zyDkn96gfX2tt2/DqWsDrl/9hs=;
-        b=oyr+cL0Gt3VsMhHB0CLCDvNGFXxMsdM/uvp52SM4o9AML8q8r1EEDyndLcRIcLfbge
-         bv0/zPx7X1Q1Qr3rrFdstL8ammPkYJM2PDAR0z2975rbDG05hrdaQAF4cPiqo0QeDhr6
-         zDIhiPw+QQ67GZLBAnfqWIfZ3p6V96ttFncHYZhpY43xp8+o4xIy9Z+EABkLTlyAXnJ5
-         /7pVHDRJzlmYIZv8L00iI22D0yY1igRwttDSeJ61JxRMubRFAaP8LTPJyl+pwLR+0qAe
-         iVXAVyiCDu86UTDFq1KuQM5IQjLpkygEKkv1yIMMQ+JfwJzzHbbXWHfZtv7vgd/Rlv8d
-         WzHQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUYj90rwk6c0pZ7k2jgW7R2vqYbSwbJGZB1dt93+DpWj1bJVbAtC2b8DY4Io99N8xnwU4nJs14iyzg=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yw0+aiMI+7MNEAXNGhVnMAVRet11efOUAuUI4ug2fZ4kT+0HcXr
-	XGwKf+k/Mf5zsjhHYaoI8CcEnGGSamOCGpAJo54kWO5OaqUFv/Ss7h4NAfyt1qdSyiLlxXbTK0J
-	D2nZjyw==
-X-Google-Smtp-Source: AGHT+IGH2b2xUlwmCehGLeN80BLd5ICkd9hx9VxyJMjC6VJA8pJue1wqM8eYOcrMqHKsQHTGrwNwqHX4jyM=
-X-Received: from plkh12.prod.google.com ([2002:a17:903:19ec:b0:240:9ca:fc49])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:902:ce05:b0:240:49d1:6347
- with SMTP id d9443c01a7336-2429f30b512mr54270245ad.35.1754510274358; Wed, 06
- Aug 2025 12:57:54 -0700 (PDT)
-Date: Wed,  6 Aug 2025 12:56:36 -0700
+        bh=AqSoz/ys0/nDwriVLA2HvcSasFXIo2nt11bZwmhw7W4=;
+        b=JvFYiMIEGQjysyC73TvuPplUOgG1URtHJhiKIMJqL7ue6iYg4NmO0bBlMm70Dn7AFE
+         KlKQeUB0dTutnWbn8cPuGjN/r4DWSxysJEZNGsyBAJhhiw9aSB6kBsjEde85jsBFbd2X
+         8mp7eclfEhETBaM9foawzUXiUjM6d56gpyP2iucquRpw3zjOdH76A87zPf0+Q+WBE1bb
+         6dy6k17jDs7lXD7S0MruYLuVRSstcfQKphn1eqXzeVjPmt/Ak0UY0mmmuzrYO4ia6guu
+         nSvCDJDvjXv8xhSjQKE3Sz5wNUBoS1bK/w9cZO2ZOWUqfUPS087brFVyVGOSa+x/HdRG
+         Drrw==
+X-Forwarded-Encrypted: i=1; AJvYcCVOpC1e1wsqQyQhAN7t2D325Vqu9wgEvxh+EMhtv+x5+n2TZybWlNkmUztyeATWXh/dF4aB5vKvQ10=@lists.infradead.org
+X-Gm-Message-State: AOJu0YydeylzQA5VCq+05UVPIxoM2lj3keiiK6RjxDnPZun1o2v/p9Cz
+	TXtw+7BT7QtNmtZQUaxkAxhuF2TRfYZ+3CQV+3JOTTUm/tFYWOaKzogaUOFyAAgsGJ0k9MQiBet
+	//uqOnQ==
+X-Google-Smtp-Source: AGHT+IFhegW1gGR7UHrSJevPOd3ITDk2k4F1jYjU8AgzTqj6JmCrtpCZa2eEdv34H9OVmz6MG3yGyWC8HfY=
+X-Received: from pjbsx14.prod.google.com ([2002:a17:90b:2cce:b0:311:c197:70a4])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:1c09:b0:31e:3bbc:e9e6
+ with SMTP id 98e67ed59e1d1-3217638fd88mr438488a91.19.1754510322909; Wed, 06
+ Aug 2025 12:58:42 -0700 (PDT)
+Date: Wed,  6 Aug 2025 12:57:03 -0700
 In-Reply-To: <20250806195706.1650976-1-seanjc@google.com>
 Mime-Version: 1.0
 References: <20250806195706.1650976-1-seanjc@google.com>
 X-Mailer: git-send-email 2.50.1.565.gc32cd1483b-goog
-Message-ID: <20250806195706.1650976-15-seanjc@google.com>
-Subject: [PATCH v5 14/44] KVM: VMX: Setup canonical VMCS config prior to kvm_x86_vendor_init()
+Message-ID: <20250806195706.1650976-42-seanjc@google.com>
+Subject: [PATCH v5 41/44] KVM: nVMX: Disable PMU MSR interception as
+ appropriate while running L2
 From: Sean Christopherson <seanjc@google.com>
 To: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>, 
 	Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>, 
@@ -85,8 +86,8 @@ Cc: linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev,
 	Xiong Zhang <xiong.y.zhang@linux.intel.com>, Sandipan Das <sandipan.das@amd.com>, 
 	Dapeng Mi <dapeng1.mi@linux.intel.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250806_125755_239439_AFD822D4 
-X-CRM114-Status: GOOD (  15.45  )
+X-CRM114-CacheID: sfid-20250806_125844_209258_EE721CBE 
+X-CRM114-Status: GOOD (  14.08  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -104,55 +105,69 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Setup the golden VMCS config during vmx_init(), before the call to
-kvm_x86_vendor_init(), instead of waiting until the callback to do
-hardware setup.  setup_vmcs_config() only touches VMX state, i.e. doesn't
-poke anything in kvm.ko, and has no runtime dependencies beyond
-hv_init_evmcs().
+From: Mingwei Zhang <mizhang@google.com>
 
-Setting the VMCS config early on will allow referencing VMCS and VMX
-capabilities at any point during setup, e.g. to check for PERF_GLOBAL_CTRL
-save/load support during mediated PMU initialization.
+Merge KVM's PMU MSR interception bitmaps with those of L1, i.e. merge the
+bitmaps of vmcs01 and vmcs12, e.g. so that KVM doesn't interpose on MSR
+accesses unnecessarily if L1 exposes a mediated PMU (or equivalent) to L2.
 
+Signed-off-by: Mingwei Zhang <mizhang@google.com>
+Co-developed-by: Dapeng Mi <dapeng1.mi@linux.intel.com>
+Signed-off-by: Dapeng Mi <dapeng1.mi@linux.intel.com>
+[sean: rewrite changelog and comment, omit MSRs that are always intercepted]
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/x86/kvm/vmx/vmx.c | 13 +++++++++----
- 1 file changed, 9 insertions(+), 4 deletions(-)
+ arch/x86/kvm/vmx/nested.c | 30 ++++++++++++++++++++++++++++++
+ 1 file changed, 30 insertions(+)
 
-diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
-index 95765db52992..ed10013dac95 100644
---- a/arch/x86/kvm/vmx/vmx.c
-+++ b/arch/x86/kvm/vmx/vmx.c
-@@ -8335,8 +8335,6 @@ __init int vmx_hardware_setup(void)
+diff --git a/arch/x86/kvm/vmx/nested.c b/arch/x86/kvm/vmx/nested.c
+index 47f1f0c7d3a7..b986a6fb684c 100644
+--- a/arch/x86/kvm/vmx/nested.c
++++ b/arch/x86/kvm/vmx/nested.c
+@@ -627,6 +627,34 @@ static inline void nested_vmx_set_intercept_for_msr(struct vcpu_vmx *vmx,
+ #define nested_vmx_merge_msr_bitmaps_rw(msr) \
+ 	nested_vmx_merge_msr_bitmaps(msr, MSR_TYPE_RW)
  
- 	vmx_setup_user_return_msrs();
- 
--	if (setup_vmcs_config(&vmcs_config, &vmx_capability) < 0)
--		return -EIO;
- 
- 	if (boot_cpu_has(X86_FEATURE_NX))
- 		kvm_enable_efer_bits(EFER_NX);
-@@ -8560,11 +8558,18 @@ int __init vmx_init(void)
- 		return -EOPNOTSUPP;
- 
- 	/*
--	 * Note, hv_init_evmcs() touches only VMX knobs, i.e. there's nothing
--	 * to unwind if a later step fails.
-+	 * Note, VMCS and eVMCS configuration only touch VMX knobs/variables,
-+	 * i.e. there's nothing to unwind if a later step fails.
- 	 */
- 	hv_init_evmcs();
- 
-+	/*
-+	 * Parse the VMCS config and VMX capabilities before anything else, so
-+	 * that the information is available to all setup flows.
-+	 */
-+	if (setup_vmcs_config(&vmcs_config, &vmx_capability) < 0)
-+		return -EIO;
++static void nested_vmx_merge_pmu_msr_bitmaps(struct kvm_vcpu *vcpu,
++					     unsigned long *msr_bitmap_l1,
++					     unsigned long *msr_bitmap_l0)
++{
++	struct kvm_pmu *pmu = vcpu_to_pmu(vcpu);
++	struct vcpu_vmx *vmx = to_vmx(vcpu);
++	int i;
 +
- 	r = kvm_x86_vendor_init(&vt_init_ops);
- 	if (r)
- 		return r;
++	/*
++	 * Skip the merges if the vCPU doesn't have a mediated PMU MSR, i.e. if
++	 * none of the MSRs can possibly be passed through to L1.
++	 */
++	if (!kvm_vcpu_has_mediated_pmu(vcpu))
++		return;
++
++	for (i = 0; i < pmu->nr_arch_gp_counters; i++) {
++		nested_vmx_merge_msr_bitmaps_rw(MSR_IA32_PERFCTR0 + i);
++		nested_vmx_merge_msr_bitmaps_rw(MSR_IA32_PMC0 + i);
++	}
++
++	for (i = 0; i < pmu->nr_arch_fixed_counters; i++)
++		nested_vmx_merge_msr_bitmaps_rw(MSR_CORE_PERF_FIXED_CTR0 + i);
++
++	nested_vmx_merge_msr_bitmaps_rw(MSR_CORE_PERF_GLOBAL_CTRL);
++	nested_vmx_merge_msr_bitmaps_read(MSR_CORE_PERF_GLOBAL_STATUS);
++	nested_vmx_merge_msr_bitmaps_write(MSR_CORE_PERF_GLOBAL_OVF_CTRL);
++}
++
+ /*
+  * Merge L0's and L1's MSR bitmap, return false to indicate that
+  * we do not use the hardware.
+@@ -724,6 +752,8 @@ static inline bool nested_vmx_prepare_msr_bitmap(struct kvm_vcpu *vcpu,
+ 	nested_vmx_set_intercept_for_msr(vmx, msr_bitmap_l1, msr_bitmap_l0,
+ 					 MSR_IA32_MPERF, MSR_TYPE_R);
+ 
++	nested_vmx_merge_pmu_msr_bitmaps(vcpu, msr_bitmap_l1, msr_bitmap_l0);
++
+ 	kvm_vcpu_unmap(vcpu, &map);
+ 
+ 	vmx->nested.force_msr_bitmap_recalc = false;
 -- 
 2.50.1.565.gc32cd1483b-goog
 
