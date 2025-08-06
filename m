@@ -4,71 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3AB60C87FCB
-	for <kvm-riscv@archiver.kernel.org>; Wed,  6 Aug 2025 21:26:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E0A17C87FD3
+	for <kvm-riscv@archiver.kernel.org>; Wed,  6 Aug 2025 21:29:54 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:Reply-To:List-Subscribe:List-Help:
 	List-Post:List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID
 	:References:Mime-Version:In-Reply-To:Date:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=/LBHMyJ4V+ReX7znujq9lR92A1UckKvyTRYc1m3yx/A=; b=0cvI1sPEEuz0gJ
-	R/2Zs/ezhuDdNzgXdSBQRBVKHvxQhH4sF763aPkvsOssOrJIbDSZcXhkwaXSDS7lfLbyKLNQs0Slt
-	dMforJgoohflImwIvYD+ZWOFCLTpzyuVmYKDfo2DH7NVBVkFOjqs9NDk9blEELv0KGZoqEL5l3SGg
-	iAMz8cMe0HAfbBI0NyyFBejuMDyTBmMWxX8pfGcHrThEPy3yt7bD8+znSwX03d+VF9YUxjz8nTheV
-	MwRcHFphzS01yYU0dzg33y/q1Z7zumrvjnEMC3f8vZkR3hgmzdTswYZz8yBWXtWxXMHNw/0hESwEJ
-	yCsiriItCP6Ph0Rx+UEg==;
+	List-Owner; bh=879ruKcmEkQPBK2ZLok4FgffQcsGNLjMVQRRo/gYyzQ=; b=Dw5T706bZ4pB9Z
+	eyGwA66hX1Tjiiv257/QNiwkDIFr24cuVRznhW19a9cLj48gxj0q2WnLWnfTL3vRKVL+hM/RH7gsX
+	EofyvzYFxLx6toz9inm8+FF8Ysk7d0NcVehzdqT7bjGRVcOaSY8VVebP7e4uD0osNk2xisTXn4hhD
+	oQpEWUUwGGPZHaltZJWwj0fpHttXHJEA4BX0+wZzSoDm4zoNrJm+DuhLdmy4TD9CCRCIgeHUsyr7K
+	tq56cylHTzQfFAQbQ8t97tmyrJbeznzxBbXzJd+3M85n09+Fse8z8MaPRC7R5K9cooIdL3P9MbcTv
+	RV4uF+ekV+DDTn7pIj6A==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1ujlef-0000000GZGm-4AMF;
-	Wed, 06 Aug 2025 21:26:37 +0000
-Received: from mail-pl1-x64a.google.com ([2607:f8b0:4864:20::64a])
+	id 1ujlhq-0000000GZlF-2Xq9;
+	Wed, 06 Aug 2025 21:29:54 +0000
+Received: from mail-pg1-x54a.google.com ([2607:f8b0:4864:20::54a])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1ujkHN-0000000GGvN-3pa0
+	id 1ujkGf-0000000GGFf-2yu0
 	for kvm-riscv@lists.infradead.org;
-	Wed, 06 Aug 2025 19:58:31 +0000
-Received: by mail-pl1-x64a.google.com with SMTP id d9443c01a7336-23fe28867b7so2375495ad.2
-        for <kvm-riscv@lists.infradead.org>; Wed, 06 Aug 2025 12:58:29 -0700 (PDT)
+	Wed, 06 Aug 2025 19:57:47 +0000
+Received: by mail-pg1-x54a.google.com with SMTP id 41be03b00d2f7-b2c00e965d0so122031a12.2
+        for <kvm-riscv@lists.infradead.org>; Wed, 06 Aug 2025 12:57:45 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1754510309; x=1755115109; darn=lists.infradead.org;
+        d=google.com; s=20230601; t=1754510265; x=1755115065; darn=lists.infradead.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:from:to:cc:subject:date:message-id:reply-to;
-        bh=h+R0RK6o+FBkoODCsg4/sPruy7k1VkLsFBuytBNeaEE=;
-        b=1mA7rBR/I6HwUswNiBr2Nk4A09ZrVGIskSfNvXllmn5aAscdoYjaVCk1eQXBbiTPNO
-         KELxz1eZnbOcKPoDDvVJFb1rCL3nRSIYHFp3+HtLclHQzGTrS6moeokQIdCxkR53UC7O
-         oSRZ38jnIS4AyVuus47l60GXtdGR6/S29jNzpcvQrVydQGJPqpSOMsEO760Q+1PjwnJh
-         ew1ynCj3Tx48nai+39t5zs7BXfUGAKDuUSHCfYj4sBBskbqfLNtYlTCCdrqTyE8etEne
-         4CPhmh54HY3iSCkBBb7/VgukTE79h5dgtJ7rflInYV1phSs3joi0xZyh8LD5qLRWHaO9
-         nCng==
+        bh=jWazn7LbEKToZVBXfT81sYQ79Zs+usROHmWn+qgVcAw=;
+        b=He2FMoYhHl7cHOxSWp71tbdUVppprSXNxeOQ5Uza7H54veAeuv9QlYi1py/e2Rw7Nr
+         be2BQpGiCgc148rRWb7mS+0eMa8xorsJgxTKDNfZx8mSEfvbOnxZYoBias3a3GASMqln
+         0Bow5riO2qCh9/vAPzU74Ik4uejIkJTovmhxueCW+Hb+HDLnKSUPU1SOC5XqUUqYsAWS
+         OmEAorq+J+dHKGgFk2AuPnrJsFupV0qaFqndtZsztNAV6TAjKFYA5qb4WMCxC1/I7Oi+
+         VEWPHz4r4YsFwTNbet5G17ReU9o/w848KhokG/gqofbzEcr+4E5jye6aN/9jI9PV/rMQ
+         bt+A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1754510309; x=1755115109;
+        d=1e100.net; s=20230601; t=1754510265; x=1755115065;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=h+R0RK6o+FBkoODCsg4/sPruy7k1VkLsFBuytBNeaEE=;
-        b=UUFYAEQtzE35ZuQlvfnIgk29B8bGoAznrF/hKeLHzQpCJR83yKgXL8RT4xPsvWaW6g
-         n8XlSu3P4kXiVrEVt9g9cBJfn3H8WqFgm6VjZc6zebaymaIuP7wrqWsDVtDYw3kcnGsu
-         7fo2g1Fq3gUShERjkT0sYzCUEnLCnoIHJexCZAcwq59xqub+N/mvU5UWqA00znneQ9/r
-         C976AT9+65/zNXwCSsdgTvfJhbluzNCj4M3NjUFTbv1mJj2/9df8IoIywXZMmoj1+Eld
-         kqOlL59Ypf4+eSQgDlyCVxW408rqVTSlgjdAZKV5/Zzi1YoXUuf07YIYjqB1pjBtIw/O
-         fI9w==
-X-Forwarded-Encrypted: i=1; AJvYcCWGWMBiK2ulMwUJS2cdqqHRnoxv/IpEk/YCbg7G++NTfYaoawwE4TyD/UY6miFvdppcT6arCpnJW2M=@lists.infradead.org
-X-Gm-Message-State: AOJu0YxqslMvRCxEhKdcZOHcD0mDfjgtGsMXBQlPuaIqL4gixqkozs+k
-	KxmE2HdCHcJPRJNm/clbXo9CclEzShxZ16XURAj/zMfPpElN285OUJcVOB9SbJkdBgK/I2x7+G3
-	h1Z3zLQ==
-X-Google-Smtp-Source: AGHT+IEfUJQHCKm2Ka63Vh1rz9TId3URvafpVHxlHcjND/kCO75vRaPMhhxSn7fVXTy0Nxb/+lRjTxRhOaU=
-X-Received: from pgbcz12.prod.google.com ([2002:a05:6a02:230c:b0:b42:1518:df18])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:902:d510:b0:240:763d:e9a6
- with SMTP id d9443c01a7336-242a0ae9d65mr50650645ad.25.1754510308841; Wed, 06
- Aug 2025 12:58:28 -0700 (PDT)
-Date: Wed,  6 Aug 2025 12:56:55 -0700
+        bh=jWazn7LbEKToZVBXfT81sYQ79Zs+usROHmWn+qgVcAw=;
+        b=dK6XtiikJlNsXmzEn7fd+jBG6V8onFljiRzqLZxW4i4fO6EU4UVmuMTOpQm6YSJBaZ
+         31gHCFswTpaQoVyAfqHZRUSwgrnIZYRAHSNc9u3XlMvHl81NaslDzYW78QB5xOd1p6iK
+         bvRYdvvWcILEI5zvvgjANQXO6gF8qLIQEOU1Y2ZODO1cEISaR+CCkVlMUNYAKKoJzXLt
+         X5xTw/CqYIuQLDBYE2khjl0zL89qpd7A4Mo7/TD7x7L+471LMEGmoTeWVo/+gp/hn6H9
+         M6LBNCsh9ACR/VHi+Sf+2vre9C1agMcjZ20T+MfKYiUcceRSV/0i2BZzN4qT7GL+cqUn
+         +KPA==
+X-Forwarded-Encrypted: i=1; AJvYcCWVV1d0yvS9eTD+A7s+beWI9rBEA20QhbOWmhxVwSR0CFp0E5son021FFuaKUw0sD60jR8frmUMxAs=@lists.infradead.org
+X-Gm-Message-State: AOJu0YyFcCUN05Fv27+gD630tLgfCaxNBbNATlDg52P1mcLnSukEk1+P
+	KNd0WWQ8BtpxVck1HlW15nL/fGBuCHOBFxIIt2YWy8nWWSHSjY25B8ZEVJw4GEh3QKHTo9KDdrA
+	J8/4FxA==
+X-Google-Smtp-Source: AGHT+IEOZHdE2/PbxBEmSs9IzcnvpAQDGgoykrCqSet5dWYTZm1GHUavvsVGL1zycY+fmJU68DVHh19KP/o=
+X-Received: from pgbcs10.prod.google.com ([2002:a05:6a02:418a:b0:b42:2ab5:b109])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6300:218d:b0:23d:f987:b033
+ with SMTP id adf61e73a8af0-240314c22f5mr6625238637.40.1754510264630; Wed, 06
+ Aug 2025 12:57:44 -0700 (PDT)
+Date: Wed,  6 Aug 2025 12:56:31 -0700
 In-Reply-To: <20250806195706.1650976-1-seanjc@google.com>
 Mime-Version: 1.0
 References: <20250806195706.1650976-1-seanjc@google.com>
 X-Mailer: git-send-email 2.50.1.565.gc32cd1483b-goog
-Message-ID: <20250806195706.1650976-34-seanjc@google.com>
-Subject: [PATCH v5 33/44] KVM: x86/pmu: Bypass perf checks when emulating
- mediated PMU counter accesses
+Message-ID: <20250806195706.1650976-10-seanjc@google.com>
+Subject: [PATCH v5 09/44] perf/x86: Switch LVTPC to/from mediated PMI vector
+ on guest load/put context
 From: Sean Christopherson <seanjc@google.com>
 To: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>, 
 	Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>, 
@@ -86,8 +86,8 @@ Cc: linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev,
 	Xiong Zhang <xiong.y.zhang@linux.intel.com>, Sandipan Das <sandipan.das@amd.com>, 
 	Dapeng Mi <dapeng1.mi@linux.intel.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250806_125829_962409_CC4B1671 
-X-CRM114-Status: GOOD (  11.64  )
+X-CRM114-CacheID: sfid-20250806_125745_761960_EC8D2445 
+X-CRM114-Status: GOOD (  14.82  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -105,54 +105,115 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-From: Dapeng Mi <dapeng1.mi@linux.intel.com>
+Add arch hooks to the mediated vPMU load/put APIs, and use the hooks to
+switch PMIs to the dedicated mediated PMU IRQ vector on load, and back to
+perf's standard NMI when the guest context is put.  I.e. route PMIs to
+PERF_GUEST_MEDIATED_PMI_VECTOR when the guest context is active, and to
+NMIs while the host context is active.
 
-When emulating a PMC counter read or write for a mediated PMU, bypass the
-perf checks and emulated_counter logic as the counters aren't proxied
-through perf, i.e. pmc->counter always holds the guest's up-to-date value,
-and thus there's no need to defer emulated overflow checks.
+While running with guest context loaded, ignore all NMIs (in perf).  Any
+NMI that arrives while the LVTPC points at the mediated PMU IRQ vector
+can't possibly be due to a host perf event.
 
-Suggested-by: Sean Christopherson <seanjc@google.com>
-Signed-off-by: Dapeng Mi <dapeng1.mi@linux.intel.com>
-Co-developed-by: Mingwei Zhang <mizhang@google.com>
+Signed-off-by: Xiong Zhang <xiong.y.zhang@linux.intel.com>
+Signed-off-by: Kan Liang <kan.liang@linux.intel.com>
 Signed-off-by: Mingwei Zhang <mizhang@google.com>
-[sean: split from event filtering change, write shortlog+changelog]
+[sean: use arch hook instead of per-PMU callback]
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/x86/kvm/pmu.c | 5 +++++
- arch/x86/kvm/pmu.h | 3 +++
- 2 files changed, 8 insertions(+)
+ arch/x86/events/core.c     | 27 +++++++++++++++++++++++++++
+ include/linux/perf_event.h |  3 +++
+ kernel/events/core.c       |  4 ++++
+ 3 files changed, 34 insertions(+)
 
-diff --git a/arch/x86/kvm/pmu.c b/arch/x86/kvm/pmu.c
-index 817ef852bdf9..082d2905882b 100644
---- a/arch/x86/kvm/pmu.c
-+++ b/arch/x86/kvm/pmu.c
-@@ -377,6 +377,11 @@ static void pmc_update_sample_period(struct kvm_pmc *pmc)
+diff --git a/arch/x86/events/core.c b/arch/x86/events/core.c
+index 7610f26dfbd9..9b0525b252f1 100644
+--- a/arch/x86/events/core.c
++++ b/arch/x86/events/core.c
+@@ -55,6 +55,8 @@ DEFINE_PER_CPU(struct cpu_hw_events, cpu_hw_events) = {
+ 	.pmu = &pmu,
+ };
  
- void pmc_write_counter(struct kvm_pmc *pmc, u64 val)
- {
-+	if (kvm_vcpu_has_mediated_pmu(pmc->vcpu)) {
-+		pmc->counter = val & pmc_bitmask(pmc);
-+		return;
-+	}
++static DEFINE_PER_CPU(bool, x86_guest_ctx_loaded);
++
+ DEFINE_STATIC_KEY_FALSE(rdpmc_never_available_key);
+ DEFINE_STATIC_KEY_FALSE(rdpmc_always_available_key);
+ DEFINE_STATIC_KEY_FALSE(perf_is_hybrid);
+@@ -1756,6 +1758,16 @@ perf_event_nmi_handler(unsigned int cmd, struct pt_regs *regs)
+ 	u64 finish_clock;
+ 	int ret;
+ 
++	/*
++	 * Ignore all NMIs when a guest's mediated PMU context is loaded.  Any
++	 * such NMI can't be due to a PMI as the CPU's LVTPC is switched to/from
++	 * the dedicated mediated PMI IRQ vector while host events are quiesced.
++	 * Attempting to handle a PMI while the guest's context is loaded will
++	 * generate false positives and clobber guest state.
++	 */
++	if (this_cpu_read(x86_guest_ctx_loaded))
++		return NMI_DONE;
 +
  	/*
- 	 * Drop any unconsumed accumulated counts, the WRMSR is a write, not a
- 	 * read-modify-write.  Adjust the counter value so that its value is
-diff --git a/arch/x86/kvm/pmu.h b/arch/x86/kvm/pmu.h
-index 51963a3a167a..1c9d26d60a60 100644
---- a/arch/x86/kvm/pmu.h
-+++ b/arch/x86/kvm/pmu.h
-@@ -111,6 +111,9 @@ static inline u64 pmc_read_counter(struct kvm_pmc *pmc)
- {
- 	u64 counter, enabled, running;
+ 	 * All PMUs/events that share this PMI handler should make sure to
+ 	 * increment active_events for their events.
+@@ -2727,6 +2739,21 @@ static struct pmu pmu = {
+ 	.filter			= x86_pmu_filter,
+ };
  
-+	if (kvm_vcpu_has_mediated_pmu(pmc->vcpu))
-+		return pmc->counter & pmc_bitmask(pmc);
++void arch_perf_load_guest_context(unsigned long data)
++{
++	u32 masked = data & APIC_LVT_MASKED;
 +
- 	counter = pmc->counter + pmc->emulated_counter;
++	apic_write(APIC_LVTPC,
++		   APIC_DM_FIXED | PERF_GUEST_MEDIATED_PMI_VECTOR | masked);
++	this_cpu_write(x86_guest_ctx_loaded, true);
++}
++
++void arch_perf_put_guest_context(void)
++{
++	this_cpu_write(x86_guest_ctx_loaded, false);
++	apic_write(APIC_LVTPC, APIC_DM_NMI);
++}
++
+ void arch_perf_update_userpage(struct perf_event *event,
+ 			       struct perf_event_mmap_page *userpg, u64 now)
+ {
+diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
+index 0c529fbd97e6..3a9bd9c4c90e 100644
+--- a/include/linux/perf_event.h
++++ b/include/linux/perf_event.h
+@@ -1846,6 +1846,9 @@ static inline unsigned long perf_arch_guest_misc_flags(struct pt_regs *regs)
+ # define perf_arch_guest_misc_flags(regs)	perf_arch_guest_misc_flags(regs)
+ #endif
  
- 	if (pmc->perf_event && !pmc->is_paused)
++extern void arch_perf_load_guest_context(unsigned long data);
++extern void arch_perf_put_guest_context(void);
++
+ static inline bool needs_branch_stack(struct perf_event *event)
+ {
+ 	return event->attr.branch_sample_type != 0;
+diff --git a/kernel/events/core.c b/kernel/events/core.c
+index e1df3c3bfc0d..ad22b182762e 100644
+--- a/kernel/events/core.c
++++ b/kernel/events/core.c
+@@ -6408,6 +6408,8 @@ void perf_load_guest_context(unsigned long data)
+ 		task_ctx_sched_out(cpuctx->task_ctx, NULL, EVENT_GUEST);
+ 	}
+ 
++	arch_perf_load_guest_context(data);
++
+ 	perf_ctx_enable(&cpuctx->ctx, EVENT_GUEST);
+ 	if (cpuctx->task_ctx)
+ 		perf_ctx_enable(cpuctx->task_ctx, EVENT_GUEST);
+@@ -6433,6 +6435,8 @@ void perf_put_guest_context(void)
+ 
+ 	perf_event_sched_in(cpuctx, cpuctx->task_ctx, NULL, EVENT_GUEST);
+ 
++	arch_perf_put_guest_context();
++
+ 	if (cpuctx->task_ctx)
+ 		perf_ctx_enable(cpuctx->task_ctx, EVENT_GUEST);
+ 	perf_ctx_enable(&cpuctx->ctx, EVENT_GUEST);
 -- 
 2.50.1.565.gc32cd1483b-goog
 
