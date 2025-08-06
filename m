@@ -4,7 +4,7 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7FF43C87FDA
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6A285C87FCB
 	for <kvm-riscv@archiver.kernel.org>; Wed,  6 Aug 2025 22:14:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
@@ -12,63 +12,63 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	List-Post:List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID
 	:References:Mime-Version:In-Reply-To:Date:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=NeGf5FacFltfVO+BIagBxJMnZWzmycnst/3JcLCdsJ4=; b=2OgaOL10pTow12
-	qPNYJkSovXfQ1LH6blL5sjT/I2DHJUfc7mYtKpT47LBxlgvJp2SCtfOvmkqYjfKN3UHF6/ZEjtaFb
-	NB/krRjK6g0swZqN3RkZtkKPXhPfBWATGi+k87xjaGGc/SCveyLeuDaLEPeVxZynhJAqbWWQmRPuy
-	lDgJ8UCJn1gbD+/NJqe3JO5nLQ/f27tmwW5n4fV54dsaDPRLOT1/5W+YCJDxPadDP7K18hPZSxF5Q
-	m7Rz/4YIRgenXdVYFmgZ5sWccgZk+axdI9eyaf3fiy/dvqikgG3pAqG3smSg7uyuHob0DRgqldqMT
-	eZvx08PZUIM7H2p3DWbg==;
+	List-Owner; bh=plQfM/z8P4SoG1EAKqM3YIS1D2s0L5c6jjnnEhDzpeQ=; b=v3GrmQHyy6ZN5e
+	x0I+kzE3VaOuwHCjSak2CBI3tBahAPpzwYQBqBb15ylsUwc/8zaY3G4Tyh4Dk0e19C72LNlD5C11X
+	nAOFTL9FT+ku0cAwHi4GzsZhBnAIgULg9Z7UE4WDTgbM+/6e5/Bt6a3MI4X4gr2Ak3cjcagHB5gAC
+	fpewWiNMLTLXKOPsmf3ft6FduG1j9X0zGpL8QctQGCrthT50/Va1M1YgbKO3V03Cm/+HE9092L4Z1
+	FVdTailquVZJnKT0fri9zZ1fJsxDl7mTjzqLltNur5JFdmuEYMS8WeVfY17DTWBrprjS37dnLayJY
+	btQSuzGyf7b5cn+T/1fA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1ujmPP-0000000GhRW-1AEw;
-	Wed, 06 Aug 2025 22:14:55 +0000
-Received: from mail-pg1-x54a.google.com ([2607:f8b0:4864:20::54a])
+	id 1ujmPO-0000000GhRD-47xl;
+	Wed, 06 Aug 2025 22:14:54 +0000
+Received: from mail-pl1-x64a.google.com ([2607:f8b0:4864:20::64a])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1ujkHC-0000000GGhq-0fTT
+	id 1ujkH9-0000000GGfp-3yp1
 	for kvm-riscv@lists.infradead.org;
-	Wed, 06 Aug 2025 19:58:19 +0000
-Received: by mail-pg1-x54a.google.com with SMTP id 41be03b00d2f7-b421b03d498so121495a12.3
-        for <kvm-riscv@lists.infradead.org>; Wed, 06 Aug 2025 12:58:17 -0700 (PDT)
+	Wed, 06 Aug 2025 19:58:17 +0000
+Received: by mail-pl1-x64a.google.com with SMTP id d9443c01a7336-2400499ab2fso1564105ad.0
+        for <kvm-riscv@lists.infradead.org>; Wed, 06 Aug 2025 12:58:15 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1754510297; x=1755115097; darn=lists.infradead.org;
+        d=google.com; s=20230601; t=1754510295; x=1755115095; darn=lists.infradead.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:from:to:cc:subject:date:message-id:reply-to;
-        bh=z6mRW3QO5+v30hMhQPo0nMlPZQjpAzxmFKtx3JiIrDs=;
-        b=vSYNEFQIq6Bi5csdwv6GPueRi/G5Zc4fjVkFc5CP35AeplywyFEFYU4DI4MwoUXHfV
-         XAf1y7fwll4CIVJOa/8RB29EEfbABKrsA5wN8RKn2t/DP31WD//XzHEQlM+UmB4omwsj
-         2//7vppYpGbPLO+OaI6FDEv1e0jIw9Un1EvhUAr+KS6hgKHdHcrgANAaMIdbAqiOd/cN
-         nMTKDiLliKzQKXjvnloBF0c3uaghg8r21xwgAaGm75jy66WeqUzcVzvzK3jSN+q6FYcn
-         f+Y0ywFHpE93r744R0IqbB7REJDii0ay9yx8f7fwPvoxHk79H+9rfZI+8vsBMHks2IuW
-         1M3A==
+        bh=7n78nD110ztSdGmfKKJPHep+PzR1j4ORmKnKizGjxcI=;
+        b=37xS0hcxkeqLwyCCR5AjgyMpjn4jC5uleUN7HzbaInKcWK+GT39J4LBGPNkwcJbdEU
+         ZireT2t1It+Q2CStxVv+C6TGYvXL0xdwZ7sXMNPqGyHuhLNcghmVlKr3j9ZiTpTW1AXd
+         3xySDrF/RmxCWOZUFWlN9UGcBI4SjRp04vkt9mrqPJxdT5IJVCncyppsGOC9zVUShoI8
+         0juu1GEyNRwNQN4PaNOG+MzDPHxnYlFXe+40xR1Fcsco/dNVLREsrwt8+E8Xz3PCjqmQ
+         xCxMjaRGIQEld+BZyWx+jjOZFmZM60/EdMZqa/Q7NR7DK3O+K1OsDyS4CW46uTH/lJu/
+         efNQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1754510297; x=1755115097;
+        d=1e100.net; s=20230601; t=1754510295; x=1755115095;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=z6mRW3QO5+v30hMhQPo0nMlPZQjpAzxmFKtx3JiIrDs=;
-        b=oSRJ3s6zCVovwfl8TAZ1QtRB0HH850gFPInBc05ZD9UJzwKk7IrycM6vlmZ0p/Zeuw
-         Ms88Ec0q5bCxeuKyJwZhrUlUyTKpYZtxm+DFENPvrGI+eeslEx6ixDfn7kqZzs6nlbXV
-         XT4Yxsca0hdyS64fJw9f/z+P592IuLA8chb9mdMyfhqkV5pliK2Y/sw6ejEoiAihyXsE
-         Yqbusdde6vowd6wH4Pm/UMznIRJxn411dz8jtV7AUZWeOWuYgkYFNmKUcixVQSqqtfIT
-         W184k9y1kFo3u/LXA3Mxl12mNEi7QvzicU9oYgN8PM0j0gCKG27bCo//XcqfX3KriIOg
-         Ipgg==
-X-Forwarded-Encrypted: i=1; AJvYcCVoYbSpj8rzbB01DqIiXjwi850lpcbNIW5NqUs2tokKdQcohIHla4b5kARh5a/V2sRr9qQTE8sU1qU=@lists.infradead.org
-X-Gm-Message-State: AOJu0YxrM4gWy/6HUKlf7IxOxoz2VNOEVuFoli4awV53IpuqXrC4Q80+
-	/IrGYxXbKLU4MOMC/dj9SmkFYjjCKzoYRwsMebE2wOEcQrisQhPI1LExW/6GIEEs8+ngzwJ9y11
-	Cpd4cBg==
-X-Google-Smtp-Source: AGHT+IF1L5jDO3EJUjPLOXu/s6M1eVdU0dJDtzEbPUmRbyNFn2oUqefjt3C97kWpA7IvjzuPBYgNpNpIe1I=
-X-Received: from pgbcv5.prod.google.com ([2002:a05:6a02:4205:b0:b42:49c8:5488])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a20:548d:b0:23f:faa0:2c27
- with SMTP id adf61e73a8af0-240330367c3mr5937028637.20.1754510296766; Wed, 06
- Aug 2025 12:58:16 -0700 (PDT)
-Date: Wed,  6 Aug 2025 12:56:48 -0700
+        bh=7n78nD110ztSdGmfKKJPHep+PzR1j4ORmKnKizGjxcI=;
+        b=bvvJuBrNqgGD1MrFyLdt4yuO2ogfA6R39PwXoeS1uL1WR6zDv1oObdlIidAnTyZsst
+         RR7nhMc4yoZLZF9bzosHDs4sbgKEg9JcLtE+AzlStcTMy6yEUbbXJ2u2q4ApHZxtxM9+
+         7OCviXLzhVWeXundm5lFT9ciqoqHuGU3k0NmdB0vazSRsVRCAiyEGbITsgg8P+9d3keO
+         8eHnWtu5pQmRsuuqKBXu/K1Cx3+osmH+p/CvAJU4K8xOZ6jQXu2+yGX0EMcMyxsJZIFb
+         mg3D6hMneIdktgTh3IJCCTjZgnpCubw2l7Zs51lAZ9BXf0/jM6XxXdl7shId+8VVRpfy
+         Q8Sw==
+X-Forwarded-Encrypted: i=1; AJvYcCW7eKnBEmut5EYWT2n1M6tSCa2Ii3o3fm+fzY+EVhy9frO/4GkSK1z6LmHXyomaFbJh22ABrK3NWVU=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yzvj+rocTZXSkxYp1JcQUthgG0o85152r/02LAwUtulgaF9m/jC
+	LpllG5J0vzV4IlPRhG0Vo80bnlYRLrnelijcUlxUTzH+Sz1OWrn2qTUiyCi8/HF91lhfLY+Ix0/
+	e2J+59w==
+X-Google-Smtp-Source: AGHT+IFqf7ZAG29dPCj/MpatUq6hwXzWupLmSqVpNm34U7crTT1sTW/TFLrPZa6u05A4GwIlFGKGaClhUR8=
+X-Received: from pjpy17.prod.google.com ([2002:a17:90a:a411:b0:321:370d:cae5])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:902:cec8:b0:242:abac:30f0
+ with SMTP id d9443c01a7336-242abac3c63mr29143805ad.42.1754510294999; Wed, 06
+ Aug 2025 12:58:14 -0700 (PDT)
+Date: Wed,  6 Aug 2025 12:56:47 -0700
 In-Reply-To: <20250806195706.1650976-1-seanjc@google.com>
 Mime-Version: 1.0
 References: <20250806195706.1650976-1-seanjc@google.com>
 X-Mailer: git-send-email 2.50.1.565.gc32cd1483b-goog
-Message-ID: <20250806195706.1650976-27-seanjc@google.com>
-Subject: [PATCH v5 26/44] KVM: VMX: Add helpers to toggle/change a bit in VMCS
- execution controls
+Message-ID: <20250806195706.1650976-26-seanjc@google.com>
+Subject: [PATCH v5 25/44] KVM: x86: Use KVM_REQ_RECALC_INTERCEPTS to react to
+ CPUID updates
 From: Sean Christopherson <seanjc@google.com>
 To: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>, 
 	Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>, 
@@ -86,8 +86,8 @@ Cc: linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev,
 	Xiong Zhang <xiong.y.zhang@linux.intel.com>, Sandipan Das <sandipan.das@amd.com>, 
 	Dapeng Mi <dapeng1.mi@linux.intel.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250806_125818_206120_F019DEB4 
-X-CRM114-Status: GOOD (  12.01  )
+X-CRM114-CacheID: sfid-20250806_125816_018955_DAEFF4ED 
+X-CRM114-Status: GOOD (  11.64  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -105,74 +105,68 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-From: Dapeng Mi <dapeng1.mi@linux.intel.com>
+Defer recalculating MSR and instruction intercepts after a CPUID update
+via RECALC_INTERCEPTS to converge on RECALC_INTERCEPTS as the "official"
+mechanism for triggering recalcs.  As a bonus, because KVM does a "recalc"
+during vCPU creation, and every functional VMM sets CPUID at least once,
+for all intents and purposes this saves at least one recalc.
 
-Expand the VMCS controls builder macros to generate helpers to change a
-bit to the desired value, and use the new helpers when toggling APICv
-related controls.
-
-No functional change intended.
-
-Suggested-by: Sean Christopherson <seanjc@google.com>
-Signed-off-by: Dapeng Mi <dapeng1.mi@linux.intel.com>
-Signed-off-by: Mingwei Zhang <mizhang@google.com>
-[sean: rewrite changelog]
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/x86/kvm/vmx/vmx.c | 20 +++++++-------------
- arch/x86/kvm/vmx/vmx.h |  8 ++++++++
- 2 files changed, 15 insertions(+), 13 deletions(-)
+ arch/x86/kvm/cpuid.c   | 2 ++
+ arch/x86/kvm/svm/svm.c | 4 +---
+ arch/x86/kvm/vmx/vmx.c | 3 ---
+ 3 files changed, 3 insertions(+), 6 deletions(-)
 
+diff --git a/arch/x86/kvm/cpuid.c b/arch/x86/kvm/cpuid.c
+index e2836a255b16..cc16e28bfab2 100644
+--- a/arch/x86/kvm/cpuid.c
++++ b/arch/x86/kvm/cpuid.c
+@@ -448,6 +448,8 @@ void kvm_vcpu_after_set_cpuid(struct kvm_vcpu *vcpu)
+ 	 * adjustments to the reserved GPA bits.
+ 	 */
+ 	kvm_mmu_after_set_cpuid(vcpu);
++
++	kvm_make_request(KVM_REQ_RECALC_INTERCEPTS, vcpu);
+ }
+ 
+ int cpuid_query_maxphyaddr(struct kvm_vcpu *vcpu)
+diff --git a/arch/x86/kvm/svm/svm.c b/arch/x86/kvm/svm/svm.c
+index 3d9dcc66a407..ef7dffc54dca 100644
+--- a/arch/x86/kvm/svm/svm.c
++++ b/arch/x86/kvm/svm/svm.c
+@@ -1225,7 +1225,7 @@ static void init_vmcb(struct kvm_vcpu *vcpu)
+ 
+ 	svm_hv_init_vmcb(vmcb);
+ 
+-	svm_recalc_intercepts(vcpu);
++	kvm_make_request(KVM_REQ_RECALC_INTERCEPTS, vcpu);
+ 
+ 	vmcb_mark_all_dirty(vmcb);
+ 
+@@ -4478,8 +4478,6 @@ static void svm_vcpu_after_set_cpuid(struct kvm_vcpu *vcpu)
+ 
+ 	if (sev_guest(vcpu->kvm))
+ 		sev_vcpu_after_set_cpuid(svm);
+-
+-	svm_recalc_intercepts(vcpu);
+ }
+ 
+ static bool svm_has_wbinvd_exit(void)
 diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
-index 6094de4855d6..baea4a9cf74f 100644
+index 2244ca074e9d..6094de4855d6 100644
 --- a/arch/x86/kvm/vmx/vmx.c
 +++ b/arch/x86/kvm/vmx/vmx.c
-@@ -4356,19 +4356,13 @@ void vmx_refresh_apicv_exec_ctrl(struct kvm_vcpu *vcpu)
+@@ -7782,9 +7782,6 @@ void vmx_vcpu_after_set_cpuid(struct kvm_vcpu *vcpu)
+ 		vmx->msr_ia32_feature_control_valid_bits &=
+ 			~FEAT_CTL_SGX_LC_ENABLED;
  
- 	pin_controls_set(vmx, vmx_pin_based_exec_ctrl(vmx));
- 
--	if (kvm_vcpu_apicv_active(vcpu)) {
--		secondary_exec_controls_setbit(vmx,
--					       SECONDARY_EXEC_APIC_REGISTER_VIRT |
--					       SECONDARY_EXEC_VIRTUAL_INTR_DELIVERY);
--		if (enable_ipiv)
--			tertiary_exec_controls_setbit(vmx, TERTIARY_EXEC_IPI_VIRT);
--	} else {
--		secondary_exec_controls_clearbit(vmx,
--						 SECONDARY_EXEC_APIC_REGISTER_VIRT |
--						 SECONDARY_EXEC_VIRTUAL_INTR_DELIVERY);
--		if (enable_ipiv)
--			tertiary_exec_controls_clearbit(vmx, TERTIARY_EXEC_IPI_VIRT);
--	}
-+	secondary_exec_controls_changebit(vmx,
-+					  SECONDARY_EXEC_APIC_REGISTER_VIRT |
-+					  SECONDARY_EXEC_VIRTUAL_INTR_DELIVERY,
-+					  kvm_vcpu_apicv_active(vcpu));
-+	if (enable_ipiv)
-+		tertiary_exec_controls_changebit(vmx, TERTIARY_EXEC_IPI_VIRT,
-+						 kvm_vcpu_apicv_active(vcpu));
- 
- 	vmx_update_msr_bitmap_x2apic(vcpu);
+-	/* Recalc MSR interception to account for feature changes. */
+-	vmx_recalc_intercepts(vcpu);
+-
+ 	/* Refresh #PF interception to account for MAXPHYADDR changes. */
+ 	vmx_update_exception_bitmap(vcpu);
  }
-diff --git a/arch/x86/kvm/vmx/vmx.h b/arch/x86/kvm/vmx/vmx.h
-index d3389baf3ab3..a4e5bcd1d023 100644
---- a/arch/x86/kvm/vmx/vmx.h
-+++ b/arch/x86/kvm/vmx/vmx.h
-@@ -608,6 +608,14 @@ static __always_inline void lname##_controls_clearbit(struct vcpu_vmx *vmx, u##b
- {												\
- 	BUILD_BUG_ON(!(val & (KVM_REQUIRED_VMX_##uname | KVM_OPTIONAL_VMX_##uname)));		\
- 	lname##_controls_set(vmx, lname##_controls_get(vmx) & ~val);				\
-+}												\
-+static __always_inline void lname##_controls_changebit(struct vcpu_vmx *vmx, u##bits val,	\
-+						       bool set)				\
-+{												\
-+	if (set)										\
-+		lname##_controls_setbit(vmx, val);						\
-+	else											\
-+		lname##_controls_clearbit(vmx, val);						\
- }
- BUILD_CONTROLS_SHADOW(vm_entry, VM_ENTRY_CONTROLS, 32)
- BUILD_CONTROLS_SHADOW(vm_exit, VM_EXIT_CONTROLS, 32)
 -- 
 2.50.1.565.gc32cd1483b-goog
 
