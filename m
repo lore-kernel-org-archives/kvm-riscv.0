@@ -4,7 +4,7 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6AE3CC87FCB
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BDE44C87FD3
 	for <kvm-riscv@archiver.kernel.org>; Wed,  6 Aug 2025 21:47:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
@@ -12,62 +12,62 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	List-Post:List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID
 	:References:Mime-Version:In-Reply-To:Date:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=WAVWZWuOB304b007kLSaV7DP2/43lwXo4c7ZXqNKkMw=; b=CGT50iVnH9yQ6G
-	1L2pNZvLzUGF+eLBIxrfiLktEd0fKIFvB/Tj6uKSxQYLAZcISLEKYQVGROP7ohZvhr2VvyrdLoVXQ
-	Hp2+wkZordwEs7ul8oLkxYONQ8d7TfhNUfRi6aFFG/ttDUUMyckEv5m6Nr3S2fxccONVpwNrUKcbU
-	aIWijhrjcdOHgUirfJnOuTo/58YNq/96vEKK36qsuOxpKFoFPPItaGB6DlTNKJopRP6nhiMYwUslD
-	Y/jQMQsgDILLUJ6CRDgNFBvIJgXckL+XE43/KLwUcAnVxh5WQkcy+uxfwQD8ZDAtXxAzgxxWxlrsZ
-	X8dW8xXmyvDGR9tjSPqA==;
+	List-Owner; bh=vwOB0pr8L8Q3ZQtrq56SzyN8+zFl/6/N20KJ1jsgd1M=; b=JQZqPc2QuceEGS
+	uvidUybl0g/Rtd0EClrQFPnNzAzt5SmfjISsZTmcdSsDdcKn7eJHYlfjnrjtnVBJJ5sVOttn66jyo
+	/JfhzP3txmmOUW6xsUkG5Y1q5oPAC4wECOZoeg9pquQ+4g/UzyWVZlJILXXY7Tg7lzJfrlODCN4LV
+	Xd98RjirOvtFAYQSfCkmgr1swV6QlAQDxpa8LcL4S3KQpNSptvZ0ZgkoQ8mUpQ3uEL7anxbJ8G4Tp
+	UH8nkach/rNtWxb7YpplC7yNQ0by0TbkdPoqO3X01WqoyTYahpA7TepvQCJ2QYqDSjs+DpVUHuriy
+	JEet05bf1rZLVbIVVOoA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1ujlyg-0000000Gcrz-0Ikz;
+	id 1ujlyg-0000000GcsC-1hdU;
 	Wed, 06 Aug 2025 21:47:18 +0000
 Received: from mail-pg1-x54a.google.com ([2607:f8b0:4864:20::54a])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1ujkHc-0000000GHBl-0jXa
+	id 1ujkHd-0000000GHDG-1HOH
 	for kvm-riscv@lists.infradead.org;
 	Wed, 06 Aug 2025 19:58:46 +0000
-Received: by mail-pg1-x54a.google.com with SMTP id 41be03b00d2f7-b4227538a47so135137a12.1
-        for <kvm-riscv@lists.infradead.org>; Wed, 06 Aug 2025 12:58:43 -0700 (PDT)
+Received: by mail-pg1-x54a.google.com with SMTP id 41be03b00d2f7-b38fc4d8dbaso218985a12.2
+        for <kvm-riscv@lists.infradead.org>; Wed, 06 Aug 2025 12:58:45 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1754510323; x=1755115123; darn=lists.infradead.org;
+        d=google.com; s=20230601; t=1754510324; x=1755115124; darn=lists.infradead.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:from:to:cc:subject:date:message-id:reply-to;
-        bh=AqSoz/ys0/nDwriVLA2HvcSasFXIo2nt11bZwmhw7W4=;
-        b=rQPe1xgLr0WYWegdjyg3F7223rHQdUiSWs/lrrsR/p0KeCbCJzTF0byjzLriqwXDHX
-         Okj2++j5bhVozeIgRWS3rkkOleldBTpHH6dOR0b9rlGkKSUqk8ABKZMIkSHRyqZluM1q
-         86lP4HRVj5CbTkZv+0F/IdDAVwSNU7RB0OSM7dlEgzUVcFfnqxeQAOph14J3sAWGBGG5
-         Riqn0J39AbLHc69jrHQuH/ratg46koHFMNjfKO2/lMerB00WoDxxvIvPg/hAUpKHH1kC
-         I180DBLz+fulwb9fi1+siGNtb+ktGcRZc3PCg6e4mfrQiQXoN7VnVYonV372/waqqNPV
-         LVmg==
+        bh=aIwiS3b08lZbnfZBzBRHsRLYuS/hl5WgYmD0pyHBLVw=;
+        b=ADIzp5zTr4Is+lYQMi2OeS/M6hJRsdiXHsPrg8w9wCHbQQl1jpHZF0aVVRmCkQJ3KD
+         bDm0K6es7D8c+xWJzIWt0m1H0q/UIWaJtBDU0u4YbqBBdavqMWbIwDDS7EuVRkPj9+7Q
+         Br8RAIsWIEcHjY+WDtSoZusaYDeiuq2AiQyT6LPG0JdRNCbIkDRuH3nL8X4A5Jm46OS1
+         j4MIvobYwSEOYMcmtahbG1g1GIDXxbg797hTYs0ugI1IOLOYp228IOR90EdxMwFU4aBo
+         jNtQ8lKfV/0d9CE7lhZpa9R38xze/Uj4KqKB9O3CwxOBx+0Lyz3AEaJuOgRL7BOHXZdN
+         dw+g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1754510323; x=1755115123;
+        d=1e100.net; s=20230601; t=1754510324; x=1755115124;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=AqSoz/ys0/nDwriVLA2HvcSasFXIo2nt11bZwmhw7W4=;
-        b=JvFYiMIEGQjysyC73TvuPplUOgG1URtHJhiKIMJqL7ue6iYg4NmO0bBlMm70Dn7AFE
-         KlKQeUB0dTutnWbn8cPuGjN/r4DWSxysJEZNGsyBAJhhiw9aSB6kBsjEde85jsBFbd2X
-         8mp7eclfEhETBaM9foawzUXiUjM6d56gpyP2iucquRpw3zjOdH76A87zPf0+Q+WBE1bb
-         6dy6k17jDs7lXD7S0MruYLuVRSstcfQKphn1eqXzeVjPmt/Ak0UY0mmmuzrYO4ia6guu
-         nSvCDJDvjXv8xhSjQKE3Sz5wNUBoS1bK/w9cZO2ZOWUqfUPS087brFVyVGOSa+x/HdRG
-         Drrw==
-X-Forwarded-Encrypted: i=1; AJvYcCVOpC1e1wsqQyQhAN7t2D325Vqu9wgEvxh+EMhtv+x5+n2TZybWlNkmUztyeATWXh/dF4aB5vKvQ10=@lists.infradead.org
-X-Gm-Message-State: AOJu0YydeylzQA5VCq+05UVPIxoM2lj3keiiK6RjxDnPZun1o2v/p9Cz
-	TXtw+7BT7QtNmtZQUaxkAxhuF2TRfYZ+3CQV+3JOTTUm/tFYWOaKzogaUOFyAAgsGJ0k9MQiBet
-	//uqOnQ==
-X-Google-Smtp-Source: AGHT+IFhegW1gGR7UHrSJevPOd3ITDk2k4F1jYjU8AgzTqj6JmCrtpCZa2eEdv34H9OVmz6MG3yGyWC8HfY=
-X-Received: from pjbsx14.prod.google.com ([2002:a17:90b:2cce:b0:311:c197:70a4])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:1c09:b0:31e:3bbc:e9e6
- with SMTP id 98e67ed59e1d1-3217638fd88mr438488a91.19.1754510322909; Wed, 06
- Aug 2025 12:58:42 -0700 (PDT)
-Date: Wed,  6 Aug 2025 12:57:03 -0700
+        bh=aIwiS3b08lZbnfZBzBRHsRLYuS/hl5WgYmD0pyHBLVw=;
+        b=TpsERDXow9r+7dERef/5Gw1vjMbSvqo9FExocTkIZnKP9c+X/0S4OJupc2JczlINoj
+         GPYcPogySK8lod9o4AtUXQewdfU++KM5IoBowJgTQzO61BE2639wMlblIOsE1nEwm+De
+         pCAX20OZBDxiDQSTyK31MtXjjmZXu2P9oteiH9jHaagsV0GpGk5QDTdoev7B4LRm/A+X
+         lziOFPBtfCD5xvSB6S7ILrs/Tpje6OSVvx/optH/jQSNFtmA8ANb5oVBNz+3GvI0g9IN
+         MySKbVKu4eH5wawKsKKUGxZN1zl996OJDAHGXHdoag3pIFI+lqfkG518a6ftZx1PEivK
+         HUFw==
+X-Forwarded-Encrypted: i=1; AJvYcCVxMLYCOgcS+Bxh6G5wAle/q6cIhxRTb94LfABD4ktvViSPg9NmMWSerFWoKL0U/hoOVqF+biI3D3g=@lists.infradead.org
+X-Gm-Message-State: AOJu0YzPXe4HYddmCFVBxCuT7LaMHPTjXwQSuVqCkSeEjGGOawy/ffuE
+	udeqcmMw/FlGKegijxX3UH9+ZJfIozScr0bvADnPnBOE+I5hNzhvH8zbmAtEFUF77lVWThMfS97
+	c2WxYSg==
+X-Google-Smtp-Source: AGHT+IEQR+T9dam/zfnLIV/i5izf3PHRRWb6ka2239rbCk7AqXY3VxMNYGaiVe7zhD28m3tT7rq7DHc261E=
+X-Received: from pjzd15.prod.google.com ([2002:a17:90a:e28f:b0:312:151d:c818])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:902:f645:b0:240:150e:57ba
+ with SMTP id d9443c01a7336-242a0a90e7amr55806795ad.3.1754510324526; Wed, 06
+ Aug 2025 12:58:44 -0700 (PDT)
+Date: Wed,  6 Aug 2025 12:57:04 -0700
 In-Reply-To: <20250806195706.1650976-1-seanjc@google.com>
 Mime-Version: 1.0
 References: <20250806195706.1650976-1-seanjc@google.com>
 X-Mailer: git-send-email 2.50.1.565.gc32cd1483b-goog
-Message-ID: <20250806195706.1650976-42-seanjc@google.com>
-Subject: [PATCH v5 41/44] KVM: nVMX: Disable PMU MSR interception as
+Message-ID: <20250806195706.1650976-43-seanjc@google.com>
+Subject: [PATCH v5 42/44] KVM: nSVM: Disable PMU MSR interception as
  appropriate while running L2
 From: Sean Christopherson <seanjc@google.com>
 To: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>, 
@@ -86,8 +86,8 @@ Cc: linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev,
 	Xiong Zhang <xiong.y.zhang@linux.intel.com>, Sandipan Das <sandipan.das@amd.com>, 
 	Dapeng Mi <dapeng1.mi@linux.intel.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250806_125844_209258_EE721CBE 
-X-CRM114-Status: GOOD (  14.08  )
+X-CRM114-CacheID: sfid-20250806_125845_381657_7A212202 
+X-CRM114-Status: GOOD (  10.76  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -105,69 +105,53 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-From: Mingwei Zhang <mizhang@google.com>
+Add MSRs that might be passed through to L1 when running with a mediated
+PMU to the nested SVM's set of to-be-merged MSR indices, i.e. disable
+interception of PMU MSRs when running L2 if both KVM (L0) and L1 disable
+interception.  There is no need for KVM to interpose on such MSR accesses,
+e.g. if L1 exposes a mediated PMU (or equivalent) to L2.
 
-Merge KVM's PMU MSR interception bitmaps with those of L1, i.e. merge the
-bitmaps of vmcs01 and vmcs12, e.g. so that KVM doesn't interpose on MSR
-accesses unnecessarily if L1 exposes a mediated PMU (or equivalent) to L2.
-
-Signed-off-by: Mingwei Zhang <mizhang@google.com>
-Co-developed-by: Dapeng Mi <dapeng1.mi@linux.intel.com>
-Signed-off-by: Dapeng Mi <dapeng1.mi@linux.intel.com>
-[sean: rewrite changelog and comment, omit MSRs that are always intercepted]
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/x86/kvm/vmx/nested.c | 30 ++++++++++++++++++++++++++++++
- 1 file changed, 30 insertions(+)
+ arch/x86/kvm/svm/nested.c | 18 +++++++++++++++++-
+ 1 file changed, 17 insertions(+), 1 deletion(-)
 
-diff --git a/arch/x86/kvm/vmx/nested.c b/arch/x86/kvm/vmx/nested.c
-index 47f1f0c7d3a7..b986a6fb684c 100644
---- a/arch/x86/kvm/vmx/nested.c
-+++ b/arch/x86/kvm/vmx/nested.c
-@@ -627,6 +627,34 @@ static inline void nested_vmx_set_intercept_for_msr(struct vcpu_vmx *vmx,
- #define nested_vmx_merge_msr_bitmaps_rw(msr) \
- 	nested_vmx_merge_msr_bitmaps(msr, MSR_TYPE_RW)
+diff --git a/arch/x86/kvm/svm/nested.c b/arch/x86/kvm/svm/nested.c
+index b7fd2e869998..de2b9db2d0ba 100644
+--- a/arch/x86/kvm/svm/nested.c
++++ b/arch/x86/kvm/svm/nested.c
+@@ -194,7 +194,7 @@ void recalc_intercepts(struct vcpu_svm *svm)
+  * Hardcode the capacity of the array based on the maximum number of _offsets_.
+  * MSRs are batched together, so there are fewer offsets than MSRs.
+  */
+-static int nested_svm_msrpm_merge_offsets[7] __ro_after_init;
++static int nested_svm_msrpm_merge_offsets[10] __ro_after_init;
+ static int nested_svm_nr_msrpm_merge_offsets __ro_after_init;
+ typedef unsigned long nsvm_msrpm_merge_t;
  
-+static void nested_vmx_merge_pmu_msr_bitmaps(struct kvm_vcpu *vcpu,
-+					     unsigned long *msr_bitmap_l1,
-+					     unsigned long *msr_bitmap_l0)
-+{
-+	struct kvm_pmu *pmu = vcpu_to_pmu(vcpu);
-+	struct vcpu_vmx *vmx = to_vmx(vcpu);
-+	int i;
+@@ -222,6 +222,22 @@ int __init nested_svm_init_msrpm_merge_offsets(void)
+ 		MSR_IA32_LASTBRANCHTOIP,
+ 		MSR_IA32_LASTINTFROMIP,
+ 		MSR_IA32_LASTINTTOIP,
 +
-+	/*
-+	 * Skip the merges if the vCPU doesn't have a mediated PMU MSR, i.e. if
-+	 * none of the MSRs can possibly be passed through to L1.
-+	 */
-+	if (!kvm_vcpu_has_mediated_pmu(vcpu))
-+		return;
++		MSR_K7_PERFCTR0,
++		MSR_K7_PERFCTR1,
++		MSR_K7_PERFCTR2,
++		MSR_K7_PERFCTR3,
++		MSR_F15H_PERF_CTR0,
++		MSR_F15H_PERF_CTR1,
++		MSR_F15H_PERF_CTR2,
++		MSR_F15H_PERF_CTR3,
++		MSR_F15H_PERF_CTR4,
++		MSR_F15H_PERF_CTR5,
 +
-+	for (i = 0; i < pmu->nr_arch_gp_counters; i++) {
-+		nested_vmx_merge_msr_bitmaps_rw(MSR_IA32_PERFCTR0 + i);
-+		nested_vmx_merge_msr_bitmaps_rw(MSR_IA32_PMC0 + i);
-+	}
-+
-+	for (i = 0; i < pmu->nr_arch_fixed_counters; i++)
-+		nested_vmx_merge_msr_bitmaps_rw(MSR_CORE_PERF_FIXED_CTR0 + i);
-+
-+	nested_vmx_merge_msr_bitmaps_rw(MSR_CORE_PERF_GLOBAL_CTRL);
-+	nested_vmx_merge_msr_bitmaps_read(MSR_CORE_PERF_GLOBAL_STATUS);
-+	nested_vmx_merge_msr_bitmaps_write(MSR_CORE_PERF_GLOBAL_OVF_CTRL);
-+}
-+
- /*
-  * Merge L0's and L1's MSR bitmap, return false to indicate that
-  * we do not use the hardware.
-@@ -724,6 +752,8 @@ static inline bool nested_vmx_prepare_msr_bitmap(struct kvm_vcpu *vcpu,
- 	nested_vmx_set_intercept_for_msr(vmx, msr_bitmap_l1, msr_bitmap_l0,
- 					 MSR_IA32_MPERF, MSR_TYPE_R);
++		MSR_AMD64_PERF_CNTR_GLOBAL_CTL,
++		MSR_AMD64_PERF_CNTR_GLOBAL_STATUS,
++		MSR_AMD64_PERF_CNTR_GLOBAL_STATUS_CLR,
++		MSR_AMD64_PERF_CNTR_GLOBAL_STATUS_SET,
+ 	};
+ 	int i, j;
  
-+	nested_vmx_merge_pmu_msr_bitmaps(vcpu, msr_bitmap_l1, msr_bitmap_l0);
-+
- 	kvm_vcpu_unmap(vcpu, &map);
- 
- 	vmx->nested.force_msr_bitmap_recalc = false;
 -- 
 2.50.1.565.gc32cd1483b-goog
 
