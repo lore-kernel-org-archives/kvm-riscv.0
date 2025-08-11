@@ -4,36 +4,36 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08302C87FDA
-	for <kvm-riscv@archiver.kernel.org>; Mon, 11 Aug 2025 06:11:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1551AC87FD2
+	for <kvm-riscv@archiver.kernel.org>; Mon, 11 Aug 2025 06:11:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=spVkyTqms2mrA9o8sE+VWwdOZk8xdj/SjMQPud2VLPs=; b=CvJ4e/nYMVrd1N
-	FxeZTPtk2BxY85DierxtGVXSblafD77rQLvVfMFLPUY2eZXl9ktvNEyykOpHpklZrAM8br2m408Vt
-	TubpG2WJd5oeaHSFYxZ5+16WUa6KXZXBjRqSkoNBICE981YZQ64MGZo3DuqcvMNXnyk2NEsS3DaB4
-	hBY8Zrsug8dAE24GV/GR2PCV7M/WuDMF4//DZngMYh9JoSQpe3kYkq0Om0et/mQb7nIdy3x+3whsZ
-	Ca524zWYYsj9ZvnEhMnIp0TTfHTwiRVrWEU5u4JYjNxuIN8vJ4U9aKaQP595ud9wZoal1Hf63ZhQj
-	sYsVP+kpduACFWHVTXNQ==;
+	List-Owner; bh=fZQi11S2ws6xpYED144X7mxTnn+O5NNVN4pwhlYlASo=; b=r29M0uFWmiwWk8
+	AyaCrkm1/wxXD3WZjEkGHNK8kZow8StTm0Mwd7ja6y3gh6oo9jwJllxNibgyn/rR9dvxO++dahfu0
+	nNtKMpKwTzhkyonN0JZDocHN0SqeXRN7ygYaD5zlDmmReqmQyFqb6OnPFXUdlGr/izp0G4nexCsbn
+	WUr7F462dK4XpTh9umOk25xbdxifarKhb+0HsGHnltZ8jzhSVpcm9YbcsNnL99O6AJXCdmK6/K5gn
+	O/6yy1f8QFNaTmvrWrUq30bmaXCQUeDgRdeiJNlpigX19YW2HlCH3ofbGd9eHKaAEgMRGyRTNgxLX
+	+mXANXYQFe6xEWiicnJQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1ulLkk-00000006ZPP-3EF4;
-	Mon, 11 Aug 2025 06:11:26 +0000
-Received: from out30-132.freemail.mail.aliyun.com ([115.124.30.132])
+	id 1ulLkl-00000006ZQn-3UL3;
+	Mon, 11 Aug 2025 06:11:27 +0000
+Received: from out30-113.freemail.mail.aliyun.com ([115.124.30.113])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1ulLkd-00000006ZIe-2K8M;
-	Mon, 11 Aug 2025 06:11:21 +0000
+	id 1ulLkf-00000006ZIh-0i9x;
+	Mon, 11 Aug 2025 06:11:22 +0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
 	d=linux.alibaba.com; s=default;
-	t=1754892677; h=From:To:Subject:Date:Message-Id:MIME-Version;
-	bh=JlGDH5MhkH4wQ0znvBetGKXo3m7u1SGgHzon2WgQpFY=;
-	b=KEARupvJsFdHyDuNkz7e9EUAYT2GGhc81tJCYiNnMMtD+d3NpEFCqJjsCOY3jXMOs4lVpC0ZNgxsAfNJcX86FmeEX0VPjXVQq38GHFi673/frOVTOWsigVMXwY4AyajRZHzse128tw/i47N/FuaN60lUU7GUVxtLfbSzYi/a4/Y=
-Received: from localhost.localdomain(mailfrom:fangyu.yu@linux.alibaba.com fp:SMTPD_---0WlP-v9j_1754892673 cluster:ay36)
+	t=1754892679; h=From:To:Subject:Date:Message-Id:MIME-Version;
+	bh=oqEUcnbYtVuGUfumL17PGMuD/BWybgobKSLXaGVbfnQ=;
+	b=CVU63bzhoCjguL1aIMaQ16vCAvtQexs0LenWYOc761qKYJh+GBm8o20ESSUZelvjYPJ64aqJUKW1nyrxmfvQLYVbQsmX52+ar+kdnS+GTNEwSqVvUu0DS/h4ag4QYgI/akRQxusHPcSbms+7waErFTx3M4j5/J070t2MESAVj3s=
+Received: from localhost.localdomain(mailfrom:fangyu.yu@linux.alibaba.com fp:SMTPD_---0WlP-vAP_1754892675 cluster:ay36)
           by smtp.aliyun-inc.com;
-          Mon, 11 Aug 2025 14:11:14 +0800
+          Mon, 11 Aug 2025 14:11:16 +0800
 From: fangyu.yu@linux.alibaba.com
 To: anup@brainfault.org,
 	paul.walmsley@sifive.com,
@@ -57,16 +57,17 @@ Cc: guoren@linux.alibaba.com,
 	linux-kernel@vger.kernel.org,
 	iommu@lists.linux.dev,
 	Fangyu Yu <fangyu.yu@linux.alibaba.com>
-Subject: [RFC PATCH 3/6] RISC-V: KVM: Add a xarray to record host irq msg
-Date: Mon, 11 Aug 2025 14:11:01 +0800
-Message-Id: <20250811061104.10326-4-fangyu.yu@linux.alibaba.com>
+Subject: [RFC PATCH 4/6] iommu/riscv: Add irq_mask and irq_ack configure for iommu-ir
+Date: Mon, 11 Aug 2025 14:11:02 +0800
+Message-Id: <20250811061104.10326-5-fangyu.yu@linux.alibaba.com>
 X-Mailer: git-send-email 2.39.3 (Apple Git-146)
 In-Reply-To: <20250811061104.10326-1-fangyu.yu@linux.alibaba.com>
 References: <20250811061104.10326-1-fangyu.yu@linux.alibaba.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250810_231119_892775_14159228 
-X-CRM114-Status: GOOD (  13.23  )
+X-CRM114-CacheID: sfid-20250810_231121_363916_C5B70B66 
+X-CRM114-Status: UNSURE (   8.48  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -85,140 +86,37 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 From: Fangyu Yu <fangyu.yu@linux.alibaba.com>
 
-In the irq bypass scenario,the host interrupt comes from VFIO, and
-it is an enabled MSI/MSI-X interrupt.  Due to the  reconfiguration
-of the PCI-e BAR space during the irq bypass process,this host irq
-will not be triggered in the host system.
-
-We can use this host irq as a notice MSI in IOMMU MRIF mode.
+The irq_mask and irq_ack are required for host irq to be triggered
+under the host system.
 
 Signed-off-by: Fangyu Yu <fangyu.yu@linux.alibaba.com>
 ---
- arch/riscv/kvm/aia_imsic.c | 69 +++++++++++++++++++++++++++++++++++++-
- 1 file changed, 68 insertions(+), 1 deletion(-)
+ drivers/iommu/riscv/iommu-ir.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/arch/riscv/kvm/aia_imsic.c b/arch/riscv/kvm/aia_imsic.c
-index e91164742fd0..58807e68a3dd 100644
---- a/arch/riscv/kvm/aia_imsic.c
-+++ b/arch/riscv/kvm/aia_imsic.c
-@@ -60,6 +60,9 @@ struct imsic {
- 	struct imsic_mrif *swfile;
- 	phys_addr_t swfile_pa;
- 	raw_spinlock_t swfile_extirq_lock;
-+
-+	bool mrif_support;
-+	struct xarray hostirq_array;	/* Attached host irq array */
+diff --git a/drivers/iommu/riscv/iommu-ir.c b/drivers/iommu/riscv/iommu-ir.c
+index 5461dbe18159..73f552ed5b65 100644
+--- a/drivers/iommu/riscv/iommu-ir.c
++++ b/drivers/iommu/riscv/iommu-ir.c
+@@ -208,6 +208,7 @@ static struct irq_chip riscv_iommu_irq_chip = {
+ 	.irq_unmask		= irq_chip_unmask_parent,
+ 	.irq_set_affinity	= irq_chip_set_affinity_parent,
+ 	.irq_set_vcpu_affinity	= riscv_iommu_irq_set_vcpu_affinity,
++	.irq_ack		= irq_chip_ack_parent,
  };
  
- #define imsic_vs_csr_read(__c)			\
-@@ -740,6 +743,57 @@ void kvm_riscv_vcpu_aia_imsic_release(struct kvm_vcpu *vcpu)
- 	kvm_riscv_aia_free_hgei(old_vsfile_cpu, old_vsfile_hgei);
- }
+ static int riscv_iommu_irq_domain_alloc_irqs(struct irq_domain *irqdomain,
+@@ -239,7 +240,9 @@ static const struct msi_parent_ops riscv_iommu_msi_parent_ops = {
+ 	.supported_flags	= MSI_GENERIC_FLAGS_MASK |
+ 				  MSI_FLAG_PCI_MSIX,
+ 	.required_flags		= MSI_FLAG_USE_DEF_DOM_OPS |
+-				  MSI_FLAG_USE_DEF_CHIP_OPS,
++				  MSI_FLAG_USE_DEF_CHIP_OPS |
++				  MSI_FLAG_PCI_MSI_MASK_PARENT,
++	.chip_flags		= MSI_CHIP_FLAG_SET_ACK,
+ 	.init_dev_msi_info	= msi_parent_init_dev_msi_info,
+ };
  
-+static int kvm_arch_update_irqfd_unset(struct kvm *kvm, unsigned int host_irq)
-+{
-+	struct kvm_vcpu *vcpu;
-+	unsigned long tmp;
-+
-+	kvm_for_each_vcpu(tmp, vcpu, kvm) {
-+		struct imsic *imsic = vcpu->arch.aia_context.imsic_state;
-+		struct msi_msg *curr = xa_load(&imsic->hostirq_array, host_irq);
-+
-+		if (!curr)
-+			continue;
-+
-+		xa_erase(&imsic->hostirq_array, host_irq);
-+		kfree(curr);
-+		break;
-+	}
-+
-+	return irq_set_vcpu_affinity(host_irq, NULL);
-+}
-+
-+static struct msi_msg *kvm_arch_update_irqfd_hostirq(struct imsic *imsic,
-+						     unsigned int host_irq, int *ret,
-+						     struct kvm_kernel_irq_routing_entry *e)
-+{
-+	struct msi_msg *priv_msg = xa_load(&imsic->hostirq_array, host_irq);
-+
-+	if (!priv_msg) {
-+		priv_msg = kzalloc(sizeof(*priv_msg), GFP_KERNEL);
-+		if (!priv_msg) {
-+			*ret = -ENOMEM;
-+			goto out;
-+		}
-+
-+		struct msi_msg host_msg, *curr;
-+
-+		get_cached_msi_msg(host_irq, &host_msg);
-+		priv_msg[0] = host_msg;
-+		curr = xa_cmpxchg(&imsic->hostirq_array, host_irq,
-+				NULL, priv_msg, GFP_ATOMIC);
-+		if (WARN_ON_ONCE(curr)) {
-+			*ret = xa_err(curr) ? : -EBUSY;
-+			kfree(priv_msg);
-+			goto out;
-+		}
-+	}
-+	*ret = 0;
-+
-+out:
-+	return priv_msg;
-+}
-+
- int kvm_arch_update_irqfd_routing(struct kvm *kvm, unsigned int host_irq,
- 				  uint32_t guest_irq, bool set)
- {
-@@ -750,7 +804,7 @@ int kvm_arch_update_irqfd_routing(struct kvm *kvm, unsigned int host_irq,
- 	int idx, ret = -ENXIO;
- 
- 	if (!set)
--		return irq_set_vcpu_affinity(host_irq, NULL);
-+		return kvm_arch_update_irqfd_unset(kvm, host_irq);
- 
- 	idx = srcu_read_lock(&kvm->irq_srcu);
- 	irq_rt = srcu_dereference(kvm->irq_routing, &kvm->irq_srcu);
-@@ -795,6 +849,11 @@ int kvm_arch_update_irqfd_routing(struct kvm *kvm, unsigned int host_irq,
- 
- 			vcpu_info.msi_addr_pattern = tppn & ~vcpu_info.msi_addr_mask;
- 			vcpu_info.gpa = target;
-+			vcpu_info.host_irq = host_irq;
-+			vcpu_info.host_msg =
-+				    kvm_arch_update_irqfd_hostirq(imsic, host_irq, &ret, e);
-+			if (ret)
-+				goto out;
- 
- 			read_lock_irqsave(&imsic->vsfile_lock, flags);
- 
-@@ -848,6 +907,10 @@ static int kvm_riscv_vcpu_irq_update(struct kvm_vcpu *vcpu)
- 		if (!irqfd->producer)
- 			continue;
- 		host_irq = irqfd->producer->irq;
-+		vcpu_info.host_irq = host_irq;
-+		vcpu_info.host_msg = xa_load(&imsic->hostirq_array, host_irq);
-+		if (!vcpu_info.host_msg)
-+			continue;
- 
- 		if (imsic->vsfile_cpu < 0) {
- 			vcpu_info.hpa = imsic->swfile_pa;
-@@ -855,6 +918,7 @@ static int kvm_riscv_vcpu_irq_update(struct kvm_vcpu *vcpu)
- 		} else {
- 			vcpu_info.mrif = false;
- 		}
-+
- 		ret = irq_set_vcpu_affinity(host_irq, &vcpu_info);
- 		if (ret) {
- 			spin_unlock_irq(&kvm->irqfds.lock);
-@@ -1195,6 +1259,9 @@ int kvm_riscv_vcpu_aia_imsic_init(struct kvm_vcpu *vcpu)
- 	imsic->swfile_pa = page_to_phys(swfile_page);
- 	raw_spin_lock_init(&imsic->swfile_extirq_lock);
- 
-+	xa_init(&imsic->hostirq_array);
-+	imsic->mrif_support = false;
-+
- 	/* Setup IO device */
- 	kvm_iodevice_init(&imsic->iodev, &imsic_iodoev_ops);
- 	mutex_lock(&kvm->slots_lock);
 -- 
 2.49.0
 
