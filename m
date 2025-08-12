@@ -4,69 +4,90 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7234CCA0EC0
-	for <kvm-riscv@archiver.kernel.org>; Mon, 11 Aug 2025 06:11:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DF34FC87FCB
+	for <kvm-riscv@archiver.kernel.org>; Tue, 12 Aug 2025 16:33:23 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
-	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:References:Subject:From:To:
+	Cc:Message-Id:Date:Mime-Version:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=FttCxDcPSY0qfCAtxrOcvU464B5CO0PpKCwsZyUWsSk=; b=yNDxKh+Qfvzs2k
-	lgBRQWHyOTG4Y6esLds25jlMOSCfHKKXAImqDZzegDn08pmxsXB6r7YooygWG/wQsySkak1ofWXij
-	vVBVwGLfNXcQ56lSY880r7ArUXOvyIcrByZTyYCQIKa7wJPRvTw4BosNUsGVBPTsSs1zQvntorSbO
-	GZsKGWK9l/TpvO59I713nM6bMGevb14qs2B1ysapXiJqlAu7R+Lg3veGDf2exLI/1Bje6HTMwvBtk
-	1byN1Nb/mo9SpilzAHTpOeLcPDKMW4g80PCEo26FnH4JwCaHPxON3B8Prz4um5rucQy2z+H13++hQ
-	wsHOL6YuMFJkqzvvAGvA==;
+	List-Owner; bh=SMR8LMyTVu4DlXsUd6F32vdmSmZuS+2kmav8GdihNqA=; b=xPWZ4GUAlmGw1w
+	cd/qMY/yc1Y9BNavYDiK/vfaEd1NiUEMLN7Yjr3alCWto614ab3GwAFRG2uUppLPzrAnEiKxVsPTk
+	RpY04gs9gmVq9xsuprN1VjiVfufeL3E1m+/aS2vJzwUzVxwKNsbbixZZE7Ww7Zz29YHKPOAsmtxCy
+	813O789CgO5tggJMWpIiEdeNb5J0zay7cMtaGEQKxdQ6w2QhNbySV61JFVpoX2TvV1Oi/Y7eOcvAD
+	hZLi2tS0EisTmb3f+99zTY1CCLhUjHzGBrmeRpyIGRx9b27EY4H3O1BpqjNSU5YeROgD/rrrDLA4p
+	I9+MUkxR3MiwTon6uUUA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1ulLko-00000006ZTr-0ojN;
-	Mon, 11 Aug 2025 06:11:30 +0000
-Received: from out30-124.freemail.mail.aliyun.com ([115.124.30.124])
+	id 1ulrwB-0000000BQZ6-2kYz;
+	Tue, 12 Aug 2025 16:33:23 +0000
+Received: from mail-wm1-x330.google.com ([2a00:1450:4864:20::330])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1ulLkh-00000006ZKu-3rfm;
-	Mon, 11 Aug 2025 06:11:26 +0000
+	id 1uloxq-0000000AuJV-18S7
+	for kvm-riscv@lists.infradead.org;
+	Tue, 12 Aug 2025 13:22:56 +0000
+Received: by mail-wm1-x330.google.com with SMTP id 5b1f17b1804b1-459ebc99726so2194285e9.1
+        for <kvm-riscv@lists.infradead.org>; Tue, 12 Aug 2025 06:22:53 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux.alibaba.com; s=default;
-	t=1754892681; h=From:To:Subject:Date:Message-Id:MIME-Version;
-	bh=7J/clauWbQWRFTci+97Z7tJgolFj9hSh37VSydzAoWg=;
-	b=U/LSQzY7UwPB1A363vqFcpmONsE5h+elI+qe4to5q0W6NDhkNXvYH9uZ7tHrOG4f7wShxA8cxAE4VQ6r/eywwzb3Nwi6OIxOvkGLazuzVj1MTZz4p/ouI6eTkXkY2YBWSgpZarEJN/UoPkjiM4XRdKM9wk0U/8350afxgXuIc0I=
-Received: from localhost.localdomain(mailfrom:fangyu.yu@linux.alibaba.com fp:SMTPD_---0WlP-vBA_1754892678 cluster:ay36)
-          by smtp.aliyun-inc.com;
-          Mon, 11 Aug 2025 14:11:19 +0800
-From: fangyu.yu@linux.alibaba.com
-To: anup@brainfault.org,
-	paul.walmsley@sifive.com,
-	palmer@dabbelt.com,
-	aou@eecs.berkeley.edu,
-	alex@ghiti.fr,
-	atishp@atishpatra.org,
-	tjeznach@rivosinc.com,
-	joro@8bytes.org,
-	will@kernel.org,
-	robin.murphy@arm.com,
-	sunilvl@ventanamicro.com,
-	rafael.j.wysocki@intel.com,
-	tglx@linutronix.de,
-	ajones@ventanamicro.com
-Cc: guoren@linux.alibaba.com,
-	guoren@kernel.org,
-	kvm@vger.kernel.org,
-	kvm-riscv@lists.infradead.org,
-	linux-riscv@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	iommu@lists.linux.dev,
-	Fangyu Yu <fangyu.yu@linux.alibaba.com>
-Subject: [RFC PATCH 6/6] RISC-V: KVM: Check the MRIF in notice MSI irq handler
-Date: Mon, 11 Aug 2025 14:11:04 +0800
-Message-Id: <20250811061104.10326-7-fangyu.yu@linux.alibaba.com>
-X-Mailer: git-send-email 2.39.3 (Apple Git-146)
-In-Reply-To: <20250811061104.10326-1-fangyu.yu@linux.alibaba.com>
-References: <20250811061104.10326-1-fangyu.yu@linux.alibaba.com>
-MIME-Version: 1.0
+        d=ventanamicro.com; s=google; t=1755004973; x=1755609773; darn=lists.infradead.org;
+        h=in-reply-to:references:subject:from:to:cc:message-id:date
+         :content-transfer-encoding:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=9B+m7y7gtFTTGyBFc0gL8TaOwTzdqm4Gs9PW5eoUpxg=;
+        b=pM/InwQuLLJ8LneB7n0Bv6dJXnDl+e+yuBK1bzqjV4jZSQh+sV28szZ1re9Dpuarrf
+         69YDVx1GE8etdpqbwLMnBnnTTt+EaHxL7uwBZgdFEnJBYBBF5bIpm9FQahO+ZsdpEJr6
+         JXneh8Ysfgpfo3lQ6TTrb0O4KpxWYdlqYziZCRv1DJcLFgDCFr5M5fEJO0yArgnITp6J
+         NG9b8bXH3T4C8kZv3808p9A6NROHQWcvyxqV43s/NINRqeyT63Up/WFO4BBJCL7ehxbH
+         I/6V6tfBge9fSUy3SOxdx51nsuku40//jHkL2iJ8tu/hvWizKjT3eb5osq+YK7Hd6K3k
+         jezA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1755004973; x=1755609773;
+        h=in-reply-to:references:subject:from:to:cc:message-id:date
+         :content-transfer-encoding:mime-version:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=9B+m7y7gtFTTGyBFc0gL8TaOwTzdqm4Gs9PW5eoUpxg=;
+        b=ilmTd4HePVM0mqkJwA/fUg6i8PiJfbUnYHHISaiLIQzDCovg98QsniqoW/TB4L+byU
+         FJHm1VTvQwAGbtHg2SJ44YkzdQZND+b7gDo7wdcckymc8dusFC3qeamEf3OVJddnHZtR
+         xMXAnwBpJtMUyLYnfMCfMU28ixwlTow5KRd54PMpcVPi7SROsBEc7XahCW8RfMv5p90t
+         tYjO4PcfHEcgIgC5/ivIM1PtHvOUhEmP5juejNGJD/a+/R0+74w0099+unB35D0hEs5a
+         vIA7Dr7MGa6precOXOdOegAIB8WYokKS42RGv2P8yhgaPfQvyknYJBHb6FYfzh8ygB6B
+         JU+A==
+X-Forwarded-Encrypted: i=1; AJvYcCWPw7EfVey5Hw7Fz8L5CYPj6tInLOkd469D3p5EJDixRyEPUbRoXp41YMy44kerqmKhJ2Js531za1k=@lists.infradead.org
+X-Gm-Message-State: AOJu0YzVVy6Q20RAY6N6iCoN+N/q21GznYr2KWWV9bGAi373Tvr4Gswh
+	V1sLfosSH17fbin/faZG7q0ZtKXkz88/DjwA92OAQ2XPD8E1g/9/K8Q02p6FIBjpLlw=
+X-Gm-Gg: ASbGncv461ksxeovcvXW9Vu3PSHXxPz5yv8ALg9VfrEy7Grw0+YP4WkhzEZvNM76XpG
+	a4HVegvl4Wctxbwh0Pl+fofXS5+mB+AF7K1FM8EFcQBzFrrzvnpMnO0+0E9Ba72hB0GT4yPNKRD
+	ILw6uM+t3tA1rRYI6MxbGaVjGxBmpnGN0BTJQ2E2mBH4WOlTm/NrfxI+jFL9ZyLW+AJOlEfMGzx
+	FvQpzo3DAkulQmexoF6M+6iMzqLmDXCTynqsXG7qSEVTXuQY/FPdiEuyZvV0+oi4F0iRa73J/34
+	2T7bgX7jcW6aRUWdyTCDZrFbHv70I1UN52J7B8xRsWbjQ18/L8VxgE28+W2U3bfl8m8FL6fKEaV
+	rpGbDr3SiPFOWStV/qsd1xA3ovlKbxA==
+X-Google-Smtp-Source: AGHT+IE2d/O56DZUtoh12B2LgxGIZeb1yHos8UKAErVtVVQ4j+I6Ktyv6mqGKISnmKVi1pnhPfvJHQ==
+X-Received: by 2002:a05:600c:1ca1:b0:459:ddd6:1cbf with SMTP id 5b1f17b1804b1-45a157b70b9mr736355e9.0.1755004972582;
+        Tue, 12 Aug 2025 06:22:52 -0700 (PDT)
+Received: from localhost ([2a02:8308:a00c:e200:8113:2b11:8f42:672f])
+        by smtp.gmail.com with UTF8SMTPSA id ffacd0b85a97d-3b79c453d6esm44093096f8f.37.2025.08.12.06.22.51
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 12 Aug 2025 06:22:52 -0700 (PDT)
+Mime-Version: 1.0
+Date: Tue, 12 Aug 2025 15:22:51 +0200
+Message-Id: <DC0HC9ORWWX1.1LUBWVHPGFK95@ventanamicro.com>
+Cc: <alex@ghiti.fr>, <anup@brainfault.org>, <aou@eecs.berkeley.edu>,
+ <atish.patra@linux.dev>, <guoren@linux.alibaba.com>,
+ <kvm-riscv@lists.infradead.org>, <kvm@vger.kernel.org>,
+ <linux-kernel@vger.kernel.org>, <linux-riscv-bounces@lists.infradead.org>,
+ <linux-riscv@lists.infradead.org>, <palmer@dabbelt.com>,
+ <paul.walmsley@sifive.com>
+To: <fangyu.yu@linux.alibaba.com>
+From: =?utf-8?q?Radim_Kr=C4=8Dm=C3=A1=C5=99?= <rkrcmar@ventanamicro.com>
+Subject: Re: [PATCH] RISC-V: KVM: Using user-mode pte within
+ kvm_riscv_gstage_ioremap
+References: <DBX0JNR61UNM.Z42YERAKRFR8@ventanamicro.com>
+ <20250809032020.51380-1-fangyu.yu@linux.alibaba.com>
+In-Reply-To: <20250809032020.51380-1-fangyu.yu@linux.alibaba.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250810_231124_262223_46B11095 
-X-CRM114-Status: GOOD (  12.60  )
+X-CRM114-CacheID: sfid-20250812_062254_315020_72AE4449 
+X-CRM114-Status: GOOD (  10.31  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -83,92 +104,38 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-From: Fangyu Yu <fangyu.yu@linux.alibaba.com>
+2025-08-09T11:20:20+08:00, <fangyu.yu@linux.alibaba.com>:
+>>> From: Fangyu Yu <fangyu.yu@linux.alibaba.com>
+>>> According to the RISC-V Privileged Architecture Spec, for G-stage address
+>>> translation, all memory accesses are considered to be user-level accesses
+>>> as though executed in Umode.
+>>
+>>What implementation are you using?  I would have assume that the
+>>original code was tested on QEMU, so we might have a bug there.
+>>
+>
+> This issue can be reproduced using QEMU.
+> Since kvm has registered the MMIO Bus for IMSIC gpa, when a guest
+> page fault occurs, it will call the imsic_mmio_write function,the
+> guest irq will be written to the guest interrupt file by kvm.
 
-In MRIF mode,  the Advanced Interrupt Architecture Specification
-defines the operation to store the  incoming MSIs into the  MRIF
-and to generate the notice MSI,the software shold check the MRIF
-in the notice MSI irq handler.
+Oh, so the interrupts were "just" slower.  Great job catching that!
 
-And without MRIF support,we redirect the guest interrupt back to
-the original host interrupt,  the software update and check MRIF
-in host irq handler.
+>>> ---
+>>> diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
+>>> @@ -359,8 +360,11 @@ int kvm_riscv_gstage_ioremap(struct kvm *kvm, gpa_t gpa,
+>>> +		pte = pte_mkdirty(pte);
+>>
+>>Is it necessary to dirty the pte?
+>>
+>>It was dirtied before, so it definitely doesn't hurt,
+>
+> Make pte dirty is necessary(for hardware without Svadu), and here is
+> the first time to make this pte dirty.
 
-Signed-off-by: Fangyu Yu <fangyu.yu@linux.alibaba.com>
----
- arch/riscv/kvm/aia_imsic.c | 29 +++++++++++++++++++++++++++--
- 1 file changed, 27 insertions(+), 2 deletions(-)
+Right, we would get a pointless trap otherwise,
 
-diff --git a/arch/riscv/kvm/aia_imsic.c b/arch/riscv/kvm/aia_imsic.c
-index 58807e68a3dd..f0d1acde0dd4 100644
---- a/arch/riscv/kvm/aia_imsic.c
-+++ b/arch/riscv/kvm/aia_imsic.c
-@@ -867,11 +867,16 @@ int kvm_arch_update_irqfd_routing(struct kvm *kvm, unsigned int host_irq,
- 
- 			ret = irq_set_vcpu_affinity(host_irq, &vcpu_info);
- 			if (ret) {
-+				if (ret == -ENODEV) {
-+					imsic->mrif_support = false;
-+					ret = 0;
-+				}
- 				read_unlock_irqrestore(&imsic->vsfile_lock, flags);
- 				goto out;
- 			}
- 
--			irq_data_get_irq_chip(irqdata)->irq_write_msi_msg(irqdata, msg);
-+			if (imsic->mrif_support)
-+				irq_data_get_irq_chip(irqdata)->irq_write_msi_msg(irqdata, msg);
- 
- 			read_unlock_irqrestore(&imsic->vsfile_lock, flags);
- 		}
-@@ -921,6 +926,10 @@ static int kvm_riscv_vcpu_irq_update(struct kvm_vcpu *vcpu)
- 
- 		ret = irq_set_vcpu_affinity(host_irq, &vcpu_info);
- 		if (ret) {
-+			if (ret == -ENODEV) {
-+				imsic->mrif_support = false;
-+				ret = 0;
-+			}
- 			spin_unlock_irq(&kvm->irqfds.lock);
- 			return ret;
- 		}
-@@ -1182,8 +1191,24 @@ int kvm_riscv_vcpu_aia_imsic_inject(struct kvm_vcpu *vcpu,
- 	if (imsic->vsfile_cpu >= 0) {
- 		writel(iid, imsic->vsfile_va + IMSIC_MMIO_SETIPNUM_LE);
- 	} else {
-+		if (imsic->mrif_support) {
-+			struct msi_msg *msg;
-+			unsigned long idx;
-+
-+			/* In MRIF mode, the noticed MSI irq handler will call here to
-+			 * determine whether the MRIF has been updated.Since the IOMMU
-+			 * hardware has updated the MRIF,the software does not need to
-+			 * update the MRIF file again.
-+			 */
-+			xa_for_each(&imsic->hostirq_array, idx, msg) {
-+				if (msg->data == iid)
-+					goto skip_update_swfile;
-+			}
-+		}
- 		eix = &imsic->swfile->eix[iid / BITS_PER_TYPE(u64)];
- 		set_bit(iid & (BITS_PER_TYPE(u64) - 1), eix->eip);
-+
-+skip_update_swfile:
- 		imsic_swfile_extirq_update(vcpu);
- 	}
- 
-@@ -1260,7 +1285,7 @@ int kvm_riscv_vcpu_aia_imsic_init(struct kvm_vcpu *vcpu)
- 	raw_spin_lock_init(&imsic->swfile_extirq_lock);
- 
- 	xa_init(&imsic->hostirq_array);
--	imsic->mrif_support = false;
-+	imsic->mrif_support = true;
- 
- 	/* Setup IO device */
- 	kvm_iodevice_init(&imsic->iodev, &imsic_iodoev_ops);
--- 
-2.49.0
-
+Thanks.
 
 -- 
 kvm-riscv mailing list
