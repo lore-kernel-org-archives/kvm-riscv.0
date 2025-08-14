@@ -4,86 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E81CACA0EE6
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E5543CA0EE4
 	for <kvm-riscv@archiver.kernel.org>; Thu, 14 Aug 2025 16:58:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
-	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=U1pSor9eovEPM4oCwXUqs1cCLl3F4oh7D0TQx7y/VsU=; b=1N7QBCQWGjERNT
-	FHsBKzD1MqZkT2S1NHKv6H8+c+7SQq7vPCS4UsA8wrXkVzUbzr0zBIOV3GifjSwb8WwAtD1cTCwes
-	ymLgw9Slek7trxAgRZppHphwSrIngw3uoN1mEpFxzg2XMS2w+uhS87y21rFvuA1ZmajB1qk8UHLOE
-	Ylvs1QjHPZK7VfJ2GX20ej7LZ1ItQsSLq7B0xORpgk6kBkQCeeGcMYyj0szS+yCypIH2btEQAQbnt
-	K7n/oIN7uDxPiukvLM269dI9xNYkkm9NGEHQmKUVCQr7pu22igVtFsy2KACWv3XquEfmF+a1HXVlK
-	G45Jkq+DFG+vIBpyVljQ==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=7wyxVPHH2sXPgHCOFF/3YCVvZuVY313ozGFDiQOU2eA=; b=RlURYU+1Hh4MZ8
+	vKe/IRwVLyUdKmyZ0x37XPdTPkhBlkb/08MGSAtPHnjUqBsl6/t9KngpfTrp/OLmHmQbGEgJgMew9
+	7p2EHQ9Qa/QKhoGYNCDE5lJmKJU+O3o2HXNBn5Q9zrO7VXbAi45amOayxETKtmI/3AN4PcINVvUzT
+	tTvwF0DRTrKZ1T0675dIYYUGbdOzrBo3sFFr0xh9sjuYPz45fRKcLBQU+7/LTp+MpYsP+ac2je/Le
+	0yOSMjMJk61eV8qWn+PKgFqX3Kf7cIPPFeTIEMBHR2rfA5fx77DQx+U8HK65IS98WX7C2KWPSh3zW
+	7Fa+IoqVxAkXYLEvC0JQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1umbHA-000000007xQ-2GDN;
+	id 1umbHA-000000007x8-0t6l;
 	Thu, 14 Aug 2025 16:58:04 +0000
-Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+Received: from mail-pf1-x431.google.com ([2607:f8b0:4864:20::431])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1umaJJ-0000000HY5y-0VlF
-	for kvm-riscv@bombadil.infradead.org;
-	Thu, 14 Aug 2025 15:56:13 +0000
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:MIME-Version
-	:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:
-	Content-Type:Content-ID:Content-Description;
-	bh=Bm60/2Cr4w6uAzbvsdcbKrh6VNvMu+/Ils5A4Kn+0Hk=; b=IfE9G8WDo/rjgAydtYCjuY0qRG
-	EmmnCo1x1DUwKoiF3RDMjvDAAaSfy7Rt2NkGsQ/THaHgmdboiRCWLs2VtU4utFLILyeastOtQ2VCo
-	wZle8B9wAsrFxDysCY0L4nRjygvwJkH0CU/CnVLKZBWeQMZRcbDF8vBL1mHDfQ/scdpeh7KFxQwS4
-	4N8bQ/UXcRy8DMrgLVlD1TaaxizmqwVMIqNEK/yvp1jrVvMUIsByYno7oDNW2Jwa3s6PBxmC8NX09
-	i/RXDMLpA221+TSytnMA1kRBHB/cHPI8gu46iDzdcsZEzbSeuCQR/fBBDXBC1fO0gnbMHECBJZAmO
-	YTn5lSQg==;
-Received: from mail-pl1-x62c.google.com ([2607:f8b0:4864:20::62c])
-	by desiato.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1umaJE-0000000GTBn-0Zn7
+	id 1umaJ6-0000000HY46-2cVW
 	for kvm-riscv@lists.infradead.org;
-	Thu, 14 Aug 2025 15:56:11 +0000
-Received: by mail-pl1-x62c.google.com with SMTP id d9443c01a7336-24458263458so10337025ad.3
-        for <kvm-riscv@lists.infradead.org>; Thu, 14 Aug 2025 08:56:07 -0700 (PDT)
+	Thu, 14 Aug 2025 15:56:02 +0000
+Received: by mail-pf1-x431.google.com with SMTP id d2e1a72fcca58-76e2e5c0d4fso988911b3a.0
+        for <kvm-riscv@lists.infradead.org>; Thu, 14 Aug 2025 08:56:00 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ventanamicro.com; s=google; t=1755186966; x=1755791766; darn=lists.infradead.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Bm60/2Cr4w6uAzbvsdcbKrh6VNvMu+/Ils5A4Kn+0Hk=;
-        b=LVDQh3PH2Jj0fmQEzGFFbGADrHwPWcEsjJjbIIP8hO5dX4cVvBYSW6mlipcPgUXsG/
-         SrdyUIqkl8XQMUkCfS0IjP6QFsxQBUJoRKcObY9j6cwBthhzIK95nm8DgYrhdZ9swliH
-         oCOuDkNJZOKZWG5j6NYyOeTBFO4vQbSKVjC5SdvlPwE5rsvwBdM4xmul+WVXgW0pAKrP
-         /heed9Hsxsfr8dvBwJLu+ep8l2XhUavHDeftpB0ASJtm82Rcqz4KDE2l0FeznesKU/OW
-         1QhWSmoHWuZSeJgyp9N9dVUBPtiBG0JBBIatBipIpYWNtfNPbvmyshXSnwJhQN0g0tsh
-         y/NQ==
+        d=ventanamicro.com; s=google; t=1755186960; x=1755791760; darn=lists.infradead.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=fbS0SnSfDCYNteBkAugCZAVezW6wYeQqbL6j1Y/9w2o=;
+        b=lrkPIcKa48cRDTKMN4ukq29X40b04Rgyv/3VCKlAFEQ6x7EGDrgIcaiFn26uZPCv0F
+         jv2ArefF+fImglGinfQOVzTl5VBZ2DSTCTvNIsfitKaEU7I8oM+MhQknnwQSDP7FGW9c
+         UjEPZiHocPycom1O//qohLYDW0fP+jxowj5wJEK6o3uwB+x9nDWBa6OrdADlqwSjN7gO
+         ie8mytwbvJUsfYkBdr2q+BuGedkaDxbCZOhNq1Hh9VBDTFYDiUOg29YB4p1w3p9dYI+Y
+         Xtx7g5fiM6VbiR+pOoi++27T3uEFp67jQjPrwB/kt+b2knr+Z/UXQLxANfsPIs+88wwP
+         0Hmw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1755186966; x=1755791766;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=Bm60/2Cr4w6uAzbvsdcbKrh6VNvMu+/Ils5A4Kn+0Hk=;
-        b=nyZXIfYekE+WieTyKDE887GaH0EP/SolcLsywbj15N4sVBBPohrrIS7BD9q3QkZH6j
-         E6lj59knyPsmOeSaHEXWh/WwQesTJGUP5JKqfUy9nOe586t84Sc71HBLJtE3UH/mrp3D
-         1c/ZybrmMB3YIKU7W2yhfuzv1rmDuwD9nQNCRkUkVJaZA6yU/uLbB5mcngDrPMlYPB7J
-         8rS+smbE519A5dNvQcJTJoKpzdRac55LyLcAPmGYuU/0F9WcDg+lyNvkcFDd29/bnbZX
-         eAMX0zJBTHzhrvABB2MucF7s/QApWuuEsUx7Yg/E/vw1zc/6+1B2Y4HxaRv5DEYIVZe5
-         hviw==
-X-Forwarded-Encrypted: i=1; AJvYcCVrFnYEV6A5TOJRny4ZMMJBwz+R7S9SYwoAE9JYozsPN8OCBcQYc1haWpEcO2gsIG5p9RUucXMcJ0o=@lists.infradead.org
-X-Gm-Message-State: AOJu0YwXZTv/NM2bCkZW66qiWU+GuToEpk+0StQ/+T2J6Ey6FfDfFktH
-	xlPcpeoEK42NOUxbnhOnGEUqSecSDTY3MHZcz9977hwDbr0D+1Ww70OCXxZHPVoJCpA=
-X-Gm-Gg: ASbGncuD+3svjGHNK/Nj811NtiCRR668R+5hsujw9d38cwUfduBjHdAEGc74nKgEXwJ
-	vL5NtAEN794xIR0rrjlCy8GkpFM5aIC3YrHNXaBQG5GwI6gdlVXuSVb8FVXpuKADT1fRGUe2QZY
-	7YnFAKlTlTBC9rKhDH2drWpQkvFv1IXlpsTEXNe9ZJ7u+d0EB8eBuVTNESxVSejtWJAYN3AHRfa
-	NRYJEHX5v9dNJFmsbj3VklvdtePKgRUMF0HBzy7i2SgbAjRbkXNhsx1yyT9VYpxvKQS/7J0kj+P
-	BzkzzdeocrnbRSWcyhLzkqdxFmY5tBi8cFcLSb4ND4k3QHYhPPRVe3c2Vv3HZ0Sm+5t9ayHhXVS
-	saAreYRcQ6jxC3hn/9WVvjVzZLofttDiIc8neN/6haLAaO1CBFDucr0zj5vZihQ==
-X-Google-Smtp-Source: AGHT+IFZMx0P1JKNMfotkf1h9uD05/LbUJ3nHS+qqEqkenBGx5Rm/Php8OZMQlv5/iu6GkzqmdURRg==
-X-Received: by 2002:a17:902:cccb:b0:23f:f065:f2be with SMTP id d9443c01a7336-244586a0e5bmr50715635ad.26.1755186965537;
-        Thu, 14 Aug 2025 08:56:05 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1755186960; x=1755791760;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=fbS0SnSfDCYNteBkAugCZAVezW6wYeQqbL6j1Y/9w2o=;
+        b=l0jLLV11ZPebJVRiwS4wCrSIzsDRBm54S+vwHfhbX3BHqRwCpxi+p4KkCqAcKeiiS2
+         XVxjwFZ6ni1+nqeGPRzpvPX6Nh/LiY0C1b93lNufdsUU0rO1aQUNgQS9kAO91ktyOJSt
+         cAnm19JmTBDjcNlD0BTixR8sqxmCfePXkGruoG1hREKatUPCWcnXYYoj2JYWj2AzRmXT
+         sh4u79F36zW3fYmyhcM8/r0+5Ha6SbRyT6I/AQBO2ae+iY4ucXpQHYegwiXqMr2MOIcf
+         Sed4ebjVUsG4hduOZlijpvIu9X+oaGO55Vg4z/cappNpAAPCE7FhnP/bGBGngdU4afxX
+         IJzg==
+X-Forwarded-Encrypted: i=1; AJvYcCWI0ofVnMMHFn7iV993l67n+dU7H7jTUA+GgzNwru5abXMwvLGDKvHAlCeUy7fEmzKSKmYZ8mTft4g=@lists.infradead.org
+X-Gm-Message-State: AOJu0YwoyKPDmFbn8C17RZQKOWyUu2jNrWHrc9f0FTRLIVs8KAHYKM4N
+	qlT1P3TGyM9E6YQyFUmJdqbdJVqqqi4jF0IKCfxr8wGSfAcrZfiL2Bmq0tQrtrhFfqY=
+X-Gm-Gg: ASbGncuKtK0JKV/jrPT6qWn1hfscJWUMR0vKoyaCyJGI5XaBvP0Ba4ELaawpcAAJt89
+	FfZ3sw7ZnBRZWjK3Ld3NeRtgtG8jf+J3fPE9yFVRc26W49LrpaExMYsH3T7PsU7vlRKABiFaY7O
+	e0zfbv0pplHqRBFcVOjpmuv34to2v6n8hujmlnqDMk+wEWloVxKCcRIOj71Zb0mKZYV/2LLRXR2
+	N3NAlICEcA9iCOx/NuM+fRa/+MlE4paBXqcp+55D+H7geQLK5cDgBnmYTEZS13IWu7UDnb6nXnm
+	bmUbnXD2GN4tp1XoaRu6rLajo2JGGh4Ora584iKhOivkGeTXk4gEgDyV+xkGLwz/tx1TXotvjt3
+	HyLQfjE13n7n7kV4l8dyGG2FIZdUDxaQWs+ZZ7+1GbxeTwygojlmDxGk7mcLscg==
+X-Google-Smtp-Source: AGHT+IHiJ/C+iotNnCA3DhU4+fNK2fePBsmUyymIcxaNYom/9E0Z1/NWwsgFdX4eBUWW/qEOqDpszg==
+X-Received: by 2002:a17:903:1a30:b0:242:fc4f:9fe3 with SMTP id d9443c01a7336-244586a18c8mr55450135ad.37.1755186959600;
+        Thu, 14 Aug 2025 08:55:59 -0700 (PDT)
 Received: from anup-ubuntu-vm.localdomain ([103.97.166.196])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3233108e1d9sm2225500a91.29.2025.08.14.08.56.00
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3233108e1d9sm2225500a91.29.2025.08.14.08.55.54
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 14 Aug 2025 08:56:05 -0700 (PDT)
+        Thu, 14 Aug 2025 08:55:59 -0700 (PDT)
 From: Anup Patel <apatel@ventanamicro.com>
 To: Atish Patra <atish.patra@linux.dev>
 Cc: Palmer Dabbelt <palmer@dabbelt.com>,
@@ -99,16 +83,14 @@ Cc: Palmer Dabbelt <palmer@dabbelt.com>,
 	linux-kernel@vger.kernel.org,
 	linux-kselftest@vger.kernel.org,
 	Anup Patel <apatel@ventanamicro.com>
-Subject: [PATCH 1/6] RISC-V: KVM: Set initial value of hedeleg in kvm_arch_vcpu_create()
-Date: Thu, 14 Aug 2025 21:25:43 +0530
-Message-ID: <20250814155548.457172-2-apatel@ventanamicro.com>
+Subject: [PATCH 0/6] ONE_REG interface for SBI FWFT extension
+Date: Thu, 14 Aug 2025 21:25:42 +0530
+Message-ID: <20250814155548.457172-1-apatel@ventanamicro.com>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20250814155548.457172-1-apatel@ventanamicro.com>
-References: <20250814155548.457172-1-apatel@ventanamicro.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250814_165608_340180_29ACC626 
-X-CRM114-Status: UNSURE (   9.54  )
+X-CRM114-CacheID: sfid-20250814_085600_663110_F99482E3 
+X-CRM114-Status: UNSURE (   7.57  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -126,36 +108,31 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-The hedeleg may be updated by ONE_REG interface before the VCPU
-is run at least once hence set the initial value of hedeleg in
-kvm_arch_vcpu_create() instead of kvm_riscv_vcpu_setup_config().
+This series adds ONE_REG interface for SBI FWFT extension implemented
+by KVM RISC-V. This was missed out in accepted SBI FWFT patches for
+KVM RISC-V.
 
-Signed-off-by: Anup Patel <apatel@ventanamicro.com>
----
- arch/riscv/kvm/vcpu.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+These patches can also be found in the riscv_kvm_fwft_one_reg_v1 branch
+at: https://github.com/avpatel/linux.git
 
-diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index f001e56403f9..86025f68c374 100644
---- a/arch/riscv/kvm/vcpu.c
-+++ b/arch/riscv/kvm/vcpu.c
-@@ -133,6 +133,8 @@ int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
- 
- 	/* Mark this VCPU never ran */
- 	vcpu->arch.ran_atleast_once = false;
-+
-+	vcpu->arch.cfg.hedeleg = KVM_HEDELEG_DEFAULT;
- 	vcpu->arch.mmu_page_cache.gfp_zero = __GFP_ZERO;
- 	bitmap_zero(vcpu->arch.isa, RISCV_ISA_EXT_MAX);
- 
-@@ -570,7 +572,6 @@ static void kvm_riscv_vcpu_setup_config(struct kvm_vcpu *vcpu)
- 			cfg->hstateen0 |= SMSTATEEN0_SSTATEEN0;
- 	}
- 
--	cfg->hedeleg = KVM_HEDELEG_DEFAULT;
- 	if (vcpu->guest_debug)
- 		cfg->hedeleg &= ~BIT(EXC_BREAKPOINT);
- }
+Anup Patel (6):
+  RISC-V: KVM: Set initial value of hedeleg in kvm_arch_vcpu_create()
+  RISC-V: KVM: Introduce feature specific reset for SBI FWFT
+  RISC-V: KVM: Introduce optional ONE_REG callbacks for SBI extensions
+  RISC-V: KVM: Move copy_sbi_ext_reg_indices() to SBI implementation
+  RISC-V: KVM: Implement ONE_REG interface for SBI FWFT state
+  KVM: riscv: selftests: Add SBI FWFT to get-reg-list test
+
+ arch/riscv/include/asm/kvm_vcpu_sbi.h         |  23 +-
+ arch/riscv/include/uapi/asm/kvm.h             |  14 ++
+ arch/riscv/kvm/vcpu.c                         |   3 +-
+ arch/riscv/kvm/vcpu_onereg.c                  |  60 +-----
+ arch/riscv/kvm/vcpu_sbi.c                     | 172 ++++++++++++---
+ arch/riscv/kvm/vcpu_sbi_fwft.c                | 199 ++++++++++++++++--
+ arch/riscv/kvm/vcpu_sbi_sta.c                 |  64 ++++--
+ .../selftests/kvm/riscv/get-reg-list.c        |  28 +++
+ 8 files changed, 436 insertions(+), 127 deletions(-)
+
 -- 
 2.43.0
 
