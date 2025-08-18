@@ -4,78 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A08BCA0EDC
-	for <kvm-riscv@archiver.kernel.org>; Sun, 17 Aug 2025 21:03:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BFF88CA0EE4
+	for <kvm-riscv@archiver.kernel.org>; Mon, 18 Aug 2025 05:42:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=5ivVC/bhxbTayJt33oEecgMCcMF+YOp92DLLIlclFfA=; b=R/03JHaZzf4FqN
-	DxFwJ1p2Ii7jy5HSJitTZyXdSSPt0NE1ly611OSmFdq5wHtfFbOM1l23GO049GLcPcJ8NEEdQ+Be3
-	pw/Pb5sRFIxsPs0lNBUDuwkXkh2FL3vHAwH7OZ9A7CgICCuBlf433XIBttSgNGeXK6ml0LxBNUBiY
-	S9p8ZoI4Hf4n61a5vuATNWGbZ9JNam72NxPfAsPxrHr6anS+aKM72D82o7VH5lRSHKR5YJ4ww5dgp
-	ktpUAwSrIB/DEqqVG2KaXXPQ2inW+c46yLkpgaivvjuLFRhDkb4RI0+zqlXeV4vHvkHKGcRAJzWqF
-	ANFYtOrlHexqVCFkcpjw==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-Id:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=wLTy8qIREH9mN3a8sIp0JU2ru7PxbV833PLSdki+/Nc=; b=FeXvJdzaM0/MBf
+	ZIOamKI8GCxXh8pXoujNoQO4ZMsyjdECNUZqYRhLl/m2fTT7RToq0HgudgypWuHZU7zZzhPu7ShCP
+	6GCvuyyd+PXHV+YLZ65vpJcjcEFLpQ6Jb2ws810dvbUoNaWy17vf/isxSwM+U3JcBT4cjdOIEAaez
+	Qa9v3HyJLVYzP9uo144lm4GNKRPUhJL8AyD/UOc8D7fmxpp2Ore+Qy0B5Q3g5rPflOdHAk+vPtRL0
+	z5rrvlR0uYWVOSUOqKGri97y8PVY+HI2e/n6T8T2ReTHfku5OgDM8sne/CNZ5MKqlG+g/WIw493Gq
+	Uf8h3rn6czjFtPRAYdTw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1unkXN-000000063BF-1pbQ;
-	Sun, 17 Aug 2025 21:03:33 +0000
-Received: from mgamail.intel.com ([198.175.65.12])
+	id 1unsdi-00000006ZQd-122p;
+	Mon, 18 Aug 2025 05:42:38 +0000
+Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1unkXK-000000063Ao-2ziC;
-	Sun, 17 Aug 2025 21:03:32 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1755464611; x=1787000611;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=mXDm9pzQ2v2aMXQtgfLc6q6k54TIbxRQKNSFRAvlPm8=;
-  b=K7AbOv2xHPUjoKY1zFbIw1/CvcG43d/5FkVX9ZqD6DsdHcl0FD7UQlHZ
-   xGfxuXhyeuHaoL4pCwKbAjHRKAHUtfPeD0j1+Dy0tjlCM+I6AT7pGxTV2
-   b+apnYjzypKa1IB7+GUlKiHM6sZTzcK4ga96sp3CfG70UscSA+DRBvKWa
-   omtw60DfI3xzSpMg45XGMNbIjiD3nSpWx5ojf/HUOkwdv8QLKcLeP1hFF
-   CrnTzXVRSOk+T5oS/c9GR0cQEBa/UKp8qn1Q/0kpEZAJtE4JG2LZhwKdN
-   m5+aOic2i6toLtPXlN4a2Jt0vGVQFeORBI/aXamWSW09df9jgzREHS1i6
-   w==;
-X-CSE-ConnectionGUID: LSyjJBE+Q+uv1R2mgz4blA==
-X-CSE-MsgGUID: RDONzPS+SfaVLvExogq+Qg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11524"; a="69143675"
-X-IronPort-AV: E=Sophos;i="6.17,293,1747724400"; 
-   d="scan'208";a="69143675"
-Received: from fmviesa005.fm.intel.com ([10.60.135.145])
-  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Aug 2025 14:03:25 -0700
-X-CSE-ConnectionGUID: XDR8jl+CQ7mIMDSoIjuRUw==
-X-CSE-MsgGUID: Itk0I8gxStyf6NnlXNz1YQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.17,293,1747724400"; 
-   d="scan'208";a="171644503"
-Received: from lkp-server02.sh.intel.com (HELO 4ea60e6ab079) ([10.239.97.151])
-  by fmviesa005.fm.intel.com with ESMTP; 17 Aug 2025 14:03:21 -0700
-Received: from kbuild by 4ea60e6ab079 with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1unkW4-000Dih-0l;
-	Sun, 17 Aug 2025 21:02:41 +0000
-Date: Mon, 18 Aug 2025 05:01:04 +0800
-From: kernel test robot <lkp@intel.com>
-To: fangyu.yu@linux.alibaba.com, anup@brainfault.org, atish.patra@linux.dev,
-	paul.walmsley@sifive.com, palmer@dabbelt.com, aou@eecs.berkeley.edu,
+	id 1unsdh-00000006ZQR-2Mit;
+	Mon, 18 Aug 2025 05:42:37 +0000
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:MIME-Version
+	:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:
+	Content-Description:In-Reply-To:References;
+	bh=W4lHP3UjuHeCBUcDEIF9ZeVamIkRm6NrjeDmREzHBUM=; b=koOuzd7gtEiuvbX6QWUdEEfxep
+	wAoSpz+VU+Pvg8z5YcgXjpCuSUBt9vOfCZYlk2EHiOJdkxBoA0L97jRRXlMA08bhZvQREefopKM45
+	7fUXMPpddLtAY3wEzin8HeCmpDUj80aphi2Cq7MjsUt7sNP+ouV2apWc+n6iQPf+1Zr/njiwynjsA
+	9XaYUFDot8JKd7WB3rjbi0qN8uYGTArj+/9GuOkTUvtEvRFOmEgpo6PNgVMZmMXSuv6PWx/ptlUt0
+	9gJ+ZmGYWq7GiufiH/bvt9BgskruRB3jP+/R+3wcjclP+NpdaEVNvDxLSq+y0KUgNpXOEwzAQCi9W
+	UE/CQv4A==;
+Received: from out30-131.freemail.mail.aliyun.com ([115.124.30.131])
+	by desiato.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1unsdd-0000000HGDo-03SR;
+	Mon, 18 Aug 2025 05:42:35 +0000
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=linux.alibaba.com; s=default;
+	t=1755495738; h=From:To:Subject:Date:Message-Id:MIME-Version;
+	bh=W4lHP3UjuHeCBUcDEIF9ZeVamIkRm6NrjeDmREzHBUM=;
+	b=Bw06UKccpjeqr3QGXKendqsuoZ4upfWC07EDlSUZNyTv+ry0pLXfAM2oL4nyomAVBWM74WLkZRF0F0c5dctIJ454Neh1G659OADELFbLykfqQXtkwgyK9Dq3g76FZ1LI+amflRyfHSNziddWLTU/Qqp8JmdV1lxO4C99atObuJw=
+Received: from localhost.localdomain(mailfrom:fangyu.yu@linux.alibaba.com fp:SMTPD_---0Wlvjb0u_1755495732 cluster:ay36)
+          by smtp.aliyun-inc.com;
+          Mon, 18 Aug 2025 13:42:14 +0800
+From: fangyu.yu@linux.alibaba.com
+To: anup@brainfault.org,
+	atish.patra@linux.dev,
+	paul.walmsley@sifive.com,
+	palmer@dabbelt.com,
+	aou@eecs.berkeley.edu,
 	alex@ghiti.fr
-Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
-	guoren@linux.alibaba.com, guoren@kernel.org, kvm@vger.kernel.org,
-	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
+Cc: guoren@linux.alibaba.com,
+	guoren@kernel.org,
+	kvm@vger.kernel.org,
+	kvm-riscv@lists.infradead.org,
+	linux-riscv@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	Fangyu Yu <fangyu.yu@linux.alibaba.com>
-Subject: Re: [PATCH] RISC-V: KVM: Write hgatp register with valid mode bits
-Message-ID: <202508180228.aJykn9j0-lkp@intel.com>
-References: <20250816073234.77646-1-fangyu.yu@linux.alibaba.com>
+Subject: [PATCH V2] RISC-V: KVM: Write hgatp register with valid mode bits
+Date: Mon, 18 Aug 2025 13:42:07 +0800
+Message-Id: <20250818054207.21532-1-fangyu.yu@linux.alibaba.com>
+X-Mailer: git-send-email 2.39.3 (Apple Git-146)
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <20250816073234.77646-1-fangyu.yu@linux.alibaba.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250817_140330_822733_EB738C66 
-X-CRM114-Status: UNSURE (   9.93  )
+X-CRM114-CacheID: sfid-20250818_064233_579295_927DC937 
+X-CRM114-Status: UNSURE (   7.75  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -93,71 +87,47 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Hi,
+From: Fangyu Yu <fangyu.yu@linux.alibaba.com>
 
-kernel test robot noticed the following build errors:
+According to the RISC-V Privileged Architecture Spec, when MODE=Bare
+is selected,software must write zero to the remaining fields of hgatp.
 
-[auto build test ERROR on kvm/queue]
-[also build test ERROR on kvm/next mst-vhost/linux-next linus/master v6.17-rc1 next-20250815]
-[cannot apply to kvm/linux-next]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+We have detected the valid mode supported by the HW before, So using a
+valid mode to detect how many vmid bits are supported.
 
-url:    https://github.com/intel-lab-lkp/linux/commits/fangyu-yu-linux-alibaba-com/RISC-V-KVM-Write-hgatp-register-with-valid-mode-bits/20250816-153513
-base:   https://git.kernel.org/pub/scm/virt/kvm/kvm.git queue
-patch link:    https://lore.kernel.org/r/20250816073234.77646-1-fangyu.yu%40linux.alibaba.com
-patch subject: [PATCH] RISC-V: KVM: Write hgatp register with valid mode bits
-config: riscv-allyesconfig (https://download.01.org/0day-ci/archive/20250818/202508180228.aJykn9j0-lkp@intel.com/config)
-compiler: clang version 16.0.6 (https://github.com/llvm/llvm-project 7cbf1a2591520c2491aa35339f227775f4d3adf6)
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20250818/202508180228.aJykn9j0-lkp@intel.com/reproduce)
+Signed-off-by: Fangyu Yu <fangyu.yu@linux.alibaba.com>
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202508180228.aJykn9j0-lkp@intel.com/
+---
+Changes in v2:
+- Fixed build error since kvm_riscv_gstage_mode() has been modified.
+---
+ arch/riscv/kvm/vmid.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-All errors (new ones prefixed by >>):
-
->> arch/riscv/kvm/vmid.c:31:24: error: call to undeclared function 'kvm_riscv_gstage_mode'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
-           csr_write(CSR_HGATP, (kvm_riscv_gstage_mode() << HGATP_MODE_SHIFT) | HGATP_VMID);
-                                 ^
-   arch/riscv/kvm/vmid.c:31:48: warning: shift count >= width of type [-Wshift-count-overflow]
-           csr_write(CSR_HGATP, (kvm_riscv_gstage_mode() << HGATP_MODE_SHIFT) | HGATP_VMID);
-                                                         ^  ~~~~~~~~~~~~~~~~
-   arch/riscv/include/asm/csr.h:538:38: note: expanded from macro 'csr_write'
-           unsigned long __v = (unsigned long)(val);               \
-                                               ^~~
-   1 warning and 1 error generated.
-
-
-vim +/kvm_riscv_gstage_mode +31 arch/riscv/kvm/vmid.c
-
-    24	
-    25	void __init kvm_riscv_gstage_vmid_detect(void)
-    26	{
-    27		unsigned long old;
-    28	
-    29		/* Figure-out number of VMID bits in HW */
-    30		old = csr_read(CSR_HGATP);
-  > 31		csr_write(CSR_HGATP, (kvm_riscv_gstage_mode() << HGATP_MODE_SHIFT) | HGATP_VMID);
-    32		vmid_bits = csr_read(CSR_HGATP);
-    33		vmid_bits = (vmid_bits & HGATP_VMID) >> HGATP_VMID_SHIFT;
-    34		vmid_bits = fls_long(vmid_bits);
-    35		csr_write(CSR_HGATP, old);
-    36	
-    37		/* We polluted local TLB so flush all guest TLB */
-    38		kvm_riscv_local_hfence_gvma_all();
-    39	
-    40		/* We don't use VMID bits if they are not sufficient */
-    41		if ((1UL << vmid_bits) < num_possible_cpus())
-    42			vmid_bits = 0;
-    43	}
-    44	
-
+diff --git a/arch/riscv/kvm/vmid.c b/arch/riscv/kvm/vmid.c
+index 3b426c800480..5f33625f4070 100644
+--- a/arch/riscv/kvm/vmid.c
++++ b/arch/riscv/kvm/vmid.c
+@@ -14,6 +14,7 @@
+ #include <linux/smp.h>
+ #include <linux/kvm_host.h>
+ #include <asm/csr.h>
++#include <asm/kvm_mmu.h>
+ #include <asm/kvm_tlb.h>
+ #include <asm/kvm_vmid.h>
+ 
+@@ -28,7 +29,7 @@ void __init kvm_riscv_gstage_vmid_detect(void)
+ 
+ 	/* Figure-out number of VMID bits in HW */
+ 	old = csr_read(CSR_HGATP);
+-	csr_write(CSR_HGATP, old | HGATP_VMID);
++	csr_write(CSR_HGATP, (kvm_riscv_gstage_mode << HGATP_MODE_SHIFT) | HGATP_VMID);
+ 	vmid_bits = csr_read(CSR_HGATP);
+ 	vmid_bits = (vmid_bits & HGATP_VMID) >> HGATP_VMID_SHIFT;
+ 	vmid_bits = fls_long(vmid_bits);
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.49.0
+
 
 -- 
 kvm-riscv mailing list
