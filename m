@@ -4,61 +4,82 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A8E1CA0EE4
-	for <kvm-riscv@archiver.kernel.org>; Tue, 19 Aug 2025 00:47:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70FA1CA0EF5
+	for <kvm-riscv@archiver.kernel.org>; Tue, 19 Aug 2025 01:18:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-Id:Date:Subject:Cc
-	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=XyyJ0zEwDZsILxftAlabIvQw1tgLkkVArPUql6txgf0=; b=F4f8vBu5WJ/P4m
-	x7770gqSgvzDNbnzinq4mDzArnAJPrU5p3yF5scWwqw8r8M6rbMRp/mXZO1esLVoy40jmisTYW35U
-	gNPm1/r2RU3tBpiEIgFC0Fr10DftzRSWyBZajzVchDIT5HoMASjMeEVu4Sa/h8ECMVr2EnHOSXQgL
-	3RPNKtZFpTVRJ7XvtGd9CJYJrhiIj0ej8XjUr2LFyZojg+t+YtmRgGsREi6Ho4a129Mvncv9cJwHR
-	WRfr+RhpvbPGPTqZVvbwbCrNRNSxKhf3CB7KhC48odlpr2d5p1hGQiDLISBaIH/OyvA/zjMGy0SoI
-	wFppXlblSAzPj3mC2ciQ==;
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
+	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=iz3XVih7K074Jcsvys9FODAjcdt3Xei55swQIqButNY=; b=3fBPXgE9gBMJeF
+	rj100NHeizwhQoy1MPDSK9XEIF+fOB6LN/Ix4Nd1Z/sdSzl+EN3LVviKVGLQvQQ5WvdSn2LEp7PrX
+	hOho0NFA5iCCXdeCtc0MjPtGihDn3/80cdMZObIG440LpLV/7KfjarKVq5JsE82RYBwFp1IzaiSfq
+	Jee6o2okeUIgnu6hGfKKTqp1kA4eN5SlIry2vPK0oktEGfPHLUUFjbVttnXGzkpeZtLPkNFw4yE9B
+	1ZLeAeJygqADBCTYRxE28SGSCwhaWCd5Pk1xx+GaBBYbpWD1Q238ZD5dXfN2iFZmH7XJMrELWnctQ
+	xDVhJgoQDkinky0BPPnw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uoAVB-000000091rk-0fuF;
-	Tue, 19 Aug 2025 00:47:01 +0000
-Received: from dfw.source.kernel.org ([139.178.84.217])
+	id 1uoAzo-000000094KC-0rIa;
+	Tue, 19 Aug 2025 01:18:40 +0000
+Received: from smtpbgau1.qq.com ([54.206.16.166])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uoAV8-000000091rF-1eeM;
-	Tue, 19 Aug 2025 00:46:59 +0000
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 6B10E5C64A0;
-	Tue, 19 Aug 2025 00:46:57 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 49635C4CEEB;
-	Tue, 19 Aug 2025 00:46:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1755564417;
-	bh=DsWrRR/JVk9NGxDPruscs5vh74AouGxQra9oUbC6csk=;
-	h=From:To:Cc:Subject:Date:From;
-	b=jrngg2QVHRvbWwsNWWKdi2b4rtirPpuFcxNJHZtkGhRWaGMuCRMGttAin2yqP98FL
-	 hIM8dVJa2Mn/sHI1p3ADOnVK+smt6TMQrJNUodhQXrnI2j1NnXRcB724Mi78/dWQWj
-	 Z5vlJPpbXAgBDfn/xKx5PnKFqdJKPRLPxE8M3zIgaQmB1+1aoLqcvNDYHapDpoQKZS
-	 IVdloivkEZkyZtClFh88C0QwCS3F4rG0klz/AB3CnIob55qqdYI9d970hqWfHdT6ot
-	 kDCYGT+RRQY7WYPG8wQz1qfKdE6jEG9/gI4TZn6h3FOpnmP7JkYPQJpRHavzgXtyOT
-	 3aOnScz/HTgLw==
-From: guoren@kernel.org
-To: guoren@kernel.org,
-	paul.walmsley@sifive.com,
-	anup@brainfault.org,
-	atish.patra@linux.dev,
-	fangyu.yu@linux.alibaba.com
-Cc: linux-riscv@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	kvm@vger.kernel.org,
-	kvm-riscv@lists.infradead.org
-Subject: [PATCH] RISC-V: KVM: Prevent HGATP_MODE_BARE passed
-Date: Mon, 18 Aug 2025 20:46:43 -0400
-Message-Id: <20250819004643.1884149-1-guoren@kernel.org>
-X-Mailer: git-send-email 2.40.1
+	id 1uoAzk-000000094Ii-0ouT;
+	Tue, 19 Aug 2025 01:18:38 +0000
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.spacemit.com;
+	s=mxsw2412; t=1755566270;
+	bh=g6JjCoyupLN35z2qvVI8PUyBR1aUVsz84r9rhHKnBG8=;
+	h=Date:From:To:Subject:Message-ID:MIME-Version;
+	b=fBdEdbfEtSE3GETmB1e3uL6fxPX8AdUXXyzEFslWrIE5xOZSmIqzUSEEaIdoDCsJu
+	 bNRzR5ogWHWYPrrRnMw4IBX0DLWPgv94P/V64TFmA8/sXkKJd9zzGkqRzrRLtHJG+Y
+	 3sscIuOVfSW0DKRV2ad2Ayq5HLp7PlhXT9+7deoM=
+X-QQ-mid: esmtpgz12t1755566262td4c8f477
+X-QQ-Originating-IP: 9iDyEPMT2fIW1OmOGvQwzxzUT/TRlHh13QLu2xmmxSI=
+Received: from = ( [61.145.255.150])
+	by bizesmtp.qq.com (ESMTP) with 
+	id ; Tue, 19 Aug 2025 09:17:40 +0800 (CST)
+X-QQ-SSF: 0000000000000000000000000000000
+X-QQ-GoodBg: 0
+X-BIZMAIL-ID: 15089458960345209029
+EX-QQ-RecipientCnt: 11
+Date: Tue, 19 Aug 2025 09:17:40 +0800
+From: Troy Mitchell <troy.mitchell@linux.spacemit.com>
+To: zhouquan@iscas.ac.cn, anup@brainfault.org, ajones@ventanamicro.com,
+	atishp@atishpatra.org, paul.walmsley@sifive.com, palmer@dabbelt.com
+Cc: linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
+	kvm@vger.kernel.org, kvm-riscv@lists.infradead.org,
+	Troy Mitchell <troy.mitchell@linux.spacemit.com>
+Subject: Re: [PATCH v2 1/6] RISC-V: KVM: Change zicbom/zicboz block size to
+ depend on the host isa
+Message-ID: <A0B6F37B4275250B+aKPQtDahHgv7Gq6-@LT-Guozexi>
+References: <cover.1754646071.git.zhouquan@iscas.ac.cn>
+ <fef5907425455ecd41b224e0093f1b6bc4067138.1754646071.git.zhouquan@iscas.ac.cn>
 MIME-Version: 1.0
+Content-Disposition: inline
+In-Reply-To: <fef5907425455ecd41b224e0093f1b6bc4067138.1754646071.git.zhouquan@iscas.ac.cn>
+X-QQ-SENDSIZE: 520
+Feedback-ID: esmtpgz:linux.spacemit.com:qybglogicsvrsz:qybglogicsvrsz3a-0
+X-QQ-XMAILINFO: NI6mNDRHoM9V6UIO0PANqbhBtmIzyi4VxG6uMub6K4uOxD+OaXdF6e+B
+	9vdJ7VKtMnuyImz1jxJ6MOydSP6mXnrxf3H4Vm3yR/+FJiwvBM8pbjdW+Wo3pYZg7R+SoCm
+	q3Wu93qEbUXAeamdfbJyaDUvvayU/dCz9BFfVYuh+x2YvoiWrDBMU9AWNbhbMIL7HBP4a9u
+	ZYA1QJ87l6g82ay2HrJXxO4jtZB6Kw/dzQ8SU2S0gELoocuodX9hQ9KxOFD/mq9wcaX7eNe
+	YRaRDHTFJ9E/JG1+XZumDmGPKt0O0vGMIbFk6Fr0DxiD81SX3IvZiwOGx9+ApNQYhQMAEDr
+	j9jBMO5N9lS61PH1aWhTj7JECUDy+pszHDPB1t3hSfro8MckFJMh2yXo7vfVxKrm25V6Itq
+	dZp1Ckd6vxyhVK7fBL4EzR+iBeJivThc/X7NGkUwmC/rN/OkUkYXDFJkLIuZBMl9MPcGxjX
+	bWBxNcduBW+rePJRv8oSYG1nTvTgelS0mFs63Efkq7Y0SZWN0vJc4AKrbPKPK25Q2BPk+B4
+	Fm2B6iTsbSL9cfSFLaHTGha8lXt+mVp+3udorSnmo54espk6KXe7azqkJDKOBbiOIublfEi
+	kXkwCWMpMAR1JDow2Cx/sELL1K/Wjjaq4dx7qdLGuAEclTisAwYIfuYRCUHScaI//9gHhRA
+	6svuHzrvBWJvnDiTMEwEuzwnNQDnvZYz4OhqQWl5x35PVqra9AixV89WH+jxbQasYrmu3Bx
+	o9IjTadJbWZXiOx45H/g+Jc2lsdil3WfbhaVVZuKFXROJPflTAjP0NyPuju5AyIaFt18t/U
+	4eS9bv7WLM3jEBsKBU5jkTzBnyJq04PDTXLX20fr8AZXmnqBLamCFJaR0X6KfDAvHejCL/E
+	Ccu760ETi54XeGDNmaqdP5/G6vf8FmLNwyJKTkZclaAaOfccrkR7rqsqX1CZRHYyWXZFi57
+	RASEr2GK28SVsWiC1qSPl1IY5Mseb2KUJtYCnlmOypVPCtz/YasFmGRGaR9aQUWGUMoSyFT
+	OM9fTDvFYwjVIes/TLRo+5aVdzsRxYApGzZi2tzFFBhSEtqUHq
+X-QQ-XMRINFO: MSVp+SPm3vtS1Vd6Y4Mggwc=
+X-QQ-RECHKSPAM: 0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250818_174658_518728_88D290C7 
-X-CRM114-Status: GOOD (  10.37  )
+X-CRM114-CacheID: sfid-20250818_181836_970451_732E9D1A 
+X-CRM114-Status: GOOD (  19.10  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -75,126 +96,77 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-From: "Guo Ren (Alibaba DAMO Academy)" <guoren@kernel.org>
+On Fri, Aug 08, 2025 at 06:18:21PM +0800, zhouquan@iscas.ac.cn wrote:
+> From: Quan Zhou <zhouquan@iscas.ac.cn>
+> 
+> The zicbom/zicboz block size registers should depend on the host's isa,
+> the reason is that we otherwise create an ioctl order dependency on the VMM.
+> 
+> Signed-off-by: Quan Zhou <zhouquan@iscas.ac.cn>
+> ---
+>  arch/riscv/kvm/vcpu_onereg.c | 12 ++++++------
+>  1 file changed, 6 insertions(+), 6 deletions(-)
+Reviwed-by: Troy Mitchell <troy.mitchell@linux.spacemit.com>
 
-urrent kvm_riscv_gstage_mode_detect() assumes H-extension must
-have HGATP_MODE_SV39X4/SV32X4 at least, but the spec allows
-H-extension with HGATP_MODE_BARE alone. The KVM depends on
-!HGATP_MODE_BARE at least, so enhance the gstage-mode-detect
-to block HGATP_MODE_BARE.
-
-Move gstage-mode-check closer to gstage-mode-detect to prevent
-unnecessary init.
-
-Signed-off-by: Guo Ren (Alibaba DAMO Academy) <guoren@kernel.org>
----
- arch/riscv/kvm/gstage.c | 27 ++++++++++++++++++++++++---
- arch/riscv/kvm/main.c   | 35 +++++++++++++++++------------------
- 2 files changed, 41 insertions(+), 21 deletions(-)
-
-diff --git a/arch/riscv/kvm/gstage.c b/arch/riscv/kvm/gstage.c
-index 24c270d6d0e2..b67d60d722c2 100644
---- a/arch/riscv/kvm/gstage.c
-+++ b/arch/riscv/kvm/gstage.c
-@@ -321,7 +321,7 @@ void __init kvm_riscv_gstage_mode_detect(void)
- 	if ((csr_read(CSR_HGATP) >> HGATP_MODE_SHIFT) == HGATP_MODE_SV57X4) {
- 		kvm_riscv_gstage_mode = HGATP_MODE_SV57X4;
- 		kvm_riscv_gstage_pgd_levels = 5;
--		goto skip_sv48x4_test;
-+		goto done;
- 	}
- 
- 	/* Try Sv48x4 G-stage mode */
-@@ -329,10 +329,31 @@ void __init kvm_riscv_gstage_mode_detect(void)
- 	if ((csr_read(CSR_HGATP) >> HGATP_MODE_SHIFT) == HGATP_MODE_SV48X4) {
- 		kvm_riscv_gstage_mode = HGATP_MODE_SV48X4;
- 		kvm_riscv_gstage_pgd_levels = 4;
-+		goto done;
- 	}
--skip_sv48x4_test:
- 
-+	/* Try Sv39x4 G-stage mode */
-+	csr_write(CSR_HGATP, HGATP_MODE_SV39X4 << HGATP_MODE_SHIFT);
-+	if ((csr_read(CSR_HGATP) >> HGATP_MODE_SHIFT) == HGATP_MODE_SV39X4) {
-+		kvm_riscv_gstage_mode = HGATP_MODE_SV39X4;
-+		kvm_riscv_gstage_pgd_levels = 3;
-+		goto done;
-+	}
-+#else /* CONFIG_32BIT */
-+	/* Try Sv32x4 G-stage mode */
-+	csr_write(CSR_HGATP, HGATP_MODE_SV32X4 << HGATP_MODE_SHIFT);
-+	if ((csr_read(CSR_HGATP) >> HGATP_MODE_SHIFT) == HGATP_MODE_SV32X4) {
-+		kvm_riscv_gstage_mode = HGATP_MODE_SV32X4;
-+		kvm_riscv_gstage_pgd_levels = 2;
-+		goto done;
-+	}
-+#endif
-+
-+	/* KVM depends on !HGATP_MODE_OFF */
-+	kvm_riscv_gstage_mode = HGATP_MODE_OFF;
-+	kvm_riscv_gstage_pgd_levels = 0;
-+
-+done:
- 	csr_write(CSR_HGATP, 0);
- 	kvm_riscv_local_hfence_gvma_all();
--#endif
- }
-diff --git a/arch/riscv/kvm/main.c b/arch/riscv/kvm/main.c
-index 67c876de74ef..8ee7aaa74ddc 100644
---- a/arch/riscv/kvm/main.c
-+++ b/arch/riscv/kvm/main.c
-@@ -93,6 +93,23 @@ static int __init riscv_kvm_init(void)
- 		return rc;
- 
- 	kvm_riscv_gstage_mode_detect();
-+	switch (kvm_riscv_gstage_mode) {
-+	case HGATP_MODE_SV32X4:
-+		str = "Sv32x4";
-+		break;
-+	case HGATP_MODE_SV39X4:
-+		str = "Sv39x4";
-+		break;
-+	case HGATP_MODE_SV48X4:
-+		str = "Sv48x4";
-+		break;
-+	case HGATP_MODE_SV57X4:
-+		str = "Sv57x4";
-+		break;
-+	default:
-+		return -ENODEV;
-+	}
-+	kvm_info("using %s G-stage page table format\n", str);
- 
- 	kvm_riscv_gstage_vmid_detect();
- 
-@@ -135,24 +152,6 @@ static int __init riscv_kvm_init(void)
- 			 (rc) ? slist : "no features");
- 	}
- 
--	switch (kvm_riscv_gstage_mode) {
--	case HGATP_MODE_SV32X4:
--		str = "Sv32x4";
--		break;
--	case HGATP_MODE_SV39X4:
--		str = "Sv39x4";
--		break;
--	case HGATP_MODE_SV48X4:
--		str = "Sv48x4";
--		break;
--	case HGATP_MODE_SV57X4:
--		str = "Sv57x4";
--		break;
--	default:
--		return -ENODEV;
--	}
--	kvm_info("using %s G-stage page table format\n", str);
--
- 	kvm_info("VMID %ld bits available\n", kvm_riscv_gstage_vmid_bits());
- 
- 	if (kvm_riscv_aia_available())
--- 
-2.40.1
-
+Best regards,
+Troy
+> 
+> diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
+> index cce6a38ea54f..6bd64ae17b80 100644
+> --- a/arch/riscv/kvm/vcpu_onereg.c
+> +++ b/arch/riscv/kvm/vcpu_onereg.c
+> @@ -277,12 +277,12 @@ static int kvm_riscv_vcpu_get_reg_config(struct kvm_vcpu *vcpu,
+>  		reg_val = vcpu->arch.isa[0] & KVM_RISCV_BASE_ISA_MASK;
+>  		break;
+>  	case KVM_REG_RISCV_CONFIG_REG(zicbom_block_size):
+> -		if (!riscv_isa_extension_available(vcpu->arch.isa, ZICBOM))
+> +		if (!riscv_isa_extension_available(NULL, ZICBOM))
+>  			return -ENOENT;
+>  		reg_val = riscv_cbom_block_size;
+>  		break;
+>  	case KVM_REG_RISCV_CONFIG_REG(zicboz_block_size):
+> -		if (!riscv_isa_extension_available(vcpu->arch.isa, ZICBOZ))
+> +		if (!riscv_isa_extension_available(NULL, ZICBOZ))
+>  			return -ENOENT;
+>  		reg_val = riscv_cboz_block_size;
+>  		break;
+> @@ -366,13 +366,13 @@ static int kvm_riscv_vcpu_set_reg_config(struct kvm_vcpu *vcpu,
+>  		}
+>  		break;
+>  	case KVM_REG_RISCV_CONFIG_REG(zicbom_block_size):
+> -		if (!riscv_isa_extension_available(vcpu->arch.isa, ZICBOM))
+> +		if (!riscv_isa_extension_available(NULL, ZICBOM))
+>  			return -ENOENT;
+>  		if (reg_val != riscv_cbom_block_size)
+>  			return -EINVAL;
+>  		break;
+>  	case KVM_REG_RISCV_CONFIG_REG(zicboz_block_size):
+> -		if (!riscv_isa_extension_available(vcpu->arch.isa, ZICBOZ))
+> +		if (!riscv_isa_extension_available(NULL, ZICBOZ))
+>  			return -ENOENT;
+>  		if (reg_val != riscv_cboz_block_size)
+>  			return -EINVAL;
+> @@ -817,10 +817,10 @@ static int copy_config_reg_indices(const struct kvm_vcpu *vcpu,
+>  		 * was not available.
+>  		 */
+>  		if (i == KVM_REG_RISCV_CONFIG_REG(zicbom_block_size) &&
+> -			!riscv_isa_extension_available(vcpu->arch.isa, ZICBOM))
+> +			!riscv_isa_extension_available(NULL, ZICBOM))
+>  			continue;
+>  		else if (i == KVM_REG_RISCV_CONFIG_REG(zicboz_block_size) &&
+> -			!riscv_isa_extension_available(vcpu->arch.isa, ZICBOZ))
+> +			!riscv_isa_extension_available(NULL, ZICBOZ))
+>  			continue;
+>  
+>  		size = IS_ENABLED(CONFIG_32BIT) ? KVM_REG_SIZE_U32 : KVM_REG_SIZE_U64;
+> -- 
+> 2.34.1
+> 
+> 
+> _______________________________________________
+> linux-riscv mailing list
+> linux-riscv@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-riscv
 
 -- 
 kvm-riscv mailing list
