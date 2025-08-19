@@ -4,56 +4,146 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 29DF6CA0EF5
-	for <kvm-riscv@archiver.kernel.org>; Tue, 19 Aug 2025 02:13:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31C2ACA0EE6
+	for <kvm-riscv@archiver.kernel.org>; Tue, 19 Aug 2025 03:56:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
-	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
-	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=k1Xx7BWpgTrSy1PZ7wqTuNiT14617jy389wMVBnKKBw=; b=GdeyRAXaqArxVA
-	/YA228sYWjLwP0jRsAE/Zmkz474VWpWJS0rCnpKFnnotNlBHz+Vtz8+9w1MPjOeOfBbjV8SIrjqM+
-	VBp70DhXlf859Zr6/Ppz9JC+pINxyr+Z8/3GyoCXKCufanolRkPGWnpYO9YP7Srxut/vOzTlJ6Zt5
-	AN4XA1eza6ylVjq081r062k02/2Ow1mMWTcVdw3IBiFpHyGVr+jReIfudkP3kdeIRUNSqEKCY3950
-	d6CKXJHsiRx5QpRIxyAFRiujVRCobR1m5q7fVtwJ+tOfCh5Puki2VpXHr2vUZGj85aU3KM993EQQE
-	ZdXaqL1t1kOpAfXk7/EQ==;
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
+	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
+	List-Unsubscribe:List-Id:MIME-Version:In-Reply-To:From:References:Cc:To:
+	Subject:Date:Message-ID:Reply-To:Content-ID:Content-Description:Resent-Date:
+	Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Owner;
+	bh=egTkkdbWaAXh4Z2RYKpZr+s148ZS4GBMZkuzebq6mZM=; b=tpcYWlSDTqdfPIr+BwzBPrd/uD
+	od+36JwXypmcrkhEuBMaWplxsQrXmjIwICEisggKHNq4wAbdzT+tOA4O1sT0THbOqdKeURu36ZLaR
+	v+HK1bXb0KveLBkww4XVLYkjhhtXdxsXI5MGAgLnumzNKC5QVuG3GaBkCI4RewEiC8aHki/OyAoDH
+	E7vrOGSoX+6q0TlpYR/2GAX0wTX2nyG4JQoW7uVoM29UE1WEjXD8GmceM/ij0LllUXc/Rc8BP923Z
+	UUzOsEmmxyZeDLYcrowUJ/gq1C24woaL8KHtUQDrXxH42kNkpMkefV97hDh1DrEgJE3F+k1IlV6aL
+	q7AySMuQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uoBqW-00000009B8X-3Ece;
-	Tue, 19 Aug 2025 02:13:08 +0000
-Received: from out30-99.freemail.mail.aliyun.com ([115.124.30.99])
+	id 1uoDSk-00000009K2A-3JoP;
+	Tue, 19 Aug 2025 03:56:42 +0000
+Received: from mail-japaneastazolkn190120002.outbound.protection.outlook.com ([2a01:111:f403:d405::2] helo=TYPPR03CU001.outbound.protection.outlook.com)
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uoBfS-000000099rf-1a6K;
-	Tue, 19 Aug 2025 02:01:43 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux.alibaba.com; s=default;
-	t=1755568898; h=From:To:Subject:Date:Message-Id:MIME-Version;
-	bh=5IULTEMO8UY5UYSTMLLyWq2kUCXNHZOA+68prgWQp1U=;
-	b=s4+hsDq/Nix4e9ik7FIFVpMiiCml371lV/b+10b5OgVzPRqYJeJEwQNwsFYHok1uvcJ6FF1JZeCjo5UBTnYatL+3MO0N+JB0RZJYi949y27MuC9/qvx0DJw9H2477NJw/MFOdljDo97otBDzFeC91icU699UZ4SJfiotPyWLuiE=
-Received: from localhost.localdomain(mailfrom:fangyu.yu@linux.alibaba.com fp:SMTPD_---0Wm4x1Pe_1755568895 cluster:ay36)
-          by smtp.aliyun-inc.com;
-          Tue, 19 Aug 2025 10:01:37 +0800
-From: fangyu.yu@linux.alibaba.com
-To: guoren@kernel.org
-Cc: anup@brainfault.org,
-	atish.patra@linux.dev,
-	fangyu.yu@linux.alibaba.com,
-	kvm-riscv@lists.infradead.org,
-	kvm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-riscv@lists.infradead.org,
-	paul.walmsley@sifive.com
-Subject: [PATCH] RISC-V: KVM: Prevent HGATP_MODE_BARE passed
-Date: Tue, 19 Aug 2025 10:01:33 +0800
-Message-Id: <20250819020133.93545-1-fangyu.yu@linux.alibaba.com>
-X-Mailer: git-send-email 2.39.3 (Apple Git-146)
-In-Reply-To: <20250819004643.1884149-1-guoren@kernel.org>
-References: <20250819004643.1884149-1-guoren@kernel.org>
+	id 1uoDBI-00000009HYF-2meX;
+	Tue, 19 Aug 2025 03:38:41 +0000
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=U8DBD6URuxSBf30C4WkEWTqA5Fg3Zl6u71gxm5M+bWtMa1ZT9C18hHIETUekegpDZYOTXx/CtSqmxsFLW/DsTdGOgQHsIqEjO5B6eKxvuLaaTiW9sPJ1L+ZjRwZhTsuwF6jet/CvO2rIgXskFV/Hj9wUpx7Bo4kzbYxArnZR1bhncP/6vrpvsc0Jf4bAWj/D4MbTyUqFAGPwwDGospms0zTfx3GSszTVeqxQmn9gV9L7XrlWQqkHUHa67nCeSoee+lV8Ju3eMwRqylyaQmit8xQVk4zVM0LrZviuP6Lxp22T4Wf+JFDxFgLqQjRgKv4KemIw3hZQrwAot0LTCSzkow==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=b9CpfC7avC0VuOlOB5eG1FDtQIX9MZggvNiH6X7jgWk=;
+ b=K5sYR3XRZa2PUT90ZTksTD+lx+7riQJOokISEUHH2CWfeAFZYBgdhzvu9YxyVsi2jVhPwWqr2xpiG1eQ1xe14W5LCqKUHw6EdM0eJOyfuomHUD+1sRhlX40YnCsQvP3p0JGTv31+lyCoWIISja+2pOSY6rpGZthLOdZXQAry8g6nbC+TZuacNJNk7+gy7L9nTHdSoWAC7VhMYf+/bX6XLkv7RmNMIRK9GuCmL291easXo+WDiohDUnjlk4p+FZ1skHn8IXY/JR25PR65p5N/xXHyqWnnf/JcSKLzPrA3XYvpi43t3e70OMRvgsxZu81qdguVyspVxTUDYNV9gmhg3g==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
+ dkim=none; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=hotmail.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=b9CpfC7avC0VuOlOB5eG1FDtQIX9MZggvNiH6X7jgWk=;
+ b=P2NG14oYnBPO/Hkoxz1UDkRJcl29OZZKM1xuSmY6aTdcJIhAwczVt3jBWGyN2Fiu1JrFA+SPww1cLy51OZLuZFbtle3rcTUQsBwfVdhwF11c2hd8brG5xWEfqo7zV8hrFE3RGx7xvYCB47czvGEZ2g0O1RQ3KvSxbPGEXyD35zh/ax0riXKQpphhquGgIa2ZvdpVAFd9rwS9IyopsDLKdJiFELCRM5/h/OksagOERB0RGZRGhOh3tKeXCV2+Kp2FNXXkhWL19a9ZY8ttRGpYtf80Kr7PNjKW+rZXmLU9/I+JCkJqiWCMBX0tw0QejXNONBbA10z1n0bt3ri9T00qPA==
+Received: from TY1PPFCDFFFA68A.apcprd02.prod.outlook.com (2603:1096:408::966)
+ by TYSPR02MB7782.apcprd02.prod.outlook.com (2603:1096:405:57::13) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9031.24; Tue, 19 Aug
+ 2025 03:38:34 +0000
+Received: from TY1PPFCDFFFA68A.apcprd02.prod.outlook.com
+ ([fe80::209a:b4cd:540:c5da]) by TY1PPFCDFFFA68A.apcprd02.prod.outlook.com
+ ([fe80::209a:b4cd:540:c5da%6]) with mapi id 15.20.9031.018; Tue, 19 Aug 2025
+ 03:38:34 +0000
+Message-ID: <TY1PPFCDFFFA68AAE9F8D45142C373728EDF330A@TY1PPFCDFFFA68A.apcprd02.prod.outlook.com>
+Date: Tue, 19 Aug 2025 11:38:29 +0800
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 1/6] RISC-V: KVM: Change zicbom/zicboz block size to
+ depend on the host isa
+To: zhouquan@iscas.ac.cn, anup@brainfault.org, ajones@ventanamicro.com,
+ atishp@atishpatra.org, paul.walmsley@sifive.com, palmer@dabbelt.com
+Cc: linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
+ kvm@vger.kernel.org, kvm-riscv@lists.infradead.org
+References: <cover.1754646071.git.zhouquan@iscas.ac.cn>
+ <fef5907425455ecd41b224e0093f1b6bc4067138.1754646071.git.zhouquan@iscas.ac.cn>
+Content-Language: en-US
+From: "Nutty.Liu" <nutty.liu@hotmail.com>
+In-Reply-To: <fef5907425455ecd41b224e0093f1b6bc4067138.1754646071.git.zhouquan@iscas.ac.cn>
+X-ClientProxiedBy: TYCP286CA0239.JPNP286.PROD.OUTLOOK.COM
+ (2603:1096:400:3c7::17) To TY1PPFCDFFFA68A.apcprd02.prod.outlook.com
+ (2603:1096:408::966)
+X-Microsoft-Original-Message-ID: <34b16c0b-74b9-4c53-a79f-f7eb260ec5df@hotmail.com>
 MIME-Version: 1.0
+X-MS-Exchange-MessageSentRepresentingType: 1
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: TY1PPFCDFFFA68A:EE_|TYSPR02MB7782:EE_
+X-MS-Office365-Filtering-Correlation-Id: 767bf47e-6616-4943-e872-08ddded1df9a
+X-Microsoft-Antispam: BCL:0;ARA:14566002|8060799015|36102599003|19110799012|5072599009|461199028|6090799003|15080799012|23021999003|440099028|3412199025|40105399003|51005399003;
+X-Microsoft-Antispam-Message-Info: =?utf-8?B?L0dNdGhQYVU1Qm1sRDE1U0VnR0FEMFJvWm9DVVdYMGRIczJ1YU9oRDFINGxm?=
+ =?utf-8?B?U01uTEMzd3ZtZVd5c3hXanlqK0drOFhkSWNoVHE2RlJtU3R4RHpzQ0ZvOC9q?=
+ =?utf-8?B?TXJZOWpmK1VjUmtkZWsvK3Q1YnNmRFdYc2hwS0VsdWVJcTQ3S2FqQUpSVGZF?=
+ =?utf-8?B?NXJXc0swZ1ZiUnFheVR1NHMvREh1dzlXeklEMWIzL1RtanphZUV6dzhyeE05?=
+ =?utf-8?B?cW5LblBmT0NKWlR2NmExd0lSUENaN05IWXRuRWtZRkNHRDZOM0FUUkduVHRH?=
+ =?utf-8?B?dS84T2x4UEhRQnFveDMxUFJwU0VVVmxvSEFBbzllczR2QUV1TlNkbmZyRG9v?=
+ =?utf-8?B?RjFQQVh1bitmWFJJaUJXdHc0ZHZUeFlmcXc2eU5hTFZ6SzBISW9IUVBYdTdM?=
+ =?utf-8?B?ZFd6WjQrdjhOTGdxaWg1SW1rc3k2OUdlWG9ZOTRXN1BFcm9VQWdQTitiWEEx?=
+ =?utf-8?B?M2dCTm8vYUFWbUtyNkZudDdLU0xERXZuZUF2ZmxITEgydFhGckt4emplSkJM?=
+ =?utf-8?B?TDdYQXlncmZlcWx0WnJORFArZ25QbEpoVXdlVXFQQlJtQncxeW5hODlEQ0Z6?=
+ =?utf-8?B?OTVnRW82T3ppQzBhb3llazhOSkJsbHNLM2ZoQWFsYnhXMnNDMkpXbzU1OGl3?=
+ =?utf-8?B?cDdid1hmelo3aVlBdWVwOWJMU25WS0IvaUdWSmxqWDgxT1JBTDVZcGFDaEls?=
+ =?utf-8?B?YWpGcUREdERwdlBXTW5VeCthL2N2NEE0RzdNcDdQUENBaGxLUy80RUw1My84?=
+ =?utf-8?B?SlkrSmQ4bWNzemRtb1lkKzRTeGJYUENJWFlvOTcxSDI2NW5mNTNQQ2dHWFpy?=
+ =?utf-8?B?K2xsV1EvL3p5U0k2bUNiZEZ1cCtrQTViQU5HUEFDZTU0eDFxeitSQnFIU0NK?=
+ =?utf-8?B?VXk0WXNIU2tkVWIzc2JHZGRuR1RrUmxQL1NUS0RIcjRCNG5jMXZXN1YrYlN5?=
+ =?utf-8?B?VGlNSTZXdEFNeHkxQnpKOXBMcWV0WitWdFpLQ1Y0eUJBZUwzNlBkK2FDa1JE?=
+ =?utf-8?B?c00rU3pxOXBhVHdTK0VJNmhWNER5bHE0UFpnRSs4UHN2TFlaSkF5Z21yb3JG?=
+ =?utf-8?B?b0YrWExHMnlGYzh6UVlPdjNGeTRCS2VUK0NpUjhOSk9JcEdzNWZPYW9QejZk?=
+ =?utf-8?B?aTRWRXlmRmE2b3p4c0xkSVNOdnowYmx4MG5xMEJnZ2NNaGs0a1RzZVFSQXA0?=
+ =?utf-8?B?N1BYZ3h6YkpIUHg2NXFuTjM4Q1pPd2NRelNCeWtuLzhKblpiYW45ei9wMTlY?=
+ =?utf-8?B?QmlpdVZMTjlTamFmazNCWFh3NkdtaEFVNVlqSkx6NHdGU1BuVWRxSHJHajY2?=
+ =?utf-8?B?OGNXdlA2bWZnenV6N0JRRC9ycEZSRkhQdDByUHNGcGFIY0NIYllERFpmeVpr?=
+ =?utf-8?B?YjU5bkU0bzZhV3d2VS85SXVXNGt1Y0lLZjAvejVLT1dqN1NnREE2Mm9CNm9s?=
+ =?utf-8?B?T3AyaExCSGJyT3lRSWdSWGZteFpkN0VTVFdNRzFtdFV3ZU00TGRJZ0RkSktL?=
+ =?utf-8?B?U3d6OWlOY2RRdGxhWG9VbWMvOHhqQ0NpVmtjK3dOUXdrL2l1YTJxRVB6SzFS?=
+ =?utf-8?B?ejRrVC9VY24rUFVFd1BMZ2g0cWExMGRKWk05TmpiSUkybU9CQTc2d09kTjFF?=
+ =?utf-8?Q?Y1UYdtPGV8/LIWMKmXJn6QqWEVH607uTXjnzxKQApluA=3D?=
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?LzJ6bGhGSmRWTmNUdHRsVGR5cERjanRPSVlMRXIyT2RYTjlPa1pVbDBIRVlC?=
+ =?utf-8?B?b2VsNzNmQTdqeFZJUWxLS0RaeUdUOTBHcnQvbWdwV0p4NEFINVlNRy94M3VD?=
+ =?utf-8?B?ajdKbTZkbXFIU0l0TXRpd25QaTRaR1hWQkVsNkp3UEtZZ2E0d2o3Uk9YMWxl?=
+ =?utf-8?B?K0RaWHNRVTErOVF3eWVleiswNjlseSt1aVpVRTZRY1pOYzYveGhTbTZRZW0z?=
+ =?utf-8?B?SkovbS9LOXFXT1M4akN0V1R1VDBjR0c0emdNaUc5VHA1ZUc4d3hJSUQ0NzQ0?=
+ =?utf-8?B?V2ZnZWlrWjQ4VVRxUnVnYURvRVpGbkZsaWx2R1pKN1JCK1VydXY3amVkMFVa?=
+ =?utf-8?B?WisrUXRwWXNWazFjUzhtS3FtMXloUWFpemRIdmFIbUFmeVN4a0VzeXhyc0JC?=
+ =?utf-8?B?Q2EwcVA5aE1lR3JwM2w0VnNxQmVnRG5CQWxJTDFORjJQaDM5ZWpCZGxkSW5a?=
+ =?utf-8?B?cnZETk5RRVlRLzliQm12OXM4U0NWNEJsOHVoeDE3cTg0Wk9VNGx0bUxmZWdv?=
+ =?utf-8?B?bjNTZmRtWnJib3oyYXFBd3NlZGduYkdYckVjNytiemlRdmp0M01EZGx3Q3My?=
+ =?utf-8?B?dXYwQ2VkNUltc0hjaUFNK3Z0V2R4REFaRGczU2lpaTRud0ZKeXE0a1Y5NFov?=
+ =?utf-8?B?WGtoaG5GcEQvemR2c25RdG9kK3JNZUM5UWhBWG9qRm84K01xM0dOZGc0WWJQ?=
+ =?utf-8?B?NWFkOUcxTGdJSDFqa1d6RGsyRlF6N05vamM3TWkxSGZEWUJudzU4QThJbGhE?=
+ =?utf-8?B?VklSc0hWVGlJZmpvb3dNYURkalA1NG5ubnU5S0tmYWZjWjZPK3h6c0U0SGFh?=
+ =?utf-8?B?ZHJuanpjYWlVTXRBNWdpWWs2VXp6cDkxcmVUc2xyU295WS9ieWZTS2NwOCtw?=
+ =?utf-8?B?Ykpqb25XRWk4dlgyb0tVUHVaTWpzY0FiUkVFQlJnQmFFakVJRExDUHU3RTNF?=
+ =?utf-8?B?Q05OOC9ybmVua3pYaUZkOVU5LzQvMzJGNCtOcUMxVHV4N1gyWWJCMlFIMk9L?=
+ =?utf-8?B?eVpOQ3Y5UnhIUkE2MTJGMVNIUm81V1Z3V2Jpck9mWTFmVHphRmNCVStSMVcy?=
+ =?utf-8?B?RkpZdEhCcWNpTjNxSjRpOENUMVJqb3BkN1BkWVRrd3NqaUpSNUF3SndmYjdn?=
+ =?utf-8?B?b05ZaHk0R1RWNXlSTlR6N3Rodm1TeEI3NFAvZWViSGJSaDIwQWpwL28xbUh2?=
+ =?utf-8?B?a2E1dGhXRHdXRUg1ZWxUNEtyTXI3ZlJDVXBYblpKRU1VM3dzazB5dXI2OWFK?=
+ =?utf-8?B?dWxnN0tudzdSc2YyZjNkQk9JbFhLM3hqcWlHV2dPV3FEbnFMc1NHODhXcEk0?=
+ =?utf-8?B?aWlHSG1BYmlqZW1aSXNwK0t0MWs5ZTZWd0dkMlozNTd4dVVidXZRa1JvUHRZ?=
+ =?utf-8?B?RGVsV1NmZ2xIWFcwTk12V0x4RVJUL0JSN2R1S3pqVDFndnhzYWt1bnlRc3l1?=
+ =?utf-8?B?UHhNNXF5VHJGRGRFSE9MdnpxY1dmejNBdnZmQjJ6aThSMWdCdU9qVlByYmNM?=
+ =?utf-8?B?MGpHbXBGL3E4Zm9FNTlBN0dTSktXQ2tFckkwcG55UkYyZWZuS0FRY1dhS09O?=
+ =?utf-8?B?alNURFNjdU55YSsycnpoUzVpQmRQbmt6VnM2WFM4cWJMTGhjUTNVSVc5ZCtW?=
+ =?utf-8?B?bmZZQm5GQVZoV0NRN0FqVnZNeGdJWlNpcEg1cHZZVVdJR2lsY2lvbEdtN0M4?=
+ =?utf-8?Q?DCXwJCCuX2Bn44ALnUw/?=
+X-OriginatorOrg: sct-15-20-8534-15-msonline-outlook-c9a3c.templateTenant
+X-MS-Exchange-CrossTenant-Network-Message-Id: 767bf47e-6616-4943-e872-08ddded1df9a
+X-MS-Exchange-CrossTenant-AuthSource: TY1PPFCDFFFA68A.apcprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Aug 2025 03:38:34.3513
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
+X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: TYSPR02MB7782
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250818_190142_813090_09D23F19 
-X-CRM114-Status: UNSURE (   7.14  )
+X-CRM114-CacheID: sfid-20250818_203840_719607_9F5F51ED 
+X-CRM114-Status: UNSURE (   9.07  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -66,135 +156,26 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
->From: "Guo Ren (Alibaba DAMO Academy)" <guoren@kernel.org>
->
->urrent kvm_riscv_gstage_mode_detect() assumes H-extension must
->have HGATP_MODE_SV39X4/SV32X4 at least, but the spec allows
->H-extension with HGATP_MODE_BARE alone. The KVM depends on
->!HGATP_MODE_BARE at least, so enhance the gstage-mode-detect
->to block HGATP_MODE_BARE.
->
->Move gstage-mode-check closer to gstage-mode-detect to prevent
->unnecessary init.
 
-This patch helps to detect hardware function missing in advance,
-prevent software from entering incorrect logic.
+On 8/8/2025 6:18 PM, zhouquan@iscas.ac.cn wrote:
+> From: Quan Zhou <zhouquan@iscas.ac.cn>
+>
+> The zicbom/zicboz block size registers should depend on the host's isa,
+> the reason is that we otherwise create an ioctl order dependency on the VMM.
+>
+> Signed-off-by: Quan Zhou <zhouquan@iscas.ac.cn>
+> ---
+>   arch/riscv/kvm/vcpu_onereg.c | 12 ++++++------
+>   1 file changed, 6 insertions(+), 6 deletions(-)
+Reviewed-by: Nutty Liu <nutty.liu@hotmail.com>
 
-Reviewed-by: Fangyu Yu <fangyu.yu@linux.alibaba.com>
-
->Signed-off-by: Guo Ren (Alibaba DAMO Academy) <guoren@kernel.org>
->---
-> arch/riscv/kvm/gstage.c | 27 ++++++++++++++++++++++++---
-> arch/riscv/kvm/main.c   | 35 +++++++++++++++++------------------
-> 2 files changed, 41 insertions(+), 21 deletions(-)
->
->diff --git a/arch/riscv/kvm/gstage.c b/arch/riscv/kvm/gstage.c
->index 24c270d6d0e2..b67d60d722c2 100644
->--- a/arch/riscv/kvm/gstage.c
->+++ b/arch/riscv/kvm/gstage.c
->@@ -321,7 +321,7 @@ void __init kvm_riscv_gstage_mode_detect(void)
-> 	if ((csr_read(CSR_HGATP) >> HGATP_MODE_SHIFT) == HGATP_MODE_SV57X4) {
-> 		kvm_riscv_gstage_mode = HGATP_MODE_SV57X4;
-> 		kvm_riscv_gstage_pgd_levels = 5;
->-		goto skip_sv48x4_test;
->+		goto done;
-> 	}
->
-> 	/* Try Sv48x4 G-stage mode */
->@@ -329,10 +329,31 @@ void __init kvm_riscv_gstage_mode_detect(void)
-> 	if ((csr_read(CSR_HGATP) >> HGATP_MODE_SHIFT) == HGATP_MODE_SV48X4) {
-> 		kvm_riscv_gstage_mode = HGATP_MODE_SV48X4;
-> 		kvm_riscv_gstage_pgd_levels = 4;
->+		goto done;
-> 	}
->-skip_sv48x4_test:
->
->+	/* Try Sv39x4 G-stage mode */
->+	csr_write(CSR_HGATP, HGATP_MODE_SV39X4 << HGATP_MODE_SHIFT);
->+	if ((csr_read(CSR_HGATP) >> HGATP_MODE_SHIFT) == HGATP_MODE_SV39X4) {
->+		kvm_riscv_gstage_mode = HGATP_MODE_SV39X4;
->+		kvm_riscv_gstage_pgd_levels = 3;
->+		goto done;
->+	}
->+#else /* CONFIG_32BIT */
->+	/* Try Sv32x4 G-stage mode */
->+	csr_write(CSR_HGATP, HGATP_MODE_SV32X4 << HGATP_MODE_SHIFT);
->+	if ((csr_read(CSR_HGATP) >> HGATP_MODE_SHIFT) == HGATP_MODE_SV32X4) {
->+		kvm_riscv_gstage_mode = HGATP_MODE_SV32X4;
->+		kvm_riscv_gstage_pgd_levels = 2;
->+		goto done;
->+	}
->+#endif
->+
->+	/* KVM depends on !HGATP_MODE_OFF */
->+	kvm_riscv_gstage_mode = HGATP_MODE_OFF;
->+	kvm_riscv_gstage_pgd_levels = 0;
->+
->+done:
-> 	csr_write(CSR_HGATP, 0);
-> 	kvm_riscv_local_hfence_gvma_all();
->-#endif
-> }
->diff --git a/arch/riscv/kvm/main.c b/arch/riscv/kvm/main.c
->index 67c876de74ef..8ee7aaa74ddc 100644
->--- a/arch/riscv/kvm/main.c
->+++ b/arch/riscv/kvm/main.c
->@@ -93,6 +93,23 @@ static int __init riscv_kvm_init(void)
-> 		return rc;
->
-> 	kvm_riscv_gstage_mode_detect();
->+	switch (kvm_riscv_gstage_mode) {
->+	case HGATP_MODE_SV32X4:
->+		str = "Sv32x4";
->+		break;
->+	case HGATP_MODE_SV39X4:
->+		str = "Sv39x4";
->+		break;
->+	case HGATP_MODE_SV48X4:
->+		str = "Sv48x4";
->+		break;
->+	case HGATP_MODE_SV57X4:
->+		str = "Sv57x4";
->+		break;
->+	default:
->+		return -ENODEV;
->+	}
->+	kvm_info("using %s G-stage page table format\n", str);
->
-> 	kvm_riscv_gstage_vmid_detect();
->
->@@ -135,24 +152,6 @@ static int __init riscv_kvm_init(void)
-> 			 (rc) ? slist : "no features");
-> 	}
->
->-	switch (kvm_riscv_gstage_mode) {
->-	case HGATP_MODE_SV32X4:
->-		str = "Sv32x4";
->-		break;
->-	case HGATP_MODE_SV39X4:
->-		str = "Sv39x4";
->-		break;
->-	case HGATP_MODE_SV48X4:
->-		str = "Sv48x4";
->-		break;
->-	case HGATP_MODE_SV57X4:
->-		str = "Sv57x4";
->-		break;
->-	default:
->-		return -ENODEV;
->-	}
->-	kvm_info("using %s G-stage page table format\n", str);
->-
-> 	kvm_info("VMID %ld bits available\n", kvm_riscv_gstage_vmid_bits());
->
-> 	if (kvm_riscv_aia_available())
->--
->2.40.1
+Thanks,
+Nutty
 
 -- 
 kvm-riscv mailing list
