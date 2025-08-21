@@ -4,32 +4,32 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9339CA0EEB
-	for <kvm-riscv@archiver.kernel.org>; Thu, 21 Aug 2025 19:12:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BE918CA0FE7
+	for <kvm-riscv@archiver.kernel.org>; Thu, 21 Aug 2025 19:12:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-Id:Date:Subject:Cc
-	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=Kzyi8cX9vjLnQEG+fFdym4KBdHrY4L0Eo7nRt3YJTcQ=; b=OY+uvmQFlApMsB
-	V4eO/mYwqksKMDOy3lx5QI1IteuHqDc7EWwHykdDV+eMmf4Uvp9SIQEMZ4nTthjQqx6CcwJptnRzy
-	WVuObCXquC1SfIEY5vr9ZUJ79qxZxDpzVY59KMUDS/DKRUy1FLedXNTEoHXL0e/m5o7Q62AmTAJoW
-	UltRYViNBlDpeTkVbQlpUK8S0geevYs4KLvD7yuuxflQP8S+TqQOJg/gShUilZFXNlEeJQGRA08Vt
-	XkkLD13l5X9vi4zEGLI8xIJ/d96/Bggu8NhYozhZey8jJ4Np3C7o5pa6ZNIrNSs73w5s1BDq8Zkgn
-	iv13KghGZF8T9Yuqh8/Q==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=0HO/R8Jj2g4j68CEinM03PcLJ72qLl1qQbYgtBgRK+4=; b=mVyWqcTJcYP4Ns
+	zzE2rtGMtPzVpoornN+qYQZIvI2OCt8Fy+zy1iCPN2upCb4opQsQ0SoFusjhoUlKssjI65OxvzRWy
+	0VYCSYm8U8FF0xgdi0SfxEmGvaXvnQJH9Sk2k285QkPK4e9wu3NgfHY2lgQatfbwqUqGlPGhK3LLH
+	7xE4RCcWunemHqFOMRVLS/4QfzZYJtVrdn+XrBU8zx2y3KKSMyQbcT0LBYPhBS24guW872xwNiXZQ
+	ZSeaJo1EXm2CoSmNu5G2/5INBQ67vyX3awKxjARVL1A2QfPOa8Nbrcp16nqDR6Wzzg3vtsqJWcKuw
+	W/j9v/6TyFrjGjomz4QA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1upAi2-00000000EqV-40S0;
-	Thu, 21 Aug 2025 19:12:26 +0000
+	id 1upAi5-00000000EvK-0wGq;
+	Thu, 21 Aug 2025 19:12:29 +0000
 Received: from smtp81.cstnet.cn ([159.226.251.81] helo=cstnet.cn)
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1up5lj-0000000H8U7-2PJD
+	id 1up5lp-0000000H8Vq-20NH
 	for kvm-riscv@lists.infradead.org;
-	Thu, 21 Aug 2025 13:55:58 +0000
+	Thu, 21 Aug 2025 13:56:02 +0000
 Received: from ROG.lan (unknown [118.251.176.166])
-	by APP-03 (Coremail) with SMTP id rQCowAAngIFZJadoCYkTDg--.22571S2;
-	Thu, 21 Aug 2025 21:55:39 +0800 (CST)
+	by APP-03 (Coremail) with SMTP id rQCowAAngIFZJadoCYkTDg--.22571S7;
+	Thu, 21 Aug 2025 21:55:53 +0800 (CST)
 From: Pincheng Wang <pincheng.plct@isrc.iscas.ac.cn>
 To: paul.walmsley@sifive.com,
 	palmer@dabbelt.com,
@@ -63,33 +63,37 @@ Cc: linux-riscv@list.infradead.org,
 	kvm-riscv@lists.infradead.org,
 	linux-kselftest@vger.kernel.org,
 	pincheng.plct@isrc.iscas.ac.cn
-Subject: [PATCH 0/5] RISC-V: Add Zilsd/Zclsd support in hwprobe and KVM
-Date: Thu, 21 Aug 2025 21:55:22 +0800
-Message-Id: <20250821135527.224044-1-pincheng.plct@isrc.iscas.ac.cn>
+Subject: [PATCH 5/5] KVM: riscv: selftests: add Zilsd and Zclsd extension to get-reg-list test
+Date: Thu, 21 Aug 2025 21:55:27 +0800
+Message-Id: <20250821135527.224044-6-pincheng.plct@isrc.iscas.ac.cn>
 X-Mailer: git-send-email 2.39.5
+In-Reply-To: <20250821135527.224044-1-pincheng.plct@isrc.iscas.ac.cn>
+References: <20250821135527.224044-1-pincheng.plct@isrc.iscas.ac.cn>
 MIME-Version: 1.0
-X-CM-TRANSID: rQCowAAngIFZJadoCYkTDg--.22571S2
-X-Coremail-Antispam: 1UD129KBjvJXoW7ur1kJF1xGr15GFy8Gw1xXwb_yoW8trW5pa
-	n5Cw15KF1kXFy7C34fAr48ur1rKF4ru393Jrn3t348WFW3Cr95Jr9ak3ZxZF18ArZ29ry0
-	93WrKw1I93Z7AaDanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUU9F14x267AKxVWrJVCq3wAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
-	rVWUWVWUuwAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
-	1l84ACjcxK6xIIjxv20xvE14v26r1j6r1xM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4j
-	6F4UM28EF7xvwVC2z280aVAFwI0_Jr0_Gr1l84ACjcxK6I8E87Iv6xkF7I0E14v26r4j6r
-	4UJwAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0
-	I7IYx2IY67AKxVWUJVWUGwAv7VC2z280aVAFwI0_Cr0_Gr1UMcvjeVCFs4IE7xkEbVWUJV
-	W8JwACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1lFIxGxcIEc7CjxVA2
-	Y2ka0xkIwI1lc7CjxVAaw2AFwI0_GFv_Wryl42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x
-	0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2
-	zVAF1VAY17CE14v26rWY6r4UJwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v26r1j6r
-	1xMIIF0xvE2Ix0cI8IcVCY1x0267AKxVW8JVWxJwCI42IY6xAIw20EY4v20xvaj40_Jr0_
-	JF4lIxAIcVC2z280aVAFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x0267AKxVW8JVW8JrUvcS
-	sGvfC2KfnxnUUI43ZEXa7VUU0JmUUUUUU==
+X-CM-TRANSID: rQCowAAngIFZJadoCYkTDg--.22571S7
+X-Coremail-Antispam: 1UD129KBjvJXoW7Cw47Ar47Jw4fZr4kXryUAwb_yoW8ZF15pr
+	1rA39Ikr4kJ34fA392y3s8Ww18Xws8Jws5Cw43ur4fAryjyryxtFnrA3W3Jr1DJa4Fqr1S
+	yF1fWr12vw40yrUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUUml14x267AKxVWrJVCq3wAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+	rVWUWVWUuwAFIxvE14AKwVWUJVWUGwA2048vs2IY020E87I2jVAFwI0_JF0E3s1l82xGYI
+	kIc2x26xkF7I0E14v26ryj6s0DM28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4kI8wA2
+	z4x0Y4vE2Ix0cI8IcVAFwI0_JFI_Gr1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Gr1j6F
+	4UJwA2z4x0Y4vEx4A2jsIE14v26r1j6r4UM28EF7xvwVC2z280aVCY1x0267AKxVW8Jr0_
+	Cr1UM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj6x
+	IIjxv20xvE14v26r1j6r18McIj6I8E87Iv67AKxVWxJVW8Jr1lOx8S6xCaFVCjc4AY6r1j
+	6r4UM4x0Y48IcxkI7VAKI48JM4x0x7Aq67IIx4CEVc8vx2IErcIFxwACI402YVCY1x0262
+	8vn2kIc2xKxwCY1x0262kKe7AKxVW8ZVWrXwCF04k20xvY0x0EwIxGrwCFx2IqxVCFs4IE
+	7xkEbVWUJVW8JwC20s026c02F40E14v26r1j6r18MI8I3I0E7480Y4vE14v26r106r1rMI
+	8E67AF67kF1VAFwI0_Wrv_Gr1UMIIYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_JFI_
+	Gr1lIxAIcVC0I7IYx2IY6xkF7I0E14v26r4UJVWxJr1lIxAIcVCF04k26cxKx2IYs7xG6r
+	1j6r1xMIIF0xvEx4A2jsIE14v26r1j6r4UMIIF0xvEx4A2jsIEc7CjxVAFwI0_Gr1j6F4U
+	JbIYCTnIWIevJa73UjIFyTuYvjTRRNtIDUUUU
 X-Originating-IP: [118.251.176.166]
 X-CM-SenderInfo: pslquxhhqjh1xofwqxxvufhxpvfd2hldfou0/
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250821_065555_976649_E8AD3070 
-X-CRM114-Status: GOOD (  10.58  )
+X-CRM114-CacheID: sfid-20250821_065601_875284_49C33ABB 
+X-CRM114-Status: UNSURE (   6.75  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -106,58 +110,48 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Hi all,
+The KVM RISC-V allows Zilsd and Zclsd extensions for Guest/VM so add
+this extension to get-reg-list test.
 
-This patch series adds support for the recently ratified Zilsd
-(Load/Store pair instructions) and Zclsd (Compressed Load/Store pair
-instructions) extensions to the RISC-V Linux kernel. It covers device tree
-binding,ISA string parsing, hwprobe exposure, KVM guest handling and selftests.
+Signed-off-by: Pincheng Wang <pincheng.plct@isrc.iscas.ac.cn>
+---
+ tools/testing/selftests/kvm/riscv/get-reg-list.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-Zilsd and Zclsd allow more efficient memory access sequences on RV32. My
-goal is to enable glibc and other user-space libraries to detect these
-extensions via hwprobe and make use of them for optimized
-implementations of common routines. To achieve this, the Linux kernel
-needs to recognize and expose the availability of these extensions
-through the device tree bindings, ISA string parsing and hwprobe
-interfaces. KVM support is also required to correctly virtualize these
-features for guest environments.
-
-The series is structured as follows:
-- Patch 1: Add device tree bindings documentation for Zilsd and Zclsd
-- Patch 2: Extend RISC-V ISA extension string parsing to recognize them.
-- Patch 3: Export Zilsd and Zclsd via riscv_hwprobe
-- Patch 4: Allow KVM guests to use them.
-- Patch 5: Add KVM selftests.
-
-This series of patches is a preparatory step toward enabling user-space
-optimizations in glibc that leverage Zilsd and Zclsd, by providing the
-necessary kernel-side support.
-
-Please review, and let me know if any adjustments are needed.
-
-Thanks,
-Pincheng Wang
-
-
-Pincheng Wang (5):
-  dt-bidings: riscv: add Zilsd and Zclsd extension descriptions
-  riscv: add ISA extension parsing for Zilsd and Zclsd
-  riscv: hwprobe: export Zilsd and Zclsd ISA extensions
-  riscv: KVM: allow Zilsd and Zclsd extensions for Guest/VM
-  KVM: riscv: selftests: add Zilsd and Zclsd extension to get-reg-list
-    test
-
- Documentation/arch/riscv/hwprobe.rst          |  8 ++++
- .../devicetree/bindings/riscv/extensions.yaml | 39 +++++++++++++++++++
- arch/riscv/include/asm/hwcap.h                |  2 +
- arch/riscv/include/uapi/asm/hwprobe.h         |  2 +
- arch/riscv/include/uapi/asm/kvm.h             |  2 +
- arch/riscv/kernel/cpufeature.c                | 24 ++++++++++++
- arch/riscv/kernel/sys_hwprobe.c               |  2 +
- arch/riscv/kvm/vcpu_onereg.c                  |  2 +
- .../selftests/kvm/riscv/get-reg-list.c        |  6 +++
- 9 files changed, 87 insertions(+)
-
+diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
+index a0b7dabb5040..477bd386265f 100644
+--- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
++++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
+@@ -78,7 +78,9 @@ bool filter_reg(__u64 reg)
+ 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZCB:
+ 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZCD:
+ 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZCF:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZCLSD:
+ 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZCMOP:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZILSD:
+ 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZFA:
+ 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZFH:
+ 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZFHMIN:
+@@ -530,7 +532,9 @@ static const char *isa_ext_single_id_to_str(__u64 reg_off)
+ 		KVM_ISA_EXT_ARR(ZCB),
+ 		KVM_ISA_EXT_ARR(ZCD),
+ 		KVM_ISA_EXT_ARR(ZCF),
++		KVM_ISA_EXT_ARR(ZCLSD),
+ 		KVM_ISA_EXT_ARR(ZCMOP),
++		KVM_ISA_EXT_ARR(ZILSD),
+ 		KVM_ISA_EXT_ARR(ZFA),
+ 		KVM_ISA_EXT_ARR(ZFH),
+ 		KVM_ISA_EXT_ARR(ZFHMIN),
+@@ -1199,7 +1203,9 @@ struct vcpu_reg_list *vcpu_configs[] = {
+ 	&config_zcb,
+ 	&config_zcd,
+ 	&config_zcf,
++	&config_zclsd,
+ 	&config_zcmop,
++	&config_zilsd,
+ 	&config_zfa,
+ 	&config_zfh,
+ 	&config_zfhmin,
 -- 
 2.39.5
 
