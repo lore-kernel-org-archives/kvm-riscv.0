@@ -4,147 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A2479CA0EFA
-	for <kvm-riscv@archiver.kernel.org>; Thu, 21 Aug 2025 10:25:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9339CA0EEB
+	for <kvm-riscv@archiver.kernel.org>; Thu, 21 Aug 2025 19:12:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
-	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
-	List-Unsubscribe:List-Id:MIME-Version:In-Reply-To:From:References:Cc:To:
-	Subject:Date:Message-ID:Reply-To:Content-ID:Content-Description:Resent-Date:
-	Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Owner;
-	bh=HMYWQf++KljUMSmmmz9aIntYZyBIQSj/F49TF9Byi2s=; b=sVTc+gsVQLfZ89t1NySxZrY9tx
-	Z33OlOPK5hW3/WuaGsGTLNHBfXREkDkCS6Rb9ItqCRbiepva06o6IFi3zgpQ7wHELoPlOhKNEeizg
-	WRetOPG0kUu3m7LuNNTUcrYI+jfxqhbyg//CGi+NDzydnKl63fSCbFHcey/KK25LtJ1s18E5V0rgs
-	JdTHFA8DV9vALsEeMvo8p59wGSu6XUjjDYHfMGWIpVvdbYe/EQ9C083hcHmVGm3OMYSCNBkEqvZJa
-	30Ww4o8UXkFAEubl26295oayDVHzeQ6Kb/9/T13e7aOH+HU5AXhfiv//Q9RJ+TKpN6RPe9pA1792q
-	C2iMjxrg==;
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-Id:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=Kzyi8cX9vjLnQEG+fFdym4KBdHrY4L0Eo7nRt3YJTcQ=; b=OY+uvmQFlApMsB
+	V4eO/mYwqksKMDOy3lx5QI1IteuHqDc7EWwHykdDV+eMmf4Uvp9SIQEMZ4nTthjQqx6CcwJptnRzy
+	WVuObCXquC1SfIEY5vr9ZUJ79qxZxDpzVY59KMUDS/DKRUy1FLedXNTEoHXL0e/m5o7Q62AmTAJoW
+	UltRYViNBlDpeTkVbQlpUK8S0geevYs4KLvD7yuuxflQP8S+TqQOJg/gShUilZFXNlEeJQGRA08Vt
+	XkkLD13l5X9vi4zEGLI8xIJ/d96/Bggu8NhYozhZey8jJ4Np3C7o5pa6ZNIrNSs73w5s1BDq8Zkgn
+	iv13KghGZF8T9Yuqh8/Q==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1up2UU-0000000GaYX-0VIU;
-	Thu, 21 Aug 2025 10:25:54 +0000
-Received: from mail-koreacentralazolkn190130003.outbound.protection.outlook.com ([2a01:111:f403:d40f::3] helo=SEYPR02CU001.outbound.protection.outlook.com)
+	id 1upAi2-00000000EqV-40S0;
+	Thu, 21 Aug 2025 19:12:26 +0000
+Received: from smtp81.cstnet.cn ([159.226.251.81] helo=cstnet.cn)
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1up0Z7-0000000GDwx-4Bt6;
-	Thu, 21 Aug 2025 08:22:35 +0000
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=q+q6KUl6mrX0LhDf3tvbQsVoB2pphi5o/3OdCC/MXEfQP0ymo8UHWIYRisTKnA1GrSyklOaA1eF982dgobIoeJdfSjb384CPu9mVluoM6Pqeu3NZg5w1CyNz14igVJDY+OSsr3oXUvKRgHtKyflyjO6Q3azgJb7Df2Kbe0GfM4E/rYCeux0oIjU4Zrj2XKoWgcFlmp4koFdH0G4cmJjT8uRURQ58jrRpS52fHNJTGtKxmX/eiOS2vwfEeZ+CoAW6cJB125CrkXPYvSBG7uKdIBe64YoMUDdb2k2kFedi/TN1i+j8Z69s9xM9dmR9OL4grSM4qSjeb9YPyAr5P7jmSQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=HPuInCWj+CcNPNqRZpyC7f1juoKyYvbbDvvDEYvyirM=;
- b=iaolWl4bW/I+hLQL23QBjsZpjzmwFIsBRek72cu9fXck9q8qdby83lznaPfrSikNwLAT9BfuzvsbyJWbEuuTyIySU7TWuv5gsGM33AhoCgUJK6C1yQTVmJL9VDmlyORJap8Fs90g71w33vI35ikjixuk7SCYuCukV9Dv/ojCBLIRSq8r5tDvbg2qc913LeXIgBV2GZE+Xdw2VblNjLgN/m7w/ChOameWAVhfA+CXZpz2vsoYR3RA/qQmJeclNtmHtFgHpdT5SuJYjwcw24DIb6lyfET9WTR9i+leJ1t91WvOOReWCvKOujbezDMCiBo/xfJzPZ7EdyHwIVBEBNLPtQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
- dkim=none; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=hotmail.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=HPuInCWj+CcNPNqRZpyC7f1juoKyYvbbDvvDEYvyirM=;
- b=scNXAoj/KQL2+gy6CmrzE8MC+BtB/uyoF154WLNZTxVQVeYq5SE6RlAOXYiRHhvdkSGBnrmo54idsGe1Zc8VzA2lfgcrwJDivGVblkNiYbLcCcEwZS7GaiWbdyZi4ZfeO4gAFg5tuPWkAAiLJUQrAwoyL6L0hif5X0zFyeIHdb3GvSSVafPCnKYholzYb0dTwT/4BA4Whkhuf8j8wSWtuwv1xEJ8xm7VfMDbGgROkgsZrf/o3oDriy8VIn2Y5eofA0rLk06myjWopj09200UpXL621A/lWj3lH3yEuSwXrAN8x61CIblPRHy5BkK7Y6fNjTjBJRzE2VIy5SNrAyi+w==
-Received: from TY1PPFCDFFFA68A.apcprd02.prod.outlook.com (2603:1096:408::966)
- by SEZPR02MB6584.apcprd02.prod.outlook.com (2603:1096:101:131::8) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9031.24; Thu, 21 Aug
- 2025 08:22:22 +0000
-Received: from TY1PPFCDFFFA68A.apcprd02.prod.outlook.com
- ([fe80::209a:b4cd:540:c5da]) by TY1PPFCDFFFA68A.apcprd02.prod.outlook.com
- ([fe80::209a:b4cd:540:c5da%6]) with mapi id 15.20.9031.018; Thu, 21 Aug 2025
- 08:22:22 +0000
-Message-ID: <TY1PPFCDFFFA68A2A32AC6CAE356148712CF332A@TY1PPFCDFFFA68A.apcprd02.prod.outlook.com>
-Date: Thu, 21 Aug 2025 16:22:17 +0800
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] riscv: skip csr restore if vcpu preempted reload
-To: Jinyu Tang <tjytimi@163.com>, Anup Patel <anup@brainfault.org>,
- Atish Patra <atish.patra@linux.dev>,
- Conor Dooley <conor.dooley@microchip.com>,
- Yong-Xuan Wang <yongxuan.wang@sifive.com>,
- Paul Walmsley <paul.walmsley@sifive.com>
-Cc: kvm@vger.kernel.org, kvm-riscv@lists.infradead.org,
- linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org
-References: <20250807114220.559098-1-tjytimi@163.com>
-Content-Language: en-US
-From: "Nutty.Liu" <nutty.liu@hotmail.com>
-In-Reply-To: <20250807114220.559098-1-tjytimi@163.com>
-X-ClientProxiedBy: SG2PR06CA0235.apcprd06.prod.outlook.com
- (2603:1096:4:ac::19) To TY1PPFCDFFFA68A.apcprd02.prod.outlook.com
- (2603:1096:408::966)
-X-Microsoft-Original-Message-ID: <583957c9-e2b4-4eb5-96d4-005b31770a4c@hotmail.com>
+	id 1up5lj-0000000H8U7-2PJD
+	for kvm-riscv@lists.infradead.org;
+	Thu, 21 Aug 2025 13:55:58 +0000
+Received: from ROG.lan (unknown [118.251.176.166])
+	by APP-03 (Coremail) with SMTP id rQCowAAngIFZJadoCYkTDg--.22571S2;
+	Thu, 21 Aug 2025 21:55:39 +0800 (CST)
+From: Pincheng Wang <pincheng.plct@isrc.iscas.ac.cn>
+To: paul.walmsley@sifive.com,
+	palmer@dabbelt.com,
+	aou@eecs.berkeley.edu,
+	alex@ghiti.fr,
+	robh@kernel.org,
+	krzk+dt@kernel.org,
+	conor+dt@kernel.org,
+	anup@brainfault.org,
+	pbonzini@redhat.com,
+	shuah@kernel.org,
+	cyan.yang@sifive.com,
+	cleger@rivosinc.com,
+	charlie@rivosinc.com,
+	cuiyunhui@bytedance.com,
+	samuel.holland@sifive.com,
+	namcao@linutronix.de,
+	jesse@rivosinc.com,
+	inochiama@gmail.com,
+	yongxuan.wang@sifive.com,
+	ajones@ventanamicro.com,
+	parri.andrea@gmail.com,
+	mikisabate@gmail.com,
+	yikming2222@gmail.com,
+	thomas.weissschuh@linutronix.de
+Cc: linux-riscv@list.infradead.org,
+	linux-kernel@vger.kernel.org,
+	linux-doc@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	kvm@vger.kernel.org,
+	kvm-riscv@lists.infradead.org,
+	linux-kselftest@vger.kernel.org,
+	pincheng.plct@isrc.iscas.ac.cn
+Subject: [PATCH 0/5] RISC-V: Add Zilsd/Zclsd support in hwprobe and KVM
+Date: Thu, 21 Aug 2025 21:55:22 +0800
+Message-Id: <20250821135527.224044-1-pincheng.plct@isrc.iscas.ac.cn>
+X-Mailer: git-send-email 2.39.5
 MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: TY1PPFCDFFFA68A:EE_|SEZPR02MB6584:EE_
-X-MS-Office365-Filtering-Correlation-Id: 819d2d29-c3d1-40e7-be59-08dde08bd9fe
-X-Microsoft-Antispam: BCL:0;ARA:14566002|6090799003|461199028|5072599009|19110799012|8060799015|36102599003|15080799012|23021999003|440099028|40105399003|3412199025|51005399003;
-X-Microsoft-Antispam-Message-Info: =?utf-8?B?U002MXBpZ3lQK1Vhdk5ySDlEYTJVTU83MEtHcVNKL2dGbnlZMVZ2S2J6cTBG?=
- =?utf-8?B?MzhsaXpxZ0lCM2lmZ1Y5MHdZWHQ3Szh5SHBSUWlVT0FZZm83R0s2YitRNTZ3?=
- =?utf-8?B?bG85SHlLR29mQ05MUVFlcEVQdE5NREJSZkRKSFpWM1lYSEx3eXp1MkxuVEV1?=
- =?utf-8?B?T2JNNWZGL1lsdmExdEN3eGRqUVJUalZkbVJBU040dkpuaWpIaWhqS2xrOHJa?=
- =?utf-8?B?MlJEVzd2alNpbFFrSmUrbHYvdGU4d2hYUzNtcSt5N1ArL2FYNGxFMnN0OFYv?=
- =?utf-8?B?RWNjaTYxeWNXNWYrOC9RMVRyeEJVOUZzUm9XRkdxVkh2Q25nUHRXaktDcksy?=
- =?utf-8?B?U3NwRWpxbUNDK256Vk9KWlhIZVNYdU0yZTdSQit2ZTNTZ1cwQ1JsVGtZbXY5?=
- =?utf-8?B?eHF2V1p2bnFBNE01MEJrdlNTMFU2QWRIK2duM2RQOTZHZU9NMCtWOFVtYm5v?=
- =?utf-8?B?dTM1ZDFzRG5ZQjNYanJZYzloOUIwRkhaMGhNdUxuRUJLeUJVc0wwTVlrcVBr?=
- =?utf-8?B?WU9ZK1owSHRXRHYvS2t5UHpFSDNkMUlXVElnUWhEZ2JqYjlLYk5OazZCdTZ4?=
- =?utf-8?B?WUNpRldQeWhJWkpRRmt3L3R1SXByQnI4OGZpMmtlbGZ6cnNoREFGYnJpK204?=
- =?utf-8?B?ZVBucEp0ejNOaTVSSWVNeE03b0tJek1MRlFEMHkzL2pYcnA1b1ZLdXJ3V1d5?=
- =?utf-8?B?SlBvay9nTVA4eDRyemtpeC9yQWJvVUVXRFBTNkk5UkJ2UytweTdhZGZWa2NK?=
- =?utf-8?B?VzNDZ0xxbm1PSzZqUkdobTdDMGtSY21zakQxV0ZzRUNVWWJyb1kzTzZQZDE2?=
- =?utf-8?B?eGVzN3RXK2tITDA5ZktSTURka09OUFpNczJEWXRuT252a3VqVEtMVkEyVVhX?=
- =?utf-8?B?QlhhdFJOdmlUd3ZrT2RzZm8xam44UUZjVWxpb295ZWpnTS9yMk9MaFhyWStw?=
- =?utf-8?B?aWMvdGE0SGVYYUZWOHZuczloTm5meUIzMWNscTg1cWtSRDJRRUwrS2NWUy92?=
- =?utf-8?B?QysvMWE2NFd4RUFtS0twVm5vMjIxaDhKanpvblJ0OEtPcVRPcjFSNnZPQkJF?=
- =?utf-8?B?Z0d0S0F1UmV1S05BMzdrd04xNjlyb2YyN0VvbnczcHVXWnlBMHdEOWlENEdR?=
- =?utf-8?B?dW5jZWlpV1N2dllMTzNGUllFbHJZOURWbHo2SjU5WE1nTm5nNlFuWncxTnZU?=
- =?utf-8?B?RGdwL2lrRVdxcWNhV0MrVEJaZWl0NElpbzZTUk5qdE54OENrU0JRNFZUbnpV?=
- =?utf-8?B?ZGJoWVJobzU3Slo0RENHeGZCc3dqN1FqUWwzaUZuNGhlNTRVSndNWFV2Qktq?=
- =?utf-8?B?S0RMQ1dxdFZNTlpiUHVDWVFZeU8xTm9tbEVkYzBkY2ltNEdKbmVCUTVody9P?=
- =?utf-8?B?dHRETUhkWnhBeGpqUytiSGxEalFBV0dXa25ZeVdkeWxtNWRHRjB4WHJoSnli?=
- =?utf-8?B?dW1sbm1iQ3dXcTdIM1BRaDZjNktLRHlTTSs1by9BMzAybkIwanFjbjExdHA5?=
- =?utf-8?B?c2VlT0FjVndBTVdROXJTUU5oUWtlYUZ5RFN5YXByTnEvcXB1Q1pqVUlYemhS?=
- =?utf-8?B?V3M2L295eXROOXZESW92WW1TZit4Rmo1MmpmUUU4bmVjQjRsRFBPYmRIZGRQ?=
- =?utf-8?Q?arLzTNnZk7gVzmMjZIWIWrRNSN1sU/gQ8//lx+dKI07g=3D?=
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?VGdlVGFxWm1QdkdHdjZobjV3NHdxckw1TEtQblJmOExpcEhDV1pwTE1HTmN2?=
- =?utf-8?B?MDNPYk1uVzc1VHVVYmFpWXJsOUlzWUx6VXdHZWRIcnFEMVRzRDZqN1crbEp1?=
- =?utf-8?B?ZUdxa2RPdjNGTTJiQWhnY3lDTTZpRWx1cjB6dkFFMG56KzVvTWd3VHpsSVZI?=
- =?utf-8?B?eGpndzUxcUhEenBQOUVoTGc0MGdkbzc2THArNU9TbENBS05OZ1R6eUhPOFJN?=
- =?utf-8?B?OEsvaW1Oc2M3WXZaVVRIVW80emE3U2NBbUpMUVRBT1ROS2xkUGRpZkEyY2ZM?=
- =?utf-8?B?dE10Z2t0citjUk5MeFU1cEQ5QmNicW8yWnlsZTA5WmhBVkl6S2dRNFlOUW9F?=
- =?utf-8?B?TE5UeWg4dlJidDN2cFRyT3kyNVl0Ykx2dUVLZEFobFdLZ08wS1ZhS2Q5K1JZ?=
- =?utf-8?B?bis3ZWtNQWtvRnIxSWVTN1gwMDFoTW55WlBYeTgvTG1IaGxFNmlqb3ZBRGds?=
- =?utf-8?B?Y0pUVUVIbDFDUldaVTFTVFBnNld1R3FBeEhRV3BQMlp4Z1pHSTZjQURDSTVH?=
- =?utf-8?B?cFRCUEQ4YzdwSTF0aXppY3Y0VCs3QncxM1FBMUMyeDdRTmd3YjZ3MDFaQ01m?=
- =?utf-8?B?SmdRQzZkRlhRMVpOd2kycFk0NHlWK1hLY0N5dEJjcGlla3VCQ0FZVGtpSFli?=
- =?utf-8?B?c2lUOWhqd2tHTWhyS08xWUo2L0h4dUYwZjVZdE1JbmhMcmpQYm05OGhMcEFV?=
- =?utf-8?B?b2JscVc1MUxVRUs1Y3dOWUY3TjBmVmVyVlZmM1U4RVRhcUc2dmErZFhXcGlz?=
- =?utf-8?B?U0xwcXJCMnNiS0ozeDMwek1aWDhjUTMwNHhCeU1waU1JYlFKbVhQYjQzMTdy?=
- =?utf-8?B?MGw3TUtaQVFpRFhVR0JlRDBxTnBQb1NoMS9COFNoU1d2MXNYWGJCaTFIT0tp?=
- =?utf-8?B?dEZablBRYmpzeHR5OGphZUdEZXVNeXZnQUkrVVlrM1RGUDlQd3RJb01PS1A5?=
- =?utf-8?B?R3gycUIxdWdTanpUQisxSW53RE5jMHd5N2x5WWdwOXhmWEpYMXhIeHFWVFVJ?=
- =?utf-8?B?bXhKOG1DenMwRGxZS05zeVpHZ1B1QVFIS2twSXhxSThqZFdyZmRvWDVNSVZB?=
- =?utf-8?B?bVUwMEJ4dlVpaHVYMEF5MFlDMDRhQ3U5NkEvN0pJUGdGRE1zVTNuK1hJMldV?=
- =?utf-8?B?a3JlcXBqb2hmYmk5YWxzYTg0NDBxYnEzYk0vcjJGVUZsckszR3loaUxHaXpK?=
- =?utf-8?B?cXhhVVpTUWkrMW9sdUxmbmlTdDIwN3JKNjNYK0V6aURuMkdCOHR0YzVWaXNx?=
- =?utf-8?B?RytPeGdqUmNXcGtldXRhVDRVS1l6YjVOc3Y0OUpJbnVTaHlQbDI4YVlHT1Nq?=
- =?utf-8?B?WmRrQ0s1bnBMSnlxY3lwOGxmVXZZLzNRWUd2TTh1MHhUaG1jbWVoeXAwb1F3?=
- =?utf-8?B?amhQbzY1NUxrUGxHR0J1S24xRHdFQjlpR3JmTUJFYk5zdmRGK1NMa2FNOHdD?=
- =?utf-8?B?Wkk5d3dOSEFISVkvOTZiZ013ZnRLV01keG1XdnJiUk5GMDVsbFRMYXBYSEdh?=
- =?utf-8?B?SHlPcmVSVTUwdWg1UGpIMDBYVmhrcmhnbXFVc2t6MUpUL2NIMGd1MlhHZnho?=
- =?utf-8?B?Y1YvRzBSV3p2alhINjh3aTFtWldVaFRtcGFDWXlyd0ZNSnhHakRpKzZoZjgv?=
- =?utf-8?B?Nmd6bFR6bVBTQUNWSmtQWWJDdGNsU0Fxd2xDRUZEZVF6UVdXZzA2QXpqUDNU?=
- =?utf-8?Q?rKMfJJpTpZnc/9BtqL6I?=
-X-OriginatorOrg: sct-15-20-8534-15-msonline-outlook-c9a3c.templateTenant
-X-MS-Exchange-CrossTenant-Network-Message-Id: 819d2d29-c3d1-40e7-be59-08dde08bd9fe
-X-MS-Exchange-CrossTenant-AuthSource: TY1PPFCDFFFA68A.apcprd02.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 21 Aug 2025 08:22:22.4331
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
-X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SEZPR02MB6584
+X-CM-TRANSID: rQCowAAngIFZJadoCYkTDg--.22571S2
+X-Coremail-Antispam: 1UD129KBjvJXoW7ur1kJF1xGr15GFy8Gw1xXwb_yoW8trW5pa
+	n5Cw15KF1kXFy7C34fAr48ur1rKF4ru393Jrn3t348WFW3Cr95Jr9ak3ZxZF18ArZ29ry0
+	93WrKw1I93Z7AaDanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUU9F14x267AKxVWrJVCq3wAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+	rVWUWVWUuwAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
+	1l84ACjcxK6xIIjxv20xvE14v26r1j6r1xM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4j
+	6F4UM28EF7xvwVC2z280aVAFwI0_Jr0_Gr1l84ACjcxK6I8E87Iv6xkF7I0E14v26r4j6r
+	4UJwAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0
+	I7IYx2IY67AKxVWUJVWUGwAv7VC2z280aVAFwI0_Cr0_Gr1UMcvjeVCFs4IE7xkEbVWUJV
+	W8JwACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1lFIxGxcIEc7CjxVA2
+	Y2ka0xkIwI1lc7CjxVAaw2AFwI0_GFv_Wryl42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x
+	0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2
+	zVAF1VAY17CE14v26rWY6r4UJwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v26r1j6r
+	1xMIIF0xvE2Ix0cI8IcVCY1x0267AKxVW8JVWxJwCI42IY6xAIw20EY4v20xvaj40_Jr0_
+	JF4lIxAIcVC2z280aVAFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x0267AKxVW8JVW8JrUvcS
+	sGvfC2KfnxnUUI43ZEXa7VUU0JmUUUUUU==
+X-Originating-IP: [118.251.176.166]
+X-CM-SenderInfo: pslquxhhqjh1xofwqxxvufhxpvfd2hldfou0/
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250821_012234_073854_06E25891 
-X-CRM114-Status: GOOD (  13.19  )
+X-CRM114-CacheID: sfid-20250821_065555_976649_E8AD3070 
+X-CRM114-Status: GOOD (  10.58  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -156,39 +101,66 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
+Hi all,
 
-On 8/7/2025 7:42 PM, Jinyu Tang wrote:
-> The kvm_arch_vcpu_load() function is called in two cases for riscv:
-> 1. When entering KVM_RUN from userspace ioctl.
-> 2. When a preempted VCPU is scheduled back.
->
-> In the second case, if no other KVM VCPU has run on this CPU since the
-> current VCPU was preempted, the guest CSR values are still valid in
-> the hardware and do not need to be restored.
->
-> This patch is to skip the CSR write path when:
-> 1. The VCPU was previously preempted
-> (vcpu->scheduled_out == 1).
-> 2. It is being reloaded on the same physical CPU
-> (vcpu->arch.last_exit_cpu == cpu).
-> 3. No other KVM VCPU has used this CPU in the meantime
-> (vcpu == __this_cpu_read(kvm_former_vcpu)).
->
-> This reduces many CSR writes with frequent preemption on the same CPU.
->
-> Signed-off-by: Jinyu Tang <tjytimi@163.com>
-> ---
->   arch/riscv/kvm/vcpu.c | 9 +++++++++
->   1 file changed, 9 insertions(+)
-Reviewed-by: Nutty Liu <nutty.liu@hotmail.com>
+This patch series adds support for the recently ratified Zilsd
+(Load/Store pair instructions) and Zclsd (Compressed Load/Store pair
+instructions) extensions to the RISC-V Linux kernel. It covers device tree
+binding,ISA string parsing, hwprobe exposure, KVM guest handling and selftests.
+
+Zilsd and Zclsd allow more efficient memory access sequences on RV32. My
+goal is to enable glibc and other user-space libraries to detect these
+extensions via hwprobe and make use of them for optimized
+implementations of common routines. To achieve this, the Linux kernel
+needs to recognize and expose the availability of these extensions
+through the device tree bindings, ISA string parsing and hwprobe
+interfaces. KVM support is also required to correctly virtualize these
+features for guest environments.
+
+The series is structured as follows:
+- Patch 1: Add device tree bindings documentation for Zilsd and Zclsd
+- Patch 2: Extend RISC-V ISA extension string parsing to recognize them.
+- Patch 3: Export Zilsd and Zclsd via riscv_hwprobe
+- Patch 4: Allow KVM guests to use them.
+- Patch 5: Add KVM selftests.
+
+This series of patches is a preparatory step toward enabling user-space
+optimizations in glibc that leverage Zilsd and Zclsd, by providing the
+necessary kernel-side support.
+
+Please review, and let me know if any adjustments are needed.
 
 Thanks,
-Nutty
+Pincheng Wang
+
+
+Pincheng Wang (5):
+  dt-bidings: riscv: add Zilsd and Zclsd extension descriptions
+  riscv: add ISA extension parsing for Zilsd and Zclsd
+  riscv: hwprobe: export Zilsd and Zclsd ISA extensions
+  riscv: KVM: allow Zilsd and Zclsd extensions for Guest/VM
+  KVM: riscv: selftests: add Zilsd and Zclsd extension to get-reg-list
+    test
+
+ Documentation/arch/riscv/hwprobe.rst          |  8 ++++
+ .../devicetree/bindings/riscv/extensions.yaml | 39 +++++++++++++++++++
+ arch/riscv/include/asm/hwcap.h                |  2 +
+ arch/riscv/include/uapi/asm/hwprobe.h         |  2 +
+ arch/riscv/include/uapi/asm/kvm.h             |  2 +
+ arch/riscv/kernel/cpufeature.c                | 24 ++++++++++++
+ arch/riscv/kernel/sys_hwprobe.c               |  2 +
+ arch/riscv/kvm/vcpu_onereg.c                  |  2 +
+ .../selftests/kvm/riscv/get-reg-list.c        |  6 +++
+ 9 files changed, 87 insertions(+)
+
+-- 
+2.39.5
+
 
 -- 
 kvm-riscv mailing list
