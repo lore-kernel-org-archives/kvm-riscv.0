@@ -4,45 +4,31 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 80BB4CA0EFF
-	for <kvm-riscv@archiver.kernel.org>; Thu, 21 Aug 2025 19:12:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D7DCECA0EFA
+	for <kvm-riscv@archiver.kernel.org>; Thu, 21 Aug 2025 19:12:46 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=94xbl2dPAos7t1BWlzZ0QYYYD0kYhTrhTaWsQFS+g3M=; b=MyJivjd5St0R59
-	+XOaqt8QQvBvWzFGcskAa/uTo/bwEFB7raLxAlEHQnPP5zg4hFdIZlotp+lYe/0CyYfTPPXlF9OHP
-	cSYAL27KYPCb/cG5MgPYXejCQVnKp6POl2tTDK/9KLA+jQnaOew7XTm7lAvkdpPDmgpUNHWQIrlZY
-	OxgVSDpcusSewIXVTGYf1meVPkLvOJfbXQUNYBfYqG17Yc7mj64salYO7qNZgrLybyiYf2lXc0ZuY
-	SrXAFIhtp8T7fWYPxwLI+Zvo6/1+2sYe+BxoMXTLgmCcLZrEOgM5deJ7asmuH4zBxVMSza+WqKs8P
-	5o7nMRwGOpaRtaJXPTDQ==;
+	List-Owner; bh=lOoFAOBGipF2MLW2DdgVRX3P0rhXG0XgyNGwoF3Okyo=; b=Q7MpV2P58l04Ky
+	LkdDA9g1ZyxZ0HQ4MzQE/aYFljih5QHUXUSLygQvwU6ZrX8OSPWu3s9Tqb0vsSs37MwVlVhOhSRNP
+	3EvxhL20kR8q5o7WUqlOaBt3W6HpWAvtCrt6zOaCP8tzI0p0qo14HQP0Bq4jwTKLBMUC6aOHfMzBB
+	zZ25ybtc9xdt/L99ZQ3HZM7CaHUgoejVw9ubdT2c5zSicgW5GEdJ5+J/fiJE1ppvqMc8cEny7IpgY
+	hJ/wRYM+cnfStjIQkLTS2HLhOOJotBIxsCgqDpe6L/s6UKgS+50/yb3LB+cWxSr0RsV2JYHZXbML+
+	YUTvRohyMIFDxiapoBFA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1upAiH-00000000FHH-3nTQ;
-	Thu, 21 Aug 2025 19:12:41 +0000
-Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
-	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1up5rY-0000000H9db-2vpI;
-	Thu, 21 Aug 2025 14:01:56 +0000
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:MIME-Version
-	:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
-	Content-Type:Content-ID:Content-Description;
-	bh=TuYLz5cJ1ahDWB/sh+nnpAMVfJ9cAcHDo7a4pdfBqj0=; b=exSg1YO1KMeOXy2OGsoYybvZeN
-	gnLK/1oQAsc3JfPI1KH+/pdNkbWCGSet1Ea7GcNdVd60YCg8yHSfrxYYvLkjrL5fn5+6StmrNLXy2
-	JlALiDNjYOudBzQkOtUbUouP+5w+bUb5EGyFNlWkQ8RR+WcrzVaunuQ/4j7z4uqXrcAgKpKARlKH3
-	BA8lvU6IybYWYhl7YCauZt+k1xEMESbNT7ILFUKdMNg2G9pCxFuawEFM3NgQxO1CiCClmdSYDksO6
-	jwvBd3dc50YWVvoOvQ1YwFOe6VLw6JQY/sk0P9ZiyNnafXH+Kwj8olnkOXAtKw+P4j5VHvu7WSPCv
-	s5i0pWIQ==;
+	id 1upAiL-00000000FNn-3K2M;
+	Thu, 21 Aug 2025 19:12:45 +0000
 Received: from smtp81.cstnet.cn ([159.226.251.81] helo=cstnet.cn)
-	by desiato.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1up5rV-00000000aLW-0c3b;
-	Thu, 21 Aug 2025 14:01:55 +0000
+	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1up5rX-0000000H9dY-3ggK;
+	Thu, 21 Aug 2025 14:01:57 +0000
 Received: from ROG.lan (unknown [118.251.176.166])
-	by APP-03 (Coremail) with SMTP id rQCowABn+Xq+JqdoP8MTDg--.22469S3;
-	Thu, 21 Aug 2025 22:01:38 +0800 (CST)
+	by APP-03 (Coremail) with SMTP id rQCowABn+Xq+JqdoP8MTDg--.22469S5;
+	Thu, 21 Aug 2025 22:01:43 +0800 (CST)
 From: Pincheng Wang <pincheng.plct@isrc.iscas.ac.cn>
 To: paul.walmsley@sifive.com,
 	palmer@dabbelt.com,
@@ -76,19 +62,19 @@ Cc: linux-riscv@lists.infradead.org,
 	kvm-riscv@lists.infradead.org,
 	linux-kselftest@vger.kernel.org,
 	pincheng.plct@isrc.iscas.ac.cn
-Subject: [PATCH v1 RESEND 1/5] dt-bidings: riscv: add Zilsd and Zclsd extension descriptions
-Date: Thu, 21 Aug 2025 22:01:27 +0800
-Message-Id: <20250821140131.225756-2-pincheng.plct@isrc.iscas.ac.cn>
+Subject: [PATCH v1 RESEND 3/5] riscv: hwprobe: export Zilsd and Zclsd ISA extensions
+Date: Thu, 21 Aug 2025 22:01:29 +0800
+Message-Id: <20250821140131.225756-4-pincheng.plct@isrc.iscas.ac.cn>
 X-Mailer: git-send-email 2.39.5
 In-Reply-To: <20250821140131.225756-1-pincheng.plct@isrc.iscas.ac.cn>
 References: <20250821140131.225756-1-pincheng.plct@isrc.iscas.ac.cn>
 MIME-Version: 1.0
-X-CM-TRANSID: rQCowABn+Xq+JqdoP8MTDg--.22469S3
-X-Coremail-Antispam: 1UD129KBjvJXoW7CF4ftF48uw17Ww1fCr15Jwb_yoW8tF1rpF
-	s3GF1kKas0q3W3ur97tw4xuw15ZF1vqw45AFZFy34xKFZ0yry0qrWay3W5Z3WrCF4xAFyU
-	ua1jgr17ZrsrAaDanT9S1TB71UUUUUDqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+X-CM-TRANSID: rQCowABn+Xq+JqdoP8MTDg--.22469S5
+X-Coremail-Antispam: 1UD129KBjvJXoWxJw4kJw1rKr13Jw1rXw18Krg_yoW5XFyxpF
+	4DWrs3WFZ8Ca1xCFZ7KF48urykA3Z7Kw4agF12k3yUXFW7ZrWrJ3sxtanIyr1jqFyFva9Y
+	gF1FkrZ5t39rArUanT9S1TB71UUUUUDqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
 	9KBjDU0xBIdaVrnRJUUUmq14x267AKxVWrJVCq3wAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
-	rVWUWVWUuwAFIxvE14AKwVWUJVWUGwA2048vs2IY020E87I2jVAFwI0_Jr4l82xGYIkIc2
+	rVWUWVWUuwAFIxvE14AKwVWUJVWUGwA2048vs2IY020E87I2jVAFwI0_JrWl82xGYIkIc2
 	x26xkF7I0E14v26ryj6s0DM28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4kI8wA2z4x0
 	Y4vE2Ix0cI8IcVAFwI0_JFI_Gr1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Gr1j6F4UJw
 	A2z4x0Y4vEx4A2jsIE14v26r4j6F4UM28EF7xvwVC2z280aVCY1x0267AKxVW8Jr0_Cr1U
@@ -99,13 +85,13 @@ X-Coremail-Antispam: 1UD129KBjvJXoW7CF4ftF48uw17Ww1fCr15Jwb_yoW8tF1rpF
 	bVWUJVW8JwC20s026c02F40E14v26r1j6r18MI8I3I0E7480Y4vE14v26r106r1rMI8E67
 	AF67kF1VAFwI0_Wrv_Gr1UMIIYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_JFI_Gr1l
 	IxAIcVC0I7IYx2IY6xkF7I0E14v26r4UJVWxJr1lIxAIcVCF04k26cxKx2IYs7xG6r1j6r
-	1xMIIF0xvEx4A2jsIE14v26r1j6r4UMIIF0xvEx4A2jsIEc7CjxVAFwI0_Gr1j6F4UJbIY
-	CTnIWIevJa73UjIFyTuYvjTRuq2MUUUUU
+	1xMIIF0xvEx4A2jsIE14v26r4j6F4UMIIF0xvEx4A2jsIEc7CjxVAFwI0_Gr1j6F4UJbIY
+	CTnIWIevJa73UjIFyTuYvjTRuksqUUUUU
 X-Originating-IP: [118.251.176.166]
 X-CM-SenderInfo: pslquxhhqjh1xofwqxxvufhxpvfd2hldfou0/
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250821_150153_734747_08DC4626 
-X-CRM114-Status: UNSURE (   8.46  )
+X-CRM114-CacheID: sfid-20250821_070156_277542_926A2147 
+X-CRM114-Status: UNSURE (   8.97  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -123,80 +109,67 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Add descriptions for the Zilsd (Load/Store pair instructions) and
-Zclsd (Compressed Load/Store pair instructions) ISA extensions
-which were ratified in commit f88abf1 ("Integrating load/store
-pair for RV32 with the main manual") of the riscv-isa-manual.
+Export Zilsd and Zclsd ISA extensions through hwprobe.
 
 Signed-off-by: Pincheng Wang <pincheng.plct@isrc.iscas.ac.cn>
 ---
- .../devicetree/bindings/riscv/extensions.yaml | 39 +++++++++++++++++++
- 1 file changed, 39 insertions(+)
+ Documentation/arch/riscv/hwprobe.rst  | 8 ++++++++
+ arch/riscv/include/uapi/asm/hwprobe.h | 2 ++
+ arch/riscv/kernel/sys_hwprobe.c       | 2 ++
+ 3 files changed, 12 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
-index ede6a58ccf53..d72ffe8f6fa7 100644
---- a/Documentation/devicetree/bindings/riscv/extensions.yaml
-+++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
-@@ -366,6 +366,20 @@ properties:
-             guarantee on LR/SC sequences, as ratified in commit b1d806605f87
-             ("Updated to ratified state.") of the riscv profiles specification.
+diff --git a/Documentation/arch/riscv/hwprobe.rst b/Documentation/arch/riscv/hwprobe.rst
+index 2aa9be272d5d..538ab6c08f7b 100644
+--- a/Documentation/arch/riscv/hwprobe.rst
++++ b/Documentation/arch/riscv/hwprobe.rst
+@@ -275,6 +275,14 @@ The following keys are defined:
+        ratified in commit 49f49c842ff9 ("Update to Rafified state") of
+        riscv-zabha.
  
-+        - const: zilsd
-+          description:
-+            The standard Zilsd extension which provides support for aligned
-+            register-pair load and store operations in 32-bit instruction
-+            encodings, as ratified in commit f88abf1 ("Integrating
-+            load/store pair for RV32 with the main manual") of riscv-isa-manual.
++  * :c:macro:`RISCV_HWPROBE_EXT_ZILSD`: The Zilsd extension is supported as
++       defined in the RISC-V ISA manual starting from commit f88abf1("Integrating
++       load/store pair for RV32 with the main manual") of the riscv-isa-manual.
 +
-+        - const: zclsd
-+          description:
-+            The Zclsd extension implements the compressed (16-bit) version of the
-+            Load/Store Pair for RV32. As with Zilsd, this extension was ratified
-+            in commit f88abf1 ("Integrating load/store pair for RV32 with the
-+            main manual") of riscv-isa-manual.
++  * :c:macro:`RISCV_HWPROBE_EXT_ZCLSD`: The Zclsd extension is supported as
++       defined in the RISC-V ISA manual starting from commit f88abf1("Integrating
++       load/store pair for RV32 with the main manual") of the riscv-isa-manual.
 +
-         - const: zk
-           description:
-             The standard Zk Standard Scalar cryptography extension as ratified
-@@ -847,6 +861,16 @@ properties:
-             anyOf:
-               - const: v
-               - const: zve32x
-+      # Zclsd depends on Zilsd and Zca
-+      - if:
-+          contains:
-+            anyOf:
-+              - const: zclsd
-+        then:
-+          contains:
-+            anyOf:
-+              - const: zilsd
-+              - const: zca
- 
- allOf:
-   # Zcf extension does not exist on rv64
-@@ -864,6 +888,21 @@ allOf:
-           not:
-             contains:
-               const: zcf
-+  # Zilsd extension does not exist on rv64
-+  - if:
-+      properties:
-+        riscv,isa-extensions:
-+          contains:
-+            const: zilsd
-+        riscv,isa-base:
-+          contains:
-+            const: rv64i
-+    then:
-+      properties:
-+        riscv,isa-extensions:
-+          not:
-+            contains:
-+              const: zilsd
- 
- additionalProperties: true
- ...
+ * :c:macro:`RISCV_HWPROBE_KEY_CPUPERF_0`: Deprecated.  Returns similar values to
+      :c:macro:`RISCV_HWPROBE_KEY_MISALIGNED_SCALAR_PERF`, but the key was
+      mistakenly classified as a bitmask rather than a value.
+diff --git a/arch/riscv/include/uapi/asm/hwprobe.h b/arch/riscv/include/uapi/asm/hwprobe.h
+index aaf6ad970499..e086179bb4fa 100644
+--- a/arch/riscv/include/uapi/asm/hwprobe.h
++++ b/arch/riscv/include/uapi/asm/hwprobe.h
+@@ -82,6 +82,8 @@ struct riscv_hwprobe {
+ #define		RISCV_HWPROBE_EXT_ZAAMO		(1ULL << 56)
+ #define		RISCV_HWPROBE_EXT_ZALRSC	(1ULL << 57)
+ #define		RISCV_HWPROBE_EXT_ZABHA		(1ULL << 58)
++#define 	RISCV_HWPROBE_EXT_ZILSD 	(1ULL << 59)
++#define 	RISCV_HWPROBE_EXT_ZCLSD 	(1ULL << 60)
+ #define RISCV_HWPROBE_KEY_CPUPERF_0	5
+ #define		RISCV_HWPROBE_MISALIGNED_UNKNOWN	(0 << 0)
+ #define		RISCV_HWPROBE_MISALIGNED_EMULATED	(1 << 0)
+diff --git a/arch/riscv/kernel/sys_hwprobe.c b/arch/riscv/kernel/sys_hwprobe.c
+index 0b170e18a2be..12f4b68ad2ac 100644
+--- a/arch/riscv/kernel/sys_hwprobe.c
++++ b/arch/riscv/kernel/sys_hwprobe.c
+@@ -111,6 +111,7 @@ static void hwprobe_isa_ext0(struct riscv_hwprobe *pair,
+ 		EXT_KEY(ZCA);
+ 		EXT_KEY(ZCB);
+ 		EXT_KEY(ZCMOP);
++		EXT_KEY(ZCLSD);
+ 		EXT_KEY(ZICBOM);
+ 		EXT_KEY(ZICBOZ);
+ 		EXT_KEY(ZICNTR);
+@@ -119,6 +120,7 @@ static void hwprobe_isa_ext0(struct riscv_hwprobe *pair,
+ 		EXT_KEY(ZIHINTPAUSE);
+ 		EXT_KEY(ZIHPM);
+ 		EXT_KEY(ZIMOP);
++		EXT_KEY(ZILSD);
+ 		EXT_KEY(ZKND);
+ 		EXT_KEY(ZKNE);
+ 		EXT_KEY(ZKNH);
 -- 
 2.39.5
 
