@@ -4,93 +4,94 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1B2DCCA0FE9
-	for <kvm-riscv@archiver.kernel.org>; Sat, 23 Aug 2025 10:49:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99FEBCA0EED
+	for <kvm-riscv@archiver.kernel.org>; Sat, 23 Aug 2025 16:37:54 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=F9/zL+2iYdhtDpqRVehiBp8U4WvI+V3t6HAAwu9GTBU=; b=vx65Fe6A3AUbqJ
-	Cg8IEaPj+RKlZAzQoimyEnV/nuYi7un2WMYjkME35FrzwLKmzupu33xNZCEmfz7OlcfHHUDem16LH
-	jV852Wpb245c0w9yHGLYB8wuLIR9qva2X9MpMzQs5VeSHRxr7orYofA5euRUdQMvWpsHv5ADSn3hg
-	GkGKdTxK6UnJc5MgdNXNdpUXFdsBKQ7jWIkBCMc8LilLFRMkXn8IQViZ6TL4sWxleF+XXjIKbbV1z
-	9gf0S5kWRr3LqFrX03Y26CXBgt9RdqWd2ZdmNvFCUGvwqlZCDseCceMq0HTfHzmlQWvekazbTUkri
-	mb318q2R/7JZs6rs8Zzw==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=OLHIYLSnV/z44ubTz86ivnUIEkrraPLO+KNM+ug++lU=; b=Gh5C0tpJdJU0V2
+	F6/ydYC3q2ViIsrFG3tmJ848YENIrz9V3Rm6qSfqbiM4QTB0BDRaIQXhJ0jg/DvJ6csBVozBDruxg
+	uhbhmA5nygi/sIqkZTsaqWtt9irpu2Cfnk46goK1rKP5hXaQuhfXMTlCBEFTX4sxb+RC6PYf7KlOA
+	WJvNnhjNAUszZqD8qG43SezIQZTfhiqTTUqaIgO34bA0MLv7pY3LDr4VPeM2a8vRDUg7xMtdWEu07
+	7kOWV9PZoU3L/y8/5nNOyveBekEgzd230r7e2EogHEwiRvM43vdX/UeozOetyD0S1beF50xf08rpz
+	jaJyAMw5jGoelxVc7++g==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uplob-00000004fAT-3JEi;
-	Sat, 23 Aug 2025 10:49:41 +0000
-Received: from mail-pf1-x435.google.com ([2607:f8b0:4864:20::435])
+	id 1uprFa-000000052up-1YV4;
+	Sat, 23 Aug 2025 16:37:54 +0000
+Received: from mail-pf1-x430.google.com ([2607:f8b0:4864:20::430])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1upaMX-00000003beY-1ABk;
-	Fri, 22 Aug 2025 22:35:58 +0000
-Received: by mail-pf1-x435.google.com with SMTP id d2e1a72fcca58-76e2eb3726cso1906367b3a.3;
-        Fri, 22 Aug 2025 15:35:56 -0700 (PDT)
+	id 1upqew-00000004xON-1UTS
+	for kvm-riscv@lists.infradead.org;
+	Sat, 23 Aug 2025 16:00:03 +0000
+Received: by mail-pf1-x430.google.com with SMTP id d2e1a72fcca58-76e6cbb991aso2697397b3a.1
+        for <kvm-riscv@lists.infradead.org>; Sat, 23 Aug 2025 09:00:01 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1755902156; x=1756506956; darn=lists.infradead.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=0FwDTbQ/G9GOnQP/jL8VoYGNnb8b98LqDD6ErxzxZ3A=;
-        b=I/8k9L2SEuBt6qLyyE56vHqXGy36kJluQ/JAcsoavf44ymkeQbg2fbmp77lo/hxoTq
-         yOVwxQpyqDB6KFp9Fxz7o5KkdCOf44dPPtxI/7Y8n6tCdL6D4UAbKN++aRXM96Vm6PXn
-         knpO30Waqnn8ZU5LcoN5Uyr3lpRLAluhx7pEqlIcsbrfA3VKOzgvaCxJA/WuWLq6oNNn
-         KbNZQKjTg205G0HSh7e3KDzVvlJj5wqyC+U5s226t9Xzq0Md2/SiLyWe3pHVZ+Z57QCu
-         Tn9bMqU5og8M/4Y/zsSwzG6lc6muCR8O/k5u3oUUuSiALhiYANkRf5iz76fn6eWJbmpT
-         /IwA==
+        d=ventanamicro.com; s=google; t=1755964801; x=1756569601; darn=lists.infradead.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=H24QVG/T3cxixN5Hjl4PI98/BCvc+2mgYT4CjAn1N5o=;
+        b=j7up+h5dyQnh8jJz6fueYS4ngmCqgbIIVhNSm+thxyRj+hgdoyOfvk/+9t1XxQK3Dy
+         iamsLt0gWg4TjpupzBV4AKFvmiv77pybw61/5D/FUcIOFgUYIXPhbZQnMISQFvWnS500
+         R7kGSsC40LgUIKIIvIW5RePkdKvOgkAD89/4T3xan1I359Kca+S1i0XwD4vA9r2dV7MS
+         D5H9dr5odzoCZlCKXhM3T3Ao/JGvYCAYKDzZ5m/qDzx43dfqPeEVzod3cRhJi+EAiN+T
+         +KzdmIQA40LEmbUd0vMFsjFX93ax5msGadRxuQkPn1imh74mbIj9D5dBept32MJfGAGg
+         etGg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1755902156; x=1756506956;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=0FwDTbQ/G9GOnQP/jL8VoYGNnb8b98LqDD6ErxzxZ3A=;
-        b=AInTbUhexS/9beZ+WkX221ks5h740GOA9PioC5u2iWJmT3PxzFEFkMKOdMFn7P/rMN
-         QT93oloUKRHnTzDrgnifpxZNhufwHfB+RmGX/dByZU4OycTDVK63B7VrYgtHl0DPo4AS
-         CkTL5+BmlK8zLtCNCYZjPmOJdJ5Z7aqsBhgdzWJA34I21bZkRo1f93wAfjRUOargD4+L
-         Xgim5xfUDMBd6MZJvEC15jGcLTXnZo6EN4gSBQD01SaRI0vkpxDhYwRbYuZSvmyxEnPb
-         DEaN9E7EZFaEFnATTNnWLMtYzuu7DkNaSvlC/9xqaz78AuaXOClaqIqZKtt2aCTp6jX5
-         6Vhw==
-X-Forwarded-Encrypted: i=1; AJvYcCUj4jjBniRUZ3prae0CcwQ8skuN5DMNSQ48S5AWT588p7KqMygmR2FGpbfPy41ZmuSh2kUQKXaOIMw=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yy394k9IvnA1S0y2uiAWP8UlOjBDDNsW4MlfZYM3Gk/5MRQAJJj
-	0uCaAKRvbAayCrUjWM5Fn0V8CBpQnBOcMAvQRimP4aSAZsMw5gsx7xJD
-X-Gm-Gg: ASbGnct6qsozHYLle3x0wKmro5Q5uJ8uHrevyPzeo/HnGASsM6VqRRoWfP5QJGxMYCk
-	wJdnSWE1HsvAumZHSQsFelhSWvLBQ5WMWU7D/lgfwwef3zSYaNP0g96ES8v4nUlFyw8GX/wGz1+
-	dMh/73uNC6kmf+aEEwrFwl1PVNmsLOEfc1KJyAUzq4BXUSrvAVuZE+DUS9WJPR6wApOG9Wnx1xU
-	OfZ+Nsjus2Jlh3DzhkjfMVwK4ID8snm8nc2oeIe4DoNvdBM96Clor5Ck3lP2DeeAN3J3BaSVqFO
-	0ABreZmiMkzufwXTRAO6w1O8S5Q+T4gR6fh4X/TGMCsu/5zdgCW6CRSHW1V7HKyYtvMtPRaVBks
-	7lQBXZH6/1qJPq8fJdRdtaQ==
-X-Google-Smtp-Source: AGHT+IEYCh8C0L6ZZn0L/gbp+7wJ7PcWlxjsVE+Dj4tzEhoWhx2t2CE2bxPom3RqYKmnOJkBIwjJZA==
-X-Received: by 2002:a05:6a21:32a8:b0:240:3c3:7ffa with SMTP id adf61e73a8af0-24340dc8405mr7563526637.43.1755902156183;
-        Fri, 22 Aug 2025 15:35:56 -0700 (PDT)
-Received: from localhost ([2001:19f0:ac00:4eb8:5400:5ff:fe30:7df3])
-        by smtp.gmail.com with UTF8SMTPSA id 98e67ed59e1d1-3254aa4f9e6sm802727a91.16.2025.08.22.15.35.55
+        d=1e100.net; s=20230601; t=1755964801; x=1756569601;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=H24QVG/T3cxixN5Hjl4PI98/BCvc+2mgYT4CjAn1N5o=;
+        b=WQ5cBHS1as0ANYRWfGEfNWfrP1pUNVl8p7j4LiaY6RrLu32x2PCx4IiRSjVYXvyyQY
+         evsHcR46nbpeBVK+Wj2mtkFhZfmzJgGZmdTqgI+JFhQuLB/Bk/nVpGG23kug5yN+sClK
+         zDDEMhNm6vBjFTf1PmObdIJt+fywxALGwPDiC0FoN4sWaV3gD8RX+3GinOI55O3FX/E3
+         wbmJROP+RdbhkM20zAb61XZpCKd9kM5rnjCCgnZiKQK4BHZkYesN4L08HB1V8wF5O7X5
+         nupLVtvoVjkRM7v/3UyWZFKG30dnEWjXNJfKYdB0sCVcY+cyVO/0jvQCn8KFE5KPKLJR
+         KhEA==
+X-Forwarded-Encrypted: i=1; AJvYcCW/c0rxiMKCH/j2VECOJ2eKiDR2CxeYCV8cVNXpS3oO4jN9bv4hLTDb6qnhq/CIUEN+pvD//uSXnMo=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yw2mlGZDiDmPvYydZK71KSOF64nImua7TATq4b6DvKfkt5mYIK2
+	J+rtlcm2zY+J4oM8EcHcoELLMXFu08sv7rxOKCCunoFNYEZw7z0MECxoB9AiGcL7O1M=
+X-Gm-Gg: ASbGncuNxa3nbYIeK8nTJM5I8k8NIt/M6YsyzaA+pPWkwsevyI+JRIX4k1Pni9IRP5+
+	vxmB8OqGF/h0F5ne6pkz0NeZez2zedRRhuvVZVSNsOdwVI06PoS1hkiBl6IJS3gesaedCBYbKVp
+	L2YFD6hdC9RK9lv0L/Cv2jz4NRr6+HqRgcg7ITIFIjBnQYao/Lx0CDuowSHV8YBZ87YpINxliNu
+	D1NNPsSTsDDFQffuOjnyVxSsCuzWo9qgRPaEgXnl13ShW/QbNlOunkLkk4TARQP2KkAqSqfpFmX
+	RPhJNj806frwRmVOkFSFK7GOxLKRKZFGw5AvJzF1YJoLkdFpt2F/IUyN7N2eyTeaez+ktwG6fM5
+	jUieIRCQSbZ4jt3PeYftofwWNEeYEc1cfwSXsazP7RpzKPoBM/NbyLHT/l5bOZpzY7MUq1idr
+X-Google-Smtp-Source: AGHT+IHHBn4yz0Tv2mtxye/b3d+njwhsYjSP/E2IAAVTTBKNql/cK/uY7eFReM62Y2BttpdFYMcwWg==
+X-Received: by 2002:a05:6a20:1592:b0:23f:fe66:5d2a with SMTP id adf61e73a8af0-24340bce2c1mr9575921637.27.1755964800673;
+        Sat, 23 Aug 2025 09:00:00 -0700 (PDT)
+Received: from anup-ubuntu-vm.localdomain ([103.97.166.196])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-77040214b81sm2804464b3a.93.2025.08.23.08.59.55
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 22 Aug 2025 15:35:55 -0700 (PDT)
-Date: Sat, 23 Aug 2025 06:34:56 +0800
-From: Inochi Amaoto <inochiama@gmail.com>
-To: Pincheng Wang <pincheng.plct@isrc.iscas.ac.cn>, 
-	paul.walmsley@sifive.com, palmer@dabbelt.com, aou@eecs.berkeley.edu, alex@ghiti.fr, 
-	robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, anup@brainfault.org, 
-	pbonzini@redhat.com, shuah@kernel.org, cyan.yang@sifive.com, cleger@rivosinc.com, 
-	charlie@rivosinc.com, cuiyunhui@bytedance.com, samuel.holland@sifive.com, 
-	namcao@linutronix.de, jesse@rivosinc.com, inochiama@gmail.com, 
-	yongxuan.wang@sifive.com, ajones@ventanamicro.com, parri.andrea@gmail.com, 
-	mikisabate@gmail.com, yikming2222@gmail.com, thomas.weissschuh@linutronix.de
-Cc: linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, 
-	linux-doc@vger.kernel.org, devicetree@vger.kernel.org, kvm@vger.kernel.org, 
-	kvm-riscv@lists.infradead.org, linux-kselftest@vger.kernel.org
-Subject: Re: [PATCH v1 RESEND 1/5] dt-bidings: riscv: add Zilsd and Zclsd
- extension descriptions
-Message-ID: <znik7dcyeipf57xerlm5gwjszcaaeujoukr7g4a7wt7lsfu366@skany6k7agt4>
-References: <20250821140131.225756-1-pincheng.plct@isrc.iscas.ac.cn>
- <20250821140131.225756-2-pincheng.plct@isrc.iscas.ac.cn>
+        Sat, 23 Aug 2025 09:00:00 -0700 (PDT)
+From: Anup Patel <apatel@ventanamicro.com>
+To: Atish Patra <atish.patra@linux.dev>
+Cc: Palmer Dabbelt <palmer@dabbelt.com>,
+	Paul Walmsley <paul.walmsley@sifive.com>,
+	Alexandre Ghiti <alex@ghiti.fr>,
+	Andrew Jones <ajones@ventanamicro.com>,
+	Anup Patel <anup@brainfault.org>,
+	Paolo Bonzini <pbonzini@redhat.com>,
+	Shuah Khan <shuah@kernel.org>,
+	kvm@vger.kernel.org,
+	kvm-riscv@lists.infradead.org,
+	linux-riscv@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	linux-kselftest@vger.kernel.org,
+	Anup Patel <apatel@ventanamicro.com>
+Subject: [PATCH v3 0/6] ONE_REG interface for SBI FWFT extension
+Date: Sat, 23 Aug 2025 21:29:41 +0530
+Message-ID: <20250823155947.1354229-1-apatel@ventanamicro.com>
+X-Mailer: git-send-email 2.43.0
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <20250821140131.225756-2-pincheng.plct@isrc.iscas.ac.cn>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250822_153557_315892_8CD9DBCC 
-X-CRM114-Status: GOOD (  17.56  )
+X-CRM114-CacheID: sfid-20250823_090002_385449_484A2A9E 
+X-CRM114-Status: UNSURE (   8.87  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -107,64 +108,43 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Thu, Aug 21, 2025 at 10:01:27PM +0800, Pincheng Wang wrote:
-> Add descriptions for the Zilsd (Load/Store pair instructions) and
-> Zclsd (Compressed Load/Store pair instructions) ISA extensions
-> which were ratified in commit f88abf1 ("Integrating load/store
-> pair for RV32 with the main manual") of the riscv-isa-manual.
-> 
-> Signed-off-by: Pincheng Wang <pincheng.plct@isrc.iscas.ac.cn>
-> ---
->  .../devicetree/bindings/riscv/extensions.yaml | 39 +++++++++++++++++++
->  1 file changed, 39 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
-> index ede6a58ccf53..d72ffe8f6fa7 100644
-> --- a/Documentation/devicetree/bindings/riscv/extensions.yaml
-> +++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
-> @@ -366,6 +366,20 @@ properties:
->              guarantee on LR/SC sequences, as ratified in commit b1d806605f87
->              ("Updated to ratified state.") of the riscv profiles specification.
->  
-> +        - const: zilsd
-> +          description:
-> +            The standard Zilsd extension which provides support for aligned
-> +            register-pair load and store operations in 32-bit instruction
-> +            encodings, as ratified in commit f88abf1 ("Integrating
-> +            load/store pair for RV32 with the main manual") of riscv-isa-manual.
-> +
-> +        - const: zclsd
-> +          description:
-> +            The Zclsd extension implements the compressed (16-bit) version of the
-> +            Load/Store Pair for RV32. As with Zilsd, this extension was ratified
-> +            in commit f88abf1 ("Integrating load/store pair for RV32 with the
-> +            main manual") of riscv-isa-manual.
-> +
->          - const: zk
->            description:
->              The standard Zk Standard Scalar cryptography extension as ratified
-> @@ -847,6 +861,16 @@ properties:
->              anyOf:
->                - const: v
->                - const: zve32x
+This series adds ONE_REG interface for SBI FWFT extension implemented
+by KVM RISC-V. This was missed out in accepted SBI FWFT patches for
+KVM RISC-V.
 
-> +      # Zclsd depends on Zilsd and Zca
-> +      - if:
-> +          contains:
-> +            anyOf:
-> +              - const: zclsd
-> +        then:
-> +          contains:
-> +            anyOf:
-> +              - const: zilsd
-> +              - const: zca
->  
+These patches can also be found in the riscv_kvm_fwft_one_reg_v3 branch
+at: https://github.com/avpatel/linux.git
 
-Should be allOf? I see the comment says "Zclsd" requires both "Zilsd"
-and "Zca".
+Changes since v2:
+ - Re-based on latest KVM RISC-V queue
+ - Improved FWFT ONE_REG interface to allow enabling/disabling each
+   FWFT feature from KVM userspace
 
-Regards,
-Inochi
+Changes since v1:
+ - Dropped have_state in PATCH4 as suggested by Drew
+ - Added Drew's Reviewed-by in appropriate patches
+
+Anup Patel (6):
+  RISC-V: KVM: Set initial value of hedeleg in kvm_arch_vcpu_create()
+  RISC-V: KVM: Introduce feature specific reset for SBI FWFT
+  RISC-V: KVM: Introduce optional ONE_REG callbacks for SBI extensions
+  RISC-V: KVM: Move copy_sbi_ext_reg_indices() to SBI implementation
+  RISC-V: KVM: Implement ONE_REG interface for SBI FWFT state
+  KVM: riscv: selftests: Add SBI FWFT to get-reg-list test
+
+ arch/riscv/include/asm/kvm_vcpu_sbi.h         |  22 +-
+ arch/riscv/include/asm/kvm_vcpu_sbi_fwft.h    |   1 +
+ arch/riscv/include/uapi/asm/kvm.h             |  15 ++
+ arch/riscv/kvm/vcpu.c                         |   3 +-
+ arch/riscv/kvm/vcpu_onereg.c                  |  60 +----
+ arch/riscv/kvm/vcpu_sbi.c                     | 172 +++++++++++--
+ arch/riscv/kvm/vcpu_sbi_fwft.c                | 227 ++++++++++++++++--
+ arch/riscv/kvm/vcpu_sbi_sta.c                 |  63 +++--
+ .../selftests/kvm/riscv/get-reg-list.c        |  32 +++
+ 9 files changed, 467 insertions(+), 128 deletions(-)
+
+-- 
+2.43.0
 
 
 -- 
