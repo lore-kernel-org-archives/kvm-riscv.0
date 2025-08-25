@@ -4,86 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2C91FCA0FE7
-	for <kvm-riscv@archiver.kernel.org>; Mon, 25 Aug 2025 20:15:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 59936CA0FE7
+	for <kvm-riscv@archiver.kernel.org>; Mon, 25 Aug 2025 20:21:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:Reply-To:List-Subscribe:List-Help:
 	List-Post:List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID
 	:References:Mime-Version:In-Reply-To:Date:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=+lm60hzPQZ5FI5oV1QMWcBNbInb7ErTe/6mhyXC+SRg=; b=KtV6nO0IF+aI3J
-	CmeiG7W36I7Lys9vXXCZqQLTwsvIviOt+dMD9GReGDtIbttWyVmD4jUbL/U15pUFUjsJ+hvfpDC+/
-	AT6GSM0Ey3q3yKny9jH0l/a2Zk1bodG+YIsWccY0XyvgkNmDZtT0t4pzT0Zq08l6Tc+i0Fn/NptFS
-	p8OP8x9/xUszgIeJ27UEZZcM+z6c3ZPIKbxuaaT2Jf9/K/hRtnnUvF+/IxHBBTgKhU7ZPKKQxKmGx
-	63Psc9NrqEo/Ngbej/9gTadkRwtrRh9/Oj6Mi4GAXYCOYSSnrYaSRjiceCdhglKs66KFtCJ31XrXK
-	MXgrJ6/hMKfxhtn0Ua1g==;
+	List-Owner; bh=d86fcJl9vCyMZH7MD+xWDlrpHu7yhBVOBu6ULDpkAjs=; b=u8cvHGmgsNqJNh
+	o0E0bvMBwQq9pJGjwLVXEZsH/NtMFJOGwyHAbipKw//BQOFXZhnZEB4hd/3Ni3X4qC6NhrmLzRES9
+	MSQvyvbdpfwO8EA4aQowtts2ugbg0Kz90I3455oLkxidFEZJfphjailOAxJwv6GV2y3RF/aoGjSV6
+	FuIA6ASL6IohhoiRI28JnCx+uPwkT7vjMHF5UAcC4UOonMBnJlRjsXJaAl0YbYhjqsDlzsRY3w5r6
+	jr3QBnW8zc7W6/nMm5KYUP/a8ZvgWFSvqmWcgTSm6sYfYiqYrBFLigTODC5H5SKYIfDTOIknnQU+/
+	UFE7JEhd15Psltyw/18Q==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uqdbg-00000009XF1-3xUJ;
-	Mon, 25 Aug 2025 20:15:56 +0000
+	id 1uqdh6-00000009YVz-0F1d;
+	Mon, 25 Aug 2025 20:21:32 +0000
 Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uqdSc-00000009UsZ-0ewZ
+	id 1uqdSf-00000009UuK-1k4m
 	for kvm-riscv@bombadil.infradead.org;
-	Mon, 25 Aug 2025 20:06:34 +0000
+	Mon, 25 Aug 2025 20:06:37 +0000
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=desiato.20200630; h=Content-Type:Cc:To:From:Subject:
 	Message-ID:References:Mime-Version:In-Reply-To:Date:Reply-To:Sender:
 	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=+oyHFbNT6msf6glrd5KFIdZcOF0+oR5scj5fBrCtJpc=; b=E7DzcDAK4qID2b1tMQb9K3JxdM
-	iRHw+fDUDZYG7t/99DHEgTsHaVNxPFl3zYHCYlIEXBwg6ahR1PivBpXWw+8Dj9U0XMg3u3olGxCXu
-	Xw4rFE4zHwpfhU4TtZKphJ0pcFJ/526V+31vP1MPwOP8Pykd4KfT6UOtDiIi1TwbHCXKNj3EyETfg
-	xWkvkH2Kw3c7OzbtM6QQFBTGtDdoFwZSjwYaIqxhIJ4mUsA2NDzkQQNPYKpCl0qCMvTM/oVLD2Pkm
-	12vKisMVdsbloZ7AGTEn170NZxqwGp6yHye6MV/Nz8lSEDUUlEvNtLClBLROLRjkNANdiEIlbbTjR
-	haPYP2qg==;
-Received: from mail-pg1-x549.google.com ([2607:f8b0:4864:20::549])
+	bh=wbD6+fQUFLj6ZyKIXXe+rz89WoEnq6GRJ4KXesOmIvQ=; b=IjFjPtzfpy8vZlM0f+UGCHbJOE
+	POeuq4Kdx97cUIqfgX3jCF+Hh3BHveAey6s8nQMtj7tDFg2+LXz+gzk0XQxdb8m1iAGZaCc/pN6rc
+	l2jKsyfSV+UaAOOqvQFw0OmmdYNl55OsDNNCVumCO2vFjSMt2uUpkTOWYxapYr5UydJOqbG5ebI2X
+	A0sc2qLFhVuZ+ECgFwTkr+KKu0OlGaQIHKuFE9pV1fosS/ghlN5xsJHEgSviIoxiJR0KpC/w0Et72
+	ShKfHN5j+9wYSOJML1MJH5d4GZPun+BcoJS/M/erZlD65sTN34X5XaXRg/6g2yHw1IZxaVH4bJaIu
+	aUHdlCNA==;
+Received: from mail-pg1-x54a.google.com ([2607:f8b0:4864:20::54a])
 	by desiato.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uqdSY-000000021uL-3JTq
+	id 1uqdSc-000000021wA-20hC
 	for kvm-riscv@lists.infradead.org;
-	Mon, 25 Aug 2025 20:06:32 +0000
-Received: by mail-pg1-x549.google.com with SMTP id 41be03b00d2f7-b4761f281a8so3542059a12.0
-        for <kvm-riscv@lists.infradead.org>; Mon, 25 Aug 2025 13:06:30 -0700 (PDT)
+	Mon, 25 Aug 2025 20:06:36 +0000
+Received: by mail-pg1-x54a.google.com with SMTP id 41be03b00d2f7-b47173a00e8so3648655a12.1
+        for <kvm-riscv@lists.infradead.org>; Mon, 25 Aug 2025 13:06:34 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1756152389; x=1756757189; darn=lists.infradead.org;
+        d=google.com; s=20230601; t=1756152393; x=1756757193; darn=lists.infradead.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:from:to:cc:subject:date:message-id:reply-to;
-        bh=+oyHFbNT6msf6glrd5KFIdZcOF0+oR5scj5fBrCtJpc=;
-        b=pZUkgU0Z4J6UHeKC7cq7umFddQiR3MxaIH97/oSY4xhv6JlV4Ni5RngXmWlUojJ74p
-         BQttE0DPkhRe+tqCxboUSZFZbqIuV/YtkkKAhDcuNr4AcMPcPIuD9eE/5MC+WtYRrTjd
-         JLrjqL9QzrRvY4ZlDHZoik1Sd6Q9qvZnIC53U7ILuoHLQottgvnKE2C+QraFfBXBNUs4
-         KIbn56gDMXfwAlF7fDR0GfP8peddvcmSZx7KkkKPtg9jYw2frwhjJ7XMlDviL3AtJcOH
-         6/+Mog8jKqIg1NSxjKn12AAZiQufhiQ6R0i7LN0hPVZTiqSQ3fkWdLSFpIDN0ja8Ii4K
-         kzwg==
+        bh=wbD6+fQUFLj6ZyKIXXe+rz89WoEnq6GRJ4KXesOmIvQ=;
+        b=FUV8699rv0ZQh65QnA/pVy9PFVQPwqzxscNH3OLF4Gb73m+QvfAbf8SAR2LeedhJRP
+         NhrR/o/ca2xkxWgqrkrMQDsEPa8qrbiLUDZp43Uj6lDuEQZdf4RzM5WfkfqtAhZ2hU+i
+         A/tVe4PSxyuk1uV5syXd6N7K6qNNzZ2zQ33TsemJ7lgJZgyTKdjJnCORcK1kgIyq4tNE
+         ub+sSIJWOHCYSZI1kyYfHolpKJ6rs2l9QYGRdyhGdnxfhPpwnIulXeRFLTMp5VPUdnmz
+         1Xd2SfDipXMKvHH9p8TNtAM7sjVSV5o65baVVMCkRG9ysYwVWUrPmZVUuB+VE09U5TD7
+         tuOw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1756152389; x=1756757189;
+        d=1e100.net; s=20230601; t=1756152393; x=1756757193;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=+oyHFbNT6msf6glrd5KFIdZcOF0+oR5scj5fBrCtJpc=;
-        b=q+NqbU+HA7Us5aYYOW2lg35BYLCe/EHTsYSs0NFZFhdqwLJ5kMU9F1J1IOrt/cbPty
-         ex59a/EetWH9ePglsujmJsyA9/4LBZ8FEYIXYxjIUKy4Xjkq2oIwwyXb6xy3qbgyIG5H
-         Aq8Ya1KF+8Ft3P8HNaBC0Mv0KkhVGKwhFlBuHxxplf0ySZvUSx5bPbqNgglqZivXam1Z
-         CKtEC6H1PQoEbp9XP+T1khZo7aTRmUXqxrwf5l0tUGIQwcqNq2OrjcBoOqZoqMV3YW6O
-         Gg2jG0Y0CgLs9uxZkHhDV2KjIWta9jXFIJuZp/OOA4H/diKTtFRqkn5gSvs+g7jSM/xB
-         nJ/w==
-X-Forwarded-Encrypted: i=1; AJvYcCVVatnWB8jnD8p23WRui1K4V2+M60fCu1Pyi1u/UduS0PGi1ftR4ZAr2DKdklGI8LvxOHH5DByWtpU=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yz11y/OT3Cngc3EhHtiJ2a7OpjWNWaeGi4molkCGfVAUB5oFJDX
-	8ERujY1U+LTAwTOhFRJ7gdoBGqXZWveBcPjFZ3oyGd3Vp8brHQuc7l8wjTgReRG8Urvaf4eC7kX
-	6KkzzJQ==
-X-Google-Smtp-Source: AGHT+IHf2Zj5lnIbPMIr1AZKuHUHSE22v55RmD47MKsgM79RfmKmA7vJz/pJwEChfBNBSyo/bobLCf+GttQ=
-X-Received: from pjbpq16.prod.google.com ([2002:a17:90b:3d90:b0:325:7fbe:1c64])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a20:6a0f:b0:243:78a:8289
- with SMTP id adf61e73a8af0-24340def606mr21242988637.48.1756152389107; Mon, 25
- Aug 2025 13:06:29 -0700 (PDT)
-Date: Mon, 25 Aug 2025 13:06:19 -0700
+        bh=wbD6+fQUFLj6ZyKIXXe+rz89WoEnq6GRJ4KXesOmIvQ=;
+        b=h+7pwB1hpZl9es47I17B1J/SS/vzsC5fxbVH9zXEShs67drqaqSf+sD3F3+eyd3FMp
+         tDMo64L78IUfUyo//OgizzzrmvNjcFgeIVUmBd19/TWbx41SeoWEoM1IP/XioP3b9PzS
+         lQePxBUaq7sWZB/y1gNLDGi+ju3ytBZKKE4UP6JheJ6oXSlL698/tFUekF9L7V7+YJys
+         SPPfxMzRTD/d3hn//TxhuySVO7YveBltSId+t65mxyhG9vwCtsffJQo/Fpy5kGqp9RTO
+         zLOqgoVVqIW1HJY2o8m4IWS1BXLyl7YsTQKzUNZnYd8//qOoqIYIXSWasAV2seaAh6pu
+         uqNg==
+X-Forwarded-Encrypted: i=1; AJvYcCURWZhCdzMO0k8o2+DLsCx++vXFP9xO5tKzj7WPg6ggzmNGbHwuETG4m2zfEeqPaL0wP5b1AsPLCts=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yz5L6b3O7wAAr+nFoxt2bS0pu9pq5YEusSFGkQtClrJ1O3BvI0V
+	FrjO1KQAZkvtWtalG4YxOuBe5qztpqzd/uUW3AX2Y6ZX3KNzkUQbV36ILC7Hy6Sg9tLnQ4/ziS4
+	XuoOG5Q==
+X-Google-Smtp-Source: AGHT+IH5IBTx24tzWYAz5h7k7ppjFmo3GXWf3YKN3bogG8Gmm6XMIM/yADKjND6wIF+ApQDKi4M8PqDi2F4=
+X-Received: from pjbsp3.prod.google.com ([2002:a17:90b:52c3:b0:31f:2a78:943])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:903:22c9:b0:246:6f78:1fc1
+ with SMTP id d9443c01a7336-2466f7820c6mr142747395ad.36.1756152392594; Mon, 25
+ Aug 2025 13:06:32 -0700 (PDT)
+Date: Mon, 25 Aug 2025 13:06:21 -0700
 In-Reply-To: <20250825200622.3759571-1-seanjc@google.com>
 Mime-Version: 1.0
 References: <20250825200622.3759571-1-seanjc@google.com>
 X-Mailer: git-send-email 2.51.0.261.g7ce5a0a67e-goog
-Message-ID: <20250825200622.3759571-3-seanjc@google.com>
-Subject: [PATCH 2/5] Drivers: hv: Handle NEED_RESCHED_LAZY before transferring
- to guest
+Message-ID: <20250825200622.3759571-5-seanjc@google.com>
+Subject: [PATCH 4/5] entry: Rename "kvm" entry code assets to "virt" to
+ genericize APIs
 From: Sean Christopherson <seanjc@google.com>
 To: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>, 
 	Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, 
@@ -104,8 +104,8 @@ Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
 	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
 	linux-hyperv@vger.kernel.org, rcu@vger.kernel.org
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250825_210630_904558_819B8825 
-X-CRM114-Status: GOOD (  12.33  )
+X-CRM114-CacheID: sfid-20250825_210634_641569_DC1CCA95 
+X-CRM114-Status: GOOD (  16.28  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -123,39 +123,242 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Check for NEED_RESCHED_LAZY, not just NEED_RESCHED, prior to transferring
-control to a guest.  Failure to check for lazy resched can unnecessarily
-delay rescheduling until the next tick when using a lazy preemption model.
+Rename the "kvm" entry code files and Kconfigs to use generic "virt"
+nomenclature so that the code can be reused by other hypervisors (or
+rather, their root/dom0 partition drivers), without incorrectly suggesting
+the code somehow relies on and/or involves KVM.
 
-Fixes: 621191d709b1 ("Drivers: hv: Introduce mshv_root module to expose /dev/mshv to VMMs")
+No functional change intended.
+
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- drivers/hv/mshv_common.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ MAINTAINERS                                 | 2 +-
+ arch/arm64/kvm/Kconfig                      | 2 +-
+ arch/loongarch/kvm/Kconfig                  | 2 +-
+ arch/riscv/kvm/Kconfig                      | 2 +-
+ arch/x86/kvm/Kconfig                        | 2 +-
+ include/linux/{entry-kvm.h => entry-virt.h} | 8 ++++----
+ include/linux/kvm_host.h                    | 6 +++---
+ include/linux/rcupdate.h                    | 2 +-
+ kernel/entry/Makefile                       | 2 +-
+ kernel/entry/{kvm.c => virt.c}              | 2 +-
+ kernel/rcu/tree.c                           | 6 +++---
+ virt/kvm/Kconfig                            | 2 +-
+ 12 files changed, 19 insertions(+), 19 deletions(-)
+ rename include/linux/{entry-kvm.h => entry-virt.h} (94%)
+ rename kernel/entry/{kvm.c => virt.c} (97%)
 
-diff --git a/drivers/hv/mshv_common.c b/drivers/hv/mshv_common.c
-index 1acc47c4be0d..b953b5e21110 100644
---- a/drivers/hv/mshv_common.c
-+++ b/drivers/hv/mshv_common.c
-@@ -151,7 +151,7 @@ static int __mshv_do_pre_guest_mode_work(ulong th_flags)
- 	if (th_flags & (_TIF_SIGPENDING | _TIF_NOTIFY_SIGNAL))
- 		return -EINTR;
+diff --git a/MAINTAINERS b/MAINTAINERS
+index fed6cd812d79..17b9c9d7958e 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -10211,7 +10211,7 @@ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
+ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git core/entry
+ F:	include/linux/entry-common.h
+-F:	include/linux/entry-kvm.h
++F:	include/linux/entry-virt.h
+ F:	include/linux/irq-entry-common.h
+ F:	kernel/entry/
  
--	if (th_flags & _TIF_NEED_RESCHED)
-+	if (th_flags & (_TIF_NEED_RESCHED | _TIF_NEED_RESCHED_LAZY))
- 		schedule();
+diff --git a/arch/arm64/kvm/Kconfig b/arch/arm64/kvm/Kconfig
+index 713248f240e0..6f4fc3caa31a 100644
+--- a/arch/arm64/kvm/Kconfig
++++ b/arch/arm64/kvm/Kconfig
+@@ -25,7 +25,7 @@ menuconfig KVM
+ 	select HAVE_KVM_CPU_RELAX_INTERCEPT
+ 	select KVM_MMIO
+ 	select KVM_GENERIC_DIRTYLOG_READ_PROTECT
+-	select KVM_XFER_TO_GUEST_WORK
++	select VIRT_XFER_TO_GUEST_WORK
+ 	select KVM_VFIO
+ 	select HAVE_KVM_DIRTY_RING_ACQ_REL
+ 	select NEED_KVM_DIRTY_RING_WITH_BITMAP
+diff --git a/arch/loongarch/kvm/Kconfig b/arch/loongarch/kvm/Kconfig
+index 40eea6da7c25..ae64bbdf83a7 100644
+--- a/arch/loongarch/kvm/Kconfig
++++ b/arch/loongarch/kvm/Kconfig
+@@ -31,7 +31,7 @@ config KVM
+ 	select KVM_GENERIC_HARDWARE_ENABLING
+ 	select KVM_GENERIC_MMU_NOTIFIER
+ 	select KVM_MMIO
+-	select KVM_XFER_TO_GUEST_WORK
++	select VIRT_XFER_TO_GUEST_WORK
+ 	select SCHED_INFO
+ 	select GUEST_PERF_EVENTS if PERF_EVENTS
+ 	help
+diff --git a/arch/riscv/kvm/Kconfig b/arch/riscv/kvm/Kconfig
+index 5a62091b0809..c50328212917 100644
+--- a/arch/riscv/kvm/Kconfig
++++ b/arch/riscv/kvm/Kconfig
+@@ -30,7 +30,7 @@ config KVM
+ 	select KVM_GENERIC_DIRTYLOG_READ_PROTECT
+ 	select KVM_GENERIC_HARDWARE_ENABLING
+ 	select KVM_MMIO
+-	select KVM_XFER_TO_GUEST_WORK
++	select VIRT_XFER_TO_GUEST_WORK
+ 	select KVM_GENERIC_MMU_NOTIFIER
+ 	select SCHED_INFO
+ 	select GUEST_PERF_EVENTS if PERF_EVENTS
+diff --git a/arch/x86/kvm/Kconfig b/arch/x86/kvm/Kconfig
+index 2c86673155c9..f81074b0c0a8 100644
+--- a/arch/x86/kvm/Kconfig
++++ b/arch/x86/kvm/Kconfig
+@@ -40,7 +40,7 @@ config KVM_X86
+ 	select HAVE_KVM_MSI
+ 	select HAVE_KVM_CPU_RELAX_INTERCEPT
+ 	select HAVE_KVM_NO_POLL
+-	select KVM_XFER_TO_GUEST_WORK
++	select VIRT_XFER_TO_GUEST_WORK
+ 	select KVM_GENERIC_DIRTYLOG_READ_PROTECT
+ 	select KVM_VFIO
+ 	select HAVE_KVM_PM_NOTIFIER if PM
+diff --git a/include/linux/entry-kvm.h b/include/linux/entry-virt.h
+similarity index 94%
+rename from include/linux/entry-kvm.h
+rename to include/linux/entry-virt.h
+index 3644de7e6019..42c89e3e5ca7 100644
+--- a/include/linux/entry-kvm.h
++++ b/include/linux/entry-virt.h
+@@ -1,6 +1,6 @@
+ /* SPDX-License-Identifier: GPL-2.0 */
+-#ifndef __LINUX_ENTRYKVM_H
+-#define __LINUX_ENTRYKVM_H
++#ifndef __LINUX_ENTRYVIRT_H
++#define __LINUX_ENTRYVIRT_H
  
- 	if (th_flags & _TIF_NOTIFY_RESUME)
-@@ -163,7 +163,8 @@ static int __mshv_do_pre_guest_mode_work(ulong th_flags)
- int mshv_do_pre_guest_mode_work(void)
+ #include <linux/static_call_types.h>
+ #include <linux/resume_user_mode.h>
+@@ -10,7 +10,7 @@
+ #include <linux/tick.h>
+ 
+ /* Transfer to guest mode work */
+-#ifdef CONFIG_KVM_XFER_TO_GUEST_WORK
++#ifdef CONFIG_VIRT_XFER_TO_GUEST_WORK
+ 
+ #ifndef ARCH_XFER_TO_GUEST_MODE_WORK
+ # define ARCH_XFER_TO_GUEST_MODE_WORK	(0)
+@@ -90,6 +90,6 @@ static inline bool xfer_to_guest_mode_work_pending(void)
+ 	lockdep_assert_irqs_disabled();
+ 	return __xfer_to_guest_mode_work_pending();
+ }
+-#endif /* CONFIG_KVM_XFER_TO_GUEST_WORK */
++#endif /* CONFIG_VIRT_XFER_TO_GUEST_WORK */
+ 
+ #endif
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index 598b9473e46d..70ac2267d5d0 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -2,7 +2,7 @@
+ #ifndef __KVM_HOST_H
+ #define __KVM_HOST_H
+ 
+-#include <linux/entry-kvm.h>
++#include <linux/entry-virt.h>
+ #include <linux/types.h>
+ #include <linux/hardirq.h>
+ #include <linux/list.h>
+@@ -2444,7 +2444,7 @@ static inline int kvm_arch_vcpu_run_pid_change(struct kvm_vcpu *vcpu)
+ }
+ #endif /* CONFIG_HAVE_KVM_VCPU_RUN_PID_CHANGE */
+ 
+-#ifdef CONFIG_KVM_XFER_TO_GUEST_WORK
++#ifdef CONFIG_VIRT_XFER_TO_GUEST_WORK
+ static inline void kvm_handle_signal_exit(struct kvm_vcpu *vcpu)
  {
- 	const ulong work_flags = _TIF_NOTIFY_SIGNAL | _TIF_SIGPENDING |
--				 _TIF_NEED_RESCHED  | _TIF_NOTIFY_RESUME;
-+				 _TIF_NEED_RESCHED  | _TIF_NEED_RESCHED_LAZY |
-+				 _TIF_NOTIFY_RESUME;
- 	ulong th_flags;
+ 	vcpu->run->exit_reason = KVM_EXIT_INTR;
+@@ -2461,7 +2461,7 @@ static inline int kvm_xfer_to_guest_mode_handle_work(struct kvm_vcpu *vcpu)
+ 	}
+ 	return r;
+ }
+-#endif /* CONFIG_KVM_XFER_TO_GUEST_WORK */
++#endif /* CONFIG_VIRT_XFER_TO_GUEST_WORK */
  
- 	th_flags = read_thread_flags();
+ /*
+  * If more than one page is being (un)accounted, @virt must be the address of
+diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
+index 120536f4c6eb..1e1f3aa375d9 100644
+--- a/include/linux/rcupdate.h
++++ b/include/linux/rcupdate.h
+@@ -129,7 +129,7 @@ static inline void rcu_sysrq_start(void) { }
+ static inline void rcu_sysrq_end(void) { }
+ #endif /* #else #ifdef CONFIG_RCU_STALL_COMMON */
+ 
+-#if defined(CONFIG_NO_HZ_FULL) && (!defined(CONFIG_GENERIC_ENTRY) || !defined(CONFIG_KVM_XFER_TO_GUEST_WORK))
++#if defined(CONFIG_NO_HZ_FULL) && (!defined(CONFIG_GENERIC_ENTRY) || !defined(CONFIG_VIRT_XFER_TO_GUEST_WORK))
+ void rcu_irq_work_resched(void);
+ #else
+ static __always_inline void rcu_irq_work_resched(void) { }
+diff --git a/kernel/entry/Makefile b/kernel/entry/Makefile
+index 77fcd83dd663..2333d70802e4 100644
+--- a/kernel/entry/Makefile
++++ b/kernel/entry/Makefile
+@@ -14,4 +14,4 @@ CFLAGS_common.o		+= -fno-stack-protector
+ 
+ obj-$(CONFIG_GENERIC_IRQ_ENTRY) 	+= common.o
+ obj-$(CONFIG_GENERIC_SYSCALL) 		+= syscall-common.o syscall_user_dispatch.o
+-obj-$(CONFIG_KVM_XFER_TO_GUEST_WORK)	+= kvm.o
++obj-$(CONFIG_VIRT_XFER_TO_GUEST_WORK)	+= virt.o
+diff --git a/kernel/entry/kvm.c b/kernel/entry/virt.c
+similarity index 97%
+rename from kernel/entry/kvm.c
+rename to kernel/entry/virt.c
+index 6fc762eaacca..c52f99249763 100644
+--- a/kernel/entry/kvm.c
++++ b/kernel/entry/virt.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ 
+-#include <linux/entry-kvm.h>
++#include <linux/entry-virt.h>
+ 
+ static int xfer_to_guest_mode_work(unsigned long ti_work)
+ {
+diff --git a/kernel/rcu/tree.c b/kernel/rcu/tree.c
+index 8eff357b0436..371447651929 100644
+--- a/kernel/rcu/tree.c
++++ b/kernel/rcu/tree.c
+@@ -573,7 +573,7 @@ void rcutorture_format_gp_seqs(unsigned long long seqs, char *cp, size_t len)
+ }
+ EXPORT_SYMBOL_GPL(rcutorture_format_gp_seqs);
+ 
+-#if defined(CONFIG_NO_HZ_FULL) && (!defined(CONFIG_GENERIC_ENTRY) || !defined(CONFIG_KVM_XFER_TO_GUEST_WORK))
++#if defined(CONFIG_NO_HZ_FULL) && (!defined(CONFIG_GENERIC_ENTRY) || !defined(CONFIG_VIRT_XFER_TO_GUEST_WORK))
+ /*
+  * An empty function that will trigger a reschedule on
+  * IRQ tail once IRQs get re-enabled on userspace/guest resume.
+@@ -602,7 +602,7 @@ noinstr void rcu_irq_work_resched(void)
+ 	if (IS_ENABLED(CONFIG_GENERIC_ENTRY) && !(current->flags & PF_VCPU))
+ 		return;
+ 
+-	if (IS_ENABLED(CONFIG_KVM_XFER_TO_GUEST_WORK) && (current->flags & PF_VCPU))
++	if (IS_ENABLED(CONFIG_VIRT_XFER_TO_GUEST_WORK) && (current->flags & PF_VCPU))
+ 		return;
+ 
+ 	instrumentation_begin();
+@@ -611,7 +611,7 @@ noinstr void rcu_irq_work_resched(void)
+ 	}
+ 	instrumentation_end();
+ }
+-#endif /* #if defined(CONFIG_NO_HZ_FULL) && (!defined(CONFIG_GENERIC_ENTRY) || !defined(CONFIG_KVM_XFER_TO_GUEST_WORK)) */
++#endif /* #if defined(CONFIG_NO_HZ_FULL) && (!defined(CONFIG_GENERIC_ENTRY) || !defined(CONFIG_VIRT_XFER_TO_GUEST_WORK)) */
+ 
+ #ifdef CONFIG_PROVE_RCU
+ /**
+diff --git a/virt/kvm/Kconfig b/virt/kvm/Kconfig
+index 727b542074e7..ce843db53831 100644
+--- a/virt/kvm/Kconfig
++++ b/virt/kvm/Kconfig
+@@ -87,7 +87,7 @@ config HAVE_KVM_VCPU_RUN_PID_CHANGE
+ config HAVE_KVM_NO_POLL
+        bool
+ 
+-config KVM_XFER_TO_GUEST_WORK
++config VIRT_XFER_TO_GUEST_WORK
+        bool
+ 
+ config HAVE_KVM_PM_NOTIFIER
 -- 
 2.51.0.261.g7ce5a0a67e-goog
 
