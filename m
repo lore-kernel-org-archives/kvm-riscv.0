@@ -4,86 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41CACCA0FEF
-	for <kvm-riscv@archiver.kernel.org>; Mon, 25 Aug 2025 17:01:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AEEB1CA0FE7
+	for <kvm-riscv@archiver.kernel.org>; Mon, 25 Aug 2025 17:01:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
-	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=GMsgGtxKY/WhR4Jub5LT1FCbuG8mxV7wbW056Ooqcjo=; b=PJV2bC+UaAWEG4
-	M9alcJfaiznMBWiXIbCP7ZnBxn6qrSj5+oUBba7EIhEICtZ4vlZ5LImVE7dbhOq9Vb/ASvqqodi4r
-	ryVNUv7V5XAwBo4d0v1Z3T1MMDi/lInUTfly4U8/ddXn/b+a4XK1M40aMUfcYhSi+Fca/pO5YOEO4
-	hg2biZhqaa34TNW93Ke8D7/XkSL+mEfuc2Ph029ful8ItIDTq2bsN/dAtQgPHscIvX+cYIOU4CT98
-	trDoYBVVscaw/dUOs/M49LJtSvZI2ZmFLfG8gU8Ucc5P/1Qq9CFw8K6E/a5AdZ6V49pmKzAtA31y5
-	gyDXodXiOjSy9uNUbANA==;
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
+	List-Subscribe:List-Help:List-Post:List-Archive:List-Unsubscribe:List-Id:
+	In-Reply-To:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:
+	Reply-To:Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date
+	:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Owner;
+	bh=an3P6s9o9GpImWlQmmGkZ+O73qAYkWDL7UbHHBXzIqY=; b=OiTCklqDfnqKs6C79dG2f6QXzM
+	IJyj5tRJC7nm992tcJ4rGxHArkgKiMw5SR0Z+M2mPaFxKZt6zvKTqO9PwgsccVmZC0vJxzEQ+XL1d
+	tJpHjr2p+1YliZGa//fTIOlos90hRFJwL5qd4AtzVj7xo3ukg+tOoz9MAaEuuIiTYigQcJdS43R0k
+	6V2j3zBgwOkzNqg3U3IuQf4LVl7RQOitrLA6tZn+pR+dUlxwa8JcOyf/YN/yqqtZfBrrnlp0OPaKV
+	PXkDbSzYg5aSADAQ5NWyKcjJQnoO3WqQFkBwabyAt9ZeOsr9T+x9rrsXLj3hE9T1wI3m0IiFcAa9O
+	wXkSPlPQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uqaZ4-00000008kru-3pNU;
-	Mon, 25 Aug 2025 17:01:02 +0000
-Received: from mail-il1-x129.google.com ([2607:f8b0:4864:20::129])
+	id 1uqaZA-00000008kzv-2v73;
+	Mon, 25 Aug 2025 17:01:08 +0000
+Received: from sea.source.kernel.org ([172.234.252.31])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uqZxW-00000008e2o-0bZv
-	for kvm-riscv@lists.infradead.org;
-	Mon, 25 Aug 2025 16:22:15 +0000
-Received: by mail-il1-x129.google.com with SMTP id e9e14a558f8ab-3ea8b3a64b5so26403445ab.2
-        for <kvm-riscv@lists.infradead.org>; Mon, 25 Aug 2025 09:22:13 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ventanamicro.com; s=google; t=1756138933; x=1756743733; darn=lists.infradead.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=gN8JTVN3UqrYbcE7si46e+ibxM+XGryuvpF6NcC0BZ0=;
-        b=IhCgmtGyVXoOJC7f8Aet9Rfm9cnSAese1paa8zZeG1bm9W0B1DDzgOEdaQxgzgcvy3
-         YXMUea+ykLdD80VeGZxpxiBHGAmlBkPWTQ+GkGZVJVnnx2fC7N1WUypduPiLvpZ/AAhC
-         jndwNLIXb/5luPk+pVgyPDGxJnsWeZl5I0IoO9lV8joEJbNNotG8J0nC3yOupvVJuQSX
-         fkOLR4Vy8O4Ssbr98Ky47FG3v+K1hL/+DlhKMyfBu6jObKIXn0GCOrDiurefUiFOLTum
-         /ZKPHEW6VGem4vuEa6Sl8f1DSMYvOSygrQ1jqZ6s1QyK0HDusl9NNQpzBgkTWHCIS1rt
-         /hAA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1756138933; x=1756743733;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=gN8JTVN3UqrYbcE7si46e+ibxM+XGryuvpF6NcC0BZ0=;
-        b=FZQ2A5WSGiZoCoG3SuM1KguxJ0+ywyN7BK7f2IInF2u/9QM1TCj0/rQNJew5L2aJVz
-         8Oxa7/8/PlItrVMb73YPigL70t6mgNo6gfmYF0r87wBrT+XjTpyUzcvpnXEIh6MRVFLo
-         2ebaVpJvaaoG1rmaKrOqRp4ZaZ1zgjQ96qL0iDXB+JeJXC7STGmN5NWN3d1KgAgtXH0L
-         eNBoQpTojD4ngLJ7tjdR6Mpn9NQEIrCzWb2QOA3sNXl8ABi+nMyDVxqsRSDOe3Vk5ext
-         L9aw1aYz9i38hdukUrlyJmFML8kUHyRz2ZsykWeTB+y88eNJVJ7zseXLHpKqGc9OJkCy
-         PS+A==
-X-Forwarded-Encrypted: i=1; AJvYcCXyqigaDsnYveaVXN46jdGJs8nej+vqaSOEE0GBdL4i6UtYyzkRWj533p5s7xngOChh0A+PSW1qa80=@lists.infradead.org
-X-Gm-Message-State: AOJu0YwzWORvsymcN82uJoGlPyfCusS1NidwAihx7X3qleyI7iK5dvYt
-	461pGxm7h6CfLGgABBpCvt+xS1w1l2+6DqH5KOXgdcGyn2ERXXHvtMFpLAgyDrV1TGU=
-X-Gm-Gg: ASbGncudZEgvU7T/hwLBDxSoWp74hcOSKFPnFdq+bacJrTcOM0hN1e3zmkZsU9/IJ+O
-	Z+fyGamNbiylUORlU12SN6EJBMEhG/wUzrgxG5giqaersZYWBwUmS+Ez2O45A61/8Z58fUoMePU
-	gWU22H5Rzf6jP5D5H//V2DU79+WxocsBMyVHK8yC6kqDl6GJ0w/HbyBK+Rio2P5Xrqqln75LirS
-	q5uGte3F5T17i1IVZFx0md7Elsb4IxcPiLr7PvGKLj7SBgID2DRj4+cHS6tFBRZxL7oxyvJBHUs
-	uM3jjUVsYIPbQkzzwCwJIG2clyWkz7om0UN1qUaCMiprYa3DttqTn0PJm5EvatnWIoQvd+G38OB
-	9EvRljGMGCppdHSHiC4vLhaj4
-X-Google-Smtp-Source: AGHT+IHxDLcJHAYpyzsrbmn/aJb96iGEjJWm0YdiTY2GoeJB5NHC5Ix7Bwg5uxn0XGZ/yig4LtZaRw==
-X-Received: by 2002:a05:6e02:184c:b0:3ec:40cf:2d37 with SMTP id e9e14a558f8ab-3ec40cf2ed7mr61486495ab.31.1756138933068;
-        Mon, 25 Aug 2025 09:22:13 -0700 (PDT)
-Received: from localhost ([140.82.166.162])
-        by smtp.gmail.com with ESMTPSA id e9e14a558f8ab-3ea4c28624bsm49231365ab.18.2025.08.25.09.22.12
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 25 Aug 2025 09:22:12 -0700 (PDT)
-Date: Mon, 25 Aug 2025 11:22:11 -0500
-From: Andrew Jones <ajones@ventanamicro.com>
-To: Jinyu Tang <tjytimi@163.com>
-Cc: Anup Patel <anup@brainfault.org>, Atish Patra <atish.patra@linux.dev>, 
-	Conor Dooley <conor.dooley@microchip.com>, Yong-Xuan Wang <yongxuan.wang@sifive.com>, 
-	Paul Walmsley <paul.walmsley@sifive.com>, Nutty Liu <nutty.liu@hotmail.com>, kvm@vger.kernel.org, 
-	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3] riscv: skip csr restore if vcpu preempted reload
-Message-ID: <20250825-69a3c8b588e0bb1fbb5b7beb@orel>
-References: <20250825121411.86573-1-tjytimi@163.com>
+	id 1uqZz9-00000008eRV-153G;
+	Mon, 25 Aug 2025 16:23:56 +0000
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 24A4740396;
+	Mon, 25 Aug 2025 16:23:54 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 09423C4CEED;
+	Mon, 25 Aug 2025 16:23:36 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1756139022;
+	bh=KgpIyi6RAg5MAXdti7zU0f2hj8RJXYvhBuIqG1e+0CE=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=cuZQedcg1Zp25ehlMzicSD+8IdnsfbE4M/4qDW+GBk9ac9z4eDU7QA6R5eTSxBxbe
+	 IFjDzU/5VAjaY7v9KqbVmjsEbZWtdaSccRasiAxWh7JdLtkj+ykHU+0OaB9UTDfEgW
+	 8v3PFGD7ukTKEdGiWSqbat61DdJsQ9rU/FEmZLPNkKxQDhf/heHdagLNykxupDCCSm
+	 3lu7uf5m1eR2ji0UUJezLjeh0pDx9h8qfk1AU2OFNwyw+HTJPTewAnEGi434B1V6Br
+	 p9w1zuysufJvFxZwXfaIKGYzFCI2xiznEsqSR8PVd5faWmyVnMEqXjwtewDrGZOMx5
+	 kCya4XmM0eXwQ==
+Date: Mon, 25 Aug 2025 17:23:34 +0100
+From: Conor Dooley <conor@kernel.org>
+To: Pincheng Wang <pincheng.plct@isrc.iscas.ac.cn>
+Cc: paul.walmsley@sifive.com, palmer@dabbelt.com, aou@eecs.berkeley.edu,
+	alex@ghiti.fr, robh@kernel.org, krzk+dt@kernel.org,
+	conor+dt@kernel.org, anup@brainfault.org, pbonzini@redhat.com,
+	shuah@kernel.org, cyan.yang@sifive.com, cleger@rivosinc.com,
+	charlie@rivosinc.com, cuiyunhui@bytedance.com,
+	samuel.holland@sifive.com, namcao@linutronix.de, jesse@rivosinc.com,
+	inochiama@gmail.com, yongxuan.wang@sifive.com,
+	ajones@ventanamicro.com, parri.andrea@gmail.com,
+	mikisabate@gmail.com, yikming2222@gmail.com,
+	thomas.weissschuh@linutronix.de, linux-riscv@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
+	devicetree@vger.kernel.org, kvm@vger.kernel.org,
+	kvm-riscv@lists.infradead.org, linux-kselftest@vger.kernel.org
+Subject: Re: [PATCH v1 RESEND 1/5] dt-bidings: riscv: add Zilsd and Zclsd
+ extension descriptions
+Message-ID: <20250825-clang-husband-bcb5defdb5f3@spud>
+References: <20250821140131.225756-1-pincheng.plct@isrc.iscas.ac.cn>
+ <20250821140131.225756-2-pincheng.plct@isrc.iscas.ac.cn>
+ <20250822-purge-doubling-f38988284db1@spud>
+ <a2cc4cbe-82ca-4a89-b623-73721a1f3baf@isrc.iscas.ac.cn>
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <20250825121411.86573-1-tjytimi@163.com>
+In-Reply-To: <a2cc4cbe-82ca-4a89-b623-73721a1f3baf@isrc.iscas.ac.cn>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250825_092214_194699_8B6C5A42 
-X-CRM114-Status: GOOD (  19.11  )
+X-CRM114-CacheID: sfid-20250825_092355_339100_0292F334 
+X-CRM114-Status: GOOD (  28.41  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -95,48 +80,156 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============0656769901248220721=="
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Mon, Aug 25, 2025 at 08:14:11PM +0800, Jinyu Tang wrote:
-> The kvm_arch_vcpu_load() function is called in two cases for riscv:
-> 1. When entering KVM_RUN from userspace ioctl.
-> 2. When a preempted VCPU is scheduled back.
-> 
-> In the second case, if no other KVM VCPU has run on this CPU since the
-> current VCPU was preempted, the guest CSR (including AIA CSRS and HGTAP) 
-> values are still valid in the hardware and do not need to be restored.
-> 
-> This patch is to skip the CSR write path when:
-> 1. The VCPU was previously preempted
-> (vcpu->scheduled_out == 1).
-> 2. It is being reloaded on the same physical CPU
-> (vcpu->arch.last_exit_cpu == cpu).
-> 3. No other KVM VCPU has used this CPU in the meantime
-> (vcpu == __this_cpu_read(kvm_former_vcpu)).
-> 
-> This reduces many CSR writes with frequent preemption on the same CPU.
-> 
-> Signed-off-by: Jinyu Tang <tjytimi@163.com>
-> Reviewed-by: Nutty Liu <nutty.liu@hotmail.com>
-> ---
->  v2 -> v3:
->  v2 was missing a critical check because I generated the patch from my
->  wrong (experimental) branch. This is fixed in v3. Sorry for my trouble.
-> 
->  v1 -> v2:
->  Apply the logic to aia csr load. Thanks for
->  Andrew Jones's advice.
-> 
->  arch/riscv/kvm/vcpu.c | 13 +++++++++++--
->  1 file changed, 11 insertions(+), 2 deletions(-)
->
 
-Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+--===============0656769901248220721==
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="przAQh4lUz2Eomq/"
+Content-Disposition: inline
+
+
+--przAQh4lUz2Eomq/
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, Aug 25, 2025 at 11:26:13PM +0800, Pincheng Wang wrote:
+> On 2025/8/23 0:33, Conor Dooley wrote:
+> > On Thu, Aug 21, 2025 at 10:01:27PM +0800, Pincheng Wang wrote:
+> > > Add descriptions for the Zilsd (Load/Store pair instructions) and
+> > > Zclsd (Compressed Load/Store pair instructions) ISA extensions
+> > > which were ratified in commit f88abf1 ("Integrating load/store
+> > > pair for RV32 with the main manual") of the riscv-isa-manual.
+> > >=20
+> > > Signed-off-by: Pincheng Wang <pincheng.plct@isrc.iscas.ac.cn>
+> > > ---
+> > >   .../devicetree/bindings/riscv/extensions.yaml | 39 ++++++++++++++++=
++++
+> > >   1 file changed, 39 insertions(+)
+> > >=20
+> > > diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml =
+b/Documentation/devicetree/bindings/riscv/extensions.yaml
+> > > index ede6a58ccf53..d72ffe8f6fa7 100644
+> > > --- a/Documentation/devicetree/bindings/riscv/extensions.yaml
+> > > +++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
+> > > @@ -366,6 +366,20 @@ properties:
+> > >               guarantee on LR/SC sequences, as ratified in commit b1d=
+806605f87
+> > >               ("Updated to ratified state.") of the riscv profiles sp=
+ecification.
+> > > +        - const: zilsd
+> > > +          description:
+> > > +            The standard Zilsd extension which provides support for =
+aligned
+> > > +            register-pair load and store operations in 32-bit instru=
+ction
+> > > +            encodings, as ratified in commit f88abf1 ("Integrating
+> > > +            load/store pair for RV32 with the main manual") of riscv=
+-isa-manual.
+> > > +
+> > > +        - const: zclsd
+> > > +          description:
+> > > +            The Zclsd extension implements the compressed (16-bit) v=
+ersion of the
+> > > +            Load/Store Pair for RV32. As with Zilsd, this extension =
+was ratified
+> > > +            in commit f88abf1 ("Integrating load/store pair for RV32=
+ with the
+> > > +            main manual") of riscv-isa-manual.
+> > > +
+> > >           - const: zk
+> > >             description:
+> > >               The standard Zk Standard Scalar cryptography extension =
+as ratified
+> > > @@ -847,6 +861,16 @@ properties:
+> > >               anyOf:
+> > >                 - const: v
+> > >                 - const: zve32x
+> > > +      # Zclsd depends on Zilsd and Zca
+> > > +      - if:
+> > > +          contains:
+> > > +            anyOf:
+> > > +              - const: zclsd
+> > > +        then:
+> > > +          contains:
+> > > +            anyOf:
+> > > +              - const: zilsd
+> > > +              - const: zca
+> > >   allOf:
+> > >     # Zcf extension does not exist on rv64
+> > > @@ -864,6 +888,21 @@ allOf:
+> > >             not:
+> > >               contains:
+> > >                 const: zcf
+> > > +  # Zilsd extension does not exist on rv64
+> > > +  - if:
+> > > +      properties:
+> >=20
+> > > +        riscv,isa-extensions:
+> > > +          contains:
+> > > +            const: zilsd
+> >=20
+> > This syntax is odd, it shouldn't be required to have zilsd in here and
+> > in the then. Did you copy this from Zcf or come up with it yourself
+> > because it didn't work otherwise?
+> >=20
+>=20
+> Yes, I did model this after the existing Zcf constraint in the same file.
+> The structure is nearly identical: cheking for presence of the extension =
+and
+> rv64i, then forbidding it in the "then" branch.
+>=20
+> I've tested confirmed that removing the "contains: const: zilsd" from the
+> "if" condition still correctly enforces that zilsd must not appear when
+> rv64i is present. The "then" clause with "not: contains" is sufficient.
+>=20
+> Given that the validation behavior is equivalent, but the logic is cleaner
+> and less redundant without the extra "contains", would you recommend
+> updating it to the simpler form:
+>=20
+>     - if:
+>         properties:
+>           riscv,isa-base:
+>             contains:
+>               const: rv64i
+>       then:
+>         properties:
+>           riscv,isa-extensions:
+>             not:
+>               contains:
+>                 const: zilsd
+>=20
+> If so, I'll update it in the next revision.
+
+Yeah, please reduce it to this form.
+
+--przAQh4lUz2Eomq/
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYKAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCaKyOBgAKCRB4tDGHoIJi
+0tBmAPwITOW6B962WAfPzymCU4z9xZ51B5BtYVuDFIxypRRcogD/bJcgHnZ/rI15
+6Mdyko1A6Tb+pZvgrrtqkICniCrQogc=
+=3Dwx
+-----END PGP SIGNATURE-----
+
+--przAQh4lUz2Eomq/--
+
+
+--===============0656769901248220721==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 -- 
 kvm-riscv mailing list
 kvm-riscv@lists.infradead.org
 http://lists.infradead.org/mailman/listinfo/kvm-riscv
+
+--===============0656769901248220721==--
+
