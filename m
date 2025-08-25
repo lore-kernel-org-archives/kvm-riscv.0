@@ -4,45 +4,46 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 93FFBC8303F
-	for <kvm-riscv@archiver.kernel.org>; Mon, 25 Aug 2025 21:46:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F40ECA0FE7
+	for <kvm-riscv@archiver.kernel.org>; Mon, 25 Aug 2025 22:24:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
 	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=wr1jw1ZNdylQIoRJVW3hXkCTxNv098/7FgDbnVbtcnU=; b=QXejs6HZMyVZNK
-	988Zb+7Sg8Fdgm6/bbMyBkFJMEw2oATNB8vVpeQdkwZHgHbsaTfhgREez9UZLWH/2GHuOCErQ5X/D
-	9gAVSpuh2w3hmg2uatcCTRsyuCERnggPf0QBeI4ZA/J0SJmdpriBhv0AVh3qlwwWyOc0N4Eg3Y8TQ
-	nrtPwFIIR4gXnBMbgOTkl6wGkiLgAzWvmxLubCjDy4hMR8EbQA67mPj7ICvfrHCXqhRH7B2ynNddF
-	hw72K3baT15Gj6iivEALvHK6vyAmnfR+/hznTfMxSYhEZD9jhEJYSIMTABb2kCyA2p4y8maCw4kBA
-	rieRKfMCc6pw4FVjGgMg==;
+	List-Owner; bh=0LPiGBawwc8f0v6yK9MOVwg2pPnAo9+4zM0ThXRLzz8=; b=3SInHV7JRvCzkF
+	whjqCwxT+VBUuD9UqiqwlomAr2Q4cHjtdGYDsr6UNLF3VRovcz+eV1TC8lVfcwWVb0+Lb9/Wj90pN
+	BUxFCM5sZLtkO10SYGkvHoRhqvG4ZqWMRDUSuPakpce93p7REArWiVfpAiLpJ37o6Lv2QhfR5tStr
+	3iA+GLP7zOMHoWdU0L+rVgZV/nFjtjgQHLMl+/vwY5hYB/bwZBWZDbr0IopjXyFY1X1BJi+7iaaJg
+	TQ7CKqY0n42p91wAG26dB++spy6OuNrKgWlYwipCsf+gbhRGP3rKFR2CPphtj7c59Z2IMmsFWhcoM
+	CuW+uuU5COpW2QL16+tg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uqf0y-00000009ne5-11Zx;
-	Mon, 25 Aug 2025 21:46:08 +0000
-Received: from tor.source.kernel.org ([2600:3c04:e001:324:0:1991:8:25])
+	id 1uqfcQ-00000009wiT-1t7Q;
+	Mon, 25 Aug 2025 22:24:50 +0000
+Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uqf0x-00000009ndJ-00d9;
-	Mon, 25 Aug 2025 21:46:07 +0000
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 04A06601E5;
-	Mon, 25 Aug 2025 21:46:06 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 95AD6C4CEED;
-	Mon, 25 Aug 2025 21:45:53 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1756158354;
-	bh=z2K4pTnpiDqLqYIH8QVc9PQKE3DH+YA71ZyqVbqxW6o=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=WehF5ftNNXRo0ktcAvTwwGNFGV/EAJ74RPmJHCc1/Z17l1QEglTKoK3ibLL8gnc4t
-	 NlKz6k7fz2lmrzWRP6K+pj3xu5efQX0yAcStIUphpdlkE0hXvX1O/hxV14uaFfM9Il
-	 teNGWS4vL/IPlA1GKik4UxLjNusOjbU5D/OewsXrWcI/Ynet9r+J6j0h0Qw9udbcdx
-	 Jt5qZw5UoaBh5E3LiK4rJTYYyfwi5l7H9dDZXLKpcynQANDbCwVWm46jM36cUflkSE
-	 TgteF7/ksdzao8dEBvyhS4bxR3OBEL/v0WKy2lffmwCnCK3v1xmgFX8nRRpGli6jrU
-	 9ptYFqpFDYbDA==
-Date: Mon, 25 Aug 2025 21:45:52 +0000
-From: Wei Liu <wei.liu@kernel.org>
+	id 1uqfb6-00000009wOZ-0sZF;
+	Mon, 25 Aug 2025 22:23:28 +0000
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=VQ6ZxU9qPw4vkvXRX5Uv3LAGHE1s7LId4Lk2ftW+5fQ=; b=Dl7NKkPggz+LyLx3g8yECmKY46
+	frByDzPrm1d7k7r6fUYBr7sJ1/gtI3/xuCZztOdzBTfXHZW5dLTfoeezOIGEPointBsAmd03xk48d
+	WlEM/iwO4pRpd/cRbRKw3fHveNo5GXY5PxTUSJ8+GZzhKGoxCHx2gpOCpjkylBAeqT/2dyKgrAimm
+	+dCTSl+QYVkt2M0A4NwjYvWM4SBpo+zMRuLXJJRssy7tLZ5SJF8r5hIe+zRkvyqcggHxDm1LnCjKo
+	AkoKfXPmuduAgVkKtztmrNNPM5r0DScPdhFhgKU4NzqG9y6QY6PhELbLGykH30oOt1dX2dZTR1OUR
+	AnNYWLvA==;
+Received: from 77-249-17-252.cable.dynamic.v4.ziggo.nl ([77.249.17.252] helo=noisy.programming.kicks-ass.net)
+	by desiato.infradead.org with esmtpsa (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1uqfay-000000024iA-1xRz;
+	Mon, 25 Aug 2025 22:23:21 +0000
+Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
+	id 0C1983002C5; Tue, 26 Aug 2025 00:23:19 +0200 (CEST)
+Date: Tue, 26 Aug 2025 00:23:19 +0200
+From: Peter Zijlstra <peterz@infradead.org>
 To: Sean Christopherson <seanjc@google.com>
 Cc: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>,
 	Catalin Marinas <catalin.marinas@arm.com>,
@@ -60,7 +61,6 @@ Cc: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>,
 	"K. Y. Srinivasan" <kys@microsoft.com>,
 	Haiyang Zhang <haiyangz@microsoft.com>,
 	Wei Liu <wei.liu@kernel.org>, Dexuan Cui <decui@microsoft.com>,
-	Peter Zijlstra <peterz@infradead.org>,
 	Andy Lutomirski <luto@kernel.org>,
 	"Paul E. McKenney" <paulmck@kernel.org>,
 	Frederic Weisbecker <frederic@kernel.org>,
@@ -72,11 +72,10 @@ Cc: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>,
 	linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev,
 	kvm@vger.kernel.org, loongarch@lists.linux.dev,
 	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
-	linux-hyperv@vger.kernel.org, rcu@vger.kernel.org,
-	mrathor@linux.microsoft.com, nunodasneves@linux.microsoft.com
+	linux-hyperv@vger.kernel.org, rcu@vger.kernel.org
 Subject: Re: [PATCH 0/5] Drivers: hv: Fix NEED_RESCHED_LAZY and use common
  APIs
-Message-ID: <aKzZkItq-8_OmxJ0@liuwe-devbox-ubuntu-v2.tail21d00.ts.net>
+Message-ID: <20250825222319.GO3419281@noisy.programming.kicks-ass.net>
 References: <20250825200622.3759571-1-seanjc@google.com>
 MIME-Version: 1.0
 Content-Disposition: inline
@@ -103,57 +102,17 @@ On Mon, Aug 25, 2025 at 01:06:17PM -0700, Sean Christopherson wrote:
 > more generic "virt" APIs (which ideally would have been done when MSHV root
 > support was added).
 > 
-
-It is nice to have a common infrastructure.
-
-Cc Mukesh and Nuno for review and test.
-
-Thanks,
-Wei
-
 > Assuming all is well, maybe this could go through the tip tree?
 > 
 > The Hyper-V stuff and non-x86 architectures are compile-tested only.
-> 
-> Sean Christopherson (5):
->   Drivers: hv: Move TIF pre-guest work handling fully into mshv_common.c
->   Drivers: hv: Handle NEED_RESCHED_LAZY before transferring to guest
->   entry/kvm: KVM: Move KVM details related to signal/-EINTR into KVM
->     proper
->   entry: Rename "kvm" entry code assets to "virt" to genericize APIs
->   Drivers: hv: Use common "entry virt" APIs to do work before running
->     guest
-> 
->  MAINTAINERS                                 |  2 +-
->  arch/arm64/kvm/Kconfig                      |  2 +-
->  arch/arm64/kvm/arm.c                        |  3 +-
->  arch/loongarch/kvm/Kconfig                  |  2 +-
->  arch/loongarch/kvm/vcpu.c                   |  3 +-
->  arch/riscv/kvm/Kconfig                      |  2 +-
->  arch/riscv/kvm/vcpu.c                       |  3 +-
->  arch/x86/kvm/Kconfig                        |  2 +-
->  arch/x86/kvm/vmx/vmx.c                      |  1 -
->  arch/x86/kvm/x86.c                          |  3 +-
->  drivers/hv/Kconfig                          |  1 +
->  drivers/hv/mshv.h                           |  2 --
->  drivers/hv/mshv_common.c                    | 22 ---------------
->  drivers/hv/mshv_root_main.c                 | 31 ++++-----------------
->  include/linux/{entry-kvm.h => entry-virt.h} | 19 +++++--------
->  include/linux/kvm_host.h                    | 17 +++++++++--
->  include/linux/rcupdate.h                    |  2 +-
->  kernel/entry/Makefile                       |  2 +-
->  kernel/entry/{kvm.c => virt.c}              | 15 ++++------
->  kernel/rcu/tree.c                           |  6 ++--
->  virt/kvm/Kconfig                            |  2 +-
->  21 files changed, 49 insertions(+), 93 deletions(-)
->  rename include/linux/{entry-kvm.h => entry-virt.h} (83%)
->  rename kernel/entry/{kvm.c => virt.c} (66%)
-> 
-> 
-> base-commit: 1b237f190eb3d36f52dffe07a40b5eb210280e00
-> -- 
-> 2.51.0.261.g7ce5a0a67e-goog
-> 
+
+I suspect there's more of this wreckage in the new VTL driver that
+they just put in:
+
+  https://lore.kernel.org/all/20250729051436.190703-3-namjain@linux.microsoft.com/
+
+although ideally they rip that thing out. I don't know how that code can
+ever be correct.
 
 -- 
 kvm-riscv mailing list
