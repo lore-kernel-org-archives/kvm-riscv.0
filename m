@@ -4,92 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 66D34C8303F
-	for <kvm-riscv@archiver.kernel.org>; Tue, 26 Aug 2025 00:27:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CB21DCA0FF2
+	for <kvm-riscv@archiver.kernel.org>; Tue, 26 Aug 2025 16:30:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID:
-	References:Mime-Version:In-Reply-To:Date:Reply-To:Content-ID:
-	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
-	:Resent-Message-ID:List-Owner;
-	bh=kzd+IWu4miHr9qXbK92JAK2w3KhQUyOxbITQL0gzAIU=; b=prjRYIetn8Ehqh6VUxUnL6adnw
-	uxd7T9egW/yK6yoV7vwH992/Xn7o0vGf13LWIx6mZtZ/VnbNpTWxtvRUidWirloD6C8XzHjSs3QV0
-	kKHNgsPjFxvPh7rEpQQbURQDpWHf2+jNZ+NXQ6bv5guq/OH6IXJVRJtlG2cdh5gIuqqgM+WD0sQFr
-	IgdESOHSxKcaypkdFelLjukns6s/U8P/HaSLSrlfacpvN6jtsed6QZD+rnJUz6JpQPLC1nxy1o8a3
-	eXW/5cDIuaacTXhDCdf8PNCkfI6sBw5JehHSeYSJ1Ax/CoqpkzaCTRVPa7PmGvgwdvL0kxjctA8UA
-	dEosZquw==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-Id:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=gm54Z8+KyEZZaqvrdOtn/THngBe7MqdyNvEh9ryFZw8=; b=vMdxagBDUhDz2D
+	Qd3lxB0xKNwZRo/GeASvf8lTZ35QW0476makhNvQFqWQhBxS+SB4q3EgAuoZf1dFvq7MWsHoNBFuP
+	Z6OqORpta8psf57K8JxM5L47D0X46Gq0sQfm22eTP6Txu+4tT22YoGzD45goziZwoN6HEMoqlWoYD
+	UViXF6sxrsf4vE/fyPZv26ILQe9HqtHoOfpAROIXBDdtnNrsGejCmjJThYQKIHOOgmtGAd1TQw71H
+	sNk+LWePP/LZmAEZ4PHeJ+sxvatKwlh+TIyta5ju5lclmcC2vvb5NjcKyc2qyvdZbutn0CkGiEm/1
+	Uxhp6TfgNyVShFCxerEg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uqhWz-0000000ACVz-38CF;
-	Tue, 26 Aug 2025 00:27:21 +0000
-Received: from mail-pg1-x549.google.com ([2607:f8b0:4864:20::549])
+	id 1uqwYy-0000000Cdz4-2UsZ;
+	Tue, 26 Aug 2025 16:30:24 +0000
+Received: from smtp81.cstnet.cn ([159.226.251.81] helo=cstnet.cn)
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uqhWx-0000000ACV2-1x87
-	for kvm-riscv@lists.infradead.org;
-	Tue, 26 Aug 2025 00:27:20 +0000
-Received: by mail-pg1-x549.google.com with SMTP id 41be03b00d2f7-b49da0156bdso3036167a12.1
-        for <kvm-riscv@lists.infradead.org>; Mon, 25 Aug 2025 17:27:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1756168038; x=1756772838; darn=lists.infradead.org;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=U4ctZNwYJMz9+Hk7ge9l8ZiYDw45Y30bqY3Iaj5/gqE=;
-        b=2zg5qTi86OMXtxUePXkzOJeDylIRi+CibX6YG/2IEujUFFX03j64NtX18W34AqrvDR
-         OX7q2+vEpAsQKSw4xNZnZHCuJ+B478d5L+tCdcxBumYjkrJQvDMiuW7PnaxQhCUP7boI
-         ZrPnnvQyqO1NjSO5mXwpFU9U75GIyA00fDGe/jHBM7oBNCPQyTNsbBlF6tI6+rFSqL8N
-         lOQr3H5QlNC9GL+n/MT+62VBIJ9njWfn4NMofZImwUMdZ/B0+SMict7n7T4yAo6F2iAr
-         QUsOm6tugl+CO7IdIzdC69oKS++NEpTzr8Bmo3jPzzLbow4qy2I9FSuUQJka9s0kEgis
-         KgiA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1756168038; x=1756772838;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=U4ctZNwYJMz9+Hk7ge9l8ZiYDw45Y30bqY3Iaj5/gqE=;
-        b=iWKP9Q0ielq5/IlAAxWX81MTgiHHH9pvMbPAbXEvv9bYsOdryCblwrPPQjIIZBh/Nb
-         kczKxHy1AQrSijwNZ0MpS1az9wjGqbscULXUASPtI+7XJcF3Bj57XaVZ0cC2JeB8IU2W
-         WmU46fiCLr/7q4OPfAX/h67c3jymoNYKhlMfPzp4+NS4I4XVkcHkjiu48HLjEymOIsKE
-         ziTlsfwt/TVTGaqjSR79QVBaQqvCHX66CgziFCWIcAgwcmYsgUqijexJbWmjdIGjGgZj
-         5oWbsaUtbVDw8eHng4RqwpVtsJuTE9iZB+UY7jimcTBzf63W9YxfHKBUgggQ9pA/tQ1R
-         8qDQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVabN2xb2xP7L8NKJ4tEmbIqPKct9U0IZHKZz06qqBbP9UPhZVLppkaUy/gRos+N1+2Fm62XldFHjc=@lists.infradead.org
-X-Gm-Message-State: AOJu0YyMgXbF6kDuLdEHlk9hPBijztpnJuw2w1Xf5CWctOsly1J+29h8
-	DSnicdPGVnf0OB9HZCUs1kYDnKXSo/8L9kmHScDW950qSy3QFs8qYoyvc7gXnGf3+iXutdRwJQz
-	b74bZlA==
-X-Google-Smtp-Source: AGHT+IFw5Mjf6HTcAUWU+u7CL/B6QAA0945o29LTS2VrhL4i1mL+9cXlmfjB4AEyc0iYoyyJlQoJr1vqexM=
-X-Received: from pjbsp15.prod.google.com ([2002:a17:90b:52cf:b0:30a:7da4:f075])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a20:a105:b0:230:8b26:9d47
- with SMTP id adf61e73a8af0-24340ab318emr21164734637.10.1756168038330; Mon, 25
- Aug 2025 17:27:18 -0700 (PDT)
-Date: Mon, 25 Aug 2025 17:27:16 -0700
-In-Reply-To: <3188ca61-2591-4576-9777-1671689b7235@linux.microsoft.com>
-Mime-Version: 1.0
-References: <20250825200622.3759571-1-seanjc@google.com> <3188ca61-2591-4576-9777-1671689b7235@linux.microsoft.com>
-Message-ID: <aKz_ZMvvF0e9nwSn@google.com>
-Subject: Re: [PATCH 0/5] Drivers: hv: Fix NEED_RESCHED_LAZY and use common APIs
-From: Sean Christopherson <seanjc@google.com>
-To: Nuno Das Neves <nunodasneves@linux.microsoft.com>
-Cc: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>, 
-	Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, 
-	Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>, 
-	Huacai Chen <chenhuacai@kernel.org>, Anup Patel <anup@brainfault.org>, 
-	Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt <palmer@dabbelt.com>, 
-	Albert Ou <aou@eecs.berkeley.edu>, Paolo Bonzini <pbonzini@redhat.com>, 
-	Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
-	"K. Y. Srinivasan" <kys@microsoft.com>, Haiyang Zhang <haiyangz@microsoft.com>, Wei Liu <wei.liu@kernel.org>, 
-	Dexuan Cui <decui@microsoft.com>, Peter Zijlstra <peterz@infradead.org>, 
-	Andy Lutomirski <luto@kernel.org>, "Paul E. McKenney" <paulmck@kernel.org>, 
-	Frederic Weisbecker <frederic@kernel.org>, Neeraj Upadhyay <neeraj.upadhyay@kernel.org>, 
-	Joel Fernandes <joelagnelf@nvidia.com>, Josh Triplett <josh@joshtriplett.org>, 
-	Boqun Feng <boqun.feng@gmail.com>, Uladzislau Rezki <urezki@gmail.com>, linux-kernel@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, 
-	kvm@vger.kernel.org, loongarch@lists.linux.dev, kvm-riscv@lists.infradead.org, 
-	linux-riscv@lists.infradead.org, linux-hyperv@vger.kernel.org, 
-	rcu@vger.kernel.org
+	id 1uqwYu-0000000CdyX-2hZ5;
+	Tue, 26 Aug 2025 16:30:23 +0000
+Received: from ROG.lan (unknown [118.251.176.199])
+	by APP-03 (Coremail) with SMTP id rQCowAD3jX8L4a1oBKJmDw--.6398S2;
+	Wed, 27 Aug 2025 00:30:05 +0800 (CST)
+From: Pincheng Wang <pincheng.plct@isrc.iscas.ac.cn>
+To: paul.walmsley@sifive.com,
+	palmer@dabbelt.com,
+	aou@eecs.berkeley.edu,
+	alex@ghiti.fr,
+	robh@kernel.org,
+	krzk+dt@kernel.org,
+	conor+dt@kernel.org,
+	anup@brainfault.org,
+	pbonzini@redhat.com,
+	shuah@kernel.org,
+	cyan.yang@sifive.com,
+	cleger@rivosinc.com,
+	charlie@rivosinc.com,
+	cuiyunhui@bytedance.com,
+	samuel.holland@sifive.com,
+	namcao@linutronix.de,
+	jesse@rivosinc.com,
+	inochiama@gmail.com,
+	yongxuan.wang@sifive.com,
+	ajones@ventanamicro.com,
+	parri.andrea@gmail.com,
+	mikisabate@gmail.com,
+	yikming2222@gmail.com,
+	thomas.weissschuh@linutronix.de
+Cc: linux-riscv@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	linux-doc@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	kvm@vger.kernel.org,
+	kvm-riscv@lists.infradead.org,
+	linux-kselftest@vger.kernel.org,
+	pincheng.plct@isrc.iscas.ac.cn
+Subject: [PATCH v2 0/5] Add Zilsd/Zclsd support in hwprobe and KVM
+Date: Wed, 27 Aug 2025 00:29:34 +0800
+Message-Id: <20250826162939.1494021-1-pincheng.plct@isrc.iscas.ac.cn>
+X-Mailer: git-send-email 2.39.5
+MIME-Version: 1.0
+X-CM-TRANSID: rQCowAD3jX8L4a1oBKJmDw--.6398S2
+X-Coremail-Antispam: 1UD129KBjvJXoW7tFyftr1UXr48Cr1DJrW5Jrb_yoW8KrW5pF
+	s5GwnI9r1kJw13CF1fAr48ur1rKan5uws3tF9xtw18WayayFyrZr10k3ZxZF1kAFZ29FyD
+	Z3WrWryI9wnrAaDanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUU9Y14x267AKxVWrJVCq3wAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+	rVWUuVWrJwAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
+	1l84ACjcxK6xIIjxv20xvE14v26r1j6r1xM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4j
+	6F4UM28EF7xvwVC2z280aVAFwI0_Jr0_Gr1l84ACjcxK6I8E87Iv6xkF7I0E14v26r4j6r
+	4UJwAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0
+	I7IYx2IY67AKxVWUJVWUGwAv7VC2z280aVAFwI0_Jr0_Gr1lOx8S6xCaFVCjc4AY6r1j6r
+	4UM4x0Y48IcxkI7VAKI48JM4x0x7Aq67IIx4CEVc8vx2IErcIFxwACI402YVCY1x02628v
+	n2kIc2xKxwCY1x0262kKe7AKxVW8ZVWrXwCF04k20xvY0x0EwIxGrwCFx2IqxVCFs4IE7x
+	kEbVWUJVW8JwC20s026c02F40E14v26r1j6r18MI8I3I0E7480Y4vE14v26r106r1rMI8E
+	67AF67kF1VAFwI0_Wrv_Gr1UMIIYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF
+	4lIxAIcVC0I7IYx2IY6xkF7I0E14v26r4j6F4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWU
+	CwCI42IY6I8E87Iv67AKxVWUJVW8JwCI42IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIYCT
+	nIWIevJa73UjIFyTuYvjTRM6wCDUUUU
+X-Originating-IP: [118.251.176.199]
+X-CM-SenderInfo: pslquxhhqjh1xofwqxxvufhxpvfd2hldfou0/
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250825_172719_510299_32DB1DA5 
-X-CRM114-Status: GOOD (  21.48  )
+X-CRM114-CacheID: sfid-20250826_093021_047166_FA0E7115 
+X-CRM114-Status: UNSURE (   9.59  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -101,60 +101,53 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Mon, Aug 25, 2025, Nuno Das Neves wrote:
-> On 8/25/2025 1:06 PM, Sean Christopherson wrote:
-> > Fix a bug where MSHV root partitions don't honor NEED_RESCHED_LAZY, and then
-> > deduplicate the TIF related MSHV code by turning the "kvm" entry APIs into
-> > more generic "virt" APIs (which ideally would have been done when MSHV root
-> > support was added).
-> > 
-> > Assuming all is well, maybe this could go through the tip tree?
-> > 
-> > The Hyper-V stuff and non-x86 architectures are compile-tested only.
-> > 
-> 
-> Thanks Sean, I can test the root partition changes.
-> 
-> A similar change will be needed in mshv_vtl_main.c since it also calls
-> mshv_do_pre_guest_mode_work() (hence the "common" in mshv_common.c).
-
-Oof, more dependencies.  I suppose the easiest thing would be to send a series
-against
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/hyperv/linux.git queue
-
-and then route everything through there?
-
-Alternatively, frontload the MSHV fixes (which I'll do regardless) and take those
-through hyperv and the rest through the tip tree?  That seems like an absurd
-amount of juggling though, especially if we want to get the cleanups into 6.18.
-And if none of these lands, it's MSHV that'll suffer the most, so betting it all
-on the hyperv tree doesn't seem terrible.
-
-> Also, is it possible to make all the mshv driver changes in a single patch?
-
-It's certainly possible, but I'd prefer not do to that.
-
-> It seems like it would be cleaner than refactoring it in patches 1 & 2 and
-> then deleting all the refactored code in patch 5.
-
-Only if you don't care about backporting fixes, bisection, or maintaining code.
-
-E.g. if checking NEED_RESCHED_LAZY somehow causes issues, it would be really nice
-for that to bisect to exactly that patch, not a patch that also switches to a
-completely different set of APIs.
-
-And if someone is wants the fixes in a pre-6.18 kernel, they don't need to
-backport all of the KVM and entry code changes just to get the fix.
-
-As for the maintenance headache, see above.
-
--- 
-kvm-riscv mailing list
-kvm-riscv@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/kvm-riscv
+SGkgYWxsLAoKVGhpcyBpcyB2MiBvZiBhIHNob3J0IHNlcmllcyB0aGF0IGFkZHMga2VybmVsIHN1
+cHBvcnQgZm9yIHRoZSByYXRpZmllZApaaWxzZCAoTG9hZC9TdG9yZSBwYWlyKSBhbmQgWmNsc2Qg
+KENvbXByZXNzZWQgTG9hZC9TdG9yZSBwYWlyKSBSSVNDLVYKSVNBIGV4dGVuc2lvbnMuIFRoZSBz
+ZXJpZXMgZW5hYmxlcyBrZXJuZWwtc2lkZSBleHBvc3VyZSBzbyB1c2VyLXNwYWNlCihmb3IgZXhh
+bXBsZSBnbGliYykgY2FuIGRldGVjdCBhbmQgdXNlIHRoZXNlIGV4dGVuc2lvbnMgdmlhIGh3cHJv
+YmUgYW5kCnJ1bnRpbWUgY2hlY2tzLgoKUGF0Y2hlczoKLSBQYXRjaCAx77yaQWRkIGRldmljZSB0
+cmVlIGJpbmRpbmdzIGRvY3VtZW50YXRpb24gZm9yIFppbHNkIGFuZCBaY2xzZC4KLSBQYXRjaCAy
+OiBFeHRlbmQgUklTQy1WIElTQSBleHRlbnNpb24gc3RyaW5nIHBhcnNpbmcgdG8gcmVjb2duaXpl
+IHRoZW0uCi0gUGF0Y2ggMzogRXhwb3J0IFppbHNkIGFuZCBaY2xzZCB2aWEgcmlzY3ZfaHdwcm9i
+ZS4KLSBQYXRjaCA0OiBBbGxvdyBLVk0gZ3Vlc3RzIHRvIHVzZSB0aGVtLgotIFBhdGNoIDU6IEFk
+ZCBLVk0gc2VsZnRlc3RzLgoKQ2hhbmdlcyBpbiB2MjoKLSBEZXZpY2UtdHJlZSBzY2hlbWE6IHNp
+bXBsaWZpZWQgdGhlIHJ2NjQgdmFsaWRhdGlvbiBmb3IgWmlsc2QgYnkKICByZW1vdmluZyBhIHJl
+ZHVuZGFudCBgY29udGFpczogY29uc3Q6IHppbHNkYCBpbiB0aGUgYGlmYCBjbGF1c2U7IHRoZQog
+IHNpbXBsZXIgYGlmIChyaXNjdiwgaXNhLWJhc2UgY29udGFpbnMgcnY2NGkpIHRoZW4gKHJpc2N2
+LAogIGlzYS1leHRlbnNpb24gbm90IGNvbnRhaW5zIHppbHNkKWAgZm9ybSBpcyB1c2VkIGluc3Rl
+YWQuIEJlaGF2aW91ciBpcwogIHVuY2hhbmdlZCwgYW5kIHRoZSBsb2dpYyBpcyBjbGVhbmVyLgot
+IERldmljZS10cmVlIHNjaGVtYTogY29ycmVjdGVkIFpjbHNkIGRlcGVuZGVuY3kgdG8gcmVxdWly
+ZSBib3RoIFppbHNkCiAgYW5kIFpjYSAocHJldmlvdXMgYGFueU9mYCB3YXMgaW5jb3JyZWN0OyBu
+b3cgYm90aCBhcmUgZW5mb3JjZWQpLgotIENvbW1pdCBtZXNzYWdlIHR5cG8gZml4ZWQ6ICJkdC1i
+aWRpbmdzIiAtPiAiZHQtYmluZGluZ3MiIGluIHRoZSBQYXRjaAogIDEgY29tbWl0IHN1YmplY3Qu
+CgpUaGUgdjIgY2hhbmdlcyBhcmUgZG9jdW1lbnRhdGlvbi9zY2hlbWEgY29ycmVjdGlvbnMgaW4g
+ZXh0ZW5zaW9ucy55YW1sLgpObyBmdW5jdGlvbmFsIGNoYW5nZXMgd2VyZSBtYWRlIHRvIElTQSBw
+YXJzaW5nLCBod3Byb2JlIHN5c2NhbGwsIEtWTQpndWVzdCBzdXBwb3J0IG9yIHRoZSBzZWxmdGVz
+dHMgYmV5b25kIGVuc3VyaW5nIHRoZSBiaW5kaW5nIGNvcnJlY3RseQpkb2N1bWVudHMgYW5kIHZh
+bGlkYXRlcyB0aGUgZXh0ZW5zaW9uIHJlbGF0aW9uc2hpcHMuCgpQbGVhc2UgcmV2aWV3IHYyIGFu
+ZCBhZHZpc2UgaWYgZnV0aGVyIGNoYW5nZXMgYXJlIG5lZWRlZC4KClRoYW5rcywKUGluY2hlbmcg
+V2FuZyAKClBpbmNoZW5nIFdhbmcgKDUpOgogIGR0LWJpbmRpbmdzOiByaXNjdjogYWRkIFppbHNk
+IGFuZCBaY2xzZCBleHRlbnNpb24gZGVzY3JpcHRpb25zCiAgcmlzY3Y6IGFkZCBJU0EgZXh0ZW5z
+aW9uIHBhcnNpbmcgZm9yIFppbHNkIGFuZCBaY2xzZAogIHJpc2N2OiBod3Byb2JlOiBleHBvcnQg
+Wmlsc2QgYW5kIFpjbHNkIElTQSBleHRlbnNpb25zCiAgcmlzY3Y6IEtWTTogYWxsb3cgWmlsc2Qg
+YW5kIFpjbHNkIGV4dGVuc2lvbnMgZm9yIEd1ZXN0L1ZNCiAgS1ZNOiByaXNjdjogc2VsZnRlc3Rz
+OiBhZGQgWmlsc2QgYW5kIFpjbHNkIGV4dGVuc2lvbiB0byBnZXQtcmVnLWxpc3QKICAgIHRlc3QK
+CiBEb2N1bWVudGF0aW9uL2FyY2gvcmlzY3YvaHdwcm9iZS5yc3QgICAgICAgICAgfCAgOCArKysr
+KwogLi4uL2RldmljZXRyZWUvYmluZGluZ3MvcmlzY3YvZXh0ZW5zaW9ucy55YW1sIHwgMzYgKysr
+KysrKysrKysrKysrKysrKwogYXJjaC9yaXNjdi9pbmNsdWRlL2FzbS9od2NhcC5oICAgICAgICAg
+ICAgICAgIHwgIDIgKysKIGFyY2gvcmlzY3YvaW5jbHVkZS91YXBpL2FzbS9od3Byb2JlLmggICAg
+ICAgICB8ICAyICsrCiBhcmNoL3Jpc2N2L2luY2x1ZGUvdWFwaS9hc20va3ZtLmggICAgICAgICAg
+ICAgfCAgMiArKwogYXJjaC9yaXNjdi9rZXJuZWwvY3B1ZmVhdHVyZS5jICAgICAgICAgICAgICAg
+IHwgMjQgKysrKysrKysrKysrKwogYXJjaC9yaXNjdi9rZXJuZWwvc3lzX2h3cHJvYmUuYyAgICAg
+ICAgICAgICAgIHwgIDIgKysKIGFyY2gvcmlzY3Yva3ZtL3ZjcHVfb25lcmVnLmMgICAgICAgICAg
+ICAgICAgICB8ICAyICsrCiAuLi4vc2VsZnRlc3RzL2t2bS9yaXNjdi9nZXQtcmVnLWxpc3QuYyAg
+ICAgICAgfCAgNiArKysrCiA5IGZpbGVzIGNoYW5nZWQsIDg0IGluc2VydGlvbnMoKykKCi0tIAoy
+LjM5LjUKCgotLSAKa3ZtLXJpc2N2IG1haWxpbmcgbGlzdAprdm0tcmlzY3ZAbGlzdHMuaW5mcmFk
+ZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2t2bS1y
+aXNjdgo=
