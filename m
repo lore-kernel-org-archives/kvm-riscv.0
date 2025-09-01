@@ -4,69 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7F9B1CA0FF0
-	for <kvm-riscv@archiver.kernel.org>; Mon,  1 Sep 2025 08:01:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D40F5CA0FF0
+	for <kvm-riscv@archiver.kernel.org>; Mon,  1 Sep 2025 08:01:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-Id:Date:Subject:Cc
-	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=8WfFC5/4SpkfF3xerT6f9kVgpENCVgBAHSLnjJFtIuY=; b=3e3KLTPYvMUAtd
-	STZxxLTJGcJPWxCoVgoKEcXlhho+TzBJAq1B24JxS+NwziYJPzrw274yQgvsqtwFBG9yxLeZaZtHU
-	2ZQ52tloKLgBPI+3YAFGQpg2R+CqpRGSLc4B1VV9TakneaGWmle2vao6iOwTZVkQZcgF4EIlfZlVv
-	p3+jI6+U2SWv37WnA0noovJEy9YrxkLMenYHCxcRPVnMHJWWix1fmeJzxkJf7CKx8fGD8Yk7mRpzA
-	sFavwgzkuyhYGkwMjFYjR/NPixdWcEbldbLSktjs2Slvz4yIA6E9Upg/XA8hl/nKq1X66XnPFrV8C
-	QLufTERnV9xaR15wfoQA==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=ex7YENyUoQjNN213go9KoUuJdZRZ+lDOs8rzLrq7sIM=; b=1XV1WRriIRGQc9
+	lX4I7RNQ1RAShCsc47ZdLRt872dZYTvp2DoGJlbTdiCU2G7cDDg9woL3G1YnheJWJU2DTZrOAiwnB
+	zW+jX8Jb4CaoTpdW5MTRwk9Et8qQp8amhAz/SuzkT5h2rY251mrzoXyozVuEt9n41PFh+76FO+SWV
+	XRAHOE7/nEptOhj0vhTe4OWLj5aukdehHHRYii3DsquNLXwogWlpGegUuwp1sECEWSqpHXVlbT/38
+	M9H9wOKoQOVlQQ0yTHIU2Pfq/7BjtHZX/7/83nRlDWiuEiv2XDZD5FagdKsN4CCHbvZ2+uXVmO7EN
+	9eVtg7vRIqx52fKVBMYA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uszU0-0000000BVvf-3BcS;
-	Mon, 01 Sep 2025 08:01:44 +0000
-Received: from mail-pl1-x641.google.com ([2607:f8b0:4864:20::641])
+	id 1uszU4-0000000BVxZ-2QlH;
+	Mon, 01 Sep 2025 08:01:48 +0000
+Received: from mail-pl1-x642.google.com ([2607:f8b0:4864:20::642])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1usz58-0000000BSHE-3omO;
-	Mon, 01 Sep 2025 07:36:03 +0000
-Received: by mail-pl1-x641.google.com with SMTP id d9443c01a7336-2445826fd9dso49031965ad.3;
-        Mon, 01 Sep 2025 00:36:01 -0700 (PDT)
+	id 1usz5F-0000000BSHm-0qST;
+	Mon, 01 Sep 2025 07:36:10 +0000
+Received: by mail-pl1-x642.google.com with SMTP id d9443c01a7336-24879ed7c17so30638315ad.1;
+        Mon, 01 Sep 2025 00:36:09 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1756712161; x=1757316961; darn=lists.infradead.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=L0ePC0WzColXkaFbBrk+Z/IecQrL5Wt4AmBIdBx+2Qg=;
-        b=DaiW8EXkyFByZhVcthX1D8Lg2t3Ko8gaBs6Bz7txOLBYdylFqA/W8z+uzjYjzJ4hxH
-         who45lb/EQs84SxWTgDrjle9rcRTx2waw19KDopQmYo4RoN4JSMv5szKewXMcE/9qB7y
-         S9WUUe4WCLKCTfIbqEeXCjIkX6OkAvzQAZm+FpEVI85CXIN212rIFXr2Rk7RAT+H9TfG
-         CuG+cMMglwLmGQ8Bq+5/IiAu8rasTBs4prXUMYipM6CtlwDfEn/vmKFoOStvq67128DU
-         aUwO1FuoM6BA9AoNIdLoVun4d1cGX9orfPcH4RooaoWq19Nq5RznPcB1hpq5tu7mqiSt
-         MzEg==
+        d=gmail.com; s=20230601; t=1756712168; x=1757316968; darn=lists.infradead.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=QkiDk4VN+vEmKndKCn5oB/XjLwcQPTcM/uTsBqiYe+s=;
+        b=ktdeqBJXv+CY0Jou9I0rKAN9MfVC2ajHuk7rsopi8fmmbr0w2RCA69JHmVIKpODjVc
+         ZYcfx4TL7uU+H/CtYAJnfjaDwoz+4S7n/dC4z7F75hyPf+kXzToBJB6SHjiLSD9yN4PX
+         wg9Mn+YAZyL4kUaKQ+NTWom4ss2UJuga5/Ii5MjT+k2ck/yBGyY4UVPKO/YQKwM4Vf//
+         IXOSh2f+0JLfZyfqLw0exN1gHlBJomnK7xMtGEGgmn4yY63GlQvG3I2LgwbxuHo0tY7U
+         rHnLgvdPpnNj6mW0LUK6yMV9d1muwFYjlrIFkLJrpAmgGH1D3by2c4KN1ERnOKZZK1zH
+         QOPg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1756712161; x=1757316961;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=L0ePC0WzColXkaFbBrk+Z/IecQrL5Wt4AmBIdBx+2Qg=;
-        b=HEmJpvj/9gHWMJtm+81qPdyZRPS7sT3B/56ogFnDVJdtAmzVxSdz7fQzgBTkX02qaC
-         X0voTqS3crpUaj3WviBcrh7Z4VlfshSC69M4lbGIspXp1aYDs+happf2BMJqgY6EqwZz
-         TzanOYjKSlIqeBkQ9tsmKdq8NmBeVcgJHSdVvLanF+6T7t5zyFdTAgEEgyn9027GmsqB
-         wMheZ2U5cppgOhNhEwweHgKN9uBByd7RzMgd4EnloLJxcgIU3e5BQhJdXELib6SZJBKd
-         H4A0L1bAQ3v88bsmFiBYChCcm3JliF1I1oBt+lzdbZrUHUimMdSz2Ft6cUSOkJqrH9Ri
-         6n6g==
-X-Forwarded-Encrypted: i=1; AJvYcCXRcSORURwze9k2iepfvO9gctfSSlXr+mUfenouaRQQPNPusW/4JF70S9QpCk/UZX30cN6kYyRTxtw=@lists.infradead.org, AJvYcCXa/ThTms8TCLGbB/7oENSFhHqT7ThHRkV08KBduNQ6jYGIjGwlTAQ5iQZ2xIVbUfb1UliPQD1X+pFxXKQ=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yxfetwf/Yrcvf27jeK+eSpCrLfpPudjRsCME7jTvJChtYeu41/R
-	SYW4nSoWGCVccZxcN0bvUvbemlyx0AsEdD8ROvR4k/9MZjA0RU78GswA
-X-Gm-Gg: ASbGncvv8PcIeq/gkfejXLfOt9b1htiOD4pXFwIl5Rjymah1a6rEwlgsaxNteMFqQTH
-	8bSzqL8LknNPgVzGKJSxQImm5trVxxBtfhaOGGNH5KPhQaWJENzBvwfH3B6XahaQSNp6JXm8JNj
-	uDqT9Y4Wo8xDz97KWugzUv56ZOsLXOYlRzAQmmvhoCa2Dn5e7RjXJsB8pikS3pdhLrMNRU/NHij
-	MhW2HyJKhllTUyezqMn+XAOWRDYp05ISGkLKAfeRrSWKv8DlKxqOhVisJySe7udQ3M20lxRzDDt
-	OWy3UtyFFT3QT8dnm6kOKJMxClBUu15VqkoYRbQ2HoygCp72sXuwGlrlpO7rFovIKg6L8cl5AVL
-	95gixH3B31Jg2BL6PVfs9yOalzfZSxQw=
-X-Google-Smtp-Source: AGHT+IHCC7OUu97GWMAOQYi+hndVB3qfPEyGEt/pCflpkaED9w8c03pQ0ntMhKZbeOTUw6gDQtgfvw==
-X-Received: by 2002:a17:903:2c06:b0:246:cfc5:1b61 with SMTP id d9443c01a7336-24944b15b97mr87894275ad.55.1756712161144;
-        Mon, 01 Sep 2025 00:36:01 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1756712168; x=1757316968;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=QkiDk4VN+vEmKndKCn5oB/XjLwcQPTcM/uTsBqiYe+s=;
+        b=dlk9NeOtGlsj9xSMDI0+JIiyqe2piQiF1W+wXh/2hByRwr1+rUgykisjxzN/H1bY4R
+         JrAyPtdOUlZrTT5qvYJQLTr+4b7PtmRjMsyW8l5Due2UPybfnFaQapIFpXauU7rADTba
+         a3JL/XBb/ZpDQ+HJ/YBVECB/BytTBqHudpGSNef+O0bdZIpBr6E8KF6ik8HMns2RaBKt
+         B4BDYrI/1J+jSgTlTZYkGq/nBAKWMdg7gS3T67SLBOLjVNwniRPqp/dyUVAMapiYM9CH
+         PhCmzZluu4jC1c8crx5H0XmVjxWi7yiJw6SyHqP4UPqI/1fHIx5tSuKFAJhpb2iAsN49
+         VdAQ==
+X-Forwarded-Encrypted: i=1; AJvYcCU1Agf6E3eEXv+rKBAiwkahy6/cTA7hZEnk1Rua4HK97Qlw0IzJjv663tCCHmcFD7+k5RUBlRlUrYU=@lists.infradead.org, AJvYcCXsbpBbzcXVF0AISPs5c+/q0srFpJ2irAmnr/5QIX+x6D9RwET5Kqqi4990JXirmVlK2h1paGFgheEA1V8=@lists.infradead.org
+X-Gm-Message-State: AOJu0YxZ5CGck0Y1K5JUR233OOmuXTia3RThngWuwOwRjs8s00UIcSgK
+	VyyYxGLTRiEyCRjFSBc5tTNyyJG+QTs08nHiWrPkhR80nyq8W3MmS5X1
+X-Gm-Gg: ASbGnct00eg34oWino9CHYEKgkxeLntjdZ4TOWV6/2cYkQj6+PNVcO2KQoPzjkVVzou
+	aU6/+ICsplD2IbRsw4tnlmmuXKg1jCO5M6Dh10grkN7pX8JY73JG+hkRp/TRnV4y87WYyI9H635
+	0zxAO3so0rrDpyrmskvKJLWxzOKvkA/eQvLq+V7JeX4V7OYz9u4IQYq7DHhqlYXcvEqg/IwgwLX
+	fUA4hmug9RbOqypjMDVe1vN3oFMEPKYZPRIgKNoUTdJJodvVwqFQMdSOs8kDHjD3o4kh+WS0h+P
+	pR4OXYHEMDj3qgltnWAT0k+FyZt6kcZvEIvx1wJyRkgMsUIBTFthfsFuebplUJrmUPgCdqofgT4
+	e13evEpqMjFKveJ3KOblu
+X-Google-Smtp-Source: AGHT+IE0fxda67lxyd5c0ekaSqZeGDPb708pPB9HUQ+wDEYZYnJ70slNseJr2MZAIOPmzUcG3kkICA==
+X-Received: by 2002:a17:903:2f8a:b0:24a:e25d:c704 with SMTP id d9443c01a7336-24ae25dc9a2mr14677165ad.47.1756712168294;
+        Mon, 01 Sep 2025 00:36:08 -0700 (PDT)
 Received: from days-ASUSLaptop.lan ([2406:8dc0:6008:46::])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-24903737b05sm95867045ad.49.2025.09.01.00.35.55
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-24903737b05sm95867045ad.49.2025.09.01.00.36.01
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 01 Sep 2025 00:36:00 -0700 (PDT)
+        Mon, 01 Sep 2025 00:36:07 -0700 (PDT)
 From: dayss1224@gmail.com
 To: pbonzini@redhat.com,
 	shuah@kernel.org,
@@ -81,15 +82,19 @@ Cc: atish.patra@linux.dev,
 	linux-kernel@vger.kernel.org,
 	kvm-riscv@lists.infradead.org,
 	linux-riscv@lists.infradead.org,
-	Dong Yang <dayss1224@gmail.com>
-Subject: [PATCH v3 0/3] KVM: riscv: selftests: Enable supported test cases
-Date: Mon,  1 Sep 2025 15:35:48 +0800
-Message-Id: <cover.1756710918.git.dayss1224@gmail.com>
+	Quan Zhou <zhouquan@iscas.ac.cn>,
+	Dong Yang <dayss1224@gmail.com>,
+	Andrew Jones <ajones@ventanamicro.com>
+Subject: [PATCH v3 1/3] KVM: riscv: selftests: Use the existing RISCV_FENCE macro in `rseq-riscv.h`
+Date: Mon,  1 Sep 2025 15:35:49 +0800
+Message-Id: <85e5e51757c9289ca463fbc4ba6d22f9c9db791b.1756710918.git.dayss1224@gmail.com>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <cover.1756710918.git.dayss1224@gmail.com>
+References: <cover.1756710918.git.dayss1224@gmail.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250901_003602_948771_1B5CD68C 
-X-CRM114-Status: UNSURE (   9.46  )
+X-CRM114-CacheID: sfid-20250901_003609_241121_D496F7A6 
+X-CRM114-Status: UNSURE (   9.52  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -107,35 +112,39 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-From: Dong Yang <dayss1224@gmail.com>
+From: Quan Zhou <zhouquan@iscas.ac.cn>
 
-Add supported KVM test cases and fix the compilation dependencies.
+To avoid redefinition issues with RISCV_FENCE,
+ directly reference the existing macro in `rseq-riscv.h`.
+
+Signed-off-by: Quan Zhou <zhouquan@iscas.ac.cn>
+Signed-off-by: Dong Yang <dayss1224@gmail.com>
+Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 ---
-Changes in v3:
-- Reorder patches to fix build dependencies
-- Sort common supported test cases alphabetically
-- Move ucall_common.h include from common header to specific source files
+ tools/testing/selftests/rseq/rseq-riscv.h | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-Changes in v2:
-- Delete some repeat KVM test cases on riscv
-- Add missing headers to fix the build for new RISC-V KVM selftests
-
-Dong Yang (1):
-  KVM: riscv: selftests: Add missing headers for new testcases
-
-Quan Zhou (2):
-  KVM: riscv: selftests: Use the existing RISCV_FENCE macro in
-    `rseq-riscv.h`
-  KVM: riscv: selftests: Add common supported test cases
-
- tools/testing/selftests/kvm/Makefile.kvm                    | 6 ++++++
- tools/testing/selftests/kvm/access_tracking_perf_test.c     | 1 +
- tools/testing/selftests/kvm/include/riscv/processor.h       | 1 +
- .../selftests/kvm/memslot_modification_stress_test.c        | 1 +
- tools/testing/selftests/kvm/memslot_perf_test.c             | 1 +
- tools/testing/selftests/rseq/rseq-riscv.h                   | 3 +--
- 6 files changed, 11 insertions(+), 2 deletions(-)
-
+diff --git a/tools/testing/selftests/rseq/rseq-riscv.h b/tools/testing/selftests/rseq/rseq-riscv.h
+index 67d544aaa9a3..06c840e81c8b 100644
+--- a/tools/testing/selftests/rseq/rseq-riscv.h
++++ b/tools/testing/selftests/rseq/rseq-riscv.h
+@@ -8,6 +8,7 @@
+  * exception when executed in all modes.
+  */
+ #include <endian.h>
++#include <asm/fence.h>
+ 
+ #if defined(__BYTE_ORDER) ? (__BYTE_ORDER == __LITTLE_ENDIAN) : defined(__LITTLE_ENDIAN)
+ #define RSEQ_SIG   0xf1401073  /* csrr mhartid, x0 */
+@@ -24,8 +25,6 @@
+ #define REG_L	__REG_SEL("ld ", "lw ")
+ #define REG_S	__REG_SEL("sd ", "sw ")
+ 
+-#define RISCV_FENCE(p, s) \
+-	__asm__ __volatile__ ("fence " #p "," #s : : : "memory")
+ #define rseq_smp_mb()	RISCV_FENCE(rw, rw)
+ #define rseq_smp_rmb()	RISCV_FENCE(r, r)
+ #define rseq_smp_wmb()	RISCV_FENCE(w, w)
 -- 
 2.34.1
 
