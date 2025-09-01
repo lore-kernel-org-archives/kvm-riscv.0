@@ -4,81 +4,93 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E14ACCA0FF0
-	for <kvm-riscv@archiver.kernel.org>; Sat, 30 Aug 2025 00:51:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7F9B1CA0FF0
+	for <kvm-riscv@archiver.kernel.org>; Mon,  1 Sep 2025 08:01:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID:
-	References:Mime-Version:In-Reply-To:Date:Reply-To:Content-ID:
-	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
-	:Resent-Message-ID:List-Owner;
-	bh=vGuIAEkkP8Z8KJ8L5DZXaLKPomZ0N0tG8CUGOJEdEvM=; b=w9gWoFhvlDy32U2F4JUQBNWFBG
-	Hq68QaYM9T8e81tCIneZx6JJN4ImL2E58RtrAsj/Z4hCaVHuabKk3KMTdo/TdgvDrx2QLGEJl08lQ
-	0lXI2TjbhTfvrjp//KO1q3jxc663aqJ5WadLQWfCVAFP0lVHQH1b5NSq60co7YcqSCbOJTBJHvKc7
-	oFB9CteCQTMBNQRr6j8iWAT6FPm1P54CsJhjEinQFh7dnszKlrmgGf5YeatUX6vbczew258XFC6/d
-	sq2pfGs5bxEVQbQAhXi/ttRYdPWV4Ydr+XPHKu3l3XniskK+4IhbFiB+xhu8QXT/OwqSPLWN8UERj
-	DKaSgi/A==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-Id:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=8WfFC5/4SpkfF3xerT6f9kVgpENCVgBAHSLnjJFtIuY=; b=3e3KLTPYvMUAtd
+	STZxxLTJGcJPWxCoVgoKEcXlhho+TzBJAq1B24JxS+NwziYJPzrw274yQgvsqtwFBG9yxLeZaZtHU
+	2ZQ52tloKLgBPI+3YAFGQpg2R+CqpRGSLc4B1VV9TakneaGWmle2vao6iOwTZVkQZcgF4EIlfZlVv
+	p3+jI6+U2SWv37WnA0noovJEy9YrxkLMenYHCxcRPVnMHJWWix1fmeJzxkJf7CKx8fGD8Yk7mRpzA
+	sFavwgzkuyhYGkwMjFYjR/NPixdWcEbldbLSktjs2Slvz4yIA6E9Upg/XA8hl/nKq1X66XnPFrV8C
+	QLufTERnV9xaR15wfoQA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1us9oI-00000007CDf-3osQ;
-	Sat, 30 Aug 2025 00:51:14 +0000
-Received: from mail-pj1-x104a.google.com ([2607:f8b0:4864:20::104a])
+	id 1uszU0-0000000BVvf-3BcS;
+	Mon, 01 Sep 2025 08:01:44 +0000
+Received: from mail-pl1-x641.google.com ([2607:f8b0:4864:20::641])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1us60N-00000006rJh-3rJW
-	for kvm-riscv@lists.infradead.org;
-	Fri, 29 Aug 2025 20:47:29 +0000
-Received: by mail-pj1-x104a.google.com with SMTP id 98e67ed59e1d1-327d1fea06eso1716354a91.1
-        for <kvm-riscv@lists.infradead.org>; Fri, 29 Aug 2025 13:47:27 -0700 (PDT)
+	id 1usz58-0000000BSHE-3omO;
+	Mon, 01 Sep 2025 07:36:03 +0000
+Received: by mail-pl1-x641.google.com with SMTP id d9443c01a7336-2445826fd9dso49031965ad.3;
+        Mon, 01 Sep 2025 00:36:01 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1756500447; x=1757105247; darn=lists.infradead.org;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=AVbLrwfcaMKrZbEzaIUXHMFK+4ezBC1s3sCq6svjQiA=;
-        b=ZQAo+tQwf7ICQLSSaOjLPJr1Tot82AWHpWc8y1ThOXoqmwEdNqXa3T0mcEVcS9SGT3
-         lSZGSwBvpqf3BnBY2k/gFO3Z4OXLXGvbFWTpshSQMitLPoi5+okd734EJ9k28wBq++Rf
-         +OSfT7oQp6LT3PEJfA6I7oLyKIJgeu8LF65STy899FVn7CnEvHWybsyEHPvWQErdriCc
-         rpdAWQM9o1m+o0Cn8BN8SCLjV24V/kkslU1XWizBpYf+6Sc+93q9DITAdgrRHO+9m4Mk
-         yNswyVoz6kIgkrPmc85mv3K6EE3kmXBgDnFRyeTmmyF1pfAuPyGgLgspxxwY6wuAiSGz
-         3IWA==
+        d=gmail.com; s=20230601; t=1756712161; x=1757316961; darn=lists.infradead.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=L0ePC0WzColXkaFbBrk+Z/IecQrL5Wt4AmBIdBx+2Qg=;
+        b=DaiW8EXkyFByZhVcthX1D8Lg2t3Ko8gaBs6Bz7txOLBYdylFqA/W8z+uzjYjzJ4hxH
+         who45lb/EQs84SxWTgDrjle9rcRTx2waw19KDopQmYo4RoN4JSMv5szKewXMcE/9qB7y
+         S9WUUe4WCLKCTfIbqEeXCjIkX6OkAvzQAZm+FpEVI85CXIN212rIFXr2Rk7RAT+H9TfG
+         CuG+cMMglwLmGQ8Bq+5/IiAu8rasTBs4prXUMYipM6CtlwDfEn/vmKFoOStvq67128DU
+         aUwO1FuoM6BA9AoNIdLoVun4d1cGX9orfPcH4RooaoWq19Nq5RznPcB1hpq5tu7mqiSt
+         MzEg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1756500447; x=1757105247;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=AVbLrwfcaMKrZbEzaIUXHMFK+4ezBC1s3sCq6svjQiA=;
-        b=HlFQMk8qDdc/UBpF7yqgiRRCSrNzwBluu4xvpqWoKC+9SuopSLFTkdc+guP8T318qs
-         UWq3Jgbd+rI/iqAox2RFlhipHeSc3SpZ+2wyieLk76I7tkbnmYIGyML/T8uctj+vttVZ
-         KphHZcuXZ1ztWZT6L4RZoQHaePYEwABwAIkdl3rMbdhW1+0GtiD/gPIyFisn/XzWDp/j
-         VWmkQY+5596LFL9ug4bBP8Lzn9DtkKFEORLBsiuLIWWUqGhUtyxM1pjO/tJTuoHlZtJh
-         RyPLmIlWaqWvGjGIPL/0eCtSp236UsUSbyt0iQIVT22Zn6B90/ztoEhE9BFacDKaYivK
-         PohQ==
-X-Forwarded-Encrypted: i=1; AJvYcCV02uqVXMbCX9TLukfaK0QQ1xzfXszursOjCCHQEGiD0MFpAh3yvWc6xAxGAk6cRrMeGhGmzk9iSPk=@lists.infradead.org
-X-Gm-Message-State: AOJu0YxtFOjE3aKBwVQPaly5yE0270BsMu6LQElCrh8r/BCNK9rDaCN3
-	+gjH3zYf/eWr1ZqveHbJTTDeBVqzq2lj9tV1QQ9/G+xGrqTqWe4oWMxsvYNW75+wuT5AGfEBL4f
-	Hi6gwiQ==
-X-Google-Smtp-Source: AGHT+IEEqHXHhC1dOfepFQ4McJBotwArzkUulxIcLhYJ/fKtpfgV5WqeosCA+M558p3CNkr7r/wGr0do/qg=
-X-Received: from pjbli2.prod.google.com ([2002:a17:90b:48c2:b0:31f:2a78:943])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:3889:b0:327:b30d:9b7f
- with SMTP id 98e67ed59e1d1-327b30d9cdbmr12852743a91.12.1756500446915; Fri, 29
- Aug 2025 13:47:26 -0700 (PDT)
-Date: Fri, 29 Aug 2025 13:47:25 -0700
-In-Reply-To: <20250829-pmu_event_info-v5-6-9dca26139a33@rivosinc.com>
-Mime-Version: 1.0
-References: <20250829-pmu_event_info-v5-0-9dca26139a33@rivosinc.com> <20250829-pmu_event_info-v5-6-9dca26139a33@rivosinc.com>
-Message-ID: <aLIR3deQPxVI2VrE@google.com>
-Subject: Re: [PATCH v5 6/9] KVM: Add a helper function to check if a gpa is in
- writable memselot
-From: Sean Christopherson <seanjc@google.com>
-To: Atish Patra <atishp@rivosinc.com>
-Cc: Anup Patel <anup@brainfault.org>, Will Deacon <will@kernel.org>, 
-	Mark Rutland <mark.rutland@arm.com>, Paul Walmsley <paul.walmsley@sifive.com>, 
-	Palmer Dabbelt <palmer@dabbelt.com>, Mayuresh Chitale <mchitale@ventanamicro.com>, 
-	linux-riscv@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
-	linux-kernel@vger.kernel.org, kvm@vger.kernel.org, 
-	kvm-riscv@lists.infradead.org
+        d=1e100.net; s=20230601; t=1756712161; x=1757316961;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=L0ePC0WzColXkaFbBrk+Z/IecQrL5Wt4AmBIdBx+2Qg=;
+        b=HEmJpvj/9gHWMJtm+81qPdyZRPS7sT3B/56ogFnDVJdtAmzVxSdz7fQzgBTkX02qaC
+         X0voTqS3crpUaj3WviBcrh7Z4VlfshSC69M4lbGIspXp1aYDs+happf2BMJqgY6EqwZz
+         TzanOYjKSlIqeBkQ9tsmKdq8NmBeVcgJHSdVvLanF+6T7t5zyFdTAgEEgyn9027GmsqB
+         wMheZ2U5cppgOhNhEwweHgKN9uBByd7RzMgd4EnloLJxcgIU3e5BQhJdXELib6SZJBKd
+         H4A0L1bAQ3v88bsmFiBYChCcm3JliF1I1oBt+lzdbZrUHUimMdSz2Ft6cUSOkJqrH9Ri
+         6n6g==
+X-Forwarded-Encrypted: i=1; AJvYcCXRcSORURwze9k2iepfvO9gctfSSlXr+mUfenouaRQQPNPusW/4JF70S9QpCk/UZX30cN6kYyRTxtw=@lists.infradead.org, AJvYcCXa/ThTms8TCLGbB/7oENSFhHqT7ThHRkV08KBduNQ6jYGIjGwlTAQ5iQZ2xIVbUfb1UliPQD1X+pFxXKQ=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yxfetwf/Yrcvf27jeK+eSpCrLfpPudjRsCME7jTvJChtYeu41/R
+	SYW4nSoWGCVccZxcN0bvUvbemlyx0AsEdD8ROvR4k/9MZjA0RU78GswA
+X-Gm-Gg: ASbGncvv8PcIeq/gkfejXLfOt9b1htiOD4pXFwIl5Rjymah1a6rEwlgsaxNteMFqQTH
+	8bSzqL8LknNPgVzGKJSxQImm5trVxxBtfhaOGGNH5KPhQaWJENzBvwfH3B6XahaQSNp6JXm8JNj
+	uDqT9Y4Wo8xDz97KWugzUv56ZOsLXOYlRzAQmmvhoCa2Dn5e7RjXJsB8pikS3pdhLrMNRU/NHij
+	MhW2HyJKhllTUyezqMn+XAOWRDYp05ISGkLKAfeRrSWKv8DlKxqOhVisJySe7udQ3M20lxRzDDt
+	OWy3UtyFFT3QT8dnm6kOKJMxClBUu15VqkoYRbQ2HoygCp72sXuwGlrlpO7rFovIKg6L8cl5AVL
+	95gixH3B31Jg2BL6PVfs9yOalzfZSxQw=
+X-Google-Smtp-Source: AGHT+IHCC7OUu97GWMAOQYi+hndVB3qfPEyGEt/pCflpkaED9w8c03pQ0ntMhKZbeOTUw6gDQtgfvw==
+X-Received: by 2002:a17:903:2c06:b0:246:cfc5:1b61 with SMTP id d9443c01a7336-24944b15b97mr87894275ad.55.1756712161144;
+        Mon, 01 Sep 2025 00:36:01 -0700 (PDT)
+Received: from days-ASUSLaptop.lan ([2406:8dc0:6008:46::])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-24903737b05sm95867045ad.49.2025.09.01.00.35.55
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 01 Sep 2025 00:36:00 -0700 (PDT)
+From: dayss1224@gmail.com
+To: pbonzini@redhat.com,
+	shuah@kernel.org,
+	anup@brainfault.org
+Cc: atish.patra@linux.dev,
+	paul.walmsley@sifive.com,
+	palmer@dabbelt.com,
+	aou@eecs.berkeley.edu,
+	alex@ghiti.fr,
+	kvm@vger.kernel.org,
+	linux-kselftest@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	kvm-riscv@lists.infradead.org,
+	linux-riscv@lists.infradead.org,
+	Dong Yang <dayss1224@gmail.com>
+Subject: [PATCH v3 0/3] KVM: riscv: selftests: Enable supported test cases
+Date: Mon,  1 Sep 2025 15:35:48 +0800
+Message-Id: <cover.1756710918.git.dayss1224@gmail.com>
+X-Mailer: git-send-email 2.34.1
+MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250829_134727_960082_F8BF749C 
-X-CRM114-Status: GOOD (  22.31  )
+X-CRM114-CacheID: sfid-20250901_003602_948771_1B5CD68C 
+X-CRM114-Status: UNSURE (   9.46  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -95,62 +107,38 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Fri, Aug 29, 2025, Atish Patra wrote:
-> The arch specific code may need to know if a particular gpa is valid and
-> writable for the shared memory between the host and the guest. Currently,
-> there are few places where it is used in RISC-V implementation. Given the
-> nature of the function it may be used for other architectures.
-> Hence, a common helper function is added.
-> 
-> Suggested-by: Sean Christopherson <seanjc@google.com>
-> Signed-off-by: Atish Patra <atishp@rivosinc.com>
-> ---
->  include/linux/kvm_host.h | 8 ++++++++
->  1 file changed, 8 insertions(+)
-> 
-> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-> index 15656b7fba6c..eec5cbbcb4b3 100644
-> --- a/include/linux/kvm_host.h
-> +++ b/include/linux/kvm_host.h
-> @@ -1892,6 +1892,14 @@ static inline bool kvm_is_gpa_in_memslot(struct kvm *kvm, gpa_t gpa)
->  	return !kvm_is_error_hva(hva);
->  }
->  
-> +static inline bool kvm_is_gpa_in_writable_memslot(struct kvm *kvm, gpa_t gpa)
-> +{
-> +	bool writable;
-> +	unsigned long hva = gfn_to_hva_prot(kvm, gpa_to_gfn(gpa), &writable);
-> +
-> +	return !kvm_is_error_hva(hva) && writable;
+From: Dong Yang <dayss1224@gmail.com>
 
-I don't hate this API, but I don't love it either.  Because knowing that the
-_memslot_ is writable doesn't mean all that much.  E.g. in this usage:
+Add supported KVM test cases and fix the compilation dependencies.
+---
+Changes in v3:
+- Reorder patches to fix build dependencies
+- Sort common supported test cases alphabetically
+- Move ucall_common.h include from common header to specific source files
 
-	hva = kvm_vcpu_gfn_to_hva_prot(vcpu, shmem >> PAGE_SHIFT, &writable);
-	if (kvm_is_error_hva(hva) || !writable)
-		return SBI_ERR_INVALID_ADDRESS;
+Changes in v2:
+- Delete some repeat KVM test cases on riscv
+- Add missing headers to fix the build for new RISC-V KVM selftests
 
-	ret = kvm_vcpu_write_guest(vcpu, shmem, &zero_sta, sizeof(zero_sta));
-	if (ret)
-		return SBI_ERR_FAILURE;
+Dong Yang (1):
+  KVM: riscv: selftests: Add missing headers for new testcases
 
-the error code returned to the guest will be different if the memslot is read-only
-versus if the VMA is read-only (or not even mapped!).  Unless every read-only
-memslot is explicitly communicated as such to the guest, I don't see how the guest
-can *know* that a memslot is read-only, so returning INVALID_ADDRESS in that case
-but not when the underlying VMA isn't writable seems odd.
+Quan Zhou (2):
+  KVM: riscv: selftests: Use the existing RISCV_FENCE macro in
+    `rseq-riscv.h`
+  KVM: riscv: selftests: Add common supported test cases
 
-It's also entirely possible the memslot could be replaced with a read-only memslot
-after the check, or vice versa, i.e. become writable after being rejected.  Is it
-*really* a problem to return FAILURE if the guest attempts to setup steal-time in
-a read-only memslot?  I.e. why not do this and call it good?
+ tools/testing/selftests/kvm/Makefile.kvm                    | 6 ++++++
+ tools/testing/selftests/kvm/access_tracking_perf_test.c     | 1 +
+ tools/testing/selftests/kvm/include/riscv/processor.h       | 1 +
+ .../selftests/kvm/memslot_modification_stress_test.c        | 1 +
+ tools/testing/selftests/kvm/memslot_perf_test.c             | 1 +
+ tools/testing/selftests/rseq/rseq-riscv.h                   | 3 +--
+ 6 files changed, 11 insertions(+), 2 deletions(-)
 
-	if (!kvm_is_gpa_in_memslot(vcpu->kvm, shmem >> PAGE_SHIFT))
-		return SBI_ERR_INVALID_ADDRESS;
+-- 
+2.34.1
 
-	ret = kvm_vcpu_write_guest(vcpu, shmem, &zero_sta, sizeof(zero_sta));
-	if (ret)
-		return SBI_ERR_FAILURE;
 
 -- 
 kvm-riscv mailing list
