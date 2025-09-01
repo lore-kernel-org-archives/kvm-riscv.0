@@ -4,70 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 16F22CA0FFD
-	for <kvm-riscv@archiver.kernel.org>; Mon,  1 Sep 2025 08:01:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A50B6CA0FFF
+	for <kvm-riscv@archiver.kernel.org>; Mon,  1 Sep 2025 08:01:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=gACMdKp6V8JHBPFKbon5JX+QfXFxBnDIGB1I7VT2WHk=; b=wvt0aIhS8pQMpa
-	HH2c7/MTLCMRLaYk1XP3Sc2CCcsIEmZSlzAkZI3w6uzmS8ybWIAziuvmOGq7hh9V9/Ah3Ht+zFuGN
-	ice7rR4tvIo/vrjoUpj/euN+IbRba8rz6i5CGDHiHdU7LkjvzwzbaTSmnqGBtai+IcB/wctsbTiLm
-	0iXKZTXcB5ET8brFyjNrMPY2arePFLyaorMYl5zYodYaMoKEkzgnlzMQIJ3EyY9ltKjoAAUxfxINn
-	w+nNa07hLf2MZbQjn0ysbdEeg6EcvpIPnQgjBoDxdxcuVOsXtWibjZaf4zEy/hrKSPD40cXUj3Lsi
-	Fj4a/VTfMRHqjDSh8URw==;
+	List-Owner; bh=tePz3FX0yw2Im8Awp0PZK3wefcDfDzL2i5eIleuM4fw=; b=UXz2/VBBqiU0H1
+	9uaXHIgUiIEavxNB/ztIK07rq+PfDQqAP0MHtbJuka7UD8jB+nwj6YB7LK1SjqIvQ6+Yp7LzoPd68
+	ubAp2hquD2cv10kjfwWQpaT4mRgSkFPHTzcx48AoeGE52yNko309dyZ5suXxoz7QfqPI6ryceJgE4
+	KsJZQOKI3DQLmecafn8n0XrcianG2uMTDRewkO5mX0GFT+RoY3vowKY2ae0ih4zg4+wxlanmoPCZr
+	v2mpHBlrZwbQmYPFBqh0yesr2uDAp3+Bdg05fXznwEV3NV1QuGM+4eDc9RK0tIILKpzfalw2RsnLQ
+	4uC3SBH7/FTgA4gbiOUA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uszU5-0000000BVz1-3UmS;
-	Mon, 01 Sep 2025 08:01:49 +0000
-Received: from mail-pl1-x643.google.com ([2607:f8b0:4864:20::643])
+	id 1uszU7-0000000BW0n-1n94;
+	Mon, 01 Sep 2025 08:01:51 +0000
+Received: from mail-pl1-x641.google.com ([2607:f8b0:4864:20::641])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1usz5L-0000000BSKK-2lkC;
-	Mon, 01 Sep 2025 07:36:16 +0000
-Received: by mail-pl1-x643.google.com with SMTP id d9443c01a7336-249036375a1so26661525ad.2;
-        Mon, 01 Sep 2025 00:36:15 -0700 (PDT)
+	id 1usz5S-0000000BSMI-1M66;
+	Mon, 01 Sep 2025 07:36:23 +0000
+Received: by mail-pl1-x641.google.com with SMTP id d9443c01a7336-24457f581aeso36687675ad.0;
+        Mon, 01 Sep 2025 00:36:22 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1756712175; x=1757316975; darn=lists.infradead.org;
+        d=gmail.com; s=20230601; t=1756712182; x=1757316982; darn=lists.infradead.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=5oeHOkgW1SXEWkLO09M8aNICfxiWEQZMbiFzd9nXhNI=;
-        b=FIw7pgIjYEScCwzl3fRc/WhwMUWw0g/93vBrAOuyyMnBjeOVv8TgwPCLMfYKTatqdb
-         wf6sTsjRgTQGAmgRUPs18WWpwWXvpySdtndcl+u1wrZf/0ZU8GBpV+J38bx3CWdQM4EM
-         tVxTgge5J8/3NloEbDQ5hsUvlU5zOoy9Ws0zBPB6bnnHapPwv7yZGO5DiAmIrzB9Wee1
-         eN1felaaS9/R/GeuxUquSZhfcWICWDlB7Htc2fpAyAmrYLfEBdKA80lhEWPCJVdUjGxh
-         9BC2bwi56EeIYguYfGFMEZyU4SKzcDf7HLhiHghINcwz+4CcoqCsap2CpiFsqfG8H2+N
-         nSOw==
+        bh=lI7sqxzwAb6+8qpfDyLKKtJ7Me1UGv0S+1RIHhygZjU=;
+        b=V4wpFG/jCY9ceMxQiFSkHGtDsBgKs1/gyqCR+9w4gj1sZh9JOb2t8wvDK2Lt6l12sh
+         hhsCKGOanELBqvuNPcPa8q3beAHRkGFcm74KuSSkC/BSwp5imn0Unl2ioWW9wPTXYIiQ
+         SKqbbFcDd1fbyHCz21nfDI1zNV7QNxeyJyiO8OtnKeGwjv3lMpax5bridys6PEm1Pye6
+         zjDM8FDIxkJZ+2kpoZwGYX6KjVjaADsCx7xNRy8/gpPbD9MAwiY62Zxvb982uqcBM+fB
+         waLhaU+1+Ay+GaYPV1XvydvqTj2nAuDh2jJa+V59ffViJdAf+QO2aY/EFGTBUO3XPqE7
+         IsqA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1756712175; x=1757316975;
+        d=1e100.net; s=20230601; t=1756712182; x=1757316982;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=5oeHOkgW1SXEWkLO09M8aNICfxiWEQZMbiFzd9nXhNI=;
-        b=SirONz59V/3tN75MCikcnq5ykqg7A90UoggJk8yMJqeXj66bKd+l6vRKrNw8YDaVWb
-         quG2AjZCkpY8yNPZTwMGHHq/LdDB3JeBT/gzm3E8PkKsA1Zt5OAiO3LOwHw9Q2iYP/UR
-         zglxHT8XbDKNjgu+29e9l5oWJi6hGviBcOQRbMDJcw2zwU2mXs3pWz5EiwG82xsa6HhI
-         Dx6DsG2DeGkf/KxaHclSZGduz430uuKsvUAEtOwM6O60lo+l/emawGzQWhuyM4TWD00i
-         n4a3/EgKt8nnU/CoXo6uT/CNkf8dugCegRcf2rFzsuqpykNUgBCY6F+JgHPlGSuKhvU6
-         XH+A==
-X-Forwarded-Encrypted: i=1; AJvYcCU3yEcoYAcX30Gil+bXGqS1Y4CmVFRUKJl0RzapW6y8XXck8pRZ/QDX0Q5SJMwl3Bat7UaGfB/CY24=@lists.infradead.org, AJvYcCUYcwtbg6KGIy0/UVzN7hCuRr2ln/zpyylA/o7uaFvAbeBbjTAxOS64ck8eOpSQRBA9qMtbNk+kpm+a/BI=@lists.infradead.org
-X-Gm-Message-State: AOJu0YyLROe3dbMB6VROJfCJJdzBM50w+lLMgqZvsWuYQeq6BgTMNVMv
-	xOGOMgga/DgS9tVbaBww/lzbi1PnpXmFdbffNf1PZlZza1GYlJHm1Dsk
-X-Gm-Gg: ASbGncsSEHlZ6jZKs//Lt3Dpi5CHZxdqWWeNqHC8nEhp/oAAyo9ZwzxcTZ2AakEwJcZ
-	lHHtxxPx6Ikgcdr1fW6DpWriE8siYKskcCxxpWhpJZ/03oJfphqrnp5arPScGPhTN7WdAdWcjtL
-	sMpQuZOIwHfhiq1h/zxNkO/rLYPyonFBzXKWbmKaDNHes1vIDiKQZYZr88eIzgDvOJOLnz8APaP
-	mFe3VmzBq0vdcQsyo10AQiqDCqwpXLn08Dpp1sNq47ce8hvgNMjLTsni00HIogh4UJDnKBDZlwM
-	4VHblu3ZmMVuq3FKmIk9Iw6U03JCCuzYk04UPQNGBMYIsBsH7c+BZ8aYf1l7GfDI31P9tZ5Ya+4
-	IBu0AJ5dl0LZNxdMFiVdw
-X-Google-Smtp-Source: AGHT+IEmw91k51+a/u/6Yg/p/QfXcjorBAKjeKm8LC1Ywv4G99JsY2MawriOAwBq5epZ8HFlkc1KVw==
-X-Received: by 2002:a17:902:ccd1:b0:246:de32:10d2 with SMTP id d9443c01a7336-24944a458c3mr90279695ad.15.1756712174848;
-        Mon, 01 Sep 2025 00:36:14 -0700 (PDT)
+        bh=lI7sqxzwAb6+8qpfDyLKKtJ7Me1UGv0S+1RIHhygZjU=;
+        b=WpWOP2OwCV56jx50wVQKTUA8uxyBixtwKIayhON7+B7c/iKq8nBmA9ozd3g3fw5Lza
+         vo6IiPt4hflWp7hYPjJpq4mu3iYiQ6+XK2M4SZHzvCmo9hfyU7CFbZlgYvAdyI1Q78Dt
+         XYV5pfyK53a/ztbAZYmkz1RsalmeyUwQIrJNenihmzPTzCVg2l3RT6PHuArdtG8UvUEh
+         GR+PrVNLJk5DAxQFadyb1Rw+cxEBe75qg5S+DS9kijWV8PptQeDvh5ckIDhpTuy4wHPU
+         NyFtxckRTNMIPgWq4SIO4pDVvw86UFl2ilBeeA/gnIsixb0TrAqfxOi+TsW00b7XSv11
+         sbKA==
+X-Forwarded-Encrypted: i=1; AJvYcCUTkIauBZRZ5WiLoM0HQ4s1/5ZuW7J7l7vXDXaN26nQVH5Wu8Onl9S22DG9rjUqaB6t/EbOPsZdK0839dA=@lists.infradead.org, AJvYcCUlWTrsrQyZHhUUG8mqrRvW4dgfpOTFTkB0BMu1kulwkuNhQAVSxkHZh+DDj8d6+lXHS6WLsJkSEPg=@lists.infradead.org
+X-Gm-Message-State: AOJu0YzBUjyEWxeAMm/Fyske22+wbeDsDdLyM8kuGaev1NPEusKo9GBj
+	m77s0rqtWUBD/OhVUsigfe1mpvRNbb0wCei99Z3Dhyb5LffssJGldJcL
+X-Gm-Gg: ASbGncvGhLJ/0/3U5u5+8PYbJxhwO0Ik0DjLfdMO2cKMbHgCi4s5S8kt7xxaYla08Ux
+	r05q1Ed+gs+7KL02MyIXS7hjC/NYLbQ2wFFuntkN4fz7jsPyQohypz6PFIMlfHFYbBI1jqrijTT
+	7uVXmIVnfGtWvCO+WQqlXuIRfnL2laYo23TFCZLDGDGVmrY+oTlr0oOuEzGlfh33yVb2Edd7F8m
+	1J6O+seE41xlyKBwqBR5wB21p7SVSkIRvvmG9/jAAbGXvjos96f/4YNKunTbHbS3qmDAcER6qLY
+	pgwEGt38dDOkzWpq7rpVnAde7AWs2+hs5U9NGZ675k4UnXPRM0YWXy9IBMRHv50qDlU35hnJvJt
+	eV94Gaw8Xh/Ktn91s7HmS
+X-Google-Smtp-Source: AGHT+IH+dCQY4Kqqb6suPsSi0/Emx7fwwdzdMp+EJ6/IyH5dxTgGWWtb0vd7ZMANbaRLjtbZGTJDPw==
+X-Received: by 2002:a17:902:ef52:b0:248:dddf:e3f0 with SMTP id d9443c01a7336-24944a4faf4mr88999825ad.19.1756712181651;
+        Mon, 01 Sep 2025 00:36:21 -0700 (PDT)
 Received: from days-ASUSLaptop.lan ([2406:8dc0:6008:46::])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-24903737b05sm95867045ad.49.2025.09.01.00.36.08
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-24903737b05sm95867045ad.49.2025.09.01.00.36.15
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 01 Sep 2025 00:36:14 -0700 (PDT)
+        Mon, 01 Sep 2025 00:36:21 -0700 (PDT)
 From: dayss1224@gmail.com
 To: pbonzini@redhat.com,
 	shuah@kernel.org,
@@ -82,18 +82,18 @@ Cc: atish.patra@linux.dev,
 	linux-kernel@vger.kernel.org,
 	kvm-riscv@lists.infradead.org,
 	linux-riscv@lists.infradead.org,
-	Dong Yang <dayss1224@gmail.com>,
-	Quan Zhou <zhouquan@iscas.ac.cn>
-Subject: [PATCH v3 2/3] KVM: riscv: selftests: Add missing headers for new testcases
-Date: Mon,  1 Sep 2025 15:35:50 +0800
-Message-Id: <bfb66541918de68cd89b83bc3430af94bdc75a85.1756710918.git.dayss1224@gmail.com>
+	Quan Zhou <zhouquan@iscas.ac.cn>,
+	Dong Yang <dayss1224@gmail.com>
+Subject: [PATCH v3 3/3] KVM: riscv: selftests: Add common supported test cases
+Date: Mon,  1 Sep 2025 15:35:51 +0800
+Message-Id: <c447f18115b27562cd65863645e41a5ef89bd37b.1756710918.git.dayss1224@gmail.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <cover.1756710918.git.dayss1224@gmail.com>
 References: <cover.1756710918.git.dayss1224@gmail.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250901_003615_698873_73F1F59F 
-X-CRM114-Status: UNSURE (   9.47  )
+X-CRM114-CacheID: sfid-20250901_003622_360170_9CE2EF93 
+X-CRM114-Status: UNSURE (   7.32  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -111,67 +111,43 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-From: Dong Yang <dayss1224@gmail.com>
+From: Quan Zhou <zhouquan@iscas.ac.cn>
 
-Add missing headers to fix the build for new RISC-V KVM selftests.
+Some common KVM test cases are supported on riscv now as following:
+
+    access_tracking_perf_test
+    dirty_log_perf_test
+    memslot_modification_stress_test
+    memslot_perf_test
+    mmu_stress_test
+    rseq_test
 
 Signed-off-by: Quan Zhou <zhouquan@iscas.ac.cn>
 Signed-off-by: Dong Yang <dayss1224@gmail.com>
 ---
- tools/testing/selftests/kvm/access_tracking_perf_test.c        | 1 +
- tools/testing/selftests/kvm/include/riscv/processor.h          | 1 +
- tools/testing/selftests/kvm/memslot_modification_stress_test.c | 1 +
- tools/testing/selftests/kvm/memslot_perf_test.c                | 1 +
- 4 files changed, 4 insertions(+)
+ tools/testing/selftests/kvm/Makefile.kvm | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/tools/testing/selftests/kvm/access_tracking_perf_test.c b/tools/testing/selftests/kvm/access_tracking_perf_test.c
-index c9de66537ec3..b058f27b2141 100644
---- a/tools/testing/selftests/kvm/access_tracking_perf_test.c
-+++ b/tools/testing/selftests/kvm/access_tracking_perf_test.c
-@@ -50,6 +50,7 @@
- #include "memstress.h"
- #include "guest_modes.h"
- #include "processor.h"
-+#include "ucall_common.h"
+diff --git a/tools/testing/selftests/kvm/Makefile.kvm b/tools/testing/selftests/kvm/Makefile.kvm
+index f6fe7a07a0a2..88613a851cc1 100644
+--- a/tools/testing/selftests/kvm/Makefile.kvm
++++ b/tools/testing/selftests/kvm/Makefile.kvm
+@@ -195,9 +195,15 @@ TEST_GEN_PROGS_s390 += rseq_test
+ TEST_GEN_PROGS_riscv = $(TEST_GEN_PROGS_COMMON)
+ TEST_GEN_PROGS_riscv += riscv/sbi_pmu_test
+ TEST_GEN_PROGS_riscv += riscv/ebreak_test
++TEST_GEN_PROGS_riscv += access_tracking_perf_test
+ TEST_GEN_PROGS_riscv += arch_timer
+ TEST_GEN_PROGS_riscv += coalesced_io_test
++TEST_GEN_PROGS_riscv += dirty_log_perf_test
+ TEST_GEN_PROGS_riscv += get-reg-list
++TEST_GEN_PROGS_riscv += memslot_modification_stress_test
++TEST_GEN_PROGS_riscv += memslot_perf_test
++TEST_GEN_PROGS_riscv += mmu_stress_test
++TEST_GEN_PROGS_riscv += rseq_test
+ TEST_GEN_PROGS_riscv += steal_time
  
- #include "cgroup_util.h"
- #include "lru_gen_util.h"
-diff --git a/tools/testing/selftests/kvm/include/riscv/processor.h b/tools/testing/selftests/kvm/include/riscv/processor.h
-index 162f303d9daa..e58282488beb 100644
---- a/tools/testing/selftests/kvm/include/riscv/processor.h
-+++ b/tools/testing/selftests/kvm/include/riscv/processor.h
-@@ -9,6 +9,7 @@
- 
- #include <linux/stringify.h>
- #include <asm/csr.h>
-+#include <asm/vdso/processor.h>
- #include "kvm_util.h"
- 
- #define INSN_OPCODE_MASK	0x007c
-diff --git a/tools/testing/selftests/kvm/memslot_modification_stress_test.c b/tools/testing/selftests/kvm/memslot_modification_stress_test.c
-index c81a84990eab..3cdfa3b19b85 100644
---- a/tools/testing/selftests/kvm/memslot_modification_stress_test.c
-+++ b/tools/testing/selftests/kvm/memslot_modification_stress_test.c
-@@ -22,6 +22,7 @@
- #include "processor.h"
- #include "test_util.h"
- #include "guest_modes.h"
-+#include "ucall_common.h"
- 
- #define DUMMY_MEMSLOT_INDEX 7
- 
-diff --git a/tools/testing/selftests/kvm/memslot_perf_test.c b/tools/testing/selftests/kvm/memslot_perf_test.c
-index e3711beff7f3..5087d082c4b0 100644
---- a/tools/testing/selftests/kvm/memslot_perf_test.c
-+++ b/tools/testing/selftests/kvm/memslot_perf_test.c
-@@ -25,6 +25,7 @@
- #include <test_util.h>
- #include <kvm_util.h>
- #include <processor.h>
-+#include <ucall_common.h>
- 
- #define MEM_EXTRA_SIZE		SZ_64K
- 
+ TEST_GEN_PROGS_loongarch += coalesced_io_test
 -- 
 2.34.1
 
