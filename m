@@ -4,84 +4,74 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68A2ACA0FF2
-	for <kvm-riscv@archiver.kernel.org>; Wed,  3 Sep 2025 19:18:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F234BCA1015
+	for <kvm-riscv@archiver.kernel.org>; Thu,  4 Sep 2025 02:11:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:Cc:To:Subject:Message-ID:Date:From:
-	In-Reply-To:References:MIME-Version:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=6g+TEEEntsUFX8P+Mbm5SQE66BSpmQUWCkdNF2aayd8=; b=McP6b/nHRS/P6i
-	ch2eWgA81FQuOGeBhOwfL8v6ku7aMrP1yArj+zHMtYJgptHvci4T5xK4Qq8gTMeLzHX2mYn/S2Elw
-	p83cUPuzETw31rXXjIo1gnQDFUn8k7gpye2jsBEqol9qIS0QqMnWLkTX5vrNFS8G5AvLpY8XDgHF3
-	arc0ztNgCATubV6LhNE84ko5cFkHsLD2Edp5MVl6Vu3lfJClsF+yOHwXw8rRrNUPzXQIvuV7eifOa
-	BUXTaeGioKC8FdOr8VUfcfi70kpDRYiiuZ3W5AWjv+JCRgCjH98cyVfzN2oHw8Tu/dd+kQLKYJbXa
-	3fBM6x+lDgUi4CAbkKrA==;
+	MIME-Version:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=kutvp3eXRtk90WHDVwMo+oTYfkdo+ijEnXZ5VMJm9Qk=; b=Q1+1VMX1D+B3tA
+	PiAuWELhu7SZtblsSSQ8hRBw9+neujW+eqdhAQOt3VKD9T841b7DlCFVONcqli3DecCtrPyYiH9g2
+	auwnqk5GI61ia4jUkGF4b/qlNRlW8xbT0CaUKEBeQM/26P3ANl0Pfv3K4K+YlqG/x2yLK9wqv5yQR
+	2iDHR7Xjecj0HGuyODnvyWVWDL45O+xg0utNhu5ba7dU/2bwmTOhEv+9dTP28/E7vnjP+38/gJNm2
+	4oDkVpSbb0BgDUigpVHsziqWnJS32TOrvp66Dpr+hGzA1bkTGOrErRlnn587Uc+ddKDjvMEw/bFff
+	JxltHVQ+aiZI7B3DHXlQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1utt0R-00000007QvR-0cOY;
-	Wed, 03 Sep 2025 19:18:55 +0000
-Received: from mail-il1-x129.google.com ([2607:f8b0:4864:20::129])
+	id 1utzRh-00000008GdE-1Pi4;
+	Thu, 04 Sep 2025 02:11:29 +0000
+Received: from mail-yw1-x112c.google.com ([2607:f8b0:4864:20::112c])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1utoWc-00000006jze-26pT
+	id 1utwtb-00000007ubr-2Non
 	for kvm-riscv@lists.infradead.org;
-	Wed, 03 Sep 2025 14:31:52 +0000
-Received: by mail-il1-x129.google.com with SMTP id e9e14a558f8ab-3f38bafe6ddso28348805ab.1
-        for <kvm-riscv@lists.infradead.org>; Wed, 03 Sep 2025 07:31:50 -0700 (PDT)
+	Wed, 03 Sep 2025 23:28:09 +0000
+Received: by mail-yw1-x112c.google.com with SMTP id 00721157ae682-71d5fb5e34cso4786177b3.0
+        for <kvm-riscv@lists.infradead.org>; Wed, 03 Sep 2025 16:28:07 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=brainfault-org.20230601.gappssmtp.com; s=20230601; t=1756909909; x=1757514709; darn=lists.infradead.org;
+        d=jms.id.au; s=google; t=1756942086; x=1757546886; darn=lists.infradead.org;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=+xK1Ixt22UPQpRV6eJF15nySq1ENYn93GAeXzGVGJzQ=;
-        b=HS10yvRhALYRTlIYhA3IQOSs3VeFdsMN11ggNjyRTZ7BMolCr7amynq+Vl3Jlp9IUJ
-         /KwTmG82xEwyP1U4OBYmbXh167AqNmwr860zWpUoQv5zfn+JMMXLsJdFFR6dwPhV+GW5
-         JkuYH0dBbmSS8cQpEWwRDid9nV7WIptR8bLmaL5HKTIxYJti+HTNEiWAefkcPv5y8V/5
-         6iplWPyhbstrBhtLYgV3rS8bKhv+rWkk+NEJUAPct8Udy+OI7G8j/88Y2cumNPiYk3z5
-         bE6r1ZxI6tXGmitO98U6SJ2ghU2ZB5VEWiHJig61adrEaeTGC5uJ2A23aq8wZHJOEPCe
-         0KMA==
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=qMfa0Po6AON5gKDR6IPWYqovOd/cI9bxk3AYRRhlrHs=;
+        b=lAwglz5PNykmKaLSv9r7KX22udm8myuy916aDFUP6ogqIMlKKO8qg88zeqyzUqc7Mq
+         1QtU2w8LAdUMjped9VYl1yfbGs3lU3/j61v3wBuK+8X4IWucTn9UcQcmGyW+JQ1AXsFD
+         7u9VDmYr07WNenVb6qEO6R+FPX31cxXuxZwlg=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1756909909; x=1757514709;
+        d=1e100.net; s=20230601; t=1756942086; x=1757546886;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=+xK1Ixt22UPQpRV6eJF15nySq1ENYn93GAeXzGVGJzQ=;
-        b=TFzTj/T6oBB8EbVHvymcM7pJXs97b1ZXAgmIFVhkdvSc29yGNfSyyOqxDLjulcpy9d
-         mWkjX8N0ol31A9A6544ZN9y7FvdZZ9VhsrWARTwOfOrlB8WZg6y//qHJodzfomcc7nEi
-         OFYxK44HSjcXmXIGBgErCVsICQJui3K+vgvE6cFh4vZf/Bunjmew92HQBQLYuN62BVXi
-         Ue81ZXtiNuVTzmUNt16m6scHAzYZ5tWEOwhnoiWmkpzeUPbFBRutWb5GNi9MD/06EwLJ
-         ibb2NUHid+APRKf9AUUpFxAizOU4vqAEh7kmaOMqSdfphii0Q/6ZAFxGF4IAtkNIGpLx
-         hcJg==
-X-Forwarded-Encrypted: i=1; AJvYcCVJq2UQERGoWNJEk0qEG0AjtO4h2T5BO86z9jj0/Tlzl/1raszuo/ubHeo+4cEcIVl0A858OH2n7fQ=@lists.infradead.org
-X-Gm-Message-State: AOJu0YwmJ8NP6B8KvmFvOTUVKdWWovNxg9e89ynHoTaDghduKTqAGE4Q
-	Yds/MZD0K/uBfM7w5luptbJSnDb7u8bnozfPv3XqZuGphzv27EEFN3/BjrCExPgexqPZZ0Qw533
-	E1NJVbEz/5y15GR73W7qDxZvAaBFZkuXjo71xJ6kc0Q==
-X-Gm-Gg: ASbGncuAmKVhcej9gxSSf8D0hyL5zrCfsh50TWRAfjfIiiElK1xkMJw10jSMlIHgzUR
-	UB8JHH4hlS080/cGDubz/HM8bBdhI+b0AJFQFxmSjP5LKYcL8HKzQOYos/TlBHoIsHeIku5B2u2
-	5Rilw1Rt9w6PXna2+3A4U3BSJvGuaOSymnzCM0bqd7C/8IwMbN0KnHc6qEjuAGAUS0bvSDFh4iL
-	7cLELAaU+E0XPHC/gYX3fmXp0yT/2sLn5HDgYvQryCgC8JRhlfqEDuuWYTESw==
-X-Google-Smtp-Source: AGHT+IEdqptgFgnh5uv2GzzQGJFqAZUOszFTkmnyBR24wl/TgHUrHJeCtE9hinNDxe7tcZMD8cJExtpH41CpN+afzKw=
-X-Received: by 2002:a92:ca4a:0:b0:3f2:1a77:4876 with SMTP id
- e9e14a558f8ab-3f4024cb129mr260307905ab.26.1756909909294; Wed, 03 Sep 2025
- 07:31:49 -0700 (PDT)
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=qMfa0Po6AON5gKDR6IPWYqovOd/cI9bxk3AYRRhlrHs=;
+        b=Dfo5Ta1kU1U/t1g9dw2wRM9EhEEVQmi8epuRsyq1cfTFXSCH/GVbjg/3qgvtOT2GsB
+         AidXHIYOTeUbTJ1LNVAljW6ujont0TQeaua7w9x2pPYlaEKCxlMgzmfs2mQw6znAGOA0
+         Yyi26c1pi1BevmgQcxymsrmoL8YjRshbc3rMnWowcry1mTEkOygdGnYmKdcPgYX8+xTa
+         B8JYZSfmfJA6ofsvZC6tjNYYe7RYLY/4q1vv2q0nNVWm3EahTdjwSor2pKvdaH8jziZN
+         u2PtLxzYEjrqVH2LAqPu/kgAw0s6/i28/NaWvHL9iBs1w1CO7ZZ6lf0rJPSk+UFeyiuV
+         JgbA==
+X-Gm-Message-State: AOJu0YxbFkmYeE1+gXEdemcZp2yFjuSmrVVjNXQm51jN8zFRn4dE2/Rx
+	Wbj8EKS0hLjs/pO5Ln2liSXW3McYVi96oXIZaouWekqlKSSBSrbsBrATkQ5erJhww7h3NH6GUbd
+	3Oc88SGZf2ZkZQk8Dw9sul4aOwFG8/z4SW7sU
+X-Gm-Gg: ASbGncvYdX78M+YWq8xvTC477vOTulwjDYHWM/3EXiuLc0MlSsAlb28LSmbCiogDggl
+	i7+ddPSXcmFltc4s4GLDYh/QRpdwdxBR8RPLvOILlZj+o75Q5400rtd1f4ebbXdDbek8Cn2ybX0
+	iPXHRopitxVLwIdtlLi+3+XLQ1Ipd1pYzdbelpZP9akugiZuT7c0jdgNsfe5kBXa3u/haziWDiF
+	42opkrWCTje303KMXilOUcMkJIH
+X-Google-Smtp-Source: AGHT+IH7FznMSuqEQ2w53VR/rPJV67jGSBAu0+n6G5x02tRwmPlsb58/aw/SdRFJTb2blOuXAEnNZ3frBVjX7pavExM=
+X-Received: by 2002:a05:690c:56c7:b0:723:98d5:7a62 with SMTP id
+ 00721157ae682-72398d580ebmr117553917b3.3.1756942086010; Wed, 03 Sep 2025
+ 16:28:06 -0700 (PDT)
 MIME-Version: 1.0
-References: <cover.1756710918.git.dayss1224@gmail.com>
-In-Reply-To: <cover.1756710918.git.dayss1224@gmail.com>
-From: Anup Patel <anup@brainfault.org>
-Date: Wed, 3 Sep 2025 20:01:37 +0530
-X-Gm-Features: Ac12FXwG5rgdOIo0vaX3JEvtxdbhO8ebAqv0PdEvBcoUhtsHNdiKMQlA4BgxMFY
-Message-ID: <CAAhSdy0DriNa-90QO_YgUbuxrjkDSQ_iTtNVG5ie0h09y2xSHA@mail.gmail.com>
-Subject: Re: [PATCH v3 0/3] KVM: riscv: selftests: Enable supported test cases
-To: dayss1224@gmail.com
-Cc: pbonzini@redhat.com, shuah@kernel.org, atish.patra@linux.dev, 
-	paul.walmsley@sifive.com, palmer@dabbelt.com, aou@eecs.berkeley.edu, 
-	alex@ghiti.fr, kvm@vger.kernel.org, linux-kselftest@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, kvm-riscv@lists.infradead.org, 
-	linux-riscv@lists.infradead.org
+From: Joel Stanley <joel@jms.id.au>
+Date: Thu, 4 Sep 2025 08:57:54 +0930
+X-Gm-Features: Ac12FXyBWvVQJdjUNlsar2kSzZYXaU1pqyCoAGwB_58XykOmtj1mldKZW998MQE
+Message-ID: <CACPK8XddfiKcS_-pYwG5b7i8pwh7ea-QDA=fwZgkP245Ad9ECQ@mail.gmail.com>
+Subject: [kvm-unit-tests] riscv build failure
+To: kvm-riscv@lists.infradead.org
+Cc: Nicholas Piggin <npiggin@gmail.com>, Buildroot Mailing List <buildroot@buildroot.org>, kvm@vger.kernel.org
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250903_073150_778129_B755AE49 
-X-CRM114-Status: GOOD (  11.07  )
+X-CRM114-CacheID: sfid-20250903_162807_974224_6B95AB5A 
+X-CRM114-Status: UNSURE (   9.11  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -93,25 +83,72 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-T24gTW9uLCBTZXAgMSwgMjAyNSBhdCAxOjA24oCvUE0gPGRheXNzMTIyNEBnbWFpbC5jb20+IHdy
-b3RlOgo+Cj4gRnJvbTogRG9uZyBZYW5nIDxkYXlzczEyMjRAZ21haWwuY29tPgo+Cj4gQWRkIHN1
-cHBvcnRlZCBLVk0gdGVzdCBjYXNlcyBhbmQgZml4IHRoZSBjb21waWxhdGlvbiBkZXBlbmRlbmNp
-ZXMuCj4gLS0tCj4gQ2hhbmdlcyBpbiB2MzoKPiAtIFJlb3JkZXIgcGF0Y2hlcyB0byBmaXggYnVp
-bGQgZGVwZW5kZW5jaWVzCj4gLSBTb3J0IGNvbW1vbiBzdXBwb3J0ZWQgdGVzdCBjYXNlcyBhbHBo
-YWJldGljYWxseQo+IC0gTW92ZSB1Y2FsbF9jb21tb24uaCBpbmNsdWRlIGZyb20gY29tbW9uIGhl
-YWRlciB0byBzcGVjaWZpYyBzb3VyY2UgZmlsZXMKPgo+IENoYW5nZXMgaW4gdjI6Cj4gLSBEZWxl
-dGUgc29tZSByZXBlYXQgS1ZNIHRlc3QgY2FzZXMgb24gcmlzY3YKPiAtIEFkZCBtaXNzaW5nIGhl
-YWRlcnMgdG8gZml4IHRoZSBidWlsZCBmb3IgbmV3IFJJU0MtViBLVk0gc2VsZnRlc3RzCj4KPiBE
-b25nIFlhbmcgKDEpOgo+ICAgS1ZNOiByaXNjdjogc2VsZnRlc3RzOiBBZGQgbWlzc2luZyBoZWFk
-ZXJzIGZvciBuZXcgdGVzdGNhc2VzCj4KPiBRdWFuIFpob3UgKDIpOgo+ICAgS1ZNOiByaXNjdjog
-c2VsZnRlc3RzOiBVc2UgdGhlIGV4aXN0aW5nIFJJU0NWX0ZFTkNFIG1hY3JvIGluCj4gICAgIGBy
-c2VxLXJpc2N2LmhgCj4gICBLVk06IHJpc2N2OiBzZWxmdGVzdHM6IEFkZCBjb21tb24gc3VwcG9y
-dGVkIHRlc3QgY2FzZXMKClF1ZXVlZCB0aGlzIHNlcmllcyBmb3IgTGludXgtNi4xOAoKVGhhbmtz
-LApBbnVwCgotLSAKa3ZtLXJpc2N2IG1haWxpbmcgbGlzdAprdm0tcmlzY3ZAbGlzdHMuaW5mcmFk
-ZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2t2bS1y
-aXNjdgo=
+I'm building kvm-unit-tests as part of buildroot and hitting a build
+failure. It looks like there's a missing dependency on
+riscv/sbi-asm.S, as building that manually fixes the issue. Triggering
+buildroot again (several times) doesn't resolve the issue so it
+doesn't look like a race condition.
+
+I can't reproduce with a normal cross compile on my machine. Buildroot
+uses make -C, in case that makes a difference.
+
+The build steps look like this:
+
+bzcat /localdev/jms/buildroot/dl/kvm-unit-tests/kvm-unit-tests-v2025-06-05.tar.bz2
+| /localdev/jms/buildroot/output-riscv-rvv/host/bin/tar
+--strip-components=1 -C
+/localdev/jms/buildroot/output-riscv-rvv/build/kvm-unit-tests-2025-06-05
+  -xf -
+cd /localdev/jms/buildroot/output-riscv-rvv/build/kvm-unit-tests-2025-06-05
+&& ./configure --disable-werror --arch="riscv64" --processor=""
+--endian="little"
+--cross-prefix="/localdev/jms/buildroot/output-riscv-rvv/host/bin/riscv64-buildroot-linux-gnu-"
+GIT_DIR=. PATH="/localdev/jms/buildroot/output-riscv-rvv/host/bin:/localdev/jms/buildroot/output-riscv-rvv/host/sbin:/home/jms/.local/bin:/home/jms/bin:/home/jms/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin"
+/usr/bin/make -j385  -C
+/localdev/jms/buildroot/output-riscv-rvv/build/kvm-unit-tests-2025-06-05
+standalone
+
+The failing line, with the full paths trimmed for readability:
+
+riscv64-buildroot-linux-gnu-ld -melf64lriscv -nostdlib  -no-pie -z
+noexecstack -pie -n -z notext -o riscv/sbi.elf -T riscv/flat.lds \
+    riscv/sbi.o riscv/cstart.o riscv/sbi.aux.o lib/libcflat.a
+lib/libfdt/libfdt.a
+riscv64-buildroot-linux-gnu-ld: riscv/sbi.o: in function `cpumask_test_cpu':
+lib/cpumask.h:35:(.text+0xd8a): undefined reference to
+`sbi_hsm_check_non_retentive_suspend'
+riscv64-buildroot-linux-gnu-ld: riscv/sbi.o: in function
+`hart_suspend_and_wait_ipi':
+riscv/sbi.c:591:(.text+0xde2): undefined reference to
+`sbi_hsm_check_non_retentive_suspend'
+riscv64-buildroot-linux-gnu-ld: riscv/sbi.o: in function `cpumask_test_cpu':
+lib/cpumask.h:36:(.text+0x1064): undefined reference to `sbi_susp_resume'
+/riscv64-buildroot-linux-gnu-ld: riscv/sbi.o: in function `susp_one_prep':
+riscv/sbi.c:1434:(.text+0x1796): undefined reference to
+`sbi_hsm_check_hart_start'
+riscv64-buildroot-linux-gnu-ld: riscv/sbi.o: in function `check_dbcn':
+/riscv/sbi.c:1247:(.text.startup+0x9fe): undefined reference to `check_sse'
+riscv64-buildroot-linux-gnu-ld:
+/localdev/jms/buildroot/output-riscv-rvv/build/kvm-unit-tests-2025-06-05/riscv/sbi.c:1247:(.text.startup+0xa02):
+undefined reference to `check_fwft'
+make[2]: *** [riscv/Makefile:131: riscv/sbi.elf] Error 1
+
+The full build log is at
+https://ozlabs.org/~joel/tmp/buildroot-kvm-unit-tests-build-log.txt
+
+I was able to reproduce with the 2025-07-31 tag, which is the same as
+today's master branch.
+
+Cheers,
+
+Joel
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
