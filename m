@@ -4,90 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 36001CA1010
-	for <kvm-riscv@archiver.kernel.org>; Fri,  5 Sep 2025 18:22:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3A671CA0FED
+	for <kvm-riscv@archiver.kernel.org>; Fri,  5 Sep 2025 19:29:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
 	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=xgmytLzx50Y2yQ9p1ixqbpCBBAwCbJNFo0UYrsR8QJY=; b=2TzeYL0jLNlpR5
-	7YWCgotBjyAt2nbXcgQZ+FDimuXfsiXXgb5SCRlaiA6jycoyg8bM5ZC9tpziaK0ZnxK3SBZU5aXXn
-	S1Vzz0MzMN8Uh77HzqjSif4qgV+KVRZM3Y9M5XMIpT/WC/to/oY/ZBaid9MRCgSSJeaf4dDDsFYL2
-	MoUVGG7r2alVM4XsrOYo7gqGaf58ZRWfhRUZOMDmPe5LW63kxX8LcI3HZ4SRVw1QQLYr6aBjtZ79K
-	Z4V+yUKW0tkoGvSepaGSkP8/1CgPzFT8hxlF46bTghjqqmbIkerAqAFriAT+0MnWKJhQ5kS+w/oj8
-	J5xwMTujfyXqJGE/2S3Q==;
+	List-Owner; bh=LAMe2UhZ2VbvqB0QBE0zD+Bxj1maSfk+QGGd+AqlRFs=; b=TZDCTjVxxa1Wz5
+	olIhiOFMY+QZmwcooYsZfyCRSGQSL/BsaQ9UgIHGf+WZ1d2PpP7k4pr7j3QjAog6vrxtigK7Hm1VB
+	/JVinXGLy94TPQ2DaCilFk6jSsNhk0Iqb157eDTjV7tgDrRaIXV8OlullEBTkjgsUPMLmKwCR4FCC
+	kEi+QjIIQe6/H1/EnwMNEpgiQRKycT3vkywqvR/FK5mV5zPGqvV76ewq+WuF4Ncq/UpFtFB4XlAFy
+	NwP7EDJbs87OH2WKdlZ/tA1w9dyaizJTmCefU1f+5LA6EfzZc4p+bSMe6rqKAbpnzEjO0mn7HVw0+
+	BZ5fShjeY2Lyw4jSaSJA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uub4R-00000003l2y-2EV3;
-	Fri, 05 Sep 2025 18:21:59 +0000
-Received: from mail-il1-x131.google.com ([2607:f8b0:4864:20::131])
+	id 1uuc85-000000049i5-3V3i;
+	Fri, 05 Sep 2025 19:29:49 +0000
+Received: from out-189.mta0.migadu.com ([91.218.175.189])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uuXK5-00000002FPA-43L0
+	id 1uuYPL-00000002mCy-2oM4
 	for kvm-riscv@lists.infradead.org;
-	Fri, 05 Sep 2025 14:21:55 +0000
-Received: by mail-il1-x131.google.com with SMTP id e9e14a558f8ab-3f663225a2bso15593645ab.1
-        for <kvm-riscv@lists.infradead.org>; Fri, 05 Sep 2025 07:21:53 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ventanamicro.com; s=google; t=1757082113; x=1757686913; darn=lists.infradead.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=WAIXNF/yhxj3WIda95HMOmBhnbf7MpGftHHpVlcqDy4=;
-        b=UwF9Fy0pC/W9M2qcGRMy0CeYBm6WO2gWKUp4xPd+DGvf/CZVOz5IDZIDwV6IsAfq90
-         0Tj++FNdhZzU3A8xHUVmclV50Nj0FIxKTc6wxl9CPp9hM3RsO7NCMSR6FHUrL7diq5ss
-         RHjtHpih9XEe7UiblJc03wBnx43WRCxxAsGTLmy/3j5Gd90U7hwRfm54hPfliXyPw9SR
-         tg4oRT5X20EXaX6KixDY4+rRUiuInvtcysG2zT4u144qPYPARU2xSXKviOPGDyu22wK1
-         bb3tMQ/ewjlrZd7+hMATJECz19jwbUmSHRjUKpvxbgrmIXEIAyRxe+oFvVkm3EqnkNZ2
-         OMxg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1757082113; x=1757686913;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=WAIXNF/yhxj3WIda95HMOmBhnbf7MpGftHHpVlcqDy4=;
-        b=dYRtCIP+hfodziSK62NRHm5sYHG8GYuBDvXlsWn8e3cld8DCIjVXHNcrDqQWzpDQv5
-         yRkMgoohw0c1RQf2J0C8Bjqvp0i5evV6VKT22FlLvsojri5/siF9Yj4SCQtFXzm7ZZRF
-         r57hIuarNBJgzZjotJug422H5Pa1qrrzHg2l8HuXydYTbY64Pmhewo4i1fjTURECV9Zm
-         hQbYL6kfHizohpFofrNcZvKZvptJi+EB7sWhW2YPyofqCoqiUUBzs2fyLD8jmcEQZ5bv
-         64NJDzNIP9SdiJAzbr8F5x1M6Fmdcu4NjFShgGGAsXcbp3pplX34Rw41v1VXOyeq0Tjq
-         qkSQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUb1bq+tHLZsPtQlXgUQMwACCmDfrtGWeRil1kEoXvzvk5ZEIjSWXDzFQ7idAoPWtz+59W2+xiiJio=@lists.infradead.org
-X-Gm-Message-State: AOJu0YytJapkSvRhDX8iss58thIqk1lxzAHB3Bf6Q9dqiuaQmmLdDKfV
-	4NrMH9yaD4Hgfzj4pAIA+SIhXlEGQthJ5wgcmGpgu0we8STnfrX76F/4dJEjpUWVL2I=
-X-Gm-Gg: ASbGncuctGxr/i+BqJnnkG2Nu8ui2c0vl1/Y3TU/l2OyJZdImvtumlLdmxOvyb1Iuj6
-	dkpAqpC0p7KTe/+djTDNR4uL7m7IvzX10Zga9YHEEqk9/QPzJn8y1PdTVgqzg064vuXogV/oXEc
-	+CYTs1YGnJt4/P3Cq9hT6O2eDA/MEibTg6wwIq7VQr8Bn00t+PNL4HQXkGqCJzVDLMQtFvCIf+e
-	yjkcj78OsL0UyJDF0fRMnBZfMjnz/4iWxcWP0wujGP8OrlkrCYphnTwRqBfS9mHfV9AviFOxCuX
-	/XAHxgmIwBKX8/GYodVxlA9aYC3RJQ6n8zzRWpJUrgIIDiSqWeJOcy0LfkFnkEsKQJdvnpUodLb
-	kpAVGWVC1benFeG+WJA9HfGTY
-X-Google-Smtp-Source: AGHT+IGf4qxxSXO6iewjkiZTlmr4yvaEZFX/IytJuUl4Nj32J40fOreM/84N8MX0m+sgaZr+dqFiDw==
-X-Received: by 2002:a05:6e02:240c:b0:3f6:6198:b39e with SMTP id e9e14a558f8ab-3f7b6808028mr57130415ab.0.1757082112699;
-        Fri, 05 Sep 2025 07:21:52 -0700 (PDT)
-Received: from localhost ([140.82.166.162])
-        by smtp.gmail.com with ESMTPSA id 8926c6da1cb9f-50d8f0d594fsm6185353173.23.2025.09.05.07.21.51
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 05 Sep 2025 07:21:52 -0700 (PDT)
-Date: Fri, 5 Sep 2025 09:21:51 -0500
-From: Andrew Jones <ajones@ventanamicro.com>
-To: Anup Patel <apatel@ventanamicro.com>
-Cc: Atish Patra <atish.patra@linux.dev>, 
-	Palmer Dabbelt <palmer@dabbelt.com>, Paul Walmsley <paul.walmsley@sifive.com>, 
-	Alexandre Ghiti <alex@ghiti.fr>, Anup Patel <anup@brainfault.org>, 
-	Paolo Bonzini <pbonzini@redhat.com>, Shuah Khan <shuah@kernel.org>, kvm@vger.kernel.org, 
-	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, 
-	linux-kselftest@vger.kernel.org
-Subject: Re: [PATCH v3 5/6] RISC-V: KVM: Implement ONE_REG interface for SBI
- FWFT state
-Message-ID: <20250905-005c0bc3e16e909c5d91eef4@orel>
-References: <20250823155947.1354229-1-apatel@ventanamicro.com>
- <20250823155947.1354229-6-apatel@ventanamicro.com>
+	Fri, 05 Sep 2025 15:31:25 +0000
+Date: Fri, 5 Sep 2025 10:31:16 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1757086279;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=oSeZxdMsuw6Z2poCMeEkBswxhwvL2OzwHT8BiaKUwhg=;
+	b=owBLh8CY+Jo16DSfNvepvejZHN+5nuXZKIMNLZPRudno405ir7arK0xzu0El3RoB6lB/iP
+	pVgREAkR3BnY4pcRHeALllE1ccQ0Z3aIxp1QydMxLhUZJxUMY+3dqumlVrqQx27gUOxQoJ
+	zBUzZ6ka88jkWtWdsyVh9PHbRAhbArc=
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Andrew Jones <andrew.jones@linux.dev>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: Joel Stanley <joel@jms.id.au>, kvm-riscv@lists.infradead.org, 
+	Buildroot Mailing List <buildroot@buildroot.org>, kvm@vger.kernel.org
+Subject: Re: [kvm-unit-tests] riscv build failure
+Message-ID: <20250905-d9a046fd4787ec78ab611495@orel>
+References: <CACPK8XddfiKcS_-pYwG5b7i8pwh7ea-QDA=fwZgkP245Ad9ECQ@mail.gmail.com>
+ <20250904-11ba6fa251f914016170c0e4@orel>
+ <csh2fzymze636erajmsu5d55id6fpfsnvypkz3at7anp5i35uw@fhn2qgz327vj>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20250823155947.1354229-6-apatel@ventanamicro.com>
+In-Reply-To: <csh2fzymze636erajmsu5d55id6fpfsnvypkz3at7anp5i35uw@fhn2qgz327vj>
+X-Migadu-Flow: FLOW_OUT
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250905_072154_003504_73B0C0AC 
-X-CRM114-Status: GOOD (  10.02  )
+X-CRM114-CacheID: sfid-20250905_083124_157027_B22C777B 
+X-CRM114-Status: GOOD (  33.51  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -104,19 +70,124 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Sat, Aug 23, 2025 at 09:29:46PM +0530, Anup Patel wrote:
-> The KVM user-space needs a way to save/restore the state of
-> SBI FWFT features so implement SBI extension ONE_REG callbacks.
+On Fri, Sep 05, 2025 at 06:26:55PM +1000, Nicholas Piggin wrote:
+> On Thu, Sep 04, 2025 at 05:17:45PM -0500, Andrew Jones wrote:
+> > On Thu, Sep 04, 2025 at 08:57:54AM +0930, Joel Stanley wrote:
+> > > I'm building kvm-unit-tests as part of buildroot and hitting a build
+> > > failure. It looks like there's a missing dependency on
+> > > riscv/sbi-asm.S, as building that manually fixes the issue. Triggering
+> > > buildroot again (several times) doesn't resolve the issue so it
+> > > doesn't look like a race condition.
+> > > 
+> > > I can't reproduce with a normal cross compile on my machine. Buildroot
+> > > uses make -C, in case that makes a difference.
+> > > 
+> > > The build steps look like this:
+> > > 
+> > > bzcat /localdev/jms/buildroot/dl/kvm-unit-tests/kvm-unit-tests-v2025-06-05.tar.bz2
+> > > | /localdev/jms/buildroot/output-riscv-rvv/host/bin/tar
+> > > --strip-components=1 -C
+> > > /localdev/jms/buildroot/output-riscv-rvv/build/kvm-unit-tests-2025-06-05
+> > >   -xf -
+> > > cd /localdev/jms/buildroot/output-riscv-rvv/build/kvm-unit-tests-2025-06-05
+> > > && ./configure --disable-werror --arch="riscv64" --processor=""
+> > > --endian="little"
+> > > --cross-prefix="/localdev/jms/buildroot/output-riscv-rvv/host/bin/riscv64-buildroot-linux-gnu-"
+> > > GIT_DIR=. PATH="/localdev/jms/buildroot/output-riscv-rvv/host/bin:/localdev/jms/buildroot/output-riscv-rvv/host/sbin:/home/jms/.local/bin:/home/jms/bin:/home/jms/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin"
+> > > /usr/bin/make -j385  -C
+> > > /localdev/jms/buildroot/output-riscv-rvv/build/kvm-unit-tests-2025-06-05
+> > > standalone
+> > 
+> > I applied similar steps but couldn't reproduce this. It also looks like we
+> > have a dependency because configuring with '--cc=/path/to/mygcc', where
+> > mygcc is
+> > 
+> >    #!/bin/bash
+> >    for x in $@; do
+> >        if [[ $x =~ sbi-asm ]] && ! [[ $x =~ sbi-asm-offsets ]]; then
+> >            sleep 5
+> >            break
+> >        fi
+> >    done
+> >    /path/to/riscv64-linux-gnu-gcc $@
+> > 
+> > stalls the build 5 seconds when compiling sbi-asm.S but doesn't reproduce
+> > the issue. That said, running make with -d shows that riscv/sbi-asm.o is
+> > an implicit prerequisite, although so are other files. I'm using
+> > GNU Make 4.4.1. Which version are you using?
+> > 
+> > Also, while the steps above shouldn't cause problems, they are a bit odd
+> >  * '--endian' only applies to ppc64
+> >  * -j385 is quite large and specific. Typicall -j$(nproc) is recommended.
+> >  * No need for '-C "$PWD"'
 > 
-> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-> ---
->  arch/riscv/include/asm/kvm_vcpu_sbi_fwft.h |   1 +
->  arch/riscv/include/uapi/asm/kvm.h          |  15 ++
->  arch/riscv/kvm/vcpu_sbi_fwft.c             | 197 +++++++++++++++++++--
->  3 files changed, 200 insertions(+), 13 deletions(-)
->
+> Thanks for taking a look, it's Make 4.2.1 at least. I tracked it down
+> to second expansion barfing when the variable name has a / in it. It
+> looks like it can be fixed with the below, so I didn't look too closely
+> at whether that's a bug, in what versions, or not previously supported
+> because I was able to fix it like this.
+> 
+> Thanks,
+> Nick
+> 
+>     build: work around second expansion limitation with some Make versions
+>     
+>     GNU Make 4.2.1 as shipped in Ubuntu 20.04 has a problem with secondary
+>     expansion and variable names containing the '/' character. Make 4.3 and
+>     4.4 don't have the problem.
+>     
+>     Avoid putting the riscv/ directory name in the sbi-deps variable, and
+>     instead strip the directory off the target name when turning it into
+>     the dependency variable name.
+> 
+> diff --git a/riscv/Makefile b/riscv/Makefile
+> index beaeaefa..64720c38 100644
+> --- a/riscv/Makefile
+> +++ b/riscv/Makefile
+> @@ -18,12 +18,12 @@ tests += $(TEST_DIR)/isa-dbltrp.$(exe)
+>  
+>  all: $(tests)
+>  
+> -$(TEST_DIR)/sbi-deps += $(TEST_DIR)/sbi-asm.o
+> -$(TEST_DIR)/sbi-deps += $(TEST_DIR)/sbi-dbtr.o
+> -$(TEST_DIR)/sbi-deps += $(TEST_DIR)/sbi-fwft.o
+> -$(TEST_DIR)/sbi-deps += $(TEST_DIR)/sbi-sse.o
+> +sbi-deps += $(TEST_DIR)/sbi-asm.o
+> +sbi-deps += $(TEST_DIR)/sbi-dbtr.o
+> +sbi-deps += $(TEST_DIR)/sbi-fwft.o
+> +sbi-deps += $(TEST_DIR)/sbi-sse.o
+>  
+> -all_deps += $($(TEST_DIR)/sbi-deps)
+> +all_deps += $(sbi-deps)
+>  
+>  # When built for EFI sieve needs extra memory, run with e.g. '-m 256' on QEMU
+>  $(TEST_DIR)/sieve.$(exe): AUXFLAGS = 0x1
+> @@ -113,7 +113,7 @@ cflatobjs += lib/efi.o
+>  .PRECIOUS: %.so
+>  
+>  %.so: EFI_LDFLAGS += -defsym=EFI_SUBSYSTEM=0xa --no-undefined
+> -%.so: %.o $(FLATLIBS) $(SRCDIR)/riscv/efi/elf_riscv64_efi.lds $(cstart.o) %.aux.o $$($$*-deps)
+> +%.so: %.o $(FLATLIBS) $(SRCDIR)/riscv/efi/elf_riscv64_efi.lds $(cstart.o) %.aux.o $$($$(notdir $$*)-deps)
+>  	$(LD) $(EFI_LDFLAGS) -o $@ -T $(SRCDIR)/riscv/efi/elf_riscv64_efi.lds \
+>  		$(filter %.o, $^) $(FLATLIBS) $(EFI_LIBS)
+>  
+> @@ -129,7 +129,7 @@ cflatobjs += lib/efi.o
+>  		-O binary $^ $@
+>  else
+>  %.elf: LDFLAGS += -pie -n -z notext
+> -%.elf: %.o $(FLATLIBS) $(SRCDIR)/riscv/flat.lds $(cstart.o) %.aux.o $$($$*-deps)
+> +%.elf: %.o $(FLATLIBS) $(SRCDIR)/riscv/flat.lds $(cstart.o) %.aux.o $$($$(notdir $$*)-deps)
+>  	$(LD) $(LDFLAGS) -o $@ -T $(SRCDIR)/riscv/flat.lds \
+>  		$(filter %.o, $^) $(FLATLIBS)
+>  	@chmod a-x $@
 
-Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+Thanks, Nicholas.
+
+This looks good to me. Can you please send as an independent patch with
+your sign-off?
+
+Thanks,
+drew
 
 -- 
 kvm-riscv mailing list
