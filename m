@@ -4,48 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DBDA3CA0FED
-	for <kvm-riscv@archiver.kernel.org>; Tue,  9 Sep 2025 17:28:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E8E1CCA101F
+	for <kvm-riscv@archiver.kernel.org>; Wed, 10 Sep 2025 14:46:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:In-Reply-To:References:
 	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=ga88+T97gYK0jruO7M3ZepKjYhrtGM2ixv4gVIt4th8=; b=w1nz0uJEdAoJx5
-	HGMV+sKuHmXqdagIzbsKklgG0uLI2KtSA3vig7jZFLh+DWwrgXfHvNPgwLuX3oXKesyCObKlutp7P
-	lWpQtPpc3x206lyJ+tc/JaGzOwCA7PRsG47HjxR80i4l1p/il0UMm1b3W8JOV09h+8X3aR9s50gBd
-	06eYzh5A1S7dOm6jKYzYh1/bZ/wLboabKCn0Is3sh3O1ldyLmw0sLgIw8HnqHNbVzzPpuPrdW75w5
-	DPNVq1T6NpwrvFgJXnppUBKkNNEocPuSmgeH9cCSWZTHQBdaZ6gMj4Mj4tUeAiAOj82XvEWUcfJDU
-	rfMh1T92lEIlInN3EwGg==;
+	List-Owner; bh=yorXa3SQ6lplYNVJ65OA426hwuyzq9T1H+NxQVQAjcE=; b=FS1RWv5hzrQbj9
+	Gz1956sMN73FTjYpPF4B1Wex7MO9HYfiQTiTQHzmBIduJ6D+gj6LCQ/AZky2gaZ1/0NSKcJg2phO0
+	92yq9aHBFIEGVl3CkpsVCcTxQ9Cf9+u2JJgLfcNx2wSbkBi9wbVY3twjn9T3NOc2UISMs7S7c4uEK
+	z3YTzONDHCw7AtmC2ReKs6yChP2PzBhuJdy1Kw0PdcKWkdQF3aEpPP1cC8J6heNJxKlSvuPJLcM5s
+	P1utIHTgB+4zc0VSKziTiZk3WGdHtClsCSCqQThASONDGJElQm2sh/2/R0Gav6BrfG4ELtXiUwVfb
+	BPNbPsnEojc/CQWogdEQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uw28Y-000000098wZ-1B8F;
-	Tue, 09 Sep 2025 17:28:10 +0000
-Received: from tor.source.kernel.org ([172.105.4.254])
+	id 1uwM5M-0000000Epqu-2qml;
+	Wed, 10 Sep 2025 14:46:12 +0000
+Received: from mail-dm6nam12on20623.outbound.protection.outlook.com ([2a01:111:f403:2417::623] helo=NAM12-DM6-obe.outbound.protection.outlook.com)
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uw21F-00000008wS5-3wb5;
-	Tue, 09 Sep 2025 17:20:38 +0000
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 3750160224;
-	Tue,  9 Sep 2025 17:20:36 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5B305C4CEF4;
-	Tue,  9 Sep 2025 17:20:35 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1757438435;
-	bh=aDtO0EP2Luwblw7wXBa/S0nm/bbd84Amf4RIFEa0YMU=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=rWNA+SZ7P7XMqvonOPAEdmtY55rXaIKEEzU9HK+ppzMNafCHRqDvkVmEoUduHt/rT
-	 aa5OZZx3ilY519/VHWj4+vwbhsuG88pY0+u24AUMR9OeOT4pFbgJb7ecQe/x2pWO4E
-	 vcn4jx2aGZ2e8t05J44ouMyfLu5WoVzT4hxN53UWANQ6M/G517uScWAOMTyKqRmi5V
-	 diqflVnydGhyAkUdxMQ6Bnquv1D4Xk2wLalfluyanQAMUeNCL713BGUmRtcdXk2oSb
-	 +eCWCY1ISYJlrL6GLeiTkLfqGaoEYVf8wOe7r+TdNoqrDDp/wKG1ImILx8nFyAfEJN
-	 RYEyJmVbovIiA==
-Date: Tue, 9 Sep 2025 17:20:34 +0000
-From: Wei Liu <wei.liu@kernel.org>
+	id 1uwM5K-0000000EppW-0w4e;
+	Wed, 10 Sep 2025 14:46:11 +0000
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=gQYgIDs/sNZUKvptknRllknhFu92wFpnssh6ckZAYKKjEos005U452/Qh6xSsB6DcOBquzaDURO/nDdYqrkNUD55l28Trgze2zjTraoL7Mx0kIfqfjmjrP9yGP0RCTxFmcJYcx0ABCD696o1SQc1Zr3TSLbfk5PKW1gFWpJHolbQeCawSnBhH+cqht0sIIxj/jB/n/FPq717Eq4+9QrkbX4qEVq3KQynOhaE25y6CY+URbjPMCKiy3LUStFM108syg4g2uygqhPHC2yM9FSAmZVpuXXcJprlPBkGHva/NLbfOqowyonGwfBYNWEyRE587bBMgaX5D4UqQOgkBl5t5w==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=GS/HhxjUNWWUBSWYHXDpo04B+VfNj/i7NDijkz7gQYs=;
+ b=QzjCbn/udIBd0xifgQMraOLJKU9GgHVA1t28iAiE78UJckaXwuVfEpvMMDKPsnywUDJOEYR4F+B982nTK88HcxbkdCeC+XOkeMrgR7usKqUO3jFiGOJZUnjlQTdMefEnz9xwlB3pyguDh+yGYIz2gJF2cA2IYKDqH3JatjA/jkpsZssYbKM3VxsgS3+xyba6Xwfa6dqqYsqMFYa+TrbOw5CXZlrtSXuJc64c5YewFjBey5Q9ZKrAYMqIWfFv9FtKRE1JFxC/rEOYjAG9AmvUQS6ip49P9Bl9bssWP6XXuIB8nekgEr4agktJHEyoR6awXYYymdfGixJEcyXmjJfWSA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=GS/HhxjUNWWUBSWYHXDpo04B+VfNj/i7NDijkz7gQYs=;
+ b=sIiyGwbPJWLXXb11pT3KWS4GYhxeSXagrteT0e68BPiVqeet3bPG6zdxA/g+R+VZEYDG4Z2Hpye61SVeRrjRIU7+7R79YJI6UWeFh/hWZB3lYAzGP+18ZJUWqbxFDt2d8hQvhdv/hYWEj1iz7f0VluYJnlV2MQKaEbDsPqfAtjBBoA9nTfH+d+TzYQHRKDXg1RWj+Q9VtvBLyviOUSKPTaQ+w6p7iqHqWYMP3lX6J9/RYb7+6Hw213lF9KqrixtouOrdgrj39yrlcG44MTQKO6AxBYItxG35OvDeXnTsARYYrfLp/+5BuD1Nb6laacth2mzYbtBmOQMXCuhKE+VYOw==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from SN7PR12MB8059.namprd12.prod.outlook.com (2603:10b6:806:32b::7)
+ by SJ5PPFC41ACEE7B.namprd12.prod.outlook.com (2603:10b6:a0f:fc02::9a0) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9094.22; Wed, 10 Sep
+ 2025 14:45:57 +0000
+Received: from SN7PR12MB8059.namprd12.prod.outlook.com
+ ([fe80::4ee2:654e:1fe8:4b91]) by SN7PR12MB8059.namprd12.prod.outlook.com
+ ([fe80::4ee2:654e:1fe8:4b91%3]) with mapi id 15.20.9094.021; Wed, 10 Sep 2025
+ 14:45:57 +0000
+Date: Wed, 10 Sep 2025 10:45:54 -0400
+From: Joel Fernandes <joelagnelf@nvidia.com>
 To: Sean Christopherson <seanjc@google.com>
-Cc: Wei Liu <wei.liu@kernel.org>, Marc Zyngier <maz@kernel.org>,
-	Oliver Upton <oliver.upton@linux.dev>,
+Cc: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>,
 	Catalin Marinas <catalin.marinas@arm.com>,
 	Will Deacon <will@kernel.org>,
 	Tianrui Zhao <zhaotianrui@loongson.cn>,
@@ -60,13 +70,12 @@ Cc: Wei Liu <wei.liu@kernel.org>, Marc Zyngier <maz@kernel.org>,
 	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
 	"K. Y. Srinivasan" <kys@microsoft.com>,
 	Haiyang Zhang <haiyangz@microsoft.com>,
-	Dexuan Cui <decui@microsoft.com>,
+	Wei Liu <wei.liu@kernel.org>, Dexuan Cui <decui@microsoft.com>,
 	Peter Zijlstra <peterz@infradead.org>,
 	Andy Lutomirski <luto@kernel.org>,
 	"Paul E. McKenney" <paulmck@kernel.org>,
 	Frederic Weisbecker <frederic@kernel.org>,
 	Neeraj Upadhyay <neeraj.upadhyay@kernel.org>,
-	Joel Fernandes <joelagnelf@nvidia.com>,
 	Josh Triplett <josh@joshtriplett.org>,
 	Boqun Feng <boqun.feng@gmail.com>,
 	Uladzislau Rezki <urezki@gmail.com>, linux-kernel@vger.kernel.org,
@@ -76,15 +85,92 @@ Cc: Wei Liu <wei.liu@kernel.org>, Marc Zyngier <maz@kernel.org>,
 	linux-hyperv@vger.kernel.org, rcu@vger.kernel.org,
 	Nuno Das Neves <nunodasneves@linux.microsoft.com>,
 	Mukesh R <mrathor@linux.microsoft.com>
-Subject: Re: [PATCH v2 0/7] Drivers: hv: Fix NEED_RESCHED_LAZY and use common
- APIs
-Message-ID: <aMBh4kPNOEUKvxpV@liuwe-devbox-ubuntu-v2.lamzopl0uupeniq2etz1fddiyg.xx.internal.cloudapp.net>
+Subject: Re: [PATCH v2 5/7] entry: Rename "kvm" entry code assets to "virt"
+ to genericize APIs
+Message-ID: <20250910144554.GA563958@joelbox2>
 References: <20250828000156.23389-1-seanjc@google.com>
- <aLojpyTwAMdb1z6D@liuwe-devbox-ubuntu-v2.lamzopl0uupeniq2etz1fddiyg.xx.internal.cloudapp.net>
- <aLp3makY6FzuUwor@google.com>
-MIME-Version: 1.0
+ <20250828000156.23389-6-seanjc@google.com>
 Content-Disposition: inline
-In-Reply-To: <aLp3makY6FzuUwor@google.com>
+In-Reply-To: <20250828000156.23389-6-seanjc@google.com>
+X-ClientProxiedBy: BL1P222CA0004.NAMP222.PROD.OUTLOOK.COM
+ (2603:10b6:208:2c7::9) To SN7PR12MB8059.namprd12.prod.outlook.com
+ (2603:10b6:806:32b::7)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SN7PR12MB8059:EE_|SJ5PPFC41ACEE7B:EE_
+X-MS-Office365-Filtering-Correlation-Id: 2d397e61-da5a-4d07-617a-08ddf078c037
+X-LD-Processed: 43083d15-7273-40c1-b7db-39efd9ccc17a,ExtAddr
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|366016|1800799024|376014|7416014|7053199007;
+X-Microsoft-Antispam-Message-Info: =?us-ascii?Q?lBJ1mftQXlMcaL0dEq2p0usWYqA3/fZZoZoDYKEdYljdF1JHeSI3IbYN8TNQ?=
+ =?us-ascii?Q?I7HbQein0kFG+OlpL20jCWiYO4pWUtXgOLbx+ldhpYn7AoGLT9GqRj+nvY3j?=
+ =?us-ascii?Q?9ltZg95twIK8A7NcqdEidVZYCg+JaC45PA3SvTiD8uikBMBnnt00L2XxO1PY?=
+ =?us-ascii?Q?FJToTiNdkS0x0QKJUmauRap3MLUdI6qMFkvblMO/HT/oYnLJ2SRF8Bil7JE1?=
+ =?us-ascii?Q?IZ0hJv91zGM5yh4Qh2CtDSqcceMIxZAMlI7eofuQK/noMZ+EMH2OVwIHJ7lI?=
+ =?us-ascii?Q?C6XNOSqk5zBwsmVnUUFMMDISh7empJvTyxRrVEol+Jw5D6xalDyC8WMFlg/t?=
+ =?us-ascii?Q?qofaX+8gv6EYwKMgwUf9rx9BeNf50tpc6Ztz87W10ty6KzsqSxe3IamcBHLx?=
+ =?us-ascii?Q?+IFBdJUnb4CZga4t8bQfDRgAK9W+GzunBDPtoOPABR8AacITyYavxJMXe7XK?=
+ =?us-ascii?Q?InVOXu/z5l5jf93JQZouFZk68SDn0TqY2HS/+D3I/Bi19jzcrEbUpHZJOdTI?=
+ =?us-ascii?Q?0FxYtQu1As86jYhUsnnokCcyq+msUvSwOQ1Q35eCrkIIf+VyaPaNZ9M0OaKx?=
+ =?us-ascii?Q?aLy/aor51huel7nx52f6sqet0UCabae2NnhmUVNbIONz0bSjCQjql7fj0oMa?=
+ =?us-ascii?Q?E0Yim+V98PLMqMzzO7jJelSdN7a+tUB8US1YZpqj7I9L8bbA8HGdG5S0QHvt?=
+ =?us-ascii?Q?muHH8i0FNx2GDYqLBvTL386vHlM3u8Wkl0fgSs67UMI6fk1Y1kcUglPAnmB0?=
+ =?us-ascii?Q?5YuIZ3kXKH3pFZOeDT7NdMAsqEJPLKeJEV6osyFlpv6lmlPQYrsiiJJZ2TrP?=
+ =?us-ascii?Q?C/cbOWgFhtjO87U1KGZeYH1+Agjw6+RvKdT6taCUUHUroMVqk3ABeRd3Y9te?=
+ =?us-ascii?Q?Waw5DmlJlliDZmD/CoW5NNWSThvQ9JgWj/y0swW8zdq6ocIoqtCmJ07rmL3b?=
+ =?us-ascii?Q?hQ6fGhuiHoobrn2F1AP2ybXGrBRtfTUhOU3m84/wBkU4XYMYBdY70mKJZjTF?=
+ =?us-ascii?Q?UXkevQaCmIIlFljHRHCnm8LX3SsT1eezPEcvQMN1G8lm2KWdztA/bsWCo2Tb?=
+ =?us-ascii?Q?L50NVM1UxZ8m2gyDvKeZdEjDJenFPl80FUQxyMCb2ry2lLGlsCEjW0VcazpZ?=
+ =?us-ascii?Q?Skf1vr6qrpOmGfoPTBsrPRAlqRAE75EpsqSAPXkNm8W+h7lGfC4atHH8s9BR?=
+ =?us-ascii?Q?JfzZLzL5Nn+imODqj1SkfSo8RqfjkXhTgTDmC321969fUyM64ZQqQBdPgJk9?=
+ =?us-ascii?Q?QdvelXW3m8mjkk39lSYzPWQoBIDMad5W+Hu/Z/VOeS5o5qLmE1hPyjd5JVmk?=
+ =?us-ascii?Q?/k2/a8exVRHidMiLtwvUYXbiTgJDYhvBKl+fgXVY4ndi1GEmTqgVNDqJyikX?=
+ =?us-ascii?Q?cLVIcwM6olbaezLyMF7tzt5TamPkJ66ojyaVSRqQ06yeSIHIEQfvaBkBZfXN?=
+ =?us-ascii?Q?qCezkY0+/fA=3D?=
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SN7PR12MB8059.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(376014)(7416014)(7053199007);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?UJsfAHztgoECTlOO9AxpQTX3/m5ix6H2GCaRGnYkNL6e5Xf667NMWTOhLXIg?=
+ =?us-ascii?Q?vlnvmhwt3biFyD7WYKjXHc339cFVD50fWB81kLavwPqI9/aaQ+QjaBGD8+Dn?=
+ =?us-ascii?Q?sD9yLpnW+TYYYjy3zNTwm1q7AmKrhbhW95zrZuXb54aO0SH5YV4ssi2JIwX3?=
+ =?us-ascii?Q?IDua9rwBZScxB3LQWOxy/B0Pz2vpIr2cWq2owuHrgSPiqU/HwZCIdr+D72Kh?=
+ =?us-ascii?Q?ON7miE+ZT7FtgUcJW/T/Fl5YfYCcBIX4I665Knvjziegu+pKueBe1Yyqdg6Q?=
+ =?us-ascii?Q?GyWwZHBPdFAYGXXSf4EJU0p46bfsCn0tDt4o5FsOBkgb6nhJsgixf9o6CADZ?=
+ =?us-ascii?Q?ASAEpgSw31j8vKhOKRMSMXxEzaUKADyw5IDnsZDnxNHs4yicR0/1NmtoFkyA?=
+ =?us-ascii?Q?dT/34dEmGcGmtrV/u14c81pAnR2oi+Bmd6zkpeMgl+CJ2xCDyrz+dISqHy6j?=
+ =?us-ascii?Q?WDHpvIpdbk3BzVHtm8UwGyF6r09LOJelkTiAseHN5ETIHhIn5p7kSKtmVqIc?=
+ =?us-ascii?Q?lQkEHNNj/mRTqtvVYWKJReFMSDzKtYbrZMgkDLJz/V1jTcZ3D2SFZkMbnlNV?=
+ =?us-ascii?Q?sOSHr8unvocM8OJx3qZqXOffmwzquZEjJFJqyNH1aWVCv1GQ8JccCwArCBj8?=
+ =?us-ascii?Q?3+uQBuePtboGi/lLyxbWYEVyRkmORVyY08kOjb3Ev/E2lHCcnaMixALwG+jy?=
+ =?us-ascii?Q?VrGpnN3kdww5OKF9UlSMRgaZznX1G2JpfJ33zolBIZs99E/8F3PwwE1TCVhf?=
+ =?us-ascii?Q?5oZ8N5B8yqjGiUiBq7/eEvG84BDsRqURauHWcQyoAH04sbALtP8Mc0Jlprj0?=
+ =?us-ascii?Q?pBBf3JyFuVz0BXIVZ4bJlJ0P23MvX+1c9BbillsrQIlbj18EsPjW3aSsQi94?=
+ =?us-ascii?Q?JkweTku7PpFPuU9YP2yrgVev+J7cIeSUZryMDqC35/JohfXZMzYRQEDB3rYV?=
+ =?us-ascii?Q?1uiXMK8Qwcg6EDsw1dLRBhkXp0RkU2YyRnKvhEVsFZUuAwbZqImsIAO8rGA8?=
+ =?us-ascii?Q?rirHIL5GJrfxut8rsFhHs3sYgNHw1ho9R1rw/OL97wEYQaAPDmuWaupYzGuN?=
+ =?us-ascii?Q?A5W8hOvwcuF1mGmkdfBylXKw3pqZgydBucVdH/CnTUNj+/oxfo1+xxSwb8VS?=
+ =?us-ascii?Q?9RP/gSdspzFrByfiOswg3w36bsLlWQhGIAsDwI9h+Xy2Yrqrgfzn2ZaD8tDj?=
+ =?us-ascii?Q?onW17E0hBCNKtTIEIbWNFi5cAEsS9kfWxtKQWoBpJVKGPiNC1Dpxz2jiC365?=
+ =?us-ascii?Q?QfqJSEYFWFKYuemeW5KZQqOI/AxHMy5SsYEtlBbRsAZ0v609CQupG2ajnek1?=
+ =?us-ascii?Q?4bQT5U+rPrGB8nMBqy5p7MBfysJNXt3S9u2ZFT7bTGuCdsH0YXC42euYaxpl?=
+ =?us-ascii?Q?UpZsGq65gKSndA6hC3yFFOHsG3T1oesdpe6yZvwWuGjCI2z5rRjRZu+GxaCa?=
+ =?us-ascii?Q?wS0yPwwnBBh1HLdYYB6DIK7x8qtB41zhabCCVjlYvmEdeJ5qeik9bviQpN1r?=
+ =?us-ascii?Q?9U0AulckHw6Msn8qCGOE8PjSXoR7It5yYsaoQ48XvUSmBPZ0wqRc8UkEVALq?=
+ =?us-ascii?Q?UariTFoEMwTB3crPDdPenrRwRarWFwC9X22y0cTA?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 2d397e61-da5a-4d07-617a-08ddf078c037
+X-MS-Exchange-CrossTenant-AuthSource: SN7PR12MB8059.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Sep 2025 14:45:57.0130
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: ohVyGPNn74G55qtyxmdCEEKWLQ6b8hbS7a05yyTQfmTfC6W/VO+qETLpxI1/NQC2UTL1A9FvQ7h2cySDRJzVhQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ5PPFC41ACEE7B
+X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
+X-CRM114-CacheID: sfid-20250910_074610_308055_46DAD69C 
+X-CRM114-Status: GOOD (  18.56  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -101,59 +187,258 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Thu, Sep 04, 2025 at 10:39:37PM -0700, Sean Christopherson wrote:
-> On Thu, Sep 04, 2025, Wei Liu wrote:
-> > On Wed, Aug 27, 2025 at 05:01:49PM -0700, Sean Christopherson wrote:
-> > > Fix a bug where MSHV root partitions (and upper-level VTL code) don't honor
-> > > NEED_RESCHED_LAZY, and then deduplicate the TIF related MSHV code by turning
-> > > the "kvm" entry APIs into more generic "virt" APIs.
-> > > 
-> > > This version is based on
-> > > 
-> > >   git://git.kernel.org/pub/scm/linux/kernel/git/hyperv/linux.git hyperv-next
-> > > 
-> > > in order to pickup the VTL changes that are queued for 6.18.  I also
-> > > squashed the NEED_RESCHED_LAZY fixes for root and VTL modes into a single
-> > > patch, as it should be easy/straightforward to drop the VTL change as needed
-> > > if we want this in 6.17 or earlier.
-> > > 
-> > > That effectively means the full series is dependent on the VTL changes being
-> > > fully merged for 6.18.  But I think that's ok as it's really only the MSHV
-> > > changes that have any urgency whatsoever, and I assume that Microsoft is
-> > > the only user that truly cares about the MSHV root fix.  I.e. if the whole
-> > > thing gets delayed, I think it's only the Hyper-V folks that are impacted.
-> > > 
-> > > I have no preference what tree this goes through, or when, and can respin
-> > > and/or split as needed.
-> > > 
-> > > As with v1, the Hyper-V stuff and non-x86 architectures are compile-tested
-> > > only.
-> > > 
-> > > v2:
-> > >  - Rebase on hyperv-next.
-> > >  - Fix and converge the VTL code as well. [Peter, Nuno]
-> > > 
-> > > v1: https://lore.kernel.org/all/20250825200622.3759571-1-seanjc@google.com
-> > > 
-> > 
-> > I dropped the mshv_vtl changes in this series and applied the rest
-> > (including the KVM changes) to hyperv-next.
+On Wed, Aug 27, 2025 at 05:01:54PM -0700, Sean Christopherson wrote:
+> Rename the "kvm" entry code files and Kconfigs to use generic "virt"
+> nomenclature so that the code can be reused by other hypervisors (or
+> rather, their root/dom0 partition drivers), without incorrectly suggesting
+> the code somehow relies on and/or involves KVM.
 > 
-> mshv_do_pre_guest_mode_work() ended up getting left behind since its removal was
-> in the last mshv_vtl patch.
+> No functional change intended.
 > 
->   $ git grep mshv_do_pre_guest_mode_work
->   drivers/hv/mshv.h:int mshv_do_pre_guest_mode_work(ulong th_flags);
->   drivers/hv/mshv_common.c:int mshv_do_pre_guest_mode_work(ulong th_flags)
->   drivers/hv/mshv_common.c:EXPORT_SYMBOL_GPL(mshv_do_pre_guest_mode_work);
-> 
-> Want to squash this into 3786d7d6b3c0 ("mshv: Use common "entry virt" APIs to do
-> work in root before running guest")?
-> 
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
+> ---
+>  MAINTAINERS                                 | 2 +-
+>  arch/arm64/kvm/Kconfig                      | 2 +-
+>  arch/loongarch/kvm/Kconfig                  | 2 +-
+>  arch/riscv/kvm/Kconfig                      | 2 +-
+>  arch/x86/kvm/Kconfig                        | 2 +-
+>  include/linux/{entry-kvm.h => entry-virt.h} | 8 ++++----
+>  include/linux/kvm_host.h                    | 6 +++---
+>  include/linux/rcupdate.h                    | 2 +-
+>  kernel/entry/Makefile                       | 2 +-
+>  kernel/entry/{kvm.c => virt.c}              | 2 +-
+>  kernel/rcu/tree.c                           | 6 +++---
 
-It's done. Thanks for pointing it out.
+For RCU part,
 
-Wei
+Reviewed-by: Joel Fernandes <joelagnelf@nvidia.com>
+
+thanks,
+
+ - Joel
+
+
+
+
+>  virt/kvm/Kconfig                            | 2 +-
+>  12 files changed, 19 insertions(+), 19 deletions(-)
+>  rename include/linux/{entry-kvm.h => entry-virt.h} (94%)
+>  rename kernel/entry/{kvm.c => virt.c} (97%)
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index fe168477caa4..c255048333f0 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -10200,7 +10200,7 @@ L:	linux-kernel@vger.kernel.org
+>  S:	Maintained
+>  T:	git git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git core/entry
+>  F:	include/linux/entry-common.h
+> -F:	include/linux/entry-kvm.h
+> +F:	include/linux/entry-virt.h
+>  F:	include/linux/irq-entry-common.h
+>  F:	kernel/entry/
+>  
+> diff --git a/arch/arm64/kvm/Kconfig b/arch/arm64/kvm/Kconfig
+> index 713248f240e0..6f4fc3caa31a 100644
+> --- a/arch/arm64/kvm/Kconfig
+> +++ b/arch/arm64/kvm/Kconfig
+> @@ -25,7 +25,7 @@ menuconfig KVM
+>  	select HAVE_KVM_CPU_RELAX_INTERCEPT
+>  	select KVM_MMIO
+>  	select KVM_GENERIC_DIRTYLOG_READ_PROTECT
+> -	select KVM_XFER_TO_GUEST_WORK
+> +	select VIRT_XFER_TO_GUEST_WORK
+>  	select KVM_VFIO
+>  	select HAVE_KVM_DIRTY_RING_ACQ_REL
+>  	select NEED_KVM_DIRTY_RING_WITH_BITMAP
+> diff --git a/arch/loongarch/kvm/Kconfig b/arch/loongarch/kvm/Kconfig
+> index 40eea6da7c25..ae64bbdf83a7 100644
+> --- a/arch/loongarch/kvm/Kconfig
+> +++ b/arch/loongarch/kvm/Kconfig
+> @@ -31,7 +31,7 @@ config KVM
+>  	select KVM_GENERIC_HARDWARE_ENABLING
+>  	select KVM_GENERIC_MMU_NOTIFIER
+>  	select KVM_MMIO
+> -	select KVM_XFER_TO_GUEST_WORK
+> +	select VIRT_XFER_TO_GUEST_WORK
+>  	select SCHED_INFO
+>  	select GUEST_PERF_EVENTS if PERF_EVENTS
+>  	help
+> diff --git a/arch/riscv/kvm/Kconfig b/arch/riscv/kvm/Kconfig
+> index 5a62091b0809..c50328212917 100644
+> --- a/arch/riscv/kvm/Kconfig
+> +++ b/arch/riscv/kvm/Kconfig
+> @@ -30,7 +30,7 @@ config KVM
+>  	select KVM_GENERIC_DIRTYLOG_READ_PROTECT
+>  	select KVM_GENERIC_HARDWARE_ENABLING
+>  	select KVM_MMIO
+> -	select KVM_XFER_TO_GUEST_WORK
+> +	select VIRT_XFER_TO_GUEST_WORK
+>  	select KVM_GENERIC_MMU_NOTIFIER
+>  	select SCHED_INFO
+>  	select GUEST_PERF_EVENTS if PERF_EVENTS
+> diff --git a/arch/x86/kvm/Kconfig b/arch/x86/kvm/Kconfig
+> index 2c86673155c9..f81074b0c0a8 100644
+> --- a/arch/x86/kvm/Kconfig
+> +++ b/arch/x86/kvm/Kconfig
+> @@ -40,7 +40,7 @@ config KVM_X86
+>  	select HAVE_KVM_MSI
+>  	select HAVE_KVM_CPU_RELAX_INTERCEPT
+>  	select HAVE_KVM_NO_POLL
+> -	select KVM_XFER_TO_GUEST_WORK
+> +	select VIRT_XFER_TO_GUEST_WORK
+>  	select KVM_GENERIC_DIRTYLOG_READ_PROTECT
+>  	select KVM_VFIO
+>  	select HAVE_KVM_PM_NOTIFIER if PM
+> diff --git a/include/linux/entry-kvm.h b/include/linux/entry-virt.h
+> similarity index 94%
+> rename from include/linux/entry-kvm.h
+> rename to include/linux/entry-virt.h
+> index 3644de7e6019..42c89e3e5ca7 100644
+> --- a/include/linux/entry-kvm.h
+> +++ b/include/linux/entry-virt.h
+> @@ -1,6 +1,6 @@
+>  /* SPDX-License-Identifier: GPL-2.0 */
+> -#ifndef __LINUX_ENTRYKVM_H
+> -#define __LINUX_ENTRYKVM_H
+> +#ifndef __LINUX_ENTRYVIRT_H
+> +#define __LINUX_ENTRYVIRT_H
+>  
+>  #include <linux/static_call_types.h>
+>  #include <linux/resume_user_mode.h>
+> @@ -10,7 +10,7 @@
+>  #include <linux/tick.h>
+>  
+>  /* Transfer to guest mode work */
+> -#ifdef CONFIG_KVM_XFER_TO_GUEST_WORK
+> +#ifdef CONFIG_VIRT_XFER_TO_GUEST_WORK
+>  
+>  #ifndef ARCH_XFER_TO_GUEST_MODE_WORK
+>  # define ARCH_XFER_TO_GUEST_MODE_WORK	(0)
+> @@ -90,6 +90,6 @@ static inline bool xfer_to_guest_mode_work_pending(void)
+>  	lockdep_assert_irqs_disabled();
+>  	return __xfer_to_guest_mode_work_pending();
+>  }
+> -#endif /* CONFIG_KVM_XFER_TO_GUEST_WORK */
+> +#endif /* CONFIG_VIRT_XFER_TO_GUEST_WORK */
+>  
+>  #endif
+> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+> index 598b9473e46d..70ac2267d5d0 100644
+> --- a/include/linux/kvm_host.h
+> +++ b/include/linux/kvm_host.h
+> @@ -2,7 +2,7 @@
+>  #ifndef __KVM_HOST_H
+>  #define __KVM_HOST_H
+>  
+> -#include <linux/entry-kvm.h>
+> +#include <linux/entry-virt.h>
+>  #include <linux/types.h>
+>  #include <linux/hardirq.h>
+>  #include <linux/list.h>
+> @@ -2444,7 +2444,7 @@ static inline int kvm_arch_vcpu_run_pid_change(struct kvm_vcpu *vcpu)
+>  }
+>  #endif /* CONFIG_HAVE_KVM_VCPU_RUN_PID_CHANGE */
+>  
+> -#ifdef CONFIG_KVM_XFER_TO_GUEST_WORK
+> +#ifdef CONFIG_VIRT_XFER_TO_GUEST_WORK
+>  static inline void kvm_handle_signal_exit(struct kvm_vcpu *vcpu)
+>  {
+>  	vcpu->run->exit_reason = KVM_EXIT_INTR;
+> @@ -2461,7 +2461,7 @@ static inline int kvm_xfer_to_guest_mode_handle_work(struct kvm_vcpu *vcpu)
+>  	}
+>  	return r;
+>  }
+> -#endif /* CONFIG_KVM_XFER_TO_GUEST_WORK */
+> +#endif /* CONFIG_VIRT_XFER_TO_GUEST_WORK */
+>  
+>  /*
+>   * If more than one page is being (un)accounted, @virt must be the address of
+> diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
+> index 120536f4c6eb..1e1f3aa375d9 100644
+> --- a/include/linux/rcupdate.h
+> +++ b/include/linux/rcupdate.h
+> @@ -129,7 +129,7 @@ static inline void rcu_sysrq_start(void) { }
+>  static inline void rcu_sysrq_end(void) { }
+>  #endif /* #else #ifdef CONFIG_RCU_STALL_COMMON */
+>  
+> -#if defined(CONFIG_NO_HZ_FULL) && (!defined(CONFIG_GENERIC_ENTRY) || !defined(CONFIG_KVM_XFER_TO_GUEST_WORK))
+> +#if defined(CONFIG_NO_HZ_FULL) && (!defined(CONFIG_GENERIC_ENTRY) || !defined(CONFIG_VIRT_XFER_TO_GUEST_WORK))
+>  void rcu_irq_work_resched(void);
+>  #else
+>  static __always_inline void rcu_irq_work_resched(void) { }
+> diff --git a/kernel/entry/Makefile b/kernel/entry/Makefile
+> index 77fcd83dd663..2333d70802e4 100644
+> --- a/kernel/entry/Makefile
+> +++ b/kernel/entry/Makefile
+> @@ -14,4 +14,4 @@ CFLAGS_common.o		+= -fno-stack-protector
+>  
+>  obj-$(CONFIG_GENERIC_IRQ_ENTRY) 	+= common.o
+>  obj-$(CONFIG_GENERIC_SYSCALL) 		+= syscall-common.o syscall_user_dispatch.o
+> -obj-$(CONFIG_KVM_XFER_TO_GUEST_WORK)	+= kvm.o
+> +obj-$(CONFIG_VIRT_XFER_TO_GUEST_WORK)	+= virt.o
+> diff --git a/kernel/entry/kvm.c b/kernel/entry/virt.c
+> similarity index 97%
+> rename from kernel/entry/kvm.c
+> rename to kernel/entry/virt.c
+> index 6fc762eaacca..c52f99249763 100644
+> --- a/kernel/entry/kvm.c
+> +++ b/kernel/entry/virt.c
+> @@ -1,6 +1,6 @@
+>  // SPDX-License-Identifier: GPL-2.0
+>  
+> -#include <linux/entry-kvm.h>
+> +#include <linux/entry-virt.h>
+>  
+>  static int xfer_to_guest_mode_work(unsigned long ti_work)
+>  {
+> diff --git a/kernel/rcu/tree.c b/kernel/rcu/tree.c
+> index 174ee243b349..995489b72535 100644
+> --- a/kernel/rcu/tree.c
+> +++ b/kernel/rcu/tree.c
+> @@ -573,7 +573,7 @@ void rcutorture_format_gp_seqs(unsigned long long seqs, char *cp, size_t len)
+>  }
+>  EXPORT_SYMBOL_GPL(rcutorture_format_gp_seqs);
+>  
+> -#if defined(CONFIG_NO_HZ_FULL) && (!defined(CONFIG_GENERIC_ENTRY) || !defined(CONFIG_KVM_XFER_TO_GUEST_WORK))
+> +#if defined(CONFIG_NO_HZ_FULL) && (!defined(CONFIG_GENERIC_ENTRY) || !defined(CONFIG_VIRT_XFER_TO_GUEST_WORK))
+>  /*
+>   * An empty function that will trigger a reschedule on
+>   * IRQ tail once IRQs get re-enabled on userspace/guest resume.
+> @@ -602,7 +602,7 @@ noinstr void rcu_irq_work_resched(void)
+>  	if (IS_ENABLED(CONFIG_GENERIC_ENTRY) && !(current->flags & PF_VCPU))
+>  		return;
+>  
+> -	if (IS_ENABLED(CONFIG_KVM_XFER_TO_GUEST_WORK) && (current->flags & PF_VCPU))
+> +	if (IS_ENABLED(CONFIG_VIRT_XFER_TO_GUEST_WORK) && (current->flags & PF_VCPU))
+>  		return;
+>  
+>  	instrumentation_begin();
+> @@ -611,7 +611,7 @@ noinstr void rcu_irq_work_resched(void)
+>  	}
+>  	instrumentation_end();
+>  }
+> -#endif /* #if defined(CONFIG_NO_HZ_FULL) && (!defined(CONFIG_GENERIC_ENTRY) || !defined(CONFIG_KVM_XFER_TO_GUEST_WORK)) */
+> +#endif /* #if defined(CONFIG_NO_HZ_FULL) && (!defined(CONFIG_GENERIC_ENTRY) || !defined(CONFIG_VIRT_XFER_TO_GUEST_WORK)) */
+>  
+>  #ifdef CONFIG_PROVE_RCU
+>  /**
+> diff --git a/virt/kvm/Kconfig b/virt/kvm/Kconfig
+> index 727b542074e7..ce843db53831 100644
+> --- a/virt/kvm/Kconfig
+> +++ b/virt/kvm/Kconfig
+> @@ -87,7 +87,7 @@ config HAVE_KVM_VCPU_RUN_PID_CHANGE
+>  config HAVE_KVM_NO_POLL
+>         bool
+>  
+> -config KVM_XFER_TO_GUEST_WORK
+> +config VIRT_XFER_TO_GUEST_WORK
+>         bool
+>  
+>  config HAVE_KVM_PM_NOTIFIER
+> -- 
+> 2.51.0.268.g9569e192d0-goog
+> 
 
 -- 
 kvm-riscv mailing list
