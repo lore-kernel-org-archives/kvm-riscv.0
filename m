@@ -4,87 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 43692CAC597
-	for <kvm-riscv@archiver.kernel.org>; Mon, 15 Sep 2025 15:26:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2BAE9CAC592
+	for <kvm-riscv@archiver.kernel.org>; Mon, 15 Sep 2025 15:31:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=NRzcXap/087pLc8/Bq/nZuyc+PeWlaqHJg4JuX/7x2A=; b=OMghsVGCi3P9yw
-	I+vJsLu0O/14zruwYVEjaiOTq7zQXKrtOtS2EskzBMILmOWHXGhu8B1HzjvAbdE0Bv1kUmfYNL0No
-	F/i3zEgMMfSoDdF/9noPea6pF6MkP4htFbjuW3uQGf/fFxlEYbUx0SG/8yWrgBFNe7KQv8UUcGiYt
-	+SiLWumP7b0WXU6F7HOLZBv03aurWxZOlSyNQa+TJRGNqtqpKVH+8Z2Z6eSCUOCUT0w7Av2NXnHHE
-	1zoBFWifrgOSn8x7qcJP2Fy/cmCwm5jeyjAX6MreAWkh2uk29HJMGBLW7IdhKga5vFZT9l+GgB35m
-	X9UKmDwI/4sigt3X3pKw==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=rLa5apuoaqpJxpTlPQq5wjXhzUi992ItFJAFFnYb8OE=; b=DF4/dJgO4wYATn
+	wP4pzA2deyoUSDySspTkfSiWqjI+/vT2zSOZZrLpyiTZYol5fIMOONWZbnxYliyuWUlOthlmjp6zC
+	9q5UyrDXwpiQxwgYCWDVR2b/g2CQ5XHvFsePwu9Kc2kFYXmK/GchGE5UaoqC//Zb+YDSuRZFfU1OV
+	MO4ej/7VSww2ZoBQ5isG+9xFHmVhm9yny8rfJ/dCJGlku7BO3eWhkBZzqZCsIcEg1QjjN54EBcpHb
+	CfRQ1mDpIHremvlyjKHUHhcyDddBTtFhDzQtNNoq8Nc+J75qoMjb+N4ZOvU6wtH+qNS1/5oiGGXml
+	ebm9WOLd7cCtgTC/bh4Q==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uyB6S-00000004wOY-3iIW;
-	Mon, 15 Sep 2025 15:26:52 +0000
-Received: from mail-il1-x134.google.com ([2607:f8b0:4864:20::134])
+	id 1uyBAn-00000004xIu-3sot;
+	Mon, 15 Sep 2025 15:31:21 +0000
+Received: from m16.mail.163.com ([220.197.31.4])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uyB6Q-00000004wNg-1B5Y
-	for kvm-riscv@lists.infradead.org;
-	Mon, 15 Sep 2025 15:26:51 +0000
-Received: by mail-il1-x134.google.com with SMTP id e9e14a558f8ab-4240111d446so17149155ab.3
-        for <kvm-riscv@lists.infradead.org>; Mon, 15 Sep 2025 08:26:49 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ventanamicro.com; s=google; t=1757950009; x=1758554809; darn=lists.infradead.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=lgIK+urtilm1qOsjSmDUUjKbzrkdpZTbpLIEbKtk/E8=;
-        b=CSa1YaI82JYaeZTHdzAsMWGNla4LbHY7/2QkPnMwKy/Agp2WHrBo6o6dPL1ODmjrwc
-         fUhbFmBWhzXbYreyv9F+5lMq4dXkF2G7Nk8blPRYvvgOhgzbCF0Gtj3nHowavkvH1k9G
-         mBmE+SBjq+EjzVhCx0dCJWAvdFxZKUvshA2+nvEBl2p2LoJS4cMMPobEhRprxVRsPe3L
-         mUOSAZtSDZPTA1YK9Huyuyw2mJDDwlHRVp9Cn7X9/iY+4RQDdFr18FZALLmErtZamOJM
-         8DNwF8PX6XlM6lNyCOUmE5pm2k/OIcAVIKNdnIOeZcpeiS5vseXDWEgzWphD8Ytnh4fm
-         tpPA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1757950009; x=1758554809;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=lgIK+urtilm1qOsjSmDUUjKbzrkdpZTbpLIEbKtk/E8=;
-        b=Xs8i4mzCgOOcV1TShyZeCU/9nhvhnCbag4Qyx1QIJaZhaHGwciGgrMhO3ximBVQJN4
-         uerkuLlzGTnKVFppEVSq43wzAiLonc9qM5JEgL4jyG/cIPA7H4OehWyWsMT+Q0zjfo30
-         4Bz5on/zsyw3lD6WIE8YhA6aYe6drtJPxSjo0VookConPjMHK1MEHinxB0hGEbPKPAX2
-         Sbt2AFzkqnaBvz9m/RBz+Tqy96gbqkvuPMxWmWjf6zqsMyn7ZJDYtv2bBxXK09qHv6T3
-         H7IjqVuLMm1staNnwGGzCU3X7XvYN6AnlMOoz78HgGCR/HFBjQ/cBs1iPkJpqWhU1knv
-         gNlw==
-X-Forwarded-Encrypted: i=1; AJvYcCXekJX60inNYOnc9cgPm5vYoIK4jTyw4SyPMkbc0ayHWJLV/bEBAH/YjyUwb87oeUiwpa45jpDKWbY=@lists.infradead.org
-X-Gm-Message-State: AOJu0Ywckb7Cpc25Od8+SLtsI9dA2BNA8qrtA/yz4e4epBg2K8iWutUF
-	1nTX2RcyJ5Sw0+Rjnl4f6KkV+oo3laJO+GA2RMYfs88uDxQojPcFguU5jnZk8JiJY8s=
-X-Gm-Gg: ASbGncvyopTIv71Hxqefu7Y/E1bTNlo7SrCraWzWf1zZxf0fTU4FzHEUYz5P2a5IeRc
-	QCpX5/vtIEMiGySSnznoD5yr2g37nFsK6iROpnWQKZV2mbyi0bl2eDV9tbcw9AeO05w1NcVV4Sf
-	tVOdT6x+8U3PP61qhP3TvIzrjNyHTVseB9Sv+A7OMqFzih4HBtzjsBPd8CavR/2CnEjHsXjFDII
-	cqGyoDgqMZY9fu+l7uBhLIGB4T+h3IwjpWaG5LFSjX1rH0vmuzxFuUkyGyonjPmgRo+JgHI03la
-	YeWj2n9It1ct1Mvb4qH0V6XAdgwccdz+okpQotMfsGTDKx/YT1lOos9NnfDeT7RWRTt/g339QUJ
-	IxwUgT5Bm1vSvoRd1SzFVh8KDBh3m3dBpQfw=
-X-Google-Smtp-Source: AGHT+IGp645TMnXX5YrOG2zVq4VnjBtkYnO7RTUiSqJt6Cj1uUCLMRmiK6QUARht6yH+1otNnwE4xA==
-X-Received: by 2002:a05:6e02:1805:b0:415:fe45:3dfe with SMTP id e9e14a558f8ab-4209d7e0f1bmr156060435ab.3.1757950008836;
-        Mon, 15 Sep 2025 08:26:48 -0700 (PDT)
-Received: from localhost ([140.82.166.162])
-        by smtp.gmail.com with ESMTPSA id 8926c6da1cb9f-511f3067b89sm4770679173.38.2025.09.15.08.26.48
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 15 Sep 2025 08:26:48 -0700 (PDT)
-Date: Mon, 15 Sep 2025 10:26:47 -0500
-From: Andrew Jones <ajones@ventanamicro.com>
-To: Samuel Holland <samuel.holland@sifive.com>
-Cc: Anup Patel <anup@brainfault.org>, Atish Patra <atish.patra@linux.dev>, 
-	kvm-riscv@lists.infradead.org, Albert Ou <aou@eecs.berkeley.edu>, 
-	Alexandre Ghiti <alex@ghiti.fr>, Palmer Dabbelt <palmer@dabbelt.com>, 
-	Paul Walmsley <paul.walmsley@sifive.com>, kvm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-riscv@lists.infradead.org
-Subject: Re: [PATCH] RISC-V: KVM: Fix SBI_FWFT_POINTER_MASKING_PMLEN algorithm
-Message-ID: <20250915-ed7932a34b8d58c2f9bdc4ab@orel>
-References: <20250915053431.1910941-1-samuel.holland@sifive.com>
+	id 1uyBAl-00000004xI0-0U1k;
+	Mon, 15 Sep 2025 15:31:21 +0000
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+	s=s110527; h=From:To:Subject:Date:Message-ID:MIME-Version; bh=2Z
+	MhoW1DNs7CX4cb16cWpeKngS2s2Gd2rkB8a0nMfaU=; b=QfjXwgF9hRiVp/8zHs
+	1XR7KqjVOiZ52kFXVwRkLoh5NBsTzbaFxcjZFvTyMw7unAu6olB4TBKRg7N0T8Nq
+	ce7iCLX51qU6LDSmTD0YQqx+3t3jdxs/l17WyQURh4NlydJLSwbSXqvUuYiEfSvB
+	d3d5Rs0zve3upTjVJBjlxlJ9w=
+Received: from localhost.localdomain (unknown [])
+	by gzsmtp3 (Coremail) with SMTP id PigvCgCnk+BnMMho_C9hDA--.18834S2;
+	Mon, 15 Sep 2025 23:27:36 +0800 (CST)
+From: Jinyu Tang <tjytimi@163.com>
+To: Anup Patel <anup@brainfault.org>,
+	Atish Patra <atish.patra@linux.dev>,
+	Andrew Jones <ajones@ventanamicro.com>,
+	Conor Dooley <conor.dooley@microchip.com>,
+	Yong-Xuan Wang <yongxuan.wang@sifive.com>,
+	Paul Walmsley <paul.walmsley@sifive.com>,
+	Nutty Liu <nutty.liu@hotmail.com>,
+	Radim Krcmar <rkrcmar@ventanamicro.com>
+Cc: kvm@vger.kernel.org,
+	kvm-riscv@lists.infradead.org,
+	linux-riscv@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	Jinyu Tang <tjytimi@163.com>,
+	Tianshun Sun <stsmail163@163.com>
+Subject: [RFC PATCH] kvm/riscv: Add ctxsstatus and ctxhstatus for migration
+Date: Mon, 15 Sep 2025 23:27:31 +0800
+Message-ID: <20250915152731.1371067-1-tjytimi@163.com>
+X-Mailer: git-send-email 2.43.0
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <20250915053431.1910941-1-samuel.holland@sifive.com>
+X-CM-TRANSID: PigvCgCnk+BnMMho_C9hDA--.18834S2
+X-Coremail-Antispam: 1Uf129KBjvJXoWxAryxJw4ruw47ZF4DZF17Awb_yoW5uFy7pF
+	ZakwsY9rW0qrWSka42kF4qgry5W3s5G34akr92qry5ZF4UtF4rZrs5K3y5AFyDJFWrXFn2
+	kFyrtF18Can0q37anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0piHa0PUUUUU=
+X-Originating-IP: [2408:823d:2011:2f19:4657:e776:64ca:e2f2]
+X-CM-SenderInfo: xwm13xlpl6il2tof0z/1tbiTg3JeGjIGXU-ywAEsO
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250915_082650_324943_2ABB14CF 
-X-CRM114-Status: GOOD (  22.66  )
+X-CRM114-CacheID: sfid-20250915_083119_645814_1CB80496 
+X-CRM114-Status: GOOD (  14.45  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -101,67 +81,97 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Sun, Sep 14, 2025 at 10:34:20PM -0700, Samuel Holland wrote:
-> The implementation of SBI_FWFT_POINTER_MASKING_PMLEN from commit
-> aa04d131b88b ("RISC-V: KVM: Add support for SBI_FWFT_POINTER_MASKING_PMLEN")
-> was based on a draft of the SBI 3.0 specification, and is not compliant
-> with the ratified version.
-> 
-> Update the algorithm to be compliant. Specifically, do not fall back to
-> a pointer masking mode with a larger PMLEN if the mode with the
-> requested PMLEN is unsupported by the hardware.
-> 
-> Fixes: aa04d131b88b ("RISC-V: KVM: Add support for SBI_FWFT_POINTER_MASKING_PMLEN")
-> Signed-off-by: Samuel Holland <samuel.holland@sifive.com>
-> ---
-> I saw that the RFC version of this patch already made it into
-> riscv_kvm_queue, but it needs an update for ratified SBI 3.0. Feel free
-> to squash this into the original commit, or I can send a replacement v2
-> patch if you prefer.
-> 
->  arch/riscv/kvm/vcpu_sbi_fwft.c | 17 +++++++++++++----
->  1 file changed, 13 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/riscv/kvm/vcpu_sbi_fwft.c b/arch/riscv/kvm/vcpu_sbi_fwft.c
-> index cacb3d4410a54..62cc9c3d57599 100644
-> --- a/arch/riscv/kvm/vcpu_sbi_fwft.c
-> +++ b/arch/riscv/kvm/vcpu_sbi_fwft.c
-> @@ -160,14 +160,23 @@ static long kvm_sbi_fwft_set_pointer_masking_pmlen(struct kvm_vcpu *vcpu,
->  	struct kvm_sbi_fwft *fwft = vcpu_to_fwft(vcpu);
->  	unsigned long pmm;
->  
-> -	if (value == 0)
-> +	switch (value) {
-> +	case 0:
->  		pmm = ENVCFG_PMM_PMLEN_0;
-> -	else if (value <= 7 && fwft->have_vs_pmlen_7)
-> +		break;
-> +	case 7:
-> +		if (!fwft->have_vs_pmlen_7)
-> +			return SBI_ERR_INVALID_PARAM;
->  		pmm = ENVCFG_PMM_PMLEN_7;
-> -	else if (value <= 16 && fwft->have_vs_pmlen_16)
-> +		break;
-> +	case 16:
-> +		if (!fwft->have_vs_pmlen_16)
-> +			return SBI_ERR_INVALID_PARAM;
->  		pmm = ENVCFG_PMM_PMLEN_16;
-> -	else
-> +		break;
-> +	default:
->  		return SBI_ERR_INVALID_PARAM;
-> +	}
->  
->  	vcpu->arch.cfg.henvcfg &= ~ENVCFG_PMM;
->  	vcpu->arch.cfg.henvcfg |= pmm;
-> -- 
-> 2.47.2
-> 
-> base-commit: 7835b892d1d9f52fb61537757aa446fb44984215
-> branch: up/kvm-fwft-pmlen
->
+When migrating a VM which guest running in user mode 
+(e.g., executing a while(1) application), the target 
+VM fails to run because it loses the information of 
+guest_context.hstatus and guest_context.sstatus. The 
+VM uses the initialized values instead of the correct ones.
 
-Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+This patch adds two new context registers (ctxsstatus and 
+ctxhstatus) to the kvm_vcpu_csr structure and implements 
+the necessary KVM get and set logic to preserve these values 
+during migration.
+
+QEMU needs to be updated to support these new registers.
+See https://github.com/tjy-zhu/qemu
+for the corresponding QEMU changes.
+
+I'm not sure if adding these CSR registers is a right way. RISCV
+KVM doesn't have API to save these two context csrs now. I will
+submit the corresponding QEMU patch to the QEMU community if
+KVM has API to get and set them.
+
+Signed-off-by: Jinyu Tang <tjytimi@163.com>
+Tested-by: Tianshun Sun <stsmail163@163.com>
+---
+ arch/riscv/include/asm/kvm_host.h |  2 ++
+ arch/riscv/include/uapi/asm/kvm.h |  2 ++
+ arch/riscv/kvm/vcpu_onereg.c      | 16 ++++++++++++++++
+ 3 files changed, 20 insertions(+)
+
+diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
+index d71d3299a..55604b075 100644
+--- a/arch/riscv/include/asm/kvm_host.h
++++ b/arch/riscv/include/asm/kvm_host.h
+@@ -161,6 +161,8 @@ struct kvm_vcpu_csr {
+ 	unsigned long vsatp;
+ 	unsigned long scounteren;
+ 	unsigned long senvcfg;
++	unsigned long ctxsstatus;
++	unsigned long ctxhstatus;
+ };
+ 
+ struct kvm_vcpu_config {
+diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+index ef27d4289..cd7d7087f 100644
+--- a/arch/riscv/include/uapi/asm/kvm.h
++++ b/arch/riscv/include/uapi/asm/kvm.h
+@@ -81,6 +81,8 @@ struct kvm_riscv_csr {
+ 	unsigned long satp;
+ 	unsigned long scounteren;
+ 	unsigned long senvcfg;
++	unsigned long ctxsstatus;
++	unsigned long ctxhstatus;
+ };
+ 
+ /* AIA CSR registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
+diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
+index cce6a38ea..284ee6e81 100644
+--- a/arch/riscv/kvm/vcpu_onereg.c
++++ b/arch/riscv/kvm/vcpu_onereg.c
+@@ -489,6 +489,12 @@ static int kvm_riscv_vcpu_general_get_csr(struct kvm_vcpu *vcpu,
+ 	if (reg_num >= sizeof(struct kvm_riscv_csr) / sizeof(unsigned long))
+ 		return -ENOENT;
+ 
++	if (reg_num == KVM_REG_RISCV_CSR_REG(ctxsstatus))
++		csr->ctxsstatus = vcpu->arch.guest_context.sstatus;
++
++	if (reg_num == KVM_REG_RISCV_CSR_REG(ctxhstatus))
++		csr->ctxhstatus = vcpu->arch.guest_context.hstatus;
++
+ 	if (reg_num == KVM_REG_RISCV_CSR_REG(sip)) {
+ 		kvm_riscv_vcpu_flush_interrupts(vcpu);
+ 		*out_val = (csr->hvip >> VSIP_TO_HVIP_SHIFT) & VSIP_VALID_MASK;
+@@ -515,6 +521,16 @@ static int kvm_riscv_vcpu_general_set_csr(struct kvm_vcpu *vcpu,
+ 
+ 	((unsigned long *)csr)[reg_num] = reg_val;
+ 
++	if (reg_num == KVM_REG_RISCV_CSR_REG(ctxsstatus)) {
++		if (csr->ctxsstatus != 0)
++			vcpu->arch.guest_context.sstatus = csr->ctxsstatus;
++	}
++
++	if (reg_num == KVM_REG_RISCV_CSR_REG(ctxhstatus)) {
++		if (csr->ctxhstatus != 0)
++			vcpu->arch.guest_context.hstatus = csr->ctxhstatus;
++	}
++
+ 	if (reg_num == KVM_REG_RISCV_CSR_REG(sip))
+ 		WRITE_ONCE(vcpu->arch.irqs_pending_mask[0], 0);
+ 
+-- 
+2.43.0
+
 
 -- 
 kvm-riscv mailing list
