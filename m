@@ -4,72 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3A4C9CAC592
-	for <kvm-riscv@archiver.kernel.org>; Fri, 19 Sep 2025 07:38:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 25AF3CAC59A
+	for <kvm-riscv@archiver.kernel.org>; Fri, 19 Sep 2025 07:38:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=RLZTzxMAbxpjq9G9t/R1jl+V72xIFIaHTNOzYPq42Pw=; b=BwmGW47tNanMTr
-	axn/HjQfZcZOyNOS1qqYFHlGQsXWunqbb51K5bPbp7AL65Q3njch4rQ/mbWRhNO6Bzi4SH+2ea3wD
-	GT5daFDtbrdY4EGh3QmTC7XZSXtGCHJb44skVIdxrQUsQM6PckBmZRPt2b6JekEFn4G0tsY0A4rAy
-	5eKsDxqMHwecfCQ42CMj0t4VH5AI2/7UP4ktlzk1JTqS+iuEiHGIwo6NS8F8ypAQo7eIOk0s/5aem
-	cb97VKC9WTjQolrine3sqhT9LPkr9VsbQ6WMiA9h592gXCIV34rOC/MX14QdSLCS25vsBfT+hj+wt
-	AIDdoVaJQXRhvtR9H+sQ==;
+	List-Owner; bh=GcgjvnK5fi1wc29Gdm2rOlGFfZAtQCRzHBWKP6V2+sE=; b=nvgrckhl48e8NO
+	Pxn4n9Q7BSEeoPLBEfP9N6SrM/iBdWYpkLKfsGHHJYa6pBQqrJJfDkr3IDfxmOTG20Ruoefc21KXN
+	DvQZHY/XmXwcS02zKQTAu5ErCC2NI9JS+O41p1l9qJoZ9XvbjrjHB3ixWG8PYY8fV+HWQiCep070M
+	Y9NYIL3Ln4E6Hn18TwnNf5qYTZkXzOJfGamZlLM3QspC62l/VL3EXZF3bDOYbXR0mHciBNvCQ1M5K
+	+foShgsjmYbQ1PNHbmYylUiIpfnZI/bHnNiK3bsye9KID16wlwS8gY3cLvERjOeEQDj5R082Jz9Ue
+	PFn/mDHh8fevIOScjYEw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uzVh7-000000025aG-43Qw;
-	Fri, 19 Sep 2025 07:38:13 +0000
-Received: from mail-pf1-x433.google.com ([2607:f8b0:4864:20::433])
+	id 1uzVhI-000000025i6-3ee1;
+	Fri, 19 Sep 2025 07:38:24 +0000
+Received: from mail-pf1-x42b.google.com ([2607:f8b0:4864:20::42b])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uzVh5-000000025YP-1Etn
+	id 1uzVhF-000000025f9-43Nd
 	for kvm-riscv@lists.infradead.org;
-	Fri, 19 Sep 2025 07:38:12 +0000
-Received: by mail-pf1-x433.google.com with SMTP id d2e1a72fcca58-7762021c574so1794979b3a.0
-        for <kvm-riscv@lists.infradead.org>; Fri, 19 Sep 2025 00:38:11 -0700 (PDT)
+	Fri, 19 Sep 2025 07:38:24 +0000
+Received: by mail-pf1-x42b.google.com with SMTP id d2e1a72fcca58-77e87003967so198305b3a.1
+        for <kvm-riscv@lists.infradead.org>; Fri, 19 Sep 2025 00:38:21 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bytedance.com; s=google; t=1758267491; x=1758872291; darn=lists.infradead.org;
+        d=bytedance.com; s=google; t=1758267501; x=1758872301; darn=lists.infradead.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=+193yncmANzEfIfweyuJi14B+CiP/3dMuVzUWsZjMz4=;
-        b=kiQ4IPARFhf2e5jP774y9g3jQTa0WE17KUhI6LvJwZuw+HkxNFt2PhoDa7bpRWED6i
-         6eoRVwLCUjZbmf/D3I3cdIMkiDKfjahJUKAM8g0ZfzdKsoHJAqceNJV/cQXL68+6W7IB
-         3ZuxvGXf/yC7OlnMqFq67TSc4S1riAGs9ndCjsnNjlONuU8NCsFJ4GeytF7HOVBC8Thx
-         LgXmOTZLIIqsF9Slgz4CuYd0Ecbxy2GPUBe6b9fZv64gPUIRdwXUP+/xM+SizjDJufs2
-         EZ+z4xQS9kGXUfnxa0X81S5luU/ClOIZy2DnLs8FwjlRnajo31zA+8+jYdYRcmc3MWV7
-         C7zQ==
+        bh=UrUXReFmfyicqjIKReJGDbVrjEBweEul9LJXTVHzmk4=;
+        b=ew0cF0iaSHrmAaehXy0mC0MMtnlF73DT45RuzZdezDZr7I2GEVCwyIjcLiysEB52Gp
+         kgnp1Nyt57ppF8E7KyYR20cATzxG1YN8BhtQxgv7BDRELOXAkLoqAWTgRgM8lg2hYKq3
+         zOaJYe4ErCU8e32FioMVtm+IVLQhwyjY+nCpf3pK2+0JcrKC3IhOA7rpzo747TyrFTg4
+         TXmgyYo/QNju/O8flZqWtXAdnWjVTMDMzX6eO+gbwbVv3IjaHYbjjksmRrv/XRhwrBBA
+         vJj7BemuZ8fznSx3XVeBmFGK1x0kei2QzXSIjm4H4v8fvr8ohK/O4SJXS4QAEZ8plFe4
+         Eghg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1758267491; x=1758872291;
+        d=1e100.net; s=20230601; t=1758267501; x=1758872301;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=+193yncmANzEfIfweyuJi14B+CiP/3dMuVzUWsZjMz4=;
-        b=p8CYksBroWh22mUSOkj92gMz8C4ZyE5m4j8R+n0q80fLvz/yoohgeFy00uC/Wg54Es
-         +PqyRz4lzPZBVz05KuqPyPaHF0cMZuQdI44F2k8FRFKm8ROC2oZ/XEsR29JY9nrBwnIu
-         Qx0hR1FaOSZ8121NhwT4rLqsAFH9/8z59cLRVv8zO0tt7cjoVnrY/bCqTOIZInQ8ZzAz
-         /MNH+j0gUE3+XgYtBQmijsr8iS8hggwtxVTOa6SBnHP60NUh2Fb29VgGq9tc9SMfSQUP
-         XsqP7KMqo2h1sL0jZz/KCqWC5STq5poZBJij5bWcFUIgcEZOZRSw0+t8nUG3Aa50d126
-         mTig==
-X-Forwarded-Encrypted: i=1; AJvYcCVqNfAZAhAruF4bT+HhDbrkznIdKWXo4/MXCuzW36Lt6YPnEyqbmQtlSsZX0u2s/o8XN61scvWUcvs=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yypro9brSnLudxSlga9LP1VMdLyoMajvqC1w45Nk9v8jJFhj3N4
-	/lmOnincxNAQbb7kt+SO/fELBFRP4Hv7BMARjAipo0MOdKmfrvNv+N78IQP7vIPR8+g=
-X-Gm-Gg: ASbGnctkCzwoXDLCkq/oA/DwQghCxOYCkJ+dYBaVIb33p7rvocOMYx411yvUGZM0Xvi
-	szpYEZNkyquZtY6M2pra/+MT0/EOR8TKvHvS51SWNvHlYWJIW7/UNwl6Yux2YgxsOOtgEJwebrg
-	ZuuMKC0bOUTh2YMxpKMM64+fyDiEiwxAaxEhWC49EPQzvUFSdDK0OO8+Vr9Oezznc2OD/cWeLiQ
-	kC+CNQWZYL1FmfzfvuVH5xXFi6TawdFv/INI7tx5WT/u6bkrCpQbOPTIkj/QD395+0nqvQ3kv+D
-	tdKBYXZz35GPb7HO+72JDA6uoB0jzsR4usVSYQ96R+6y7bHFjQ8pR/yHG+uHDVNPXQSzOgID2Da
-	7z3uhC9yTnnGFTT6t8PTQrTRrqR+OkTSmCX6GfmgOxbPzcYA1KGVKzgrTj9gZRovVf2ZiML2Z63
-	Vb4aRAzD53Vwr5NcVjsx8VvRfjzxxy0Hi9H5oZqp0ryQ==
-X-Google-Smtp-Source: AGHT+IHSeUWZ1h2FvilomFO6LKlK35LvsEHQvldORE6E3obR4YCYcFLQha/I1fqdofri+zuG0ncN0g==
-X-Received: by 2002:a17:902:cccc:b0:24d:a3a0:5230 with SMTP id d9443c01a7336-269ba54c1c4mr31455485ad.58.1758267490633;
-        Fri, 19 Sep 2025 00:38:10 -0700 (PDT)
+        bh=UrUXReFmfyicqjIKReJGDbVrjEBweEul9LJXTVHzmk4=;
+        b=mrcE86bPwVJCw2wPIEXy/Bhpox/gFo8ZrkS3RYbf1o96X/6KI6SC+VwhZtJ1ZNV0Ok
+         2Ag0SHghxAC2uhtlE4vKDR6NxCA/ebCy8kOD6w4E+mJS3+vGtQoC4+3o/ERoF3utiuGZ
+         uJJSboxm1EapecWbh+N6jDWdMillT4c62t0Vv68fQWiq/WBtD7YA9WFS279ONQc+oKER
+         OAK+OaWxx7zUBCwpHUtSszKrtXtWt1aKN4gpj/oNGM9fq5kwnzQsbGREptpQpCgAx3Zv
+         7ho13VGkgI8g2+aVqDub83k91m+3GievFmZeKds1jLZEKAGVcZOCV6opoQp5GaFaIjvH
+         nFjA==
+X-Forwarded-Encrypted: i=1; AJvYcCUgSfMt159noqvdkWUDARpONaE+hheA1IrrHBjxLxwgQYStpIEvFjczuV6PjuHdVLYEFdvQ4q6taKo=@lists.infradead.org
+X-Gm-Message-State: AOJu0YyO5oKQNnImRURL8AGH4QenFv/yKdMIXhldkvtfWxy1NIIOucDY
+	U6BP7OBHmjRUlLQnU1a/yg1jiuOHvl3dkKc5ic36AliKQAFoRIWnX4Q6T3S2NKFK53E=
+X-Gm-Gg: ASbGncvDZPWSBL719S6YC8j55inny3TA6b94uQgoyEYGxyYpakys+jUf683nn/QcO/e
+	qbGmf8/kPqYD9bMJgtnBZBmVILW4NzE7X3HgNEwJUgctPaeGG/ybmZDDBeteBI3JKjL2EtbIDEO
+	ApH6zZvgNSaYN0I99X2v+P5GqwMnmlske1xgMy8cjSSmVnXGkP69vuDGviB9kn/AMSACl9cIYsY
+	7GnrjQ5C/NVhxdeNAOpZeSV/RH6tH9FfwKQ4uq999rAGv8JgpVRj4zVAYENPqY6NIwnaiE00NEg
+	Mt1fYUlCEJoLmZ980j/RdFwZ1dxCPkLiZiTYRaFbp05MwEG0UEodnvwBw2LzTdW9FbHaczGZOUq
+	KCOLczmNkY+cVKiUMUa6XjhrErHI0Ne7XBJweRn5saKNbvPNV3JNRjBFlP3iZy0hMrchA2eHWaO
+	Ju0TZw7LF+7SoC85oU3l4PUKasPuVwwTKodcOFKegCNA==
+X-Google-Smtp-Source: AGHT+IHO/IBu5KluVEBZTCVVCP8FOuGD/BwTuyZsvB1MFOiJrJSLMwCJJx47GpnoAoobwSIeA0YuxQ==
+X-Received: by 2002:a05:6a21:6d9c:b0:247:b1d9:774 with SMTP id adf61e73a8af0-292588a2f9bmr3836926637.5.1758267501051;
+        Fri, 19 Sep 2025 00:38:21 -0700 (PDT)
 Received: from J9GPGXL7NT.bytedance.net ([61.213.176.57])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-b550fd7ebc7sm2679096a12.19.2025.09.19.00.38.00
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-b550fd7ebc7sm2679096a12.19.2025.09.19.00.38.11
         (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Fri, 19 Sep 2025 00:38:10 -0700 (PDT)
+        Fri, 19 Sep 2025 00:38:20 -0700 (PDT)
 From: Xu Lu <luxu.kernel@bytedance.com>
 To: corbet@lwn.net,
 	robh@kernel.org,
@@ -100,16 +100,16 @@ Cc: devicetree@vger.kernel.org,
 	kvm-riscv@lists.infradead.org,
 	linux-kselftest@vger.kernel.org,
 	Xu Lu <luxu.kernel@bytedance.com>
-Subject: [PATCH v3 4/8] riscv: Introduce Zalasr instructions
-Date: Fri, 19 Sep 2025 15:37:10 +0800
-Message-ID: <20250919073714.83063-5-luxu.kernel@bytedance.com>
+Subject: [PATCH v3 5/8] riscv: Use Zalasr for smp_load_acquire/smp_store_release
+Date: Fri, 19 Sep 2025 15:37:11 +0800
+Message-ID: <20250919073714.83063-6-luxu.kernel@bytedance.com>
 X-Mailer: git-send-email 2.50.1
 In-Reply-To: <20250919073714.83063-1-luxu.kernel@bytedance.com>
 References: <20250919073714.83063-1-luxu.kernel@bytedance.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250919_003811_352011_06180C7F 
-X-CRM114-Status: UNSURE (   7.01  )
+X-CRM114-CacheID: sfid-20250919_003822_022867_17B22D6C 
+X-CRM114-Status: UNSURE (   8.77  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -127,111 +127,134 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Introduce l{b|h|w|d}.{aq|aqrl} and s{b|h|w|d}.{rl|aqrl} instruction
-encodings.
+Replace fence instructions with Zalasr instructions during
+smp_load_acquire() and smp_store_release() operations.
+
+|----------------------------------|
+|    |     __smp_store_release     |
+|    |-----------------------------|
+|    | zalasr        | !zalasr     |
+| rl |-----------------------------|
+|    | s{b|h|w|d}.rl | fence rw, w |
+|    |               | s{b|h|w|d}  |
+|----------------------------------|
+|    |    __smp_load_acquire       |
+|    |-----------------------------|
+|    | zalasr        | !zalasr     |
+| aq |-----------------------------|
+|    | l{b|h|w|d}.rl | l{b|h|w|d}  |
+|    |               | fence r, rw |
+|----------------------------------|
 
 Signed-off-by: Xu Lu <luxu.kernel@bytedance.com>
 ---
- arch/riscv/include/asm/insn-def.h | 79 +++++++++++++++++++++++++++++++
- 1 file changed, 79 insertions(+)
+ arch/riscv/include/asm/barrier.h | 91 ++++++++++++++++++++++++++++----
+ 1 file changed, 80 insertions(+), 11 deletions(-)
 
-diff --git a/arch/riscv/include/asm/insn-def.h b/arch/riscv/include/asm/insn-def.h
-index d5adbaec1d010..3fec7e66ce50f 100644
---- a/arch/riscv/include/asm/insn-def.h
-+++ b/arch/riscv/include/asm/insn-def.h
-@@ -179,6 +179,7 @@
- #define RV___RS1(v)		__RV_REG(v)
- #define RV___RS2(v)		__RV_REG(v)
+diff --git a/arch/riscv/include/asm/barrier.h b/arch/riscv/include/asm/barrier.h
+index b8c5726d86acb..9eaf94a028096 100644
+--- a/arch/riscv/include/asm/barrier.h
++++ b/arch/riscv/include/asm/barrier.h
+@@ -51,19 +51,88 @@
+  */
+ #define smp_mb__after_spinlock()	RISCV_FENCE(iorw, iorw)
  
-+#define RV_OPCODE_AMO		RV_OPCODE(47)
- #define RV_OPCODE_MISC_MEM	RV_OPCODE(15)
- #define RV_OPCODE_OP_IMM	RV_OPCODE(19)
- #define RV_OPCODE_SYSTEM	RV_OPCODE(115)
-@@ -208,6 +209,84 @@
- 	__ASM_STR(.error "hlv.d requires 64-bit support")
- #endif
+-#define __smp_store_release(p, v)					\
+-do {									\
+-	compiletime_assert_atomic_type(*p);				\
+-	RISCV_FENCE(rw, w);						\
+-	WRITE_ONCE(*p, v);						\
++extern void __bad_size_call_parameter(void);
++
++#define __smp_store_release(p, v)						\
++do {										\
++	typeof(p) __p = (p);							\
++	union { typeof(*p) __val; char __c[1]; } __u =				\
++		{ .__val = (__force typeof(*p)) (v) };				\
++	compiletime_assert_atomic_type(*p);					\
++	switch (sizeof(*p)) {							\
++	case 1:									\
++		asm volatile(ALTERNATIVE("fence rw, w;\t\nsb %0, 0(%1)\t\n",	\
++					 SB_RL(%0, %1) "\t\nnop\t\n",		\
++					 0, RISCV_ISA_EXT_ZALASR, 1)		\
++					 : : "r" (*(__u8 *)__u.__c), "r" (__p)	\
++					 : "memory");				\
++		break;								\
++	case 2:									\
++		asm volatile(ALTERNATIVE("fence rw, w;\t\nsh %0, 0(%1)\t\n",	\
++					 SH_RL(%0, %1) "\t\nnop\t\n",		\
++					 0, RISCV_ISA_EXT_ZALASR, 1)		\
++					 : : "r" (*(__u16 *)__u.__c), "r" (__p)	\
++					 : "memory");				\
++		break;								\
++	case 4:									\
++		asm volatile(ALTERNATIVE("fence rw, w;\t\nsw %0, 0(%1)\t\n",	\
++					 SW_RL(%0, %1) "\t\nnop\t\n",		\
++					 0, RISCV_ISA_EXT_ZALASR, 1)		\
++					 : : "r" (*(__u32 *)__u.__c), "r" (__p)	\
++					 : "memory");				\
++		break;								\
++	case 8:									\
++		asm volatile(ALTERNATIVE("fence rw, w;\t\nsd %0, 0(%1)\t\n",	\
++					 SD_RL(%0, %1) "\t\nnop\t\n",		\
++					 0, RISCV_ISA_EXT_ZALASR, 1)		\
++					 : : "r" (*(__u64 *)__u.__c), "r" (__p)	\
++					 : "memory");				\
++		break;								\
++	default:								\
++		__bad_size_call_parameter();					\
++		break;								\
++	}									\
+ } while (0)
  
-+#define LB_AQ(dest, addr)					\
-+	INSN_R(OPCODE_AMO, FUNC3(0), FUNC7(26),			\
-+	       RD(dest), RS1(addr), __RS2(0))
-+
-+#define LB_AQRL(dest, addr)					\
-+	INSN_R(OPCODE_AMO, FUNC3(0), FUNC7(27),			\
-+	       RD(dest), RS1(addr), __RS2(0))
-+
-+#define LH_AQ(dest, addr)					\
-+	INSN_R(OPCODE_AMO, FUNC3(1), FUNC7(26),			\
-+	       RD(dest), RS1(addr), __RS2(0))
-+
-+#define LH_AQRL(dest, addr)					\
-+	INSN_R(OPCODE_AMO, FUNC3(1), FUNC7(27),			\
-+	       RD(dest), RS1(addr), __RS2(0))
-+
-+#define LW_AQ(dest, addr)					\
-+	INSN_R(OPCODE_AMO, FUNC3(2), FUNC7(26),			\
-+	       RD(dest), RS1(addr), __RS2(0))
-+
-+#define LW_AQRL(dest, addr)					\
-+	INSN_R(OPCODE_AMO, FUNC3(2), FUNC7(27),			\
-+	       RD(dest), RS1(addr), __RS2(0))
-+
-+#define SB_RL(src, addr)					\
-+	INSN_R(OPCODE_AMO, FUNC3(0), FUNC7(29),			\
-+	       __RD(0), RS1(addr), RS2(src))
-+
-+#define SB_AQRL(src, addr)					\
-+	INSN_R(OPCODE_AMO, FUNC3(0), FUNC7(31),			\
-+	       __RD(0), RS1(addr), RS2(src))
-+
-+#define SH_RL(src, addr)					\
-+	INSN_R(OPCODE_AMO, FUNC3(1), FUNC7(29),			\
-+	       __RD(0), RS1(addr), RS2(src))
-+
-+#define SH_AQRL(src, addr)					\
-+	INSN_R(OPCODE_AMO, FUNC3(1), FUNC7(31),			\
-+	       __RD(0), RS1(addr), RS2(src))
-+
-+#define SW_RL(src, addr)					\
-+	INSN_R(OPCODE_AMO, FUNC3(2), FUNC7(29),			\
-+	       __RD(0), RS1(addr), RS2(src))
-+
-+#define SW_AQRL(src, addr)					\
-+	INSN_R(OPCODE_AMO, FUNC3(2), FUNC7(31),			\
-+	       __RD(0), RS1(addr), RS2(src))
-+
-+#ifdef CONFIG_64BIT
-+#define LD_AQ(dest, addr)					\
-+	INSN_R(OPCODE_AMO, FUNC3(3), FUNC7(26),			\
-+	       RD(dest), RS1(addr), __RS2(0))
-+
-+#define LD_AQRL(dest, addr)					\
-+	INSN_R(OPCODE_AMO, FUNC3(3), FUNC7(27),			\
-+	       RD(dest), RS1(addr), __RS2(0))
-+
-+#define SD_RL(src, addr)					\
-+	INSN_R(OPCODE_AMO, FUNC3(3), FUNC7(29),			\
-+	       __RD(0), RS1(addr), RS2(src))
-+
-+#define SD_AQRL(src, addr)					\
-+	INSN_R(OPCODE_AMO, FUNC3(3), FUNC7(31),			\
-+	       __RD(0), RS1(addr), RS2(src))
-+#else
-+#define LD_AQ(dest, addr)					\
-+	__ASM_STR(.error "ld.aq requires 64-bit support")
-+
-+#define LD_AQRL(dest, addr)					\
-+	__ASM_STR(.error "ld.aqrl requires 64-bit support")
-+
-+#define SD_RL(dest, addr)					\
-+	__ASM_STR(.error "sd.rl requires 64-bit support")
-+
-+#define SD_AQRL(dest, addr)					\
-+	__ASM_STR(.error "sd.aqrl requires 64-bit support")
-+#endif
-+
- #define SINVAL_VMA(vaddr, asid)					\
- 	INSN_R(OPCODE_SYSTEM, FUNC3(0), FUNC7(11),		\
- 	       __RD(0), RS1(vaddr), RS2(asid))
+-#define __smp_load_acquire(p)						\
+-({									\
+-	typeof(*p) ___p1 = READ_ONCE(*p);				\
+-	compiletime_assert_atomic_type(*p);				\
+-	RISCV_FENCE(r, rw);						\
+-	___p1;								\
++#define __smp_load_acquire(p)							\
++({										\
++	union { typeof(*p) __val; char __c[1]; } __u;				\
++	typeof(p) __p = (p);							\
++	compiletime_assert_atomic_type(*p);					\
++	switch (sizeof(*p)) {							\
++	case 1:									\
++		asm volatile(ALTERNATIVE("lb %0, 0(%1)\t\nfence r, rw\t\n",	\
++					 LB_AQ(%0, %1) "\t\nnop\t\n",		\
++					 0, RISCV_ISA_EXT_ZALASR, 1)		\
++					 : "=r" (*(__u8 *)__u.__c) : "r" (__p)	\
++					 : "memory");				\
++		break;								\
++	case 2:									\
++		asm volatile(ALTERNATIVE("lh %0, 0(%1)\t\nfence r, rw\t\n",	\
++					 LH_AQ(%0, %1) "\t\nnop\t\n",		\
++					 0, RISCV_ISA_EXT_ZALASR, 1)		\
++					 : "=r" (*(__u16 *)__u.__c) : "r" (__p)	\
++					 : "memory");				\
++		break;								\
++	case 4:									\
++		asm volatile(ALTERNATIVE("lw %0, 0(%1)\t\nfence r, rw\t\n",	\
++					 LW_AQ(%0, %1) "\t\nnop\t\n",		\
++					 0, RISCV_ISA_EXT_ZALASR, 1)		\
++					 : "=r" (*(__u32 *)__u.__c) : "r" (__p)	\
++					 : "memory");				\
++		break;								\
++	case 8:									\
++		asm volatile(ALTERNATIVE("ld %0, 0(%1)\t\nfence r, rw\t\n",	\
++					 LD_AQ(%0, %1) "\t\nnop\t\n",		\
++					 0, RISCV_ISA_EXT_ZALASR, 1)		\
++					 : "=r" (*(__u64 *)__u.__c) : "r" (__p)	\
++					 : "memory");				\
++		break;								\
++	default:								\
++		__bad_size_call_parameter();					\
++		break;								\
++	}									\
++	__u.__val;								\
+ })
+ 
+ #ifdef CONFIG_RISCV_ISA_ZAWRS
 -- 
 2.20.1
 
