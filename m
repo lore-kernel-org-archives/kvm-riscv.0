@@ -4,149 +4,90 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5C19ECAC592
-	for <kvm-riscv@archiver.kernel.org>; Mon, 22 Sep 2025 18:43:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A29C6CA100F
+	for <kvm-riscv@archiver.kernel.org>; Mon, 22 Sep 2025 21:20:49 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:In-Reply-To:References:
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
 	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=W4mije8lLDPIoYYnjbweO6Cjm1LGodL+0BU+pDevL/U=; b=k/sEvivJqDIJBM
-	JhBiwJDktQyjAev+OoHlq3lc/SdYWZZqWvVUCYgnGCaiPHjow0Bg8JiESSWyoI+BawC2uvIWt+PCR
-	x9os/mFmArOi+DOZkSuR4xKBiI7/8SRQSpwz5IsjFHQJ+2+VWInMgGwkX2wYf9ckA4ijDqMJ3Bn4A
-	isa5YpqBj07WAlh24S8iTEwj81LT/VWLNXsdIohtXM8H1AbB0hLkZWaLi8To9d9knzzl9tMPJc4sw
-	LPL4cskcMi5GcKTIMtlAc8pEDsi88zOXHEnUeCoXA655HIs0bEiBFCd1fBnBLZTHzcLEp59B0mDUQ
-	kPr9KaEPYwUEpHeqGGlg==;
+	List-Owner; bh=OfMeEDy5g6Jp2qGfN3dxXRVuDlHCdX0ADA4p3YCszCQ=; b=zeh+X824yAzFEc
+	eKbXba0We4898e2fyMPljxLXrx5QhiIItgFrPt3pwhvRJ08V0ZA3GuFiWg4ay0HMILNrdwNV8v18a
+	tq0X2Yl9gvNq7mC2Cyhe9xxm0f8godoOI/lBlyvViYq2g+lAmHqeVeOjGWvwRQi2TictFyY6Qe088
+	UcG3fsBUvF1Dl3c31iO4rZxkqLWMfQgN/TWyIrvRzcVFjqCMVlr3aXxNSM6BmoolWrm5SiGSmxVsQ
+	0n2dfb27IlPYu9kwk184tbB20d6+jGJbhjkBkAe/urvQjanZchVYl8MvP1yp2uru3wrEqWmUmsJSo
+	GbbCAwej4HfsIddVcGmQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1v0lVx-0000000BGiF-0DsR;
-	Mon, 22 Sep 2025 18:43:53 +0000
-Received: from mail-westus3azlp170120001.outbound.protection.outlook.com ([2a01:111:f403:c107::1] helo=PH8PR06CU001.outbound.protection.outlook.com)
+	id 1v0nxp-0000000BYKX-0KMg;
+	Mon, 22 Sep 2025 21:20:49 +0000
+Received: from mail-yw1-x1132.google.com ([2607:f8b0:4864:20::1132])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1v0lVt-0000000BGgb-3eo9;
-	Mon, 22 Sep 2025 18:43:51 +0000
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=Ywaaysgi9UMRJh1LWggraXHMlqW+uW1qiV8s5P3em5kVV0fx1WyM7NhHF0dubPRaB7qHn9tXrlPB7ml18KFRsmmyOWS9zncuILVZv/n3b/N0i49vPotpAagBKGTIuc6Pr3d8is+V+qUFXfsBrWtwzq856/PmomteoaVmLUGnT7WrAe5Irc5OgYE+B11yECCpioaemetxkQtXiZNSg090Q0MbfZ/vtmGoLZOuyqBqKISp2ZpeScEMpDFhMJIE7sk90MtViyX2bcprHGadTO2Sh++VZv7me7WGaxqre7EkHPdX/X+Xi4UxucJZQZS4NtlURFly75oeoJ2OV4xOUdO74A==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=eolSg0rzExzNDfc7qDIgDzHooaUIUHgfDZtBJtrQv+I=;
- b=PTjfETJI6IHtC6WSmodR1FBodmCdY1arUEcyBi6adK/3mLwjNDzWB5VSDL2oaHMClxqEGFIKVgaJJPRYkF/BIaeqdbHPsjtPF78R24rjpwMy2JTgsMRBcfpnDLvRnLShbmgY/RC5uOo4KOilFfjl4QGCcFzU6W34I1lcz9PdwvexkzJIYzi6xcF/ROH3g63W93afQXhvBKKk1GCecmw6J8thXLg+ZvUBFeU4oSEtiWOy/o6+aVd+NjlkH3bMimrQTGjDjfeqoWgGryHlWKLjK7hRAxThhaghvXxLcLowTTQ4g4pF/rxqcIWYc9S3RYdpdFJoPQC7ylVzEADrirra4g==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=eolSg0rzExzNDfc7qDIgDzHooaUIUHgfDZtBJtrQv+I=;
- b=cbFHRS9Wl7Sm3AD9mlhR10INpFSM9yi56kvY6W++3vPntZNLYo4A4bV43sJq9F0DHwPDBCPtX9bdfIZ6ji5Dwq/0LGs+X1C2zwYR7gdj35iKxwzsIQWKSdXTZrmp5UGTJnbsC82EuYUUPL9nTQS1BzDCmPCxQD8MDqv+sICeOaYSQ7x0SWR+1sS2kk6f5VVHAt4/K8TOk+1SZUYgnc4xX7bB2ldolxvTlZzb3HyshGvLpIHnasXE632WgEEPdXy0758SC0Y1NpdZpLiOj7M89RYnNW8CRWO/ApNOJSdg4XMsQOK+91MABzREg1oh0HALDAAMswqbQ8OarlvLc4i+0g==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from PH7PR12MB5757.namprd12.prod.outlook.com (2603:10b6:510:1d0::13)
- by DS0PR12MB9399.namprd12.prod.outlook.com (2603:10b6:8:1b8::9) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9137.18; Mon, 22 Sep
- 2025 18:43:38 +0000
-Received: from PH7PR12MB5757.namprd12.prod.outlook.com
- ([fe80::f012:300c:6bf4:7632]) by PH7PR12MB5757.namprd12.prod.outlook.com
- ([fe80::f012:300c:6bf4:7632%2]) with mapi id 15.20.9137.018; Mon, 22 Sep 2025
- 18:43:38 +0000
-Date: Mon, 22 Sep 2025 15:43:36 -0300
-From: Jason Gunthorpe <jgg@nvidia.com>
-To: Andrew Jones <ajones@ventanamicro.com>
-Cc: iommu@lists.linux.dev, kvm-riscv@lists.infradead.org,
-	kvm@vger.kernel.org, linux-riscv@lists.infradead.org,
-	linux-kernel@vger.kernel.org, zong.li@sifive.com,
-	tjeznach@rivosinc.com, joro@8bytes.org, will@kernel.org,
-	robin.murphy@arm.com, anup@brainfault.org, atish.patra@linux.dev,
-	tglx@linutronix.de, alex.williamson@redhat.com,
-	paul.walmsley@sifive.com, palmer@dabbelt.com, alex@ghiti.fr
+	id 1v0nxm-0000000BYJK-3ERU
+	for kvm-riscv@lists.infradead.org;
+	Mon, 22 Sep 2025 21:20:48 +0000
+Received: by mail-yw1-x1132.google.com with SMTP id 00721157ae682-73b4e3d0756so38250567b3.3
+        for <kvm-riscv@lists.infradead.org>; Mon, 22 Sep 2025 14:20:46 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ventanamicro.com; s=google; t=1758576045; x=1759180845; darn=lists.infradead.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=onj4yFqllMzEveOUk9DfiKAf4L6zZPOcmFKF8e4Prmo=;
+        b=nQ9ZXxX+m7iwWblj5R2iI64fN/b6iPF1jsLQPcEP6TifL3BXKfqDkVrX4aTSFJb1ey
+         47yDP9sNIRJcO5W6JsJY+Zuyf5NBtGXl8SPt1F3K9FtBqyDkMRYkJs/2U0wX4jd08JeE
+         CIn2eznjfNFJFCpPvNzEnB5FdMcZMgzM9826ATaNvNYHiEYmTtnLHDtvrXMb9UZ6mvAH
+         aMnFQ3Tj5QyC+9/4A3VO6HTx2MUFl3Mfit0wBmtfoIXAhXZRL6aCmJVT7RtXBuQAGv4b
+         S0p83HjbNZfRvpwzMw7a9AlQ89Pvw1Okt5sdOLg43wrs8t2+b3qRhXpPia+yD0on3IYz
+         b47A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1758576045; x=1759180845;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=onj4yFqllMzEveOUk9DfiKAf4L6zZPOcmFKF8e4Prmo=;
+        b=q203Ruxj3iO5TyOQGfNqcESz0iv9+L2v3xk0d1KgI6gMEBUIsJRVQ/ruINyMLeUi1s
+         W24rcSlAKpm2aF4YJI3Vv9w1W4Tlu3Fb58LwFW+1xtSarLpL1dgiiQKKd6MUXYx+blXw
+         /COOIheJj88uPBA9I3DXxnoaxp2pHD+/wQ39Ac2E1dmUJr3z4s25f2dqc/gQPLUxwRwf
+         S52X7x6yWp+Jp6XtfSpWLF+7zGlaAecFCXC8rkotD85L6w4eoDOkjzZ/j9K7gUEjxABA
+         0Ex7oypjgDT394nWvVrCduhtmcHi/trgOX1GHeSZKJDhkbdXUREpD/JvIX6Hnls09S3a
+         RbgA==
+X-Forwarded-Encrypted: i=1; AJvYcCUVjuDMgN6O5ApajSb34+d0ZX4FjNo8sVmcHBrDz+9eACfv4zS91P3MpK48bGBwJxQYc81zkD1g2Eo=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yygy8sLq8BGf0ESDjNge2vbIH8lDTsFcbnQe5XbeYVNRcAeFSwS
+	F9LAdNlfAs4lWmVj9P9DRR/9uIgXJENGx8VCwgsbNdS8VATI3uHbGZLgHZpvXZYPqZo=
+X-Gm-Gg: ASbGncuS+0uHp9x2Ogw5PAmRXHeVff+d3UUJo8qGfUEgeIbQZWCI/KrhChBt08x1971
+	+H0jwnFYrqVGOiGXmqI++dYT3idsh44dTacC0hhbMtjIIdiZ2nBtvLOUlKtp6aTyfNDdaX/CsIK
+	5ZJNLOP9B+pibiFpbnmE/cxdpmc7GoLNQBA7hGJa++NOXBHGBwhWV8kGOocWqYBVHNR1UxOdFHF
+	lmlqEUohWhTwGXHfzQlBDkZmptOeKJfKN4xv4Jzro5XQ7bpw73bw1o2ENxfhACPfEcqDTpEr80m
+	0xqgKWV91bxTbEFXjZNw+TfoWM0Hb4mND4/ALkJ7ez73Yh87+3Hr5AFk46xGF259FvRSa5nhLja
+	OMx5FhXTdW/zoznK5l+kNt5pT
+X-Google-Smtp-Source: AGHT+IEkvQZ5SylVDHV/m2S+NTAyd5wvsiLsp5Pptg5UwT2UN0VbvwmLcskjGP4MQTxbjIrmiAtKRQ==
+X-Received: by 2002:a05:690c:4b03:b0:722:6f24:6293 with SMTP id 00721157ae682-758a2d07fd7mr1394647b3.32.1758576045119;
+        Mon, 22 Sep 2025 14:20:45 -0700 (PDT)
+Received: from localhost ([140.82.166.162])
+        by smtp.gmail.com with ESMTPSA id 956f58d0204a3-633bcce7089sm4581523d50.5.2025.09.22.14.20.44
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 22 Sep 2025 14:20:44 -0700 (PDT)
+Date: Mon, 22 Sep 2025 16:20:43 -0500
+From: Andrew Jones <ajones@ventanamicro.com>
+To: Jason Gunthorpe <jgg@nvidia.com>
+Cc: iommu@lists.linux.dev, kvm-riscv@lists.infradead.org, 
+	kvm@vger.kernel.org, linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	zong.li@sifive.com, tjeznach@rivosinc.com, joro@8bytes.org, will@kernel.org, 
+	robin.murphy@arm.com, anup@brainfault.org, atish.patra@linux.dev, tglx@linutronix.de, 
+	alex.williamson@redhat.com, paul.walmsley@sifive.com, palmer@dabbelt.com, alex@ghiti.fr
 Subject: Re: [RFC PATCH v2 08/18] iommu/riscv: Use MSI table to enable IMSIC
  access
-Message-ID: <20250922184336.GD1391379@nvidia.com>
+Message-ID: <20250922-50372a07397db3155fec49c9@orel>
 References: <20250920203851.2205115-20-ajones@ventanamicro.com>
  <20250920203851.2205115-28-ajones@ventanamicro.com>
-Content-Disposition: inline
-In-Reply-To: <20250920203851.2205115-28-ajones@ventanamicro.com>
-X-ClientProxiedBy: SA9P221CA0022.NAMP221.PROD.OUTLOOK.COM
- (2603:10b6:806:25::27) To PH7PR12MB5757.namprd12.prod.outlook.com
- (2603:10b6:510:1d0::13)
+ <20250922184336.GD1391379@nvidia.com>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PH7PR12MB5757:EE_|DS0PR12MB9399:EE_
-X-MS-Office365-Filtering-Correlation-Id: a3a5cb85-73e4-43f1-ae0d-08ddfa07f1c3
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;ARA:13230040|1800799024|366016|7416014|376014;
-X-Microsoft-Antispam-Message-Info: =?us-ascii?Q?kODFTFjzR2oSUMLIHRSAX4khezXayjrI6p5fC2hdTGvBZLUSVUJmczjLL6dx?=
- =?us-ascii?Q?0lbez1AclY/AJP6HYjN9i0OQkiPK8VDDEbEUX1cZEe9kQ7j4/LpcCp0Dszyv?=
- =?us-ascii?Q?kDROfQDNTJ2C/WWJmJN86gQ+IcvE/XwPo2pjjIpi569F/cMnMl4Rh8u9rNtu?=
- =?us-ascii?Q?/Q+n/0DJrIPLtI0xlm1OiuRLr95rH0ouAYwcwmzy5JcQeMOSf+i/GZAPMXTL?=
- =?us-ascii?Q?Ch6ijPJF1IpFUj4dgvUzAHLvtGpaNR+wKy2jx3ofmhdIxM1ypcfglG0WH4rH?=
- =?us-ascii?Q?0IX3TfMZ43cFTE/nmTaBJjDnhU/VONPxzROdwWVX14yEW5k+/83Hp4v4wr1R?=
- =?us-ascii?Q?angNepYcZ34JfMGj2CPK10O0vAuvUX5xLDHByMxiqXrpyzhJlxgU9jrhrrbc?=
- =?us-ascii?Q?FB2UBkz2RzE9ztLHwLskZfy3JHISI6UJTi2Nlxzn393/J0YnCEpmglwRHv5U?=
- =?us-ascii?Q?Iv1TGvnbFQsDvTbJ8hPG2rYHto23AFeA57PSllgtVPiYuocDlem791Odr5VN?=
- =?us-ascii?Q?cGaWHl/nCsfKoDKer5iYwBTfH1x7vufQibXMjVx0A72DNcKQ9x49svW1eAQd?=
- =?us-ascii?Q?pB2OfkwWrBOsnM4S7m/8wvu3ADe5ogwHsZwQ5/5c1WOEz2NekLj6yH3xMLQy?=
- =?us-ascii?Q?SJy3qjfgpEaGeoU6FJEBwhOX1wJ4U8rGcb6lyaa8YbdyBp9suYPYcu46sQ3M?=
- =?us-ascii?Q?BahgksWltm7Tb/aIAtMP9E/z0pmWgS7VYPDe2ShrMzsIP78+XCKw5tKPCn+n?=
- =?us-ascii?Q?G8bG0ClHv0EOPaSiTJstTdmuiRPkwRV8M7THi6/tE4vn0/Cp9sMu5Fkf5B9x?=
- =?us-ascii?Q?aYSnN+UfHpKCf6iVJpdLfJt+F4Rlrz/PIgPiFf/eQqBwXcgOcvN6wiKrBGHA?=
- =?us-ascii?Q?E8BTsBcbMqOHHpYIBuGP9VXMHs38HwIIpuCpH33/I/3FSxLesvrTOHEDe5VE?=
- =?us-ascii?Q?e2qvy/s5odTG32lH/TuHMRoLI9erUeOi6hswEYyZs8MNJ5VM851YOw4veV74?=
- =?us-ascii?Q?fpps57aqZlI43PXWbahrpeXTGk7hva8X5vfmm+0xYJEtvw3Ia7TchEvtSkQ8?=
- =?us-ascii?Q?vsDBbEDLO/eUPMZdbDwveFS9lVpoFNewiRY9VBBba/pcCzkGcpVFQENfGTT2?=
- =?us-ascii?Q?FT4x3IL2Yj5T1LacUb4BjyaLlBAzm2Zii6X18KVde0jo4Yrn2bFpJxVDLWG3?=
- =?us-ascii?Q?7cbPDcNMPJ5kxeaLOOVxZgzC9ZXQFWhxqYUcRASLKCKG7A/3sdBFfmgS1mAs?=
- =?us-ascii?Q?tN7obiLsFb1qB67UExPrD1vncjTdGFCbQqnvOPzD1oUVAJDXFWj21VRzhRxF?=
- =?us-ascii?Q?FvsYBTBIRUWkosyOvRbYZFiFskZN6fHmr63tnQrkB1zJwMxejwjL/gdLKtMl?=
- =?us-ascii?Q?6cNdR7ub5MoFgYhjlVtWwHYVxcxyaDsLH1NVFSy97x0p3HDdTORXMhpQ1fWR?=
- =?us-ascii?Q?5j5P5WDAiSE=3D?=
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH7PR12MB5757.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(7416014)(376014);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?wc9Xp5SRNiblxnZfOhdYMWfOvpj3Kps32pClAeJqUKg+E5YzF676y9zKKJ4s?=
- =?us-ascii?Q?KnrH/CQipRtdN14f2hx+Iz+7wfXpaKz8/57+hyKHBEOgoC1r+myVetSOR6Yc?=
- =?us-ascii?Q?tiL2dnK0MFkHjEYg1Lq+/wSuOJY+VzQ06dP2lEMjS5yQGlGi85AbL2mLyq/l?=
- =?us-ascii?Q?1Il1N44RXl28w+9biSzmLXnhiBmvhm/t9PiX5bczoQtZdsB40j90efCON/Oq?=
- =?us-ascii?Q?XaFUDsNDDXEpB0o4fyzJAG6CW2nGTKmZSMoKjYL2zEFv0Qz4QK0ELq6P0ZSa?=
- =?us-ascii?Q?EREe5H6qvILS1P08NWQV6RxF//7+hetSYT3EGHKDWxyhrwXfhTsWJ2X6QKs+?=
- =?us-ascii?Q?q1hzn8Yo/B48saxQCgOreLfSGwswK32nrRTM0WKkCu69i77KJpyGQ4mEJbuq?=
- =?us-ascii?Q?NtvGw++t2sW4HbqvxPWG8OUYnbhHyUw1vjnAfZKeFXhaMJFKsGJVBGYCJkia?=
- =?us-ascii?Q?c7Ca+tGvFUrBxR1+8MC+sBm2IQU67YBLSYxTW2YGhJMA2m/Plm7nlD8Ibu/J?=
- =?us-ascii?Q?jh++xJJjMhyU9oxGrwxp0A5l1vb/E5BHBiXbGg14ySjRNkkZm154DP3s9i8G?=
- =?us-ascii?Q?jzZC2NtYd6QQJbYS6qKdqQxOoUA84E1aN7bv/bTakazpsApTQja7meTWm7o7?=
- =?us-ascii?Q?zKL0a/vvtLdrfKB/Ip4xLUDMUCwFNuvw+OaqR8cQjA36/sNY1vC0J7gYVVnx?=
- =?us-ascii?Q?BZr+07UwJa7b8P6qrL6W9CVun+nuqGM8J5Pro+i2XKB+MafdUctaM34DC3Wb?=
- =?us-ascii?Q?f6u8snYYX+yVLqcYV8Z1rBqAG71ZoZpGpI1rgrOgg55k/3u0MxdVsSyYTSj4?=
- =?us-ascii?Q?fNk0+XwAQPLYJL3m+Lv+dEUYI11W4dTpUjHr1qGCIKkeKbbSVq4cJdjKWtzl?=
- =?us-ascii?Q?vPZBtzWSUNPdRbtPqx1Wc9UCkhGT6HS/1DhNlYTntYeSXbm+BfLRfIhNqtrt?=
- =?us-ascii?Q?5FpiWZAKkqymAaTx2ka+nUmqVtL63St6r/z6Zy9m+ASOoFEpqCaqX6fEJ8wG?=
- =?us-ascii?Q?R/IlblRG+tAYHiulrqiorQka0I9CPFVqE7ofh83vFg8qinWLnqtrKYDKX+LD?=
- =?us-ascii?Q?AX3JTK9yfKopysjCSHmZi+TbzXkWU5MAEPH9Uo/K4R81tVaVy73JA9NPV1Pv?=
- =?us-ascii?Q?tGMDt19/sB7whDzlNau8laHYe0vVpyaJIP7eWGrpF8AoUHeJ327/7DYlYAg7?=
- =?us-ascii?Q?QcWvXzneQo1t9sTglXvfJXE39NS5nvl2PN0OleyWC8gIDg+nYNQw1rBW0MDy?=
- =?us-ascii?Q?2cKgZL/STPFdf8rn80JmlwAH+BV6BPH48TUpW8vi67AQl9PtGwOKDYH4eNk+?=
- =?us-ascii?Q?mA+ZuTK0LUpji+1HNbzieQNWURXlUDDnWLLlW0IW5kW8KO5ol7hIqUISK3gd?=
- =?us-ascii?Q?K9+F1HDisz0X1UjBgJ9pF5PRT+6PG4kZwlLCeDRIKfOyNAg2UHvbiODLR18f?=
- =?us-ascii?Q?mupBNawckWCbVmrS1PsJubCEuTGXm1zv88wxc4EAzhrOi6/LAYOOScMPQBP/?=
- =?us-ascii?Q?P9kV5+BjQw8G/FrNw0OjCb04C8J3eiBccB0D+9alyR1gI2SNmoP7FZ8JPkAX?=
- =?us-ascii?Q?h2/sDaJbakvR5/LDjDaPRQaSIzdm2TnZfk3Y1zOk?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: a3a5cb85-73e4-43f1-ae0d-08ddfa07f1c3
-X-MS-Exchange-CrossTenant-AuthSource: PH7PR12MB5757.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 22 Sep 2025 18:43:38.6243
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: JvtHAFIHa/UEzwAHfxK/OQ7thPGIlPpM/brMTisvs3Y/ttBrm260HK//HfkuBwDw
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS0PR12MB9399
+Content-Disposition: inline
+In-Reply-To: <20250922184336.GD1391379@nvidia.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250922_114349_930514_3E3B3F9A 
-X-CRM114-Status: GOOD (  18.81  )
+X-CRM114-CacheID: sfid-20250922_142046_815731_269D79C9 
+X-CRM114-Status: GOOD (  48.03  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -163,52 +104,145 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Sat, Sep 20, 2025 at 03:38:58PM -0500, Andrew Jones wrote:
-> When setting irq affinity extract the IMSIC address the device
-> needs to access and add it to the MSI table. If the device no
-> longer needs access to an IMSIC then remove it from the table
-> to prohibit access. This allows isolating device MSIs to a set
-> of harts so we can now add the IRQ_DOMAIN_FLAG_ISOLATED_MSI IRQ
-> domain flag.
+On Mon, Sep 22, 2025 at 03:43:36PM -0300, Jason Gunthorpe wrote:
+> On Sat, Sep 20, 2025 at 03:38:58PM -0500, Andrew Jones wrote:
+> > When setting irq affinity extract the IMSIC address the device
+> > needs to access and add it to the MSI table. If the device no
+> > longer needs access to an IMSIC then remove it from the table
+> > to prohibit access. This allows isolating device MSIs to a set
+> > of harts so we can now add the IRQ_DOMAIN_FLAG_ISOLATED_MSI IRQ
+> > domain flag.
+> 
+> IRQ_DOMAIN_FLAG_ISOLATED_MSI has nothing to do with HARTs.
+> 
+>  * Isolated MSI means that HW modeled by an irq_domain on the path from the
+>  * initiating device to the CPU will validate that the MSI message specifies an
+>  * interrupt number that the device is authorized to trigger. This must block
+>  * devices from triggering interrupts they are not authorized to trigger.
+>  * Currently authorization means the MSI vector is one assigned to the device.
 
-IRQ_DOMAIN_FLAG_ISOLATED_MSI has nothing to do with HARTs.
+Unfortunately the RISC-V IOMMU doesn't have support for this. I've raised
+the lack of MSI data validation to the spec writers and I'll try to raise
+it again, but I was hoping we could still get IRQ_DOMAIN_FLAG_ISOLATED_MSI
+by simply ensuring the MSI addresses only include the affined harts (and
+also with the NOTE comment I've put in this patch to point out the
+deficiency).
 
- * Isolated MSI means that HW modeled by an irq_domain on the path from the
- * initiating device to the CPU will validate that the MSI message specifies an
- * interrupt number that the device is authorized to trigger. This must block
- * devices from triggering interrupts they are not authorized to trigger.
- * Currently authorization means the MSI vector is one assigned to the device.
+> 
+> It has to do with each PCI BDF having a unique set of
+> validation/mapping tables for MSIs that are granular to the interrupt
+> number.
 
-It has to do with each PCI BDF having a unique set of
-validation/mapping tables for MSIs that are granular to the interrupt
-number.
+Interrupt numbers (MSI data) aren't used by the RISC-V IOMMU in any way.
 
-As I understand the spec this is is only possible with msiptp? As
-discussed previously this has to be a static property and the SW stack
-doesn't expect it to change. So if the IR driver sets
-IRQ_DOMAIN_FLAG_ISOLATED_MSI it has to always use misptp?
+> 
+> As I understand the spec this is is only possible with msiptp? As
+> discussed previously this has to be a static property and the SW stack
+> doesn't expect it to change. So if the IR driver sets
+> IRQ_DOMAIN_FLAG_ISOLATED_MSI it has to always use misptp?
 
-Further, since the interrupt tables have to be per BDF they cannot be
-linked to an iommu_domain! Storing the msiptp in an iommu_domain is
-totally wrong?? It needs to somehow be stored in the interrupt layer
-per-struct device, check how AMD and Intel have stored their IR tables
-programmed into their versions of DC.
+Yes, the patch only sets IRQ_DOMAIN_FLAG_ISOLATED_MSI when the IOMMU
+has RISCV_IOMMU_CAPABILITIES_MSI_FLAT and it will remain set for the
+lifetime of the irqdomain, no matter how the IOMMU is being applied.
 
-It looks like there is something in here to support HW that doesn't
-have msiptp? That's different, and also looks very confused. The IR
-driver should never be touching the iommu domain or calling iommu_map!
-Instead it probably has to use the SW_MSI mechanism to request mapping
-the interrupt controller aperture. You don't get
-IRQ_DOMAIN_FLAG_ISOLATED_MSI with something like this though. Look at
-how ARM GIC works for this mechanism.
+> 
+> Further, since the interrupt tables have to be per BDF they cannot be
+> linked to an iommu_domain! Storing the msiptp in an iommu_domain is
+> totally wrong?? It needs to somehow be stored in the interrupt layer
+> per-struct device, check how AMD and Intel have stored their IR tables
+> programmed into their versions of DC.
 
-Finally, please split this series up, if ther are two different ways
-to manage the MSI aperture then please split it into two series with a
-clear description how the HW actually works.
+The RISC-V IOMMU MSI table is simply a flat address remapping table,
+which also has support for MRIFs. The table indices come from an
+address matching mechanism used to filter out invalid addresses and
+to convert valid addresses into MSI table indices. IOW, the RISC-V
+MSI table is a simple translation table, and even needs to be tied to
+a particular DMA table in order to work. Here's some examples
 
-Maybe start with the simpler case of no msiptp??
+1. stage1 not BARE
+------------------
 
-Jason
+      stage1     MSI table
+ IOVA ------> A  ---------> host-MSI-address
+
+2. stage1 is BARE, for example if only stage2 is in use
+-------------------------------------------------------
+
+           MSI table
+ IOVA == A ---------> host-MSI-address
+
+When used by the host A == host-MSI-address, but at least we can block
+the write when an IRQ has been affined to a set of harts that doesn't
+include what it's targeting. When used for irqbypass A == guest-MSI-
+address and the host-MSI-address will be that of a guest interrupt file.
+This ensures a device assigned to a guest can only reach its own vcpus
+when sending MSIs.
+
+In the first example, where stage1 is not BARE, the stage1 page tables
+must have some IOVA->A mapping, otherwise the MSI table will not get
+a chance to do a translation, as the stage1 DMA will fault. This
+series ensures stage1 gets an identity mapping for all possible MSI
+targets and then leaves it be, using the MSI tables instead for the
+isolation.
+
+I don't think we can apply a lot of AMD's and Intel's model to RISC-V.
+
+> 
+> It looks like there is something in here to support HW that doesn't
+> have msiptp? That's different, and also looks very confused.
+
+The only support is to ensure all the host IMSICs are mapped, otherwise
+we can't turn on IOMMU_DMA since all MSI writes will cause faults. We
+don't set IRQ_DOMAIN_FLAG_ISOLATED_MSI in this case, though, since we
+don't bother unmapping MSI addresses of harts that IRQs have be un-
+affined from.
+
+> The IR
+> driver should never be touching the iommu domain or calling iommu_map!
+
+As pointed out above, the RISC-V IR is quite a different beast than AMD
+and Intel. Whether or not the IOMMU has MSI table support, the IMSICs
+must be mapped in stage1, when stage1 is not BARE. So, in both cases we
+roll that mapping into the IR code since there isn't really any better
+place for it for the host case and it's necessary for the IR code to
+manage it for the virt case. Since IR (or MSI delivery in general) is
+dependent upon the stage1 page tables, then it's necessary to be tied to
+the same IOMMU domain that those page tables are tied to. Patch4's changes
+to riscv_iommu_attach_paging_domain() and riscv_iommu_iodir_update() show
+how they're tied together.
+
+> Instead it probably has to use the SW_MSI mechanism to request mapping
+> the interrupt controller aperture. You don't get
+> IRQ_DOMAIN_FLAG_ISOLATED_MSI with something like this though. Look at
+> how ARM GIC works for this mechanism.
+
+I'm not seeing how SW_MSI will help here, but so far I've just done some
+quick grepping and code skimming.
+
+> 
+> Finally, please split this series up, if ther are two different ways
+> to manage the MSI aperture then please split it into two series with a
+> clear description how the HW actually works.
+> 
+> Maybe start with the simpler case of no msiptp??
+
+The first five patches plus the "enable IOMMU_DMA" will allow paging
+domains to be used by default, while paving the way for patches 6-8 to
+allow host IRQs to be isolated to the best of our ability (only able to
+access IMSICs to which they are affined). So we could have
+
+series1: irqdomain + map all imsics + enable IOMMU_DMA
+series2: actually apply irqdomain in order to implement map/unmap of MSI
+         ptes based on IRQ affinity - set IRQ_DOMAIN_FLAG_ISOLATED_MSI,
+         because that's the best we've got...
+series3: the rest of the patches of this series which introduce irqbypass
+         support for the virt use case
+
+Would that be better? Or do you see some need for some patch splits as
+well?
+
+Thanks,
+drew
 
 -- 
 kvm-riscv mailing list
