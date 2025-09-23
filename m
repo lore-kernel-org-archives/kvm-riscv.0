@@ -4,69 +4,153 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 217F7CAC5A7
-	for <kvm-riscv@archiver.kernel.org>; Tue, 23 Sep 2025 10:13:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DD92FCAC5AC
+	for <kvm-riscv@archiver.kernel.org>; Tue, 23 Sep 2025 14:06:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:References
-	:In-Reply-To:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:In-Reply-To:References:
+	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=mnz8xZojuemMj+J2MQidFzeYoFfP0A2vq+4OHYbSwjc=; b=iwvrEORIJBL1ww
-	HJJXo4ODjm+lNwvYVhlhrmpT/KAahnrNDYeYirAmg6j751E5CtQm5C12BTUONhaCd2vgcSdI1a0el
-	lGL+6zjLwSvx462lbWPldni4yk62AqG4jRTgBH4cF+B5xTRkd3Z3OaSQTDn8h5tJJN1KTDDIBQojo
-	qnS1LdoI1h7s6Ze0H5eVkdk38QCaY3jvi8JoNMAXMrAYNnNOXHXwK/YNhNitkKveFw+T5ZyuqHR23
-	E//D1vq/eSsYlVqyiO6VegwJ2P/5T3pammtBcozfPNEMThci97U2eW9Nk1KZWM9J69lb2kmKC1Eig
-	tyX9UVJsf6DewcJJsAnQ==;
+	List-Owner; bh=ePSBYju4I8jnQ+aDjD6y7ir0+o8tCnBzoIzvww9EHkc=; b=sivC6kojiOkk6i
+	hEl3Pnw8g3SMelvVekW+a33tZq2oAKeB+yZNcPRIxeb1wGb4uT6wlXHgO69NWk8kBwqSUPbfsp3dI
+	L6olVX9y1pOrK88QxZ1iKg1QohcfeTruaHQTxEMnfTh+zNd68XtzpcGOeMVILtpmEdoCW0CoapRBD
+	FeXSFBecV3WkjapTvJn9lYYV8Y0h6oPqx4+rphzDuhF5epE1X7zMzcRCmVy7vfc6mKgoIOFk1BpH7
+	mFAVUwuidbW1WasvWGgiqb7TSLj07pwQj2wtc7ddOZElidaj4sy5pagMu5OZ2gAsM50qqrfrwdeiI
+	bOUWvvpeTqDCJ4fi8FpA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1v1015-0000000D22M-2kkB;
-	Tue, 23 Sep 2025 10:12:59 +0000
-Received: from galois.linutronix.de ([2a0a:51c0:0:12e:550::1])
+	id 1v13fW-0000000Deqx-29UL;
+	Tue, 23 Sep 2025 14:06:58 +0000
+Received: from mail-westcentralusazlp170100005.outbound.protection.outlook.com ([2a01:111:f403:c112::5] helo=CY7PR03CU001.outbound.protection.outlook.com)
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1v1012-0000000D21e-2AAx;
-	Tue, 23 Sep 2025 10:12:57 +0000
-From: Thomas Gleixner <tglx@linutronix.de>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1758622373;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=jbygUmzfw8XS2VUG0sJP6HEJcO918I6DxufbOrM/Lys=;
-	b=bThBhpI0ltJ1hqx0PKVweVeLpdM3xppi1mqlVS9P988dnElWJFcno5EqlUW2/LORt+1zHz
-	Wfycx0wfOOEs+0yZfXstUOoTY3leeQd5TumBF3E+fPfmgUpBgr3z2gUegc384kvbK/Fw2U
-	zMu21rf4c2ypNNk6Q4WKuorRAmddD+LkdASO7a+EzkZR353yMhnagecaosBIt3xUhYRNDU
-	sO0qyqawwncogrv4F2rhWO3Rg0Zvfj/jZJB14UU1T0RU54TGMg9OOPdIipGEy6os0k5wJf
-	HqsjAOG4y7wjMTQ921422R3Oyvo/iBZvs68IHSoJxmN/QMofzRMMkt5Gab7g/Q==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1758622373;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=jbygUmzfw8XS2VUG0sJP6HEJcO918I6DxufbOrM/Lys=;
-	b=bv0St62rsMuDh+7nigvQeW8MWJocEsM7XcTr5+GGEUrX8DshmHpEvAwaL6y/hDZduT7sB4
-	IDchlUJGMNv0/6Dw==
-To: Jason Gunthorpe <jgg@nvidia.com>, Andrew Jones <ajones@ventanamicro.com>
-Cc: iommu@lists.linux.dev, kvm-riscv@lists.infradead.org,
- kvm@vger.kernel.org, linux-riscv@lists.infradead.org,
- linux-kernel@vger.kernel.org, zong.li@sifive.com, tjeznach@rivosinc.com,
- joro@8bytes.org, will@kernel.org, robin.murphy@arm.com,
- anup@brainfault.org, atish.patra@linux.dev, alex.williamson@redhat.com,
- paul.walmsley@sifive.com, palmer@dabbelt.com, alex@ghiti.fr
+	id 1v13fU-0000000Deq4-048E;
+	Tue, 23 Sep 2025 14:06:57 +0000
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=LvfjTdxfpk/yBh/K7m6B81tPX9QmpEVlC7vEJ6c3PX+SPCEwxD1DIn0Efa6YQQ8aMSwRrJX9VQxxcAiRM2yfwYyp30jQEGDhbpAoDbppKe1iyjBa3FksFOK2h3aAvPXvzc2t6ikRtKI2ROQqqR2yscABgJGRrdcVPXiGk0YLJnJMTwz+letBv1puUc+bMzagJBNEqw9glj+kwLf1Jx1LNf6g+GS3TuIVa1LX042g4KCsAFM8XrYE/b87P0EZ8E2x6oJK8S1kWx/n2FYQEra/jwxxyJsvlY4uUxl90miA3O+DV6kBrfc/0dKGDV+2GwG94SXwXRDv7M4kY8HZRrGELg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=dU8KG8TBt8VeNziA73m48MhcMtB5VIZ0N/0CxyFeAtQ=;
+ b=p/StxvgIiobUd99U0LYlKrHpA45kDqgvq52k2nSZFfLN3K9ywGmTQgujWvcqBg+x9++ZcoEDvgfdqH0Krg2OPF6ory+oaYmCBLfdKWz9wmkhB06Cjob25SWq4DH8Xu9Et0RDD1t0LwFtVB7/bepLoVNQku2/PbsMhy3vRgtI1UYGZboqjN1wCtRTqWcqm6zIyT3rTenoXFow617wj+WIrfYaDqLXTeYqwEVq9w0uOw37MUxL9Rqe8AkPJllvprH6y+uImVsI9z5Ov6TZudzPyiKcbJATFBOz6Jg45p0K9M3o7d0dycZGPYy9juGP/HhUS9voV1mCxswtV6oSwfB5GQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=dU8KG8TBt8VeNziA73m48MhcMtB5VIZ0N/0CxyFeAtQ=;
+ b=rF1I5CBteYdjJRJQGFOLxyhBr3fqEGZl3mILc8q93+OHKE0OYU0cOczjP5uCJrtZKiRlGbyM8wMEwipj5l9+p8HEtgov6QAa0ZLQ6D0jcdt39SkgZ2QUDlsnyQPH4YZcY0d34gb9+SJ8Dgsg9Jjw/telyyGyEdsOGI+G5ZohJYMU/JSXK3Kw6EZbvXMPGoKHa/UyDOewSSBTtofj7xPz20FdVYM+PxADZ6fBEh9a7ZHEkr20t7aKdqM9Jr4z03mRQA82VKgnrkeeylzm1yPjhgOtF0bJ/s3u9Dz93U78+Vi6HkjiNatmUruyRDfv/tyhH4/93s1euGwf9tr2EPz9Rg==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from PH7PR12MB5757.namprd12.prod.outlook.com (2603:10b6:510:1d0::13)
+ by PH7PR12MB7305.namprd12.prod.outlook.com (2603:10b6:510:209::21) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9160.9; Tue, 23 Sep
+ 2025 14:06:49 +0000
+Received: from PH7PR12MB5757.namprd12.prod.outlook.com
+ ([fe80::f012:300c:6bf4:7632]) by PH7PR12MB5757.namprd12.prod.outlook.com
+ ([fe80::f012:300c:6bf4:7632%2]) with mapi id 15.20.9137.018; Tue, 23 Sep 2025
+ 14:06:48 +0000
+Date: Tue, 23 Sep 2025 11:06:46 -0300
+From: Jason Gunthorpe <jgg@nvidia.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andrew Jones <ajones@ventanamicro.com>, iommu@lists.linux.dev,
+	kvm-riscv@lists.infradead.org, kvm@vger.kernel.org,
+	linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
+	zong.li@sifive.com, tjeznach@rivosinc.com, joro@8bytes.org,
+	will@kernel.org, robin.murphy@arm.com, anup@brainfault.org,
+	atish.patra@linux.dev, alex.williamson@redhat.com,
+	paul.walmsley@sifive.com, palmer@dabbelt.com, alex@ghiti.fr
 Subject: Re: [RFC PATCH v2 08/18] iommu/riscv: Use MSI table to enable IMSIC
  access
-In-Reply-To: <20250922235651.GG1391379@nvidia.com>
+Message-ID: <20250923140646.GM1391379@nvidia.com>
 References: <20250920203851.2205115-20-ajones@ventanamicro.com>
  <20250920203851.2205115-28-ajones@ventanamicro.com>
  <20250922184336.GD1391379@nvidia.com>
  <20250922-50372a07397db3155fec49c9@orel>
  <20250922235651.GG1391379@nvidia.com>
-Date: Tue, 23 Sep 2025 12:12:52 +0200
-Message-ID: <87ecrx4guz.ffs@tglx>
+ <87ecrx4guz.ffs@tglx>
+Content-Disposition: inline
+In-Reply-To: <87ecrx4guz.ffs@tglx>
+X-ClientProxiedBy: BL1PR13CA0255.namprd13.prod.outlook.com
+ (2603:10b6:208:2ba::20) To PH7PR12MB5757.namprd12.prod.outlook.com
+ (2603:10b6:510:1d0::13)
 MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: PH7PR12MB5757:EE_|PH7PR12MB7305:EE_
+X-MS-Office365-Filtering-Correlation-Id: 1f4b83fb-74cf-4098-ca23-08ddfaaa7008
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|366016|1800799024|376014|7416014;
+X-Microsoft-Antispam-Message-Info: =?us-ascii?Q?6LUnmU4F31tWAVX0wmyJHkuSDeWyk8tHIv3uvIANe+NBBcZ0LCI0uCBVPr7n?=
+ =?us-ascii?Q?FWQvE0YjDCjn1xU8k/32TqXSnBBv0HVnjyjl9tR8CYMRAV/n0OvdK+yEICTY?=
+ =?us-ascii?Q?weHfMpsitRmnNlj2s4UbD8ldoHUSQTz4gQan5IvFWGtZFrj1rVLWqjwmgGpm?=
+ =?us-ascii?Q?1yY1sXwfwLFMn+9k7NMkc0FinU0OV0gEJht94EJh8eEohlhZnfQ2e7Nsa8/V?=
+ =?us-ascii?Q?RJZ29TO0UmR/xZMfFVqV6mVBk0Dy9fRUyurJkKuO41WFeRVCCYid8UQt9Xdw?=
+ =?us-ascii?Q?K2l0CnXRRG/qa1bmDq7jphMtJ+vZr0aHXMnZu+okzNYuNKThJlpap9rHLdSb?=
+ =?us-ascii?Q?5PxyP7XeScaLB9R/V3kAxkGfRskQZv+AWEg1/y7OqQG4qHfV+z2xEOX6T28Z?=
+ =?us-ascii?Q?I0Ep5z72YDt3DKVlStXv8FeHBXuXWGKpwXef1qbhc/PsaVGL6BCqaHCGyiIY?=
+ =?us-ascii?Q?wG1yOeDiaOVIV3Aoo2QJ0ezJpwdBjPXvI6jyiK1RmcLotBAVjSF2ZvWnGgeD?=
+ =?us-ascii?Q?8l5BPD4ztaWZu78loZ4usfZqWsX7q8IywZhQBsP+0Nrz2yfNCIIY5952B60g?=
+ =?us-ascii?Q?MU9PSt371qhGmjo/sjF5gq12dJb2Cmn/rI3I+V9fZEoq8X4/Xxw+l54dNlA5?=
+ =?us-ascii?Q?5pLnlTYbT1c6Ucl87MYp+ar5O0cjTvr9NR6C8KZaTpZbQIbg/EKE6bqy46pd?=
+ =?us-ascii?Q?4pXK3I0JPFUlBAbqjyUVw3sHug3dBcfQ2W1LlXfsM2mEjtuNP6aR0vGdxwfI?=
+ =?us-ascii?Q?C9UEwwesIMcLBwjQCfF1jSB9QgVZ1nK4ID/vAgMr40A/w+FF1PTBkubraF5T?=
+ =?us-ascii?Q?9cmIUPznQn8lOmAGQ1El3dJUdTVC1d2ucxyaQasKen5O4Hvr5RCNYrNlqh1v?=
+ =?us-ascii?Q?8Oacz7pxlqV3BURooJgEzg76t9SrugFcOKKFUpokiaO7vWiogro0jxoowngF?=
+ =?us-ascii?Q?kbA2wlLHQ+OGsIkSGpw659tRbhxEXOjnrCj4gIcW7jX9/fyjMU1mR5+HDcGX?=
+ =?us-ascii?Q?7fOD7M4vQcPIilz8Mz7mLPr1Pf1X5Wxj0vQASRDbC3uH3tfqSFSmom5fimes?=
+ =?us-ascii?Q?uGTxAcmRtx0r+U9vKkAclQCnVhG/sLKYzNIj3LigK8GtFOesUfcHLV6ScTtT?=
+ =?us-ascii?Q?/XUse/FXnAd2nnvtiQU47W+JAhfv7Ur3chUIkACeU4AukutdoYZccNx5Ylhk?=
+ =?us-ascii?Q?mqa1ux2IdGyjthTEyL+il0QNrA3ZWiA7iaLh3cp+agleCQtoLVQ2/LSWFHjp?=
+ =?us-ascii?Q?sJNk/9I8XIumRn16a6e/EcxjJOLLRsKi5aJcA+S9tqASqSxaXG/tD5eHrrYC?=
+ =?us-ascii?Q?U86Egwd97QOnhtt0oJxhCeI6Lj2JuJZvNh7L1SbpLzmj4WjsGTV5Q5+OaUYl?=
+ =?us-ascii?Q?h8m+vYUokdwzrTnABl8GGqKfqWOEC2Th7f3I91vGVa3ldGL+ZpG1rHy6uU+Z?=
+ =?us-ascii?Q?qcAiCER6T08=3D?=
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH7PR12MB5757.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(376014)(7416014);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?AhD6g4c6U+Ik2ZzHJc/5QhNVtXbtvnGfWZXuzl2nfIGKAG7XPk6VVJFdj1Fo?=
+ =?us-ascii?Q?72N4FQY0NLdSieLtofAgxMdFXGsQsCqSIYeP1CYIrttz8y46Fdq/5AlSDsNk?=
+ =?us-ascii?Q?bZrIjGaiDZr7FY0vRAO4BKt1FC0EMTcu3uJOFDtnDt02fiA31IBZc2bVB62d?=
+ =?us-ascii?Q?MyzItw+3SO8sOlPqy7HXhmZHnPuiF0bgDJy6+xu9M0De3o+BGNOFsbTj/q7s?=
+ =?us-ascii?Q?AgtnTBnz4wU9J1uWa6XQFRXQju+iKYhlEVLmhctheXRT98hJTh/opcY9KFKt?=
+ =?us-ascii?Q?MVCednDBhiuJihJoJAaj2GqalZ6cLpyVTYiUSbiGZ3LwKFK4sFpqkmmYhL1n?=
+ =?us-ascii?Q?TnBzf2KIpVC4nOM9xpn5SmFiO6pNiUtUzxZXOWxXx8ySVRRGdI9tQvRQYFi0?=
+ =?us-ascii?Q?6tVt+Sxg06PsMAZwTaDn/51pjW4V79Gu4+4QuQophP8RDIXuI1nZK7vWzx+U?=
+ =?us-ascii?Q?Iop6PQwqa1gQkBOx2MOoqNSenLexqfIGwEsDPGDk6EWALts1HNmamNk2yVVv?=
+ =?us-ascii?Q?OKT2BO25QJjKAOAtyndg4zSachoeW9jPRrRhacWLdbPXfUUYFbT8d7mdfpXY?=
+ =?us-ascii?Q?juYrAuxgUfn3XHV2nosP2jWUqxuZHGBfNPREtdXHKfwHURaSUCuzlieeIPWw?=
+ =?us-ascii?Q?8DguEdemMuHTjYRhs7EuU+VtCPyVxmIMKl2RlNWku27s9v5M9GP6TuaLZBqU?=
+ =?us-ascii?Q?SEoSliPdbp7BPm2ME3fKz7qsj6pkErbwfwH5f6XzGoaMIuU33S0zmoJv7sUz?=
+ =?us-ascii?Q?AuW2uj52FDtoClPkqLTC75kkCbwrpQCFgDUMukiLSuVfAhZxr/T4S/SxKHHY?=
+ =?us-ascii?Q?g8eXLd0R84e0qfWqO+4hUIWcJYMWdKwjNMfNNP68vvDed0JTkXOBYHBy+Bdi?=
+ =?us-ascii?Q?VitFbfd0okkSckQnzAknpxN6sDhuWYzvvZAlciEjPUAfpfm7R6oDff4xMFRf?=
+ =?us-ascii?Q?FXgkwEfrAMt2NruxK64GQ8wpP0p5sH8LrbFBE3oSYsdd9GRUz985sXtSolop?=
+ =?us-ascii?Q?LDZ5zlZx0jZUVwv5BUYKpQ5BTvYNPyqny/MdWaNDRoRGzNR3UulPQhMCW28R?=
+ =?us-ascii?Q?76V7VbBMGxclN80qbxf3nQjl7CON4d6Vo7bRqxCQzBRhatiJTXGK8r1a8rD8?=
+ =?us-ascii?Q?q5KFR1eP6e6Z6s5C6Vu2vYhJl5KaXN2S+bi1TeZUWTvPqjHYygFvxW8O6hWv?=
+ =?us-ascii?Q?ErZD/Lsxfw8rB1zVaNFxGaN0qBobaYf7pzqeQwdnOeEEfKyw6Ue1ditd67wv?=
+ =?us-ascii?Q?pf0UAnV7smpHp4Fl8Qv1WZcCqoTLJDnhPD5BHB9kTouEwQ1ptHFGlSlB5cV3?=
+ =?us-ascii?Q?FXP4Wt2tILBQvBjuTNpkkM8bPqTZsVVEFyCiyqo827bnuBvE8KXGWLv1+qHC?=
+ =?us-ascii?Q?yZWCqwG2MyEgnZg5sjLBCh3wWT6ol5mFsD5MtxHlovSfbgc3S+a32qqZYg+W?=
+ =?us-ascii?Q?B87V9GPJDa0rEsiz678SuQMs1lv1W/l2n/uxIGs/R/fW2MmhQ7YNANGOYdn5?=
+ =?us-ascii?Q?Witf8E0uwhA7QMzo5oUA8SwFHEREAhB8QdmqXHN5n9IbU0fgxDf4TLiJVQME?=
+ =?us-ascii?Q?FlEarxAK0Jo6biqYaKLEIdd5GSPpmY/C6Ymjf66P?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 1f4b83fb-74cf-4098-ca23-08ddfaaa7008
+X-MS-Exchange-CrossTenant-AuthSource: PH7PR12MB5757.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 23 Sep 2025 14:06:48.9050
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: gkQ0ErG0wzG352s0T7LMQpQEo09+RV700Qvpxc42Okx4Tsz3hIU3sXRmNlpacncj
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR12MB7305
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250923_031256_761632_7CEBF9B7 
-X-CRM114-Status: GOOD (  23.80  )
+X-CRM114-CacheID: sfid-20250923_070656_055922_2BB7F23F 
+X-CRM114-Status: GOOD (  14.09  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -83,111 +167,61 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Mon, Sep 22 2025 at 20:56, Jason Gunthorpe wrote:
-> On Mon, Sep 22, 2025 at 04:20:43PM -0500, Andrew Jones wrote:
->> > It has to do with each PCI BDF having a unique set of
->> > validation/mapping tables for MSIs that are granular to the interrupt
->> > number.
->> 
->> Interrupt numbers (MSI data) aren't used by the RISC-V IOMMU in any way.
->
-> Interrupt number is a Linux concept, HW decodes the addr/data pair and
-> delivers it to some Linux interrupt. Linux doesn't care how the HW
-> treats the addr/data pair, it can ignore data if it wants.
+On Tue, Sep 23, 2025 at 12:12:52PM +0200, Thomas Gleixner wrote:
+> With a remapping domain intermediary this looks like this:
+> 
+>      [ CPU domain ] --- [ Remap domain] --- [ MSI domain ] -- device
+>  
+>    device driver allocates an MSI interrupt in the MSI domain
+> 
+>    MSI domain allocates an interrupt in the Remap domain
+> 
+>    Remap domain allocates a resource in the remap space, e.g. an entry
+>    in the remap translation table and then allocates an interrupt in the
+>    CPU domain.
 
-Let me explain this a bit deeper.
+Thanks!
 
-As you said, the interrupt number is a pure kernel software construct,
-which is mapped to a hardware interrupt source.
+And to be very crystal clear here, the meaning of
+IRQ_DOMAIN_FLAG_ISOLATED_MSI is that the remap domain has a security
+feature such that the device can only trigger CPU domain interrupts
+that have been explicitly allocated in the remap domain for that
+device. The device can never go through the remap domain and trigger
+some other device's interrupt.
 
-The interrupt domain, which is associated to a hardware interrupt
-source, creates the mapping and supplies the resulting configuration to
-the hardware, so that the hardware is able to raise an interrupt in the
-CPU.
+This is usally done by having the remap domain's HW take in the
+Addr/Data pair, do a per-BDF table lookup and then completely replace
+the Addr/Data pair with the "remapped" version. By fully replacing the
+remap domain prevents the device from generating a disallowed
+addr/data pair toward the CPU domain.
 
-In case of MSI, this configuration is the MSI message (address,
-data). That's composed by the domain according to the requirements of
-the underlying CPU hardware resource. This underlying hardware resource
-can be the CPUs interrupt controller itself or some intermediary
-hardware entity.
+It fundamentally must be done by having the HW do a per-RID/BDF table
+lookup based on the incoming MSI addr/data and fully sanitize the
+resulting output.
 
-The kernel reflects this in the interrupt domain hierarchy. The simplest
-case for MSI is:
+There is some legacy history here. When MSI was first invented the
+goal was to make interrupts scalable by removing any state from the
+CPU side. The device would be told what Addr/Data to send to the CPU
+and the CPU would just take some encoded information in that pair as a
+delivery instruction. No state on the CPU side per interrupt.
 
-     [ CPU domain ] --- [ MSI domain ] -- device
+In the world of virtualization it was realized this is not secure, so
+the archs undid the core principal of MSI and the CPU HW has some kind
+of state/table entry for every single device interrupt source.
 
-The flow is as follows:
+x86/AMD did this by having per-device remapping tables in their IOMMU
+device context that are selected by incomming RID and effectively
+completely rewrite the addr/data pair before it reaches the APIC. The
+remap table alone now basically specifies where the interrupt is
+delivered.
 
-   device driver allocates an MSI interrupt in the MSI domain
+ARM doesn't do remapping, instead the interrupt controller itself has
+a table that converts (BDF,Data) into a delivery instruction. It is
+inherently secure.
 
-   MSI domain allocates an interrupt in the CPU domain
+That flag has nothing to do with affinity.
 
-   CPU domain allocates an interrupt vector and composes the
-   address/data pair. If @data is written to @address, the interrupt is
-   raised in the CPU
-
-   MSI domain converts the address/data pair into device format and
-   writes it into the device.
-
-   When the device fires an interrupt it writes @data to @address, which
-   raises the interrupt in the CPU at the allocated CPU vector.  That
-   vector is then translated to the Linux interrupt number in the
-   interrupt handling entry code by looking it up in the CPU domain.
-
-With a remapping domain intermediary this looks like this:
-
-     [ CPU domain ] --- [ Remap domain] --- [ MSI domain ] -- device
- 
-   device driver allocates an MSI interrupt in the MSI domain
-
-   MSI domain allocates an interrupt in the Remap domain
-
-   Remap domain allocates a resource in the remap space, e.g. an entry
-   in the remap translation table and then allocates an interrupt in the
-   CPU domain.
-
-   CPU domain allocates an interrupt vector and composes the
-   address/data pair. If @data is written to @address, the interrupt is
-   raised in the CPU
-
-   Remap domain converts the CPU address/data pair to remap table format
-   and writes it to the alloacted entry in that table. It then composes
-   a new address/data pair, which points at the remap table entry.
-
-   MSI domain converts the remap address/data pair into device format
-   and writes it into the device.
-
-   So when the device fires an interrupt it writes @data to @address,
-   which triggers the remap unit. The remap unit validates that the
-   address/data pair is valid for the device and if so it writes the CPU
-   address/data pair, which raises the interrupt in the CPU at the
-   allocated vector. That vector is then translated to the Linux
-   interrupt number in the interrupt handling entry code by looking it
-   up in the CPU domain.
-
-So from a kernel POV, the address/data pairs are just opaque
-configuration values, which are written into the remap table and the
-device. Whether the content of @data is relevant or not, is a hardware
-implementation detail. That implementation detail is only relevant for
-the interrupt domain code, which handle a specific part of the
-hierarchy.
-
-The MSI domain does not need to know anything about the content and the
-meaning of @address and @data. It just cares about converting that into
-the device specific storage format.
-
-The Remap domain does not need to know anything about the content and
-the meaning of the CPU domain provided @address and @data. It just cares
-about converting that into the remap table specific format.
-
-The hardware entities do not know about the Linux interrupt number at
-all. That relationship is purely software managed as a mapping from the
-allocated CPU vector to the Linux interrupt number.
-
-Hope that helps.
-
-     tglx
-
+Jason
 
 -- 
 kvm-riscv mailing list
