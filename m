@@ -4,87 +4,91 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7AA60CAC5A5
-	for <kvm-riscv@archiver.kernel.org>; Wed, 24 Sep 2025 12:54:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E00E5CAC5AE
+	for <kvm-riscv@archiver.kernel.org>; Wed, 24 Sep 2025 13:31:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
 	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=g4dL/eRkpqFhgaOs14WL6rPE7dPnIkoSTzad1GBVDOI=; b=oMZSwTOh5b0Vc4
-	VRtOqXCWhUaQgRbgMBPQW4DVljyl9GORZp1nkrN0oyivSY/4xqyJ6OB/tpjc16ARHn2oV2tm3Y+vk
-	nv69hzKMBKeEuZYazdiIblfUsPV35e6VQwjpDGdFszN5hJykKVztOjRPDNshFHl/+PKcbxU+lFBgL
-	ijKp63HdUSNBL3g9ZTeYKLFb1PCCPjcYnls4L1FawrcolQKZH9o187qYugH7+UXQtbte1R6VUVGDM
-	hJaC7LaUx2CMTNKskhaozKRgfOTsV87XL0tDHwSdfUoob8xnW7mjEiqPFUondSRw4KxmACHBnHHpT
-	Qwzdxus6TM3l+Dep3/wA==;
+	List-Owner; bh=2K+rjC1slECJT85WoSwlTeOJJuv9spGsQJe7C9f+VQY=; b=4mNd0rDdL0WxPf
+	JSvbeqCO2UF/M5y3kM2B9exyjA8NnshMqRbTcZ43bm5slVPu3wF+iVthmLvAV93jukYzJOE6EyD0k
+	mPyWkuktHp8gSxNxb3dhZQ7HiYjKzBG/cr17wErCbNNXHZMX8OQ2Wq9+/zIZhG5k351PnQ6aceLuy
+	MB5P3D5oW57l43RqMuuSIKSeV2//0RHD4hIqiyJgSX/xXSEu+kLcmXVg2LMrUBHwOGp3ONNsaKD7d
+	n9z+AHMcA3nn0KCuOrMMOjFasimmcZIIQf7WTEU29MOv12KJQAQyHYyDbtfqER8EbuFjk7jJXeXqS
+	rFBmHvB/ay2LhZ310L1A==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1v1P1D-0000000Ha9R-0QZd;
-	Wed, 24 Sep 2025 12:54:47 +0000
-Received: from mail-io1-xd33.google.com ([2607:f8b0:4864:20::d33])
+	id 1v1PbB-00000000Edo-3HbJ;
+	Wed, 24 Sep 2025 13:31:57 +0000
+Received: from mail-io1-xd31.google.com ([2607:f8b0:4864:20::d31])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1v1P1A-0000000Ha8a-3SIJ
+	id 1v1Pb8-00000000EaR-0mGp
 	for kvm-riscv@lists.infradead.org;
-	Wed, 24 Sep 2025 12:54:46 +0000
-Received: by mail-io1-xd33.google.com with SMTP id ca18e2360f4ac-88776dcac7aso222098239f.1
-        for <kvm-riscv@lists.infradead.org>; Wed, 24 Sep 2025 05:54:44 -0700 (PDT)
+	Wed, 24 Sep 2025 13:31:55 +0000
+Received: by mail-io1-xd31.google.com with SMTP id ca18e2360f4ac-88703c873d5so249589039f.3
+        for <kvm-riscv@lists.infradead.org>; Wed, 24 Sep 2025 06:31:53 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ventanamicro.com; s=google; t=1758718483; x=1759323283; darn=lists.infradead.org;
+        d=ventanamicro.com; s=google; t=1758720713; x=1759325513; darn=lists.infradead.org;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=hXk5gvGOIj4B8Hhv/tzj6b7Y9tm8ywIFhspLK9qUglQ=;
-        b=eFIgl5yUmgsQ7jSiDUgzbeuuxbv1deSKAMl4OAD4utcH06xn3Bug9knYYissF3SBBa
-         j9BaOVo3SXwFPgNdvdLpf2Sl4GBhgExJ5YtMKhx/HqMQqsyL6O3VaBVPguhAryZLn8nS
-         YEORRUV3exEttwX9iNzkx9K+uPJs7rwgg2GhX/sx5U9PmaupOQv3oDW0VLik/B9nMZPS
-         pBYXpbZwajmQPPOQNhDlzd/rpa6J1RdrToYsRbyZOemIN7VrPgmEDd2gldh2tM5XCbpA
-         oeaee9VbGaLcFVi5/Ca8l2mBoiyxu9QzXm8wCYIn9CMlQzaduTcW/GA65wPH8csXiVzS
-         FEKg==
+        bh=Sjr8/7QWc40wBIvcq7xbnNiZ+KKEhi3m1vUvdK7Sd/0=;
+        b=cE5PAxGMFessfbp8MvxS+hKwIT3VyPOrGmM5RmOLB8KMDJ8umsaG5e4RBajkgMwz/o
+         Jimk7xASfx2lTTHY1Qk9KZyYLiXPIpzxuJe8w9HA6Ilw+hXZ5S124nrARcmsuc0YeyEt
+         18Bp8N/vva32C1xuTx7M1gAGbC9jKoxFryPbLlnsXE/wfNyBmhYTKiupxRu4B8GG0Zd4
+         K2ylP4h36FIjnDuDGGbI2Quz64xj4PkrBGj6mhIOp5xa8qOZOUBrOsqponL8CLY7trTS
+         IHSalThgdd1ZoCb+CEiwwpRdLRG3pxjM9geBhjsbqNjR35jxBp660S6JEQ4H9JgeweAZ
+         sTYA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1758718483; x=1759323283;
+        d=1e100.net; s=20230601; t=1758720713; x=1759325513;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=hXk5gvGOIj4B8Hhv/tzj6b7Y9tm8ywIFhspLK9qUglQ=;
-        b=Yg2l7fEOiV5aS8G37cUIBRsyU6aVl7OPjW9LCInVFWZoNiIw3K183ZW2LqLEFVRX/2
-         APN35Lry1tPU1YtWtr1+fPnsShRYmE1FRoEMT/NUSkaPKrzy8PAqsv468m3+P7Ggdibq
-         CHj3ozdgIxbyIIhcLkc0+VJSXIsQ8FoI0UNfluJJYtyxaek2V+neyDgv3/mQNZYvEKls
-         iaCwUw4T+dBKdFAOqD9scD+HHa+fLOXOtMa8rFK8wbhgyUi9fqitsJCrReVUlRyyk8D8
-         zRpNCbuY/eC35Hk/cKGXAM6lWj9cwUFXMLynTaawVSlbe5Csa1JIcHZxJdBALU3bmbz1
-         I5nQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVagJizsyEr2DDjR3GqbifPPFOyJm2glEdJnrabgxSQFXHdrcmtH9AJbMv2xAJCfNotHR+3oCqVRos=@lists.infradead.org
-X-Gm-Message-State: AOJu0YwWmm0ZNxw5woEYFBZb0gTfQXIyJN34/i+El2shvLYfwVF7WYbg
-	r0ggmauIMqe4Hj7HxJCMr9fkCPKnrKiRj1sFKo/KuzZD6xA/p9/pGnxkYtkLWxEFufs=
-X-Gm-Gg: ASbGncu3ZyhUTSJiEaxYwnad6XRRduqNK4F0DIm+gTTeauXwUndy4JfYezuLS4qxxUS
-	sCZkQX07poyQHKrW1xmvspORNzdx3cTz2/FmP7pS0WUAjnTnoxWUzSORS7Ly4DVL0KZxvCrvpRs
-	LzaywETf8Z6uLwSIbSmPLBjXskcuh2uN3JZS0cH9hLnxC/rPmSEuf6YSv6WlXJzI6is8mVjVKkU
-	06EhFbtSjEQF6F43qhAJ9NaMFj0ysSioL8TJNg2fhu5v5cMaPn2LnJQ5P9/YTqhcrHeaG0hfLN0
-	z3V+/UaKmlQiZ4nGIyKAF4vKGqbQwbz+ucA450EjTyVogNSuP9qEJnmVm6/a42QchSfOLT9/Gmw
-	1Qktwp8dwDVQqqY9Gtmvp+Ew80wZF3mhf+VI=
-X-Google-Smtp-Source: AGHT+IE3iBnvBMfmVf9p58xM4KWA9RxO6Yi6uROxLGwroD+MUtGpdeej2f+4Q9Zc1iv4krdN8l30nw==
-X-Received: by 2002:a05:6602:27c2:b0:8fe:f51a:16b4 with SMTP id ca18e2360f4ac-8fef547e5d9mr52908239f.6.1758718483310;
-        Wed, 24 Sep 2025 05:54:43 -0700 (PDT)
+        bh=Sjr8/7QWc40wBIvcq7xbnNiZ+KKEhi3m1vUvdK7Sd/0=;
+        b=ldVHeE9yTpA+k+yry9bnBZgNlzCRDSZlF9DSY0yw2kffl9fVpSAjYCHAqWwNmKwMY/
+         YAqbjNKPKoUFiG7fuGzgE+/OzLynTqAiylxTRupm+Hun+vgINjcrzVK2gWLOFyzGh4LM
+         lbai7+hOLsJNiHSYMZgO+mSQGBXO7Db0ZpYvW8miSCDV/WhU3HVvZp1tS0ECbd3jNlhl
+         7GGrgSAwdKOzrgubQz8um9ssPZSO8q4kmAji0kLUhc4kma/k10st80Y+6Ssl2U8v1qCK
+         o9hgvi6+YEyHphlG43StgAcfSrEptfw1eWuOiHL/8QAPFBLPDXqMv+V+B/sEHepeY37L
+         DJCQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXZdaVvQ3sNCEMx4Ujyq9BHn6ldqRA/NSkiaCHxTLDF9YAozan9+yOaMSaWL8/VBt++abQ8iTNqzBg=@lists.infradead.org
+X-Gm-Message-State: AOJu0YxuXUhuDE6mXKT2nqV4f4sRhOakpBDLbwRMEZewZZ67Hy09Z8W3
+	X8IcZuikR/wwW9n4EcWoxtxXY91/wqFLBtwn1yOfFRHLfSF/2535YRhVoFWZE0/JtF8=
+X-Gm-Gg: ASbGncsPRLf4UE7HSJB3qmNRawKsS6l3BDoVUkAN0YMzyu7zrHtv8VvdW99ad8SuNr0
+	lhUPbW4e/5epEtNxesSC6Hh3n6GpCR3BOKduiliLgdVvEewBJBcLvgeDLZLPx+1CouHhmLM2zLg
+	6Hg56K17UODViFwyCGIiYfN17GK0siXNvX+zVthhRNSIEjz2e3ZkPEoIv8PJahvzFFg3dsBstu0
+	SOhgDXZChNlhU2cx/gBV+rd4qnYV7Qk1oG1luckP6+vlg6xXLtm4GMAVDNPfSjqULhLlB2IcJ4j
+	F4r+VTIESoryKPllpTCEEj0mKJRuM/qwjeXERnjwfAlHrwaHIYw4Wn+4xUsD1G3RzUqCpzb4vte
+	y/Tbz2wEebcv8263OR0mYYowgG3e0qsAxncI=
+X-Google-Smtp-Source: AGHT+IGomox+b2UDBxIjrLVdwH3ZQg0MBial2WDQuoPjUzT0cQ/7OM+jfwuVUQxS7ZLef0sIJoY2Og==
+X-Received: by 2002:a6b:6a04:0:b0:893:2ff0:162c with SMTP id ca18e2360f4ac-8e1fd6f67b8mr883021539f.9.1758720712618;
+        Wed, 24 Sep 2025 06:31:52 -0700 (PDT)
 Received: from localhost ([140.82.166.162])
-        by smtp.gmail.com with ESMTPSA id ca18e2360f4ac-8a4832339c5sm620494639f.26.2025.09.24.05.54.42
+        by smtp.gmail.com with ESMTPSA id ca18e2360f4ac-8a46b2f3405sm646365839f.1.2025.09.24.06.31.51
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 24 Sep 2025 05:54:42 -0700 (PDT)
-Date: Wed, 24 Sep 2025 07:54:41 -0500
+        Wed, 24 Sep 2025 06:31:51 -0700 (PDT)
+Date: Wed, 24 Sep 2025 08:31:50 -0500
 From: Andrew Jones <ajones@ventanamicro.com>
-To: BillXiang <xiangwencheng@lanxincomputing.com>
-Cc: anup@brainfault.org, kvm-riscv@lists.infradead.org, 
-	linux-kernel@vger.kernel.org, paul.walmsley@sifive.com, palmer@dabbelt.com, 
-	aou@eecs.berkeley.edu, alex@ghiti.fr, atishp@rivosinc.com
-Subject: Re: [PATCH] riscv: Move user-visible sbi ext ids to uapi
-Message-ID: <20250924-7e9764acec6722b5ef29ce7d@orel>
-References: <20250917085246.1430354-1-xiangwencheng@lanxincomputing.com>
- <20250923-5498566fbd48a3dfd61ecd08@orel>
- <1be32bd0-a3d1-4fea-8f22-e050f664907b@lanxincomputing.com>
+To: "Nutty.Liu" <nutty.liu@hotmail.com>
+Cc: iommu@lists.linux.dev, kvm-riscv@lists.infradead.org, 
+	kvm@vger.kernel.org, linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	jgg@nvidia.com, zong.li@sifive.com, tjeznach@rivosinc.com, joro@8bytes.org, 
+	will@kernel.org, robin.murphy@arm.com, anup@brainfault.org, atish.patra@linux.dev, 
+	tglx@linutronix.de, alex.williamson@redhat.com, paul.walmsley@sifive.com, 
+	palmer@dabbelt.com, alex@ghiti.fr
+Subject: Re: [RFC PATCH v2 03/18] iommu/riscv: Use data structure instead of
+ individual values
+Message-ID: <20250924-01f9a5207f8865555c839abd@orel>
+References: <20250920203851.2205115-20-ajones@ventanamicro.com>
+ <20250920203851.2205115-23-ajones@ventanamicro.com>
+ <TY1PPFCDFFFA68A794163FFB7BFAAAC22BEF31CA@TY1PPFCDFFFA68A.apcprd02.prod.outlook.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <1be32bd0-a3d1-4fea-8f22-e050f664907b@lanxincomputing.com>
+In-Reply-To: <TY1PPFCDFFFA68A794163FFB7BFAAAC22BEF31CA@TY1PPFCDFFFA68A.apcprd02.prod.outlook.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250924_055444_874995_99D6A0A9 
-X-CRM114-Status: GOOD (  30.94  )
+X-CRM114-CacheID: sfid-20250924_063154_234190_AFCC8F83 
+X-CRM114-Status: GOOD (  26.44  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -101,149 +105,117 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Wed, Sep 24, 2025 at 10:35:25AM +0800, BillXiang wrote:
-> On 9/24/2025 4:14 AM, Andrew Jones wrote:
-> > On Wed, Sep 17, 2025 at 04:52:46PM +0800, BillXiang wrote:
-> >> Move those sbi ext ids to uapi because they will be forwarded
-> >> to user space by kvm.
+On Wed, Sep 24, 2025 at 11:25:59AM +0800, Nutty.Liu wrote:
+> On 9/21/2025 4:38 AM, Andrew Jones wrote:
+> > From: Zong Li <zong.li@sifive.com>
 > > 
-> > We don't need to publish the IDs in UAPI since they are already known to
-> > userspace by reading the SBI spec. Indeed QEMU already defines all of
-> > these except for the experimental range.>
-> > What problem are you trying to solve?
-> 
-> 
-> I'm working on rust-vmm[1], which auto-generates the ID constants
-> from uapi/kvm.h via bindgen[2]. Any ID that isn't exported there is
-> invisible to us. I expect other VMMs besides QEMU will need these
-> numbers as well, so let's keep one canonical definition in the UAPI
-> headers for everyone to share.
+> > The parameter will be increased when we need to set up more fields
+> > in the device context. Use a data structure to wrap them up.
+> > 
+> > Signed-off-by: Zong Li <zong.li@sifive.com>
+> > Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+> > ---
+> >   drivers/iommu/riscv/iommu.c | 31 +++++++++++++++++++------------
+> >   1 file changed, 19 insertions(+), 12 deletions(-)
+> > 
+> > diff --git a/drivers/iommu/riscv/iommu.c b/drivers/iommu/riscv/iommu.c
+> > index 901d02529a26..a44c67a848fa 100644
+> > --- a/drivers/iommu/riscv/iommu.c
+> > +++ b/drivers/iommu/riscv/iommu.c
+> > @@ -988,7 +988,7 @@ static void riscv_iommu_iotlb_inval(struct riscv_iommu_domain *domain,
+> >    * interim translation faults.
+> >    */
+> >   static void riscv_iommu_iodir_update(struct riscv_iommu_device *iommu,
+> > -				     struct device *dev, u64 fsc, u64 ta)
+> > +				     struct device *dev, struct riscv_iommu_dc *new_dc)
+> >   {
+> >   	struct iommu_fwspec *fwspec = dev_iommu_fwspec_get(dev);
+> >   	struct riscv_iommu_dc *dc;
+> > @@ -1022,10 +1022,10 @@ static void riscv_iommu_iodir_update(struct riscv_iommu_device *iommu,
+> >   	for (i = 0; i < fwspec->num_ids; i++) {
+> >   		dc = riscv_iommu_get_dc(iommu, fwspec->ids[i]);
+> >   		tc = READ_ONCE(dc->tc);
+> > -		tc |= ta & RISCV_IOMMU_DC_TC_V;
+> > +		tc |= new_dc->ta & RISCV_IOMMU_DC_TC_V;
+> > -		WRITE_ONCE(dc->fsc, fsc);
+> > -		WRITE_ONCE(dc->ta, ta & RISCV_IOMMU_PC_TA_PSCID);
+> > +		WRITE_ONCE(dc->fsc, new_dc->fsc);
+> > +		WRITE_ONCE(dc->ta, new_dc->ta & RISCV_IOMMU_PC_TA_PSCID);
+> Seems it will override all other fields in 'TA' except for the field of
+> 'PSCID'.
+> Should the other fields remain unchanged ?
 
-But KVM isn't the authority on these IDs, the spec is. KVM and its
-userspaces are just some implementations of SBI. M-mode software
-and other hypervisors also implements SBI.
+The short answer is that the current implementation is doing the right
+thing. The long answer is that riscv_iommu_iodir_update() and how it's
+called from riscv_iommu_attach_paging_domain() could use some cleanup.
 
-For Rust you can use https://docs.rs/sbi-spec/latest/sbi_spec/ to get
-the constants you're looking for.
+A more logical interface would be that new_dc would be completely written,
+which means any fields left zero when creating new_dc will result in zeros
+being written -- it doesn't do that right now. Also, rather than passing
+DC_TC_V through new_dc->ta (as PC_TA_V, even though DC_TC_PDTV = 0), we
+should probably just set it directly in new_dc->tc.
+
+We can clean this up separately though, probably as work for adding SVA
+support.
+
+> Otherwise,
+> Reviewed-by: Nutty Liu <nutty.liu@hotmail.com>
 
 Thanks,
 drew
 
 > 
-> 
-> [1] https://github.com/rust-vmm
-> [2] https://crates.io/crates/bindgen
-> 
-> > 
-> > Thanks,
-> > drew
-> > 
-> >>
-> >> Signed-off-by: BillXiang <xiangwencheng@lanxincomputing.com>
-> >> ---
-> >>   arch/riscv/include/asm/sbi.h      | 16 +-----------
-> >>   arch/riscv/include/uapi/asm/sbi.h | 43 +++++++++++++++++++++++++++++++
-> >>   2 files changed, 44 insertions(+), 15 deletions(-)
-> >>   create mode 100644 arch/riscv/include/uapi/asm/sbi.h
-> >>
-> >> diff --git a/arch/riscv/include/asm/sbi.h b/arch/riscv/include/asm/sbi.h
-> >> index 341e74238aa0..e196feaabb2e 100644
-> >> --- a/arch/riscv/include/asm/sbi.h
-> >> +++ b/arch/riscv/include/asm/sbi.h
-> >> @@ -10,13 +10,12 @@
-> >>   #include <linux/types.h>
-> >>   #include <linux/cpumask.h>
-> >>   #include <linux/jump_label.h>
-> >> +#include <uapi/asm/sbi.h>
-> >>   
-> >>   #ifdef CONFIG_RISCV_SBI
-> >>   enum sbi_ext_id {
-> >>   #ifdef CONFIG_RISCV_SBI_V01
-> >>   	SBI_EXT_0_1_SET_TIMER = 0x0,
-> >> -	SBI_EXT_0_1_CONSOLE_PUTCHAR = 0x1,
-> >> -	SBI_EXT_0_1_CONSOLE_GETCHAR = 0x2,
-> >>   	SBI_EXT_0_1_CLEAR_IPI = 0x3,
-> >>   	SBI_EXT_0_1_SEND_IPI = 0x4,
-> >>   	SBI_EXT_0_1_REMOTE_FENCE_I = 0x5,
-> >> @@ -37,13 +36,6 @@ enum sbi_ext_id {
-> >>   	SBI_EXT_NACL = 0x4E41434C,
-> >>   	SBI_EXT_FWFT = 0x46574654,
-> >>   
-> >> -	/* Experimentals extensions must lie within this range */
-> >> -	SBI_EXT_EXPERIMENTAL_START = 0x08000000,
-> >> -	SBI_EXT_EXPERIMENTAL_END = 0x08FFFFFF,
-> >> -
-> >> -	/* Vendor extensions must lie within this range */
-> >> -	SBI_EXT_VENDOR_START = 0x09000000,
-> >> -	SBI_EXT_VENDOR_END = 0x09FFFFFF,
-> >>   };
-> >>   
-> >>   enum sbi_ext_base_fid {
-> >> @@ -263,12 +255,6 @@ enum sbi_pmu_ctr_type {
-> >>   #define SBI_PMU_STOP_FLAG_RESET BIT(0)
-> >>   #define SBI_PMU_STOP_FLAG_TAKE_SNAPSHOT BIT(1)
-> >>   
-> >> -enum sbi_ext_dbcn_fid {
-> >> -	SBI_EXT_DBCN_CONSOLE_WRITE = 0,
-> >> -	SBI_EXT_DBCN_CONSOLE_READ = 1,
-> >> -	SBI_EXT_DBCN_CONSOLE_WRITE_BYTE = 2,
-> >> -};
-> >> -
-> >>   /* SBI STA (steal-time accounting) extension */
-> >>   enum sbi_ext_sta_fid {
-> >>   	SBI_EXT_STA_STEAL_TIME_SET_SHMEM = 0,
-> >> diff --git a/arch/riscv/include/uapi/asm/sbi.h b/arch/riscv/include/uapi/asm/sbi.h
-> >> new file mode 100644
-> >> index 000000000000..d29ac0abeefe
-> >> --- /dev/null
-> >> +++ b/arch/riscv/include/uapi/asm/sbi.h
-> >> @@ -0,0 +1,43 @@
-> >> +/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
-> >> +/*
-> >> + * Copyright (C) 2025 Lanxincomputing Corporation or its affiliates.
-> >> + *
-> >> + * Authors:
-> >> + *     BillXiang <xiangwencheng@lanxincomputing.com>
-> >> + */
-> >> +
-> >> +#ifndef _UAPI_ASM_RISCV_SBI_H
-> >> +#define _UAPI_ASM_RISCV_SBI_H
-> >> +
-> >> +
-> >> +enum SBI_EXT_ID {
-> >> +	/*
-> >> +	* The CONSOLE_GETCHAR/CONSOLE_PUTCHAR SBI calls cannot be
-> >> +	* handled in kernel so they will be forwarded to userspace by kvm.
-> >> +	*/
-> >> +	SBI_EXT_0_1_CONSOLE_PUTCHAR = 0x1,
-> >> +	SBI_EXT_0_1_CONSOLE_GETCHAR = 0x2,
-> >> +	/*
-> >> +	* Both SBI experimental and vendor extensions are
-> >> +	* unconditionally forwarded to userspace by kvm.
-> >> +	*/
-> >> +	/* Experimentals extensions must lie within this range */
-> >> +	SBI_EXT_EXPERIMENTAL_START = 0x08000000,
-> >> +	SBI_EXT_EXPERIMENTAL_END = 0x08FFFFFF,
-> >> +
-> >> +	/* Vendor extensions must lie within this range */
-> >> +	SBI_EXT_VENDOR_START = 0x09000000,
-> >> +	SBI_EXT_VENDOR_END = 0x09FFFFFF,
-> >> +};
-> >> +
-> >> +/*
-> >> +* The SBI debug console functions are unconditionally
-> >> +* forwarded to the userspace by kvm.
-> >> +*/
-> >> +enum sbi_ext_dbcn_fid {
-> >> +	SBI_EXT_DBCN_CONSOLE_WRITE = 0,
-> >> +	SBI_EXT_DBCN_CONSOLE_READ = 1,
-> >> +	SBI_EXT_DBCN_CONSOLE_WRITE_BYTE = 2,
-> >> +};
-> >> +
-> >> +#endif /* _UAPI_ASM_RISCV_SBI_H */
-> >> \ No newline at end of file
-> >> -- 
-> >> 2.43.0
+> Thanks,
+> Nutty
+> >   		/* Update device context, write TC.V as the last step. */
+> >   		dma_wmb();
+> >   		WRITE_ONCE(dc->tc, tc);
+> > @@ -1304,20 +1304,20 @@ static int riscv_iommu_attach_paging_domain(struct iommu_domain *iommu_domain,
+> >   	struct riscv_iommu_domain *domain = iommu_domain_to_riscv(iommu_domain);
+> >   	struct riscv_iommu_device *iommu = dev_to_iommu(dev);
+> >   	struct riscv_iommu_info *info = dev_iommu_priv_get(dev);
+> > -	u64 fsc, ta;
+> > +	struct riscv_iommu_dc dc = {0};
+> >   	if (!riscv_iommu_pt_supported(iommu, domain->pgd_mode))
+> >   		return -ENODEV;
+> > -	fsc = FIELD_PREP(RISCV_IOMMU_PC_FSC_MODE, domain->pgd_mode) |
+> > -	      FIELD_PREP(RISCV_IOMMU_PC_FSC_PPN, virt_to_pfn(domain->pgd_root));
+> > -	ta = FIELD_PREP(RISCV_IOMMU_PC_TA_PSCID, domain->pscid) |
+> > -	     RISCV_IOMMU_PC_TA_V;
+> > +	dc.fsc = FIELD_PREP(RISCV_IOMMU_PC_FSC_MODE, domain->pgd_mode) |
+> > +		 FIELD_PREP(RISCV_IOMMU_PC_FSC_PPN, virt_to_pfn(domain->pgd_root));
+> > +	dc.ta = FIELD_PREP(RISCV_IOMMU_PC_TA_PSCID, domain->pscid) |
+> > +			   RISCV_IOMMU_PC_TA_V;
+> >   	if (riscv_iommu_bond_link(domain, dev))
+> >   		return -ENOMEM;
+> > -	riscv_iommu_iodir_update(iommu, dev, fsc, ta);
+> > +	riscv_iommu_iodir_update(iommu, dev, &dc);
+> >   	riscv_iommu_bond_unlink(info->domain, dev);
+> >   	info->domain = domain;
+> > @@ -1408,9 +1408,12 @@ static int riscv_iommu_attach_blocking_domain(struct iommu_domain *iommu_domain,
+> >   {
+> >   	struct riscv_iommu_device *iommu = dev_to_iommu(dev);
+> >   	struct riscv_iommu_info *info = dev_iommu_priv_get(dev);
+> > +	struct riscv_iommu_dc dc = {0};
+> > +
+> > +	dc.fsc = RISCV_IOMMU_FSC_BARE;
+> >   	/* Make device context invalid, translation requests will fault w/ #258 */
+> > -	riscv_iommu_iodir_update(iommu, dev, RISCV_IOMMU_FSC_BARE, 0);
+> > +	riscv_iommu_iodir_update(iommu, dev, &dc);
+> >   	riscv_iommu_bond_unlink(info->domain, dev);
+> >   	info->domain = NULL;
+> > @@ -1429,8 +1432,12 @@ static int riscv_iommu_attach_identity_domain(struct iommu_domain *iommu_domain,
+> >   {
+> >   	struct riscv_iommu_device *iommu = dev_to_iommu(dev);
+> >   	struct riscv_iommu_info *info = dev_iommu_priv_get(dev);
+> > +	struct riscv_iommu_dc dc = {0};
+> > +
+> > +	dc.fsc = RISCV_IOMMU_FSC_BARE;
+> > +	dc.ta = RISCV_IOMMU_PC_TA_V;
+> > -	riscv_iommu_iodir_update(iommu, dev, RISCV_IOMMU_FSC_BARE, RISCV_IOMMU_PC_TA_V);
+> > +	riscv_iommu_iodir_update(iommu, dev, &dc);
+> >   	riscv_iommu_bond_unlink(info->domain, dev);
+> >   	info->domain = NULL;
 
 -- 
 kvm-riscv mailing list
