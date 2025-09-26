@@ -4,81 +4,178 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0A033CAC5A5
-	for <kvm-riscv@archiver.kernel.org>; Thu, 25 Sep 2025 07:00:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A84C3CAC5AE
+	for <kvm-riscv@archiver.kernel.org>; Fri, 26 Sep 2025 07:13:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:Subject:Message-ID:Date:From:
-	MIME-Version:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=KSUc6NNUaC5BxW+JdA0lAQKqyZxBeYDvngg0RknBlY4=; b=Ek1XOrmZQuQyMl
-	uH+pogcQ2Z5c2nsQTN09dhNEGb7d9aivBgJUjGPw/cRcacHZRCe6Lk9vzPQST05C+V/LQqm4uD8uP
-	nTkGNFTerXzaSikpdhAwpl/SWmLxARouuGhu8yAB/2w0suLvlAQatP1O662BuDKQrxBExlEUfVAza
-	q0pkm/gFlt0bqu6UcjYGFDSI1Vd6vTa2CR3/anQFi7P+yKLm9jI4JMS2JKgvE4RjEJWY2AA/pO0NS
-	B+hd/HymlVFewY1yez6/ricguxiP+hgcjy3jHj3OuGhIsJvr1I2hFaENAX0RSo9PlmMJ/IkkgMXUY
-	DF3toGZnCzoU6iTT6N8w==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:In-Reply-To:From:
+	References:Cc:To:Subject:Date:Message-ID:Reply-To:Content-ID:
+	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+	:Resent-Message-ID:List-Owner;
+	bh=218eDf28QQzqvLrpV5kigHHFnY0qbhRJHUcCbiTpbiY=; b=pIiKBYQV7NRgEmpdbfo5lVdkZ8
+	oljks8w6RiPI/hh+HtGvgt9GEZAifteZnf+kVyLIhUJF6ieEuX4vmTtpVW3oGLm/qB1lHfnJcEjUt
+	KyKIVVGpkmulo3oKrf/IPxOtlAe5kGokTHE5IYt8wizGNGvW6oXjiRx4VfgymaJiRfQfgBqj2CG3+
+	0Ks1w6ga7YzBEqObCNukZo+u8Oyc76MMXV7HZocC4fjdx3qCMqBXNvstuvS8yFA+F6rdtuuLUk6tr
+	EMVuu1z7hIdZHJb8H/PE1CEMUOrdxVuJc+Y1oVFOwnH7uEQN0x8kfpb4wA8dMFQ1xHMS5tUUFw9Yn
+	+Z+TXGcg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1v1fy9-00000006VqZ-2GYp;
-	Thu, 25 Sep 2025 07:00:45 +0000
-Received: from mail-il1-x134.google.com ([2607:f8b0:4864:20::134])
+	id 1v22dp-0000000Gfpl-0mFI;
+	Fri, 26 Sep 2025 07:13:17 +0000
+Received: from mail-eastusazlp17011000f.outbound.protection.outlook.com ([2a01:111:f403:c100::f] helo=BL2PR02CU003.outbound.protection.outlook.com)
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1v1fy6-00000006VpB-0Fhq
-	for kvm-riscv@lists.infradead.org;
-	Thu, 25 Sep 2025 07:00:43 +0000
-Received: by mail-il1-x134.google.com with SMTP id e9e14a558f8ab-42480cb42e9so3192365ab.0
-        for <kvm-riscv@lists.infradead.org>; Thu, 25 Sep 2025 00:00:39 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=brainfault-org.20230601.gappssmtp.com; s=20230601; t=1758783639; x=1759388439; darn=lists.infradead.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=MmyT2DQ8FjwtnIvToh+8LVARVJ88hd64Mv9gPij29H0=;
-        b=tm4rZt9ehbfVZ4Cj+ErTCS9ZFJLQvvS6i3CRwvC8xzqosCPE1kmXtvyefB0wPF7c6H
-         ya3mVlbeSlw1UeM0iF1SkHSxKvz7yi3VrmOcfjfMcGslYGDoU5+vxu/KD9e5iT1AFMLE
-         xT/u5kxrvahVTMmCHk2QT5BFpHWhCHBLdrm1Fa23G6q19tN7o37HafKdicO+ktMf1WMm
-         1yH9Iyv2QkuDvU15T88omyshHnwJNiaYTq26OjD0F+ou6GcTRvpJZzUPXcUEbMaaGDEp
-         cPG3fBSZJ7cei6FzFTdLS2KcZ3d2KMX0ElW1/u3/F+CxBr/My8nG/x6re/0EYNKLQ6nQ
-         nFxQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1758783639; x=1759388439;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=MmyT2DQ8FjwtnIvToh+8LVARVJ88hd64Mv9gPij29H0=;
-        b=hjU9DLfrkZZeVKwcxoM+JhjaUrUrkSV4Rngu64ooGBayL4JJQtvRO4LPhuetfGI0I/
-         FUKvzx+86LYUqlNOABEF+flcwKuaFifiZlRcrYWKGHCs8zXoKUe4THEef/RToT/B1Zkd
-         uWr/MaBN6xKTASyf+ToteClBh0vmP6lMfn+lwfldQFp8tpgmanxf5cOV9QchwsTtOO2Y
-         Znd11E5vNW5rM/RkECohyfJhJE75KUEHh0OiC/rfnP/oB3HIEMaw4jlSVfoAM8eezto6
-         bAEU6gT6MlYyAefpvY+p4rx90Uat0TL0IL515ZGj1Q6t1P4n3LiEhuo9j2CTz9718ZFr
-         ZsMg==
-X-Forwarded-Encrypted: i=1; AJvYcCVd35fYQw8En1/9ltKpfH4uC2tu6x9DUQ9truutFTz8/8oE6y0DAk7BJuukoJMgVTGhCAjybnvVSm4=@lists.infradead.org
-X-Gm-Message-State: AOJu0YwMPsg9SFSpp+da+fD4TJ8ngveO3ArPhrIjsaNxO1iy3SboI0rB
-	ftH9UcSIfZBzUBMCkVVrnishHObfZISPSgqxsoNjdg79OvGb689XeOTGlUqo4Uz2UeIgSA0OOMi
-	BUzS4gJHtAo8QYSV3wHdbP0U6x/fQssmFQoba6bN6nbNCYouBtI3OBBg=
-X-Gm-Gg: ASbGncszdN+PsSH56mJrNm3oV+EuPJUowJ+e2brv5P7AgEOU7E0WkNgvnpmAz2SGJXW
-	OoZ7gufxlEQZURAKlfBIu+tyigzXcR/vG5uSt4L76PNbeFFKFgcHra+4XB3xzG+ZolEneqEqJW+
-	PzjARBXZrOGdgwdyaWbmcY3RkRI+87MwamFrk1BU3JyAriBuF0B6sngDVd0g9Ojsu71ul6lkvvZ
-	omOZf7alZekzd/4gsWzInQWSP3PGri9sg3lig==
-X-Google-Smtp-Source: AGHT+IHZRb9CK/OmyBqOaD/n1EoZIqcM4pae02poytMs04HVBkLjaVLzPJP9OpaAHZ4GqnnqxcX2Onw45K5JIuhAveI=
-X-Received: by 2002:a05:6e02:3cc1:b0:424:8d44:a267 with SMTP id
- e9e14a558f8ab-4259566089fmr35271475ab.29.1758783638175; Thu, 25 Sep 2025
- 00:00:38 -0700 (PDT)
+	id 1v22dm-0000000Gfn1-1AEo;
+	Fri, 26 Sep 2025 07:13:15 +0000
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=nzua3Sox0lAXBVSaPMqEk8USCdF32UzaJhFu78/PtVrItVuIh+0/zLUZ+YTrOSMlnGcjBrkpd+FjdJCz8PZ/XRAk6ldKOKx3L8Pydahzj3RZcc9kMUyLGx/avXtCrWo6ZHstjJQ79RWLmJeiNWUjQfENJKFjC/dOUqxkWSGiXOesFM5YySs7RUJNKo93W6ySkmzgTRNjxgeDSIL2qdl+VluH9qlWSrplvx/lTMzuQdGeAPQuHg93VwW4AZ1PHvT0DhKKHTmg6R3Tq4/1YN3oK75ct10mqDyu69LPJOwF6/S9ZJPVOSwdbrS3y8fIPuo1wmhTyObJdaUwBHdC/AR50Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=2vpVfG7RLRw8H16WuZjgOBjnzonFtRr6h55U0N8epS8=;
+ b=eeoYeRW248aF1M5KTe1owC9KaEIg2lVfvdIsYrcy80VDgl/JGJU/t53Kbb1VkJjZYyyu2mIz2mwbkNrGKnUHjiuU8Jmx5oH70KbXpvHVAHy9+eoQ7j5FQaU77YhcRaauOx611uOpL3jMUHpgWyksvh/OXUMhIrGhu3ThsOLmfxTS52xfb1ADNBmDnVeuemQvHMnrkpSTX9Nf2WA3vCofyZEIGnm/6c/8vshMVapVOZll9GcW00YxS90cfyxlWxKdAviboBy2THCUHZkinnMc2z6laydgb2lkYCByc/YNwFq5nXU1hBs7e3/OzcVC5dstF0qYD1lpeZEmgkewcahjYQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
+ header.d=amd.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=2vpVfG7RLRw8H16WuZjgOBjnzonFtRr6h55U0N8epS8=;
+ b=AIS8tK5EUfT6YP9QFpeCeFtNCNYN9zcHWPhDgbDJzlPtTMg5FBP6f6O47OxgYteNgHcGwT8R/aVI9RSlJWpkt4xs/WCkdaauPf8H8sOmKbLlgsgGQXuNd3lF/m4dreb7wNC/oGf/NwPQwnGkc/iK1+jPs0YojrV9QcsgiHIlBVk=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=amd.com;
+Received: from PH7PR12MB5712.namprd12.prod.outlook.com (2603:10b6:510:1e3::13)
+ by PH7PR12MB8121.namprd12.prod.outlook.com (2603:10b6:510:2b5::20) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9160.13; Fri, 26 Sep
+ 2025 07:13:08 +0000
+Received: from PH7PR12MB5712.namprd12.prod.outlook.com
+ ([fe80::2efc:dc9f:3ba8:3291]) by PH7PR12MB5712.namprd12.prod.outlook.com
+ ([fe80::2efc:dc9f:3ba8:3291%6]) with mapi id 15.20.9160.008; Fri, 26 Sep 2025
+ 07:13:08 +0000
+Message-ID: <f896966e-8925-4b4f-8f0d-f1ae8aa197f7@amd.com>
+Date: Fri, 26 Sep 2025 12:42:50 +0530
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v5 32/44] KVM: x86/pmu: Disable interception of select PMU
+ MSRs for mediated vPMUs
+To: Sean Christopherson <seanjc@google.com>, Marc Zyngier <maz@kernel.org>,
+ Oliver Upton <oliver.upton@linux.dev>, Tianrui Zhao
+ <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>,
+ Huacai Chen <chenhuacai@kernel.org>, Anup Patel <anup@brainfault.org>,
+ Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt
+ <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
+ Xin Li <xin@zytor.com>, "H. Peter Anvin" <hpa@zytor.com>,
+ Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+ Ingo Molnar <mingo@redhat.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Namhyung Kim <namhyung@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>
+Cc: linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev,
+ kvm@vger.kernel.org, loongarch@lists.linux.dev,
+ kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org,
+ Kan Liang <kan.liang@linux.intel.com>, Yongwei Ma <yongwei.ma@intel.com>,
+ Mingwei Zhang <mizhang@google.com>,
+ Xiong Zhang <xiong.y.zhang@linux.intel.com>,
+ Sandipan Das <sandipan.das@amd.com>, Dapeng Mi <dapeng1.mi@linux.intel.com>
+References: <20250806195706.1650976-1-seanjc@google.com>
+ <20250806195706.1650976-33-seanjc@google.com>
+Content-Language: en-US
+From: Sandipan Das <sandidas@amd.com>
+In-Reply-To: <20250806195706.1650976-33-seanjc@google.com>
+X-ClientProxiedBy: PN2PR01CA0184.INDPRD01.PROD.OUTLOOK.COM
+ (2603:1096:c01:e8::8) To PH7PR12MB5712.namprd12.prod.outlook.com
+ (2603:10b6:510:1e3::13)
 MIME-Version: 1.0
-From: Anup Patel <anup@brainfault.org>
-Date: Thu, 25 Sep 2025 12:30:26 +0530
-X-Gm-Features: AS18NWBoHJSdz0RKFWvagHmEkQT_MCXcW0bn11BwoOh7tEVjSPPT1943J8gh5oY
-Message-ID: <CAAhSdy3pXsGfFi-A1jFsO3UJsjomJ1y3Z8F73xe0xuftzLHBLA@mail.gmail.com>
-Subject: [GIT PULL] KVM/riscv changes for 6.18
-To: Paolo Bonzini <pbonzini@redhat.com>
-Cc: Palmer Dabbelt <palmer@dabbelt.com>, Paul Walmsley <pjw@kernel.org>, 
-	Andrew Jones <ajones@ventanamicro.com>, Atish Patra <atishp@rivosinc.com>, 
-	Atish Patra <atish.patra@linux.dev>, 
-	"open list:KERNEL VIRTUAL MACHINE FOR RISC-V (KVM/riscv)" <kvm-riscv@lists.infradead.org>, KVM General <kvm@vger.kernel.org>, 
-	linux-riscv <linux-riscv@lists.infradead.org>
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: PH7PR12MB5712:EE_|PH7PR12MB8121:EE_
+X-MS-Office365-Filtering-Correlation-Id: cc94f5c9-f0ee-468d-94f6-08ddfccc24b8
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|1800799024|376014|7416014|366016|921020|7053199007;
+X-Microsoft-Antispam-Message-Info: =?utf-8?B?dFhROFNlSkYxbWs3SFJnQXVmMVpDZkJ0eStKTFBxQXBPczFoNlhrcEVnclM3?=
+ =?utf-8?B?UFR2NmR0bjdEM0xKNUJZMVZHNDBKWUczcXM5MTB0QzNOZzdDVXdOK1dhTGRN?=
+ =?utf-8?B?Y0tQM1RBVGl2M3ZaMU9IMXpyVFBsS3hVQkpGaVpPOW83SURvdjVGa3lySjZJ?=
+ =?utf-8?B?QmxtRlRiUHhxRHlETjR5UjEyNnkwVjl1d01xRE9ZRXMvNEpSQVgxS0NEeGZE?=
+ =?utf-8?B?cThNa1BUbXZUSGJYazVzZXBDMlMvUUR4TWhEVjRuWXo2eStMWU9yV3ErYTR5?=
+ =?utf-8?B?eVBOYzMyd2dmMjd1OXZua1h0N0dId2Y5WGlibVZ4Rlg1ZUttanowZzNFeU5j?=
+ =?utf-8?B?M0czaUQzUUdraDNDMjJ4NTRmc1FJdEVLbHdIckFGZmJ2YUkyMXlrQzNSSTAw?=
+ =?utf-8?B?U0hJYWF5TUxxRFFjWTMwT2pqK0JjUmRMYnY0NmhiVlR4VVhURm5QdHYvT1BR?=
+ =?utf-8?B?NTBTZDRFeEk5SDl3R1dKekFFNlpueHhqK3NMSEt0NXRPVkVuZ2JWVHpRVy9R?=
+ =?utf-8?B?SlA3M3VRbCtjWTJMdVJkSU1lU0l1VzdJNDFvRUdvTWkrRFJWemFTZVhvMTA1?=
+ =?utf-8?B?dml0dlM2QXVXa3BqdDZQU1pxNUh2U2dvRUpxS3FFQUFlamRuR1VWRFU3bXhN?=
+ =?utf-8?B?U3VSL3FOUnhtU212bG1zMlhMUjcvQmhzWjArQWh3VEp6NVFqRHRzSERUSTd6?=
+ =?utf-8?B?bVRkei9vYkxId0ZuWE5nOVZtMjNTaUxBRlJKcVdOUlQ3b0lraVZwMlRWWEdH?=
+ =?utf-8?B?WEJTT2F6NEJuSkhOWWxsMThiNVd1VFVVNzlBbG5zMkpieVNtdGNGcGd6dG5T?=
+ =?utf-8?B?cUlUSytWOS8zbk84cFRXNmJQVzlidkZnM2Rwak1xaDk3QnljWjVENUx1NmRN?=
+ =?utf-8?B?SEt5UkRxZ3pYSkNybXRkLzZJVkpqS3duZ3h2WllUU1AyZE5KcDVUKzd0Kytn?=
+ =?utf-8?B?ZWhMaWdBSmsrZzVJcjMyKzd3QURra1Y2bS9rMThCMlI3MXJGUUhWNGJFWnox?=
+ =?utf-8?B?SXpaNXhkYnc5QnBHVmordnFkWis1ZG4yU0lvdXNUZEZ5UUtKYTBlOW5xS2VK?=
+ =?utf-8?B?ek1OeTVXUHlkRFg5MGhGTlBzdVpTWm4yZS9DQzZKcDRVbjlwZEpseTUzUWx1?=
+ =?utf-8?B?RXhabXJuQ2JHTHNianpBUnQyQ0tSQzFiVXp3UkN4ajEyanVlbnBac1BDSnlJ?=
+ =?utf-8?B?OWQrRGFYSFN0aUQ2a2F5L0tZaGdOVEFaengrbnhBU2d1M3hpUGhGTXZUS0pQ?=
+ =?utf-8?B?U2NYcEwxRmZ2Y0pjNER0Z1RiN2k4azlDbHowMDhlbm9xTGZoblhCL1J5QjV3?=
+ =?utf-8?B?U3EwaTVnZWVib21JUGFwUGxPUjVESU56SzNCaHc4QjNCT082RWJTV29CYjNZ?=
+ =?utf-8?B?OHF0SFIrbFdEb1Z6TDVyYi84SElGTjRNTzI5ZzJiclpPRlI0ZExKeWVOZDhv?=
+ =?utf-8?B?SzN3YUVQejlKT2ZxQVY3bjJmemp5c0RJaXk1RVJSOHFCdHpVNjlKR3ZHb3Yy?=
+ =?utf-8?B?aWZBL0ZMelRhZnpuOHBNbmMxWTRjSGtRQ0xZQlVybE01WGdiNmJub2trOUhI?=
+ =?utf-8?B?NjJLTzlXcm9hdEpYNXlXdyttMEFUN0dTMW93S3BLWVM3WGJxd2plRXk0QWJI?=
+ =?utf-8?B?Y3dGYUdMcGE0bGNLWGFXTEtCMUU0UG4xQml0d3VqZ1BVS0xkbEp0ZDcyN0hL?=
+ =?utf-8?B?UGdnblA4Z3FoaWZyRnhlME9KVS9BMTkvU3ZvTTNhNDYveUNyeDNlOEJHT1VU?=
+ =?utf-8?B?WUVFOFdYNXZ2Q1ZjQVg5MlI0TlJFL2dzdVR1cC9XdWhjc0R5TGxRQ2tFNTFO?=
+ =?utf-8?B?TkxYaWlYNlhhZHhOdjd5bDNJYUxLdXp2MnlyRDArYTZRZ1FXSXVVak0rRk5l?=
+ =?utf-8?B?cGl1OEFoaW5NcnFhY0NXMUZqcWRxa1Y4MUQ5YVdTREVRcnIvNjA4RU41UmRD?=
+ =?utf-8?B?OVd5ZmxlSEpMMEF0TEpyL1hqWThVUE1mVUVNK0xXR25JS1duZURJWG1ySFJN?=
+ =?utf-8?B?NDcxSFhVOXZRPT0=?=
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH7PR12MB5712.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(376014)(7416014)(366016)(921020)(7053199007);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?REZJSXdZTStoMG5pdDZTejQ5ODZ5Qlh3ZnM0ZytUSnlMZG9zQzBCTW9SVEo2?=
+ =?utf-8?B?WUZVckpEOWV5TmVpWkZZYjBHbzM5ZDNSNjd2ZzFnQ2I4a1dndUNIK1BIVEN5?=
+ =?utf-8?B?MlF3R2NlVTVMM3htR1d4VTNkTVpBUkc3RVR3SmxnV0lsL0N0ems4bWdPVlhl?=
+ =?utf-8?B?UlRiZ2M2emF0WXVtak5mSWxaRittRnZndkgyWWw0Vk1PcXZmNkVJWWJNcEJz?=
+ =?utf-8?B?S20zbGRLNnI5Wi9xZGh2U1ZIMHQxRTV0VUpQbVQ0YUVCc0k3WDR5Z2x0bE5P?=
+ =?utf-8?B?Um9pQmUwZk1BdFFOSXFHeEZvYjl0L0hrajZEdGVHV1dicTBzUnhCdkJTWWdz?=
+ =?utf-8?B?aUwrUllzSktSeVY5dFRZYng1bEFlNGMwMW52U3R2NmFud0NVeEVKbUhkRmJk?=
+ =?utf-8?B?Q2kvZHFoNW11UWlLTWVJRGdpMnpIM3FEUlBQOWhQOEM0VGNhakJqeHhxOTVF?=
+ =?utf-8?B?VFNiUUFycnBXR0NILzJiU1JqSjdIMjc0RmpuSDZkSjNYenVwemtpOFRuVjJn?=
+ =?utf-8?B?MHZWZFo0TUV0ek8xYlZDa2dwTzZnZEVpQkYrNm4vZmY2UG1YdjMvd0VST0NV?=
+ =?utf-8?B?cmtXalJxbTJoR1MvSm9nUGVodzFoUkViMWZrRFk4SnhGQXJXeTNzWGV2c2lK?=
+ =?utf-8?B?bzN1eExqd29IRHFPZk91bTRTUjJ6NFkrQjhkd0ZzZEZGOFFTd0M4RmNpSjhU?=
+ =?utf-8?B?UnFweXZoWGxDa1AwNEJKcXZpREhGSnZKS2dWZVVIRHNDNDRpWWY2Nk9Qa0Y4?=
+ =?utf-8?B?NFdzbDhXZUpZTWVIcGFrNyswblBhWDJPK0NHNm1pNXlrS1Z1WUlqZ0Zhayt1?=
+ =?utf-8?B?d2xhYkhoQ1NWODJrUHhLV3BNdVBiMzM4RWZwMGo2Y3BYVElwMllJNkhiWlp6?=
+ =?utf-8?B?a2J5WHk5M3lhbFZib2I2SzV3TDEyc21QKzFNdnlBcEQzbkdiNGN0U2ZlaGNR?=
+ =?utf-8?B?b09kU1puQkwvM1VQbDVhcXg5NWZkaWZDcy9JUithK0RNNGRqWVZ0bUhjcCtX?=
+ =?utf-8?B?VmNlS25mV1ZJTm1Wb2ZFR2orTWRkZklKcVJoVzhlSGlpOER6Y0psZEtOTjhH?=
+ =?utf-8?B?MzhPK0VHdWJZRTEvcHBsNWpKNGRZWWErdGIrWm90NU9MY3UxQ1JjZFdpRXBY?=
+ =?utf-8?B?VXJ1QXNUY3hqeC9wcUxPRDBEYzdMVmZOZHd3RXNRUmttUTlIRk4rUHpYNlNK?=
+ =?utf-8?B?TkEwMmtzSlQ3SWdqU2Qyd0lPRlpVWUxHQW9nUmdyeU5YcGpsWWI3bGZKL3JD?=
+ =?utf-8?B?QVBtRjFzVmF0WkRsVkVhM3R0VGxjMG1vcGVVTEl6ajFZSHZXbzhKTzVGWm0z?=
+ =?utf-8?B?b2ZmQkE5Q2ZDOEdVMTRvR0FNaWFSV1ZjejNpOGoveWdNT1FFWTA4eUVmL3hl?=
+ =?utf-8?B?THQwdkM3UTl6S1RnTnQ3YTNnR0E4QlFWS1U5dnBUUjFKako3WjhXeXRJdnlS?=
+ =?utf-8?B?ajdrcnZTVmJYY3k4RnpIOVNNc21pTHdZdjVTbDEvNFN3dGJHQldPeGE5MlJ3?=
+ =?utf-8?B?NUNWL1ZtR3lTMzhMYXpLTmtMYm1lbW1aektVOGxqd285OUtzQ1g5U0Roa3Vo?=
+ =?utf-8?B?VUJDVy9kK0h3cUY1TDR1c2kwbjNLMTlxV1RUMlBNa2RrSCtoKzQ5cThIWTJ2?=
+ =?utf-8?B?V003VUlKVXJmY2lXYWxJcnpvaFlCakxnSVNpUFo1ZUM1N1JSSUlCODYxSHFV?=
+ =?utf-8?B?eEFnZEpiOHQ4dm5rYVpxN24zUEdRZ1oxdGVhdTlMckJIZ2tvaU8zSnlFVGE1?=
+ =?utf-8?B?NVJGL2VMVHpUcXNzODJTcFpMb2wyOG9KQWo3SDJqUnZhTk1xdytiZVZScXpX?=
+ =?utf-8?B?U0UrTnJxckQ3bGpOUGxrRm5rNTd6OUt0bmVSU3E0QzN0NnYyR0J2ZTVHcno2?=
+ =?utf-8?B?RFBIQ2x1cUFzUm8rdGQzWkd0UTgvYWlSRWlvelVMSzZRdVduWDlVZTdlb1l0?=
+ =?utf-8?B?S1dhSkJGUXhGQnNGRWhNaDByUE9lVlhCdnJ3VElMUThZL2RLUnovaEc4YS8y?=
+ =?utf-8?B?c2pVc0QrRmdaTXdFUUlVMzNva2ROYTllanhSMlZNRWV1aVZ0Y21HSVNqc1FR?=
+ =?utf-8?B?OUZ0VFhadmN2U3ZocmkrNzhQOW5qc0ZtbDRrdnFMTk5IekN0L3V5SWJTVmhi?=
+ =?utf-8?Q?dGMU2WIj7J3DZKmgi6VrmV7y2?=
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: cc94f5c9-f0ee-468d-94f6-08ddfccc24b8
+X-MS-Exchange-CrossTenant-AuthSource: PH7PR12MB5712.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 26 Sep 2025 07:13:08.0442
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 3DOCVJ15s68FUHCLwewWv+n/BYJGdzjXwaWofriXgT00d0pCfmxE4y0lT7CTE/Q9MOuy/vImG91TiQBXnuCI+w==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR12MB8121
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250925_000042_290899_874D6597 
-X-CRM114-Status: GOOD (  12.50  )
+X-CRM114-CacheID: sfid-20250926_001314_396281_D2325B8B 
+X-CRM114-Status: GOOD (  26.60  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -90,103 +187,325 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-SGkgUGFvbG8sCgpXZSBoYXZlIHRoZSBmb2xsb3dpbmcgS1ZNIFJJU0MtViBjaGFuZ2VzIGZvciA2
-LjE4OgoxKSBBZGRlZCBTQkkgRldGVCBleHRlbnNpb24gZm9yIEd1ZXN0L1ZNIGFsb25nIHdpdGgK
-ICAgIGNvcnJlc3BvbmRpbmcgT05FX1JFRyBpbnRlcmZhY2UKMikgQWRkZWQgWmljYm9wIGFuZCBi
-ZmxvYXQxNiBleHRlbnNpb25zIGZvciBHdWVzdC9WTQozKSBFbmFibGVkIG1vcmUgY29tbW9uIEtW
-TSBzZWxmdGVzdHMgZm9yIFJJU0MtVgo0KSBBZGRlZCBTQkkgdjMuMCBQTVUgZW5oYW5jZW1lbnRz
-IGluIEtWTSBhbmQKICAgIHBlcmYgZHJpdmVyCgpUaGUgcGVyZiBkcml2ZXIgY2hhbmdlcyBpbiAj
-NCBhYm92ZSBhcmUgZ29pbmcgdGhyb3VnaApLVk0gUklTQy1WIHRyZWUgYmFzZWQgZGlzY3Vzc2lv
-biB3aXRoIFdpbGwgYW5kIFBhdWwgWzFdLgoKUGxlYXNlIHB1bGwuCgpbMV0gLSBodHRwczovL2xv
-cmUua2VybmVsLm9yZy9hbGwvQ0FBaFNkeTN3SmQ1dWljSm50ZitXZ1RhTGNpaVFzcVQxUWZVbXJa
-MUprOXFFT05SZ1B3QG1haWwuZ21haWwuY29tLwoKUmVnYXJkcywKQW51cAoKVGhlIGZvbGxvd2lu
-ZyBjaGFuZ2VzIHNpbmNlIGNvbW1pdCA3NmVlYjliOGRlOTg4MGNhMzg2OTZiMmZiNTZhYzQ1YWMw
-YTI1YzZjOgoKICBMaW51eCA2LjE3LXJjNSAoMjAyNS0wOS0wNyAxNDoyMjo1NyAtMDcwMCkKCmFy
-ZSBhdmFpbGFibGUgaW4gdGhlIEdpdCByZXBvc2l0b3J5IGF0OgoKICBodHRwczovL2dpdGh1Yi5j
-b20va3ZtLXJpc2N2L2xpbnV4LmdpdCB0YWdzL2t2bS1yaXNjdi02LjE4LTEKCmZvciB5b3UgdG8g
-ZmV0Y2ggY2hhbmdlcyB1cCB0byBkYmRhZGQ5NDNhMjc4ZmI4YTI0YWU0MTk5YTY2ODEzMTEwODAz
-NGI0OgoKICBSSVNDLVY6IEtWTTogVXBncmFkZSB0aGUgc3VwcG9ydGVkIFNCSSB2ZXJzaW9uIHRv
-IDMuMCAoMjAyNS0wOS0xNgoxMTo0OTozMSArMDUzMCkKCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KS1ZNL3Jpc2N2IGNoYW5n
-ZXMgZm9yIDYuMTgKCi0gQWRkZWQgU0JJIEZXRlQgZXh0ZW5zaW9uIGZvciBHdWVzdC9WTSB3aXRo
-IG1pc2FsaWduZWQKICBkZWxlZ2F0aW9uIGFuZCBwb2ludGVyIG1hc2tpbmcgUE1MRU4gZmVhdHVy
-ZXMKLSBBZGRlZCBPTkVfUkVHIGludGVyZmFjZSBmb3IgU0JJIEZXRlQgZXh0ZW5zaW9uCi0gQWRk
-ZWQgWmljYm9wIGFuZCBiZmxvYXQxNiBleHRlbnNpb25zIGZvciBHdWVzdC9WTQotIEVuYWJsZWQg
-bW9yZSBjb21tb24gS1ZNIHNlbGZ0ZXN0cyBmb3IgUklTQy1WIHN1Y2ggYXMKICBhY2Nlc3NfdHJh
-Y2tpbmdfcGVyZl90ZXN0LCBkaXJ0eV9sb2dfcGVyZl90ZXN0LAogIG1lbXNsb3RfbW9kaWZpY2F0
-aW9uX3N0cmVzc190ZXN0LCBtZW1zbG90X3BlcmZfdGVzdCwKICBtbXVfc3RyZXNzX3Rlc3QsIGFu
-ZCByc2VxX3Rlc3QKLSBBZGRlZCBTQkkgdjMuMCBQTVUgZW5oYW5jZW1lbnRzIGluIEtWTSBhbmQg
-cGVyZiBkcml2ZXIKCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0KQW51cCBQYXRlbCAoNik6CiAgICAgIFJJU0MtVjogS1ZNOiBT
-ZXQgaW5pdGlhbCB2YWx1ZSBvZiBoZWRlbGVnIGluIGt2bV9hcmNoX3ZjcHVfY3JlYXRlKCkKICAg
-ICAgUklTQy1WOiBLVk06IEludHJvZHVjZSBmZWF0dXJlIHNwZWNpZmljIHJlc2V0IGZvciBTQkkg
-RldGVAogICAgICBSSVNDLVY6IEtWTTogSW50cm9kdWNlIG9wdGlvbmFsIE9ORV9SRUcgY2FsbGJh
-Y2tzIGZvciBTQkkgZXh0ZW5zaW9ucwogICAgICBSSVNDLVY6IEtWTTogTW92ZSBjb3B5X3NiaV9l
-eHRfcmVnX2luZGljZXMoKSB0byBTQkkgaW1wbGVtZW50YXRpb24KICAgICAgUklTQy1WOiBLVk06
-IEltcGxlbWVudCBPTkVfUkVHIGludGVyZmFjZSBmb3IgU0JJIEZXRlQgc3RhdGUKICAgICAgS1ZN
-OiByaXNjdjogc2VsZnRlc3RzOiBBZGQgU0JJIEZXRlQgdG8gZ2V0LXJlZy1saXN0IHRlc3QKCkF0
-aXNoIFBhdHJhICg4KToKICAgICAgZHJpdmVycy9wZXJmOiByaXNjdjogQWRkIFNCSSB2My4wIGZs
-YWcKICAgICAgZHJpdmVycy9wZXJmOiByaXNjdjogQWRkIHJhdyBldmVudCB2MiBzdXBwb3J0CiAg
-ICAgIFJJU0MtVjogS1ZNOiBBZGQgc3VwcG9ydCBmb3IgUmF3IGV2ZW50IHYyCiAgICAgIGRyaXZl
-cnMvcGVyZjogcmlzY3Y6IEltcGxlbWVudCBQTVUgZXZlbnQgaW5mbyBmdW5jdGlvbgogICAgICBk
-cml2ZXJzL3BlcmY6IHJpc2N2OiBFeHBvcnQgUE1VIGV2ZW50IGluZm8gZnVuY3Rpb24KICAgICAg
-UklTQy1WOiBLVk06IE5vIG5lZWQgb2YgZXhwbGljaXQgd3JpdGFibGUgc2xvdCBjaGVjawogICAg
-ICBSSVNDLVY6IEtWTTogSW1wbGVtZW50IGdldCBldmVudCBpbmZvIGZ1bmN0aW9uCiAgICAgIFJJ
-U0MtVjogS1ZNOiBVcGdyYWRlIHRoZSBzdXBwb3J0ZWQgU0JJIHZlcnNpb24gdG8gMy4wCgpDbMOp
-bWVudCBMw6lnZXIgKDIpOgogICAgICBSSVNDLVY6IEtWTTogYWRkIHN1cHBvcnQgZm9yIEZXRlQg
-U0JJIGV4dGVuc2lvbgogICAgICBSSVNDLVY6IEtWTTogYWRkIHN1cHBvcnQgZm9yIFNCSV9GV0ZU
-X01JU0FMSUdORURfREVMRUcKCkRvbmcgWWFuZyAoMSk6CiAgICAgIEtWTTogcmlzY3Y6IHNlbGZ0
-ZXN0czogQWRkIG1pc3NpbmcgaGVhZGVycyBmb3IgbmV3IHRlc3RjYXNlcwoKRmFuZ3l1IFl1ICgx
-KToKICAgICAgUklTQy1WOiBLVk06IFdyaXRlIGhnYXRwIHJlZ2lzdGVyIHdpdGggdmFsaWQgbW9k
-ZSBiaXRzCgpHdW8gUmVuIChBbGliYWJhIERBTU8gQWNhZGVteSkgKDIpOgogICAgICBSSVNDLVY6
-IEtWTTogUmVtb3ZlIHVubmVjZXNzYXJ5IEhHQVRQIGNzcl9yZWFkCiAgICAgIFJJU0MtVjogS1ZN
-OiBQcmV2ZW50IEhHQVRQX01PREVfQkFSRSBwYXNzZWQKClF1YW4gWmhvdSAoOCk6CiAgICAgIFJJ
-U0MtVjogS1ZNOiBDaGFuZ2UgemljYm9tL3ppY2JveiBibG9jayBzaXplIHRvIGRlcGVuZCBvbiB0
-aGUgaG9zdCBpc2EKICAgICAgUklTQy1WOiBLVk06IFByb3ZpZGUgVUFQSSBmb3IgWmljYm9wIGJs
-b2NrIHNpemUKICAgICAgUklTQy1WOiBLVk06IEFsbG93IFppY2JvcCBleHRlbnNpb24gZm9yIEd1
-ZXN0L1ZNCiAgICAgIFJJU0MtVjogS1ZNOiBBbGxvdyBiZmxvYXQxNiBleHRlbnNpb24gZm9yIEd1
-ZXN0L1ZNCiAgICAgIEtWTTogcmlzY3Y6IHNlbGZ0ZXN0czogQWRkIFppY2JvcCBleHRlbnNpb24g
-dG8gZ2V0LXJlZy1saXN0IHRlc3QKICAgICAgS1ZNOiByaXNjdjogc2VsZnRlc3RzOiBBZGQgYmZs
-b2F0MTYgZXh0ZW5zaW9uIHRvIGdldC1yZWctbGlzdCB0ZXN0CiAgICAgIEtWTTogcmlzY3Y6IHNl
-bGZ0ZXN0czogVXNlIHRoZSBleGlzdGluZyBSSVNDVl9GRU5DRSBtYWNybyBpbgpgcnNlcS1yaXNj
-di5oYAogICAgICBLVk06IHJpc2N2OiBzZWxmdGVzdHM6IEFkZCBjb21tb24gc3VwcG9ydGVkIHRl
-c3QgY2FzZXMKClNhbXVlbCBIb2xsYW5kICgxKToKICAgICAgUklTQy1WOiBLVk06IEFkZCBzdXBw
-b3J0IGZvciBTQklfRldGVF9QT0lOVEVSX01BU0tJTkdfUE1MRU4KCiBhcmNoL3Jpc2N2L2luY2x1
-ZGUvYXNtL2t2bV9ob3N0LmggICAgICAgICAgICAgICAgICB8ICAgNCArCiBhcmNoL3Jpc2N2L2lu
-Y2x1ZGUvYXNtL2t2bV92Y3B1X3BtdS5oICAgICAgICAgICAgICB8ICAgMyArCiBhcmNoL3Jpc2N2
-L2luY2x1ZGUvYXNtL2t2bV92Y3B1X3NiaS5oICAgICAgICAgICAgICB8ICAyNSArLQogYXJjaC9y
-aXNjdi9pbmNsdWRlL2FzbS9rdm1fdmNwdV9zYmlfZndmdC5oICAgICAgICAgfCAgMzQgKysKIGFy
-Y2gvcmlzY3YvaW5jbHVkZS9hc20vc2JpLmggICAgICAgICAgICAgICAgICAgICAgIHwgIDEzICsK
-IGFyY2gvcmlzY3YvaW5jbHVkZS91YXBpL2FzbS9rdm0uaCAgICAgICAgICAgICAgICAgIHwgIDIx
-ICsKIGFyY2gvcmlzY3Yva3ZtL01ha2VmaWxlICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwg
-ICAxICsKIGFyY2gvcmlzY3Yva3ZtL2dzdGFnZS5jICAgICAgICAgICAgICAgICAgICAgICAgICAg
-IHwgIDI3ICstCiBhcmNoL3Jpc2N2L2t2bS9tYWluLmMgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICB8ICAzMyArLQogYXJjaC9yaXNjdi9rdm0vdmNwdS5jICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgfCAgIDMgKy0KIGFyY2gvcmlzY3Yva3ZtL3ZjcHVfb25lcmVnLmMgICAgICAgICAg
-ICAgICAgICAgICAgIHwgIDk1ICsrLS0KIGFyY2gvcmlzY3Yva3ZtL3ZjcHVfcG11LmMgICAgICAg
-ICAgICAgICAgICAgICAgICAgIHwgIDc0ICsrLQogYXJjaC9yaXNjdi9rdm0vdmNwdV9zYmkuYyAg
-ICAgICAgICAgICAgICAgICAgICAgICAgfCAxNzYgKysrKysrLQogYXJjaC9yaXNjdi9rdm0vdmNw
-dV9zYmlfZndmdC5jICAgICAgICAgICAgICAgICAgICAgfCA1NDQgKysrKysrKysrKysrKysrKysr
-KysrCiBhcmNoL3Jpc2N2L2t2bS92Y3B1X3NiaV9wbXUuYyAgICAgICAgICAgICAgICAgICAgICB8
-ICAgMyArCiBhcmNoL3Jpc2N2L2t2bS92Y3B1X3NiaV9zdGEuYyAgICAgICAgICAgICAgICAgICAg
-ICB8ICA3MiArLS0KIGFyY2gvcmlzY3Yva3ZtL3ZtaWQuYyAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgIHwgICA4ICstCiBkcml2ZXJzL3BlcmYvcmlzY3ZfcG11X3NiaS5jICAgICAgICAgICAg
-ICAgICAgICAgICB8IDE5MSArKysrKystLQogaW5jbHVkZS9saW51eC9wZXJmL3Jpc2N2X3BtdS5o
-ICAgICAgICAgICAgICAgICAgICAgfCAgIDEgKwogdG9vbHMvdGVzdGluZy9zZWxmdGVzdHMva3Zt
-L01ha2VmaWxlLmt2bSAgICAgICAgICAgfCAgIDYgKwogLi4uL3NlbGZ0ZXN0cy9rdm0vYWNjZXNz
-X3RyYWNraW5nX3BlcmZfdGVzdC5jICAgICAgfCAgIDEgKwogLi4uL3NlbGZ0ZXN0cy9rdm0vaW5j
-bHVkZS9yaXNjdi9wcm9jZXNzb3IuaCAgICAgICAgfCAgIDEgKwogLi4uL2t2bS9tZW1zbG90X21v
-ZGlmaWNhdGlvbl9zdHJlc3NfdGVzdC5jICAgICAgICAgfCAgIDEgKwogdG9vbHMvdGVzdGluZy9z
-ZWxmdGVzdHMva3ZtL21lbXNsb3RfcGVyZl90ZXN0LmMgICAgfCAgIDEgKwogdG9vbHMvdGVzdGlu
-Zy9zZWxmdGVzdHMva3ZtL3Jpc2N2L2dldC1yZWctbGlzdC5jICAgfCAgNjAgKysrCiB0b29scy90
-ZXN0aW5nL3NlbGZ0ZXN0cy9yc2VxL3JzZXEtcmlzY3YuaCAgICAgICAgICB8ICAgMyArLQogMjYg
-ZmlsZXMgY2hhbmdlZCwgMTE4OCBpbnNlcnRpb25zKCspLCAyMTMgZGVsZXRpb25zKC0pCiBjcmVh
-dGUgbW9kZSAxMDA2NDQgYXJjaC9yaXNjdi9pbmNsdWRlL2FzbS9rdm1fdmNwdV9zYmlfZndmdC5o
-CiBjcmVhdGUgbW9kZSAxMDA2NDQgYXJjaC9yaXNjdi9rdm0vdmNwdV9zYmlfZndmdC5jCgotLSAK
-a3ZtLXJpc2N2IG1haWxpbmcgbGlzdAprdm0tcmlzY3ZAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRw
-Oi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2t2bS1yaXNjdgo=
+On 8/7/2025 1:26 AM, Sean Christopherson wrote:
+> From: Dapeng Mi <dapeng1.mi@linux.intel.com>
+> 
+> For vCPUs with a mediated vPMU, disable interception of counter MSRs for
+> PMCs that are exposed to the guest, and for GLOBAL_CTRL and related MSRs
+> if they are fully supported according to the vCPU model, i.e. if the MSRs
+> and all bits supported by hardware exist from the guest's point of view.
+> 
+> Do NOT passthrough event selector or fixed counter control MSRs, so that
+> KVM can enforce userspace-defined event filters, e.g. to prevent use of
+> AnyThread events (which is unfortunately a setting in the fixed counter
+> control MSR).
+> 
+> Defer support for nested passthrough of mediated PMU MSRs to the future,
+> as the logic for nested MSR interception is unfortunately vendor specific.
+> 
+> Suggested-by: Sean Christopherson <seanjc@google.com>
+> Co-developed-by: Mingwei Zhang <mizhang@google.com>
+> Signed-off-by: Mingwei Zhang <mizhang@google.com>
+> Co-developed-by: Sandipan Das <sandipan.das@amd.com>
+> Signed-off-by: Sandipan Das <sandipan.das@amd.com>
+> Signed-off-by: Dapeng Mi <dapeng1.mi@linux.intel.com>
+> [sean: squash patches, massage changelog, refresh VMX MSRs on filter change]
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
+> ---
+>  arch/x86/include/asm/msr-index.h |  1 +
+>  arch/x86/kvm/pmu.c               | 34 ++++++++++++------
+>  arch/x86/kvm/pmu.h               |  1 +
+>  arch/x86/kvm/svm/svm.c           | 36 +++++++++++++++++++
+>  arch/x86/kvm/vmx/pmu_intel.c     | 13 -------
+>  arch/x86/kvm/vmx/pmu_intel.h     | 15 ++++++++
+>  arch/x86/kvm/vmx/vmx.c           | 59 ++++++++++++++++++++++++++------
+>  7 files changed, 124 insertions(+), 35 deletions(-)
+> 
+> diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
+> index f19d1ee9a396..06bd7aaae931 100644
+> --- a/arch/x86/include/asm/msr-index.h
+> +++ b/arch/x86/include/asm/msr-index.h
+> @@ -736,6 +736,7 @@
+>  #define MSR_AMD64_PERF_CNTR_GLOBAL_STATUS	0xc0000300
+>  #define MSR_AMD64_PERF_CNTR_GLOBAL_CTL		0xc0000301
+>  #define MSR_AMD64_PERF_CNTR_GLOBAL_STATUS_CLR	0xc0000302
+> +#define MSR_AMD64_PERF_CNTR_GLOBAL_STATUS_SET	0xc0000303
+>  
+>  /* AMD Last Branch Record MSRs */
+>  #define MSR_AMD64_LBR_SELECT			0xc000010e
+> diff --git a/arch/x86/kvm/pmu.c b/arch/x86/kvm/pmu.c
+> index 4246e1d2cfcc..817ef852bdf9 100644
+> --- a/arch/x86/kvm/pmu.c
+> +++ b/arch/x86/kvm/pmu.c
+> @@ -715,18 +715,14 @@ int kvm_pmu_rdpmc(struct kvm_vcpu *vcpu, unsigned idx, u64 *data)
+>  	return 0;
+>  }
+>  
+> -bool kvm_need_rdpmc_intercept(struct kvm_vcpu *vcpu)
+> +bool kvm_need_perf_global_ctrl_intercept(struct kvm_vcpu *vcpu)
+>  {
+>  	struct kvm_pmu *pmu = vcpu_to_pmu(vcpu);
+>  
+>  	if (!kvm_vcpu_has_mediated_pmu(vcpu))
+>  		return true;
+>  
+> -	/*
+> -	 * VMware allows access to these Pseduo-PMCs even when read via RDPMC
+> -	 * in Ring3 when CR4.PCE=0.
+> -	 */
+> -	if (enable_vmware_backdoor)
+> +	if (!kvm_pmu_has_perf_global_ctrl(pmu))
+>  		return true;
+>  
+>  	/*
+> @@ -735,7 +731,22 @@ bool kvm_need_rdpmc_intercept(struct kvm_vcpu *vcpu)
+>  	 * capabilities themselves may be a subset of hardware capabilities.
+>  	 */
+>  	return pmu->nr_arch_gp_counters != kvm_host_pmu.num_counters_gp ||
+> -	       pmu->nr_arch_fixed_counters != kvm_host_pmu.num_counters_fixed ||
+> +	       pmu->nr_arch_fixed_counters != kvm_host_pmu.num_counters_fixed;
+> +}
+> +EXPORT_SYMBOL_GPL(kvm_need_perf_global_ctrl_intercept);
+> +
+> +bool kvm_need_rdpmc_intercept(struct kvm_vcpu *vcpu)
+> +{
+> +	struct kvm_pmu *pmu = vcpu_to_pmu(vcpu);
+> +
+> +	/*
+> +	 * VMware allows access to these Pseduo-PMCs even when read via RDPMC
+> +	 * in Ring3 when CR4.PCE=0.
+> +	 */
+> +	if (enable_vmware_backdoor)
+> +		return true;
+> +
+> +	return kvm_need_perf_global_ctrl_intercept(vcpu) ||
+>  	       pmu->counter_bitmask[KVM_PMC_GP] != (BIT_ULL(kvm_host_pmu.bit_width_gp) - 1) ||
+>  	       pmu->counter_bitmask[KVM_PMC_FIXED] != (BIT_ULL(kvm_host_pmu.bit_width_fixed) - 1);
+>  }
+
+There is a case for AMD processors where the global MSRs are absent in the guest
+but the guest still uses the same number of counters as what is advertised by the
+host capabilities. So RDPMC interception is not necessary for all cases where
+global control is unavailable.
+
+> @@ -927,11 +938,12 @@ void kvm_pmu_refresh(struct kvm_vcpu *vcpu)
+>  	 * in the global controls).  Emulate that behavior when refreshing the
+>  	 * PMU so that userspace doesn't need to manually set PERF_GLOBAL_CTRL.
+>  	 */
+> -	if (kvm_pmu_has_perf_global_ctrl(pmu) && pmu->nr_arch_gp_counters) {
+> +	if (pmu->nr_arch_gp_counters &&
+> +	    (kvm_pmu_has_perf_global_ctrl(pmu) || kvm_vcpu_has_mediated_pmu(vcpu)))
+>  		pmu->global_ctrl = GENMASK_ULL(pmu->nr_arch_gp_counters - 1, 0);
+> -		if (kvm_vcpu_has_mediated_pmu(vcpu))
+> -			kvm_pmu_call(write_global_ctrl)(pmu->global_ctrl);
+> -	}
+> +
+> +	if (kvm_vcpu_has_mediated_pmu(vcpu))
+> +		kvm_pmu_call(write_global_ctrl)(pmu->global_ctrl);
+>  
+>  	bitmap_set(pmu->all_valid_pmc_idx, 0, pmu->nr_arch_gp_counters);
+>  	bitmap_set(pmu->all_valid_pmc_idx, KVM_FIXED_PMC_BASE_IDX,
+> diff --git a/arch/x86/kvm/pmu.h b/arch/x86/kvm/pmu.h
+> index dcf4e2253875..51963a3a167a 100644
+> --- a/arch/x86/kvm/pmu.h
+> +++ b/arch/x86/kvm/pmu.h
+> @@ -239,6 +239,7 @@ void kvm_pmu_instruction_retired(struct kvm_vcpu *vcpu);
+>  void kvm_pmu_branch_retired(struct kvm_vcpu *vcpu);
+>  
+>  bool is_vmware_backdoor_pmc(u32 pmc_idx);
+> +bool kvm_need_perf_global_ctrl_intercept(struct kvm_vcpu *vcpu);
+>  bool kvm_need_rdpmc_intercept(struct kvm_vcpu *vcpu);
+>  
+>  extern struct kvm_pmu_ops intel_pmu_ops;
+> diff --git a/arch/x86/kvm/svm/svm.c b/arch/x86/kvm/svm/svm.c
+> index 2d42962b47aa..add50b64256c 100644
+> --- a/arch/x86/kvm/svm/svm.c
+> +++ b/arch/x86/kvm/svm/svm.c
+> @@ -790,6 +790,40 @@ void svm_vcpu_free_msrpm(void *msrpm)
+>  	__free_pages(virt_to_page(msrpm), get_order(MSRPM_SIZE));
+>  }
+>  
+> +static void svm_recalc_pmu_msr_intercepts(struct kvm_vcpu *vcpu)
+> +{
+> +	bool intercept = !kvm_vcpu_has_mediated_pmu(vcpu);
+> +	struct kvm_pmu *pmu = vcpu_to_pmu(vcpu);
+> +	int i;
+> +
+> +	if (!enable_mediated_pmu)
+> +		return;
+> +
+> +	/* Legacy counters are always available for AMD CPUs with a PMU. */
+> +	for (i = 0; i < min(pmu->nr_arch_gp_counters, AMD64_NUM_COUNTERS); i++)
+> +		svm_set_intercept_for_msr(vcpu, MSR_K7_PERFCTR0 + i,
+> +					  MSR_TYPE_RW, intercept);
+> +
+> +	intercept |= !guest_cpu_cap_has(vcpu, X86_FEATURE_PERFCTR_CORE);
+> +	for (i = 0; i < pmu->nr_arch_gp_counters; i++)
+> +		svm_set_intercept_for_msr(vcpu, MSR_F15H_PERF_CTR + 2 * i,
+> +					  MSR_TYPE_RW, intercept);
+> +
+> +	for ( ; i < kvm_pmu_cap.num_counters_gp; i++)
+> +		svm_enable_intercept_for_msr(vcpu, MSR_F15H_PERF_CTR + 2 * i,
+> +					     MSR_TYPE_RW);
+> +
+> +	intercept = kvm_need_perf_global_ctrl_intercept(vcpu);
+> +	svm_set_intercept_for_msr(vcpu, MSR_AMD64_PERF_CNTR_GLOBAL_CTL,
+> +				  MSR_TYPE_RW, intercept);
+> +	svm_set_intercept_for_msr(vcpu, MSR_AMD64_PERF_CNTR_GLOBAL_STATUS,
+> +				  MSR_TYPE_RW, intercept);
+> +	svm_set_intercept_for_msr(vcpu, MSR_AMD64_PERF_CNTR_GLOBAL_STATUS_CLR,
+> +				  MSR_TYPE_RW, intercept);
+> +	svm_set_intercept_for_msr(vcpu, MSR_AMD64_PERF_CNTR_GLOBAL_STATUS_SET,
+> +				  MSR_TYPE_RW, intercept);
+> +}
+> +
+>  static void svm_recalc_msr_intercepts(struct kvm_vcpu *vcpu)
+>  {
+>  	struct vcpu_svm *svm = to_svm(vcpu);
+> @@ -847,6 +881,8 @@ static void svm_recalc_msr_intercepts(struct kvm_vcpu *vcpu)
+>  	if (sev_es_guest(vcpu->kvm))
+>  		sev_es_recalc_msr_intercepts(vcpu);
+>  
+> +	svm_recalc_pmu_msr_intercepts(vcpu);
+> +
+>  	/*
+>  	 * x2APIC intercepts are modified on-demand and cannot be filtered by
+>  	 * userspace.
+> diff --git a/arch/x86/kvm/vmx/pmu_intel.c b/arch/x86/kvm/vmx/pmu_intel.c
+> index 779b4e64acac..2bdddb95816e 100644
+> --- a/arch/x86/kvm/vmx/pmu_intel.c
+> +++ b/arch/x86/kvm/vmx/pmu_intel.c
+> @@ -128,19 +128,6 @@ static struct kvm_pmc *intel_rdpmc_ecx_to_pmc(struct kvm_vcpu *vcpu,
+>  	return &counters[array_index_nospec(idx, num_counters)];
+>  }
+>  
+> -static inline u64 vcpu_get_perf_capabilities(struct kvm_vcpu *vcpu)
+> -{
+> -	if (!guest_cpu_cap_has(vcpu, X86_FEATURE_PDCM))
+> -		return 0;
+> -
+> -	return vcpu->arch.perf_capabilities;
+> -}
+> -
+> -static inline bool fw_writes_is_enabled(struct kvm_vcpu *vcpu)
+> -{
+> -	return (vcpu_get_perf_capabilities(vcpu) & PERF_CAP_FW_WRITES) != 0;
+> -}
+> -
+>  static inline struct kvm_pmc *get_fw_gp_pmc(struct kvm_pmu *pmu, u32 msr)
+>  {
+>  	if (!fw_writes_is_enabled(pmu_to_vcpu(pmu)))
+> diff --git a/arch/x86/kvm/vmx/pmu_intel.h b/arch/x86/kvm/vmx/pmu_intel.h
+> index 5620d0882cdc..5d9357640aa1 100644
+> --- a/arch/x86/kvm/vmx/pmu_intel.h
+> +++ b/arch/x86/kvm/vmx/pmu_intel.h
+> @@ -4,6 +4,21 @@
+>  
+>  #include <linux/kvm_host.h>
+>  
+> +#include "cpuid.h"
+> +
+> +static inline u64 vcpu_get_perf_capabilities(struct kvm_vcpu *vcpu)
+> +{
+> +	if (!guest_cpu_cap_has(vcpu, X86_FEATURE_PDCM))
+> +		return 0;
+> +
+> +	return vcpu->arch.perf_capabilities;
+> +}
+> +
+> +static inline bool fw_writes_is_enabled(struct kvm_vcpu *vcpu)
+> +{
+> +	return (vcpu_get_perf_capabilities(vcpu) & PERF_CAP_FW_WRITES) != 0;
+> +}
+> +
+>  bool intel_pmu_lbr_is_enabled(struct kvm_vcpu *vcpu);
+>  int intel_pmu_create_guest_lbr_event(struct kvm_vcpu *vcpu);
+>  
+> diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
+> index 1233a0afb31e..85bd82d41f94 100644
+> --- a/arch/x86/kvm/vmx/vmx.c
+> +++ b/arch/x86/kvm/vmx/vmx.c
+> @@ -4068,6 +4068,53 @@ void pt_update_intercept_for_msr(struct kvm_vcpu *vcpu)
+>  	}
+>  }
+>  
+> +static void vmx_recalc_pmu_msr_intercepts(struct kvm_vcpu *vcpu)
+> +{
+> +	bool has_mediated_pmu = kvm_vcpu_has_mediated_pmu(vcpu);
+> +	struct kvm_pmu *pmu = vcpu_to_pmu(vcpu);
+> +	struct vcpu_vmx *vmx = to_vmx(vcpu);
+> +	bool intercept = !has_mediated_pmu;
+> +	int i;
+> +
+> +	if (!enable_mediated_pmu)
+> +		return;
+> +
+> +	vm_entry_controls_changebit(vmx, VM_ENTRY_LOAD_IA32_PERF_GLOBAL_CTRL,
+> +				    has_mediated_pmu);
+> +
+> +	vm_exit_controls_changebit(vmx, VM_EXIT_LOAD_IA32_PERF_GLOBAL_CTRL |
+> +					VM_EXIT_SAVE_IA32_PERF_GLOBAL_CTRL,
+> +				   has_mediated_pmu);
+> +
+> +	for (i = 0; i < pmu->nr_arch_gp_counters; i++) {
+> +		vmx_set_intercept_for_msr(vcpu, MSR_IA32_PERFCTR0 + i,
+> +					  MSR_TYPE_RW, intercept);
+> +		vmx_set_intercept_for_msr(vcpu, MSR_IA32_PMC0 + i, MSR_TYPE_RW,
+> +					  intercept || !fw_writes_is_enabled(vcpu));
+> +	}
+> +	for ( ; i < kvm_pmu_cap.num_counters_gp; i++) {
+> +		vmx_set_intercept_for_msr(vcpu, MSR_IA32_PERFCTR0 + i,
+> +					  MSR_TYPE_RW, true);
+> +		vmx_set_intercept_for_msr(vcpu, MSR_IA32_PMC0 + i,
+> +					  MSR_TYPE_RW, true);
+> +	}
+> +
+> +	for (i = 0; i < pmu->nr_arch_fixed_counters; i++)
+> +		vmx_set_intercept_for_msr(vcpu, MSR_CORE_PERF_FIXED_CTR0 + i,
+> +					  MSR_TYPE_RW, intercept);
+> +	for ( ; i < kvm_pmu_cap.num_counters_fixed; i++)
+> +		vmx_set_intercept_for_msr(vcpu, MSR_CORE_PERF_FIXED_CTR0 + i,
+> +					  MSR_TYPE_RW, true);
+> +
+> +	intercept = kvm_need_perf_global_ctrl_intercept(vcpu);
+> +	vmx_set_intercept_for_msr(vcpu, MSR_CORE_PERF_GLOBAL_STATUS,
+> +				  MSR_TYPE_RW, intercept);
+> +	vmx_set_intercept_for_msr(vcpu, MSR_CORE_PERF_GLOBAL_CTRL,
+> +				  MSR_TYPE_RW, intercept);
+> +	vmx_set_intercept_for_msr(vcpu, MSR_CORE_PERF_GLOBAL_OVF_CTRL,
+> +				  MSR_TYPE_RW, intercept);
+> +}
+> +
+>  static void vmx_recalc_msr_intercepts(struct kvm_vcpu *vcpu)
+>  {
+>  	if (!cpu_has_vmx_msr_bitmap())
+> @@ -4115,17 +4162,7 @@ static void vmx_recalc_msr_intercepts(struct kvm_vcpu *vcpu)
+>  		vmx_set_intercept_for_msr(vcpu, MSR_IA32_FLUSH_CMD, MSR_TYPE_W,
+>  					  !guest_cpu_cap_has(vcpu, X86_FEATURE_FLUSH_L1D));
+>  
+> -	if (enable_mediated_pmu) {
+> -		bool is_mediated_pmu = kvm_vcpu_has_mediated_pmu(vcpu);
+> -		struct vcpu_vmx *vmx = to_vmx(vcpu);
+> -
+> -		vm_entry_controls_changebit(vmx,
+> -					    VM_ENTRY_LOAD_IA32_PERF_GLOBAL_CTRL, is_mediated_pmu);
+> -
+> -		vm_exit_controls_changebit(vmx,
+> -					   VM_EXIT_LOAD_IA32_PERF_GLOBAL_CTRL |
+> -					   VM_EXIT_SAVE_IA32_PERF_GLOBAL_CTRL, is_mediated_pmu);
+> -	}
+> +	vmx_recalc_pmu_msr_intercepts(vcpu);
+>  
+>  	/*
+>  	 * x2APIC and LBR MSR intercepts are modified on-demand and cannot be
+
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
