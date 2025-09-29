@@ -4,210 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B7017CAC5B5
-	for <kvm-riscv@archiver.kernel.org>; Sun, 28 Sep 2025 19:32:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CD2A0CAC5B9
+	for <kvm-riscv@archiver.kernel.org>; Mon, 29 Sep 2025 15:50:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
-	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
-	List-Unsubscribe:List-Id:MIME-Version:In-Reply-To:From:References:Cc:To:
-	Subject:Date:Message-ID:Reply-To:Content-ID:Content-Description:Resent-Date:
-	Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Owner;
-	bh=ACQjIkgYzh8qAvf3zIhDRV/+jWQ5HRg6wv6RwfzE0rw=; b=R1c9vXXplL4QQsJW7Nw3/xZ6Nm
-	WyxcZyqATsz2g3Y5TCluLjzDozxSg29mCm/HPHD6FGBb61jmlM0bA/I6XBmoJJ9jVZVyBT8HYt4DW
-	MFhjSWd8plGZ/qdBj6RATLc00TrFrojfG4PgC4ga9oHu1Zx18XG/pUxRBmdZcR0xbRiAaysaQhC1T
-	efK8K/pC/r5vY2t4C3vFitZXbp0Tt1Oi+RN9IKuYbGziRFNJ2YEaEk9MylORwAAzaLxHGAKxlRmxJ
-	yPiDHl60UwHuROZ4X1Q/GZ0GoLd2eS3AZ9jS0slqVz4Gy2TAGsEOr4TvTedV8Sxg9+wzd98MYN1uP
-	L2MOaYRA==;
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
+	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=8rYXatEQgDnvXgluG4icyNAGpNs67UwCvZ2ketHOD4s=; b=BpUuMMBa3iSu8r
+	XGTOl4vf0wu83l+qWZKubDNE5BxZGNElLgsKfSuGWQLAMjj/rjz2hTA65Exom/QPAyF+pzvlXrEMj
+	U+Gay9l5sgCCYIObAL8OSLfnDNKRoF78F/ic/MA4dNR9svgHFWVpHIWQYQj6bgsQ/4Ks3xLv31/Ob
+	Z6cG7LYFGz6/Fs7Y41p0khsLWZJt+gmw8nluccLbpfhqXazD0fl8JT1uZjsJMLUxMVNJFitlP6ARy
+	UyISSRj4Nf+ZO4Tmy9nql/Et3Csb199QpxNpx3d7YjidRSp2JTpBqIJwIuw0U6xa8DhDRRZ3UuG6w
+	7O0gHm1df0TKHlu1qsEQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1v2x8A-0000000HRLi-2gQC;
-	Sun, 28 Sep 2025 19:32:22 +0000
-Received: from mx0b-00069f02.pphosted.com ([205.220.177.32])
+	id 1v3G9M-00000002pwq-1HBR;
+	Mon, 29 Sep 2025 15:50:52 +0000
+Received: from mail-io1-xd32.google.com ([2607:f8b0:4864:20::d32])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1v2x87-0000000HRL9-0pML;
-	Sun, 28 Sep 2025 19:32:21 +0000
-Received: from pps.filterd (m0246631.ppops.net [127.0.0.1])
-	by mx0b-00069f02.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 58SIxWn5018411;
-	Sun, 28 Sep 2025 19:32:06 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=
-	corp-2025-04-25; bh=BOnEA4cUvfQ2bJD+C7uoKrM3IWZZePZAhknlKn/ZEik=; b=
-	VgC5vZFOWNk+CJbFyWTjTnJ8OVdmU11AUmwMsK6KCDeJB6+mWos/R1M5LhhEuX/3
-	8IEPK0tro9nJU/mtRS6vLGv5nm/2xMetTy5B7vO6NrW6e3dgjvUQxGQBCIBMKq8M
-	kkPGXJHWGg8+5QaVvsBCGTHdGV+tJQSQxIOgJKXnFHz7La3jp+j1ve5TaZXdGdr9
-	+TXfCxYUm+VoGfYqIUAg0vk0phfkQYSdBR9zrpSbLl4dGLkUcnQCHpdYF1mQ7tDO
-	Opny/WfxZctRXnwvhhm7zcRZC7jbPYgbPqL65MrtfwlpZCs3oNB9+n+9V1fi5S6M
-	szrX11IHyKxAkfTbYdTbNw==
-Received: from iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta03.appoci.oracle.com [130.35.103.27])
-	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 49fasg00eq-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sun, 28 Sep 2025 19:32:05 +0000 (GMT)
-Received: from pps.filterd (iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (8.18.1.2/8.18.1.2) with ESMTP id 58SFqFQJ000581;
-	Sun, 28 Sep 2025 19:32:05 GMT
-Received: from ch1pr05cu001.outbound.protection.outlook.com (mail-northcentralusazon11010065.outbound.protection.outlook.com [52.101.193.65])
-	by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 49e6c5mx8p-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sun, 28 Sep 2025 19:32:05 +0000
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=Crb9/6RS7/8UMs0/PvAC6khlkkeuRddrEnjXN3OrcBixdZoWn2zbnEqSYKEnSTN6OC+sNGyLFnApufMVEqACLzz4Ba5fRSmRsDlbONrA1s+PesFNAh1jgCJLcFqj5iXozPIAYPL3RZUKxhdQnigOTA70xxkRzSb0VnoImYn89jDdMCiyNbHKJscuSBfFGOn2xzNyKmcrBsAoHKvx2sv34Er7I33j3WwwJ+DTE9gG9eAApeEfARzEAGSxdMfQv0aeyxs6zTssWNdr3sXNXi+Bmx5hhsjXeUQJNr4g9RNJ/pcv3JGiO+Seg3aEfn87xZ6Ta1TJ/j3oKudQH0SWipQVMg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=BOnEA4cUvfQ2bJD+C7uoKrM3IWZZePZAhknlKn/ZEik=;
- b=QMocRAfZMZ33Lmp0GJu9XA3t9fOV5sZQatZyoDuX+KbE+n+WrHuqE9RgAxgXFU3P1XNozaJ5P03kLfxTki/fZeYGfE04e7a/t/x+h18u4+ieCN58/7AcFIqAJjrWTpWxiF4eaT1Uu4veGTFkwv2hEO5MW1Gfuz3RU0Vt1HUej1xeMd02Tak/KEX0ZAyUfglXafHnsmo+IUEeZTNHomIYZbyDvxUVQKpOH7eZFcKSwjIgtajotwXMcSeX92OgiUUsunPkxnJS4IG0D9oGwG0S01Dq2r8hFunvq53+JKIj2tdgy0SYE207Bfkp8UMGamufI2RWwaKYNgmnuGInaORMWw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
- dkim=pass header.d=oracle.com; arc=none
+	id 1v3G9I-00000002puM-2EPO
+	for kvm-riscv@lists.infradead.org;
+	Mon, 29 Sep 2025 15:50:51 +0000
+Received: by mail-io1-xd32.google.com with SMTP id ca18e2360f4ac-92aee734585so36335439f.3
+        for <kvm-riscv@lists.infradead.org>; Mon, 29 Sep 2025 08:50:47 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=BOnEA4cUvfQ2bJD+C7uoKrM3IWZZePZAhknlKn/ZEik=;
- b=d6yPa8h8Xo4x+10clPqX5cHnTLwx5z9anTzMaMxTBIy7+w2rs4Yyri6IU9UBqEsMjA1wewVYBIFvZMWhnphWh5PZW9CyBfgoXjTyxlcc+USobIxhoMO35Fmrin/brByczSoBMb3EVcIsOoDL230tL1ugixzrAjU1lxpwKqPUY/o=
-Received: from DS7PR10MB5328.namprd10.prod.outlook.com (2603:10b6:5:3a6::12)
- by IA0PR10MB6747.namprd10.prod.outlook.com (2603:10b6:208:43d::10) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9160.16; Sun, 28 Sep
- 2025 19:32:02 +0000
-Received: from DS7PR10MB5328.namprd10.prod.outlook.com
- ([fe80::ea13:c6c1:9956:b29c]) by DS7PR10MB5328.namprd10.prod.outlook.com
- ([fe80::ea13:c6c1:9956:b29c%6]) with mapi id 15.20.9160.008; Sun, 28 Sep 2025
- 19:32:02 +0000
-Message-ID: <89643477-b713-47ed-861f-e5fd17989745@oracle.com>
-Date: Mon, 29 Sep 2025 01:01:51 +0530
-User-Agent: Mozilla Thunderbird
-Subject: Re: [External] : [PATCH] RISC-V: KVM: Transparent huge page support
-To: liu.xuemei1@zte.com.cn, anup@brainfault.org
-Cc: atish.patra@linux.dev, paul.walmsley@sifive.com, palmer@dabbelt.com,
-        aou@eecs.berkeley.edu, alex@ghiti.fr, kvm@vger.kernel.org,
-        kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
-        linux-kernel@vger.kernel.org
-References: <20250928154450701hRC3fm00QYFnGiM0_M1No@zte.com.cn>
-Content-Language: en-US
-From: ALOK TIWARI <alok.a.tiwari@oracle.com>
-In-Reply-To: <20250928154450701hRC3fm00QYFnGiM0_M1No@zte.com.cn>
-X-ClientProxiedBy: FR5P281CA0051.DEUP281.PROD.OUTLOOK.COM
- (2603:10a6:d10:f0::20) To DS7PR10MB5328.namprd10.prod.outlook.com
- (2603:10b6:5:3a6::12)
+        d=ventanamicro.com; s=google; t=1759161047; x=1759765847; darn=lists.infradead.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=thl1botW/6JnUO3NJgzLyWhXcvMbSjUKSouz8HBMgL8=;
+        b=JvcUa06hKPS1eIKw/vqQEIgK7mfgDVAH6s98zvwqcEQ4r590IPlxyEXcE0jlRjmTJ/
+         qODcHg484U5gFrYJvYHc2c3+3D2ku1Jtj8KE/lO3NpVV2xrJxHCKMPjCUfp1isJderBj
+         4sIajUd+8PTs/GmStFtHXTX8DPrWoidCHYzAjtJoolOEy9l3q9AmzX3FuWcXZK3AJKWO
+         zfgc+8qZce+scc98vQ7fsvYI6jcwow/U0v7IOfqCHVQXUTy+0JFVzmtnMTcyNbLxCivm
+         I9/6FxBaSoPbiPuvrZGxeXPn4yTNhhGDfTitlbjhlwqSC//DPKZouy6H4MTivFDCah8v
+         W72Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1759161047; x=1759765847;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=thl1botW/6JnUO3NJgzLyWhXcvMbSjUKSouz8HBMgL8=;
+        b=l9BINYU+gJZzPgSfAGWk4R3Ax9RwYIVBsa2EffcgGIRo3v0I7yswYL6ydAkDP6hdHf
+         NDic/XX6rLyy2v4oFURIcrA5vlRKtf1+grM+C6w6QfK4FKug2ngAJSVAr5rHwpkZrjH/
+         5L5vdgsJRvsRCIz237xng6gGmNE5+6Yzt89psMqiIals2Q5rVJ+6iKMhnh5T0d9BVzRP
+         ltxqPoQHfxOJlgkfIVbRD9Un3oPEb3nxQ4phVuuCSMfOFvsjNBHuikw94coshpqrxQw8
+         IHTJLLjiX/LCffpf6a2VOYpr7jdcdTvh3tjzoe96kq2M4Y+0vhQNxBFKxQyrS4AObovb
+         lSwg==
+X-Forwarded-Encrypted: i=1; AJvYcCUUHaFBCTN+2VBtBCFeeKTDpCJxrFI8zdKUMgmwzPfvK6FK8fxo/98INcdVLIf/baPgDKSHisYnjVo=@lists.infradead.org
+X-Gm-Message-State: AOJu0YzSYrFrbcZl/rFN15FNGfZcU3OmwuPwIAXorYDeTNLzHXPGiIDp
+	zFH8NZ7a2OX+rmlgQi5T1FZNibpnoypz6IQFGSKKUQ8F92b5PLDkCkrgPcBfsv4K1CE=
+X-Gm-Gg: ASbGncsoHHvQoaeD0aX1aICl1Eaq0PbBEjUW9Q00v8y2pNaF1xRFznMxprSlMaWtPOC
+	XOlxiXDu+obAL2ApblJ5aUKjS4E49SFtUVCRNh0o8KunICEpZOmURyCoWhVzm4856nVLXUfRNta
+	Z2VwLqhVePblM2brYrGmRMHh4pW9KMMjPCfpqQCVxcIxPEJ9gozHp1aw3STmR6OIvvkMiRGg677
+	1wFBBM3Vag1d2e5dqp5g8MMBRYkzTeWcI2zkZ93Rd9pQJ/TnK2iwFoRiBBFBaC1gwgIOYH9D79/
+	3t6MLnpZ9PCSVbzi2PJO7ZPhRbS1KJlpndNjqBcgDCBY8ltls09O0u+MWM81F5Lg+oiH7VKHER5
+	ddYjbjSkRkyyuhoMYmLupUh24
+X-Google-Smtp-Source: AGHT+IH7gk327UmY6C6eScZpxHXRC9XJhlTFKO90VrWRwUWHG19VAOUZaRB2R9AE7aS+Xnm+h8Ln6w==
+X-Received: by 2002:a05:6602:341e:b0:928:c6cc:3b1a with SMTP id ca18e2360f4ac-928c6cc3cbfmr562321039f.18.1759161047242;
+        Mon, 29 Sep 2025 08:50:47 -0700 (PDT)
+Received: from localhost ([140.82.166.162])
+        by smtp.gmail.com with ESMTPSA id 8926c6da1cb9f-56a6a5ae2c1sm4845167173.63.2025.09.29.08.50.46
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 29 Sep 2025 08:50:46 -0700 (PDT)
+Date: Mon, 29 Sep 2025 10:50:45 -0500
+From: Andrew Jones <ajones@ventanamicro.com>
+To: "Nutty.Liu" <nutty.liu@hotmail.com>
+Cc: iommu@lists.linux.dev, kvm-riscv@lists.infradead.org, 
+	kvm@vger.kernel.org, linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	jgg@nvidia.com, zong.li@sifive.com, tjeznach@rivosinc.com, joro@8bytes.org, 
+	will@kernel.org, robin.murphy@arm.com, anup@brainfault.org, atish.patra@linux.dev, 
+	tglx@linutronix.de, alex.williamson@redhat.com, paul.walmsley@sifive.com, 
+	palmer@dabbelt.com, alex@ghiti.fr
+Subject: Re: [RFC PATCH v2 04/18] iommu/riscv: Add IRQ domain for interrupt
+ remapping
+Message-ID: <20250929-816b2ab17977ffa1b9687fe2@orel>
+References: <20250920203851.2205115-20-ajones@ventanamicro.com>
+ <20250920203851.2205115-24-ajones@ventanamicro.com>
+ <TY1PPFCDFFFA68A1C49C083357FF49575AEF318A@TY1PPFCDFFFA68A.apcprd02.prod.outlook.com>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DS7PR10MB5328:EE_|IA0PR10MB6747:EE_
-X-MS-Office365-Filtering-Correlation-Id: 308d4b7a-7562-4bd6-2538-08ddfec5b301
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;ARA:13230040|7416014|376014|1800799024|366016|7053199007;
-X-Microsoft-Antispam-Message-Info: =?utf-8?B?VjJPa05zajFyQkoraEZxTDFXSm9rcXhJa0N1czRNQUZ6K0krUno2NUxHbHY5?=
- =?utf-8?B?REg3M0NJQTRoNHR5VjZHR0lMMksxQTlrTW9CQ2NQV1NoZnN2RWJZRmg0ekQ1?=
- =?utf-8?B?czBTUmJ3UWUrdzcwOTJaTzlUUG5mM3dHbnN4aUo4QWFNZXprQWEvYktmdzFu?=
- =?utf-8?B?SStIYzI4RUZWYUhIRzRVTmZGRjd6Z1M2MVpnNE9zL0dzM2p3UEZZZTUydzM0?=
- =?utf-8?B?R2d3NDl5RWt2aEdLTzVKdlUyZVlrU3lxVFg1OW85cXBudGE3NzVvRTRBRHc3?=
- =?utf-8?B?eCtpUUtzU2Q1K05IOTN1d2FrZWxmQWRFM0RuM1ZCcmlGNCttVHRXYStUZFdF?=
- =?utf-8?B?dDZRZjg3ZEpXSHBFWUFacVhSM05ZMmtYT0ltc1JkWFhEaHdsdTFQaWhiYnZ5?=
- =?utf-8?B?ckdkNW5tMm1XUjRhQTQxbVp5UzUxS1JlS0RlRHVaODkrRHhQdVhsYjBoVGo2?=
- =?utf-8?B?Zk5reTBsT1YvNzlRZjZQaWdHVEtXVnhIMVRtNm91bnJLcEl4RjJ2WnhNQkJH?=
- =?utf-8?B?MzZIVUJVMHVZSjNUOE1BUENTWkpFSzJKZWZRMHdqMnJIZDlIVzAwZlA0M1lL?=
- =?utf-8?B?S1NZeGVTY3FZU2ZCb0w0RGNKTDdkVjljYm8wTXFhTCszd2NxOHIwZnRKV3Nq?=
- =?utf-8?B?WlppRDFmR203dXR2Uk1nSi9KcWdOd1YrU2xjMDBzMFBOSDdxcDZoSmlQUDdY?=
- =?utf-8?B?anBXT2Y0WVVmSlhlbXdlM00vdng1Z0pSY1VvRXN2Ry9oZ0EyaytSMHF2aThI?=
- =?utf-8?B?eVJ4NDVSZVJ2dXhuWVNya1V6RktYR0FseVA0aXRyMDg2YXl4bU1CYWN1MVk2?=
- =?utf-8?B?MVhjQXhWL0xwMmNXNlA5Q1AxU0p2UVcvVkp2L3JERHRueHc5Mm1YQndaTG1T?=
- =?utf-8?B?R2NZUGJXZUtHRXpnWWZvOE1hcjJBa0djNm9mTjVGKzZpajBqQ1o0R1pSZjd4?=
- =?utf-8?B?YmVjOSt5Z3JDYmk3L1Zwc3FDYmY0MVg5enVtVGk4eVVVcE85NlowTzhQbGhT?=
- =?utf-8?B?WEd5VWZmcyt4RU1iMFBxNHhwNjZyK1hIcHpqUjhJTmFQTlBUZm9YRGJsaWt4?=
- =?utf-8?B?eVZVcWJkMGxiZWJQRUNPQVEwbEpOM1JWaDBWRGh5V2dIdnp6dmdxUWkyL1Jj?=
- =?utf-8?B?bHRqbndSQUM0dUhCQnZRWWFaZWJra01iMHJhekE1d2hvSTMvaWVheHhqMXF2?=
- =?utf-8?B?b0F1N25jRE85L2FibHVlTzJLZUlzQjdEU3Boa0JhUU1LV1lZajU3S290ZkxO?=
- =?utf-8?B?R2tlZUZUVnRiWll2ZjQ5NUdyZzJjZjVDM0ZzZk1WWEVLTENxMlRSQVpDN3J6?=
- =?utf-8?B?azdJYmR3TlpTY0FjRWlkY0N0L095OWRsT2pxbVpscDRUKzk1cUZ1VVE3R3dY?=
- =?utf-8?B?M3MxUkUyNnpyWXNTeXBPbjJyUEt0N092cldFcGE3OEx5Z1BXbitsZVNLUGpG?=
- =?utf-8?B?aVdYbmhCMnJmc0lhOWZBTEFwbFp1cS9aVW94UFR4TzZBSmVrMDBBRVE4ckN0?=
- =?utf-8?B?WEp4OHhHQzBTQXFNSUU2d2psZXhoVmZVNzhieC9ISDZ1UGM1aCtsTXpqdVlM?=
- =?utf-8?B?SGkrRG9jNHJkQUF2RkhTdkUxU0RMOGQzR0xyN3JPMGhlL3VabnFKSk9qRGRz?=
- =?utf-8?B?MU1CR09FdDlWbU9hUDlxYWQzZXl3VXBzemlRclFiTTVEZFVGSUhwK0U1c3pS?=
- =?utf-8?B?UzdCekNwNGgwckxBdkdvT3dQd3pKc1BDNEhBYVJ6bmZEak01ZWtpcXJLbUo2?=
- =?utf-8?B?NEs3TTE5N25SWTJrODFBTTBKVWN3OGJ3UE02NlYzUHBqRHpNZEdXaDN1bGkw?=
- =?utf-8?B?citrWWdqTWh5Wnpxak9NQWlQN3l5VnBYQkNXY0k2eWdQeTI1b29OaERuMExh?=
- =?utf-8?B?Y1BPNldxclpvWkl6UnkzVzNUV0JoNmI4RGhzUm1EYUtoL0VBZWtXa2laUU5F?=
- =?utf-8?Q?+dI2jft7nT7R815wOmX/ZV52nUUzP31e?=
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS7PR10MB5328.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(1800799024)(366016)(7053199007);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?SnVxWEJ0YTJWUEF4azhSZExyUWpydTNiRDRpSGZtVHlPanIvajB1OXc3RWJN?=
- =?utf-8?B?ejJuTEgxZzk1SERGWDJjTE9BWkhBMnJGYlo3SGxOcTFDR3dzZjNSV0YyU014?=
- =?utf-8?B?bmtvN1VvT1RvQ0U1UFVkTWI4SXFzZGpnamJQem1KdEpEUnphNW9nbnRWWkRI?=
- =?utf-8?B?ZVBEYTI2OE9hdUdENUhyMlorRUhob08vV1ZPMmxkZTIyY1hjZFRyQlBRd3dK?=
- =?utf-8?B?VllzWDV5WHVUTm0ySjg3OTdObS9YSzdNQmVjVWNEK1dkaHoyZXVrTXJiTjlj?=
- =?utf-8?B?LzFrVjJ0bXBabEg3M3ErTHdFczM0MVp0a0dqVWpVdGM0aXpTU2VZM2txU0pX?=
- =?utf-8?B?Ly9LV2lMakxKUUlRT29SVTJvc1FHNFd6L2c1Um1Gd3A4QUZhMzVIZGRtcFNB?=
- =?utf-8?B?TUVyaUIranB2aFhMV0ZVdXVWbzMrcGJhUXAvbVRHM2xpYTVGN2dmZUY5K01x?=
- =?utf-8?B?S2g1bjJETndDVDh5clpKUkx6Nk1SMllnOHkzaEdTeGJ5Unh4RmRpZ0cvRHRE?=
- =?utf-8?B?ZXBmU0JwU2QzZ0xzK0FzWVg5bnVMMTVCWFYvL0lab1NSQ0hrWUhta2pGT0RG?=
- =?utf-8?B?NzM3R1h6R0dtRFhkL21WSm1YK0FHc1dpUExQNW44OHBDSDBsUWF3NEdBc0tn?=
- =?utf-8?B?SkJUZGt3K3lzblVJU04yZ05SNStZZVp0U0xRZHVDMXJJS25mWHlkNVZ0d1da?=
- =?utf-8?B?UVRESVBCQnphTkFTZFlQczVrNXJlM2s3MlErUWd3OHRYZ2w5d091RWFYWVZT?=
- =?utf-8?B?UVlaM1JDUXBqV0Q5anBPelJJZXg1cWtKTDM1MEcvQUpabVRWY0NQcFNVUDZZ?=
- =?utf-8?B?YzFBNjdjdlQ0T1NxaUZjeURqcDIrY01FWDFueFh2VlBQTWZuNnNNT3BtZHdi?=
- =?utf-8?B?eEtpQmprZjJWZDZmR3c0dzZ4NXVLbGg3TlBJbE9GZlNQOVQrKzcwcHE3bzc0?=
- =?utf-8?B?REQ4YnlOajl0a3R1YlNVcG9lT2x6Z2Z5aTRjZklsck9kR1FmYm1XVGFPQktm?=
- =?utf-8?B?NHp2cFJINytscFh1UWlRbkFjNTQzdkJQaDlGZWxPd2x4c3lBNnZQZTEzUnNT?=
- =?utf-8?B?Ym04ZEovWHFFeFAxamhyc1dnMnZHTzZxWUMraXFrb0lKUFEzZFpFdVFZMUZY?=
- =?utf-8?B?amxuVC9lRnRwdDB6WEkrckh5WUoxZUVwQlFzRFBIWXFsSzNucHRFS2xVc1Zt?=
- =?utf-8?B?THJINGJpdGJ4bTI0YjRJOVd0OWg2N3JYUHdxS010T2FSYjVLQVdwM1AvVjBI?=
- =?utf-8?B?VzlzWTNDRENubHZ6ZjhkSHZxcU5KNzZIbnhJNXQwMDY1YnRmRHpYRDFmTU1y?=
- =?utf-8?B?Y255V3pIZEI2WWtJWklYZWdXVHFFNEhxcURqL3A4VDJWblZYTGJiTWtLSDR3?=
- =?utf-8?B?d2lOdFJXT3BDempCbklld1NLQlJMRm9ycFY2bkd2cGRXTlJLYjFKWms4OWMx?=
- =?utf-8?B?MEswc1NSNWRvZzE4c05xaVorano2akxJanZTRW5TdnMwYS9tS1ltYmdDZGJj?=
- =?utf-8?B?UzM5YllRSG1jVnhFeXBQWHhFc1o2NXlHTlhMT1VCQ1hoTlR5ekU2WWhGV1Bm?=
- =?utf-8?B?WnJQM0tudlN5YkJmZG9zWkJoWEVhbXppbGlaeERPcnZ6Q3VUMHNKVlJhVDBm?=
- =?utf-8?B?ZWlBOU9Zb09xNmd4ZXVWNWswSnhPQnJrSUx3VngwUzlLM2JncGJYeGhpM21M?=
- =?utf-8?B?UEZKNFdqenZkVmlKV2M1R3ZtbW1JYTJMWTNHQzN4M3Avcko0SHVzalhocW13?=
- =?utf-8?B?NXhrV0ZHYU9CMTlGYnBtWm9NMHdERktyOXg1UU9hYUZDUEFNd25KS0oyMTRs?=
- =?utf-8?B?c0JwQVJwaUhGV0ZvZzd4eEwvdmhWY2llNTczTUUvdXU0RkZXNEVvK2E4dG5s?=
- =?utf-8?B?UU1CdWZUYm5QUzFvZitabkpKRjdxR3N3b2pmeGlzVE0vVWFyZ3V4VnN6OThs?=
- =?utf-8?B?OTI1SmI1ZnNhZVdoL2pTamdGMHkvblEzUlY3RUk4TUhOa3Y3djQ5dTQ0b0NR?=
- =?utf-8?B?aUpPTGdRd2NadllEQzRvU1hEeFBBamlwUWpJc1BBbjFoYWNueThXQlBTS1Ru?=
- =?utf-8?B?NzQ2Q1ZVZ01jempLK3JDbysrbzRpR2lnR0hmdzkrREU5RnlPS0R0b04rdGZU?=
- =?utf-8?B?ZlF4ZVdQVTZCUElZeUd2MEU1WUN1bk4xTUh3SXVIUUF2MjBDNkNpMWFzUHhh?=
- =?utf-8?B?VkE9PQ==?=
-X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: haahnAMlF1rNirK0PrTqS62sioqzPHU0Tx64LqdDsVIas7hEWqDgFEj7gmxa6KljP94TZiZ5hJArw4eNhTUi3JHsKLkprbOnHH4JFS+nhQV8MUIGSRKVihCc0JMd7HKjHqEIFYju9gNd5oUt/HUZcXQhraXlxwgvVzThtccayLbaQ99JKz9dezBpmCLSyrWgypJSu6ppW1BoleIjdwz6c623TYu05pv+I4QQ9zjs02HuGFAChu12fej1YLYDXrJ9SrYmlsVpCKlR9ps3MqiMsABo/+PMxRr/l9bVyJLXzN2fz2oCXlxRDtbRplUVrwg4UBXIPEOwJ7tlRW9GJROjZ9Lg6Dn7D3weoJyd6cgrYRnUd5XJquxkSkZJyKar6VqR4zYWfHEwBde/bOq+0kuP4kKUElko0t4GW0/nmC0CkUT6ut3tp0goo3+opb6Gql78JK65+A8q0/iNI7zbEIT8XsZienB17wrl4hbTkvRkE5BejTB0xrX7rkiuUN7ZnqXw6Kb8TFW9YsqV0vqJBgiewG5H4vdc3N/UBLC27nW4dCY8flSrVL34dbQLE+IFUUSJLGtSJXSqsGCxTb2Qw5hMUMfiqZPk3wPi/aXiEwlASX8=
-X-OriginatorOrg: oracle.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 308d4b7a-7562-4bd6-2538-08ddfec5b301
-X-MS-Exchange-CrossTenant-AuthSource: DS7PR10MB5328.namprd10.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 28 Sep 2025 19:32:02.3340
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: EROB/1a+jTGpMZMds2yuwDQGbvvcXiMim6H3nrW9HJB2qBZzqh93TFUuDjb1PJZSuJ0XnAijg+M8pQ/47BhEoh6wtG2PapSU+48j/mkZ6Oc=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA0PR10MB6747
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1117,Hydra:6.1.9,FMLib:17.12.80.40
- definitions=2025-09-28_08,2025-09-26_01,2025-03-28_01
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0 mlxscore=0
- mlxlogscore=999 malwarescore=0 phishscore=0 bulkscore=0 spamscore=0
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2509150000 definitions=main-2509280190
-X-Proofpoint-GUID: vQ-MVtjVUgvKKnsm_N4XlfyBlXMYxexe
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwOTI4MDE4NiBTYWx0ZWRfX4GYmRqh3BD2C
- CnDqRAbm9AkBYATbWqefID+eYlvvlhdepLX8DCD2AoEHquueb/G5djiRLHJb5c4YSxEQwPJHV3i
- 0KLXoROZLBt5j/17NQEb1ec/9Xc9PCyvwIPILU3rQOMx+SDN1U1SjJWjN6fe27hnH+oz980UxUt
- n8fQ5SmHKG5TAO64d7QFXga89q5AKvxaIzHIYiZOtMrjSr1PdD6p2cZL2P7svGYw14LrvjD37J/
- jSISBuwjsX9TRrR4b2+EbWoSAqlkrHb8oa8QLjZ+3bJxemQxnil8MKVxJA8xLT6ZzfdjRt3rrL3
- /3dUWhqGM7KT1NhFqxP6Az0HJLNzt9c7b+dMev355W4xGWXFbDeK3qh7GfIXnydKl7kNePPXH/0
- z4scxLhnC2hmlqmUtnbrnjOOpcWM3HR8Nn5TZ92Aa+mnzrc7oxw=
-X-Proofpoint-ORIG-GUID: vQ-MVtjVUgvKKnsm_N4XlfyBlXMYxexe
-X-Authority-Analysis: v=2.4 cv=OuJCCi/t c=1 sm=1 tr=0 ts=68d98d35 b=1 cx=c_pps
- a=qoll8+KPOyaMroiJ2sR5sw==:117 a=qoll8+KPOyaMroiJ2sR5sw==:17
- a=6eWqkTHjU83fiwn7nKZWdM+Sl24=:19 a=z/mQ4Ysz8XfWz/Q5cLBRGdckG28=:19
- a=lCpzRmAYbLLaTzLvsPZ7Mbvzbb8=:19 a=wKuvFiaSGQ0qltdbU6+NXLB8nM8=:19
- a=Ol13hO9ccFRV9qXi2t6ftBPywas=:19 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
- a=yJojWOMRYYMA:10 a=GoEa3M9JfhUA:10 a=1RTuLK3dAAAA:8 a=miCPuyuPU83LgrXPzbcA:9
- a=QEXdDO2ut3YA:10 a=kRpfLKi8w9umh8uBmg1i:22 cc=ntf awl=host:12090
+Content-Disposition: inline
+In-Reply-To: <TY1PPFCDFFFA68A1C49C083357FF49575AEF318A@TY1PPFCDFFFA68A.apcprd02.prod.outlook.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250928_123219_650757_9147AB0C 
-X-CRM114-Status: GOOD (  16.96  )
+X-CRM114-CacheID: sfid-20250929_085048_577887_A43ADE1C 
+X-CRM114-Status: GOOD (  31.32  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -219,77 +101,212 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
+On Sun, Sep 28, 2025 at 05:30:26PM +0800, Nutty.Liu wrote:
+> =
 
+> On 9/21/2025 4:38 AM, Andrew Jones wrote:
+> > This is just a skeleton. Until irq-set-affinity functions are
+> > implemented the IRQ domain doesn't serve any purpose.
+> > =
 
-On 9/28/2025 1:14 PM, liu.xuemei1@zte.com.cn wrote:
-> +static bool gstage_supports_huge_mapping(struct kvm_memory_slot *memslot, unsigned long hva)
-> +{
-> +	gpa_t gpa_start;
-> +	hva_t uaddr_start, uaddr_end;
-> +	size_t size;
-> +
-> +	size = memslot->npages * PAGE_SIZE;
-> +	uaddr_start = memslot->userspace_addr;
-> +	uaddr_end = uaddr_start + size;
-> +
-> +	gpa_start = memslot->base_gfn << PAGE_SIZE;
+> > Signed-off-by: Andrew Jones<ajones@ventanamicro.com>
+> > ---
+> >   drivers/iommu/riscv/Makefile   |   2 +-
+> >   drivers/iommu/riscv/iommu-ir.c | 114 +++++++++++++++++++++++++++++++++
+> >   drivers/iommu/riscv/iommu.c    |  36 +++++++++++
+> >   drivers/iommu/riscv/iommu.h    |  12 ++++
+> >   4 files changed, 163 insertions(+), 1 deletion(-)
+> >   create mode 100644 drivers/iommu/riscv/iommu-ir.c
+> > =
 
-looks wrong why << PAGE_SIZE ? typo
+> > diff --git a/drivers/iommu/riscv/Makefile b/drivers/iommu/riscv/Makefile
+> > index b5929f9f23e6..9c83f877d50f 100644
+> > --- a/drivers/iommu/riscv/Makefile
+> > +++ b/drivers/iommu/riscv/Makefile
+> > @@ -1,3 +1,3 @@
+> >   # SPDX-License-Identifier: GPL-2.0-only
+> > -obj-y +=3D iommu.o iommu-platform.o
+> > +obj-y +=3D iommu.o iommu-ir.o iommu-platform.o
+> >   obj-$(CONFIG_RISCV_IOMMU_PCI) +=3D iommu-pci.o
+> > diff --git a/drivers/iommu/riscv/iommu-ir.c b/drivers/iommu/riscv/iommu=
+-ir.c
+> > new file mode 100644
+> > index 000000000000..08cf159b587d
+> > --- /dev/null
+> > +++ b/drivers/iommu/riscv/iommu-ir.c
+> > @@ -0,0 +1,114 @@
+> > +// SPDX-License-Identifier: GPL-2.0-only
+> > +/*
+> > + * IOMMU Interrupt Remapping
+> > + *
+> > + * Copyright =A9 2025 Ventana Micro Systems Inc.
+> > + */
+> > +#include <linux/irqdomain.h>
+> > +#include <linux/msi.h>
+> > +
+> > +#include "iommu.h"
+> > +
+> > +static struct irq_chip riscv_iommu_ir_irq_chip =3D {
+> > +	.name			=3D "IOMMU-IR",
+> > +	.irq_ack		=3D irq_chip_ack_parent,
+> > +	.irq_mask		=3D irq_chip_mask_parent,
+> > +	.irq_unmask		=3D irq_chip_unmask_parent,
+> > +	.irq_set_affinity	=3D irq_chip_set_affinity_parent,
+> > +};
+> > +
+> > +static int riscv_iommu_ir_irq_domain_alloc_irqs(struct irq_domain *irq=
+domain,
+> > +						unsigned int irq_base, unsigned int nr_irqs,
+> > +						void *arg)
+> > +{
+> > +	struct irq_data *data;
+> > +	int i, ret;
+> > +
+> > +	ret =3D irq_domain_alloc_irqs_parent(irqdomain, irq_base, nr_irqs, ar=
+g);
+> > +	if (ret)
+> > +		return ret;
+> > +
+> > +	for (i =3D 0; i < nr_irqs; i++) {
+> > +		data =3D irq_domain_get_irq_data(irqdomain, irq_base + i);
+> Nitpick:=A0 Would it be better to check if 'data' is NULL ?
 
-> +
-> +	/*
-> +	 * Pages belonging to memslots that don't have the same alignment
-> +	 * within a PMD for userspace and GPA cannot be mapped with g-stage
-> +	 * PMD entries, because we'll end up mapping the wrong pages.
-> +	 *
-> +	 * Consider a layout like the following:
-> +	 *
-> +	 *    memslot->userspace_addr:
-> +	 *    +-----+--------------------+--------------------+---+
-> +	 *|abcde|fgh vs-stage block | vs-stage block tv|xyz|
-> +	 *    +-----+--------------------+--------------------+---+
-> +	 *
-> +	 *    memslot->base_gfn << PAGE_SHIFT:
-> +	 *      +---+--------------------+--------------------+-----+
-> +	 *|abc|def g-stage block | g-stage block |tvxyz|
-> +	 *      +---+--------------------+--------------------+-----+
-> +	 *
-> +	 * If we create those g-stage blocks, we'll end up with this incorrect
-> +	 * mapping:
-> +	 *   d -> f
-> +	 *   e -> g
-> +	 *   f -> h
-> +	 */
-> +	if ((gpa_start & (PMD_SIZE - 1)) != (uaddr_start & (PMD_SIZE - 1)))
-> +		return false;
-> +
-> +	/*
-> +	 * Next, let's make sure we're not trying to map anything not covered
-> +	 * by the memslot. This means we have to prohibit block size mappings
-> +	 * for the beginning and end of a non-block aligned and non-block sized
-> +	 * memory slot (illustrated by the head and tail parts of the
-> +	 * userspace view above containing pages 'abcde' and 'xyz',
-> +	 * respectively).
-> +	 *
-> +	 * Note that it doesn't matter if we do the check using the
-> +	 * userspace_addr or the base_gfn, as both are equally aligned (per
-> +	 * the check above) and equally sized.
-> +	 */
-> +	return (hva >= ALIGN(uaddr_start, PMD_SIZE)) && (hva < ALIGN_DOWN(uaddr_end, PMD_SIZE));
-> +}
-> +
+A null irq-data here would imply a bug in the irq domain hierarchy
+implementation and warrant a BUG_ON for the response. But, a null
+dereference should give us the same backtrace, so I think we're OK
+to leave things as they are.
 
+> =
+
+> > +		data->chip =3D &riscv_iommu_ir_irq_chip;
+> > +	}
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +static const struct irq_domain_ops riscv_iommu_ir_irq_domain_ops =3D {
+> > +	.alloc =3D riscv_iommu_ir_irq_domain_alloc_irqs,
+> > +	.free =3D irq_domain_free_irqs_parent,
+> > +};
+> > +
+> > +static const struct msi_parent_ops riscv_iommu_ir_msi_parent_ops =3D {
+> > +	.prefix			=3D "IR-",
+> > +	.supported_flags	=3D MSI_GENERIC_FLAGS_MASK |
+> > +				  MSI_FLAG_PCI_MSIX,
+> > +	.required_flags		=3D MSI_FLAG_USE_DEF_DOM_OPS |
+> > +				  MSI_FLAG_USE_DEF_CHIP_OPS |
+> > +				  MSI_FLAG_PCI_MSI_MASK_PARENT,
+> > +	.chip_flags		=3D MSI_CHIP_FLAG_SET_ACK,
+> > +	.init_dev_msi_info	=3D msi_parent_init_dev_msi_info,
+> > +};
+> > +
+> > +struct irq_domain *riscv_iommu_ir_irq_domain_create(struct riscv_iommu=
+_device *iommu,
+> > +						    struct device *dev,
+> > +						    struct riscv_iommu_info *info)
+> > +{
+> > +	struct irq_domain *irqparent =3D dev_get_msi_domain(dev);
+> > +	struct irq_domain *irqdomain;
+> > +	struct fwnode_handle *fn;
+> > +	char *fwname;
+> > +
+> > +	fwname =3D kasprintf(GFP_KERNEL, "IOMMU-IR-%s", dev_name(dev));
+> > +	if (!fwname)
+> > +		return NULL;
+> > +
+> > +	fn =3D irq_domain_alloc_named_fwnode(fwname);
+> > +	kfree(fwname);
+> > +	if (!fn) {
+> > +		dev_err(iommu->dev, "Couldn't allocate fwnode\n");
+> > +		return NULL;
+> > +	}
+> > +
+> > +	irqdomain =3D irq_domain_create_hierarchy(irqparent, 0, 0, fn,
+> > +						&riscv_iommu_ir_irq_domain_ops,
+> > +						info);
+> > +	if (!irqdomain) {
+> > +		dev_err(iommu->dev, "Failed to create IOMMU irq domain\n");
+> > +		irq_domain_free_fwnode(fn);
+> > +		return NULL;
+> > +	}
+> > +
+> > +	irqdomain->flags |=3D IRQ_DOMAIN_FLAG_MSI_PARENT;
+> > +	irqdomain->msi_parent_ops =3D &riscv_iommu_ir_msi_parent_ops;
+> > +	irq_domain_update_bus_token(irqdomain, DOMAIN_BUS_MSI_REMAP);
+> > +
+> > +	dev_set_msi_domain(dev, irqdomain);
+> > +
+> > +	return irqdomain;
+> > +}
+> > +
+> > +void riscv_iommu_ir_irq_domain_remove(struct riscv_iommu_info *info)
+> > +{
+> > +	struct fwnode_handle *fn;
+> > +
+> > +	if (!info->irqdomain)
+> > +		return;
+> > +
+> > +	fn =3D info->irqdomain->fwnode;
+> > +	irq_domain_remove(info->irqdomain);
+> > +	info->irqdomain =3D NULL;
+> > +	irq_domain_free_fwnode(fn);
+> > +}
+> > +
+> > +int riscv_iommu_ir_attach_paging_domain(struct riscv_iommu_domain *dom=
+ain,
+> > +					struct device *dev)
+> > +{
+> > +	return 0;
+> > +}
+> > +
+> > +void riscv_iommu_ir_free_paging_domain(struct riscv_iommu_domain *doma=
+in)
+> > +{
+> > +}
+> > diff --git a/drivers/iommu/riscv/iommu.c b/drivers/iommu/riscv/iommu.c
+> > index a44c67a848fa..db2acd9dc64b 100644
+> > --- a/drivers/iommu/riscv/iommu.c
+> > +++ b/drivers/iommu/riscv/iommu.c
+> > @@ -17,6 +17,8 @@
+> >   #include <linux/init.h>
+> >   #include <linux/iommu.h>
+> >   #include <linux/iopoll.h>
+> > +#include <linux/irqchip/riscv-imsic.h>
+> > +#include <linux/irqdomain.h>
+> >   #include <linux/kernel.h>
+> >   #include <linux/pci.h>
+> > @@ -1026,6 +1028,9 @@ static void riscv_iommu_iodir_update(struct riscv=
+_iommu_device *iommu,
+> >   		WRITE_ONCE(dc->fsc, new_dc->fsc);
+> >   		WRITE_ONCE(dc->ta, new_dc->ta & RISCV_IOMMU_PC_TA_PSCID);
+> > +		WRITE_ONCE(dc->msiptp, new_dc->msiptp);
+> > +		WRITE_ONCE(dc->msi_addr_mask, new_dc->msi_addr_mask);
+> > +		WRITE_ONCE(dc->msi_addr_pattern, new_dc->msi_addr_pattern);
+> Since the MSI page table pointer (msiptp) has been changed,
+> should all cache entries from this MSI page table need to be invalidated ?
+
+That's a good question and I need to bang my head against the spec some
+more for it. The invalidation guidance for a device context states that
+an iotinval.gvma is only needed when dc.iohgatp.mode is not bare (and
+currently it's always bare). However, the msi table needs an iotinval.gvma
+(whether or not dc.iohgatp.mode is bare). So, as you suggest, I think we
+need it and the spec could probably use some clarification.
+
+> =
+
+> Otherwise,
+> Reviewed-by: Nutty Liu <nutty.liu@hotmail.com>
 
 Thanks,
-Alok
+drew
 
+-- =
 
--- 
 kvm-riscv mailing list
 kvm-riscv@lists.infradead.org
 http://lists.infradead.org/mailman/listinfo/kvm-riscv
