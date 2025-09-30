@@ -4,64 +4,147 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B4C57CAC5B8
-	for <kvm-riscv@archiver.kernel.org>; Tue, 30 Sep 2025 07:21:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 58731CAC5B8
+	for <kvm-riscv@archiver.kernel.org>; Tue, 30 Sep 2025 08:25:49 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
-	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Subject:Cc:To:From:Mime-Version:
-	Message-ID:Date:Reply-To:Content-ID:Content-Description:Resent-Date:
-	Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:
-	References:List-Owner; bh=p1xku1ou5pdV/AKt66hbnUXgOPpfHN8PsN5LFvTMIso=; b=xRd
-	GL03PmOH97NfAx6JZ0pVO+ngZkyazXI8NG7NMRpxUMrBU+w/KUUUAMtadjA936Hzi+DlVQxHiERe/
-	i86imBInDzl1LX/0JPNdEC7YdAyzkcbvXoIPEFBJSDwvQkO9H+rCzmpofpK9MqEyCys5wleuj6/Go
-	NdsSNgdBAy/kSNX1JP8VI/1QJ6wTEIHpwoAiHPVP5O7JMqM5SKl+x2oJe0yh+hq6OFuewFkL9dROC
-	vNi0j5NkdwnbHUjPLlJyyqIShaBS9Q62Jzufqv5/5UlCfkIJWCl9OnDK7MEezIc2nqPhdCbZ6xoEw
-	0t6lLSKaCnNQuirJfCqhNCnkzbIiK9Q==;
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
+	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
+	List-Unsubscribe:List-Id:MIME-Version:In-Reply-To:From:References:Cc:To:
+	Subject:Date:Message-ID:Reply-To:Content-ID:Content-Description:Resent-Date:
+	Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Owner;
+	bh=Pj/EtUDv+iB/G6fCB0go2ZjEOxslrIBgaDhFpnRIN4g=; b=VW5WJArhp7uspe0E+Tr898l4Rp
+	MTi3CWTRoUms+0rUN772V9bb9eeaZXJgNqustlQG3jTkLL44eGD9hLj5ZeHsr0Mamea1O2JoJ4xaT
+	i8w+h55RPf5a2VYyOgVhvQ/5Npyak3kXqnGOiE/yIzzxlThspbG2hVFvDFE9Ys4sHsPIYsEwvZKaA
+	ykn1i02SC9V6HW4Na305hYFFyG49OOaUM30jUMyShVpMkPzeIXpVCbrbR2GT17MNFRkZfyVYQ+To3
+	ucoKz6XR+co5sQarOCNxHarYpbsTTHmwVDb+VDQ0dnifvxqefzQSw5s72oZGuohfqQD5+hSZuE3pO
+	XKIvy9tQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1v3Ufp-00000004TKC-0X1j;
-	Tue, 30 Sep 2025 07:21:21 +0000
-Received: from mxct.zte.com.cn ([183.62.165.209])
+	id 1v3VgC-00000004dA6-3zmk;
+	Tue, 30 Sep 2025 08:25:48 +0000
+Received: from mail-koreacentralazolkn190130003.outbound.protection.outlook.com ([2a01:111:f403:d40f::3] helo=SEYPR02CU001.outbound.protection.outlook.com)
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1v3Ufk-00000004TJb-1DdO;
-	Tue, 30 Sep 2025 07:21:19 +0000
-Received: from mse-fl2.zte.com.cn (unknown [10.5.228.133])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mxct.zte.com.cn (FangMail) with ESMTPS id 4cbTxW60Stz4xNt3;
-	Tue, 30 Sep 2025 15:21:03 +0800 (CST)
-Received: from xaxapp05.zte.com.cn ([10.99.98.109])
-	by mse-fl2.zte.com.cn with SMTP id 58U7Kqll028593;
-	Tue, 30 Sep 2025 15:20:52 +0800 (+08)
-	(envelope-from liu.xuemei1@zte.com.cn)
-Received: from mapi (xaxapp02[null])
-	by mapi (Zmail) with MAPI id mid32;
-	Tue, 30 Sep 2025 15:20:54 +0800 (CST)
-Date: Tue, 30 Sep 2025 15:20:54 +0800 (CST)
-X-Zmail-TransId: 2afa68db84d67a6-a6dcc
-X-Mailer: Zmail v1.0
-Message-ID: <202509301520545960_jMIljfZY7bMHBkBbaHR@zte.com.cn>
-Mime-Version: 1.0
-From: <liu.xuemei1@zte.com.cn>
-To: <anup@brainfault.org>
-Cc: <atish.patra@linux.dev>, <paul.walmsley@sifive.com>, <palmer@dabbelt.com>,
-        <aou@eecs.berkeley.edu>, <alex@ghiti.fr>, <kvm@vger.kernel.org>,
-        <kvm-riscv@lists.infradead.org>, <linux-riscv@lists.infradead.org>,
-        <linux-kernel@vger.kernel.org>
-Subject: =?UTF-8?B?W1BBVENIIHYyXSBSSVNDLVY6IEtWTTogVHJhbnNwYXJlbnQgaHVnZSBwYWdlIHN1cHBvcnQ=?=
-X-MAIL: mse-fl2.zte.com.cn 58U7Kqll028593
-X-TLS: YES
-X-SPF-DOMAIN: zte.com.cn
-X-ENVELOPE-SENDER: liu.xuemei1@zte.com.cn
-X-SPF: None
-X-SOURCE-IP: 10.5.228.133 unknown Tue, 30 Sep 2025 15:21:03 +0800
-X-Fangmail-Anti-Spam-Filtered: true
-X-Fangmail-MID-QID: 68DB84DF.002/4cbTxW60Stz4xNt3
+	id 1v3Vg9-00000004d7m-2jyy;
+	Tue, 30 Sep 2025 08:25:47 +0000
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=s+sGYKLtUHOVxHYhYVNS5o9mJ2YfpzJN7VDfpymhdj8ikssGjDychbbl7njHeXW6dLCy35JzPDDRCxl9dusOkfUmXzxPD38yczgMq/CTDQCDL8qj8BZBBwywN+4rKldyel+C/ds45ryVeVUk4AvSGt3qoUnCnbJFmA8gq6tJfYIpCHfiHkAqDNmqIONBFJWAj4AG4QgQbJE79YJsqS982GsBqwgkHFuXUyWHJOR3oBW2bJQsaMs+j2ChNXyrNZPCHHLI2wBRGAoV+cW9UPiKA6HnTQ0Szoa99gFg9P8EKCmUYfJDXosRdoqrz662LX6nIlVLWo7YcJBc4meiQxakcw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=l9f5BewTscpZDFVos48CwY6vXY4BwieARbVqyrBhWe4=;
+ b=xOJ0f45weMp0CM9F/CWcAWqN72ydsfywQKFDuuC9dNsmTVif6vAMcMYUNYLnSQuhE+Pbv196U7CbW3fovWia7XoY2LPrFuyzrlZsezYme4SkRHVI1ELmO7ALM1ljVPVvO4TXzqPNFUlfiaeaqVebSRkcdvSLzDvqqn53pUYekTaFtNtbRCzu1m3kxBtOePtwgW1OUPJwrR0inbV0BHfk79pt3u4Az5xBo3V0GP8gGMLq9zFoURnxpurppeHKP6nO/D3bG0Cr0DjL7GAqtBxyAPOWbjweFJDg9r4qm8G/6rsQRMK48rK0LDzfR+0H8X8/CQiFNJlhN3ny2HsQsraqzw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
+ dkim=none; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=hotmail.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=l9f5BewTscpZDFVos48CwY6vXY4BwieARbVqyrBhWe4=;
+ b=bZjVaN/VcLzl/hawldoW4Ck24+FJpCjVku0fpZyqUo8GFdzkC3knoWvpk/BroxQnzEqeKWKeAyx5wVb7+HfaxW38UaOe/IGTwf7Ws1vXkdQnG18YA+lIEUgzn6o97+yR96SUiqd1bRHiOCqdaeJIaai6YRi31Z+Fe2dXixPlwwyfyYqoUTqBMo5hrVtjSFr/ZhYS3ttnc4C8ahopK5841guND62WMoCyNPEQuHIzaXsp5xk1SuVk70HCMU9Vqw2IDgZUfXNU9BgAhVH+DwgAeIl4hLLNDbxtg8XAhsig3qr49EelEre1jeA+FZX5p4YI8goRCEbdu2CQpk8qFPwK4Q==
+Received: from TY1PPFCDFFFA68A.apcprd02.prod.outlook.com (2603:1096:408::966)
+ by SEYPR02MB7297.apcprd02.prod.outlook.com (2603:1096:101:1d3::8) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9160.17; Tue, 30 Sep
+ 2025 08:25:28 +0000
+Received: from TY1PPFCDFFFA68A.apcprd02.prod.outlook.com
+ ([fe80::209a:b4cd:540:c5da]) by TY1PPFCDFFFA68A.apcprd02.prod.outlook.com
+ ([fe80::209a:b4cd:540:c5da%6]) with mapi id 15.20.9094.021; Tue, 30 Sep 2025
+ 08:25:28 +0000
+Message-ID: <TY1PPFCDFFFA68AD67F6ABDD2F9F9644526F31AA@TY1PPFCDFFFA68A.apcprd02.prod.outlook.com>
+Date: Tue, 30 Sep 2025 16:25:13 +0800
+User-Agent: Mozilla Thunderbird
+Subject: Re: [RFC PATCH v2 01/18] genirq/msi: Provide DOMAIN_BUS_MSI_REMAP
+To: Andrew Jones <ajones@ventanamicro.com>, iommu@lists.linux.dev,
+ kvm-riscv@lists.infradead.org, kvm@vger.kernel.org,
+ linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org
+Cc: jgg@nvidia.com, zong.li@sifive.com, tjeznach@rivosinc.com,
+ joro@8bytes.org, will@kernel.org, robin.murphy@arm.com, anup@brainfault.org,
+ atish.patra@linux.dev, tglx@linutronix.de, alex.williamson@redhat.com,
+ paul.walmsley@sifive.com, palmer@dabbelt.com, alex@ghiti.fr
+References: <20250920203851.2205115-20-ajones@ventanamicro.com>
+ <20250920203851.2205115-21-ajones@ventanamicro.com>
+Content-Language: en-US
+From: "Nutty.Liu" <nutty.liu@hotmail.com>
+In-Reply-To: <20250920203851.2205115-21-ajones@ventanamicro.com>
+X-ClientProxiedBy: TYWPR01CA0047.jpnprd01.prod.outlook.com
+ (2603:1096:400:17f::12) To TY1PPFCDFFFA68A.apcprd02.prod.outlook.com
+ (2603:1096:408::966)
+X-Microsoft-Original-Message-ID: <b95833c2-a288-4782-be5b-0ae5275d8c38@hotmail.com>
+MIME-Version: 1.0
+X-MS-Exchange-MessageSentRepresentingType: 1
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: TY1PPFCDFFFA68A:EE_|SEYPR02MB7297:EE_
+X-MS-Office365-Filtering-Correlation-Id: feea81ee-0c04-4158-1240-08ddfffae955
+X-Microsoft-Antispam: BCL:0;ARA:14566002|5072599009|461199028|23021999003|6090799003|15080799012|19110799012|8060799015|37102599003|440099028|40105399003|3412199025|19111999003;
+X-Microsoft-Antispam-Message-Info: =?utf-8?B?K3htU3lUSXZxUUZLemNsK1VQMDlVZzJOMmNrZnl3M1ZQQk1wb0lLZWV0SlZx?=
+ =?utf-8?B?MUVKdFQ0Z3NKREpXZVE2YXEzS3VuUzFkRDk3SitNY0NVNUU1NHZLQXF6ejNR?=
+ =?utf-8?B?TkVVaXhEOHJYU0ZzOHQ4aTlpMEJhbjRmQVBlWFJLUEdaR3UvQ29QZCtNRkpH?=
+ =?utf-8?B?MVVpeDZFV0MxZ2tKSDFKUnROdCtRZ1JSblZhaGdaZDhGVXI5SFE1TndOOUdE?=
+ =?utf-8?B?R0djeGRJMTJJM3E4UTRXcVh0akp1NkZJT2N1d0JienNrVFdNcDVMZi9VcEFL?=
+ =?utf-8?B?czgraUhtclF1dlVZejErZ1NDL0lhbFRPK3pvWUE4b3ltNmMvcTBWT3dhV3pB?=
+ =?utf-8?B?L1AvR0hqYzd2Wkk0dDlObmpWQmFIK2duRVFRUi82OVA4RTFIdlM2dmY2WmJ3?=
+ =?utf-8?B?cmh5MTdnSzA1b0x2R1hMcGdxYldmV0h1SUZjcGRoMEMzckt4QTVGOFUvUkNJ?=
+ =?utf-8?B?bUpTbWxmLzFsejRUZVlyN0hWVHkydVdnQkxJd0VNVUlZZ2VZUEZyQnBXVHBi?=
+ =?utf-8?B?WVhWODM3a3Z4cVQ2anR6MnRjSG11ME04TjQxaE92aFlXaGtEMndHZ2l2ZXpX?=
+ =?utf-8?B?UU0rSm5vS3Ywb3J3NVNQL1E0RkNwbEVidCtVQ0RwMTNzck42Q1BrRGEyQjJN?=
+ =?utf-8?B?ZWloY2tKUjNDZVZMS2dJS3VxcVh2Wm1EdG11SHVCU2ZtY0cxOUZqTUxWVW8v?=
+ =?utf-8?B?SHZqbHp1NVdwTTFiNTJmcmxpOGNWOWhrbmorajNrT0VZc1BVQlhEVTU3UTds?=
+ =?utf-8?B?UlQ5MmlycGZ0dnhOLzVvNm51eGVURWMreU10ajhycndqVnZzcDZVcHRnem16?=
+ =?utf-8?B?QmNTaW9CYWFDMkcvTzEybllqL29FNnhSV3F4N3FGbjM5bFRhejV5TmxOTzdG?=
+ =?utf-8?B?bERJTmI2ang1OGNWdkJGRHAxaUlrQnZTT2tPRCt6MFRZVmhiT3o0UHhMZ0J1?=
+ =?utf-8?B?aDBiOE9Ebi9vQ0NDcEFTQVp3QkVFbHpZUFQ4VzRydHAyVmhURDJ0bm1ZKzJz?=
+ =?utf-8?B?Ni9xcEk4b1IvYzhYeS9YUXRqaE5SWXRWMXNzbE5xY3dxdlRIeGR4L3hJR0dj?=
+ =?utf-8?B?Mk1kdmd0S1FwdkN1SzJtOURLUjgzOFVqeGNnVGo0Nmd6MGYzVC9ybUl5STUw?=
+ =?utf-8?B?aWJOMzFZWUM1UXJWWmJZeGx1aHpqdjlyTlBoZGxDb3IrbEZIMnhlbU50OEdV?=
+ =?utf-8?B?N1RHTGlIS2RtOW02Sy9zdHl3ellCajJMcDMzdzVDWXphK3dRZm01NW9pR1VC?=
+ =?utf-8?B?TGkyaEVONFVsTnc4SzM2ajd4MnVsOWZFQ2lkOVZ0bDc0MTlyR1Nhd1dXVlFC?=
+ =?utf-8?B?VW5LbGp5TkZQLzM3NGJ1TTBpb3BHMFNNeHZCNHpQZC84MERManJFTVM4RmNF?=
+ =?utf-8?B?bGJOb21QZ0NCb1Q1ZkhZZzg2VXVBZStid2ZwRjlCTC9zZ29tVVJ5RVl4OUcw?=
+ =?utf-8?B?L084MDVyditOczlPcUVIUi8xeWh1enhFbkxiN1Z0U0hTZDN2UUpDUUdod3JN?=
+ =?utf-8?B?bk5XK2tlVmI3dnJzakJjL1EydmY4WHBKVEZTTzc1NkZJcTl6QXRsYVR1UW5s?=
+ =?utf-8?B?enRyK1dub1FFakVOZnVLOElrY1hzWjFURG9FMmxNVGx5Q0NqZ2lWNjFzU1Zu?=
+ =?utf-8?Q?EijI/PWRzySZTn9A/K4BYg8ytkTdmGjNFVbaNakejdN4=3D?=
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?ZFpEK241d1ZBVFJQUnlKMG42U2IwRC8yN0hFbUNNSHp1dTNDcmJtRW1FeDNq?=
+ =?utf-8?B?b0N3OTNDbjdoMUtENXJaMzkwUXVub2FlbGV2M2VnWVUyZWlVRFdFWHAwQmNr?=
+ =?utf-8?B?OTlxZ0ppS2xRTERWRWRBbmpnazByMkRSWGh5RTdyMEQ0U1p2NzhlN3FncmFW?=
+ =?utf-8?B?RlFva3VNL0RmYnk3UnlOWmVCTUNOSDJuZzdNT1UrK3N6eHhDV2NPV2piZGJ6?=
+ =?utf-8?B?dUJOM3Z1RFFzazFLVEZiQkpBUzVrNmJyZmxqdXd1STl6by9NL2NBbVJ6dUs2?=
+ =?utf-8?B?Z3lGTXVMVlVBTmVzOHdSbU1zV3NSOUNPUWtIdmtkaXQvODVTQU1aSDhYRmY3?=
+ =?utf-8?B?b1hHQlNYMll6TUIvV3d6ZEZXVUdZRkhEbDlkYnlMdDZ3ZEpPeWpaeGVVV1lP?=
+ =?utf-8?B?M09YVUhLV2RucTdMc3Fod1d6L1JpTXBlc0ViMDgwRTdSV1kzUWI2TjA0QzhZ?=
+ =?utf-8?B?MGxEYUIvNkczakZZMEIvTnZxYUp1RmM5WGpyOFZaaSthamo0NGF4TmhiQ05H?=
+ =?utf-8?B?WXAwRjlWYVRuTlV2VDVDRHQrcGo3QXhacHZNMXF0dERxVHExWHRTM3BiNmZB?=
+ =?utf-8?B?WGQ5UGJqTGM0Y1FsS3RzaXdsellQZWhVUE43TllHZklyU0xwMmVGZk9oN1FN?=
+ =?utf-8?B?SlhyMHhoRmdjOUIrZFVRSHpOYWxaZks2VmZFbzhxeHJFeFhuZlhEUHNNSitD?=
+ =?utf-8?B?dEFlOU5Jc2YxQ3orQ1hIbkluUEI4MEFOQldXK2Z3WGdRbEh0RGhzL0lvazVG?=
+ =?utf-8?B?R2EzTlQ1YUFrQkdkblZVRjg3cGhqRENaY0NLK2FaRS90MzdVMmtGMHR6cjVH?=
+ =?utf-8?B?b2hIOXh0UW54YTNYWjNPczNYZVR2ZnBVZmtra0s0Q2s5NGtqUU5sQ1g1L1Mw?=
+ =?utf-8?B?bi9iVXQyamEzWm42SG5TVmw2TnpYR2FTYnFZRGJmYjErMi95ZUVzM1FDdHR0?=
+ =?utf-8?B?dm1xVGsxWXFDOE8ydWowWTR3NThYUSt4eHVHQUw4Qm1ZS1FJdm9rREZsNnJz?=
+ =?utf-8?B?TCtUaCtzU3JzdG9zbHU5M0lLTnNtVWI3NFJyaGhCRlZjU2hjdCtxZWYrL1Qz?=
+ =?utf-8?B?bmdFQ2ZudzY4SG1VUjRaeFIzMEtNWjdpK0w2Z3ltTElpNTVEeS9BRTNKMmtw?=
+ =?utf-8?B?a2FGRndUUnFsOFYyQW5DNFg2NHB2ajhITkFJUkkxLzlxWmFMNWRrMlhFajJZ?=
+ =?utf-8?B?TlZFSHBoT21xUUxQaENxVmMyM0VYZE55aWlvNGhrVE1wUEI0K253SURLYlV6?=
+ =?utf-8?B?RUtZcTJzMXlIM3FyRTBHRmh2SDVnQnBJZTI3WXZib0dXelNHRDNJYUQ0UkZZ?=
+ =?utf-8?B?MEhSeEx6cWVlOHJpd2VOUnJ1R2tLbml3eU5zTVJjUDlBZ3Yxb2R0eEdZRWgx?=
+ =?utf-8?B?a3Uwbk9SVm9raTV2TEtVUFl4Z1I1bU8zZEhEVS9pR3JZUHFGbVBDcWt3bUlW?=
+ =?utf-8?B?QmRkdnk4dE1NWWZyTTJxNTRxNEFpWHNiRnZTSUFFbGhKK3hYUDZlRUpPNGsx?=
+ =?utf-8?B?L0xQQ0pSU0wxZlo1VkxyNWZ4ZHlkNWNubjFZdDhidEJtRnkzaEZST2lZNjBv?=
+ =?utf-8?B?eEtQdk5HaDFQSk5Qc2hLQkVBT3dSQVVHbFJ4aHZrVXBuenVYOTNQVmtBUzQr?=
+ =?utf-8?Q?ich3z2rmg9ob09PZuiRONJCGPO26m0pNoIgSF7uCdr84=3D?=
+X-OriginatorOrg: sct-15-20-9115-0-msonline-outlook-a092a.templateTenant
+X-MS-Exchange-CrossTenant-Network-Message-Id: feea81ee-0c04-4158-1240-08ddfffae955
+X-MS-Exchange-CrossTenant-AuthSource: TY1PPFCDFFFA68A.apcprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 30 Sep 2025 08:25:28.3059
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
+X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SEYPR02MB7297
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250930_002116_638034_A097252F 
-X-CRM114-Status: GOOD (  18.01  )
+X-CRM114-CacheID: sfid-20250930_012545_693561_DE4A9A42 
+X-CRM114-Status: GOOD (  12.73  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -73,181 +156,33 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-From: Jessica Liu <liu.xuemei1@zte.com.cn>
+On 9/21/2025 4:38 AM, Andrew Jones wrote:
+> Provide a domain bus token for the upcoming support for the RISC-V
+> IOMMU interrupt remapping domain, which needs to be distinguished
+> from NEXUS domains. The new token name is generic, as the only
+> information that needs to be conveyed is that the IRQ domain will
+> remap MSIs, i.e. there's nothing RISC-V specific to convey.
+>
+> Since the MSI_REMAP domain implements init_dev_msi_info() with
+> msi_parent_init_dev_msi_info(), which makes 'domain' point to
+> the NEXUS domain, while keeping 'msi_parent_domain' pointing to
+> itself, there's nothing to do in msi-lib to add support except
+> to accept the token.
+>
+> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+> ---
+>   drivers/irqchip/irq-msi-lib.c  | 8 ++++----
+>   include/linux/irqdomain_defs.h | 1 +
+>   2 files changed, 5 insertions(+), 4 deletions(-)
+Reviewed-by: Nutty Liu <nutty.liu@hotmail.com>
 
-Use block mapping if backed by a THP, as implemented in architectures
-like ARM and x86_64.
-
-Signed-off-by: Jessica Liu <liu.xuemei1@zte.com.cn>
----
-Changes in v2:
-- Fixed the typo of writing PAGE_SHIFT as PAGE_SIZE.
-
- arch/riscv/include/asm/kvm_gstage.h |   3 +
- arch/riscv/kvm/gstage.c             | 100 ++++++++++++++++++++++++++++
- arch/riscv/kvm/mmu.c                |  12 +++-
- 3 files changed, 114 insertions(+), 1 deletion(-)
-
-diff --git a/arch/riscv/include/asm/kvm_gstage.h b/arch/riscv/include/asm/kvm_gstage.h
-index 595e2183173e..cc67fb2d2d42 100644
---- a/arch/riscv/include/asm/kvm_gstage.h
-+++ b/arch/riscv/include/asm/kvm_gstage.h
-@@ -69,4 +69,7 @@ void kvm_riscv_gstage_wp_range(struct kvm_gstage *gstage, gpa_t start, gpa_t end
-
- void kvm_riscv_gstage_mode_detect(void);
-
-+long kvm_riscv_gstage_thp_adjust(struct kvm *kvm, struct kvm_memory_slot *memslot,
-+				 unsigned long hva, kvm_pfn_t *pfnp, gpa_t *gpa);
-+
- #endif
-diff --git a/arch/riscv/kvm/gstage.c b/arch/riscv/kvm/gstage.c
-index 24c270d6d0e2..129dee62c570 100644
---- a/arch/riscv/kvm/gstage.c
-+++ b/arch/riscv/kvm/gstage.c
-@@ -77,6 +77,106 @@ static int gstage_level_to_page_size(u32 level, unsigned long *out_pgsize)
- 	return 0;
- }
-
-+static int gstage_get_user_mapping_size(struct kvm *kvm, u64 addr)
-+{
-+	pte_t *ptepp;
-+	u32 ptep_level;
-+	unsigned long out_pgsize;
-+	struct kvm_gstage gstage = {
-+		.pgd = kvm->mm->pgd
-+	};
-+
-+	if (!kvm_riscv_gstage_get_leaf(&gstage, addr, &ptepp, &ptep_level))
-+		return -EFAULT;
-+
-+	if (gstage_level_to_page_size(ptep_level, &out_pgsize))
-+		return -EFAULT;
-+
-+	return out_pgsize;
-+}
-+
-+static bool gstage_supports_huge_mapping(struct kvm_memory_slot *memslot, unsigned long hva)
-+{
-+	gpa_t gpa_start;
-+	hva_t uaddr_start, uaddr_end;
-+	size_t size;
-+
-+	size = memslot->npages * PAGE_SIZE;
-+	uaddr_start = memslot->userspace_addr;
-+	uaddr_end = uaddr_start + size;
-+
-+	gpa_start = memslot->base_gfn << PAGE_SHIFT;
-+
-+	/*
-+	 * Pages belonging to memslots that don't have the same alignment
-+	 * within a PMD for userspace and GPA cannot be mapped with g-stage
-+	 * PMD entries, because we'll end up mapping the wrong pages.
-+	 *
-+	 * Consider a layout like the following:
-+	 *
-+	 *    memslot->userspace_addr:
-+	 *    +-----+--------------------+--------------------+---+
-+	 *    |abcde|fgh  vs-stage block  |    vs-stage block tv|xyz|
-+	 *    +-----+--------------------+--------------------+---+
-+	 *
-+	 *    memslot->base_gfn << PAGE_SHIFT:
-+	 *      +---+--------------------+--------------------+-----+
-+	 *      |abc|def  g-stage block  |    g-stage block   |tvxyz|
-+	 *      +---+--------------------+--------------------+-----+
-+	 *
-+	 * If we create those g-stage blocks, we'll end up with this incorrect
-+	 * mapping:
-+	 *   d -> f
-+	 *   e -> g
-+	 *   f -> h
-+	 */
-+	if ((gpa_start & (PMD_SIZE - 1)) != (uaddr_start & (PMD_SIZE - 1)))
-+		return false;
-+
-+	/*
-+	 * Next, let's make sure we're not trying to map anything not covered
-+	 * by the memslot. This means we have to prohibit block size mappings
-+	 * for the beginning and end of a non-block aligned and non-block sized
-+	 * memory slot (illustrated by the head and tail parts of the
-+	 * userspace view above containing pages 'abcde' and 'xyz',
-+	 * respectively).
-+	 *
-+	 * Note that it doesn't matter if we do the check using the
-+	 * userspace_addr or the base_gfn, as both are equally aligned (per
-+	 * the check above) and equally sized.
-+	 */
-+	return (hva >= ALIGN(uaddr_start, PMD_SIZE)) && (hva < ALIGN_DOWN(uaddr_end, PMD_SIZE));
-+}
-+
-+long kvm_riscv_gstage_thp_adjust(struct kvm *kvm, struct kvm_memory_slot *memslot,
-+				 unsigned long hva, kvm_pfn_t *hfnp, gpa_t *gpa)
-+{
-+	kvm_pfn_t hfn = *hfnp;
-+
-+	/*
-+	 * Make sure the adjustment is done only for THP pages. Also make
-+	 * sure that the HVA and GPA are sufficiently aligned and that the
-+	 * block map is contained within the memslot.
-+	 */
-+	if (gstage_supports_huge_mapping(memslot, hva)) {
-+		int sz = gstage_get_user_mapping_size(kvm, hva);
-+
-+		if (sz < 0)
-+			return sz;
-+
-+		if (sz < PMD_SIZE)
-+			return PAGE_SIZE;
-+
-+		*gpa &= PMD_MASK;
-+		hfn &= ~(PTRS_PER_PMD - 1);
-+		*hfnp = hfn;
-+
-+		return PMD_SIZE;
-+	}
-+
-+	return PAGE_SIZE;
-+}
-+
- bool kvm_riscv_gstage_get_leaf(struct kvm_gstage *gstage, gpa_t addr,
- 			       pte_t **ptepp, u32 *ptep_level)
- {
-diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-index 525fb5a330c0..f70cf721ebb8 100644
---- a/arch/riscv/kvm/mmu.c
-+++ b/arch/riscv/kvm/mmu.c
-@@ -337,7 +337,8 @@ int kvm_riscv_mmu_map(struct kvm_vcpu *vcpu, struct kvm_memory_slot *memslot,
- 	struct kvm_mmu_memory_cache *pcache = &vcpu->arch.mmu_page_cache;
- 	bool logging = (memslot->dirty_bitmap &&
- 			!(memslot->flags & KVM_MEM_READONLY)) ? true : false;
--	unsigned long vma_pagesize, mmu_seq;
-+	unsigned long mmu_seq;
-+	long vma_pagesize;
- 	struct kvm_gstage gstage;
- 	struct page *page;
-
-@@ -416,6 +417,15 @@ int kvm_riscv_mmu_map(struct kvm_vcpu *vcpu, struct kvm_memory_slot *memslot,
- 	if (mmu_invalidate_retry(kvm, mmu_seq))
- 		goto out_unlock;
-
-+	/* check if we are backed by a THP and thus use block mapping if possible */
-+	if (vma_pagesize == PAGE_SIZE) {
-+		vma_pagesize = kvm_riscv_gstage_thp_adjust(kvm, memslot, hva, &hfn, &gpa);
-+		if (vma_pagesize < 0) {
-+			ret = vma_pagesize;
-+			goto out_unlock;
-+		}
-+	}
-+
- 	if (writable) {
- 		mark_page_dirty_in_slot(kvm, memslot, gfn);
- 		ret = kvm_riscv_gstage_map_page(&gstage, pcache, gpa, hfn << PAGE_SHIFT,
--- 
-2.27.0
+Thanks,
+Nutty
 
 -- 
 kvm-riscv mailing list
