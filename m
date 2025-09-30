@@ -4,8 +4,8 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 05A45CAC5B8
-	for <kvm-riscv@archiver.kernel.org>; Tue, 30 Sep 2025 16:37:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 461EFCCA472
+	for <kvm-riscv@archiver.kernel.org>; Tue, 30 Sep 2025 16:37:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
@@ -13,62 +13,62 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	References:Mime-Version:In-Reply-To:Date:Reply-To:Content-ID:
 	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
 	:Resent-Message-ID:List-Owner;
-	bh=Vh4QUQb83StSc/GRJIS7uTs/LM6Rf6Vp1cIkWK5Gars=; b=glm8DFXNnUrH0aycT1tIpDEqKW
-	fVPxOhA8VWhGEBKM7OA16tKlcAFnYmUNCYwQiDB4TZfyrP/W1PI62SddIh5ZDjQDoBOf+p4AAbTo8
-	FvPBC9un9koUIulDSd7y5mHMIBGZnE84fU5MSS/ZduzSYzU2d7JTvi5H9DMzPJJ75cO4zbQ9GxW+B
-	VYDxTal4kOuJxFnJXPiYN7/bM9/Pry3zp2wk8U8cJ0DS3T8F/X24jaioNc4DPHImsfgE8Xs5NgT3J
-	KFZksfkKqxIxugrIqmOAos+YMQisukwOlHiqDaVy7lsUut83qA7FzHcdjDA41fTaFzLo31mXLbc2q
-	pJvwdhnQ==;
+	bh=b2YEha+8OVrknoo1dZLjYe82RCMpTzf6ExFzIihoZvc=; b=NMiiLZiJ/M7eVNO2SdD8hc66Cr
+	ma4Rm/5i1bmhzFUQVTxgkJcOAiJf8z8FpUTRxVAVa88z7sUjHvJSA2wypW/3OotmAu1UbfDTmyzcj
+	0ei44Aw6a4ZufJ18SVKknhtoD+x3oLxgDrNu5YFuZ3jZGg8HvYeh2TjkvTVfbMi1Ma8Hb+eFxoVq6
+	Xpn8a9NXsVqsuL7BmWNnNGoq7MNsduJSR6s9t0zKEMzHDJkuhT3gMB5Ey5Xuxyo68VuCHPo+6M8Gf
+	uTmzuWbFm2j99ltkFtTg43SD5AYAMMjcmOFwU4+/kR4GnqwlWiJ28F8uoEeURnLs6mBJ5o91KF7Cn
+	FxUkT52g==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1v3dLa-00000005moF-2kkr;
-	Tue, 30 Sep 2025 16:37:02 +0000
-Received: from mail-pj1-x104a.google.com ([2607:f8b0:4864:20::104a])
+	id 1v3dLb-00000005mpl-3v8W;
+	Tue, 30 Sep 2025 16:37:03 +0000
+Received: from mail-pf1-x449.google.com ([2607:f8b0:4864:20::449])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1v3dLU-00000005mjl-3xz9
+	id 1v3dLW-00000005mkz-3bTJ
 	for kvm-riscv@lists.infradead.org;
-	Tue, 30 Sep 2025 16:36:59 +0000
-Received: by mail-pj1-x104a.google.com with SMTP id 98e67ed59e1d1-32eb864fe90so8692785a91.3
-        for <kvm-riscv@lists.infradead.org>; Tue, 30 Sep 2025 09:36:55 -0700 (PDT)
+	Tue, 30 Sep 2025 16:37:02 +0000
+Received: by mail-pf1-x449.google.com with SMTP id d2e1a72fcca58-78038ed99d9so8267433b3a.2
+        for <kvm-riscv@lists.infradead.org>; Tue, 30 Sep 2025 09:36:57 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1759250215; x=1759855015; darn=lists.infradead.org;
+        d=google.com; s=20230601; t=1759250217; x=1759855017; darn=lists.infradead.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=i/QRF3FFgseL8D0g15ww2uGbub0UU/EJdFmqDVXw9oU=;
-        b=OumJsWIsq0/GgmWGPFdeuTYYG9X7yKOe/UgvJgIMs7UvIDpC/lyGHOT+UqMhq6M72x
-         pWHY+ThmEiQF+twwYMZNzR0jQZ66UNes2ievut3xWGccY8oWN+BxbR02FRWwDc7v0MXR
-         G16cFW9E4LqLaWtutxFlzwAKFgLAqUeWkPi56cgU6AU+CBY5REjah1arfou+roDR2BkD
-         mWHq9ptYyTqivlcRwYbY1k2nxPGBkbjX+/cRz94iDgUCw+clIONZYO/Mm9AzUQ9YDnU+
-         NDHg5vxTRoQxsGJXodG2SQtxPuUsnoYnYDxQU9dCmGxxnxQWaavc9cOpeKlErHLe958d
-         EBmw==
+        bh=/blTKaVRJ7ExwjOeSNjQIII5Nz+Rh7TdSzJjFSlh4/M=;
+        b=FdS7Ae3nxiQUEG0lIcdIkUEcfYSIOa3YUS7RxHU3O8XsuQ0Htl4dJyVtigb8Z37KJu
+         4JCqWHTrML5C1l8Njh9k065jGmjKYnrvdvyeJ5iUr8wOuK0cthTwOc07st/QSWIwBrxY
+         k2A15potyE1dRYOfZBXqxijXOATc4cZA8yhTFaNvGVGbOBW9Zrug3EVzgYRyjU1w4Mfw
+         SSNsDBTyqVbRpkt/Bjf5A6KAT4d5sfQulXadK6BdwfVpHezg+1CbwRcG4ilmOZLuPqQL
+         +ryPN/XmFpLvUyeIEhY8zC+5vEjgO5x4WC8xJtioZ1q7F3BsnHoH5f1ufeMmi7g2W9bp
+         DdWA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1759250215; x=1759855015;
+        d=1e100.net; s=20230601; t=1759250217; x=1759855017;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=i/QRF3FFgseL8D0g15ww2uGbub0UU/EJdFmqDVXw9oU=;
-        b=rfC40EUm+BN6TN2R6hK5efGDe9GMCJ8qEtpdkn0Ekcs/dIDuVMZOCKCF7Vf5JtFuEw
-         EyHVu3D6/MIj2K+CQD5cPHhF3qm7iQmR0q1d+zWmGj5J2hkGLYykUedRU6U01szjwoJx
-         Hy2zepfXeWjsTg3dZ9DFJTaC/p76p1ZBE2Jf0VQzLir2+dzwtYgzm0kP9bJb0HUA0d89
-         HDNF8Bz0qSAuWHk64LryEsmIb84g1532aBF710ilMFLqY8Z426Y4eCPRBQjxXnCytLOO
-         C37+zMIwYH2Ia4gO0nJnQbqyfp8K36Is65aAXiUAoPgJVbFVgsu0o0Uq6ybNqkxWM1wL
-         oYiw==
-X-Forwarded-Encrypted: i=1; AJvYcCWhkZ1FnuYvfDCLsgni28EuRNRBP3TUG/A623fNEdZRIUIaoK786vHMMETx93OeX6L6J+/4CKDQIDI=@lists.infradead.org
-X-Gm-Message-State: AOJu0YwlsCedBeLF6yNRZc0CJV7QrcY27OGt9Dp+KBo8wgETtPpexfJG
-	+SEEZo1Jn2MKrNdzGyfYw6tR2zeix8PjV2rA+6DzafX4zF/nhxZk20gsGy1K2iTgBoKd/fYhpPt
-	+rzu93gkUrg==
-X-Google-Smtp-Source: AGHT+IEdeV+S3AOsumfo+VA7YBUiHc/nL5ezOQx5Foo8J1Cq3HgpIz3y8FReXq936G/8G4+cCaSjSkfD+N8w
-X-Received: from pjbpg12.prod.google.com ([2002:a17:90b:1e0c:b0:32b:50cb:b92f])
- (user=vipinsh job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:1c83:b0:338:3221:9dc0
- with SMTP id 98e67ed59e1d1-339a6f69812mr102527a91.37.1759250215269; Tue, 30
- Sep 2025 09:36:55 -0700 (PDT)
-Date: Tue, 30 Sep 2025 09:36:30 -0700
+        bh=/blTKaVRJ7ExwjOeSNjQIII5Nz+Rh7TdSzJjFSlh4/M=;
+        b=MH/GNtc14vFikptCQU3Kb+6oQboTWXuxn7ZT+XpDU0U71mJU+vNGrxHOfMap7+UobK
+         +G1b7khuR9LAcmOFGuRjvHhOokBveXPakSKMKDk9xt7VPqVK4i3znap39mlGqn8hWz+W
+         dIEDTEfD2bT0kPusnjUuWqdoT0MmnIz5N3O69UmoC/znNue3MEPe84h4VkVPWf07Gf04
+         hkTtgSNTZn+Ymf9BPRWvZxVJzUVcFp/INvEpoOJFSy1OYjHE8Y0lWIFUNDkSUADr4cOg
+         4NWObmIhEepvWGsDwSTRFg4IS/ldSeVE+B3Yn8uEL3xvh/kGG2vCuTQgxXuX5TQo7rho
+         nlzA==
+X-Forwarded-Encrypted: i=1; AJvYcCWK5ifDrmNJQKAu7FFBs3mliOS7FUQZEdXuTuYEGLZuJQLRETfivboc+z+6K5zHyxbq/G2wWBAUjGY=@lists.infradead.org
+X-Gm-Message-State: AOJu0YwFdT5BQpGLCH+ormIEzYb+MMeD3onbSbkzNJWRUgHEGgPQwdlv
+	PwOx4W71afTYj3SudC7TlkiEtZ/ra5InV9ro562egnrBAPE3ps+n9jxSOi9mZnuSIsNSlsYKKqx
+	Z76jW/XHc5Q==
+X-Google-Smtp-Source: AGHT+IE7rnnLhXFO5s/R1gQ25mkbUuQhQ07CGMf/RRIqGNDBQAmFMCZUe6cqXMyhDeruvPI5USo/PgLLbGsF
+X-Received: from pgdf22.prod.google.com ([2002:a05:6a02:5156:b0:b58:d933:1281])
+ (user=vipinsh job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a21:1813:b0:301:daeb:589f
+ with SMTP id adf61e73a8af0-321cf13ac4bmr518324637.8.1759250216877; Tue, 30
+ Sep 2025 09:36:56 -0700 (PDT)
+Date: Tue, 30 Sep 2025 09:36:31 -0700
 In-Reply-To: <20250930163635.4035866-1-vipinsh@google.com>
 Mime-Version: 1.0
 References: <20250930163635.4035866-1-vipinsh@google.com>
 X-Mailer: git-send-email 2.51.0.618.g983fd99d29-goog
-Message-ID: <20250930163635.4035866-5-vipinsh@google.com>
-Subject: [PATCH v3 4/9] KVM: selftests: Add option to save selftest runner
- output to a directory
+Message-ID: <20250930163635.4035866-6-vipinsh@google.com>
+Subject: [PATCH v3 5/9] KVM: selftests: Run tests concurrently in KVM
+ selftests runner
 From: Vipin Sharma <vipinsh@google.com>
 To: kvm@vger.kernel.org, kvmarm@lists.linux.dev, kvm-riscv@lists.infradead.org
 Cc: seanjc@google.com, pbonzini@redhat.com, borntraeger@linux.ibm.com, 
@@ -77,8 +77,8 @@ Cc: seanjc@google.com, pbonzini@redhat.com, borntraeger@linux.ibm.com,
 	chenhuacai@kernel.org, maz@kernel.org, oliver.upton@linux.dev, 
 	ajones@ventanamicro.com, Vipin Sharma <vipinsh@google.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250930_093658_156064_1503E723 
-X-CRM114-Status: GOOD (  13.35  )
+X-CRM114-CacheID: sfid-20250930_093658_930499_4859FC46 
+X-CRM114-Status: GOOD (  11.98  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -95,202 +95,91 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Add a command line flag, -o/--output, to selftest runner which enables
-it to save individual tests output (stdout & stderr) stream to a
-directory in a hierarchical way. Create folder hierarchy same as tests
-hieararcy given by --testcases and --dirs.
-
-Also, add a command line flag, --append-output-time, which will append
-timestamp (format YYYY.M.DD.HH.MM.SS) to the directory name given in
---output flag.
+Add a command line argument, --jobs, to specify how many tests can
+execute concurrently. Set default to 1.
 
 Example:
-  python3 runner --dirs test -o test_result --append_output_time
-
-This will create test_result.2025.06.06.08.45.57 directory.
+  python3 runner --test-dirs tests -j 10
 
 Signed-off-by: Vipin Sharma <vipinsh@google.com>
 ---
- .../testing/selftests/kvm/runner/__main__.py  | 34 +++++++++++++--
- .../testing/selftests/kvm/runner/selftest.py  | 42 ++++++++++++++++---
- .../selftests/kvm/runner/test_runner.py       |  4 +-
- 3 files changed, 69 insertions(+), 11 deletions(-)
+ .../testing/selftests/kvm/runner/__main__.py  |  6 ++++
+ .../selftests/kvm/runner/test_runner.py       | 28 +++++++++++++------
+ 2 files changed, 26 insertions(+), 8 deletions(-)
 
 diff --git a/tools/testing/selftests/kvm/runner/__main__.py b/tools/testing/selftests/kvm/runner/__main__.py
-index 5cedc5098a54..b27a41e86271 100644
+index b27a41e86271..b98f72c9f7ee 100644
 --- a/tools/testing/selftests/kvm/runner/__main__.py
 +++ b/tools/testing/selftests/kvm/runner/__main__.py
-@@ -7,6 +7,8 @@ import argparse
- import logging
- import os
- import sys
-+import datetime
-+import pathlib
+@@ -54,6 +54,12 @@ def cli():
+                         default=False,
+                         help="Appends timestamp to the output directory.")
  
- from test_runner import TestRunner
- from selftest import SelftestStatus
-@@ -42,10 +44,20 @@ def cli():
-                         type=int,
-                         help="Timeout, in seconds, before runner kills the running test. (Default: 120 seconds)")
- 
-+    parser.add_argument("-o",
-+                        "--output",
-+                        nargs='?',
-+                        help="Dumps test runner output which includes each test execution result, their stdouts and stderrs hierarchically in the given directory.")
-+
-+    parser.add_argument("--append-output-time",
-+                        action="store_true",
-+                        default=False,
-+                        help="Appends timestamp to the output directory.")
++    parser.add_argument("-j",
++                        "--jobs",
++                        default=1,
++                        type=int,
++                        help="Maximum number of tests that can be run concurrently. (Default: 1)")
 +
      return parser.parse_args()
  
  
--def setup_logging():
-+def setup_logging(args):
-     class TerminalColorFormatter(logging.Formatter):
-         reset = "\033[0m"
-         red_bold = "\033[31;1m"
-@@ -72,12 +84,26 @@ def setup_logging():
-     logger = logging.getLogger("runner")
-     logger.setLevel(logging.INFO)
- 
-+    formatter_args = {
-+        "fmt": "%(asctime)s | %(message)s",
-+        "datefmt": "%H:%M:%S"
-+    }
-+
-     ch = logging.StreamHandler()
--    ch_formatter = TerminalColorFormatter(fmt="%(asctime)s | %(message)s",
--                                          datefmt="%H:%M:%S")
-+    ch_formatter = TerminalColorFormatter(**formatter_args)
-     ch.setFormatter(ch_formatter)
-     logger.addHandler(ch)
- 
-+    if args.output != None:
-+        if (args.append_output_time):
-+            args.output += datetime.datetime.now().strftime(".%Y.%m.%d.%H.%M.%S")
-+        pathlib.Path(args.output).mkdir(parents=True, exist_ok=True)
-+        logging_file = os.path.join(args.output, "log")
-+        fh = logging.FileHandler(logging_file)
-+        fh_formatter = logging.Formatter(**formatter_args)
-+        fh.setFormatter(fh_formatter)
-+        logger.addHandler(fh)
-+
- 
- def fetch_testcases_in_dirs(dirs):
-     testcases = []
-@@ -98,7 +124,7 @@ def fetch_testcases(args):
- 
- def main():
-     args = cli()
--    setup_logging()
-+    setup_logging(args)
-     testcases = fetch_testcases(args)
-     return TestRunner(testcases, args).start()
- 
-diff --git a/tools/testing/selftests/kvm/runner/selftest.py b/tools/testing/selftests/kvm/runner/selftest.py
-index 4783785ca230..1aedeaeb5e74 100644
---- a/tools/testing/selftests/kvm/runner/selftest.py
-+++ b/tools/testing/selftests/kvm/runner/selftest.py
-@@ -7,6 +7,7 @@ import pathlib
- import enum
- import os
- import subprocess
-+import contextlib
- 
- class SelftestStatus(enum.IntEnum):
-     """
-@@ -29,7 +30,7 @@ class Selftest:
-     Extract the test execution command from test file and executes it.
-     """
- 
--    def __init__(self, test_path, path, timeout):
-+    def __init__(self, test_path, path, timeout, output_dir):
-         test_command = pathlib.Path(test_path).read_text().strip()
-         if not test_command:
-             raise ValueError("Empty test command in " + test_path)
-@@ -39,15 +40,14 @@ class Selftest:
-         self.test_path = test_path
-         self.command = test_command
-         self.timeout = timeout
-+        if output_dir is not None:
-+            output_dir = os.path.join(output_dir, test_path.lstrip("./"))
-+        self.output_dir = output_dir
-         self.status = SelftestStatus.NO_RUN
-         self.stdout = ""
-         self.stderr = ""
- 
--    def run(self):
--        if not self.exists:
--            self.stderr = "File doesn't exists."
--            return
--
-+    def _run(self, output=None, error=None):
-         run_args = {
-             "universal_newlines": True,
-             "shell": True,
-@@ -59,7 +59,12 @@ class Selftest:
-         try:
-             proc = subprocess.run(self.command, **run_args)
-             self.stdout = proc.stdout
-+            if output is not None:
-+                output.write(proc.stdout)
-+
-             self.stderr = proc.stderr
-+            if error is not None:
-+                error.write(proc.stderr)
- 
-             if proc.returncode == 0:
-                 self.status = SelftestStatus.PASSED
-@@ -71,5 +76,30 @@ class Selftest:
-             self.status = SelftestStatus.TIMED_OUT
-             if e.stdout is not None:
-                 self.stdout = e.stdout
-+                if output is not None:
-+                    output.write(e.stdout)
-             if e.stderr is not None:
-                 self.stderr = e.stderr
-+                if error is not None:
-+                    error.write(e.stderr)
-+
-+    def run(self):
-+        if not self.exists:
-+            self.stderr = "File doesn't exists."
-+            return
-+
-+        if self.output_dir is not None:
-+            pathlib.Path(self.output_dir).mkdir(parents=True, exist_ok=True)
-+
-+        output = None
-+        error = None
-+        with contextlib.ExitStack() as stack:
-+            if self.output_dir is not None:
-+                output_path = os.path.join(self.output_dir, "stdout")
-+                output = stack.enter_context(
-+                    open(output_path, encoding="utf-8", mode="w"))
-+
-+                error_path = os.path.join(self.output_dir, "stderr")
-+                error = stack.enter_context(
-+                    open(error_path, encoding="utf-8", mode="w"))
-+            return self._run(output, error)
 diff --git a/tools/testing/selftests/kvm/runner/test_runner.py b/tools/testing/selftests/kvm/runner/test_runner.py
-index bea82c6239cd..b9101f0e0432 100644
+index b9101f0e0432..92eec18fe5c6 100644
 --- a/tools/testing/selftests/kvm/runner/test_runner.py
 +++ b/tools/testing/selftests/kvm/runner/test_runner.py
-@@ -13,9 +13,11 @@ logger = logging.getLogger("runner")
- class TestRunner:
+@@ -4,6 +4,8 @@
+ # Author: vipinsh@google.com (Vipin Sharma)
+ 
+ import logging
++import concurrent.futures
++
+ from selftest import Selftest
+ from selftest import SelftestStatus
+ 
+@@ -14,11 +16,16 @@ class TestRunner:
      def __init__(self, testcases, args):
          self.tests = []
-+        self.output_dir = args.output
+         self.output_dir = args.output
++        self.jobs = args.jobs
  
          for testcase in testcases:
--            self.tests.append(Selftest(testcase, args.path, args.timeout))
-+            self.tests.append(Selftest(testcase, args.path, args.timeout,
-+                                       args.output))
+             self.tests.append(Selftest(testcase, args.path, args.timeout,
+                                        args.output))
  
++    def _run_test(self, test):
++        test.run()
++        return test
++
      def _log_result(self, test_result):
          logger.info("*** stdout ***\n" + test_result.stdout)
+         logger.info("*** stderr ***\n" + test_result.stderr)
+@@ -28,12 +35,17 @@ class TestRunner:
+     def start(self):
+         ret = 0
+ 
+-        for test in self.tests:
+-            test.run()
+-            self._log_result(test)
+-
+-            if (test.status not in [SelftestStatus.PASSED,
+-                                    SelftestStatus.NO_RUN,
+-                                    SelftestStatus.SKIPPED]):
+-                ret = 1
++        with concurrent.futures.ProcessPoolExecutor(max_workers=self.jobs) as executor:
++            all_futures = []
++            for test in self.tests:
++                future = executor.submit(self._run_test, test)
++                all_futures.append(future)
++
++            for future in concurrent.futures.as_completed(all_futures):
++                test_result = future.result()
++                self._log_result(test_result)
++                if (test_result.status not in [SelftestStatus.PASSED,
++                                               SelftestStatus.NO_RUN,
++                                               SelftestStatus.SKIPPED]):
++                    ret = 1
+         return ret
 -- 
 2.51.0.618.g983fd99d29-goog
 
