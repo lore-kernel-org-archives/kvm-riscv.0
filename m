@@ -4,8 +4,8 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 520BFCCA476
-	for <kvm-riscv@archiver.kernel.org>; Tue, 30 Sep 2025 16:37:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CC2CECCA470
+	for <kvm-riscv@archiver.kernel.org>; Tue, 30 Sep 2025 16:37:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
@@ -13,62 +13,62 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	References:Mime-Version:In-Reply-To:Date:Reply-To:Content-ID:
 	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
 	:Resent-Message-ID:List-Owner;
-	bh=4vAr5XgL1A+XSb+jDdYD0LnPge6oLDhLBt8Yly140rY=; b=vicInf+p4w85PJBmShOMXWekH9
-	/xyZumxanmP8WthYzUAppQrFItebQNfgGY9rwkH1vbsKDDZLfBkj8OZmUFeTbw+yU2h5f/Ak0A4Qo
-	wmoJv4srhYzsSzo9dLB1dPWhxJUm2zXoDVcxASUIW5FFo7V/24JVR64RuD4IlEnekkXf45A1gS5oE
-	vV3bE6yB/3C7DNPeaIogDm+3WRQlvz2yIkZLR+wEEiTCNX/DMGmDaHLHS9e7hmZwZJ5kkLQBjxWs8
-	/JbsrflSPXNfLCA825HVtv+vRk9yd85tWnxVklkkh2Ty1YgV/qPlSUhH6uxfGBYtzLetR/FqVv1ZS
-	Mpx7z02Q==;
+	bh=SNXDwdeyrnEVaEjxzmQHx+AqAmM63AmG7SchQuYHquE=; b=35tB2aA7X3qDCMBmmXjX4HtSL9
+	sxxmgElcrYB+kMyLvOHT9ilzQxH3D8Y4JrSSTiaIqUm+NSszeQthb7DvmiV4Xuj/4EjdMM9Nvk6Zt
+	Wfjry0q0fHpb+5D6hbzQ6IcIYjtpbJ0tg2njTlyCskOjdfsZlOdjwwn/HWH+U1Qno+tq8gNTwmn1D
+	TwV/LZJWg/COkUlmimGuJSe0fe90QvQ2LmG3t8Qgfh8+NBR7592rtFsAhpjjaTOnPL8dN/1VOotLh
+	2S2OG7C9XRi0HXZkTne3IoDVId9Xs0tl0mBBgFuhNxovpxeapYDgbf46E3itcJUXvlVxS4luqYg1u
+	PjxNrYrA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1v3dLc-00000005mrh-3mmb;
+	id 1v3dLc-00000005mrD-2Eew;
 	Tue, 30 Sep 2025 16:37:04 +0000
-Received: from mail-pf1-x449.google.com ([2607:f8b0:4864:20::449])
+Received: from mail-pg1-x549.google.com ([2607:f8b0:4864:20::549])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1v3dLX-00000005mmG-2Wvq
+	id 1v3dLZ-00000005mms-3hB1
 	for kvm-riscv@lists.infradead.org;
 	Tue, 30 Sep 2025 16:37:03 +0000
-Received: by mail-pf1-x449.google.com with SMTP id d2e1a72fcca58-78038ed99d9so8267460b3a.2
-        for <kvm-riscv@lists.infradead.org>; Tue, 30 Sep 2025 09:36:59 -0700 (PDT)
+Received: by mail-pg1-x549.google.com with SMTP id 41be03b00d2f7-b59682541d5so6136115a12.0
+        for <kvm-riscv@lists.infradead.org>; Tue, 30 Sep 2025 09:37:01 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1759250219; x=1759855019; darn=lists.infradead.org;
+        d=google.com; s=20230601; t=1759250220; x=1759855020; darn=lists.infradead.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=0GTsqnY4+saNzCy5mGyriIvmSp6eaE/vqi0JjCPWBoU=;
-        b=C3NIYL7R9Q2sNi3wVB9r5bdQKyosIVv2wxBf4osHFkddRDg/TTZlOC6Mumw/3xNmE6
-         TehK2S1H1llJojSIpXQ9nMVqfc7IeG2+Ydp/0X2j8enFGT2GywdA9lvN6XsxZsyLMObb
-         hMoz0CYNavmvPFIbg1Pjy8hIg8AYR4ilqiHvL1DitJjR+py82Cj434ZmWhdTSBeGslb8
-         zeQRTVy/QQpuXng7tsaZzjp2ValZdLgmPMrN/xKxicyHPZF83tLoJZEle7ebpkjMwT1D
-         D1jFdOMSPQHCxRsJYZyHAmsRJlgYMOAiUsw0oX8k+K+PYb38uO5xUWn+1Iz2F6+cPecW
-         LS3w==
+        bh=OUg12Od11PLsJD4awVDsfJr7RcaROxBR6pzVFyNdKj8=;
+        b=BvZLA2UnBxgxrQT7pUj6Y5ERZP9AskVY5l6ktHQQ3sE4z2iHhP9XW3/DgA2wWMJ0Z4
+         J3UuZ06Pt7KoueeewKVhJp0hRW8EGAZwg1fUgu6a8E9L4HWgLqIg19Ifr4SX9BSSDXbT
+         xts16Jmcy5g956BhTyRpP7is6zraP351hPupwxfrluTkYZ8BrhvX/GJMSwAeb8alwb7J
+         AmxmGfg/zTtjzw2fU7ptHnyLIdcX+JSveNZrkXPJzCuMQ8Wge3bFbnm8LPhVAWn69eVz
+         GvC5UXKvOW6jlInyLjlb17lk2vrjdqF04AGaRAJEytQr2L5UjyHWix3AtbgR4upWOAsR
+         hsyw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1759250219; x=1759855019;
+        d=1e100.net; s=20230601; t=1759250220; x=1759855020;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=0GTsqnY4+saNzCy5mGyriIvmSp6eaE/vqi0JjCPWBoU=;
-        b=DzNjOSS9rGPCe15d5NjbJDrR5kciPS2pVzQCqAQQfOLgwsXZVxvY2DRdAuCvvKvBu2
-         Jw8I/wfUlJQpV6g9IhX+dGhj83XHniampaAeASeFmuAdJLsuVSIat3jXh6eU02F6IcGX
-         Ha6FTFo9+6dmd8tCi1BPO25cT0DccKlEklNYYXIMffWU656ZiYGE7LQMlASBTD4vWNLZ
-         oM3w9Z/gmb66tP3edNMUhljt8RE/UpqpKPBKxwP1zK3N+LvOraBciF7k0ytlDMY82IZ+
-         EGglXR/M8uu8257Vl7oj1/HWFzowf/7bpnUtQR9w04d4IZd/iTu2hBvK7QVNNLWXbNcm
-         keeQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVIRCbljT17uF0nnsp6e2ZYg86gLFwN1RtrLdiz4zSZQsnMIjjImgic0yql24TxK0BoRre7spo2Wyo=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yz75qEtZlRDuDQzz/Ht7YK4ttXM0aHkI3sJ2rnJgVutv+F/chdH
-	NAQgs52Mjl4oAtpw/CvSckn/J5WaoS+b6Y+SGaqQeTTkGevRYPS11L64azKRu9+oeJteVl6VjID
-	eESWH2UsdgA==
-X-Google-Smtp-Source: AGHT+IGhAsgZwOMvoWdZcUEtVVfFvQe5AhCplay9erkcPQTqVQZCmBY4Dt3zYWPsYtiBB7sDVDiH7IVgr5gK
-X-Received: from pfoh11.prod.google.com ([2002:aa7:86cb:0:b0:77f:138f:8b8f])
- (user=vipinsh job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a00:3cc4:b0:77b:5b58:34f7
- with SMTP id d2e1a72fcca58-78af4143e2amr69675b3a.9.1759250218647; Tue, 30 Sep
- 2025 09:36:58 -0700 (PDT)
-Date: Tue, 30 Sep 2025 09:36:32 -0700
+        bh=OUg12Od11PLsJD4awVDsfJr7RcaROxBR6pzVFyNdKj8=;
+        b=LdRYXzxqPafAsxMDuKhvYP8pWQJvCi2RQA1dGuVeLrGbDNJYxLt5ExnrXbNyoiu4Qu
+         +Z0mcxgGUNVBJocf+gtPzfzdZ3nu6hXNGLWa4paKgzV8pBmBhasPD7q5eMkWMJrO7SMq
+         sDu7mOSbu0sy70sDfcouUyvhZPiBzvxVldZGBNBgDfdjSFdm0U+HRo2CG47dQqVUFk+J
+         Ey5lUzpASE4KCxNavdkrrQ9TAtIPkhX4Yzr+7l2gGOur9K8POkvkHY0ijo1YUNgyu/lA
+         H7vSOneJ/QNwm095mq38fss4sTBxmmHobfAjYAwDTybvlgvNalyhQRkcXZrwNWn5daEA
+         xmVg==
+X-Forwarded-Encrypted: i=1; AJvYcCUe2Y1WGhe6FA/7f+8JBtnS7mfQJ2DmtMJrDU7ovESM5qQV9mk9qOaA+B4hDyoJ+fPC8KH/A6CnsLo=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yz98Ys02C1bRzQGVqNihQuBhX++hTY3nKahDc3bvcupnWp5R83x
+	p+AHnVwv8TmUM1491u0uVAXm32zefIaz4Qs6DLbp3GBQz+nCrHtLSzCu1Nl9BoWSbDcx4Bk5Abt
+	mxVhMDJ2yow==
+X-Google-Smtp-Source: AGHT+IFs+CMWNOODVu6P+nzztd0EOiTd83LgNk/a5bScJBUGMhwZj+o12u3ClbHwdU+ZCLfO3OKClHjbbXZN
+X-Received: from pjbcm23.prod.google.com ([2002:a17:90a:fa17:b0:32e:ddac:6ea5])
+ (user=vipinsh job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:4b08:b0:329:e9da:35e9
+ with SMTP id 98e67ed59e1d1-339a6e8ff19mr118159a91.2.1759250220455; Tue, 30
+ Sep 2025 09:37:00 -0700 (PDT)
+Date: Tue, 30 Sep 2025 09:36:33 -0700
 In-Reply-To: <20250930163635.4035866-1-vipinsh@google.com>
 Mime-Version: 1.0
 References: <20250930163635.4035866-1-vipinsh@google.com>
 X-Mailer: git-send-email 2.51.0.618.g983fd99d29-goog
-Message-ID: <20250930163635.4035866-7-vipinsh@google.com>
-Subject: [PATCH v3 6/9] KVM: selftests: Add various print flags to KVM
- selftest runner
+Message-ID: <20250930163635.4035866-8-vipinsh@google.com>
+Subject: [PATCH v3 7/9] KVM: selftests: Print sticky KVM selftests runner
+ status at bottom
 From: Vipin Sharma <vipinsh@google.com>
 To: kvm@vger.kernel.org, kvmarm@lists.linux.dev, kvm-riscv@lists.infradead.org
 Cc: seanjc@google.com, pbonzini@redhat.com, borntraeger@linux.ibm.com, 
@@ -77,8 +77,9 @@ Cc: seanjc@google.com, pbonzini@redhat.com, borntraeger@linux.ibm.com,
 	chenhuacai@kernel.org, maz@kernel.org, oliver.upton@linux.dev, 
 	ajones@ventanamicro.com, Vipin Sharma <vipinsh@google.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250930_093701_705422_CDD0637D 
-X-CRM114-Status: GOOD (  10.92  )
+X-CRM114-CacheID: sfid-20250930_093702_007561_C1C689A2 
+X-CRM114-Status: UNSURE (   9.74  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -95,128 +96,79 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Add various print flags to selectively print outputs on terminal based
-on test execution status (passed, failed, timed out, skipped, no run).
+Print current state of the KVM selftest runner during its execution.
+Show it as the bottom most line, make it sticky and colored. Provide
+the following information:
+- Total number of tests selected for run.
+- How many have executed.
+- Total for each end state.
 
-For each status provide further options (off, full, stderr, stdout,
-status) to choose verbosity of their prints. Make "full" the default
-choice.
+Example:
 
-Example: To print stderr for the failed tests and only status for the
-passed test:
-
-   python3 runner --test-dirs tests  --print-failed stderr \
-   --print-passed status
-
-Above command with disable print off skipped, timed out, and no run
-tests.
+Total: 3/3 Passed: 1 Failed: 1 Skipped: 0 Timed Out: 0 No Run: 1
 
 Signed-off-by: Vipin Sharma <vipinsh@google.com>
 ---
- .../testing/selftests/kvm/runner/__main__.py  | 45 +++++++++++++++++++
- .../selftests/kvm/runner/test_runner.py       | 19 ++++++--
- 2 files changed, 60 insertions(+), 4 deletions(-)
+ .../testing/selftests/kvm/runner/test_runner.py | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
 
-diff --git a/tools/testing/selftests/kvm/runner/__main__.py b/tools/testing/selftests/kvm/runner/__main__.py
-index b98f72c9f7ee..4867e89c30f2 100644
---- a/tools/testing/selftests/kvm/runner/__main__.py
-+++ b/tools/testing/selftests/kvm/runner/__main__.py
-@@ -9,6 +9,7 @@ import os
- import sys
- import datetime
- import pathlib
-+import textwrap
- 
- from test_runner import TestRunner
- from selftest import SelftestStatus
-@@ -60,6 +61,50 @@ def cli():
-                         type=int,
-                         help="Maximum number of tests that can be run concurrently. (Default: 1)")
- 
-+    status_choices = ["off", "full", "stdout", "stderr", "status"]
-+    status_help_text = textwrap.dedent('''\
-+                        Control output of the {} test.
-+                        off   : dont print anything.
-+                        full  : print stdout, stderr, and status of the test.
-+                        stdout: print stdout and status of the test.
-+                        stderr: print stderr and status of the test.
-+                        status: only print the status of test execution and no other output.''');
-+
-+    parser.add_argument("--print-passed",
-+                        default="full",
-+                        const="full",
-+                        nargs='?',
-+                        choices=status_choices,
-+                        help = status_help_text.format("passed"))
-+
-+    parser.add_argument("--print-failed",
-+                        default="full",
-+                        const="full",
-+                        nargs='?',
-+                        choices=status_choices,
-+                        help = status_help_text.format("failed"))
-+
-+    parser.add_argument("--print-skipped",
-+                        default="full",
-+                        const="full",
-+                        nargs='?',
-+                        choices=status_choices,
-+                        help = status_help_text.format("skipped"))
-+
-+    parser.add_argument("--print-timed-out",
-+                        default="full",
-+                        const="full",
-+                        nargs='?',
-+                        choices=status_choices,
-+                        help = status_help_text.format("timed-out"))
-+
-+    parser.add_argument("--print-no-run",
-+                        default="full",
-+                        const="full",
-+                        nargs='?',
-+                        choices=status_choices,
-+                        help = status_help_text.format("no-run"))
-+
-     return parser.parse_args()
- 
- 
 diff --git a/tools/testing/selftests/kvm/runner/test_runner.py b/tools/testing/selftests/kvm/runner/test_runner.py
-index 92eec18fe5c6..e8e8fd91c1ad 100644
+index e8e8fd91c1ad..42274e695b76 100644
 --- a/tools/testing/selftests/kvm/runner/test_runner.py
 +++ b/tools/testing/selftests/kvm/runner/test_runner.py
-@@ -17,6 +17,13 @@ class TestRunner:
+@@ -15,6 +15,7 @@ logger = logging.getLogger("runner")
+ class TestRunner:
+     def __init__(self, testcases, args):
          self.tests = []
++        self.status = {x: 0 for x in SelftestStatus}
          self.output_dir = args.output
          self.jobs = args.jobs
-+        self.print_stds = {
-+            SelftestStatus.PASSED: args.print_passed,
-+            SelftestStatus.FAILED: args.print_failed,
-+            SelftestStatus.SKIPPED: args.print_skipped,
-+            SelftestStatus.TIMED_OUT: args.print_timed_out,
-+            SelftestStatus.NO_RUN: args.print_no_run
-+        }
- 
-         for testcase in testcases:
-             self.tests.append(Selftest(testcase, args.path, args.timeout,
-@@ -27,10 +34,14 @@ class TestRunner:
+         self.print_stds = {
+@@ -33,9 +34,18 @@ class TestRunner:
+         test.run()
          return test
  
-     def _log_result(self, test_result):
--        logger.info("*** stdout ***\n" + test_result.stdout)
--        logger.info("*** stderr ***\n" + test_result.stderr)
--        logger.log(test_result.status,
--                   f"[{test_result.status.name}] {test_result.test_path}")
-+        print_level = self.print_stds.get(test_result.status, "full")
++    def _sticky_update(self):
++        print(f"\r\033[1mTotal: {self.tests_ran}/{len(self.tests)}" \
++                f"\033[32;1m Passed: {self.status[SelftestStatus.PASSED]}" \
++                f"\033[31;1m Failed: {self.status[SelftestStatus.FAILED]}" \
++                f"\033[33;1m Skipped: {self.status[SelftestStatus.SKIPPED]}"\
++                f"\033[91;1m Timed Out: {self.status[SelftestStatus.TIMED_OUT]}"\
++                f"\033[34;1m No Run: {self.status[SelftestStatus.NO_RUN]}\033[0m", end="\r")
 +
-+        if (print_level == "full" or print_level == "stdout"):
-+            logger.info("*** stdout ***\n" + test_result.stdout)
-+        if (print_level == "full" or print_level == "stderr"):
-+            logger.info("*** stderr ***\n" + test_result.stderr)
-+        if (print_level != "off"):
-+            logger.log(test_result.status, f"[{test_result.status.name}] {test_result.test_path}")
+     def _log_result(self, test_result):
+         print_level = self.print_stds.get(test_result.status, "full")
  
++        print("\033[2K", end="\r")
+         if (print_level == "full" or print_level == "stdout"):
+             logger.info("*** stdout ***\n" + test_result.stdout)
+         if (print_level == "full" or print_level == "stderr"):
+@@ -43,8 +53,13 @@ class TestRunner:
+         if (print_level != "off"):
+             logger.log(test_result.status, f"[{test_result.status.name}] {test_result.test_path}")
+ 
++        self.status[test_result.status] += 1
++        # Sticky bottom line
++        self._sticky_update()
++
      def start(self):
          ret = 0
++        self.tests_ran = 0
+ 
+         with concurrent.futures.ProcessPoolExecutor(max_workers=self.jobs) as executor:
+             all_futures = []
+@@ -54,9 +69,11 @@ class TestRunner:
+ 
+             for future in concurrent.futures.as_completed(all_futures):
+                 test_result = future.result()
++                self.tests_ran += 1
+                 self._log_result(test_result)
+                 if (test_result.status not in [SelftestStatus.PASSED,
+                                                SelftestStatus.NO_RUN,
+                                                SelftestStatus.SKIPPED]):
+                     ret = 1
++        print("\n")
+         return ret
 -- 
 2.51.0.618.g983fd99d29-goog
 
