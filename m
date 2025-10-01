@@ -4,90 +4,81 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 42662CAC5B8
-	for <kvm-riscv@archiver.kernel.org>; Tue, 30 Sep 2025 22:23:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 868E7CAC5BB
+	for <kvm-riscv@archiver.kernel.org>; Wed,  1 Oct 2025 08:44:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Subject:Cc:To:From:Message-ID:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=PLM/+gdAWewTb2hIigDtw+pRcMsPF4Kp1VYzTl3Ye3s=; b=HZzTJetRfeI5jc
-	okD8phvsWxnW6Rixre1cZ9BSWhqbr96HQ/9JId1drxIJiEP8lLlXjfwySRplzL+NIDZEyk+7yn0I1
-	RjapRFH4vYDr2Iqn8tWLLTYZDeS0cZyo0v7QhKdS/t6p6BY4lMNjBl4HNgNCl75+KtgtLgsNSkPEV
-	cHMeIAsmBZ2BJaVohj+0SWfGHfW48f+2VRUZFdzabVUUx0pX1jMAUrxzwbeTKz74o/vh3NzGAOQCt
-	KKOteMhoYfKvRe5ofYh8xADkIVw/2nZBArQFrfylPQaRRzW7RPrXk+AjilB5JutU3/kVN1qh3hvsO
-	3NcX5B0FEzGjgDMMj42g==;
+	List-Owner; bh=LSckRMHpiZ6fJuXGavxFDho3eLfiV+VeK4kVP4Zfm1g=; b=E3MonsdJ0G2bRJ
+	9+zXcsoSYxyiC0dtzzfFMHVc9ETbNrS1n/YcSjAeny6Mbt93ZIOhxbw5bNUbdewRCaGma5IGShCXL
+	v6ctfAhv5F9K03HM77erpAxL7SkkIG1svoyIImwGI5GHSvaraOL5EsLPgRLHIDEk8CwiQAEE8jH4e
+	EEmyGdvb2vvf++7gEaP/jnkQLlPe7GhkaNLbL3t5+V/rxCdGLmqo+tRyaWsvJHOJ6XNxXin6wflWh
+	CF//nvRtBIm5SDkPY1qJ7llMX3iP+snq8tBmkfNHUnJMBEnUQL2vE2l7v5wJ6GaNEu7h9zldJ1vqB
+	9pwqvlmKDRxnmR5Nk3cg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1v3ilJ-00000006JOa-3gUd;
-	Tue, 30 Sep 2025 22:23:57 +0000
-Received: from mail-pl1-x62e.google.com ([2607:f8b0:4864:20::62e])
+	id 1v3sRn-000000073oI-3Lrn;
+	Wed, 01 Oct 2025 08:44:27 +0000
+Received: from tor.source.kernel.org ([2600:3c04:e001:324:0:1991:8:25])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1v3ilH-00000006JOC-1LdJ
+	id 1v3sRm-000000073o6-37Ms
 	for kvm-riscv@lists.infradead.org;
-	Tue, 30 Sep 2025 22:23:56 +0000
-Received: by mail-pl1-x62e.google.com with SMTP id d9443c01a7336-2681645b7b6so23825ad.1
-        for <kvm-riscv@lists.infradead.org>; Tue, 30 Sep 2025 15:23:54 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1759271034; x=1759875834; darn=lists.infradead.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=OovWlEA9+Pzbq4UuSlKiI00VjEkZNQJKGvfeEXc2tY4=;
-        b=4x9HBM/7cIZtHwvithwhDQmODlrNU7/NZPaDoW1dZgmoBO8EdCyNYQ4njhK+r0oLcA
-         ApzRmLKVxoN/eox8uhVItqjoXBFdX3lmEYMFgPEDIkjcu7eFT4f/zmCtoTISzz06iY2R
-         8pTLVPugSGttxyFOeo/3u5MO1xmPNhznJJX1PABPZvJT8an4rgdfv+7szdyWse5evSiF
-         lTW9K9StkAF/Grq64/adUq+5IXdAH0pwY7C/PRURK0KcK765aK1haBqJJlrG37gZNoes
-         wCds9HQ0D+Cie5tH3A2yammbAyXLn8cCgRhYpbKAqNTl2nX/RQFwH95ssq1Ce7DLxSXm
-         T0sw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1759271034; x=1759875834;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=OovWlEA9+Pzbq4UuSlKiI00VjEkZNQJKGvfeEXc2tY4=;
-        b=ENRnPnQgbfYPC4Ummw1huymYV+lwfhm/YNLFBjynEZptQKDoz1lWfA8jzmhoIdl/Hx
-         mlSogRzAKdgR0gMhrjHizdJV6HoFc9/JznM8IKaLnQfPiuxRVC5CvHeFQ6g7swcoJuL/
-         ORLAuO1lrjyrvIbbbLugtIlPl61BQMsrZ9hBFUWsiES7tqM1PzNHtDVn8XPgwHvYgkLL
-         aq1OU4W5LHaYMWpeqFQgFs+wPQgIAXBcxRg/5gALMuLwBu6VSkKanUR/FmbH9hUMeASI
-         RwHsV/KS7o1K1EPnyj0mcLgfXRBsSOfABqVVz3phLJWd2DP9QlFGY3d3T5HWBrloQtmD
-         asGA==
-X-Forwarded-Encrypted: i=1; AJvYcCX8MZ3PTVmpXa3OGsd+rD9I/vp38RWXqf0zPH9SXLa4uz8Ji+4y44nGkbG7YvGNsvyfHa8H4rdPOOI=@lists.infradead.org
-X-Gm-Message-State: AOJu0YwpMhYc3/Z6RSuq4+DHaz6xb+9lprR48AOd3TEnwJxVzFFHGwbe
-	hXnlXEiAYD098g1ErXqBAXTPiaXGmmdeNXbZ3ViSbNZ3NQPKxmvKmks8l+WmTDHP6A==
-X-Gm-Gg: ASbGnctqY3ZUMFXEInI3RyN6btOrwoIfFdwbADAYFXzAt4vUhxgAMIHCddoTWvXNkZN
-	oPMxNxixKfWwfwZxW7stLe6Ql9JqHhffMGTG4XRNAAxJnizLKOBpQXl0ALctbPFaHE0YBYprOZ2
-	k0EBgHa/ahVpyhx2rODsWTZiCCRXRed/I2NwN7fePFexKRov9O+smYn0kaccpK8BkIneZVNa85F
-	D1f+iGvjV1OGVHwaaGQ6KlgMytRK3M5ZxZiKiozY7uRy4IAfCi92R7wbZSH4Zbcbdim/lYGtre9
-	Rf815emIEielO4pebeEPKKnmhXysBq06uCjqu/BTHPFILPrEO1v41CEieAbthL7KPfLFeqIyREL
-	il8Frrdcpyrb7sQ8buERFgWce82xqSBRV2PdqmV0QXmrQEqWPxd2YXmgwldQaUtxa8CG4Cnc43V
-	MYmEudXeZqXDpaSU65K+cz4A==
-X-Google-Smtp-Source: AGHT+IG7yXqqtZNgHXq2ux/pq6R5lOByc3Up0+c+fpGZ9ajcwT8arb5aAkRLhIVwYDowJVib6njbyQ==
-X-Received: by 2002:a17:903:1b67:b0:274:506d:7fea with SMTP id d9443c01a7336-28e8127b0c3mr707745ad.5.1759271033336;
-        Tue, 30 Sep 2025 15:23:53 -0700 (PDT)
-Received: from google.com (60.89.247.35.bc.googleusercontent.com. [35.247.89.60])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-27ed6ab67a9sm167075335ad.131.2025.09.30.15.23.52
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 30 Sep 2025 15:23:52 -0700 (PDT)
-Date: Tue, 30 Sep 2025 15:23:48 -0700
-From: Vipin Sharma <vipinsh@google.com>
-To: seanjc@google.com
-Cc: pbonzini@redhat.com, borntraeger@linux.ibm.com, frankja@linux.ibm.com,
-	imbrenda@linux.ibm.com, anup@brainfault.org, atish.patra@linux.dev,
-	zhaotianrui@loongson.cn, maobibo@loongson.cn, chenhuacai@kernel.org,
-	maz@kernel.org, oliver.upton@linux.dev, ajones@ventanamicro.com,
-	kvm@vger.kernel.org, kvmarm@lists.linux.dev,
-	kvm-riscv@lists.infradead.org
-Subject: Re: [PATCH v3 1/9] KVM: selftest: Create KVM selftest runner
-Message-ID: <20250930222348.GA16152.vipinsh@google.com>
+	Wed, 01 Oct 2025 08:44:26 +0000
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id C8E5A6058A;
+	Wed,  1 Oct 2025 08:44:25 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 71C1AC4CEF4;
+	Wed,  1 Oct 2025 08:44:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1759308265;
+	bh=OITbHtBiKQulBfkyYae+4T6+4pYA0XrXm6IhiHjoxnw=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=Plqo/NgC3CS3b/cef7CYFgq3oEFShqUTYQrA7AQxkoGnGvb2uG1WVNI7AgBiSt58V
+	 LjpMQ6S+4rxbvcEMeHFmv8Teg1jsTGO82+31mRAhfpoBxhFc5BOqSuIUobj+goVLr9
+	 YAkJalMWxd7ck/Ncyh0thM049zf/w5iOSRdY8rIbNpUqjTmK5K3IMeAkr3tceEOd7U
+	 KcenwMIdFMgXAPrf9UbWTwg11GjzpYwGFwF2OH+09WyUrCZX7KqmQnN+6VOHW1JktR
+	 BcSuEYIx9znSuONefevTRqPPjAYhf2H/ExldrlIuC+sqq/J+QjT64z37AkiP8RU8Xn
+	 IMbpdXklAQp9Q==
+Received: from sofa.misterjones.org ([185.219.108.64] helo=goblin-girl.misterjones.org)
+	by disco-boy.misterjones.org with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.98.2)
+	(envelope-from <maz@kernel.org>)
+	id 1v3sRj-0000000AkPc-0VsO;
+	Wed, 01 Oct 2025 08:44:23 +0000
+Date: Wed, 01 Oct 2025 09:44:22 +0100
+Message-ID: <86qzvnypsp.wl-maz@kernel.org>
+From: Marc Zyngier <maz@kernel.org>
+To: Vipin Sharma <vipinsh@google.com>
+Cc: kvm@vger.kernel.org,
+	kvmarm@lists.linux.dev,
+	kvm-riscv@lists.infradead.org,
+	seanjc@google.com,
+	pbonzini@redhat.com,
+	borntraeger@linux.ibm.com,
+	frankja@linux.ibm.com,
+	imbrenda@linux.ibm.com,
+	anup@brainfault.org,
+	atish.patra@linux.dev,
+	zhaotianrui@loongson.cn,
+	maobibo@loongson.cn,
+	chenhuacai@kernel.org,
+	oliver.upton@linux.dev,
+	ajones@ventanamicro.com
+Subject: Re: [PATCH v3 9/9] KVM: selftests: Provide README.rst for KVM selftests runner
+In-Reply-To: <20250930163635.4035866-10-vipinsh@google.com>
 References: <20250930163635.4035866-1-vipinsh@google.com>
- <20250930163635.4035866-2-vipinsh@google.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <20250930163635.4035866-2-vipinsh@google.com>
-X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250930_152355_360879_C569E501 
-X-CRM114-Status: GOOD (  11.43  )
+	<20250930163635.4035866-10-vipinsh@google.com>
+User-Agent: Wanderlust/2.15.9 (Almost Unreal) SEMI-EPG/1.14.7 (Harue)
+ FLIM-LB/1.14.9 (=?UTF-8?B?R29qxY0=?=) APEL-LB/10.8 EasyPG/1.0.0 Emacs/30.1
+ (aarch64-unknown-linux-gnu) MULE/6.0 (HANACHIRUSATO)
+MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
+X-SA-Exim-Connect-IP: 185.219.108.64
+X-SA-Exim-Rcpt-To: vipinsh@google.com, kvm@vger.kernel.org, kvmarm@lists.linux.dev, kvm-riscv@lists.infradead.org, seanjc@google.com, pbonzini@redhat.com, borntraeger@linux.ibm.com, frankja@linux.ibm.com, imbrenda@linux.ibm.com, anup@brainfault.org, atish.patra@linux.dev, zhaotianrui@loongson.cn, maobibo@loongson.cn, chenhuacai@kernel.org, oliver.upton@linux.dev, ajones@ventanamicro.com
+X-SA-Exim-Mail-From: maz@kernel.org
+X-SA-Exim-Scanned: No (on disco-boy.misterjones.org); SAEximRunCond expanded to false
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -104,41 +95,90 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On 2025-09-30 09:36:27, Vipin Sharma wrote:
-> diff --git a/tools/testing/selftests/kvm/runner/__main__.py b/tools/testing/selftests/kvm/runner/__main__.py
+On Tue, 30 Sep 2025 17:36:35 +0100,
+Vipin Sharma <vipinsh@google.com> wrote:
+> 
+> Add README.rst for KVM selftest runner and explain how to use the
+> runner.
+> 
+> Signed-off-by: Vipin Sharma <vipinsh@google.com>
+> ---
+>  tools/testing/selftests/kvm/.gitignore        |  1 +
+>  tools/testing/selftests/kvm/runner/README.rst | 54 +++++++++++++++++++
+>  2 files changed, 55 insertions(+)
+>  create mode 100644 tools/testing/selftests/kvm/runner/README.rst
+> 
+> diff --git a/tools/testing/selftests/kvm/.gitignore b/tools/testing/selftests/kvm/.gitignore
+> index 548d435bde2f..83aa2fe01bac 100644
+> --- a/tools/testing/selftests/kvm/.gitignore
+> +++ b/tools/testing/selftests/kvm/.gitignore
+> @@ -4,6 +4,7 @@
+>  !*.c
+>  !*.h
+>  !*.py
+> +!*.rst
+>  !*.S
+>  !*.sh
+>  !*.test
+> diff --git a/tools/testing/selftests/kvm/runner/README.rst b/tools/testing/selftests/kvm/runner/README.rst
 > new file mode 100644
-> index 000000000000..8d1a78450e41
+> index 000000000000..83b071c0a0e6
 > --- /dev/null
-> +++ b/tools/testing/selftests/kvm/runner/__main__.py
-> +def main():
-> +    args = cli()
-> +    setup_logging()
-> +    testcases = fetch_testcases(args)
-> +    return TestRunner(testcases).start()
+> +++ b/tools/testing/selftests/kvm/runner/README.rst
+> @@ -0,0 +1,54 @@
+> +KVM Selftest Runner
+> +===================
 > +
+> +KVM selftest runner is highly configurable test executor that allows to run
+> +tests with different configurations (not just the default), parallely, save
+
+s/parallely/in parallel/
+
+> +output to disk hierarchically, control what gets printed on console, provide
+> +execution status.
 > +
-> +if __name__ == "__main__":
-> +    sys.exit(main())
+> +To generate default tests use::
+> +
+> +  # make tests_install
+> +
+> +This will create ``testcases_default_gen`` directory which will have testcases
 
-Sean, as discussed offline, following diff adds a minimum python version
-check. Runner can run on python 3.6, it might go lower but I haven't checked.
-Linux kernel minimum requirement for python is 3.9
-(Documentation/process/changes.rst)
+I don't think using the future tense is correct here. I'd rather see
+something written in the present tense, possibly imperative. For
+example:
 
-diff --git a/tools/testing/selftests/kvm/runner/__main__.py b/tools/testing/selftests/kvm/runner/__main__.py
-index 8d1a78450e41..db87f426331d 100644
---- a/tools/testing/selftests/kvm/runner/__main__.py
-+++ b/tools/testing/selftests/kvm/runner/__main__.py
-@@ -91,4 +91,9 @@ def main():
+"Create 'blah' directory containing 'foo' files, one per test-case.
 
+> +in `default.test` files. Each KVM selftest will have a directory in  which
+> +`default.test` file will be created with executable path relative to KVM
+> +selftest root directory i.e. `/tools/testing/selftests/kvm`.
 
- if __name__ == "__main__":
-+    PYTHON_VERSION = (3, 6)
-+    if sys.version_info < PYTHON_VERSION:
-+        print(f"Minimum required python version {PYTHON_VERSION}, found {sys.version}")
-+        sys.exit(1)
-+
-     sys.exit(main())
+Shouldn't this honor the existing build output directives? If it
+actually does, then you want to call this out.
+
+> For example, the
+> +`dirty_log_perf_test` will have::
+> +
+> +  # cat testcase_default_gen/dirty_log_perf_test/default.test
+> +  dirty_log_perf_test
+> +
+> +Runner will execute `dirty_log_perf_test`. Testcases files can also provide
+> +extra arguments to the test::
+> +
+> +  # cat tests/dirty_log_perf_test/2slot_5vcpu_10iter.test
+> +  dirty_log_perf_test -x 2 -v 5 -i 10
+> +
+> +In this case runner will execute the `dirty_log_perf_test` with the options.
+> +
+
+The beginning of the text talks about "non-default' configurations,
+but you only seem to talk about the default stuff. How does one deals
+with a non-default config?
+
+	M.
+
+-- 
+Without deviation from the norm, progress is not possible.
 
 -- 
 kvm-riscv mailing list
