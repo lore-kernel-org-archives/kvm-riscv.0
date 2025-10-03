@@ -4,81 +4,178 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88A29CAC5B0
-	for <kvm-riscv@archiver.kernel.org>; Fri,  3 Oct 2025 01:02:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37142CCA470
+	for <kvm-riscv@archiver.kernel.org>; Fri,  3 Oct 2025 05:04:24 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID:
-	References:Mime-Version:In-Reply-To:Date:Reply-To:Content-ID:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:In-Reply-To:From:
+	References:Cc:To:Subject:Date:Message-ID:Reply-To:Content-ID:
 	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
 	:Resent-Message-ID:List-Owner;
-	bh=G939tbtanBJaCnIZ5YF9+bFCpw/HfZlnbQFuWh7Tfzw=; b=XRDWNs/v4RUKDCoK+hPBDsDnye
-	IwNiTAFGiKjQK8gISU3DB04ftM7Jf9TC89ukyHl5N0ET/9JaQzPf++fjZAVQ1+FWZoS21oBOCCliH
-	feKPQyqjoS7vQZs0djdIKq8sMb5oh5qS0YoXWTwBYTRVMi+vB3rjVOaRhLuSRY1pnxBzZjlrgsiW0
-	h/D/6TFhXPyk795dmd1GbuDBBGQM+A/VDZ/Z3j1NoDFQVHgL87s/lbu8iu6RWmXk+4E72koEgS32Y
-	dUG6jJ0L2HkhnhPWxsH4gWo9LdGqSfdoM4+zwkhofvceVVIUFvUBzIg5YYFuJQ7hs1d4k6eYPdO1n
-	7CDl3v3A==;
+	bh=s+22fziJrZSFTr+Od5N0C8FnbNNdV/lbw9VsUA9D6RY=; b=EvakeJgFDTv6dnHG6Zpuf1Gyft
+	rDnVQ6DQHvd2p0ob+r/Q9wrzMVKi4kdU88UD5duhuV+YwC5Sl1G/AU+LhCOhy6FPUXdewRe/X91DP
+	xQPsMaUTwh7xKHUl8kzEfY1wt8zr4YV9PgEwkoY5/GZYTpAYxNCMWX/LnADVfpBST1cOwUtkZmRLv
+	wWyZOqF9mtUHyywoV+lsxDuMFZjIfolfLbWZVtRMOsgMHS9AayUtu31BX4w9llxnaBPYuNWAFIBE9
+	P1HbG9jZACR3JSVYZ9XgbDvRnQQ9uPEFg+Yw1qR22xWCIA618uLBTPR9y25SBO38htO0wYaHYl1I4
+	gRMoy84A==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1v4UBY-0000000BToc-2mE9;
-	Fri, 03 Oct 2025 01:02:12 +0000
-Received: from mail-pj1-x1049.google.com ([2607:f8b0:4864:20::1049])
+	id 1v4Xxv-0000000BgFm-24o1;
+	Fri, 03 Oct 2025 05:04:23 +0000
+Received: from mail-southcentralusazlp170110003.outbound.protection.outlook.com ([2a01:111:f403:c10d::3] helo=SN4PR0501CU005.outbound.protection.outlook.com)
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1v4UBW-0000000BToE-2q8c
-	for kvm-riscv@lists.infradead.org;
-	Fri, 03 Oct 2025 01:02:11 +0000
-Received: by mail-pj1-x1049.google.com with SMTP id 98e67ed59e1d1-33428befc5bso1819800a91.0
-        for <kvm-riscv@lists.infradead.org>; Thu, 02 Oct 2025 18:02:09 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1759453329; x=1760058129; darn=lists.infradead.org;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=8Jhsi/hyS7a38NhT2Hqz3OM4Bzlch84UkK/Xe3cm3J0=;
-        b=am0O1bemSJB77CPntZpJc89nJOk02JTSmmXFYlaJ1N92AflQQD5nzwnMByIXPUQ1GG
-         k/3W6AZZYtB3WVTbhRwnXkatgU/vAqmyqfIRjZjMe8togXpIumQVd3aZt2LFEP+TSNDy
-         GapzrcwnjWf5awbNb1TdlUzHk9dWhgPwU5ENnp3rfOSe8fRS1Gao2WYv5u87iGBJIZtz
-         GbmnAqnIVuRW0KOdmhB7Ushj9DFjZ1zJ5iBxJdSuyXkh32G7t0Q4sSe1EophfAIOHz3+
-         U1rBzO1bwmJE7I/DpRmLIHvAk65LdNI3A+xKMQhm8anw49JpFgY/+pFr+k0lnHz02wQ0
-         iWcg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1759453329; x=1760058129;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=8Jhsi/hyS7a38NhT2Hqz3OM4Bzlch84UkK/Xe3cm3J0=;
-        b=NpYQspK2PULFlWKbaXTGe34RrmC+dhBWvzDlEVqcVPD+aX/tdkjIXVPS8zdL6y4UrC
-         vF0Z6g1ZP3ftPhCFlld+F+X3yxtHh6bvmvQ3ROI05eSvE6sUDF3Sm7tqCdi9/WFJl5aN
-         S6a5p3rMQZZ9MgU6MSp+jJfq4u6hc0NKj2zSqjQeP9Tb3WY8vEXPCjjS9n6VhIiU8AVa
-         pTjcfgLM0AZuZjdfQZXDz31HZ/30f9I0xix6wrdqIlL0W7jqaeorAalSveQOkWUk+2sr
-         gYeCA2diiLszSz/DS3BNHpcrVy4b0dgDEbHpPfcFW9bo3nQ+0h8GcYDmQtL+9ZcH14H3
-         efiw==
-X-Forwarded-Encrypted: i=1; AJvYcCWNe7YikzpeFglh9CuAa5chXzfoy/c3sbDALCbdLVI3cfH9HMUy4+2+ZEF8BldCt+UObkFltTji1d0=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yz2M7XKCv/outEasawYf+1QuD9W52XWtWDz80o5a+D8sBhHex8h
-	g8oKkW1ywh/4+Qzd8g7YU06pwNHjpnp47q+vzIVGF5Q9n5lO4piwkj6U4OnHRQE4ewDX/xf5oCI
-	Nk/oihw==
-X-Google-Smtp-Source: AGHT+IFwurIZ5wEQactgz/Wb47f7lyl+S//nCwqNIeLCXTOqPn/FvG0AeALewYCWSg5yph5QxPM5itarytY=
-X-Received: from pjpo10.prod.google.com ([2002:a17:90a:9f8a:b0:32e:a3c3:df27])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:4a91:b0:32e:c6b6:956b
- with SMTP id 98e67ed59e1d1-339c2765e06mr1319063a91.4.1759453329295; Thu, 02
- Oct 2025 18:02:09 -0700 (PDT)
-Date: Thu, 2 Oct 2025 18:02:08 -0700
-In-Reply-To: <86a529z7qh.wl-maz@kernel.org>
-Mime-Version: 1.0
-References: <20250930163635.4035866-1-vipinsh@google.com> <20250930163635.4035866-10-vipinsh@google.com>
- <86qzvnypsp.wl-maz@kernel.org> <20251001173225.GA420255.vipinsh@google.com> <86a529z7qh.wl-maz@kernel.org>
-Message-ID: <aN8gkEMHuvIVPcCt@google.com>
-Subject: Re: [PATCH v3 9/9] KVM: selftests: Provide README.rst for KVM
- selftests runner
-From: Sean Christopherson <seanjc@google.com>
-To: Marc Zyngier <maz@kernel.org>
-Cc: Vipin Sharma <vipinsh@google.com>, kvm@vger.kernel.org, kvmarm@lists.linux.dev, 
-	kvm-riscv@lists.infradead.org, pbonzini@redhat.com, borntraeger@linux.ibm.com, 
-	frankja@linux.ibm.com, imbrenda@linux.ibm.com, anup@brainfault.org, 
-	atish.patra@linux.dev, zhaotianrui@loongson.cn, maobibo@loongson.cn, 
-	chenhuacai@kernel.org, oliver.upton@linux.dev, ajones@ventanamicro.com
+	id 1v4Xxs-0000000BgE7-1cYf;
+	Fri, 03 Oct 2025 05:04:22 +0000
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=ZmnvLqQJoPH6PjcpyXkHZzqsEBFfrHe0BVPWwEdgYEmlJK9XGZYTSmbWQbBPGCCQoF1HS5HYqm9soumGUOWXMAvXTkVVzlXWDcdY4BC3XX/bPFUtWo9Sgr4Mh8XAHkKZRIGmD+fYLdc32PkCowglJtoHO4cR+3bPrD88V5Qm8wIBcL0l25XRR10vTm9XWYKNHNfBfVZfFPD90aQXmJZoB9MnINMGMWAo/GjmknUYDqu0s/2qxhIKjKhkGSPc27lHxjIBUoc2GzcNEyb5KxNGvk5KxM1qIfyM3Tv2oq0vHiHdFcgRCdVdiuaTpbeIHmeXPHFV09BCzdKPA0fEn+cclw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=iplH5jn4C0klpNNVCzIs9dMDCkQEOLLe2i1eeO4XarY=;
+ b=vdgbh3Gp9yFbWD4rJGqZpviupTcgFHFRHQo4y7XG4awCqVb9kfzHOtnBeyCHaJJA0to4xsuTCbnJ5LewkSOf1Y9twNdo//1y35GMhUNhlfAzoyRAXLZr2g4OBZa/3O6NT0EL4GSFrb+oIX/aH3tk3bT8Fr2HyF7IefJqW1IV6p7SlqPR653Q+VixvtNoUfkNPCljQPay+PR5b03Jv1J06WwY74D2qaICVIqblj0pjoslvJ1KpU5thdsKoM6N3Z641/gunYqspyJtagDAtMgddPdmq5z5KAc/CnIzV/9/+Krug9XrED2YKnLBRlLWmz8hLasDjZGzZ/+cTUrNWjNJEg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
+ header.d=amd.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=iplH5jn4C0klpNNVCzIs9dMDCkQEOLLe2i1eeO4XarY=;
+ b=dNwffRs5+LA+dIMsnCJDDcCNynYbNF5HU90An3uQvFIAeVfRPPlm67Ff9SERr26VTJBXtlKzDGSxjS1PT6wbnaWuza7FuvqC3mh+cET+TOzcbYdioq0yyNBSdlpc7Bg8TFuqm9rp03wbMQucHiINJN1289+fff5Tr52Swcv8v3Q=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=amd.com;
+Received: from PH7PR12MB5712.namprd12.prod.outlook.com (2603:10b6:510:1e3::13)
+ by LV2PR12MB5989.namprd12.prod.outlook.com (2603:10b6:408:171::20) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9160.18; Fri, 3 Oct
+ 2025 05:04:05 +0000
+Received: from PH7PR12MB5712.namprd12.prod.outlook.com
+ ([fe80::2efc:dc9f:3ba8:3291]) by PH7PR12MB5712.namprd12.prod.outlook.com
+ ([fe80::2efc:dc9f:3ba8:3291%6]) with mapi id 15.20.9160.017; Fri, 3 Oct 2025
+ 05:04:04 +0000
+Message-ID: <bd144177-94e6-49b2-8c9e-b5edbaa42aeb@amd.com>
+Date: Fri, 3 Oct 2025 10:33:43 +0530
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v5 32/44] KVM: x86/pmu: Disable interception of select PMU
+ MSRs for mediated vPMUs
+To: Sean Christopherson <seanjc@google.com>
+Cc: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>,
+ Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>,
+ Huacai Chen <chenhuacai@kernel.org>, Anup Patel <anup@brainfault.org>,
+ Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt
+ <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
+ Xin Li <xin@zytor.com>, "H. Peter Anvin" <hpa@zytor.com>,
+ Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+ Ingo Molnar <mingo@redhat.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Namhyung Kim <namhyung@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>,
+ linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev,
+ kvm@vger.kernel.org, loongarch@lists.linux.dev,
+ kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org,
+ Kan Liang <kan.liang@linux.intel.com>, Yongwei Ma <yongwei.ma@intel.com>,
+ Mingwei Zhang <mizhang@google.com>,
+ Xiong Zhang <xiong.y.zhang@linux.intel.com>,
+ Sandipan Das <sandipan.das@amd.com>, Dapeng Mi <dapeng1.mi@linux.intel.com>
+References: <20250806195706.1650976-1-seanjc@google.com>
+ <20250806195706.1650976-33-seanjc@google.com>
+ <f896966e-8925-4b4f-8f0d-f1ae8aa197f7@amd.com> <aN1vfykNs8Dmv_g0@google.com>
+Content-Language: en-US
+From: Sandipan Das <sandidas@amd.com>
+In-Reply-To: <aN1vfykNs8Dmv_g0@google.com>
+X-ClientProxiedBy: MA0PR01CA0091.INDPRD01.PROD.OUTLOOK.COM
+ (2603:1096:a01:ae::14) To PH7PR12MB5712.namprd12.prod.outlook.com
+ (2603:10b6:510:1e3::13)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: PH7PR12MB5712:EE_|LV2PR12MB5989:EE_
+X-MS-Office365-Filtering-Correlation-Id: 65c033f2-89d6-4143-610e-08de023a4632
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|366016|1800799024|376014|7416014;
+X-Microsoft-Antispam-Message-Info: =?utf-8?B?bVp2UEQ3UkRVNk5VKzZWZUtrK1l5OXFVVUMraCtOSUZOdisxQ0pQZXo0bUlt?=
+ =?utf-8?B?YXE0aytESTloZkhkTm5HRHByTk5JYUZEaEpWQWNuRzBlNThqWWYraUNpOU45?=
+ =?utf-8?B?K0Q1alNJR2FLSGlCeklHV25TZld0bmI0Yk1mMnVRWCtCclJiWGNCK0dqUjRM?=
+ =?utf-8?B?NGFtenNKZS9WZjUwdVNMeDcrWHVhbm5yd3JkdHFveGRmVWZFTzl4UkVtUy9v?=
+ =?utf-8?B?dWxtQXd2QVFpWklXQWNFM0xYWXRIM0RsLzlhT2U4cVBGNHBYb1dDYXVLN1ZS?=
+ =?utf-8?B?SDJlU2t6NTBWZy9VYU1HTWZZdlorQUxiWjdMakthZnNXUmVVQUx3R1pXYUJv?=
+ =?utf-8?B?Wk9maW02VGgyNzZoSGtTa0h3aU5YSDdZdStRQk42c0VOUkRjR3NyVGdTQ0JD?=
+ =?utf-8?B?Y3JZNGI5a2hIYytqSjVpYnhJa1RiSGx1WG0yTm9mRFhzbytmaFdNZ1BaWU4w?=
+ =?utf-8?B?YTZGRWxBbW05S0prWGVCL2lzdjBURkw3K0JpVG5WRjkzdWlSLzkzVmFGK0hI?=
+ =?utf-8?B?U256VEI4eSthOXRuQmFucFpoZU9BWWdzMUM1RVBpQUFDdjBoOFdMcG1ybEp4?=
+ =?utf-8?B?WC9IQ3BZMzI2WlFSTUtPQjBuUUhSaDR5TVM5TEVrNGtVZGR5R3FDNGZvNWZl?=
+ =?utf-8?B?ZDZoaStXQ0xSWExwMXZWeFhGaGxvSXVzUnZNRmRGL21XWG0zcXNjS2U5THFv?=
+ =?utf-8?B?UmdsS2szcEhNRVJoWjU3SU5UWFVyUGdEcmYxdkUwUE5hVDZ2SWNzVFhIY0xk?=
+ =?utf-8?B?QjRRMVE3cE43aU5QcXduZ3BIbVBtbzl2SWhkQVh6VU9JSUxsSWlDd1RrOGIv?=
+ =?utf-8?B?Vm9uMGE2T2h2eXQvNUVjQWF2SmhlZEhaUEZpNlMvUDlQWXRVeVkvWkhqUHhh?=
+ =?utf-8?B?QXNvSjJvTCthSVc1THUvZUtlbVJQdGxxdWxiUzVVVjBHKzhaNk41dGhrNGpN?=
+ =?utf-8?B?MHRtemhKV2hwTUE3R0gyaDhhU20wcldFTmNDZWZDTzg3Q28yZ2Y0bUhMaDVx?=
+ =?utf-8?B?RTN6Q3gvaGsxMXBMMnhvQ1UxdDN3SFI1VlQyWUFYbGZWeWwzTWZYOTZldnBP?=
+ =?utf-8?B?cFZzWU1pQlJRbWhlcUVTZ1liZDNTTHVzWE5iZUo4MkJKc1p2d0FsMlNWR21v?=
+ =?utf-8?B?QTJVcHp4WkZzaU10MTI5cTFVd3d6cmk0WTdRVGcyQTNSRkhpUmNxdW5Qb2Ux?=
+ =?utf-8?B?THdsdTYwa0UzYkpHWHpSbzl2c0p1UGtXN1dTVjdSQ3lnWE1CNHVJVnE5aU1a?=
+ =?utf-8?B?NkU4SVRhRHZMTFlybkgwcWRyRlVGbW1LaEU1S2VITHhyajZoUUhsS0R6UU5s?=
+ =?utf-8?B?VHhaRElybWJhQWdTL0tGSUEwQkNyaEpqNk1Hb3RKUGxtVFNhWi9UUUg5L2gy?=
+ =?utf-8?B?TW52OHBkREs0eVN5bVMzQlhOUFcrdnQ3R0tOSDZwN2FrU1pJTi9vWUZHK2Jo?=
+ =?utf-8?B?NmNyeWg4blYvTkdRRTBrRGNpVFlWdldTZTlodWxnU3ExVEZJOHUzVWVocEt4?=
+ =?utf-8?B?MnRiZXdFbnRSQ0FPckZ5Uzhna0lseDE4UmVMUnp4c1hvT210ajZGa0k4Z2o3?=
+ =?utf-8?B?Y0t0RzdaUnFYd0lhWGhzcU96Z3RVWjdvWHVtNTNrTUZicUpzR1hYdUhlbUpF?=
+ =?utf-8?B?TG5PVEJzcFIrMC9hYVJud1p5MFRWS01QbmhuYndkMG1RZlNOTW1hSlVOL0Fp?=
+ =?utf-8?B?MGhnZnBRR3VqMERjTU9xbDNucFNlN3oyUC9UMG0wQmRVT2VQWjc5eGhrMnZ6?=
+ =?utf-8?B?UklQemI0T2ZaMm1BeitWWGEvemhIZnhueVBTVXdtQitBUHRZQkwxRkF0NkFv?=
+ =?utf-8?B?dC90d0hpQVVUTFV4WkhoUC9WTkZQb3JLanAzQmpYRmdKbnpGNC9sRzlybUNV?=
+ =?utf-8?B?enZ2V2VSSEs5QU8xQ1ZINUk5RzNORWgyeW9LRGthWWF3SVFpQTdqaU4yZm56?=
+ =?utf-8?Q?IOKUBlLsm9RZmsfMOxp8tXAeRHuEOGN9?=
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH7PR12MB5712.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(376014)(7416014);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?eXpwbzc0L1c0ZGlTYW41UFMrQlp5eEk0dDJVZ0xYUEtadmdIZE5PVTFrNXNw?=
+ =?utf-8?B?VzExK0pVd0E1RnFOWjk5OVFwUml6Q0tqRGIwODZTU0dQVkt4VE9rWWV6eEF4?=
+ =?utf-8?B?U2pDeXI3VFRydFd1MjF1VFUydE10MmZCY2Y1Z3VwY1phdzBwbkVzektEdUJW?=
+ =?utf-8?B?Mnp4WWEyd3hKajB0anVtNlpCdldQUjFwSktPWktkVkRtR1h3cElTSWVBVlJ3?=
+ =?utf-8?B?UzNLSXk5YkNUTUh5SHlPeTdabHBQNy9HZGc2WGR3R09Ob1RIUGI5dSt1R3FF?=
+ =?utf-8?B?ZGg4VXprNzd2QTVkckNvaGZIWVIrTjJRaTRwcytueDRtMG5LSmdxSktlM0gy?=
+ =?utf-8?B?WDlRbC9wdkxieExTYytIN1cxU3VldFJzcHhtaldFa1NGdi9Mb3BXZC83THI1?=
+ =?utf-8?B?NGRxMjFpSzZPYnQ2WEpoRVBGQ2REZ0lab0cyWWQ0Z0lkVEVrMUEvVnhaaCt3?=
+ =?utf-8?B?WXZ0aWZ5NVFhNVFscTNmY3hwdW1TNStPMjRjZjF5bklFR0N2NWhOU0ZRMEll?=
+ =?utf-8?B?U2hSbEJBS1JsVW1UUWp4QWl6eFU5TzRWbjk3bGFqM21vTUNpRHlxZUZUN0pw?=
+ =?utf-8?B?NUt5VkJsYnMyN1dsUFdnWk9LajhtZHUyMXU1emtRalMyblROZm9Qa1hnM1pN?=
+ =?utf-8?B?YWt1WFZzMGlHSFFvNFA4Sjd1UFc5R3B3YlUxWko1Q2VOdVR0SzlkK3BlV3JM?=
+ =?utf-8?B?UmlZUHpmNGRETC8vdFRjMVc0aDVKMC82T3NWaEtHSUxRcDVQR3VYMjZDT3kr?=
+ =?utf-8?B?UW5RbnlEQmZ0LzNtelhRclZjZzdtYVpwTmI5anEyWnBjWGl5R0xWekt3ZDVz?=
+ =?utf-8?B?STR2TzREQmkxVEhnZzkyMkwrTDZpcjIrb1BxTVpuOXprWlRKZzJFZVlWS1M5?=
+ =?utf-8?B?TWFxRDJ4bldGaU5veVdMNXJOS3dESEJxVVE2bnlSOVJsWTdWYTFqc1FZRG1I?=
+ =?utf-8?B?VWVTenlRZGJqRy9xUmljSTZmVTFNc2diYzlMM2JUUER4QXI3SW5mWmU2RnJV?=
+ =?utf-8?B?QmcyaFlGamR3YWZONTl2T1lXMkVwNWVzRzNPQUtqbGx1QzlqWHE2TWRxbXNW?=
+ =?utf-8?B?bkM2TWljbld4a2kxVlNwbnY0VllzUnI2aHBhREtEMWpSNG9qdENodEQyQTdu?=
+ =?utf-8?B?T1JEYzJOMnBMb1ZiODhRSmR1V3JucVRHOGdjdFZ6SWQzUytUNm5QRGlGT3dV?=
+ =?utf-8?B?ZHdCSmhXZk11ZEZvZ3E5VnhnOVQwKzdndkFaMVU5eW8xdnladzREV3dId0tG?=
+ =?utf-8?B?Uk12cW1zeHFOV2VGRjdEVHdLSkRYa25YbDVnZk13bXFWYkxpOWdhU1N4cDdp?=
+ =?utf-8?B?ZGFpNnUwcSt0UHZuN3pBOTRUcm9tdmZzU3lnRnY1OFdDbTFnaHlOQlV2d0Jh?=
+ =?utf-8?B?NGRWMzR6bWc2ZFprTWQraGx6WVVTaGVCWjVwcmF4ME8rb3NoOFd0N01hVmRj?=
+ =?utf-8?B?TG5IQ3hGbzNIUnd5SGsyaytqWnhQRFVkL0NEWERITUdza3dzUTdxd1k3eENu?=
+ =?utf-8?B?OTRsSVhCeTk0Umg4ZE5Kd3VjR0NvRW1iTFBKL3E1TjYzaWdtc0loSkp0SUsv?=
+ =?utf-8?B?Tit6cFdic09ZSUJIU1lGZldYQlFHK2dhUGtBbHdkNk9RRDhqbTM2YmJXcTJI?=
+ =?utf-8?B?d3JSQnN6NHVOUGFrc0dUQWtsV0w2d3BmU2lOcDRSRm1PT29GUzU4anBqSVFp?=
+ =?utf-8?B?YkdEOUpKRkVGV3RHRUhsVEJrRERVRyt0eFBPVzF5SkUrTnhlZFpPUFpjNDVP?=
+ =?utf-8?B?R3E0ditlMTNkWjFzcFZpRVRWeWVlOGMzZlFOS1lHSm0rYXVxYVM5U1VwSU5R?=
+ =?utf-8?B?VGh4TE53VG9oNTFnOXJ2OCtrV25sZkZwb2xkckFhbU5GVm40bHEwbVF0NnhK?=
+ =?utf-8?B?ODViUUlXaFRoaVF4bDF2VlRsc3JDUXdEaHN5dXd0NjNyZ0k3Ly9JK2RuUXVl?=
+ =?utf-8?B?akNmN2tMdm9WTHgwU0Q1SUtGeVo4ckNXWFdtQXBBYzArYjVaWUMxZDY5RVRs?=
+ =?utf-8?B?QWZYQUJyM0ljcHE1MXpha2JUY2FnQUxRamg0VTJUQUJ0YWJzZ0ExZWk4N3k1?=
+ =?utf-8?B?dE1palRRL2Y1cDJYVEJRaU9sODJvN1J4TC9TTGoxck0wZTZhSjhhZFdBbGtL?=
+ =?utf-8?Q?pvW0351KuCOmuyN4OUOboxpDi?=
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 65c033f2-89d6-4143-610e-08de023a4632
+X-MS-Exchange-CrossTenant-AuthSource: PH7PR12MB5712.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 03 Oct 2025 05:04:04.6435
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: WSYiXZXU/+Js+nYnbGsNH396/VpLDn+SsYlivjFMDLKwA68AxYMyyLRWBUnrq5wubBY8CVyZUeiFUDXjKOXjFA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: LV2PR12MB5989
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20251002_180210_735012_D75B9033 
-X-CRM114-Status: GOOD (  20.64  )
+X-CRM114-CacheID: sfid-20251002_220421_042135_1062A072 
+X-CRM114-Status: GOOD (  23.48  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -95,76 +192,133 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Thu, Oct 02, 2025, Marc Zyngier wrote:
-> On Wed, 01 Oct 2025 18:32:25 +0100,
-> > One can run these non-default tests as (assuming current directory is
-> > kvm selftests):
-> > 
-> >   python3 runner -d ./tests
-> > 
-> > Over the time we will add more of these non-default interesting
-> > testcases. One can then run:
-> > 
-> >   python3 runner -d ./tests ./testcases_default_gen
+On 10/1/2025 11:44 PM, Sean Christopherson wrote:
+> On Fri, Sep 26, 2025, Sandipan Das wrote:
+>> On 8/7/2025 1:26 AM, Sean Christopherson wrote:
+>>> From: Dapeng Mi <dapeng1.mi@linux.intel.com>
+>>>
+>>> For vCPUs with a mediated vPMU, disable interception of counter MSRs for
+>>> PMCs that are exposed to the guest, and for GLOBAL_CTRL and related MSRs
+>>> if they are fully supported according to the vCPU model, i.e. if the MSRs
+>>> and all bits supported by hardware exist from the guest's point of view.
+>>>
+>>> Do NOT passthrough event selector or fixed counter control MSRs, so that
+>>> KVM can enforce userspace-defined event filters, e.g. to prevent use of
+>>> AnyThread events (which is unfortunately a setting in the fixed counter
+>>> control MSR).
+>>>
+>>> Defer support for nested passthrough of mediated PMU MSRs to the future,
+>>> as the logic for nested MSR interception is unfortunately vendor specific.
 > 
-> That's not what I am complaining about. What you call "configuration"
-> seems to just be "random set of parameters for a random test".
-
-Hopefully s/random/interesting, but yes, the design of the runner is specifically
-to support running tests with different parameters, and not much more (from a
-configuration perspective).
-
-> In practice, your runner does not seem configurable at all. You just
-> treat all possible configurations of a single test as different tests.
+> ...
 > 
-> My (admittedly very personal) view of what a configuration should be
-> is "run this single test with these parameters varying in these
-> ranges, for this long".
+>>>  #define MSR_AMD64_LBR_SELECT			0xc000010e
+>>> diff --git a/arch/x86/kvm/pmu.c b/arch/x86/kvm/pmu.c
+>>> index 4246e1d2cfcc..817ef852bdf9 100644
+>>> --- a/arch/x86/kvm/pmu.c
+>>> +++ b/arch/x86/kvm/pmu.c
+>>> @@ -715,18 +715,14 @@ int kvm_pmu_rdpmc(struct kvm_vcpu *vcpu, unsigned idx, u64 *data)
+>>>  	return 0;
+>>>  }
+>>>  
+>>> -bool kvm_need_rdpmc_intercept(struct kvm_vcpu *vcpu)
+>>> +bool kvm_need_perf_global_ctrl_intercept(struct kvm_vcpu *vcpu)
+>>>  {
+>>>  	struct kvm_pmu *pmu = vcpu_to_pmu(vcpu);
+>>>  
+>>>  	if (!kvm_vcpu_has_mediated_pmu(vcpu))
+>>>  		return true;
+>>>  
+>>> -	/*
+>>> -	 * VMware allows access to these Pseduo-PMCs even when read via RDPMC
+>>> -	 * in Ring3 when CR4.PCE=0.
+>>> -	 */
+>>> -	if (enable_vmware_backdoor)
+>>> +	if (!kvm_pmu_has_perf_global_ctrl(pmu))
+>>>  		return true;
+>>>  
+>>>  	/*
+>>> @@ -735,7 +731,22 @@ bool kvm_need_rdpmc_intercept(struct kvm_vcpu *vcpu)
+>>>  	 * capabilities themselves may be a subset of hardware capabilities.
+>>>  	 */
+>>>  	return pmu->nr_arch_gp_counters != kvm_host_pmu.num_counters_gp ||
+>>> -	       pmu->nr_arch_fixed_counters != kvm_host_pmu.num_counters_fixed ||
+>>> +	       pmu->nr_arch_fixed_counters != kvm_host_pmu.num_counters_fixed;
+>>> +}
+>>> +EXPORT_SYMBOL_GPL(kvm_need_perf_global_ctrl_intercept);
+>>> +
+>>> +bool kvm_need_rdpmc_intercept(struct kvm_vcpu *vcpu)
+>>> +{
+>>> +	struct kvm_pmu *pmu = vcpu_to_pmu(vcpu);
+>>> +
+>>> +	/*
+>>> +	 * VMware allows access to these Pseduo-PMCs even when read via RDPMC
+>>> +	 * in Ring3 when CR4.PCE=0.
+>>> +	 */
+>>> +	if (enable_vmware_backdoor)
+>>> +		return true;
+>>> +
+>>> +	return kvm_need_perf_global_ctrl_intercept(vcpu) ||
+>>>  	       pmu->counter_bitmask[KVM_PMC_GP] != (BIT_ULL(kvm_host_pmu.bit_width_gp) - 1) ||
+>>>  	       pmu->counter_bitmask[KVM_PMC_FIXED] != (BIT_ULL(kvm_host_pmu.bit_width_fixed) - 1);
+>>>  }
+>>
+>> There is a case for AMD processors where the global MSRs are absent in the guest
+>> but the guest still uses the same number of counters as what is advertised by the
+>> host capabilities. So RDPMC interception is not necessary for all cases where
+>> global control is unavailable.o
+> 
+> Hmm, I think Intel would be the same?  Ah, no, because the host will have fixed
+> counters, but the guest will not.  However, that's not directly related to
+> kvm_pmu_has_perf_global_ctrl(), so I think this would be correct?
+> 
+> diff --git a/arch/x86/kvm/pmu.c b/arch/x86/kvm/pmu.c
+> index 4414d070c4f9..4c5b2712ee4c 100644
+> --- a/arch/x86/kvm/pmu.c
+> +++ b/arch/x86/kvm/pmu.c
+> @@ -744,16 +744,13 @@ int kvm_pmu_rdpmc(struct kvm_vcpu *vcpu, unsigned idx, u64 *data)
+>         return 0;
+>  }
+>  
+> -bool kvm_need_perf_global_ctrl_intercept(struct kvm_vcpu *vcpu)
+> +static bool kvm_need_pmc_intercept(struct kvm_vcpu *vcpu)
+>  {
+>         struct kvm_pmu *pmu = vcpu_to_pmu(vcpu);
+>  
+>         if (!kvm_vcpu_has_mediated_pmu(vcpu))
+>                 return true;
+>  
+> -       if (!kvm_pmu_has_perf_global_ctrl(pmu))
+> -               return true;
+> -
+>         /*
+>          * Note!  Check *host* PMU capabilities, not KVM's PMU capabilities, as
+>          * KVM's capabilities are constrained based on KVM support, i.e. KVM's
+> @@ -762,6 +759,13 @@ bool kvm_need_perf_global_ctrl_intercept(struct kvm_vcpu *vcpu)
+>         return pmu->nr_arch_gp_counters != kvm_host_pmu.num_counters_gp ||
+>                pmu->nr_arch_fixed_counters != kvm_host_pmu.num_counters_fixed;
+>  }
+> +
+> +bool kvm_need_perf_global_ctrl_intercept(struct kvm_vcpu *vcpu)
+> +{
+> +
+> +       return kvm_need_pmc_intercept(vcpu) ||
+> +              !kvm_pmu_has_perf_global_ctrl(vcpu_to_pmu(vcpu));
+> +}
+>  EXPORT_SYMBOL_GPL(kvm_need_perf_global_ctrl_intercept);
+>  
+>  bool kvm_need_rdpmc_intercept(struct kvm_vcpu *vcpu)
+> @@ -775,7 +779,7 @@ bool kvm_need_rdpmc_intercept(struct kvm_vcpu *vcpu)
+>         if (enable_vmware_backdoor)
+>                 return true;
+>  
+> -       return kvm_need_perf_global_ctrl_intercept(vcpu) ||
+> +       return kvm_need_pmc_intercept(vcpu) ||
+>                pmu->counter_bitmask[KVM_PMC_GP] != (BIT_ULL(kvm_host_pmu.bit_width_gp) - 1) ||
+>                pmu->counter_bitmask[KVM_PMC_FIXED] != (BIT_ULL(kvm_host_pmu.bit_width_fixed) - 1);
+>  }
 
-Ya, but personal preference is precisely why we kept the runner fairly minimal.
-The goal is to provide:
-
- 1. A way to upstream non-standard test invocations so that they can be shared
-    with others, and to improve the coverage provided when developers just run
-    whatever tests are upstream (which probably covers most contributions?).
-
- 2. Provide "basic" functionality so that each developer doesn't have to reinvent
-    the wheel.
-
-    E.g. I have a (horrific) bash script to run selftests in parallel, and while
-    it works well enough for my purposes, it's far from perfect, e.g. there's no
-    timeouts, it's super hard to see what tests are still running, the logging is
-    hacky, etc.
- 
-    The idea with this runner is to deal with those low-level details that are
-    painful to implement from scratch, and that generally don't require foisting
-    a highly opinionated view on anyone.  E.g. if someone really doesn't want to
-    see certain output, or wants to fully serialize tests, it's easy to do so.
-   
- 3. Tooling that power users (and hoepfully CI?) can build on, e.g. via wrapper
-    scripts, or something even fancier, again without having to be too opinionated.
-
-    E.g. thanks to the myraid module params in x86, I run all selftests with 5-6
-    different versions of KVM (by unloading and reloading KVM modules).  We
-    deliberately chose not to allow specifying module params of sysfs knobs as
-    part of the runner, because:
-
-        (a) Handling system-wide changes in a runner gets nasty because of the
-            need to express and track dependencies/conflicts.
-        (b) It's easy (or should be easy) to query dependencies in selftests.
-        (c) Selftests need to query them anyways, e.g. to avoid failure when
-            run with a "bad configuration".
-        (d) Permuting on system-wide things outside of the runner isn't terribly
-            difficult (and often requires elevated privileges).
-
-So yeah, there are definitely limitations, but for the most part they are self-
-imposed.  Partly to avoid boiling the ocean in the initial version (e.g. many
-tests won't benefit from running with a range of values/parameters), but also so
-that we don't end up in a situation where the runner only suits the needs of a
-few people, e.g. because it's too opinionated and/or tailored to certain use cases.
-
-I'm definitely not against providing more functionality/flexibility in the future,
-but for a first go I'd like to stick to a relatively minimal implementation.
+This looks good. Thanks.
 
 -- 
 kvm-riscv mailing list
