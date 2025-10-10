@@ -4,62 +4,82 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 693D4CCD185
-	for <kvm-riscv@archiver.kernel.org>; Fri, 10 Oct 2025 14:11:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EF549CCD185
+	for <kvm-riscv@archiver.kernel.org>; Fri, 10 Oct 2025 18:14:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
-	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
-	List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:Subject:
-	MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=JeWRnjk59obPAoeHJYCJdW/SbE7LPKRqBuikcWh+Z6s=; b=l9RiOheKJZznRg
-	ZV/F8ni4ZmpUjxRVByDhl7JPwbhziEwsb8t8x4hUszjA0Yl//bGkdGO3ofZUht9EKRsTbWYgj9Z1B
-	rPmQVKHfUokcRE8Jj6KocsSFwhYEiaK7bomNLLgrgVlH74AyqL2/MX5qVafyIue/erBsTemULJoGj
-	XCeL+Psk2IaROCl3pAUsiFlPghEo0rp+WhE6dfhM1Vb0BhMDsmAT0Nzlf4m1e8OP5/pLFfbs7uCdW
-	m+OOzcSweswQH3oSLEajuquMkSicoGqLf2BPwgOOPUe2yqDyOOQcL8XiMhMMuXJEvitK+JxR7kKTQ
-	MeXkbOw4+BC/O5CkZqsA==;
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID:
+	References:Mime-Version:In-Reply-To:Date:Reply-To:Content-ID:
+	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+	:Resent-Message-ID:List-Owner;
+	bh=lhMKVrv8YT0+OJ/Awge0ue5UNtln34jbxHM0gXSSanA=; b=SWb9E5TawlCA0eU2Hd4W7HUPmZ
+	COzDyg4cofzuYipgIwnlPBfAY6PU/hCZTV8cQMGyaRE6SMaa+KhKt6DAmWciI/09GAZ+uSJboe7vw
+	fp7XwNB6cgN5r444utih16dSNdu9Z26ipfjW5jzuJfo+/cced9Pj/Wqau3VJq8qgmQVx37nUOEjly
+	J/YyYidiVN4fvSxiY/jcUeGaWnBqgZzIYvn3MQz5vxASlyxKQ/rLJEJzQj9ts+Y9vEB2daq3G1veK
+	l8Hx5hPEaUBwTgWyN4qyuEEN2aERdwHWhOsBLP0g/5GjVZnSNhUr6wdsQaKxNydpJZdmTLcCJtWUn
+	e3nhX15A==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1v7Dqh-00000008dWC-04qb;
-	Fri, 10 Oct 2025 14:11:59 +0000
-Received: from m16.mail.163.com ([117.135.210.5])
+	id 1v7Hd5-000000098JJ-1TaE;
+	Fri, 10 Oct 2025 18:14:11 +0000
+Received: from mail-pl1-x649.google.com ([2607:f8b0:4864:20::649])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1v7Dqd-00000008dTH-2Iig
+	id 1v7Hd3-000000098Ii-2ds4
 	for kvm-riscv@lists.infradead.org;
-	Fri, 10 Oct 2025 14:11:57 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=Message-ID:Date:MIME-Version:Subject:To:From:
-	Content-Type; bh=EGTg3UI8+wmv7/ItHdXdZcjDDD21GS2UPYiO+4FZMjA=;
-	b=PN3JzIi3oWX48a8vGhPna5NOrHA3DXT8IAPIUAgmEO8MKsZky4AIT89r/TFqI2
-	w+3RiTPX1LWZtHFkTbNs0Izo5GsFqH5S38eu6CXDIkb3IOnxV8nTflAr9pYZNg60
-	QMKgZ+9nPaqTRi/CqSfk5lsgN23qbBGcGQ6iz9q1R8Zwc=
-Received: from [IPV6:240e:38d:8311:d200:72f2:4161:c85c:bd3e] (unknown [])
-	by gzga-smtp-mtada-g1-3 (Coremail) with SMTP id _____wD3n6IjFOlokxRJDQ--.5490S2;
-	Fri, 10 Oct 2025 22:11:47 +0800 (CST)
-Message-ID: <56cae42e-158e-47e8-ae94-56b2e0a84643@163.com>
-Date: Fri, 10 Oct 2025 22:11:47 +0800
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: KVM: riscv: selftests: sv39 support needed?
-To: Andrew Jones <ajones@ventanamicro.com>
-Cc: wu.fei9@sanechips.com.cn, kvm-riscv@lists.infradead.org
-References: <202509170234.58H2YCma081344@mse-fl2.zte.com.cn>
- <20250918-618ded295b364b5aee7d17b2@orel>
- <305003be-8f8b-47f1-bbe6-17c547eb3725@163.com>
- <20251009-fbe27696dc9ef50de56c44d3@orel>
-Content-Language: en-US
-From: Wu Fei <atwufei@163.com>
-In-Reply-To: <20251009-fbe27696dc9ef50de56c44d3@orel>
-X-CM-TRANSID: _____wD3n6IjFOlokxRJDQ--.5490S2
-X-Coremail-Antispam: 1Uf129KBjvJXoWxWr1kZr4UurykJr1ktr4xJFb_yoW5uw15pr
-	W2kF45Ka4DJan7AF40934vqFy8trW5JryUXayvvF1UGwsYgw12yr1Iga15uFyS9r1xZa48
-	tF4YqFy3Can8ZaDanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0pZg4rcUUUUU=
-X-Originating-IP: [240e:38d:8311:d200:72f2:4161:c85c:bd3e]
-X-CM-SenderInfo: pdwz3wlhl6il2tof0z/1tbiYgfioWjpDEfxBQAAsY
+	Fri, 10 Oct 2025 18:14:10 +0000
+Received: by mail-pl1-x649.google.com with SMTP id d9443c01a7336-2681623f927so49675895ad.0
+        for <kvm-riscv@lists.infradead.org>; Fri, 10 Oct 2025 11:14:08 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1760120048; x=1760724848; darn=lists.infradead.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=RRqqebB5b3S+5bGOfhb1j8iKUMVMXWWcx0kI9eE51UQ=;
+        b=OuJr4FVlnaTl6X0FH2vXXE0iaups9oIGgOe3yC/aSSfipTNUgZoSNTh+vUDZxTObQC
+         iwtmSTUCMLllWamkx7MZw6EaSJg9OVCCCVWilLmu30hBrPVEu37PBvam83milJZoE/z0
+         IIZi5dMF1ugO4hqxOf3QSoWu72oxj2LgP5Ahjd5Sz2WARWrpfapUiVyWnzLlciIK29Zk
+         +IWlRbCBEWDWW8Cgt1NjGGPclW56ZFc7YDny+CIshptrsXKrpPIhu9qGQr6JlxGeXSGV
+         fqLsWGWNZphoOUIs0aBuh805JpO067AKST7yuoXQuJ2DTNJD42Vv6a84baVpB+mJ34LB
+         B9EQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1760120048; x=1760724848;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=RRqqebB5b3S+5bGOfhb1j8iKUMVMXWWcx0kI9eE51UQ=;
+        b=WmdS22TppD8oLC88fRFw6IgnK6pePUBSZO4CybjDYgVSpCp9EiuLsZqLbDxGOrrd/i
+         es44EPyuBs8nbMCE5N+mZHt7qoJKNHA8pd1ztcTCnJWZyTFJKrZTx06lt75g+kyXn+vD
+         2elYtnfz19DB/fSW9gsArRLNokfNmShnaiMygxTHeeMpyGP4IjhueF0YS0AoGFYYDZ3B
+         UfyZ3E7pouXYez/7sgRyHy/sspBMzjv9n1tyPD8wH72z8V1pqVN2qNxvoqO5tj5wM+d6
+         A+/HY6WIv7/Xdeep4KpiTM1NW2OFAynxDO0P28xFgFstLUSUeMM+HkLIkmLYqryl8ewa
+         thZQ==
+X-Forwarded-Encrypted: i=1; AJvYcCU5avwezc4PeMf1yrfeU6QsmwrUSjvV9BnWKEqEV+BZ+z0ZbdfJCawQzXWBPLeVFL8PMfzgO3ZjnSc=@lists.infradead.org
+X-Gm-Message-State: AOJu0YwXRuY2NKZ8OUJfs4cm58E/ZDSr7nvtfBdgirh0E3jFBYPGBXaj
+	BDwq/cNfAaBjLd7CD5Nc+M+ioRQGZfT6+SAv5bZXbPxYcfbTNjyd2NRwASzb6V2RMs8dTEu9igO
+	7hWnHgg==
+X-Google-Smtp-Source: AGHT+IH7cFlVTSNM+0j4l/xFWY5dLqOboXxalLgs1PnQJ4K/8YINWNO1tWQ0AvtHmyKAMc8BcWffcUfPi8Q=
+X-Received: from plkb3.prod.google.com ([2002:a17:903:fa3:b0:268:1af:fcff])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:902:f54b:b0:265:47:a7b0
+ with SMTP id d9443c01a7336-290272117f0mr156739855ad.10.1760120048173; Fri, 10
+ Oct 2025 11:14:08 -0700 (PDT)
+Date: Fri, 10 Oct 2025 11:14:06 -0700
+In-Reply-To: <DDEJY5ON407O.2O7CMOY9311NV@google.com>
+Mime-Version: 1.0
+References: <20250930163635.4035866-1-vipinsh@google.com> <20250930163635.4035866-10-vipinsh@google.com>
+ <DDEJY5ON407O.2O7CMOY9311NV@google.com>
+Message-ID: <aOlM7ngJJsEW-5sV@google.com>
+Subject: Re: [PATCH v3 9/9] KVM: selftests: Provide README.rst for KVM
+ selftests runner
+From: Sean Christopherson <seanjc@google.com>
+To: Brendan Jackman <jackmanb@google.com>
+Cc: Vipin Sharma <vipinsh@google.com>, kvm@vger.kernel.org, kvmarm@lists.linux.dev, 
+	kvm-riscv@lists.infradead.org, pbonzini@redhat.com, borntraeger@linux.ibm.com, 
+	frankja@linux.ibm.com, imbrenda@linux.ibm.com, anup@brainfault.org, 
+	atish.patra@linux.dev, zhaotianrui@loongson.cn, maobibo@loongson.cn, 
+	chenhuacai@kernel.org, maz@kernel.org, oliver.upton@linux.dev, 
+	ajones@ventanamicro.com, kvm-riscv <kvm-riscv-bounces@lists.infradead.org>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20251010_071155_972369_304A1D0D 
-X-CRM114-Status: GOOD (  28.60  )
+X-CRM114-CacheID: sfid-20251010_111409_664219_D8835897 
+X-CRM114-Status: GOOD (  36.85  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -71,95 +91,110 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On 10/9/25 22:40, Andrew Jones wrote:
-> On Thu, Oct 09, 2025 at 08:40:03PM +0800, Wu Fei wrote:
->>
->> On 9/18/25 22:13, Andrew Jones wrote:
->>> On Wed, Sep 17, 2025 at 10:11:05AM +0800, wu.fei9@sanechips.com.cn wrote:
->>>> I was running kvm selftests on qemu-system-riscv64 with "-cpu rva23s64", which
->>>> uses sv39 by default, then I got the following error. After some debugging I
->>>> found sv39 is not supported for selftests, should we add sv39 support? I can
->>>> prepare a patch if it's needed.
->>> Yes, please.
->>
->>
->> Should we add another mode as VM_MODE_P41V39_4K? The smallest VA is 47bits
->> on the existing modes.
+On Fri, Oct 10, 2025, Brendan Jackman wrote:
+> On Tue Sep 30, 2025 at 4:36 PM UTC, Vipin Sharma wrote:
+> > @@ -0,0 +1,54 @@
+> > +KVM Selftest Runner
+> > +===================
+> > +
+> > +KVM selftest runner is highly configurable test executor that allows to run
+> > +tests with different configurations (not just the default), parallely, save
+> > +output to disk hierarchically, control what gets printed on console, provide
+> > +execution status.
+
+...
+
+> I understand that for reasons of velocity
+
+It's not just velocity, it's also for stability and maintainability.  Selftests are
+the wild, wild west; there's no central authority, and many subsystems have "needs"
+and opinions.  E.g. tools/testing/selftests/kselftest_harness.h is quite opionated,
+_and_ it has fatally been broken multiple due to one subsystem making changes that
+broke usage for other subsystems.  Obviously those bugs got sorted out, but it's a
+painful experience.
+
+I guess you could say those things are all about velocity in the end; but I want
+to call out that it's not just about the initial velocity of landing the series,
+it's also about the long-term velocity of being able to make changes to fit KVM's
+needs without getting bogged down due to other susbystems adding requirements and
+use cases that are irrelevant or at odds with KVM's.
+
+> it might make sense to do this as a KVM-specific thing, but IIUC very little
+> of this has anything to do with KVM in particular, right?
+
+The actual implementation doesn't have any dependencies on KVM, but the design
+and its goal are tailored to the needs of KVM.
+
+> Is there an expectation to evolve in a more KVM-specific direction?
+
+Sort of?  I don't think we'll ever pick up direct dependencies, but I do think
+we'll continue to tailor the runner to the needs of the KVM community.
+
+> (One thing that might be KVM-specific is the concurrency. I assume there
+> are a bunch of KVM tests that are pretty isolated from one another and
+> reasonable to run in parallel.
+
+Every KVM selftest should be able to run in parallel.  That's actually a very
+intentional design property of the runner: any system-level configuration needs
+to be done by a "higher" authority, e.g. the human manually running the test, a
+wrapper script, some form of CI infrastructure, etc.
+
+> Testing _the_ mm like that just isn't gonna work most of the time. I still
+> think this is really specific to individual sets of tests though, in a more
+> mature system there would be a metadata mechanism for marking tests as
+> parallelisable wrt each other.
+
+Dependency and friendliness tracking is again something we specifically avoided
+doing, because the KVM selftests need to be self-contained anyways.  E.g. if a
+test requires KVM module param X to be enabled, then the test needs to skip.
+The runner takes advantage of that behavior in order to simplify the code; it
+really is just a "dumb" executor.
+
+> I guess this patchset is part of an effort to have a more mature system that
+> enables that kind of thing.).
+
+Sort of?  My response to Marc covered more of the goals in detail:
+
+https://lore.kernel.org/all/aN8gkEMHuvIVPcCt@google.com
+
+> To avoid confusing people and potentially leave the door open to a
+> cleaner integration, please can you add some bits here about how this
+> relates to the rest of the kselftest infrastructure? Some questions I
+> think are worth answering:
 > 
-> Why P41? sv39 supports a 56-bit physical address. To support sv39 I'd
-> expect to add a VM_MODE_P56V39_4K. And, afaict, the reason we don't have a
-> VM_MODE_P56V48_4K is simply because when riscv support was added it
-> didn't add any new modes. We could VM_MODE_P56V48_4K as part of this work.
+> - As someone who runs KVM selftests, but doesn't work specifically on
+>   KVM, to what extent do I need to know about this tool? Can I still run
+>   the selftests "the old fashioned way" and if so what do I lose as
+>   compared to using the KVM runner?
 
-It's about mode for guest? Which is also limited by hgapt.mode, suppose 
-hgapt.mode is Sv39x4, the valid gpa bits is 41.
+The runner is purely optional.  You'll lose whatever you don't have, that the
+runner provides.  E.g. I have (hacky) scripts to run KVM selftests in parallel,
+but without much of the niceties provided by this runner.
 
-> 
->>
->> Also, is it necessary to add mode for sv57? Or we can just use some existing
->> ones such as P52V48 instead.
-> 
-> We need new modes that support 57-bit virtual addresses to test that
-> support, and I'd like to see that. Again we have a 56-bit physical
-> address, so the new mode would be VM_MODE_P56V57_4K.
-> 
->>
->>>
->>>> # ./arch_timer
->>>> Random seed: 0x6b8b4567
->>>> ==== Test Assertion Failure ====
->>>>     arch_timer.c:73: false
->>>>     pid=144 tid=146 errno=0 - Success
->>> We can avoid errors for the default case by adding a
->>> kvm_selftest_arch_init() function for riscv which calls
->>> guest_modes_append_default(). We'll also need to modify
->>> guest_modes_append_default() to configure the default using information
->>> from KVM that can be obtained with a get-one-reg of the satp_mode config
->>> register. OIOW, use satp_mode but otherwise just mimic arm64's setup.
->>
->>
->> Is the current kvm_check_cap(KVM_CAP_VM_GPA_BITS) equal to satp_mode,
->>
->> e.g. gpa 41-bits always means 8 in satp_mode?
-> 
-> No, KVM_CAP_VM_GPA_BITS only tells you the number of physical bits of the
-> host, which dictates the maximum mode you can choose (see
-> lib/guest_modes.c). You can get the maximum satp_mode with get-one-reg
-> RISCV_CONFIG_REG(satp_mode) and then use that or anything smaller than
-> that for the mode in the test. See lib/guest_modes.c again to see how
-> there's support in the test framework for looping over modes in order to
-> run the same tests on multiple modes. To do that, the test will change
-> the guest configured mode with a set-one-reg of satp_mode.
+> - Does this system change the "data model" of the selftests at all, and
+>   if so how? I.e. I think (but honestly I'm not sure) that kselftests
+>   are a 2-tier hierarchy of $suite:$test without any further
+>   parameterisation or nesting (where there is more detail, it's hidden
+>   as implementation details of individual $tests). Do the KVM selftests
+>   have this structure?
 
-Got it, just check the difference of the two methods:
-* KVM_CAP_VM_GPA_BITS - value from hgatp.mode, which is set during 
-kvm_riscv_gstage_mode_detect(), represents the hardware capability
-* RISCV_CONFIG_REG(satp_mode) - value from satp_mode, which is set 
-during set_satp_mode(), decided by both hardware capability and kernel 
-cmdline
+More or less.
 
-It looks like current implementation tries to ensure vsatp.mode equals 
-to host satp.mode (I don't think it's necessary from spec point of 
-view), so that only one mode can be set for guest, in 
-kvm_riscv_vcpu_set_reg_config:
+>   If it differs, how does that effect the view from run_kselftest.sh?
 
-         case KVM_REG_RISCV_CONFIG_REG(satp_mode):
-                 if (reg_val != (satp_mode >> SATP_MODE_SHIFT))
-                         return -EINVAL;
-                 break;
+AFAIK, nothing in KVM selftests is at odds with run_kselftest.sh.
 
-Thanks,
-Fei.
+> - I think (again, not very sure) that in kselftest that each $test is a
+>   command executing a process. And this process communicates its status
+>   by printing KTAP and returning an exit code. Is that stuff the same
+>   for this runner?
 
-> 
-> Thanks,
-> drew
-
+Yes?  Except most KVM selftests don't support TAP (yet).
 
 -- 
 kvm-riscv mailing list
