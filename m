@@ -4,87 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A94D5CCA476
-	for <kvm-riscv@archiver.kernel.org>; Fri, 10 Oct 2025 19:39:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BD79FCCD183
+	for <kvm-riscv@archiver.kernel.org>; Mon, 13 Oct 2025 17:33:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:Subject:Message-ID:Date:From:
-	In-Reply-To:References:MIME-Version:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
+	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=J8H2IF4x2bo0BuJ3maA4OmBHZ8sbp2pSMz0xnP2TnFg=; b=DPcCNth6LA/k8O
-	whADjiRVCOmGW+4PORoyh+KQzPQ4+5U/ru+oFc/P39iY/wg89A3LPBfWBhtxMjcWFBybXZhnaQiC+
-	kSaExQjxGqVOMT6fgdYFc0mwNDtL6NS0o5QI2M5AC2cykSE0abssz3LOsAhW8B/4cIlWGMjm6NgjY
-	RgvQzeElHeUTxCYsu3T3f2vPK9l9/kVcROT/nx9Dhtd4Kmvyuc1fVZpUlLplzWnokjd3Q8d1Fg1Aq
-	P8NuytWWt6LHhE9W22kCBd36z9zhhFpIBr2yFxnLE2DZ5SV0iTGOKb9K7X4aByaE7AiQc7jJngJS6
-	GE8B4ESSEhqIZhvSjjlw==;
+	List-Owner; bh=kXL36psy4Vi4SSP/3UD8uhAw5GarcCoO8heic1gYdPY=; b=whyXToiStSMPEu
+	Hnosj6duTmKIz2AGORjA0oZRRp9C/ZSoV50a64Aq6er4VDJk0WCllJO6SRREoiaYpbw/CFhF3OlhJ
+	AbGgJ6LlnzMzJHo+rZrALn568H600sYWBce1tENCF6NFpYaOcCSUbX5wkiRYY7e1R7g89dPipUmRE
+	Q6eJ2DuNi2cV0q7kfVvCxP4rm2OH8yyVq0eTt4YkpthZq6nNZJYETyL2F/OLzei23UAPA/03NYFet
+	jgzJr02/n1/aTwsH9aB5qBAG/7o7THUe1i5J/Va0AlO3zEB/IknC2Q3MKbeaOMPS/etnGutbc1dzT
+	I7O/VfVdLBFddClNnMHg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1v7IxB-00000009GNT-0osg;
-	Fri, 10 Oct 2025 19:39:01 +0000
-Received: from mail-wm1-x32c.google.com ([2a00:1450:4864:20::32c])
+	id 1v8MQ9-0000000E2xr-1usR;
+	Mon, 13 Oct 2025 17:33:17 +0000
+Received: from mail-il1-x133.google.com ([2607:f8b0:4864:20::133])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1v7Ix9-00000009GMV-0UoA
+	id 1v8MQ7-0000000E2xH-1BsP
 	for kvm-riscv@lists.infradead.org;
-	Fri, 10 Oct 2025 19:39:00 +0000
-Received: by mail-wm1-x32c.google.com with SMTP id 5b1f17b1804b1-46e3bcf272aso12045e9.0
-        for <kvm-riscv@lists.infradead.org>; Fri, 10 Oct 2025 12:38:58 -0700 (PDT)
+	Mon, 13 Oct 2025 17:33:16 +0000
+Received: by mail-il1-x133.google.com with SMTP id e9e14a558f8ab-42f6e0bdcf7so37696395ab.0
+        for <kvm-riscv@lists.infradead.org>; Mon, 13 Oct 2025 10:33:14 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1760125137; x=1760729937; darn=lists.infradead.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=G42i/u8MRJ9M6Twy2bIRqjYAwcznw/QdFBR+ThWzAOg=;
-        b=3J6+paIAF8eIFbitfOP0fE/FDk4GFqLZWW/2PJQ4bnNtz4owohb62hudzcUPFPB6aH
-         Ydt+apSCgRCoV3suP/UG9pm+UgA5H+yvFHB+jZtHtpZIUzGBLvC78ntRURjcFOVBdS06
-         N5drIxDSJg6zQaEaKW0XwIcMeuZ38u//F2D8cJg7Sf/kI5HOZgBquSk/6OfVS9f4U1k0
-         7gd9t5nBAY9NeTwt8Ih4v2a0aXjXvaBb3SgPA/IdptCvNlRa4hlH2vOAWYs6BJ5l46fu
-         5JpFAeYP6NluJSOkbSVHrw+0nYj/bAEKNGX8Kpyq+WRUCbHlpbqoGWSSjDiTWOncmwfH
-         P0tA==
+        d=ventanamicro.com; s=google; t=1760376794; x=1760981594; darn=lists.infradead.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=ayp48MZbN5Cs7nDgCISLNME6zNhdXoMazjFmWcmYUGc=;
+        b=nWNt3Gaw1D8rowuv5lRs75ckuBJ/gtSixzg88cBx6uLHAlL4OOhtdPx9YWBHEJhZPg
+         tKHnhN2sNDtprDl37LfnZrtxShTwc0y2sedpv6nh2bPQBawiBt5fgC7sBvkIekSNdWia
+         HRuRrQyJj67HOIQO15yKV35apTHnOM5sZhYvbCEkss1VoZHk0lhxG0MFqelRvUpBBrdH
+         S54+eWLZvb39Y0bjeeA7BSkVKxul4WPZR2BOyvDitNF0z+BonwNCbhkQlX12bzJ/DaHd
+         g9Cvo+SI8y7v4GO6zEwSN/j/V+URibD3pN6MPcr4+mIv7KBgqRHJuLNGROQxBnaPjmb7
+         ayrw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1760125137; x=1760729937;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=G42i/u8MRJ9M6Twy2bIRqjYAwcznw/QdFBR+ThWzAOg=;
-        b=PdyTehAwE5ULGht3We8GChP+Ned7YQTZZV8BMGFZ+dOlY/Gv1vXk4Oq+XmgMrS9mFy
-         1xoRO2ooc3e2hVrhmCxCVA2ake6U0ZjGgPAjN8R567YLY8I1rxCn++avl9mksEic6phE
-         2CID/8w43lcIXRpu2pgAm/QIPQL+fxaj2ajRFhOaqUEBSFayGiyet0kqJdFBvoYR/KTw
-         q2D8+i5EPQBvguPQ5u7ZXwAMqUvcXg/nhv+5deHVC6CK2e8vSaqWeFlAdZ5NkrX55+oe
-         wNyDF/IqLsXm/0m5k4Zonk5eMBuhHbTQnEH+4DiiqV28i6emLnPB+f2i5GAhU5nxAYIg
-         JCng==
-X-Forwarded-Encrypted: i=1; AJvYcCX2lot471RckYAISwGzbkL7BN0p1g4AKRJCoyuYRjXd9EnyQZgTo4QpvZHHhjV/q3beqtLSW2ItuS0=@lists.infradead.org
-X-Gm-Message-State: AOJu0YzzQbHLTVVi/MG2lTn58X+CdtOc7sPRhCEUz5+U7zXd34eSPoMS
-	Afjr2XOfdzcpYLR0cCSwogS+mjjQb50lxPxmU0XDYXzAaBvcLzSB+fwfjqL1h1nxwy5kBmepNQI
-	wa5nx7VHWBGG+/GGHWYZN0qxl1CPmTHfHrQfFqOUh
-X-Gm-Gg: ASbGncsmokLsTQPGKNDRiFB7HTP2g1PGrAPwY9QP1xVq7aVO2E+9xJNu/7Ts2ZKrikN
-	wd0yCAOt4ZgzHf61JgEsqAfHAgzWSCEsK23QkxHLZXb9MK8F/TaBFc92iMouUskMwKBAu9jYQ55
-	LjwvfPIPuP2t2X8pC1XxoYOCwfCF9pBEMjvQ1xRbYP54yntiZdnxEHEEJyLPbVNuK+bt94iAAD8
-	xwjOnNJf8wTQ2hB6+0DsBlWVTpfRK9tLfiP3FsMEbMX6zGYuH8L70hkk0cbPi/TPNv9YmA+jA==
-X-Google-Smtp-Source: AGHT+IHIodl2NROYEXh/33nRBxbfEbLDzR8sSJgEr+hrINiKOgEMjhQA45bKdj70j3vWXJWBDjRujP7bStH4hSJ2gwQ=
-X-Received: by 2002:a05:600c:c1d7:20b0:45d:f6a6:a13e with SMTP id
- 5b1f17b1804b1-46fa9a94635mr7264035e9.1.1760125137119; Fri, 10 Oct 2025
- 12:38:57 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1760376794; x=1760981594;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=ayp48MZbN5Cs7nDgCISLNME6zNhdXoMazjFmWcmYUGc=;
+        b=G69BmZlo1dzpbtMN6MCIf81iM0305GfvlNhulx8KdBDQcxm7wB9+x7tH1zpMO6jyiG
+         SIxPQ6MnKflPAr3QmzcMdsWYzVCSw0G0gMD8xGczy+ER2mjPcgTADkSaUIm8gr2mw3L+
+         4yiXvh/eAHdEJ5aq6iV+xkYSfDiInGPpapLaGAHvrY6SWGdgDRLZiJggXfdySXRsDlp8
+         azlnRZwbyTKjNm8wdXBvOmllzvJkl297EkrWRyDj26GuzKl0Xqy7Rhb+4EZqgSHWGgH3
+         hA5w83fWoVjrPQ99kdSkj+T0WfLa4EyNN+J/tqA9QSc5g8ZMbap5Yubx+0Sfi22CnN5Q
+         qUuw==
+X-Forwarded-Encrypted: i=1; AJvYcCUBGMlLhp5M1nQX5qwuz2iCpGdVGpie3ZSISl2qsTJ0iDTXeU81tZjyaQ5RClAp/kKBiGMGWLy2Ao4=@lists.infradead.org
+X-Gm-Message-State: AOJu0YxfDyFbys50ScBYO/V6vzB84DyV6mgYJItnEeb3oB+M94ZATCr2
+	5oQMHGn8g83j0UYvoEj1gqfzRENghRFjF7DbYh2Nhl1dS+QBBs1yCcVi704YwpQ4R/M=
+X-Gm-Gg: ASbGncuB7mAlZZ66QtFkIMOHNDtKMmwJS4UFqnlQLaW05CkIJOKv0X5aSVqSCgjIZl7
+	+z8s07DA3zvN2xkr87TLt2tdANsQzFCGHIfywMbFfUc9ZpbG66dF2QQiGpXSJp7uyr8MFhm7XZP
+	PGZQb6uTEp4nzYdR5S2NZgltBQ3QNUa3Vs9RUdex/tuJJCeVlBjneD0l26A8Di5bcnyKND5HkZz
+	z0rGj5a6AXZN6Fme0HaIzGov0ucLRjeO4B4800JmUZ0NN4nVpiQNaxlf0sm2SAYoyRNWZao4Z/O
+	CgDcd8iBlKg8ANbvjMbEGVjgael4Cum+oznxa/b2SqGyQDD91cfqi3N96DCNaerMkReo+sNHeV+
+	Oam3WBxqCjWTPM5lzGGBAJzoM3kVNK/pkqsa+sjVoaQI=
+X-Google-Smtp-Source: AGHT+IFDazSLroLydtk5cH1KILqZ4Iei26upSUEwKCXzSVpVsXNoIQpkXulTHXzkWEj/yRrHFf3q1Q==
+X-Received: by 2002:a92:cd84:0:b0:42f:952d:962 with SMTP id e9e14a558f8ab-42f952d0acbmr188390205ab.0.1760376793773;
+        Mon, 13 Oct 2025 10:33:13 -0700 (PDT)
+Received: from localhost ([140.82.166.162])
+        by smtp.gmail.com with ESMTPSA id 8926c6da1cb9f-58f729ce076sm3876957173.55.2025.10.13.10.33.12
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 13 Oct 2025 10:33:13 -0700 (PDT)
+Date: Mon, 13 Oct 2025 12:33:12 -0500
+From: Andrew Jones <ajones@ventanamicro.com>
+To: Wu Fei <atwufei@163.com>
+Cc: wu.fei9@sanechips.com.cn, kvm-riscv@lists.infradead.org
+Subject: Re: KVM: riscv: selftests: sv39 support needed?
+Message-ID: <20251013-a4ac567b70f3d5f4aab4052d@orel>
+References: <202509170234.58H2YCma081344@mse-fl2.zte.com.cn>
+ <20250918-618ded295b364b5aee7d17b2@orel>
+ <305003be-8f8b-47f1-bbe6-17c547eb3725@163.com>
+ <20251009-fbe27696dc9ef50de56c44d3@orel>
+ <56cae42e-158e-47e8-ae94-56b2e0a84643@163.com>
 MIME-Version: 1.0
-References: <20250930163635.4035866-1-vipinsh@google.com> <20250930163635.4035866-10-vipinsh@google.com>
- <DDEJY5ON407O.2O7CMOY9311NV@google.com> <aOlM7ngJJsEW-5sV@google.com>
-In-Reply-To: <aOlM7ngJJsEW-5sV@google.com>
-From: Vipin Sharma <vipinsh@google.com>
-Date: Fri, 10 Oct 2025 12:38:19 -0700
-X-Gm-Features: AS18NWBZyUvCG4kU2gu0uAzSe3onaIPRVz7Z1T1oN44tuheRWwvOLEuzuPBM3VY
-Message-ID: <CAHVum0e9fFfivmDg2N9VvWQfPdc4DfV0_qEhrRaFQXFjhr8LRA@mail.gmail.com>
-Subject: Re: [PATCH v3 9/9] KVM: selftests: Provide README.rst for KVM
- selftests runner
-To: Sean Christopherson <seanjc@google.com>, Brendan Jackman <jackmanb@google.com>
-Cc: kvm@vger.kernel.org, kvmarm@lists.linux.dev, kvm-riscv@lists.infradead.org, 
-	pbonzini@redhat.com, borntraeger@linux.ibm.com, frankja@linux.ibm.com, 
-	imbrenda@linux.ibm.com, anup@brainfault.org, atish.patra@linux.dev, 
-	zhaotianrui@loongson.cn, maobibo@loongson.cn, chenhuacai@kernel.org, 
-	maz@kernel.org, oliver.upton@linux.dev, ajones@ventanamicro.com, 
-	kvm-riscv <kvm-riscv-bounces@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <56cae42e-158e-47e8-ae94-56b2e0a84643@163.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20251010_123859_175125_4974D846 
-X-CRM114-Status: GOOD (  26.90  )
+X-CRM114-CacheID: sfid-20251013_103315_351346_566320D1 
+X-CRM114-Status: GOOD (  45.96  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -96,59 +96,113 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-T24gRnJpLCBPY3QgMTAsIDIwMjUgYXQgMTE6MTTigK9BTSBTZWFuIENocmlzdG9waGVyc29uIDxz
-ZWFuamNAZ29vZ2xlLmNvbT4gd3JvdGU6Cj4KPiBPbiBGcmksIE9jdCAxMCwgMjAyNSwgQnJlbmRh
-biBKYWNrbWFuIHdyb3RlOgo+ID4gVG8gYXZvaWQgY29uZnVzaW5nIHBlb3BsZSBhbmQgcG90ZW50
-aWFsbHkgbGVhdmUgdGhlIGRvb3Igb3BlbiB0byBhCj4gPiBjbGVhbmVyIGludGVncmF0aW9uLCBw
-bGVhc2UgY2FuIHlvdSBhZGQgc29tZSBiaXRzIGhlcmUgYWJvdXQgaG93IHRoaXMKPiA+IHJlbGF0
-ZXMgdG8gdGhlIHJlc3Qgb2YgdGhlIGtzZWxmdGVzdCBpbmZyYXN0cnVjdHVyZT8gU29tZSBxdWVz
-dGlvbnMgSQo+ID4gdGhpbmsgYXJlIHdvcnRoIGFuc3dlcmluZzoKPiA+CgpJdCdzIGEgZ29vZCBw
-b2ludCwgSSBzaG91bGQgd3JpdGUgYWJvdXQgaG93IGl0IGNvbXBhcmVzIHdpdGgga3NlbGZ0ZXN0
-CmluZnJhc3RydWN0dXJlLgoKPiA+IC0gQXMgc29tZW9uZSB3aG8gcnVucyBLVk0gc2VsZnRlc3Rz
-LCBidXQgZG9lc24ndCB3b3JrIHNwZWNpZmljYWxseSBvbgo+ID4gICBLVk0sIHRvIHdoYXQgZXh0
-ZW50IGRvIEkgbmVlZCB0byBrbm93IGFib3V0IHRoaXMgdG9vbD8gQ2FuIEkgc3RpbGwgcnVuCj4g
-PiAgIHRoZSBzZWxmdGVzdHMgInRoZSBvbGQgZmFzaGlvbmVkIHdheSIgYW5kIGlmIHNvIHdoYXQg
-ZG8gSSBsb3NlIGFzCj4gPiAgIGNvbXBhcmVkIHRvIHVzaW5nIHRoZSBLVk0gcnVubmVyPwo+Cj4g
-VGhlIHJ1bm5lciBpcyBwdXJlbHkgb3B0aW9uYWwuICBZb3UnbGwgbG9zZSB3aGF0ZXZlciB5b3Ug
-ZG9uJ3QgaGF2ZSwgdGhhdCB0aGUKPiBydW5uZXIgcHJvdmlkZXMuICBFLmcuIEkgaGF2ZSAoaGFj
-a3kpIHNjcmlwdHMgdG8gcnVuIEtWTSBzZWxmdGVzdHMgaW4gcGFyYWxsZWwsCj4gYnV0IHdpdGhv
-dXQgbXVjaCBvZiB0aGUgbmljZXRpZXMgcHJvdmlkZWQgYnkgdGhpcyBydW5uZXIuCj4KCkZvciBv
-Y2Nhc2lvbmFsIGNvbnRyaWJ1dG9ycywgaXQgd2lsbCBwcm92aWRlIG9wcG9ydHVuaXR5IHRvIHJ1
-biB0aGUKZGVmYXVsdCB0ZXN0cyBhbmQgcnVuIHRlc3RzIHdpdGggZGlmZmVyZW50IGNvbWJpbmF0
-aW9ucyBvZiB0aGVpcgpjb21tYW5kIGxpbmUgb3B0aW9ucy4gT3ZlcmFsbCwgcHJvdmlkZXMgYmV0
-dGVyIHRlc3QgY292ZXJhZ2UgYW5kCmNvbmZpZGVuY2UgYmVmb3JlIHNlbmRpbmcgcGF0Y2hlcyB1
-cHN0cmVhbS4KCkZvciByZWd1bGFyIGNvbnRyaWJ1dG9ycyBhbmQgbWFpbnRhaW5lcnMsIGEgZmFz
-dCBleGVjdXRpb24gb2YKc2VsZnRlc3RzICsgbW9yZSBjb3ZlcmFnZS4gUnVubmVyIGFsbG93cyB0
-aGVtIHRvIGNvbmZpZ3VyZSBvdXRwdXQgYW5kCnJlc3VsdHMgYXMgcGVyIHRoZWlyIHdpc2gvd29y
-a2Zsb3dzLgoKRm9yIGV2ZXJ5b25lLCB0byB1cGxvYWQgdGhlaXIgaW50ZXJlc3RpbmcgdGVzdCBj
-b21iaW5hdGlvbnMgdGhleSB1c2UKc28gdGhhdCB0aGUgb3ZlcmFsbCBLVk0gY29tbXVuaXR5IGdl
-dHMgYmVuZWZpdCBvdXQgb2YgaXQuCgo+ID4gLSBEb2VzIHRoaXMgc3lzdGVtIGNoYW5nZSB0aGUg
-ImRhdGEgbW9kZWwiIG9mIHRoZSBzZWxmdGVzdHMgYXQgYWxsLCBhbmQKPiA+ICAgaWYgc28gaG93
-PyBJLmUuIEkgdGhpbmsgKGJ1dCBob25lc3RseSBJJ20gbm90IHN1cmUpIHRoYXQga3NlbGZ0ZXN0
-cwo+ID4gICBhcmUgYSAyLXRpZXIgaGllcmFyY2h5IG9mICRzdWl0ZTokdGVzdCB3aXRob3V0IGFu
-eSBmdXJ0aGVyCj4gPiAgIHBhcmFtZXRlcmlzYXRpb24gb3IgbmVzdGluZyAod2hlcmUgdGhlcmUg
-aXMgbW9yZSBkZXRhaWwsIGl0J3MgaGlkZGVuCj4gPiAgIGFzIGltcGxlbWVudGF0aW9uIGRldGFp
-bHMgb2YgaW5kaXZpZHVhbCAkdGVzdHMpLiBEbyB0aGUgS1ZNIHNlbGZ0ZXN0cwo+ID4gICBoYXZl
-IHRoaXMgc3RydWN0dXJlPwo+Cj4gTW9yZSBvciBsZXNzLgo+Cj4gPiAgIElmIGl0IGRpZmZlcnMs
-IGhvdyBkb2VzIHRoYXQgZWZmZWN0IHRoZSB2aWV3IGZyb20gcnVuX2tzZWxmdGVzdC5zaD8KPgo+
-IEFGQUlLLCBub3RoaW5nIGluIEtWTSBzZWxmdGVzdHMgaXMgYXQgb2RkcyB3aXRoIHJ1bl9rc2Vs
-ZnRlc3Quc2guCj4KPiA+IC0gSSB0aGluayAoYWdhaW4sIG5vdCB2ZXJ5IHN1cmUpIHRoYXQgaW4g
-a3NlbGZ0ZXN0IHRoYXQgZWFjaCAkdGVzdCBpcyBhCj4gPiAgIGNvbW1hbmQgZXhlY3V0aW5nIGEg
-cHJvY2Vzcy4gQW5kIHRoaXMgcHJvY2VzcyBjb21tdW5pY2F0ZXMgaXRzIHN0YXR1cwo+ID4gICBi
-eSBwcmludGluZyBLVEFQIGFuZCByZXR1cm5pbmcgYW4gZXhpdCBjb2RlLiBJcyB0aGF0IHN0dWZm
-IHRoZSBzYW1lCj4gPiAgIGZvciB0aGlzIHJ1bm5lcj8KPgo+IFllcz8gIEV4Y2VwdCBtb3N0IEtW
-TSBzZWxmdGVzdHMgZG9uJ3Qgc3VwcG9ydCBUQVAgKHlldCkuCgpIZXJlIGVhY2ggdGVzdCBpcyBl
-eGVjdXRlZCBpbiBpdHMgb3duIHN1YnByb2Nlc3MuIE91dHB1dCBvZiBydW5uZXIgaXMKbm90IGlu
-IEtUQVAgZm9ybWF0LCBzYW1lIGZvciBtYWpvcml0eSBvZiB0aGUgS1ZNIHRlc3RzLgoKRXhlY3V0
-aW9uIGlzIGFueSBjb21tYW5kIHdyaXR0ZW4gaW4gKi50ZXN0IGZpbGUsIHdoaWNoIGlzIGludGVy
-cHJldGVkCmFzIGEgY29tbWFuZCB0byBleGVjdXRlIGluIGEgc2hlbGwuIFRoaXMgYWxsb3dzIHVz
-IHRvIHdyaXRlIHRlc3RzCndoaWNoIGNhbiBydW4gYmFzZWQgb24gdGhlIHJlc291cmNlcyBvbiB0
-aGUgaG9zdCBsaWtlIG51bWJlciBvZiB2Y3B1cwp0byB1c2UsIGhvdyBtdWNoIG1lbW9yeSB0byBh
-bGxvY2F0ZSwgZXRjLgoKLS0gCmt2bS1yaXNjdiBtYWlsaW5nIGxpc3QKa3ZtLXJpc2N2QGxpc3Rz
-LmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5m
-by9rdm0tcmlzY3YK
+On Fri, Oct 10, 2025 at 10:11:47PM +0800, Wu Fei wrote:
+> On 10/9/25 22:40, Andrew Jones wrote:
+> > On Thu, Oct 09, 2025 at 08:40:03PM +0800, Wu Fei wrote:
+> > > 
+> > > On 9/18/25 22:13, Andrew Jones wrote:
+> > > > On Wed, Sep 17, 2025 at 10:11:05AM +0800, wu.fei9@sanechips.com.cn wrote:
+> > > > > I was running kvm selftests on qemu-system-riscv64 with "-cpu rva23s64", which
+> > > > > uses sv39 by default, then I got the following error. After some debugging I
+> > > > > found sv39 is not supported for selftests, should we add sv39 support? I can
+> > > > > prepare a patch if it's needed.
+> > > > Yes, please.
+> > > 
+> > > 
+> > > Should we add another mode as VM_MODE_P41V39_4K? The smallest VA is 47bits
+> > > on the existing modes.
+> > 
+> > Why P41? sv39 supports a 56-bit physical address. To support sv39 I'd
+> > expect to add a VM_MODE_P56V39_4K. And, afaict, the reason we don't have a
+> > VM_MODE_P56V48_4K is simply because when riscv support was added it
+> > didn't add any new modes. We could VM_MODE_P56V48_4K as part of this work.
+> 
+> It's about mode for guest? Which is also limited by hgapt.mode, suppose
+> hgapt.mode is Sv39x4, the valid gpa bits is 41.
+
+You're right. I forgot what the PXX meant in the mode, but reviewing the
+implementation for Arm has now reminded me. Indeed we want
+VM_MODE_P41V39_4K.
+
+> 
+> > 
+> > > 
+> > > Also, is it necessary to add mode for sv57? Or we can just use some existing
+> > > ones such as P52V48 instead.
+> > 
+> > We need new modes that support 57-bit virtual addresses to test that
+> > support, and I'd like to see that. Again we have a 56-bit physical
+> > address, so the new mode would be VM_MODE_P56V57_4K.
+> > 
+> > > 
+> > > > 
+> > > > > # ./arch_timer
+> > > > > Random seed: 0x6b8b4567
+> > > > > ==== Test Assertion Failure ====
+> > > > >     arch_timer.c:73: false
+> > > > >     pid=144 tid=146 errno=0 - Success
+> > > > We can avoid errors for the default case by adding a
+> > > > kvm_selftest_arch_init() function for riscv which calls
+> > > > guest_modes_append_default(). We'll also need to modify
+> > > > guest_modes_append_default() to configure the default using information
+> > > > from KVM that can be obtained with a get-one-reg of the satp_mode config
+> > > > register. OIOW, use satp_mode but otherwise just mimic arm64's setup.
+> > > 
+> > > 
+> > > Is the current kvm_check_cap(KVM_CAP_VM_GPA_BITS) equal to satp_mode,
+> > > 
+> > > e.g. gpa 41-bits always means 8 in satp_mode?
+> > 
+> > No, KVM_CAP_VM_GPA_BITS only tells you the number of physical bits of the
+> > host, which dictates the maximum mode you can choose (see
+> > lib/guest_modes.c). You can get the maximum satp_mode with get-one-reg
+> > RISCV_CONFIG_REG(satp_mode) and then use that or anything smaller than
+> > that for the mode in the test. See lib/guest_modes.c again to see how
+> > there's support in the test framework for looping over modes in order to
+> > run the same tests on multiple modes. To do that, the test will change
+> > the guest configured mode with a set-one-reg of satp_mode.
+
+I'm wrong again here. We don't need to use set-one-reg for satp_mode and
+it won't work (as you've pointed out below) anyway. The guest should just
+use the modes we tell it to use. More about setting satp_mode below.
+
+> 
+> Got it, just check the difference of the two methods:
+> * KVM_CAP_VM_GPA_BITS - value from hgatp.mode, which is set during
+> kvm_riscv_gstage_mode_detect(), represents the hardware capability
+> * RISCV_CONFIG_REG(satp_mode) - value from satp_mode, which is set during
+> set_satp_mode(), decided by both hardware capability and kernel cmdline
+> 
+> It looks like current implementation tries to ensure vsatp.mode equals to
+> host satp.mode (I don't think it's necessary from spec point of view), so
+> that only one mode can be set for guest, in kvm_riscv_vcpu_set_reg_config:
+> 
+>         case KVM_REG_RISCV_CONFIG_REG(satp_mode):
+>                 if (reg_val != (satp_mode >> SATP_MODE_SHIFT))
+>                         return -EINVAL;
+>                 break;
+
+Right, the spec doesn't restrict the guest to the same mode as the host,
+just to the same or narrower. We could relax this check. Of course we
+have to trust the guest to do what it's told, not what the hardware says
+is possible, anyway though, since satp accesses don't trap. With that in
+mind, a VMM doesn't even need this set-one-reg to configure guests since
+it knows the maximum width it can describe to the guest from the
+get-one-reg of satp and KVM can't do anything with a mode set by the VMM
+anyway.
+
+So, as said above, for the multiple guest mode tests the guest will just
+need to set the mode we tell it to set.
+
+Thanks,
+drew
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
