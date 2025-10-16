@@ -4,92 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E08DFCCD193
-	for <kvm-riscv@archiver.kernel.org>; Thu, 16 Oct 2025 00:17:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5CA45CCD193
+	for <kvm-riscv@archiver.kernel.org>; Thu, 16 Oct 2025 01:27:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-Id:Date:Subject:Cc
 	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
 	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=pqDIqaM0+My712Q69BaPIAaejIj+NXTf1ecB3LbQzdg=; b=rJ/omjBVvNitNu
-	EHcWLG9E19xYa7iwVEHjKNdr1QQAA30pYdA/QJweSE5iEayM/wcZ3MrvgHfcGG1vTRSvJOdTypw1N
-	P/MPZ4ABQoYnaJ7mjrZaB3Nsc1IQjRAFv+HV3Zty7HK7zqRFGWLgxoqo7vM/xwCKkkgK36DGPsVJK
-	OfyuSu7RFYdIx99GkZ4rSo3KJD1Y6iWDuzVVLJMvNJc9Y6PjbaU/C78SR6S4yQkxgpDfvdRQ8+I0o
-	j0VWW/MLNpGIHJl/in6F1A9qxcS4wJ3dk7gA65f9ISqrEaZxOdx9qhHb9s17WcUaw4ZNNmjCNOB7J
-	/PpdIXjofakrhrp51idQ==;
+	List-Owner; bh=WarWObf325535vcY7aNx6cb0RdCHKmt86ZpRxC+HBk4=; b=qPbh92sd8/xSt4
+	E75oHcDjSMfmxbCrvpn3E6WKUJ8eSkYZDWug60BbRknL5c7cDvhPlapZcdkNSVwH+28MR4XdLKx8m
+	wB83f4lCdHKBaGdHwvJ+bgYgI0iCOqUyuHMdIizdq9BaGRNPwKjLbQUlUtnq9mvEojwozVvqBj8SZ
+	nOJqpwhl3+UkfsKRK8pKcUnGdW2359B39L1UBxfigVnLWbjyFV4RMdaqARDBp9RY78uTsacEAF0M1
+	bwziZDxG1LYhDI1yS0i07TPAPvKnUWMwCOON4iQLqM+s915+wcSWy2/4+3Q5Q8PY6Ca6WEhSHE1VZ
+	1V+9yf/tNMxjgFFIbgfg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1v9BgF-000000038Mk-1qCq;
-	Thu, 16 Oct 2025 00:17:19 +0000
-Received: from mail-pg1-x529.google.com ([2607:f8b0:4864:20::529])
+	id 1v9Clv-00000003D2X-2sYW;
+	Thu, 16 Oct 2025 01:27:15 +0000
+Received: from out30-118.freemail.mail.aliyun.com ([115.124.30.118])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1v9BgD-000000038M5-0fzQ
-	for kvm-riscv@lists.infradead.org;
-	Thu, 16 Oct 2025 00:17:18 +0000
-Received: by mail-pg1-x529.google.com with SMTP id 41be03b00d2f7-b57bf560703so61326a12.2
-        for <kvm-riscv@lists.infradead.org>; Wed, 15 Oct 2025 17:17:16 -0700 (PDT)
+	id 1v9Clr-00000003D25-2JNW;
+	Thu, 16 Oct 2025 01:27:13 +0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=sifive.com; s=google; t=1760573836; x=1761178636; darn=lists.infradead.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=bwptj4G5KoYvNAhjikL6LhizMbH7cKsoQglRkksgDsw=;
-        b=QpXI75rgVyrbeDoQk9EVgYONBF/7hQeKw12z/iiVqkq2OEOvCtmLmNxXSG3RROoEtK
-         uVST0R24gAR1oVzotvJASWFvPcEUk8lYeWQe3W0mMDQNdEoJ2NLxmOMuxxFy1hpFCzYF
-         9Pt7AZRsAYxo85wFnrtYgenImXxo8f18UcxnXYq0Zi+XWvwckoaaEhs8fTlo4gQJHblo
-         15hg+HGo9AGsfEEeGDA3cM0fIRskVBl9MLrQTnYG+30f92mHkW3sfD5PWdG0DWRdgPvl
-         pAa0yHMoxSzOvMtCD/4rj/laDkOVzUKpzY4emX0TH3o7iA+HgXhd4A7hS20jzeqGkNGy
-         niSw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1760573836; x=1761178636;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=bwptj4G5KoYvNAhjikL6LhizMbH7cKsoQglRkksgDsw=;
-        b=suia4rXpbgN84IU3k5Ntmd1++88aKCzkMSzw0MVtM2l5zOHJHS7LrPGMox49rCBjM0
-         P/TNbuUr/nOay1sv5UKEBvrGGGuJs7cUJ+8q8gGoMrDwaukApJfrnThpzUFfLBIYbDMG
-         oGhoI/+HTUJa6IK+H/2IqDceKtyPNCuBQF8j90P9mE/hURvUkRw+WqnOqybHDaEYvHzy
-         QoYUd8pVhaOeo43w0iSOXqWY0woC4kZG6llvwMyen3JIe03q5pTAFBRAfj7QcyZyKTb7
-         AO4ERpItaYndyDzFQ7xRywv7qx8Z0r7MVcSbkowRv4AAmY1hzDFz/EkJZ0BYdV8AAlpa
-         baFA==
-X-Forwarded-Encrypted: i=1; AJvYcCXpLkaURj3Cxer5SUOmygYJ52xJynfmO/dZF2ztPqOHiAiCGuyXXUuycYfr3QMxP7xnVRaTlQ8J8Bo=@lists.infradead.org
-X-Gm-Message-State: AOJu0YyU4YP8KKIs+/o7T0IwBRAOLh473T4IJuBuMQm++kh6T/gQsFBM
-	+SOV4yknfxiit/g9o12BzlLrl4iyVqFuldwpDBpOec34I7V7vamQCReNdKtHf43hgvI=
-X-Gm-Gg: ASbGncuhSCynCggGDRYA+4HfiqlFp0eQ9CtVtRxTBj/g6YYVh9rwerUPXGvJ+Eb8oTO
-	78m0FE70sH1I28biLPWMzG1jIcgYWzKlfZ+x1vmcy8DZYF3650MLRAt2RW3r3tk7e9lE5arYhAG
-	uijQEPHPqv9rYrYNtxi3S68tJZ4FC++2YXlgqXc4akrMmWsw5ilegrMb35EnY2AvPnHZRH+o6jU
-	EyGYoKhYnSa++Z83pUorBk5uGKh/mMufUpL7n7I4hf+ByIrFBFltCUq09M9kVbPxcvGBepliLvB
-	86F47posTMc3pmhGcXXpRvwAJYZeMiVMnsE6eBASv1jIfbjBZVzMeiycAXO/h+aynGMpBjGbLpV
-	Cz0CiHTO421oiCSiNLzNP2oRzSJeYfWnuzPPVXh7jKy2HfBDgD9+tghP+R+fcv2OY+3Vhtc4lsm
-	uUGwW8qckksDTolJL/7BOabg==
-X-Google-Smtp-Source: AGHT+IF8Txz7jrNpsSTJjE/JSeJk6k3fgDPYMzVbvQKqjcn0cbcXxdsvxtPavIzWrNBmcH4D/9ElyQ==
-X-Received: by 2002:a17:903:2381:b0:275:c1e7:c7e with SMTP id d9443c01a7336-29027356a08mr313186275ad.4.1760573836372;
-        Wed, 15 Oct 2025 17:17:16 -0700 (PDT)
-Received: from sw06.internal.sifive.com ([4.53.31.132])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-29099afbdb5sm8484645ad.104.2025.10.15.17.17.14
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 15 Oct 2025 17:17:15 -0700 (PDT)
-From: Samuel Holland <samuel.holland@sifive.com>
-To: Anup Patel <anup@brainfault.org>,
-	Atish Patra <atish.patra@linux.dev>
-Cc: Samuel Holland <samuel.holland@sifive.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Alexandre Ghiti <alex@ghiti.fr>,
-	Andrew Jones <ajones@ventanamicro.com>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Paul Walmsley <pjw@kernel.org>,
-	kvm-riscv@lists.infradead.org,
+	d=linux.alibaba.com; s=default;
+	t=1760578027; h=From:To:Subject:Date:Message-Id:MIME-Version;
+	bh=mWoWxsGAtDp0EV2ifeUAQMZcSWDLqLKjj7ZtzpCtdDQ=;
+	b=Tcl4ZAr2SsNOYvabpVtobWXXNk385ww+QCryGBt/uk0p7u5t98byX3abVhi5c6PPAhmOkdoTdKmQUlUpil7CyqyrUDHVG/2Rxx0LQT590tipMUh8WX/A7x3ylCr/hU0TcTMIS1F2Aib5AVQKfCP+vSJa2wfI/Q3ItOr31tX2WZk=
+Received: from localhost.localdomain(mailfrom:fangyu.yu@linux.alibaba.com fp:SMTPD_---0WqIKtva_1760578023 cluster:ay36)
+          by smtp.aliyun-inc.com;
+          Thu, 16 Oct 2025 09:27:04 +0800
+From: fangyu.yu@linux.alibaba.com
+To: anup@brainfault.org,
+	atish.patra@linux.dev,
+	pjw@kernel.org,
+	palmer@dabbelt.com,
+	aou@eecs.berkeley.edu,
+	alex@ghiti.fr,
+	liujingqi@lanxincomputing.com
+Cc: guoren@kernel.org,
 	kvm@vger.kernel.org,
+	kvm-riscv@lists.infradead.org,
+	linux-riscv@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
-	linux-riscv@lists.infradead.org
-Subject: [PATCH] RISC-V: KVM: Fix check for local interrupts on riscv32
-Date: Wed, 15 Oct 2025 17:17:09 -0700
-Message-ID: <20251016001714.3889380-1-samuel.holland@sifive.com>
-X-Mailer: git-send-email 2.47.2
+	Fangyu Yu <fangyu.yu@linux.alibaba.com>
+Subject: [PATCH] RISC-V: KVM: Read HGEIP CSR on the correct cpu
+Date: Thu, 16 Oct 2025 09:26:59 +0800
+Message-Id: <20251016012659.82998-1-fangyu.yu@linux.alibaba.com>
+X-Mailer: git-send-email 2.39.3 (Apple Git-146)
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20251015_171717_225939_733AB6F2 
-X-CRM114-Status: UNSURE (   9.77  )
+X-CRM114-CacheID: sfid-20251015_182712_075457_C5D0DA5A 
+X-CRM114-Status: UNSURE (   8.52  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -107,34 +73,46 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-To set all 64 bits in the mask on a 32-bit system, the constant must
-have type `unsigned long long`.
+From: Fangyu Yu <fangyu.yu@linux.alibaba.com>
 
-Fixes: 6b1e8ba4bac4 ("RISC-V: KVM: Use bitmap for irqs_pending and irqs_pending_mask")
-Signed-off-by: Samuel Holland <samuel.holland@sifive.com>
+When executing kvm_riscv_vcpu_aia_has_interrupts, the vCPU may have
+migrated and the IMSIC VS-file have not been updated yet, currently
+the HGEIP CSR should be read from the imsic->vsfile_cpu ( the pCPU
+before migration ) via on_each_cpu_mask, but this will trigger an
+IPI call and repeated IPI within a period of time is expensive in
+a many-core systems.
+
+Just let the vCPU execute and update the correct IMSIC VS-file via
+kvm_riscv_vcpu_aia_imsic_update may be a simple solution.
+
+Fixes: 4cec89db80ba ("RISC-V: KVM: Move HGEI[E|P] CSR access to IMSIC virtualization")
+Signed-off-by: Fangyu Yu <fangyu.yu@linux.alibaba.com>
 ---
+ arch/riscv/kvm/aia_imsic.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
- arch/riscv/kvm/vcpu.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index bccb919ca615..5ce35aba6069 100644
---- a/arch/riscv/kvm/vcpu.c
-+++ b/arch/riscv/kvm/vcpu.c
-@@ -212,7 +212,7 @@ int kvm_cpu_has_pending_timer(struct kvm_vcpu *vcpu)
+diff --git a/arch/riscv/kvm/aia_imsic.c b/arch/riscv/kvm/aia_imsic.c
+index fda0346f0ea1..168c02ad0a78 100644
+--- a/arch/riscv/kvm/aia_imsic.c
++++ b/arch/riscv/kvm/aia_imsic.c
+@@ -689,8 +689,12 @@ bool kvm_riscv_vcpu_aia_imsic_has_interrupt(struct kvm_vcpu *vcpu)
+ 	 */
  
- int kvm_arch_vcpu_runnable(struct kvm_vcpu *vcpu)
- {
--	return (kvm_riscv_vcpu_has_interrupts(vcpu, -1UL) &&
-+	return (kvm_riscv_vcpu_has_interrupts(vcpu, -1ULL) &&
- 		!kvm_riscv_vcpu_stopped(vcpu) && !vcpu->arch.pause);
- }
+ 	read_lock_irqsave(&imsic->vsfile_lock, flags);
+-	if (imsic->vsfile_cpu > -1)
+-		ret = !!(csr_read(CSR_HGEIP) & BIT(imsic->vsfile_hgei));
++	if (imsic->vsfile_cpu > -1) {
++		if (imsic->vsfile_cpu != smp_processor_id())
++			ret = true;
++		else
++			ret = !!(csr_read(CSR_HGEIP) & BIT(imsic->vsfile_hgei));
++	}
+ 	read_unlock_irqrestore(&imsic->vsfile_lock, flags);
  
+ 	return ret;
 -- 
-2.47.2
+2.50.1
 
-base-commit: 5a6f65d1502551f84c158789e5d89299c78907c7
-branch: up/kvm-aia-fix
 
 -- 
 kvm-riscv mailing list
