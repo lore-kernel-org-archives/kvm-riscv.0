@@ -4,70 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 495D1CCD199
-	for <kvm-riscv@archiver.kernel.org>; Fri, 17 Oct 2025 00:32:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DA231CCD199
+	for <kvm-riscv@archiver.kernel.org>; Fri, 17 Oct 2025 00:33:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:Reply-To:List-Subscribe:List-Help:
 	List-Post:List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID
 	:References:Mime-Version:In-Reply-To:Date:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=SIn171gMKmRMoRdnoGlm55eHryzba6PGd0XY/bD+Q0Y=; b=zaMu+YzXaVwjjb
-	7EufQljJxWACoW8VsSERGOXtSw1WLr+DnaM1yMYanrq/d/kB6aUJsSwIeZ5e22QigrxSXSmK5IXX9
-	L/25KC5FxH3lLd4lQcf/FWQmTGYY7WBSTP/Tj2N5W0aTlnGs8TUFTNjjl8jniRStNNjIKR3gy/sl9
-	TXzbWqiDoFFLcOcqtJGKa8yFOngcHUPOHrNzyy1u8iiW2Tjs5AVkeNq47kPQCoTyjZ1nFw6+0m/jc
-	7VJVnbmQagAu368z0yiNEcnDIL47YlqxP+8/yXUZTyHHOnjqq1XvJAF3miC1CwrIy1UdlYBe6rz2h
-	dUpyFNukLoq/XUGZwggg==;
+	List-Owner; bh=zOVW9XgF53qh+5y/dbpYcKdFjgZAurTKxLJz+iIsYhc=; b=DnmFRKfxrpZrZn
+	rrGcDXalQQZ6UebTwgVIAxjwXD1NqzQEzQpxycX9NIA2NubdNpv2ltwR29ia9sy3EX3yhJyp6nz21
+	ZULc3scoZtEvphLJl9ZviKD+Cr70wS3D37WR8vUd3uanB74Qi3fnqOQ3EfhBRsCMEm0fjRYRo7vyr
+	mOX3vIqWHq/Simf+hV/Sw27lA0SvlnaYy9eQEBbfgtxuqkhuysFg9ZGUcGW3ECt4gb5pbRzuPC53G
+	JO4bCKTnJAymow/TlmgN/mLV8cl90jEyv1lOqvFiHMNZ0ThEPv9S5jtY64fDwtZBPLeAulnuypFQU
+	zGqon+ZH/YMCO1wJgxHQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1v9YOt-00000006Ca2-421J;
-	Fri, 17 Oct 2025 00:32:55 +0000
-Received: from mail-pj1-x1049.google.com ([2607:f8b0:4864:20::1049])
+	id 1v9YOy-00000006Cfz-0jde;
+	Fri, 17 Oct 2025 00:33:00 +0000
+Received: from mail-pj1-x104a.google.com ([2607:f8b0:4864:20::104a])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1v9YOr-00000006CWX-0tkL
+	id 1v9YOs-00000006CXo-3U7s
 	for kvm-riscv@lists.infradead.org;
-	Fri, 17 Oct 2025 00:32:54 +0000
-Received: by mail-pj1-x1049.google.com with SMTP id 98e67ed59e1d1-334b0876195so1510561a91.1
-        for <kvm-riscv@lists.infradead.org>; Thu, 16 Oct 2025 17:32:52 -0700 (PDT)
+	Fri, 17 Oct 2025 00:32:55 +0000
+Received: by mail-pj1-x104a.google.com with SMTP id 98e67ed59e1d1-33428befbbaso1593444a91.0
+        for <kvm-riscv@lists.infradead.org>; Thu, 16 Oct 2025 17:32:54 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1760661172; x=1761265972; darn=lists.infradead.org;
+        d=google.com; s=20230601; t=1760661174; x=1761265974; darn=lists.infradead.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:from:to:cc:subject:date:message-id:reply-to;
-        bh=33cozUgZY2qVcRUHL7b8tITs99/x6FMYwOKO1Eer8GQ=;
-        b=poP3TdRixJLISvqC6fMbTz3kCn4I0y2yzRcegStp882Rd9GYIE7zXgkpSFFBINizCj
-         ipUOiCmtRBpCzQbrEQsDFc1TzjGhvrTtxW2vloREHcS8ebgd1ZfntwJ+JzN8VqatPweQ
-         +n6vVJuixChymK13l2tHMfr32/D86Nc3ttF6u7kzfmPL47tzB5mV8dVM9UiuI/xGJClw
-         FfCmqqbrn1B8dEUi0kvSETTFsSxx9bkvVCW4XPLaxg46oUUrfj8/J5IpAv4qO4r7Jgk6
-         uITIFUig8ODcmCi6OsBFclEqJG+VbYswpSN1cTgTW7NUZS3uspD2bfCDDiaNDE1i/Gxh
-         O+6w==
+        bh=ufVneY39YrbdCfRZpp0jVK1n9RSn66wnVA9SJtGGBdY=;
+        b=4oa6caSMum2WHT2zMG3xhhyI3dNcRr8cDPoC20Ij26eNiFw28CZibjrprKTlm6MKe5
+         POttPdnydUnKx5yqKvgRAZdQGxc2DcC6isz+c75l9gHqGxKHqWxzO2oS6qmcrJzgqOvK
+         p+blFmKjfF157bQ/sqZkxQf61/3CoqikYQxe6AWy9yjd4DuO/eqvR1zvD9Gt2dIG93mV
+         NzBgf5IXDwCi9IsHNYJTNxwk12CUBeY/jW5svIUe2ZgUzzbcUQJJzBcmlNfg2RXRjj9O
+         LiJ0haW04bt3YRqyGI7Ji7e5el68eSOi9qfn87Y4XInxgMA1HlOKArcGrDiZC9BFclm/
+         E5xA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1760661172; x=1761265972;
+        d=1e100.net; s=20230601; t=1760661174; x=1761265974;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=33cozUgZY2qVcRUHL7b8tITs99/x6FMYwOKO1Eer8GQ=;
-        b=oEGz5BMkgylB8J1cFJmz+QlUf/kqBCWBMbZoywNNneyhZMWK7YQpw713jkaeEWUsxE
-         f/SBRy2sSCtBWsZibrqm5LTedEipcv46I1SXl9USVs9kG8vTneF7ZP2d+KzYF2rzCwqk
-         2VGp8wAXpdBBZkjyMYJCFzWG4MKycHGim+5HbeT65gxhEvgsfJUnHg6XC1kgy8HMUUSm
-         YJ4vv4qbkG6mLoEz8Dj4ROHzy557sJw4+AKViLgUmTTpmX4dmi0C99wLCdSYBzilkPr3
-         2VFVDnZsv6c18NyuaDAxrynSoB+XHamyMSMG9aI0oZeEV8x0+Z8wqXQFtwNg1QK6kmdE
-         2FfA==
-X-Forwarded-Encrypted: i=1; AJvYcCXMog+/sRWBPZhY5/xGAUs+eXryMN1owlndKHPLkzjm5VXBTELoR+ZHMzBJrAinMUFYKd/C0PliiXM=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yx7QXTYfZtJBkjKwFFBAEQ8jvm2hleF5Cf9GZsJ0tCmA/6iWwCm
-	8IY6zspxy4O7lmwvot0drtb9CStYFW/ajx3D/s//cneqxIS7t9QxkuS8wL4UqUBotrpnDTcraq9
-	VCSblHA==
-X-Google-Smtp-Source: AGHT+IHi1bmDhBVE/1dfVFfxtUsGZvUIPpndhcsCAkXUuWnb62NCix+r2iPcIxi5145AtUHJ60DhAmmul/g=
-X-Received: from pjut11.prod.google.com ([2002:a17:90a:d50b:b0:33b:beb0:be7])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:380f:b0:32e:8931:b59c
- with SMTP id 98e67ed59e1d1-33bcf90c0cdmr1921084a91.27.1760661171886; Thu, 16
- Oct 2025 17:32:51 -0700 (PDT)
-Date: Thu, 16 Oct 2025 17:32:20 -0700
+        bh=ufVneY39YrbdCfRZpp0jVK1n9RSn66wnVA9SJtGGBdY=;
+        b=HQMznQBTPdQKW1DdTpTw7RuwxmYUQx28QrzDxiPevQJE+pdo9WRVG0Gv7CxfvqzCrS
+         Z5xB9lubvzTadDdq1LP9o9apq4PsZdM9OCgZndwMamolb0B6v5jSZeotCOYmk5lOGj4x
+         Zlpd05KWQ0kEz9PyRB3UmALIdKpx1GCk3VQsH5GbHvSRwsup5MClTW6ufQMYusHouQDz
+         EzZqWgl1/y0fCMZOg63f8vJsZcS+i3XNcfDdMKZQOO1Ai5sO7Wr7V7cKaTTNhI5GQCGO
+         pXYup3r09pCEsQ92nRPihFs7cfMtKpXnEPnv5otfq62SGLq4Igjm3tFSpbxKZ0QBgP16
+         f/uw==
+X-Forwarded-Encrypted: i=1; AJvYcCWBymOy38r2qt0/StaKEFkbfX8yByh+QyEOZHbg926I6brS/YkgovgeTxExzHKDTca0M8BWmgWVKA8=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yzvs2Dfar8h8GoLEHCz8K+Jc1QCZVO/kgb0/LSCw492loXSnRVv
+	SR6M3+ELCRe3/0uFrO5U1g/ziGmkMQa3NCtLh3J3QHUsHIaNjePqIWqOWQc1QOwhZKYdnwtLl+A
+	Z8wYquA==
+X-Google-Smtp-Source: AGHT+IGBsD40M1TCHpceHuTvrzQu31EsWCpow7sShvAnQiEKP0H9VSo9B6k/+Ftt8wsphMd8FgX3xhZLFrA=
+X-Received: from pjop7.prod.google.com ([2002:a17:90a:9307:b0:33b:aa58:175c])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:2fd0:b0:32d:601d:f718
+ with SMTP id 98e67ed59e1d1-33bcf8f9c16mr1675095a91.31.1760661173675; Thu, 16
+ Oct 2025 17:32:53 -0700 (PDT)
+Date: Thu, 16 Oct 2025 17:32:21 -0700
 In-Reply-To: <20251017003244.186495-1-seanjc@google.com>
 Mime-Version: 1.0
 References: <20251017003244.186495-1-seanjc@google.com>
 X-Mailer: git-send-email 2.51.0.858.gf9c4a03a3a-goog
-Message-ID: <20251017003244.186495-3-seanjc@google.com>
-Subject: [PATCH v3 02/25] KVM: Rename kvm_arch_vcpu_async_ioctl() to kvm_arch_vcpu_unlocked_ioctl()
+Message-ID: <20251017003244.186495-4-seanjc@google.com>
+Subject: [PATCH v3 03/25] KVM: TDX: Drop PROVE_MMU=y sanity check on
+ to-be-populated mappings
 From: Sean Christopherson <seanjc@google.com>
 To: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>, 
 	Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>, 
@@ -87,8 +88,8 @@ Cc: linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev,
 	Rick Edgecombe <rick.p.edgecombe@intel.com>, Ackerley Tng <ackerleytng@google.com>, 
 	Binbin Wu <binbin.wu@linux.intel.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20251016_173253_274747_34343AAD 
-X-CRM114-Status: GOOD (  13.15  )
+X-CRM114-CacheID: sfid-20251016_173254_909790_7F6BA0C0 
+X-CRM114-Status: GOOD (  19.28  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -106,173 +107,73 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Rename the "async" ioctl API to "unlocked" so that upcoming usage in x86's
-TDX code doesn't result in a massive misnomer.  To avoid having to retry
-SEAMCALLs, TDX needs to acquire kvm->lock *and* all vcpu->mutex locks, and
-acquiring all of those locks after/inside the current vCPU's mutex is a
-non-starter.  However, TDX also needs to acquire the vCPU's mutex and load
-the vCPU, i.e. the handling is very much not async to the vCPU.
+Drop TDX's sanity check that a mirror EPT mapping isn't zapped between
+creating said mapping and doing TDH.MEM.PAGE.ADD, as the check is
+simultaneously superfluous and incomplete.  Per commit 2608f1057601
+("KVM: x86/tdp_mmu: Add a helper function to walk down the TDP MMU"), the
+justification for introducing kvm_tdp_mmu_gpa_is_mapped() was to check
+that the target gfn was pre-populated, with a link that points to this
+snippet:
 
-No functional change intended.
+ : > One small question:
+ : >
+ : > What if the memory region passed to KVM_TDX_INIT_MEM_REGION hasn't been pre-
+ : > populated?  If we want to make KVM_TDX_INIT_MEM_REGION work with these regions,
+ : > then we still need to do the real map.  Or we can make KVM_TDX_INIT_MEM_REGION
+ : > return error when it finds the region hasn't been pre-populated?
+ :
+ : Return an error.  I don't love the idea of bleeding so many TDX details into
+ : userspace, but I'm pretty sure that ship sailed a long, long time ago.
 
+But that justification makes little sense for the final code, as the check
+on nr_premapped after TDH.MEM.PAGE.ADD will detect and return an error if
+KVM attempted to zap a S-EPT entry (tdx_sept_zap_private_spte() will fail
+on TDH.MEM.RANGE.BLOCK due lack of a valid S-EPT entry).  And as evidenced
+by the "is mapped?" code being guarded with CONFIG_KVM_PROVE_MMU=y, KVM is
+NOT relying on the check for general correctness.
+
+The sanity check is also incomplete in the sense that mmu_lock is dropped
+between the check and TDH.MEM.PAGE.ADD, i.e. will only detect KVM bugs that
+zap SPTEs in a very specific window (note, this also applies to the check
+on nr_premapped).
+
+Removing the sanity check will allow removing kvm_tdp_mmu_gpa_is_mapped(),
+which has no business being exposed to vendor code, and more importantly
+will pave the way for eliminating the "pre-map" approach entirely in favor
+of doing TDH.MEM.PAGE.ADD under mmu_lock.
+
+Reviewed-by: Ira Weiny <ira.weiny@intel.com>
+Reviewed-by: Kai Huang <kai.huang@intel.com>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/arm64/kvm/arm.c       | 4 ++--
- arch/loongarch/kvm/vcpu.c  | 4 ++--
- arch/mips/kvm/mips.c       | 4 ++--
- arch/powerpc/kvm/powerpc.c | 4 ++--
- arch/riscv/kvm/vcpu.c      | 4 ++--
- arch/s390/kvm/kvm-s390.c   | 4 ++--
- arch/x86/kvm/x86.c         | 4 ++--
- include/linux/kvm_host.h   | 4 ++--
- virt/kvm/kvm_main.c        | 6 +++---
- 9 files changed, 19 insertions(+), 19 deletions(-)
+ arch/x86/kvm/vmx/tdx.c | 14 --------------
+ 1 file changed, 14 deletions(-)
 
-diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
-index 785aaaee6a5d..e8d654024608 100644
---- a/arch/arm64/kvm/arm.c
-+++ b/arch/arm64/kvm/arm.c
-@@ -1828,8 +1828,8 @@ long kvm_arch_vcpu_ioctl(struct file *filp,
- 	return r;
- }
+diff --git a/arch/x86/kvm/vmx/tdx.c b/arch/x86/kvm/vmx/tdx.c
+index 326db9b9c567..4c3014befe9f 100644
+--- a/arch/x86/kvm/vmx/tdx.c
++++ b/arch/x86/kvm/vmx/tdx.c
+@@ -3181,20 +3181,6 @@ static int tdx_gmem_post_populate(struct kvm *kvm, gfn_t gfn, kvm_pfn_t pfn,
+ 	if (ret < 0)
+ 		goto out;
  
--long kvm_arch_vcpu_async_ioctl(struct file *filp, unsigned int ioctl,
--			       unsigned long arg)
-+long kvm_arch_vcpu_unlocked_ioctl(struct file *filp, unsigned int ioctl,
-+				  unsigned long arg)
- {
- 	return -ENOIOCTLCMD;
- }
-diff --git a/arch/loongarch/kvm/vcpu.c b/arch/loongarch/kvm/vcpu.c
-index 30e3b089a596..9a5844e85fd3 100644
---- a/arch/loongarch/kvm/vcpu.c
-+++ b/arch/loongarch/kvm/vcpu.c
-@@ -1471,8 +1471,8 @@ int kvm_vcpu_ioctl_interrupt(struct kvm_vcpu *vcpu, struct kvm_interrupt *irq)
- 	return 0;
- }
- 
--long kvm_arch_vcpu_async_ioctl(struct file *filp,
--			       unsigned int ioctl, unsigned long arg)
-+long kvm_arch_vcpu_unlocked_ioctl(struct file *filp, unsigned int ioctl,
-+				  unsigned long arg)
- {
- 	void __user *argp = (void __user *)arg;
- 	struct kvm_vcpu *vcpu = filp->private_data;
-diff --git a/arch/mips/kvm/mips.c b/arch/mips/kvm/mips.c
-index a75587018f44..b0fb92fda4d4 100644
---- a/arch/mips/kvm/mips.c
-+++ b/arch/mips/kvm/mips.c
-@@ -895,8 +895,8 @@ static int kvm_vcpu_ioctl_enable_cap(struct kvm_vcpu *vcpu,
- 	return r;
- }
- 
--long kvm_arch_vcpu_async_ioctl(struct file *filp, unsigned int ioctl,
--			       unsigned long arg)
-+long kvm_arch_vcpu_unlocked_ioctl(struct file *filp, unsigned int ioctl,
-+				  unsigned long arg)
- {
- 	struct kvm_vcpu *vcpu = filp->private_data;
- 	void __user *argp = (void __user *)arg;
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 2ba057171ebe..9a89a6d98f97 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -2028,8 +2028,8 @@ int kvm_arch_vcpu_ioctl_set_mpstate(struct kvm_vcpu *vcpu,
- 	return -EINVAL;
- }
- 
--long kvm_arch_vcpu_async_ioctl(struct file *filp,
--			       unsigned int ioctl, unsigned long arg)
-+long kvm_arch_vcpu_unlocked_ioctl(struct file *filp, unsigned int ioctl,
-+				  unsigned long arg)
- {
- 	struct kvm_vcpu *vcpu = filp->private_data;
- 	void __user *argp = (void __user *)arg;
-diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index bccb919ca615..a4bd6077eecc 100644
---- a/arch/riscv/kvm/vcpu.c
-+++ b/arch/riscv/kvm/vcpu.c
-@@ -238,8 +238,8 @@ vm_fault_t kvm_arch_vcpu_fault(struct kvm_vcpu *vcpu, struct vm_fault *vmf)
- 	return VM_FAULT_SIGBUS;
- }
- 
--long kvm_arch_vcpu_async_ioctl(struct file *filp,
--			       unsigned int ioctl, unsigned long arg)
-+long kvm_arch_vcpu_unlocked_ioctl(struct file *filp, unsigned int ioctl,
-+				  unsigned long arg)
- {
- 	struct kvm_vcpu *vcpu = filp->private_data;
- 	void __user *argp = (void __user *)arg;
-diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
-index 16ba04062854..8c4caa5f2fcd 100644
---- a/arch/s390/kvm/kvm-s390.c
-+++ b/arch/s390/kvm/kvm-s390.c
-@@ -5730,8 +5730,8 @@ static long kvm_s390_vcpu_memsida_op(struct kvm_vcpu *vcpu,
- 	return r;
- }
- 
--long kvm_arch_vcpu_async_ioctl(struct file *filp,
--			       unsigned int ioctl, unsigned long arg)
-+long kvm_arch_vcpu_unlocked_ioctl(struct file *filp, unsigned int ioctl,
-+				  unsigned long arg)
- {
- 	struct kvm_vcpu *vcpu = filp->private_data;
- 	void __user *argp = (void __user *)arg;
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index ca5ba2caf314..b85cb213a336 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -7240,8 +7240,8 @@ static int kvm_vm_ioctl_set_clock(struct kvm *kvm, void __user *argp)
- 	return 0;
- }
- 
--long kvm_arch_vcpu_async_ioctl(struct file *filp, unsigned int ioctl,
--			       unsigned long arg)
-+long kvm_arch_vcpu_unlocked_ioctl(struct file *filp, unsigned int ioctl,
-+				  unsigned long arg)
- {
- 	return -ENOIOCTLCMD;
- }
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 7186b2ae4b57..d93f75b05ae2 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -1557,6 +1557,8 @@ long kvm_arch_dev_ioctl(struct file *filp,
- 			unsigned int ioctl, unsigned long arg);
- long kvm_arch_vcpu_ioctl(struct file *filp,
- 			 unsigned int ioctl, unsigned long arg);
-+long kvm_arch_vcpu_unlocked_ioctl(struct file *filp,
-+				  unsigned int ioctl, unsigned long arg);
- vm_fault_t kvm_arch_vcpu_fault(struct kvm_vcpu *vcpu, struct vm_fault *vmf);
- 
- int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext);
-@@ -2437,8 +2439,6 @@ static inline bool kvm_arch_no_poll(struct kvm_vcpu *vcpu)
- }
- #endif /* CONFIG_HAVE_KVM_NO_POLL */
- 
--long kvm_arch_vcpu_async_ioctl(struct file *filp,
--			       unsigned int ioctl, unsigned long arg);
- void kvm_arch_guest_memory_reclaimed(struct kvm *kvm);
- 
- #ifdef CONFIG_HAVE_KVM_VCPU_RUN_PID_CHANGE
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index b7a0ae2a7b20..b7db1d5f71a8 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -4434,10 +4434,10 @@ static long kvm_vcpu_ioctl(struct file *filp,
- 		return r;
- 
- 	/*
--	 * Some architectures have vcpu ioctls that are asynchronous to vcpu
--	 * execution; mutex_lock() would break them.
-+	 * Let arch code handle select vCPU ioctls without holding vcpu->mutex,
-+	 * e.g. to support ioctls that can run asynchronous to vCPU execution.
- 	 */
--	r = kvm_arch_vcpu_async_ioctl(filp, ioctl, arg);
-+	r = kvm_arch_vcpu_unlocked_ioctl(filp, ioctl, arg);
- 	if (r != -ENOIOCTLCMD)
- 		return r;
- 
+-	/*
+-	 * The private mem cannot be zapped after kvm_tdp_map_page()
+-	 * because all paths are covered by slots_lock and the
+-	 * filemap invalidate lock.  Check that they are indeed enough.
+-	 */
+-	if (IS_ENABLED(CONFIG_KVM_PROVE_MMU)) {
+-		scoped_guard(read_lock, &kvm->mmu_lock) {
+-			if (KVM_BUG_ON(!kvm_tdp_mmu_gpa_is_mapped(vcpu, gpa), kvm)) {
+-				ret = -EIO;
+-				goto out;
+-			}
+-		}
+-	}
+-
+ 	ret = 0;
+ 	err = tdh_mem_page_add(&kvm_tdx->td, gpa, pfn_to_page(pfn),
+ 			       src_page, &entry, &level_state);
 -- 
 2.51.0.858.gf9c4a03a3a-goog
 
