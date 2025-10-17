@@ -4,85 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88631CCD1A2
-	for <kvm-riscv@archiver.kernel.org>; Fri, 17 Oct 2025 00:34:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D4DC5CCD1A3
+	for <kvm-riscv@archiver.kernel.org>; Fri, 17 Oct 2025 00:34:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:Reply-To:List-Subscribe:List-Help:
 	List-Post:List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID
 	:References:Mime-Version:In-Reply-To:Date:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=A4x5y8Kh/zC2sShvTTM30dKINlewDZxAwKy3eIO5ZBw=; b=yhwWsmZz0ySCuQ
-	odnyjkjzgbAXSHIIbX5Nf2QQaYJgA1a2GjKQzmGShhLMIDZiZi81nGFF+Y9z6LUoD3xCzHQNZoCBa
-	su29n1yHYfKRdWZz4SKbIEQjG7buhHNWA1RvRAVFsTPx5tzM3kf/LkHoLEP3CfocL2TxCqajWAwvi
-	PFiAIyayVLAr4s9s7uDsgxkKdbJOR/zfK6Gdp0hx4LoSX26CZMJcH6akhNI5UnVYigpDIyeQbimkf
-	ihAUTIWPd8ZyvJdKJFAFA3DOD6r7bIuAc33N05ggUv+Z6lZfTIiYSbEzEeKzfBqoWQ3LjJKFLrM6Y
-	EhlWHIvDEf3tyk8JlEAQ==;
+	List-Owner; bh=yxgg9aaiUd0L7mt+AT+roNP5VcgAn2p2A70qbtP2zOU=; b=sCZGgsVwkfSl1s
+	XeBNUdJtW1voe0dpHsZKExzRizOn1/VCmZ+04lvjvxzGTJ+dOa/wV4fRKTjSHCHijet7RQc7eukwC
+	PQKo1BZ8xN8t91g33niG4nNKjFpbpHDn47z8daRE/93GAp7qcYeShaDC9TMoNGt9nu2/YcmAccJZj
+	QdcrlQKcLWP6tMhhMeWQP+eP8UHAVNlmeJe8+9WAflZPoUDlOpz7Kfu0ZbJJENmyxdWhBwdqB29Jz
+	g2moEywCYJPfyvFPjjC+KmSRoeOGATtwALwe4TB/OdSyxOrNSQTvIunVVXQcJPEjqJBjEPtDvv2KY
+	LdetC5lKqe/UI9GYjoRA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1v9YQV-00000006F0W-477i;
-	Fri, 17 Oct 2025 00:34:36 +0000
+	id 1v9YQY-00000006F6F-2IwD;
+	Fri, 17 Oct 2025 00:34:38 +0000
 Received: from casper.infradead.org ([2001:8b0:10b:1236::1])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1v9YPT-00000006DSA-2Q1E
+	id 1v9YPV-00000006DUy-2bXU
 	for kvm-riscv@bombadil.infradead.org;
-	Fri, 17 Oct 2025 00:33:31 +0000
+	Fri, 17 Oct 2025 00:33:33 +0000
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=casper.20170209; h=Content-Type:Cc:To:From:Subject:
 	Message-ID:References:Mime-Version:In-Reply-To:Date:Reply-To:Sender:
 	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=WBWRMN6X3w3vTrUF8QjNUM8q/tVPNzKCX5eXLQ+Uu38=; b=fhLxZYev8G1f+n9WmMZX/V75HK
-	IUelcdWdEpP2VQZ/oRyFVw3etWWXPDoZtOp4SanzyQaOUdKWAYnOeSi5t5rGJdeKTXVVfKBed+xrk
-	uzLsDTsv2ibnT77nD0CsGOZ3maENVu2hplekfkqOWshkVDn0ccElcZYQJOMjAgrc9CFm0DQ/Ur3jy
-	liZNUQHMa7g2nYXgVGmEo5Pygmii6nCakecmL8FffuCZ3csRO3Z3AWleiMcMsgqREOs2IcpI+rG76
-	H/oHlBFDKOGvSAkcIVB+o/f+EYPVwhQkkIZSTuJ2IO1fDM4vgJ3E0t8sLOIj+gpDPs5dKT3V8MUCD
-	29gE2OqQ==;
+	bh=G1uT4yQcba8Ntip8LDR4veCehne/0rON+KC3PlpYlbc=; b=s0JNFvRTEt8fj4BEMyRh1qoMFr
+	ZuCwbthv5ySTIgp5TaRBx/FnsjYo9tcSa/6PqhkqChgLK1bwIr9Znl+iD2fpfSp/jeNiDqDSyeoUw
+	V6drEEiqiDVaN6kmGOxt4aorYTNdSes0Fcz9q5/gQPeU7OSCGg6drlIVTYJ/9v98UfBBT9fXIeT0y
+	u4pDbyrIFPBABImBxZ8anCTe2vkNCMAhmEytaVhShFpWbIKzVnlNXitCbOc6jiyJG8og7skg+alPP
+	cYmb2GdW4Lv+v/VeWKkM9sYAcZJmYOS+uWYD1/lANgdBJQw5EToYF/KZJ+Booky4fZM7JEj+solCI
+	J55iadvA==;
 Received: from mail-pj1-x104a.google.com ([2607:f8b0:4864:20::104a])
 	by casper.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1v9YPO-0000000FiB2-19Q9
+	id 1v9YPP-0000000FiBN-1FKZ
 	for kvm-riscv@lists.infradead.org;
-	Fri, 17 Oct 2025 00:33:29 +0000
-Received: by mail-pj1-x104a.google.com with SMTP id 98e67ed59e1d1-33baef12edaso1233411a91.0
-        for <kvm-riscv@lists.infradead.org>; Thu, 16 Oct 2025 17:33:25 -0700 (PDT)
+	Fri, 17 Oct 2025 00:33:31 +0000
+Received: by mail-pj1-x104a.google.com with SMTP id 98e67ed59e1d1-336b646768eso1548707a91.1
+        for <kvm-riscv@lists.infradead.org>; Thu, 16 Oct 2025 17:33:27 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1760661196; x=1761265996; darn=lists.infradead.org;
+        d=google.com; s=20230601; t=1760661205; x=1761266005; darn=lists.infradead.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:from:to:cc:subject:date:message-id:reply-to;
-        bh=WBWRMN6X3w3vTrUF8QjNUM8q/tVPNzKCX5eXLQ+Uu38=;
-        b=EJVCo06tnO+whKZkT3gHcJw1k3BxRuJpcUZftBWqFLiiW6L+ZYbr6LlRtQgFNI2Y6H
-         TSMrOzyijaX0bMiZ5iba0F/zHShVTYSzSr+NkJbnTDF7t4G6ogOlAcYuWLNYq4j7On/h
-         09UmfQhZQs0X+YTqObvX5r84CtnwA7ChzvqVAhLvvFTJm7Uxa215lLZsDZ3mdFn4ssHF
-         iiEFAcwtx5f1Ai20zwffgqkq9r3Heck9XKNaG4/rmn11g1yesHNxETX/qw/xNSKdWuyv
-         v91zMONO7XeGwO16lmieOwTuStnbkLS6ejlC70eO1SCOqeWGRyjKeRZeOO2MYn6JMNET
-         4kxg==
+        bh=G1uT4yQcba8Ntip8LDR4veCehne/0rON+KC3PlpYlbc=;
+        b=xqVq3Aj4Y9ujrNNOOvU+UTlc4pGeyZJL8zE6SJ35e3eY4eigmEALCAg2BWHFyeF6fW
+         0g5+0+1gJMyLYXY8f7pzt5M1L83aMWvi5PSgDo1/AWBFL9h57IeWpUVkd+cD3AQK1e2T
+         HdZh1YXiH9ey81LACg7mdZTwsgYO4mwYXTBXVoU5t6eiUQsqy6OpuFm9I53+yJZmmEUa
+         Jm8NIi0GyIdsE5PsqW7NoNQqD6XhSKb0p9mDuSEq1Mp9q2kMPXgSYPM3eAEvUkqLzFwd
+         aefpZdHuIoHakxQoPsxtEym6C1xv0kPzMjC567A12gnTMLCFiu21uFFgz+1rh67Tn3jO
+         2Tbg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1760661196; x=1761265996;
+        d=1e100.net; s=20230601; t=1760661205; x=1761266005;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=WBWRMN6X3w3vTrUF8QjNUM8q/tVPNzKCX5eXLQ+Uu38=;
-        b=K4O/PhkEbVJWUXEhGC5FS9HGEB+ZdbEoaTjSigHQAsA6X6A2ulFxG/XmEsuntREmP1
-         de8FJ6hg8+E+spD7tskyWwqS1SK25yod2tX7zNLE4jYyf5ulWQUE/g/3UhiVwa16feGG
-         rYK2TZJNTnUQOwl4jsankiCoHarRa6diE4VuSa7YlpeSfF0nq2AIhTvtZ832pPr4EoE2
-         z1/G+wTrhAcmmNs4yl24g4ay4UzAkibwiD9jPtkOQGQPiOj0rH4TTAysklO1BhaOCapN
-         GrebPEuV2UvixBUS+IEKb0Fw5d4Pb2iOXNYhmga4ZX7vjJnfIDV/a2g3YRf5MSaONSFF
-         oa+Q==
-X-Forwarded-Encrypted: i=1; AJvYcCUlPAMykMoKPUV+43t6AHxyJ3vkzfIAgzj1/IgzFilfIYJ9VnEuFc2OU41rh1+TnDL2sevdczg5ICM=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yzhpam/9v8O/tlFNAt+bBrDoavKeUSJsOJqYHz2rhlyAvNjEHGN
-	G0i5fzP1b/35FWemZtIQ3P2CSnamhDV0ijJJUzrJ1P1+tRhcwqxQvwIqzo32r5tUvZARJJFm0An
-	Q8pPJYQ==
-X-Google-Smtp-Source: AGHT+IH07aQeXAQe/gpM4oI6RLK2u3p52mKtLGzZsiMbsodE1gcNl3/aTBVcK7Ae83foyLaxFhiKihoxiME=
-X-Received: from pjbpt2.prod.google.com ([2002:a17:90b:3d02:b0:329:e84e:1c50])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90a:c2c3:b0:32e:4924:6902
- with SMTP id 98e67ed59e1d1-33bcf85a829mr1565388a91.3.1760661196491; Thu, 16
- Oct 2025 17:33:16 -0700 (PDT)
-Date: Thu, 16 Oct 2025 17:32:34 -0700
+        bh=G1uT4yQcba8Ntip8LDR4veCehne/0rON+KC3PlpYlbc=;
+        b=KcvdWp2cIjAgovyK9G9x7W9OeJ9dA6CUxXZNpaA8nX7iHwUEs2oXN6Gw1MLj9B/h35
+         nX8DmMuQr1oRdKhq9sZPZEMFrezxBc8DsOecMLK7AoTedqJXdMhPKW/9pykSupLV/ufs
+         u8WeL2PGVF8IHoIarCal8mRz3azFgGTKL4FJaFCSSgQt9fr7rv3IKnQNazAMmIGPHgQI
+         MLhgWlSuR7jsQdQxJB7iROSgTpSGFMIMvq+2eai6h1ktcr/JWkjehl571OlU0U/64n5b
+         wOvG7tNYAWG50zLYRzFbhFyoEF0ir6uHkUiMXURHafApGl7W5HumH+j34J/bAF+Vew6T
+         YSfQ==
+X-Forwarded-Encrypted: i=1; AJvYcCVIZ7qPcgfCdy9lwf7KQ/ji73LTeP5uVPUz7mtNIy4lbj3fW6C4PStd0xVXNzE10mMkFC+PJznWpEw=@lists.infradead.org
+X-Gm-Message-State: AOJu0YwK0Z6pihISGqu+TgqosBpzgEGP7Bk5Zh1p7M4BXPInXk8Nyt55
+	tEhQZzX/5PLNFu8Np1ZZbWskESx/eurrbccodhbnhfTcVU+a9wikqAf4vLxmV/sx496A/1+bGej
+	P7VuuFg==
+X-Google-Smtp-Source: AGHT+IFb3cb9XScIkfIbQA2oQID7nhqxfExRyWF6N5UGcVhE3T71y0SJP1d51io6pNMM6/KZP3XG25y1rx0=
+X-Received: from pjoa3.prod.google.com ([2002:a17:90a:8c03:b0:32e:a549:83e3])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:2d8f:b0:335:2eee:19dc
+ with SMTP id 98e67ed59e1d1-33bcf8f94b6mr1826093a91.28.1760661204960; Thu, 16
+ Oct 2025 17:33:24 -0700 (PDT)
+Date: Thu, 16 Oct 2025 17:32:39 -0700
 In-Reply-To: <20251017003244.186495-1-seanjc@google.com>
 Mime-Version: 1.0
 References: <20251017003244.186495-1-seanjc@google.com>
 X-Mailer: git-send-email 2.51.0.858.gf9c4a03a3a-goog
-Message-ID: <20251017003244.186495-17-seanjc@google.com>
-Subject: [PATCH v3 16/25] KVM: TDX: Fold tdx_sept_zap_private_spte() into tdx_sept_remove_private_spte()
+Message-ID: <20251017003244.186495-22-seanjc@google.com>
+Subject: [PATCH v3 21/25] KVM: TDX: Add tdx_get_cmd() helper to get and
+ validate sub-ioctl command
 From: Sean Christopherson <seanjc@google.com>
 To: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>, 
 	Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>, 
@@ -102,8 +103,8 @@ Cc: linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev,
 	Rick Edgecombe <rick.p.edgecombe@intel.com>, Ackerley Tng <ackerleytng@google.com>, 
 	Binbin Wu <binbin.wu@linux.intel.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20251017_013327_567476_B6284068 
-X-CRM114-Status: GOOD (  10.79  )
+X-CRM114-CacheID: sfid-20251017_013328_567368_32A635D1 
+X-CRM114-Status: GOOD (  10.36  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -121,87 +122,70 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Do TDH_MEM_RANGE_BLOCK directly in tdx_sept_remove_private_spte() instead
-of using a one-off helper now that the nr_premapped tracking is gone.
-
-Opportunistically drop the WARN on hugepages, which was dead code (see the
-KVM_BUG_ON() in tdx_sept_remove_private_spte()).
+Add a helper to copy a kvm_tdx_cmd structure from userspace and verify
+that must-be-zero fields are indeed zero.
 
 No functional change intended.
 
-Reviewed-by: Rick Edgecombe <rick.p.edgecombe@intel.com>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/x86/kvm/vmx/tdx.c | 41 +++++++++++------------------------------
- 1 file changed, 11 insertions(+), 30 deletions(-)
+ arch/x86/kvm/vmx/tdx.c | 31 +++++++++++++++++--------------
+ 1 file changed, 17 insertions(+), 14 deletions(-)
 
 diff --git a/arch/x86/kvm/vmx/tdx.c b/arch/x86/kvm/vmx/tdx.c
-index 76030461c8f7..d77b2de6db8a 100644
+index 2e2dab89c98f..d5f810435f34 100644
 --- a/arch/x86/kvm/vmx/tdx.c
 +++ b/arch/x86/kvm/vmx/tdx.c
-@@ -1679,33 +1679,6 @@ static int tdx_sept_link_private_spt(struct kvm *kvm, gfn_t gfn,
+@@ -2761,20 +2761,25 @@ static int tdx_td_finalize(struct kvm *kvm, struct kvm_tdx_cmd *cmd)
  	return 0;
  }
  
--static int tdx_sept_zap_private_spte(struct kvm *kvm, gfn_t gfn,
--				     enum pg_level level, struct page *page)
--{
--	int tdx_level = pg_level_to_tdx_sept_level(level);
--	struct kvm_tdx *kvm_tdx = to_kvm_tdx(kvm);
--	gpa_t gpa = gfn_to_gpa(gfn) & KVM_HPAGE_MASK(level);
--	u64 err, entry, level_state;
--
--	/* For now large page isn't supported yet. */
--	WARN_ON_ONCE(level != PG_LEVEL_4K);
--
--	err = tdh_mem_range_block(&kvm_tdx->td, gpa, tdx_level, &entry, &level_state);
--
--	if (unlikely(tdx_operand_busy(err))) {
--		/* After no vCPUs enter, the second retry is expected to succeed */
--		tdx_no_vcpus_enter_start(kvm);
--		err = tdh_mem_range_block(&kvm_tdx->td, gpa, tdx_level, &entry, &level_state);
--		tdx_no_vcpus_enter_stop(kvm);
--	}
--
--	if (KVM_BUG_ON(err, kvm)) {
--		pr_tdx_error_2(TDH_MEM_RANGE_BLOCK, err, entry, level_state);
--		return -EIO;
--	}
--	return 1;
--}
--
- /*
-  * Ensure shared and private EPTs to be flushed on all vCPUs.
-  * tdh_mem_track() is the only caller that increases TD epoch. An increase in
-@@ -1786,7 +1759,6 @@ static void tdx_sept_remove_private_spte(struct kvm *kvm, gfn_t gfn,
- 	struct kvm_tdx *kvm_tdx = to_kvm_tdx(kvm);
- 	gpa_t gpa = gfn_to_gpa(gfn);
- 	u64 err, entry, level_state;
--	int ret;
- 
- 	/*
- 	 * HKID is released after all private pages have been removed, and set
-@@ -1800,9 +1772,18 @@ static void tdx_sept_remove_private_spte(struct kvm *kvm, gfn_t gfn,
- 	if (KVM_BUG_ON(level != PG_LEVEL_4K, kvm))
- 		return;
- 
--	ret = tdx_sept_zap_private_spte(kvm, gfn, level, page);
--	if (ret <= 0)
-+	err = tdh_mem_range_block(&kvm_tdx->td, gpa, tdx_level, &entry, &level_state);
-+	if (unlikely(tdx_operand_busy(err))) {
-+		/* After no vCPUs enter, the second retry is expected to succeed */
-+		tdx_no_vcpus_enter_start(kvm);
-+		err = tdh_mem_range_block(&kvm_tdx->td, gpa, tdx_level, &entry, &level_state);
-+		tdx_no_vcpus_enter_stop(kvm);
-+	}
++static int tdx_get_cmd(void __user *argp, struct kvm_tdx_cmd *cmd)
++{
++	if (copy_from_user(cmd, argp, sizeof(*cmd)))
++		return -EFAULT;
 +
-+	if (KVM_BUG_ON(err, kvm)) {
-+		pr_tdx_error_2(TDH_MEM_RANGE_BLOCK, err, entry, level_state);
- 		return;
-+	}
++	if (cmd->hw_error)
++		return -EINVAL;
++
++	return 0;
++}
++
+ int tdx_vm_ioctl(struct kvm *kvm, void __user *argp)
+ {
+ 	struct kvm_tdx_cmd tdx_cmd;
+ 	int r;
  
- 	/*
- 	 * TDX requires TLB tracking before dropping private page.  Do
+-	if (copy_from_user(&tdx_cmd, argp, sizeof(struct kvm_tdx_cmd)))
+-		return -EFAULT;
+-
+-	/*
+-	 * Userspace should never set hw_error. It is used to fill
+-	 * hardware-defined error by the kernel.
+-	 */
+-	if (tdx_cmd.hw_error)
+-		return -EINVAL;
++	r = tdx_get_cmd(argp, &tdx_cmd);
++	if (r)
++		return r;
+ 
+ 	mutex_lock(&kvm->lock);
+ 
+@@ -3152,11 +3157,9 @@ int tdx_vcpu_ioctl(struct kvm_vcpu *vcpu, void __user *argp)
+ 	if (!is_hkid_assigned(kvm_tdx) || kvm_tdx->state == TD_STATE_RUNNABLE)
+ 		return -EINVAL;
+ 
+-	if (copy_from_user(&cmd, argp, sizeof(cmd)))
+-		return -EFAULT;
+-
+-	if (cmd.hw_error)
+-		return -EINVAL;
++	ret = tdx_get_cmd(argp, &cmd);
++	if (ret)
++		return ret;
+ 
+ 	switch (cmd.id) {
+ 	case KVM_TDX_INIT_VCPU:
 -- 
 2.51.0.858.gf9c4a03a3a-goog
 
