@@ -4,112 +4,100 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5216CCCD195
-	for <kvm-riscv@archiver.kernel.org>; Fri, 17 Oct 2025 16:00:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DFD4ACCD199
+	for <kvm-riscv@archiver.kernel.org>; Fri, 17 Oct 2025 16:04:59 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
-	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
+	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=aU4G0GomPQg7wejHGOxldsAk6Lkgx7VRSbiBSFv5SYo=; b=XS3Wf/n6E25/Sz
-	QBmiMkbky6SrhTfOIMusIIWmYHpiqQSDYrZb0dzyWfgDucmS4LxOu9jIFFAqHgv16b6QYZaOE7hwF
-	d8Qis6B+Y0tFToOfW1xA2X4VXPII8PtuRnw9l5DKsSg9JGY6oVnAsxyPmGXXma57/MkaHsaJduJ61
-	m6jVLDAPP3NcJg20eEF3W28FbWXAtt028GCd6DXpc1YC0PuhkcDY/Xjn27cUuq58Wz+ZF2suA2JHi
-	mBf42VDw8hfBWm7TWYml4VDdAFaygu5lZzzXx3RgyNvazy7+Od/o0Q9+3JtLeirSo037YGHqpgZhV
-	hOf6Opra55o9qxZe0adw==;
+	List-Owner; bh=Zy+QomXu9bQ0QGbQQNaKzm+f6ZxKmvCMy8qwoftTf2U=; b=lZLHgXyD/jCOIm
+	bshGONa3N9jhn43XQkjOiinJCQxj2JhoIzPvV1dWpmH1hQvMvr5c8tChUi5YEHQ8CeVChmlqwXPaQ
+	aV5OQ5eyWMiKgxYBh+mMcKM7QPbDoL/HRrx51/M9JA4UYhlTK+XepNdD6/j4H+3aA7gTc6dPKqdzQ
+	RfGGirQhbslcpY6FMhAZpS2hxyJ6c+XrgvkEhBmh4PwNV4OmW++Qw2aBB+3vzMSL/UaZLaRytbWAc
+	s/Ui8UDOgGNVtVONE8t5GEY/6r4Tm+Npchqw74T0qoXPgeLDwkyVTlj9F/pm49DwbrETa7cUM0Uj4
+	Y8k5TDv/qI/8Ib6zRGCA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1v9msf-00000008M4H-0C0k;
-	Fri, 17 Oct 2025 16:00:37 +0000
+	id 1v9mwt-00000008MyE-2YtQ;
+	Fri, 17 Oct 2025 16:04:59 +0000
 Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1v9msd-00000008M2c-1xPw
+	id 1v9mws-00000008Mxe-073V
 	for kvm-riscv@bombadil.infradead.org;
-	Fri, 17 Oct 2025 16:00:35 +0000
+	Fri, 17 Oct 2025 16:04:58 +0000
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:MIME-Version
-	:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:
-	Content-Type:Content-ID:Content-Description;
-	bh=XGrq7dE9mGPhrWe1XWbI1ElRSHZxTOfH8a4rxkkGojA=; b=YBJUuFoRPsgX2DPKM+pifCIIP8
-	8rgqlAFe9rxP7eUD/5GqV39DatzJAxhDgXHVYnMmlRJZOKWMLmv2wjCWrKU/uxOstqPNxMDwQWZcC
-	cP6ZtgIaZb4yo/Bd63AQdrWcjhrsD54ivlES6yGsPyPFoirNEqeN1wnxvSwAWgRLR+0k7vpZa9YHA
-	+hmdnYu0gnUoNY8TJil66uSbfKjt8+DNrcJ6jv/IoKpniI79yQrQdpdPGBIIscW+lQFwWuqx8pNZf
-	aZiu9MByDhSmy05yza65NMP+zs0g3/kvB/T6RdBIvvbM0tp1Hkicq2qfWHarU1XClD92dA23DwHZP
-	uY/+2jAg==;
-Received: from mail-pf1-x42c.google.com ([2607:f8b0:4864:20::42c])
+	d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=SvJpBvOxY/CPj4QnQ1neShnGYHWpMpPjYGQCrWAehTg=; b=qhumYUZ7LbELQ0qAoZLxXpebfl
+	IsjhoYd65MjI9385GlLIVwE6Qee0swPi9uQ2bLl5enPxTUGEmUj+MYlLG5yrve7tICn43oTuu0seg
+	dd8blwKw0m31EvBX6kJZL2AmNlB9Wpc0RJ60rYkXIEDLPwfSVJdgJ0B/o6a3zljnb0KKEuKTseTGX
+	Fta7g7J+vzLrJVUV/oDjIIgngmK6uKa1THhaiXbq8sm+VTLP16Hl060vE8/KmSFafqLY6cl7uNZ3A
+	mF1m06REY9jWwwMusZyv58I0zpgdd8dlCSHCgf3JJ74uDwxyS9zu5SiIg8VYCzR1khS6WMygFfTmG
+	MQzhFtUg==;
+Received: from mail-io1-xd2b.google.com ([2607:f8b0:4864:20::d2b])
 	by desiato.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1v9mrv-00000007iRk-18Vf
+	id 1v9mwi-00000007ilz-1YUp
 	for kvm-riscv@lists.infradead.org;
-	Fri, 17 Oct 2025 16:00:10 +0000
-Received: by mail-pf1-x42c.google.com with SMTP id d2e1a72fcca58-78125ed4052so2760820b3a.0
-        for <kvm-riscv@lists.infradead.org>; Fri, 17 Oct 2025 08:59:51 -0700 (PDT)
+	Fri, 17 Oct 2025 16:04:52 +0000
+Received: by mail-io1-xd2b.google.com with SMTP id ca18e2360f4ac-92cebee95a8so88861039f.0
+        for <kvm-riscv@lists.infradead.org>; Fri, 17 Oct 2025 09:04:47 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ventanamicro.com; s=google; t=1760716790; x=1761321590; darn=lists.infradead.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=XGrq7dE9mGPhrWe1XWbI1ElRSHZxTOfH8a4rxkkGojA=;
-        b=Qwnd7md5Ro9B14ZMZXKXYow6lfGe3XPclir+08L2tPSljpAhhE6bZpcA1XVLtsbk4J
-         VEqciMPJ1ctFYLHp89HkREqwvWPJ6e/qiR2drk9ajkzt84ZNR/Np5WOL1/nWwBHkIY0t
-         AXF/SAMuIVs6barJLimtynoAzPzoYg9vH1pir0go4JTdojXe3BaScMtUDk+ufzIp/5NU
-         4vrB47iWy32UkdNt637BkTADA2+jal/AnYkF17+b++ONmw9eFrgXwUd8VfHnx8XOAVp7
-         VuSrcJheOkgZ75BD9ceyCINnYShxbZZQlYIN0sTY0eCG5LQGQfI/pHk8HG0pymL85RGV
-         B8zw==
+        d=ventanamicro.com; s=google; t=1760717086; x=1761321886; darn=lists.infradead.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=SvJpBvOxY/CPj4QnQ1neShnGYHWpMpPjYGQCrWAehTg=;
+        b=lD9GOyMNjPnz+5k/HdqrKofQiJ5/OlvO+JgzDj5ygA45zoOgwzdgcqIVYuIrw1MxuV
+         iIx9owTPb3pYnOyI8CndSRsM6fA6hwL0PXcLSNXU55V9NB61G7gRL3cU6C0dqc6Js/tn
+         Uh7yd1jPd++Wy1IjzCJ+RRzbNtUblvOBAvg+USKQHSPUFe2XB/QVEQa+2nZwST4IAAt2
+         3ov/9uH9bTy7fxrhCHsOetyptyEhnTsXMiH4JjJU0qzBK1BkSrx4eslPqqKs4fIjA9FT
+         Zm7bO2KIQHqMw9bVsmuddW4kYJaHt2ctHKlwZupkAdIkfZ3FRp7Sd9tXD656kMorECsx
+         F9Eg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1760716790; x=1761321590;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=XGrq7dE9mGPhrWe1XWbI1ElRSHZxTOfH8a4rxkkGojA=;
-        b=FBFgeX8Hw4LUZD2j0p8uBx9Pr71iWIrGQoC1XqLt6cg7vg9qLxH/5irDUghqS8PrHF
-         EKMPDQqP05fo2k3B0rkraXucsgjnJxh0yz0K3/6Rybhz0tvBjmd536z706kFE8EbPKZ+
-         y3amrcQtgAU0XNNRxK/8plOd6I8+abU+nI3hjQUdM6CWEkVSJpJbskfwUtouQ9i0lRQT
-         4fJ38BZOdKcEEzSMt5m02+XzS0HBl/w8bGoxj2/sEBECIhOif/MkilJimNEVvYC5wFmR
-         G7O4YLxAwRf81mvyjddEpXWTrZdveQSgmKWzmFvtfsMmS+XyTmaYRdr57vIxtbn5Ioat
-         /csg==
-X-Forwarded-Encrypted: i=1; AJvYcCVmrCyMiQMMH9OxVt+jtLT9D7yb3evZSOpNqfm7uzCuwKx/A1L27LaQbYD1JgGphUY0rRobWKSolLU=@lists.infradead.org
-X-Gm-Message-State: AOJu0YwfGn696gAq2KjoY0W/tplHkd1s4V5tDMubv9JX+M8/FhyDqKdR
-	kKfJTH5oedyTGmPZ5C6t/P9HN41Ddu/D2G+9MX2bNKGE8aYN5DUaj0bqVF8ULIN4H4w=
-X-Gm-Gg: ASbGncsIS69VvgQdrIt7YxBs6GXMCl4xgUvCtWpwuFoOfgNQBWu916crUEDgbPssGbr
-	7Z8ku8ibBEZmLermd6SmsnMGqDk5RvI5u9oLFocrpm/cYJB8BTUdf2cLZiNLCrA2kL6BHIjlWtr
-	+tvdkP2RoI5mAqnGMg0R4V7wJ6ByB9dqp9Zi36vgFp3Wa0djvlTnlUmg+9F/cFJMw2kubWm1w9U
-	OqqtPtFVlyi5aa4WnsR6CixMtwqKltuPaj7UzEFLqveW3QhBuC1FABmk7E8a9T7aMXYbJ7hWWZ8
-	rOG7a87IzsKLfs1h4YHJgmGMLFPB1b2MaUBQdOvIjtDiu0CafiukQZ1NTUgwBrNfmIZhOGpv4Ie
-	PkIMzSyw9XsstNyzQuTizj5va7L6JTAy/jPL6F/QIwN5Cvdhjn9XW6FVWmFG/JDBT1GVjq8qexz
-	rQwvACp/0ICc8gBVqn7UE2pceo0LWMotvkOhh/oTLI7QU=
-X-Google-Smtp-Source: AGHT+IEjhb0cA2r/R2/eGguQc8wJ0VGA660zoYKsRyUrDokrj4BSrZrFe4SkzJzL8cy+UNwStJFbqg==
-X-Received: by 2002:a05:6a20:958f:b0:334:8335:9d87 with SMTP id adf61e73a8af0-334a856e41amr6075209637.19.1760716789785;
-        Fri, 17 Oct 2025 08:59:49 -0700 (PDT)
-Received: from localhost.localdomain ([122.171.18.129])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-b6a7669392csm151067a12.18.2025.10.17.08.59.45
+        d=1e100.net; s=20230601; t=1760717086; x=1761321886;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=SvJpBvOxY/CPj4QnQ1neShnGYHWpMpPjYGQCrWAehTg=;
+        b=DyfhAPkhaewW+2awNz+Zt5yH4RZXFJJQY1LUXuE1p7G6OR/p9keTMOv5hhSWP7czDE
+         t7pcFyFV4E/845Tc0wQqkAUkUlau6yotb78iQl+jguVZICtswLPmNkQDKiSyNDHLrBQU
+         IdbJky5g++8oA4piWs/ucunh+U5jx7Tpwyisuqzhcd+iJoj3wtEc+x7QjlCFlNgzbaSr
+         mHjnlf0/Rg48s2ke4sZzQxyYxsemuyt5/dRxz5os2DodX+DAe62HarceCIr9DKtZ4EQ0
+         aRLEKB5DSSIPUOBChjdM8ZMyVFMRdy4SQ7zZCpkcDcOT4vpDpW5qwWyrwovs83u4IO9J
+         GdOg==
+X-Gm-Message-State: AOJu0YwSR0zS9AaFGgqGK9ozpgzN0CT3EQYPoZnscqin+hilxysUCiyD
+	EEihzjZ/a9yNsexkrlELcP69Pc6XPSHj5ZiC5MWhk+F2b7GfZ5fRzuRWoWGkLAwOrjDO8/Jhn/Q
+	yJrFbIEw=
+X-Gm-Gg: ASbGncuhSPL3Kz/b7zaqVWz0WFzsgeG6zofDsY8WuR17QOKntW1PvSsinaSXWPCV1aN
+	rZj2aMYMmzdneJrG3Kmivhu4/Angw3iL1qVZ/V14YYj1LrlCRLxwMyhL7FcEfRq40J0fHD2X5K7
+	DfHh/+o8TzOtOmkVj82LK7CgETEIh+1w0sbNDcd0grrUOuBZPPCaluBKLBnHHGg+t9ELl83gw30
+	wPJG4YxJucM802IyWWPbikUYHCB8oBS62QmUiNwbmr9uZEzCAc1U/mBVsNAas+JfYMPrVZfg4w4
+	SgKBr3+ORQM0OVflQJ4sUs1wSDz54Z4Ta/UhUAgUQm5Lh+V4Fv67N3cgO29kxIfY7dE1FyLZmCf
+	5/sIQU59C2somVc0EdK6W1a95auiXcdBktudKIXplStDvGI2xSOe+K14IK6mChNCBdztby9N/UG
+	LGcg==
+X-Google-Smtp-Source: AGHT+IH91gtjg4MEDAfFBXyD5uwoG2Mo/ry27+3Ys5Ih0x7eQMipoHQlZ7P3xEdgqy8bloN7nFmVBg==
+X-Received: by 2002:a05:6e02:178e:b0:430:d061:d9f7 with SMTP id e9e14a558f8ab-430d061da22mr4773715ab.23.1760717085569;
+        Fri, 17 Oct 2025 09:04:45 -0700 (PDT)
+Received: from localhost ([140.82.166.162])
+        by smtp.gmail.com with ESMTPSA id 8926c6da1cb9f-5a8a9601be8sm11030173.4.2025.10.17.09.04.45
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 17 Oct 2025 08:59:49 -0700 (PDT)
-From: Anup Patel <apatel@ventanamicro.com>
-To: Atish Patra <atish.patra@linux.dev>,
-	Andrew Jones <ajones@ventanamicro.com>
-Cc: Palmer Dabbelt <palmer@dabbelt.com>,
-	Paul Walmsley <paul.walmsley@sifive.com>,
-	Alexandre Ghiti <alex@ghiti.fr>,
-	Paolo Bonzini <pbonzini@redhat.com>,
-	Shuah Khan <shuah@kernel.org>,
-	Anup Patel <anup@brainfault.org>,
-	kvm@vger.kernel.org,
-	kvm-riscv@lists.infradead.org,
-	linux-riscv@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	linux-kselftest@vger.kernel.org,
-	Anup Patel <apatel@ventanamicro.com>
-Subject: [PATCH 3/4] RISC-V: KVM: Add SBI MPXY extension support for Guest
-Date: Fri, 17 Oct 2025 21:29:24 +0530
-Message-ID: <20251017155925.361560-4-apatel@ventanamicro.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20251017155925.361560-1-apatel@ventanamicro.com>
-References: <20251017155925.361560-1-apatel@ventanamicro.com>
+        Fri, 17 Oct 2025 09:04:45 -0700 (PDT)
+Date: Fri, 17 Oct 2025 11:04:44 -0500
+From: Andrew Jones <ajones@ventanamicro.com>
+To: wu.fei9@sanechips.com.cn
+Cc: kvm-riscv@lists.infradead.org
+Subject: Re: [PATCH 2/2] KVM: riscv: selftests: Detect supported vm modes
+Message-ID: <20251017-f2c1b717d2364067c64f95a6@orel>
+References: <20251017110908650RWBl7sDIk6WUGhkvJSH4L@zte.com.cn>
+ <202510170319.59H3JmWd056039@mse-fl2.zte.com.cn>
 MIME-Version: 1.0
+Content-Disposition: inline
+In-Reply-To: <202510170319.59H3JmWd056039@mse-fl2.zte.com.cn>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20251017_170005_419263_EC6E56FA 
-X-CRM114-Status: GOOD (  10.50  )
+X-CRM114-CacheID: sfid-20251017_170450_780036_3CD1F112 
+X-CRM114-Status: GOOD (  26.71  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -126,74 +114,173 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-The SBI MPXY extension is a platform-level functionality so KVM only
-needs to forward SBI MPXY calls to KVM user-space.
+On Fri, Oct 17, 2025 at 11:15:57AM +0800, wu.fei9@sanechips.com.cn wrote:
+> The default vm mode on riscv is hardcoded to sv48, which causes tests to
+> fail on platform supporting sv39 only, such as '-cpu rva23s64' on qemu.
+> This patch detects the support vm modes and sets default to the maximum
+> supported one.
+> 
+> Signed-off-by: Wu Fei <wu.fei9@sanechips.com.cn>
+> ---
+>  .../testing/selftests/kvm/include/kvm_util.h  |  4 ++-
+>  .../selftests/kvm/include/riscv/processor.h   |  2 ++
+>  tools/testing/selftests/kvm/lib/guest_modes.c | 24 +++++++++----
+>  .../selftests/kvm/lib/riscv/processor.c       | 36 +++++++++++++++++++
+>  4 files changed, 59 insertions(+), 7 deletions(-)
+> 
+> diff --git a/tools/testing/selftests/kvm/include/kvm_util.h b/tools/testing/selftests/kvm/include/kvm_util.h
+> index 02224bc514d4..7bc2ee9f0cad 100644
+> --- a/tools/testing/selftests/kvm/include/kvm_util.h
+> +++ b/tools/testing/selftests/kvm/include/kvm_util.h
+> @@ -234,7 +234,9 @@ extern enum vm_guest_mode vm_mode_default;
+>  #error "RISC-V 32-bit kvm selftests not supported"
+>  #endif
+> 
+> -#define VM_MODE_DEFAULT                        VM_MODE_P50V48_4K
+> +extern enum vm_guest_mode vm_mode_default;
 
-Signed-off-by: Anup Patel <apatel@ventanamicro.com>
----
- arch/riscv/include/asm/kvm_vcpu_sbi.h | 1 +
- arch/riscv/include/uapi/asm/kvm.h     | 1 +
- arch/riscv/kvm/vcpu_sbi.c             | 4 ++++
- arch/riscv/kvm/vcpu_sbi_forward.c     | 7 +++++++
- 4 files changed, 13 insertions(+)
+We can just move this declaration out of the #ifdef __aarch64__ region.
+It shouldn't harm other architectures.
 
-diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-index 446f4a8eb3cd..c1a7e3b40d9c 100644
---- a/arch/riscv/include/asm/kvm_vcpu_sbi.h
-+++ b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-@@ -107,6 +107,7 @@ extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_dbcn;
- extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_susp;
- extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_sta;
- extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_fwft;
-+extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_mpxy;
- extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_experimental;
- extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_vendor;
- 
-diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-index 759a4852c09a..37213d86c0d1 100644
---- a/arch/riscv/include/uapi/asm/kvm.h
-+++ b/arch/riscv/include/uapi/asm/kvm.h
-@@ -211,6 +211,7 @@ enum KVM_RISCV_SBI_EXT_ID {
- 	KVM_RISCV_SBI_EXT_STA,
- 	KVM_RISCV_SBI_EXT_SUSP,
- 	KVM_RISCV_SBI_EXT_FWFT,
-+	KVM_RISCV_SBI_EXT_MPXY,
- 	KVM_RISCV_SBI_EXT_MAX,
- };
- 
-diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
-index fd4106c276d8..46ab7b989432 100644
---- a/arch/riscv/kvm/vcpu_sbi.c
-+++ b/arch/riscv/kvm/vcpu_sbi.c
-@@ -82,6 +82,10 @@ static const struct kvm_riscv_sbi_extension_entry sbi_ext[] = {
- 		.ext_idx = KVM_RISCV_SBI_EXT_FWFT,
- 		.ext_ptr = &vcpu_sbi_ext_fwft,
- 	},
-+	{
-+		.ext_idx = KVM_RISCV_SBI_EXT_MPXY,
-+		.ext_ptr = &vcpu_sbi_ext_mpxy,
-+	},
- 	{
- 		.ext_idx = KVM_RISCV_SBI_EXT_EXPERIMENTAL,
- 		.ext_ptr = &vcpu_sbi_ext_experimental,
-diff --git a/arch/riscv/kvm/vcpu_sbi_forward.c b/arch/riscv/kvm/vcpu_sbi_forward.c
-index dbfa70c2c775..5a3c75eb23c5 100644
---- a/arch/riscv/kvm/vcpu_sbi_forward.c
-+++ b/arch/riscv/kvm/vcpu_sbi_forward.c
-@@ -25,3 +25,10 @@ const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_dbcn = {
- 	.default_disabled = true,
- 	.handler = kvm_riscv_vcpu_sbi_forward_handler,
- };
-+
-+const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_mpxy = {
-+	.extid_start = SBI_EXT_MPXY,
-+	.extid_end = SBI_EXT_MPXY,
-+	.default_disabled = true,
-+	.handler = kvm_riscv_vcpu_sbi_forward_handler,
-+};
--- 
-2.43.0
+> +
+> +#define VM_MODE_DEFAULT                        vm_mode_default
+>  #define MIN_PAGE_SHIFT                 12U
+>  #define ptes_per_page(page_size)       ((page_size) / 8)
+> 
+> diff --git a/tools/testing/selftests/kvm/include/riscv/processor.h b/tools/testing/selftests/kvm/include/riscv/processor.h
+> index 162f303d9daa..2d5a5548e698 100644
+> --- a/tools/testing/selftests/kvm/include/riscv/processor.h
+> +++ b/tools/testing/selftests/kvm/include/riscv/processor.h
+> @@ -191,4 +191,6 @@ static inline void local_irq_disable(void)
+>         csr_clear(CSR_SSTATUS, SR_SIE);
+>  }
+> 
+> +unsigned long riscv64_get_satp_mode(void);
+> +
+>  #endif /* SELFTEST_KVM_PROCESSOR_H */
+> diff --git a/tools/testing/selftests/kvm/lib/guest_modes.c b/tools/testing/selftests/kvm/lib/guest_modes.c
+> index 63d0d5479188..9c4a9e86223e 100644
+> --- a/tools/testing/selftests/kvm/lib/guest_modes.c
+> +++ b/tools/testing/selftests/kvm/lib/guest_modes.c
+> @@ -4,7 +4,7 @@
+>   */
+>  #include "guest_modes.h"
+> 
+> -#ifdef __aarch64__
+> +#if defined(__aarch64__) || defined(__riscv)
+>  #include "processor.h"
+>  enum vm_guest_mode vm_mode_default;
+>  #endif
+> @@ -13,9 +13,11 @@ struct guest_mode guest_modes[NUM_VM_MODES];
+> 
+>  void guest_modes_append_default(void)
+>  {
+> -#ifndef __aarch64__
+> +#if !defined(__aarch64__) && !defined(__riscv)
+>         guest_mode_append(VM_MODE_DEFAULT, true);
+> -#else
+> +#endif
+> +
+> +#ifdef __aarch64__
+>         {
+>                 unsigned int limit = kvm_check_cap(KVM_CAP_ARM_VM_IPA_SIZE);
+>                 uint32_t ipa4k, ipa16k, ipa64k;
+> @@ -74,10 +76,20 @@ void guest_modes_append_default(void)
+>  #ifdef __riscv
+>         {
+>                 unsigned int sz = kvm_check_cap(KVM_CAP_VM_GPA_BITS);
+> +               unsigned long satp_mode = riscv64_get_satp_mode() << SATP_MODE_SHIFT;
+> +               int i;
+> 
+> -               guest_mode_append(VM_MODE_P56V57_4K, sz >= 59);
+> -               guest_mode_append(VM_MODE_P50V48_4K, sz >= 50);
+> -               guest_mode_append(VM_MODE_P41V39_4K, sz >= 41);
+> +               guest_mode_append(VM_MODE_P56V57_4K, satp_mode >= SATP_MODE_57 && sz >= 59);
+> +               guest_mode_append(VM_MODE_P50V48_4K, satp_mode >= SATP_MODE_48 && sz >= 50);
+> +               guest_mode_append(VM_MODE_P41V39_4K, satp_mode >= SATP_MODE_39 && sz >= 41);
 
+Something along these lines was what I was suggesting in the last patch,
+but where we select from many more combinations of P and V for modes.
+
+VM_MODE_P41V39_4K
+VM_MODE_P41V48_4K
+VM_MODE_P41V57_4K
+VM_MODE_P50V48_4K
+VM_MODE_P50V57_4K
+VM_MODE_P59V57_4K
+
+> +
+> +               // set the first (maximum) supported mode as default
+
+Please, no C++ comments, and don't we want a V39 mode to be the default?
+In fact, VM_MODE_P41V39_4K should always be supported, so we can just set
+VM_MODE_DEFAULT to that.
+
+Thanks,
+drew
+
+> +               vm_mode_default = NUM_VM_MODES;
+> +               for (i = 0; vm_mode_default == NUM_VM_MODES && i < NUM_VM_MODES; i++) {
+> +                       if (guest_modes[i].supported && guest_modes[i].enabled)
+> +                               vm_mode_default = i;
+> +               }
+> +               TEST_ASSERT(vm_mode_default != NUM_VM_MODES, "No supported mode!");
+>         }
+>  #endif
+>  }
+> diff --git a/tools/testing/selftests/kvm/lib/riscv/processor.c b/tools/testing/selftests/kvm/lib/riscv/processor.c
+> index de84c092f982..eac67cb21f50 100644
+> --- a/tools/testing/selftests/kvm/lib/riscv/processor.c
+> +++ b/tools/testing/selftests/kvm/lib/riscv/processor.c
+> @@ -8,6 +8,7 @@
+>  #include <linux/compiler.h>
+>  #include <assert.h>
+> 
+> +#include "guest_modes.h"
+>  #include "kvm_util.h"
+>  #include "processor.h"
+>  #include "ucall_common.h"
+> @@ -528,3 +529,38 @@ unsigned long get_host_sbi_spec_version(void)
+> 
+>         return ret.value;
+>  }
+> +
+> +void kvm_selftest_arch_init(void)
+> +{
+> +       /*
+> +        * riscv64 doesn't have a true default mode, so start by detecting the
+> +        * supported vm mode.
+> +        */
+> +       guest_modes_append_default();
+> +}
+> +
+> +unsigned long riscv64_get_satp_mode(void)
+> +{
+> +       int kvm_fd, vm_fd, vcpu_fd, err;
+> +       uint64_t val;
+> +       struct kvm_one_reg reg = {
+> +               .id     = RISCV_CONFIG_REG(satp_mode),
+> +               .addr   = (uint64_t)&val,
+> +       };
+> +
+> +       kvm_fd = open_kvm_dev_path_or_exit();
+> +       vm_fd = __kvm_ioctl(kvm_fd, KVM_CREATE_VM, NULL);
+> +       TEST_ASSERT(vm_fd >= 0, KVM_IOCTL_ERROR(KVM_CREATE_VM, vm_fd));
+> +
+> +       vcpu_fd = ioctl(vm_fd, KVM_CREATE_VCPU, 0);
+> +       TEST_ASSERT(vcpu_fd >= 0, KVM_IOCTL_ERROR(KVM_CREATE_VCPU, vcpu_fd));
+> +
+> +       err = ioctl(vcpu_fd, KVM_GET_ONE_REG, &reg);
+> +       TEST_ASSERT(err == 0, KVM_IOCTL_ERROR(KVM_GET_ONE_REG, vcpu_fd));
+> +
+> +       close(vcpu_fd);
+> +       close(vm_fd);
+> +       close(kvm_fd);
+> +
+> +       return val;
+> +}
+> --
+> 2.43.0
 
 -- 
 kvm-riscv mailing list
