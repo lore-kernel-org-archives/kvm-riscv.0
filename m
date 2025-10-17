@@ -4,69 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 43E45CCD199
-	for <kvm-riscv@archiver.kernel.org>; Fri, 17 Oct 2025 03:34:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8E67FCCD195
+	for <kvm-riscv@archiver.kernel.org>; Fri, 17 Oct 2025 07:07:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Subject:To:From:Mime-Version:References
-	:In-Reply-To:Date:Message-Id:Reply-To:Cc:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:Subject:Message-ID:Date:From:
+	In-Reply-To:References:MIME-Version:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=fVeFTK2eBqVHKeuR/eeRONaw4AEjoCbow7d7o4rP+lQ=; b=aYE+Pd270+7/so
-	4bRghTB4SvagvBEjEe+tblUs+z9yvtA6D/35h73KujaqvPxXRjLcrCRRmT17JY+At7s0qJp13dzcW
-	jezyf9C13NXIvWjG5lVpVxZaRVI7gQ+tVrvlT9E4KxAdz/w5q0ldGuPMgMoam9rd3zbTmlOAvwM/1
-	hjl8oTd6yPmPN613EJ/cLPSMa8+yBb6p7+FLs01bRfYRaQtJHwPm4CXny8bWPVm4bAt0mE+Wlo/Ya
-	0uaAIbpuhamD4z5EQtir+kv5wQxvbT/yUFyQXKYicmkj+W9+Bqwa65oK6qz/CJ/ygvtZnLYJprDwg
-	vL4C6OYDEO2PdQi3XNFg==;
+	List-Owner; bh=RBBmeBfW7CjGLtzD30GoaiZUDG0W2N5vYq3aIwI5na8=; b=UCcHqpNzRWb0cD
+	uoGYiVHf3RRDl5nlgZME9iVJ1GFi4Lvtvgk5wNMgMp/L5hLPOOZ6omBhcoEQlUB0j92kM4xrCyj/t
+	LWqVqMhVSake117Sl709HPPMEWzwP5lMsUxhKKEyBSOEFw77YeTeLpHiZ6806Ab74/ClKpx1jEVIE
+	vS6T/4vgWn5lZUInx+MLLTdXsqvwy500lM/e8xI/hv696NfXLKtk1c4VdOn97p65MthGjxHlFF5KY
+	d+uw7to9tiNByIZaxTZQl3QRMRNLHcG8uMY/IncEGRmBGLT6Wre+H1Ri2wQELYXono94VAckYq4XU
+	s2gimP5HH5sv6oQfksFQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1v9bEM-00000006SxZ-3TKf;
-	Fri, 17 Oct 2025 03:34:14 +0000
-Received: from mxct.zte.com.cn ([183.62.165.209])
+	id 1v9eYU-00000006vlW-0TPI;
+	Fri, 17 Oct 2025 07:07:14 +0000
+Received: from mail-pg1-x52a.google.com ([2607:f8b0:4864:20::52a])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1v9bEJ-00000006Sx8-2VVR
+	id 1v9eYR-00000006vkn-1TkE
 	for kvm-riscv@lists.infradead.org;
-	Fri, 17 Oct 2025 03:34:13 +0000
-Received: from mse-fl2.zte.com.cn (unknown [10.5.228.133])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mxct.zte.com.cn (FangMail) with ESMTPS id 4cnr5p742Pz4xNtM;
-	Fri, 17 Oct 2025 11:34:06 +0800 (CST)
-Received: (from root@localhost)
-	by mse-fl2.zte.com.cn id 59H3Y7fB074149;
-	Fri, 17 Oct 2025 11:34:07 +0800 (+08)
-	(envelope-from wu.fei9@sanechips.com.cn)
-Message-Id: <202510170334.59H3Y7fB074149@mse-fl2.zte.com.cn>
-Received: from njb2app06.zte.com.cn ([10.55.23.119])
-	by mse-fl2.zte.com.cn with SMTP id 59H3DVYI046522;
-	Fri, 17 Oct 2025 11:13:32 +0800 (+08)
-	(envelope-from wu.fei9@sanechips.com.cn)
-Received: from mapi (njy2app03[null])
-	by mapi (Zmail) with MAPI id mid204;
-	Fri, 17 Oct 2025 11:13:33 +0800 (CST)
-Date: Fri, 17 Oct 2025 11:13:33 +0800 (CST)
-X-Zmail-TransId: 2afb68f1b45df50-5f339
-X-Mailer: Zmail v1.0
-In-Reply-To: <20251017110908650RWBl7sDIk6WUGhkvJSH4L@zte.com.cn>
-References: 20251017110908650RWBl7sDIk6WUGhkvJSH4L@zte.com.cn
-Mime-Version: 1.0
-From: <wu.fei9@sanechips.com.cn>
-To: <kvm-riscv@lists.infradead.org>, <ajones@ventanamicro.com>
-Subject: =?UTF-8?B?W1BBVENIIDEvMl0gS1ZNOiByaXNjdjogc2VsZnRlc3RzOiBBZGQgcmlzY3Ygdm0gc2F0cCBtb2Rlcw==?=
-X-MAIL: mse-fl2.zte.com.cn 59H3Y7fB074149
-X-MSS: AUDITRELEASE@mse-fl2.zte.com.cn
-X-TLS: YES
-X-SPF-DOMAIN: sanechips.com.cn
-X-ENVELOPE-SENDER: wu.fei9@sanechips.com.cn
-X-SPF: None
-X-SOURCE-IP: 10.5.228.133 unknown Fri, 17 Oct 2025 11:34:07 +0800
-X-Fangmail-Anti-Spam-Filtered: true
-X-Fangmail-MID-QID: 68F1B92E.002/4cnr5p742Pz4xNtM
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+	Fri, 17 Oct 2025 07:07:12 +0000
+Received: by mail-pg1-x52a.google.com with SMTP id 41be03b00d2f7-b62e7221351so1330629a12.1
+        for <kvm-riscv@lists.infradead.org>; Fri, 17 Oct 2025 00:07:11 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=brainfault-org.20230601.gappssmtp.com; s=20230601; t=1760684830; x=1761289630; darn=lists.infradead.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=1tBllN1KPXGz1kwWkEqmZXoXM1+36pBPLJkHM98NsOQ=;
+        b=UzzGpqPnviQYm27Q/uSxLe1B5cmtBxMaZ4/vjrM92Xj8QQoRPi/88Wtxb3D/6aFVKy
+         jh9OXT4BzjsyZdE1i04yImyIyj2CyxyYNp1c0Y9EbPEKyRDEpIxdb6DnANL0jqE3GneQ
+         mmWGqx6BgahscB7tN2f0bG9wDGk/wtsr2s2EYrffQpQbZZwWxMBqLMT3K9CtmvaOtahh
+         1jxtODU5DWCsn7UzEAgCidDDSyLjtl+9bEytpCsOrNOTf+FTxqhMTOqOixdxQj/0gw0w
+         tf47Ym5nP4PKNyvqeRL9rOC8hJCl/PQEXCRrUdu1strBNUl9BgA2+j99msd3u939onXK
+         Hi9Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1760684830; x=1761289630;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=1tBllN1KPXGz1kwWkEqmZXoXM1+36pBPLJkHM98NsOQ=;
+        b=wqjZZOFuA1/LVWmzi1pgJ3lFkdFXMh7m/d2ZWpQTxW0oG+QTm6zhM5SIDJH3iTTAJL
+         CY7KIl6kitz3HcLJzm/F89R4qOqWLtOhnYCY3RAnByPvr+Weu+g6e+A8scn8OpruXk+0
+         rHal8c3XXjp0XiuSXCMrYUJSGMX1RzJaLa1IPLURDu/j1sWt0nS3mCvhphSkp9iFzJsT
+         pINFlReeG31VEZ7VYta0g2OArasDH1ffNwUSAdPA8mopCOIHM3Gh+0QsL9BJCzlCf32W
+         ycKVFXjf/+XYchUpxT+rqXb4gd3JQgM/89QHBY9KmOgiYxl4SjRoedb/2hcMvmnoLz+4
+         sX8g==
+X-Forwarded-Encrypted: i=1; AJvYcCWkR3PI2EwCwOqRi9tZzhWTMcZbStcFzhU205KLA4iiJVgxgF9aQGcFTsiWzlnW5c64eoCs6R9qUkM=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yzy2ATahSDGlZIwe6nlqSR5NipqDmixAAey7+EAYick5lf3KddN
+	Tb2rIvNJL2iS2AaMTjJds8yhhQhadTMbGWJCsUUsU5Bo7kJGdnG4zkI5tkckVjA5DzrOaQ/jYdd
+	i/QRET44/3H42hFzORYiq5JcnqcMcwRlQCX9qlGz6cZZFn36GLdJa
+X-Gm-Gg: ASbGncsjK6HIosgODrxhicf7EvAvsxXQrk7E5GDc0Ld+d5bwjpMI9b62ljHBHxMrlAJ
+	CvVoi31qjbYml7THIUVZ2LlMS76CFKsaYU75kkv1Oqm32c/SLsRgd14N6WoTnyE9XGJPFUpzPJ2
+	eY0jJIya/LZOYgMr1yDHMxcwtDKAqXzUB1H1u0IM7+vd42M8nrfGNS2NjIyhxoIphmfO+66PqVx
+	PP8/N9Yh9xbiAQU49Pgw4vcQ7T9EdzFoD1yIsVwk1tBvc8KorOsfJNEzJirTGnEsq7Vc+YhVYd8
+	6jBNXDj3As2HtKlgy1OSgjWivS27
+X-Google-Smtp-Source: AGHT+IFCshVxKTQarSYu+mbLMq9+cdps146TZixf/9pY/HK3AnNs9jHylKnsUq6JcPr+g9YcoZphbOzJ+VMIjriDxuQ=
+X-Received: by 2002:a05:6e02:3e04:b0:430:c394:15a3 with SMTP id
+ e9e14a558f8ab-430c528d628mr41557595ab.22.1760684336325; Thu, 16 Oct 2025
+ 23:58:56 -0700 (PDT)
+MIME-Version: 1.0
+References: <20251016012659.82998-1-fangyu.yu@linux.alibaba.com>
+In-Reply-To: <20251016012659.82998-1-fangyu.yu@linux.alibaba.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Fri, 17 Oct 2025 12:28:44 +0530
+X-Gm-Features: AS18NWDRRpVn-G-IgqIpz7eW2arnxdgcUvLxINosb7XYvEXa1letznEamlVSgow
+Message-ID: <CAAhSdy2UcmoPLF0CGBrsF1bRdJe-X05YA7UQOVffxBjZTourMA@mail.gmail.com>
+Subject: Re: [PATCH] RISC-V: KVM: Read HGEIP CSR on the correct cpu
+To: fangyu.yu@linux.alibaba.com
+Cc: atish.patra@linux.dev, pjw@kernel.org, palmer@dabbelt.com, 
+	aou@eecs.berkeley.edu, alex@ghiti.fr, liujingqi@lanxincomputing.com, 
+	guoren@kernel.org, kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
+	linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20251016_203411_947049_800F7151 
-X-CRM114-Status: GOOD (  10.51  )
+X-CRM114-CacheID: sfid-20251017_000711_384224_7AEDE876 
+X-CRM114-Status: GOOD (  18.53  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -78,153 +93,45 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Current vm modes cannot represent riscv guest modes precisely, here add
-P41V39, P50V48 and P56V57.
-
-Signed-off-by: Wu Fei <wu.fei9@sanechips.com.cn>
----
- .../testing/selftests/kvm/include/kvm_util.h  |  7 ++++++-
- tools/testing/selftests/kvm/lib/guest_modes.c |  7 +++----
- tools/testing/selftests/kvm/lib/kvm_util.c    | 15 +++++++++++++
- .../selftests/kvm/lib/riscv/processor.c       | 21 +++++++++++++++----
- 4 files changed, 41 insertions(+), 9 deletions(-)
-
-diff --git a/tools/testing/selftests/kvm/include/kvm_util.h b/tools/testing/selftests/kvm/include/kvm_util.h
-index bee65ca08721..02224bc514d4 100644
---- a/tools/testing/selftests/kvm/include/kvm_util.h
-+++ b/tools/testing/selftests/kvm/include/kvm_util.h
-@@ -179,6 +179,11 @@ enum vm_guest_mode {
-        VM_MODE_P36V48_64K,
-        VM_MODE_P47V47_16K,
-        VM_MODE_P36V47_16K,
-+
-+       VM_MODE_P56V57_4K,      /* For riscv64 */
-+       VM_MODE_P50V48_4K,
-+       VM_MODE_P41V39_4K,
-+
-        NUM_VM_MODES,
- };
-
-@@ -229,7 +234,7 @@ extern enum vm_guest_mode vm_mode_default;
- #error "RISC-V 32-bit kvm selftests not supported"
- #endif
-
--#define VM_MODE_DEFAULT                        VM_MODE_P40V48_4K
-+#define VM_MODE_DEFAULT                        VM_MODE_P50V48_4K
- #define MIN_PAGE_SHIFT                 12U
- #define ptes_per_page(page_size)       ((page_size) / 8)
-
-diff --git a/tools/testing/selftests/kvm/lib/guest_modes.c b/tools/testing/selftests/kvm/lib/guest_modes.c
-index b04901e55138..63d0d5479188 100644
---- a/tools/testing/selftests/kvm/lib/guest_modes.c
-+++ b/tools/testing/selftests/kvm/lib/guest_modes.c
-@@ -75,10 +75,9 @@ void guest_modes_append_default(void)
-        {
-                unsigned int sz = kvm_check_cap(KVM_CAP_VM_GPA_BITS);
-
--               if (sz >= 52)
--                       guest_mode_append(VM_MODE_P52V48_4K, true);
--               if (sz >= 48)
--                       guest_mode_append(VM_MODE_P48V48_4K, true);
-+               guest_mode_append(VM_MODE_P56V57_4K, sz >= 59);
-+               guest_mode_append(VM_MODE_P50V48_4K, sz >= 50);
-+               guest_mode_append(VM_MODE_P41V39_4K, sz >= 41);
-        }
- #endif
- }
-diff --git a/tools/testing/selftests/kvm/lib/kvm_util.c b/tools/testing/selftests/kvm/lib/kvm_util.c
-index a055343a7bf7..4cd69fffa06d 100644
---- a/tools/testing/selftests/kvm/lib/kvm_util.c
-+++ b/tools/testing/selftests/kvm/lib/kvm_util.c
-@@ -224,6 +224,9 @@ const char *vm_guest_mode_string(uint32_t i)
-                [VM_MODE_P36V48_64K]    = "PA-bits:36,  VA-bits:48, 64K pages",
-                [VM_MODE_P47V47_16K]    = "PA-bits:47,  VA-bits:47, 16K pages",
-                [VM_MODE_P36V47_16K]    = "PA-bits:36,  VA-bits:47, 16K pages",
-+               [VM_MODE_P56V57_4K]     = "PA-bits:56,  VA-bits:57,  4K pages",
-+               [VM_MODE_P50V48_4K]     = "PA-bits:50,  VA-bits:48,  4K pages",
-+               [VM_MODE_P41V39_4K]     = "PA-bits:41,  VA-bits:39,  4K pages",
-        };
-        _Static_assert(sizeof(strings)/sizeof(char *) == NUM_VM_MODES,
-                       "Missing new mode strings?");
-@@ -251,6 +254,9 @@ const struct vm_guest_mode_params vm_guest_mode_params[] = {
-        [VM_MODE_P36V48_64K]    = { 36, 48, 0x10000, 16 },
-        [VM_MODE_P47V47_16K]    = { 47, 47,  0x4000, 14 },
-        [VM_MODE_P36V47_16K]    = { 36, 47,  0x4000, 14 },
-+       [VM_MODE_P56V57_4K]     = { 56, 57,  0x1000, 12 },
-+       [VM_MODE_P50V48_4K]     = { 50, 48,  0x1000, 12 },
-+       [VM_MODE_P41V39_4K]     = { 41, 39,  0x1000, 12 },
- };
- _Static_assert(sizeof(vm_guest_mode_params)/sizeof(struct vm_guest_mode_params) == NUM_VM_MODES,
-               "Missing new mode params?");
-@@ -351,6 +357,15 @@ struct kvm_vm *____vm_create(struct vm_shape shape)
-        case VM_MODE_P44V64_4K:
-                vm->pgtable_levels = 5;
-                break;
-+       case VM_MODE_P56V57_4K:
-+               vm->pgtable_levels = 5;
-+               break;
-+       case VM_MODE_P50V48_4K:
-+               vm->pgtable_levels = 4;
-+               break;
-+       case VM_MODE_P41V39_4K:
-+               vm->pgtable_levels = 3;
-+               break;
-        default:
-                TEST_FAIL("Unknown guest mode: 0x%x", vm->mode);
-        }
-diff --git a/tools/testing/selftests/kvm/lib/riscv/processor.c b/tools/testing/selftests/kvm/lib/riscv/processor.c
-index 2eac7d4b59e9..de84c092f982 100644
---- a/tools/testing/selftests/kvm/lib/riscv/processor.c
-+++ b/tools/testing/selftests/kvm/lib/riscv/processor.c
-@@ -197,22 +197,35 @@ void riscv_vcpu_mmu_setup(struct kvm_vcpu *vcpu)
- {
-        struct kvm_vm *vm = vcpu->vm;
-        unsigned long satp;
-+       unsigned long satp_mode;
-+       unsigned long max_satp_mode;
-
-        /*
-         * The RISC-V Sv48 MMU mode supports 56-bit physical address
-         * for 48-bit virtual address with 4KB last level page size.
-         */
-        switch (vm->mode) {
--       case VM_MODE_P52V48_4K:
--       case VM_MODE_P48V48_4K:
--       case VM_MODE_P40V48_4K:
-+       case VM_MODE_P56V57_4K:
-+               satp_mode = SATP_MODE_57;
-+               break;
-+       case VM_MODE_P50V48_4K:
-+               satp_mode = SATP_MODE_48;
-+               break;
-+       case VM_MODE_P41V39_4K:
-+               satp_mode = SATP_MODE_39;
-                break;
-        default:
-                TEST_FAIL("Unknown guest mode, mode: 0x%x", vm->mode);
-        }
-
-+       max_satp_mode = vcpu_get_reg(vcpu, RISCV_CONFIG_REG(satp_mode));
-+
-+       if ((satp_mode >> SATP_MODE_SHIFT) > max_satp_mode)
-+               TEST_FAIL("Unable to set satp mode 0x%lx, max mode 0x%lx\n",
-+                         satp_mode >> SATP_MODE_SHIFT, max_satp_mode);
-+
-        satp = (vm->pgd >> PGTBL_PAGE_SIZE_SHIFT) & SATP_PPN;
--       satp |= SATP_MODE_48;
-+       satp |= satp_mode;
-
-        vcpu_set_reg(vcpu, RISCV_GENERAL_CSR_REG(satp), satp);
- }
---
-2.43.0
-
--- 
-kvm-riscv mailing list
-kvm-riscv@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/kvm-riscv
+T24gVGh1LCBPY3QgMTYsIDIwMjUgYXQgNjo1N+KAr0FNIDxmYW5neXUueXVAbGludXguYWxpYmFi
+YS5jb20+IHdyb3RlOgo+Cj4gRnJvbTogRmFuZ3l1IFl1IDxmYW5neXUueXVAbGludXguYWxpYmFi
+YS5jb20+Cj4KPiBXaGVuIGV4ZWN1dGluZyBrdm1fcmlzY3ZfdmNwdV9haWFfaGFzX2ludGVycnVw
+dHMsIHRoZSB2Q1BVIG1heSBoYXZlCj4gbWlncmF0ZWQgYW5kIHRoZSBJTVNJQyBWUy1maWxlIGhh
+dmUgbm90IGJlZW4gdXBkYXRlZCB5ZXQsIGN1cnJlbnRseQo+IHRoZSBIR0VJUCBDU1Igc2hvdWxk
+IGJlIHJlYWQgZnJvbSB0aGUgaW1zaWMtPnZzZmlsZV9jcHUgKCB0aGUgcENQVQo+IGJlZm9yZSBt
+aWdyYXRpb24gKSB2aWEgb25fZWFjaF9jcHVfbWFzaywgYnV0IHRoaXMgd2lsbCB0cmlnZ2VyIGFu
+Cj4gSVBJIGNhbGwgYW5kIHJlcGVhdGVkIElQSSB3aXRoaW4gYSBwZXJpb2Qgb2YgdGltZSBpcyBl
+eHBlbnNpdmUgaW4KPiBhIG1hbnktY29yZSBzeXN0ZW1zLgo+Cj4gSnVzdCBsZXQgdGhlIHZDUFUg
+ZXhlY3V0ZSBhbmQgdXBkYXRlIHRoZSBjb3JyZWN0IElNU0lDIFZTLWZpbGUgdmlhCj4ga3ZtX3Jp
+c2N2X3ZjcHVfYWlhX2ltc2ljX3VwZGF0ZSBtYXkgYmUgYSBzaW1wbGUgc29sdXRpb24uCj4KPiBG
+aXhlczogNGNlYzg5ZGI4MGJhICgiUklTQy1WOiBLVk06IE1vdmUgSEdFSVtFfFBdIENTUiBhY2Nl
+c3MgdG8gSU1TSUMgdmlydHVhbGl6YXRpb24iKQo+IFNpZ25lZC1vZmYtYnk6IEZhbmd5dSBZdSA8
+ZmFuZ3l1Lnl1QGxpbnV4LmFsaWJhYmEuY29tPgo+IC0tLQo+ICBhcmNoL3Jpc2N2L2t2bS9haWFf
+aW1zaWMuYyB8IDggKysrKysrLS0KPiAgMSBmaWxlIGNoYW5nZWQsIDYgaW5zZXJ0aW9ucygrKSwg
+MiBkZWxldGlvbnMoLSkKPgo+IGRpZmYgLS1naXQgYS9hcmNoL3Jpc2N2L2t2bS9haWFfaW1zaWMu
+YyBiL2FyY2gvcmlzY3Yva3ZtL2FpYV9pbXNpYy5jCj4gaW5kZXggZmRhMDM0NmYwZWExLi4xNjhj
+MDJhZDBhNzggMTAwNjQ0Cj4gLS0tIGEvYXJjaC9yaXNjdi9rdm0vYWlhX2ltc2ljLmMKPiArKysg
+Yi9hcmNoL3Jpc2N2L2t2bS9haWFfaW1zaWMuYwo+IEBAIC02ODksOCArNjg5LDEyIEBAIGJvb2wg
+a3ZtX3Jpc2N2X3ZjcHVfYWlhX2ltc2ljX2hhc19pbnRlcnJ1cHQoc3RydWN0IGt2bV92Y3B1ICp2
+Y3B1KQo+ICAgICAgICAgICovCj4KPiAgICAgICAgIHJlYWRfbG9ja19pcnFzYXZlKCZpbXNpYy0+
+dnNmaWxlX2xvY2ssIGZsYWdzKTsKPiAtICAgICAgIGlmIChpbXNpYy0+dnNmaWxlX2NwdSA+IC0x
+KQo+IC0gICAgICAgICAgICAgICByZXQgPSAhIShjc3JfcmVhZChDU1JfSEdFSVApICYgQklUKGlt
+c2ljLT52c2ZpbGVfaGdlaSkpOwo+ICsgICAgICAgaWYgKGltc2ljLT52c2ZpbGVfY3B1ID4gLTEp
+IHsKPiArICAgICAgICAgICAgICAgaWYgKGltc2ljLT52c2ZpbGVfY3B1ICE9IHNtcF9wcm9jZXNz
+b3JfaWQoKSkKCkdvb2QgY2F0Y2ggISEhCgpJIGFncmVlIHdpdGggR3VvIFJlbi4gV2Ugc2hvdWxk
+IHVzZSAidmNwdS0+Y3B1IiBvdmVyIGhlcmUKaW5zdGVhZCBvZiBzbXBfcHJvY2Vzc29yX2lkKCku
+IEFsc28sIEkgdGhpbmsgd2Ugc2hvdWxkIGFkZApzb21lIGNvbW1lbnRzIGZvciBmdXR1cmUgcmVm
+ZXJlbmNlLiBJIHdpbGwgdGFrZSBjYXJlIG9mIHRoaXMKYXQgdGhlIHRpbWUgb2YgbWVyZ2luZyB0
+aGlzIHBhdGNoLgoKUXVldWVkIHRoaXMgYXMgZml4ZXMgZm9yIExpbnV4LTYuMTgKClRoYW5rcywK
+QW51cAoKPiArICAgICAgICAgICAgICAgICAgICAgICByZXQgPSB0cnVlOwo+ICsgICAgICAgICAg
+ICAgICBlbHNlCj4gKyAgICAgICAgICAgICAgICAgICAgICAgcmV0ID0gISEoY3NyX3JlYWQoQ1NS
+X0hHRUlQKSAmIEJJVChpbXNpYy0+dnNmaWxlX2hnZWkpKTsKPiArICAgICAgIH0KPiAgICAgICAg
+IHJlYWRfdW5sb2NrX2lycXJlc3RvcmUoJmltc2ljLT52c2ZpbGVfbG9jaywgZmxhZ3MpOwo+Cj4g
+ICAgICAgICByZXR1cm4gcmV0Owo+IC0tCj4gMi41MC4xCj4KCi0tIAprdm0tcmlzY3YgbWFpbGlu
+ZyBsaXN0Cmt2bS1yaXNjdkBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRl
+YWQub3JnL21haWxtYW4vbGlzdGluZm8va3ZtLXJpc2N2Cg==
