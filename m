@@ -4,94 +4,81 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 797A0CCF9E0
-	for <kvm-riscv@archiver.kernel.org>; Fri, 24 Oct 2025 23:12:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 63DC3CCF9E3
+	for <kvm-riscv@archiver.kernel.org>; Sat, 25 Oct 2025 10:14:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=XgJjwi1wZyyXFUDmxLzPXiRV4Qh8dsIMZfeYjwcho64=; b=uN8cBCFApkc3O4
-	QGhkbv6G5aiEuPtfeZnCQiNYKR976UGJVu28FYIjXgS02BOl79EwHHUm57EEi78n5fqLklstm2ttj
-	iKDz7qWW60D8roneOjmLKI1cu6TT8PMqoL+uBhVkXZ0FnaAqGbzUqhingdPHexUfJGb59/dwgUmjj
-	k0uHORy/zOckd17IdTPZndEvEXRfS0197Fi2Fysx4kBWDga+ejCft089zA/6OVShJZtjOCnu9NiZE
-	Asqt9rn6fBzQJKtOUyeocOGIZmrS7Y++1YzqQ/CcJoNmXQYm6abdMd3TmMysNOCXHHH+kq1wXUdJf
-	7bhtUf8ezBx9faYQ+IhA==;
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:Subject:Message-ID:Date:From:
+	MIME-Version:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=lL/BwBbuh2fLYQ3NGnnGFiQI5m4E+97FV5xUYM+NORc=; b=zBXRSY8ncgQOXP
+	p6NjqBpAYX2Culeq+iJrHp46P33eQ/54irnBXM5J9JTcA+LFL1QblqhkISZ5hsrlhAv3wtq2UYX9m
+	hR7LdZA38nSPYK6qTCLBJnppkoPpP65xFvu5T/LGmFxMJX9vWfN9sAbLFkB61F96GdYKMXXpFK0pT
+	lU24Td22CjcKEplxH/DTPeTvzGhZXxs3YASIZD2LiF+oo5mAk5uY/j/NAi8CXut0V/EsixcuOSsa2
+	wyTVq7d0QKUhhOBmNEPBphbVwUSGHm7NKC/Drx+ovqJuPX2M+6fCFOXBaGLMoiphkXrqv+E8Cn9gr
+	fG7ocGbWQeNxAU+06dSA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vCQxA-0000000AdKv-0DK2;
-	Fri, 24 Oct 2025 23:12:12 +0000
-Received: from mail-ej1-x633.google.com ([2a00:1450:4864:20::633])
+	id 1vCbHq-0000000BCke-415T;
+	Sat, 25 Oct 2025 10:14:14 +0000
+Received: from mail-io1-xd34.google.com ([2607:f8b0:4864:20::d34])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vCQx7-0000000AdJW-3Pa6
+	id 1vCbHn-0000000BCig-36gA
 	for kvm-riscv@lists.infradead.org;
-	Fri, 24 Oct 2025 23:12:11 +0000
-Received: by mail-ej1-x633.google.com with SMTP id a640c23a62f3a-b3c2db014easo565690266b.0
-        for <kvm-riscv@lists.infradead.org>; Fri, 24 Oct 2025 16:12:08 -0700 (PDT)
+	Sat, 25 Oct 2025 10:14:13 +0000
+Received: by mail-io1-xd34.google.com with SMTP id ca18e2360f4ac-930cfdfabb3so188966139f.1
+        for <kvm-riscv@lists.infradead.org>; Sat, 25 Oct 2025 03:14:11 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1761347528; x=1761952328; darn=lists.infradead.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=4qshgmZlkIM4+vcn2er+R5ZwtdRF9Gko5Hx8ZyCDhMI=;
-        b=m6hpzv+3TYeJJISMBFKIEAmQoQQkyX6+zOQJHrywC9r3lAjiMukanoIHPojISBHBnM
-         igr6N6gH/fmhX19Nkm60hhuutmuqRIYrWPkiYpFpWPIIXx7G8HMXBbFiyc9LKLcpkDg6
-         oDM9+buf/5TMyejmyHNlAY8IsfirPqt8sV4V3yUwJttBymH9vUefELchFSDxQTybDI5P
-         6QSV++p8RPDlF3sHALI1o6+eiKwJX85sDJ3mn0se3DSuB6CxGa8gX7gCMZJ0iQapCP4o
-         24wBj/Y3YmyMSh8d9q2bPRn9hVbmpbHwEjIvvpcXbM1Z1+kZ8hsw4h5ad8RNZuSYEinI
-         Y3ag==
+        d=brainfault-org.20230601.gappssmtp.com; s=20230601; t=1761387250; x=1761992050; darn=lists.infradead.org;
+        h=cc:to:subject:message-id:date:from:mime-version:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=wN5MsaqKfRbeYqcIv/KVHd41EL8Y3jzy/bgpR/o5GyI=;
+        b=vpELyfhq9uTRuB7/1X4tgwvIwTVSpW6lDLOG33z10hQB8BBog+iP/de0TUvLI1KaTw
+         lrLQ7CUfn9wiAWzmXg/SZHPxuO5DVd/5sih1lqNr0ekTjFLFcB3pK4OhKli4m3dhRlBZ
+         MsoHctCATd59+UPKkkX1BvSeC6YeaSLI6DrpyAyOyRgLsHJ6YQmnOeplqFIxFpn3fHdl
+         KhjgXC3wvokNMwSfOfVUst8+kKZw7JWM2qKDtI8lqpO8PKSIkTtjWgJMBv5rIraxMGtH
+         hUOSu811oR+FsNw+RNphlQFPaEyCSf4iDN9w6IIXL93YNuRrTDrX8PsDKJxrqueFBWyf
+         HKGQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1761347528; x=1761952328;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=4qshgmZlkIM4+vcn2er+R5ZwtdRF9Gko5Hx8ZyCDhMI=;
-        b=town4hvG1qF/rqFoqL0i8c2sbCHLokomE15rjS5/gwyOO2NSqUECdexp8jqeU3d5CJ
-         n1m44L/35FaRYkfrKqfzKM70uUI5OGMUZ2ZKy04TpNPtXgTGBDoTN/AWMMl8dVC5CeUG
-         4pzTf3had3r9aXlMG4i/bfIb2XLyRSd7FdAQZi19kJGYyShjEBB65RCVUoYzV8elnQ6+
-         q4wnltIej/8D2WXB2OEZ9PCI7juttelx1Q7Z2jIlf5EyyMyAWHFi4CFHjLgLo2OI55CP
-         4h4yzL+yuwAN+VqaV1dfpV702/qkhRDa31lSawicn96jZMmZ3lr/7imTn+fEM7EREXDw
-         KYWA==
-X-Forwarded-Encrypted: i=1; AJvYcCUuGcKbVx7S4jwJJi2DiSZeceWiMZ/kGMWEMjc5lHg3SLcTVH36XeE1q8K+uQqt/KAcHSrCh4VGTEk=@lists.infradead.org
-X-Gm-Message-State: AOJu0Ywjf/HlLplER8zKhSeFu3hGO9/tDfeR5IN411XDZBTjfCvzWTZO
-	ALOUJEsB027TTcavuFAYDF5xRqUt8qSwnFpnaZsdFS+58MJsb9x+qQfpQuNn4Q==
-X-Gm-Gg: ASbGncvt+MDmz3m54cquioNKE64HED9HFxePXVbSjh9THtjkJUeT0k2ZjnDWyuJ2fFh
-	+S/5EzhoM2iN3l//C1f090//PEJ3DzzGHFCgLh3OGkx7bROpTV1h5ObQghhv7ZlHhlSgVDxg7J7
-	jykgVjy272oiPA+WpwKJm2DlHL6Gch6Tv0ym9CsRGXw6YziLuqTf8fo3x7YB/AT2cQJJK4ImKlW
-	NK2BBh4QHCiKTk1lxVYDU6PutS+q7ff9d/NKsHer1VvmdCVnhEkTekMiEzlzoUrIT24bWpoNeKu
-	JJddguhEC3js/6ftRAApBWIaWT4vyEcF88ma0jPVRn7WdllR2oNeW1FiVqD8Gp1BwBl/N2Nj0Ef
-	9nzArhE2cI+On26+EpcRrNnOn+Sy+Bb357ueVEH8ut2MCszG2hS9/zlIP94qdkSCAy/lK1m7uHm
-	v8XnBOxFK8hkwo52dn
-X-Google-Smtp-Source: AGHT+IEQw0TA1CC7no4fMAMA9oQRoUt9Lgbn+Uft1azRKrTnyGz7lCiyNuO6p2GHKFOC05VVJ/iKvw==
-X-Received: by 2002:a05:600c:4f89:b0:471:a98:99a6 with SMTP id 5b1f17b1804b1-475cafae164mr64272055e9.11.1761342429974;
-        Fri, 24 Oct 2025 14:47:09 -0700 (PDT)
-Received: from andrea ([31.189.53.175])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-47496d4b923sm89676705e9.14.2025.10.24.14.47.07
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 24 Oct 2025 14:47:09 -0700 (PDT)
-Date: Fri, 24 Oct 2025 23:47:04 +0200
-From: Andrea Parri <parri.andrea@gmail.com>
-To: Xu Lu <luxu.kernel@bytedance.com>
-Cc: corbet@lwn.net, paul.walmsley@sifive.com, palmer@dabbelt.com,
-	aou@eecs.berkeley.edu, alex@ghiti.fr, robh@kernel.org,
-	krzk+dt@kernel.org, conor+dt@kernel.org, will@kernel.org,
-	peterz@infradead.org, boqun.feng@gmail.com, mark.rutland@arm.com,
-	anup@brainfault.org, atish.patra@linux.dev, pbonzini@redhat.com,
-	shuah@kernel.org, ajones@ventanamicro.com, brs@rivosinc.com,
-	guoren@kernel.org, linux-doc@vger.kernel.org,
-	linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
-	devicetree@vger.kernel.org, kvm@vger.kernel.org,
-	kvm-riscv@lists.infradead.org, linux-kselftest@vger.kernel.org,
-	apw@canonical.com, joe@perches.com, lukas.bulwahn@gmail.com
-Subject: Re: [PATCH v4 00/10] riscv: Add Zalasr ISA extension support
-Message-ID: <aPvz2Pb6RuWnw9Ht@andrea>
-References: <20251020042056.30283-1-luxu.kernel@bytedance.com>
+        d=1e100.net; s=20230601; t=1761387250; x=1761992050;
+        h=cc:to:subject:message-id:date:from:mime-version:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=wN5MsaqKfRbeYqcIv/KVHd41EL8Y3jzy/bgpR/o5GyI=;
+        b=oOrmgKslHqXOX5rhO5PYyNRoslR6QIHIDUjTgl0ktBnG5XWgr8v+673L+3B/MLddcT
+         1jFbsfdowSfketPe/94wN5tCAde0oUm5yXGasXXcorEC0dSXYcATyuKsALMg9/nys8by
+         +wuR0rcF/i2pVRwWFu6b8ijNwGszrPQ9CCIUVBp0eJ8dMF/+rvvDvOmcCI/mcoTMQaaY
+         rGv4IT2kCnTtBgBWB20BTVbmu8JkTmbAyMgKV7NFQHO8eTRRl47XJCtw5WjvO+oTLs1b
+         CC+r7h60zC05uQxiOkphoY0g16VVe+OMMWgUlaT9rTwNKFR3Y078S/v+CG9MC2+OJmeM
+         6p5A==
+X-Forwarded-Encrypted: i=1; AJvYcCVRKokkFSJSjvqbBjg4yxNhmWcV7o0lRVoqY3iGlkSg5KIpMP2x/Bt/JQuP2SuoNwmCRSpJbWEQqqs=@lists.infradead.org
+X-Gm-Message-State: AOJu0YzvDsMTcCH+Hz8Gl8+cZ4LFR1bn+FoIGR0z5eBbrfNORd50xsOY
+	37ZinYqT7q+I2ibdozXxRWFMLTq6lIrm2icnK3fSz/w5qzRPrtODNpBWMyxqLxJ2wmLiTOzV8FF
+	d1ny0L+DlqlpzFl1cAU8TsaSZxkk4ktY+MlyY4KmNrg==
+X-Gm-Gg: ASbGnctNeUuMaERXFPethvx/MGP6CajeCOgKkHbpgoCMspB3A1ETCEEK1PWVRzoLe1n
+	JV6GT8pLaGc9IX5tp9DB+HhPHKGdGhq0gYzDPwMLWs8QvLcwYFmumLKtpJQeSQH07j3qTCpjdYv
+	3Pgc/SbjBUYRM0wt8OBPZQE5oBJKD15XkVlOfcKT+zxz5Au5F+tue+kwifLr4LdZDpiKfYhWTTe
+	MPp8rZi48iWCbHYG19fzkgIlsZuVLzUXAX6racFCKjLyKeY1E3vqREemZi7NCLfZ1y/3KKOwdNK
+	f0bHXPcuNRfXNDAbq++o1ad7i9gA
+X-Google-Smtp-Source: AGHT+IFpWZVjRCuwhb4DtOufiG7BXJsKl5vIHXR0e6zokP9kahb0yrltoaSSXtmlHhJhQihxphgaQ1Awrp0N48kr/R0=
+X-Received: by 2002:a05:6e02:1786:b0:430:bf84:e94c with SMTP id
+ e9e14a558f8ab-431eb67c444mr59866215ab.13.1761387250503; Sat, 25 Oct 2025
+ 03:14:10 -0700 (PDT)
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <20251020042056.30283-1-luxu.kernel@bytedance.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Sat, 25 Oct 2025 15:43:58 +0530
+X-Gm-Features: AWmQ_bmwq2oGHjBSLEnWv7bNvD-fJRrO3lgDsBq83C5kNERHDGX9jLhLgFP3WlI
+Message-ID: <CAAhSdy1jcXypH3yCUBaci2EbOy2cbr2qNtdYriKa-vcyFFeCzg@mail.gmail.com>
+Subject: [GIT PULL v2] KVM/riscv fixes for 6.18 take #2
+To: Paolo Bonzini <pbonzini@redhat.com>
+Cc: Palmer Dabbelt <palmer@dabbelt.com>, Paul Walmsley <pjw@kernel.org>, 
+	Atish Patra <atish.patra@linux.dev>, Andrew Jones <ajones@ventanamicro.com>, 
+	"open list:KERNEL VIRTUAL MACHINE FOR RISC-V (KVM/riscv)" <kvm-riscv@lists.infradead.org>, KVM General <kvm@vger.kernel.org>, 
+	linux-riscv <linux-riscv@lists.infradead.org>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20251024_161209_894116_97A902C2 
-X-CRM114-Status: GOOD (  18.99  )
+X-CRM114-CacheID: sfid-20251025_031412_016897_1DA566BD 
+X-CRM114-Status: UNSURE (   6.64  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -108,86 +95,50 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Mon, Oct 20, 2025 at 12:20:46PM +0800, Xu Lu wrote:
-> This patch adds support for the Zalasr ISA extension, which supplies the
-> real load acquire/store release instructions.
-> 
-> The specification can be found here:
-> https://github.com/riscv/riscv-zalasr/blob/main/chapter2.adoc
-> 
-> This patch seires has been tested with ltp on Qemu with Brensan's zalasr
-> support patch[1].
-> 
-> Some false positive spacing error happens during patch checking. Thus I
-> CCed maintainers of checkpatch.pl as well.
-> 
-> [1] https://lore.kernel.org/all/CAGPSXwJEdtqW=nx71oufZp64nK6tK=0rytVEcz4F-gfvCOXk2w@mail.gmail.com/
-> 
-> v4:
->  - Apply acquire/release semantics to arch_atomic operations. Thanks
->  to Andrea.
+Hi Paolo,
 
-Perhaps I wasn't clear enough, sorry, but I did mean my suggestion
-(specifically, the use of .aq/.rl annotations) to be conditional on
-zalasr.  Same observation for xchg/cmpxchg below.  IOW, I really
-expected this series to introduce _no changes_ to our lowerings when
-!zalasr.  If any !zalasr-changes are needed, I'd suggest isolating
-/submitting them in dedicated patches.
+We have three fixes for the 6.18 kernel. Two of these
+are related to checking pending interrupts whereas
+the third one removes automatic I/O mapping from
+kvm_arch_prepare_memory_region().
 
-But other than that, this looks pretty good to me.  Perhaps something
-else to consider for zalasr is our lowering of smp_cond_load_acquire()
-(can't spot an actual bug now, but recall the principle "zalasr -> use
-.aq/.rl annotations ..."): riscv currently uses the "generic", fence-
-based implementation from include/asm-generic/barrier.h; compare that
-with e.g. the implementation from arch/arm64/include/asm/barrier.h .
+Please pull.
 
-  Andrea
+Regards,
+Anup
 
+The following changes since commit 3a8660878839faadb4f1a6dd72c3179c1df56787:
 
-> v3:
->  - Apply acquire/release semantics to arch_xchg/arch_cmpxchg operations
->  so as to ensure FENCE.TSO ordering between operations which precede the
->  UNLOCK+LOCK sequence and operations which follow the sequence. Thanks
->  to Andrea.
->  - Support hwprobe of Zalasr.
->  - Allow Zalasr extensions for Guest/VM.
-> 
-> v2:
->  - Adjust the order of Zalasr and Zalrsc in dt-bindings. Thanks to
->  Conor.
-> 
-> Xu Lu (10):
->   riscv: Add ISA extension parsing for Zalasr
->   dt-bindings: riscv: Add Zalasr ISA extension description
->   riscv: hwprobe: Export Zalasr extension
->   riscv: Introduce Zalasr instructions
->   riscv: Apply Zalasr to smp_load_acquire/smp_store_release
->   riscv: Apply acquire/release semantics to arch_xchg/arch_cmpxchg
->     operations
->   riscv: Apply acquire/release semantics to arch_atomic operations
->   riscv: Remove arch specific __atomic_acquire/release_fence
->   RISC-V: KVM: Allow Zalasr extensions for Guest/VM
->   RISC-V: KVM: selftests: Add Zalasr extensions to get-reg-list test
-> 
->  Documentation/arch/riscv/hwprobe.rst          |   5 +-
->  .../devicetree/bindings/riscv/extensions.yaml |   5 +
->  arch/riscv/include/asm/atomic.h               |  70 ++++++++-
->  arch/riscv/include/asm/barrier.h              |  91 +++++++++--
->  arch/riscv/include/asm/cmpxchg.h              | 144 +++++++++---------
->  arch/riscv/include/asm/fence.h                |   4 -
->  arch/riscv/include/asm/hwcap.h                |   1 +
->  arch/riscv/include/asm/insn-def.h             |  79 ++++++++++
->  arch/riscv/include/uapi/asm/hwprobe.h         |   1 +
->  arch/riscv/include/uapi/asm/kvm.h             |   1 +
->  arch/riscv/kernel/cpufeature.c                |   1 +
->  arch/riscv/kernel/sys_hwprobe.c               |   1 +
->  arch/riscv/kvm/vcpu_onereg.c                  |   2 +
->  .../selftests/kvm/riscv/get-reg-list.c        |   4 +
->  14 files changed, 314 insertions(+), 95 deletions(-)
-> 
-> -- 
-> 2.20.1
-> 
+  Linux 6.18-rc1 (2025-10-12 13:42:36 -0700)
+
+are available in the Git repository at:
+
+  https://github.com/kvm-riscv/linux.git tags/kvm-riscv-fixes-6.18-2
+
+for you to fetch changes up to 8c5fa3764facaad6d38336e90f406c2c11d69733:
+
+  RISC-V: KVM: Remove automatic I/O mapping for VM_PFNMAP (2025-10-24
+21:24:36 +0530)
+
+----------------------------------------------------------------
+KVM/riscv fixes for 6.18, take #2
+
+- Fix check for local interrupts on riscv32
+- Read HGEIP CSR on the correct cpu when checking for IMSIC interrupts
+- Remove automatic I/O mapping from kvm_arch_prepare_memory_region()
+
+----------------------------------------------------------------
+Fangyu Yu (2):
+      RISC-V: KVM: Read HGEIP CSR on the correct cpu
+      RISC-V: KVM: Remove automatic I/O mapping for VM_PFNMAP
+
+Samuel Holland (1):
+      RISC-V: KVM: Fix check for local interrupts on riscv32
+
+ arch/riscv/kvm/aia_imsic.c | 16 ++++++++++++++--
+ arch/riscv/kvm/mmu.c       | 25 ++-----------------------
+ arch/riscv/kvm/vcpu.c      |  2 +-
+ 3 files changed, 17 insertions(+), 26 deletions(-)
 
 -- 
 kvm-riscv mailing list
