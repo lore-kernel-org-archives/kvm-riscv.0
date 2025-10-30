@@ -4,86 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 57D26CCF9FE
-	for <kvm-riscv@archiver.kernel.org>; Thu, 30 Oct 2025 20:13:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9391BCCF9FE
+	for <kvm-riscv@archiver.kernel.org>; Thu, 30 Oct 2025 20:13:31 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:Reply-To:List-Subscribe:List-Help:
 	List-Post:List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID
 	:References:Mime-Version:In-Reply-To:Date:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=v1mpjfMCABfhetsSdHagpECFtwxCY69OAacRzu15z+g=; b=l35Bi9j4E+rbmm
-	L3XJqioDpdDJsjDaIMr02HBJqyjR+DuFJK/spKo1h1YTdCt3WRTl/prae4vqXHg9cURvO0Xo8bks+
-	ohLdA9WegyBY12/o0v1DPttpQH4eF1lXMhziSP7vs6nGf8UESnKzZgDt/wPuFV3Ozc7S+wqFsT2Pq
-	1Fx5tPmp5Cy6MjtdT4nNaWvtun09/jfn7ZK+ZzCsPFA5A5nGy6AE8oa7SNa60a3ssy3abjogeFxIX
-	FdXOYaNxSBKkY8IPRzZ5TlDr4h9AkixYyjNlf9pCMYuSA4FMkdwFuDceIPaH52MHxv8p9IUMasmfy
-	+xIR8P8mnwJlxd/2FObA==;
+	List-Owner; bh=CFhVhyMtxWtPvpKUARmUEiec/dgWV1r4Rs4ZIDpV2UY=; b=XTh5FWaXconhAh
+	zoCAhV/DUaIDEbrCUNeK9q0Fh63SiCHJA9/qsAqqWc3KFb1MOJr1iprgn9t8KIDczZy/rFm7GkFDs
+	bjd7v3Ageih3ffXb6f1kuSbFFRDSw8rKMfMmLYIK89Jma+Cp91HY4TbBD3WzOvZ0nkW18imPD2uDw
+	7lP1o2K/Q0p9MQCc1Dr6t0w8Y74ZhzOApyndQlBvlQDedLunGkryAHyvb7EW/wJmAcXVWqhSFDmZx
+	NmAaglSl75iGyEKKuSKj2MiQ2UOaopcTMR4jlwBPCyLKldw02H24Qw4N+XTCoKK73Bx+DmlWbrMjl
+	JP92yJpyGBLuMdKsmRcQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vEZ1I-00000004n05-0cuS;
-	Thu, 30 Oct 2025 20:13:16 +0000
+	id 1vEZ1W-00000004nH0-3SQV;
+	Thu, 30 Oct 2025 20:13:31 +0000
 Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vEYz7-00000004kLI-1eY1
+	id 1vEYzC-00000004kSJ-0Wv9
 	for kvm-riscv@bombadil.infradead.org;
-	Thu, 30 Oct 2025 20:11:01 +0000
+	Thu, 30 Oct 2025 20:11:06 +0000
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=desiato.20200630; h=Content-Type:Cc:To:From:Subject:
 	Message-ID:References:Mime-Version:In-Reply-To:Date:Reply-To:Sender:
 	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=HfwppzbkJFTqc1oDUhl9YAWd2H/Ydo3ViOcPjYsyqPw=; b=RDE97aIft6hvoPQW/dxcEjJrJ5
-	pVo83iYm2FHWxDQtv2+Kg+zgfvKRPIkM7+EoSlLJp1QhuWuHyam8ANJk9GNr8Kcaz0Ja/FTjwXpKx
-	GI8GpvvrVgClsuTJ6w6177zJWe/D7Nie3DGYN6A2BynLPPCDS15/jqdycS3EJPq74DDVqgoeAyg9C
-	H0QL8PsZwL4Wyr5Yre+EGtFb8PvnBcseiVIu2dXUOXgcVjmXD+nWsGP050n65tmZxB2ORKirZiyAf
-	u34QeED09WjGBnopbG+9WdJwku9QCO+OJL02dpFA8gOqIeNFV8k/FuunSLnHasNIS1ixAKY1nvOF8
-	BFZ4OSZg==;
-Received: from mail-pj1-x104a.google.com ([2607:f8b0:4864:20::104a])
+	bh=ZPfEDjublRysEg+wBq1Bud0evQ6Qw3SUr7bZgrR40cM=; b=UrKhnUkOKHoSkF3kfGpWSXzFNU
+	eWnf/TOoy0fzcdGCFlgEOegvpTBNOVkVAav/iQAFtX7BOYe2j7/amtTqNcacjWXW0Ov+NO4RtL7cB
+	KEw7XSRkZdc9lrHtyNQj+Ol/9uyQebQsBc3vqhLt0AehUUeGJD5el8ZzT93tKvMJ3MeDPRBQgUND+
+	iutLtGrhWW1wB908SbEyRtYujYiwm7hS/84vmIASRqG7YbBqT1s9VD0u6lEgk+pSbZAA6SFYzSQ8e
+	GiOkqbwKNWOUclgW0Lpxg0RAFcLuJ6r6M4zqzS1PKwoO4Mrt8I8yf1+38GRUHfBdw5WZaeF89khu0
+	Mm0ixdlw==;
+Received: from mail-pf1-x44a.google.com ([2607:f8b0:4864:20::44a])
 	by desiato.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vEY7K-00000009tzO-2yVs
+	id 1vEY7P-00000009u2c-2msB
 	for kvm-riscv@lists.infradead.org;
-	Thu, 30 Oct 2025 19:15:28 +0000
-Received: by mail-pj1-x104a.google.com with SMTP id 98e67ed59e1d1-33bbbb41a84so3170936a91.1
-        for <kvm-riscv@lists.infradead.org>; Thu, 30 Oct 2025 13:10:57 -0700 (PDT)
+	Thu, 30 Oct 2025 19:15:33 +0000
+Received: by mail-pf1-x44a.google.com with SMTP id d2e1a72fcca58-78117b8e49fso3032873b3a.3
+        for <kvm-riscv@lists.infradead.org>; Thu, 30 Oct 2025 13:11:01 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1761855055; x=1762459855; darn=lists.infradead.org;
+        d=google.com; s=20230601; t=1761855059; x=1762459859; darn=lists.infradead.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:from:to:cc:subject:date:message-id:reply-to;
-        bh=HfwppzbkJFTqc1oDUhl9YAWd2H/Ydo3ViOcPjYsyqPw=;
-        b=O7cQMqOwjLnKfJBLVfB0+M2swNy0UfrjbOGSpgLgR5GU4n9c2J7d9ck3IA9WjK6EPR
-         WN3CTkr9A4xkoDbl5vzK3bT6l1iKTkMniwL29wlX+8teUBjltB6j99Ef3BxKKmr2ZpwK
-         RhoZiERodtb9q3DH/g54irTWgl8tH3c2I9M6ydqgDt4kV/qA6W08uecuky4ppSJM+ZBe
-         B+XaFGtSxbsInjmmH0mIhX7CSeCib2MCCS+Fx/WogGiYroziROi4fXSTSKjM822WjZBQ
-         05vURvFnvG+HWDDRV/ixV24eM3CSC/bYjNXjTknxHnWl6QrYsOIqkqay86wtQ9SFAo61
-         aAUg==
+        bh=ZPfEDjublRysEg+wBq1Bud0evQ6Qw3SUr7bZgrR40cM=;
+        b=BZEy6sKojx1/5VyFaR7VFj7gf8fisYugky15YQtU4iG42ImKOkFdkp1sC5/4DaHYsa
+         HjOHidf20oKX7J8JS7PKtn5D/LHOXidgpKCCYNHr5k04Cv+QmxaI8ymfVjl1M85ZyQaH
+         cGmo/dOdEk8CgtObaiAHrTJQt2Kv/6cf/HqQC759katrXs9mm9mGm7qWe+6AzWJB38yI
+         TGXL9WyVlAoc3vnsIe2+m7YronPGQgZ22o/XeSKcmSZMZeCdqixlgNPCGh8NgEcCksR/
+         j+R8CdXlWnIUs3rU4FSEOysVjGnjTajr0K9nfx1fGAcP12qx2MSJc4QdvP36Dg7yXt8S
+         skyw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1761855055; x=1762459855;
+        d=1e100.net; s=20230601; t=1761855059; x=1762459859;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=HfwppzbkJFTqc1oDUhl9YAWd2H/Ydo3ViOcPjYsyqPw=;
-        b=eVRmY0XNiWhH1R8VJdsG11Q5SQFqwyeWjGMRijpWyOKcdoYRT6Oba0dVh8D3XWInEB
-         TPIpI8LYoGUbWR+rH5+l1rZQekZJFftt52Nnwi8MWl9wA+qn6hBQz069IGyuQkI2Hk6w
-         g9jaQNmD/WaP+Dd88QoayzlGCHzuzaQBvnSBIj9Lp8xlnLx4t0bVOM2laTnYhn8Wn7pX
-         1rO880SPjPPGg0JJN5VL0unaJ4WNEzWcy39q2ElNrVDn8oOdg2dY9PTXx0Pf4l47Cbrc
-         oZMvdOD57QWnmrHvkmRtf0RDbUpQzmnM5CXU7VmYMhAbCvCUJs7eDnk0rEZeBovLS03i
-         Rxdg==
-X-Forwarded-Encrypted: i=1; AJvYcCVAbSKSaR/0lf0fev3noNOKBADrUF3MLf9NMKNJ+WCQmkGix+EKg/RDG6g3ZTgbBk5E1ozuUjajkD4=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yzzp+k3bOJs92tXtlhBPRUnK6WvqQ1TqIqwUSwL7B5bDiJQ062W
-	gIDvAe7kIFvhqkPtku6t97ulToqqRs1iu3drOlEdq41es/75uDt8xJWunkwOuWMerNVnbdwXQHr
-	tr395Nw==
-X-Google-Smtp-Source: AGHT+IFgv0+NgL48Cma0Y79QUzd7lRP+/FCxQ0tZkUpinDRTeLAklkWHALMXu+tHUB2W7Y9sxKQZz0IMk4g=
-X-Received: from pjbbt9.prod.google.com ([2002:a17:90a:f009:b0:340:7770:2e30])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:1f82:b0:32e:a5ae:d00
- with SMTP id 98e67ed59e1d1-34082fc7b43mr1201499a91.13.1761855054620; Thu, 30
- Oct 2025 13:10:54 -0700 (PDT)
-Date: Thu, 30 Oct 2025 13:09:45 -0700
+        bh=ZPfEDjublRysEg+wBq1Bud0evQ6Qw3SUr7bZgrR40cM=;
+        b=Al7ZuWS02IwCo0vLnmXmkt6tgb2bQdXz2H1KgXOiYDN/n+14aDnn3KAnflFH4fiQmI
+         2kFZ368TYSga6vcqNW624jHjvGYCeKWkRh8HozzKNewYtltFh+DTlNHJ+SuxL/QY5MDb
+         3iDNaePv833VG5po4xSOV6a9NKeqNoEUlKcT0U0hTSm5d4MIh2AdAks1TwPWFmlXzRGh
+         WmwTBMw4oNESYP2y28LB533jGutdJNp/gFwX9u9XZyJvvgyg8BCiByeV5LGA+a02R8r2
+         p2H1YRF/8hpNSY3ZfSMyiaWiqhqYOH1/pOllKFF6Yy3uvWDYJcrhz5ex3WD5WPd2fCVF
+         iixw==
+X-Forwarded-Encrypted: i=1; AJvYcCVnrZu2wGHkN+aSp4mc9d77Z69p7U4uX0nYG5X6Z5bnACXHx2vHPBMc4tHbkbu+DfO+tRnhVJm3t6M=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yw7UPiwmTpzhjLgoLcSrzF6vNVoiJCh1giXrYgFhf2sYYqWF4M7
+	hgvskHyZNlrZK4TnPMjS7QYhngNJ02m2n32rhg3SH032wAiozbFzBxSanEcTCMzNDFFtPqIzbXX
+	N5/5AKg==
+X-Google-Smtp-Source: AGHT+IE4oqFNhFQQZr1IyqSPUxhZWizKY8+4h3k61YypjXkX/4HyRwAM2GyKD7DH49xWshMyjNqw52ssRLY=
+X-Received: from pfbgi4.prod.google.com ([2002:a05:6a00:63c4:b0:793:b157:af42])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a00:2283:b0:7a2:721b:adb6
+ with SMTP id d2e1a72fcca58-7a77a9cb11amr747302b3a.28.1761855059275; Thu, 30
+ Oct 2025 13:10:59 -0700 (PDT)
+Date: Thu, 30 Oct 2025 13:09:47 -0700
 In-Reply-To: <20251030200951.3402865-1-seanjc@google.com>
 Mime-Version: 1.0
 References: <20251030200951.3402865-1-seanjc@google.com>
 X-Mailer: git-send-email 2.51.1.930.gacf6e81ea2-goog
-Message-ID: <20251030200951.3402865-23-seanjc@google.com>
-Subject: [PATCH v4 22/28] KVM: TDX: Add tdx_get_cmd() helper to get and
- validate sub-ioctl command
+Message-ID: <20251030200951.3402865-25-seanjc@google.com>
+Subject: [PATCH v4 24/28] KVM: TDX: Use guard() to acquire kvm->lock in tdx_vm_ioctl()
 From: Sean Christopherson <seanjc@google.com>
 To: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>, 
 	Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>, 
@@ -103,8 +102,9 @@ Cc: linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev,
 	Vishal Annapurve <vannapurve@google.com>, Rick Edgecombe <rick.p.edgecombe@intel.com>, 
 	Ackerley Tng <ackerleytng@google.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20251030_191526_842086_00014C19 
-X-CRM114-Status: GOOD (  12.01  )
+X-CRM114-CacheID: sfid-20251030_191531_744133_AEE34315 
+X-CRM114-Status: UNSURE (   8.72  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -122,8 +122,9 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Add a helper to copy a kvm_tdx_cmd structure from userspace and verify
-that must-be-zero fields are indeed zero.
+Use guard() in tdx_vm_ioctl() to tidy up the code a small amount, but more
+importantly to minimize the diff of a future change, which will use
+guard-like semantics to acquire and release multiple locks.
 
 No functional change intended.
 
@@ -131,67 +132,40 @@ Reviewed-by: Rick Edgecombe <rick.p.edgecombe@intel.com>
 Reviewed-by: Kai Huang <kai.huang@intel.com>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/x86/kvm/vmx/tdx.c | 35 +++++++++++++++++++++--------------
- 1 file changed, 21 insertions(+), 14 deletions(-)
+ arch/x86/kvm/vmx/tdx.c | 9 +++------
+ 1 file changed, 3 insertions(+), 6 deletions(-)
 
 diff --git a/arch/x86/kvm/vmx/tdx.c b/arch/x86/kvm/vmx/tdx.c
-index 97632fc6b520..390c934562c1 100644
+index d6f40a481487..037429964fd7 100644
 --- a/arch/x86/kvm/vmx/tdx.c
 +++ b/arch/x86/kvm/vmx/tdx.c
-@@ -2782,20 +2782,29 @@ static int tdx_td_finalize(struct kvm *kvm, struct kvm_tdx_cmd *cmd)
- 	return 0;
+@@ -2806,7 +2806,7 @@ int tdx_vm_ioctl(struct kvm *kvm, void __user *argp)
+ 	if (r)
+ 		return r;
+ 
+-	mutex_lock(&kvm->lock);
++	guard(mutex)(&kvm->lock);
+ 
+ 	switch (tdx_cmd.id) {
+ 	case KVM_TDX_CAPABILITIES:
+@@ -2819,15 +2819,12 @@ int tdx_vm_ioctl(struct kvm *kvm, void __user *argp)
+ 		r = tdx_td_finalize(kvm, &tdx_cmd);
+ 		break;
+ 	default:
+-		r = -EINVAL;
+-		goto out;
++		return -EINVAL;
+ 	}
+ 
+ 	if (copy_to_user(argp, &tdx_cmd, sizeof(struct kvm_tdx_cmd)))
+-		r = -EFAULT;
++		return -EFAULT;
+ 
+-out:
+-	mutex_unlock(&kvm->lock);
+ 	return r;
  }
  
-+static int tdx_get_cmd(void __user *argp, struct kvm_tdx_cmd *cmd)
-+{
-+	if (copy_from_user(cmd, argp, sizeof(*cmd)))
-+		return -EFAULT;
-+
-+	/*
-+	 * Userspace should never set hw_error.  KVM writes hw_error to report
-+	 * hardware-defined error back to userspace.
-+	 */
-+	if (cmd->hw_error)
-+		return -EINVAL;
-+
-+	return 0;
-+}
-+
- int tdx_vm_ioctl(struct kvm *kvm, void __user *argp)
- {
- 	struct kvm_tdx_cmd tdx_cmd;
- 	int r;
- 
--	if (copy_from_user(&tdx_cmd, argp, sizeof(struct kvm_tdx_cmd)))
--		return -EFAULT;
--
--	/*
--	 * Userspace should never set hw_error. It is used to fill
--	 * hardware-defined error by the kernel.
--	 */
--	if (tdx_cmd.hw_error)
--		return -EINVAL;
-+	r = tdx_get_cmd(argp, &tdx_cmd);
-+	if (r)
-+		return r;
- 
- 	mutex_lock(&kvm->lock);
- 
-@@ -3171,11 +3180,9 @@ int tdx_vcpu_ioctl(struct kvm_vcpu *vcpu, void __user *argp)
- 	if (!is_hkid_assigned(kvm_tdx) || kvm_tdx->state == TD_STATE_RUNNABLE)
- 		return -EINVAL;
- 
--	if (copy_from_user(&cmd, argp, sizeof(cmd)))
--		return -EFAULT;
--
--	if (cmd.hw_error)
--		return -EINVAL;
-+	ret = tdx_get_cmd(argp, &cmd);
-+	if (ret)
-+		return ret;
- 
- 	switch (cmd.id) {
- 	case KVM_TDX_INIT_VCPU:
 -- 
 2.51.1.930.gacf6e81ea2-goog
 
