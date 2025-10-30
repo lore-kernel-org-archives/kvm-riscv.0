@@ -4,70 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 98230CCF9FE
-	for <kvm-riscv@archiver.kernel.org>; Thu, 30 Oct 2025 20:10:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1F3E3CCF9FE
+	for <kvm-riscv@archiver.kernel.org>; Thu, 30 Oct 2025 20:10:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:Reply-To:List-Subscribe:List-Help:
 	List-Post:List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID
 	:References:Mime-Version:In-Reply-To:Date:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=Vi/qHkXNo1e5hCZqIByT1hnHdR8ZxCwqjEhOiXGA/s8=; b=39ix0Ll8tdeJ5j
-	ay4cg7ot+qFCh4aSwvuoPyH1zdJWZI7n9nDfja9k5/XSuhLb3JMl6KrkS0YXv8kHMaCs960fWaH03
-	U4ogiAZBIcYDSF+LJJRF/0TJu4otkGWdtie1LigeiH1bFFN+srLhVhdFbbC5oBtXjzfsjvtRu4YE8
-	8o/lN1b3mJZYIjL3MSh+02m1BuqiPm3Y7ONn3erF6ZqWloaCqtMNWjFUhMT1CLDypt2aYRNrDosCq
-	xQws8Fws4vip+rPwbaftJRPH3QOYNV+vG9QOKSbdWwLDQXkL1rbTe1yVpZ4t43P+r2oVCcsjV3Biq
-	9qyWRw+zsC0KSK4iIHPA==;
+	List-Owner; bh=p9Tx3Vdg2g6TRvkDyez9BWp73Urc6ioWAc2MBhsrqDo=; b=VMeHvjsdMQZsFd
+	eXY8CLPoj/y41iJn9cWi3FL4/uDuS5XkdVMmMCzGEOfsnSGVyWZnEas9s3BJ/lhIKU7LBj/gHcfdt
+	WLs3mxfYnhl9UA+LAWcjLeyDf/PgoBQdU/6tB7/1ULcH0ODTn6N4ai59GZmFZB2et4yVMEJn4Jg1u
+	cWlSH12V/bSjOnnhnVUQaoIxMo0OGYQbNnHlEogvYT887ameuddE6GEqguqOdSA6eb7ru70Io4WQC
+	3sqknvMH1GXI6JsgHYgCxFIXh0BPkxBvBPYjlDo8GRwlpLMOLSwtuaQcgCeIvxU8dAEgOARyya4xz
+	tPi6JgnUV9d6cCPxxLgg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vEYyq-00000004k2r-1XGs;
-	Thu, 30 Oct 2025 20:10:44 +0000
-Received: from mail-pg1-x54a.google.com ([2607:f8b0:4864:20::54a])
+	id 1vEYyz-00000004kDl-0ZR5;
+	Thu, 30 Oct 2025 20:10:53 +0000
+Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vEYyP-00000004jUM-0qIe
+	id 1vEYya-00000004jiA-1j64
+	for kvm-riscv@bombadil.infradead.org;
+	Thu, 30 Oct 2025 20:10:28 +0000
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=desiato.20200630; h=Content-Type:Cc:To:From:Subject:
+	Message-ID:References:Mime-Version:In-Reply-To:Date:Reply-To:Sender:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=l9YJv18Ob5fRSYpWoHOBPRjxzgmHk89rOMKnw0Dkb6I=; b=lqjylf57u6hKeEuUDYswN7MQvq
+	XPRIPRJJepLn+9b+XiD9jCmyOLdNhooFw3+FF3byMevbAl0XZrY4xXKxbID73rt0cL58oFvwP88mh
+	GF6CkLrTM13WUjkCgZTfbYOqAs/kmsP7fjrT6j8bpy80xnrw0r+R77Zt5LGduKpiCAkzW5bSaBJn4
+	/2JLKPbkk7OzFo47gse1krvv1bGHD9EAB0Cw7NZY60XvB1GE8hG+gPu/Qju02EPVquXw5f5G63xc2
+	MqLSmvpUQKTZ/q9Ga/tK0jjf+t/lUjkGPf2Sw9iUTzwPQyozJIn9aZoX5wey9vVACKnM+xrYLttnd
+	lVnD3D7A==;
+Received: from mail-pg1-x54a.google.com ([2607:f8b0:4864:20::54a])
+	by desiato.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1vEY6n-00000009tdj-3UOq
 	for kvm-riscv@lists.infradead.org;
-	Thu, 30 Oct 2025 20:10:20 +0000
-Received: by mail-pg1-x54a.google.com with SMTP id 41be03b00d2f7-b6cf1b799dcso1133873a12.2
-        for <kvm-riscv@lists.infradead.org>; Thu, 30 Oct 2025 13:10:16 -0700 (PDT)
+	Thu, 30 Oct 2025 19:14:55 +0000
+Received: by mail-pg1-x54a.google.com with SMTP id 41be03b00d2f7-b5535902495so987313a12.0
+        for <kvm-riscv@lists.infradead.org>; Thu, 30 Oct 2025 13:10:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1761855016; x=1762459816; darn=lists.infradead.org;
+        d=google.com; s=20230601; t=1761855021; x=1762459821; darn=lists.infradead.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:from:to:cc:subject:date:message-id:reply-to;
-        bh=JLmVjM6Rep3/JgP/0z+P5jqrWiynYk4juTN/f68hSuo=;
-        b=VFih8QHG7e36R+HshJx1PuovozDtvNc1ULWH34yDAwWB2EJh1pY3BNjqdBrnI2a7Mc
-         Z4v5QEy1q8XZaIa6wasn6ZJY86mJXoWOiTULmR11jm7Bo4KdKAcSUNphAy5FRLQw+ksc
-         MvSltwgK4HLwOqNOpigcK98i6mqSAfDgeqau3sJx2ybP2NGKppZ4nbTiDmwNAfiTKPdA
-         ++ZbZKGkR/KFgcpONCmBnPn5t+1IUCbzNiFp2i++cGgb5K/SgsL+mm/mDg074pc86N18
-         fWUmvQgL2zBWEbSs1SUSM7mGC8fTBilaPO6LL46I7sEm3fgafQPV7ASOahy+RRmb9ZIE
-         bZEA==
+        bh=l9YJv18Ob5fRSYpWoHOBPRjxzgmHk89rOMKnw0Dkb6I=;
+        b=3dEKK0BOuXUq/kvQ62z1hnB9Wdd+ffhDNm9WNsEY6MJB3z7IOfGMhI68ITHvxG5wFe
+         8t7f8chZRc3A7DpbOkXHNeJ5FIeoBS3ww7ts8lHEvxvMBXDNrPPr7IEweZcr9EYkPmsR
+         URSns1NCEQHx3whOjtgr8wXuh7f/zbWyOLHvRd6VflbMFuzXxUi4XwaaMI74IUn0WNUg
+         yylsYouV0nrltuLXPI7aXDEZoZWEma5A+GZBniUeWuMecqbXtjIlewON2vuKEde7zm+e
+         nGmglywsznQKBZpsssymXh77IONwHlQ76imwkRwHl8UnO8XZfOn6Wk8Y2Wh1Hro8XTnd
+         3Zgg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1761855016; x=1762459816;
+        d=1e100.net; s=20230601; t=1761855021; x=1762459821;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=JLmVjM6Rep3/JgP/0z+P5jqrWiynYk4juTN/f68hSuo=;
-        b=xS1/T7RbULswVn04VATp7hJ6LRXjPeacBXUldMo7m8ArzNHU8pXAg8gmsbr94bDbhY
-         9qI2FDXbZESgT0VMtIpGHNEPY4+n8OpEDXe2VHNDxzXEBexBKO39D8pQ/T2giwxTMLAw
-         /en8MvC2CCSzolf15K1D0j330ZEiSaw1wnq+CzQTENuglHX4/BH5gvmHqWxLbf3xywf5
-         tE8MfGHh2L0HMpTwFIqg0rhWZVroTyrkNy0sPveBYPzCHAH33nfKF8QewJBaV+LeiDs3
-         ifrC6S0jzF8BHfCIalVCMr/CYedqmHfK0+xXIiAItxu3U6/U5UtF8OAnexqmmgbtbtj7
-         5ujw==
-X-Forwarded-Encrypted: i=1; AJvYcCUK7bXLyrAuVMEHgx/5lNtoMYS451kdnLh24iwVNYa9qBWNOHvs/AwIclHoxulU0bV3AUva0r7KRQk=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yy0L0W0/OE0ogGkQy26TM9PmuSzpS0AjQigDZKdll9bJMYonIRs
-	VZkCCuZ8Tu0aTQEH9NKOdO4f9sLUMeXfVt7lgeQRTtV+wk++H8qah5ygSfTcUalQn2yOkZPb+mS
-	pBpO9bw==
-X-Google-Smtp-Source: AGHT+IH1/xZVzpdLpqTCV5R9sgqM94QaK+KvWTLge6Sarj+nuvNBhb5+D5DYqWRmVcfvrQhQkF7/dm0shPg=
-X-Received: from plnx8.prod.google.com ([2002:a17:902:8208:b0:290:bd15:24ab])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:902:e88e:b0:28e:7fd3:57f2
- with SMTP id d9443c01a7336-2951a491f2dmr14399305ad.49.1761855016072; Thu, 30
- Oct 2025 13:10:16 -0700 (PDT)
-Date: Thu, 30 Oct 2025 13:09:30 -0700
+        bh=l9YJv18Ob5fRSYpWoHOBPRjxzgmHk89rOMKnw0Dkb6I=;
+        b=CQ+AA4yVAoShFxFdEiTu/BlvQz6Q1EsBpQEeclLJ+RxnszkMZjy8mHOiRsTk5CCqhI
+         Ip0hqZtD+MAcr+ESyoSAXDMQXZwEWpoI/xNZlYLfcc/KNBbz54IneK13vBaObVOiUd3l
+         +3F/ZU0q92+DKfja+YaPkbIhbAESH1bDW1EbRvWuq0wIfK4lIl1TnVfnXjY1MO0Fzj7q
+         p7q5HYuERNp4Re+sh1UB3XONSITjKS+6pLzmKV5t+D/2NyeHbezX/cXUfgvxVO4b0ZzC
+         8w4fuxRr/QZUyh06l0i0N3Fng0yhY7b2yn0nwM97n5bpeztSSutYDjd8prCiKGwWTL2P
+         WuTA==
+X-Forwarded-Encrypted: i=1; AJvYcCX1TQDTh5wo5HB8ukEotxZmmtB6Kk4SaqNWnn+yXyA7WvYTJ+8F0FKFC8MsPelk+gqRrxxLythXluQ=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yzl5CZcuLE/rBCdU5FkuL6iJrn3SuQkS2uugonBUEwFHCWo0BXD
+	IMWoeuSMOZxtFpQH1fb6nsCTRw4gyUzGIzGO6aH1lQk/Bzp/9iu9+f373Qa8fNu/c1G5hcHCRzZ
+	Uqcg7Ag==
+X-Google-Smtp-Source: AGHT+IG+gFwz9Ni5D6YjNM4YmwfrZ1OxqSQdFqNs3bWhzX+cRsNM16o/ggLOmTawQXyQElnAsV5VYAZIDy0=
+X-Received: from pjvp23.prod.google.com ([2002:a17:90a:df97:b0:339:e59f:e26])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:4e83:b0:33b:c5de:6a4e
+ with SMTP id 98e67ed59e1d1-34082fa592cmr1221665a91.5.1761855021014; Thu, 30
+ Oct 2025 13:10:21 -0700 (PDT)
+Date: Thu, 30 Oct 2025 13:09:32 -0700
 In-Reply-To: <20251030200951.3402865-1-seanjc@google.com>
 Mime-Version: 1.0
 References: <20251030200951.3402865-1-seanjc@google.com>
 X-Mailer: git-send-email 2.51.1.930.gacf6e81ea2-goog
-Message-ID: <20251030200951.3402865-8-seanjc@google.com>
-Subject: [PATCH v4 07/28] KVM: x86/mmu: Rename kvm_tdp_map_page() to kvm_tdp_page_prefault()
+Message-ID: <20251030200951.3402865-10-seanjc@google.com>
+Subject: [PATCH v4 09/28] KVM: TDX: Return -EIO, not -EINVAL, on a
+ KVM_BUG_ON() condition
 From: Sean Christopherson <seanjc@google.com>
 To: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>, 
 	Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>, 
@@ -87,9 +103,8 @@ Cc: linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev,
 	Vishal Annapurve <vannapurve@google.com>, Rick Edgecombe <rick.p.edgecombe@intel.com>, 
 	Ackerley Tng <ackerleytng@google.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20251030_131017_320577_7F6A9E57 
-X-CRM114-Status: UNSURE (   9.16  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20251030_191453_935393_84487B93 
+X-CRM114-Status: GOOD (  11.35  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -107,43 +122,72 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Rename kvm_tdp_map_page() to kvm_tdp_page_prefault() now that it's used
-only by kvm_arch_vcpu_pre_fault_memory().
-
-No functional change intended.
+Return -EIO when a KVM_BUG_ON() is tripped, as KVM's ABI is to return -EIO
+when a VM has been killed due to a KVM bug, not -EINVAL.  Note, many (all?)
+of the affected paths never propagate the error code to userspace, i.e.
+this is about internal consistency more than anything else.
 
 Reviewed-by: Rick Edgecombe <rick.p.edgecombe@intel.com>
+Reviewed-by: Ira Weiny <ira.weiny@intel.com>
 Reviewed-by: Binbin Wu <binbin.wu@linux.intel.com>
-Reviewed-by: Kai Huang <kai.huang@intel.com>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/x86/kvm/mmu/mmu.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ arch/x86/kvm/vmx/tdx.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
-index 3a5104e4127a..10e579f8fa8e 100644
---- a/arch/x86/kvm/mmu/mmu.c
-+++ b/arch/x86/kvm/mmu/mmu.c
-@@ -4924,8 +4924,8 @@ int kvm_tdp_page_fault(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault)
- 	return direct_page_fault(vcpu, fault);
- }
+diff --git a/arch/x86/kvm/vmx/tdx.c b/arch/x86/kvm/vmx/tdx.c
+index c3bae6b96dc4..c242d73b6a7b 100644
+--- a/arch/x86/kvm/vmx/tdx.c
++++ b/arch/x86/kvm/vmx/tdx.c
+@@ -1621,7 +1621,7 @@ static int tdx_mem_page_record_premap_cnt(struct kvm *kvm, gfn_t gfn,
+ 	struct kvm_tdx *kvm_tdx = to_kvm_tdx(kvm);
  
--static int kvm_tdp_map_page(struct kvm_vcpu *vcpu, gpa_t gpa, u64 error_code,
--			    u8 *level)
-+static int kvm_tdp_page_prefault(struct kvm_vcpu *vcpu, gpa_t gpa,
-+				 u64 error_code, u8 *level)
- {
- 	int r;
+ 	if (KVM_BUG_ON(kvm->arch.pre_fault_allowed, kvm))
+-		return -EINVAL;
++		return -EIO;
  
-@@ -5002,7 +5002,7 @@ long kvm_arch_vcpu_pre_fault_memory(struct kvm_vcpu *vcpu,
- 	 * Shadow paging uses GVA for kvm page fault, so restrict to
- 	 * two-dimensional paging.
+ 	/* nr_premapped will be decreased when tdh_mem_page_add() is called. */
+ 	atomic64_inc(&kvm_tdx->nr_premapped);
+@@ -1635,7 +1635,7 @@ static int tdx_sept_set_private_spte(struct kvm *kvm, gfn_t gfn,
+ 
+ 	/* TODO: handle large pages. */
+ 	if (KVM_BUG_ON(level != PG_LEVEL_4K, kvm))
+-		return -EINVAL;
++		return -EIO;
+ 
+ 	/*
+ 	 * Read 'pre_fault_allowed' before 'kvm_tdx->state'; see matching
+@@ -1658,10 +1658,10 @@ static int tdx_sept_drop_private_spte(struct kvm *kvm, gfn_t gfn,
+ 
+ 	/* TODO: handle large pages. */
+ 	if (KVM_BUG_ON(level != PG_LEVEL_4K, kvm))
+-		return -EINVAL;
++		return -EIO;
+ 
+ 	if (KVM_BUG_ON(!is_hkid_assigned(kvm_tdx), kvm))
+-		return -EINVAL;
++		return -EIO;
+ 
+ 	/*
+ 	 * When zapping private page, write lock is held. So no race condition
+@@ -1846,7 +1846,7 @@ static int tdx_sept_free_private_spt(struct kvm *kvm, gfn_t gfn,
+ 	 * and slot move/deletion.
  	 */
--	r = kvm_tdp_map_page(vcpu, range->gpa | direct_bits, error_code, &level);
-+	r = kvm_tdp_page_prefault(vcpu, range->gpa | direct_bits, error_code, &level);
- 	if (r < 0)
- 		return r;
+ 	if (KVM_BUG_ON(is_hkid_assigned(kvm_tdx), kvm))
+-		return -EINVAL;
++		return -EIO;
  
+ 	/*
+ 	 * The HKID assigned to this TD was already freed and cache was
+@@ -1867,7 +1867,7 @@ static int tdx_sept_remove_private_spte(struct kvm *kvm, gfn_t gfn,
+ 	 * there can't be anything populated in the private EPT.
+ 	 */
+ 	if (KVM_BUG_ON(!is_hkid_assigned(to_kvm_tdx(kvm)), kvm))
+-		return -EINVAL;
++		return -EIO;
+ 
+ 	ret = tdx_sept_zap_private_spte(kvm, gfn, level, page);
+ 	if (ret <= 0)
 -- 
 2.51.1.930.gacf6e81ea2-goog
 
