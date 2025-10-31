@@ -4,75 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 246C8CCF9FA
-	for <kvm-riscv@archiver.kernel.org>; Fri, 31 Oct 2025 09:15:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 49904CCF9FF
+	for <kvm-riscv@archiver.kernel.org>; Fri, 31 Oct 2025 09:17:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
 	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
 	List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:Subject:
 	MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=jvhXGBzz9Dw/lIVdeOIl83cJs46qHla6I24Pr6+GMSI=; b=gY5nItVD0ItRq/
-	MWxihMpQUdwYPtF5KZf8DRXAsROU6T5xKERPhHYLhNBOPoqKp/jp+NcA468M6ESI1xBLKRuRtwnha
-	uKoZNoX7Dr7a94Ki3y9zKEs7TvkxehrsYVd7oHnRYEo2NsVqv8uAzvTd8EIjjR2WWiLq2gsaSYLo+
-	fCGChHK2oJhzvtXEwiSZX5lQ+zP4YNdRyQ98IAa+ktGVX5FDjU9n5wMdqr8kZ6cgkndseE3gRhanC
-	AMenBwyDjr8/5vtbsZ1B4se8e4yyHpRctLaLKrP0wOkC4uHgIm3DWuBGbhzVGkmystzZncipRFLTo
-	zJGAzAPmdZ9LJLE8B9pw==;
+	List-Owner; bh=nGduWWcTrVSuLiN6Dsk7dzTIqTZXMjt1g7lkiIMW/T0=; b=3tB/98lQhs/R+F
+	qRWVJhdpyVTbcoFsz4gEt9/gRmLa45Q37RSIXfgilOwHyWz53dK1VmYXpCkt7OvXHM7J9zpMwmr7l
+	JrGUQ0YLlTPAiP+ab6lOPLHphsORO9gFR/fu0jV54M3Kj2v2k329YaWH8XHAzlq9Ogv4Xa7GkTxIq
+	VCxpNDcYx3zIHAG6zNAWCp3YhfMY7uifIk9S+nDwKxGuKqTxGAmM1VmvSQy3p2MOeg+mWH0pGuCqb
+	WBftKX5FKYqXGnfpLONZ9bFrsMK59NccimNcBrF6tRLEQioI5bQqXAZojLdHIsOTmAcnyhQDb5NT1
+	xd1v3w960S14HKHTeusQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vElEC-00000005myc-3hBV;
-	Fri, 31 Oct 2025 09:15:24 +0000
-Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+	id 1vElGS-00000005nfC-3ZVM;
+	Fri, 31 Oct 2025 09:17:44 +0000
+Received: from mgamail.intel.com ([192.198.163.17])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vElEB-00000005my5-3GVR;
-	Fri, 31 Oct 2025 09:15:23 +0000
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:Content-Type
-	:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:Message-ID:
-	Sender:Reply-To:Content-ID:Content-Description;
-	bh=PEZyjCEAirGsnd1ualshLT165jeP3bC2ATQpTmkSqys=; b=HKefvg7EDXbPfBs+iJg6JYbc2e
-	jnq2ouAp//9vvt29M6RoqH20eb1KlV1AY9FwyQLyclhAgNxdbGgR7nJwTxn0CuGMWDrteFOC3bnkK
-	bXQBJ3IkDCm1oR+KW5TFC9fZrtj5TaMSnu8JBJ3n4Hf+aFBkU6qltx6K4UMkhC5XODSZFjngyCR9B
-	k/sJHpsB7LIUV0HF4tvgzEvBKakrkOuHh1VU+Ss43L3st5R5EW1kSfMDzccxuv3FzuZm9HpPK6AJc
-	PeS1BbVRLhe22CldJJJyMF30fpgW3xy0O8LqEJOmoZW6EPq3mmVV4YE1AsAM2GJ5ajLcDPq9zftxV
-	f9ufiNWA==;
-Received: from mgamail.intel.com ([198.175.65.9])
-	by desiato.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vEkMP-0000000AsVG-24uA;
-	Fri, 31 Oct 2025 08:19:51 +0000
+	id 1vElGQ-00000005ne2-0x67;
+	Fri, 31 Oct 2025 09:17:43 +0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1761902120; x=1793438120;
+  t=1761902262; x=1793438262;
   h=message-id:date:mime-version:subject:to:cc:references:
    from:in-reply-to:content-transfer-encoding;
-  bh=PEZyjCEAirGsnd1ualshLT165jeP3bC2ATQpTmkSqys=;
-  b=WcCj5oD0u3zhbShu6vPwdHnGv45HkFutP4XpTLr9oQ+lqdLQ/nb6DySR
-   uVUvXaiD/VpZiPDt96Mkgl65WCWkb45dA10EAbNra0ic8m7tQqSKH7ZS7
-   xxSOgkk7UHhGeQPye025TecTI1ONC0WvNiQ3ElThXIgT0+C5JGG+k5wdi
-   EM+XVIvSThBDvxmc3KaEqqJ+2aSFGZiJ/U6RgQBYNWb6y9/jKi/UL8D9C
-   j2DJVFbUVI25vFVZ2fefHwONQCyGAg7JE+WVhuxSN+NBwbqZuo/eJLqYo
-   CxiY1T6UETb+ozqpZVi8Pe67mwn9RK8ROVIPXqNeobovDjpe5AER8fbq1
-   g==;
-X-CSE-ConnectionGUID: 3s/SO0FiS6uvvHQTkJryvA==
-X-CSE-MsgGUID: CFDetKpPTfajPX7W5VXg3Q==
-X-IronPort-AV: E=McAfee;i="6800,10657,11598"; a="86683964"
+  bh=6+fdM28QuB9T1HFnYCRzCUXVpG1QU1xA4LJIWTCndpE=;
+  b=bEcwznLhMIcFn+sVDVSO8r6aCscJyCi3kE8oCvdG+aeLEvWmEcnomWAA
+   4GbOLdqeyZ2kvC6VqL9sm7ZKHqWsbyyoh2eVNgZc6wWTV/FSsgrbZPcNf
+   kgndqtoCanTlczctUNw4ZPhiT3Rnmfzx0symwMPSGZ7qvtSIRIIG9bata
+   yn45f3ZASzpRl/OjiOXyOIJ+lmnRQ5TqeFNjPKGQu4coT1ZvzkkCkINzS
+   azElLHT7dLqpBwKGECaCTJU0iJkri4oBVdHZutMaozpWJDqATOvPo3gMP
+   aLpLwbv1DPSdc30/77AZQHwHYrpRABSPyYEy5SO/uaeX/KrJIKFXZmKO4
+   w==;
+X-CSE-ConnectionGUID: 09qGstlhSaeL4mpo9qKlwg==
+X-CSE-MsgGUID: EMQrHEzJQrGRtO2VNtaLeA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11598"; a="63974774"
 X-IronPort-AV: E=Sophos;i="6.19,269,1754982000"; 
-   d="scan'208";a="86683964"
+   d="scan'208";a="63974774"
 Received: from orviesa007.jf.intel.com ([10.64.159.147])
-  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Oct 2025 02:15:18 -0700
-X-CSE-ConnectionGUID: /aUTuTUZR1CXvXYAACxkEg==
-X-CSE-MsgGUID: 8/kgW76KTTCO7UxJ6gCbbg==
+  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Oct 2025 02:17:41 -0700
+X-CSE-ConnectionGUID: xN3TnblrQqeOxewqaIMiwg==
+X-CSE-MsgGUID: 7VuncW0PQxeTB4CUZL105Q==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.19,269,1754982000"; 
-   d="scan'208";a="186125404"
+   d="scan'208";a="186126269"
 Received: from binbinwu-mobl.ccr.corp.intel.com (HELO [10.124.240.28]) ([10.124.240.28])
-  by orviesa007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Oct 2025 02:15:09 -0700
-Message-ID: <fd65c501-296a-4f77-86fc-7de61a7c5eeb@linux.intel.com>
-Date: Fri, 31 Oct 2025 17:15:06 +0800
+  by orviesa007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Oct 2025 02:17:33 -0700
+Message-ID: <94e3e701-b60d-419b-b3c1-2b41796ab5c3@linux.intel.com>
+Date: Fri, 31 Oct 2025 17:17:29 +0800
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 23/28] KVM: TDX: Convert INIT_MEM_REGION and INIT_VCPU
- to "unlocked" vCPU ioctl
+Subject: Re: [PATCH v4 24/28] KVM: TDX: Use guard() to acquire kvm->lock in
+ tdx_vm_ioctl()
 To: Sean Christopherson <seanjc@google.com>
 Cc: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>,
  Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>,
@@ -94,13 +80,13 @@ Cc: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>,
  Rick Edgecombe <rick.p.edgecombe@intel.com>,
  Ackerley Tng <ackerleytng@google.com>
 References: <20251030200951.3402865-1-seanjc@google.com>
- <20251030200951.3402865-24-seanjc@google.com>
+ <20251030200951.3402865-25-seanjc@google.com>
 Content-Language: en-US
 From: Binbin Wu <binbin.wu@linux.intel.com>
-In-Reply-To: <20251030200951.3402865-24-seanjc@google.com>
+In-Reply-To: <20251030200951.3402865-25-seanjc@google.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20251031_081950_174619_4CFA0253 
-X-CRM114-Status: UNSURE (   4.97  )
+X-CRM114-CacheID: sfid-20251031_021742_287360_54472E21 
+X-CRM114-Status: UNSURE (   4.65  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -121,16 +107,14 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 
 On 10/31/2025 4:09 AM, Sean Christopherson wrote:
-> Handle the KVM_TDX_INIT_MEM_REGION and KVM_TDX_INIT_VCPU vCPU sub-ioctls
-> in the unlocked variant, i.e. outside of vcpu->mutex, in anticipation of
-> taking kvm->lock along with all other vCPU mutexes, at which point the
-> sub-ioctls _must_ start without vcpu->mutex held.
+> Use guard() in tdx_vm_ioctl() to tidy up the code a small amount, but more
+> importantly to minimize the diff of a future change, which will use
+> guard-like semantics to acquire and release multiple locks.
 >
 > No functional change intended.
 >
+> Reviewed-by: Rick Edgecombe <rick.p.edgecombe@intel.com>
 > Reviewed-by: Kai Huang <kai.huang@intel.com>
-> Co-developed-by: Yan Zhao <yan.y.zhao@intel.com>
-> Signed-off-by: Yan Zhao <yan.y.zhao@intel.com>
 > Signed-off-by: Sean Christopherson <seanjc@google.com>
 
 Reviewed-by: Binbin Wu <binbin.wu@linux.intel.com>
