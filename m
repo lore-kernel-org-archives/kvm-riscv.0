@@ -4,61 +4,75 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E1AD0CCFA00
-	for <kvm-riscv@archiver.kernel.org>; Fri, 31 Oct 2025 09:05:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4CB41CCFA02
+	for <kvm-riscv@archiver.kernel.org>; Fri, 31 Oct 2025 09:08:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
 	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
 	List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:Subject:
 	MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=d+FzBME+SQhOSnSHSOimKlDom1GPpT7D7w2/FipIyAg=; b=Otgu7N4dFdVipu
-	XltrzFkLKPDTvRzCBeFoJQw+jLJ2u+Ng0+Ug6oGjy1SjumTwr5JU3VkiNAWDB7I/2T08VW7b8FsMf
-	c3w8+WWlUFSiDUgrEiBMHYRonOlEaJjzXm0528uhtvhW3WIYoGHU9djeNPZhQR1Oge7DWG4GxTgqb
-	4xcTzasNmsr2KwORKJT7v/DSyBS7usW9MXY9MXy17BPXrCRvhyl1Tw5Fc4Sz5uYsviT4HjdAM4pZH
-	WV5yGA8F17eIPxHpylgaLtHGoiMCoZx4AGU4uKFhc7ZjZzQW/6eL3IARW/TZUzqZMfbfAs5awY+5x
-	wmx0U2tmYkgVSGKamMeA==;
+	List-Owner; bh=6qC+oR8uWtnmHe3KRIpZrgrnovMPrMlsr+ZGtVp/3ys=; b=o62QF0OVT7pFtd
+	gGyeqSOX6KWE+m7LijhtY6UJ4xqKNujpQHsLEZ9dv+j1rLFJgfqfMQSG/FC/tzhD/x5UV90j8PgH4
+	SXiP2XH6JvCa4X0qEbo0Rz7gZ2MfgMS0mZVKgyftHuDNkDofX8Hx9yeTK/AbBWXUOsSr9pqI1VaaP
+	IFFhtCyw6TBnqiquMI2B49FuxRTsCMW2Dd9tye53drJQxwXjaA2GwtHgjrTHpXejARlkug5gJVE/4
+	CNb3x3b6Wrh83jZ8aZ/o+xp2SSiRmv4eghZPuM8dIDU6LSK765JtNWj/tE0st+3x0e4qRYYGRY9wR
+	dOVXrRTwFovqFKeVU8Nw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vEl4p-00000005kMl-11Oy;
-	Fri, 31 Oct 2025 09:05:44 +0000
-Received: from mgamail.intel.com ([192.198.163.7])
+	id 1vEl7Z-00000005l5J-23o1;
+	Fri, 31 Oct 2025 09:08:33 +0000
+Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vEl4n-00000005kM6-1wOJ;
-	Fri, 31 Oct 2025 09:05:42 +0000
+	id 1vEl7Y-00000005l4K-1Fvg;
+	Fri, 31 Oct 2025 09:08:32 +0000
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:Content-Type
+	:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:Message-ID:
+	Sender:Reply-To:Content-ID:Content-Description;
+	bh=y5oqO91F+X+WX7+C5vKkOfA3RMlNxfHv2fFSqkI6O+c=; b=SyG78lWKrKRjTeCNiguA7R+OLO
+	22W+XYSVlm5gqFHUD2qUS+/4yJ8YPVv6A7bfEhwVKLtGE0+l2PjXlIllOAZZojGHBrN/EOgSXZHGD
+	QVSEvoqZI5WuK2jrVWxOLWLFAkYCveSO8ulH2gAG5wBC4xYkvYTKuFwwmSqafYoRYJmop+SaRCw6V
+	fb9aVCfCXf0yCsUDxvR7rSZkVRUCmsFAZEAv54CwHxwtUl61sFctO8uY0Y488+HCMW/78AU01DeZC
+	fqXcWbsDMP2ZOZyxApEVVxwB06Dyss8i70+FmNF6NUvfKaDeGE7FvlwudgDrGO3qwGqYRDQy59GOh
+	4b3Pc57A==;
+Received: from mgamail.intel.com ([198.175.65.16])
+	by desiato.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1vEkFk-0000000ArOO-3pms;
+	Fri, 31 Oct 2025 08:12:59 +0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1761901541; x=1793437541;
+  t=1761901708; x=1793437708;
   h=message-id:date:mime-version:subject:to:cc:references:
    from:in-reply-to:content-transfer-encoding;
-  bh=qFNmSQUeXMaY7XvP4sAPgKkJ8Ev3XCXyw2q+qbAZDIU=;
-  b=D+MDkPJIuJbXracYjeQPrhqp2Z1J8PA42DgmToB5mtukOzejdJb50tr6
-   cLik5jPvXKRz1TM0r9X8dHdLwjvAhrFZvBTXG64qqlr2LGGgWJd057SKV
-   riKu2x1GjGa/3ov1D3aXluC2bfwO+Lnvk7pyy+UKDpfTqKXZBJhDDNa+K
-   wqzyu3ndmH8bFkjB8hFr8tj2gVzIxiJRl5hoyCY9nmtnDWF73mdl49V8F
-   KacemejJhnFmXDuQYf52FiW0d3a1eqYStTprjDAyMJ5qMk7cdYqu1SXzT
-   ZlAEQkWog/K+kF29XWI6K/5yTiO0WAP93vNCb8WIg58Du34qMeGWNFCv+
-   Q==;
-X-CSE-ConnectionGUID: tEiLt9G5SqyhLgFW8uPmOA==
-X-CSE-MsgGUID: Tue60yezT+2yOgJW9ot+EQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11598"; a="89523298"
+  bh=8N9WDGemUWQsRelXH+GyTq3qC+LNB5rRhJXjTRawBT4=;
+  b=c4g2TVMoYnK7jMudCt8kKptm7l5+VkIk57nd6/9SDbJzs7Fmka7HRvWt
+   lSPNkiNm68TMc7R85kUwPh1x5CFV92Zb8jR0/x4x6tJpjt9tIHW879uu3
+   rp0dTUGWIudDMo12ccMDp2z1ShX9DqEJh6kDyJZtLh1ZfBXlfzfW4PVRH
+   Bg6/Nskej5TPC6bcBTGbO3bnMOnN28aMvS2I80frY1XKeH/z5L7A6CsRe
+   jqkq4sEjOKrvbjAXKh9nh5hh+w60N73tR0jODDihOWFjX+mRmSArGHMex
+   x+o5s5GGwaoxFF4zbkl0U4cFTddxIcfNJ5xU86shOvbANhTxKTXM0AV9P
+   w==;
+X-CSE-ConnectionGUID: s5UEaWwkQO+YxGL7n3ZW0Q==
+X-CSE-MsgGUID: FvQSb+jXRQuq/HC71gdBvA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11598"; a="64208921"
 X-IronPort-AV: E=Sophos;i="6.19,269,1754982000"; 
-   d="scan'208";a="89523298"
+   d="scan'208";a="64208921"
 Received: from orviesa007.jf.intel.com ([10.64.159.147])
-  by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Oct 2025 02:05:41 -0700
-X-CSE-ConnectionGUID: wf1Dt5UnRy6jaWYzdx9wDQ==
-X-CSE-MsgGUID: x9G1JpmbTtGdOFT3heo6QA==
+  by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Oct 2025 02:08:24 -0700
+X-CSE-ConnectionGUID: GjHDbGLnSWakhDM9/CBrlg==
+X-CSE-MsgGUID: Gbbob1bvT8C2WhgnaRVktg==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.19,269,1754982000"; 
-   d="scan'208";a="186121954"
+   d="scan'208";a="186123013"
 Received: from binbinwu-mobl.ccr.corp.intel.com (HELO [10.124.240.28]) ([10.124.240.28])
-  by orviesa007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Oct 2025 02:05:32 -0700
-Message-ID: <18ecf186-c3b9-4027-a54b-7f3e5ba9f484@linux.intel.com>
-Date: Fri, 31 Oct 2025 17:05:34 +0800
+  by orviesa007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Oct 2025 02:08:16 -0700
+Message-ID: <a4dac87e-ff40-4ce1-a969-c8f535b66d74@linux.intel.com>
+Date: Fri, 31 Oct 2025 17:08:13 +0800
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 20/28] KVM: TDX: Assert that mmu_lock is held for write
- when removing S-EPT entries
+Subject: Re: [PATCH v4 21/28] KVM: TDX: Add macro to retry SEAMCALLs when
+ forcing vCPUs out of guest
 To: Sean Christopherson <seanjc@google.com>
 Cc: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>,
  Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>,
@@ -80,13 +94,14 @@ Cc: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>,
  Rick Edgecombe <rick.p.edgecombe@intel.com>,
  Ackerley Tng <ackerleytng@google.com>
 References: <20251030200951.3402865-1-seanjc@google.com>
- <20251030200951.3402865-21-seanjc@google.com>
+ <20251030200951.3402865-22-seanjc@google.com>
 Content-Language: en-US
 From: Binbin Wu <binbin.wu@linux.intel.com>
-In-Reply-To: <20251030200951.3402865-21-seanjc@google.com>
+In-Reply-To: <20251030200951.3402865-22-seanjc@google.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20251031_020541_515641_8C4F1DA8 
-X-CRM114-Status: GOOD (  16.41  )
+X-CRM114-CacheID: sfid-20251031_081257_960223_78985A42 
+X-CRM114-Status: UNSURE (   7.34  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -98,52 +113,28 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-CgpPbiAxMC8zMS8yMDI1IDQ6MDkgQU0sIFNlYW4gQ2hyaXN0b3BoZXJzb24gd3JvdGU6Cj4gVW5j
-b25kaXRpb25hbGx5IGFzc2VydCB0aGF0IG1tdV9sb2NrIGlzIGhlbGQgZm9yIHdyaXRlIHdoZW4g
-cmVtb3ZpbmcgUy1FUFQKPiBlbnRyaWVzLCBub3QganVzdCB3aGVuIHJlbW92aW5nIFMtRVBUIGVu
-dHJpZXMgdHJpZ2dlcnMgY2VydGFpbiBjb25kaXRpb25zLAo+IGUuZy4gbmVlZHMgdG8gZG8gVERI
-X01FTV9UUkFDSyBvciBraWNrIHZDUFVzIG91dCBvZiB0aGUgZ3Vlc3QuCj4gQ29uZGl0aW9uYWxs
-eSBhc3NlcnRpbmcgaW1wbGllcyB0aGF0IGl0J3Mgc2FmZSB0byBob2xkIG1tdV9sb2NrIGZvciBy
-ZWFkCj4gd2hlbiB0aG9zZSBwYXRocyBhcmVuJ3QgaGl0LCB3aGljaCBpcyBzaW1wbHkgbm90IHRy
-dWUsIGFzIEtWTSBkb2Vzbid0Cj4gc3VwcG9ydCByZW1vdmluZyBTLUVQVCBlbnRyaWVzIHVuZGVy
-IHJlYWQtbG9jay4KPgo+IE9ubHkgdHdvIHBhdGhzIGxlYWQgdG8gcmVtb3ZlX2V4dGVybmFsX3Nw
-dGUoKSwgYW5kIGJvdGggcGF0aHMgYXNzZXJ0cyB0aGF0CiDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
-oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
-oCDCoCDCoCDCoCDCoCDCoCBeCiDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
-oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCBh
-c3NlcnQKPiBtbXVfbG9jayBpcyBoZWxkIGZvciB3cml0ZSAodGRwX21tdV9zZXRfc3B0ZSgpIHZp
-YSBsb2NrZGVwLCBhbmQKPiBoYW5kbGVfcmVtb3ZlZF9wdCgpIHZpYSBLVk1fQlVHX09OKCkpLgo+
-Cj4gRGVsaWJlcmF0ZWx5IGxlYXZlIGxvY2tkZXAgYXNzZXJ0aW9ucyBpbiB0aGUgIm5vIHZDUFVz
-IiBoZWxwZXJzIHRvIGRvY3VtZW50Cj4gdGhhdCB3YWl0X2Zvcl9zZXB0X3phcCBpcyBndWFyZGVk
-IGJ5IGhvbGRpbmcgbW11X2xvY2sgZm9yIHdyaXRlLCBhbmQga2VlcAo+IHRoZSBjb25kaXRpb25h
-bCBhc3NlcnQgaW4gdGR4X3RyYWNrKCkgYXMgd2VsbCwgYnV0IHdpdGggYSBjb21tZW50IHRvIGhl
-bHAKPiBleHBsYWluIHdoeSBob2xkaW5nIG1tdV9sb2NrIGZvciB3cml0ZSBtYXR0ZXJzIChhYm92
-ZSBhbmQgYmV5b25kIHdoeQo+IHRkeF9zZXB0X3JlbW92ZV9wcml2YXRlX3NwdGUoKSdzIHJlcXVp
-cmVtZW50cykuCj4KPiBTaWduZWQtb2ZmLWJ5OiBTZWFuIENocmlzdG9waGVyc29uIDxzZWFuamNA
-Z29vZ2xlLmNvbT4KClJldmlld2VkLWJ5OiBCaW5iaW4gV3UgPGJpbmJpbi53dUBsaW51eC5pbnRl
-bC5jb20+Cgo+IC0tLQo+ICAgYXJjaC94ODYva3ZtL3ZteC90ZHguYyB8IDcgKysrKysrKwo+ICAg
-MSBmaWxlIGNoYW5nZWQsIDcgaW5zZXJ0aW9ucygrKQo+Cj4gZGlmZiAtLWdpdCBhL2FyY2gveDg2
-L2t2bS92bXgvdGR4LmMgYi9hcmNoL3g4Ni9rdm0vdm14L3RkeC5jCj4gaW5kZXggNjNkNDYwOWNj
-M2JjLi45OTliNTE5NDk0ZTkgMTAwNjQ0Cj4gLS0tIGEvYXJjaC94ODYva3ZtL3ZteC90ZHguYwo+
-ICsrKyBiL2FyY2gveDg2L2t2bS92bXgvdGR4LmMKPiBAQCAtMTcxNSw2ICsxNzE1LDExIEBAIHN0
-YXRpYyB2b2lkIHRkeF90cmFjayhzdHJ1Y3Qga3ZtICprdm0pCj4gICAJaWYgKHVubGlrZWx5KGt2
-bV90ZHgtPnN0YXRlICE9IFREX1NUQVRFX1JVTk5BQkxFKSkKPiAgIAkJcmV0dXJuOwo+ICAgCj4g
-KwkvKgo+ICsJICogVGhlIGZ1bGwgc2VxdWVuY2Ugb2YgVERILk1FTS5UUkFDSyBhbmQgZm9yY2lu
-ZyB2Q1BVcyBvdXQgb2YgZ3Vlc3QKPiArCSAqIG1vZGUgbXVzdCBiZSBzZXJpYWxpemVkLCBhcyBU
-REguTUVNLlRSQUNLIHdpbGwgZmFpbCBpZiB0aGUgcHJldmlvdXMKPiArCSAqIHRyYWNraW5nIGVw
-b2NoIGhhc24ndCBjb21wbGV0ZWQuCj4gKwkgKi8KPiAgIAlsb2NrZGVwX2Fzc2VydF9oZWxkX3dy
-aXRlKCZrdm0tPm1tdV9sb2NrKTsKPiAgIAo+ICAgCWVyciA9IHRkaF9tZW1fdHJhY2soJmt2bV90
-ZHgtPnRkKTsKPiBAQCAtMTc2Miw2ICsxNzY3LDggQEAgc3RhdGljIHZvaWQgdGR4X3NlcHRfcmVt
-b3ZlX3ByaXZhdGVfc3B0ZShzdHJ1Y3Qga3ZtICprdm0sIGdmbl90IGdmbiwKPiAgIAlncGFfdCBn
-cGEgPSBnZm5fdG9fZ3BhKGdmbik7Cj4gICAJdTY0IGVyciwgZW50cnksIGxldmVsX3N0YXRlOwo+
-ICAgCj4gKwlsb2NrZGVwX2Fzc2VydF9oZWxkX3dyaXRlKCZrdm0tPm1tdV9sb2NrKTsKPiArCj4g
-ICAJLyoKPiAgIAkgKiBIS0lEIGlzIHJlbGVhc2VkIGFmdGVyIGFsbCBwcml2YXRlIHBhZ2VzIGhh
-dmUgYmVlbiByZW1vdmVkLCBhbmQgc2V0Cj4gICAJICogYmVmb3JlIGFueSBtaWdodCBiZSBwb3B1
-bGF0ZWQuIFdhcm4gaWYgemFwcGluZyBpcyBhdHRlbXB0ZWQgd2hlbgoKCi0tIAprdm0tcmlzY3Yg
-bWFpbGluZyBsaXN0Cmt2bS1yaXNjdkBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5p
-bmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8va3ZtLXJpc2N2Cg==
+
+
+On 10/31/2025 4:09 AM, Sean Christopherson wrote:
+> Add a macro to handle kicking vCPUs out of the guest and retrying
+> SEAMCALLs on -EBUSY instead of providing small helpers to be used by each
+> SEAMCALL.  Wrapping the SEAMCALLs in a macro makes it a little harder to
+> tease out which SEAMCALL is being made, but significantly reduces the
+> amount of copy+paste code and makes it all but impossible to leave an
+> elevated wait_for_sept_zap.
+>
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
+
+Reviewed-by: Binbin Wu <binbin.wu@linux.intel.com>
+
+
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
