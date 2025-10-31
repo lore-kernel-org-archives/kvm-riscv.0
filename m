@@ -4,61 +4,75 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A06B8CCFA00
-	for <kvm-riscv@archiver.kernel.org>; Fri, 31 Oct 2025 09:11:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 246C8CCF9FA
+	for <kvm-riscv@archiver.kernel.org>; Fri, 31 Oct 2025 09:15:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
 	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
 	List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:Subject:
 	MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=XvxrowFbfYyG8qgU3gr+vZ+gbE40q5lp8IUwWhwZL/k=; b=2g/kAzu/B3HlnM
-	pY9jZ6cxOoCNxxhUEI8cCLR9pBbX5QE4DISUOiSCbS5AFGZIW1ldHhs94drm2qTIoATZ/dSIgbr79
-	SoBuV8hgz0LEPMXOcNBkGm541SPYgIFudIIFZUTg+ftkbLxwJAm83uX4FrbtJe8WbmtgmpBLXUEpU
-	bnV5EqjbpS7s5c3NMQzQd1IU56xAT309wE6q/N5avM26KlSkPsIkNnAC/OkGbkpleEv0jAXkJP6KB
-	mzx+Yr0rg2KwqdHlXAZYjpNunoShtsYDuBGJ6y7LOdHSwebpb0LT0A8jHVc1w9Xkl4eKqnTfOon5v
-	XwbA6Qxs4lTKM3fEyawA==;
+	List-Owner; bh=jvhXGBzz9Dw/lIVdeOIl83cJs46qHla6I24Pr6+GMSI=; b=gY5nItVD0ItRq/
+	MWxihMpQUdwYPtF5KZf8DRXAsROU6T5xKERPhHYLhNBOPoqKp/jp+NcA468M6ESI1xBLKRuRtwnha
+	uKoZNoX7Dr7a94Ki3y9zKEs7TvkxehrsYVd7oHnRYEo2NsVqv8uAzvTd8EIjjR2WWiLq2gsaSYLo+
+	fCGChHK2oJhzvtXEwiSZX5lQ+zP4YNdRyQ98IAa+ktGVX5FDjU9n5wMdqr8kZ6cgkndseE3gRhanC
+	AMenBwyDjr8/5vtbsZ1B4se8e4yyHpRctLaLKrP0wOkC4uHgIm3DWuBGbhzVGkmystzZncipRFLTo
+	zJGAzAPmdZ9LJLE8B9pw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vElAF-00000005mNg-1Kg4;
-	Fri, 31 Oct 2025 09:11:19 +0000
-Received: from mgamail.intel.com ([198.175.65.11])
+	id 1vElEC-00000005myc-3hBV;
+	Fri, 31 Oct 2025 09:15:24 +0000
+Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vElAC-00000005mMi-3Vpj;
-	Fri, 31 Oct 2025 09:11:18 +0000
+	id 1vElEB-00000005my5-3GVR;
+	Fri, 31 Oct 2025 09:15:23 +0000
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:Content-Type
+	:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:Message-ID:
+	Sender:Reply-To:Content-ID:Content-Description;
+	bh=PEZyjCEAirGsnd1ualshLT165jeP3bC2ATQpTmkSqys=; b=HKefvg7EDXbPfBs+iJg6JYbc2e
+	jnq2ouAp//9vvt29M6RoqH20eb1KlV1AY9FwyQLyclhAgNxdbGgR7nJwTxn0CuGMWDrteFOC3bnkK
+	bXQBJ3IkDCm1oR+KW5TFC9fZrtj5TaMSnu8JBJ3n4Hf+aFBkU6qltx6K4UMkhC5XODSZFjngyCR9B
+	k/sJHpsB7LIUV0HF4tvgzEvBKakrkOuHh1VU+Ss43L3st5R5EW1kSfMDzccxuv3FzuZm9HpPK6AJc
+	PeS1BbVRLhe22CldJJJyMF30fpgW3xy0O8LqEJOmoZW6EPq3mmVV4YE1AsAM2GJ5ajLcDPq9zftxV
+	f9ufiNWA==;
+Received: from mgamail.intel.com ([198.175.65.9])
+	by desiato.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1vEkMP-0000000AsVG-24uA;
+	Fri, 31 Oct 2025 08:19:51 +0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1761901877; x=1793437877;
+  t=1761902120; x=1793438120;
   h=message-id:date:mime-version:subject:to:cc:references:
    from:in-reply-to:content-transfer-encoding;
-  bh=nVFcr7cSAivJ3kX3Ong+t5W82ll2lBVB0+D6Fy+f66w=;
-  b=HQCZO9vTEpjJxjl/WaTCvT+awRwcTymmY5VKXIyecuwkdXGSQ4CdTnUI
-   I+SrED/yK0H0+LUQlpaR8xRryORZOVL1URSehS1vyIaEvzTNXIcsTgOaH
-   tdeT6vlFUshLs8u11njnrWwIo6ImhQlkoUHf7wDQ7H2h3/oCBBwIMMSdV
-   ajxLSEMH9BbPzsF+p5NWMQ1TFqL3cp0KcQswEkWcN50GI+PFF8wH1sBsT
-   HbD5HCUpsLuHLF3Cia/l8G5NOIlTYr9Cxnu2hexEzm33E+kjxoTct31c1
-   32154/Mipa40drH93kHLEL9tV4E5ELqv45Hl4q3z5INSOrK4ZKbJ9HvRI
+  bh=PEZyjCEAirGsnd1ualshLT165jeP3bC2ATQpTmkSqys=;
+  b=WcCj5oD0u3zhbShu6vPwdHnGv45HkFutP4XpTLr9oQ+lqdLQ/nb6DySR
+   uVUvXaiD/VpZiPDt96Mkgl65WCWkb45dA10EAbNra0ic8m7tQqSKH7ZS7
+   xxSOgkk7UHhGeQPye025TecTI1ONC0WvNiQ3ElThXIgT0+C5JGG+k5wdi
+   EM+XVIvSThBDvxmc3KaEqqJ+2aSFGZiJ/U6RgQBYNWb6y9/jKi/UL8D9C
+   j2DJVFbUVI25vFVZ2fefHwONQCyGAg7JE+WVhuxSN+NBwbqZuo/eJLqYo
+   CxiY1T6UETb+ozqpZVi8Pe67mwn9RK8ROVIPXqNeobovDjpe5AER8fbq1
    g==;
-X-CSE-ConnectionGUID: 0lJdMZqtTvyWYvAtTFoI0g==
-X-CSE-MsgGUID: P7eqIzj4RTKUnhc/NyCxvw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11598"; a="74350454"
+X-CSE-ConnectionGUID: 3s/SO0FiS6uvvHQTkJryvA==
+X-CSE-MsgGUID: CFDetKpPTfajPX7W5VXg3Q==
+X-IronPort-AV: E=McAfee;i="6800,10657,11598"; a="86683964"
 X-IronPort-AV: E=Sophos;i="6.19,269,1754982000"; 
-   d="scan'208";a="74350454"
+   d="scan'208";a="86683964"
 Received: from orviesa007.jf.intel.com ([10.64.159.147])
-  by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Oct 2025 02:11:16 -0700
-X-CSE-ConnectionGUID: mtRCVhiuRGSbh+b9MLYkrw==
-X-CSE-MsgGUID: naB5mn6dRoCATJ8bJWh6cA==
+  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Oct 2025 02:15:18 -0700
+X-CSE-ConnectionGUID: /aUTuTUZR1CXvXYAACxkEg==
+X-CSE-MsgGUID: 8/kgW76KTTCO7UxJ6gCbbg==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.19,269,1754982000"; 
-   d="scan'208";a="186124007"
+   d="scan'208";a="186125404"
 Received: from binbinwu-mobl.ccr.corp.intel.com (HELO [10.124.240.28]) ([10.124.240.28])
-  by orviesa007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Oct 2025 02:11:08 -0700
-Message-ID: <709166ed-2102-46f2-807b-3d8139a386f0@linux.intel.com>
-Date: Fri, 31 Oct 2025 17:11:05 +0800
+  by orviesa007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Oct 2025 02:15:09 -0700
+Message-ID: <fd65c501-296a-4f77-86fc-7de61a7c5eeb@linux.intel.com>
+Date: Fri, 31 Oct 2025 17:15:06 +0800
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 22/28] KVM: TDX: Add tdx_get_cmd() helper to get and
- validate sub-ioctl command
+Subject: Re: [PATCH v4 23/28] KVM: TDX: Convert INIT_MEM_REGION and INIT_VCPU
+ to "unlocked" vCPU ioctl
 To: Sean Christopherson <seanjc@google.com>
 Cc: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>,
  Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>,
@@ -80,13 +94,13 @@ Cc: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>,
  Rick Edgecombe <rick.p.edgecombe@intel.com>,
  Ackerley Tng <ackerleytng@google.com>
 References: <20251030200951.3402865-1-seanjc@google.com>
- <20251030200951.3402865-23-seanjc@google.com>
+ <20251030200951.3402865-24-seanjc@google.com>
 Content-Language: en-US
 From: Binbin Wu <binbin.wu@linux.intel.com>
-In-Reply-To: <20251030200951.3402865-23-seanjc@google.com>
+In-Reply-To: <20251030200951.3402865-24-seanjc@google.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20251031_021116_972976_6565129E 
-X-CRM114-Status: UNSURE (   5.16  )
+X-CRM114-CacheID: sfid-20251031_081950_174619_4CFA0253 
+X-CRM114-Status: UNSURE (   4.97  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -107,13 +121,16 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 
 On 10/31/2025 4:09 AM, Sean Christopherson wrote:
-> Add a helper to copy a kvm_tdx_cmd structure from userspace and verify
-> that must-be-zero fields are indeed zero.
+> Handle the KVM_TDX_INIT_MEM_REGION and KVM_TDX_INIT_VCPU vCPU sub-ioctls
+> in the unlocked variant, i.e. outside of vcpu->mutex, in anticipation of
+> taking kvm->lock along with all other vCPU mutexes, at which point the
+> sub-ioctls _must_ start without vcpu->mutex held.
 >
 > No functional change intended.
 >
-> Reviewed-by: Rick Edgecombe <rick.p.edgecombe@intel.com>
 > Reviewed-by: Kai Huang <kai.huang@intel.com>
+> Co-developed-by: Yan Zhao <yan.y.zhao@intel.com>
+> Signed-off-by: Yan Zhao <yan.y.zhao@intel.com>
 > Signed-off-by: Sean Christopherson <seanjc@google.com>
 
 Reviewed-by: Binbin Wu <binbin.wu@linux.intel.com>
