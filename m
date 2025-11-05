@@ -4,60 +4,93 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 42342CCF9F8
-	for <kvm-riscv@archiver.kernel.org>; Wed,  5 Nov 2025 15:16:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 506F6CCFA0D
+	for <kvm-riscv@archiver.kernel.org>; Wed,  5 Nov 2025 15:26:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
-	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=Lwfo7BBi8EMdXkcXbpZD1cpH/p66Jzluh6N3h6DTgx4=; b=KO/hONAPFJwZ8g
-	93SlSihIn4yGNlNogvBjeENGmbyN7QQJueNzrPAzPwCt7B9V7OCVPh2j4+dqdWziRjzSsKKxbpN/b
-	O/s9TpCY1j6AtZnyZwBUa8Vp2d0y78AR7yTxiELdaU2jB4FUONFBly4ODCV8Z+zcT/V+uvvnYtAfa
-	WFSfM4jDPBv4ISEtLD2kejJCKfl3C3UPtWR1BJeGxOEadUHYegVHlG5aUPaM+A1S8na5P2I5JvvoI
-	J5DYrRsCm03sfKzv7HHt3N36GUpYMdHmp+52YvTgdgySgmqllL3XH9HUbxsCKfOMONGy3s3Qy/B5C
-	MyPItTBqVQxou2RrTAfg==;
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID:
+	References:Mime-Version:In-Reply-To:Date:Reply-To:Content-ID:
+	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+	:Resent-Message-ID:List-Owner;
+	bh=YY0r02lZHPTfbcq6UKeizvRJAEuXGW6C6TNYAm1jIFs=; b=Kxq+slVpINO/migmFw0Oivm3lm
+	jfgzbtFPi/iJE4YQP+mOZZqmbIy8aTfLH4zeL+n1kILmknazl2uH9ueee2So6+MNbFJfdRZrrop33
+	roeLkrBDr94SA9yP16D0jyM4ryxXyjsyjp7m5cdfwyuOhcDTWGs+bl1jtRVr09bH0bWhvRld7f8OO
+	jEbaUCb7cpOYTeIJGBFZ7rl2yKuDWPwUjsk5DwqgHAyxRkVypfBN6Jk37JwiwPEWSvMvmF6HwEW+/
+	UIw8XKBTz41yUFH4GtWkQ4rDHZTcrWxSRum6ZfyEbkPlyPA85Q7RzZ24UHOkt1NW4TwTP+zpUOoKl
+	GhHBjwEA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vGfFG-0000000Du4G-3YOT;
-	Wed, 05 Nov 2025 15:16:22 +0000
-Received: from m16.mail.163.com ([117.135.210.3])
+	id 1vGfPE-0000000Dw3l-02KA;
+	Wed, 05 Nov 2025 15:26:40 +0000
+Received: from mail-pj1-x1049.google.com ([2607:f8b0:4864:20::1049])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vGfFD-0000000Du3a-2umN
+	id 1vGfPA-0000000Dw2M-18iW
 	for kvm-riscv@lists.infradead.org;
-	Wed, 05 Nov 2025 15:16:21 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:To:Subject:Date:Message-ID:MIME-Version; bh=xa
-	Nnz3xllFFklv0+6RHlce9uSFLQrslVQn0HbzGh3CM=; b=O5HQpvDvHlo0jkxy1w
-	b/h0vb6/XPd+WqP7L9Fv7Q54ZGKEs86l2mSmZhUdjsV3i2256wSLzClKXgWGTPNe
-	cKmP88Zdfg0z6d61AdF9lMHNujhfVODiXTx+JUuWMa5tbJAn6nnMTLEH50pQ9pBp
-	OFXsGF0EJGYikDl2NMO/sxgC4=
-Received: from wufei (unknown [])
-	by gzga-smtp-mtada-g1-4 (Coremail) with SMTP id _____wDnz70cagtpVB05Bw--.55534S2;
-	Wed, 05 Nov 2025 23:16:02 +0800 (CST)
-From: Wu Fei <wu.fei9@sanechips.com.cn>
-To: kvm-riscv@lists.infradead.org,
-	kvm@vger.kernel.org
-Cc: Wu Fei <wu.fei9@sanechips.com.cn>,
-	Andrew Jones <ajones@ventanamicro.com>,
-	Nutty Liu <nutty.liu@hotmail.com>,
-	Anup Patel <anup@brainfault.org>
-Subject: [PATCH v2 RESEND] KVM: riscv: selftests: Add riscv vm satp modes
-Date: Wed,  5 Nov 2025 23:14:26 +0800
-Message-ID: <20251105151442.28767-1-wu.fei9@sanechips.com.cn>
-X-Mailer: git-send-email 2.51.0
-MIME-Version: 1.0
-X-CM-TRANSID: _____wDnz70cagtpVB05Bw--.55534S2
-X-Coremail-Antispam: 1Uf129KBjvJXoW3ZryrCF4UAr47Ar1fur1UAwb_yoWDCryUpF
-	4DGw10k347tFy3ZFy8Gr9YvrWxJw1rJrW8ury2ganruw4ktr1xJr1xKFZxAa43urW8W3Wr
-	Cr1SgFy7WrWkWF7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07je9a9UUUUU=
-X-Originating-IP: [240e:38d:8311:d200:526a:aa80:280b:b970]
-X-CM-SenderInfo: pdwz3wlhl6il2tof0z/1tbiYB38oWkLYPnhsgAAsI
+	Wed, 05 Nov 2025 15:26:38 +0000
+Received: by mail-pj1-x1049.google.com with SMTP id 98e67ed59e1d1-341616a6fb7so4125a91.0
+        for <kvm-riscv@lists.infradead.org>; Wed, 05 Nov 2025 07:26:35 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1762356395; x=1762961195; darn=lists.infradead.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=dmjmfo22QwufKip+RFN2GwcKXDk7+fDMohFzNqFh1wo=;
+        b=iDewj5jzpJ4BBrzV4dZGab58MK62rovLkvr+hG4RFcoGHlYhQv7iLb2JGDGOwxK9dG
+         jtf7FF1RAcPgZhrqCQjjmO0qA7gXYDXGUBPkerDVd4wRMlYcBxzSaJspRzcrnoTufLx3
+         dnabE8POzccSz7v+pMgInT10JnK6JxxY1DPf4SR1gBbSBtQmfvDYuSRpozIdnd6RpAd3
+         xjwMhGgeJwqKPqN+H4uNLDSSfz0HtRY/y+3PiZtUVhMPxhZvIr3HWRlBCJmjAnF5wLyf
+         nDF/UHn8LuZKREmY93wNgMGRX7nYM9Bgstq5reSDHh00uhZkIEytjxTV87HcO8w44EzR
+         IgVg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1762356395; x=1762961195;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=dmjmfo22QwufKip+RFN2GwcKXDk7+fDMohFzNqFh1wo=;
+        b=hJ1z8ijOQYSUnpwMVtrbT8KTW6ZVyGZxFIRRJVM9RUTeaPJbbvHgIvD9+Y/ciq6ZEr
+         Kwc6T19b7yYleHywUoS+0fn2/uxIx2GtvaS5ZR3C8h5yaSzMivlU5zj9kYlaTJCqQeit
+         f3jz+NU9DXV1BUJBPAXP23UbDRHIf8VW4ezJdNEMBF8/cKZ3ISdlDtC8pxwZoyK8zyUI
+         uwcKdIrBmjluN2gK6SofDGsBqUExd5o0wyl1tYelTLIZS8m3JOhhI+M2/SH5jZlYfSPf
+         L+db9JcrQO2S9bJZ/jzkvplzJDXkruXMQV5Lo6041muVWy/G2zFjLj75ZlT/ArQ2av3U
+         h9LA==
+X-Forwarded-Encrypted: i=1; AJvYcCV/3i3qMyhsnfkLJ6tVWpAIxCGxV7jC3G6vmon7SJrsL6eVcScZ2u9tOC7pJ9O9K7NiJ+FjtHi05k8=@lists.infradead.org
+X-Gm-Message-State: AOJu0YwLkrjt6zGK+VunloGgRG2HUwYMzm9iFdg86vW5+ZNH8V8Ub7pv
+	7TAfPeJ0HImr/kPMjccuWT7p9xu1Ppcvf8h/qPtgQ5mG7yrQRSO/Gi87raQuaTG4Op8dbjrn4sQ
+	1YU5gDg==
+X-Google-Smtp-Source: AGHT+IEksiko2nLkYHDcuQoizh41Xk4dhEPlLcSxUswEaWhydqjlp9gNPv6q5VYl/pXem0FsGEVxprPZGIk=
+X-Received: from pjbtc7.prod.google.com ([2002:a17:90b:5407:b0:340:b503:505f])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:384d:b0:340:9cf1:54d0
+ with SMTP id 98e67ed59e1d1-341a6c08e65mr4623520a91.1.1762356395074; Wed, 05
+ Nov 2025 07:26:35 -0800 (PST)
+Date: Wed, 5 Nov 2025 07:26:33 -0800
+In-Reply-To: <aQsBI1/SIXGbf9nA@yzhao56-desk.sh.intel.com>
+Mime-Version: 1.0
+References: <20251017003244.186495-1-seanjc@google.com> <20251017003244.186495-5-seanjc@google.com>
+ <aPhjYcOFjL1Z8m2s@yzhao56-desk.sh.intel.com> <aQMi/n9DVyeaWsVH@yzhao56-desk.sh.intel.com>
+ <aQo-hus99rE7WBgb@google.com> <aQr9jW/7zwWJaDFf@yzhao56-desk.sh.intel.com> <aQsBI1/SIXGbf9nA@yzhao56-desk.sh.intel.com>
+Message-ID: <aQtsqXPaZo2SMdJU@google.com>
+Subject: Re: [PATCH v3 04/25] KVM: x86/mmu: Add dedicated API to map
+ guest_memfd pfn into TDP MMU
+From: Sean Christopherson <seanjc@google.com>
+To: Yan Zhao <yan.y.zhao@intel.com>
+Cc: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>, 
+	Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>, 
+	Huacai Chen <chenhuacai@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, 
+	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+	Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, 
+	Claudio Imbrenda <imbrenda@linux.ibm.com>, Paolo Bonzini <pbonzini@redhat.com>, 
+	"Kirill A. Shutemov" <kas@kernel.org>, linux-arm-kernel@lists.infradead.org, 
+	kvmarm@lists.linux.dev, kvm@vger.kernel.org, loongarch@lists.linux.dev, 
+	linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
+	x86@kernel.org, linux-coco@lists.linux.dev, linux-kernel@vger.kernel.org, 
+	Ira Weiny <ira.weiny@intel.com>, Kai Huang <kai.huang@intel.com>, 
+	Michael Roth <michael.roth@amd.com>, Vishal Annapurve <vannapurve@google.com>, 
+	Rick Edgecombe <rick.p.edgecombe@intel.com>, Ackerley Tng <ackerleytng@google.com>, 
+	Binbin Wu <binbin.wu@linux.intel.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20251105_071620_141170_B5A4D807 
-X-CRM114-Status: GOOD (  18.59  )
+X-CRM114-CacheID: sfid-20251105_072636_317200_722821AA 
+X-CRM114-Status: GOOD (  24.10  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -74,304 +107,56 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Current vm modes cannot represent riscv guest modes precisely, here add
-all 9 combinations of P(56,40,41) x V(57,48,39). Also the default vm
-mode is detected on runtime instead of hardcoded one, which might not be
-supported on specific machine.
+On Wed, Nov 05, 2025, Yan Zhao wrote:
+> On Wed, Nov 05, 2025 at 03:32:29PM +0800, Yan Zhao wrote:
+> > On Tue, Nov 04, 2025 at 09:57:26AM -0800, Sean Christopherson wrote:
+> > > On Thu, Oct 30, 2025, Yan Zhao wrote:
+> > > > On Wed, Oct 22, 2025 at 12:53:53PM +0800, Yan Zhao wrote:
+> > > > > On Thu, Oct 16, 2025 at 05:32:22PM -0700, Sean Christopherson wrote:
+> > > > > > Link: https://lore.kernel.org/all/20250709232103.zwmufocd3l7sqk7y@amd.com
+> > > > > 
+> > > > > Hi Sean,                                                                         
+> > > > > 
+> > > > > Will you post [1] to fix the AB-BA deadlock issue for huge page in-place
+> > > > > conversion as well?
+> > > 
+> > > If you (or anyone) has the bandwidth, please pick it up.  I won't have cycles to
+> > > look at that for many weeks (potentially not even this calendar year).
+> > Got it!
+> > On the other hand, do you think we can address the warning as below?
+> > The code is based on [2].
+> Hmm, updated the diff.
+> 
+> diff --git a/virt/kvm/guest_memfd.c b/virt/kvm/guest_memfd.c
+> index 7b4a4474d468..543e1eb9db65 100644
+> --- a/virt/kvm/guest_memfd.c
+> +++ b/virt/kvm/guest_memfd.c
+> @@ -853,6 +853,9 @@ static int kvm_gmem_init_inode(struct inode *inode, loff_t size, u64 flags)
+>         inode->i_size = size;
+>         mapping_set_gfp_mask(inode->i_mapping, GFP_HIGHUSER);
+>         mapping_set_inaccessible(inode->i_mapping);
+> +       if (flags &GUEST_MEMFD_FLAG_MMAP)
+> +               lockdep_set_subclass(&inode->i_mapping->invalidate_lock, 1);
+> +
+>         /* Unmovable mappings are supposed to be marked unevictable as well. */
+>         WARN_ON_ONCE(!mapping_unevictable(inode->i_mapping));
+> 
+>  
+> > As noted in [3], the only scenario can trigger the warning after [2] is when a
+> > process creates a TDX VM with non-in-place-conversion guest_memfd and a normal
+> > VM with in-place-conversion guest_memfd. The two invalidate_lock's don't contend
+> > with each other theoretically.
 
-Signed-off-by: Wu Fei <wu.fei9@sanechips.com.cn>
-Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
-Reviewed-by: Nutty Liu <nutty.liu@hotmail.com>
-Reviewed-by: Anup Patel <anup@brainfault.org>
----
- .../testing/selftests/kvm/include/kvm_util.h  | 17 ++++-
- .../selftests/kvm/include/riscv/processor.h   |  2 +
- tools/testing/selftests/kvm/lib/guest_modes.c | 41 +++++++++---
- tools/testing/selftests/kvm/lib/kvm_util.c    | 33 ++++++++++
- .../selftests/kvm/lib/riscv/processor.c       | 63 +++++++++++++++++--
- 5 files changed, 142 insertions(+), 14 deletions(-)
+Hmm, no, I think we need to hoist gup() call outside of filemap_invalidate_lock(),
+because I don't think this is strictly limited to TDX VMs without in-place
+conversion.  Even with in-place conversion, I think KVM should allow the source
+page to be shared memory, at which point I believe this becomes a legimate AB-BA
+issue.
 
-diff --git a/tools/testing/selftests/kvm/include/kvm_util.h b/tools/testing/selftests/kvm/include/kvm_util.h
-index d3f3e455c031..c6d0b4a5b263 100644
---- a/tools/testing/selftests/kvm/include/kvm_util.h
-+++ b/tools/testing/selftests/kvm/include/kvm_util.h
-@@ -185,6 +185,17 @@ enum vm_guest_mode {
- 	VM_MODE_P36V48_64K,
- 	VM_MODE_P47V47_16K,
- 	VM_MODE_P36V47_16K,
-+
-+	VM_MODE_P56V57_4K,	/* For riscv64 */
-+	VM_MODE_P56V48_4K,
-+	VM_MODE_P56V39_4K,
-+	VM_MODE_P50V57_4K,
-+	VM_MODE_P50V48_4K,
-+	VM_MODE_P50V39_4K,
-+	VM_MODE_P41V57_4K,
-+	VM_MODE_P41V48_4K,
-+	VM_MODE_P41V39_4K,
-+
- 	NUM_VM_MODES,
- };
- 
-@@ -209,10 +220,10 @@ kvm_static_assert(sizeof(struct vm_shape) == sizeof(uint64_t));
- 	shape;					\
- })
- 
--#if defined(__aarch64__)
--
- extern enum vm_guest_mode vm_mode_default;
- 
-+#if defined(__aarch64__)
-+
- #define VM_MODE_DEFAULT			vm_mode_default
- #define MIN_PAGE_SHIFT			12U
- #define ptes_per_page(page_size)	((page_size) / 8)
-@@ -235,7 +246,7 @@ extern enum vm_guest_mode vm_mode_default;
- #error "RISC-V 32-bit kvm selftests not supported"
- #endif
- 
--#define VM_MODE_DEFAULT			VM_MODE_P40V48_4K
-+#define VM_MODE_DEFAULT			vm_mode_default
- #define MIN_PAGE_SHIFT			12U
- #define ptes_per_page(page_size)	((page_size) / 8)
- 
-diff --git a/tools/testing/selftests/kvm/include/riscv/processor.h b/tools/testing/selftests/kvm/include/riscv/processor.h
-index e58282488beb..4dade8c4d18e 100644
---- a/tools/testing/selftests/kvm/include/riscv/processor.h
-+++ b/tools/testing/selftests/kvm/include/riscv/processor.h
-@@ -192,4 +192,6 @@ static inline void local_irq_disable(void)
- 	csr_clear(CSR_SSTATUS, SR_SIE);
- }
- 
-+unsigned long riscv64_get_satp_mode(void);
-+
- #endif /* SELFTEST_KVM_PROCESSOR_H */
-diff --git a/tools/testing/selftests/kvm/lib/guest_modes.c b/tools/testing/selftests/kvm/lib/guest_modes.c
-index b04901e55138..ce3099630397 100644
---- a/tools/testing/selftests/kvm/lib/guest_modes.c
-+++ b/tools/testing/selftests/kvm/lib/guest_modes.c
-@@ -4,7 +4,7 @@
-  */
- #include "guest_modes.h"
- 
--#ifdef __aarch64__
-+#if defined(__aarch64__) || defined(__riscv)
- #include "processor.h"
- enum vm_guest_mode vm_mode_default;
- #endif
-@@ -13,9 +13,11 @@ struct guest_mode guest_modes[NUM_VM_MODES];
- 
- void guest_modes_append_default(void)
- {
--#ifndef __aarch64__
-+#if !defined(__aarch64__) && !defined(__riscv)
- 	guest_mode_append(VM_MODE_DEFAULT, true);
--#else
-+#endif
-+
-+#ifdef __aarch64__
- 	{
- 		unsigned int limit = kvm_check_cap(KVM_CAP_ARM_VM_IPA_SIZE);
- 		uint32_t ipa4k, ipa16k, ipa64k;
-@@ -74,11 +76,36 @@ void guest_modes_append_default(void)
- #ifdef __riscv
- 	{
- 		unsigned int sz = kvm_check_cap(KVM_CAP_VM_GPA_BITS);
-+		unsigned long satp_mode = riscv64_get_satp_mode() << SATP_MODE_SHIFT;
-+		int i;
- 
--		if (sz >= 52)
--			guest_mode_append(VM_MODE_P52V48_4K, true);
--		if (sz >= 48)
--			guest_mode_append(VM_MODE_P48V48_4K, true);
-+		switch (sz) {
-+		case 59:
-+			guest_mode_append(VM_MODE_P56V57_4K, satp_mode >= SATP_MODE_57);
-+			guest_mode_append(VM_MODE_P56V48_4K, satp_mode >= SATP_MODE_48);
-+			guest_mode_append(VM_MODE_P56V39_4K, satp_mode >= SATP_MODE_39);
-+			break;
-+		case 50:
-+			guest_mode_append(VM_MODE_P50V57_4K, satp_mode >= SATP_MODE_57);
-+			guest_mode_append(VM_MODE_P50V48_4K, satp_mode >= SATP_MODE_48);
-+			guest_mode_append(VM_MODE_P50V39_4K, satp_mode >= SATP_MODE_39);
-+			break;
-+		case 41:
-+			guest_mode_append(VM_MODE_P41V57_4K, satp_mode >= SATP_MODE_57);
-+			guest_mode_append(VM_MODE_P41V48_4K, satp_mode >= SATP_MODE_48);
-+			guest_mode_append(VM_MODE_P41V39_4K, satp_mode >= SATP_MODE_39);
-+			break;
-+		default:
-+			break;
-+		}
-+
-+		/* set the first supported mode as default */
-+		vm_mode_default = NUM_VM_MODES;
-+		for (i = 0; vm_mode_default == NUM_VM_MODES && i < NUM_VM_MODES; i++) {
-+			if (guest_modes[i].supported && guest_modes[i].enabled)
-+				vm_mode_default = i;
-+		}
-+		TEST_ASSERT(vm_mode_default != NUM_VM_MODES, "No supported mode!");
- 	}
- #endif
- }
-diff --git a/tools/testing/selftests/kvm/lib/kvm_util.c b/tools/testing/selftests/kvm/lib/kvm_util.c
-index 1a93d6361671..a6a4bbc07211 100644
---- a/tools/testing/selftests/kvm/lib/kvm_util.c
-+++ b/tools/testing/selftests/kvm/lib/kvm_util.c
-@@ -209,6 +209,15 @@ const char *vm_guest_mode_string(uint32_t i)
- 		[VM_MODE_P36V48_64K]	= "PA-bits:36,  VA-bits:48, 64K pages",
- 		[VM_MODE_P47V47_16K]	= "PA-bits:47,  VA-bits:47, 16K pages",
- 		[VM_MODE_P36V47_16K]	= "PA-bits:36,  VA-bits:47, 16K pages",
-+		[VM_MODE_P56V57_4K]	= "PA-bits:56,  VA-bits:57,  4K pages",
-+		[VM_MODE_P56V48_4K]	= "PA-bits:56,  VA-bits:48,  4K pages",
-+		[VM_MODE_P56V39_4K]	= "PA-bits:56,  VA-bits:39,  4K pages",
-+		[VM_MODE_P50V57_4K]	= "PA-bits:50,  VA-bits:57,  4K pages",
-+		[VM_MODE_P50V48_4K]	= "PA-bits:50,  VA-bits:48,  4K pages",
-+		[VM_MODE_P50V39_4K]	= "PA-bits:50,  VA-bits:39,  4K pages",
-+		[VM_MODE_P41V57_4K]	= "PA-bits:41,  VA-bits:57,  4K pages",
-+		[VM_MODE_P41V48_4K]	= "PA-bits:41,  VA-bits:48,  4K pages",
-+		[VM_MODE_P41V39_4K]	= "PA-bits:41,  VA-bits:39,  4K pages",
- 	};
- 	_Static_assert(sizeof(strings)/sizeof(char *) == NUM_VM_MODES,
- 		       "Missing new mode strings?");
-@@ -236,6 +245,15 @@ const struct vm_guest_mode_params vm_guest_mode_params[] = {
- 	[VM_MODE_P36V48_64K]	= { 36, 48, 0x10000, 16 },
- 	[VM_MODE_P47V47_16K]	= { 47, 47,  0x4000, 14 },
- 	[VM_MODE_P36V47_16K]	= { 36, 47,  0x4000, 14 },
-+	[VM_MODE_P56V57_4K]	= { 56, 57,  0x1000, 12 },
-+	[VM_MODE_P56V48_4K]	= { 56, 48,  0x1000, 12 },
-+	[VM_MODE_P56V39_4K]	= { 56, 39,  0x1000, 12 },
-+	[VM_MODE_P50V57_4K]	= { 50, 57,  0x1000, 12 },
-+	[VM_MODE_P50V48_4K]	= { 50, 48,  0x1000, 12 },
-+	[VM_MODE_P50V39_4K]	= { 50, 39,  0x1000, 12 },
-+	[VM_MODE_P41V57_4K]	= { 41, 57,  0x1000, 12 },
-+	[VM_MODE_P41V48_4K]	= { 41, 48,  0x1000, 12 },
-+	[VM_MODE_P41V39_4K]	= { 41, 39,  0x1000, 12 },
- };
- _Static_assert(sizeof(vm_guest_mode_params)/sizeof(struct vm_guest_mode_params) == NUM_VM_MODES,
- 	       "Missing new mode params?");
-@@ -336,6 +354,21 @@ struct kvm_vm *____vm_create(struct vm_shape shape)
- 	case VM_MODE_P44V64_4K:
- 		vm->pgtable_levels = 5;
- 		break;
-+	case VM_MODE_P56V57_4K:
-+	case VM_MODE_P50V57_4K:
-+	case VM_MODE_P41V57_4K:
-+		vm->pgtable_levels = 5;
-+		break;
-+	case VM_MODE_P56V48_4K:
-+	case VM_MODE_P50V48_4K:
-+	case VM_MODE_P41V48_4K:
-+		vm->pgtable_levels = 4;
-+		break;
-+	case VM_MODE_P56V39_4K:
-+	case VM_MODE_P50V39_4K:
-+	case VM_MODE_P41V39_4K:
-+		vm->pgtable_levels = 3;
-+		break;
- 	default:
- 		TEST_FAIL("Unknown guest mode: 0x%x", vm->mode);
- 	}
-diff --git a/tools/testing/selftests/kvm/lib/riscv/processor.c b/tools/testing/selftests/kvm/lib/riscv/processor.c
-index 2eac7d4b59e9..003693576225 100644
---- a/tools/testing/selftests/kvm/lib/riscv/processor.c
-+++ b/tools/testing/selftests/kvm/lib/riscv/processor.c
-@@ -8,6 +8,7 @@
- #include <linux/compiler.h>
- #include <assert.h>
- 
-+#include "guest_modes.h"
- #include "kvm_util.h"
- #include "processor.h"
- #include "ucall_common.h"
-@@ -197,22 +198,41 @@ void riscv_vcpu_mmu_setup(struct kvm_vcpu *vcpu)
- {
- 	struct kvm_vm *vm = vcpu->vm;
- 	unsigned long satp;
-+	unsigned long satp_mode;
-+	unsigned long max_satp_mode;
- 
- 	/*
- 	 * The RISC-V Sv48 MMU mode supports 56-bit physical address
- 	 * for 48-bit virtual address with 4KB last level page size.
- 	 */
- 	switch (vm->mode) {
--	case VM_MODE_P52V48_4K:
--	case VM_MODE_P48V48_4K:
--	case VM_MODE_P40V48_4K:
-+	case VM_MODE_P56V57_4K:
-+	case VM_MODE_P50V57_4K:
-+	case VM_MODE_P41V57_4K:
-+		satp_mode = SATP_MODE_57;
-+		break;
-+	case VM_MODE_P56V48_4K:
-+	case VM_MODE_P50V48_4K:
-+	case VM_MODE_P41V48_4K:
-+		satp_mode = SATP_MODE_48;
-+		break;
-+	case VM_MODE_P56V39_4K:
-+	case VM_MODE_P50V39_4K:
-+	case VM_MODE_P41V39_4K:
-+		satp_mode = SATP_MODE_39;
- 		break;
- 	default:
- 		TEST_FAIL("Unknown guest mode, mode: 0x%x", vm->mode);
- 	}
- 
-+	max_satp_mode = vcpu_get_reg(vcpu, RISCV_CONFIG_REG(satp_mode));
-+
-+	if ((satp_mode >> SATP_MODE_SHIFT) > max_satp_mode)
-+		TEST_FAIL("Unable to set satp mode 0x%lx, max mode 0x%lx\n",
-+			  satp_mode >> SATP_MODE_SHIFT, max_satp_mode);
-+
- 	satp = (vm->pgd >> PGTBL_PAGE_SIZE_SHIFT) & SATP_PPN;
--	satp |= SATP_MODE_48;
-+	satp |= satp_mode;
- 
- 	vcpu_set_reg(vcpu, RISCV_GENERAL_CSR_REG(satp), satp);
- }
-@@ -515,3 +535,38 @@ unsigned long get_host_sbi_spec_version(void)
- 
- 	return ret.value;
- }
-+
-+void kvm_selftest_arch_init(void)
-+{
-+	/*
-+	 * riscv64 doesn't have a true default mode, so start by detecting the
-+	 * supported vm mode.
-+	 */
-+	guest_modes_append_default();
-+}
-+
-+unsigned long riscv64_get_satp_mode(void)
-+{
-+	int kvm_fd, vm_fd, vcpu_fd, err;
-+	uint64_t val;
-+	struct kvm_one_reg reg = {
-+		.id     = RISCV_CONFIG_REG(satp_mode),
-+		.addr   = (uint64_t)&val,
-+	};
-+
-+	kvm_fd = open_kvm_dev_path_or_exit();
-+	vm_fd = __kvm_ioctl(kvm_fd, KVM_CREATE_VM, NULL);
-+	TEST_ASSERT(vm_fd >= 0, KVM_IOCTL_ERROR(KVM_CREATE_VM, vm_fd));
-+
-+	vcpu_fd = ioctl(vm_fd, KVM_CREATE_VCPU, 0);
-+	TEST_ASSERT(vcpu_fd >= 0, KVM_IOCTL_ERROR(KVM_CREATE_VCPU, vcpu_fd));
-+
-+	err = ioctl(vcpu_fd, KVM_GET_ONE_REG, &reg);
-+	TEST_ASSERT(err == 0, KVM_IOCTL_ERROR(KVM_GET_ONE_REG, vcpu_fd));
-+
-+	close(vcpu_fd);
-+	close(vm_fd);
-+	close(kvm_fd);
-+
-+	return val;
-+}
--- 
-2.51.0
+In general, playing lockdep games with so many subsystems involved terrifies me.
 
+> > [2] https://lore.kernel.org/all/cover.1760731772.git.ackerleytng@google.com/
+> > [3] https://lore.kernel.org/all/aQMi%2Fn9DVyeaWsVH@yzhao56-desk.sh.intel.com/
 
 -- 
 kvm-riscv mailing list
