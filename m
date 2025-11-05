@@ -4,199 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99E6ECCF9F8
-	for <kvm-riscv@archiver.kernel.org>; Wed,  5 Nov 2025 07:50:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 42342CCF9F8
+	for <kvm-riscv@archiver.kernel.org>; Wed,  5 Nov 2025 15:16:23 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
-	Content-Transfer-Encoding:Content-Type:Reply-To:List-Subscribe:List-Help:
-	List-Post:List-Archive:List-Unsubscribe:List-Id:MIME-Version:In-Reply-To:
-	References:Message-ID:Subject:To:From:Date:Cc:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=OkJWpfe+pBspmpiTnby1e5+IcKsexDgtg5g0Y+aR2SI=; b=1jy97Li9NMyUJf
-	Guonrf4dGA/ZENbPFC3tF6gd7uhB7BFu566VtgP38WHQxaOs4Utcj57cA8ij6ooCKHLb9qMMImCr8
-	rlh6cvQ7o+8Fms6RA8EFtJg4mMSbHsCaiPMbpS9MkjUzl2imuZ6ZYtbEMm5K2IlxnntwjhjMxLjpD
-	PNXAtV1X43Sodine93Tb1eUeGr9vR1T2m0g4MjDlKs7nU5kJoq+VUTKX5J/5739jpmeTZ0IPKivtt
-	qgbreuNB5l0IDfSsKtzfxGrLG0Av1nD0X6JGCCiqHdgMMpkcXsXojhq/Qu9uyZ5afA+IaUnBuQAvq
-	4tzNf6eOdgxAj9FECRZA==;
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=Lwfo7BBi8EMdXkcXbpZD1cpH/p66Jzluh6N3h6DTgx4=; b=KO/hONAPFJwZ8g
+	93SlSihIn4yGNlNogvBjeENGmbyN7QQJueNzrPAzPwCt7B9V7OCVPh2j4+dqdWziRjzSsKKxbpN/b
+	O/s9TpCY1j6AtZnyZwBUa8Vp2d0y78AR7yTxiELdaU2jB4FUONFBly4ODCV8Z+zcT/V+uvvnYtAfa
+	WFSfM4jDPBv4ISEtLD2kejJCKfl3C3UPtWR1BJeGxOEadUHYegVHlG5aUPaM+A1S8na5P2I5JvvoI
+	J5DYrRsCm03sfKzv7HHt3N36GUpYMdHmp+52YvTgdgySgmqllL3XH9HUbxsCKfOMONGy3s3Qy/B5C
+	MyPItTBqVQxou2RrTAfg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vGYHM-0000000DEVk-1WGM;
-	Wed, 05 Nov 2025 07:50:04 +0000
-Received: from mgamail.intel.com ([198.175.65.12])
+	id 1vGfFG-0000000Du4G-3YOT;
+	Wed, 05 Nov 2025 15:16:22 +0000
+Received: from m16.mail.163.com ([117.135.210.3])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vGYHJ-0000000DEUS-1cl8;
-	Wed, 05 Nov 2025 07:50:03 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1762329002; x=1793865002;
-  h=date:from:to:subject:message-id:reply-to:references:
-   in-reply-to:mime-version;
-  bh=xSVZXDY0znLHAquPH9GWLVC3lLn4OHkxYQHQ6IfV7so=;
-  b=fqNxDbRkFmiieaD4zvmicrboiYxQ2BLIuIwotaftQD20ejL69eJ0P9kI
-   aYr5zDIQFS17gJp67tw1+oPa3jVfHLbn3XlarVd6s8hPReCbTBnlO2JVR
-   8mTafg5TzOHZUBrSuOrN2wNGMSJZ4OtL4Bzc9TdwquNY4CPJ7KuXOwV9s
-   UALaTWYQZpLGrrqYpJQRKEPPWfvU+BUEKxS6I6LXO9mhMdSrVY4O1rjIu
-   j6ah8M9gdQZQGwL/59JG2nsCGELN5gBOoo3p3w9yUc5UlJ15StOzJQJd3
-   GrQfvQ1pB4Mke+PJu0MCCVNidZ+keFC3eb6D4jssFgKOSucD+SNpLa8Y7
-   w==;
-X-CSE-ConnectionGUID: PZMCszzERbqCKvKFUUcQlQ==
-X-CSE-MsgGUID: 1gp8IZyRQp6ifHnDBMImFQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11603"; a="75885186"
-X-IronPort-AV: E=Sophos;i="6.19,281,1754982000"; 
-   d="scan'208";a="75885186"
-Received: from fmviesa004.fm.intel.com ([10.60.135.144])
-  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Nov 2025 23:50:01 -0800
-X-CSE-ConnectionGUID: /URWdqlmQhirABx2oJ5+wA==
-X-CSE-MsgGUID: HFnd7MhQS/ypmFv2FAX2bQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.19,281,1754982000"; 
-   d="scan'208";a="192460516"
-Received: from fmsmsx901.amr.corp.intel.com ([10.18.126.90])
-  by fmviesa004.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Nov 2025 23:50:00 -0800
-Received: from FMSMSX903.amr.corp.intel.com (10.18.126.92) by
- fmsmsx901.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.27; Tue, 4 Nov 2025 23:49:59 -0800
-Received: from fmsedg901.ED.cps.intel.com (10.1.192.143) by
- FMSMSX903.amr.corp.intel.com (10.18.126.92) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.27 via Frontend Transport; Tue, 4 Nov 2025 23:49:59 -0800
-Received: from CH4PR04CU002.outbound.protection.outlook.com (40.107.201.3) by
- edgegateway.intel.com (192.55.55.81) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.27; Tue, 4 Nov 2025 23:49:59 -0800
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=Nw/WOF9nmqsvM36EY2tDKBWT4PbkMwVYmNJicwtVfzkcF1Elqfbi3IRxMoD0UFYkPk7+Z04YgGcFwRk/J5JbtrkKtic3QVygNn0IdQiI45q1DaIQVYKAhWoSuvdzyU4enK4rbZEgb3sS4oyz9vr5oRKQFM6z7kuXGmSto3EsIO6TdG9AOswk5ugXxysisXFAGsxJPlZBpGkXeY9u8FuXZBQAJy2OZl8GibG7tbgFnrYJnuqikPyNYj2c2S+yDk3EutKM5gFThD62i6MAlcPwzABVFbRFu8c8aG2/5RDnXszYwWGd3GDUm9Z4oLS/YrU6vKLzuerQ+2QPgto2uPNCTQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=H763XweLnSfFOo+PRrBmFAIVPvUbd9MxqaCXgLJ6h9M=;
- b=Cc0TzMgeb4vDP+clogZGst4NQaObKyZYnXje4g/o0fbdJ6FexwiaM8qC6Nxj3w/W1oI26LdMQ+zDOQC5K1aTMzThyM38ZG63St8usGD+6GjIz0r2oZdGWGDt+la9qtFK0erT0yotAbNkOwY/zZCm+Xk30GBuYJ4yNAypfRKOuUcST/OULRU8xmW3GpULuBHY3TeAazqcdHm9uOPfTZo/A0dPNVK1IYFTxiPtrDpSOYFJQLS3saN0vQz7j+dWA9NkR6QXsHjM/CBFK8zYPZDfQ8WAucbTSmhPXhGcb9BtZrv3s0z6h7jSZNbKtzkqs0kKNuGSCvOmXJfAFL6PsOQqwQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Received: from DS7PR11MB5966.namprd11.prod.outlook.com (2603:10b6:8:71::6) by
- DS4PPF7CFF9C87C.namprd11.prod.outlook.com (2603:10b6:f:fc02::35) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9298.7; Wed, 5 Nov
- 2025 07:49:56 +0000
-Received: from DS7PR11MB5966.namprd11.prod.outlook.com
- ([fe80::e971:d8f4:66c4:12ca]) by DS7PR11MB5966.namprd11.prod.outlook.com
- ([fe80::e971:d8f4:66c4:12ca%6]) with mapi id 15.20.9275.015; Wed, 5 Nov 2025
- 07:49:56 +0000
-Date: Wed, 5 Nov 2025 15:47:47 +0800
-From: Yan Zhao <yan.y.zhao@intel.com>
-To: Sean Christopherson <seanjc@google.com>, Marc Zyngier <maz@kernel.org>,
-	Oliver Upton <oliver.upton@linux.dev>, Tianrui Zhao
-	<zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>, Huacai Chen
-	<chenhuacai@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, "Anup
- Patel" <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt
-	<palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, "Christian
- Borntraeger" <borntraeger@linux.ibm.com>, Janosch Frank
-	<frankja@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, "Paolo
- Bonzini" <pbonzini@redhat.com>, "Kirill A. Shutemov" <kas@kernel.org>,
-	<linux-arm-kernel@lists.infradead.org>, <kvmarm@lists.linux.dev>,
-	<kvm@vger.kernel.org>, <loongarch@lists.linux.dev>,
-	<linux-mips@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
-	<kvm-riscv@lists.infradead.org>, <linux-riscv@lists.infradead.org>,
-	<x86@kernel.org>, <linux-coco@lists.linux.dev>,
-	<linux-kernel@vger.kernel.org>, Ira Weiny <ira.weiny@intel.com>, Kai Huang
-	<kai.huang@intel.com>, Michael Roth <michael.roth@amd.com>, Vishal Annapurve
-	<vannapurve@google.com>, Rick Edgecombe <rick.p.edgecombe@intel.com>,
-	Ackerley Tng <ackerleytng@google.com>, Binbin Wu <binbin.wu@linux.intel.com>
-Subject: Re: [PATCH v3 04/25] KVM: x86/mmu: Add dedicated API to map
- guest_memfd pfn into TDP MMU
-Message-ID: <aQsBI1/SIXGbf9nA@yzhao56-desk.sh.intel.com>
-References: <20251017003244.186495-1-seanjc@google.com>
- <20251017003244.186495-5-seanjc@google.com>
- <aPhjYcOFjL1Z8m2s@yzhao56-desk.sh.intel.com>
- <aQMi/n9DVyeaWsVH@yzhao56-desk.sh.intel.com>
- <aQo-hus99rE7WBgb@google.com>
- <aQr9jW/7zwWJaDFf@yzhao56-desk.sh.intel.com>
-Content-Disposition: inline
-In-Reply-To: <aQr9jW/7zwWJaDFf@yzhao56-desk.sh.intel.com>
-X-ClientProxiedBy: SI1PR02CA0040.apcprd02.prod.outlook.com
- (2603:1096:4:1f6::7) To DS7PR11MB5966.namprd11.prod.outlook.com
- (2603:10b6:8:71::6)
+	id 1vGfFD-0000000Du3a-2umN
+	for kvm-riscv@lists.infradead.org;
+	Wed, 05 Nov 2025 15:16:21 +0000
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+	s=s110527; h=From:To:Subject:Date:Message-ID:MIME-Version; bh=xa
+	Nnz3xllFFklv0+6RHlce9uSFLQrslVQn0HbzGh3CM=; b=O5HQpvDvHlo0jkxy1w
+	b/h0vb6/XPd+WqP7L9Fv7Q54ZGKEs86l2mSmZhUdjsV3i2256wSLzClKXgWGTPNe
+	cKmP88Zdfg0z6d61AdF9lMHNujhfVODiXTx+JUuWMa5tbJAn6nnMTLEH50pQ9pBp
+	OFXsGF0EJGYikDl2NMO/sxgC4=
+Received: from wufei (unknown [])
+	by gzga-smtp-mtada-g1-4 (Coremail) with SMTP id _____wDnz70cagtpVB05Bw--.55534S2;
+	Wed, 05 Nov 2025 23:16:02 +0800 (CST)
+From: Wu Fei <wu.fei9@sanechips.com.cn>
+To: kvm-riscv@lists.infradead.org,
+	kvm@vger.kernel.org
+Cc: Wu Fei <wu.fei9@sanechips.com.cn>,
+	Andrew Jones <ajones@ventanamicro.com>,
+	Nutty Liu <nutty.liu@hotmail.com>,
+	Anup Patel <anup@brainfault.org>
+Subject: [PATCH v2 RESEND] KVM: riscv: selftests: Add riscv vm satp modes
+Date: Wed,  5 Nov 2025 23:14:26 +0800
+Message-ID: <20251105151442.28767-1-wu.fei9@sanechips.com.cn>
+X-Mailer: git-send-email 2.51.0
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DS7PR11MB5966:EE_|DS4PPF7CFF9C87C:EE_
-X-MS-Office365-Filtering-Correlation-Id: 1e9ec11a-c06f-45a9-dfed-08de1c3fe994
-X-LD-Processed: 46c98d88-e344-4ed4-8496-4ed7712e255d,ExtAddr
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;ARA:13230040|366016|7416014|376014|1800799024|921020;
-X-Microsoft-Antispam-Message-Info: =?us-ascii?Q?WpyqhYkY92dZiBd/By/e2x2WbRfUnlxQUdWzaglJEI0AQvS2ZqmVY9Cdy8J6?=
- =?us-ascii?Q?xfX1XwaQnOyFn9qWvF5ijQT4RsJ59pq8tkGbewAYwUp1AVhrvBE1F2/Wc+gl?=
- =?us-ascii?Q?++EZEkXfP200IM2iHFuiellqD7ueVOpAPeVGqk78XA8HVlDR+G/TB2r7+Ioj?=
- =?us-ascii?Q?ji+bdWHI1DqprhfrGbB8WhhnUynbOMmZ6/hdn9190Ri/w20VoWS9BEhMHtGr?=
- =?us-ascii?Q?OhTOXV4Cb4ktQzOrNHNVLN3050FLJDswWjTHAzPqYGWysFBwmY97f/64RpuC?=
- =?us-ascii?Q?qJ4UP8CBSeevUA4l9fk0cTBcZgdIl13dQr8zGQZYo8/NaM6A2zo12rmNzjtU?=
- =?us-ascii?Q?wkhn661vjSs+Tgi6cv+HcrzWidq8aE1SN7jLW3aSqTx0vL/w8zb+dgRdfvrn?=
- =?us-ascii?Q?VtiJjs23qJTxG6/0QHe2ss9ozYWpdk5hc01jbHVSWTij1Ik8oREhvCMLENGL?=
- =?us-ascii?Q?qioGrVsKpoJ39KzeeRyM4HOhNZNG+i6uFMYj1Ul1Vl0bH13OJWI00Japp5M8?=
- =?us-ascii?Q?f+/qp5zw8vLrnbnAX1EkFNatc+3wwSny3VmWpErKY6Sh544SBQGA9NA1mQ9p?=
- =?us-ascii?Q?eJ4jJ3zSstOFA41YuX7Mwr+wewt1H8RIiPXDWlodB4juF0r8lsQBxZ5w38dw?=
- =?us-ascii?Q?MSne+PqvfxegtOfTA1vC579to1K/AcvODDjSUu0P7LUSXDm+EkE4QENck96M?=
- =?us-ascii?Q?RJ8XVPUa3oFJh6Jgfr070qt+SczJo8dGr0T8pOVpnie5IkDK/qsBfG+h6tFS?=
- =?us-ascii?Q?CkUtdNn0QYi4n+jKDzn/SMJOyj7a9TT8sn08x1RkCoUJWf99tBMmH6rzsoC1?=
- =?us-ascii?Q?pxirZfmCFXGWb6U00T5S9UAMSCXqWX6z3ZdzfjwssYgPkdcWJSNAs7tr2oDn?=
- =?us-ascii?Q?1shuDBpoUbM1P5OE6BEy/1JEKUee96rLsGa+/rS92GPlf1jPH1ApR3yPrTES?=
- =?us-ascii?Q?TPOrKrGkAnGkAPtNAxNj6GW25smNOqOl1uvg/TyNDG5Pza7xDoHSjmPpCoHA?=
- =?us-ascii?Q?fyNtUWGfd7yUitmtkBRVexPGeCfbU7lBZOWpV5MUmZxzT/XIwoeQFoOHDXEZ?=
- =?us-ascii?Q?NcNOxvODKVuFDOWPbbC2MoTamSFIFZ7SaVb8nc19GpzlY/f4XQ3K+uVV00Au?=
- =?us-ascii?Q?3fbssyD9iMq7WxDQeJxxuxyYfD1sr4eAPdVrp1NiuGJs1ABYZq8BYnB6U8Xg?=
- =?us-ascii?Q?YnXovBHktMWqf3gXjstMRBL7lrQAGa6W91KaDuwRCK2EeB41OqkGALHJO6Xd?=
- =?us-ascii?Q?VfqcXgw+n9ABLr9C1joeRPB6mTkNsTRLYLqwoqK4U2Foq5Zbr7W2sedgbeJ3?=
- =?us-ascii?Q?NT7yhAEy9PG7CualDXqy51OB1+b9fSou4IYjwbem+eTzcOKoEEjWdA4G9efu?=
- =?us-ascii?Q?we0eROc8wfFVVzLYr8NxXfZyPcVRmiI2kvUa7WNxE0PEF4QRrakbxPh3q532?=
- =?us-ascii?Q?ayXFeXdqxaZQlkOQOEQ5fh6qwv1EbBXpl/pyNUeLR6vNBCw3UmaaRwvHrAqj?=
- =?us-ascii?Q?xnb3eJ6r8LazX0+l1g7OqLjYUWkaknDUlaOc?=
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS7PR11MB5966.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(7416014)(376014)(1800799024)(921020);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?NRCu/xLEz4q4DmC2WXRmCl9LoYnU1QHZNjtQqW05KjQKGFxuVw+96E3ui5Z7?=
- =?us-ascii?Q?xQ6gXdlnMnpFaF9q0mrY6qZ4SuWtQSsed3exWRJLioPS+4Jm3JW7RMZDZOrn?=
- =?us-ascii?Q?ooypGL8CfWVmFAHQ+tqW2UKsLWcVaKDKWp6j+purCH4zU3mN8GxHHshvzujt?=
- =?us-ascii?Q?Yb1pzTBlS5yJvshM+Dj9oo7xAbZ/VgWty5KTu5+l8EAkceYVyUXASopZv7CP?=
- =?us-ascii?Q?dQFcMI/J0mcFzYxW7pLBoSkZ/MB6k5985pgvq/rzD6UxNHW6Bd+LH7oXQwKt?=
- =?us-ascii?Q?J/wY+21y8qKf4ZKWSqPD1UUL+TsAL/SsdlXehyCIdakcpmxptVZlYPzu2LhY?=
- =?us-ascii?Q?flvfLNl1zExSc8CZGbCcXWsiRnzAdE9++TbPVgMr/2kGja5D5uwAWwePhyze?=
- =?us-ascii?Q?/tXCT8TvXRvugAT/aPn80AcTEQxZu0RQk3h5IIaFb4LzeSNL+Hf5DJiL7wNt?=
- =?us-ascii?Q?bkax67ZWv7pnflq6C9ECxLyxa8CaaBy7lnTGR+/LAVoi81qTiGRcZrxmex5g?=
- =?us-ascii?Q?F53N7dZXeP9AC6gj+i9ScLak/8Mt1PKFyEsbZy2GWXc+zq8nmDXGQRMvGHwF?=
- =?us-ascii?Q?SHrCwZAU2prkN5kRHfxkJe8AndnIT//S+G65Pm4Yxiv/+djm4zmWI07Ee7aV?=
- =?us-ascii?Q?T8u620XWZzVZbafLQpl6UmMUKTEgOEu7lPKEKJKp92hwlOo9edoI/P+Kt8i1?=
- =?us-ascii?Q?CjrEy/largU0SU7rbZTdK3lsW904d6oFv6bFtMTQHb92xGcuSwN8pqZ68CY8?=
- =?us-ascii?Q?pSDhXa7my301v+DZ2psnHqXZSFtyH+b6gduB295a2Ao71rLEmomfnVHbxuXR?=
- =?us-ascii?Q?LotqeayxdHpcmnW9SahU3sp6mnfS70OkvywZeJLvtJ9qRe9f/UNH16tkOhre?=
- =?us-ascii?Q?vlwWYQDczAwjElxhc/uLuyqJmpok6jPEmo4jEYKZAYrv9zcPt018/e7dNYJD?=
- =?us-ascii?Q?srdv39blv6drI5Cwi7bEAFDtoNTZf/+AhibYj9gz6kdEi3Dku1wxF+OUKjte?=
- =?us-ascii?Q?bqT1V1qVUJTRb5Uk1tvD+x8rfpkrczdsuCBSKpOdd84MTD+KWyegz5WPqzAp?=
- =?us-ascii?Q?46jnsAZ/Grt0rZ2V89SYHtsdOZj75Zl/R4xa1BmC7h7Od1vNkQfiYiPTPMrz?=
- =?us-ascii?Q?3Oyf44hYLcxHxd/F57g4Y0BJ6HAbRO59UwtereSc2r4TgOgYmcBb8WNYExqA?=
- =?us-ascii?Q?TLiQEySJhgyX4LA5WCTwWAE2tN3oC3p69xcHNfi72RxJ++NE8gyz4xxwGWvI?=
- =?us-ascii?Q?YOpeqEFgMja+tgPzPUWf3vF5OBCjtA1/lgEovCMs5rHp65JQtZTNubxbS7jq?=
- =?us-ascii?Q?LRxyT6MoW6eVHOu674i4nIIvnhvJIZoSSBclOdCFNJGUbsl/Za5OWv3gUx/b?=
- =?us-ascii?Q?jwk6AKcu2iVhmYkfSL7FJHEt4qL6tkdmDlJqNb7G7b26mvKom0/YdyPlUE9v?=
- =?us-ascii?Q?6l0+fVtMXntUbqYhhszSA1p7Q+gqj9UJFxH1treAOiwoC7nZFUTIiFaMXy74?=
- =?us-ascii?Q?QCawUe+E2K7hLgvIp7DhU9o83t0h/rilKqO4BnxLkShxXfTZ1jaJDYfYcNsF?=
- =?us-ascii?Q?rdZMZw61tPq/97C81eEqEoW1Ru02kZ8Ebiz+3kNx?=
-X-MS-Exchange-CrossTenant-Network-Message-Id: 1e9ec11a-c06f-45a9-dfed-08de1c3fe994
-X-MS-Exchange-CrossTenant-AuthSource: DS7PR11MB5966.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 05 Nov 2025 07:49:56.1939
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: p6Z2ENmN56C9ZqeMpITc9tPGXcDncpDGiwAevvvPsclreA+aq7aImB3W3ccb8Isi1QgAbzFSVvdjJ0SRs/VvLw==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS4PPF7CFF9C87C
-X-OriginatorOrg: intel.com
+X-CM-TRANSID: _____wDnz70cagtpVB05Bw--.55534S2
+X-Coremail-Antispam: 1Uf129KBjvJXoW3ZryrCF4UAr47Ar1fur1UAwb_yoWDCryUpF
+	4DGw10k347tFy3ZFy8Gr9YvrWxJw1rJrW8ury2ganruw4ktr1xJr1xKFZxAa43urW8W3Wr
+	Cr1SgFy7WrWkWF7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07je9a9UUUUU=
+X-Originating-IP: [240e:38d:8311:d200:526a:aa80:280b:b970]
+X-CM-SenderInfo: pdwz3wlhl6il2tof0z/1tbiYB38oWkLYPnhsgAAsI
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20251104_235001_665731_33B55198 
-X-CRM114-Status: GOOD (  18.51  )
+X-CRM114-CacheID: sfid-20251105_071620_141170_B5A4D807 
+X-CRM114-Status: GOOD (  18.59  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -208,54 +69,309 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Reply-To: Yan Zhao <yan.y.zhao@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Wed, Nov 05, 2025 at 03:32:29PM +0800, Yan Zhao wrote:
-> On Tue, Nov 04, 2025 at 09:57:26AM -0800, Sean Christopherson wrote:
-> > On Thu, Oct 30, 2025, Yan Zhao wrote:
-> > > On Wed, Oct 22, 2025 at 12:53:53PM +0800, Yan Zhao wrote:
-> > > > On Thu, Oct 16, 2025 at 05:32:22PM -0700, Sean Christopherson wrote:
-> > > > > Link: https://lore.kernel.org/all/20250709232103.zwmufocd3l7sqk7y@amd.com
-> > > > 
-> > > > Hi Sean,                                                                         
-> > > > 
-> > > > Will you post [1] to fix the AB-BA deadlock issue for huge page in-place
-> > > > conversion as well?
-> > 
-> > If you (or anyone) has the bandwidth, please pick it up.  I won't have cycles to
-> > look at that for many weeks (potentially not even this calendar year).
-> Got it!
-> On the other hand, do you think we can address the warning as below?
-> The code is based on [2].
-Hmm, updated the diff.
+Current vm modes cannot represent riscv guest modes precisely, here add
+all 9 combinations of P(56,40,41) x V(57,48,39). Also the default vm
+mode is detected on runtime instead of hardcoded one, which might not be
+supported on specific machine.
 
-diff --git a/virt/kvm/guest_memfd.c b/virt/kvm/guest_memfd.c
-index 7b4a4474d468..543e1eb9db65 100644
---- a/virt/kvm/guest_memfd.c
-+++ b/virt/kvm/guest_memfd.c
-@@ -853,6 +853,9 @@ static int kvm_gmem_init_inode(struct inode *inode, loff_t size, u64 flags)
-        inode->i_size = size;
-        mapping_set_gfp_mask(inode->i_mapping, GFP_HIGHUSER);
-        mapping_set_inaccessible(inode->i_mapping);
-+       if (flags &GUEST_MEMFD_FLAG_MMAP)
-+               lockdep_set_subclass(&inode->i_mapping->invalidate_lock, 1);
+Signed-off-by: Wu Fei <wu.fei9@sanechips.com.cn>
+Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+Reviewed-by: Nutty Liu <nutty.liu@hotmail.com>
+Reviewed-by: Anup Patel <anup@brainfault.org>
+---
+ .../testing/selftests/kvm/include/kvm_util.h  | 17 ++++-
+ .../selftests/kvm/include/riscv/processor.h   |  2 +
+ tools/testing/selftests/kvm/lib/guest_modes.c | 41 +++++++++---
+ tools/testing/selftests/kvm/lib/kvm_util.c    | 33 ++++++++++
+ .../selftests/kvm/lib/riscv/processor.c       | 63 +++++++++++++++++--
+ 5 files changed, 142 insertions(+), 14 deletions(-)
+
+diff --git a/tools/testing/selftests/kvm/include/kvm_util.h b/tools/testing/selftests/kvm/include/kvm_util.h
+index d3f3e455c031..c6d0b4a5b263 100644
+--- a/tools/testing/selftests/kvm/include/kvm_util.h
++++ b/tools/testing/selftests/kvm/include/kvm_util.h
+@@ -185,6 +185,17 @@ enum vm_guest_mode {
+ 	VM_MODE_P36V48_64K,
+ 	VM_MODE_P47V47_16K,
+ 	VM_MODE_P36V47_16K,
 +
-        /* Unmovable mappings are supposed to be marked unevictable as well. */
-        WARN_ON_ONCE(!mapping_unevictable(inode->i_mapping));
-
++	VM_MODE_P56V57_4K,	/* For riscv64 */
++	VM_MODE_P56V48_4K,
++	VM_MODE_P56V39_4K,
++	VM_MODE_P50V57_4K,
++	VM_MODE_P50V48_4K,
++	VM_MODE_P50V39_4K,
++	VM_MODE_P41V57_4K,
++	VM_MODE_P41V48_4K,
++	VM_MODE_P41V39_4K,
++
+ 	NUM_VM_MODES,
+ };
  
-> As noted in [3], the only scenario can trigger the warning after [2] is when a
-> process creates a TDX VM with non-in-place-conversion guest_memfd and a normal
-> VM with in-place-conversion guest_memfd. The two invalidate_lock's don't contend
-> with each other theoretically.
-> 
-> 
-> [2] https://lore.kernel.org/all/cover.1760731772.git.ackerleytng@google.com/
-> [3] https://lore.kernel.org/all/aQMi%2Fn9DVyeaWsVH@yzhao56-desk.sh.intel.com/
+@@ -209,10 +220,10 @@ kvm_static_assert(sizeof(struct vm_shape) == sizeof(uint64_t));
+ 	shape;					\
+ })
+ 
+-#if defined(__aarch64__)
+-
+ extern enum vm_guest_mode vm_mode_default;
+ 
++#if defined(__aarch64__)
++
+ #define VM_MODE_DEFAULT			vm_mode_default
+ #define MIN_PAGE_SHIFT			12U
+ #define ptes_per_page(page_size)	((page_size) / 8)
+@@ -235,7 +246,7 @@ extern enum vm_guest_mode vm_mode_default;
+ #error "RISC-V 32-bit kvm selftests not supported"
+ #endif
+ 
+-#define VM_MODE_DEFAULT			VM_MODE_P40V48_4K
++#define VM_MODE_DEFAULT			vm_mode_default
+ #define MIN_PAGE_SHIFT			12U
+ #define ptes_per_page(page_size)	((page_size) / 8)
+ 
+diff --git a/tools/testing/selftests/kvm/include/riscv/processor.h b/tools/testing/selftests/kvm/include/riscv/processor.h
+index e58282488beb..4dade8c4d18e 100644
+--- a/tools/testing/selftests/kvm/include/riscv/processor.h
++++ b/tools/testing/selftests/kvm/include/riscv/processor.h
+@@ -192,4 +192,6 @@ static inline void local_irq_disable(void)
+ 	csr_clear(CSR_SSTATUS, SR_SIE);
+ }
+ 
++unsigned long riscv64_get_satp_mode(void);
++
+ #endif /* SELFTEST_KVM_PROCESSOR_H */
+diff --git a/tools/testing/selftests/kvm/lib/guest_modes.c b/tools/testing/selftests/kvm/lib/guest_modes.c
+index b04901e55138..ce3099630397 100644
+--- a/tools/testing/selftests/kvm/lib/guest_modes.c
++++ b/tools/testing/selftests/kvm/lib/guest_modes.c
+@@ -4,7 +4,7 @@
+  */
+ #include "guest_modes.h"
+ 
+-#ifdef __aarch64__
++#if defined(__aarch64__) || defined(__riscv)
+ #include "processor.h"
+ enum vm_guest_mode vm_mode_default;
+ #endif
+@@ -13,9 +13,11 @@ struct guest_mode guest_modes[NUM_VM_MODES];
+ 
+ void guest_modes_append_default(void)
+ {
+-#ifndef __aarch64__
++#if !defined(__aarch64__) && !defined(__riscv)
+ 	guest_mode_append(VM_MODE_DEFAULT, true);
+-#else
++#endif
++
++#ifdef __aarch64__
+ 	{
+ 		unsigned int limit = kvm_check_cap(KVM_CAP_ARM_VM_IPA_SIZE);
+ 		uint32_t ipa4k, ipa16k, ipa64k;
+@@ -74,11 +76,36 @@ void guest_modes_append_default(void)
+ #ifdef __riscv
+ 	{
+ 		unsigned int sz = kvm_check_cap(KVM_CAP_VM_GPA_BITS);
++		unsigned long satp_mode = riscv64_get_satp_mode() << SATP_MODE_SHIFT;
++		int i;
+ 
+-		if (sz >= 52)
+-			guest_mode_append(VM_MODE_P52V48_4K, true);
+-		if (sz >= 48)
+-			guest_mode_append(VM_MODE_P48V48_4K, true);
++		switch (sz) {
++		case 59:
++			guest_mode_append(VM_MODE_P56V57_4K, satp_mode >= SATP_MODE_57);
++			guest_mode_append(VM_MODE_P56V48_4K, satp_mode >= SATP_MODE_48);
++			guest_mode_append(VM_MODE_P56V39_4K, satp_mode >= SATP_MODE_39);
++			break;
++		case 50:
++			guest_mode_append(VM_MODE_P50V57_4K, satp_mode >= SATP_MODE_57);
++			guest_mode_append(VM_MODE_P50V48_4K, satp_mode >= SATP_MODE_48);
++			guest_mode_append(VM_MODE_P50V39_4K, satp_mode >= SATP_MODE_39);
++			break;
++		case 41:
++			guest_mode_append(VM_MODE_P41V57_4K, satp_mode >= SATP_MODE_57);
++			guest_mode_append(VM_MODE_P41V48_4K, satp_mode >= SATP_MODE_48);
++			guest_mode_append(VM_MODE_P41V39_4K, satp_mode >= SATP_MODE_39);
++			break;
++		default:
++			break;
++		}
++
++		/* set the first supported mode as default */
++		vm_mode_default = NUM_VM_MODES;
++		for (i = 0; vm_mode_default == NUM_VM_MODES && i < NUM_VM_MODES; i++) {
++			if (guest_modes[i].supported && guest_modes[i].enabled)
++				vm_mode_default = i;
++		}
++		TEST_ASSERT(vm_mode_default != NUM_VM_MODES, "No supported mode!");
+ 	}
+ #endif
+ }
+diff --git a/tools/testing/selftests/kvm/lib/kvm_util.c b/tools/testing/selftests/kvm/lib/kvm_util.c
+index 1a93d6361671..a6a4bbc07211 100644
+--- a/tools/testing/selftests/kvm/lib/kvm_util.c
++++ b/tools/testing/selftests/kvm/lib/kvm_util.c
+@@ -209,6 +209,15 @@ const char *vm_guest_mode_string(uint32_t i)
+ 		[VM_MODE_P36V48_64K]	= "PA-bits:36,  VA-bits:48, 64K pages",
+ 		[VM_MODE_P47V47_16K]	= "PA-bits:47,  VA-bits:47, 16K pages",
+ 		[VM_MODE_P36V47_16K]	= "PA-bits:36,  VA-bits:47, 16K pages",
++		[VM_MODE_P56V57_4K]	= "PA-bits:56,  VA-bits:57,  4K pages",
++		[VM_MODE_P56V48_4K]	= "PA-bits:56,  VA-bits:48,  4K pages",
++		[VM_MODE_P56V39_4K]	= "PA-bits:56,  VA-bits:39,  4K pages",
++		[VM_MODE_P50V57_4K]	= "PA-bits:50,  VA-bits:57,  4K pages",
++		[VM_MODE_P50V48_4K]	= "PA-bits:50,  VA-bits:48,  4K pages",
++		[VM_MODE_P50V39_4K]	= "PA-bits:50,  VA-bits:39,  4K pages",
++		[VM_MODE_P41V57_4K]	= "PA-bits:41,  VA-bits:57,  4K pages",
++		[VM_MODE_P41V48_4K]	= "PA-bits:41,  VA-bits:48,  4K pages",
++		[VM_MODE_P41V39_4K]	= "PA-bits:41,  VA-bits:39,  4K pages",
+ 	};
+ 	_Static_assert(sizeof(strings)/sizeof(char *) == NUM_VM_MODES,
+ 		       "Missing new mode strings?");
+@@ -236,6 +245,15 @@ const struct vm_guest_mode_params vm_guest_mode_params[] = {
+ 	[VM_MODE_P36V48_64K]	= { 36, 48, 0x10000, 16 },
+ 	[VM_MODE_P47V47_16K]	= { 47, 47,  0x4000, 14 },
+ 	[VM_MODE_P36V47_16K]	= { 36, 47,  0x4000, 14 },
++	[VM_MODE_P56V57_4K]	= { 56, 57,  0x1000, 12 },
++	[VM_MODE_P56V48_4K]	= { 56, 48,  0x1000, 12 },
++	[VM_MODE_P56V39_4K]	= { 56, 39,  0x1000, 12 },
++	[VM_MODE_P50V57_4K]	= { 50, 57,  0x1000, 12 },
++	[VM_MODE_P50V48_4K]	= { 50, 48,  0x1000, 12 },
++	[VM_MODE_P50V39_4K]	= { 50, 39,  0x1000, 12 },
++	[VM_MODE_P41V57_4K]	= { 41, 57,  0x1000, 12 },
++	[VM_MODE_P41V48_4K]	= { 41, 48,  0x1000, 12 },
++	[VM_MODE_P41V39_4K]	= { 41, 39,  0x1000, 12 },
+ };
+ _Static_assert(sizeof(vm_guest_mode_params)/sizeof(struct vm_guest_mode_params) == NUM_VM_MODES,
+ 	       "Missing new mode params?");
+@@ -336,6 +354,21 @@ struct kvm_vm *____vm_create(struct vm_shape shape)
+ 	case VM_MODE_P44V64_4K:
+ 		vm->pgtable_levels = 5;
+ 		break;
++	case VM_MODE_P56V57_4K:
++	case VM_MODE_P50V57_4K:
++	case VM_MODE_P41V57_4K:
++		vm->pgtable_levels = 5;
++		break;
++	case VM_MODE_P56V48_4K:
++	case VM_MODE_P50V48_4K:
++	case VM_MODE_P41V48_4K:
++		vm->pgtable_levels = 4;
++		break;
++	case VM_MODE_P56V39_4K:
++	case VM_MODE_P50V39_4K:
++	case VM_MODE_P41V39_4K:
++		vm->pgtable_levels = 3;
++		break;
+ 	default:
+ 		TEST_FAIL("Unknown guest mode: 0x%x", vm->mode);
+ 	}
+diff --git a/tools/testing/selftests/kvm/lib/riscv/processor.c b/tools/testing/selftests/kvm/lib/riscv/processor.c
+index 2eac7d4b59e9..003693576225 100644
+--- a/tools/testing/selftests/kvm/lib/riscv/processor.c
++++ b/tools/testing/selftests/kvm/lib/riscv/processor.c
+@@ -8,6 +8,7 @@
+ #include <linux/compiler.h>
+ #include <assert.h>
+ 
++#include "guest_modes.h"
+ #include "kvm_util.h"
+ #include "processor.h"
+ #include "ucall_common.h"
+@@ -197,22 +198,41 @@ void riscv_vcpu_mmu_setup(struct kvm_vcpu *vcpu)
+ {
+ 	struct kvm_vm *vm = vcpu->vm;
+ 	unsigned long satp;
++	unsigned long satp_mode;
++	unsigned long max_satp_mode;
+ 
+ 	/*
+ 	 * The RISC-V Sv48 MMU mode supports 56-bit physical address
+ 	 * for 48-bit virtual address with 4KB last level page size.
+ 	 */
+ 	switch (vm->mode) {
+-	case VM_MODE_P52V48_4K:
+-	case VM_MODE_P48V48_4K:
+-	case VM_MODE_P40V48_4K:
++	case VM_MODE_P56V57_4K:
++	case VM_MODE_P50V57_4K:
++	case VM_MODE_P41V57_4K:
++		satp_mode = SATP_MODE_57;
++		break;
++	case VM_MODE_P56V48_4K:
++	case VM_MODE_P50V48_4K:
++	case VM_MODE_P41V48_4K:
++		satp_mode = SATP_MODE_48;
++		break;
++	case VM_MODE_P56V39_4K:
++	case VM_MODE_P50V39_4K:
++	case VM_MODE_P41V39_4K:
++		satp_mode = SATP_MODE_39;
+ 		break;
+ 	default:
+ 		TEST_FAIL("Unknown guest mode, mode: 0x%x", vm->mode);
+ 	}
+ 
++	max_satp_mode = vcpu_get_reg(vcpu, RISCV_CONFIG_REG(satp_mode));
++
++	if ((satp_mode >> SATP_MODE_SHIFT) > max_satp_mode)
++		TEST_FAIL("Unable to set satp mode 0x%lx, max mode 0x%lx\n",
++			  satp_mode >> SATP_MODE_SHIFT, max_satp_mode);
++
+ 	satp = (vm->pgd >> PGTBL_PAGE_SIZE_SHIFT) & SATP_PPN;
+-	satp |= SATP_MODE_48;
++	satp |= satp_mode;
+ 
+ 	vcpu_set_reg(vcpu, RISCV_GENERAL_CSR_REG(satp), satp);
+ }
+@@ -515,3 +535,38 @@ unsigned long get_host_sbi_spec_version(void)
+ 
+ 	return ret.value;
+ }
++
++void kvm_selftest_arch_init(void)
++{
++	/*
++	 * riscv64 doesn't have a true default mode, so start by detecting the
++	 * supported vm mode.
++	 */
++	guest_modes_append_default();
++}
++
++unsigned long riscv64_get_satp_mode(void)
++{
++	int kvm_fd, vm_fd, vcpu_fd, err;
++	uint64_t val;
++	struct kvm_one_reg reg = {
++		.id     = RISCV_CONFIG_REG(satp_mode),
++		.addr   = (uint64_t)&val,
++	};
++
++	kvm_fd = open_kvm_dev_path_or_exit();
++	vm_fd = __kvm_ioctl(kvm_fd, KVM_CREATE_VM, NULL);
++	TEST_ASSERT(vm_fd >= 0, KVM_IOCTL_ERROR(KVM_CREATE_VM, vm_fd));
++
++	vcpu_fd = ioctl(vm_fd, KVM_CREATE_VCPU, 0);
++	TEST_ASSERT(vcpu_fd >= 0, KVM_IOCTL_ERROR(KVM_CREATE_VCPU, vcpu_fd));
++
++	err = ioctl(vcpu_fd, KVM_GET_ONE_REG, &reg);
++	TEST_ASSERT(err == 0, KVM_IOCTL_ERROR(KVM_GET_ONE_REG, vcpu_fd));
++
++	close(vcpu_fd);
++	close(vm_fd);
++	close(kvm_fd);
++
++	return val;
++}
+-- 
+2.51.0
+
 
 -- 
 kvm-riscv mailing list
