@@ -4,93 +4,91 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0661DCD1288
-	for <kvm-riscv@archiver.kernel.org>; Sun,  9 Nov 2025 07:07:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31127CCF9E3
+	for <kvm-riscv@archiver.kernel.org>; Mon, 10 Nov 2025 15:43:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:Subject:Message-ID:Date:From:
-	In-Reply-To:References:MIME-Version:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=sfQXdZ8XJD/mSlLhsepy3LN0b4CXFL2kUNqcuG0G0fg=; b=1OaxfyxXqO8W3e
-	FHbKXskreOafZBZBwc4sDy1wrxQevL+qEjy6IGuurUL6uv3wBz0EdSOoy8di4bwmbRWAM9jRZEaCE
-	O1zNONJv23DsF38/Dsz80oFpnwSl3ZZFL56/tc34gMqOW+vQeqPQ+ynnMpfQxghPU+kDXHqsBD5Ul
-	XwUS+j97QuW2XUboz4Z2cKGQ2zYArwCOyzGXvvD37iipW/4eVlRW+9k8FOBoqHa54b3SZRyVTYlU4
-	9IUoi/c+K9yw01SbQcFkSGZiuWOkbMxxL9TJ8qZu2+hRYcRLqfMPnSOQOOAFIGZZTs5f+eprprqtq
-	vMDnPt747PxrszEX0GHg==;
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID:
+	References:Mime-Version:In-Reply-To:Date:Reply-To:Content-ID:
+	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+	:Resent-Message-ID:List-Owner;
+	bh=9zOOJxZc0FgxKqIpC87++MTzQO3vSftwa2a2i2bu94Y=; b=G9KvKV3ePZ5z7eqGAuYNPErcmf
+	XHm6Ey1dwEkQ6XgSmfumWejWHo5mqSmnXy4GvJRALBxE2nW4JC1dJcVrOP3VC6h0Pkx+BhNOrH3za
+	5cwrsS8Q2IWZ9JNN87dM3JjjqUFyUtiH+O4S9KCX9lNzC0DJb9n17WMZCZ5fGCS1Vn0KhqVu3hm+R
+	n5d8pkvK9xrFtqiDY/jWhQ/Bq5bXcC5we5XdrBGlsIE9LodN0q5V6/eHY9SgR/O3xFIHGLjutbpOI
+	5AgW9qCxBhshZiTVO7q5wtCGjlYslTpGc9tNoH/G0WnDnLY/sK9IMV9rqjeuw3Ui9DgKGRq89e+We
+	ADDCOIhQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vHzWS-00000003pb9-0DbM;
-	Sun, 09 Nov 2025 07:07:36 +0000
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.129.124])
+	id 1vIU3N-00000005iSH-35Rr;
+	Mon, 10 Nov 2025 15:43:37 +0000
+Received: from mail-pj1-x104a.google.com ([2607:f8b0:4864:20::104a])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vHzWM-00000003paJ-2WT3
+	id 1vIU2z-00000005iPb-3VbS
 	for kvm-riscv@lists.infradead.org;
-	Sun, 09 Nov 2025 07:07:34 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1762672048;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=QHvKsjMe/AixpxnbJYjrVGK6zy8xknqlwpjxpwPDfNM=;
-	b=XGUl+MxXhAYGJHK8CJuSIJ899TOuTBoSIKbNXRG/Nsi+x4l1B9qABVrQqHUX/ICKI7QLld
-	3AS5L8GHWifcALfRIAhGK8Vd6/6reF9IvOhJCC/VvCUAbgBH5NP+bxbxQ1lPTxzs5Xsff+
-	DTlJFS8w6HSvfMRV2QPOKoKMFw44MRg=
-Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
- [209.85.221.70]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-553-ROIyfUi-PD-UmhGT8dkCCQ-1; Sun, 09 Nov 2025 02:07:25 -0500
-X-MC-Unique: ROIyfUi-PD-UmhGT8dkCCQ-1
-X-Mimecast-MFC-AGG-ID: ROIyfUi-PD-UmhGT8dkCCQ_1762672044
-Received: by mail-wr1-f70.google.com with SMTP id ffacd0b85a97d-429c7b0ae36so953694f8f.0
-        for <kvm-riscv@lists.infradead.org>; Sat, 08 Nov 2025 23:07:25 -0800 (PST)
+	Mon, 10 Nov 2025 15:43:35 +0000
+Received: by mail-pj1-x104a.google.com with SMTP id 98e67ed59e1d1-34374bfbcccso1711670a91.0
+        for <kvm-riscv@lists.infradead.org>; Mon, 10 Nov 2025 07:43:13 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1762789392; x=1763394192; darn=lists.infradead.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=87FfliXTeIYU4Ti4q0mlK1AlR2N3oXTPIRkcYWMY8TY=;
+        b=cJjxj52Q5c+rMehW4UNNs2mzn+3+OY7PWioLhIS+BlhpcrbDQ1kdvDfWqmKTqBRfhX
+         vY0TLd8rF8OFdO2TRMdVGsL+UyeDivjCHWhiSmrNHimppG0K9oysss3wm9Q3+npXM6hf
+         ENBJvdXv+DRwJYvhnEnODq9rxGyD+oNIZrGJ9b1RLGfa4zUuANnm9uIDS6y1GwEx74fd
+         E24nNC1w4oi0qURAitsTXc6e4O/zzdKl9g2RST923YPMnjTRTJ3EB2F+Hx2bRher4b7d
+         +JHHyylyhNMqUM2a07eez6G8PXHw9BFt4HWuipLys2KXY7CRrursGu83kGdZHl7TDlIW
+         OCuQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1762672044; x=1763276844;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=QHvKsjMe/AixpxnbJYjrVGK6zy8xknqlwpjxpwPDfNM=;
-        b=AeQxR5Uts+J1bBk/lABjc8JjrQIebMIPMQobbEQQIfsg23zNTwZmn65BqFwZ+1HmoX
-         CET+otzUvF/98de2ZOurp7YzzhPnyxHY6opD/wy5LfrecB2VTa+A1rb157aqg4ScL3q7
-         hFjiuJiplWg5lh/pZN7aXoPBr53yf4mDp5Mn48bqXC7CBPQ4iAyrldQUWlyasW/LbPnM
-         6Xkcd91Any7RmyfZGmrJ6/bRRQIdI5SCi+vO1PYSF4KYFBRUcsyXNhpXKbr0oNXMH8eU
-         yQHiEv5+Hss8U+nFAXu7JXuQSrnSDFJdVnRjttREyyGmVqLadnO8kmll/mba7PolukqP
-         ZX4w==
-X-Forwarded-Encrypted: i=1; AJvYcCWBah3o1NIIzLHeR653J7u5ewbptxwhM+7FSJvK+Uhgqi23lihgbaMEh5XBwCzVdO+Eo+N0Gs0Jdzk=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yy0MYp1iVB8rDeEld3LCxuHBa3mvhN9iiDTjfWVkAdRXqezUH5K
-	Qjz/7TjXs/tQK7iJgdaUglbnoat6iCMD55RW+OWCAirFWiA7+lXfBKaJ2+qweE3PQ7+M83EGbx2
-	3oivHuT4Gp10UQ8Y5FWNaBzJZUKdbc4NEcjdGabC1okJYzGA/CY49lWm3uJ4FLNRyq2tjWcQA6m
-	4Cb8vm8ZRSOvbaWS5wprA2EbiMxOdn/Od8LFs77rY1HQ==
-X-Gm-Gg: ASbGncv/wtDQOy7HGtx13cZEzhk6DDi3IC2jAQ1e8M5QC6DPRJnlKZ2Iv6Z1TTtRy46
-	/BBLDASOX4ez39eVfcS30cfK6XrffGz0bBYdanh5OQgBWeVWFRnWqQycZNX/lKHagN0LO22vHp/
-	C2pDXP/chw95i4iT53HlqlZqTX5LNj3zJrJvc52t9TcN9DdPMmGCYUTkRZE2yUtwiwStAXjKYXV
-	E0tmAtSiIkpy2VG24LnkzkHjgePIkh+ExY0BwwUyEoDLuvuuejAEttQKn38
-X-Received: by 2002:a5d:5f51:0:b0:42b:2dc9:437d with SMTP id ffacd0b85a97d-42b2dc945bemr3340225f8f.8.1762672044541;
-        Sat, 08 Nov 2025 23:07:24 -0800 (PST)
-X-Google-Smtp-Source: AGHT+IHlgHVVqddTf0z9GBTwc7IKuQZJE4lbbt4jIACSUKr9tRwMh48mz2VQwkxk817nUPP85PYqX+H4iU6UOxhzr7A=
-X-Received: by 2002:a5d:5f51:0:b0:42b:2dc9:437d with SMTP id
- ffacd0b85a97d-42b2dc945bemr3340209f8f.8.1762672044139; Sat, 08 Nov 2025
- 23:07:24 -0800 (PST)
-MIME-Version: 1.0
-References: <CAAhSdy1jcXypH3yCUBaci2EbOy2cbr2qNtdYriKa-vcyFFeCzg@mail.gmail.com>
-In-Reply-To: <CAAhSdy1jcXypH3yCUBaci2EbOy2cbr2qNtdYriKa-vcyFFeCzg@mail.gmail.com>
-From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Sun, 9 Nov 2025 08:07:12 +0100
-X-Gm-Features: AWmQ_bnx7mWPxNcnsLGyK7FcbtNdFOMyOYxt5lXfFl9U8cdhZMTbepfHl2tYedU
-Message-ID: <CABgObfYYc1MTR6MFjVWfXKu6tOe0iVY-dh9OnGU_6RvF1fCMeg@mail.gmail.com>
-Subject: Re: [GIT PULL v2] KVM/riscv fixes for 6.18 take #2
-To: Anup Patel <anup@brainfault.org>
-Cc: Palmer Dabbelt <palmer@dabbelt.com>, Paul Walmsley <pjw@kernel.org>, 
-	Atish Patra <atish.patra@linux.dev>, Andrew Jones <ajones@ventanamicro.com>, 
-	"open list:KERNEL VIRTUAL MACHINE FOR RISC-V (KVM/riscv)" <kvm-riscv@lists.infradead.org>, KVM General <kvm@vger.kernel.org>, 
-	linux-riscv <linux-riscv@lists.infradead.org>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: vw38FEMGnPTWeAssOtTXjot6RdbYaaVL-TmiNBayx10_1762672044
-X-Mimecast-Originator: redhat.com
+        d=1e100.net; s=20230601; t=1762789392; x=1763394192;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=87FfliXTeIYU4Ti4q0mlK1AlR2N3oXTPIRkcYWMY8TY=;
+        b=Iz+sp874EO2nN6+Oi8YRs1tpOR5hKVg7t6Xbm9PMeRA6IVS5qhg+VfMxxyqR/r0aIC
+         ZgR5G7AqCdBr52S5diTT9jI91vm33k2LLm8ygrMcd2nsn/iMU186Y3YbtIgjtBYA68Zv
+         lTU4F5o/aqn6QF7UxZ8DjJG+v/tGGpk0cdeEype9YYoCOPsee7RW4htr8Dk3aaGtyRVE
+         xYZpWLuvlKUHNeFUf9yr6RnQyHZcDtupSE+/fsJEb93qw2/nK5xWg2iNNPIMPThKl+IJ
+         V8AUuu8wSv2znM6qTWLOJjeshJPVYnFyiROl3pi4KoXqG90zXpLkGcJccCbDlmRlbdYQ
+         WQDg==
+X-Forwarded-Encrypted: i=1; AJvYcCXCp211j+NoRMk+8ybTqEeWYevZcv33V9jYUJQVdchHNNBWiR1BZXSKBfahrIL9WyFGKJlFC5/fbUk=@lists.infradead.org
+X-Gm-Message-State: AOJu0YwaM6M16Rqz0J8frVG7GqXXsMq8qdPtDdY1oK5gzjpSQUAUMcPw
+	sVWB274ciCoEzLZ/Nl43HWrPF39mOf9N1LniHzflk1OP5YhoEFdXTLqWZpKHFLVWrB6YO0HxV/C
+	merT7mg==
+X-Google-Smtp-Source: AGHT+IGU2QqcHJOpKVyUh8wnC6DXg/rmfR5MmGRMoX3raYINDU0h+4Ytj4+FRCcbgxWr/CiKwQo1uRnxIsY=
+X-Received: from pjbdw16.prod.google.com ([2002:a17:90b:950:b0:343:6849:31ae])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:4a10:b0:341:124f:474f
+ with SMTP id 98e67ed59e1d1-3436cd0c3e9mr10428985a91.32.1762789392114; Mon, 10
+ Nov 2025 07:43:12 -0800 (PST)
+Date: Mon, 10 Nov 2025 07:37:29 -0800
+In-Reply-To: <20251030200951.3402865-1-seanjc@google.com>
+Mime-Version: 1.0
+References: <20251030200951.3402865-1-seanjc@google.com>
+X-Mailer: git-send-email 2.51.2.1041.gc1ab5b90ca-goog
+Message-ID: <176278827443.918905.17609380057567446021.b4-ty@google.com>
+Subject: Re: [PATCH v4 00/28] KVM: x86/mmu: TDX post-populate cleanups
+From: Sean Christopherson <seanjc@google.com>
+To: Sean Christopherson <seanjc@google.com>, Marc Zyngier <maz@kernel.org>, 
+	Oliver Upton <oliver.upton@linux.dev>, Tianrui Zhao <zhaotianrui@loongson.cn>, 
+	Bibo Mao <maobibo@loongson.cn>, Huacai Chen <chenhuacai@kernel.org>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>, 
+	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+	Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, 
+	Claudio Imbrenda <imbrenda@linux.ibm.com>, Paolo Bonzini <pbonzini@redhat.com>, 
+	"Kirill A. Shutemov" <kas@kernel.org>
+Cc: linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, 
+	kvm@vger.kernel.org, loongarch@lists.linux.dev, linux-mips@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, kvm-riscv@lists.infradead.org, 
+	linux-riscv@lists.infradead.org, x86@kernel.org, linux-coco@lists.linux.dev, 
+	linux-kernel@vger.kernel.org, Ira Weiny <ira.weiny@intel.com>, 
+	Kai Huang <kai.huang@intel.com>, Binbin Wu <binbin.wu@linux.intel.com>, 
+	Michael Roth <michael.roth@amd.com>, Yan Zhao <yan.y.zhao@intel.com>, 
+	Vishal Annapurve <vannapurve@google.com>, Rick Edgecombe <rick.p.edgecombe@intel.com>, 
+	Ackerley Tng <ackerleytng@google.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20251108_230730_980637_AE5F81F0 
-X-CRM114-Status: GOOD (  14.78  )
+X-CRM114-CacheID: sfid-20251110_074313_870662_FDBD7672 
+X-CRM114-Status: GOOD (  13.85  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -102,38 +100,92 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-T24gU2F0LCBPY3QgMjUsIDIwMjUgYXQgMTI6MTTigK9QTSBBbnVwIFBhdGVsIDxhbnVwQGJyYWlu
-ZmF1bHQub3JnPiB3cm90ZToKPgo+IEhpIFBhb2xvLAo+Cj4gV2UgaGF2ZSB0aHJlZSBmaXhlcyBm
-b3IgdGhlIDYuMTgga2VybmVsLiBUd28gb2YgdGhlc2UKPiBhcmUgcmVsYXRlZCB0byBjaGVja2lu
-ZyBwZW5kaW5nIGludGVycnVwdHMgd2hlcmVhcwo+IHRoZSB0aGlyZCBvbmUgcmVtb3ZlcyBhdXRv
-bWF0aWMgSS9PIG1hcHBpbmcgZnJvbQo+IGt2bV9hcmNoX3ByZXBhcmVfbWVtb3J5X3JlZ2lvbigp
-Lgo+Cj4gUGxlYXNlIHB1bGwuCgpQdWxsZWQsIHRoYW5rcy4KClBhb2xvCgo+Cj4gUmVnYXJkcywK
-PiBBbnVwCj4KPiBUaGUgZm9sbG93aW5nIGNoYW5nZXMgc2luY2UgY29tbWl0IDNhODY2MDg3ODgz
-OWZhYWRiNGYxYTZkZDcyYzMxNzljMWRmNTY3ODc6Cj4KPiAgIExpbnV4IDYuMTgtcmMxICgyMDI1
-LTEwLTEyIDEzOjQyOjM2IC0wNzAwKQo+Cj4gYXJlIGF2YWlsYWJsZSBpbiB0aGUgR2l0IHJlcG9z
-aXRvcnkgYXQ6Cj4KPiAgIGh0dHBzOi8vZ2l0aHViLmNvbS9rdm0tcmlzY3YvbGludXguZ2l0IHRh
-Z3Mva3ZtLXJpc2N2LWZpeGVzLTYuMTgtMgo+Cj4gZm9yIHlvdSB0byBmZXRjaCBjaGFuZ2VzIHVw
-IHRvIDhjNWZhMzc2NGZhY2FhZDZkMzgzMzZlOTBmNDA2YzJjMTFkNjk3MzM6Cj4KPiAgIFJJU0Mt
-VjogS1ZNOiBSZW1vdmUgYXV0b21hdGljIEkvTyBtYXBwaW5nIGZvciBWTV9QRk5NQVAgKDIwMjUt
-MTAtMjQKPiAyMToyNDozNiArMDUzMCkKPgo+IC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KPiBLVk0vcmlzY3YgZml4ZXMgZm9y
-IDYuMTgsIHRha2UgIzIKPgo+IC0gRml4IGNoZWNrIGZvciBsb2NhbCBpbnRlcnJ1cHRzIG9uIHJp
-c2N2MzIKPiAtIFJlYWQgSEdFSVAgQ1NSIG9uIHRoZSBjb3JyZWN0IGNwdSB3aGVuIGNoZWNraW5n
-IGZvciBJTVNJQyBpbnRlcnJ1cHRzCj4gLSBSZW1vdmUgYXV0b21hdGljIEkvTyBtYXBwaW5nIGZy
-b20ga3ZtX2FyY2hfcHJlcGFyZV9tZW1vcnlfcmVnaW9uKCkKPgo+IC0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KPiBGYW5neXUg
-WXUgKDIpOgo+ICAgICAgIFJJU0MtVjogS1ZNOiBSZWFkIEhHRUlQIENTUiBvbiB0aGUgY29ycmVj
-dCBjcHUKPiAgICAgICBSSVNDLVY6IEtWTTogUmVtb3ZlIGF1dG9tYXRpYyBJL08gbWFwcGluZyBm
-b3IgVk1fUEZOTUFQCj4KPiBTYW11ZWwgSG9sbGFuZCAoMSk6Cj4gICAgICAgUklTQy1WOiBLVk06
-IEZpeCBjaGVjayBmb3IgbG9jYWwgaW50ZXJydXB0cyBvbiByaXNjdjMyCj4KPiAgYXJjaC9yaXNj
-di9rdm0vYWlhX2ltc2ljLmMgfCAxNiArKysrKysrKysrKysrKy0tCj4gIGFyY2gvcmlzY3Yva3Zt
-L21tdS5jICAgICAgIHwgMjUgKystLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQo+ICBhcmNoL3Jpc2N2
-L2t2bS92Y3B1LmMgICAgICB8ICAyICstCj4gIDMgZmlsZXMgY2hhbmdlZCwgMTcgaW5zZXJ0aW9u
-cygrKSwgMjYgZGVsZXRpb25zKC0pCj4KCgotLSAKa3ZtLXJpc2N2IG1haWxpbmcgbGlzdAprdm0t
-cmlzY3ZAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWls
-bWFuL2xpc3RpbmZvL2t2bS1yaXNjdgo=
+On Thu, 30 Oct 2025 13:09:23 -0700, Sean Christopherson wrote:
+> Non-x86 folks, as with v3, patches 1 and 2 are likely the only thing of
+> interest here.  They make kvm_arch_vcpu_async_ioctl() mandatory and then
+> rename it to kvm_arch_vcpu_unlocked_ioctl().
+> 
+> As for the x86 side...
+> 
+> Clean up the TDX post-populate paths (and many tangentially related paths) to
+> address locking issues between gmem and TDX's post-populate hook[*], and
+> within KVM itself (KVM doesn't ensure full mutual exclusivity between paths
+> that for all intents and purposes the TDX-Module requires to be serialized).
+> 
+> [...]
+
+Applied to kvm-x86 tdx, with fixups for the various typos.  Thanks for all the
+reviews and testing!
+
+Other KVM arch maintainers, please holler if you want a stable tag for the
+kvm_arch_vcpu_async_ioctl() changes (they're based directly on v6.18-rc4).
+
+[01/28] KVM: Make support for kvm_arch_vcpu_async_ioctl() mandatory
+        https://github.com/kvm-x86/linux/commit/0a0da3f92118
+[02/28] KVM: Rename kvm_arch_vcpu_async_ioctl() to kvm_arch_vcpu_unlocked_ioctl()
+        https://github.com/kvm-x86/linux/commit/50efc2340a59
+[03/28] KVM: TDX: Drop PROVE_MMU=y sanity check on to-be-populated mappings
+        https://github.com/kvm-x86/linux/commit/5294a4b93e07
+[04/28] KVM: x86/mmu: Add dedicated API to map guest_memfd pfn into TDP MMU
+        https://github.com/kvm-x86/linux/commit/3ab3283dbb2c
+[05/28] KVM: x86/mmu: WARN if KVM attempts to map into an invalid TDP MMU root
+        https://github.com/kvm-x86/linux/commit/c1f173fb3389
+[06/28] Revert "KVM: x86/tdp_mmu: Add a helper function to walk down the TDP MMU"
+        https://github.com/kvm-x86/linux/commit/fe7413e39810
+[07/28] KVM: x86/mmu: Rename kvm_tdp_map_page() to kvm_tdp_page_prefault()
+        https://github.com/kvm-x86/linux/commit/6de2fb089bb2
+[08/28] KVM: TDX: Drop superfluous page pinning in S-EPT management
+        https://github.com/kvm-x86/linux/commit/ce7b5695397b
+[09/28] KVM: TDX: Return -EIO, not -EINVAL, on a KVM_BUG_ON() condition
+        https://github.com/kvm-x86/linux/commit/e6348c90dda9
+[10/28] KVM: TDX: Fold tdx_sept_drop_private_spte() into tdx_sept_remove_private_spte()
+        https://github.com/kvm-x86/linux/commit/b836503300dc
+[11/28] KVM: x86/mmu: Drop the return code from kvm_x86_ops.remove_external_spte()
+        https://github.com/kvm-x86/linux/commit/7139c8606505
+[12/28] KVM: TDX: WARN if mirror SPTE doesn't have full RWX when creating S-EPT mapping
+        https://github.com/kvm-x86/linux/commit/b9d5cf6de0b6
+[13/28] KVM: TDX: Avoid a double-KVM_BUG_ON() in tdx_sept_zap_private_spte()
+        https://github.com/kvm-x86/linux/commit/24adff397052
+[14/28] KVM: TDX: Use atomic64_dec_return() instead of a poor equivalent
+        https://github.com/kvm-x86/linux/commit/af96d5452e5e
+[15/28] KVM: TDX: Fold tdx_mem_page_record_premap_cnt() into its sole caller
+        https://github.com/kvm-x86/linux/commit/b4b2b6eda5af
+[16/28] KVM: TDX: ADD pages to the TD image while populating mirror EPT entries
+        https://github.com/kvm-x86/linux/commit/6b5b71ffabf9
+[17/28] KVM: TDX: Fold tdx_sept_zap_private_spte() into tdx_sept_remove_private_spte()
+        https://github.com/kvm-x86/linux/commit/14c9938619be
+[18/28] KVM: TDX: Combine KVM_BUG_ON + pr_tdx_error() into TDX_BUG_ON()
+        https://github.com/kvm-x86/linux/commit/597d7068702f
+[19/28] KVM: TDX: Derive error argument names from the local variable names
+        https://github.com/kvm-x86/linux/commit/55560b6be5bc
+[20/28] KVM: TDX: Assert that mmu_lock is held for write when removing S-EPT entries
+        https://github.com/kvm-x86/linux/commit/2ff14116982c
+[21/28] KVM: TDX: Add macro to retry SEAMCALLs when forcing vCPUs out of guest
+        https://github.com/kvm-x86/linux/commit/3d626ce5a8cc
+[22/28] KVM: TDX: Add tdx_get_cmd() helper to get and validate sub-ioctl command
+        https://github.com/kvm-x86/linux/commit/59d5c1ed6df2
+[23/28] KVM: TDX: Convert INIT_MEM_REGION and INIT_VCPU to "unlocked" vCPU ioctl
+        https://github.com/kvm-x86/linux/commit/94428e3ba325
+[24/28] KVM: TDX: Use guard() to acquire kvm->lock in tdx_vm_ioctl()
+        https://github.com/kvm-x86/linux/commit/0b76e827b29d
+[25/28] KVM: TDX: Don't copy "cmd" back to userspace for KVM_TDX_CAPABILITIES
+        https://github.com/kvm-x86/linux/commit/f26061fe2c25
+[26/28] KVM: TDX: Guard VM state transitions with "all" the locks
+        https://github.com/kvm-x86/linux/commit/15945e9ec195
+[27/28] KVM: TDX: Bug the VM if extending the initial measurement fails
+        https://github.com/kvm-x86/linux/commit/ad44aa4c5d3f
+[28/28] KVM: TDX: Fix list_add corruption during vcpu_load()
+        https://github.com/kvm-x86/linux/commit/1e3a825c9ec9
+
+--
+https://github.com/kvm-x86/linux/tree/next
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
