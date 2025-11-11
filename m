@@ -4,64 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 21589CCFA18
-	for <kvm-riscv@archiver.kernel.org>; Tue, 11 Nov 2025 04:49:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 510A0CCFA1A
+	for <kvm-riscv@archiver.kernel.org>; Tue, 11 Nov 2025 13:55:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Subject:Cc:To:From:Mime-Version:
-	Message-ID:Date:Reply-To:Content-ID:Content-Description:Resent-Date:
-	Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:
-	References:List-Owner; bh=OdoNX851NcdiCjCGHAd2pWXiUw+2MqwloLp4RZmovFA=; b=Xoy
-	dDnohYisHQPA5kV/zNrSOmdgDEXZBmkLSS4WR1zG0aRxDY+D6UNZtOKOtLOKdzq1Nxz1YhvgI/wpk
-	1qLLCpKt1Ji81pYA2ZawtESXpEDVTiMxiuwh2Jd0gm4fdioRSCPFvBxxATHcGAMwHxE9eZUOYwXjW
-	pSxm7Bx7u1tzaDo907pDlIyJ5DVQPzynZsyOIawFLWBVNvoBS3FOA+DkAx3cnmRdNmfcwTJMyVFPs
-	EfiEK+wiaW/8P8y5AcZkYHUwz5bCIDlBGxD0f0oN85s/d3NqStwJySuZQ5mwipYRyXF+0A0K2mjHK
-	NSUDAq1xisl3UdR8MQJRkdYPnwi72bw==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-Id:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=P3ZU2zTD9tzx/91qX9lZ0OYuoZER1DBHTybhUNDU/+I=; b=Cxj/A7Dkt70BGv
+	bzcoIU+2zapmKbYEVXR5na+ev/klx8G1p4HD7xo60PO+MFH9GMoPKItcIpgo9Ss6ySg7i1OLPJU1/
+	TENH3l5Q6fY3U6w/soJSv8WzSSh3HuQcQETg2ct0U5nUuWFriDlk8i6ebpJ6xCxDCcdCa40gISjb9
+	9C9ZPv/oOSgLdccgnzBfHWwSnGy+TNI4TrD6hWYC6lO1HMqN7YMuToINSCPeAqgGcgjjfCP5q7Ifp
+	Yx8LYZDm5Vt4P+nEQiog9MsCMYT19lBxyWYcZ99TdMeAz34DKLJgmLBx8Kc5K6olvY9tUzr6LYSJA
+	kzquxqJ0AYD/UAz+v6rA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vIgKC-00000006WVP-2OdN;
-	Tue, 11 Nov 2025 04:49:48 +0000
-Received: from mxhk.zte.com.cn ([160.30.148.35])
+	id 1vIoqH-00000007Glx-3AIl;
+	Tue, 11 Nov 2025 13:55:29 +0000
+Received: from out30-97.freemail.mail.aliyun.com ([115.124.30.97])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vIgK9-00000006WUj-2aYm
-	for kvm-riscv@lists.infradead.org;
-	Tue, 11 Nov 2025 04:49:47 +0000
-Received: from mse-fl1.zte.com.cn (unknown [10.5.228.132])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mxhk.zte.com.cn (FangMail) with ESMTPS id 4d5DbL6hlKz8Xs72;
-	Tue, 11 Nov 2025 12:49:34 +0800 (CST)
-Received: from xaxapp02.zte.com.cn ([10.88.97.241])
-	by mse-fl1.zte.com.cn with SMTP id 5AB4nVsH024286;
-	Tue, 11 Nov 2025 12:49:31 +0800 (+08)
-	(envelope-from liu.xuemei1@zte.com.cn)
-Received: from mapi (xaxapp02[null])
-	by mapi (Zmail) with MAPI id mid32;
-	Tue, 11 Nov 2025 12:49:32 +0800 (CST)
-Date: Tue, 11 Nov 2025 12:49:32 +0800 (CST)
-X-Zmail-TransId: 2afa6912c05c6ac-e258e
-X-Mailer: Zmail v1.0
-Message-ID: <20251111124932618qn9qbBbeaZrOZ3UDg7jed@zte.com.cn>
-Mime-Version: 1.0
-From: <liu.xuemei1@zte.com.cn>
-To: <atish.patra@linux.dev>, <alex@ghiti.fr>, <anup@brainfault.org>
-Cc: <pjw@kernel.org>, <palmer@dabbelt.com>, <aou@eecs.berkeley.edu>,
-        <kvm@vger.kernel.org>, <kvm-riscv@lists.infradead.org>,
-        <inux-riscv@lists.infradead.org>, <linux-kernel@vger.kernel.org>
-Subject: =?UTF-8?B?W1BBVENIIHYzXSBSSVNDLVY6IEtWTTogVHJhbnNwYXJlbnQgaHVnZSBwYWdlIHN1cHBvcnQ=?=
-X-MAIL: mse-fl1.zte.com.cn 5AB4nVsH024286
-X-TLS: YES
-X-SPF-DOMAIN: zte.com.cn
-X-ENVELOPE-SENDER: liu.xuemei1@zte.com.cn
-X-SPF: None
-X-SOURCE-IP: 10.5.228.132 unknown Tue, 11 Nov 2025 12:49:34 +0800
-X-Fangmail-Anti-Spam-Filtered: true
-X-Fangmail-MID-QID: 6912C05E.000/4d5DbL6hlKz8Xs72
+	id 1vIoqE-00000007Gkq-3P8d;
+	Tue, 11 Nov 2025 13:55:28 +0000
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=linux.alibaba.com; s=default;
+	t=1762869321; h=From:To:Subject:Date:Message-Id:MIME-Version;
+	bh=JYpEUEDdcRzYzdeW+638BcwXZNQIfYVkyqsW+6NhS0E=;
+	b=EnjHqDFf6iFOOAZYXxZC9y1vxScZprs6e+7a6G3xZI3XZCtiNdy+PzdOxxu6CNb9/wtyDXJxEfM64EI1k1Hxf36ZRuLEO+gV9/TvbWCSAB7CkBiNLZwKYxmJvdQXf359e+9zEUv3eVbXBflq3NrLAEXe3z1BI+CvDbnQHEt+/mI=
+Received: from localhost.localdomain(mailfrom:fangyu.yu@linux.alibaba.com fp:SMTPD_---0WsBpap1_1762869317 cluster:ay36)
+          by smtp.aliyun-inc.com;
+          Tue, 11 Nov 2025 21:55:19 +0800
+From: fangyu.yu@linux.alibaba.com
+To: anup@brainfault.org,
+	atish.patra@linux.dev,
+	pjw@kernel.org,
+	palmer@dabbelt.com,
+	aou@eecs.berkeley.edu,
+	alex@ghiti.fr
+Cc: guoren@kernel.org,
+	kvm@vger.kernel.org,
+	kvm-riscv@lists.infradead.org,
+	linux-riscv@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	Fangyu Yu <fangyu.yu@linux.alibaba.com>
+Subject: [PATCH v2] RISC-V: KVM: Fix guest page fault within HLV* instructions
+Date: Tue, 11 Nov 2025 21:55:06 +0800
+Message-Id: <20251111135506.8526-1-fangyu.yu@linux.alibaba.com>
+X-Mailer: git-send-email 2.39.3 (Apple Git-146)
+MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20251110_204945_967836_D0742A35 
-X-CRM114-Status: GOOD (  17.12  )
+X-CRM114-CacheID: sfid-20251111_055527_369633_286F5404 
+X-CRM114-Status: UNSURE (   8.52  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -78,182 +72,95 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-From: Jessica Liu <liu.xuemei1@zte.com.cn>
+From: Fangyu Yu <fangyu.yu@linux.alibaba.com>
 
-Use block mapping if backed by a THP, as implemented in architectures
-like ARM and x86_64.
+When executing HLV* instructions at the HS mode, a guest page fault
+may occur when a g-stage page table migration between triggering the
+virtual instruction exception and executing the HLV* instruction.
 
-Signed-off-by: Jessica Liu <liu.xuemei1@zte.com.cn>
+This may be a corner case, and one simpler way to handle this is to
+re-execute the instruction where the virtual  instruction exception
+occurred, and the guest page fault will be automatically handled.
+
+Fixes: b91f0e4cb8a3 ("RISC-V: KVM: Factor-out instruction emulation into separate sources")
+Signed-off-by: Fangyu Yu <fangyu.yu@linux.alibaba.com>
+
 ---
-Changes in v3:
-- Changed prototype of gstage_get_user_mapping_size to
-  kvm_riscv_gstage_get_mapping_size.
-- Relocated the remaining functions from gstage.c in v2 to mmu.c and
-  renamed them.
+Changes in v2:
+- Remove unnecessary modifications and add comments(suggested by Anup)
+- Update Fixes tag
+- Link to v1: https://lore.kernel.org/linux-riscv/20250912134332.22053-1-fangyu.yu@linux.alibaba.com/
+---
+ arch/riscv/kvm/vcpu_insn.c | 39 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 39 insertions(+)
 
- arch/riscv/include/asm/kvm_gstage.h |  2 +
- arch/riscv/kvm/gstage.c             | 15 +++++
- arch/riscv/kvm/mmu.c                | 97 ++++++++++++++++++++++++++++-
- 3 files changed, 113 insertions(+), 1 deletion(-)
-
-diff --git a/arch/riscv/include/asm/kvm_gstage.h b/arch/riscv/include/asm/kvm_gstage.h
-index 595e2183173e..006bbdb90df8 100644
---- a/arch/riscv/include/asm/kvm_gstage.h
-+++ b/arch/riscv/include/asm/kvm_gstage.h
-@@ -69,4 +69,6 @@ void kvm_riscv_gstage_wp_range(struct kvm_gstage *gstage, gpa_t start, gpa_t end
-
- void kvm_riscv_gstage_mode_detect(void);
-
-+int kvm_riscv_gstage_get_mapping_size(struct kvm_gstage *gstage, gpa_t addr);
-+
- #endif
-diff --git a/arch/riscv/kvm/gstage.c b/arch/riscv/kvm/gstage.c
-index b67d60d722c2..a63089206869 100644
---- a/arch/riscv/kvm/gstage.c
-+++ b/arch/riscv/kvm/gstage.c
-@@ -357,3 +357,18 @@ void __init kvm_riscv_gstage_mode_detect(void)
- 	csr_write(CSR_HGATP, 0);
- 	kvm_riscv_local_hfence_gvma_all();
- }
-+
-+int kvm_riscv_gstage_get_mapping_size(struct kvm_gstage *gstage, gpa_t addr)
-+{
-+	pte_t *ptepp;
-+	u32 ptep_level;
-+	unsigned long out_pgsize;
-+
-+	if (!kvm_riscv_gstage_get_leaf(gstage, addr, &ptepp, &ptep_level))
-+		return -EFAULT;
-+
-+	if (gstage_level_to_page_size(ptep_level, &out_pgsize))
-+		return -EFAULT;
-+
-+	return out_pgsize;
-+}
-diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-index 525fb5a330c0..1457bc958505 100644
---- a/arch/riscv/kvm/mmu.c
-+++ b/arch/riscv/kvm/mmu.c
-@@ -323,6 +323,91 @@ bool kvm_test_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
- 	return pte_young(ptep_get(ptep));
- }
-
-+static bool fault_supports_gstage_huge_mapping(struct kvm_memory_slot *memslot, unsigned long hva)
-+{
-+	gpa_t gpa_start;
-+	hva_t uaddr_start, uaddr_end;
-+	size_t size;
-+
-+	size = memslot->npages * PAGE_SIZE;
-+	uaddr_start = memslot->userspace_addr;
-+	uaddr_end = uaddr_start + size;
-+
-+	gpa_start = memslot->base_gfn << PAGE_SHIFT;
-+
-+	/*
-+	 * Pages belonging to memslots that don't have the same alignment
-+	 * within a PMD for userspace and GPA cannot be mapped with g-stage
-+	 * PMD entries, because we'll end up mapping the wrong pages.
-+	 *
-+	 * Consider a layout like the following:
-+	 *
-+	 *    memslot->userspace_addr:
-+	 *    +-----+--------------------+--------------------+---+
-+	 *    |abcde|fgh  vs-stage block  |    vs-stage block tv|xyz|
-+	 *    +-----+--------------------+--------------------+---+
-+	 *
-+	 *    memslot->base_gfn << PAGE_SHIFT:
-+	 *      +---+--------------------+--------------------+-----+
-+	 *      |abc|def  g-stage block  |    g-stage block   |tvxyz|
-+	 *      +---+--------------------+--------------------+-----+
-+	 *
-+	 * If we create those g-stage blocks, we'll end up with this incorrect
-+	 * mapping:
-+	 *   d -> f
-+	 *   e -> g
-+	 *   f -> h
-+	 */
-+	if ((gpa_start & (PMD_SIZE - 1)) != (uaddr_start & (PMD_SIZE - 1)))
-+		return false;
-+
-+	/*
-+	 * Next, let's make sure we're not trying to map anything not covered
-+	 * by the memslot. This means we have to prohibit block size mappings
-+	 * for the beginning and end of a non-block aligned and non-block sized
-+	 * memory slot (illustrated by the head and tail parts of the
-+	 * userspace view above containing pages 'abcde' and 'xyz',
-+	 * respectively).
-+	 *
-+	 * Note that it doesn't matter if we do the check using the
-+	 * userspace_addr or the base_gfn, as both are equally aligned (per
-+	 * the check above) and equally sized.
-+	 */
-+	return (hva >= ALIGN(uaddr_start, PMD_SIZE)) && (hva < ALIGN_DOWN(uaddr_end, PMD_SIZE));
-+}
-+
-+static long transparent_hugepage_adjust(struct kvm *kvm, struct kvm_memory_slot *memslot,
-+					unsigned long hva, kvm_pfn_t *hfnp, gpa_t *gpa)
-+{
-+	kvm_pfn_t hfn = *hfnp;
-+
-+	/*
-+	 * Make sure the adjustment is done only for THP pages. Also make
-+	 * sure that the HVA and GPA are sufficiently aligned and that the
-+	 * block map is contained within the memslot.
-+	 */
-+	if (fault_supports_gstage_huge_mapping(memslot, hva)) {
-+		struct kvm_gstage gstage;
-+
-+		gstage.pgd = kvm->mm->pgd;
-+		int sz = kvm_riscv_gstage_get_mapping_size(&gstage, hva);
-+
-+		if (sz < 0)
-+			return sz;
-+
-+		if (sz < PMD_SIZE)
-+			return PAGE_SIZE;
-+
-+		*gpa &= PMD_MASK;
-+		hfn &= ~(PTRS_PER_PMD - 1);
-+		*hfnp = hfn;
-+
-+		return PMD_SIZE;
-+	}
-+
-+	return PAGE_SIZE;
-+}
-+
- int kvm_riscv_mmu_map(struct kvm_vcpu *vcpu, struct kvm_memory_slot *memslot,
- 		      gpa_t gpa, unsigned long hva, bool is_write,
- 		      struct kvm_gstage_mapping *out_map)
-@@ -337,7 +422,8 @@ int kvm_riscv_mmu_map(struct kvm_vcpu *vcpu, struct kvm_memory_slot *memslot,
- 	struct kvm_mmu_memory_cache *pcache = &vcpu->arch.mmu_page_cache;
- 	bool logging = (memslot->dirty_bitmap &&
- 			!(memslot->flags & KVM_MEM_READONLY)) ? true : false;
--	unsigned long vma_pagesize, mmu_seq;
-+	unsigned long mmu_seq;
-+	long vma_pagesize;
- 	struct kvm_gstage gstage;
- 	struct page *page;
-
-@@ -416,6 +502,15 @@ int kvm_riscv_mmu_map(struct kvm_vcpu *vcpu, struct kvm_memory_slot *memslot,
- 	if (mmu_invalidate_retry(kvm, mmu_seq))
- 		goto out_unlock;
-
-+	/* check if we are backed by a THP and thus use block mapping if possible */
-+	if (vma_pagesize == PAGE_SIZE) {
-+		vma_pagesize = transparent_hugepage_adjust(kvm, memslot, hva, &hfn, &gpa);
-+		if (vma_pagesize < 0) {
-+			ret = vma_pagesize;
-+			goto out_unlock;
-+		}
-+	}
-+
- 	if (writable) {
- 		mark_page_dirty_in_slot(kvm, memslot, gfn);
- 		ret = kvm_riscv_gstage_map_page(&gstage, pcache, gpa, hfn << PAGE_SHIFT,
+diff --git a/arch/riscv/kvm/vcpu_insn.c b/arch/riscv/kvm/vcpu_insn.c
+index de1f96ea6225..a8d796ef2822 100644
+--- a/arch/riscv/kvm/vcpu_insn.c
++++ b/arch/riscv/kvm/vcpu_insn.c
+@@ -323,6 +323,19 @@ int kvm_riscv_vcpu_virtual_insn(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ 							  ct->sepc,
+ 							  &utrap);
+ 			if (utrap.scause) {
++				/**
++				 * If a g-stage page fault occurs, the direct approach
++				 * is to let the g-stage page fault handler handle it
++				 * naturally, however, calling the g-stage page fault
++				 * handler here seems rather strange.
++				 * Considering this is an corner case, we can directly
++				 * return to the guest and re-execute the same PC, this
++				 * will trigger a g-stage page fault again and then the
++				 * regular g-stage page fault handler will populate
++				 * g-stage page table.
++				 */
++				if (utrap.scause == EXC_LOAD_GUEST_PAGE_FAULT)
++					return 1;
+ 				utrap.sepc = ct->sepc;
+ 				kvm_riscv_vcpu_trap_redirect(vcpu, &utrap);
+ 				return 1;
+@@ -378,6 +391,19 @@ int kvm_riscv_vcpu_mmio_load(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ 		insn = kvm_riscv_vcpu_unpriv_read(vcpu, true, ct->sepc,
+ 						  &utrap);
+ 		if (utrap.scause) {
++			/**
++			 * If a g-stage page fault occurs, the direct approach
++			 * is to let the g-stage page fault handler handle it
++			 * naturally, however, calling the g-stage page fault
++			 * handler here seems rather strange.
++			 * Considering this is an corner case, we can directly
++			 * return to the guest and re-execute the same PC, this
++			 * will trigger a g-stage page fault again and then the
++			 * regular g-stage page fault handler will populate
++			 * g-stage page table.
++			 */
++			if (utrap.scause == EXC_LOAD_GUEST_PAGE_FAULT)
++				return 1;
+ 			/* Redirect trap if we failed to read instruction */
+ 			utrap.sepc = ct->sepc;
+ 			kvm_riscv_vcpu_trap_redirect(vcpu, &utrap);
+@@ -504,6 +530,19 @@ int kvm_riscv_vcpu_mmio_store(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ 		insn = kvm_riscv_vcpu_unpriv_read(vcpu, true, ct->sepc,
+ 						  &utrap);
+ 		if (utrap.scause) {
++			/**
++			 * If a g-stage page fault occurs, the direct approach
++			 * is to let the g-stage page fault handler handle it
++			 * naturally, however, calling the g-stage page fault
++			 * handler here seems rather strange.
++			 * Considering this is an corner case, we can directly
++			 * return to the guest and re-execute the same PC, this
++			 * will trigger a g-stage page fault again and then the
++			 * regular g-stage page fault handler will populate
++			 * g-stage page table.
++			 */
++			if (utrap.scause == EXC_LOAD_GUEST_PAGE_FAULT)
++				return 1;
+ 			/* Redirect trap if we failed to read instruction */
+ 			utrap.sepc = ct->sepc;
+ 			kvm_riscv_vcpu_trap_redirect(vcpu, &utrap);
 -- 
-2.27.0
+2.50.1
+
 
 -- 
 kvm-riscv mailing list
