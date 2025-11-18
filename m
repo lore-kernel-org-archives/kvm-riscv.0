@@ -4,60 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1ED0CCE8D6B
-	for <kvm-riscv@archiver.kernel.org>; Mon, 17 Nov 2025 08:49:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A7D54CF2562
+	for <kvm-riscv@archiver.kernel.org>; Tue, 18 Nov 2025 23:31:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:CC
-	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=0nWhRMtDY/sYh1ef5JIYtiwpReVHVdYDldeaNZfMBh4=; b=yMBv+0CeiCW1Bu
-	whtVHBaD2dZToUEpYiACYVlNYQ6zwqXsKeb1SYzRTKCibtYBZszXkYmiXtdVi7vDMyvG/qPkS0/A4
-	4+yNiM0To2tiIsv3q7zJDIoFt9bF2RlJYpy/KV9/GSbEtI3R1ETBwyRwZqYaS6Za3RXfGhecNjHP2
-	VCJDoueUu0+OsixGO4TLJY898G4uwfexDwKH49udyIl0XSXYknzbBC9IRYAizEGkjr0DtcdFqSWti
-	WCQLlZQpSxq0Xlf5iEFLIAe2jB3AJTDDC8iEOvNeX/sPulTtRIeIm5DHbSFc4FtCNdUkkFAqFBNY+
-	6Bn00SvDOyUrplpeJRrQ==;
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID:
+	References:Mime-Version:In-Reply-To:Date:Reply-To:Content-ID:
+	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+	:Resent-Message-ID:List-Owner;
+	bh=TQLJUAqPz8DbYj6IGn6cBIqdoCSPvJ2y/rtqCBZ0kRc=; b=w5wzVANneVj0s6bNVm6/LsBqCp
+	+brRlzZmY7y2v14brAonaneDmjyjppuq87k6+RFV2W+wkGV7mGYyj0F/Hp/udamUwwRVqJkwzmezf
+	ZSxwtbYiSuslDoch6NAc6VFqdJgtqbq+1vnNuJVUMS2XbTnrhW7sItmswZQvUte4GGT+Wcw/Ngoe3
+	PCKUVLEk7+IdUGW0gRaGNUUjipnJKSMFVK5ScYmz4Nwqk66KiiFaec0GNNeRAahhuKSkJVbPjmqmW
+	s7z0gjwv9C8MGTLBrkSbb/ZMzBliEU7U3+VI/iwpbJW+JnoLE0RyShridBQpN6PNt44vpwmXapIat
+	DtPjQkFg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vKuvF-0000000FiWB-3XmU;
-	Mon, 17 Nov 2025 08:49:17 +0000
-Received: from 60-248-80-70.hinet-ip.hinet.net ([60.248.80.70] helo=Atcsqr.andestech.com)
+	id 1vLVAW-00000001EmR-17ac;
+	Tue, 18 Nov 2025 23:31:28 +0000
+Received: from mail-pj1-x1049.google.com ([2607:f8b0:4864:20::1049])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vKuv8-0000000FiSF-1nQG;
-	Mon, 17 Nov 2025 08:49:16 +0000
-Received: from mail.andestech.com (ATCPCS34.andestech.com [10.0.1.134])
-	by Atcsqr.andestech.com with ESMTPS id 5AH8kHmt097165
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=OK);
-	Mon, 17 Nov 2025 16:46:17 +0800 (+08)
-	(envelope-from minachou@andestech.com)
-Received: from swlinux02.andestech.com (10.0.15.183) by ATCPCS34.andestech.com
- (10.0.1.134) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.39; Mon, 17 Nov
- 2025 16:46:17 +0800
-From: Hui Min Mina Chou <minachou@andestech.com>
-To: <anup@brainfault.org>, <atish.patra@linux.dev>, <pjw@kernel.org>,
-        <palmer@dabbelt.com>, <aou@eecs.berkeley.edu>, <alex@ghiti.fr>
-CC: <kvm@vger.kernel.org>, <kvm-riscv@lists.infradead.org>,
-        <linux-riscv@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
-        <tim609@andestech.com>, <minachou@andestech.com>,
-        <ben717@andestech.com>, <az70021@gmail.com>,
-        =?UTF-8?q?Radim=20Kr=C4=8Dm=C3=A1=C5=99?=
-	<rkrcmar@ventanamicro.com>
-Subject: [PATCH v4] RISC-V: KVM: Flush VS-stage TLB after VCPU migration for split two-stage TLBs
-Date: Mon, 17 Nov 2025 16:45:55 +0800
-Message-ID: <20251117084555.157642-1-minachou@andestech.com>
-X-Mailer: git-send-email 2.34.1
-MIME-Version: 1.0
-X-Originating-IP: [10.0.15.183]
-X-ClientProxiedBy: ATCPCS33.andestech.com (10.0.1.100) To
- ATCPCS34.andestech.com (10.0.1.134)
-X-DKIM-Results: atcpcs34.andestech.com; dkim=none;
-X-DNSRBL: 
-X-MAIL: Atcsqr.andestech.com 5AH8kHmt097165
+	id 1vLVAT-00000001ElT-2IbX
+	for kvm-riscv@lists.infradead.org;
+	Tue, 18 Nov 2025 23:31:26 +0000
+Received: by mail-pj1-x1049.google.com with SMTP id 98e67ed59e1d1-343daf0f488so7358863a91.1
+        for <kvm-riscv@lists.infradead.org>; Tue, 18 Nov 2025 15:31:25 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1763508684; x=1764113484; darn=lists.infradead.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=vhbmIaudy7FUgPhz41c9iiSjQeSWp1bqqQI5ni0zcdI=;
+        b=26jaJNME71p+fMBJa5pXtu02zAEUnsF18KIhxny+Ac9XjlH4W8+10a+z21UFilUNgP
+         O0kt1hdhE0hdABbbR1BBKZmoBXbfnJddvOZ4HuXLWJgbStOAlPoXlWDkiR2uxfJhLN5a
+         0ny8Qmevs3rMPan+jTe1QrjeN3vOUqZJzpBLRYmsFAp2TxHrcqHQKNbmQgRM1LxHDiJ9
+         8cfLm9ISzpGeIandsVeuce6S0zAvGW/cFLOr5sfmpmdDHISeTJti1EpxhGwcoIXDLVra
+         mzTj29Q5g2+JBEblYSlIikV+HFfb2ma8KKDv/g9PDopOeibvdCRkVL8NCye8hKJCdqj8
+         SjVQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1763508684; x=1764113484;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=vhbmIaudy7FUgPhz41c9iiSjQeSWp1bqqQI5ni0zcdI=;
+        b=WWdFBrJyHswm8sUTgH8iCwYS5vPTCHHTqLh1f/qXN5zrsEAClVg5bJOHxX5poZgoK+
+         bP8HAbvEipwr9tYt9P6xxY8LI9pAUK8C1vRux3ZFq1DnTV+oNQJ0N5Xdqf56sSsiM5LM
+         hDXRXCZoulk6tnp361ZPeErq0e654urANAqEJsAdYayL9v6js9W/jlgAyvPzsxGFb5yx
+         7oudDh24XgMTjadk1wNqJYdMbUHxvcJNHjCRi6rF2CcsH0f0qPaSXC3BBe5CPd93AtvQ
+         NyD2CMChYNBn2awNirvt4wMbGzofd3Dxm27EAIwBKThL89AF0PS732flh4NCxYTiKzno
+         HwyQ==
+X-Forwarded-Encrypted: i=1; AJvYcCVpjWfWhsI8gsdywSDxlF/YQlL5LA6U+JGvgk5LcfXWtl3EYGAl89wajA7JiQAcg/9mtzd2PTcOD9E=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yyjj+RuSdpuf4JBa50D6kPnv3j89XA/5TrJkHT0wDszjLhP+2LZ
+	eWgW7k3xMiPPGHF0Y2qTuGQyU613BLkfNRC+4gPeOM1xb+2L4QdQRyjjHKC4lgfp9ogHCc24h1Q
+	eDXfgEA==
+X-Google-Smtp-Source: AGHT+IE1o3OuDgEYh+WwImWCZtj32ss/bDTcBxOCjrPrz1sqG0DLMNd/QRhOEpFCg6/bq23FewNy3cS6Bik=
+X-Received: from pjbpd18.prod.google.com ([2002:a17:90b:1dd2:b0:340:e8f7:1b44])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:5484:b0:341:124f:474f
+ with SMTP id 98e67ed59e1d1-343fa6390cfmr19214010a91.32.1763508684387; Tue, 18
+ Nov 2025 15:31:24 -0800 (PST)
+Date: Tue, 18 Nov 2025 15:31:22 -0800
+In-Reply-To: <20251028002824.1470939-1-rick.p.edgecombe@intel.com>
+Mime-Version: 1.0
+References: <aP-1qlTkmFUgTld-@google.com> <20251028002824.1470939-1-rick.p.edgecombe@intel.com>
+Message-ID: <aR0Byu3bd3URxzhu@google.com>
+Subject: Re: [PATCH] KVM: TDX: Take MMU lock around tdh_vp_init()
+From: Sean Christopherson <seanjc@google.com>
+To: Rick Edgecombe <rick.p.edgecombe@intel.com>
+Cc: ackerleytng@google.com, anup@brainfault.org, aou@eecs.berkeley.edu, 
+	binbin.wu@linux.intel.com, borntraeger@linux.ibm.com, chenhuacai@kernel.org, 
+	frankja@linux.ibm.com, imbrenda@linux.ibm.com, ira.weiny@intel.com, 
+	kai.huang@intel.com, kas@kernel.org, kvm-riscv@lists.infradead.org, 
+	kvm@vger.kernel.org, kvmarm@lists.linux.dev, 
+	linux-arm-kernel@lists.infradead.org, linux-coco@lists.linux.dev, 
+	linux-kernel@vger.kernel.org, linux-mips@vger.kernel.org, 
+	linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, 
+	loongarch@lists.linux.dev, maddy@linux.ibm.com, maobibo@loongson.cn, 
+	maz@kernel.org, michael.roth@amd.com, oliver.upton@linux.dev, 
+	palmer@dabbelt.com, pbonzini@redhat.com, pjw@kernel.org, 
+	vannapurve@google.com, x86@kernel.org, yan.y.zhao@intel.com, 
+	zhaotianrui@loongson.cn
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20251117_004910_815342_6F6F0E15 
-X-CRM114-Status: GOOD (  11.90  )
+X-CRM114-CacheID: sfid-20251118_153125_593778_AB303870 
+X-CRM114-Status: GOOD (  21.07  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -69,96 +96,64 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-TW9zdCBpbXBsZW1lbnRhdGlvbnMgY2FjaGUgdGhlIGNvbWJpbmVkIHJlc3VsdCBvZiB0d28tc3Rh
-Z2UKdHJhbnNsYXRpb24sIGJ1dCBzb21lLCBsaWtlIEFuZGVzIGNvcmVzLCB1c2Ugc3BsaXQgVExC
-cyB0aGF0CnN0b3JlIFZTLXN0YWdlIGFuZCBHLXN0YWdlIGVudHJpZXMgc2VwYXJhdGVseS4KCk9u
-IHN1Y2ggc3lzdGVtcywgd2hlbiBhIFZDUFUgbWlncmF0ZXMgdG8gYW5vdGhlciBDUFUsIGFuIGFk
-ZGl0aW9uYWwKSEZFTkNFLlZWTUEgaXMgcmVxdWlyZWQgdG8gYXZvaWQgdXNpbmcgc3RhbGUgVlMt
-c3RhZ2UgZW50cmllcywgd2hpY2gKY291bGQgb3RoZXJ3aXNlIGNhdXNlIGd1ZXN0IGZhdWx0cy4K
-CkludHJvZHVjZSBhIHN0YXRpYyBrZXkgdG8gaWRlbnRpZnkgQ1BVcyB3aXRoIHNwbGl0IHR3by1z
-dGFnZSBUTEJzLgpXaGVuIGVuYWJsZWQsIEtWTSBpc3N1ZXMgYW4gZXh0cmEgSEZFTkNFLlZWTUEg
-b24gVkNQVSBtaWdyYXRpb24gdG8KcHJldmVudCBzdGFsZSBWUy1zdGFnZSBtYXBwaW5ncy4KClNp
-Z25lZC1vZmYtYnk6IEh1aSBNaW4gTWluYSBDaG91IDxtaW5hY2hvdUBhbmRlc3RlY2guY29tPgpT
-aWduZWQtb2ZmLWJ5OiBCZW4gWm9uZy1Zb3UgWGllIDxiZW43MTdAYW5kZXN0ZWNoLmNvbT4KUmV2
-aWV3ZWQtYnk6IFJhZGltIEtyxI1tw6HFmSA8cmtyY21hckB2ZW50YW5hbWljcm8uY29tPgotLS0K
-Q2hhbmdlbG9nOgoKdjQ6CiAtIFJlbmFtZSB0aGUgcGF0Y2ggc3ViamVjdAogLSBSZW1vdmUgdGhl
-IEZpeGVzIHRhZwogLSBBZGQgYSBzdGF0aWMga2V5IHNvIHRoYXQgSEZFTkNFLlZWTUEgaXMgaXNz
-dWVkIG9ubHkgb24gQ1BVcyB3aXRoCiAgIHNwbGl0IHR3by1zdGFnZSBUTEJzCiAtIEFkZCBrdm1f
-cmlzY3Zfc2V0dXBfdmVuZG9yX2ZlYXR1cmVzKCkgdG8gZGV0ZWN0IG12ZW5kb3JpZC9tYXJjaGlk
-CiAgIGFuZCBlbmFibGUgdGhlIGtleSB3aGVuIHJlcXVpcmVkCgp2MzoKIC0gUmVzb2x2ZWQgYnVp
-bGQgd2FybmluZzsgdXBkYXRlZCBoZWFkZXIgZGVjbGFyYXRpb24gYW5kIGNhbGwgc2lkZSB0bwog
-ICBrdm1fcmlzY3ZfbG9jYWxfdGxiX3Nhbml0aXplCiAtIEFkZCBSYWRpbSBLcsSNbcOhxZkncyBS
-ZXZpZXdlZC1ieSB0YWcKIChodHRwczovL2xvcmUua2VybmVsLm9yZy9hbGwvMjAyNTEwMjMwMzI1
-MTcuMjUyNzE5My0xLW1pbmFjaG91QGFuZGVzdGVjaC5jb20vKQoKdjI6CiAtIFVwZGF0ZWQgRml4
-ZXMgY29tbWl0IHRvIDkyZTQ1MDUwN2Q1NgogLSBSZW5hbWVkIGZ1bmN0aW9uIHRvIGt2bV9yaXNj
-dl9sb2NhbF90bGJfc2FuaXRpemUKIChodHRwczovL2xvcmUua2VybmVsLm9yZy9hbGwvMjAyNTEw
-MjEwODMxMDUuNDAyOTMwNS0xLW1pbmFjaG91QGFuZGVzdGVjaC5jb20vKQotLS0KIGFyY2gvcmlz
-Y3YvaW5jbHVkZS9hc20va3ZtX2hvc3QuaCB8ICAyICsrCiBhcmNoL3Jpc2N2L2luY2x1ZGUvYXNt
-L2t2bV92bWlkLmggfCAgMiArLQogYXJjaC9yaXNjdi9rdm0vbWFpbi5jICAgICAgICAgICAgIHwg
-MTQgKysrKysrKysrKysrKysKIGFyY2gvcmlzY3Yva3ZtL3ZjcHUuYyAgICAgICAgICAgICB8ICAy
-ICstCiBhcmNoL3Jpc2N2L2t2bS92bWlkLmMgICAgICAgICAgICAgfCAgNiArKysrKy0KIDUgZmls
-ZXMgY2hhbmdlZCwgMjMgaW5zZXJ0aW9ucygrKSwgMyBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQg
-YS9hcmNoL3Jpc2N2L2luY2x1ZGUvYXNtL2t2bV9ob3N0LmggYi9hcmNoL3Jpc2N2L2luY2x1ZGUv
-YXNtL2t2bV9ob3N0LmgKaW5kZXggZDcxZDMyOTlhMzM1Li4yMWFiYWMyZjgwNGUgMTAwNjQ0Ci0t
-LSBhL2FyY2gvcmlzY3YvaW5jbHVkZS9hc20va3ZtX2hvc3QuaAorKysgYi9hcmNoL3Jpc2N2L2lu
-Y2x1ZGUvYXNtL2t2bV9ob3N0LmgKQEAgLTMyMyw0ICszMjMsNiBAQCBib29sIGt2bV9yaXNjdl92
-Y3B1X3N0b3BwZWQoc3RydWN0IGt2bV92Y3B1ICp2Y3B1KTsKIAogdm9pZCBrdm1fcmlzY3ZfdmNw
-dV9yZWNvcmRfc3RlYWxfdGltZShzdHJ1Y3Qga3ZtX3ZjcHUgKnZjcHUpOwogCitERUNMQVJFX1NU
-QVRJQ19LRVlfRkFMU0Uoa3ZtX3Jpc2N2X3RsYl9zcGxpdF9tb2RlKTsKKwogI2VuZGlmIC8qIF9f
-UklTQ1ZfS1ZNX0hPU1RfSF9fICovCmRpZmYgLS1naXQgYS9hcmNoL3Jpc2N2L2luY2x1ZGUvYXNt
-L2t2bV92bWlkLmggYi9hcmNoL3Jpc2N2L2luY2x1ZGUvYXNtL2t2bV92bWlkLmgKaW5kZXggYWI5
-OGUxNDM0ZmI3Li43NWZiNmU4NzJjY2QgMTAwNjQ0Ci0tLSBhL2FyY2gvcmlzY3YvaW5jbHVkZS9h
-c20va3ZtX3ZtaWQuaAorKysgYi9hcmNoL3Jpc2N2L2luY2x1ZGUvYXNtL2t2bV92bWlkLmgKQEAg
-LTIyLDYgKzIyLDYgQEAgdW5zaWduZWQgbG9uZyBrdm1fcmlzY3ZfZ3N0YWdlX3ZtaWRfYml0cyh2
-b2lkKTsKIGludCBrdm1fcmlzY3ZfZ3N0YWdlX3ZtaWRfaW5pdChzdHJ1Y3Qga3ZtICprdm0pOwog
-Ym9vbCBrdm1fcmlzY3ZfZ3N0YWdlX3ZtaWRfdmVyX2NoYW5nZWQoc3RydWN0IGt2bV92bWlkICp2
-bWlkKTsKIHZvaWQga3ZtX3Jpc2N2X2dzdGFnZV92bWlkX3VwZGF0ZShzdHJ1Y3Qga3ZtX3ZjcHUg
-KnZjcHUpOwotdm9pZCBrdm1fcmlzY3ZfZ3N0YWdlX3ZtaWRfc2FuaXRpemUoc3RydWN0IGt2bV92
-Y3B1ICp2Y3B1KTsKK3ZvaWQga3ZtX3Jpc2N2X2xvY2FsX3RsYl9zYW5pdGl6ZShzdHJ1Y3Qga3Zt
-X3ZjcHUgKnZjcHUpOwogCiAjZW5kaWYKZGlmZiAtLWdpdCBhL2FyY2gvcmlzY3Yva3ZtL21haW4u
-YyBiL2FyY2gvcmlzY3Yva3ZtL21haW4uYwppbmRleCA2N2M4NzZkZTc0ZWYuLmJmMGU0ZjFhYmUw
-ZiAxMDA2NDQKLS0tIGEvYXJjaC9yaXNjdi9rdm0vbWFpbi5jCisrKyBiL2FyY2gvcmlzY3Yva3Zt
-L21haW4uYwpAQCAtMTUsNiArMTUsMTggQEAKICNpbmNsdWRlIDxhc20va3ZtX25hY2wuaD4KICNp
-bmNsdWRlIDxhc20vc2JpLmg+CiAKK0RFRklORV9TVEFUSUNfS0VZX0ZBTFNFKGt2bV9yaXNjdl90
-bGJfc3BsaXRfbW9kZSk7CisKK3N0YXRpYyB2b2lkIGt2bV9yaXNjdl9zZXR1cF92ZW5kb3JfZmVh
-dHVyZXModm9pZCkKK3sKKwkvKiBBbmRlcyBBWDY2OiBzcGxpdCB0d28tc3RhZ2UgVExCcyAqLwor
-CWlmIChyaXNjdl9jYWNoZWRfbXZlbmRvcmlkKDApID09IEFOREVTX1ZFTkRPUl9JRCAmJgorCSAg
-ICAocmlzY3ZfY2FjaGVkX21hcmNoaWQoMCkgJiAweEZGRkYpID09IDB4OEE2NikgeworCQlzdGF0
-aWNfYnJhbmNoX2VuYWJsZSgma3ZtX3Jpc2N2X3RsYl9zcGxpdF9tb2RlKTsKKwkJa3ZtX2luZm8o
-InVzaW5nIHNwbGl0IHR3by1zdGFnZSBUTEJzIHJlcXVpcmluZyBleHRyYSBIRkVOQ0UuVlZNQVxu
-Iik7CisJfQorfQorCiBsb25nIGt2bV9hcmNoX2Rldl9pb2N0bChzdHJ1Y3QgZmlsZSAqZmlscCwK
-IAkJCXVuc2lnbmVkIGludCBpb2N0bCwgdW5zaWduZWQgbG9uZyBhcmcpCiB7CkBAIC0xNTksNiAr
-MTcxLDggQEAgc3RhdGljIGludCBfX2luaXQgcmlzY3Zfa3ZtX2luaXQodm9pZCkKIAkJa3ZtX2lu
-Zm8oIkFJQSBhdmFpbGFibGUgd2l0aCAlZCBndWVzdCBleHRlcm5hbCBpbnRlcnJ1cHRzXG4iLAog
-CQkJIGt2bV9yaXNjdl9haWFfbnJfaGdlaSk7CiAKKwlrdm1fcmlzY3Zfc2V0dXBfdmVuZG9yX2Zl
-YXR1cmVzKCk7CisKIAlrdm1fcmVnaXN0ZXJfcGVyZl9jYWxsYmFja3MoTlVMTCk7CiAKIAlyYyA9
-IGt2bV9pbml0KHNpemVvZihzdHJ1Y3Qga3ZtX3ZjcHUpLCAwLCBUSElTX01PRFVMRSk7CmRpZmYg
-LS1naXQgYS9hcmNoL3Jpc2N2L2t2bS92Y3B1LmMgYi9hcmNoL3Jpc2N2L2t2bS92Y3B1LmMKaW5k
-ZXggM2ViY2ZmZmFhOTc4Li43OTYyMThlNGE0NjIgMTAwNjQ0Ci0tLSBhL2FyY2gvcmlzY3Yva3Zt
-L3ZjcHUuYworKysgYi9hcmNoL3Jpc2N2L2t2bS92Y3B1LmMKQEAgLTk2OCw3ICs5NjgsNyBAQCBp
-bnQga3ZtX2FyY2hfdmNwdV9pb2N0bF9ydW4oc3RydWN0IGt2bV92Y3B1ICp2Y3B1KQogCQkgKiBO
-b3RlOiBUaGlzIHNob3VsZCBiZSBkb25lIGFmdGVyIEctc3RhZ2UgVk1JRCBoYXMgYmVlbgogCQkg
-KiB1cGRhdGVkIHVzaW5nIGt2bV9yaXNjdl9nc3RhZ2Vfdm1pZF92ZXJfY2hhbmdlZCgpCiAJCSAq
-LwotCQlrdm1fcmlzY3ZfZ3N0YWdlX3ZtaWRfc2FuaXRpemUodmNwdSk7CisJCWt2bV9yaXNjdl9s
-b2NhbF90bGJfc2FuaXRpemUodmNwdSk7CiAKIAkJdHJhY2Vfa3ZtX2VudHJ5KHZjcHUpOwogCmRp
-ZmYgLS1naXQgYS9hcmNoL3Jpc2N2L2t2bS92bWlkLmMgYi9hcmNoL3Jpc2N2L2t2bS92bWlkLmMK
-aW5kZXggM2I0MjZjODAwNDgwLi4xZGJkNTBjNjdhODggMTAwNjQ0Ci0tLSBhL2FyY2gvcmlzY3Yv
-a3ZtL3ZtaWQuYworKysgYi9hcmNoL3Jpc2N2L2t2bS92bWlkLmMKQEAgLTEyNSw3ICsxMjUsNyBA
-QCB2b2lkIGt2bV9yaXNjdl9nc3RhZ2Vfdm1pZF91cGRhdGUoc3RydWN0IGt2bV92Y3B1ICp2Y3B1
-KQogCQlrdm1fbWFrZV9yZXF1ZXN0KEtWTV9SRVFfVVBEQVRFX0hHQVRQLCB2KTsKIH0KIAotdm9p
-ZCBrdm1fcmlzY3ZfZ3N0YWdlX3ZtaWRfc2FuaXRpemUoc3RydWN0IGt2bV92Y3B1ICp2Y3B1KQor
-dm9pZCBrdm1fcmlzY3ZfbG9jYWxfdGxiX3Nhbml0aXplKHN0cnVjdCBrdm1fdmNwdSAqdmNwdSkK
-IHsKIAl1bnNpZ25lZCBsb25nIHZtaWQ7CiAKQEAgLTE0Niw0ICsxNDYsOCBAQCB2b2lkIGt2bV9y
-aXNjdl9nc3RhZ2Vfdm1pZF9zYW5pdGl6ZShzdHJ1Y3Qga3ZtX3ZjcHUgKnZjcHUpCiAKIAl2bWlk
-ID0gUkVBRF9PTkNFKHZjcHUtPmt2bS0+YXJjaC52bWlkLnZtaWQpOwogCWt2bV9yaXNjdl9sb2Nh
-bF9oZmVuY2VfZ3ZtYV92bWlkX2FsbCh2bWlkKTsKKworCS8qIEZvciBzcGxpdCBUTEIgZGVzaWdu
-cywgZmx1c2ggVlMtc3RhZ2UgZW50cmllcyBhbHNvICovCisJaWYgKHN0YXRpY19icmFuY2hfdW5s
-aWtlbHkoJmt2bV9yaXNjdl90bGJfc3BsaXRfbW9kZSkpCisJCWt2bV9yaXNjdl9sb2NhbF9oZmVu
-Y2VfdnZtYV9hbGwodm1pZCk7CiB9Ci0tIAoyLjM0LjEKCgotLSAKa3ZtLXJpc2N2IG1haWxpbmcg
-bGlzdAprdm0tcmlzY3ZAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFk
-Lm9yZy9tYWlsbWFuL2xpc3RpbmZvL2t2bS1yaXNjdgo=
+On Mon, Oct 27, 2025, Rick Edgecombe wrote:
+> Take MMU lock around tdh_vp_init() in KVM_TDX_INIT_VCPU to prevent
+> meeting contention during retries in some no-fail MMU paths.
+> 
+> The TDX module takes various try-locks internally, which can cause
+> SEAMCALLs to return an error code when contention is met. Dealing with
+> an error in some of the MMU paths that make SEAMCALLs is not straight
+> forward, so KVM takes steps to ensure that these will meet no contention
+> during a single BUSY error retry. The whole scheme relies on KVM to take
+> appropriate steps to avoid making any SEAMCALLs that could contend while
+> the retry is happening.
+> 
+> Unfortunately, there is a case where contention could be met if userspace
+> does something unusual. Specifically, hole punching a gmem fd while
+> initializing the TD vCPU. The impact would be triggering a KVM_BUG_ON().
+> 
+> The resource being contended is called the "TDR resource" in TDX docs 
+> parlance. The tdh_vp_init() can take this resource as exclusive if the 
+> 'version' passed is 1, which happens to be version the kernel passes. The 
+> various MMU operations (tdh_mem_range_block(), tdh_mem_track() and 
+> tdh_mem_page_remove()) take it as shared.
+> 
+> There isn't a KVM lock that maps conceptually and in a lock order friendly 
+> way to the TDR lock. So to minimize infrastructure, just take MMU lock 
+> around tdh_vp_init(). This makes the operations we care about mutually 
+> exclusive. Since the other operations are under a write mmu_lock, the code 
+> could just take the lock for read, however this is weirdly inverted from 
+> the actual underlying resource being contended. Since this is covering an 
+> edge case that shouldn't be hit in normal usage, be a little less weird 
+> and take the mmu_lock for write around the call.
+> 
+> Fixes: 02ab57707bdb ("KVM: TDX: Implement hooks to propagate changes of TDP MMU mirror page table")
+> Reported-by: Yan Zhao <yan.y.zhao@intel.com>
+> Suggested-by: Yan Zhao <yan.y.zhao@intel.com>
+> Signed-off-by: Rick Edgecombe <rick.p.edgecombe@intel.com>
+> ---
+> Hi,
+> 
+> It was indeed awkward, as Sean must have sniffed. But seems ok enough to
+> close the issue.
+> 
+> Yan, can you give it a look?
+> 
+> Posted here, but applies on top of this series.
+
+In the future, please don't post in-reply-to, as it mucks up my b4 workflow.
+
+Applied to kvm-x86 tdx, with a more verbose comment as suggested by Binbin.
+
+[1/1] KVM: TDX: Take MMU lock around tdh_vp_init()
+      https://github.com/kvm-x86/linux/commit/9a89894f30d5
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
