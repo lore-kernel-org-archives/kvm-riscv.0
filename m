@@ -4,65 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00975CF34D9
-	for <kvm-riscv@archiver.kernel.org>; Wed, 19 Nov 2025 15:57:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64C39CF58FE
+	for <kvm-riscv@archiver.kernel.org>; Wed, 19 Nov 2025 21:31:31 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:References:Mime-Version:From:Message-Id
-	:Date:In-Reply-To:Subject:Cc:To:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=nU98vaYTRQ7km0VwCFuwaPwlhq4d+8M0B1RGDYKAeJQ=; b=qkLJlEBgrcRc4G
-	obSg4x8pReC41E7+q6PgR2c+yyXxj08o8o/03r7iKIuNm4ip/xCUuAfhjbT/X5e4lo/b7Cpndp8CD
-	ItwVDzqPk19lYKZ/93Yn96RrGuHQnWof0VERKJRzxvyISJ+xdk4OoWtYb8yoXLwadj9mjBwFX+Lmy
-	LtfhOV7qCirBdMAyxkDq/6h+rsXEn2zk20T5dylNK1buKDE0vbG/AOsuT2/W8MXxrqtLQc5kvRwrQ
-	eiT+qus4vbqyq2b/auFVGnF5PzzD3X7vM1nG9vgsid1WUUsE1b7ITfxCqOAEqc92k9WpkHUGhPIDr
-	9ErLMQTxqDZE09wtisCQ==;
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID:
+	References:Mime-Version:In-Reply-To:Date:Reply-To:Content-ID:
+	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+	:Resent-Message-ID:List-Owner;
+	bh=qDE9132tIuZhccXR/39Sd35y6TZAew92to/elrHw5IU=; b=Yn5yqWufv3emJA36LWshFkqQXv
+	087n1wMhV/12nNT6jQkPZTGj104Fi3VoGuM3PA+J59Ms+LscACUudsx+/cuO8udPEFZf11dllVdVW
+	tTEr1FK4u3rnbVG8qDjTURw2Yav4rTAvYRvDiH2mWz9nrWoT5HEtCNyASkacifAfYKupxckP4p6id
+	M/4llSv3eJlrtJxTW5XVssDwiHLTWzHjXUzLkPxcMorVhb60Vj6WNlr8vVbOx4yXDGa+1/Uyfr1Kt
+	xkZVfmaQyiDqR6CeOxtPj6g/Z+ZBuJl+109Lm3JBTCLdk1Bhr4NHstXjFOHPItQfBb0T9c6FIlFVW
+	xU8zRLmA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vLkZ5-00000003cB2-37d9;
-	Wed, 19 Nov 2025 15:57:51 +0000
-Received: from sg-1-101.ptr.blmpb.com ([118.26.132.101])
+	id 1vLply-00000005kd1-3fR8;
+	Wed, 19 Nov 2025 21:31:30 +0000
+Received: from mail-pl1-x64a.google.com ([2607:f8b0:4864:20::64a])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vLkZ2-00000003c9X-0qyP
+	id 1vLplw-00000005kc3-2z3X
 	for kvm-riscv@lists.infradead.org;
-	Wed, 19 Nov 2025 15:57:50 +0000
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- s=2212171451; d=bytedance.com; t=1763567861; h=from:subject:
- mime-version:from:date:message-id:subject:to:cc:reply-to:content-type:
- mime-version:in-reply-to:message-id;
- bh=mQ45HxHEz7bEk0U1Kg7KEiKQ1cBt2yG8qBc7T+EeuPs=;
- b=UqQV/M0KVnqVIbes+T1VV5SYDQBUho8kznxbAiYsToK+jUa4il3/H/XbholIfk2vhMtJjp
- qBcw52taj1iZnwQoxlvwy6vQyl96TiF5DLpAY/hnB8OKpiyrxr3bxooNrdZddhA7V4FTh5
- cModvja+7QNJsvuYxDrSOrVjKQI+lSnHCBf4TMYmvtLXrpNTTgkaB6Xadywgbtlfw2YI4R
- 1HMOwLrt30weNo9TEwQpsV6nTf4bz4Zbwq3Jq/+Ttc+NwLbHFhn89RC5I13WCOSG9aNnOl
- yfod9OGzB8lb4c9K7hvmAD7rJwuVYmdbbk2hWYvfNJf/0OF4eMx4QOpG4cabOQ==
-To: "Paul Walmsley" <pjw@kernel.org>
-Cc: <patchwork-bot+linux-riscv@kernel.org>, 
-	<linux-riscv@lists.infradead.org>, <corbet@lwn.net>, 
-	<paul.walmsley@sifive.com>, <palmer@dabbelt.com>, 
-	<aou@eecs.berkeley.edu>, <alex@ghiti.fr>, <robh@kernel.org>, 
-	<krzk+dt@kernel.org>, <conor+dt@kernel.org>, <will@kernel.org>, 
-	<peterz@infradead.org>, <boqun.feng@gmail.com>, <mark.rutland@arm.com>, 
-	<anup@brainfault.org>, <atish.patra@linux.dev>, <pbonzini@redhat.com>, 
-	<shuah@kernel.org>, <parri.andrea@gmail.com>, <ajones@ventanamicro.com>, 
-	<brs@rivosinc.com>, <guoren@kernel.org>, <linux-doc@vger.kernel.org>, 
-	<linux-kernel@vger.kernel.org>, <devicetree@vger.kernel.org>, 
-	<kvm@vger.kernel.org>, <kvm-riscv@lists.infradead.org>, 
-	<linux-kselftest@vger.kernel.org>, <apw@canonical.com>, 
-	<joe@perches.com>, <lukas.bulwahn@gmail.com>
-Subject: Re: [PATCH v4 00/10] riscv: Add Zalasr ISA extension support
-In-Reply-To: <b7dc669e-cc48-f163-0146-0ef37dbd19ec@kernel.org>
-X-Lms-Return-Path: <lba+1691de8f3+3986f9+lists.infradead.org+luxu.kernel@bytedance.com>
-Date: Wed, 19 Nov 2025 23:57:38 +0800
-Message-Id: <b0b0f9d727b334fa569c726fc13490dd51d4fe42.7caea664.2799.41de.8705.9603c8f00a51@bytedance.com>
-From: =?utf-8?q?=E8=B7=AF=E6=97=AD?= <luxu.kernel@bytedance.com>
+	Wed, 19 Nov 2025 21:31:29 +0000
+Received: by mail-pl1-x64a.google.com with SMTP id d9443c01a7336-295592eb5dbso5062115ad.0
+        for <kvm-riscv@lists.infradead.org>; Wed, 19 Nov 2025 13:31:27 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1763587887; x=1764192687; darn=lists.infradead.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=tRlBn8hNsoLzEGGI6zV1NxPFQ/eFHCg8PaMSNSKYawI=;
+        b=n5KlQWvdK34aKIolHSQc6DmRdgLr6+25j66jW1qX8/yAS+D2Qb+hqDA1B37WgxdCBQ
+         ztrydwoKMOex3juwUdM9+ibgh0sESNOBcDFhxr54/nBAQsK4xxmxZjWc/oKgJX0hu9BS
+         fEC/gSX0op1iXoZXN55q0pyPI+ee9ODgMnD16g0CMGdEt7YbK1YXmzQXpIZhAB5RLewF
+         pzdrq5nZFQXXEYeQqOgIwimOdQOvm3eCsBCr6fFd7sba3ok1aIy4HNM68f4E4loAnDm+
+         ea+uas2y/fNKEh2YdAlzpskABPmJm82OjHXZ88XF+AJPsHPT/Ca3aUjBhvaU1zod5zi4
+         RMrA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1763587887; x=1764192687;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=tRlBn8hNsoLzEGGI6zV1NxPFQ/eFHCg8PaMSNSKYawI=;
+        b=u9S1afpOTozBtzWxxp7Qjn8hO8+mZegZ7YNlbpVxw2on6OQzB2jCvQ/4dZiUwic1z4
+         eIopKyrhvovi0hAzTTBSAbHMhdbZy6i1mgLpM55szhQa1WwUwRQDwi0GmOlYBX5yf02o
+         s3eWDqaUJOSqXkas+aJPWE0wRcCDdYt0QdzesBYd6QwWFP1vVnVmv4yRKeC3V7o2hubT
+         QeC7CC1ATlO+YvIvPMb9pUsHjVUUvwtdbR0MPr5x5sbmO9cQGml7ye90y8Llo2WnlmwW
+         Dn46mSBZtI3hzncrKSuDIKdeXfL+y6S2c8BlsFr3lQU1x67KFNNIJYQ2neywNMTzgaCT
+         VQEg==
+X-Forwarded-Encrypted: i=1; AJvYcCXdOdFB2wvYBWrCg4+0Vl1XzgorM3PpPYQ0OqvllbX9TI0hPYAI4r6dKw54yvaheI89HbbJpuhnlfM=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yx3Wy3uo8X/Al+1qHbvA5pJrHA+wnctdDQgQfVB9c1THkEXBVsT
+	F0PAsZc4E8U05ONYPXxjrgxd/z2G/GrDYHbyg2D5PY58WPXsJGS4nP81RJ40m8b+Oy3VJ4Ng2Xo
+	1/4KX9A==
+X-Google-Smtp-Source: AGHT+IEd+gfd++T3e2i6Z4dBj2glGk6LJnNjNrz24WgF1sqa+HmClxx9J2N7UBfKQW53wCFECS0cLQGpQb0=
+X-Received: from plot18.prod.google.com ([2002:a17:902:8c92:b0:298:9ac:cfe9])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:902:ccc7:b0:298:49db:a9c5
+ with SMTP id d9443c01a7336-29b5b136462mr7336255ad.43.1763587887332; Wed, 19
+ Nov 2025 13:31:27 -0800 (PST)
+Date: Wed, 19 Nov 2025 13:31:26 -0800
+In-Reply-To: <aKNF7jc4qr9ab-Es@google.com>
 Mime-Version: 1.0
-References: <20251020042056.30283-1-luxu.kernel@bytedance.com> <176355541475.758643.7685467502830246491.git-patchwork-notify@kernel.org>
-	<b7dc669e-cc48-f163-0146-0ef37dbd19ec@kernel.org>
+References: <20250806195706.1650976-1-seanjc@google.com> <20250806195706.1650976-10-seanjc@google.com>
+ <20250815113951.GC4067720@noisy.programming.kicks-ass.net>
+ <aJ9VQH87ytkWf1dH@google.com> <aJ9YbZTJAg66IiVh@google.com>
+ <20250818143204.GH3289052@noisy.programming.kicks-ass.net> <aKNF7jc4qr9ab-Es@google.com>
+Message-ID: <aR43LoV1ti5-2WRD@google.com>
+Subject: Re: [PATCH v5 09/44] perf/x86: Switch LVTPC to/from mediated PMI
+ vector on guest load/put context
+From: Sean Christopherson <seanjc@google.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>, 
+	Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>, 
+	Huacai Chen <chenhuacai@kernel.org>, Anup Patel <anup@brainfault.org>, 
+	Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt <palmer@dabbelt.com>, 
+	Albert Ou <aou@eecs.berkeley.edu>, Xin Li <xin@zytor.com>, "H. Peter Anvin" <hpa@zytor.com>, 
+	Andy Lutomirski <luto@kernel.org>, Ingo Molnar <mingo@redhat.com>, 
+	Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, 
+	Paolo Bonzini <pbonzini@redhat.com>, linux-arm-kernel@lists.infradead.org, 
+	kvmarm@lists.linux.dev, kvm@vger.kernel.org, loongarch@lists.linux.dev, 
+	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
+	linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, 
+	Kan Liang <kan.liang@linux.intel.com>, Yongwei Ma <yongwei.ma@intel.com>, 
+	Mingwei Zhang <mizhang@google.com>, Xiong Zhang <xiong.y.zhang@linux.intel.com>, 
+	Sandipan Das <sandipan.das@amd.com>, Dapeng Mi <dapeng1.mi@linux.intel.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20251119_075748_600938_AB4D59AA 
-X-CRM114-Status: GOOD (  15.84  )
+X-CRM114-CacheID: sfid-20251119_133128_757816_8B3C82DA 
+X-CRM114-Status: GOOD (  34.88  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -74,67 +101,103 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-SGkgUGF1bCwKCkkgd2lsbCBjb250aW51ZSB3aXRoIHRoaXMgd29yay4gQW5kIHRoYW5rcyBmb3Ig
-QW5kcmVhJ3MgZmVlZGJhY2suCgpCZXN0IFJlZ2FyZHMsClh1IEx1Cgo+IEZyb206ICJQYXVsIFdh
-bG1zbGV5IjxwandAa2VybmVsLm9yZz4KPiBEYXRlOsKgIFdlZCwgTm92IDE5LCAyMDI1LCAyMzo0
-Mgo+IFN1YmplY3Q6wqAgUmU6IFtQQVRDSCB2NCAwMC8xMF0gcmlzY3Y6IEFkZCBaYWxhc3IgSVNB
-IGV4dGVuc2lvbiBzdXBwb3J0Cj4gVG86IDxwYXRjaHdvcmstYm90K2xpbnV4LXJpc2N2QGtlcm5l
-bC5vcmc+Cj4gQ2M6ICJYdSBMdSI8bHV4dS5rZXJuZWxAYnl0ZWRhbmNlLmNvbT4sIDxsaW51eC1y
-aXNjdkBsaXN0cy5pbmZyYWRlYWQub3JnPiwgPGNvcmJldEBsd24ubmV0PiwgPHBhdWwud2FsbXNs
-ZXlAc2lmaXZlLmNvbT4sIDxwYWxtZXJAZGFiYmVsdC5jb20+LCA8YW91QGVlY3MuYmVya2VsZXku
-ZWR1PiwgPGFsZXhAZ2hpdGkuZnI+LCA8cm9iaEBrZXJuZWwub3JnPiwgPGtyemsrZHRAa2VybmVs
-Lm9yZz4sIDxjb25vcitkdEBrZXJuZWwub3JnPiwgPHdpbGxAa2VybmVsLm9yZz4sIDxwZXRlcnpA
-aW5mcmFkZWFkLm9yZz4sIDxib3F1bi5mZW5nQGdtYWlsLmNvbT4sIDxtYXJrLnJ1dGxhbmRAYXJt
-LmNvbT4sIDxhbnVwQGJyYWluZmF1bHQub3JnPiwgPGF0aXNoLnBhdHJhQGxpbnV4LmRldj4sIDxw
-Ym9uemluaUByZWRoYXQuY29tPiwgPHNodWFoQGtlcm5lbC5vcmc+LCA8cGFycmkuYW5kcmVhQGdt
-YWlsLmNvbT4sIDxham9uZXNAdmVudGFuYW1pY3JvLmNvbT4sIDxicnNAcml2b3NpbmMuY29tPiwg
-PGd1b3JlbkBrZXJuZWwub3JnPiwgPGxpbnV4LWRvY0B2Z2VyLmtlcm5lbC5vcmc+LCA8bGludXgt
-a2VybmVsQHZnZXIua2VybmVsLm9yZz4sIDxkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZz4sIDxr
-dm1Admdlci5rZXJuZWwub3JnPiwgPGt2bS1yaXNjdkBsaXN0cy5pbmZyYWRlYWQub3JnPiwgPGxp
-bnV4LWtzZWxmdGVzdEB2Z2VyLmtlcm5lbC5vcmc+LCA8YXB3QGNhbm9uaWNhbC5jb20+LCA8am9l
-QHBlcmNoZXMuY29tPiwgPGx1a2FzLmJ1bHdhaG5AZ21haWwuY29tPgo+IEZvbGtzLAoKPsKgCj4g
-T24gV2VkLCAxOSBOb3YgMjAyNSwgcGF0Y2h3b3JrLWJvdCtsaW51eC1yaXNjdkBrZXJuZWwub3Jn
-IHdyb3RlOgoKPsKgCj4gPiBUaGlzIHNlcmllcyB3YXMgYXBwbGllZCB0byByaXNjdi9saW51eC5n
-aXQgKGZvci1uZXh0KQoKPiA+IGJ5IFBhdWwgV2FsbXNsZXkgPHBqd0BrZXJuZWwub3JnPjoKCj7C
-oAo+IFRoaXMgYWN0dWFsbHkgaXNuJ3QgdHJ1ZTsgSSd2ZSBvbmx5IGFwcGxpZWQgdGhlIGZpcnN0
-IGZvdXIgcGF0Y2hlcyAoc2VlwqAKCj4gYmVsb3cpLgoKPsKgCj4gPiBPbiBNb24sIDIwIE9jdCAy
-MDI1IDEyOjIwOjQ2ICswODAwIHlvdSB3cm90ZToKCj4gPiA+IFRoaXMgcGF0Y2ggYWRkcyBzdXBw
-b3J0IGZvciB0aGUgWmFsYXNyIElTQSBleHRlbnNpb24sIHdoaWNoIHN1cHBsaWVzIHRoZQoKPiA+
-ID4gcmVhbCBsb2FkIGFjcXVpcmUvc3RvcmUgcmVsZWFzZSBpbnN0cnVjdGlvbnMuCgo+ID4gPsKg
-Cgo+ID4gPiBUaGUgc3BlY2lmaWNhdGlvbiBjYW4gYmUgZm91bmQgaGVyZToKCj4gPiA+IGh0dHBz
-Oi8vZ2l0aHViLmNvbS9yaXNjdi9yaXNjdi16YWxhc3IvYmxvYi9tYWluL2NoYXB0ZXIyLmFkb2MK
-Cj4gPiA+wqAKCj4gPiA+IFRoaXMgcGF0Y2ggc2VpcmVzIGhhcyBiZWVuIHRlc3RlZCB3aXRoIGx0
-cCBvbiBRZW11IHdpdGggQnJlbnNhbidzIHphbGFzcgoKPiA+ID4gc3VwcG9ydCBwYXRjaFsxXS4K
-Cj4gPiA+wqAKCj4gPiA+IFsuLi5dCgo+ID7CoAoKPiA+IEhlcmUgaXMgdGhlIHN1bW1hcnkgd2l0
-aCBsaW5rczoKCj4gPiDCoCAtIFt2NCwwMS8xMF0gcmlzY3Y6IEFkZCBJU0EgZXh0ZW5zaW9uIHBh
-cnNpbmcgZm9yIFphbGFzcgoKPiA+IMKgIMKgIGh0dHBzOi8vZ2l0Lmtlcm5lbC5vcmcvcmlzY3Yv
-Yy8wNTk3YjljODYyN2UKCj4gPiDCoCAtIFt2NCwwMi8xMF0gZHQtYmluZGluZ3M6IHJpc2N2OiBB
-ZGQgWmFsYXNyIElTQSBleHRlbnNpb24gZGVzY3JpcHRpb24KCj4gPiDCoCDCoCBodHRwczovL2dp
-dC5rZXJuZWwub3JnL3Jpc2N2L2MvNmUyYTBmZjcwYWJlCgo+ID4gwqAgLSBbdjQsMDMvMTBdIHJp
-c2N2OiBod3Byb2JlOiBFeHBvcnQgWmFsYXNyIGV4dGVuc2lvbgoKPiA+IMKgIMKgIGh0dHBzOi8v
-Z2l0Lmtlcm5lbC5vcmcvcmlzY3YvYy9kNWUyMDYyOGE4ODIKCj4gPiDCoCAtIFt2NCwwNC8xMF0g
-cmlzY3Y6IEludHJvZHVjZSBaYWxhc3IgaW5zdHJ1Y3Rpb25zCgo+ID4gwqAgwqAgaHR0cHM6Ly9n
-aXQua2VybmVsLm9yZy9yaXNjdi9jL2M0MTM5ZWE2NzE3YwoKPiA+IMKgIC0gW3Y0LDA1LzEwXSBy
-aXNjdjogQXBwbHkgWmFsYXNyIHRvIHNtcF9sb2FkX2FjcXVpcmUvc21wX3N0b3JlX3JlbGVhc2UK
-Cj4gPiDCoCDCoCAobm8gbWF0Y2hpbmcgY29tbWl0KQoKPiA+IMKgIC0gW3Y0LDA2LzEwXSByaXNj
-djogQXBwbHkgYWNxdWlyZS9yZWxlYXNlIHNlbWFudGljcyB0byBhcmNoX3hjaGcvYXJjaF9jbXB4
-Y2hnIG9wZXJhdGlvbnMKCj4gPiDCoCDCoCAobm8gbWF0Y2hpbmcgY29tbWl0KQoKPiA+IMKgIC0g
-W3Y0LDA3LzEwXSByaXNjdjogQXBwbHkgYWNxdWlyZS9yZWxlYXNlIHNlbWFudGljcyB0byBhcmNo
-X2F0b21pYyBvcGVyYXRpb25zCgo+ID4gwqAgwqAgKG5vIG1hdGNoaW5nIGNvbW1pdCkKCj4gPiDC
-oCAtIFt2NCwwOC8xMF0gcmlzY3Y6IFJlbW92ZSBhcmNoIHNwZWNpZmljIF9fYXRvbWljX2FjcXVp
-cmUvcmVsZWFzZV9mZW5jZQoKPiA+IMKgIMKgIChubyBtYXRjaGluZyBjb21taXQpCgo+ID4gwqAg
-LSBbdjQsMDkvMTBdIFJJU0MtVjogS1ZNOiBBbGxvdyBaYWxhc3IgZXh0ZW5zaW9ucyBmb3IgR3Vl
-c3QvVk0KCj4gPiDCoCDCoCAobm8gbWF0Y2hpbmcgY29tbWl0KQoKPiA+IMKgIC0gW3Y0LDEwLzEw
-XSBSSVNDLVY6IEtWTTogc2VsZnRlc3RzOiBBZGQgWmFsYXNyIGV4dGVuc2lvbnMgdG8gZ2V0LXJl
-Zy1saXN0IHRlc3QKCj4gPiDCoCDCoCAobm8gbWF0Y2hpbmcgY29tbWl0KQoKPsKgCj4gSW4gdGVy
-bXMgb2YgcGF0Y2hlcyA1LTgsIHdlJ3JlIHN0aWxsIHdhaXRpbmcgZm9yIFh1IEx1IHRvIHVwZGF0
-ZSB0aGXCoAoKPiBwYXRjaGVzIGJhc2VkIG9uIEFuZHJlYSdzIGZlZWRiYWNrLiDCoFh1IEx1LCBh
-cmUgeW91IHN0aWxsIHBsYW5uaW5nIHRvwqAKCj4gdXBkYXRlIHRoZXNlPwoKPsKgCj7CoAo+IC0g
-UGF1bAo+wqAKCi0tIAprdm0tcmlzY3YgbWFpbGluZyBsaXN0Cmt2bS1yaXNjdkBsaXN0cy5pbmZy
-YWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8va3Zt
-LXJpc2N2Cg==
+On Mon, Aug 18, 2025, Sean Christopherson wrote:
+> On Mon, Aug 18, 2025, Peter Zijlstra wrote:
+> > On Fri, Aug 15, 2025 at 08:55:25AM -0700, Sean Christopherson wrote:
+> > > On Fri, Aug 15, 2025, Sean Christopherson wrote:
+> > > > On Fri, Aug 15, 2025, Peter Zijlstra wrote:
+> > > So if we're confident that switching the host LVTPC outside of
+> > > perf_{load,put}_guest_context() is functionally safe, I'm a-ok with it.
+> > 
+> > Let me see. So the hardware sets Masked when it raises the interrupt.
+> > 
+> > The interrupt handler clears it from software -- depending on uarch in 3
+> > different places:
+> >  1) right at the start of the PMI
+> >  2) in the middle, right before enabling the PMU (writing global control)
+> >  3) at the end of the PMI
+> > 
+> > the various changelogs adding that code mention spurious PMIs and
+> > malformed PEBS records.
+> > 
+> > So the fun all happens when the guest is doing PMI and gets a VM-exit
+> > while still Masked.
+> > 
+> > At that point, we can come in and completely rewrite the PMU state,
+> > reroute the PMI and enable things again. Then later, we 'restore' the
+> > PMU state, re-set LVTPC masked to the guest interrupt and 'resume'.
+> > 
+> > What could possibly go wrong :/ Kan, I'm assuming, but not knowing, that
+> > writing all the PMU MSRs is somehow serializing state sufficient to not
+> > cause the above mentioned fails? Specifically, clearing PEBS_ENABLE
+> > should inhibit those malformed PEBS records or something? What if the
+> > host also has PEBS and we don't actually clear the bit?
+> > 
+> > The current order ensures we rewrite LVTPC when global control is unset;
+> > I think we want to keep that.
+> 
+> Yes, for sure.
+> 
+> > While staring at this, I note that perf_load_guest_context() will clear
+> > global ctrl, clear all the counter programming, and re-enable an empty
+> > pmu. Now, an empty PMU should result in global control being zero --
+> > there is nothing run after all.
+> > 
+> > But then kvm_mediated_pmu_load() writes an explicit 0 again. Perhaps
+> > replace this with asserting it is 0 instead?
+> 
+> Yeah, I like that idea, a lot.  This?
+> 
+> 	perf_load_guest_context();
+> 
+> 	/*
+> 	 * Sanity check that "loading" guest context disabled all counters, as
+> 	 * modifying the LVTPC while host perf is active will cause explosions,
+> 	 * as will loading event selectors and PMCs with guest values.
+> 	 *
+> 	 * VMX will enable/disable counters at VM-Enter/VM-Exit by atomically
+> 	 * loading PERF_GLOBAL_CONTROL.  SVM effectively performs the switch by
+> 	 * configuring all events to be GUEST_ONLY.
+> 	 */
+> 	WARN_ON_ONCE(rdmsrq(kvm_pmu_ops.PERF_GLOBAL_CTRL));
+
+This doesn't actually work, because perf_load_guest_context() doesn't guarantee
+PERF_GLOBAL_CTRL is '0', it only guarantees all events are disabled.  E.g. if
+there are no perf events, perf_load_guest_context() is one big nop (I think).
+
+And while it might seem reasonable to expect PERF_GLOBAL_CTRL to be '0' if
+there are no perf events, that doesn't hold true today.  E.g. amd_pmu_reload_virt()
+unconditionally sets all supported MSR_AMD64_PERF_CNTR_GLOBAL_CTL bits.
+
+I'm sure we could massage perf to really truly ensure PERF_GLOBAL_CTRL is '0',
+but I don't see any value in explicitly doing that in perf_load_guest_context()
+(versus simply doing it in KVM), and I would rather not play whack-a-mole in perf
+as part of this series.
+
+So unless someone really, really wants to lean on perf to clear PERF_GLOBAL_CTRL,
+I'll go with this:
+
+	/*
+	 * Explicitly clear PERF_GLOBAL_CTRL, as "loading" the guest's context
+	 * disables all individual counters (if any were enabled), but doesn't
+	 * globally disable the entire PMU.  Loading event selectors and PMCs
+	 * with guest values while PERF_GLOBAL_CTRL is non-zero will generate
+	 * unexpected events and PMIs.
+	 *
+	 * VMX will enable/disable counters at VM-Enter/VM-Exit by atomically
+	 * loading PERF_GLOBAL_CONTROL.  SVM effectively performs the switch by
+	 * configuring all events to be GUEST_ONLY.  Clear PERF_GLOBAL_CONTROL
+	 * even for SVM to minimize the damage if a perf event is left enabled,
+	 * and to ensure a consistent starting state.
+	 */
+	wrmsrq(kvm_pmu_ops.PERF_GLOBAL_CTRL, 0);
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
