@@ -4,87 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8B24CFD364
-	for <kvm-riscv@archiver.kernel.org>; Tue, 25 Nov 2025 05:03:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44EA8CFD364
+	for <kvm-riscv@archiver.kernel.org>; Tue, 25 Nov 2025 09:50:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:From:References:To:Subject:
-	MIME-Version:Date:Message-ID:Reply-To:Cc:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Date:
+	Message-Id:From:Subject:MIME-Version:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=ykNU+PBpfWSLbYpOPCdJ3T4/gpZYjaE7qBEUrGVYpfQ=; b=Tpn3GY/tYCN/Ly
-	2PH3fr4dRCOSV8+UsfQFHHnrqz/JoBu0MZSuSEKYjOOsdiLTZWbGVHg75S/ZXYpjVtrH5JZcgMJ8o
-	ZroJvjqmRMz5aKTwr7O2hGGPzdSIkxsn+QziJQiqAiKL8m9tNx56Dyyp8uY3/PkgYEpeG6RGDOZmp
-	2uEdiyptQmdvNsy4/Qt7tzdz/S9pFjOWniY+XW/RGOy74Mv6dw0nHtG+XSAlJO/qVcpMCw1wg1jDP
-	ykswhuUfX9vesxFXQJw7uBgmMcWo1Vdk7+Nyd5Fiq6lC0lHdu+CIyzkqGjA+VwGmbWKSfErAUCvLt
-	9ljGhe1r5jrPfspZbbsA==;
+	List-Owner; bh=B4hPrLymELinpI0YEIYAqEB96vyQLeifbms3OMXYajg=; b=X+qWxFtogZweRj
+	2LbHsVpVt3Kreund6tjwMjdh0bu1QstXGR2Jr7vOv+lOjyL6pisjUGTuTvUgp9ZpEoVDNuQTctGLq
+	6qmQRRyq5q7zIXlx9E4ym06LrrcEC++aZoOqSYXQvV7rBvkhB+3q7dESpYUDcwwhRRTedrGgkBsDT
+	Lmvxo5SOqxOo34mad4VycbMMClyC7LCpvIbdynfaOMO/qObFjHdCf6YJZjtUgGzcna3mVduXVF+5m
+	VP+4fvsKr8vFkiHl0ZYhIdYmI3IUhfJ4oq30r51/zeoGr9rpRdbaxX9zHLN/CioDkaQx8XcE5hNyq
+	ubc5OsFLjOwVocln31+g==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vNlCf-0000000ClRy-0ky2;
-	Tue, 25 Nov 2025 05:03:01 +0000
-Received: from mgamail.intel.com ([198.175.65.16])
+	id 1vNphH-0000000D2xB-1GpH;
+	Tue, 25 Nov 2025 09:50:55 +0000
+Received: from sea.source.kernel.org ([2600:3c0a:e001:78e:0:1991:8:25])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vNlCc-0000000ClRI-0kd9;
-	Tue, 25 Nov 2025 05:02:59 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1764046978; x=1795582978;
-  h=message-id:date:mime-version:subject:to:references:from:
-   in-reply-to:content-transfer-encoding;
-  bh=CxuoyWDMjnvPVlANis+bdBxUp4A0mu3YzVIP24vTdmw=;
-  b=jTPVMannSWMfc3fm+OSavYVcsCmnGbne+dbW1FG5nA7sGPkFWRtBNLWp
-   VuVrx/aqCG6JKLrrVABkL1TzZs8q2Cf/VxVA4aJgAaY2lia67aw0bnD7g
-   Fwtj/siUvr3JCtXVEfAR9QBKFxSh7VoJQma3SP7axSGR3wOE2mVcH6KQ3
-   7TUK/nyZCRARppkKwGO9JKPTAi/xFeT3CwVALAoNkCrKAh3adzudcJ8bh
-   h88cLGohhxCwPkjFqDtk438C47dWYq8pTHyVlb4H9fymLLa/kAjDT+ZL/
-   VnYTtY+w+dI0pcfAF0TvTA5QFuL46hIYyj+35Y4VWBopSR49Ebc236pXq
-   A==;
-X-CSE-ConnectionGUID: ptbUomSoQlOTg8soc63A7Q==
-X-CSE-MsgGUID: ZbTzBQ77T6+SQZtmczzajA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11623"; a="66219506"
-X-IronPort-AV: E=Sophos;i="6.20,224,1758610800"; 
-   d="scan'208";a="66219506"
-Received: from orviesa006.jf.intel.com ([10.64.159.146])
-  by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Nov 2025 21:02:56 -0800
-X-CSE-ConnectionGUID: rs3B5ijhTVGv+kSjCL9fAA==
-X-CSE-MsgGUID: urT/xi6OQOK7RTeKmDyI0w==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.20,224,1758610800"; 
-   d="scan'208";a="191669191"
-Received: from dapengmi-mobl1.ccr.corp.intel.com (HELO [10.124.240.213]) ([10.124.240.213])
-  by orviesa006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Nov 2025 21:02:48 -0800
-Message-ID: <83067602-325a-4655-a1b7-e6bd6a31eed4@linux.intel.com>
-Date: Tue, 25 Nov 2025 13:02:46 +0800
+	id 1vNphE-0000000D2wi-20lM;
+	Tue, 25 Nov 2025 09:50:53 +0000
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 5109643A5C;
+	Tue, 25 Nov 2025 09:50:51 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1F13BC4CEF1;
+	Tue, 25 Nov 2025 09:50:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1764064251;
+	bh=ZpZ7Gn9GLkQYXGHbd52ia/vfx8XpDdhT9cEzlscmjek=;
+	h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
+	b=YQ3TY/wNjqodeZHs7cE5lAYdvVZ23Fk0Y3iJU+nqRkQWEwN1q2k5fFzjwd8uM381Z
+	 t/Kit8WUH7idwZdNOPhAI1oZUmyQBAVSrWq2dwIiZDn6okk2bd+6GbU+zmlPhlhva0
+	 21EikZ0Rgdiz8jg8xj2uWPn0SqzW8Uy4TXOVHuEMf3QNiXxThyJ9Evwr6e5nUik/eV
+	 sG5HT5RmS98jBKN8HeKtVb6SL0sq6jCkUNEOpMhiv8jufsbqDQpqWlf9dDfxlZ+vjM
+	 Pwicdetk7YIZ3BF4huugAu/dM1N1xA/Qz44hIwEXzwQ2gRKja2j7C5deCLw0L59icH
+	 hFVqBmVLRX5jg==
+Received: from [10.30.226.235] (localhost [IPv6:::1])
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id EB0513A8D142;
+	Tue, 25 Nov 2025 09:50:14 +0000 (UTC)
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 28/44] KVM: x86/pmu: Load/save GLOBAL_CTRL via
- entry/exit fields for mediated PMU
-To: Sean Christopherson <seanjc@google.com>, Marc Zyngier <maz@kernel.org>,
- Oliver Upton <oliver.upton@linux.dev>, Tianrui Zhao
- <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>,
- Huacai Chen <chenhuacai@kernel.org>, Anup Patel <anup@brainfault.org>,
- Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt
- <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Xin Li <xin@zytor.com>, "H. Peter Anvin" <hpa@zytor.com>,
- Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
- Ingo Molnar <mingo@redhat.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
- Namhyung Kim <namhyung@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>,
- linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev,
- kvm@vger.kernel.org, loongarch@lists.linux.dev,
- kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
- linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org,
- Kan Liang <kan.liang@linux.intel.com>, Yongwei Ma <yongwei.ma@intel.com>,
- Mingwei Zhang <mizhang@google.com>,
- Xiong Zhang <xiong.y.zhang@linux.intel.com>,
- Sandipan Das <sandipan.das@amd.com>
-References: <20250806195706.1650976-1-seanjc@google.com>
- <20250806195706.1650976-29-seanjc@google.com> <aSUK8FuWT4lpMP3F@google.com>
-Content-Language: en-US
-From: "Mi, Dapeng" <dapeng1.mi@linux.intel.com>
-In-Reply-To: <aSUK8FuWT4lpMP3F@google.com>
+Subject: Re: [PATCH v2 0/5] Add Zilsd/Zclsd support in hwprobe and KVM
+From: patchwork-bot+linux-riscv@kernel.org
+Message-Id: <176406421375.657800.9856634072172881689.git-patchwork-notify@kernel.org>
+Date: Tue, 25 Nov 2025 09:50:13 +0000
+References: <20250826162939.1494021-1-pincheng.plct@isrc.iscas.ac.cn>
+In-Reply-To: <20250826162939.1494021-1-pincheng.plct@isrc.iscas.ac.cn>
+To: Pincheng Wang <pincheng.plct@isrc.iscas.ac.cn>
+Cc: linux-riscv@lists.infradead.org, paul.walmsley@sifive.com,
+ palmer@dabbelt.com, aou@eecs.berkeley.edu, alex@ghiti.fr, robh@kernel.org,
+ krzk+dt@kernel.org, conor+dt@kernel.org, anup@brainfault.org,
+ pbonzini@redhat.com, shuah@kernel.org, cyan.yang@sifive.com,
+ cleger@rivosinc.com, charlie@rivosinc.com, cuiyunhui@bytedance.com,
+ samuel.holland@sifive.com, namcao@linutronix.de, jesse@rivosinc.com,
+ inochiama@gmail.com, yongxuan.wang@sifive.com, ajones@ventanamicro.com,
+ parri.andrea@gmail.com, mikisabate@gmail.com, yikming2222@gmail.com,
+ thomas.weissschuh@linutronix.de, linux-kernel@vger.kernel.org,
+ linux-doc@vger.kernel.org, devicetree@vger.kernel.org, kvm@vger.kernel.org,
+ kvm-riscv@lists.infradead.org, linux-kselftest@vger.kernel.org
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20251124_210258_295909_1A1BFEFD 
-X-CRM114-Status: GOOD (  29.16  )
+X-CRM114-CacheID: sfid-20251125_015052_563212_DAEB7D0E 
+X-CRM114-Status: GOOD (  10.54  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -101,96 +82,40 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
+Hello:
 
-On 11/25/2025 9:48 AM, Sean Christopherson wrote:
-> On Wed, Aug 06, 2025, Sean Christopherson wrote:
->> From: Dapeng Mi <dapeng1.mi@linux.intel.com>
->>
->> When running a guest with a mediated PMU, context switch PERF_GLOBAL_CTRL
->> via the dedicated VMCS fields for both host and guest.  For the host,
->> always zero GLOBAL_CTRL on exit as the guest's state will still be loaded
->> in hardware (KVM will context switch the bulk of PMU state outside of the
->> inner run loop).  For the guest, use the dedicated fields to atomically
->> load and save PERF_GLOBAL_CTRL on all entry/exits.
->>
->> Note, VM_EXIT_SAVE_IA32_PERF_GLOBAL_CTRL was introduced by Sapphire
->> Rapids, and is expected to be supported on all CPUs with PMU v4+.  WARN if
->> that expectation is not met.  Alternatively, KVM could manually save
->> PERF_GLOBAL_CTRL via the MSR save list, but the associated complexity and
->> runtime overhead is unjustified given that the feature should always be
->> available on relevant CPUs.
-> This is wrong, PMU v4 has been supported since Skylake.
+This series was applied to riscv/linux.git (for-next)
+by Paul Walmsley <pjw@kernel.org>:
 
-Yes, the v4+ restriction is to meet the requirement of existence of
-IA32_PERF_GLOBAL_STATUS_SET MSR which is needed to restore the guest
-global_ctrl.
+On Wed, 27 Aug 2025 00:29:34 +0800 you wrote:
+> Hi all,
+> 
+> This is v2 of a short series that adds kernel support for the ratified
+> Zilsd (Load/Store pair) and Zclsd (Compressed Load/Store pair) RISC-V
+> ISA extensions. The series enables kernel-side exposure so user-space
+> (for example glibc) can detect and use these extensions via hwprobe and
+> runtime checks.
+> 
+> [...]
 
+Here is the summary with links:
+  - [v2,1/5] dt-bindings: riscv: add Zilsd and Zclsd extension descriptions
+    https://git.kernel.org/riscv/c/aeec6a5ddd8a
+  - [v2,2/5] riscv: add ISA extension parsing for Zilsd and Zclsd
+    https://git.kernel.org/riscv/c/ac3b03f8a4eb
+  - [v2,3/5] riscv: hwprobe: export Zilsd and Zclsd ISA extensions
+    https://git.kernel.org/riscv/c/668a3bd57466
+  - [v2,4/5] riscv: KVM: allow Zilsd and Zclsd extensions for Guest/VM
+    (no matching commit)
+  - [v2,5/5] KVM: riscv: selftests: add Zilsd and Zclsd extension to get-reg-list test
+    (no matching commit)
 
->
->> diff --git a/arch/x86/kvm/vmx/pmu_intel.c b/arch/x86/kvm/vmx/pmu_intel.c
->> index 7ab35ef4a3b1..98f7b45ea391 100644
->> --- a/arch/x86/kvm/vmx/pmu_intel.c
->> +++ b/arch/x86/kvm/vmx/pmu_intel.c
->> @@ -787,7 +787,23 @@ static bool intel_pmu_is_mediated_pmu_supported(struct x86_pmu_capability *host_
->>  	 * Require v4+ for MSR_CORE_PERF_GLOBAL_STATUS_SET, and full-width
->>  	 * writes so that KVM can precisely load guest counter values.
->>  	 */
->> -	return host_pmu->version >= 4 && host_perf_cap & PERF_CAP_FW_WRITES;
->> +	if (host_pmu->version < 4 || !(host_perf_cap & PERF_CAP_FW_WRITES))
->> +		return false;
->> +
->> +	/*
->> +	 * All CPUs that support a mediated PMU are expected to support loading
->> +	 * and saving PERF_GLOBAL_CTRL via dedicated VMCS fields.
->> +	 */
->> +	if (WARN_ON_ONCE(!cpu_has_load_perf_global_ctrl() ||
->> +			 !cpu_has_save_perf_global_ctrl()))
->> +		return false;
-> And so this WARN fires due to cpu_has_save_perf_global_ctrl() being false.  The
-> bad changelog is mine, but the code isn't entirely my fault.  I did suggest the
-> WARN in v3[1], probably because I forgot when PMU v4 was introduced and no one
-> corrected me.
->
-> v4 of the series[2] then made cpu_has_save_perf_global_ctrl() a hard requirement,
-> based on my miguided feedback.
->
->    * Only support GLOBAL_CTRL save/restore with VMCS exec_ctrl, drop the MSR
->      save/retore list support for GLOBAL_CTRL, thus the support of mediated
->      vPMU is constrained to SapphireRapids and later CPUs on Intel side.
->
-> Doubly frustrating is that this was discussed in the original RFC, where Jim
-> pointed out[3] that requiring VM_EXIT_SAVE_IA32_PERF_GLOBAL_CTRL would prevent
-> enabling the mediated PMU on Skylake+, and I completely forgot that conversation
-> by the time v3 of the series rolled around :-(
-
-VM_EXIT_SAVE_IA32_PERF_GLOBAL_CTRL is introduced from SPR and later. I
-remember the original requirements includes to support Skylake and Icelake,
-but I ever thought there were some offline sync and the requirement changed...
-
-My bad, I should double confirm this at then.
+You are awesome, thank you!
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
 
 
->
-> As mentioned in the discussion with Jim, _if_ PMU v4 was introduced with ICX (or
-> later), then I'd be in favor of making VM_EXIT_SAVE_IA32_PERF_GLOBAL_CTRL a hard
-> requirement.  But losing supporting Skylake+ is a bit much.
->
-> There are a few warts with nVMX's use of the auto-store list that need to be
-> cleaned up, but on the plus side it's also a good excuse to clean up
-> {add,clear}_atomic_switch_msr(), which have accumulated some cruft and quite a
-> bit of duplicate code.  And while I still dislike using the auto-store list, the
-> code isn't as ugly as it was back in v3 because we _can_ make the "load" VMCS
-> controls mandatory without losing support for any CPUs (they predate PMU v4).
-
-Yes, xxx_atomic_switch_msr() helpers need to be cleaned up and optimized. I
-suppose we can have an independent patch-set to clean up and support
-global_ctrl with auto-store list for Skylake and Icelake.
-
-
->
-> [1] https://lore.kernel.org/all/ZzyWKTMdNi5YjvEM@google.com
-> [2] https://lore.kernel.org/all/20250324173121.1275209-1-mizhang@google.com
-> [3] https://lore.kernel.org/all/CALMp9eQ+-wcj8QMmFR07zvxFF22-bWwQgV-PZvD04ruQ=0NBBA@mail.gmail.com
 
 -- 
 kvm-riscv mailing list
