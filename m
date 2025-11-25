@@ -4,89 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BD98FCFD313
-	for <kvm-riscv@archiver.kernel.org>; Mon, 24 Nov 2025 15:28:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A1646CFD36B
+	for <kvm-riscv@archiver.kernel.org>; Tue, 25 Nov 2025 01:48:39 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:To:From:Subject:Message-ID:References:
+	Mime-Version:In-Reply-To:Date:Reply-To:Cc:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=nTYzXaipx3WMNIWGf8q8Dzutd7xPcqDNBmAL+5NonCc=; b=xj5xIsw/j3bn7T
-	73KduRyV8sD1gqxb+0h5SS3sq2Wep2IZlo46upUBEpIsPKPsLytH/qyxPH9WauyuVLuqF91uKhwFB
-	3tRUx94wqlTnl/J+IaNVOiKcK0OJvfYu64SpMXiFwXn8kA7hfh3qdZmBfALWULwzE2gw129XfU4cY
-	oOpquzYXHFT2AqaOd8ThEmr3s5NapQ0oNiwQExh/zXTeA7zck1zPEffbOWEUcbdddROpMO6nTdiB7
-	6Xw6pajSb1W1+QHrQ/hnAqg+fls1RzGgk1BVBPE83XSfpdHo9VLMwJq07ZDb4eWNrNyBG1dX8rHzj
-	ROY/CVJWG2Dui6VGvK6Q==;
+	List-Owner; bh=5IyVOtuNwFgDrBRxvXwgKdzq55C/Cn1DguTNe0ctbr8=; b=hwO6bbLMB31ta6
+	WVtUTrb7hMeVld26MHjSEeplFI9Plau5YLji0Cj2PhMfF1jTbgv+TuzA1kPJYm8/By+RCHJdGEDgS
+	xa7SVELReYAx87/Hh4inrOpVRrZ7xUqKkpzTvuI0jXIDV4Lnm/U323yDkMtH1LW5hGxntl4QkNaNl
+	YfrH04jM+ueJnRznYpKVTHqZz+n5dt2M09hey3bn+2tfjoh1TYDa5Jl1pgTRbA0NfrWGvlJNDzinb
+	HVSNinl3Ft9+rRx2Il5rAApnpfmKxvFp+eUeyn8CF6MEevOhgmY/IrxMUw61i31mdZC8I3SVJyet3
+	zFstEwJUJLgQexP67ehA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vNYTz-0000000BvBZ-0xwv;
-	Mon, 24 Nov 2025 15:28:03 +0000
-Received: from mail-il1-x12a.google.com ([2607:f8b0:4864:20::12a])
+	id 1vNiAY-0000000CZmR-412P;
+	Tue, 25 Nov 2025 01:48:38 +0000
+Received: from mail-pj1-x104a.google.com ([2607:f8b0:4864:20::104a])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vNYTx-0000000BvAL-1776
+	id 1vNiAV-0000000CZlH-3YNn
 	for kvm-riscv@lists.infradead.org;
-	Mon, 24 Nov 2025 15:28:02 +0000
-Received: by mail-il1-x12a.google.com with SMTP id e9e14a558f8ab-43379251ff9so25579125ab.1
-        for <kvm-riscv@lists.infradead.org>; Mon, 24 Nov 2025 07:28:00 -0800 (PST)
+	Tue, 25 Nov 2025 01:48:37 +0000
+Received: by mail-pj1-x104a.google.com with SMTP id 98e67ed59e1d1-3436e9e3569so10392863a91.2
+        for <kvm-riscv@lists.infradead.org>; Mon, 24 Nov 2025 17:48:34 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ventanamicro.com; s=google; t=1763998080; x=1764602880; darn=lists.infradead.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=q1RSYP6MsAvIm0Pq2Uruz+WZQe9fgkegsjE1gjboYnk=;
-        b=b5BBTp6ObLbrACYdFbo/vr5UEqRQT2NPhZGvMejyz1BaOh1vOeOKQrr3Z/9WbFAqQZ
-         3siezo5pRuLP/AAk9WxuAbTJ/LWCsBE40qa6VK/MD/BahUtkd+PTXuxbN9ElMZYFoeH2
-         XxLI3vfVQalNNAbll532jr9cSunUGX6CXzDLEMSp4aaF1A5N8u3TaNb87vEjpM6uejHo
-         wontdpN55fpHLO+RDwFXXnKnkK5OxpmVShh3zHqvX6Qi1L1SvOOAbalW+uTWMVOwAun5
-         X8y/IzJ1ZH1Qb/rr8O0qYrkWn1vn7UZ+p5li+g72wLo+uL2PMqp5ECqHJ52UOmw+dp35
-         Fh9w==
+        d=google.com; s=20230601; t=1764035314; x=1764640114; darn=lists.infradead.org;
+        h=to:from:subject:message-id:references:mime-version:in-reply-to:date
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=pxECKAH71uYUFlk1OLSRLVGsdtXKfBuiVH3qX5Bq1JE=;
+        b=iMgLQy4paVkPFTs7ZB/F0ydYuym+iwIlatj70f5uyh0w3xcnH92oC4id9Rr/Zg7Vt1
+         zeMaRO/IPaVewsh67UCKSN5wIndOfC9dyTMjTMycptDjGhiEKQ1JVehfEflR3DbySzYo
+         xA0IRAzMNaRfUd7FxD1LjADdJFAcXYjXXg9qqjRMq8UzsurLU6ILLB/Roq2iwp3q1MWw
+         rDcH4shSS+9PF1+95fQ6MDWql9eaFuVmD/TaTVq/QF4imirsh72Z/ck5py2dFcmV4I9T
+         /MUIKeuF033NZYOUbP3PFmJmsxo5NDXLVO+DIxgumuUglyP+/yrEzGNDoyOvxdiJsC1a
+         RanA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1763998080; x=1764602880;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
+        d=1e100.net; s=20230601; t=1764035314; x=1764640114;
+        h=to:from:subject:message-id:references:mime-version:in-reply-to:date
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=q1RSYP6MsAvIm0Pq2Uruz+WZQe9fgkegsjE1gjboYnk=;
-        b=wBqdV1aChO6onVCvIEBu34RAS0AZTLaaPzSBP3dRSKY//dj+Hvh665+B/9fHnbtXrG
-         c+6IzAa1PFEEh3txX23qH++BpuPsNY4VlmVZok4eMqscsluqxF/czVJcAxpp+UJffC9i
-         pAf/In2y3N+Yk5/aCVx9zzC5gvy/3eLWsavlBbZejtsZgXcLafSZxGDmFsaQoEpHi5Cj
-         yA8pl1/bLD4NsxEzf8janV4u6KXh4EQ9YCijJ9dwXAVYhBgqjcQTPtuQb/MMRUXQbPOB
-         Vd/Okp/p7pfyEAxQ8u4m4BkloGF3ioVSTeKCKyYJDs5yg8gpaMyf3gsoToNL0SDZ6nmi
-         iVRA==
-X-Forwarded-Encrypted: i=1; AJvYcCV3ITJvNGr7TAGmgEt2DaJ5UsxnvF7dj2UXklsuvl1rDAVpKUcI8WcOI3AiHzNmLuvU0Gxd5xvUvow=@lists.infradead.org
-X-Gm-Message-State: AOJu0YygrmbzJXPhyAAYy/SzgVAV8t6f1c/7L0qzcJu7qNCXwh0i06AM
-	d9R9UlCE+IynhvBINyT6wz0dOTLjxFia3zaRdZRFTzmyG+Io7Lh1E2EUdawXIP6etsI=
-X-Gm-Gg: ASbGnct2pGKkKvxTgugXR1Absj7W2B4CVKCG1Ie/86jrykpkL8mFmzR4XwUeAKyjmVO
-	I/otVGVs/NLuFhcppgfePZcxk8B4bIjNk7w/EXEhTp+n2p0VRU6ZyACYDDlg+6dQeEjIHbLjMjb
-	6VquH/LRxIbccQ7sIk/XcCoyhVW/CMq/dGKThcg5BzDjORukt87/vMQA3+xfzLc13Q2QGtluwCc
-	tzmgyWyQaMztpUUSasz65QowJ7ZZ1JGDBnN/AO1YZi3HxEHv19oo640JDhyQG26fKPpdQxZLi97
-	+ys/utV6+t5U3UfRSvxjQbRzmnwaxamVQJP9v7wNLq9Qbj5coe7sYq2Ww9yDtqi7C/Jpm46Enra
-	R05oNTZqk8UZg955kuuebV9sPLvgqfpMH+AIDxcpWx02vrHgBNzoYi+M42Gm+Dez3SDcwBA4J0x
-	d4oH9DfBtlf2Mm
-X-Google-Smtp-Source: AGHT+IHmDpkWVE+bXi7YcFx06zdDu1mvUX5E8wtndVMa3n+flWgwc0GhUUEOVNOo3pwJ3is8DkRQDw==
-X-Received: by 2002:a05:6e02:3187:b0:433:7842:7967 with SMTP id e9e14a558f8ab-435b90f7448mr96578225ab.11.1763998079832;
-        Mon, 24 Nov 2025 07:27:59 -0800 (PST)
-Received: from localhost ([140.82.166.162])
-        by smtp.gmail.com with ESMTPSA id e9e14a558f8ab-435a90dba32sm60356135ab.28.2025.11.24.07.27.58
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 24 Nov 2025 07:27:59 -0800 (PST)
-Date: Mon, 24 Nov 2025 09:27:57 -0600
-From: Andrew Jones <ajones@ventanamicro.com>
-To: Guo Ren <guoren@kernel.org>
-Cc: fangyu.yu@linux.alibaba.com, anup@brainfault.org, 
-	atish.patra@linux.dev, pjw@kernel.org, palmer@dabbelt.com, aou@eecs.berkeley.edu, 
-	alex@ghiti.fr, kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
-	linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] RISC-V: KVM: Allow to downgrade HGATP mode via SATP mode
-Message-ID: <20251124-4ecf1b6b91b8f0688b762698@orel>
-References: <20251122075023.27589-1-fangyu.yu@linux.alibaba.com>
- <CAJF2gTTRBFTnu2pA5rh16EWLvF_Wo=+vpZMUK9roDkDPes4Fpg@mail.gmail.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <CAJF2gTTRBFTnu2pA5rh16EWLvF_Wo=+vpZMUK9roDkDPes4Fpg@mail.gmail.com>
+        bh=pxECKAH71uYUFlk1OLSRLVGsdtXKfBuiVH3qX5Bq1JE=;
+        b=BDqLN4VFlxTAu1OYioAtK9Ad6NKS38vq+DUo7vRV4OWvh7i1ij/J0iORob3FA0DwB4
+         8EZ6NfKxNAkJY6WfbP7kP1SBe+bLYtjBy5qXRmd9sH6HuB6Arfz2U4tRUSzg+rvQkTh+
+         NlG0MuJoeSXOYKARV2wM77rsQR5Pul/ydq7gjjqM8q840b40KqwyPhI1THYMTgE0Yayn
+         jeXePd4qrEHl51mcpBREPi4nLDkTz9DalWzjhbzD+FmQUG7T6Y8KTRpxJ1ghd1FzjiEw
+         vR0TGC6kAHhidhAT6OnhgfaC8cBFh268sVUh7cYtt0D8ilSyAA2e8SrfoJAAqQj6f1tE
+         Iukg==
+X-Forwarded-Encrypted: i=1; AJvYcCX/g6Wb5MDyLajDgqvXq5GF4YqlHFPJ0cmlzcbb4wzH3n7ggkL5jJIa060kZ2p3dIovJsPY04rwP1w=@lists.infradead.org
+X-Gm-Message-State: AOJu0YzJvR8P89gj08SjPh3ZRB3q3Vf23xeLBBWPwdB/U8XhXLdAVCFj
+	S6pLP1Io41PcYth2pXsL/0IGnTKpc3lCtKxbwHmvvUMu1e07l1jP10ceFZBlPnX0qKiAB43T8Pr
+	WjHo5/g==
+X-Google-Smtp-Source: AGHT+IGw7n/WkVQTGzwbQxQ9VV1HAFWO+WUionAVci6QFcq9BhvaMpdHuGTmwsKZi9fkk+aykjevdAFNlrA=
+X-Received: from pjvb14.prod.google.com ([2002:a17:90a:d88e:b0:341:8ac7:27a9])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:164a:b0:340:c261:f9db
+ with SMTP id 98e67ed59e1d1-34733e60944mr13320658a91.10.1764035314194; Mon, 24
+ Nov 2025 17:48:34 -0800 (PST)
+Date: Mon, 24 Nov 2025 17:48:32 -0800
+In-Reply-To: <20250806195706.1650976-29-seanjc@google.com>
+Mime-Version: 1.0
+References: <20250806195706.1650976-1-seanjc@google.com> <20250806195706.1650976-29-seanjc@google.com>
+Message-ID: <aSUK8FuWT4lpMP3F@google.com>
+Subject: Re: [PATCH v5 28/44] KVM: x86/pmu: Load/save GLOBAL_CTRL via
+ entry/exit fields for mediated PMU
+From: Sean Christopherson <seanjc@google.com>
+To: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>, 
+	Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>, 
+	Huacai Chen <chenhuacai@kernel.org>, Anup Patel <anup@brainfault.org>, 
+	Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt <palmer@dabbelt.com>, 
+	Albert Ou <aou@eecs.berkeley.edu>, Xin Li <xin@zytor.com>, "H. Peter Anvin" <hpa@zytor.com>, 
+	Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, 
+	Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, 
+	Paolo Bonzini <pbonzini@redhat.com>, linux-arm-kernel@lists.infradead.org, 
+	kvmarm@lists.linux.dev, kvm@vger.kernel.org, loongarch@lists.linux.dev, 
+	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
+	linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, 
+	Kan Liang <kan.liang@linux.intel.com>, Yongwei Ma <yongwei.ma@intel.com>, 
+	Mingwei Zhang <mizhang@google.com>, Xiong Zhang <xiong.y.zhang@linux.intel.com>, 
+	Sandipan Das <sandipan.das@amd.com>, Dapeng Mi <dapeng1.mi@linux.intel.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20251124_072801_305682_67112D49 
-X-CRM114-Status: GOOD (  14.72  )
+X-CRM114-CacheID: sfid-20251124_174835_955102_96E911DF 
+X-CRM114-Status: GOOD (  25.88  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -98,26 +96,83 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-T24gU3VuLCBOb3YgMjMsIDIwMjUgYXQgMTA6MzM6MTlBTSArMDgwMCwgR3VvIFJlbiB3cm90ZToK
-PiBPbiBTYXQsIE5vdiAyMiwgMjAyNSBhdCAzOjUw4oCvUE0gPGZhbmd5dS55dUBsaW51eC5hbGli
-YWJhLmNvbT4gd3JvdGU6Cj4gPgo+ID4gRnJvbTogRmFuZ3l1IFl1IDxmYW5neXUueXVAbGludXgu
-YWxpYmFiYS5jb20+Cj4gPgo+ID4gQ3VycmVudGx5LCBIR0FUUCBtb2RlIHVzZXMgdGhlIG1heGlt
-dW0gdmFsdWUgZGV0ZWN0ZWQgYnkgdGhlIGhhcmR3YXJlCj4gPiBidXQgb2Z0ZW4gc3VjaCBhIHdp
-ZGUgR1BBIGlzIHVubmVjZXNzYXJ5LCBqdXN0IGFzIGEgaG9zdCBzb21ldGltZXMKPiA+IGRvZXNu
-J3QgbmVlZCBzdjU3Lgo+ID4gSXQncyBsaWtlbHkgdGhhdCBubyBhZGRpdGlvbmFsIHBhcmFtZXRl
-cnMgKGxpa2Ugbm81bHZsIGFuZCBubzRsdmwpIGFyZQo+ID4gbmVlZGVkLCBhbGlnbmluZyBIR0FU
-UCBtb2RlIHRvIFNBVFAgbW9kZSBzaG91bGQgbWVldCB0aGUgcmVxdWlyZW1lbnRzCj4gPiBvZiBt
-b3N0IHNjZW5hcmlvcy4KPiBZZXMsIG5vNS80bHZsIGlzIG5vdCBjbGVhciBhYm91dCBzYXRwIG9y
-IGhnYXRwLiBTbywgY292ZXJpbmcgSEdQQVRQIGlzCj4gcmVhc29uYWJsZS4KClRoZSBkb2N1bWVu
-dGF0aW9uIHNob3VsZCBiZSBpbXByb3ZlZCwgYnV0IEkgZG9uJ3QgdGhpbmsgd2Ugd2FudCB0byBz
-dGF0ZQp0aGF0IHRoZXNlIHBhcmFtZXRlcnMgYXBwbHkgdG8gYm90aCBzLSBhbmQgZy1zdGFnZS4g
-SWYgd2UgbmVlZCBwYXJhbWV0ZXJzCnRvIGRpY3RhdGUgS1ZNIGJlaGF2aW9yIChnLXN0YWdlIG1h
-bmFnZW1lbnQpLCB0aGVuIHdlIHNob3VsZCBhZGQgS1ZNCm1vZHVsZSBwYXJhbWV0ZXJzLgoKVGhh
-bmtzLApkcmV3CgotLSAKa3ZtLXJpc2N2IG1haWxpbmcgbGlzdAprdm0tcmlzY3ZAbGlzdHMuaW5m
-cmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2t2
-bS1yaXNjdgo=
+On Wed, Aug 06, 2025, Sean Christopherson wrote:
+> From: Dapeng Mi <dapeng1.mi@linux.intel.com>
+> 
+> When running a guest with a mediated PMU, context switch PERF_GLOBAL_CTRL
+> via the dedicated VMCS fields for both host and guest.  For the host,
+> always zero GLOBAL_CTRL on exit as the guest's state will still be loaded
+> in hardware (KVM will context switch the bulk of PMU state outside of the
+> inner run loop).  For the guest, use the dedicated fields to atomically
+> load and save PERF_GLOBAL_CTRL on all entry/exits.
+> 
+> Note, VM_EXIT_SAVE_IA32_PERF_GLOBAL_CTRL was introduced by Sapphire
+> Rapids, and is expected to be supported on all CPUs with PMU v4+.  WARN if
+> that expectation is not met.  Alternatively, KVM could manually save
+> PERF_GLOBAL_CTRL via the MSR save list, but the associated complexity and
+> runtime overhead is unjustified given that the feature should always be
+> available on relevant CPUs.
+
+This is wrong, PMU v4 has been supported since Skylake.
+
+> diff --git a/arch/x86/kvm/vmx/pmu_intel.c b/arch/x86/kvm/vmx/pmu_intel.c
+> index 7ab35ef4a3b1..98f7b45ea391 100644
+> --- a/arch/x86/kvm/vmx/pmu_intel.c
+> +++ b/arch/x86/kvm/vmx/pmu_intel.c
+> @@ -787,7 +787,23 @@ static bool intel_pmu_is_mediated_pmu_supported(struct x86_pmu_capability *host_
+>  	 * Require v4+ for MSR_CORE_PERF_GLOBAL_STATUS_SET, and full-width
+>  	 * writes so that KVM can precisely load guest counter values.
+>  	 */
+> -	return host_pmu->version >= 4 && host_perf_cap & PERF_CAP_FW_WRITES;
+> +	if (host_pmu->version < 4 || !(host_perf_cap & PERF_CAP_FW_WRITES))
+> +		return false;
+> +
+> +	/*
+> +	 * All CPUs that support a mediated PMU are expected to support loading
+> +	 * and saving PERF_GLOBAL_CTRL via dedicated VMCS fields.
+> +	 */
+> +	if (WARN_ON_ONCE(!cpu_has_load_perf_global_ctrl() ||
+> +			 !cpu_has_save_perf_global_ctrl()))
+> +		return false;
+
+And so this WARN fires due to cpu_has_save_perf_global_ctrl() being false.  The
+bad changelog is mine, but the code isn't entirely my fault.  I did suggest the
+WARN in v3[1], probably because I forgot when PMU v4 was introduced and no one
+corrected me.
+
+v4 of the series[2] then made cpu_has_save_perf_global_ctrl() a hard requirement,
+based on my miguided feedback.
+
+   * Only support GLOBAL_CTRL save/restore with VMCS exec_ctrl, drop the MSR
+     save/retore list support for GLOBAL_CTRL, thus the support of mediated
+     vPMU is constrained to SapphireRapids and later CPUs on Intel side.
+
+Doubly frustrating is that this was discussed in the original RFC, where Jim
+pointed out[3] that requiring VM_EXIT_SAVE_IA32_PERF_GLOBAL_CTRL would prevent
+enabling the mediated PMU on Skylake+, and I completely forgot that conversation
+by the time v3 of the series rolled around :-(
+
+As mentioned in the discussion with Jim, _if_ PMU v4 was introduced with ICX (or
+later), then I'd be in favor of making VM_EXIT_SAVE_IA32_PERF_GLOBAL_CTRL a hard
+requirement.  But losing supporting Skylake+ is a bit much.
+
+There are a few warts with nVMX's use of the auto-store list that need to be
+cleaned up, but on the plus side it's also a good excuse to clean up
+{add,clear}_atomic_switch_msr(), which have accumulated some cruft and quite a
+bit of duplicate code.  And while I still dislike using the auto-store list, the
+code isn't as ugly as it was back in v3 because we _can_ make the "load" VMCS
+controls mandatory without losing support for any CPUs (they predate PMU v4).
+
+[1] https://lore.kernel.org/all/ZzyWKTMdNi5YjvEM@google.com
+[2] https://lore.kernel.org/all/20250324173121.1275209-1-mizhang@google.com
+[3] https://lore.kernel.org/all/CALMp9eQ+-wcj8QMmFR07zvxFF22-bWwQgV-PZvD04ruQ=0NBBA@mail.gmail.com
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
