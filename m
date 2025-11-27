@@ -4,89 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7F980D1036F
-	for <kvm-riscv@archiver.kernel.org>; Wed, 26 Nov 2025 00:23:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7900BD11183
+	for <kvm-riscv@archiver.kernel.org>; Thu, 27 Nov 2025 08:52:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:
-	Subject:MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=Tl2bdQp4fmxKS/hTCNlaV4MUXVEUzFEsO6oRbcHJlqY=; b=YaTgUQi6End0q4
-	L+GjCvXNLxvVMwnwkDk0PgzLvv2FMQEhf/wNavSS/nCe33VEdEyhrK3vY2M/D9KAY0qAq6IUUVSm4
-	oUHHxP1YcB2UaA/kOyMxLL0+8RnQnXHJIjjp5WI9UKQiOLbMfuPIXqSl80ZeBzYL5ROHwrQs1QJQX
-	oAmaZuq56DdKLJfOP2uOObRYeBhKhzoOpXc89zq2XnqT46zvMMyvbXJdCvTVcTJro3PKkHSQeV5VR
-	UvM3rhtWAK68uC/2r6Pc3exz9+kP4ZyZBAm9sVsxz48QbzoQo92SmdWcmL8qWf028e1n3+64H+S5w
-	zgIEr7PObJ5j3hATvHwA==;
+	List-Archive:List-Unsubscribe:List-Id:Subject:Cc:To:From:Mime-Version:
+	Message-ID:Date:Reply-To:Content-ID:Content-Description:Resent-Date:
+	Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:
+	References:List-Owner; bh=UhxCjvs8Bxi+MyjddO5yOibUTZ9J+BVLcAFFhpQkpCc=; b=4j+
+	sL0MH2HBBDw1Z46zhNgWWVu8A75QzD3Pe3a+qpDB/MKDPd1ffU+XzHmmUhXChlCMmFRys3kR27ML4
+	5Ye1aMHrIaMZfJbT836jGKMxzPEV8ykit52yAjys/2anV+rsEL36nSs8JmLDhUOCEGp8kUrTBtbvL
+	KvAOl3AELweGivtnAO71dV6PBOUhM37GErySvajUi02uE8ce9yAbug/nnLFaqOV9rNIy3cBNKoa4Q
+	b+LcYIXtyAIMG97AFVB3Ey2dXvk0d80wcBlFlf0jejZe5uT5uN/5ZrZdVzP4OHv5G56SXr/El9Bmr
+	TDXLNBpBK1l8Iw1GPXnEr0D60iMoRPg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vO3Jb-0000000E7Fe-00gj;
-	Wed, 26 Nov 2025 00:23:23 +0000
-Received: from mgamail.intel.com ([198.175.65.16])
+	id 1vOXjc-0000000GEnc-3lFe;
+	Thu, 27 Nov 2025 08:52:16 +0000
+Received: from mxhk.zte.com.cn ([160.30.148.34])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vO3JX-0000000E7Ew-2o0c;
-	Wed, 26 Nov 2025 00:23:21 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1764116600; x=1795652600;
-  h=message-id:date:mime-version:subject:to:cc:references:
-   from:in-reply-to:content-transfer-encoding;
-  bh=jNSFdQCLhdJyzqyDdBupTSBjX5ORPHs5VM+yw2SDmzU=;
-  b=EFz8RAATr3f9V/LFFKelojZvsNmV0OUga53+WoDot+3gKYCX88W4PD+L
-   F8YFPDon84CFX9sS+1WxI/e0kSGU/gZz8YJBtpjOnIXb+c7tsuy06i6DT
-   kD6dRl9G1792TXe9x4dU5AGehJbOdrMRXL0mQspZLA9DfyQqjsB+83Cq4
-   10VS6QpuMZO91Ca9DbY8PU7QGdNz2gsFCtBCVUpDO80BsRaiAJkISJvs6
-   03SnDwnn0zPgH6Bf7mBDcNSU6vLqt9LpMVVFQjLS9oWWuWS1R3gR+fbWJ
-   Uu2wi2ExrsImkUkp/9MCINoWkBCW1eZ9YDybVedaJS7Tr5PsH98LS+EXI
-   g==;
-X-CSE-ConnectionGUID: iyK1EJFWQ7mT8ODu6e1S+A==
-X-CSE-MsgGUID: eqbUaUo7RCKXlKBqcUCNQg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11624"; a="66306982"
-X-IronPort-AV: E=Sophos;i="6.20,227,1758610800"; 
-   d="scan'208";a="66306982"
-Received: from orviesa004.jf.intel.com ([10.64.159.144])
-  by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Nov 2025 16:23:18 -0800
-X-CSE-ConnectionGUID: W+654JrHR0i0NNZKwcIPrQ==
-X-CSE-MsgGUID: g62AlCY3TmyGnusI1wnrTg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.20,227,1758610800"; 
-   d="scan'208";a="197267661"
-Received: from dapengmi-mobl1.ccr.corp.intel.com (HELO [10.124.240.213]) ([10.124.240.213])
-  by orviesa004-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Nov 2025 16:23:10 -0800
-Message-ID: <f7a84eb0-eb64-4cdf-801d-088bbdbce0b4@linux.intel.com>
-Date: Wed, 26 Nov 2025 08:23:07 +0800
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 28/44] KVM: x86/pmu: Load/save GLOBAL_CTRL via
- entry/exit fields for mediated PMU
-To: Sean Christopherson <seanjc@google.com>
-Cc: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>,
- Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>,
- Huacai Chen <chenhuacai@kernel.org>, Anup Patel <anup@brainfault.org>,
- Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt
- <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Xin Li <xin@zytor.com>, "H. Peter Anvin" <hpa@zytor.com>,
- Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
- Ingo Molnar <mingo@redhat.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
- Namhyung Kim <namhyung@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>,
- linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev,
- kvm@vger.kernel.org, loongarch@lists.linux.dev,
- kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
- linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org,
- Kan Liang <kan.liang@linux.intel.com>, Yongwei Ma <yongwei.ma@intel.com>,
- Mingwei Zhang <mizhang@google.com>,
- Xiong Zhang <xiong.y.zhang@linux.intel.com>,
- Sandipan Das <sandipan.das@amd.com>
-References: <20250806195706.1650976-1-seanjc@google.com>
- <20250806195706.1650976-29-seanjc@google.com> <aSUK8FuWT4lpMP3F@google.com>
- <83067602-325a-4655-a1b7-e6bd6a31eed4@linux.intel.com>
- <aSXigAQznhuxZmy7@google.com>
-Content-Language: en-US
-From: "Mi, Dapeng" <dapeng1.mi@linux.intel.com>
-In-Reply-To: <aSXigAQznhuxZmy7@google.com>
+	id 1vOXja-0000000GEnE-1Eao
+	for kvm-riscv@lists.infradead.org;
+	Thu, 27 Nov 2025 08:52:16 +0000
+Received: from mse-fl1.zte.com.cn (unknown [10.5.228.132])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mxhk.zte.com.cn (FangMail) with ESMTPS id 4dH9Cq08M0z6FyC3;
+	Thu, 27 Nov 2025 16:52:07 +0800 (CST)
+Received: from xaxapp05.zte.com.cn ([10.99.98.109])
+	by mse-fl1.zte.com.cn with SMTP id 5AR8pZos089303;
+	Thu, 27 Nov 2025 16:51:35 +0800 (+08)
+	(envelope-from liu.xuemei1@zte.com.cn)
+Received: from mapi (xaxapp04[null])
+	by mapi (Zmail) with MAPI id mid32;
+	Thu, 27 Nov 2025 16:51:37 +0800 (CST)
+Date: Thu, 27 Nov 2025 16:51:37 +0800 (CST)
+X-Zmail-TransId: 2afb692811196d6-335c2
+X-Mailer: Zmail v1.0
+Message-ID: <20251127165137780QbUOVPKPAfWSGAFl5qtRy@zte.com.cn>
+Mime-Version: 1.0
+From: <liu.xuemei1@zte.com.cn>
+To: <atish.patra@linux.dev>, <alex@ghiti.fr>, <anup@brainfault.org>
+Cc: <pjw@kernel.org>, <palmer@dabbelt.com>, <aou@eecs.berkeley.edu>,
+        <kvm@vger.kernel.org>, <kvm-riscv@lists.infradead.org>,
+        <inux-riscv@lists.infradead.org>, <linux-kernel@vger.kernel.org>
+Subject: =?UTF-8?B?W1BBVENIIHY0XSBSSVNDLVY6IEtWTTogVHJhbnNwYXJlbnQgaHVnZSBwYWdlIHN1cHBvcnQ=?=
+X-MAIL: mse-fl1.zte.com.cn 5AR8pZos089303
+X-TLS: YES
+X-SPF-DOMAIN: zte.com.cn
+X-ENVELOPE-SENDER: liu.xuemei1@zte.com.cn
+X-SPF: None
+X-SOURCE-IP: 10.5.228.132 unknown Thu, 27 Nov 2025 16:52:07 +0800
+X-Fangmail-Anti-Spam-Filtered: true
+X-Fangmail-MID-QID: 69281137.000/4dH9Cq08M0z6FyC3
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20251125_162319_764127_D6E0FE85 
-X-CRM114-Status: GOOD (  28.59  )
+X-CRM114-CacheID: sfid-20251127_005214_743003_3B7A2B26 
+X-CRM114-Status: GOOD (  17.08  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -103,88 +78,200 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
+From: Jessica Liu <liu.xuemei1@zte.com.cn>
 
-On 11/26/2025 1:08 AM, Sean Christopherson wrote:
-> On Tue, Nov 25, 2025, Dapeng Mi wrote:
->> On 11/25/2025 9:48 AM, Sean Christopherson wrote:
->>>> +	if (host_pmu->version < 4 || !(host_perf_cap & PERF_CAP_FW_WRITES))
->>>> +		return false;
->>>> +
->>>> +	/*
->>>> +	 * All CPUs that support a mediated PMU are expected to support loading
->>>> +	 * and saving PERF_GLOBAL_CTRL via dedicated VMCS fields.
->>>> +	 */
->>>> +	if (WARN_ON_ONCE(!cpu_has_load_perf_global_ctrl() ||
->>>> +			 !cpu_has_save_perf_global_ctrl()))
->>>> +		return false;
->>> And so this WARN fires due to cpu_has_save_perf_global_ctrl() being false.  The
->>> bad changelog is mine, but the code isn't entirely my fault.  I did suggest the
->>> WARN in v3[1], probably because I forgot when PMU v4 was introduced and no one
->>> corrected me.
->>>
->>> v4 of the series[2] then made cpu_has_save_perf_global_ctrl() a hard requirement,
->>> based on my miguided feedback.
->>>
->>>    * Only support GLOBAL_CTRL save/restore with VMCS exec_ctrl, drop the MSR
->>>      save/retore list support for GLOBAL_CTRL, thus the support of mediated
->>>      vPMU is constrained to SapphireRapids and later CPUs on Intel side.
->>>
->>> Doubly frustrating is that this was discussed in the original RFC, where Jim
->>> pointed out[3] that requiring VM_EXIT_SAVE_IA32_PERF_GLOBAL_CTRL would prevent
->>> enabling the mediated PMU on Skylake+, and I completely forgot that conversation
->>> by the time v3 of the series rolled around :-(
->> VM_EXIT_SAVE_IA32_PERF_GLOBAL_CTRL is introduced from SPR and later. I
->> remember the original requirements includes to support Skylake and Icelake,
->> but I ever thought there were some offline sync and the requirement changed...
-> Two things:
->
->  1) Upstream's "requirements" are not the same as Google's requirements (or those
->     of any company/individual).  Upstream most definitely is influenced by the
->     needs and desires of end users, but ultimately the decision to do something
->     (or not) is one that needs to be made by the upstream community.
->
->  2) Decisions made off-list need to be summarized and communicated on-list,
->     especially in cases like this where it's a relatively minor detail in a
->     large series/feature, and thus easy to overlook.
->
-> I'll follow-up internally to make sure these points are well-understood by Google
-> folks as well (at least, those working on KVM).
+Use block mapping if backed by a THP, as implemented in architectures
+like ARM and x86_64.
 
-Understood and would follow.
+Signed-off-by: Jessica Liu <liu.xuemei1@zte.com.cn>
+---
+Changes in v4:
+- Substituted kvm_riscv_gstage_get_mapping_size with get_hva_mapping_size
 
+ arch/riscv/kvm/mmu.c    | 140 ++++++++++++++++++++++++++++++++++++++++
+ arch/riscv/mm/pgtable.c |   2 +
+ 2 files changed, 142 insertions(+)
 
->
->> My bad,
-> Eh, this was a group "effort".  I'm as much to blame as anyone else.
->
->> I should double confirm this at then.
-> No need, as above, Google's requirements (assuming the requirements you're referring
-> to are coming from Google people) are effectively just one data point.  At this
-> point, I want to drive the decision to support Sylake+ (or not) purely through
-> discussion of upstream patches.
->
->>> As mentioned in the discussion with Jim, _if_ PMU v4 was introduced with ICX (or
->>> later), then I'd be in favor of making VM_EXIT_SAVE_IA32_PERF_GLOBAL_CTRL a hard
->>> requirement.  But losing supporting Skylake+ is a bit much.
->>>
->>> There are a few warts with nVMX's use of the auto-store list that need to be
->>> cleaned up, but on the plus side it's also a good excuse to clean up
->>> {add,clear}_atomic_switch_msr(), which have accumulated some cruft and quite a
->>> bit of duplicate code.  And while I still dislike using the auto-store list, the
->>> code isn't as ugly as it was back in v3 because we _can_ make the "load" VMCS
->>> controls mandatory without losing support for any CPUs (they predate PMU v4).
->> Yes, xxx_atomic_switch_msr() helpers need to be cleaned up and optimized. I
->> suppose we can have an independent patch-set to clean up and support
->> global_ctrl with auto-store list for Skylake and Icelake.
-> I have the code written (I wanted to see how much complexity it would add before
-> re-opening this discussion).  My plan is to put the Skylake+ support at the end
-> of the series, not a separate series, so that it can be reviewed in one shot.
-> E.g. if we can make a change in the "main" series that would simplify Skylake+
-> support, then I'd prefer to find and implement any such change right away.
+diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
+index 58f5f3536ffd..38816c5895fe 100644
+--- a/arch/riscv/kvm/mmu.c
++++ b/arch/riscv/kvm/mmu.c
+@@ -302,6 +302,142 @@ bool kvm_test_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
+ 	return pte_young(ptep_get(ptep));
+ }
 
-Sure. Thanks.
++static bool fault_supports_gstage_huge_mapping(struct kvm_memory_slot *memslot,
++					       unsigned long hva)
++{
++	hva_t uaddr_start, uaddr_end;
++	gpa_t gpa_start;
++	size_t size;
++
++	size = memslot->npages * PAGE_SIZE;
++	uaddr_start = memslot->userspace_addr;
++	uaddr_end = uaddr_start + size;
++
++	gpa_start = memslot->base_gfn << PAGE_SHIFT;
++
++	/*
++	 * Pages belonging to memslots that don't have the same alignment
++	 * within a PMD for userspace and GPA cannot be mapped with g-stage
++	 * PMD entries, because we'll end up mapping the wrong pages.
++	 *
++	 * Consider a layout like the following:
++	 *
++	 *    memslot->userspace_addr:
++	 *    +-----+--------------------+--------------------+---+
++	 *    |abcde|fgh  vs-stage block  |    vs-stage block tv|xyz|
++	 *    +-----+--------------------+--------------------+---+
++	 *
++	 *    memslot->base_gfn << PAGE_SHIFT:
++	 *      +---+--------------------+--------------------+-----+
++	 *      |abc|def  g-stage block  |    g-stage block   |tvxyz|
++	 *      +---+--------------------+--------------------+-----+
++	 *
++	 * If we create those g-stage blocks, we'll end up with this incorrect
++	 * mapping:
++	 *   d -> f
++	 *   e -> g
++	 *   f -> h
++	 */
++	if ((gpa_start & (PMD_SIZE - 1)) != (uaddr_start & (PMD_SIZE - 1)))
++		return false;
++
++	/*
++	 * Next, let's make sure we're not trying to map anything not covered
++	 * by the memslot. This means we have to prohibit block size mappings
++	 * for the beginning and end of a non-block aligned and non-block sized
++	 * memory slot (illustrated by the head and tail parts of the
++	 * userspace view above containing pages 'abcde' and 'xyz',
++	 * respectively).
++	 *
++	 * Note that it doesn't matter if we do the check using the
++	 * userspace_addr or the base_gfn, as both are equally aligned (per
++	 * the check above) and equally sized.
++	 */
++	return (hva >= ALIGN(uaddr_start, PMD_SIZE)) && (hva < ALIGN_DOWN(uaddr_end, PMD_SIZE));
++}
++
++static int get_hva_mapping_size(struct kvm *kvm,
++				unsigned long hva)
++{
++	int size = PAGE_SIZE;
++	unsigned long flags;
++	pgd_t pgd;
++	p4d_t p4d;
++	pud_t pud;
++	pmd_t pmd;
++
++	/*
++	 * Disable IRQs to prevent concurrent tear down of host page tables,
++	 * e.g. if the primary MMU promotes a P*D to a huge page and then frees
++	 * the original page table.
++	 */
++	local_irq_save(flags);
++
++	/*
++	 * Read each entry once.  As above, a non-leaf entry can be promoted to
++	 * a huge page _during_ this walk.  Re-reading the entry could send the
++	 * walk into the weeks, e.g. p*d_leaf() returns false (sees the old
++	 * value) and then p*d_offset() walks into the target huge page instead
++	 * of the old page table (sees the new value).
++	 */
++	pgd = pgdp_get(pgd_offset(kvm->mm, hva));
++	if (pgd_none(pgd))
++		goto out;
++
++	p4d = p4dp_get(p4d_offset(&pgd, hva));
++	if (p4d_none(p4d) || !p4d_present(p4d))
++		goto out;
++
++	pud = pudp_get(pud_offset(&p4d, hva));
++	if (pud_none(pud) || !pud_present(pud))
++		goto out;
++
++	if (pud_leaf(pud)) {
++		size = PUD_SIZE;
++		goto out;
++	}
++
++	pmd = pmdp_get(pmd_offset(&pud, hva));
++	if (pmd_none(pmd) || !pmd_present(pmd))
++		goto out;
++
++	if (pmd_leaf(pmd))
++		size = PMD_SIZE;
++
++out:
++	local_irq_restore(flags);
++	return size;
++}
++
++static unsigned long transparent_hugepage_adjust(struct kvm *kvm,
++						 struct kvm_memory_slot *memslot,
++						 unsigned long hva,
++						 kvm_pfn_t *hfnp, gpa_t *gpa)
++{
++	kvm_pfn_t hfn = *hfnp;
++
++	/*
++	 * Make sure the adjustment is done only for THP pages. Also make
++	 * sure that the HVA and GPA are sufficiently aligned and that the
++	 * block map is contained within the memslot.
++	 */
++	if (fault_supports_gstage_huge_mapping(memslot, hva)) {
++		int sz;
++
++		sz = get_hva_mapping_size(kvm, hva);
++		if (sz < PMD_SIZE)
++			return sz;
++
++		*gpa &= PMD_MASK;
++		hfn &= ~(PTRS_PER_PMD - 1);
++		*hfnp = hfn;
++
++		return PMD_SIZE;
++	}
++
++	return PAGE_SIZE;
++}
++
+ int kvm_riscv_mmu_map(struct kvm_vcpu *vcpu, struct kvm_memory_slot *memslot,
+ 		      gpa_t gpa, unsigned long hva, bool is_write,
+ 		      struct kvm_gstage_mapping *out_map)
+@@ -395,6 +531,10 @@ int kvm_riscv_mmu_map(struct kvm_vcpu *vcpu, struct kvm_memory_slot *memslot,
+ 	if (mmu_invalidate_retry(kvm, mmu_seq))
+ 		goto out_unlock;
 
++	/* check if we are backed by a THP and thus use block mapping if possible */
++	if (vma_pagesize == PAGE_SIZE)
++		vma_pagesize = transparent_hugepage_adjust(kvm, memslot, hva, &hfn, &gpa);
++
+ 	if (writable) {
+ 		mark_page_dirty_in_slot(kvm, memslot, gfn);
+ 		ret = kvm_riscv_gstage_map_page(&gstage, pcache, gpa, hfn << PAGE_SHIFT,
+diff --git a/arch/riscv/mm/pgtable.c b/arch/riscv/mm/pgtable.c
+index 8b6c0a112a8d..fe776f03cc12 100644
+--- a/arch/riscv/mm/pgtable.c
++++ b/arch/riscv/mm/pgtable.c
+@@ -49,6 +49,7 @@ pud_t *pud_offset(p4d_t *p4d, unsigned long address)
 
+ 	return (pud_t *)p4d;
+ }
++EXPORT_SYMBOL_GPL(pud_offset);
+
+ p4d_t *p4d_offset(pgd_t *pgd, unsigned long address)
+ {
+@@ -57,6 +58,7 @@ p4d_t *p4d_offset(pgd_t *pgd, unsigned long address)
+
+ 	return (p4d_t *)pgd;
+ }
++EXPORT_SYMBOL_GPL(p4d_offset);
+ #endif
+
+ #ifdef CONFIG_HAVE_ARCH_HUGE_VMAP
+-- 
+2.27.0
 
 -- 
 kvm-riscv mailing list
