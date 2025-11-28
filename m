@@ -4,64 +4,81 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2AFB2CFD376
-	for <kvm-riscv@archiver.kernel.org>; Fri, 28 Nov 2025 04:02:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 29BA8D116F3
+	for <kvm-riscv@archiver.kernel.org>; Fri, 28 Nov 2025 11:09:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
-	Message-ID:Subject:CC:To:From:Date:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=8dfFtNUIZz9EKeYR0GWqqm3izFSNkuwJyuK0SfASfjo=; b=eRa2ePPnbPoblk
-	9WfzpnBr5BLz4hsRtqjxCyXCEi7OACl4jHzr7JDdb3RWmfEmH299BM5tr4RGa1MgDZPkCPEVkHvu2
-	8Zo4I93hRxzWm5KbiPjMbrkRRuDPKMTDhyQCls2O6m2n6X/aw92hhft95VVQYBYL6SL/930vlpu8G
-	3Vq7VXPqRcSLEZcxRinytl80O55Xy1AFANN4p/j9RO5Fqv7uSwVywtBY0q6zCBJPGXxx2Takg3w5W
-	hGPthh/TLml+w8Ud158ITho+1Qiv3G7nPDg0Kn60zmJ6wIex9dikwj0HC3ZlHQTiodO7XJoePubKn
-	cAog/wQBcPaerApBu75w==;
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:Subject:Message-ID:Date:From:
+	MIME-Version:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=g+sV+w4/5/ATjRm0ztlt34It5Wu2cxCioIzAzx4MX/o=; b=ztu4WDV/06/IIX
+	dFSiO1VfOufiUXNk2+uRCZfAseMVoqPonWSeudRkj0xiX5aljoKBgANFBuSxWLwyX7kinZc6artYk
+	980HPv+XiaADBijtbwVzghBq/jnb5ppBYNp4eeRQ9OcZxdYQJ/IoCqvV1tMMhhUD7OysWhF7CP2id
+	YzGAMqnGsnWFmFdszeHCEkdTDsKtcxcL/BZUt6ssJGOSkUYp/KxL1bvCGdXk3idX0smS06llfUqPI
+	8GQbHwLVL86DraAEvPHW0EIjhcWPRarMB8uz6G0YdYfxL3nWgwGR+uJxnCZ4W4GkSgAN/AnTvl0Qp
+	B/eQHDvfbM67+ipB62Tw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vOpgl-0000000HYAd-34zS;
-	Fri, 28 Nov 2025 04:02:31 +0000
-Received: from 60-248-80-70.hinet-ip.hinet.net ([60.248.80.70] helo=Atcsqr.andestech.com)
+	id 1vOwM2-00000000LFi-27BI;
+	Fri, 28 Nov 2025 11:09:34 +0000
+Received: from mail-il1-x136.google.com ([2607:f8b0:4864:20::136])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vOpgZ-0000000HY8p-36Ag;
-	Fri, 28 Nov 2025 04:02:29 +0000
-Received: from mail.andestech.com (ATCPCS34.andestech.com [10.0.1.134])
-	by Atcsqr.andestech.com with ESMTPS id 5AS3xEpv039276
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=OK);
-	Fri, 28 Nov 2025 11:59:14 +0800 (+08)
-	(envelope-from minachou@andestech.com)
-Received: from atcsi01.andestech.com (10.0.15.32) by ATCPCS34.andestech.com
- (10.0.1.134) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.39; Fri, 28 Nov
- 2025 11:59:14 +0800
-Date: Fri, 28 Nov 2025 11:59:10 +0800
-From: Mina Chou <minachou@andestech.com>
-To: Anup Patel <anup@brainfault.org>
-CC: <atish.patra@linux.dev>, <pjw@kernel.org>, <palmer@dabbelt.com>,
-        <aou@eecs.berkeley.edu>, <alex@ghiti.fr>, <kvm@vger.kernel.org>,
-        <kvm-riscv@lists.infradead.org>, <linux-riscv@lists.infradead.org>,
-        <linux-kernel@vger.kernel.org>, <tim609@andestech.com>,
-        <ben717@andestech.com>, <az70021@gmail.com>,
-        <rkrcmar@ventanamicro.com>, <nutty.liu@hotmail.com>
-Subject: Re: [PATCH v4] RISC-V: KVM: Flush VS-stage TLB after VCPU migration
- for split two-stage TLBs
-Message-ID: <aSkdyHo0T6BYPF7A@atcsi01.andestech.com>
-References: <20251117084555.157642-1-minachou@andestech.com>
- <CAAhSdy0mS++Oqp6jB8vf5n5Q8EYbFUDYceYxj1R6eH67=X2RZg@mail.gmail.com>
+	id 1vOwLz-00000000LF5-3yeO
+	for kvm-riscv@lists.infradead.org;
+	Fri, 28 Nov 2025 11:09:33 +0000
+Received: by mail-il1-x136.google.com with SMTP id e9e14a558f8ab-433101f2032so9283665ab.1
+        for <kvm-riscv@lists.infradead.org>; Fri, 28 Nov 2025 03:09:31 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=brainfault-org.20230601.gappssmtp.com; s=20230601; t=1764328170; x=1764932970; darn=lists.infradead.org;
+        h=cc:to:subject:message-id:date:from:mime-version:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=Ev8osqQslZ1HDuUmpz2SAJrU4WVNGotFbl7NHJTtz5M=;
+        b=ryUGBQ4pJ8smm3lbytubmukQ2CCdcrwcDACyQTiuymBneaRSE2quYOTm/bUELV7uuK
+         S/VqVT/D0WGQsyC+PU70NHj/bWJG/7+6r2YX8fnTlCEKo7E3i6QN+WH1GZoyW8sLkzER
+         leVmPf33g2pAw8CyiOqNMecc7S1HjFEYkic05xPjBcv68HNWhXuBR1WseEGXaiRPFLup
+         HD75hDz8fP/WYRYKKx50W02heTv5LJ7oiGHAqabJ/EWL+v0D8QxEbkCBen/d/y37/X78
+         CZG6xcOAvmSjJSMXcklINu3lugMd6vW7nM7X890eCSuHzsg2xT5wKX4gOYUtoMcpYA6h
+         2Mfg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1764328170; x=1764932970;
+        h=cc:to:subject:message-id:date:from:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=Ev8osqQslZ1HDuUmpz2SAJrU4WVNGotFbl7NHJTtz5M=;
+        b=O05DVO656yqN6o1N+0NgEna8jwd/fv6GTwVIvA9lrv6qv1CLfRcRkoAgueFXnM83Vq
+         cTEep3fgK4CidMICWrLBtbjS29mzdvphETrGgHE5LBH7MKf1TqoAoKoLH3oxwKl6xYCw
+         O37pnX/Y82/fyJHUWJAMjX6E9L1D8rvWXerxoINDsXTwHVWe1QhSajSE+lRpQj2FEnS/
+         pVsVHutMsYPc7OldAewaCFHMKjILrUVKeBt8WejXL6/WTxxgSOmIkvBLCF89wkS4zC5k
+         Wk1uLiKHaVm6n0rzYx5D3vj9iZAMJa+Dw/ducOHjtQCm8KoVRvN9JNwdCkkeCz5GYji4
+         Q+mQ==
+X-Forwarded-Encrypted: i=1; AJvYcCWhBw2GNG00sxfzYAaBZ7U1yRFI0jhAw5FIT6GHu3Ehc6wTiQDgphnOY1dBMDLcYw2nqrQmjqLq0hc=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yz9wIJCw/G7lJEjPuZra+bkvdsxKZnv5yNPO8+vxSXJbiNUIvqW
+	Ssxi/u/hM/176zqt7EzVxEfc+rz+Z1OM674/IYlH2tNdypfst4WIyTMIJfZGUFKeeWUQvV829y9
+	T2Q7Rs/p2FxcPFxKA6oe+y8KO3ptBt0ECYDdAF/yi0w==
+X-Gm-Gg: ASbGncvv3zsY4KlBdfX1QSrvkZ2WTDvYCtHCUiu9RUQukNuPgVp1m0Bc3xTf0TS3eVJ
+	iMCb6Id8y9YMTY4ECLHqYDxNIjLo3GXw8ndvnRUhi2mgahPffx+L5o6XdsAQ9G6CgNX1HYKg+Gx
+	YN1/gR/iqZ/hkmJE9UMKOuL/DL9qkevGaCR+QEJu7//AacRTjEkPkdxDKLjVJ4rshAKSiwDt5CV
+	hcoohFrURzfSg5MG+HuyAvaNmtCmKizs0UgOfChhg7vUkN9+9JzXpojyLYl3gD0PZ/ICxY=
+X-Google-Smtp-Source: AGHT+IFc/ry5UpHjP3r/OfTOToFIN7uuwb7cq3NZruvPD9SmePUAvE+8mJAN0tC4qknnjQrfmNXoFUaXRVof3Et5lUs=
+X-Received: by 2002:a05:6e02:1fe8:b0:433:7e25:b93d with SMTP id
+ e9e14a558f8ab-435b98e6823mr258774305ab.28.1764328170460; Fri, 28 Nov 2025
+ 03:09:30 -0800 (PST)
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <CAAhSdy0mS++Oqp6jB8vf5n5Q8EYbFUDYceYxj1R6eH67=X2RZg@mail.gmail.com>
-User-Agent: Mutt/2.2.15 (2025-10-02)
-X-Originating-IP: [10.0.15.32]
-X-ClientProxiedBy: ATCPCS33.andestech.com (10.0.1.100) To
- ATCPCS34.andestech.com (10.0.1.134)
-X-DKIM-Results: atcpcs34.andestech.com; dkim=none;
-X-DNSRBL: 
-X-MAIL: Atcsqr.andestech.com 5AS3xEpv039276
+From: Anup Patel <anup@brainfault.org>
+Date: Fri, 28 Nov 2025 16:39:20 +0530
+X-Gm-Features: AWmQ_bmhFxPdJkF-zIY_yLVqZOdy6yi8l1326gMlp_2aI20DPgm8qhw27bUypWs
+Message-ID: <CAAhSdy3C7zxovYDZJvzpuCytRmdBrGwgLF2MtOMzP7vFVm4ohQ@mail.gmail.com>
+Subject: [GIT PULL] KVM/riscv changes for 6.19
+To: Paolo Bonzini <pbonzini@redhat.com>
+Cc: Palmer Dabbelt <palmer@dabbelt.com>, Paul Walmsley <pjw@kernel.org>, 
+	Andrew Jones <ajones@ventanamicro.com>, Atish Patra <atish.patra@linux.dev>, 
+	Atish Patra <atishp@rivosinc.com>, 
+	"open list:KERNEL VIRTUAL MACHINE FOR RISC-V (KVM/riscv)" <kvm-riscv@lists.infradead.org>, KVM General <kvm@vger.kernel.org>, 
+	linux-riscv <linux-riscv@lists.infradead.org>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20251127_200220_126886_4C3C8CBA 
-X-CRM114-Status: GOOD (  32.73  )
+X-CRM114-CacheID: sfid-20251128_030932_122000_29A97C71 
+X-CRM114-Status: UNSURE (   9.35  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -78,186 +95,85 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Sun, Nov 23, 2025 at 11:34:28AM +0530, Anup Patel wrote:
-> [EXTERNAL MAIL]
-> 
-> A shorter patch subject can be:
-> "RISC-V: KVM: Flush VS-stage TLB after VCPU migration for Andes cores"
-> 
-> On Mon, Nov 17, 2025 at 2:19???PM Hui Min Mina Chou
-> <minachou@andestech.com> wrote:
-> >
-> > Most implementations cache the combined result of two-stage
-> > translation, but some, like Andes cores, use split TLBs that
-> > store VS-stage and G-stage entries separately.
-> >
-> > On such systems, when a VCPU migrates to another CPU, an additional
-> > HFENCE.VVMA is required to avoid using stale VS-stage entries, which
-> > could otherwise cause guest faults.
-> >
-> > Introduce a static key to identify CPUs with split two-stage TLBs.
-> > When enabled, KVM issues an extra HFENCE.VVMA on VCPU migration to
-> > prevent stale VS-stage mappings.
-> >
-> > Signed-off-by: Hui Min Mina Chou <minachou@andestech.com>
-> > Signed-off-by: Ben Zong-You Xie <ben717@andestech.com>
-> > Reviewed-by: Radim Kr??m???? <rkrcmar@ventanamicro.com>
-> > ---
-> > Changelog:
-> >
-> > v4:
-> >  - Rename the patch subject
-> >  - Remove the Fixes tag
-> >  - Add a static key so that HFENCE.VVMA is issued only on CPUs with
-> >    split two-stage TLBs
-> >  - Add kvm_riscv_setup_vendor_features() to detect mvendorid/marchid
-> >    and enable the key when required
-> >
-> > v3:
-> >  - Resolved build warning; updated header declaration and call side to
-> >    kvm_riscv_local_tlb_sanitize
-> >  - Add Radim Kr??m????'s Reviewed-by tag
-> >  (https://lore.kernel.org/all/20251023032517.2527193-1-minachou@andestech.com/)
-> >
-> > v2:
-> >  - Updated Fixes commit to 92e450507d56
-> >  - Renamed function to kvm_riscv_local_tlb_sanitize
-> >  (https://lore.kernel.org/all/20251021083105.4029305-1-minachou@andestech.com/)
-> > ---
-> >  arch/riscv/include/asm/kvm_host.h |  2 ++
-> >  arch/riscv/include/asm/kvm_vmid.h |  2 +-
-> >  arch/riscv/kvm/main.c             | 14 ++++++++++++++
-> >  arch/riscv/kvm/vcpu.c             |  2 +-
-> >  arch/riscv/kvm/vmid.c             |  6 +++++-
-> >  5 files changed, 23 insertions(+), 3 deletions(-)
-> >
-> > diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
-> > index d71d3299a335..21abac2f804e 100644
-> > --- a/arch/riscv/include/asm/kvm_host.h
-> > +++ b/arch/riscv/include/asm/kvm_host.h
-> > @@ -323,4 +323,6 @@ bool kvm_riscv_vcpu_stopped(struct kvm_vcpu *vcpu);
-> >
-> >  void kvm_riscv_vcpu_record_steal_time(struct kvm_vcpu *vcpu);
-> >
-> > +DECLARE_STATIC_KEY_FALSE(kvm_riscv_tlb_split_mode);
-> > +
-> 
-> "kvm_riscv_vsstage_tlb_no_gpa" is a better name for the static key.
-> 
-> >  #endif /* __RISCV_KVM_HOST_H__ */
-> > diff --git a/arch/riscv/include/asm/kvm_vmid.h b/arch/riscv/include/asm/kvm_vmid.h
-> > index ab98e1434fb7..75fb6e872ccd 100644
-> > --- a/arch/riscv/include/asm/kvm_vmid.h
-> > +++ b/arch/riscv/include/asm/kvm_vmid.h
-> > @@ -22,6 +22,6 @@ unsigned long kvm_riscv_gstage_vmid_bits(void);
-> >  int kvm_riscv_gstage_vmid_init(struct kvm *kvm);
-> >  bool kvm_riscv_gstage_vmid_ver_changed(struct kvm_vmid *vmid);
-> >  void kvm_riscv_gstage_vmid_update(struct kvm_vcpu *vcpu);
-> > -void kvm_riscv_gstage_vmid_sanitize(struct kvm_vcpu *vcpu);
-> > +void kvm_riscv_local_tlb_sanitize(struct kvm_vcpu *vcpu);
-> 
-> kvm_riscv_local_tlb_sanitize() must be declared in kvm_tlb.h
-> 
-> >
-> >  #endif
-> > diff --git a/arch/riscv/kvm/main.c b/arch/riscv/kvm/main.c
-> > index 67c876de74ef..bf0e4f1abe0f 100644
-> > --- a/arch/riscv/kvm/main.c
-> > +++ b/arch/riscv/kvm/main.c
-> > @@ -15,6 +15,18 @@
-> >  #include <asm/kvm_nacl.h>
-> >  #include <asm/sbi.h>
-> >
-> > +DEFINE_STATIC_KEY_FALSE(kvm_riscv_tlb_split_mode);
-> > +
-> > +static void kvm_riscv_setup_vendor_features(void)
-> > +{
-> > +       /* Andes AX66: split two-stage TLBs */
-> > +       if (riscv_cached_mvendorid(0) == ANDES_VENDOR_ID &&
-> > +           (riscv_cached_marchid(0) & 0xFFFF) == 0x8A66) {
-> > +               static_branch_enable(&kvm_riscv_tlb_split_mode);
-> > +               kvm_info("using split two-stage TLBs requiring extra HFENCE.VVMA\n");
-> 
-> I think the "VS-stage TLB does not cache guest physical addresses
-> and VMID" message is more clear.
-> 
-> > +       }
-> > +}
-> > +
-> >  long kvm_arch_dev_ioctl(struct file *filp,
-> >                         unsigned int ioctl, unsigned long arg)
-> >  {
-> > @@ -159,6 +171,8 @@ static int __init riscv_kvm_init(void)
-> >                 kvm_info("AIA available with %d guest external interrupts\n",
-> >                          kvm_riscv_aia_nr_hgei);
-> >
-> > +       kvm_riscv_setup_vendor_features();
-> > +
-> >         kvm_register_perf_callbacks(NULL);
-> >
-> >         rc = kvm_init(sizeof(struct kvm_vcpu), 0, THIS_MODULE);
-> > diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-> > index 3ebcfffaa978..796218e4a462 100644
-> > --- a/arch/riscv/kvm/vcpu.c
-> > +++ b/arch/riscv/kvm/vcpu.c
-> > @@ -968,7 +968,7 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
-> >                  * Note: This should be done after G-stage VMID has been
-> >                  * updated using kvm_riscv_gstage_vmid_ver_changed()
-> >                  */
-> > -               kvm_riscv_gstage_vmid_sanitize(vcpu);
-> > +               kvm_riscv_local_tlb_sanitize(vcpu);
-> >
-> >                 trace_kvm_entry(vcpu);
-> >
-> > diff --git a/arch/riscv/kvm/vmid.c b/arch/riscv/kvm/vmid.c
-> > index 3b426c800480..1dbd50c67a88 100644
-> > --- a/arch/riscv/kvm/vmid.c
-> > +++ b/arch/riscv/kvm/vmid.c
-> > @@ -125,7 +125,7 @@ void kvm_riscv_gstage_vmid_update(struct kvm_vcpu *vcpu)
-> >                 kvm_make_request(KVM_REQ_UPDATE_HGATP, v);
-> >  }
-> >
-> > -void kvm_riscv_gstage_vmid_sanitize(struct kvm_vcpu *vcpu)
-> > +void kvm_riscv_local_tlb_sanitize(struct kvm_vcpu *vcpu)
-> >  {
-> >         unsigned long vmid;
-> >
-> > @@ -146,4 +146,8 @@ void kvm_riscv_gstage_vmid_sanitize(struct kvm_vcpu *vcpu)
-> >
-> >         vmid = READ_ONCE(vcpu->kvm->arch.vmid.vmid);
-> >         kvm_riscv_local_hfence_gvma_vmid_all(vmid);
-> > +
-> > +       /* For split TLB designs, flush VS-stage entries also */
-> > +       if (static_branch_unlikely(&kvm_riscv_tlb_split_mode))
-> > +               kvm_riscv_local_hfence_vvma_all(vmid);
-> >  }
-> 
-> kvm_riscv_local_tlb_sanitize() implementation must be
-> moved to kvm/tlb.c
-> 
-> > --
-> > 2.34.1
-> >
-> 
-> I will take care of the above comments at the time of merging
-> this patch. If any further changes are required then I can squash
-> changes before the end of next week.
-> 
-> Queued this patch for Linux-6.19.
-> 
-> Thanks,
-> Anup
+Hi Paolo,
 
-Hi Anup,
+We have the following KVM RISC-V changes for 6.19:
+1) SBI MPXY support for KVM guest
+2) New KVM_EXIT_FAIL_ENTRY_NO_VSFILE
+3) Enable dirty logging gradually in small chunks
+4) Fix guest page fault within HLV* instructions
+5) Flush VS-stage TLB after VCPU migration for Andes cores
 
-I won't be making any further changes to this patch. Thanks a lot
-for your help and suggestions!
-Regarding Nutty's comment about using a macro for ANDES_ARCH_ID,
-we'll clean up the Andes CPU-related defines and update that part
-in a future patch. Thanks also to Nutty for the suggestion!
+Please pull.
 
-Thanks again!
-Mina
+Regards,
+Anup
+
+The following changes since commit ac3fd01e4c1efce8f2c054cdeb2ddd2fc0fb150d:
+
+  Linux 6.18-rc7 (2025-11-23 14:53:16 -0800)
+
+are available in the Git repository at:
+
+  https://github.com/kvm-riscv/linux.git tags/kvm-riscv-6.19-1
+
+for you to fetch changes up to 3239c52fd21257c80579875e74c9956c2f9cd1f9:
+
+  RISC-V: KVM: Flush VS-stage TLB after VCPU migration for Andes cores
+(2025-11-24 09:55:36 +0530)
+
+----------------------------------------------------------------
+KVM/riscv changes for 6.19
+
+- SBI MPXY support for KVM guest
+- New KVM_EXIT_FAIL_ENTRY_NO_VSFILE for the case when in-kernel
+  AIA virtualization fails to allocate IMSIC VS-file
+- Support enabling dirty log gradually in small chunks
+- Fix guest page fault within HLV* instructions
+- Flush VS-stage TLB after VCPU migration for Andes cores
+
+----------------------------------------------------------------
+Anup Patel (4):
+      RISC-V: KVM: Convert kvm_riscv_vcpu_sbi_forward() into extension handler
+      RISC-V: KVM: Add separate source for forwarded SBI extensions
+      RISC-V: KVM: Add SBI MPXY extension support for Guest
+      KVM: riscv: selftests: Add SBI MPXY extension to get-reg-list
+
+BillXiang (1):
+      RISC-V: KVM: Introduce KVM_EXIT_FAIL_ENTRY_NO_VSFILE
+
+Dong Yang (1):
+      KVM: riscv: Support enabling dirty log gradually in small chunks
+
+Fangyu Yu (1):
+      RISC-V: KVM: Fix guest page fault within HLV* instructions
+
+Hui Min Mina Chou (1):
+      RISC-V: KVM: Flush VS-stage TLB after VCPU migration for Andes cores
+
+ Documentation/virt/kvm/api.rst                   |  2 +-
+ arch/riscv/include/asm/kvm_host.h                |  6 +++++
+ arch/riscv/include/asm/kvm_tlb.h                 |  1 +
+ arch/riscv/include/asm/kvm_vcpu_sbi.h            |  5 +++-
+ arch/riscv/include/asm/kvm_vmid.h                |  1 -
+ arch/riscv/include/uapi/asm/kvm.h                |  3 +++
+ arch/riscv/kvm/Makefile                          |  1 +
+ arch/riscv/kvm/aia_imsic.c                       |  2 +-
+ arch/riscv/kvm/main.c                            | 14 ++++++++++
+ arch/riscv/kvm/mmu.c                             |  5 +++-
+ arch/riscv/kvm/tlb.c                             | 30 +++++++++++++++++++++
+ arch/riscv/kvm/vcpu.c                            |  2 +-
+ arch/riscv/kvm/vcpu_insn.c                       | 22 +++++++++++++++
+ arch/riscv/kvm/vcpu_sbi.c                        | 10 ++++++-
+ arch/riscv/kvm/vcpu_sbi_base.c                   | 28 +------------------
+ arch/riscv/kvm/vcpu_sbi_forward.c                | 34 ++++++++++++++++++++++++
+ arch/riscv/kvm/vcpu_sbi_replace.c                | 32 ----------------------
+ arch/riscv/kvm/vcpu_sbi_system.c                 |  4 +--
+ arch/riscv/kvm/vcpu_sbi_v01.c                    |  3 +--
+ arch/riscv/kvm/vmid.c                            | 23 ----------------
+ tools/testing/selftests/kvm/riscv/get-reg-list.c |  4 +++
+ 21 files changed, 138 insertions(+), 94 deletions(-)
+ create mode 100644 arch/riscv/kvm/vcpu_sbi_forward.c
 
 -- 
 kvm-riscv mailing list
