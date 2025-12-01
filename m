@@ -4,31 +4,31 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2394DCFD376
-	for <kvm-riscv@archiver.kernel.org>; Mon,  1 Dec 2025 01:45:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44BABCFD376
+	for <kvm-riscv@archiver.kernel.org>; Mon,  1 Dec 2025 01:46:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-Id:Date:Subject:Cc
-	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=X2EJ8/VJ7llcbw12x+wlHxqA+O+Uc2pHQMu6NZHdml0=; b=PKRbpa1fixGB1z
-	e4dL4HAbsKYXgrRuRkBumZSeGviTfpJHQuPshssp6NVIKoP/ZlIXN6lsKWnJxWHy8bJkyVB6efCkR
-	kUeQihRuHYMvK9xpN79GJvmvzbTR0J/RegWz0p81JDY7GmSbwG1gGEaQKexyikIK8AnrKnF2u+mPG
-	z862U5+2RsRjOzPZBwJxjUpC2DEvamjpXLnfvjsbYKIhu2bu5f/nhLucTL6c/O6NIu2sjYn4X8KPZ
-	PqoICEFoZl4+eJUL0C5eIpf5M+7DbETI1yssSdCPyQYOrV8Zeovpjvd4cqK8VUGFbph93tMlneG3a
-	UsEmu4nzfFtg99NfcN+g==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=/FCI6c4nBuESodfnQPISfnsSckO6sYOoW8Ur5tJ+AkY=; b=iJxO9nzcD6ABqc
+	9U4MNQcvYXQc1oN3/lsp3Ol+uQXIvsuj2+g2arFOUxuo0KjW70P8bylNsagf+5hgEFOzVSN4d2CJx
+	AjcFknGvO5qnNQYkUfJuwC4MnVjbewkCsCarolC1yPEz+BandEVN0twhu6p/llOG1OfpL3Bjd9CaW
+	HQjcEVDj2cLUDA/8FtuOmrFFRuenmmZy8wnEqo54PONKKeBNDyAssUwKMdZhJmwbjt2nE7B3PrKpo
+	2OkwSq//bkHHt35uyfmeKifmx/Rh75uXr44GpgdorTmZDZH9LVBIIqdegE/173t6S/1+TAqf5fU34
+	B3hwFgirpYixwDMnwStw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vPszD-00000002m6B-1nkc;
-	Mon, 01 Dec 2025 01:45:55 +0000
+	id 1vPszT-00000002m8T-4BPV;
+	Mon, 01 Dec 2025 01:46:11 +0000
 Received: from smtp21.cstnet.cn ([159.226.251.21] helo=cstnet.cn)
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vPsz8-00000002m5h-3mv9;
-	Mon, 01 Dec 2025 01:45:53 +0000
+	id 1vPszQ-00000002m7Q-3s9W;
+	Mon, 01 Dec 2025 01:46:10 +0000
 Received: from zq-Legion-Y7000.. (unknown [121.237.244.238])
-	by APP-01 (Coremail) with SMTP id qwCowADnfMxE8yxpRt2vAg--.19616S2;
-	Mon, 01 Dec 2025 09:45:41 +0800 (CST)
+	by APP-01 (Coremail) with SMTP id qwCowABn_cxZ8yxpqd6vAg--.25095S2;
+	Mon, 01 Dec 2025 09:46:03 +0800 (CST)
 From: zhouquan@iscas.ac.cn
 To: anup@brainfault.org,
 	ajones@ventanamicro.com,
@@ -40,33 +40,35 @@ Cc: linux-kernel@vger.kernel.org,
 	kvm@vger.kernel.org,
 	kvm-riscv@lists.infradead.org,
 	Quan Zhou <zhouquan@iscas.ac.cn>
-Subject: [PATCH 0/4] RISC-V: KVM: Add Zicfiss/Zicfilp support
-Date: Mon,  1 Dec 2025 09:28:04 +0800
-Message-Id: <cover.1764509485.git.zhouquan@iscas.ac.cn>
+Subject: [PATCH 1/4] RISC-V: KVM: Allow zicfiss/zicfilp exts for Guest/VM
+Date: Mon,  1 Dec 2025 09:28:25 +0800
+Message-Id: <103e156ea1f2201db52034e370a907f46edafb83.1764509485.git.zhouquan@iscas.ac.cn>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <cover.1764509485.git.zhouquan@iscas.ac.cn>
+References: <cover.1764509485.git.zhouquan@iscas.ac.cn>
 MIME-Version: 1.0
-X-CM-TRANSID: qwCowADnfMxE8yxpRt2vAg--.19616S2
-X-Coremail-Antispam: 1UD129KBjvdXoWrtFWDJFyDKr1UJr1rKr13CFg_yoWkAFb_Cr
-	WxJ3s7u34xJFZ7KF90vwn3WFWDKrWrtF98tw17Xr17WFnrur13Xw4Iq3Wjqr1jyr15Xa93
-	ArZ5XrZ2q34j9jkaLaAFLSUrUUUUbb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
-	9fnUUIcSsGvfJTRUUUb6xFF20E14v26r4j6ryUM7CY07I20VC2zVCF04k26cxKx2IYs7xG
-	6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4kI8w
-	A2z4x0Y4vE2Ix0cI8IcVAFwI0_Xr0_Ar1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Cr0_
-	Gr1UM28EF7xvwVC2z280aVAFwI0_Gr1j6F4UJwA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_Cr
-	1j6rxdM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj
-	6xIIjxv20xvE14v26r1j6r18McIj6I8E87Iv67AKxVW8JVWxJwAm72CE4IkC6x0Yz7v_Jr
-	0_Gr1lF7xvr2IYc2Ij64vIr41lF7I21c0EjII2zVCS5cI20VAGYxC7M4IIrI8v6xkF7I0E
-	8cxan2IY04v7M4kE6xkIj40Ew7xC0wCY1x0262kKe7AKxVWUtVW8ZwCY02Avz4vE14v_Kw
-	CF04k20xvY0x0EwIxGrwCFx2IqxVCFs4IE7xkEbVWUJVW8JwC20s026c02F40E14v26r1j
-	6r18MI8I3I0E7480Y4vE14v26r106r1rMI8E67AF67kF1VAFwI0_Jw0_GFylIxkGc2Ij64
-	vIr41lIxAIcVC0I7IYx2IY67AKxVWUJVWUCwCI42IY6xIIjxv20xvEc7CjxVAFwI0_Jr0_
-	Gr1lIxAIcVCF04k26cxKx2IYs7xG6r1j6r1xMIIF0xvEx4A2jsIE14v26r1j6r4UMIIF0x
-	vEx4A2jsIEc7CjxVAFwI0_Gr0_Gr1UYxBIdaVFxhVjvjDU0xZFpf9x0JUfWrAUUUUU=
+X-CM-TRANSID: qwCowABn_cxZ8yxpqd6vAg--.25095S2
+X-Coremail-Antispam: 1UD129KBjvJXoWxArW8Ww47AryxCF17Jr1fZwb_yoW5GryDpr
+	sxCF9akr45C34fua4xtr4kWr48u3y5WwsIgw18u34fXFy2krW8Jr1vya43Ja4DJa10grWv
+	9F18Wry8Zws8AwUanT9S1TB71UUUUUDqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUUBC14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
+	1l84ACjcxK6xIIjxv20xvE14v26ryj6F1UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26F4j
+	6r4UJwA2z4x0Y4vEx4A2jsIE14v26r4UJVWxJr1l84ACjcxK6I8E87Iv6xkF7I0E14v26F
+	4UJVW0owAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40EFcxC0VAKzVAqx4xG6I80ewAv
+	7VC0I7IYx2IY67AKxVWUGVWUXwAv7VC2z280aVAFwI0_Gr0_Cr1lOx8S6xCaFVCjc4AY6r
+	1j6r4UM4x0Y48IcxkI7VAKI48JM4x0x7Aq67IIx4CEVc8vx2IErcIFxwACI402YVCY1x02
+	628vn2kIc2xKxwAKzVCY07xG64k0F24lc7CjxVAaw2AFwI0_Jw0_GFylc2xSY4AK67AK6w
+	4l42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67AKxVWU
+	JVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r1q6r43MIIYrxkI7V
+	AKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7IYx2IY6xkF7I0E14v26r4j
+	6F4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVWUJVW8JwCI42
+	IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIYCTnIWIevJa73UjIFyTuYvjfUYPfHDUUUU
 X-Originating-IP: [121.237.244.238]
-X-CM-SenderInfo: 52kr31xxdqqxpvfd2hldfou0/1tbiDAYDBmks7K0Z0AAAsC
+X-CM-SenderInfo: 52kr31xxdqqxpvfd2hldfou0/1tbiBg0DBmks7HsaLgAAso
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20251130_174551_316390_693342AF 
-X-CRM114-Status: UNSURE (   4.62  )
+X-CRM114-CacheID: sfid-20251130_174609_329496_1A71D560 
+X-CRM114-Status: UNSURE (   8.46  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -86,30 +88,72 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 From: Quan Zhou <zhouquan@iscas.ac.cn>
 
-This patchset is based on `riscv control-flow integrity for usermode` [1].
-Add Zicfiss/Zicfilp [2] and sbi fwft [3] support for riscv kvm.
+Extend the KVM ISA extension ONE_REG interface to allow KVM user
+space to detect and enable zicfiss/zicfilp exts for Guest/VM,
+the rules defined in the spec [1] are as follows:
+---
+1) Zicfiss extension introduces the SSE field (bit 3) in henvcfg.
+If the SSE field is set to 1, the Zicfiss extension is activated
+in VS-mode. When the SSE field is 0, the Zicfiss extension remains
+inactive in VS-mode.
 
-[1] - https://lore.kernel.org/all/20251112-v5_user_cfi_series-v23-0-b55691eacf4f@rivosinc.com/
-[2] - https://github.com/riscv/riscv-cfi
-[3] - https://github.com/riscv-non-isa/riscv-sbi-doc/blob/master/src/ext-firmware-features.adoc
+2) Zicfilp extension introduces the LPE field (bit 2) in henvcfg.
+When the LPE field is set to 1, the Zicfilp extension is enabled
+in VS-mode. When the LPE field is 0, the Zicfilp extension is not
+enabled in VS-mode.
 
-Quan Zhou (4):
-  RISC-V: KVM: Allow zicfiss/zicfilp exts for Guest/VM
-  RISC-V: KVM: Add support for software check exception
-  RISC-V: KVM: Add suuport for zicfiss/zicfilp/svadu FWFT features
-  KVM: riscv: selftests: Add zicfiss/zicfilp/svadu and SBI FWFT to
-    get-reg-list test
+[1] - https://github.com/riscv/riscv-cfi
 
- arch/riscv/include/asm/csr.h                  |   1 +
- arch/riscv/include/asm/kvm_host.h             |   3 +-
- arch/riscv/include/uapi/asm/kvm.h             |   5 +
- arch/riscv/kvm/vcpu.c                         |   6 +
- arch/riscv/kvm/vcpu_exit.c                    |   3 +
- arch/riscv/kvm/vcpu_onereg.c                  |   2 +
- arch/riscv/kvm/vcpu_sbi_fwft.c                | 129 ++++++++++++++++++
- .../selftests/kvm/riscv/get-reg-list.c        |  26 ++++
- 8 files changed, 174 insertions(+), 1 deletion(-)
+Signed-off-by: Quan Zhou <zhouquan@iscas.ac.cn>
+---
+ arch/riscv/include/uapi/asm/kvm.h | 2 ++
+ arch/riscv/kvm/vcpu.c             | 6 ++++++
+ arch/riscv/kvm/vcpu_onereg.c      | 2 ++
+ 3 files changed, 10 insertions(+)
 
+diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+index 759a4852c09a..7ca087848a43 100644
+--- a/arch/riscv/include/uapi/asm/kvm.h
++++ b/arch/riscv/include/uapi/asm/kvm.h
+@@ -190,6 +190,8 @@ enum KVM_RISCV_ISA_EXT_ID {
+ 	KVM_RISCV_ISA_EXT_ZFBFMIN,
+ 	KVM_RISCV_ISA_EXT_ZVFBFMIN,
+ 	KVM_RISCV_ISA_EXT_ZVFBFWMA,
++	KVM_RISCV_ISA_EXT_ZICFILP,
++	KVM_RISCV_ISA_EXT_ZICFISS,
+ 	KVM_RISCV_ISA_EXT_MAX,
+ };
+ 
+diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+index 5ce35aba6069..098d77f9a886 100644
+--- a/arch/riscv/kvm/vcpu.c
++++ b/arch/riscv/kvm/vcpu.c
+@@ -557,6 +557,12 @@ static void kvm_riscv_vcpu_setup_config(struct kvm_vcpu *vcpu)
+ 	if (riscv_isa_extension_available(isa, ZICBOZ))
+ 		cfg->henvcfg |= ENVCFG_CBZE;
+ 
++	if (riscv_isa_extension_available(isa, ZICFILP))
++		cfg->henvcfg |= ENVCFG_LPE;
++
++	if (riscv_isa_extension_available(isa, ZICFISS))
++		cfg->henvcfg |= ENVCFG_SSE;
++
+ 	if (riscv_isa_extension_available(isa, SVADU) &&
+ 	    !riscv_isa_extension_available(isa, SVADE))
+ 		cfg->henvcfg |= ENVCFG_ADUE;
+diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
+index 865dae903aa0..3d05a4bafd9b 100644
+--- a/arch/riscv/kvm/vcpu_onereg.c
++++ b/arch/riscv/kvm/vcpu_onereg.c
+@@ -72,6 +72,8 @@ static const unsigned long kvm_isa_ext_arr[] = {
+ 	KVM_ISA_EXT_ARR(ZICBOP),
+ 	KVM_ISA_EXT_ARR(ZICBOZ),
+ 	KVM_ISA_EXT_ARR(ZICCRSE),
++	KVM_ISA_EXT_ARR(ZICFILP),
++	KVM_ISA_EXT_ARR(ZICFISS),
+ 	KVM_ISA_EXT_ARR(ZICNTR),
+ 	KVM_ISA_EXT_ARR(ZICOND),
+ 	KVM_ISA_EXT_ARR(ZICSR),
 -- 
 2.34.1
 
