@@ -4,71 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 77622D3ABC7
-	for <kvm-riscv@archiver.kernel.org>; Sat,  6 Dec 2025 00:24:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B4043D3ABC8
+	for <kvm-riscv@archiver.kernel.org>; Sat,  6 Dec 2025 00:25:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:Reply-To:List-Subscribe:List-Help:
 	List-Post:List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID
 	:References:Mime-Version:In-Reply-To:Date:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=yHT2yvHuj76Mh5elGcUVhODDj45HIcKN0kELTy2kmK8=; b=aq1dFiCwZYX/mv
-	v8OTIKnJ7TguGPpkf8IFz8WECHwnTJ/4D1QE+Fpwfs+FqjD9o18w2yzdrGR0zY9oL2bIs1Hlsiqd2
-	KpJ6JAW6IDDo2o2leZpHzUJdwtZJ1loVqyloZgGHenv1XniGKzshM93lnP9sXBoA2/lsqBoay6RNq
-	c4Ikxn6T9qqB+TupRBgdhA6RR5O+gFUYIFEAYQUfb9BEfFaov+KNfOFAFf9N9Jx5URfxz5SXN1hs8
-	6P7t+VdiYyqPNnlFzqEpmhNRTorqovXJ6DKD900Lz7Hcu3vedi1CW9ovc1FDNSrkm6nQG2buJvJX+
-	hhYUarKHI7uf0oGQ8PTg==;
+	List-Owner; bh=ybGdj/5E/hV+7rkZRzX+8QGUoPFqKGXQce2GITZT8Rc=; b=RYubExKoSArSjm
+	b0FYBF9WWbTqeWTlEeGcdFB89SfbJ7zbcsUBFwoNer4SY0nQ4rcxAPS3BUGbHBMr4qeKtTYCnpoqP
+	2qfmCIHfL7lV33ENvCWHRfeeSOGfF4EF44FzPiqhiP3TmbpYdGyBmhLAwVfOC7Lfutk2FoB7DhdZO
+	tBk8U962crl1FIn3qN4qgFU4FckaUoQFPQ+nbO8XILLET5fv1JggEv31vjwIhExSw//XAculfVvln
+	oCVSITJ5hBdiKFhJKSu9klP+9RzdSjly8dycwaAadSSQ81egcW5Rn7Rk1kN6qdyu68U6J5Ov2VOe0
+	qs2CN0W7+0/oeh9I0Nxw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vRg5o-0000000AMI4-13Yy;
-	Sat, 06 Dec 2025 00:24:08 +0000
-Received: from mail-pl1-x64a.google.com ([2607:f8b0:4864:20::64a])
+	id 1vRg6w-0000000AMUc-20Jx;
+	Sat, 06 Dec 2025 00:25:18 +0000
+Received: from mail-ot1-x349.google.com ([2607:f8b0:4864:20::349])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vRg5l-0000000AMHV-29FP
+	id 1vRg6u-0000000AMTT-07g2
 	for kvm-riscv@lists.infradead.org;
-	Sat, 06 Dec 2025 00:24:06 +0000
-Received: by mail-pl1-x64a.google.com with SMTP id d9443c01a7336-2958c80fcabso58798545ad.0
-        for <kvm-riscv@lists.infradead.org>; Fri, 05 Dec 2025 16:24:04 -0800 (PST)
+	Sat, 06 Dec 2025 00:25:17 +0000
+Received: by mail-ot1-x349.google.com with SMTP id 46e09a7af769-7c702d1a4f7so5057151a34.3
+        for <kvm-riscv@lists.infradead.org>; Fri, 05 Dec 2025 16:25:15 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1764980644; x=1765585444; darn=lists.infradead.org;
+        d=google.com; s=20230601; t=1764980715; x=1765585515; darn=lists.infradead.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:from:to:cc:subject:date:message-id:reply-to;
-        bh=EW7FbaDPVd5t9h4ibnQZUOMw78F2xoAgB/he+4U2Bes=;
-        b=Pis/YvJg+YzHlB8nW4OGU2u0XkUN/uC2l0H8YKyAqyIVY4T456bR/REGpFQLDkL2ki
-         CPWKoad9BF0GdlEmx7w9sC6lUTT1tFJQlmqMv17ErG8QzSqypp13URE0jeS+v6DcBl3e
-         TtmkUfrGg/QEYjXAQI6RCa2RwEWHZgr6Sgyn5d0UatPqFHPQL2TQQt2wPX04dO4VuzuJ
-         sMc483iPbz4+maZ5Fqxv/j//Sw4Wf47mBWLAS/PVXFmwSeoTWN5FknKG0Pf4ssILLPNh
-         Ob3TIcL3xDQFD3D3ZDojIoIiV0Op8FSyz6qfDRiaKmIo4n0LOwApvQSbY8f32ZB9veQj
-         pn4Q==
+        bh=VDZ6qvbhnxeB/xicU22NIlKKbEtAofiGZXasyTcZTcc=;
+        b=Oi5mVla0iQ/wksgwy/JlZoZvtWT+ki0+AvD93LkgpO3dKivYLMTxzqPeLgSh+FmMvr
+         jG2ffQQCYiQ4zF0ln2yGCBvRTk/eUj1ffJbTlmbqICafn6YI8Gfr2MKRnm8EVpLPumOX
+         JtE93treQVaRhluAZ+kDRyxbHNFbiqkAdF5PJO5Ded7QTva7mUII+5JYQByb4eHAn9j3
+         zVhQWKJnJ4V9ucNk+81CiRbd2p+ksbrFbjWWUVpzXkGl29NTBHE5o5TVZvK4YtQYxy5U
+         5h2aqygBodDm2du8UpOAvZWxsmGAPzGdXHvYYWmL0KZpDNNm7QgkADXm0qzwWHj33gND
+         PWwA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1764980644; x=1765585444;
+        d=1e100.net; s=20230601; t=1764980715; x=1765585515;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=EW7FbaDPVd5t9h4ibnQZUOMw78F2xoAgB/he+4U2Bes=;
-        b=ilXKW8659wNTKwEYPaojY9DYKsODp7T+UEXpHcRWn+/dh962uOTsR1jCD8VHg+w3Wy
-         V68d1zkt9M5p9foOuixEC4heb9tFCVOwfgxNmHCM9ZuhUMwh54Pg9Qq1hbjPYbMvNy/S
-         XKgjKIcv0hM20RB733QZ5EjRHZrhgAwDwovl0QszXTclpCZXVxcbVNggh9iv/Itn2WaX
-         v4aX79lSPt4/Wi/ahdJGkTa2Sc3T++OL20fwbSz3n9LIoEeZ2FyPEdyfbp6QFioDv9OI
-         qmgrqIs5irZEhspivalwoQt50YqzTi8OIgzq9kZ8nOVx7NF8m1zUj30CtGQUp0Yeomja
-         d3kg==
-X-Forwarded-Encrypted: i=1; AJvYcCVq3qDQSRHzpCeoLv/XIUb4xxaRBzdJcW0Muqfye2odU04/6vbWZcZcr0opjdAy/GjVr6mJCuQe18U=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yw2gWRyN+L+RRI7qArvilKJ7kzkUKnYlQFlmmtPwrQOFnO5y+az
-	r4P9b9GIraFY3FP9IBjhuSswHlIVfltgAr72vEn4udvBAEBpHgezcOtJVJJow73L4RTLXKE8O+B
-	G98hvKg==
-X-Google-Smtp-Source: AGHT+IEzWFttnZLEQAsOaxYvtzWLuPcRq6QltY73DikVd5gmywMn7Yi+CzZHr3S07fvHdxIzVSJyvXKfRes=
-X-Received: from plrc6.prod.google.com ([2002:a17:902:aa46:b0:29d:5afa:2de])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:903:32d0:b0:294:f310:5218
- with SMTP id d9443c01a7336-29df4cb6bfamr6615315ad.0.1764980310360; Fri, 05
- Dec 2025 16:18:30 -0800 (PST)
-Date: Fri,  5 Dec 2025 16:17:08 -0800
+        bh=VDZ6qvbhnxeB/xicU22NIlKKbEtAofiGZXasyTcZTcc=;
+        b=hugQZpMON/V5ioM3RXOwH44XpMGJgxY0s/e6wKrjbNNXTUSlJkX4W8U44RzqXjkoAU
+         JqOmdbDzWYEJypqs2QOUxmPX4sskqNczGMfMqTPEZl3jIglyEMzohb4n6wvWNcD6etRJ
+         G/SBYikgM913Wcjz0DpG04YzkL/eMhTjAFroMtetgYpg3NxkqEIqsemRuOr7DGeCUkb8
+         3fsl7wQktTKVkIsu9mmdb+j9HvVKgIjgTjjmok1doqEMF6O9BfFgBjPap1NYt/gOvFYe
+         3ASuQ95+kibF+z7+8mRNUrcU2AYEmRgAariEXUxuavAoz8UwKw3lGGubO051dDspC/1p
+         3ITA==
+X-Forwarded-Encrypted: i=1; AJvYcCUgZvNGyEAaGpPNdZTuOw4AmQCKHbfrtE1K1gCMwR/FxtzCN7IVUc//UJo87iEyy9wIfw6GVB9ab0I=@lists.infradead.org
+X-Gm-Message-State: AOJu0YwJeh6c0wMyW9LXkQRMj0e15L1k0zjwYeCuQRwVCf62VWzNxGUd
+	JVqs/N/iIEzAKbeHJojgrIU0pyX6KufFfnIQdl775XWn4MsO5yB8c7s9QbMQii5PkEAqNrfu1oa
+	BbI2M9A==
+X-Google-Smtp-Source: AGHT+IF4RzpEBka8aK0ucRE2Cm9e095W8Dm56/F1owL7T0nm81v+pRoWT+IrKx6iUc4yDzdsBycmMqAWYnk=
+X-Received: from pjuy11.prod.google.com ([2002:a17:90a:d70b:b0:340:3ea9:30bc])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:5905:b0:341:761c:3330
+ with SMTP id 98e67ed59e1d1-349a25bd8e0mr687187a91.23.1764980304689; Fri, 05
+ Dec 2025 16:18:24 -0800 (PST)
+Date: Fri,  5 Dec 2025 16:17:05 -0800
 In-Reply-To: <20251206001720.468579-1-seanjc@google.com>
 Mime-Version: 1.0
 References: <20251206001720.468579-1-seanjc@google.com>
 X-Mailer: git-send-email 2.52.0.223.gf5cc29aaa4-goog
-Message-ID: <20251206001720.468579-33-seanjc@google.com>
-Subject: [PATCH v6 32/44] KVM: nSVM: Disable PMU MSR interception as
- appropriate while running L2
+Message-ID: <20251206001720.468579-30-seanjc@google.com>
+Subject: [PATCH v6 29/44] KVM: x86/pmu: Handle emulated instruction for
+ mediated vPMU
 From: Sean Christopherson <seanjc@google.com>
 To: Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, 
 	Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>, 
@@ -86,9 +86,8 @@ Cc: linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev,
 	Dapeng Mi <dapeng1.mi@linux.intel.com>, Xiong Zhang <xiong.y.zhang@linux.intel.com>, 
 	Manali Shukla <manali.shukla@amd.com>, Jim Mattson <jmattson@google.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20251205_162405_555516_4FFF7B83 
-X-CRM114-Status: UNSURE (   9.52  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20251205_162516_079530_3E212CB4 
+X-CRM114-Status: GOOD (  12.69  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -106,54 +105,75 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Add MSRs that might be passed through to L1 when running with a mediated
-PMU to the nested SVM's set of to-be-merged MSR indices, i.e. disable
-interception of PMU MSRs when running L2 if both KVM (L0) and L1 disable
-interception.  There is no need for KVM to interpose on such MSR accesses,
-e.g. if L1 exposes a mediated PMU (or equivalent) to L2.
+From: Dapeng Mi <dapeng1.mi@linux.intel.com>
 
+Mediated vPMU needs to accumulate the emulated instructions into counter
+and load the counter into HW at vm-entry.
+
+Moreover, if the accumulation leads to counter overflow, KVM needs to
+update GLOBAL_STATUS and inject PMI into guest as well.
+
+Suggested-by: Sean Christopherson <seanjc@google.com>
+Signed-off-by: Dapeng Mi <dapeng1.mi@linux.intel.com>
+Signed-off-by: Mingwei Zhang <mizhang@google.com>
 Tested-by: Xudong Hao <xudong.hao@intel.com>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/x86/kvm/svm/nested.c | 18 +++++++++++++++++-
- 1 file changed, 17 insertions(+), 1 deletion(-)
+ arch/x86/kvm/pmu.c | 39 +++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 37 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/kvm/svm/nested.c b/arch/x86/kvm/svm/nested.c
-index ba0f11c68372..93140ccec95d 100644
---- a/arch/x86/kvm/svm/nested.c
-+++ b/arch/x86/kvm/svm/nested.c
-@@ -194,7 +194,7 @@ void recalc_intercepts(struct vcpu_svm *svm)
-  * Hardcode the capacity of the array based on the maximum number of _offsets_.
-  * MSRs are batched together, so there are fewer offsets than MSRs.
-  */
--static int nested_svm_msrpm_merge_offsets[7] __ro_after_init;
-+static int nested_svm_msrpm_merge_offsets[10] __ro_after_init;
- static int nested_svm_nr_msrpm_merge_offsets __ro_after_init;
- typedef unsigned long nsvm_msrpm_merge_t;
+diff --git a/arch/x86/kvm/pmu.c b/arch/x86/kvm/pmu.c
+index 578bf996bda2..cb07d9b62bee 100644
+--- a/arch/x86/kvm/pmu.c
++++ b/arch/x86/kvm/pmu.c
+@@ -1033,10 +1033,45 @@ void kvm_pmu_destroy(struct kvm_vcpu *vcpu)
+ 	kvm_pmu_reset(vcpu);
+ }
  
-@@ -222,6 +222,22 @@ int __init nested_svm_init_msrpm_merge_offsets(void)
- 		MSR_IA32_LASTBRANCHTOIP,
- 		MSR_IA32_LASTINTFROMIP,
- 		MSR_IA32_LASTINTTOIP,
++static bool pmc_is_pmi_enabled(struct kvm_pmc *pmc)
++{
++	u8 fixed_ctr_ctrl;
 +
-+		MSR_K7_PERFCTR0,
-+		MSR_K7_PERFCTR1,
-+		MSR_K7_PERFCTR2,
-+		MSR_K7_PERFCTR3,
-+		MSR_F15H_PERF_CTR0,
-+		MSR_F15H_PERF_CTR1,
-+		MSR_F15H_PERF_CTR2,
-+		MSR_F15H_PERF_CTR3,
-+		MSR_F15H_PERF_CTR4,
-+		MSR_F15H_PERF_CTR5,
++	if (pmc_is_gp(pmc))
++		return pmc->eventsel & ARCH_PERFMON_EVENTSEL_INT;
 +
-+		MSR_AMD64_PERF_CNTR_GLOBAL_CTL,
-+		MSR_AMD64_PERF_CNTR_GLOBAL_STATUS,
-+		MSR_AMD64_PERF_CNTR_GLOBAL_STATUS_CLR,
-+		MSR_AMD64_PERF_CNTR_GLOBAL_STATUS_SET,
- 	};
- 	int i, j;
++	fixed_ctr_ctrl = fixed_ctrl_field(pmc_to_pmu(pmc)->fixed_ctr_ctrl,
++					  pmc->idx - KVM_FIXED_PMC_BASE_IDX);
++	return fixed_ctr_ctrl & INTEL_FIXED_0_ENABLE_PMI;
++}
++
+ static void kvm_pmu_incr_counter(struct kvm_pmc *pmc)
+ {
+-	pmc->emulated_counter++;
+-	kvm_pmu_request_counter_reprogram(pmc);
++	struct kvm_vcpu *vcpu = pmc->vcpu;
++
++	/*
++	 * For perf-based PMUs, accumulate software-emulated events separately
++	 * from pmc->counter, as pmc->counter is offset by the count of the
++	 * associated perf event. Request reprogramming, which will consult
++	 * both emulated and hardware-generated events to detect overflow.
++	 */
++	if (!kvm_vcpu_has_mediated_pmu(vcpu)) {
++		pmc->emulated_counter++;
++		kvm_pmu_request_counter_reprogram(pmc);
++		return;
++	}
++
++	/*
++	 * For mediated PMUs, pmc->counter is updated when the vCPU's PMU is
++	 * put, and will be loaded into hardware when the PMU is loaded. Simply
++	 * increment the counter and signal overflow if it wraps to zero.
++	 */
++	pmc->counter = (pmc->counter + 1) & pmc_bitmask(pmc);
++	if (!pmc->counter) {
++		pmc_to_pmu(pmc)->global_status |= BIT_ULL(pmc->idx);
++		if (pmc_is_pmi_enabled(pmc))
++			kvm_make_request(KVM_REQ_PMI, vcpu);
++	}
+ }
  
+ static inline bool cpl_is_matched(struct kvm_pmc *pmc)
 -- 
 2.52.0.223.gf5cc29aaa4-goog
 
