@@ -4,71 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 49717D3ABC8
-	for <kvm-riscv@archiver.kernel.org>; Sat,  6 Dec 2025 00:23:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 77622D3ABC7
+	for <kvm-riscv@archiver.kernel.org>; Sat,  6 Dec 2025 00:24:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:Reply-To:List-Subscribe:List-Help:
 	List-Post:List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID
 	:References:Mime-Version:In-Reply-To:Date:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=hkgddsdotZVDeSEpqcVwNzCMnvkMvHnnjGYXYA76Tys=; b=GF5vmToW/UKYQn
-	tnjlWDdLxFBR8cSDJP9CZVHhp0Lq36gMkbWhQSmfC6hRL4yF1Ts5eySupP1ZjhTpffVeUHWmXnXru
-	0WQYh/7brHvii0tX2a1qqHry4H0KaqZ7Es9KHDnM4JMWwVMsJOXXoMmvDd5j+F50XlS3stO4YLgaS
-	WDChSpRSt5Y5s5mGVLFhlCObGOYRwRKrqm9hg9myyo90hwyL/3LH2Y0ZeA2D74joahOYUxS9Cyhps
-	jP/Hl62yXH8D6ZCzgmPjkXZlnY8M3AdE+qwdXiawa9h+Ozlf45NYyiasPPtQALaO3WfgBnapMCKHz
-	dc0DSrVffviefsRu4Fiw==;
+	List-Owner; bh=yHT2yvHuj76Mh5elGcUVhODDj45HIcKN0kELTy2kmK8=; b=aq1dFiCwZYX/mv
+	v8OTIKnJ7TguGPpkf8IFz8WECHwnTJ/4D1QE+Fpwfs+FqjD9o18w2yzdrGR0zY9oL2bIs1Hlsiqd2
+	KpJ6JAW6IDDo2o2leZpHzUJdwtZJ1loVqyloZgGHenv1XniGKzshM93lnP9sXBoA2/lsqBoay6RNq
+	c4Ikxn6T9qqB+TupRBgdhA6RR5O+gFUYIFEAYQUfb9BEfFaov+KNfOFAFf9N9Jx5URfxz5SXN1hs8
+	6P7t+VdiYyqPNnlFzqEpmhNRTorqovXJ6DKD900Lz7Hcu3vedi1CW9ovc1FDNSrkm6nQG2buJvJX+
+	hhYUarKHI7uf0oGQ8PTg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vRg5Y-0000000AMGO-45wY;
-	Sat, 06 Dec 2025 00:23:53 +0000
+	id 1vRg5o-0000000AMI4-13Yy;
+	Sat, 06 Dec 2025 00:24:08 +0000
 Received: from mail-pl1-x64a.google.com ([2607:f8b0:4864:20::64a])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vRg5W-0000000AMG6-3xZY
+	id 1vRg5l-0000000AMHV-29FP
 	for kvm-riscv@lists.infradead.org;
-	Sat, 06 Dec 2025 00:23:52 +0000
-Received: by mail-pl1-x64a.google.com with SMTP id d9443c01a7336-29806c42760so76406955ad.2
-        for <kvm-riscv@lists.infradead.org>; Fri, 05 Dec 2025 16:23:49 -0800 (PST)
+	Sat, 06 Dec 2025 00:24:06 +0000
+Received: by mail-pl1-x64a.google.com with SMTP id d9443c01a7336-2958c80fcabso58798545ad.0
+        for <kvm-riscv@lists.infradead.org>; Fri, 05 Dec 2025 16:24:04 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1764980629; x=1765585429; darn=lists.infradead.org;
+        d=google.com; s=20230601; t=1764980644; x=1765585444; darn=lists.infradead.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:from:to:cc:subject:date:message-id:reply-to;
-        bh=vcjFml1Ocn5W+9fhtxvlQ/X0kii0S1Hbwc7mdgCzQH4=;
-        b=xbxvY9ZDgys9inYWKLBOLkCO3x+kecsWp2/P9vanMAPnTlR1xBC/llH9D0wfEi6Khv
-         3EeoXU99DDyG4rE6lFxXrnR396o6fj/yWybY3KBW2J5wO3DNNjxjJBilxvAzI0c0QQm0
-         I6MTacrULGbvsFkrz9leGBSQgSH5w3pbmTsvYe+7fj5TgVOF/CoeOKgHsJPcammS1v96
-         OnRcM9JyMpugEehUqXUa5gp+q4zfcGilReh50ibHq/zRVHZ3EcO+e7TURcjeZpaGHvy/
-         12tcnpHD2vkZ/EckfvJxdICX6+qxIkIPBmX1JG6+MrlGhu/X9XxAGrde3GmdOdeYMBLK
-         LGFw==
+        bh=EW7FbaDPVd5t9h4ibnQZUOMw78F2xoAgB/he+4U2Bes=;
+        b=Pis/YvJg+YzHlB8nW4OGU2u0XkUN/uC2l0H8YKyAqyIVY4T456bR/REGpFQLDkL2ki
+         CPWKoad9BF0GdlEmx7w9sC6lUTT1tFJQlmqMv17ErG8QzSqypp13URE0jeS+v6DcBl3e
+         TtmkUfrGg/QEYjXAQI6RCa2RwEWHZgr6Sgyn5d0UatPqFHPQL2TQQt2wPX04dO4VuzuJ
+         sMc483iPbz4+maZ5Fqxv/j//Sw4Wf47mBWLAS/PVXFmwSeoTWN5FknKG0Pf4ssILLPNh
+         Ob3TIcL3xDQFD3D3ZDojIoIiV0Op8FSyz6qfDRiaKmIo4n0LOwApvQSbY8f32ZB9veQj
+         pn4Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1764980629; x=1765585429;
+        d=1e100.net; s=20230601; t=1764980644; x=1765585444;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=vcjFml1Ocn5W+9fhtxvlQ/X0kii0S1Hbwc7mdgCzQH4=;
-        b=hfqmRcd0+HP4pxV8atEclOb/d7mreWCS706s4M2zxiTV7aU+ZvkKPAfIPsBTyCZBds
-         jM5Gs3rzA994p7WMaO1JZJQzn4HmHQ7HNqko97w5orqwIsqrXd9EwIh5VvMzOB1GdOf4
-         O7vFrWyjHlCwD6uoStOfW/Gkl/HbqA4Dn/zLw3rcj2/+HRoQnYvulqVjvbfCadiF2WPz
-         zpqyEZcXBd8FUdq0h+zedHpagVsOZnOEjmov5+g9tMCWe/Bw6cA55LKeGeZDaxLEUA3J
-         RZqY8v81WwPzIFHZgkWyp5jD6YoWsCX0XTnzndevNIcX+WzeFY4zp+rWoSswQchcz7UF
-         M+SA==
-X-Forwarded-Encrypted: i=1; AJvYcCVUltG59epn9gXLj8qDmdmP5R9nlZHoszoIkVCY9DKmmdDqt+/G8Yd7CShvAV1nAqtU+Suigl1hxE4=@lists.infradead.org
-X-Gm-Message-State: AOJu0YwicyOH0gKStyA8KhdHWS6+ME+wPxf1NHkMEi1QFXPqegEHxx/A
-	clgKNeRY0xypLdBO+RYXRS8UT60vt8DC48vgBr0+qhwZefaSaMcF0GbNlQLqioVtITw/pD2q1Xh
-	EYF8McA==
-X-Google-Smtp-Source: AGHT+IEi41vT7k5Y8TL0eorj0ILiZzn3n1cXKu+mvARIF/KTkqiX2XdS9wsUu8uQeqy5b+ge2DTi5IOhdXM=
-X-Received: from pfmm14.prod.google.com ([2002:a05:6a00:248e:b0:7dd:8bba:63ae])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a00:2ea0:b0:7a9:8770:ce5a
- with SMTP id d2e1a72fcca58-7e8c3628897mr847803b3a.20.1764980303025; Fri, 05
- Dec 2025 16:18:23 -0800 (PST)
-Date: Fri,  5 Dec 2025 16:17:04 -0800
+        bh=EW7FbaDPVd5t9h4ibnQZUOMw78F2xoAgB/he+4U2Bes=;
+        b=ilXKW8659wNTKwEYPaojY9DYKsODp7T+UEXpHcRWn+/dh962uOTsR1jCD8VHg+w3Wy
+         V68d1zkt9M5p9foOuixEC4heb9tFCVOwfgxNmHCM9ZuhUMwh54Pg9Qq1hbjPYbMvNy/S
+         XKgjKIcv0hM20RB733QZ5EjRHZrhgAwDwovl0QszXTclpCZXVxcbVNggh9iv/Itn2WaX
+         v4aX79lSPt4/Wi/ahdJGkTa2Sc3T++OL20fwbSz3n9LIoEeZ2FyPEdyfbp6QFioDv9OI
+         qmgrqIs5irZEhspivalwoQt50YqzTi8OIgzq9kZ8nOVx7NF8m1zUj30CtGQUp0Yeomja
+         d3kg==
+X-Forwarded-Encrypted: i=1; AJvYcCVq3qDQSRHzpCeoLv/XIUb4xxaRBzdJcW0Muqfye2odU04/6vbWZcZcr0opjdAy/GjVr6mJCuQe18U=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yw2gWRyN+L+RRI7qArvilKJ7kzkUKnYlQFlmmtPwrQOFnO5y+az
+	r4P9b9GIraFY3FP9IBjhuSswHlIVfltgAr72vEn4udvBAEBpHgezcOtJVJJow73L4RTLXKE8O+B
+	G98hvKg==
+X-Google-Smtp-Source: AGHT+IEzWFttnZLEQAsOaxYvtzWLuPcRq6QltY73DikVd5gmywMn7Yi+CzZHr3S07fvHdxIzVSJyvXKfRes=
+X-Received: from plrc6.prod.google.com ([2002:a17:902:aa46:b0:29d:5afa:2de])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:903:32d0:b0:294:f310:5218
+ with SMTP id d9443c01a7336-29df4cb6bfamr6615315ad.0.1764980310360; Fri, 05
+ Dec 2025 16:18:30 -0800 (PST)
+Date: Fri,  5 Dec 2025 16:17:08 -0800
 In-Reply-To: <20251206001720.468579-1-seanjc@google.com>
 Mime-Version: 1.0
 References: <20251206001720.468579-1-seanjc@google.com>
 X-Mailer: git-send-email 2.52.0.223.gf5cc29aaa4-goog
-Message-ID: <20251206001720.468579-29-seanjc@google.com>
-Subject: [PATCH v6 28/44] KVM: x86/pmu: Disallow emulation in the fastpath if
- mediated PMCs are active
+Message-ID: <20251206001720.468579-33-seanjc@google.com>
+Subject: [PATCH v6 32/44] KVM: nSVM: Disable PMU MSR interception as
+ appropriate while running L2
 From: Sean Christopherson <seanjc@google.com>
 To: Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, 
 	Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>, 
@@ -86,8 +86,8 @@ Cc: linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev,
 	Dapeng Mi <dapeng1.mi@linux.intel.com>, Xiong Zhang <xiong.y.zhang@linux.intel.com>, 
 	Manali Shukla <manali.shukla@amd.com>, Jim Mattson <jmattson@google.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20251205_162350_979302_4288B18F 
-X-CRM114-Status: UNSURE (   9.94  )
+X-CRM114-CacheID: sfid-20251205_162405_555516_4FFF7B83 
+X-CRM114-Status: UNSURE (   9.52  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -106,74 +106,53 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Don't handle exits in the fastpath if emulation is required, i.e. if an
-instruction needs to be skipped, the mediated PMU is enabled, and one or
-more PMCs is counting instructions.  With the mediated PMU, KVM's cache of
-PMU state is inconsistent with respect to hardware until KVM exits the
-inner run loop (when the mediated PMU is "put").
+Add MSRs that might be passed through to L1 when running with a mediated
+PMU to the nested SVM's set of to-be-merged MSR indices, i.e. disable
+interception of PMU MSRs when running L2 if both KVM (L0) and L1 disable
+interception.  There is no need for KVM to interpose on such MSR accesses,
+e.g. if L1 exposes a mediated PMU (or equivalent) to L2.
 
-Reviewed-by: Sandipan Das <sandipan.das@amd.com>
 Tested-by: Xudong Hao <xudong.hao@intel.com>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/x86/kvm/pmu.h | 10 ++++++++++
- arch/x86/kvm/x86.c |  9 +++++++++
- 2 files changed, 19 insertions(+)
+ arch/x86/kvm/svm/nested.c | 18 +++++++++++++++++-
+ 1 file changed, 17 insertions(+), 1 deletion(-)
 
-diff --git a/arch/x86/kvm/pmu.h b/arch/x86/kvm/pmu.h
-index 25b583da9ee2..0925246731cb 100644
---- a/arch/x86/kvm/pmu.h
-+++ b/arch/x86/kvm/pmu.h
-@@ -234,6 +234,16 @@ static inline bool pmc_is_globally_enabled(struct kvm_pmc *pmc)
- 	return test_bit(pmc->idx, (unsigned long *)&pmu->global_ctrl);
- }
+diff --git a/arch/x86/kvm/svm/nested.c b/arch/x86/kvm/svm/nested.c
+index ba0f11c68372..93140ccec95d 100644
+--- a/arch/x86/kvm/svm/nested.c
++++ b/arch/x86/kvm/svm/nested.c
+@@ -194,7 +194,7 @@ void recalc_intercepts(struct vcpu_svm *svm)
+  * Hardcode the capacity of the array based on the maximum number of _offsets_.
+  * MSRs are batched together, so there are fewer offsets than MSRs.
+  */
+-static int nested_svm_msrpm_merge_offsets[7] __ro_after_init;
++static int nested_svm_msrpm_merge_offsets[10] __ro_after_init;
+ static int nested_svm_nr_msrpm_merge_offsets __ro_after_init;
+ typedef unsigned long nsvm_msrpm_merge_t;
  
-+static inline bool kvm_pmu_is_fastpath_emulation_allowed(struct kvm_vcpu *vcpu)
-+{
-+	struct kvm_pmu *pmu = vcpu_to_pmu(vcpu);
+@@ -222,6 +222,22 @@ int __init nested_svm_init_msrpm_merge_offsets(void)
+ 		MSR_IA32_LASTBRANCHTOIP,
+ 		MSR_IA32_LASTINTFROMIP,
+ 		MSR_IA32_LASTINTTOIP,
 +
-+	return !kvm_vcpu_has_mediated_pmu(vcpu) ||
-+	       !bitmap_intersects(pmu->pmc_counting_instructions,
-+				  (unsigned long *)&pmu->global_ctrl,
-+				  X86_PMC_IDX_MAX);
-+}
++		MSR_K7_PERFCTR0,
++		MSR_K7_PERFCTR1,
++		MSR_K7_PERFCTR2,
++		MSR_K7_PERFCTR3,
++		MSR_F15H_PERF_CTR0,
++		MSR_F15H_PERF_CTR1,
++		MSR_F15H_PERF_CTR2,
++		MSR_F15H_PERF_CTR3,
++		MSR_F15H_PERF_CTR4,
++		MSR_F15H_PERF_CTR5,
 +
- void kvm_pmu_deliver_pmi(struct kvm_vcpu *vcpu);
- void kvm_pmu_handle_event(struct kvm_vcpu *vcpu);
- int kvm_pmu_rdpmc(struct kvm_vcpu *vcpu, unsigned pmc, u64 *data);
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 589a309259f4..4683df775b0a 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -2215,6 +2215,9 @@ EXPORT_SYMBOL_FOR_KVM_INTERNAL(kvm_emulate_invd);
- 
- fastpath_t handle_fastpath_invd(struct kvm_vcpu *vcpu)
- {
-+	if (!kvm_pmu_is_fastpath_emulation_allowed(vcpu))
-+		return EXIT_FASTPATH_NONE;
-+
- 	if (!kvm_emulate_invd(vcpu))
- 		return EXIT_FASTPATH_EXIT_USERSPACE;
- 
-@@ -2271,6 +2274,9 @@ static inline bool kvm_vcpu_exit_request(struct kvm_vcpu *vcpu)
- 
- static fastpath_t __handle_fastpath_wrmsr(struct kvm_vcpu *vcpu, u32 msr, u64 data)
- {
-+	if (!kvm_pmu_is_fastpath_emulation_allowed(vcpu))
-+		return EXIT_FASTPATH_NONE;
-+
- 	switch (msr) {
- 	case APIC_BASE_MSR + (APIC_ICR >> 4):
- 		if (!lapic_in_kernel(vcpu) || !apic_x2apic_mode(vcpu->arch.apic) ||
-@@ -11714,6 +11720,9 @@ EXPORT_SYMBOL_FOR_KVM_INTERNAL(kvm_emulate_halt);
- 
- fastpath_t handle_fastpath_hlt(struct kvm_vcpu *vcpu)
- {
-+	if (!kvm_pmu_is_fastpath_emulation_allowed(vcpu))
-+		return EXIT_FASTPATH_NONE;
-+
- 	if (!kvm_emulate_halt(vcpu))
- 		return EXIT_FASTPATH_EXIT_USERSPACE;
++		MSR_AMD64_PERF_CNTR_GLOBAL_CTL,
++		MSR_AMD64_PERF_CNTR_GLOBAL_STATUS,
++		MSR_AMD64_PERF_CNTR_GLOBAL_STATUS_CLR,
++		MSR_AMD64_PERF_CNTR_GLOBAL_STATUS_SET,
+ 	};
+ 	int i, j;
  
 -- 
 2.52.0.223.gf5cc29aaa4-goog
