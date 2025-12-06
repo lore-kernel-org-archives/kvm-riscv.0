@@ -4,85 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8DD4ED3ABC4
-	for <kvm-riscv@archiver.kernel.org>; Sat,  6 Dec 2025 00:20:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7E0C1D3ABC6
+	for <kvm-riscv@archiver.kernel.org>; Sat,  6 Dec 2025 00:21:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:Reply-To:List-Subscribe:List-Help:
 	List-Post:List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID
 	:References:Mime-Version:In-Reply-To:Date:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=pE2occ8Ixs9kCzyOVaOw7jpjfOl+5j+Yun12VY+WkIs=; b=Vkdmdibkbvu4Eu
-	oUFbj7sa7KSUUPmd10hwX27kkxT5yEwW1mMEaENxzgQeExWSPLH/cXpP+jbKLcj5UqEIlay8V1ncU
-	OGqW+uEG7Z+PRQh3T5pHbfyhDMj5yw2L2AxLT7f7Bn3M+hOeSwHBiDwdKUZD+12CiGYCeNCqUp8Cq
-	kQwWAxN1/IE2UZSJ3AmTJRlVuav3wWawCEITRdYTraJI+TYTHI3EXLY6P6+c7NIbOXAZHoV9EJfBF
-	68uF4lYOgnavVm4M8Ff1V+sJEaAM1dHnVZ7/tpGtlSQ5y12s50shJikc8F7PZdpzNFaqKVPLVVULI
-	Ks2+v7lIMhTWkGU0i+8Q==;
+	List-Owner; bh=eHr9U5gDpoM6P4gidYemp4MiZvlCBHRL2aKnDmXwAtc=; b=qKyNFxmnxW3cV/
+	Iih4jMYWCbziktCcT3hk2SftpjwEjxbmtATr8bFn8/Mv1qQeVfXmPGFlpgHkO8K2JPfDwaSDGQZ/P
+	hlBUU/MFGw0aqjLmI3iKT/NvvIycmEKWocjrg2nSu1sOqA81l5mgsrGmqGrOeOeS86raaR2BeOx7p
+	QRWBR6BVhd0yWGg0hCt03achOHWpD3emjDksuvhE9RIitem0ZTO4uijRzUdirhrtKLEMlO/vEqN/Y
+	47CUtf38zWl/CFip09X5DqCx3YbX0lJgchRDwdC94B0TuvU+cHxjhwpzpdXY3vdPUfaVv2NWeRD/J
+	Do3RlItjdmlrHrrosU5g==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vRg2e-0000000AK8o-3XvA;
-	Sat, 06 Dec 2025 00:20:52 +0000
-Received: from casper.infradead.org ([2001:8b0:10b:1236::1])
+	id 1vRg2v-0000000AKav-3bt1;
+	Sat, 06 Dec 2025 00:21:09 +0000
+Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vRg0q-0000000AGTP-3fhR
+	id 1vRg1B-0000000AH3h-2LDD
 	for kvm-riscv@bombadil.infradead.org;
-	Sat, 06 Dec 2025 00:19:01 +0000
+	Sat, 06 Dec 2025 00:19:21 +0000
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=casper.20170209; h=Content-Type:Cc:To:From:Subject:
+	d=infradead.org; s=desiato.20200630; h=Content-Type:Cc:To:From:Subject:
 	Message-ID:References:Mime-Version:In-Reply-To:Date:Reply-To:Sender:
 	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=igvZhN+qFglUKI0D9M5DwytuE53IkpoWDDVxPCMFY70=; b=nkR3Ra75BdzPQbjK5hRW2UMF9q
-	lsD/qDhQJg6DTcPoeCfLj85oOw3NbTTe2dTOqB/Wpyy/9yhXKFyxcG7uRRRrcbgWpKFJVjCyeSbQC
-	xcVnlfNneyxpl3jHbrKovsUTccF3UCPXQuTftK9az9f+ka0mS7K+ID9l4MAvasrhYDheQhzkjggDQ
-	bGWxd75bNlCIwanIvnsKSq57bywATtG8uOfp0mK/3iXaYphfpHWTHYZ+JMuoT4Y7iuYYOFfRJtS/2
-	Dv2h83rx4MBGg4YkbcUGAwd/+/dPckMh0OwoWt+ZycNonFOPzqyXcLBfORZPWTPTTzfks8bBjlTtg
-	3BCjzDkw==;
-Received: from mail-pj1-f74.google.com ([209.85.216.74])
-	by casper.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vRg0k-00000006SoI-28wG
+	bh=dghHZC8C4J94U5X0EsLhdqx+qyyu5Gw9y0a71sLAgMI=; b=WGMqxMVTv7TOKUWPQxfo5N9F90
+	mDiNMnVVBSsffrYfa2LDZ/2SDdzabl0cXYzD8KWSjQtnwtOcmn1rnR7fnBS5HoZdP2tVi8hm40m4j
+	n5ehMWUAuST5WtsSdDJkW8JzOByeoejtkWxG7nlcUFk9ijnNyZ8MO2lDzpmqNnIySixNBw7ePsdlK
+	trW9CsBZcEsBzVri6UVaaIZNty6X/3fqwS5n5a/be1e3bpWUG4CxeKe4TCbUfdTjNmbjkaop/+Qkl
+	nplaOz3pMo6xToPYuBsyKuIfusGG+TQJhjdRoFEql802s7SCb8/yNW605VJKyERw9BrwUytzY/nNx
+	CLvaTyfA==;
+Received: from mail-pl1-x64a.google.com ([2607:f8b0:4864:20::64a])
+	by desiato.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1vRf9G-000000072vV-47ze
 	for kvm-riscv@lists.infradead.org;
-	Sat, 06 Dec 2025 00:18:59 +0000
-Received: by mail-pj1-f74.google.com with SMTP id 98e67ed59e1d1-343daf0f488so2945837a91.1
-        for <kvm-riscv@lists.infradead.org>; Fri, 05 Dec 2025 16:18:53 -0800 (PST)
+	Fri, 05 Dec 2025 23:23:41 +0000
+Received: by mail-pl1-x64a.google.com with SMTP id d9443c01a7336-297e5a18652so32996375ad.1
+        for <kvm-riscv@lists.infradead.org>; Fri, 05 Dec 2025 16:18:57 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1764980331; x=1765585131; darn=lists.infradead.org;
+        d=google.com; s=20230601; t=1764980335; x=1765585135; darn=lists.infradead.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:from:to:cc:subject:date:message-id:reply-to;
-        bh=igvZhN+qFglUKI0D9M5DwytuE53IkpoWDDVxPCMFY70=;
-        b=B590VdDDBmjaZeBvXfIebozpnsHny4TzX2JokZMkKvKt6JRK+4WDkxduoL0iSTbq4J
-         ZOdupiphhdauR9ia4I0DgGe/zhGzTYY484p/c3mHps6uxZR1J3HWcz4nOh3oqjlvKfdk
-         wsJP90ln87/9QLV25H0hKOzaBpI7Rk4HOYvYMTK4MS/TXj1/m41ijv16ihsyUe9WSTrp
-         Ew5dal6blPirsppjDwOlRQaC5ETtlgMw7JwyYHJmA52Mo6I19MlcSVE3/qss9XMEMdv1
-         8A/14EKGAFuSuFO94BzazwPdmxXaxwLqm6jAloaAdBWX9Gd4pVoiL41r3xrVzS4roFxE
-         tKHg==
+        bh=dghHZC8C4J94U5X0EsLhdqx+qyyu5Gw9y0a71sLAgMI=;
+        b=H853E1eJDiwe+J5ShPlzUr/BK6hbGKdf+jrD01phUqk0GuY73bTM+rbgbRucj5ee9F
+         TSJWVvL+Yo+mty91X4v2kp3zMLI9aYzLF9+v3mkPDO9cP5FvQCbnkIiaUpZdUE/iAUGa
+         kKsr2+dQiNYdIT/Xm0EYTY+NN3NLRMmf3cPopktdWJAU/a56LP0s21cIN+u4IBEnedBY
+         5cuLOPe7C8JyMpMFTvpCjBF5p+EXi1WjJKtGTzTBhlmsAy7rbeLkXtFcMlz4YYWOwHDT
+         L34NmmO8o6Xw5GG8HksoSkGqA9Nruo57sHfudQe7f3Qi7PqIMRtxQvFr1509ed1FUjfr
+         EiZQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1764980331; x=1765585131;
+        d=1e100.net; s=20230601; t=1764980335; x=1765585135;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=igvZhN+qFglUKI0D9M5DwytuE53IkpoWDDVxPCMFY70=;
-        b=GDZlMVZYlJe0+kH5H/az7Mx0YoVx220Bo1x6QLTqqq8Q/z0S8G2hT4QGMX+R5WXjKZ
-         Wc43m+k8CAHGUljZPoTXd3C0FCrw+iYbeX62/GYYqDB/Fiw0pdD17Rd7NAVKFjv5J4Fl
-         406/lw/ETV9CITAwxhaVPfkvKWbZ+37O7B6QTtShW8ezQ8IxRHLatiPzFtV97yxSlr5f
-         +9mddVENQZchvj/jAbhwq4rGjH8+FAnpCu9j1cWFrCOyjfvQyR6nTuPL79UQWvJW0jJ7
-         NZ1udx5d605l2SdcBkq0bRmTUAYCJF3uMw3e1rhZhR8X7rRe4iujwQlLRn3CgUaK2xvh
-         QAFg==
-X-Forwarded-Encrypted: i=1; AJvYcCVmnFiNIM8W1h/f/P0qYKDvP72ofIa1XrG5rBcIZ8zFLGpKB1pux0sm13oIHh8qFvK/MvoAAKl4AMA=@lists.infradead.org
-X-Gm-Message-State: AOJu0YxXNjvlUvBi678XijtHAj5WWUFMy0LpbHlhGazm5LrA6gWDfDfT
-	9GHm/bePLxIOHsGNzA7d6VTHBO3QXQb4vAc4GBevmB2Wq67XAQy3ST+wWqrPYP9/SuejlWCWch3
-	tYeGhlg==
-X-Google-Smtp-Source: AGHT+IELoQ04EyxWWYOkaKJLtcnZ6DpPNmUnBZcM+48DKxRjXGIekKbShjkFhb2K5/ObBWXw0pAx2mabe98=
-X-Received: from pjbsk6.prod.google.com ([2002:a17:90b:2dc6:b0:340:a5c6:acc3])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90a:fc47:b0:343:d70e:bef0
- with SMTP id 98e67ed59e1d1-349a267fbc8mr680584a91.21.1764980331409; Fri, 05
- Dec 2025 16:18:51 -0800 (PST)
-Date: Fri,  5 Dec 2025 16:17:18 -0800
+        bh=dghHZC8C4J94U5X0EsLhdqx+qyyu5Gw9y0a71sLAgMI=;
+        b=dJTvjDvWUArAbQ1njivOb5zTnyvSP9PRRo0S5KJ3qtE/ORUIDdkLWtiEQ1RfdO1ttB
+         n1bJkSiZEpfvzBebxVd68ielJ292Oi3Ewg2yXuFiGpHulF57+29kBoeGCHQeWO70uq6J
+         qjcfq10cPXnEGR+koXvenaGuBtMBACrltPtXqwhfsMDUTxU5U9OtG+8+7fzy8uv50s/u
+         Itmn9gD/wAW5tIYiMSNhydFmnH0dg/FIq6VX3dh4F4w+5ztTHsZ554q7ck4vOKNhmYKh
+         TQ6fo5iPnvLirNMY/v26hzruGdjSmWgeVTN3LZ5xPA0RqYdP06r0B5OZodZFJZE7GysJ
+         9urA==
+X-Forwarded-Encrypted: i=1; AJvYcCW5rsTVwYJ4s+1K/IJbQQd+mE0GGaWfFLzoZ+bY5IZu1e8gBcrllNqxPHo2RcGy1Lu8N8OJvpv41+o=@lists.infradead.org
+X-Gm-Message-State: AOJu0YxDFVm8X5EWfG+sA8JKoHJD9B3eFgX1z3YBSsXaWhMiyY2un3J8
+	sy2WE6MBFcgO83XBuWVrgSd1kw4LToabRPaP90bY9Kn2VEEajyxhYZxiJ5vVr0ukOQf+JjQGIf+
+	iqqM+vw==
+X-Google-Smtp-Source: AGHT+IGiF/KlyKw3jh5Mhte5oVO+4hAY3tNIkOZ4DdyLYn/+Z0r5Rwc99w3eHOaoOE5Aq4b+oO/Y2gl+Kqw=
+X-Received: from pgbcp9.prod.google.com ([2002:a05:6a02:4009:b0:b99:9560:3dc9])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a20:e290:b0:35b:c84f:c7b0
+ with SMTP id adf61e73a8af0-36617e37e14mr1031726637.8.1764980334861; Fri, 05
+ Dec 2025 16:18:54 -0800 (PST)
+Date: Fri,  5 Dec 2025 16:17:20 -0800
 In-Reply-To: <20251206001720.468579-1-seanjc@google.com>
 Mime-Version: 1.0
 References: <20251206001720.468579-1-seanjc@google.com>
 X-Mailer: git-send-email 2.52.0.223.gf5cc29aaa4-goog
-Message-ID: <20251206001720.468579-43-seanjc@google.com>
-Subject: [PATCH v6 42/44] KVM: VMX: Dedup code for adding MSR to VMCS's auto list
+Message-ID: <20251206001720.468579-45-seanjc@google.com>
+Subject: [PATCH v6 44/44] KVM: VMX: Add mediated PMU support for CPUs without
+ "save perf global ctrl"
 From: Sean Christopherson <seanjc@google.com>
 To: Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, 
 	Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>, 
@@ -100,8 +101,8 @@ Cc: linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev,
 	Dapeng Mi <dapeng1.mi@linux.intel.com>, Xiong Zhang <xiong.y.zhang@linux.intel.com>, 
 	Manali Shukla <manali.shukla@amd.com>, Jim Mattson <jmattson@google.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20251206_001854_690573_C80A5F90 
-X-CRM114-Status: GOOD (  10.86  )
+X-CRM114-CacheID: sfid-20251205_232339_522612_46B9696A 
+X-CRM114-Status: GOOD (  17.08  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -119,81 +120,164 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Add a helper to add an MSR to a VMCS's "auto" list to deduplicate the code
-in add_atomic_switch_msr(), and so that the functionality can be used in
-the future for managing the MSR auto-store list.
+Extend mediated PMU support for Intel CPUs without support for saving
+PERF_GLOBAL_CONTROL into the guest VMCS field on VM-Exit, e.g. for Skylake
+and its derivatives, as well as Icelake.  While supporting CPUs without
+VM_EXIT_SAVE_IA32_PERF_GLOBAL_CTRL isn't completely trivial, it's not that
+complex either.  And not supporting such CPUs would mean not supporting 7+
+years of Intel CPUs released in the past 10 years.
 
-No functional change intended.
+On VM-Exit, immediately propagate the saved PERF_GLOBAL_CTRL to the VMCS
+as well as KVM's software cache so that KVM doesn't need to add full EXREG
+tracking of PERF_GLOBAL_CTRL.  In practice, the vast majority of VM-Exits
+won't trigger software writes to guest PERF_GLOBAL_CTRL, so deferring the
+VMWRITE to the next VM-Enter would only delay the inevitable without
+batching/avoiding VMWRITEs.
+
+Note!  Take care to refresh VM_EXIT_MSR_STORE_COUNT on nested VM-Exit, as
+it's unfortunately possible that KVM could recalculate MSR intercepts
+while L2 is active, e.g. if userspace loads nested state and _then_ sets
+PERF_CAPABILITIES.  Eating the VMWRITE on every nested VM-Exit is
+unfortunate, but that's a pre-existing problem and can/should be solved
+separately, e.g. modifying the number of auto-load entries while L2 is
+active is also uncommon on modern CPUs.
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/x86/kvm/vmx/vmx.c | 41 +++++++++++++++++++----------------------
- 1 file changed, 19 insertions(+), 22 deletions(-)
+ arch/x86/kvm/vmx/nested.c    |  6 ++++-
+ arch/x86/kvm/vmx/pmu_intel.c |  7 -----
+ arch/x86/kvm/vmx/vmx.c       | 52 ++++++++++++++++++++++++++++++++----
+ 3 files changed, 52 insertions(+), 13 deletions(-)
 
+diff --git a/arch/x86/kvm/vmx/nested.c b/arch/x86/kvm/vmx/nested.c
+index 614b789ecf16..1ee1edc8419d 100644
+--- a/arch/x86/kvm/vmx/nested.c
++++ b/arch/x86/kvm/vmx/nested.c
+@@ -5142,7 +5142,11 @@ void __nested_vmx_vmexit(struct kvm_vcpu *vcpu, u32 vm_exit_reason,
+ 
+ 	kvm_nested_vmexit_handle_ibrs(vcpu);
+ 
+-	/* Update any VMCS fields that might have changed while L2 ran */
++	/*
++	 * Update any VMCS fields that might have changed while vmcs02 was the
++	 * active VMCS.  The tracking is per-vCPU, not per-VMCS.
++	 */
++	vmcs_write32(VM_EXIT_MSR_STORE_COUNT, vmx->msr_autostore.nr);
+ 	vmcs_write32(VM_EXIT_MSR_LOAD_COUNT, vmx->msr_autoload.host.nr);
+ 	vmcs_write32(VM_ENTRY_MSR_LOAD_COUNT, vmx->msr_autoload.guest.nr);
+ 	vmcs_write64(TSC_OFFSET, vcpu->arch.tsc_offset);
+diff --git a/arch/x86/kvm/vmx/pmu_intel.c b/arch/x86/kvm/vmx/pmu_intel.c
+index 55249fa4db95..27eb76e6b6a0 100644
+--- a/arch/x86/kvm/vmx/pmu_intel.c
++++ b/arch/x86/kvm/vmx/pmu_intel.c
+@@ -777,13 +777,6 @@ static bool intel_pmu_is_mediated_pmu_supported(struct x86_pmu_capability *host_
+ 	if (WARN_ON_ONCE(!cpu_has_load_perf_global_ctrl()))
+ 		return false;
+ 
+-	/*
+-	 * KVM doesn't yet support mediated PMU on CPUs without support for
+-	 * saving PERF_GLOBAL_CTRL via a dedicated VMCS field.
+-	 */
+-	if (!cpu_has_save_perf_global_ctrl())
+-		return false;
+-
+ 	return true;
+ }
+ 
 diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
-index 018e01daab68..3f64d4b1b19c 100644
+index 6a17cb90eaf4..ba1262c3e3ff 100644
 --- a/arch/x86/kvm/vmx/vmx.c
 +++ b/arch/x86/kvm/vmx/vmx.c
-@@ -1093,12 +1093,28 @@ static __always_inline void add_atomic_switch_msr_special(struct vcpu_vmx *vmx,
- 	vm_exit_controls_setbit(vmx, exit);
+@@ -1204,6 +1204,17 @@ static bool update_transition_efer(struct vcpu_vmx *vmx)
+ 	return true;
  }
  
-+static void vmx_add_auto_msr(struct vmx_msrs *m, u32 msr, u64 value,
-+			     unsigned long vmcs_count_field, struct kvm *kvm)
++static void vmx_add_autostore_msr(struct vcpu_vmx *vmx, u32 msr)
 +{
-+	int i;
-+
-+	i = vmx_find_loadstore_msr_slot(m, msr);
-+	if (i < 0) {
-+		if (KVM_BUG_ON(m->nr == MAX_NR_LOADSTORE_MSRS, kvm))
-+			return;
-+
-+		i = m->nr++;
-+		m->val[i].index = msr;
-+		vmcs_write32(vmcs_count_field, m->nr);
-+	}
-+	m->val[i].value = value;
++	vmx_add_auto_msr(&vmx->msr_autostore, msr, 0, VM_EXIT_MSR_STORE_COUNT,
++			 vmx->vcpu.kvm);
 +}
 +
- static void add_atomic_switch_msr(struct vcpu_vmx *vmx, unsigned msr,
- 				  u64 guest_val, u64 host_val)
++static void vmx_remove_autostore_msr(struct vcpu_vmx *vmx, u32 msr)
++{
++	vmx_remove_auto_msr(&vmx->msr_autostore, msr, VM_EXIT_MSR_STORE_COUNT);
++}
++
+ #ifdef CONFIG_X86_32
+ /*
+  * On 32-bit kernels, VM exits still load the FS and GS bases from the
+@@ -4225,6 +4236,8 @@ void pt_update_intercept_for_msr(struct kvm_vcpu *vcpu)
+ 
+ static void vmx_recalc_pmu_msr_intercepts(struct kvm_vcpu *vcpu)
  {
- 	struct msr_autoload *m = &vmx->msr_autoload;
- 	struct kvm *kvm = vmx->vcpu.kvm;
--	int i;
++	u64 vm_exit_controls_bits = VM_EXIT_LOAD_IA32_PERF_GLOBAL_CTRL |
++				    VM_EXIT_SAVE_IA32_PERF_GLOBAL_CTRL;
+ 	bool has_mediated_pmu = kvm_vcpu_has_mediated_pmu(vcpu);
+ 	struct kvm_pmu *pmu = vcpu_to_pmu(vcpu);
+ 	struct vcpu_vmx *vmx = to_vmx(vcpu);
+@@ -4234,12 +4247,19 @@ static void vmx_recalc_pmu_msr_intercepts(struct kvm_vcpu *vcpu)
+ 	if (!enable_mediated_pmu)
+ 		return;
  
- 	switch (msr) {
- 	case MSR_EFER:
-@@ -1132,27 +1148,8 @@ static void add_atomic_switch_msr(struct vcpu_vmx *vmx, unsigned msr,
- 		wrmsrq(MSR_IA32_PEBS_ENABLE, 0);
- 	}
++	if (!cpu_has_save_perf_global_ctrl()) {
++		vm_exit_controls_bits &= ~VM_EXIT_SAVE_IA32_PERF_GLOBAL_CTRL;
++
++		if (has_mediated_pmu)
++			vmx_add_autostore_msr(vmx, MSR_CORE_PERF_GLOBAL_CTRL);
++		else
++			vmx_remove_autostore_msr(vmx, MSR_CORE_PERF_GLOBAL_CTRL);
++	}
++
+ 	vm_entry_controls_changebit(vmx, VM_ENTRY_LOAD_IA32_PERF_GLOBAL_CTRL,
+ 				    has_mediated_pmu);
  
--	i = vmx_find_loadstore_msr_slot(&m->guest, msr);
--	if (i < 0) {
--		if (KVM_BUG_ON(m->guest.nr == MAX_NR_LOADSTORE_MSRS, kvm))
--			return;
--
--		i = m->guest.nr++;
--		m->guest.val[i].index = msr;
--		vmcs_write32(VM_ENTRY_MSR_LOAD_COUNT, m->guest.nr);
--	}
--	m->guest.val[i].value = guest_val;
--
--	i = vmx_find_loadstore_msr_slot(&m->host, msr);
--	if (i < 0) {
--		if (KVM_BUG_ON(m->host.nr == MAX_NR_LOADSTORE_MSRS, kvm))
--			return;
--
--		i = m->host.nr++;
--		m->host.val[i].index = msr;
--		vmcs_write32(VM_EXIT_MSR_LOAD_COUNT, m->host.nr);
--	}
--	m->host.val[i].value = host_val;
-+	vmx_add_auto_msr(&m->guest, msr, guest_val, VM_ENTRY_MSR_LOAD_COUNT, kvm);
-+	vmx_add_auto_msr(&m->guest, msr, host_val, VM_EXIT_MSR_LOAD_COUNT, kvm);
+-	vm_exit_controls_changebit(vmx, VM_EXIT_LOAD_IA32_PERF_GLOBAL_CTRL |
+-					VM_EXIT_SAVE_IA32_PERF_GLOBAL_CTRL,
+-				   has_mediated_pmu);
++	vm_exit_controls_changebit(vmx, vm_exit_controls_bits, has_mediated_pmu);
+ 
+ 	for (i = 0; i < pmu->nr_arch_gp_counters; i++) {
+ 		vmx_set_intercept_for_msr(vcpu, MSR_IA32_PERFCTR0 + i,
+@@ -7346,6 +7366,29 @@ static void atomic_switch_perf_msrs(struct vcpu_vmx *vmx)
+ 					      msrs[i].host);
  }
  
- static bool update_transition_efer(struct vcpu_vmx *vmx)
++static void vmx_refresh_guest_perf_global_control(struct kvm_vcpu *vcpu)
++{
++	struct kvm_pmu *pmu = vcpu_to_pmu(vcpu);
++	struct vcpu_vmx *vmx = to_vmx(vcpu);
++
++	if (msr_write_intercepted(vmx, MSR_CORE_PERF_GLOBAL_CTRL))
++		return;
++
++	if (!cpu_has_save_perf_global_ctrl()) {
++		int slot = vmx_find_loadstore_msr_slot(&vmx->msr_autostore,
++						       MSR_CORE_PERF_GLOBAL_CTRL);
++
++		if (WARN_ON_ONCE(slot < 0))
++			return;
++
++		pmu->global_ctrl = vmx->msr_autostore.val[slot].value;
++		vmcs_write64(GUEST_IA32_PERF_GLOBAL_CTRL, pmu->global_ctrl);
++		return;
++	}
++
++	pmu->global_ctrl = vmcs_read64(GUEST_IA32_PERF_GLOBAL_CTRL);
++}
++
+ static void vmx_update_hv_timer(struct kvm_vcpu *vcpu, bool force_immediate_exit)
+ {
+ 	struct vcpu_vmx *vmx = to_vmx(vcpu);
+@@ -7631,8 +7674,7 @@ fastpath_t vmx_vcpu_run(struct kvm_vcpu *vcpu, u64 run_flags)
+ 
+ 	vmx->loaded_vmcs->launched = 1;
+ 
+-	if (!msr_write_intercepted(vmx, MSR_CORE_PERF_GLOBAL_CTRL))
+-		vcpu_to_pmu(vcpu)->global_ctrl = vmcs_read64(GUEST_IA32_PERF_GLOBAL_CTRL);
++	vmx_refresh_guest_perf_global_control(vcpu);
+ 
+ 	vmx_recover_nmi_blocking(vmx);
+ 	vmx_complete_interrupts(vmx);
 -- 
 2.52.0.223.gf5cc29aaa4-goog
 
