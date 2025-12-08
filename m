@@ -4,57 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E54BDD3B7DD
-	for <kvm-riscv@archiver.kernel.org>; Mon,  8 Dec 2025 09:32:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3EBEDD3ABEF
+	for <kvm-riscv@archiver.kernel.org>; Mon,  8 Dec 2025 09:34:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:
 	Subject:MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=DBB6aHU//thEV3FYHa87P+lA1z47VHDl0v+MO91bpGQ=; b=kCZL3EUVhqa9MT
-	8gB0z267qSm2Zu9caD1/uvPjWLlgVlM+9nxmuMO+kDTtitabQTFxkYJfXYIMjZUhVa4a+EL+ZglKf
-	ONCR1aPZdNmapqoMJl9o+ncolRaUf5cEuHFg8Ue//WhlMc5e2JaLFCjMm4cxjSw+Ou2o/p3UkF1bf
-	v/SEBpgyrkHUF7rmrtd58b0Zp46XU9TpeYAB4jXmz3Kcy4XSAT17XO4f9fEDIIozjsem6UvRP9Q9M
-	gGJEglqjRIH6h3X19XKJpTNNZVGOZZJRPptTIb2n6eVNmW5g9r4EQuX52eQAlQPcVpnkn8kndGnpF
-	buqgURUf+Hfnq1Q2ZmMw==;
+	List-Owner; bh=1I3urQ6Osy09ltvRYT/K7Y8MKGByLmHMlu5YKe7JK8w=; b=rKDgl1NOKVS41O
+	W1sGI7J/Un+57DcZ7PpOWL4AtNA15myN3W5QubdCxBEnyf5ix2smSTh/OgFv+VYF5jetC8JUkM7ae
+	A639BW5Lbios+2UVnvKSvK/8ptyHszBYjnuPbgBl/8kG8lt0lPGFV9kBvpoLcp5INQvrotU4+cv4S
+	45y1LRo6WlgGmGgmPoyh45Z0ZCmtlArI8LgLSWud9L/QYr2219b3C9MlFejlWlj0PI0MG21poR9Rn
+	84WZQvLnVf22dZ12awlb2nXnAKreeCAJfSt+1jX8Dn/8EEaQ2KMZdflPPGqZCF9scPc8O/h4fe2Zw
+	Pf3q+wHefHhU9LNzqQwA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vSXbz-0000000Cshq-2qEt;
-	Mon, 08 Dec 2025 09:32:55 +0000
-Received: from mgamail.intel.com ([192.198.163.14])
+	id 1vSXdi-0000000Ct0C-3yCf;
+	Mon, 08 Dec 2025 09:34:43 +0000
+Received: from mgamail.intel.com ([198.175.65.16])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vSXbx-0000000Csgn-0q7V;
-	Mon, 08 Dec 2025 09:32:54 +0000
+	id 1vSXde-0000000Cszh-1GVi;
+	Mon, 08 Dec 2025 09:34:41 +0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1765186373; x=1796722373;
+  t=1765186479; x=1796722479;
   h=message-id:date:mime-version:subject:to:cc:references:
    from:in-reply-to:content-transfer-encoding;
-  bh=pukd5DIniWoie9kGMG9/80bzu02vevF6aHW9X0aaot4=;
-  b=KdXhuuuH2X2O8czSNlfvg+iMkrfMizeA1G1QeVWqCvJW+XNvT3L+/YDg
-   3L6n5TlDWlJyIa/ShhDpkdMSPacyrWj6BsKIQPAsdygCZDfZywnbudEXJ
-   xnk+vFB/gi5HMG3I1h9DDt1eybdUHzbUFxECh0ZqyVam79fXHlhStBQrn
-   H0BPw3FppsC76lNnBpJBFmz0UFaI/EKs7Ll+93bFOXkz0b6VryUcq0QhT
-   49sJ4e8g/idH1V5iPSYXMVD8a4tAuh3XiDGKOsGGTYtUFJbsJ1n3DjKdy
-   GQx1HmAW6mzn8W2nrCpnXxl4r1AThKKWy+EB2PxjNZYLOlWPu9l40XQAv
-   w==;
-X-CSE-ConnectionGUID: rc9QuI65QKSLtNMlDD/oxw==
-X-CSE-MsgGUID: nlxLaaIbTomx6+vY7j18mQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11635"; a="67161248"
+  bh=nSxjb3iSvlhZrRlAmKEmJNxO+kFHROtO7j/bMcBHd/4=;
+  b=CtNSkcDZOXLQqdVxNjx8qpbWNt0pPLZ3hN5IUwPvint6WMZq0Liof7eL
+   zSK7zwYP7rzJ0ynsm3sI7KDH+aFMDHfNkxZvNs1lvY8YlVc7YeRT+TpGR
+   9Frqp6IAFRGmlJ3RC/dlknseVk4yIZjNKj1H9uzIedXBI0JMjvgTKPztF
+   wBuIkR6o9suXDufSBeFmbjeY0QgF3D/BAenlSU+fdqCzL8hfHc220cFmd
+   fIrvIYoywERsX4oNd0fKT5usPA/qFceKX6aja7GPTYSUBg6iz/SQOUlFi
+   8nR7MPDzFzPw2h9ve0Trp8QzY8HF+/xmQv02MvyBet6BZ1FkK2sF8UMv9
+   A==;
+X-CSE-ConnectionGUID: k7Bn4DJtSEW1B/733w3FXQ==
+X-CSE-MsgGUID: PHidTj2/S7GWspgTJHDnyQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11635"; a="67288126"
 X-IronPort-AV: E=Sophos;i="6.20,258,1758610800"; 
-   d="scan'208";a="67161248"
-Received: from orviesa001.jf.intel.com ([10.64.159.141])
-  by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Dec 2025 01:32:52 -0800
-X-CSE-ConnectionGUID: zIoGPMZ2RX+cbRJrhnH6Bg==
-X-CSE-MsgGUID: GKzYOiuHTO6nUrMMOo/4dg==
+   d="scan'208";a="67288126"
+Received: from fmviesa008.fm.intel.com ([10.60.135.148])
+  by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Dec 2025 01:34:38 -0800
+X-CSE-ConnectionGUID: jJDDhXNuTkyNrjKmaswHjw==
+X-CSE-MsgGUID: 4F6FhXpxRu6nERmNjwerUg==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.20,258,1758610800"; 
-   d="scan'208";a="233262642"
+   d="scan'208";a="196157352"
 Received: from dapengmi-mobl1.ccr.corp.intel.com (HELO [10.124.240.12]) ([10.124.240.12])
-  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Dec 2025 01:32:45 -0800
-Message-ID: <4b82ce2f-ff87-4d6b-9cee-565f56bb75ca@linux.intel.com>
-Date: Mon, 8 Dec 2025 17:32:41 +0800
+  by fmviesa008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Dec 2025 01:34:30 -0800
+Message-ID: <04c70698-e523-43ae-9092-f360c848d797@linux.intel.com>
+Date: Mon, 8 Dec 2025 17:34:27 +0800
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH v6 39/44] KVM: VMX: Bug the VM if either MSR auto-load
@@ -82,7 +82,7 @@ Content-Language: en-US
 From: "Mi, Dapeng" <dapeng1.mi@linux.intel.com>
 In-Reply-To: <20251206001720.468579-40-seanjc@google.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20251208_013253_287493_6D0E0A29 
+X-CRM114-CacheID: sfid-20251208_013438_386335_DA6F7F10 
 X-CRM114-Status: GOOD (  17.83  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -138,16 +138,16 @@ On 12/6/2025 8:17 AM, Sean Christopherson wrote:
 > -				"Can't add msr %x\n", msr);
 > +	if (KVM_BUG_ON(i < 0 && m->guest.nr == MAX_NR_LOADSTORE_MSRS, kvm) ||
 > +	    KVM_BUG_ON(j < 0 &&  m->host.nr == MAX_NR_LOADSTORE_MSRS, kvm))
+
+nit: Remove one extra space before "m->host.nr".
+
+
 >  		return;
 > -	}
 > +
 >  	if (i < 0) {
 >  		i = m->guest.nr++;
 >  		vmcs_write32(VM_ENTRY_MSR_LOAD_COUNT, m->guest.nr);
-
-Reviewed-by: Dapeng Mi <dapeng1.mi@linux.intel.com>
-
-
 
 -- 
 kvm-riscv mailing list
