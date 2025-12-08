@@ -4,61 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2CE7BD3ABEF
-	for <kvm-riscv@archiver.kernel.org>; Mon,  8 Dec 2025 09:15:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 71BB2D3B7DD
+	for <kvm-riscv@archiver.kernel.org>; Mon,  8 Dec 2025 09:30:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:
 	Subject:MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=6876RgomO26UZZy6msGeGSpo4xJCx8NUi5ljz2Q0Bx4=; b=bYWWL0ejMOBXT5
-	t8nPXLTsTxSvnhJck3N0D/Wy8suWoxUAdDgzump8CwGgmvWqHPcNyo5P2rBpBys+bPDpR8tg1rMgC
-	jaLmghne0W6RYrdjsO5+FbKTtvJL9ZQ9NLtxyhTuKgrkNJ+loePtLpKZ0Vcr+OqKV0YXb2o9NAcSx
-	jD/9cwGfuqZYYwAteQarZaY8Amgiu6xgbU438mGmJuxVP/nOZZM2lTZvtDmpJ2en7r94RXs6i8DyJ
-	a4Y/jpRzPOztVFaR+ADow41IigNbR2azs6VH0S91wnX7c1BHQjnUJfgs8we/e6ac2+XNsYWu2jBGy
-	ghHb3HmQvm7jAJIMor1A==;
+	List-Owner; bh=F41x3NdIpN1pw6MNTgi2YWDCdyZDwldmGX/gvhiO2O4=; b=K/OsGPm9ZldWsP
+	5+iUvhmDmN8lA4cbSbHpVi3miPB8szGqrLPLJXhN1rrvElRG3bFaifcePyESPEl0fqafbV54NIbn2
+	K7H8wiUG7Ysq3OfufB4YySNBI/1RZXcLJNk2kmWPQoy3hx1YFGR9mwZtPUbakYks0sVsdApo0Xjpp
+	snpT9Tjri2Rn1btmIhvOLsaHyLrcoiXDC5aP2VcuBQOyo/Tx+hhkqNvel552nSgfHf8YtZdJm70Sd
+	5sLiwATYSeXoOu22j0YmtwbeBJ6gEAuUI3eJA/Yi5B0w+S3awwarSQj8B84i6ULphsYQwd76txspG
+	Ta/jcoNrASSccH19GzSw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vSXKt-0000000Cr6T-3LsR;
-	Mon, 08 Dec 2025 09:15:15 +0000
-Received: from mgamail.intel.com ([192.198.163.19])
+	id 1vSXZH-0000000CsJT-36L8;
+	Mon, 08 Dec 2025 09:30:09 +0000
+Received: from mgamail.intel.com ([198.175.65.14])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vSXKq-0000000Cr5J-2S2M;
-	Mon, 08 Dec 2025 09:15:13 +0000
+	id 1vSXZE-0000000CsIy-1UPY;
+	Mon, 08 Dec 2025 09:30:05 +0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1765185312; x=1796721312;
+  t=1765186205; x=1796722205;
   h=message-id:date:mime-version:subject:to:cc:references:
    from:in-reply-to:content-transfer-encoding;
-  bh=Op2nVfSeshtd/97y1F620bAyJ5slemNLwyBYIxH82c8=;
-  b=LiMOua18mHIfmgSJn5GX5PkFB4awoYxWrbNgdcPaL9SfEba9vCSbECvn
-   tKUDZXvaSvcV8zEzfzPiOO5pZjLvfZBOmqba5Fb8NlI2Yqq1+NHAZBVBG
-   b2+WeixORZwAbbPOcoKIgbGSkaTpo3ybHjtmlcYH+kcbz5JPcssVzeCN2
-   kWimUDtmsjb42e1yw44TAgt0N3961GKHmxge6xbmBqro89/pb3+Vud27W
-   7D6C8hFvl6X/qYnn78gK3Y0UhfpkvT/sjTMLo+sbUygMKmUuqIiHsCAL+
-   7fkgm4gU4SJhT4DLBuieLVHAl6HMfAcsY0kE9lWgU2U5mjqFR2/XQ/pOx
+  bh=JcvwqgFLZTsix0sYAKimzPeJUH3wC8yywdSyJTN0AOA=;
+  b=nXofIik18CH0JQSzkCZXBhsdsW6oayriLxNss4v2cHQ2prAOIIt/QQB4
+   zpi2zaUEejwjuSPLwMjF8nuA8R7nq+XU9DRpwrJCmoDLFPaICSMJVzgyn
+   C6+cPy0uLjsJ3ozTF10vCLzfa/I6v8HuHtQwAeOU39IzDWTtHZmZ3uRVs
+   nAtXPnGvzucTC+O6tSR81ZzpFoI47cKbJ3mR4Qi81tkDZjkaUxoM3Vw9v
+   vlL1k3g8hv/zTATX7bizX3KpGyC+b+LxOtU+9cAjQ5KISHUiOTZSg+PZK
+   3QdYjBO5f5qGii8JcoDJYcJVbze9ajrIRTtIwyMTFPrafABBtmUnKXmSE
    g==;
-X-CSE-ConnectionGUID: kgxTm+sgSFiK9VOq1d8xZQ==
-X-CSE-MsgGUID: PWb1sxmpSSqvR3IwqYTdbw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11635"; a="66124380"
+X-CSE-ConnectionGUID: 3ziNoRN8Qd646LI7dmBZGg==
+X-CSE-MsgGUID: KqlQfh9rTJWeLbF4AFXV4Q==
+X-IronPort-AV: E=McAfee;i="6800,10657,11635"; a="70979405"
 X-IronPort-AV: E=Sophos;i="6.20,258,1758610800"; 
-   d="scan'208";a="66124380"
-Received: from orviesa008.jf.intel.com ([10.64.159.148])
-  by fmvoesa113.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Dec 2025 01:15:10 -0800
-X-CSE-ConnectionGUID: 4H/pcwrXQVSjY8FUXqPV6w==
-X-CSE-MsgGUID: j7p+D3AjRFu5Wm3XzOa1YQ==
+   d="scan'208";a="70979405"
+Received: from orviesa003.jf.intel.com ([10.64.159.143])
+  by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Dec 2025 01:30:04 -0800
+X-CSE-ConnectionGUID: hxoRms/XQeW3zbu9VYpNCQ==
+X-CSE-MsgGUID: qMxDtETuSwGp66ogCtei0A==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.20,258,1758610800"; 
-   d="scan'208";a="195945489"
+   d="scan'208";a="200067632"
 Received: from dapengmi-mobl1.ccr.corp.intel.com (HELO [10.124.240.12]) ([10.124.240.12])
-  by orviesa008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Dec 2025 01:14:59 -0800
-Message-ID: <0237b3eb-87f5-4758-b704-9f8d525f1f15@linux.intel.com>
-Date: Mon, 8 Dec 2025 17:14:56 +0800
+  by ORVIESA003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Dec 2025 01:29:56 -0800
+Message-ID: <2440b9bf-a2a1-4f66-94b2-71f47d62f3db@linux.intel.com>
+Date: Mon, 8 Dec 2025 17:29:53 +0800
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v6 35/44] KVM: VMX: Drop intermediate "guest" field from
- msr_autostore
+Subject: Re: [PATCH v6 37/44] KVM: VMX: Dedup code for removing MSR from
+ VMCS's auto-load list
 To: Sean Christopherson <seanjc@google.com>, Marc Zyngier <maz@kernel.org>,
  Oliver Upton <oupton@kernel.org>, Tianrui Zhao <zhaotianrui@loongson.cn>,
  Bibo Mao <maobibo@loongson.cn>, Huacai Chen <chenhuacai@kernel.org>,
@@ -77,13 +77,13 @@ Cc: linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev,
  Xiong Zhang <xiong.y.zhang@linux.intel.com>,
  Manali Shukla <manali.shukla@amd.com>, Jim Mattson <jmattson@google.com>
 References: <20251206001720.468579-1-seanjc@google.com>
- <20251206001720.468579-36-seanjc@google.com>
+ <20251206001720.468579-38-seanjc@google.com>
 Content-Language: en-US
 From: "Mi, Dapeng" <dapeng1.mi@linux.intel.com>
-In-Reply-To: <20251206001720.468579-36-seanjc@google.com>
+In-Reply-To: <20251206001720.468579-38-seanjc@google.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20251208_011512_679664_6E3FF101 
-X-CRM114-Status: GOOD (  20.92  )
+X-CRM114-CacheID: sfid-20251208_013004_512851_9770B2E2 
+X-CRM114-Status: GOOD (  19.58  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -95,114 +95,55 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-
-On 12/6/2025 8:17 AM, Sean Christopherson wrote:
-> Drop the intermediate "guest" field from vcpu_vmx.msr_autostore as the
-> value saved on VM-Exit isn't guaranteed to be the guest's value, it's
-> purely whatever is in hardware at the time of VM-Exit.  E.g. KVM's only
-> use of the store list at the momemnt is to snapshot TSC at VM-Exit, and
-> the value saved is always the raw TSC even if TSC-offseting and/or
-> TSC-scaling is enabled for the guest.
->
-> And unlike msr_autoload, there is no need differentiate between "on-entry"
-> and "on-exit".
->
-> No functional change intended.
->
-> Cc: Jim Mattson <jmattson@google.com>
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
-> ---
->  arch/x86/kvm/vmx/nested.c | 10 +++++-----
->  arch/x86/kvm/vmx/vmx.c    |  2 +-
->  arch/x86/kvm/vmx/vmx.h    |  4 +---
->  3 files changed, 7 insertions(+), 9 deletions(-)
->
-> diff --git a/arch/x86/kvm/vmx/nested.c b/arch/x86/kvm/vmx/nested.c
-> index 729cc1f05ac8..486789dac515 100644
-> --- a/arch/x86/kvm/vmx/nested.c
-> +++ b/arch/x86/kvm/vmx/nested.c
-> @@ -1076,11 +1076,11 @@ static bool nested_vmx_get_vmexit_msr_value(struct kvm_vcpu *vcpu,
->  	 * VM-exit in L0, use the more accurate value.
->  	 */
->  	if (msr_index == MSR_IA32_TSC) {
-> -		int i = vmx_find_loadstore_msr_slot(&vmx->msr_autostore.guest,
-> +		int i = vmx_find_loadstore_msr_slot(&vmx->msr_autostore,
->  						    MSR_IA32_TSC);
->  
->  		if (i >= 0) {
-> -			u64 val = vmx->msr_autostore.guest.val[i].value;
-> +			u64 val = vmx->msr_autostore.val[i].value;
->  
->  			*data = kvm_read_l1_tsc(vcpu, val);
->  			return true;
-> @@ -1167,7 +1167,7 @@ static void prepare_vmx_msr_autostore_list(struct kvm_vcpu *vcpu,
->  					   u32 msr_index)
->  {
->  	struct vcpu_vmx *vmx = to_vmx(vcpu);
-> -	struct vmx_msrs *autostore = &vmx->msr_autostore.guest;
-> +	struct vmx_msrs *autostore = &vmx->msr_autostore;
->  	bool in_vmcs12_store_list;
->  	int msr_autostore_slot;
->  	bool in_autostore_list;
-> @@ -2366,7 +2366,7 @@ static void prepare_vmcs02_constant_state(struct vcpu_vmx *vmx)
->  	 * addresses are constant (for vmcs02), the counts can change based
->  	 * on L2's behavior, e.g. switching to/from long mode.
->  	 */
-> -	vmcs_write64(VM_EXIT_MSR_STORE_ADDR, __pa(vmx->msr_autostore.guest.val));
-> +	vmcs_write64(VM_EXIT_MSR_STORE_ADDR, __pa(vmx->msr_autostore.val));
->  	vmcs_write64(VM_EXIT_MSR_LOAD_ADDR, __pa(vmx->msr_autoload.host.val));
->  	vmcs_write64(VM_ENTRY_MSR_LOAD_ADDR, __pa(vmx->msr_autoload.guest.val));
->  
-> @@ -2704,7 +2704,7 @@ static void prepare_vmcs02_rare(struct vcpu_vmx *vmx, struct vmcs12 *vmcs12)
->  	 */
->  	prepare_vmx_msr_autostore_list(&vmx->vcpu, MSR_IA32_TSC);
->  
-> -	vmcs_write32(VM_EXIT_MSR_STORE_COUNT, vmx->msr_autostore.guest.nr);
-> +	vmcs_write32(VM_EXIT_MSR_STORE_COUNT, vmx->msr_autostore.nr);
->  	vmcs_write32(VM_EXIT_MSR_LOAD_COUNT, vmx->msr_autoload.host.nr);
->  	vmcs_write32(VM_ENTRY_MSR_LOAD_COUNT, vmx->msr_autoload.guest.nr);
->  
-> diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
-> index 62ba2a2b9e98..23c92c41fd83 100644
-> --- a/arch/x86/kvm/vmx/vmx.c
-> +++ b/arch/x86/kvm/vmx/vmx.c
-> @@ -6567,7 +6567,7 @@ void dump_vmcs(struct kvm_vcpu *vcpu)
->  	if (vmcs_read32(VM_ENTRY_MSR_LOAD_COUNT) > 0)
->  		vmx_dump_msrs("guest autoload", &vmx->msr_autoload.guest);
->  	if (vmcs_read32(VM_EXIT_MSR_STORE_COUNT) > 0)
-> -		vmx_dump_msrs("guest autostore", &vmx->msr_autostore.guest);
-> +		vmx_dump_msrs("autostore", &vmx->msr_autostore);
->  
->  	if (vmentry_ctl & VM_ENTRY_LOAD_CET_STATE)
->  		pr_err("S_CET = 0x%016lx, SSP = 0x%016lx, SSP TABLE = 0x%016lx\n",
-> diff --git a/arch/x86/kvm/vmx/vmx.h b/arch/x86/kvm/vmx/vmx.h
-> index d7a96c84371f..4ce653d729ca 100644
-> --- a/arch/x86/kvm/vmx/vmx.h
-> +++ b/arch/x86/kvm/vmx/vmx.h
-> @@ -245,9 +245,7 @@ struct vcpu_vmx {
->  		struct vmx_msrs host;
->  	} msr_autoload;
->  
-> -	struct msr_autostore {
-> -		struct vmx_msrs guest;
-> -	} msr_autostore;
-> +	struct vmx_msrs msr_autostore;
->  
->  	struct {
->  		int vm86_active;
-
-LGTM.
-
-Reviewed-by: Dapeng Mi <dapeng1.mi@linux.intel.com>
-
-
-
--- 
-kvm-riscv mailing list
-kvm-riscv@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/kvm-riscv
+Ck9uIDEyLzYvMjAyNSA4OjE3IEFNLCBTZWFuIENocmlzdG9waGVyc29uIHdyb3RlOgo+IEFkZCBh
+IGhlbHBlciB0byByZW1vdmUgYW4gTVNSIGZyb20gYW4gYXV0by17bG9hZCxzdG9yZX0gbGlzdCB0
+byBkZWR1cCB0aGUKPiBtc3JfYXV0b2xvYWQgY29kZSwgYW5kIGluIGFudGljaXBhdGlvbiBvZiBh
+ZGRpbmcgc2ltaWxhciBmdW5jdGlvbmFsaXR5IGZvcgo+IG1zcl9hdXRvc3RvcmUuCj4KPiBObyBm
+dW5jdGlvbmFsIGNoYW5nZSBpbnRlbmRlZC4KPgo+IFNpZ25lZC1vZmYtYnk6IFNlYW4gQ2hyaXN0
+b3BoZXJzb24gPHNlYW5qY0Bnb29nbGUuY29tPgo+IC0tLQo+ICBhcmNoL3g4Ni9rdm0vdm14L3Zt
+eC5jIHwgMzEgKysrKysrKysrKysrKysrKy0tLS0tLS0tLS0tLS0tLQo+ICAxIGZpbGUgY2hhbmdl
+ZCwgMTYgaW5zZXJ0aW9ucygrKSwgMTUgZGVsZXRpb25zKC0pCj4KPiBkaWZmIC0tZ2l0IGEvYXJj
+aC94ODYva3ZtL3ZteC92bXguYyBiL2FyY2gveDg2L2t2bS92bXgvdm14LmMKPiBpbmRleCA1MmJj
+YjgxN2NjMTUuLmE1MWY2NmQxYjIwMSAxMDA2NDQKPiAtLS0gYS9hcmNoL3g4Ni9rdm0vdm14L3Zt
+eC5jCj4gKysrIGIvYXJjaC94ODYva3ZtL3ZteC92bXguYwo+IEBAIC0xMDQwLDkgKzEwNDAsMjIg
+QEAgc3RhdGljIGludCB2bXhfZmluZF9sb2Fkc3RvcmVfbXNyX3Nsb3Qoc3RydWN0IHZteF9tc3Jz
+ICptLCB1MzIgbXNyKQo+ICAJcmV0dXJuIC1FTk9FTlQ7Cj4gIH0KPiAgCj4gK3N0YXRpYyB2b2lk
+IHZteF9yZW1vdmVfYXV0b19tc3Ioc3RydWN0IHZteF9tc3JzICptLCB1MzIgbXNyLAo+ICsJCQkJ
+dW5zaWduZWQgbG9uZyB2bWNzX2NvdW50X2ZpZWxkKQo+ICt7Cj4gKwlpbnQgaTsKPiArCj4gKwlp
+ID0gdm14X2ZpbmRfbG9hZHN0b3JlX21zcl9zbG90KG0sIG1zcik7Cj4gKwlpZiAoaSA8IDApCj4g
+KwkJcmV0dXJuOwo+ICsKPiArCS0tbS0+bnI7Cj4gKwltLT52YWxbaV0gPSBtLT52YWxbbS0+bnJd
+OwoKU29tZXRpbWVzIHRoZSBvcmRlciBvZiBNU1Igd3JpdGluZyBkb2VzIG1hdHRlciwgZS5nLiwg
+UEVSRl9HTE9CQUxfQ1RSTCBNU1IKc2hvdWxkIGJlIHdyaXR0ZW4gYXQgbGFzdCBhZnRlciBhbGwg
+UE1VIE1TUiB3cml0aW5nLiBTbyBkaXJlY3RseSBtb3ZpbmcgdGhlCmxhc3QgTVNSIGVudHJ5IGlu
+dG8gY2xlYXJlZCBvbmUgY291bGQgYnJlYWsgdGhlIE1TUiB3cml0aW5nIHNlcXVlbmNlIGFuZApt
+YXkgY2F1c2UgaXNzdWUgaW4gdGhlb3J5LgoKSSBrbm93IHRoaXMgd29uJ3QgcmVhbGx5IGNhdXNl
+IGlzc3VlIHNpbmNlIGN1cnJlbnRseSB2UE1VIHdvbid0IHVzZSB0aGUgTVNSCmF1dG8tbG9hZCBm
+ZWF0dXJlIHRvIHNhdmUgYW55IFBNVSBNU1IsIGJ1dCBpdCdzIHN0aWxsIHVuc2FmZSBmb3IgZnV0
+dXJlIHVzZXMuwqAKCkknbSBub3Qgc3VyZSBpZiBpdCdzIHdvcnRoeSB0byBkbyB0aGUgc3RyaWN0
+IE1TUiBlbnRyeSBzaGlmdCByaWdodCBub3cuClBlcmhhcHMgd2UgY291bGQgYWRkIGEgbWVzc2Fn
+ZSB0byB3YXJuIHVzZXJzIGF0IGxlYXN0LgoKVGhhbmtzLgoKCj4gKwl2bWNzX3dyaXRlMzIodm1j
+c19jb3VudF9maWVsZCwgbS0+bnIpOwo+ICt9Cj4gKwo+ICBzdGF0aWMgdm9pZCBjbGVhcl9hdG9t
+aWNfc3dpdGNoX21zcihzdHJ1Y3QgdmNwdV92bXggKnZteCwgdW5zaWduZWQgbXNyKQo+ICB7Cj4g
+LQlpbnQgaTsKPiAgCXN0cnVjdCBtc3JfYXV0b2xvYWQgKm0gPSAmdm14LT5tc3JfYXV0b2xvYWQ7
+Cj4gIAo+ICAJc3dpdGNoIChtc3IpIHsKPiBAQCAtMTA2MywyMSArMTA3Niw5IEBAIHN0YXRpYyB2
+b2lkIGNsZWFyX2F0b21pY19zd2l0Y2hfbXNyKHN0cnVjdCB2Y3B1X3ZteCAqdm14LCB1bnNpZ25l
+ZCBtc3IpCj4gIAkJfQo+ICAJCWJyZWFrOwo+ICAJfQo+IC0JaSA9IHZteF9maW5kX2xvYWRzdG9y
+ZV9tc3Jfc2xvdCgmbS0+Z3Vlc3QsIG1zcik7Cj4gLQlpZiAoaSA8IDApCj4gLQkJZ290byBza2lw
+X2d1ZXN0Owo+IC0JLS1tLT5ndWVzdC5ucjsKPiAtCW0tPmd1ZXN0LnZhbFtpXSA9IG0tPmd1ZXN0
+LnZhbFttLT5ndWVzdC5ucl07Cj4gLQl2bWNzX3dyaXRlMzIoVk1fRU5UUllfTVNSX0xPQURfQ09V
+TlQsIG0tPmd1ZXN0Lm5yKTsKPiAgCj4gLXNraXBfZ3Vlc3Q6Cj4gLQlpID0gdm14X2ZpbmRfbG9h
+ZHN0b3JlX21zcl9zbG90KCZtLT5ob3N0LCBtc3IpOwo+IC0JaWYgKGkgPCAwKQo+IC0JCXJldHVy
+bjsKPiAtCj4gLQktLW0tPmhvc3QubnI7Cj4gLQltLT5ob3N0LnZhbFtpXSA9IG0tPmhvc3QudmFs
+W20tPmhvc3QubnJdOwo+IC0Jdm1jc193cml0ZTMyKFZNX0VYSVRfTVNSX0xPQURfQ09VTlQsIG0t
+Pmhvc3QubnIpOwo+ICsJdm14X3JlbW92ZV9hdXRvX21zcigmbS0+Z3Vlc3QsIG1zciwgVk1fRU5U
+UllfTVNSX0xPQURfQ09VTlQpOwo+ICsJdm14X3JlbW92ZV9hdXRvX21zcigmbS0+aG9zdCwgbXNy
+LCBWTV9FWElUX01TUl9MT0FEX0NPVU5UKTsKPiAgfQo+ICAKPiAgc3RhdGljIF9fYWx3YXlzX2lu
+bGluZSB2b2lkIGFkZF9hdG9taWNfc3dpdGNoX21zcl9zcGVjaWFsKHN0cnVjdCB2Y3B1X3ZteCAq
+dm14LAoKLS0gCmt2bS1yaXNjdiBtYWlsaW5nIGxpc3QKa3ZtLXJpc2N2QGxpc3RzLmluZnJhZGVh
+ZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9rdm0tcmlz
+Y3YK
