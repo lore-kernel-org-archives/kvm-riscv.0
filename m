@@ -4,86 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 010A1D3ABEF
-	for <kvm-riscv@archiver.kernel.org>; Mon,  8 Dec 2025 09:39:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E6709D3B7DE
+	for <kvm-riscv@archiver.kernel.org>; Mon,  8 Dec 2025 10:10:59 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
-	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:
-	Subject:MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
+	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
+	List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:Subject:
+	MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=W2FGec88HP3i5phTy9VDv0uEb+nqDXvtiRoWdMmHBso=; b=vaoNH2Lz2y8gZa
-	q7lH7yrxmnRCzobE9egQmNwf1GLgWl50ybPq3q9/ONHAzLuaP7HJjjbcxJCCFjB7wTy4sGh5LuQNj
-	BFu/Wp8e9P8nLYf7plzpU7VZLORieaCL9kNSGE2Re6b3nZyfgoqFkbxF5jo37tMiItuPHWgn3kfe6
-	mrrYPnFQ81QtI91PdRrDmErsSe0wYisk+UuqIB1jriyrKa0ElhwJfc3SKsEydG2x332xEXG3s8umf
-	61tx+y5q3/0vLsjEVn8h6ssakZ3bfoXph1qou9S/Zm2HgJ3aA895LVGRqYm2yU7Kd+qrsVrb0GHnL
-	aQhuDhqGtlnsr9BllvPA==;
+	List-Owner; bh=BWlqjoOYIMLiauZzwEQILjtk7lrfZA12zFj7+BsLKvc=; b=vcjCYYEj/8yh/p
+	ptUR6FeAG07OW9DLM/SgTBMwPrySnJGEOzwMfYPNcQSdNDgcch3DA7IQcTe2cK6Pk7lZeETWKkWaz
+	OGO4K3whZWWdfDA6lVbJOF3mPF4iKc9m+DZI0IkXkJLFj1b1cMnuZwWalgjljpQ8cQ/DI77m4zlp7
+	5fZ061kgok8kdizAfYFt3nFSdmvfyheYYBL7ZTdhZaB3mwTSFS0VwPDJvOImzxPrDeyxYFj79x/4L
+	jaVUtEmNfFv2g7ltpHLIjoXpskq+qtDxG0EfAROlHOaoslVXHzc4mjQqRnFsqOB00NHmjBuH/o6Nv
+	sax+Kv5rswN61mNNQEVA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vSXiN-0000000Ctwx-37ob;
-	Mon, 08 Dec 2025 09:39:31 +0000
-Received: from mgamail.intel.com ([198.175.65.10])
+	id 1vSYCp-0000000Cw50-2Dao;
+	Mon, 08 Dec 2025 10:10:59 +0000
+Received: from smtp84.cstnet.cn ([159.226.251.84] helo=cstnet.cn)
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vSXiL-0000000CtwL-23Mp;
-	Mon, 08 Dec 2025 09:39:30 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1765186770; x=1796722770;
-  h=message-id:date:mime-version:subject:to:cc:references:
-   from:in-reply-to:content-transfer-encoding;
-  bh=p82IBGZ4j1jkt4NBfcu7z7d/63zqeo9G4reT2I4uWDo=;
-  b=bG6XJnnX+Nxb7n0oaV51zT1rfX+SYGcj9o2feEPxMCrKVgwOkuR/8cPU
-   NfHabVf6goXRAMKk6MB2uTA4wxWIdbifAomscOO50ZJhYEINweqd9q9YX
-   9TN+OsQQSsNp02Zbh3EOqnLp/liKYNljyVf3HmXeGN7zEzuPVtIq4Buok
-   N5x54PejBfAbkwU7FyyfQ2lCqm5Th+NgKXj5OvHWW7BR2nB0U0QhmRSoY
-   wAzLVtaU1HmmFTWbKa7qE/N+GfG3oVrnPcsmpypaLFjwMvCH4Jjtc/Y4g
-   4NCSjwoqMele5Cjb3Shexi6CQQuLQUsyiDfoj3qeRgw0ej3Y1DYptHm+C
-   g==;
-X-CSE-ConnectionGUID: MwR2GeTNRx+gu3ByZ2txVg==
-X-CSE-MsgGUID: 5YAtaV2MSFC56+BhDdLIxw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11635"; a="84532304"
-X-IronPort-AV: E=Sophos;i="6.20,258,1758610800"; 
-   d="scan'208";a="84532304"
-Received: from fmviesa004.fm.intel.com ([10.60.135.144])
-  by orvoesa102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Dec 2025 01:39:29 -0800
-X-CSE-ConnectionGUID: RUNkPscvTKK1RrxIzPPi5w==
-X-CSE-MsgGUID: ZP9ZxvGjQRmDCWEnSrL+eg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.20,258,1758610800"; 
-   d="scan'208";a="200807599"
-Received: from dapengmi-mobl1.ccr.corp.intel.com (HELO [10.124.240.12]) ([10.124.240.12])
-  by fmviesa004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Dec 2025 01:39:21 -0800
-Message-ID: <ee30ed9c-6377-4d14-b930-f0e2c809df7c@linux.intel.com>
-Date: Mon, 8 Dec 2025 17:39:18 +0800
+	id 1vSYCk-0000000Cw40-1x7p;
+	Mon, 08 Dec 2025 10:10:56 +0000
+Received: from [192.168.12.121] (unknown [180.111.29.24])
+	by APP-05 (Coremail) with SMTP id zQCowADXbBAmpDZpZxcBAA--.733S2;
+	Mon, 08 Dec 2025 18:10:47 +0800 (CST)
+Message-ID: <44d62b37-1496-48f1-ab5a-b12e91b32dbb@iscas.ac.cn>
+Date: Mon, 8 Dec 2025 17:53:07 +0800
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v6 44/44] KVM: VMX: Add mediated PMU support for CPUs
- without "save perf global ctrl"
-To: Sean Christopherson <seanjc@google.com>, Marc Zyngier <maz@kernel.org>,
- Oliver Upton <oupton@kernel.org>, Tianrui Zhao <zhaotianrui@loongson.cn>,
- Bibo Mao <maobibo@loongson.cn>, Huacai Chen <chenhuacai@kernel.org>,
- Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>,
- Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Xin Li <xin@zytor.com>, "H. Peter Anvin" <hpa@zytor.com>,
- Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
- Ingo Molnar <mingo@redhat.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
- Namhyung Kim <namhyung@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>
-Cc: linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev,
- kvm@vger.kernel.org, loongarch@lists.linux.dev,
- kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
- linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org,
- Mingwei Zhang <mizhang@google.com>, Xudong Hao <xudong.hao@intel.com>,
- Sandipan Das <sandipan.das@amd.com>,
- Xiong Zhang <xiong.y.zhang@linux.intel.com>,
- Manali Shukla <manali.shukla@amd.com>, Jim Mattson <jmattson@google.com>
-References: <20251206001720.468579-1-seanjc@google.com>
- <20251206001720.468579-45-seanjc@google.com>
+Subject: Re: [PATCH 1/4] RISC-V: KVM: Allow zicfiss/zicfilp exts for Guest/VM
+To: Deepak Gupta <debug@rivosinc.com>
+Cc: anup@brainfault.org, ajones@ventanamicro.com, atishp@atishpatra.org,
+ paul.walmsley@sifive.com, palmer@dabbelt.com, linux-kernel@vger.kernel.org,
+ linux-riscv@lists.infradead.org, kvm@vger.kernel.org,
+ kvm-riscv@lists.infradead.org
+References: <cover.1764509485.git.zhouquan@iscas.ac.cn>
+ <103e156ea1f2201db52034e370a907f46edafb83.1764509485.git.zhouquan@iscas.ac.cn>
+ <aTBxIBZ0Jwn67OcV@debug.ba.rivosinc.com>
 Content-Language: en-US
-From: "Mi, Dapeng" <dapeng1.mi@linux.intel.com>
-In-Reply-To: <20251206001720.468579-45-seanjc@google.com>
+From: Quan Zhou <zhouquan@iscas.ac.cn>
+In-Reply-To: <aTBxIBZ0Jwn67OcV@debug.ba.rivosinc.com>
+X-CM-TRANSID: zQCowADXbBAmpDZpZxcBAA--.733S2
+X-Coremail-Antispam: 1UD129KBjvJXoWxuF1rZry5JFyDtr1fZFW7twb_yoWrWF13pr
+	4kAFyfKrZxCwn3Ca4xtr1DWrW8uw4YgwnxGw18WFy8XFy7Cryvvr1qga4ag3WkJa10gr4v
+	9r1rXFykZwnxJa7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUUvqb7Iv0xC_Cr1lb4IE77IF4wAFF20E14v26r4j6ryUM7CY07I2
+	0VC2zVCF04k26cxKx2IYs7xG6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rw
+	A2F7IY1VAKz4vEj48ve4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Xr0_Ar1l84ACjcxK6xII
+	jxv20xvEc7CjxVAFwI0_Gr0_Cr1l84ACjcxK6I8E87Iv67AKxVW0oVCq3wA2z4x0Y4vEx4
+	A2jsIEc7CjxVAFwI0_GcCE3s1le2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xvF2IE
+	w4CE5I8CrVC2j2WlYx0E2Ix0cI8IcVAFwI0_JrI_JrylYx0Ex4A2jsIE14v26F4j6r4UJw
+	Am72CE4IkC6x0Yz7v_Jr0_Gr1lF7xvr2IY64vIr41lFIxGxcIEc7CjxVA2Y2ka0xkIwI1l
+	c7CjxVAaw2AFwI0_Jw0_GFyl42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr
+	1lx2IqxVAqx4xG67AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE
+	14v26r1q6r43MIIYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7
+	IYx2IY6xkF7I0E14v26r1j6r4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E
+	87Iv67AKxVWUJVW8JwCI42IY6I8E87Iv6xkF7I0E14v26r1j6r4UYxBIdaVFxhVjvjDU0x
+	ZFpf9x07UXF4_UUUUU=
+X-Originating-IP: [180.111.29.24]
+X-CM-SenderInfo: 52kr31xxdqqxpvfd2hldfou0/1tbiCQ4KBmk2dfC9AgAAsu
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20251208_013929_653671_9C2D4883 
-X-CRM114-Status: GOOD (  28.03  )
+X-CRM114-CacheID: sfid-20251208_021054_906186_C593547C 
+X-CRM114-Status: GOOD (  17.73  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -95,178 +78,79 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-
-On 12/6/2025 8:17 AM, Sean Christopherson wrote:
-> Extend mediated PMU support for Intel CPUs without support for saving
-> PERF_GLOBAL_CONTROL into the guest VMCS field on VM-Exit, e.g. for Skylake
-> and its derivatives, as well as Icelake.  While supporting CPUs without
-> VM_EXIT_SAVE_IA32_PERF_GLOBAL_CTRL isn't completely trivial, it's not that
-> complex either.  And not supporting such CPUs would mean not supporting 7+
-> years of Intel CPUs released in the past 10 years.
->
-> On VM-Exit, immediately propagate the saved PERF_GLOBAL_CTRL to the VMCS
-> as well as KVM's software cache so that KVM doesn't need to add full EXREG
-> tracking of PERF_GLOBAL_CTRL.  In practice, the vast majority of VM-Exits
-> won't trigger software writes to guest PERF_GLOBAL_CTRL, so deferring the
-> VMWRITE to the next VM-Enter would only delay the inevitable without
-> batching/avoiding VMWRITEs.
->
-> Note!  Take care to refresh VM_EXIT_MSR_STORE_COUNT on nested VM-Exit, as
-> it's unfortunately possible that KVM could recalculate MSR intercepts
-> while L2 is active, e.g. if userspace loads nested state and _then_ sets
-> PERF_CAPABILITIES.  Eating the VMWRITE on every nested VM-Exit is
-> unfortunate, but that's a pre-existing problem and can/should be solved
-> separately, e.g. modifying the number of auto-load entries while L2 is
-> active is also uncommon on modern CPUs.
->
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
-> ---
->  arch/x86/kvm/vmx/nested.c    |  6 ++++-
->  arch/x86/kvm/vmx/pmu_intel.c |  7 -----
->  arch/x86/kvm/vmx/vmx.c       | 52 ++++++++++++++++++++++++++++++++----
->  3 files changed, 52 insertions(+), 13 deletions(-)
->
-> diff --git a/arch/x86/kvm/vmx/nested.c b/arch/x86/kvm/vmx/nested.c
-> index 614b789ecf16..1ee1edc8419d 100644
-> --- a/arch/x86/kvm/vmx/nested.c
-> +++ b/arch/x86/kvm/vmx/nested.c
-> @@ -5142,7 +5142,11 @@ void __nested_vmx_vmexit(struct kvm_vcpu *vcpu, u32 vm_exit_reason,
->  
->  	kvm_nested_vmexit_handle_ibrs(vcpu);
->  
-> -	/* Update any VMCS fields that might have changed while L2 ran */
-> +	/*
-> +	 * Update any VMCS fields that might have changed while vmcs02 was the
-> +	 * active VMCS.  The tracking is per-vCPU, not per-VMCS.
-> +	 */
-> +	vmcs_write32(VM_EXIT_MSR_STORE_COUNT, vmx->msr_autostore.nr);
->  	vmcs_write32(VM_EXIT_MSR_LOAD_COUNT, vmx->msr_autoload.host.nr);
->  	vmcs_write32(VM_ENTRY_MSR_LOAD_COUNT, vmx->msr_autoload.guest.nr);
->  	vmcs_write64(TSC_OFFSET, vcpu->arch.tsc_offset);
-> diff --git a/arch/x86/kvm/vmx/pmu_intel.c b/arch/x86/kvm/vmx/pmu_intel.c
-> index 55249fa4db95..27eb76e6b6a0 100644
-> --- a/arch/x86/kvm/vmx/pmu_intel.c
-> +++ b/arch/x86/kvm/vmx/pmu_intel.c
-> @@ -777,13 +777,6 @@ static bool intel_pmu_is_mediated_pmu_supported(struct x86_pmu_capability *host_
->  	if (WARN_ON_ONCE(!cpu_has_load_perf_global_ctrl()))
->  		return false;
->  
-> -	/*
-> -	 * KVM doesn't yet support mediated PMU on CPUs without support for
-> -	 * saving PERF_GLOBAL_CTRL via a dedicated VMCS field.
-> -	 */
-> -	if (!cpu_has_save_perf_global_ctrl())
-> -		return false;
-> -
->  	return true;
->  }
->  
-> diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
-> index 6a17cb90eaf4..ba1262c3e3ff 100644
-> --- a/arch/x86/kvm/vmx/vmx.c
-> +++ b/arch/x86/kvm/vmx/vmx.c
-> @@ -1204,6 +1204,17 @@ static bool update_transition_efer(struct vcpu_vmx *vmx)
->  	return true;
->  }
->  
-> +static void vmx_add_autostore_msr(struct vcpu_vmx *vmx, u32 msr)
-> +{
-> +	vmx_add_auto_msr(&vmx->msr_autostore, msr, 0, VM_EXIT_MSR_STORE_COUNT,
-> +			 vmx->vcpu.kvm);
-> +}
-> +
-> +static void vmx_remove_autostore_msr(struct vcpu_vmx *vmx, u32 msr)
-> +{
-> +	vmx_remove_auto_msr(&vmx->msr_autostore, msr, VM_EXIT_MSR_STORE_COUNT);
-> +}
-> +
->  #ifdef CONFIG_X86_32
->  /*
->   * On 32-bit kernels, VM exits still load the FS and GS bases from the
-> @@ -4225,6 +4236,8 @@ void pt_update_intercept_for_msr(struct kvm_vcpu *vcpu)
->  
->  static void vmx_recalc_pmu_msr_intercepts(struct kvm_vcpu *vcpu)
->  {
-> +	u64 vm_exit_controls_bits = VM_EXIT_LOAD_IA32_PERF_GLOBAL_CTRL |
-> +				    VM_EXIT_SAVE_IA32_PERF_GLOBAL_CTRL;
->  	bool has_mediated_pmu = kvm_vcpu_has_mediated_pmu(vcpu);
->  	struct kvm_pmu *pmu = vcpu_to_pmu(vcpu);
->  	struct vcpu_vmx *vmx = to_vmx(vcpu);
-> @@ -4234,12 +4247,19 @@ static void vmx_recalc_pmu_msr_intercepts(struct kvm_vcpu *vcpu)
->  	if (!enable_mediated_pmu)
->  		return;
->  
-> +	if (!cpu_has_save_perf_global_ctrl()) {
-> +		vm_exit_controls_bits &= ~VM_EXIT_SAVE_IA32_PERF_GLOBAL_CTRL;
-> +
-> +		if (has_mediated_pmu)
-> +			vmx_add_autostore_msr(vmx, MSR_CORE_PERF_GLOBAL_CTRL);
-> +		else
-> +			vmx_remove_autostore_msr(vmx, MSR_CORE_PERF_GLOBAL_CTRL);
-> +	}
-> +
->  	vm_entry_controls_changebit(vmx, VM_ENTRY_LOAD_IA32_PERF_GLOBAL_CTRL,
->  				    has_mediated_pmu);
->  
-> -	vm_exit_controls_changebit(vmx, VM_EXIT_LOAD_IA32_PERF_GLOBAL_CTRL |
-> -					VM_EXIT_SAVE_IA32_PERF_GLOBAL_CTRL,
-> -				   has_mediated_pmu);
-> +	vm_exit_controls_changebit(vmx, vm_exit_controls_bits, has_mediated_pmu);
->  
->  	for (i = 0; i < pmu->nr_arch_gp_counters; i++) {
->  		vmx_set_intercept_for_msr(vcpu, MSR_IA32_PERFCTR0 + i,
-> @@ -7346,6 +7366,29 @@ static void atomic_switch_perf_msrs(struct vcpu_vmx *vmx)
->  					      msrs[i].host);
->  }
->  
-> +static void vmx_refresh_guest_perf_global_control(struct kvm_vcpu *vcpu)
-> +{
-> +	struct kvm_pmu *pmu = vcpu_to_pmu(vcpu);
-> +	struct vcpu_vmx *vmx = to_vmx(vcpu);
-> +
-> +	if (msr_write_intercepted(vmx, MSR_CORE_PERF_GLOBAL_CTRL))
-> +		return;
-> +
-> +	if (!cpu_has_save_perf_global_ctrl()) {
-> +		int slot = vmx_find_loadstore_msr_slot(&vmx->msr_autostore,
-> +						       MSR_CORE_PERF_GLOBAL_CTRL);
-> +
-> +		if (WARN_ON_ONCE(slot < 0))
-> +			return;
-> +
-> +		pmu->global_ctrl = vmx->msr_autostore.val[slot].value;
-> +		vmcs_write64(GUEST_IA32_PERF_GLOBAL_CTRL, pmu->global_ctrl);
-> +		return;
-> +	}
-> +
-> +	pmu->global_ctrl = vmcs_read64(GUEST_IA32_PERF_GLOBAL_CTRL);
-> +}
-> +
->  static void vmx_update_hv_timer(struct kvm_vcpu *vcpu, bool force_immediate_exit)
->  {
->  	struct vcpu_vmx *vmx = to_vmx(vcpu);
-> @@ -7631,8 +7674,7 @@ fastpath_t vmx_vcpu_run(struct kvm_vcpu *vcpu, u64 run_flags)
->  
->  	vmx->loaded_vmcs->launched = 1;
->  
-> -	if (!msr_write_intercepted(vmx, MSR_CORE_PERF_GLOBAL_CTRL))
-> -		vcpu_to_pmu(vcpu)->global_ctrl = vmcs_read64(GUEST_IA32_PERF_GLOBAL_CTRL);
-> +	vmx_refresh_guest_perf_global_control(vcpu);
->  
->  	vmx_recover_nmi_blocking(vmx);
->  	vmx_complete_interrupts(vmx);
-
-The change looks good to me, but I still have no bandwidth to test the code
-on Ice lake, I would go back after I finish the tests. Thanks.
-
-
-
--- 
-kvm-riscv mailing list
-kvm-riscv@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/kvm-riscv
+CgpPbiAyMDI1LzEyLzQgMDE6MTksIERlZXBhayBHdXB0YSB3cm90ZToKPiBPbiBNb24sIERlYyAw
+MSwgMjAyNSBhdCAwOToyODoyNUFNICswODAwLCB6aG91cXVhbkBpc2Nhcy5hYy5jbiB3cm90ZToK
+Pj4gRnJvbTogUXVhbiBaaG91IDx6aG91cXVhbkBpc2Nhcy5hYy5jbj4KPj4KPj4gRXh0ZW5kIHRo
+ZSBLVk0gSVNBIGV4dGVuc2lvbiBPTkVfUkVHIGludGVyZmFjZSB0byBhbGxvdyBLVk0gdXNlcgo+
+PiBzcGFjZSB0byBkZXRlY3QgYW5kIGVuYWJsZSB6aWNmaXNzL3ppY2ZpbHAgZXh0cyBmb3IgR3Vl
+c3QvVk0sCj4+IHRoZSBydWxlcyBkZWZpbmVkIGluIHRoZSBzcGVjIFsxXSBhcmUgYXMgZm9sbG93
+czoKPj4gLS0tCj4+IDEpIFppY2Zpc3MgZXh0ZW5zaW9uIGludHJvZHVjZXMgdGhlIFNTRSBmaWVs
+ZCAoYml0IDMpIGluIGhlbnZjZmcuCj4+IElmIHRoZSBTU0UgZmllbGQgaXMgc2V0IHRvIDEsIHRo
+ZSBaaWNmaXNzIGV4dGVuc2lvbiBpcyBhY3RpdmF0ZWQKPj4gaW4gVlMtbW9kZS4gV2hlbiB0aGUg
+U1NFIGZpZWxkIGlzIDAsIHRoZSBaaWNmaXNzIGV4dGVuc2lvbiByZW1haW5zCj4+IGluYWN0aXZl
+IGluIFZTLW1vZGUuCj4+Cj4+IDIpIFppY2ZpbHAgZXh0ZW5zaW9uIGludHJvZHVjZXMgdGhlIExQ
+RSBmaWVsZCAoYml0IDIpIGluIGhlbnZjZmcuCj4+IFdoZW4gdGhlIExQRSBmaWVsZCBpcyBzZXQg
+dG8gMSwgdGhlIFppY2ZpbHAgZXh0ZW5zaW9uIGlzIGVuYWJsZWQKPj4gaW4gVlMtbW9kZS4gV2hl
+biB0aGUgTFBFIGZpZWxkIGlzIDAsIHRoZSBaaWNmaWxwIGV4dGVuc2lvbiBpcyBub3QKPj4gZW5h
+YmxlZCBpbiBWUy1tb2RlLgo+Pgo+PiBbMV0gLSBodHRwczovL2dpdGh1Yi5jb20vcmlzY3Yvcmlz
+Y3YtY2ZpCj4+Cj4+IFNpZ25lZC1vZmYtYnk6IFF1YW4gWmhvdSA8emhvdXF1YW5AaXNjYXMuYWMu
+Y24+Cj4+IC0tLQo+PiBhcmNoL3Jpc2N2L2luY2x1ZGUvdWFwaS9hc20va3ZtLmggfCAyICsrCj4+
+IGFyY2gvcmlzY3Yva3ZtL3ZjcHUuY8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCB8IDYgKysrKysr
+Cj4+IGFyY2gvcmlzY3Yva3ZtL3ZjcHVfb25lcmVnLmPCoMKgwqDCoMKgIHwgMiArKwo+PiAzIGZp
+bGVzIGNoYW5nZWQsIDEwIGluc2VydGlvbnMoKykKPj4KPj4gZGlmZiAtLWdpdCBhL2FyY2gvcmlz
+Y3YvaW5jbHVkZS91YXBpL2FzbS9rdm0uaCBiL2FyY2gvcmlzY3YvaW5jbHVkZS8gCj4+IHVhcGkv
+YXNtL2t2bS5oCj4+IGluZGV4IDc1OWE0ODUyYzA5YS4uN2NhMDg3ODQ4YTQzIDEwMDY0NAo+PiAt
+LS0gYS9hcmNoL3Jpc2N2L2luY2x1ZGUvdWFwaS9hc20va3ZtLmgKPj4gKysrIGIvYXJjaC9yaXNj
+di9pbmNsdWRlL3VhcGkvYXNtL2t2bS5oCj4+IEBAIC0xOTAsNiArMTkwLDggQEAgZW51bSBLVk1f
+UklTQ1ZfSVNBX0VYVF9JRCB7Cj4+IMKgwqDCoMKgS1ZNX1JJU0NWX0lTQV9FWFRfWkZCRk1JTiwK
+Pj4gwqDCoMKgwqBLVk1fUklTQ1ZfSVNBX0VYVF9aVkZCRk1JTiwKPj4gwqDCoMKgwqBLVk1fUklT
+Q1ZfSVNBX0VYVF9aVkZCRldNQSwKPj4gK8KgwqDCoCBLVk1fUklTQ1ZfSVNBX0VYVF9aSUNGSUxQ
+LAo+PiArwqDCoMKgIEtWTV9SSVNDVl9JU0FfRVhUX1pJQ0ZJU1MsCj4+IMKgwqDCoMKgS1ZNX1JJ
+U0NWX0lTQV9FWFRfTUFYLAo+PiB9Owo+Pgo+PiBkaWZmIC0tZ2l0IGEvYXJjaC9yaXNjdi9rdm0v
+dmNwdS5jIGIvYXJjaC9yaXNjdi9rdm0vdmNwdS5jCj4+IGluZGV4IDVjZTM1YWJhNjA2OS4uMDk4
+ZDc3ZjlhODg2IDEwMDY0NAo+PiAtLS0gYS9hcmNoL3Jpc2N2L2t2bS92Y3B1LmMKPj4gKysrIGIv
+YXJjaC9yaXNjdi9rdm0vdmNwdS5jCj4+IEBAIC01NTcsNiArNTU3LDEyIEBAIHN0YXRpYyB2b2lk
+IGt2bV9yaXNjdl92Y3B1X3NldHVwX2NvbmZpZyhzdHJ1Y3QgCj4+IGt2bV92Y3B1ICp2Y3B1KQo+
+PiDCoMKgwqDCoGlmIChyaXNjdl9pc2FfZXh0ZW5zaW9uX2F2YWlsYWJsZShpc2EsIFpJQ0JPWikp
+Cj4+IMKgwqDCoMKgwqDCoMKgIGNmZy0+aGVudmNmZyB8PSBFTlZDRkdfQ0JaRTsKPj4KPj4gK8Kg
+wqDCoCBpZiAocmlzY3ZfaXNhX2V4dGVuc2lvbl9hdmFpbGFibGUoaXNhLCBaSUNGSUxQKSkKPj4g
+K8KgwqDCoMKgwqDCoMKgIGNmZy0+aGVudmNmZyB8PSBFTlZDRkdfTFBFOwo+IAo+IEJsaW5kbHkg
+ZW5hYmxpbmcgbGFuZGluZyBwYWQgZW5mb3JjZW1lbnQgb24gZ3Vlc3Qga2VybmVsIHdpbGwgbGVh
+ZCB0byAKPiBpc3N1ZXMKPiAoYSBndWVzdCBrZXJuZWwgbWlnaHQgbm90IGJlIHJlYWR5IGFuZCBj
+b21waWxlZCB3aXRoIGxhbmRpbmcgcGFkIAo+IGVuZm9yY2VtZW50KS4KPiBJdCBtdXN0IGJlIGRv
+bmUgdmlhIGEgU1NFIGludGVyZmFjZSB3aGVyZSBlbmFibGUgaXMgcmVxdWVzdGVkIGJ5IGd1ZXN0
+IAo+IGtlcm5lbC4KPiAKPj4gKwo+PiArwqDCoMKgIGlmIChyaXNjdl9pc2FfZXh0ZW5zaW9uX2F2
+YWlsYWJsZShpc2EsIFpJQ0ZJU1MpKQo+PiArwqDCoMKgwqDCoMKgwqAgY2ZnLT5oZW52Y2ZnIHw9
+IEVOVkNGR19TU0U7Cj4gCj4gU2FtZSBjb21tZW50IG9uIHNoYWRvdyBzdGFjayBlbmFibGUuIFdo
+aWxlIHVzdWFsbHkgc2hhZG93IHN0YWNrIHVzYWdlIGlzIAo+IG9wdGluCj4gd2hlcmUgZXhwbGlj
+aXR5bCBzc3B1c2gvc3Nwb3BjaGsvc3NhbW9zd2FwIGhhcyB0byBiZSBwYXJ0IG9mIGNvZGVnZW4g
+dG8gCj4gdXNlIHRoZQo+IGV4dGVuc2lvbiBhbmQgbm90IG1vZGlmeWluZyBleGlzdGluZyBpbnN0
+cnVjdGlvbiBiZWhhdmlvciAobGlrZSB6aWNmaWxwIAo+IGRvZXMgb24KPiBgamFscmApCj4gVGhl
+cmUgaXMgYSBzaXR1YWlvbiBkdXJpbmcgZWFybHkgYm9vdCBvZiBrZXJuZWwgd2hlcmUgc2hhZG93
+IHN0YWNrIAo+IHBlcm1pc3Npb25zCj4gZm9yIGluaXQgc2hhZG93IHN0YWNrIG1pZ2h0IG5vdCBo
+YXZlIGJlZW4gY29uZmlndXJlZCAob3Igc2F0cCA9PSBCQVJFIGF0IAo+IHRoYXQKPiB0aW1lKSwg
+aW4gdGhvc2UgY2FzZXMgYHNzcHVzaC9zc3BvcGNoa2AgaW4gZ3Vlc3Qga2VybmVsIHdpbGwgc3Rh
+cnQgCj4gZmF1bHRpbmcuCj4gCj4gU28gZW5hYmxpbmcgc2hhZG93IHN0YWNrIHNob3VsZCBhbHNv
+IGJlIGRvbmUgdmlhIFNTRSBpbnRlcmZhY2UuCj4gCj4gVGhhdCdzIGhvdyB1c2VyIGNmaSBwYXRj
+aHNldHMgYWxzbyBkby4KPiAKCk9rYXksIEkgd2lsbCBmaXggaXQuCgpUaGFua3MsClF1YW4KCj4+
+ICsKPj4gwqDCoMKgwqBpZiAocmlzY3ZfaXNhX2V4dGVuc2lvbl9hdmFpbGFibGUoaXNhLCBTVkFE
+VSkgJiYKPj4gwqDCoMKgwqDCoMKgwqAgIXJpc2N2X2lzYV9leHRlbnNpb25fYXZhaWxhYmxlKGlz
+YSwgU1ZBREUpKQo+PiDCoMKgwqDCoMKgwqDCoCBjZmctPmhlbnZjZmcgfD0gRU5WQ0ZHX0FEVUU7
+Cj4+IGRpZmYgLS1naXQgYS9hcmNoL3Jpc2N2L2t2bS92Y3B1X29uZXJlZy5jIGIvYXJjaC9yaXNj
+di9rdm0vdmNwdV9vbmVyZWcuYwo+PiBpbmRleCA4NjVkYWU5MDNhYTAuLjNkMDVhNGJhZmQ5YiAx
+MDA2NDQKPj4gLS0tIGEvYXJjaC9yaXNjdi9rdm0vdmNwdV9vbmVyZWcuYwo+PiArKysgYi9hcmNo
+L3Jpc2N2L2t2bS92Y3B1X29uZXJlZy5jCj4+IEBAIC03Miw2ICs3Miw4IEBAIHN0YXRpYyBjb25z
+dCB1bnNpZ25lZCBsb25nIGt2bV9pc2FfZXh0X2FycltdID0gewo+PiDCoMKgwqDCoEtWTV9JU0Ff
+RVhUX0FSUihaSUNCT1ApLAo+PiDCoMKgwqDCoEtWTV9JU0FfRVhUX0FSUihaSUNCT1opLAo+PiDC
+oMKgwqDCoEtWTV9JU0FfRVhUX0FSUihaSUNDUlNFKSwKPj4gK8KgwqDCoCBLVk1fSVNBX0VYVF9B
+UlIoWklDRklMUCksCj4+ICvCoMKgwqAgS1ZNX0lTQV9FWFRfQVJSKFpJQ0ZJU1MpLAo+PiDCoMKg
+wqDCoEtWTV9JU0FfRVhUX0FSUihaSUNOVFIpLAo+PiDCoMKgwqDCoEtWTV9JU0FfRVhUX0FSUiha
+SUNPTkQpLAo+PiDCoMKgwqDCoEtWTV9JU0FfRVhUX0FSUihaSUNTUiksCj4+IC0tIAo+PiAyLjM0
+LjEKPj4KPj4KCgotLSAKa3ZtLXJpc2N2IG1haWxpbmcgbGlzdAprdm0tcmlzY3ZAbGlzdHMuaW5m
+cmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2t2
+bS1yaXNjdgo=
