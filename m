@@ -4,123 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 75BEDD3B7DE
-	for <kvm-riscv@archiver.kernel.org>; Mon,  8 Dec 2025 10:32:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D79B5D3B7E2
+	for <kvm-riscv@archiver.kernel.org>; Mon,  8 Dec 2025 10:42:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
-	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
-	List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:Subject:
-	MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Subject:Cc:To:From:Message-ID:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=QHIyHry1LVENZWb0w0mKy4F56KyHRZpoEwxcSXRHLl4=; b=hhS0phLhejw60i
-	39ux6VoT1/N3p0EjtXXFEVzI2U36I4yzSFP6DVUOVEvPyk2HDx7PYCJIoRcd2sR1F2XcG5P76kNtR
-	ohV66yB7/PTyBdIOasfcuTlA7z6MBl1ilvTVVTZNON9FqcFaanJR5H/HmzTTtahExzHc0WGrHAsgd
-	P4pwNm4Y1k0T25WTFVh4BIihJ8DHdDJZRr4zEzB4WJHbjtZnOOSHkA2mZCRF/oTeobx5UUppLB8PC
-	fANlIqYOHVSQqWZxLwuWMKmIQnm3wCHtj73+uQXs7oz/KhbiOKNYw/8Vtyb1Gz4l5P0XM0zsbCFu5
-	e5TNYw50QJeZ31H3SGtQ==;
+	List-Owner; bh=r+1JUbq1a7Hsd66G3Vyy8m2izPYYmLx/0BwDWAQbttc=; b=YbDbcjprwaLJz1
+	DqLkEDaV4/74Z5LQzHIrQDO7aomu+p3Wsf+q2elZLxNr1Z5AitJN/tM0hLEWNmWtRF+JvhAF3dVzA
+	+MDVeaJgS9s4E4+2zgnR9KzID8p87/m6YtOnusELdyoFpxVea4JqkFYp/DYCaSM6sNph65TfazVvi
+	YxmLs4sEO04BFdk5ys6MWOLZKqHW+E79Y9yI6aSmlghItB5qjgSj1fd54FyO3oGoUjvb2aheylEpv
+	DuIiEpBZ9eceAChPOhm4A3gax+1okVPsKfNdEyi/bI88BJX3pMLDGqYohsaZ+ESJoUEeYgou8p5Te
+	fHDK+8qcr9J9xLGf2Rkw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vSYXs-0000000CxPS-0WkT;
-	Mon, 08 Dec 2025 10:32:44 +0000
-Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5])
+	id 1vSYhB-0000000Cy3d-1mwE;
+	Mon, 08 Dec 2025 10:42:21 +0000
+Received: from tor.source.kernel.org ([2600:3c04:e001:324:0:1991:8:25])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vSYXp-0000000CxML-0x8y;
-	Mon, 08 Dec 2025 10:32:42 +0000
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5B86b963010256;
-	Mon, 8 Dec 2025 10:32:35 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=Je9IIy
-	qf3ckx1tk8Ni7hFzNEfi8CPmuUhAWbgT06pH4=; b=BfzC3HxrPobuhS53ACWdZB
-	PA9iEG/1aL4jT1TRuchKotrzCF9xodygooM1550WBnCL65pVF3xXiljw12UBVbLl
-	lT+rak8kiOOioJ9cqZfrJ/ccy+UBPtvzp/8HFNZqWKthsUB1XFwvk4QBgX+oR4l2
-	iEBYiqVoRUgRtZMs2uBsno0TintxSEi5vcwDUtb+JotU+Kwm1A/ocXKUSZWbktMh
-	g4tOQ0bTghEU6cY1PLDtxzsPSxo1B5+CtrYCtPidOz0X79/QvKd91QLKbspeRwQw
-	V9xQ4P1lQPcSB1CjW4dA4pcTwPESBW5+P72Bw0gAK7/ETwLMsX/bE32v4LqRlX8A
-	==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4avc536st5-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 08 Dec 2025 10:32:35 +0000 (GMT)
-Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 5B8ASQSK009105;
-	Mon, 8 Dec 2025 10:32:34 GMT
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4avc536ssv-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 08 Dec 2025 10:32:34 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5B885xZo002034;
-	Mon, 8 Dec 2025 10:32:33 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4aw11j4wwg-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 08 Dec 2025 10:32:33 +0000
-Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5B8AWU3o38535608
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 8 Dec 2025 10:32:30 GMT
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0F3E72004B;
-	Mon,  8 Dec 2025 10:32:30 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 73E4420040;
-	Mon,  8 Dec 2025 10:32:28 +0000 (GMT)
-Received: from [9.111.22.193] (unknown [9.111.22.193])
-	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon,  8 Dec 2025 10:32:28 +0000 (GMT)
-Message-ID: <8f1c1b9e-2743-4326-9a6f-754885ae90f4@linux.ibm.com>
-Date: Mon, 8 Dec 2025 11:32:27 +0100
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
+	id 1vSYhA-0000000Cy3O-0fk0;
+	Mon, 08 Dec 2025 10:42:20 +0000
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 3D39D6014D;
+	Mon,  8 Dec 2025 10:42:19 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DDA12C4CEF1;
+	Mon,  8 Dec 2025 10:42:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1765190538;
+	bh=TAnDl6sPhcy+IUlbX2x8cziKUCBVlmn2sw/09aCCSsI=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=X39h8sTJnWGPt8aAvzjUIiETMHFCA3RazvKyqIgwrxEc58CgplJjrACjAAoXNDu9v
+	 Mf4FaQLF71Mpzddiqh8kUrRua4Tc83Ql8bVBgkYb1NwV/s948y0TBK6H1F/bs9Ola/
+	 sZu+jSyI5iZIZdEKwdjRFL1iArddlpoE9LJVlY5w70w1lpY2RFr5VT3HWhCLjjqgO/
+	 7UHZkgAfe6RkxZmmdW+6fR624bPxRz7mmacB9JWaHHKj3qGDASLOxRB1uz0L/yo7E6
+	 bJOkeoaduri8FaD9L2jy/l1FCprmQ0KANGIOHDqKa2svuZK9Ni4EKDeVCuLiDQBGK1
+	 trQavZzLM6zlg==
+Received: from sofa.misterjones.org ([185.219.108.64] helo=goblin-girl.misterjones.org)
+	by disco-boy.misterjones.org with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.98.2)
+	(envelope-from <maz@kernel.org>)
+	id 1vSYh6-0000000BGKA-1nWA;
+	Mon, 08 Dec 2025 10:42:16 +0000
+Date: Mon, 08 Dec 2025 10:42:15 +0000
+Message-ID: <865xahp854.wl-maz@kernel.org>
+From: Marc Zyngier <maz@kernel.org>
+To: Sean Christopherson <seanjc@google.com>
+Cc: Oliver Upton <oupton@kernel.org>,
+	Tianrui Zhao <zhaotianrui@loongson.cn>,
+	Bibo Mao <maobibo@loongson.cn>,
+	Huacai Chen <chenhuacai@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Anup Patel <anup@brainfault.org>,
+	Paul Walmsley <pjw@kernel.org>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Janosch Frank <frankja@linux.ibm.com>,
+	Claudio Imbrenda <imbrenda@linux.ibm.com>,
+	Paolo Bonzini <pbonzini@redhat.com>,
+	linux-arm-kernel@lists.infradead.org,
+	kvmarm@lists.linux.dev,
+	kvm@vger.kernel.org,
+	loongarch@lists.linux.dev,
+	linux-mips@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	kvm-riscv@lists.infradead.org,
+	linux-riscv@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	"Gustavo A . R . Silva" <gustavoars@kernel.org>
 Subject: Re: [PATCH] KVM: Remove subtle "struct kvm_stats_desc" pseudo-overlay
-To: Sean Christopherson <seanjc@google.com>, Marc Zyngier <maz@kernel.org>,
-        Oliver Upton <oupton@kernel.org>,
-        Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>,
-        Huacai Chen <chenhuacai@kernel.org>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>,
-        Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
-        Janosch Frank <frankja@linux.ibm.com>,
-        Claudio Imbrenda <imbrenda@linux.ibm.com>,
-        Paolo Bonzini <pbonzini@redhat.com>
-Cc: linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev,
-        kvm@vger.kernel.org, loongarch@lists.linux.dev,
-        linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
-        linux-kernel@vger.kernel.org,
-        "Gustavo A . R . Silva" <gustavoars@kernel.org>
-References: <20251205232655.445294-1-seanjc@google.com>
-Content-Language: en-US
-From: Christian Borntraeger <borntraeger@linux.ibm.com>
 In-Reply-To: <20251205232655.445294-1-seanjc@google.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMjA2MDAyMCBTYWx0ZWRfX/ZkvryR9rikx
- RRIhLIzEwTDFULt3caOu8S6wy6ncgQsyLzn5JBuqe/16x7rRK7DPdjVge5xAJA2z7rL/tT1lyFd
- YMh3EQIfgG8q57vyiiYdkyOyNbLFDPTLaENaDyuoNnPQpGHKZMal2jpHafVG+bQkdZsWG8NW7UX
- AlT3nARl8qerz3haG9zUXE0cGXVKSMt5DkrhWZpn/VgzlCYydbpaoEhPc+m7bnrKQcjwj0amtRB
- p7RTydIUxj8YhOmJYvTpU5HYiUaYpnHgR9Ox+9r7ValcFQxCBW7NuzkHf4WykCwt+6kvFjjjGAe
- 9Yp1mHPJC81eNRrbuDPcX0SwdooPdv90XQw8GuaCLPA48Ihvfn3NN+/xRxSX0h0xvHQNlMFWFsC
- kUNylzqzl1bbNR0XFFbgeDqefkUM1w==
-X-Authority-Analysis: v=2.4 cv=S/DUAYsP c=1 sm=1 tr=0 ts=6936a943 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=IkcTkHD0fZMA:10 a=wP3pNCr1ah4A:10 a=VkNPw1HP01LnGYTKEx00:22
- a=VwQbUJbxAAAA:8 a=1XWaLZrsAAAA:8 a=VnNF1IyMAAAA:8 a=W9euR_DFE7q28BTGJBMA:9
- a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: QQLrcpyWW-8FcouxCOIdxqAKliO-gZxO
-X-Proofpoint-GUID: ADFjf-VsY2dJHYbJ59fyg02c4PSLuneX
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
- definitions=2025-12-06_02,2025-12-04_04,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 phishscore=0 clxscore=1011 impostorscore=0 suspectscore=0
- lowpriorityscore=0 adultscore=0 spamscore=0 bulkscore=0 priorityscore=1501
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.19.0-2510240000 definitions=main-2512060020
-X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20251208_023241_405237_809D33D2 
-X-CRM114-Status: GOOD (  12.92  )
+References: <20251205232655.445294-1-seanjc@google.com>
+User-Agent: Wanderlust/2.15.9 (Almost Unreal) SEMI-EPG/1.14.7 (Harue)
+ FLIM-LB/1.14.9 (=?UTF-8?B?R29qxY0=?=) APEL-LB/10.8 EasyPG/1.0.0 Emacs/30.1
+ (aarch64-unknown-linux-gnu) MULE/6.0 (HANACHIRUSATO)
+MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
+X-SA-Exim-Connect-IP: 185.219.108.64
+X-SA-Exim-Rcpt-To: seanjc@google.com, oupton@kernel.org, zhaotianrui@loongson.cn, maobibo@loongson.cn, chenhuacai@kernel.org, maddy@linux.ibm.com, anup@brainfault.org, pjw@kernel.org, palmer@dabbelt.com, aou@eecs.berkeley.edu, borntraeger@linux.ibm.com, frankja@linux.ibm.com, imbrenda@linux.ibm.com, pbonzini@redhat.com, linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, kvm@vger.kernel.org, loongarch@lists.linux.dev, linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, gustavoars@kernel.org
+X-SA-Exim-Mail-From: maz@kernel.org
+X-SA-Exim-Scanned: No (on disco-boy.misterjones.org); SAEximRunCond expanded to false
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -132,12 +96,14 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Am 06.12.25 um 00:26 schrieb Sean Christopherson:
+On Fri, 05 Dec 2025 23:26:55 +0000,
+Sean Christopherson <seanjc@google.com> wrote:
+> 
 > Remove KVM's internal pseudo-overlay of kvm_stats_desc, which subtly
 > aliases the flexible name[] in the uAPI definition with a fixed-size array
 > of the same name.  The unusual embedded structure results in compiler
@@ -154,34 +120,12 @@ Am 06.12.25 um 00:26 schrieb Sean Christopherson:
 > Closes: https://lore.kernel.org/all/aPfNKRpLfhmhYqfP@kspp
 > Signed-off-by: Sean Christopherson <seanjc@google.com>
 
-Acked-by: Christian Borntraeger <borntraeger@linux.ibm.com>
-[..]
+Acked-by: Marc Zyngier <maz@kernel.org>
 
-> --- a/include/uapi/linux/kvm.h
-> +++ b/include/uapi/linux/kvm.h
-> @@ -14,6 +14,10 @@
->   #include <linux/ioctl.h>
->   #include <asm/kvm.h>
->   
-> +#ifdef __KERNEL__
-> +#include <linux/kvm_types.h>
-> +#endif
-> +
->   #define KVM_API_VERSION 12
->   
->   /*
-> @@ -1579,7 +1583,11 @@ struct kvm_stats_desc {
->   	__u16 size;
->   	__u32 offset;
->   	__u32 bucket_size;
-> +#ifdef __KERNEL__
-> +	char name[KVM_STATS_NAME_SIZE];
-> +#else
->   	char name[];
-> +#endif
->   };
+	M.
 
-Not sure if we need a comment here or not. Maybe git blame is good enough.
+-- 
+Without deviation from the norm, progress is not possible.
 
 -- 
 kvm-riscv mailing list
