@@ -4,61 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 71BB2D3B7DD
-	for <kvm-riscv@archiver.kernel.org>; Mon,  8 Dec 2025 09:30:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 75420D3B7DD
+	for <kvm-riscv@archiver.kernel.org>; Mon,  8 Dec 2025 09:32:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:
 	Subject:MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=F41x3NdIpN1pw6MNTgi2YWDCdyZDwldmGX/gvhiO2O4=; b=K/OsGPm9ZldWsP
-	5+iUvhmDmN8lA4cbSbHpVi3miPB8szGqrLPLJXhN1rrvElRG3bFaifcePyESPEl0fqafbV54NIbn2
-	K7H8wiUG7Ysq3OfufB4YySNBI/1RZXcLJNk2kmWPQoy3hx1YFGR9mwZtPUbakYks0sVsdApo0Xjpp
-	snpT9Tjri2Rn1btmIhvOLsaHyLrcoiXDC5aP2VcuBQOyo/Tx+hhkqNvel552nSgfHf8YtZdJm70Sd
-	5sLiwATYSeXoOu22j0YmtwbeBJ6gEAuUI3eJA/Yi5B0w+S3awwarSQj8B84i6ULphsYQwd76txspG
-	Ta/jcoNrASSccH19GzSw==;
+	List-Owner; bh=qoYpL7BiJA06Kyo9Yi8ZTSu6uq5cHrV0ShM7L8PYDYw=; b=AmxUXpukPCBH+Z
+	epFmY/bQOxXA2SWKMISpVrjKpR5KjKKC01qFkPaSMDDFTjOpaWmXRYeZs9ZEHWf/VFH/RgDJdkpD4
+	7Cav/FAOqz43K36kVzRrc9BN6kFocql3NrlYgco2xdIVo80GRWgCGUUgohDA+cB9d4FpiqZFriaN6
+	LoCoRN+YX+gN0bCvshGnZzvqSgS9Z0stHrWbCZ/uf7yLjQoBaFU4LofOyO2AXOBeDYrEeN0aFoX1V
+	FGn0+modgXiIDmgNRmRzwKSQJD/gtYqrlol6gfnxC2f3NjjucCU26PQ0HGdvc9b8nsJIc1eIhTDE7
+	4HUYPUbthbJQa4y8z0rg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vSXZH-0000000CsJT-36L8;
-	Mon, 08 Dec 2025 09:30:09 +0000
+	id 1vSXbM-0000000CsXl-0OzM;
+	Mon, 08 Dec 2025 09:32:16 +0000
 Received: from mgamail.intel.com ([198.175.65.14])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vSXZE-0000000CsIy-1UPY;
-	Mon, 08 Dec 2025 09:30:05 +0000
+	id 1vSXbI-0000000CsXJ-3pbT;
+	Mon, 08 Dec 2025 09:32:14 +0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1765186205; x=1796722205;
+  t=1765186333; x=1796722333;
   h=message-id:date:mime-version:subject:to:cc:references:
    from:in-reply-to:content-transfer-encoding;
-  bh=JcvwqgFLZTsix0sYAKimzPeJUH3wC8yywdSyJTN0AOA=;
-  b=nXofIik18CH0JQSzkCZXBhsdsW6oayriLxNss4v2cHQ2prAOIIt/QQB4
-   zpi2zaUEejwjuSPLwMjF8nuA8R7nq+XU9DRpwrJCmoDLFPaICSMJVzgyn
-   C6+cPy0uLjsJ3ozTF10vCLzfa/I6v8HuHtQwAeOU39IzDWTtHZmZ3uRVs
-   nAtXPnGvzucTC+O6tSR81ZzpFoI47cKbJ3mR4Qi81tkDZjkaUxoM3Vw9v
-   vlL1k3g8hv/zTATX7bizX3KpGyC+b+LxOtU+9cAjQ5KISHUiOTZSg+PZK
-   3QdYjBO5f5qGii8JcoDJYcJVbze9ajrIRTtIwyMTFPrafABBtmUnKXmSE
-   g==;
-X-CSE-ConnectionGUID: 3ziNoRN8Qd646LI7dmBZGg==
-X-CSE-MsgGUID: KqlQfh9rTJWeLbF4AFXV4Q==
-X-IronPort-AV: E=McAfee;i="6800,10657,11635"; a="70979405"
+  bh=GYQaZ3LGrXDq/3mzDZllqKTFLOorC/Poy7Wcg2fCybE=;
+  b=DqHxtImLc+xU09Sf0NeDIaZa76tYTuvBHINhyN8oiVWqPvgPUw1RFi4T
+   wz/OE2puXulvvmQe+jPGCOxGygcoKrbgRtbci+ypqAE6AUPy2ZI6uIwDi
+   1dim/e5tOAXhuRhewexVJZY1Q2EcejSCyGfTwmAj5PckknmmBp53uQjG/
+   RxxUnJxQpXxdnU1NTc/RrHhkDo82H4la9QHnSnAIpx3c8/9iRHYOB+HSf
+   bBMARtZNPx4agc+4n+qr8Lu7DhlAGYcVWCDXRU9sI89CarvKGgEHVsgKp
+   MWGKHY5drEdDIWe+2Li6/x9F1y0fcN0ZgzfRJgTwlFIbd7ENNCyoIxsl3
+   A==;
+X-CSE-ConnectionGUID: dohHzTG6RyOB1HzVYZSQAA==
+X-CSE-MsgGUID: AwpGHOcpTa+S122EMOzmpw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11635"; a="70979537"
 X-IronPort-AV: E=Sophos;i="6.20,258,1758610800"; 
-   d="scan'208";a="70979405"
+   d="scan'208";a="70979537"
 Received: from orviesa003.jf.intel.com ([10.64.159.143])
-  by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Dec 2025 01:30:04 -0800
-X-CSE-ConnectionGUID: hxoRms/XQeW3zbu9VYpNCQ==
-X-CSE-MsgGUID: qMxDtETuSwGp66ogCtei0A==
+  by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Dec 2025 01:32:13 -0800
+X-CSE-ConnectionGUID: ypr0CVsRRuCL80dlOYG7Uw==
+X-CSE-MsgGUID: sHpFM58aQWi8jT8QK4x6Bg==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.20,258,1758610800"; 
-   d="scan'208";a="200067632"
+   d="scan'208";a="200067937"
 Received: from dapengmi-mobl1.ccr.corp.intel.com (HELO [10.124.240.12]) ([10.124.240.12])
-  by ORVIESA003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Dec 2025 01:29:56 -0800
-Message-ID: <2440b9bf-a2a1-4f66-94b2-71f47d62f3db@linux.intel.com>
-Date: Mon, 8 Dec 2025 17:29:53 +0800
+  by ORVIESA003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Dec 2025 01:32:04 -0800
+Message-ID: <f551c638-a8c8-4aab-9fb7-f04df124ff15@linux.intel.com>
+Date: Mon, 8 Dec 2025 17:32:01 +0800
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v6 37/44] KVM: VMX: Dedup code for removing MSR from
- VMCS's auto-load list
+Subject: Re: [PATCH v6 38/44] KVM: VMX: Drop unused @entry_only param from
+ add_atomic_switch_msr()
 To: Sean Christopherson <seanjc@google.com>, Marc Zyngier <maz@kernel.org>,
  Oliver Upton <oupton@kernel.org>, Tianrui Zhao <zhaotianrui@loongson.cn>,
  Bibo Mao <maobibo@loongson.cn>, Huacai Chen <chenhuacai@kernel.org>,
@@ -77,13 +77,13 @@ Cc: linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev,
  Xiong Zhang <xiong.y.zhang@linux.intel.com>,
  Manali Shukla <manali.shukla@amd.com>, Jim Mattson <jmattson@google.com>
 References: <20251206001720.468579-1-seanjc@google.com>
- <20251206001720.468579-38-seanjc@google.com>
+ <20251206001720.468579-39-seanjc@google.com>
 Content-Language: en-US
 From: "Mi, Dapeng" <dapeng1.mi@linux.intel.com>
-In-Reply-To: <20251206001720.468579-38-seanjc@google.com>
+In-Reply-To: <20251206001720.468579-39-seanjc@google.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20251208_013004_512851_9770B2E2 
-X-CRM114-Status: GOOD (  19.58  )
+X-CRM114-CacheID: sfid-20251208_013213_248419_C10B2D31 
+X-CRM114-Status: GOOD (  20.64  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -95,55 +95,106 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Ck9uIDEyLzYvMjAyNSA4OjE3IEFNLCBTZWFuIENocmlzdG9waGVyc29uIHdyb3RlOgo+IEFkZCBh
-IGhlbHBlciB0byByZW1vdmUgYW4gTVNSIGZyb20gYW4gYXV0by17bG9hZCxzdG9yZX0gbGlzdCB0
-byBkZWR1cCB0aGUKPiBtc3JfYXV0b2xvYWQgY29kZSwgYW5kIGluIGFudGljaXBhdGlvbiBvZiBh
-ZGRpbmcgc2ltaWxhciBmdW5jdGlvbmFsaXR5IGZvcgo+IG1zcl9hdXRvc3RvcmUuCj4KPiBObyBm
-dW5jdGlvbmFsIGNoYW5nZSBpbnRlbmRlZC4KPgo+IFNpZ25lZC1vZmYtYnk6IFNlYW4gQ2hyaXN0
-b3BoZXJzb24gPHNlYW5qY0Bnb29nbGUuY29tPgo+IC0tLQo+ICBhcmNoL3g4Ni9rdm0vdm14L3Zt
-eC5jIHwgMzEgKysrKysrKysrKysrKysrKy0tLS0tLS0tLS0tLS0tLQo+ICAxIGZpbGUgY2hhbmdl
-ZCwgMTYgaW5zZXJ0aW9ucygrKSwgMTUgZGVsZXRpb25zKC0pCj4KPiBkaWZmIC0tZ2l0IGEvYXJj
-aC94ODYva3ZtL3ZteC92bXguYyBiL2FyY2gveDg2L2t2bS92bXgvdm14LmMKPiBpbmRleCA1MmJj
-YjgxN2NjMTUuLmE1MWY2NmQxYjIwMSAxMDA2NDQKPiAtLS0gYS9hcmNoL3g4Ni9rdm0vdm14L3Zt
-eC5jCj4gKysrIGIvYXJjaC94ODYva3ZtL3ZteC92bXguYwo+IEBAIC0xMDQwLDkgKzEwNDAsMjIg
-QEAgc3RhdGljIGludCB2bXhfZmluZF9sb2Fkc3RvcmVfbXNyX3Nsb3Qoc3RydWN0IHZteF9tc3Jz
-ICptLCB1MzIgbXNyKQo+ICAJcmV0dXJuIC1FTk9FTlQ7Cj4gIH0KPiAgCj4gK3N0YXRpYyB2b2lk
-IHZteF9yZW1vdmVfYXV0b19tc3Ioc3RydWN0IHZteF9tc3JzICptLCB1MzIgbXNyLAo+ICsJCQkJ
-dW5zaWduZWQgbG9uZyB2bWNzX2NvdW50X2ZpZWxkKQo+ICt7Cj4gKwlpbnQgaTsKPiArCj4gKwlp
-ID0gdm14X2ZpbmRfbG9hZHN0b3JlX21zcl9zbG90KG0sIG1zcik7Cj4gKwlpZiAoaSA8IDApCj4g
-KwkJcmV0dXJuOwo+ICsKPiArCS0tbS0+bnI7Cj4gKwltLT52YWxbaV0gPSBtLT52YWxbbS0+bnJd
-OwoKU29tZXRpbWVzIHRoZSBvcmRlciBvZiBNU1Igd3JpdGluZyBkb2VzIG1hdHRlciwgZS5nLiwg
-UEVSRl9HTE9CQUxfQ1RSTCBNU1IKc2hvdWxkIGJlIHdyaXR0ZW4gYXQgbGFzdCBhZnRlciBhbGwg
-UE1VIE1TUiB3cml0aW5nLiBTbyBkaXJlY3RseSBtb3ZpbmcgdGhlCmxhc3QgTVNSIGVudHJ5IGlu
-dG8gY2xlYXJlZCBvbmUgY291bGQgYnJlYWsgdGhlIE1TUiB3cml0aW5nIHNlcXVlbmNlIGFuZApt
-YXkgY2F1c2UgaXNzdWUgaW4gdGhlb3J5LgoKSSBrbm93IHRoaXMgd29uJ3QgcmVhbGx5IGNhdXNl
-IGlzc3VlIHNpbmNlIGN1cnJlbnRseSB2UE1VIHdvbid0IHVzZSB0aGUgTVNSCmF1dG8tbG9hZCBm
-ZWF0dXJlIHRvIHNhdmUgYW55IFBNVSBNU1IsIGJ1dCBpdCdzIHN0aWxsIHVuc2FmZSBmb3IgZnV0
-dXJlIHVzZXMuwqAKCkknbSBub3Qgc3VyZSBpZiBpdCdzIHdvcnRoeSB0byBkbyB0aGUgc3RyaWN0
-IE1TUiBlbnRyeSBzaGlmdCByaWdodCBub3cuClBlcmhhcHMgd2UgY291bGQgYWRkIGEgbWVzc2Fn
-ZSB0byB3YXJuIHVzZXJzIGF0IGxlYXN0LgoKVGhhbmtzLgoKCj4gKwl2bWNzX3dyaXRlMzIodm1j
-c19jb3VudF9maWVsZCwgbS0+bnIpOwo+ICt9Cj4gKwo+ICBzdGF0aWMgdm9pZCBjbGVhcl9hdG9t
-aWNfc3dpdGNoX21zcihzdHJ1Y3QgdmNwdV92bXggKnZteCwgdW5zaWduZWQgbXNyKQo+ICB7Cj4g
-LQlpbnQgaTsKPiAgCXN0cnVjdCBtc3JfYXV0b2xvYWQgKm0gPSAmdm14LT5tc3JfYXV0b2xvYWQ7
-Cj4gIAo+ICAJc3dpdGNoIChtc3IpIHsKPiBAQCAtMTA2MywyMSArMTA3Niw5IEBAIHN0YXRpYyB2
-b2lkIGNsZWFyX2F0b21pY19zd2l0Y2hfbXNyKHN0cnVjdCB2Y3B1X3ZteCAqdm14LCB1bnNpZ25l
-ZCBtc3IpCj4gIAkJfQo+ICAJCWJyZWFrOwo+ICAJfQo+IC0JaSA9IHZteF9maW5kX2xvYWRzdG9y
-ZV9tc3Jfc2xvdCgmbS0+Z3Vlc3QsIG1zcik7Cj4gLQlpZiAoaSA8IDApCj4gLQkJZ290byBza2lw
-X2d1ZXN0Owo+IC0JLS1tLT5ndWVzdC5ucjsKPiAtCW0tPmd1ZXN0LnZhbFtpXSA9IG0tPmd1ZXN0
-LnZhbFttLT5ndWVzdC5ucl07Cj4gLQl2bWNzX3dyaXRlMzIoVk1fRU5UUllfTVNSX0xPQURfQ09V
-TlQsIG0tPmd1ZXN0Lm5yKTsKPiAgCj4gLXNraXBfZ3Vlc3Q6Cj4gLQlpID0gdm14X2ZpbmRfbG9h
-ZHN0b3JlX21zcl9zbG90KCZtLT5ob3N0LCBtc3IpOwo+IC0JaWYgKGkgPCAwKQo+IC0JCXJldHVy
-bjsKPiAtCj4gLQktLW0tPmhvc3QubnI7Cj4gLQltLT5ob3N0LnZhbFtpXSA9IG0tPmhvc3QudmFs
-W20tPmhvc3QubnJdOwo+IC0Jdm1jc193cml0ZTMyKFZNX0VYSVRfTVNSX0xPQURfQ09VTlQsIG0t
-Pmhvc3QubnIpOwo+ICsJdm14X3JlbW92ZV9hdXRvX21zcigmbS0+Z3Vlc3QsIG1zciwgVk1fRU5U
-UllfTVNSX0xPQURfQ09VTlQpOwo+ICsJdm14X3JlbW92ZV9hdXRvX21zcigmbS0+aG9zdCwgbXNy
-LCBWTV9FWElUX01TUl9MT0FEX0NPVU5UKTsKPiAgfQo+ICAKPiAgc3RhdGljIF9fYWx3YXlzX2lu
-bGluZSB2b2lkIGFkZF9hdG9taWNfc3dpdGNoX21zcl9zcGVjaWFsKHN0cnVjdCB2Y3B1X3ZteCAq
-dm14LAoKLS0gCmt2bS1yaXNjdiBtYWlsaW5nIGxpc3QKa3ZtLXJpc2N2QGxpc3RzLmluZnJhZGVh
-ZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9rdm0tcmlz
-Y3YK
+
+On 12/6/2025 8:17 AM, Sean Christopherson wrote:
+> Drop the "on VM-Enter only" parameter from add_atomic_switch_msr() as it
+> is no longer used, and for all intents and purposes was never used.  The
+> functionality was added, under embargo, by commit 989e3992d2ec
+> ("x86/KVM/VMX: Extend add_atomic_switch_msr() to allow VMENTER only MSRs"),
+> and then ripped out by commit 2f055947ae5e ("x86/kvm: Drop L1TF MSR list
+> approach") just a few commits later.
+>
+>   2f055947ae5e x86/kvm: Drop L1TF MSR list approach
+>   72c6d2db64fa x86/litf: Introduce vmx status variable
+>   215af5499d9e cpu/hotplug: Online siblings when SMT control is turned on
+>   390d975e0c4e x86/KVM/VMX: Use MSR save list for IA32_FLUSH_CMD if required
+>   989e3992d2ec x86/KVM/VMX: Extend add_atomic_switch_msr() to allow VMENTER only MSRs
+>
+> Furthermore, it's extremely unlikely KVM will ever _need_ to load an MSR
+> value via the auto-load lists only on VM-Enter.  MSRs writes via the lists
+> aren't optimized in any way, and so the only reason to use the lists
+> instead of a WRMSR are for cases where the MSR _must_ be load atomically
+> with respect to VM-Enter (and/or VM-Exit).  While one could argue that
+> command MSRs, e.g. IA32_FLUSH_CMD, "need" to be done exact at VM-Enter, in
+> practice doing such flushes within a few instructons of VM-Enter is more
+> than sufficient.
+>
+> Note, the shortlog and changelog for commit 390d975e0c4e ("x86/KVM/VMX: Use
+> MSR save list for IA32_FLUSH_CMD if required") are misleading and wrong.
+> That commit added MSR_IA32_FLUSH_CMD to the VM-Enter _load_ list, not the
+> VM-Enter save list (which doesn't exist, only VM-Exit has a store/save
+> list).
+>
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
+> ---
+>  arch/x86/kvm/vmx/vmx.c | 13 ++++---------
+>  1 file changed, 4 insertions(+), 9 deletions(-)
+>
+> diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
+> index a51f66d1b201..38491962b2c1 100644
+> --- a/arch/x86/kvm/vmx/vmx.c
+> +++ b/arch/x86/kvm/vmx/vmx.c
+> @@ -1094,7 +1094,7 @@ static __always_inline void add_atomic_switch_msr_special(struct vcpu_vmx *vmx,
+>  }
+>  
+>  static void add_atomic_switch_msr(struct vcpu_vmx *vmx, unsigned msr,
+> -				  u64 guest_val, u64 host_val, bool entry_only)
+> +				  u64 guest_val, u64 host_val)
+>  {
+>  	int i, j = 0;
+>  	struct msr_autoload *m = &vmx->msr_autoload;
+> @@ -1132,8 +1132,7 @@ static void add_atomic_switch_msr(struct vcpu_vmx *vmx, unsigned msr,
+>  	}
+>  
+>  	i = vmx_find_loadstore_msr_slot(&m->guest, msr);
+> -	if (!entry_only)
+> -		j = vmx_find_loadstore_msr_slot(&m->host, msr);
+> +	j = vmx_find_loadstore_msr_slot(&m->host, msr);
+>  
+>  	if ((i < 0 && m->guest.nr == MAX_NR_LOADSTORE_MSRS) ||
+>  	    (j < 0 &&  m->host.nr == MAX_NR_LOADSTORE_MSRS)) {
+> @@ -1148,9 +1147,6 @@ static void add_atomic_switch_msr(struct vcpu_vmx *vmx, unsigned msr,
+>  	m->guest.val[i].index = msr;
+>  	m->guest.val[i].value = guest_val;
+>  
+> -	if (entry_only)
+> -		return;
+> -
+>  	if (j < 0) {
+>  		j = m->host.nr++;
+>  		vmcs_write32(VM_EXIT_MSR_LOAD_COUNT, m->host.nr);
+> @@ -1190,8 +1186,7 @@ static bool update_transition_efer(struct vcpu_vmx *vmx)
+>  		if (!(guest_efer & EFER_LMA))
+>  			guest_efer &= ~EFER_LME;
+>  		if (guest_efer != kvm_host.efer)
+> -			add_atomic_switch_msr(vmx, MSR_EFER,
+> -					      guest_efer, kvm_host.efer, false);
+> +			add_atomic_switch_msr(vmx, MSR_EFER, guest_efer, kvm_host.efer);
+>  		else
+>  			clear_atomic_switch_msr(vmx, MSR_EFER);
+>  		return false;
+> @@ -7350,7 +7345,7 @@ static void atomic_switch_perf_msrs(struct vcpu_vmx *vmx)
+>  			clear_atomic_switch_msr(vmx, msrs[i].msr);
+>  		else
+>  			add_atomic_switch_msr(vmx, msrs[i].msr, msrs[i].guest,
+> -					msrs[i].host, false);
+> +					      msrs[i].host);
+>  }
+>  
+>  static void vmx_update_hv_timer(struct kvm_vcpu *vcpu, bool force_immediate_exit)
+
+LGTM.
+
+Reviewed-by: Dapeng Mi <dapeng1.mi@linux.intel.com>
+
+
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
