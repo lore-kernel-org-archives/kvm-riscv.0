@@ -4,89 +4,89 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 81102D3B9B6
-	for <kvm-riscv@archiver.kernel.org>; Wed, 10 Dec 2025 01:09:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 55508D59F76
+	for <kvm-riscv@archiver.kernel.org>; Sat, 13 Dec 2025 15:09:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:
-	Subject:MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=E99aMaqzpYFsUEjFBv1SqA8ZLCipH17x3TFxaVfSs6Q=; b=cyUzYhGXMnhOKf
-	8uNWu297BsFsT6+jGuQJzko4FhesC2ZAYjlPJwIQJRDi/1+SdvnH/4HXMzNd2Bm5C+eQ3zJ7H6zBw
-	5U2zdiAE3b7mLhH2fgArBZ/ZnTv0FXCQ4pxh8yQ1mhRYR1J/ZALUGHhfGgqF7t5aZNWJ0rylQyVT2
-	C2rxB0mmIV8jMZak7zYd2iWqg+VpKjfSaGYY7IaWZUYoaY72wC59d9mikFOqjf8TroC5i8Vvay5HU
-	LDhoAy0tBuJNy3Yi0/1aOig+NecDWqEYICANQ8Ns4ns3W11ATp2Z8tpabLA6ldvEKyrHzLP/lnSCD
-	03jPr1ca+qh/kMX4Mmsw==;
+	List-Owner; bh=MISKiSXZYmpeXdNQSZWilsncdNI7O9ilb3MPTH4W5A0=; b=vbwAMu3mOKmrSS
+	tCgZywjsIGA40nQfqipO3Ct8pnwjzIa3CL2EBNJyneoox92uf8U4BIQQxq0d6uRGGqB8XeiLDPnXS
+	da3QfZMAkSGkd/Vb1hB4NYkvpg4doeh75Cs5r3oo+I0VhAYXUujI18+CCaAWKrc0ZFGAyqssKp05o
+	QkBa6lNFJNMkOU/9Ek1NMQHFBCA30XE245mdYs/4Ixyk5qTXUfmd4Cmix8QaGC/5pGdbsBqevXhkd
+	zxm0ATcWeLfxqsO+g3WV14dcjleVLhlAvQ6NsmfTLfFz2p0s0eDhPjN6ztVMToTYqsbhfGUAXW866
+	dJhO7Nrvjx3fZFlHXJpw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vT8hW-0000000Exfm-2QGr;
-	Wed, 10 Dec 2025 01:09:06 +0000
-Received: from mgamail.intel.com ([192.198.163.17])
+	id 1vURFB-00000001idv-1qkz;
+	Sat, 13 Dec 2025 15:09:13 +0000
+Received: from mail-pl1-x62f.google.com ([2607:f8b0:4864:20::62f])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vT8hU-0000000ExfL-1Vtd;
-	Wed, 10 Dec 2025 01:09:05 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1765328944; x=1796864944;
-  h=message-id:date:mime-version:subject:to:cc:references:
-   from:in-reply-to:content-transfer-encoding;
-  bh=7Sw6PITpzapkD99/tAnwNI3D6Ucw9JU8bsiOsehlJts=;
-  b=FoffeohhpA77GufSVMykhaVh+BaJakLO/wN/IbFWz848fbMsH4RYAqZe
-   tIwFhRasNS+/2t0tS3vVxvDAt3zCzXZUk45arf75G1xQ9dEvTnrLR1fke
-   aBJdY3mo3l6WTVu9V7O5MpGe/MQYHg8yNC80wv6HdOE4Yc02RW0tMz0zK
-   T9we6Uq+mJRWQQFrBoMFP8bWHC2YRGG/PZxWDvuMD0nzi+Z7u6Duko1jg
-   Qfl6TXWZnGoy+0O6kas3LMBDrzpvE8nfnsti3J+HD2h8eUX0BgKvaKmlD
-   kVQ5mPE/pBy6nsHaVXsTlJu2hShAJ4Eww5936UZtnJeykAywxKZaWhnUD
-   g==;
-X-CSE-ConnectionGUID: irH/A8EGRC6JQB2YauS2rQ==
-X-CSE-MsgGUID: Al43oxFuT8mNQdHkmn1GIQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11637"; a="67190221"
-X-IronPort-AV: E=Sophos;i="6.20,262,1758610800"; 
-   d="scan'208";a="67190221"
-Received: from orviesa004.jf.intel.com ([10.64.159.144])
-  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Dec 2025 17:09:02 -0800
-X-CSE-ConnectionGUID: 21iGYDOORw+11NIMlPnpaw==
-X-CSE-MsgGUID: WFDJ3r6bSDGlQ9mRnDj7FQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.20,262,1758610800"; 
-   d="scan'208";a="200862410"
-Received: from dapengmi-mobl1.ccr.corp.intel.com (HELO [10.124.240.12]) ([10.124.240.12])
-  by orviesa004-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Dec 2025 17:08:54 -0800
-Message-ID: <fad66209-6dc1-4067-87df-9aa1105e3017@linux.intel.com>
-Date: Wed, 10 Dec 2025 09:08:52 +0800
+	id 1vURF8-00000001id0-1TYC
+	for kvm-riscv@lists.infradead.org;
+	Sat, 13 Dec 2025 15:09:11 +0000
+Received: by mail-pl1-x62f.google.com with SMTP id d9443c01a7336-29f30233d8aso16368175ad.0
+        for <kvm-riscv@lists.infradead.org>; Sat, 13 Dec 2025 07:09:10 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1765638549; x=1766243349; darn=lists.infradead.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=DV+YsCSpJyz8LU2DSgDk8rLLAaInxe4ioSw123lddU8=;
+        b=HmaiN+AkciKaa3KeyA7r0kgxABpjL9TdJ0qhrjm+1Rskovt3F4ZfdD8sbzCTaaQZON
+         1xBrBKSMvdjmuqu++FwJUxH0KU7BQrT3H6ZTkAeS1ZVuokxR2oI/Qy6rAveyQ3EgVOWb
+         L/kfBVt/tF3OIhmGuphsKGMLV1nKAwYlz0ojOGKsFAQuepv1ErLlaRp9K0TOjvWwt8Xd
+         HobhS1QEnUSO4Shk52KSwq7PZPKLLf9Jysz+wvhkkoPoiQz0V/X8M4jIdwAtup0WYI1E
+         Zqkbo4iehdZS8nb788s/vt+rxoHGvlUKNE3Ibwdjz11LKN8F1dp1yAmlSBmj59Q0BSuP
+         inxw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1765638549; x=1766243349;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=DV+YsCSpJyz8LU2DSgDk8rLLAaInxe4ioSw123lddU8=;
+        b=k+3T9vC+C3AT6brNGGYo5wvDTm6PU6EtGfXgpYRYKNytbNcvl3X7jY3vLu4Sp9T7q/
+         toSzu7fFs6RX61ETtkLdPCzflMs4khfY49vGV5jY3AWdLwVLzQv3iJallhdi6mE00zPt
+         YjQiU8Cwc0uzwAkGgW8MbUFKTFmW3bXygbD8mqeLBcfuD4JSpxEJAPUbou6T6B3r3ev7
+         2z9ZnzuG8rSjCnd8nkQ+BqoXjya1ExnbOyCvv4oCbbyPCFmVzVmsi+F3BbYhJEk+24lz
+         HKztJejXttxkUlRId0Bqx22P5ky6Bm0cg+Tw9rz6ZCNCPA/dLwhbT1M0jGwiXk7HppcC
+         heTg==
+X-Forwarded-Encrypted: i=1; AJvYcCVxPkhjxtBnQiWAaTH+yN6FQpU7UKdP368BINpr1l3umHoztFLDhHi/9XLP2MJbyaEgkA0zaiaqlK4=@lists.infradead.org
+X-Gm-Message-State: AOJu0YxeRRgpQ+mS5EIuD0I/EBB8hP6/mBRDG5l2wWwSsPOM2p49Yn3g
+	SzORiSYrEkXhiwCOc58Y5faGnOJpQ7jc2+RFAOblPd7kLCGQQGw6XUOL
+X-Gm-Gg: AY/fxX4bgU1+EokdmGPiHxOUIcC+7nHh+WNlG3nPUpsjqnWNP409E3bOm3pFBo7KDZl
+	MHtrSzDQJjbhnEo7PsMoeHG96ROFx59c3rZ63xQ+CrCHUphmE/pe22acrVV81GblB8NzocPNL1z
+	xpNcuF+c6JCNnSksXMk5gMivGg7J2RDyc7mU75ObgMaqjIuSeRp+4P/jfCrLMn8p9jdFThjNjgz
+	Te1ZPxtFHg2be25WAWv9h7oelnnScCzv+/KLjCxToriktnsApDJWVwHhHIgIH4ATGOuqU9Eu1Sa
+	ZYdqM9TwvKeUmWElnb0RtQF4WGH51YxEOrhoTLQXgnFSoOxNl1hkCIWHGH7bn4up2NU3Yd5ipS2
+	ihou7tk4JoSgIQhy3jVH2DNqORFteQkAJ1UPed5B4jOjpjGgMaWMA7mm9c7g0py55pZHev5urXZ
+	j7qRS8c4zLClyKx4Qb
+X-Google-Smtp-Source: AGHT+IF5tvERXCT4zL1GzpqSj7FJysIN0r9EWu8eFo/hMMsmKS1TDjFNfsRwtI3jsiOKYfKWOYjI0A==
+X-Received: by 2002:a17:903:2ece:b0:295:4936:d1e9 with SMTP id d9443c01a7336-29f23c7b7e3mr49941505ad.36.1765638549520;
+        Sat, 13 Dec 2025 07:09:09 -0800 (PST)
+Received: from JRT-PC.. ([111.94.32.24])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-29eea016c6esm85494715ad.59.2025.12.13.07.09.07
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 13 Dec 2025 07:09:09 -0800 (PST)
+From: James Raphael Tiovalen <jamestiotio@gmail.com>
+To: kvm@vger.kernel.org,
+	kvm-riscv@lists.infradead.org
+Cc: andrew.jones@linux.dev,
+	atishp@rivosinc.com,
+	James Raphael Tiovalen <jamestiotio@gmail.com>
+Subject: [kvm-unit-tests PATCH 1/4] lib: riscv: Add SBI PMU CSRs and enums
+Date: Sat, 13 Dec 2025 23:08:45 +0800
+Message-ID: <20251213150848.149729-2-jamestiotio@gmail.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20251213150848.149729-1-jamestiotio@gmail.com>
+References: <20251213150848.149729-1-jamestiotio@gmail.com>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v6 37/44] KVM: VMX: Dedup code for removing MSR from
- VMCS's auto-load list
-To: Sean Christopherson <seanjc@google.com>
-Cc: Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>,
- Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>,
- Huacai Chen <chenhuacai@kernel.org>, Anup Patel <anup@brainfault.org>,
- Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
- Albert Ou <aou@eecs.berkeley.edu>, Xin Li <xin@zytor.com>,
- "H. Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Namhyung Kim <namhyung@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>,
- linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev,
- kvm@vger.kernel.org, loongarch@lists.linux.dev,
- kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
- linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org,
- Mingwei Zhang <mizhang@google.com>, Xudong Hao <xudong.hao@intel.com>,
- Sandipan Das <sandipan.das@amd.com>,
- Xiong Zhang <xiong.y.zhang@linux.intel.com>,
- Manali Shukla <manali.shukla@amd.com>, Jim Mattson <jmattson@google.com>
-References: <20251206001720.468579-1-seanjc@google.com>
- <20251206001720.468579-38-seanjc@google.com>
- <2440b9bf-a2a1-4f66-94b2-71f47d62f3db@linux.intel.com>
- <aTheSQb9fhXmZKw6@google.com>
-Content-Language: en-US
-From: "Mi, Dapeng" <dapeng1.mi@linux.intel.com>
-In-Reply-To: <aTheSQb9fhXmZKw6@google.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20251209_170904_437490_753B2AC9 
-X-CRM114-Status: GOOD (  26.72  )
+X-CRM114-CacheID: sfid-20251213_070910_760915_32A2A8F5 
+X-CRM114-Status: UNSURE (   6.80  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -98,82 +98,167 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Ck9uIDEyLzEwLzIwMjUgMTozNyBBTSwgU2VhbiBDaHJpc3RvcGhlcnNvbiB3cm90ZToKPiBPbiBN
-b24sIERlYyAwOCwgMjAyNSwgRGFwZW5nIE1pIHdyb3RlOgo+PiBPbiAxMi82LzIwMjUgODoxNyBB
-TSwgU2VhbiBDaHJpc3RvcGhlcnNvbiB3cm90ZToKPj4+IEFkZCBhIGhlbHBlciB0byByZW1vdmUg
-YW4gTVNSIGZyb20gYW4gYXV0by17bG9hZCxzdG9yZX0gbGlzdCB0byBkZWR1cCB0aGUKPj4+IG1z
-cl9hdXRvbG9hZCBjb2RlLCBhbmQgaW4gYW50aWNpcGF0aW9uIG9mIGFkZGluZyBzaW1pbGFyIGZ1
-bmN0aW9uYWxpdHkgZm9yCj4+PiBtc3JfYXV0b3N0b3JlLgo+Pj4KPj4+IE5vIGZ1bmN0aW9uYWwg
-Y2hhbmdlIGludGVuZGVkLgo+Pj4KPj4+IFNpZ25lZC1vZmYtYnk6IFNlYW4gQ2hyaXN0b3BoZXJz
-b24gPHNlYW5qY0Bnb29nbGUuY29tPgo+Pj4gLS0tCj4+PiAgYXJjaC94ODYva3ZtL3ZteC92bXgu
-YyB8IDMxICsrKysrKysrKysrKysrKystLS0tLS0tLS0tLS0tLS0KPj4+ICAxIGZpbGUgY2hhbmdl
-ZCwgMTYgaW5zZXJ0aW9ucygrKSwgMTUgZGVsZXRpb25zKC0pCj4+Pgo+Pj4gZGlmZiAtLWdpdCBh
-L2FyY2gveDg2L2t2bS92bXgvdm14LmMgYi9hcmNoL3g4Ni9rdm0vdm14L3ZteC5jCj4+PiBpbmRl
-eCA1MmJjYjgxN2NjMTUuLmE1MWY2NmQxYjIwMSAxMDA2NDQKPj4+IC0tLSBhL2FyY2gveDg2L2t2
-bS92bXgvdm14LmMKPj4+ICsrKyBiL2FyY2gveDg2L2t2bS92bXgvdm14LmMKPj4+IEBAIC0xMDQw
-LDkgKzEwNDAsMjIgQEAgc3RhdGljIGludCB2bXhfZmluZF9sb2Fkc3RvcmVfbXNyX3Nsb3Qoc3Ry
-dWN0IHZteF9tc3JzICptLCB1MzIgbXNyKQo+Pj4gIAlyZXR1cm4gLUVOT0VOVDsKPj4+ICB9Cj4+
-PiAgCj4+PiArc3RhdGljIHZvaWQgdm14X3JlbW92ZV9hdXRvX21zcihzdHJ1Y3Qgdm14X21zcnMg
-Km0sIHUzMiBtc3IsCj4+PiArCQkJCXVuc2lnbmVkIGxvbmcgdm1jc19jb3VudF9maWVsZCkKPj4+
-ICt7Cj4+PiArCWludCBpOwo+Pj4gKwo+Pj4gKwlpID0gdm14X2ZpbmRfbG9hZHN0b3JlX21zcl9z
-bG90KG0sIG1zcik7Cj4+PiArCWlmIChpIDwgMCkKPj4+ICsJCXJldHVybjsKPj4+ICsKPj4+ICsJ
-LS1tLT5ucjsKPj4+ICsJbS0+dmFsW2ldID0gbS0+dmFsW20tPm5yXTsKPj4gU29tZXRpbWVzIHRo
-ZSBvcmRlciBvZiBNU1Igd3JpdGluZyBkb2VzIG1hdHRlciwgZS5nLiwgUEVSRl9HTE9CQUxfQ1RS
-TCBNU1IKPj4gc2hvdWxkIGJlIHdyaXR0ZW4gYXQgbGFzdCBhZnRlciBhbGwgUE1VIE1TUiB3cml0
-aW5nLgo+IEhtbSwgbm8uICBfSWZfIEtWTSB3ZXJlIHdyaXRpbmcgZXZlbnQgc2VsZWN0b3JzIHVz
-aW5nIHRoZSBhdXRvLWxvYWQgbGlzdHMsIHRoZW4KPiBLVk0gd291bGQgbmVlZCB0byBib29rZW5k
-IHRoZSBldmVudCBzZWxlY3RvciBNU1JzIHdpdGggUEVSRl9HTE9CQUxfQ1RSTD0wIGFuZAo+IFBF
-UkZfR0xPQkFMX0NUUkw9PG5ldyBjb250ZXh0IChndWVzdCB2cy4gaG9zdCk+LiAgRS5nLiBzbyB0
-aGF0IGd1ZXN0IFBNQyBjb3VudHMKPiBhcmVuJ3QgcG9sbHV0ZWQgd2l0aCBob3N0IGV2ZW50cywg
-YW5kIHZpY2UgdmVyc2EuCj4KPiBBcyB0aGluZ3Mgc3RhbmQgdG9kYXksIHRoZSBvbmx5IG90aGVy
-IE1TUnMgYXJlIFBFQlMgYW5kIHRoZSBEUyBhcmVhIGNvbmZpZ3VyYXRpb24KPiBzdHVmZiwgYW5k
-IGtpbmRhIHRvIG15IGVhcmxpZXIgcG9pbnQsIEtWTSBwcmUtemVyb2VzIE1TUl9JQTMyX1BFQlNf
-RU5BQkxFIGFzIHBhcnQKPiBvZiBhZGRfYXRvbWljX3N3aXRjaF9tc3IoKSB0byBlbnN1cmUgYSBx
-dWllc2NlbnQgcGVyaW9kIGJlZm9yZSBWTS1FbnRlci4KPgo+IEhlaCwgYW5kIHdyaXRpbmcgUEVS
-Rl9HTE9CQUxfQ1RSTCBsYXN0IGZvciB0aGF0IHNlcXVlbmNlIG1pZ2h0IGFjdHVhbGx5IGJlCj4g
-cHJvYmxlbWF0aWMuICBFLmcuIGxvYWQgaG9zdCBQRUJTIHdpdGggZ3Vlc3QgUEVSRl9HTE9CQUxf
-Q1RSTCBhY3RpdmUuCj4KPiBBbnl3YXlzLCBJIGFncmVlIHRoYXQgdGhpcyBtaWdodCBiZSBicml0
-dGxlLCBidXQgdGhpcyBpcyBhbGwgcHJlLWV4aXN0aW5nIGJlaGF2aW9yCj4gc28gSSBkb24ndCB3
-YW50IHRvIHRhY2tsZSB0aGF0IGhlcmUgdW5sZXNzIGl0J3MgYWJzb2x1dGVseSBuZWNlc3Nhcnku
-CgpZZWFoLCB0aGlzIHdvbid0IGNhdXNlIGFueSByZWFsIGlzc3VlIGZvciBjdXJyZW50IGNvZGUu
-wqAKCgo+Cj4gT3Igd2FpdCwgYnkgIndyaXRpbmciIGRvIHlvdSBtZWFuICJ3cml0aW5nIE1TUnMg
-dG8gbWVtb3J5IiwgYXMgb3Bwb3NlZCB0byAid3JpdGluZwo+IHZhbHVlcyB0byBNU1JzIj8gIFJl
-Z2FyZGxlc3MsIEkgdGhpbmsgbXkgYW5zd2VyIGlzIHRoZSBzYW1lOiB0aGlzIGlzbid0IGEgcHJv
-YmxlbQo+IHRvZGF5LCBzbyBJJ2QgcHJlZmVyIHRvIG5vdCBzaHVmZmxlIHRoZSBvcmRlcmluZyB1
-bmxlc3MgaXQncyBhYnNvbHV0ZWx5IG5lY2Vzc2FyeS4KCkFjdHVhbGx5IGJvdGguIEFzIFNETSBz
-dWdnZXN0cywgY3VycmVudCBhbnkgbWFuaXB1bGF0aW9uIGZvciBQTVUgTVNScywgdGhlCmJlbG93
-IG9yZGVyIHNob3VsZCBiZSBmb2xsb3dlZC4KCi0gZGlzYWJsZSBhbGwgUE1VIGNvdW50ZXJzIGJ5
-IHdyaXRpbmcgUEVSRl9HTE9CQUxfQ1RSTCB0byAwLgoKLSBtYW5pcHVsYXRlIFBNVSBNU1JzLgoK
-LSBFbmFibGUgdGhlIG5lZWRlZCBQTVUgY291bnRlcnMgYnkgd3JpdGluZyBQRVJGX0dMT0JBTF9D
-VFJMLgoKU28gdGhlcmUgaXMgYSBpbXBsaWNpdCBvcmRlciBvbiB0aGUgTVNSIHdyaXRpbmcgaW4g
-ZmFjdC7CoAoKRm9yIEtWTSwgaWYgTVNSIGF1dG8tbG9hZCBsaXN0IGZlYXR1cmUgaXMgdXNlZCB0
-byBhdXRvbWF0aWNhbGx5IHJlc3RvcmUgdGhlCmhvc3QvZ3Vlc3QgTVNScywgS1ZNIG5lZWRzIHRv
-IGZvbGxvdyB0aGUgYWJvdmUgb3JkZXIgdG8gZmlsbCB0aGUgTVNSCmF1dG8tbG9hZCBsaXN0IGFu
-ZCB0aGVuIGV4cGVjdCB0aGVzZSBNU1JzIGFyZSB3cml0dGVuIGJ5IFZNWCBpbiB0aGUKZGVzaWdu
-ZWQgb3JkZXIuCgpCdXQgc2luY2UgaXQgd29uJ3QgY2F1c2UgYW55IHJlYWwgaXNzdWUgbm93LCBp
-dCdzIGZpbmUgZm9yIG1lIHRvIGhhbmRsZSBpdAp1bnRpbCB0aGVyZSBpcyBhIHJlYWwgbmVjZXNz
-aXR5LgoKCj4KPj4gU28gZGlyZWN0bHkgbW92aW5nIHRoZSBsYXN0IE1TUiBlbnRyeSBpbnRvIGNs
-ZWFyZWQgb25lIGNvdWxkIGJyZWFrIHRoZSBNU1IKPj4gd3JpdGluZyBzZXF1ZW5jZSBhbmQgbWF5
-IGNhdXNlIGlzc3VlIGluIHRoZW9yeS4KPj4KPj4gSSBrbm93IHRoaXMgd29uJ3QgcmVhbGx5IGNh
-dXNlIGlzc3VlIHNpbmNlIGN1cnJlbnRseSB2UE1VIHdvbid0IHVzZSB0aGUgTVNSCj4+IGF1dG8t
-bG9hZCBmZWF0dXJlIHRvIHNhdmUgYW55IFBNVSBNU1IsIGJ1dCBpdCdzIHN0aWxsIHVuc2FmZSBm
-b3IgZnV0dXJlIHVzZXMuwqAKPj4KPj4gSSdtIG5vdCBzdXJlIGlmIGl0J3Mgd29ydGh5IHRvIGRv
-IHRoZSBzdHJpY3QgTVNSIGVudHJ5IHNoaWZ0IHJpZ2h0IG5vdy4KPj4KPj4gUGVyaGFwcyB3ZSBj
-b3VsZCBhZGQgYSBtZXNzYWdlIHRvIHdhcm4gdXNlcnMgYXQgbGVhc3QuCj4gSG1tLCB5ZWFoLCBi
-dXQgSSdtIG5vdCBlbnRpcmVseSBzdXJlIHdoZXJlL2hvdyBiZXN0IHRvIGRvY3VtZW50IHRoaXMu
-ICBCZWNhdXNlCj4gaXQncyBub3QganVzdCB0aGF0IHZteF9yZW1vdmVfYXV0b19tc3IoKSBhcmJp
-dHJhcmlseSBtYW5pdXBsYXRlcyB0aGUgb3JkZXIsIGUuZy4KPiBtdWx0aXBsZSBjYWxscyB0byB2
-bXhfYWRkX2F1dG9fbXNyKCkgYXJlbid0IGd1YXJhbnRlZWQgdG8gcHJvdmlkZSBvcmRlcmluZyBi
-ZWNhdXNlCj4gb25lIG9yIG1vcmUgTVNScyBtYXkgYWxyZWFkeSBiZSBpbiB0aGUgbGlzdC4gIEFu
-ZCB0aGUgInNwZWNpYWwiIE1TUnMgdGhhdCBjYW4gYmUKPiBzd2l0Y2hlZCB2aWEgZGVkaWNhdGVk
-IFZNQ1MgZmllbGRzIGZ1cnRoZXIgbXVkZHkgdGhlIHdhdGVycy4KPgo+IFNvIEknbSB0ZW1wdGVk
-IHRvIG5vdCBhZGQgYSBjb21tZW50IHRvIHRoZSBoZWxwZXJzLCBvciBldmVuIHRoZSBzdHJ1Y3Qg
-ZmllbGRzLAo+IGJlY2F1c2UgdW5mb3J0dW5hdGVseSBpdCdzIGxhcmdlbHkgYSAiSGVyZSBiZSBk
-cmFnb25zISIgdHlwZSB3YXJuaW5nLiA6LS8KCkkgc2VlLiBUaGFua3MuCgoKCi0tIAprdm0tcmlz
-Y3YgbWFpbGluZyBsaXN0Cmt2bS1yaXNjdkBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0
-cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8va3ZtLXJpc2N2Cg==
+Add the CSRs and enum values used by the RISC-V SBI PMU extension.
+
+Signed-off-by: James Raphael Tiovalen <jamestiotio@gmail.com>
+---
+ lib/riscv/asm/csr.h | 31 +++++++++++++++++
+ lib/riscv/asm/sbi.h | 82 +++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 113 insertions(+)
+
+diff --git a/lib/riscv/asm/csr.h b/lib/riscv/asm/csr.h
+index 6a8e0578..d5b1c7cc 100644
+--- a/lib/riscv/asm/csr.h
++++ b/lib/riscv/asm/csr.h
+@@ -14,7 +14,38 @@
+ #define CSR_STIMECMP		0x14d
+ #define CSR_STIMECMPH		0x15d
+ #define CSR_SATP		0x180
++#define CSR_CYCLE		0xc00
+ #define CSR_TIME		0xc01
++#define CSR_INSTRET		0xc02
++#define CSR_HPMCOUNTER3		0xc03
++#define CSR_HPMCOUNTER4		0xc04
++#define CSR_HPMCOUNTER5		0xc05
++#define CSR_HPMCOUNTER6		0xc06
++#define CSR_HPMCOUNTER7		0xc07
++#define CSR_HPMCOUNTER8		0xc08
++#define CSR_HPMCOUNTER9		0xc09
++#define CSR_HPMCOUNTER10	0xc0a
++#define CSR_HPMCOUNTER11	0xc0b
++#define CSR_HPMCOUNTER12	0xc0c
++#define CSR_HPMCOUNTER13	0xc0d
++#define CSR_HPMCOUNTER14	0xc0e
++#define CSR_HPMCOUNTER15	0xc0f
++#define CSR_HPMCOUNTER16	0xc10
++#define CSR_HPMCOUNTER17	0xc11
++#define CSR_HPMCOUNTER18	0xc12
++#define CSR_HPMCOUNTER19	0xc13
++#define CSR_HPMCOUNTER20	0xc14
++#define CSR_HPMCOUNTER21	0xc15
++#define CSR_HPMCOUNTER22	0xc16
++#define CSR_HPMCOUNTER23	0xc17
++#define CSR_HPMCOUNTER24	0xc18
++#define CSR_HPMCOUNTER25	0xc19
++#define CSR_HPMCOUNTER26	0xc1a
++#define CSR_HPMCOUNTER27	0xc1b
++#define CSR_HPMCOUNTER28	0xc1c
++#define CSR_HPMCOUNTER29	0xc1d
++#define CSR_HPMCOUNTER30	0xc1e
++#define CSR_HPMCOUNTER31	0xc1f
+ 
+ #define SR_SIE			_AC(0x00000002, UL)
+ #define SR_SPP			_AC(0x00000100, UL)
+diff --git a/lib/riscv/asm/sbi.h b/lib/riscv/asm/sbi.h
+index 289a6a24..35dbf508 100644
+--- a/lib/riscv/asm/sbi.h
++++ b/lib/riscv/asm/sbi.h
+@@ -47,6 +47,7 @@ enum sbi_ext_id {
+ 	SBI_EXT_IPI = 0x735049,
+ 	SBI_EXT_HSM = 0x48534d,
+ 	SBI_EXT_SRST = 0x53525354,
++	SBI_EXT_PMU = 0x504d55,
+ 	SBI_EXT_DBCN = 0x4442434E,
+ 	SBI_EXT_SUSP = 0x53555350,
+ 	SBI_EXT_FWFT = 0x46574654,
+@@ -94,6 +95,87 @@ enum sbi_ext_hsm_hart_suspend_type {
+ 	SBI_EXT_HSM_HART_SUSPEND_NON_RETENTIVE = 0x80000000,
+ };
+ 
++enum sbi_ext_pmu_fid {
++	SBI_EXT_PMU_NUM_COUNTERS = 0,
++	SBI_EXT_PMU_COUNTER_GET_INFO,
++	SBI_EXT_PMU_COUNTER_CONFIG_MATCHING,
++	SBI_EXT_PMU_COUNTER_START,
++	SBI_EXT_PMU_COUNTER_STOP,
++	SBI_EXT_PMU_COUNTER_FW_READ,
++	SBI_EXT_PMU_COUNTER_FW_READ_HI,
++	SBI_EXT_PMU_SNAPSHOT_SET_SHMEM,
++	SBI_EXT_PMU_EVENT_GET_INFO,
++};
++
++enum sbi_ext_pmu_eid_type {
++	SBI_EXT_PMU_EVENT_HW_GENERAL = 0,
++	SBI_EXT_PMU_EVENT_HW_CACHE,
++	SBI_EXT_PMU_EVENT_HW_RAW,
++	SBI_EXT_PMU_EVENT_HW_RAW_V2,
++	SBI_EXT_PMU_EVENT_FW = 15,
++};
++
++enum sbi_ext_pmu_hw_generic_event_code_id {
++	SBI_EXT_PMU_HW_NO_EVENT = 0,
++	SBI_EXT_PMU_HW_CPU_CYCLES,
++	SBI_EXT_PMU_HW_INSTRUCTIONS,
++	SBI_EXT_PMU_HW_CACHE_REFERENCES,
++	SBI_EXT_PMU_HW_CACHE_MISSES,
++	SBI_EXT_PMU_HW_BRANCH_INSTRUCTIONS,
++	SBI_EXT_PMU_HW_BRANCH_MISSES,
++	SBI_EXT_PMU_HW_BUS_CYCLES,
++	SBI_EXT_PMU_HW_STALLED_CYCLES_FRONTEND,
++	SBI_EXT_PMU_HW_STALLED_CYCLES_BACKEND,
++	SBI_EXT_PMU_HW_REF_CPU_CYCLES,
++};
++
++enum sbi_ext_pmu_hw_cache_id {
++	SBI_EXT_PMU_HW_CACHE_L1D = 0,
++	SBI_EXT_PMU_HW_CACHE_L1I,
++	SBI_EXT_PMU_HW_CACHE_LL,
++	SBI_EXT_PMU_HW_CACHE_DTLB,
++	SBI_EXT_PMU_HW_CACHE_ITLB,
++	SBI_EXT_PMU_HW_CACHE_BPU,
++	SBI_EXT_PMU_HW_CACHE_NODE,
++};
++
++enum sbi_ext_pmu_hw_cache_op_id {
++	SBI_EXT_PMU_HW_CACHE_OP_READ = 0,
++	SBI_EXT_PMU_HW_CACHE_OP_WRITE,
++	SBI_EXT_PMU_HW_CACHE_OP_PREFETCH
++};
++
++enum sbi_ext_pmu_hw_cache_op_result_id {
++	SBI_EXT_PMU_HW_CACHE_RESULT_ACCESS = 0,
++	SBI_EXT_PMU_HW_CACHE_RESULT_MISS,
++};
++
++enum sbi_ext_pmu_fw_event_code_id {
++	SBI_EXT_PMU_FW_MISALIGNED_LOAD = 0,
++	SBI_EXT_PMU_FW_MISALIGNED_STORE,
++	SBI_EXT_PMU_FW_ACCESS_LOAD,
++	SBI_EXT_PMU_FW_ACCESS_STORE,
++	SBI_EXT_PMU_FW_ILLEGAL_INSN,
++	SBI_EXT_PMU_FW_SET_TIMER,
++	SBI_EXT_PMU_FW_IPI_SENT,
++	SBI_EXT_PMU_FW_IPI_RECEIVED,
++	SBI_EXT_PMU_FW_FENCE_I_SENT,
++	SBI_EXT_PMU_FW_FENCE_I_RECEIVED,
++	SBI_EXT_PMU_FW_SFENCE_VMA_SENT,
++	SBI_EXT_PMU_FW_SFENCE_VMA_RECEIVED,
++	SBI_EXT_PMU_FW_SFENCE_VMA_ASID_SENT,
++	SBI_EXT_PMU_FW_SFENCE_VMA_ASID_RECEIVED,
++	SBI_EXT_PMU_FW_HFENCE_GVMA_SENT,
++	SBI_EXT_PMU_FW_HFENCE_GVMA_RECEIVED,
++	SBI_EXT_PMU_FW_HFENCE_GVMA_VMID_SENT,
++	SBI_EXT_PMU_FW_HFENCE_GVMA_VMID_RECEIVED,
++	SBI_EXT_PMU_FW_HFENCE_VVMA_SENT,
++	SBI_EXT_PMU_FW_HFENCE_VVMA_RECEIVED,
++	SBI_EXT_PMU_FW_HFENCE_VVMA_ASID_SENT,
++	SBI_EXT_PMU_FW_HFENCE_VVMA_ASID_RECEIVED,
++	SBI_EXT_PMU_FW_PLATFORM = 65535,
++};
++
+ enum sbi_ext_dbcn_fid {
+ 	SBI_EXT_DBCN_CONSOLE_WRITE = 0,
+ 	SBI_EXT_DBCN_CONSOLE_READ,
+-- 
+2.43.0
+
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
