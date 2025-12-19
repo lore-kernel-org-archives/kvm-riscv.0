@@ -4,60 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DD118D74964
-	for <kvm-riscv@archiver.kernel.org>; Fri, 19 Dec 2025 08:13:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3856ED711D6
+	for <kvm-riscv@archiver.kernel.org>; Fri, 19 Dec 2025 08:13:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Date:
 	Message-Id:From:Subject:MIME-Version:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=FY1+sLrHM2JNHYPS2TSUs8TrE4G1vLXMvDLBbXPVrMU=; b=SK9n4yWgrRDx+o
-	eu/JvqW+LIxtph/nPaMrFHHbphw3rNfG531deysErMA1WpT/YngZ1xnLiEeWWVRhNAEmn/vpSmKFT
-	DR1547CKT5+BTBWLrYuf5cIidQJ3sojeBdZayDfOGGjaSBXGjaXUIW5/+HjzBmrqi6TKRxUm03EV6
-	q9X3kcRK1acptmuc/GI+RxY+BhJsoHPCYbLGfBxQ6iRl+Fb5vk3g42thwuPcpI8ffw8zrXoXnjj4d
-	WVDms5+EUOV20dUY/JnZG/RysVGYKnvFf1coiEOZNB0j7g0cMbXDkvQTBTA8VLsB6QAxajmwwWreR
-	16xPU5cVQ9fcfJNEmmKg==;
+	List-Owner; bh=BuES+GethP8go7FVnw93FBzmp/pApVOCGcA1yVMoaKA=; b=yfP3RHM4bJj+8j
+	d/NKaQacBoPQj+H6/yHL7GfuTByYiG2FVuOBiojdmozZ1/63BniVJ4B+cE7bfsyWKpi/l2z1gUgJx
+	aVgXH5s7f/rqcijMWQZxulF3rZLEFEI2DUP2THL0wV8DD1ZYyPJjzQQ0n22Ylv3VEsAySvzj2hxKA
+	JTmh6oPoslvhnnnbJu8Ma5fIu0dM2js2rF1C6w53CEdQ+uxQ/w3XLiBR3kcM/4h6M95gt4sOU93LG
+	Sjd+fm15bm8IbmV+2Ck0loER8XWLm7j+/qJUEQNdBCKnLVKfY9VQt8qTWhF5CcBcFuev5CRgrywBm
+	MtBRmAecya/Jd8hoKKHQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vWVbt-00000009oq4-25WS;
-	Fri, 19 Dec 2025 08:13:13 +0000
-Received: from sea.source.kernel.org ([2600:3c0a:e001:78e:0:1991:8:25])
+	id 1vWVcP-00000009pVX-2q3R;
+	Fri, 19 Dec 2025 08:13:45 +0000
+Received: from sea.source.kernel.org ([172.234.252.31])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vWVbq-00000009oo2-1lxA;
-	Fri, 19 Dec 2025 08:13:11 +0000
+	id 1vWVcB-00000009p9J-1cNn;
+	Fri, 19 Dec 2025 08:13:33 +0000
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 231D044483;
-	Fri, 19 Dec 2025 08:13:10 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 02541C16AAE;
-	Fri, 19 Dec 2025 08:13:10 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 906FA4437E;
+	Fri, 19 Dec 2025 08:13:30 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5EE75C19425;
+	Fri, 19 Dec 2025 08:13:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1766131990;
-	bh=0McNF3HTg1uqzq/OAoF2HQ2uw2feE5NG+K3Uv59eW6E=;
+	s=k20201202; t=1766132010;
+	bh=l//QwgPNp1q4alMwyDOP8wGl2QpoY+/qlyQYNCdTd4I=;
 	h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
-	b=GNMrOCy8f2un7W21yh9qohZjnM/WmI/ZGzfH8nAMZ0EtjjQ8vFg2/fmN2++GNXZ4B
-	 XbI1vqg4aP6Ztfq85SbRsc2TRPZNQCRLk6Bhq1f00gd0fthZNms+4UqyIU4ByF0I5z
-	 ulQjgbEyKTq2eJFiOJSanFrsP/RhMXQrGVt1jYrqNNdFcjz+ZDYZ46LTvaOgdD4EF5
-	 +XbXg8VACZDp2zvBIK+mbZydYJpAeyo8H5mLGhmfkTJEdh/BANeoltz1oDJNB/7Ehi
-	 n5wI6baAuZMRZiqhUDbzLZitffjwg5fsLCWq3CugrcMg7cJnlD0r9BW4dmbHlgl8XN
-	 W4oPWGrtyI6lA==
+	b=qxl4+v7EchxSQ7uPMHgNydReNM1Y6n+K31KkYZykBB3zU4/1J55VuaieSBPlR9Uew
+	 sLPPbZyXzw6pJ+styBQdsS0VRaDdqAl6U1hXPC2bUl0TvEu+rZd1OaDzNP4aOStHCw
+	 ZZvMZqHw68rVGgMhd/UwwdRS24KcLQ02S/WO0J1ohgEOhsHUDqnR1nA5FOlM747o2y
+	 erJR+P6geI4sQdGcE79OMvqcCMoTWhhpXEVOtbXXJGenq2Ir6sw+qs+MsKb7rWSt8r
+	 14TrsfA2fV/kOFeqFhp7zu47yGs3J1syqT9XBu0q/JfKl9NfTeBHRszhr2z6HTblmW
+	 GL+j2vbGTM0rw==
 Received: from [10.30.226.235] (localhost [IPv6:::1])
-	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 3B98D380AA50;
-	Fri, 19 Dec 2025 08:10:00 +0000 (UTC)
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 790A6380AA50;
+	Fri, 19 Dec 2025 08:10:20 +0000 (UTC)
 MIME-Version: 1.0
-Subject: Re: [GIT PULL] KVM/riscv changes for 6.19
+Subject: Re: [PATCH v3] RISC-V: KVM: Fix guest page fault within HLV*
+ instructions
 From: patchwork-bot+linux-riscv@kernel.org
-Message-Id: <176613179881.3684357.5605042777950548364.git-patchwork-notify@kernel.org>
-Date: Fri, 19 Dec 2025 08:09:58 +0000
-References: <CAAhSdy3C7zxovYDZJvzpuCytRmdBrGwgLF2MtOMzP7vFVm4ohQ@mail.gmail.com>
-In-Reply-To: <CAAhSdy3C7zxovYDZJvzpuCytRmdBrGwgLF2MtOMzP7vFVm4ohQ@mail.gmail.com>
-To: Anup Patel <anup@brainfault.org>
-Cc: linux-riscv@lists.infradead.org, pbonzini@redhat.com, palmer@dabbelt.com,
- pjw@kernel.org, ajones@ventanamicro.com, atish.patra@linux.dev,
- atishp@rivosinc.com, kvm-riscv@lists.infradead.org, kvm@vger.kernel.org
+Message-Id: <176613181927.3684357.6307325316578427331.git-patchwork-notify@kernel.org>
+Date: Fri, 19 Dec 2025 08:10:19 +0000
+References: <20251121133543.46822-1-fangyu.yu@linux.alibaba.com>
+In-Reply-To: <20251121133543.46822-1-fangyu.yu@linux.alibaba.com>
+To: yu fangyu <fangyu.yu@linux.alibaba.com>
+Cc: linux-riscv@lists.infradead.org, anup@brainfault.org,
+ atish.patra@linux.dev, pjw@kernel.org, palmer@dabbelt.com,
+ aou@eecs.berkeley.edu, alex@ghiti.fr, guoren@kernel.org,
+ ajones@ventanamicro.com, kvm@vger.kernel.org, kvm-riscv@lists.infradead.org,
+ linux-kernel@vger.kernel.org
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20251219_001310_486146_BCC8DE3C 
-X-CRM114-Status: UNSURE (   7.27  )
+X-CRM114-CacheID: sfid-20251219_001331_633930_11484CF8 
+X-CRM114-Status: UNSURE (   8.63  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -77,24 +80,25 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 Hello:
 
-This pull request was applied to riscv/linux.git (fixes)
-by Paolo Bonzini <pbonzini@redhat.com>:
+This patch was applied to riscv/linux.git (fixes)
+by Anup Patel <anup@brainfault.org>:
 
-On Fri, 28 Nov 2025 16:39:20 +0530 you wrote:
-> Hi Paolo,
+On Fri, 21 Nov 2025 21:35:43 +0800 you wrote:
+> From: Fangyu Yu <fangyu.yu@linux.alibaba.com>
 > 
-> We have the following KVM RISC-V changes for 6.19:
-> 1) SBI MPXY support for KVM guest
-> 2) New KVM_EXIT_FAIL_ENTRY_NO_VSFILE
-> 3) Enable dirty logging gradually in small chunks
-> 4) Fix guest page fault within HLV* instructions
-> 5) Flush VS-stage TLB after VCPU migration for Andes cores
+> When executing HLV* instructions at the HS mode, a guest page fault
+> may occur when a g-stage page table migration between triggering the
+> virtual instruction exception and executing the HLV* instruction.
+> 
+> This may be a corner case, and one simpler way to handle this is to
+> re-execute the instruction where the virtual  instruction exception
+> occurred, and the guest page fault will be automatically handled.
 > 
 > [...]
 
 Here is the summary with links:
-  - [GIT,PULL] KVM/riscv changes for 6.19
-    https://git.kernel.org/riscv/c/63a9b0bc65d5
+  - [v3] RISC-V: KVM: Fix guest page fault within HLV* instructions
+    https://git.kernel.org/riscv/c/974555d6e417
 
 You are awesome, thank you!
 -- 
