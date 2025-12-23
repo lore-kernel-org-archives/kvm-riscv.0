@@ -4,150 +4,104 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 186B6E6B25F
-	for <kvm-riscv@archiver.kernel.org>; Tue, 23 Dec 2025 06:16:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D4568E6F090
+	for <kvm-riscv@archiver.kernel.org>; Tue, 23 Dec 2025 14:36:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
-	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
-	List-Unsubscribe:List-Id:MIME-Version:In-Reply-To:From:References:Cc:To:
-	Subject:Date:Message-ID:Reply-To:Content-ID:Content-Description:Resent-Date:
-	Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Owner;
-	bh=rzLIsE4okHqAEv8h8jtj19HoPbCkAKsUK375oECkxXA=; b=15ciiF21Dqk0wHjJzOB2ji/7Y2
-	j7XXE5cRpHi9cDU+2BXExdHQmpp0Sa/BX3yYimkrzxke5hT/X3DDbpyropruTy4iPdEhOrZKcLZJU
-	vIQDrnkuuC8vRxNEqvHoWYlZzzHDyALoUCrp1lKnxWDaf5mlx8htkoxGMUQ2pigLPtAS5U/ngalAo
-	PFNQXhgrm37OFbtknI6bgNMGygyJRIgLDymSusugKEjqPD3mzT3xKhEPQtzlkApgKY1VQsbHzc9Zl
-	0FlvXVWaimkPvPIsiXSCC1tdazozKIdClZliSj94G2hxxeR3aZrugFeUSj/2L0NVbtArjXGO+L2f7
-	OG9zCLiw==;
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=oe9cC4rjnd661HWRei5PyeWDntzTw4T2rrNZWZdlZlE=; b=pNS0TNCHaZTqt9
+	3Ys1u67PDmnmqLRNbgmisXOg+JnfG7OE0D4Y2I2IPrVpOR+u8+5+UI5pvyfnTw/9GTVOrcN0RvbAA
+	Ohe38lgWmBiGhGIJTQzR6uHDyBbx9uvsbhuhOKdQCpxt99GbtxhkV48xCImbMllOHylwfQwuCA1Nj
+	HCYLwF6DAwaN4xZOe8Vb/izAZN4Hl7E8+GQN2l1P3sOixfcl+R63GafRGjtm6aaLophzOWjIXjxsq
+	q24qrhf9E/hVoNFz9SVn0CqUysV6ksuJlQ96yDP4tjyCDOGSiiZGSuAZh8CMZHYPwrF0ENqzc7liP
+	43gHNMvYUQeRdOWbinuQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vXvgs-0000000EaQi-1yOx;
-	Tue, 23 Dec 2025 06:16:14 +0000
-Received: from mail-japaneastazolkn19012063.outbound.protection.outlook.com ([52.103.43.63] helo=TYPPR03CU001.outbound.protection.outlook.com)
+	id 1vY3V2-0000000FcuV-1XuB;
+	Tue, 23 Dec 2025 14:36:32 +0000
+Received: from mx0a-0031df01.pphosted.com ([205.220.168.131])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vXvgp-0000000EaQ9-0fgQ;
-	Tue, 23 Dec 2025 06:16:12 +0000
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=Pdz2U5bVqb6qkQCccYbcjbFYluqC/9GcrQ1uUaQvi37TkoNnsCRULvdiz9VDZ2YbiIOPuw+rt/PTw0GpVbYKaC2pDUQFbf8oJXdFt8vBzXmvUAcMU94FU7zIwfn/ecNJUTjYW89X0rhgIQYfvXu9H46MSUgiJc2t0UT7etV97eQn2MjOsGuHTxu5JZPl8GefnCW4Ueg1iS5eKSL52bkgH+vKrx+xBHmgBu5c2Fm945tZPnRPkf5O4ME566MbZ2lK9EnFAxfkn6/Gf3pKbAehdxCcHBwzyxhVKOpX+Si3M5eri3AIDbZFuFCTgAlCH42hbIo73k6kB+cFqrLhNclBtQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=ck6UUtyRDP7kDPqtXSPlPLXHS+yDthvGbdy8KKe/ffg=;
- b=Ef0SnWz5XNS2L8A5Ur8kc+D5AzrouLXypk8sgQ0AjBTZXZf54f0uKRanu8ueMMuMqUUatKteIKtb2Xikv8Z0tcwHzCmxu+aSnSjzIR/WL20sckJ7R9veQ15sNiO1+y0A78hPixrgVf1f1jmDpPTk0V//v7J7u5GTo6xG83u4rvYZ018seGa7xoZZWiiB6n7a2c3S+7ax5ayNV73fNuLXZ8b3DoH9F7WzLV/Qf9oV6sWLcelgnfUXfHkwt3p0iVKfQiQm8lBmCFwlCwsIv6erFAj/Ag28ez5LxfNJ8PjtWJdVziQkQ4F4SSLJb4ySwUySvl3PfD2kR9rj6Dj1BNqmgQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
- dkim=none; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=hotmail.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=ck6UUtyRDP7kDPqtXSPlPLXHS+yDthvGbdy8KKe/ffg=;
- b=K9GmrKFtLWNW0/ALb+TsEefLqXQO5fQ5742+FJLKtz1HT9EouFFFoRJHXhIR3T40J1RR6nb+8ExNfxO/SJIEFEzgbk3nuNdXyuNwsvNrkfYLvIOwhwQGqFhqVK8modq5mmG/N1N6wQ4XBDetqgJJeMNFplZW4HgVODo1MzqZzwSlY+HFBuxZaOf3iRp3hPn0IZdTn3sDn7cQMgA3+6edprBWlRPHvJ97fm/9hBio6Y9a82Lkvf8OgFB985plnYl6Gex4IQwpEtiKNvCSD9bfTVjSQ+YmJJw6caJWQfBPeWEXxNnj30xI6LcGXZWKRDBNJ+iw+QHfUBhAROsnlctipA==
-Received: from KUZPR04MB9265.apcprd04.prod.outlook.com (2603:1096:d10:5a::6)
- by KUZPR04MB9265.apcprd04.prod.outlook.com (2603:1096:d10:5a::6) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9434.11; Tue, 23 Dec
- 2025 06:15:56 +0000
-Received: from KUZPR04MB9265.apcprd04.prod.outlook.com
- ([fe80::3c38:c065:daf4:cbfa]) by KUZPR04MB9265.apcprd04.prod.outlook.com
- ([fe80::3c38:c065:daf4:cbfa%5]) with mapi id 15.20.9434.009; Tue, 23 Dec 2025
- 06:15:54 +0000
-Message-ID: <KUZPR04MB9265AF1883CAE0BDDB8A204DF3B5A@KUZPR04MB9265.apcprd04.prod.outlook.com>
-Date: Tue, 23 Dec 2025 14:15:48 +0800
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4] irqchip/riscv-imsic: Adjust the number of available
- guest irq files
-To: Xu Lu <luxu.kernel@bytedance.com>, anup@brainfault.org,
- atish.patra@linux.dev, pjw@kernel.org, palmer@dabbelt.com,
- aou@eecs.berkeley.edu, alex@ghiti.fr, tglx@linutronix.de
-Cc: kvm@vger.kernel.org, kvm-riscv@lists.infradead.org,
- linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org
-References: <20251222093718.26223-1-luxu.kernel@bytedance.com>
-Content-Language: en-US
-From: "Nutty.Liu" <nutty.liu@hotmail.com>
-In-Reply-To: <20251222093718.26223-1-luxu.kernel@bytedance.com>
-X-ClientProxiedBy: TP0P295CA0017.TWNP295.PROD.OUTLOOK.COM
- (2603:1096:910:5::11) To KUZPR04MB9265.apcprd04.prod.outlook.com
- (2603:1096:d10:5a::6)
-X-Microsoft-Original-Message-ID: <2ca031a5-23a1-40a9-b2d6-fdba5f790966@hotmail.com>
+	id 1vY3Uz-0000000Fctt-0Jht;
+	Tue, 23 Dec 2025 14:36:30 +0000
+Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 5BN78U6T4044542;
+	Tue, 23 Dec 2025 14:35:49 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=qcppdkim1; bh=CsSg3raa755P7fEcUVN611Vs8+I2n7jTezy
+	9VwgkJA8=; b=fVWIMTcCbYsE969JUBB5OyUUBzwfwhPKt4SFgfZoCHJZPFZ9y3H
+	DxyOC6b1FoWe2FLdOKvGBKzxpy73HTybQLeyz44BVPeDx/5Dh4nFBQAqV0WmFQDc
+	8k3oTJ6EREh0x04ox9OX/CeEJ+aKGFmojRnex9inXaAdv6Sx9zLfrOdiZjb5xm3j
+	smeN8G+itS7RW90RN5ArotUZcT1R0tkKDurLndoNr8I2mguTPQ2q5KMrLata4SIT
+	DybrEYkwW0dXfD6R7KJKQfUrSf5qF/9wLon7TVZjAcBSI3GKaAcb1KQc6xFn4Bh5
+	b8caUWN2/dA4r6+bqAIdgqYFIZAngUfspOw==
+Received: from apblrppmta02.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4b7cuhaxct-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 23 Dec 2025 14:35:49 +0000 (GMT)
+Received: from pps.filterd (APBLRPPMTA02.qualcomm.com [127.0.0.1])
+	by APBLRPPMTA02.qualcomm.com (8.18.1.2/8.18.1.2) with ESMTP id 5BNEZkhi009619;
+	Tue, 23 Dec 2025 14:35:46 GMT
+Received: from pps.reinject (localhost [127.0.0.1])
+	by APBLRPPMTA02.qualcomm.com (PPS) with ESMTPS id 4b5mvm95g5-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 23 Dec 2025 14:35:46 +0000
+Received: from APBLRPPMTA02.qualcomm.com (APBLRPPMTA02.qualcomm.com [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 5BNEZkrh009611;
+	Tue, 23 Dec 2025 14:35:46 GMT
+Received: from hu-devc-blr-u24-a.qualcomm.com (hu-anuppate-blr.qualcomm.com [10.131.36.165])
+	by APBLRPPMTA02.qualcomm.com (PPS) with ESMTPS id 5BNEZkph009609
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 23 Dec 2025 14:35:46 +0000
+Received: by hu-devc-blr-u24-a.qualcomm.com (Postfix, from userid 486687)
+	id 3143F21A30; Tue, 23 Dec 2025 20:05:45 +0530 (+0530)
+From: Anup Patel <anup.patel@oss.qualcomm.com>
+To: Thomas Gleixner <tglx@linutronix.de>, Palmer Dabbelt <palmer@dabbelt.com>,
+        Paul Walmsley <pjw@kernel.org>
+Cc: Alexandre Ghiti <alex@ghiti.fr>, Sunil V L <sunilvl@oss.qualcomm.com>,
+        Atish Patra <atish.patra@linux.dev>,
+        Andrew Jones <andrew.jones@oss.qualcomm.com>,
+        Samuel Holland <samuel.holland@sifive.com>,
+        Anup Patel <anup@brainfault.org>, kvm-riscv@lists.infradead.org,
+        linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
+        Anup Patel <anup.patel@oss.qualcomm.com>
+Subject: [PATCH] Revert "irqchip/riscv-imsic: Embed the vector array in lpriv"
+Date: Tue, 23 Dec 2025 20:05:44 +0530
+Message-ID: <20251223143544.1504217-1-anup.patel@oss.qualcomm.com>
+X-Mailer: git-send-email 2.43.0
 MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: KUZPR04MB9265:EE_
-X-MS-Office365-Filtering-Correlation-Id: 891c6185-c9c8-4bae-9726-08de41eaba8a
-X-Microsoft-Antispam: BCL:0;ARA:14566002|19110799012|7042599007|23021999003|461199028|15080799012|5072599009|6090799003|51005399006|41001999006|8060799015|3412199025|440099028|40105399003;
-X-Microsoft-Antispam-Message-Info: =?utf-8?B?MnlXTnk1UGlLY2t3VVdCTVVKeTJSTVFWSkx0bUkyS3lwcnlqUFZBTHZPY3Nt?=
- =?utf-8?B?eUphcHNUUVZBVGhnMEROemtDenBEZGlXaWZmVG44bmwraFJxakZaSUcvanJl?=
- =?utf-8?B?VjdRS09RVjNKRlhaWHhFMzJNNFFmYXZYb3Q3bm5HR3UxY0J3NlNRVGdpdEh4?=
- =?utf-8?B?dWhUcHpEZngzQVlGQysyRXIyM2pDNVRrY0dTNzkxVk1zblVRNEg2WDJMeUlz?=
- =?utf-8?B?RlVXdVlKVjhkLzJaL3ZZNHpBYmtzNWNLMFFZcW00SEpUVERmTS9oVTA2NFdw?=
- =?utf-8?B?QmFiblJqR1c2K0FIN1hZQ2lpZ0ZRdi9OMVlXU2tUUmdqWTU1VzY3Rk4rU1NP?=
- =?utf-8?B?RllBUjhNUmhQZ2d5VjRRY2hCTlNhTU1pSlN4ZWV0d2hXRVIvQ2h5SE84M054?=
- =?utf-8?B?WUNFWDB6OW5qcXA0dVpUQ2FJRHIyU1hPU0FEWGtZVXJaWDBTdFkxd2FVWUlV?=
- =?utf-8?B?SWRwcU9CbjNIYmkzbHZEQnBudHRwM0JBbFBoWW1KOXRlQ0tHbko1blR2Wkpl?=
- =?utf-8?B?Q1RIcGlieWd5b1FVSUxqV0UvSDZlZ05qUnljeEpVSUJZVndjR3phRkxYM2E4?=
- =?utf-8?B?K2RXRWtlRUExWktySXdXZzVmdzJBYytOWS9mbWNPVzFyK2Fscm82RUVkYlpS?=
- =?utf-8?B?eUdZSnFhZnM1azRyRkNuSkpQb09BUGlwNSsxN2JrK0Q3VGhsTkh3N1pzRmJt?=
- =?utf-8?B?REtsK0N3cTN3UldjVjJraDF3UUVTYjJpSThkdURtT21oSWdzZk80ZlArUklS?=
- =?utf-8?B?WnlFL20zVTBmUTdURndRNGZyNkhadUNZM2MreEI0V1lIdDJqdGlDY3JFODdM?=
- =?utf-8?B?NytSbFhtYXdQTFV4aFZGS0ZFL1hId0tEODYrODdWNXhPaC9EWjhVcmRLclYx?=
- =?utf-8?B?cEFiamNyZE9TT2VXS0V5bjVTSEdZKzF3L2ZUMkdKUCtZZWoyYUlqU1RnVGc3?=
- =?utf-8?B?N1RhMWV6RFUzS2R0aXBKR1BxWjRwTzVoM2dKcCtUcGN2enFKbXdITk1tZXo2?=
- =?utf-8?B?bGpYb2dpdi9aMXNsRnVyS01FYTNiMGx3VjBva3E1eUc2TVJlV2htNXJRMGlU?=
- =?utf-8?B?RUsvR1lUK3NrRW9PbEVhUGxzeXFva3BEYUpldFdSNHZYZW41S0UvWS8wVGRN?=
- =?utf-8?B?d1pVdVZhemVqYW5WSURCK3N3NisrN3FNaDQ0TGVVTXQzS2kzOElGVWFyTUJt?=
- =?utf-8?B?QWRjWHVZNk9tNWV2dEc1MjMzYnpwRjdCSnF6bEkrRURlcS9LMkhKaDV3Vzd3?=
- =?utf-8?B?VVlWL0dRUFRxMmFjeXJCaXBHV01pM0dTZWVQNzY5UmZxZm9nRXJObjJHTFQ3?=
- =?utf-8?B?cU8vZkpWUmhhYWZzL3RIZ0ZpdGpGQi8wd0FpZjcyWGh3VDBpNUZTSUk2SWlW?=
- =?utf-8?B?NWpucUl3aGlkcGxka2lIMldkMEhSSDNmbHArRFhzMWxXbzNBTE01RjJYYi8w?=
- =?utf-8?B?SForZFdLNTRSV1d2TjlaY1d2Znl1MFU5MVQ3akhXWTRTTlJqLzk5SFkzd0gx?=
- =?utf-8?B?YzRVVk1lUDNOc3kzWmd5TktxMElIckRjbTZVSFJzSHVQVHFoS3Qyb3hiS0sv?=
- =?utf-8?B?cWpKN0d3R2RMbnFOKzQ4OWhIMFpBYS9rMHN6cC9VQ1hkU0xvTHBVQXRvam9S?=
- =?utf-8?B?Q2FicTV5VVBRV2pmVXNWa3p0c2MrYjdmdFlaalJqUWlJbExWTHVsQWdoZzFk?=
- =?utf-8?B?WXI4R1NwZWl5SGFnei9UZElCYzFRZEgza3JuMTU3RG5JV2ZheXhZckVnPT0=?=
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?cjVnc01PZXk4MUpOM1h1Z2NEMkh3UDZua013TEFQM0x5eUZrQS91eWxoa3Bj?=
- =?utf-8?B?TnBXaEMxNkJpQ3VKTmNnLzNSalh2ZG93SW1qamFmcXVNbEh1UTB4bk5GdFpH?=
- =?utf-8?B?K3pNbFFWTGNYdHZWS254bFE1cWRNdm1YaE42VFpIaDBsbDJvblZHVE1Pek0z?=
- =?utf-8?B?dmFNbDlPb2ZmR010YUxPam1vbE5WTmFoUlBUOHB1cG44K0NCSjhKUXNLdDl5?=
- =?utf-8?B?T0RVNyttaTBwKzM1QlVKOEFDb09iTHdYK1pYY2FESUk0TnlleU5MVWVId3gy?=
- =?utf-8?B?WVFzSk45M3dtUk9HZWhVNSsyMWxVK1U0dGJTd25jU1FZR1FuOVJycHlFcnVM?=
- =?utf-8?B?aHF6cllhMG15ZDVheWtlMGFIRnd4SW5GbmVvK2IycVdGRmVqbGR4dlZlVUJW?=
- =?utf-8?B?VE81TVFUQm1KV0pWOTdJMVNyd1ZCYUFCT0EyVnhMSnBIK1ZpSGszZDZId2pN?=
- =?utf-8?B?SjhLQmdwazdTVXF4YlpoRkVoV0VtNUgrYkVTMGhmeHZwVkt5Wm5vK3haWlBt?=
- =?utf-8?B?TGk1a1JFQTEwc20rd3hrNHAvemlpSjFOVThySlZPTnhobjVTdjJ5L0NmK29i?=
- =?utf-8?B?TDVJTktjTkFjMjFLeFpGRUZCMGJkcXVHbmJZM2M5czc3WEFjcEppQ2trWmtZ?=
- =?utf-8?B?M3NVSkJDbWFLeGtFVk9kNGNjd0ZRUWJSdWtQTDZvZkhTbWJLRFZIV3VhOHJ2?=
- =?utf-8?B?N2tSN1hCMys4YnREdVBnWW9Pd0N0bmpCYkQveW9ybzYwSkwrcmRldm1TeitY?=
- =?utf-8?B?dkowWDBCZEdTYVcwVGRLRmJUaVBNM2lXYzE1bUZhbHQ3T0dtb1o2azBpTGF1?=
- =?utf-8?B?bzVSclU5dVFJczMrTitOajlpb0F2Q0d2YStQQ3owa3pPejJOTll6Y2lVQ2pn?=
- =?utf-8?B?cVY0QUxxcnl2VUdjamRsOFJ0RHgvYi8xbTI0VXlTVW5pQitjSmJPZHkxT3kr?=
- =?utf-8?B?ckZIRG5hSXl0QXhDNVo0UTRNOHI0cFhqOE95UmlaMFhwN1pzM1orRzFpTnZw?=
- =?utf-8?B?QWZ1d1pvM3NGS3ZBbTQ0Zkw1bWU5QU1HQTBIa2VoY3c3djZoNGRLcFJBT1Jk?=
- =?utf-8?B?bkNvQ3FoUUREUWxEc29UMGgrSEJWeHhhaEd1NzZJZVYvcWZlSlI3T3JuaDcy?=
- =?utf-8?B?bVRBbWIybHJOSUdFdmFHSGxBREszZVkxYVNabGFFOWNzcWl0WmFJSXVQTFdy?=
- =?utf-8?B?WGwxNzk0VFI3WTNtdFhVRTBRK1BEYWQ4QVdUcFIyaXUxNUp5SkliTGN3Vldy?=
- =?utf-8?B?Q2k0VlNZZjBnSG9xbzdvOGdtaEZVek92YUc1Q3liRW1UNXNKNzZ0Q0x3eFJj?=
- =?utf-8?B?alhFSy9aeXMvcE9iSmRKeGxzQVZtTllFZjJXdlRQd0hIcC85YTVMckJaYkYz?=
- =?utf-8?B?L2VtUFRwTjhHN252aWZXMUdDTFNsUHlRZHQ3VVgvVGk0YW5JM3RMWVZBVDJx?=
- =?utf-8?B?N2hLVTJ2M1ptZm03R3RvM2ZIVVJSZUw3YVlmWHVGTXVkYXJBb3g1R2Q1Vkx4?=
- =?utf-8?B?TlRtaEJTSVdDSG84WEpQY1pyS3c4TExrTjdLUWgwTmg2eW55SUVpbmlPSVp0?=
- =?utf-8?B?R2lqOS9Nd3RKZ2xTaFNPM0ZBaHhpQmEveWczMmhRN1c5QkZCQjhMOVM5Ymtr?=
- =?utf-8?B?dko3OWwyU3kvNUN0UVNsdEZDSXMyZWkzRUtKcS8wYmVwRXFPTnJiWSswemdl?=
- =?utf-8?B?ZE1vN3pVUVgvV3UwTXQyVzhjVUkvbDVJMXFsd0I1TENNeTNKSWtnWk1iUE5J?=
- =?utf-8?B?NU92ZVNWZkRnNFNvQ2d4eWhpV1lBYjliRkVVM3lNS0lRNUZtZkhJWGovQVdj?=
- =?utf-8?B?ZzZVUUY3U055MTFwTnRpOURpb2FkUHg5S2N6czBZRURSN1krSmNUWkN0MHc2?=
- =?utf-8?Q?1pVyknfFQBS8x?=
-X-OriginatorOrg: sct-15-20-9412-4-msonline-outlook-515b2.templateTenant
-X-MS-Exchange-CrossTenant-Network-Message-Id: 891c6185-c9c8-4bae-9726-08de41eaba8a
-X-MS-Exchange-CrossTenant-AuthSource: KUZPR04MB9265.apcprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 23 Dec 2025 06:15:54.7429
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
-X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: KUZPR04MB9265
+X-QCInternal: smtphost
+X-QCInternal: smtphost
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
+X-Proofpoint-ORIG-GUID: 9iaSLzjfDeb7f_OHe9U_zVa0CjGOGmEw
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMjIzMDEyMCBTYWx0ZWRfXwybHLAjqO3ld
+ hP9i2fNduP5HUOGMmogbIThUiZf8APudf3k87/nfL24q8DUCMHYB8ewAcfSbE02RAgpZWokSsoN
+ 3yOasC/nevVUSAY1V4LVpXoJjuLwh9jS9QXoBJftM8mSreHQ+yIh9iXKIMlpyOdd81frJre0lfG
+ 1QatefbEaN8+9YmR3Sit00Xc67jiSQ1UOBEfkoCGIkjV2L+C46DnxGRitRgui9KEA5iNDniDaIq
+ 89KFJGyjAM0N7E1yqllNFZhhxXKPAzOM/PMvfN8rd6RiGJ41fnaNIBHmp0fLmrdMWmwmgXbWKeS
+ jxvaXCfDYG5vaHhCnTiTzAAy/dHIvcfsONvresAUfXuKGAOg4gfFDu0RRGBl5qA/YA8X3gI9JaC
+ mTiscJ1rQqCdhhB9NYS30YvFcKiNKKdINc5AtsQiI8pzIEbE4dYQLzHEsuo3b1J2tztFo9PISlm
+ kaM9G+kYQpcGou1YJ+A==
+X-Proofpoint-GUID: 9iaSLzjfDeb7f_OHe9U_zVa0CjGOGmEw
+X-Authority-Analysis: v=2.4 cv=NZDrFmD4 c=1 sm=1 tr=0 ts=694aa8c5 cx=c_pps
+ a=Ou0eQOY4+eZoSc0qltEV5Q==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
+ a=wP3pNCr1ah4A:10 a=VkNPw1HP01LnGYTKEx00:22 a=EUspDBNiAAAA:8
+ a=ZCMddYN6k4-7DcXjQ1QA:9
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
+ definitions=2025-12-23_03,2025-12-22_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 spamscore=0 clxscore=1011 impostorscore=0 malwarescore=0
+ suspectscore=0 phishscore=0 bulkscore=0 adultscore=0 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2512120000 definitions=main-2512230120
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20251222_221611_220432_83B8C4AE 
-X-CRM114-Status: GOOD (  21.76  )
+X-CRM114-CacheID: sfid-20251223_063629_116451_2CBCDD1A 
+X-CRM114-Status: GOOD (  15.81  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -159,97 +113,80 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
+The __alloc_percpu() fails when the number of IDs are greater than 959
+because size parameter of __alloc_percpu() must be less than 32768 (aka
+PCPU_MIN_UNIT_SIZE). This failure is observed with KVMTOOL when AIA is
+trap-n-emulated by in-kernel KVM because in this case KVM guest has 2047
+interrupt IDs.
 
-On 12/22/2025 5:37 PM, Xu Lu wrote:
-> Currently, KVM assumes the minimum of implemented HGEIE bits and
-> "BIT(gc->guest_index_bits) - 1" as the number of guest files available
-> across all CPUs. This will not work when CPUs have different number
-> of guest files because KVM may incorrectly allocate a guest file on a CPU
-> with fewer guest files.
->
-> To address above, during initialization, we calculate the number of
-> available guest interrupt files according to MMIO resources and constrain
-> the number of guest interrupt files that can be allocated by KVM.
->
-> Signed-off-by: Xu Lu <luxu.kernel@bytedance.com>
-> ---
->   arch/riscv/kvm/aia.c                    |  2 +-
->   drivers/irqchip/irq-riscv-imsic-state.c | 12 +++++++++++-
->   include/linux/irqchip/riscv-imsic.h     |  3 +++
->   3 files changed, 15 insertions(+), 2 deletions(-)
-Reviewed-by: Nutty Liu <nutty.liu@hotmail.com>
+To address this issue, don't embed vector array in struct imsic_local_priv
+until __alloc_percpu() support size parameter greater than 32768.
 
-Thanks,
-Nutty
-> diff --git a/arch/riscv/kvm/aia.c b/arch/riscv/kvm/aia.c
-> index dad3181856600..cac3c2b51d724 100644
-> --- a/arch/riscv/kvm/aia.c
-> +++ b/arch/riscv/kvm/aia.c
-> @@ -630,7 +630,7 @@ int kvm_riscv_aia_init(void)
->   	 */
->   	if (gc)
->   		kvm_riscv_aia_nr_hgei = min((ulong)kvm_riscv_aia_nr_hgei,
-> -					    BIT(gc->guest_index_bits) - 1);
-> +					    gc->nr_guest_files);
->   	else
->   		kvm_riscv_aia_nr_hgei = 0;
->   
-> diff --git a/drivers/irqchip/irq-riscv-imsic-state.c b/drivers/irqchip/irq-riscv-imsic-state.c
-> index dc95ad856d80a..cccca38983577 100644
-> --- a/drivers/irqchip/irq-riscv-imsic-state.c
-> +++ b/drivers/irqchip/irq-riscv-imsic-state.c
-> @@ -794,7 +794,7 @@ static int __init imsic_parse_fwnode(struct fwnode_handle *fwnode,
->   
->   int __init imsic_setup_state(struct fwnode_handle *fwnode, void *opaque)
->   {
-> -	u32 i, j, index, nr_parent_irqs, nr_mmios, nr_handlers = 0;
-> +	u32 i, j, index, nr_parent_irqs, nr_mmios, nr_guest_files, nr_handlers = 0;
->   	struct imsic_global_config *global;
->   	struct imsic_local_config *local;
->   	void __iomem **mmios_va = NULL;
-> @@ -888,6 +888,7 @@ int __init imsic_setup_state(struct fwnode_handle *fwnode, void *opaque)
->   	}
->   
->   	/* Configure handlers for target CPUs */
-> +	global->nr_guest_files = BIT(global->guest_index_bits) - 1;
->   	for (i = 0; i < nr_parent_irqs; i++) {
->   		rc = imsic_get_parent_hartid(fwnode, i, &hartid);
->   		if (rc) {
-> @@ -928,6 +929,15 @@ int __init imsic_setup_state(struct fwnode_handle *fwnode, void *opaque)
->   		local->msi_pa = mmios[index].start + reloff;
->   		local->msi_va = mmios_va[index] + reloff;
->   
-> +		/*
-> +		 * KVM uses global->nr_guest_files to determine the available guest
-> +		 * interrupt files on each CPU. Take the minimum number of guest
-> +		 * interrupt files across all CPUs to avoid KVM incorrectly allocatling
-> +		 * an unexisted or unmapped guest interrupt file on some CPUs.
-> +		 */
-> +		nr_guest_files = (resource_size(&mmios[index]) - reloff) / IMSIC_MMIO_PAGE_SZ - 1;
-> +		global->nr_guest_files = min(global->nr_guest_files, nr_guest_files);
-> +
->   		nr_handlers++;
->   	}
->   
-> diff --git a/include/linux/irqchip/riscv-imsic.h b/include/linux/irqchip/riscv-imsic.h
-> index 7494952c55187..43aed52385008 100644
-> --- a/include/linux/irqchip/riscv-imsic.h
-> +++ b/include/linux/irqchip/riscv-imsic.h
-> @@ -69,6 +69,9 @@ struct imsic_global_config {
->   	/* Number of guest interrupt identities */
->   	u32					nr_guest_ids;
->   
-> +	/* Number of guest interrupt files per core */
-> +	u32					nr_guest_files;
-> +
->   	/* Per-CPU IMSIC addresses */
->   	struct imsic_local_config __percpu	*local;
->   };
+This reverts commit 79eaabc61dfb ("irqchip/riscv-imsic: Embed the vector
+array in lpriv").
+
+Signed-off-by: Anup Patel <anup.patel@oss.qualcomm.com>
+---
+ drivers/irqchip/irq-riscv-imsic-state.c | 10 ++++++++--
+ drivers/irqchip/irq-riscv-imsic-state.h |  2 +-
+ 2 files changed, 9 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/irqchip/irq-riscv-imsic-state.c b/drivers/irqchip/irq-riscv-imsic-state.c
+index 385368052d5c..b6cebfee9461 100644
+--- a/drivers/irqchip/irq-riscv-imsic-state.c
++++ b/drivers/irqchip/irq-riscv-imsic-state.c
+@@ -477,6 +477,7 @@ static void __init imsic_local_cleanup(void)
+ 		lpriv = per_cpu_ptr(imsic->lpriv, cpu);
+ 
+ 		bitmap_free(lpriv->dirty_bitmap);
++		kfree(lpriv->vectors);
+ 	}
+ 
+ 	free_percpu(imsic->lpriv);
+@@ -490,8 +491,7 @@ static int __init imsic_local_init(void)
+ 	int cpu, i;
+ 
+ 	/* Allocate per-CPU private state */
+-	imsic->lpriv = __alloc_percpu(struct_size(imsic->lpriv, vectors, global->nr_ids + 1),
+-				      __alignof__(*imsic->lpriv));
++	imsic->lpriv = alloc_percpu(typeof(*imsic->lpriv));
+ 	if (!imsic->lpriv)
+ 		return -ENOMEM;
+ 
+@@ -511,6 +511,12 @@ static int __init imsic_local_init(void)
+ 		timer_setup(&lpriv->timer, imsic_local_timer_callback, TIMER_PINNED);
+ #endif
+ 
++		/* Allocate vector array */
++		lpriv->vectors = kcalloc(global->nr_ids + 1, sizeof(*lpriv->vectors),
++					 GFP_KERNEL);
++		if (!lpriv->vectors)
++			goto fail_local_cleanup;
++
+ 		/* Setup vector array */
+ 		for (i = 0; i <= global->nr_ids; i++) {
+ 			vec = &lpriv->vectors[i];
+diff --git a/drivers/irqchip/irq-riscv-imsic-state.h b/drivers/irqchip/irq-riscv-imsic-state.h
+index 6332501dcbd8..c42ee180b305 100644
+--- a/drivers/irqchip/irq-riscv-imsic-state.h
++++ b/drivers/irqchip/irq-riscv-imsic-state.h
+@@ -40,7 +40,7 @@ struct imsic_local_priv {
+ #endif
+ 
+ 	/* Local vector table */
+-	struct imsic_vector			vectors[];
++	struct imsic_vector			*vectors;
+ };
+ 
+ struct imsic_priv {
+-- 
+2.43.0
+
 
 -- 
 kvm-riscv mailing list
