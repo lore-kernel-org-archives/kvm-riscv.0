@@ -4,92 +4,82 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C4878E92FE3
-	for <kvm-riscv@archiver.kernel.org>; Mon, 29 Dec 2025 23:57:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A236EE01F6
+	for <kvm-riscv@archiver.kernel.org>; Tue, 30 Dec 2025 23:02:23 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
-	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID:
-	References:Mime-Version:In-Reply-To:Date:Reply-To:Content-ID:
-	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
-	:Resent-Message-ID:List-Owner;
-	bh=nJqSsduYJ6x/1dx60UN9BCNkzSgVg6XiBnn5HMVg+h8=; b=MEnyGSsKG6B4/ekN4bc4XCqhpU
-	8wxAiBbllnJaY64Gj8JCW2gpGiYm2FW+GMYYWrrH/Fj1Xvlr/YQMDnuN0iTELsNCLW+dafn8RAzWB
-	lmuNxoKhE9kRZq3MHVYOOAvicvXQtby4GEhFXZk66w1BicG70y8OMAhlEzFHzauAqWM/MM62CznFF
-	oA1FRzijPMVUMrFqXPHXumzXCc5S+3aAr0pL9/GWrBj2Mx4jBSRy8QCEXY70Xi36glg9lF8R4PUqB
-	HOaZgd5Nvyn1vwAZwNJj4jAuL3H9AiG7Fg9KYyCxNupDv1SxwpsNN+qaHNVKHJYLeR/v6ViLdApW8
-	5bxnanyw==;
+	Content-Transfer-Encoding:Content-Type:Reply-To:List-Subscribe:List-Help:
+	List-Post:List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID
+	:Mime-Version:Date:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=3Fkdf5NLU8/FW2WxfBxH4Z4kU2z3iyb7IYQZ4bjmn1Q=; b=wv7tbsElX2pPWe
+	Sbk6XSR1L4GDr21ECPD8dRnStyuDhMy5xfBkXJDQODa4ciNG84dR36fhmgF3oMEDXpT5L/OY0/A9w
+	ECIEGlfdikfcVJgXi3jPOCn7a5iIdY/Q0kwKvo0pOehBnV2f5XXmNdJ/QMkOBC3IyjQFCg8H8Eq7G
+	KoH6NoKSmvyhnEQtalIW8AORu+AA1U4CXeO50L2I7B8e8e7/uGWeLZJ9PwQjFtYStdbAMedF8Eki0
+	eVdhv7RumxtBjSWPrmembjWG+ckpUVXNJNWG0FsYqbm0K2EZoFHTfvUZdXCXZAETjZAjH8o/0i2Ay
+	qsCslFTuU+hMQNWBhHwA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vaN7A-00000004ADW-43v4;
-	Mon, 29 Dec 2025 23:57:28 +0000
-Received: from mail-pf1-x449.google.com ([2607:f8b0:4864:20::449])
+	id 1vaijO-00000005MyI-24uy;
+	Tue, 30 Dec 2025 23:02:22 +0000
+Received: from mail-pf1-x44a.google.com ([2607:f8b0:4864:20::44a])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vaN77-00000004ABx-0NIh
+	id 1vaiiw-00000005Mek-3axx
 	for kvm-riscv@lists.infradead.org;
-	Mon, 29 Dec 2025 23:57:27 +0000
-Received: by mail-pf1-x449.google.com with SMTP id d2e1a72fcca58-7b9090d9f2eso17965642b3a.0
-        for <kvm-riscv@lists.infradead.org>; Mon, 29 Dec 2025 15:57:23 -0800 (PST)
+	Tue, 30 Dec 2025 23:02:10 +0000
+Received: by mail-pf1-x44a.google.com with SMTP id d2e1a72fcca58-7dd05696910so15559528b3a.2
+        for <kvm-riscv@lists.infradead.org>; Tue, 30 Dec 2025 15:01:53 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1767052643; x=1767657443; darn=lists.infradead.org;
-        h=content-transfer-encoding:cc:to:from:subject:message-id:references
-         :mime-version:in-reply-to:date:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=vaCAmCD1pI2PB4kVDvq818qZSC88KaBTxMeyOFyVIUw=;
-        b=Exbi19g3iSDD1XlqrHs8hWXWfmGesph4xEIEbHgDuiBvpXDanlClvqhxWfmVOv6b2X
-         u35MpWa+wCc9krpswJEDzLDIGel0bqzE6PM7NoiU18jC84uTEvHIJDI7F2ZzM4+elE7K
-         6h5OfCk2Dt7J9TO+R4VK/8qbdTU6axjopdF2Rx/8SUKexFc0ERSicHfdocV6XEKGQIp4
-         vJhozZaaUvTy7sEDBYpJVoRCXxicW130vtn0xfH6iUzbp891u4BniP3pO0PasBaEgSiQ
-         4D3uHWji4cT4HxCqiJR97xASV+7IGhKfJNHnGWIjFjNZYlUwwaFBfHP8/Y+ADfM2t03X
-         EHyg==
+        d=google.com; s=20230601; t=1767135713; x=1767740513; darn=lists.infradead.org;
+        h=cc:to:from:subject:message-id:mime-version:date:reply-to:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=DduiMfmTpcy5dWbJfJJBZV4wRgqp4T0woAtqbJ6bKWQ=;
+        b=SpTDVzH5NHaMWwc4acDPlpijEnOy95gZp/YZacjeRGKdqMozNnn4/aJ5Ia06rPScvZ
+         0QoZNEK7N4dlYZdV3jwhRCPCwNO2zIS0ktfEmOpGwkL02GhhruYBB33aP9e+LnfjHOt7
+         wSsVgxjDhYPucvc1wmFbSgPnLtiqHWTMkD1Na1/ybCrmjgbldayBf2IRBNbdp0nlm2q/
+         lu2oSE6pjXHd7cGyavmOWxy7N/Ws1yiP/5k18TpHdbQWs55AkXE4mMoPQ9xEtqWUJMq6
+         AizNnDgNa4GWLMKww5ItchvMZGgDhg2RAroR1WFeBaezffgGtCZYaltp1SSMLWpSUwKZ
+         nljg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1767052643; x=1767657443;
-        h=content-transfer-encoding:cc:to:from:subject:message-id:references
-         :mime-version:in-reply-to:date:x-gm-message-state:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=vaCAmCD1pI2PB4kVDvq818qZSC88KaBTxMeyOFyVIUw=;
-        b=jXwW19V4GU/W1f1+rjWJI9n3bdvBPCQg0kwITUGUEAauJfRL704z+zJ99UajxDN85e
-         MxDAqBQpUURN9XRWI9GgQzEsTftrBvkngBQ1E5U+AJft7hZ3m4WYPkqGX2jOa89/nbbG
-         airxuukszvfUPLbit0jop4X05ejbrh1aymrCWBmU1dVRMVgyTT33FeEn/N4bDyC/8NBr
-         262O87n/f+jvVpWOUhyBzu2/6wCaXIvHB361AbQIRnEOH+uZbU61OQZTEBOY3wJyGpWp
-         kaGfEP4C0X4aGKvSqaauiAP3FRAK0XqpHaMyg/JaJ5jCCNXw+Xpm9jc57/XCoUDMgJFX
-         aNiQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVngMs3q4dvoN6pm9uL1ANmD2kAv5L4qry68VNgEyzoSbLrjyFhd+uF7CXb9QboKWfzHexPM7ju0ps=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yz0cauXfagrOEkRWcYlsgs6UmZXU61h5xSufigcgt2+XlxF9uyl
-	smOqaRBfqcHkgoWJw151OjjkxbUcPgpKkMIwrbn+3WU1CQ8GGB/UHTWUPA29eo75lxZalT61dFO
-	jUcb2Ig==
-X-Google-Smtp-Source: AGHT+IGWSzvMBdAgSpc1cQ4FNAzud2F9vkcmbgsGWHl/uECW+mXFCBlsNw6jhBxprH27ZWhYhxw4eDFyKfA=
-X-Received: from pjhk89.prod.google.com ([2002:a17:90a:4ce2:b0:34c:1d76:2fe9])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a20:9185:b0:343:af1:9a57
- with SMTP id adf61e73a8af0-376aa8e98d6mr28981483637.56.1767052643109; Mon, 29
- Dec 2025 15:57:23 -0800 (PST)
-Date: Mon, 29 Dec 2025 15:57:21 -0800
-In-Reply-To: <43d1cde6-2277-4f3c-8e7d-59e6edb2228a@linux.intel.com>
+        d=1e100.net; s=20230601; t=1767135713; x=1767740513;
+        h=cc:to:from:subject:message-id:mime-version:date:reply-to
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=DduiMfmTpcy5dWbJfJJBZV4wRgqp4T0woAtqbJ6bKWQ=;
+        b=VZag/Y95ulmJw6y9xqEspiOlFx2qXo0hcF22X2YGId+meTnNlPhbzrVP/MQ+G17cBy
+         jG/M0T1JElDtlBVQCmpz9WeFBBT7Ma/dNoYMjOjjn1/5LHdpraofWg1B2HHhy7U+H8a8
+         ZgJTk9M2sKLbrAhBoAS+/iBpxbWCcf0HdJ0NxIOTus6clwAkFc3g/03yzN5PyGHtkRLf
+         +0kXeLsj5tMOWoJB9WA7Wb+RilEAnpEbH53xu7xMI/4qnNTzFbXSy9+sYNsEnyk63VeB
+         ZDDurLRoxr0W2MI57ysgYbh4OSoEdIcQE6v0shQMQMzbkMMUMFwcl2tFRYW92UAMxP5h
+         XuDA==
+X-Forwarded-Encrypted: i=1; AJvYcCWY4XlkV650Cam+uw229waNmwC6eSksQDAI5dgoA4E/A2x00yp2RcoH6YRXREExIVU6BMe7KtFpLk4=@lists.infradead.org
+X-Gm-Message-State: AOJu0YxoxQW3+6lT87FVU6YllmVnRnFhI3nFgmhZfK+O7ITSMbXDWvat
+	h6OsM7CFT1JqzwlrtF4kqgbGNyVK9V+mKXgLAnq9cLsK73uZSqhfgQY2zlSWIqX7xpypeMBYWx7
+	7NTzzUA==
+X-Google-Smtp-Source: AGHT+IFl5YLLzZS88Mfh7NFRVwFsdWY7dXmSPWiNHP66M1DsoJkgDWwQHxi6m97nCMs9lyQggVclX+5VgK0=
+X-Received: from pjbge24.prod.google.com ([2002:a17:90b:e18:b0:34c:cb46:dad7])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a21:e083:b0:361:3bec:fe28
+ with SMTP id adf61e73a8af0-376a9de5b35mr35584887637.37.1767135712714; Tue, 30
+ Dec 2025 15:01:52 -0800 (PST)
+Date: Tue, 30 Dec 2025 15:01:29 -0800
 Mime-Version: 1.0
-References: <20251206001720.468579-1-seanjc@google.com> <20251206001720.468579-16-seanjc@google.com>
- <43d1cde6-2277-4f3c-8e7d-59e6edb2228a@linux.intel.com>
-Message-ID: <aVMVYY_WkNClfXuj@google.com>
-Subject: Re: [PATCH v6 15/44] KVM: x86/pmu: Snapshot host (i.e. perf's)
- reported PMU capabilities
+X-Mailer: git-send-email 2.52.0.351.gbe84eed79e-goog
+Message-ID: <20251230230150.4150236-1-seanjc@google.com>
+Subject: [PATCH v4 00/21] KVM: selftests: Add Nested NPT support
 From: Sean Christopherson <seanjc@google.com>
-To: Dapeng Mi <dapeng1.mi@linux.intel.com>
-Cc: Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, 
-	Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>, 
-	Huacai Chen <chenhuacai@kernel.org>, Anup Patel <anup@brainfault.org>, 
-	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
-	Xin Li <xin@zytor.com>, "H. Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@kernel.org>, 
-	Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, 
-	Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, 
-	Paolo Bonzini <pbonzini@redhat.com>, linux-arm-kernel@lists.infradead.org, 
-	kvmarm@lists.linux.dev, kvm@vger.kernel.org, loongarch@lists.linux.dev, 
+To: Paolo Bonzini <pbonzini@redhat.com>, Marc Zyngier <maz@kernel.org>, 
+	Oliver Upton <oupton@kernel.org>, Tianrui Zhao <zhaotianrui@loongson.cn>, 
+	Bibo Mao <maobibo@loongson.cn>, Huacai Chen <chenhuacai@kernel.org>, 
+	Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, 
+	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+	Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, 
+	Claudio Imbrenda <imbrenda@linux.ibm.com>, Sean Christopherson <seanjc@google.com>
+Cc: kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	kvmarm@lists.linux.dev, loongarch@lists.linux.dev, 
 	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
-	linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, 
-	Mingwei Zhang <mizhang@google.com>, Xudong Hao <xudong.hao@intel.com>, 
-	Sandipan Das <sandipan.das@amd.com>, Xiong Zhang <xiong.y.zhang@linux.intel.com>, 
-	Manali Shukla <manali.shukla@amd.com>, Jim Mattson <jmattson@google.com>
+	linux-kernel@vger.kernel.org, Yosry Ahmed <yosry.ahmed@linux.dev>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20251229_155725_142219_03636336 
-X-CRM114-Status: GOOD (  19.94  )
+X-CRM114-CacheID: sfid-20251230_150154_896416_073EAB17 
+X-CRM114-Status: GOOD (  13.80  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -101,42 +91,103 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Reply-To: Sean Christopherson <seanjc@google.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-T24gVGh1LCBEZWMgMjUsIDIwMjUsIERhcGVuZyBNaSB3cm90ZToKPiAKPiBPbiAxMi82LzIwMjUg
-ODoxNiBBTSwgU2VhbiBDaHJpc3RvcGhlcnNvbiB3cm90ZToKPiA+IFRha2UgYSBzbmFwc2hvdCBv
-ZiB0aGUgdW5hZHVsdGVyYXRlZCBQTVUgY2FwYWJpbGl0aWVzIHByb3ZpZGVkIGJ5IHBlcmYgc28K
-PiA+IHRoYXQgS1ZNIGNhbiBjb21wYXJlIGd1ZXN0IHZQTVUgY2FwYWJpbGl0aWVzIGFnYWluc3Qg
-aGFyZHdhcmUgY2FwYWJpbGl0aWVzCj4gPiB3aGVuIGRldGVybWluaW5nIHdoZXRoZXIgb3Igbm90
-IHRvIGludGVyY2VwdCBQTVUgTVNScyAoYW5kIFJEUE1DKS4KPiA+Cj4gPiBSZXZpZXdlZC1ieTog
-U2FuZGlwYW4gRGFzIDxzYW5kaXBhbi5kYXNAYW1kLmNvbT4KPiA+IFRlc3RlZC1ieTogWHVkb25n
-IEhhbyA8eHVkb25nLmhhb0BpbnRlbC5jb20+Cj4gPiBTaWduZWQtb2ZmLWJ5OiBTZWFuIENocmlz
-dG9waGVyc29uIDxzZWFuamNAZ29vZ2xlLmNvbT4KPiA+IC0tLQo+ID4gIGFyY2gveDg2L2t2bS9w
-bXUuYyB8IDIgKysKPiA+ICAxIGZpbGUgY2hhbmdlZCwgMiBpbnNlcnRpb25zKCspCj4gPgo+ID4g
-ZGlmZiAtLWdpdCBhL2FyY2gveDg2L2t2bS9wbXUuYyBiL2FyY2gveDg2L2t2bS9wbXUuYwo+ID4g
-aW5kZXggNDg3YWQxOWEyMzZlLi43YzIxOTMwNWI2MWQgMTAwNjQ0Cj4gPiAtLS0gYS9hcmNoL3g4
-Ni9rdm0vcG11LmMKPiA+ICsrKyBiL2FyY2gveDg2L2t2bS9wbXUuYwo+ID4gQEAgLTEwOCw2ICsx
-MDgsOCBAQCB2b2lkIGt2bV9pbml0X3BtdV9jYXBhYmlsaXR5KGNvbnN0IHN0cnVjdCBrdm1fcG11
-X29wcyAqcG11X29wcykKPiA+ICAJYm9vbCBpc19pbnRlbCA9IGJvb3RfY3B1X2RhdGEueDg2X3Zl
-bmRvciA9PSBYODZfVkVORE9SX0lOVEVMOwo+ID4gIAlpbnQgbWluX25yX2dwX2N0cnMgPSBwbXVf
-b3BzLT5NSU5fTlJfR1BfQ09VTlRFUlM7Cj4gPiAgCj4gPiArCXBlcmZfZ2V0X3g4Nl9wbXVfY2Fw
-YWJpbGl0eSgma3ZtX2hvc3RfcG11KTsKPiA+ICsKPiA+ICAJLyoKPiA+ICAJICogSHlicmlkIFBN
-VXMgZG9uJ3QgcGxheSBuaWNlIHdpdGggdmlydHVhbGl6YXRpb24gd2l0aG91dCBjYXJlZnVsCj4g
-PiAgCSAqIGNvbmZpZ3VyYXRpb24gYnkgdXNlcnNwYWNlLCBhbmQgS1ZNJ3MgQVBJcyBmb3IgcmVw
-b3J0aW5nIHN1cHBvcnRlZAo+IAo+IEhpIFNlYW4sCj4gCj4gSXQgbG9va3MgYSBtZXJnaW5nIGVy
-cm9yIGhlcmUuIFdlIGRvbid0IG5lZWQgdGhpcyBwYXRjaC4KCkdhaCwgcmlnaHQgeW91IGFyZS4g
-IEkgb3Zlcmxvb2tlZCBpdCBiZWNhdXNlIGl0IGRpZG4ndCBjb25mbGljdCBvbiBhIHJlYmFzZSwg
-YW5kCkkgb25jZSBhZ2FpbiBmb3Jnb3QgdG8gdGVzdCBvbiBhIGh5YnJpZCBQTVUsIGdyci4KClRo
-YW5rcyEKCj4gVGhlIG9yaWdpbmFsIHBhdGNoICI1MWYzNGIxICgiS1ZNOiB4ODYvcG11OiBTbmFw
-c2hvdCBob3N0IChpLmUuIHBlcmYncykKPiByZXBvcnRlZCBQTVUgY2FwYWJpbGl0aWVzIikiIGhh
-ZCBiZWVuIG1lcmdlZCBpbnRvIHVwc3RyZWFtIGFuZCBzdWJzZXF1ZW50bHkKPiB3ZSBzdWJtaXR0
-ZWQgYSBuZXcgcGF0Y2ggIjAzNDQxN2MxNDM5YSAoIktWTTogeDg2L3BtdTogRG9uJ3QgdHJ5IHRv
-IGdldAo+IHBlcmYgY2FwYWJpbGl0aWVzIGZvciBoeWJyaWQgQ1BVcyIpIiB0byBmaXggdGhlIHdh
-cm5pbmcgaW50cm9kdWNlZCBmcm9tCj4gcHJldmlvdXMgcGF0Y2jCoCAiNTFmMzRiMSAoIktWTTog
-eDg2L3BtdTogU25hcHNob3QgaG9zdCAoaS5lLiBwZXJmJ3MpCj4gcmVwb3J0ZWQgUE1VIGNhcGFi
-aWxpdGllcyIpIi4gVGhhbmtzLgo+IAo+IC1EYXBlbmcgTWkKPiAKPiAKCi0tIAprdm0tcmlzY3Yg
-bWFpbGluZyBsaXN0Cmt2bS1yaXNjdkBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5p
-bmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8va3ZtLXJpc2N2Cg==
+Yosry's series to add support for nested NPT, and extends vmx_dirty_log_test
+and kvm_dirty_log_test (with -n, using memstress) to cover nested SVM.
+
+Note, I'm mildly concerned the last patch to extend nested_dirty_log_test to
+validate KVM's handling of READ faults could be flaky, e.g. maybe if someone
+is running the test under heavy memory pressure and the to-be-access page is
+swapped between the write-from-host and read-from-guest?  But unless someone
+knows/shows it'll be flaky, I'm inclined to apply it and hope for the best.
+
+v4:
+ - Document the likely reason for setting A/D bits.
+ - Put "mmu" structure in common "struct kvm".
+ - Make it clear PTE accessors are predicates.
+ - Assert that the stage-2 MMU is initialized at most once.
+ - Make READABLE a standalone bit (don't overload USER).
+ - Don't alias PRESENT => READABLE for EPT.
+ - Fix the A/D bit definitions for EPT.
+ - Drop the function comment for __tdp_map().
+ - Add a patch to extend the nested_dirty_log_test to verify that KVM creates
+   writable SPTEs when the gPTEs are writable and dirty.
+
+v3:
+ - https://lore.kernel.org/all/20251127013440.3324671-1-yosry.ahmed@linux.dev
+ - Dropped the patches that landed in kvm-x86.
+ - Reshuffled some patches and cleanups.
+ - Introduced kvm_mmu data structures to hold the root, page table
+   levels, and page table masks (Sean).
+ - Extended memstress as well to cover nested SVM.
+
+v2: https://lore.kernel.org/kvm/20251021074736.1324328-1-yosry.ahmed@linux.dev
+
+Sean Christopherson (7):
+  KVM: selftests: Add "struct kvm_mmu" to track a given MMU instance
+  KVM: selftests: Plumb "struct kvm_mmu" into x86's MMU APIs
+  KVM: selftests: Add a "struct kvm_mmu_arch arch" member to kvm_mmu
+  KVM: selftests: Add a stage-2 MMU instance to kvm_vm
+  KVM: selftests: Move TDP mapping functions outside of vmx.c
+  KVM: selftests: Rename vm_get_page_table_entry() to vm_get_pte()
+  KVM: selftests: Test READ=>WRITE dirty logging behavior for shadow MMU
+
+Yosry Ahmed (14):
+  KVM: selftests: Make __vm_get_page_table_entry() static
+  KVM: selftests: Stop passing a memslot to nested_map_memslot()
+  KVM: selftests: Rename nested TDP mapping functions
+  KVM: selftests: Kill eptPageTablePointer
+  KVM: selftests: Stop setting A/D bits when creating EPT PTEs
+  KVM: selftests: Move PTE bitmasks to kvm_mmu
+  KVM: selftests: Use a TDP MMU to share EPT page tables between vCPUs
+  KVM: selftests: Stop passing VMX metadata to TDP mapping functions
+  KVM: selftests: Reuse virt mapping functions for nested EPTs
+  KVM: selftests: Allow kvm_cpu_has_ept() to be called on AMD CPUs
+  KVM: selftests: Add support for nested NPTs
+  KVM: selftests: Set the user bit on nested NPT PTEs
+  KVM: selftests: Extend vmx_dirty_log_test to cover SVM
+  KVM: selftests: Extend memstress to run on nested SVM
+
+ tools/testing/selftests/kvm/Makefile.kvm      |   2 +-
+ .../kvm/include/arm64/kvm_util_arch.h         |   2 +
+ .../testing/selftests/kvm/include/kvm_util.h  |  18 +-
+ .../kvm/include/loongarch/kvm_util_arch.h     |   1 +
+ .../kvm/include/riscv/kvm_util_arch.h         |   1 +
+ .../kvm/include/s390/kvm_util_arch.h          |   1 +
+ .../selftests/kvm/include/x86/kvm_util_arch.h |  22 ++
+ .../selftests/kvm/include/x86/processor.h     |  58 +++-
+ .../selftests/kvm/include/x86/svm_util.h      |   9 +
+ tools/testing/selftests/kvm/include/x86/vmx.h |  16 +-
+ .../selftests/kvm/lib/arm64/processor.c       |  38 +--
+ tools/testing/selftests/kvm/lib/kvm_util.c    |  28 +-
+ .../selftests/kvm/lib/loongarch/processor.c   |  28 +-
+ .../selftests/kvm/lib/riscv/processor.c       |  31 ++-
+ .../selftests/kvm/lib/s390/processor.c        |  16 +-
+ .../testing/selftests/kvm/lib/x86/memstress.c |  66 +++--
+ .../testing/selftests/kvm/lib/x86/processor.c | 237 ++++++++++++----
+ tools/testing/selftests/kvm/lib/x86/svm.c     |  24 ++
+ tools/testing/selftests/kvm/lib/x86/vmx.c     | 251 ++++-------------
+ .../selftests/kvm/x86/hyperv_tlb_flush.c      |   2 +-
+ .../selftests/kvm/x86/nested_dirty_log_test.c | 259 ++++++++++++++++++
+ .../x86/smaller_maxphyaddr_emulation_test.c   |   4 +-
+ .../selftests/kvm/x86/vmx_dirty_log_test.c    | 179 ------------
+ .../kvm/x86/vmx_nested_la57_state_test.c      |   2 +-
+ 24 files changed, 726 insertions(+), 569 deletions(-)
+ create mode 100644 tools/testing/selftests/kvm/x86/nested_dirty_log_test.c
+ delete mode 100644 tools/testing/selftests/kvm/x86/vmx_dirty_log_test.c
+
+
+base-commit: 9448598b22c50c8a5bb77a9103e2d49f134c9578
+-- 
+2.52.0.351.gbe84eed79e-goog
+
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
