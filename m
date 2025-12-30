@@ -4,70 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DA28FEE57C2
-	for <kvm-riscv@archiver.kernel.org>; Tue, 30 Dec 2025 23:04:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A5A4EE01F6
+	for <kvm-riscv@archiver.kernel.org>; Tue, 30 Dec 2025 23:04:31 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:Reply-To:List-Subscribe:List-Help:
 	List-Post:List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID
 	:References:Mime-Version:In-Reply-To:Date:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=0IpjX4OQ5gtyXwTm8LPSDNeViJD5jaRwqTXmT8+eVCo=; b=fgjNPkwhcQcAlb
-	lqdtUJOKnyoxIZKWjHsXXWK2bMoPxU3+dQ+SjB3NuCfAjnE2EMqL3XR5hA4gJKWjwmOR+Dh4tdS6f
-	UUixt8st2cEwtL31lQawBLE50fOZdgNJ3XgsEdsoLyBIgNIvAOyrix2TZTSEaBSE5ZiYM0Xt5mgEU
-	Uibm23ZCAhwmHfgggEbWBFkbJfxIehwDZFErmdW2jR9+9dMWzo2/sufwRTxFszsvV+Mo0YnyRWXD9
-	xr5U5M6qe2W4DpbYdINUggw/4bkH4YRafGoILlmFb1On5zMvM6AFSL6s1B3foA7IDOa1oo06BDIiG
-	eoc3HdX48IQEvzXIYllg==;
+	List-Owner; bh=nkhA4ZiYccmSkcuAQA4aLVc7t8hQhGI4QpNc89Xlu6k=; b=gy3GZWmmH9Fvr2
+	cxdA5UKfZV+53KTfTjMIe6ESVGBmQ+A8H7awgb7e+h308lKGxOxXnXpCsQ4zByK1yBSfEbkiTofDh
+	TmSk5gP/mQ5RrVvPmu+pYxh2M/iHjXJXDdGYMqJBSj36SoHH90Fv9hR6Zmm2SQiVOZpzK8kvKTPLl
+	YHqJjhI0U79/gCJuPTAubIVEr3gmNgI38wZJWFFklW4qxf8QYJUt1tZDR62vu10qEoMfJJth9ploO
+	wmFvcpeU+LmFXtuU+jGsMbpjOv9OcU8eGIaNpf9/O7bqn0bH1+ad4tZ/po1oKRHmpcS3hICgGrMQ4
+	smLaKNRnajmHI7WkVf7Q==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vailL-00000005PW3-3Iox;
-	Tue, 30 Dec 2025 23:04:23 +0000
-Received: from mail-pl1-x649.google.com ([2607:f8b0:4864:20::649])
+	id 1vailQ-00000005PeR-2pEz;
+	Tue, 30 Dec 2025 23:04:28 +0000
+Received: from mail-pj1-x1049.google.com ([2607:f8b0:4864:20::1049])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vaijU-00000005N6m-25xf
+	id 1vaijW-00000005N9C-0twJ
 	for kvm-riscv@lists.infradead.org;
-	Tue, 30 Dec 2025 23:02:30 +0000
-Received: by mail-pl1-x649.google.com with SMTP id d9443c01a7336-29f13989cd3so306708795ad.1
-        for <kvm-riscv@lists.infradead.org>; Tue, 30 Dec 2025 15:02:27 -0800 (PST)
+	Tue, 30 Dec 2025 23:02:31 +0000
+Received: by mail-pj1-x1049.google.com with SMTP id 98e67ed59e1d1-34cc88eca7eso18704606a91.2
+        for <kvm-riscv@lists.infradead.org>; Tue, 30 Dec 2025 15:02:29 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1767135747; x=1767740547; darn=lists.infradead.org;
+        d=google.com; s=20230601; t=1767135749; x=1767740549; darn=lists.infradead.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:from:to:cc:subject:date:message-id:reply-to;
-        bh=DkXelmu7bqFxndg8qpo6pKIzfvXDHv9zHII5ienX1m4=;
-        b=pRNwwcMYMnJFIrL3H1L/3walyg8FeNdVtbvJVcyX+RVCzfWCHUqCxfHVAJkChTP9Ov
-         7ydLv4+z0Q/bECbmcW+uWewUFt7UVaU4s3KzJwGc1Gaz8GeNVU39hNPqmaibbGakOwph
-         xLmt8QmFPgrIs+5dJJDJuXVRTN8lplpCdtMSI4gCmd9JRZjTS5I1cuPtq9WGCcFUM01+
-         t6BoYDSTyy/nk2VEAvhF7OVbzAStzSWuIDNwNssQxvmd4bBq/btCH+ONvnxvYuKZJqWn
-         Nd1chCd/XJEL1ZiOKGUIfN2fR3ixULhZMTe3WPyrqCEpdKdQ36yy7tvqm2Ua+aDMgD2a
-         e//A==
+        bh=ykxeCu2rd9E7NdPIA3m898BLFxasNeM9KWtJ/FC5NbY=;
+        b=MA8sYW3ZERQ4eU1czifRj1Or8TEVM70yXn+Z1Nk8B11nw1iiNkerNoktUn8qhjUH4w
+         bnplvt6g2KfekEit2JoL1SVfnJN7vo+8jodVGu/lSPkLe7AOMZwYzTGEVHc+GCwDFGjK
+         J6Jh/Ep/FxZNh+JqBPvGc62MXUNWT0i41vbYeAs4CUswrW/hWllNJxVWIqH38BFmU+JL
+         CZasWIbHPM/InP+bFASr+Bg+vd5T7GnwZyOV7ovHIh6XM9zcFIWx7nc/ryF4zadNv7VF
+         /ebrlepJmpMzKaEOaAKVyu9bgNug2pErBdzXi9lKdOyLqX7n31WvastvhW8KUX07CJtz
+         T7yA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1767135747; x=1767740547;
+        d=1e100.net; s=20230601; t=1767135749; x=1767740549;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=DkXelmu7bqFxndg8qpo6pKIzfvXDHv9zHII5ienX1m4=;
-        b=KG5/ZzX7gUjn6UUJ2DGy1bWcqtz2EZGT0Zg+yD/wI3KJrHkLrw+Krqf+g1buGby8OW
-         NeNMV9GeSJvg12WpF0+SY+/nfElZO5G8NpLqRqt3GUe67MNSCuAsF4jaoriWaYw7b9Xi
-         z4PkGp+58MJe/PI/xcDQ1zSCen9XGCv/I/hxVybLSs+xdJ7FrzpTnOoX7+DUh+mhwlC8
-         Dvk5pbwwifcPHQV3RvrsYlMYypyk9e//4EKIp1W+u5neY044maT6MAOWQi5s65D1RJ9g
-         pslc5qIYGNfR7fG8hxtuRHxGPWkGgHOfDWvAuYIhQAT/eOqLvlPtXvKJEGd5qNoWlHf+
-         td5A==
-X-Forwarded-Encrypted: i=1; AJvYcCVhS7DxhsN28ZQoWtajj74s1YuX/mQ8m/QXBCrJpxYD8UF3xM3Q+PpV1eqESVsioNiTsvla+nR/ppg=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yw91q7sqYrZq7a+4wMvzqK/B5LDhD7bYKfsQf1he8r3nmZbO5f9
-	AfoRkznMLPIAI8Qi3NBKnX7C3GPT2F+C1I8eDdflI6T6z/51cnIHd+smFCoGZXcG12nT2m8FS7K
-	fQB5bTA==
-X-Google-Smtp-Source: AGHT+IEInX/hcWFTn62wzbw74nK2yGoqn05dsItc6QCyzO/aFUt0jVk0kLNXelUPHMxHCU04rbTUsERgFgA=
-X-Received: from pgav5.prod.google.com ([2002:a05:6a02:2dc5:b0:b55:6eb3:fd4])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a20:7346:b0:319:fc6f:8adf
- with SMTP id adf61e73a8af0-376a81e2c20mr34940934637.12.1767135747025; Tue, 30
- Dec 2025 15:02:27 -0800 (PST)
-Date: Tue, 30 Dec 2025 15:01:48 -0800
+        bh=ykxeCu2rd9E7NdPIA3m898BLFxasNeM9KWtJ/FC5NbY=;
+        b=rqDwxV+hXROm1rTKReD96hSU0WCDJ+uKQ723SX2hmvIaDg9Oy5q6fT0NHVzDNZchK3
+         vbp2uNXl+JJh+gIyOyTSveJ6FBnf/FnGpYmQLK8hK8saJBA/BovXXdTSxjORax4aG9/k
+         g22+/Qw7DWVjirx+v2Y+SlkYC5ptAIo9Ky03fcKK9V382F8HtET/DONpKNNHWYuclUnK
+         JDSHiMEa8jwxbVUSbHLM1pQF3Ybep5Qh3JTLpr7UxNE56NZ1FDgAxP2gzxbvx46RSNqc
+         rO2Hs3oxf2MbREdngnIGSfGDsqUsQSPPG42qyZdSlimSNaZ0wEFpd0Xjcpb6+bNYdkiD
+         WMtQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXdXYgAHy7kMCrRg5g/E5ZW5X8ObDHi4LJ6z+RZzLYThNk40G7HX/ZS1nXKJ1xnyZbxELoOvm7M6nQ=@lists.infradead.org
+X-Gm-Message-State: AOJu0YwpqKqX3Fu9aySbjrzxCWAnnksRnqFPU7iq6Y2Gz2LkMwNq2ZKB
+	BvJI58ieqfSPUgT6IFUH8SBwKZFZSTCDF9GGcipYKccQneLwPv14zofzPGBVnaXyMfS6lLsQO4V
+	keNn3Mw==
+X-Google-Smtp-Source: AGHT+IEpuChkB0izCaZM7wAnBEmg/NFDOHvlk8mvLyNibHqxg0YqGOIPaICPmBipc+pvYA8R48I/lk77pf0=
+X-Received: from pjbqe11.prod.google.com ([2002:a17:90b:4f8b:b0:34a:9e02:ffa0])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90a:dfc6:b0:340:d1a1:af8e
+ with SMTP id 98e67ed59e1d1-34e921e60d9mr30599932a91.37.1767135748870; Tue, 30
+ Dec 2025 15:02:28 -0800 (PST)
+Date: Tue, 30 Dec 2025 15:01:49 -0800
 In-Reply-To: <20251230230150.4150236-1-seanjc@google.com>
 Mime-Version: 1.0
 References: <20251230230150.4150236-1-seanjc@google.com>
 X-Mailer: git-send-email 2.52.0.351.gbe84eed79e-goog
-Message-ID: <20251230230150.4150236-20-seanjc@google.com>
-Subject: [PATCH v4 19/21] KVM: selftests: Extend memstress to run on nested SVM
+Message-ID: <20251230230150.4150236-21-seanjc@google.com>
+Subject: [PATCH v4 20/21] KVM: selftests: Rename vm_get_page_table_entry() to vm_get_pte()
 From: Sean Christopherson <seanjc@google.com>
 To: Paolo Bonzini <pbonzini@redhat.com>, Marc Zyngier <maz@kernel.org>, 
 	Oliver Upton <oupton@kernel.org>, Tianrui Zhao <zhaotianrui@loongson.cn>, 
@@ -81,8 +81,8 @@ Cc: kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
 	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
 	linux-kernel@vger.kernel.org, Yosry Ahmed <yosry.ahmed@linux.dev>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20251230_150228_601086_ED2B21E3 
-X-CRM114-Status: GOOD (  11.30  )
+X-CRM114-CacheID: sfid-20251230_150230_299481_4EA1A9C9 
+X-CRM114-Status: GOOD (  10.08  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -100,107 +100,81 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-From: Yosry Ahmed <yosry.ahmed@linux.dev>
+Shorten the API to get a PTE as the "PTE" acronym is ubiquitous, and the
+"page table entry" makes it unnecessarily difficult to quickly understand
+what callers are doing.
 
-Add L1 SVM code and generalize the setup code to work for both VMX and
-SVM. This allows running 'dirty_log_perf_test -n' on AMD CPUs.
+No functional change intended.
 
-Signed-off-by: Yosry Ahmed <yosry.ahmed@linux.dev>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- .../testing/selftests/kvm/lib/x86/memstress.c | 42 +++++++++++++++----
- 1 file changed, 35 insertions(+), 7 deletions(-)
+ tools/testing/selftests/kvm/include/x86/processor.h           | 2 +-
+ tools/testing/selftests/kvm/lib/x86/processor.c               | 2 +-
+ tools/testing/selftests/kvm/x86/hyperv_tlb_flush.c            | 2 +-
+ .../selftests/kvm/x86/smaller_maxphyaddr_emulation_test.c     | 4 +---
+ 4 files changed, 4 insertions(+), 6 deletions(-)
 
-diff --git a/tools/testing/selftests/kvm/lib/x86/memstress.c b/tools/testing/selftests/kvm/lib/x86/memstress.c
-index 407abfc34909..86f4c5e4c430 100644
---- a/tools/testing/selftests/kvm/lib/x86/memstress.c
-+++ b/tools/testing/selftests/kvm/lib/x86/memstress.c
-@@ -13,6 +13,7 @@
- #include "kvm_util.h"
- #include "memstress.h"
- #include "processor.h"
-+#include "svm_util.h"
- #include "vmx.h"
- 
- void memstress_l2_guest_code(uint64_t vcpu_id)
-@@ -29,9 +30,10 @@ __asm__(
- "	ud2;"
- );
- 
--static void memstress_l1_guest_code(struct vmx_pages *vmx, uint64_t vcpu_id)
--{
- #define L2_GUEST_STACK_SIZE 64
-+
-+static void l1_vmx_code(struct vmx_pages *vmx, uint64_t vcpu_id)
-+{
- 	unsigned long l2_guest_stack[L2_GUEST_STACK_SIZE];
- 	unsigned long *rsp;
- 
-@@ -45,10 +47,34 @@ static void memstress_l1_guest_code(struct vmx_pages *vmx, uint64_t vcpu_id)
- 	prepare_vmcs(vmx, memstress_l2_guest_entry, rsp);
- 
- 	GUEST_ASSERT(!vmlaunch());
--	GUEST_ASSERT(vmreadz(VM_EXIT_REASON) == EXIT_REASON_VMCALL);
-+	GUEST_ASSERT_EQ(vmreadz(VM_EXIT_REASON), EXIT_REASON_VMCALL);
- 	GUEST_DONE();
+diff --git a/tools/testing/selftests/kvm/include/x86/processor.h b/tools/testing/selftests/kvm/include/x86/processor.h
+index 7b7d962244d6..ab29b1c7ed2d 100644
+--- a/tools/testing/selftests/kvm/include/x86/processor.h
++++ b/tools/testing/selftests/kvm/include/x86/processor.h
+@@ -1357,7 +1357,7 @@ static inline bool kvm_is_ignore_msrs(void)
+ 	return get_kvm_param_bool("ignore_msrs");
  }
  
-+static void l1_svm_code(struct svm_test_data *svm, uint64_t vcpu_id)
-+{
-+	unsigned long l2_guest_stack[L2_GUEST_STACK_SIZE];
-+	unsigned long *rsp;
-+
-+
-+	rsp = &l2_guest_stack[L2_GUEST_STACK_SIZE - 1];
-+	*rsp = vcpu_id;
-+	generic_svm_setup(svm, memstress_l2_guest_entry, rsp);
-+
-+	run_guest(svm->vmcb, svm->vmcb_gpa);
-+	GUEST_ASSERT_EQ(svm->vmcb->control.exit_code, SVM_EXIT_VMMCALL);
-+	GUEST_DONE();
-+}
-+
-+
-+static void memstress_l1_guest_code(void *data, uint64_t vcpu_id)
-+{
-+	if (this_cpu_has(X86_FEATURE_VMX))
-+		l1_vmx_code(data, vcpu_id);
-+	else
-+		l1_svm_code(data, vcpu_id);
-+}
-+
- uint64_t memstress_nested_pages(int nr_vcpus)
- {
- 	/*
-@@ -78,15 +104,17 @@ static void memstress_setup_ept_mappings(struct kvm_vm *vm)
- void memstress_setup_nested(struct kvm_vm *vm, int nr_vcpus, struct kvm_vcpu *vcpus[])
- {
- 	struct kvm_regs regs;
--	vm_vaddr_t vmx_gva;
-+	vm_vaddr_t nested_gva;
- 	int vcpu_id;
+-uint64_t *vm_get_page_table_entry(struct kvm_vm *vm, uint64_t vaddr);
++uint64_t *vm_get_pte(struct kvm_vm *vm, uint64_t vaddr);
  
--	TEST_REQUIRE(kvm_cpu_has(X86_FEATURE_VMX));
- 	TEST_REQUIRE(kvm_cpu_has_tdp());
- 
- 	vm_enable_tdp(vm);
- 	for (vcpu_id = 0; vcpu_id < nr_vcpus; vcpu_id++) {
--		vcpu_alloc_vmx(vm, &vmx_gva);
-+		if (kvm_cpu_has(X86_FEATURE_VMX))
-+			vcpu_alloc_vmx(vm, &nested_gva);
-+		else
-+			vcpu_alloc_svm(vm, &nested_gva);
- 
- 		/* The EPTs are shared across vCPUs, setup the mappings once */
- 		if (vcpu_id == 0)
-@@ -99,6 +127,6 @@ void memstress_setup_nested(struct kvm_vm *vm, int nr_vcpus, struct kvm_vcpu *vc
- 		vcpu_regs_get(vcpus[vcpu_id], &regs);
- 		regs.rip = (unsigned long) memstress_l1_guest_code;
- 		vcpu_regs_set(vcpus[vcpu_id], &regs);
--		vcpu_args_set(vcpus[vcpu_id], 2, vmx_gva, vcpu_id);
-+		vcpu_args_set(vcpus[vcpu_id], 2, nested_gva, vcpu_id);
- 	}
+ uint64_t kvm_hypercall(uint64_t nr, uint64_t a0, uint64_t a1, uint64_t a2,
+ 		       uint64_t a3);
+diff --git a/tools/testing/selftests/kvm/lib/x86/processor.c b/tools/testing/selftests/kvm/lib/x86/processor.c
+index 5a3385d48902..ab869a98bbdc 100644
+--- a/tools/testing/selftests/kvm/lib/x86/processor.c
++++ b/tools/testing/selftests/kvm/lib/x86/processor.c
+@@ -390,7 +390,7 @@ static uint64_t *__vm_get_page_table_entry(struct kvm_vm *vm,
+ 	return virt_get_pte(vm, mmu, pte, vaddr, PG_LEVEL_4K);
  }
+ 
+-uint64_t *vm_get_page_table_entry(struct kvm_vm *vm, uint64_t vaddr)
++uint64_t *vm_get_pte(struct kvm_vm *vm, uint64_t vaddr)
+ {
+ 	int level = PG_LEVEL_4K;
+ 
+diff --git a/tools/testing/selftests/kvm/x86/hyperv_tlb_flush.c b/tools/testing/selftests/kvm/x86/hyperv_tlb_flush.c
+index a3b7ce155981..c542cc4762b1 100644
+--- a/tools/testing/selftests/kvm/x86/hyperv_tlb_flush.c
++++ b/tools/testing/selftests/kvm/x86/hyperv_tlb_flush.c
+@@ -619,7 +619,7 @@ int main(int argc, char *argv[])
+ 	 */
+ 	gva = vm_vaddr_unused_gap(vm, NTEST_PAGES * PAGE_SIZE, KVM_UTIL_MIN_VADDR);
+ 	for (i = 0; i < NTEST_PAGES; i++) {
+-		pte = vm_get_page_table_entry(vm, data->test_pages + i * PAGE_SIZE);
++		pte = vm_get_pte(vm, data->test_pages + i * PAGE_SIZE);
+ 		gpa = addr_hva2gpa(vm, pte);
+ 		virt_pg_map(vm, gva + PAGE_SIZE * i, gpa & PAGE_MASK);
+ 		data->test_pages_pte[i] = gva + (gpa & ~PAGE_MASK);
+diff --git a/tools/testing/selftests/kvm/x86/smaller_maxphyaddr_emulation_test.c b/tools/testing/selftests/kvm/x86/smaller_maxphyaddr_emulation_test.c
+index fabeeaddfb3a..0e8aec568010 100644
+--- a/tools/testing/selftests/kvm/x86/smaller_maxphyaddr_emulation_test.c
++++ b/tools/testing/selftests/kvm/x86/smaller_maxphyaddr_emulation_test.c
+@@ -47,7 +47,6 @@ int main(int argc, char *argv[])
+ 	struct kvm_vcpu *vcpu;
+ 	struct kvm_vm *vm;
+ 	struct ucall uc;
+-	uint64_t *pte;
+ 	uint64_t *hva;
+ 	uint64_t gpa;
+ 	int rc;
+@@ -73,8 +72,7 @@ int main(int argc, char *argv[])
+ 	hva = addr_gpa2hva(vm, MEM_REGION_GPA);
+ 	memset(hva, 0, PAGE_SIZE);
+ 
+-	pte = vm_get_page_table_entry(vm, MEM_REGION_GVA);
+-	*pte |= BIT_ULL(MAXPHYADDR);
++	*vm_get_pte(vm, MEM_REGION_GVA) |= BIT_ULL(MAXPHYADDR);
+ 
+ 	vcpu_run(vcpu);
+ 
 -- 
 2.52.0.351.gbe84eed79e-goog
 
