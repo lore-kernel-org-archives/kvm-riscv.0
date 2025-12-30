@@ -4,86 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 29CBCEE01F6
-	for <kvm-riscv@archiver.kernel.org>; Tue, 30 Dec 2025 23:02:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 22C77EE57C2
+	for <kvm-riscv@archiver.kernel.org>; Tue, 30 Dec 2025 23:02:49 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:Reply-To:List-Subscribe:List-Help:
 	List-Post:List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID
 	:References:Mime-Version:In-Reply-To:Date:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=obOSnG/ktpLDiL/jDh0esRKWvNiW/wMWN+QXWCnujT0=; b=kgh+Mh6kfbuaeD
-	tagWAGzJx5rAPNUfT92iNDexf57sJa1xAzfU5LI6d1v/QhM+26uo8kWu1g/W8PWC8DJoTtQblVCsq
-	3ZR+wJOPiOlNBjc3L5N29LFIzMewxthcNIcG4ixw/oiLzZl4qhejKAHZqf8ZFM3h5pWGgcONSabUr
-	0EcEdUcG4Yb5bxlgsByE1ExVJ9Q621iMxOhzrUEQrxguI2FVvQrkUcIBckH6Fu7JMjFl1L8uT0U8X
-	eeQRXsYrhLWOQK3zHSO6Dh2wtzOM8yz6Lsk3HdKLhKug0YWoBrfqjaTgn+hSq1Wkqp1rB6ZtXYUei
-	r2kYEmQhpOeIWat1mZyA==;
+	List-Owner; bh=xuGlCxiIp+p/Te7hYJ2aO+MU8N0BfXjIxGiAbvq2wcY=; b=thdcQLduoGXExO
+	lECbEiQ7kD5Ikjch0pcQFvkQNHdOvqqJj8leeoltskGC+m+bIuQNzc1wFH56fCEdge5df0ZCFDISl
+	kxFKflWWO1IFfxCvoeYlyT689A8y6/tmXqlmUyq2AKW3ABUuIXpWRvDI6jOgsLxF2c5yPc6g3KRj4
+	05eci+p/jqg3/MxHhODjT7L2GuJRSCSHV7xHbyRvTZb2MkeO6yOMaqj1VP5cV4+tJr73RpvHRG1Cc
+	Cpd29hU7iyriQTZ7XfO5ZeVELVJ/6oz9XxtmrD0+uaj8glgM7m0uE9BK8eZd7Zb4GhP9enIuacFLK
+	3Nfj8dRWBr7ez7Sqs7XA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vaijm-00000005NUM-1MRF;
-	Tue, 30 Dec 2025 23:02:46 +0000
-Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+	id 1vaijn-00000005NVf-1elJ;
+	Tue, 30 Dec 2025 23:02:47 +0000
+Received: from mail-pj1-x104a.google.com ([2607:f8b0:4864:20::104a])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vaijF-00000005Mnb-0sv9
-	for kvm-riscv@bombadil.infradead.org;
-	Tue, 30 Dec 2025 23:02:13 +0000
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=Content-Type:Cc:To:From:Subject:
-	Message-ID:References:Mime-Version:In-Reply-To:Date:Reply-To:Sender:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=sUaPNsiWybrsN14UDe2YJDAR+cxy5ZbGWPMbDaaniZw=; b=qxCk1MwNKapf2BEz/O01cSu8s8
-	QSD6rTJchMab4xAHftW+ugIyLJin+EbzwdgoGrtuwFXAZe16/yeTb2ty7dwsScAP/DpzqrtFCvxbb
-	8U5aRCsc/dYv3AyzFmvxL1/SwoGDvgZd6roNRcgCbGQ+F3cUvZPmxlgYEjxOoY9wnPmRVEtJgDxxn
-	MLOLmcUL9aeZta+lEkNQJtuBM/A9DpSXUHLe2CTo4KWqzpsZW0OA3jxXXIlQBhOImsFKTvPDTQr1F
-	Vo/uWNDW35wQzr1mfQYj3YSiDpW7cQL+BGT/ekyQIg/KrCz8RpSczeEqjbfsnTN+EUkWZuKsfDVH+
-	pPgS/TwQ==;
-Received: from mail-pl1-x649.google.com ([2607:f8b0:4864:20::649])
-	by desiato.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vaijB-00000004C07-0v8k
+	id 1vaij4-00000005Mia-3Obn
 	for kvm-riscv@lists.infradead.org;
-	Tue, 30 Dec 2025 23:02:11 +0000
-Received: by mail-pl1-x649.google.com with SMTP id d9443c01a7336-29f29ae883bso149885225ad.3
-        for <kvm-riscv@lists.infradead.org>; Tue, 30 Dec 2025 15:02:08 -0800 (PST)
+	Tue, 30 Dec 2025 23:02:14 +0000
+Received: by mail-pj1-x104a.google.com with SMTP id 98e67ed59e1d1-34c6cda4a92so22223836a91.3
+        for <kvm-riscv@lists.infradead.org>; Tue, 30 Dec 2025 15:02:01 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1767135727; x=1767740527; darn=lists.infradead.org;
+        d=google.com; s=20230601; t=1767135721; x=1767740521; darn=lists.infradead.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:from:to:cc:subject:date:message-id:reply-to;
-        bh=sUaPNsiWybrsN14UDe2YJDAR+cxy5ZbGWPMbDaaniZw=;
-        b=prUf8gqqWPTg/PGNDZscUaIf19NKpi8t5zStZLfTyLym266YdqPAUgKp8rLa78ycJE
-         6lNeY1pW+OIO4bFbCuOFil4CY7O+dIMlMZ5M97YvEeluDwwUactWM9gjnu3c2JUWATU+
-         W8GxPXsMe9PdfFdiUNsnsAfCxpHEMXGwQNUhLatTDB6S4CeBgH9rHSdJ0eW7rSUeJXUZ
-         y2mPtEE5pH+mE8dR6aRfpxL5crTGx3+BKJUGDcRfo6N3+O88O8DeUenyHm4J/bm5aBNr
-         YlZ45Q3EsCS+R/C6iJCauyh6+XVLw8sQsc5FZEPzlOrdvzc7TLVkSMaELSISv4tr3VgP
-         WNJA==
+        bh=snslv60TkZffEAQE2fKI/7w9i9KGKI8ATFVeEcgF+Qk=;
+        b=F/D1kpaJYMzrQpLd/RqrLV8EArQpA1Y4FEEsZn8NdJc5PhrujrQQTatgLNhGReOwPl
+         Yeg7UuupR6N/56cBRdClEe3OGCml4hjqcJZvxUJSl9rJGnHc/Csmpkfv9L2uEEbwHyI1
+         +hgH5mbITcdZ6IuAHFjOXObu/h0bUscLotMxe1viHTVU4yJ97251jADsspcc40pYArVB
+         MdGt0RJRTQ7j4miOATavkKUjLRnUYxFX6fiPQHhCULqZZduMY+/X4E4Jig8GRjm7hcHS
+         mMuA+ZpmfwC6YDrZ/WUaScUYMuxweb8ShfvCTZO0Zb+5rgnbrczUgPFQ711qLOj6ojaQ
+         h+9Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1767135727; x=1767740527;
+        d=1e100.net; s=20230601; t=1767135721; x=1767740521;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=sUaPNsiWybrsN14UDe2YJDAR+cxy5ZbGWPMbDaaniZw=;
-        b=mf4C7en9cvL27icnNbBjQCQFrcVGlPV2RS7puJFGFfBvuTmbV8jFncLeiiC4A3Kvx2
-         qP9UtH+oAnSQRntXVOETvi1l4l98YJNwozB+Kh15zoagbcdAedZnsXS20DfGfG0+xivT
-         OYCHu2zQD5YCstgIAnK5KrCeb2e2jJtrQ3VOO8ovwyR3Sad38L7PQRXgyMOnCU6nsvfD
-         p9Ck8EXrQPy88QzsPbvuGbOMHMsIaVYVGAXHABoCS5Qd4+4VHMIoQGG5whBfXsL9Zx8Z
-         3OcY5Xjnfy07uefgctAkc8d3pKK+MuNRlQvxMlpm1Jgy9+T379LOsWMrTnwzLbqtcDDK
-         zNdQ==
-X-Forwarded-Encrypted: i=1; AJvYcCV4qyc6Wx0nP2tRmgzHL9wpG4HrA2HBP6E5RSqPWVw+0hjK2DU3XwQKLHDIX5DZbiyoraXqhnhhl/8=@lists.infradead.org
-X-Gm-Message-State: AOJu0YwIPKDVupqEutviA98YMXaKhQcWivM/KbN90Ng4xt3M//XdRkXT
-	XJ9k8ZgejfKVHO4NAf5TPUUBXzwvanHUTgO57IU6rm/MoeS0gXJJ4c/Ps0hPSIZz2WnX9nB6KlV
-	/RAIqPw==
-X-Google-Smtp-Source: AGHT+IFQnOuwYC0g4+LirB1coBfKvkA6ZwCBuTM8ay+vZ/F6ieVjqX4SvnIiidBDol06ehcl6JagnUzMopM=
-X-Received: from plxx9.prod.google.com ([2002:a17:902:e049:b0:2a0:9ab8:a28d])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:903:2f0b:b0:2a0:9970:13fd
- with SMTP id d9443c01a7336-2a2f293cf1emr298922605ad.43.1767135726838; Tue, 30
- Dec 2025 15:02:06 -0800 (PST)
-Date: Tue, 30 Dec 2025 15:01:37 -0800
+        bh=snslv60TkZffEAQE2fKI/7w9i9KGKI8ATFVeEcgF+Qk=;
+        b=KwWeiTScErSNjjb5ppfs3XBAxEJVN1qinCYvY8KPLXRZEKjJpvE4LLnkO7VcctvaCd
+         y0vjWw1hMErWQt0O7PS9xM72Q4UaxpigRV5Tb8YFLyW1PHu8t9s090Rb1VVH/WTfbWsr
+         02ua3rSr31svVg4X47GE3cfWlXEtnuFHpqKNclAZ8cBnOURugAIK/yKL/Iu9Me2VEMJL
+         zmDcqBtnfhESGuYUA7BL+9kuG9/42V3awt1IWzzjdiXEnSdp09zkyFqhjywybi3E2k/7
+         EIdjPennTT8//YsYR9PmXRuMUV6HR0GNOFahvIlrIYp+STzBBNyh1O65xGBAPwr+rjIz
+         n/Bw==
+X-Forwarded-Encrypted: i=1; AJvYcCWNCPF7hTot2oU3o2GsROtJ6j6RQToG5I1n/bPvL+dcvza6ZZt2p21TNeeIDtOTdibog8gs2yVQBxM=@lists.infradead.org
+X-Gm-Message-State: AOJu0YyjKX7N3zzZn/AeAktGJKda9lrtjO8bQF9XdW/yLOWNqYZIFowJ
+	nLsWhFxf6MMN1W8OSM7oJCSQvLRk0bhCrkGenTmN/zSk3z8LgXLB5xanQmhF2BcT1WO9ihFFkDP
+	ZwT8x8Q==
+X-Google-Smtp-Source: AGHT+IElvIFPPzPbx/fWhmlKYhmrHPLLecvBIwXjPK26QLj43KDrpSTQ0SF/ILvphJaY0JI4Mn53QzvVzYY=
+X-Received: from pjoo4.prod.google.com ([2002:a17:90b:5824:b0:34a:a9d5:99d6])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:2e0c:b0:341:8bda:d0ae
+ with SMTP id 98e67ed59e1d1-34e921b7334mr26690257a91.20.1767135721380; Tue, 30
+ Dec 2025 15:02:01 -0800 (PST)
+Date: Tue, 30 Dec 2025 15:01:34 -0800
 In-Reply-To: <20251230230150.4150236-1-seanjc@google.com>
 Mime-Version: 1.0
 References: <20251230230150.4150236-1-seanjc@google.com>
 X-Mailer: git-send-email 2.52.0.351.gbe84eed79e-goog
-Message-ID: <20251230230150.4150236-9-seanjc@google.com>
-Subject: [PATCH v4 08/21] KVM: selftests: Add a "struct kvm_mmu_arch arch"
- member to kvm_mmu
+Message-ID: <20251230230150.4150236-6-seanjc@google.com>
+Subject: [PATCH v4 05/21] KVM: selftests: Stop setting A/D bits when creating
+ EPT PTEs
 From: Sean Christopherson <seanjc@google.com>
 To: Paolo Bonzini <pbonzini@redhat.com>, Marc Zyngier <maz@kernel.org>, 
 	Oliver Upton <oupton@kernel.org>, Tianrui Zhao <zhaotianrui@loongson.cn>, 
@@ -97,9 +82,8 @@ Cc: kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
 	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
 	linux-kernel@vger.kernel.org, Yosry Ahmed <yosry.ahmed@linux.dev>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20251230_230209_350966_9BDF0435 
-X-CRM114-Status: UNSURE (   7.23  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20251230_150202_843547_918A3524 
+X-CRM114-Status: GOOD (  14.69  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -117,96 +101,85 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Add an arch structure+field in "struct kvm_mmu" so that architectures can
-track arch-specific information for a given MMU.
+From: Yosry Ahmed <yosry.ahmed@linux.dev>
 
-No functional change intended.
+Stop setting Accessed/Dirty bits when creating EPT entries for L2 so that
+the stage-1 and stage-2 (a.k.a. TDP) page table APIs can use common code
+without bleeding the EPT hack into the common APIs.
 
+While commit 094444204570 ("selftests: kvm: add test for dirty logging
+inside nested guests") is _very_ light on details, the most likely
+explanation is that vmx_dirty_log_test was attempting to avoid taking an
+EPT Violation on the first _write_ from L2.
+
+  static void l2_guest_code(u64 *a, u64 *b)
+  {
+	READ_ONCE(*a);
+	WRITE_ONCE(*a, 1);   <===
+	GUEST_SYNC(true);
+
+	...
+  }
+
+When handling read faults in the shadow MMU, KVM opportunistically creates
+a writable SPTE if the mapping can be writable *and* the gPTE is dirty (or
+doesn't support the Dirty bit), i.e. if KVM doesn't need to intercept
+writes in order to emulate Dirty-bit updates.  By setting A/D bits in the
+test's EPT entries, the above READ+WRITE will fault only on the read, and
+in theory expose the bug fixed by KVM commit 1f4e5fc83a42 ("KVM: x86: fix
+nested guest live migration with PML").  If the Dirty bit is NOT set, the
+test will get a false pass due; though again, in theory.
+
+However, the test is flawed (and always was, at least in the versions
+posted publicly), as KVM (correctly) marks the corresponding L1 GFN as
+dirty (in the dirty bitmap) when creating the writable SPTE.  I.e. without
+a check on the dirty bitmap after the READ_ONCE(), the check after the
+first WRITE_ONCE() will get a false pass due to the dirty bitmap/log having
+been updated by the read fault, not by PML.
+
+Furthermore, the subsequent behavior in the test's l2_guest_code()
+effectively hides the flawed test behavior, as the straight writes to a
+new L2 GPA fault also trigger the KVM bug, and so the test will still
+detect the failure due to lack of isolation between the two testcases
+(Read=>Write vs. Write=>Write).
+
+	WRITE_ONCE(*b, 1);
+	GUEST_SYNC(true);
+	WRITE_ONCE(*b, 1);
+	GUEST_SYNC(true);
+	GUEST_SYNC(false);
+
+Punt on fixing vmx_dirty_log_test for the moment as it will be easier to
+properly fix the test once the TDP code uses the common MMU APIs, at which
+point it will be trivially easy for the test to retrieve the EPT PTE and
+set the Dirty bit as needed.
+
+Signed-off-by: Yosry Ahmed <yosry.ahmed@linux.dev>
+[sean: rewrite changelog to explain the situation]
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- tools/testing/selftests/kvm/include/arm64/kvm_util_arch.h     | 2 ++
- tools/testing/selftests/kvm/include/kvm_util.h                | 2 ++
- tools/testing/selftests/kvm/include/loongarch/kvm_util_arch.h | 1 +
- tools/testing/selftests/kvm/include/riscv/kvm_util_arch.h     | 1 +
- tools/testing/selftests/kvm/include/s390/kvm_util_arch.h      | 1 +
- tools/testing/selftests/kvm/include/x86/kvm_util_arch.h       | 2 ++
- 6 files changed, 9 insertions(+)
+ tools/testing/selftests/kvm/lib/x86/vmx.c | 8 --------
+ 1 file changed, 8 deletions(-)
 
-diff --git a/tools/testing/selftests/kvm/include/arm64/kvm_util_arch.h b/tools/testing/selftests/kvm/include/arm64/kvm_util_arch.h
-index b973bb2c64a6..4a2033708227 100644
---- a/tools/testing/selftests/kvm/include/arm64/kvm_util_arch.h
-+++ b/tools/testing/selftests/kvm/include/arm64/kvm_util_arch.h
-@@ -2,6 +2,8 @@
- #ifndef SELFTEST_KVM_UTIL_ARCH_H
- #define SELFTEST_KVM_UTIL_ARCH_H
+diff --git a/tools/testing/selftests/kvm/lib/x86/vmx.c b/tools/testing/selftests/kvm/lib/x86/vmx.c
+index 85043bb1ec4d..a3e2eae981da 100644
+--- a/tools/testing/selftests/kvm/lib/x86/vmx.c
++++ b/tools/testing/selftests/kvm/lib/x86/vmx.c
+@@ -432,14 +432,6 @@ void __tdp_pg_map(struct vmx_pages *vmx, struct kvm_vm *vm,
  
-+struct kvm_mmu_arch {};
-+
- struct kvm_vm_arch {
- 	bool	has_gic;
- 	int	gic_fd;
-diff --git a/tools/testing/selftests/kvm/include/kvm_util.h b/tools/testing/selftests/kvm/include/kvm_util.h
-index 39558c05c0bf..c1497515fa6a 100644
---- a/tools/testing/selftests/kvm/include/kvm_util.h
-+++ b/tools/testing/selftests/kvm/include/kvm_util.h
-@@ -92,6 +92,8 @@ struct kvm_mmu {
- 	bool pgd_created;
- 	uint64_t pgd;
- 	int pgtable_levels;
-+
-+	struct kvm_mmu_arch arch;
- };
+ 		pt = addr_gpa2hva(vm, pte->address * vm->page_size);
+ 	}
+-
+-	/*
+-	 * For now mark these as accessed and dirty because the only
+-	 * testcase we have needs that.  Can be reconsidered later.
+-	 */
+-	pte->accessed = true;
+-	pte->dirty = true;
+-
+ }
  
- struct kvm_vm {
-diff --git a/tools/testing/selftests/kvm/include/loongarch/kvm_util_arch.h b/tools/testing/selftests/kvm/include/loongarch/kvm_util_arch.h
-index e43a57d99b56..d5095900e442 100644
---- a/tools/testing/selftests/kvm/include/loongarch/kvm_util_arch.h
-+++ b/tools/testing/selftests/kvm/include/loongarch/kvm_util_arch.h
-@@ -2,6 +2,7 @@
- #ifndef SELFTEST_KVM_UTIL_ARCH_H
- #define SELFTEST_KVM_UTIL_ARCH_H
- 
-+struct kvm_mmu_arch {};
- struct kvm_vm_arch {};
- 
- #endif  // SELFTEST_KVM_UTIL_ARCH_H
-diff --git a/tools/testing/selftests/kvm/include/riscv/kvm_util_arch.h b/tools/testing/selftests/kvm/include/riscv/kvm_util_arch.h
-index e43a57d99b56..d5095900e442 100644
---- a/tools/testing/selftests/kvm/include/riscv/kvm_util_arch.h
-+++ b/tools/testing/selftests/kvm/include/riscv/kvm_util_arch.h
-@@ -2,6 +2,7 @@
- #ifndef SELFTEST_KVM_UTIL_ARCH_H
- #define SELFTEST_KVM_UTIL_ARCH_H
- 
-+struct kvm_mmu_arch {};
- struct kvm_vm_arch {};
- 
- #endif  // SELFTEST_KVM_UTIL_ARCH_H
-diff --git a/tools/testing/selftests/kvm/include/s390/kvm_util_arch.h b/tools/testing/selftests/kvm/include/s390/kvm_util_arch.h
-index e43a57d99b56..d5095900e442 100644
---- a/tools/testing/selftests/kvm/include/s390/kvm_util_arch.h
-+++ b/tools/testing/selftests/kvm/include/s390/kvm_util_arch.h
-@@ -2,6 +2,7 @@
- #ifndef SELFTEST_KVM_UTIL_ARCH_H
- #define SELFTEST_KVM_UTIL_ARCH_H
- 
-+struct kvm_mmu_arch {};
- struct kvm_vm_arch {};
- 
- #endif  // SELFTEST_KVM_UTIL_ARCH_H
-diff --git a/tools/testing/selftests/kvm/include/x86/kvm_util_arch.h b/tools/testing/selftests/kvm/include/x86/kvm_util_arch.h
-index 972bb1c4ab4c..456e5ca170df 100644
---- a/tools/testing/selftests/kvm/include/x86/kvm_util_arch.h
-+++ b/tools/testing/selftests/kvm/include/x86/kvm_util_arch.h
-@@ -10,6 +10,8 @@
- 
- extern bool is_forced_emulation_enabled;
- 
-+struct kvm_mmu_arch {};
-+
- struct kvm_vm_arch {
- 	vm_vaddr_t gdt;
- 	vm_vaddr_t tss;
+ void tdp_pg_map(struct vmx_pages *vmx, struct kvm_vm *vm,
 -- 
 2.52.0.351.gbe84eed79e-goog
 
