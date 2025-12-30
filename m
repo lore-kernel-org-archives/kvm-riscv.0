@@ -4,70 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9C4B3EE01F6
-	for <kvm-riscv@archiver.kernel.org>; Tue, 30 Dec 2025 23:04:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DA28FEE57C2
+	for <kvm-riscv@archiver.kernel.org>; Tue, 30 Dec 2025 23:04:24 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:Reply-To:List-Subscribe:List-Help:
 	List-Post:List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID
 	:References:Mime-Version:In-Reply-To:Date:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=bQSa4uqWxYFgSWqvQSIdiHBszphhg8cic/Apkz0FpeU=; b=JKfxfUbBefWfbS
-	+cDZ2sosrYBP+p++7yhClSQdOpPhMIPT2vOq2DeaLM3jNsTc3YUwdnxZg2LqEbCVZ5EdEKPUL86/Z
-	8EcYV07/VQba07zO58VNGNz0N27YvMXzoU91KQGvGYuKADarpBXtOotMKbNEPDT5AT9uHc1NGxCfj
-	aM9s515ddfinpQAlOLyUJ5PH0Nm5PSltbujBxKv2Que3LZWZbAyOq9OrodjnZdhhrOPTp1CVktf4f
-	N8SW5FwJtOLQleISVxngV1lUmj+RSdsqa9V6+bvOrpjDbAw4lCwtheVnCkdhGOqT3fks0MRJTYwPq
-	kBCZFMCliS99ImJhUGkA==;
+	List-Owner; bh=0IpjX4OQ5gtyXwTm8LPSDNeViJD5jaRwqTXmT8+eVCo=; b=fgjNPkwhcQcAlb
+	lqdtUJOKnyoxIZKWjHsXXWK2bMoPxU3+dQ+SjB3NuCfAjnE2EMqL3XR5hA4gJKWjwmOR+Dh4tdS6f
+	UUixt8st2cEwtL31lQawBLE50fOZdgNJ3XgsEdsoLyBIgNIvAOyrix2TZTSEaBSE5ZiYM0Xt5mgEU
+	Uibm23ZCAhwmHfgggEbWBFkbJfxIehwDZFErmdW2jR9+9dMWzo2/sufwRTxFszsvV+Mo0YnyRWXD9
+	xr5U5M6qe2W4DpbYdINUggw/4bkH4YRafGoILlmFb1On5zMvM6AFSL6s1B3foA7IDOa1oo06BDIiG
+	eoc3HdX48IQEvzXIYllg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vailG-00000005PNr-2Fx3;
-	Tue, 30 Dec 2025 23:04:18 +0000
-Received: from mail-pj1-x104a.google.com ([2607:f8b0:4864:20::104a])
+	id 1vailL-00000005PW3-3Iox;
+	Tue, 30 Dec 2025 23:04:23 +0000
+Received: from mail-pl1-x649.google.com ([2607:f8b0:4864:20::649])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vaijS-00000005N4L-3QAS
+	id 1vaijU-00000005N6m-25xf
 	for kvm-riscv@lists.infradead.org;
-	Tue, 30 Dec 2025 23:02:29 +0000
-Received: by mail-pj1-x104a.google.com with SMTP id 98e67ed59e1d1-34ea5074935so9471142a91.0
-        for <kvm-riscv@lists.infradead.org>; Tue, 30 Dec 2025 15:02:26 -0800 (PST)
+	Tue, 30 Dec 2025 23:02:30 +0000
+Received: by mail-pl1-x649.google.com with SMTP id d9443c01a7336-29f13989cd3so306708795ad.1
+        for <kvm-riscv@lists.infradead.org>; Tue, 30 Dec 2025 15:02:27 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1767135745; x=1767740545; darn=lists.infradead.org;
+        d=google.com; s=20230601; t=1767135747; x=1767740547; darn=lists.infradead.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:from:to:cc:subject:date:message-id:reply-to;
-        bh=l02CRqI+Ghgr8JnMhLywloG9mLg+BlVpb36VX9/E5wI=;
-        b=nf9yYxABfDQlGS2b6JYuiLqaVrhqPVY4o1X5gd/jtdeNOKqX5Y6Ju6T0KK3cnI9ksS
-         HH9A5/1kkWSxqcVYDL+tZrzbiP+t1lH6k8cU3q13NkpTox7QVy/2cP7ZwGryYnItnJAh
-         C7bnoWTgEpgG8r2qu/2mb/yBN908XDflEFIt4FUiIbjdPbd04yiEtlPwWzB2N2IBsevP
-         s5bzJjfMspimegMmw4c2+sM1KWFCGCVax+gYE8Ub4vHjL1qRCTdUcPK3l3WUpLPNLnU7
-         KDCbRaZbgp3l85UDZOF5kzXB/xpBbnIwJSw04WQrcJXCqXp/OhRAL0Rs43mcuun2XXQz
-         0hpQ==
+        bh=DkXelmu7bqFxndg8qpo6pKIzfvXDHv9zHII5ienX1m4=;
+        b=pRNwwcMYMnJFIrL3H1L/3walyg8FeNdVtbvJVcyX+RVCzfWCHUqCxfHVAJkChTP9Ov
+         7ydLv4+z0Q/bECbmcW+uWewUFt7UVaU4s3KzJwGc1Gaz8GeNVU39hNPqmaibbGakOwph
+         xLmt8QmFPgrIs+5dJJDJuXVRTN8lplpCdtMSI4gCmd9JRZjTS5I1cuPtq9WGCcFUM01+
+         t6BoYDSTyy/nk2VEAvhF7OVbzAStzSWuIDNwNssQxvmd4bBq/btCH+ONvnxvYuKZJqWn
+         Nd1chCd/XJEL1ZiOKGUIfN2fR3ixULhZMTe3WPyrqCEpdKdQ36yy7tvqm2Ua+aDMgD2a
+         e//A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1767135745; x=1767740545;
+        d=1e100.net; s=20230601; t=1767135747; x=1767740547;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=l02CRqI+Ghgr8JnMhLywloG9mLg+BlVpb36VX9/E5wI=;
-        b=GxOyuBrqGCCTTPaasXPuowGNNw3sUXUIUAsQdIydaZq3w29sSaFnBQ06geBo5ONY4L
-         gFlyUcJ/Z6aR5N1D8A1k8ixGohelpmEXqyODszWdjN3/kHO7pi3A2kjS60wultLU5quz
-         Mo59gSfmFQS5dMdrks/ehskJNH5jEnqBi9ZARHE3sIe1roDtIJHlCabLTYpNxvGitdpJ
-         PpbGLLiEqv+De1zT/HgLOpcTgL/j9ap+Ko5+lHSFAHrNo3x8NSmwmGiJi0M59D9VQj1P
-         FPiKhtMVYAUNToZj0p/2x6C4gn+9/lwWONk+Hmk6kDMDKydDZD/vj2arjekRUU+Fam6o
-         7H6g==
-X-Forwarded-Encrypted: i=1; AJvYcCVSnqcWiVzIPadSVbAh5tt3jQ8xk3qBWspTnkZZXM5ECNrtJ4k3Lx1/uIy50n2Q8bOPXFDjDro+oZU=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yy1gJ5cwzcYvAi18pXGT1nXvBiAyvXs3De1zbhZSWRvKm9DhsBi
-	as+h0o2X5eRnN9efJfiEbmuRiO9f9McvIuWd7j22a/unDM3ko8VJHSDCvT+xowbcdIb4ksXskKV
-	tMOtYbA==
-X-Google-Smtp-Source: AGHT+IGdzi4L+tULZgNB2XZI1GCuJkpL9VP6/Muf2M4d65NarSlafnhFOOOyBjKAOuvQIqtL04yY0e8Tvtc=
-X-Received: from pjbsw11.prod.google.com ([2002:a17:90b:2c8b:b0:34a:bf4e:cb5c])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a20:3c90:b0:35f:26b2:2f94
- with SMTP id adf61e73a8af0-376a9acefcdmr33777508637.46.1767135745424; Tue, 30
- Dec 2025 15:02:25 -0800 (PST)
-Date: Tue, 30 Dec 2025 15:01:47 -0800
+        bh=DkXelmu7bqFxndg8qpo6pKIzfvXDHv9zHII5ienX1m4=;
+        b=KG5/ZzX7gUjn6UUJ2DGy1bWcqtz2EZGT0Zg+yD/wI3KJrHkLrw+Krqf+g1buGby8OW
+         NeNMV9GeSJvg12WpF0+SY+/nfElZO5G8NpLqRqt3GUe67MNSCuAsF4jaoriWaYw7b9Xi
+         z4PkGp+58MJe/PI/xcDQ1zSCen9XGCv/I/hxVybLSs+xdJ7FrzpTnOoX7+DUh+mhwlC8
+         Dvk5pbwwifcPHQV3RvrsYlMYypyk9e//4EKIp1W+u5neY044maT6MAOWQi5s65D1RJ9g
+         pslc5qIYGNfR7fG8hxtuRHxGPWkGgHOfDWvAuYIhQAT/eOqLvlPtXvKJEGd5qNoWlHf+
+         td5A==
+X-Forwarded-Encrypted: i=1; AJvYcCVhS7DxhsN28ZQoWtajj74s1YuX/mQ8m/QXBCrJpxYD8UF3xM3Q+PpV1eqESVsioNiTsvla+nR/ppg=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yw91q7sqYrZq7a+4wMvzqK/B5LDhD7bYKfsQf1he8r3nmZbO5f9
+	AfoRkznMLPIAI8Qi3NBKnX7C3GPT2F+C1I8eDdflI6T6z/51cnIHd+smFCoGZXcG12nT2m8FS7K
+	fQB5bTA==
+X-Google-Smtp-Source: AGHT+IEInX/hcWFTn62wzbw74nK2yGoqn05dsItc6QCyzO/aFUt0jVk0kLNXelUPHMxHCU04rbTUsERgFgA=
+X-Received: from pgav5.prod.google.com ([2002:a05:6a02:2dc5:b0:b55:6eb3:fd4])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a20:7346:b0:319:fc6f:8adf
+ with SMTP id adf61e73a8af0-376a81e2c20mr34940934637.12.1767135747025; Tue, 30
+ Dec 2025 15:02:27 -0800 (PST)
+Date: Tue, 30 Dec 2025 15:01:48 -0800
 In-Reply-To: <20251230230150.4150236-1-seanjc@google.com>
 Mime-Version: 1.0
 References: <20251230230150.4150236-1-seanjc@google.com>
 X-Mailer: git-send-email 2.52.0.351.gbe84eed79e-goog
-Message-ID: <20251230230150.4150236-19-seanjc@google.com>
-Subject: [PATCH v4 18/21] KVM: selftests: Extend vmx_dirty_log_test to cover SVM
+Message-ID: <20251230230150.4150236-20-seanjc@google.com>
+Subject: [PATCH v4 19/21] KVM: selftests: Extend memstress to run on nested SVM
 From: Sean Christopherson <seanjc@google.com>
 To: Paolo Bonzini <pbonzini@redhat.com>, Marc Zyngier <maz@kernel.org>, 
 	Oliver Upton <oupton@kernel.org>, Tianrui Zhao <zhaotianrui@loongson.cn>, 
@@ -81,8 +81,8 @@ Cc: kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
 	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
 	linux-kernel@vger.kernel.org, Yosry Ahmed <yosry.ahmed@linux.dev>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20251230_150226_941841_4FA6F988 
-X-CRM114-Status: GOOD (  15.21  )
+X-CRM114-CacheID: sfid-20251230_150228_601086_ED2B21E3 
+X-CRM114-Status: GOOD (  11.30  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -102,195 +102,104 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 From: Yosry Ahmed <yosry.ahmed@linux.dev>
 
-Generalize the code in vmx_dirty_log_test.c by adding SVM-specific L1
-code, doing some renaming (e.g. EPT -> TDP), and having setup code for
-both SVM and VMX in test_dirty_log().
+Add L1 SVM code and generalize the setup code to work for both VMX and
+SVM. This allows running 'dirty_log_perf_test -n' on AMD CPUs.
 
 Signed-off-by: Yosry Ahmed <yosry.ahmed@linux.dev>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- tools/testing/selftests/kvm/Makefile.kvm      |  2 +-
- ...rty_log_test.c => nested_dirty_log_test.c} | 73 ++++++++++++++-----
- 2 files changed, 54 insertions(+), 21 deletions(-)
- rename tools/testing/selftests/kvm/x86/{vmx_dirty_log_test.c => nested_dirty_log_test.c} (71%)
+ .../testing/selftests/kvm/lib/x86/memstress.c | 42 +++++++++++++++----
+ 1 file changed, 35 insertions(+), 7 deletions(-)
 
-diff --git a/tools/testing/selftests/kvm/Makefile.kvm b/tools/testing/selftests/kvm/Makefile.kvm
-index ba5c2b643efa..8f14213ddef1 100644
---- a/tools/testing/selftests/kvm/Makefile.kvm
-+++ b/tools/testing/selftests/kvm/Makefile.kvm
-@@ -89,6 +89,7 @@ TEST_GEN_PROGS_x86 += x86/kvm_buslock_test
- TEST_GEN_PROGS_x86 += x86/monitor_mwait_test
- TEST_GEN_PROGS_x86 += x86/msrs_test
- TEST_GEN_PROGS_x86 += x86/nested_close_kvm_test
-+TEST_GEN_PROGS_x86 += x86/nested_dirty_log_test
- TEST_GEN_PROGS_x86 += x86/nested_emulation_test
- TEST_GEN_PROGS_x86 += x86/nested_exceptions_test
- TEST_GEN_PROGS_x86 += x86/nested_invalid_cr3_test
-@@ -115,7 +116,6 @@ TEST_GEN_PROGS_x86 += x86/ucna_injection_test
- TEST_GEN_PROGS_x86 += x86/userspace_io_test
- TEST_GEN_PROGS_x86 += x86/userspace_msr_exit_test
- TEST_GEN_PROGS_x86 += x86/vmx_apic_access_test
--TEST_GEN_PROGS_x86 += x86/vmx_dirty_log_test
- TEST_GEN_PROGS_x86 += x86/vmx_exception_with_invalid_guest_state
- TEST_GEN_PROGS_x86 += x86/vmx_msrs_test
- TEST_GEN_PROGS_x86 += x86/vmx_invalid_nested_guest_state
-diff --git a/tools/testing/selftests/kvm/x86/vmx_dirty_log_test.c b/tools/testing/selftests/kvm/x86/nested_dirty_log_test.c
-similarity index 71%
-rename from tools/testing/selftests/kvm/x86/vmx_dirty_log_test.c
-rename to tools/testing/selftests/kvm/x86/nested_dirty_log_test.c
-index 032ab8bf60a4..89d2e86a0db9 100644
---- a/tools/testing/selftests/kvm/x86/vmx_dirty_log_test.c
-+++ b/tools/testing/selftests/kvm/x86/nested_dirty_log_test.c
-@@ -12,6 +12,7 @@
- #include "test_util.h"
+diff --git a/tools/testing/selftests/kvm/lib/x86/memstress.c b/tools/testing/selftests/kvm/lib/x86/memstress.c
+index 407abfc34909..86f4c5e4c430 100644
+--- a/tools/testing/selftests/kvm/lib/x86/memstress.c
++++ b/tools/testing/selftests/kvm/lib/x86/memstress.c
+@@ -13,6 +13,7 @@
  #include "kvm_util.h"
+ #include "memstress.h"
  #include "processor.h"
 +#include "svm_util.h"
  #include "vmx.h"
  
- /* The memory slot index to track dirty pages */
-@@ -25,6 +26,8 @@
- #define NESTED_TEST_MEM1		0xc0001000
- #define NESTED_TEST_MEM2		0xc0002000
+ void memstress_l2_guest_code(uint64_t vcpu_id)
+@@ -29,9 +30,10 @@ __asm__(
+ "	ud2;"
+ );
  
-+#define L2_GUEST_STACK_SIZE 64
+-static void memstress_l1_guest_code(struct vmx_pages *vmx, uint64_t vcpu_id)
+-{
+ #define L2_GUEST_STACK_SIZE 64
 +
- static void l2_guest_code(u64 *a, u64 *b)
- {
- 	READ_ONCE(*a);
-@@ -42,20 +45,19 @@ static void l2_guest_code(u64 *a, u64 *b)
- 	vmcall();
- }
- 
--static void l2_guest_code_ept_enabled(void)
-+static void l2_guest_code_tdp_enabled(void)
- {
- 	l2_guest_code((u64 *)NESTED_TEST_MEM1, (u64 *)NESTED_TEST_MEM2);
- }
- 
--static void l2_guest_code_ept_disabled(void)
-+static void l2_guest_code_tdp_disabled(void)
- {
--	/* Access the same L1 GPAs as l2_guest_code_ept_enabled() */
-+	/* Access the same L1 GPAs as l2_guest_code_tdp_enabled() */
- 	l2_guest_code((u64 *)GUEST_TEST_MEM, (u64 *)GUEST_TEST_MEM);
- }
- 
--void l1_guest_code(struct vmx_pages *vmx)
-+void l1_vmx_code(struct vmx_pages *vmx)
- {
--#define L2_GUEST_STACK_SIZE 64
++static void l1_vmx_code(struct vmx_pages *vmx, uint64_t vcpu_id)
++{
  	unsigned long l2_guest_stack[L2_GUEST_STACK_SIZE];
- 	void *l2_rip;
+ 	unsigned long *rsp;
  
-@@ -64,22 +66,49 @@ void l1_guest_code(struct vmx_pages *vmx)
- 	GUEST_ASSERT(load_vmcs(vmx));
+@@ -45,10 +47,34 @@ static void memstress_l1_guest_code(struct vmx_pages *vmx, uint64_t vcpu_id)
+ 	prepare_vmcs(vmx, memstress_l2_guest_entry, rsp);
  
- 	if (vmx->eptp_gpa)
--		l2_rip = l2_guest_code_ept_enabled;
-+		l2_rip = l2_guest_code_tdp_enabled;
- 	else
--		l2_rip = l2_guest_code_ept_disabled;
-+		l2_rip = l2_guest_code_tdp_disabled;
- 
- 	prepare_vmcs(vmx, l2_rip, &l2_guest_stack[L2_GUEST_STACK_SIZE]);
- 
- 	GUEST_SYNC(false);
  	GUEST_ASSERT(!vmlaunch());
- 	GUEST_SYNC(false);
 -	GUEST_ASSERT(vmreadz(VM_EXIT_REASON) == EXIT_REASON_VMCALL);
 +	GUEST_ASSERT_EQ(vmreadz(VM_EXIT_REASON), EXIT_REASON_VMCALL);
  	GUEST_DONE();
  }
  
--static void test_vmx_dirty_log(bool enable_ept)
-+static void l1_svm_code(struct svm_test_data *svm)
- {
--	vm_vaddr_t vmx_pages_gva = 0;
++static void l1_svm_code(struct svm_test_data *svm, uint64_t vcpu_id)
++{
 +	unsigned long l2_guest_stack[L2_GUEST_STACK_SIZE];
-+	void *l2_rip;
++	unsigned long *rsp;
 +
-+	if (svm->ncr3_gpa)
-+		l2_rip = l2_guest_code_tdp_enabled;
-+	else
-+		l2_rip = l2_guest_code_tdp_disabled;
 +
-+	generic_svm_setup(svm, l2_rip, &l2_guest_stack[L2_GUEST_STACK_SIZE]);
++	rsp = &l2_guest_stack[L2_GUEST_STACK_SIZE - 1];
++	*rsp = vcpu_id;
++	generic_svm_setup(svm, memstress_l2_guest_entry, rsp);
 +
-+	GUEST_SYNC(false);
 +	run_guest(svm->vmcb, svm->vmcb_gpa);
-+	GUEST_SYNC(false);
 +	GUEST_ASSERT_EQ(svm->vmcb->control.exit_code, SVM_EXIT_VMMCALL);
 +	GUEST_DONE();
 +}
 +
-+static void l1_guest_code(void *data)
++
++static void memstress_l1_guest_code(void *data, uint64_t vcpu_id)
 +{
 +	if (this_cpu_has(X86_FEATURE_VMX))
-+		l1_vmx_code(data);
++		l1_vmx_code(data, vcpu_id);
 +	else
-+		l1_svm_code(data);
++		l1_svm_code(data, vcpu_id);
 +}
 +
-+static void test_dirty_log(bool nested_tdp)
-+{
-+	vm_vaddr_t nested_gva = 0;
- 	unsigned long *bmap;
- 	uint64_t *host_test_mem;
- 
-@@ -88,15 +117,19 @@ static void test_vmx_dirty_log(bool enable_ept)
- 	struct ucall uc;
- 	bool done = false;
- 
--	pr_info("Nested EPT: %s\n", enable_ept ? "enabled" : "disabled");
-+	pr_info("Nested TDP: %s\n", nested_tdp ? "enabled" : "disabled");
- 
- 	/* Create VM */
- 	vm = vm_create_with_one_vcpu(&vcpu, l1_guest_code);
--	if (enable_ept)
-+	if (nested_tdp)
- 		vm_enable_tdp(vm);
- 
--	vcpu_alloc_vmx(vm, &vmx_pages_gva);
--	vcpu_args_set(vcpu, 1, vmx_pages_gva);
-+	if (kvm_cpu_has(X86_FEATURE_VMX))
-+		vcpu_alloc_vmx(vm, &nested_gva);
-+	else
-+		vcpu_alloc_svm(vm, &nested_gva);
-+
-+	vcpu_args_set(vcpu, 1, nested_gva);
- 
- 	/* Add an extra memory slot for testing dirty logging */
- 	vm_userspace_mem_region_add(vm, VM_MEM_SRC_ANONYMOUS,
-@@ -115,10 +148,10 @@ static void test_vmx_dirty_log(bool enable_ept)
- 	 * ... pages in the L2 GPA range [0xc0001000, 0xc0003000) will map to
- 	 * 0xc0000000.
- 	 *
--	 * When EPT is disabled, the L2 guest code will still access the same L1
--	 * GPAs as the EPT enabled case.
-+	 * When TDP is disabled, the L2 guest code will still access the same L1
-+	 * GPAs as the TDP enabled case.
- 	 */
--	if (enable_ept) {
-+	if (nested_tdp) {
- 		tdp_identity_map_default_memslots(vm);
- 		tdp_map(vm, NESTED_TEST_MEM1, GUEST_TEST_MEM, PAGE_SIZE);
- 		tdp_map(vm, NESTED_TEST_MEM2, GUEST_TEST_MEM, PAGE_SIZE);
-@@ -166,12 +199,12 @@ static void test_vmx_dirty_log(bool enable_ept)
- 
- int main(int argc, char *argv[])
+ uint64_t memstress_nested_pages(int nr_vcpus)
  {
+ 	/*
+@@ -78,15 +104,17 @@ static void memstress_setup_ept_mappings(struct kvm_vm *vm)
+ void memstress_setup_nested(struct kvm_vm *vm, int nr_vcpus, struct kvm_vcpu *vcpus[])
+ {
+ 	struct kvm_regs regs;
+-	vm_vaddr_t vmx_gva;
++	vm_vaddr_t nested_gva;
+ 	int vcpu_id;
+ 
 -	TEST_REQUIRE(kvm_cpu_has(X86_FEATURE_VMX));
-+	TEST_REQUIRE(kvm_cpu_has(X86_FEATURE_VMX) || kvm_cpu_has(X86_FEATURE_SVM));
+ 	TEST_REQUIRE(kvm_cpu_has_tdp());
  
--	test_vmx_dirty_log(/*enable_ept=*/false);
-+	test_dirty_log(/*nested_tdp=*/false);
+ 	vm_enable_tdp(vm);
+ 	for (vcpu_id = 0; vcpu_id < nr_vcpus; vcpu_id++) {
+-		vcpu_alloc_vmx(vm, &vmx_gva);
++		if (kvm_cpu_has(X86_FEATURE_VMX))
++			vcpu_alloc_vmx(vm, &nested_gva);
++		else
++			vcpu_alloc_svm(vm, &nested_gva);
  
- 	if (kvm_cpu_has_tdp())
--		test_vmx_dirty_log(/*enable_ept=*/true);
-+		test_dirty_log(/*nested_tdp=*/true);
- 
- 	return 0;
+ 		/* The EPTs are shared across vCPUs, setup the mappings once */
+ 		if (vcpu_id == 0)
+@@ -99,6 +127,6 @@ void memstress_setup_nested(struct kvm_vm *vm, int nr_vcpus, struct kvm_vcpu *vc
+ 		vcpu_regs_get(vcpus[vcpu_id], &regs);
+ 		regs.rip = (unsigned long) memstress_l1_guest_code;
+ 		vcpu_regs_set(vcpus[vcpu_id], &regs);
+-		vcpu_args_set(vcpus[vcpu_id], 2, vmx_gva, vcpu_id);
++		vcpu_args_set(vcpus[vcpu_id], 2, nested_gva, vcpu_id);
+ 	}
  }
 -- 
 2.52.0.351.gbe84eed79e-goog
