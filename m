@@ -4,72 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D765BC2A075
-	for <kvm-riscv@archiver.kernel.org>; Sun,  4 Jan 2026 14:00:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DC411C2A062
+	for <kvm-riscv@archiver.kernel.org>; Sun,  4 Jan 2026 14:00:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=/BJ9tGZfLr7yfpE0DQCAgS5VTAAfVxeuTbpOP9QiBuA=; b=LFIDsTNK6cdNV2
-	CNnnAXYHdoHjo1sVXXjPiHTvcNO6dJPVDXQyscSBYtutbp/mQ880r175i7NqHsnLwfMZkWSSQfykr
-	TMTiU3EEOEBg/NFTa9aIr95ErOC6JGsTAYUscqQ/nj/W452blfysQuPenYKDwk9BJ9P9PIkB6JjAP
-	53ZZEau63oIyMeitc/tvR42+cOEvZFw4cx9uYgyEEUg0JVh59Vhy/olDisacFA/NAzlv+VeHtn6os
-	HN3EZOV23csVLHwz60evuQMwItpTr710R8kZMsWdI8W2NVcL5jw+2jtDZ9wsWN2UtQS1FKYrz0EEW
-	ogGwgkgvDery5dl2FZRA==;
+	List-Owner; bh=q9I56UNzaWkfDYW6XIGW7mpJ8WnYi4K0C6U8aGoG+MM=; b=qXtKz38UbVRY5m
+	LWeqkCMB6c4N9MOFyT0n4Pofk9TJWInQUxFP8dR/3S0hfyMX3Stznhj254csTa86HQO9fWB077oHA
+	vGVcXic5NEg20q7CbyVw0AN7RBzh+ECxpg4KPxboRV5AwpQUuk0z4PZ+JcY3Tbh0TrHqckE9LiAHH
+	VLQO9qTj49rSjmHlOsZhNbejPBi8PIj1vvF6hBo+bsrl913LXy03dAHqW3YjiVQLGKKJvW1To5I+K
+	kLZcUC4p9K0/qkWZeQ9QHzbjE0JId+TCpDbaZlskJfuZZKn0OVBfckogZrbzEaXvFYuFmBknquFvC
+	XHSfagVianLOKlr4lMOQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vcOeV-0000000AH5r-2OCJ;
-	Sun, 04 Jan 2026 14:00:15 +0000
-Received: from mail-pl1-x632.google.com ([2607:f8b0:4864:20::632])
+	id 1vcOeZ-0000000AH87-2AKs;
+	Sun, 04 Jan 2026 14:00:19 +0000
+Received: from mail-pl1-x631.google.com ([2607:f8b0:4864:20::631])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vcOeS-0000000AH4b-3UW6
+	id 1vcOeW-0000000AH6c-2jwp
 	for kvm-riscv@lists.infradead.org;
-	Sun, 04 Jan 2026 14:00:14 +0000
-Received: by mail-pl1-x632.google.com with SMTP id d9443c01a7336-2a09a3bd9c5so117984185ad.3
-        for <kvm-riscv@lists.infradead.org>; Sun, 04 Jan 2026 06:00:12 -0800 (PST)
+	Sun, 04 Jan 2026 14:00:18 +0000
+Received: by mail-pl1-x631.google.com with SMTP id d9443c01a7336-2a07f8dd9cdso136438865ad.1
+        for <kvm-riscv@lists.infradead.org>; Sun, 04 Jan 2026 06:00:16 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1767535212; x=1768140012; darn=lists.infradead.org;
+        d=gmail.com; s=20230601; t=1767535216; x=1768140016; darn=lists.infradead.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=uKC0H97nVlNsmqfTcj9M3djnqsg1WIKTEJ/Ie/Lsi00=;
-        b=U//YoWGyanXT8HJR+PI/odvAw/GMcDZ8DulxddnHBd5fwI5AN2/NGeU1RJqivxi8hm
-         ol2fhK9/P2Mu3NJI2PxueGTWP8D/rtb4EIIxI3zh7DtIE8QnVR4QzpJDaVGTOFMfDNM0
-         d4PbYpjyrmUDd/TD48ojDPyGR7wHGNwwUqO97T6iA/2aBvOxeR95plZ4EdBB+CdJemwT
-         JW1q1B97BuE1L16v+sgxBtxBNSz4aDGoN+nonTr69QuMVyk217UR8M8fMoT7CWPPSDOs
-         LkdaUg6FslQWvz3WonvgzY1oF9a/rlPWK6Dc9NGtctbIA7C+yv3msCF+TnfZEYIHDT/Q
-         /52w==
+        bh=WKWm2q1i1+0+Z99C46AW9QGvFUwK/OoedXO5dcU1Nq0=;
+        b=A4BLM2Sp0c1tHr1z5B9aUCCCi/Ul+vF5izONGD14fGm0hQLUpeX5SD0ncBHj8qRRFw
+         SPEQ4VUSs3jJxhMqWujpJpBOnC30GteztPUWD00oMi3XbDCrEAvfXIXUQIAX0rB6eD7v
+         XAGBNtRs1pLVjkjJuICUaFKOdeZfwcZw3mCQlvAsa8YNxy9mDuzkd2WqOf9fruEa9QuA
+         30s4q5KnHzdJBG/NL9aoIy264d2PSFIppOmwoLiMyfmj82PQDAEyOXU7Le9smrZhwT5x
+         L94rGm7pdY7q4kwrixjRB941BYgsdyOhJh4dZ4PZjTKRAUolidX36JvlCCIOZHYoDQ2P
+         JNGw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1767535212; x=1768140012;
+        d=1e100.net; s=20230601; t=1767535216; x=1768140016;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=uKC0H97nVlNsmqfTcj9M3djnqsg1WIKTEJ/Ie/Lsi00=;
-        b=NsE14I4Z0UOntAut8geJ2hQFj6PX7p/CFDVaWzujMhi8nMIRopkMohEdSOTL1aMEVb
-         aANtqA0LwPcIf7q/blGKcrdfWM7LsBPc5vvRcZHomTQKiALKCDPm0KU2eaxkOcjnugej
-         YhfS6vG+gz/kc23s7s7j0LmOt2S1zGYZQ+YoyryS+3gUDou2Hgtj2wDKNcRX+Z49ZcqX
-         478x/SAcU7Qc0qtRxs62Bz9sYRXOA1qXD8AWrySu/gemmnKWfKiDCL7+0MmwMdhZm1Sc
-         K2wEMf1wUorgZd2MktVnKLG9w6J1ATqqfKSIpwzcBtLeunu1Imr7vLcNgydJgcvlCdf4
-         GCCA==
-X-Forwarded-Encrypted: i=1; AJvYcCUTRthOwd2tN4+MVaYdd/EEDONnG+BeW430VUtn7HTtbjVxPtGAZgNgdDTgAmno9Mxvr8aedx1ak4k=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yzfhl1koq2Whmy2TVnxrpr5CV8toxmLnALLA/0PQaF8idIL8q+G
-	P6hrghDzfz1nRiBW4RLx189geOOuTVScKa4VGCkMs4mtQUezOAgxyWAP
-X-Gm-Gg: AY/fxX5+h0EuPDj+k981mquuewEqC8dFO/9ia7odYAOXk90TgbfPzvBQM7akdzhcvKX
-	HTO+5x+dpFsUBFKdHJTMS9pfgYp5Pb97EJNrNRYx739H5yMwRJZZoeurHBFzhoPlffLUiD+uWj6
-	JzNoedRZ+/6si8eje24upImm7Txs1pJyzthcEtsoidqhOk5krMFmPT8X4JfRYyENu4Z4HsPI7Ag
-	KXqpI8+Hqei9YEesRxV0ENNv7xqd4qqX1/Gdp4zYrOTV5wcvBfhbFQgWzq4BQGdMv/YeAOBqo5W
-	9Ovm1XBacsthxQVN9Ee/y/n5SjtoIIJ61lT9e/+pWH/CtKZJPh7n/mkN5p05Q1Ml1qsrrS387En
-	2XLWvi3OZvqmIijyYgFAzCFF5ai7piPL/2MVSjx++Phoe2ymOk9LPk1fw0P7EZf/j3w3GQ7rF2F
-	lsNFc86FAndXq2V0E5Iq3XZ/Gq8o2sx/7cfe2zwTMSZmXHiiPbcTBILEwUA1IWpfP/
-X-Google-Smtp-Source: AGHT+IFWhEWVgZjHasmxigK04Dcv536ZNizp8RTdkFnv5HseXa6ZLIKf5NEo+F1Jf/zNHtSMHWTSZw==
-X-Received: by 2002:a17:903:2345:b0:2a0:d629:9035 with SMTP id d9443c01a7336-2a2f220cebfmr462612735ad.3.1767535211800;
-        Sun, 04 Jan 2026 06:00:11 -0800 (PST)
+        bh=WKWm2q1i1+0+Z99C46AW9QGvFUwK/OoedXO5dcU1Nq0=;
+        b=CUSuqR4Jrf1MDlUjfS1Ly3jUP6H3/0Y+MRWm9seevgeAJPakfSLrmZddcVlZgvYyKR
+         6iChdbm2uOc+828Y9rciruXck4YBkHE2XmRAKXX+TebYTqMpj7s+nu4wK78uS9N0gsyU
+         SZwkOTdGgarfyB71Il5I4QvixHeXof6TeL+fXqBoverBLdhIgmhZ4Jxn/1z93BwtLZev
+         iT4XFAnZ3qXoT6HknB3LuMJrN7JQY/6ONCoizIq1pZnjNU3VWaznFSBUhukS4qrqvRF/
+         +NzmA/PGNaGwPU2WWUCimi4/gnkde/JiYn9rZl/2C0uW7IoJY+Ibj+PiK4HW2DI4OL8U
+         Lb1A==
+X-Forwarded-Encrypted: i=1; AJvYcCUHpw7PpQiU7t9fr34jzPV2gUq67R4R3y7y48C2cRXXiwvF32Yjz/4mdPJud4MlIkQNCmDzrSJjNDM=@lists.infradead.org
+X-Gm-Message-State: AOJu0YxS/Q/YRMN1ABiGGcKXsxgYgGAgIh0CO1Q8REaNqn/J4F5tLmgr
+	XTRiyspFEjI9uvRCb0l4t4/+VEQF7q9sWTdi/IYh+SR9gknsCVsSXGQ7
+X-Gm-Gg: AY/fxX6rPSxxhpkAw+cEt42+/HSbzjNLKWZH+73lgxVHZXfl3GOv38gNt4R8MeauD11
+	rJxGwLCrD5AZ3L8nY9czVipZVVOma6Oi+uUuNNG64H9kpWQm5HR15v3ZXHsOMq48tMMe8qIkUCm
+	Es9pIdS2YyFWIOxiZSUl9aAthpnVnDBowhttpBIwP/R/DXPusHUXAeGTio6ScmuxiRLec0303ZL
+	s+E5y1VNPsgbgOPVa/F9Q6dbF43dm75ZasSAXfvgjTtWYo5E+vYp7lywhRccYtFoseS6W4474OY
+	LhDh5Z04NBQTOc5J4kiptEgYEXeD1gqbjp10STNSvlgBG9HzrNwnzEA0Ed0DfTNNLtQgwDJDtoP
+	/3wWIloAz6gcTA/QbiSgxSKW1zq3Ld6ZAcTblpskWCVYL4szYtRBDminwtmCJsp+xTrCE3IA6wI
+	RgWU+B+24yNVRahAjpEebYZVwpelkTE5YyiFw5GmD/re4msEQnIg98lJlSj6i1bc4G
+X-Google-Smtp-Source: AGHT+IFmQkAn76a6jPoUFSWskVsApd4EjT9EaQS9Lmch2wXWsdjxCu1JoZ0JGs1XSVlb+dqOkzOctw==
+X-Received: by 2002:a17:903:32cf:b0:2a2:dc3f:be4c with SMTP id d9443c01a7336-2a2f220d883mr423015965ad.10.1767535215342;
+        Sun, 04 Jan 2026 06:00:15 -0800 (PST)
 Received: from localhost.localdomain (g163-131-201-140.scn-net.ne.jp. [163.131.201.140])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2a2f3d4cb25sm432327535ad.56.2026.01.04.06.00.08
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2a2f3d4cb25sm432327535ad.56.2026.01.04.06.00.12
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 04 Jan 2026 06:00:11 -0800 (PST)
+        Sun, 04 Jan 2026 06:00:14 -0800 (PST)
 From: Naohiko Shimizu <naohiko.shimizu@gmail.com>
 To: pjw@kernel.org,
 	palmer@dabbelt.com,
@@ -85,16 +85,16 @@ Cc: alex@ghiti.fr,
 	kvm@vger.kernel.org,
 	kvm-riscv@lists.infradead.org,
 	Naohiko Shimizu <naohiko.shimizu@gmail.com>
-Subject: [PATCH v3 1/3] riscv: clocksource: Fix stimecmp update hazard on RV32
-Date: Sun,  4 Jan 2026 22:59:36 +0900
-Message-Id: <20260104135938.524-2-naohiko.shimizu@gmail.com>
+Subject: [PATCH v3 2/3] riscv: kvm: Fix vstimecmp update hazard on RV32
+Date: Sun,  4 Jan 2026 22:59:37 +0900
+Message-Id: <20260104135938.524-3-naohiko.shimizu@gmail.com>
 X-Mailer: git-send-email 2.39.5
 In-Reply-To: <20260104135938.524-1-naohiko.shimizu@gmail.com>
 References: <20260104135938.524-1-naohiko.shimizu@gmail.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260104_060012_917451_A207C3D2 
-X-CRM114-Status: GOOD (  11.16  )
+X-CRM114-CacheID: sfid-20260104_060016_699529_100C0151 
+X-CRM114-Status: GOOD (  10.92  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -131,26 +131,37 @@ spurious timer interrupts.
 This patch adopts the spec-recommended 3-step sequence to ensure the
 intermediate 64-bit state is never smaller than the current time.
 
-Fixes: 9f7a8ff6391f ("RISC-V: Prefer sstc extension if available")
+Fixes: 8f5cb44b1bae ("RISC-V: KVM: Support sstc extension")
 Signed-off-by: Naohiko Shimizu <naohiko.shimizu@gmail.com>
 ---
- drivers/clocksource/timer-riscv.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/riscv/kvm/vcpu_timer.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/clocksource/timer-riscv.c b/drivers/clocksource/timer-riscv.c
-index 4d7cf338824a..cfc4d83c42c0 100644
---- a/drivers/clocksource/timer-riscv.c
-+++ b/drivers/clocksource/timer-riscv.c
-@@ -50,8 +50,9 @@ static int riscv_clock_next_event(unsigned long delta,
- 
- 	if (static_branch_likely(&riscv_sstc_available)) {
+diff --git a/arch/riscv/kvm/vcpu_timer.c b/arch/riscv/kvm/vcpu_timer.c
+index 85a7262115e1..f36247e4c783 100644
+--- a/arch/riscv/kvm/vcpu_timer.c
++++ b/arch/riscv/kvm/vcpu_timer.c
+@@ -72,8 +72,9 @@ static int kvm_riscv_vcpu_timer_cancel(struct kvm_vcpu_timer *t)
+ static int kvm_riscv_vcpu_update_vstimecmp(struct kvm_vcpu *vcpu, u64 ncycles)
+ {
  #if defined(CONFIG_32BIT)
--		csr_write(CSR_STIMECMP, next_tval & 0xFFFFFFFF);
-+		csr_write(CSR_STIMECMP, ULONG_MAX);
- 		csr_write(CSR_STIMECMPH, next_tval >> 32);
-+		csr_write(CSR_STIMECMP, next_tval & 0xFFFFFFFF);
+-	ncsr_write(CSR_VSTIMECMP, ncycles & 0xFFFFFFFF);
++	ncsr_write(CSR_VSTIMECMP,  ULONG_MAX);
+ 	ncsr_write(CSR_VSTIMECMPH, ncycles >> 32);
++	ncsr_write(CSR_VSTIMECMP, (u32)ncycles);
  #else
- 		csr_write(CSR_STIMECMP, next_tval);
+ 	ncsr_write(CSR_VSTIMECMP, ncycles);
+ #endif
+@@ -307,8 +308,9 @@ void kvm_riscv_vcpu_timer_restore(struct kvm_vcpu *vcpu)
+ 		return;
+ 
+ #if defined(CONFIG_32BIT)
+-	ncsr_write(CSR_VSTIMECMP, (u32)t->next_cycles);
++	ncsr_write(CSR_VSTIMECMP, ULONG_MAX);
+ 	ncsr_write(CSR_VSTIMECMPH, (u32)(t->next_cycles >> 32));
++	ncsr_write(CSR_VSTIMECMP, (u32)(t->next_cycles));
+ #else
+ 	ncsr_write(CSR_VSTIMECMP, t->next_cycles);
  #endif
 -- 
 2.39.5
