@@ -4,71 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B83B4C2A062
-	for <kvm-riscv@archiver.kernel.org>; Sun,  4 Jan 2026 14:00:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D765BC2A075
+	for <kvm-riscv@archiver.kernel.org>; Sun,  4 Jan 2026 14:00:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-Id:Date:Subject:Cc
-	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=nNbTJyLiJv+PfoGkyxFP6DtvS4lKQP6E62LYPJ4tdcU=; b=RKQMR+xZthr0f4
-	8MPOHI7YIflb26heu+9eYhCqracsFmWNfSPXjAK5K5Js+nZ1qCMYSnTfRzReroMKnfjQVMz0STVdA
-	/Dj8U/QzRUE5DEbEdIwJ70YsNJvcYxgMJKLkuoq9Bq48qpy41XbbUYgYMrp5KCx9WeNhd9/Xeyonc
-	sPDlm2+K7eXfsDqTrDI5VTYmdTVcGAlIMup8fIS08r4NMB3cIdyIBTkPQPtkQ6tG06sL/9XvVvH6d
-	YTkpX+kKeIyRvt+PD78d9Ss3QMC1nz3sr+q6K2hLc5ZO7AwYEg4k9DNQIoQPhsqYz5tOgRxRTM6Xt
-	qCiSPfCl6+d+pp6z7mUQ==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=/BJ9tGZfLr7yfpE0DQCAgS5VTAAfVxeuTbpOP9QiBuA=; b=LFIDsTNK6cdNV2
+	CNnnAXYHdoHjo1sVXXjPiHTvcNO6dJPVDXQyscSBYtutbp/mQ880r175i7NqHsnLwfMZkWSSQfykr
+	TMTiU3EEOEBg/NFTa9aIr95ErOC6JGsTAYUscqQ/nj/W452blfysQuPenYKDwk9BJ9P9PIkB6JjAP
+	53ZZEau63oIyMeitc/tvR42+cOEvZFw4cx9uYgyEEUg0JVh59Vhy/olDisacFA/NAzlv+VeHtn6os
+	HN3EZOV23csVLHwz60evuQMwItpTr710R8kZMsWdI8W2NVcL5jw+2jtDZ9wsWN2UtQS1FKYrz0EEW
+	ogGwgkgvDery5dl2FZRA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vcOeT-0000000AH59-0nsp;
-	Sun, 04 Jan 2026 14:00:13 +0000
-Received: from mail-pl1-x62d.google.com ([2607:f8b0:4864:20::62d])
+	id 1vcOeV-0000000AH5r-2OCJ;
+	Sun, 04 Jan 2026 14:00:15 +0000
+Received: from mail-pl1-x632.google.com ([2607:f8b0:4864:20::632])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vcOeP-0000000AH3w-3Nwx
+	id 1vcOeS-0000000AH4b-3UW6
 	for kvm-riscv@lists.infradead.org;
-	Sun, 04 Jan 2026 14:00:11 +0000
-Received: by mail-pl1-x62d.google.com with SMTP id d9443c01a7336-2a0bae9aca3so188953015ad.3
-        for <kvm-riscv@lists.infradead.org>; Sun, 04 Jan 2026 06:00:08 -0800 (PST)
+	Sun, 04 Jan 2026 14:00:14 +0000
+Received: by mail-pl1-x632.google.com with SMTP id d9443c01a7336-2a09a3bd9c5so117984185ad.3
+        for <kvm-riscv@lists.infradead.org>; Sun, 04 Jan 2026 06:00:12 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1767535208; x=1768140008; darn=lists.infradead.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=HEqhNW5O+8RAp0S31dtdTiF5gzWANx1aqh14jIZncZA=;
-        b=mDvZw+W91ezUlORSgUlqxF0U7yn7bnxFpSsy5Iwqdy9aGW1UqIeCTLr2mkhGzSh4ex
-         kkdVP8O5r1JRGMNC6XamEPh7unNczB+46ULIT1bFLfr9GLj1azNsRVwCvuGqitE/as9q
-         jxiQiZOmD6OCn8t11KJsTxqRCAA5LN99ik+dmUTeS0iZT7mOqUY41hwjcnPkbYx2Swfd
-         14LvpgogSJa2W/W4wcdYKog/rgUMDSR2++X5KCOHu6SH6TQzIKzote7DXGXePwxtkYSn
-         +79RMFEF5vG+xK6+xCWjhKge0Rq53UxmDE/FG2A5yrGRW5PzPA4ctO1FiN/+4TgeZcJI
-         Hlgg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1767535208; x=1768140008;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=gmail.com; s=20230601; t=1767535212; x=1768140012; darn=lists.infradead.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=HEqhNW5O+8RAp0S31dtdTiF5gzWANx1aqh14jIZncZA=;
-        b=mMJr4+tLoVGVMPHRc37CrpDvWuI8QUD5pu66GiKzt5/647El6WZj/Zh5gbq4hqlFDZ
-         crRxrN3nJZqDhCYMPghPAKh/bIqUtbTqk73LJADdLt7vpV8Zz41hk2ZphzYZuTGCIDAA
-         dJnV42RvROMZLZ3UmsAcT07cd1aIsr0ACrfhZJsSRLKrExov/UJTcvTYRY5KO5rpU+BY
-         uAc0lpB3UwHqTzW9XojdUdUSCU9nWs6XVnitL/Wpj5k5rM4TME6sI6KlkMin971eFbfE
-         jNU/93eJKAq6YylIlH3bODpSwnLsRV7+K+7grmkx0yXtWkG2ZXpiNN+FAVkrNCmbgsxs
-         d2yw==
-X-Forwarded-Encrypted: i=1; AJvYcCVMU7fp9SOrHFtSOnqLOtcJNVOOIRchCHNGcDeI9AIG2l8IoE/Vr1ICHCRE18aoKHnWCJa3Std6wX0=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yx22T0iKRIi+2v2quny5nWUTr2SURdV0XnY9ZN9/Cu1fBh40IT1
-	i6VB+ZTrfi1tfIEDeT0GpV76LANT1bVk3nBfnHizOsgK4YwhJUh3xhul
-X-Gm-Gg: AY/fxX7NufeXx5PcGmVhRrojOsWUcUgHoUmyT0aUJq3zCVPxR3jnmGQ+bq8ZW0t6r2u
-	bRGZG5DE/cK8+9MzlLJH14ho+2f5MHaA6N3RFZ8xukAItNBTybmGXPGvC0AYBxpO/FtOuIXvU+D
-	DQpofnzIzDLJ5oiMsgIVCDegRmXAbzirBH5K92muu7PO1UPuZrw5M4OO0wRrw96dfBJdMIBHKRT
-	l35yIBW+q/5rHeYAmX48mja5R9TmM9dh0njhle0tnzfH0OUncD4qcGJAN4XXqAjJa48IBHy2/yW
-	zm8N/Ix2jbwMF0MWwNBqwbVVHC/mt8HqqQryEwFotGoFGzM3GdTwQW5R2jpejU5YCMu0h6lUste
-	0xWTGKsr8OjHk7xUP9HMeCwvyuO0fPqn3hYuyfdEAKjcQP3hZCaKR6chtcSV+QDqzeFR8jB9583
-	OINsG1nijdmKLHCJj9zoHbaEKqu1A2IkIlACGrUSaEKIHXX2GBuEfZGZr43tcxRpxm
-X-Google-Smtp-Source: AGHT+IHYOHBJT78zqotwaAPeOBEa33pI9OjGBIGmbHuEBwmEYLu2IfXRLZs8IapRix35ur7Qubzuzw==
-X-Received: by 2002:a17:902:c403:b0:297:f527:a38f with SMTP id d9443c01a7336-2a2f2231764mr476919905ad.18.1767535208281;
-        Sun, 04 Jan 2026 06:00:08 -0800 (PST)
+        bh=uKC0H97nVlNsmqfTcj9M3djnqsg1WIKTEJ/Ie/Lsi00=;
+        b=U//YoWGyanXT8HJR+PI/odvAw/GMcDZ8DulxddnHBd5fwI5AN2/NGeU1RJqivxi8hm
+         ol2fhK9/P2Mu3NJI2PxueGTWP8D/rtb4EIIxI3zh7DtIE8QnVR4QzpJDaVGTOFMfDNM0
+         d4PbYpjyrmUDd/TD48ojDPyGR7wHGNwwUqO97T6iA/2aBvOxeR95plZ4EdBB+CdJemwT
+         JW1q1B97BuE1L16v+sgxBtxBNSz4aDGoN+nonTr69QuMVyk217UR8M8fMoT7CWPPSDOs
+         LkdaUg6FslQWvz3WonvgzY1oF9a/rlPWK6Dc9NGtctbIA7C+yv3msCF+TnfZEYIHDT/Q
+         /52w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1767535212; x=1768140012;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=uKC0H97nVlNsmqfTcj9M3djnqsg1WIKTEJ/Ie/Lsi00=;
+        b=NsE14I4Z0UOntAut8geJ2hQFj6PX7p/CFDVaWzujMhi8nMIRopkMohEdSOTL1aMEVb
+         aANtqA0LwPcIf7q/blGKcrdfWM7LsBPc5vvRcZHomTQKiALKCDPm0KU2eaxkOcjnugej
+         YhfS6vG+gz/kc23s7s7j0LmOt2S1zGYZQ+YoyryS+3gUDou2Hgtj2wDKNcRX+Z49ZcqX
+         478x/SAcU7Qc0qtRxs62Bz9sYRXOA1qXD8AWrySu/gemmnKWfKiDCL7+0MmwMdhZm1Sc
+         K2wEMf1wUorgZd2MktVnKLG9w6J1ATqqfKSIpwzcBtLeunu1Imr7vLcNgydJgcvlCdf4
+         GCCA==
+X-Forwarded-Encrypted: i=1; AJvYcCUTRthOwd2tN4+MVaYdd/EEDONnG+BeW430VUtn7HTtbjVxPtGAZgNgdDTgAmno9Mxvr8aedx1ak4k=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yzfhl1koq2Whmy2TVnxrpr5CV8toxmLnALLA/0PQaF8idIL8q+G
+	P6hrghDzfz1nRiBW4RLx189geOOuTVScKa4VGCkMs4mtQUezOAgxyWAP
+X-Gm-Gg: AY/fxX5+h0EuPDj+k981mquuewEqC8dFO/9ia7odYAOXk90TgbfPzvBQM7akdzhcvKX
+	HTO+5x+dpFsUBFKdHJTMS9pfgYp5Pb97EJNrNRYx739H5yMwRJZZoeurHBFzhoPlffLUiD+uWj6
+	JzNoedRZ+/6si8eje24upImm7Txs1pJyzthcEtsoidqhOk5krMFmPT8X4JfRYyENu4Z4HsPI7Ag
+	KXqpI8+Hqei9YEesRxV0ENNv7xqd4qqX1/Gdp4zYrOTV5wcvBfhbFQgWzq4BQGdMv/YeAOBqo5W
+	9Ovm1XBacsthxQVN9Ee/y/n5SjtoIIJ61lT9e/+pWH/CtKZJPh7n/mkN5p05Q1Ml1qsrrS387En
+	2XLWvi3OZvqmIijyYgFAzCFF5ai7piPL/2MVSjx++Phoe2ymOk9LPk1fw0P7EZf/j3w3GQ7rF2F
+	lsNFc86FAndXq2V0E5Iq3XZ/Gq8o2sx/7cfe2zwTMSZmXHiiPbcTBILEwUA1IWpfP/
+X-Google-Smtp-Source: AGHT+IFWhEWVgZjHasmxigK04Dcv536ZNizp8RTdkFnv5HseXa6ZLIKf5NEo+F1Jf/zNHtSMHWTSZw==
+X-Received: by 2002:a17:903:2345:b0:2a0:d629:9035 with SMTP id d9443c01a7336-2a2f220cebfmr462612735ad.3.1767535211800;
+        Sun, 04 Jan 2026 06:00:11 -0800 (PST)
 Received: from localhost.localdomain (g163-131-201-140.scn-net.ne.jp. [163.131.201.140])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2a2f3d4cb25sm432327535ad.56.2026.01.04.06.00.05
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2a2f3d4cb25sm432327535ad.56.2026.01.04.06.00.08
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 04 Jan 2026 06:00:07 -0800 (PST)
+        Sun, 04 Jan 2026 06:00:11 -0800 (PST)
 From: Naohiko Shimizu <naohiko.shimizu@gmail.com>
 To: pjw@kernel.org,
 	palmer@dabbelt.com,
@@ -84,15 +85,16 @@ Cc: alex@ghiti.fr,
 	kvm@vger.kernel.org,
 	kvm-riscv@lists.infradead.org,
 	Naohiko Shimizu <naohiko.shimizu@gmail.com>
-Subject: [PATCH v3 0/3] riscv: fix timer update hazards on RV32
-Date: Sun,  4 Jan 2026 22:59:35 +0900
-Message-Id: <20260104135938.524-1-naohiko.shimizu@gmail.com>
+Subject: [PATCH v3 1/3] riscv: clocksource: Fix stimecmp update hazard on RV32
+Date: Sun,  4 Jan 2026 22:59:36 +0900
+Message-Id: <20260104135938.524-2-naohiko.shimizu@gmail.com>
 X-Mailer: git-send-email 2.39.5
+In-Reply-To: <20260104135938.524-1-naohiko.shimizu@gmail.com>
+References: <20260104135938.524-1-naohiko.shimizu@gmail.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260104_060009_856119_4DCC6E3B 
-X-CRM114-Status: UNSURE (   8.66  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20260104_060012_917451_A207C3D2 
+X-CRM114-Status: GOOD (  11.16  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -109,29 +111,47 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-This patch series fixes timer register update hazards on RV32 for
-clocksource, KVM, and suspend/resume paths by adopting the 3-step
-update sequence recommended by the RISC-V Privileged Specification.
+On RV32, updating the 64-bit stimecmp (or vstimecmp) CSR requires two
+separate 32-bit writes. A race condition exists if the timer triggers
+during these two writes.
 
-Changes in v3:
-- Dropped redundant subject line from commit descriptions.
-- Added Fixes tags for all patches.
-- Moved Signed-off-by tags to the end of commit messages.
+The RISC-V Privileged Specification (e.g., Section 3.2.1 for mtimecmp)
+recommends a specific 3-step sequence to avoid spurious interrupts
+when updating 64-bit comparison registers on 32-bit systems:
 
-Changes in v2:
-- Added detailed architectural background to commit messages.
-- Added KVM and suspend/resume cases.
+1. Set the low-order bits (stimecmp) to all ones (ULONG_MAX).
+2. Set the high-order bits (stimecmph) to the desired value.
+3. Set the low-order bits (stimecmp) to the desired value.
 
-Naohiko Shimizu (3):
-  riscv: clocksource: Fix stimecmp update hazard on RV32
-  riscv: kvm: Fix vstimecmp update hazard on RV32
-  riscv: suspend: Fix stimecmp update hazard on RV32
+Current implementation writes the LSB first without ensuring a future
+value, which may lead to a transient state where the 64-bit comparison
+is incorrectly evaluated as "expired" by the hardware. This results in
+spurious timer interrupts.
 
- arch/riscv/kernel/suspend.c       | 3 ++-
- arch/riscv/kvm/vcpu_timer.c       | 6 ++++--
+This patch adopts the spec-recommended 3-step sequence to ensure the
+intermediate 64-bit state is never smaller than the current time.
+
+Fixes: 9f7a8ff6391f ("RISC-V: Prefer sstc extension if available")
+Signed-off-by: Naohiko Shimizu <naohiko.shimizu@gmail.com>
+---
  drivers/clocksource/timer-riscv.c | 3 ++-
- 3 files changed, 8 insertions(+), 4 deletions(-)
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
+diff --git a/drivers/clocksource/timer-riscv.c b/drivers/clocksource/timer-riscv.c
+index 4d7cf338824a..cfc4d83c42c0 100644
+--- a/drivers/clocksource/timer-riscv.c
++++ b/drivers/clocksource/timer-riscv.c
+@@ -50,8 +50,9 @@ static int riscv_clock_next_event(unsigned long delta,
+ 
+ 	if (static_branch_likely(&riscv_sstc_available)) {
+ #if defined(CONFIG_32BIT)
+-		csr_write(CSR_STIMECMP, next_tval & 0xFFFFFFFF);
++		csr_write(CSR_STIMECMP, ULONG_MAX);
+ 		csr_write(CSR_STIMECMPH, next_tval >> 32);
++		csr_write(CSR_STIMECMP, next_tval & 0xFFFFFFFF);
+ #else
+ 		csr_write(CSR_STIMECMP, next_tval);
+ #endif
 -- 
 2.39.5
 
