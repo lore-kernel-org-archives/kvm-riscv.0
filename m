@@ -4,104 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0411CEFD01
-	for <kvm-riscv@archiver.kernel.org>; Tue,  6 Jan 2026 19:49:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08B4DCD5828
+	for <kvm-riscv@archiver.kernel.org>; Wed,  7 Jan 2026 10:01:44 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:Cc:To:Subject:Message-ID:Date:From:
-	In-Reply-To:References:MIME-Version:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=30ysgIOsU3eGGm3ABgZnNCkYCjPgD4ycrrorlrfQ4SE=; b=SavHHIsQbZP9od
-	IJ2oZPPVFmWlqtLClp/KS6rVEN2cp4GGWCmzPWw4tapofKuBCoDkV95BWURCrxUgtJb0FJ5OYvu9J
-	zvtUn4ZQ3A7a89aQe8RVotSVACWkCsgkUa4ZKrCWxrRZkotO8LLmdzdaqvGPZEpx6EODaL2rSMCgM
-	tfCL2zpBQaoXeP55a1WdZiQtqz9QwtZndZ24GVtdvuw0I0DJ2egv4ua9pDQRRldIHl2EzIa0haWkR
-	1fOQtwgbqIDGCDwPo7+/scWuTwyLWKHWsnHo71RID0EmpBklAoWkWKuRXK/aNug9IOfMp5ti1kVpQ
-	ySULUM+msVFp56lcmUWw==;
+	MIME-Version:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=NiLziAIErq+11YtfhBTSEOKPwQmkb3liMj/H9LHQ3/8=; b=MW4oM1c4Cnyphj
+	7a8y6cjpnmynZet4F8NbZ69ptYfM9fyWN8f71N1bkCuKK1Od0ZNC694zmiX4b0NZfSErAuOccwQgS
+	JX9aYCc8fIvBL4TNU6qYVgH/MEz0bwytAyupSu4/oaEs9Vw8YyQAHaUrQcUHlnimqK0Hk12XsF2lX
+	K/jm2XAeDWxM+OvPO6vCR/9KXzg63qRP36m4prOx32qX8gvV+tOqK+pBZSr+rK282XsXMt3rcXf67
+	tqAqcSnavLGzJWYHq6ZfNNznmPj2FZ6XTyMTgEwA29QL/eS/zOl0wIGaE+WKahKogrjGKEZjt5GkO
+	CudpYSF4CnsIxJReZDYw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vdD3h-0000000DmY1-2GDi;
-	Tue, 06 Jan 2026 19:49:37 +0000
-Received: from mail-qt1-x832.google.com ([2607:f8b0:4864:20::832])
+	id 1vdQMJ-0000000EdPP-2TGh;
+	Wed, 07 Jan 2026 10:01:43 +0000
+Received: from mail-vk1-xa29.google.com ([2607:f8b0:4864:20::a29])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vdD3b-0000000DmWX-00tM
+	id 1vdQMG-0000000EdOM-48X2
 	for kvm-riscv@lists.infradead.org;
-	Tue, 06 Jan 2026 19:49:33 +0000
-Received: by mail-qt1-x832.google.com with SMTP id d75a77b69052e-4ee147baf7bso59741cf.1
-        for <kvm-riscv@lists.infradead.org>; Tue, 06 Jan 2026 11:49:30 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1767728969; cv=none;
-        d=google.com; s=arc-20240605;
-        b=I6zUZHv0nOUUAsc8xOHwUPfpQ4+x096LcyGan9w18YKx/qkiFfPspfSBZkB61/T4qG
-         VNbunMlK1QvtawsWemCJDXKOpuCCHueOhGifuXVGGFoMVDHL9sWkwkpTXm3TOh9G+nql
-         lSBEh+x9285UsQpVBGTl5B+LNmUl8YJMULkAkIxGHCjVduDwBmlejdnhwdop+1SOssFv
-         loGo102+son2g2eesnA/0Zr+IOBsaqTDDLBC/BgfP4zWvD+1uGvxDg9XegFoUUBgzUeT
-         cxRH+hAwCWAvlqIfUF4ILGc+Y7uZ81dzHvvIFSvljm+KNa6GLUsbrW3/Th49kHPH0O+T
-         Wlyg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=k9+aHBxxyMm5uEUryvCGnluoRKqqLv7iqR1X9acm+vo=;
-        fh=6kAgN+eUd5v7CjYPZjpSsZR5jQqwvoBGcPnZjAyovcY=;
-        b=K1YW0q3d+jpLi9pPBWNeGmBn20HPVf33guMlPbx9jUMGeNHGF7Wp4ubmFh3czGhKbW
-         BwdKhsCtLINLBWd+brJMHagl3vFUWs9/IAo11/9/FNwA7+QR9Vifa51BQPYQTPV/yv2f
-         dFlVu4U8wUcHI3mDL4yD473VpzhlI1b3oL+JYjaA3SPTdiBIRKI1fotxuX0mb4GJ0/Mx
-         Npf/QsjYbEstDtF3gXbZSSq5T4vY72BgDDdGaQoMqqsarct/q2OlDWyHdnKAo3mCs8dk
-         Dwbr6PMJ5RERqDkviCY5y/h3iPp09v1aUoVlC6GhtP2UWZWLxs/RzhMLPz9kjpWAum67
-         GPFw==;
-        darn=lists.infradead.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	Wed, 07 Jan 2026 10:01:42 +0000
+Received: by mail-vk1-xa29.google.com with SMTP id 71dfb90a1353d-55b6a66f155so756586e0c.3
+        for <kvm-riscv@lists.infradead.org>; Wed, 07 Jan 2026 02:01:37 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1767728969; x=1768333769; darn=lists.infradead.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=k9+aHBxxyMm5uEUryvCGnluoRKqqLv7iqR1X9acm+vo=;
-        b=HHmyZHr2ADeqr27tUkGGuW9b7EM4tFLTWclf6NvmqlSsQ4nOVPQJz7nHr8dV5U4Pso
-         TzJrkrKJK4yypIEhYdCLOK6liTuWqMPAqxjGYDheoRo0t1xqPtSyIcRglHjZIDv++fSY
-         zBdYOPvEvUJmJjr5KITbA2KZpOoqMKCJxvKA/AvPwYVEYVIyR8taGFHAupavIE65NmWO
-         RxgBp5FsNVJf6aD0hzquI0jl5jwXpMvzx0ufs92ABv8MEJoli8TBazoPga35QhKR2Vr8
-         cCN7OfRwSqcZRv+MXyw7gleTogoZhwtz3DTEL+xUTXkO1sKe9ihuM3R4Ku8PHyG+W+Ls
-         0ZmQ==
+        d=bytedance.com; s=google; t=1767780097; x=1768384897; darn=lists.infradead.org;
+        h=cc:to:subject:message-id:date:from:mime-version:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=1e7HzwoffI5S/6V5SheLWTLvf9f05N/KDUwstam8N0k=;
+        b=G1276w88YA/COqFxr7IqGhLGN9sYoogjH9+0xFLdE7cq0kYLSFkH7zWuQZ9sZkxVBA
+         3UWcvHRTYEvFms3fztE1+23s6h3dPU6yFZC4uryXj701BW7tb7Bz0QhtDuYr8pgOaWNE
+         uvJEOE5ZIrkpdZ75gEz8YRXp4iMgJ+E5d7jkhwWJHgLwMd/rYvQqmEX/ukMK+BJOMzsG
+         10bu2ytCXg92os8z69c5Ncws8RUMzvJS8grqwEwLoStSaASEOmp2CZ5+ZCI0+li63gn9
+         ml5kdZwIY2sRqtewukj/fz5oYNU5gAxHWhAcGtEcSHtMU8L71c2IRCfWBnDNw6TscqYg
+         MW9Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1767728969; x=1768333769;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=k9+aHBxxyMm5uEUryvCGnluoRKqqLv7iqR1X9acm+vo=;
-        b=dsLb/mXUOP2l8DN/Ki0rz3JkeAJw0FUJcJpEjjeU5XCwTj5rImnFyHuSuw/HjNQw9d
-         NB63boFRWa37FE310PZiySQK/8a5aTa2PtY3u74WO0WeXmwc2LhKoUSQa5twJ7iSn3VY
-         sP7WVrvphrNcg5qUIYejYrSnP9nCPFYPfUya1kMHoiH3TMtBkDNrsbrHwtlrO8qtAXEK
-         oCSjoXMXbJ89dR/kLk/pTMW0d2L6wmVq+gE68xyBAXGtcayUBZcB/2/KVm773JUm25sI
-         RkHy1hj8oXB/4yDwAkm4BCLgwJDavpYlQ0Ef0mpSA6rO5nzJfg+bvCmoyi6b7occrX+c
-         D5jA==
-X-Forwarded-Encrypted: i=1; AJvYcCUvIK4n369IweeL9cJ4FE3REt/S/vummiePTRloSy50MerOBtw8wkTTf5ErOY+6kwBYqnESTx3uIMg=@lists.infradead.org
-X-Gm-Message-State: AOJu0YyLIuYK/okLZkpJ/RuTcQfV+VjvtfGSDdvne5NTqmGctePmk5tI
-	8cZJlCQvExAzkLp5L301oD9sPb7yHJI1gy6lKkoWviW4RuSgmYUkW8w1wE1kzIaI/ZX8YBArx/C
-	NK/BMx4wrkXfSmg94lYHJcQ/bvBwtn5v0pOwrN6Qv
-X-Gm-Gg: AY/fxX55D030/HubrZHkzFY24iyVXMqaULPVs6XFGbUQPpt8LM+VR2NAwyVEnd4vvn9
-	3xEoYyoUQFpmBfbnGy6IOTP/8wyPZvlrCz93i8iq3kSfcKi8tvEBeiOBTuwz4cDmyHgw8Oj+v7M
-	Rck6TsXs80MoV8tFxNwz3t5LWaEfpfJAPPZGlHoxy1E/EmB+3+RIDQKQ2YYBtKN7c6L/CmwahXV
-	d3JKmKa2ODlyHp27bhDeHMaIEt7faCK8j/1fRyP/Y2IC0SRl5v1AH8QVRhc2bG8S8N3tUV0
-X-Received: by 2002:ac8:58d3:0:b0:4ff:a98b:c33e with SMTP id
- d75a77b69052e-4ffb3c9bfd7mr1612321cf.6.1767728969218; Tue, 06 Jan 2026
- 11:49:29 -0800 (PST)
+        d=1e100.net; s=20230601; t=1767780097; x=1768384897;
+        h=cc:to:subject:message-id:date:from:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=1e7HzwoffI5S/6V5SheLWTLvf9f05N/KDUwstam8N0k=;
+        b=nq0TgMQZ4A48qiUuUKkUuY0pjx/vbk9lxsVhIRNP8D532QyxDm9mNugTmHJWGvmpiu
+         rj8XulYumqm8DKxcOWxpGJjrNtaXXtqEzrIlZGVzEn8Be5EHN633Dqrdr+DZeqZnjnFR
+         am2uqMwSXmyul8iXLKkLgXAu0X2npLjVcy3gvuPQtVNhMGYMu16y+/P6LCdvhmSR+2CY
+         pigElv52C+UCzNov3XFndCv1bAosVHG6EJXmNyPklyADpbnRTDrRYYGFAH5cgS++UXZS
+         Xm0clltTWIkgj5yG9NQcgDOttonKDsJellg9CyLpN74iexVu6Yff/H7imQkwpdkEW9iL
+         XD/A==
+X-Forwarded-Encrypted: i=1; AJvYcCWZkRbtiTlcYQppbhfgFmjQdWSnpiZpWLvjxS6Fq9dfESxsSbc+o79PQfCCcTEOS/DiYcksfm/6B0o=@lists.infradead.org
+X-Gm-Message-State: AOJu0YyEkXfI9Q7fUIuVbUlWR1PBU8AKzOl8KHmsp+neN8xnQmXYvP8D
+	I3rN1J0qahAzIqgPB1omkQgQ/FymssOERXrpvp0khslVfurNQ0ygpCzxqEFzp4PFht2vTSTILQh
+	W2+DKpHuviJO7z16tJEtNgHTNt1zuCHxzHVgKTUm65Q==
+X-Gm-Gg: AY/fxX53qbBtkfxA6JIZZa493clCyN7RybxyfF+7qCWEh5O5DdhkeTllf6sHroPq65r
+	swGOUO6GgX87FrAjcKDruVlPjwqTe7NnPwsIlz9Xlg6NrYJv7XkRKLTT22qYAxqdmS/XiE0bZ9o
+	BCxmupOO5xtOi3zc1taUnFoPUf5CN1x4BIEGSLoBhDq3TICAC98ABCQ0mB4y6kbS+RXyDc66uxU
+	Rkmi7wSIIsA7KyhGx9F7uQMXye+UwUumo2f3i1jvfQliDg5Ks6P4mOtsUjMJdF7j+givbP0QHsU
+	bUylzclb
+X-Google-Smtp-Source: AGHT+IFY9o6LoBGhJfHFhrwQmRjYbAjez+97Fc8MV2H/JqEGQGgiF+2CT3xNTtCeZryZYDcntgXs7hAyuiU8xea9t8Y=
+X-Received: by 2002:a05:6102:534f:b0:5db:34b5:318c with SMTP id
+ ada2fe7eead31-5ecb6955532mr709984137.45.1767780096723; Wed, 07 Jan 2026
+ 02:01:36 -0800 (PST)
 MIME-Version: 1.0
-References: <20260106092425.1529428-1-tabba@google.com> <20260106092425.1529428-5-tabba@google.com>
- <aV1mqQtALFIUBHVM@google.com>
-In-Reply-To: <aV1mqQtALFIUBHVM@google.com>
-From: Fuad Tabba <tabba@google.com>
-Date: Tue, 6 Jan 2026 19:48:52 +0000
-X-Gm-Features: AQt7F2oD6imhUH1-IKtVcA97OhzMLb8nSqzV2q_rb-md0NTxT87GehM6m6PIMYQ
-Message-ID: <CA+EHjTw3YBG9HNateXEAYsSUJ625eWGu2OHt-2=Y0=-qzbObWw@mail.gmail.com>
-Subject: Re: [PATCH v3 4/5] KVM: selftests: Move page_align() to shared header
-To: Sean Christopherson <seanjc@google.com>
-Cc: kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, kvmarm@lists.linux.dev, 
-	linux-arm-kernel@lists.infradead.org, maz@kernel.org, oliver.upton@linux.dev, 
-	joey.gouly@arm.com, suzuki.poulose@arm.com, yuzenghui@huawei.com, 
-	will@kernel.org, pbonzini@redhat.com, shuah@kernel.org, anup@brainfault.org, 
-	itaru.kitayama@fujitsu.com, andrew.jones@linux.dev
+From: Xu Lu <luxu.kernel@bytedance.com>
+Date: Wed, 7 Jan 2026 18:01:26 +0800
+X-Gm-Features: AQt7F2okIYDpNGyBgdlwrVkXSKzrOvkkA7_TMkO--kZnCCpAAR9jkMnVcWZBt1o
+Message-ID: <CAPYmKFscKJ1ff470d6YmuMxLdJPSZ-ZmuGMMAFO83TT-vvV2JQ@mail.gmail.com>
+Subject: Question about RISCV IOMMU irqbypass patch series
+To: Andrew Jones <ajones@ventanamicro.com>
+Cc: Jason Gunthorpe <jgg@nvidia.com>, Zong Li <zong.li@sifive.com>, 
+	Tomasz Jeznach <tjeznach@rivosinc.com>, joro@8bytes.org, Will Deacon <will@kernel.org>, 
+	Robin Murphy <robin.murphy@arm.com>, Anup Patel <anup@brainfault.org>, atish.patra@linux.dev, 
+	Thomas Gleixner <tglx@linutronix.de>, alex.williamson@redhat.com, 
+	Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt <palmer@dabbelt.com>, 
+	Alexandre Ghiti <alex@ghiti.fr>, iommu@lists.linux.dev, kvm-riscv@lists.infradead.org, 
+	kvm@vger.kernel.org, linux-riscv <linux-riscv@lists.infradead.org>, 
+	LKML <linux-kernel@vger.kernel.org>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260106_114931_935679_C47CEE65 
-X-CRM114-Status: GOOD (  17.92  )
+X-CRM114-CacheID: sfid-20260107_020141_022210_F217C665 
+X-CRM114-Status: UNSURE (   6.77  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -118,83 +99,25 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Tue, 6 Jan 2026 at 19:46, Sean Christopherson <seanjc@google.com> wrote:
->
-> On Tue, Jan 06, 2026, Fuad Tabba wrote:
-> > To avoid code duplication, move page_align() to the shared `kvm_util.h`
-> > header file.
-> >
-> > No functional change intended.
-> >
-> > Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
-> > Signed-off-by: Fuad Tabba <tabba@google.com>
-> > ---
-> >  tools/testing/selftests/kvm/include/kvm_util.h    | 5 +++++
-> >  tools/testing/selftests/kvm/lib/arm64/processor.c | 5 -----
-> >  tools/testing/selftests/kvm/lib/riscv/processor.c | 5 -----
-> >  3 files changed, 5 insertions(+), 10 deletions(-)
-> >
-> > diff --git a/tools/testing/selftests/kvm/include/kvm_util.h b/tools/testing/selftests/kvm/include/kvm_util.h
-> > index 81f4355ff28a..dabbe4c3b93f 100644
-> > --- a/tools/testing/selftests/kvm/include/kvm_util.h
-> > +++ b/tools/testing/selftests/kvm/include/kvm_util.h
-> > @@ -1258,6 +1258,11 @@ static inline int __vm_disable_nx_huge_pages(struct kvm_vm *vm)
-> >       return __vm_enable_cap(vm, KVM_CAP_VM_DISABLE_NX_HUGE_PAGES, 0);
-> >  }
-> >
-> > +static inline uint64_t page_align(struct kvm_vm *vm, uint64_t v)
->
-> Maybe vm_page_align()?  So that it's a bit more obvious when reading call sites
-> that the alignment is done with respect to the guest's "base" page size, not the
-> host's page size.
+Hi Andrew,
 
-Yes, that's clearer. I'll fix this.
+Thanks for your brilliant job on the RISCV IOMMU irqbypass patch
+series[1]. I have rebased it on v6.18 and successfully passed through
+a nvme device to VM. But I still have some questions about it.
 
-Thanks,
-/fuad
+1. It seems "irqdomain->host_data->domain" can be NULL for blocking or
+identity domain. So it's better to check whether it's NULL in
+riscv_iommu_ir_irq_domain_alloc_irqs or
+riscv_iommu_ir_irq_domain_free_irqs functions. Otherwise page fault
+can happen.
 
-> > +{
-> > +     return (v + vm->page_size - 1) & ~(vm->page_size - 1);
-> > +}
-> > +
-> >  /*
-> >   * Arch hook that is invoked via a constructor, i.e. before exeucting main(),
-> >   * to allow for arch-specific setup that is common to all tests, e.g. computing
-> > diff --git a/tools/testing/selftests/kvm/lib/arm64/processor.c b/tools/testing/selftests/kvm/lib/arm64/processor.c
-> > index 607a4e462984..143632917766 100644
-> > --- a/tools/testing/selftests/kvm/lib/arm64/processor.c
-> > +++ b/tools/testing/selftests/kvm/lib/arm64/processor.c
-> > @@ -21,11 +21,6 @@
-> >
-> >  static vm_vaddr_t exception_handlers;
-> >
-> > -static uint64_t page_align(struct kvm_vm *vm, uint64_t v)
-> > -{
-> > -     return (v + vm->page_size - 1) & ~(vm->page_size - 1);
-> > -}
-> > -
-> >  static uint64_t pgd_index(struct kvm_vm *vm, vm_vaddr_t gva)
-> >  {
-> >       unsigned int shift = (vm->pgtable_levels - 1) * (vm->page_shift - 3) + vm->page_shift;
-> > diff --git a/tools/testing/selftests/kvm/lib/riscv/processor.c b/tools/testing/selftests/kvm/lib/riscv/processor.c
-> > index d5e8747b5e69..f8ff4bf938d9 100644
-> > --- a/tools/testing/selftests/kvm/lib/riscv/processor.c
-> > +++ b/tools/testing/selftests/kvm/lib/riscv/processor.c
-> > @@ -26,11 +26,6 @@ bool __vcpu_has_ext(struct kvm_vcpu *vcpu, uint64_t ext)
-> >       return !ret && !!value;
-> >  }
-> >
-> > -static uint64_t page_align(struct kvm_vm *vm, uint64_t v)
-> > -{
-> > -     return (v + vm->page_size - 1) & ~(vm->page_size - 1);
-> > -}
-> > -
-> >  static uint64_t pte_addr(struct kvm_vm *vm, uint64_t entry)
-> >  {
-> >       return ((entry & PGTBL_PTE_ADDR_MASK) >> PGTBL_PTE_ADDR_SHIFT) <<
-> > --
-> > 2.52.0.351.gbe84eed79e-goog
-> >
+2. It seems you are using the first stage iommu page table even for
+gpa->spa, what if a VM needs an vIOMMU? Or did I miss something?
+
+[1] https://lore.kernel.org/all/20250920203851.2205115-20-ajones@ventanamicro.com/
+
+Best regards,
+Xu Lu
 
 -- 
 kvm-riscv mailing list
