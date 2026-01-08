@@ -4,89 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 90B6DD14891
-	for <kvm-riscv@archiver.kernel.org>; Thu,  8 Jan 2026 02:42:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A3770D1D482
+	for <kvm-riscv@archiver.kernel.org>; Thu,  8 Jan 2026 16:32:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:Subject:Message-ID:Date:From:
-	In-Reply-To:References:MIME-Version:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=Mewr3sQfQq8558BiY4QpzPpak5jP4nptw+2Ks2uS1n4=; b=QjGMviy8U+2G3R
-	7zSnTSpWWrvwlJkdWzi0+5r3VLi/xNOYWKEot2OFs6JljCbqU+m1YtpT6mGq66PezaVGdCNWKo5yb
-	JQR1kZp0qyTT7/uV43MDR9RPY+HX2BqLW2mpxKP1xSX1jUNwfHIhx6yRmXgxpqebPuL2H2snTR3vU
-	N7A0BTGA/CemKUR9jXsN1moPaUIIiaeJKeL3QezbzBM81pEcewS5JvHBIfiG+rj4Rd6UG/qCGfZZr
-	Exn+KKDUPDcc0QjPZfZxRQd7wWIZK00MWL8/keQppoldNwmnU18vmO0M8qs7JzfLDEGpKr1zp0P3S
-	W9SooXvvduOh3Du9px2w==;
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID:
+	References:Mime-Version:In-Reply-To:Date:Reply-To:Content-ID:
+	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+	:Resent-Message-ID:List-Owner;
+	bh=brPoUeHeJB8rjvDPZMAg6cnWOIuf0nFcQG7H9UFERUY=; b=y2XVQo3RIJGXUTgmZ7/DSWG84u
+	QzjtOcL8dZCRZSNsw8EtfGAVxndhcIu+aXy0DQ7ozsBgwhTPBnUO3qCBEaAbLg613N7kVCwVgAPCT
+	KBRJOHssanAogKeJ4gQZa53JVCFWGifwea3Z05rU86ltUUC3ToXuJfooWow0atbzLWeKSONkW+sQx
+	jAYpMCmqFce+gg8pYqwFCwiY9i1VoSvazyl3h8NF0mwbQqllyeddTFbPSS8Vcim2VksVOcSpQBSBT
+	TuM6B81BoKD0/whK2AaU9pDK9pSx/dhQryWgrKM0jL2Pr52G23NNDgRlxcs1z47eUqNwVADxRzTPm
+	lTGi8xiQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vdfyt-0000000Fqd0-0bC9;
-	Thu, 08 Jan 2026 02:42:35 +0000
-Received: from mail-vk1-xa30.google.com ([2607:f8b0:4864:20::a30])
+	id 1vdswM-000000009Qg-0jVI;
+	Thu, 08 Jan 2026 16:32:50 +0000
+Received: from mail-pj1-x104a.google.com ([2607:f8b0:4864:20::104a])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vdfyp-0000000Fqc7-0rXA
+	id 1vdswJ-000000009Os-2kpb
 	for kvm-riscv@lists.infradead.org;
-	Thu, 08 Jan 2026 02:42:33 +0000
-Received: by mail-vk1-xa30.google.com with SMTP id 71dfb90a1353d-560227999d2so965204e0c.1
-        for <kvm-riscv@lists.infradead.org>; Wed, 07 Jan 2026 18:42:29 -0800 (PST)
+	Thu, 08 Jan 2026 16:32:48 +0000
+Received: by mail-pj1-x104a.google.com with SMTP id 98e67ed59e1d1-34cc88eca7eso4385921a91.2
+        for <kvm-riscv@lists.infradead.org>; Thu, 08 Jan 2026 08:32:46 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bytedance.com; s=google; t=1767840148; x=1768444948; darn=lists.infradead.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=DWaAMva1vkFJnTO6a4Iz8dqSyzVc2Jv2hoZ7YzKgLAI=;
-        b=Em6sCPygt9uu5oKAJdxOXSjAlrFr4K0KCd59CFqu9tr8dqZulDLuSy2mjAwhwJuD7K
-         Y2aiwGvI9QQN0ZncEp7AoS1G6K4W1DOKvzAkPANYvyqW9WhJ4ScENrTskCt6mEoth8zn
-         yJHpGTHC7C1dHnaXiXqm+piC68N7Gz9KzrRBfd6PJvsJafdL8KVK8N2Pb6WGVYLkuTt8
-         UbLOinqNZJymW3urbdxKE4k7gUNZjLGzex7aZei3Z8RAm27QNFGK5LcMg3HPMMeNN6Pz
-         SmjHhw5OyntBcTyZyfwXwYCmbnx16lDZFXDmafaTp5672FrqkIDYRUdpMy7yXgTwO6w4
-         ZUSA==
+        d=google.com; s=20230601; t=1767889966; x=1768494766; darn=lists.infradead.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=P4weczJ0CflKmWmemkjVQLod+ZW9LM2QROk7btr2Pj0=;
+        b=26h3V6RNG8moPJqDL66leYTexGqEqD5/U7SCBUadHGKVY5pWJtt7XguJ1O3BzceDg1
+         M+RxNbl2thanzLi+w0WwmQ6MPiRb6OeQhhLCdHt3/7ELfDs9IJMBtnjQbzxyADyadj+y
+         BMH2uxpeErIBNIbellyoSDZG2iHAJV+ejwbkYZZCG/HBFWnEFgsbwF/aYKFX+nuF0vp4
+         4n9J+8k6WjjRXhcI8Sytt/2DrjaOl1WdhEHrH4MxtH/1WIA8f/y2MQc4FSz4wEUsMemW
+         PWVLVicqzDI8V8u7j+z6fZcD1cQrIpLhZBm8yfbNuRJFevyjaoI5DmcVKulQGZWFWbKQ
+         P4ow==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1767840148; x=1768444948;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=DWaAMva1vkFJnTO6a4Iz8dqSyzVc2Jv2hoZ7YzKgLAI=;
-        b=AyjXj/NGTiYCtf3nJjdL00HYw/3fWa9ujrhQD2fRSyIyMXASdXnwRVKvrS+sziUaQ5
-         e61aInNvC1ecPGX/PUvL721ibrMpyytRdbanoL+wL4nrZquwp2NLTstDkYt1dAJb0kLz
-         FETDad8bcsx+1yBeF/q6SiXwqvn8jnCSCn4lx776mHJygl0ZiiBLzhWWCgEcdKRiGnC+
-         7LBwVbbTqn+ZSCxWQ2uH4oBvE900sIu3DFY+2K/YBXR78epx0IO8cFSXj9zY/BzphzXG
-         1Z+0fjGfDVUWnGHGhfQUQ/Q3+6u9vYScTv+cvKoWEtBKXte4t8tEM8pD5USOaGAhif98
-         lJ+Q==
-X-Forwarded-Encrypted: i=1; AJvYcCX37C8Ka/CawrlZDWsbO5rRVhYhtUIAtBuldaiM/z961IPw/1hsVud1cpyaaN4f92qr/N1e8wKvoOo=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yx7fllVNZAtrVvONY4gXazhtSvCbiZmZyJ5N3S8cXObxuiCbB7y
-	eKp5H0laLpe7vJOmxP//ka3exjGr+c8F39YdzjkUgf3cZMNg5fOJMMEYBu8T4IIZfScGwx2HGhs
-	a/c5K7dTrsDQTS6BAdfw4lEgkbZapqhvB9zPA2m7Oew==
-X-Gm-Gg: AY/fxX6QwN2cJb4coxnFFmmp1Be/OAl2OnnC15NXl905WClez4Gg9z5R3wXeH/irSbw
-	leozrRrkBR0G0gV6j+PA5NqgjY8B8HpFPmLs6HWpKAJAw0Qtv2qJDHv7xuhFSVYodoX7dyy74GG
-	IiKpJhRZ9jW6KyI8rVDW3IU8uzEZRc5VJuHx6vNF/zGx4S5DeffYAD12MbXo1iFHKVD5kozi2JO
-	CLAdq+21q0ENUuch121w+/LF5Ap7Hl1HbpArnk1WWh4jGYEkr25r/AgkiZLVH5epuIehtBC3SEt
-	JgODvAb5
-X-Google-Smtp-Source: AGHT+IE/V47xL3tEG3ednENEvtsU/+jEjz0pdaOAK/mMsh+e9J/Ck7StTpF0/DRbwTV9PXomZiSbW5hS90oTUNQNBIc=
-X-Received: by 2002:a05:6102:5344:b0:5db:f9df:34de with SMTP id
- ada2fe7eead31-5ecb6948477mr1618905137.23.1767840148469; Wed, 07 Jan 2026
- 18:42:28 -0800 (PST)
-MIME-Version: 1.0
-References: <CAPYmKFscKJ1ff470d6YmuMxLdJPSZ-ZmuGMMAFO83TT-vvV2JQ@mail.gmail.com>
- <20260107-dc4b5f1d879db9afb00a4a87@orel>
-In-Reply-To: <20260107-dc4b5f1d879db9afb00a4a87@orel>
-From: Xu Lu <luxu.kernel@bytedance.com>
-Date: Thu, 8 Jan 2026 10:42:17 +0800
-X-Gm-Features: AQt7F2oc3TtqXZDC2BKsShVX4GzfSFEeOlZgFscK0Kpj3D8Ip6rwHKBwkPbyCwE
-Message-ID: <CAPYmKFtTxFNix17n19DccBckmGkkpKt4dwQB_60tvsB1GNJS6w@mail.gmail.com>
-Subject: Re: [External] Re: Question about RISCV IOMMU irqbypass patch series
-To: Andrew Jones <ajones@ventanamicro.com>
-Cc: Jason Gunthorpe <jgg@nvidia.com>, Zong Li <zong.li@sifive.com>, 
-	Tomasz Jeznach <tjeznach@rivosinc.com>, joro@8bytes.org, Will Deacon <will@kernel.org>, 
-	Robin Murphy <robin.murphy@arm.com>, Anup Patel <anup@brainfault.org>, atish.patra@linux.dev, 
-	Thomas Gleixner <tglx@linutronix.de>, alex.williamson@redhat.com, 
-	Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt <palmer@dabbelt.com>, 
-	Alexandre Ghiti <alex@ghiti.fr>, iommu@lists.linux.dev, kvm-riscv@lists.infradead.org, 
-	kvm@vger.kernel.org, linux-riscv <linux-riscv@lists.infradead.org>, 
-	LKML <linux-kernel@vger.kernel.org>
+        d=1e100.net; s=20230601; t=1767889966; x=1768494766;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=P4weczJ0CflKmWmemkjVQLod+ZW9LM2QROk7btr2Pj0=;
+        b=q4KkyAH6NaMZTK+kvc/7GNbVgX30mQZ1/2zzltmnGZb9isbqmizSzCUVsdTHdB3uSX
+         g5aFqRJ9uYvMU8JWo3hGbFMQVi97Z5uuAF1uw34os/C4szi5IYERgslPvpJ7kPG2/CFK
+         dLAlgovrevHD818hXB4eNL0XZfWefZrjwpDnZmuy2es//NApj1ds40tPA1JXtrhPNP6/
+         7JiQIdWrZQKMH9PFVm8r+GnPU8XpkexRwIqh+kY3UnQElmt3+npSueYouQy9hVwVdPah
+         Us6TUnMQvcmtGhBix2eiTFnfRlQEyhl7hKPixUNgdSjf99OnUjiEPQrKO/BpaHq3InPn
+         e7Lw==
+X-Forwarded-Encrypted: i=1; AJvYcCXvAMb6QkV8JVxt/zFVMaSLH1PGRwzmAtcEF2DSLZM0rkZMnkHC+Ra145sxLg4qG++otMTYqr/+Gcc=@lists.infradead.org
+X-Gm-Message-State: AOJu0YyQUjj0UNLnM5Z9qRWmPaX4tnjMP6hyMsp8ODgFyb6l+8hGeB2Z
+	vwLDwpF1qSZMeAz4dhfp/lTDnVZSy/UShKnxC/O3fdaXrufnzbjS0lwBMpPNVDuIXlrqtchMqpt
+	ugVBAsg==
+X-Google-Smtp-Source: AGHT+IE52p68bfcsN1dFtZpJ3rbWKn9Teo6CB2P4bpjVKJkGE0poIQ7b/YVeU0+kM07hg/nx48xC5EXqdCA=
+X-Received: from pjbgk8.prod.google.com ([2002:a17:90b:1188:b0:340:7740:281c])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:3852:b0:343:b610:901c
+ with SMTP id 98e67ed59e1d1-34f68cb9036mr7160126a91.26.1767889966231; Thu, 08
+ Jan 2026 08:32:46 -0800 (PST)
+Date: Thu, 8 Jan 2026 08:32:44 -0800
+In-Reply-To: <t7dcszq3quhqprdcqz7keykxbmqf62pdelqrkeilpbmsrnuji5@a3lplybmlbwf>
+Mime-Version: 1.0
+References: <20251230230150.4150236-1-seanjc@google.com> <20251230230150.4150236-22-seanjc@google.com>
+ <t7dcszq3quhqprdcqz7keykxbmqf62pdelqrkeilpbmsrnuji5@a3lplybmlbwf>
+Message-ID: <aV_cLAlz4v1VOkDt@google.com>
+Subject: Re: [PATCH v4 21/21] KVM: selftests: Test READ=>WRITE dirty logging
+ behavior for shadow MMU
+From: Sean Christopherson <seanjc@google.com>
+To: Yosry Ahmed <yosry.ahmed@linux.dev>
+Cc: Paolo Bonzini <pbonzini@redhat.com>, Marc Zyngier <maz@kernel.org>, 
+	Oliver Upton <oupton@kernel.org>, Tianrui Zhao <zhaotianrui@loongson.cn>, 
+	Bibo Mao <maobibo@loongson.cn>, Huacai Chen <chenhuacai@kernel.org>, 
+	Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, 
+	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+	Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, 
+	Claudio Imbrenda <imbrenda@linux.ibm.com>, kvm@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, 
+	loongarch@lists.linux.dev, kvm-riscv@lists.infradead.org, 
+	linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260107_184231_461483_7EECE3D8 
-X-CRM114-Status: GOOD (  24.30  )
+X-CRM114-CacheID: sfid-20260108_083247_729770_AF493F61 
+X-CRM114-Status: GOOD (  39.41  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -98,154 +95,420 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-SGkgQW5kcmV3LAoKT24gVGh1LCBKYW4gOCwgMjAyNiBhdCAxOjUx4oCvQU0gQW5kcmV3IEpvbmVz
-IDxham9uZXNAdmVudGFuYW1pY3JvLmNvbT4gd3JvdGU6Cj4KPiBPbiBXZWQsIEphbiAwNywgMjAy
-NiBhdCAwNjowMToyNlBNICswODAwLCBYdSBMdSB3cm90ZToKPiA+IEhpIEFuZHJldywKPiA+Cj4g
-PiBUaGFua3MgZm9yIHlvdXIgYnJpbGxpYW50IGpvYiBvbiB0aGUgUklTQ1YgSU9NTVUgaXJxYnlw
-YXNzIHBhdGNoCj4gPiBzZXJpZXNbMV0uIEkgaGF2ZSByZWJhc2VkIGl0IG9uIHY2LjE4IGFuZCBz
-dWNjZXNzZnVsbHkgcGFzc2VkIHRocm91Z2gKPiA+IGEgbnZtZSBkZXZpY2UgdG8gVk0uIEJ1dCBJ
-IHN0aWxsIGhhdmUgc29tZSBxdWVzdGlvbnMgYWJvdXQgaXQuCj4gPgo+ID4gMS4gSXQgc2VlbXMg
-ImlycWRvbWFpbi0+aG9zdF9kYXRhLT5kb21haW4iIGNhbiBiZSBOVUxMIGZvciBibG9ja2luZyBv
-cgo+ID4gaWRlbnRpdHkgZG9tYWluLiBTbyBpdCdzIGJldHRlciB0byBjaGVjayB3aGV0aGVyIGl0
-J3MgTlVMTCBpbgo+ID4gcmlzY3ZfaW9tbXVfaXJfaXJxX2RvbWFpbl9hbGxvY19pcnFzIG9yCj4g
-PiByaXNjdl9pb21tdV9pcl9pcnFfZG9tYWluX2ZyZWVfaXJxcyBmdW5jdGlvbnMuIE90aGVyd2lz
-ZSBwYWdlIGZhdWx0Cj4gPiBjYW4gaGFwcGVuLgo+Cj4gSW5kZWVkLiBEaWQgeW91IGhpdCB0aGUg
-TlVMTCBkZXJlZmVyZW5jZSBpbiB5b3VyIHRlc3Rpbmc/CgpZZXMuIEJlbG93IGlzIG15IHNldHRp
-bmdzOgoKQ09ORklHX0lPTU1VX0lPVkE9eQpDT05GSUdfSU9NTVVfQVBJPXkKQ09ORklHX0lPTU1V
-X1NVUFBPUlQ9eQpDT05GSUdfSU9NTVVfREVGQVVMVF9ETUFfU1RSSUNUPXkKQ09ORklHX0lPTU1V
-X0RNQT15CkNPTkZJR19SSVNDVl9JT01NVT15CkNPTkZJR19SSVNDVl9JT01NVV9QQ0k9eQpDT05G
-SUdfSEFWRV9LVk1fSVJRX0JZUEFTUz1tCkNPTkZJR19JUlFfQllQQVNTX01BTkFHRVI9bQpDT05G
-SUdfS1ZNX1ZGSU89eQpDT05GSUdfVkZJTz1tCkNPTkZJR19WRklPX0dST1VQPXkKQ09ORklHX1ZG
-SU9fQ09OVEFJTkVSPXkKQ09ORklHX1ZGSU9fSU9NTVVfVFlQRTE9bQpDT05GSUdfVkZJT19OT0lP
-TU1VPXkKQ09ORklHX1ZGSU9fVklSUUZEPXkKQ09ORklHX1ZGSU9fUENJX0NPUkU9bQpDT05GSUdf
-VkZJT19QQ0lfSU5UWD15CkNPTkZJR19WRklPX1BDST1tCgpUaGUgcGFuaWMgc3RhY2sgYmVoYXZl
-cyBhczoKClsgICAgMS43OTk0NjFdIHZpcnRpby1wY2kgMDAwMDowMDowMS4wOiBlbmFibGluZyBk
-ZXZpY2UgKDAwMDAgLT4gMDAwMykKWyAgICAxLjgwNzg5Nl0gdmlydGlvX2JsayB2aXJ0aW8wOiA4
-LzAvMCBkZWZhdWx0L3JlYWQvcG9sbCBxdWV1ZXMKWyAgICAxLjgxMzA4OF0gVW5hYmxlIHRvIGhh
-bmRsZSBrZXJuZWwgTlVMTCBwb2ludGVyIGRlcmVmZXJlbmNlIGF0CnZpcnR1YWwgYWRkcmVzcyAw
-MDAwMDAwMDAwMDAwMGMwClsgICAgMS44MTQ0OTldIEN1cnJlbnQga3dvcmtlci91Mzk6MCBwZ3Rh
-YmxlOiA0SyBwYWdlc2l6ZSwgNDgtYml0IFZBcywKcGdkcD0weDAwMDAwMDAwODI1ZGEwMDAKWyAg
-ICAxLjgxNTAwNl0gWzAwMDAwMDAwMDAwMDAwYzBdIHBnZD0wMDAwMDAwMDAwMDAwMDAwLCBwNGQ9
-MDAwMDAwMDAwMDAwMDAwMApbICAgIDEuODE1OTU2XSBPb3BzIFsjMV0KWyAgICAxLjgxNjE2Nl0g
-TW9kdWxlcyBsaW5rZWQgaW46ClsgICAgMS44MTY5MjJdIENQVTogNyBVSUQ6IDAgUElEOiA2MSBD
-b21tOiBrd29ya2VyL3UzOTowIE5vdCB0YWludGVkCjYuMTguMC0wMDAyMC1nZWEwYWIzYTVlNzZl
-ICMyNDMgVk9MVU5UQVJZClsgICAgMS44MTc2NzBdIEhhcmR3YXJlIG5hbWU6IHJpc2N2LXZpcnRp
-byxxZW11IChEVCkKWyAgICAxLjgxODQ3NF0gV29ya3F1ZXVlOiBldmVudHNfdW5ib3VuZCBkZWZl
-cnJlZF9wcm9iZV93b3JrX2Z1bmMKWyAgICAxLjgxOTIyN10gZXBjIDogcmlzY3ZfaW9tbXVfaXJf
-Y29tcHV0ZV9tc2lwdGVfaWR4KzB4MTAvMHhiOApbICAgIDEuODE5ODAzXSAgcmEgOiByaXNjdl9p
-b21tdV9pcl9pcnFfZG9tYWluX2FsbG9jX2lycXMrMHg4ZS8weDEyOApbICAgIDEuODIwMTgxXSBl
-cGMgOiBmZmZmZmZmZjgwNzMyNDMwIHJhIDogZmZmZmZmZmY4MDczMmUxZSBzcCA6CmZmZmY4Zjgw
-MDA5Y2VjMzAKWyAgICAxLjgyMDU5Nl0gIGdwIDogZmZmZmZmZmY4MjNjYmJlMCB0cCA6IGZmZmZh
-ZjgwODBjZThlODAgdDAgOgpmZmZmZmZmZjgwMDFjNDIwClsgICAgMS44MjEwMDZdICB0MSA6IDAw
-MDAwMDAwMDAwMDAwMDAgdDIgOiAwMDAwMDAwMDAwMDAwMDAwIHMwIDoKZmZmZjhmODAwMDljZWM0
-MApbICAgIDEuODIxNDEzXSAgczEgOiAwMDAwMDAwMDAwMDAwMDE3IGEwIDogMDAwMDAwMDAwMDAw
-MDAwMCBhMSA6CjAwMDAwMDAwMjgwMTAwMDAKWyAgICAxLjgyMTkxOF0gIGEyIDogZmZmZmFmODA4
-MWY1ZDYwOCBhMyA6IGZmZmZhZjgwODAxMzllNDAgYTQgOgowMDAwMDAwMDAwMDAwMDAwClsgICAg
-MS44MjI0NjVdICBhNSA6IDAwMDAwMDAwMDAwMDAwMDMgYTYgOiAwMDAwMDAwMDAwMDAwMDAxIGE3
-IDoKZmZmZmFmODA4MWY1ZDYwMApbICAgIDEuODIyODc3XSAgczIgOiBmZmZmYWY4MDgwZDA2ZTQw
-IHMzIDogMDAwMDAwMDAwMDAwMDAwMCBzNCA6CjAwMDAwMDAwMjgwMTAwMDAKWyAgICAxLjgyMzI4
-NF0gIHM1IDogMDAwMDAwMDAwMDAwMDAxOCBzNiA6IGZmZmZhZjgwODBkMDVmMDAgczcgOgpmZmZm
-YWY4MDgwZTE4OWYwClsgICAgMS44MjM2OTRdICBzOCA6IDAwMDAwMDAwMDAwMDAwMDAgczkgOiBm
-ZmZmZmZmZjgyMzNkODkwIHMxMDoKMDAwMDAwMDAwMDAwMDAwMgpbICAgIDEuODI0MTA0XSAgczEx
-OiBmZmZmYWY4MDgwZTE0MTkwIHQzIDogMDAwMDAwMDAwMDAwMDAwMiB0NCA6CmZmZmZmZmZmODIw
-MDBiMjAKWyAgICAxLjgyNDUxMl0gIHQ1IDogMDAwMDAwMDAwMDAwMDAwMyB0NiA6IGZmZmZhZjgw
-ODBkMDVkNjgKWyAgICAxLjgyNDgyN10gc3RhdHVzOiAwMDAwMDAwMjAwMDAwMTIwIGJhZGFkZHI6
-IDAwMDAwMDAwMDAwMDAwYzAKY2F1c2U6IDAwMDAwMDAwMDAwMDAwMGQKWyAgICAxLjgyNTQzOV0g
-WzxmZmZmZmZmZjgwNzMyNDMwPl0gcmlzY3ZfaW9tbXVfaXJfY29tcHV0ZV9tc2lwdGVfaWR4KzB4
-MTAvMHhiOApbICAgIDEuODI2MTYyXSBbPGZmZmZmZmZmODA3MzJlMWU+XQpyaXNjdl9pb21tdV9p
-cl9pcnFfZG9tYWluX2FsbG9jX2lycXMrMHg4ZS8weDEyOApbICAgIDEuODI2NTk1XSBbPGZmZmZm
-ZmZmODAwYzcwNTQ+XSBpcnFfZG9tYWluX2FsbG9jX2lycXNfcGFyZW50KzB4MWMvMHg2MApbICAg
-IDEuODI2OTczXSBbPGZmZmZmZmZmODAwY2FjOGM+XSBtc2lfZG9tYWluX2FsbG9jKzB4NzQvMHgx
-MjAKWyAgICAxLjgyNzI5NV0gWzxmZmZmZmZmZjgwMGM3MjkwPl0gaXJxX2RvbWFpbl9hbGxvY19p
-cnFzX2hpZXJhcmNoeSsweDE4LzB4NTAKWyAgICAxLjgyNzY4Ml0gWzxmZmZmZmZmZjgwMGM4MjVh
-Pl0gaXJxX2RvbWFpbl9hbGxvY19pcnFzX2xvY2tlZCsweGJhLzB4MzA4ClsgICAgMS44MjgwNThd
-IFs8ZmZmZmZmZmY4MDBjODg0ZT5dIF9faXJxX2RvbWFpbl9hbGxvY19pcnFzKzB4NWUvMHhhOApb
-ICAgIDEuODI4NDExXSBbPGZmZmZmZmZmODAwY2I0N2M+XSBfX21zaV9kb21haW5fYWxsb2NfaXJx
-cysweDE3NC8weDNhMApbICAgIDEuODI4Nzc0XSBbPGZmZmZmZmZmODAwY2MwMDI+XSBfX21zaV9k
-b21haW5fYWxsb2NfbG9ja2VkKzB4MTFhLzB4MTc4ClsgICAgMS44MjkxNDBdIFs8ZmZmZmZmZmY4
-MDBjYzk1ND5dIG1zaV9kb21haW5fYWxsb2NfaXJxc19hbGxfbG9ja2VkKzB4NTQvMHhiOApbICAg
-IDEuODI5NTI4XSBbPGZmZmZmZmZmODA2MTYyMTQ+XSBwY2lfbXNpX3NldHVwX21zaV9pcnFzKzB4
-MmMvMHg0OApbICAgIDEuODI5OTkzXSBbPGZmZmZmZmZmODA2MTUyODQ+XSBtc2l4X3NldHVwX2lu
-dGVycnVwdHMrMHgxMjQvMHgxZjgKWyAgICAxLjgzMDQ4NF0gWzxmZmZmZmZmZjgwNjE1NjhlPl0g
-X19wY2lfZW5hYmxlX21zaXhfcmFuZ2UrMHgzMzYvMHg0ZTAKWyAgICAxLjgzMDg0M10gWzxmZmZm
-ZmZmZjgwNjEzYTRlPl0gcGNpX2FsbG9jX2lycV92ZWN0b3JzX2FmZmluaXR5KzB4OWUvMHgxMjAK
-WyAgICAxLjgzMTIyNV0gWzxmZmZmZmZmZjgwNmQwNjc2Pl0gdnBfZmluZF92cXNfbXNpeCsweDEy
-ZS8weDNhOApbICAgIDEuODMxNTU3XSBbPGZmZmZmZmZmODA2ZDA5MmE+XSB2cF9maW5kX3Zxcysw
-eDNhLzB4MjIwClsgICAgMS44MzE4NjBdIFs8ZmZmZmZmZmY4MDZjZTBlNj5dIHZwX21vZGVybl9m
-aW5kX3ZxcysweDFlLzB4NjgKWyAgICAxLjgzMjE4NV0gWzxmZmZmZmZmZjgwNzgwYTg0Pl0gaW5p
-dF92cSsweDJkNC8weDM0MApbICAgIDEuODMyNDc0XSBbPGZmZmZmZmZmODA3ODBjNTg+XSB2aXJ0
-YmxrX3Byb2JlKzB4ZTAvMHhiNDAKWyAgICAxLjgzMjc3N10gWzxmZmZmZmZmZjgwNmM3Mzk0Pl0g
-dmlydGlvX2Rldl9wcm9iZSsweDE4NC8weDI4MApbICAgIDEuODMzMTA3XSBbPGZmZmZmZmZmODA3
-NGM2MjY+XSByZWFsbHlfcHJvYmUrMHg5ZS8weDM1MApbICAgIDEuODMzNDEyXSBbPGZmZmZmZmZm
-ODA3NGM5NTQ+XSBfX2RyaXZlcl9wcm9iZV9kZXZpY2UrMHg3Yy8weDEzOApbICAgIDEuODMzODUz
-XSBbPGZmZmZmZmZmODA3NGNhZmE+XSBkcml2ZXJfcHJvYmVfZGV2aWNlKzB4M2EvMHhkMApbICAg
-IDEuODM0MTkxXSBbPGZmZmZmZmZmODA3NGNjMWU+XSBfX2RldmljZV9hdHRhY2hfZHJpdmVyKzB4
-OGUvMHgxMzAKWyAgICAxLjgzNDU0M10gWzxmZmZmZmZmZjgwNzRhMTY4Pl0gYnVzX2Zvcl9lYWNo
-X2RydisweDY4LzB4YzgKWyAgICAxLjgzNDg0OF0gWzxmZmZmZmZmZjgwNzRjZmQ4Pl0gX19kZXZp
-Y2VfYXR0YWNoKzB4OTAvMHgxYTAKWyAgICAxLjgzNTE2NF0gWzxmZmZmZmZmZjgwNzRkMzBhPl0g
-ZGV2aWNlX2luaXRpYWxfcHJvYmUrMHgxYS8weDMwClsgICAgMS44MzU0OThdIFs8ZmZmZmZmZmY4
-MDc0YjMxMD5dIGJ1c19wcm9iZV9kZXZpY2UrMHg5MC8weGEwClsgICAgMS44MzU4MjFdIFs8ZmZm
-ZmZmZmY4MDc0ODVlMD5dIGRldmljZV9hZGQrMHg1ZTgvMHg3ZjgKWyAgICAxLjgzNjEyMl0gWzxm
-ZmZmZmZmZjgwNmM3MDIwPl0gcmVnaXN0ZXJfdmlydGlvX2RldmljZSsweDFjMC8weDFmOApbICAg
-IDEuODM2NDcyXSBbPGZmZmZmZmZmODA2Y2ZjYjg+XSB2aXJ0aW9fcGNpX3Byb2JlKzB4YjAvMHgx
-NzAKWyAgICAxLjgzNjc5Nl0gWzxmZmZmZmZmZjgwNjA5ODk0Pl0gbG9jYWxfcGNpX3Byb2JlKzB4
-M2MvMHg5OApbICAgIDEuODM3MTExXSBbPGZmZmZmZmZmODA2MGE1MTI+XSBwY2lfZGV2aWNlX3By
-b2JlKzB4Y2EvMHgyNzgKWyAgICAxLjgzNzQzMV0gWzxmZmZmZmZmZjgwNzRjNjI2Pl0gcmVhbGx5
-X3Byb2JlKzB4OWUvMHgzNTAKWyAgICAxLjgzNzgwOF0gWzxmZmZmZmZmZjgwNzRjOTU0Pl0gX19k
-cml2ZXJfcHJvYmVfZGV2aWNlKzB4N2MvMHgxMzgKWyAgICAxLjgzODE1N10gWzxmZmZmZmZmZjgw
-NzRjYWZhPl0gZHJpdmVyX3Byb2JlX2RldmljZSsweDNhLzB4ZDAKWyAgICAxLjgzODQ4NV0gWzxm
-ZmZmZmZmZjgwNzRjYzFlPl0gX19kZXZpY2VfYXR0YWNoX2RyaXZlcisweDhlLzB4MTMwClsgICAg
-MS44Mzg4MzVdIFs8ZmZmZmZmZmY4MDc0YTE2OD5dIGJ1c19mb3JfZWFjaF9kcnYrMHg2OC8weGM4
-ClsgICAgMS44MzkxNTJdIFs8ZmZmZmZmZmY4MDc0Y2ZkOD5dIF9fZGV2aWNlX2F0dGFjaCsweDkw
-LzB4MWEwClsgICAgMS44Mzk0NzBdIFs8ZmZmZmZmZmY4MDc0ZDMwYT5dIGRldmljZV9pbml0aWFs
-X3Byb2JlKzB4MWEvMHgzMApbICAgIDEuODM5ODA5XSBbPGZmZmZmZmZmODA1ZmFiMmE+XSBwY2lf
-YnVzX2FkZF9kZXZpY2UrMHhhYS8weDEwOApbICAgIDEuODQwMTQxXSBbPGZmZmZmZmZmODA1ZmFi
-YzQ+XSBwY2lfYnVzX2FkZF9kZXZpY2VzKzB4M2MvMHg4OApbICAgIDEuODQwNDcwXSBbPGZmZmZm
-ZmZmODA1ZmVmOGE+XSBwY2lfaG9zdF9wcm9iZSsweDlhLzB4MTA4ClsgICAgMS44NDA3ODldIFs8
-ZmZmZmZmZmY4MDYzZmFmZT5dIHBjaV9ob3N0X2NvbW1vbl9pbml0KzB4N2UvMHhhMApbICAgIDEu
-ODQxMTMxXSBbPGZmZmZmZmZmODA2M2ZiNGM+XSBwY2lfaG9zdF9jb21tb25fcHJvYmUrMHgyYy8w
-eDQ4ClsgICAgMS44NDE0NzBdIFs8ZmZmZmZmZmY4MDc0ZjkxNj5dIHBsYXRmb3JtX3Byb2JlKzB4
-NTYvMHg5OApbICAgIDEuODQxODcwXSBbPGZmZmZmZmZmODA3NGM2MjY+XSByZWFsbHlfcHJvYmUr
-MHg5ZS8weDM1MApbICAgIDEuODQyMTkxXSBbPGZmZmZmZmZmODA3NGM5NTQ+XSBfX2RyaXZlcl9w
-cm9iZV9kZXZpY2UrMHg3Yy8weDEzOApbICAgIDEuODQyNTM3XSBbPGZmZmZmZmZmODA3NGNhZmE+
-XSBkcml2ZXJfcHJvYmVfZGV2aWNlKzB4M2EvMHhkMApbICAgIDEuODQyODczXSBbPGZmZmZmZmZm
-ODA3NGNjMWU+XSBfX2RldmljZV9hdHRhY2hfZHJpdmVyKzB4OGUvMHgxMzAKWyAgICAxLjg0MzIy
-MV0gWzxmZmZmZmZmZjgwNzRhMTY4Pl0gYnVzX2Zvcl9lYWNoX2RydisweDY4LzB4YzgKWyAgICAx
-Ljg0MzU0MF0gWzxmZmZmZmZmZjgwNzRjZmQ4Pl0gX19kZXZpY2VfYXR0YWNoKzB4OTAvMHgxYTAK
-WyAgICAxLjg0Mzg2MV0gWzxmZmZmZmZmZjgwNzRkMzBhPl0gZGV2aWNlX2luaXRpYWxfcHJvYmUr
-MHgxYS8weDMwClsgICAgMS44NDQxOTNdIFs8ZmZmZmZmZmY4MDc0YjMxMD5dIGJ1c19wcm9iZV9k
-ZXZpY2UrMHg5MC8weGEwClsgICAgMS44NDQ1MDddIFs8ZmZmZmZmZmY4MDc0YzIwNj5dIGRlZmVy
-cmVkX3Byb2JlX3dvcmtfZnVuYysweGE2LzB4MTEwClsgICAgMS44NDQ4NjldIFs8ZmZmZmZmZmY4
-MDA1NWVhYT5dIHByb2Nlc3Nfb25lX3dvcmsrMHgxOTIvMHgzMzgKWyAgICAxLjg0NTE5Nl0gWzxm
-ZmZmZmZmZjgwMDU2ZjljPl0gd29ya2VyX3RocmVhZCsweDI5NC8weDQwOApbICAgIDEuODQ1NTAy
-XSBbPGZmZmZmZmZmODAwNjAyMDA+XSBrdGhyZWFkKzB4ZTAvMHgxZDgKWyAgICAxLjg0NTg4N10g
-WzxmZmZmZmZmZjgwMDEzNmM2Pl0gcmV0X2Zyb21fZm9ya19rZXJuZWwrMHgxNi8weDEwMApbICAg
-IDEuODQ2MzYyXSBbPGZmZmZmZmZmODBhYzY5M2E+XSByZXRfZnJvbV9mb3JrX2tlcm5lbF9hc20r
-MHgxNi8weDE4ClsgICAgMS44NDY5NTRdIENvZGU6IGZmZmYgZmZmZiBhMjk3IGZmOGUgMDAxMyAw
-MDAwIDExNDEgZTAyMiBlNDA2IDA4MDAKKDI2ODMpIDBjMDUKWyAgICAxLjg0ODEyNV0gLS0tWyBl
-bmQgdHJhY2UgMDAwMDAwMDAwMDAwMDAwMCBdLS0tCgpJIGFkZGVkIGEgY2hlY2sgb2Ygd2hldGhl
-ciB0aGUgaXJxZG9tYWluLT5ob3N0X2RhdGEtPmRvbWFpbiBpcyBOVUxMIGluCmJvdGggcmlzY3Zf
-aW9tbXVfaXJfaXJxX2RvbWFpbl9hbGxvY19pcnFzKCkgYW5kCnJpc2N2X2lvbW11X2lyX2lycV9k
-b21haW5fZnJlZV9pcnFzKCkgYW5kIG5vdyBpdCB3b3Jrcy4KCj4KPiA+Cj4gPiAyLiBJdCBzZWVt
-cyB5b3UgYXJlIHVzaW5nIHRoZSBmaXJzdCBzdGFnZSBpb21tdSBwYWdlIHRhYmxlIGV2ZW4gZm9y
-Cj4gPiBncGEtPnNwYSwgd2hhdCBpZiBhIFZNIG5lZWRzIGFuIHZJT01NVT8gT3IgZGlkIEkgbWlz
-cyBzb21ldGhpbmc/Cj4KPiBVbmZvcnR1bmF0ZWx5IHRoZSBJT01NVSBzcGVjIHdhc24ndCBjbGVh
-ciBvbiB0aGUgdXNlIG9mIHRoZSBNU0kgdGFibGUKPiB3aGVuIG9ubHkgc3RhZ2UxIGlzIGluIHVz
-ZSBhbmQgbm93LCBhZnRlciBkaXNjdXNzaW9ucyB3aXRoIHRoZSBzcGVjCj4gYXV0aG9yLCBpdCBh
-cHBlYXJzIHdoYXQgSSBoYXZlIHdyaXR0ZW4gd29uJ3Qgd29yay4gQWRkaXRpb25hbGx5LCBKYXNv
-bgo+IGRpZG4ndCBsaWtlIHRoaXMgbmV3IGFwcHJvYWNoIHRvIElSUV9ET01BSU5fRkxBR19JU09M
-QVRFRF9NU0kgZWl0aGVyLAo+IHNvIHRoZXJlJ3MgYSBsb3Qgb2YgcmV3b3JrIHRoYXQgbmVlZHMg
-dG8gYmUgZG9uZSBmb3IgdjMuIEkgaGFkIGhhZCBob3Blcwo+IHRvIGRlZGljYXRlIERlY2VtYmVy
-IHRvIHRoaXMgYnV0IGdvdCBkaXN0cmFjdGVkIHdpdGggb3RoZXIgdGhpbmdzIGFuZAo+IHZhY2F0
-aW9uLiBOb3cgSSBob3BlIHRvIGRlZGljYXRlIHRoaXMgbW9udGgsIGJ1dCBJIHN0aWxsIG5lZWQg
-dG8gZ2V0Cj4gc3RhcnRlZCEKCkkgc2VlLiBMb29rIGZvcndhcmQgdG8geW91ciBuZXh0IHZlcnNp
-b24uCgpCZXN0IHJlZ2FyZHMsClh1IEx1Cgo+Cj4gVGhhbmtzLAo+IGRyZXcKPgo+ID4KPiA+IFsx
-XSBodHRwczovL2xvcmUua2VybmVsLm9yZy9hbGwvMjAyNTA5MjAyMDM4NTEuMjIwNTExNS0yMC1h
-am9uZXNAdmVudGFuYW1pY3JvLmNvbS8KPiA+Cj4gPiBCZXN0IHJlZ2FyZHMsCj4gPiBYdSBMdQoK
-LS0gCmt2bS1yaXNjdiBtYWlsaW5nIGxpc3QKa3ZtLXJpc2N2QGxpc3RzLmluZnJhZGVhZC5vcmcK
-aHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9rdm0tcmlzY3YK
+On Fri, Jan 02, 2026, Yosry Ahmed wrote:
+> On Tue, Dec 30, 2025 at 03:01:50PM -0800, Sean Christopherson wrote:
+> >  	WRITE_ONCE(*b, 1);
+> > -	GUEST_SYNC(true);
+> > +	GUEST_SYNC(2 | TEST_SYNC_WRITE_FAULT);
+> >  	WRITE_ONCE(*b, 1);
+> > -	GUEST_SYNC(true);
+> > -	GUEST_SYNC(false);
+> > +	GUEST_SYNC(2 | TEST_SYNC_WRITE_FAULT);
+> > +	READ_ONCE(*b);
+> > +	GUEST_SYNC(2 | TEST_SYNC_NO_FAULT);
+> > +	GUEST_SYNC(2 | TEST_SYNC_NO_FAULT);
+> 
+> Instead of hardcoding 0 and 2 here, which IIUC correspond to the
+> physical addresses 0xc0000000 and 0xc0002000, as well as indices in
+> host_test_mem, can we make the overall definitions a bit more intuitive?
+> 
+> For example:
+> 
+> #define GUEST_GPA_START		0xc0000000
+> #define GUEST_PAGE1_IDX		0
+> #define GUEST_PAGE2_IDX		1
+> #define GUEST_GPA_PAGE1		(GUEST_GPA_START + GUEST_PAGE1_IDX * PAGE_SIZE)
+> #define GUEST_GPA_PAGE2		(GUEST_GPA_START + GUEST_PAGE2_IDX * PAGE_SIZE)
+> 
+> /* Mapped to GUEST_GPA_PAGE1 and GUEST_GPA_PAGE2 */
+> #define GUEST_GVA_PAGE1		0xd0000000
+> #define GUEST_GVA_PAGE2		0xd0002000
+> 
+> /* Mapped to GUEST_GPA_PAGE1 and GUEST_GPA_PAGE2 using TDP in L1 */
+> #define GUEST_GVA_NESTED_PAGE1  0xd0001000
+> #define GUEST_GVA_NESTED_PAGE2	0xd0003000
+> 
+> Then in L2 code, we can explicitly take in the GVA of page1 and page2
+> and use the definitions above in the GUEST_SYNC() calls, for example:
+> 
+> static void l2_guest_code(u64 *page1_gva, u64 *page2_gva)
+> {
+>         READ_ONCE(*page1_gva);
+>         GUEST_SYNC(GUEST_PAGE1_IDX | TEST_SYNC_READ_FAULT);
+>         WRITE_ONCE(*page1_gva, 1);
+>         GUEST_SYNC(GUEST_PAGE1_IDX | TEST_SYNC_WRITE_FAULT);
+> 	...
+> }
+> 
+> and we can explicitly read page1 and page2 from the host (instead of
+> using host_test_mem).
+> 
+> Alternatively, we can pass in the guest GVA directly into GUEST_SYNC(),
+> and use the lower bits for TEST_SYNC_READ_FAULT, TEST_SYNC_WRITE_FAULT,
+> and TEST_SYNC_NO_FAULT.
+>
+> WDYT?
+
+I fiddled with this a bunch and came up with the below.  It's more or less what
+you're suggesting, but instead of interleaving the aliases, it simply puts them
+at a higher base.  That makes pulling the page frame number out of the GVA much
+cleaner, as it's simply arithmetic instead of weird masking and shifting magic.
+
+--
+From: Sean Christopherson <seanjc@google.com>
+Date: Wed, 7 Jan 2026 14:38:32 -0800
+Subject: [PATCH] KVM: selftests: Test READ=>WRITE dirty logging behavior for
+ shadow MMU
+
+Update the nested dirty log test to validate KVM's handling of READ faults
+when dirty logging is enabled.  Specifically, set the Dirty bit in the
+guest PTEs used to map L2 GPAs, so that KVM will create writable SPTEs
+when handling L2 read faults.  When handling read faults in the shadow MMU,
+KVM opportunistically creates a writable SPTE if the mapping can be
+writable *and* the gPTE is dirty (or doesn't support the Dirty bit), i.e.
+if KVM doesn't need to intercept writes in order to emulate Dirty-bit
+updates.
+
+To actually test the L2 READ=>WRITE sequence, e.g. without masking a false
+pass by other test activity, route the READ=>WRITE and WRITE=>WRITE
+sequences to separate L1 pages, and differentiate between "marked dirty
+due to a WRITE access/fault" and "marked dirty due to creating a writable
+SPTE for a READ access/fault".  The updated sequence exposes the bug fixed
+by KVM commit 1f4e5fc83a42 ("KVM: x86: fix nested guest live migration
+with PML") when the guest performs a READ=>WRITE sequence with dirty guest
+PTEs.
+
+Opportunistically tweak and rename the address macros, and add comments,
+to make it more obvious what the test is doing.  E.g. NESTED_TEST_MEM1
+vs. GUEST_TEST_MEM doesn't make it all that obvious that the test is
+creating aliases in both the L2 GPA and GVA address spaces, but only when
+L1 is using TDP to run L2.
+
+Signed-off-by: Sean Christopherson <seanjc@google.com>
+---
+ .../selftests/kvm/include/x86/processor.h     |   1 +
+ .../testing/selftests/kvm/lib/x86/processor.c |   7 +
+ .../selftests/kvm/x86/nested_dirty_log_test.c | 188 +++++++++++++-----
+ 3 files changed, 145 insertions(+), 51 deletions(-)
+
+diff --git a/tools/testing/selftests/kvm/include/x86/processor.h b/tools/testing/selftests/kvm/include/x86/processor.h
+index ab29b1c7ed2d..8945c9eea704 100644
+--- a/tools/testing/selftests/kvm/include/x86/processor.h
++++ b/tools/testing/selftests/kvm/include/x86/processor.h
+@@ -1483,6 +1483,7 @@ bool kvm_cpu_has_tdp(void);
+ void tdp_map(struct kvm_vm *vm, uint64_t nested_paddr, uint64_t paddr, uint64_t size);
+ void tdp_identity_map_default_memslots(struct kvm_vm *vm);
+ void tdp_identity_map_1g(struct kvm_vm *vm,  uint64_t addr, uint64_t size);
++uint64_t *tdp_get_pte(struct kvm_vm *vm, uint64_t l2_gpa);
+ 
+ /*
+  * Basic CPU control in CR0
+diff --git a/tools/testing/selftests/kvm/lib/x86/processor.c b/tools/testing/selftests/kvm/lib/x86/processor.c
+index ab869a98bbdc..fab18e9be66c 100644
+--- a/tools/testing/selftests/kvm/lib/x86/processor.c
++++ b/tools/testing/selftests/kvm/lib/x86/processor.c
+@@ -390,6 +390,13 @@ static uint64_t *__vm_get_page_table_entry(struct kvm_vm *vm,
+ 	return virt_get_pte(vm, mmu, pte, vaddr, PG_LEVEL_4K);
+ }
+ 
++uint64_t *tdp_get_pte(struct kvm_vm *vm, uint64_t l2_gpa)
++{
++	int level = PG_LEVEL_4K;
++
++	return __vm_get_page_table_entry(vm, &vm->stage2_mmu, l2_gpa, &level);
++}
++
+ uint64_t *vm_get_pte(struct kvm_vm *vm, uint64_t vaddr)
+ {
+ 	int level = PG_LEVEL_4K;
+diff --git a/tools/testing/selftests/kvm/x86/nested_dirty_log_test.c b/tools/testing/selftests/kvm/x86/nested_dirty_log_test.c
+index 89d2e86a0db9..6f4f7a8209be 100644
+--- a/tools/testing/selftests/kvm/x86/nested_dirty_log_test.c
++++ b/tools/testing/selftests/kvm/x86/nested_dirty_log_test.c
+@@ -17,29 +17,53 @@
+ 
+ /* The memory slot index to track dirty pages */
+ #define TEST_MEM_SLOT_INDEX		1
+-#define TEST_MEM_PAGES			3
+ 
+-/* L1 guest test virtual memory offset */
+-#define GUEST_TEST_MEM			0xc0000000
++/*
++ * Allocate four pages total.  Two pages are used to verify that the KVM marks
++ * the accessed page/GFN as marked dirty, but not the "other" page.  Times two
++ * so that each "normal" page can be accessed from L2 via an aliased L2 GVA+GPA
++ * (when TDP is enabled), to verify KVM marks _L1's_ page/GFN as dirty (to
++ * detect failures, L2 => L1 GPAs can't be identity mapped in the TDP page
++ * tables, as marking L2's GPA dirty would get a false pass if L1 == L2).
++ */
++#define TEST_MEM_PAGES			4
+ 
+-/* L2 guest test virtual memory offset */
+-#define NESTED_TEST_MEM1		0xc0001000
+-#define NESTED_TEST_MEM2		0xc0002000
++#define TEST_MEM_BASE			0xc0000000
++#define TEST_MEM_ALIAS_BASE		0xc0002000
++
++#define TEST_GUEST_ADDR(base, idx)	((base) + (idx) * PAGE_SIZE)
++
++#define TEST_GVA(idx)			TEST_GUEST_ADDR(TEST_MEM_BASE, idx)
++#define TEST_GPA(idx)			TEST_GUEST_ADDR(TEST_MEM_BASE, idx)
++
++#define TEST_HVA(vm, idx)		addr_gpa2hva(vm, TEST_GPA(idx))
+ 
+ #define L2_GUEST_STACK_SIZE 64
+ 
+-static void l2_guest_code(u64 *a, u64 *b)
++/* Use the page offset bits to communicate the access+fault type. */
++#define TEST_SYNC_READ_FAULT		BIT(0)
++#define TEST_SYNC_WRITE_FAULT		BIT(1)
++#define TEST_SYNC_NO_FAULT		BIT(2)
++
++static void l2_guest_code(vm_vaddr_t base)
+ {
+-	READ_ONCE(*a);
+-	WRITE_ONCE(*a, 1);
+-	GUEST_SYNC(true);
+-	GUEST_SYNC(false);
++	vm_vaddr_t page0 = TEST_GUEST_ADDR(base, 0);
++	vm_vaddr_t page1 = TEST_GUEST_ADDR(base, 1);
+ 
+-	WRITE_ONCE(*b, 1);
+-	GUEST_SYNC(true);
+-	WRITE_ONCE(*b, 1);
+-	GUEST_SYNC(true);
+-	GUEST_SYNC(false);
++	READ_ONCE(*(u64 *)page0);
++	GUEST_SYNC(page0 | TEST_SYNC_READ_FAULT);
++	WRITE_ONCE(*(u64 *)page0, 1);
++	GUEST_SYNC(page0 | TEST_SYNC_WRITE_FAULT);
++	READ_ONCE(*(u64 *)page0);
++	GUEST_SYNC(page0 | TEST_SYNC_NO_FAULT);
++
++	WRITE_ONCE(*(u64 *)page1, 1);
++	GUEST_SYNC(page1 | TEST_SYNC_WRITE_FAULT);
++	WRITE_ONCE(*(u64 *)page1, 1);
++	GUEST_SYNC(page1 | TEST_SYNC_WRITE_FAULT);
++	READ_ONCE(*(u64 *)page1);
++	GUEST_SYNC(page1 | TEST_SYNC_NO_FAULT);
++	GUEST_SYNC(page1 | TEST_SYNC_NO_FAULT);
+ 
+ 	/* Exit to L1 and never come back.  */
+ 	vmcall();
+@@ -47,13 +71,22 @@ static void l2_guest_code(u64 *a, u64 *b)
+ 
+ static void l2_guest_code_tdp_enabled(void)
+ {
+-	l2_guest_code((u64 *)NESTED_TEST_MEM1, (u64 *)NESTED_TEST_MEM2);
++	/*
++	 * Use the aliased virtual addresses when running with TDP to verify
++	 * that KVM correctly handles the case where a page is dirtied via a
++	 * different GPA than would be used by L1.
++	 */
++	l2_guest_code(TEST_MEM_ALIAS_BASE);
+ }
+ 
+ static void l2_guest_code_tdp_disabled(void)
+ {
+-	/* Access the same L1 GPAs as l2_guest_code_tdp_enabled() */
+-	l2_guest_code((u64 *)GUEST_TEST_MEM, (u64 *)GUEST_TEST_MEM);
++	/*
++	 * Use the "normal" virtual addresses when running without TDP enabled,
++	 * in which case L2 will use the same page tables as L1, and thus needs
++	 * to use the same virtual addresses that are mapped into L1.
++	 */
++	l2_guest_code(TEST_MEM_BASE);
+ }
+ 
+ void l1_vmx_code(struct vmx_pages *vmx)
+@@ -72,9 +105,9 @@ void l1_vmx_code(struct vmx_pages *vmx)
+ 
+ 	prepare_vmcs(vmx, l2_rip, &l2_guest_stack[L2_GUEST_STACK_SIZE]);
+ 
+-	GUEST_SYNC(false);
++	GUEST_SYNC(TEST_SYNC_NO_FAULT);
+ 	GUEST_ASSERT(!vmlaunch());
+-	GUEST_SYNC(false);
++	GUEST_SYNC(TEST_SYNC_NO_FAULT);
+ 	GUEST_ASSERT_EQ(vmreadz(VM_EXIT_REASON), EXIT_REASON_VMCALL);
+ 	GUEST_DONE();
+ }
+@@ -91,9 +124,9 @@ static void l1_svm_code(struct svm_test_data *svm)
+ 
+ 	generic_svm_setup(svm, l2_rip, &l2_guest_stack[L2_GUEST_STACK_SIZE]);
+ 
+-	GUEST_SYNC(false);
++	GUEST_SYNC(TEST_SYNC_NO_FAULT);
+ 	run_guest(svm->vmcb, svm->vmcb_gpa);
+-	GUEST_SYNC(false);
++	GUEST_SYNC(TEST_SYNC_NO_FAULT);
+ 	GUEST_ASSERT_EQ(svm->vmcb->control.exit_code, SVM_EXIT_VMMCALL);
+ 	GUEST_DONE();
+ }
+@@ -106,12 +139,66 @@ static void l1_guest_code(void *data)
+ 		l1_svm_code(data);
+ }
+ 
++static void test_handle_ucall_sync(struct kvm_vm *vm, u64 arg,
++				   unsigned long *bmap)
++{
++	vm_vaddr_t gva = arg & ~(PAGE_SIZE - 1);
++	int page_nr, i;
++
++	/*
++	 * Extract the page number of underlying physical page, which is also
++	 * the _L1_ page number.  The dirty bitmap _must_ be updated based on
++	 * the L1 GPA, not L2 GPA, i.e. whether or not L2 used an aliased GPA
++	 * (i.e. if TDP enabled for L2) is irrelevant with respect to the dirty
++	 * bitmap and which underlying physical page is accessed.
++	 *
++	 * Note, gva will be '0' if there was no access, i.e. if the purpose of
++	 * the sync is to verify all pages are clean.
++	 */
++	if (!gva)
++		page_nr = 0;
++	else if (gva >= TEST_MEM_ALIAS_BASE)
++		page_nr = (gva - TEST_MEM_ALIAS_BASE) >> PAGE_SHIFT;
++	else
++		page_nr = (gva - TEST_MEM_BASE) >> PAGE_SHIFT;
++	TEST_ASSERT(page_nr == 0 || page_nr == 1,
++		    "Test bug, unexpected frame number '%u' for arg = %lx", page_nr, arg);
++	TEST_ASSERT(gva || (arg & TEST_SYNC_NO_FAULT),
++		    "Test bug, gva must be valid if a fault is expected");
++
++	kvm_vm_get_dirty_log(vm, TEST_MEM_SLOT_INDEX, bmap);
++
++	/*
++	 * Check all pages to verify the correct physical page was modified (or
++	 * not), and that all pages are clean/dirty as expected.
++	 *
++	 * If a fault of any kind is expected, the target page should be dirty
++	 * as the Dirty bit is set in the gPTE.  KVM should create a writable
++	 * SPTE even on a read fault, *and* KVM must mark the GFN as dirty
++	 * when doing so.
++	 */
++	for (i = 0; i < TEST_MEM_PAGES; i++) {
++		if (i == page_nr && arg & TEST_SYNC_WRITE_FAULT)
++			TEST_ASSERT(*(u64 *)TEST_HVA(vm, i) == 1,
++				    "Page %u incorrectly not written by guest", i);
++		else
++			TEST_ASSERT(*(u64 *)TEST_HVA(vm, i) == 0xaaaaaaaaaaaaaaaaULL,
++				    "Page %u incorrectly written by guest", i);
++
++		if (i == page_nr && !(arg & TEST_SYNC_NO_FAULT))
++			TEST_ASSERT(test_bit(i, bmap),
++				    "Page %u incorrectly reported clean on %s fault",
++				    i, arg & TEST_SYNC_READ_FAULT ? "read" : "write");
++		else
++			TEST_ASSERT(!test_bit(i, bmap),
++				    "Page %u incorrectly reported dirty", i);
++	}
++}
++
+ static void test_dirty_log(bool nested_tdp)
+ {
+ 	vm_vaddr_t nested_gva = 0;
+ 	unsigned long *bmap;
+-	uint64_t *host_test_mem;
+-
+ 	struct kvm_vcpu *vcpu;
+ 	struct kvm_vm *vm;
+ 	struct ucall uc;
+@@ -133,35 +220,50 @@ static void test_dirty_log(bool nested_tdp)
+ 
+ 	/* Add an extra memory slot for testing dirty logging */
+ 	vm_userspace_mem_region_add(vm, VM_MEM_SRC_ANONYMOUS,
+-				    GUEST_TEST_MEM,
++				    TEST_MEM_BASE,
+ 				    TEST_MEM_SLOT_INDEX,
+ 				    TEST_MEM_PAGES,
+ 				    KVM_MEM_LOG_DIRTY_PAGES);
+ 
+ 	/*
+-	 * Add an identity map for GVA range [0xc0000000, 0xc0002000).  This
++	 * Add an identity map for GVA range [0xc0000000, 0xc0004000).  This
+ 	 * affects both L1 and L2.  However...
+ 	 */
+-	virt_map(vm, GUEST_TEST_MEM, GUEST_TEST_MEM, TEST_MEM_PAGES);
++	virt_map(vm, TEST_MEM_BASE, TEST_MEM_BASE, TEST_MEM_PAGES);
+ 
+ 	/*
+-	 * ... pages in the L2 GPA range [0xc0001000, 0xc0003000) will map to
+-	 * 0xc0000000.
++	 * ... pages in the L2 GPA ranges [0xc0001000, 0xc0002000) and
++	 * [0xc0003000, 0xc0004000) will map to 0xc0000000 and 0xc0001000
++	 * respectively.
+ 	 *
+ 	 * When TDP is disabled, the L2 guest code will still access the same L1
+ 	 * GPAs as the TDP enabled case.
++	 *
++	 * Set the Dirty bit in the PTEs used by L2 so that KVM will create
++	 * writable SPTEs when handling read faults (if the Dirty bit isn't
++	 * set, KVM must intercept the next write to emulate the Dirty bit
++	 * update).
+ 	 */
+ 	if (nested_tdp) {
++		vm_vaddr_t gva0 = TEST_GUEST_ADDR(TEST_MEM_ALIAS_BASE, 0);
++		vm_vaddr_t gva1 = TEST_GUEST_ADDR(TEST_MEM_ALIAS_BASE, 1);
++
+ 		tdp_identity_map_default_memslots(vm);
+-		tdp_map(vm, NESTED_TEST_MEM1, GUEST_TEST_MEM, PAGE_SIZE);
+-		tdp_map(vm, NESTED_TEST_MEM2, GUEST_TEST_MEM, PAGE_SIZE);
++		tdp_map(vm, gva0, TEST_GPA(0), PAGE_SIZE);
++		tdp_map(vm, gva1, TEST_GPA(1), PAGE_SIZE);
++
++		*tdp_get_pte(vm, gva0) |= PTE_DIRTY_MASK(&vm->stage2_mmu);
++		*tdp_get_pte(vm, gva1) |= PTE_DIRTY_MASK(&vm->stage2_mmu);
++	} else {
++		*vm_get_pte(vm, TEST_GVA(0)) |= PTE_DIRTY_MASK(&vm->mmu);
++		*vm_get_pte(vm, TEST_GVA(1)) |= PTE_DIRTY_MASK(&vm->mmu);
+ 	}
+ 
+ 	bmap = bitmap_zalloc(TEST_MEM_PAGES);
+-	host_test_mem = addr_gpa2hva(vm, GUEST_TEST_MEM);
+ 
+ 	while (!done) {
+-		memset(host_test_mem, 0xaa, TEST_MEM_PAGES * PAGE_SIZE);
++		memset(TEST_HVA(vm, 0), 0xaa, TEST_MEM_PAGES * PAGE_SIZE);
++
+ 		vcpu_run(vcpu);
+ 		TEST_ASSERT_KVM_EXIT_REASON(vcpu, KVM_EXIT_IO);
+ 
+@@ -170,23 +272,7 @@ static void test_dirty_log(bool nested_tdp)
+ 			REPORT_GUEST_ASSERT(uc);
+ 			/* NOT REACHED */
+ 		case UCALL_SYNC:
+-			/*
+-			 * The nested guest wrote at offset 0x1000 in the memslot, but the
+-			 * dirty bitmap must be filled in according to L1 GPA, not L2.
+-			 */
+-			kvm_vm_get_dirty_log(vm, TEST_MEM_SLOT_INDEX, bmap);
+-			if (uc.args[1]) {
+-				TEST_ASSERT(test_bit(0, bmap), "Page 0 incorrectly reported clean");
+-				TEST_ASSERT(host_test_mem[0] == 1, "Page 0 not written by guest");
+-			} else {
+-				TEST_ASSERT(!test_bit(0, bmap), "Page 0 incorrectly reported dirty");
+-				TEST_ASSERT(host_test_mem[0] == 0xaaaaaaaaaaaaaaaaULL, "Page 0 written by guest");
+-			}
+-
+-			TEST_ASSERT(!test_bit(1, bmap), "Page 1 incorrectly reported dirty");
+-			TEST_ASSERT(host_test_mem[PAGE_SIZE / 8] == 0xaaaaaaaaaaaaaaaaULL, "Page 1 written by guest");
+-			TEST_ASSERT(!test_bit(2, bmap), "Page 2 incorrectly reported dirty");
+-			TEST_ASSERT(host_test_mem[PAGE_SIZE*2 / 8] == 0xaaaaaaaaaaaaaaaaULL, "Page 2 written by guest");
++			test_handle_ucall_sync(vm, uc.args[1], bmap);
+ 			break;
+ 		case UCALL_DONE:
+ 			done = true;
+
+base-commit: 3cd487701a911d0e317bf31e79fe07bba5fa9995
+--
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
