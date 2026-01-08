@@ -4,39 +4,39 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2CAB7D1D493
-	for <kvm-riscv@archiver.kernel.org>; Thu,  8 Jan 2026 20:24:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 323A5D1D492
+	for <kvm-riscv@archiver.kernel.org>; Thu,  8 Jan 2026 20:26:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
 	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=TE/jEKCjdi4PkxQVJuwqoUWMNDYI5BgaQZN2Bxk3JHs=; b=UCzJbDlgp+ahoB
-	BLQ1rJI77qMqqnC8LBxZ8qYQvm0cdv6/QgqR+o9/WiAfWoZ3HigerymgPJAy+DUUh8aloCCqT/FCJ
-	mYihjcgs4wsF7+BBFfODH2OwaS1mpCCQgxzRKMy302X7brXAqzoRaXjzN7q+b4WT3cSEKlQKbdcTN
-	wkRO7VdKhv7YJlBQmrwZU8Xt9tbYygkSLRplT+GPfK9e+FLEUA9kUKMQkMV28EFUmbqmwrLlWRHdR
-	pkHuRPy645h9UNb6QRufmXOdXI3lWWbOwRFi0m9jmq193gZiXZXtlUnZZ/OYqTMaYYAuLk6pKHQx9
-	ANVjtS+7/TrglgV7jG2Q==;
+	List-Owner; bh=gjtz1NhdNhRPmYUUrQBLykAr5np8gGGMcJqxT8yTp3k=; b=B+YDDBC1HR++un
+	KKVJreymz+MJvPcTGPYXNDbsCciQextDkzfPiT3lFxh7jQpeNlFhkKYvRgPC0gyrY2UwJB9/EcDU+
+	DOC/sAvLFlm5FnqCEz6M19NQX2lxsEV6WtPDttkN4wXA7ZAYIogAp/jW1jLFhIptIZFwEhgy45eat
+	Cyi52rddcQtUN7d/XGPZQ9aMnnCR3sS0iBKl8Om9Om4GWqi79v3f6TCPCNSTh2020C8oH3eDgibry
+	7oghPQCTVwgcZrImwh9b0mG+XoSuBzD19KLumvKPHZNZ6gl91/4KDTOF4VTU8V3rV13zaP9fqmXTL
+	mdKVbEfDO3VePireFdwA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vdwYa-00000000ooP-2B71;
-	Thu, 08 Jan 2026 20:24:32 +0000
-Received: from out-171.mta0.migadu.com ([91.218.175.171])
+	id 1vdwaV-00000000p6v-27Yk;
+	Thu, 08 Jan 2026 20:26:31 +0000
+Received: from out-187.mta1.migadu.com ([95.215.58.187])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vdwYV-00000000omt-2tjd
+	id 1vdwaR-00000000p4v-3Xpr
 	for kvm-riscv@lists.infradead.org;
-	Thu, 08 Jan 2026 20:24:30 +0000
-Date: Thu, 8 Jan 2026 20:24:02 +0000
+	Thu, 08 Jan 2026 20:26:29 +0000
+Date: Thu, 8 Jan 2026 20:26:07 +0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1767903855;
+	t=1767903975;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=9zTxzfr7fY9EwCt7bK8R02rLevG6g750c5e86uBEiYU=;
-	b=DyO/oISx5B9ukqXz/1g2P9vAexKComopUmmQDbNTVuah1ARLtdaBOvpYX6kGvTieHfpp9N
-	iur5e+pcLYMO131gG1oLDBMvAzStRW6es6PTvrAFxZDxAFDtn5rTUslZIqDwYCA972DtcO
-	6QqR7YxSgL/xWx6X8E/oDnVRZl0izlc=
+	bh=fwq273udHL84MC93sFKE2b+YO778RBmqz0tqmApt9d4=;
+	b=PMw7fKitVdHrjyge5ljK6/L68v7R+4+vzO9D7MrAm90dsGbLRrjsBC9NHx8c3OlKqAGUK9
+	RQOIL7n4eXlANPwfoUtyWD4bE7eFC4rCNTurJe+s9+e85FwgZizfMWhqRDh9j0WIuoS6J7
+	lSSYP0wZh7tUajkrEiLaovdXVyWWH7s=
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
 From: Yosry Ahmed <yosry.ahmed@linux.dev>
 To: Sean Christopherson <seanjc@google.com>
@@ -51,20 +51,18 @@ Cc: Paolo Bonzini <pbonzini@redhat.com>, Marc Zyngier <maz@kernel.org>,
 	linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org
 Subject: Re: [PATCH v4 21/21] KVM: selftests: Test READ=>WRITE dirty logging
  behavior for shadow MMU
-Message-ID: <3xrew6ag7pefka7wava4z7ht54e6xlpwbywcm2ivsgnkdbahe4@yqzsaxnhedj7>
+Message-ID: <kivowzryb3mbntaoud4kmhxjbix3usqjiy7phwihjc7p4rp4gk@ppilefrxpu35>
 References: <20251230230150.4150236-1-seanjc@google.com>
  <20251230230150.4150236-22-seanjc@google.com>
  <t7dcszq3quhqprdcqz7keykxbmqf62pdelqrkeilpbmsrnuji5@a3lplybmlbwf>
  <aV_cLAlz4v1VOkDt@google.com>
- <gzyjze3wszmrwxdwnudij6nfqdxzihm37uappfqxorfjy5vatf@hffzaobbm3g7>
- <aV_3-lhnZ-MoKnjv@google.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <aV_3-lhnZ-MoKnjv@google.com>
+In-Reply-To: <aV_cLAlz4v1VOkDt@google.com>
 X-Migadu-Flow: FLOW_OUT
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260108_122427_893818_352002F3 
-X-CRM114-Status: GOOD (  32.20  )
+X-CRM114-CacheID: sfid-20260108_122628_165168_8EA75729 
+X-CRM114-Status: GOOD (  18.34  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -81,149 +79,56 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Thu, Jan 08, 2026 at 10:31:22AM -0800, Sean Christopherson wrote:
-> On Thu, Jan 08, 2026, Yosry Ahmed wrote:
-> > On Thu, Jan 08, 2026 at 08:32:44AM -0800, Sean Christopherson wrote:
-> > > On Fri, Jan 02, 2026, Yosry Ahmed wrote:
-> > > diff --git a/tools/testing/selftests/kvm/lib/x86/processor.c b/tools/testing/selftests/kvm/lib/x86/processor.c
-> > > index ab869a98bbdc..fab18e9be66c 100644
-> > > --- a/tools/testing/selftests/kvm/lib/x86/processor.c
-> > > +++ b/tools/testing/selftests/kvm/lib/x86/processor.c
-> > > @@ -390,6 +390,13 @@ static uint64_t *__vm_get_page_table_entry(struct kvm_vm *vm,
-> > >  	return virt_get_pte(vm, mmu, pte, vaddr, PG_LEVEL_4K);
-> > >  }
-> > >  
-> > > +uint64_t *tdp_get_pte(struct kvm_vm *vm, uint64_t l2_gpa)
-> > 
-> > nested_paddr is the name used by tdp_map(), maybe use that here as well
-> > (and in the header)?
-> 
-> Oh hell no :-)  nested_paddr is a terrible name (I was *very* tempted to change
-> it on the fly, but restrained myself).  "nested" is far too ambigous, e.g. without
-> nested virtualization, "nested_paddr" arguably refers to _L1_ physical addresses
-> (SVM called 'em Nested Page Tables after all).
+On Thu, Jan 08, 2026 at 08:32:44AM -0800, Sean Christopherson wrote:
+[..]
+> @@ -106,12 +139,66 @@ static void l1_guest_code(void *data)
+>  		l1_svm_code(data);
+>  }
+>  
+> +static void test_handle_ucall_sync(struct kvm_vm *vm, u64 arg,
+> +				   unsigned long *bmap)
+> +{
+> +	vm_vaddr_t gva = arg & ~(PAGE_SIZE - 1);
+> +	int page_nr, i;
+> +
+> +	/*
+> +	 * Extract the page number of underlying physical page, which is also
+> +	 * the _L1_ page number.  The dirty bitmap _must_ be updated based on
+> +	 * the L1 GPA, not L2 GPA, i.e. whether or not L2 used an aliased GPA
+> +	 * (i.e. if TDP enabled for L2) is irrelevant with respect to the dirty
+> +	 * bitmap and which underlying physical page is accessed.
+> +	 *
+> +	 * Note, gva will be '0' if there was no access, i.e. if the purpose of
+> +	 * the sync is to verify all pages are clean.
+> +	 */
+> +	if (!gva)
+> +		page_nr = 0;
+> +	else if (gva >= TEST_MEM_ALIAS_BASE)
+> +		page_nr = (gva - TEST_MEM_ALIAS_BASE) >> PAGE_SHIFT;
+> +	else
+> +		page_nr = (gva - TEST_MEM_BASE) >> PAGE_SHIFT;
+> +	TEST_ASSERT(page_nr == 0 || page_nr == 1,
+> +		    "Test bug, unexpected frame number '%u' for arg = %lx", page_nr, arg);
+> +	TEST_ASSERT(gva || (arg & TEST_SYNC_NO_FAULT),
+> +		    "Test bug, gva must be valid if a fault is expected");
+> +
+> +	kvm_vm_get_dirty_log(vm, TEST_MEM_SLOT_INDEX, bmap);
+> +
+> +	/*
+> +	 * Check all pages to verify the correct physical page was modified (or
+> +	 * not), and that all pages are clean/dirty as expected.
+> +	 *
+> +	 * If a fault of any kind is expected, the target page should be dirty
+> +	 * as the Dirty bit is set in the gPTE.  KVM should create a writable
+> +	 * SPTE even on a read fault, *and* KVM must mark the GFN as dirty
+> +	 * when doing so.
+> +	 */
+> +	for (i = 0; i < TEST_MEM_PAGES; i++) {
+> +		if (i == page_nr && arg & TEST_SYNC_WRITE_FAULT)
 
-That's fair, I generally like consistency to a fault :)
+Micro nit: I think this is slightly clearer:
+		if (i == page_nr && (arg & TEST_SYNC_WRITE_FAULT))
 
-> 
-> > > +	int level = PG_LEVEL_4K;
-> > > +
-> > > +	return __vm_get_page_table_entry(vm, &vm->stage2_mmu, l2_gpa, &level);
-> > > +}
-> > > +
-> > >  uint64_t *vm_get_pte(struct kvm_vm *vm, uint64_t vaddr)
-> > >  {
-> > >  	int level = PG_LEVEL_4K;
-> > [..]
-> > > @@ -133,35 +220,50 @@ static void test_dirty_log(bool nested_tdp)
-> > >  
-> > >  	/* Add an extra memory slot for testing dirty logging */
-> > >  	vm_userspace_mem_region_add(vm, VM_MEM_SRC_ANONYMOUS,
-> > > -				    GUEST_TEST_MEM,
-> > > +				    TEST_MEM_BASE,
-> > >  				    TEST_MEM_SLOT_INDEX,
-> > >  				    TEST_MEM_PAGES,
-> > >  				    KVM_MEM_LOG_DIRTY_PAGES);
-> > >  
-> > >  	/*
-> > > -	 * Add an identity map for GVA range [0xc0000000, 0xc0002000).  This
-> > > +	 * Add an identity map for GVA range [0xc0000000, 0xc0004000).  This
-> > >  	 * affects both L1 and L2.  However...
-> > >  	 */
-> > > -	virt_map(vm, GUEST_TEST_MEM, GUEST_TEST_MEM, TEST_MEM_PAGES);
-> > > +	virt_map(vm, TEST_MEM_BASE, TEST_MEM_BASE, TEST_MEM_PAGES);
-> > >  
-> > >  	/*
-> > > -	 * ... pages in the L2 GPA range [0xc0001000, 0xc0003000) will map to
-> > > -	 * 0xc0000000.
-> > > +	 * ... pages in the L2 GPA ranges [0xc0001000, 0xc0002000) and
-> > > +	 * [0xc0003000, 0xc0004000) will map to 0xc0000000 and 0xc0001000
-> > > +	 * respectively.
-> > 
-> > Are these ranges correct? I thought L2 GPA range [0xc0002000,
-> > 0xc0004000) will map to [0xc0000000, 0xc0002000).
-> 
-> Gah, no.  I looked at the comments after changing things around, but my eyes had
-> glazed over by that point.
-> 
-> > Also, perhaps it's better to express those in terms of the macros?
-> > 
-> > L2 GPA range [TEST_MEM_ALIAS_BASE, TEST_MEM_ALIAS_BASE + 2*PAGE_SIZE)
-> > will map to [TEST_MEM_BASE, TEST_MEM_BASE + 2*PAGE_SIZE)?
-> 
-> Hmm, no, at some point we need to concretely state the addresses, so that people
-> debugging this know what to expect, i.e. don't have to manually compute the
-> addresses from the macros in order to debug.
-
-I was trying to avoid a situation where the comment gets out of sync
-with the macros in a way that gets confusing. Maybe reference both if
-it's not too verbose?
-
-	/*
-	 * ... pages in the L2 GPA range [0xc0002000, 0xc0004000) at
-	 * TEST_MEM_ALIAS_BASE will map to [[0xc0000000, 0xc0002000) at
-	 * TEST_MEM_BASE.
-	 */
-
-> 
-> > >  	 *
-> > >  	 * When TDP is disabled, the L2 guest code will still access the same L1
-> > >  	 * GPAs as the TDP enabled case.
-> > > +	 *
-> > > +	 * Set the Dirty bit in the PTEs used by L2 so that KVM will create
-> > > +	 * writable SPTEs when handling read faults (if the Dirty bit isn't
-> > > +	 * set, KVM must intercept the next write to emulate the Dirty bit
-> > > +	 * update).
-> > >  	 */
-> > >  	if (nested_tdp) {
-> > > +		vm_vaddr_t gva0 = TEST_GUEST_ADDR(TEST_MEM_ALIAS_BASE, 0);
-> > > +		vm_vaddr_t gva1 = TEST_GUEST_ADDR(TEST_MEM_ALIAS_BASE, 1);
-> > 
-> > Why are these gvas? Should these be L2 GPAs?
-> 
-> Pure oversight.
-> 
-> > Maybe 'uint64_t l2_gpa0' or 'uint64_t nested_paddr0'?
-> 
-> For better of worse, vm_paddr_t is the typedef in selftests.  Hmm, if/when we go
-> with David M's proposal to switch to u64 (from e.g. uint64_t), it'd probably be
-> a good time to switch to KVM's gva_t and gpa_t as well.
-
-vm_paddr_t is fine too, I am just against using vm_vaddr_t. tdp_map()
-takes in uint64_t for the GPAs, which is why I suggested uint64_t here.
-
-> 
-> > Also maybe add TEST_ALIAS_GPA() macro to keep things consistent?
-> 
-> Ya, then the line lengths are short enough to omit the local variables.  How's
-> this look?
-
-Looks good, thanks!
-
-> 
-> 	/*
-> 	 * ... pages in the L2 GPA address range [0xc0002000, 0xc0004000) will
-> 	 * map to [0xc0000000, 0xc0002000) when TDP is enabled (for L2).
-> 	 *
-> 	 * When TDP is disabled, the L2 guest code will still access the same L1
-> 	 * GPAs as the TDP enabled case.
-> 	 *
-> 	 * Set the Dirty bit in the PTEs used by L2 so that KVM will create
-> 	 * writable SPTEs when handling read faults (if the Dirty bit isn't
-> 	 * set, KVM must intercept the next write to emulate the Dirty bit
-> 	 * update).
-> 	 */
-> 	if (nested_tdp) {
-> 		tdp_identity_map_default_memslots(vm);
-> 		tdp_map(vm, TEST_ALIAS_GPA(0), TEST_GPA(0), PAGE_SIZE);
-> 		tdp_map(vm, TEST_ALIAS_GPA(1), TEST_GPA(1), PAGE_SIZE);
-> 
-> 		*tdp_get_pte(vm, TEST_ALIAS_GPA(0)) |= PTE_DIRTY_MASK(&vm->stage2_mmu);
-> 		*tdp_get_pte(vm, TEST_ALIAS_GPA(1)) |= PTE_DIRTY_MASK(&vm->stage2_mmu);
-> 	} else {
-> 		*vm_get_pte(vm, TEST_GVA(0)) |= PTE_DIRTY_MASK(&vm->mmu);
-> 		*vm_get_pte(vm, TEST_GVA(1)) |= PTE_DIRTY_MASK(&vm->mmu);
-> 	}
 
 -- 
 kvm-riscv mailing list
