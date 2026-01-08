@@ -4,62 +4,89 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2672CD0D17E
-	for <kvm-riscv@archiver.kernel.org>; Wed,  7 Jan 2026 23:14:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 90B6DD14891
+	for <kvm-riscv@archiver.kernel.org>; Thu,  8 Jan 2026 02:42:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:Subject:Message-ID:Date:From:
+	In-Reply-To:References:MIME-Version:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=vu3sKXaRYFtjvRVfoQmDI+c6V3jbPXydLaCm4k6/jfI=; b=MSstS6FLodPQHZ
-	iZCpA8hwiFDaC02K7mVrZef8SUeHnxt7HqkQp1kP9kuS1i/67tgwvVrya5uTrlXQLJjEkoMYYHp3n
-	XrDlxOxS0njbrCfwBUFKR+TZzX1vrLYjvq0iLMNjpPKxJoLova2nsU0caMMBmANrTAQnppXIe+Qao
-	g+iSxRRFl7OQB9RvEC6rkYN7W9V7RyIytZq4hM2AF+rTPztKxdG8mNEiKiP2RI287u5Apub0VNhlP
-	LjBw9i0BBeDl7YSf0KqpIljK4st0BPNfnd2tFiduPKbnMeFZ0M/s0p5SHbHp3OZ0uRkRNJ8aU6SVQ
-	/8G9kdMkDpxuy5fGsh/g==;
+	List-Owner; bh=Mewr3sQfQq8558BiY4QpzPpak5jP4nptw+2Ks2uS1n4=; b=QjGMviy8U+2G3R
+	7zSnTSpWWrvwlJkdWzi0+5r3VLi/xNOYWKEot2OFs6JljCbqU+m1YtpT6mGq66PezaVGdCNWKo5yb
+	JQR1kZp0qyTT7/uV43MDR9RPY+HX2BqLW2mpxKP1xSX1jUNwfHIhx6yRmXgxpqebPuL2H2snTR3vU
+	N7A0BTGA/CemKUR9jXsN1moPaUIIiaeJKeL3QezbzBM81pEcewS5JvHBIfiG+rj4Rd6UG/qCGfZZr
+	Exn+KKDUPDcc0QjPZfZxRQd7wWIZK00MWL8/keQppoldNwmnU18vmO0M8qs7JzfLDEGpKr1zp0P3S
+	W9SooXvvduOh3Du9px2w==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vdcjB-0000000FjWV-2Z3p;
-	Wed, 07 Jan 2026 23:14:09 +0000
-Received: from out-188.mta1.migadu.com ([2001:41d0:203:375::bc])
+	id 1vdfyt-0000000Fqd0-0bC9;
+	Thu, 08 Jan 2026 02:42:35 +0000
+Received: from mail-vk1-xa30.google.com ([2607:f8b0:4864:20::a30])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vdcj7-0000000FjTt-0vpX
+	id 1vdfyp-0000000Fqc7-0rXA
 	for kvm-riscv@lists.infradead.org;
-	Wed, 07 Jan 2026 23:14:07 +0000
-Date: Wed, 7 Jan 2026 23:12:59 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1767827632;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=rR1fnvTTjB0CTE6RfkOtCAeY2jGW4kIZ+UMk8iaKGdI=;
-	b=u5Bh4aFM/DJ6EI3tKWN9ieFoB4g6EEjw1qSeYhK/tQ+6PGvPQrzcSVID7cPg1+zCvC6KFm
-	XbMjwJ3hL72SpmGfx9q0LV4fstFFuDLFPPm5Dw+mLKGD28qAisxn74YyTOvcRrbHUMU5DQ
-	sLtTKWYIAxdxWioTvQMqczCGjCOTVFs=
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Yosry Ahmed <yosry.ahmed@linux.dev>
-To: Sean Christopherson <seanjc@google.com>
-Cc: Paolo Bonzini <pbonzini@redhat.com>, Marc Zyngier <maz@kernel.org>, 
-	Oliver Upton <oupton@kernel.org>, Tianrui Zhao <zhaotianrui@loongson.cn>, 
-	Bibo Mao <maobibo@loongson.cn>, Huacai Chen <chenhuacai@kernel.org>, 
-	Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, 
-	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
-	Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, 
-	Claudio Imbrenda <imbrenda@linux.ibm.com>, kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	kvmarm@lists.linux.dev, loongarch@lists.linux.dev, kvm-riscv@lists.infradead.org, 
-	linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4 16/21] KVM: selftests: Add support for nested NPTs
-Message-ID: <fj2wis2dluwtlaawrelfj25ldsk35dpbytytd2koemnv2va4np@feeu6in4gjjg>
-References: <20251230230150.4150236-1-seanjc@google.com>
- <20251230230150.4150236-17-seanjc@google.com>
+	Thu, 08 Jan 2026 02:42:33 +0000
+Received: by mail-vk1-xa30.google.com with SMTP id 71dfb90a1353d-560227999d2so965204e0c.1
+        for <kvm-riscv@lists.infradead.org>; Wed, 07 Jan 2026 18:42:29 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=bytedance.com; s=google; t=1767840148; x=1768444948; darn=lists.infradead.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=DWaAMva1vkFJnTO6a4Iz8dqSyzVc2Jv2hoZ7YzKgLAI=;
+        b=Em6sCPygt9uu5oKAJdxOXSjAlrFr4K0KCd59CFqu9tr8dqZulDLuSy2mjAwhwJuD7K
+         Y2aiwGvI9QQN0ZncEp7AoS1G6K4W1DOKvzAkPANYvyqW9WhJ4ScENrTskCt6mEoth8zn
+         yJHpGTHC7C1dHnaXiXqm+piC68N7Gz9KzrRBfd6PJvsJafdL8KVK8N2Pb6WGVYLkuTt8
+         UbLOinqNZJymW3urbdxKE4k7gUNZjLGzex7aZei3Z8RAm27QNFGK5LcMg3HPMMeNN6Pz
+         SmjHhw5OyntBcTyZyfwXwYCmbnx16lDZFXDmafaTp5672FrqkIDYRUdpMy7yXgTwO6w4
+         ZUSA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1767840148; x=1768444948;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=DWaAMva1vkFJnTO6a4Iz8dqSyzVc2Jv2hoZ7YzKgLAI=;
+        b=AyjXj/NGTiYCtf3nJjdL00HYw/3fWa9ujrhQD2fRSyIyMXASdXnwRVKvrS+sziUaQ5
+         e61aInNvC1ecPGX/PUvL721ibrMpyytRdbanoL+wL4nrZquwp2NLTstDkYt1dAJb0kLz
+         FETDad8bcsx+1yBeF/q6SiXwqvn8jnCSCn4lx776mHJygl0ZiiBLzhWWCgEcdKRiGnC+
+         7LBwVbbTqn+ZSCxWQ2uH4oBvE900sIu3DFY+2K/YBXR78epx0IO8cFSXj9zY/BzphzXG
+         1Z+0fjGfDVUWnGHGhfQUQ/Q3+6u9vYScTv+cvKoWEtBKXte4t8tEM8pD5USOaGAhif98
+         lJ+Q==
+X-Forwarded-Encrypted: i=1; AJvYcCX37C8Ka/CawrlZDWsbO5rRVhYhtUIAtBuldaiM/z961IPw/1hsVud1cpyaaN4f92qr/N1e8wKvoOo=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yx7fllVNZAtrVvONY4gXazhtSvCbiZmZyJ5N3S8cXObxuiCbB7y
+	eKp5H0laLpe7vJOmxP//ka3exjGr+c8F39YdzjkUgf3cZMNg5fOJMMEYBu8T4IIZfScGwx2HGhs
+	a/c5K7dTrsDQTS6BAdfw4lEgkbZapqhvB9zPA2m7Oew==
+X-Gm-Gg: AY/fxX6QwN2cJb4coxnFFmmp1Be/OAl2OnnC15NXl905WClez4Gg9z5R3wXeH/irSbw
+	leozrRrkBR0G0gV6j+PA5NqgjY8B8HpFPmLs6HWpKAJAw0Qtv2qJDHv7xuhFSVYodoX7dyy74GG
+	IiKpJhRZ9jW6KyI8rVDW3IU8uzEZRc5VJuHx6vNF/zGx4S5DeffYAD12MbXo1iFHKVD5kozi2JO
+	CLAdq+21q0ENUuch121w+/LF5Ap7Hl1HbpArnk1WWh4jGYEkr25r/AgkiZLVH5epuIehtBC3SEt
+	JgODvAb5
+X-Google-Smtp-Source: AGHT+IE/V47xL3tEG3ednENEvtsU/+jEjz0pdaOAK/mMsh+e9J/Ck7StTpF0/DRbwTV9PXomZiSbW5hS90oTUNQNBIc=
+X-Received: by 2002:a05:6102:5344:b0:5db:f9df:34de with SMTP id
+ ada2fe7eead31-5ecb6948477mr1618905137.23.1767840148469; Wed, 07 Jan 2026
+ 18:42:28 -0800 (PST)
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <20251230230150.4150236-17-seanjc@google.com>
-X-Migadu-Flow: FLOW_OUT
+References: <CAPYmKFscKJ1ff470d6YmuMxLdJPSZ-ZmuGMMAFO83TT-vvV2JQ@mail.gmail.com>
+ <20260107-dc4b5f1d879db9afb00a4a87@orel>
+In-Reply-To: <20260107-dc4b5f1d879db9afb00a4a87@orel>
+From: Xu Lu <luxu.kernel@bytedance.com>
+Date: Thu, 8 Jan 2026 10:42:17 +0800
+X-Gm-Features: AQt7F2oc3TtqXZDC2BKsShVX4GzfSFEeOlZgFscK0Kpj3D8Ip6rwHKBwkPbyCwE
+Message-ID: <CAPYmKFtTxFNix17n19DccBckmGkkpKt4dwQB_60tvsB1GNJS6w@mail.gmail.com>
+Subject: Re: [External] Re: Question about RISCV IOMMU irqbypass patch series
+To: Andrew Jones <ajones@ventanamicro.com>
+Cc: Jason Gunthorpe <jgg@nvidia.com>, Zong Li <zong.li@sifive.com>, 
+	Tomasz Jeznach <tjeznach@rivosinc.com>, joro@8bytes.org, Will Deacon <will@kernel.org>, 
+	Robin Murphy <robin.murphy@arm.com>, Anup Patel <anup@brainfault.org>, atish.patra@linux.dev, 
+	Thomas Gleixner <tglx@linutronix.de>, alex.williamson@redhat.com, 
+	Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt <palmer@dabbelt.com>, 
+	Alexandre Ghiti <alex@ghiti.fr>, iommu@lists.linux.dev, kvm-riscv@lists.infradead.org, 
+	kvm@vger.kernel.org, linux-riscv <linux-riscv@lists.infradead.org>, 
+	LKML <linux-kernel@vger.kernel.org>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260107_151405_395864_5CF274D3 
-X-CRM114-Status: GOOD (  25.74  )
+X-CRM114-CacheID: sfid-20260107_184231_461483_7EECE3D8 
+X-CRM114-Status: GOOD (  24.30  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -71,212 +98,154 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Tue, Dec 30, 2025 at 03:01:45PM -0800, Sean Christopherson wrote:
-> From: Yosry Ahmed <yosry.ahmed@linux.dev>
-> 
-> Implement nCR3 and NPT initialization functions, similar to the EPT
-> equivalents, and create common TDP helpers for enablement checking and
-> initialization. Enable NPT for nested guests by default if the TDP MMU
-> was initialized, similar to VMX.
-> 
-> Reuse the PTE masks from the main MMU in the NPT MMU, except for the C
-> and S bits related to confidential VMs.
-> 
-> Signed-off-by: Yosry Ahmed <yosry.ahmed@linux.dev>
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
-
-Funny story, I missed a teeny tiny part here..
-
-diff --git a/tools/testing/selftests/kvm/lib/x86/svm.c b/tools/testing/selftests/kvm/lib/x86/svm.c
-index 18e9e9089643..2e5c480c9afd 100644
---- a/tools/testing/selftests/kvm/lib/x86/svm.c
-+++ b/tools/testing/selftests/kvm/lib/x86/svm.c
-@@ -46,6 +46,9 @@ vcpu_alloc_svm(struct kvm_vm *vm, vm_vaddr_t *p_svm_gva)
-        svm->msr_gpa = addr_gva2gpa(vm, (uintptr_t)svm->msr);
-        memset(svm->msr_hva, 0, getpagesize());
-
-+       if (vm->stage2_mmu.pgd_created)
-+               svm->ncr3_gpa = vm->stage2_mmu.pgd;
-+
-        *p_svm_gva = svm_gva;
-        return svm;
- }
-
----
-
-The good news is that the test still passes after we start ACTUALLY
-USING the nested NPT :)
-
-> ---
->  .../selftests/kvm/include/x86/processor.h     |  2 ++
->  .../selftests/kvm/include/x86/svm_util.h      |  9 ++++++++
->  .../testing/selftests/kvm/lib/x86/memstress.c |  4 ++--
->  .../testing/selftests/kvm/lib/x86/processor.c | 15 +++++++++++++
->  tools/testing/selftests/kvm/lib/x86/svm.c     | 21 +++++++++++++++++++
->  .../selftests/kvm/x86/vmx_dirty_log_test.c    |  4 ++--
->  6 files changed, 51 insertions(+), 4 deletions(-)
-> 
-> diff --git a/tools/testing/selftests/kvm/include/x86/processor.h b/tools/testing/selftests/kvm/include/x86/processor.h
-> index d134c886f280..deb471fb9b51 100644
-> --- a/tools/testing/selftests/kvm/include/x86/processor.h
-> +++ b/tools/testing/selftests/kvm/include/x86/processor.h
-> @@ -1477,6 +1477,8 @@ void __virt_pg_map(struct kvm_vm *vm, struct kvm_mmu *mmu, uint64_t vaddr,
->  void virt_map_level(struct kvm_vm *vm, uint64_t vaddr, uint64_t paddr,
->  		    uint64_t nr_bytes, int level);
->  
-> +void vm_enable_tdp(struct kvm_vm *vm);
-> +bool kvm_cpu_has_tdp(void);
->  void tdp_map(struct kvm_vm *vm, uint64_t nested_paddr, uint64_t paddr, uint64_t size);
->  void tdp_identity_map_default_memslots(struct kvm_vm *vm);
->  void tdp_identity_map_1g(struct kvm_vm *vm,  uint64_t addr, uint64_t size);
-> diff --git a/tools/testing/selftests/kvm/include/x86/svm_util.h b/tools/testing/selftests/kvm/include/x86/svm_util.h
-> index b74c6dcddcbd..5d7c42534bc4 100644
-> --- a/tools/testing/selftests/kvm/include/x86/svm_util.h
-> +++ b/tools/testing/selftests/kvm/include/x86/svm_util.h
-> @@ -27,6 +27,9 @@ struct svm_test_data {
->  	void *msr; /* gva */
->  	void *msr_hva;
->  	uint64_t msr_gpa;
-> +
-> +	/* NPT */
-> +	uint64_t ncr3_gpa;
->  };
->  
->  static inline void vmmcall(void)
-> @@ -57,6 +60,12 @@ struct svm_test_data *vcpu_alloc_svm(struct kvm_vm *vm, vm_vaddr_t *p_svm_gva);
->  void generic_svm_setup(struct svm_test_data *svm, void *guest_rip, void *guest_rsp);
->  void run_guest(struct vmcb *vmcb, uint64_t vmcb_gpa);
->  
-> +static inline bool kvm_cpu_has_npt(void)
-> +{
-> +	return kvm_cpu_has(X86_FEATURE_NPT);
-> +}
-> +void vm_enable_npt(struct kvm_vm *vm);
-> +
->  int open_sev_dev_path_or_exit(void);
->  
->  #endif /* SELFTEST_KVM_SVM_UTILS_H */
-> diff --git a/tools/testing/selftests/kvm/lib/x86/memstress.c b/tools/testing/selftests/kvm/lib/x86/memstress.c
-> index 3319cb57a78d..407abfc34909 100644
-> --- a/tools/testing/selftests/kvm/lib/x86/memstress.c
-> +++ b/tools/testing/selftests/kvm/lib/x86/memstress.c
-> @@ -82,9 +82,9 @@ void memstress_setup_nested(struct kvm_vm *vm, int nr_vcpus, struct kvm_vcpu *vc
->  	int vcpu_id;
->  
->  	TEST_REQUIRE(kvm_cpu_has(X86_FEATURE_VMX));
-> -	TEST_REQUIRE(kvm_cpu_has_ept());
-> +	TEST_REQUIRE(kvm_cpu_has_tdp());
->  
-> -	vm_enable_ept(vm);
-> +	vm_enable_tdp(vm);
->  	for (vcpu_id = 0; vcpu_id < nr_vcpus; vcpu_id++) {
->  		vcpu_alloc_vmx(vm, &vmx_gva);
->  
-> diff --git a/tools/testing/selftests/kvm/lib/x86/processor.c b/tools/testing/selftests/kvm/lib/x86/processor.c
-> index 29e7d172f945..a3a4c9a4cbcb 100644
-> --- a/tools/testing/selftests/kvm/lib/x86/processor.c
-> +++ b/tools/testing/selftests/kvm/lib/x86/processor.c
-> @@ -8,7 +8,9 @@
->  #include "kvm_util.h"
->  #include "pmu.h"
->  #include "processor.h"
-> +#include "svm_util.h"
->  #include "sev.h"
-> +#include "vmx.h"
->  
->  #ifndef NUM_INTERRUPTS
->  #define NUM_INTERRUPTS 256
-> @@ -472,6 +474,19 @@ void virt_arch_dump(FILE *stream, struct kvm_vm *vm, uint8_t indent)
->  	}
->  }
->  
-> +void vm_enable_tdp(struct kvm_vm *vm)
-> +{
-> +	if (kvm_cpu_has(X86_FEATURE_VMX))
-> +		vm_enable_ept(vm);
-> +	else
-> +		vm_enable_npt(vm);
-> +}
-> +
-> +bool kvm_cpu_has_tdp(void)
-> +{
-> +	return kvm_cpu_has_ept() || kvm_cpu_has_npt();
-> +}
-> +
->  void __tdp_map(struct kvm_vm *vm, uint64_t nested_paddr, uint64_t paddr,
->  	       uint64_t size, int level)
->  {
-> diff --git a/tools/testing/selftests/kvm/lib/x86/svm.c b/tools/testing/selftests/kvm/lib/x86/svm.c
-> index d239c2097391..8e4795225595 100644
-> --- a/tools/testing/selftests/kvm/lib/x86/svm.c
-> +++ b/tools/testing/selftests/kvm/lib/x86/svm.c
-> @@ -59,6 +59,22 @@ static void vmcb_set_seg(struct vmcb_seg *seg, u16 selector,
->  	seg->base = base;
->  }
->  
-> +void vm_enable_npt(struct kvm_vm *vm)
-> +{
-> +	struct pte_masks pte_masks;
-> +
-> +	TEST_ASSERT(kvm_cpu_has_npt(), "KVM doesn't supported nested NPT");
-> +
-> +	/*
-> +	 * NPTs use the same PTE format, but deliberately drop the C-bit as the
-> +	 * per-VM shared vs. private information is only meant for stage-1.
-> +	 */
-> +	pte_masks = vm->mmu.arch.pte_masks;
-> +	pte_masks.c = 0;
-> +
-> +	tdp_mmu_init(vm, vm->mmu.pgtable_levels, &pte_masks);
-> +}
-> +
->  void generic_svm_setup(struct svm_test_data *svm, void *guest_rip, void *guest_rsp)
->  {
->  	struct vmcb *vmcb = svm->vmcb;
-> @@ -102,6 +118,11 @@ void generic_svm_setup(struct svm_test_data *svm, void *guest_rip, void *guest_r
->  	vmcb->save.rip = (u64)guest_rip;
->  	vmcb->save.rsp = (u64)guest_rsp;
->  	guest_regs.rdi = (u64)svm;
-> +
-> +	if (svm->ncr3_gpa) {
-> +		ctrl->nested_ctl |= SVM_NESTED_CTL_NP_ENABLE;
-> +		ctrl->nested_cr3 = svm->ncr3_gpa;
-> +	}
->  }
->  
->  /*
-> diff --git a/tools/testing/selftests/kvm/x86/vmx_dirty_log_test.c b/tools/testing/selftests/kvm/x86/vmx_dirty_log_test.c
-> index 370f8d3117c2..032ab8bf60a4 100644
-> --- a/tools/testing/selftests/kvm/x86/vmx_dirty_log_test.c
-> +++ b/tools/testing/selftests/kvm/x86/vmx_dirty_log_test.c
-> @@ -93,7 +93,7 @@ static void test_vmx_dirty_log(bool enable_ept)
->  	/* Create VM */
->  	vm = vm_create_with_one_vcpu(&vcpu, l1_guest_code);
->  	if (enable_ept)
-> -		vm_enable_ept(vm);
-> +		vm_enable_tdp(vm);
->  
->  	vcpu_alloc_vmx(vm, &vmx_pages_gva);
->  	vcpu_args_set(vcpu, 1, vmx_pages_gva);
-> @@ -170,7 +170,7 @@ int main(int argc, char *argv[])
->  
->  	test_vmx_dirty_log(/*enable_ept=*/false);
->  
-> -	if (kvm_cpu_has_ept())
-> +	if (kvm_cpu_has_tdp())
->  		test_vmx_dirty_log(/*enable_ept=*/true);
->  
->  	return 0;
-> -- 
-> 2.52.0.351.gbe84eed79e-goog
-> 
-
--- 
-kvm-riscv mailing list
-kvm-riscv@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/kvm-riscv
+SGkgQW5kcmV3LAoKT24gVGh1LCBKYW4gOCwgMjAyNiBhdCAxOjUx4oCvQU0gQW5kcmV3IEpvbmVz
+IDxham9uZXNAdmVudGFuYW1pY3JvLmNvbT4gd3JvdGU6Cj4KPiBPbiBXZWQsIEphbiAwNywgMjAy
+NiBhdCAwNjowMToyNlBNICswODAwLCBYdSBMdSB3cm90ZToKPiA+IEhpIEFuZHJldywKPiA+Cj4g
+PiBUaGFua3MgZm9yIHlvdXIgYnJpbGxpYW50IGpvYiBvbiB0aGUgUklTQ1YgSU9NTVUgaXJxYnlw
+YXNzIHBhdGNoCj4gPiBzZXJpZXNbMV0uIEkgaGF2ZSByZWJhc2VkIGl0IG9uIHY2LjE4IGFuZCBz
+dWNjZXNzZnVsbHkgcGFzc2VkIHRocm91Z2gKPiA+IGEgbnZtZSBkZXZpY2UgdG8gVk0uIEJ1dCBJ
+IHN0aWxsIGhhdmUgc29tZSBxdWVzdGlvbnMgYWJvdXQgaXQuCj4gPgo+ID4gMS4gSXQgc2VlbXMg
+ImlycWRvbWFpbi0+aG9zdF9kYXRhLT5kb21haW4iIGNhbiBiZSBOVUxMIGZvciBibG9ja2luZyBv
+cgo+ID4gaWRlbnRpdHkgZG9tYWluLiBTbyBpdCdzIGJldHRlciB0byBjaGVjayB3aGV0aGVyIGl0
+J3MgTlVMTCBpbgo+ID4gcmlzY3ZfaW9tbXVfaXJfaXJxX2RvbWFpbl9hbGxvY19pcnFzIG9yCj4g
+PiByaXNjdl9pb21tdV9pcl9pcnFfZG9tYWluX2ZyZWVfaXJxcyBmdW5jdGlvbnMuIE90aGVyd2lz
+ZSBwYWdlIGZhdWx0Cj4gPiBjYW4gaGFwcGVuLgo+Cj4gSW5kZWVkLiBEaWQgeW91IGhpdCB0aGUg
+TlVMTCBkZXJlZmVyZW5jZSBpbiB5b3VyIHRlc3Rpbmc/CgpZZXMuIEJlbG93IGlzIG15IHNldHRp
+bmdzOgoKQ09ORklHX0lPTU1VX0lPVkE9eQpDT05GSUdfSU9NTVVfQVBJPXkKQ09ORklHX0lPTU1V
+X1NVUFBPUlQ9eQpDT05GSUdfSU9NTVVfREVGQVVMVF9ETUFfU1RSSUNUPXkKQ09ORklHX0lPTU1V
+X0RNQT15CkNPTkZJR19SSVNDVl9JT01NVT15CkNPTkZJR19SSVNDVl9JT01NVV9QQ0k9eQpDT05G
+SUdfSEFWRV9LVk1fSVJRX0JZUEFTUz1tCkNPTkZJR19JUlFfQllQQVNTX01BTkFHRVI9bQpDT05G
+SUdfS1ZNX1ZGSU89eQpDT05GSUdfVkZJTz1tCkNPTkZJR19WRklPX0dST1VQPXkKQ09ORklHX1ZG
+SU9fQ09OVEFJTkVSPXkKQ09ORklHX1ZGSU9fSU9NTVVfVFlQRTE9bQpDT05GSUdfVkZJT19OT0lP
+TU1VPXkKQ09ORklHX1ZGSU9fVklSUUZEPXkKQ09ORklHX1ZGSU9fUENJX0NPUkU9bQpDT05GSUdf
+VkZJT19QQ0lfSU5UWD15CkNPTkZJR19WRklPX1BDST1tCgpUaGUgcGFuaWMgc3RhY2sgYmVoYXZl
+cyBhczoKClsgICAgMS43OTk0NjFdIHZpcnRpby1wY2kgMDAwMDowMDowMS4wOiBlbmFibGluZyBk
+ZXZpY2UgKDAwMDAgLT4gMDAwMykKWyAgICAxLjgwNzg5Nl0gdmlydGlvX2JsayB2aXJ0aW8wOiA4
+LzAvMCBkZWZhdWx0L3JlYWQvcG9sbCBxdWV1ZXMKWyAgICAxLjgxMzA4OF0gVW5hYmxlIHRvIGhh
+bmRsZSBrZXJuZWwgTlVMTCBwb2ludGVyIGRlcmVmZXJlbmNlIGF0CnZpcnR1YWwgYWRkcmVzcyAw
+MDAwMDAwMDAwMDAwMGMwClsgICAgMS44MTQ0OTldIEN1cnJlbnQga3dvcmtlci91Mzk6MCBwZ3Rh
+YmxlOiA0SyBwYWdlc2l6ZSwgNDgtYml0IFZBcywKcGdkcD0weDAwMDAwMDAwODI1ZGEwMDAKWyAg
+ICAxLjgxNTAwNl0gWzAwMDAwMDAwMDAwMDAwYzBdIHBnZD0wMDAwMDAwMDAwMDAwMDAwLCBwNGQ9
+MDAwMDAwMDAwMDAwMDAwMApbICAgIDEuODE1OTU2XSBPb3BzIFsjMV0KWyAgICAxLjgxNjE2Nl0g
+TW9kdWxlcyBsaW5rZWQgaW46ClsgICAgMS44MTY5MjJdIENQVTogNyBVSUQ6IDAgUElEOiA2MSBD
+b21tOiBrd29ya2VyL3UzOTowIE5vdCB0YWludGVkCjYuMTguMC0wMDAyMC1nZWEwYWIzYTVlNzZl
+ICMyNDMgVk9MVU5UQVJZClsgICAgMS44MTc2NzBdIEhhcmR3YXJlIG5hbWU6IHJpc2N2LXZpcnRp
+byxxZW11IChEVCkKWyAgICAxLjgxODQ3NF0gV29ya3F1ZXVlOiBldmVudHNfdW5ib3VuZCBkZWZl
+cnJlZF9wcm9iZV93b3JrX2Z1bmMKWyAgICAxLjgxOTIyN10gZXBjIDogcmlzY3ZfaW9tbXVfaXJf
+Y29tcHV0ZV9tc2lwdGVfaWR4KzB4MTAvMHhiOApbICAgIDEuODE5ODAzXSAgcmEgOiByaXNjdl9p
+b21tdV9pcl9pcnFfZG9tYWluX2FsbG9jX2lycXMrMHg4ZS8weDEyOApbICAgIDEuODIwMTgxXSBl
+cGMgOiBmZmZmZmZmZjgwNzMyNDMwIHJhIDogZmZmZmZmZmY4MDczMmUxZSBzcCA6CmZmZmY4Zjgw
+MDA5Y2VjMzAKWyAgICAxLjgyMDU5Nl0gIGdwIDogZmZmZmZmZmY4MjNjYmJlMCB0cCA6IGZmZmZh
+ZjgwODBjZThlODAgdDAgOgpmZmZmZmZmZjgwMDFjNDIwClsgICAgMS44MjEwMDZdICB0MSA6IDAw
+MDAwMDAwMDAwMDAwMDAgdDIgOiAwMDAwMDAwMDAwMDAwMDAwIHMwIDoKZmZmZjhmODAwMDljZWM0
+MApbICAgIDEuODIxNDEzXSAgczEgOiAwMDAwMDAwMDAwMDAwMDE3IGEwIDogMDAwMDAwMDAwMDAw
+MDAwMCBhMSA6CjAwMDAwMDAwMjgwMTAwMDAKWyAgICAxLjgyMTkxOF0gIGEyIDogZmZmZmFmODA4
+MWY1ZDYwOCBhMyA6IGZmZmZhZjgwODAxMzllNDAgYTQgOgowMDAwMDAwMDAwMDAwMDAwClsgICAg
+MS44MjI0NjVdICBhNSA6IDAwMDAwMDAwMDAwMDAwMDMgYTYgOiAwMDAwMDAwMDAwMDAwMDAxIGE3
+IDoKZmZmZmFmODA4MWY1ZDYwMApbICAgIDEuODIyODc3XSAgczIgOiBmZmZmYWY4MDgwZDA2ZTQw
+IHMzIDogMDAwMDAwMDAwMDAwMDAwMCBzNCA6CjAwMDAwMDAwMjgwMTAwMDAKWyAgICAxLjgyMzI4
+NF0gIHM1IDogMDAwMDAwMDAwMDAwMDAxOCBzNiA6IGZmZmZhZjgwODBkMDVmMDAgczcgOgpmZmZm
+YWY4MDgwZTE4OWYwClsgICAgMS44MjM2OTRdICBzOCA6IDAwMDAwMDAwMDAwMDAwMDAgczkgOiBm
+ZmZmZmZmZjgyMzNkODkwIHMxMDoKMDAwMDAwMDAwMDAwMDAwMgpbICAgIDEuODI0MTA0XSAgczEx
+OiBmZmZmYWY4MDgwZTE0MTkwIHQzIDogMDAwMDAwMDAwMDAwMDAwMiB0NCA6CmZmZmZmZmZmODIw
+MDBiMjAKWyAgICAxLjgyNDUxMl0gIHQ1IDogMDAwMDAwMDAwMDAwMDAwMyB0NiA6IGZmZmZhZjgw
+ODBkMDVkNjgKWyAgICAxLjgyNDgyN10gc3RhdHVzOiAwMDAwMDAwMjAwMDAwMTIwIGJhZGFkZHI6
+IDAwMDAwMDAwMDAwMDAwYzAKY2F1c2U6IDAwMDAwMDAwMDAwMDAwMGQKWyAgICAxLjgyNTQzOV0g
+WzxmZmZmZmZmZjgwNzMyNDMwPl0gcmlzY3ZfaW9tbXVfaXJfY29tcHV0ZV9tc2lwdGVfaWR4KzB4
+MTAvMHhiOApbICAgIDEuODI2MTYyXSBbPGZmZmZmZmZmODA3MzJlMWU+XQpyaXNjdl9pb21tdV9p
+cl9pcnFfZG9tYWluX2FsbG9jX2lycXMrMHg4ZS8weDEyOApbICAgIDEuODI2NTk1XSBbPGZmZmZm
+ZmZmODAwYzcwNTQ+XSBpcnFfZG9tYWluX2FsbG9jX2lycXNfcGFyZW50KzB4MWMvMHg2MApbICAg
+IDEuODI2OTczXSBbPGZmZmZmZmZmODAwY2FjOGM+XSBtc2lfZG9tYWluX2FsbG9jKzB4NzQvMHgx
+MjAKWyAgICAxLjgyNzI5NV0gWzxmZmZmZmZmZjgwMGM3MjkwPl0gaXJxX2RvbWFpbl9hbGxvY19p
+cnFzX2hpZXJhcmNoeSsweDE4LzB4NTAKWyAgICAxLjgyNzY4Ml0gWzxmZmZmZmZmZjgwMGM4MjVh
+Pl0gaXJxX2RvbWFpbl9hbGxvY19pcnFzX2xvY2tlZCsweGJhLzB4MzA4ClsgICAgMS44MjgwNThd
+IFs8ZmZmZmZmZmY4MDBjODg0ZT5dIF9faXJxX2RvbWFpbl9hbGxvY19pcnFzKzB4NWUvMHhhOApb
+ICAgIDEuODI4NDExXSBbPGZmZmZmZmZmODAwY2I0N2M+XSBfX21zaV9kb21haW5fYWxsb2NfaXJx
+cysweDE3NC8weDNhMApbICAgIDEuODI4Nzc0XSBbPGZmZmZmZmZmODAwY2MwMDI+XSBfX21zaV9k
+b21haW5fYWxsb2NfbG9ja2VkKzB4MTFhLzB4MTc4ClsgICAgMS44MjkxNDBdIFs8ZmZmZmZmZmY4
+MDBjYzk1ND5dIG1zaV9kb21haW5fYWxsb2NfaXJxc19hbGxfbG9ja2VkKzB4NTQvMHhiOApbICAg
+IDEuODI5NTI4XSBbPGZmZmZmZmZmODA2MTYyMTQ+XSBwY2lfbXNpX3NldHVwX21zaV9pcnFzKzB4
+MmMvMHg0OApbICAgIDEuODI5OTkzXSBbPGZmZmZmZmZmODA2MTUyODQ+XSBtc2l4X3NldHVwX2lu
+dGVycnVwdHMrMHgxMjQvMHgxZjgKWyAgICAxLjgzMDQ4NF0gWzxmZmZmZmZmZjgwNjE1NjhlPl0g
+X19wY2lfZW5hYmxlX21zaXhfcmFuZ2UrMHgzMzYvMHg0ZTAKWyAgICAxLjgzMDg0M10gWzxmZmZm
+ZmZmZjgwNjEzYTRlPl0gcGNpX2FsbG9jX2lycV92ZWN0b3JzX2FmZmluaXR5KzB4OWUvMHgxMjAK
+WyAgICAxLjgzMTIyNV0gWzxmZmZmZmZmZjgwNmQwNjc2Pl0gdnBfZmluZF92cXNfbXNpeCsweDEy
+ZS8weDNhOApbICAgIDEuODMxNTU3XSBbPGZmZmZmZmZmODA2ZDA5MmE+XSB2cF9maW5kX3Zxcysw
+eDNhLzB4MjIwClsgICAgMS44MzE4NjBdIFs8ZmZmZmZmZmY4MDZjZTBlNj5dIHZwX21vZGVybl9m
+aW5kX3ZxcysweDFlLzB4NjgKWyAgICAxLjgzMjE4NV0gWzxmZmZmZmZmZjgwNzgwYTg0Pl0gaW5p
+dF92cSsweDJkNC8weDM0MApbICAgIDEuODMyNDc0XSBbPGZmZmZmZmZmODA3ODBjNTg+XSB2aXJ0
+YmxrX3Byb2JlKzB4ZTAvMHhiNDAKWyAgICAxLjgzMjc3N10gWzxmZmZmZmZmZjgwNmM3Mzk0Pl0g
+dmlydGlvX2Rldl9wcm9iZSsweDE4NC8weDI4MApbICAgIDEuODMzMTA3XSBbPGZmZmZmZmZmODA3
+NGM2MjY+XSByZWFsbHlfcHJvYmUrMHg5ZS8weDM1MApbICAgIDEuODMzNDEyXSBbPGZmZmZmZmZm
+ODA3NGM5NTQ+XSBfX2RyaXZlcl9wcm9iZV9kZXZpY2UrMHg3Yy8weDEzOApbICAgIDEuODMzODUz
+XSBbPGZmZmZmZmZmODA3NGNhZmE+XSBkcml2ZXJfcHJvYmVfZGV2aWNlKzB4M2EvMHhkMApbICAg
+IDEuODM0MTkxXSBbPGZmZmZmZmZmODA3NGNjMWU+XSBfX2RldmljZV9hdHRhY2hfZHJpdmVyKzB4
+OGUvMHgxMzAKWyAgICAxLjgzNDU0M10gWzxmZmZmZmZmZjgwNzRhMTY4Pl0gYnVzX2Zvcl9lYWNo
+X2RydisweDY4LzB4YzgKWyAgICAxLjgzNDg0OF0gWzxmZmZmZmZmZjgwNzRjZmQ4Pl0gX19kZXZp
+Y2VfYXR0YWNoKzB4OTAvMHgxYTAKWyAgICAxLjgzNTE2NF0gWzxmZmZmZmZmZjgwNzRkMzBhPl0g
+ZGV2aWNlX2luaXRpYWxfcHJvYmUrMHgxYS8weDMwClsgICAgMS44MzU0OThdIFs8ZmZmZmZmZmY4
+MDc0YjMxMD5dIGJ1c19wcm9iZV9kZXZpY2UrMHg5MC8weGEwClsgICAgMS44MzU4MjFdIFs8ZmZm
+ZmZmZmY4MDc0ODVlMD5dIGRldmljZV9hZGQrMHg1ZTgvMHg3ZjgKWyAgICAxLjgzNjEyMl0gWzxm
+ZmZmZmZmZjgwNmM3MDIwPl0gcmVnaXN0ZXJfdmlydGlvX2RldmljZSsweDFjMC8weDFmOApbICAg
+IDEuODM2NDcyXSBbPGZmZmZmZmZmODA2Y2ZjYjg+XSB2aXJ0aW9fcGNpX3Byb2JlKzB4YjAvMHgx
+NzAKWyAgICAxLjgzNjc5Nl0gWzxmZmZmZmZmZjgwNjA5ODk0Pl0gbG9jYWxfcGNpX3Byb2JlKzB4
+M2MvMHg5OApbICAgIDEuODM3MTExXSBbPGZmZmZmZmZmODA2MGE1MTI+XSBwY2lfZGV2aWNlX3By
+b2JlKzB4Y2EvMHgyNzgKWyAgICAxLjgzNzQzMV0gWzxmZmZmZmZmZjgwNzRjNjI2Pl0gcmVhbGx5
+X3Byb2JlKzB4OWUvMHgzNTAKWyAgICAxLjgzNzgwOF0gWzxmZmZmZmZmZjgwNzRjOTU0Pl0gX19k
+cml2ZXJfcHJvYmVfZGV2aWNlKzB4N2MvMHgxMzgKWyAgICAxLjgzODE1N10gWzxmZmZmZmZmZjgw
+NzRjYWZhPl0gZHJpdmVyX3Byb2JlX2RldmljZSsweDNhLzB4ZDAKWyAgICAxLjgzODQ4NV0gWzxm
+ZmZmZmZmZjgwNzRjYzFlPl0gX19kZXZpY2VfYXR0YWNoX2RyaXZlcisweDhlLzB4MTMwClsgICAg
+MS44Mzg4MzVdIFs8ZmZmZmZmZmY4MDc0YTE2OD5dIGJ1c19mb3JfZWFjaF9kcnYrMHg2OC8weGM4
+ClsgICAgMS44MzkxNTJdIFs8ZmZmZmZmZmY4MDc0Y2ZkOD5dIF9fZGV2aWNlX2F0dGFjaCsweDkw
+LzB4MWEwClsgICAgMS44Mzk0NzBdIFs8ZmZmZmZmZmY4MDc0ZDMwYT5dIGRldmljZV9pbml0aWFs
+X3Byb2JlKzB4MWEvMHgzMApbICAgIDEuODM5ODA5XSBbPGZmZmZmZmZmODA1ZmFiMmE+XSBwY2lf
+YnVzX2FkZF9kZXZpY2UrMHhhYS8weDEwOApbICAgIDEuODQwMTQxXSBbPGZmZmZmZmZmODA1ZmFi
+YzQ+XSBwY2lfYnVzX2FkZF9kZXZpY2VzKzB4M2MvMHg4OApbICAgIDEuODQwNDcwXSBbPGZmZmZm
+ZmZmODA1ZmVmOGE+XSBwY2lfaG9zdF9wcm9iZSsweDlhLzB4MTA4ClsgICAgMS44NDA3ODldIFs8
+ZmZmZmZmZmY4MDYzZmFmZT5dIHBjaV9ob3N0X2NvbW1vbl9pbml0KzB4N2UvMHhhMApbICAgIDEu
+ODQxMTMxXSBbPGZmZmZmZmZmODA2M2ZiNGM+XSBwY2lfaG9zdF9jb21tb25fcHJvYmUrMHgyYy8w
+eDQ4ClsgICAgMS44NDE0NzBdIFs8ZmZmZmZmZmY4MDc0ZjkxNj5dIHBsYXRmb3JtX3Byb2JlKzB4
+NTYvMHg5OApbICAgIDEuODQxODcwXSBbPGZmZmZmZmZmODA3NGM2MjY+XSByZWFsbHlfcHJvYmUr
+MHg5ZS8weDM1MApbICAgIDEuODQyMTkxXSBbPGZmZmZmZmZmODA3NGM5NTQ+XSBfX2RyaXZlcl9w
+cm9iZV9kZXZpY2UrMHg3Yy8weDEzOApbICAgIDEuODQyNTM3XSBbPGZmZmZmZmZmODA3NGNhZmE+
+XSBkcml2ZXJfcHJvYmVfZGV2aWNlKzB4M2EvMHhkMApbICAgIDEuODQyODczXSBbPGZmZmZmZmZm
+ODA3NGNjMWU+XSBfX2RldmljZV9hdHRhY2hfZHJpdmVyKzB4OGUvMHgxMzAKWyAgICAxLjg0MzIy
+MV0gWzxmZmZmZmZmZjgwNzRhMTY4Pl0gYnVzX2Zvcl9lYWNoX2RydisweDY4LzB4YzgKWyAgICAx
+Ljg0MzU0MF0gWzxmZmZmZmZmZjgwNzRjZmQ4Pl0gX19kZXZpY2VfYXR0YWNoKzB4OTAvMHgxYTAK
+WyAgICAxLjg0Mzg2MV0gWzxmZmZmZmZmZjgwNzRkMzBhPl0gZGV2aWNlX2luaXRpYWxfcHJvYmUr
+MHgxYS8weDMwClsgICAgMS44NDQxOTNdIFs8ZmZmZmZmZmY4MDc0YjMxMD5dIGJ1c19wcm9iZV9k
+ZXZpY2UrMHg5MC8weGEwClsgICAgMS44NDQ1MDddIFs8ZmZmZmZmZmY4MDc0YzIwNj5dIGRlZmVy
+cmVkX3Byb2JlX3dvcmtfZnVuYysweGE2LzB4MTEwClsgICAgMS44NDQ4NjldIFs8ZmZmZmZmZmY4
+MDA1NWVhYT5dIHByb2Nlc3Nfb25lX3dvcmsrMHgxOTIvMHgzMzgKWyAgICAxLjg0NTE5Nl0gWzxm
+ZmZmZmZmZjgwMDU2ZjljPl0gd29ya2VyX3RocmVhZCsweDI5NC8weDQwOApbICAgIDEuODQ1NTAy
+XSBbPGZmZmZmZmZmODAwNjAyMDA+XSBrdGhyZWFkKzB4ZTAvMHgxZDgKWyAgICAxLjg0NTg4N10g
+WzxmZmZmZmZmZjgwMDEzNmM2Pl0gcmV0X2Zyb21fZm9ya19rZXJuZWwrMHgxNi8weDEwMApbICAg
+IDEuODQ2MzYyXSBbPGZmZmZmZmZmODBhYzY5M2E+XSByZXRfZnJvbV9mb3JrX2tlcm5lbF9hc20r
+MHgxNi8weDE4ClsgICAgMS44NDY5NTRdIENvZGU6IGZmZmYgZmZmZiBhMjk3IGZmOGUgMDAxMyAw
+MDAwIDExNDEgZTAyMiBlNDA2IDA4MDAKKDI2ODMpIDBjMDUKWyAgICAxLjg0ODEyNV0gLS0tWyBl
+bmQgdHJhY2UgMDAwMDAwMDAwMDAwMDAwMCBdLS0tCgpJIGFkZGVkIGEgY2hlY2sgb2Ygd2hldGhl
+ciB0aGUgaXJxZG9tYWluLT5ob3N0X2RhdGEtPmRvbWFpbiBpcyBOVUxMIGluCmJvdGggcmlzY3Zf
+aW9tbXVfaXJfaXJxX2RvbWFpbl9hbGxvY19pcnFzKCkgYW5kCnJpc2N2X2lvbW11X2lyX2lycV9k
+b21haW5fZnJlZV9pcnFzKCkgYW5kIG5vdyBpdCB3b3Jrcy4KCj4KPiA+Cj4gPiAyLiBJdCBzZWVt
+cyB5b3UgYXJlIHVzaW5nIHRoZSBmaXJzdCBzdGFnZSBpb21tdSBwYWdlIHRhYmxlIGV2ZW4gZm9y
+Cj4gPiBncGEtPnNwYSwgd2hhdCBpZiBhIFZNIG5lZWRzIGFuIHZJT01NVT8gT3IgZGlkIEkgbWlz
+cyBzb21ldGhpbmc/Cj4KPiBVbmZvcnR1bmF0ZWx5IHRoZSBJT01NVSBzcGVjIHdhc24ndCBjbGVh
+ciBvbiB0aGUgdXNlIG9mIHRoZSBNU0kgdGFibGUKPiB3aGVuIG9ubHkgc3RhZ2UxIGlzIGluIHVz
+ZSBhbmQgbm93LCBhZnRlciBkaXNjdXNzaW9ucyB3aXRoIHRoZSBzcGVjCj4gYXV0aG9yLCBpdCBh
+cHBlYXJzIHdoYXQgSSBoYXZlIHdyaXR0ZW4gd29uJ3Qgd29yay4gQWRkaXRpb25hbGx5LCBKYXNv
+bgo+IGRpZG4ndCBsaWtlIHRoaXMgbmV3IGFwcHJvYWNoIHRvIElSUV9ET01BSU5fRkxBR19JU09M
+QVRFRF9NU0kgZWl0aGVyLAo+IHNvIHRoZXJlJ3MgYSBsb3Qgb2YgcmV3b3JrIHRoYXQgbmVlZHMg
+dG8gYmUgZG9uZSBmb3IgdjMuIEkgaGFkIGhhZCBob3Blcwo+IHRvIGRlZGljYXRlIERlY2VtYmVy
+IHRvIHRoaXMgYnV0IGdvdCBkaXN0cmFjdGVkIHdpdGggb3RoZXIgdGhpbmdzIGFuZAo+IHZhY2F0
+aW9uLiBOb3cgSSBob3BlIHRvIGRlZGljYXRlIHRoaXMgbW9udGgsIGJ1dCBJIHN0aWxsIG5lZWQg
+dG8gZ2V0Cj4gc3RhcnRlZCEKCkkgc2VlLiBMb29rIGZvcndhcmQgdG8geW91ciBuZXh0IHZlcnNp
+b24uCgpCZXN0IHJlZ2FyZHMsClh1IEx1Cgo+Cj4gVGhhbmtzLAo+IGRyZXcKPgo+ID4KPiA+IFsx
+XSBodHRwczovL2xvcmUua2VybmVsLm9yZy9hbGwvMjAyNTA5MjAyMDM4NTEuMjIwNTExNS0yMC1h
+am9uZXNAdmVudGFuYW1pY3JvLmNvbS8KPiA+Cj4gPiBCZXN0IHJlZ2FyZHMsCj4gPiBYdSBMdQoK
+LS0gCmt2bS1yaXNjdiBtYWlsaW5nIGxpc3QKa3ZtLXJpc2N2QGxpc3RzLmluZnJhZGVhZC5vcmcK
+aHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9rdm0tcmlzY3YK
