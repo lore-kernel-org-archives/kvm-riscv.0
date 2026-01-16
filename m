@@ -4,88 +4,132 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D538EC982CA
-	for <kvm-riscv@archiver.kernel.org>; Fri, 16 Jan 2026 15:33:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 87087C982F0
+	for <kvm-riscv@archiver.kernel.org>; Fri, 16 Jan 2026 19:03:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID:
-	References:Mime-Version:In-Reply-To:Date:Reply-To:Content-ID:
-	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
-	:Resent-Message-ID:List-Owner;
-	bh=dj9dc1+eaBEGBlmV0/A/BRipQUVBy/jnNSvaflruDow=; b=m6x0VqpvgCvMQc35IZJEXQYczj
-	BGhO8Y+/cDeYFpxNmtpyVsq3fyADNP7ZFpKzSsRyKnADZdXN6e9MaKEt1trUbTz9gMdj872sZAiYl
-	dhDCEGmVTUApAMVdaKb6U+SAk+ETundIApN+p3F/WGHtFZRqdhCkghkanuePk6MXUpm2rxa/1dOOM
-	6IPWIEduE3P84h2fYWxavINCwQhuCL5FprPg/BMsFGFdH3x/I4Rwhryljsie93+3d8gwZVl7oiJ0s
-	euHMidMoNAjeX5AzLnngDL2oWuvWKuxBhR3lpXHAq6IQfNUMhTWNfIhTZkaWfHNVhFI9OG/IIzhQ2
-	OfpaXi1w==;
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
+	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=2KaPMzzi9GxwkVgKICi206tsavuiMseRUy8oLL0rPLk=; b=F/9Q11Gj2JXsk4
+	hfSPh7dB2WThCjauawOgcOBoT0w/1LPW6d01Dq9zPqv9YByTEE9YSNOoAcoJ343AuE3Iti19mjcEM
+	J1NMhBn1Jyrb8GqksvROGR1zH351Z34ypV55jv1Vd4repv2jne4QMYVfehSgg7f5ox32TVFqRbWkm
+	+hBkQCHvb7lWWTQ5cRYjF77c8qADAbLNjqAqsgN/aya+qx6ix2P8x8EmGSrUnVUVGaAHgMubt0v+a
+	/VXYTUPE10GK5ew0ZU9GDNf5mAQO2iFGZEwwk6jQsL2hEZ+2xDYvWTaGDjRHXHOGnfiRTV5HGOMv6
+	cJWRQ3Atn5ytWwJJ+gSQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vglpL-0000000EMuQ-3Cr3;
-	Fri, 16 Jan 2026 15:33:31 +0000
-Received: from mail-pj1-x104a.google.com ([2607:f8b0:4864:20::104a])
+	id 1vgp6X-0000000EfLy-3tmn;
+	Fri, 16 Jan 2026 19:03:29 +0000
+Received: from mx0b-0031df01.pphosted.com ([205.220.180.131])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vglpI-0000000EMsu-2e8u
+	id 1vgp6V-0000000EfLG-2NCS
 	for kvm-riscv@lists.infradead.org;
-	Fri, 16 Jan 2026 15:33:29 +0000
-Received: by mail-pj1-x104a.google.com with SMTP id 98e67ed59e1d1-34ac819b2f2so1899940a91.0
-        for <kvm-riscv@lists.infradead.org>; Fri, 16 Jan 2026 07:33:27 -0800 (PST)
+	Fri, 16 Jan 2026 19:03:29 +0000
+Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 60GExm7U914139
+	for <kvm-riscv@lists.infradead.org>; Fri, 16 Jan 2026 19:03:26 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=qcppdkim1; bh=ctdwtzx4woC6De+DgvE6qX6t
+	IJzFb2FXyuR20qfZBEg=; b=LGtcOnPtOR+13bTj4jHF6nGlYrcYhfluq4KC3l/S
+	6UOnnPz6682Jwq/EWmZW7agEUTEQL9y/l/PX/3AY7ugCJJZv1Nv+Nkf1HOEIVRNK
+	VPWJrH9q5xHOVlCTzIs5XWUMYWhk0iG+QMZdlPRjtaH/H0G6GVd+bKz2O9p6xAWB
+	hyMIE2I3yBgJAo3Ot+sE+XHGeVz8BZ3xbwVwb5LcR936uamiROOi5uArxm1Rwy33
+	/a+kV+OgDTBk/cGmIw16Bz157nFLcOyn8Z8RU7UzEaqzbMIxJh24EJyUfS9gkUrt
+	NeAAhMJWuU3AN0XXa8dchBbWjJ6bl+HRWAC6/YsNZ7CYfw==
+Received: from mail-ot1-f69.google.com (mail-ot1-f69.google.com [209.85.210.69])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4bqqjurrm2-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <kvm-riscv@lists.infradead.org>; Fri, 16 Jan 2026 19:03:26 +0000 (GMT)
+Received: by mail-ot1-f69.google.com with SMTP id 46e09a7af769-7cfd0f67288so4894075a34.3
+        for <kvm-riscv@lists.infradead.org>; Fri, 16 Jan 2026 11:03:25 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1768577606; x=1769182406; darn=lists.infradead.org;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=MFDMwcUB+g0lr3+O0uNE+y+KlNYemC0Uyu3/6hhSiCE=;
-        b=rEcuTnHOWXE+0bznCPKmFJdxOXxH2MsDxckAY5qwABabLEuD4uImgUvK5F4UHAPiKl
-         rJXfskiMDy+fpJPsBYQmGwsGYwz8OrAZS59OCoO6AG/7W4UMOXpJeOYaPD3V80zUXg9s
-         V0rAU05aBtKCydHI/mdGYbNo+DETw6S6BPZNUgucWeWpi068DkyRN4Bn4/Xrm4/OEzGT
-         S8YUrDVvM1nmQ1fcXrE0ROHg6YV6u/ozyJb++YxQNVA1atJ3fWarhU5E3S4OdsnUYsHu
-         f2wgQbHu4Gs1PW9dujPaIY2Om2hu0zK+4VDr6OZkOocKlPFBaK510ITLTEB95J0+5PPi
-         5U7g==
+        d=oss.qualcomm.com; s=google; t=1768590205; x=1769195005; darn=lists.infradead.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=ctdwtzx4woC6De+DgvE6qX6tIJzFb2FXyuR20qfZBEg=;
+        b=KkF8AJrS/2WTOXmtA8eDK0dEeK1aWHmi6eZviwBA5EkpEx3lo9gzeHhQQcO6kEzGLM
+         qW6Fm8iyV+QVzwnyLYZZPLF1xra2P4sD1tmVgPqKsuCfDUuyTZds5ihAr3W0KljoczEC
+         cLN2b3IscRBTovSm7mjjKZHWp4qIbOWdInjxx+RTk99bLVUDin7WyW+zIprMphwHqeFz
+         cq2hGO8NakEQuIc+zYuW7oVrqQLuoSYpLLQjsvlAtKide+DFMymZuXOaG8RunK2yVEfl
+         iJvSa3Cv1LPD6H/DhHAnq/gYxrpiIJyKSkoAWLcX0stC2LIy+Eq1VCcSI2t4xeYhlZW8
+         D7fw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1768577606; x=1769182406;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=MFDMwcUB+g0lr3+O0uNE+y+KlNYemC0Uyu3/6hhSiCE=;
-        b=FhSG2sGTqcFJe1BXyRpvv8ZxZPLfDKt5ByN2MSvQGCz/wHeY1yUDQKf89KD5BSr8Z7
-         2oDd8tTk0qpVHmZCJS0zFXXO+1Hh5irSKiXsSQiTtp4+9oOgbiCe+TIwvIYFTEnEDa6D
-         ChTe8POTh2YFLun5yx0R1xzqOmZFcfhGXm3jUvTRFqCj5AJNSlisOe0tCBq+HqpDGyMo
-         0ZHEPSVK0fZLuf9CdxXwhcDbMOhoHE3M1sr0tnL794xFcwlTWiYhfgAAyTht49w0Xfye
-         a8/JFXM5uQICn6uXajI7vyereuMLScJ8+KI4IWSdR+qK/aliYd3U2RNWqn7NbIWhU/mM
-         E5lg==
-X-Forwarded-Encrypted: i=1; AJvYcCW08SOYkltBB1E8XYdytM/nDHkxYrksAHkXrpeyI3Byq0ecb1pTtEMB0/vdKcBk+eVXWgglpV2qkoU=@lists.infradead.org
-X-Gm-Message-State: AOJu0YzGU05Jt3cuD5HFIUCfbqSZxzdBPo8Zus5PobZLWpPYPRmXrhBn
-	a6g+dZ6+zgV1Kk/6HGDmSPQE7PXiB5B46xvlhEg3eclzMNqAdx8QOr8t/hKixKl1qL3SAlFNQRt
-	vieGKog==
-X-Received: from pjbsh12.prod.google.com ([2002:a17:90b:524c:b0:34c:2156:9de7])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:5803:b0:32e:3829:a71c
- with SMTP id 98e67ed59e1d1-35272efcc92mr2558426a91.16.1768577606439; Fri, 16
- Jan 2026 07:33:26 -0800 (PST)
-Date: Fri, 16 Jan 2026 07:32:47 -0800
-In-Reply-To: <20251206001720.468579-1-seanjc@google.com>
-Mime-Version: 1.0
-References: <20251206001720.468579-1-seanjc@google.com>
-X-Mailer: git-send-email 2.52.0.457.g6b5491de43-goog
-Message-ID: <176857711424.940905.14821355548518788463.b4-ty@google.com>
-Subject: Re: [PATCH v6 00/44] KVM: x86: Add support for mediated vPMUs
-From: Sean Christopherson <seanjc@google.com>
-To: Sean Christopherson <seanjc@google.com>, Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, 
-	Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>, 
-	Huacai Chen <chenhuacai@kernel.org>, Anup Patel <anup@brainfault.org>, 
-	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
-	Xin Li <xin@zytor.com>, "H. Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@kernel.org>, 
-	Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, 
-	Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, 
-	Paolo Bonzini <pbonzini@redhat.com>
-Cc: linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, 
-	kvm@vger.kernel.org, loongarch@lists.linux.dev, kvm-riscv@lists.infradead.org, 
-	linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, 
-	linux-perf-users@vger.kernel.org, Mingwei Zhang <mizhang@google.com>, 
-	Xudong Hao <xudong.hao@intel.com>, Sandipan Das <sandipan.das@amd.com>, 
-	Dapeng Mi <dapeng1.mi@linux.intel.com>, Xiong Zhang <xiong.y.zhang@linux.intel.com>, 
-	Manali Shukla <manali.shukla@amd.com>, Jim Mattson <jmattson@google.com>
+        d=1e100.net; s=20230601; t=1768590205; x=1769195005;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=ctdwtzx4woC6De+DgvE6qX6tIJzFb2FXyuR20qfZBEg=;
+        b=xHKfH39IYsGj3YAvJqFzFLZ9eK8ejkSPaLspOwTrxh3z51qufm2ORGGpNsu03CpPwa
+         c1W2D2nFqZir5g6HM2yW8RRrqQtQOQkAuHXx3LGQ8FHqmUqKDEHdaBZ2XABh/RFvaGAs
+         sib9tWNa3X0fxqULzkgPl8CdCopKAhrqnytx9I8iN7xfUn8yWSlNmo8nU8W3HU5ZrnJO
+         j1V6TQtZ1R6jX06eJk7iFQllIS9KKxrpvUuILjtAZAa99dHrxOdOP6LSRqhcURYAxaaT
+         spP0tF4G60a1u0+tJDzCyM8oS3m53jC1FLhpDxBAiS+yAUuGk+NX9brr8Ul/Hqusff43
+         9KIQ==
+X-Forwarded-Encrypted: i=1; AJvYcCWauhrB+Hlk+3CBmcGnSITrVynhYyKHUpX8TxZowptHIqGC8PTpJ3PdPyQil/FFa6kkbd+48XOgc3s=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yys3FxVjt52Rx7j8RYZyW+5EQbu+rRwDvw6ypCel0CfJYE1t/m2
+	sYvbW7LJ8qhlAK9P3tjHoOBwzrriVU+0Ayo+yf4WAmCjL8GboW71xcxJ5iDIj5tTH6aksuAAqRx
+	Zf3jynIXD/CReKU7jvLdMTwxqJUwGCekTQJbhrsTHDmcPqILD9nOGxPgXw6LmqEsEEjY2
+X-Gm-Gg: AY/fxX4F09oLPcbGDPeAyvMJEPG8CzEMpLIEFTQtD+9IfjNQfPhOuHLxthHlsL1+Ra8
+	R9bDe5OiCUkfTeGY0m4MCymzdi8yMDUVBsEuM25lD+4qMd9WUZnX6GuU76882EHM5pIKDrefBkT
+	wb6nMHZbnhPiJvSW3DcjbEoKph12FcezHq2Hwk419hw4CA4FBdfaEzwA1BFOqn/1eN6Js2Sxvzi
+	sUCRoCBPHi0apnqiXZ69ubNro1AkRhaMukn+dSB3xj07C3gLcCpaAhrNdNLeMfqYMINGAfVQsp/
+	MoLEp4R85ir4ulrp1lLLTGC59epL24pV46J8+N9qjbB8BmOkdYkXhljnlLX4ip+F81NzUpZvsLf
+	BY+pvXS74jJE2kaz3KCc=
+X-Received: by 2002:a05:6830:7305:b0:7ca:f1fa:e9d7 with SMTP id 46e09a7af769-7cfe013b1cbmr1708043a34.16.1768590205337;
+        Fri, 16 Jan 2026 11:03:25 -0800 (PST)
+X-Received: by 2002:a05:6830:7305:b0:7ca:f1fa:e9d7 with SMTP id 46e09a7af769-7cfe013b1cbmr1708026a34.16.1768590204813;
+        Fri, 16 Jan 2026 11:03:24 -0800 (PST)
+Received: from localhost ([140.82.166.162])
+        by smtp.gmail.com with ESMTPSA id 46e09a7af769-7cfdf0f0137sm2144941a34.12.2026.01.16.11.03.23
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 16 Jan 2026 11:03:24 -0800 (PST)
+Date: Fri, 16 Jan 2026 13:03:23 -0600
+From: Andrew Jones <andrew.jones@oss.qualcomm.com>
+To: fangyu.yu@linux.alibaba.com
+Cc: pbonzini@redhat.com, corbet@lwn.net, anup@brainfault.org,
+        atish.patra@linux.dev, pjw@kernel.org, palmer@dabbelt.com,
+        aou@eecs.berkeley.edu, alex@ghiti.fr, guoren@kernel.org,
+        ajones@ventanamicro.com, rkrcmar@ventanamicro.com,
+        linux-doc@vger.kernel.org, kvm@vger.kernel.org,
+        kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] RISC-V: KVM: add KVM_CAP_RISCV_SET_HGATP_MODE
+Message-ID: <6txqxrkyqh4afmked4hdi6qekkqrb54ar3q5upz3ennnuaktsi@dtoarqt7e26t>
+References: <20260105143232.76715-1-fangyu.yu@linux.alibaba.com>
+ <20260105143232.76715-3-fangyu.yu@linux.alibaba.com>
+MIME-Version: 1.0
+Content-Disposition: inline
+In-Reply-To: <20260105143232.76715-3-fangyu.yu@linux.alibaba.com>
+X-Proofpoint-ORIG-GUID: 8IHmZQhOK_yupT3lVRUUQufshMuZvJfF
+X-Proofpoint-GUID: 8IHmZQhOK_yupT3lVRUUQufshMuZvJfF
+X-Authority-Analysis: v=2.4 cv=atu/yCZV c=1 sm=1 tr=0 ts=696a8b7e cx=c_pps
+ a=z9lCQkyTxNhZyzAvolXo/A==:117 a=cvcws7F5//HeuvjG1O1erQ==:17
+ a=kj9zAlcOel0A:10 a=vUbySO9Y5rIA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=JfrnYn6hAAAA:8 a=SRrdq9N9AAAA:8
+ a=y9tgS1qgbWeIrQugNAQA:9 a=CjuIK1q_8ugA:10 a=EyFUmsFV_t8cxB2kMr4A:22
+ a=1CNFftbPRP8L7MoqJWF3:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMTE2MDE0MSBTYWx0ZWRfX0/U5mxKzvTmv
+ YJLfWd6p50BfgZYnzUJg8oPd+n9dPbKVYI7PoO9eH8+1ALLIJfpBfnS9sHUDdOY8U//qoDYkgsh
+ 97vuKonDGyqQAnacJWzFUhDGa9GSTchu65GXiY5eP4t+Qot5qnql/QzasPO2CmLw486LJEMwVvJ
+ UMnaJojsxEEOTsxqbjFyTvhm2Ui8ieLPB4o8VLNuh9jGHtwCuCPg5gCyAf1E9uQKOiBqdd/nQdF
+ PEwdjPOjBA9XqxdLGMIPHm3CgAyV1F0g/TXY3YD2Jxp14QM80SZdYbkloBwgfW4BOwe8l1m/pj7
+ Mtdb8KRB1XrMbpAgCOezKzK9P+uCuir7eH5+fHpfS64SVXR8+uNTItspCUtCoAgrKhMsEb6pYbi
+ 0w3i17ZRSqI3QrNxiObUtosxWlC4ZJVSmdlhk8KNpC8mB79nBr41NJpuo98ysRgOse+cSTlNLla
+ zMPBCDwR9XSOGjOjl3A==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
+ definitions=2026-01-16_07,2026-01-15_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 adultscore=0 clxscore=1015 lowpriorityscore=0 suspectscore=0
+ spamscore=0 impostorscore=0 phishscore=0 malwarescore=0 priorityscore=1501
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2512120000 definitions=main-2601160141
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260116_073328_681491_E4B8BFC0 
-X-CRM114-Status: GOOD (  14.80  )
+X-CRM114-CacheID: sfid-20260116_110327_727304_4428E44B 
+X-CRM114-Status: GOOD (  19.16  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -102,84 +146,55 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Fri, 05 Dec 2025 16:16:36 -0800, Sean Christopherson wrote:
-> This series is based on 'https://github.com/kvm-x86/linux next', but except
-> for one minor conflict in perf should apply on Linus' tree once the KVM 6.19
-> pull request lands.  I considered waiting until 6.19-rc1 to post this, but
-> I've had this in a "ready" state for a few weeks and want to get it out there.
+On Mon, Jan 05, 2026 at 10:32:32PM +0800, fangyu.yu@linux.alibaba.com wrote:
+...
+> +	case KVM_CAP_RISCV_SET_HGATP_MODE:
+> +#ifdef CONFIG_64BIT
+> +		if (cap->args[0] < HGATP_MODE_SV39X4 ||
+> +			cap->args[0] > kvm_riscv_gstage_max_mode)
+> +			return -EINVAL;
+> +		if (kvm->arch.gstage_mode_initialized)
+> +			return 0;
+> +		kvm->arch.gstage_mode_initialized = true;
+> +		kvm->arch.kvm_riscv_gstage_mode = cap->args[0];
+> +		kvm->arch.kvm_riscv_gstage_pgd_levels = 3 +
+> +		    kvm->arch.kvm_riscv_gstage_mode - HGATP_MODE_SV39X4;
+> +		kvm_info("using SV%lluX4 G-stage page table format\n",
+> +			39 + (cap->args[0] - HGATP_MODE_SV39X4) * 9);
+
+I don't think we want this kvm_info line, particularly if it doesn't also
+include a VM ID in some form to allow readers to know which VM is using
+the selected format. Let's either drop it or change it to kvm_debug and
+include a VM ID.
+
+Thanks,
+drew
+
+> +#endif
+> +		return 0;
+>  	default:
+>  		return -EINVAL;
+>  	}
+> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+> index dddb781b0507..00c02a880518 100644
+> --- a/include/uapi/linux/kvm.h
+> +++ b/include/uapi/linux/kvm.h
+> @@ -974,6 +974,7 @@ struct kvm_enable_cap {
+>  #define KVM_CAP_GUEST_MEMFD_FLAGS 244
+>  #define KVM_CAP_ARM_SEA_TO_USER 245
+>  #define KVM_CAP_S390_USER_OPEREXEC 246
+> +#define KVM_CAP_RISCV_SET_HGATP_MODE 247
+>  
+>  struct kvm_irq_routing_irqchip {
+>  	__u32 irqchip;
+> -- 
+> 2.50.1
 > 
-> My hope/plan is that the perf changes will go through the tip tree with a
-> stable tag/branch, and the KVM changes will go the kvm-x86 tree.
 > 
-> [...]
-
-Applied the KVM patches to kvm-x86 pmu, thanks!
-
-[14/44] KVM: Add a simplified wrapper for registering perf callbacks
-        https://github.com/kvm-x86/linux/commit/4b24910c0569
-[15/44] KVM: Add a simplified wrapper for registering perf callbacks
-        [DROPPED - already merged (and then fixed)]
-[16/44] KVM: x86/pmu: Start stubbing in mediated PMU support
-        https://github.com/kvm-x86/linux/commit/3e51822b2fdf
-[17/44] KVM: x86/pmu: Implement Intel mediated PMU requirements and constraints
-        https://github.com/kvm-x86/linux/commit/bfee4f07d880
-[18/44] KVM: x86/pmu: Implement AMD mediated PMU requirements
-        https://github.com/kvm-x86/linux/commit/9ba0bb4ae76a
-[19/44] KVM: x86/pmu: Register PMI handler for mediated vPMU
-        https://github.com/kvm-x86/linux/commit/1c4ba7286afb
-[20/44] KVM: x86/pmu: Disable RDPMC interception for compatible mediated vPMU
-        https://github.com/kvm-x86/linux/commit/80624272129e
-[21/44] KVM: x86/pmu: Load/save GLOBAL_CTRL via entry/exit fields for mediated PMU
-        https://github.com/kvm-x86/linux/commit/d3ba32d1ff2a
-[22/44] KVM: x86/pmu: Disable interception of select PMU MSRs for mediated vPMUs
-        https://github.com/kvm-x86/linux/commit/2904df6692f4
-[23/44] KVM: x86/pmu: Bypass perf checks when emulating mediated PMU counter accesses
-        https://github.com/kvm-x86/linux/commit/0ea0d6314870
-[24/44] KVM: x86/pmu: Introduce eventsel_hw to prepare for pmu event filtering
-        https://github.com/kvm-x86/linux/commit/02918f007792
-[25/44] KVM: x86/pmu: Reprogram mediated PMU event selectors on event filter updates
-        https://github.com/kvm-x86/linux/commit/3db871fe185b
-[26/44] KVM: x86/pmu: Always stuff GuestOnly=1,HostOnly=0 for mediated PMCs on AMD
-        https://github.com/kvm-x86/linux/commit/a2f4ba534cc5
-[27/44] KVM: x86/pmu: Load/put mediated PMU context when entering/exiting guest
-        https://github.com/kvm-x86/linux/commit/56bb27369750
-[28/44] KVM: x86/pmu: Disallow emulation in the fastpath if mediated PMCs are active
-        https://github.com/kvm-x86/linux/commit/f7a65e58d643
-[29/44] KVM: x86/pmu: Handle emulated instruction for mediated vPMU
-        https://github.com/kvm-x86/linux/commit/283a5aa57b22
-[30/44] KVM: nVMX: Add macros to simplify nested MSR interception setting
-        https://github.com/kvm-x86/linux/commit/cb58327c4c8a
-[31/44] KVM: nVMX: Disable PMU MSR interception as appropriate while running L2
-        https://github.com/kvm-x86/linux/commit/88ebc2a3199c
-[32/44] KVM: nSVM: Disable PMU MSR interception as appropriate while running L2
-        https://github.com/kvm-x86/linux/commit/3b36160d9406
-[33/44] KVM: x86/pmu: Expose enable_mediated_pmu parameter to user space
-        https://github.com/kvm-x86/linux/commit/860bcb1021f5
-[34/44] KVM: x86/pmu: Elide WRMSRs when loading guest PMCs if values already match
-        https://github.com/kvm-x86/linux/commit/b0b6a8d3be16
-[35/44] KVM: VMX: Drop intermediate "guest" field from msr_autostore
-        https://github.com/kvm-x86/linux/commit/462f092dc55c
-[36/44] KVM: nVMX: Don't update msr_autostore count when saving TSC for vmcs12
-        https://github.com/kvm-x86/linux/commit/58f21a01417f
-[37/44] KVM: VMX: Dedup code for removing MSR from VMCS's auto-load list
-        https://github.com/kvm-x86/linux/commit/0bd29379114b
-[38/44] KVM: VMX: Drop unused @entry_only param from add_atomic_switch_msr()
-        https://github.com/kvm-x86/linux/commit/84ac00042a28
-[39/44] KVM: VMX: Bug the VM if either MSR auto-load list is full
-        https://github.com/kvm-x86/linux/commit/2ed57bb89976
-[40/44] KVM: VMX: Set MSR index auto-load entry if and only if entry is "new"
-        https://github.com/kvm-x86/linux/commit/0c4ff0866fc1
-[41/44] KVM: VMX: Compartmentalize adding MSRs to host vs. guest auto-load list
-        https://github.com/kvm-x86/linux/commit/2239d137a71d
-[42/44] KVM: VMX: Dedup code for adding MSR to VMCS's auto list
-        https://github.com/kvm-x86/linux/commit/c3d6a7210a4d
-[43/44] KVM: VMX: Initialize vmcs01.VM_EXIT_MSR_STORE_ADDR with list address
-        https://github.com/kvm-x86/linux/commit/9757a5aebcd6
-[44/44] KVM: VMX: Add mediated PMU support for CPUs without "save perf global ctrl"
-        https://github.com/kvm-x86/linux/commit/d374b89edbb9
-
---
-https://github.com/kvm-x86/linux/tree/next
+> -- 
+> kvm-riscv mailing list
+> kvm-riscv@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kvm-riscv
 
 -- 
 kvm-riscv mailing list
