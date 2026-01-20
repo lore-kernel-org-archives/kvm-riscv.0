@@ -4,7 +4,7 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BE57CD2ED15
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70E64D2ED0F
 	for <kvm-riscv@archiver.kernel.org>; Tue, 20 Jan 2026 08:01:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
@@ -12,66 +12,66 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=K0uUJwmFuOoAakeP6BxUsZ0rFQHsmEE68UjDnEMitCA=; b=Vw/QxxLeM7bi2t
-	wTCDVG6LimrB8QZWsATmycxNUwNBwROSHTJMVTfzas7hW7KFgosb0JQVO291eN/tBlU33TfvIFAl4
-	SjAM79XFB0219FpEM2ZPBGcWcvXD/6Hx8jT1OWSfCSNeNSnpTnu0bGd69bx5Qyumk1dVC5IDezMN2
-	hVj3owVwnAfroy1kEB7H3OCJZLNGjJ0E/s2l7yl96L1+lB4Gl0f3+OU7MRa322T6cm7em8vTttqIh
-	cLT2r6iSSBeBLZ/8QZxAIMsA4xlDAyKOM7qKQlFBSKhgzkmCjT00xG20nfhrwyX3UfWRGTRAz/Zgn
-	moC6f2Mkq63sYMOAVc5Q==;
+	List-Owner; bh=ME/G2KVIFo9U3ofNklEAvnEbKTOFuDtmJEUePpGV3gA=; b=d1QQ5T9KiuECiM
+	XuV0Cev2PICMD9BsBic9GowlDa87J5QharxOuyD7qm6ZKmF0ijQVPhRx6HDh8JhAVQPCu2KqHTs7N
+	1BkIr0SQ4428joHbSVuS8c4qaigOkNoyZ96xU11CImezx/9RcomWuTlbAdvzJuqDngMxWM/O7nKyg
+	mQwFB41rcQOQpkV6NyfeAmCGISxhl17vxmbUbfp1X3TRxmuoE8HI004e/+rqylrtB9p7EBFY0woL4
+	VeO9RLHsB4PdYYoSqlPJkhWLEycQ9Ug4ep43NdjNI9F4Mn1u/QLeu2uAwDwUOhUjnJEXLHsqm8vzO
+	ypXc2MjujIs4kXQYK9kg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vi6fe-00000003OQx-1vcl;
+	id 1vi6fe-00000003OQ7-0YRs;
 	Tue, 20 Jan 2026 08:01:02 +0000
 Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vi6fJ-00000003O8r-2M7A;
+	id 1vi6fJ-00000003O8w-3TCs;
 	Tue, 20 Jan 2026 08:00:42 +0000
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:MIME-Version
 	:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:
 	Content-Type:Content-ID:Content-Description;
-	bh=KU8did4VXBpkNoW3wwE6ucF+QiiR7rYgBUo365iyrKY=; b=ORCiXwAqq7IyIyoG1McjKZZ9EH
-	OGhDNYx25cmzY6epKh7/IfI+IxgQQlPmr7ATbrrmV4JKgeHSrIxqRat9Ds6GQPr9jvgNbTvQE5dVf
-	DAf68iWALDWsTFPPHnYXyJvyHS0t9C0Eyfko8swd6pJkh6iPDWdgFRD0px9hK2u4i/B8rWpKRKZVV
-	0izkcnKlS9YW6jzxVgh9lSTuceL6DtqMFjVGs/fbfUpdXpl2D2O/r6MoNIf5NWG/cKeE10dC1qprQ
-	KJmP2V6efsoHJhn2ElSbn+YfUogMQJ8/3pg0eaNN2Nxc3VW/wi0RcBgfBb2OvaXAkRYdvPvSkyihx
-	kt78MYqg==;
-Received: from mx0b-0031df01.pphosted.com ([205.220.180.131])
+	bh=9kYDxHs9MRUOvyl0H/A1mVAYEIz1SCyJy7D2jJRTaKg=; b=nJaJvE43J252opxJIAvxs7OZEc
+	4qR6nqXCeNixTvz1ba/yjae+5gJ0FH0LTQYa1Snb8ONDHt2KY7ytrSrhAGYL8OD1VuOBNBtoRHj74
+	UMXoGKGMx5KCNqC5Fek5a8oQevbzJFQeBD6ytXyIUHgtrxOiF8Uk1qGfyHNPdg8l1WRt1oETHBK8a
+	3jhZ8Q5E+FHHXP3K2f6vNFL7NLcSp+ipSP/J+oM0BDHQlf40YPH+vcjp9MbQprJkfFbTDqwTkTyHg
+	HdSMspjkK0lJyu1IM5o2vnO5je2OgIy2gg+kwxubxGwn/fdp2j1kCPguuBUMJKPEjm7sPBQjC8DbL
+	1Jm5XR5Q==;
+Received: from mx0a-0031df01.pphosted.com ([205.220.168.131])
 	by desiato.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vi6fF-0000000DX1K-0d6M;
+	id 1vi6fF-0000000DX1O-188f;
 	Tue, 20 Jan 2026 08:00:40 +0000
-Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 60K6i30o428958;
-	Tue, 20 Jan 2026 08:00:21 GMT
+Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 60K29HEp3176259;
+	Tue, 20 Jan 2026 08:00:20 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=qcppdkim1; bh=KU8did4VXBp
-	kNoW3wwE6ucF+QiiR7rYgBUo365iyrKY=; b=Tn83sPQ14Vesi4X4fyNreUe9wvy
-	lr47xpiHqSXV3xJiyV4Rbv/UF8Yh1/8ib06dVwA7b8ykLkAJFkczBqJQy9WhcyQK
-	KMfPqe9Tex8Wt+1A+CCBIzJ5z9lcdQMiz6TX29yo/PfLNx5vSl4goSKNucY7/DjH
-	GRECVdwCeuiWmYiTagyrm1DpWGNKZxa2BbmwqCjpBSEmVE3Cu1zQ6KVo6sjUb1YC
-	2u8IA5ejKrKkel4b7SEDrIauvWUNW4g4ydvHQ4DcWONNKAlhIUjWVDaxX0Tur3/s
-	YjnCT0O5/1A6FGmtwcwrNBslWORecm9fZ50CjkgyG7s1yVT3zMP6+gTlYvg==
+	:mime-version:references:subject:to; s=qcppdkim1; bh=9kYDxHs9MRU
+	Ovyl0H/A1mVAYEIz1SCyJy7D2jJRTaKg=; b=RhXrUy27cJw67DkPxH5Iu04DnmJ
+	qIkMoiCAQ/o304Lu4rsqIqsqexdr3GJqsay66HhcibmMqj3gjwBI6UW8BVXMiPR5
+	IaY+NbqP9bL9WBKkYbytAMFN3WrsA1HOkgFIn0b1OGpItEIz/7rXACtjagGhlBWr
+	k+j6z7UwD22bQk6jp/BgtVSmwZ9A7VgJotlmZCnYFiokDRC9NuA5Dg4g9FCPBayE
+	cqerBLt2dzB0yFcWKqvz/VxdbQ0EGXsHUShufNPFDuoCClrmZUsW3Kxrq6+tGINl
+	WB5hupx+/S9NbavnfbGL9Rc6ShaDv6uKLbeeqMUT1HqdpYX/2DlPlmOJm2g==
 Received: from apblrppmta02.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4bt4ps076b-1
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4bt0p2gx2d-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Tue, 20 Jan 2026 08:00:20 +0000 (GMT)
 Received: from pps.filterd (APBLRPPMTA02.qualcomm.com [127.0.0.1])
-	by APBLRPPMTA02.qualcomm.com (8.18.1.2/8.18.1.2) with ESMTP id 60K80HnL008067;
+	by APBLRPPMTA02.qualcomm.com (8.18.1.2/8.18.1.2) with ESMTP id 60K7wBd6005898;
 	Tue, 20 Jan 2026 08:00:17 GMT
 Received: from pps.reinject (localhost [127.0.0.1])
-	by APBLRPPMTA02.qualcomm.com (PPS) with ESMTPS id 4br3gm8q78-1
+	by APBLRPPMTA02.qualcomm.com (PPS) with ESMTPS id 4br3gm8q5r-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Tue, 20 Jan 2026 08:00:17 +0000
 Received: from APBLRPPMTA02.qualcomm.com (APBLRPPMTA02.qualcomm.com [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 60K80Gqs007909;
-	Tue, 20 Jan 2026 08:00:17 GMT
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 60K80Fif007830;
+	Tue, 20 Jan 2026 08:00:16 GMT
 Received: from hu-devc-blr-u24-a.qualcomm.com (hu-anuppate-blr.qualcomm.com [10.131.36.165])
-	by APBLRPPMTA02.qualcomm.com (PPS) with ESMTPS id 60K80HBb008006
+	by APBLRPPMTA02.qualcomm.com (PPS) with ESMTPS id 60K80Gnd007888
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 20 Jan 2026 08:00:17 +0000
+	Tue, 20 Jan 2026 08:00:16 +0000
 Received: by hu-devc-blr-u24-a.qualcomm.com (Postfix, from userid 486687)
-	id CC69D25585; Tue, 20 Jan 2026 13:30:14 +0530 (+0530)
+	id B47DA24A88; Tue, 20 Jan 2026 13:30:14 +0530 (+0530)
 From: Anup Patel <anup.patel@oss.qualcomm.com>
 To: Paolo Bonzini <pbonzini@redhat.com>, Atish Patra <atish.patra@linux.dev>
 Cc: Palmer Dabbelt <palmer@dabbelt.com>, Paul Walmsley <pjw@kernel.org>,
@@ -82,9 +82,9 @@ Cc: Palmer Dabbelt <palmer@dabbelt.com>, Paul Walmsley <pjw@kernel.org>,
         linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
         linux-kselftest@vger.kernel.org,
         Anup Patel <anup.patel@oss.qualcomm.com>
-Subject: [PATCH 17/27] RISC-V: KVM: Extend kvm_riscv_isa_check_host() for nested virt
-Date: Tue, 20 Jan 2026 13:30:03 +0530
-Message-ID: <20260120080013.2153519-18-anup.patel@oss.qualcomm.com>
+Subject: [PATCH 10/27] RISC-V: KVM: Initial skeletal nested virtualization support
+Date: Tue, 20 Jan 2026 13:29:56 +0530
+Message-ID: <20260120080013.2153519-11-anup.patel@oss.qualcomm.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260120080013.2153519-1-anup.patel@oss.qualcomm.com>
 References: <20260120080013.2153519-1-anup.patel@oss.qualcomm.com>
@@ -93,32 +93,32 @@ X-QCInternal: smtphost
 X-QCInternal: smtphost
 X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
 X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-ORIG-GUID: l5u5lEFmf-jH5jOVDXIG6vIm_8sdL45b
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMTIwMDA2NSBTYWx0ZWRfX/DJBCGyJHWBo
- MrMTgyEnmAQO4NXaSGteLSNk34Zw20GcKyGxtuyQOLGDWC+JLLea8z75Q/rwhTDi8C2Mr5YHpvO
- UwatjF33JYLn0sH7+qFOxNbYYTqFVjoqPx+aJdEXCoZfB9c0QRE8KHXG2TU4GVSJtHygWOFqx0A
- rSap5ebKKE9P7xB7AEfs04ParMY9Wgq4UiS/0UiParvU1bK3lNRijO7AvUG8gElHsRKmjVRJ+P4
- v/rfWva3XylTHbI38XYoklbB46vpYCMGcMJeMr4WKHRYKdW4jFKJvrXLtpd7oJsRoEV76jtWCrp
- 9n4We+cNBGJvtcd6uqG0rWk9GDfs0sRsME+wBsnORXJDvuQG/XH8Woi9rm09yrv374TIfE1sre6
- Igf0KtawJZzkiC2vtNDHVkZER6bttozy+yJGs99U1+wQM1E9QMrFAgQjsTKn5yf4DTB35Qu2WeF
- qwoqLj+J1OoBBPf3CjQ==
-X-Authority-Analysis: v=2.4 cv=PdfyRyhd c=1 sm=1 tr=0 ts=696f3614 cx=c_pps
+X-Proofpoint-ORIG-GUID: A-H8m3biAm9lUrVhm-KcP6w4kSxmRuIR
+X-Authority-Analysis: v=2.4 cv=drTWylg4 c=1 sm=1 tr=0 ts=696f3614 cx=c_pps
  a=Ou0eQOY4+eZoSc0qltEV5Q==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
  a=vUbySO9Y5rIA:10 a=VkNPw1HP01LnGYTKEx00:22 a=EUspDBNiAAAA:8
- a=IcsGow7upkUQ9H4TgUEA:9
-X-Proofpoint-GUID: l5u5lEFmf-jH5jOVDXIG6vIm_8sdL45b
+ a=13pBwPEtajaBZmoNmVIA:9
+X-Proofpoint-GUID: A-H8m3biAm9lUrVhm-KcP6w4kSxmRuIR
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMTIwMDA2NiBTYWx0ZWRfX1Mx7RIqQSOHk
+ 0bVcBzYgSrimIUNBUQs8PJzQj9UY1ipZ7U+4ZFn1sZl8RS+lFOznenPCYmyKUUskcYzQVTeZIuL
+ B+nF5W7NEkiQImXRPkUVSnu2ThiR1ovvlhsvswwgiMKT+9vLAhwMEArwnqUXOt69iLSN0W/2h/W
+ NmxAs2YX1izxc/bexbZWMFTUiAXdbYD3F199WOSOy/aMhlKMXYM8ywjHhQ1Tw0oisuo6eGITn6P
+ SFXwbMybPrUvlfVycHYDTs/PePEYSGYxzFM6cgZ/FrD2e6wUj1duslvX0TtZcQlfsY7t0Mp7hSa
+ EhoZiD+GedG106sO2lPVLlkZAA205s5iP+778rdqahnrkAJKhNyocstNV78y86I/yr/cXWCva1D
+ wIknjm9Qds8Fs0OsJ9wbLaiyn1IRjR9jPEAqcCvysjcL1qSO04LPo56SgTRowZDrCpxjr5xzbx7
+ FXxZ1S4Q0XOJpQ1c9EQ==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
  definitions=2026-01-20_02,2026-01-19_03,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 suspectscore=0 adultscore=0 lowpriorityscore=0
- clxscore=1015 bulkscore=0 spamscore=0 phishscore=0 malwarescore=0
- impostorscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ suspectscore=0 spamscore=0 bulkscore=0 adultscore=0 impostorscore=0
+ malwarescore=0 priorityscore=1501 clxscore=1015 lowpriorityscore=0
+ phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
  route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2601150000
- definitions=main-2601200065
+ definitions=main-2601200066
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260120_080037_547958_7A72F051 
-X-CRM114-Status: GOOD (  14.95  )
+X-CRM114-CacheID: sfid-20260120_080037_757039_C84BD626 
+X-CRM114-Status: GOOD (  26.36  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -135,237 +135,427 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Nested virtualization for various ISA extensions will be enabled
-gradually so extend kvm_riscv_isa_check_host() such that certain
-ISA extensions can be disabled when nested virtualization is
-available.
+Add initial skeletal nested virtualization support which is disabled
+by default and needs to be explicitly enabled using module parameter.
+
+Subsequent patches will further improve and complete the nested
+virtualization support.
 
 Signed-off-by: Anup Patel <anup.patel@oss.qualcomm.com>
 ---
- arch/riscv/kvm/isa.c | 178 ++++++++++++++++++++++---------------------
- 1 file changed, 93 insertions(+), 85 deletions(-)
+ arch/riscv/include/asm/kvm_host.h        |  5 ++
+ arch/riscv/include/asm/kvm_vcpu_nested.h | 83 ++++++++++++++++++++++++
+ arch/riscv/kvm/Makefile                  |  2 +
+ arch/riscv/kvm/isa.c                     |  2 +-
+ arch/riscv/kvm/main.c                    |  5 ++
+ arch/riscv/kvm/vcpu.c                    | 20 +++++-
+ arch/riscv/kvm/vcpu_exit.c               | 22 ++++++-
+ arch/riscv/kvm/vcpu_nested.c             | 48 ++++++++++++++
+ arch/riscv/kvm/vcpu_nested_swtlb.c       | 70 ++++++++++++++++++++
+ 9 files changed, 253 insertions(+), 4 deletions(-)
+ create mode 100644 arch/riscv/include/asm/kvm_vcpu_nested.h
+ create mode 100644 arch/riscv/kvm/vcpu_nested.c
+ create mode 100644 arch/riscv/kvm/vcpu_nested_swtlb.c
 
-diff --git a/arch/riscv/kvm/isa.c b/arch/riscv/kvm/isa.c
-index 1566d01fc52e..e469c350f5bb 100644
---- a/arch/riscv/kvm/isa.c
-+++ b/arch/riscv/kvm/isa.c
-@@ -10,91 +10,96 @@
- #include <asm/kvm_isa.h>
- #include <asm/vector.h>
+diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
+index 11c3566318ae..3b58953eb4eb 100644
+--- a/arch/riscv/include/asm/kvm_host.h
++++ b/arch/riscv/include/asm/kvm_host.h
+@@ -25,6 +25,7 @@
+ #include <asm/kvm_vcpu_sbi_fwft.h>
+ #include <asm/kvm_vcpu_timer.h>
+ #include <asm/kvm_vcpu_pmu.h>
++#include <asm/kvm_vcpu_nested.h>
  
--#define KVM_ISA_EXT_ARR(ext)		\
--[KVM_RISCV_ISA_EXT_##ext] = RISCV_ISA_EXT_##ext
-+struct kvm_isa_ext {
-+	unsigned long ext;
-+	bool nested;
+ #define KVM_MAX_VCPUS			1024
+ 
+@@ -45,6 +46,7 @@
+ #define KVM_REQ_HFENCE			\
+ 	KVM_ARCH_REQ_FLAGS(5, KVM_REQUEST_WAIT | KVM_REQUEST_NO_WAKEUP)
+ #define KVM_REQ_STEAL_UPDATE		KVM_ARCH_REQ(6)
++#define KVM_REQ_NESTED_SWTLB		KVM_ARCH_REQ(7)
+ 
+ #define __KVM_HAVE_ARCH_FLUSH_REMOTE_TLBS_RANGE
+ 
+@@ -203,6 +205,9 @@ struct kvm_vcpu_arch {
+ 	/* CPU reset state of Guest VCPU */
+ 	struct kvm_vcpu_reset_state reset_state;
+ 
++	/* CPU nested virtualization context of Guest VCPU */
++	struct kvm_vcpu_nested nested;
++
+ 	/*
+ 	 * VCPU interrupts
+ 	 *
+diff --git a/arch/riscv/include/asm/kvm_vcpu_nested.h b/arch/riscv/include/asm/kvm_vcpu_nested.h
+new file mode 100644
+index 000000000000..4234c6e81bb6
+--- /dev/null
++++ b/arch/riscv/include/asm/kvm_vcpu_nested.h
+@@ -0,0 +1,83 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * Copyright (c) 2026 Qualcomm Technologies, Inc.
++ */
++
++#ifndef __RISCV_VCPU_NESTED_H__
++#define __RISCV_VCPU_NESTED_H__
++
++#include <linux/jump_label.h>
++#include <linux/kvm_types.h>
++#include <asm/kvm_mmu.h>
++
++DECLARE_STATIC_KEY_FALSE(kvm_riscv_nested_available);
++#define kvm_riscv_nested_available() \
++	static_branch_unlikely(&kvm_riscv_nested_available)
++
++struct kvm_vcpu_nested_swtlb {
++	/* Software TLB request */
++	struct {
++		bool pending;
++		struct kvm_gstage_mapping guest;
++		struct kvm_gstage_mapping host;
++	} request;
++
++	/* Shadow G-stage page table for guest VS/VU-mode */
++	pgd_t *shadow_pgd;
++	phys_addr_t shadow_pgd_phys;
 +};
 +
-+#define KVM_ISA_EXT_ARR(ext, nested)		\
-+[KVM_RISCV_ISA_EXT_##ext] = { RISCV_ISA_EXT_##ext, nested }
- 
- /* Mapping between KVM ISA Extension ID & guest ISA extension ID */
--static const unsigned long kvm_isa_ext_arr[] = {
-+static const struct kvm_isa_ext kvm_isa_ext_arr[] = {
- 	/* Single letter extensions (alphabetically sorted) */
--	[KVM_RISCV_ISA_EXT_A] = RISCV_ISA_EXT_a,
--	[KVM_RISCV_ISA_EXT_C] = RISCV_ISA_EXT_c,
--	[KVM_RISCV_ISA_EXT_D] = RISCV_ISA_EXT_d,
--	[KVM_RISCV_ISA_EXT_F] = RISCV_ISA_EXT_f,
--	[KVM_RISCV_ISA_EXT_H] = RISCV_ISA_EXT_h,
--	[KVM_RISCV_ISA_EXT_I] = RISCV_ISA_EXT_i,
--	[KVM_RISCV_ISA_EXT_M] = RISCV_ISA_EXT_m,
--	[KVM_RISCV_ISA_EXT_V] = RISCV_ISA_EXT_v,
-+	[KVM_RISCV_ISA_EXT_A] = { RISCV_ISA_EXT_a, true },
-+	[KVM_RISCV_ISA_EXT_C] = { RISCV_ISA_EXT_c, true },
-+	[KVM_RISCV_ISA_EXT_D] = { RISCV_ISA_EXT_d, true },
-+	[KVM_RISCV_ISA_EXT_F] = { RISCV_ISA_EXT_f, true },
-+	[KVM_RISCV_ISA_EXT_H] = { RISCV_ISA_EXT_h, true },
-+	[KVM_RISCV_ISA_EXT_I] = { RISCV_ISA_EXT_i, true },
-+	[KVM_RISCV_ISA_EXT_M] = { RISCV_ISA_EXT_m, true },
-+	[KVM_RISCV_ISA_EXT_V] = { RISCV_ISA_EXT_v, true },
- 	/* Multi letter extensions (alphabetically sorted) */
--	KVM_ISA_EXT_ARR(SMNPM),
--	KVM_ISA_EXT_ARR(SMSTATEEN),
--	KVM_ISA_EXT_ARR(SSAIA),
--	KVM_ISA_EXT_ARR(SSCOFPMF),
--	KVM_ISA_EXT_ARR(SSNPM),
--	KVM_ISA_EXT_ARR(SSTC),
--	KVM_ISA_EXT_ARR(SVADE),
--	KVM_ISA_EXT_ARR(SVADU),
--	KVM_ISA_EXT_ARR(SVINVAL),
--	KVM_ISA_EXT_ARR(SVNAPOT),
--	KVM_ISA_EXT_ARR(SVPBMT),
--	KVM_ISA_EXT_ARR(SVVPTC),
--	KVM_ISA_EXT_ARR(ZAAMO),
--	KVM_ISA_EXT_ARR(ZABHA),
--	KVM_ISA_EXT_ARR(ZACAS),
--	KVM_ISA_EXT_ARR(ZALASR),
--	KVM_ISA_EXT_ARR(ZALRSC),
--	KVM_ISA_EXT_ARR(ZAWRS),
--	KVM_ISA_EXT_ARR(ZBA),
--	KVM_ISA_EXT_ARR(ZBB),
--	KVM_ISA_EXT_ARR(ZBC),
--	KVM_ISA_EXT_ARR(ZBKB),
--	KVM_ISA_EXT_ARR(ZBKC),
--	KVM_ISA_EXT_ARR(ZBKX),
--	KVM_ISA_EXT_ARR(ZBS),
--	KVM_ISA_EXT_ARR(ZCA),
--	KVM_ISA_EXT_ARR(ZCB),
--	KVM_ISA_EXT_ARR(ZCD),
--	KVM_ISA_EXT_ARR(ZCF),
--	KVM_ISA_EXT_ARR(ZCLSD),
--	KVM_ISA_EXT_ARR(ZCMOP),
--	KVM_ISA_EXT_ARR(ZFA),
--	KVM_ISA_EXT_ARR(ZFBFMIN),
--	KVM_ISA_EXT_ARR(ZFH),
--	KVM_ISA_EXT_ARR(ZFHMIN),
--	KVM_ISA_EXT_ARR(ZICBOM),
--	KVM_ISA_EXT_ARR(ZICBOP),
--	KVM_ISA_EXT_ARR(ZICBOZ),
--	KVM_ISA_EXT_ARR(ZICCRSE),
--	KVM_ISA_EXT_ARR(ZICNTR),
--	KVM_ISA_EXT_ARR(ZICOND),
--	KVM_ISA_EXT_ARR(ZICSR),
--	KVM_ISA_EXT_ARR(ZIFENCEI),
--	KVM_ISA_EXT_ARR(ZIHINTNTL),
--	KVM_ISA_EXT_ARR(ZIHINTPAUSE),
--	KVM_ISA_EXT_ARR(ZIHPM),
--	KVM_ISA_EXT_ARR(ZILSD),
--	KVM_ISA_EXT_ARR(ZIMOP),
--	KVM_ISA_EXT_ARR(ZKND),
--	KVM_ISA_EXT_ARR(ZKNE),
--	KVM_ISA_EXT_ARR(ZKNH),
--	KVM_ISA_EXT_ARR(ZKR),
--	KVM_ISA_EXT_ARR(ZKSED),
--	KVM_ISA_EXT_ARR(ZKSH),
--	KVM_ISA_EXT_ARR(ZKT),
--	KVM_ISA_EXT_ARR(ZTSO),
--	KVM_ISA_EXT_ARR(ZVBB),
--	KVM_ISA_EXT_ARR(ZVBC),
--	KVM_ISA_EXT_ARR(ZVFBFMIN),
--	KVM_ISA_EXT_ARR(ZVFBFWMA),
--	KVM_ISA_EXT_ARR(ZVFH),
--	KVM_ISA_EXT_ARR(ZVFHMIN),
--	KVM_ISA_EXT_ARR(ZVKB),
--	KVM_ISA_EXT_ARR(ZVKG),
--	KVM_ISA_EXT_ARR(ZVKNED),
--	KVM_ISA_EXT_ARR(ZVKNHA),
--	KVM_ISA_EXT_ARR(ZVKNHB),
--	KVM_ISA_EXT_ARR(ZVKSED),
--	KVM_ISA_EXT_ARR(ZVKSH),
--	KVM_ISA_EXT_ARR(ZVKT),
-+	KVM_ISA_EXT_ARR(SMNPM, false),
-+	KVM_ISA_EXT_ARR(SMSTATEEN, false),
-+	KVM_ISA_EXT_ARR(SSAIA, false),
-+	KVM_ISA_EXT_ARR(SSCOFPMF, false),
-+	KVM_ISA_EXT_ARR(SSNPM, false),
-+	KVM_ISA_EXT_ARR(SSTC, false),
-+	KVM_ISA_EXT_ARR(SVADE, true),
-+	KVM_ISA_EXT_ARR(SVADU, true),
-+	KVM_ISA_EXT_ARR(SVINVAL, false),
-+	KVM_ISA_EXT_ARR(SVNAPOT, false),
-+	KVM_ISA_EXT_ARR(SVPBMT, false),
-+	KVM_ISA_EXT_ARR(SVVPTC, true),
-+	KVM_ISA_EXT_ARR(ZAAMO, true),
-+	KVM_ISA_EXT_ARR(ZABHA, true),
-+	KVM_ISA_EXT_ARR(ZACAS, true),
-+	KVM_ISA_EXT_ARR(ZALASR, true),
-+	KVM_ISA_EXT_ARR(ZALRSC, true),
-+	KVM_ISA_EXT_ARR(ZAWRS, false),
-+	KVM_ISA_EXT_ARR(ZBA, true),
-+	KVM_ISA_EXT_ARR(ZBB, true),
-+	KVM_ISA_EXT_ARR(ZBC, true),
-+	KVM_ISA_EXT_ARR(ZBKB, true),
-+	KVM_ISA_EXT_ARR(ZBKC, true),
-+	KVM_ISA_EXT_ARR(ZBKX, true),
-+	KVM_ISA_EXT_ARR(ZBS, true),
-+	KVM_ISA_EXT_ARR(ZCA, true),
-+	KVM_ISA_EXT_ARR(ZCB, true),
-+	KVM_ISA_EXT_ARR(ZCD, true),
-+	KVM_ISA_EXT_ARR(ZCF, true),
-+	KVM_ISA_EXT_ARR(ZCLSD, true),
-+	KVM_ISA_EXT_ARR(ZCMOP, true),
-+	KVM_ISA_EXT_ARR(ZFA, true),
-+	KVM_ISA_EXT_ARR(ZFBFMIN, true),
-+	KVM_ISA_EXT_ARR(ZFH, true),
-+	KVM_ISA_EXT_ARR(ZFHMIN, true),
-+	KVM_ISA_EXT_ARR(ZICBOM, false),
-+	KVM_ISA_EXT_ARR(ZICBOP, false),
-+	KVM_ISA_EXT_ARR(ZICBOZ, false),
-+	KVM_ISA_EXT_ARR(ZICCRSE, true),
-+	KVM_ISA_EXT_ARR(ZICNTR, true),
-+	KVM_ISA_EXT_ARR(ZICOND, true),
-+	KVM_ISA_EXT_ARR(ZICSR, true),
-+	KVM_ISA_EXT_ARR(ZIFENCEI, true),
-+	KVM_ISA_EXT_ARR(ZIHINTNTL, true),
-+	KVM_ISA_EXT_ARR(ZIHINTPAUSE, true),
-+	KVM_ISA_EXT_ARR(ZIHPM, true),
-+	KVM_ISA_EXT_ARR(ZILSD, true),
-+	KVM_ISA_EXT_ARR(ZIMOP, true),
-+	KVM_ISA_EXT_ARR(ZKND, true),
-+	KVM_ISA_EXT_ARR(ZKNE, true),
-+	KVM_ISA_EXT_ARR(ZKNH, true),
-+	KVM_ISA_EXT_ARR(ZKR, true),
-+	KVM_ISA_EXT_ARR(ZKSED, true),
-+	KVM_ISA_EXT_ARR(ZKSH, true),
-+	KVM_ISA_EXT_ARR(ZKT, true),
-+	KVM_ISA_EXT_ARR(ZTSO, true),
-+	KVM_ISA_EXT_ARR(ZVBB, true),
-+	KVM_ISA_EXT_ARR(ZVBC, true),
-+	KVM_ISA_EXT_ARR(ZVFBFMIN, true),
-+	KVM_ISA_EXT_ARR(ZVFBFWMA, true),
-+	KVM_ISA_EXT_ARR(ZVFH, true),
-+	KVM_ISA_EXT_ARR(ZVFHMIN, true),
-+	KVM_ISA_EXT_ARR(ZVKB, true),
-+	KVM_ISA_EXT_ARR(ZVKG, true),
-+	KVM_ISA_EXT_ARR(ZVKNED, true),
-+	KVM_ISA_EXT_ARR(ZVKNHA, true),
-+	KVM_ISA_EXT_ARR(ZVKNHB, true),
-+	KVM_ISA_EXT_ARR(ZVKSED, true),
-+	KVM_ISA_EXT_ARR(ZVKSH, true),
-+	KVM_ISA_EXT_ARR(ZVKT, true),
- };
- 
- unsigned long kvm_riscv_base2isa_ext(unsigned long base_ext)
-@@ -102,7 +107,7 @@ unsigned long kvm_riscv_base2isa_ext(unsigned long base_ext)
- 	unsigned long i;
- 
- 	for (i = 0; i < KVM_RISCV_ISA_EXT_MAX; i++) {
--		if (kvm_isa_ext_arr[i] == base_ext)
-+		if (kvm_isa_ext_arr[i].ext == base_ext)
- 			return i;
- 	}
- 
-@@ -117,7 +122,10 @@ int __kvm_riscv_isa_check_host(unsigned long ext, unsigned long *base_ext)
- 	    ext >= ARRAY_SIZE(kvm_isa_ext_arr))
- 		return -ENOENT;
- 
--	switch (kvm_isa_ext_arr[ext]) {
-+	if (kvm_riscv_nested_available() && !kvm_isa_ext_arr[ext].nested)
-+		return -ENOENT;
++struct kvm_vcpu_nested_csr {
++	unsigned long hstatus;
++	unsigned long hedeleg;
++	unsigned long hideleg;
++	unsigned long hvip;
++	unsigned long hcounteren;
++	unsigned long htimedelta;
++	unsigned long htimedeltah;
++	unsigned long htval;
++	unsigned long htinst;
++	unsigned long henvcfg;
++	unsigned long henvcfgh;
++	unsigned long hgatp;
++	unsigned long vsstatus;
++	unsigned long vsie;
++	unsigned long vstvec;
++	unsigned long vsscratch;
++	unsigned long vsepc;
++	unsigned long vscause;
++	unsigned long vstval;
++	unsigned long vsatp;
++};
 +
-+	switch (kvm_isa_ext_arr[ext].ext) {
- 	case RISCV_ISA_EXT_SMNPM:
- 		/*
- 		 * Pointer masking effective in (H)S-mode is provided by the
-@@ -128,7 +136,7 @@ int __kvm_riscv_isa_check_host(unsigned long ext, unsigned long *base_ext)
- 		host_ext = RISCV_ISA_EXT_SSNPM;
- 		break;
- 	default:
--		host_ext = kvm_isa_ext_arr[ext];
-+		host_ext = kvm_isa_ext_arr[ext].ext;
- 		break;
++struct kvm_vcpu_nested {
++	/* Nested virt state */
++	bool virt;
++
++	/* Nested software TLB request */
++	struct kvm_vcpu_nested_swtlb swtlb;
++
++	/* Nested CSR state */
++	struct kvm_vcpu_nested_csr csr;
++};
++
++#define kvm_riscv_vcpu_nested_virt(__vcpu) ((__vcpu)->arch.nested.virt)
++
++int kvm_riscv_vcpu_nested_swtlb_xlate(struct kvm_vcpu *vcpu,
++				      const struct kvm_cpu_trap *trap,
++				      struct kvm_gstage_mapping *out_map,
++				      struct kvm_cpu_trap *out_trap);
++void kvm_riscv_vcpu_nested_swtlb_process(struct kvm_vcpu *vcpu);
++void kvm_riscv_vcpu_nested_swtlb_request(struct kvm_vcpu *vcpu,
++					 const struct kvm_gstage_mapping *guest_map,
++					 const struct kvm_gstage_mapping *host_map);
++void kvm_riscv_vcpu_nested_swtlb_reset(struct kvm_vcpu *vcpu);
++int kvm_riscv_vcpu_nested_swtlb_init(struct kvm_vcpu *vcpu);
++void kvm_riscv_vcpu_nested_swtlb_deinit(struct kvm_vcpu *vcpu);
++
++void kvm_riscv_vcpu_nested_reset(struct kvm_vcpu *vcpu);
++int kvm_riscv_vcpu_nested_init(struct kvm_vcpu *vcpu);
++void kvm_riscv_vcpu_nested_deinit(struct kvm_vcpu *vcpu);
++void kvm_riscv_nested_init(void);
++
++#endif
+diff --git a/arch/riscv/kvm/Makefile b/arch/riscv/kvm/Makefile
+index 296c2ba05089..a8806b69205f 100644
+--- a/arch/riscv/kvm/Makefile
++++ b/arch/riscv/kvm/Makefile
+@@ -25,6 +25,8 @@ kvm-y += vcpu_config.o
+ kvm-y += vcpu_exit.o
+ kvm-y += vcpu_fp.o
+ kvm-y += vcpu_insn.o
++kvm-y += vcpu_nested.o
++kvm-y += vcpu_nested_swtlb.o
+ kvm-y += vcpu_onereg.o
+ kvm-$(CONFIG_RISCV_PMU_SBI) += vcpu_pmu.o
+ kvm-y += vcpu_sbi.o
+diff --git a/arch/riscv/kvm/isa.c b/arch/riscv/kvm/isa.c
+index e860f6d79bb0..1566d01fc52e 100644
+--- a/arch/riscv/kvm/isa.c
++++ b/arch/riscv/kvm/isa.c
+@@ -145,7 +145,7 @@ bool kvm_riscv_isa_enable_allowed(unsigned long ext)
+ {
+ 	switch (ext) {
+ 	case KVM_RISCV_ISA_EXT_H:
+-		return false;
++		return kvm_riscv_nested_available();
+ 	case KVM_RISCV_ISA_EXT_SSCOFPMF:
+ 		/* Sscofpmf depends on interrupt filtering defined in ssaia */
+ 		return !kvm_riscv_isa_check_host(SSAIA);
+diff --git a/arch/riscv/kvm/main.c b/arch/riscv/kvm/main.c
+index 588a84783dff..5b4bf972d242 100644
+--- a/arch/riscv/kvm/main.c
++++ b/arch/riscv/kvm/main.c
+@@ -131,6 +131,8 @@ static int __init riscv_kvm_init(void)
+ 		return rc;
  	}
  
-@@ -136,7 +144,7 @@ int __kvm_riscv_isa_check_host(unsigned long ext, unsigned long *base_ext)
- 		return -ENOENT;
++	kvm_riscv_nested_init();
++
+ 	kvm_info("hypervisor extension available\n");
  
- 	if (base_ext)
--		*base_ext = kvm_isa_ext_arr[ext];
-+		*base_ext = kvm_isa_ext_arr[ext].ext;
+ 	if (kvm_riscv_nacl_available()) {
+@@ -172,6 +174,9 @@ static int __init riscv_kvm_init(void)
+ 		kvm_info("AIA available with %d guest external interrupts\n",
+ 			 kvm_riscv_aia_nr_hgei);
  
- 	return 0;
++	if (kvm_riscv_nested_available())
++		kvm_info("nested virtualization available\n");
++
+ 	kvm_riscv_setup_vendor_features();
+ 
+ 	kvm_register_perf_callbacks(NULL);
+diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+index 93c731da67f6..859c8e71df65 100644
+--- a/arch/riscv/kvm/vcpu.c
++++ b/arch/riscv/kvm/vcpu.c
+@@ -94,6 +94,8 @@ static void kvm_riscv_reset_vcpu(struct kvm_vcpu *vcpu, bool kvm_sbi_reset)
+ 
+ 	kvm_riscv_vcpu_context_reset(vcpu, kvm_sbi_reset);
+ 
++	kvm_riscv_vcpu_nested_reset(vcpu);
++
+ 	kvm_riscv_vcpu_fp_reset(vcpu);
+ 
+ 	kvm_riscv_vcpu_vector_reset(vcpu);
+@@ -152,10 +154,16 @@ int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
+ 
+ 	spin_lock_init(&vcpu->arch.reset_state.lock);
+ 
+-	rc = kvm_riscv_vcpu_alloc_vector_context(vcpu);
++	rc = kvm_riscv_vcpu_nested_init(vcpu);
+ 	if (rc)
+ 		return rc;
+ 
++	rc = kvm_riscv_vcpu_alloc_vector_context(vcpu);
++	if (rc) {
++		kvm_riscv_vcpu_nested_deinit(vcpu);
++		return rc;
++	}
++
+ 	/* Setup VCPU timer */
+ 	kvm_riscv_vcpu_timer_init(vcpu);
+ 
+@@ -205,6 +213,9 @@ void kvm_arch_vcpu_destroy(struct kvm_vcpu *vcpu)
+ 
+ 	/* Free vector context space for host and guest kernel */
+ 	kvm_riscv_vcpu_free_vector_context(vcpu);
++
++	/* Cleanup VCPU nested state */
++	kvm_riscv_vcpu_nested_deinit(vcpu);
  }
+ 
+ int kvm_cpu_has_pending_timer(struct kvm_vcpu *vcpu)
+@@ -683,6 +694,13 @@ static int kvm_riscv_check_vcpu_requests(struct kvm_vcpu *vcpu)
+ 		if (kvm_check_request(KVM_REQ_STEAL_UPDATE, vcpu))
+ 			kvm_riscv_vcpu_record_steal_time(vcpu);
+ 
++		/*
++		 * Process nested software TLB request after handling
++		 * various HFENCE requests.
++		 */
++		if (kvm_check_request(KVM_REQ_NESTED_SWTLB, vcpu))
++			kvm_riscv_vcpu_nested_swtlb_process(vcpu);
++
+ 		if (kvm_dirty_ring_check_request(vcpu))
+ 			return 0;
+ 	}
+diff --git a/arch/riscv/kvm/vcpu_exit.c b/arch/riscv/kvm/vcpu_exit.c
+index 0bb0c51e3c89..4f63548e582f 100644
+--- a/arch/riscv/kvm/vcpu_exit.c
++++ b/arch/riscv/kvm/vcpu_exit.c
+@@ -15,14 +15,29 @@
+ static int gstage_page_fault(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ 			     struct kvm_cpu_trap *trap)
+ {
+-	struct kvm_gstage_mapping host_map;
++	struct kvm_gstage_mapping guest_map, host_map;
+ 	struct kvm_memory_slot *memslot;
+ 	unsigned long hva, fault_addr;
++	struct kvm_cpu_trap out_trap;
+ 	bool writable;
+ 	gfn_t gfn;
+ 	int ret;
+ 
+-	fault_addr = (trap->htval << 2) | (trap->stval & 0x3);
++	if (kvm_riscv_vcpu_nested_virt(vcpu)) {
++		memset(&out_trap, 0, sizeof(out_trap));
++		ret = kvm_riscv_vcpu_nested_swtlb_xlate(vcpu, trap, &guest_map, &out_trap);
++		if (ret <= 0)
++			return ret;
++		fault_addr = __page_val_to_pfn(pte_val(guest_map.pte)) << PAGE_SHIFT;
++
++		if (out_trap.scause) {
++			kvm_riscv_vcpu_trap_redirect(vcpu, &out_trap);
++			return 1;
++		}
++	} else {
++		fault_addr = (trap->htval << 2) | (trap->stval & 0x3);
++	}
++
+ 	gfn = fault_addr >> PAGE_SHIFT;
+ 	memslot = gfn_to_memslot(vcpu->kvm, gfn);
+ 	hva = gfn_to_hva_memslot_prot(memslot, gfn, &writable);
+@@ -49,6 +64,9 @@ static int gstage_page_fault(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ 	if (ret < 0)
+ 		return ret;
+ 
++	if (kvm_riscv_vcpu_nested_virt(vcpu) && !pte_none(host_map.pte))
++		kvm_riscv_vcpu_nested_swtlb_request(vcpu, &guest_map, &host_map);
++
+ 	return 1;
+ }
+ 
+diff --git a/arch/riscv/kvm/vcpu_nested.c b/arch/riscv/kvm/vcpu_nested.c
+new file mode 100644
+index 000000000000..3c30d35b3b39
+--- /dev/null
++++ b/arch/riscv/kvm/vcpu_nested.c
+@@ -0,0 +1,48 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Copyright (c) 2026 Qualcomm Technologies, Inc.
++ */
++
++#include <linux/kvm_host.h>
++
++DEFINE_STATIC_KEY_FALSE(kvm_riscv_nested_available);
++
++static bool __read_mostly enable_nested_virt;
++module_param(enable_nested_virt, bool, 0644);
++
++void kvm_riscv_vcpu_nested_reset(struct kvm_vcpu *vcpu)
++{
++	struct kvm_vcpu_nested *ns = &vcpu->arch.nested;
++	struct kvm_vcpu_nested_csr *ncsr = &vcpu->arch.nested.csr;
++
++	ns->virt = false;
++	kvm_riscv_vcpu_nested_swtlb_reset(vcpu);
++	memset(ncsr, 0, sizeof(*ncsr));
++}
++
++int kvm_riscv_vcpu_nested_init(struct kvm_vcpu *vcpu)
++{
++	return kvm_riscv_vcpu_nested_swtlb_init(vcpu);
++}
++
++void kvm_riscv_vcpu_nested_deinit(struct kvm_vcpu *vcpu)
++{
++	kvm_riscv_vcpu_nested_swtlb_deinit(vcpu);
++}
++
++void kvm_riscv_nested_init(void)
++{
++	/*
++	 * Nested virtualization uses hvictl CSR hence only
++	 * available when AIA is available.
++	 */
++	if (!kvm_riscv_aia_available())
++		return;
++
++	/* Check state of module parameter */
++	if (!enable_nested_virt)
++		return;
++
++	/* Enable KVM nested virtualization support */
++	static_branch_enable(&kvm_riscv_nested_available);
++}
+diff --git a/arch/riscv/kvm/vcpu_nested_swtlb.c b/arch/riscv/kvm/vcpu_nested_swtlb.c
+new file mode 100644
+index 000000000000..1d9faf50a61f
+--- /dev/null
++++ b/arch/riscv/kvm/vcpu_nested_swtlb.c
+@@ -0,0 +1,70 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Copyright (c) 2026 Qualcomm Technologies, Inc.
++ */
++
++#include <linux/kvm_host.h>
++
++int kvm_riscv_vcpu_nested_swtlb_xlate(struct kvm_vcpu *vcpu,
++				      const struct kvm_cpu_trap *trap,
++				      struct kvm_gstage_mapping *out_map,
++				      struct kvm_cpu_trap *out_trap)
++{
++	/* TODO: */
++	return 0;
++}
++
++void kvm_riscv_vcpu_nested_swtlb_process(struct kvm_vcpu *vcpu)
++{
++	struct kvm_vcpu_nested_swtlb *nst = &vcpu->arch.nested.swtlb;
++
++	WARN_ON(!nst->request.pending);
++
++	/* TODO: */
++
++	nst->request.pending = false;
++}
++
++void kvm_riscv_vcpu_nested_swtlb_request(struct kvm_vcpu *vcpu,
++					 const struct kvm_gstage_mapping *guest_map,
++					 const struct kvm_gstage_mapping *host_map)
++{
++	struct kvm_vcpu_nested_swtlb *nst = &vcpu->arch.nested.swtlb;
++
++	WARN_ON(nst->request.pending);
++
++	nst->request.pending = true;
++	memcpy(&nst->request.guest, guest_map, sizeof(*guest_map));
++	memcpy(&nst->request.host, host_map, sizeof(*host_map));
++
++	kvm_make_request(KVM_REQ_NESTED_SWTLB, vcpu);
++}
++
++void kvm_riscv_vcpu_nested_swtlb_reset(struct kvm_vcpu *vcpu)
++{
++	struct kvm_vcpu_nested_swtlb *nst = &vcpu->arch.nested.swtlb;
++
++	memset(nst, 0, sizeof(*nst));
++}
++
++int kvm_riscv_vcpu_nested_swtlb_init(struct kvm_vcpu *vcpu)
++{
++	struct kvm_vcpu_nested_swtlb *nst = &vcpu->arch.nested.swtlb;
++	struct page *pgd_page;
++
++	pgd_page = alloc_pages(GFP_KERNEL | __GFP_ZERO,
++			       get_order(kvm_riscv_gstage_pgd_size));
++	if (!pgd_page)
++		return -ENOMEM;
++	nst->shadow_pgd = page_to_virt(pgd_page);
++	nst->shadow_pgd_phys = page_to_phys(pgd_page);
++
++	return 0;
++}
++
++void kvm_riscv_vcpu_nested_swtlb_deinit(struct kvm_vcpu *vcpu)
++{
++	struct kvm_vcpu_nested_swtlb *nst = &vcpu->arch.nested.swtlb;
++
++	free_pages((unsigned long)nst->shadow_pgd, get_order(kvm_riscv_gstage_pgd_size));
++}
 -- 
 2.43.0
 
