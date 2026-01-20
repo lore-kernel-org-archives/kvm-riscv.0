@@ -4,38 +4,38 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 97E57D2ECE9
-	for <kvm-riscv@archiver.kernel.org>; Tue, 20 Jan 2026 14:22:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 91402D2ECE9
+	for <kvm-riscv@archiver.kernel.org>; Tue, 20 Jan 2026 14:23:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=BDG2wiczFpnZUAr7q3OwE2/KAbxt1VpvqUDiczW11P4=; b=qS38VYCS1sCu3G
-	vxng9FRVNPflzQPVwhv5jeOkw+FTK+umLy+bNqB7u+1TonVpXWeGggr7VCvz9yFs1MtzaJhtRAbYp
-	n0aXD1GeCUBK0PSoJAdKvyKlXZtecjQ0SovHcLnLc40ukdEe+pqcmVpHroqAwi+iqDgCphFnX3rWo
-	gDmCe2qVqJlvENbXjFNqQUug4UpIWSrDQs9Ex2I+O2/DhnJ2czy75TXZ7v0Uufv+mkaG/Z6QR9JG8
-	70XTojWKuPmPn2p32hBFbIARFEIR5MRiHmsqUku3gAsGi455zamSznV3qZttnsgBv4pmXeO5D8G5U
-	1MBok+h0qjwGaUHsWhYA==;
+	List-Owner; bh=po8uBFu6bcuk0U4swuLhSL2v5b1xI1xSmGZ69wiIQPQ=; b=BlHX/FYSUdL9Vh
+	8xnrf05zZYXv19yf043gxkWHX2Fa301LU79pIXWhoDUBwSjVoeTVEasmS5w1QcFBGtnvkLL6BHcZh
+	T49f7g1Ouv1LdUCV6QVm1UrGyVjH/Q8UEVv6jVsYTCeEjYnH+doAeCtM6V7Qu+4pvE16CgBxOEc3X
+	/uwAdgo70wNsqef8UTAFFN0qlX8Wvo+tTbkOCD400ZbEguAcpgKf3kNF+agk1gzDyLlJ5n3C2oYJ6
+	Qd+dJJ87JnhcZUMDnH72d8THln+dK/k2ybVD5x1mp/4uILXhAaysVxBj5SSaIgtd97mo8AEVBdJrF
+	pZ64m91gSXG0QJcBN33Q==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1viCd0-00000003yCL-2j8U;
-	Tue, 20 Jan 2026 14:22:42 +0000
-Received: from out30-113.freemail.mail.aliyun.com ([115.124.30.113])
+	id 1viCdX-00000003yKN-0zNK;
+	Tue, 20 Jan 2026 14:23:15 +0000
+Received: from out30-112.freemail.mail.aliyun.com ([115.124.30.112])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1viCcv-00000003yA0-45kT;
-	Tue, 20 Jan 2026 14:22:41 +0000
+	id 1viCdQ-00000003yHc-02ax;
+	Tue, 20 Jan 2026 14:23:12 +0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
 	d=linux.alibaba.com; s=default;
-	t=1768918947; h=From:To:Subject:Date:Message-Id:MIME-Version;
-	bh=wD/viQYhsRUrgX+bgboJYmyufn5Ii5TsHLlk29tx4N4=;
-	b=bwnHFPtUJkgZ+T3zM3woukFmEqow+D9rfcsKqQconRenbIavgyAVXRKXpcOOX7HIHjSeLVp3FgCJeysxcFUoIqS61Qgqy5lJ4exE05FQ3xbzIymU+ZQzwDeg7lXgi1QHRiPc9fw6Hw5Oe6NzF4782oNJ6E8jp6y817JJRe4Semw=
-Received: from localhost.localdomain(mailfrom:fangyu.yu@linux.alibaba.com fp:SMTPD_---0WxUjVe1_1768918934 cluster:ay36)
+	t=1768918982; h=From:To:Subject:Date:Message-Id:MIME-Version;
+	bh=XjFJwiZwKYWRxhHb7L7H6Uqg4/HCRCOm2ZcJ0CPggm0=;
+	b=w+hWjyy0ZeAhnzf5VYtWUGdB/Hc/GhvH+GD+xTKdGBZmvC47GmYim5U961FuEATcTpG07zyuhVJTo1LrdQsY8TqC/Kc3++NVyaslRLbF26F5d5EEyqhOhTf7hpgegwYef0YGFQemv1YsIRUvLyCJCkzrD8PHRQovLrd1lezpui8=
+Received: from localhost.localdomain(mailfrom:fangyu.yu@linux.alibaba.com fp:SMTPD_---0WxUghn7_1768918976 cluster:ay36)
           by smtp.aliyun-inc.com;
-          Tue, 20 Jan 2026 22:22:16 +0800
+          Tue, 20 Jan 2026 22:22:58 +0800
 From: fangyu.yu@linux.alibaba.com
-To: andrew.jones@oss.qualcomm.com
+To: radim.krcmar@oss.qualcomm.com
 Cc: ajones@ventanamicro.com,
 	alex@ghiti.fr,
 	anup@brainfault.org,
@@ -54,16 +54,15 @@ Cc: ajones@ventanamicro.com,
 	pjw@kernel.org,
 	rkrcmar@ventanamicro.com
 Subject: Re: Re: [PATCH v2] RISC-V: KVM: add KVM_CAP_RISCV_SET_HGATP_MODE
-Date: Tue, 20 Jan 2026 22:22:10 +0800
-Message-Id: <20260120142210.9891-1-fangyu.yu@linux.alibaba.com>
+Date: Tue, 20 Jan 2026 22:22:56 +0800
+Message-Id: <20260120142256.9968-1-fangyu.yu@linux.alibaba.com>
 X-Mailer: git-send-email 2.39.3 (Apple Git-146)
-In-Reply-To: <6txqxrkyqh4afmked4hdi6qekkqrb54ar3q5upz3ennnuaktsi@dtoarqt7e26t>
-References: <6txqxrkyqh4afmked4hdi6qekkqrb54ar3q5upz3ennnuaktsi@dtoarqt7e26t>
+In-Reply-To: <DFSM9IHXY24S.3W4T39VHEH420@oss.qualcomm.com>
+References: <DFSM9IHXY24S.3W4T39VHEH420@oss.qualcomm.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260120_062238_947765_7BC49E8E 
-X-CRM114-Status: UNSURE (   9.78  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20260120_062308_292181_82B0B495 
+X-CRM114-Status: GOOD (  13.58  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -80,7 +79,23 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
->...
+>> From: Fangyu Yu <fangyu.yu@linux.alibaba.com>
+>>
+>> This capability allows userspace to explicitly select the HGATP mode
+>> for the VM. The selected mode must be less than or equal to the max
+>> HGATP mode supported by the hardware. This capability must be enabled
+>> before creating any vCPUs, and can only be set once per VM.
+>>
+>> Signed-off-by: Fangyu Yu <fangyu.yu@linux.alibaba.com>
+>> ---
+>> diff --git a/arch/riscv/kvm/vm.c b/arch/riscv/kvm/vm.c
+>> @@ -212,12 +219,27 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+>>  
+>>  int kvm_vm_ioctl_enable_cap(struct kvm *kvm, struct kvm_enable_cap *cap)
+>>  {
+>> +	if (cap->flags)
+>> +		return -EINVAL;
+>>  	switch (cap->cap) {
 >> +	case KVM_CAP_RISCV_SET_HGATP_MODE:
 >> +#ifdef CONFIG_64BIT
 >> +		if (cap->args[0] < HGATP_MODE_SV39X4 ||
@@ -88,45 +103,41 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 >> +			return -EINVAL;
 >> +		if (kvm->arch.gstage_mode_initialized)
 >> +			return 0;
+>
+>"must be enabled before creating any vCPUs" check is missing.
+
+Agreed, I'll add the missing "must be enabled before creating any vCPUs" check by
+rejecting the capability once kvm->created_vcpus is non-zero.
+
+>
 >> +		kvm->arch.gstage_mode_initialized = true;
 >> +		kvm->arch.kvm_riscv_gstage_mode = cap->args[0];
 >> +		kvm->arch.kvm_riscv_gstage_pgd_levels = 3 +
 >> +		    kvm->arch.kvm_riscv_gstage_mode - HGATP_MODE_SV39X4;
->> +		kvm_info("using SV%lluX4 G-stage page table format\n",
->> +			39 + (cap->args[0] - HGATP_MODE_SV39X4) * 9);
 >
->I don't think we want this kvm_info line, particularly if it doesn't also
->include a VM ID in some form to allow readers to know which VM is using
->the selected format. Let's either drop it or change it to kvm_debug and
->include a VM ID.
+>Even before creating VCPUs, I don't see enough protections to make this
+>work.
+>
+>Userspace can only provide a hint about the physical address space size
+>before any other KVM code could have acted on the information.
+>It would be a serious issue if some code would operate on hgatp as if it
+>were X and others as Y.
+>
+>The simplest solution would be to ensure that the CAP_SET VM ioctl can
+>only be executed before any other IOCTL, but a change in generic code to
+>achieve it would be frowned upon...
+>I would recommend looking at kvm_are_all_memslots_empty() first, as it's
+>quite likely that it could be sufficient for the purposes of changing
+>hgatp.
 
-Agreed, I will switch it to kvm_debug() and include a VM ID.
+Using kvm_are_all_memslots_empty might be a good idea, and I will add a
+check for this function in the v2.
 
 >
->Thanks,
->drew
->
->> +#endif
->> +		return 0;
->>  	default:
->>  		return -EINVAL;
->>  	}
->> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
->> index dddb781b0507..00c02a880518 100644
->> --- a/include/uapi/linux/kvm.h
->> +++ b/include/uapi/linux/kvm.h
->> @@ -974,6 +974,7 @@ struct kvm_enable_cap {
->>  #define KVM_CAP_GUEST_MEMFD_FLAGS 244
->>  #define KVM_CAP_ARM_SEA_TO_USER 245
->>  #define KVM_CAP_S390_USER_OPEREXEC 246
->> +#define KVM_CAP_RISCV_SET_HGATP_MODE 247
->>  
->>  struct kvm_irq_routing_irqchip {
->>  	__u32 irqchip;
->> -- 
->> 2.50.1
->
->
+>Thanks.
+
+Thanks,
+Fangyu
 
 -- 
 kvm-riscv mailing list
