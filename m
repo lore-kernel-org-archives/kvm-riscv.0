@@ -4,60 +4,74 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3433AD2ED14
-	for <kvm-riscv@archiver.kernel.org>; Tue, 20 Jan 2026 08:01:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EE4E1D2ED16
+	for <kvm-riscv@archiver.kernel.org>; Tue, 20 Jan 2026 08:01:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=txV/A5j+MG5ER2ynSgSlPB7BiFK7j+PgkfCwn9U/doU=; b=jFjsBD0ZsZHB+D
-	BF7WHqHGE5R1DXtewYCNyEkNVxtqCnDX0X4I/KZiPpzzU9mcYNFPApL/ZSI2a2E+pR6DC9aJ1GJdM
-	bur5yjdF64hjC1aFMO+EhGS02QxzCeMn4i82gSlnHU6LSu29mcc6JlE+HtiT+2Cu3AkUwzwYRMtdp
-	aTkdlH8s07PDxvwU0PxlLr0xzkDWiIK6KAfEEpMfAscMckD5N2LSqtGV8cmEgpYVekx5OJCXByRJI
-	3HNlFypdVeUKxs2PfhvU6mxAxlPtN5fix9M5YfXzM4KRVfllQ3pqZpL+G2F6WSy6f28/GFcOoDaWl
-	L6JiW+cMHO4oVSpNWhTg==;
+	List-Owner; bh=lu8h4oY664KL8MYZiThgEsRBL7MwO2kwDLGJsEeGNeQ=; b=Lt91RDU+kHH7bk
+	9aBSGAvGMLznKjhCRfb1944H7CA8M65Ebn0miWT7yUFEyALKPoPVQzH2Iwypo0Cb4kiCO7M4m3cWj
+	0CUvgGfdXNe+RG33jRsnhy7U4u7jlST9Pb+JnlSFjB+4/7fAzwQI6B4oqsRg4gNDJ4mlp5dlxkJhJ
+	BeC8JpqGs+ON+2br6VszSnLVE+qb5H3uBHupkE1qtNdO039g4NDow8jiMptjbsMTJUaOakgzJjANH
+	Ux0TjdP2R2bQ1ZF8PxEJwGCmUyODFyp5K5YyZBhUSWjsBrLbOlB0ZeiVZerExvCSOjewGWtB05F/Q
+	uGn1KW+IByxEILZphyhg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vi6fd-00000003OPU-3NfT;
-	Tue, 20 Jan 2026 08:01:01 +0000
-Received: from mx0a-0031df01.pphosted.com ([205.220.168.131])
+	id 1vi6fe-00000003ORi-3rmP;
+	Tue, 20 Jan 2026 08:01:04 +0000
+Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vi6fG-00000003O7M-433N;
-	Tue, 20 Jan 2026 08:00:43 +0000
-Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 60K5UoPW774076;
-	Tue, 20 Jan 2026 08:00:21 GMT
+	id 1vi6fJ-00000003O8v-3UFN;
+	Tue, 20 Jan 2026 08:00:42 +0000
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:MIME-Version
+	:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:
+	Content-Type:Content-ID:Content-Description;
+	bh=R8FQczWtBUy5v1pZmDCxmjtbD0OvwMcba0xNdmFzHV4=; b=olLBRD/ISeWnBsRyNbBzEDyKyd
+	IaOzAWJEmY+lqO8qliFWpB8UYAUKOSOS6f5RwFIalqz2en1TSlBLydV5e3UsY/ro/WAzvbLnGF1ki
+	5Yz9kgvPcAr5ZQOCgNPSSDveAYFYd2o9NbrXPS1da1O1qKmllW5HOCSdo8Zlgy7NXnvZ5noBmwSng
+	nTw0rzcHdgDVpXX5YDcuhn5h948Muk5UfruOgtod+KzPXJ1mChSmkDoZD1xT9uqBZOSvaVRDNqp9o
+	QJP5KLlZ8pQ4cjxV4TRGDi34Zmhjq9yxgPV15+mJQsOKLBSxhcQxvV2hkYBGxK9G/krlJaT4rsrP+
+	Pit4L7+Q==;
+Received: from mx0a-0031df01.pphosted.com ([205.220.168.131])
+	by desiato.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1vi6fF-0000000DX1J-0X8Q;
+	Tue, 20 Jan 2026 08:00:40 +0000
+Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 60K71Z4u1408482;
+	Tue, 20 Jan 2026 08:00:22 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=qcppdkim1; bh=cZTpAxcP9z8
-	a0OAJSNBpKMeHkvi2gDPdFbwYijflKWU=; b=WFG/Y1wjJqKUhXPnQKLEQHp1nHW
-	MVUcQ+ivNzfuw5VqaNwwlRYUeJmRsK23eckHoC8G8ogpuUis/sAQe/Xet9cHsVa5
-	dTBd0qm/I8FUyoK4wTowL8kwbxScwxIHHwO+oUAWlZrXUQ5fDgDp3NydJ5ZDPoNF
-	ApXnP4DfnGH7w3EKxUjSXhTz9npJgq+HyuhPgM74vzfbNyed4VSxGfWM27urwOa/
-	rbr1SaI/2EM7TCco0q4D/jMblOElc2B7seavorEa2VcArq3ldvIi/xGDpxOSn/W0
-	mdp4dfxn8DEBeAgprhnpOSkNuX+aPpbG2oXQcqvShyoypvPfeZbasuTy7JA==
+	:mime-version:references:subject:to; s=qcppdkim1; bh=R8FQczWtBUy
+	5v1pZmDCxmjtbD0OvwMcba0xNdmFzHV4=; b=l7XFxBTsa+3WWzGbTlDuezdZYdf
+	+gkxX6/VKNoaPK9SSVYNOtDKAG0Hv/guXZdg5Z6g+8TZjcaku72Z0+qeANdh0TtE
+	4dbEKUWtcTao9t/7mxWyDg5WhtXtxcF5yF2Q87XszKqpjJTX6L+Nkh6eikLgWCR1
+	i5KBAdUQNYJQ04ibNByoPHAm9qV/e+SUrpo8Y1HBXInzyA1XIYnARClX5DJXLHjd
+	9RlU2z+WzKXG+b2SbIX7suUjoVWNOokHIVNJxEJB2Z8r4vWPHpoXja5/CnnirzO8
+	FOm1Dv7kaektgbXR4eLXjH8LblC5IrbeHjfdVlqED6HSZDCY1U8lCwrSPxg==
 Received: from apblrppmta02.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4bsj9ab743-1
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4bt4y2r5a1-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 20 Jan 2026 08:00:20 +0000 (GMT)
+	Tue, 20 Jan 2026 08:00:21 +0000 (GMT)
 Received: from pps.filterd (APBLRPPMTA02.qualcomm.com [127.0.0.1])
-	by APBLRPPMTA02.qualcomm.com (8.18.1.2/8.18.1.2) with ESMTP id 60K80HnM008067;
-	Tue, 20 Jan 2026 08:00:17 GMT
+	by APBLRPPMTA02.qualcomm.com (8.18.1.2/8.18.1.2) with ESMTP id 60K80G0a007954;
+	Tue, 20 Jan 2026 08:00:18 GMT
 Received: from pps.reinject (localhost [127.0.0.1])
-	by APBLRPPMTA02.qualcomm.com (PPS) with ESMTPS id 4br3gm8q79-1
+	by APBLRPPMTA02.qualcomm.com (PPS) with ESMTPS id 4br3gm8q7k-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 20 Jan 2026 08:00:17 +0000
+	Tue, 20 Jan 2026 08:00:18 +0000
 Received: from APBLRPPMTA02.qualcomm.com (APBLRPPMTA02.qualcomm.com [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 60K80GTK007912;
-	Tue, 20 Jan 2026 08:00:17 GMT
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 60K80FZe007832;
+	Tue, 20 Jan 2026 08:00:18 GMT
 Received: from hu-devc-blr-u24-a.qualcomm.com (hu-anuppate-blr.qualcomm.com [10.131.36.165])
-	by APBLRPPMTA02.qualcomm.com (PPS) with ESMTPS id 60K80Hvk008004
+	by APBLRPPMTA02.qualcomm.com (PPS) with ESMTPS id 60K80H7Z008013
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 20 Jan 2026 08:00:17 +0000
+	Tue, 20 Jan 2026 08:00:18 +0000
 Received: by hu-devc-blr-u24-a.qualcomm.com (Postfix, from userid 486687)
-	id C5BE325579; Tue, 20 Jan 2026 13:30:14 +0530 (+0530)
+	id CFCAE25597; Tue, 20 Jan 2026 13:30:14 +0530 (+0530)
 From: Anup Patel <anup.patel@oss.qualcomm.com>
 To: Paolo Bonzini <pbonzini@redhat.com>, Atish Patra <atish.patra@linux.dev>
 Cc: Palmer Dabbelt <palmer@dabbelt.com>, Paul Walmsley <pjw@kernel.org>,
@@ -68,9 +82,9 @@ Cc: Palmer Dabbelt <palmer@dabbelt.com>, Paul Walmsley <pjw@kernel.org>,
         linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
         linux-kselftest@vger.kernel.org,
         Anup Patel <anup.patel@oss.qualcomm.com>
-Subject: [PATCH 15/27] RISC-V: KVM: Extend trap redirection for nested virtualization
-Date: Tue, 20 Jan 2026 13:30:01 +0530
-Message-ID: <20260120080013.2153519-16-anup.patel@oss.qualcomm.com>
+Subject: [PATCH 18/27] RISC-V: KVM: Trap-n-emulate SRET for Guest HS-mode
+Date: Tue, 20 Jan 2026 13:30:04 +0530
+Message-ID: <20260120080013.2153519-19-anup.patel@oss.qualcomm.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260120080013.2153519-1-anup.patel@oss.qualcomm.com>
 References: <20260120080013.2153519-1-anup.patel@oss.qualcomm.com>
@@ -79,31 +93,32 @@ X-QCInternal: smtphost
 X-QCInternal: smtphost
 X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
 X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-ORIG-GUID: FK8E5Qck1I85jUPsO4PK6KZvLfW3BGez
-X-Authority-Analysis: v=2.4 cv=N40k1m9B c=1 sm=1 tr=0 ts=696f3615 cx=c_pps
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMTIwMDA2NSBTYWx0ZWRfXyK6u780okVE7
+ aLxDXZePncjbDgTdiv1jihYvHt/Cepr1RqJtMijVZy8Hzti3/8FRj8eTP6YQ7GaahSRPNyJixsE
+ ++hXGY36MfXLqYBnOuX5PpjOCyIGOk4Vlwm2VIbrXxmIcVCRhcx0v2f1k/8HS/4/I9fizs8DlCR
+ 5krU6RIEaPMZ4DJlUCqnXdLgOeiqygweLGoz+FHJf98JvuusJpIY67n5v1qka2nX3+6j0Ndxnj9
+ 8QpUD/ky6yYPNNW7wrRd0vv3ObdMthgLDPgT+0V5eSywIFpHUJei8XNxQc9MF1VcZh6VwAFrfKF
+ ymiiLNvh2tYJokhVb6MYMTVl4/PsHna2VKcQU2dKmHwf4YwyLGEngAsGNVFQT3rV9vyUVC9ia9i
+ cUPCQ+Zamskj0qT7PstAk0cZg9hD5m3A407TCuJE2B9QseBydRT8HDMyTlRDJZ76WcI9Zpls8eG
+ a4udiD1+6exiyXmBDxQ==
+X-Authority-Analysis: v=2.4 cv=Ds1bOW/+ c=1 sm=1 tr=0 ts=696f3615 cx=c_pps
  a=Ou0eQOY4+eZoSc0qltEV5Q==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
  a=vUbySO9Y5rIA:10 a=VkNPw1HP01LnGYTKEx00:22 a=EUspDBNiAAAA:8
- a=8oevvQFq_g5LQl22nIQA:9
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMTIwMDA2NSBTYWx0ZWRfX5ARfViYaB5HK
- CGiafPRidv14WLMTRrOofrsaahTngq2zUuPBTL48Af7MwSV/xh26u08xFWJEnK98odIRcKNtBG1
- yIyYGIAfcvOi0rcDk+cjdYHChkOQ+zLCO5kDOoRQdqIA6A1GDN007vpbCT8SW0BVp3u308HlcCk
- 2/SHdfxT5SynNw+PJMZkvnwCkBoEd8/mu3x4J+M0XpHjeAqoyXZMvjwgEcIsJb1bivUmucbE60c
- uuuPbstCya1rWoQOI26QjeYDKBJBRir/W27+dYX4zKQjeDZ5JEQtEDGC5HFOOkpJN+q6dXVHc8+
- YlnkSCm09npLIJhK6DqgMRb2pss3ac6aFPkLJ8PzAs+uEyjHimcF0yan2KaE2f178yCBnEMBmxe
- Lb9N2gQSO0qPjJLEhiN0FOb9vkppZxEMKfX/aQviQZycpAB+A1O1n5MzWxG9uT5L3aofhGNx2+K
- tS+BOqmj/wAl48XBLvg==
-X-Proofpoint-GUID: FK8E5Qck1I85jUPsO4PK6KZvLfW3BGez
+ a=geURt3utUUeLdx-e4vsA:9
+X-Proofpoint-GUID: 6T3tHglOs3WQkVdbI-7TE9YEkgg7akAs
+X-Proofpoint-ORIG-GUID: 6T3tHglOs3WQkVdbI-7TE9YEkgg7akAs
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
  definitions=2026-01-20_02,2026-01-19_03,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 priorityscore=1501 impostorscore=0 malwarescore=0 adultscore=0
- spamscore=0 suspectscore=0 lowpriorityscore=0 bulkscore=0 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2601150000 definitions=main-2601200065
+ bulkscore=0 malwarescore=0 clxscore=1015 impostorscore=0 spamscore=0
+ phishscore=0 lowpriorityscore=0 adultscore=0 suspectscore=0
+ priorityscore=1501 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2601150000
+ definitions=main-2601200065
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260120_000039_029625_E384732D 
-X-CRM114-Status: GOOD (  20.33  )
+X-CRM114-CacheID: sfid-20260120_080037_589334_0E7F1290 
+X-CRM114-Status: GOOD (  20.00  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -120,290 +135,149 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-The L0/host hypervisor must always redirect traps to the L1/guest
-hypervisor so extend KVM RISC-V to perform the necessary nested
-world-switch when redirecting traps.
+The guest HS-mode (aka L1/guest hypervisor) can enter Guest VS/VU-mode
+(aka L2/nested guest) using the SRET instruction. To achieve this, host
+host hypervisor must trap-n-emulate SRET instruction for guest HS-mode
+(aka L1/guest hypervisor) using host hstatus.VTSR bit.
+
+Trapping all SRET instructions executed by guest HS-mode (aka L1/guest
+hypervisor) will impact performance so host hypervisor will only set
+hstatus.VTSR bit when guest sets HSTATUS.SPV bit and hstatus.VTSR bit
+is cleared by SRET emulation upon entry into guest VS/VU-mode.
 
 Signed-off-by: Anup Patel <anup.patel@oss.qualcomm.com>
 ---
- arch/riscv/include/asm/kvm_host.h        |   3 +
- arch/riscv/include/asm/kvm_vcpu_nested.h |  12 ++
- arch/riscv/kvm/vcpu_exit.c               |  28 +++-
- arch/riscv/kvm/vcpu_nested.c             | 162 +++++++++++++++++++++++
- 4 files changed, 201 insertions(+), 4 deletions(-)
+ arch/riscv/include/asm/insn.h            |  3 ++
+ arch/riscv/include/asm/kvm_vcpu_nested.h |  2 +
+ arch/riscv/kvm/Makefile                  |  1 +
+ arch/riscv/kvm/vcpu_insn.c               |  6 +++
+ arch/riscv/kvm/vcpu_nested_insn.c        | 54 ++++++++++++++++++++++++
+ 5 files changed, 66 insertions(+)
+ create mode 100644 arch/riscv/kvm/vcpu_nested_insn.c
 
-diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
-index 3b58953eb4eb..c510564a09a2 100644
---- a/arch/riscv/include/asm/kvm_host.h
-+++ b/arch/riscv/include/asm/kvm_host.h
-@@ -289,6 +289,9 @@ unsigned long kvm_riscv_vcpu_unpriv_read(struct kvm_vcpu *vcpu,
- 					 bool read_insn,
- 					 unsigned long guest_addr,
- 					 struct kvm_cpu_trap *trap);
-+void kvm_riscv_vcpu_trap_smode_redirect(struct kvm_vcpu *vcpu,
-+					struct kvm_cpu_trap *trap,
-+					bool prev_priv);
- void kvm_riscv_vcpu_trap_redirect(struct kvm_vcpu *vcpu,
- 				  struct kvm_cpu_trap *trap);
- int kvm_riscv_vcpu_exit(struct kvm_vcpu *vcpu, struct kvm_run *run,
+diff --git a/arch/riscv/include/asm/insn.h b/arch/riscv/include/asm/insn.h
+index c3005573e8c9..24a8abb3283c 100644
+--- a/arch/riscv/include/asm/insn.h
++++ b/arch/riscv/include/asm/insn.h
+@@ -331,6 +331,9 @@ static __always_inline bool riscv_insn_is_c_jalr(u32 code)
+ #define INSN_OPCODE_SHIFT	2
+ #define INSN_OPCODE_SYSTEM	28
+ 
++#define INSN_MASK_SRET		0xffffffff
++#define INSN_MATCH_SRET		0x10200073
++
+ #define INSN_MASK_WFI		0xffffffff
+ #define INSN_MATCH_WFI		0x10500073
+ 
 diff --git a/arch/riscv/include/asm/kvm_vcpu_nested.h b/arch/riscv/include/asm/kvm_vcpu_nested.h
-index 4234c6e81bb6..6bfb67702610 100644
+index 6d9d252a378c..665c60f09ee6 100644
 --- a/arch/riscv/include/asm/kvm_vcpu_nested.h
 +++ b/arch/riscv/include/asm/kvm_vcpu_nested.h
-@@ -75,6 +75,18 @@ void kvm_riscv_vcpu_nested_swtlb_reset(struct kvm_vcpu *vcpu);
- int kvm_riscv_vcpu_nested_swtlb_init(struct kvm_vcpu *vcpu);
- void kvm_riscv_vcpu_nested_swtlb_deinit(struct kvm_vcpu *vcpu);
+@@ -63,6 +63,8 @@ struct kvm_vcpu_nested {
  
-+enum kvm_vcpu_nested_set_virt_event {
-+	NESTED_SET_VIRT_EVENT_TRAP = 0,
-+	NESTED_SET_VIRT_EVENT_SRET
-+};
+ #define kvm_riscv_vcpu_nested_virt(__vcpu) ((__vcpu)->arch.nested.virt)
+ 
++int kvm_riscv_vcpu_nested_insn_sret(struct kvm_vcpu *vcpu, struct kvm_run *run, ulong insn);
 +
-+void kvm_riscv_vcpu_nested_set_virt(struct kvm_vcpu *vcpu,
-+				    enum kvm_vcpu_nested_set_virt_event event,
-+				    bool virt, bool spvp, bool gva);
-+void kvm_riscv_vcpu_nested_trap_redirect(struct kvm_vcpu *vcpu,
-+					 struct kvm_cpu_trap *trap,
-+					 bool prev_priv);
-+
- void kvm_riscv_vcpu_nested_reset(struct kvm_vcpu *vcpu);
- int kvm_riscv_vcpu_nested_init(struct kvm_vcpu *vcpu);
- void kvm_riscv_vcpu_nested_deinit(struct kvm_vcpu *vcpu);
-diff --git a/arch/riscv/kvm/vcpu_exit.c b/arch/riscv/kvm/vcpu_exit.c
-index 4f63548e582f..aeec4c4eee06 100644
---- a/arch/riscv/kvm/vcpu_exit.c
-+++ b/arch/riscv/kvm/vcpu_exit.c
-@@ -149,19 +149,21 @@ unsigned long kvm_riscv_vcpu_unpriv_read(struct kvm_vcpu *vcpu,
- }
+ int kvm_riscv_vcpu_nested_swtlb_xlate(struct kvm_vcpu *vcpu,
+ 				      const struct kvm_cpu_trap *trap,
+ 				      struct kvm_gstage_mapping *out_map,
+diff --git a/arch/riscv/kvm/Makefile b/arch/riscv/kvm/Makefile
+index a8806b69205f..c0534d4a469e 100644
+--- a/arch/riscv/kvm/Makefile
++++ b/arch/riscv/kvm/Makefile
+@@ -26,6 +26,7 @@ kvm-y += vcpu_exit.o
+ kvm-y += vcpu_fp.o
+ kvm-y += vcpu_insn.o
+ kvm-y += vcpu_nested.o
++kvm-y += vcpu_nested_insn.o
+ kvm-y += vcpu_nested_swtlb.o
+ kvm-y += vcpu_onereg.o
+ kvm-$(CONFIG_RISCV_PMU_SBI) += vcpu_pmu.o
+diff --git a/arch/riscv/kvm/vcpu_insn.c b/arch/riscv/kvm/vcpu_insn.c
+index 4d89b94128ae..745cd654df94 100644
+--- a/arch/riscv/kvm/vcpu_insn.c
++++ b/arch/riscv/kvm/vcpu_insn.c
+@@ -9,6 +9,7 @@
  
- /**
-- * kvm_riscv_vcpu_trap_redirect -- Redirect trap to Guest
-+ * kvm_riscv_vcpu_trap_smode_redirect -- Redirect S-mode trap to Guest
-  *
-  * @vcpu: The VCPU pointer
-  * @trap: Trap details
-+ * @prev_priv: Previous privilege mode (true: S-mode, false: U-mode)
-  */
--void kvm_riscv_vcpu_trap_redirect(struct kvm_vcpu *vcpu,
--				  struct kvm_cpu_trap *trap)
-+void kvm_riscv_vcpu_trap_smode_redirect(struct kvm_vcpu *vcpu,
-+					struct kvm_cpu_trap *trap,
-+					bool prev_priv)
- {
- 	unsigned long vsstatus = ncsr_read(CSR_VSSTATUS);
+ #include <asm/cpufeature.h>
+ #include <asm/insn.h>
++#include <asm/kvm_vcpu_nested.h>
  
- 	/* Change Guest SSTATUS.SPP bit */
- 	vsstatus &= ~SR_SPP;
--	if (vcpu->arch.guest_context.sstatus & SR_SPP)
-+	if (prev_priv)
- 		vsstatus |= SR_SPP;
- 
- 	/* Change Guest SSTATUS.SPIE bit */
-@@ -187,6 +189,24 @@ void kvm_riscv_vcpu_trap_redirect(struct kvm_vcpu *vcpu,
- 	vcpu->arch.guest_context.sstatus |= SR_SPP;
- }
- 
-+/**
-+ * kvm_riscv_vcpu_trap_redirect -- Redirect HS-mode trap to Guest
-+ *
-+ * @vcpu: The VCPU pointer
-+ * @trap: Trap details
+ struct insn_func {
+ 	unsigned long mask;
+@@ -257,6 +258,11 @@ static const struct insn_func system_opcode_funcs[] = {
+ 		.match = INSN_MATCH_CSRRCI,
+ 		.func  = csr_insn,
+ 	},
++	{
++		.mask  = INSN_MASK_SRET,
++		.match = INSN_MATCH_SRET,
++		.func  = kvm_riscv_vcpu_nested_insn_sret,
++	},
+ 	{
+ 		.mask  = INSN_MASK_WFI,
+ 		.match = INSN_MATCH_WFI,
+diff --git a/arch/riscv/kvm/vcpu_nested_insn.c b/arch/riscv/kvm/vcpu_nested_insn.c
+new file mode 100644
+index 000000000000..8f5b2992dbb9
+--- /dev/null
++++ b/arch/riscv/kvm/vcpu_nested_insn.c
+@@ -0,0 +1,54 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Copyright (c) 2026 Qualcomm Technologies, Inc.
 + */
-+void kvm_riscv_vcpu_trap_redirect(struct kvm_vcpu *vcpu,
-+				  struct kvm_cpu_trap *trap)
-+{
-+	bool prev_priv = (vcpu->arch.guest_context.sstatus & SR_SPP) ? true : false;
 +
-+	/* Update Guest nested state */
-+	kvm_riscv_vcpu_nested_trap_redirect(vcpu, trap, prev_priv);
-+
-+	/* Update Guest supervisor state */
-+	kvm_riscv_vcpu_trap_smode_redirect(vcpu, trap, prev_priv);
-+}
-+
- static inline int vcpu_redirect(struct kvm_vcpu *vcpu, struct kvm_cpu_trap *trap)
- {
- 	int ret = -EFAULT;
-diff --git a/arch/riscv/kvm/vcpu_nested.c b/arch/riscv/kvm/vcpu_nested.c
-index 3c30d35b3b39..214206fc28bb 100644
---- a/arch/riscv/kvm/vcpu_nested.c
-+++ b/arch/riscv/kvm/vcpu_nested.c
-@@ -3,13 +3,175 @@
-  * Copyright (c) 2026 Qualcomm Technologies, Inc.
-  */
- 
-+#include <linux/smp.h>
- #include <linux/kvm_host.h>
++#include <linux/kvm_host.h>
 +#include <asm/kvm_nacl.h>
-+#include <asm/kvm_mmu.h>
- 
- DEFINE_STATIC_KEY_FALSE(kvm_riscv_nested_available);
- 
- static bool __read_mostly enable_nested_virt;
- module_param(enable_nested_virt, bool, 0644);
- 
-+void kvm_riscv_vcpu_nested_set_virt(struct kvm_vcpu *vcpu,
-+				    enum kvm_vcpu_nested_set_virt_event event,
-+				    bool virt, bool spvp, bool gva)
++#include <asm/kvm_vcpu_insn.h>
++
++int kvm_riscv_vcpu_nested_insn_sret(struct kvm_vcpu *vcpu, struct kvm_run *run, ulong insn)
 +{
-+	struct kvm_vcpu_nested *ns = &vcpu->arch.nested;
-+	struct kvm_vcpu_nested_csr *nsc = &ns->csr;
-+	unsigned long tmp, sr_fs_vs_mask = 0;
-+	int cpu;
++	unsigned long vsstatus, next_sepc, next_spp;
++	bool next_virt;
 +
-+	/* If H-extension is not available for VCPU then do nothing */
-+	if (!riscv_isa_extension_available(vcpu->arch.isa, h))
-+		return;
++	/*
++	 * Trap from virtual-VS/VU modes should be forwarded to
++	 * virtual-HS mode as a virtual instruction trap.
++	 */
++	if (kvm_riscv_vcpu_nested_virt(vcpu))
++		return KVM_INSN_VIRTUAL_TRAP;
 +
-+	/* Grab the CPU to ensure we remain on same CPU */
-+	cpu = get_cpu();
++	/*
++	 * Trap from virtual-U mode should be forwarded to
++	 * virtual-HS mode as illegal instruction trap.
++	 */
++	if (!(vcpu->arch.guest_context.hstatus & HSTATUS_SPVP))
++		return KVM_INSN_ILLEGAL_TRAP;
 +
-+	/* Skip hardware CSR update if no change in virt state */
-+	if (virt == ns->virt)
-+		goto skip_csr_update;
++	vsstatus = ncsr_read(CSR_VSSTATUS);
 +
-+	/* Update config CSRs (aka hedeleg, hideleg, henvcfg, and hstateeX) */
-+	kvm_riscv_vcpu_config_load(vcpu, virt);
++	/*
++	 * Find next nested virtualization mode, next privilege mode,
++	 * and next sepc
++	 */
++	next_virt = (vcpu->arch.nested.csr.hstatus & HSTATUS_SPV) ? true : false;
++	next_sepc = ncsr_read(CSR_VSEPC);
++	next_spp = vsstatus & SR_SPP;
 +
-+	/* Update time delta */
-+	kvm_riscv_vcpu_update_timedelta(vcpu, virt);
++	/* Update Guest sstatus.sie */
++	vsstatus &= ~SR_SIE;
++	vsstatus |= (vsstatus & SR_SPIE) ? SR_SIE : 0;
++	ncsr_write(CSR_VSSTATUS, vsstatus);
 +
-+	/* Update G-stage page table */
-+	kvm_riscv_mmu_update_hgatp(vcpu, virt);
++	/* Update return address and return privilege mode*/
++	vcpu->arch.guest_context.sepc = next_sepc;
++	vcpu->arch.guest_context.sstatus &= ~SR_SPP;
++	vcpu->arch.guest_context.sstatus |= next_spp;
 +
-+	/* Swap hardware vs<xyz> CSRs except vsie and vsstatus */
-+	nsc->vstvec = ncsr_swap(CSR_VSTVEC, nsc->vstvec);
-+	nsc->vsscratch = ncsr_swap(CSR_VSSCRATCH, nsc->vsscratch);
-+	nsc->vsepc = ncsr_swap(CSR_VSEPC, nsc->vsepc);
-+	nsc->vscause = ncsr_swap(CSR_VSCAUSE, nsc->vscause);
-+	nsc->vstval = ncsr_swap(CSR_VSTVAL, nsc->vstval);
-+	nsc->vsatp = ncsr_swap(CSR_VSATP, nsc->vsatp);
++	/* Set nested virtualization state based on guest hstatus.SPV */
++	kvm_riscv_vcpu_nested_set_virt(vcpu, NESTED_SET_VIRT_EVENT_SRET,
++				       next_virt, false, false);
 +
-+	/* Update vsstatus CSR */
-+	if (riscv_isa_extension_available(vcpu->arch.isa, f) ||
-+	    riscv_isa_extension_available(vcpu->arch.isa, d))
-+		sr_fs_vs_mask |= SR_FS;
-+	if (riscv_isa_extension_available(vcpu->arch.isa, v))
-+		sr_fs_vs_mask |= SR_VS;
-+	if (virt) {
-+		/*
-+		 * Update vsstatus in following manner:
-+		 * 1) Swap hardware vsstatus (i.e. virtual-HS mode sstatus) with
-+		 *    vsstatus in nested virtualization context (i.e. virtual-VS
-+		 *    mode sstatus)
-+		 * 2) Swap host sstatus.[FS|VS] (i.e. HS mode sstatus.[FS|VS])
-+		 *    with the vsstatus.[FS|VS] saved in nested virtualization
-+		 *    context (i.e. virtual-HS mode sstatus.[FS|VS])
-+		 */
-+		nsc->vsstatus = ncsr_swap(CSR_VSSTATUS, nsc->vsstatus);
-+		tmp = vcpu->arch.guest_context.sstatus & sr_fs_vs_mask;
-+		vcpu->arch.guest_context.sstatus &= ~sr_fs_vs_mask;
-+		vcpu->arch.guest_context.sstatus |= (nsc->vsstatus & sr_fs_vs_mask);
-+		nsc->vsstatus &= ~sr_fs_vs_mask;
-+		nsc->vsstatus |= tmp;
-+	} else {
-+		/*
-+		 * Update vsstatus in following manner:
-+		 * 1) Swap host sstatus.[FS|VS] (i.e. virtual-HS mode sstatus.[FS|VS])
-+		 *    with vsstatus.[FS|VS] saved in the nested virtualization
-+		 *    context (i.e. HS mode sstatus.[FS|VS])
-+		 * 2) Swap hardware vsstatus (i.e. virtual-VS mode sstatus) with
-+		 *    vsstatus in nested virtualization context (i.e. virtual-HS
-+		 *    mode sstatus)
-+		 */
-+		tmp = vcpu->arch.guest_context.sstatus & sr_fs_vs_mask;
-+		vcpu->arch.guest_context.sstatus &= ~sr_fs_vs_mask;
-+		vcpu->arch.guest_context.sstatus |= (nsc->vsstatus & sr_fs_vs_mask);
-+		nsc->vsstatus &= ~sr_fs_vs_mask;
-+		nsc->vsstatus |= tmp;
-+		nsc->vsstatus = ncsr_swap(CSR_VSSTATUS, nsc->vsstatus);
-+	}
-+
-+skip_csr_update:
-+	if (event != NESTED_SET_VIRT_EVENT_SRET) {
-+		/* Update guest hstatus.SPV bit */
-+		nsc->hstatus &= ~HSTATUS_SPV;
-+		nsc->hstatus |= (ns->virt) ? HSTATUS_SPV : 0;
-+
-+		/* Update guest hstatus.SPVP bit */
-+		if (ns->virt) {
-+			nsc->hstatus &= ~HSTATUS_SPVP;
-+			if (spvp)
-+				nsc->hstatus |= HSTATUS_SPVP;
-+		}
-+
-+		/* Update guest hstatus.GVA bit */
-+		if (event == NESTED_SET_VIRT_EVENT_TRAP) {
-+			nsc->hstatus &= ~HSTATUS_GVA;
-+			nsc->hstatus |= (gva) ? HSTATUS_GVA : 0;
-+		}
-+	}
-+
-+	/* Update host SRET trapping */
-+	vcpu->arch.guest_context.hstatus &= ~HSTATUS_VTSR;
-+	if (virt) {
-+		if (nsc->hstatus & HSTATUS_VTSR)
-+			vcpu->arch.guest_context.hstatus |= HSTATUS_VTSR;
-+	} else {
-+		if (nsc->hstatus & HSTATUS_SPV)
-+			vcpu->arch.guest_context.hstatus |= HSTATUS_VTSR;
-+	}
-+
-+	/* Update host VM trapping */
-+	vcpu->arch.guest_context.hstatus &= ~HSTATUS_VTVM;
-+	if (virt && (nsc->hstatus & HSTATUS_VTVM))
-+		vcpu->arch.guest_context.hstatus |= HSTATUS_VTVM;
-+
-+	/* Update virt flag */
-+	ns->virt = virt;
-+
-+	/* Release CPU */
-+	put_cpu();
++	return KVM_INSN_CONTINUE_SAME_SEPC;
 +}
-+
-+void kvm_riscv_vcpu_nested_trap_redirect(struct kvm_vcpu *vcpu,
-+					 struct kvm_cpu_trap *trap,
-+					 bool prev_priv)
-+{
-+	bool gva;
-+
-+	/* Do nothing if H-extension is not available for VCPU */
-+	if (!riscv_isa_extension_available(vcpu->arch.isa, h))
-+		return;
-+
-+	/* Determine GVA bit state */
-+	gva = false;
-+	switch (trap->scause) {
-+	case EXC_INST_MISALIGNED:
-+	case EXC_INST_ACCESS:
-+	case EXC_LOAD_MISALIGNED:
-+	case EXC_LOAD_ACCESS:
-+	case EXC_STORE_MISALIGNED:
-+	case EXC_STORE_ACCESS:
-+	case EXC_INST_PAGE_FAULT:
-+	case EXC_LOAD_PAGE_FAULT:
-+	case EXC_STORE_PAGE_FAULT:
-+	case EXC_INST_GUEST_PAGE_FAULT:
-+	case EXC_LOAD_GUEST_PAGE_FAULT:
-+	case EXC_STORE_GUEST_PAGE_FAULT:
-+		gva = true;
-+		break;
-+	default:
-+		break;
-+	}
-+
-+	/* Update Guest HTVAL and HTINST */
-+	vcpu->arch.nested.csr.htval = trap->htval;
-+	vcpu->arch.nested.csr.htinst = trap->htinst;
-+
-+	/* Turn-off nested virtualization for virtual-HS mode */
-+	kvm_riscv_vcpu_nested_set_virt(vcpu, NESTED_SET_VIRT_EVENT_TRAP,
-+				       false, prev_priv, gva);
-+}
-+
- void kvm_riscv_vcpu_nested_reset(struct kvm_vcpu *vcpu)
- {
- 	struct kvm_vcpu_nested *ns = &vcpu->arch.nested;
 -- 
 2.43.0
 
