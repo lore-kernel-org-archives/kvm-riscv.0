@@ -4,65 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 91402D2ECE9
-	for <kvm-riscv@archiver.kernel.org>; Tue, 20 Jan 2026 14:23:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 650DDD77898
+	for <kvm-riscv@archiver.kernel.org>; Sat, 24 Jan 2026 02:21:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
-	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=po8uBFu6bcuk0U4swuLhSL2v5b1xI1xSmGZ69wiIQPQ=; b=BlHX/FYSUdL9Vh
-	8xnrf05zZYXv19yf043gxkWHX2Fa301LU79pIXWhoDUBwSjVoeTVEasmS5w1QcFBGtnvkLL6BHcZh
-	T49f7g1Ouv1LdUCV6QVm1UrGyVjH/Q8UEVv6jVsYTCeEjYnH+doAeCtM6V7Qu+4pvE16CgBxOEc3X
-	/uwAdgo70wNsqef8UTAFFN0qlX8Wvo+tTbkOCD400ZbEguAcpgKf3kNF+agk1gzDyLlJ5n3C2oYJ6
-	Qd+dJJ87JnhcZUMDnH72d8THln+dK/k2ybVD5x1mp/4uILXhAaysVxBj5SSaIgtd97mo8AEVBdJrF
-	pZ64m91gSXG0QJcBN33Q==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-Id:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=bnthD9bN6hBWWlNXfkxp6QikDbNzzpmBkOjzTgGWQsM=; b=I8LaylrueJCcHs
+	ZTUta22oTYTXslm/jZ8riLXXSq1IZ8cHpIcI2vyU4LBSkdEkcYq/Q5TUmhLvKmxcCn5n1Mao6jFXo
+	sCLqSQLN93y7/vIQt5eszlVPNZiYq8XsoJaCyAxbD5X7vmD+MHAtDirwUhFVDOV92iEw0H4ohVfq5
+	4M8iu2tQ6BggMkjOnkm5AYgu8UcVYLIKH97CWTrxsS9HXQ+/3eEH/Fz74cebNnqH6W9TXx/nelK1I
+	yrVMJ56MZ2I/IW46/nyfN21bJp5f5VSJtwa7/YZxiZQ+vUWDlw1vm6YjCTPrOl0B4AROtTESgjnsn
+	HgMjWLnFD3og+DePpXxw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1viCdX-00000003yKN-0zNK;
-	Tue, 20 Jan 2026 14:23:15 +0000
-Received: from out30-112.freemail.mail.aliyun.com ([115.124.30.112])
+	id 1vjTGj-00000009n46-0SBJ;
+	Sat, 24 Jan 2026 02:20:57 +0000
+Received: from mail-pg1-x529.google.com ([2607:f8b0:4864:20::529])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1viCdQ-00000003yHc-02ax;
-	Tue, 20 Jan 2026 14:23:12 +0000
+	id 1vjTGh-00000009n35-0QgR
+	for kvm-riscv@lists.infradead.org;
+	Sat, 24 Jan 2026 02:20:56 +0000
+Received: by mail-pg1-x529.google.com with SMTP id 41be03b00d2f7-c3e921afad1so1066166a12.1
+        for <kvm-riscv@lists.infradead.org>; Fri, 23 Jan 2026 18:20:54 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux.alibaba.com; s=default;
-	t=1768918982; h=From:To:Subject:Date:Message-Id:MIME-Version;
-	bh=XjFJwiZwKYWRxhHb7L7H6Uqg4/HCRCOm2ZcJ0CPggm0=;
-	b=w+hWjyy0ZeAhnzf5VYtWUGdB/Hc/GhvH+GD+xTKdGBZmvC47GmYim5U961FuEATcTpG07zyuhVJTo1LrdQsY8TqC/Kc3++NVyaslRLbF26F5d5EEyqhOhTf7hpgegwYef0YGFQemv1YsIRUvLyCJCkzrD8PHRQovLrd1lezpui8=
-Received: from localhost.localdomain(mailfrom:fangyu.yu@linux.alibaba.com fp:SMTPD_---0WxUghn7_1768918976 cluster:ay36)
-          by smtp.aliyun-inc.com;
-          Tue, 20 Jan 2026 22:22:58 +0800
-From: fangyu.yu@linux.alibaba.com
-To: radim.krcmar@oss.qualcomm.com
-Cc: ajones@ventanamicro.com,
-	alex@ghiti.fr,
-	anup@brainfault.org,
-	aou@eecs.berkeley.edu,
-	atish.patra@linux.dev,
-	corbet@lwn.net,
-	fangyu.yu@linux.alibaba.com,
-	guoren@kernel.org,
-	kvm-riscv@lists.infradead.org,
-	kvm@vger.kernel.org,
-	linux-doc@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
+        d=gmail.com; s=20230601; t=1769221254; x=1769826054; darn=lists.infradead.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=p8kRNbAvCBcU6i7e683KXYAQzk2DTUU7+Egyrm6jhp8=;
+        b=fI5X4YS2IqMvaE3WAcoqJMHNFjj1WCUlHMPENDrgnzoSZFl0CbCYNigvErgYmbs0Fd
+         dizcMq438k4A6E/+u7K7GD3OfAzX8gpOmpE8Maxa/f3NOy9iXyf/ekvfVA1y0ECtZBdI
+         oJ8ApyPmcn6pwtAAdlf6LbGjo/nRiRYRVAZe+goEJ4IFDXEYyEeQilnJTh+OnisDKY0w
+         sHqpre/IMqFx66gOIy1blhSzh92M3/xVYCQ2TiwAgwh5oxg9b7vhASz2YSbPGmo++ELE
+         8VgdER7ab+4a1KY7RrsupsJ18tSTq3kZaIvCgYVErNli63lJs9rrZE+QGKUqcKlELzK1
+         cNoQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1769221254; x=1769826054;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=p8kRNbAvCBcU6i7e683KXYAQzk2DTUU7+Egyrm6jhp8=;
+        b=mWhnTyVMrBtqHGEwI5UY5H+WpIEnpl6J6Bz5odVFUTHTAn931KduLmXxdyAVfdzRfe
+         R35pAMj8d0QDWaD/kPhqEgGq2TdZcKIkT1OYxLSDvNHfuJOqhwWWm04LwBuI8xGPLTo6
+         pBEOYn4E1Z9uaQwlFT/5J4u0fACwclarCSWW2Te6RSLzAj0OOtpsOfGMk7KajPJo8Z0w
+         lmVJZ7Kf9k0CoEApT9G/1ynf/v4jwBQgtAo8ZniTf96QRL7zoVDDUPu2OjsWLssDfZhh
+         RAUD25qpbSRYcMFykdmhoxxTLsKiKTLXH83r4mXSNcBbl4svzr1a3Dk4qrJKgpG7jQV3
+         mWaw==
+X-Forwarded-Encrypted: i=1; AJvYcCUMZnfMT4LJnpY1lIPCrRswrAqUyLkINVFY8uWDAFxMo5zWUgOKvnwMk9X2rOwl5ANICz7yy8OKiQ0=@lists.infradead.org
+X-Gm-Message-State: AOJu0YwCDXzEDkP/wEV56lhqYPjGZTaPTO8rNt3CZM92MPluA+oHgZ/x
+	97/MW31iJ+WAnVvIwNUVVMpxodiHRBczGlhjt7yE7EpMUTcV6GPz12Wk
+X-Gm-Gg: AZuq6aLpaPGQx1XExh0PjjPNUOuXexQiUawAtEX4P8PW0el5rKQYTg4zpmM0HM07Zj/
+	9No1SIg0tTrRMYDQuSnVCyRFmmss/R96sfX7hZ644M2JwHd1CIXna8iYBHYJjbrQtVAvYpDrRX0
+	4/SyNkU7BrFEQq1wDZLh7GEIX97Yt8P5M2+S+E4o9CKcjAgDOp5ukUDkyDF4tF3jjXmfFjqNtCA
+	n+AwiPSFxbEFN7vr8sb7itJcd5tOuhDObznTMeKMAfVbwQQ3jkYzbxkXebK2plJE/zC/C0LaEVO
+	NLBCUAl8nLqJtqJw2zo1RRUi3iOZcRwsPAUoLJHn5MiX4YxykaR9w2ZhKyUOrbtG4iC00BFtBtj
+	UniXqr1atJECuHrkuPagCrqnoCCmPCEeR/IADJja7enVqXzXQhtHZ0WDy8PUi/aj8WxrIO/OBE/
+	8HSMlxC8+Iea5NF7Fe917S227l9Y5+mOJ47yibLRq6
+X-Received: by 2002:a17:903:98d:b0:2a0:d05c:7dde with SMTP id d9443c01a7336-2a7fe73fac6mr41209565ad.44.1769221253788;
+        Fri, 23 Jan 2026 18:20:53 -0800 (PST)
+Received: from fric.. ([210.73.43.101])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2a802dcd781sm30926135ad.24.2026.01.23.18.20.50
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 23 Jan 2026 18:20:53 -0800 (PST)
+From: Jiakai Xu <jiakaipeanut@gmail.com>
+X-Google-Original-From: Jiakai Xu <xujiakai2025@iscas.ac.cn>
+To: linux-kernel@vger.kernel.org,
 	linux-riscv@lists.infradead.org,
-	palmer@dabbelt.com,
-	pbonzini@redhat.com,
-	pjw@kernel.org,
-	rkrcmar@ventanamicro.com
-Subject: Re: Re: [PATCH v2] RISC-V: KVM: add KVM_CAP_RISCV_SET_HGATP_MODE
-Date: Tue, 20 Jan 2026 22:22:56 +0800
-Message-Id: <20260120142256.9968-1-fangyu.yu@linux.alibaba.com>
-X-Mailer: git-send-email 2.39.3 (Apple Git-146)
-In-Reply-To: <DFSM9IHXY24S.3W4T39VHEH420@oss.qualcomm.com>
-References: <DFSM9IHXY24S.3W4T39VHEH420@oss.qualcomm.com>
+	kvm-riscv@lists.infradead.org,
+	kvm@vger.kernel.org
+Cc: Alexandre Ghiti <alex@ghiti.fr>,
+	Albert Ou <aou@eecs.berkeley.edu>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Paul Walmsley <pjw@kernel.org>,
+	Atish Patra <atish.patra@linux.dev>,
+	Anup Patel <anup@brainfault.org>,
+	Jiakai Xu <xujiakai2025@iscas.ac.cn>,
+	Jiakai Xu <jiakaiPeanut@gmail.com>
+Subject: [PATCH] RISC-V: KVM: Validate SBI STA shmem alignment in kvm_sbi_ext_sta_set_reg
+Date: Sat, 24 Jan 2026 02:20:42 +0000
+Message-Id: <20260124022042.2168136-1-xujiakai2025@iscas.ac.cn>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260120_062308_292181_82B0B495 
-X-CRM114-Status: GOOD (  13.58  )
+X-CRM114-CacheID: sfid-20260123_182055_140371_1696CB06 
+X-CRM114-Status: GOOD (  16.68  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -79,65 +106,95 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
->> From: Fangyu Yu <fangyu.yu@linux.alibaba.com>
->>
->> This capability allows userspace to explicitly select the HGATP mode
->> for the VM. The selected mode must be less than or equal to the max
->> HGATP mode supported by the hardware. This capability must be enabled
->> before creating any vCPUs, and can only be set once per VM.
->>
->> Signed-off-by: Fangyu Yu <fangyu.yu@linux.alibaba.com>
->> ---
->> diff --git a/arch/riscv/kvm/vm.c b/arch/riscv/kvm/vm.c
->> @@ -212,12 +219,27 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
->>  
->>  int kvm_vm_ioctl_enable_cap(struct kvm *kvm, struct kvm_enable_cap *cap)
->>  {
->> +	if (cap->flags)
->> +		return -EINVAL;
->>  	switch (cap->cap) {
->> +	case KVM_CAP_RISCV_SET_HGATP_MODE:
->> +#ifdef CONFIG_64BIT
->> +		if (cap->args[0] < HGATP_MODE_SV39X4 ||
->> +			cap->args[0] > kvm_riscv_gstage_max_mode)
->> +			return -EINVAL;
->> +		if (kvm->arch.gstage_mode_initialized)
->> +			return 0;
->
->"must be enabled before creating any vCPUs" check is missing.
+The RISC-V SBI Steal-Time Accounting (STA) extension requires the shared
+memory physical address to be 64-byte aligned, and the shared memory size
+to be at least 64 bytes.
 
-Agreed, I'll add the missing "must be enabled before creating any vCPUs" check by
-rejecting the capability once kvm->created_vcpus is non-zero.
+KVM exposes the SBI STA shared memory configuration to userspace via
+KVM_SET_ONE_REG. However, the current implementation of
+kvm_sbi_ext_sta_set_reg() does not validate the alignment of the configured
+shared memory address. As a result, userspace can install a misaligned
+shared memory address that violates the SBI specification.
 
->
->> +		kvm->arch.gstage_mode_initialized = true;
->> +		kvm->arch.kvm_riscv_gstage_mode = cap->args[0];
->> +		kvm->arch.kvm_riscv_gstage_pgd_levels = 3 +
->> +		    kvm->arch.kvm_riscv_gstage_mode - HGATP_MODE_SV39X4;
->
->Even before creating VCPUs, I don't see enough protections to make this
->work.
->
->Userspace can only provide a hint about the physical address space size
->before any other KVM code could have acted on the information.
->It would be a serious issue if some code would operate on hgatp as if it
->were X and others as Y.
->
->The simplest solution would be to ensure that the CAP_SET VM ioctl can
->only be executed before any other IOCTL, but a change in generic code to
->achieve it would be frowned upon...
->I would recommend looking at kvm_are_all_memslots_empty() first, as it's
->quite likely that it could be sufficient for the purposes of changing
->hgatp.
+Such an invalid configuration may later reach runtime code paths that
+assume a valid and properly aligned shared memory region. In particular,
+KVM_RUN can trigger the following WARN_ON in
+kvm_riscv_vcpu_record_steal_time():
 
-Using kvm_are_all_memslots_empty might be a good idea, and I will add a
-check for this function in the v2.
+  WARNING: arch/riscv/kvm/vcpu_sbi_sta.c:49 at
+  kvm_riscv_vcpu_record_steal_time
 
->
->Thanks.
+WARN_ON paths are not expected to be reachable during normal runtime
+execution, and may result in a kernel panic when panic_on_warn is enabled.
 
-Thanks,
-Fangyu
+Fix this by validating the shared memory alignment at the
+KVM_SET_ONE_REG boundary and rejecting misaligned configurations with
+-EINVAL. The validation is performed on a temporary computed address and
+only committed to vcpu->arch.sta.shmem once it is known to be valid, 
+similar to the existing logic in kvm_sbi_sta_steal_time_set_shmem() and
+kvm_sbi_ext_sta_handler().
+
+With this change, invalid userspace state is rejected early and cannot
+reach runtime code paths that rely on the SBI specification invariants.
+
+A reproducer triggering the WARN_ON and the complete kernel log are
+available at: https://github.com/j1akai/temp/tree/main/20260124
+
+Signed-off-by: Jiakai Xu <xujiakai2025@iscas.ac.cn>
+Signed-off-by: Jiakai Xu <jiakaiPeanut@gmail.com>
+---
+ arch/riscv/kvm/vcpu_sbi_sta.c | 15 ++++++++++-----
+ 1 file changed, 10 insertions(+), 5 deletions(-)
+
+diff --git a/arch/riscv/kvm/vcpu_sbi_sta.c b/arch/riscv/kvm/vcpu_sbi_sta.c
+index afa0545c3bcfc..7dfe671c42eaa 100644
+--- a/arch/riscv/kvm/vcpu_sbi_sta.c
++++ b/arch/riscv/kvm/vcpu_sbi_sta.c
+@@ -186,23 +186,25 @@ static int kvm_sbi_ext_sta_set_reg(struct kvm_vcpu *vcpu, unsigned long reg_num,
+ 		return -EINVAL;
+ 	value = *(const unsigned long *)reg_val;
+ 
++	gpa_t new_shmem = vcpu->arch.sta.shmem;
++
+ 	switch (reg_num) {
+ 	case KVM_REG_RISCV_SBI_STA_REG(shmem_lo):
+ 		if (IS_ENABLED(CONFIG_32BIT)) {
+ 			gpa_t hi = upper_32_bits(vcpu->arch.sta.shmem);
+ 
+-			vcpu->arch.sta.shmem = value;
+-			vcpu->arch.sta.shmem |= hi << 32;
++			new_shmem = value;
++			new_shmem |= hi << 32;
+ 		} else {
+-			vcpu->arch.sta.shmem = value;
++			new_shmem = value;
+ 		}
+ 		break;
+ 	case KVM_REG_RISCV_SBI_STA_REG(shmem_hi):
+ 		if (IS_ENABLED(CONFIG_32BIT)) {
+ 			gpa_t lo = lower_32_bits(vcpu->arch.sta.shmem);
+ 
+-			vcpu->arch.sta.shmem = ((gpa_t)value << 32);
+-			vcpu->arch.sta.shmem |= lo;
++			new_shmem = ((gpa_t)value << 32);
++			new_shmem |= lo;
+ 		} else if (value != 0) {
+ 			return -EINVAL;
+ 		}
+@@ -210,7 +212,10 @@ static int kvm_sbi_ext_sta_set_reg(struct kvm_vcpu *vcpu, unsigned long reg_num,
+ 	default:
+ 		return -ENOENT;
+ 	}
++	if (new_shmem && !IS_ALIGNED(new_shmem, 64))
++		return -EINVAL;
+ 
++	vcpu->arch.sta.shmem = new_shmem;
+ 	return 0;
+ }
+ 
+-- 
+2.34.1
+
 
 -- 
 kvm-riscv mailing list
