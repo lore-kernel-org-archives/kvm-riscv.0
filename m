@@ -4,70 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41279E63CA0
-	for <kvm-riscv@archiver.kernel.org>; Sun, 25 Jan 2026 11:58:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C25C5E63CA5
+	for <kvm-riscv@archiver.kernel.org>; Sun, 25 Jan 2026 14:33:57 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-Id:Date:Subject:Cc
 	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
 	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=opBuTtspaBeVBOfWGBpmXgTX3EUUMbVQ8n7oKkqBHBk=; b=jW88Su5ldF4Cpn
-	t8xEptShfu58aQut3WzVzNVY5mHTl9CQjrxQF8eY7CRIVUhLEdbG5n7xoHWr73DMihsjbnXu33b8t
-	mX6F5+fCSb78kg2ytVyusYcK6MRtj5CqtFNx0qjBg++Pzk2MRCSxv0XwY5r0fx8Yrmyew37OAaXVO
-	onW6WJQtLmC29O2xBC82uhF2XvndZ9l0egAF5hDhijtWfD0ENxJMmQiy71WaTQq7dh3eVM0GkX6r6
-	lX/nQkUqw0WIbi+cAHTnC1Dl30fO2kKBSQoa/sc9TAYazSgOPpJpHF4dQtT07uvijPuPSc5tSqNdr
-	3WDktONigZgo0/p+3r+w==;
+	List-Owner; bh=9+cYsgX3uJ+sQCXXOc6EmTigkjzk72HyFtUMWdv7My0=; b=cN90fP/9SlDuP1
+	QSzXCrt9yCLxW2SGbXFfkvnXpuibNB82jkfZ+DbWvGvfONPp5sgOOyLMIUCIuSJgVikROlDeaMLLF
+	Eeauwy1Gxq38DmdV8xelg4j7Ug2X3b9SDmVzn5gHIhpXQPcPbfURqwUIfUgbtmIUC8m21U7Ui+yHm
+	QNnthU94T7KoyeMjDCDlRLHq3XmyiukToisjsVNCbeC7LOLm2YYisD8F413R2fWSbt4pVHBf9zIsp
+	fSNHiEgb01QbJOZ2XWeQwQoaWGVSnEShxO1sSV9ySUZDcc5IFQh6QtS4amq2fV7ZOwQ0BkK5Nao63
+	cIlx/HFJMgQEPRnw93OQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vjykr-0000000B914-35mo;
-	Sun, 25 Jan 2026 11:58:09 +0000
-Received: from mail-pl1-x636.google.com ([2607:f8b0:4864:20::636])
+	id 1vk1Bc-0000000BF4e-2Bmo;
+	Sun, 25 Jan 2026 14:33:56 +0000
+Received: from mail-pj1-x1032.google.com ([2607:f8b0:4864:20::1032])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vjyko-0000000B90K-3zeN
+	id 1vk1BZ-0000000BF3p-14nX
 	for kvm-riscv@lists.infradead.org;
-	Sun, 25 Jan 2026 11:58:08 +0000
-Received: by mail-pl1-x636.google.com with SMTP id d9443c01a7336-2a7786d7895so23525565ad.1
-        for <kvm-riscv@lists.infradead.org>; Sun, 25 Jan 2026 03:58:06 -0800 (PST)
+	Sun, 25 Jan 2026 14:33:55 +0000
+Received: by mail-pj1-x1032.google.com with SMTP id 98e67ed59e1d1-352f60d6c2fso2530369a91.1
+        for <kvm-riscv@lists.infradead.org>; Sun, 25 Jan 2026 06:33:52 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1769342286; x=1769947086; darn=lists.infradead.org;
+        d=gmail.com; s=20230601; t=1769351632; x=1769956432; darn=lists.infradead.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=zGmrDbJpv9Mnf4OlN/zRFu5G/nsgDAKHAOEKObolTbA=;
-        b=jijKmZ8jE6jKNhflj3M2bYvBzJKm6wr1is16OSeOVByFFn8owX8SnMkCLmQ0L8waWz
-         miskhfB8KKwaXHGIhJQ61RvzwZrN1R1FjQfYmNKdBmbllsrcmB8+5XHea0OJI3GDWMjz
-         6ImTio9sZBpHBsgD/aeOlKBEI1SMC+5fuk8cGGi05Iryel1S0bt7vWOmvEAGNEWr0ECq
-         aOpm0mWV7d4IX4bCUOhhwGLKrN8oX4NqTG/sRXJPu/l6QuOL/yF8OQZk6+6B49t36HYw
-         sCQAUpJycnT9pyXkJs/YrT9eK4Mavqyd1qkfwQDPk1dM59zUDk9h7jcXsyzKKd5MgpvQ
-         t/wQ==
+        bh=9vrpTgp19j2v2S0F0+kVV2ZQQrhahMGVY6XxldYPxCk=;
+        b=M36DMzpgS8VMhkmkGE+oJO1r4hWtRJlehJLY3ayv5cEOo0TbGoC6d6csrqjNxVb8qt
+         BJphDfTi9yQu3VFJW/munZgyJR6LHOiqSDS3y50qZAF/tzsxN/XkgEBDtSoOy2MJHblH
+         8iLiRwhmrIxVMV8wmEKpBdCESDkL6tKYazZtsFZmbZOFMJgykCtOAOSyFqdYSh50js8U
+         xRqYyhlMRJqA4cpbbdi01tA41ZJR5UgYacPJj6Rkai82U/pw93lh7e5Gz8gdbrNtzjFf
+         cvP5sIInVR11s8cK11SXzXVZ/sYuKs9FFc1T2yEumVS5fO2ipOovAZdtAQPJN+tasVbQ
+         WAuw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1769342286; x=1769947086;
+        d=1e100.net; s=20230601; t=1769351632; x=1769956432;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=zGmrDbJpv9Mnf4OlN/zRFu5G/nsgDAKHAOEKObolTbA=;
-        b=Mwwho0KouwvikLx+rPo+5YHTBt279nxaEQIrZ98elo7fS5FoxYY12VJYuMK3DLFeXD
-         omNntpDHkFLuHlnDy24bSLy4lnxNERW6FH+Bj6lKTuNlQC9m8GB1kpixtmh3gDG+Dhp9
-         eZ3HtcmESU825HfGhjkXHRVusZ4PfBtqNMl5/gEZXZIUdkY6+R0cIITu2GkFe06TbEcl
-         jgBuknze9wfomYaROOfoeFliAy/mZl8WIgjfnAdjpGQQTS3K8t5twO84wI/ImuHzJrZt
-         rWXjnsf85uSrCNRrZzLbONNhFMt7C8uXQxZ0qTC6EMYgJtP9zv5zXZstYQVQ4IIlvVEX
-         Axvg==
-X-Forwarded-Encrypted: i=1; AJvYcCUTCn3Hx9CoKbZwEQEG1ZP6jZ2fNeHDfNfsiMH3p9uoYh+VzAclhwU7ouxEMSZJtq60K8GZJkc5K9s=@lists.infradead.org
-X-Gm-Message-State: AOJu0YzsjnY87AE6aKoKLZS4iUwQWTqWCuNtKv2OoeId9Bli7jjvUOOJ
-	ZXy0NUuJyConnVXDGShE1irZHkXO1/VqjbfabuJop9w85YGJZCXd8C7q
-X-Gm-Gg: AZuq6aLeaqGvvzi96esoC7MyjqBWAf0g3UbJOMRSDs0pRcjLvmul+YOmEHyHLCgij2d
-	62SDwIJ9bGKH6f6xhr6aDF3OZmBv9RIn1PIbq30wm62sq+dYJVHdnBdOgYKg1rE8eXQX5Ovv98z
-	DUiXLdsfGTT3P8/GLIUJ8NnEapxwbxsvgZN15J//dy+3cgzNnArlVZWbFG0HS1iNJm8if7Ns6yg
-	f8B49YZ/hA+MlN+O4K62VAUh11a1K+Ft7cmbXuYsG6DuWxBDAK+ov7S9e7gtvydylfNv9zbBEPh
-	mBCAYYWkyVHqgzh8OjsW7HikRjnXsvjLRW7rJsa4XSsGdxiZstFILQJUPh3eyg/C3xPwjfMHtx3
-	lzKlay+IuyYky1KL942BXe2ZGjWnX9zotNDRj9oAJ8UoMcVRyV+S8YjB0wVPTYrsh3KdY5j2+C3
-	ZcFFnlD949trT8BYBaR6OKjhh+SPtom2XWcbB2bJGSvSNzXWP9nAE=
-X-Received: by 2002:a17:902:ce8e:b0:295:9e4e:4090 with SMTP id d9443c01a7336-2a845307823mr12548625ad.52.1769342285789;
-        Sun, 25 Jan 2026 03:58:05 -0800 (PST)
+        bh=9vrpTgp19j2v2S0F0+kVV2ZQQrhahMGVY6XxldYPxCk=;
+        b=CkiwuJ6Qf5ctjQMaBXScv+EsdLoBllh048LYKRp65pBhQU92pyDw5p69z0Nywqe6uD
+         gqS+UTVtw7aL1iYvrBgNF5ynvWD6XL6otrznS+9J+RG/vP3uxat1+PtvFrlBjiFy1dg9
+         m6vQDtcqMYwQLMhyQYPFGyd5SDlf8Wf75fUAqxFGhV4eilVhHnTrA/WuAChD3yoKtNVi
+         QVsN8crnkHHvz9BuPP0eBy4xtWG6hnn3/hxrMnqwYi2y9eN4xWfi6581OscuQXua3/0J
+         RsYrAr4U0lmM5ZaDN1Po8tdLboZdua2m+R8DVzRqEuOPV5P9SAGdjnnZK9BKN3ADMfjw
+         D6qQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUeThJstrI3Fa1YGn0IgZtQErKYJamBEQCoxPyVjJv5zvNgkn0eu3R73S2Y2xdFUxOsweRL0hQS1WE=@lists.infradead.org
+X-Gm-Message-State: AOJu0YyB81EB2pUeEz0XoXfw/wT4LG23ZIO75U9xQO+X9mEUlYMj9KlF
+	hvQSOc2tn0Dk0w+OFXsZu9q0RVOtijs7YADdFykoT4X0ZSaYs/fLJ7ZMuhWn1MSRlzk=
+X-Gm-Gg: AZuq6aL/UV7TTaPi7bWPlEOKIAGuy94jkKv3Tqse7+iGR6ZY0CyvgwdnSoDjymaVv7L
+	ReZT307IBmWRLIOaHJNc4vAlQtaRP1OkygTqy4/+gIZX9l3OHOz2BSJRpAvi3sNdXJBBJghqxp0
+	HSFD++Iul361jjlEYC+pF2jt8axMcdh26PXpqyS0ztPC0Pl8b/0Q+PULOFMKZiRFyODSfVtiK2s
+	/saFtm9RdqDNbeBvQ4x4c2fjAQuDEiE8lR2vCpK25E8BI9yXY+bpt2oPTu89ofUPfldZEEjwW7I
+	yePIWSAwZB2NP+eAuVff06NslU8QOIzKp6n3eZ9PsRGAqdzvJzqOCNI9eVVhWIZZapS4M7GWaYv
+	RjTaeQL5LpwVbVADrfzvD0fSv0N82gGKBylFTx80J/TvDQE2PWdr0eNAOeatIX8owEi0AyJR+YW
+	sJGdKzRoCcehNxRGacTuyjDb7918/RiO9oUJaTSl+ZQ0M4YYecwks=
+X-Received: by 2002:a17:90b:3d12:b0:340:b908:9665 with SMTP id 98e67ed59e1d1-353c418d276mr1450186a91.37.1769351631814;
+        Sun, 25 Jan 2026 06:33:51 -0800 (PST)
 Received: from fric.. ([210.73.43.101])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2a802daa675sm66792385ad.15.2026.01.25.03.58.02
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-353354a6b06sm9351073a91.10.2026.01.25.06.33.48
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 25 Jan 2026 03:58:05 -0800 (PST)
+        Sun, 25 Jan 2026 06:33:51 -0800 (PST)
 From: Jiakai Xu <jiakaipeanut@gmail.com>
 X-Google-Original-From: Jiakai Xu <xujiakai2025@iscas.ac.cn>
 To: linux-kernel@vger.kernel.org,
@@ -81,15 +81,15 @@ Cc: Alexandre Ghiti <alex@ghiti.fr>,
 	Atish Patra <atish.patra@linux.dev>,
 	Anup Patel <anup@brainfault.org>,
 	Jiakai Xu <xujiakai2025@iscas.ac.cn>,
-	Jiakai Xu <jiakaiPeanut@gamil.com>
-Subject: [PATCH v3] RISC-V: KVM: Fix null pointer dereference in kvm_riscv_aia_imsic_has_attr()
-Date: Sun, 25 Jan 2026 11:57:58 +0000
-Message-Id: <20260125115758.2486687-1-xujiakai2025@iscas.ac.cn>
+	Jiakai Xu <jiakaiPeanut@gmail.com>
+Subject: [PATCH v4] RISC-V: KVM: Fix null pointer dereference in kvm_riscv_aia_imsic_has_attr()
+Date: Sun, 25 Jan 2026 14:33:44 +0000
+Message-Id: <20260125143344.2515451-1-xujiakai2025@iscas.ac.cn>
 X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260125_035807_036257_F2A32DAE 
-X-CRM114-Status: GOOD (  12.58  )
+X-CRM114-CacheID: sfid-20260125_063353_301196_4B201902 
+X-CRM114-Status: GOOD (  12.78  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -135,8 +135,9 @@ the null pointer dereference.
 
 Fixes: 5463091a51cf ("RISC-V: KVM: Expose IMSIC registers as attributes of AIA irqchip")
 Signed-off-by: Jiakai Xu <xujiakai2025@iscas.ac.cn>
-Signed-off-by: Jiakai Xu <jiakaiPeanut@gamil.com>
+Signed-off-by: Jiakai Xu <jiakaiPeanut@gmail.com>
 ---
+V3 -> V4: Fix typo in Signed-off-by email address.
 V2 -> V3: Moved isel assignment after imsic_state NULL check.
           Placed patch version history after '---' separator.
           Added parentheses to function name in subject.
