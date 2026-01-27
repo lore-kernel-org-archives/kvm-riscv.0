@@ -4,70 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EFEC2D2594B
-	for <kvm-riscv@archiver.kernel.org>; Tue, 27 Jan 2026 07:22:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D7A73CA6C9D
+	for <kvm-riscv@archiver.kernel.org>; Tue, 27 Jan 2026 08:43:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-Id:Date:Subject:Cc
 	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
 	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=5dyEiMoIDHDaWf4k66pRVxcCKgKqLwPLIDtJt6Qyy0I=; b=baZpnDVDKQkxMp
-	c5fGpOJavL4fM5vfIeF9Mf9+8c8A5tRoXeckR8GUeiNQr50vpkDKNmJYQPnCz3l7hvgrAJWOX3HwA
-	4wlWTeEMYXDEVL45dPd7kfx2HHOgLioFlPNhUG4S7OmiucyoPHML2cm/Q1XMoaS7vj5HOC7SM8J+l
-	51J3l9E3BCIf9vzxrv64/4AnZQAk5nqTEvopmHUYuCQibocMyPBSoP28lV/mZnrcPOAl+FUZgvzRW
-	e7cfaEBrzfMAe+gqtTcUL3o4rKO0c9BkDhLc28IIuING89Kq5vRPenn0jZaa1Q1LXuj1qxbTC/YCY
-	xJsIX/hjl0ObGWDjwGcg==;
+	List-Owner; bh=qRj2F54ZAhAVe0iNRcAIjXJ0hNaqg4cssJ6eejDPkMc=; b=Mt4C9V0kdRxtdu
+	oUIdkEz2lvdEOczPNtmET0o9lda844qKSZbELJCQoIjER+WmrLxl5wk6FKO5UOuz9LSxynE9sEeOG
+	3swIUauZ2V9TjpcJkQAbQTKy+l4IWI+ZD7HWBU0Pe7MlHn7hueZlmsJ9DR7pkVM//cKUbPjqzJxb4
+	6YsIgYAN7DDed/gRCNKb3elpYr6bW0WThAm3dWTkL++Go+fgAeJB+k8PLzHvPRjrUM+VZOZtmPBiQ
+	KduMrD41SSk3P5+Jtr/pFiwQvtKpV3JUEq5AZcgS3ZzhM54CXfg8iToeD6/Sc/CSNDPK6VIxNiAsQ
+	MiNI90CirhEz5nXl5qZQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vkdPD-0000000DluA-2d86;
-	Tue, 27 Jan 2026 07:22:31 +0000
-Received: from mail-pg1-x531.google.com ([2607:f8b0:4864:20::531])
+	id 1vkeg0-0000000Dqzz-14Xj;
+	Tue, 27 Jan 2026 08:43:56 +0000
+Received: from mail-pl1-x629.google.com ([2607:f8b0:4864:20::629])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vkdPA-0000000DltE-3ajF
+	id 1vkefx-0000000DqzH-3guA
 	for kvm-riscv@lists.infradead.org;
-	Tue, 27 Jan 2026 07:22:29 +0000
-Received: by mail-pg1-x531.google.com with SMTP id 41be03b00d2f7-c0ec27cad8cso2052455a12.1
-        for <kvm-riscv@lists.infradead.org>; Mon, 26 Jan 2026 23:22:27 -0800 (PST)
+	Tue, 27 Jan 2026 08:43:54 +0000
+Received: by mail-pl1-x629.google.com with SMTP id d9443c01a7336-2a7bced39cfso59657195ad.1
+        for <kvm-riscv@lists.infradead.org>; Tue, 27 Jan 2026 00:43:53 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1769498547; x=1770103347; darn=lists.infradead.org;
+        d=gmail.com; s=20230601; t=1769503433; x=1770108233; darn=lists.infradead.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=WUonCIx+ZXd3QT2hTb6eW9uVCVHoiU5hLnPWwgxhDNA=;
-        b=hgdV6424zzBlxon1woUjyZKGO1hjS+l9Ef52dfB7D+kebBXB65k56VsBuYuqQDnqTx
-         389zrHdzITJMSx8ZoBPUBGH3aq36jNkch8DSmjqdB79zilt7Z5tmTiFmJdiCdKhY1xZJ
-         WU1y3k9huNztAHKv4KH9doW8ISkG4EGtJCORN3RF2u0YGlIFi0bvPPgouMTzTwByDJwj
-         njVl3fgCnsr9d1N8+/0yNheaB0HV4zuA5OMH4MNbrdsP1k8YWluSm5ulNqMSPyqpSSgC
-         1JGFRd3dMm4WBxIl8DiJvR8FmU8E5yoOIgwBvgcozUazOYyzB0ECv4Xsg/CDv7wttdLi
-         eukQ==
+        bh=IsvMU6ygmVPOfBtUBm6r4nNfbsjDFVMoFcdeUelLuBA=;
+        b=aoFH5Hi0NoDFrFQqg7EjvAy1AuipN/i0ocEGAmwn5yG4GFQ+fxarVo6LMh9aceLhd1
+         999+fYlfTMhpWGBeGaDcMEMmKc1YyXXR/rV/dZ+ROBJKwW5UUVeWmcR7ZJ1N1NFU6X7Q
+         lIE66SNeistSnUHAhzP9VjVwcYtKecz1p5SQP8WSwpUvBZ3ulB+RGp0LxMuxiMmYaGN6
+         w27N22mwLEpQcENh4a8kivfifvsm0skK2VpCJ4UvWtzMlX0ciXfMI36abtn2zL1LwClg
+         hetyDMxyWz/6E1T4m0JNEa39r6WOYpt2iGePQc8W+VyT859H9L/6VP7kh7YJBTRbm0dt
+         6U6A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1769498547; x=1770103347;
+        d=1e100.net; s=20230601; t=1769503433; x=1770108233;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=WUonCIx+ZXd3QT2hTb6eW9uVCVHoiU5hLnPWwgxhDNA=;
-        b=hVpDQT0Xggtn6Okdx97BRRA70eG9VrNlzFD5eg9XKvaN3Wkuu5c4rAUrB/D/RI5QBU
-         nfg1jmRW1AX2i4NSTTuJW+UYnkH7zJYPd5CuG8jrCi4IvZIOkUmhMUW2VgQMJKA+CrF7
-         2f2ifIPzejjoiEvCT17Ls/DARge1Nf9fFk3Kky4VqTYqPfJzynWDKWZQesgMGH7f3aQC
-         hMmjnbhNzhtmOomKUkOZHApP82RWn5Am7cLLmBTS8igtAekkI5UNCakjwIylNdTm59A+
-         nZaer1Nwtgl+hqSc2P7KMo2ruh4Q1clLISUzoHm094QDftEZk4XGXGkZEJ2rmVE3VuHV
-         LCmQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUMfh3GaQhdBq6AnyUu+oSMd8kFG7kkuOLDA/PAh4NL6a7SJESznWAwrY8jJn3jbiiqMkbcfYqzDW4=@lists.infradead.org
-X-Gm-Message-State: AOJu0YwxRTiASipEw3m3AeZdHseCCsH8RSBLnghXrHF2TosNNmOHkoU7
-	MQ+bONfTr5M6kEn1ixwVpNmfW1D3rFm+VA/6rFUVDAgfMbepkVicPrYR
-X-Gm-Gg: AZuq6aLQYscZngORdNLZFLaojQ1Y8dj+zVMuih4//daOj27DCp6nOoMbjYO7wEK/rFy
-	S5Lx6ivoX9bVYU2BvZYJHue3hD3H0ijiHwGNsda28wiQmrmkw4PZfcoCwIR6mZRavyEsWsORere
-	9AHNq/GS6EXdLvdgWISCADDOcUohcsclLOuQnLthPhuMvxgcX81g+/irCuWAYXVB3DVfeSWrT6M
-	xwCOCjF3FYgORcP7ywMn2GxnEZh8Y8z2vGjiQxe3aySrooRbW2piZ85Li1Ncltmz4M79j8yE9eW
-	CiNcGf8NpR4Bg/lwhBSK7T5O/JpKfWiYAyKlEA8fDDyTTvoF8LzajjNDoown8OWumK0S202Df+e
-	Z7+lHlaqd+7qb8stJPj2JoZfN147LGUAmH7oExt96iC4Tr4LJz6aRgBOEo+2yFMnvQP7QIF/AAc
-	ICQu/FaCVuSyioPDu5C/gxEhQdRMCiwWXShq3PAonf6ZE/IPvWILE=
-X-Received: by 2002:a17:903:2344:b0:2a0:b461:c883 with SMTP id d9443c01a7336-2a870dd56e0mr9555815ad.45.1769498547192;
-        Mon, 26 Jan 2026 23:22:27 -0800 (PST)
+        bh=IsvMU6ygmVPOfBtUBm6r4nNfbsjDFVMoFcdeUelLuBA=;
+        b=F2Rf6ldMt9n77tyB6DjuyX3VTQhHV0JLNTNvE1h2MCHfeU2TdEav5kEsl3nlhjTv09
+         mXKN+RaaNzjykZuKNFnofHco3Vr+A2zBZLXC4otrBqdrVB1XWDqqWPSNzGyjkoTYJEws
+         SWpKX2O00ALKnXYI2SsMVvlvvAYJJxMOiskI+4b+ydaA0kbc1DgacbeKcITlmEIB+O/q
+         P4Gy8xV8diDfK9kz5rfL4/JgFujbm8fpP4b97iZUiF2wMQDMWkK9aaoZM8XdDo7taSKz
+         N+qN9I3+JPSD6gnoXOCKrOaS7ZoBm70TAjuQnZ1Z3lxyKQJbEWddhGclwNhIBh2QnidX
+         ELZA==
+X-Forwarded-Encrypted: i=1; AJvYcCVrK11JeUbekiReXRmjIG/380cvWXsrpOnEsGDxJeVP+FSxANMOHu4iFnWqSWK4KiSuw3LL2cZblMo=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yw7P2VY/WliATyB/TUSgsHW1dxGZ4sZW9PxKOHIiqiy8mJXXbAO
+	9Aoi8Pu+Aq1Q60vAkcDgTWzhsMx9+7AocQHCED2xwLlp1wXNLG67ivjR
+X-Gm-Gg: AZuq6aJH88vMuLdq4prQ8SZIyoBe3qPYTowBjl4LVIdwFoI3cy4Zsw7UQ4TuGuEurp/
+	OKc0rcPipgmHuvvsk0evbi6B+UpOURDc5Gz4kaVcT9mXHUzaRCYsNR8+tQE74qZseAmJmSufM95
+	Q4HtS4DxkDtcppBjBSikIPbK63P9NoFHF2sCr1X5YV17oFw0dO3GWnJJEcZV4DcIC5EQ7qMZlTt
+	MTmYvoa34cixfE+/HHoZ0ov0GDQtkFK1tnCseLQKf4MtDquNGVuaGwjx3DnHcYdM9u6yafZgZXf
+	KtnMZ6+wSfHgxLFI8YlAlNG4gydne3HIkM6ciCQ9SAH+hhjbgJ28+oPrqj9hkzFMON3QgjYCzKD
+	/yW7kdCsus6+eXdRoBM/J4aXUAFwh0spaEeGmXjH3PlOYkeGYRmiUkpBUclpjPYt9VQH1EhfxGz
+	jQwHqJg7upwuj4FXuNYl/ZyTOYH9rWWsMzdwqBVPAy
+X-Received: by 2002:a17:903:2c6:b0:24b:270e:56c7 with SMTP id d9443c01a7336-2a870d7a907mr11402265ad.7.1769503432479;
+        Tue, 27 Jan 2026 00:43:52 -0800 (PST)
 Received: from fric.. ([210.73.43.101])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2a87842538bsm2505685ad.60.2026.01.26.23.22.24
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2a802de5cf8sm108838235ad.42.2026.01.27.00.43.49
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 26 Jan 2026 23:22:26 -0800 (PST)
+        Tue, 27 Jan 2026 00:43:52 -0800 (PST)
 From: Jiakai Xu <jiakaipeanut@gmail.com>
 X-Google-Original-From: Jiakai Xu <xujiakai2025@iscas.ac.cn>
 To: linux-kernel@vger.kernel.org,
@@ -82,14 +82,14 @@ Cc: Anup Patel <anup@brainfault.org>,
 	Alexandre Ghiti <alex@ghiti.fr>,
 	Jiakai Xu <xujiakai2025@iscas.ac.cn>,
 	Jiakai Xu <jiakaiPeanut@gmail.com>
-Subject: [PATCH] RISC-V: KVM: Fix null pointer dereference in kvm_riscv_aia_imsic_rw_attr()
-Date: Tue, 27 Jan 2026 07:22:19 +0000
-Message-Id: <20260127072219.3366607-1-xujiakai2025@iscas.ac.cn>
+Subject: [PATCH] RISC-V: KVM: Skip IMSIC update if vCPU IMSIC state is not initialized
+Date: Tue, 27 Jan 2026 08:43:13 +0000
+Message-Id: <20260127084313.3496485-1-xujiakai2025@iscas.ac.cn>
 X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260126_232228_926096_D5AEE451 
-X-CRM114-Status: GOOD (  12.60  )
+X-CRM114-CacheID: sfid-20260127_004353_947170_012DE4A1 
+X-CRM114-Status: GOOD (  11.64  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -106,48 +106,50 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Add a null pointer check for imsic_state before dereferencing it in
-kvm_riscv_aia_imsic_rw_attr(). While the function checks that the
-vcpu exists, it doesn't verify that the vcpu's imsic_state has been
-initialized, leading to a null pointer dereference when accessed.
+kvm_riscv_vcpu_aia_imsic_update() assumes that the vCPU IMSIC state has
+already been initialized and unconditionally accesses imsic->vsfile_lock.
+However, in fuzzed ioctl sequences, the AIA device may be initialized at
+the VM level while the per-vCPU IMSIC state is still NULL.
+
+This leads to invalid access when entering the vCPU run loop before
+IMSIC initialization has completed.
 
 The crash manifests as:
   Unable to handle kernel paging request at virtual address
   dfffffff00000006
   ...
-  kvm_riscv_aia_imsic_rw_attr+0x2d8/0x854 arch/riscv/kvm/aia_imsic.c:958
-  aia_set_attr+0x2ee/0x1726 arch/riscv/kvm/aia_device.c:354
-  kvm_device_ioctl_attr virt/kvm/kvm_main.c:4744 [inline]
-  kvm_device_ioctl+0x296/0x374 virt/kvm/kvm_main.c:4761
-  vfs_ioctl fs/ioctl.c:51 [inline]
+  kvm_riscv_vcpu_aia_imsic_update arch/riscv/kvm/aia_imsic.c:801
+  kvm_riscv_vcpu_aia_update arch/riscv/kvm/aia_device.c:493
+  kvm_arch_vcpu_ioctl_run arch/riscv/kvm/vcpu.c:927
   ...
 
-The fix adds a check to return -ENODEV if imsic_state is NULL and moves 
-isel assignment after imsic_state NULL check.
+Add a guard to skip the IMSIC update path when imsic_state is NULL. This
+allows the vCPU run loop to continue safely.
 
-Fixes: 5463091a51cfaa ("RISC-V: KVM: Expose IMSIC registers as attributes of AIA irqchip")
+This issue was discovered during fuzzing of RISC-V KVM code.
+
+Fixes: db8b7e97d6137a ("RISC-V: KVM: Add in-kernel virtualization of AIA IMSIC")
 Signed-off-by: Jiakai Xu <xujiakai2025@iscas.ac.cn>
 Signed-off-by: Jiakai Xu <jiakaiPeanut@gmail.com>
 ---
- arch/riscv/kvm/aia_imsic.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ arch/riscv/kvm/aia_imsic.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
 diff --git a/arch/riscv/kvm/aia_imsic.c b/arch/riscv/kvm/aia_imsic.c
-index e597e86491c3b..bd7081e70036d 100644
+index e597e86491c3b..a7d387e280d49 100644
 --- a/arch/riscv/kvm/aia_imsic.c
 +++ b/arch/riscv/kvm/aia_imsic.c
-@@ -952,8 +952,10 @@ int kvm_riscv_aia_imsic_rw_attr(struct kvm *kvm, unsigned long type,
- 	if (!vcpu)
- 		return -ENODEV;
+@@ -797,6 +797,10 @@ int kvm_riscv_vcpu_aia_imsic_update(struct kvm_vcpu *vcpu)
+ 	if (kvm->arch.aia.mode == KVM_DEV_RISCV_AIA_MODE_EMUL)
+ 		return 1;
  
--	isel = KVM_DEV_RISCV_AIA_IMSIC_GET_ISEL(type);
- 	imsic = vcpu->arch.aia_context.imsic_state;
++	/* IMSIC vCPU state may not be initialized yet */
 +	if (!imsic)
-+		return -ENODEV;
-+	isel = KVM_DEV_RISCV_AIA_IMSIC_GET_ISEL(type);
- 
++		return 1;
++
+ 	/* Read old IMSIC VS-file details */
  	read_lock_irqsave(&imsic->vsfile_lock, flags);
- 
+ 	old_vsfile_hgei = imsic->vsfile_hgei;
 -- 
 2.34.1
 
