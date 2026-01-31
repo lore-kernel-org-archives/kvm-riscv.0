@@ -4,54 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6CCC6D46C1D
-	for <kvm-riscv@archiver.kernel.org>; Sat, 31 Jan 2026 00:40:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C6469E6BF3C
+	for <kvm-riscv@archiver.kernel.org>; Sat, 31 Jan 2026 02:58:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-Id:Date:Subject:Cc
 	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
 	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=PdC3obpIL6r0g4c4mR0o5zdzllwxfTlrsOB5dSfXAIM=; b=qEVZ/JmRoi5ElW
-	PtVYqD71Re/lEhNYqWMXNUYZzxfXROgAlbmGvHj8jfWD7kC0DtCiU9JZ+MLBFmYVdb9F6jnwUcf0V
-	zg74YyvJMVvIKc8t0jJXx+gyPwSuh1vc327oqiumetXAY9ho5XhnJjTL2S9K3IAfrb9AX5pQDV+Ok
-	BE9kglRC0W8f5QllG20A0U1YxjJKautxuqObUeB/Yk/+2At0No2KsGrkPuM4mGJhLYTWBiIl8p0Pl
-	jN4R17LQ79btxlTpXNx0nRNbhlugxpbGyHpsSmjV9CMk+nmjM5uBH6pWoGpNf7VWyqVFq/ujwwigp
-	xzuW/Te0oXiM101Go17g==;
+	List-Owner; bh=HbsB6YgNVdDxnI6X0FJEJIKtumXij+HbERzUXaLqfu0=; b=ROEy477/5DSEs0
+	q6wqtIIDHj2W/w2UK2SXHkDokPm6xuTocWQnVNiXhYUeGEfc0Xmc9s8zFopKjbvhRQRTrQiKE2d5c
+	Q1dXTmrhZ8CX2SX0nEgwuNtV4uYU4zW0P8W9JP5TwwMaXQjTIpNo7HLY6QlgTPLx/LXvZG7L3Ol+G
+	f1YIFbNKbyeyjBRZCr+1xcBmgimFUZJni2W6dpQf2YD02UlMKWtkmI0suLnVkNewxWwL/BFiOrbFV
+	c1Xkq9q15wIjPDeABtIiPF2hc2F9rlZbK6dHfEa7BmeHQEMM7B4dxzL1CTJOFz23RteSKNKmd/ZoZ
+	Y9/G0Tlzmiaty8cQlMVQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vlz2V-000000029oy-2jpy;
-	Sat, 31 Jan 2026 00:40:39 +0000
-Received: from smtp84.cstnet.cn ([159.226.251.84] helo=cstnet.cn)
+	id 1vm1Be-00000002FvA-0B31;
+	Sat, 31 Jan 2026 02:58:14 +0000
+Received: from smtp21.cstnet.cn ([159.226.251.21] helo=cstnet.cn)
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vlz2R-000000029oQ-00pe;
-	Sat, 31 Jan 2026 00:40:37 +0000
+	id 1vm1Ba-00000002FuB-3XYj;
+	Sat, 31 Jan 2026 02:58:12 +0000
 Received: from fric.. (unknown [210.73.43.101])
-	by APP-05 (Coremail) with SMTP id zQCowAA3zRB1T31p+GgaBw--.52843S2;
-	Sat, 31 Jan 2026 08:40:22 +0800 (CST)
+	by APP-01 (Coremail) with SMTP id qwCowABnEm65b31pOVPLBg--.13268S2;
+	Sat, 31 Jan 2026 10:58:02 +0800 (CST)
 From: Jiakai Xu <xujiakai2025@iscas.ac.cn>
 To: linux-kernel@vger.kernel.org,
 	linux-riscv@lists.infradead.org,
-	kvm-riscv@lists.infradead.org,
-	kvm@vger.kernel.org
-Cc: Andrew Jones <ajones@ventanamicro.com>,
-	Alexandre Ghiti <alex@ghiti.fr>,
+	kvm@vger.kernel.org,
+	kvm-riscv@lists.infradead.org
+Cc: Alexandre Ghiti <alex@ghiti.fr>,
 	Albert Ou <aou@eecs.berkeley.edu>,
 	Palmer Dabbelt <palmer@dabbelt.com>,
-	Paul Walmsley <pjw@kernel.org>,
+	Paul Walmsley <paul.walmsley@sifive.com>,
 	Atish Patra <atish.patra@linux.dev>,
 	Anup Patel <anup@brainfault.org>,
 	Jiakai Xu <xujiakai2025@iscas.ac.cn>,
 	Jiakai Xu <jiakaiPeanut@gmail.com>
-Subject: [PATCH v4] RISC-V: KVM: Validate SBI STA shmem alignment in kvm_sbi_ext_sta_set_reg
-Date: Sat, 31 Jan 2026 00:40:19 +0000
-Message-Id: <20260131004019.1486274-1-xujiakai2025@iscas.ac.cn>
+Subject: [PATCH] RISC-V: KVM: Change imsic->vsfile_lock from rwlock_t to raw_spinlock_t
+Date: Sat, 31 Jan 2026 02:58:00 +0000
+Message-Id: <20260131025800.1550692-1-xujiakai2025@iscas.ac.cn>
 X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-X-CM-TRANSID: zQCowAA3zRB1T31p+GgaBw--.52843S2
-X-Coremail-Antispam: 1UD129KBjvJXoWxXF4xXFyfKw4fZrW5Cry7trb_yoWrJryrpF
-	4Ikw15ArWxtFZ7A39rZr4vgr1j93ykKr1UtF9xu34rZF4ktFyYyrna93y7ZFy5JFykZFyS
-	yr10vF1Duw45taUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+X-CM-TRANSID: qwCowABnEm65b31pOVPLBg--.13268S2
+X-Coremail-Antispam: 1UD129KBjvJXoW3XryDGr4ruFWUJF4fAryUtrb_yoW3ZFWfpr
+	4rZF1kCr1xuw1Uuw4qv3Wkuayvg39F9r45WrWUWw1rXr17JwsYgr4xZayxWFWjqrn7GFn2
+	yr1rAaySkF17AaUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
 	9KBjDU0xBIdaVrnRJUUUB214x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
 	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
 	1l84ACjcxK6xIIjxv20xvE14v26r4j6ryUM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4j
@@ -66,10 +65,10 @@ X-Coremail-Antispam: 1UD129KBjvJXoWxXF4xXFyfKw4fZrW5Cry7trb_yoWrJryrpF
 	42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVWUJVW8JwCI42IY6I8E87Iv6x
 	kF7I0E14v26r4j6r4UJbIYCTnIWIevJa73UjIFyTuYvjfUOmhFUUUUU
 X-Originating-IP: [210.73.43.101]
-X-CM-SenderInfo: 50xmxthndljiysv6x2xfdvhtffof0/1tbiDAYECWl8yMbIFwAAsD
+X-CM-SenderInfo: 50xmxthndljiysv6x2xfdvhtffof0/1tbiBgsECWl8yB384AAAsc
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260130_164035_419015_A7ACCECC 
-X-CRM114-Status: GOOD (  16.95  )
+X-CRM114-CacheID: sfid-20260130_185811_254280_17BEA420 
+X-CRM114-Status: GOOD (  13.93  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -86,102 +85,202 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-The RISC-V SBI Steal-Time Accounting (STA) extension requires the shared
-memory physical address to be 64-byte aligned, and the shared memory size
-to be at least 64 bytes.
+The per-vCPU IMSIC context uses a vsfile_lock to protect access
+to the VS-file. Currently, this lock is an rwlock_t, and is used
+with read_lock_irqsave/write_lock_irqsave in multiple places
+inside arch/riscv/kvm/aia_imsic.c.
 
-KVM exposes the SBI STA shared memory configuration to userspace via
-KVM_SET_ONE_REG. However, the current implementation of
-kvm_sbi_ext_sta_set_reg() does not validate the alignment of the configured
-shared memory address. As a result, userspace can install a misaligned
-shared memory address that violates the SBI specification.
+During fuzz testing of KVM ioctl sequences, an 
+"[BUG: Invalid wait context]" crash was observed when holding 
+vsfile_lock in certain VCPU scheduling paths, for example during 
+kvm_riscv_vcpu_aia_imsic_put(). Log shows that at this point
+the task may hold vcpu->mutex and scheduler runqueue locks,
+and thus is in a context where acquiring a read/write rwlock
+with irqsave is illegal.
 
-Such an invalid configuration may later reach runtime code paths that
-assume a valid and properly aligned shared memory region. In particular,
-KVM_RUN can trigger the following WARN_ON in
-kvm_riscv_vcpu_record_steal_time():
+The crash manifests as:
+  [ BUG: Invalid wait context ]
+  (&imsic->vsfile_lock){....}-{3:3}, at:
+  kvm_riscv_vcpu_aia_imsic_put arch/riscv/kvm/aia_imsic.c:728
+  ...
+  2 locks held by syz.4.4541/8252:
+   #0: (&vcpu->mutex), at: kvm_vcpu_ioctl virt/kvm/kvm_main.c:4460
+   #1: (&rq->__lock), at: raw_spin_rq_lock_nested kernel/sched/core.c:639
+   #1: (&rq->__lock), at: raw_spin_rq_lock kernel/sched/sched.h:1580
+   #1: (&rq->__lock), at: rq_lock kernel/sched/sched.h:1907
+   #1: (&rq->__lock), at: __schedule kernel/sched/core.c:6772
+  ...
+  Call Trace:
+   _raw_read_lock_irqsave kernel/locking/spinlock.c:236
+   kvm_riscv_vcpu_aia_imsic_put arch/riscv/kvm/aia_imsic.c:716
+   kvm_riscv_vcpu_aia_put arch/riscv/kvm/aia.c:154
+   kvm_arch_vcpu_put arch/riscv/kvm/vcpu.c:650
+   kvm_sched_out virt/kvm/kvm_main.c:6421
+   __fire_sched_out_preempt_notifiers kernel/sched/core.c:4835
+   fire_sched_out_preempt_notifiers kernel/sched/core.c:4843
+   prepare_task_switch kernel/sched/core.c:5050
+   context_switch kernel/sched/core.c:5205
+   __schedule kernel/sched/core.c:6867
+   __schedule_loop kernel/sched/core.c:6949
+   schedule kernel/sched/core.c:6964
+   kvm_riscv_check_vcpu_requests arch/riscv/kvm/vcpu.c:699
+   kvm_arch_vcpu_ioctl_run arch/riscv/kvm/vcpu.c:920
 
-  WARNING: arch/riscv/kvm/vcpu_sbi_sta.c:49 at
-  kvm_riscv_vcpu_record_steal_time
+Therefore, replace vsfile_lock with raw_spinlock_t, and update 
+all acquire/release calls to 
+raw_spin_lock_irqsave()/raw_spin_unlock_irqrestore().
 
-WARN_ON paths are not expected to be reachable during normal runtime
-execution, and may result in a kernel panic when panic_on_warn is enabled.
-
-Fix this by validating the shared memory alignment at the
-KVM_SET_ONE_REG boundary and rejecting misaligned configurations with
--EINVAL. The validation is performed on a temporary computed address and
-only committed to vcpu->arch.sta.shmem once it is known to be valid, 
-similar to the existing logic in kvm_sbi_sta_steal_time_set_shmem() and
-kvm_sbi_ext_sta_handler().
-
-With this change, invalid userspace state is rejected early and cannot
-reach runtime code paths that rely on the SBI specification invariants.
-
-A reproducer triggering the WARN_ON and the complete kernel log are
-available at: https://github.com/j1akai/temp/tree/main/20260124
-
-Fixes: f61ce890b1f074 ("RISC-V: KVM: Add support for SBI STA registers")
+Fixes: db8b7e97d6137a ("RISC-V: KVM: Add in-kernel virtualization of AIA IMSIC")
 Signed-off-by: Jiakai Xu <xujiakai2025@iscas.ac.cn>
 Signed-off-by: Jiakai Xu <jiakaiPeanut@gmail.com>
 ---
-V3 -> V4: Declared new_shmem at the top of kvm_sbi_ext_sta_set_reg().
-          Initialized new_shmem to 0 instead of vcpu->arch.sta.shmem.
-		  Added blank lines per review feedback.
-V2 -> V3: Added parentheses to function name in subject.
-V1 -> V2: Added Fixes tag.
+ arch/riscv/kvm/aia_imsic.c | 36 ++++++++++++++++++------------------
+ 1 file changed, 18 insertions(+), 18 deletions(-)
 
----
- arch/riscv/kvm/vcpu_sbi_sta.c | 16 +++++++++++-----
- 1 file changed, 11 insertions(+), 5 deletions(-)
-
-diff --git a/arch/riscv/kvm/vcpu_sbi_sta.c b/arch/riscv/kvm/vcpu_sbi_sta.c
-index afa0545c3bcfc..bb13aa8eab7ee 100644
---- a/arch/riscv/kvm/vcpu_sbi_sta.c
-+++ b/arch/riscv/kvm/vcpu_sbi_sta.c
-@@ -181,6 +181,7 @@ static int kvm_sbi_ext_sta_set_reg(struct kvm_vcpu *vcpu, unsigned long reg_num,
- 				   unsigned long reg_size, const void *reg_val)
- {
- 	unsigned long value;
-+	gpa_t new_shmem = 0;
+diff --git a/arch/riscv/kvm/aia_imsic.c b/arch/riscv/kvm/aia_imsic.c
+index fda0346f0ea1f..8730229442a26 100644
+--- a/arch/riscv/kvm/aia_imsic.c
++++ b/arch/riscv/kvm/aia_imsic.c
+@@ -47,7 +47,7 @@ struct imsic {
+ 	 */
  
- 	if (reg_size != sizeof(unsigned long))
- 		return -EINVAL;
-@@ -191,18 +192,18 @@ static int kvm_sbi_ext_sta_set_reg(struct kvm_vcpu *vcpu, unsigned long reg_num,
- 		if (IS_ENABLED(CONFIG_32BIT)) {
- 			gpa_t hi = upper_32_bits(vcpu->arch.sta.shmem);
+ 	/* IMSIC VS-file */
+-	rwlock_t vsfile_lock;
++	raw_spinlock_t vsfile_lock;
+ 	int vsfile_cpu;
+ 	int vsfile_hgei;
+ 	void __iomem *vsfile_va;
+@@ -597,13 +597,13 @@ static void imsic_vsfile_cleanup(struct imsic *imsic)
+ 	 * VCPU is being destroyed.
+ 	 */
  
--			vcpu->arch.sta.shmem = value;
--			vcpu->arch.sta.shmem |= hi << 32;
-+			new_shmem = value;
-+			new_shmem |= hi << 32;
- 		} else {
--			vcpu->arch.sta.shmem = value;
-+			new_shmem = value;
- 		}
- 		break;
- 	case KVM_REG_RISCV_SBI_STA_REG(shmem_hi):
- 		if (IS_ENABLED(CONFIG_32BIT)) {
- 			gpa_t lo = lower_32_bits(vcpu->arch.sta.shmem);
+-	write_lock_irqsave(&imsic->vsfile_lock, flags);
++	raw_spin_lock_irqsave(&imsic->vsfile_lock, flags);
+ 	old_vsfile_hgei = imsic->vsfile_hgei;
+ 	old_vsfile_cpu = imsic->vsfile_cpu;
+ 	imsic->vsfile_cpu = imsic->vsfile_hgei = -1;
+ 	imsic->vsfile_va = NULL;
+ 	imsic->vsfile_pa = 0;
+-	write_unlock_irqrestore(&imsic->vsfile_lock, flags);
++	raw_spin_unlock_irqrestore(&imsic->vsfile_lock, flags);
  
--			vcpu->arch.sta.shmem = ((gpa_t)value << 32);
--			vcpu->arch.sta.shmem |= lo;
-+			new_shmem = ((gpa_t)value << 32);
-+			new_shmem |= lo;
- 		} else if (value != 0) {
- 			return -EINVAL;
- 		}
-@@ -211,6 +212,11 @@ static int kvm_sbi_ext_sta_set_reg(struct kvm_vcpu *vcpu, unsigned long reg_num,
- 		return -ENOENT;
- 	}
+ 	memset(imsic->swfile, 0, sizeof(*imsic->swfile));
  
-+	if (new_shmem && !IS_ALIGNED(new_shmem, 64))
-+		return -EINVAL;
-+
-+	vcpu->arch.sta.shmem = new_shmem;
-+
- 	return 0;
+@@ -688,10 +688,10 @@ bool kvm_riscv_vcpu_aia_imsic_has_interrupt(struct kvm_vcpu *vcpu)
+ 	 * only check for interrupt when IMSIC VS-file is being used.
+ 	 */
+ 
+-	read_lock_irqsave(&imsic->vsfile_lock, flags);
++	raw_spin_lock_irqsave(&imsic->vsfile_lock, flags);
+ 	if (imsic->vsfile_cpu > -1)
+ 		ret = !!(csr_read(CSR_HGEIP) & BIT(imsic->vsfile_hgei));
+-	read_unlock_irqrestore(&imsic->vsfile_lock, flags);
++	raw_spin_unlock_irqrestore(&imsic->vsfile_lock, flags);
+ 
+ 	return ret;
+ }
+@@ -713,10 +713,10 @@ void kvm_riscv_vcpu_aia_imsic_put(struct kvm_vcpu *vcpu)
+ 	if (!kvm_vcpu_is_blocking(vcpu))
+ 		return;
+ 
+-	read_lock_irqsave(&imsic->vsfile_lock, flags);
++	raw_spin_lock_irqsave(&imsic->vsfile_lock, flags);
+ 	if (imsic->vsfile_cpu > -1)
+ 		csr_set(CSR_HGEIE, BIT(imsic->vsfile_hgei));
+-	read_unlock_irqrestore(&imsic->vsfile_lock, flags);
++	raw_spin_unlock_irqrestore(&imsic->vsfile_lock, flags);
  }
  
+ void kvm_riscv_vcpu_aia_imsic_release(struct kvm_vcpu *vcpu)
+@@ -727,13 +727,13 @@ void kvm_riscv_vcpu_aia_imsic_release(struct kvm_vcpu *vcpu)
+ 	struct imsic *imsic = vcpu->arch.aia_context.imsic_state;
+ 
+ 	/* Read and clear IMSIC VS-file details */
+-	write_lock_irqsave(&imsic->vsfile_lock, flags);
++	raw_spin_lock_irqsave(&imsic->vsfile_lock, flags);
+ 	old_vsfile_hgei = imsic->vsfile_hgei;
+ 	old_vsfile_cpu = imsic->vsfile_cpu;
+ 	imsic->vsfile_cpu = imsic->vsfile_hgei = -1;
+ 	imsic->vsfile_va = NULL;
+ 	imsic->vsfile_pa = 0;
+-	write_unlock_irqrestore(&imsic->vsfile_lock, flags);
++	raw_spin_unlock_irqrestore(&imsic->vsfile_lock, flags);
+ 
+ 	/* Do nothing, if no IMSIC VS-file to release */
+ 	if (old_vsfile_cpu < 0)
+@@ -786,10 +786,10 @@ int kvm_riscv_vcpu_aia_imsic_update(struct kvm_vcpu *vcpu)
+ 		return 1;
+ 
+ 	/* Read old IMSIC VS-file details */
+-	read_lock_irqsave(&imsic->vsfile_lock, flags);
++	raw_spin_lock_irqsave(&imsic->vsfile_lock, flags);
+ 	old_vsfile_hgei = imsic->vsfile_hgei;
+ 	old_vsfile_cpu = imsic->vsfile_cpu;
+-	read_unlock_irqrestore(&imsic->vsfile_lock, flags);
++	raw_spin_unlock_irqrestore(&imsic->vsfile_lock, flags);
+ 
+ 	/* Do nothing if we are continuing on same CPU */
+ 	if (old_vsfile_cpu == vcpu->cpu)
+@@ -839,12 +839,12 @@ int kvm_riscv_vcpu_aia_imsic_update(struct kvm_vcpu *vcpu)
+ 	/* TODO: Update the IOMMU mapping ??? */
+ 
+ 	/* Update new IMSIC VS-file details in IMSIC context */
+-	write_lock_irqsave(&imsic->vsfile_lock, flags);
++	raw_spin_lock_irqsave(&imsic->vsfile_lock, flags);
+ 	imsic->vsfile_hgei = new_vsfile_hgei;
+ 	imsic->vsfile_cpu = vcpu->cpu;
+ 	imsic->vsfile_va = new_vsfile_va;
+ 	imsic->vsfile_pa = new_vsfile_pa;
+-	write_unlock_irqrestore(&imsic->vsfile_lock, flags);
++	raw_spin_unlock_irqrestore(&imsic->vsfile_lock, flags);
+ 
+ 	/*
+ 	 * At this point, all interrupt producers have been moved
+@@ -943,7 +943,7 @@ int kvm_riscv_aia_imsic_rw_attr(struct kvm *kvm, unsigned long type,
+ 	isel = KVM_DEV_RISCV_AIA_IMSIC_GET_ISEL(type);
+ 	imsic = vcpu->arch.aia_context.imsic_state;
+ 
+-	read_lock_irqsave(&imsic->vsfile_lock, flags);
++	raw_spin_lock_irqsave(&imsic->vsfile_lock, flags);
+ 
+ 	rc = 0;
+ 	vsfile_hgei = imsic->vsfile_hgei;
+@@ -958,7 +958,7 @@ int kvm_riscv_aia_imsic_rw_attr(struct kvm *kvm, unsigned long type,
+ 					    isel, val, 0, 0);
+ 	}
+ 
+-	read_unlock_irqrestore(&imsic->vsfile_lock, flags);
++	raw_spin_unlock_irqrestore(&imsic->vsfile_lock, flags);
+ 
+ 	if (!rc && vsfile_cpu >= 0)
+ 		rc = imsic_vsfile_rw(vsfile_hgei, vsfile_cpu, imsic->nr_eix,
+@@ -1015,7 +1015,7 @@ int kvm_riscv_vcpu_aia_imsic_inject(struct kvm_vcpu *vcpu,
+ 	if (imsic->nr_msis <= iid)
+ 		return -EINVAL;
+ 
+-	read_lock_irqsave(&imsic->vsfile_lock, flags);
++	raw_spin_lock_irqsave(&imsic->vsfile_lock, flags);
+ 
+ 	if (imsic->vsfile_cpu >= 0) {
+ 		writel(iid, imsic->vsfile_va + IMSIC_MMIO_SETIPNUM_LE);
+@@ -1025,7 +1025,7 @@ int kvm_riscv_vcpu_aia_imsic_inject(struct kvm_vcpu *vcpu,
+ 		imsic_swfile_extirq_update(vcpu);
+ 	}
+ 
+-	read_unlock_irqrestore(&imsic->vsfile_lock, flags);
++	raw_spin_unlock_irqrestore(&imsic->vsfile_lock, flags);
+ 
+ 	return 0;
+ }
+@@ -1081,7 +1081,7 @@ int kvm_riscv_vcpu_aia_imsic_init(struct kvm_vcpu *vcpu)
+ 
+ 	/* Setup IMSIC context  */
+ 	imsic->nr_msis = kvm->arch.aia.nr_ids + 1;
+-	rwlock_init(&imsic->vsfile_lock);
++	raw_spin_lock_init(&imsic->vsfile_lock);
+ 	imsic->nr_eix = BITS_TO_U64(imsic->nr_msis);
+ 	imsic->nr_hw_eix = BITS_TO_U64(kvm_riscv_aia_max_ids);
+ 	imsic->vsfile_hgei = imsic->vsfile_cpu = -1;
 -- 
 2.34.1
 
