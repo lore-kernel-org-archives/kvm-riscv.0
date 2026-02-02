@@ -4,72 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E7C9D172AA
-	for <kvm-riscv@archiver.kernel.org>; Mon,  2 Feb 2026 00:39:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5FCDED172C3
+	for <kvm-riscv@archiver.kernel.org>; Mon,  2 Feb 2026 04:01:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-Id:Date:Subject:Cc
 	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
 	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=noIx1t7sxig+JcZPboRPWpNE/hEDfBrPDIDxDkUYRZk=; b=FCY2xFuayMe40m
-	sWbwp31Eqgtklxp7CEbhL13GZKqz4Cpf/3J7b+RrgzowKM7SBQONNggmd94YgioJK4hSA+5CoEOvE
-	gOW6heoFjlnbbcMYuB/gJ73x+LFakjVCn99tkvqmjlLq06SM1qCYSgiwml0s4LcHpiR7WoXPXHSkG
-	rWfXl+G9gVI+MlIohHqAXw+ZG/v2HE6XVTSeWBOsE0Xhw/R+gVFBLOJ50T42vHid0kHSEBZndzE3s
-	B2/WvYldklHfTQNMwKc2uVsp3OIVJRl4m14dSI+hWoG5tNTIvNQxY0kTlL7r1DTF7hEk2HRqgja/I
-	OroSJhqKWks9uIjyNRMw==;
+	List-Owner; bh=h4Mym99sSUTc3uUpSsdr+ZO/5GUEoM0pZjXhm9U8zC0=; b=UPoeZDP4C+c5ye
+	t5EUjSDngNGEFMjz3dEOnODyxP/u8Cw5UgD1uJ8EnKfOmnabYitdXvoVxmA52O0VyLu3WEVPQ+YaJ
+	gN9JNeRRAN/dUr5jCNOg1Ra/hpjmttw0X8xW9Md3DRpm18hKQpIsr3AfpsB8sBIRmLbXTUuYmfvsU
+	jF49LNYApkr0E0hs7P6n2Q11eXQrCDOD3obENqFLtnYg/KJf1mQSktSK4cmLRBZvacurye3rmS5ra
+	06r910r0iJz0o6FfhlPSpwzcYGqsa5rbHv+1xctz6WxzwsS6Z1bVadtJktRoE/Kgl6WvKdDlOStF8
+	lmrsrLzYuC7zELWD7EFA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vmhyL-00000004GZh-3JLo;
-	Mon, 02 Feb 2026 00:39:21 +0000
-Received: from smtp84.cstnet.cn ([159.226.251.84] helo=cstnet.cn)
+	id 1vml7k-00000004OzE-46um;
+	Mon, 02 Feb 2026 04:01:17 +0000
+Received: from smtp81.cstnet.cn ([159.226.251.81] helo=cstnet.cn)
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vmhyG-00000004GZ5-1rjw;
-	Mon, 02 Feb 2026 00:39:19 +0000
+	id 1vml7d-00000004Oyl-1YCw;
+	Mon, 02 Feb 2026 04:01:12 +0000
 Received: from fric.. (unknown [210.73.43.101])
-	by APP-05 (Coremail) with SMTP id zQCowAC3Sw8i8n9p5QBGBw--.1693S2;
-	Mon, 02 Feb 2026 08:38:59 +0800 (CST)
+	by APP-03 (Coremail) with SMTP id rQCowAAnDON8IYBpot59Bw--.49852S2;
+	Mon, 02 Feb 2026 12:01:01 +0800 (CST)
 From: Jiakai Xu <xujiakai2025@iscas.ac.cn>
 To: linux-kernel@vger.kernel.org,
 	linux-riscv@lists.infradead.org,
 	kvm-riscv@lists.infradead.org,
 	kvm@vger.kernel.org
-Cc: Andrew Jones <ajones@ventanamicro.com>,
-	Alexandre Ghiti <alex@ghiti.fr>,
+Cc: Alexandre Ghiti <alex@ghiti.fr>,
 	Albert Ou <aou@eecs.berkeley.edu>,
 	Palmer Dabbelt <palmer@dabbelt.com>,
-	Paul Walmsley <pjw@kernel.org>,
+	Paul Walmsley <paul.walmsley@sifive.com>,
 	Atish Patra <atish.patra@linux.dev>,
 	Anup Patel <anup@brainfault.org>,
 	Jiakai Xu <xujiakai2025@iscas.ac.cn>,
 	Jiakai Xu <jiakaiPeanut@gmail.com>
-Subject: [PATCH v5] RISC-V: KVM: Validate SBI STA shmem alignment in kvm_sbi_ext_sta_set_reg()
-Date: Mon,  2 Feb 2026 00:38:57 +0000
-Message-Id: <20260202003857.1694378-1-xujiakai2025@iscas.ac.cn>
+Subject: [PATCH v2] RISC-V: KVM: Fix use-after-free in kvm_riscv_gstage_get_leaf()
+Date: Mon,  2 Feb 2026 04:00:59 +0000
+Message-Id: <20260202040059.1801167-1-xujiakai2025@iscas.ac.cn>
 X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-X-CM-TRANSID: zQCowAC3Sw8i8n9p5QBGBw--.1693S2
-X-Coremail-Antispam: 1UD129KBjvJXoWxXF4xXFyfKw4fZrW5Cry7trb_yoWrJFWUpF
-	4Ikw15ArWxtFZ7A39rZr4vgr1Y93ykKr1jqF9xu34rZF4ktFyYyrna93y7ZF98GFyvvFyS
-	yr10vF1Duw4YyaDanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUUB214x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+X-CM-TRANSID: rQCowAAnDON8IYBpot59Bw--.49852S2
+X-Coremail-Antispam: 1UD129KBjvJXoW7Kw4UtrW7XF4Utw45tF13Jwb_yoW5JFykpF
+	Z8Gry3CryrJr4kCry7tryDZrWDWw4UWrWkCFy5CF9rGrsIqa97Zrna9as2qry5ArykXFy3
+	ZrWDKa4rCr4Fya7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUUBF14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
 	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
-	1l84ACjcxK6xIIjxv20xvE14v26ryj6F1UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4j
-	6F4UM28EF7xvwVC2z280aVAFwI0_Cr1j6rxdM28EF7xvwVC2z280aVCY1x0267AKxVWxJr
-	0_GcWlnxkEFVAIw20F6cxK64vIFxWle2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xv
-	F2IEw4CE5I8CrVC2j2WlYx0E2Ix0cI8IcVAFwI0_Jr0_Jr4lYx0Ex4A2jsIE14v26r1j6r
-	4UMcvjeVCFs4IE7xkEbVWUJVW8JwACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I
-	648v4I1lFIxGxcIEc7CjxVA2Y2ka0xkIwI1lc7CjxVAaw2AFwI0_Jw0_GFyl42xK82IYc2
-	Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67AKxVWUJVWUGwC20s02
-	6x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r1q6r43MIIYrxkI7VAKI48JMIIF0x
-	vE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7IYx2IY6xkF7I0E14v26r4j6F4UMIIF0xvE
-	42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVWUJVW8JwCI42IY6I8E87Iv6x
-	kF7I0E14v26r4j6r4UJbIYCTnIWIevJa73UjIFyTuYvjfUOmhFUUUUU
+	1l84ACjcxK6xIIjxv20xvE14v26r4j6ryUM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4j
+	6F4UM28EF7xvwVC2z280aVAFwI0_Cr1j6rxdM28EF7xvwVC2z280aVCY1x0267AKxVW0oV
+	Cq3wAac4AC62xK8xCEY4vEwIxC4wAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40EFcxC
+	0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AKxVWUJVWUGwAv7VC2z280aVAFwI0_Gr0_Cr
+	1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48IcxkI7VAKI48JM4x0x7Aq67IIx4CEVc8vx2IE
+	rcIFxwACI402YVCY1x02628vn2kIc2xKxwCY1x0262kKe7AKxVWUtVW8ZwCF04k20xvY0x
+	0EwIxGrwCFx2IqxVCFs4IE7xkEbVWUJVW8JwC20s026c02F40E14v26r1j6r18MI8I3I0E
+	7480Y4vE14v26r106r1rMI8E67AF67kF1VAFwI0_Jw0_GFylIxkGc2Ij64vIr41lIxAIcV
+	C0I7IYx2IY67AKxVWUJVWUCwCI42IY6xIIjxv20xvEc7CjxVAFwI0_Gr0_Cr1lIxAIcVCF
+	04k26cxKx2IYs7xG6r1j6r1xMIIF0xvEx4A2jsIE14v26r1j6r4UMIIF0xvEx4A2jsIEc7
+	CjxVAFwI0_Gr0_Gr1UYxBIdaVFxhVjvjDU0xZFpf9x0JU6c_3UUUUU=
 X-Originating-IP: [210.73.43.101]
-X-CM-SenderInfo: 50xmxthndljiysv6x2xfdvhtffof0/1tbiBwwGCWl-a9Cj8QAAs7
+X-CM-SenderInfo: 50xmxthndljiysv6x2xfdvhtffof0/1tbiDAUGCWl-a8ajEgABsN
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260201_163916_863176_6ECDC9C7 
-X-CRM114-Status: GOOD (  17.23  )
+X-CRM114-CacheID: sfid-20260201_200110_008491_91569B58 
+X-CRM114-Status: UNSURE (   6.31  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -86,101 +86,60 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-The RISC-V SBI Steal-Time Accounting (STA) extension requires the shared
-memory physical address to be 64-byte aligned, and the shared memory size
-to be at least 64 bytes.
+While fuzzing KVM on RISC-V, a use-after-free was observed in
+kvm_riscv_gstage_get_leaf(),  where ptep_get() dereferences a
+freed gstage page table page during gfn unmap.
 
-KVM exposes the SBI STA shared memory configuration to userspace via
-KVM_SET_ONE_REG. However, the current implementation of
-kvm_sbi_ext_sta_set_reg() does not validate the alignment of the configured
-shared memory address. As a result, userspace can install a misaligned
-shared memory address that violates the SBI specification.
+The crash manifests as:
+  use-after-free in ptep_get include/linux/pgtable.h:340 [inline]
+  use-after-free in kvm_riscv_gstage_get_leaf arch/riscv/kvm/gstage.c:89
+  Call Trace:
+    ptep_get include/linux/pgtable.h:340 [inline]
+    kvm_riscv_gstage_get_leaf+0x2ea/0x358 arch/riscv/kvm/gstage.c:89
+    kvm_riscv_gstage_unmap_range+0xf0/0x308 arch/riscv/kvm/gstage.c:265
+    kvm_unmap_gfn_range+0x168/0x1fc arch/riscv/kvm/mmu.c:256
+    kvm_mmu_unmap_gfn_range virt/kvm/kvm_main.c:724 [inline]
+  page last free pid 808 tgid 808 stack trace:
+    kvm_riscv_mmu_free_pgd+0x1b6/0x26a arch/riscv/kvm/mmu.c:457
+    kvm_arch_flush_shadow_all+0x1a/0x24 arch/riscv/kvm/mmu.c:134
+    kvm_flush_shadow_all virt/kvm/kvm_main.c:344 [inline]
 
-Such an invalid configuration may later reach runtime code paths that
-assume a valid and properly aligned shared memory region. In particular,
-KVM_RUN can trigger the following WARN_ON in
-kvm_riscv_vcpu_record_steal_time():
+The UAF is caused by gstage page table walks running concurrently with
+gstage pgd teardown. In particular, kvm_unmap_gfn_range() can traverse
+gstage page tables while kvm_arch_flush_shadow_all() frees the pgd,
+leading to use-after-free of page table pages.
 
-  WARNING: arch/riscv/kvm/vcpu_sbi_sta.c:49 at
-  kvm_riscv_vcpu_record_steal_time
+Fix the issue by serializing gstage unmap and pgd teardown with
+kvm->mmu_lock. Holding mmu_lock ensures that gstage page tables
+remain valid for the duration of unmap operations and prevents
+concurrent frees.
 
-WARN_ON paths are not expected to be reachable during normal runtime
-execution, and may result in a kernel panic when panic_on_warn is enabled.
+This matches existing RISC-V KVM usage of mmu_lock to protect gstage
+map/unmap operations, e.g. kvm_riscv_mmu_iounmap.
 
-Fix this by validating the shared memory alignment at the
-KVM_SET_ONE_REG boundary and rejecting misaligned configurations with
--EINVAL. The validation is performed on a temporary computed address and
-only committed to vcpu->arch.sta.shmem once it is known to be valid, 
-similar to the existing logic in kvm_sbi_sta_steal_time_set_shmem() and
-kvm_sbi_ext_sta_handler().
-
-With this change, invalid userspace state is rejected early and cannot
-reach runtime code paths that rely on the SBI specification invariants.
-
-A reproducer triggering the WARN_ON and the complete kernel log are
-available at: https://github.com/j1akai/temp/tree/main/20260124
-
-Fixes: f61ce890b1f074 ("RISC-V: KVM: Add support for SBI STA registers")
+Fixes: dd82e35638d67f ("RISC-V: KVM: Factor-out g-stage page table management")
 Signed-off-by: Jiakai Xu <xujiakai2025@iscas.ac.cn>
 Signed-off-by: Jiakai Xu <jiakaiPeanut@gmail.com>
 ---
-V4 -> V5: Added parentheses to function name in subject.
-V3 -> V4: Declared new_shmem at the top of kvm_sbi_ext_sta_set_reg().
-          Initialized new_shmem to 0 instead of vcpu->arch.sta.shmem.
-          Added blank lines per review feedback.
-V2 -> V3: Added parentheses to function name in subject.
-V1 -> V2: Added Fixes tag.
+V1 -> V2: Removed kvm->mmu_lock in kvm_arch_flush_shadow_all().
 
----
- arch/riscv/kvm/vcpu_sbi_sta.c | 16 +++++++++++-----
- 1 file changed, 11 insertions(+), 5 deletions(-)
+ arch/riscv/kvm/mmu.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/riscv/kvm/vcpu_sbi_sta.c b/arch/riscv/kvm/vcpu_sbi_sta.c
-index afa0545c3bcfc..bb13aa8eab7ee 100644
---- a/arch/riscv/kvm/vcpu_sbi_sta.c
-+++ b/arch/riscv/kvm/vcpu_sbi_sta.c
-@@ -181,6 +181,7 @@ static int kvm_sbi_ext_sta_set_reg(struct kvm_vcpu *vcpu, unsigned long reg_num,
- 				   unsigned long reg_size, const void *reg_val)
- {
- 	unsigned long value;
-+	gpa_t new_shmem = 0;
- 
- 	if (reg_size != sizeof(unsigned long))
- 		return -EINVAL;
-@@ -191,18 +192,18 @@ static int kvm_sbi_ext_sta_set_reg(struct kvm_vcpu *vcpu, unsigned long reg_num,
- 		if (IS_ENABLED(CONFIG_32BIT)) {
- 			gpa_t hi = upper_32_bits(vcpu->arch.sta.shmem);
- 
--			vcpu->arch.sta.shmem = value;
--			vcpu->arch.sta.shmem |= hi << 32;
-+			new_shmem = value;
-+			new_shmem |= hi << 32;
- 		} else {
--			vcpu->arch.sta.shmem = value;
-+			new_shmem = value;
- 		}
- 		break;
- 	case KVM_REG_RISCV_SBI_STA_REG(shmem_hi):
- 		if (IS_ENABLED(CONFIG_32BIT)) {
- 			gpa_t lo = lower_32_bits(vcpu->arch.sta.shmem);
- 
--			vcpu->arch.sta.shmem = ((gpa_t)value << 32);
--			vcpu->arch.sta.shmem |= lo;
-+			new_shmem = ((gpa_t)value << 32);
-+			new_shmem |= lo;
- 		} else if (value != 0) {
- 			return -EINVAL;
- 		}
-@@ -211,6 +212,11 @@ static int kvm_sbi_ext_sta_set_reg(struct kvm_vcpu *vcpu, unsigned long reg_num,
- 		return -ENOENT;
- 	}
- 
-+	if (new_shmem && !IS_ALIGNED(new_shmem, 64))
-+		return -EINVAL;
-+
-+	vcpu->arch.sta.shmem = new_shmem;
-+
- 	return 0;
+diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
+index a1c3b2ec1dde5..1d71c1cb429ca 100644
+--- a/arch/riscv/kvm/mmu.c
++++ b/arch/riscv/kvm/mmu.c
+@@ -268,9 +268,11 @@ bool kvm_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range)
+ 	gstage.flags = 0;
+ 	gstage.vmid = READ_ONCE(kvm->arch.vmid.vmid);
+ 	gstage.pgd = kvm->arch.pgd;
++	spin_lock(&kvm->mmu_lock);
+ 	kvm_riscv_gstage_unmap_range(&gstage, range->start << PAGE_SHIFT,
+ 				     (range->end - range->start) << PAGE_SHIFT,
+ 				     range->may_block);
++	spin_unlock(&kvm->mmu_lock);
+ 	return false;
  }
  
 -- 
