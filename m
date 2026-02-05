@@ -4,130 +4,134 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 368C2E83F1F
-	for <kvm-riscv@archiver.kernel.org>; Thu,  5 Feb 2026 14:56:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 94C1DECD983
+	for <kvm-riscv@archiver.kernel.org>; Thu,  5 Feb 2026 15:30:23 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
 	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=s7Uf7LxUIwz6e2SB4yYs2LPmjtroNyaY0op1YTZ7Bms=; b=M9Voaaf6AOzNyj
-	TpYWhmw8jS3w8KGU9OgGIqEaeL33KEznrrfbMCgwzacefWrkf2oe11BXcPxPnKxlQbQ/QBU018Bzr
-	J6OsApdgVZ56TqZhDKWef8AGYkMTav9C4Y9KqPMuG+7aIticA0bsI5+pQc2f0ZgI6l4O4HyQBEZW5
-	+6Nlgbblf9OLP9lZMNRESf3VckoCnpdJ/8uB74DyrqvsPGzxLl0dybpunkbNRkcv7zawrpbPnY39D
-	P/3+WpBHX9ZTu77+wH+HkL7rninYnRbZdFzgBH1bzTvR3Pp8P1KKrZFwtiH8F3JfJNzV415WZg8Ko
-	27SZQJma+LM6UJH1AS3A==;
+	List-Owner; bh=25qkQHmm4fgClxaMtWEq+a/nAokoA3T3yZuCsvjKeEw=; b=rxV6qMqJ+wRbqk
+	HTdGeQeilsoWaZPYnR2E8c7KPAYm3MKfSPCol32XSSdXNyZC663iqru4k+RyPm0t6d5Mrfj90QMze
+	tXhSQAQN+uWlsd0mZRNdYWVvoQA4jyaGZ7MD7BV/qF869zcXIyNuA9EB53yYwQ7DEHfA2jKhzS6QY
+	7GBjxYHmlw56oOQ9wUcSeL97BdA3x+bn7DsIZ/W8MyXmPYKuZNs7HKQRg8YHdcX1g8tRZjTrMB1PN
+	hna6FiP8xIcqJgvcgliDlF8neTPVwJjkxaKXu255r+aID/D2/QHRxFL09AGZwc71IBe5IdyERycpA
+	oREi7bpkNptnOxRaLPug==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vo0mf-0000000A3hr-2d9R;
-	Thu, 05 Feb 2026 14:56:41 +0000
-Received: from mx0a-0031df01.pphosted.com ([205.220.168.131])
+	id 1vo1JG-0000000A8hv-3gWD;
+	Thu, 05 Feb 2026 15:30:22 +0000
+Received: from mx0b-0031df01.pphosted.com ([205.220.180.131])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vo0mb-0000000A3gQ-2yN7
+	id 1vo1Is-0000000A8fh-3RfX
 	for kvm-riscv@lists.infradead.org;
-	Thu, 05 Feb 2026 14:56:40 +0000
-Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 615AnJuL3031034
-	for <kvm-riscv@lists.infradead.org>; Thu, 5 Feb 2026 14:56:37 GMT
+	Thu, 05 Feb 2026 15:30:21 +0000
+Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 615B4Gu1177887
+	for <kvm-riscv@lists.infradead.org>; Thu, 5 Feb 2026 15:29:57 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=qcppdkim1; bh=9g6+zH9yTy+gqiQg02/erDU6
-	iT9X69ZdnysU8cGq/4k=; b=H/rALWxp2l6X54hT7X5f0Pe16GD/FTZddeL+7ndP
-	GO5q0vqJu75qA6yRtJITBurImTgWxYB+/gvSu6b/9irQ8rkIsWByGEgYcvp2/wyc
-	m+wuWYFG6gewptipkrCkvPZCIpWipejGYymc9JoFDaa67mKWFS7CIh1VoLGexZFM
-	hDzdMogstPzZ3fUpyd9boZoux4r5NMUsgP6MIDNXDFIH8jBM5UFziM2Yc03RE8dz
-	EQ/yHKTJKeNBoI8c4oDrQyUYhZbQimMZ2G/+aADOv+U7tPD57nn702DYknUI5WR+
-	wAhAMTvyNdncZyusJpJJ4KX96WOTSySErcv/cY11Uvv2PA==
+	:references:subject:to; s=qcppdkim1; bh=cRJydN6XhmQwgdowUHd7ChTT
+	rTbeIpI6IAID2mzzwGs=; b=KU35dBE8bwyUOW9VZSSEqC5HMrNA/wuXACQj6795
+	zvdsS6+Pb0H9CAptu1SwDfntMKDOv8Rnv6uZFcrsxiFP1vpmqmkN2/6s21nWH2Kt
+	fZPbvr9dYRhPE0toxed61NGV2Epni4Q5d4T67HtkQeWAD1XGPBwuZGhLxEXpww1q
+	GQVlmvK5VSDbSxtyNuBGnYp5TAMTV1i07zxNzD9KMvkE+QfJCsm4w+eihPmSojFT
+	JTe0ACLX6I4RYOLr01tFraq61Gwq4miX0yV0TGx3vu9amOuPqXowvxK5jwSKCC7l
+	CL/MupKKfp6ThJhDQMiR7sqxKiqVqLQhFQ5HL/dV99vRBw==
 Received: from mail-dl1-f71.google.com (mail-dl1-f71.google.com [74.125.82.71])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4c4a7tkma8-1
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4c4t0p0srw-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <kvm-riscv@lists.infradead.org>; Thu, 05 Feb 2026 14:56:36 +0000 (GMT)
-Received: by mail-dl1-f71.google.com with SMTP id a92af1059eb24-124a978ba9bso1632609c88.0
-        for <kvm-riscv@lists.infradead.org>; Thu, 05 Feb 2026 06:56:36 -0800 (PST)
+	for <kvm-riscv@lists.infradead.org>; Thu, 05 Feb 2026 15:29:57 +0000 (GMT)
+Received: by mail-dl1-f71.google.com with SMTP id a92af1059eb24-1232dd9a256so1743650c88.1
+        for <kvm-riscv@lists.infradead.org>; Thu, 05 Feb 2026 07:29:57 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1770303396; x=1770908196; darn=lists.infradead.org;
+        d=oss.qualcomm.com; s=google; t=1770305396; x=1770910196; darn=lists.infradead.org;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=9g6+zH9yTy+gqiQg02/erDU6iT9X69ZdnysU8cGq/4k=;
-        b=SdYDwLoeYg79t5XUbcrYHz81lVHq8BtqhXfJFX+Pbjz1YJKYpI48tuA28eYO0WexvB
-         uQP73mjQ2OC4Thporsfmf+WNOOmuQnmX5bF+9Q3nEktXYCCaRtHxP5tu8/KaZUpzvrlk
-         s1w6kf2Ycyjmxdyk1dOd13QiIIEgKbjL6292XY3WLj93M+azhWGjjijLw2TzwOOetN8J
-         mj1arXGcyUNKo5+SyQ4UQFkvYH8wAMpzLKRGitVCdyuIh5+fk/8KoIgn4mCL5dAWag+3
-         z9VMBUOmGQPV2rsdl6FaG2ypehDX72y4dI+AK937b44jyhlzpFGWBc4ZEBNB9dNRfRoQ
-         qIqA==
+        bh=cRJydN6XhmQwgdowUHd7ChTTrTbeIpI6IAID2mzzwGs=;
+        b=XyEk3P97XotIYnd4a0BGgdaxLO18kCSN5F3TeY/y3Tma6903ILpDfurwY9duxIkQFu
+         NWUcADMnSP7UZMUVTkLXnJQa+JltHWkC5UrtvmcPMHtl03MoxCqhcqPDVw3iNVRuOoaa
+         MabXwj0HSkdl/BAQBhPUxn/5vJ9D+Wr7wei3GLAyH7LrMlr39whNthmiWr2OE6xh8rH+
+         8H/FVKmrVhsG5ExF7W08JLXvWwFCLLN97nRIWUUzC/2pdJRFzIVS05RySY/68Q9LesIO
+         eCnUS/K16JIE+qi0UV8PWn29j1cEcTf7pTpNzL8Xm0U26FFWzfGq/RZif14M+bMN39sc
+         uGlQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1770303396; x=1770908196;
+        d=1e100.net; s=20230601; t=1770305396; x=1770910196;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=9g6+zH9yTy+gqiQg02/erDU6iT9X69ZdnysU8cGq/4k=;
-        b=tpT2A0+7oIP7HUyauv0GiXOaKp/O9vg6Qt+D5axrcLslWCkSapn1Ea40AhIzxnLe1x
-         oHmg5QfrVjxrrL183Ugh30d6PJrGgEtcESpB/MVFAf8u4zOF2jAVEuDTMxMm3wF71/2a
-         1kYF8OkAZYAURIUVyfTuZyOU6+dBWklGQEuwweUkj3XNk7TJQ2J/N1G7Q4YRWFXMIFYW
-         l4UB9NIYUmTnTp9S3FfxXOgqymhJ1j41f1osyphoW61lxyG87VOimWzwkkNlyqfAPHt3
-         kG2omz5TK16RwI7MEfm/VSjNKgd/DqLyPhzDABxalQRoceIG23FgbhgdkpFjllhp1+CX
-         UC6w==
-X-Forwarded-Encrypted: i=1; AJvYcCXqh7vpUrdN0mwrOGwiZJ1UNe+E0+F6RrRN0x/SuWiKVSTaKHBL/yqtq7z1kYsGbCaNR8F/yS/6gw0=@lists.infradead.org
-X-Gm-Message-State: AOJu0YyiORylmG+j6rVlxizO3JnWMH1qJUOvPjLikzFfQGh4soJEHg7Q
-	97s9RlECpE5HW+tD8NQpy9hX+gX8S+GRN0hw5PnW/yXyOGht2aRtURmS9v0kbuiZvvYnuZnM31g
-	bp968yr7oWhtOent9DVw1Qdw94wQw3pqMpQcvpx+j8oWD1a7dluSyqmrWa/n7+CZinyqN
-X-Gm-Gg: AZuq6aKIsorZgXb/8fpOMbAfzoFWeW1vgUceGkBSLCWmWrF/3/EhVMcO1O4sDrnk+Df
-	C1lpNv6ZOzwoXaUZ7fA+mx23p6oIZvHCFQzo/BqN1mNsBumf/x/C9S65+04E9F8a8dLJSTZ7Onf
-	sx6XjrBODimNMKcpxv1WFkImTZg755U+4U1oQlgsEEOM0HADS4QSBaSYQ8+Ll1AtnyZVhdZeM2j
-	IrYXBoZR7mAmgudzFrmeMHb2V66yKs/MSkWu7MZzg8EIb0rYcPp/lY294T3ejiIvSFq1WhaJsjM
-	q7SzP6Il5Y8OAupokfKYpLZlfT5U0SEEJp1dT72Bhn5ffMjYJoo9UB+6xnFRB7mGveGz/0nIFH+
-	/dYs/tZZhiMp9/IiaCm4=
-X-Received: by 2002:a05:7022:f90:b0:119:e56b:98a1 with SMTP id a92af1059eb24-126f4780c3bmr2575066c88.8.1770303396093;
-        Thu, 05 Feb 2026 06:56:36 -0800 (PST)
-X-Received: by 2002:a05:7022:f90:b0:119:e56b:98a1 with SMTP id a92af1059eb24-126f4780c3bmr2575043c88.8.1770303395516;
-        Thu, 05 Feb 2026 06:56:35 -0800 (PST)
+        bh=cRJydN6XhmQwgdowUHd7ChTTrTbeIpI6IAID2mzzwGs=;
+        b=DEgoMTmgyAJPV5KcCKNEK9qHmLSmAC+uOToOjXT4EefIRROoDfBx2hs2+3AckrMdQt
+         H2/9aqiisZtU4f0o5cbpUyZvmii6Sg5JFdhKFsJVVQgWIW3phnaim7le4Tr/uEw3RPMt
+         vBjxZC4TQvzRGz1TsCIpQm5qvs73q3tiR6ycFWb/GiBaYUAPs3LhhUpwN24rf3zDzRqP
+         HiRScaGu+Z+21yYtJl2ErQytbHvVnQadkkHbEPdNA7i3Y1P/CGKuMZB9Ej+n0ais5PPk
+         AEpSYOSp3+/HcgAGVvgf+RQdn6E9341KfXgDoYBBV54KTYHp5sMxXBZHCrTHxQpjnpFX
+         ZfHw==
+X-Forwarded-Encrypted: i=1; AJvYcCWMmzoLjNmetyDzCkMXPo7/F2lW4kHLzAVAbiUrx0LJ3qLiopXZcATjmpCpB1PAKrY9d+zY0/R3xZw=@lists.infradead.org
+X-Gm-Message-State: AOJu0YyaBSEVVVo6ApZdk17LoPFeme/CR1BaEZXm5l4sW0n8e7odGCQE
+	489OKvayigXzDOHD0AdWRqQCLmxUsbLggs9OtONCnTqnA10A0W+ETywJAbGgiSwcyWRPyx+9f2r
+	ITgiGvoibyRNhJjOLL+sUv9I19PJJyDy4nOgN4syuWBBq1Zc85ytTaX5Aw21+aqmQSJFk
+X-Gm-Gg: AZuq6aL5j2jdPr1vzhXu2x7bsC+WL9OqrcpC/J5XWdpztyXHQRkCkTfs4IUujfootAz
+	OugIVAIQVgh9f+GiTEMlN+GxvbuU19szTLduHvML+nY27yOiEDzEWHmppiwhlUofFB7qnXSYqnK
+	neKvJAcXCUlNXmxUf5KFpELOwEIUuDqXaupIGnIct6s1kQbDmkQKqDiZSaEwHHbPfWvroEfFdIl
+	a3oUjVR7cR2FQAtrZmF8i0SopoXr+kQFuE8YygHZgYE4QvAYzOPUlxFGmRr56aGpC4onIwiZybA
+	cHYYuIdYpv1ELGSbccgK21GzMtrKhQis9iqP5Gw7/QylY9eV5rcBtzvHGn4O2AdqXu2jas140Sh
+	A2qpKK7wpS43egr8BmhE=
+X-Received: by 2002:a05:7022:6a5:b0:11d:fd41:62c8 with SMTP id a92af1059eb24-126fc2ef50bmr1459947c88.13.1770305396389;
+        Thu, 05 Feb 2026 07:29:56 -0800 (PST)
+X-Received: by 2002:a05:7022:6a5:b0:11d:fd41:62c8 with SMTP id a92af1059eb24-126fc2ef50bmr1459922c88.13.1770305395713;
+        Thu, 05 Feb 2026 07:29:55 -0800 (PST)
 Received: from localhost ([140.82.166.162])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-126f503e5aasm4543164c88.14.2026.02.05.06.56.34
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-126f503087esm4715815c88.12.2026.02.05.07.29.54
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 05 Feb 2026 06:56:35 -0800 (PST)
-Date: Thu, 5 Feb 2026 08:56:33 -0600
+        Thu, 05 Feb 2026 07:29:54 -0800 (PST)
+Date: Thu, 5 Feb 2026 09:29:53 -0600
 From: Andrew Jones <andrew.jones@oss.qualcomm.com>
-To: fangyu.yu@linux.alibaba.com
-Cc: pbonzini@redhat.com, corbet@lwn.net, anup@brainfault.org,
-        atish.patra@linux.dev, pjw@kernel.org, palmer@dabbelt.com,
-        aou@eecs.berkeley.edu, alex@ghiti.fr, guoren@kernel.org,
-        radim.krcmar@oss.qualcomm.com, linux-doc@vger.kernel.org,
-        kvm@vger.kernel.org, kvm-riscv@lists.infradead.org,
-        linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v5 0/3] Support runtime configuration for per-VM's HGATP
- mode
-Message-ID: <vgqqpqfqin34stqyd2gdqxiopw6vornjpmomuyctx7ngbtjj5t@ly4avedudyrx>
-References: <20260204134507.33912-1-fangyu.yu@linux.alibaba.com>
+To: Jiakai Xu <xujiakai2025@iscas.ac.cn>
+Cc: linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
+        kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
+        linux-kselftest@vger.kernel.org, Anup Patel <anup@brainfault.org>,
+        Atish Patra <atish.patra@linux.dev>, Paul Walmsley <pjw@kernel.org>,
+        Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
+        Alexandre Ghiti <alex@ghiti.fr>,
+        Andrew Jones <ajones@ventanamicro.com>,
+        Paolo Bonzini <pbonzini@redhat.com>, Shuah Khan <shuah@kernel.org>,
+        Jiakai Xu <jiakaiPeanut@gmail.com>
+Subject: Re: [PATCH v6 1/2] RISC-V: KVM: Validate SBI STA shmem alignment in
+  kvm_sbi_ext_sta_set_reg()
+Message-ID: <zudnvpsirxbfjwh6plmj5utumgvj4tmzdddegneu3f22vfxdz3@dza2x6bur6pb>
+References: <20260205010502.2554381-1-xujiakai2025@iscas.ac.cn>
+ <20260205010502.2554381-2-xujiakai2025@iscas.ac.cn>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20260204134507.33912-1-fangyu.yu@linux.alibaba.com>
-X-Proofpoint-ORIG-GUID: XGMVFCOnIq366ZbXPlJgtQ1VmrLqcmfe
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMjA1MDExMyBTYWx0ZWRfX2h0PvaIdjdL9
- 4h/DrKEpwWT+PlNpt7luJpCrFI7vJJXduAA52No9vKCGn6/ETZeazIhahD7cOm3OdcHvPFaVQ75
- Qcmw6Kyj9zucGM7p3ShwWQUT66JWCHh+8ynb59iPg5eQWG2LKHdlKmRX/0V2QogsN4IcnXNTd9X
- 9iFs78uEHeb33xUoQRxKtQFzq4ZdFFn+MbfGtPmsCIeVM6QNFyDvDIJN90VpldJMUebhEwj9Ti6
- 0bTviZ1IriPG+WlrZjYAujSr84EwQaZ6Z33mUIBnjIMYQTLGSGayhZ5z1NIXpPTvkEn7s5adbM+
- pkBKor04OLEaRLWLvYVwu/sjxs8zNpse0w+vvyphuHj2jdWG3SL4uq8ffmWsGg6sC7DPDrWbq40
- NzATs6kyDkXCE1M2Nl53YypPiiU9JW7cKSkhOjp+JQFCF9PKvOLa8zzTHz0eIXb5pfQYFW1zBmv
- 4f+c/c2aiWBiiPgbbhQ==
-X-Proofpoint-GUID: XGMVFCOnIq366ZbXPlJgtQ1VmrLqcmfe
-X-Authority-Analysis: v=2.4 cv=QaVrf8bv c=1 sm=1 tr=0 ts=6984afa4 cx=c_pps
+In-Reply-To: <20260205010502.2554381-2-xujiakai2025@iscas.ac.cn>
+X-Authority-Analysis: v=2.4 cv=ItITsb/g c=1 sm=1 tr=0 ts=6984b775 cx=c_pps
  a=JYo30EpNSr/tUYqK9jHPoA==:117 a=cvcws7F5//HeuvjG1O1erQ==:17
  a=kj9zAlcOel0A:10 a=HzLeVaNsDn8A:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=SRrdq9N9AAAA:8 a=EUspDBNiAAAA:8
- a=pZlcIiJjb0-w25zZ6xIA:9 a=CjuIK1q_8ugA:10 a=Fk4IpSoW4aLDllm1B1p-:22
+ a=VkNPw1HP01LnGYTKEx00:22 a=pGLkceISAAAA:8 a=EUspDBNiAAAA:8
+ a=9wIPkYZYpLDyJTQGRwgA:9 a=CjuIK1q_8ugA:10 a=Fk4IpSoW4aLDllm1B1p-:22
+X-Proofpoint-ORIG-GUID: sbl1L1NM9iI6rZqi41rkIR6EIQ9mk3z8
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMjA1MDExNiBTYWx0ZWRfX5bS6GxclgOI5
+ 9esH97ELmOVIjziQqOD2qFQW+x6U/Q+w38wImSUjp30Tfbwks3QIm4myBzaPXnnwLTQQz09c7C2
+ P5WAsS+K8hIhsfXCX5eYC+SP7vMlurAnTCsyOkYNsjKSDzMNskYwez6ESYpS9K/6/EKzG+JNi86
+ bQNtrK0WM8d8E7Ws4g9+QUYvqOiGSLx43sLRSucDitdkjArzXnrQg9XxC0VaYHf4Zg12DXwuNwX
+ ALTSzCVSLd3pqHYPZQJ+Ak+JP79lgC64VJ9HHAyobTP4dKQw6yFBGA/7lFBBdKZlGo8LgBtHqP/
+ JTDH4o6OvEBGGpKZjuWSywn6TQBJM2ZCQ9xzceyZamQXSuf0cgy9pKX+xAbJPwf7ODjSCbVg1Mv
+ RrZm/S5e5CMds60HtwsLpIsgm7gv8Fu39uXBMmPoX1GMlP/mArbNe2Abt8qBwM3GDZjK2KDwdgk
+ sTZoCs13ou95hO5OZzQ==
+X-Proofpoint-GUID: sbl1L1NM9iI6rZqi41rkIR6EIQ9mk3z8
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-02-05_03,2026-02-05_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 spamscore=0 bulkscore=0 adultscore=0 impostorscore=0
- lowpriorityscore=0 clxscore=1015 malwarescore=0 phishscore=0 suspectscore=0
+ clxscore=1015 bulkscore=0 spamscore=0 lowpriorityscore=0 adultscore=0
+ suspectscore=0 malwarescore=0 priorityscore=1501 impostorscore=0 phishscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2601150000 definitions=main-2602050113
+ reason=mlx scancount=1 engine=8.22.0-2601150000 definitions=main-2602050116
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260205_065638_341954_0D50EA36 
-X-CRM114-Status: GOOD (  13.18  )
+X-CRM114-CacheID: sfid-20260205_072959_020125_06F9D1C7 
+X-CRM114-Status: GOOD (  31.37  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -144,21 +148,100 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Wed, Feb 04, 2026 at 09:45:04PM +0800, fangyu.yu@linux.alibaba.com wrote:
-> From: Fangyu Yu <fangyu.yu@linux.alibaba.com>
+On Thu, Feb 05, 2026 at 01:05:01AM +0000, Jiakai Xu wrote:
+> The RISC-V SBI Steal-Time Accounting (STA) extension requires the shared
+> memory physical address to be 64-byte aligned, or set to all-ones to
+> explicitly disable steal-time accounting.
 > 
-> Currently, RISC-V KVM hardcodes the G-stage page table format (HGATP mode)
-> to the maximum mode detected at boot time (e.g., SV57x4 if supported). but
-> often such a wide GPA is unnecessary, just as a host sometimes doesn't need
-> sv57.
+> KVM exposes the SBI STA shared memory configuration to userspace via
+> KVM_SET_ONE_REG. However, the current implementation of
+> kvm_sbi_ext_sta_set_reg() does not validate the alignment of the configured
+> shared memory address. As a result, userspace can install a misaligned
+> shared memory address that violates the SBI specification.
 > 
-> This patch introduces per-VM configurability of the G-stage mode via a new
-> KVM capability: KVM_CAP_RISCV_SET_HGATP_MODE. User-space can now explicitly
-> request a specific HGATP mode (SV39x4, SV48x4, SV57x4 or SV32x4) during
-> VM creation.
+> Such an invalid configuration may later reach runtime code paths that
+> assume a valid and properly aligned shared memory region. In particular,
+> KVM_RUN can trigger the following WARN_ON in
+> kvm_riscv_vcpu_record_steal_time():
 > 
-
-For the series,
+>   WARNING: arch/riscv/kvm/vcpu_sbi_sta.c:49 at
+>   kvm_riscv_vcpu_record_steal_time
+> 
+> WARN_ON paths are not expected to be reachable during normal runtime
+> execution, and may result in a kernel panic when panic_on_warn is enabled.
+> 
+> Fix this by validating the computed shared memory GPA at the
+> KVM_SET_ONE_REG boundary. A temporary GPA is constructed and checked
+> before committing it to vcpu->arch.sta.shmem. The validation allows
+> either a 64-byte aligned GPA or INVALID_GPA (all-ones), which disables
+> STA as defined by the SBI specification.
+> 
+> This prevents invalid userspace state from reaching runtime code paths
+> that assume SBI STA invariants and avoids unexpected WARN_ON behavior.
+> 
+> Fixes: f61ce890b1f074 ("RISC-V: KVM: Add support for SBI STA registers")
+> Signed-off-by: Jiakai Xu <xujiakai2025@iscas.ac.cn>
+> Signed-off-by: Jiakai Xu <jiakaiPeanut@gmail.com>
+> ---
+> V5 -> V6: Initialized new_shmem to INVALID_GPA as suggested.
+> V4 -> V5: Added parentheses to function name in subject.
+> V3 -> V4: Declared new_shmem at the top of kvm_sbi_ext_sta_set_reg().
+>           Initialized new_shmem to 0 instead of vcpu->arch.sta.shmem.
+>           Added blank lines per review feedback.
+> V2 -> V3: Added parentheses to function name in subject.
+> V1 -> V2: Added Fixes tag.
+> ---
+>  arch/riscv/kvm/vcpu_sbi_sta.c | 16 +++++++++++-----
+>  1 file changed, 11 insertions(+), 5 deletions(-)
+> 
+> diff --git a/arch/riscv/kvm/vcpu_sbi_sta.c b/arch/riscv/kvm/vcpu_sbi_sta.c
+> index afa0545c3bcfc..3b834709b429f 100644
+> --- a/arch/riscv/kvm/vcpu_sbi_sta.c
+> +++ b/arch/riscv/kvm/vcpu_sbi_sta.c
+> @@ -181,6 +181,7 @@ static int kvm_sbi_ext_sta_set_reg(struct kvm_vcpu *vcpu, unsigned long reg_num,
+>  				   unsigned long reg_size, const void *reg_val)
+>  {
+>  	unsigned long value;
+> +	gpa_t new_shmem = INVALID_GPA;
+>  
+>  	if (reg_size != sizeof(unsigned long))
+>  		return -EINVAL;
+> @@ -191,18 +192,18 @@ static int kvm_sbi_ext_sta_set_reg(struct kvm_vcpu *vcpu, unsigned long reg_num,
+>  		if (IS_ENABLED(CONFIG_32BIT)) {
+>  			gpa_t hi = upper_32_bits(vcpu->arch.sta.shmem);
+>  
+> -			vcpu->arch.sta.shmem = value;
+> -			vcpu->arch.sta.shmem |= hi << 32;
+> +			new_shmem = value;
+> +			new_shmem |= hi << 32;
+>  		} else {
+> -			vcpu->arch.sta.shmem = value;
+> +			new_shmem = value;
+>  		}
+>  		break;
+>  	case KVM_REG_RISCV_SBI_STA_REG(shmem_hi):
+>  		if (IS_ENABLED(CONFIG_32BIT)) {
+>  			gpa_t lo = lower_32_bits(vcpu->arch.sta.shmem);
+>  
+> -			vcpu->arch.sta.shmem = ((gpa_t)value << 32);
+> -			vcpu->arch.sta.shmem |= lo;
+> +			new_shmem = ((gpa_t)value << 32);
+> +			new_shmem |= lo;
+>  		} else if (value != 0) {
+>  			return -EINVAL;
+>  		}
+> @@ -211,6 +212,11 @@ static int kvm_sbi_ext_sta_set_reg(struct kvm_vcpu *vcpu, unsigned long reg_num,
+>  		return -ENOENT;
+>  	}
+>  
+> +	if (new_shmem != INVALID_GPA && !IS_ALIGNED(new_shmem, 64))
+> +		return -EINVAL;
+> +
+> +	vcpu->arch.sta.shmem = new_shmem;
+> +
+>  	return 0;
+>  }
+>
 
 Reviewed-by: Andrew Jones <andrew.jones@oss.qualcomm.com>
 
