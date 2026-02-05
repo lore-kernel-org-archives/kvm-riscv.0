@@ -4,79 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 80FC1EA794C
-	for <kvm-riscv@archiver.kernel.org>; Thu,  5 Feb 2026 01:05:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 91158EA794C
+	for <kvm-riscv@archiver.kernel.org>; Thu,  5 Feb 2026 01:28:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=+5jQYyJJYooUrYVisX8NwGD+TunZFnPnI101jNc1nS8=; b=dKHw/IadpHmA4s
-	5tIm5Td2hn18gDW0lEP7qmjU/ouzuCkysWNOwtb7eYErLsxUhic4dbSwCsY3gG0cY4bH/USQ/vEZq
-	sxMaS7+Pn60Pw9itfK6uugVSrx1P4IbEsHagAvTgRNxE1/LJi+djr27GOTSkFPBab1+q6rezm2VER
-	gs1hMZCw6cBtRbMNV9+vyHToybyYmQDtRlboWfCDRRV3wq0YPCS+4uGJop36oWcBdYDfbGmRTpD9+
-	4Y5Hy3i76rwe9miIKfBmvhULYwYV9o8bnVoO+Y4g4wJpR82aTxhPU2/nIrzVZkWGYUltZtXa+CcPU
-	A3W3lCChF9zVh0IFX6Dg==;
+	List-Owner; bh=fx9sGbrtVElJm9kFlwwnkIIhvG1EISwa4KiX2WRy8Rk=; b=l6Juf6fAi6hceR
+	ZjfrDu5Xd14tLYuXmOgF8YrbpRkuBoIRDYYj0/ETpuAKlbbOf/ts3Axe70idHRzzZ4sev0c41yX1u
+	+0dQzIo8dDNhGaoUH8V2bfDW+lQDCTHZ3aXJ9wXOhTEs+RGe1pTZ+4NWMV8jkXpElSUX85zKqr2TP
+	a/i8EJ+2GxfTaO7eOQe9tW26BJn128idCvL0TXr2q30Z14qI1KUIZ1DFQA1cyuOatDYe8GC5Lge7b
+	MnzxZsBAfiHXvUIcLMpCLzsuSgd2Vh0kN/Gxt4uUphwJp/bMx7HIivIrlvF5s1FxPgpUT1+GfiR2s
+	3SmzGATRT7Talr6fZcnA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vnnoB-00000009F40-0yAn;
-	Thu, 05 Feb 2026 01:05:23 +0000
-Received: from smtp81.cstnet.cn ([159.226.251.81] helo=cstnet.cn)
+	id 1vnoAV-00000009GMG-0UCa;
+	Thu, 05 Feb 2026 01:28:27 +0000
+Received: from out30-110.freemail.mail.aliyun.com ([115.124.30.110])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vnno6-00000009F2O-3zB8;
-	Thu, 05 Feb 2026 01:05:21 +0000
-Received: from fric.. (unknown [210.73.43.101])
-	by APP-03 (Coremail) with SMTP id rQCowACXt97A7INpzKW1Bw--.43975S4;
-	Thu, 05 Feb 2026 09:05:05 +0800 (CST)
-From: Jiakai Xu <xujiakai2025@iscas.ac.cn>
-To: linux-kernel@vger.kernel.org,
-	kvm@vger.kernel.org,
+	id 1vnoAQ-00000009GLO-3B0y;
+	Thu, 05 Feb 2026 01:28:25 +0000
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=linux.alibaba.com; s=default;
+	t=1770254895; h=From:To:Subject:Date:Message-Id:MIME-Version;
+	bh=ch2lw3Gkx/tmSQGhjBy06LxNeqZ/lvoi8ni6rWgh66M=;
+	b=yGA9ZSnFPe0kW6jneI9Ffxs11MOU+imY89sxh+VOCRLTMJaz51YukP0nsdL58YoC4VnIDQd56+2E6L+jXCLkakcZhZcqbPKwgd/FcqMQJbpyaAhwvcflUOyxsUCqHkrmlHX7LC8nci8EKv2S86uUhOM+6Khz/Akk8nKVnYVQ3e0=
+Received: from localhost.localdomain(mailfrom:fangyu.yu@linux.alibaba.com fp:SMTPD_---0WyZ3nte_1770254889 cluster:ay36)
+          by smtp.aliyun-inc.com;
+          Thu, 05 Feb 2026 09:28:11 +0800
+From: fangyu.yu@linux.alibaba.com
+To: andrew.jones@oss.qualcomm.com
+Cc: alex@ghiti.fr,
+	anup@brainfault.org,
+	aou@eecs.berkeley.edu,
+	atish.patra@linux.dev,
+	corbet@lwn.net,
+	fangyu.yu@linux.alibaba.com,
+	guoren@kernel.org,
 	kvm-riscv@lists.infradead.org,
+	kvm@vger.kernel.org,
+	linux-doc@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
 	linux-riscv@lists.infradead.org,
-	linux-kselftest@vger.kernel.org
-Cc: Anup Patel <anup@brainfault.org>,
-	Atish Patra <atish.patra@linux.dev>,
-	Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Alexandre Ghiti <alex@ghiti.fr>,
-	Andrew Jones <ajones@ventanamicro.com>,
-	Paolo Bonzini <pbonzini@redhat.com>,
-	Shuah Khan <shuah@kernel.org>,
-	Jiakai Xu <xujiakai2025@iscas.ac.cn>,
-	Jiakai Xu <jiakaiPeanut@gmail.com>
-Subject: [PATCH v6 2/2] RISC-V: KVM: selftests: Add RISC-V SBI STA shmem alignment tests
-Date: Thu,  5 Feb 2026 01:05:02 +0000
-Message-Id: <20260205010502.2554381-3-xujiakai2025@iscas.ac.cn>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20260205010502.2554381-1-xujiakai2025@iscas.ac.cn>
-References: <20260205010502.2554381-1-xujiakai2025@iscas.ac.cn>
+	palmer@dabbelt.com,
+	pbonzini@redhat.com,
+	pjw@kernel.org,
+	radim.krcmar@oss.qualcomm.com
+Subject: Re: Re: [PATCH v5 3/3] RISC-V: KVM: add KVM_CAP_RISCV_SET_HGATP_MODE
+Date: Thu,  5 Feb 2026 09:28:08 +0800
+Message-Id: <20260205012808.98973-1-fangyu.yu@linux.alibaba.com>
+X-Mailer: git-send-email 2.39.3 (Apple Git-146)
+In-Reply-To: <ocfqo4zpsg6yyaz6kd65jrvudtb35uerdsueazqdk6w7c5lvdf@wvwzhc57gxez>
+References: <ocfqo4zpsg6yyaz6kd65jrvudtb35uerdsueazqdk6w7c5lvdf@wvwzhc57gxez>
 MIME-Version: 1.0
-X-CM-TRANSID: rQCowACXt97A7INpzKW1Bw--.43975S4
-X-Coremail-Antispam: 1UD129KBjvJXoWxCr1fKw17CF15CrWfXrW3Awb_yoW5trW5pF
-	WkCwn0vFW8KFWxt34xKr1vqF4Fg3ykKr4vvrWxu3yrAF4xtrWxJrsrKFyDZ34DWrZ5X3WS
-	vFyIgF4Uua1UXa7anT9S1TB71UUUUUJqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUUHE14x267AKxVWrJVCq3wAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
-	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2048vs2IY020E87I2jVAFwI0_Jryl82xGYIkIc2
-	x26xkF7I0E14v26ryj6s0DM28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4kI8wA2z4x0
-	Y4vE2Ix0cI8IcVAFwI0_Xr0_Ar1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Cr0_Gr1UM2
-	8EF7xvwVC2z280aVAFwI0_Gr1j6F4UJwA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_Cr1j6rxd
-	M2kKe7AKxVWUXVWUAwAac4AC62xK8xCEY4vEwIxC4wAS0I0E0xvYzxvE52x082IY62kv04
-	87Mc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AKxVWUXVWUAwAv7VC2z280
-	aVAFwI0_Jr0_Gr1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48IcxkI7VAKI48JM4x0x7Aq67
-	IIx4CEVc8vx2IErcIFxwACI402YVCY1x02628vn2kIc2xKxwCY1x0262kKe7AKxVW8ZVWr
-	XwCY02Avz4vE14v_KwCF04k20xvY0x0EwIxGrwCFx2IqxVCFs4IE7xkEbVWUJVW8JwC20s
-	026c02F40E14v26r1j6r18MI8I3I0E7480Y4vE14v26r106r1rMI8E67AF67kF1VAFwI0_
-	GFv_WrylIxkGc2Ij64vIr41lIxAIcVC0I7IYx2IY67AKxVWUCVW8JwCI42IY6xIIjxv20x
-	vEc7CjxVAFwI0_Cr0_Gr1UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv
-	67AKxVWUJVW8JwCI42IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIYCTnIWIevJa73UjIFyT
-	uYvjTRu89NDUUUU
-X-Originating-IP: [210.73.43.101]
-X-CM-SenderInfo: 50xmxthndljiysv6x2xfdvhtffof0/1tbiDAcJCWmD6tsHtgAAsh
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260204_170519_362061_11098504 
-X-CRM114-Status: GOOD (  10.74  )
+X-CRM114-CacheID: sfid-20260204_172823_797958_F12B5C22 
+X-CRM114-Status: GOOD (  22.25  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -93,102 +78,148 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Add RISC-V KVM selftests to verify the SBI Steal-Time Accounting (STA)
-shared memory alignment requirements.
+>> From: Fangyu Yu <fangyu.yu@linux.alibaba.com>
+>> 
+>> Add a VM capability that allows userspace to select the G-stage page table
+>> format by setting HGATP.MODE on a per-VM basis.
+>> 
+>> Userspace enables the capability via KVM_ENABLE_CAP, passing the requested
+>> HGATP.MODE in args[0]. The request is rejected with -EINVAL if the mode is
+>> not supported by the host, and with -EBUSY if the VM has already been
+>> committed (e.g. vCPUs have been created or any memslot is populated).
+>> 
+>> KVM_CHECK_EXTENSION(KVM_CAP_RISCV_SET_HGATP_MODE) returns a bitmask of the
+>> HGATP.MODE formats supported by the host.
+>> 
+>> Signed-off-by: Fangyu Yu <fangyu.yu@linux.alibaba.com>
+>> ---
+>>  Documentation/virt/kvm/api.rst | 27 +++++++++++++++++++++++++++
+>>  arch/riscv/kvm/vm.c            | 19 +++++++++++++++++--
+>>  include/uapi/linux/kvm.h       |  1 +
+>>  3 files changed, 45 insertions(+), 2 deletions(-)
+>> 
+>> diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.rst
+>> index 01a3abef8abb..62dc120857c1 100644
+>> --- a/Documentation/virt/kvm/api.rst
+>> +++ b/Documentation/virt/kvm/api.rst
+>> @@ -8765,6 +8765,33 @@ helpful if user space wants to emulate instructions which are not
+>>  This capability can be enabled dynamically even if VCPUs were already
+>>  created and are running.
+>>  
+>> +7.47 KVM_CAP_RISCV_SET_HGATP_MODE
+>> +---------------------------------
+>> +
+>> +:Architectures: riscv
+>> +:Type: VM
+>> +:Parameters: args[0] contains the requested HGATP mode
+>> +:Returns:
+>> +  - 0 on success.
+>> +  - -EINVAL if args[0] is outside the range of HGATP modes supported by the
+>> +    hardware.
+>> +  - -EBUSY if vCPUs have already been created for the VM, if the VM has any
+>> +    non-empty memslots.
+>> +
+>
+>Currently the documentation for KVM_SET_ONE_REG has this for EBUSY
+>
+>  EBUSY    (riscv) changing register value not allowed after the vcpu
+>           has run at least once
+>
+>I suggest we update the KVM_SET_ONE_REG EBUSY description to say
+>
+>(riscv) changing register value not allowed. This may occur after the vcpu
+>has run at least once or when other setup has completed which depends on
+>the value of the register.
 
-The SBI specification requires the STA shared memory GPA to be 64-byte
-aligned, or set to all-ones to explicitly disable steal-time accounting.
-This test verifies that KVM enforces the expected behavior when
-configuring the SBI STA shared memory via KVM_SET_ONE_REG.
+Thanks for the suggestion.
 
-Specifically, the test checks that:
-- misaligned GPAs are rejected with -EINVAL
-- 64-byte aligned GPAs are accepted
-- INVALID_GPA correctly disables steal-time accounting
+In this series the HGATP mode is configured via KVM_ENABLE_CAP at the VM level
+(kvm_vm_ioctl_enable_cap), not via KVM_SET_ONE_REG. Updating the KVM_SET_ONE_REG
+-EBUSY description might be misleading since it is vCPU one-reg specific and not
+directly related to this series.
 
-Signed-off-by: Jiakai Xu <xujiakai2025@iscas.ac.cn>
-Signed-off-by: Jiakai Xu <jiakaiPeanut@gmail.com>
----
- .../selftests/kvm/include/riscv/processor.h   |  4 +++
- tools/testing/selftests/kvm/steal_time.c      | 33 +++++++++++++++++++
- 2 files changed, 37 insertions(+)
+>> +This capability allows userspace to explicitly select the HGATP mode for
+>> +the VM. The selected mode must be supported by both KVM and hardware. This
+>> +capability must be enabled before creating any vCPUs or memslots.
+>> +
+>> +If this capability is not enabled, KVM will select the default HGATP mode
+>> +automatically. The default is the highest HGATP.MODE value supported by
+>> +hardware.
+>> +
+>> +``KVM_CHECK_EXTENSION(KVM_CAP_RISCV_SET_HGATP_MODE)`` returns a bitmask of
+>> +HGATP.MODE values supported by the host. A return value of 0 indicates that
+>> +the capability is not supported. Supported-mode bitmask use HGATP.MODE
+>> +encodings as defined by the RISC-V privileged specification, such as Sv39x4
+>> +corresponds to HGATP.MODE=8, so userspace should test bitmask & BIT(8).
+>> +
+>>  8. Other capabilities.
+>>  ======================
+>>  
+>> diff --git a/arch/riscv/kvm/vm.c b/arch/riscv/kvm/vm.c
+>> index 4b2156df40fc..7d1e1d257df5 100644
+>> --- a/arch/riscv/kvm/vm.c
+>> +++ b/arch/riscv/kvm/vm.c
+>> @@ -202,6 +202,9 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+>>  	case KVM_CAP_VM_GPA_BITS:
+>>  		r = kvm_riscv_gstage_gpa_bits(&kvm->arch);
+>>  		break;
+>> +	case KVM_CAP_RISCV_SET_HGATP_MODE:
+>> +		r = kvm_riscv_get_hgatp_mode_mask();
+>> +		break;
+>>  	default:
+>>  		r = 0;
+>>  		break;
+>> @@ -212,12 +215,24 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+>>  
+>>  int kvm_vm_ioctl_enable_cap(struct kvm *kvm, struct kvm_enable_cap *cap)
+>>  {
+>> +	if (cap->flags)
+>> +		return -EINVAL;
+>> +
+>>  	switch (cap->cap) {
+>>  	case KVM_CAP_RISCV_MP_STATE_RESET:
+>> -		if (cap->flags)
+>> -			return -EINVAL;
+>>  		kvm->arch.mp_state_reset = true;
+>>  		return 0;
+>> +	case KVM_CAP_RISCV_SET_HGATP_MODE:
+>> +		if (!kvm_riscv_hgatp_mode_is_valid(cap->args[0]))
+>> +			return -EINVAL;
+>> +
+>> +		if (kvm->created_vcpus || !kvm_are_all_memslots_empty(kvm))
+>> +			return -EBUSY;
+>> +#ifdef CONFIG_64BIT
+>> +		kvm->arch.kvm_riscv_gstage_pgd_levels =
+>> +				3 + cap->args[0] - HGATP_MODE_SV39X4;
+>> +#endif
+>
+> 'if (IS_ENABLED(CONFIG_64BIT))' is preferred to the #ifdef.
+>
+>> +		return 0;
+>>  	default:
+>>  		return -EINVAL;
+>>  	}
+>> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+>> index dddb781b0507..00c02a880518 100644
+>> --- a/include/uapi/linux/kvm.h
+>> +++ b/include/uapi/linux/kvm.h
+>> @@ -974,6 +974,7 @@ struct kvm_enable_cap {
+>>  #define KVM_CAP_GUEST_MEMFD_FLAGS 244
+>>  #define KVM_CAP_ARM_SEA_TO_USER 245
+>>  #define KVM_CAP_S390_USER_OPEREXEC 246
+>> +#define KVM_CAP_RISCV_SET_HGATP_MODE 247
+>>  
+>>  struct kvm_irq_routing_irqchip {
+>>  	__u32 irqchip;
+>> -- 
+>> 2.50.1
+>>
+>
+>Thanks,
+>drew
 
-diff --git a/tools/testing/selftests/kvm/include/riscv/processor.h b/tools/testing/selftests/kvm/include/riscv/processor.h
-index e58282488beb3..c3551d129d2f6 100644
---- a/tools/testing/selftests/kvm/include/riscv/processor.h
-+++ b/tools/testing/selftests/kvm/include/riscv/processor.h
-@@ -62,6 +62,10 @@ static inline uint64_t __kvm_reg_id(uint64_t type, uint64_t subtype,
- 						     KVM_REG_RISCV_SBI_SINGLE,		\
- 						     idx, KVM_REG_SIZE_ULONG)
- 
-+#define RISCV_SBI_STA_REG(idx)	__kvm_reg_id(KVM_REG_RISCV_SBI_STATE,	\
-+						     KVM_REG_RISCV_SBI_STA,			\
-+						     idx, KVM_REG_SIZE_ULONG)
-+
- bool __vcpu_has_ext(struct kvm_vcpu *vcpu, uint64_t ext);
- 
- static inline bool __vcpu_has_isa_ext(struct kvm_vcpu *vcpu, uint64_t isa_ext)
-diff --git a/tools/testing/selftests/kvm/steal_time.c b/tools/testing/selftests/kvm/steal_time.c
-index 8edc1fca345ba..30b98d1b601c3 100644
---- a/tools/testing/selftests/kvm/steal_time.c
-+++ b/tools/testing/selftests/kvm/steal_time.c
-@@ -209,6 +209,7 @@ static void steal_time_dump(struct kvm_vm *vm, uint32_t vcpu_idx)
- 
- /* SBI STA shmem must have 64-byte alignment */
- #define STEAL_TIME_SIZE		((sizeof(struct sta_struct) + 63) & ~63)
-+#define INVALID_GPA (~(u64)0)
- 
- static vm_paddr_t st_gpa[NR_VCPUS];
- 
-@@ -301,6 +302,34 @@ static void steal_time_dump(struct kvm_vm *vm, uint32_t vcpu_idx)
- 	pr_info("\n");
- }
- 
-+static void test_riscv_sta_shmem_alignment(struct kvm_vcpu *vcpu)
-+{
-+	struct kvm_one_reg reg;
-+	uint64_t shmem;
-+	int ret;
-+
-+	reg.id = RISCV_SBI_STA_REG(0);
-+	reg.addr = (uint64_t)&shmem;
-+
-+	/* Case 1: misaligned GPA */
-+	shmem = ST_GPA_BASE + 1;
-+	ret = __vcpu_ioctl(vcpu, KVM_SET_ONE_REG, &reg);
-+	TEST_ASSERT(ret == -1 && errno == EINVAL,
-+		    "misaligned STA shmem should return -EINVAL");
-+
-+	/* Case 2: 64-byte aligned GPA */
-+	shmem = ST_GPA_BASE;
-+	ret = __vcpu_ioctl(vcpu, KVM_SET_ONE_REG, &reg);
-+	TEST_ASSERT(ret == 0,
-+		    "aligned STA shmem should succeed");
-+
-+	/* Case 3: INVALID_GPA disables STA */
-+	shmem = INVALID_GPA;
-+	ret = __vcpu_ioctl(vcpu, KVM_SET_ONE_REG, &reg);
-+	TEST_ASSERT(ret == 0,
-+		    "INVALID_GPA should disable STA successfully");
-+}
-+
- #endif
- 
- static void *do_steal_time(void *arg)
-@@ -369,6 +398,10 @@ int main(int ac, char **av)
- 	TEST_REQUIRE(is_steal_time_supported(vcpus[0]));
- 	ksft_set_plan(NR_VCPUS);
- 
-+#ifdef __riscv
-+	test_riscv_sta_shmem_alignment(vcpus[0]);
-+#endif
-+
- 	/* Run test on each VCPU */
- 	for (i = 0; i < NR_VCPUS; ++i) {
- 		steal_time_init(vcpus[i], i);
--- 
-2.34.1
-
+Thanks,
+Fangyu
 
 -- 
 kvm-riscv mailing list
