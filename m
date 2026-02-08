@@ -4,99 +4,135 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E93A9EE6B6F
-	for <kvm-riscv@archiver.kernel.org>; Sat,  7 Feb 2026 03:21:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 827ACEF06E2
+	for <kvm-riscv@archiver.kernel.org>; Sun,  8 Feb 2026 16:15:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:Subject:Message-ID:Date:From:
-	MIME-Version:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=sVSJ54De8Jf36ieFyMxixMcoFsNvo0/Q2ftNUTnIagE=; b=JW8pq9OsCrr5qE
-	bt3i9/I2lbv+Aq/zgHrsK7CKcdqTtKQeBoF0koKUBlT9PZyHUyWAOiVQWK50Hj1J+B9MhoePO/DL8
-	x9t7IwrIbdDtViXqogr0dUWnnS+leyP0XQkZ8OGtTWzVREOSUSNpeVwJZCp/uJ+mo6Umg1MYwEptc
-	lhS4+Azzw3/BarM8/JN8Xh1eZWYnDI2A9itIkehQFWeoWklXucwRYSZobWelSwraN76tapAc3K3ZP
-	mcP8fOYZfN5f6UzYCuyXhN3ht3VVJ5JQnr8NqPvBYbpiTit9Fd+SvvOtbc0+ixWTVVUPCDhL6g30P
-	NLp5dhxbEsd6G9hxWAZg==;
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
+	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=T0rCHiYbDXYiYCalKkEt44UT5jvKMXsnglNdBHMnPUI=; b=btOeCi/V+2WpTp
+	TrLyHv5xJ17bGheoY45Jv02BKUHh7hHIh47tkLLWyxfbes263nwBntSR1yTqxfSf3tI1JqpyaW8zT
+	e/ykCTTFcQkXfNUZkWq+0qGRC6Hc+Y5dgrBg9GiQTSONcGkOJQfO+RYEozxmsD3FzohQrnPJHfxti
+	cQJHP9x5Njck3qq4H+L1GlP4iKNXbCb1fdojmndYUxrhb2Bq54jdqGEsev8KSbzo+PiwKGSYITloE
+	nIPQM8YlvhRRORDn1T+wAC4rbN2elbdjGOJjryR4A7V8bXjDpzu+d2IwIoBTsies7BX63v+byRIjD
+	u4zJXKNFJZ5tcY0u+l9A==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1voYsz-0000000C4r2-3SU2;
-	Sat, 07 Feb 2026 03:21:29 +0000
-Received: from mail-oo1-xc33.google.com ([2607:f8b0:4864:20::c33])
+	id 1vp7RV-0000000DRk9-1Bma;
+	Sun, 08 Feb 2026 16:15:25 +0000
+Received: from mx0b-0031df01.pphosted.com ([205.220.180.131])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1voYsv-0000000C4qG-2sFI
+	id 1vp7RS-0000000DRhY-0esn
 	for kvm-riscv@lists.infradead.org;
-	Sat, 07 Feb 2026 03:21:28 +0000
-Received: by mail-oo1-xc33.google.com with SMTP id 006d021491bc7-66106a2f8d1so1634109eaf.1
-        for <kvm-riscv@lists.infradead.org>; Fri, 06 Feb 2026 19:21:24 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1770434483; cv=none;
-        d=google.com; s=arc-20240605;
-        b=kB/8LUhiEzNHkasbARXvVedeWJJq+M59UIz5AluOKAwTUuVQiebAR6dwXb1DE2Kixq
-         v+ECa5J4bvpbr0FgfpJE5687EyOm2E35dtmrgx5QLysdtVKe1266tm26Yk+eqzIBtDwg
-         qSZYkMFqKOtM6b8OheWZWjTfXPLI3SmmVvmUPcC4Edxt62qVzOMeqKLRTrgGBXrlTFVp
-         Pk+G6u1WVg7LUzEmr+HTKsfEmSV3f9ctLLiJoaR6le4aMfPdumPMqaw8Fm8iy/4RKLC4
-         e+ber0vyUyERmOpWnsALzF94mGsuA0rAaMCqc69Yj8890tjw9/GaM9PtaD+M7VHeBwJH
-         q3dg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=cc:to:subject:message-id:date:from:mime-version:dkim-signature;
-        bh=DDnvhXep83DlBOrKWoBYx9m4Ze6xzsCfCU7TNyv34F8=;
-        fh=UeU+GSCSrsdW61/s2pAVDXOimFQLVglGORsW/lwvlJA=;
-        b=frIyZa/eJd24PtEh63uGcfxyVN+frBqFm8N3FWBIISVk7D2lvfJTXk9hHQUUg0MWcU
-         rtGD/Zx0WJ2PVVxYHi6jTe9Zhjlg7hK6BFCf7nKuhhggITvrByKqgocuTvEkp2AtT+9I
-         Dn/AN9S40f9n3Gcwdn8NhjfEL2LGJlYxmyzTtAM+AxjuvNQ2KezMhFvWis6Q6CKwdRt2
-         CBxTjvF7bod1+73HFRn5OE/yOU1ZjK8+ss4lxhKiOSbiLY1aXE96k354OdvmPf00CvGF
-         1hxlMNjSU3mNFEtYnfjtoFCtQw50H11nqEwy92xppNZUUSLrC4bJK88JnGKq7MTG7Crn
-         CfIQ==;
-        darn=lists.infradead.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	Sun, 08 Feb 2026 16:15:23 +0000
+Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 618Budrf4131304
+	for <kvm-riscv@lists.infradead.org>; Sun, 8 Feb 2026 16:15:18 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=qcppdkim1; bh=tEZvuD7PszcvIhjHPQ44DwrS
+	7K/2mzb6NKM1cf9Fq+s=; b=Ek3q8dh3vTid99CagXWhxx91gyx/B54lCKqbKPh3
+	xPreGTT76MiZnsBoKZVZX4zRHc8YpfRdWU1avt4sSDczYE9vhBsh0/KAvPnjWw1f
+	M9jT7hr0ZlgaHVVh8k+P6giW6BEPxAXlpePn3TZ0kvS5XS4Epat5hNo5BUSGTyLY
+	z6l72TrSU5jYf+csB3OZyc9M0e7yIqWGEp1fOgvncv88W2it0wZ18JglFRNEIalP
+	+bUty3sunPxPpv5uLXfSGc9uqy7XJJF9MqNB6sFZQxhnxeun7EerI1bS1rxrl8c1
+	5bb+zdTYnS1TAnl1kiA9YGF/1/9u9n5U6yGHPkRUzoQzpA==
+Received: from mail-dy1-f199.google.com (mail-dy1-f199.google.com [74.125.82.199])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4c5xb4tmje-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <kvm-riscv@lists.infradead.org>; Sun, 08 Feb 2026 16:15:18 +0000 (GMT)
+Received: by mail-dy1-f199.google.com with SMTP id 5a478bee46e88-2b6b9c1249fso2779503eec.1
+        for <kvm-riscv@lists.infradead.org>; Sun, 08 Feb 2026 08:15:18 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=brainfault-org.20230601.gappssmtp.com; s=20230601; t=1770434483; x=1771039283; darn=lists.infradead.org;
-        h=cc:to:subject:message-id:date:from:mime-version:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=DDnvhXep83DlBOrKWoBYx9m4Ze6xzsCfCU7TNyv34F8=;
-        b=3Spdo7iMpZ8C0xTfCubgMczFUV4l3TRjATUbz97SVBEdbpEEwHpVgaWGIWk3Vzzgvt
-         Ly9Zk15IKPQZkzTM77Gdo6qTatxOwo19mKZBxV4DUb3dqNybFAn4438O7G6a1cewl4Mj
-         e2d7NcnmRSF8XKSIDB1t/0yEl7jKqWdzri811oRnsvhnRu/pgWDtYUhKOdmp+t7fURWM
-         uRfH4hR57+SGq6GJZ2LFYcksQTMJf3/6Zq17VZT70q5b8/09CMGDtfU91kZNxE4UTpw8
-         LAVvHjy9+xGE1um4NuZlaPPTYtE8zxM3hZpvwkwAPq4ksVF2H4fzLihblw6VWCSJI4iI
-         i5og==
+        d=oss.qualcomm.com; s=google; t=1770567318; x=1771172118; darn=lists.infradead.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=tEZvuD7PszcvIhjHPQ44DwrS7K/2mzb6NKM1cf9Fq+s=;
+        b=I9UMuBJJzdgD1azwb6AExaI9QmK8qJ2usA/PswQygCiUS43urerZHRDZs1GVO4Idri
+         MHfwr4CcOir89J+kLiEnfhwHLR2katnX4fKzC/k5FCO1GnLqRCzVUbNJ2R9pkOX/MMao
+         hoK7EpeNLscw0VQozBU9146v9vtodkfro69X/4L8xTOo720NRqaYhP4nGn3rKbNRUglD
+         8fIUF6+Yyo2Kvc6hUKT8M3iPyxbZasPWlQwvILciYXC93zEk8kXigr9iBLPsKp+tVUtu
+         J8hB8NJQyo9aPWhI96UxOMQ0Ljg8I3oo8blWOZiqPBPp0F6yzQFa+2tMhJRun/PxNE3a
+         Kzxw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1770434483; x=1771039283;
-        h=cc:to:subject:message-id:date:from:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=DDnvhXep83DlBOrKWoBYx9m4Ze6xzsCfCU7TNyv34F8=;
-        b=GiMSM1p7DfylxugDTFhQk5qBi/4/fiSi/7y6tUeu9HUy3trDC9VSr68/yHtw9qf84F
-         l2hCqECAWFZLl+/Pb108YeCd48u9tRyj6d2oA1DRyYeDXXLZkZ49FHzEWhpS0qoqLani
-         BQuMmralBNtRtvPPC90HLXPykW4Ppz50eMHWiSwZi58u8Bqhc+UqJ9jitj8/iNiOTCC4
-         HrenSE3KXVNpFDpjEg2qr71oRFhq3JTZtQQL9jxUSY4G/NQr5v2UT2qIN/IVuxLfdS0Z
-         F4pSGIEIksojIGjNKw+wIz9xOqcgn52piZbPbLtZ3tNh4LrjBC/ZJB2b3saKa3B5fzmO
-         Q/1Q==
-X-Forwarded-Encrypted: i=1; AJvYcCXjSl6KwHq7SMIOXFLkUpHf9t1xmh7PKrNjcurTm0DIbFdbPqcRzloksrYjuj9LGIUx1+ecXeBCB0Y=@lists.infradead.org
-X-Gm-Message-State: AOJu0YwE1LHUYeuF3rsiglLi5ERXT+2qbq7Nd1KwVQ60zh+afqcWyO5/
-	RjDDzmBGI4133ann4nBZI8E06C329eAgJnZ5Yp0hp9XqdAf/+IfQwTz6DlUaKJDKedPOFgikVWd
-	qQwylnpKGkqSFtadFOUB2dC/RkP7oi98dXx2B0IBYhQ==
-X-Gm-Gg: AZuq6aJewKOd+Z5xlTBU+Fol6vUkFT9LhNtOm0/8H802AdKG5lB0XqRBbHciKTvyZYV
-	DhXRd8RTOx495qE4KSeVRszpXNOdWatn3nshosk71S9uYtHy78u0pLTCx9uzE1LGe4717Sxb8Of
-	30Gm/n1AiThwNSFqsfoaO8QvgGW+R0AjE2ka8jrRbnTEk90vmNxAwYYecHObwi1A10MFbD1Ne38
-	2zUx+QZQFIHk2bz1Nt8yHSP5EPXLEJ7ehyOTrCTUy8IOXyPR5KhENRCKVz67ZLQeP8dIXWKGXg8
-	2Kg19DKvvJdWVgB1JEjPPGFu9JFflnmq/z3BFQk+REDvYZ8D5A2e/C/0pw==
-X-Received: by 2002:a05:6820:180e:b0:662:f347:75ea with SMTP id
- 006d021491bc7-66d0a380580mr2281379eaf.28.1770434483383; Fri, 06 Feb 2026
- 19:21:23 -0800 (PST)
+        d=1e100.net; s=20230601; t=1770567318; x=1771172118;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=tEZvuD7PszcvIhjHPQ44DwrS7K/2mzb6NKM1cf9Fq+s=;
+        b=IfaD0ZMRbkqqzCyMm1znv1HwMeH45s9JCxeSOkPBD1YAFcw5SoKco/9hrYSOHEAYRv
+         9E/vZXJndE3Rjw7IifLTZULjQPx4Iwy+yO8elOZpT6GzERldM8N2WcOZfXM4dHDaCGaj
+         PVA29ZGCQsrn86pu3+o+CKoPDAOADrb9FXz30sDRoAkOwrpZZpzJxPEnSbAbw9DkBSOo
+         2p1eEVDVF1ttLqSkATrj2jczSYcwIzomPgU5oXrAgRwSp7D89Y+l5bGLwnBQrHuvatbk
+         5gpDOqEhAU8Y7/UUzWlJBfuDhMLlXlIaYT+l81DTPmO/h20Qp64GfOw8ehqJ95TBRoVx
+         7yvw==
+X-Forwarded-Encrypted: i=1; AJvYcCV1/rzYoin0JTKApkmGsX1aOX/vpFuz1tx553KQuJ+w6W4xChLR1VsNkXr+o7SbT7llhP4cxAchxXs=@lists.infradead.org
+X-Gm-Message-State: AOJu0YxQZLS7iy6MCLp7MjFsd9FGp4m5hgwiseJer2BMoGJySGjdYnf8
+	7tZZN/wj85z2496LgjT04Au+coH1lCSMlcMfYdtHpM/+pnQ/2PlLuPt82XpUOCbbfHf+hJOnwlV
+	azof59OMGGE/SJ+kiNI1xiL/+y7AUSxOAF5sGxd79xTN2zuSzhpBAEjOuh9Gj5uQiNZAB
+X-Gm-Gg: AZuq6aJOj4pAh7M2MnUJpmtKHfMyiwvjQyAY5BhOI+3lpJkjUHLaqCIsCfiGvDpK5Nu
+	4uDbvkf+PnmwJT9MT6PmqQEwuotY4UFZMSUcxo0cZzAykFG8GebJ39XjtPdoWXKdsRIQrDLDSkl
+	zJvUtr+gkwsUUyFgARNY0llqKZCyupUuhNy+5E9yiY42/ZJcDQ2WIM1iK98xmvcYz7A+Nf5Tlbm
+	e3h6Fp0TkbqfjKWlDYEvr1U5GoAXHBjkCiWjhTKf2iDL/OLI/cXoLFafMi9TqyC7M87shoM9JT9
+	YSds8+49wBgJVGg88wxD3TLoHZ/6xGUFPX4MDD1JAnnwbOmF1Bo8jnUfNcpGTu7daQLJDpTJ0GP
+	O5Ir4XavrXIJOUSZhYto=
+X-Received: by 2002:a05:693c:60d8:b0:2ba:6aef:6959 with SMTP id 5a478bee46e88-2ba6aefa62dmr561799eec.27.1770567317610;
+        Sun, 08 Feb 2026 08:15:17 -0800 (PST)
+X-Received: by 2002:a05:693c:60d8:b0:2ba:6aef:6959 with SMTP id 5a478bee46e88-2ba6aefa62dmr561793eec.27.1770567316986;
+        Sun, 08 Feb 2026 08:15:16 -0800 (PST)
+Received: from localhost ([140.82.166.162])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-2b855af7806sm5952312eec.10.2026.02.08.08.15.16
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 08 Feb 2026 08:15:16 -0800 (PST)
+Date: Sun, 8 Feb 2026 10:15:15 -0600
+From: Andrew Jones <andrew.jones@oss.qualcomm.com>
+To: linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
+        kvm-riscv@lists.infradead.org
+Cc: Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+        Anup Patel <anup@brainfault.org>,
+        =?utf-8?B?Q2zDqW1lbnQgTMOpZ2Vy?= <cleger@rivosinc.com>,
+        Conor Dooley <conor.dooley@microchip.com>,
+        Guodong Xu <guodong@riscstar.com>,
+        Charlie Jenkins <charlie@rivosinc.com>,
+        Charlie Jenkins <thecharlesjenkins@gmail.com>,
+        Samuel Holland <samuel.holland@sifive.com>
+Subject: Re: [RFC PATCH v1 08/11] riscv: hwprobe: Introduce rva23u64 base
+ behavior
+Message-ID: <3ffm2j66avwpud3sdgjua7jrkhb7bgbaxlp3jnzve7p2xpmcnj@slek5n6t54zn>
+References: <20260206002349.96740-1-andrew.jones@oss.qualcomm.com>
+ <20260206002349.96740-9-andrew.jones@oss.qualcomm.com>
 MIME-Version: 1.0
-From: Anup Patel <anup@brainfault.org>
-Date: Sat, 7 Feb 2026 08:51:12 +0530
-X-Gm-Features: AZwV_Qgt6jGZeh_4zfnnbt8_F11u5jr2-fPeHJpG-DyOXqW_XCH4wBnJqmdFURc
-Message-ID: <CAAhSdy3z70oEePkgOBziVOKgFGae-0xMD+8xmsMV2PWM1v0ToA@mail.gmail.com>
-Subject: [GIT PULL] KVM/riscv changes for 6.20
-To: Paolo Bonzini <pbonzini@redhat.com>
-Cc: Palmer Dabbelt <palmer@dabbelt.com>, Paul Walmsley <pjw@kernel.org>, 
-	Andrew Jones <andrew.jones@oss.qualcomm.com>, Atish Patra <atish.patra@linux.dev>, 
-	"open list:KERNEL VIRTUAL MACHINE FOR RISC-V (KVM/riscv)" <kvm-riscv@lists.infradead.org>, KVM General <kvm@vger.kernel.org>, 
-	linux-riscv <linux-riscv@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <20260206002349.96740-9-andrew.jones@oss.qualcomm.com>
+X-Proofpoint-GUID: J6z0H5aZwpwrbGMKSZApTneoGQs3Wmhl
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMjA4MDE0MCBTYWx0ZWRfXzuqThBFt4mm9
+ vVmB14xWw+HssvrZ5f1F39tnhuoNVZC8DopBJ5EJLItw/qGgjAL7iSfg0gtw6O3Yor7ydomy+Rx
+ Q+1et1mqgBy+UtaEAgp745zidupaBAgWA4mpVRpmSrz2qdCiydcipiT0Hi+YdlT5OUvClJtR+2O
+ lp/4o0UIoLorEiXvi6KarcSdPEAA6+QO7HI5XSrx4sZLDlCOGoGXYCc2JrR9K7ulcgmqZohWEJu
+ AYHuWBlo3YQpLa0oUnrr8GQoqASk5YMVLNIo/ruouFZ6XaP8md99sGUybfsVqUNNROSnIBjY2xI
+ PmShadN99rFcoOSOQHVhEVYk6e+VMj7k84rvhlZSONugghtRWrm1MjXreNK4aZTlfsqfY/s27xL
+ 0JzqWkqmjMyWrN4sx5a9H42z9QkGvklotr3okq2LTTyHLiDaj+sOKI24VigUsej4Od1i4dI/CsD
+ krpOtSH8XZDijtq4Wog==
+X-Authority-Analysis: v=2.4 cv=PYLyRyhd c=1 sm=1 tr=0 ts=6988b696 cx=c_pps
+ a=cFYjgdjTJScbgFmBucgdfQ==:117 a=cvcws7F5//HeuvjG1O1erQ==:17
+ a=kj9zAlcOel0A:10 a=HzLeVaNsDn8A:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=Mpw57Om8IfrbqaoTuvik:22 a=GgsMoib0sEa3-_RKJdDe:22
+ a=ZTsgeh6Hs3hiWlqVS5QA:9 a=CjuIK1q_8ugA:10 a=scEy_gLbYbu1JhEsrz4S:22
+X-Proofpoint-ORIG-GUID: J6z0H5aZwpwrbGMKSZApTneoGQs3Wmhl
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-02-08_04,2026-02-05_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0 phishscore=0 malwarescore=0 priorityscore=1501
+ suspectscore=0 bulkscore=0 impostorscore=0 spamscore=0 clxscore=1015
+ adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2601150000
+ definitions=main-2602080140
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260206_192125_998398_909468CF 
-X-CRM114-Status: GOOD (  12.59  )
+X-CRM114-CacheID: sfid-20260208_081522_344905_14C4E022 
+X-CRM114-Status: GOOD (  14.96  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -113,164 +149,43 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Hi Paolo,
+On Thu, Feb 05, 2026 at 06:23:46PM -0600, Andrew Jones wrote:
+...
+> +static bool hwprobe_has_rva23u64(const struct cpumask *cpus)
+> +{
+> +	struct riscv_hwprobe pair;
+> +
+> +	if (!IS_ENABLED(CONFIG_64BIT))
+> +		return false;
+> +
+> +	/* Additional mandates for Zic64b and Supm */
+> +	if (riscv_cbom_block_size != 64 ||
+> +	    riscv_cbop_block_size != 64 ||
+> +	    riscv_cboz_block_size != 64 ||
+> +	    !riscv_have_user_pmlen_7)
+> +		return false;
+> +
 
-We have the following KVM RISC-V changes for 6.20:
-1) Fixes for issues discovered by KVM API fuzzing in
-    AIA virtualization
-2) Allow Zalasr, Zilsd and Zclsd extensions for Guest/VM
-3) Add riscv vm satp modes in KVM selftests
-4) Transparent huge support for G-stage
-5) Adjust the number of available guest irq files based
-    on MMIO register sizes
+Thanks to kernel test robot's report I'll fix the compilation of this for
+configs without RISCV_ISA_SUPM with the following change and something
+similar for patch10.
 
-Please pull.
+Thanks,
+drew
 
-Also, please note that we have a conflict with kvm-x86
-tree in tools/testing/selftests/kvm/lib/riscv/processor.c due
-to patch "KVM: riscv: selftests: Add riscv vm satp modes"
-discovered on linux-next. This can be resolved as follows:
+diff --git a/arch/riscv/kernel/sys_hwprobe.c b/arch/riscv/kernel/sys_hwprobe.c
+index 4b9981b15ebe..3fd63ac7dd60 100644
+--- a/arch/riscv/kernel/sys_hwprobe.c
++++ b/arch/riscv/kernel/sys_hwprobe.c
+@@ -278,7 +278,7 @@ static bool hwprobe_has_rva23u64(const struct cpumask *cpus)
+        if (riscv_cbom_block_size != 64 ||
+            riscv_cbop_block_size != 64 ||
+            riscv_cboz_block_size != 64 ||
+-           !riscv_have_user_pmlen_7)
++           !IS_ENABLED(CONFIG_RISCV_ISA_SUPM) || !riscv_have_user_pmlen_7)
+                return false;
 
-diff --cc tools/testing/selftests/kvm/lib/riscv/processor.c
-index 373cf4d1ed809,e6ec7c224fc3e..0000000000000
---- a/tools/testing/selftests/kvm/lib/riscv/processor.c
-+++ b/tools/testing/selftests/kvm/lib/riscv/processor.c
-@@@ -64,15 -68,15 +64,15 @@@ static uint64_t pte_index(struct kvm_v
-
-  void virt_arch_pgd_alloc(struct kvm_vm *vm)
-  {
- -      size_t nr_pages = page_align(vm, ptrs_per_pte(vm) * 8) / vm->page_size;
- +      size_t nr_pages = vm_page_align(vm, ptrs_per_pte(vm) * 8) /
-vm->page_size;
-
--       if (vm->pgd_created)
-+       if (vm->mmu.pgd_created)
-                return;
-
--       vm->pgd = vm_phy_pages_alloc(vm, nr_pages,
--                                    KVM_GUEST_PAGE_TABLE_MIN_PADDR,
--                                    vm->memslots[MEM_REGION_PT]);
--       vm->pgd_created = true;
-+       vm->mmu.pgd = vm_phy_pages_alloc(vm, nr_pages,
-+                                        KVM_GUEST_PAGE_TABLE_MIN_PADDR,
-+                                        vm->memslots[MEM_REGION_PT]);
-+       vm->mmu.pgd_created = true;
-  }
-
-  void virt_arch_pg_map(struct kvm_vm *vm, uint64_t vaddr, uint64_t paddr)
-@@@ -220,14 -212,8 +221,14 @@@ void riscv_vcpu_mmu_setup(struct kvm_vc
-                TEST_FAIL("Unknown guest mode, mode: 0x%x", vm->mode);
-        }
-
- +      max_satp_mode = vcpu_get_reg(vcpu, RISCV_CONFIG_REG(satp_mode));
- +
- +      if ((satp_mode >> SATP_MODE_SHIFT) > max_satp_mode)
- +              TEST_FAIL("Unable to set satp mode 0x%lx, max mode 0x%lx\n",
- +                        satp_mode >> SATP_MODE_SHIFT, max_satp_mode);
- +
--       satp = (vm->pgd >> PGTBL_PAGE_SIZE_SHIFT) & SATP_PPN;
-+       satp = (vm->mmu.pgd >> PGTBL_PAGE_SIZE_SHIFT) & SATP_PPN;
- -      satp |= SATP_MODE_48;
- +      satp |= satp_mode;
-
-        vcpu_set_reg(vcpu, RISCV_GENERAL_CSR_REG(satp), satp);
-  }
-diff --git a/tools/testing/selftests/kvm/lib/kvm_util.c
-b/tools/testing/selftests/kvm/lib/kvm_util.c
-index 265e173b73709..1959bf556e88e 100644
---- a/tools/testing/selftests/kvm/lib/kvm_util.c
-+++ b/tools/testing/selftests/kvm/lib/kvm_util.c
-@@ -359,17 +359,17 @@ struct kvm_vm *____vm_create(struct vm_shape shape)
-        case VM_MODE_P56V57_4K:
-        case VM_MODE_P50V57_4K:
-        case VM_MODE_P41V57_4K:
--               vm->pgtable_levels = 5;
-+               vm->mmu.pgtable_levels = 5;
-                break;
-        case VM_MODE_P56V48_4K:
-        case VM_MODE_P50V48_4K:
-        case VM_MODE_P41V48_4K:
--               vm->pgtable_levels = 4;
-+               vm->mmu.pgtable_levels = 4;
-                break;
-        case VM_MODE_P56V39_4K:
-        case VM_MODE_P50V39_4K:
-        case VM_MODE_P41V39_4K:
--               vm->pgtable_levels = 3;
-+               vm->mmu.pgtable_levels = 3;
-                break;
-        default:
-                TEST_FAIL("Unknown guest mode: 0x%x", vm->mode);
-
-Regards,
-Anup
-
-The following changes since commit 63804fed149a6750ffd28610c5c1c98cce6bd377:
-
-  Linux 6.19-rc7 (2026-01-25 14:11:24 -0800)
-
-are available in the Git repository at:
-
-  https://github.com/kvm-riscv/linux.git tags/kvm-riscv-6.20-1
-
-for you to fetch changes up to 376e2f8cca2816c489a9196e65cc904d1a907fd2:
-
-  irqchip/riscv-imsic: Adjust the number of available guest irq files
-(2026-02-06 19:05:34 +0530)
-
-----------------------------------------------------------------
-KVM/riscv changes for 6.20
-
-- Fixes for issues discovered by KVM API fuzzing in
-  kvm_riscv_aia_imsic_has_attr(), kvm_riscv_aia_imsic_rw_attr(),
-  and kvm_riscv_vcpu_aia_imsic_update()
-- Allow Zalasr, Zilsd and Zclsd extensions for Guest/VM
-- Add riscv vm satp modes in KVM selftests
-- Transparent huge support for G-stage
-- Adjust the number of available guest irq files based on
-  MMIO register sizes in DeviceTree or ACPI
-
-----------------------------------------------------------------
-Jessica Liu (1):
-      RISC-V: KVM: Transparent huge page support
-
-Jiakai Xu (3):
-      RISC-V: KVM: Fix null pointer dereference in
-kvm_riscv_aia_imsic_has_attr()
-      RISC-V: KVM: Fix null pointer dereference in kvm_riscv_aia_imsic_rw_attr()
-      RISC-V: KVM: Skip IMSIC update if vCPU IMSIC state is not initialized
-
-Pincheng Wang (2):
-      riscv: KVM: allow Zilsd and Zclsd extensions for Guest/VM
-      KVM: riscv: selftests: add Zilsd and Zclsd extension to get-reg-list test
-
-Qiang Ma (1):
-      RISC-V: KVM: Remove unnecessary 'ret' assignment
-
-Wu Fei (1):
-      KVM: riscv: selftests: Add riscv vm satp modes
-
-Xu Lu (3):
-      RISC-V: KVM: Allow Zalasr extensions for Guest/VM
-      RISC-V: KVM: selftests: Add Zalasr extensions to get-reg-list test
-      irqchip/riscv-imsic: Adjust the number of available guest irq files
-
- arch/riscv/include/uapi/asm/kvm.h                  |   3 +
- arch/riscv/kvm/aia.c                               |   2 +-
- arch/riscv/kvm/aia_imsic.c                         |  13 +-
- arch/riscv/kvm/mmu.c                               | 140 +++++++++++++++++++++
- arch/riscv/kvm/vcpu_onereg.c                       |   4 +
- arch/riscv/kvm/vcpu_pmu.c                          |   5 +-
- arch/riscv/mm/pgtable.c                            |   2 +
- drivers/irqchip/irq-riscv-imsic-state.c            |  12 +-
- include/linux/irqchip/riscv-imsic.h                |   3 +
- tools/testing/selftests/kvm/include/kvm_util.h     |  17 ++-
- .../selftests/kvm/include/riscv/processor.h        |   2 +
- tools/testing/selftests/kvm/lib/guest_modes.c      |  41 ++++--
- tools/testing/selftests/kvm/lib/kvm_util.c         |  33 +++++
- tools/testing/selftests/kvm/lib/riscv/processor.c  |  63 +++++++++-
- tools/testing/selftests/kvm/riscv/get-reg-list.c   |  12 ++
- 15 files changed, 330 insertions(+), 22 deletions(-)
+        hwprobe_isa_ext0(&pair, cpus);
 
 -- 
 kvm-riscv mailing list
