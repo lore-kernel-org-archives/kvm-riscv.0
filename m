@@ -4,131 +4,135 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34E46F4BB8C
-	for <kvm-riscv@archiver.kernel.org>; Tue, 24 Feb 2026 21:51:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F233F4BB93
+	for <kvm-riscv@archiver.kernel.org>; Tue, 24 Feb 2026 22:11:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
 	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=f9oXf1VUeMWwSEMSrADHr2R2p/7YWu8g5Cps/LIUE8w=; b=ZhRtw49AaAfe/b
-	TxisdJo6dAL7hZkISINMxy2f9V/Z15ItskXNhaRYqZEXk7ukzpwMLHF5lw/Euor1UKwnLeH2dznAV
-	dXae7XXjbGwQWLfjWuVrnOXwT+XbWzDhyda2qMKi6onQg81kUCWrpTnX0f6Mb7mGGwhgmmXaqsTee
-	NWEv7QAC+i22K6C00IEv+wtMIjJEDLfnVavgYDwKW1sg+pA3X2AGjZdVLoZzsY48QEege4w8828/9
-	dWUpxJbiRtg+VdUwakCTpqFoO1CGaCgnmCTYXtosYyQRKhMYKGspteoO5iHZUmHLAlxG6UDqf7nIK
-	QTvZgw2/C79Nme8xZkrA==;
+	List-Owner; bh=lx2EQ4CZHc2p1psx6yflMoyr5vPiP8Jrf4LebEcW64M=; b=0J9VXCAA0ug2j9
+	wm+0K2uNv2d6NUu9c1x8bfVPwIUj/Ia+7JMnh2lmKLuxMvxtZaJ9B0uXLgBhfCmc8SFVTUJqTa+Kd
+	lFMdlmdljNfpXc+JfiHqLUgyfzTYY+SEl4/Qo0lr+iIomQwub0pEIGi/0FakkJKN4SSoVgN88k4wG
+	/WuA2aNIH4oo9GFPVZR7VzaV/B0CmGGs5eR14BebRp1ATSFoRytsYeFCgQ2nK5UzMznd04+ab9teK
+	rJzMq5u1Yehk7Gw4BQvhqEgnH85pCy/uwaGWA1yVKGPrYOMDozb3hqIxUAqBV66Rh3RT0uu8baho9
+	go+Uy7liP0Fe/WemwRMw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vv0J3-00000002pHF-35nF;
-	Tue, 24 Feb 2026 21:51:01 +0000
-Received: from mx0b-0031df01.pphosted.com ([205.220.180.131])
+	id 1vv0ch-00000002qTK-2fdw;
+	Tue, 24 Feb 2026 22:11:19 +0000
+Received: from mx0a-0031df01.pphosted.com ([205.220.168.131])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vv0J0-00000002pGV-2z40
+	id 1vv0ce-00000002qSZ-2zVd
 	for kvm-riscv@lists.infradead.org;
-	Tue, 24 Feb 2026 21:51:00 +0000
-Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 61OLQWVE2432444
-	for <kvm-riscv@lists.infradead.org>; Tue, 24 Feb 2026 21:50:57 GMT
+	Tue, 24 Feb 2026 22:11:17 +0000
+Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 61OHjjb9057144
+	for <kvm-riscv@lists.infradead.org>; Tue, 24 Feb 2026 22:11:16 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=qcppdkim1; bh=PYdOYbhb4RINNVZP0bdh4mEu
-	h5KJPe7w0rQzb0Et4Lk=; b=cQmV6/+hvUaKLA8pJgSUofxUW98ZZ1zAEaUqekSu
-	i1o6YtvHC47F99Tm+i2Jh9cBnJ1kbwGXZChybh8lNAeuejdEk3RZ0DvHFYLpckX0
-	aYHNYRRB3qiYDB2pwmh9fJR/dsCe4VyACviHfnhLhy1Pt0n2cS4kMPOpKmYkm45N
-	QmdlLl3Rgdtz8bGhtGbboY01vAbbpHdwP94XUyx3Rs4muDUKmoM2Fi0dXinpzt80
-	7PT5LWLwow62dTZD8bFIwxcv88PLetthKN1b99UsArMxKiy5lb7fH//jumzIvkAV
-	9wiBy9nOYdr8Ej2vCQoCqleKJQtMZiSRD+3OWQDwZsShJw==
-Received: from mail-dy1-f197.google.com (mail-dy1-f197.google.com [74.125.82.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4chekj9cd6-1
+	:references:subject:to; s=qcppdkim1; bh=MpuMHOd/Hug9XUMO7ooIdgJu
+	G+bQRgf3rD7wfYuWTIk=; b=RNBG68nOWtnkct3pLRXTzFwfqNxyv6vii0G7syYk
+	Gc23n86pTdRvIWxNUEXvkzXkaElzJNwoVgMVMtZxbx/E/NeGYlgOznoziDx4Sa5w
+	zUpAVvy1V9/L9vWn9jzWTQt1Z5pFvztLL6/hc/IIFpqjXXBbKgy8WkfMO0Ng077J
+	5vX35Q9PL64/QejwiMXAGeocTONi4cpet6wS+cGKiaZtO5IxeMhaipCXReiEFTJx
+	P4VwUh1HghI7bHRP9SxSPgez2JoRwR9VjBi1gvTlNQN9ahpCvRx52lOTgIGwDqky
+	fvdWqraP3OWQbGkde2q56uMrrp4NJNllkbJvo2LiZzeNnQ==
+Received: from mail-dy1-f200.google.com (mail-dy1-f200.google.com [74.125.82.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4ch9saacjg-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <kvm-riscv@lists.infradead.org>; Tue, 24 Feb 2026 21:50:57 +0000 (GMT)
-Received: by mail-dy1-f197.google.com with SMTP id 5a478bee46e88-2ba8013a9e3so6770631eec.0
-        for <kvm-riscv@lists.infradead.org>; Tue, 24 Feb 2026 13:50:57 -0800 (PST)
+	for <kvm-riscv@lists.infradead.org>; Tue, 24 Feb 2026 22:11:15 +0000 (GMT)
+Received: by mail-dy1-f200.google.com with SMTP id 5a478bee46e88-2ba9f033a5bso53644336eec.0
+        for <kvm-riscv@lists.infradead.org>; Tue, 24 Feb 2026 14:11:15 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1771969856; x=1772574656; darn=lists.infradead.org;
+        d=oss.qualcomm.com; s=google; t=1771971075; x=1772575875; darn=lists.infradead.org;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=PYdOYbhb4RINNVZP0bdh4mEuh5KJPe7w0rQzb0Et4Lk=;
-        b=K8Pjg0Se+JaZLCEB3N/vdzMafqPzL4gK2kATRzGjdoaU/fuVJ+hWL8Xa1JKBNEWX18
-         ji4mCX8Bif3HPfqnlryXkvuXRZdLV4jmovpk8Buz0N2uxs0ZGpilEandlVEGkd+ZVd/J
-         YoOfcRqbgGqwm8ZPqtVzCHjob8XtxZ3lPm5LAPeN+PuNhr6MDxBOkfo2n16ptSoR6ev4
-         nV6y/EINkNzMcK6b4Zmp4z14If2atrOWAeOnD+JEtisEFFPcKZe8j5BYYhalRPGl6tdM
-         DxlpLOqk222EPNVXcDJRQqMn3SOzjI6oRiMfL7n+f4fQSUs7wZacL7dx0PZocZ63nmlH
-         gbyQ==
+        bh=MpuMHOd/Hug9XUMO7ooIdgJuG+bQRgf3rD7wfYuWTIk=;
+        b=fzVec7s1RM/06FRuDMJvrsMHBmekrBhzC88f8NZjSq7cDnuT/YsAbMiPaqV5oJACg2
+         iku1ZnsA1q1R0P/knymMYKAgwhlKQ9qLaX0c2Ot0yxmfK6Ew1tgF9/rlo+2nDR2O2e/t
+         sSCS2RIvr24AVdPmonCwMi0eSFJAECEFyI+kIHA3GTZgc2vVCR2W5r9MQ1YbDMB0ZlLs
+         3fAS55aloycIu0VXWlS3q3pxY1jX7ysP428b44J12PBuZEPFVo/UBYFUYDNz5tQLDMPW
+         t1m+eIS/3vpv0MYm4kjeN9b/gCj5o416E7pIpEsQPD35/TGR0tf8q+jgtATvVte+dNW6
+         IshQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1771969856; x=1772574656;
+        d=1e100.net; s=20230601; t=1771971075; x=1772575875;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=PYdOYbhb4RINNVZP0bdh4mEuh5KJPe7w0rQzb0Et4Lk=;
-        b=qUfaykdXnl2mOtFI5Et/3igUsezjQl5IRnJs8344vfVEfi7MzoOlbGMKezQHOHye6h
-         zC1VeerAaVgH1VWxAfPJCPyTwtIC6SVceiLi7fWe8WbqrIIx+ZAWURfQZGFhciIqK3zj
-         fDUsLBo830/l3pMtfMc6LcvM1RC4a0COHTAPIEjEQZTlC95Rt5yaNnyXc/eJLAX4HtJ8
-         mOl+d+kFF3oA+eILOqFYeGCOQ8K4pXF30dVBe8H4FEABNx77CbRaCf8SNERg7j3wLkzS
-         xXYrGs0Mu+GRBXlftxWO00pfiAGsMSDSIDkqcOsWMPqsZPKYF2XSpYK+3Rslx+J3QIRQ
-         Rf5w==
-X-Forwarded-Encrypted: i=1; AJvYcCWb/0Nzdn5D2r8lswgOdAA3rNSAtP779T5y5sLDofA4xAWKxS9LJWCjkuQ0pFclTf8bq55laVN/15I=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yx3LyyRCAZGAbbKQyCGkKARWuYonQp8yYmK1/YS7EXEywnMdzlS
-	fayHDiutuiT3AS5a3ANjL/nlyMRf1nmWgc89x4aSaDBIlwe2J/b5mgqTU0t/pOSiYp4TvGtVGV9
-	Pe29GJXIW3pIXT2Fs2pKRDn6EqNg7NwGgjgxCd2qa7X+2FS8gZMh0IkY50nNVbLxyJnIf
-X-Gm-Gg: ATEYQzwNkryLwS+q3CCn1A/6kO9COJqThtqcTlpaoN1T2fnvzL6WHz3/bRRShmIT4s5
-	7kf6gbKvcYDxbf5Lo8YE9PGPE1XUyq1h/IUrby1I3uwFupTUPYHxwgta+yfxHvrfLMTlMuCxQnQ
-	0GgoV4vOLVafhBw/QtvHFGXQeVBvKNjBFnAK6RwC5g8F3s6furVOL/C2eMTkbgQRnbQZPHzSbW3
-	TtxPDH1OiaMsEpK33lfgTlmdFdpICvc2u0drCvucYmQGj3ndqnU9m1APvLmSSug2IaPJZGurDwb
-	+MXu9bjw6uydLwdn+AzcMRoYMeAHrIrIn7SCqxUMtblGPwotjdqItAeKUxV7UxKiK0FlNUi5dKH
-	Iv6RmguRqxefHtwXQ56K/gzfHLo2HbhU=
-X-Received: by 2002:a05:693c:2b0d:b0:2b8:4a34:6c39 with SMTP id 5a478bee46e88-2bd7bae9c9dmr5164264eec.16.1771969856476;
-        Tue, 24 Feb 2026 13:50:56 -0800 (PST)
-X-Received: by 2002:a05:693c:2b0d:b0:2b8:4a34:6c39 with SMTP id 5a478bee46e88-2bd7bae9c9dmr5164253eec.16.1771969855873;
-        Tue, 24 Feb 2026 13:50:55 -0800 (PST)
+        bh=MpuMHOd/Hug9XUMO7ooIdgJuG+bQRgf3rD7wfYuWTIk=;
+        b=BNfCCh0681ZI8kAlQIOUMdoGNfXWfWtIsqtAciIUkG2KcrfYFqlIG94lJi8ZyR0kis
+         TroB9K37q2Jdsdbt33CSjxpfyhtcm2245COi4qZ6ufRyyrW7LegUWeHnvUa5Is/x3pxE
+         bdDZ1d7NsvoG21/yjUc/fN/y/1CiPmQMh2+fcRsNDnSf+pw4C5LsdI76ml4vFdNPfM4w
+         aPzDbW71oL+7bqrzM6b8B81avbyP5YrczYx9Z4Z0dJLHnjSLTYzUqlGo43p+J/mfblf6
+         TwfCaF4R0GW1rRtLjBSbQJ0P8ilC+vtv9UyjayqjQqh+fjE8ZYGvXERdt+sK73Joun+m
+         ntdg==
+X-Forwarded-Encrypted: i=1; AJvYcCUsEhwnGqz9QOjOv/9/Har3lbVUBSK37SGSUgtgWkV5LNMTbQGQ4Zwt5Z5aNOY7L7RQNB3NMeeGCnA=@lists.infradead.org
+X-Gm-Message-State: AOJu0YxFCCx+bWsgz9a2SqZFI0G5CbZEZKUH/yUQi30kbh7QJOSj0wnY
+	Tt6JaVk2zDB1tW7fLpGvWAYlNdmb5h0ECcIpu0/8d9ge2ifTZ9NAu8iOp4MW+yOiWvlRAHJZ828
+	JGREMZXGRZO3vd5h55GJuIOBKCda0yXqiHj+x70BntotpQ6+e9BuwOTZs9PVAp7jUSek1
+X-Gm-Gg: ATEYQzyejXkdO8I6nZ2pDTm0kjufv8oP+xMze2KM36DDTDwjEVcnmmGNLi06lCKzr81
+	YBqAmxnbj4Z3PX2GkgzR6opKExFzuheTRrmOtcrnEGddRVHjrzf5WGd2JwLyo9iBkSLg7IzTkn0
+	c4sb/ntB0aQFEQKS81SFV7qtxU7xa6rN8/JnDCh3BMrOg6sUR5kjw0drY58RjGksk4kBWxGh19f
+	hl3MgV1MneeN0I/zFh53+8rSF5AVdO+5bIoMOFmQgZzsxZ4IJjhXKl2CPRz1HtH0Y2c0SD6hGWu
+	ttpKQZjScOJJH+Coov++UyuMt398L7s9jzDi9NcBkRdail+YQEVEZEN53e4EHxgN5WniQVF8H7D
+	OCKIEhwhPiAw5vhxsthc/7zfeYcCOJ7c=
+X-Received: by 2002:a05:7301:9bc5:b0:2ba:a0c6:ef5d with SMTP id 5a478bee46e88-2bd7bd2a538mr5920114eec.21.1771971075062;
+        Tue, 24 Feb 2026 14:11:15 -0800 (PST)
+X-Received: by 2002:a05:7301:9bc5:b0:2ba:a0c6:ef5d with SMTP id 5a478bee46e88-2bd7bd2a538mr5920085eec.21.1771971074444;
+        Tue, 24 Feb 2026 14:11:14 -0800 (PST)
 Received: from localhost ([140.82.166.162])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-2bd7dc164e3sm7529614eec.25.2026.02.24.13.50.54
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-2bd7da47778sm7770942eec.6.2026.02.24.14.11.12
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 24 Feb 2026 13:50:55 -0800 (PST)
-Date: Tue, 24 Feb 2026 15:50:54 -0600
+        Tue, 24 Feb 2026 14:11:13 -0800 (PST)
+Date: Tue, 24 Feb 2026 16:11:11 -0600
 From: Andrew Jones <andrew.jones@oss.qualcomm.com>
-To: Jinyu Tang <tjytimi@163.com>
-Cc: anup@brainfault.org, atish.patra@linux.dev, ajones@ventanamicro.com,
-        conor.dooley@microchip.com, yongxuan.wang@sifive.com,
-        nutty.liu@hotmail.com, paul.walmsley@sifive.com, pjw@kernel.org,
-        palmer@dabbelt.com, aou@eecs.berkeley.edu, alex@ghiti.fr,
-        kvm@vger.kernel.org, kvm-riscv@lists.infradead.org,
-        linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4] KVM: riscv: Skip CSR restore if VCPU is reloaded on
- the same core
-Message-ID: <fr5tir6ypoxkgqwfg5u2ke5n23bucdkk6zaxckfha2wibsebbo@qqusmvhky24e>
-References: <20260222045741.260325-1-tjytimi@163.com>
+To: Jiakai Xu <xujiakai2025@iscas.ac.cn>
+Cc: linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
+        kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
+        linux-kselftest@vger.kernel.org, Anup Patel <anup@brainfault.org>,
+        Atish Patra <atish.patra@linux.dev>, Paul Walmsley <pjw@kernel.org>,
+        Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
+        Alexandre Ghiti <alex@ghiti.fr>,
+        Andrew Jones <ajones@ventanamicro.com>,
+        Paolo Bonzini <pbonzini@redhat.com>, Shuah Khan <shuah@kernel.org>,
+        Jiakai Xu <jiakaiPeanut@gmail.com>
+Subject: Re: [PATCH v7 2/3] KVM: selftests: Refactor UAPI tests into
+ dedicated function
+Message-ID: <bo356uh554twpg2jateqth7rqi7g6uoc26kao3yekcukitg6wc@eeyd2qdjpgff>
+References: <20260213103557.3207335-1-xujiakai2025@iscas.ac.cn>
+ <20260213103557.3207335-3-xujiakai2025@iscas.ac.cn>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20260222045741.260325-1-tjytimi@163.com>
-X-Authority-Analysis: v=2.4 cv=RNe+3oi+ c=1 sm=1 tr=0 ts=699e1d41 cx=c_pps
- a=Uww141gWH0fZj/3QKPojxA==:117 a=cvcws7F5//HeuvjG1O1erQ==:17
+In-Reply-To: <20260213103557.3207335-3-xujiakai2025@iscas.ac.cn>
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMjI0MDE5NCBTYWx0ZWRfX1dIiJaeOsUut
+ XLXyN/8lwEHYsgNm7QN3VOHTz52yR54m/gRVLHt15d2IpcQ2c8/T1vADmKtZBEIHnn6I+Kg22PF
+ 2UKIhO6GctjsHGkoJHvJvFk30e7V8nomGSSUAF26Bv7y0okcIxDcNPhDaK2JnPm9g7ybAFeEqfs
+ APTKFysKthquM4Vl2/fgDLWeDTkhSyLVFTU1iKttmn0So+DlkgEMGG3Rtyn+zhYE1/MWcYxfQ5k
+ jhifYCaGaYeD3RCmpFjQTdlvHXFoAOsxQ2EmmD37HeiHd8mIqnw44kz3cVB+Qckqgadx5z8GoZz
+ oTt1VJ9wq1uQyMb1aMF94e32quEuji1wt+mOk/ksVcOUGVfrcxExj4KQ/TbJf7aHVkYQEkcz3q9
+ mGmNnSDyMZG9LUnR+fADFyZd3ZFCJP/FFcAc0PCXSPeR2gZxiUGoS0VFCZ1qsdzm2ncaxkYavuY
+ G1nK/yVDEfxvIGLitVQ==
+X-Proofpoint-ORIG-GUID: 6m1AdfAT4BJmN54xRQU4x7jDenoWaotu
+X-Authority-Analysis: v=2.4 cv=e7ELiKp/ c=1 sm=1 tr=0 ts=699e2203 cx=c_pps
+ a=PfFC4Oe2JQzmKTvty2cRDw==:117 a=cvcws7F5//HeuvjG1O1erQ==:17
  a=kj9zAlcOel0A:10 a=HzLeVaNsDn8A:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=rJkE3RaqiGZ5pbrm-msn:22
- a=Byx-y9mGAAAA:8 a=J8dAU397a_ys_4ZrTBUA:9 a=CjuIK1q_8ugA:10
- a=PxkB5W3o20Ba91AHUih5:22
-X-Proofpoint-ORIG-GUID: D-Vc537J-4FgXrQTSqMgdcM3zXwWrRxf
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMjI0MDE5MCBTYWx0ZWRfX4HH5Siv7bt+4
- 4Rl79VfR0Ie8OFcab+9FDWrGqgJN1cA7lpZ9GU5iHeZGl69xtlV+NmZTgMG/VSox2i3zCgHnZXo
- MxDbDf07YMkRYsnNL8r8xzQ6TjVwuAXWRTG6ekPmmNJBli8mvdA+znOmSzxn27rsvV/Thrq1Ywb
- +55OI3nIm6NKTLUARli6OZ56ei5KXUcaAdo+mJZyymnbZJIDZB/fo/A+qicjzu/w/blfaAnwLQt
- rAsAksGLS3H9emkRy6tq6e7uTfQ8xNTRbSJ7zv+puh/6ZZllq2ZT4/QIahAY/HW8zQEPSyV4+T4
- m5AnX4+YmvpXtOFvzGsXBbrx1EmA8/wB/yQiHmo+lp1Tox2CIaVCc0vz6OZEfksXrGm8inwpOnD
- 6UfOO8GmptCrGfllejkTV3JHqIU1qAu7XpBl4tnf5MLTIJZBxbg0uf6tdmij6ks2HMrA1g7aO4x
- +3GFutnLw4oRdUI+kuw==
-X-Proofpoint-GUID: D-Vc537J-4FgXrQTSqMgdcM3zXwWrRxf
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_K5XuSEh1TEqbUxoQ0s3:22
+ a=EUspDBNiAAAA:8 a=pGLkceISAAAA:8 a=HySIa_1SWE6k9wrxFvsA:9 a=CjuIK1q_8ugA:10
+ a=6Ab_bkdmUrQuMsNx7PHu:22
+X-Proofpoint-GUID: 6m1AdfAT4BJmN54xRQU4x7jDenoWaotu
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-02-24_03,2026-02-23_03,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 lowpriorityscore=0 adultscore=0 priorityscore=1501 phishscore=0
- clxscore=1015 spamscore=0 impostorscore=0 suspectscore=0 malwarescore=0
+ malwarescore=0 suspectscore=0 adultscore=0 priorityscore=1501 impostorscore=0
+ lowpriorityscore=0 clxscore=1015 phishscore=0 spamscore=0 bulkscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2602130000 definitions=main-2602240190
+ reason=mlx scancount=1 engine=8.22.0-2602130000 definitions=main-2602240194
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260224_135058_864225_6EA8571B 
-X-CRM114-Status: GOOD (  35.54  )
+X-CRM114-CacheID: sfid-20260224_141116_785740_878CBCBB 
+X-CRM114-Status: GOOD (  30.56  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -145,162 +149,188 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Sun, Feb 22, 2026 at 12:57:41PM +0800, Jinyu Tang wrote:
-> Currently, kvm_arch_vcpu_load() unconditionally restores guest CSRs and
-> HGATP. However, when a preempted VCPU is scheduled back on the same
-> physical CPU, and no other KVM VCPU has run on this CPU in the meantime,
-> the hardware CSRs are still valid.
+On Fri, Feb 13, 2026 at 10:35:56AM +0000, Jiakai Xu wrote:
+> Move steal time UAPI tests from steal_time_init() into a separate
+> check_steal_time_uapi() function for better code organization and
+> maintainability.
 > 
-> This patch optimizes the vcpu_load path by skipping the expensive CSR
-> writes if all the following conditions are met:
-> 1. The VCPU was previously preempted (vcpu->scheduled_out == 1).
-> 2. It is being reloaded on the same CPU (vcpu->arch.last_exit_cpu == cpu).
-> 3. No other VCPU used this CPU (vcpu == __this_cpu_read(kvm_former_vcpu)).
-> 4. The CSRs are not dirty (!vcpu->arch.csr_dirty).
+> Previously, x86 and ARM64 architectures performed UAPI validation
+> tests within steal_time_init(), mixing initialization logic with
+> uapi tests.
 > 
-> To ensure this fast-path doesn't break corner cases:
-> - Live migration and VCPU reset are naturally safe. KVM initializes
->   last_exit_cpu to -1, which guarantees the fast-path won't trigger.
-> - A new 'csr_dirty' flag is introduced to track runtime userspace
->   interventions. If userspace modifies guest configurations (e.g.,
->   hedeleg via KVM_SET_GUEST_DEBUG, or CSRs via KVM_SET_ONE_REG) while
->   the VCPU is preempted, the flag is set to skip fast path.
-
-I'm a bit concerned that the need for csr_dirty makes this fragile. Maybe
-some reorganizing/factoring of kvm_arch_vcpu_load() could be done in a way
-to make it obvious to anybody that's adding another csr to be loaded that
-they also need to ensure csr_dirty is set when appropriate? At least a big
-comment would help.
-
-That said, can we now apply csr_dirty everywhere CSRs are dirtied allowing
-us to remove the vcpu->scheduled_out check? Unless I'm missing something
-we should only need to ensure last-cpu and last-vcpu are as expected and
-that no csrs are dirty in order to skip the writes - it shouldn't matter
-that we're reloading after a sched out or otherwise.
-
-A couple nits below.
-
+> Changes by architecture:
+> x86_64:
+>   - Extract MSR reserved bits test from steal_time_init()
+>   - Move to check_steal_time_uapi() which tests that setting
+>     MSR_KVM_STEAL_TIME with KVM_STEAL_RESERVED_MASK fails
+> ARM64:
+>   - Extract three UAPI tests from steal_time_init():
+>     	Device attribute support check
+>     	Misaligned IPA rejection (EINVAL)
+>     	Duplicate IPA setting rejection (EEXIST)
+>   - Move all tests to check_steal_time_uapi()
+> RISC-V:
+>   - Add empty check_steal_time_uapi() stub for future use
+>   - No changes to steal_time_init() (had no tests to extract)
 > 
-> Note that kvm_riscv_vcpu_aia_load() is kept outside the skip logic
-> to ensure IMSIC/AIA interrupt states are always properly
-> synchronized.
+> The new check_steal_time_uapi() function:
+>   - Is called once before the per-VCPU test loop
 > 
-> Signed-off-by: Jinyu Tang <tjytimi@163.com>
+> No functional change intended.
+> 
+
+Suggested-by: Andrew Jones <andrew.jones@oss.qualcomm.com>
+
+> Signed-off-by: Jiakai Xu <xujiakai2025@iscas.ac.cn>
+> Signed-off-by: Jiakai Xu <jiakaiPeanut@gmail.com>
 > ---
->  v3 -> v4:
->  - Addressed Anup Patel's review regarding hardware state inconsistency.
->  - Introduced 'csr_dirty' flag to track dynamic userspace CSR/CONFIG
->    modifications (KVM_SET_ONE_REG, KVM_SET_GUEST_DEBUG), forcing a full
->    restore when debugging or modifying states at userspace.
->  - Kept kvm_riscv_vcpu_aia_load() out of the skip block to resolve IMSIC
->    VS-file instability.
+>  tools/testing/selftests/kvm/steal_time.c | 63 ++++++++++++++++++------
+>  1 file changed, 47 insertions(+), 16 deletions(-)
 > 
->  v2 -> v3:
->  v2 was missing a critical check because I generated the patch from my
->  wrong (experimental) branch. This is fixed in v3. Sorry for my trouble.
-> 
->  v1 -> v2:
->  Apply the logic to aia csr load. Thanks for Andrew Jones's advice.
-> ---
->  arch/riscv/include/asm/kvm_host.h |  3 +++
->  arch/riscv/kvm/vcpu.c             | 13 +++++++++++++
->  arch/riscv/kvm/vcpu_onereg.c      |  3 +++
->  3 files changed, 19 insertions(+)
-> 
-> diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
-> index 24585304c..7ee47b83c 100644
-> --- a/arch/riscv/include/asm/kvm_host.h
-> +++ b/arch/riscv/include/asm/kvm_host.h
-> @@ -273,6 +273,9 @@ struct kvm_vcpu_arch {
->  	/* 'static' configurations which are set only once */
->  	struct kvm_vcpu_config cfg;
+> diff --git a/tools/testing/selftests/kvm/steal_time.c b/tools/testing/selftests/kvm/steal_time.c
+> index 8edc1fca345ba..a814f6f3f8b41 100644
+> --- a/tools/testing/selftests/kvm/steal_time.c
+> +++ b/tools/testing/selftests/kvm/steal_time.c
+> @@ -69,16 +69,10 @@ static bool is_steal_time_supported(struct kvm_vcpu *vcpu)
 >  
-> +	/* Indicates modified guest CSRs */
-> +	bool csr_dirty;
-> +
->  	/* SBI steal-time accounting */
->  	struct {
->  		gpa_t shmem;
-> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-> index a55a95da5..f7f58f02c 100644
-> --- a/arch/riscv/kvm/vcpu.c
-> +++ b/arch/riscv/kvm/vcpu.c
-> @@ -24,6 +24,8 @@
->  #define CREATE_TRACE_POINTS
->  #include "trace.h"
+>  static void steal_time_init(struct kvm_vcpu *vcpu, uint32_t i)
+>  {
+> -	int ret;
+> -
+>  	/* ST_GPA_BASE is identity mapped */
+>  	st_gva[i] = (void *)(ST_GPA_BASE + i * STEAL_TIME_SIZE);
+>  	sync_global_to_guest(vcpu->vm, st_gva[i]);
 >  
-> +static DEFINE_PER_CPU(struct kvm_vcpu *, kvm_former_vcpu);
-> +
->  const struct _kvm_stats_desc kvm_vcpu_stats_desc[] = {
->  	KVM_GENERIC_VCPU_STATS(),
->  	STATS_DESC_COUNTER(VCPU, ecall_exit_stat),
-> @@ -537,6 +539,9 @@ int kvm_arch_vcpu_ioctl_set_guest_debug(struct kvm_vcpu *vcpu,
->  		vcpu->arch.cfg.hedeleg |= BIT(EXC_BREAKPOINT);
->  	}
->  
-> +	/* Mark CSRs dirty on hedeleg update */
-
-Unnecessary comment.
-
-> +	vcpu->arch.csr_dirty = true;
-> +
->  	return 0;
+> -	ret = _vcpu_set_msr(vcpu, MSR_KVM_STEAL_TIME,
+> -			    (ulong)st_gva[i] | KVM_STEAL_RESERVED_MASK);
+> -	TEST_ASSERT(ret == 0, "Bad GPA didn't fail");
+> -
+>  	vcpu_set_msr(vcpu, MSR_KVM_STEAL_TIME, (ulong)st_gva[i] | KVM_MSR_ENABLED);
 >  }
 >  
-> @@ -581,6 +586,11 @@ void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
->  	struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
->  	struct kvm_vcpu_config *cfg = &vcpu->arch.cfg;
->  
-> +	if (vcpu->scheduled_out && vcpu == __this_cpu_read(kvm_former_vcpu) &&
-> +		vcpu->arch.last_exit_cpu == cpu && !vcpu->arch.csr_dirty)
-
-Align the second line condition under the first
-
-	if (vcpu->scheduled_out && vcpu == __this_cpu_read(kvm_former_vcpu) &&
-	    vcpu->arch.last_exit_cpu == cpu && !vcpu->arch.csr_dirty)
-
-> +		goto csr_restore_done;
-> +
-> +	vcpu->arch.csr_dirty = false;
->  	if (kvm_riscv_nacl_sync_csr_available()) {
->  		nsh = nacl_shmem();
->  		nacl_csr_write(nsh, CSR_VSSTATUS, csr->vsstatus);
-> @@ -624,6 +634,7 @@ void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
->  
->  	kvm_riscv_mmu_update_hgatp(vcpu);
->  
-> +csr_restore_done:
->  	kvm_riscv_vcpu_timer_restore(vcpu);
->  
->  	kvm_riscv_vcpu_host_fp_save(&vcpu->arch.host_context);
-> @@ -645,6 +656,8 @@ void kvm_arch_vcpu_put(struct kvm_vcpu *vcpu)
->  	void *nsh;
->  	struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
->  
-> +	__this_cpu_write(kvm_former_vcpu, vcpu);
-> +
->  	vcpu->cpu = -1;
->  
->  	kvm_riscv_vcpu_aia_put(vcpu);
-> diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
-> index e7ab6cb00..88cfcb018 100644
-> --- a/arch/riscv/kvm/vcpu_onereg.c
-> +++ b/arch/riscv/kvm/vcpu_onereg.c
-> @@ -652,6 +652,9 @@ static int kvm_riscv_vcpu_set_reg_csr(struct kvm_vcpu *vcpu,
->  	if (rc)
->  		return rc;
->  
-> +	/* Mark CSRs dirty after userspace update csr */
-
-Unnecessary comment.
-
-> +	vcpu->arch.csr_dirty = true;
-> +
->  	return 0;
+> @@ -99,6 +93,18 @@ static void steal_time_dump(struct kvm_vm *vm, uint32_t vcpu_idx)
+>  			st->pad[8], st->pad[9], st->pad[10]);
 >  }
 >  
+> +static void check_steal_time_uapi(struct kvm_vcpu *vcpu)
+> +{
+> +	int ret;
+> +
+> +	st_gva[0] = (void *)(ST_GPA_BASE);
+> +	sync_global_to_guest(vcpu->vm, st_gva[0]);
+
+No need to use st_gva[] and sync_global_to_guest(). For this test we can
+just use ST_GPA_BASE directly.
+
+> +
+> +	ret = _vcpu_set_msr(vcpu, MSR_KVM_STEAL_TIME,
+> +			    (ulong)st_gva[0] | KVM_STEAL_RESERVED_MASK);
+> +	TEST_ASSERT(ret == 0, "Bad GPA didn't fail");
+> +}
+> +
+>  #elif defined(__aarch64__)
+>  
+>  /* PV_TIME_ST must have 64-byte alignment */
+> @@ -170,7 +176,6 @@ static void steal_time_init(struct kvm_vcpu *vcpu, uint32_t i)
+>  {
+>  	struct kvm_vm *vm = vcpu->vm;
+>  	uint64_t st_ipa;
+> -	int ret;
+>  
+>  	struct kvm_device_attr dev = {
+>  		.group = KVM_ARM_VCPU_PVTIME_CTRL,
+> @@ -178,21 +183,12 @@ static void steal_time_init(struct kvm_vcpu *vcpu, uint32_t i)
+>  		.addr = (uint64_t)&st_ipa,
+>  	};
+>  
+> -	vcpu_ioctl(vcpu, KVM_HAS_DEVICE_ATTR, &dev);
+> -
+>  	/* ST_GPA_BASE is identity mapped */
+>  	st_gva[i] = (void *)(ST_GPA_BASE + i * STEAL_TIME_SIZE);
+>  	sync_global_to_guest(vm, st_gva[i]);
+>  
+> -	st_ipa = (ulong)st_gva[i] | 1;
+> -	ret = __vcpu_ioctl(vcpu, KVM_SET_DEVICE_ATTR, &dev);
+> -	TEST_ASSERT(ret == -1 && errno == EINVAL, "Bad IPA didn't report EINVAL");
+> -
+>  	st_ipa = (ulong)st_gva[i];
+>  	vcpu_ioctl(vcpu, KVM_SET_DEVICE_ATTR, &dev);
+> -
+> -	ret = __vcpu_ioctl(vcpu, KVM_SET_DEVICE_ATTR, &dev);
+> -	TEST_ASSERT(ret == -1 && errno == EEXIST, "Set IPA twice without EEXIST");
+>  }
+>  
+>  static void steal_time_dump(struct kvm_vm *vm, uint32_t vcpu_idx)
+> @@ -205,6 +201,34 @@ static void steal_time_dump(struct kvm_vm *vm, uint32_t vcpu_idx)
+>  	ksft_print_msg("    st_time: %ld\n", st->st_time);
+>  }
+>  
+> +static void check_steal_time_uapi(struct kvm_vcpu *vcpu)
+> +{
+> +	struct kvm_vm *vm = vcpu->vm;
+> +	uint64_t st_ipa;
+> +	int ret;
+> +
+> +	struct kvm_device_attr dev = {
+> +		.group = KVM_ARM_VCPU_PVTIME_CTRL,
+> +		.attr = KVM_ARM_VCPU_PVTIME_IPA,
+> +		.addr = (uint64_t)&st_ipa,
+> +	};
+> +
+> +	vcpu_ioctl(vcpu, KVM_HAS_DEVICE_ATTR, &dev);
+> +
+> +	st_gva[0] = (void *)(ST_GPA_BASE);
+> +	sync_global_to_guest(vm, st_gva[0]);
+
+Same comment as above.
+
+> +
+> +	st_ipa = (ulong)st_gva[0] | 1;
+> +	ret = __vcpu_ioctl(vcpu, KVM_SET_DEVICE_ATTR, &dev);
+> +	TEST_ASSERT(ret == -1 && errno == EINVAL, "Bad IPA didn't report EINVAL");
+> +
+> +	st_ipa = (ulong)st_gva[0];
+> +	vcpu_ioctl(vcpu, KVM_SET_DEVICE_ATTR, &dev);
+> +
+> +	ret = __vcpu_ioctl(vcpu, KVM_SET_DEVICE_ATTR, &dev);
+> +	TEST_ASSERT(ret == -1 && errno == EEXIST, "Set IPA twice without EEXIST");
+> +}
+
+Hmm... don't we now fail with EEXIST in arm64's steal_time_init() for i=0 ?
+I think the only way to avoid it is to create a temporary vcpu for the uapi
+tests which gets thrown away before creating the vcpus for the steal time
+tests.
+
+> +
+>  #elif defined(__riscv)
+>  
+>  /* SBI STA shmem must have 64-byte alignment */
+> @@ -301,6 +325,11 @@ static void steal_time_dump(struct kvm_vm *vm, uint32_t vcpu_idx)
+>  	pr_info("\n");
+>  }
+>  
+> +static void check_steal_time_uapi(struct kvm_vcpu *vcpu)
+> +{
+> +	/* RISC-V UAPI tests will be added in a subsequent patch */
+
+nit: no need for this comment.
+
+> +}
+> +
+>  #endif
+>  
+>  static void *do_steal_time(void *arg)
+> @@ -369,6 +398,8 @@ int main(int ac, char **av)
+>  	TEST_REQUIRE(is_steal_time_supported(vcpus[0]));
+>  	ksft_set_plan(NR_VCPUS);
+>  
+> +	check_steal_time_uapi(vcpus[0]);
+> +
+>  	/* Run test on each VCPU */
+>  	for (i = 0; i < NR_VCPUS; ++i) {
+>  		steal_time_init(vcpus[i], i);
 > -- 
-> 2.43.0
+> 2.34.1
 >
 
 Thanks,
