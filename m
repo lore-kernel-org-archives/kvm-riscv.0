@@ -4,69 +4,90 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 190B4FCE068
-	for <kvm-riscv@archiver.kernel.org>; Thu, 26 Feb 2026 12:39:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0DD6FCE087
+	for <kvm-riscv@archiver.kernel.org>; Thu, 26 Feb 2026 14:19:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
-	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=Ut0NXyMSFm6DuYvDdy7AKw0dt3j1yPFBHYTW74LvFzM=; b=xEPOAEs7a5qlNS
-	sxFOA1ljX2ijMmya6zF9PSjwMxpNBDJ3GE78fWP8b/fEufbUSm2+nJ2xvMQM5lrrUzct3M8mg8iM2
-	UEdk3PoTrEUHX692QU0lSg5gX+MHlqDHnxSCKTPG2njtPumQV0A1m/1Ut6wrzPqhHu6siSpOrXTTU
-	FwcT0DAle8fsR61EzZspLpPy0W5AnELACH3ZUqRt8bcrEFgmHM5Vw4ePzzl0iNBy1+ps3FYni6E1B
-	MifFkcx1GQaW1bWqn49hTkF4Hv6VyOQsqlMuCyCksmmujHJxEz9nUgyAawB7y/xTOvC7fLkWjQenr
-	O0xOPyM23wrUuq7s7tHw==;
+	List-Archive:List-Unsubscribe:List-Id:CC:To:In-Reply-To:References:Message-ID
+	:MIME-Version:Subject:Date:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=GAwBKZS1d5PdwLXmZgCScUhkkNNXLh3Uyov/Zcl4T0I=; b=s2SBNM7Cl6lyy0
+	RfzYd9eVtf3TgBsSP49G4FJPCchj8IzBH5XAMf8ZBwsMI+Ca5VsTatlETTwztfMFO6go7CyjNlf80
+	+TY3LH7Ts4V9VZblEyWddIocG9EinIm12F46ITJxqFkhhiTY+v8uhE6pQPmSVogVnRfI0Fps3KXFT
+	mWnxK1/7+Fv4DPRYNa7OaFG3ae2CmXUhL8I9KXAQxHWPDJBHcGULvwPZjZOXJmwTMKO0V3cZo4waJ
+	A8wau/P9YEl61YBpaYQB6oBO6JnAJuy+zwl1uB+fdVUtwCPHv8vY/BqQSwDfAyja3z1gCMB4Gf6a6
+	+iEJhBFCZcWmhOuUKx3w==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vvae8-000000068cN-3KdS;
-	Thu, 26 Feb 2026 12:39:12 +0000
-Received: from m16.mail.163.com ([117.135.210.4])
+	id 1vvcDP-00000006JeD-0Lkb;
+	Thu, 26 Feb 2026 14:19:43 +0000
+Received: from mx-2023-1.gwdg.de ([134.76.10.21])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vvae5-000000068bI-1W7B;
-	Thu, 26 Feb 2026 12:39:11 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:To:Subject:Date:Message-ID:MIME-Version; bh=Y2
-	dSiRAjxppeg7/bGSsyFayGIlsunKAgYoY2n1sc7os=; b=pPqNYmPqDBptzKg1gY
-	xGF6A0ig0IRHqUa5DKQJfT+ziY/j/oM3HfaUoIPiLFWu7NyGmrjzSollUMGOzkUv
-	nNtSeNvgOnXctNOkbWZutFtgdnXyobC7jP09pm83J4YIluoep+bqciW15esTVvKX
-	MBJc1ktGn2nvA5H+SZ2yINfbw=
-Received: from whoami-MS-7D95.. (unknown [])
-	by gzga-smtp-mtada-g1-1 (Coremail) with SMTP id _____wBXnkmsPqBppcMFMw--.51195S2;
-	Thu, 26 Feb 2026 20:38:05 +0800 (CST)
-From: Jinyu Tang <tjytimi@163.com>
-To: Anup Patel <anup@brainfault.org>,
-	Atish Patra <atish.patra@linux.dev>,
-	Andrew Jones <andrew.jones@oss.qualcomm.com>,
-	Conor Dooley <conor.dooley@microchip.com>,
-	Yong-Xuan Wang <yongxuan.wang@sifive.com>,
-	Nutty Liu <nutty.liu@hotmail.com>,
-	Paul Walmsley <pjw@kernel.org>,
-	Paul Walmsley <paul.walmsley@sifive.com>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Alexandre Ghiti <alex@ghiti.fr>
-Cc: kvm@vger.kernel.org,
-	kvm-riscv@lists.infradead.org,
-	linux-riscv@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	Jinyu Tang <tjytimi@163.com>
-Subject: [PATCH v6] KVM: riscv: Skip CSR restore if VCPU is reloaded on the same core
-Date: Thu, 26 Feb 2026 20:38:02 +0800
-Message-ID: <20260226123802.154855-1-tjytimi@163.com>
-X-Mailer: git-send-email 2.43.0
+	id 1vvcDM-00000006JTA-3Hjd;
+	Thu, 26 Feb 2026 14:19:42 +0000
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=cispa.de;
+	s=2023-rsa; h=CC:To:In-Reply-To:References:Message-ID:
+	Content-Transfer-Encoding:Content-Type:MIME-Version:Subject:Date:From:Sender:
+	Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender
+	:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:
+	List-Subscribe:List-Post:List-Owner:List-Archive;
+	bh=jAeCECNlZO1euMlCtdN550hykLYZFsNroN+0wfjKXiE=; b=U/Xd5ZKkugLw4jKH46vDneAvZt
+	thgWfeRlQiGg57cm5hQq1sFPZpOyeZpwDSvQHndFDsW8VhO1wCSNRxq2NKDBKTqGC2UR87ky/toI0
+	sv2v3QzTEeCIMwbHaRQO4JcyJXh7V2nYbFX9JGgHtgzOGaKu2KjHwz7Sy3S9L4ztcv40rHoeOm7g9
+	rhfAuT1aaHG78sjRl9Ji6OcEQSjjVO11rd4K6ltPFL5CssSp7DWii4qjvtthmWh4dWhOUY/C/igou
+	IHrMhsZ22Zw+SjzyLhpU3dNjMnuZlzvKgkoByFEBkytskW1PWxV0G5zZcT6eI8WbVhJ9BXrA25EI3
+	7pEMUIyQ==;
+Received: from mailer.gwdg.de ([134.76.10.26]:60674)
+	by mailer.gwdg.de with esmtp (GWDG Mailer)
+	(envelope-from <lukas.gerlach@cispa.de>)
+	id 1vvcDC-006EG9-09;
+	Thu, 26 Feb 2026 15:19:30 +0100
+Received: from mbx19-sub-05.um.gwdg.de ([10.108.142.70] helo=email.gwdg.de)
+	by mailer.gwdg.de with esmtps (TLS1.2:ECDHE-RSA-AES128-GCM-SHA256:128)
+	(GWDG Mailer)
+	(envelope-from <lukas.gerlach@cispa.de>)
+	id 1vvcDC-0009wl-1u;
+	Thu, 26 Feb 2026 15:19:30 +0100
+Received: from
+ 1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa
+ (10.250.9.200) by MBX19-SUB-05.um.gwdg.de (10.108.142.70) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.2.2562.37; Thu, 26 Feb 2026 15:19:24 +0100
+From: Lukas Gerlach <lukas.gerlach@cispa.de>
+Date: Thu, 26 Feb 2026 15:18:59 +0100
+Subject: [PATCH 2/4] KVM: riscv: Fix Spectre-v1 in AIA CSR access
 MIME-Version: 1.0
-X-CM-TRANSID: _____wBXnkmsPqBppcMFMw--.51195S2
-X-Coremail-Antispam: 1Uf129KBjvJXoW3WrWxurWxXr4xXr4xCw1UGFg_yoW7ZF15pF
-	W7CFn5Ww48Gr13G347Xr4v9r4YgwsYgw1fJ34UZ3yayr45try5AFs5KFyUAFZ8GrW8ZFyS
-	yF1DtFy09Fn0vaUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0pROdbbUUUUU=
-X-Originating-IP: [2408:823c:2011:64d4:ceda:9d2a:733a:aa1c]
-X-CM-SenderInfo: xwm13xlpl6il2tof0z/xtbC0A09tWmgPq1brgAA36
+Message-ID: <20260226-kvm-riscv-spectre-v1-v1-2-5f930ea16691@cispa.de>
+References: <20260226-kvm-riscv-spectre-v1-v1-0-5f930ea16691@cispa.de>
+In-Reply-To: <20260226-kvm-riscv-spectre-v1-v1-0-5f930ea16691@cispa.de>
+To: Anup Patel <anup@brainfault.org>, Atish Patra <atish.patra@linux.dev>,
+	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert
+ Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, Andrew Jones
+	<ajones@ventanamicro.com>
+CC: <kvm@vger.kernel.org>, <kvm-riscv@lists.infradead.org>,
+	<linux-riscv@lists.infradead.org>, <linux-kernel@vger.kernel.org>, Daniel
+ Weber <daniel.weber@cispa.de>, Michael Schwarz <michael.schwarz@cispa.de>,
+	Marton Bognar <marton.bognar@kuleuven.be>, Jo Van Bulck
+	<jo.vanbulck@kuleuven.be>, Lukas Gerlach <lukas.gerlach@cispa.de>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2015;
+ i=lukas.gerlach@cispa.de; h=from:subject:message-id;
+ bh=GFfVWFqoNPRvvXxOXJ4Garf8GrDfVffFbdN0xbFwWQM=;
+ b=owGbwMvMwCGWoTIjqP/42kTG02pJDJkLwuIfLzVcePOR7OkbR7qXJLL5P7wzzfT4Pc9ZSyb8Z
+ g1+mqH3rqOUhUGMg0FWTJFlquBrxr49DjxJmYfPwcxhZQIZwsDFKQATyXrHyHC74nK1qUAi67n9
+ K6pE1sinnhXMZouL+RNyir+l+IfpV12G/xEpN+e9u7Pni+8smeeh8m0Ppr0MzihVuLpZoM64eGd
+ GEzcA
+X-Developer-Key: i=lukas.gerlach@cispa.de; a=openpgp;
+ fpr=9511EB018EBC400C6269C3CE682498528FC7AD61
+X-Originating-IP: [10.250.9.200]
+X-ClientProxiedBy: mbx19-sub-02.um.gwdg.de (10.108.142.55) To
+ MBX19-SUB-05.um.gwdg.de (10.108.142.70)
+X-Virus-Scanned: (clean) by clamav
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260226_043909_933615_6B3A45CA 
-X-CRM114-Status: GOOD (  21.41  )
+X-CRM114-CacheID: sfid-20260226_061940_853465_839B566D 
+X-CRM114-Status: UNSURE (   9.23  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -83,157 +104,65 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Currently, kvm_arch_vcpu_load() unconditionally restores guest CSRs and
-HGATP. However, when a VCPU is loaded back on the same physical CPU,
-and no other KVM VCPU has run on this CPU since it was last put,
-the hardware CSRs are still valid.
+User-controlled indices are used to access AIA CSR registers.
+Sanitize them with array_index_nospec() to prevent speculative
+out-of-bounds access.
 
-This patch optimizes the vcpu_load path by skipping the expensive CSR
-writes if all the following conditions are met:
-1. It is being reloaded on the same CPU (vcpu->arch.last_exit_cpu == cpu).
-2. The CSRs are not dirty (!vcpu->arch.csr_dirty).
-3. No other VCPU used this CPU (vcpu == __this_cpu_read(kvm_former_vcpu)).
+Similar to x86 commit 8c86405f606c ("KVM: x86: Protect
+ioapic_read_indirect() from Spectre-v1/L1TF attacks") and arm64
+commit 41b87599c743 ("KVM: arm/arm64: vgic: fix possible spectre-v1
+in vgic_get_irq()").
 
-To ensure this fast-path doesn't break corner cases:
-- Live migration and VCPU reset are naturally safe. KVM initializes
-  last_exit_cpu to -1, which guarantees the fast-path won't trigger.
-- A new 'csr_dirty' flag is introduced to track runtime userspace
-  interventions. If userspace modifies guest configurations (e.g.,
-  hedeleg via KVM_SET_GUEST_DEBUG, or CSRs via KVM_SET_ONE_REG) while
-  the VCPU is preempted, the flag is set to skip fast path.
-
-Note that kvm_riscv_vcpu_aia_load() is kept outside the skip logic
-to ensure IMSIC/AIA interrupt states are always properly
-synchronized.
-
-Signed-off-by: Jinyu Tang <tjytimi@163.com>
+Signed-off-by: Lukas Gerlach <lukas.gerlach@cispa.de>
 ---
- v5 -> v6:
- As suggested by Andrew Jones, checking 'last_exit_cpu' first (most
- likely to fail on busy hosts) and placing the expensive
- __this_cpu_read() last, skipping __this_cpu_write() in kvm_arch_vcpu_put()
- if kvm_former_vcpu is already set to the current VCPU.
+ arch/riscv/kvm/aia.c | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
- v4 -> v5:
- - Dropped the 'vcpu->scheduled_out' check as Andrew Jones pointed out,
-   relying on 'last_exit_cpu', 'former_vcpu', and '!csr_dirty'
-   is sufficient and safe. This expands the optimization to cover many
-   userspace exits (e.g., MMIO) as well.
- - Added a block comment in kvm_arch_vcpu_load() to warn future
-   developers about maintaining the 'csr_dirty' dependency, as Andrew's
-   suggestion to reduce fragility.
- - Removed unnecessary single-line comments and fixed indentation nits.
+diff --git a/arch/riscv/kvm/aia.c b/arch/riscv/kvm/aia.c
+index cac3c2b51d72..38de97d2f5b8 100644
+--- a/arch/riscv/kvm/aia.c
++++ b/arch/riscv/kvm/aia.c
+@@ -13,6 +13,7 @@
+ #include <linux/irqchip/riscv-imsic.h>
+ #include <linux/irqdomain.h>
+ #include <linux/kvm_host.h>
++#include <linux/nospec.h>
+ #include <linux/percpu.h>
+ #include <linux/spinlock.h>
+ #include <asm/cpufeature.h>
+@@ -182,10 +183,13 @@ int kvm_riscv_vcpu_aia_get_csr(struct kvm_vcpu *vcpu,
+ 			       unsigned long *out_val)
+ {
+ 	struct kvm_vcpu_aia_csr *csr = &vcpu->arch.aia_context.guest_csr;
++	unsigned long regs_max = sizeof(struct kvm_riscv_aia_csr) / sizeof(unsigned long);
+ 
+-	if (reg_num >= sizeof(struct kvm_riscv_aia_csr) / sizeof(unsigned long))
++	if (reg_num >= regs_max)
+ 		return -ENOENT;
+ 
++	reg_num = array_index_nospec(reg_num, regs_max);
++
+ 	*out_val = 0;
+ 	if (kvm_riscv_aia_available())
+ 		*out_val = ((unsigned long *)csr)[reg_num];
+@@ -198,10 +202,13 @@ int kvm_riscv_vcpu_aia_set_csr(struct kvm_vcpu *vcpu,
+ 			       unsigned long val)
+ {
+ 	struct kvm_vcpu_aia_csr *csr = &vcpu->arch.aia_context.guest_csr;
++	unsigned long regs_max = sizeof(struct kvm_riscv_aia_csr) / sizeof(unsigned long);
+ 
+-	if (reg_num >= sizeof(struct kvm_riscv_aia_csr) / sizeof(unsigned long))
++	if (reg_num >= regs_max)
+ 		return -ENOENT;
+ 
++	reg_num = array_index_nospec(reg_num, regs_max);
++
+ 	if (kvm_riscv_aia_available()) {
+ 		((unsigned long *)csr)[reg_num] = val;
+ 
 
- v3 -> v4:
- - Addressed Anup Patel's review regarding hardware state inconsistency.
- - Introduced 'csr_dirty' flag to track dynamic userspace CSR/CONFIG
-   modifications (KVM_SET_ONE_REG, KVM_SET_GUEST_DEBUG), forcing a full
-   restore when debugging or modifying states at userspace.
- - Kept kvm_riscv_vcpu_aia_load() out of the skip block to resolve IMSIC
-   VS-file instability.
-
- v2 -> v3:
- v2 was missing a critical check because I generated the patch from my
- wrong (experimental) branch. This is fixed in v3. Sorry for my trouble.
-
- v1 -> v2:
- Apply the logic to aia csr load. Thanks for Andrew Jones's advice.
----
- arch/riscv/include/asm/kvm_host.h |  3 +++
- arch/riscv/kvm/vcpu.c             | 22 ++++++++++++++++++++++
- arch/riscv/kvm/vcpu_onereg.c      |  2 ++
- 3 files changed, 27 insertions(+)
-
-diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
-index 24585304c..7ee47b83c 100644
---- a/arch/riscv/include/asm/kvm_host.h
-+++ b/arch/riscv/include/asm/kvm_host.h
-@@ -273,6 +273,9 @@ struct kvm_vcpu_arch {
- 	/* 'static' configurations which are set only once */
- 	struct kvm_vcpu_config cfg;
- 
-+	/* Indicates modified guest CSRs */
-+	bool csr_dirty;
-+
- 	/* SBI steal-time accounting */
- 	struct {
- 		gpa_t shmem;
-diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index a55a95da5..ff51a312d 100644
---- a/arch/riscv/kvm/vcpu.c
-+++ b/arch/riscv/kvm/vcpu.c
-@@ -24,6 +24,8 @@
- #define CREATE_TRACE_POINTS
- #include "trace.h"
- 
-+static DEFINE_PER_CPU(struct kvm_vcpu *, kvm_former_vcpu);
-+
- const struct _kvm_stats_desc kvm_vcpu_stats_desc[] = {
- 	KVM_GENERIC_VCPU_STATS(),
- 	STATS_DESC_COUNTER(VCPU, ecall_exit_stat),
-@@ -537,6 +539,8 @@ int kvm_arch_vcpu_ioctl_set_guest_debug(struct kvm_vcpu *vcpu,
- 		vcpu->arch.cfg.hedeleg |= BIT(EXC_BREAKPOINT);
- 	}
- 
-+	vcpu->arch.csr_dirty = true;
-+
- 	return 0;
- }
- 
-@@ -581,6 +585,20 @@ void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
- 	struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
- 	struct kvm_vcpu_config *cfg = &vcpu->arch.cfg;
- 
-+	/*
-+	 * If VCPU is being reloaded on the same physical CPU and no
-+	 * other KVM VCPU has run on this CPU since it was last put,
-+	 * we can skip the expensive CSR and HGATP writes.
-+	 *
-+	 * Note: If a new CSR is added to this fast-path skip block,
-+	 * make sure that 'csr_dirty' is set to true in any
-+	 * ioctl (e.g., KVM_SET_ONE_REG) that modifies it.
-+	 */
-+	if (vcpu->arch.last_exit_cpu == cpu && !vcpu->arch.csr_dirty &&
-+	    vcpu == __this_cpu_read(kvm_former_vcpu))
-+		goto csr_restore_done;
-+
-+	vcpu->arch.csr_dirty = false;
- 	if (kvm_riscv_nacl_sync_csr_available()) {
- 		nsh = nacl_shmem();
- 		nacl_csr_write(nsh, CSR_VSSTATUS, csr->vsstatus);
-@@ -624,6 +642,7 @@ void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
- 
- 	kvm_riscv_mmu_update_hgatp(vcpu);
- 
-+csr_restore_done:
- 	kvm_riscv_vcpu_timer_restore(vcpu);
- 
- 	kvm_riscv_vcpu_host_fp_save(&vcpu->arch.host_context);
-@@ -645,6 +664,9 @@ void kvm_arch_vcpu_put(struct kvm_vcpu *vcpu)
- 	void *nsh;
- 	struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
- 
-+	if (vcpu != __this_cpu_read(kvm_former_vcpu))
-+		__this_cpu_write(kvm_former_vcpu, vcpu);
-+
- 	vcpu->cpu = -1;
- 
- 	kvm_riscv_vcpu_aia_put(vcpu);
-diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
-index e7ab6cb00..fc08bf833 100644
---- a/arch/riscv/kvm/vcpu_onereg.c
-+++ b/arch/riscv/kvm/vcpu_onereg.c
-@@ -652,6 +652,8 @@ static int kvm_riscv_vcpu_set_reg_csr(struct kvm_vcpu *vcpu,
- 	if (rc)
- 		return rc;
- 
-+	vcpu->arch.csr_dirty = true;
-+
- 	return 0;
- }
- 
 -- 
-2.43.0
+2.51.0
 
 
 -- 
