@@ -4,79 +4,80 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 36833FEFB5D
-	for <kvm-riscv@archiver.kernel.org>; Fri, 27 Feb 2026 15:13:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DC91B1048922
+	for <kvm-riscv@archiver.kernel.org>; Sat, 28 Feb 2026 00:54:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
-	Message-ID:Date:Subject:CC:To:From:Reply-To:Content-ID:Content-Description:
+	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=pRpOnZD+Jg6lxjd6gnRzUgU2sQ6Vx3KoehoPCipoIwY=; b=g9TqTwCKL8lx0x
-	3uXW64NtMkaYrnNTZ8C7a0hq68ugQTbgeeKfvq4nCxVtWNfwVjftXPojhIvKywWRut8FqYNezc0Om
-	7Azr1BIwwSXX9CGzEnsgS9osb6/Xbtg/3756+ElazaBvHLC3ubCyVQxmL9LoZsCjj/v3N4C5ckVZl
-	X4lk4bNZmM942htWoM110nlkH18lsj5QQb9vbO2cBmMpWlMNKUKrOU8zBStnOCKoJZssXFPPjCg/n
-	O+5eRdP6+eA8wdU00f/0QeTFzVlUk8n4JUZtXEcCE86vXmBQcvuT1ck68REt/WqiXbpkejJDABpbV
-	wPvNcinQ16JTwM+86MXA==;
+	List-Owner; bh=9rjH/YhYWwB43QNCp5cORfmS9AfknaXGVlMIqDzm85w=; b=duQoo1cKh18Xy9
+	i2G3G/zrazHK8iUDAtlGZfDunRndrFn7FTP8DEQWSdzt0iqE1MoanT5hJe6KUkTIu/h5wau4nui3H
+	yrf/HYQpjfonLnSeK0rE4zO4hK6XkDLemJ8MuwZtk/Ugf5CEZv0nDWZMvlEdyUXBHhegINYcpGGCj
+	yEAXXqMfY/eUzVBVyjX0QjB6Xa03WdwJ2b+WJKfRPSFN7LOoHYZTD9ok0w0qFZM4Rx2zneUFYzLBo
+	hs9jhdmDFsf9FGEyk4Ewqpl6K+UnfxrdComVknNOT3oHWdRdhqmFEDFgdIDM3NepqNuJ+nLOD5SQf
+	+m2UHWRj0KLPUm4Ikn9Q==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vvzX1-00000008YqB-3FdQ;
-	Fri, 27 Feb 2026 15:13:31 +0000
-Received: from mx-2023-1.gwdg.de ([134.76.10.21])
+	id 1vw8b1-00000009LCj-3NRh;
+	Sat, 28 Feb 2026 00:54:15 +0000
+Received: from smtp81.cstnet.cn ([159.226.251.81] helo=cstnet.cn)
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vvzWz-00000008Ypb-118B;
-	Fri, 27 Feb 2026 15:13:30 +0000
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=cispa.de;
-	s=2023-rsa; h=Content-Type:Content-Transfer-Encoding:MIME-Version:References:
-	In-Reply-To:Message-ID:Date:Subject:CC:To:From:Sender:Reply-To:Content-ID:
-	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
-	:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
-	List-Post:List-Owner:List-Archive;
-	bh=FWU+AoGX9eH3mCsh3LQUgdVuyGEg7A83/ykl1w+gkCQ=; b=VBFZUizvgZG78Youf4F+MeuRT2
-	zri9gJa8VJVZ5M6To8Tru9dkJszT42T+HnSu3Linjj54Cre1zTBIRISI2Y2bBBZzcBR/QsOFFXhxq
-	ta5/gvMUNi5XaBlqWdwXys81LGEl8Oq15xR6bbzo73PtB/vmOYhPpEzvtDSHj3E/dCyCXg4Uxjop+
-	EBWg04SLhWki8tp+QNbFBzkK7dcpZKPpKVvBo0Oqhd5LaipYyIaq5LE0HzdnTqy17Hd1BQ9M9+lVd
-	MMJ7Y72wIevZWLffmLfqJs7PD9o/ZNjE4Ebo4POqVfrCG9pLNOS0pQGM5R8OtCzT8ulNWsHGzN35Y
-	jsDMgJfQ==;
-Received: from mailer.gwdg.de ([134.76.10.26]:56296)
-	by mailer.gwdg.de with esmtp (GWDG Mailer)
-	(envelope-from <lukas.gerlach@cispa.de>)
-	id 1vvzWi-006hGu-0F;
-	Fri, 27 Feb 2026 16:13:12 +0100
-Received: from mbx19-sub-05.um.gwdg.de ([10.108.142.70] helo=email.gwdg.de)
-	by mailer.gwdg.de with esmtps (TLS1.2:ECDHE-RSA-AES128-GCM-SHA256:128)
-	(GWDG Mailer)
-	(envelope-from <lukas.gerlach@cispa.de>)
-	id 1vvzWi-000PaN-2i;
-	Fri, 27 Feb 2026 16:13:12 +0100
-Received: from localhost.localdomain (10.250.9.200) by MBX19-SUB-05.um.gwdg.de
- (10.108.142.70) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.2.2562.37; Fri, 27 Feb
- 2026 16:13:10 +0100
-From: Lukas Gerlach <lukas.gerlach@cispa.de>
-To: <radim.krcmar@oss.qualcomm.com>
-CC: <ajones@ventanamicro.com>, <alex@ghiti.fr>, <anup@brainfault.org>,
-	<aou@eecs.berkeley.edu>, <atish.patra@linux.dev>, <daniel.weber@cispa.de>,
-	<jo.vanbulck@kuleuven.be>, <kvm-riscv@lists.infradead.org>,
-	<kvm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-	<linux-riscv@lists.infradead.org>, <lukas.gerlach@cispa.de>,
-	<marton.bognar@kuleuven.be>, <michael.schwarz@cispa.de>,
-	<palmer@dabbelt.com>, <pjw@kernel.org>
-Subject: Re: [PATCH 4/4] KVM: riscv: Fix Spectre-v1 in PMU counter access
-Date: Fri, 27 Feb 2026 16:12:47 +0100
-Message-ID: <20260227151247.18602-1-lukas.gerlach@cispa.de>
-X-Mailer: git-send-email 2.51.0
-In-Reply-To: <DGPS39X0VRTU.3ATPEH33LUF1G@oss.qualcomm.com>
-References: <DGPS39X0VRTU.3ATPEH33LUF1G@oss.qualcomm.com>
+	id 1vw8ax-00000009LBE-2esV;
+	Sat, 28 Feb 2026 00:54:14 +0000
+Received: from fric.. (unknown [210.73.43.101])
+	by APP-03 (Coremail) with SMTP id rQCowABXO+KkPKJpPMJ2CQ--.12049S3;
+	Sat, 28 Feb 2026 08:53:58 +0800 (CST)
+From: Jiakai Xu <xujiakai2025@iscas.ac.cn>
+To: linux-riscv@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	kvm-riscv@lists.infradead.org,
+	linux-kselftest@vger.kernel.org,
+	kvm@vger.kernel.org
+Cc: Alexandre Ghiti <alex@ghiti.fr>,
+	Paolo Bonzini <pbonzini@redhat.com>,
+	Shuah Khan <shuah@kernel.org>,
+	Paul Walmsley <pjw@kernel.org>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Andrew Jones <ajones@ventanamicro.com>,
+	Anup Patel <anup@brainfault.org>,
+	Atish Patra <atish.patra@linux.dev>,
+	Albert Ou <aou@eecs.berkeley.edu>,
+	Jiakai Xu <xujiakai2025@iscas.ac.cn>,
+	Jiakai Xu <jiakaiPeanut@gmail.com>,
+	Andrew Jones <andrew.jones@oss.qualcomm.com>
+Subject: [PATCH v9 1/3] RISC-V: KVM: Validate SBI STA shmem alignment in  kvm_sbi_ext_sta_set_reg()
+Date: Sat, 28 Feb 2026 00:53:53 +0000
+Message-Id: <20260228005355.823048-2-xujiakai2025@iscas.ac.cn>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20260228005355.823048-1-xujiakai2025@iscas.ac.cn>
+References: <20260228005355.823048-1-xujiakai2025@iscas.ac.cn>
 MIME-Version: 1.0
-X-Originating-IP: [10.250.9.200]
-X-ClientProxiedBy: MBX19-FMZ-06.um.gwdg.de (10.108.142.65) To
- MBX19-SUB-05.um.gwdg.de (10.108.142.70)
-X-Virus-Scanned: (clean) by clamav
+X-CM-TRANSID: rQCowABXO+KkPKJpPMJ2CQ--.12049S3
+X-Coremail-Antispam: 1UD129KBjvJXoWxXF4xXFyfKw4fZrW5Cry7trb_yoWrJF1UpF
+	42kw15ZrW8tFZ2k39rZw4vgr15u3ykKr1jqFy3W34xZF4kta4Yyrna93y7ZF98JryvvFWI
+	yF10vF1DCw45AaDanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUUHab7Iv0xC_Kw4lb4IE77IF4wAFF20E14v26rWj6s0DM7CY07I2
+	0VC2zVCF04k26cxKx2IYs7xG6rWj6s0DM7CIcVAFz4kK6r1j6r18M28IrcIa0xkI8VA2jI
+	8067AKxVWUGwA2048vs2IY020Ec7CjxVAFwI0_Gr0_Xr1l8cAvFVAK0II2c7xJM28CjxkF
+	64kEwVA0rcxSw2x7M28EF7xvwVC0I7IYx2IY67AKxVW5JVW7JwA2z4x0Y4vE2Ix0cI8IcV
+	CY1x0267AKxVWxJVW8Jr1l84ACjcxK6I8E87Iv67AKxVW8Jr0_Cr1UM28EF7xvwVC2z280
+	aVCY1x0267AKxVWxJr0_GcWlnxkEFVAIw20F6cxK64vIFxWle2I262IYc4CY6c8Ij28IcV
+	AaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E2Ix0cI8IcVAFwI0_Jr0_Jr4lYx0E
+	x4A2jsIE14v26r1j6r4UMcvjeVCFs4IE7xkEbVWUJVW8JwACjcxG0xvY0x0EwIxGrwACjI
+	8F5VA0II8E6IAqYI8I648v4I1lFIxGxcIEc7CjxVA2Y2ka0xkIwI1lc7CjxVAaw2AFwI0_
+	GFv_Wryl42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67
+	AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r4a6rW5MIIY
+	rxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7IYx2IY6xkF7I0E14
+	v26r4j6F4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVWUJVW8
+	JwCI42IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIYCTnIWIevJa73UjIFyTuYvjxU2ZqWUU
+	UUU
+X-Originating-IP: [210.73.43.101]
+X-CM-SenderInfo: 50xmxthndljiysv6x2xfdvhtffof0/1tbiCRAMCWmhsqi6XgAAsq
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260227_071329_325251_B064DCD5 
-X-CRM114-Status: UNSURE (   6.93  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20260227_165412_036913_54A6A818 
+X-CRM114-Status: GOOD (  15.14  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -93,20 +94,103 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Thanks for the review!
+The RISC-V SBI Steal-Time Accounting (STA) extension requires the shared
+memory physical address to be 64-byte aligned, or set to all-ones to
+explicitly disable steal-time accounting.
 
-> This one also covers a non-speculation bug, since the previous condition
-> used cidx > RISCV_KVM_MAX_COUNTER. :)  I'll send a patch for that.
+KVM exposes the SBI STA shared memory configuration to userspace via
+KVM_SET_ONE_REG. However, the current implementation of
+kvm_sbi_ext_sta_set_reg() does not validate the alignment of the configured
+shared memory address. As a result, userspace can install a misaligned
+shared memory address that violates the SBI specification.
 
-Nice catch, thanks for sending the fix.
+Such an invalid configuration may later reach runtime code paths that
+assume a valid and properly aligned shared memory region. In particular,
+KVM_RUN can trigger the following WARN_ON in
+kvm_riscv_vcpu_record_steal_time():
 
-> I noticed a few other places where mis-speculation is possible,
-> see below; can you explain why they don't need protection?
+  WARNING: arch/riscv/kvm/vcpu_sbi_sta.c:49 at
+  kvm_riscv_vcpu_record_steal_time
 
-They do, I missed those. Will send a v2 incorporating all four sites.
+WARN_ON paths are not expected to be reachable during normal runtime
+execution, and may result in a kernel panic when panic_on_warn is enabled.
 
-Thanks,
-Lukas
+Fix this by validating the computed shared memory GPA at the
+KVM_SET_ONE_REG boundary. A temporary GPA is constructed and checked
+before committing it to vcpu->arch.sta.shmem. The validation allows
+either a 64-byte aligned GPA or INVALID_GPA (all-ones), which disables
+STA as defined by the SBI specification.
+
+This prevents invalid userspace state from reaching runtime code paths
+that assume SBI STA invariants and avoids unexpected WARN_ON behavior.
+
+Fixes: f61ce890b1f074 ("RISC-V: KVM: Add support for SBI STA registers")
+Signed-off-by: Jiakai Xu <xujiakai2025@iscas.ac.cn>
+Signed-off-by: Jiakai Xu <jiakaiPeanut@gmail.com>
+Reviewed-by: Andrew Jones <andrew.jones@oss.qualcomm.com>
+---
+V5 -> V6: Initialized new_shmem to INVALID_GPA as suggested.
+V4 -> V5: Added parentheses to function name in subject.
+V3 -> V4: Declared new_shmem at the top of kvm_sbi_ext_sta_set_reg().
+          Initialized new_shmem to 0 instead of vcpu->arch.sta.shmem.
+          Added blank lines per review feedback.
+V2 -> V3: Added parentheses to function name in subject.
+V1 -> V2: Added Fixes tag.
+---
+ arch/riscv/kvm/vcpu_sbi_sta.c | 16 +++++++++++-----
+ 1 file changed, 11 insertions(+), 5 deletions(-)
+
+diff --git a/arch/riscv/kvm/vcpu_sbi_sta.c b/arch/riscv/kvm/vcpu_sbi_sta.c
+index afa0545c3bcfc..3b834709b429f 100644
+--- a/arch/riscv/kvm/vcpu_sbi_sta.c
++++ b/arch/riscv/kvm/vcpu_sbi_sta.c
+@@ -181,6 +181,7 @@ static int kvm_sbi_ext_sta_set_reg(struct kvm_vcpu *vcpu, unsigned long reg_num,
+ 				   unsigned long reg_size, const void *reg_val)
+ {
+ 	unsigned long value;
++	gpa_t new_shmem = INVALID_GPA;
+ 
+ 	if (reg_size != sizeof(unsigned long))
+ 		return -EINVAL;
+@@ -191,18 +192,18 @@ static int kvm_sbi_ext_sta_set_reg(struct kvm_vcpu *vcpu, unsigned long reg_num,
+ 		if (IS_ENABLED(CONFIG_32BIT)) {
+ 			gpa_t hi = upper_32_bits(vcpu->arch.sta.shmem);
+ 
+-			vcpu->arch.sta.shmem = value;
+-			vcpu->arch.sta.shmem |= hi << 32;
++			new_shmem = value;
++			new_shmem |= hi << 32;
+ 		} else {
+-			vcpu->arch.sta.shmem = value;
++			new_shmem = value;
+ 		}
+ 		break;
+ 	case KVM_REG_RISCV_SBI_STA_REG(shmem_hi):
+ 		if (IS_ENABLED(CONFIG_32BIT)) {
+ 			gpa_t lo = lower_32_bits(vcpu->arch.sta.shmem);
+ 
+-			vcpu->arch.sta.shmem = ((gpa_t)value << 32);
+-			vcpu->arch.sta.shmem |= lo;
++			new_shmem = ((gpa_t)value << 32);
++			new_shmem |= lo;
+ 		} else if (value != 0) {
+ 			return -EINVAL;
+ 		}
+@@ -211,6 +212,11 @@ static int kvm_sbi_ext_sta_set_reg(struct kvm_vcpu *vcpu, unsigned long reg_num,
+ 		return -ENOENT;
+ 	}
+ 
++	if (new_shmem != INVALID_GPA && !IS_ALIGNED(new_shmem, 64))
++		return -EINVAL;
++
++	vcpu->arch.sta.shmem = new_shmem;
++
+ 	return 0;
+ }
+ 
+-- 
+2.34.1
+
 
 -- 
 kvm-riscv mailing list
