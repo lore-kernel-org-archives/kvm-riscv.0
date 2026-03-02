@@ -4,86 +4,134 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 30FD6E9B37D
-	for <kvm-riscv@archiver.kernel.org>; Mon,  2 Mar 2026 13:27:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B98FEEB363D
+	for <kvm-riscv@archiver.kernel.org>; Mon,  2 Mar 2026 21:57:44 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-Id:Date:Subject:Cc
-	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=HGKcbT7CsUC279GV/Ju5YfHK7LNszT+aDVgYr4/jEHg=; b=hAZef7B2jbcmjy
-	9JKOtYtZaCvQEp9/lI8O1ANtrGtmFf2R3WfsKwqolL6fdDxIUaVTqncQOyY85cbR2uwb+SojfRQ3Q
-	Kd2HTIo223Fip8VTHsyX1khUNEnu/kFmytotv9iIMWIxrjdm3cS2zkqiD74PqUUCInMsAYISN6Abb
-	S3phPeS+8y0OI4PVFZDeBB48IvZFzDPmBKwo0pmWwh64Aro4kSGyLHaHJ4mzw+P97sv4HT1P4l5H5
-	fKAXOloMLfEROD67y34p5XhmShRef7cwt0usXuFplhIRyT+0tkrsutsDw7JsqKnbmztZ8cgoR0k80
-	4ulV5bFhCkWtIna6ChQw==;
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
+	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=NBsQ6eaeFmjDWI4yMinhdrsO972yuBhpf3fh6d3B0t0=; b=II/pHw/A9MKA59
+	uV4gUShZ+WcXyzy75ZKOZb3syqy0DgOzDlSDiwbZS740SGraTOXzeePWfSzsJF0LwopSC+rIWrMp0
+	Z3a/S9XYYA5/yVJXegoHpV4Ht3jCBCe6kXxRIRPC7oBSffUVshc1iHb+qZPuRFjZvN6IkOQ5HbJPS
+	+7NCs2WJSmbb5PzN0bqWKbtulEa94Yq9RkiEL7JWC/rVOxma882xzJGwBxZzxyy+gl0EBL7N8bJJr
+	nl60q7GWHtIKqjiqsz4j2oCrTYUYyV2Q5FMcLT8XgxJX7iJi6mossWWKghstMw06Qz1U+IOGlejb+
+	Hyw6ICGimJ/soMWt5ZIw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vx3J1-0000000D6H0-2ykU;
-	Mon, 02 Mar 2026 13:27:27 +0000
-Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+	id 1vxBGp-0000000E4GS-38FZ;
+	Mon, 02 Mar 2026 21:57:43 +0000
+Received: from mx0b-0031df01.pphosted.com ([205.220.180.131])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vx3J0-0000000D6GV-1Vzw;
-	Mon, 02 Mar 2026 13:27:26 +0000
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:MIME-Version
-	:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:
-	Content-Description:In-Reply-To:References;
-	bh=RuZFEnl9j78powhTNWsrxd/rXdyRxdzz6mO/eVLrOq4=; b=moKm62tyqw/w178p8wbUO3CMWB
-	7v+21OZ3mZaAnHFYio2uYB+Vrr0mX0HNATNeQEfD82GwigwUfr+LvskZ82kghDbj8f6Plbd3uFF/f
-	EPn+LwG0DU7nssTBruuzTAU0cGxYWYonFKAezQgiLZoC068BanTJALqjHBLd83HgPkoLej6Hg8Hlb
-	Sv77gZgvIx4cXK07KaCXmt+G/t1AboW4LbsoDndCR/TbiBlIm2LlgNBBkzSn8br0/FFmcvucCGCQJ
-	J+63looI4ViUi8t5gHrs/Z+Bv2eb9LyW+fv4+W+OAWvWPwhdTJhh3pAOcw+MByrc/vWS7wNwbhEQt
-	RRniTyhQ==;
-Received: from smtp21.cstnet.cn ([159.226.251.21] helo=cstnet.cn)
-	by desiato.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vx3Iv-000000009rs-0z7z;
-	Mon, 02 Mar 2026 13:27:24 +0000
-Received: from fric.. (unknown [210.73.43.101])
-	by APP-01 (Coremail) with SMTP id qwCowABXw24pkKVpxM0bCQ--.814S2;
-	Mon, 02 Mar 2026 21:27:05 +0800 (CST)
-From: Jiakai Xu <xujiakai2025@iscas.ac.cn>
-To: linux-kernel@vger.kernel.org,
-	linux-riscv@lists.infradead.org,
-	kvm-riscv@lists.infradead.org,
-	kvm@vger.kernel.org
-Cc: Alexandre Ghiti <alex@ghiti.fr>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Paul Walmsley <paul.walmsley@sifive.com>,
-	Atish Patra <atish.patra@linux.dev>,
-	Anup Patel <anup@brainfault.org>,
-	Jiakai Xu <xujiakai2025@iscas.ac.cn>,
-	Jiakai Xu <jiakaiPeanut@gmail.com>
-Subject: [PATCH v3] RISC-V: KVM: Fix use-after-free in kvm_riscv_aia_aplic_has_attr()
-Date: Mon,  2 Mar 2026 13:27:03 +0000
-Message-Id: <20260302132703.1721415-1-xujiakai2025@iscas.ac.cn>
-X-Mailer: git-send-email 2.34.1
+	id 1vxBGn-0000000E4FO-2bdA
+	for kvm-riscv@lists.infradead.org;
+	Mon, 02 Mar 2026 21:57:42 +0000
+Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 622IVOPT3561527
+	for <kvm-riscv@lists.infradead.org>; Mon, 2 Mar 2026 21:57:39 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=qcppdkim1; bh=kKGEnQyVqddtbVsVaKzEMP9/
+	0r9eYevQQlpSxYQoULw=; b=QekejI2mpiNgKb1T0/vwrfrCoNAOsem1o8Sw/ucO
+	FHzM/wRfm4PxxcRiftZRmvgH5WcI7YV7n9cfJOH5RtmUKFgnzgo+lE0izVwDhVgT
+	QtJmS0rUZLV9vNYNyjdaZj6nhHI9+BRckTWrNWV1pWx1io7ydCOgP+IA7E3vnuMQ
+	JU8PGldNHy9DY+3C1TyWRmJY+XK7YhYgcIvKBR964pyrJ9V+KTNFTmJznWZLyvGy
+	mbwpAETh2U8fhYV81pQU6KIjAu98mxVBOPWvz02FgrDALKS7ZzlHBkNtND91bXAg
+	8XN7sDhqjzCTy0GT1hJ0TBFV7x/V+DMlyIfvbeIl3J/l/g==
+Received: from mail-dl1-f69.google.com (mail-dl1-f69.google.com [74.125.82.69])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4cn9bva410-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <kvm-riscv@lists.infradead.org>; Mon, 02 Mar 2026 21:57:39 +0000 (GMT)
+Received: by mail-dl1-f69.google.com with SMTP id a92af1059eb24-1275c2ae713so8279715c88.0
+        for <kvm-riscv@lists.infradead.org>; Mon, 02 Mar 2026 13:57:39 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1772488659; x=1773093459; darn=lists.infradead.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=kKGEnQyVqddtbVsVaKzEMP9/0r9eYevQQlpSxYQoULw=;
+        b=e18QyIjUK1JUlprRuEJzbMAAFRZr82wNLoX6fao4OcTzdqDIhycwVrKSKD7//MbPNy
+         2vFga9x39idzqmkNq8sBkGLMXUuut3YzNAzvFKQUB+HY1Xndx/Gl5lGta9BZ2j2dl/tF
+         fASAgbYUTTp1211LV/Jlju0CWLeNR9dhWdg6HkEkx7vNFr+VadK+X2IgOF65LSCjQ3uA
+         9CngUKaUxREX6igkdGI8BAIsu4J8ExyuZvOQ+zuuZlHC9dHGlK5PJVdNV5aocUrcCcoS
+         cVZqdyndwhoqgWS1CoqwzmfF7a/5+B03YWbyZdnMvYWBkmnN8yp9W/iF3obVwn1wb1PA
+         Jk0g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1772488659; x=1773093459;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=kKGEnQyVqddtbVsVaKzEMP9/0r9eYevQQlpSxYQoULw=;
+        b=Xsal0Q7TKP6lBUPDgzntgOFLMI1VcfFQHFZCHVLv3neDRonjXEfUTp0j6z4ZV060D2
+         h0w57OYLjIN/zuI0MwHm1iq74QC0O3466aci/YEuhbZv1ZMEEbi0HcfEHKYRJZQWITWc
+         cKc+uU9g7uGuAb7X7FGkEpsN5Lt45xM3cJvfjWwqvFmtx2H8yySkNL/4zptvCQMmU6IA
+         ITIOiRlRWReOExySPK7Mz4/an6TnHR5eaPUH5s8qHsFMnIFWJzZQpduwODyrSIhuK4/y
+         93HLxprJZfvfVaYZ/gTykufDmRITsJg84rSVaFUIPKa6nzYvx83Evv42GzAi25cA+bKY
+         H3xg==
+X-Forwarded-Encrypted: i=1; AJvYcCWsqd04o1rlPxIAmlPEfMbj4VK0RN/T3RCAfdILr6E3Dakfs7YAcIDJc925YDtxh+OrfXCFHWSNGl4=@lists.infradead.org
+X-Gm-Message-State: AOJu0YxlV/QAhMDCB52ntiCCpWimwT6os2vQUFu27d4KZ0N0R2ndYtV2
+	OjXHng3GAf4sS0sbo/7PiJ0iDTtVp8TpSID0TyqgbzZarvy14CPlQlYnNc9SdN2ZxuVwZFPnzaX
+	QfUFg/UbYScbQnzWFs9xdD/GOK3FYMN5vCeBHZ1ogyjJd3krATJMhz8OQx+TPdqkeNBzI
+X-Gm-Gg: ATEYQzzhO3OEYAcHEEKVupGM2kZEHJEDLudzXYfXzHXn8ZdgwmfhVyi2/m0CmZpHCHM
+	1v2hfSCVloIUO+oFbEYGhmIwQKamiCJAVUFPWuMgtATxT4wP2zJfFSZSgoR1f8viRdSQ45irvYu
+	R4AMVQ4b6w5s2jZuIla/1Ye9NwKGkqVlBqF4AxIMzsnettQdDiGVtoZ8rckMEnSZiDKr0ShJdW2
+	ft61pLnr02g9mO7mGRZyK7d28gay5nYb91UISOlxb2Vcy2WCo8NsNXtvEGB59UH+g6puI3wtL85
+	gvvHYLckEGMpkzZOaYVXjYGUZtUqpAO4B2cJfC7zhnBBpMhsI0THEuyDx4gHe1ltyLbRh3ySnhT
+	PUGZSquZFz2cRjYlvP0LRXJ7i6wdv4Lk=
+X-Received: by 2002:a05:7022:4584:b0:119:e56b:9590 with SMTP id a92af1059eb24-1278fcf8749mr7439092c88.21.1772488658566;
+        Mon, 02 Mar 2026 13:57:38 -0800 (PST)
+X-Received: by 2002:a05:7022:4584:b0:119:e56b:9590 with SMTP id a92af1059eb24-1278fcf8749mr7439077c88.21.1772488658006;
+        Mon, 02 Mar 2026 13:57:38 -0800 (PST)
+Received: from localhost ([140.82.166.162])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-2bdf662eb6dsm7208496eec.2.2026.03.02.13.57.37
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 02 Mar 2026 13:57:37 -0800 (PST)
+Date: Mon, 2 Mar 2026 15:57:36 -0600
+From: Andrew Jones <andrew.jones@oss.qualcomm.com>
+To: Jiakai Xu <xujiakai2025@iscas.ac.cn>
+Cc: linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
+        kvm-riscv@lists.infradead.org, linux-kselftest@vger.kernel.org,
+        kvm@vger.kernel.org, Alexandre Ghiti <alex@ghiti.fr>,
+        Paolo Bonzini <pbonzini@redhat.com>, Shuah Khan <shuah@kernel.org>,
+        Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+        Andrew Jones <ajones@ventanamicro.com>,
+        Anup Patel <anup@brainfault.org>, Atish Patra <atish.patra@linux.dev>,
+        Albert Ou <aou@eecs.berkeley.edu>, Jiakai Xu <jiakaiPeanut@gmail.com>
+Subject: Re: [PATCH v9 2/3] KVM: selftests: Refactor UAPI tests into
+ dedicated function
+Message-ID: <kxssxvwvt2dyzznftbuudkxt7gonnceou4jrjswyhkhg5vrkgh@26sivnbte6mq>
+References: <20260228005355.823048-1-xujiakai2025@iscas.ac.cn>
+ <20260228005355.823048-3-xujiakai2025@iscas.ac.cn>
 MIME-Version: 1.0
-X-CM-TRANSID: qwCowABXw24pkKVpxM0bCQ--.814S2
-X-Coremail-Antispam: 1UD129KBjvJXoWxWF4fGF45WF4DGrWrGF1rJFb_yoWrJw1xpF
-	WrCFyDArW5Gw1xGrZxtw1kXw429r4Yk3W3GrWUWrWI9rsxtrWxtr9a9ryjvr4YyFW8Jasa
-	qF4Ykas5ur45JF7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUUBE14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
-	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
-	1l84ACjcxK6xIIjxv20xvE14v26r4j6ryUM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4j
-	6F4UM28EF7xvwVC2z280aVAFwI0_GcCE3s1l84ACjcxK6I8E87Iv6xkF7I0E14v26rxl6s
-	0DM2vYz4IE04k24VAvwVAKI4IrM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI
-	64kE6c02F40Ex7xfMcIj6xIIjxv20xvE14v26r106r15McIj6I8E87Iv67AKxVW8JVWxJw
-	Am72CE4IkC6x0Yz7v_Jr0_Gr1lF7xvr2IYc2Ij64vIr41lF7I21c0EjII2zVCS5cI20VAG
-	YxC7M4IIrI8v6xkF7I0E8cxan2IY04v7MxkF7I0En4kS14v26r1q6r43MxkIecxEwVAFwV
-	W5GwCF04k20xvY0x0EwIxGrwCFx2IqxVCFs4IE7xkEbVWUJVW8JwC20s026c02F40E14v2
-	6r1j6r18MI8I3I0E7480Y4vE14v26r106r1rMI8E67AF67kF1VAFwI0_Jw0_GFylIxkGc2
-	Ij64vIr41lIxAIcVC0I7IYx2IY67AKxVWUJVWUCwCI42IY6xIIjxv20xvEc7CjxVAFwI0_
-	Gr0_Cr1lIxAIcVCF04k26cxKx2IYs7xG6r1j6r1xMIIF0xvEx4A2jsIE14v26r1j6r4UMI
-	IF0xvEx4A2jsIEc7CjxVAFwI0_Gr0_Gr1UYxBIdaVFxhVjvjDU0xZFpf9x0JUVc_fUUUUU
-	=
-X-Originating-IP: [210.73.43.101]
-X-CM-SenderInfo: 50xmxthndljiysv6x2xfdvhtffof0/1tbiDAcOCWmljDcJNwAAsF
+Content-Disposition: inline
+In-Reply-To: <20260228005355.823048-3-xujiakai2025@iscas.ac.cn>
+X-Proofpoint-GUID: 5S-pkm-tc7CGjit-8Nw8TzneqhwClVOj
+X-Authority-Analysis: v=2.4 cv=S83UAYsP c=1 sm=1 tr=0 ts=69a607d3 cx=c_pps
+ a=kVLUcbK0zfr7ocalXnG1qA==:117 a=cvcws7F5//HeuvjG1O1erQ==:17
+ a=kj9zAlcOel0A:10 a=Yq5XynenixoA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=rJkE3RaqiGZ5pbrm-msn:22
+ a=EUspDBNiAAAA:8 a=pGLkceISAAAA:8 a=oAJ8CtkVvmEuxm3YF40A:9 a=CjuIK1q_8ugA:10
+ a=vr4QvYf-bLy2KjpDp97w:22
+X-Proofpoint-ORIG-GUID: 5S-pkm-tc7CGjit-8Nw8TzneqhwClVOj
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzAyMDE2NCBTYWx0ZWRfX02fWAaYtC1h8
+ /8AMAbr5lBdXi9f2LGt6H2dVTYHI5NkNME5jV4G2ntXE5nxmrmt8kO6c/AioS4LWPCClFyFsp5E
+ fzWFmYPJGrIb4VLqND82sKQpmZ0aWT4dH6CtOnnSVhXak6yLhR3rePa2oMg8rM65gkt4AuWDP5J
+ 6ISJzbQtS0g1YA7KlejuhkIYN/a9U8W5GF8doKkkHxxYK9/GKoJlet5EkiEnZIXr7MiR4Pcq/SN
+ qnVrR9WaucTdZ5VP2NqSEPyoLjKOFCBX8r2EasVWKJ5MPOVUUcRW2qa/7ZacJBKqOSXvMhD57NZ
+ 45UikMvd4yXCoYubOpPwsTyEFqs71Au+wupq0IDlJuE/QPya3yTx580Alef9P61929PKPRszRFC
+ ChdmLSL0Y0lXI5IsXd7euf4MCZnBDuKWaPRjkvY237lpD40gw1nXdwD9ovkt7648bNL87ZCqGyH
+ pCKop9tij56SHI6TMvA==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-03-02_05,2026-03-02_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 clxscore=1015 malwarescore=0 lowpriorityscore=0 adultscore=0
+ phishscore=0 spamscore=0 bulkscore=0 impostorscore=0 priorityscore=1501
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2602130000 definitions=main-2603020164
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260302_132721_782992_680D56BF 
-X-CRM114-Status: GOOD (  11.67  )
+X-CRM114-CacheID: sfid-20260302_135741_768791_98CB3414 
+X-CRM114-Status: GOOD (  20.00  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -100,94 +148,54 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Fuzzer reports a KASAN use-after-free bug triggered by a race
-between KVM_HAS_DEVICE_ATTR and KVM_SET_DEVICE_ATTR ioctls on the AIA
-device. The root cause is that aia_has_attr() invokes
-kvm_riscv_aia_aplic_has_attr() without holding dev->kvm->lock, while
-a concurrent aia_set_attr() may call aia_init() under that lock. When
-aia_init() fails after kvm_riscv_aia_aplic_init() has succeeded, it
-calls kvm_riscv_aia_aplic_cleanup() in its fail_cleanup_imsics path,
-which frees both aplic_state and aplic_state->irqs. The concurrent
-has_attr path can then dereference the freed aplic->irqs in
-aplic_read_pending():
-	irqd = &aplic->irqs[irq];   /* UAF here */
+On Sat, Feb 28, 2026 at 12:53:54AM +0000, Jiakai Xu wrote:
+> Move steal time UAPI tests from steal_time_init() into a separate
+> check_steal_time_uapi() function for better code organization and
+> maintainability.
+> 
+> Previously, x86 and ARM64 architectures performed UAPI validation
+> tests within steal_time_init(), mixing initialization logic with
+> uapi tests.
+> 
+> Changes by architecture:
+> x86_64:
+>   - Extract MSR reserved bits test from steal_time_init()
+>   - Move to check_steal_time_uapi() which tests that setting
+>     MSR_KVM_STEAL_TIME with KVM_STEAL_RESERVED_MASK fails
+> ARM64:
+>   - Extract three UAPI tests from steal_time_init():
+>      Device attribute support check
+>      Misaligned IPA rejection (EINVAL)
+>      Duplicate IPA setting rejection (EEXIST)
+>   - Move all tests to check_steal_time_uapi()
+> RISC-V:
+>   - Add empty check_steal_time_uapi() stub for future use
+>   - No changes to steal_time_init() (had no tests to extract)
+> 
+> The new check_steal_time_uapi() function:
+>   - Is called once before the per-VCPU test loop
+> 
+> No functional change intended.
+> 
+> Suggested-by: Andrew Jones <andrew.jones@oss.qualcomm.com>
+> Signed-off-by: Jiakai Xu <xujiakai2025@iscas.ac.cn>
+> Signed-off-by: Jiakai Xu <jiakaiPeanut@gmail.com>
+> ---
+> V8 -> V9: Created a temporary VM with one vCPU in
+>            check_steal_time_uapi() instead of adding extra vCPUs to the
+>            main VM.
+>           Made check_steal_time_uapi() parameterless for all architectures.
+> V7 -> V8: Used ST_GPA_BASE directly instead of
+>            st_gva[]/sync_global_to_guest() in x86_64 and ARM64
+>            check_steal_time_uapi().
+>           Created a temporary vcpu in ARM64 check_steal_time_uapi() to
+>            avoid EEXIST when steal_time_init() later sets IPA for vcpu[0].
+>           Removed unnecessary comment in RISC-V check_steal_time_uapi().
+> ---
+>  tools/testing/selftests/kvm/steal_time.c | 67 ++++++++++++++++++------
+>  1 file changed, 51 insertions(+), 16 deletions(-)
 
-KASAN report:
- BUG: KASAN: slab-use-after-free in aplic_read_pending
-             arch/riscv/kvm/aia_aplic.c:119 [inline]
- BUG: KASAN: slab-use-after-free in aplic_read_pending_word
-             arch/riscv/kvm/aia_aplic.c:351 [inline]
- BUG: KASAN: slab-use-after-free in aplic_mmio_read_offset
-             arch/riscv/kvm/aia_aplic.c:406
- Read of size 8 at addr ff600000ba965d58 by task 9498
- Call Trace:
-  aplic_read_pending arch/riscv/kvm/aia_aplic.c:119 [inline]
-  aplic_read_pending_word arch/riscv/kvm/aia_aplic.c:351 [inline]
-  aplic_mmio_read_offset arch/riscv/kvm/aia_aplic.c:406
-  kvm_riscv_aia_aplic_has_attr arch/riscv/kvm/aia_aplic.c:566
-  aia_has_attr arch/riscv/kvm/aia_device.c:469
- allocated by task 9473:
-  kvm_riscv_aia_aplic_init arch/riscv/kvm/aia_aplic.c:583
-  aia_init arch/riscv/kvm/aia_device.c:248 [inline]
-  aia_set_attr arch/riscv/kvm/aia_device.c:334
- freed by task 9473:
-  kvm_riscv_aia_aplic_cleanup arch/riscv/kvm/aia_aplic.c:644
-  aia_init arch/riscv/kvm/aia_device.c:292 [inline]
-  aia_set_attr arch/riscv/kvm/aia_device.c:334
-
-Fix this race by acquiring dev->kvm->lock in aia_has_attr() before
-calling kvm_riscv_aia_aplic_has_attr(), consistent with the locking
-pattern used in aia_get_attr() and aia_set_attr().
-
-Fixes: 289a007b98b06d ("RISC-V: KVM: Expose APLIC registers as attributes of AIA irqchip")
-Signed-off-by: Jiakai Xu <jiakaiPeanut@gmail.com>
-Signed-off-by: Jiakai Xu <xujiakai2025@iscas.ac.cn>
----
-V2 -> V3:
-- Fixed incorrect locking pattern in aia_has_attr(): avoid returning
-  while holding dev->kvm->lock by storing the return value in a local
-  variable, unlocking, and then returning.
-V1 -> V2:
-- Fixed the race by adding locking in aia_has_attr() instead of
-  introducing a new validation function, as suggested by Anup Patel.
----
- arch/riscv/kvm/aia_device.c | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
-
-diff --git a/arch/riscv/kvm/aia_device.c b/arch/riscv/kvm/aia_device.c
-index b195a93add1ce..0722cbaed5ec9 100644
---- a/arch/riscv/kvm/aia_device.c
-+++ b/arch/riscv/kvm/aia_device.c
-@@ -437,7 +437,7 @@ static int aia_get_attr(struct kvm_device *dev, struct kvm_device_attr *attr)
- 
- static int aia_has_attr(struct kvm_device *dev, struct kvm_device_attr *attr)
- {
--	int nr_vcpus;
-+	int nr_vcpus, r = -ENXIO;
- 
- 	switch (attr->group) {
- 	case KVM_DEV_RISCV_AIA_GRP_CONFIG:
-@@ -466,12 +466,15 @@ static int aia_has_attr(struct kvm_device *dev, struct kvm_device_attr *attr)
- 		}
- 		break;
- 	case KVM_DEV_RISCV_AIA_GRP_APLIC:
--		return kvm_riscv_aia_aplic_has_attr(dev->kvm, attr->attr);
-+		mutex_lock(&dev->kvm->lock);
-+		r = kvm_riscv_aia_aplic_has_attr(dev->kvm, attr->attr);
-+		mutex_unlock(&dev->kvm->lock);
-+		return r;
- 	case KVM_DEV_RISCV_AIA_GRP_IMSIC:
- 		return kvm_riscv_aia_imsic_has_attr(dev->kvm, attr->attr);
- 	}
- 
--	return -ENXIO;
-+	return r;
- }
- 
- struct kvm_device_ops kvm_riscv_aia_device_ops = {
--- 
-2.34.1
-
+Reviewed-by: Andrew Jones <andrew.jones@oss.qualcomm.com>
 
 -- 
 kvm-riscv mailing list
