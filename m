@@ -4,45 +4,47 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 730F4EB7EAC
-	for <kvm-riscv@archiver.kernel.org>; Wed,  4 Mar 2026 09:22:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0588AEB7EAC
+	for <kvm-riscv@archiver.kernel.org>; Wed,  4 Mar 2026 09:26:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:Subject:Cc:To:From:Mime-Version:Date:
-	Message-ID:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=2GCiLtPbHe4GMY8ctU7ElvV6LdQmbb6whmgr54aR4Dc=; b=h8lk6npQn8tc48
-	mwRf+G53Thi/GxnYVPWOCp7kOb9YPWWR/0qwosTeKNTyKfX/UbaZejsEZPJGlK8u0KcJykw6UN1sw
-	lYjMMlbOJ4uH1DBiQjd6XWhW7kPEpk8atpH8ri+KfAkpR98AOppFzPfUNS/dti7Z/hIzZKZcRwF89
-	dGge96C7ek86YiLRk7fonAC98r2ee5aZvdlGLSrYeoL5poDOM8MOhIhTA/d+nfWKSy18xJevipClm
-	utmxs8Sf4k1A/bR9PFY9tw5jZcrWgILFZo8bplrCEwFlZiY3PD1h2TNWhNHf5KPJ43LypgiRAUgyZ
-	Qsc1KZ6RBH587iZN7oIA==;
+	References:In-Reply-To:Message-ID:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=oknTY2gIGJFE3l40z3bAcUMiyVN5L+dPkbLifJXLn94=; b=HyN5I/PQeKPrBa
+	+ifQXaew9oP2Ce3rRjexmsRX1S+6tcCiISJ4Ylw10tO9TwZmOzwGgo8YJyipzFBoAP8/d/o2VYpSk
+	tXGfrxwr7WCNJogXbvhQMXe0orldQmZhZpBEZsJ7ABtDOh8HO5I1fbzEnBpnyGnP+2vIh4LrVILPv
+	QbDPqgK3ZkV5jSDJyXPNMhg+6jJxJHNAaB7yS0yBxUWSLBbpXBnM2Ex38uGlluwpxwdC1+EfVMjcY
+	U22wdFXTJ9AwgYr4L4TOUfCp+W1euY1hVY2IiUNpK3B9/GShxquh6mf5GXjMZ6v89fyiIKlnX4Uod
+	VgYytMQvbYi+o3xKveUw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vxiQa-0000000GrTn-0jbu;
-	Wed, 04 Mar 2026 09:22:00 +0000
-Received: from mxct.zte.com.cn ([183.62.165.209])
+	id 1vxiUm-0000000GrkW-1oRu;
+	Wed, 04 Mar 2026 09:26:20 +0000
+Received: from mxhk.zte.com.cn ([160.30.148.34])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vxiQW-0000000GrTP-29L0;
-	Wed, 04 Mar 2026 09:21:58 +0000
-Received: from mse-fl2.zte.com.cn (unknown [10.5.228.133])
+	id 1vxiUj-0000000GrjS-1zED;
+	Wed, 04 Mar 2026 09:26:18 +0000
+Received: from mse-fl1.zte.com.cn (unknown [10.5.228.132])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mxct.zte.com.cn (FangMail) with ESMTPS id 4fQnHG51clz4xQXM;
-	Wed, 04 Mar 2026 17:21:46 +0800 (CST)
-Received: from szxlzmapp03.zte.com.cn ([10.5.231.207])
-	by mse-fl2.zte.com.cn with SMTP id 6249LaoC048377;
-	Wed, 4 Mar 2026 17:21:36 +0800 (+08)
+	by mxhk.zte.com.cn (FangMail) with ESMTPS id 4fQnNM1Dmvz5B12g;
+	Wed, 04 Mar 2026 17:26:11 +0800 (CST)
+Received: from szxl2zmapp07.zte.com.cn ([10.1.32.52])
+	by mse-fl1.zte.com.cn with SMTP id 6249PwJO088803;
+	Wed, 4 Mar 2026 17:25:58 +0800 (+08)
 	(envelope-from wang.yechao255@zte.com.cn)
-Received: from mapi (szxlzmapp03[null])
+Received: from mapi (szxlzmapp01[null])
 	by mapi (Zmail) with MAPI id mid12;
-	Wed, 4 Mar 2026 17:21:39 +0800 (CST)
-X-Zmail-TransId: 2b0569a7f9a33a2-214cb
+	Wed, 4 Mar 2026 17:26:01 +0800 (CST)
+X-Zmail-TransId: 2b0369a7faa9f44-4504a
 X-Mailer: Zmail v1.0
-Message-ID: <20260304172139131ChDubMSpGDUB03lY4UCbK@zte.com.cn>
-Date: Wed, 4 Mar 2026 17:21:39 +0800 (CST)
+Message-ID: <20260304172601396IhMZyDqdV3dRmc2rVopfJ@zte.com.cn>
+In-Reply-To: <20260304172139131ChDubMSpGDUB03lY4UCbK@zte.com.cn>
+References: 20260304172139131ChDubMSpGDUB03lY4UCbK@zte.com.cn
+Date: Wed, 4 Mar 2026 17:26:01 +0800 (CST)
 Mime-Version: 1.0
 From: <wang.yechao255@zte.com.cn>
 To: <anup@brainfault.org>, <atish.patra@linux.dev>, <pjw@kernel.org>,
@@ -50,19 +52,19 @@ To: <anup@brainfault.org>, <atish.patra@linux.dev>, <pjw@kernel.org>,
 Cc: <kvm@vger.kernel.org>, <kvm-riscv@lists.infradead.org>,
         <linux-riscv@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
         <wang.yechao255@zte.com.cn>
-Subject: =?UTF-8?B?W1BBVENIIHYyIDAvM10gUklTQy1WOiBLVk06IEZpeCBodWdlcGFnZSBtYXBwaW5nIGhhbmRsaW5nIGR1cmluZyBkaXJ0eSBsb2dnaW5n?=
-X-MAIL: mse-fl2.zte.com.cn 6249LaoC048377
+Subject: =?UTF-8?B?W1BBVENIIHYyIDEvM10gUklTQy1WOiBLVk06IEZpeCBsb3N0IHdyaXRlIHByb3RlY3Rpb24gb24gaHVnZSBwYWdlcwogZHVyaW5nIGRpcnR5IGxvZ2dpbmc=?=
+X-MAIL: mse-fl1.zte.com.cn 6249PwJO088803
 X-TLS: YES
 X-SPF-DOMAIN: zte.com.cn
 X-ENVELOPE-SENDER: wang.yechao255@zte.com.cn
 X-SPF: None
-X-SOURCE-IP: 10.5.228.133 unknown Wed, 04 Mar 2026 17:21:46 +0800
+X-SOURCE-IP: 10.5.228.132 unknown Wed, 04 Mar 2026 17:26:11 +0800
 X-Fangmail-Anti-Spam-Filtered: true
-X-Fangmail-MID-QID: 69A7F9AA.000/4fQnHG51clz4xQXM
+X-Fangmail-MID-QID: 69A7FAB3.000/4fQnNM1Dmvz5B12g
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260304_012156_708714_190C3740 
-X-CRM114-Status: UNSURE (   4.56  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20260304_012617_665600_61BF7555 
+X-CRM114-Status: GOOD (  10.11  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -81,26 +83,44 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 From: Wang Yechao <wang.yechao255@zte.com.cn>
 
-This series fixes an issue where dirty logging fails to work correctly
-with huge pages.
+When enabling dirty log in small chunks (e.g., QEMU default chunk
+size of 256K), the chunk size is always smaller than the page size
+of huge pages (1G or 2M) used in the gstage page tables. This caused
+the write protection to be incorrectly skipped for huge PTEs because
+the condition `(end - addr) >= page_size` was not satisfied.
 
-v1 -> v2:
-  - fix the lost write protection on huge pages
-  - split huge pages before handling the write protection fault.
+Remove the size check in `kvm_riscv_gstage_wp_range()` to ensure huge
+PTEs are always write-protected regardless of the chunk size. Additionally,
+explicitly align the address down to the page size before invoking
+`kvm_riscv_gstage_op_pte()` to guarantee that the address passed to the
+operation function is page-aligned.
 
-  - Link to v1:
-  https://lore.kernel.org/linux-riscv/20260226172245358qVZavIykLL2QC0KoqTO-I@zte.com.cn/T/#u
+This fixes the issue where dirty pages might not be tracked correctly
+when using huge pages.
 
-Wang Yechao (3):
-  RISC-V: KVM: Fix lost write protection on huge pages during dirty
-    logging
-  RISC-V: KVM: Allow splitting huge pages to arbitrary level
-  RISC-V: KVM: Split huge pages during fault handling for dirty logging
+Signed-off-by: Wang Yechao <wang.yechao255@zte.com.cn>
+---
+ arch/riscv/kvm/gstage.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
- arch/riscv/include/asm/kvm_gstage.h |  4 ++
- arch/riscv/kvm/gstage.c             | 85 +++++++++++++++++++++++++++--
- 2 files changed, 85 insertions(+), 4 deletions(-)
+diff --git a/arch/riscv/kvm/gstage.c b/arch/riscv/kvm/gstage.c
+index b67d60d722c2..d2001d508046 100644
+--- a/arch/riscv/kvm/gstage.c
++++ b/arch/riscv/kvm/gstage.c
+@@ -304,10 +304,9 @@ void kvm_riscv_gstage_wp_range(struct kvm_gstage *gstage, gpa_t start, gpa_t end
+ 		if (!found_leaf)
+ 			goto next;
 
+-		if (!(addr & (page_size - 1)) && ((end - addr) >= page_size))
+-			kvm_riscv_gstage_op_pte(gstage, addr, ptep,
+-						ptep_level, GSTAGE_OP_WP);
+-
++		addr = ALIGN_DOWN(addr, page_size);
++		kvm_riscv_gstage_op_pte(gstage, addr, ptep,
++					ptep_level, GSTAGE_OP_WP);
+ next:
+ 		addr += page_size;
+ 	}
 -- 
 2.47.3
 
