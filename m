@@ -4,47 +4,47 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 726A1EB7EB2
-	for <kvm-riscv@archiver.kernel.org>; Wed,  4 Mar 2026 09:28:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3415CEB7EAC
+	for <kvm-riscv@archiver.kernel.org>; Wed,  4 Mar 2026 09:31:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:Subject:Cc:To:From:Mime-Version:Date:
 	References:In-Reply-To:Message-ID:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=oeN9OZeotnW8UOxZETmt5v2CkHYge7qR6gnQpbK1oAQ=; b=Nqy4E82Q7onpM3
-	wzkYv8DWe4eI09OBo07f7PQxEUqabSSxWbq8MuZ3dJroCVY5dR5lePy6ESpUwNZ2ZEmlTJSdhv1mD
-	9K/dqrd4SgmqQi7TElwjuQvsJqP6V0aOFVGDaVaC7dpQjDECUhOinokLfPMxBxsf928T0AQKuL5M8
-	K8Qetg0zx6cT9hJO+uZIAESzZ5cqseJSKEaVxHmsA3qz00poEiqJRvCv2emOLHW13Vt5g51+qbpGB
-	/syhYShDzkHOgdq8Z+Ghrsz4LYD3CBlrzTAfm8VZ0RNzZ2XXiNiGbcDdJ9MBrJGyYCIA1BruZ0oDp
-	U8lLp82BGqlw0PX8tC5A==;
+	List-Owner; bh=6hwBNdzGMpbsxsEVjkqjsVWArWNbIZcaiL2/EKkVtf0=; b=ifloGWGh0nBFma
+	31RY9rEhjHXOy4cZRKX0L4p49mH/j+XtvscXL7JeYEgs507lyr8knVC00S6h0kKO8S2QAJfP+H14H
+	SPCpO1/kocrEXlGp3cVl60X0wFvkJy9gq4LUP2L6fgnGumDQe5u/lTVcv9C25/yBX2LEmnmlzNgsI
+	J7DiqCgoPiMyV0N2gp+TXjZMzegJEDIwSKN/xDj2i+kPatC5ssaYHOOK6P4nogY2eUt9lRC90HXyx
+	qZ7JxPFKoiw1hVdRbNILmInaMgubnD9waj1+cB33NTugVTgYgMazmPP64AWFiI91QTjsX8iL4p30W
+	rpqm0vW/Ni4TBi14DivQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vxiWm-0000000Gry9-3Olr;
-	Wed, 04 Mar 2026 09:28:24 +0000
-Received: from mxct.zte.com.cn ([183.62.165.209])
+	id 1vxiZI-0000000GsGU-3rNp;
+	Wed, 04 Mar 2026 09:31:00 +0000
+Received: from mxhk.zte.com.cn ([160.30.148.35])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vxiWk-0000000Grxd-3EUo;
-	Wed, 04 Mar 2026 09:28:24 +0000
-Received: from mse-fl2.zte.com.cn (unknown [10.5.228.133])
+	id 1vxiZF-0000000GsFY-3Pdz;
+	Wed, 04 Mar 2026 09:30:59 +0000
+Received: from mse-fl1.zte.com.cn (unknown [10.5.228.132])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mxct.zte.com.cn (FangMail) with ESMTPS id 4fQnQf6wLqz4xPSq;
-	Wed, 04 Mar 2026 17:28:10 +0800 (CST)
-Received: from szxlzmapp01.zte.com.cn ([10.5.231.85])
-	by mse-fl2.zte.com.cn with SMTP id 6249S1pZ058883;
-	Wed, 4 Mar 2026 17:28:01 +0800 (+08)
+	by mxhk.zte.com.cn (FangMail) with ESMTPS id 4fQnTq1RMmz8Xs72;
+	Wed, 04 Mar 2026 17:30:55 +0800 (CST)
+Received: from szxlzmapp02.zte.com.cn ([10.5.231.79])
+	by mse-fl1.zte.com.cn with SMTP id 6249Uk2v099658;
+	Wed, 4 Mar 2026 17:30:46 +0800 (+08)
 	(envelope-from wang.yechao255@zte.com.cn)
-Received: from mapi (szxlzmapp02[null])
+Received: from mapi (szxl2zmapp06[null])
 	by mapi (Zmail) with MAPI id mid12;
-	Wed, 4 Mar 2026 17:28:03 +0800 (CST)
-X-Zmail-TransId: 2b0469a7fb23038-4c136
+	Wed, 4 Mar 2026 17:30:49 +0800 (CST)
+X-Zmail-TransId: 2b0869a7fbc9022-35137
 X-Mailer: Zmail v1.0
-Message-ID: <20260304172803832bNWZwe5J-jmNTNt79mGq2@zte.com.cn>
+Message-ID: <20260304173049328qFHOTh8G2sgzCY7pyCVpr@zte.com.cn>
 In-Reply-To: <20260304172139131ChDubMSpGDUB03lY4UCbK@zte.com.cn>
 References: 20260304172139131ChDubMSpGDUB03lY4UCbK@zte.com.cn
-Date: Wed, 4 Mar 2026 17:28:03 +0800 (CST)
+Date: Wed, 4 Mar 2026 17:30:49 +0800 (CST)
 Mime-Version: 1.0
 From: <wang.yechao255@zte.com.cn>
 To: <anup@brainfault.org>, <atish.patra@linux.dev>, <pjw@kernel.org>,
@@ -52,19 +52,20 @@ To: <anup@brainfault.org>, <atish.patra@linux.dev>, <pjw@kernel.org>,
 Cc: <kvm@vger.kernel.org>, <kvm-riscv@lists.infradead.org>,
         <linux-riscv@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
         <wang.yechao255@zte.com.cn>
-Subject: =?UTF-8?B?W1BBVENIIHYyIDIvM10gUklTQy1WOiBLVk06IEFsbG93IHNwbGl0dGluZyBodWdlIHBhZ2VzIHRvIGFyYml0cmFyeQoKIGxldmVs?=
-X-MAIL: mse-fl2.zte.com.cn 6249S1pZ058883
+Subject: =?UTF-8?B?W1BBVENIIHYyIDMvM10gUklTQy1WOiBLVk06IFNwbGl0IGh1Z2UgcGFnZXMgZHVyaW5nIGZhdWx0IGhhbmRsaW5nIGZvcgoKIGRpcnR5IGxvZ2dpbmc=?=
+X-MAIL: mse-fl1.zte.com.cn 6249Uk2v099658
 X-TLS: YES
 X-SPF-DOMAIN: zte.com.cn
 X-ENVELOPE-SENDER: wang.yechao255@zte.com.cn
 X-SPF: None
-X-SOURCE-IP: 10.5.228.133 unknown Wed, 04 Mar 2026 17:28:11 +0800
+X-SOURCE-IP: 10.5.228.132 unknown Wed, 04 Mar 2026 17:30:55 +0800
 X-Fangmail-Anti-Spam-Filtered: true
-X-Fangmail-MID-QID: 69A7FB2A.000/4fQnQf6wLqz4xPSq
+X-Fangmail-MID-QID: 69A7FBCF.000/4fQnTq1RMmz8Xs72
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260304_012822_977955_0B4A2170 
-X-CRM114-Status: GOOD (  14.04  )
+X-CRM114-CacheID: sfid-20260304_013058_012948_57087297 
+X-CRM114-Status: UNSURE (   7.97  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -83,117 +84,46 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 From: Wang Yechao <wang.yechao255@zte.com.cn>
 
-This patch introduces the function kvm_riscv_gstage_split_huge().
-It splits the huge page covering a given guest physical address down
-to a specified target level (e.g., from 1G to 2M or 4K). The caller
-provides a memory cache for allocating any intermediate page tables
-and may request a TLB flush after the split.
+During dirty logging, all huge pages are write-protected. When the guest
+writes to a write-protected huge page, a page fault is triggered. Before
+recovering the write permission, the huge page must be split into smaller
+pages (e.g., 4K). After splitting, the normal mapping process proceeds,
+allowing write permission to be restored at the smaller page granularity.
 
-This functionality will be used by subsequent patches to split huge
-pages before handling the write-protection fault, or for other operations
-that require page-level granularity.
+This ensures that dirty logging works correctly with huge pages.
 
 Signed-off-by: Wang Yechao <wang.yechao255@zte.com.cn>
 ---
- arch/riscv/include/asm/kvm_gstage.h |  4 ++
- arch/riscv/kvm/gstage.c             | 69 +++++++++++++++++++++++++++++
- 2 files changed, 73 insertions(+)
+ arch/riscv/kvm/gstage.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/arch/riscv/include/asm/kvm_gstage.h b/arch/riscv/include/asm/kvm_gstage.h
-index 595e2183173e..373748c6745e 100644
---- a/arch/riscv/include/asm/kvm_gstage.h
-+++ b/arch/riscv/include/asm/kvm_gstage.h
-@@ -53,6 +53,10 @@ int kvm_riscv_gstage_map_page(struct kvm_gstage *gstage,
- 			      bool page_rdonly, bool page_exec,
- 			      struct kvm_gstage_mapping *out_map);
-
-+int kvm_riscv_gstage_split_huge(struct kvm_gstage *gstage,
-+                                struct kvm_mmu_memory_cache *pcache,
-+                                gpa_t addr, u32 target_level, bool flush);
-+
- enum kvm_riscv_gstage_op {
- 	GSTAGE_OP_NOP = 0,	/* Nothing */
- 	GSTAGE_OP_CLEAR,	/* Clear/Unmap */
 diff --git a/arch/riscv/kvm/gstage.c b/arch/riscv/kvm/gstage.c
-index d2001d508046..92331e9b0bb8 100644
+index 92331e9b0bb8..27ea6bb81553 100644
 --- a/arch/riscv/kvm/gstage.c
 +++ b/arch/riscv/kvm/gstage.c
-@@ -209,6 +209,75 @@ int kvm_riscv_gstage_map_page(struct kvm_gstage *gstage,
- 	return kvm_riscv_gstage_set_pte(gstage, pcache, out_map);
- }
-
-+static inline unsigned long make_child_pte(unsigned long huge_pte, int index,
-+					   unsigned long child_page_size)
-+{
-+	unsigned long child_pte = huge_pte;
-+	unsigned long child_pfn_offset;
-+
-+	/*
-+	 * The child_pte already has the base address of the huge page being
-+	 * split. So we just have to OR in the offset to the page at the next
-+	 * lower level for the given index.
-+	 */
-+	child_pfn_offset = index * (child_page_size / PAGE_SIZE);
-+	child_pte |= pte_val(pfn_pte(child_pfn_offset, __pgprot(0)));
-+
-+	return child_pte;
-+}
-+
-+int kvm_riscv_gstage_split_huge(struct kvm_gstage *gstage,
-+				struct kvm_mmu_memory_cache *pcache,
-+				gpa_t addr, u32 target_level, bool flush)
-+{
-+	u32 current_level = kvm_riscv_gstage_pgd_levels - 1;
-+	pte_t *next_ptep = (pte_t *)gstage->pgd;
+@@ -171,6 +171,9 @@ int kvm_riscv_gstage_map_page(struct kvm_gstage *gstage,
+ {
+ 	pgprot_t prot;
+ 	int ret;
 +	pte_t *ptep;
-+	unsigned long huge_pte, child_pte;
-+	unsigned long child_page_size;
-+	int i, ret;
-+
-+	while(current_level > target_level) {
-+		ptep = (pte_t *)&next_ptep[gstage_pte_index(addr, current_level)];
-+
-+		if (!pte_val(ptep_get(ptep)))
-+			break;
-+
-+		if (!gstage_pte_leaf(ptep)) {
-+			next_ptep = (pte_t *)gstage_pte_page_vaddr(ptep_get(ptep));
-+			current_level--;
-+			continue;
-+		}
-+
-+		huge_pte = pte_val(ptep_get(ptep));
-+
-+		ret = gstage_level_to_page_size(current_level - 1, &child_page_size);
-+		if (ret)
-+			return ret;
-+
-+		if (!pcache)
-+			return -ENOMEM;
-+		next_ptep = kvm_mmu_memory_cache_alloc(pcache);
-+		if (!next_ptep)
-+			return -ENOMEM;
-+
-+		set_pte(ptep, pfn_pte(PFN_DOWN(__pa(next_ptep)),
-+				__pgprot(_PAGE_TABLE)));
-+
-+		for (i = 0; i < PTRS_PER_PTE; i++) {
-+			child_pte = make_child_pte(huge_pte, i, child_page_size);
-+			set_pte((pte_t *)&next_ptep[i], __pte(child_pte));
-+		}
-+
-+		if (flush)
-+			gstage_tlb_flush(gstage, current_level, addr);
-+
-+		current_level--;
++	u32 ptep_level;
++	bool found_leaf;
+
+ 	out_map->addr = gpa;
+ 	out_map->level = 0;
+@@ -179,6 +182,12 @@ int kvm_riscv_gstage_map_page(struct kvm_gstage *gstage,
+ 	if (ret)
+ 		return ret;
+
++	found_leaf = kvm_riscv_gstage_get_leaf(gstage, gpa, &ptep, &ptep_level);
++	if (found_leaf && ptep_level > out_map->level) {
++		kvm_riscv_gstage_split_huge(gstage, pcache, gpa,
++					    out_map->level, true);
 +	}
 +
-+	return 0;
-+}
-+
- void kvm_riscv_gstage_op_pte(struct kvm_gstage *gstage, gpa_t addr,
- 			     pte_t *ptep, u32 ptep_level, enum kvm_riscv_gstage_op op)
- {
+ 	/*
+ 	 * A RISC-V implementation can choose to either:
+ 	 * 1) Update 'A' and 'D' PTE bits in hardware
 -- 
 2.47.3
 
