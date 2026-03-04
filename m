@@ -4,72 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7B3C3EB7EA0
-	for <kvm-riscv@archiver.kernel.org>; Wed,  4 Mar 2026 08:08:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 730F4EB7EAC
+	for <kvm-riscv@archiver.kernel.org>; Wed,  4 Mar 2026 09:22:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-Id:Date:Subject:Cc
-	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	List-Archive:List-Unsubscribe:List-Id:Subject:Cc:To:From:Mime-Version:Date:
+	Message-ID:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
 	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=0Fh/K7WpdMc3LDJqxHPrIjMq5w307ZW73TMANpsNhVE=; b=dDIjSfhIhKUyGt
-	WzZvZX+NE3b057PHvoTpMOX9pa3bZ/PbCJmOgYtpXEz76wwj2gbFiF6By8Q1Xz1CtgjRh2WFbPTCN
-	BREOCWD8nuesVlHARo+PT7uHaJZIJYsJuL77LRNXl6lxmp3Awq3GzLmLqumkyXxmAjPr1ED6hPR7X
-	1llAw16+NLwyqrdYMqigGoDGpyrYK5RS+A3SbYuYD3v1gGJoLwfb88ds8EXdKsd1NuwHtTeuOz0s/
-	VbaeckC8NqCztnBAQk+l7i6H7rYBcEq35doTDbkyavwLkR5LHR4j6EgoUJiXU1pIhpOIrcQ/qrQMK
-	haeAt2vtW4EihQupRRUw==;
+	List-Owner; bh=2GCiLtPbHe4GMY8ctU7ElvV6LdQmbb6whmgr54aR4Dc=; b=h8lk6npQn8tc48
+	mwRf+G53Thi/GxnYVPWOCp7kOb9YPWWR/0qwosTeKNTyKfX/UbaZejsEZPJGlK8u0KcJykw6UN1sw
+	lYjMMlbOJ4uH1DBiQjd6XWhW7kPEpk8atpH8ri+KfAkpR98AOppFzPfUNS/dti7Z/hIzZKZcRwF89
+	dGge96C7ek86YiLRk7fonAC98r2ee5aZvdlGLSrYeoL5poDOM8MOhIhTA/d+nfWKSy18xJevipClm
+	utmxs8Sf4k1A/bR9PFY9tw5jZcrWgILFZo8bplrCEwFlZiY3PD1h2TNWhNHf5KPJ43LypgiRAUgyZ
+	Qsc1KZ6RBH587iZN7oIA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vxhHM-0000000GhF8-0ZUI;
-	Wed, 04 Mar 2026 08:08:24 +0000
-Received: from smtp21.cstnet.cn ([159.226.251.21] helo=cstnet.cn)
+	id 1vxiQa-0000000GrTn-0jbu;
+	Wed, 04 Mar 2026 09:22:00 +0000
+Received: from mxct.zte.com.cn ([183.62.165.209])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vxhHH-0000000Gh9K-3kZz;
-	Wed, 04 Mar 2026 08:08:22 +0000
-Received: from fric.. (unknown [210.73.43.101])
-	by APP-01 (Coremail) with SMTP id qwCowAAHsm1m6KdpumE5CQ--.5449S2;
-	Wed, 04 Mar 2026 16:08:06 +0800 (CST)
-From: Jiakai Xu <xujiakai2025@iscas.ac.cn>
-To: linux-kernel@vger.kernel.org,
-	linux-riscv@lists.infradead.org,
-	kvm-riscv@lists.infradead.org,
-	kvm@vger.kernel.org
-Cc: Anup Patel <anup@brainfault.org>,
-	Atish Patra <atish.patra@linux.dev>,
-	Paul Walmsley <pjw@kernel.org>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Alexandre Ghiti <alex@ghiti.fr>,
-	Jiakai Xu <xujiakai2025@iscas.ac.cn>,
-	Jiakai Xu <jiakaiPeanut@gmail.com>
-Subject: [PATCH] RISC-V: KVM: Fix potential UAF in kvm_riscv_aia_imsic_has_attr()
-Date: Wed,  4 Mar 2026 08:08:04 +0000
-Message-Id: <20260304080804.2281721-1-xujiakai2025@iscas.ac.cn>
-X-Mailer: git-send-email 2.34.1
-MIME-Version: 1.0
-X-CM-TRANSID: qwCowAAHsm1m6KdpumE5CQ--.5449S2
-X-Coremail-Antispam: 1UD129KBjvJXoW7Ar18Cr4ftw4UKryUuFWDXFb_yoW8ZF45pF
-	WrCF97CrW3Kw12grZFqwn7Xw4vqayjkw43GrW3Kw4I9rn8tr1IyFyI9rW09rWUJFWqvan2
-	9r1UtayruF45Ar7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUUP014x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
-	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
-	1l84ACjcxK6xIIjxv20xvE14v26ryj6F1UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4U
-	JVWxJr1l84ACjcxK6I8E87Iv67AKxVW0oVCq3wA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_Gc
-	CE3s1lnxkEFVAIw20F6cxK64vIFxWle2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xv
-	F2IEw4CE5I8CrVC2j2WlYx0E2Ix0cI8IcVAFwI0_JrI_JrylYx0Ex4A2jsIE14v26r4j6F
-	4UMcvjeVCFs4IE7xkEbVWUJVW8JwACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I
-	648v4I1lFIxGxcIEc7CjxVA2Y2ka0xkIwI1lc7CjxVAaw2AFwI0_Jw0_GFylc2xSY4AK67
-	AK6r43MxAIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4AY6r1j6r4UMI8I3I0E5I8CrVAF
-	wI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_JrI_JrWlx4CE17CEb7AF67AKxVWUtVW8ZwCIc4
-	0Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v26r1j6r1xMIIF0xvE2Ix0cI8IcVCY1x0267AK
-	xVW8JVWxJwCI42IY6xAIw20EY4v20xvaj40_Jr0_JF4lIxAIcVC2z280aVAFwI0_Jr0_Gr
-	1lIxAIcVC2z280aVCY1x0267AKxVW8JVW8JrUvcSsGvfC2KfnxnUUI43ZEXa7VUjdOz3UU
-	UUU==
-X-Originating-IP: [210.73.43.101]
-X-CM-SenderInfo: 50xmxthndljiysv6x2xfdvhtffof0/1tbiBgsQCWmnycp17wAAsD
+	id 1vxiQW-0000000GrTP-29L0;
+	Wed, 04 Mar 2026 09:21:58 +0000
+Received: from mse-fl2.zte.com.cn (unknown [10.5.228.133])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mxct.zte.com.cn (FangMail) with ESMTPS id 4fQnHG51clz4xQXM;
+	Wed, 04 Mar 2026 17:21:46 +0800 (CST)
+Received: from szxlzmapp03.zte.com.cn ([10.5.231.207])
+	by mse-fl2.zte.com.cn with SMTP id 6249LaoC048377;
+	Wed, 4 Mar 2026 17:21:36 +0800 (+08)
+	(envelope-from wang.yechao255@zte.com.cn)
+Received: from mapi (szxlzmapp03[null])
+	by mapi (Zmail) with MAPI id mid12;
+	Wed, 4 Mar 2026 17:21:39 +0800 (CST)
+X-Zmail-TransId: 2b0569a7f9a33a2-214cb
+X-Mailer: Zmail v1.0
+Message-ID: <20260304172139131ChDubMSpGDUB03lY4UCbK@zte.com.cn>
+Date: Wed, 4 Mar 2026 17:21:39 +0800 (CST)
+Mime-Version: 1.0
+From: <wang.yechao255@zte.com.cn>
+To: <anup@brainfault.org>, <atish.patra@linux.dev>, <pjw@kernel.org>,
+        <palmer@dabbelt.com>, <aou@eecs.berkeley.edu>, <alex@ghiti.fr>
+Cc: <kvm@vger.kernel.org>, <kvm-riscv@lists.infradead.org>,
+        <linux-riscv@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
+        <wang.yechao255@zte.com.cn>
+Subject: =?UTF-8?B?W1BBVENIIHYyIDAvM10gUklTQy1WOiBLVk06IEZpeCBodWdlcGFnZSBtYXBwaW5nIGhhbmRsaW5nIGR1cmluZyBkaXJ0eSBsb2dnaW5n?=
+X-MAIL: mse-fl2.zte.com.cn 6249LaoC048377
+X-TLS: YES
+X-SPF-DOMAIN: zte.com.cn
+X-ENVELOPE-SENDER: wang.yechao255@zte.com.cn
+X-SPF: None
+X-SOURCE-IP: 10.5.228.133 unknown Wed, 04 Mar 2026 17:21:46 +0800
+X-Fangmail-Anti-Spam-Filtered: true
+X-Fangmail-MID-QID: 69A7F9AA.000/4fQnHG51clz4xQXM
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260304_000820_324035_3A348CE3 
-X-CRM114-Status: GOOD (  12.08  )
+X-CRM114-CacheID: sfid-20260304_012156_708714_190C3740 
+X-CRM114-Status: UNSURE (   4.56  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -86,52 +79,30 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-The KVM_DEV_RISCV_AIA_GRP_APLIC branch of aia_has_attr() was identified
-to have a race condition with concurrent KVM_SET_DEVICE_ATTR ioctls,
-leading to a use-after-free bug.
+From: Wang Yechao <wang.yechao255@zte.com.cn>
 
-Upon analyzing the code, it was discovered that the
-KVM_DEV_RISCV_AIA_GRP_IMSIC branch of aia_has_attr() suffers from the same
-lack of synchronization. It invokes kvm_riscv_aia_imsic_has_attr() without
-holding dev->kvm->lock.
+This series fixes an issue where dirty logging fails to work correctly
+with huge pages.
 
-While aia_has_attr() is running, a concurrent aia_set_attr() could call
-aia_init() under the dev->kvm->lock. If aia_init() fails, it may trigger
-kvm_riscv_vcpu_aia_imsic_cleanup(), which frees imsic_state. Without proper
-locking, kvm_riscv_aia_imsic_has_attr() could attempt to access imsic_state
-while it is being deallocated.
+v1 -> v2:
+  - fix the lost write protection on huge pages
+  - split huge pages before handling the write protection fault.
 
-Although this specific path has not yet been reported by a fuzzer, it
-is logically identical to the APLIC issue. Fix this by acquiring the
-dev->kvm->lock before calling kvm_riscv_aia_imsic_has_attr(), ensuring
-consistency with the locking pattern used for other AIA attribute groups.
+  - Link to v1:
+  https://lore.kernel.org/linux-riscv/20260226172245358qVZavIykLL2QC0KoqTO-I@zte.com.cn/T/#u
 
-Fixes: 5463091a51cf ("RISC-V: KVM: Expose IMSIC registers as attributes of AIA irqchip")
-Signed-off-by: Jiakai Xu <xujiakai2025@iscas.ac.cn>
-Signed-off-by: Jiakai Xu <jiakaiPeanut@gmail.com>
----
- arch/riscv/kvm/aia_device.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+Wang Yechao (3):
+  RISC-V: KVM: Fix lost write protection on huge pages during dirty
+    logging
+  RISC-V: KVM: Allow splitting huge pages to arbitrary level
+  RISC-V: KVM: Split huge pages during fault handling for dirty logging
 
-diff --git a/arch/riscv/kvm/aia_device.c b/arch/riscv/kvm/aia_device.c
-index fb901947aefe..9a45c85239fe 100644
---- a/arch/riscv/kvm/aia_device.c
-+++ b/arch/riscv/kvm/aia_device.c
-@@ -471,7 +471,10 @@ static int aia_has_attr(struct kvm_device *dev, struct kvm_device_attr *attr)
- 		mutex_unlock(&dev->kvm->lock);
- 		break;
- 	case KVM_DEV_RISCV_AIA_GRP_IMSIC:
--		return kvm_riscv_aia_imsic_has_attr(dev->kvm, attr->attr);
-+		mutex_lock(&dev->kvm->lock);
-+		r = kvm_riscv_aia_imsic_has_attr(dev->kvm, attr->attr);
-+		mutex_unlock(&dev->kvm->lock);
-+		break;
- 	}
- 
- 	return r;
+ arch/riscv/include/asm/kvm_gstage.h |  4 ++
+ arch/riscv/kvm/gstage.c             | 85 +++++++++++++++++++++++++++--
+ 2 files changed, 85 insertions(+), 4 deletions(-)
+
 -- 
-2.34.1
-
+2.47.3
 
 -- 
 kvm-riscv mailing list
