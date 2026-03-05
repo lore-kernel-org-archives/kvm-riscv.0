@@ -4,111 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 46D09EB7EB8
-	for <kvm-riscv@archiver.kernel.org>; Wed,  4 Mar 2026 11:08:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9538BEFCE53
+	for <kvm-riscv@archiver.kernel.org>; Thu,  5 Mar 2026 00:58:31 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:Subject:Message-ID:Date:From:
-	In-Reply-To:References:MIME-Version:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
+	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=FX+VXt6TxGC/tCBHJ+8H+jhTRPGKEzAKDSB89RKo/0g=; b=sAKSM7v/nO0lA1
-	nn3Ilm6LAleobkn/NDaKvJNxZptKFJnUpA8f9SzNy5DPtTp/hgst7DX4ZyfMIsaoFdmuoYIakce8b
-	Iea07gpMP85YtyCUjE1KMjinqBGDxgQ9y3KJQWOj5XBmwfGY7rS6Hh4uIHHJOJ/li0BPaphvZiikn
-	gchhMznEb68i6zjU1i7gSNwDqzqIVrxSl7rAVyqSa/thEwpVSzkSBjN36HWFejHtk31NXDXfN9DbC
-	M+KDkHJqMyDj7ep/zWolHsB2QSEsOHmRsTrQZEiiy12qN6EwDAzmiEnzuqORUTe15cWtE2Pgjj8aC
-	rdMv35QFVR1P3J+HXAfw==;
+	List-Owner; bh=jqmIL0QSg0+RLRgUrwGqPOttycw7cOb8k6sdZ7l55j4=; b=iP75UZrfkc4oKX
+	VRQRL7xih9HC/6+LRxwqsSjAVdDHEo7kTI/NDhiN71uxTCfsX5BMINjLYYIKphlhd7UxZ5HBbsaDc
+	8UgJlY/ZSioWYiNLUJ0lpJZkE0hrh7owJPgu62EQN4yxnoIGf9rDmEcuJtEWF/uJRQHBDHalD+T2g
+	zz2MvE4LhhkWQa7qbHcjPvjEgWay/1Scp6VPGe/aO5U6gwtPmey7vaiDGk6aKgIh3qNQxDy7cMTwy
+	ihhYWLggrvmIQUFzwg63nEwHUbFxQbMpCOFq7P7fqaLGpCRPmHYaexGPMlr69+Ec+jUMMq/4MqMX1
+	CiDcqWmpQbufThEWxpyA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vxk5s-0000000H3R5-3ivj;
-	Wed, 04 Mar 2026 11:08:44 +0000
-Received: from mail-oo1-xc2d.google.com ([2607:f8b0:4864:20::c2d])
+	id 1vxx2s-00000000ikF-3NVb;
+	Thu, 05 Mar 2026 00:58:30 +0000
+Received: from mail-dl1-x122a.google.com ([2607:f8b0:4864:20::122a])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vxk5q-0000000H3QB-1P4s
+	id 1vxx2r-00000000ijH-0OUc
 	for kvm-riscv@lists.infradead.org;
-	Wed, 04 Mar 2026 11:08:43 +0000
-Received: by mail-oo1-xc2d.google.com with SMTP id 006d021491bc7-6729292dcd7so3933200eaf.0
-        for <kvm-riscv@lists.infradead.org>; Wed, 04 Mar 2026 03:08:41 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1772622521; cv=none;
-        d=google.com; s=arc-20240605;
-        b=ZrLPEkNuTESS4KNaSwoHaj3dHAw5XO7InXudses7Gh8sQ+8rvxkwhLrc53VhzvuyM7
-         8IHyfVi8yBeZ1tm7AcnKqHt/C3vk8FmYl3LiMtAIoQ4vl0VcjPkO/SU+5hKeEolTggDM
-         d0NceNY9eVsf3PuvKEw+2UUuEto5hXeHF1xEiOYeTIGXHKU/P+7KB0DLjnpZS4uvO3cm
-         8P/mA+xVNjVHnr7AkL2zEp12Q02f7+0SOhqC70mBVC5MUOg2Q63k0d5F7pNSjyMxlziH
-         D/0BlI+HteNVXfeAQYBHEo/FpThGEteHhrTfaxZfdIy+PuqEs2+P96p8wcYy4Z3/NPSO
-         lRsQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=20V0HsiRCM8u2CycbPAhWN5bAO7CHOUhSKzXrUPLlhE=;
-        fh=P51Jryk7p7oN4eSxJCPMVtGoWXIlUBkOmQe77TlJNPY=;
-        b=ZiZdbdCUDbHXf3pgKBcwvRK6DDdcVb0Hr54ePQOr2DEf01XuxmuV9rq5m+qjOmKtVx
-         nT19C8SAk/ocjeB+Tb1+pIffZoCQ+MWZf2wFqls2bmwnDF26JpGRE+FT7TafGRvJbD5N
-         XQ1osdA6S4F6hHqFdmOCMkJJNI2HiAnULEavHtQJH6BIpkWvdODc5mT3F/rZHMlx6ffv
-         4WyZebAInOtx12Bg274cMtSuWXpBaE2m8JKHDQaFP90Xs+6uk386dye2OVcfYmV4dsLC
-         XsIoNjah1VEQIhxVF/0872F7RQs0mgO+kZshnoHzKoUo2b0IATASAM1V9TpZwK9xyon2
-         IRnQ==;
-        darn=lists.infradead.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	Thu, 05 Mar 2026 00:58:30 +0000
+Received: by mail-dl1-x122a.google.com with SMTP id a92af1059eb24-126ea4e9694so3573588c88.1
+        for <kvm-riscv@lists.infradead.org>; Wed, 04 Mar 2026 16:58:28 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=brainfault-org.20230601.gappssmtp.com; s=20230601; t=1772622521; x=1773227321; darn=lists.infradead.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=20V0HsiRCM8u2CycbPAhWN5bAO7CHOUhSKzXrUPLlhE=;
-        b=0TdzYEAdsfIQIyHOGvX7ProYWojA8+be0CgdftfJFfhk5ek+Veblp+Fi+iQxjPd+Rn
-         XXLXknveDygQOcvJSDm4rbrb2gtz1lGYskBquV3Scpwn4TRgy5xDU3qBomroa024vrik
-         +puSuqsa/2u/bw828Ua+v2fPic7Mn9PdXMQMoREV/FmOe1hpkRwOxo9MbT3xpVE/k1+9
-         17VGnsBtm0++Sk8/uFLMvaWZij3bGXCXQWzH47k/PtP7sAz4kguyaENsAERlRdqCvCTW
-         fnvL8uXquq9D+C2DC4dpWEpV2JKefhUvjTm/MaEEEitOmaysgRya9DEZqY23vHB/zYj0
-         lCQA==
+        d=gmail.com; s=20230601; t=1772672308; x=1773277108; darn=lists.infradead.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=V18G0dffShMU4z6G97+zCQkLAwnQ6V/WEvHOERsnHVY=;
+        b=fvP1p8IASV5xNoUIOn1pbR0JjK5WpnVefjOxu4O1jS3/0itqAlu7Whw8xlrWsPa8X9
+         scBlI7a6AzkwaYDUAXRZHdETgirlvDAbr+nZvK1BLU7NIaAsSmsPX3UEDhxn9Qknu+ZC
+         UCOUL6tb0aByZ1d1oDzWO4kEyPg5FgDrVXD2d/GB+oeATP4KxNv4etyO38RAXyZp9kGs
+         kZNfZQ4o1f0+3IvK2f6bz+iusPQ9odw4Ujt0PlOteXLvmY9oCSo0kqdDyT3G0EYXtKO8
+         zRSb6xCYYDH8Js1rQ7ccu5A74uwYPwSw+CmuITDB40JXvC64x70p9lzpizi3xQFFHIbF
+         sqKw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1772622521; x=1773227321;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=20V0HsiRCM8u2CycbPAhWN5bAO7CHOUhSKzXrUPLlhE=;
-        b=Viv1vR71aZUzChE2N3CIoDtVnDdAgamF3BFUpTqVHhFn/9l87c5gffqjH1TBF9QMXy
-         ZbcFm1W7lyqtVe05bTGIrxNPbnbsmNaCeopR2w7LA84Ek3uIcrAJUuivqCemeoOORE28
-         Aaz2Ur82O3pPiWA++kwDYFjyC/Ah7eLAxxvX8KqL2KYrj6ESB3TvsXdpLK82zHQlC+Nb
-         gaGhm7NCQdjI1JQEjobBzzL1Y1eCcjj35Yb57yoOkXESQMDJXPtSUiz8XvfMZkF42HqT
-         FnRwIXQmmm2NJ9lvLAhVFSdq6lSiBdHEKTx3ixUzz9PTHHFmac0//3iqkS/1kTXmGv9j
-         7jbg==
-X-Forwarded-Encrypted: i=1; AJvYcCUa+5CtlSktzTV8XA+u7eRS4G3023L9u3PJTWkOo9jE5Wn+EWoe/EZbpW1SZsnfDB9WeutjELLmDEw=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yw2rWh8QL+cW8l8/NDRg4jDfpL23xLwFwwm+qWoXQpG/nWEKIgg
-	Y5eg0jJs0lcsA4i08iwjVenHg0pXEjwOIzTBDva3yey/yIAm+8PqQYw1HM8c2dlN76ntA19gY/O
-	24S7l4XjgukWaQYAwYERpPYojwr6UzyHV78FlMeRMeDnSr9WGlNAf
-X-Gm-Gg: ATEYQzzUTEt5QS29GbEK7knrohTyQUrE8M6ZPs1KQj6n5mLwKghnzYqlud+yixCSS40
-	SF0B1++caImB7chowguZHd1niENnfsKGofmH6CawC7p08Gw+r80vRN7p8KsxeN5uswubmnpxmGS
-	f2ohtrYyCvTdmNd8x8i+LKhzjkglPeq+FZ3G7QBJ2OZA8geO3MCOQD4IBJv3Mu6iCyytdY4/mFV
-	HXmJC1hYlXZ8n8PyevQurGW6DP8KrMC3ylaMyMTJEzM9enueJqhhyY8QClt6PJ3v0lIXD83lqe4
-	oJk3vYJUbjwVo0ycCDXSJYGxEQBT/XzXspdNMyMxz5PGWD1Kcw372kFBzk2BX2oKdy4tJI9VQmE
-	kykXvEvPgUFHMa6IvrAQO4dyUSK4=
-X-Received: by 2002:a05:6820:f021:b0:679:a463:c933 with SMTP id
- 006d021491bc7-67b1e932124mr914892eaf.71.1772622520701; Wed, 04 Mar 2026
- 03:08:40 -0800 (PST)
+        d=1e100.net; s=20230601; t=1772672308; x=1773277108;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=V18G0dffShMU4z6G97+zCQkLAwnQ6V/WEvHOERsnHVY=;
+        b=s/7VdVADRuTCq8OQ0zmZDgfIen3xmhytXkWoNUrVm1yB2OPOB5RySw5Xpwxu2las2q
+         cKRMZTa15Z7k7tuFGsgf1lXw0mnsg9TNgW3BxEfNRKbEA0jH798NVEu+HE/rbrvw4mNc
+         qLBDdlJjjAMXVO0si4FDINB1FpWf1fBqunqoZssB4mfe3TpYjWEMtOIJ/CYCE0V/nJA1
+         GMrSFsKUt4chMWiBp57jcWlAQIan6uptc1gFHIBF8zQUt5IEnfynEDHhwGvqQAb4r/yb
+         SUWINGHqyM6sW/hLkqz2WU4KJW7cI9sWkRkYIzPc+stPD+LO+eBEl3YGYA80Fc7tDBn0
+         3BDA==
+X-Forwarded-Encrypted: i=1; AJvYcCUCuQ/nc2sqLzYoES7EbvW6DVyeaM4WMhQwYBJQgFn718yrM0JtkUtgfmcNurrETCJFI6Ok/w3lQoM=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yy8dbNi7uUYb7kGTynewcha2aAc73IfMb3Vh8bpoCEyhH3uAlTy
+	SUkXxPSHEPJn3AXLVJx5hYgyols/4V2wVwH/mDC4UmzU1z7PwUli8n/v
+X-Gm-Gg: ATEYQzwM3aUiCJ3GCHO75h57/liwK9NoCNp561z1OTiBjxSREHB84j9ZTMShHqu5Yd8
+	uHBwtLVouBAIDNlOADU8pNlf1c5hYVjq3BfAANRKGvw+1yzYNScDMnHxVXt1edm0yqXnktHdagu
+	PpldX6ciessoTVL+s+6Lm1e9MjAmDGIT7SZ0MQWT9ae0D2aTRRYRKg/m5scdo+1hAJcz2+feJsa
+	VFfahSKegNR9PmFWvIDB2EHsu33WUK9RV9wdY3x38o7zGHImNTP3q016eG87D1QOn81ryRpcQqm
+	4tiLgQ3+np6oZC0DqM6vAF/YdkzCFqU7gxvLWE135TkNQZNi0LOIacxo4YFrOpShORw5ViayZEF
+	n08NYkMCzExAz+FLdzjD5uR6nj5j5xj0kqjesPDHT7Grpq+zyrD4a2GA/f37qO53fF7Jz4Iu370
+	9qrODZrAZKGj5ol9DRNF9++Yk=
+X-Received: by 2002:a05:7022:525:b0:119:e56b:9590 with SMTP id a92af1059eb24-128b70d11bdmr2303907c88.21.1772672307447;
+        Wed, 04 Mar 2026 16:58:27 -0800 (PST)
+Received: from inky.localdomain ([2601:647:6700:64d0::5c10])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-2be381d5ae9sm1164212eec.26.2026.03.04.16.58.26
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 04 Mar 2026 16:58:26 -0800 (PST)
+Date: Wed, 4 Mar 2026 16:58:24 -0800
+From: Charlie Jenkins <thecharlesjenkins@gmail.com>
+To: Andrew Jones <andrew.jones@oss.qualcomm.com>
+Cc: linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
+	kvm-riscv@lists.infradead.org, Paul Walmsley <pjw@kernel.org>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Anup Patel <anup@brainfault.org>,
+	=?iso-8859-1?Q?Cl=E9ment_L=E9ger?= <cleger@rivosinc.com>,
+	Conor Dooley <conor.dooley@microchip.com>,
+	Guodong Xu <guodong@riscstar.com>,
+	Charlie Jenkins <charlie@rivosinc.com>,
+	Samuel Holland <samuel.holland@sifive.com>
+Subject: Re: [RFC PATCH v1 00/11] riscv: hwprobe: Introduce rva23u64 base
+ behavior
+Message-ID: <20260305005824.GA132269@inky.localdomain>
+References: <20260206002349.96740-1-andrew.jones@oss.qualcomm.com>
 MIME-Version: 1.0
-References: <20260303-kvm-riscv-spectre-v1-v2-0-192caab8e0dc@cispa.de>
-In-Reply-To: <20260303-kvm-riscv-spectre-v1-v2-0-192caab8e0dc@cispa.de>
-From: Anup Patel <anup@brainfault.org>
-Date: Wed, 4 Mar 2026 16:38:29 +0530
-X-Gm-Features: AaiRm50FApq9ik0ETo3HXP7rfW4o3U8qtmgzjhKd-QdWkzujkTa_K8xattka4x8
-Message-ID: <CAAhSdy0nkke8sJR-wV9nrzc=VqdY4igYu9c8g14qudbEeR=27g@mail.gmail.com>
-Subject: Re: [PATCH v2 0/4] KVM: riscv: Fix Spectre-v1 vulnerabilities in
- register access
-To: Lukas Gerlach <lukas.gerlach@cispa.de>
-Cc: Atish Patra <atish.patra@linux.dev>, Paul Walmsley <pjw@kernel.org>, 
-	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
-	Alexandre Ghiti <alex@ghiti.fr>, Andrew Jones <ajones@ventanamicro.com>, 
-	=?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <radim.krcmar@oss.qualcomm.com>, 
-	kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
-	linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, 
-	Daniel Weber <daniel.weber@cispa.de>, Michael Schwarz <michael.schwarz@cispa.de>, 
-	Marton Bognar <marton.bognar@kuleuven.be>, Jo Van Bulck <jo.vanbulck@kuleuven.be>
+Content-Disposition: inline
+In-Reply-To: <20260206002349.96740-1-andrew.jones@oss.qualcomm.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260304_030842_629714_D3EE8506 
-X-CRM114-Status: UNSURE (   9.92  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20260304_165829_134322_678341ED 
+X-CRM114-Status: GOOD (  23.89  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -120,29 +101,92 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-T24gVHVlLCBNYXIgMywgMjAyNiBhdCA3OjQ54oCvUE0gTHVrYXMgR2VybGFjaCA8bHVrYXMuZ2Vy
-bGFjaEBjaXNwYS5kZT4gd3JvdGU6Cj4KPiBUaGlzIHNlcmllcyBhZGRzIGFycmF5X2luZGV4X25v
-c3BlYygpIHRvIFJJU0MtViBLVk0gdG8gcHJldmVudAo+IHNwZWN1bGF0aXZlIG91dC1vZi1ib3Vu
-ZHMgYWNjZXNzIHRvIGtlcm5lbCBtZW1vcnkuCj4KPiBTaW1pbGFyIGZpeGVzIGV4aXN0IGZvciB4
-ODYgKGlvYXBpYywgbGFwaWMsIFBNVSkgYW5kIGFybTY0ICh2Z2ljKS4KPgo+IFNpZ25lZC1vZmYt
-Ynk6IEx1a2FzIEdlcmxhY2ggPGx1a2FzLmdlcmxhY2hAY2lzcGEuZGU+Cj4gLS0tCj4gQ2hhbmdl
-cyBpbiB2MjoKPiBBZGQgYXJyYXlfaW5kZXhfbm9zcGVjKCkgdG8gZm91ciBhZGRpdGlvbmFsIHNp
-dGVzIGluIHZjcHVfcG11LmMKPiAoUmFkaW0gS3LEjW3DocWZKQo+Cj4gLS0tCj4gTHVrYXMgR2Vy
-bGFjaCAoNCk6Cj4gICAgICAgS1ZNOiByaXNjdjogRml4IFNwZWN0cmUtdjEgaW4gT05FX1JFRyBy
-ZWdpc3RlciBhY2Nlc3MKPiAgICAgICBLVk06IHJpc2N2OiBGaXggU3BlY3RyZS12MSBpbiBBSUEg
-Q1NSIGFjY2Vzcwo+ICAgICAgIEtWTTogcmlzY3Y6IEZpeCBTcGVjdHJlLXYxIGluIGZsb2F0aW5n
-LXBvaW50IHJlZ2lzdGVyIGFjY2Vzcwo+ICAgICAgIEtWTTogcmlzY3Y6IEZpeCBTcGVjdHJlLXYx
-IGluIFBNVSBjb3VudGVyIGFjY2Vzcwo+Cj4gIGFyY2gvcmlzY3Yva3ZtL2FpYS5jICAgICAgICAg
-fCAxMSArKysrKysrKystLQo+ICBhcmNoL3Jpc2N2L2t2bS92Y3B1X2ZwLmMgICAgIHwgMTcgKysr
-KysrKysrKysrKy0tLS0KPiAgYXJjaC9yaXNjdi9rdm0vdmNwdV9vbmVyZWcuYyB8IDM2ICsrKysr
-KysrKysrKysrKysrKysrKysrKysrKystLS0tLS0tLQo+ICBhcmNoL3Jpc2N2L2t2bS92Y3B1X3Bt
-dS5jICAgIHwgMTQgKysrKysrKysrKystLS0KPiAgNCBmaWxlcyBjaGFuZ2VkLCA2MSBpbnNlcnRp
-b25zKCspLCAxNyBkZWxldGlvbnMoLSkKClF1ZXVlZCB0aGVzZSBwYXRjaGVzIGFzIGZpeGVzIGZv
-ciBMaW51eC03LjAtcmNYCgpUaGFua3MsCkFudXAKCi0tIAprdm0tcmlzY3YgbWFpbGluZyBsaXN0
-Cmt2bS1yaXNjdkBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3Jn
-L21haWxtYW4vbGlzdGluZm8va3ZtLXJpc2N2Cg==
+On Thu, Feb 05, 2026 at 06:23:38PM -0600, Andrew Jones wrote:
+> Users need a way determine that their harts conform to rva23u64 that
+> isn't error-prone. While patches 2 and 6 make it possible to determine,
+> it requires a bunch of probes and checks themselves (see patch9 for the
+> recipe). This RFC proposes adding an RVA23U64 hwprobe base behavior
+> (patch8) allowing easy determination. It also proposes adding the bases
+> to /proc/cpuinfo (patches 10 and 11) -- but those two patches are probably
+> even more RFCy than the hwprobe proposal...
+> 
+> The first three patches have been posted previously by their respective
+> authors and are currently under active review (except patch2 which
+> appears to have gotten lost in the shuffle). I've collected these
+> patches into the series since they're necessary for the base and
+> because I wanted to repost patch2 and patch3 with some changes. patch4
+> and patch6 expose more extensions to userspace. patch9 adds a consistency
+> test for the new hwprobe base behavior bit.
+
+Great series! Thanks for pulling these all together, I like this
+direction. We had dropped patch2 because we were using it for some
+misaligned access optimizations but then realized that the extension
+wasn't useful for that so then the patches got lost.
+
+In Linux 7.0, patch 1 got applied along with CFI using the first flags of
+the second key so there is some rebasing to do.
+
+I think putting the compatibility info in /proc/cpuinfo is a good idea.
+There is always hesitance around /proc/cpuinfo because some ill-advised
+programs try to parse information from it, but it is nice to have an
+easy way for users to see the compatility and since you also added the
+hwprobe interface for it this seems reasonable.
+
+- Charlie
+
+> 
+> Thanks,
+> drew
+> 
+> 
+> Andrew Jones (8):
+>   riscv: Add B to hwcap
+>   riscv: hwprobe.rst: Replace tabs with spaces
+>   riscv: Add Ziccamoa, Ziccif, Ziccrse, and Za64rs to hwprobe
+>   riscv: Export have_user_pmlen* booleans
+>   riscv: hwprobe: Introduce rva23u64 base behavior
+>   riscv: selftests: hwprobe: Check rva23u64 consistency
+>   riscv: /proc/cpuinfo: Add rva23 bases to output
+>   riscv: /proc/cpuinfo: Also output rva20 and rva22 isa bases
+> 
+> Charlie Jenkins (1):
+>   riscv: Standardize extension capitilization
+> 
+> Jesse Taube (1):
+>   RISC-V: Add Zicclsm to cpufeature and hwprobe
+> 
+> Paul Walmsley (1):
+>   riscv: hwprobe: add support for RISCV_HWPROBE_KEY_IMA_EXT_1
+> 
+>  Documentation/arch/riscv/hwprobe.rst          |  42 ++-
+>  arch/riscv/include/asm/cpufeature.h           |  14 +
+>  arch/riscv/include/asm/hwcap.h                |  23 +-
+>  arch/riscv/include/asm/hwprobe.h              |   3 +-
+>  arch/riscv/include/asm/switch_to.h            |   4 +-
+>  arch/riscv/include/uapi/asm/hwcap.h           |   1 +
+>  arch/riscv/include/uapi/asm/hwprobe.h         |   9 +-
+>  arch/riscv/kernel/cpu.c                       |  38 +++
+>  arch/riscv/kernel/cpufeature.c                | 168 ++++++++++--
+>  arch/riscv/kernel/process.c                   |  12 +-
+>  arch/riscv/kernel/sys_hwprobe.c               | 249 +++++++++++++-----
+>  arch/riscv/kvm/main.c                         |   2 +-
+>  arch/riscv/kvm/vcpu_fp.c                      |  28 +-
+>  arch/riscv/kvm/vcpu_onereg.c                  |  22 +-
+>  arch/riscv/kvm/vcpu_vector.c                  |  14 +-
+>  .../testing/selftests/riscv/hwprobe/hwprobe.c | 112 +++++++-
+>  .../selftests/riscv/hwprobe/which-cpus.c      |  20 +-
+>  17 files changed, 610 insertions(+), 151 deletions(-)
+> 
+> -- 
+> 2.43.0
+> 
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
