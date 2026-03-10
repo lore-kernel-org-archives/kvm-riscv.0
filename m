@@ -4,131 +4,76 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F2583FCA18A
-	for <kvm-riscv@archiver.kernel.org>; Mon,  9 Mar 2026 21:12:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 53ABBFCC9C4
+	for <kvm-riscv@archiver.kernel.org>; Tue, 10 Mar 2026 05:56:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=TbD36FdysSs0D1TBHQivQyA78TtJ7xUZ1sDO8PDNxDc=; b=qLbf3EkJGyQhGX
-	mb1/bd3Oy/FaKnkiACiyNWMcuPesd4WGS0nbJivQmrpF1nkcrcN+mPvKryJ2TrYtRGMFbchgT2GhF
-	iaK5ZBXEnUnFsHYpjCtr9/mWgWQIjLmJx9m7BOTZpd8zTu0nGwO9bI1ygYRICUFZqLVk5kYIw19kt
-	cQdgRlI3U5kzzReyqlCP9gqneAWNrI7YgCFuAHayh1zZMYEZWygWT4hIDRXtk/Cdwy5n+sdIFBwdI
-	v+NRHtLSoG/vbrrvMxPQlF74QedSO8arEOS+fD0eRYXQz4n3ReQThl/mwD1JNRC509bAfTje222kE
-	vdbBkfNR5/WRZ+oJrBrw==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-Id:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=7g0bpk4GBDSHdMgOguvUzkharyJfpHaD3LpSFnUamrc=; b=J/D1M/UKoV5Gf+
+	YH2bWIW7qnaaSdVMYTL69fhFCNmwxWUq1RETxBkWkG/kXPSlHQhvSa+xGj3tUoJfh+7uwSa/U6/Q7
+	pQxtrsGCLVYuFt2OE53kM/HikvYWm8KTIwGO3efN5MKc2DwmsDcky/2S/EZVn96jJ2+48YoI6PNBM
+	HeW3yzy2saYcKo8w91T4dnuW8dPAIEjQhks9wnmf3hgrSTHTnqprZiAcHGwJGppHtW2jOe56LWB4+
+	8BulDUCSCiLtzVup2OwWp24ENu2g3QaNHA3DgmoG98p3VBt/S5ykL+QJ2HvInvHaCWBUgybT4kssX
+	3Tje12j7cT6Z1kDawFWA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vzhuE-00000008A3U-2QlA;
-	Mon, 09 Mar 2026 21:12:51 +0000
-Received: from mx0b-0031df01.pphosted.com ([205.220.180.131])
+	id 1vzq5G-00000008lBw-2ol1;
+	Tue, 10 Mar 2026 05:56:46 +0000
+Received: from smtp81.cstnet.cn ([159.226.251.81] helo=cstnet.cn)
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vzhuB-00000008A2n-1Z6R
-	for kvm-riscv@lists.infradead.org;
-	Mon, 09 Mar 2026 21:12:48 +0000
-Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 629HDMOR1214071
-	for <kvm-riscv@lists.infradead.org>; Mon, 9 Mar 2026 21:12:45 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=qcppdkim1; bh=hIRGX75FqhGaD3BMA10Fm2iv
-	i9uf9Iqa56+NA2iQds4=; b=iwctoPmuglmq0Tf+ez67wQOU7T44KIlV1E5lOjbX
-	bcNC4aXZ4D6Gzwyp3ADUzKFH6lmeJwdOSjiXKTvKwvcMdEtmiZYFyeUzUuiuFp40
-	VAbZ/7znO6OIghtb5LL6ebpNHstAtdHXaBxA2FJRHnkD2T0+WCOl/9wbu4uJ4eqD
-	mM2ZEaGJ018xRi7699eftmMw1bcfPEGSpTXEwgOPHOFl+8FsH4CMBvh7RyEEyCs3
-	tqQ+mU7KJbPRZiY8MrtuIczgqdvj/zKiMWC7r9GdIJXYELL+wfepJMQMi4ggbypU
-	qR/ZOUhCgrwm/aFcvBctADV4jotTPmIJvjEdnF4+4E7JlQ==
-Received: from mail-oo1-f71.google.com (mail-oo1-f71.google.com [209.85.161.71])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4cswwkhqrq-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <kvm-riscv@lists.infradead.org>; Mon, 09 Mar 2026 21:12:45 +0000 (GMT)
-Received: by mail-oo1-f71.google.com with SMTP id 006d021491bc7-679a47a1febso58562035eaf.3
-        for <kvm-riscv@lists.infradead.org>; Mon, 09 Mar 2026 14:12:45 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1773090764; x=1773695564; darn=lists.infradead.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=hIRGX75FqhGaD3BMA10Fm2ivi9uf9Iqa56+NA2iQds4=;
-        b=TCqi+CMKjqOJR5T+oOo98yLDBjRawoDo9v+mwrMwkGZr5Fym8v6kacFQY9EgFGrWqW
-         KtQJNJZfG4EtWjWfobIp6HhkENjQ+nfl9+6edoSCzSUMWL6Exv7SgcedIxklXlt6wuQ7
-         9G9jiD7pFW3Rii6AypHlOZ/hHqXidlxNjkZpDl0e1C8+GJgR17xJT2Si+UVNzWoqlim+
-         pqSLI9nqRb9zpIdE32+eEwi4/gYpd37IqcIyhrjpcIYacBufCcBSSAWSF5iDVtpdUlUZ
-         jK+j7oS88EtRMD2upiu4YrRfgO3AtQsvdKpyfOROWYMfKhCdC2jNU0phRc2wRwnmOn9K
-         X3iA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1773090764; x=1773695564;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=hIRGX75FqhGaD3BMA10Fm2ivi9uf9Iqa56+NA2iQds4=;
-        b=QitDe9eQcuI+Rdd+E4VEeIdQsakJp0CrBYqkDnIzKuMASJrsyJUVCph5+QmO//K8X2
-         LgSrwdwvQb+OnrjP7APUjbDBTitc8E3uUuIrsrukpnT+vlGx91wUJqA1pxGOhrQuq7BE
-         zarRi9WFz1t4KTPl0LrKdbE2VTgVrQcIjId0sq1y9Vv+7QgsKqnf34zVcEJAWnZGBtMo
-         qO2kw+3wsims2ZrcDzitrEBG9tqMiU1hZ2ugytsDjaQCajAOecd5ijC5/sFbnOaNsXE4
-         rXIT+kgWhPcC/ZWfsvSuE6xVWzXlKM3sRUND/gH1jhQZcUOiX5SGxs4hXrbqBfPPPPUN
-         qA1Q==
-X-Forwarded-Encrypted: i=1; AJvYcCVyw2RMKqWFZNPUd1S6IcPWuERw2rnbwp/EwBkcmiMKkTD1TckmZDE6MwW2pj8yfauvMN9mC6Kfm+0=@lists.infradead.org
-X-Gm-Message-State: AOJu0YxBIISzKJeJkpqJz7i0B2v//NMiPnTfAWlXqlDNnuyDmzGXhtrf
-	cW5g+Kc2JTx/TR9UPE2ns9xOLiaE2GUYp0Mk0xJeaSLNR0DjAuTCxS81JA4y1XZ4W/dxkGZlz8c
-	Yp+A7pnkjXSpNNp74GvGWcyRa4+pnoS/G9ube1634F6EF0ECgkUCdOvYEGEnm0k616EoV
-X-Gm-Gg: ATEYQzyNtKNv+Z1vtSNxPqrsSiYFRfrHJO1jSbVgC/KOPlGrznNltre9nklTvyZ+BWm
-	kYZ+hNBZQqWJSxuRTgd/ka5xvb0v8ntLHPJC8ObLkdO1fy3JB6WrzHx5yzHf/kZfKthum8PQScK
-	5xqU4DsOFp3w7WT41eQlU4GIuZygsDD/okSFtvk8xrVbmDna7+aIamb6KzJdekleY7uK9KJLyP4
-	FP4avwtbCeiIu/ol5zvy20JKKktg58Mwa/PkACQ+lwq5WXgRk/nSoqKy0Gg8CTCKYonf+lGyTUw
-	Vbj1oDGtAu5dwDZuZCoSpRLMA0D+9xLHS0u931kPUiPjMVJ0cTAwjlJB4n3yrmlwUS/aBR1TyNa
-	ao+avDS51kRgYIEUK2IjLiZbBL2inWUQ=
-X-Received: by 2002:a05:6820:1991:b0:67a:1d88:46d5 with SMTP id 006d021491bc7-67b9bcd3839mr7601100eaf.31.1773090764539;
-        Mon, 09 Mar 2026 14:12:44 -0700 (PDT)
-X-Received: by 2002:a05:6820:1991:b0:67a:1d88:46d5 with SMTP id 006d021491bc7-67b9bcd3839mr7601074eaf.31.1773090764040;
-        Mon, 09 Mar 2026 14:12:44 -0700 (PDT)
-Received: from localhost ([140.82.166.162])
-        by smtp.gmail.com with ESMTPSA id 006d021491bc7-67bacd85dd6sm3996753eaf.11.2026.03.09.14.12.43
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 09 Mar 2026 14:12:43 -0700 (PDT)
-Date: Mon, 9 Mar 2026 16:12:43 -0500
-From: Andrew Jones <andrew.jones@oss.qualcomm.com>
-To: Osama Abdelkader <osama.abdelkader@gmail.com>
-Cc: Anup Patel <anup@brainfault.org>, Atish Patra <atish.patra@linux.dev>,
-        Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
-        Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
-        Andrew Jones <ajones@ventanamicro.com>, kvm@vger.kernel.org,
-        kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] RISC-V: KVM: fix PMU snapshot_set_shmem on 32-bit hosts
-Message-ID: <guxeojlqqz6cfjdilxnuaeyft4cn4lwdrbplat7xgd5w5hod44@uxqymidomd55>
-References: <20260307234355.69831-1-osama.abdelkader@gmail.com>
+	id 1vzq5C-00000008lAq-30kH;
+	Tue, 10 Mar 2026 05:56:44 +0000
+Received: from fric.. (unknown [210.73.43.101])
+	by APP-03 (Coremail) with SMTP id rQCowAC30Ndvsq9p08A4Cg--.55585S2;
+	Tue, 10 Mar 2026 13:55:59 +0800 (CST)
+From: Jiakai Xu <xujiakai2025@iscas.ac.cn>
+To: kvm-riscv@lists.infradead.org,
+	kvm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-kselftest@vger.kernel.org,
+	linux-riscv@lists.infradead.org
+Cc: Albert Ou <aou@eecs.berkeley.edu>,
+	Alexandre Ghiti <alex@ghiti.fr>,
+	Andrew Jones <ajones@ventanamicro.com>,
+	Anup Patel <anup@brainfault.org>,
+	Atish Patra <atish.patra@linux.dev>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Paolo Bonzini <pbonzini@redhat.com>,
+	Paul Walmsley <pjw@kernel.org>,
+	Shuah Khan <shuah@kernel.org>,
+	Jiakai Xu <xujiakai2025@iscas.ac.cn>
+Subject: [PATCH v3 0/2] RISC-V: KVM: Fix array out-of-bounds in firmware counter reads
+Date: Tue, 10 Mar 2026 05:55:55 +0000
+Message-Id: <20260310055557.835531-1-xujiakai2025@iscas.ac.cn>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <20260307234355.69831-1-osama.abdelkader@gmail.com>
-X-Authority-Analysis: v=2.4 cv=cZ/fb3DM c=1 sm=1 tr=0 ts=69af37cd cx=c_pps
- a=V4L7fE8DliODT/OoDI2WOg==:117 a=cvcws7F5//HeuvjG1O1erQ==:17
- a=kj9zAlcOel0A:10 a=Yq5XynenixoA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=3WHJM1ZQz_JShphwDgj5:22
- a=JfrnYn6hAAAA:8 a=pGLkceISAAAA:8 a=EUspDBNiAAAA:8 a=tWgbADMcUQFZQAcJDasA:9
- a=NqO74GWdXPXpGKcKHaDJD/ajO6k=:19 a=CjuIK1q_8ugA:10 a=WZGXeFmKUf7gPmL3hEjn:22
- a=1CNFftbPRP8L7MoqJWF3:22
-X-Proofpoint-ORIG-GUID: p_v-wfJAV19Bh_1jw_Pq3T5JADnT1rWy
-X-Proofpoint-GUID: p_v-wfJAV19Bh_1jw_Pq3T5JADnT1rWy
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzA5MDE4OCBTYWx0ZWRfX+fqJyltWM8m9
- zwF+ypXO4IXw/pXyBvyc+TQrR/wUQxmGtwDRlPUJivtZDgX9ih+r1Ja+wB1R+wau8e/+WVFuNlO
- 7DxCtSIAkDCwtDZAuG08JCaf/j9P+5HAJhrHhp77v71RNiyBaPklw3YvN7xhlxC4AswIOCk6Reb
- Da/+Hv4K3XN3mYja8v1h5WVz/Pqob8CxSOeql1XvGce9jTiXjxsTSGadjYj7dc1hU1AppjtJ1EI
- sfBDlH124aov+Yj4sSA8fS8V54+bLZX1Bf0d9RRKNDJt+RnDsPYf7B5xKECNcXjbsXwfdfHcGvH
- 5ZowQy4SmHwflo9r7E9U+yTFqMtZBB5Y4KSpa7I1+OTKvLGOXMCpyop3FLtdGorglzxSth094Fx
- rSBTLcz8g1CuHIeazQWW2xNCn8DNzSIjzD4seXD6Ig9wYieO5l/bG8Q/5UFpR9xPcvDX7yypSUz
- LvH+hgtlbiN/CBGqefQ==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-03-09_06,2026-03-09_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 suspectscore=0 impostorscore=0 adultscore=0 priorityscore=1501
- phishscore=0 malwarescore=0 lowpriorityscore=0 clxscore=1015 bulkscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2602130000 definitions=main-2603090188
+X-CM-TRANSID: rQCowAC30Ndvsq9p08A4Cg--.55585S2
+X-Coremail-Antispam: 1UD129KBjvJXoW7CF4fXw45Cry8Ar47tF4DXFb_yoW8Xr1xpF
+	ZxKa4YkrykJrs7t343A3ykJw15Xrs5Ca98Gry7GF18Cr45ZryfXryqk3sxtF1rCrsYqw1Y
+	ka1Igas7CFy5Za7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUUP014x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
+	1l84ACjcxK6xIIjxv20xvE14v26ryj6F1UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4U
+	JVWxJr1l84ACjcxK6I8E87Iv67AKxVW0oVCq3wA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_Gc
+	CE3s1lnxkEFVAIw20F6cxK64vIFxWle2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xv
+	F2IEw4CE5I8CrVC2j2WlYx0E2Ix0cI8IcVAFwI0_Jrv_JF1lYx0Ex4A2jsIE14v26r4j6F
+	4UMcvjeVCFs4IE7xkEbVWUJVW8JwACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I
+	648v4I1lFIxGxcIEc7CjxVA2Y2ka0xkIwI1lc7CjxVAaw2AFwI0_Jw0_GFylc2xSY4AK67
+	AK6r4rMxAIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4AY6r1j6r4UMI8I3I0E5I8CrVAF
+	wI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_JrI_JrWlx4CE17CEb7AF67AKxVWUtVW8ZwCIc4
+	0Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v26r1j6r1xMIIF0xvE2Ix0cI8IcVCY1x0267AK
+	xVW8JVWxJwCI42IY6xAIw20EY4v20xvaj40_Jr0_JF4lIxAIcVC2z280aVAFwI0_Jr0_Gr
+	1lIxAIcVC2z280aVCY1x0267AKxVW8JVW8JrUvcSsGvfC2KfnxnUUI43ZEXa7VUjZ2-5UU
+	UUU==
+X-Originating-IP: [210.73.43.101]
+X-CM-SenderInfo: 50xmxthndljiysv6x2xfdvhtffof0/1tbiBgwCCWmvomAt5wAAsP
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260309_141247_535619_0200E0F0 
-X-CRM114-Status: GOOD (  20.07  )
+X-CRM114-CacheID: sfid-20260309_225643_144232_7DCEABBE 
+X-CRM114-Status: UNSURE (   6.78  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -145,51 +90,39 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Sun, Mar 08, 2026 at 12:43:54AM +0100, Osama Abdelkader wrote:
-> When saddr_high != 0 on RV32, the goto out was unconditional, causing
-> valid 64-bit addresses to be rejected. Only goto out when the address
-> is invalid (64-bit host with saddr_high != 0).
-> 
-> Fixes: c2f41ddbcdd7 ("RISC-V: KVM: Implement SBI PMU Snapshot feature")
-> Signed-off-by: Osama Abdelkader <osama.abdelkader@gmail.com>
-> ---
->  arch/riscv/kvm/vcpu_pmu.c | 5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/riscv/kvm/vcpu_pmu.c b/arch/riscv/kvm/vcpu_pmu.c
-> index 4d8d5e9aa53d..045099ca904b 100644
-> --- a/arch/riscv/kvm/vcpu_pmu.c
-> +++ b/arch/riscv/kvm/vcpu_pmu.c
-> @@ -425,9 +425,10 @@ int kvm_riscv_vcpu_pmu_snapshot_set_shmem(struct kvm_vcpu *vcpu, unsigned long s
->  	if (saddr_high != 0) {
->  		if (IS_ENABLED(CONFIG_32BIT))
->  			saddr |= ((gpa_t)saddr_high << 32);
-> -		else
-> +		else {
->  			sbiret = SBI_ERR_INVALID_ADDRESS;
-> -		goto out;
-> +			goto out;
-> +		}
+When a guest reads a firmware PMU counter via
+SBI_EXT_PMU_COUNTER_FW_READ or SBI_EXT_PMU_COUNTER_FW_READ_HI without
+first configuring it with SBI_EXT_PMU_COUNTER_CFG_MATCH, the counter's
+event_idx remains SBI_PMU_EVENT_IDX_INVALID (0xFFFFFFFF).
 
-nit: Could add the {} to the if-arm too in order to keep things balanced.
-Otherwise,
+get_event_code() extracts the lower 16 bits from event_idx, yielding
+0xFFFF, which is then used to index into kvpmu->fw_event[]. Since the
+fw_event array only contains RISCV_KVM_MAX_FW_CTRS entries, this results
+in an out-of-bounds access that can be detected by UBSAN.
 
-Reviewed-by: Andrew Jones <andrew.jones@oss.qualcomm.com>
+Patch 1 fixes the issue by validating the firmware event code before
+accessing the fw_event array and returning -EINVAL for invalid values.
 
-Thanks,
-drew
+After fixing the kernel behavior, the existing KVM selftest
+(sbi_pmu_test) fails because it attempts to read firmware counters
+without configuring them first. Patch 2 updates the selftest to
+configure a firmware event before reading the counter and adds a
+negative test to ensure that reading an unconfigured firmware counter
+fails gracefully.
 
->  	}
->  
->  	kvpmu->sdata = kzalloc(snapshot_area_size, GFP_ATOMIC);
-> -- 
-> 2.43.0
-> 
-> 
-> -- 
-> kvm-riscv mailing list
-> kvm-riscv@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/kvm-riscv
+6eanut (2):
+  RISC-V: KVM: Fix array out-of-bounds in pmu_ctr_read() and
+    pmu_fw_ctr_read_hi()
+  RISC-V: KVM: selftests: Fix firmware counter read in sbi_pmu_test
+
+ arch/riscv/kvm/vcpu_pmu.c                     | 14 +++++++
+ .../testing/selftests/kvm/include/riscv/sbi.h | 37 +++++++++++++++++++
+ .../selftests/kvm/riscv/sbi_pmu_test.c        | 20 +++++++++-
+ 3 files changed, 70 insertions(+), 1 deletion(-)
+
+-- 
+2.34.1
+
 
 -- 
 kvm-riscv mailing list
