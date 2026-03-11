@@ -4,136 +4,89 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 511931125857
-	for <kvm-riscv@archiver.kernel.org>; Wed, 11 Mar 2026 16:57:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8B090103E2F2
+	for <kvm-riscv@archiver.kernel.org>; Wed, 11 Mar 2026 23:17:44 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
 	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=+nVbzAavv0nSb2LgUFeWHWOWVeq1C7lowKAiCdtzEm4=; b=2fhGyrQMJNB00M
-	m2SqlhEup8IewOrYe3TXJzz/UWJYf1dlyyEwhH020Z+oBg5pAvAB7cUut6M9Dh7M0r14wFDIqa7Tl
-	3GQXGcS7SSej1xQZp5wVarIy3HchAD4rc2E+IFYvCUoBjcUDmGXhzPeKZs+pi3v7Ul5+cPZKIDb35
-	oOgtoo/VbdhHUL70Cpz3swt7uAQANwmcKqcnuYqwyr3P10Q5BLBCvFKbOLQId+5TuGn5y5vI7NJTm
-	6TheHFW8dXmnmbXPebrZikszpYUdquu9m/79/VCK294JKtRQSQTMu9uTD4BatP1CRgfLeK9JaFM2H
-	IQkFzERgtEYXguqSdXGw==;
+	List-Owner; bh=4IZkfKhe0ZkjxNzBStFSxL7atRkhghP06wqbZb0Z9zA=; b=J6tsZjZrlAUffQ
+	eW98ZQj7Z/qWEz5Y39akKqAeI6ZoDII9ECAB3krqQimQA5ZE1y8dMZiBgsPIGyUxCWnNuTq7R6iPs
+	aCbT7yvDUirF5QuL7YhL7pgXnFsk5MyOddNjrXRJWRLvEBBIXDn94e1atRVk4RIV82rVBoc3pXlki
+	/g9GCiEbP6rGtlWNlOt4Y809ewvXm/VfiHO9foY6tYXyhYS2i0oRhu4Dbqevz0icxFLct3HXnjQhg
+	wTz43zfUpCVO3+MqDEWI8kTfCjM+zsVuSkeNwHN8m894f+XNCF8m0g3LyLcqy2uqcZCcmXf8zYI+L
+	eSVYjiTUlNsCQYSArEyQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1w0Mro-0000000BxCo-47TW;
-	Wed, 11 Mar 2026 16:57:04 +0000
-Received: from mx0b-0031df01.pphosted.com ([205.220.180.131])
+	id 1w0SoB-0000000CnDz-3k7O;
+	Wed, 11 Mar 2026 23:17:43 +0000
+Received: from mail-wr1-x42e.google.com ([2a00:1450:4864:20::42e])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1w0Mrm-0000000BxC2-2Pa8
+	id 1w0So7-0000000CnBb-2OII
 	for kvm-riscv@lists.infradead.org;
-	Wed, 11 Mar 2026 16:57:03 +0000
-Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62BFoxeX350618
-	for <kvm-riscv@lists.infradead.org>; Wed, 11 Mar 2026 16:57:01 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=qcppdkim1; bh=h07YhZ15uUsR3D3PiadCrr4J
-	bpjVd0QblfgbHENErsk=; b=p3Yax84VOMh7P/ITtyRHAt3LGt6bA01ccLDVjqBz
-	dedYV2H7EfNj2LucW0F/6iH/FhJyyKkM+Rx7uGL7JBMlwCY+EvfR3VNptNwurhJf
-	MzNOWTs28fPMTBGiT7l3uCutFRcXlC/p7R0XUefyqGq62RlszlcY/Kx6RNdQjWES
-	825hbuHJGwHW5sEFiWAAxkNlz6EUBJxrvT9LqfkWBJ765oAXYMEEUA1PlGWcNmIZ
-	KKwraVC23Sf5ZEI6crTiMicVuGTI2e5QbnwhvvK0KbPBM6DO3E/eQ2NTVM/QtY5D
-	r1UfbAegAsJ0LOgQ7IOQMbDIZtUkuphG+nm8aIazTS1v8w==
-Received: from mail-ot1-f70.google.com (mail-ot1-f70.google.com [209.85.210.70])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4cubd6g8f4-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <kvm-riscv@lists.infradead.org>; Wed, 11 Mar 2026 16:57:01 +0000 (GMT)
-Received: by mail-ot1-f70.google.com with SMTP id 46e09a7af769-7d74533e53dso1153843a34.1
-        for <kvm-riscv@lists.infradead.org>; Wed, 11 Mar 2026 09:57:01 -0700 (PDT)
+	Wed, 11 Mar 2026 23:17:41 +0000
+Received: by mail-wr1-x42e.google.com with SMTP id ffacd0b85a97d-439b6d9c981so295635f8f.1
+        for <kvm-riscv@lists.infradead.org>; Wed, 11 Mar 2026 16:17:38 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1773248221; x=1773853021; darn=lists.infradead.org;
+        d=gmail.com; s=20230601; t=1773271057; x=1773875857; darn=lists.infradead.org;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=h07YhZ15uUsR3D3PiadCrr4JbpjVd0QblfgbHENErsk=;
-        b=G9iPyOa6UY+EE4msVk3kluUEyhjPDhkexvGU605hAgZFVsJOEZD6AU+UFpTorUMNqg
-         FpYgG/wZFggIQcxjqdJUYwQTZUm9DsrEW9DytFD2MKRyApk57O1BmAvXZyh4cFNd+bWc
-         mOeAnN7cZbXkWz8REf+Zu+DEJJmIoG2p0qAxKC/0D1nwbfwuECnbRAhVVG92WyAkQdzz
-         v8aIeZ9MhNSI5M3FcPCvO3mxe7u+Tcr4CkDTqRY76O3o9C10Vrv54/oikvW6IrGITdRf
-         DDYR/BjeMxi1Xv4ixCe4Kz+Imt/1mpqPW9GAOB3fudyF5SlzGYZO+7SNbRGqMT280zZk
-         1X+Q==
+        bh=0YAX8de4YmYeIq/8WNtylATFHnJksgOAf2WopH1Q00E=;
+        b=UM4ruXQtBRut7H9WNrY8W1WSzwDCRfePqepy7PMgU99t3GQhtKlTvwpWSJvmA4gNn2
+         lzn/LfoAN62w/mbaBu3jfj2iNmlt2IcNnKaYDSCDzy6UoMz5N6kZk6iAgBIDJFiUwfe5
+         Xi8W0yedS3d9UvdI7jUy/4hlsAuRchHg4PT47Itn9l6Zj4GfIXLngafzkxPV/OtUjnmN
+         3KtitWqusSECdWNLlMCZb+hag2UOQjVnTtVGZ/ZwsVuCd01fG+FhvR3BBI5TxOAFN86f
+         yUrmwXZRWI9xcgzK7ZonW1QtsIYRgQUy+7ex1NOJwE0z6Me5yMmPtG1EdsC25y7ydNQV
+         BUQw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1773248221; x=1773853021;
+        d=1e100.net; s=20230601; t=1773271057; x=1773875857;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=h07YhZ15uUsR3D3PiadCrr4JbpjVd0QblfgbHENErsk=;
-        b=NRwAXu8TRVLkQSakI0KkqiGW6XBecQywgnZG7QBLFcRnFIun3NDizRMpG950xQgagR
-         6RMroUGacJUllnwjOwWE2Ecr4FzB2L+cZXar48Y3Z9w1lvLyjm9VpDnO7hBTmi9/br7k
-         QTaNwXDQY/5VYQLJJkl3KMYeYGJxZTyAK66N2Kz3m+YW4Q9a4zdl2a0lVybHnYbnYwYt
-         wO32JH0Br9OroGPc8KYWxfyyXVF8ONzvZON8Htq0fAV4Nzm+dmVvQ6vqEIenSMkmoe/n
-         0JtKRgrDp02OF6QW9d6Jjs9HFoFQMqO1vqHquztIXF/SQ4bkrIVbcjynlNrmeV7gMv2x
-         yJ+Q==
-X-Gm-Message-State: AOJu0YxG/h4N4h9S8rpkM4jPo3GqwWqxMmoDYHkm1IJ5RAFvljmTA83X
-	NQO3P26IfV/idKtOa19dMtd65jH4EJAKz9I9CrwVCRA2dUUxTCMWWFV1ZVjv5eoX847mA7L3a73
-	+OGScYsjv5o6UKmV6j5q4lwaA3ySUK+h5l3sNJkXH3odnTM0sWH0lAMBtQoE8mJLVbjtDNsgYag
-	Xi
-X-Gm-Gg: ATEYQzzXCZWtcF0PjAOXFlx9Qu/nxyOuWZi19TttrSjct/HCL4rl4bfddbVUcWnv6D4
-	DqC0VHD+KuM5AwX0JIYgnge+qLA6cmL8XyIMlUpGpqtV7z87yL7L9ClJKR4OCr242eJARXqDoIi
-	d3m8bT4S0d+7mDOjzsBBqmgLq4dBfsHyHiBF7J0yQIE6WaSIZkeTx8rCELDOdREj/vIlin0Lieb
-	V7uwTpCAfr4B194TqsyxNCm7XgRcRpmz/iSUJlNqHHzbm0X4bECHB/Dce4V9IfvyloDxgqdkD4h
-	gpdKQi0s71/A0tBB9CNwxmwMtfP5waKZRQBIkXL6JD5XzwSLh/5uOsrKXlMj8wELbElsCuwgIsS
-	1vZ9EPw7I7abdhcae118R50XuY9W3CEI=
-X-Received: by 2002:a05:6830:398a:b0:7d7:4f9d:54a7 with SMTP id 46e09a7af769-7d76a8bd730mr2414340a34.28.1773248220780;
-        Wed, 11 Mar 2026 09:57:00 -0700 (PDT)
-X-Received: by 2002:a05:6830:398a:b0:7d7:4f9d:54a7 with SMTP id 46e09a7af769-7d76a8bd730mr2414301a34.28.1773248220302;
-        Wed, 11 Mar 2026 09:57:00 -0700 (PDT)
-Received: from localhost ([140.82.166.162])
-        by smtp.gmail.com with ESMTPSA id 46e09a7af769-7d76ae3a18bsm2142694a34.18.2026.03.11.09.56.59
+        bh=0YAX8de4YmYeIq/8WNtylATFHnJksgOAf2WopH1Q00E=;
+        b=Z1lqZbhjhGZh4k9sYClRPPJ39eiRxPAX0BW49XjPfIlEgxbxHIb04uuT5kpPnwTKan
+         IPJRuxIJyRjD/aBUxRsu0ARIXuT+rxGL4Yza5mQ33sk0bBr3ipF9j59WOMrh6+A9hzE2
+         60oeoTaRH631aSTC9verD3S8CF1J0oaITuLrVNagazvOXBi1qzxvqU9bQASP7AC9SnfO
+         sewRi7RWGU7k0k/ba5cZYbnlC7vGWllBv4FnBuzUDQqHTs6yFceeQ+Jmfd1B+iqTIcfC
+         /ur1QRIupoSXtWwC9ReTreCjoRgkKEGDl1uMZ92w3EMf40foNMjbRCJPgZyGtRbPSA9Z
+         b6oQ==
+X-Forwarded-Encrypted: i=1; AJvYcCX0JRwL964qSTqon1UYrAgKt4xZttwcgdvIaXj1zOhR0Dya2avhDDEoMHRQZ2B9GKGE+oaoVncT9MA=@lists.infradead.org
+X-Gm-Message-State: AOJu0YwcqfSx4kfPRW0RJtpxqRpmFFQr1vo1eN29LRT8fzsDQ3/9yP8G
+	vgNfyaFtUN7KarncH2J4gPXHd65rpYTQGB/TOYR/jexlViB7HrJGW5dI
+X-Gm-Gg: ATEYQzzB9JFe35Qi5AC+9/AhaTbsIpqmT2GLsxJBMqOLipCBEfPKz9xWtVw7FCR6uqO
+	JYb2p8wHo/XhroM/G3J6eqWcwonoBiUb7xbLui1v8jsgIQwuNh0aVASJqjudzzH3SWfRdeAw7+D
+	VREBsVpthZIQBL4nz6LVzAFMOf/ECmll5qp6kVfq4jcUasEpoT2OuNn2WSKLKm2HemYQfnzz+mD
+	O8rQZHzd01faOMZIt4YJdgwdsMbB3h5LtwntAoCj0m2SXS8hgomJ7zMywcG7gEuhpCiD2z+B7l4
+	bDK2i2ZZUM+NmYva+g2TT2EWCyyPgao1UuDRgoFgCM9yfJGl7xv65Ac2QlOl5J3N3kbmIAvviq/
+	4O61otrWivdrh/9zFK8ggI6UNERLPvOLC5yDcEIlj/MTGeRcvE2ugS2gQ1yH+6lIM75nSDed/2f
+	oDSqMHTZZY7o3tJT1IHkuuBOs3GoA7HEmY/laZvlu8MeUPLEFxFtBrpc5EOg==
+X-Received: by 2002:a05:6000:1a8e:b0:439:bde0:62ea with SMTP id ffacd0b85a97d-439fe1ae91fmr2554188f8f.29.1773271056823;
+        Wed, 11 Mar 2026 16:17:36 -0700 (PDT)
+Received: from osama ([156.223.222.252])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-439fe219c41sm2773963f8f.29.2026.03.11.16.17.33
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 11 Mar 2026 09:56:59 -0700 (PDT)
-Date: Wed, 11 Mar 2026 11:56:59 -0500
-From: Andrew Jones <andrew.jones@oss.qualcomm.com>
-To: Jiakai Xu <xujiakai2025@iscas.ac.cn>
-Cc: kvm-riscv@lists.infradead.org, kvm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org,
-        linux-riscv@lists.infradead.org, Albert Ou <aou@eecs.berkeley.edu>,
-        Alexandre Ghiti <alex@ghiti.fr>,
-        Andrew Jones <ajones@ventanamicro.com>,
-        Anup Patel <anup@brainfault.org>, Atish Patra <atish.patra@linux.dev>,
-        Palmer Dabbelt <palmer@dabbelt.com>,
-        Paolo Bonzini <pbonzini@redhat.com>, Paul Walmsley <pjw@kernel.org>,
-        Shuah Khan <shuah@kernel.org>, Jiakai Xu <jiakaiPeanut@gmail.com>
-Subject: Re: [PATCH v3 2/2] RISC-V: KVM: selftests: Fix firmware counter read
- in sbi_pmu_test
-Message-ID: <xno3pqjszessdrkjayjhtz44avckviidwg3orhgqzuj52gw37h@fjsvuvo6bji6>
-References: <20260310055557.835531-1-xujiakai2025@iscas.ac.cn>
- <20260310055557.835531-3-xujiakai2025@iscas.ac.cn>
+        Wed, 11 Mar 2026 16:17:36 -0700 (PDT)
+Date: Thu, 12 Mar 2026 00:17:31 +0100
+From: Osama Abdelkader <osama.abdelkader@gmail.com>
+To: Andrew Jones <andrew.jones@oss.qualcomm.com>
+Cc: Anup Patel <anup@brainfault.org>, Atish Patra <atish.patra@linux.dev>,
+	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+	Andrew Jones <ajones@ventanamicro.com>, kvm@vger.kernel.org,
+	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] RISC-V: KVM: fix PMU snapshot_set_shmem on 32-bit hosts
+Message-ID: <abH4C8RaycAqxySF@osama>
+References: <20260307234355.69831-1-osama.abdelkader@gmail.com>
+ <guxeojlqqz6cfjdilxnuaeyft4cn4lwdrbplat7xgd5w5hod44@uxqymidomd55>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20260310055557.835531-3-xujiakai2025@iscas.ac.cn>
-X-Authority-Analysis: v=2.4 cv=OvdCCi/t c=1 sm=1 tr=0 ts=69b19edd cx=c_pps
- a=7uPEO8VhqeOX8vTJ3z8K6Q==:117 a=cvcws7F5//HeuvjG1O1erQ==:17
- a=kj9zAlcOel0A:10 a=Yq5XynenixoA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=gowsoOTTUOVcmtlkKump:22
- a=pGLkceISAAAA:8 a=EUspDBNiAAAA:8 a=VH6gc7BSxg5OAeS6WkMA:9 a=CjuIK1q_8ugA:10
- a=EXS-LbY8YePsIyqnH6vw:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzExMDE0MyBTYWx0ZWRfX4WKX6RDeTzEz
- hlUCxb4pcirOnj8mp6pwko1vhFX8RMgF9FiODb9feFJVkb7tH4DAX3wlkKj08k3Nd7w9N2+x3IS
- cNvqHENLi17IFA4M4TTMPeuaXQds56sZZeax+Pcsm/2/w7/ZLoDzi0Q1pGY/twvt5Vws+3PPO8Q
- TdXIOY6rUpKiinqoChEsTcxOSgVADu3D1dN5m552onfepJBDtol4toxzKGlyxk8BZrivYl5/JQ1
- ybs/fxxToIdxw5qi9UP9x9CmIe+74O7wpzeoy4AI4ySL0R8HvQlIcm8SToY4UKmlW9X8dUy6mAG
- JIgar8aZh2/F7gqfwkbHdTwS6ZblQzfmLN17WOnLGE1KTL7gX1mb6Vt6nmsiR3bxb9pExqZ8v57
- 5Mb6Z+QPvHwtFdueT+gbxHn4AqzBNfG5JjNPDsFaWJOpZQuMbgEaUm4YaU3fhofAxC/kjWYb7Wv
- ytDUMU4sV8hYEzxY6qA==
-X-Proofpoint-GUID: SN9pY7weXpLuM_iSEuxXLn17CiTl2PH5
-X-Proofpoint-ORIG-GUID: SN9pY7weXpLuM_iSEuxXLn17CiTl2PH5
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-03-11_02,2026-03-09_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 priorityscore=1501 lowpriorityscore=0 impostorscore=0
- phishscore=0 malwarescore=0 suspectscore=0 adultscore=0 spamscore=0
- bulkscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
- adjust=0 reason=mlx scancount=1 engine=8.22.0-2602130000
- definitions=main-2603110143
+In-Reply-To: <guxeojlqqz6cfjdilxnuaeyft4cn4lwdrbplat7xgd5w5hod44@uxqymidomd55>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260311_095702_722781_9FBAC848 
-X-CRM114-Status: GOOD (  26.24  )
+X-CRM114-CacheID: sfid-20260311_161739_618524_D600F454 
+X-CRM114-Status: GOOD (  20.41  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -150,122 +103,58 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Tue, Mar 10, 2026 at 05:55:57AM +0000, Jiakai Xu wrote:
-> The current sbi_pmu_test attempts to read firmware counters without
-> configuring them first with SBI_EXT_PMU_COUNTER_CFG_MATCH.
+On Mon, Mar 09, 2026 at 04:12:43PM -0500, Andrew Jones wrote:
+> On Sun, Mar 08, 2026 at 12:43:54AM +0100, Osama Abdelkader wrote:
+> > When saddr_high != 0 on RV32, the goto out was unconditional, causing
+> > valid 64-bit addresses to be rejected. Only goto out when the address
+> > is invalid (64-bit host with saddr_high != 0).
+> > 
+> > Fixes: c2f41ddbcdd7 ("RISC-V: KVM: Implement SBI PMU Snapshot feature")
+> > Signed-off-by: Osama Abdelkader <osama.abdelkader@gmail.com>
+> > ---
+> >  arch/riscv/kvm/vcpu_pmu.c | 5 +++--
+> >  1 file changed, 3 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/arch/riscv/kvm/vcpu_pmu.c b/arch/riscv/kvm/vcpu_pmu.c
+> > index 4d8d5e9aa53d..045099ca904b 100644
+> > --- a/arch/riscv/kvm/vcpu_pmu.c
+> > +++ b/arch/riscv/kvm/vcpu_pmu.c
+> > @@ -425,9 +425,10 @@ int kvm_riscv_vcpu_pmu_snapshot_set_shmem(struct kvm_vcpu *vcpu, unsigned long s
+> >  	if (saddr_high != 0) {
+> >  		if (IS_ENABLED(CONFIG_32BIT))
+> >  			saddr |= ((gpa_t)saddr_high << 32);
+> > -		else
+> > +		else {
+> >  			sbiret = SBI_ERR_INVALID_ADDRESS;
+> > -		goto out;
+> > +			goto out;
+> > +		}
 > 
-> Previously this did not fail because KVM incorrectly allowed the read
-> and accessed fw_event[] with an out-of-bounds index when the counter
-> was unconfigured. After fixing that bug, the read now correctly returns
-> SBI_ERR_INVALID_PARAM, causing the selftest to fail.
+> nit: Could add the {} to the if-arm too in order to keep things balanced.
+> Otherwise,
 > 
-> Update the test to configure a firmware event before reading the
-> counter. Also add a negative test to ensure that attempting to read an
-> unconfigured firmware counter fails gracefully.
+> Reviewed-by: Andrew Jones <andrew.jones@oss.qualcomm.com>
 > 
-> Signed-off-by: Jiakai Xu <xujiakai2025@iscas.ac.cn>
-> Signed-off-by: Jiakai Xu <jiakaiPeanut@gmail.com>
-> ---
-> V2 -> V3:
-> - Removed unnecessary BIT(ret.value) & counter_mask_available check.
-> - Asserted ret.value == i after successful CFG_MATCH.
-> - Fixed eidx construction in SBI_EXT_PMU_COUNTER_CFG_MATCH.
-> ---
->  .../testing/selftests/kvm/include/riscv/sbi.h | 37 +++++++++++++++++++
->  .../selftests/kvm/riscv/sbi_pmu_test.c        | 20 +++++++++-
->  2 files changed, 56 insertions(+), 1 deletion(-)
-> 
-> diff --git a/tools/testing/selftests/kvm/include/riscv/sbi.h b/tools/testing/selftests/kvm/include/riscv/sbi.h
-> index 046b432ae896..16f1815ac48f 100644
-> --- a/tools/testing/selftests/kvm/include/riscv/sbi.h
-> +++ b/tools/testing/selftests/kvm/include/riscv/sbi.h
-> @@ -97,6 +97,43 @@ enum sbi_pmu_hw_generic_events_t {
->  	SBI_PMU_HW_GENERAL_MAX,
->  };
->  
-> +enum sbi_pmu_fw_generic_events_t {
-> +	SBI_PMU_FW_MISALIGNED_LOAD	= 0,
-> +	SBI_PMU_FW_MISALIGNED_STORE	= 1,
-> +	SBI_PMU_FW_ACCESS_LOAD		= 2,
-> +	SBI_PMU_FW_ACCESS_STORE		= 3,
-> +	SBI_PMU_FW_ILLEGAL_INSN		= 4,
-> +	SBI_PMU_FW_SET_TIMER		= 5,
-> +	SBI_PMU_FW_IPI_SENT		= 6,
-> +	SBI_PMU_FW_IPI_RCVD		= 7,
-> +	SBI_PMU_FW_FENCE_I_SENT		= 8,
-> +	SBI_PMU_FW_FENCE_I_RCVD		= 9,
-> +	SBI_PMU_FW_SFENCE_VMA_SENT	= 10,
-> +	SBI_PMU_FW_SFENCE_VMA_RCVD	= 11,
-> +	SBI_PMU_FW_SFENCE_VMA_ASID_SENT	= 12,
-> +	SBI_PMU_FW_SFENCE_VMA_ASID_RCVD	= 13,
-> +
-> +	SBI_PMU_FW_HFENCE_GVMA_SENT	= 14,
-> +	SBI_PMU_FW_HFENCE_GVMA_RCVD	= 15,
-> +	SBI_PMU_FW_HFENCE_GVMA_VMID_SENT = 16,
-> +	SBI_PMU_FW_HFENCE_GVMA_VMID_RCVD = 17,
-> +
-> +	SBI_PMU_FW_HFENCE_VVMA_SENT	= 18,
-> +	SBI_PMU_FW_HFENCE_VVMA_RCVD	= 19,
-> +	SBI_PMU_FW_HFENCE_VVMA_ASID_SENT = 20,
-> +	SBI_PMU_FW_HFENCE_VVMA_ASID_RCVD = 21,
-> +	SBI_PMU_FW_MAX,
-> +};
-> +
-> +/* SBI PMU event types */
-> +enum sbi_pmu_event_type {
-> +	SBI_PMU_EVENT_TYPE_HW = 0x0,
-> +	SBI_PMU_EVENT_TYPE_CACHE = 0x1,
-> +	SBI_PMU_EVENT_TYPE_RAW = 0x2,
-> +	SBI_PMU_EVENT_TYPE_RAW_V2 = 0x3,
-> +	SBI_PMU_EVENT_TYPE_FW = 0xf,
-> +};
-> +
->  /* SBI PMU counter types */
->  enum sbi_pmu_ctr_type {
->  	SBI_PMU_CTR_TYPE_HW = 0x0,
-> diff --git a/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c b/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c
-> index 924a335d2262..9404577e4ad5 100644
-> --- a/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c
-> +++ b/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c
-> @@ -436,6 +436,7 @@ static void test_pmu_basic_sanity(void)
->  	struct sbiret ret;
->  	int num_counters = 0, i;
->  	union sbi_pmu_ctr_info ctrinfo;
-> +	unsigned long fw_eidx;
->  
->  	probe = guest_sbi_probe_extension(SBI_EXT_PMU, &out_val);
->  	GUEST_ASSERT(probe && out_val == 1);
-> @@ -461,7 +462,24 @@ static void test_pmu_basic_sanity(void)
->  			pmu_csr_read_num(ctrinfo.csr);
->  			GUEST_ASSERT(illegal_handler_invoked);
->  		} else if (ctrinfo.type == SBI_PMU_CTR_TYPE_FW) {
-> -			read_fw_counter(i, ctrinfo);
-> +			/* Read without configure should fail */
-> +			ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_FW_READ,
-> +					i, 0, 0, 0, 0, 0);
-> +			GUEST_ASSERT(ret.error == SBI_ERR_INVALID_PARAM);
-> +
-> +			/*
-> +			 * Try to configure with a common firmware event.
-> +			 * If configuration succeeds, verify we can read it.
-> +			 */
-> +			fw_eidx = ((unsigned long)SBI_PMU_EVENT_TYPE_FW << 16) |
-> +					  SBI_PMU_FW_ACCESS_LOAD;
-> +
-> +			ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_CFG_MATCH,
-> +					i, 1, 0, fw_eidx, 0, 0);
-> +			if (ret.error == 0) {
-> +				GUEST_ASSERT(ret.value == i);
-> +				read_fw_counter(i, ctrinfo);
-> +			}
->  		}
->  	}
->  
-> -- 
-> 2.34.1
+> Thanks,
+> drew
 >
 
-Reviewed-by: Andrew Jones <andrew.jones@oss.qualcomm.com>
+Hi Andrew,
+I'm going to do that in v2, thanks.
+Thanks,
+Osama 
+
+> >  	}
+> >  
+> >  	kvpmu->sdata = kzalloc(snapshot_area_size, GFP_ATOMIC);
+> > -- 
+> > 2.43.0
+> > 
+> > 
+> > -- 
+> > kvm-riscv mailing list
+> > kvm-riscv@lists.infradead.org
+> > http://lists.infradead.org/mailman/listinfo/kvm-riscv
 
 -- 
 kvm-riscv mailing list
