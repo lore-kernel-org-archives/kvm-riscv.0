@@ -4,148 +4,140 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1CB6F105F79C
-	for <kvm-riscv@archiver.kernel.org>; Fri, 13 Mar 2026 11:38:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7D054105F7A6
+	for <kvm-riscv@archiver.kernel.org>; Fri, 13 Mar 2026 13:27:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
-	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
-	List-Unsubscribe:List-Id:MIME-Version:In-Reply-To:From:References:Cc:To:
-	Subject:Date:Message-ID:Reply-To:Content-ID:Content-Description:Resent-Date:
-	Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Owner;
-	bh=6ZyOrgszwg8w+R9YdinI6/kI/KZmb3UKNr3UZj1JCfw=; b=GKoDHQEZVs25X/oDHoe3AVlu8f
-	gU7ylmavWFUMrZspiFAi7GG5+C0dRbOMIBhOrhzA9uNPK/ZgwGXvrbSAXbAdK60WP441RgGXIm3Eu
-	ZA97UmgtxawcxFfedjfHiW2+q4cMKyZ6czHqI3qTK8IW9WgqV1jCGGSlJq3ifwm8GGwFI8aDP2N5Y
-	3RqGFql4lx7RR1HEkXa17NLxzNix2FTwWXMWZuzY3F0yUtkVlAnmwXLCP6bqFr2v6hNSFepLt9sUe
-	zB0ATr2toseLCv9wZcN3/3i2+sBjpOIoNLKqBdE0rD51JLyHnBjZ7EqrnrixCTfs2O7lsgTBIeOyd
-	4URKtxLQ==;
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:References:Subject:From:To:
+	Cc:Message-Id:Date:Mime-Version:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=u3BWUCeQMC8gqdZyGqF5uovkRPXgE9FVFoYeW1Ae/nE=; b=z8IylE5iwGxE0m
+	jsOpxxMkd7fpE1jkPsKOPdk+rVvqKE78wsSghXMs5IkMvhF29FnfhmI1VP+qd08afwjUrHaincGPC
+	ugKCAPKr2oWSKhSYMfbGz6pKrsv6tdteRLgTLn5eAclAUjfvdIxxVMvJ7aG/eDerDkYg6HB3bryKt
+	VlttwwgYcowWLFHXnqLmaq9Sx+4L8Zp/EYsbYPifTIKcLDHz+2jAGnjZGxCWLD0bPFjcE28oVRND3
+	voDP05tFQ7CODiYhRl1lhM4uhoO3b4LbS43UiVs5qtPY2Yg6N9erb4gj5OqegVdUau4Oqf6OUPf8B
+	2cuKq4cr1lIRph7OL0sg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1w10qz-000000002p5-3Cu7;
-	Fri, 13 Mar 2026 11:38:53 +0000
-Received: from mail-koreacentralazolkn190130003.outbound.protection.outlook.com ([2a01:111:f403:d40f::3] helo=SEYPR02CU001.outbound.protection.outlook.com)
+	id 1w12Y3-00000000EeQ-0kQM;
+	Fri, 13 Mar 2026 13:27:27 +0000
+Received: from mx0a-0031df01.pphosted.com ([205.220.168.131])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1w10qx-000000002oQ-3seW;
-	Fri, 13 Mar 2026 11:38:53 +0000
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=VfX3R0DytZ/HDbLvBz9Y69zZsELywc6J3X5MvmYtf+6drEhAwShIiHI/2DO02sxdlopY+39K6+c6kz9j07smp7lpSOt6jQy8VY+IuELWuCg9XLUpQcKOcV+Ao7sfADn2dgyS9fg+w3w6auk5WUHLZpGF6JAOBGceJqOrNAattmts5XTyKL/P4FHWyg3WtRDANjNkx3tzwjxQix3tbccnaB5atQjIC98AaAxmsNA8wuRnnyCSpONn1KOA8ZQdEGIeLDZ6dII/BoYNYrcWcID0Cd/02ePvLdFw+niqU3NdOj8RUitBddadX5k/AIpiSYV47224H81eBIGAEfXVaK16XQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=VCnYrDYI+82ltK4QHNad8efUggo3ef48gZ1k3T7zg14=;
- b=nR2hNYKgg65/bEgq5C2GP8LI8Kd6uHba5Fx8isqLTYV76QMLhGJwxaU4dPTYy9JXN7xIUde5Axt7xbr/kIvr4TgHBGXtZWp+eX4kfySybGabYLyluaHso6p2i96t4mgqQK+mFFTuxVgzoSDqCWgQFsLjSc3cJ6aNPflrG3Bwro2q6kXQVOQMYLyqi1Xs1trYYS699S/YSKUP2cmUWTeUuW45Luy90oW3/bUxjuHaIiCID6y3gEyIvEwKtn/J7k/DosFTR1p7Q28X011sA1k1Oj1py/8IulRVu1V9Rj1CejbVX5eIT6ghe6jcpOj3Vi+cr9DaOYn4u06UBPvVDVCRVQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
- dkim=none; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=hotmail.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=VCnYrDYI+82ltK4QHNad8efUggo3ef48gZ1k3T7zg14=;
- b=AfFLfTRGfbF3b4CPM3JcBA5lPeX77EewQC79k0jzSXmwQmYkXY99KjhXy+MKGuDZ/a3K/weIyFJsnn39P/MlE8ooqb/MPVXRIXWGmOeyqTYd90Y7B4Py8vwwRbdmisrtRkzZBDqo21I63rkTtwKgeWTW7lzYZjNLQ7hFJToPF8pmvTpWdKRc0Ar1/xFRKIWyQVHkYnNj/3oZkycjgmtLcJChBU12tI8E6rFVcZYMLwtseLBx2uEE/YMXXgPRgKX4KsZtg8fJSp7sDGdJYO1ShlxLGUR6JUIHnpM8aZj2r8IwjSAXh7wvurEpuNPNbM2kPhx0M9t9Dxwy09ckrnByVQ==
-Received: from SE3PR04MB8922.apcprd04.prod.outlook.com (2603:1096:101:2e9::7)
- by SEYPR04MB6555.apcprd04.prod.outlook.com (2603:1096:101:b9::11) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9700.15; Fri, 13 Mar
- 2026 11:22:45 +0000
-Received: from SE3PR04MB8922.apcprd04.prod.outlook.com
- ([fe80::3450:f139:5238:8f58]) by SE3PR04MB8922.apcprd04.prod.outlook.com
- ([fe80::3450:f139:5238:8f58%6]) with mapi id 15.20.9700.015; Fri, 13 Mar 2026
- 11:22:45 +0000
-Message-ID: <SE3PR04MB892267C1A570CF03E870BAADF345A@SE3PR04MB8922.apcprd04.prod.outlook.com>
-Date: Fri, 13 Mar 2026 19:22:37 +0800
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 2/2] RISC-V: KVM: selftests: Fix firmware counter read
- in sbi_pmu_test
-To: Jiakai Xu <xujiakai2025@iscas.ac.cn>, kvm-riscv@lists.infradead.org,
- kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-kselftest@vger.kernel.org, linux-riscv@lists.infradead.org
-Cc: Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
- Andrew Jones <ajones@ventanamicro.com>, Anup Patel <anup@brainfault.org>,
- Atish Patra <atish.patra@linux.dev>, Palmer Dabbelt <palmer@dabbelt.com>,
- Paolo Bonzini <pbonzini@redhat.com>, Paul Walmsley <pjw@kernel.org>,
- Shuah Khan <shuah@kernel.org>, Jiakai Xu <jiakaiPeanut@gmail.com>
-References: <20260310055557.835531-1-xujiakai2025@iscas.ac.cn>
- <20260310055557.835531-3-xujiakai2025@iscas.ac.cn>
-Content-Language: en-US
-From: "Nutty.Liu" <nutty.liu@hotmail.com>
-In-Reply-To: <20260310055557.835531-3-xujiakai2025@iscas.ac.cn>
-X-ClientProxiedBy: TPYP295CA0030.TWNP295.PROD.OUTLOOK.COM
- (2603:1096:7d0:a::16) To SE3PR04MB8922.apcprd04.prod.outlook.com
- (2603:1096:101:2e9::7)
-X-Microsoft-Original-Message-ID: <f878e7ea-d835-4a0b-a3a8-9cbf20fb450c@hotmail.com>
-MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SE3PR04MB8922:EE_|SEYPR04MB6555:EE_
-X-MS-Office365-Filtering-Correlation-Id: 6ae74547-1c4d-4a77-2c7f-08de80f2d993
-X-Microsoft-Antispam: BCL:0;ARA:14566002|51005399006|6090799003|19110799012|12121999013|7042599007|8060799015|15080799012|5072599009|461199028|23021999003|40105399003|440099028|3412199025;
-X-Microsoft-Antispam-Message-Info: =?utf-8?B?WmVWb3U1RlFRRkpjVXgrNFArOTA1MkEyOEZWbkF1OFpjMUtWNTZBY0tMS2ps?=
- =?utf-8?B?TVZWVTBVNldFRVpFR2tkZjFoWU5qeThOdHpoM2QyWjdXQU1TRWVaTGtNTW5h?=
- =?utf-8?B?bG1KRmN4eHpScEFwUnpkVVVUSXhPdjZTcnh3ZExEK1ZyTkFoSVBGdGd5ZVdX?=
- =?utf-8?B?SUhjbHN1NUkyeXlFWS90clNDazd2cFlSSmljQUFydjFTTmhOb0VIZWM4WTFS?=
- =?utf-8?B?OUxaYnA1eVgzajdJZ3FacmV0RGpMVEZMUTg5NjdVSDdITHB0UFRDcGt6YTNs?=
- =?utf-8?B?ZVFvVE9KQXlzN0pSZmJiVnhyY285MmsxVmpRQ01oMVpES3hZU3BsVHVGQ3Vp?=
- =?utf-8?B?QTA0YjgzQkdVQ1Zjb0RpT0doK2hqMHRUNzI5L3pqYjF1R016VkExNy9pZXBE?=
- =?utf-8?B?QWorNjhMdDNFVHZzSkN6S3BjejRXb1pVUzM3c2hQVWgrdXhpcWN5VzROMkVk?=
- =?utf-8?B?MG5xenZlWWYrZmN5TUh1SjNYRE9seTI4RGJ4K3BZUGdhdU9FaEQ3aElwVFdU?=
- =?utf-8?B?RDB3bUpPQzd5eHB3UjJuWXJQa0E2ZGhIcXZxLzRPZURTSkxSVDF5cFY5OGZF?=
- =?utf-8?B?NVhRRGxxMGJyZm5nVERsb3JHNmllU01VOTNXZGRIZ3NUNTBxNTc5MTNNMjky?=
- =?utf-8?B?aEo4TEZaK1l0SXhrQ1Y3WjdYVXVZM1VoY3JaNm9KUkF1Mkdtam1YNjFocWJE?=
- =?utf-8?B?WXV0QlE2VXZvMTNaUVJ6eVRON1phSmN1WnJlcHdmVmJDaExFaVJ0bmVNWjJi?=
- =?utf-8?B?STh2Y1NFQmJoZWJhWlpSQVJ3Q09rcGVmWWNZWGFXQWVpcXFNeXZ2bkpHM25N?=
- =?utf-8?B?MGdNQk9mZnFhSjZLMkN5aUhrSFZQeWRvYUxYOUNQRktqYktxemZiTHNRdkp1?=
- =?utf-8?B?K1AydDc1bjJPMEFCaWZEL0ZTeGcxZUt1R3pKZGFHM0V0VTVpZ1czbVNTZ1JP?=
- =?utf-8?B?S01WR1JhZDdDV2MrSzQ1N2lEUHZYWHd4YmUvSkpUY2FIdW4wMGZiajg5cG0v?=
- =?utf-8?B?T3JhQWo4SXZ5djJRWmNGTkt4elRPVkVsRDJndlV0TWxZd3FHT3BHMVpVQXJ5?=
- =?utf-8?B?VSs3ZzltYS82QmFQYzJwWjJXNm5NL3I3OFIwVm13MmpWb3RPeDRSZGtJcnFH?=
- =?utf-8?B?Mlg1RFFicmQzMXNKdjZ5S3J6bU5qdTFGWHFsTk12ZGVwdm80N1RBUUUwVEhz?=
- =?utf-8?B?YzQ4aXpmY2pxQVlxdC9hOGNiVGhvWG5Kc0hIdnBYL2hlbWZSMGhvNFNaV0k4?=
- =?utf-8?B?QkZyT2hlOFJrZkkvcFZTUzFFTmR2aW1vY3J6aklqSHFSMStjSW5qbzZYY2hJ?=
- =?utf-8?Q?/COSIMm9/B21q0xml+FiGMZ41A56m4f41x?=
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?VEZWUnRQTkFoOVVBT293WEVTOFdSMnVSenJETWpia3c1RlFObVhqdGN1MU41?=
- =?utf-8?B?QWc0ZWhFY0EzY3hWM3VhZTdScFFCSlA3V05PN2JGS1V5MEN3ckhyaWFmakJH?=
- =?utf-8?B?MC83YlRGU2lqZTZUNFFVdWRyOHZoeUxPTDhweXdWVUxna2NVMHpFNHg2R3BX?=
- =?utf-8?B?RDhPbmsvQ0JsZFFwanlHQWdIbHFuTk9yV3lZV05ESDMvZmtodkprVFJwamxs?=
- =?utf-8?B?QlRNWU42L2JLQkZQRThjeGtmaU5Jc1hsVmNpUEwyOFl1N081QUY3WEI4M2Js?=
- =?utf-8?B?cllCOVNOQzJqRitZQmd6enkyU3daZWRoL2lTTm9aODBHRFZmc1JOZ3hwOHVn?=
- =?utf-8?B?TWp0emYvY1RKSnNsVXVYYmpGQkl6ZE1yOXViVDVlSXBNaWVSeVNFd1BCSFBM?=
- =?utf-8?B?a3hteUhpR0xycnIxcksrYjBEc21jVks4OEd1U2dabGtSaU1kVWtSTG5HYUh5?=
- =?utf-8?B?NzBONkN6Q1czdVF0ODBGL1U3M0lhYlBCUjlyUWNVcnVyWDJ5RzMvZ2VWbFZH?=
- =?utf-8?B?NS9ObXBxU3RVSklWNUlvREg3ekR6cmlySWYvL3NpaVBlVEJobUlIaWI4a0lt?=
- =?utf-8?B?cjUreE83Nm5oMWUwRGpBMnBKaFl2alJjckp0NU0wSUFzR3RDQjRHOW0rQTQ2?=
- =?utf-8?B?SFZib0J0YU0yMCszMFo3MFV4Wkh0SG4xV29DVEJHTVpvb0wrOE5SUDQwcjIz?=
- =?utf-8?B?ZjF6RGJhYTZ5NWVxalByU0ovZVNzcUp3REhMMGpmNDk0d2ZqY0FjTTdQdTQr?=
- =?utf-8?B?d1k3VXkwRHR2bFZDVFFYZ01hSS9pekN5c2RrQ2g5Vmx4bTN2Wk5UT0FQWlV2?=
- =?utf-8?B?dDhkemFtdmJFWTBEVnR2L2JkdTRtQ3hHNjJyYmdwUlAxV1lJZ25xTDV5Yk1Y?=
- =?utf-8?B?V1k2dG44V0dHazhnckVGcWlyZjNLNG9tYlVBa0JuRzh2THJMMnB0aDRXekZ5?=
- =?utf-8?B?QjdRaDRsR0ZaeldWRFdNTkNaTENZMVZKVmd6UWRIcFlZUGFqT2FOdnhudDNS?=
- =?utf-8?B?RGRuUjR6bXNSV2JOWmNGYjRFNlVyTFVpaC9haS8wZnFpTXlseXFtbTZTYVFp?=
- =?utf-8?B?MEsvczR1cmF5SVlhNmFZNER2REN2OHFHUVFSTnRhWkFmRXkxM3VGVDQwcCtW?=
- =?utf-8?B?MVVFMG5oSHRKcGhURUdma1duRUdnVXJrNlhrZlNsREIyNWZRQjI3RElra0Ez?=
- =?utf-8?B?TUkwWXZXcXgvOE13c2FuKzhMNndnWXNlMmlJa1JyQzVDM3BFSnVxYkF1Z3hU?=
- =?utf-8?B?WU5YTUZ2L0gyNUs3NUZrd2k1SmZ1ckJEV2FTelRST1JVNVR6a1lBZXN1K2pX?=
- =?utf-8?B?VUNhSUdpRlVsMlVxZkFZTXo5WENWK3dGZ3FrVWtCUDNJeDBaOEc3ZW90V0o2?=
- =?utf-8?B?cG1teCtjYk9FcTQvbXZSSnlRVDlIaVpDK0U2ZHVxRGdiWVQ2emNBTmxObWxw?=
- =?utf-8?B?eERheWh4SDJ3Z3BrNmdDSG9tZlpOWnhmMEErei96ejlOQnRiUDUySE51MHpq?=
- =?utf-8?B?RFV4VmFzOFV6UDZiUmlodkRMMTdGdHpJcWdJS3hSYWk4SWR4M2FLUi9MQW1s?=
- =?utf-8?B?VHpubXV4ZStYRDNOVU5KaXJtTGZRWjFuVE9JSzJvVHlhWlpHakUwRDJLU0Vo?=
- =?utf-8?B?TGVCbHBSdHVMQ3k4YlhCNVBNejNNeDFkSEM4TkpUcytzOGR3cmhKUE5taGtY?=
- =?utf-8?B?WDNoMjloakdLdnl4Rit3N2U5OUJPdWJZSzBnQVVMLzBNbS81cnFzZnh3SlFt?=
- =?utf-8?B?eUhzZlBWUFRNN3RtK2t1S1FXNEJzYzJ3OVJ1SUJ5ZWJkM3ZZZGIzejE5UzJw?=
- =?utf-8?B?TUxvRXNqSWRmNS91OC9hTWh6M1dqbElJODFOSGNJZVlWaU9hL3YzZVBRdmtE?=
- =?utf-8?Q?7giV5wxXQloGD?=
-X-OriginatorOrg: sct-15-20-9412-4-msonline-outlook-c3e7a.templateTenant
-X-MS-Exchange-CrossTenant-Network-Message-Id: 6ae74547-1c4d-4a77-2c7f-08de80f2d993
-X-MS-Exchange-CrossTenant-AuthSource: SE3PR04MB8922.apcprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Mar 2026 11:22:45.6105
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
-X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SEYPR04MB6555
+	id 1w12Y0-00000000Eby-21Fo
+	for kvm-riscv@lists.infradead.org;
+	Fri, 13 Mar 2026 13:27:25 +0000
+Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62DBrXkA4140736
+	for <kvm-riscv@lists.infradead.org>; Fri, 13 Mar 2026 13:27:23 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	1nlW109bb/HB/QDCXch5lmGmv1Xj5QyHaZAnML++DYY=; b=Y+ZaNBCQfFQuQhBo
+	6p1N4DaISDil9CT8DRrLzQLJ1xsdyP1T9f8tpL7qVgwl8wwjq3yGeQWew4lQ7rO9
+	I0BnNBvdxN+qjWkkby8onSiinQSsyp5cl11WdGnDbVLxdJPjHlAhP0eUG7KBb64T
+	yr8FuoluaAhmgHc7GpDxTYrgrg9TRYwXs4W5l0QJfeC/8hCsmsKmpwZJ98MY/fIv
+	ZyF0g/UDtgkcZE6qpa7uO3NDB7ybHwTIRGTeR9ApSABL48t6zfG9rsncNEfp6hvk
+	pK3nttJexlTW3kX37DE1LoXdZfAyKX9kFZ0ncQ5t9XiBG4fbRwsskoa3HXyQtJ+p
+	P7jFYw==
+Received: from mail-qk1-f200.google.com (mail-qk1-f200.google.com [209.85.222.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4cvbn29rh1-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <kvm-riscv@lists.infradead.org>; Fri, 13 Mar 2026 13:27:23 +0000 (GMT)
+Received: by mail-qk1-f200.google.com with SMTP id af79cd13be357-8cd849cd562so1376534785a.0
+        for <kvm-riscv@lists.infradead.org>; Fri, 13 Mar 2026 06:27:23 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1773408442; x=1774013242; darn=lists.infradead.org;
+        h=in-reply-to:references:subject:from:to:cc:message-id:date
+         :content-transfer-encoding:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=1nlW109bb/HB/QDCXch5lmGmv1Xj5QyHaZAnML++DYY=;
+        b=Jkzor4DbXCDghOuloieuxsZwJOkRqOlYEU8fTzN9lIvrHD3p/iBIqQzOWOjpqAtbhp
+         1j2Lur+MsfmqLulKpp0S8Aur7oJZx3SUPnW/fXfhwiJGcOnnCEJgvawp22n6HMdTYYLH
+         mLPbTfOudnE9n4fME58skRgCPD3FBIGHvAzaT+bWpF++/o15ejegyH0Ii+w33NkDvHYK
+         HTvLEY7EJTAMHI4bqeCC/3wZw8sKm4jqpTf8ZhVIFqiVS3L4NwJkYJfonQVKvkLVeKV8
+         lmOnGY/d9Cau/K6gcud8Y+CvTPq/ooVJAbLaa0dlDhZs6G4TYXBiZzNeHZGJIyR1+vis
+         +8Vg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1773408442; x=1774013242;
+        h=in-reply-to:references:subject:from:to:cc:message-id:date
+         :content-transfer-encoding:mime-version:x-gm-gg:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=1nlW109bb/HB/QDCXch5lmGmv1Xj5QyHaZAnML++DYY=;
+        b=BK7dtFrn4xH3xyVETNGfkIDYw+DmMeO23YLPNVbVfWMza2gHsrGYK02ne3yYxY6PyZ
+         qS8Ay0fx2DI+MUTawatd/7X6PhqiO6sFMOG0rXPOQniKlNA7DDP1tlyKeADmf0T7/mE2
+         NkTZawJfFCXk8ACWZMnbtZxwdOBrwItKFx5G23Y6ZTTLjK/Zs6vW8So8OvB1fa3PWiij
+         RpS6P2ezS0IUjT7IoDpcROKMVuhHuFrw6UrPWm4ZO+9nVp0eD/65a+t/mrzeP4ipJmc6
+         IyG13neg1tr0+YVts7Kn6rl8WeTf2+ug/7Z9F38k6YYWOKMN+AIAQCbmZPeKNL+U9Eih
+         7iMQ==
+X-Forwarded-Encrypted: i=1; AJvYcCVs8uIDqQ+nH6J4sEdEzPxvxyoOjrGci3fSd+/m57ID7b6BktFj+alAW4fdIduLFXhu3vg5BA6O47M=@lists.infradead.org
+X-Gm-Message-State: AOJu0YzBus37gzX3GCdLIdANgxsxZyi72M6ewJvxzwEfWZhh7gf4db3+
+	71xv1Dee0OJT6/g2o5U+IhOQ3CZBXRtvbbcke0tq0Vy5u2UzM01YQZ3ftDKKCiJxP8nJPa4MCB5
+	hsW+F2Ea9tZRajOe0UHHrbYHhtA85sE7VV3iSv9LaUs/uHqIzs2dBEQ06CYUgFBDRjSvr
+X-Gm-Gg: ATEYQzznDrs56gVgVWkV9yyL0Tjc/PO8k7OGfJHnEpWU2nWDf6FF0HRyxsc6uZmrN4f
+	CgLwgyLgV8ffG5KmFrpiljZ5uAKanJrHEdMk1TqKex8of9NXLlRv/sGPWcCe4Sk352gDzpagj/c
+	Fznugy/2j71e7ZVkD9eQIPL7R9LxYobRlPEqFl9u1cdgJ4P5ucY0pUDYybUn551+yga512aOarC
+	4fM9Vtq9iXnc/hGrTZuaRnr8LmCN/4AyuqieBdyn3bsqVJrNBxWRCpsNwboqy+owiTfKWcTfoBF
+	tjEtTyn3WCb+LErvQOpK8XJhQb4fT2GudjccjOJxTeT3bUvQz5lM3lItVhTjjwm5Zs0615an96R
+	FsxvJ+xOuKzINvispVi1fvUtmS66ElOmmE6H/nk1Puhp8nNib9g97TxF3oq6b
+X-Received: by 2002:a05:620a:2a11:b0:8cd:871c:909d with SMTP id af79cd13be357-8cdb5b5fc9emr450720885a.53.1773408441952;
+        Fri, 13 Mar 2026 06:27:21 -0700 (PDT)
+X-Received: by 2002:a05:620a:2a11:b0:8cd:871c:909d with SMTP id af79cd13be357-8cdb5b5fc9emr450714985a.53.1773408441464;
+        Fri, 13 Mar 2026 06:27:21 -0700 (PDT)
+Received: from localhost (ip-86-49-249-15.bb.vodafone.cz. [86.49.249.15])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-439fe23afc5sm19683402f8f.39.2026.03.13.06.27.20
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 13 Mar 2026 06:27:20 -0700 (PDT)
+Mime-Version: 1.0
+Date: Fri, 13 Mar 2026 14:27:19 +0100
+Message-Id: <DH1OTQ0FHZLN.1RCIA8ERD3VGF@oss.qualcomm.com>
+Cc: "Palmer Dabbelt" <palmer@dabbelt.com>, "Paul Walmsley" <pjw@kernel.org>,
+        "Alexandre Ghiti" <alex@ghiti.fr>, "Shuah Khan" <shuah@kernel.org>,
+        "Anup
+ Patel" <anup@brainfault.org>,
+        "Andrew Jones"
+ <andrew.jones@oss.qualcomm.com>,
+        <kvm-riscv@lists.infradead.org>, <kvm@vger.kernel.org>,
+        <linux-riscv@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
+        <linux-kselftest@vger.kernel.org>
+To: "Anup Patel" <anup.patel@oss.qualcomm.com>,
+        "Paolo Bonzini"
+ <pbonzini@redhat.com>,
+        "Atish Patra" <atish.patra@linux.dev>
+From: =?utf-8?q?Radim_Kr=C4=8Dm=C3=A1=C5=99?=
+ <radim.krcmar@oss.qualcomm.com>
+Subject: Re: [PATCH 09/27] RISC-V: KVM: Don't check hstateen0 when updating
+ sstateen0 CSR
+References: <20260120080013.2153519-1-anup.patel@oss.qualcomm.com>
+ <20260120080013.2153519-10-anup.patel@oss.qualcomm.com>
+In-Reply-To: <20260120080013.2153519-10-anup.patel@oss.qualcomm.com>
+X-Proofpoint-ORIG-GUID: tijXLoJHoFeLoL7Dpuor2K0IiLgZEiIk
+X-Proofpoint-GUID: tijXLoJHoFeLoL7Dpuor2K0IiLgZEiIk
+X-Authority-Analysis: v=2.4 cv=ZKfaWH7b c=1 sm=1 tr=0 ts=69b410bb cx=c_pps
+ a=hnmNkyzTK/kJ09Xio7VxxA==:117 a=fuErIE+P63Icv3tqjtEZBw==:17
+ a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=M51BFTxLslgA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=eoimf2acIAo5FJnRuUoq:22
+ a=EUspDBNiAAAA:8 a=MPGxGW8KdBHyhiCmLn8A:9 a=QEXdDO2ut3YA:10
+ a=PEH46H7Ffwr30OY-TuGO:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzEzMDEwNyBTYWx0ZWRfX3YyR7XT+BCFA
+ dpgy5jPsMAQH1THYPoRb3fVZlXJBDICvSVD7WZgozGRRVbIjKDeJfVYs+BWXSybCc2IRGMmll0r
+ KSHiHEkgLAw8oOhY3qoCohmq3E/L7qJ0Q3djNg5x8ayouYthAuPb9OlP2x17CVgiWgihZ4pW2Sd
+ L88A9F3910TqqASmybJLJzMFErATApHQq/aL0HJ5tbMHbvxy4NT0GQSqKOE4nlYMRJ5KV2XW7fq
+ +tY3RDXwCU6pvIO8aek7dwCK8UPYOiQEyYAfbMlY4oR5LaQpD0eQdrKRLF0h4OQeZ9rIuBGOjIy
+ RvVKvoqsr+vx1KeUnMYjTqEe9v3ZGIzbdQw+udOBO/xbTZfOC6fcGQ0eKACUiRsEJX4LxW05tQa
+ 8GT855R6NwGCiqlXAC/JmjzOy3wyDRrRmbqn//2cl+TfkvUo2kJAIIEh6bPRiSHvN+EfBNObznK
+ PuHpx8mrjb6nfXYldwQ==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-03-13_02,2026-03-13_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 clxscore=1015 spamscore=0 malwarescore=0 suspectscore=0
+ lowpriorityscore=0 bulkscore=0 adultscore=0 priorityscore=1501 phishscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2603130107
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260313_043851_966014_4AD96A8B 
-X-CRM114-Status: GOOD (  20.28  )
+X-CRM114-CacheID: sfid-20260313_062724_548498_A65FC334 
+X-CRM114-Status: GOOD (  11.09  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -157,132 +149,32 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-
-On 3/10/2026 1:55 PM, Jiakai Xu wrote:
-> The current sbi_pmu_test attempts to read firmware counters without
-> configuring them first with SBI_EXT_PMU_COUNTER_CFG_MATCH.
->
-> Previously this did not fail because KVM incorrectly allowed the read
-> and accessed fw_event[] with an out-of-bounds index when the counter
-> was unconfigured. After fixing that bug, the read now correctly returns
-> SBI_ERR_INVALID_PARAM, causing the selftest to fail.
->
-> Update the test to configure a firmware event before reading the
-> counter. Also add a negative test to ensure that attempting to read an
-> unconfigured firmware counter fails gracefully.
->
-> Signed-off-by: Jiakai Xu <xujiakai2025@iscas.ac.cn>
-> Signed-off-by: Jiakai Xu <jiakaiPeanut@gmail.com>
-> ---
-> V2 -> V3:
-> - Removed unnecessary BIT(ret.value) & counter_mask_available check.
-> - Asserted ret.value == i after successful CFG_MATCH.
-> - Fixed eidx construction in SBI_EXT_PMU_COUNTER_CFG_MATCH.
-> ---
->   .../testing/selftests/kvm/include/riscv/sbi.h | 37 +++++++++++++++++++
->   .../selftests/kvm/riscv/sbi_pmu_test.c        | 20 +++++++++-
->   2 files changed, 56 insertions(+), 1 deletion(-)
->
-> diff --git a/tools/testing/selftests/kvm/include/riscv/sbi.h b/tools/testing/selftests/kvm/include/riscv/sbi.h
-> index 046b432ae896..16f1815ac48f 100644
-> --- a/tools/testing/selftests/kvm/include/riscv/sbi.h
-> +++ b/tools/testing/selftests/kvm/include/riscv/sbi.h
-> @@ -97,6 +97,43 @@ enum sbi_pmu_hw_generic_events_t {
->   	SBI_PMU_HW_GENERAL_MAX,
->   };
->   
-> +enum sbi_pmu_fw_generic_events_t {
-> +	SBI_PMU_FW_MISALIGNED_LOAD	= 0,
-> +	SBI_PMU_FW_MISALIGNED_STORE	= 1,
-> +	SBI_PMU_FW_ACCESS_LOAD		= 2,
-> +	SBI_PMU_FW_ACCESS_STORE		= 3,
-> +	SBI_PMU_FW_ILLEGAL_INSN		= 4,
-> +	SBI_PMU_FW_SET_TIMER		= 5,
-> +	SBI_PMU_FW_IPI_SENT		= 6,
-> +	SBI_PMU_FW_IPI_RCVD		= 7,
-> +	SBI_PMU_FW_FENCE_I_SENT		= 8,
-> +	SBI_PMU_FW_FENCE_I_RCVD		= 9,
-> +	SBI_PMU_FW_SFENCE_VMA_SENT	= 10,
-> +	SBI_PMU_FW_SFENCE_VMA_RCVD	= 11,
-> +	SBI_PMU_FW_SFENCE_VMA_ASID_SENT	= 12,
-> +	SBI_PMU_FW_SFENCE_VMA_ASID_RCVD	= 13,
-> +
-> +	SBI_PMU_FW_HFENCE_GVMA_SENT	= 14,
-> +	SBI_PMU_FW_HFENCE_GVMA_RCVD	= 15,
-> +	SBI_PMU_FW_HFENCE_GVMA_VMID_SENT = 16,
-> +	SBI_PMU_FW_HFENCE_GVMA_VMID_RCVD = 17,
-> +
-> +	SBI_PMU_FW_HFENCE_VVMA_SENT	= 18,
-> +	SBI_PMU_FW_HFENCE_VVMA_RCVD	= 19,
-> +	SBI_PMU_FW_HFENCE_VVMA_ASID_SENT = 20,
-> +	SBI_PMU_FW_HFENCE_VVMA_ASID_RCVD = 21,
-> +	SBI_PMU_FW_MAX,
-> +};
-> +
-> +/* SBI PMU event types */
-> +enum sbi_pmu_event_type {
-> +	SBI_PMU_EVENT_TYPE_HW = 0x0,
-> +	SBI_PMU_EVENT_TYPE_CACHE = 0x1,
-> +	SBI_PMU_EVENT_TYPE_RAW = 0x2,
-> +	SBI_PMU_EVENT_TYPE_RAW_V2 = 0x3,
-> +	SBI_PMU_EVENT_TYPE_FW = 0xf,
-> +};
-> +
->   /* SBI PMU counter types */
->   enum sbi_pmu_ctr_type {
->   	SBI_PMU_CTR_TYPE_HW = 0x0,
-> diff --git a/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c b/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c
-> index 924a335d2262..9404577e4ad5 100644
-> --- a/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c
-> +++ b/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c
-> @@ -436,6 +436,7 @@ static void test_pmu_basic_sanity(void)
->   	struct sbiret ret;
->   	int num_counters = 0, i;
->   	union sbi_pmu_ctr_info ctrinfo;
-> +	unsigned long fw_eidx;
->   
->   	probe = guest_sbi_probe_extension(SBI_EXT_PMU, &out_val);
->   	GUEST_ASSERT(probe && out_val == 1);
-> @@ -461,7 +462,24 @@ static void test_pmu_basic_sanity(void)
->   			pmu_csr_read_num(ctrinfo.csr);
->   			GUEST_ASSERT(illegal_handler_invoked);
->   		} else if (ctrinfo.type == SBI_PMU_CTR_TYPE_FW) {
-> -			read_fw_counter(i, ctrinfo);
-> +			/* Read without configure should fail */
-> +			ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_FW_READ,
-> +					i, 0, 0, 0, 0, 0);
-> +			GUEST_ASSERT(ret.error == SBI_ERR_INVALID_PARAM);
-> +
-> +			/*
-> +			 * Try to configure with a common firmware event.
-> +			 * If configuration succeeds, verify we can read it.
-> +			 */
-> +			fw_eidx = ((unsigned long)SBI_PMU_EVENT_TYPE_FW << 16) |
-> +					  SBI_PMU_FW_ACCESS_LOAD;
-Nit: Also need to align with previous line ?
-
-Otherwise,
-Reviewed-by: Nutty Liu <nutty.liu@hotmail.com>
-
-Thanks,
-Nutty
-> +
-> +			ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_CFG_MATCH,
-> +					i, 1, 0, fw_eidx, 0, 0);
-> +			if (ret.error == 0) {
-> +				GUEST_ASSERT(ret.value == i);
-> +				read_fw_counter(i, ctrinfo);
-> +			}
->   		}
->   	}
->   
-
--- 
-kvm-riscv mailing list
-kvm-riscv@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/kvm-riscv
+MjAyNi0wMS0yMFQxMzoyOTo1NSswNTozMCwgQW51cCBQYXRlbCA8YW51cC5wYXRlbEBvc3MucXVh
+bGNvbW0uY29tPjoKPiBUaGUgaHN0YXRlZW4wIHdpbGwgYmUgcHJvZ3JhbW1lZCBkaWZmZXJlbnRs
+eSBmb3IgZ3Vlc3QgSFMtbW9kZQo+IGFuZCBndWVzdCBWUy9WVS1tb2RlIHNvIGRvbid0IGNoZWNr
+IGhzdGF0ZWVuMC5TU1RBVEVFTjAgYml0IHdoZW4KPiB1cGRhdGluZyBzc3RhdGVlbjAgQ1NSIGlu
+IGt2bV9yaXNjdl92Y3B1X3N3YXBfaW5fZ3Vlc3Rfc3RhdGUoKQo+IGFuZCBrdm1fcmlzY3ZfdmNw
+dV9zd2FwX2luX2hvc3Rfc3RhdGUoKS4KPgo+IFNpZ25lZC1vZmYtYnk6IEFudXAgUGF0ZWwgPGFu
+dXAucGF0ZWxAb3NzLnF1YWxjb21tLmNvbT4KPiAtLS0KPiBkaWZmIC0tZ2l0IGEvYXJjaC9yaXNj
+di9rdm0vdmNwdS5jIGIvYXJjaC9yaXNjdi9rdm0vdmNwdS5jCj4gQEAgLTcwMiwyOCArNzAyLDIy
+IEBAIHN0YXRpYyBfX2Fsd2F5c19pbmxpbmUgdm9pZCBrdm1fcmlzY3ZfdmNwdV9zd2FwX2luX2d1
+ZXN0X3N0YXRlKHN0cnVjdCBrdm1fdmNwdSAqCj4gLQlpZiAocmlzY3ZfaGFzX2V4dGVuc2lvbl91
+bmxpa2VseShSSVNDVl9JU0FfRVhUX1NNU1RBVEVFTikgJiYKPiAtCSAgICAoY2ZnLT5oc3RhdGVl
+bjAgJiBTTVNUQVRFRU4wX1NTVEFURUVOMCkpCj4gLQkJdmNwdS0+YXJjaC5ob3N0X3NzdGF0ZWVu
+MCA9IGNzcl9zd2FwKENTUl9TU1RBVEVFTjAsCj4gLQkJCQkJCSAgICAgc21jc3ItPnNzdGF0ZWVu
+MCk7Cj4gKwlpZiAocmlzY3ZfaGFzX2V4dGVuc2lvbl91bmxpa2VseShSSVNDVl9JU0FfRVhUX1NN
+U1RBVEVFTikpCj4gKwkJdmNwdS0+YXJjaC5ob3N0X3NzdGF0ZWVuMCA9IGNzcl9zd2FwKENTUl9T
+U1RBVEVFTjAsIHNtY3NyLT5zc3RhdGVlbjApOwoKVGhpcyBjb3VsZCBldmVuIGJlIGNvbnNpZGVy
+ZWQgYXMgYSBmaXgsIGFsdGhvdWdoIHRoZXJlIGlzIG5vIGJ1ZyBhdCB0aGUKbW9tZW50IChib3Ro
+IGhvc3QgYW5kIGd1ZXN0IHNzdGF0ZWVuIGFyZSBhbHdheXMgMCkuCkluIHRoZSBmdXR1cmUsIGV4
+ZWN1dGlvbiBvZiBhIGd1ZXN0IG1pZ2h0IGhhdmUgYmVlbiB0YW1wZXJpbmcgd2l0aCB0aGUKaG9z
+dCBzc3RhdGVlbiwgYmVjYXVzZSBzc3RhdGVlbiBpcyBhY3RpdmUgZXZlbiB3aGVuIGhzdGF0ZWVu
+LlNFMD0wLgoKUmV2aWV3ZWQtYnk6IFJhZGltIEtyxI1tw6HFmSA8cmFkaW0ua3JjbWFyQG9zcy5x
+dWFsY29tbS5jb20+CgotLSAKa3ZtLXJpc2N2IG1haWxpbmcgbGlzdAprdm0tcmlzY3ZAbGlzdHMu
+aW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZv
+L2t2bS1yaXNjdgo=
