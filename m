@@ -4,31 +4,31 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C48ABF30296
-	for <kvm-riscv@archiver.kernel.org>; Mon, 16 Mar 2026 01:45:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 767BDF30295
+	for <kvm-riscv@archiver.kernel.org>; Mon, 16 Mar 2026 01:45:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-Id:Date:Subject:Cc
-	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=sruszXuiraT6dEVCmTr7HnDesa8YZECIrW4jCgQJCdg=; b=ubdrrfvTEGdL/c
-	Su94BztbSOBRJlDOaEij0pJDKbIbDQyl/i8gbOk2+ysbKjRKyQS/EW/gMlWaKarDgLqQQJrtu8w0x
-	sNbG+eDcoNc/vDMr5xNcRBOe/Ga0Ei4vnmCgrAoYLIJZtihfSIszI/HtzIPbdhhZzP85+F7oEEo6/
-	zdgSIBCTD8GpXv+5vpXzCn4V3jZwRr7XTRco0qBXmH77MVaVXLkd6eJqZFotUN+s5EkUVB8HtgbwB
-	ezgiOZHGU1pNjiuc21w8MNIYYBrRzJcRrTkH6vvoZl1sYW1Te84rWgYUV3C4ntbaeeRRzx+qoP7DD
-	rWhcS6uXPocgWRlNWS7g==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=VY/zxvSE3FUclWLVdGGep1O31Paj9wB3PAVdeST6xr0=; b=NyTDKFof3cIMEZ
+	wefHLkVjqCjseISCnmyPgM3CiFDCqFPNIgeV61GR9xMMgshvzKioXhHOTtKNuNQQTagwAmh/Esdzs
+	rZkxk6Hd7n9flaS5aDeJBIjODFLwuV+lvkMriYi3Ad8kIaIEkSnU1s3MkYSfAx6KKqQ8AuowRhWVV
+	Jlb0KDFMZ+C207BSiFs3qteFhCKCcKaYi1OwzkLQ5vZ+AC3Qm8mKZUDLed/yd+rU4y3jLp7iF4/7b
+	K7iTY0j3qbxE7ICGYdJXJ+WyWH5cPJ1uI6l2OLDZSJ05EIs/VUhkvxzZSIuyts5Vag+4vUjByuVPq
+	n/SNrjEHiS+Gqk3XLDew==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1w1x1i-000000038T5-0c5p;
-	Mon, 16 Mar 2026 01:45:52 +0000
+	id 1w1x1l-000000038UQ-0aHB;
+	Mon, 16 Mar 2026 01:45:53 +0000
 Received: from smtp21.cstnet.cn ([159.226.251.21] helo=cstnet.cn)
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1w1x1d-000000038Qx-2dzX;
+	id 1w1x1f-000000038R2-1B0U;
 	Mon, 16 Mar 2026 01:45:48 +0000
 Received: from fric.. (unknown [210.73.43.101])
-	by APP-01 (Coremail) with SMTP id qwCowAC3XWm+YLdpa+wzCg--.590S2;
-	Mon, 16 Mar 2026 09:45:34 +0800 (CST)
+	by APP-01 (Coremail) with SMTP id qwCowAC3XWm+YLdpa+wzCg--.590S3;
+	Mon, 16 Mar 2026 09:45:35 +0800 (CST)
 From: Jiakai Xu <xujiakai2025@iscas.ac.cn>
 To: kvm-riscv@lists.infradead.org,
 	kvm@vger.kernel.org,
@@ -44,35 +44,40 @@ Cc: Albert Ou <aou@eecs.berkeley.edu>,
 	Paolo Bonzini <pbonzini@redhat.com>,
 	Paul Walmsley <pjw@kernel.org>,
 	Shuah Khan <shuah@kernel.org>,
-	Jiakai Xu <xujiakai2025@iscas.ac.cn>
-Subject: [PATCH v5 0/2] RISC-V: KVM: Fix array out-of-bounds in firmware counter reads
-Date: Mon, 16 Mar 2026 01:45:31 +0000
-Message-Id: <20260316014533.2312254-1-xujiakai2025@iscas.ac.cn>
+	Jiakai Xu <xujiakai2025@iscas.ac.cn>,
+	Jiakai Xu <jiakaiPeanut@gmail.com>,
+	Andrew Jones <andrew.jones@oss.qualcomm.com>
+Subject: [PATCH v5 1/2] RISC-V: KVM: Fix array out-of-bounds in pmu_ctr_read() and pmu_fw_ctr_read_hi()
+Date: Mon, 16 Mar 2026 01:45:32 +0000
+Message-Id: <20260316014533.2312254-2-xujiakai2025@iscas.ac.cn>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20260316014533.2312254-1-xujiakai2025@iscas.ac.cn>
+References: <20260316014533.2312254-1-xujiakai2025@iscas.ac.cn>
 MIME-Version: 1.0
-X-CM-TRANSID: qwCowAC3XWm+YLdpa+wzCg--.590S2
-X-Coremail-Antispam: 1UD129KBjvJXoW7CF4fXw45Cry8Ar47tF4DXFb_yoW8Xr1fpF
-	W3Ka4YkrykJrs7t343A3yktw15Xrs5Ca98GryxGF18Cr45ZryfXr1qkwnxt3WrCrsYqw1Y
-	ya1Igas7CFy5Za7anT9S1TB71UUUUUDqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUUPY14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
-	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
-	1l84ACjcxK6xIIjxv20xvE14v26w1j6s0DM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4U
-	JVWxJr1l84ACjcxK6I8E87Iv67AKxVWxJr0_GcWl84ACjcxK6I8E87Iv6xkF7I0E14v26F
-	4UJVW0owAac4AC62xK8xCEY4vEwIxC4wAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40E
-	FcxC0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AKxVWUAVWUtwAv7VC2z280aVAFwI0_Gr
-	0_Cr1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48IcxkI7VAKI48JM4x0x7Aq67IIx4CEVc8v
-	x2IErcIFxwACI402YVCY1x02628vn2kIc2xKxwCY1x0262kKe7AKxVWUtVW8ZwCY02Avz4
-	vE14v_KwCF04k20xvY0x0EwIxGrwCFx2IqxVCFs4IE7xkEbVWUJVW8JwC20s026c02F40E
-	14v26r1j6r18MI8I3I0E7480Y4vE14v26r106r1rMI8E67AF67kF1VAFwI0_Jw0_GFylIx
-	kGc2Ij64vIr41lIxAIcVC0I7IYx2IY67AKxVWUCVW8JwCI42IY6xIIjxv20xvEc7CjxVAF
-	wI0_Gr0_Cr1lIxAIcVCF04k26cxKx2IYs7xG6r1j6r1xMIIF0xvEx4A2jsIE14v26r1j6r
-	4UMIIF0xvEx4A2jsIEc7CjxVAFwI0_Gr0_Gr1UYxBIdaVFxhVjvjDU0xZFpf9x0JUDb18U
-	UUUU=
+X-CM-TRANSID: qwCowAC3XWm+YLdpa+wzCg--.590S3
+X-Coremail-Antispam: 1UD129KBjvJXoWxCF1fCFW8Xw1rtF4kZw13Arb_yoW5Ww18pr
+	47Kw1Yq395trs2vw1Yyw1Duw4Uta1kK3yDGrW7WF18Aw13Wry3JFyqg3sIqF43AF4Yqa4x
+	tw1Iq3WxCFy5Xa7anT9S1TB71UUUUUDqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUUdFb7Iv0xC_Kw4lb4IE77IF4wAFF20E14v26rWj6s0DM7CY07I2
+	0VC2zVCF04k26cxKx2IYs7xG6rWj6s0DM7CIcVAFz4kK6r1j6r18M28IrcIa0xkI8VA2jI
+	8067AKxVWUGwA2048vs2IY020Ec7CjxVAFwI0_Gr0_Xr1l8cAvFVAK0II2c7xJM28CjxkF
+	64kEwVA0rcxSw2x7M28EF7xvwVC0I7IYx2IY67AKxVWDJVCq3wA2z4x0Y4vE2Ix0cI8IcV
+	CY1x0267AKxVW8Jr0_Cr1UM28EF7xvwVC2z280aVAFwI0_Cr1j6rxdM28EF7xvwVC2z280
+	aVCY1x0267AKxVWxJr0_GcWlnxkEFVAIw20F6cxK64vIFxWle2I262IYc4CY6c8Ij28IcV
+	AaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E2Ix0cI8IcVAFwI0_JF0_Jw1lYx0E
+	x4A2jsIE14v26r4j6F4UMcvjeVCFs4IE7xkEbVWUJVW8JwACjcxG0xvY0x0EwIxGrwACjI
+	8F5VA0II8E6IAqYI8I648v4I1lFIxGxcIEc7CjxVA2Y2ka0xkIwI1lc7CjxVAaw2AFwI0_
+	GFv_Wrylc2xSY4AK67AK6w4l42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr
+	1lx2IqxVAqx4xG67AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE
+	14v26r4a6rW5MIIYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_JFI_Gr1lIxAIcVC0I7
+	IYx2IY6xkF7I0E14v26F4j6r4UJwCI42IY6xAIw20EY4v20xvaj40_Jr0_JF4lIxAIcVC2
+	z280aVAFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x0267AKxVW8JVW8JrUvcSsGvfC2KfnxnU
+	UI43ZEXa7IU8XJ55UUUUU==
 X-Originating-IP: [210.73.43.101]
-X-CM-SenderInfo: 50xmxthndljiysv6x2xfdvhtffof0/1tbiBwwICWm3WbMoDgAAsY
+X-CM-SenderInfo: 50xmxthndljiysv6x2xfdvhtffof0/1tbiDAYICWm3WYgougAAsW
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260315_184546_527032_473F2C14 
-X-CRM114-Status: UNSURE (   6.29  )
+X-CRM114-CacheID: sfid-20260315_184547_723007_46D263DA 
+X-CRM114-Status: UNSURE (   9.71  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -90,36 +95,74 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-When a guest reads a firmware PMU counter via
-SBI_EXT_PMU_COUNTER_FW_READ or SBI_EXT_PMU_COUNTER_FW_READ_HI without
-first configuring it with SBI_EXT_PMU_COUNTER_CFG_MATCH, the counter's
-event_idx remains SBI_PMU_EVENT_IDX_INVALID (0xFFFFFFFF).
+When a guest invokes SBI_EXT_PMU_COUNTER_FW_READ or
+SBI_EXT_PMU_COUNTER_FW_READ_HI on a firmware counter that has not been
+configured via SBI_EXT_PMU_COUNTER_CFG_MATCH, the pmc->event_idx remains
+SBI_PMU_EVENT_IDX_INVALID (0xFFFFFFFF). get_event_code() extracts the
+lower 16 bits, yielding 0xFFFF (65535), which is then used to index into
+kvpmu->fw_event[]. Since fw_event is only RISCV_KVM_MAX_FW_CTRS (32)
+entries, this triggers an array-index-out-of-bounds:
 
-get_event_code() extracts the lower 16 bits from event_idx, yielding
-0xFFFF, which is then used to index into kvpmu->fw_event[]. Since the
-fw_event array only contains RISCV_KVM_MAX_FW_CTRS entries, this results
-in an out-of-bounds access that can be detected by UBSAN.
+  UBSAN: array-index-out-of-bounds in arch/riscv/kvm/vcpu_pmu.c:255:37
+  index 65535 is out of range for type 'kvm_fw_event [32]'
 
-Patch 1 fixes the issue by validating the firmware event code before
-accessing the fw_event array and returning -EINVAL for invalid values.
+Add a check for the known unconfigured case (SBI_PMU_EVENT_IDX_INVALID)
+and a WARN_ONCE guard for any unexpected out-of-bounds event codes,
+returning -EINVAL in both cases.
 
-After fixing the kernel behavior, the existing KVM selftest
-(sbi_pmu_test) fails because it attempts to read firmware counters
-without configuring them first. Patch 2 updates the selftest to
-configure a firmware event before reading the counter and adds a
-negative test to ensure that reading an unconfigured firmware counter
-fails gracefully.
+Fixes: badc386869e2c ("RISC-V: KVM: Support firmware events")
+Fixes: 08fb07d6dcf71 ("RISC-V: KVM: Support 64 bit firmware counters on RV32")
+Signed-off-by: Jiakai Xu <xujiakai2025@iscas.ac.cn>
+Signed-off-by: Jiakai Xu <jiakaiPeanut@gmail.com>
+Reviewed-by: Andrew Jones <andrew.jones@oss.qualcomm.com>
+---
+V3 -> V4:
+- Fixed WARN_ONCE argument alignment.
+V2 -> V3:
+- Added check for SBI_PMU_EVENT_IDX_INVALID.
+- Added WARN_ONCE for unexpected out-of-bounds event codes.
+V1 -> V2:
+- Merged the fixes for pmu_ctr_read() and pmu_fw_ctr_read_hi() into a single
+commit.
+- Removed the pr_warn, simply returning -EINVAL instead.
+---
+ arch/riscv/kvm/vcpu_pmu.c | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
-Jiakai Xu (2):
-  RISC-V: KVM: Fix array out-of-bounds in pmu_ctr_read() and
-    pmu_fw_ctr_read_hi()
-  RISC-V: KVM: selftests: Fix firmware counter read in sbi_pmu_test
-
- arch/riscv/kvm/vcpu_pmu.c                     | 14 +++++++
- .../testing/selftests/kvm/include/riscv/sbi.h | 37 +++++++++++++++++++
- .../selftests/kvm/riscv/sbi_pmu_test.c        | 20 +++++++++-
- 3 files changed, 70 insertions(+), 1 deletion(-)
-
+diff --git a/arch/riscv/kvm/vcpu_pmu.c b/arch/riscv/kvm/vcpu_pmu.c
+index e873430e596b..ca86c0000809 100644
+--- a/arch/riscv/kvm/vcpu_pmu.c
++++ b/arch/riscv/kvm/vcpu_pmu.c
+@@ -226,7 +226,14 @@ static int pmu_fw_ctr_read_hi(struct kvm_vcpu *vcpu, unsigned long cidx,
+ 	if (pmc->cinfo.type != SBI_PMU_CTR_TYPE_FW)
+ 		return -EINVAL;
+ 
++	if (pmc->event_idx == SBI_PMU_EVENT_IDX_INVALID)
++		return -EINVAL;
++
+ 	fevent_code = get_event_code(pmc->event_idx);
++	if (WARN_ONCE(fevent_code >= SBI_PMU_FW_MAX,
++	    "Invalid firmware event code: %d\n", fevent_code))
++		return -EINVAL;
++
+ 	pmc->counter_val = kvpmu->fw_event[fevent_code].value;
+ 
+ 	*out_val = pmc->counter_val >> 32;
+@@ -251,7 +258,14 @@ static int pmu_ctr_read(struct kvm_vcpu *vcpu, unsigned long cidx,
+ 	pmc = &kvpmu->pmc[cidx];
+ 
+ 	if (pmc->cinfo.type == SBI_PMU_CTR_TYPE_FW) {
++		if (pmc->event_idx == SBI_PMU_EVENT_IDX_INVALID)
++			return -EINVAL;
++
+ 		fevent_code = get_event_code(pmc->event_idx);
++		if (WARN_ONCE(fevent_code >= SBI_PMU_FW_MAX,
++		    "Invalid firmware event code: %d\n", fevent_code))
++			return -EINVAL;
++
+ 		pmc->counter_val = kvpmu->fw_event[fevent_code].value;
+ 	} else if (pmc->perf_event) {
+ 		pmc->counter_val += perf_event_read_value(pmc->perf_event, &enabled, &running);
 -- 
 2.34.1
 
