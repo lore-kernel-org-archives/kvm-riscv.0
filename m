@@ -4,70 +4,89 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9F096103E168
-	for <kvm-riscv@archiver.kernel.org>; Wed, 18 Mar 2026 12:36:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BBDC8107761C
+	for <kvm-riscv@archiver.kernel.org>; Wed, 18 Mar 2026 21:19:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
-	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=eerppMDQEGFVK61mCawKAGfymTGBbkVRX9g9NiyPjwc=; b=Hf5iDPaX00k6EC
-	/FGmMhwXiai7yThgykPuxQOsfPESNaluQW1s437jxlME4K0E9Se/5pxWfgdLRk+NElCZG/BQrfYCL
-	v7m6No4iz6LrEI6tI+zycClgFh54w7hv+Ol0n1doEaqcTI0E5G3uWXpT+xFgDWQGrZSBBfCAI408v
-	Lv/B28q2M99vPR1tPBXR6PKxqItGO39vEzAvUhwCDMYz/hswsWD5H1dJCqzavXsOXdwZTDWBmXHpo
-	SHnxUWbxv+2q/nLYgw7QQ9LeJwmr6ZxaSMEVG96OWTPhG++ckTglHsJsWl+mJGj4ID8rYNf48hBHm
-	gnRfZrMHAR+qYlfWWWQw==;
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:References:To:From:Subject:
+	Cc:Message-Id:Date:Mime-Version:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=y2AwA0GGSqzUZTgeWWNRt/QkRNvC7GJB1S4x0xOuQts=; b=nbdqwr6ARBRiMP
+	w3JsqmkpAcuTbr9sAigVPoXZQ0dicUM23tkmDCeq2WOEZBx9S5bKYqFOGpz+vSMjQ9ZfAKAS6ZPmR
+	zselWPFZOLJ6BGWlLkgWM/19+CtNyfqOkaSlqWQOWnPlqotk+n1cnm1NlIS2gIgEEUqiQhm6486cl
+	YTUGvEysccrOJ3KO281QvbOQ2hhYEKoiGBFiYmHOM/A7MQq/XhpS63Q1tFRB95jO5IzXubpJLOiGL
+	sWjluLIkSAT7VV+ANZkOy8xgdq5rXUMtUzSEo2Q2QQC+EO1YTnUwk6CQrcjVHPsf4ThXQPgg9ypXD
+	oOzkEBz4aFY6ep4nhIVQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1w2q8n-00000008Oe7-41bY;
-	Wed, 18 Mar 2026 12:36:49 +0000
-Received: from m16.mail.163.com ([117.135.210.5])
+	id 1w2yIa-00000009NDX-0yyo;
+	Wed, 18 Mar 2026 21:19:28 +0000
+Received: from mail-yw1-x112e.google.com ([2607:f8b0:4864:20::112e])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1w2q8k-00000008ObL-2AKL;
-	Wed, 18 Mar 2026 12:36:48 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:To:Subject:Date:Message-ID:MIME-Version; bh=8F
-	dH4WSxnaNsrxY+HYRVMygusEpKn03CJlFj28CLWrg=; b=nPmqn+xZb9/6kIWpKt
-	PBafquFmonCwZZApNE6ze4EcISCtOlG3EaEuZvaseAY368KiGr7yNx+oUsle6ZWe
-	1pVFWs7pbZRbqxp2HC+558w8Ce0OQjGDP4kYQ5lGnGkZLUh7K50eADVrjO/UC6/G
-	CIAReeXcijx33mIasr3g8MrOI=
-Received: from localhost.localdomain (unknown [])
-	by gzga-smtp-mtada-g0-1 (Coremail) with SMTP id _____wAXfZkinLpp4Se1Bg--.34780S2;
-	Wed, 18 Mar 2026 20:35:47 +0800 (CST)
-From: Jinyu Tang <tjytimi@163.com>
-To: Anup Patel <anup@brainfault.org>,
-	Atish Patra <atish.patra@linux.dev>,
-	Paul Walmsley <pjw@kernel.org>,
-	Paul Walmsley <paul.walmsley@sifive.com>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Alexandre Ghiti <alex@ghiti.fr>,
-	=?UTF-8?q?Radim=20Kr=C4=8Dm=C3=A1=C5=99?= <radim.krcmar@oss.qualcomm.com>,
-	Andrew Jones <andrew.jones@oss.qualcomm.com>,
-	Conor Dooley <conor.dooley@microchip.com>,
-	Yong-Xuan Wang <yongxuan.wang@sifive.com>,
-	Nutty Liu <nutty.liu@hotmail.com>
-Cc: kvm@vger.kernel.org,
-	kvm-riscv@lists.infradead.org,
-	linux-riscv@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	Jinyu Tang <tjytimi@163.com>
-Subject: [PATCH v2] RISC-V: KVM: Batch stage-2 remote TLB flushes
-Date: Wed, 18 Mar 2026 20:35:33 +0800
-Message-ID: <20260318123534.2166919-1-tjytimi@163.com>
-X-Mailer: git-send-email 2.43.0
-MIME-Version: 1.0
-X-CM-TRANSID: _____wAXfZkinLpp4Se1Bg--.34780S2
-X-Coremail-Antispam: 1Uf129KBjvJXoW3Zry5AF1DtrW7tF43JF13Jwb_yoWkXw45pr
-	4DCryfur4fXrs7XF13tFWDZrn8uws7W3WrAr98CF90yrn8trWfXr1vg34vvr15Jr1rXFW3
-	ZFyDGF1UAr4IyFUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0piUGYdUUUUU=
-X-Originating-IP: [2408:823d:2011:31d0:e5a2:a09d:6cdb:4df]
-X-CM-SenderInfo: xwm13xlpl6il2tof0z/xtbC8gM4sGm6nCMLxgAA3Y
+	id 1w2yIY-00000009NCu-0HI5
+	for kvm-riscv@lists.infradead.org;
+	Wed, 18 Mar 2026 21:19:27 +0000
+Received: by mail-yw1-x112e.google.com with SMTP id 00721157ae682-79a46260385so3861667b3.3
+        for <kvm-riscv@lists.infradead.org>; Wed, 18 Mar 2026 14:19:25 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1773868764; x=1774473564; darn=lists.infradead.org;
+        h=in-reply-to:references:to:from:subject:cc:message-id:date
+         :content-transfer-encoding:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=s1Qp9lS9mJbsbw6BdqhHIoqJG66lBxCc3NYAKkS9f8Q=;
+        b=DubDZY/87GoCPOJi0ahxlHKpbCVOFfdW5jWWi1itdhhC+tg2v/hfi+pbis7+07JcA+
+         SqjqjGsLxuCWeFhAY7PLyvB58F0Onz0cYaaAmzJFjQhWaXVK5y91HjLLV2Xf73aHuiX2
+         i7j6x0xlVZv/QdF0WrS8HIzfe+2GegWvSPeUsqDpEIK/vD3mwfdEWecXtHBylTt7HCy8
+         gs0xSUuiEi6KQXTnyL/vOoSHx2U1pQHazewRI7ijIZbu9dItNfCcWBO4qrrN1lDXJxnm
+         peeULC+uNdLS+bUE9dfH84PRJwTff50auSfdP67zyI/b4eNO5ej1z8RKmNSD0/m1wfjv
+         wOTw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1773868764; x=1774473564;
+        h=in-reply-to:references:to:from:subject:cc:message-id:date
+         :content-transfer-encoding:mime-version:x-gm-gg:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=s1Qp9lS9mJbsbw6BdqhHIoqJG66lBxCc3NYAKkS9f8Q=;
+        b=oaGhr5ewk4xPWtOvZ4/rKniOnjgcKX6/n+pCfIM5XJj8bSpjhVcuHuzXXRYgD7hqWG
+         fZIMkhOUbktG097DIEUKabCXWaKxiEDzLMFS2n7zXsP2KRxon7XCVjXPCNXl7ydIxzdb
+         7dAgx6RN9ysMuZpt/cGMJ0u9P1vqw6pfn0PfvqeKLHtNi6peutGPUd2qOaIxw/UkZDt7
+         umhfbPmASRZIY+QghzoKli6kXrNRGLSiwWKPDaDbNNZVY3eOsXLOQX2aOu6v4Xtxqj4W
+         tLVrdYFYTOj6a7bT63tiR8IUaFtak0fZyJFlLviqajF429vIRrsnmVvI1Qab7dpbO0jc
+         5q/g==
+X-Forwarded-Encrypted: i=1; AJvYcCXyqjpwul8h9OoHe6MrSd91h8tMGhAHsuIk0QkwXamv9cFz2Vp4MCLxeSzarDBIAuCDCBtUAbHFji0=@lists.infradead.org
+X-Gm-Message-State: AOJu0YwPQZzK/JfzMI6Ra0mEV+qSnFdToXmJ8R41dnD4Ve3gI5mFkdD6
+	mWkxqYMwDqIsb15qrxFvNhXSoCHfap1qXIL1vT0qkUziJHluHEldYhAy
+X-Gm-Gg: ATEYQzzshsvWBP0sX2CZhNSJyTfRRdwnribqWDSGwfZQ2bAxb0w7W7lsO1bNIe+R2V+
+	KJ9toKLDG6+mhtsLYYqNpcVPfaoiGz1NNqc6YA+w4HePa4JTR3LG+BMFV4pA5n7Sqo6X+SAx/1D
+	aQqnuD1emIdHZLJccbpgHUcf5E2ds97/5awMSqhLd0yV5LbJAuZNjiiRiB0GvRdPk/VsOzL5KL2
+	kqWUypDZ1O0c1vE5PUAfOCkfldkHlMImJeCQnWS0rYbYandaGZB9KtzfayGkMAicIiKX0U5/xIh
+	Z2OpRwZOaDH1pOXv9DohWUwVRAjCkuszmDIPtYHjWqH1PpAxXZWDGxRsmmi2RRqFC3noYEJFAFm
+	VDoqAqVNIjSkGjKv/atnjX8o0ibJp/CicjbZhMXovPMgWBh1X6SkNim8rdGiVYAtgWVAOePLMQs
+	7uSXgTdiZOHKM26nbato9P351NiXvxObr8lbt5IgNm6RlEKotPEW5gwR3pxYi/s1t/jMu+cF+L8
+	SuzLzUEvDMr235EGPDJNLBlQixGipCZ
+X-Received: by 2002:a05:690c:dc4:b0:79a:2ef2:82a with SMTP id 00721157ae682-79a718c82b6mr50873677b3.20.1773868764218;
+        Wed, 18 Mar 2026 14:19:24 -0700 (PDT)
+Received: from localhost ([2601:7c0:c37e:2360::f769])
+        by smtp.gmail.com with ESMTPSA id 00721157ae682-79a7136de7bsm24223777b3.2.2026.03.18.14.19.23
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 18 Mar 2026 14:19:23 -0700 (PDT)
+Mime-Version: 1.0
+Date: Wed, 18 Mar 2026 16:19:22 -0500
+Message-Id: <DH67ZVO5UL9G.3SP1BFT4TQOI5@gmail.com>
+Cc: <atish.patra@linux.dev>, <pjw@kernel.org>, <palmer@dabbelt.com>,
+ <aou@eecs.berkeley.edu>, <alex@ghiti.fr>, <ajones@ventanamicro.com>,
+ <kvm@vger.kernel.org>, <kvm-riscv@lists.infradead.org>,
+ <linux-riscv@lists.infradead.org>, <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] RISC-V: KVM: Fix out-of-bounds by 1
+From: "Ethan Tidmore" <ethantidmore06@gmail.com>
+To: "Ethan Tidmore" <ethantidmore06@gmail.com>, <anup@brainfault.org>
+X-Mailer: aerc 0.21.0-0-g5549850facc2
+References: <20260228152226.2116895-1-ethantidmore06@gmail.com>
+In-Reply-To: <20260228152226.2116895-1-ethantidmore06@gmail.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260318_053647_138793_2BCCD571 
-X-CRM114-Status: GOOD (  16.85  )
+X-CRM114-CacheID: sfid-20260318_141926_108785_61ABB2B6 
+X-CRM114-Status: UNSURE (   8.13  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -84,327 +103,29 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-KVM RISC-V triggers a TLB flush for every single stage-2 PTE
-modification (unmap or write-protect) now. Although KVM coalesces the
-hardware IPIs, the software overhead of executing the flush work
-for every 4K page is large, especially during dirty page tracking.
+On Sat Feb 28, 2026 at 9:22 AM CST, Ethan Tidmore wrote:
+> The array kvpmu->pmc is defined as:
+>
+> struct kvm_pmc pmc[RISCV_KVM_MAX_COUNTERS];
+>
+> So, accessing it with index RISCV_KVM_MAX_COUNTERS would be
+> out-of-bounds by 1.
+>
+> Change index check from > to >=.
+>
+> Detected by Smatch:
+> arch/riscv/kvm/vcpu_pmu.c:528 kvm_riscv_vcpu_pmu_ctr_info() error:
+> buffer overflow 'kvpmu->pmc' 64 <= 64
+>
+> Fixes: 8f0153ecd3bf1 ("RISC-V: KVM: Add skeleton support for perf")
+> Signed-off-by: Ethan Tidmore <ethantidmore06@gmail.com>
+> ---
 
-Following the approach used in x86 and arm64, this patch optimizes
-the MMU logic by making the PTE manipulation functions return a boolean
-indicating if a leaf PTE was actually changed. The outer MMU functions
-bubble up this flag to batch the remote TLB flushes. This change makes
-the generic KVM MMU callbacks (e.g., `kvm_unmap_gfn_range()`) actually
-effective by returning the true flush requirement rather than `false`.
+Friendly ping.
 
-Consequently, the flush operation is executed only once per batch.
-Moving it outside of the `mmu_lock` also reduces lock contention.
-For directory pages, we keep the synchronous flush to ensure safety.
+Thanks,
 
-Tested with tools/testing/selftests/kvm on a 4-vCPU guest (Host
-environment: QEMU 10.2.1 RISC-V)
-1. demand_paging_test (1GB memory)
-	# time ./demand_paging_test -b 1G -v 4
-   - Total execution time reduced from ~2m33s to ~2m25s
-2. dirty_log_perf_test (1GB memory)
-   	# ./dirty_log_perf_test -b 1G -v 4
-	- "Clear dirty log time" per iteration dropped significantly from
-     ~3.02s to ~0.20s
-
-Reviewed-by: Nutty Liu <nutty.liu@hotmail.com>
-Signed-off-by: Jinyu Tang <tjytimi@163.com>
----
-v1 -> v2:
-Changes in v2:
-- Fixed alignment issues in multi-line function calls supported by
-  Nutty Liu.
-
- arch/riscv/include/asm/kvm_gstage.h |  6 ++--
- arch/riscv/kvm/gstage.c             | 46 +++++++++++++++++++----------
- arch/riscv/kvm/mmu.c                | 38 +++++++++++++++++-------
- 3 files changed, 62 insertions(+), 28 deletions(-)
-
-diff --git a/arch/riscv/include/asm/kvm_gstage.h b/arch/riscv/include/asm/kvm_gstage.h
-index 595e21831..b003a07f1 100644
---- a/arch/riscv/include/asm/kvm_gstage.h
-+++ b/arch/riscv/include/asm/kvm_gstage.h
-@@ -59,13 +59,13 @@ enum kvm_riscv_gstage_op {
- 	GSTAGE_OP_WP,		/* Write-protect */
- };
- 
--void kvm_riscv_gstage_op_pte(struct kvm_gstage *gstage, gpa_t addr,
-+bool kvm_riscv_gstage_op_pte(struct kvm_gstage *gstage, gpa_t addr,
- 			     pte_t *ptep, u32 ptep_level, enum kvm_riscv_gstage_op op);
- 
--void kvm_riscv_gstage_unmap_range(struct kvm_gstage *gstage,
-+bool kvm_riscv_gstage_unmap_range(struct kvm_gstage *gstage,
- 				  gpa_t start, gpa_t size, bool may_block);
- 
--void kvm_riscv_gstage_wp_range(struct kvm_gstage *gstage, gpa_t start, gpa_t end);
-+bool kvm_riscv_gstage_wp_range(struct kvm_gstage *gstage, gpa_t start, gpa_t end);
- 
- void kvm_riscv_gstage_mode_detect(void);
- 
-diff --git a/arch/riscv/kvm/gstage.c b/arch/riscv/kvm/gstage.c
-index b67d60d72..798719ac1 100644
---- a/arch/riscv/kvm/gstage.c
-+++ b/arch/riscv/kvm/gstage.c
-@@ -209,49 +209,59 @@ int kvm_riscv_gstage_map_page(struct kvm_gstage *gstage,
- 	return kvm_riscv_gstage_set_pte(gstage, pcache, out_map);
- }
- 
--void kvm_riscv_gstage_op_pte(struct kvm_gstage *gstage, gpa_t addr,
-+bool kvm_riscv_gstage_op_pte(struct kvm_gstage *gstage, gpa_t addr,
- 			     pte_t *ptep, u32 ptep_level, enum kvm_riscv_gstage_op op)
- {
- 	int i, ret;
- 	pte_t old_pte, *next_ptep;
- 	u32 next_ptep_level;
- 	unsigned long next_page_size, page_size;
-+	bool flush = false;
- 
- 	ret = gstage_level_to_page_size(ptep_level, &page_size);
- 	if (ret)
--		return;
-+		return false;
- 
- 	WARN_ON(addr & (page_size - 1));
- 
- 	if (!pte_val(ptep_get(ptep)))
--		return;
-+		return false;
- 
- 	if (ptep_level && !gstage_pte_leaf(ptep)) {
- 		next_ptep = (pte_t *)gstage_pte_page_vaddr(ptep_get(ptep));
- 		next_ptep_level = ptep_level - 1;
- 		ret = gstage_level_to_page_size(next_ptep_level, &next_page_size);
- 		if (ret)
--			return;
-+			return false;
- 
- 		if (op == GSTAGE_OP_CLEAR)
- 			set_pte(ptep, __pte(0));
- 		for (i = 0; i < PTRS_PER_PTE; i++)
--			kvm_riscv_gstage_op_pte(gstage, addr + i * next_page_size,
--						&next_ptep[i], next_ptep_level, op);
--		if (op == GSTAGE_OP_CLEAR)
-+			flush |= kvm_riscv_gstage_op_pte(gstage, addr + i * next_page_size,
-+							 &next_ptep[i], next_ptep_level, op);
-+		if (op == GSTAGE_OP_CLEAR) {
-+			gstage_tlb_flush(gstage, ptep_level, addr);
-+			flush = false;
- 			put_page(virt_to_page(next_ptep));
-+		}
- 	} else {
- 		old_pte = *ptep;
- 		if (op == GSTAGE_OP_CLEAR)
- 			set_pte(ptep, __pte(0));
- 		else if (op == GSTAGE_OP_WP)
- 			set_pte(ptep, __pte(pte_val(ptep_get(ptep)) & ~_PAGE_WRITE));
--		if (pte_val(*ptep) != pte_val(old_pte))
--			gstage_tlb_flush(gstage, ptep_level, addr);
-+		if (pte_val(*ptep) != pte_val(old_pte)) {
-+			if (gstage->flags & KVM_GSTAGE_FLAGS_LOCAL)
-+				gstage_tlb_flush(gstage, ptep_level, addr);
-+			else
-+				flush = true;
-+		}
- 	}
-+
-+	return flush;
- }
- 
--void kvm_riscv_gstage_unmap_range(struct kvm_gstage *gstage,
-+bool kvm_riscv_gstage_unmap_range(struct kvm_gstage *gstage,
- 				  gpa_t start, gpa_t size, bool may_block)
- {
- 	int ret;
-@@ -260,6 +270,7 @@ void kvm_riscv_gstage_unmap_range(struct kvm_gstage *gstage,
- 	bool found_leaf;
- 	unsigned long page_size;
- 	gpa_t addr = start, end = start + size;
-+	bool flush = false;
- 
- 	while (addr < end) {
- 		found_leaf = kvm_riscv_gstage_get_leaf(gstage, addr, &ptep, &ptep_level);
-@@ -271,8 +282,8 @@ void kvm_riscv_gstage_unmap_range(struct kvm_gstage *gstage,
- 			goto next;
- 
- 		if (!(addr & (page_size - 1)) && ((end - addr) >= page_size))
--			kvm_riscv_gstage_op_pte(gstage, addr, ptep,
--						ptep_level, GSTAGE_OP_CLEAR);
-+			flush |= kvm_riscv_gstage_op_pte(gstage, addr, ptep,
-+							 ptep_level, GSTAGE_OP_CLEAR);
- 
- next:
- 		addr += page_size;
-@@ -284,9 +295,11 @@ void kvm_riscv_gstage_unmap_range(struct kvm_gstage *gstage,
- 		if (!(gstage->flags & KVM_GSTAGE_FLAGS_LOCAL) && may_block && addr < end)
- 			cond_resched_lock(&gstage->kvm->mmu_lock);
- 	}
-+
-+	return flush;
- }
- 
--void kvm_riscv_gstage_wp_range(struct kvm_gstage *gstage, gpa_t start, gpa_t end)
-+bool kvm_riscv_gstage_wp_range(struct kvm_gstage *gstage, gpa_t start, gpa_t end)
- {
- 	int ret;
- 	pte_t *ptep;
-@@ -294,6 +307,7 @@ void kvm_riscv_gstage_wp_range(struct kvm_gstage *gstage, gpa_t start, gpa_t end
- 	bool found_leaf;
- 	gpa_t addr = start;
- 	unsigned long page_size;
-+	bool flush = false;
- 
- 	while (addr < end) {
- 		found_leaf = kvm_riscv_gstage_get_leaf(gstage, addr, &ptep, &ptep_level);
-@@ -305,12 +319,14 @@ void kvm_riscv_gstage_wp_range(struct kvm_gstage *gstage, gpa_t start, gpa_t end
- 			goto next;
- 
- 		if (!(addr & (page_size - 1)) && ((end - addr) >= page_size))
--			kvm_riscv_gstage_op_pte(gstage, addr, ptep,
--						ptep_level, GSTAGE_OP_WP);
-+			flush |= kvm_riscv_gstage_op_pte(gstage, addr, ptep,
-+							 ptep_level, GSTAGE_OP_WP);
- 
- next:
- 		addr += page_size;
- 	}
-+
-+	return flush;
- }
- 
- void __init kvm_riscv_gstage_mode_detect(void)
-diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-index 0b75eb2a1..dde5afe57 100644
---- a/arch/riscv/kvm/mmu.c
-+++ b/arch/riscv/kvm/mmu.c
-@@ -23,6 +23,7 @@ static void mmu_wp_memory_region(struct kvm *kvm, int slot)
- 	phys_addr_t start = memslot->base_gfn << PAGE_SHIFT;
- 	phys_addr_t end = (memslot->base_gfn + memslot->npages) << PAGE_SHIFT;
- 	struct kvm_gstage gstage;
-+	bool flush;
- 
- 	gstage.kvm = kvm;
- 	gstage.flags = 0;
-@@ -30,9 +31,10 @@ static void mmu_wp_memory_region(struct kvm *kvm, int slot)
- 	gstage.pgd = kvm->arch.pgd;
- 
- 	spin_lock(&kvm->mmu_lock);
--	kvm_riscv_gstage_wp_range(&gstage, start, end);
-+	flush = kvm_riscv_gstage_wp_range(&gstage, start, end);
- 	spin_unlock(&kvm->mmu_lock);
--	kvm_flush_remote_tlbs_memslot(kvm, memslot);
-+	if (flush)
-+		kvm_flush_remote_tlbs_memslot(kvm, memslot);
- }
- 
- int kvm_riscv_mmu_ioremap(struct kvm *kvm, gpa_t gpa, phys_addr_t hpa,
-@@ -88,6 +90,7 @@ int kvm_riscv_mmu_ioremap(struct kvm *kvm, gpa_t gpa, phys_addr_t hpa,
- void kvm_riscv_mmu_iounmap(struct kvm *kvm, gpa_t gpa, unsigned long size)
- {
- 	struct kvm_gstage gstage;
-+	bool flush;
- 
- 	gstage.kvm = kvm;
- 	gstage.flags = 0;
-@@ -95,8 +98,12 @@ void kvm_riscv_mmu_iounmap(struct kvm *kvm, gpa_t gpa, unsigned long size)
- 	gstage.pgd = kvm->arch.pgd;
- 
- 	spin_lock(&kvm->mmu_lock);
--	kvm_riscv_gstage_unmap_range(&gstage, gpa, size, false);
-+	flush = kvm_riscv_gstage_unmap_range(&gstage, gpa, size, false);
- 	spin_unlock(&kvm->mmu_lock);
-+
-+	if (flush)
-+		kvm_flush_remote_tlbs_range(kvm, gpa >> PAGE_SHIFT,
-+					    size >> PAGE_SHIFT);
- }
- 
- void kvm_arch_mmu_enable_log_dirty_pt_masked(struct kvm *kvm,
-@@ -108,13 +115,17 @@ void kvm_arch_mmu_enable_log_dirty_pt_masked(struct kvm *kvm,
- 	phys_addr_t start = (base_gfn +  __ffs(mask)) << PAGE_SHIFT;
- 	phys_addr_t end = (base_gfn + __fls(mask) + 1) << PAGE_SHIFT;
- 	struct kvm_gstage gstage;
-+	bool flush;
- 
- 	gstage.kvm = kvm;
- 	gstage.flags = 0;
- 	gstage.vmid = READ_ONCE(kvm->arch.vmid.vmid);
- 	gstage.pgd = kvm->arch.pgd;
- 
--	kvm_riscv_gstage_wp_range(&gstage, start, end);
-+	flush = kvm_riscv_gstage_wp_range(&gstage, start, end);
-+	if (flush)
-+		kvm_flush_remote_tlbs_range(kvm, start >> PAGE_SHIFT,
-+					    (end - start) >> PAGE_SHIFT);
- }
- 
- void kvm_arch_sync_dirty_log(struct kvm *kvm, struct kvm_memory_slot *memslot)
-@@ -140,6 +151,7 @@ void kvm_arch_flush_shadow_memslot(struct kvm *kvm,
- 	gpa_t gpa = slot->base_gfn << PAGE_SHIFT;
- 	phys_addr_t size = slot->npages << PAGE_SHIFT;
- 	struct kvm_gstage gstage;
-+	bool flush;
- 
- 	gstage.kvm = kvm;
- 	gstage.flags = 0;
-@@ -147,8 +159,10 @@ void kvm_arch_flush_shadow_memslot(struct kvm *kvm,
- 	gstage.pgd = kvm->arch.pgd;
- 
- 	spin_lock(&kvm->mmu_lock);
--	kvm_riscv_gstage_unmap_range(&gstage, gpa, size, false);
-+	flush = kvm_riscv_gstage_unmap_range(&gstage, gpa, size, false);
- 	spin_unlock(&kvm->mmu_lock);
-+	if (flush)
-+		kvm_flush_remote_tlbs(kvm);
- }
- 
- void kvm_arch_commit_memory_region(struct kvm *kvm,
-@@ -253,10 +267,9 @@ bool kvm_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range)
- 	gstage.flags = 0;
- 	gstage.vmid = READ_ONCE(kvm->arch.vmid.vmid);
- 	gstage.pgd = kvm->arch.pgd;
--	kvm_riscv_gstage_unmap_range(&gstage, range->start << PAGE_SHIFT,
--				     (range->end - range->start) << PAGE_SHIFT,
--				     range->may_block);
--	return false;
-+	return kvm_riscv_gstage_unmap_range(&gstage, range->start << PAGE_SHIFT,
-+					    (range->end - range->start) << PAGE_SHIFT,
-+					    range->may_block);
- }
- 
- bool kvm_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
-@@ -579,6 +592,7 @@ void kvm_riscv_mmu_free_pgd(struct kvm *kvm)
- {
- 	struct kvm_gstage gstage;
- 	void *pgd = NULL;
-+	bool flush = false;
- 
- 	spin_lock(&kvm->mmu_lock);
- 	if (kvm->arch.pgd) {
-@@ -586,13 +600,17 @@ void kvm_riscv_mmu_free_pgd(struct kvm *kvm)
- 		gstage.flags = 0;
- 		gstage.vmid = READ_ONCE(kvm->arch.vmid.vmid);
- 		gstage.pgd = kvm->arch.pgd;
--		kvm_riscv_gstage_unmap_range(&gstage, 0UL, kvm_riscv_gstage_gpa_size, false);
-+		flush = kvm_riscv_gstage_unmap_range(&gstage, 0UL,
-+						     kvm_riscv_gstage_gpa_size, false);
- 		pgd = READ_ONCE(kvm->arch.pgd);
- 		kvm->arch.pgd = NULL;
- 		kvm->arch.pgd_phys = 0;
- 	}
- 	spin_unlock(&kvm->mmu_lock);
- 
-+	if (flush)
-+		kvm_flush_remote_tlbs(kvm);
-+
- 	if (pgd)
- 		free_pages((unsigned long)pgd, get_order(kvm_riscv_gstage_pgd_size));
- }
--- 
-2.43.0
-
+ET
 
 -- 
 kvm-riscv mailing list
