@@ -4,65 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CD929F532DE
-	for <kvm-riscv@archiver.kernel.org>; Tue, 24 Mar 2026 06:07:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37259F532E0
+	for <kvm-riscv@archiver.kernel.org>; Tue, 24 Mar 2026 06:07:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Date:
 	Message-Id:From:Subject:MIME-Version:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=Hyrb6qWQWww86jSIQVxorX9G67+X28hQU6g1g4lNbg4=; b=NQbcaIP45DgmZJ
-	ebn3iM5D0CQLlU1DRkHj1PUzgjsFurNMllRYZetIWYiuxcfzHyy/abDhq+V8TFU/dcl28/ANDczcf
-	VeORfH+iejCDS4yjF+rm/lcILtE6udwfIgdVxLF7sqWGdzWJYiIxnV/IzQ39WpYKLDgqkjpHW7WDj
-	5Bw4+CO6pG7Kf1ExKl8C2R1soTA9mH8VGNkufs+dAzvU5PcH/hy3qEGrxFe2+VJZrX2PB9iC5nqvR
-	rUlPHK8zVX5X58JGvE0HsB241vwmbpl0kClkppdU1/GwU8Eedy76+0ew2jflvZAfV9nrD2syHipt7
-	vbZoZDxCCH7j6M+nxj/Q==;
+	List-Owner; bh=RNGG0s0xN5jfgz7jwUHWbxHAybHm7ZA9yZXrLOI/O9Q=; b=TrENxD9t7eeXtm
+	551nK+/KR86/hbX5XFA3pyjU148NgA8JjSfj9Xj979pKbHj3f+EOcg8IxjDFdpkBQ5Gz392rjzMcT
+	F9YngXy3CkrCD1d4UCll04Ksc0pA7a15gGcaamnJfdXgh1bCfkd6FaDi9mcbuagECchiD69pLejKt
+	G/wMF30EB2V4JdxIeqruUpmhcbj/7HVlY+hNuayO1HXJTjhH8A99V41GXV/liS8jzTU/lKXCkO1Jk
+	/nKm7nXXZ+vi8GUa02qqODh6F+DjEJuYZQmlBQ81sKdXS83dIhKtRfzq8S1VOO+RXS6Vjr/CXDIq7
+	de3YljmQSsOJyGWuGe0A==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1w4uva-00000000dOJ-2Oeq;
-	Tue, 24 Mar 2026 06:07:46 +0000
+	id 1w4uve-00000000dTb-3n91;
+	Tue, 24 Mar 2026 06:07:50 +0000
 Received: from sea.source.kernel.org ([2600:3c0a:e001:78e:0:1991:8:25])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1w4uvX-00000000dJg-1i8a;
-	Tue, 24 Mar 2026 06:07:44 +0000
+	id 1w4uva-00000000dOK-3RsV;
+	Tue, 24 Mar 2026 06:07:48 +0000
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 8A4AC41AD2;
-	Tue, 24 Mar 2026 06:07:42 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 69F02C2BCB2;
-	Tue, 24 Mar 2026 06:07:42 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 7CC4F4439C;
+	Tue, 24 Mar 2026 06:07:46 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5F883C2BCB4;
+	Tue, 24 Mar 2026 06:07:46 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774332462;
-	bh=5zNUfjCbe4xMMri1P2HaByUJAkjQzA8Nb9ip9FvYKes=;
+	s=k20201202; t=1774332466;
+	bh=z4J3ormmSXU+X7jeV6FkQUS7GtywJzymGFhiKVjbDaU=;
 	h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
-	b=byrCHLeFhkP2m2kqESbzXZCxNMNC//4fVSFc9OeISJD1jNXl+AxwmfLgRdod4s1oA
-	 Oa72XoY5nRRjIvgFlTXq0Vi64GALRTxTUZvjB4l2/2o2eiMUv86OyfTtFQRnnnc84Z
-	 cnPBrH5NSBZbBdFMhHQurVK8qLDbgjZpM8kEkZ2nwz5lvqfVGa6IwLDxNPmI/lKtMl
-	 C4x4ei+7qwP2MIzEAzo6VgyvQZPsB+JHpK8TvHvAiyqZEer5QShnK/Fl59vZADpGme
-	 QiIA0Kz4We8WXDmOFR0/fH8YvVu9A9ABD5T6VdX+IzjWeY3aB/j7liGA4P+8xPNWE/
-	 eB1ZlnfTnv+Qg==
+	b=Hwoz5YsjR1PACl+UQNn+HH+FllIaPq/7dXZ7ML29dJvWcP3Sy7qtE65yX0PVwt496
+	 C50KSpIsgEURb5xPAiG3GJPawXBZBTkfae3QvOjntb5DRvqWxRXTXnPYnoimUQSUbQ
+	 gvDMLUTf1JPzXzHl6NetEwiAtjXr6rCbJzlBDFRHcZJ21Vtrep7uhj0ZNP1NrHQJWI
+	 bmqjM+5n4g0s2XeL7NL7xnHxTLmRpAL8gqYjG9CAC1LwILx+yARKcV7UQ9MrF6TnTq
+	 kuM1HGFpLCFQjB4oq+KUm61KUg+q0SW6jfcLA/yq5JAbXkZ7Ti0FY08zRUFUGMMUAY
+	 xEi/TQdsPaMbw==
 Received: from [10.30.226.235] (localhost [IPv6:::1])
-	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id B72183808200;
-	Tue, 24 Mar 2026 06:07:31 +0000 (UTC)
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id B9E9E3808200;
+	Tue, 24 Mar 2026 06:07:35 +0000 (UTC)
 MIME-Version: 1.0
-Subject: Re: [PATCH v2 0/4] KVM: riscv: Fix Spectre-v1 vulnerabilities in
- register access
+Subject: Re: [PATCH v2] RISC-V: KVM: Fix null pointer dereference in
+ kvm_riscv_vcpu_aia_rmw_topei()
 From: patchwork-bot+linux-riscv@kernel.org
-Message-Id: <177433245028.469836.11061694721898939145.git-patchwork-notify@kernel.org>
-Date: Tue, 24 Mar 2026 06:07:30 +0000
-References: <20260303-kvm-riscv-spectre-v1-v2-0-192caab8e0dc@cispa.de>
-In-Reply-To: <20260303-kvm-riscv-spectre-v1-v2-0-192caab8e0dc@cispa.de>
-To: Lukas Gerlach <lukas.gerlach@cispa.de>
-Cc: linux-riscv@lists.infradead.org, anup@brainfault.org,
- atish.patra@linux.dev, pjw@kernel.org, palmer@dabbelt.com,
- aou@eecs.berkeley.edu, alex@ghiti.fr, ajones@ventanamicro.com,
- radim.krcmar@oss.qualcomm.com, kvm@vger.kernel.org,
- kvm-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
- daniel.weber@cispa.de, michael.schwarz@cispa.de, marton.bognar@kuleuven.be,
- jo.vanbulck@kuleuven.be
+Message-Id: <177433245454.469836.16737695875391376252.git-patchwork-notify@kernel.org>
+Date: Tue, 24 Mar 2026 06:07:34 +0000
+References: <20260226085119.643295-1-xujiakai2025@iscas.ac.cn>
+In-Reply-To: <20260226085119.643295-1-xujiakai2025@iscas.ac.cn>
+To: Jiakai Xu <xujiakai2025@iscas.ac.cn>
+Cc: linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
+ kvm-riscv@lists.infradead.org, kvm@vger.kernel.org, alex@ghiti.fr,
+ aou@eecs.berkeley.edu, palmer@dabbelt.com, paul.walmsley@sifive.com,
+ atish.patra@linux.dev, anup@brainfault.org, jiakaiPeanut@gmail.com
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260323_230743_484096_6E5C2970 
-X-CRM114-Status: UNSURE (   7.67  )
+X-CRM114-CacheID: sfid-20260323_230746_899670_477E74EE 
+X-CRM114-Status: UNSURE (   8.82  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -82,28 +79,24 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 Hello:
 
-This series was applied to riscv/linux.git (for-next)
+This patch was applied to riscv/linux.git (for-next)
 by Anup Patel <anup@brainfault.org>:
 
-On Tue, 3 Mar 2026 15:19:40 +0100 you wrote:
-> This series adds array_index_nospec() to RISC-V KVM to prevent
-> speculative out-of-bounds access to kernel memory.
+On Thu, 26 Feb 2026 08:51:19 +0000 you wrote:
+> kvm_riscv_vcpu_aia_rmw_topei() assumes that the per-vCPU IMSIC state has
+> been initialized once AIA is reported as available and initialized at
+> the VM level. This assumption does not always hold.
 > 
-> Similar fixes exist for x86 (ioapic, lapic, PMU) and arm64 (vgic).
-> 
-> Signed-off-by: Lukas Gerlach <lukas.gerlach@cispa.de>
+> Under fuzzed ioctl sequences, a guest may access the IMSIC TOPEI CSR
+> before the vCPU IMSIC state is set up. In this case,
+> vcpu->arch.aia_context.imsic_state is still NULL, and the TOPEI RMW path
+> dereferences it unconditionally, leading to a host kernel crash.
 > 
 > [...]
 
 Here is the summary with links:
-  - [v2,1/4] KVM: riscv: Fix Spectre-v1 in ONE_REG register access
-    https://git.kernel.org/riscv/c/f9e26fc32541
-  - [v2,2/4] KVM: riscv: Fix Spectre-v1 in AIA CSR access
-    https://git.kernel.org/riscv/c/ec87a82ca874
-  - [v2,3/4] KVM: riscv: Fix Spectre-v1 in floating-point register access
-    https://git.kernel.org/riscv/c/8f0c15c4b14f
-  - [v2,4/4] KVM: riscv: Fix Spectre-v1 in PMU counter access
-    https://git.kernel.org/riscv/c/2dda6a9e09ee
+  - [v2] RISC-V: KVM: Fix null pointer dereference in kvm_riscv_vcpu_aia_rmw_topei()
+    https://git.kernel.org/riscv/c/c28eb189e481
 
 You are awesome, thank you!
 -- 
