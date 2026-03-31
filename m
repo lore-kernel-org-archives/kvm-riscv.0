@@ -4,66 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CBE1A10F92F8
-	for <kvm-riscv@archiver.kernel.org>; Tue, 31 Mar 2026 19:42:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E1F7510F92F9
+	for <kvm-riscv@archiver.kernel.org>; Tue, 31 Mar 2026 19:42:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID:
-	Mime-Version:Date:Reply-To:Content-ID:Content-Description:Resent-Date:
-	Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:
-	References:List-Owner; bh=+lDsUogJCJAQVZ8t2EMBR7rmhZCmSqFQWsnSlwe8N7o=; b=0+K
-	yJk7z1zrjUkOe/xKxeJJ5VCMG1MrWX40pjNFg3Fmcc0NeHVpDfZVQ7HNw68XbNWVhdFRr7IbH4jFi
-	mrZweSePx5+itxS7a8dg193qRw4tneZeTSB72eMMpXlssZsWHjTJguLwJV53jEboilyWFkKzx/Mqm
-	R+SCx7pavyZUtWJmt903WNtXUpfcBQjsd4iFAnQ50/kppVUPYGAnHsjRkXkYkohe96luvxZwwzOi1
-	ksp7At/eoDkRPwRN8fSs+diJaWBjmZIHulvuwTOxwBQtJz8Hua+Qg60/M7Fjgusm+uiGvxiYOmHM5
-	d2y8FtU4uaE97HBsL1dnxMQXc57I9Fg==;
+	References:Mime-Version:In-Reply-To:Date:Reply-To:Content-ID:
+	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+	:Resent-Message-ID:List-Owner;
+	bh=rrsCu9qjymXrEqKnY0GhwJMBfZPl4QJ9pbACV/z62I8=; b=mTEqAbByNYZWRFjsD8N9qPPyno
+	gsSMe3K1Sgr4fw+QwEcJMwNBiqfFaCoKXd0QltqbTZ8JSvp6dvC5WIJlio7go0g5RylV6EslVBhzY
+	lvlEchavHt3GL5cFXwHj0A9UCaPAtBlErawnYtdvCyxYYQVlYaIxiB7Dc7i4H5oV+5x1DJVlS4Qff
+	VRIa9ZhkKrNdEB51Y9K8qiOmbR3U0FtNp29iqkBgzo/zA/Hxj/6F2ADBFGVSO9wckaa3tR9rJCjTS
+	3vgXLEsVMNmywbZ6iMfHx7byYsNQrDVeDkLtcrRnoCia2k3szk8Fw4xs8LwNZaPkeK4amTKzD0kEA
+	AoS2a1BA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1w7eye-0000000DULZ-1Ygy;
-	Tue, 31 Mar 2026 19:42:16 +0000
-Received: from mail-pg1-x549.google.com ([2607:f8b0:4864:20::549])
+	id 1w7eyf-0000000DULz-2bSX;
+	Tue, 31 Mar 2026 19:42:17 +0000
+Received: from mail-pj1-x1049.google.com ([2607:f8b0:4864:20::1049])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1w7eyc-0000000DUKa-00Rp
+	id 1w7eyd-0000000DUL2-2037
 	for kvm-riscv@lists.infradead.org;
-	Tue, 31 Mar 2026 19:42:15 +0000
-Received: by mail-pg1-x549.google.com with SMTP id 41be03b00d2f7-c7422397574so11154993a12.0
-        for <kvm-riscv@lists.infradead.org>; Tue, 31 Mar 2026 12:42:13 -0700 (PDT)
+	Tue, 31 Mar 2026 19:42:16 +0000
+Received: by mail-pj1-x1049.google.com with SMTP id 98e67ed59e1d1-35842aa350fso17796062a91.0
+        for <kvm-riscv@lists.infradead.org>; Tue, 31 Mar 2026 12:42:14 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1774986132; x=1775590932; darn=lists.infradead.org;
-        h=cc:to:from:subject:message-id:mime-version:date:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=jSJ9JEryhSvGPhJKGI1u0Qnqsdu8hhpgpJnk/hSuiNY=;
-        b=Uvjjr1xw5ll/pe4hV3Y2KR7LZV2c9DSM3frbhcSZv8Shjmp9MmJvjOQ48ESQaKqLhx
-         2v9M0h1LI/GFQ+LLSySj20+q/7H8FpJUu3aPlebhnsk6SZXzqy6x5/CObtqkrNgCLKzt
-         183r4ucrvXLJEuw+ln7+9xKcjY5we6AovpUKl5TNtfC9gyEL/RSEFb30NCBukKr0/Wiu
-         g/p8YtoZEkyc9Tc25RT2VaJ7F+xW3dH+0IJ9dEqwuC1DZF06iwlmaOPDx16NoYzNZCwu
-         8piUliTa5cvql3Qn83f+9fP0uMqnpWfdQ7fTlr7IgAJMuTUsUMmdrsEM8LdQBEpmMn53
-         kAQQ==
+        d=google.com; s=20251104; t=1774986134; x=1775590934; darn=lists.infradead.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=77Z+jquwwk0zk6Vwhrc3psuAUoaKxjDwCdLNMqluKDo=;
+        b=WZlbCfzN84qSI7exEWNkjk5FIGo8lw1MM/H6uEC0aidExQ1cxhizbkwpx7TQRpPYyX
+         /e+clcUxUPL8anHod4/W1eYuZtxTOF6tXp+TLbsPv+5VAbo3B4tLIN4/Saw+1UGGsQif
+         gER/NeYCvHU5leEyaBAjnZ55EFdUUtaJ9CE7HmWvQWdO/8ZLx2sDfS2TAvGU/KSX5sKe
+         GoPLx33sWbJr/8B9wfO4j8ho0gd1e+K0ORA7kWqpeTfRaDrJ5/UucpIzAIUQOr33F7nH
+         Q4wVrX7vrAxnz1Kb0hIPay97HTWBbNr39GYy7SiqoJMVKc49GO16HCLi+mPy2iXvuNM6
+         uJpw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774986132; x=1775590932;
-        h=cc:to:from:subject:message-id:mime-version:date:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=jSJ9JEryhSvGPhJKGI1u0Qnqsdu8hhpgpJnk/hSuiNY=;
-        b=a/tgUNthOZYdqOItIoqFsreZ8jAki9f4K0spssNLcBi0mYkpNqZK2TuY+wQC/8j5zu
-         fGMqRkjgIwrZgrGPuIKIbP1pqrcyqJvbZO33oO/NUKVdL2k2VbbHcWP8PjbiW4Z8C5gU
-         DhkVZpJaNSyjWraxHbEVU9pKDYQYRK2nHc0rJ2BMBCh1CJYRGsNOwIFWuOEgXBxiGZNB
-         0022JfjrdeIFIwMEKuo4s5gtackjHwL61W4eTX6YM29pcDaBMY2X81uREgaOE3Tlmh1v
-         +S123SCQXvex6zMzpj90WXntsYDzeUOAc9Awwslu0JG8+G3hcNTGos8m+1h1/tAKYdVL
-         TtgA==
-X-Forwarded-Encrypted: i=1; AJvYcCWoJrLBeNXZU0605kn6f2JJGUOIhuTL62OMbhrKBz4fz2FdVjerpGMUwC1g6UzgSgwWRVbZZGVs0aM=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yz4SpPDLif9rQWBLyEfROQvJUJTD/XcFG/etINFwzbVS/DvX31+
-	/1nnt1NNebsknGRjZx3g8DlSmsJGBLHccAfzG+XSNIJY7VL7R1WOcRG5YA7X6YqNjau+NtNQ8VX
-	zch/G9bdjBg==
-X-Received: from pgah15.prod.google.com ([2002:a05:6a02:4e8f:b0:c75:7a93:9b8f])
- (user=vipinsh job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a21:6d88:b0:38b:d9b5:5de2
- with SMTP id adf61e73a8af0-39ef7792bc2mr470704637.50.1774986132379; Tue, 31
- Mar 2026 12:42:12 -0700 (PDT)
-Date: Tue, 31 Mar 2026 12:41:53 -0700
+        d=1e100.net; s=20251104; t=1774986134; x=1775590934;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=77Z+jquwwk0zk6Vwhrc3psuAUoaKxjDwCdLNMqluKDo=;
+        b=LyKwRhOORFcXpMPAzJ4aENIyFkoZXZvTV9gELlB9bSu12WOh1MOh+5jRqNn+bR3Zcw
+         tyZzQAUjUotAOqN8rsGDvJR+mKlT81D0SVW+g8tMZLyXQFtgXMd40aQ2J1NpOjzM67dC
+         2sOChxYSZdo9f3AhBQJaiZ8yndCv/rF3sZTkngIN61NdLzk4eoXcBjPWoH37TdqeA1DN
+         fLWZoEmq19GMdyKx6AXGnJcwqE/S5boLTJ6ax8p0zlKZ7ji46+m1XY6nIrXE1fOgn4nl
+         +CH6bVtFVWL//vCQ4JEMAAghrPRb/Ztl2ltBBtJEN0lBiBWMBe+eU51r/6dnDWYRpoZp
+         Dqgw==
+X-Forwarded-Encrypted: i=1; AJvYcCWg09hOauduWDgXyurr8fQNFMmybEDdWlDMTUtV+RhX8JW34eceF3G9UP8QOWvChb5/ssTLMgdueao=@lists.infradead.org
+X-Gm-Message-State: AOJu0Ywsqy0qsvlpMdZe6o3IdDJqr9oF0goebP4USRTaHyByZHQMaHlq
+	yiaoQ1yqu8cExpa8Uyz+tQe1NSLQTia8ZY/xqu/Dvg7fRHpA2P08j1YEeizC7+95O2BVU5CJcS0
+	J00y+TXnpIA==
+X-Received: from pjbmz13.prod.google.com ([2002:a17:90b:378d:b0:35c:217b:ecd7])
+ (user=vipinsh job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:2ecb:b0:35b:ea35:c3ce
+ with SMTP id 98e67ed59e1d1-35dc6f93abfmr482770a91.27.1774986134029; Tue, 31
+ Mar 2026 12:42:14 -0700 (PDT)
+Date: Tue, 31 Mar 2026 12:41:54 -0700
+In-Reply-To: <20260331194202.1722082-1-vipinsh@google.com>
 Mime-Version: 1.0
+References: <20260331194202.1722082-1-vipinsh@google.com>
 X-Mailer: git-send-email 2.53.0.1118.gaef5881109-goog
-Message-ID: <20260331194202.1722082-1-vipinsh@google.com>
-Subject: [PATCH v4 0/9] KVM: selftests: Create KVM selftests runner
+Message-ID: <20260331194202.1722082-2-vipinsh@google.com>
+Subject: [PATCH v4 1/9] KVM: selftest: Create KVM selftest runner
 From: Vipin Sharma <vipinsh@google.com>
 To: kvm@vger.kernel.org, kvmarm@lists.linux.dev, kvm-riscv@lists.infradead.org
 Cc: seanjc@google.com, pbonzini@redhat.com, borntraeger@linux.ibm.com, 
@@ -72,8 +75,8 @@ Cc: seanjc@google.com, pbonzini@redhat.com, borntraeger@linux.ibm.com,
 	chenhuacai@kernel.org, maz@kernel.org, oliver.upton@linux.dev, 
 	ajones@ventanamicro.com, Vipin Sharma <vipinsh@google.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260331_124214_049942_9E56EF44 
-X-CRM114-Status: GOOD (  14.25  )
+X-CRM114-CacheID: sfid-20260331_124215_525381_A35DC632 
+X-CRM114-Status: GOOD (  18.39  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -90,90 +93,303 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Hello,
+Implement a basic KVM selftest runner in Python to run selftests. Add
+command line options to select individual testcase file or a
+directory containing multiple testcase files.
 
-This is v4 of KVM selftest runner.
+After selecting the tests to run, start their execution and print their
+final execution status (passed, failed, skipped, no run), stdout and
+stderr on terminal.
 
-To recap, KVM Selftest Runner allows running KVM selftests with added
-features not present in default kselftest infrastructure like
-parallelism, user friendly output, saving output hierarchically, etc.
-Check README file in the patch 9.
+Print execution status in colors on the terminals where it is supported
+to easily distinguish different statuses of the tests execution.
 
-This series is also available on github at:
+If a test fails or times out, then return with a non-zero exit code
+after all of the tests execution have completed. If none of the tests
+fails or times out then exit with status 0
 
-https://github.com/shvipin/linux kvm/selftests/runner-v4
+Provide some sample test configuration files to demonstrate the
+execution of the runner.
 
-v4:
-- Copy runner code and default test case files to out-of-tree build
-  directory.
-- Added comparison with kernel selftest framework.
-- Added python minimum version (3.6) check for the runner.
-- Bug fix where runner was not handling the child process output if returned in
-  bytes instead of string.
+Runner can be started from tools/testing/selftests/kvm directory as:
 
-v3: https://lore.kernel.org/kvm/20250930163635.4035866-1-vipinsh@google.com/
-- Created "tests_install" rule in Makefile.kvm to auto generate default
-  testcases, which will be ignored in .gitignore.
-- Changed command line option names to pass testcase files, directories,
-  executable paths, print based on test status, and what to print.
-  Removed certain other options based on feedback in v2.
-- Merged command.py into selftest.py
-- Fixed issue where timed out test's stdout and stderr were not printed.
-- Reduced python version from 3.7 to 3.6.
-- Fixed issue where test status numerical value was printed instead of
-  text like PASSED, FAILED, SKIPPED, etc.
-- Added README.rst.
+  python3 runner --dirs tests
+OR
+  python3 runner --testcases \
+  tests/dirty_log_perf_test/no_dirty_log_protect.test
 
-v2: https://lore.kernel.org/kvm/20250606235619.1841595-1-vipinsh@google.com/
-- Automatic default test generation.
-- Command line flag to provide executables location
-- Dump output to filesystem with timestamp
-- Accept absolute path of *.test files/directory location
-- Sticky status at bottom for the current state of runner.
-- Knobs to control output verbosity
-- Colored output for terminals.
+This is a very basic implementation of the runner. Next patches will
+enhance the runner by adding more features like parallelization, dumping
+output to file system, time limit, out-of-tree builds run, etc.
 
-v1: https://lore.kernel.org/kvm/20250222005943.3348627-1-vipinsh@google.com/
-- Parallel test execution.
-- Dumping separate output for each test.
-- Timeout for test execution
-- Specify single test or a test directory.
-
-RFC: https://lore.kernel.org/kvm/20240821223012.3757828-1-vipinsh@google.com/
-
-
-Vipin Sharma (9):
-  KVM: selftest: Create KVM selftest runner
-  KVM: selftests: Provide executables path option to the KVM selftest
-    runner
-  KVM: selftests: Add timeout option in selftests runner
-  KVM: selftests: Add option to save selftest runner output to a
-    directory
-  KVM: selftests: Run tests concurrently in KVM selftests runner
-  KVM: selftests: Add various print flags to KVM selftest runner
-  KVM: selftests: Print sticky KVM selftests runner status at bottom
-  KVM: selftests: Add rule to generate default tests for KVM selftests
-    runner
-  KVM: selftests: Provide README.rst for KVM selftests runner
-
- tools/testing/selftests/kvm/.gitignore        |   6 +-
- tools/testing/selftests/kvm/Makefile.kvm      |  26 ++-
- tools/testing/selftests/kvm/runner/README.rst |  95 +++++++++
- .../testing/selftests/kvm/runner/__main__.py  | 189 ++++++++++++++++++
- .../testing/selftests/kvm/runner/selftest.py  |  99 +++++++++
- .../selftests/kvm/runner/test_runner.py       |  83 ++++++++
- .../2slot_5vcpu_10iter.test                   |   1 +
- .../no_dirty_log_protect.test                 |   1 +
- 8 files changed, 498 insertions(+), 2 deletions(-)
- create mode 100644 tools/testing/selftests/kvm/runner/README.rst
+Signed-off-by: Vipin Sharma <vipinsh@google.com>
+---
+ tools/testing/selftests/kvm/.gitignore        |  4 +-
+ .../testing/selftests/kvm/runner/__main__.py  | 99 +++++++++++++++++++
+ .../testing/selftests/kvm/runner/selftest.py  | 66 +++++++++++++
+ .../selftests/kvm/runner/test_runner.py       | 37 +++++++
+ .../2slot_5vcpu_10iter.test                   |  1 +
+ .../no_dirty_log_protect.test                 |  1 +
+ 6 files changed, 207 insertions(+), 1 deletion(-)
  create mode 100644 tools/testing/selftests/kvm/runner/__main__.py
  create mode 100644 tools/testing/selftests/kvm/runner/selftest.py
  create mode 100644 tools/testing/selftests/kvm/runner/test_runner.py
  create mode 100644 tools/testing/selftests/kvm/tests/dirty_log_perf_test/2slot_5vcpu_10iter.test
  create mode 100644 tools/testing/selftests/kvm/tests/dirty_log_perf_test/no_dirty_log_protect.test
 
-
-base-commit: df83746075778958954aa0460cca55f4b3fc9c02
+diff --git a/tools/testing/selftests/kvm/.gitignore b/tools/testing/selftests/kvm/.gitignore
+index 1d41a046a7bf..95af97b1ff9e 100644
+--- a/tools/testing/selftests/kvm/.gitignore
++++ b/tools/testing/selftests/kvm/.gitignore
+@@ -3,10 +3,12 @@
+ !/**/
+ !*.c
+ !*.h
++!*.py
+ !*.S
+ !*.sh
++!*.test
+ !.gitignore
+ !config
+ !settings
+ !Makefile
+-!Makefile.kvm
+\ No newline at end of file
++!Makefile.kvm
+diff --git a/tools/testing/selftests/kvm/runner/__main__.py b/tools/testing/selftests/kvm/runner/__main__.py
+new file mode 100644
+index 000000000000..db87f426331d
+--- /dev/null
++++ b/tools/testing/selftests/kvm/runner/__main__.py
+@@ -0,0 +1,99 @@
++# SPDX-License-Identifier: GPL-2.0
++# Copyright 2025 Google LLC
++#
++# Author: vipinsh@google.com (Vipin Sharma)
++
++import argparse
++import logging
++import os
++import sys
++
++from test_runner import TestRunner
++from selftest import SelftestStatus
++
++
++def cli():
++    parser = argparse.ArgumentParser(
++        prog="KVM Selftests Runner",
++        formatter_class=argparse.RawTextHelpFormatter,
++        allow_abbrev=False
++    )
++
++    parser.add_argument("-t",
++                        "--testcases",
++                        nargs="*",
++                        default=[],
++                        help="Testcases to run. Provide the space separated testcases paths")
++
++    parser.add_argument("-d",
++                        "--dirs",
++                        nargs="*",
++                        default=[],
++                        help="Run the testcases present in the given directory and all of its sub directories. Provide the space separated paths to add multiple directories.")
++
++    return parser.parse_args()
++
++
++def setup_logging():
++    class TerminalColorFormatter(logging.Formatter):
++        reset = "\033[0m"
++        red_bold = "\033[31;1m"
++        green = "\033[32m"
++        yellow = "\033[33m"
++        blue = "\033[34m"
++
++        COLORS = {
++            SelftestStatus.PASSED: green,
++            SelftestStatus.NO_RUN: blue,
++            SelftestStatus.SKIPPED: yellow,
++            SelftestStatus.FAILED: red_bold
++        }
++
++        def __init__(self, fmt=None, datefmt=None):
++            super().__init__(fmt, datefmt)
++
++        def format(self, record):
++            return (self.COLORS.get(record.levelno, "") +
++                    super().format(record) + self.reset)
++
++    logger = logging.getLogger("runner")
++    logger.setLevel(logging.INFO)
++
++    ch = logging.StreamHandler()
++    ch_formatter = TerminalColorFormatter(fmt="%(asctime)s | %(message)s",
++                                          datefmt="%H:%M:%S")
++    ch.setFormatter(ch_formatter)
++    logger.addHandler(ch)
++
++
++def fetch_testcases_in_dirs(dirs):
++    testcases = []
++    for dir in dirs:
++        for root, child_dirs, files in os.walk(dir):
++            for file in files:
++                testcases.append(os.path.join(root, file))
++    return testcases
++
++
++def fetch_testcases(args):
++    testcases = args.testcases
++    testcases.extend(fetch_testcases_in_dirs(args.dirs))
++    # Remove duplicates
++    testcases = list(dict.fromkeys(testcases))
++    return testcases
++
++
++def main():
++    args = cli()
++    setup_logging()
++    testcases = fetch_testcases(args)
++    return TestRunner(testcases).start()
++
++
++if __name__ == "__main__":
++    PYTHON_VERSION = (3, 6)
++    if sys.version_info < PYTHON_VERSION:
++        print(f"Minimum required python version {PYTHON_VERSION}, found {sys.version}")
++        sys.exit(1)
++
++    sys.exit(main())
+diff --git a/tools/testing/selftests/kvm/runner/selftest.py b/tools/testing/selftests/kvm/runner/selftest.py
+new file mode 100644
+index 000000000000..5a86f9ceedd4
+--- /dev/null
++++ b/tools/testing/selftests/kvm/runner/selftest.py
+@@ -0,0 +1,66 @@
++# SPDX-License-Identifier: GPL-2.0
++# Copyright 2025 Google LLC
++#
++# Author: vipinsh@google.com (Vipin Sharma)
++
++import pathlib
++import enum
++import os
++import subprocess
++
++class SelftestStatus(enum.IntEnum):
++    """
++    Selftest Status. Integer values are just +1 to the logging.INFO level.
++    """
++
++    PASSED = 21
++    NO_RUN = 22
++    SKIPPED = 23
++    FAILED = 24
++
++    def __str__(self):
++        return str.__str__(self.name)
++
++class Selftest:
++    """
++    Represents a single selftest.
++
++    Extract the test execution command from test file and executes it.
++    """
++
++    def __init__(self, test_path):
++        test_command = pathlib.Path(test_path).read_text().strip()
++        if not test_command:
++            raise ValueError("Empty test command in " + test_path)
++
++        test_command = os.path.join(".", test_command)
++        self.exists = os.path.isfile(test_command.split(maxsplit=1)[0])
++        self.test_path = test_path
++        self.command = test_command
++        self.status = SelftestStatus.NO_RUN
++        self.stdout = ""
++        self.stderr = ""
++
++    def run(self):
++        if not self.exists:
++            self.stderr = "File doesn't exist."
++            return
++
++        run_args = {
++            "universal_newlines": True,
++            "shell": True,
++            "stdout": subprocess.PIPE,
++            "stderr": subprocess.PIPE
++        }
++        proc = subprocess.run(self.command, **run_args)
++
++        out, err = proc.stdout, proc.stderr
++        self.stdout = out.decode("utf-8", "replace") if isinstance(out, bytes) else (out or "")
++        self.stderr = err.decode("utf-8", "replace") if isinstance(err, bytes) else (err or "")
++
++        if proc.returncode == 0:
++            self.status = SelftestStatus.PASSED
++        elif proc.returncode == 4:
++            self.status = SelftestStatus.SKIPPED
++        else:
++            self.status = SelftestStatus.FAILED
+diff --git a/tools/testing/selftests/kvm/runner/test_runner.py b/tools/testing/selftests/kvm/runner/test_runner.py
+new file mode 100644
+index 000000000000..4418777d75e3
+--- /dev/null
++++ b/tools/testing/selftests/kvm/runner/test_runner.py
+@@ -0,0 +1,37 @@
++# SPDX-License-Identifier: GPL-2.0
++# Copyright 2025 Google LLC
++#
++# Author: vipinsh@google.com (Vipin Sharma)
++
++import logging
++from selftest import Selftest
++from selftest import SelftestStatus
++
++logger = logging.getLogger("runner")
++
++
++class TestRunner:
++    def __init__(self, testcases):
++        self.tests = []
++
++        for testcase in testcases:
++            self.tests.append(Selftest(testcase))
++
++    def _log_result(self, test_result):
++        logger.info("*** stdout ***\n" + test_result.stdout)
++        logger.info("*** stderr ***\n" + test_result.stderr)
++        logger.log(test_result.status,
++                   f"[{test_result.status.name}] {test_result.test_path}")
++
++    def start(self):
++        ret = 0
++
++        for test in self.tests:
++            test.run()
++            self._log_result(test)
++
++            if (test.status not in [SelftestStatus.PASSED,
++                                    SelftestStatus.NO_RUN,
++                                    SelftestStatus.SKIPPED]):
++                ret = 1
++        return ret
+diff --git a/tools/testing/selftests/kvm/tests/dirty_log_perf_test/2slot_5vcpu_10iter.test b/tools/testing/selftests/kvm/tests/dirty_log_perf_test/2slot_5vcpu_10iter.test
+new file mode 100644
+index 000000000000..5b8d56b44a75
+--- /dev/null
++++ b/tools/testing/selftests/kvm/tests/dirty_log_perf_test/2slot_5vcpu_10iter.test
+@@ -0,0 +1 @@
++dirty_log_perf_test -x 2 -v 5 -i 10
+diff --git a/tools/testing/selftests/kvm/tests/dirty_log_perf_test/no_dirty_log_protect.test b/tools/testing/selftests/kvm/tests/dirty_log_perf_test/no_dirty_log_protect.test
+new file mode 100644
+index 000000000000..ed3490b1d1a1
+--- /dev/null
++++ b/tools/testing/selftests/kvm/tests/dirty_log_perf_test/no_dirty_log_protect.test
+@@ -0,0 +1 @@
++dirty_log_perf_test -g
 -- 
 2.53.0.1118.gaef5881109-goog
 
