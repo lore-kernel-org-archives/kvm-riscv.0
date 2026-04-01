@@ -4,79 +4,74 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 706ACFF60D5
-	for <kvm-riscv@archiver.kernel.org>; Tue, 31 Mar 2026 19:42:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7AE33D35173
+	for <kvm-riscv@archiver.kernel.org>; Wed,  1 Apr 2026 10:49:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID:
-	References:Mime-Version:In-Reply-To:Date:Reply-To:Content-ID:
-	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
-	:Resent-Message-ID:List-Owner;
-	bh=SGlaVB4oAo7dAktCVacBA2SiDnegAUgUHaHuLvhTH0g=; b=kxWgIAP4Cr8au8veNGpYKcusNh
-	A/s3SNXeSS887LkuYF+rFUBclXKf5T0Zaje7nGfAPgJwIJjK9dPJ8oVGo4eynZzfPIcqpWzAObuD6
-	Y671NSk5nzZPP70Bv0rdnazg8rTzY3wyt0fTecOxZ13CB0VxsPTtWzsXPA09wdWOUt2zNxoaPpx9V
-	XYv3H5tYQXid5NV3qDnRJKVvuRiPcZxDc5DVMmtcN6f9ghard8l0IuctfYWik7XqCq45dvWLQnnQZ
-	LDZfe7piSHUqHcho1ZTLBaoMNcq2XVKSNyvnZDz6djsgYecd2jt4V+QVh6LtwL6Xxi7RDYkmLJUoz
-	jD64ajMw==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=ZjGn4c3RpXB4UMy1vGcy3PCu+nrj9Lh3WrRmpKZhtIE=; b=1dFJIs2X6ezOsj
+	14xyO6r0O/G4y6hm2nBmSn1QapYOMO5YzyJTPo/Jc6IpNcLbRn6sP29NMGEsZmJ2Z1Np6oVn0IhN5
+	uSNdEtf36Zt3HvDMDgYkAPu2KbmWPT7hZ20tYr9AQHZAMys4um06oTFqkfwMsAYaHBzRX/gdlSiV+
+	hZEZphiuNfrqO1IvjR4y/0/IP+EGYhU1vBixyFiUh04s1OlgVtD/GhEiZs7NeSnqJyj9cI/YgMaxm
+	gZKdfnyK//LqG6xClQpY87t3GZbtd+sCO/akb583f7VuFpnVIkZqPcd45dNAnHJIaGL1MbxNCiaZG
+	up9mINrEJjzD6aj72FbQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1w7eyu-0000000DUWD-0l80;
-	Tue, 31 Mar 2026 19:42:32 +0000
-Received: from mail-pj1-x1049.google.com ([2607:f8b0:4864:20::1049])
+	id 1w7t8N-0000000EYCS-31Yk;
+	Wed, 01 Apr 2026 10:49:15 +0000
+Received: from smtp81.cstnet.cn ([159.226.251.81] helo=cstnet.cn)
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1w7eyr-0000000DUTz-434L
-	for kvm-riscv@lists.infradead.org;
-	Tue, 31 Mar 2026 19:42:31 +0000
-Received: by mail-pj1-x1049.google.com with SMTP id 98e67ed59e1d1-35dacc40f92so2441437a91.2
-        for <kvm-riscv@lists.infradead.org>; Tue, 31 Mar 2026 12:42:29 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1774986149; x=1775590949; darn=lists.infradead.org;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=4VWnO9ZqBqweDz2fb12798lX7BIjzp/risNDY0rLawk=;
-        b=Dlr76GlWnhxf6RuwFAL+0HDjrpGazbgfVGrrJ3uwy7pDBSv3jecs5LFltHTHE9SMHq
-         qwXLQofMduUoH6YHSx/FIIcp8dUdEFsmUzMurJ53X6cjO1rtZBayY2UnoBspmBDwQ1H+
-         M4pJyREfKKx/HoScIu08tnTy/+cnMyYuiDXp5BCmIlYw9rh+/ZjLzLW7w8aGwIeI6o57
-         2nO56CgoxW7NSt25EAJ0f07/y1JIWfysYMDyJTlkYvU1+SgmfK8T4eaNtLlVpWX100qg
-         wJXPTWxK3h/kFriIf88Snic8UbiOE4qSfoMgcukt/byOy8jQO7x/kQhOKN720Y+m7i/i
-         wR5Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774986149; x=1775590949;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=4VWnO9ZqBqweDz2fb12798lX7BIjzp/risNDY0rLawk=;
-        b=HENRuS/jjukvgbwGstMZGQ3y+xCRorNLR5GMmL/luC0Q6XgcJ+kVEoqXtMTesf0vM4
-         7q65iZDMb7FaM1O0amN9/Tfp4dJUJDh3X5vg073bK8C3xNFmbRk5Q/3iT6f8KAvmJ4Oa
-         RpihMpIOwnZvXWSPgIf30ds8ftOr2Kvf3aN2V+IFws+kUmu7htrvkqWNH7PnbAW95GOg
-         ao4kahfYG4NJ8RVx1Puz2GOmrQgROgkw523akSaFiOyCs4VcFRy5+nRkXaXjSpelQGU3
-         VHT3xYwatfaRL0tj9YzdLu9kfYW+3ettOF+vjz2w8ZPu3f1zUA6cA2qQGBtJDGitAN8M
-         LeOQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUHgZwYc+9Ey/r74xoJBwqSELVFekS6++zuJSb6a5T9mesOTemvSWu8eFlPCzVSIAM3rfucoUqwe6E=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yy8Dpb+vVHgx38p0q6gRDoVsemJTJeL5ZFtv74kHGEx2EAlozUR
-	TbfVMkZH7vO40Pv05vzFXQc8p/+bOLtcua7AFewBnNJl6GsRefoJ3yvvw89+dziVokWuLHD+IHT
-	L3mfrC9S1Cw==
-X-Received: from pjyw24.prod.google.com ([2002:a17:90a:ea18:b0:35d:a917:a7bf])
- (user=vipinsh job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:528c:b0:35d:a3b4:2f0d
- with SMTP id 98e67ed59e1d1-35dc6e77eb0mr554628a91.6.1774986148828; Tue, 31
- Mar 2026 12:42:28 -0700 (PDT)
-Date: Tue, 31 Mar 2026 12:42:02 -0700
-In-Reply-To: <20260331194202.1722082-1-vipinsh@google.com>
-Mime-Version: 1.0
-References: <20260331194202.1722082-1-vipinsh@google.com>
-X-Mailer: git-send-email 2.53.0.1118.gaef5881109-goog
-Message-ID: <20260331194202.1722082-10-vipinsh@google.com>
-Subject: [PATCH v4 9/9] KVM: selftests: Provide README.rst for KVM selftests runner
-From: Vipin Sharma <vipinsh@google.com>
-To: kvm@vger.kernel.org, kvmarm@lists.linux.dev, kvm-riscv@lists.infradead.org
-Cc: seanjc@google.com, pbonzini@redhat.com, borntraeger@linux.ibm.com, 
-	frankja@linux.ibm.com, imbrenda@linux.ibm.com, anup@brainfault.org, 
-	atish.patra@linux.dev, zhaotianrui@loongson.cn, maobibo@loongson.cn, 
-	chenhuacai@kernel.org, maz@kernel.org, oliver.upton@linux.dev, 
-	ajones@ventanamicro.com, Vipin Sharma <vipinsh@google.com>
+	id 1w7t8K-0000000EYBU-3Waq;
+	Wed, 01 Apr 2026 10:49:15 +0000
+Received: from fric.. (unknown [210.73.43.101])
+	by APP-03 (Coremail) with SMTP id rQCowABng9oe+Mxp7D+IDA--.28909S2;
+	Wed, 01 Apr 2026 18:49:03 +0800 (CST)
+From: Jiakai Xu <xujiakai2025@iscas.ac.cn>
+To: anup@brainfault.org
+Cc: alex@ghiti.fr,
+	aou@eecs.berkeley.edu,
+	atish.patra@linux.dev,
+	jiakaiPeanut@gmail.com,
+	kvm-riscv@lists.infradead.org,
+	kvm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-riscv@lists.infradead.org,
+	palmer@dabbelt.com,
+	paul.walmsley@sifive.com,
+	xujiakai2025@iscas.ac.cn
+Subject: Re: [PATCH v2] RISC-V: KVM: Fix use-after-free in kvm_riscv_gstage_get_leaf()
+Date: Wed,  1 Apr 2026 10:49:02 +0000
+Message-Id: <20260401104902.716329-1-xujiakai2025@iscas.ac.cn>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <CAAhSdy3V2kipH8sPzXkmnXP=Sh=7wwqhHaAWDyucJnytbL+qtw@mail.gmail.com>
+References: <CAAhSdy3V2kipH8sPzXkmnXP=Sh=7wwqhHaAWDyucJnytbL+qtw@mail.gmail.com>
+MIME-Version: 1.0
+X-CM-TRANSID: rQCowABng9oe+Mxp7D+IDA--.28909S2
+X-Coremail-Antispam: 1UD129KBjvJXoWrZryDJr47CF17Ar13JryDtrb_yoW8JF1Upr
+	Z5K3y3uFn8Ww4UZrs7J3WkArW5u3yxWr15Ga4DG3Z3Cw45XrW3Wr4I9ryqv3Z8Cr1SvFZI
+	vF1Ut34DZw48Z3JanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUUBY14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
+	1l84ACjcxK6xIIjxv20xvE14v26r4j6ryUM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4j
+	6F4UM28EF7xvwVC2z280aVAFwI0_GcCE3s1l84ACjcxK6I8E87Iv6xkF7I0E14v26rxl6s
+	0DM2vYz4IE04k24VAvwVAKI4IrM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI
+	64kE6c02F40Ex7xfMcIj6xIIjxv20xvE14v26r1j6r18McIj6I8E87Iv67AKxVW8JVWxJw
+	Am72CE4IkC6x0Yz7v_Jr0_Gr1lF7xvr2IYc2Ij64vIr41lF7I21c0EjII2zVCS5cI20VAG
+	YxC7M4IIrI8v6xkF7I0E8cxan2IY04v7MxkF7I0En4kS14v26r1q6r43MxAIw28IcxkI7V
+	AKI48JMxC20s026xCaFVCjc4AY6r1j6r4UMI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCj
+	r7xvwVAFwI0_JrI_JrWlx4CE17CEb7AF67AKxVWUtVW8ZwCIc40Y0x0EwIxGrwCI42IY6x
+	IIjxv20xvE14v26r1j6r1xMIIF0xvE2Ix0cI8IcVCY1x0267AKxVW8JVWxJwCI42IY6xAI
+	w20EY4v20xvaj40_Jr0_JF4lIxAIcVC2z280aVAFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x
+	0267AKxVW8JVW8JrUvcSsGvfC2KfnxnUUI43ZEXa7VUjEoGDUUUUU==
+X-Originating-IP: [210.73.43.101]
+X-CM-SenderInfo: 50xmxthndljiysv6x2xfdvhtffof0/1tbiBwsECWnM0NKVfQAAsO
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260331_124230_010292_07356739 
-X-CRM114-Status: GOOD (  16.32  )
+X-CRM114-CacheID: sfid-20260401_034913_260054_56A2948F 
+X-CRM114-Status: UNSURE (   7.73  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -93,131 +88,44 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Add README.rst for KVM selftest runner and explain how to use the
-runner.
+Hi Anup,
 
-Signed-off-by: Vipin Sharma <vipinsh@google.com>
----
- tools/testing/selftests/kvm/.gitignore        |  1 +
- tools/testing/selftests/kvm/runner/README.rst | 95 +++++++++++++++++++
- 2 files changed, 96 insertions(+)
- create mode 100644 tools/testing/selftests/kvm/runner/README.rst
+I've been fuzzing the latest kvm-riscv with the spin_trylock() fix 
+applied, and I can still reproduce the use-after-free bug in 
+kvm_riscv_gstage_get_leaf(). This indicates the current fix is 
+insufficient.
 
-diff --git a/tools/testing/selftests/kvm/.gitignore b/tools/testing/selftests/kvm/.gitignore
-index 548d435bde2f..83aa2fe01bac 100644
---- a/tools/testing/selftests/kvm/.gitignore
-+++ b/tools/testing/selftests/kvm/.gitignore
-@@ -4,6 +4,7 @@
- !*.c
- !*.h
- !*.py
-+!*.rst
- !*.S
- !*.sh
- !*.test
-diff --git a/tools/testing/selftests/kvm/runner/README.rst b/tools/testing/selftests/kvm/runner/README.rst
-new file mode 100644
-index 000000000000..e264c78ace68
---- /dev/null
-+++ b/tools/testing/selftests/kvm/runner/README.rst
-@@ -0,0 +1,95 @@
-+KVM Selftest Runner
-+===================
-+
-+Execute KVM selftests with high configurability. The runner supports parallel
-+execution, hierarchical output storage, console output control, and execution
-+status reporting.
-+
-+Compatibility with KVM Selftests
-+===============================
-+
-+The runner acts as a non-intrusive wrapper around the existing KVM selftests.
-+It does not modify the underlying test binaries or the way they are built.
-+You can still run KVM selftests using traditional methods without any conflict:
-+
-+- Execute binaries directly: ``./dirty_log_perf_test -v 4``
-+- Use the standard kselftest framework: ``make -C tools/testing/selftests TARGETS=kvm run_tests``
-+
-+Comparison with kselftest framework
-+===================================
-+
-+While the standard ``kselftest`` framework provides basic execution and reporting,
-+this runner is designed for more advanced testing scenarios and offers several
-+advantages:
-+
-+- **Flexible Test Selection**: Unlike some ``kselftest`` options that may use a
-+  fixed ``suite:test`` syntax for selection, this runner leverages the
-+  filesystem. You can group tests into directories (acting as suites) or
-+  provide a list of specific test files, offering a more intuitive way to
-+  organize and execute subsets of tests.
-+- **Parallel Execution**: Run tests concurrently using the ``-j`` flag to
-+  significantly reduce total execution time.
-+- **Granular Output Control**: Control exactly what gets printed to the console
-+  for passed, failed, skipped, or timed-out tests.
-+- **Hierarchical Logging**: Automatically save the stdout and stderr of every
-+  test into a structured directory tree, making it easy to debug failures in
-+  large test runs.
-+- **Out-of-Tree Support**: Easily run test binaries located in a different
-+  directory using the ``-p`` flag.
-+
-+Generate Default Tests
-+======================
-+
-+Generate the default test case files using the provided make target::
-+
-+  # make tests_install
-+
-+This creates the ``testcases_default_gen`` directory containing ``default.test``
-+files. Each KVM selftest has a directory with a ``default.test`` file. This file
-+contains the executable path relative to the KVM selftest root directory
-+(``/tools/testing/selftests/kvm``). For example, the ``dirty_log_perf_test``
-+entry looks like::
-+
-+  # cat testcases_default_gen/dirty_log_perf_test/default.test
-+  dirty_log_perf_test
-+
-+In above testcase, the runner executes ``dirty_log_perf_test``. Testcase files
-+can provide extra arguments to the test::
-+
-+  # cat tests/dirty_log_perf_test/2slot_5vcpu_10iter.test
-+  dirty_log_perf_test -x 2 -v 5 -i 10
-+
-+In this case, the runner executes ``dirty_log_perf_test`` with the specified
-+options.
-+
-+Examples
-+========
-+
-+Display all options::
-+
-+  # python3 runner -h
-+
-+Run all default tests::
-+
-+  # python3 runner -d testcases_default_gen
-+
-+Run tests in parallel::
-+
-+  # python3 runner -d testcases_default_gen -j 40
-+
-+Print only passed test status and failed test stderr::
-+
-+  # python3 runner -d testcases_default_gen --print-passed status \
-+  --print-failed stderr
-+
-+Run test binaries from a different directory (e.g., out-of-tree builds)::
-+
-+  # python3 runner -d testcases_default_gen -p /path/to/binaries
-+
-+Save all test outputs (stdout, stderr, status) to a directory::
-+
-+  # python3 runner -d testcases_default_gen -o test_outputs
-+
-+Run specific testcase files::
-+
-+  # python3 runner -t tests/dirty_log_perf_test/2slot_5vcpu_10iter.test
--- 
-2.53.0.1118.gaef5881109-goog
+The current code does:
+    mmu_locked = spin_trylock(&kvm->mmu_lock);
+    kvm_riscv_gstage_unmap_range(...);
+    if (mmu_locked)
+        spin_unlock(&kvm->mmu_lock);
+When spin_trylock() fails (lock held by another CPU), the code still 
+proceeds to access the gstage page table without any protection, 
+leading to UAF when concurrent with kvm_riscv_mmu_free_pgd().
+
+The fundamental issue is that spin_trylock() returns false in two 
+different cases:
+1. Lock held by current thread (we should continue)
+2. Lock held by another thread (we should NOT continue)
+But the current code doesn't distinguish between them.
+
+My proposed fix:
+Use lock_is_held_type() to check if current thread already holds the 
+lock:
+    bool need_unlock = false;
+    if (!lock_is_held_type(&kvm->mmu_lock, LOCK_STATE_HELD)) {
+        spin_lock(&kvm->mmu_lock);
+        need_unlock = true;
+    }
+    kvm_riscv_gstage_unmap_range(...);
+    if (need_unlock)
+        spin_unlock(&kvm->mmu_lock);
+
+However, I'm not sure if this is the best approach. What do you think?
+
+Thanks,
+Jiakai
 
 
 -- 
