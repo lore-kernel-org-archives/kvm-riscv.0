@@ -4,51 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1B84AD39423
-	for <kvm-riscv@archiver.kernel.org>; Thu,  2 Apr 2026 13:23:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CE04CD39422
+	for <kvm-riscv@archiver.kernel.org>; Thu,  2 Apr 2026 13:23:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=TksV3pprH1Xx3imkyfm+U6+vToGJQp9zlaP8kseiEHA=; b=10d/O+jylvFcsF
-	tBt9FfiP6qAvx3VKAZh77i7VZh5zxg/8L+v2pxwaA8t6iBLd6dJLv5xBVjsGZpyaPJNGCZzGGDn3W
-	AY2rCFQclon9h++YrFUTVL9GhLnWpuQ5kCjrSltsHuqCPrvtRrzYvG0dpaV9BMpSCFNGaVZuINIfY
-	vMtzRVH5J/onHS7CfvQ1N3b5NJPD3BOBEZcWqE5jO8C+9lsBFN5Y9De2oHmGwPDy6tPXa2xRgu5C5
-	BIxrnAvfEGAWziemGfDCj5/gUA9Ddu5RbAnLO505HGrLqb+Pk+j09qg6thAuWEDAQUeOoAbXGaCY8
-	6q6bD45mjuCrsLKcLorQ==;
+	List-Owner; bh=26Qao+h20/L2QjuuWq6KzHIAWNJxc37aDAmVyqd+hl8=; b=1f2FvUQ33arwFl
+	9TkKSLXqmtmx3ynpRq/BCiowVthKaGdVKefOMZqFit0HGTAkfbg/LfCSVr9PNWv+mVDeFjrM/fE2w
+	3+41BRuBU6YSGCVxigdHbc1Py/Hbq9Qme8CZafzCQsuhc/CuDgAOjOz2WjSq8iZkoSvR9+uyP0mxJ
+	QulQRPm4aSqjgLFCAxg6aBmD+p9TuuZlKXdsNSYA6LArno/fvzF3BckbyMo0jHtGEQFke0Rh6kGBS
+	MWVZ8lyZL+9pDWzlREj6qykYdETQiKLcDt7bp+5NMjvUkUtJBIi2/pVjr4Miy1UEFg1dRo4uo1Jzl
+	agz5APeztHruuWgGIAuw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1w8I1U-00000000AXe-3V3o;
+	id 1w8I1U-00000000AWu-2Nvi;
 	Thu, 02 Apr 2026 13:23:48 +0000
 Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1w8I1S-00000000AUG-18qP;
+	id 1w8I1S-00000000AUI-1CJT;
 	Thu, 02 Apr 2026 13:23:46 +0000
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:MIME-Version
 	:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
 	Content-Type:Content-ID:Content-Description;
-	bh=P6NbZiOMkU8cQutDdqvRtWcC03732/Yoi102kKoLQNc=; b=JJC9I6EQoH4FRbH5jPMAL27t+2
-	Ox9YuYu+LkPVrvUFCkZ1n2+9ViIVtypIR6isADhRPVeyO11N0XcO9RyusbDSpyStRemYgTf0zDDUS
-	EIWl3tcEmBfj8b4qcxcKaFTeBrzgA/e3ZM5jPutSUJmYH+4duGgzACvkIwcg/WDRIqmFfiI1fg+/A
-	zZoFQmL2bY+aT2KeUPQNzjc1rsf6F0A+vtgkYDdCeZvYAlYYydgus2PmaTAJc1QVJiuWZ94YRoeVN
-	phrNeNwzHLApkmjIULyTaYOAlTi3EBNweNCZsbWV0qD1QgWKzbzbX6MK4Bx+dn0XhcDL3gvH5XDlz
-	JgOQNHKw==;
-Received: from out30-132.freemail.mail.aliyun.com ([115.124.30.132])
+	bh=uQ7MH/P5X4dEeg6SQT8ncWdhiILNQuCxIsZxQBjBQDo=; b=SeMDRFyxsoZxJGrWi9h/zQCjHG
+	CeVAE2i0xzKZEHayjSGevyfZYpu5QOPV+CFQmo5cRJEQWuXz264CQEcdC/obRt837N/X9JWBw3F4l
+	RWvz7Hs+/EGT/10nt1wSYdz4+DNDlrzVLLIQPjsr7QLq+LvEmfwZMyMfcPTtkcZTXEUgnoFl3vTiV
+	6TI/6AyRe/yZX/t+h5nMWh6taP8owad9yCIbtq671ollBad7+ocwCjTzoWzWTDp1zWDFT+MhYObTB
+	Qvxsp3FKlVIKdQ20eDq00BpHx5fIjgL3n+BlL5qDY4Blq5LFIRqQhGKZrD4PYPYXpn9OVe2Nw/nTG
+	HyR40T3g==;
+Received: from out30-111.freemail.mail.aliyun.com ([115.124.30.111])
 	by desiato.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1w8I1N-00000002X6z-2hcR;
-	Thu, 02 Apr 2026 13:23:43 +0000
+	id 1w8I1N-00000002X7r-3eY4;
+	Thu, 02 Apr 2026 13:23:44 +0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
 	d=linux.alibaba.com; s=default;
-	t=1775136206; h=From:To:Subject:Date:Message-Id:MIME-Version;
-	bh=P6NbZiOMkU8cQutDdqvRtWcC03732/Yoi102kKoLQNc=;
-	b=FIAEFGRx9h3JcnRoHaarFTSlvuH4mkYGRGUtBjwGcKpp9JyIAwJ5O8XxaXf0Bpjg71gLyH87bsRo6BPc7/6bJz/dfJlS2Lvjwg4DA/H0u0mA6F4YJkcDEOf+C+Ue5weq9lodXK6C6eaGgpz/biOEPboksl24G7GjFWnEeg/pE3U=
-X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R161e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam033037026112;MF=fangyu.yu@linux.alibaba.com;NM=1;PH=DS;RN=18;SR=0;TI=SMTPD_---0X0HNDE7_1775136203;
-Received: from localhost.localdomain(mailfrom:fangyu.yu@linux.alibaba.com fp:SMTPD_---0X0HNDE7_1775136203 cluster:ay36)
+	t=1775136211; h=From:To:Subject:Date:Message-Id:MIME-Version;
+	bh=uQ7MH/P5X4dEeg6SQT8ncWdhiILNQuCxIsZxQBjBQDo=;
+	b=X3YOhVE9XoEaHcIqvbp31AghowJBuedcX31K+Sk0gNQ35SdawOwi1FUQxOcOh/Zx8e0curDVqhDdsS4IFEyy9GDmKBlwla2QAZlXGUcR6T/IVM7CdzrvGeEbAGGOwk4kSYqSvezcHySVy3tRUxIMJtxBNuQcumfV1O/VXcPJl/c=
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R151e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam011083073210;MF=fangyu.yu@linux.alibaba.com;NM=1;PH=DS;RN=18;SR=0;TI=SMTPD_---0X0HNDF6_1775136206;
+Received: from localhost.localdomain(mailfrom:fangyu.yu@linux.alibaba.com fp:SMTPD_---0X0HNDF6_1775136206 cluster:ay36)
           by smtp.aliyun-inc.com;
-          Thu, 02 Apr 2026 21:23:24 +0800
+          Thu, 02 Apr 2026 21:23:26 +0800
 From: fangyu.yu@linux.alibaba.com
 To: pbonzini@redhat.com,
 	corbet@lwn.net,
@@ -68,16 +68,16 @@ Cc: guoren@kernel.org,
 	linux-riscv@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	Fangyu Yu <fangyu.yu@linux.alibaba.com>
-Subject: [PATCH v7 2/4] RISC-V: KVM: Cache gstage pgd_levels in struct kvm_gstage
-Date: Thu,  2 Apr 2026 21:23:01 +0800
-Message-Id: <20260402132303.6252-3-fangyu.yu@linux.alibaba.com>
+Subject: [PATCH v7 4/4] RISC-V: KVM: add KVM_CAP_RISCV_SET_HGATP_MODE
+Date: Thu,  2 Apr 2026 21:23:03 +0800
+Message-Id: <20260402132303.6252-5-fangyu.yu@linux.alibaba.com>
 X-Mailer: git-send-email 2.39.3 (Apple Git-146)
 In-Reply-To: <20260402132303.6252-1-fangyu.yu@linux.alibaba.com>
 References: <20260402132303.6252-1-fangyu.yu@linux.alibaba.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260402_142342_018261_6EBA90E0 
-X-CRM114-Status: GOOD (  13.03  )
+X-CRM114-CacheID: sfid-20260402_142342_587171_A0789D7A 
+X-CRM114-Status: GOOD (  15.21  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -96,223 +96,116 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 From: Fangyu Yu <fangyu.yu@linux.alibaba.com>
 
-Gstage page-table helpers frequently chase gstage->kvm->arch to
-fetch pgd_levels. This adds noise and repeats the same dereference
-chain in hot paths.
+Add a VM capability that allows userspace to select the G-stage page table
+format by setting HGATP.MODE on a per-VM basis.
 
-Add pgd_levels to struct kvm_gstage and initialize it from kvm->arch
-when setting up a gstage instance. Introduce kvm_riscv_gstage_init()
-to centralize initialization and switch gstage code to use
-gstage->pgd_levels.
+Userspace enables the capability via KVM_ENABLE_CAP, passing the requested
+HGATP.MODE in args[0]. The request is rejected with -EINVAL if the mode is
+not supported by the host, and with -EBUSY if the VM has already been
+committed (e.g. vCPUs have been created or any memslot is populated).
 
-Suggested-by: Anup Patel <anup@brainfault.org>
+KVM_CHECK_EXTENSION(KVM_CAP_RISCV_SET_HGATP_MODE) returns a bitmask of the
+HGATP.MODE formats supported by the host.
+
 Signed-off-by: Fangyu Yu <fangyu.yu@linux.alibaba.com>
-Reviewed-by: Anup Patel <anup@brainfault.org>
+Reviewed-by: Andrew Jones <andrew.jones@oss.qualcomm.com>
+Reviewed-by: Guo Ren <guoren@kernel.org>
 ---
- arch/riscv/include/asm/kvm_gstage.h | 10 ++++++
- arch/riscv/kvm/gstage.c             | 10 +++---
- arch/riscv/kvm/mmu.c                | 50 ++++++-----------------------
- 3 files changed, 25 insertions(+), 45 deletions(-)
+ Documentation/virt/kvm/api.rst | 27 +++++++++++++++++++++++++++
+ arch/riscv/kvm/vm.c            | 18 ++++++++++++++++--
+ include/uapi/linux/kvm.h       |  1 +
+ 3 files changed, 44 insertions(+), 2 deletions(-)
 
-diff --git a/arch/riscv/include/asm/kvm_gstage.h b/arch/riscv/include/asm/kvm_gstage.h
-index 5aa58d1f692a..70d9d483365e 100644
---- a/arch/riscv/include/asm/kvm_gstage.h
-+++ b/arch/riscv/include/asm/kvm_gstage.h
-@@ -15,6 +15,7 @@ struct kvm_gstage {
- #define KVM_GSTAGE_FLAGS_LOCAL		BIT(0)
- 	unsigned long vmid;
- 	pgd_t *pgd;
-+	unsigned long pgd_levels;
- };
+diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.rst
+index 032516783e96..9d7f6958fa81 100644
+--- a/Documentation/virt/kvm/api.rst
++++ b/Documentation/virt/kvm/api.rst
+@@ -8902,6 +8902,33 @@ helpful if user space wants to emulate instructions which are not
+ This capability can be enabled dynamically even if VCPUs were already
+ created and are running.
  
- struct kvm_gstage_mapping {
-@@ -92,4 +93,13 @@ static inline unsigned long kvm_riscv_gstage_mode(unsigned long pgd_levels)
- 	}
- }
- 
-+static inline void kvm_riscv_gstage_init(struct kvm_gstage *gstage, struct kvm *kvm)
-+{
-+	gstage->kvm = kvm;
-+	gstage->flags = 0;
-+	gstage->vmid = READ_ONCE(kvm->arch.vmid.vmid);
-+	gstage->pgd = kvm->arch.pgd;
-+	gstage->pgd_levels = kvm->arch.pgd_levels;
-+}
++7.47 KVM_CAP_RISCV_SET_HGATP_MODE
++---------------------------------
 +
- #endif
-diff --git a/arch/riscv/kvm/gstage.c b/arch/riscv/kvm/gstage.c
-index 4beb9322fe76..7c4c34bc191b 100644
---- a/arch/riscv/kvm/gstage.c
-+++ b/arch/riscv/kvm/gstage.c
-@@ -26,7 +26,7 @@ static inline unsigned long gstage_pte_index(struct kvm_gstage *gstage,
- 	unsigned long mask;
- 	unsigned long shift = HGATP_PAGE_SHIFT + (kvm_riscv_gstage_index_bits * level);
++:Architectures: riscv
++:Type: VM
++:Parameters: args[0] contains the requested HGATP mode
++:Returns:
++  - 0 on success.
++  - -EINVAL if args[0] is outside the range of HGATP modes supported by the
++    hardware.
++  - -EBUSY if vCPUs have already been created for the VM, if the VM has any
++    non-empty memslots.
++
++This capability allows userspace to explicitly select the HGATP mode for
++the VM. The selected mode must be supported by both KVM and hardware. This
++capability must be enabled before creating any vCPUs or memslots.
++
++If this capability is not enabled, KVM will select the default HGATP mode
++automatically. The default is the highest HGATP.MODE value supported by
++hardware.
++
++``KVM_CHECK_EXTENSION(KVM_CAP_RISCV_SET_HGATP_MODE)`` returns a bitmask of
++HGATP.MODE values supported by the host. A return value of 0 indicates that
++the capability is not supported. Supported-mode bitmask use HGATP.MODE
++encodings as defined by the RISC-V privileged specification, such as Sv39x4
++corresponds to HGATP.MODE=8, so userspace should test bitmask & BIT(8).
++
+ 8. Other capabilities.
+ ======================
  
--	if (level == gstage->kvm->arch.pgd_levels - 1)
-+	if (level == gstage->pgd_levels - 1)
- 		mask = (PTRS_PER_PTE * (1UL << kvm_riscv_gstage_pgd_xbits)) - 1;
- 	else
- 		mask = PTRS_PER_PTE - 1;
-@@ -45,7 +45,7 @@ static int gstage_page_size_to_level(struct kvm_gstage *gstage, unsigned long pa
- 	u32 i;
- 	unsigned long psz = 1UL << 12;
+diff --git a/arch/riscv/kvm/vm.c b/arch/riscv/kvm/vm.c
+index 4d82a886102c..5e82a3ad3ad0 100644
+--- a/arch/riscv/kvm/vm.c
++++ b/arch/riscv/kvm/vm.c
+@@ -201,6 +201,9 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+ 	case KVM_CAP_VM_GPA_BITS:
+ 		r = kvm_riscv_gstage_gpa_bits(kvm->arch.pgd_levels);
+ 		break;
++	case KVM_CAP_RISCV_SET_HGATP_MODE:
++		r = kvm_riscv_get_hgatp_mode_mask();
++		break;
+ 	default:
+ 		r = 0;
+ 		break;
+@@ -211,12 +214,23 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
  
--	for (i = 0; i < gstage->kvm->arch.pgd_levels; i++) {
-+	for (i = 0; i < gstage->pgd_levels; i++) {
- 		if (page_size == (psz << (i * kvm_riscv_gstage_index_bits))) {
- 			*out_level = i;
- 			return 0;
-@@ -58,7 +58,7 @@ static int gstage_page_size_to_level(struct kvm_gstage *gstage, unsigned long pa
- static int gstage_level_to_page_order(struct kvm_gstage *gstage, u32 level,
- 				      unsigned long *out_pgorder)
+ int kvm_vm_ioctl_enable_cap(struct kvm *kvm, struct kvm_enable_cap *cap)
  {
--	if (gstage->kvm->arch.pgd_levels < level)
-+	if (gstage->pgd_levels < level)
++	if (cap->flags)
++		return -EINVAL;
++
+ 	switch (cap->cap) {
+ 	case KVM_CAP_RISCV_MP_STATE_RESET:
+-		if (cap->flags)
+-			return -EINVAL;
+ 		kvm->arch.mp_state_reset = true;
+ 		return 0;
++	case KVM_CAP_RISCV_SET_HGATP_MODE:
++		if (!kvm_riscv_hgatp_mode_is_valid(cap->args[0]))
++			return -EINVAL;
++
++		if (kvm->created_vcpus || !kvm_are_all_memslots_empty(kvm))
++			return -EBUSY;
++#ifdef CONFIG_64BIT
++		kvm->arch.pgd_levels = 3 + cap->args[0] - HGATP_MODE_SV39X4;
++#endif
++		return 0;
+ 	default:
  		return -EINVAL;
+ 	}
+diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+index 80364d4dbebb..a74a80fd4046 100644
+--- a/include/uapi/linux/kvm.h
++++ b/include/uapi/linux/kvm.h
+@@ -989,6 +989,7 @@ struct kvm_enable_cap {
+ #define KVM_CAP_ARM_SEA_TO_USER 245
+ #define KVM_CAP_S390_USER_OPEREXEC 246
+ #define KVM_CAP_S390_KEYOP 247
++#define KVM_CAP_RISCV_SET_HGATP_MODE 248
  
- 	*out_pgorder = 12 + (level * kvm_riscv_gstage_index_bits);
-@@ -83,7 +83,7 @@ bool kvm_riscv_gstage_get_leaf(struct kvm_gstage *gstage, gpa_t addr,
- 			       pte_t **ptepp, u32 *ptep_level)
- {
- 	pte_t *ptep;
--	u32 current_level = gstage->kvm->arch.pgd_levels - 1;
-+	u32 current_level = gstage->pgd_levels - 1;
- 
- 	*ptep_level = current_level;
- 	ptep = (pte_t *)gstage->pgd;
-@@ -127,7 +127,7 @@ int kvm_riscv_gstage_set_pte(struct kvm_gstage *gstage,
- 			     struct kvm_mmu_memory_cache *pcache,
- 			     const struct kvm_gstage_mapping *map)
- {
--	u32 current_level = gstage->kvm->arch.pgd_levels - 1;
-+	u32 current_level = gstage->pgd_levels - 1;
- 	pte_t *next_ptep = (pte_t *)gstage->pgd;
- 	pte_t *ptep = &next_ptep[gstage_pte_index(gstage, map->addr, current_level)];
- 
-diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-index fbcdd75cb9af..2d3def024270 100644
---- a/arch/riscv/kvm/mmu.c
-+++ b/arch/riscv/kvm/mmu.c
-@@ -24,10 +24,7 @@ static void mmu_wp_memory_region(struct kvm *kvm, int slot)
- 	phys_addr_t end = (memslot->base_gfn + memslot->npages) << PAGE_SHIFT;
- 	struct kvm_gstage gstage;
- 
--	gstage.kvm = kvm;
--	gstage.flags = 0;
--	gstage.vmid = READ_ONCE(kvm->arch.vmid.vmid);
--	gstage.pgd = kvm->arch.pgd;
-+	kvm_riscv_gstage_init(&gstage, kvm);
- 
- 	spin_lock(&kvm->mmu_lock);
- 	kvm_riscv_gstage_wp_range(&gstage, start, end);
-@@ -49,10 +46,7 @@ int kvm_riscv_mmu_ioremap(struct kvm *kvm, gpa_t gpa, phys_addr_t hpa,
- 	struct kvm_gstage_mapping map;
- 	struct kvm_gstage gstage;
- 
--	gstage.kvm = kvm;
--	gstage.flags = 0;
--	gstage.vmid = READ_ONCE(kvm->arch.vmid.vmid);
--	gstage.pgd = kvm->arch.pgd;
-+	kvm_riscv_gstage_init(&gstage, kvm);
- 
- 	end = (gpa + size + PAGE_SIZE - 1) & PAGE_MASK;
- 	pfn = __phys_to_pfn(hpa);
-@@ -89,10 +83,7 @@ void kvm_riscv_mmu_iounmap(struct kvm *kvm, gpa_t gpa, unsigned long size)
- {
- 	struct kvm_gstage gstage;
- 
--	gstage.kvm = kvm;
--	gstage.flags = 0;
--	gstage.vmid = READ_ONCE(kvm->arch.vmid.vmid);
--	gstage.pgd = kvm->arch.pgd;
-+	kvm_riscv_gstage_init(&gstage, kvm);
- 
- 	spin_lock(&kvm->mmu_lock);
- 	kvm_riscv_gstage_unmap_range(&gstage, gpa, size, false);
-@@ -109,10 +100,7 @@ void kvm_arch_mmu_enable_log_dirty_pt_masked(struct kvm *kvm,
- 	phys_addr_t end = (base_gfn + __fls(mask) + 1) << PAGE_SHIFT;
- 	struct kvm_gstage gstage;
- 
--	gstage.kvm = kvm;
--	gstage.flags = 0;
--	gstage.vmid = READ_ONCE(kvm->arch.vmid.vmid);
--	gstage.pgd = kvm->arch.pgd;
-+	kvm_riscv_gstage_init(&gstage, kvm);
- 
- 	kvm_riscv_gstage_wp_range(&gstage, start, end);
- }
-@@ -141,10 +129,7 @@ void kvm_arch_flush_shadow_memslot(struct kvm *kvm,
- 	phys_addr_t size = slot->npages << PAGE_SHIFT;
- 	struct kvm_gstage gstage;
- 
--	gstage.kvm = kvm;
--	gstage.flags = 0;
--	gstage.vmid = READ_ONCE(kvm->arch.vmid.vmid);
--	gstage.pgd = kvm->arch.pgd;
-+	kvm_riscv_gstage_init(&gstage, kvm);
- 
- 	spin_lock(&kvm->mmu_lock);
- 	kvm_riscv_gstage_unmap_range(&gstage, gpa, size, false);
-@@ -250,10 +235,7 @@ bool kvm_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range)
- 	if (!kvm->arch.pgd)
- 		return false;
- 
--	gstage.kvm = kvm;
--	gstage.flags = 0;
--	gstage.vmid = READ_ONCE(kvm->arch.vmid.vmid);
--	gstage.pgd = kvm->arch.pgd;
-+	kvm_riscv_gstage_init(&gstage, kvm);
- 	mmu_locked = spin_trylock(&kvm->mmu_lock);
- 	kvm_riscv_gstage_unmap_range(&gstage, range->start << PAGE_SHIFT,
- 				     (range->end - range->start) << PAGE_SHIFT,
-@@ -275,10 +257,7 @@ bool kvm_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
- 
- 	WARN_ON(size != PAGE_SIZE && size != PMD_SIZE && size != PUD_SIZE);
- 
--	gstage.kvm = kvm;
--	gstage.flags = 0;
--	gstage.vmid = READ_ONCE(kvm->arch.vmid.vmid);
--	gstage.pgd = kvm->arch.pgd;
-+	kvm_riscv_gstage_init(&gstage, kvm);
- 	if (!kvm_riscv_gstage_get_leaf(&gstage, range->start << PAGE_SHIFT,
- 				       &ptep, &ptep_level))
- 		return false;
-@@ -298,10 +277,7 @@ bool kvm_test_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
- 
- 	WARN_ON(size != PAGE_SIZE && size != PMD_SIZE && size != PUD_SIZE);
- 
--	gstage.kvm = kvm;
--	gstage.flags = 0;
--	gstage.vmid = READ_ONCE(kvm->arch.vmid.vmid);
--	gstage.pgd = kvm->arch.pgd;
-+	kvm_riscv_gstage_init(&gstage, kvm);
- 	if (!kvm_riscv_gstage_get_leaf(&gstage, range->start << PAGE_SHIFT,
- 				       &ptep, &ptep_level))
- 		return false;
-@@ -463,10 +439,7 @@ int kvm_riscv_mmu_map(struct kvm_vcpu *vcpu, struct kvm_memory_slot *memslot,
- 	struct kvm_gstage gstage;
- 	struct page *page;
- 
--	gstage.kvm = kvm;
--	gstage.flags = 0;
--	gstage.vmid = READ_ONCE(kvm->arch.vmid.vmid);
--	gstage.pgd = kvm->arch.pgd;
-+	kvm_riscv_gstage_init(&gstage, kvm);
- 
- 	/* Setup initial state of output mapping */
- 	memset(out_map, 0, sizeof(*out_map));
-@@ -587,10 +560,7 @@ void kvm_riscv_mmu_free_pgd(struct kvm *kvm)
- 
- 	spin_lock(&kvm->mmu_lock);
- 	if (kvm->arch.pgd) {
--		gstage.kvm = kvm;
--		gstage.flags = 0;
--		gstage.vmid = READ_ONCE(kvm->arch.vmid.vmid);
--		gstage.pgd = kvm->arch.pgd;
-+		kvm_riscv_gstage_init(&gstage, kvm);
- 		kvm_riscv_gstage_unmap_range(&gstage, 0UL,
- 			kvm_riscv_gstage_gpa_size(kvm->arch.pgd_levels), false);
- 		pgd = READ_ONCE(kvm->arch.pgd);
+ struct kvm_irq_routing_irqchip {
+ 	__u32 irqchip;
 -- 
 2.50.1
 
