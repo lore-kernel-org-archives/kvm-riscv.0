@@ -4,130 +4,80 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B5715D39406
-	for <kvm-riscv@archiver.kernel.org>; Thu,  2 Apr 2026 10:23:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 16A47D39422
+	for <kvm-riscv@archiver.kernel.org>; Thu,  2 Apr 2026 13:23:46 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
-	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=Nz8jpk5mi4gQCWApg92rQ1FOlLVxZ3QE2FndNut5Jnc=; b=kd35BEmpTz3DH7
-	xDAZd4MhC5GjYYDX50Yia1BLUC8/sbLb2AHGIM/E781R+hQcYnHo5VcT4N9b3D7EnfsOAGFKKHJwz
-	yN4WdnJcOB42CQUkc1YVom3nsLroVSs+i+gYJ8QD+zdKO7Q7lakJ1+1XnB8dJOobq3Tehffbnrui1
-	9VwDNLlneP00rRdh3xQ3iKAyX9WTfGk4tEHMgKrBExLe7dTNa1Ebxja/5VWn4UMzx8ZT7oPnx/YCA
-	inHAFgii30zbXain0EL59JrO0r7jCyuVZNntLwWo0LvIe6xgtKi8GoolXKxw9zXzXK1E9njewNIEB
-	X/0G4yFTV8gDoi6mnfyQ==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=lMagpSgmuBVaxSbaK9Qy6tZ7aDbzGr34eemf/rzyaMI=; b=pdrhMRI6ojuIl0
+	gw9RJbJyEKH+EdZ5+Yo5Z5yYBs80zoohjYcIfooun0qGFKKdHdtQ3yI0/L/vH9BDTRz0Jwa02mzqL
+	B3xG1ACbnbpBRDshbJnan6U3PVoJIHNQWgPdzKPKgegcmWkbIneD/gRsxd268Rj1zX0cxt/1W+JyQ
+	MXnehWfINr8Urwc7LMPVX+NuxTqYNXOC6kXJeZipML0cLS63WITFcmY89hH6XEgPaE/9h7WBdd+e+
+	t0sO3EjPRNHBwoomegswK4AEd6prwgEl2HdiqsQ6f1M1H0UfaJRYPHvxhZ+TlheOUg1suaAVv+6k4
+	DZWiivmLPIvXKIvrjd2Q==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1w8FCy-0000000HOoZ-44Pw;
-	Thu, 02 Apr 2026 10:23:28 +0000
-Received: from mx0b-0031df01.pphosted.com ([205.220.180.131])
+	id 1w8I1R-00000000AUU-3RGY;
+	Thu, 02 Apr 2026 13:23:45 +0000
+Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1w8FCw-0000000HOoD-3kRL
-	for kvm-riscv@lists.infradead.org;
-	Thu, 02 Apr 2026 10:23:28 +0000
-Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6327CNdB1128559
-	for <kvm-riscv@lists.infradead.org>; Thu, 2 Apr 2026 10:23:25 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=qcppdkim1; bh=9NJM49s+MiVY1tQMsPbOJHH10Xogvc7mmpy
-	Ts02c6Ms=; b=UlP4958gdS9gDtGGXlkbTIAwReZ8obzELD2H/85Wb9ZPv/YSXr7
-	bhVmtqDH1m7FsugU0zpLe2/bHjqLPGfilTh/A2VG4/QuNYEyrcCUBukDdElQrBpz
-	2EguKES2Lhn3q/LfSx+tq+8LtQR2SikmyENdnDvusozue9F5cmIUNb6kNdap+3B8
-	nZ0j9oZFNh7C0JeVqITCR0jiI4BktJ5D8Px+qLhCoJGVm3INZqHUff0q6hgE/0fz
-	cuetOmdYSyRlnCYNC2y302YFVKyR5EvdhTue2NgWhdGG+SRl147r2DrqeRGbApeF
-	MmwoywgB/S30uGO8BJjHA20sb0cmqVHo3Mw==
-Received: from mail-pf1-f199.google.com (mail-pf1-f199.google.com [209.85.210.199])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4d96k9bj1c-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <kvm-riscv@lists.infradead.org>; Thu, 02 Apr 2026 10:23:24 +0000 (GMT)
-Received: by mail-pf1-f199.google.com with SMTP id d2e1a72fcca58-82c714cb672so449481b3a.0
-        for <kvm-riscv@lists.infradead.org>; Thu, 02 Apr 2026 03:23:24 -0700 (PDT)
+	id 1w8I1Q-00000000ATk-1Iz6;
+	Thu, 02 Apr 2026 13:23:44 +0000
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:MIME-Version
+	:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
+	Content-Type:Content-ID:Content-Description;
+	bh=7ELOJE3JZXFjIllqNR+stpZ1VHthBWOJOaGpIGYae10=; b=OEg7XBN+4MUVSb1YviLmTiYSjB
+	fxvG9YjMzQRJJnfFosu+qBUwJmptAmBRPyR4/2CFGlHG4rP5FYK8SVxmpBs/6cWFhS8BnHu881DTg
+	UKv0H3/VISP9OOq9Wa+2LS/Hm9uoR8kxijeiE8z1JpXRcNx1CMZ7HKO6NbMoLqV8BWjn0RUFKXOih
+	bhdcl/8hlFzJu2nWaQoP4ikT1H3tREHXH+HxA+D7imbqwf+KyrKRa1uJWYO/Q9rNJQPdxSi5LYgMR
+	Sqj2fEe3QOP7WQgMYmMnK2x5NRRQti55w/btILt1iPJxMwqFWNZ/o1Admqu+CnR+rgKauqLGvaLJs
+	NknnULyA==;
+Received: from out30-132.freemail.mail.aliyun.com ([115.124.30.132])
+	by desiato.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1w8I1M-00000002X78-13Oq;
+	Thu, 02 Apr 2026 13:23:43 +0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1775125404; x=1775730204; darn=lists.infradead.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=9NJM49s+MiVY1tQMsPbOJHH10Xogvc7mmpyTs02c6Ms=;
-        b=NplpBkjm8PF5nPtKO8OSxLxeHpLkN6wfa/e4QA6b4v1NdUVCfizP0S1vnvd1FufDXS
-         bt9ri2RxdSgXF1zeYitOFgI0aBgeBl30ZWC7c9EV3+o/nzxQZCJx+NRb26HEvk2BW+0E
-         7Uyt1HPP1UOvDZR3lv1n1Jf4tp9uC9uRkSeITTP3zFW3A1DTwsZpIIyVDRzLeJZ/FM0j
-         XAe8ih4mN7ah9GWKgvLdB87HQ1G2Ekzmj1AONvRLxhPVl+gYIn+LkPsCSIDMkBn3/SEz
-         PzOI5v/vTHysqX8UpMQeW3XtvTB/mDm0MOMe6TQS2lAdhOR4SGz5NNFtieYVgE4ZqhxD
-         pJeQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1775125404; x=1775730204;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=9NJM49s+MiVY1tQMsPbOJHH10Xogvc7mmpyTs02c6Ms=;
-        b=euIM/iThbDO2rUQbvfnEYt+KFcJOQnU7XAEt6HuSgxKrv+fQoumzSgA0w+V5v/vv04
-         4taI/KWqEVR5lq/AX6QAnEzts0om7Vq9SRa9nI28DAn6K5DMbo9rGFxbvKvrLX6ArO/j
-         WKXgn5L5n2srlfOQdvgohQlcwaCq8mzr5mrpuCfdhNCSgUKA5d6Bqwf9a8HyMnr1ftdf
-         E1YSY1n9lnxUxhL7cD1K5Qv2t0JfFiyPkzAjY0WmLwmvazulVI8zIZqZHlj/q2drbWVr
-         fn4Mx5Tt9C1D1ibeCwUz3xWg2018WI6b3WstUBWcj+mAMA5LRhQf6ApmUE+K5YXc3Jyz
-         W04g==
-X-Forwarded-Encrypted: i=1; AJvYcCXOUpg9K+j6XRmDEo1ei3jLBpF2qWNlA0eW+b3hIJYSPk67xL1mMudwZHFBwGMeOJh8ry7C9SNHnQg=@lists.infradead.org
-X-Gm-Message-State: AOJu0YxnBGfwFcaO7Bk3lCQ3YOI/A9Egbk4Rl44DWXLsc5TjPEqnSnEK
-	Q60QuqJ0Zpde53S7Zg9tkdVwR1tZessVt1gf/tK7KLWHJ0a9uBGplBg7i6y9zLwKB5slKh0+/EM
-	4gQufdh4xLx5Xmx88+ofFkdmcBBoEJQajWsLeOeLeTZRVoi/xMYFFBmV79AF0snfcwnuc
-X-Gm-Gg: ATEYQzwejcrkM6r+Cmd+8CqqrdS50G23b61ZwKS1rxjW3Z52SqEZKlgNQXKSzAZSwCc
-	Slc6iVhdEhN8poDGnO7Dd9CcNMbrOuWWwN8YgXh97rWqeVErW2wN5MVsEI3OfwtzpAhpXwW0dpy
-	H+poc8SHRH4qof/mFUinxvdshdDrMW1fzGaQCJTgfRYARoK+yvYUvRgx0Lt/5Dp1b/dZYyT48l1
-	HVLTRHHKzOP6jB7N3Az30pdXHzA5kPfXGO0MobaVjbn+by3iQgbonDLbfAytBhqX65vq7ALgwt2
-	2/IBEkvd/qH0Dvln+AoW744zkRG2DzRfr3GUGVid7KtuvC5F24IMnF7jGelJUjVqdFdfM6xZIam
-	19ArlnOLYoGnSkybTqpDikdap5rnWCUnSPt5H+yd0SCnLh8kp+lJ9yD2s6MA=
-X-Received: by 2002:a05:6a00:12e0:b0:82a:1935:f21b with SMTP id d2e1a72fcca58-82ce8b1505fmr6940222b3a.55.1775125404005;
-        Thu, 02 Apr 2026 03:23:24 -0700 (PDT)
-X-Received: by 2002:a05:6a00:12e0:b0:82a:1935:f21b with SMTP id d2e1a72fcca58-82ce8b1505fmr6940195b3a.55.1775125403534;
-        Thu, 02 Apr 2026 03:23:23 -0700 (PDT)
-Received: from hu-mchitale-hyd.qualcomm.com ([202.46.22.19])
-        by smtp.googlemail.com with ESMTPSA id d2e1a72fcca58-82cf9c41bc6sm2643160b3a.29.2026.04.02.03.23.18
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 02 Apr 2026 03:23:23 -0700 (PDT)
-From: Mayuresh Chitale <mayuresh.chitale@oss.qualcomm.com>
-To: Anup Patel <anup@brainfault.org>, Atish Patra <atish.patra@linux.dev>,
-        Paolo Bonzini <pbonzini@redhat.com>, Shuah Khan <shuah@kernel.org>,
-        Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
-        Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
-        Sean Christopherson <seanjc@google.com>, Marc Zyngier <maz@kernel.org>,
-        Oliver Upton <oupton@kernel.org>
-Cc: Mayuresh Chitale <mayuresh.chitale@oss.qualcomm.com>, kvm@vger.kernel.org,
-        kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
-        linux-kselftest@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] KVM: riscv: selftests: Implement kvm_arch_has_default_irqchip
-Date: Thu,  2 Apr 2026 15:48:14 +0530
-Message-ID: <20260402101818.2982071-1-mayuresh.chitale@oss.qualcomm.com>
-X-Mailer: git-send-email 2.43.0
+	d=linux.alibaba.com; s=default;
+	t=1775136207; h=From:To:Subject:Date:Message-Id:MIME-Version;
+	bh=7ELOJE3JZXFjIllqNR+stpZ1VHthBWOJOaGpIGYae10=;
+	b=rNTwyPKEO2dCY5Ks6gPWCREB+37aEP7xc58pV3n0wuUff4V0sZ3TuDK2qGwjT2gj/j7Ja86oxelKPYLUopBnOFDi04Us1+a/IZ+FGCzFncOxsGLGpAzJzL/JfzfutG9yypUsefGyuKsXZRHoJBqbiIVu7O26qqw49fk3/kBAKjc=
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R121e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam011083073210;MF=fangyu.yu@linux.alibaba.com;NM=1;PH=DS;RN=18;SR=0;TI=SMTPD_---0X0HNDEh_1775136205;
+Received: from localhost.localdomain(mailfrom:fangyu.yu@linux.alibaba.com fp:SMTPD_---0X0HNDEh_1775136205 cluster:ay36)
+          by smtp.aliyun-inc.com;
+          Thu, 02 Apr 2026 21:23:25 +0800
+From: fangyu.yu@linux.alibaba.com
+To: pbonzini@redhat.com,
+	corbet@lwn.net,
+	anup@brainfault.org,
+	atish.patra@linux.dev,
+	pjw@kernel.org,
+	palmer@dabbelt.com,
+	aou@eecs.berkeley.edu,
+	alex@ghiti.fr,
+	skhan@linuxfoundation.org
+Cc: guoren@kernel.org,
+	radim.krcmar@oss.qualcomm.com,
+	andrew.jones@oss.qualcomm.com,
+	linux-doc@vger.kernel.org,
+	kvm@vger.kernel.org,
+	kvm-riscv@lists.infradead.org,
+	linux-riscv@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	Fangyu Yu <fangyu.yu@linux.alibaba.com>
+Subject: [PATCH v7 3/4] RISC-V: KVM: Detect and expose supported HGATP G-stage modes
+Date: Thu,  2 Apr 2026 21:23:02 +0800
+Message-Id: <20260402132303.6252-4-fangyu.yu@linux.alibaba.com>
+X-Mailer: git-send-email 2.39.3 (Apple Git-146)
+In-Reply-To: <20260402132303.6252-1-fangyu.yu@linux.alibaba.com>
+References: <20260402132303.6252-1-fangyu.yu@linux.alibaba.com>
 MIME-Version: 1.0
-X-Authority-Analysis: v=2.4 cv=doLWylg4 c=1 sm=1 tr=0 ts=69ce439c cx=c_pps
- a=WW5sKcV1LcKqjgzy2JUPuA==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
- a=A5OVakUREuEA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=_glEPmIy2e8OvE2BGh3C:22 a=EUspDBNiAAAA:8
- a=wNTC72m251yRgy6-mc0A:9 a=OpyuDcXvxspvyRM73sMx:22
-X-Proofpoint-ORIG-GUID: 9JAfFFNwdr5Bm3ca0j88qzaZ4WwrzusN
-X-Proofpoint-GUID: 9JAfFFNwdr5Bm3ca0j88qzaZ4WwrzusN
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDAyMDA5MyBTYWx0ZWRfXwxs1p/CLJmcS
- k3YTr/KhBqMh8Vvmbp2Y+hBtxVMBU/UMLpRTKLbXzKKxijevVZR5Aq7+juSvWoFrWLFlmt7tqrK
- T3hTW01yXwbalRr7+bcBlKfIPul7DH7JjhmG0TR1FDfHvkJnHw822PZwBtCepEw0iLhnw3+YvKR
- LRordJWUfbOo/kf8jAoyhE0E/JCVt/b/pnmCI6DRCFn0S+XApAXvdUOK0/kBqi2inM0a8ddNHvi
- rhBCpSDH6xANOObLoAWaqngVyarf1kRcBAcHH20WY0Qfi4sGIjwExpyB2ye5YYWPRucNeRgFDtg
- 9Qwaw9iywjSWUHx2HFHkUeQwkPG/rZVKjNwfc1mcq23+yO3hUIYFfYXpC9+w+N13NgGUn3vle1j
- SSDA+NMqwlTORKvZ90MSeXjwhPjv1VXhkjmHKcvkxTU4LSvlF4oiEY698f06ZhL7jmqPwZjy0iG
- ISUFVhTDNe3DTXVuAwg==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-04-02_01,2026-04-02_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 bulkscore=0 impostorscore=0 spamscore=0 suspectscore=0
- clxscore=1011 lowpriorityscore=0 malwarescore=0 priorityscore=1501
- adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2603050001
- definitions=main-2604020093
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260402_032327_085978_C88AB98D 
-X-CRM114-Status: UNSURE (   9.27  )
+X-CRM114-CacheID: sfid-20260402_142340_677816_E3F720EF 
+X-CRM114-Status: UNSURE (   8.49  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -145,30 +95,115 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-kvm_arch_has_default_irqchip is required for irqfd_test and returns
-true if an in-kernel interrupt controller is supported.
+From: Fangyu Yu <fangyu.yu@linux.alibaba.com>
 
-Fixes: a133052666bed ("KVM: selftests: Fix irqfd_test for non-x86 architectures")
-Signed-off-by: Mayuresh Chitale <mayuresh.chitale@oss.qualcomm.com>
+Extend kvm_riscv_gstage_mode_detect() to record HGATP.MODE values in a
+bitmask. Keep tracking the maximum supported G-stage page table level
+for existing internal users.
+
+Also provide lightweight helpers to retrieve the supported-mode bitmask
+and validate a requested HGATP.MODE against it.
+
+Signed-off-by: Fangyu Yu <fangyu.yu@linux.alibaba.com>
+Reviewed-by: Andrew Jones <andrew.jones@oss.qualcomm.com>
+Reviewed-by: Guo Ren <guoren@kernel.org>
 ---
- tools/testing/selftests/kvm/lib/riscv/processor.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ arch/riscv/include/asm/kvm_gstage.h | 11 +++++++++++
+ arch/riscv/kvm/gstage.c             | 15 ++++++++++++---
+ 2 files changed, 23 insertions(+), 3 deletions(-)
 
-diff --git a/tools/testing/selftests/kvm/lib/riscv/processor.c b/tools/testing/selftests/kvm/lib/riscv/processor.c
-index 51dd455ff52c..067c6b2c15b0 100644
---- a/tools/testing/selftests/kvm/lib/riscv/processor.c
-+++ b/tools/testing/selftests/kvm/lib/riscv/processor.c
-@@ -566,3 +566,8 @@ unsigned long riscv64_get_satp_mode(void)
+diff --git a/arch/riscv/include/asm/kvm_gstage.h b/arch/riscv/include/asm/kvm_gstage.h
+index 70d9d483365e..bbf8f45c6563 100644
+--- a/arch/riscv/include/asm/kvm_gstage.h
++++ b/arch/riscv/include/asm/kvm_gstage.h
+@@ -31,6 +31,7 @@ struct kvm_gstage_mapping {
+ #endif
  
- 	return val;
+ extern unsigned long kvm_riscv_gstage_max_pgd_levels;
++extern u32 kvm_riscv_gstage_supported_mode_mask;
+ 
+ #define kvm_riscv_gstage_pgd_xbits	2
+ #define kvm_riscv_gstage_pgd_size	(1UL << (HGATP_PAGE_SHIFT + kvm_riscv_gstage_pgd_xbits))
+@@ -102,4 +103,14 @@ static inline void kvm_riscv_gstage_init(struct kvm_gstage *gstage, struct kvm *
+ 	gstage->pgd_levels = kvm->arch.pgd_levels;
  }
-+
-+bool kvm_arch_has_default_irqchip(void)
+ 
++static inline u32 kvm_riscv_get_hgatp_mode_mask(void)
 +{
-+	return kvm_check_cap(KVM_CAP_IRQCHIP);
++	return kvm_riscv_gstage_supported_mode_mask;
 +}
++
++static inline bool kvm_riscv_hgatp_mode_is_valid(unsigned long mode)
++{
++	return kvm_riscv_gstage_supported_mode_mask & BIT(mode);
++}
++
+ #endif
+diff --git a/arch/riscv/kvm/gstage.c b/arch/riscv/kvm/gstage.c
+index 7c4c34bc191b..9204e6427d2d 100644
+--- a/arch/riscv/kvm/gstage.c
++++ b/arch/riscv/kvm/gstage.c
+@@ -16,6 +16,8 @@ unsigned long kvm_riscv_gstage_max_pgd_levels __ro_after_init = 3;
+ #else
+ unsigned long kvm_riscv_gstage_max_pgd_levels __ro_after_init = 2;
+ #endif
++/* Bitmask of supported HGATP.MODE encodings (BIT(HGATP_MODE_*)). */
++u32 kvm_riscv_gstage_supported_mode_mask __ro_after_init;
+ 
+ #define gstage_pte_leaf(__ptep)	\
+ 	(pte_val(*(__ptep)) & (_PAGE_READ | _PAGE_WRITE | _PAGE_EXEC))
+@@ -317,11 +319,17 @@ void kvm_riscv_gstage_wp_range(struct kvm_gstage *gstage, gpa_t start, gpa_t end
+ 
+ void __init kvm_riscv_gstage_mode_detect(void)
+ {
++	kvm_riscv_gstage_supported_mode_mask = 0;
++	kvm_riscv_gstage_max_pgd_levels = 0;
++
+ #ifdef CONFIG_64BIT
+ 	/* Try Sv57x4 G-stage mode */
+ 	csr_write(CSR_HGATP, HGATP_MODE_SV57X4 << HGATP_MODE_SHIFT);
+ 	if ((csr_read(CSR_HGATP) >> HGATP_MODE_SHIFT) == HGATP_MODE_SV57X4) {
+ 		kvm_riscv_gstage_max_pgd_levels = 5;
++		kvm_riscv_gstage_supported_mode_mask |= BIT(HGATP_MODE_SV57X4) |
++							BIT(HGATP_MODE_SV48X4) |
++							BIT(HGATP_MODE_SV39X4);
+ 		goto done;
+ 	}
+ 
+@@ -329,6 +337,8 @@ void __init kvm_riscv_gstage_mode_detect(void)
+ 	csr_write(CSR_HGATP, HGATP_MODE_SV48X4 << HGATP_MODE_SHIFT);
+ 	if ((csr_read(CSR_HGATP) >> HGATP_MODE_SHIFT) == HGATP_MODE_SV48X4) {
+ 		kvm_riscv_gstage_max_pgd_levels = 4;
++		kvm_riscv_gstage_supported_mode_mask |= BIT(HGATP_MODE_SV48X4) |
++							BIT(HGATP_MODE_SV39X4);
+ 		goto done;
+ 	}
+ 
+@@ -336,6 +346,7 @@ void __init kvm_riscv_gstage_mode_detect(void)
+ 	csr_write(CSR_HGATP, HGATP_MODE_SV39X4 << HGATP_MODE_SHIFT);
+ 	if ((csr_read(CSR_HGATP) >> HGATP_MODE_SHIFT) == HGATP_MODE_SV39X4) {
+ 		kvm_riscv_gstage_max_pgd_levels = 3;
++		kvm_riscv_gstage_supported_mode_mask |= BIT(HGATP_MODE_SV39X4);
+ 		goto done;
+ 	}
+ #else /* CONFIG_32BIT */
+@@ -343,13 +354,11 @@ void __init kvm_riscv_gstage_mode_detect(void)
+ 	csr_write(CSR_HGATP, HGATP_MODE_SV32X4 << HGATP_MODE_SHIFT);
+ 	if ((csr_read(CSR_HGATP) >> HGATP_MODE_SHIFT) == HGATP_MODE_SV32X4) {
+ 		kvm_riscv_gstage_max_pgd_levels = 2;
++		kvm_riscv_gstage_supported_mode_mask |= BIT(HGATP_MODE_SV32X4);
+ 		goto done;
+ 	}
+ #endif
+ 
+-	/* KVM depends on !HGATP_MODE_OFF */
+-	kvm_riscv_gstage_max_pgd_levels = 0;
+-
+ done:
+ 	csr_write(CSR_HGATP, 0);
+ 	kvm_riscv_local_hfence_gvma_all();
 -- 
-2.43.0
+2.50.1
 
 
 -- 
