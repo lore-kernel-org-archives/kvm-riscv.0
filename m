@@ -4,73 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D986E88D72
-	for <kvm-riscv@archiver.kernel.org>; Fri,  3 Apr 2026 23:08:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F074AE88D6E
+	for <kvm-riscv@archiver.kernel.org>; Fri,  3 Apr 2026 23:20:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
-	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=K9P6DlMV5Kj+uWbTIVsZyHTQ7QSdCAP+lIlLYk1ISfU=; b=YjkAMUA7mniZtd
-	CDxI0Qc2bvPpHaUAoQ8icW5v4Nh4+sI651pRQucjX82Kf8uDj74KLxHVlLY/B07ktFX4gQEcrTfLH
-	QNfvoFljREoZqeFuBoaXRB9AYfznxeejTT/FKVpbdn1WP3T3zGJlOsGnkguxrnw9UFZuEjHxaA4bs
-	mH5KddZnkKYaxU8pTDHtfhTvFHt2j2ldK25cU4vAUFuzbMOnChMyBy8cVmDi6+qD9TgB+jxts8D9O
-	yabtQ15yCVFlQ3Qxzc7Cgnd8RhZYmo4B62WiCozlIyQnZQE3PT7LLMDjHreMNyMPflyf0RV4gvZ4c
-	MuPldU4TZMrZ9LhAmtww==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-Id:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=sLbsgQgJIHc+HXoJOGhWep80CmoCcm9akXNs1GW/Vn4=; b=gI1+oNawwTgCae
+	7BS3PoCMUpWcrzmZTVqRVfi2cu3W1zyjfTj0Q4kU+DUBGoHDqMFZdq/uMWal1r7XewOOHBO3p7sgS
+	Qwx28mzfbDIQiw3p/4quQHUENmKBrS86ou2b3Hdt63752qD2k1dMAFBq+wgJvilPkEZymmCZH+Jpf
+	bjiOwPOMLkV8qjbOWrNhDm7fplZhpgw6Pn57eKNnt4rht8Tmx0ivecyuNmWrIVCerav8WOgou2lbe
+	4jh37oIj3ObpxzIiQrJxfcg9j+SeiZcR3WR88n8E2pMyth29I/dP197w7xLM73Ud1ww5SJ3oNS0Z+
+	IqOejGdf/6KIbqIv9zyQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1w8nco-00000002i35-26Iy;
-	Fri, 03 Apr 2026 23:08:26 +0000
+	id 1w8noP-00000002j0v-2bBo;
+	Fri, 03 Apr 2026 23:20:25 +0000
 Received: from smtp21.cstnet.cn ([159.226.251.21] helo=cstnet.cn)
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1w8ncl-00000002i2U-0w3c;
-	Fri, 03 Apr 2026 23:08:25 +0000
+	id 1w8noM-00000002j0W-1zlp;
+	Fri, 03 Apr 2026 23:20:24 +0000
 Received: from fric.. (unknown [210.73.43.101])
-	by APP-01 (Coremail) with SMTP id qwCowABXAW05SNBprXYbDA--.6997S2;
-	Sat, 04 Apr 2026 07:07:38 +0800 (CST)
+	by APP-01 (Coremail) with SMTP id qwCowADHb2ssS9BpDqMbDA--.3154S2;
+	Sat, 04 Apr 2026 07:20:12 +0800 (CST)
 From: Jiakai Xu <xujiakai2025@iscas.ac.cn>
-To: andrew.jones@oss.qualcomm.com
-Cc: alex@ghiti.fr,
-	anup@brainfault.org,
-	aou@eecs.berkeley.edu,
-	atish.patra@linux.dev,
-	jiakaiPeanut@gmail.com,
-	kvm-riscv@lists.infradead.org,
+To: kvm-riscv@lists.infradead.org,
 	kvm@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	linux-riscv@lists.infradead.org,
-	palmer@dabbelt.com,
-	pjw@kernel.org,
-	xujiakai2025@iscas.ac.cn
-Subject: Re: [PATCH] RISC-V: KVM: Fix shift-out-of-bounds in make_xfence_request()
-Date: Fri,  3 Apr 2026 23:07:37 +0000
-Message-Id: <20260403230737.2388099-1-xujiakai2025@iscas.ac.cn>
+	linux-riscv@lists.infradead.org
+Cc: Albert Ou <aou@eecs.berkeley.edu>,
+	Alexandre Ghiti <alex@ghiti.fr>,
+	Anup Patel <anup@brainfault.org>,
+	Atish Patra <atish.patra@linux.dev>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Paul Walmsley <pjw@kernel.org>,
+	Jiakai Xu <xujiakai2025@iscas.ac.cn>,
+	Jiakai Xu <jiakaiPeanut@gmail.com>
+Subject: [PATCH v2] RISC-V: KVM: Fix shift-out-of-bounds in make_xfence_request()
+Date: Fri,  3 Apr 2026 23:20:11 +0000
+Message-Id: <20260403232011.2394966-1-xujiakai2025@iscas.ac.cn>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <wneyyisnu6rtkzwpdantjfb6e3fzakkc4gbyfuanavunjoxaev@5niyyh64rdrb>
-References: <wneyyisnu6rtkzwpdantjfb6e3fzakkc4gbyfuanavunjoxaev@5niyyh64rdrb>
 MIME-Version: 1.0
-X-CM-TRANSID: qwCowABXAW05SNBprXYbDA--.6997S2
-X-Coremail-Antispam: 1UD129KBjDUn29KB7ZKAUJUUUUU529EdanIXcx71UUUUU7v73
-	VFW2AGmfu7bjvjm3AaLaJ3UjIYCTnIWjp_UUUYM7AC8VAFwI0_Gr0_Xr1l1xkIjI8I6I8E
-	6xAIw20EY4v20xvaj40_Wr0E3s1l1IIY67AEw4v_Jr0_Jr4l8cAvFVAK0II2c7xJM28Cjx
-	kF64kEwVA0rcxSw2x7M28EF7xvwVC0I7IYx2IY67AKxVW5JVW7JwA2z4x0Y4vE2Ix0cI8I
-	cVCY1x0267AKxVW8JVWxJwA2z4x0Y4vEx4A2jsIE14v26r4UJVWxJr1l84ACjcxK6I8E87
-	Iv6xkF7I0E14v26F4UJVW0owAac4AC62xK8xCEY4vEwIxC4wAS0I0E0xvYzxvE52x082IY
-	62kv0487Mc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AKxVWUJVWUGwAv7V
-	C2z280aVAFwI0_Jr0_Gr1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48IcxkI7VAKI48JM4x0
-	x7Aq67IIx4CEVc8vx2IErcIFxwACI402YVCY1x02628vn2kIc2xKxwCF04k20xvY0x0EwI
-	xGrwCF54CYxVCY1x0262kKe7AKxVWUtVW8ZwCFx2IqxVCFs4IE7xkEbVWUJVW8JwC20s02
-	6c02F40E14v26r1j6r18MI8I3I0E7480Y4vE14v26r106r1rMI8E67AF67kF1VAFwI0_Jw
-	0_GFylIxkGc2Ij64vIr41lIxAIcVC0I7IYx2IY67AKxVWUJVWUCwCI42IY6xIIjxv20xvE
-	c7CjxVAFwI0_Gr0_Cr1lIxAIcVCF04k26cxKx2IYs7xG6r1j6r1xMIIF0xvEx4A2jsIE14
-	v26r1j6r4UMIIF0xvEx4A2jsIEc7CjxVAFwI0_Gr0_Gr1UYxBIdaVFxhVjvjDU0xZFpf9x
-	0JUQZ23UUUUU=
+X-CM-TRANSID: qwCowADHb2ssS9BpDqMbDA--.3154S2
+X-Coremail-Antispam: 1UD129KBjvJXoW7tFy7try3tw1UXF4rWr45Jrb_yoW8XryDpr
+	4kuFsa9Fs5GFnFya47ArZ5WF18Ar1kK34jvrW3uF48Jr4qqry8ArsY93s8Wry3JFsYqryF
+	krnIqFyfua1DAaUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUUPj14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
+	1l84ACjcxK6xIIjxv20xvE14v26ryj6F1UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4j
+	6F4UM28EF7xvwVC2z280aVAFwI0_Cr1j6rxdM28EF7xvwVC2z280aVCY1x0267AKxVWxJr
+	0_GcWlnxkEFVAIw20F6cxK64vIFxWle2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xv
+	F2IEw4CE5I8CrVC2j2WlYx0E2Ix0cI8IcVAFwI0_JrI_JrylYx0Ex4A2jsIE14v26r1j6r
+	4UMcvjeVCFs4IE7xkEbVWUJVW8JwACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I
+	648v4I1lFIxGxcIEc7CjxVA2Y2ka0xkIwI1lc7CjxVAaw2AFwI0_Jw0_GFylc2xSY4AK67
+	AK6FWl42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67AK
+	xVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r1q6r43MIIYrx
+	kI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7IYx2IY6xkF7I0E14v2
+	6r4j6F4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVWUJVW8Jw
+	CI42IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIYCTnIWIevJa73UjIFyTuYvjfU0sqXDUUU
+	U
 X-Originating-IP: [210.73.43.101]
-X-CM-SenderInfo: 50xmxthndljiysv6x2xfdvhtffof0/1tbiBwwGCWnP11+mewAAs3
+X-CM-SenderInfo: 50xmxthndljiysv6x2xfdvhtffof0/1tbiBwkGCWnP11+pggAAsE
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260403_160823_644910_A8F403E1 
-X-CRM114-Status: UNSURE (   5.63  )
+X-CRM114-CacheID: sfid-20260403_162022_893856_1265BF46 
+X-CRM114-Status: UNSURE (   8.91  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -88,23 +87,49 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-> idx is unsigned, so I would expect this 'idx < 0' to produce a warning
-> that it's always false.
-> 
-> I wouldn't introduce idx and just change the current condition instead
-> 
->   if (vcpu->vcpu_id < hbase || vcpu->vcpu_id >= hbase + BITS_PER_LONG)
->      continue;
+The make_xfence_request() function uses a shift operation to check if a
+vCPU is in the hart mask:
 
-Thanks for the review!
+  if (!(hmask & (1UL << (vcpu->vcpu_id - hbase))))
 
-You're right, the 'idx < 0' check is redundant since idx is unsigned.
-Will drop the idx variable and use your suggested condition directly.
+However, when the difference between vcpu_id and hbase
+is >= BITS_PER_LONG, the shift operation causes undefined behavior.
 
-Will send a v2 shortly.
+This was detected by UBSAN:
+  UBSAN: shift-out-of-bounds in arch/riscv/kvm/tlb.c:343:23
+  shift exponent 256 is too large for 64-bit type 'long unsigned int'
 
-Thanks,
-Jiakai
+Fix this by adding a bounds check before the shift operation.
+
+This bug was found by fuzzing the KVM RISC-V interface.
+
+Fixes: 13acfec2dbcc ("RISC-V: KVM: Add remote HFENCE functions based on VCPU requests")
+Signed-off-by: Jiakai Xu <jiakaiPeanut@gmail.com>
+Signed-off-by: Jiakai Xu <xujiakai2025@iscas.ac.cn>
+---
+V1 -> V2:
+- Dropped 'idx' variable and compared vcpu_id against hbase directly,
+  as suggested by Andrew Jones.
+---
+ arch/riscv/kvm/tlb.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/arch/riscv/kvm/tlb.c b/arch/riscv/kvm/tlb.c
+index ff1aeac4eb8eb..439c20c2775ab 100644
+--- a/arch/riscv/kvm/tlb.c
++++ b/arch/riscv/kvm/tlb.c
+@@ -338,7 +338,8 @@ static void make_xfence_request(struct kvm *kvm,
+ 	bitmap_zero(vcpu_mask, KVM_MAX_VCPUS);
+ 	kvm_for_each_vcpu(i, vcpu, kvm) {
+ 		if (hbase != -1UL) {
+-			if (vcpu->vcpu_id < hbase)
++			if (vcpu->vcpu_id < hbase ||
++				vcpu->vcpu_id >= hbase + BITS_PER_LONG)
+ 				continue;
+ 			if (!(hmask & (1UL << (vcpu->vcpu_id - hbase))))
+ 				continue;
+-- 
+2.34.1
 
 
 -- 
