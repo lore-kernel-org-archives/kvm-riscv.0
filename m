@@ -4,66 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7258CEDB7D4
-	for <kvm-riscv@archiver.kernel.org>; Tue,  7 Apr 2026 09:13:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E1595EDB7D8
+	for <kvm-riscv@archiver.kernel.org>; Tue,  7 Apr 2026 09:15:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:Subject:Cc:To:From:Mime-Version:Date:
 	References:In-Reply-To:Message-ID:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=i6f42VDX4/o/D3iAKbOzckV+bUj3WjEcyP1jCYqk8VQ=; b=2fheS7Cuj69mwt
-	Um7Wn4g0hek2xM6OmEOzcyTGEuK2WvHIY/3ccvLps6YbZhGB7E2rW3NmO7scCkQ03VHzzX7bwQR3D
-	iRMTkF0HDBRbPGdtlKYnw8ys7C78hZ6Cjcs/Xgwgkai2PXk1KA7mU0zADQDTgu7qzCzETrAutyucP
-	zvlzWW27guK0VvbwKsSMSm/mLxpl8Wl8L8NXMRXXV3yZY277hTjPZiWWshaC07pfiPD54hIm4WQT/
-	592p8KH8h0kzMkBzqbxV19aglYBxqNp8rKIxoKQsLabb1drRVQqfobQwTD9ZGdqp+C8ffviYuDIkR
-	sCYWli5I+qmh5KW4hUMQ==;
+	List-Owner; bh=Ti5FbXzzwfInAZGV+xdxnSdq7Qsw5aVGpY9KLcl0jPw=; b=eHy/Oa7bSt/Kk8
+	gHgSRA85BERcotZ+y4HUBtn5uY80IU5EmwbR4zSgtjTLTm2AGJ7Cwat3W+C7qZw+UQzNsEt1vWoOZ
+	6rx7b+StNC9fsMOq29Wa6bHrDg7OyZ2//fh6jQ+RkWWTebm303RjJ4qja/y2dXTHrwTEErs3K35tA
+	xe/lVZDNXvhgFADQ7RgNky5HYzWsEgSl3Bc+Te1Jf58r3B3dybz8mOb6WAk4U4ly0nEOAhBODzEHk
+	11U7KC/UHS80aOzp8ydf6kepSIBF11hd1chGydYxSzf2UJvbWG4tBQBQdkEsqSQRpKNS12tfI7Xgn
+	KZBPhX8NxS0FZN89tdSw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1wA2VS-00000006Cln-3Ajt;
-	Tue, 07 Apr 2026 09:13:58 +0000
+	id 1wA2X3-00000006Cxc-2jry;
+	Tue, 07 Apr 2026 09:15:37 +0000
 Received: from mxhk.zte.com.cn ([160.30.148.35])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1wA2VP-00000006Ckk-2hUg;
-	Tue, 07 Apr 2026 09:13:57 +0000
+	id 1wA2X1-00000006Cx1-3HPD;
+	Tue, 07 Apr 2026 09:15:37 +0000
 Received: from mse-fl1.zte.com.cn (unknown [10.5.228.132])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mxhk.zte.com.cn (FangMail) with ESMTPS id 4fqgVN3l4Wz8Xs70;
-	Tue, 07 Apr 2026 17:13:48 +0800 (CST)
-Received: from szxl2zmapp05.zte.com.cn ([10.1.32.37])
-	by mse-fl1.zte.com.cn with SMTP id 6379DZhh068225;
-	Tue, 7 Apr 2026 17:13:35 +0800 (+08)
+	by mxhk.zte.com.cn (FangMail) with ESMTPS id 4fqgWz00Dnz7QYRQ;
+	Tue, 07 Apr 2026 17:15:10 +0800 (CST)
+Received: from szxlzmapp02.zte.com.cn ([10.5.231.79])
+	by mse-fl1.zte.com.cn with SMTP id 6379Ere8070472;
+	Tue, 7 Apr 2026 17:14:53 +0800 (+08)
 	(envelope-from wang.yechao255@zte.com.cn)
-Received: from mapi (szxlzmapp03[null])
+Received: from mapi (szxlzmapp01[null])
 	by mapi (Zmail) with MAPI id mid12;
-	Tue, 7 Apr 2026 17:13:38 +0800 (CST)
-X-Zmail-TransId: 2b0569d4cac2d33-9076c
+	Tue, 7 Apr 2026 17:14:55 +0800 (CST)
+X-Zmail-TransId: 2b0369d4cb0fb57-00521
 X-Mailer: Zmail v1.0
-Message-ID: <20260407171338173YQ_-quPfgvXzr9BX4WY-q@zte.com.cn>
+Message-ID: <20260407171455735miXfwO3C51btdouaaGUEc@zte.com.cn>
 In-Reply-To: <20260407171052241tmZDFGusMP_wlEsBVVtJo@zte.com.cn>
 References: 20260407171052241tmZDFGusMP_wlEsBVVtJo@zte.com.cn
-Date: Tue, 7 Apr 2026 17:13:38 +0800 (CST)
+Date: Tue, 7 Apr 2026 17:14:55 +0800 (CST)
 Mime-Version: 1.0
 From: <wang.yechao255@zte.com.cn>
 To: <anup@brainfault.org>, <atish.patra@linux.dev>, <pjw@kernel.org>,
         <palmer@dabbelt.com>, <aou@eecs.berkeley.edu>, <alex@ghiti.fr>
 Cc: <kvm@vger.kernel.org>, <kvm-riscv@lists.infradead.org>,
         <linux-riscv@lists.infradead.org>, <linux-kernel@vger.kernel.org>
-Subject: =?UTF-8?B?W1BBVENIIDEvM10gUklTQy1WOiBLVk06IFJlZmFjdG9yIGt2bV9hcmNoX2NvbW1pdF9tZW1vcnlfcmVnaW9uKCk=?=
-X-MAIL: mse-fl1.zte.com.cn 6379DZhh068225
+Subject: =?UTF-8?B?W1BBVENIIDIvM10gUklTQy1WOiBLVk06IGFkZCB0cmFjZXBvaW50cyBmb3IgZ3Vlc3QgcGFnZSBmYXVsdHM=?=
+X-MAIL: mse-fl1.zte.com.cn 6379Ere8070472
 X-TLS: YES
 X-SPF-DOMAIN: zte.com.cn
 X-ENVELOPE-SENDER: wang.yechao255@zte.com.cn
 X-SPF: None
-X-SOURCE-IP: 10.5.228.132 unknown Tue, 07 Apr 2026 17:13:48 +0800
+X-SOURCE-IP: 10.5.228.132 unknown Tue, 07 Apr 2026 17:15:11 +0800
 X-Fangmail-Anti-Spam-Filtered: true
-X-Fangmail-MID-QID: 69D4CACC.003/4fqgVN3l4Wz8Xs70
+X-Fangmail-MID-QID: 69D4CB1E.001/4fqgWz00Dnz7QYRQ
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260407_021356_727470_D56A9E86 
-X-CRM114-Status: GOOD (  10.43  )
+X-CRM114-CacheID: sfid-20260407_021536_133988_6282ABFB 
+X-CRM114-Status: UNSURE (   7.34  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -82,43 +83,72 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 From: Wang Yechao <wang.yechao255@zte.com.cn>
 
-Refactor kvm_arch_commit_memory_region() as a preparation for a future
-commit to look cleaner and more understandable. Also, it looks more
-like its arm64 and x86 counterparts.
+Add the kvm_page_fault event tracepoints to count the number of KVM
+guest page faults.
 
 Signed-off-by: Wang Yechao <wang.yechao255@zte.com.cn>
 ---
- arch/riscv/kvm/mmu.c | 12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+ arch/riscv/kvm/trace.h     | 25 +++++++++++++++++++++++++
+ arch/riscv/kvm/vcpu_exit.c |  3 +++
+ 2 files changed, 28 insertions(+)
 
-diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-index c3539f660142..d2116c09c589 100644
---- a/arch/riscv/kvm/mmu.c
-+++ b/arch/riscv/kvm/mmu.c
-@@ -156,12 +156,22 @@ void kvm_arch_commit_memory_region(struct kvm *kvm,
- 				const struct kvm_memory_slot *new,
- 				enum kvm_mr_change change)
- {
-+	bool log_dirty_pages = new && new->flags & KVM_MEM_LOG_DIRTY_PAGES;
-+	bool read_only = new && new->flags & KVM_MEM_READONLY;
+diff --git a/arch/riscv/kvm/trace.h b/arch/riscv/kvm/trace.h
+index 3d54175d805c..9056cc9883cf 100644
+--- a/arch/riscv/kvm/trace.h
++++ b/arch/riscv/kvm/trace.h
+@@ -56,6 +56,31 @@ TRACE_EVENT(kvm_exit,
+ 		__entry->htinst)
+ );
+
++/*
++ * Tracepoint for page fault.
++ */
++TRACE_EVENT(kvm_page_fault,
++	TP_PROTO(struct kvm_vcpu *vcpu, u64 fault_address, u64 error_code),
++	TP_ARGS(vcpu, fault_address, error_code),
 +
-+	/*
-+	 * Nothing more to do for RO slots (which can't be dirtied and can't be
-+	 * made writable) or CREATE/MOVE/DELETE of a slot.
-+	 */
-+	if ((change != KVM_MR_FLAGS_ONLY) || read_only)
-+		return;
++	TP_STRUCT__entry(
++		__field(unsigned int,   vcpu_id)
++		__field(u64,            fault_address)
++		__field(u64,            error_code)
++	),
 +
- 	/*
- 	 * At this point memslot has been committed and there is an
- 	 * allocated dirty_bitmap[], dirty pages will be tracked while
- 	 * the memory slot is write protected.
- 	 */
--	if (change != KVM_MR_DELETE && new->flags & KVM_MEM_LOG_DIRTY_PAGES) {
-+	if (log_dirty_pages) {
- 		if (kvm_dirty_log_manual_protect_and_init_set(kvm))
- 			return;
- 		mmu_wp_memory_region(kvm, new->id);
++	TP_fast_assign(
++		__entry->vcpu_id        = vcpu->vcpu_id;
++		__entry->fault_address  = fault_address;
++		__entry->error_code     = error_code;
++	),
++
++	TP_printk("vcpu %u address 0x%016llx error_code 0x%llx",
++		__entry->vcpu_id,
++		__entry->fault_address,
++		__entry->error_code)
++);
++
+ #endif /* _TRACE_RSICV_KVM_H */
+
+ #undef TRACE_INCLUDE_PATH
+diff --git a/arch/riscv/kvm/vcpu_exit.c b/arch/riscv/kvm/vcpu_exit.c
+index 0bb0c51e3c89..0cfb0149da9f 100644
+--- a/arch/riscv/kvm/vcpu_exit.c
++++ b/arch/riscv/kvm/vcpu_exit.c
+@@ -11,6 +11,7 @@
+ #include <asm/insn-def.h>
+ #include <asm/kvm_mmu.h>
+ #include <asm/kvm_nacl.h>
++#include "trace.h"
+
+ static int gstage_page_fault(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ 			     struct kvm_cpu_trap *trap)
+@@ -43,6 +44,8 @@ static int gstage_page_fault(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ 		};
+ 	}
+
++	trace_kvm_page_fault(vcpu, fault_addr, trap->scause);
++
+ 	ret = kvm_riscv_mmu_map(vcpu, memslot, fault_addr, hva,
+ 				(trap->scause == EXC_STORE_GUEST_PAGE_FAULT) ? true : false,
+ 				&host_map);
 -- 
 2.47.3
 
