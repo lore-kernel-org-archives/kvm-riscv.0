@@ -4,77 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D57E1FD5F73
-	for <kvm-riscv@archiver.kernel.org>; Wed,  8 Apr 2026 04:46:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ED8F710F9956
+	for <kvm-riscv@archiver.kernel.org>; Wed,  8 Apr 2026 16:12:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
-	Content-Transfer-Encoding:Content-Type:Reply-To:List-Subscribe:List-Help:
-	List-Post:List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:
-	Message-Id:MIME-Version:Subject:Date:From:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=i9pkRAYdWATNDK1qIpa50D/VgBK7YZrZljHCUG4esFM=; b=BXqgp5yHprImoQ
-	DW0FEVArZJYZ17VRXfcs+0FAUnuIV4shZFFcH2kU2HBLgNxowKM3etDHnN3p6/v2NV5ZMZXPPeZOC
-	opMRjuZrPsy88mwsUONXaoXr3GvYT0pLCy0D31SzU8LEn0R7DQHU1O5uz6lj70hfXsLANc/za7MlB
-	ZsKZdyILxli/+PkF5CjahwD0ugHcAKbbYefOL8b5WfMZ5wSmPDwDSTOE0vxD2u/oTPRiQQ9VPstxV
-	3diji7wu0Y37i4KhFnZwHEeNE6Qg2P+gEkIhtZBvHPKDXs5ijydm5Yy5q+fxzG2fW16q+XVlxo1+5
-	7Thr8BV22Ef4JfPChpzA==;
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=MfRLz5UfFi40dOYKPbRdfg6JaZV98BZ3PqRkcHyyYy0=; b=15Htv4/BYP3LpT
+	gHK1gpkWhnct6Mb0N1MEpzf95wNIMlkqG7KvWVPMq0CUawvtUlsN6iVS7/L7TtK4Rc3zknsDuM+Od
+	LaagW+Q6kRZ7Orij0mdSJgznVrSwn8kswtEnijjYCjcE2Lx+4onGNspcG9JSMm/uLLYKasOvB3Oxc
+	MfmEigrS72jDwbI6oFUXPL96Uk1CYzd80tZ3qum8R/IyibOUbMfVooK/ss6uRC5B/E4LHq7JP+p2S
+	t9hckI+wZhxZGFGfC8xhruLXLnIr9oc1mLpdQGkiO7BfykPsj4U5F0mX2H8GgWxHRtbfkbFK/z7VU
+	V+fN9PWjKYfVElGdgiBw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1wAKoY-00000008EwP-0SvQ;
-	Wed, 08 Apr 2026 04:46:54 +0000
-Received: from sea.source.kernel.org ([2600:3c0a:e001:78e:0:1991:8:25])
+	id 1wAVWQ-000000096Ej-3LKK;
+	Wed, 08 Apr 2026 16:12:54 +0000
+Received: from m16.mail.163.com ([220.197.31.3])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1wAKoL-00000008EbZ-2aZH;
-	Wed, 08 Apr 2026 04:46:44 +0000
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 19D0A444BF;
-	Wed,  8 Apr 2026 04:46:38 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id ECF28C2BCB1;
-	Wed,  8 Apr 2026 04:46:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775623598;
-	bh=8wPtZOdIunHOa0A3kGq4p12+3k4VUZ2hS7SUzFTnngc=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=MqnsPJyyziwfiG8mXsn4rMbLo8rTczSi882nYJpOl8DLm8kRRhwgOFo2CnBJ2yoF8
-	 JYliT5EjuwgmHvh8jPiQCa7ar+PbHsE88gn9+l3pG4WtuHyU5DqNk58/dBJB4CfF9v
-	 8zAx2LMOcFxxPUI+WAw6+ckIQfo4YRI5IztsxqksQxtSlCubyguwTByoAsjX3bFauN
-	 Xfo8yUmb/dT1NsrH2lRZkaUQJi4OEBaLHPsJtk9FZsrzbPAmToRVF/D3mMKYPWwpX2
-	 vQDz4n1pp7LfZ3BChjUzKJZ2Epkzty2PC/J/kDdRPYiDDxXlLSy8UPA+tDJAb4LjpZ
-	 lVIENCSF9+uLA==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E6F09FD5F68;
-	Wed,  8 Apr 2026 04:46:37 +0000 (UTC)
-From: Charlie Jenkins via B4 Relay <devnull+thecharlesjenkins.gmail.com@kernel.org>
-Date: Tue, 07 Apr 2026 21:46:04 -0700
-Subject: [PATCH 16/16] riscv: Remove unused instruction headers
+	id 1wAVWO-000000096E8-022g;
+	Wed, 08 Apr 2026 16:12:53 +0000
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+	s=s110527; h=From:To:Subject:Date:Message-ID:MIME-Version; bh=KB
+	Xncyw+iEHL0HCRS7IV0AWX3HjeoVcE7Qo4kvoj0Ic=; b=JHKMtmOdw3gb9UD7bD
+	zA+6Xcu5NLYGitskrA12MidmPgeicACsCQEftdqgVoxDndmClSDShwPuIf5SxYFK
+	lGauJzyhgndCpZvMpu7tA4OoQXEyrLoab/0Q2vJvavQjXxwoPsw/i3cMxaD89Ekl
+	yxKL+c36wnTlvyNyQbKhdr7JE=
+Received: from localhost.localdomain (unknown [])
+	by gzsmtp5 (Coremail) with SMTP id QCgvCgA3I2Q5ftZp6CvMVg--.154S2;
+	Thu, 09 Apr 2026 00:11:40 +0800 (CST)
+From: Jinyu Tang <tjytimi@163.com>
+To: Anup Patel <anup@brainfault.org>,
+	Atish Patra <atish.patra@linux.dev>,
+	Paul Walmsley <pjw@kernel.org>,
+	Paul Walmsley <paul.walmsley@sifive.com>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>,
+	Alexandre Ghiti <alex@ghiti.fr>,
+	=?UTF-8?q?Radim=20Kr=C4=8Dm=C3=A1=C5=99?= <radim.krcmar@oss.qualcomm.com>,
+	Andrew Jones <andrew.jones@oss.qualcomm.com>,
+	Conor Dooley <conor.dooley@microchip.com>,
+	Yong-Xuan Wang <yongxuan.wang@sifive.com>,
+	Nutty Liu <nutty.liu@hotmail.com>
+Cc: kvm@vger.kernel.org,
+	kvm-riscv@lists.infradead.org,
+	linux-riscv@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	Jinyu Tang <tjytimi@163.com>
+Subject: [PATCH v3] RISC-V: KVM: Batch stage-2 remote TLB flushes
+Date: Thu,  9 Apr 2026 00:11:33 +0800
+Message-ID: <20260408161133.244669-1-tjytimi@163.com>
+X-Mailer: git-send-email 2.43.0
 MIME-Version: 1.0
-Message-Id: <20260407-riscv_insn_table-v1-16-54b4736a1e77@gmail.com>
-References: <20260407-riscv_insn_table-v1-0-54b4736a1e77@gmail.com>
-In-Reply-To: <20260407-riscv_insn_table-v1-0-54b4736a1e77@gmail.com>
-To: Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
- Alexandre Ghiti <alex@ghiti.fr>, Anup Patel <anup@brainfault.org>, 
- Atish Patra <atish.patra@linux.dev>, Conor Dooley <conor@kernel.org>, 
- Paolo Bonzini <pbonzini@redhat.com>, 
- Andrew Morton <akpm@linux-foundation.org>, Shuah Khan <shuah@kernel.org>
-Cc: linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, 
- kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
- linux-kselftest@vger.kernel.org, 
- Charlie Jenkins <thecharlesjenkins@gmail.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1775623594; l=17862;
- i=thecharlesjenkins@gmail.com; s=2026030; h=from:subject:message-id;
- bh=rNrrN8s0yuy1PEPQ7SBnTqcnsQ6ilbK8WVkYbT03TFQ=;
- b=LccdWhFicRP3crEbMTj18OmRqxpEIBpHChEef+FneE6pJMfmahy01LguWeRl+ngOXMQCH+zOT
- Udk9nY3tuFUDmXprpLm6QBiDxtmy/wsgz7aF3GFlv617NgC26EDwUcl
-X-Developer-Key: i=thecharlesjenkins@gmail.com; a=ed25519;
- pk=vpF2USrG+aB6CTbSt34rzJKsAVe/l+GAXo1IomCMETk=
-X-Endpoint-Received: by B4 Relay for thecharlesjenkins@gmail.com/2026030
- with auth_id=663
-X-Original-From: Charlie Jenkins <thecharlesjenkins@gmail.com>
+X-CM-TRANSID: QCgvCgA3I2Q5ftZp6CvMVg--.154S2
+X-Coremail-Antispam: 1Uf129KBjvJXoW3tr1xCFyfCw1Duw4UuF1DGFg_yoWkXryxpr
+	4DCryfur4fXrs7XF13tFWDZrn8uws7W3WrAry5CF90qFn0qrWfXr1vg34vvry5JFyrXFW3
+	ZFyDGF1UAr4IyFUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0pE2Q6PUUUUU=
+X-Originating-IP: [2408:823d:2011:11d4:bc22:f58e:3e4:e62d]
+X-CM-SenderInfo: xwm13xlpl6il2tof0z/xtbC8Ry+N2nWfjyKsAAA3j
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260407_214641_753110_F37341C1 
-X-CRM114-Status: UNSURE (   9.23  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20260408_091252_435968_892ACFCA 
+X-CRM114-Status: GOOD (  15.63  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -86,496 +79,326 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Reply-To: thecharlesjenkins@gmail.com
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-From: Charlie Jenkins <thecharlesjenkins@gmail.com>
+KVM RISC-V triggers a TLB flush for every single stage-2 PTE
+modification (unmap or write-protect) now. Although KVM coalesces the
+hardware IPIs, the software overhead of executing the flush work
+for every 4K page is large, especially during dirty page tracking.
 
-All usages of hard-coded riscv instruction have been migrated over to
-the generated instruction headers so the old macros can be deleted.
+Following the approach used in x86 and arm64, this patch optimizes
+the MMU logic by making the PTE manipulation functions return a boolean
+indicating if a leaf PTE was actually changed. The outer MMU functions
+bubble up this flag to batch the remote TLB flushes.
 
-Signed-off-by: Charlie Jenkins <thecharlesjenkins@gmail.com>
+Consequently, the flush operation is executed only once per batch.
+Moving it outside of the `mmu_lock` also reduces lock contention.
+
+Tested with tools/testing/selftests/kvm on a 4-vCPU guest (Host
+environment: QEMU 10.2.1 RISC-V)
+1. demand_paging_test (1GB memory)
+	# time ./demand_paging_test -b 1G -v 4
+   - Total execution time reduced from ~2m33s to ~2m25s
+2. dirty_log_perf_test (1GB memory)
+   	# ./dirty_log_perf_test -b 1G -v 4
+	- "Clear dirty log time" per iteration dropped significantly from
+     ~3.02s to ~0.19s
+
+Reviewed-by: Nutty Liu <nutty.liu@hotmail.com>
+Signed-off-by: Jinyu Tang <tjytimi@163.com>
 ---
- arch/riscv/include/asm/insn.h | 413 +-----------------------------------------
- 1 file changed, 4 insertions(+), 409 deletions(-)
+v2 -> v3:
+Addressed review comments from Anup Patel:
+- Removed gstage_tlb_flush() for non-leaf PTEs only set flush flag
+- Removed KVM_GSTAGE_FLAGS_LOCAL check
+- Used kvm_flush_remote_tlbs_range() instead of full flushes in 
+  kvm_arch_flush_shadow_memslot() and kvm_unmap_gfn_range() to avoid 
+  unnecessary global TLB flush.
 
-diff --git a/arch/riscv/include/asm/insn.h b/arch/riscv/include/asm/insn.h
-index 43440edc6f1d..6ea8dc08a290 100644
---- a/arch/riscv/include/asm/insn.h
-+++ b/arch/riscv/include/asm/insn.h
-@@ -38,151 +38,22 @@ static __always_inline bool riscv_insn_is_##name(u32 _insn)		\
+v1 -> v2:
+- Fixed alignment issues in multi-line function calls supported by
+  Nutty Liu.
+
+ arch/riscv/include/asm/kvm_gstage.h |  6 ++---
+ arch/riscv/kvm/gstage.c             | 35 +++++++++++++++----------
+ arch/riscv/kvm/mmu.c                | 40 ++++++++++++++++++++++-------
+ 3 files changed, 56 insertions(+), 25 deletions(-)
+
+diff --git a/arch/riscv/include/asm/kvm_gstage.h b/arch/riscv/include/asm/kvm_gstage.h
+index 595e21831..b003a07f1 100644
+--- a/arch/riscv/include/asm/kvm_gstage.h
++++ b/arch/riscv/include/asm/kvm_gstage.h
+@@ -59,13 +59,13 @@ enum kvm_riscv_gstage_op {
+ 	GSTAGE_OP_WP,		/* Write-protect */
+ };
  
- #include <asm/insn_gen.h>
+-void kvm_riscv_gstage_op_pte(struct kvm_gstage *gstage, gpa_t addr,
++bool kvm_riscv_gstage_op_pte(struct kvm_gstage *gstage, gpa_t addr,
+ 			     pte_t *ptep, u32 ptep_level, enum kvm_riscv_gstage_op op);
  
--#define RV_INSN_FUNCT3_MASK	GENMASK(14, 12)
--#define RV_INSN_FUNCT3_OPOFF	12
- #define RV_INSN_OPCODE_MASK	GENMASK(6, 0)
--#define RV_INSN_OPCODE_OPOFF	0
--#define RV_INSN_FUNCT12_OPOFF	20
--
--#define RV_ENCODE_FUNCT3(f_)	(RVG_FUNCT3_##f_ << RV_INSN_FUNCT3_OPOFF)
--#define RV_ENCODE_FUNCT12(f_)	(RVG_FUNCT12_##f_ << RV_INSN_FUNCT12_OPOFF)
--
--/* The bit field of immediate value in I-type instruction */
--#define RV_I_IMM_SIGN_OPOFF	31
--#define RV_I_IMM_11_0_OPOFF	20
--#define RV_I_IMM_SIGN_OFF	12
--#define RV_I_IMM_11_0_OFF	0
--#define RV_I_IMM_11_0_MASK	GENMASK(11, 0)
--
--/* The bit field of immediate value in J-type instruction */
--#define RV_J_IMM_SIGN_OPOFF	31
--#define RV_J_IMM_10_1_OPOFF	21
--#define RV_J_IMM_11_OPOFF	20
--#define RV_J_IMM_19_12_OPOFF	12
--#define RV_J_IMM_SIGN_OFF	20
--#define RV_J_IMM_10_1_OFF	1
--#define RV_J_IMM_11_OFF		11
--#define RV_J_IMM_19_12_OFF	12
--#define RV_J_IMM_10_1_MASK	GENMASK(9, 0)
--#define RV_J_IMM_11_MASK	GENMASK(0, 0)
--#define RV_J_IMM_19_12_MASK	GENMASK(7, 0)
--
--/*
-- * U-type IMMs contain the upper 20bits [31:20] of an immediate with
-- * the rest filled in by zeros, so no shifting required. Similarly,
-- * bit31 contains the signed state, so no sign extension necessary.
-- */
--#define RV_U_IMM_SIGN_OPOFF	31
--#define RV_U_IMM_31_12_OPOFF	0
--#define RV_U_IMM_31_12_MASK	GENMASK(31, 12)
--
--/* The bit field of immediate value in B-type instruction */
--#define RV_B_IMM_SIGN_OPOFF	31
--#define RV_B_IMM_10_5_OPOFF	25
--#define RV_B_IMM_4_1_OPOFF	8
--#define RV_B_IMM_11_OPOFF	7
--#define RV_B_IMM_SIGN_OFF	12
--#define RV_B_IMM_10_5_OFF	5
--#define RV_B_IMM_4_1_OFF	1
--#define RV_B_IMM_11_OFF		11
--#define RV_B_IMM_10_5_MASK	GENMASK(5, 0)
--#define RV_B_IMM_4_1_MASK	GENMASK(3, 0)
--#define RV_B_IMM_11_MASK	GENMASK(0, 0)
--
--/* The register offset in RVG instruction */
--#define RVG_RS1_OPOFF		15
--#define RVG_RS2_OPOFF		20
--#define RVG_RD_OPOFF		7
--#define RVG_RS1_MASK		GENMASK(4, 0)
--#define RVG_RS2_MASK		GENMASK(4, 0)
--#define RVG_RD_MASK		GENMASK(4, 0)
--
--/* The bit field of immediate value in RVC J instruction */
--#define RVC_J_IMM_SIGN_OPOFF	12
--#define RVC_J_IMM_4_OPOFF	11
--#define RVC_J_IMM_9_8_OPOFF	9
--#define RVC_J_IMM_10_OPOFF	8
--#define RVC_J_IMM_6_OPOFF	7
--#define RVC_J_IMM_7_OPOFF	6
--#define RVC_J_IMM_3_1_OPOFF	3
--#define RVC_J_IMM_5_OPOFF	2
--#define RVC_J_IMM_SIGN_OFF	11
--#define RVC_J_IMM_4_OFF		4
--#define RVC_J_IMM_9_8_OFF	8
--#define RVC_J_IMM_10_OFF	10
--#define RVC_J_IMM_6_OFF		6
--#define RVC_J_IMM_7_OFF		7
--#define RVC_J_IMM_3_1_OFF	1
--#define RVC_J_IMM_5_OFF		5
--#define RVC_J_IMM_4_MASK	GENMASK(0, 0)
--#define RVC_J_IMM_9_8_MASK	GENMASK(1, 0)
--#define RVC_J_IMM_10_MASK	GENMASK(0, 0)
--#define RVC_J_IMM_6_MASK	GENMASK(0, 0)
--#define RVC_J_IMM_7_MASK	GENMASK(0, 0)
--#define RVC_J_IMM_3_1_MASK	GENMASK(2, 0)
--#define RVC_J_IMM_5_MASK	GENMASK(0, 0)
--
--/* The bit field of immediate value in RVC B instruction */
--#define RVC_B_IMM_SIGN_OPOFF	12
--#define RVC_B_IMM_4_3_OPOFF	10
--#define RVC_B_IMM_7_6_OPOFF	5
--#define RVC_B_IMM_2_1_OPOFF	3
--#define RVC_B_IMM_5_OPOFF	2
--#define RVC_B_IMM_SIGN_OFF	8
--#define RVC_B_IMM_4_3_OFF	3
--#define RVC_B_IMM_7_6_OFF	6
--#define RVC_B_IMM_2_1_OFF	1
--#define RVC_B_IMM_5_OFF		5
--#define RVC_B_IMM_4_3_MASK	GENMASK(1, 0)
--#define RVC_B_IMM_7_6_MASK	GENMASK(1, 0)
--#define RVC_B_IMM_2_1_MASK	GENMASK(1, 0)
--#define RVC_B_IMM_5_MASK	GENMASK(0, 0)
--
--#define RVC_INSN_FUNCT4_MASK	GENMASK(15, 12)
--#define RVC_INSN_FUNCT4_OPOFF	12
--#define RVC_INSN_FUNCT3_MASK	GENMASK(15, 13)
--#define RVC_INSN_FUNCT3_OPOFF	13
--#define RVC_INSN_J_RS1_MASK	GENMASK(11, 7)
--#define RVC_INSN_J_RS2_MASK	GENMASK(6, 2)
--#define RVC_INSN_OPCODE_MASK	GENMASK(1, 0)
--#define RVC_ENCODE_FUNCT3(f_)	(RVC_FUNCT3_##f_ << RVC_INSN_FUNCT3_OPOFF)
--#define RVC_ENCODE_FUNCT4(f_)	(RVC_FUNCT4_##f_ << RVC_INSN_FUNCT4_OPOFF)
--
--/* The register offset in RVC op=C0 instruction */
--#define RVC_C0_RS1_OPOFF	7
--#define RVC_C0_RS2_OPOFF	2
--#define RVC_C0_RD_OPOFF		2
--
--/* The register offset in RVC op=C1 instruction */
--#define RVC_C1_RS1_OPOFF	7
--#define RVC_C1_RS2_OPOFF	2
--#define RVC_C1_RD_OPOFF		7
--
--/* The register offset in RVC op=C2 instruction */
--#define RVC_C2_RS1_OPOFF	7
--#define RVC_C2_RS2_OPOFF	2
--#define RVC_C2_RD_OPOFF		7
--#define RVC_C2_RS1_MASK		GENMASK(4, 0)
+-void kvm_riscv_gstage_unmap_range(struct kvm_gstage *gstage,
++bool kvm_riscv_gstage_unmap_range(struct kvm_gstage *gstage,
+ 				  gpa_t start, gpa_t size, bool may_block);
  
- /* parts of opcode for RVG*/
--#define RVG_OPCODE_FENCE	0x0f
--#define RVG_OPCODE_AUIPC	0x17
- #define RVG_OPCODE_BRANCH	0x63
--#define RVG_OPCODE_JALR		0x67
--#define RVG_OPCODE_JAL		0x6f
- #define RVG_OPCODE_SYSTEM	0x73
- #define RVG_SYSTEM_CSR_OFF	20
- #define RVG_SYSTEM_CSR_MASK	GENMASK(12, 0)
+-void kvm_riscv_gstage_wp_range(struct kvm_gstage *gstage, gpa_t start, gpa_t end);
++bool kvm_riscv_gstage_wp_range(struct kvm_gstage *gstage, gpa_t start, gpa_t end);
  
-+// THESE ARE ALL ACTUALLY USED
- /* parts of opcode for RVF, RVD and RVQ */
- #define RVFDQ_FL_FS_WIDTH_OFF	12
- #define RVFDQ_FL_FS_WIDTH_MASK	GENMASK(2, 0)
--#define RVFDQ_FL_FS_WIDTH_W	2
--#define RVFDQ_FL_FS_WIDTH_D	3
--#define RVFDQ_LS_FS_WIDTH_Q	4
- #define RVFDQ_OPCODE_FL		0x07
- #define RVFDQ_OPCODE_FS		0x27
+ void kvm_riscv_gstage_mode_detect(void);
  
-+// THESE ARE ALL ACTUALLY USED
- /* parts of opcode for RVV */
- #define RVV_OPCODE_VECTOR	0x57
- #define RVV_VL_VS_WIDTH_8	0
-@@ -192,72 +63,6 @@ static __always_inline bool riscv_insn_is_##name(u32 _insn)		\
- #define RVV_OPCODE_VL		RVFDQ_OPCODE_FL
- #define RVV_OPCODE_VS		RVFDQ_OPCODE_FS
- 
--/* parts of opcode for RVC*/
--#define RVC_OPCODE_C0		0x0
--#define RVC_OPCODE_C1		0x1
--#define RVC_OPCODE_C2		0x2
--
--/* parts of funct3 code for I, M, A extension*/
--#define RVG_FUNCT3_JALR		0x0
--#define RVG_FUNCT3_BEQ		0x0
--#define RVG_FUNCT3_BNE		0x1
--#define RVG_FUNCT3_BLT		0x4
--#define RVG_FUNCT3_BGE		0x5
--#define RVG_FUNCT3_BLTU		0x6
--#define RVG_FUNCT3_BGEU		0x7
--
--/* parts of funct3 code for C extension*/
--#define RVC_FUNCT3_C_BEQZ	0x6
--#define RVC_FUNCT3_C_BNEZ	0x7
--#define RVC_FUNCT3_C_J		0x5
--#define RVC_FUNCT3_C_JAL	0x1
--#define RVC_FUNCT4_C_JR		0x8
--#define RVC_FUNCT4_C_JALR	0x9
--#define RVC_FUNCT4_C_EBREAK	0x9
--
--#define RVG_FUNCT12_EBREAK	0x1
--#define RVG_FUNCT12_SRET	0x102
--
--#define RVG_MATCH_AUIPC		(RVG_OPCODE_AUIPC)
--#define RVG_MATCH_JALR		(RV_ENCODE_FUNCT3(JALR) | RVG_OPCODE_JALR)
--#define RVG_MATCH_JAL		(RVG_OPCODE_JAL)
--#define RVG_MATCH_FENCE		(RVG_OPCODE_FENCE)
--#define RVG_MATCH_BEQ		(RV_ENCODE_FUNCT3(BEQ) | RVG_OPCODE_BRANCH)
--#define RVG_MATCH_BNE		(RV_ENCODE_FUNCT3(BNE) | RVG_OPCODE_BRANCH)
--#define RVG_MATCH_BLT		(RV_ENCODE_FUNCT3(BLT) | RVG_OPCODE_BRANCH)
--#define RVG_MATCH_BGE		(RV_ENCODE_FUNCT3(BGE) | RVG_OPCODE_BRANCH)
--#define RVG_MATCH_BLTU		(RV_ENCODE_FUNCT3(BLTU) | RVG_OPCODE_BRANCH)
--#define RVG_MATCH_BGEU		(RV_ENCODE_FUNCT3(BGEU) | RVG_OPCODE_BRANCH)
--#define RVG_MATCH_EBREAK	(RV_ENCODE_FUNCT12(EBREAK) | RVG_OPCODE_SYSTEM)
--#define RVG_MATCH_SRET		(RV_ENCODE_FUNCT12(SRET) | RVG_OPCODE_SYSTEM)
--#define RVC_MATCH_C_BEQZ	(RVC_ENCODE_FUNCT3(C_BEQZ) | RVC_OPCODE_C1)
--#define RVC_MATCH_C_BNEZ	(RVC_ENCODE_FUNCT3(C_BNEZ) | RVC_OPCODE_C1)
--#define RVC_MATCH_C_J		(RVC_ENCODE_FUNCT3(C_J) | RVC_OPCODE_C1)
--#define RVC_MATCH_C_JAL		(RVC_ENCODE_FUNCT3(C_JAL) | RVC_OPCODE_C1)
--#define RVC_MATCH_C_JR		(RVC_ENCODE_FUNCT4(C_JR) | RVC_OPCODE_C2)
--#define RVC_MATCH_C_JALR	(RVC_ENCODE_FUNCT4(C_JALR) | RVC_OPCODE_C2)
--#define RVC_MATCH_C_EBREAK	(RVC_ENCODE_FUNCT4(C_EBREAK) | RVC_OPCODE_C2)
--
--#define RVG_MASK_AUIPC		(RV_INSN_OPCODE_MASK)
--#define RVG_MASK_JALR		(RV_INSN_FUNCT3_MASK | RV_INSN_OPCODE_MASK)
--#define RVG_MASK_JAL		(RV_INSN_OPCODE_MASK)
--#define RVG_MASK_FENCE		(RV_INSN_OPCODE_MASK)
--#define RVC_MASK_C_JALR		(RVC_INSN_FUNCT4_MASK | RVC_INSN_J_RS2_MASK | RVC_INSN_OPCODE_MASK)
--#define RVC_MASK_C_JR		(RVC_INSN_FUNCT4_MASK | RVC_INSN_J_RS2_MASK | RVC_INSN_OPCODE_MASK)
--#define RVC_MASK_C_JAL		(RVC_INSN_FUNCT3_MASK | RVC_INSN_OPCODE_MASK)
--#define RVC_MASK_C_J		(RVC_INSN_FUNCT3_MASK | RVC_INSN_OPCODE_MASK)
--#define RVG_MASK_BEQ		(RV_INSN_FUNCT3_MASK | RV_INSN_OPCODE_MASK)
--#define RVG_MASK_BNE		(RV_INSN_FUNCT3_MASK | RV_INSN_OPCODE_MASK)
--#define RVG_MASK_BLT		(RV_INSN_FUNCT3_MASK | RV_INSN_OPCODE_MASK)
--#define RVG_MASK_BGE		(RV_INSN_FUNCT3_MASK | RV_INSN_OPCODE_MASK)
--#define RVG_MASK_BLTU		(RV_INSN_FUNCT3_MASK | RV_INSN_OPCODE_MASK)
--#define RVG_MASK_BGEU		(RV_INSN_FUNCT3_MASK | RV_INSN_OPCODE_MASK)
--#define RVC_MASK_C_BEQZ		(RVC_INSN_FUNCT3_MASK | RVC_INSN_OPCODE_MASK)
--#define RVC_MASK_C_BNEZ		(RVC_INSN_FUNCT3_MASK | RVC_INSN_OPCODE_MASK)
--#define RVC_MASK_C_EBREAK	0xffff
--#define RVG_MASK_EBREAK		0xffffffff
--#define RVG_MASK_SRET		0xffffffff
--
- #define __INSN_LENGTH_MASK	_UL(0x3)
- #define __INSN_LENGTH_GE_32	_UL(0x3)
- #define __INSN_OPCODE_MASK	_UL(0x7F)
-@@ -275,236 +80,26 @@ static __always_inline bool riscv_insn_is_branch(u32 code)
- 	return (code & RV_INSN_OPCODE_MASK) == RVG_OPCODE_BRANCH;
+diff --git a/arch/riscv/kvm/gstage.c b/arch/riscv/kvm/gstage.c
+index b67d60d72..f008ccf1d 100644
+--- a/arch/riscv/kvm/gstage.c
++++ b/arch/riscv/kvm/gstage.c
+@@ -209,35 +209,36 @@ int kvm_riscv_gstage_map_page(struct kvm_gstage *gstage,
+ 	return kvm_riscv_gstage_set_pte(gstage, pcache, out_map);
  }
  
--#define INSN_MATCH_LB		0x3
--#define INSN_MASK_LB		0x707f
--#define INSN_MATCH_LH		0x1003
--#define INSN_MASK_LH		0x707f
--#define INSN_MATCH_LW		0x2003
--#define INSN_MASK_LW		0x707f
--#define INSN_MATCH_LD		0x3003
--#define INSN_MASK_LD		0x707f
--#define INSN_MATCH_LBU		0x4003
--#define INSN_MASK_LBU		0x707f
--#define INSN_MATCH_LHU		0x5003
--#define INSN_MASK_LHU		0x707f
--#define INSN_MATCH_LWU		0x6003
--#define INSN_MASK_LWU		0x707f
--#define INSN_MATCH_SB		0x23
--#define INSN_MASK_SB		0x707f
--#define INSN_MATCH_SH		0x1023
--#define INSN_MASK_SH		0x707f
--#define INSN_MATCH_SW		0x2023
--#define INSN_MASK_SW		0x707f
--#define INSN_MATCH_SD		0x3023
--#define INSN_MASK_SD		0x707f
--
--#define INSN_MATCH_C_LD		0x6000
--#define INSN_MASK_C_LD		0xe003
--#define INSN_MATCH_C_SD		0xe000
--#define INSN_MASK_C_SD		0xe003
--#define INSN_MATCH_C_LW		0x4000
--#define INSN_MASK_C_LW		0xe003
--#define INSN_MATCH_C_SW		0xc000
--#define INSN_MASK_C_SW		0xe003
--#define INSN_MATCH_C_LDSP	0x6002
--#define INSN_MASK_C_LDSP	0xe003
--#define INSN_MATCH_C_SDSP	0xe002
--#define INSN_MASK_C_SDSP	0xe003
--#define INSN_MATCH_C_LWSP	0x4002
--#define INSN_MASK_C_LWSP	0xe003
--#define INSN_MATCH_C_SWSP	0xc002
--#define INSN_MASK_C_SWSP	0xe003
--
- #define INSN_OPCODE_MASK	0x007c
- #define INSN_OPCODE_SHIFT	2
- #define INSN_OPCODE_SYSTEM	28
+-void kvm_riscv_gstage_op_pte(struct kvm_gstage *gstage, gpa_t addr,
++bool kvm_riscv_gstage_op_pte(struct kvm_gstage *gstage, gpa_t addr,
+ 			     pte_t *ptep, u32 ptep_level, enum kvm_riscv_gstage_op op)
+ {
+ 	int i, ret;
+ 	pte_t old_pte, *next_ptep;
+ 	u32 next_ptep_level;
+ 	unsigned long next_page_size, page_size;
++	bool flush = false;
  
--#define INSN_MASK_WFI		0xffffffff
--#define INSN_MATCH_WFI		0x10500073
--
--#define INSN_MASK_WRS		0xffffffff
--#define INSN_MATCH_WRS		0x00d00073
--
--#define INSN_MATCH_CSRRW	0x1073
--#define INSN_MASK_CSRRW		0x707f
--#define INSN_MATCH_CSRRS	0x2073
--#define INSN_MASK_CSRRS		0x707f
--#define INSN_MATCH_CSRRC	0x3073
--#define INSN_MASK_CSRRC		0x707f
--#define INSN_MATCH_CSRRWI	0x5073
--#define INSN_MASK_CSRRWI	0x707f
--#define INSN_MATCH_CSRRSI	0x6073
--#define INSN_MASK_CSRRSI	0x707f
--#define INSN_MATCH_CSRRCI	0x7073
--#define INSN_MASK_CSRRCI	0x707f
--
--#define INSN_MATCH_FLW		0x2007
--#define INSN_MASK_FLW		0x707f
--#define INSN_MATCH_FLD		0x3007
--#define INSN_MASK_FLD		0x707f
--#define INSN_MATCH_FLQ		0x4007
--#define INSN_MASK_FLQ		0x707f
--#define INSN_MATCH_FSW		0x2027
--#define INSN_MASK_FSW		0x707f
--#define INSN_MATCH_FSD		0x3027
--#define INSN_MASK_FSD		0x707f
--#define INSN_MATCH_FSQ		0x4027
--#define INSN_MASK_FSQ		0x707f
--
--#define INSN_MATCH_C_FLD	0x2000
--#define INSN_MASK_C_FLD		0xe003
--#define INSN_MATCH_C_FLW	0x6000
--#define INSN_MASK_C_FLW		0xe003
--#define INSN_MATCH_C_FSD	0xa000
--#define INSN_MASK_C_FSD		0xe003
--#define INSN_MATCH_C_FSW	0xe000
--#define INSN_MASK_C_FSW		0xe003
--#define INSN_MATCH_C_FLDSP	0x2002
--#define INSN_MASK_C_FLDSP	0xe003
--#define INSN_MATCH_C_FSDSP	0xa002
--#define INSN_MASK_C_FSDSP	0xe003
--#define INSN_MATCH_C_FLWSP	0x6002
--#define INSN_MASK_C_FLWSP	0xe003
--#define INSN_MATCH_C_FSWSP	0xe002
--#define INSN_MASK_C_FSWSP	0xe003
--
--#define INSN_MATCH_C_LHU		0x8400
--#define INSN_MASK_C_LHU			0xfc43
--#define INSN_MATCH_C_LH			0x8440
--#define INSN_MASK_C_LH			0xfc43
--#define INSN_MATCH_C_SH			0x8c00
--#define INSN_MASK_C_SH			0xfc43
--
- #define INSN_16BIT_MASK		0x3
- #define INSN_IS_16BIT(insn)	(((insn) & INSN_16BIT_MASK) != INSN_16BIT_MASK)
- #define INSN_LEN(insn)		(INSN_IS_16BIT(insn) ? 2 : 4)
+ 	ret = gstage_level_to_page_size(ptep_level, &page_size);
+ 	if (ret)
+-		return;
++		return false;
  
--#define SHIFT_RIGHT(x, y)		\
--	((y) < 0 ? ((x) << -(y)) : ((x) >> (y)))
--
- #define REG_MASK			\
- 	((1 << (5 + LOG_REGBYTES)) - (1 << LOG_REGBYTES))
+ 	WARN_ON(addr & (page_size - 1));
  
--#define REG_OFFSET(insn, pos)		\
--	(SHIFT_RIGHT((insn), (pos) - LOG_REGBYTES) & REG_MASK)
--
--#define REG_PTR(insn, pos, regs)	\
--	((ulong *)((ulong)(regs) + REG_OFFSET(insn, pos)))
--
--#define GET_RS1(insn, regs)	(*REG_PTR(insn, SH_RS1, regs))
--#define GET_RS2(insn, regs)	(*REG_PTR(insn, SH_RS2, regs))
--#define GET_RS1S(insn, regs)	(*REG_PTR(RVC_RS1S(insn), 0, regs))
--#define GET_RS2S(insn, regs)	(*REG_PTR(RVC_RS2S(insn), 0, regs))
--#define GET_RS2C(insn, regs)	(*REG_PTR(insn, SH_RS2C, regs))
--#define GET_SP(regs)		(*REG_PTR(2, 0, regs))
--#define SET_RD(insn, regs, val)	(*REG_PTR(insn, SH_RD, regs) = (val))
--#define IMM_I(insn)		((s32)(insn) >> 20)
--#define IMM_S(insn)		(((s32)(insn) >> 25 << 5) | \
--				 (s32)(((insn) >> 7) & 0x1f))
--
--#define SH_RD			7
--#define SH_RS1			15
--#define SH_RS2			20
--#define SH_RS2C			2
--#define MASK_RX			0x1f
--
- #if defined(CONFIG_64BIT)
- #define LOG_REGBYTES		3
- #else
- #define LOG_REGBYTES		2
- #endif
+ 	if (!pte_val(ptep_get(ptep)))
+-		return;
++		return false;
  
--#define MASK_FUNCT3		0x7000
--
--#define GET_FUNCT3(insn)	(((insn) >> 12) & 7)
--
--#define RV_IMM_SIGN(x)		(-(((x) >> 31) & 1))
--#define RVC_IMM_SIGN(x)		(-(((x) >> 12) & 1))
--#define RV_X_MASK(X, s, mask)	(((X) >> (s)) & (mask))
--#define RV_X(X, s, n)		RV_X_MASK(X, s, ((1 << (n)) - 1))
--#define RVC_LW_IMM(x)		((RV_X(x, 6, 1) << 2) | \
--				 (RV_X(x, 10, 3) << 3) | \
--				 (RV_X(x, 5, 1) << 6))
--#define RVC_LD_IMM(x)		((RV_X(x, 10, 3) << 3) | \
--				 (RV_X(x, 5, 2) << 6))
--#define RVC_LWSP_IMM(x)		((RV_X(x, 4, 3) << 2) | \
--				 (RV_X(x, 12, 1) << 5) | \
--				 (RV_X(x, 2, 2) << 6))
--#define RVC_LDSP_IMM(x)		((RV_X(x, 5, 2) << 3) | \
--				 (RV_X(x, 12, 1) << 5) | \
--				 (RV_X(x, 2, 3) << 6))
--#define RVC_SWSP_IMM(x)		((RV_X(x, 9, 4) << 2) | \
--				 (RV_X(x, 7, 2) << 6))
--#define RVC_SDSP_IMM(x)		((RV_X(x, 10, 3) << 3) | \
--				 (RV_X(x, 7, 3) << 6))
--#define RVC_RS1S(insn)		(8 + RV_X(insn, SH_RD, 3))
--#define RVC_RS2S(insn)		(8 + RV_X(insn, SH_RS2C, 3))
--#define RVC_RS2(insn)		RV_X(insn, SH_RS2C, 5)
--#define RVC_X(X, s, mask)	RV_X_MASK(X, s, mask)
--
--#define RV_EXTRACT_FUNCT3(x) \
--	({typeof(x) x_ = (x); \
--	(RV_X_MASK(x_, RV_INSN_FUNCT3_OPOFF, \
--		   RV_INSN_FUNCT3_MASK >> RV_INSN_FUNCT3_OPOFF)); })
--
--#define RV_EXTRACT_RS1_REG(x) \
--	({typeof(x) x_ = (x); \
--	(RV_X_MASK(x_, RVG_RS1_OPOFF, RVG_RS1_MASK)); })
--
--#define RV_EXTRACT_RS2_REG(x) \
--	({typeof(x) x_ = (x); \
--	(RV_X_MASK(x_, RVG_RS2_OPOFF, RVG_RS2_MASK)); })
--
--#define RV_EXTRACT_RD_REG(x) \
--	({typeof(x) x_ = (x); \
--	(RV_X_MASK(x_, RVG_RD_OPOFF, RVG_RD_MASK)); })
--
--#define RV_EXTRACT_UTYPE_IMM(x) \
--	({typeof(x) x_ = (x); \
--	(RV_X_MASK(x_, RV_U_IMM_31_12_OPOFF, RV_U_IMM_31_12_MASK)); })
--
--#define RV_EXTRACT_JTYPE_IMM(x) \
--	({typeof(x) x_ = (x); \
--	(RV_X_MASK(x_, RV_J_IMM_10_1_OPOFF, RV_J_IMM_10_1_MASK) << RV_J_IMM_10_1_OFF) | \
--	(RV_X_MASK(x_, RV_J_IMM_11_OPOFF, RV_J_IMM_11_MASK) << RV_J_IMM_11_OFF) | \
--	(RV_X_MASK(x_, RV_J_IMM_19_12_OPOFF, RV_J_IMM_19_12_MASK) << RV_J_IMM_19_12_OFF) | \
--	(RV_IMM_SIGN(x_) << RV_J_IMM_SIGN_OFF); })
--
--#define RV_EXTRACT_ITYPE_IMM(x) \
--	({typeof(x) x_ = (x); \
--	(RV_X_MASK(x_, RV_I_IMM_11_0_OPOFF, RV_I_IMM_11_0_MASK)) | \
--	(RV_IMM_SIGN(x_) << RV_I_IMM_SIGN_OFF); })
--
--#define RV_EXTRACT_BTYPE_IMM(x) \
--	({typeof(x) x_ = (x); \
--	(RV_X_MASK(x_, RV_B_IMM_4_1_OPOFF, RV_B_IMM_4_1_MASK) << RV_B_IMM_4_1_OFF) | \
--	(RV_X_MASK(x_, RV_B_IMM_10_5_OPOFF, RV_B_IMM_10_5_MASK) << RV_B_IMM_10_5_OFF) | \
--	(RV_X_MASK(x_, RV_B_IMM_11_OPOFF, RV_B_IMM_11_MASK) << RV_B_IMM_11_OFF) | \
--	(RV_IMM_SIGN(x_) << RV_B_IMM_SIGN_OFF); })
--
--#define RVC_EXTRACT_C2_RS1_REG(x) \
--	({typeof(x) x_ = (x); \
--	(RV_X_MASK(x_, RVC_C2_RS1_OPOFF, RVC_C2_RS1_MASK)); })
--
--#define RVC_EXTRACT_JTYPE_IMM(x) \
--	({typeof(x) x_ = (x); \
--	(RVC_X(x_, RVC_J_IMM_3_1_OPOFF, RVC_J_IMM_3_1_MASK) << RVC_J_IMM_3_1_OFF) | \
--	(RVC_X(x_, RVC_J_IMM_4_OPOFF, RVC_J_IMM_4_MASK) << RVC_J_IMM_4_OFF) | \
--	(RVC_X(x_, RVC_J_IMM_5_OPOFF, RVC_J_IMM_5_MASK) << RVC_J_IMM_5_OFF) | \
--	(RVC_X(x_, RVC_J_IMM_6_OPOFF, RVC_J_IMM_6_MASK) << RVC_J_IMM_6_OFF) | \
--	(RVC_X(x_, RVC_J_IMM_7_OPOFF, RVC_J_IMM_7_MASK) << RVC_J_IMM_7_OFF) | \
--	(RVC_X(x_, RVC_J_IMM_9_8_OPOFF, RVC_J_IMM_9_8_MASK) << RVC_J_IMM_9_8_OFF) | \
--	(RVC_X(x_, RVC_J_IMM_10_OPOFF, RVC_J_IMM_10_MASK) << RVC_J_IMM_10_OFF) | \
--	(RVC_IMM_SIGN(x_) << RVC_J_IMM_SIGN_OFF); })
--
--#define RVC_EXTRACT_BTYPE_IMM(x) \
--	({typeof(x) x_ = (x); \
--	(RVC_X(x_, RVC_B_IMM_2_1_OPOFF, RVC_B_IMM_2_1_MASK) << RVC_B_IMM_2_1_OFF) | \
--	(RVC_X(x_, RVC_B_IMM_4_3_OPOFF, RVC_B_IMM_4_3_MASK) << RVC_B_IMM_4_3_OFF) | \
--	(RVC_X(x_, RVC_B_IMM_5_OPOFF, RVC_B_IMM_5_MASK) << RVC_B_IMM_5_OFF) | \
--	(RVC_X(x_, RVC_B_IMM_7_6_OPOFF, RVC_B_IMM_7_6_MASK) << RVC_B_IMM_7_6_OFF) | \
--	(RVC_IMM_SIGN(x_) << RVC_B_IMM_SIGN_OFF); })
-+#define RV_X_MASK(X, s, mask)  (((X) >> (s)) & (mask))
+ 	if (ptep_level && !gstage_pte_leaf(ptep)) {
+ 		next_ptep = (pte_t *)gstage_pte_page_vaddr(ptep_get(ptep));
+ 		next_ptep_level = ptep_level - 1;
+ 		ret = gstage_level_to_page_size(next_ptep_level, &next_page_size);
+ 		if (ret)
+-			return;
++			return false;
  
-+// These three are used by vector stuff
- #define RVG_EXTRACT_SYSTEM_CSR(x) \
- 	({typeof(x) x_ = (x); RV_X_MASK(x_, RVG_SYSTEM_CSR_OFF, RVG_SYSTEM_CSR_MASK); })
+ 		if (op == GSTAGE_OP_CLEAR)
+ 			set_pte(ptep, __pte(0));
+ 		for (i = 0; i < PTRS_PER_PTE; i++)
+-			kvm_riscv_gstage_op_pte(gstage, addr + i * next_page_size,
+-						&next_ptep[i], next_ptep_level, op);
++			flush |= kvm_riscv_gstage_op_pte(gstage, addr + i * next_page_size,
++							 &next_ptep[i], next_ptep_level, op);
+ 		if (op == GSTAGE_OP_CLEAR)
+ 			put_page(virt_to_page(next_ptep));
+ 	} else {
+@@ -247,11 +248,13 @@ void kvm_riscv_gstage_op_pte(struct kvm_gstage *gstage, gpa_t addr,
+ 		else if (op == GSTAGE_OP_WP)
+ 			set_pte(ptep, __pte(pte_val(ptep_get(ptep)) & ~_PAGE_WRITE));
+ 		if (pte_val(*ptep) != pte_val(old_pte))
+-			gstage_tlb_flush(gstage, ptep_level, addr);
++			flush = true;
+ 	}
++
++	return flush;
+ }
  
-
+-void kvm_riscv_gstage_unmap_range(struct kvm_gstage *gstage,
++bool kvm_riscv_gstage_unmap_range(struct kvm_gstage *gstage,
+ 				  gpa_t start, gpa_t size, bool may_block)
+ {
+ 	int ret;
+@@ -260,6 +263,7 @@ void kvm_riscv_gstage_unmap_range(struct kvm_gstage *gstage,
+ 	bool found_leaf;
+ 	unsigned long page_size;
+ 	gpa_t addr = start, end = start + size;
++	bool flush = false;
+ 
+ 	while (addr < end) {
+ 		found_leaf = kvm_riscv_gstage_get_leaf(gstage, addr, &ptep, &ptep_level);
+@@ -271,8 +275,8 @@ void kvm_riscv_gstage_unmap_range(struct kvm_gstage *gstage,
+ 			goto next;
+ 
+ 		if (!(addr & (page_size - 1)) && ((end - addr) >= page_size))
+-			kvm_riscv_gstage_op_pte(gstage, addr, ptep,
+-						ptep_level, GSTAGE_OP_CLEAR);
++			flush |= kvm_riscv_gstage_op_pte(gstage, addr, ptep,
++							 ptep_level, GSTAGE_OP_CLEAR);
+ 
+ next:
+ 		addr += page_size;
+@@ -284,9 +288,11 @@ void kvm_riscv_gstage_unmap_range(struct kvm_gstage *gstage,
+ 		if (!(gstage->flags & KVM_GSTAGE_FLAGS_LOCAL) && may_block && addr < end)
+ 			cond_resched_lock(&gstage->kvm->mmu_lock);
+ 	}
++
++	return flush;
+ }
+ 
+-void kvm_riscv_gstage_wp_range(struct kvm_gstage *gstage, gpa_t start, gpa_t end)
++bool kvm_riscv_gstage_wp_range(struct kvm_gstage *gstage, gpa_t start, gpa_t end)
+ {
+ 	int ret;
+ 	pte_t *ptep;
+@@ -294,6 +300,7 @@ void kvm_riscv_gstage_wp_range(struct kvm_gstage *gstage, gpa_t start, gpa_t end
+ 	bool found_leaf;
+ 	gpa_t addr = start;
+ 	unsigned long page_size;
++	bool flush = false;
+ 
+ 	while (addr < end) {
+ 		found_leaf = kvm_riscv_gstage_get_leaf(gstage, addr, &ptep, &ptep_level);
+@@ -305,12 +312,14 @@ void kvm_riscv_gstage_wp_range(struct kvm_gstage *gstage, gpa_t start, gpa_t end
+ 			goto next;
+ 
+ 		if (!(addr & (page_size - 1)) && ((end - addr) >= page_size))
+-			kvm_riscv_gstage_op_pte(gstage, addr, ptep,
+-						ptep_level, GSTAGE_OP_WP);
++			flush |= kvm_riscv_gstage_op_pte(gstage, addr, ptep,
++							 ptep_level, GSTAGE_OP_WP);
+ 
+ next:
+ 		addr += page_size;
+ 	}
++
++	return flush;
+ }
+ 
+ void __init kvm_riscv_gstage_mode_detect(void)
+diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
+index 0b75eb2a1..b9a57f0a9 100644
+--- a/arch/riscv/kvm/mmu.c
++++ b/arch/riscv/kvm/mmu.c
+@@ -23,6 +23,7 @@ static void mmu_wp_memory_region(struct kvm *kvm, int slot)
+ 	phys_addr_t start = memslot->base_gfn << PAGE_SHIFT;
+ 	phys_addr_t end = (memslot->base_gfn + memslot->npages) << PAGE_SHIFT;
+ 	struct kvm_gstage gstage;
++	bool flush;
+ 
+ 	gstage.kvm = kvm;
+ 	gstage.flags = 0;
+@@ -30,9 +31,10 @@ static void mmu_wp_memory_region(struct kvm *kvm, int slot)
+ 	gstage.pgd = kvm->arch.pgd;
+ 
+ 	spin_lock(&kvm->mmu_lock);
+-	kvm_riscv_gstage_wp_range(&gstage, start, end);
++	flush = kvm_riscv_gstage_wp_range(&gstage, start, end);
+ 	spin_unlock(&kvm->mmu_lock);
+-	kvm_flush_remote_tlbs_memslot(kvm, memslot);
++	if (flush)
++		kvm_flush_remote_tlbs_memslot(kvm, memslot);
+ }
+ 
+ int kvm_riscv_mmu_ioremap(struct kvm *kvm, gpa_t gpa, phys_addr_t hpa,
+@@ -88,6 +90,7 @@ int kvm_riscv_mmu_ioremap(struct kvm *kvm, gpa_t gpa, phys_addr_t hpa,
+ void kvm_riscv_mmu_iounmap(struct kvm *kvm, gpa_t gpa, unsigned long size)
+ {
+ 	struct kvm_gstage gstage;
++	bool flush;
+ 
+ 	gstage.kvm = kvm;
+ 	gstage.flags = 0;
+@@ -95,8 +98,12 @@ void kvm_riscv_mmu_iounmap(struct kvm *kvm, gpa_t gpa, unsigned long size)
+ 	gstage.pgd = kvm->arch.pgd;
+ 
+ 	spin_lock(&kvm->mmu_lock);
+-	kvm_riscv_gstage_unmap_range(&gstage, gpa, size, false);
++	flush = kvm_riscv_gstage_unmap_range(&gstage, gpa, size, false);
+ 	spin_unlock(&kvm->mmu_lock);
++
++	if (flush)
++		kvm_flush_remote_tlbs_range(kvm, gpa >> PAGE_SHIFT,
++					    size >> PAGE_SHIFT);
+ }
+ 
+ void kvm_arch_mmu_enable_log_dirty_pt_masked(struct kvm *kvm,
+@@ -108,13 +115,17 @@ void kvm_arch_mmu_enable_log_dirty_pt_masked(struct kvm *kvm,
+ 	phys_addr_t start = (base_gfn +  __ffs(mask)) << PAGE_SHIFT;
+ 	phys_addr_t end = (base_gfn + __fls(mask) + 1) << PAGE_SHIFT;
+ 	struct kvm_gstage gstage;
++	bool flush;
+ 
+ 	gstage.kvm = kvm;
+ 	gstage.flags = 0;
+ 	gstage.vmid = READ_ONCE(kvm->arch.vmid.vmid);
+ 	gstage.pgd = kvm->arch.pgd;
+ 
+-	kvm_riscv_gstage_wp_range(&gstage, start, end);
++	flush = kvm_riscv_gstage_wp_range(&gstage, start, end);
++	if (flush)
++		kvm_flush_remote_tlbs_range(kvm, start >> PAGE_SHIFT,
++					    (end - start) >> PAGE_SHIFT);
+ }
+ 
+ void kvm_arch_sync_dirty_log(struct kvm *kvm, struct kvm_memory_slot *memslot)
+@@ -140,6 +151,7 @@ void kvm_arch_flush_shadow_memslot(struct kvm *kvm,
+ 	gpa_t gpa = slot->base_gfn << PAGE_SHIFT;
+ 	phys_addr_t size = slot->npages << PAGE_SHIFT;
+ 	struct kvm_gstage gstage;
++	bool flush;
+ 
+ 	gstage.kvm = kvm;
+ 	gstage.flags = 0;
+@@ -147,8 +159,11 @@ void kvm_arch_flush_shadow_memslot(struct kvm *kvm,
+ 	gstage.pgd = kvm->arch.pgd;
+ 
+ 	spin_lock(&kvm->mmu_lock);
+-	kvm_riscv_gstage_unmap_range(&gstage, gpa, size, false);
++	flush = kvm_riscv_gstage_unmap_range(&gstage, gpa, size, false);
+ 	spin_unlock(&kvm->mmu_lock);
++	if (flush)
++		kvm_flush_remote_tlbs_range(kvm, gpa >> PAGE_SHIFT,
++					    size >> PAGE_SHIFT);
+ }
+ 
+ void kvm_arch_commit_memory_region(struct kvm *kvm,
+@@ -253,9 +268,11 @@ bool kvm_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range)
+ 	gstage.flags = 0;
+ 	gstage.vmid = READ_ONCE(kvm->arch.vmid.vmid);
+ 	gstage.pgd = kvm->arch.pgd;
+-	kvm_riscv_gstage_unmap_range(&gstage, range->start << PAGE_SHIFT,
+-				     (range->end - range->start) << PAGE_SHIFT,
+-				     range->may_block);
++	if (kvm_riscv_gstage_unmap_range(&gstage, range->start << PAGE_SHIFT,
++					 (range->end - range->start) << PAGE_SHIFT,
++					 range->may_block))
++		kvm_flush_remote_tlbs_range(kvm, range->start,
++					    range->end - range->start);
+ 	return false;
+ }
+ 
+@@ -579,6 +596,7 @@ void kvm_riscv_mmu_free_pgd(struct kvm *kvm)
+ {
+ 	struct kvm_gstage gstage;
+ 	void *pgd = NULL;
++	bool flush = false;
+ 
+ 	spin_lock(&kvm->mmu_lock);
+ 	if (kvm->arch.pgd) {
+@@ -586,13 +604,17 @@ void kvm_riscv_mmu_free_pgd(struct kvm *kvm)
+ 		gstage.flags = 0;
+ 		gstage.vmid = READ_ONCE(kvm->arch.vmid.vmid);
+ 		gstage.pgd = kvm->arch.pgd;
+-		kvm_riscv_gstage_unmap_range(&gstage, 0UL, kvm_riscv_gstage_gpa_size, false);
++		flush = kvm_riscv_gstage_unmap_range(&gstage, 0UL,
++						     kvm_riscv_gstage_gpa_size, false);
+ 		pgd = READ_ONCE(kvm->arch.pgd);
+ 		kvm->arch.pgd = NULL;
+ 		kvm->arch.pgd_phys = 0;
+ 	}
+ 	spin_unlock(&kvm->mmu_lock);
+ 
++	if (flush)
++		kvm_flush_remote_tlbs(kvm);
++
+ 	if (pgd)
+ 		free_pages((unsigned long)pgd, get_order(kvm_riscv_gstage_pgd_size));
+ }
 -- 
-2.52.0
-
+2.43.0
 
 
 -- 
