@@ -4,52 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 69C02FD5F77
-	for <kvm-riscv@archiver.kernel.org>; Wed,  8 Apr 2026 04:46:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5825BFD5F79
+	for <kvm-riscv@archiver.kernel.org>; Wed,  8 Apr 2026 04:46:49 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:Reply-To:List-Subscribe:List-Help:
 	List-Post:List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:
 	Message-Id:MIME-Version:Subject:Date:From:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=Xd33hpoVd8/aUAIqW7irKe46/8bSgUPpuFyoPAdIqwc=; b=dmt64f6JbynBwk
-	NBTqvBSSgHLl0vmJh8hcRF1JqB6yQQ/LH89r89hXDUDVkVluKoWmVLvq7NSse0uOELllKjXhVKeQH
-	HVF1brMvvcv+YtaZtB5HU07joSvg5SemeFsL9x1OlZGjki5vFRJfbVSE/r21FZ/6ls7Jv14Vlr6G3
-	e9IW1v5eU+yDaykDfp7WVr1jn6x1yJcA4wcHnrjdCCEtOCwW4rcmpYrC2dTKqHCucqheizD6K3Yjv
-	XWcojP4MkXRn8gSjUFKNvGFkRGYmgXDF3L5lYO0/xhx46f8FLv/ihZsS6dM3KEfZ48AV8TBu4zeA7
-	5wqXDouY97FpbnMa09oA==;
+	List-Owner; bh=VixBdGpLsQpQaPKiZ34k3MkXvgdHP27Ee5Qp55aTj94=; b=aHds2w2S0Ebza5
+	9DfyZmsPoQMhGgWwNynDUB+HHFIO3QIP19F8EvR7LRtERUFIhLZfWrXb2ThutQCkngzB1lO7WeZLC
+	twtH1O1ugdHsHSS3XJV06ZeW6dJ5B0rHp955Ldkw4ov4JUNqwqoIrefY47aALPoa8UdWaswY7Wn0W
+	LY0Mq0PxVwmhiB6+RhjJQ4PiyMxPpt03czT8/d4IvuWHX2jbrfRQUVisoaIJDwR6jlnwnmBJu6+1J
+	mKzKjMR4lc69isvv3oc5KNrAmCmfvZcxwZTx2PK9SYez6qhQiXhCYg/5BBmgYWFtzM07bMh05SJ+p
+	+A2WFTQEiVsaRCGYt/8Q==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1wAKoP-00000008EkB-0GeI;
-	Wed, 08 Apr 2026 04:46:45 +0000
-Received: from sea.source.kernel.org ([172.234.252.31])
+	id 1wAKoT-00000008Enc-0Ibc;
+	Wed, 08 Apr 2026 04:46:49 +0000
+Received: from sea.source.kernel.org ([2600:3c0a:e001:78e:0:1991:8:25])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1wAKoJ-00000008EbR-1qSS;
-	Wed, 08 Apr 2026 04:46:41 +0000
+	id 1wAKoK-00000008Eco-29DE;
+	Wed, 08 Apr 2026 04:46:42 +0000
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id EA0B84456B;
-	Wed,  8 Apr 2026 04:46:36 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id CABE5C19424;
-	Wed,  8 Apr 2026 04:46:36 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 68D25445A7;
+	Wed,  8 Apr 2026 04:46:37 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 3FA10C19425;
+	Wed,  8 Apr 2026 04:46:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775623596;
-	bh=HNvGZP/PuCqYLkCx9Gaq3wYlwoREaAJofqqabmC45W4=;
+	s=k20201202; t=1775623597;
+	bh=lChrzKmkSUM2VwN/SlQWXnrTo6efmgqrmXjeou47SQQ=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=MV7mcViiU6SJZhgS1ephI7soVRhBzrBF7ZxL4+Zb5NUKxqb7AtZGmk1SotbRGnaVy
-	 Twj0wNf7s6wtWNcX86n65bVQ+2qGf0rErQpZ0lbWEzkErx8lunYq3IN2QWoCQ2mSf8
-	 nk+1cYIQR2bWZGjdDFCetzLnE9zg5tP6f3k9WK0oIZkAzLTzJW9RtprWuTqAc5yM+K
-	 jYkGD1mAB6zGYlrRVlmfTCi87XidL1W4ibydBNP6SQgz4Sh+oL+ah/2ZDRLDBUWbLz
-	 vOWzLrn/rGDej1ch7HAdkJL7iCDgU+clO6arzn+BzDAmfTxHvip9Wu/67FsrKVhRoO
-	 Wr1dN65KI617g==
+	b=PhqFD4cy3LSKa2+erT2riN9afxOLOg9J66WEvfzIv+MJ5G6CIosfoC8oY17PmTyQg
+	 ARrXdGLUKbZpmVD+6Wilj111y17BHhGknxXVpV7S4LzpSOUWSI/yVQ0DIO3nIQCEUR
+	 fMUhZP+vPF921JpAlKpQCh6CtiF72eTLYmLWl2iFq51Jyvo0xM64YeJPEjnLHSpjy+
+	 NxanhlvYRO1G0hbEszMxRHw4QiLDtsMRGmzHXXYB2H+NXfQX0SWZiM/Dkr5jBrgN5C
+	 FaDYnd+Db6+NC50h0SeHXDL9blz3op9mGDAQIp0EJURF8dOBnWJ32n4w7IRKPkyJgc
+	 cKsGx80qz02yQ==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C2B54FD5F70;
-	Wed,  8 Apr 2026 04:46:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 32796FD5F76;
+	Wed,  8 Apr 2026 04:46:37 +0000 (UTC)
 From: Charlie Jenkins via B4 Relay <devnull+thecharlesjenkins.gmail.com@kernel.org>
-Date: Tue, 07 Apr 2026 21:45:54 -0700
-Subject: [PATCH 06/16] riscv: Use generated instruction headers for
- misaligned loads/stores
+Date: Tue, 07 Apr 2026 21:45:58 -0700
+Subject: [PATCH 10/16] KVM: riscv: selftests: Add mmio test
 MIME-Version: 1.0
-Message-Id: <20260407-riscv_insn_table-v1-6-54b4736a1e77@gmail.com>
+Message-Id: <20260407-riscv_insn_table-v1-10-54b4736a1e77@gmail.com>
 References: <20260407-riscv_insn_table-v1-0-54b4736a1e77@gmail.com>
 In-Reply-To: <20260407-riscv_insn_table-v1-0-54b4736a1e77@gmail.com>
 To: Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
@@ -62,19 +61,19 @@ Cc: linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
  linux-kselftest@vger.kernel.org, 
  Charlie Jenkins <thecharlesjenkins@gmail.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1775623594; l=12714;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1775623594; l=7215;
  i=thecharlesjenkins@gmail.com; s=2026030; h=from:subject:message-id;
- bh=zVf4OnkgNKq4fyLzqxwsfYBeYNXIZfimNqUJ5k6ZjJY=;
- b=PMCNw6i04J+ZvQWbWQYJSC97cAr9pXZvmZupjkQN9OHsNQuNHLg93WPdmrxBcDSdHQNMrhAEX
- SdHKdL89hSjD5zAkYFLz7wzG/mqnmp6mA9JeJQYFy3oLHUaFSq3aM0p
+ bh=I1m1SXH0L+QYSFNr6TSVf7ckXNM0lll65+t/TdGFsTs=;
+ b=+KRMu+rX16oBPNgSUL6TEER4P32IoJXyqtv72sFw5alZ+T2Acuu1muy0vleUGouSxHuDBDY61
+ fc0UIqYhN/AChEN4fM3N0TvboiWeV0iI9sAqQJ1YOYa038JAefijOHJ
 X-Developer-Key: i=thecharlesjenkins@gmail.com; a=ed25519;
  pk=vpF2USrG+aB6CTbSt34rzJKsAVe/l+GAXo1IomCMETk=
 X-Endpoint-Received: by B4 Relay for thecharlesjenkins@gmail.com/2026030
  with auth_id=663
 X-Original-From: Charlie Jenkins <thecharlesjenkins@gmail.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260407_214639_584989_B620DCF5 
-X-CRM114-Status: GOOD (  16.33  )
+X-CRM114-CacheID: sfid-20260407_214640_665015_A9EDC420 
+X-CRM114-Status: GOOD (  13.21  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -94,368 +93,218 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 From: Charlie Jenkins <thecharlesjenkins@gmail.com>
 
-Migrate the misaligned loads/store code to use the generated instruction
-headers instead of the hand-written instruction composition functions.
+Use the test KVM device to validate that reads and writes to a device
+are properly emulated by KVM. This test checks all load and store
+instructions that are emulated by KVM.
 
 Signed-off-by: Charlie Jenkins <thecharlesjenkins@gmail.com>
-
 ---
+ tools/testing/selftests/kvm/Makefile.kvm      |   1 +
+ tools/testing/selftests/kvm/riscv/mmio_test.c | 184 ++++++++++++++++++++++++++
+ 2 files changed, 185 insertions(+)
 
-Similar to the other patches of this series, I extracted out the logic
-of this function and brute forced all possible inputs to validate that
-the outputs are the same. To verify this change in the kernel, I booted
-on Spike and used the misaligned access checker which does some
-misaligned accesses.
----
- arch/riscv/kernel/traps_misaligned.c | 183 ++++++++++++++++-------------------
- 1 file changed, 83 insertions(+), 100 deletions(-)
-
-diff --git a/arch/riscv/kernel/traps_misaligned.c b/arch/riscv/kernel/traps_misaligned.c
-index 2a27d3ff4ac6..a36ea0994ae8 100644
---- a/arch/riscv/kernel/traps_misaligned.c
-+++ b/arch/riscv/kernel/traps_misaligned.c
-@@ -22,15 +22,11 @@
- 
- #ifdef CONFIG_FPU
- 
--#define FP_GET_RD(insn)		(insn >> 7 & 0x1F)
--
- extern void put_f32_reg(unsigned long fp_reg, unsigned long value);
- 
--static int set_f32_rd(unsigned long insn, struct pt_regs *regs,
-+static int set_f32_rd(unsigned long fp_reg, struct pt_regs *regs,
- 		      unsigned long val)
- {
--	unsigned long fp_reg = FP_GET_RD(insn);
--
- 	put_f32_reg(fp_reg, val);
- 	regs->status |= SR_FS_DIRTY;
- 
-@@ -39,9 +35,8 @@ static int set_f32_rd(unsigned long insn, struct pt_regs *regs,
- 
- extern void put_f64_reg(unsigned long fp_reg, unsigned long value);
- 
--static int set_f64_rd(unsigned long insn, struct pt_regs *regs, u64 val)
-+static int set_f64_rd(unsigned long fp_reg, struct pt_regs *regs, u64 val)
- {
--	unsigned long fp_reg = FP_GET_RD(insn);
- 	unsigned long value;
- 
- #if __riscv_xlen == 32
-@@ -58,10 +53,8 @@ static int set_f64_rd(unsigned long insn, struct pt_regs *regs, u64 val)
- #if __riscv_xlen == 32
- extern void get_f64_reg(unsigned long fp_reg, u64 *value);
- 
--static u64 get_f64_rs(unsigned long insn, u8 fp_reg_offset,
--		      struct pt_regs *regs)
-+static u64 get_f64_rs(unsigned long fp_reg, struct pt_regs *regs)
- {
--	unsigned long fp_reg = (insn >> fp_reg_offset) & 0x1F;
- 	u64 val;
- 
- 	get_f64_reg(fp_reg, &val);
-@@ -73,10 +66,8 @@ static u64 get_f64_rs(unsigned long insn, u8 fp_reg_offset,
- 
- extern unsigned long get_f64_reg(unsigned long fp_reg);
- 
--static unsigned long get_f64_rs(unsigned long insn, u8 fp_reg_offset,
--				struct pt_regs *regs)
-+static unsigned long get_f64_rs(unsigned long fp_reg, struct pt_regs *regs)
- {
--	unsigned long fp_reg = (insn >> fp_reg_offset) & 0x1F;
- 	unsigned long val;
- 
- 	val = get_f64_reg(fp_reg);
-@@ -89,10 +80,8 @@ static unsigned long get_f64_rs(unsigned long insn, u8 fp_reg_offset,
- 
- extern unsigned long get_f32_reg(unsigned long fp_reg);
- 
--static unsigned long get_f32_rs(unsigned long insn, u8 fp_reg_offset,
--				struct pt_regs *regs)
-+static unsigned long get_f32_rs(unsigned long fp_reg, struct pt_regs *regs)
- {
--	unsigned long fp_reg = (insn >> fp_reg_offset) & 0x1F;
- 	unsigned long val;
- 
- 	val = get_f32_reg(fp_reg);
-@@ -107,28 +96,18 @@ static void set_f32_rd(unsigned long insn, struct pt_regs *regs,
- 
- static void set_f64_rd(unsigned long insn, struct pt_regs *regs, u64 val) {}
- 
--static unsigned long get_f64_rs(unsigned long insn, u8 fp_reg_offset,
--				struct pt_regs *regs)
-+static unsigned long get_f64_rs(unsigned long fp_reg, struct pt_regs *regs)
- {
- 	return 0;
- }
- 
--static unsigned long get_f32_rs(unsigned long insn, u8 fp_reg_offset,
--				struct pt_regs *regs)
-+static unsigned long get_f32_rs(unsigned long fp_reg, struct pt_regs *regs)
- {
- 	return 0;
- }
- 
- #endif
- 
--#define GET_F64_RS2(insn, regs) (get_f64_rs(insn, 20, regs))
--#define GET_F64_RS2C(insn, regs) (get_f64_rs(insn, 2, regs))
--#define GET_F64_RS2S(insn, regs) (get_f64_rs(RVC_RS2S(insn), 0, regs))
--
--#define GET_F32_RS2(insn, regs) (get_f32_rs(insn, 20, regs))
--#define GET_F32_RS2C(insn, regs) (get_f32_rs(insn, 2, regs))
--#define GET_F32_RS2S(insn, regs) (get_f32_rs(RVC_RS2S(insn), 0, regs))
--
- #define __read_insn(regs, insn, insn_addr, type)	\
- ({							\
- 	int __ret;					\
-@@ -217,13 +196,13 @@ static int handle_vector_misaligned_load(struct pt_regs *regs)
- }
- #endif
- 
--static int handle_scalar_misaligned_load(struct pt_regs *regs)
-+static noinline int handle_scalar_misaligned_load(struct pt_regs *regs)
- {
- 	union reg_data val;
- 	unsigned long epc = regs->epc;
- 	unsigned long insn;
- 	unsigned long addr = regs->badaddr;
--	int fp = 0, shift = 0, len = 0;
-+	int fp = 0, shift = 0, len = 0, rd = 0;
- 
- 	perf_sw_event(PERF_COUNT_SW_ALIGNMENT_FAULTS, 1, regs, addr);
- 
-@@ -240,68 +219,71 @@ static int handle_scalar_misaligned_load(struct pt_regs *regs)
- 
- 	regs->epc = 0;
- 
--	if ((insn & INSN_MASK_LW) == INSN_MATCH_LW) {
-+	if (riscv_insn_is_lw(insn)) {
- 		len = 4;
- 		shift = 8 * (sizeof(unsigned long) - len);
--#if defined(CONFIG_64BIT)
--	} else if ((insn & INSN_MASK_LD) == INSN_MATCH_LD) {
-+		rd = riscv_insn_lw_extract_xd(insn);
-+	} else if (riscv_insn_is_ld(insn)) {
- 		len = 8;
- 		shift = 8 * (sizeof(unsigned long) - len);
--	} else if ((insn & INSN_MASK_LWU) == INSN_MATCH_LWU) {
-+		rd = riscv_insn_ld_extract_xd(insn);
-+	} else if (riscv_insn_is_lwu(insn)) {
- 		len = 4;
--#endif
--	} else if ((insn & INSN_MASK_FLD) == INSN_MATCH_FLD) {
-+		rd = riscv_insn_lwu_extract_xd(insn);
-+	} else if (riscv_insn_is_fld(insn)) {
- 		fp = 1;
- 		len = 8;
--	} else if ((insn & INSN_MASK_FLW) == INSN_MATCH_FLW) {
-+		rd = riscv_insn_fld_extract_fd(insn);
-+	} else if (riscv_insn_is_flw(insn)) {
- 		fp = 1;
- 		len = 4;
--	} else if ((insn & INSN_MASK_LH) == INSN_MATCH_LH) {
-+		rd = riscv_insn_flw_extract_fd(insn);
-+	} else if (riscv_insn_is_lh(insn)) {
- 		len = 2;
- 		shift = 8 * (sizeof(unsigned long) - len);
--	} else if ((insn & INSN_MASK_LHU) == INSN_MATCH_LHU) {
-+		rd = riscv_insn_lh_extract_xd(insn);
-+	} else if (riscv_insn_is_lhu(insn)) {
- 		len = 2;
--#if defined(CONFIG_64BIT)
--	} else if ((insn & INSN_MASK_C_LD) == INSN_MATCH_C_LD) {
-+		rd = riscv_insn_lhu_extract_xd(insn);
-+	} else if (riscv_insn_is_c_ld(insn)) {
- 		len = 8;
- 		shift = 8 * (sizeof(unsigned long) - len);
--		insn = RVC_RS2S(insn) << SH_RD;
--	} else if ((insn & INSN_MASK_C_LDSP) == INSN_MATCH_C_LDSP &&
--		   ((insn >> SH_RD) & 0x1f)) {
-+		rd = (8 + riscv_insn_c_ld_extract_xd(insn));
-+	} else if (riscv_insn_is_c_ldsp(insn)) {
- 		len = 8;
- 		shift = 8 * (sizeof(unsigned long) - len);
--#endif
--	} else if ((insn & INSN_MASK_C_LW) == INSN_MATCH_C_LW) {
-+		rd = riscv_insn_c_ldsp_extract_xd(insn);
-+	} else if (riscv_insn_is_c_lw(insn)) {
- 		len = 4;
- 		shift = 8 * (sizeof(unsigned long) - len);
--		insn = RVC_RS2S(insn) << SH_RD;
--	} else if ((insn & INSN_MASK_C_LWSP) == INSN_MATCH_C_LWSP &&
--		   ((insn >> SH_RD) & 0x1f)) {
-+		rd = (8 + riscv_insn_c_lw_extract_xd(insn));
-+	} else if (riscv_insn_is_c_lwsp(insn)) {
- 		len = 4;
- 		shift = 8 * (sizeof(unsigned long) - len);
--	} else if ((insn & INSN_MASK_C_FLD) == INSN_MATCH_C_FLD) {
-+		rd = riscv_insn_c_lwsp_extract_xd(insn);
-+	} else if (riscv_insn_is_c_fld(insn)) {
- 		fp = 1;
- 		len = 8;
--		insn = RVC_RS2S(insn) << SH_RD;
--	} else if ((insn & INSN_MASK_C_FLDSP) == INSN_MATCH_C_FLDSP) {
-+		rd = (8 + riscv_insn_c_fld_extract_fd(insn));
-+	} else if (riscv_insn_is_c_fldsp(insn)) {
- 		fp = 1;
- 		len = 8;
--#if defined(CONFIG_32BIT)
--	} else if ((insn & INSN_MASK_C_FLW) == INSN_MATCH_C_FLW) {
-+		rd = riscv_insn_c_fldsp_extract_fd(insn);
-+	} else if (riscv_insn_is_c_flw(insn)) {
- 		fp = 1;
- 		len = 4;
--		insn = RVC_RS2S(insn) << SH_RD;
--	} else if ((insn & INSN_MASK_C_FLWSP) == INSN_MATCH_C_FLWSP) {
-+		rd = (8 + riscv_insn_c_flw_extract_fd(insn));
-+	} else if (riscv_insn_is_c_flwsp(insn)) {
- 		fp = 1;
- 		len = 4;
--#endif
--	} else if ((insn & INSN_MASK_C_LHU) == INSN_MATCH_C_LHU) {
-+		rd = riscv_insn_c_flwsp_extract_fd(insn);
-+	} else if (riscv_insn_is_c_lhu(insn)) {
- 		len = 2;
--		insn = RVC_RS2S(insn) << SH_RD;
--	} else if ((insn & INSN_MASK_C_LH) == INSN_MATCH_C_LH) {
-+		rd = (8 + riscv_insn_c_lhu_extract_xd(insn));
-+	} else if (riscv_insn_is_c_lh(insn)) {
- 		len = 2;
--		shift = 8 * (sizeof(ulong) - len);
--		insn = RVC_RS2S(insn) << SH_RD;
-+		shift = 8 * (sizeof(unsigned long) - len);
-+		rd = (8 + riscv_insn_c_lh_extract_xd(insn));
- 	} else {
- 		regs->epc = epc;
- 		return -1;
-@@ -319,11 +301,11 @@ static int handle_scalar_misaligned_load(struct pt_regs *regs)
- 	}
- 
- 	if (!fp)
--		SET_RD(insn, regs, (long)(val.data_ulong << shift) >> shift);
-+		*(unsigned long *)((unsigned long *)regs + rd) = val.data_ulong << shift;
- 	else if (len == 8)
--		set_f64_rd(insn, regs, val.data_u64);
-+		set_f64_rd(rd, regs, val.data_u64);
- 	else
--		set_f32_rd(insn, regs, val.data_ulong);
-+		set_f32_rd(rd, regs, val.data_ulong);
- 
- 	regs->epc = epc + INSN_LEN(insn);
- 
-@@ -336,7 +318,7 @@ static int handle_scalar_misaligned_store(struct pt_regs *regs)
- 	unsigned long epc = regs->epc;
- 	unsigned long insn;
- 	unsigned long addr = regs->badaddr;
--	int len = 0, fp = 0;
-+	int fp = 0, len = 0, rd = 0;
- 
- 	perf_sw_event(PERF_COUNT_SW_ALIGNMENT_FAULTS, 1, regs, addr);
- 
-@@ -351,67 +333,68 @@ static int handle_scalar_misaligned_store(struct pt_regs *regs)
- 
- 	regs->epc = 0;
- 
--	val.data_ulong = GET_RS2(insn, regs);
--
--	if ((insn & INSN_MASK_SW) == INSN_MATCH_SW) {
-+	if (riscv_insn_is_sw(insn)) {
- 		len = 4;
--#if defined(CONFIG_64BIT)
--	} else if ((insn & INSN_MASK_SD) == INSN_MATCH_SD) {
-+		rd = riscv_insn_sw_extract_xs2(insn);
-+	} else if (riscv_insn_is_sd(insn)) {
- 		len = 8;
--#endif
--	} else if ((insn & INSN_MASK_FSD) == INSN_MATCH_FSD) {
-+		rd = riscv_insn_sd_extract_xs2(insn);
-+	} else if (riscv_insn_is_fsd(insn)) {
- 		fp = 1;
- 		len = 8;
--		val.data_u64 = GET_F64_RS2(insn, regs);
--	} else if ((insn & INSN_MASK_FSW) == INSN_MATCH_FSW) {
-+		rd = riscv_insn_fsd_extract_fs2(insn);
-+	} else if (riscv_insn_is_fsw(insn)) {
- 		fp = 1;
- 		len = 4;
--		val.data_ulong = GET_F32_RS2(insn, regs);
--	} else if ((insn & INSN_MASK_SH) == INSN_MATCH_SH) {
-+		rd = riscv_insn_fsw_extract_fs2(insn);
-+	} else if (riscv_insn_is_sh(insn)) {
- 		len = 2;
--#if defined(CONFIG_64BIT)
--	} else if ((insn & INSN_MASK_C_SD) == INSN_MATCH_C_SD) {
-+		rd = riscv_insn_sh_extract_xs2(insn);
-+	} else if (riscv_insn_is_c_sd(insn)) {
- 		len = 8;
--		val.data_ulong = GET_RS2S(insn, regs);
--	} else if ((insn & INSN_MASK_C_SDSP) == INSN_MATCH_C_SDSP) {
-+		rd = riscv_insn_c_sd_extract_xs2(insn);
-+	} else if (riscv_insn_is_c_sdsp(insn)) {
- 		len = 8;
--		val.data_ulong = GET_RS2C(insn, regs);
--#endif
--	} else if ((insn & INSN_MASK_C_SW) == INSN_MATCH_C_SW) {
-+		rd = riscv_insn_c_sdsp_extract_xs2(insn);
-+	} else if (riscv_insn_is_c_sw(insn)) {
- 		len = 4;
--		val.data_ulong = GET_RS2S(insn, regs);
--	} else if ((insn & INSN_MASK_C_SWSP) == INSN_MATCH_C_SWSP) {
-+		rd = riscv_insn_c_sw_extract_xs2(insn);
-+	} else if (riscv_insn_is_c_swsp(insn)) {
- 		len = 4;
--		val.data_ulong = GET_RS2C(insn, regs);
--	} else if ((insn & INSN_MASK_C_FSD) == INSN_MATCH_C_FSD) {
-+		rd = riscv_insn_c_swsp_extract_xs2(insn);
-+	} else if (riscv_insn_is_c_fsd(insn)) {
- 		fp = 1;
- 		len = 8;
--		val.data_u64 = GET_F64_RS2S(insn, regs);
--	} else if ((insn & INSN_MASK_C_FSDSP) == INSN_MATCH_C_FSDSP) {
-+		rd = riscv_insn_c_fsd_extract_fs2(insn);
-+	} else if (riscv_insn_is_c_fsdsp(insn)) {
- 		fp = 1;
- 		len = 8;
--		val.data_u64 = GET_F64_RS2C(insn, regs);
--#if !defined(CONFIG_64BIT)
--	} else if ((insn & INSN_MASK_C_FSW) == INSN_MATCH_C_FSW) {
-+		rd = riscv_insn_c_fsdsp_extract_fs2(insn);
-+	} else if (riscv_insn_is_c_fsw(insn)) {
- 		fp = 1;
- 		len = 4;
--		val.data_ulong = GET_F32_RS2S(insn, regs);
--	} else if ((insn & INSN_MASK_C_FSWSP) == INSN_MATCH_C_FSWSP) {
-+		rd = riscv_insn_c_fsw_extract_fs2(insn);
-+	} else if (riscv_insn_is_c_fswsp(insn)) {
- 		fp = 1;
- 		len = 4;
--		val.data_ulong = GET_F32_RS2C(insn, regs);
--#endif
--	} else if ((insn & INSN_MASK_C_SH) == INSN_MATCH_C_SH) {
-+		rd = riscv_insn_c_fswsp_extract_fs2(insn);
-+	} else if (riscv_insn_is_c_sh(insn)) {
- 		len = 2;
--		val.data_ulong = GET_RS2S(insn, regs);
-+		rd = riscv_insn_c_sh_extract_xs2(insn);
- 	} else {
--		regs->epc = epc;
- 		return -1;
- 	}
- 
- 	if (!IS_ENABLED(CONFIG_FPU) && fp)
- 		return -EOPNOTSUPP;
- 
-+	if (!fp)
-+		val.data_ulong = *(unsigned long *)((unsigned long *)regs + rd);
-+	else if (len == 8)
-+		val.data_u64 = get_f64_rs(rd, regs);
-+	else
-+		val.data_ulong = get_f32_rs(rd, regs);
+diff --git a/tools/testing/selftests/kvm/Makefile.kvm b/tools/testing/selftests/kvm/Makefile.kvm
+index ba5c2b643efa..d402fb339bc0 100644
+--- a/tools/testing/selftests/kvm/Makefile.kvm
++++ b/tools/testing/selftests/kvm/Makefile.kvm
+@@ -204,6 +204,7 @@ TEST_GEN_PROGS_s390 += rseq_test
+ TEST_GEN_PROGS_riscv = $(TEST_GEN_PROGS_COMMON)
+ TEST_GEN_PROGS_riscv += riscv/sbi_pmu_test
+ TEST_GEN_PROGS_riscv += riscv/ebreak_test
++TEST_GEN_PROGS_riscv += riscv/mmio_test
+ TEST_GEN_PROGS_riscv += access_tracking_perf_test
+ TEST_GEN_PROGS_riscv += arch_timer
+ TEST_GEN_PROGS_riscv += coalesced_io_test
+diff --git a/tools/testing/selftests/kvm/riscv/mmio_test.c b/tools/testing/selftests/kvm/riscv/mmio_test.c
+new file mode 100644
+index 000000000000..9726860a269a
+--- /dev/null
++++ b/tools/testing/selftests/kvm/riscv/mmio_test.c
+@@ -0,0 +1,184 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * mmio_test.c - Tests the mmio functionality.
++ */
++#include "kvm_util.h"
++#include "ucall_common.h"
 +
- 	if (user_mode(regs)) {
- 		if (copy_to_user((u8 __user *)addr, &val, len))
- 			return -1;
++#define MMIO_TEST_REGION 0x20000000
++
++#define test_standard_read(len, instruction, name, options)					\
++static void test_##name(void)									\
++{												\
++	unsigned long mmio_result, reference_result;						\
++	/* Configure the MMIO to return 0xff for each byte to check sign extension */		\
++	unsigned long reference = ((unsigned long)-1 >> ((sizeof(long) - len) * 8));		\
++	*((unsigned long *)MMIO_TEST_REGION) = reference;					\
++	/* Check that reads through MMIO are equivalent to standard reads. */			\
++	asm volatile (										\
++		".option push\n"								\
++		options										\
++		#instruction "	%[mmio_res], 0(%[region])\n"					\
++		#instruction "	%[ref_res], 0(%[ref])\n"					\
++		".option pop\n"									\
++		: [mmio_res] "=&cr" (mmio_result), [ref_res] "=&cr" (reference_result)		\
++		: [region] "cr" (MMIO_TEST_REGION), [ref] "cr" (&reference)			\
++	);											\
++	GUEST_ASSERT_EQ(mmio_result, reference_result);						\
++	GUEST_DONE();										\
++}
++
++#define test_sp_read(len, instruction, name)							\
++static void test_##name(void)									\
++{												\
++	unsigned long mmio_result, reference_result;						\
++	unsigned long tmp;									\
++	/* Configure the MMIO to return 0xff for each byte to check sign extension */		\
++	unsigned long reference = ((unsigned long)-1 >> ((sizeof(long) - len) * 8));		\
++	*(((unsigned long *)MMIO_TEST_REGION)) = reference;					\
++	/* Check that reads through MMIO are equivalent to standard reads. */			\
++	asm volatile (										\
++		"mv	%[tmp], sp\n"								\
++		"mv	sp, %[region]\n"							\
++		".option push\n"								\
++		".option arch,+c\n"								\
++		#instruction "	%[mmio_res], 0(sp)\n"						\
++		"mv	sp, %[ref]\n"								\
++		#instruction "	%[ref_res], 0(sp)\n"						\
++		".option pop\n"									\
++		"mv	sp, %[tmp]\n"								\
++		: [mmio_res]  "=&cr" (mmio_result), [ref_res] "=&cr" (reference_result),	\
++		  [tmp] "=&r" (tmp)								\
++		: [region] "r" (MMIO_TEST_REGION), [ref] "cr" (&reference)			\
++	);											\
++	GUEST_ASSERT_EQ(mmio_result, reference_result);						\
++	GUEST_DONE();										\
++}
++
++test_standard_read(1, lb, lb, "")
++test_standard_read(1, lbu, lbu, "")
++test_standard_read(4, lw, lw, "")
++test_standard_read(4, c.lw, c_lw, ".option arch,+c\n")
++test_sp_read(4, c.lwsp, c_lwsp)
++
++#if __riscv_xlen == 64
++test_standard_read(2, lh, lh, "")
++test_standard_read(2, lhu, lhu, "")
++test_standard_read(4, lwu, lwu, "")
++test_standard_read(8, ld, ld, "")
++test_standard_read(8, c.ld, c_ld, ".option arch,+c\n")
++test_sp_read(8, c.ldsp, c_ldsp)
++#endif
++
++#define test_standard_write(len, write, read, name, options)					\
++static void test_##name(void)									\
++{												\
++	unsigned long result;									\
++	unsigned long reference = (0x55555555UL >> ((sizeof(long) - len) * 8));			\
++	/* Check that we can write and then read the same value. */				\
++	asm volatile (										\
++		".option push\n"								\
++		options										\
++		#write "	%[ref], 0(%[region])\n"						\
++		#read "		%[res], 0(%[region])\n"						\
++		".option pop\n"									\
++		: [res] "=&cr" (result)								\
++		: [region] "cr" (MMIO_TEST_REGION), [ref] "cr" (reference)			\
++	);											\
++	GUEST_ASSERT_EQ(result, reference);							\
++	GUEST_DONE();										\
++}
++
++#define test_sp_write(len, write, read, name)							\
++static void test_##name(void)									\
++{												\
++	unsigned long result;									\
++	unsigned long tmp;									\
++	unsigned long reference = (0x55555555UL >> ((sizeof(long) - len) * 8));			\
++	/* Check that we can write and then read the same value. */				\
++	asm volatile (										\
++		"mv	%[tmp], sp\n"								\
++		"mv	sp, %[region]\n"							\
++		".option push\n"								\
++		".option arch,+c\n"								\
++		#write "	%[ref], 0(sp)\n"						\
++		#read "		%[res], 0(sp)\n"						\
++		".option pop\n"									\
++		"mv	sp, %[tmp]\n"								\
++		: [res] "=&cr" (result), [tmp] "=&r" (tmp)					\
++		: [region] "cr" (MMIO_TEST_REGION), [ref] "cr" (reference)			\
++	);											\
++	GUEST_ASSERT_EQ(result, reference);							\
++	GUEST_DONE();										\
++}
++
++test_standard_write(1, sb, lb, sb, "")
++test_standard_write(2, sh, lh, sh, "")
++test_standard_write(4, sw, lw, sw, "")
++test_standard_write(4, c.sw, c.lw, c_sw, ".option arch,+c\n")
++test_sp_write(4, c.swsp, c.lwsp, c_swsp)
++
++#if __riscv_xlen == 64
++test_standard_write(8, sd, ld, sd, "")
++test_standard_write(8, c.sd, c.ld, c_sd, ".option arch,+c\n")
++#endif
++
++static void run(void *guest_code, char *instruction)
++{
++	struct ucall uc;
++	struct kvm_vm *vm;
++	struct kvm_vcpu *vcpu;
++
++	vm = vm_create_with_one_vcpu(&vcpu, guest_code);
++	kvm_create_device(vm, KVM_DEV_TYPE_TEST);
++
++	virt_map(vm, (unsigned long)MMIO_TEST_REGION, MMIO_TEST_REGION, 1);
++
++	vcpu_run(vcpu);
++
++	TEST_ASSERT(get_ucall(vcpu, &uc) == UCALL_DONE,
++		    "MMIO with instruction '%s' failed: '%s'", instruction,
++		    uc.buffer);
++
++	kvm_vm_free(vm);
++}
++
++void test_mmio_read_sign_extension(void)
++{
++	run(test_lb, "lb");
++	run(test_lbu, "lbu");
++	run(test_lw, "lw");
++	run(test_c_lw, "c.lw");
++	run(test_c_lwsp, "c.lwsp");
++
++#if __riscv_xlen == 64
++	run(test_lh, "lh");
++	run(test_lhu, "lhu");
++	run(test_lwu, "lwu");
++	run(test_ld, "ld");
++	run(test_c_ld, "c.ld");
++	run(test_c_ldsp, "c.ldsp");
++#endif
++}
++
++void test_mmio_write(void)
++{
++	run(test_sb, "sb");
++	run(test_sh, "sh");
++	run(test_sw, "sw");
++	run(test_c_sw, "c.sw");
++	run(test_c_swsp, "c.swsp");
++
++#if __riscv_xlen == 64
++	run(test_sd, "sd");
++	run(test_c_sd, "c.sd");
++#endif
++}
++
++int main(void)
++{
++	test_mmio_read_sign_extension();
++	test_mmio_write();
++
++	return 0;
++}
 
 -- 
 2.52.0
