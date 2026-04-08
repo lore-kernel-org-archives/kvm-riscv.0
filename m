@@ -4,84 +4,94 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 266BDCD8CB2
-	for <kvm-riscv@archiver.kernel.org>; Wed, 10 Jun 2026 16:48:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1A5ECD98C6
+	for <kvm-riscv@archiver.kernel.org>; Wed, 10 Jun 2026 16:48:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
-	Content-Transfer-Encoding:Content-Type:Reply-To:List-Subscribe:List-Help:
-	List-Post:List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID
-	:References:Mime-Version:In-Reply-To:Date:Content-ID:Content-Description:
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=hLIDxttuxB+JBHKYHtaB/X+dWgiKBhMZnOLuwWfrxio=; b=wgFkzkavLWzrpV
-	gbKfLeUfAHI3IJmzRGwdIr4PvFcOm0qFRch1YMXAtoPdHfhbnCI5eJ+ETlnvumLtBTnDesSpvBmiI
-	VWiA29MbcTKuL0MZOwOcDBRLP9Yua14GtVV6DkXZrBOgu95ep2jqw72Edw1wYop3vdPKkc8J1hnr0
-	fQyKSPbbqgp7oYIN3wBMDDTSaTq8GBpX5cWGZTmLMzh8rdkuuuxXhcqTXDrjm22lPqUd90ao/5Sfq
-	Vl5fwgeWop1A/0tL67pRvScLmRMH3btDemRlDFvELp1HRUUnmpN/g9UY1zozBSaS1AqnR4Ew+yI/1
-	JP5KokRn0nbpn/2xmKvg==;
+	List-Owner; bh=r/v50l6gK04xn8AahBfbawuyN0Pz3mYGqPCH9Tm9c64=; b=KYs7UwNkx/tUvT
+	HpQidlaMiuRMqzBK1CtYuxH1sWLZrxjnLTFO5iXHcfW9cxKoGdIuU9o+EK+vqYYU6+EVZsc8hBupQ
+	dRQXE6aGo+Jwmbz3xiZaCiSG9zexfBJ7BsXBLMU2R8ku9u5vvrNegTMcmeMTq7bf2UYBHO0hlqQ4V
+	xEZuUS7eKYNXB9ZjiS8PElrPPrja/lqHTHSMkE43+pqj/zXb5Vd75FcPJTrcTPLMHSjBJIiA8jK+M
+	s9E8wB1NrGRJn8uAgbqjSMu6l/tKqqoOTUr0S/PNRDi/g53r/dXCjW88AZlUoa1lqDovplYzVhTHU
+	sztFECYRExtwWPzMhGcg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wXM6T-000000089hH-3TI1;
+	id 1wXM6S-000000089h1-1wMQ;
 	Wed, 10 Jun 2026 16:48:33 +0000
-Received: from mail-pl1-x649.google.com ([2607:f8b0:4864:20::649])
+Received: from mail-pj1-x102a.google.com ([2607:f8b0:4864:20::102a])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1wEw2M-00000007fS1-07sw
+	id 1wAXB2-00000009EYj-4BGG
 	for kvm-riscv@lists.infradead.org;
-	Mon, 20 Apr 2026 21:20:15 +0000
-Received: by mail-pl1-x649.google.com with SMTP id d9443c01a7336-2b2ead99f5dso44901735ad.0
-        for <kvm-riscv@lists.infradead.org>; Mon, 20 Apr 2026 14:20:09 -0700 (PDT)
+	Wed, 08 Apr 2026 17:58:59 +0000
+Received: by mail-pj1-x102a.google.com with SMTP id 98e67ed59e1d1-358e3cc5e7eso17861a91.0
+        for <kvm-riscv@lists.infradead.org>; Wed, 08 Apr 2026 10:58:56 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1776720008; x=1777324808; darn=lists.infradead.org;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:reply-to:from:to:cc:subject:date:message-id:reply-to;
-        bh=IFrglCoyloT3GmEewLfHk/yw0r4k2oBtwi+jeEWWdhk=;
-        b=V0fe0LmivaR+nlEHzO8x/oDyo/nMbJ6ZF1ClhIjtgMbuy9S8ww6S0vFA7HSOqY7rru
-         NhDYYA/z9XiIznKZpDVBXSX+TZZvSHmAxSTnNhnQ33h18Bs0cREkq7r4JUX+yBvqoIHR
-         S2cVZoRawz38EIXMY8DyGafQ0hB3+lgBuQmGKNOoKPyxJC/yn0C5TULfpMMfIKnjh4Ek
-         UQXmnHu0sy+1z/H2lFyFx0/CnO2sqFaTXj5JH/MDlxG8l7Qo9ItkgzqVVFmXErm7tbpV
-         7tAxsLPCFEwHRGRzxVcAHS2/4dSftXmJWUmHVD2IOvKHP6cNIIqyQ0I0+IF6IIeOGoOQ
-         cEGg==
+        d=gmail.com; s=20251104; t=1775671135; x=1776275935; darn=lists.infradead.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=EPC75zCX3AQNScmBKzj0l4KXEu7SMiERNrMCgtwvXtE=;
+        b=A4hyUwIkroEtsISrVIQwjvCOk2yq4auOnyK8Gy4153Whlez9oGYGMUw7oIJc4AVveK
+         reh2Wil71dEI9atOxRT2GN+jYSquVdVYWQYOEPmPpju8TnlMKa8abzCAbsZrLLn/LhRu
+         024A05Q+l7Z5s9GoMRv52oKdnNSVBlmNs4L3AT/AsMSvt8G7QfH0TOcUm0UMhCZlwqS2
+         njqftGKlx7K3M/Ogw6StwDCSc4BG5gaFsWfd/NtBh7kCgLCwhFzHd/PkUCbETXVbJP0+
+         dFsDx4V3ZUmKBGR3TxXVeMwKlFnTQrWbFJ4y8xXXCYzv50JnZ2D/DfZgHwWdeAvBaNVz
+         dgzQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776720008; x=1777324808;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:reply-to:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=IFrglCoyloT3GmEewLfHk/yw0r4k2oBtwi+jeEWWdhk=;
-        b=Nea1j0y0VbdMtjq0LtfDgo1/4gIpNvPmA2pLiI7D1EfRFbBC8ZxAF+A7vMSR5y338X
-         HJfG4C+0NZfuiS9OttPsBcPH+3LiI/WT+o/DFq7jf/Aq76ZjhnQPctqi1ag3k7nJ5DrD
-         yDLACfgvw0C9YtGu2yRPmh5sqZclIk9nWfqFUeC7bn5kZy+lhSqSRsV8grBP/M4iCo1P
-         G4GJBagICpIgnraf5MXJ/muTHgKa7mt9p9JuRXpYieNYH1v0czkRp2vDJfOpahp3ulLl
-         KWZkQ4flWCyfeeFvj+TNHT/9eRRqtI0U/OgxW/x+P8DpzKBuxahXPXFe49lTRozpYNIM
-         d2tw==
-X-Forwarded-Encrypted: i=1; AFNElJ95HQXsX8kZGorPOaX3eyluLn9wl0yxuv5OYVMC46/NNvdUywIDAY/5eVRi5Qxg3pLw0H1pEXkRiQ0=@lists.infradead.org
-X-Gm-Message-State: AOJu0YzjS6v0EL1IWslvtzw28wUreS9T5gWx+zh4U1MyjrWOGZK1UyQe
-	qwrjDKfYYjJN2l0o9O6o4TYe3i6NP5Hz+mujv0IM7EMpKKzk8vO9dAW7+HUC9K6V8ZwToL80tAF
-	Y0ZEflA==
-X-Received: from pgiz3.prod.google.com ([2002:a63:c043:0:b0:c79:65cb:1f76])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a20:2583:b0:398:9820:f6ed
- with SMTP id adf61e73a8af0-3a08d940335mr17898577637.56.1776720008228; Mon, 20
- Apr 2026 14:20:08 -0700 (PDT)
-Date: Mon, 20 Apr 2026 14:19:46 -0700
-In-Reply-To: <20260420212004.3938325-1-seanjc@google.com>
-Mime-Version: 1.0
-References: <20260420212004.3938325-1-seanjc@google.com>
-X-Mailer: git-send-email 2.54.0.rc1.555.g9c883467ad-goog
-Message-ID: <20260420212004.3938325-2-seanjc@google.com>
-Subject: [PATCH v3 01/19] KVM: selftests: Use gva_t instead of vm_vaddr_t
-From: Sean Christopherson <seanjc@google.com>
-To: Paolo Bonzini <pbonzini@redhat.com>, Marc Zyngier <maz@kernel.org>, 
-	Oliver Upton <oupton@kernel.org>, Tianrui Zhao <zhaotianrui@loongson.cn>, 
-	Bibo Mao <maobibo@loongson.cn>, Huacai Chen <chenhuacai@kernel.org>, 
-	Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, 
-	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
-	Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, 
-	Claudio Imbrenda <imbrenda@linux.ibm.com>, Sean Christopherson <seanjc@google.com>
-Cc: kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	kvmarm@lists.linux.dev, loongarch@lists.linux.dev, 
-	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
-	linux-kernel@vger.kernel.org, David Matlack <dmatlack@google.com>
-X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260420_142010_139249_41FF04C7 
-X-CRM114-Status: GOOD (  16.66  )
+        d=1e100.net; s=20251104; t=1775671135; x=1776275935;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=EPC75zCX3AQNScmBKzj0l4KXEu7SMiERNrMCgtwvXtE=;
+        b=WNQTgzHzaEwVu5Jq/t3GTooOQQyTD6a0htkyX3ErRQV9MKKM8paImazQroY1f4f50y
+         0DfDAcX+bFCZap+e1G6U9Be1HJ5iE61yQi3JByA8pfFKTILGe9HjI6CJGEV0YndHqYTR
+         IntyEwZRKxNbTdpvUk7jrfvKBM4oAOKBOO7NcY63MZ4D6E/EZO/REK6UChYMpT4HPCY4
+         OeTYHxyaFwF+gngQ7TB+ubQAJIepjFvRHNugG4Pu+LDpzhBtaf69IqpTWXH0XiX0LOdR
+         3ox2ukUXHAWKmUC1QFSbFffYLe74AfB29vtSoFQTE+IQ5xVs3gtVebW8JeRJnG7ekOMz
+         oEvA==
+X-Forwarded-Encrypted: i=1; AJvYcCV2COWeD3QsVMRkX6mCr0EyJGSsWNQaHWW7FnYQ3rXKUx3qzXOa9hSXTzqYmixsBDNng5mYXcVuCUs=@lists.infradead.org
+X-Gm-Message-State: AOJu0YzLetdm9dPVtC7hz2dmbrjVKuydyVfsKZfnfSCMjyC4QOx8gcq1
+	tpYIs8P5T3RGn9bH5fayNrrlBGQI72zUR2ICedRRI59Th6aMw4liwZWK
+X-Gm-Gg: AeBDietZGnJIHTMP7Hk9PwF68krY+18qSu4osrtHKZLC6uLZBe0rLI3tbTqp7cPHCKJ
+	KJmOfuekzPNe3KbrKXYLVRnZhi5q01MhAQ6yRijnoQlkPXqmvAl4W95Svze57ewn1ecbJOpYfxa
+	XLY4HzcjrOBf/ibL8CofmH4uAt+roSPXbp44y/wcB+/g0K9o94bSeZb8MAGi3NchiD3Hevu2ci3
+	nAtBDwAg3KTRjcjeYEHQczxP0iex+3uEe6LaOVrhYjYnN2DzPxKgFGRhnQBYqhanIdYnjqbnX1E
+	q11e4CRpR76LMdym0E1vz/26KOfYaYWhNiBVr8CzYfB4nvWPVcAPrQZz6Q24nKjC5QDwElDmwAA
+	cUX6IZZIulhFopOILILGLanZoAxKkHXixUg+q31FyBOd8S0xSdxtDY9WyisimL2iJW6k1uK7glQ
+	sgtgLZR2cC9nNCYSBRdVScKbhS90l22n52USgAHgmap4rLTOSqflto
+X-Received: by 2002:a05:693c:3018:b0:2c0:cc90:a71 with SMTP id 5a478bee46e88-2cbf9df22d4mr10054952eec.8.1775671134916;
+        Wed, 08 Apr 2026 10:58:54 -0700 (PDT)
+Received: from inky.hsd1.ca.comcast.net ([2601:647:6700:64d0:8ccf:d575:662c:a402])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-2cf1af62347sm14963480eec.22.2026.04.08.10.58.53
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 08 Apr 2026 10:58:54 -0700 (PDT)
+From: Charlie Jenkins <thecharlesjenkins@gmail.com>
+To: Paul Walmsley <pjw@kernel.org>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Alexandre Ghiti <alex@ghiti.fr>,
+	Anup Patel <anup@brainfault.org>,
+	Atish Patra <atish.patra@linux.dev>,
+	Conor Dooley <conor@kernel.org>,
+	Paolo Bonzini <pbonzini@redhat.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Shuah Khan <shuah@kernel.org>
+Cc: linux-riscv@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	kvm@vger.kernel.org,
+	kvm-riscv@lists.infradead.org,
+	linux-kselftest@vger.kernel.org,
+	Charlie Jenkins <thecharlesjenkins@gmail.com>
+Subject: [PATCH 1/16] riscv: Introduce instruction table generation
+Date: Wed,  8 Apr 2026 10:58:30 -0700
+Message-ID: <430b73fed9363535ee20326924c4fafa0a8863c4.1775669508.git.thecharlesjenkins@gmail.com>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260407-riscv_insn_table-v1-0-54b4736a1e77@gmail.com>
+References: <20260407-riscv_insn_table-v1-0-54b4736a1e77@gmail.com>
+MIME-Version: 1.0
 X-Mailman-Approved-At: Wed, 10 Jun 2026 09:48:29 -0700
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -94,1678 +104,1907 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Reply-To: Sean Christopherson <seanjc@google.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-From: David Matlack <dmatlack@google.com>
+Eliminate the need to hand-write riscv instructions by using a shell
+script to autogenerate a header from an instruction table. This is modeled
+after the syscall table infrastructure.
 
-Replace all occurrences of vm_vaddr_t with gva_t to align with KVM code
-and with the conversion helpers (e.g. addr_gva2hva()).
+The table is generated externally by riscv-unified-db [1], but is
+in a simple format to make it possible to use other tools or modify
+manually.
 
-This commit was generated with the following command:
+[1] https://github.com/riscv-software-src/riscv-unified-db
 
-  git ls-files tools/testing/selftests/kvm | xargs sed -i 's/vm_vaddr_/gva_/g'
+Signed-off-by: Charlie Jenkins <thecharlesjenkins@gmail.com>
 
-Then by manually adjusting whitespace to make checkpatch.pl happy, and
-dropping renames of functions that allocate memory within a given VM.
-
-No functional change intended.
-
-Signed-off-by: David Matlack <dmatlack@google.com>
-[sean: drop renames of allocator APIs]
-Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- tools/testing/selftests/kvm/arm64/vgic_irq.c  |  6 ++--
- .../selftests/kvm/include/arm64/processor.h   |  4 +--
- .../selftests/kvm/include/arm64/ucall.h       |  4 +--
- .../testing/selftests/kvm/include/kvm_util.h  | 32 +++++++++----------
- .../selftests/kvm/include/kvm_util_types.h    |  2 +-
- .../selftests/kvm/include/loongarch/ucall.h   |  4 +--
- .../selftests/kvm/include/riscv/ucall.h       |  2 +-
- .../selftests/kvm/include/s390/ucall.h        |  2 +-
- .../selftests/kvm/include/ucall_common.h      |  4 +--
- .../selftests/kvm/include/x86/hyperv.h        | 10 +++---
- .../selftests/kvm/include/x86/kvm_util_arch.h |  6 ++--
- .../selftests/kvm/include/x86/svm_util.h      |  2 +-
- tools/testing/selftests/kvm/include/x86/vmx.h |  2 +-
- .../selftests/kvm/kvm_page_table_test.c       |  2 +-
- .../selftests/kvm/lib/arm64/processor.c       | 18 +++++------
- tools/testing/selftests/kvm/lib/arm64/ucall.c |  6 ++--
- tools/testing/selftests/kvm/lib/elf.c         |  6 ++--
- tools/testing/selftests/kvm/lib/kvm_util.c    | 32 ++++++++-----------
- .../selftests/kvm/lib/loongarch/processor.c   |  8 ++---
- .../selftests/kvm/lib/loongarch/ucall.c       |  6 ++--
- .../selftests/kvm/lib/riscv/processor.c       |  8 ++---
- .../selftests/kvm/lib/s390/processor.c        |  2 +-
- .../testing/selftests/kvm/lib/ucall_common.c  |  8 ++---
- tools/testing/selftests/kvm/lib/x86/hyperv.c  |  4 +--
- .../testing/selftests/kvm/lib/x86/memstress.c |  2 +-
- .../testing/selftests/kvm/lib/x86/processor.c | 14 ++++----
- tools/testing/selftests/kvm/lib/x86/svm.c     |  4 +--
- tools/testing/selftests/kvm/lib/x86/ucall.c   |  2 +-
- tools/testing/selftests/kvm/lib/x86/vmx.c     |  4 +--
- .../selftests/kvm/riscv/sbi_pmu_test.c        |  2 +-
- tools/testing/selftests/kvm/s390/memop.c      |  6 ++--
- tools/testing/selftests/kvm/s390/tprot.c      |  6 ++--
- tools/testing/selftests/kvm/steal_time.c      |  2 +-
- tools/testing/selftests/kvm/x86/amx_test.c    |  2 +-
- .../selftests/kvm/x86/aperfmperf_test.c       |  2 +-
- tools/testing/selftests/kvm/x86/cpuid_test.c  |  6 ++--
- .../kvm/x86/evmcs_smm_controls_test.c         |  2 +-
- .../testing/selftests/kvm/x86/hyperv_clock.c  |  2 +-
- .../testing/selftests/kvm/x86/hyperv_evmcs.c  |  6 ++--
- .../kvm/x86/hyperv_extended_hypercalls.c      |  6 ++--
- .../selftests/kvm/x86/hyperv_features.c       |  6 ++--
- tools/testing/selftests/kvm/x86/hyperv_ipi.c  |  8 ++---
- .../selftests/kvm/x86/hyperv_svm_test.c       |  6 ++--
- .../selftests/kvm/x86/hyperv_tlb_flush.c      | 12 +++----
- .../selftests/kvm/x86/kvm_buslock_test.c      |  2 +-
- .../selftests/kvm/x86/kvm_clock_test.c        |  2 +-
- .../selftests/kvm/x86/nested_close_kvm_test.c |  2 +-
- .../selftests/kvm/x86/nested_dirty_log_test.c | 10 +++---
- .../selftests/kvm/x86/nested_emulation_test.c |  2 +-
- .../kvm/x86/nested_exceptions_test.c          |  2 +-
- .../kvm/x86/nested_invalid_cr3_test.c         |  2 +-
- .../kvm/x86/nested_tsc_adjust_test.c          |  2 +-
- .../kvm/x86/nested_tsc_scaling_test.c         |  2 +-
- .../kvm/x86/nested_vmsave_vmload_test.c       |  2 +-
- .../selftests/kvm/x86/sev_smoke_test.c        |  2 +-
- tools/testing/selftests/kvm/x86/smm_test.c    |  2 +-
- tools/testing/selftests/kvm/x86/state_test.c  |  2 +-
- .../selftests/kvm/x86/svm_int_ctl_test.c      |  2 +-
- .../selftests/kvm/x86/svm_lbr_nested_state.c  |  2 +-
- .../kvm/x86/svm_nested_clear_efer_svme.c      |  2 +-
- .../kvm/x86/svm_nested_shutdown_test.c        |  2 +-
- .../kvm/x86/svm_nested_soft_inject_test.c     |  4 +--
- .../selftests/kvm/x86/svm_nested_vmcb12_gpa.c |  6 ++--
- .../selftests/kvm/x86/svm_vmcall_test.c       |  2 +-
- .../kvm/x86/triple_fault_event_test.c         |  4 +--
- .../selftests/kvm/x86/vmx_apic_access_test.c  |  2 +-
- .../kvm/x86/vmx_apicv_updates_test.c          |  2 +-
- .../kvm/x86/vmx_invalid_nested_guest_state.c  |  2 +-
- .../kvm/x86/vmx_nested_la57_state_test.c      |  2 +-
- .../kvm/x86/vmx_preemption_timer_test.c       |  2 +-
- .../selftests/kvm/x86/xapic_ipi_test.c        |  2 +-
- 71 files changed, 172 insertions(+), 178 deletions(-)
 
-diff --git a/tools/testing/selftests/kvm/arm64/vgic_irq.c b/tools/testing/selftests/kvm/arm64/vgic_irq.c
-index 2fb2c7939fe9..da87d049d246 100644
---- a/tools/testing/selftests/kvm/arm64/vgic_irq.c
-+++ b/tools/testing/selftests/kvm/arm64/vgic_irq.c
-@@ -731,7 +731,7 @@ static void kvm_inject_get_call(struct kvm_vm *vm, struct ucall *uc,
- 		struct kvm_inject_args *args)
+This change immediately modifies all of the riscv_insn_* macros. I don't
+have a clean way of sharing my test cases but what I did was compare the
+old and new versions of the functions using the following test case:
+
+    for (unsigned int i = 0; i < ((1ULL << 32) - 1); i++) {\
+        bool old = riscv_insn_is_##name(i);\
+        bool new = new_riscv_insn_is_##name(i);\
+        if (old != new) {\
+            printf(#name " %u\n", i);\
+        }\
+    }
+
+    for (unsigned int i = 0; i < ((1ULL << 32) - 1); i++) {\
+        bool old = riscv_insn_is_##name(i);\
+        bool new = new_riscv_insn_is_##name(i);\
+\
+        if (old != new) {\
+            printf(#name " %u\n", i);\
+            return;\
+        }\
+    }
+
+void check()
+{
+    check_64(auipc)
+    check_64(jalr)
+    check_64(jal)
+    check_64(beq)
+    check_64(bne)
+    check_64(blt)
+    check_64(bge)
+    check_64(bltu)
+    check_64(bgeu)
+    check_64(ebreak)
+    check_64(sret)
+    check_64(fence)
+
+    check_32(c_jr)
+    check_32(c_jalr)
+    check_32(c_j)
+    check_32(c_beqz)
+    check_32(c_bnez)
+    check_32(c_ebreak)
+}
+
+This does a simple brute force to check all possible numbers. The
+only difference with the new version is that the fence instruction
+refers to the literal "fence" instruction whereas the previous version
+could have matched on to fence, fence.i, or fence.tso. This does not
+make a material difference because riscv_insn_is_fence() isn't currently
+in use.
+---
+ arch/riscv/Makefile           |    3 +
+ arch/riscv/include/asm/Kbuild |    1 +
+ arch/riscv/include/asm/insn.h |   72 +-
+ arch/riscv/tools/Makefile     |   22 +
+ arch/riscv/tools/insn.tbl     | 1391 +++++++++++++++++++++++++++++++++
+ arch/riscv/tools/insn_tbl.sh  |  263 +++++++
+ 6 files changed, 1710 insertions(+), 42 deletions(-)
+ create mode 100644 arch/riscv/tools/Makefile
+ create mode 100644 arch/riscv/tools/insn.tbl
+ create mode 100755 arch/riscv/tools/insn_tbl.sh
+
+diff --git a/arch/riscv/Makefile b/arch/riscv/Makefile
+index 4c6de57f65ef..d665b015988b 100644
+--- a/arch/riscv/Makefile
++++ b/arch/riscv/Makefile
+@@ -171,6 +171,9 @@ BOOT_TARGETS := Image Image.gz Image.bz2 Image.lz4 Image.lzma Image.lzo Image.zs
+ 
+ all:	$(notdir $(KBUILD_IMAGE))
+ 
++archprepare:
++	$(Q)$(MAKE) $(build)=arch/riscv/tools insn
++
+ loader.bin: loader
+ Image.gz Image.bz2 Image.lz4 Image.lzma Image.lzo Image.zst Image.xz loader xipImage vmlinuz.efi: Image
+ 
+diff --git a/arch/riscv/include/asm/Kbuild b/arch/riscv/include/asm/Kbuild
+index bd5fc9403295..82feba7b0eb5 100644
+--- a/arch/riscv/include/asm/Kbuild
++++ b/arch/riscv/include/asm/Kbuild
+@@ -2,6 +2,7 @@
+ syscall-y += syscall_table_32.h
+ syscall-y += syscall_table_64.h
+ 
++generated-y += insn_gen.h
+ generic-y += early_ioremap.h
+ generic-y += flat.h
+ generic-y += fprobe.h
+diff --git a/arch/riscv/include/asm/insn.h b/arch/riscv/include/asm/insn.h
+index c3005573e8c9..d562b2b40ba1 100644
+--- a/arch/riscv/include/asm/insn.h
++++ b/arch/riscv/include/asm/insn.h
+@@ -8,6 +8,36 @@
+ 
+ #include <linux/bits.h>
+ 
++/*
++ * Generate a function to check if a sequence of bits matches an instruction
++ */
++#define __RISCV_INSN_FUNCS(name)							\
++static __always_inline bool riscv_insn_is_##name(u32 _insn)				\
++{											\
++	BUILD_BUG_ON(~(riscv_insn_##name##_MASK) & (riscv_insn_##name##_MATCH));	\
++	return (_insn & (riscv_insn_##name##_MASK)) == (riscv_insn_##name##_MATCH);	\
++}
++
++/*
++ * Generate a function to check if a sequence of bits matches an instruction
++ * with constraints. Some instructions require inputs to be specific values.
++ */
++#define __RISCV_INSN_FUNCS_CONSTRAINED(name, constraints)				\
++static __always_inline bool riscv_insn_is_##name(u32 _insn)				\
++{											\
++	BUILD_BUG_ON(~(riscv_insn_##name##_MASK) & (riscv_insn_##name##_MATCH));	\
++	return ((_insn & (riscv_insn_##name##_MASK)) == (riscv_insn_##name##_MATCH)) && \
++	       (constraints);								\
++}
++
++#define __RISCV_INSN_FUNCS_UNSUPPORTED(name)				\
++static __always_inline bool riscv_insn_is_##name(u32 _insn)		\
++{									\
++	return 0;							\
++}
++
++#include <asm/insn_gen.h>
++
+ #define RV_INSN_FUNCT3_MASK	GENMASK(14, 12)
+ #define RV_INSN_FUNCT3_OPOFF	12
+ #define RV_INSN_OPCODE_MASK	GENMASK(6, 0)
+@@ -233,36 +263,6 @@
+ #define __INSN_OPCODE_MASK	_UL(0x7F)
+ #define __INSN_BRANCH_OPCODE	_UL(RVG_OPCODE_BRANCH)
+ 
+-#define __RISCV_INSN_FUNCS(name, mask, val)				\
+-static __always_inline bool riscv_insn_is_##name(u32 code)		\
+-{									\
+-	BUILD_BUG_ON(~(mask) & (val));					\
+-	return (code & (mask)) == (val);				\
+-}									\
+-
+-#if __riscv_xlen == 32
+-/* C.JAL is an RV32C-only instruction */
+-__RISCV_INSN_FUNCS(c_jal, RVC_MASK_C_JAL, RVC_MATCH_C_JAL)
+-#else
+-#define riscv_insn_is_c_jal(opcode) 0
+-#endif
+-__RISCV_INSN_FUNCS(auipc, RVG_MASK_AUIPC, RVG_MATCH_AUIPC)
+-__RISCV_INSN_FUNCS(jalr, RVG_MASK_JALR, RVG_MATCH_JALR)
+-__RISCV_INSN_FUNCS(jal, RVG_MASK_JAL, RVG_MATCH_JAL)
+-__RISCV_INSN_FUNCS(c_j, RVC_MASK_C_J, RVC_MATCH_C_J)
+-__RISCV_INSN_FUNCS(beq, RVG_MASK_BEQ, RVG_MATCH_BEQ)
+-__RISCV_INSN_FUNCS(bne, RVG_MASK_BNE, RVG_MATCH_BNE)
+-__RISCV_INSN_FUNCS(blt, RVG_MASK_BLT, RVG_MATCH_BLT)
+-__RISCV_INSN_FUNCS(bge, RVG_MASK_BGE, RVG_MATCH_BGE)
+-__RISCV_INSN_FUNCS(bltu, RVG_MASK_BLTU, RVG_MATCH_BLTU)
+-__RISCV_INSN_FUNCS(bgeu, RVG_MASK_BGEU, RVG_MATCH_BGEU)
+-__RISCV_INSN_FUNCS(c_beqz, RVC_MASK_C_BEQZ, RVC_MATCH_C_BEQZ)
+-__RISCV_INSN_FUNCS(c_bnez, RVC_MASK_C_BNEZ, RVC_MATCH_C_BNEZ)
+-__RISCV_INSN_FUNCS(c_ebreak, RVC_MASK_C_EBREAK, RVC_MATCH_C_EBREAK)
+-__RISCV_INSN_FUNCS(ebreak, RVG_MASK_EBREAK, RVG_MATCH_EBREAK)
+-__RISCV_INSN_FUNCS(sret, RVG_MASK_SRET, RVG_MATCH_SRET)
+-__RISCV_INSN_FUNCS(fence, RVG_MASK_FENCE, RVG_MATCH_FENCE);
+-
+ /* special case to catch _any_ system instruction */
+ static __always_inline bool riscv_insn_is_system(u32 code)
  {
- 	struct kvm_inject_args *kvm_args_hva;
--	vm_vaddr_t kvm_args_gva;
-+	gva_t kvm_args_gva;
- 
- 	kvm_args_gva = uc->args[1];
- 	kvm_args_hva = (struct kvm_inject_args *)addr_gva2hva(vm, kvm_args_gva);
-@@ -752,7 +752,7 @@ static void test_vgic(uint32_t nr_irqs, bool level_sensitive, bool eoi_split)
- 	struct kvm_vcpu *vcpu;
- 	struct kvm_vm *vm;
- 	struct kvm_inject_args inject_args;
--	vm_vaddr_t args_gva;
-+	gva_t args_gva;
- 
- 	struct test_args args = {
- 		.nr_irqs = nr_irqs,
-@@ -986,7 +986,7 @@ static void test_vgic_two_cpus(void *gcode)
- 	struct kvm_vcpu *vcpus[2];
- 	struct test_args args = {};
- 	struct kvm_vm *vm;
--	vm_vaddr_t args_gva;
-+	gva_t args_gva;
- 	int gic_fd, ret;
- 
- 	vm = vm_create_with_vcpus(2, gcode, vcpus);
-diff --git a/tools/testing/selftests/kvm/include/arm64/processor.h b/tools/testing/selftests/kvm/include/arm64/processor.h
-index ac97a1c436fc..5b18ffe68789 100644
---- a/tools/testing/selftests/kvm/include/arm64/processor.h
-+++ b/tools/testing/selftests/kvm/include/arm64/processor.h
-@@ -179,8 +179,8 @@ void vm_install_exception_handler(struct kvm_vm *vm,
- void vm_install_sync_handler(struct kvm_vm *vm,
- 		int vector, int ec, handler_fn handler);
- 
--uint64_t *virt_get_pte_hva_at_level(struct kvm_vm *vm, vm_vaddr_t gva, int level);
--uint64_t *virt_get_pte_hva(struct kvm_vm *vm, vm_vaddr_t gva);
-+uint64_t *virt_get_pte_hva_at_level(struct kvm_vm *vm, gva_t gva, int level);
-+uint64_t *virt_get_pte_hva(struct kvm_vm *vm, gva_t gva);
- 
- static inline void cpu_relax(void)
- {
-diff --git a/tools/testing/selftests/kvm/include/arm64/ucall.h b/tools/testing/selftests/kvm/include/arm64/ucall.h
-index 4ec801f37f00..2210d3d94c40 100644
---- a/tools/testing/selftests/kvm/include/arm64/ucall.h
-+++ b/tools/testing/selftests/kvm/include/arm64/ucall.h
-@@ -10,9 +10,9 @@
-  * ucall_exit_mmio_addr holds per-VM values (global data is duplicated by each
-  * VM), it must not be accessed from host code.
-  */
--extern vm_vaddr_t *ucall_exit_mmio_addr;
-+extern gva_t *ucall_exit_mmio_addr;
- 
--static inline void ucall_arch_do_ucall(vm_vaddr_t uc)
-+static inline void ucall_arch_do_ucall(gva_t uc)
- {
- 	WRITE_ONCE(*ucall_exit_mmio_addr, uc);
- }
-diff --git a/tools/testing/selftests/kvm/include/kvm_util.h b/tools/testing/selftests/kvm/include/kvm_util.h
-index f861242b4ae8..2378dd42c988 100644
---- a/tools/testing/selftests/kvm/include/kvm_util.h
-+++ b/tools/testing/selftests/kvm/include/kvm_util.h
-@@ -112,7 +112,7 @@ struct kvm_vm {
- 	struct sparsebit *vpages_mapped;
- 	bool has_irqchip;
- 	vm_paddr_t ucall_mmio_addr;
--	vm_vaddr_t handlers;
-+	gva_t handlers;
- 	uint32_t dirty_ring_size;
- 	uint64_t gpa_tag_mask;
- 
-@@ -716,22 +716,20 @@ void vm_mem_region_move(struct kvm_vm *vm, uint32_t slot, uint64_t new_gpa);
- void vm_mem_region_delete(struct kvm_vm *vm, uint32_t slot);
- struct kvm_vcpu *__vm_vcpu_add(struct kvm_vm *vm, uint32_t vcpu_id);
- void vm_populate_vaddr_bitmap(struct kvm_vm *vm);
--vm_vaddr_t vm_vaddr_unused_gap(struct kvm_vm *vm, size_t sz, vm_vaddr_t vaddr_min);
--vm_vaddr_t vm_vaddr_alloc(struct kvm_vm *vm, size_t sz, vm_vaddr_t vaddr_min);
--vm_vaddr_t __vm_vaddr_alloc(struct kvm_vm *vm, size_t sz, vm_vaddr_t vaddr_min,
-+gva_t vm_vaddr_unused_gap(struct kvm_vm *vm, size_t sz, gva_t vaddr_min);
-+gva_t vm_vaddr_alloc(struct kvm_vm *vm, size_t sz, gva_t vaddr_min);
-+gva_t __vm_vaddr_alloc(struct kvm_vm *vm, size_t sz, gva_t vaddr_min,
-+		       enum kvm_mem_region_type type);
-+gva_t vm_vaddr_alloc_shared(struct kvm_vm *vm, size_t sz, gva_t vaddr_min,
- 			    enum kvm_mem_region_type type);
--vm_vaddr_t vm_vaddr_alloc_shared(struct kvm_vm *vm, size_t sz,
--				 vm_vaddr_t vaddr_min,
--				 enum kvm_mem_region_type type);
--vm_vaddr_t vm_vaddr_alloc_pages(struct kvm_vm *vm, int nr_pages);
--vm_vaddr_t __vm_vaddr_alloc_page(struct kvm_vm *vm,
--				 enum kvm_mem_region_type type);
--vm_vaddr_t vm_vaddr_alloc_page(struct kvm_vm *vm);
-+gva_t vm_vaddr_alloc_pages(struct kvm_vm *vm, int nr_pages);
-+gva_t __vm_vaddr_alloc_page(struct kvm_vm *vm, enum kvm_mem_region_type type);
-+gva_t vm_vaddr_alloc_page(struct kvm_vm *vm);
- 
- void virt_map(struct kvm_vm *vm, uint64_t vaddr, uint64_t paddr,
- 	      unsigned int npages);
- void *addr_gpa2hva(struct kvm_vm *vm, vm_paddr_t gpa);
--void *addr_gva2hva(struct kvm_vm *vm, vm_vaddr_t gva);
-+void *addr_gva2hva(struct kvm_vm *vm, gva_t gva);
- vm_paddr_t addr_hva2gpa(struct kvm_vm *vm, void *hva);
- void *addr_gpa2alias(struct kvm_vm *vm, vm_paddr_t gpa);
- 
-@@ -1131,12 +1129,12 @@ vm_adjust_num_guest_pages(enum vm_guest_mode mode, unsigned int num_guest_pages)
- }
- 
- #define sync_global_to_guest(vm, g) ({				\
--	typeof(g) *_p = addr_gva2hva(vm, (vm_vaddr_t)&(g));	\
-+	typeof(g) *_p = addr_gva2hva(vm, (gva_t)&(g));		\
- 	memcpy(_p, &(g), sizeof(g));				\
- })
- 
- #define sync_global_from_guest(vm, g) ({			\
--	typeof(g) *_p = addr_gva2hva(vm, (vm_vaddr_t)&(g));	\
-+	typeof(g) *_p = addr_gva2hva(vm, (gva_t)&(g));		\
- 	memcpy(&(g), _p, sizeof(g));				\
- })
- 
-@@ -1147,7 +1145,7 @@ vm_adjust_num_guest_pages(enum vm_guest_mode mode, unsigned int num_guest_pages)
-  * undesirable to change the host's copy of the global.
-  */
- #define write_guest_global(vm, g, val) ({			\
--	typeof(g) *_p = addr_gva2hva(vm, (vm_vaddr_t)&(g));	\
-+	typeof(g) *_p = addr_gva2hva(vm, (gva_t)&(g));		\
- 	typeof(g) _val = val;					\
- 								\
- 	memcpy(_p, &(_val), sizeof(g));				\
-@@ -1242,9 +1240,9 @@ static inline void virt_pg_map(struct kvm_vm *vm, uint64_t vaddr, uint64_t paddr
-  * Returns the VM physical address of the translated VM virtual
-  * address given by @gva.
-  */
--vm_paddr_t addr_arch_gva2gpa(struct kvm_vm *vm, vm_vaddr_t gva);
-+vm_paddr_t addr_arch_gva2gpa(struct kvm_vm *vm, gva_t gva);
- 
--static inline vm_paddr_t addr_gva2gpa(struct kvm_vm *vm, vm_vaddr_t gva)
-+static inline vm_paddr_t addr_gva2gpa(struct kvm_vm *vm, gva_t gva)
- {
- 	return addr_arch_gva2gpa(vm, gva);
- }
-diff --git a/tools/testing/selftests/kvm/include/kvm_util_types.h b/tools/testing/selftests/kvm/include/kvm_util_types.h
-index 0366e9bce7f9..f27bd035ea10 100644
---- a/tools/testing/selftests/kvm/include/kvm_util_types.h
-+++ b/tools/testing/selftests/kvm/include/kvm_util_types.h
-@@ -15,7 +15,7 @@
- #define kvm_static_assert(expr, ...) __kvm_static_assert(expr, ##__VA_ARGS__, #expr)
- 
- typedef uint64_t vm_paddr_t; /* Virtual Machine (Guest) physical address */
--typedef uint64_t vm_vaddr_t; /* Virtual Machine (Guest) virtual address */
-+typedef uint64_t gva_t; /* Virtual Machine (Guest) virtual address */
- 
- #define INVALID_GPA (~(uint64_t)0)
- 
-diff --git a/tools/testing/selftests/kvm/include/loongarch/ucall.h b/tools/testing/selftests/kvm/include/loongarch/ucall.h
-index 4ec801f37f00..2210d3d94c40 100644
---- a/tools/testing/selftests/kvm/include/loongarch/ucall.h
-+++ b/tools/testing/selftests/kvm/include/loongarch/ucall.h
-@@ -10,9 +10,9 @@
-  * ucall_exit_mmio_addr holds per-VM values (global data is duplicated by each
-  * VM), it must not be accessed from host code.
-  */
--extern vm_vaddr_t *ucall_exit_mmio_addr;
-+extern gva_t *ucall_exit_mmio_addr;
- 
--static inline void ucall_arch_do_ucall(vm_vaddr_t uc)
-+static inline void ucall_arch_do_ucall(gva_t uc)
- {
- 	WRITE_ONCE(*ucall_exit_mmio_addr, uc);
- }
-diff --git a/tools/testing/selftests/kvm/include/riscv/ucall.h b/tools/testing/selftests/kvm/include/riscv/ucall.h
-index a695ae36f3e0..41d56254968e 100644
---- a/tools/testing/selftests/kvm/include/riscv/ucall.h
-+++ b/tools/testing/selftests/kvm/include/riscv/ucall.h
-@@ -11,7 +11,7 @@ static inline void ucall_arch_init(struct kvm_vm *vm, vm_paddr_t mmio_gpa)
- {
+@@ -275,18 +275,6 @@ static __always_inline bool riscv_insn_is_branch(u32 code)
+ 	return (code & RV_INSN_OPCODE_MASK) == RVG_OPCODE_BRANCH;
  }
  
--static inline void ucall_arch_do_ucall(vm_vaddr_t uc)
-+static inline void ucall_arch_do_ucall(gva_t uc)
- {
- 	sbi_ecall(KVM_RISCV_SELFTESTS_SBI_EXT,
- 		  KVM_RISCV_SELFTESTS_SBI_UCALL,
-diff --git a/tools/testing/selftests/kvm/include/s390/ucall.h b/tools/testing/selftests/kvm/include/s390/ucall.h
-index 8035a872a351..befee84c4609 100644
---- a/tools/testing/selftests/kvm/include/s390/ucall.h
-+++ b/tools/testing/selftests/kvm/include/s390/ucall.h
-@@ -10,7 +10,7 @@ static inline void ucall_arch_init(struct kvm_vm *vm, vm_paddr_t mmio_gpa)
- {
- }
- 
--static inline void ucall_arch_do_ucall(vm_vaddr_t uc)
-+static inline void ucall_arch_do_ucall(gva_t uc)
- {
- 	/* Exit via DIAGNOSE 0x501 (normally used for breakpoints) */
- 	asm volatile ("diag 0,%0,0x501" : : "a"(uc) : "memory");
-diff --git a/tools/testing/selftests/kvm/include/ucall_common.h b/tools/testing/selftests/kvm/include/ucall_common.h
-index d9d6581b8d4f..e5499f170834 100644
---- a/tools/testing/selftests/kvm/include/ucall_common.h
-+++ b/tools/testing/selftests/kvm/include/ucall_common.h
-@@ -30,7 +30,7 @@ struct ucall {
- };
- 
- void ucall_arch_init(struct kvm_vm *vm, vm_paddr_t mmio_gpa);
--void ucall_arch_do_ucall(vm_vaddr_t uc);
-+void ucall_arch_do_ucall(gva_t uc);
- void *ucall_arch_get_ucall(struct kvm_vcpu *vcpu);
- 
- void ucall(uint64_t cmd, int nargs, ...);
-@@ -48,7 +48,7 @@ int ucall_nr_pages_required(uint64_t page_size);
-  * the full ucall() are problematic and/or unwanted.  Note, this will come out
-  * as UCALL_NONE on the backend.
-  */
--#define GUEST_UCALL_NONE()	ucall_arch_do_ucall((vm_vaddr_t)NULL)
-+#define GUEST_UCALL_NONE()	ucall_arch_do_ucall((gva_t)NULL)
- 
- #define GUEST_SYNC_ARGS(stage, arg1, arg2, arg3, arg4)	\
- 				ucall(UCALL_SYNC, 6, "hello", stage, arg1, arg2, arg3, arg4)
-diff --git a/tools/testing/selftests/kvm/include/x86/hyperv.h b/tools/testing/selftests/kvm/include/x86/hyperv.h
-index f13e532be240..eedfff3cf102 100644
---- a/tools/testing/selftests/kvm/include/x86/hyperv.h
-+++ b/tools/testing/selftests/kvm/include/x86/hyperv.h
-@@ -254,8 +254,8 @@
-  * Issue a Hyper-V hypercall. Returns exception vector raised or 0, 'hv_status'
-  * is set to the hypercall status (if no exception occurred).
-  */
--static inline uint8_t __hyperv_hypercall(u64 control, vm_vaddr_t input_address,
--					 vm_vaddr_t output_address,
-+static inline uint8_t __hyperv_hypercall(u64 control, gva_t input_address,
-+					 gva_t output_address,
- 					 uint64_t *hv_status)
- {
- 	uint64_t error_code;
-@@ -274,8 +274,8 @@ static inline uint8_t __hyperv_hypercall(u64 control, vm_vaddr_t input_address,
- }
- 
- /* Issue a Hyper-V hypercall and assert that it succeeded. */
--static inline void hyperv_hypercall(u64 control, vm_vaddr_t input_address,
--				    vm_vaddr_t output_address)
-+static inline void hyperv_hypercall(u64 control, gva_t input_address,
-+				    gva_t output_address)
- {
- 	uint64_t hv_status;
- 	uint8_t vector;
-@@ -347,7 +347,7 @@ struct hyperv_test_pages {
- };
- 
- struct hyperv_test_pages *vcpu_alloc_hyperv_test_pages(struct kvm_vm *vm,
--						       vm_vaddr_t *p_hv_pages_gva);
-+						       gva_t *p_hv_pages_gva);
- 
- /* HV_X64_MSR_TSC_INVARIANT_CONTROL bits */
- #define HV_INVARIANT_TSC_EXPOSED               BIT_ULL(0)
-diff --git a/tools/testing/selftests/kvm/include/x86/kvm_util_arch.h b/tools/testing/selftests/kvm/include/x86/kvm_util_arch.h
-index be35d26bb320..4c605f624956 100644
---- a/tools/testing/selftests/kvm/include/x86/kvm_util_arch.h
-+++ b/tools/testing/selftests/kvm/include/x86/kvm_util_arch.h
-@@ -33,9 +33,9 @@ struct kvm_mmu_arch {
- struct kvm_mmu;
- 
- struct kvm_vm_arch {
--	vm_vaddr_t gdt;
--	vm_vaddr_t tss;
--	vm_vaddr_t idt;
-+	gva_t gdt;
-+	gva_t tss;
-+	gva_t idt;
- 
- 	uint64_t c_bit;
- 	uint64_t s_bit;
-diff --git a/tools/testing/selftests/kvm/include/x86/svm_util.h b/tools/testing/selftests/kvm/include/x86/svm_util.h
-index 5d7c42534bc4..a25b83e2c233 100644
---- a/tools/testing/selftests/kvm/include/x86/svm_util.h
-+++ b/tools/testing/selftests/kvm/include/x86/svm_util.h
-@@ -56,7 +56,7 @@ static inline void vmmcall(void)
- 		"clgi\n"	\
- 		)
- 
--struct svm_test_data *vcpu_alloc_svm(struct kvm_vm *vm, vm_vaddr_t *p_svm_gva);
-+struct svm_test_data *vcpu_alloc_svm(struct kvm_vm *vm, gva_t *p_svm_gva);
- void generic_svm_setup(struct svm_test_data *svm, void *guest_rip, void *guest_rsp);
- void run_guest(struct vmcb *vmcb, uint64_t vmcb_gpa);
- 
-diff --git a/tools/testing/selftests/kvm/include/x86/vmx.h b/tools/testing/selftests/kvm/include/x86/vmx.h
-index 92b918700d24..f194723da3d0 100644
---- a/tools/testing/selftests/kvm/include/x86/vmx.h
-+++ b/tools/testing/selftests/kvm/include/x86/vmx.h
-@@ -550,7 +550,7 @@ union vmx_ctrl_msr {
- 	};
- };
- 
--struct vmx_pages *vcpu_alloc_vmx(struct kvm_vm *vm, vm_vaddr_t *p_vmx_gva);
-+struct vmx_pages *vcpu_alloc_vmx(struct kvm_vm *vm, gva_t *p_vmx_gva);
- bool prepare_for_vmx_operation(struct vmx_pages *vmx);
- void prepare_vmcs(struct vmx_pages *vmx, void *guest_rip, void *guest_rsp);
- bool load_vmcs(struct vmx_pages *vmx);
-diff --git a/tools/testing/selftests/kvm/kvm_page_table_test.c b/tools/testing/selftests/kvm/kvm_page_table_test.c
-index c60a24a92829..61915fc89c17 100644
---- a/tools/testing/selftests/kvm/kvm_page_table_test.c
-+++ b/tools/testing/selftests/kvm/kvm_page_table_test.c
-@@ -292,7 +292,7 @@ static struct kvm_vm *pre_init_before_test(enum vm_guest_mode mode, void *arg)
- 	ret = sem_init(&test_stage_completed, 0, 0);
- 	TEST_ASSERT(ret == 0, "Error in sem_init");
- 
--	current_stage = addr_gva2hva(vm, (vm_vaddr_t)(&guest_test_stage));
-+	current_stage = addr_gva2hva(vm, (gva_t)(&guest_test_stage));
- 	*current_stage = NUM_TEST_STAGES;
- 
- 	pr_info("Testing guest mode: %s\n", vm_guest_mode_string(mode));
-diff --git a/tools/testing/selftests/kvm/lib/arm64/processor.c b/tools/testing/selftests/kvm/lib/arm64/processor.c
-index 43ea40edc533..3645acae09ce 100644
---- a/tools/testing/selftests/kvm/lib/arm64/processor.c
-+++ b/tools/testing/selftests/kvm/lib/arm64/processor.c
-@@ -19,9 +19,9 @@
- 
- #define DEFAULT_ARM64_GUEST_STACK_VADDR_MIN	0xac0000
- 
--static vm_vaddr_t exception_handlers;
-+static gva_t exception_handlers;
- 
--static uint64_t pgd_index(struct kvm_vm *vm, vm_vaddr_t gva)
-+static uint64_t pgd_index(struct kvm_vm *vm, gva_t gva)
- {
- 	unsigned int shift = (vm->mmu.pgtable_levels - 1) * (vm->page_shift - 3) + vm->page_shift;
- 	uint64_t mask = (1UL << (vm->va_bits - shift)) - 1;
-@@ -29,7 +29,7 @@ static uint64_t pgd_index(struct kvm_vm *vm, vm_vaddr_t gva)
- 	return (gva >> shift) & mask;
- }
- 
--static uint64_t pud_index(struct kvm_vm *vm, vm_vaddr_t gva)
-+static uint64_t pud_index(struct kvm_vm *vm, gva_t gva)
- {
- 	unsigned int shift = 2 * (vm->page_shift - 3) + vm->page_shift;
- 	uint64_t mask = (1UL << (vm->page_shift - 3)) - 1;
-@@ -40,7 +40,7 @@ static uint64_t pud_index(struct kvm_vm *vm, vm_vaddr_t gva)
- 	return (gva >> shift) & mask;
- }
- 
--static uint64_t pmd_index(struct kvm_vm *vm, vm_vaddr_t gva)
-+static uint64_t pmd_index(struct kvm_vm *vm, gva_t gva)
- {
- 	unsigned int shift = (vm->page_shift - 3) + vm->page_shift;
- 	uint64_t mask = (1UL << (vm->page_shift - 3)) - 1;
-@@ -51,7 +51,7 @@ static uint64_t pmd_index(struct kvm_vm *vm, vm_vaddr_t gva)
- 	return (gva >> shift) & mask;
- }
- 
--static uint64_t pte_index(struct kvm_vm *vm, vm_vaddr_t gva)
-+static uint64_t pte_index(struct kvm_vm *vm, gva_t gva)
- {
- 	uint64_t mask = (1UL << (vm->page_shift - 3)) - 1;
- 	return (gva >> vm->page_shift) & mask;
-@@ -181,7 +181,7 @@ void virt_arch_pg_map(struct kvm_vm *vm, uint64_t vaddr, uint64_t paddr)
- 	_virt_pg_map(vm, vaddr, paddr, attr_idx);
- }
- 
--uint64_t *virt_get_pte_hva_at_level(struct kvm_vm *vm, vm_vaddr_t gva, int level)
-+uint64_t *virt_get_pte_hva_at_level(struct kvm_vm *vm, gva_t gva, int level)
- {
- 	uint64_t *ptep;
- 
-@@ -225,12 +225,12 @@ uint64_t *virt_get_pte_hva_at_level(struct kvm_vm *vm, vm_vaddr_t gva, int level
- 	exit(EXIT_FAILURE);
- }
- 
--uint64_t *virt_get_pte_hva(struct kvm_vm *vm, vm_vaddr_t gva)
-+uint64_t *virt_get_pte_hva(struct kvm_vm *vm, gva_t gva)
- {
- 	return virt_get_pte_hva_at_level(vm, gva, 3);
- }
- 
--vm_paddr_t addr_arch_gva2gpa(struct kvm_vm *vm, vm_vaddr_t gva)
-+vm_paddr_t addr_arch_gva2gpa(struct kvm_vm *vm, gva_t gva)
- {
- 	uint64_t *ptep = virt_get_pte_hva(vm, gva);
- 
-@@ -539,7 +539,7 @@ void vm_init_descriptor_tables(struct kvm_vm *vm)
- 	vm->handlers = __vm_vaddr_alloc(vm, sizeof(struct handlers),
- 					vm->page_size, MEM_REGION_DATA);
- 
--	*(vm_vaddr_t *)addr_gva2hva(vm, (vm_vaddr_t)(&exception_handlers)) = vm->handlers;
-+	*(gva_t *)addr_gva2hva(vm, (gva_t)(&exception_handlers)) = vm->handlers;
- }
- 
- void vm_install_sync_handler(struct kvm_vm *vm, int vector, int ec,
-diff --git a/tools/testing/selftests/kvm/lib/arm64/ucall.c b/tools/testing/selftests/kvm/lib/arm64/ucall.c
-index ddab0ce89d4d..9ea747982d00 100644
---- a/tools/testing/selftests/kvm/lib/arm64/ucall.c
-+++ b/tools/testing/selftests/kvm/lib/arm64/ucall.c
-@@ -6,17 +6,17 @@
-  */
- #include "kvm_util.h"
- 
--vm_vaddr_t *ucall_exit_mmio_addr;
-+gva_t *ucall_exit_mmio_addr;
- 
- void ucall_arch_init(struct kvm_vm *vm, vm_paddr_t mmio_gpa)
- {
--	vm_vaddr_t mmio_gva = vm_vaddr_unused_gap(vm, vm->page_size, KVM_UTIL_MIN_VADDR);
-+	gva_t mmio_gva = vm_vaddr_unused_gap(vm, vm->page_size, KVM_UTIL_MIN_VADDR);
- 
- 	virt_map(vm, mmio_gva, mmio_gpa, 1);
- 
- 	vm->ucall_mmio_addr = mmio_gpa;
- 
--	write_guest_global(vm, ucall_exit_mmio_addr, (vm_vaddr_t *)mmio_gva);
-+	write_guest_global(vm, ucall_exit_mmio_addr, (gva_t *)mmio_gva);
- }
- 
- void *ucall_arch_get_ucall(struct kvm_vcpu *vcpu)
-diff --git a/tools/testing/selftests/kvm/lib/elf.c b/tools/testing/selftests/kvm/lib/elf.c
-index f34d926d9735..ff90fba3a5c6 100644
---- a/tools/testing/selftests/kvm/lib/elf.c
-+++ b/tools/testing/selftests/kvm/lib/elf.c
-@@ -157,12 +157,12 @@ void kvm_vm_elf_load(struct kvm_vm *vm, const char *filename)
- 			"memsize of 0,\n"
- 			"  phdr index: %u p_memsz: 0x%" PRIx64,
- 			n1, (uint64_t) phdr.p_memsz);
--		vm_vaddr_t seg_vstart = align_down(phdr.p_vaddr, vm->page_size);
--		vm_vaddr_t seg_vend = phdr.p_vaddr + phdr.p_memsz - 1;
-+		gva_t seg_vstart = align_down(phdr.p_vaddr, vm->page_size);
-+		gva_t seg_vend = phdr.p_vaddr + phdr.p_memsz - 1;
- 		seg_vend |= vm->page_size - 1;
- 		size_t seg_size = seg_vend - seg_vstart + 1;
- 
--		vm_vaddr_t vaddr = __vm_vaddr_alloc(vm, seg_size, seg_vstart,
-+		gva_t vaddr = __vm_vaddr_alloc(vm, seg_size, seg_vstart,
- 						    MEM_REGION_CODE);
- 		TEST_ASSERT(vaddr == seg_vstart, "Unable to allocate "
- 			"virtual memory for segment at requested min addr,\n"
-diff --git a/tools/testing/selftests/kvm/lib/kvm_util.c b/tools/testing/selftests/kvm/lib/kvm_util.c
-index f5e076591c64..04a59603e93e 100644
---- a/tools/testing/selftests/kvm/lib/kvm_util.c
-+++ b/tools/testing/selftests/kvm/lib/kvm_util.c
-@@ -1386,8 +1386,7 @@ struct kvm_vcpu *__vm_vcpu_add(struct kvm_vm *vm, uint32_t vcpu_id)
-  * TEST_ASSERT failure occurs for invalid input or no area of at least
-  * sz unallocated bytes >= vaddr_min is available.
-  */
--vm_vaddr_t vm_vaddr_unused_gap(struct kvm_vm *vm, size_t sz,
--			       vm_vaddr_t vaddr_min)
-+gva_t vm_vaddr_unused_gap(struct kvm_vm *vm, size_t sz, gva_t vaddr_min)
- {
- 	uint64_t pages = (sz + vm->page_size - 1) >> vm->page_shift;
- 
-@@ -1452,10 +1451,8 @@ vm_vaddr_t vm_vaddr_unused_gap(struct kvm_vm *vm, size_t sz,
- 	return pgidx_start * vm->page_size;
- }
- 
--static vm_vaddr_t ____vm_vaddr_alloc(struct kvm_vm *vm, size_t sz,
--				     vm_vaddr_t vaddr_min,
--				     enum kvm_mem_region_type type,
--				     bool protected)
-+static gva_t ____vm_vaddr_alloc(struct kvm_vm *vm, size_t sz, gva_t vaddr_min,
-+				enum kvm_mem_region_type type, bool protected)
- {
- 	uint64_t pages = (sz >> vm->page_shift) + ((sz % vm->page_size) != 0);
- 
-@@ -1468,10 +1465,10 @@ static vm_vaddr_t ____vm_vaddr_alloc(struct kvm_vm *vm, size_t sz,
- 	 * Find an unused range of virtual page addresses of at least
- 	 * pages in length.
- 	 */
--	vm_vaddr_t vaddr_start = vm_vaddr_unused_gap(vm, sz, vaddr_min);
-+	gva_t vaddr_start = vm_vaddr_unused_gap(vm, sz, vaddr_min);
- 
- 	/* Map the virtual pages. */
--	for (vm_vaddr_t vaddr = vaddr_start; pages > 0;
-+	for (gva_t vaddr = vaddr_start; pages > 0;
- 		pages--, vaddr += vm->page_size, paddr += vm->page_size) {
- 
- 		virt_pg_map(vm, vaddr, paddr);
-@@ -1480,16 +1477,15 @@ static vm_vaddr_t ____vm_vaddr_alloc(struct kvm_vm *vm, size_t sz,
- 	return vaddr_start;
- }
- 
--vm_vaddr_t __vm_vaddr_alloc(struct kvm_vm *vm, size_t sz, vm_vaddr_t vaddr_min,
--			    enum kvm_mem_region_type type)
-+gva_t __vm_vaddr_alloc(struct kvm_vm *vm, size_t sz, gva_t vaddr_min,
-+		       enum kvm_mem_region_type type)
- {
- 	return ____vm_vaddr_alloc(vm, sz, vaddr_min, type,
- 				  vm_arch_has_protected_memory(vm));
- }
- 
--vm_vaddr_t vm_vaddr_alloc_shared(struct kvm_vm *vm, size_t sz,
--				 vm_vaddr_t vaddr_min,
--				 enum kvm_mem_region_type type)
-+gva_t vm_vaddr_alloc_shared(struct kvm_vm *vm, size_t sz, gva_t vaddr_min,
-+			    enum kvm_mem_region_type type)
- {
- 	return ____vm_vaddr_alloc(vm, sz, vaddr_min, type, false);
- }
-@@ -1513,7 +1509,7 @@ vm_vaddr_t vm_vaddr_alloc_shared(struct kvm_vm *vm, size_t sz,
-  * a unique set of pages, with the minimum real allocation being at least
-  * a page. The allocated physical space comes from the TEST_DATA memory region.
-  */
--vm_vaddr_t vm_vaddr_alloc(struct kvm_vm *vm, size_t sz, vm_vaddr_t vaddr_min)
-+gva_t vm_vaddr_alloc(struct kvm_vm *vm, size_t sz, gva_t vaddr_min)
- {
- 	return __vm_vaddr_alloc(vm, sz, vaddr_min, MEM_REGION_TEST_DATA);
- }
-@@ -1532,12 +1528,12 @@ vm_vaddr_t vm_vaddr_alloc(struct kvm_vm *vm, size_t sz, vm_vaddr_t vaddr_min)
-  * Allocates at least N system pages worth of bytes within the virtual address
-  * space of the vm.
-  */
--vm_vaddr_t vm_vaddr_alloc_pages(struct kvm_vm *vm, int nr_pages)
-+gva_t vm_vaddr_alloc_pages(struct kvm_vm *vm, int nr_pages)
- {
- 	return vm_vaddr_alloc(vm, nr_pages * getpagesize(), KVM_UTIL_MIN_VADDR);
- }
- 
--vm_vaddr_t __vm_vaddr_alloc_page(struct kvm_vm *vm, enum kvm_mem_region_type type)
-+gva_t __vm_vaddr_alloc_page(struct kvm_vm *vm, enum kvm_mem_region_type type)
- {
- 	return __vm_vaddr_alloc(vm, getpagesize(), KVM_UTIL_MIN_VADDR, type);
- }
-@@ -1556,7 +1552,7 @@ vm_vaddr_t __vm_vaddr_alloc_page(struct kvm_vm *vm, enum kvm_mem_region_type typ
-  * Allocates at least one system page worth of bytes within the virtual address
-  * space of the vm.
-  */
--vm_vaddr_t vm_vaddr_alloc_page(struct kvm_vm *vm)
-+gva_t vm_vaddr_alloc_page(struct kvm_vm *vm)
- {
- 	return vm_vaddr_alloc_pages(vm, 1);
- }
-@@ -2161,7 +2157,7 @@ vm_paddr_t vm_alloc_page_table(struct kvm_vm *vm)
-  * Return:
-  *   Equivalent host virtual address
-  */
--void *addr_gva2hva(struct kvm_vm *vm, vm_vaddr_t gva)
-+void *addr_gva2hva(struct kvm_vm *vm, gva_t gva)
- {
- 	return addr_gpa2hva(vm, addr_gva2gpa(vm, gva));
- }
-diff --git a/tools/testing/selftests/kvm/lib/loongarch/processor.c b/tools/testing/selftests/kvm/lib/loongarch/processor.c
-index ee4ad3b1d2a4..3b67720fbbe1 100644
---- a/tools/testing/selftests/kvm/lib/loongarch/processor.c
-+++ b/tools/testing/selftests/kvm/lib/loongarch/processor.c
-@@ -13,9 +13,9 @@
- #define LOONGARCH_GUEST_STACK_VADDR_MIN		0x200000
- 
- static vm_paddr_t invalid_pgtable[4];
--static vm_vaddr_t exception_handlers;
-+static gva_t exception_handlers;
- 
--static uint64_t virt_pte_index(struct kvm_vm *vm, vm_vaddr_t gva, int level)
-+static uint64_t virt_pte_index(struct kvm_vm *vm, gva_t gva, int level)
- {
- 	unsigned int shift;
- 	uint64_t mask;
-@@ -72,7 +72,7 @@ static int virt_pte_none(uint64_t *ptep, int level)
- 	return *ptep == invalid_pgtable[level];
- }
- 
--static uint64_t *virt_populate_pte(struct kvm_vm *vm, vm_vaddr_t gva, int alloc)
-+static uint64_t *virt_populate_pte(struct kvm_vm *vm, gva_t gva, int alloc)
- {
- 	int level;
- 	uint64_t *ptep;
-@@ -106,7 +106,7 @@ static uint64_t *virt_populate_pte(struct kvm_vm *vm, vm_vaddr_t gva, int alloc)
- 	exit(EXIT_FAILURE);
- }
- 
--vm_paddr_t addr_arch_gva2gpa(struct kvm_vm *vm, vm_vaddr_t gva)
-+vm_paddr_t addr_arch_gva2gpa(struct kvm_vm *vm, gva_t gva)
- {
- 	uint64_t *ptep;
- 
-diff --git a/tools/testing/selftests/kvm/lib/loongarch/ucall.c b/tools/testing/selftests/kvm/lib/loongarch/ucall.c
-index fc6cbb50573f..a5aa568f437b 100644
---- a/tools/testing/selftests/kvm/lib/loongarch/ucall.c
-+++ b/tools/testing/selftests/kvm/lib/loongarch/ucall.c
-@@ -9,17 +9,17 @@
-  * ucall_exit_mmio_addr holds per-VM values (global data is duplicated by each
-  * VM), it must not be accessed from host code.
-  */
--vm_vaddr_t *ucall_exit_mmio_addr;
-+gva_t *ucall_exit_mmio_addr;
- 
- void ucall_arch_init(struct kvm_vm *vm, vm_paddr_t mmio_gpa)
- {
--	vm_vaddr_t mmio_gva = vm_vaddr_unused_gap(vm, vm->page_size, KVM_UTIL_MIN_VADDR);
-+	gva_t mmio_gva = vm_vaddr_unused_gap(vm, vm->page_size, KVM_UTIL_MIN_VADDR);
- 
- 	virt_map(vm, mmio_gva, mmio_gpa, 1);
- 
- 	vm->ucall_mmio_addr = mmio_gpa;
- 
--	write_guest_global(vm, ucall_exit_mmio_addr, (vm_vaddr_t *)mmio_gva);
-+	write_guest_global(vm, ucall_exit_mmio_addr, (gva_t *)mmio_gva);
- }
- 
- void *ucall_arch_get_ucall(struct kvm_vcpu *vcpu)
-diff --git a/tools/testing/selftests/kvm/lib/riscv/processor.c b/tools/testing/selftests/kvm/lib/riscv/processor.c
-index 067c6b2c15b0..552628dda4a0 100644
---- a/tools/testing/selftests/kvm/lib/riscv/processor.c
-+++ b/tools/testing/selftests/kvm/lib/riscv/processor.c
-@@ -15,7 +15,7 @@
- 
- #define DEFAULT_RISCV_GUEST_STACK_VADDR_MIN	0xac0000
- 
--static vm_vaddr_t exception_handlers;
-+static gva_t exception_handlers;
- 
- bool __vcpu_has_ext(struct kvm_vcpu *vcpu, uint64_t ext)
- {
-@@ -52,7 +52,7 @@ static uint32_t pte_index_shift[] = {
- 	PGTBL_L3_INDEX_SHIFT,
- };
- 
--static uint64_t pte_index(struct kvm_vm *vm, vm_vaddr_t gva, int level)
-+static uint64_t pte_index(struct kvm_vm *vm, gva_t gva, int level)
- {
- 	TEST_ASSERT(level > -1,
- 		"Negative page table level (%d) not possible", level);
-@@ -119,7 +119,7 @@ void virt_arch_pg_map(struct kvm_vm *vm, uint64_t vaddr, uint64_t paddr)
- 		PGTBL_PTE_PERM_MASK | PGTBL_PTE_VALID_MASK;
- }
- 
--vm_paddr_t addr_arch_gva2gpa(struct kvm_vm *vm, vm_vaddr_t gva)
-+vm_paddr_t addr_arch_gva2gpa(struct kvm_vm *vm, gva_t gva)
- {
- 	uint64_t *ptep;
- 	int level = vm->mmu.pgtable_levels - 1;
-@@ -452,7 +452,7 @@ void vm_init_vector_tables(struct kvm_vm *vm)
- 	vm->handlers = __vm_vaddr_alloc(vm, sizeof(struct handlers),
- 				   vm->page_size, MEM_REGION_DATA);
- 
--	*(vm_vaddr_t *)addr_gva2hva(vm, (vm_vaddr_t)(&exception_handlers)) = vm->handlers;
-+	*(gva_t *)addr_gva2hva(vm, (gva_t)(&exception_handlers)) = vm->handlers;
- }
- 
- void vm_install_exception_handler(struct kvm_vm *vm, int vector, exception_handler_fn handler)
-diff --git a/tools/testing/selftests/kvm/lib/s390/processor.c b/tools/testing/selftests/kvm/lib/s390/processor.c
-index 6a9a660413a7..e8d3c1d333d5 100644
---- a/tools/testing/selftests/kvm/lib/s390/processor.c
-+++ b/tools/testing/selftests/kvm/lib/s390/processor.c
-@@ -86,7 +86,7 @@ void virt_arch_pg_map(struct kvm_vm *vm, uint64_t gva, uint64_t gpa)
- 	entry[idx] = gpa;
- }
- 
--vm_paddr_t addr_arch_gva2gpa(struct kvm_vm *vm, vm_vaddr_t gva)
-+vm_paddr_t addr_arch_gva2gpa(struct kvm_vm *vm, gva_t gva)
- {
- 	int ri, idx;
- 	uint64_t *entry;
-diff --git a/tools/testing/selftests/kvm/lib/ucall_common.c b/tools/testing/selftests/kvm/lib/ucall_common.c
-index 42151e571953..997444178c78 100644
---- a/tools/testing/selftests/kvm/lib/ucall_common.c
-+++ b/tools/testing/selftests/kvm/lib/ucall_common.c
-@@ -29,7 +29,7 @@ void ucall_init(struct kvm_vm *vm, vm_paddr_t mmio_gpa)
- {
- 	struct ucall_header *hdr;
- 	struct ucall *uc;
--	vm_vaddr_t vaddr;
-+	gva_t vaddr;
- 	int i;
- 
- 	vaddr = vm_vaddr_alloc_shared(vm, sizeof(*hdr), KVM_UTIL_MIN_VADDR,
-@@ -96,7 +96,7 @@ void ucall_assert(uint64_t cmd, const char *exp, const char *file,
- 	guest_vsnprintf(uc->buffer, UCALL_BUFFER_LEN, fmt, va);
- 	va_end(va);
- 
--	ucall_arch_do_ucall((vm_vaddr_t)uc->hva);
-+	ucall_arch_do_ucall((gva_t)uc->hva);
- 
- 	ucall_free(uc);
- }
-@@ -113,7 +113,7 @@ void ucall_fmt(uint64_t cmd, const char *fmt, ...)
- 	guest_vsnprintf(uc->buffer, UCALL_BUFFER_LEN, fmt, va);
- 	va_end(va);
- 
--	ucall_arch_do_ucall((vm_vaddr_t)uc->hva);
-+	ucall_arch_do_ucall((gva_t)uc->hva);
- 
- 	ucall_free(uc);
- }
-@@ -135,7 +135,7 @@ void ucall(uint64_t cmd, int nargs, ...)
- 		WRITE_ONCE(uc->args[i], va_arg(va, uint64_t));
- 	va_end(va);
- 
--	ucall_arch_do_ucall((vm_vaddr_t)uc->hva);
-+	ucall_arch_do_ucall((gva_t)uc->hva);
- 
- 	ucall_free(uc);
- }
-diff --git a/tools/testing/selftests/kvm/lib/x86/hyperv.c b/tools/testing/selftests/kvm/lib/x86/hyperv.c
-index 15bc8cd583aa..be8b31572588 100644
---- a/tools/testing/selftests/kvm/lib/x86/hyperv.c
-+++ b/tools/testing/selftests/kvm/lib/x86/hyperv.c
-@@ -76,9 +76,9 @@ bool kvm_hv_cpu_has(struct kvm_x86_cpu_feature feature)
- }
- 
- struct hyperv_test_pages *vcpu_alloc_hyperv_test_pages(struct kvm_vm *vm,
--						       vm_vaddr_t *p_hv_pages_gva)
-+						       gva_t *p_hv_pages_gva)
- {
--	vm_vaddr_t hv_pages_gva = vm_vaddr_alloc_page(vm);
-+	gva_t hv_pages_gva = vm_vaddr_alloc_page(vm);
- 	struct hyperv_test_pages *hv = addr_gva2hva(vm, hv_pages_gva);
- 
- 	/* Setup of a region of guest memory for the VP Assist page. */
-diff --git a/tools/testing/selftests/kvm/lib/x86/memstress.c b/tools/testing/selftests/kvm/lib/x86/memstress.c
-index f53414ba7103..73a82730927d 100644
---- a/tools/testing/selftests/kvm/lib/x86/memstress.c
-+++ b/tools/testing/selftests/kvm/lib/x86/memstress.c
-@@ -104,7 +104,7 @@ static void memstress_setup_ept_mappings(struct kvm_vm *vm)
- void memstress_setup_nested(struct kvm_vm *vm, int nr_vcpus, struct kvm_vcpu *vcpus[])
- {
- 	struct kvm_regs regs;
--	vm_vaddr_t nested_gva;
-+	gva_t nested_gva;
- 	int vcpu_id;
- 
- 	TEST_REQUIRE(kvm_cpu_has_tdp());
-diff --git a/tools/testing/selftests/kvm/lib/x86/processor.c b/tools/testing/selftests/kvm/lib/x86/processor.c
-index 01f0f97d4430..7a01f83cab0b 100644
---- a/tools/testing/selftests/kvm/lib/x86/processor.c
-+++ b/tools/testing/selftests/kvm/lib/x86/processor.c
-@@ -21,7 +21,7 @@
- #define KERNEL_DS	0x10
- #define KERNEL_TSS	0x18
- 
--vm_vaddr_t exception_handlers;
-+gva_t exception_handlers;
- bool host_cpu_is_amd;
- bool host_cpu_is_intel;
- bool host_cpu_is_hygon;
-@@ -618,7 +618,7 @@ static void kvm_seg_set_kernel_data_64bit(struct kvm_segment *segp)
- 	segp->present = true;
- }
- 
--vm_paddr_t addr_arch_gva2gpa(struct kvm_vm *vm, vm_vaddr_t gva)
-+vm_paddr_t addr_arch_gva2gpa(struct kvm_vm *vm, gva_t gva)
- {
- 	int level = PG_LEVEL_NONE;
- 	uint64_t *pte = __vm_get_page_table_entry(vm, &vm->mmu, gva, &level);
-@@ -633,7 +633,7 @@ vm_paddr_t addr_arch_gva2gpa(struct kvm_vm *vm, vm_vaddr_t gva)
- 	return vm_untag_gpa(vm, PTE_GET_PA(*pte)) | (gva & ~HUGEPAGE_MASK(level));
- }
- 
--static void kvm_seg_set_tss_64bit(vm_vaddr_t base, struct kvm_segment *segp)
-+static void kvm_seg_set_tss_64bit(gva_t base, struct kvm_segment *segp)
- {
- 	memset(segp, 0, sizeof(*segp));
- 	segp->base = base;
-@@ -755,7 +755,7 @@ static void vm_init_descriptor_tables(struct kvm_vm *vm)
- 	for (i = 0; i < NUM_INTERRUPTS; i++)
- 		set_idt_entry(vm, i, (unsigned long)(&idt_handlers)[i], 0, KERNEL_CS);
- 
--	*(vm_vaddr_t *)addr_gva2hva(vm, (vm_vaddr_t)(&exception_handlers)) = vm->handlers;
-+	*(gva_t *)addr_gva2hva(vm, (gva_t)(&exception_handlers)) = vm->handlers;
- 
- 	kvm_seg_set_kernel_code_64bit(&seg);
- 	kvm_seg_fill_gdt_64bit(vm, &seg);
-@@ -770,9 +770,9 @@ static void vm_init_descriptor_tables(struct kvm_vm *vm)
- void vm_install_exception_handler(struct kvm_vm *vm, int vector,
- 			       void (*handler)(struct ex_regs *))
- {
--	vm_vaddr_t *handlers = (vm_vaddr_t *)addr_gva2hva(vm, vm->handlers);
-+	gva_t *handlers = (gva_t *)addr_gva2hva(vm, vm->handlers);
- 
--	handlers[vector] = (vm_vaddr_t)handler;
-+	handlers[vector] = (gva_t)handler;
- }
- 
- void assert_on_unhandled_exception(struct kvm_vcpu *vcpu)
-@@ -825,7 +825,7 @@ struct kvm_vcpu *vm_arch_vcpu_add(struct kvm_vm *vm, uint32_t vcpu_id)
- {
- 	struct kvm_mp_state mp_state;
- 	struct kvm_regs regs;
--	vm_vaddr_t stack_vaddr;
-+	gva_t stack_vaddr;
- 	struct kvm_vcpu *vcpu;
- 
- 	stack_vaddr = __vm_vaddr_alloc(vm, DEFAULT_STACK_PGS * getpagesize(),
-diff --git a/tools/testing/selftests/kvm/lib/x86/svm.c b/tools/testing/selftests/kvm/lib/x86/svm.c
-index eb20b00112c7..4a3b1a2738a2 100644
---- a/tools/testing/selftests/kvm/lib/x86/svm.c
-+++ b/tools/testing/selftests/kvm/lib/x86/svm.c
-@@ -28,9 +28,9 @@ u64 rflags;
-  *   Pointer to structure with the addresses of the SVM areas.
-  */
- struct svm_test_data *
--vcpu_alloc_svm(struct kvm_vm *vm, vm_vaddr_t *p_svm_gva)
-+vcpu_alloc_svm(struct kvm_vm *vm, gva_t *p_svm_gva)
- {
--	vm_vaddr_t svm_gva = vm_vaddr_alloc_page(vm);
-+	gva_t svm_gva = vm_vaddr_alloc_page(vm);
- 	struct svm_test_data *svm = addr_gva2hva(vm, svm_gva);
- 
- 	svm->vmcb = (void *)vm_vaddr_alloc_page(vm);
-diff --git a/tools/testing/selftests/kvm/lib/x86/ucall.c b/tools/testing/selftests/kvm/lib/x86/ucall.c
-index 1265cecc7dd1..1af2a6880cdf 100644
---- a/tools/testing/selftests/kvm/lib/x86/ucall.c
-+++ b/tools/testing/selftests/kvm/lib/x86/ucall.c
-@@ -8,7 +8,7 @@
- 
- #define UCALL_PIO_PORT ((uint16_t)0x1000)
- 
--void ucall_arch_do_ucall(vm_vaddr_t uc)
-+void ucall_arch_do_ucall(gva_t uc)
- {
- 	/*
- 	 * FIXME: Revert this hack (the entire commit that added it) once nVMX
-diff --git a/tools/testing/selftests/kvm/lib/x86/vmx.c b/tools/testing/selftests/kvm/lib/x86/vmx.c
-index c87b340362a9..a6bb649e62c3 100644
---- a/tools/testing/selftests/kvm/lib/x86/vmx.c
-+++ b/tools/testing/selftests/kvm/lib/x86/vmx.c
-@@ -79,9 +79,9 @@ void vm_enable_ept(struct kvm_vm *vm)
-  *   Pointer to structure with the addresses of the VMX areas.
-  */
- struct vmx_pages *
--vcpu_alloc_vmx(struct kvm_vm *vm, vm_vaddr_t *p_vmx_gva)
-+vcpu_alloc_vmx(struct kvm_vm *vm, gva_t *p_vmx_gva)
- {
--	vm_vaddr_t vmx_gva = vm_vaddr_alloc_page(vm);
-+	gva_t vmx_gva = vm_vaddr_alloc_page(vm);
- 	struct vmx_pages *vmx = addr_gva2hva(vm, vmx_gva);
- 
- 	/* Setup of a region of guest memory for the vmxon region. */
-diff --git a/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c b/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c
-index cec1621ace23..8366c11131ff 100644
---- a/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c
-+++ b/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c
-@@ -610,7 +610,7 @@ static void test_vm_setup_snapshot_mem(struct kvm_vm *vm, struct kvm_vcpu *vcpu)
- 	virt_map(vm, PMU_SNAPSHOT_GPA_BASE, PMU_SNAPSHOT_GPA_BASE, 1);
- 
- 	snapshot_gva = (void *)(PMU_SNAPSHOT_GPA_BASE);
--	snapshot_gpa = addr_gva2gpa(vcpu->vm, (vm_vaddr_t)snapshot_gva);
-+	snapshot_gpa = addr_gva2gpa(vcpu->vm, (gva_t)snapshot_gva);
- 	sync_global_to_guest(vcpu->vm, snapshot_gva);
- 	sync_global_to_guest(vcpu->vm, snapshot_gpa);
- }
-diff --git a/tools/testing/selftests/kvm/s390/memop.c b/tools/testing/selftests/kvm/s390/memop.c
-index 4374b4cd2a80..0e8dc8e5d8bd 100644
---- a/tools/testing/selftests/kvm/s390/memop.c
-+++ b/tools/testing/selftests/kvm/s390/memop.c
-@@ -878,7 +878,7 @@ static void guest_copy_key_fetch_prot_override(void)
- static void test_copy_key_fetch_prot_override(void)
- {
- 	struct test_default t = test_default_init(guest_copy_key_fetch_prot_override);
--	vm_vaddr_t guest_0_page, guest_last_page;
-+	gva_t guest_0_page, guest_last_page;
- 
- 	guest_0_page = vm_vaddr_alloc(t.kvm_vm, PAGE_SIZE, 0);
- 	guest_last_page = vm_vaddr_alloc(t.kvm_vm, PAGE_SIZE, last_page_addr);
-@@ -917,7 +917,7 @@ static void test_copy_key_fetch_prot_override(void)
- static void test_errors_key_fetch_prot_override_not_enabled(void)
- {
- 	struct test_default t = test_default_init(guest_copy_key_fetch_prot_override);
--	vm_vaddr_t guest_0_page, guest_last_page;
-+	gva_t guest_0_page, guest_last_page;
- 
- 	guest_0_page = vm_vaddr_alloc(t.kvm_vm, PAGE_SIZE, 0);
- 	guest_last_page = vm_vaddr_alloc(t.kvm_vm, PAGE_SIZE, last_page_addr);
-@@ -938,7 +938,7 @@ static void test_errors_key_fetch_prot_override_not_enabled(void)
- static void test_errors_key_fetch_prot_override_enabled(void)
- {
- 	struct test_default t = test_default_init(guest_copy_key_fetch_prot_override);
--	vm_vaddr_t guest_0_page, guest_last_page;
-+	gva_t guest_0_page, guest_last_page;
- 
- 	guest_0_page = vm_vaddr_alloc(t.kvm_vm, PAGE_SIZE, 0);
- 	guest_last_page = vm_vaddr_alloc(t.kvm_vm, PAGE_SIZE, last_page_addr);
-diff --git a/tools/testing/selftests/kvm/s390/tprot.c b/tools/testing/selftests/kvm/s390/tprot.c
-index 12d5e1cb62e3..fd8e997de693 100644
---- a/tools/testing/selftests/kvm/s390/tprot.c
-+++ b/tools/testing/selftests/kvm/s390/tprot.c
-@@ -207,7 +207,7 @@ int main(int argc, char *argv[])
- 	struct kvm_vcpu *vcpu;
- 	struct kvm_vm *vm;
- 	struct kvm_run *run;
--	vm_vaddr_t guest_0_page;
-+	gva_t guest_0_page;
- 
- 	ksft_print_header();
- 	ksft_set_plan(STAGE_END);
-@@ -216,7 +216,7 @@ int main(int argc, char *argv[])
- 	run = vcpu->run;
- 
- 	HOST_SYNC(vcpu, STAGE_INIT_SIMPLE);
--	mprotect(addr_gva2hva(vm, (vm_vaddr_t)pages), PAGE_SIZE * 2, PROT_READ);
-+	mprotect(addr_gva2hva(vm, (gva_t)pages), PAGE_SIZE * 2, PROT_READ);
- 	HOST_SYNC(vcpu, TEST_SIMPLE);
- 
- 	guest_0_page = vm_vaddr_alloc(vm, PAGE_SIZE, 0);
-@@ -229,7 +229,7 @@ int main(int argc, char *argv[])
- 		HOST_SYNC(vcpu, STAGE_INIT_FETCH_PROT_OVERRIDE);
- 	}
- 	if (guest_0_page == 0)
--		mprotect(addr_gva2hva(vm, (vm_vaddr_t)0), PAGE_SIZE, PROT_READ);
-+		mprotect(addr_gva2hva(vm, (gva_t)0), PAGE_SIZE, PROT_READ);
- 	run->s.regs.crs[0] |= CR0_FETCH_PROTECTION_OVERRIDE;
- 	run->kvm_dirty_regs = KVM_SYNC_CRS;
- 	HOST_SYNC(vcpu, TEST_FETCH_PROT_OVERRIDE);
-diff --git a/tools/testing/selftests/kvm/steal_time.c b/tools/testing/selftests/kvm/steal_time.c
-index efe56a10d13e..d2a513ec7dd5 100644
---- a/tools/testing/selftests/kvm/steal_time.c
-+++ b/tools/testing/selftests/kvm/steal_time.c
-@@ -309,7 +309,7 @@ static void steal_time_init(struct kvm_vcpu *vcpu, uint32_t i)
- {
- 	/* ST_GPA_BASE is identity mapped */
- 	st_gva[i] = (void *)(ST_GPA_BASE + i * STEAL_TIME_SIZE);
--	st_gpa[i] = addr_gva2gpa(vcpu->vm, (vm_vaddr_t)st_gva[i]);
-+	st_gpa[i] = addr_gva2gpa(vcpu->vm, (gva_t)st_gva[i]);
- 	sync_global_to_guest(vcpu->vm, st_gva[i]);
- 	sync_global_to_guest(vcpu->vm, st_gpa[i]);
- }
-diff --git a/tools/testing/selftests/kvm/x86/amx_test.c b/tools/testing/selftests/kvm/x86/amx_test.c
-index 37b166260ee3..6f934732c014 100644
---- a/tools/testing/selftests/kvm/x86/amx_test.c
-+++ b/tools/testing/selftests/kvm/x86/amx_test.c
-@@ -236,7 +236,7 @@ int main(int argc, char *argv[])
- 	struct kvm_x86_state *state;
- 	struct kvm_x86_state *tile_state = NULL;
- 	int xsave_restore_size;
--	vm_vaddr_t amx_cfg, tiledata, xstate;
-+	gva_t amx_cfg, tiledata, xstate;
- 	struct ucall uc;
- 	int ret;
- 
-diff --git a/tools/testing/selftests/kvm/x86/aperfmperf_test.c b/tools/testing/selftests/kvm/x86/aperfmperf_test.c
-index 8b15a13df939..2b547fc93ba8 100644
---- a/tools/testing/selftests/kvm/x86/aperfmperf_test.c
-+++ b/tools/testing/selftests/kvm/x86/aperfmperf_test.c
-@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
- {
- 	const bool has_nested = kvm_cpu_has(X86_FEATURE_SVM) || kvm_cpu_has(X86_FEATURE_VMX);
- 	uint64_t host_aperf_before, host_mperf_before;
--	vm_vaddr_t nested_test_data_gva;
-+	gva_t nested_test_data_gva;
- 	struct kvm_vcpu *vcpu;
- 	struct kvm_vm *vm;
- 	int msr_fd, cpu, i;
-diff --git a/tools/testing/selftests/kvm/x86/cpuid_test.c b/tools/testing/selftests/kvm/x86/cpuid_test.c
-index f9ed14996977..3c45249a42c4 100644
---- a/tools/testing/selftests/kvm/x86/cpuid_test.c
-+++ b/tools/testing/selftests/kvm/x86/cpuid_test.c
-@@ -140,10 +140,10 @@ static void run_vcpu(struct kvm_vcpu *vcpu, int stage)
- 	}
- }
- 
--struct kvm_cpuid2 *vcpu_alloc_cpuid(struct kvm_vm *vm, vm_vaddr_t *p_gva, struct kvm_cpuid2 *cpuid)
-+struct kvm_cpuid2 *vcpu_alloc_cpuid(struct kvm_vm *vm, gva_t *p_gva, struct kvm_cpuid2 *cpuid)
- {
- 	int size = sizeof(*cpuid) + cpuid->nent * sizeof(cpuid->entries[0]);
--	vm_vaddr_t gva = vm_vaddr_alloc(vm, size, KVM_UTIL_MIN_VADDR);
-+	gva_t gva = vm_vaddr_alloc(vm, size, KVM_UTIL_MIN_VADDR);
- 	struct kvm_cpuid2 *guest_cpuids = addr_gva2hva(vm, gva);
- 
- 	memcpy(guest_cpuids, cpuid, size);
-@@ -217,7 +217,7 @@ static void test_get_cpuid2(struct kvm_vcpu *vcpu)
- int main(void)
- {
- 	struct kvm_vcpu *vcpu;
--	vm_vaddr_t cpuid_gva;
-+	gva_t cpuid_gva;
- 	struct kvm_vm *vm;
- 	int stage;
- 
-diff --git a/tools/testing/selftests/kvm/x86/evmcs_smm_controls_test.c b/tools/testing/selftests/kvm/x86/evmcs_smm_controls_test.c
-index af7c90103396..62cfde273f71 100644
---- a/tools/testing/selftests/kvm/x86/evmcs_smm_controls_test.c
-+++ b/tools/testing/selftests/kvm/x86/evmcs_smm_controls_test.c
-@@ -73,7 +73,7 @@ static void guest_code(struct vmx_pages *vmx_pages,
- 
- int main(int argc, char *argv[])
- {
--	vm_vaddr_t vmx_pages_gva = 0, hv_pages_gva = 0;
-+	gva_t vmx_pages_gva = 0, hv_pages_gva = 0;
- 	struct hyperv_test_pages *hv;
- 	struct hv_enlightened_vmcs *evmcs;
- 	struct kvm_vcpu *vcpu;
-diff --git a/tools/testing/selftests/kvm/x86/hyperv_clock.c b/tools/testing/selftests/kvm/x86/hyperv_clock.c
-index e058bc676cd6..b68844924dc5 100644
---- a/tools/testing/selftests/kvm/x86/hyperv_clock.c
-+++ b/tools/testing/selftests/kvm/x86/hyperv_clock.c
-@@ -208,7 +208,7 @@ int main(void)
- 	struct kvm_vcpu *vcpu;
- 	struct kvm_vm *vm;
- 	struct ucall uc;
--	vm_vaddr_t tsc_page_gva;
-+	gva_t tsc_page_gva;
- 	int stage;
- 
- 	TEST_REQUIRE(kvm_has_cap(KVM_CAP_HYPERV_TIME));
-diff --git a/tools/testing/selftests/kvm/x86/hyperv_evmcs.c b/tools/testing/selftests/kvm/x86/hyperv_evmcs.c
-index 74cf19661309..c2de5ac799ee 100644
---- a/tools/testing/selftests/kvm/x86/hyperv_evmcs.c
-+++ b/tools/testing/selftests/kvm/x86/hyperv_evmcs.c
-@@ -76,7 +76,7 @@ void l2_guest_code(void)
- }
- 
- void guest_code(struct vmx_pages *vmx_pages, struct hyperv_test_pages *hv_pages,
--		vm_vaddr_t hv_hcall_page_gpa)
-+		gva_t hv_hcall_page_gpa)
- {
- #define L2_GUEST_STACK_SIZE 64
- 	unsigned long l2_guest_stack[L2_GUEST_STACK_SIZE];
-@@ -231,8 +231,8 @@ static struct kvm_vcpu *save_restore_vm(struct kvm_vm *vm,
- 
- int main(int argc, char *argv[])
- {
--	vm_vaddr_t vmx_pages_gva = 0, hv_pages_gva = 0;
--	vm_vaddr_t hcall_page;
-+	gva_t vmx_pages_gva = 0, hv_pages_gva = 0;
-+	gva_t hcall_page;
- 
- 	struct kvm_vcpu *vcpu;
- 	struct kvm_vm *vm;
-diff --git a/tools/testing/selftests/kvm/x86/hyperv_extended_hypercalls.c b/tools/testing/selftests/kvm/x86/hyperv_extended_hypercalls.c
-index 949e08e98f31..7762c168bbf3 100644
---- a/tools/testing/selftests/kvm/x86/hyperv_extended_hypercalls.c
-+++ b/tools/testing/selftests/kvm/x86/hyperv_extended_hypercalls.c
-@@ -16,7 +16,7 @@
- #define EXT_CAPABILITIES 0xbull
- 
- static void guest_code(vm_paddr_t in_pg_gpa, vm_paddr_t out_pg_gpa,
--		       vm_vaddr_t out_pg_gva)
-+		       gva_t out_pg_gva)
- {
- 	uint64_t *output_gva;
- 
-@@ -35,8 +35,8 @@ static void guest_code(vm_paddr_t in_pg_gpa, vm_paddr_t out_pg_gpa,
- 
- int main(void)
- {
--	vm_vaddr_t hcall_out_page;
--	vm_vaddr_t hcall_in_page;
-+	gva_t hcall_out_page;
-+	gva_t hcall_in_page;
- 	struct kvm_vcpu *vcpu;
- 	struct kvm_run *run;
- 	struct kvm_vm *vm;
-diff --git a/tools/testing/selftests/kvm/x86/hyperv_features.c b/tools/testing/selftests/kvm/x86/hyperv_features.c
-index 130b9ce7e5dd..1059fcc460e3 100644
---- a/tools/testing/selftests/kvm/x86/hyperv_features.c
-+++ b/tools/testing/selftests/kvm/x86/hyperv_features.c
-@@ -82,7 +82,7 @@ static void guest_msr(struct msr_data *msr)
- 	GUEST_DONE();
- }
- 
--static void guest_hcall(vm_vaddr_t pgs_gpa, struct hcall_data *hcall)
-+static void guest_hcall(gva_t pgs_gpa, struct hcall_data *hcall)
- {
- 	u64 res, input, output;
- 	uint8_t vector;
-@@ -134,7 +134,7 @@ static void guest_test_msrs_access(void)
- 	struct kvm_vm *vm;
- 	struct ucall uc;
- 	int stage = 0;
--	vm_vaddr_t msr_gva;
-+	gva_t msr_gva;
- 	struct msr_data *msr;
- 	bool has_invtsc = kvm_cpu_has(X86_FEATURE_INVTSC);
- 
-@@ -523,7 +523,7 @@ static void guest_test_hcalls_access(void)
- 	struct kvm_vm *vm;
- 	struct ucall uc;
- 	int stage = 0;
--	vm_vaddr_t hcall_page, hcall_params;
-+	gva_t hcall_page, hcall_params;
- 	struct hcall_data *hcall;
- 
- 	while (true) {
-diff --git a/tools/testing/selftests/kvm/x86/hyperv_ipi.c b/tools/testing/selftests/kvm/x86/hyperv_ipi.c
-index ca61836c4e32..7d648219833c 100644
---- a/tools/testing/selftests/kvm/x86/hyperv_ipi.c
-+++ b/tools/testing/selftests/kvm/x86/hyperv_ipi.c
-@@ -45,13 +45,13 @@ struct hv_send_ipi_ex {
- 	struct hv_vpset vp_set;
- };
- 
--static inline void hv_init(vm_vaddr_t pgs_gpa)
-+static inline void hv_init(gva_t pgs_gpa)
- {
- 	wrmsr(HV_X64_MSR_GUEST_OS_ID, HYPERV_LINUX_OS_ID);
- 	wrmsr(HV_X64_MSR_HYPERCALL, pgs_gpa);
- }
- 
--static void receiver_code(void *hcall_page, vm_vaddr_t pgs_gpa)
-+static void receiver_code(void *hcall_page, gva_t pgs_gpa)
- {
- 	u32 vcpu_id;
- 
-@@ -85,7 +85,7 @@ static inline void nop_loop(void)
- 		asm volatile("nop");
- }
- 
--static void sender_guest_code(void *hcall_page, vm_vaddr_t pgs_gpa)
-+static void sender_guest_code(void *hcall_page, gva_t pgs_gpa)
- {
- 	struct hv_send_ipi *ipi = (struct hv_send_ipi *)hcall_page;
- 	struct hv_send_ipi_ex *ipi_ex = (struct hv_send_ipi_ex *)hcall_page;
-@@ -243,7 +243,7 @@ int main(int argc, char *argv[])
- {
- 	struct kvm_vm *vm;
- 	struct kvm_vcpu *vcpu[3];
--	vm_vaddr_t hcall_page;
-+	gva_t hcall_page;
- 	pthread_t threads[2];
- 	int stage = 1, r;
- 	struct ucall uc;
-diff --git a/tools/testing/selftests/kvm/x86/hyperv_svm_test.c b/tools/testing/selftests/kvm/x86/hyperv_svm_test.c
-index 0ddb63229bcb..e0caf5ea14bd 100644
---- a/tools/testing/selftests/kvm/x86/hyperv_svm_test.c
-+++ b/tools/testing/selftests/kvm/x86/hyperv_svm_test.c
-@@ -67,7 +67,7 @@ void l2_guest_code(void)
- 
- static void __attribute__((__flatten__)) guest_code(struct svm_test_data *svm,
- 						    struct hyperv_test_pages *hv_pages,
--						    vm_vaddr_t pgs_gpa)
-+						    gva_t pgs_gpa)
- {
- 	unsigned long l2_guest_stack[L2_GUEST_STACK_SIZE];
- 	struct vmcb *vmcb = svm->vmcb;
-@@ -149,8 +149,8 @@ static void __attribute__((__flatten__)) guest_code(struct svm_test_data *svm,
- 
- int main(int argc, char *argv[])
- {
--	vm_vaddr_t nested_gva = 0, hv_pages_gva = 0;
--	vm_vaddr_t hcall_page;
-+	gva_t nested_gva = 0, hv_pages_gva = 0;
-+	gva_t hcall_page;
- 	struct kvm_vcpu *vcpu;
- 	struct kvm_vm *vm;
- 	struct ucall uc;
-diff --git a/tools/testing/selftests/kvm/x86/hyperv_tlb_flush.c b/tools/testing/selftests/kvm/x86/hyperv_tlb_flush.c
-index c542cc4762b1..7f58a5efe6d5 100644
---- a/tools/testing/selftests/kvm/x86/hyperv_tlb_flush.c
-+++ b/tools/testing/selftests/kvm/x86/hyperv_tlb_flush.c
-@@ -61,14 +61,14 @@ struct hv_tlb_flush_ex {
-  * - GVAs of the test pages' PTEs
-  */
- struct test_data {
--	vm_vaddr_t hcall_gva;
-+	gva_t hcall_gva;
- 	vm_paddr_t hcall_gpa;
--	vm_vaddr_t test_pages;
--	vm_vaddr_t test_pages_pte[NTEST_PAGES];
-+	gva_t test_pages;
-+	gva_t test_pages_pte[NTEST_PAGES];
- };
- 
- /* 'Worker' vCPU code checking the contents of the test page */
--static void worker_guest_code(vm_vaddr_t test_data)
-+static void worker_guest_code(gva_t test_data)
- {
- 	struct test_data *data = (struct test_data *)test_data;
- 	u32 vcpu_id = rdmsr(HV_X64_MSR_VP_INDEX);
-@@ -196,7 +196,7 @@ static inline void post_test(struct test_data *data, u64 exp1, u64 exp2)
- #define TESTVAL2 0x0202020202020202
- 
- /* Main vCPU doing the test */
--static void sender_guest_code(vm_vaddr_t test_data)
-+static void sender_guest_code(gva_t test_data)
- {
- 	struct test_data *data = (struct test_data *)test_data;
- 	struct hv_tlb_flush *flush = (struct hv_tlb_flush *)data->hcall_gva;
-@@ -581,7 +581,7 @@ int main(int argc, char *argv[])
- 	struct kvm_vm *vm;
- 	struct kvm_vcpu *vcpu[3];
- 	pthread_t threads[2];
--	vm_vaddr_t test_data_page, gva;
-+	gva_t test_data_page, gva;
- 	vm_paddr_t gpa;
- 	uint64_t *pte;
- 	struct test_data *data;
-diff --git a/tools/testing/selftests/kvm/x86/kvm_buslock_test.c b/tools/testing/selftests/kvm/x86/kvm_buslock_test.c
-index d88500c118eb..52014a3210c8 100644
---- a/tools/testing/selftests/kvm/x86/kvm_buslock_test.c
-+++ b/tools/testing/selftests/kvm/x86/kvm_buslock_test.c
-@@ -73,7 +73,7 @@ static void guest_code(void *test_data)
- int main(int argc, char *argv[])
- {
- 	const bool has_nested = kvm_cpu_has(X86_FEATURE_SVM) || kvm_cpu_has(X86_FEATURE_VMX);
--	vm_vaddr_t nested_test_data_gva;
-+	gva_t nested_test_data_gva;
- 	struct kvm_vcpu *vcpu;
- 	struct kvm_run *run;
- 	struct kvm_vm *vm;
-diff --git a/tools/testing/selftests/kvm/x86/kvm_clock_test.c b/tools/testing/selftests/kvm/x86/kvm_clock_test.c
-index 5bc12222d87a..e14f7330302e 100644
---- a/tools/testing/selftests/kvm/x86/kvm_clock_test.c
-+++ b/tools/testing/selftests/kvm/x86/kvm_clock_test.c
-@@ -135,7 +135,7 @@ static void enter_guest(struct kvm_vcpu *vcpu)
- int main(void)
- {
- 	struct kvm_vcpu *vcpu;
--	vm_vaddr_t pvti_gva;
-+	gva_t pvti_gva;
- 	vm_paddr_t pvti_gpa;
- 	struct kvm_vm *vm;
- 	int flags;
-diff --git a/tools/testing/selftests/kvm/x86/nested_close_kvm_test.c b/tools/testing/selftests/kvm/x86/nested_close_kvm_test.c
-index f001cb836bfa..761fec293408 100644
---- a/tools/testing/selftests/kvm/x86/nested_close_kvm_test.c
-+++ b/tools/testing/selftests/kvm/x86/nested_close_kvm_test.c
-@@ -67,7 +67,7 @@ static void l1_guest_code(void *data)
- 
- int main(int argc, char *argv[])
- {
--	vm_vaddr_t guest_gva;
-+	gva_t guest_gva;
- 	struct kvm_vcpu *vcpu;
- 	struct kvm_vm *vm;
- 
-diff --git a/tools/testing/selftests/kvm/x86/nested_dirty_log_test.c b/tools/testing/selftests/kvm/x86/nested_dirty_log_test.c
-index 619229bbd693..0e67cce83570 100644
---- a/tools/testing/selftests/kvm/x86/nested_dirty_log_test.c
-+++ b/tools/testing/selftests/kvm/x86/nested_dirty_log_test.c
-@@ -47,10 +47,10 @@
- #define TEST_SYNC_WRITE_FAULT		BIT(1)
- #define TEST_SYNC_NO_FAULT		BIT(2)
- 
--static void l2_guest_code(vm_vaddr_t base)
-+static void l2_guest_code(gva_t base)
- {
--	vm_vaddr_t page0 = TEST_GUEST_ADDR(base, 0);
--	vm_vaddr_t page1 = TEST_GUEST_ADDR(base, 1);
-+	gva_t page0 = TEST_GUEST_ADDR(base, 0);
-+	gva_t page1 = TEST_GUEST_ADDR(base, 1);
- 
- 	READ_ONCE(*(u64 *)page0);
- 	GUEST_SYNC(page0 | TEST_SYNC_READ_FAULT);
-@@ -143,7 +143,7 @@ static void l1_guest_code(void *data)
- static void test_handle_ucall_sync(struct kvm_vm *vm, u64 arg,
- 				   unsigned long *bmap)
- {
--	vm_vaddr_t gva = arg & ~(PAGE_SIZE - 1);
-+	gva_t gva = arg & ~(PAGE_SIZE - 1);
- 	int page_nr, i;
- 
- 	/*
-@@ -198,7 +198,7 @@ static void test_handle_ucall_sync(struct kvm_vm *vm, u64 arg,
- 
- static void test_dirty_log(bool nested_tdp)
- {
--	vm_vaddr_t nested_gva = 0;
-+	gva_t nested_gva = 0;
- 	unsigned long *bmap;
- 	struct kvm_vcpu *vcpu;
- 	struct kvm_vm *vm;
-diff --git a/tools/testing/selftests/kvm/x86/nested_emulation_test.c b/tools/testing/selftests/kvm/x86/nested_emulation_test.c
-index abc824dba04f..d398add21e4c 100644
---- a/tools/testing/selftests/kvm/x86/nested_emulation_test.c
-+++ b/tools/testing/selftests/kvm/x86/nested_emulation_test.c
-@@ -122,7 +122,7 @@ static void guest_code(void *test_data)
- 
- int main(int argc, char *argv[])
- {
--	vm_vaddr_t nested_test_data_gva;
-+	gva_t nested_test_data_gva;
- 	struct kvm_vcpu *vcpu;
- 	struct kvm_vm *vm;
- 
-diff --git a/tools/testing/selftests/kvm/x86/nested_exceptions_test.c b/tools/testing/selftests/kvm/x86/nested_exceptions_test.c
-index 3641a42934ac..646cfb0022b3 100644
---- a/tools/testing/selftests/kvm/x86/nested_exceptions_test.c
-+++ b/tools/testing/selftests/kvm/x86/nested_exceptions_test.c
-@@ -216,7 +216,7 @@ static void queue_ss_exception(struct kvm_vcpu *vcpu, bool inject)
-  */
- int main(int argc, char *argv[])
- {
--	vm_vaddr_t nested_test_data_gva;
-+	gva_t nested_test_data_gva;
- 	struct kvm_vcpu_events events;
- 	struct kvm_vcpu *vcpu;
- 	struct kvm_vm *vm;
-diff --git a/tools/testing/selftests/kvm/x86/nested_invalid_cr3_test.c b/tools/testing/selftests/kvm/x86/nested_invalid_cr3_test.c
-index a6b6da9cf7fe..11fd2467d823 100644
---- a/tools/testing/selftests/kvm/x86/nested_invalid_cr3_test.c
-+++ b/tools/testing/selftests/kvm/x86/nested_invalid_cr3_test.c
-@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
- {
- 	struct kvm_vcpu *vcpu;
- 	struct kvm_vm *vm;
--	vm_vaddr_t guest_gva = 0;
-+	gva_t guest_gva = 0;
- 
- 	TEST_REQUIRE(kvm_cpu_has(X86_FEATURE_VMX) ||
- 		     kvm_cpu_has(X86_FEATURE_SVM));
-diff --git a/tools/testing/selftests/kvm/x86/nested_tsc_adjust_test.c b/tools/testing/selftests/kvm/x86/nested_tsc_adjust_test.c
-index 2839f650e5c9..d9238116d30d 100644
---- a/tools/testing/selftests/kvm/x86/nested_tsc_adjust_test.c
-+++ b/tools/testing/selftests/kvm/x86/nested_tsc_adjust_test.c
-@@ -125,7 +125,7 @@ static void report(int64_t val)
- 
- int main(int argc, char *argv[])
- {
--	vm_vaddr_t nested_gva;
-+	gva_t nested_gva;
- 	struct kvm_vcpu *vcpu;
- 
- 	TEST_REQUIRE(kvm_cpu_has(X86_FEATURE_VMX) ||
-diff --git a/tools/testing/selftests/kvm/x86/nested_tsc_scaling_test.c b/tools/testing/selftests/kvm/x86/nested_tsc_scaling_test.c
-index 4260c9e4f489..b76f29e1e775 100644
---- a/tools/testing/selftests/kvm/x86/nested_tsc_scaling_test.c
-+++ b/tools/testing/selftests/kvm/x86/nested_tsc_scaling_test.c
-@@ -152,7 +152,7 @@ int main(int argc, char *argv[])
- {
- 	struct kvm_vcpu *vcpu;
- 	struct kvm_vm *vm;
--	vm_vaddr_t guest_gva = 0;
-+	gva_t guest_gva = 0;
- 
- 	uint64_t tsc_start, tsc_end;
- 	uint64_t tsc_khz;
-diff --git a/tools/testing/selftests/kvm/x86/nested_vmsave_vmload_test.c b/tools/testing/selftests/kvm/x86/nested_vmsave_vmload_test.c
-index 71717118d692..85d3f4cc76f3 100644
---- a/tools/testing/selftests/kvm/x86/nested_vmsave_vmload_test.c
-+++ b/tools/testing/selftests/kvm/x86/nested_vmsave_vmload_test.c
-@@ -128,7 +128,7 @@ static void l1_guest_code(struct svm_test_data *svm)
- 
- int main(int argc, char *argv[])
- {
--	vm_vaddr_t nested_gva = 0;
-+	gva_t nested_gva = 0;
- 	struct vmcb *test_vmcb[2];
- 	struct kvm_vcpu *vcpu;
- 	struct kvm_vm *vm;
-diff --git a/tools/testing/selftests/kvm/x86/sev_smoke_test.c b/tools/testing/selftests/kvm/x86/sev_smoke_test.c
-index 8bd37a476f15..dcb3aee699b9 100644
---- a/tools/testing/selftests/kvm/x86/sev_smoke_test.c
-+++ b/tools/testing/selftests/kvm/x86/sev_smoke_test.c
-@@ -108,7 +108,7 @@ static void test_sync_vmsa(uint32_t type, uint64_t policy)
- {
- 	struct kvm_vcpu *vcpu;
- 	struct kvm_vm *vm;
--	vm_vaddr_t gva;
-+	gva_t gva;
- 	void *hva;
- 
- 	double x87val = M_PI;
-diff --git a/tools/testing/selftests/kvm/x86/smm_test.c b/tools/testing/selftests/kvm/x86/smm_test.c
-index ade8412bf94a..3ede3ed8ae5c 100644
---- a/tools/testing/selftests/kvm/x86/smm_test.c
-+++ b/tools/testing/selftests/kvm/x86/smm_test.c
-@@ -113,7 +113,7 @@ static void guest_code(void *arg)
- 
- int main(int argc, char *argv[])
- {
--	vm_vaddr_t nested_gva = 0;
-+	gva_t nested_gva = 0;
- 
- 	struct kvm_vcpu *vcpu;
- 	struct kvm_regs regs;
-diff --git a/tools/testing/selftests/kvm/x86/state_test.c b/tools/testing/selftests/kvm/x86/state_test.c
-index 992a52504a4a..6797da4bd9d9 100644
---- a/tools/testing/selftests/kvm/x86/state_test.c
-+++ b/tools/testing/selftests/kvm/x86/state_test.c
-@@ -258,7 +258,7 @@ void check_nested_state(int stage, struct kvm_x86_state *state)
- int main(int argc, char *argv[])
- {
- 	uint64_t *xstate_bv, saved_xstate_bv;
--	vm_vaddr_t nested_gva = 0;
-+	gva_t nested_gva = 0;
- 	struct kvm_cpuid2 empty_cpuid = {};
- 	struct kvm_regs regs1, regs2;
- 	struct kvm_vcpu *vcpu, *vcpuN;
-diff --git a/tools/testing/selftests/kvm/x86/svm_int_ctl_test.c b/tools/testing/selftests/kvm/x86/svm_int_ctl_test.c
-index 917b6066cfc1..d3cc5e4f7883 100644
---- a/tools/testing/selftests/kvm/x86/svm_int_ctl_test.c
-+++ b/tools/testing/selftests/kvm/x86/svm_int_ctl_test.c
-@@ -82,7 +82,7 @@ static void l1_guest_code(struct svm_test_data *svm)
- int main(int argc, char *argv[])
- {
- 	struct kvm_vcpu *vcpu;
--	vm_vaddr_t svm_gva;
-+	gva_t svm_gva;
- 	struct kvm_vm *vm;
- 	struct ucall uc;
- 
-diff --git a/tools/testing/selftests/kvm/x86/svm_lbr_nested_state.c b/tools/testing/selftests/kvm/x86/svm_lbr_nested_state.c
-index ff99438824d3..7fbfaa054c95 100644
---- a/tools/testing/selftests/kvm/x86/svm_lbr_nested_state.c
-+++ b/tools/testing/selftests/kvm/x86/svm_lbr_nested_state.c
-@@ -97,9 +97,9 @@ void test_lbrv_nested_state(bool nested_lbrv)
- {
- 	struct kvm_x86_state *state = NULL;
- 	struct kvm_vcpu *vcpu;
--	vm_vaddr_t svm_gva;
- 	struct kvm_vm *vm;
- 	struct ucall uc;
-+	gva_t svm_gva;
- 
- 	pr_info("Testing with nested LBRV %s\n", nested_lbrv ? "enabled" : "disabled");
- 
-diff --git a/tools/testing/selftests/kvm/x86/svm_nested_clear_efer_svme.c b/tools/testing/selftests/kvm/x86/svm_nested_clear_efer_svme.c
-index a521a9eed061..6a89eaffc657 100644
---- a/tools/testing/selftests/kvm/x86/svm_nested_clear_efer_svme.c
-+++ b/tools/testing/selftests/kvm/x86/svm_nested_clear_efer_svme.c
-@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
- {
- 	struct kvm_vcpu *vcpu;
- 	struct kvm_vm *vm;
--	vm_vaddr_t nested_gva = 0;
-+	gva_t nested_gva = 0;
- 
- 	TEST_REQUIRE(kvm_cpu_has(X86_FEATURE_SVM));
- 
-diff --git a/tools/testing/selftests/kvm/x86/svm_nested_shutdown_test.c b/tools/testing/selftests/kvm/x86/svm_nested_shutdown_test.c
-index 00135cbba35e..c6ea3d609a62 100644
---- a/tools/testing/selftests/kvm/x86/svm_nested_shutdown_test.c
-+++ b/tools/testing/selftests/kvm/x86/svm_nested_shutdown_test.c
-@@ -42,7 +42,7 @@ static void l1_guest_code(struct svm_test_data *svm, struct idt_entry *idt)
- int main(int argc, char *argv[])
- {
- 	struct kvm_vcpu *vcpu;
--	vm_vaddr_t svm_gva;
-+	gva_t svm_gva;
- 	struct kvm_vm *vm;
- 
- 	TEST_REQUIRE(kvm_cpu_has(X86_FEATURE_SVM));
-diff --git a/tools/testing/selftests/kvm/x86/svm_nested_soft_inject_test.c b/tools/testing/selftests/kvm/x86/svm_nested_soft_inject_test.c
-index 4bd1655f9e6d..c739d071d3b3 100644
---- a/tools/testing/selftests/kvm/x86/svm_nested_soft_inject_test.c
-+++ b/tools/testing/selftests/kvm/x86/svm_nested_soft_inject_test.c
-@@ -144,8 +144,8 @@ static void run_test(bool is_nmi)
- {
- 	struct kvm_vcpu *vcpu;
- 	struct kvm_vm *vm;
--	vm_vaddr_t svm_gva;
--	vm_vaddr_t idt_alt_vm;
-+	gva_t svm_gva;
-+	gva_t idt_alt_vm;
- 	struct kvm_guest_debug debug;
- 
- 	pr_info("Running %s test\n", is_nmi ? "NMI" : "soft int");
-diff --git a/tools/testing/selftests/kvm/x86/svm_nested_vmcb12_gpa.c b/tools/testing/selftests/kvm/x86/svm_nested_vmcb12_gpa.c
-index 569869bed20b..ae8a10913af7 100644
---- a/tools/testing/selftests/kvm/x86/svm_nested_vmcb12_gpa.c
-+++ b/tools/testing/selftests/kvm/x86/svm_nested_vmcb12_gpa.c
-@@ -74,7 +74,7 @@ static u64 unmappable_gpa(struct kvm_vcpu *vcpu)
- 
- static void test_invalid_vmcb12(struct kvm_vcpu *vcpu)
- {
--	vm_vaddr_t nested_gva = 0;
-+	gva_t nested_gva = 0;
- 	struct ucall uc;
- 
- 
-@@ -90,7 +90,7 @@ static void test_invalid_vmcb12(struct kvm_vcpu *vcpu)
- 
- static void test_unmappable_vmcb12(struct kvm_vcpu *vcpu)
- {
--	vm_vaddr_t nested_gva = 0;
-+	gva_t nested_gva = 0;
- 
- 	vcpu_alloc_svm(vcpu->vm, &nested_gva);
- 	vcpu_args_set(vcpu, 2, nested_gva, unmappable_gpa(vcpu));
-@@ -103,7 +103,7 @@ static void test_unmappable_vmcb12(struct kvm_vcpu *vcpu)
- static void test_unmappable_vmcb12_vmexit(struct kvm_vcpu *vcpu)
- {
- 	struct kvm_x86_state *state;
--	vm_vaddr_t nested_gva = 0;
-+	gva_t nested_gva = 0;
- 	struct ucall uc;
- 
- 	/*
-diff --git a/tools/testing/selftests/kvm/x86/svm_vmcall_test.c b/tools/testing/selftests/kvm/x86/svm_vmcall_test.c
-index 8a62cca28cfb..b1887242f3b8 100644
---- a/tools/testing/selftests/kvm/x86/svm_vmcall_test.c
-+++ b/tools/testing/selftests/kvm/x86/svm_vmcall_test.c
-@@ -36,7 +36,7 @@ static void l1_guest_code(struct svm_test_data *svm)
- int main(int argc, char *argv[])
- {
- 	struct kvm_vcpu *vcpu;
--	vm_vaddr_t svm_gva;
-+	gva_t svm_gva;
- 	struct kvm_vm *vm;
- 
- 	TEST_REQUIRE(kvm_cpu_has(X86_FEATURE_SVM));
-diff --git a/tools/testing/selftests/kvm/x86/triple_fault_event_test.c b/tools/testing/selftests/kvm/x86/triple_fault_event_test.c
-index 56306a19144a..f1c488e0d497 100644
---- a/tools/testing/selftests/kvm/x86/triple_fault_event_test.c
-+++ b/tools/testing/selftests/kvm/x86/triple_fault_event_test.c
-@@ -72,13 +72,13 @@ int main(void)
- 
- 
- 	if (has_vmx) {
--		vm_vaddr_t vmx_pages_gva;
-+		gva_t vmx_pages_gva;
- 
- 		vm = vm_create_with_one_vcpu(&vcpu, l1_guest_code_vmx);
- 		vcpu_alloc_vmx(vm, &vmx_pages_gva);
- 		vcpu_args_set(vcpu, 1, vmx_pages_gva);
- 	} else {
--		vm_vaddr_t svm_gva;
-+		gva_t svm_gva;
- 
- 		vm = vm_create_with_one_vcpu(&vcpu, l1_guest_code_svm);
- 		vcpu_alloc_svm(vm, &svm_gva);
-diff --git a/tools/testing/selftests/kvm/x86/vmx_apic_access_test.c b/tools/testing/selftests/kvm/x86/vmx_apic_access_test.c
-index a81a24761aac..dc5c3d1db346 100644
---- a/tools/testing/selftests/kvm/x86/vmx_apic_access_test.c
-+++ b/tools/testing/selftests/kvm/x86/vmx_apic_access_test.c
-@@ -72,7 +72,7 @@ static void l1_guest_code(struct vmx_pages *vmx_pages, unsigned long high_gpa)
- int main(int argc, char *argv[])
- {
- 	unsigned long apic_access_addr = ~0ul;
--	vm_vaddr_t vmx_pages_gva;
-+	gva_t vmx_pages_gva;
- 	unsigned long high_gpa;
- 	struct vmx_pages *vmx;
- 	bool done = false;
-diff --git a/tools/testing/selftests/kvm/x86/vmx_apicv_updates_test.c b/tools/testing/selftests/kvm/x86/vmx_apicv_updates_test.c
-index 337c53fddeff..7f84cc92feaf 100644
---- a/tools/testing/selftests/kvm/x86/vmx_apicv_updates_test.c
-+++ b/tools/testing/selftests/kvm/x86/vmx_apicv_updates_test.c
-@@ -110,7 +110,7 @@ static void l1_guest_code(struct vmx_pages *vmx_pages)
- 
- int main(int argc, char *argv[])
- {
--	vm_vaddr_t vmx_pages_gva;
-+	gva_t vmx_pages_gva;
- 	struct vmx_pages *vmx;
- 	struct kvm_vcpu *vcpu;
- 	struct kvm_vm *vm;
-diff --git a/tools/testing/selftests/kvm/x86/vmx_invalid_nested_guest_state.c b/tools/testing/selftests/kvm/x86/vmx_invalid_nested_guest_state.c
-index a100ee5f0009..a2eaceed9ad5 100644
---- a/tools/testing/selftests/kvm/x86/vmx_invalid_nested_guest_state.c
-+++ b/tools/testing/selftests/kvm/x86/vmx_invalid_nested_guest_state.c
-@@ -52,7 +52,7 @@ static void l1_guest_code(struct vmx_pages *vmx_pages)
- 
- int main(int argc, char *argv[])
- {
--	vm_vaddr_t vmx_pages_gva;
-+	gva_t vmx_pages_gva;
- 	struct kvm_sregs sregs;
- 	struct kvm_vcpu *vcpu;
- 	struct kvm_run *run;
-diff --git a/tools/testing/selftests/kvm/x86/vmx_nested_la57_state_test.c b/tools/testing/selftests/kvm/x86/vmx_nested_la57_state_test.c
-index 915c42001dba..4ffa11a6bcd8 100644
---- a/tools/testing/selftests/kvm/x86/vmx_nested_la57_state_test.c
-+++ b/tools/testing/selftests/kvm/x86/vmx_nested_la57_state_test.c
-@@ -73,7 +73,7 @@ void guest_code(struct vmx_pages *vmx_pages)
- 
- int main(int argc, char *argv[])
- {
--	vm_vaddr_t vmx_pages_gva = 0;
-+	gva_t vmx_pages_gva = 0;
- 	struct kvm_vm *vm;
- 	struct kvm_vcpu *vcpu;
- 	struct kvm_x86_state *state;
-diff --git a/tools/testing/selftests/kvm/x86/vmx_preemption_timer_test.c b/tools/testing/selftests/kvm/x86/vmx_preemption_timer_test.c
-index 00dd2ac07a61..1b7b6ba23de7 100644
---- a/tools/testing/selftests/kvm/x86/vmx_preemption_timer_test.c
-+++ b/tools/testing/selftests/kvm/x86/vmx_preemption_timer_test.c
-@@ -152,7 +152,7 @@ void guest_code(struct vmx_pages *vmx_pages)
- 
- int main(int argc, char *argv[])
- {
--	vm_vaddr_t vmx_pages_gva = 0;
-+	gva_t vmx_pages_gva = 0;
- 
- 	struct kvm_regs regs1, regs2;
- 	struct kvm_vm *vm;
-diff --git a/tools/testing/selftests/kvm/x86/xapic_ipi_test.c b/tools/testing/selftests/kvm/x86/xapic_ipi_test.c
-index ae4a4b6c05ca..0b10dfbfa3ea 100644
---- a/tools/testing/selftests/kvm/x86/xapic_ipi_test.c
-+++ b/tools/testing/selftests/kvm/x86/xapic_ipi_test.c
-@@ -393,7 +393,7 @@ int main(int argc, char *argv[])
- 	int run_secs = 0;
- 	int delay_usecs = 0;
- 	struct test_data_page *data;
--	vm_vaddr_t test_data_page_vaddr;
-+	gva_t test_data_page_vaddr;
- 	bool migrate = false;
- 	pthread_t threads[2];
- 	struct thread_params params[2];
+-static __always_inline bool riscv_insn_is_c_jr(u32 code)
+-{
+-	return (code & RVC_MASK_C_JR) == RVC_MATCH_C_JR &&
+-	       (code & RVC_INSN_J_RS1_MASK) != 0;
+-}
+-
+-static __always_inline bool riscv_insn_is_c_jalr(u32 code)
+-{
+-	return (code & RVC_MASK_C_JALR) == RVC_MATCH_C_JALR &&
+-	       (code & RVC_INSN_J_RS1_MASK) != 0;
+-}
+-
+ #define INSN_MATCH_LB		0x3
+ #define INSN_MASK_LB		0x707f
+ #define INSN_MATCH_LH		0x1003
+diff --git a/arch/riscv/tools/Makefile b/arch/riscv/tools/Makefile
+new file mode 100644
+index 000000000000..5f40439c12e9
+--- /dev/null
++++ b/arch/riscv/tools/Makefile
+@@ -0,0 +1,22 @@
++# SPDX-License-Identifier: GPL-2.0
++
++gen := arch/$(ARCH)/include/generated/asm
++insn_tbl := $(src)/insn_tbl.sh
++insn := $(src)/insn.tbl
++
++gen-y := $(gen)/insn_gen.h
++
++targets += $(addprefix ../../../,$(gen-y))
++
++PHONY += insn
++
++insn:	$(gen-y)
++
++# Create output directory if not already present
++$(shell mkdir -p $(gen))
++
++quiet_cmd_insn_tbl = INST_TBL  $@
++      cmd_insn_tbl = $(CONFIG_SHELL) $(insn_tbl) $< $@
++
++$(gen)/insn_gen.h: $(insn) $(insn_tbl) FORCE
++	$(call if_changed,insn_tbl)
+diff --git a/arch/riscv/tools/insn.tbl b/arch/riscv/tools/insn.tbl
+new file mode 100644
+index 000000000000..56797903b141
+--- /dev/null
++++ b/arch/riscv/tools/insn.tbl
+@@ -0,0 +1,1391 @@
++# SPDX-License-Identifier: GPL-2.0-only
++#
++# GENERATED WITH https://github.com/riscv-software-src/riscv-unified-db
++# "bundle exec rake gen:insn_table"
++#
++# Each line of the instruction table should have the following format:
++# NAME BASE FIXED_BITS [VARIABLE_LIST]
++# NAME                        instruction name
++# BASE                        instruction base size (common[,(32|64)])
++# FIXED_BITS                  bitfields of the fixed bits of an instruction concatenated with |
++#                             each continuous grouping of fixed bits is in the format of bits<offset
++# all instruction variables in the form of <var>[-<sign_extend>-][<<left_shift><][!<constraint>...]
++#                             if the variable requires sign extension, surround the index to sign extend at in '-'
++#                             if the variable requires left shifting, surround the left shift amount in '<'
++#                             a "constraint" is an integer value that is invalid for this variable
++# VARIABLE_LIST               a variable sized list of all variables in the instruction definition
++#                             in the form of name[~][<num][!num...]=(high[-low])|...
++#                             symbols after the name represent different modifiers:
++#                                 ~ sign extension, can only appear once
++#                                 < left shift by 'num' amount on extraction, can only appear once
++#                                 ! mark 'num' as an invalid input for this variable, any number may appear
++andn common 0100000<25|111<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++clmul common 0000101<25|001<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++clmulh common 0000101<25|011<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++orn common 0100000<25|110<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++rev8 common,32 011010011000<20|101<12|0010011<0 xs1=19-15 xd=11-7
++rev8 common,64 011010111000<20|101<12|0010011<0 xs1=19-15 xd=11-7
++rol common 0110000<25|001<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++rolw 64 0110000<25|001<12|0111011<0 xs2=24-20 xs1=19-15 xd=11-7
++ror common 0110000<25|101<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++rori common,32 0110000<25|101<12|0010011<0 shamt=24-20 xs1=19-15 xd=11-7
++rori common,64 011000<26|101<12|0010011<0 shamt=25-20 xs1=19-15 xd=11-7
++roriw 64 0110000<25|101<12|0011011<0 shamt=24-20 xs1=19-15 xd=11-7
++rorw 64 0110000<25|101<12|0111011<0 xs2=24-20 xs1=19-15 xd=11-7
++xnor common 0100000<25|100<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++c.add common 1001<12|10<0 xs2!0=6-2 xd!0=11-7
++c.addi common 000<13|01<0 imm!0=12|6-2 xd!0=11-7
++c.addi16sp common 011<13|00010<7|01<0 imm!0<4=12|4-3|5|2|6
++c.addi4spn common 000<13|00<0 imm!0<2=10-7|12-11|5|6 xd=4-2
++c.addiw 64 001<13|01<0 imm=12|6-2 xd!0=11-7
++c.addw 64 100111<10|01<5|01<0 xs2=4-2 xd=9-7
++c.and common 100011<10|11<5|01<0 xs2=4-2 xd=9-7
++c.andi common 100<13|10<10|01<0 imm=12|6-2 xd=9-7
++c.beqz common 110<13|01<0 imm~<1=12|6-5|2|11-10|4-3 xs1=9-7
++c.bnez common 111<13|01<0 imm~<1=12|6-5|2|11-10|4-3 xs1=9-7
++c.ebreak common 1001000000000010<0
++c.j common 101<13|01<0 imm~<1=12|8|10-9|6|7|2|11|5-3
++c.jal 32 001<13|01<0 imm~<1=12|8|10-9|6|7|2|11|5-3
++c.jalr common 1001<12|0000010<0 xs1!0=11-7
++c.jr common 1000<12|0000010<0 xs1!0=11-7
++c.ld common,32 011<13|00<0 imm<3=6-5|12-10 xd!1!3!5!7=4-2 xs1=9-7
++c.ld common,64 011<13|00<0 imm<3=6-5|12-10 xd=4-2 xs1=9-7
++c.ldsp common,32 011<13|10<0 imm<3=4-2|12|6-5 xd!0!1!3!5!7=11-7
++c.ldsp common,64 011<13|10<0 imm<3=4-2|12|6-5 xd=11-7
++c.li common 010<13|01<0 imm=12|6-2 xd!0=11-7
++c.lui common 011<13|01<0 imm<12=12|6-2 xd!0!2=11-7
++c.lw common 010<13|00<0 imm<2=5|12-10|6 xd=4-2 xs1=9-7
++c.lwsp common 010<13|10<0 imm<2=3-2|12|6-4 xd!0=11-7
++c.mv common 1000<12|10<0 xd!0=11-7 xs2!0=6-2
++c.nop common 0000000000000001<0
++c.or common 100011<10|10<5|01<0 xs2=4-2 xd=9-7
++c.sd common,32 111<13|00<0 imm<3=6-5|12-10 xs2!1!3!5!7=4-2 xs1=9-7
++c.sd common,64 111<13|00<0 imm<3=6-5|12-10 xs2=4-2 xs1=9-7
++c.sdsp common,32 111<13|10<0 xs2!1!3!5!7=6-2 imm<3=9-7|12-10
++c.sdsp common,64 111<13|10<0 xs2=6-2 imm<3=9-7|12-10
++c.slli common,32 0000<12|10<0 shamt!0=6-2 xd=11-7
++c.slli common,64 000<13|10<0 shamt!0=12|6-2 xd=11-7
++c.srai common,32 100001<10|01<0 shamt!0=6-2 xd=9-7
++c.srai common,64 100<13|01<10|01<0 shamt!0=12|6-2 xd=9-7
++c.srli common,32 100000<10|01<0 shamt!0=6-2 xd=9-7
++c.srli common,64 100<13|00<10|01<0 shamt!0=12|6-2 xd=9-7
++c.sub common 100011<10|00<5|01<0 xs2=4-2 xd=9-7
++c.subw 64 100111<10|00<5|01<0 xs2=4-2 xd=9-7
++c.sw common 110<13|00<0 imm<2=5|12-10|6 xs2=4-2 xs1=9-7
++c.swsp common 110<13|10<0 imm<2=8-7|12-9 xs2=6-2
++c.xor common 100011<10|01<5|01<0 xs2=4-2 xd=9-7
++fadd.d common 0000001<25|1010011<0 fs2=24-20 fs1=19-15 rm=14-12 fd=11-7
++fclass.d common 111000100000<20|001<12|1010011<0 fs1=19-15 xd=11-7
++fcvt.d.l 64 110100100010<20|1010011<0 xs1=19-15 rm=14-12 fd=11-7
++fcvt.d.lu 64 110100100011<20|1010011<0 xs1=19-15 rm=14-12 fd=11-7
++fcvt.d.s common 010000100000<20|1010011<0 fs1=19-15 rm=14-12 fd=11-7
++fcvt.d.w common 110100100000<20|1010011<0 xs1=19-15 rm=14-12 fd=11-7
++fcvt.d.wu common 110100100001<20|1010011<0 xs1=19-15 rm=14-12 fd=11-7
++fcvt.l.d 64 110000100010<20|1010011<0 fs1=19-15 rm=14-12 xd=11-7
++fcvt.lu.d 64 110000100011<20|1010011<0 fs1=19-15 rm=14-12 xd=11-7
++fcvt.s.d common 010000000001<20|1010011<0 fs1=19-15 rm=14-12 fd=11-7
++fcvt.w.d common 110000100000<20|1010011<0 fs1=19-15 rm=14-12 xd=11-7
++fcvt.wu.d common 110000100001<20|1010011<0 fs1=19-15 rm=14-12 xd=11-7
++fcvtmod.w.d common 110000101000<20|1010011<0 fs1=19-15 rm!0!2!3!4!5!6!7=14-12 xd=11-7
++fdiv.d common 0001101<25|1010011<0 fs2=24-20 fs1=19-15 rm=14-12 fd=11-7
++feq.d common 1010001<25|010<12|1010011<0 fs2=24-20 fs1=19-15 xd=11-7
++fld common 011<12|0000111<0 imm=31-20 xs1=19-15 fd=11-7
++fle.d common 1010001<25|000<12|1010011<0 fs2=24-20 fs1=19-15 xd=11-7
++fleq.d common 1010001<25|100<12|1010011<0 fs2=24-20 fs1=19-15 xd=11-7
++fli.d common 111100100001<20|000<12|1010011<0 xs1=19-15 fd=11-7
++flt.d common 1010001<25|001<12|1010011<0 fs2=24-20 fs1=19-15 xd=11-7
++fltq.d common 1010001<25|101<12|1010011<0 fs2=24-20 fs1=19-15 xd=11-7
++fmadd.d common 01<25|1000011<0 fs3=31-27 fs2=24-20 fs1=19-15 rm=14-12 fd=11-7
++fmax.d common 0010101<25|001<12|1010011<0 fs2=24-20 fs1=19-15 fd=11-7
++fmaxm.d common 0010101<25|011<12|1010011<0 fs2=24-20 fs1=19-15 fd=11-7
++fmin.d common 0010101<25|000<12|1010011<0 fs2=24-20 fs1=19-15 fd=11-7
++fminm.d common 0010101<25|010<12|1010011<0 fs2=24-20 fs1=19-15 fd=11-7
++fmsub.d common 01<25|1000111<0 fs3=31-27 fs2=24-20 fs1=19-15 rm=14-12 fd=11-7
++fmul.d common 0001001<25|1010011<0 fs2=24-20 fs1=19-15 rm=14-12 fd=11-7
++fmv.d.x 64 111100100000<20|000<12|1010011<0 xs1=19-15 fd=11-7
++fmv.x.d 64 111000100000<20|000<12|1010011<0 fs1=19-15 xd=11-7
++fmvh.x.d 32 111000100001<20|000<12|1010011<0 fs1=19-15 xd=11-7
++fmvp.d.x 32 1011001<25|000<12|1010011<0 xs2=24-20 xs1=19-15 fd=11-7
++fnmadd.d common 01<25|1001111<0 fs3=31-27 fs2=24-20 fs1=19-15 rm=14-12 fd=11-7
++fnmsub.d common 01<25|1001011<0 fs3=31-27 fs2=24-20 fs1=19-15 rm=14-12 fd=11-7
++fround.d common 010000100100<20|1010011<0 fs1=19-15 rm=14-12 fd=11-7
++froundnx.d common 010000100101<20|1010011<0 fs1=19-15 rm=14-12 fd=11-7
++fsd common 011<12|0100111<0 imm=31-25|11-7 fs2=24-20 xs1=19-15
++fsgnj.d common 0010001<25|000<12|1010011<0 fs2=24-20 fs1=19-15 fd=11-7
++fsgnjn.d common 0010001<25|001<12|1010011<0 fs2=24-20 fs1=19-15 fd=11-7
++fsgnjx.d common 0010001<25|010<12|1010011<0 fs2=24-20 fs1=19-15 fd=11-7
++fsqrt.d common 010110100000<20|1010011<0 fs1=19-15 rm=14-12 fd=11-7
++fsub.d common 0000101<25|1010011<0 fs2=24-20 fs1=19-15 rm=14-12 fd=11-7
++fadd.s common 0000000<25|1010011<0 fs2=24-20 fs1=19-15 rm=14-12 fd=11-7
++fclass.s common 111000000000<20|001<12|1010011<0 fs1=19-15 xd=11-7
++fcvt.l.s 64 110000000010<20|1010011<0 fs1=19-15 rm=14-12 xd=11-7
++fcvt.lu.s 64 110000000011<20|1010011<0 fs1=19-15 rm=14-12 xd=11-7
++fcvt.s.l 64 110100000010<20|1010011<0 xs1=19-15 rm=14-12 fd=11-7
++fcvt.s.lu 64 110100000011<20|1010011<0 xs1=19-15 rm=14-12 fd=11-7
++fcvt.s.w common 110100000000<20|1010011<0 xs1=19-15 rm=14-12 fd=11-7
++fcvt.s.wu common 110100000001<20|1010011<0 xs1=19-15 rm=14-12 fd=11-7
++fcvt.w.s common 110000000000<20|1010011<0 fs1=19-15 rm=14-12 xd=11-7
++fcvt.wu.s common 110000000001<20|1010011<0 fs1=19-15 rm=14-12 xd=11-7
++fdiv.s common 0001100<25|1010011<0 fs2=24-20 fs1=19-15 rm=14-12 fd=11-7
++feq.s common 1010000<25|010<12|1010011<0 fs2=24-20 fs1=19-15 xd=11-7
++fle.s common 1010000<25|000<12|1010011<0 fs2=24-20 fs1=19-15 xd=11-7
++fleq.s common 1010000<25|100<12|1010011<0 fs2=24-20 fs1=19-15 xd=11-7
++flt.s common 1010000<25|001<12|1010011<0 fs2=24-20 fs1=19-15 xd=11-7
++fltq.s common 1010000<25|101<12|1010011<0 fs2=24-20 fs1=19-15 xd=11-7
++flw common 010<12|0000111<0 imm=31-20 xs1=19-15 fd=11-7
++fmadd.s common 00<25|1000011<0 fs3=31-27 fs2=24-20 fs1=19-15 rm=14-12 fd=11-7
++fmax.s common 0010100<25|001<12|1010011<0 fs2=24-20 fs1=19-15 fd=11-7
++fmin.s common 0010100<25|000<12|1010011<0 fs2=24-20 fs1=19-15 fd=11-7
++fmsub.s common 00<25|1000111<0 fs3=31-27 fs2=24-20 fs1=19-15 rm=14-12 fd=11-7
++fmul.s common 0001000<25|1010011<0 fs2=24-20 fs1=19-15 rm=14-12 fd=11-7
++fmv.w.x common 111100000000<20|000<12|1010011<0 xs1=19-15 fd=11-7
++fmv.x.w common 111000000000<20|000<12|1010011<0 fs1=19-15 xd=11-7
++fnmadd.s common 00<25|1001111<0 fs3=31-27 fs2=24-20 fs1=19-15 rm=14-12 fd=11-7
++fnmsub.s common 00<25|1001011<0 fs3=31-27 fs2=24-20 fs1=19-15 rm=14-12 fd=11-7
++fsgnj.s common 0010000<25|000<12|1010011<0 fs2=24-20 fs1=19-15 fd=11-7
++fsgnjn.s common 0010000<25|001<12|1010011<0 fs2=24-20 fs1=19-15 fd=11-7
++fsgnjx.s common 0010000<25|010<12|1010011<0 fs2=24-20 fs1=19-15 fd=11-7
++fsqrt.s common 010110000000<20|1010011<0 fs1=19-15 rm=14-12 fd=11-7
++fsub.s common 0000100<25|1010011<0 fs2=24-20 fs1=19-15 rm=14-12 fd=11-7
++fsw common 010<12|0100111<0 imm=31-25|11-7 fs2=24-20 xs1=19-15
++hfence.gvma common 0110001<25|000000001110011<0 xs2=24-20 xs1=19-15
++hfence.vvma common 0010001<25|000000001110011<0 xs2=24-20 xs1=19-15
++hlv.b common 011000000000<20|100<12|1110011<0 xs1=19-15 xd=11-7
++hlv.bu common 011000000001<20|100<12|1110011<0 xs1=19-15 xd=11-7
++hlv.d 64 011011000000<20|100<12|1110011<0 xs1=19-15 xd=11-7
++hlv.h common 011001000000<20|100<12|1110011<0 xs1=19-15 xd=11-7
++hlv.hu common 011001000001<20|100<12|1110011<0 xs1=19-15 xd=11-7
++hlv.w common 011010000000<20|100<12|1110011<0 xs1=19-15 xd=11-7
++hlv.wu 64 011010000001<20|100<12|1110011<0 xs1=19-15 xd=11-7
++hlvx.hu common 011001000011<20|100<12|1110011<0 xs1=19-15 xd=11-7
++hlvx.wu common 011010000011<20|100<12|1110011<0 xs1=19-15 xd=11-7
++hsv.b common 0110001<25|100000001110011<0 xs2=24-20 xs1=19-15
++hsv.d 64 0110111<25|100000001110011<0 xs2=24-20 xs1=19-15
++hsv.h common 0110011<25|100000001110011<0 xs2=24-20 xs1=19-15
++hsv.w common 0110101<25|100000001110011<0 xs2=24-20 xs1=19-15
++add common 0000000<25|000<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++addi common 000<12|0010011<0 imm=31-20 xs1=19-15 xd=11-7
++addiw 64 000<12|0011011<0 imm=31-20 xs1=19-15 xd=11-7
++addw 64 0000000<25|000<12|0111011<0 xs2=24-20 xs1=19-15 xd=11-7
++and common 0000000<25|111<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++andi common 111<12|0010011<0 imm=31-20 xs1=19-15 xd=11-7
++auipc common 0010111<0 imm<12=31-12 xd=11-7
++beq common 000<12|1100011<0 imm~<1=31|7|30-25|11-8 xs2=24-20 xs1=19-15
++bge common 101<12|1100011<0 imm~<1=31|7|30-25|11-8 xs2=24-20 xs1=19-15
++bgeu common 111<12|1100011<0 imm~<1=31|7|30-25|11-8 xs2=24-20 xs1=19-15
++blt common 100<12|1100011<0 imm~<1=31|7|30-25|11-8 xs2=24-20 xs1=19-15
++bltu common 110<12|1100011<0 imm~<1=31|7|30-25|11-8 xs2=24-20 xs1=19-15
++bne common 001<12|1100011<0 imm~<1=31|7|30-25|11-8 xs2=24-20 xs1=19-15
++ebreak common 00000000000100000000000001110011<0
++ecall common 00000000000000000000000001110011<0
++fence.tso common 100000110011<20|000<12|0001111<0 xs1=19-15 xd=11-7
++fence common 000<12|0001111<0 fm=31-28 pred=27-24 succ=23-20 xs1=19-15 xd=11-7
++jal common 1101111<0 imm~<1=31|19-12|20|30-21 xd=11-7
++jalr common 000<12|1100111<0 imm~=31-20 xs1=19-15 xd=11-7
++lb common 000<12|0000011<0 imm=31-20 xs1=19-15 xd=11-7
++lbu common 100<12|0000011<0 imm=31-20 xs1=19-15 xd=11-7
++ld common,32 011<12|0000011<0 imm=31-20 xs1=19-15 xd!1!3!5!7!9!11!13!15!17!19!21!23!25!27!29!31=11-7
++ld common,64 011<12|0000011<0 imm=31-20 xs1=19-15 xd=11-7
++lh common 001<12|0000011<0 imm=31-20 xs1=19-15 xd=11-7
++lhu common 101<12|0000011<0 imm=31-20 xs1=19-15 xd=11-7
++lui common 0110111<0 imm<12=31-12 xd=11-7
++lw common 010<12|0000011<0 imm=31-20 xs1=19-15 xd=11-7
++lwu 64 110<12|0000011<0 imm=31-20 xs1=19-15 xd=11-7
++mret common 00110000001000000000000001110011<0
++or common 0000000<25|110<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++ori common 110<12|0010011<0 imm=31-20 xs1=19-15 xd=11-7
++sb common 000<12|0100011<0 imm=31-25|11-7 xs2=24-20 xs1=19-15
++sd common,32 011<12|0100011<0 imm=31-25|11-7 xs2!1!3!5!7!9!11!13!15!17!19!21!23!25!27!29!31=24-20 xs1=19-15
++sd common,64 011<12|0100011<0 imm~=31-25|11-7 xs2=24-20 xs1=19-15
++sh common 001<12|0100011<0 imm=31-25|11-7 xs2=24-20 xs1=19-15
++sll common 0000000<25|001<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++slli common,32 0000000<25|001<12|0010011<0 shamt=24-20 xs1=19-15 xd=11-7
++slli common,64 000000<26|001<12|0010011<0 shamt=25-20 xs1=19-15 xd=11-7
++slliw 64 0000000<25|001<12|0011011<0 shamt=24-20 xs1=19-15 xd=11-7
++sllw 64 0000000<25|001<12|0111011<0 xs2=24-20 xs1=19-15 xd=11-7
++slt common 0000000<25|010<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++slti common 010<12|0010011<0 imm=31-20 xs1=19-15 xd=11-7
++sltiu common 011<12|0010011<0 imm=31-20 xs1=19-15 xd=11-7
++sltu common 0000000<25|011<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++sra common 0100000<25|101<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++srai common,32 0100000<25|101<12|0010011<0 shamt=24-20 xs1=19-15 xd=11-7
++srai common,64 010000<26|101<12|0010011<0 shamt=25-20 xs1=19-15 xd=11-7
++sraiw 64 0100000<25|101<12|0011011<0 shamt=24-20 xs1=19-15 xd=11-7
++sraw 64 0100000<25|101<12|0111011<0 xs2=24-20 xs1=19-15 xd=11-7
++srl common 0000000<25|101<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++srli common,32 0000000<25|101<12|0010011<0 shamt=24-20 xs1=19-15 xd=11-7
++srli common,64 000000<26|101<12|0010011<0 shamt=25-20 xs1=19-15 xd=11-7
++srliw 64 0000000<25|101<12|0011011<0 shamt=24-20 xs1=19-15 xd=11-7
++srlw 64 0000000<25|101<12|0111011<0 xs2=24-20 xs1=19-15 xd=11-7
++sub common 0100000<25|000<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++subw 64 0100000<25|000<12|0111011<0 xs2=24-20 xs1=19-15 xd=11-7
++sw common 010<12|0100011<0 imm=31-25|11-7 xs2=24-20 xs1=19-15
++wfi common 00010000010100000000000001110011<0
++xor common 0000000<25|100<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++xori common 100<12|0010011<0 imm=31-20 xs1=19-15 xd=11-7
++div common 0000001<25|100<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++divu common 0000001<25|101<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++divuw 64 0000001<25|101<12|0111011<0 xs2=24-20 xs1=19-15 xd=11-7
++divw 64 0000001<25|100<12|0111011<0 xs2=24-20 xs1=19-15 xd=11-7
++mul common 0000001<25|000<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++mulh common 0000001<25|001<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++mulhsu common 0000001<25|010<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++mulhu common 0000001<25|011<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++mulw 64 0000001<25|000<12|0111011<0 xs2=24-20 xs1=19-15 xd=11-7
++rem common 0000001<25|110<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++remu common 0000001<25|111<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++remuw 64 0000001<25|111<12|0111011<0 xs2=24-20 xs1=19-15 xd=11-7
++remw 64 0000001<25|110<12|0111011<0 xs2=24-20 xs1=19-15 xd=11-7
++fadd.q common 0000011<25|1010011<0 fs2=24-20 fs1=19-15 rm=14-12 fd=11-7
++fclass.q common 111001100000<20|001<12|1010011<0 fs1=19-15 xd=11-7
++fcvt.d.q common 010000100011<20|1010011<0 fs1=19-15 rm=14-12 fd=11-7
++fcvt.h.q common 010001000011<20|1010011<0 fs1=19-15 rm=14-12 fd=11-7
++fcvt.l.q 64 110001100010<20|1010011<0 fs1=19-15 rm=14-12 xd=11-7
++fcvt.lu.q 64 110001100011<20|1010011<0 fs1=19-15 rm=14-12 xd=11-7
++fcvt.q.d common 010001100001<20|1010011<0 fs1=19-15 rm=14-12 fd=11-7
++fcvt.q.h common 010001100010<20|1010011<0 fs1=19-15 rm=14-12 fd=11-7
++fcvt.q.l 64 110101100010<20|1010011<0 xs1=19-15 rm=14-12 fd=11-7
++fcvt.q.lu 64 110101100011<20|1010011<0 xs1=19-15 rm=14-12 fd=11-7
++fcvt.q.s common 010001100000<20|1010011<0 fs1=19-15 rm=14-12 fd=11-7
++fcvt.q.w common 110101100000<20|1010011<0 xs1=19-15 rm=14-12 fd=11-7
++fcvt.q.wu common 110101100001<20|1010011<0 xs1=19-15 rm=14-12 fd=11-7
++fcvt.s.q common 010000000011<20|1010011<0 fs1=19-15 rm=14-12 fd=11-7
++fcvt.w.q common 110001100000<20|1010011<0 fs1=19-15 rm=14-12 xd=11-7
++fcvt.wu.q common 110001100001<20|1010011<0 fs1=19-15 rm=14-12 xd=11-7
++fdiv.q common 0001111<25|1010011<0 fs2=24-20 fs1=19-15 rm=14-12 fd=11-7
++feq.q common 1010011<25|010<12|1010011<0 fs2=24-20 fs1=19-15 xd=11-7
++fle.q common 1010011<25|000<12|1010011<0 fs2=24-20 fs1=19-15 xd=11-7
++fleq.q common 1010011<25|100<12|1010011<0 fs2=24-20 fs1=19-15 xd=11-7
++fli.q common 111101100001<20|000<12|1010011<0 xs1=19-15 fd=11-7
++flq common 100<12|0000111<0 imm=31-20 xs1=19-15 fd=11-7
++flt.q common 1010011<25|001<12|1010011<0 fs2=24-20 fs1=19-15 xd=11-7
++fltq.q common 1010011<25|101<12|1010011<0 fs2=24-20 fs1=19-15 fd=11-7
++fmadd.q common 11<25|1000011<0 fs3=31-27 fs2=24-20 fs1=19-15 rm=14-12 fd=11-7
++fmax.q common 0010111<25|001<12|1010011<0 fs2=24-20 fs1=19-15 fd=11-7
++fmaxm.q common 0010111<25|011<12|1010011<0 fs2=24-20 fs1=19-15 fd=11-7
++fmin.q common 0010111<25|000<12|1010011<0 fs2=24-20 fs1=19-15 fd=11-7
++fminm.q common 0010111<25|010<12|1010011<0 fs2=24-20 fs1=19-15 fd=11-7
++fmsub.q common 11<25|1000111<0 fs3=31-27 fs2=24-20 fs1=19-15 rm=14-12 fd=11-7
++fmul.q common 0001011<25|1010011<0 fs2=24-20 fs1=19-15 rm=14-12 fd=11-7
++fmvh.x.q 64 111001100001<20|000<12|1010011<0 fs1=19-15 xd=11-7
++fmvp.q.x 64 1011011<25|000<12|1010011<0 xs2=24-20 xs1=19-15 fd=11-7
++fnmadd.q common 11<25|1001111<0 fs3=31-27 fs2=24-20 fs1=19-15 rm=14-12 fd=11-7
++fnmsub.q common 11<25|1001011<0 fs3=31-27 fs2=24-20 fs1=19-15 rm=14-12 fd=11-7
++fround.q common 010001100100<20|1010011<0 fs1=19-15 rm=14-12 fd=11-7
++froundnx.q common 010001100101<20|1010011<0 fs1=19-15 rm=14-12 fd=11-7
++fsgnj.q common 0010011<25|000<12|1010011<0 fs2=24-20 fs1=19-15 fd=11-7
++fsgnjn.q common 0010011<25|001<12|1010011<0 fs2=24-20 fs1=19-15 fd=11-7
++fsgnjx.q common 0010011<25|010<12|1010011<0 fs2=24-20 fs1=19-15 fd=11-7
++fsq common 100<12|0100111<0 imm=31-25|11-7 fs2=24-20 xs1=19-15
++fsqrt.q common 010111100000<20|1010011<0 fs1=19-15 rm=14-12 fd=11-7
++fsub.q common 0000111<25|1010011<0 fs2=24-20 fs1=19-15 rm=14-12 fd=11-7
++sfence.vma common 0001001<25|000000001110011<0 xs2=24-20 xs1=19-15
++sret common 00010000001000000000000001110011<0
++dret common 01111011001000000000000001110011<0
++sctrclr common 00010000010000000000000001110011<0
++mnret common 01110000001000000000000001110011<0
++hinval.gvma common 0110011<25|000000001110011<0 xs2=24-20 xs1=19-15
++hinval.vvma common 0010011<25|000000001110011<0 xs2=24-20 xs1=19-15
++sfence.inval.ir common 00011000000100000000000001110011<0
++sfence.w.inval common 00011000000000000000000001110011<0
++sinval.vma common 0001011<25|000000001110011<0 xs2=24-20 xs1=19-15
++vaadd.vv common 001001<26|010<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vaadd.vx common 001001<26|110<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vaaddu.vv common 001000<26|010<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vaaddu.vx common 001000<26|110<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vadc.vim common 0100000<25|011<12|1010111<0 vs2=24-20 imm=19-15 vd=11-7
++vadc.vvm common 0100000<25|000<12|1010111<0 vs2=24-20 vs1=19-15 vd=11-7
++vadc.vxm common 0100000<25|100<12|1010111<0 vs2=24-20 xs1=19-15 vd=11-7
++vadd.vi common 000000<26|011<12|1010111<0 vm=25-25 vs2=24-20 imm=19-15 vd=11-7
++vadd.vv common 000000<26|000<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vadd.vx common 000000<26|100<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vand.vi common 001001<26|011<12|1010111<0 vm=25-25 vs2=24-20 imm=19-15 vd=11-7
++vand.vv common 001001<26|000<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vand.vx common 001001<26|100<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vasub.vv common 001011<26|010<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vasub.vx common 001011<26|110<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vasubu.vv common 001010<26|010<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vasubu.vx common 001010<26|110<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vcompress.vm common 0101111<25|010<12|1010111<0 vs2=24-20 vs1=19-15 vd=11-7
++vcpop.m common 010000<26|10000010<12|1010111<0 vm=25-25 vs2=24-20 xd=11-7
++vdiv.vv common 100001<26|010<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vdiv.vx common 100001<26|110<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vdivu.vv common 100000<26|010<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vdivu.vx common 100000<26|110<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vfadd.vf common 000000<26|101<12|1010111<0 vm=25-25 vs2=24-20 fs1=19-15 vd=11-7
++vfadd.vv common 000000<26|001<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vfclass.v common 010011<26|10000001<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vfcvt.f.x.v common 010010<26|00011001<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vfcvt.f.xu.v common 010010<26|00010001<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vfcvt.rtz.x.f.v common 010010<26|00111001<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vfcvt.rtz.xu.f.v common 010010<26|00110001<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vfcvt.x.f.v common 010010<26|00001001<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vfcvt.xu.f.v common 010010<26|00000001<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vfdiv.vf common 100000<26|101<12|1010111<0 vm=25-25 vs2=24-20 fs1=19-15 vd=11-7
++vfdiv.vv common 100000<26|001<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vfirst.m common 010000<26|10001010<12|1010111<0 vm=25-25 vs2=24-20 xd=11-7
++vfmacc.vf common 101100<26|101<12|1010111<0 vm=25-25 vs2=24-20 fs1=19-15 vd=11-7
++vfmacc.vv common 101100<26|001<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vfmadd.vf common 101000<26|101<12|1010111<0 vm=25-25 vs2=24-20 fs1=19-15 vd=11-7
++vfmadd.vv common 101000<26|001<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vfmax.vf common 000110<26|101<12|1010111<0 vm=25-25 vs2=24-20 fs1=19-15 vd=11-7
++vfmax.vv common 000110<26|001<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vfmerge.vfm common 0101110<25|101<12|1010111<0 vs2=24-20 fs1=19-15 vd=11-7
++vfmin.vf common 000100<26|101<12|1010111<0 vm=25-25 vs2=24-20 fs1=19-15 vd=11-7
++vfmin.vv common 000100<26|001<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vfmsac.vf common 101110<26|101<12|1010111<0 vm=25-25 vs2=24-20 fs1=19-15 vd=11-7
++vfmsac.vv common 101110<26|001<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vfmsub.vf common 101010<26|101<12|1010111<0 vm=25-25 vs2=24-20 fs1=19-15 vd=11-7
++vfmsub.vv common 101010<26|001<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vfmul.vf common 100100<26|101<12|1010111<0 vm=25-25 vs2=24-20 fs1=19-15 vd=11-7
++vfmul.vv common 100100<26|001<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vfmv.f.s common 0100001<25|00000001<12|1010111<0 vs2=24-20 fd=11-7
++vfmv.s.f common 010000100000<20|101<12|1010111<0 fs1=19-15 vd=11-7
++vfmv.v.f common 010111100000<20|101<12|1010111<0 fs1=19-15 vd=11-7
++vfncvt.f.f.w common 010010<26|10100001<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vfncvt.f.x.w common 010010<26|10011001<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vfncvt.f.xu.w common 010010<26|10010001<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vfncvt.rod.f.f.w common 010010<26|10101001<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vfncvt.rtz.x.f.w common 010010<26|10111001<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vfncvt.rtz.xu.f.w common 010010<26|10110001<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vfncvt.x.f.w common 010010<26|10001001<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vfncvt.xu.f.w common 010010<26|10000001<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vfnmacc.vf common 101101<26|101<12|1010111<0 vm=25-25 vs2=24-20 fs1=19-15 vd=11-7
++vfnmacc.vv common 101101<26|001<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vfnmadd.vf common 101001<26|101<12|1010111<0 vm=25-25 vs2=24-20 fs1=19-15 vd=11-7
++vfnmadd.vv common 101001<26|001<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vfnmsac.vf common 101111<26|101<12|1010111<0 vm=25-25 vs2=24-20 fs1=19-15 vd=11-7
++vfnmsac.vv common 101111<26|001<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vfnmsub.vf common 101011<26|101<12|1010111<0 vm=25-25 vs2=24-20 fs1=19-15 vd=11-7
++vfnmsub.vv common 101011<26|001<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vfrdiv.vf common 100001<26|101<12|1010111<0 vm=25-25 vs2=24-20 fs1=19-15 vd=11-7
++vfrec7.v common 010011<26|00101001<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vfredmax.vs common 000111<26|001<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vfredmin.vs common 000101<26|001<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vfredosum.vs common 000011<26|001<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vfredusum.vs common 000001<26|001<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vfrsqrt7.v common 010011<26|00100001<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vfrsub.vf common 100111<26|101<12|1010111<0 vm=25-25 vs2=24-20 fs1=19-15 vd=11-7
++vfsgnj.vf common 001000<26|101<12|1010111<0 vm=25-25 vs2=24-20 fs1=19-15 vd=11-7
++vfsgnj.vv common 001000<26|001<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vfsgnjn.vf common 001001<26|101<12|1010111<0 vm=25-25 vs2=24-20 fs1=19-15 vd=11-7
++vfsgnjn.vv common 001001<26|001<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vfsgnjx.vf common 001010<26|101<12|1010111<0 vm=25-25 vs2=24-20 fs1=19-15 vd=11-7
++vfsgnjx.vv common 001010<26|001<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vfslide1down.vf common 001111<26|101<12|1010111<0 vm=25-25 vs2=24-20 fs1=19-15 vd=11-7
++vfslide1up.vf common 001110<26|101<12|1010111<0 vm=25-25 vs2=24-20 fs1=19-15 vd=11-7
++vfsqrt.v common 010011<26|00000001<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vfsub.vf common 000010<26|101<12|1010111<0 vm=25-25 vs2=24-20 fs1=19-15 vd=11-7
++vfsub.vv common 000010<26|001<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vfwadd.vf common 110000<26|101<12|1010111<0 vm=25-25 vs2=24-20 fs1=19-15 vd=11-7
++vfwadd.vv common 110000<26|001<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vfwadd.wf common 110100<26|101<12|1010111<0 vm=25-25 vs2=24-20 fs1=19-15 vd=11-7
++vfwadd.wv common 110100<26|001<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vfwcvt.f.f.v common 010010<26|01100001<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vfwcvt.f.x.v common 010010<26|01011001<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vfwcvt.f.xu.v common 010010<26|01010001<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vfwcvt.rtz.x.f.v common 010010<26|01111001<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vfwcvt.rtz.xu.f.v common 010010<26|01110001<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vfwcvt.x.f.v common 010010<26|01001001<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vfwcvt.xu.f.v common 010010<26|01000001<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vfwmacc.vf common 111100<26|101<12|1010111<0 vm=25-25 vs2=24-20 fs1=19-15 vd=11-7
++vfwmacc.vv common 111100<26|001<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vfwmsac.vf common 111110<26|101<12|1010111<0 vm=25-25 vs2=24-20 fs1=19-15 vd=11-7
++vfwmsac.vv common 111110<26|001<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vfwmul.vf common 111000<26|101<12|1010111<0 vm=25-25 vs2=24-20 fs1=19-15 vd=11-7
++vfwmul.vv common 111000<26|001<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vfwnmacc.vf common 111101<26|101<12|1010111<0 vm=25-25 vs2=24-20 fs1=19-15 vd=11-7
++vfwnmacc.vv common 111101<26|001<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vfwnmsac.vf common 111111<26|101<12|1010111<0 vm=25-25 vs2=24-20 fs1=19-15 vd=11-7
++vfwnmsac.vv common 111111<26|001<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vfwredosum.vs common 110011<26|001<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vfwredusum.vs common 110001<26|001<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vfwsub.vf common 110010<26|101<12|1010111<0 vm=25-25 vs2=24-20 fs1=19-15 vd=11-7
++vfwsub.vv common 110010<26|001<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vfwsub.wf common 110110<26|101<12|1010111<0 vm=25-25 vs2=24-20 fs1=19-15 vd=11-7
++vfwsub.wv common 110110<26|001<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vid.v common 010100<26|0000010001010<12|1010111<0 vm=25-25 vd=11-7
++viota.m common 010100<26|10000010<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vl1re16.v common 000000101000<20|101<12|0000111<0 xs1=19-15 vd=11-7
++vl1re32.v common 000000101000<20|110<12|0000111<0 xs1=19-15 vd=11-7
++vl1re64.v common 000000101000<20|111<12|0000111<0 xs1=19-15 vd=11-7
++vl1re8.v common 000000101000<20|000<12|0000111<0 xs1=19-15 vd=11-7
++vl2re16.v common 001000101000<20|101<12|0000111<0 xs1=19-15 vd=11-7
++vl2re32.v common 001000101000<20|110<12|0000111<0 xs1=19-15 vd=11-7
++vl2re64.v common 001000101000<20|111<12|0000111<0 xs1=19-15 vd=11-7
++vl2re8.v common 001000101000<20|000<12|0000111<0 xs1=19-15 vd=11-7
++vl4re16.v common 011000101000<20|101<12|0000111<0 xs1=19-15 vd=11-7
++vl4re32.v common 011000101000<20|110<12|0000111<0 xs1=19-15 vd=11-7
++vl4re64.v common 011000101000<20|111<12|0000111<0 xs1=19-15 vd=11-7
++vl4re8.v common 011000101000<20|000<12|0000111<0 xs1=19-15 vd=11-7
++vl8re16.v common 111000101000<20|101<12|0000111<0 xs1=19-15 vd=11-7
++vl8re32.v common 111000101000<20|110<12|0000111<0 xs1=19-15 vd=11-7
++vl8re64.v common 111000101000<20|111<12|0000111<0 xs1=19-15 vd=11-7
++vl8re8.v common 111000101000<20|000<12|0000111<0 xs1=19-15 vd=11-7
++vle16.v common 000000<26|00000<20|101<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vle16ff.v common 000000<26|10000<20|101<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vle32.v common 000000<26|00000<20|110<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vle32ff.v common 000000<26|10000<20|110<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vle64.v common 000000<26|00000<20|111<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vle64ff.v common 000000<26|10000<20|111<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vle8.v common 000000<26|00000<20|000<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vle8ff.v common 000000<26|10000<20|000<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlm.v common 000000101011<20|000<12|0000111<0 xs1=19-15 vd=11-7
++vloxei16.v common 000011<26|101<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vloxei32.v common 000011<26|110<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vloxei64.v common 000011<26|111<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vloxei8.v common 000011<26|000<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vloxseg2ei16.v common 001011<26|101<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vloxseg2ei32.v common 001011<26|110<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vloxseg2ei64.v common 001011<26|111<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vloxseg2ei8.v common 001011<26|000<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vloxseg3ei16.v common 010011<26|101<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vloxseg3ei32.v common 010011<26|110<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vloxseg3ei64.v common 010011<26|111<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vloxseg3ei8.v common 010011<26|000<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vloxseg4ei16.v common 011011<26|101<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vloxseg4ei32.v common 011011<26|110<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vloxseg4ei64.v common 011011<26|111<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vloxseg4ei8.v common 011011<26|000<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vloxseg5ei16.v common 100011<26|101<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vloxseg5ei32.v common 100011<26|110<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vloxseg5ei64.v common 100011<26|111<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vloxseg5ei8.v common 100011<26|000<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vloxseg6ei16.v common 101011<26|101<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vloxseg6ei32.v common 101011<26|110<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vloxseg6ei64.v common 101011<26|111<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vloxseg6ei8.v common 101011<26|000<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vloxseg7ei16.v common 110011<26|101<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vloxseg7ei32.v common 110011<26|110<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vloxseg7ei64.v common 110011<26|111<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vloxseg7ei8.v common 110011<26|000<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vloxseg8ei16.v common 111011<26|101<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vloxseg8ei32.v common 111011<26|110<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vloxseg8ei64.v common 111011<26|111<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vloxseg8ei8.v common 111011<26|000<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vlse16.v common 000010<26|101<12|0000111<0 vm=25-25 xs2=24-20 xs1=19-15 vd=11-7
++vlse32.v common 000010<26|110<12|0000111<0 vm=25-25 xs2=24-20 xs1=19-15 vd=11-7
++vlse64.v common 000010<26|111<12|0000111<0 vm=25-25 xs2=24-20 xs1=19-15 vd=11-7
++vlse8.v common 000010<26|000<12|0000111<0 vm=25-25 xs2=24-20 xs1=19-15 vd=11-7
++vlseg2e16.v common 001000<26|00000<20|101<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg2e16ff.v common 001000<26|10000<20|101<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg2e32.v common 001000<26|00000<20|110<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg2e32ff.v common 001000<26|10000<20|110<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg2e64.v common 001000<26|00000<20|111<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg2e64ff.v common 001000<26|10000<20|111<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg2e8.v common 001000<26|00000<20|000<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg2e8ff.v common 001000<26|10000<20|000<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg3e16.v common 010000<26|00000<20|101<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg3e16ff.v common 010000<26|10000<20|101<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg3e32.v common 010000<26|00000<20|110<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg3e32ff.v common 010000<26|10000<20|110<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg3e64.v common 010000<26|00000<20|111<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg3e64ff.v common 010000<26|10000<20|111<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg3e8.v common 010000<26|00000<20|000<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg3e8ff.v common 010000<26|10000<20|000<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg4e16.v common 011000<26|00000<20|101<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg4e16ff.v common 011000<26|10000<20|101<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg4e32.v common 011000<26|00000<20|110<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg4e32ff.v common 011000<26|10000<20|110<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg4e64.v common 011000<26|00000<20|111<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg4e64ff.v common 011000<26|10000<20|111<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg4e8.v common 011000<26|00000<20|000<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg4e8ff.v common 011000<26|10000<20|000<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg5e16.v common 100000<26|00000<20|101<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg5e16ff.v common 100000<26|10000<20|101<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg5e32.v common 100000<26|00000<20|110<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg5e32ff.v common 100000<26|10000<20|110<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg5e64.v common 100000<26|00000<20|111<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg5e64ff.v common 100000<26|10000<20|111<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg5e8.v common 100000<26|00000<20|000<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg5e8ff.v common 100000<26|10000<20|000<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg6e16.v common 101000<26|00000<20|101<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg6e16ff.v common 101000<26|10000<20|101<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg6e32.v common 101000<26|00000<20|110<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg6e32ff.v common 101000<26|10000<20|110<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg6e64.v common 101000<26|00000<20|111<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg6e64ff.v common 101000<26|10000<20|111<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg6e8.v common 101000<26|00000<20|000<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg6e8ff.v common 101000<26|10000<20|000<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg7e16.v common 110000<26|00000<20|101<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg7e16ff.v common 110000<26|10000<20|101<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg7e32.v common 110000<26|00000<20|110<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg7e32ff.v common 110000<26|10000<20|110<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg7e64.v common 110000<26|00000<20|111<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg7e64ff.v common 110000<26|10000<20|111<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg7e8.v common 110000<26|00000<20|000<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg7e8ff.v common 110000<26|10000<20|000<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg8e16.v common 111000<26|00000<20|101<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg8e16ff.v common 111000<26|10000<20|101<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg8e32.v common 111000<26|00000<20|110<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg8e32ff.v common 111000<26|10000<20|110<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg8e64.v common 111000<26|00000<20|111<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg8e64ff.v common 111000<26|10000<20|111<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg8e8.v common 111000<26|00000<20|000<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlseg8e8ff.v common 111000<26|10000<20|000<12|0000111<0 vm=25-25 xs1=19-15 vd=11-7
++vlsseg2e16.v common 001010<26|101<12|0000111<0 vm=25-25 xs2=24-20 xs1=19-15 vd=11-7
++vlsseg2e32.v common 001010<26|110<12|0000111<0 vm=25-25 xs2=24-20 xs1=19-15 vd=11-7
++vlsseg2e64.v common 001010<26|111<12|0000111<0 vm=25-25 xs2=24-20 xs1=19-15 vd=11-7
++vlsseg2e8.v common 001010<26|000<12|0000111<0 vm=25-25 xs2=24-20 xs1=19-15 vd=11-7
++vlsseg3e16.v common 010010<26|101<12|0000111<0 vm=25-25 xs2=24-20 xs1=19-15 vd=11-7
++vlsseg3e32.v common 010010<26|110<12|0000111<0 vm=25-25 xs2=24-20 xs1=19-15 vd=11-7
++vlsseg3e64.v common 010010<26|111<12|0000111<0 vm=25-25 xs2=24-20 xs1=19-15 vd=11-7
++vlsseg3e8.v common 010010<26|000<12|0000111<0 vm=25-25 xs2=24-20 xs1=19-15 vd=11-7
++vlsseg4e16.v common 011010<26|101<12|0000111<0 vm=25-25 xs2=24-20 xs1=19-15 vd=11-7
++vlsseg4e32.v common 011010<26|110<12|0000111<0 vm=25-25 xs2=24-20 xs1=19-15 vd=11-7
++vlsseg4e64.v common 011010<26|111<12|0000111<0 vm=25-25 xs2=24-20 xs1=19-15 vd=11-7
++vlsseg4e8.v common 011010<26|000<12|0000111<0 vm=25-25 xs2=24-20 xs1=19-15 vd=11-7
++vlsseg5e16.v common 100010<26|101<12|0000111<0 vm=25-25 xs2=24-20 xs1=19-15 vd=11-7
++vlsseg5e32.v common 100010<26|110<12|0000111<0 vm=25-25 xs2=24-20 xs1=19-15 vd=11-7
++vlsseg5e64.v common 100010<26|111<12|0000111<0 vm=25-25 xs2=24-20 xs1=19-15 vd=11-7
++vlsseg5e8.v common 100010<26|000<12|0000111<0 vm=25-25 xs2=24-20 xs1=19-15 vd=11-7
++vlsseg6e16.v common 101010<26|101<12|0000111<0 vm=25-25 xs2=24-20 xs1=19-15 vd=11-7
++vlsseg6e32.v common 101010<26|110<12|0000111<0 vm=25-25 xs2=24-20 xs1=19-15 vd=11-7
++vlsseg6e64.v common 101010<26|111<12|0000111<0 vm=25-25 xs2=24-20 xs1=19-15 vd=11-7
++vlsseg6e8.v common 101010<26|000<12|0000111<0 vm=25-25 xs2=24-20 xs1=19-15 vd=11-7
++vlsseg7e16.v common 110010<26|101<12|0000111<0 vm=25-25 xs2=24-20 xs1=19-15 vd=11-7
++vlsseg7e32.v common 110010<26|110<12|0000111<0 vm=25-25 xs2=24-20 xs1=19-15 vd=11-7
++vlsseg7e64.v common 110010<26|111<12|0000111<0 vm=25-25 xs2=24-20 xs1=19-15 vd=11-7
++vlsseg7e8.v common 110010<26|000<12|0000111<0 vm=25-25 xs2=24-20 xs1=19-15 vd=11-7
++vlsseg8e16.v common 111010<26|101<12|0000111<0 vm=25-25 xs2=24-20 xs1=19-15 vd=11-7
++vlsseg8e32.v common 111010<26|110<12|0000111<0 vm=25-25 xs2=24-20 xs1=19-15 vd=11-7
++vlsseg8e64.v common 111010<26|111<12|0000111<0 vm=25-25 xs2=24-20 xs1=19-15 vd=11-7
++vlsseg8e8.v common 111010<26|000<12|0000111<0 vm=25-25 xs2=24-20 xs1=19-15 vd=11-7
++vluxei16.v common 000001<26|101<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vluxei32.v common 000001<26|110<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vluxei64.v common 000001<26|111<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vluxei8.v common 000001<26|000<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vluxseg2ei16.v common 001001<26|101<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vluxseg2ei32.v common 001001<26|110<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vluxseg2ei64.v common 001001<26|111<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vluxseg2ei8.v common 001001<26|000<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vluxseg3ei16.v common 010001<26|101<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vluxseg3ei32.v common 010001<26|110<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vluxseg3ei64.v common 010001<26|111<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vluxseg3ei8.v common 010001<26|000<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vluxseg4ei16.v common 011001<26|101<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vluxseg4ei32.v common 011001<26|110<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vluxseg4ei64.v common 011001<26|111<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vluxseg4ei8.v common 011001<26|000<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vluxseg5ei16.v common 100001<26|101<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vluxseg5ei32.v common 100001<26|110<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vluxseg5ei64.v common 100001<26|111<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vluxseg5ei8.v common 100001<26|000<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vluxseg6ei16.v common 101001<26|101<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vluxseg6ei32.v common 101001<26|110<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vluxseg6ei64.v common 101001<26|111<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vluxseg6ei8.v common 101001<26|000<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vluxseg7ei16.v common 110001<26|101<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vluxseg7ei32.v common 110001<26|110<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vluxseg7ei64.v common 110001<26|111<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vluxseg7ei8.v common 110001<26|000<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vluxseg8ei16.v common 111001<26|101<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vluxseg8ei32.v common 111001<26|110<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vluxseg8ei64.v common 111001<26|111<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vluxseg8ei8.v common 111001<26|000<12|0000111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vmacc.vv common 101101<26|010<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vmacc.vx common 101101<26|110<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vmadc.vi common 0100011<25|011<12|1010111<0 vs2=24-20 imm=19-15 vd=11-7
++vmadc.vim common 0100010<25|011<12|1010111<0 vs2=24-20 imm=19-15 vd=11-7
++vmadc.vv common 0100011<25|000<12|1010111<0 vs2=24-20 vs1=19-15 vd=11-7
++vmadc.vvm common 0100010<25|000<12|1010111<0 vs2=24-20 vs1=19-15 vd=11-7
++vmadc.vx common 0100011<25|100<12|1010111<0 vs2=24-20 xs1=19-15 vd=11-7
++vmadc.vxm common 0100010<25|100<12|1010111<0 vs2=24-20 xs1=19-15 vd=11-7
++vmadd.vv common 101001<26|010<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vmadd.vx common 101001<26|110<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vmand.mm common 0110011<25|010<12|1010111<0 vs2=24-20 vs1=19-15 vd=11-7
++vmandn.mm common 0110001<25|010<12|1010111<0 vs2=24-20 vs1=19-15 vd=11-7
++vmax.vv common 000111<26|000<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vmax.vx common 000111<26|100<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vmaxu.vv common 000110<26|000<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vmaxu.vx common 000110<26|100<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vmerge.vim common 0101110<25|011<12|1010111<0 vs2=24-20 imm=19-15 vd=11-7
++vmerge.vvm common 0101110<25|000<12|1010111<0 vs2=24-20 vs1=19-15 vd=11-7
++vmerge.vxm common 0101110<25|100<12|1010111<0 vs2=24-20 xs1=19-15 vd=11-7
++vmfeq.vf common 011000<26|101<12|1010111<0 vm=25-25 vs2=24-20 fs1=19-15 vd=11-7
++vmfeq.vv common 011000<26|001<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vmfge.vf common 011111<26|101<12|1010111<0 vm=25-25 vs2=24-20 fs1=19-15 vd=11-7
++vmfgt.vf common 011101<26|101<12|1010111<0 vm=25-25 vs2=24-20 fs1=19-15 vd=11-7
++vmfle.vf common 011001<26|101<12|1010111<0 vm=25-25 vs2=24-20 fs1=19-15 vd=11-7
++vmfle.vv common 011001<26|001<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vmflt.vf common 011011<26|101<12|1010111<0 vm=25-25 vs2=24-20 fs1=19-15 vd=11-7
++vmflt.vv common 011011<26|001<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vmfne.vf common 011100<26|101<12|1010111<0 vm=25-25 vs2=24-20 fs1=19-15 vd=11-7
++vmfne.vv common 011100<26|001<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vmin.vv common 000101<26|000<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vmin.vx common 000101<26|100<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vminu.vv common 000100<26|000<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vminu.vx common 000100<26|100<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vmnand.mm common 0111011<25|010<12|1010111<0 vs2=24-20 vs1=19-15 vd=11-7
++vmnor.mm common 0111101<25|010<12|1010111<0 vs2=24-20 vs1=19-15 vd=11-7
++vmor.mm common 0110101<25|010<12|1010111<0 vs2=24-20 vs1=19-15 vd=11-7
++vmorn.mm common 0111001<25|010<12|1010111<0 vs2=24-20 vs1=19-15 vd=11-7
++vmsbc.vv common 0100111<25|000<12|1010111<0 vs2=24-20 vs1=19-15 vd=11-7
++vmsbc.vvm common 0100110<25|000<12|1010111<0 vs2=24-20 vs1=19-15 vd=11-7
++vmsbc.vx common 0100111<25|100<12|1010111<0 vs2=24-20 xs1=19-15 vd=11-7
++vmsbc.vxm common 0100110<25|100<12|1010111<0 vs2=24-20 xs1=19-15 vd=11-7
++vmsbf.m common 010100<26|00001010<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vmseq.vi common 011000<26|011<12|1010111<0 vm=25-25 vs2=24-20 imm=19-15 vd=11-7
++vmseq.vv common 011000<26|000<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vmseq.vx common 011000<26|100<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vmsgt.vi common 011111<26|011<12|1010111<0 vm=25-25 vs2=24-20 imm=19-15 vd=11-7
++vmsgt.vx common 011111<26|100<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vmsgtu.vi common 011110<26|011<12|1010111<0 vm=25-25 vs2=24-20 imm=19-15 vd=11-7
++vmsgtu.vx common 011110<26|100<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vmsif.m common 010100<26|00011010<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vmsle.vi common 011101<26|011<12|1010111<0 vm=25-25 vs2=24-20 imm=19-15 vd=11-7
++vmsle.vv common 011101<26|000<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vmsle.vx common 011101<26|100<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vmsleu.vi common 011100<26|011<12|1010111<0 vm=25-25 vs2=24-20 imm=19-15 vd=11-7
++vmsleu.vv common 011100<26|000<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vmsleu.vx common 011100<26|100<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vmslt.vv common 011011<26|000<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vmslt.vx common 011011<26|100<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vmsltu.vv common 011010<26|000<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vmsltu.vx common 011010<26|100<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vmsne.vi common 011001<26|011<12|1010111<0 vm=25-25 vs2=24-20 imm=19-15 vd=11-7
++vmsne.vv common 011001<26|000<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vmsne.vx common 011001<26|100<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vmsof.m common 010100<26|00010010<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vmul.vv common 100101<26|010<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vmul.vx common 100101<26|110<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vmulh.vv common 100111<26|010<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vmulh.vx common 100111<26|110<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vmulhsu.vv common 100110<26|010<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vmulhsu.vx common 100110<26|110<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vmulhu.vv common 100100<26|010<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vmulhu.vx common 100100<26|110<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vmv.s.x common 010000100000<20|110<12|1010111<0 xs1=19-15 vd=11-7
++vmv.v.i common 010111100000<20|011<12|1010111<0 imm=19-15 vd=11-7
++vmv.v.v common 010111100000<20|000<12|1010111<0 vs1=19-15 vd=11-7
++vmv.v.x common 010111100000<20|100<12|1010111<0 xs1=19-15 vd=11-7
++vmv.x.s common 0100001<25|00000010<12|1010111<0 vs2=24-20 xd=11-7
++vmv1r.v common 1001111<25|00000011<12|1010111<0 vs2=24-20 vd=11-7
++vmv2r.v common 1001111<25|00001011<12|1010111<0 vs2=24-20 vd=11-7
++vmv4r.v common 1001111<25|00011011<12|1010111<0 vs2=24-20 vd=11-7
++vmv8r.v common 1001111<25|00111011<12|1010111<0 vs2=24-20 vd=11-7
++vmxnor.mm common 0111111<25|010<12|1010111<0 vs2=24-20 vs1=19-15 vd=11-7
++vmxor.mm common 0110111<25|010<12|1010111<0 vs2=24-20 vs1=19-15 vd=11-7
++vnclip.wi common 101111<26|011<12|1010111<0 vm=25-25 vs2=24-20 imm=19-15 vd=11-7
++vnclip.wv common 101111<26|000<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vnclip.wx common 101111<26|100<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vnclipu.wi common 101110<26|011<12|1010111<0 vm=25-25 vs2=24-20 imm=19-15 vd=11-7
++vnclipu.wv common 101110<26|000<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vnclipu.wx common 101110<26|100<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vnmsac.vv common 101111<26|010<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vnmsac.vx common 101111<26|110<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vnmsub.vv common 101011<26|010<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vnmsub.vx common 101011<26|110<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vnsra.wi common 101101<26|011<12|1010111<0 vm=25-25 vs2=24-20 imm=19-15 vd=11-7
++vnsra.wv common 101101<26|000<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vnsra.wx common 101101<26|100<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vnsrl.wi common 101100<26|011<12|1010111<0 vm=25-25 vs2=24-20 imm=19-15 vd=11-7
++vnsrl.wv common 101100<26|000<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vnsrl.wx common 101100<26|100<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vor.vi common 001010<26|011<12|1010111<0 vm=25-25 vs2=24-20 imm=19-15 vd=11-7
++vor.vv common 001010<26|000<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vor.vx common 001010<26|100<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vredand.vs common 000001<26|010<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vredmax.vs common 000111<26|010<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vredmaxu.vs common 000110<26|010<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vredmin.vs common 000101<26|010<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vredminu.vs common 000100<26|010<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vredor.vs common 000010<26|010<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vredsum.vs common 000000<26|010<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vredxor.vs common 000011<26|010<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vrem.vv common 100011<26|010<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vrem.vx common 100011<26|110<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vremu.vv common 100010<26|010<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vremu.vx common 100010<26|110<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vrgather.vi common 001100<26|011<12|1010111<0 vm=25-25 vs2=24-20 imm=19-15 vd=11-7
++vrgather.vv common 001100<26|000<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vrgather.vx common 001100<26|100<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vrgatherei16.vv common 001110<26|000<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vrsub.vi common 000011<26|011<12|1010111<0 vm=25-25 vs2=24-20 imm=19-15 vd=11-7
++vrsub.vx common 000011<26|100<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vs1r.v common 000000101000<20|000<12|0100111<0 xs1=19-15 vs3=11-7
++vs2r.v common 001000101000<20|000<12|0100111<0 xs1=19-15 vs3=11-7
++vs4r.v common 011000101000<20|000<12|0100111<0 xs1=19-15 vs3=11-7
++vs8r.v common 111000101000<20|000<12|0100111<0 xs1=19-15 vs3=11-7
++vsadd.vi common 100001<26|011<12|1010111<0 vm=25-25 vs2=24-20 imm=19-15 vd=11-7
++vsadd.vv common 100001<26|000<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vsadd.vx common 100001<26|100<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vsaddu.vi common 100000<26|011<12|1010111<0 vm=25-25 vs2=24-20 imm=19-15 vd=11-7
++vsaddu.vv common 100000<26|000<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vsaddu.vx common 100000<26|100<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vsbc.vvm common 0100100<25|000<12|1010111<0 vs2=24-20 vs1=19-15 vd=11-7
++vsbc.vxm common 0100100<25|100<12|1010111<0 vs2=24-20 xs1=19-15 vd=11-7
++vse16.v common 000000<26|00000<20|101<12|0100111<0 vm=25-25 xs1=19-15 vs3=11-7
++vse32.v common 000000<26|00000<20|110<12|0100111<0 vm=25-25 xs1=19-15 vs3=11-7
++vse64.v common 000000<26|00000<20|111<12|0100111<0 vm=25-25 xs1=19-15 vs3=11-7
++vse8.v common 000000<26|00000<20|000<12|0100111<0 vm=25-25 xs1=19-15 vs3=11-7
++vsetivli common 11<30|111<12|1010111<0 vtypei=29-20 uimm=19-15 xd=11-7
++vsetvl common 1000000<25|111<12|1010111<0 xs2=24-20 xs1=19-15 xd=11-7
++vsetvli common 0<31|111<12|1010111<0 vtypei=30-20 xs1=19-15 xd=11-7
++vsext.vf2 common 010010<26|00111010<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vsext.vf4 common 010010<26|00101010<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vsext.vf8 common 010010<26|00011010<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vslide1down.vx common 001111<26|110<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vslide1up.vx common 001110<26|110<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vslidedown.vi common 001111<26|011<12|1010111<0 vm=25-25 vs2=24-20 imm=19-15 vd=11-7
++vslidedown.vx common 001111<26|100<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vslideup.vi common 001110<26|011<12|1010111<0 vm=25-25 vs2=24-20 imm=19-15 vd=11-7
++vslideup.vx common 001110<26|100<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vsll.vi common 100101<26|011<12|1010111<0 vm=25-25 vs2=24-20 imm=19-15 vd=11-7
++vsll.vv common 100101<26|000<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vsll.vx common 100101<26|100<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vsm.v common 000000101011<20|000<12|0100111<0 xs1=19-15 vs3=11-7
++vsmul.vv common 100111<26|000<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vsmul.vx common 100111<26|100<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vsoxei16.v common 000011<26|101<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsoxei32.v common 000011<26|110<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsoxei64.v common 000011<26|111<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsoxei8.v common 000011<26|000<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsoxseg2ei16.v common 001011<26|101<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsoxseg2ei32.v common 001011<26|110<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsoxseg2ei64.v common 001011<26|111<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsoxseg2ei8.v common 001011<26|000<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsoxseg3ei16.v common 010011<26|101<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsoxseg3ei32.v common 010011<26|110<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsoxseg3ei64.v common 010011<26|111<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsoxseg3ei8.v common 010011<26|000<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsoxseg4ei16.v common 011011<26|101<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsoxseg4ei32.v common 011011<26|110<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsoxseg4ei64.v common 011011<26|111<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsoxseg4ei8.v common 011011<26|000<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsoxseg5ei16.v common 100011<26|101<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsoxseg5ei32.v common 100011<26|110<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsoxseg5ei64.v common 100011<26|111<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsoxseg5ei8.v common 100011<26|000<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsoxseg6ei16.v common 101011<26|101<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsoxseg6ei32.v common 101011<26|110<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsoxseg6ei64.v common 101011<26|111<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsoxseg6ei8.v common 101011<26|000<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsoxseg7ei16.v common 110011<26|101<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsoxseg7ei32.v common 110011<26|110<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsoxseg7ei64.v common 110011<26|111<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsoxseg7ei8.v common 110011<26|000<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsoxseg8ei16.v common 111011<26|101<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsoxseg8ei32.v common 111011<26|110<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsoxseg8ei64.v common 111011<26|111<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsoxseg8ei8.v common 111011<26|000<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsra.vi common 101001<26|011<12|1010111<0 vm=25-25 vs2=24-20 imm=19-15 vd=11-7
++vsra.vv common 101001<26|000<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vsra.vx common 101001<26|100<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vsrl.vi common 101000<26|011<12|1010111<0 vm=25-25 vs2=24-20 imm=19-15 vd=11-7
++vsrl.vv common 101000<26|000<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vsrl.vx common 101000<26|100<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vsse16.v common 000010<26|101<12|0100111<0 vm=25-25 xs2=24-20 xs1=19-15 vs3=11-7
++vsse32.v common 000010<26|110<12|0100111<0 vm=25-25 xs2=24-20 xs1=19-15 vs3=11-7
++vsse64.v common 000010<26|111<12|0100111<0 vm=25-25 xs2=24-20 xs1=19-15 vs3=11-7
++vsse8.v common 000010<26|000<12|0100111<0 vm=25-25 xs2=24-20 xs1=19-15 vs3=11-7
++vsseg2e16.v common 001000<26|00000<20|101<12|0100111<0 vm=25-25 xs1=19-15 vs3=11-7
++vsseg2e32.v common 001000<26|00000<20|110<12|0100111<0 vm=25-25 xs1=19-15 vs3=11-7
++vsseg2e64.v common 001000<26|00000<20|111<12|0100111<0 vm=25-25 xs1=19-15 vs3=11-7
++vsseg2e8.v common 001000<26|00000<20|000<12|0100111<0 vm=25-25 xs1=19-15 vs3=11-7
++vsseg3e16.v common 010000<26|00000<20|101<12|0100111<0 vm=25-25 xs1=19-15 vs3=11-7
++vsseg3e32.v common 010000<26|00000<20|110<12|0100111<0 vm=25-25 xs1=19-15 vs3=11-7
++vsseg3e64.v common 010000<26|00000<20|111<12|0100111<0 vm=25-25 xs1=19-15 vs3=11-7
++vsseg3e8.v common 010000<26|00000<20|000<12|0100111<0 vm=25-25 xs1=19-15 vs3=11-7
++vsseg4e16.v common 011000<26|00000<20|101<12|0100111<0 vm=25-25 xs1=19-15 vs3=11-7
++vsseg4e32.v common 011000<26|00000<20|110<12|0100111<0 vm=25-25 xs1=19-15 vs3=11-7
++vsseg4e64.v common 011000<26|00000<20|111<12|0100111<0 vm=25-25 xs1=19-15 vs3=11-7
++vsseg4e8.v common 011000<26|00000<20|000<12|0100111<0 vm=25-25 xs1=19-15 vs3=11-7
++vsseg5e16.v common 100000<26|00000<20|101<12|0100111<0 vm=25-25 xs1=19-15 vs3=11-7
++vsseg5e32.v common 100000<26|00000<20|110<12|0100111<0 vm=25-25 xs1=19-15 vs3=11-7
++vsseg5e64.v common 100000<26|00000<20|111<12|0100111<0 vm=25-25 xs1=19-15 vs3=11-7
++vsseg5e8.v common 100000<26|00000<20|000<12|0100111<0 vm=25-25 xs1=19-15 vs3=11-7
++vsseg6e16.v common 101000<26|00000<20|101<12|0100111<0 vm=25-25 xs1=19-15 vs3=11-7
++vsseg6e32.v common 101000<26|00000<20|110<12|0100111<0 vm=25-25 xs1=19-15 vs3=11-7
++vsseg6e64.v common 101000<26|00000<20|111<12|0100111<0 vm=25-25 xs1=19-15 vs3=11-7
++vsseg6e8.v common 101000<26|00000<20|000<12|0100111<0 vm=25-25 xs1=19-15 vs3=11-7
++vsseg7e16.v common 110000<26|00000<20|101<12|0100111<0 vm=25-25 xs1=19-15 vs3=11-7
++vsseg7e32.v common 110000<26|00000<20|110<12|0100111<0 vm=25-25 xs1=19-15 vs3=11-7
++vsseg7e64.v common 110000<26|00000<20|111<12|0100111<0 vm=25-25 xs1=19-15 vs3=11-7
++vsseg7e8.v common 110000<26|00000<20|000<12|0100111<0 vm=25-25 xs1=19-15 vs3=11-7
++vsseg8e16.v common 111000<26|00000<20|101<12|0100111<0 vm=25-25 xs1=19-15 vs3=11-7
++vsseg8e32.v common 111000<26|00000<20|110<12|0100111<0 vm=25-25 xs1=19-15 vs3=11-7
++vsseg8e64.v common 111000<26|00000<20|111<12|0100111<0 vm=25-25 xs1=19-15 vs3=11-7
++vsseg8e8.v common 111000<26|00000<20|000<12|0100111<0 vm=25-25 xs1=19-15 vs3=11-7
++vssra.vi common 101011<26|011<12|1010111<0 vm=25-25 vs2=24-20 imm=19-15 vd=11-7
++vssra.vv common 101011<26|000<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vssra.vx common 101011<26|100<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vssrl.vi common 101010<26|011<12|1010111<0 vm=25-25 vs2=24-20 imm=19-15 vd=11-7
++vssrl.vv common 101010<26|000<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vssrl.vx common 101010<26|100<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vssseg2e16.v common 001010<26|101<12|0100111<0 vm=25-25 xs2=24-20 xs1=19-15 vs3=11-7
++vssseg2e32.v common 001010<26|110<12|0100111<0 vm=25-25 xs2=24-20 xs1=19-15 vs3=11-7
++vssseg2e64.v common 001010<26|111<12|0100111<0 vm=25-25 xs2=24-20 xs1=19-15 vs3=11-7
++vssseg2e8.v common 001010<26|000<12|0100111<0 vm=25-25 xs2=24-20 xs1=19-15 vs3=11-7
++vssseg3e16.v common 010010<26|101<12|0100111<0 vm=25-25 xs2=24-20 xs1=19-15 vs3=11-7
++vssseg3e32.v common 010010<26|110<12|0100111<0 vm=25-25 xs2=24-20 xs1=19-15 vs3=11-7
++vssseg3e64.v common 010010<26|111<12|0100111<0 vm=25-25 xs2=24-20 xs1=19-15 vs3=11-7
++vssseg3e8.v common 010010<26|000<12|0100111<0 vm=25-25 xs2=24-20 xs1=19-15 vs3=11-7
++vssseg4e16.v common 011010<26|101<12|0100111<0 vm=25-25 xs2=24-20 xs1=19-15 vs3=11-7
++vssseg4e32.v common 011010<26|110<12|0100111<0 vm=25-25 xs2=24-20 xs1=19-15 vs3=11-7
++vssseg4e64.v common 011010<26|111<12|0100111<0 vm=25-25 xs2=24-20 xs1=19-15 vs3=11-7
++vssseg4e8.v common 011010<26|000<12|0100111<0 vm=25-25 xs2=24-20 xs1=19-15 vs3=11-7
++vssseg5e16.v common 100010<26|101<12|0100111<0 vm=25-25 xs2=24-20 xs1=19-15 vs3=11-7
++vssseg5e32.v common 100010<26|110<12|0100111<0 vm=25-25 xs2=24-20 xs1=19-15 vs3=11-7
++vssseg5e64.v common 100010<26|111<12|0100111<0 vm=25-25 xs2=24-20 xs1=19-15 vs3=11-7
++vssseg5e8.v common 100010<26|000<12|0100111<0 vm=25-25 xs2=24-20 xs1=19-15 vs3=11-7
++vssseg6e16.v common 101010<26|101<12|0100111<0 vm=25-25 xs2=24-20 xs1=19-15 vs3=11-7
++vssseg6e32.v common 101010<26|110<12|0100111<0 vm=25-25 xs2=24-20 xs1=19-15 vs3=11-7
++vssseg6e64.v common 101010<26|111<12|0100111<0 vm=25-25 xs2=24-20 xs1=19-15 vs3=11-7
++vssseg6e8.v common 101010<26|000<12|0100111<0 vm=25-25 xs2=24-20 xs1=19-15 vs3=11-7
++vssseg7e16.v common 110010<26|101<12|0100111<0 vm=25-25 xs2=24-20 xs1=19-15 vs3=11-7
++vssseg7e32.v common 110010<26|110<12|0100111<0 vm=25-25 xs2=24-20 xs1=19-15 vs3=11-7
++vssseg7e64.v common 110010<26|111<12|0100111<0 vm=25-25 xs2=24-20 xs1=19-15 vs3=11-7
++vssseg7e8.v common 110010<26|000<12|0100111<0 vm=25-25 xs2=24-20 xs1=19-15 vs3=11-7
++vssseg8e16.v common 111010<26|101<12|0100111<0 vm=25-25 xs2=24-20 xs1=19-15 vs3=11-7
++vssseg8e32.v common 111010<26|110<12|0100111<0 vm=25-25 xs2=24-20 xs1=19-15 vs3=11-7
++vssseg8e64.v common 111010<26|111<12|0100111<0 vm=25-25 xs2=24-20 xs1=19-15 vs3=11-7
++vssseg8e8.v common 111010<26|000<12|0100111<0 vm=25-25 xs2=24-20 xs1=19-15 vs3=11-7
++vssub.vv common 100011<26|000<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vssub.vx common 100011<26|100<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vssubu.vv common 100010<26|000<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vssubu.vx common 100010<26|100<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vsub.vv common 000010<26|000<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vsub.vx common 000010<26|100<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vsuxei16.v common 000001<26|101<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsuxei32.v common 000001<26|110<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsuxei64.v common 000001<26|111<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsuxei8.v common 000001<26|000<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsuxseg2ei16.v common 001001<26|101<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsuxseg2ei32.v common 001001<26|110<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsuxseg2ei64.v common 001001<26|111<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsuxseg2ei8.v common 001001<26|000<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsuxseg3ei16.v common 010001<26|101<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsuxseg3ei32.v common 010001<26|110<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsuxseg3ei64.v common 010001<26|111<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsuxseg3ei8.v common 010001<26|000<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsuxseg4ei16.v common 011001<26|101<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsuxseg4ei32.v common 011001<26|110<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsuxseg4ei64.v common 011001<26|111<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsuxseg4ei8.v common 011001<26|000<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsuxseg5ei16.v common 100001<26|101<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsuxseg5ei32.v common 100001<26|110<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsuxseg5ei64.v common 100001<26|111<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsuxseg5ei8.v common 100001<26|000<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsuxseg6ei16.v common 101001<26|101<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsuxseg6ei32.v common 101001<26|110<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsuxseg6ei64.v common 101001<26|111<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsuxseg6ei8.v common 101001<26|000<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsuxseg7ei16.v common 110001<26|101<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsuxseg7ei32.v common 110001<26|110<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsuxseg7ei64.v common 110001<26|111<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsuxseg7ei8.v common 110001<26|000<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsuxseg8ei16.v common 111001<26|101<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsuxseg8ei32.v common 111001<26|110<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsuxseg8ei64.v common 111001<26|111<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vsuxseg8ei8.v common 111001<26|000<12|0100111<0 vm=25-25 vs2=24-20 xs1=19-15 vs3=11-7
++vwadd.vv common 110001<26|010<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vwadd.vx common 110001<26|110<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vwadd.wv common 110101<26|010<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vwadd.wx common 110101<26|110<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vwaddu.vv common 110000<26|010<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vwaddu.vx common 110000<26|110<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vwaddu.wv common 110100<26|010<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vwaddu.wx common 110100<26|110<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vwmacc.vv common 111101<26|010<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vwmacc.vx common 111101<26|110<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vwmaccsu.vv common 111111<26|010<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vwmaccsu.vx common 111111<26|110<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vwmaccu.vv common 111100<26|010<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vwmaccu.vx common 111100<26|110<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vwmaccus.vx common 111110<26|110<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vwmul.vv common 111011<26|010<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vwmul.vx common 111011<26|110<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vwmulsu.vv common 111010<26|010<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vwmulsu.vx common 111010<26|110<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vwmulu.vv common 111000<26|010<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vwmulu.vx common 111000<26|110<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vwredsum.vs common 110001<26|000<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vwredsumu.vs common 110000<26|000<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vwsub.vv common 110011<26|010<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vwsub.vx common 110011<26|110<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vwsub.wv common 110111<26|010<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vwsub.wx common 110111<26|110<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vwsubu.vv common 110010<26|010<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vwsubu.vx common 110010<26|110<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vwsubu.wv common 110110<26|010<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vwsubu.wx common 110110<26|110<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vxor.vi common 001011<26|011<12|1010111<0 vm=25-25 vs2=24-20 imm=19-15 vd=11-7
++vxor.vv common 001011<26|000<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vxor.vx common 001011<26|100<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vzext.vf2 common 010010<26|00110010<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vzext.vf4 common 010010<26|00100010<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vzext.vf8 common 010010<26|00010010<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++amoadd.d.aq 64 0000010<25|011<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoadd.d.aqrl 64 0000011<25|011<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoadd.d.rl 64 0000001<25|011<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoadd.d 64 0000000<25|011<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoadd.w.aq common 0000010<25|010<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoadd.w.aqrl common 0000011<25|010<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoadd.w.rl common 0000001<25|010<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoadd.w common 0000000<25|010<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoand.d.aq 64 0110010<25|011<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoand.d.aqrl 64 0110011<25|011<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoand.d.rl 64 0110001<25|011<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoand.d 64 0110000<25|011<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoand.w.aq common 0110010<25|010<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoand.w.aqrl common 0110011<25|010<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoand.w.rl common 0110001<25|010<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoand.w common 0110000<25|010<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomax.d.aq 64 1010010<25|011<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomax.d.aqrl 64 1010011<25|011<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomax.d.rl 64 1010001<25|011<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomax.d 64 1010000<25|011<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomax.w.aq common 1010010<25|010<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomax.w.aqrl common 1010011<25|010<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomax.w.rl common 1010001<25|010<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomax.w common 1010000<25|010<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomaxu.d.aq 64 1110010<25|011<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomaxu.d.aqrl 64 1110011<25|011<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomaxu.d.rl 64 1110001<25|011<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomaxu.d 64 1110000<25|011<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomaxu.w.aq common 1110010<25|010<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomaxu.w.aqrl common 1110011<25|010<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomaxu.w.rl common 1110001<25|010<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomaxu.w common 1110000<25|010<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomin.d.aq 64 1000010<25|011<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomin.d.aqrl 64 1000011<25|011<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomin.d.rl 64 1000001<25|011<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomin.d 64 1000000<25|011<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomin.w.aq common 1000010<25|010<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomin.w.aqrl common 1000011<25|010<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomin.w.rl common 1000001<25|010<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomin.w common 1000000<25|010<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amominu.d.aq 64 1100010<25|011<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amominu.d.aqrl 64 1100011<25|011<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amominu.d.rl 64 1100001<25|011<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amominu.d 64 1100000<25|011<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amominu.w.aq common 1100010<25|010<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amominu.w.aqrl common 1100011<25|010<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amominu.w.rl common 1100001<25|010<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amominu.w common 1100000<25|010<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoor.d.aq 64 0100010<25|011<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoor.d.aqrl 64 0100011<25|011<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoor.d.rl 64 0100001<25|011<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoor.d 64 0100000<25|011<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoor.w.aq common 0100010<25|010<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoor.w.aqrl common 0100011<25|010<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoor.w.rl common 0100001<25|010<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoor.w common 0100000<25|010<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoswap.d.aq 64 0000110<25|011<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoswap.d.aqrl 64 0000111<25|011<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoswap.d.rl 64 0000101<25|011<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoswap.d 64 0000100<25|011<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoswap.w.aq common 0000110<25|010<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoswap.w.aqrl common 0000111<25|010<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoswap.w.rl common 0000101<25|010<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoswap.w common 0000100<25|010<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoxor.d.aq 64 0010010<25|011<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoxor.d.aqrl 64 0010011<25|011<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoxor.d.rl 64 0010001<25|011<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoxor.d 64 0010000<25|011<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoxor.w.aq common 0010010<25|010<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoxor.w.aqrl common 0010011<25|010<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoxor.w.rl common 0010001<25|010<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoxor.w common 0010000<25|010<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoadd.b.aq common 0000010<25|000<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoadd.b.aqrl common 0000011<25|000<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoadd.b.rl common 0000001<25|000<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoadd.b common 0000000<25|000<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoadd.h.aq common 0000010<25|001<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoadd.h.aqrl common 0000011<25|001<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoadd.h.rl common 0000001<25|001<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoadd.h common 0000000<25|001<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoand.b.aq common 0110010<25|000<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoand.b.aqrl common 0110011<25|000<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoand.b.rl common 0110001<25|000<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoand.b common 0110000<25|000<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoand.h.aq common 0110010<25|001<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoand.h.aqrl common 0110011<25|001<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoand.h.rl common 0110001<25|001<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoand.h common 0110000<25|001<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amocas.b.aq common 0010110<25|000<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amocas.b.aqrl common 0010111<25|000<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amocas.b.rl common 0010101<25|000<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amocas.b common 0010100<25|000<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amocas.h.aq common 0010110<25|001<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amocas.h.aqrl common 0010111<25|001<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amocas.h.rl common 0010101<25|001<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amocas.h common 0010100<25|001<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomax.b.aq common 1010010<25|000<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomax.b.aqrl common 1010011<25|000<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomax.b.rl common 1010001<25|000<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomax.b common 1010000<25|000<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomax.h.aq common 1010010<25|001<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomax.h.aqrl common 1010011<25|001<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomax.h.rl common 1010001<25|001<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomax.h common 1010000<25|001<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomaxu.b.aq common 1110010<25|000<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomaxu.b.aqrl common 1110011<25|000<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomaxu.b.rl common 1110001<25|000<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomaxu.b common 1110000<25|000<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomaxu.h.aq common 1110010<25|001<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomaxu.h.aqrl common 1110011<25|001<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomaxu.h.rl common 1110001<25|001<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomaxu.h common 1110000<25|001<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomin.b.aq common 1000010<25|000<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomin.b.aqrl common 1000011<25|000<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomin.b.rl common 1000001<25|000<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomin.b common 1000000<25|000<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomin.h.aq common 1000010<25|001<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomin.h.aqrl common 1000011<25|001<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomin.h.rl common 1000001<25|001<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amomin.h common 1000000<25|001<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amominu.b.aq common 1100010<25|000<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amominu.b.aqrl common 1100011<25|000<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amominu.b.rl common 1100001<25|000<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amominu.b common 1100000<25|000<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amominu.h.aq common 1100010<25|001<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amominu.h.aqrl common 1100011<25|001<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amominu.h.rl common 1100001<25|001<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amominu.h common 1100000<25|001<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoor.b.aq common 0100010<25|000<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoor.b.aqrl common 0100011<25|000<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoor.b.rl common 0100001<25|000<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoor.b common 0100000<25|000<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoor.h.aq common 0100010<25|001<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoor.h.aqrl common 0100011<25|001<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoor.h.rl common 0100001<25|001<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoor.h common 0100000<25|001<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoswap.b.aq common 0000110<25|000<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoswap.b.aqrl common 0000111<25|000<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoswap.b.rl common 0000101<25|000<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoswap.b common 0000100<25|000<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoswap.h.aq common 0000110<25|001<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoswap.h.aqrl common 0000111<25|001<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoswap.h.rl common 0000101<25|001<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoswap.h common 0000100<25|001<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoxor.b.aq common 0010010<25|000<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoxor.b.aqrl common 0010011<25|000<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoxor.b.rl common 0010001<25|000<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoxor.b common 0010000<25|000<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoxor.h.aq common 0010010<25|001<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoxor.h.aqrl common 0010011<25|001<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoxor.h.rl common 0010001<25|001<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amoxor.h common 0010000<25|001<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amocas.d.aq common 0010110<25|011<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amocas.d.aqrl common 0010111<25|011<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amocas.d.rl common 0010101<25|011<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amocas.d common 0010100<25|011<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amocas.q.aq 64 0010110<25|100<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amocas.q.aqrl 64 0010111<25|100<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amocas.q.rl 64 0010101<25|100<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amocas.q 64 0010100<25|100<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amocas.w.aq common 0010110<25|010<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amocas.w.aqrl common 0010111<25|010<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amocas.w.rl common 0010101<25|010<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++amocas.w common 0010100<25|010<12|0101111<0 xs2=24-20 xs1=19-15 xd=11-7
++lb.aq common 001101000000<20|000<12|0101111<0 xs1=19-15 xd=11-7
++lb.aqrl common 001101100000<20|000<12|0101111<0 xs1=19-15 xd=11-7
++ld.aq common 001101000000<20|011<12|0101111<0 xs1=19-15 xd=11-7
++ld.aqrl common 001101100000<20|011<12|0101111<0 xs1=19-15 xd=11-7
++lh.aq common 001101000000<20|001<12|0101111<0 xs1=19-15 xd=11-7
++lh.aqrl common 001101100000<20|001<12|0101111<0 xs1=19-15 xd=11-7
++lw.aq common 001101000000<20|010<12|0101111<0 xs1=19-15 xd=11-7
++lw.aqrl common 001101100000<20|010<12|0101111<0 xs1=19-15 xd=11-7
++sb.aqrl common 0011111<25|000000000101111<0 xs2=24-20 xs1=19-15
++sb.rl common 0011101<25|000000000101111<0 xs2=24-20 xs1=19-15
++sd.aqrl common 0011111<25|011000000101111<0 xs2=24-20 xs1=19-15
++sd.rl common 0011101<25|011000000101111<0 xs2=24-20 xs1=19-15
++sh.aqrl common 0011111<25|001000000101111<0 xs2=24-20 xs1=19-15
++sh.rl common 0011101<25|001000000101111<0 xs2=24-20 xs1=19-15
++sw.aqrl common 0011111<25|010000000101111<0 xs2=24-20 xs1=19-15
++sw.rl common 0011101<25|010000000101111<0 xs2=24-20 xs1=19-15
++lr.d.aq 64 00010<27|00000<20|011<12|0101111<0 aq!0=26 rl!1=25 xs1=19-15 xd=11-7
++lr.d.aqrl 64 00010<27|00000<20|011<12|0101111<0 aq!0=26 rl!0=25 xs1=19-15 xd=11-7
++lr.d.rl 64 00010<27|00000<20|011<12|0101111<0 aq!1=26 rl!0=25 xs1=19-15 xd=11-7
++lr.d 64 00010<27|00000<20|011<12|0101111<0 aq!1=26 rl!1=25 xs1=19-15 xd=11-7
++lr.w.aq common 00010<27|00000<20|010<12|0101111<0 aq!0=26 rl!1=25 xs1=19-15 xd=11-7
++lr.w.aqrl common 00010<27|00000<20|010<12|0101111<0 aq!0=26 rl!0=25 xs1=19-15 xd=11-7
++lr.w.rl common 00010<27|00000<20|010<12|0101111<0 aq!1=26 rl!0=25 xs1=19-15 xd=11-7
++lr.w common 00010<27|00000<20|010<12|0101111<0 aq!1=26 rl!1=25 xs1=19-15 xd=11-7
++sc.d.aq 64 00011<27|011<12|0101111<0 aq!0=26 rl!1=25 xs2=24-20 xs1=19-15 xd=11-7
++sc.d.aqrl 64 00011<27|011<12|0101111<0 aq!0=26 rl!0=25 xs2=24-20 xs1=19-15 xd=11-7
++sc.d.rl 64 00011<27|011<12|0101111<0 aq!1=26 rl!0=25 xs2=24-20 xs1=19-15 xd=11-7
++sc.d 64 00011<27|011<12|0101111<0 aq!1=26 rl!1=25 xs2=24-20 xs1=19-15 xd=11-7
++sc.w.aq common 00011<27|010<12|0101111<0 aq!0=26 rl!1=25 xs2=24-20 xs1=19-15 xd=11-7
++sc.w.aqrl common 00011<27|010<12|0101111<0 aq!0=26 rl!0=25 xs2=24-20 xs1=19-15 xd=11-7
++sc.w.rl common 00011<27|010<12|0101111<0 aq!1=26 rl!0=25 xs2=24-20 xs1=19-15 xd=11-7
++sc.w common 00011<27|010<12|0101111<0 aq!1=26 rl!1=25 xs2=24-20 xs1=19-15 xd=11-7
++wrs.nto common 00000000110100000000000001110011<0
++wrs.sto common 00000001110100000000000001110011<0
++add.uw 64 0000100<25|000<12|0111011<0 xs2=24-20 xs1=19-15 xd=11-7
++sh1add.uw 64 0010000<25|010<12|0111011<0 xs2=24-20 xs1=19-15 xd=11-7
++sh1add common 0010000<25|010<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++sh2add.uw 64 0010000<25|100<12|0111011<0 xs2=24-20 xs1=19-15 xd=11-7
++sh2add common 0010000<25|100<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++sh3add.uw 64 0010000<25|110<12|0111011<0 xs2=24-20 xs1=19-15 xd=11-7
++sh3add common 0010000<25|110<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++slli.uw 64 000010<26|001<12|0011011<0 shamt=25-20 xs1=19-15 xd=11-7
++clz common 011000000000<20|001<12|0010011<0 xs1=19-15 xd=11-7
++clzw 64 011000000000<20|001<12|0011011<0 xs1=19-15 xd=11-7
++cpop common 011000000010<20|001<12|0010011<0 xs1=19-15 xd=11-7
++cpopw 64 011000000010<20|001<12|0011011<0 xs1=19-15 xd=11-7
++ctz common 011000000001<20|001<12|0010011<0 xs1=19-15 xd=11-7
++ctzw 64 011000000001<20|001<12|0011011<0 xs1=19-15 xd=11-7
++max common 0000101<25|110<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++maxu common 0000101<25|111<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++min common 0000101<25|100<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++minu common 0000101<25|101<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++orc.b common 001010000111<20|101<12|0010011<0 xs1=19-15 xd=11-7
++sext.b common 011000000100<20|001<12|0010011<0 xs1=19-15 xd=11-7
++sext.h common 011000000101<20|001<12|0010011<0 xs1=19-15 xd=11-7
++zext.h common,32 000010000000<20|100<12|0110011<0 xs1=19-15 xd=11-7
++zext.h common,64 000010000000<20|100<12|0111011<0 xs1=19-15 xd=11-7
++clmulr common 0000101<25|010<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++brev8 common 011010000111<20|101<12|0010011<0 xs1=19-15 xd=11-7
++pack common 0000100<25|100<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++packh common 0000100<25|111<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++packw 64 0000100<25|100<12|0111011<0 xs2=24-20 xs1=19-15 xd=11-7
++unzip 32 000010001111<20|101<12|0010011<0 xs1=19-15 xd=11-7
++zip 32 000010001111<20|001<12|0010011<0 xs1=19-15 xd=11-7
++xperm4 common 0010100<25|010<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++xperm8 common 0010100<25|100<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++bclr common 0100100<25|001<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++bclri common,32 0100100<25|001<12|0010011<0 shamt=24-20 xs1=19-15 xd=11-7
++bclri common,64 010010<26|001<12|0010011<0 shamt=25-20 xs1=19-15 xd=11-7
++bext common 0100100<25|101<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++bexti common,32 0100100<25|101<12|0010011<0 shamt=24-20 xs1=19-15 xd=11-7
++bexti common,64 010010<26|101<12|0010011<0 shamt=25-20 xs1=19-15 xd=11-7
++binv common 0110100<25|001<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++binvi common,32 0110100<25|001<12|0010011<0 shamt=24-20 xs1=19-15 xd=11-7
++binvi common,64 011010<26|001<12|0010011<0 shamt=25-20 xs1=19-15 xd=11-7
++bset common 0010100<25|001<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++bseti common,32 0010100<25|001<12|0010011<0 shamt=24-20 xs1=19-15 xd=11-7
++bseti common,64 001010<26|001<12|0010011<0 shamt=25-20 xs1=19-15 xd=11-7
++c.lbu common 100000<10|00<0 imm=5|6 xd=4-2 xs1=9-7
++c.lh common 100001<10|1<6|00<0 imm<1=5 xd=4-2 xs1=9-7
++c.lhu common 100001<10|0<6|00<0 imm<1=5 xd=4-2 xs1=9-7
++c.mul common 100111<10|10<5|01<0 xd=9-7 xs2=4-2
++c.not common 100111<10|1110101<0 xd=9-7
++c.sb common 100010<10|00<0 imm=5|6 xs2=4-2 xs1=9-7
++c.sext.b common 100111<10|1100101<0 xd=9-7
++c.sext.h common 100111<10|1101101<0 xd=9-7
++c.sh common 100011<10|0<6|00<0 imm<1=5 xs2=4-2 xs1=9-7
++c.zext.b common 100111<10|1100001<0 xd=9-7
++c.zext.h common 100111<10|1101001<0 xd=9-7
++c.zext.w 64 100111<10|1110001<0 xd=9-7
++c.fld common 001<13|00<0 imm<3=6-5|12-10 fd=4-2 xs1=9-7
++c.fldsp common 001<13|10<0 imm<3=4-2|12|6-5 fd=11-7
++c.fsd common 101<13|00<0 imm<3=6-5|12-10 fs2=4-2 xs1=9-7
++c.fsdsp common 101<13|10<0 imm<3=9-7|12-10 fs2=6-2
++c.flw 32 011<13|00<0 imm<2=5|12-10|6 fd=4-2 xs1=9-7
++c.flwsp 32 011<13|10<0 imm<2=3-2|12|6-4 fd=11-7
++c.fsw 32 111<13|00<0 imm<2=5|12-10|6 fs2=4-2 xs1=9-7
++c.fswsp 32 111<13|10<0 imm<2=8-7|12-9 fs2=6-2
++c.mop.1 common 0110000010000001<0
++c.mop.11 common 0110010110000001<0
++c.mop.13 common 0110011010000001<0
++c.mop.15 common 0110011110000001<0
++c.mop.3 common 0110000110000001<0
++c.mop.5 common 0110001010000001<0
++c.mop.7 common 0110001110000001<0
++c.mop.9 common 0110010010000001<0
++cm.mva01s common 101011<10|11<5|10<0 r1s=9-7 r2s=4-2
++cm.mvsa01 common 101011<10|01<5|10<0 r1s=9-7 r2s=4-2
++cm.pop common 10111010<8|10<0 rlist!0!1!2!3=7-4 spimm<4=3-2
++cm.popret common 10111110<8|10<0 rlist!0!1!2!3=7-4 spimm<4=3-2
++cm.popretz common 10111100<8|10<0 rlist!0!1!2!3=7-4 spimm<4=3-2
++cm.push common 10111000<8|10<0 rlist!0!1!2!3=7-4 spimm<4=3-2
++cm.jalt common 101000<10|10<0 index!0!1!2!3!4!5!6!7!8!9!10!11!12!13!14!15!16!17!18!19!20!21!22!23!24!25!26!27!28!29!30!31=9-2
++cm.jt common 101000000<7|10<0 index=6-2
++fli.s common 111100000001<20|000<12|1010011<0 xs1=19-15 fd=11-7
++fmaxm.s common 0010100<25|011<12|1010011<0 fs2=24-20 fs1=19-15 fd=11-7
++fminm.s common 0010100<25|010<12|1010011<0 fs2=24-20 fs1=19-15 fd=11-7
++fround.s common 010000000100<20|1010011<0 fs1=19-15 rm=14-12 fd=11-7
++froundnx.s common 010000000101<20|1010011<0 fs1=19-15 rm=14-12 fd=11-7
++fcvt.bf16.s common 010001001000<20|1010011<0 fs1=19-15 rm=14-12 fd=11-7
++fcvt.s.bf16 common 010000000110<20|1010011<0 fs1=19-15 rm=14-12 fd=11-7
++fadd.h common 0000010<25|1010011<0 fs2=24-20 fs1=19-15 rm=14-12 fd=11-7
++fclass.h common 111001000000<20|001<12|1010011<0 fs1=19-15 xd=11-7
++fcvt.d.h common 010000100010<20|1010011<0 fs1=19-15 rm=14-12 fd=11-7
++fcvt.h.d common 010001000001<20|1010011<0 fs1=19-15 rm=14-12 fd=11-7
++fcvt.h.l 64 110101000010<20|1010011<0 xs1=19-15 rm=14-12 fd=11-7
++fcvt.h.lu 64 110101000011<20|1010011<0 xs1=19-15 rm=14-12 fd=11-7
++fcvt.h.s common 010001000000<20|1010011<0 fs1=19-15 rm=14-12 fd=11-7
++fcvt.h.w common 110101000000<20|1010011<0 xs1=19-15 rm=14-12 fd=11-7
++fcvt.h.wu common 110101000001<20|1010011<0 xs1=19-15 rm=14-12 fd=11-7
++fcvt.l.h 64 110001000010<20|1010011<0 fs1=19-15 rm=14-12 xd=11-7
++fcvt.lu.h 64 110001000011<20|1010011<0 fs1=19-15 rm=14-12 xd=11-7
++fcvt.s.h common 010000000010<20|1010011<0 fs1=19-15 rm=14-12 fd=11-7
++fcvt.w.h common 110001000000<20|1010011<0 fs1=19-15 rm=14-12 xd=11-7
++fcvt.wu.h common 110001000001<20|1010011<0 fs1=19-15 rm=14-12 xd=11-7
++fdiv.h common 0001110<25|1010011<0 fs2=24-20 fs1=19-15 rm=14-12 fd=11-7
++feq.h common 1010010<25|010<12|1010011<0 fs2=24-20 fs1=19-15 xd=11-7
++fle.h common 1010010<25|000<12|1010011<0 fs2=24-20 fs1=19-15 xd=11-7
++fleq.h common 1010010<25|100<12|1010011<0 fs2=24-20 fs1=19-15 xd=11-7
++flh common 001<12|0000111<0 imm=31-20 xs1=19-15 fd=11-7
++fli.h common 111101000001<20|000<12|1010011<0 xs1=19-15 fd=11-7
++flt.h common 1010010<25|001<12|1010011<0 fs2=24-20 fs1=19-15 xd=11-7
++fltq.h common 1010010<25|101<12|1010011<0 fs2=24-20 fs1=19-15 xd=11-7
++fmadd.h common 10<25|1000011<0 fs3=31-27 fs2=24-20 fs1=19-15 rm=14-12 fd=11-7
++fmax.h common 0010110<25|001<12|1010011<0 fs2=24-20 fs1=19-15 fd=11-7
++fmaxm.h common 0010110<25|011<12|1010011<0 fs2=24-20 fs1=19-15 fd=11-7
++fmin.h common 0010110<25|000<12|1010011<0 fs2=24-20 fs1=19-15 fd=11-7
++fminm.h common 0010110<25|010<12|1010011<0 fs2=24-20 fs1=19-15 fd=11-7
++fmsub.h common 10<25|1000111<0 fs3=31-27 fs2=24-20 fs1=19-15 rm=14-12 fd=11-7
++fmul.h common 0001010<25|1010011<0 fs2=24-20 fs1=19-15 rm=14-12 fd=11-7
++fmv.h.x common 111101000000<20|000<12|1010011<0 xs1=19-15 fd=11-7
++fmv.x.h common 111001000000<20|000<12|1010011<0 fs1=19-15 xd=11-7
++fnmadd.h common 10<25|1001111<0 fs3=31-27 fs2=24-20 fs1=19-15 rm=14-12 fd=11-7
++fnmsub.h common 10<25|1001011<0 fs3=31-27 fs2=24-20 fs1=19-15 rm=14-12 fd=11-7
++fround.h common 010001000100<20|1010011<0 fs1=19-15 rm=14-12 fd=11-7
++froundnx.h common 010001000101<20|1010011<0 fs1=19-15 rm=14-12 fd=11-7
++fsgnj.h common 0010010<25|000<12|1010011<0 fs2=24-20 fs1=19-15 fd=11-7
++fsgnjn.h common 0010010<25|001<12|1010011<0 fs2=24-20 fs1=19-15 fd=11-7
++fsgnjx.h common 0010010<25|010<12|1010011<0 fs2=24-20 fs1=19-15 fd=11-7
++fsh common 001<12|0100111<0 imm=31-25|11-7 xs1=19-15 fs2=24-20
++fsqrt.h common 010111000000<20|1010011<0 fs1=19-15 rm=14-12 fd=11-7
++fsub.h common 0000110<25|1010011<0 fs2=24-20 fs1=19-15 rm=14-12 fd=11-7
++cbo.clean common 000000000001<20|010000000001111<0 xs1=19-15
++cbo.flush common 000000000010<20|010000000001111<0 xs1=19-15
++cbo.inval common 000000000000<20|010000000001111<0 xs1=19-15
++prefetch.i common 00000<20|110000000010011<0 imm=31-25 xs1=19-15
++prefetch.r common 00001<20|110000000010011<0 imm=31-25 xs1=19-15
++prefetch.w common 00011<20|110000000010011<0 imm=31-25 xs1=19-15
++cbo.zero common 000000000100<20|010000000001111<0 xs1=19-15
++lpad common 000000010111<0 imm<12=31-12
++ssamoswap.d common 01001<27|011<12|0101111<0 aq=26-26 rl=25-25 xs2=24-20 xs1=19-15 xd=11-7
++ssamoswap.w common 01001<27|010<12|0101111<0 aq=26-26 rl=25-25 xs2=24-20 xs1=19-15 xd=11-7
++sspopchk.x1 common 11001101110000001100000001110011<0
++sspopchk.x5 common 11001101110000101100000001110011<0
++sspush.x1 common 11001110000100000100000001110011<0
++sspush.x5 common 11001110010100000100000001110011<0
++ssrdp common 11001101110000000100<12|1110011<0 xd!0=11-7
++czero.eqz common 0000111<25|101<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++czero.nez common 0000111<25|111<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++csrrc common 011<12|1110011<0 csr=31-20 xs1=19-15 xd=11-7
++csrrci common 111<12|1110011<0 csr=31-20 imm=19-15 xd=11-7
++csrrs common 010<12|1110011<0 csr=31-20 xs1=19-15 xd=11-7
++csrrsi common 110<12|1110011<0 csr=31-20 imm=19-15 xd=11-7
++csrrw common 001<12|1110011<0 csr=31-20 xs1=19-15 xd=11-7
++csrrwi common 101<12|1110011<0 csr=31-20 imm=19-15 xd=11-7
++fence.i common 001<12|0001111<0 imm=31-20 xs1=19-15 xd=11-7
++c.ntl.all common 1001000000010110<0
++c.ntl.p1 common 1001000000001010<0
++c.ntl.pall common 1001000000001110<0
++c.ntl.s1 common 1001000000010010<0
++ntl.all common 00000000010100000000000000110011<0
++ntl.p1 common 00000000001000000000000000110011<0
++ntl.pall common 00000000001100000000000000110011<0
++ntl.s1 common 00000000010000000000000000110011<0
++pause common 00000001000000000000000000001111<0
++mop.r.0 common 100000011100<20|100<12|1110011<0 xs1=19-15 xd=11-7
++mop.r.1 common 100000011101<20|100<12|1110011<0 xs1=19-15 xd=11-7
++mop.r.10 common 100010011110<20|100<12|1110011<0 xs1=19-15 xd=11-7
++mop.r.11 common 100010011111<20|100<12|1110011<0 xs1=19-15 xd=11-7
++mop.r.12 common 100011011100<20|100<12|1110011<0 xs1=19-15 xd=11-7
++mop.r.13 common 100011011101<20|100<12|1110011<0 xs1=19-15 xd=11-7
++mop.r.14 common 100011011110<20|100<12|1110011<0 xs1=19-15 xd=11-7
++mop.r.15 common 100011011111<20|100<12|1110011<0 xs1=19-15 xd=11-7
++mop.r.16 common 110000011100<20|100<12|1110011<0 xs1=19-15 xd=11-7
++mop.r.17 common 110000011101<20|100<12|1110011<0 xs1=19-15 xd=11-7
++mop.r.18 common 110000011110<20|100<12|1110011<0 xs1=19-15 xd=11-7
++mop.r.19 common 110000011111<20|100<12|1110011<0 xs1=19-15 xd=11-7
++mop.r.2 common 100000011110<20|100<12|1110011<0 xs1=19-15 xd=11-7
++mop.r.20 common 110001011100<20|100<12|1110011<0 xs1=19-15 xd=11-7
++mop.r.21 common 110001011101<20|100<12|1110011<0 xs1=19-15 xd=11-7
++mop.r.22 common 110001011110<20|100<12|1110011<0 xs1=19-15 xd=11-7
++mop.r.23 common 110001011111<20|100<12|1110011<0 xs1=19-15 xd=11-7
++mop.r.24 common 110010011100<20|100<12|1110011<0 xs1=19-15 xd=11-7
++mop.r.25 common 110010011101<20|100<12|1110011<0 xs1=19-15 xd=11-7
++mop.r.26 common 110010011110<20|100<12|1110011<0 xs1=19-15 xd=11-7
++mop.r.27 common 110010011111<20|100<12|1110011<0 xs1=19-15 xd=11-7
++mop.r.28 common 110011011100<20|100<12|1110011<0 xs1=19-15 xd=11-7
++mop.r.29 common 110011011101<20|100<12|1110011<0 xs1=19-15 xd=11-7
++mop.r.3 common 100000011111<20|100<12|1110011<0 xs1=19-15 xd=11-7
++mop.r.30 common 110011011110<20|100<12|1110011<0 xs1=19-15 xd=11-7
++mop.r.31 common 110011011111<20|100<12|1110011<0 xs1=19-15 xd=11-7
++mop.r.4 common 100001011100<20|100<12|1110011<0 xs1=19-15 xd=11-7
++mop.r.5 common 100001011101<20|100<12|1110011<0 xs1=19-15 xd=11-7
++mop.r.6 common 100001011110<20|100<12|1110011<0 xs1=19-15 xd=11-7
++mop.r.7 common 100001011111<20|100<12|1110011<0 xs1=19-15 xd=11-7
++mop.r.8 common 100010011100<20|100<12|1110011<0 xs1=19-15 xd=11-7
++mop.r.9 common 100010011101<20|100<12|1110011<0 xs1=19-15 xd=11-7
++mop.rr.0 common 1000001<25|100<12|1110011<0 xs2=24-20 xs1=19-15 xd=11-7
++mop.rr.1 common 1000011<25|100<12|1110011<0 xs2=24-20 xs1=19-15 xd=11-7
++mop.rr.2 common 1000101<25|100<12|1110011<0 xs2=24-20 xs1=19-15 xd=11-7
++mop.rr.3 common 1000111<25|100<12|1110011<0 xs2=24-20 xs1=19-15 xd=11-7
++mop.rr.4 common 1100001<25|100<12|1110011<0 xs2=24-20 xs1=19-15 xd=11-7
++mop.rr.5 common 1100011<25|100<12|1110011<0 xs2=24-20 xs1=19-15 xd=11-7
++mop.rr.6 common 1100101<25|100<12|1110011<0 xs2=24-20 xs1=19-15 xd=11-7
++mop.rr.7 common 1100111<25|100<12|1110011<0 xs2=24-20 xs1=19-15 xd=11-7
++aes64ks1i 64 00110001<24|001<12|0010011<0 rnum=23-20 xs1=19-15 xd=11-7
++aes64ks2 64 0111111<25|000<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++aes32dsi 32 10101<25|000<12|0110011<0 bs=31-30 xs2=24-20 xs1=19-15 xd=11-7
++aes32dsmi 32 10111<25|000<12|0110011<0 bs=31-30 xs2=24-20 xs1=19-15 xd=11-7
++aes64ds 64 0011101<25|000<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++aes64dsm 64 0011111<25|000<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++aes64im 64 001100000000<20|001<12|0010011<0 xs1=19-15 xd=11-7
++aes32esi 32 10001<25|000<12|0110011<0 bs=31-30 xs2=24-20 xs1=19-15 xd=11-7
++aes32esmi 32 10011<25|000<12|0110011<0 bs=31-30 xs2=24-20 xs1=19-15 xd=11-7
++aes64es 64 0011001<25|000<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++aes64esm 64 0011011<25|000<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++sha256sig0 common 000100000010<20|001<12|0010011<0 xs1=19-15 xd=11-7
++sha256sig1 common 000100000011<20|001<12|0010011<0 xs1=19-15 xd=11-7
++sha256sum0 common 000100000000<20|001<12|0010011<0 xs1=19-15 xd=11-7
++sha256sum1 common 000100000001<20|001<12|0010011<0 xs1=19-15 xd=11-7
++sha512sig0 64 000100000110<20|001<12|0010011<0 xs1=19-15 xd=11-7
++sha512sig0h 32 0101110<25|000<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++sha512sig0l 32 0101010<25|000<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++sha512sig1 64 000100000111<20|001<12|0010011<0 xs1=19-15 xd=11-7
++sha512sig1h 32 0101111<25|000<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++sha512sig1l 32 0101011<25|000<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++sha512sum0 64 000100000100<20|001<12|0010011<0 xs1=19-15 xd=11-7
++sha512sum0r 32 0101000<25|000<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++sha512sum1 64 000100000101<20|001<12|0010011<0 xs1=19-15 xd=11-7
++sha512sum1r 32 0101001<25|000<12|0110011<0 xs2=24-20 xs1=19-15 xd=11-7
++sm3p0 common 000100001000<20|001<12|0010011<0 xs1=19-15 xd=11-7
++sm3p1 common 000100001001<20|001<12|0010011<0 xs1=19-15 xd=11-7
++sm4ed common 11000<25|000<12|0110011<0 bs=31-30 xs2=24-20 xs1=19-15 xd=11-7
++sm4ks common 11010<25|000<12|0110011<0 bs=31-30 xs2=24-20 xs1=19-15 xd=11-7
++vandn.vv common 000001<26|000<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vandn.vx common 000001<26|100<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vbrev.v common 010010<26|01010010<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vbrev8.v common 010010<26|01000010<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vclz.v common 010010<26|01100010<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vcpop.v common 010010<26|01110010<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vctz.v common 010010<26|01101010<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vrev8.v common 010010<26|01001010<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vrol.vv common 010101<26|000<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vrol.vx common 010101<26|100<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vror.vi common 01010<27|011<12|1010111<0 imm=26|19-15 vm=25-25 vs2=24-20 vd=11-7
++vror.vv common 010100<26|000<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vror.vx common 010100<26|100<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vwsll.vi common 110101<26|011<12|1010111<0 vm=25-25 vs2=24-20 imm=19-15 vd=11-7
++vwsll.vv common 110101<26|000<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vwsll.vx common 110101<26|100<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vclmul.vv common 001100<26|010<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vclmul.vx common 001100<26|110<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vclmulh.vv common 001101<26|010<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vclmulh.vx common 001101<26|110<12|1010111<0 vm=25-25 vs2=24-20 xs1=19-15 vd=11-7
++vfncvtbf16.f.f.w common 010010<26|11101001<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vfwcvtbf16.f.f.v common 010010<26|01101001<12|1010111<0 vm=25-25 vs2=24-20 vd=11-7
++vfwmaccbf16.vf common 111011<26|101<12|1010111<0 vm=25-25 vs2=24-20 fs1=19-15 vd=11-7
++vfwmaccbf16.vv common 111011<26|001<12|1010111<0 vm=25-25 vs2=24-20 vs1=19-15 vd=11-7
++vghsh.vv common 1011001<25|010<12|1110111<0 vs2=24-20 vs1=19-15 vd=11-7
++vgmul.vv common 1010001<25|10001010<12|1110111<0 vs2=24-20 vd=11-7
++vaesdf.vs common 1010011<25|00001010<12|1110111<0 vs2=24-20 vd=11-7
++vaesdf.vv common 1010001<25|00001010<12|1110111<0 vs2=24-20 vd=11-7
++vaesdm.vs common 1010011<25|00000010<12|1110111<0 vs2=24-20 vd=11-7
++vaesdm.vv common 1010001<25|00000010<12|1110111<0 vs2=24-20 vd=11-7
++vaesef.vs common 1010011<25|00011010<12|1110111<0 vs2=24-20 vd=11-7
++vaesef.vv common 1010001<25|00011010<12|1110111<0 vs2=24-20 vd=11-7
++vaesem.vs common 1010011<25|00010010<12|1110111<0 vs2=24-20 vd=11-7
++vaesem.vv common 1010001<25|00010010<12|1110111<0 vs2=24-20 vd=11-7
++vaeskf1.vi common 1000101<25|010<12|1110111<0 vs2=24-20 imm=19-15 vd=11-7
++vaeskf2.vi common 1010101<25|010<12|1110111<0 vs2=24-20 imm=19-15 vd=11-7
++vaesz.vs common 1010011<25|00111010<12|1110111<0 vs2=24-20 vd=11-7
++vsha2ch.vv common 1011101<25|010<12|1110111<0 vs2=24-20 vs1=19-15 vd=11-7
++vsha2cl.vv common 1011111<25|010<12|1110111<0 vs2=24-20 vs1=19-15 vd=11-7
++vsha2ms.vv common 1011011<25|010<12|1110111<0 vs2=24-20 vs1=19-15 vd=11-7
++vsm3c.vi common 1010111<25|010<12|1110111<0 vs2=24-20 imm=19-15 vd=11-7
++vsm3me.vv common 1000001<25|010<12|1110111<0 vs2=24-20 vs1=19-15 vd=11-7
++vsm4k.vi common 1000011<25|010<12|1110111<0 vs2=24-20 imm=19-15 vd=11-7
++vsm4r.vs common 1010011<25|10000010<12|1110111<0 vs2=24-20 vd=11-7
++vsm4r.vv common 1010001<25|10000010<12|1110111<0 vs2=24-20 vd=11-7
+diff --git a/arch/riscv/tools/insn_tbl.sh b/arch/riscv/tools/insn_tbl.sh
+new file mode 100755
+index 000000000000..0ab1e17959c4
+--- /dev/null
++++ b/arch/riscv/tools/insn_tbl.sh
+@@ -0,0 +1,263 @@
++#!/bin/sh
++# SPDX-License-Identifier: GPL-2.0-only
++#
++# Generate riscv instruction helper header.
++# The generated helpers for each instruction are:
++#   - riscv_insn_<insn>_MASK useful to help check if arbitrary binary is <insn>
++#   - riscv_insn_<insn>_MATCH useful to help check if arbitrary binary is <insn>
++#   - riscv_insn_<insn> useful to construct <insn>
++#   - riscv_insn_<insn>_<var> useful to extract <var> from <insn>
++#
++# Each line of the instruction table should have the following format:
++#
++# NAME BASE FIXED_BITS [VARIABLE_LIST]
++#
++# NAME                        instruction name
++# BASE                        instruction base size (common[,(32|64)])
++# FIXED_BITS                  bitfields of the fixed bits of an instruction concatenated with |
++#                             each continuous grouping of fixed bits is in the format of bits<offset
++#                             all instruction variables in the form of <var>[-<sign_extend>-][<<left_shift><][!<constraint>...]
++#                             if the variable requires sign extension, surround the index to sign extend at in '-'
++#                             if the variable requires left shifting, surround the left shift amount in '<'
++#                             a "constraint" is an integer value that is invalid for this variable
++# VARIABLE_LIST               a variable sized list of all variables in the instruction definition
++#                             in the form of name[~][<num][!num...]=(high[-low])|...
++#                             symbols after the name represent different modifiers:
++#                                 ~ sign extension, can only appear once
++#                                 < left shift by 'num' amount on extraction, can only appear once
++#                                 ! mark 'num' as an invalid input for this variable, any number may appear
++#
++
++set -e
++
++usage() {
++	echo >&2 "usage: $0 BASE INFILE OUTFILE" >&2
++	echo >&2
++	echo >&2 "  INFILE    input instruction table"
++	echo >&2 "  OUTFILE   output header file"
++	exit 1
++}
++
++if [ $# -ne 2 ]; then
++	usage
++fi
++
++infile="$1"
++outfile="$2"
++
++file=$(readlink -f $0)
++
++echo "/* Auto-generated rv${base} header from script arch/${file#*arch/} */" > $outfile
++
++echo "#ifndef RISCV_INSN_GEN_H" >> $outfile
++echo "#define RISCV_INSN_GEN_H" >> $outfile
++echo >> $outfile
++
++printf "#include <linux/bits.h>" >> $outfile
++echo >> $outfile
++echo "#define COMMA ," >> $outfile
++echo "#define SEMICOLON ;" >> $outfile
++echo "#define SINGLE_ARG(...) __VA_ARGS__" >> $outfile
++echo >> $outfile
++
++grep -E "^[a-z\.0-9]+[[:space:]]+" "$infile" | {
++    while read name base fixed variables; do
++        echo "/* $name */"
++
++        compressed_name=${name##c.*}
++        invalid_inst_functions=""
++        variable_params=""
++        constraints=""
++        match=""
++        mask=""
++        make=""
++
++        # All compressed instructions start with "c."
++        size=${compressed_name:+32};
++        size=${size:-16};
++
++        # Replace all . with _
++        formatted_inst_name=$name
++        while [ ! ${formatted_inst_name##*.*} ]; do
++            prefix=${formatted_inst_name%.*}
++            suffix=${formatted_inst_name##*.}
++            contains_dot=${formatted_inst_name##*.*}
++            formatted_inst_name=${contains_dot:-${prefix}_${suffix}}
++        done
++
++        # Collect all fixed bits of an instruction
++        OLD_IFS=$IFS
++        IFS='|'
++        for segment in $fixed; do
++            bits=${segment%<*}
++            offset=${segment#*<}
++
++            len=${#bits}
++
++            mask="${mask} | 0b"
++
++            while [ $len -gt 0 ]; do
++                len=$((len - 1))
++                mask=${mask}1
++            done
++
++            if [ ${offset} -gt 0 ]; then
++                s=" << ${offset}"
++            else
++                s=""
++            fi
++
++            mask="${mask}${s}"
++
++            match="${match} | 0b${bits}${s}"
++        done
++        IFS=$OLD_IFS
++
++        # Instruction only appears in one base
++        only_base=
++        if [ "${base}" != "${base%32}" ]; then
++            echo "#if __riscv_xlen == 32"
++            only_base=32
++        elif [ "${base}" != "${base%64}" ]; then
++            echo "#if __riscv_xlen == 64"
++            only_base=64
++        fi
++
++        # Standard name for the instruction parameter in generated functions
++        insn="_insn"
++
++        for variable in ${variables}; do
++            variable_name="${variable%%[<~=!]*}"
++            parts="${variable#*=}"
++            insert_mask=""
++            sign_extend=""
++            left_shift=""
++            extract=""
++            insert=""
++
++            # Standard name for the variable parameter in generated functions
++            var="_${variable_name}"
++            variable_params="${variable_params}u32 ${var}, "
++
++            if [ "${variable}" != "${variable#*~}" ]; then
++                sign_extend="1"
++            fi
++
++            if [ "${variable}" != "${variable#*<}" ]; then
++                left_shift="${variable#*<}"
++                left_shift="${left_shift%%[=<~!]*}"
++            else
++                left_shift="0"
++            fi
++
++            if [ "${variable}" != "${variable#*!}" ]; then
++                raw_constraints="${variable#*!}"
++                raw_constraints="${raw_constraints%%[=<~!]**}"
++
++                OLD_IFS=$IFS
++                IFS='!'
++                for constraint in $raw_constraints; do
++                    constraints="${constraints}(riscv_insn_${formatted_inst_name}_extract_${variable_name}(${insn}) != ${constraint}) && "
++                done
++                IFS=$OLD_IFS
++            fi
++
++            offset=0
++            while true; do
++                part=${parts##*|}
++
++                if [ "${part#*-}" = "${part}" ]; then
++                    high="${part}"
++                    low="${part}"
++                    len=1
++                else
++                    high="${part%-*}"
++                    low="${part#*-}"
++                    len=$((high - low + 1))
++                fi
++
++                # Don't emit shift if 0
++                first_shift=${low}
++                if [ "${first_shift}" = "0" ]; then
++                    first_shift=
++                fi
++
++                second_shift=$((offset + left_shift))
++                if [ "${second_shift}" = "0" ]; then
++                    second_shift=
++                fi
++
++                extract="${extract} | ((${insn}${first_shift:+ >> }${first_shift} & GENMASK($((len - 1)), 0))${second_shift:+ << }${second_shift})"
++                insert_mask="${insert_mask} & ~GENMASK(${high}, ${low})"
++                insert="${insert} | (((${var}${second_shift:+ >> }${second_shift}) & GENMASK($((len - 1)), 0))${first_shift:+ << }${first_shift})"
++                offset=$((offset + len))
++
++                if [ "${parts}" = "${part}" ]; then
++                    # Processed all parts of variable
++                    break
++                fi
++
++                parts=${parts%|*}
++            done
++
++            extract="${extract# | }"
++
++            if [ ${sign_extend} ]; then
++                extract="sign_extend32(${extract}, ${offset})"
++                type="s"
++            else
++                type="u"
++            fi
++
++            echo "static __always_inline ${type}${size} riscv_insn_${formatted_inst_name}_extract_${variable_name}(u${size} ${insn})"
++            echo "{"
++            echo "\treturn ${extract};"
++            echo "}"
++            echo "static __always_inline void riscv_insn_${formatted_inst_name}_insert_${variable_name}(u${size} *${insn}, ${type}32 ${var})"
++            echo "{"
++            echo "\t*_insn &= ${insert_mask# & };"
++            echo "\t*_insn |= ${insert# | };"
++            echo "}"
++
++            if [ "${only_base}" ]; then
++                invalid_inst_functions="${invalid_inst_functions}static __always_inline ${type}${size} riscv_insn_${formatted_inst_name}_extract_${variable_name}(u${size} ${insn}) {\n\tpanic(\"${name} is not supported on non ${only_base}-bit systems.\");\n}\n"
++            fi
++
++            make="${make}	riscv_insn_${formatted_inst_name}_insert_${variable_name}(&${insn}, ${var});\n"
++        done
++
++        variable_params="${variable_params%, }"
++        variable_params="${variable_params:-void}"
++
++        echo "#define riscv_insn_${formatted_inst_name}_MASK (${mask# | })"
++        echo "#define riscv_insn_${formatted_inst_name}_MATCH (${match# | })"
++        echo "static __always_inline u${size} riscv_insn_${formatted_inst_name}(${variable_params})"
++        echo "{"
++        echo "\tu${size} ${insn} = riscv_insn_${formatted_inst_name}_MATCH;"
++        echo "${make}	return ${insn};"
++        echo "}"
++
++        # Check against instructions that have a variable that may contain invalid values
++        if [ "$constraints" ]; then
++            echo "__RISCV_INSN_FUNCS_CONSTRAINED(${formatted_inst_name}, ${constraints% && });"
++        else
++            echo "__RISCV_INSN_FUNCS(${formatted_inst_name});"
++        fi
++
++        # If common does not appear in the base, then this instruction only appears in one base
++        if [ "$base" = "${base#common}" ]; then
++            echo "#else"
++            echo "__RISCV_INSN_FUNCS_UNSUPPORTED(${formatted_inst_name});"
++            echo "${invalid_inst_functions%\\n}"
++        fi
++
++        # Instruction has a base variant
++        if [ "$base" != "${base%[24]}" ]; then
++            echo "#endif"
++        fi
++
++        echo
++    done
++
++    echo "#endif /* RISCV_INST_GEN_H */"
++} >> $outfile
 -- 
-2.54.0.rc1.555.g9c883467ad-goog
+2.52.0
 
 
 -- 
