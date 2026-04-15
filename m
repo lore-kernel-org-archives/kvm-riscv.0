@@ -4,173 +4,90 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6C442FA0C3A
-	for <kvm-riscv@archiver.kernel.org>; Wed, 15 Apr 2026 06:52:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 07986FA0C37
+	for <kvm-riscv@archiver.kernel.org>; Wed, 15 Apr 2026 07:06:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:In-Reply-To:References:
-	Message-ID:Date:Subject:CC:To:From:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:
+	Subject:MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=d04+va9qqdSc21AFMWmGSGXachy3XYOg5luKUH8vUE8=; b=bF5Y/pjoWEZLHi
-	dhM+XA/pKddxD3Z5aOu9UsGFmyH/FMIzRPa/+zl4HEH31653eLewshsFi8VHgtl4nqjMTjT49XuIK
-	ht7fcv9MJt+JWu+FV97cjKHNAvflyAWAYQFj4XaEtFSQxMGcVtsF/g/tT/z6TpDBd+/zIsepEz0Kf
-	ELkJy1uCrqP0DJy0HlZNRq7YHrkN30V1VhN0uIHw7w5G1nzpdaazUtSxRaFYvQb18iQbb6J+xhhAR
-	YujbmPEZmgzISQysTOXLbATbip8S4mGbVl3pl781rdUivSVyORSBO4UYP+qMOzfWNwUBMqepuRDpZ
-	ZewZKvxkMWkS5ZLxxqNg==;
+	List-Owner; bh=MY0jpgxFtqX1XW8vJGyCJdNxlk4gs/dO6XXzaOaPr4A=; b=uVzSXzi+pJoVQ/
+	ZX3eu+WC45QAyr5iXXgKGEUMZ5jPUXHW/+S3vFgkP4rjprAQpNHymujM52cph22uoDBA7C3PFxTy5
+	3+Ln1gfGf66c3GuM3AzO4a9xw368McaIOyR4CP+IkR29aqkjYdGOSWooAdggYNDZneEXPwe8WwTeI
+	kFPkX12Q2g2OJrAqtlBuVNsQUr7mUrp66SpeyJG0KCG0t9f8SzBdmxyxVeDpCxMqffcZd6ARnUPPt
+	/16Zy5VO1vwiuUr6tsXEHt4TacLQp29HB7XVVkPjXcz5whGlKxSjfKaD212O5wRbpOzUn67WErXhK
+	WhsBTRyLegzqr7rd9YFA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1wCu6v-00000000gOQ-3pmX;
-	Wed, 15 Apr 2026 06:52:29 +0000
-Received: from mgamail.intel.com ([198.175.65.16])
+	id 1wCuKI-00000000hFM-2yhq;
+	Wed, 15 Apr 2026 07:06:18 +0000
+Received: from smtpbgsg2.qq.com ([54.254.200.128])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1wCu6s-00000000gO0-08Hu;
-	Wed, 15 Apr 2026 06:52:28 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1776235946; x=1807771946;
-  h=from:to:cc:subject:date:message-id:references:
-   in-reply-to:content-transfer-encoding:mime-version;
-  bh=b5a3VqDhqjf7cI585esgP3i86d9AOYTce20VqK0O83w=;
-  b=IvA7dn4juW3L6cu43fpXVgi/UZdH850wa8Q9vI/cvitK8RFFAP7vAQPw
-   89NWhjrkaGccq2qcwwiSoXbQ3aovUyC22WGkb+KmMk9xQoL3rQLLWbWVy
-   dRKXvhqxd6Xxot1ADBcE06AGEw1asUitDBvcAh8oau5BtQIv4CE+iHWcl
-   jIJSslG8vjRI0L8ESUMZPk0YmergjK2Fb7XXLdQNnfZ1FmplLaYQQzG3t
-   dXR6CRr03E1XF9ZgdQOn16E8c4hIGoutg2IjBl91xoXyioBNNnJ01g/Ug
-   VbnvVAlsJJPnudU9qJ3Ayja8crs9h9LR10VSIpec7hB3TkzC9sP4og2d4
-   Q==;
-X-CSE-ConnectionGUID: GZotYl7XRGissYCcVHdmBg==
-X-CSE-MsgGUID: q5ocnxMHQCGlulFKhwktQQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11759"; a="77385114"
-X-IronPort-AV: E=Sophos;i="6.23,179,1770624000"; 
-   d="scan'208";a="77385114"
-Received: from fmviesa005.fm.intel.com ([10.60.135.145])
-  by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2026 23:52:24 -0700
-X-CSE-ConnectionGUID: t5NHvNJrSeuK5fdqlBvjQA==
-X-CSE-MsgGUID: rlVt7eEcR++bvsj9yBdeJw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,179,1770624000"; 
-   d="scan'208";a="235264216"
-Received: from orsmsx903.amr.corp.intel.com ([10.22.229.25])
-  by fmviesa005.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2026 23:52:23 -0700
-Received: from ORSMSX901.amr.corp.intel.com (10.22.229.23) by
- ORSMSX903.amr.corp.intel.com (10.22.229.25) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.37; Tue, 14 Apr 2026 23:52:23 -0700
-Received: from ORSEDG903.ED.cps.intel.com (10.7.248.13) by
- ORSMSX901.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.37 via Frontend Transport; Tue, 14 Apr 2026 23:52:23 -0700
-Received: from BN1PR04CU002.outbound.protection.outlook.com (52.101.56.24) by
- edgegateway.intel.com (134.134.137.113) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.37; Tue, 14 Apr 2026 23:52:22 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=RyGwyhotvdzPHKX4LgExHEgjAqFsXSWd3FKndiX8JJaovOOeSi3WHUBE1DJ7+dF3gGEVMat5GdmWSNlHYYDTNRWWloGMOelzvCDGmbIycMS5wC0F89gsPVBNM9jXVOhPBmmkKLndVdOgzNAxWEvF66aYlCEbUhzg7s6ocubGxLDjefWuwFSAMpF2ZpaXqkCAkQpDEUCPE7p4K9QryH+W0pzsOREOnrdULiHP/Bdjeyk0qDU4duJwXH7XGQjTbziGhwFtHkXplRD4nox9IuO6WB4RqHHI/FynwW3eLvjH8jPf03c1qo8ccQhKw0G9zUFLRYaN6HVFq1uzN3DiaaaSeQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=mPBoup2MAgbaRyQq+57fnmvqdiqjFjeOqnQuLRRgi7A=;
- b=McQ8BnmEXTRlagc4DiqACje/zJ/Zi3rypa4drBVK3/rM1fhcdiZICiyCTj2XCds5TYY+HYLs9thPBUP2zGeA8oaQ6OfCyo+WbYr07l/1SBaS5F61QnSAEb0vIIqatK06RZ11RddIO870lHAzc9bvRlo1otYGGCGMf8iBPTfs9zm9K4OMTrY6idQVsO3MLxWHydUy/tfywgAYTFVxE9XccIEE8N7fObbS5mQd18o3cenN0yrQvCWeCqt/3AojciPid7mw7KmKIVKb6Qr2HgBO3P6N3nR14PRczRuOBhYn7iYFkE+I+kHpI7FFkCvbVxJp/tEhvHoe3EHZxu981lxFHA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Received: from BN9PR11MB5276.namprd11.prod.outlook.com (2603:10b6:408:135::18)
- by PH0PR11MB4856.namprd11.prod.outlook.com (2603:10b6:510:32::10) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9818.20; Wed, 15 Apr
- 2026 06:52:15 +0000
-Received: from BN9PR11MB5276.namprd11.prod.outlook.com
- ([fe80::f997:762f:f079:134f]) by BN9PR11MB5276.namprd11.prod.outlook.com
- ([fe80::f997:762f:f079:134f%5]) with mapi id 15.20.9818.017; Wed, 15 Apr 2026
- 06:52:14 +0000
-From: "Tian, Kevin" <kevin.tian@intel.com>
-To: "fangyu.yu@linux.alibaba.com" <fangyu.yu@linux.alibaba.com>,
-	"joro@8bytes.org" <joro@8bytes.org>, "will@kernel.org" <will@kernel.org>,
-	"robin.murphy@arm.com" <robin.murphy@arm.com>, "pjw@kernel.org"
-	<pjw@kernel.org>, "palmer@dabbelt.com" <palmer@dabbelt.com>,
-	"aou@eecs.berkeley.edu" <aou@eecs.berkeley.edu>, "alex@ghiti.fr"
-	<alex@ghiti.fr>, "tjeznach@rivosinc.com" <tjeznach@rivosinc.com>,
-	"jgg@ziepe.ca" <jgg@ziepe.ca>, "baolu.lu@linux.intel.com"
-	<baolu.lu@linux.intel.com>, "vasant.hegde@amd.com" <vasant.hegde@amd.com>,
-	"anup@brainfault.org" <anup@brainfault.org>, "nutty.liu@hotmail.com"
-	<nutty.liu@hotmail.com>, "jgg@nvidia.com" <jgg@nvidia.com>
-CC: "guoren@kernel.org" <guoren@kernel.org>, "iommu@lists.linux.dev"
-	<iommu@lists.linux.dev>, "kvm-riscv@lists.infradead.org"
-	<kvm-riscv@lists.infradead.org>, "linux-riscv@lists.infradead.org"
-	<linux-riscv@lists.infradead.org>, "linux-kernel@vger.kernel.org"
-	<linux-kernel@vger.kernel.org>
-Subject: RE: [PATCH v2 2/2] iommupt: Encode IOMMU_MMIO/IOMMU_CACHE via RISC-V
- Svpbmt bits
-Thread-Topic: [PATCH v2 2/2] iommupt: Encode IOMMU_MMIO/IOMMU_CACHE via RISC-V
- Svpbmt bits
-Thread-Index: AQHcy/426CfvNf6EM0Ke4tEywGaYprXfsL3w
-Date: Wed, 15 Apr 2026 06:52:14 +0000
-Message-ID: <BN9PR11MB5276B545712B0A3C73193EF08C222@BN9PR11MB5276.namprd11.prod.outlook.com>
-References: <20260414110212.79526-1-fangyu.yu@linux.alibaba.com>
- <20260414110212.79526-3-fangyu.yu@linux.alibaba.com>
-In-Reply-To: <20260414110212.79526-3-fangyu.yu@linux.alibaba.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: BN9PR11MB5276:EE_|PH0PR11MB4856:EE_
-x-ms-office365-filtering-correlation-id: f5702f34-81c5-454c-6b6b-08de9abb86e2
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0;ARA:13230040|376014|7416014|366016|1800799024|38070700021|921020|18002099003|22082099003|56012099003;
-x-microsoft-antispam-message-info: Y/jRztQVlcWuDq7nrKFvYRrKNXk0gGcMXWdHlOM5edYqUGWYC7kv3qUuIZaZw+VNOn0n7Do+0I9rPz0E7mMYuYhpGC340pwhqWKZSma/gPoS9G78jhIFJWpyRJOhV37cN9AVR1O7zIMe2vZ6NpjBWL4LVvkpuwYttTL0AJXg7ZEFTTX/qLyrgpo1eHtZwwj2imLezgwvvZrPfFndlusWsjH2fb6QxKUxgPh0AVGZr3YTe5Zhf8tRJx6MLjgA/8ipUpP5qtsGYkLRnrEjZPqkjLxfFjYTgOCGmdEQeFKk0/bKXJEOd7fJHAQa0Yt9iYdnLUxbx0hQCFCgX+JIvrkmieGiPlYybTkEVRUsiNnx2NuOjyUoMUpODuUvwzTpMykXe84x5wv1Ko9xKsvE7gMAL+mBIl54Do6zZqjFhaHaeOc4ie8pVnyUNUhaWso6R6FgCbol5VYDuqmOCmoaIFBWq+Jk6TMKDCS4OvsVncMssu1jow5z4+NOSvBBCNmWw1jpLLnaEwAgft3GKMjaV6c7ZhzhDt85h4n9GG+49tev8Of/U35yNQPFv5ACtUcbHrFAh6USt4LgMCelgS4//hN5Q7nliydoRLoM4xXUA8REds0eTJXEgIZzK0DrXYzQP1YX75rZSov+aRgwpYgbFo7qvIrvyjCk1sDMf602CBuVlMAGavG06rbPSMjZB4W/Ojr9VPn6UDdCIQoy6pJeBz+HHOEqDN4IqEV99lseGPpk/Xjr7BhUoD68j8qnPF4BP34g54srJAynBSGrC1OoEGtCY2pjq5a2F/ua/amVwPYu7TBeK88o2kVEETtD8MgoqO8g
-x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BN9PR11MB5276.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(366016)(1800799024)(38070700021)(921020)(18002099003)(22082099003)(56012099003);DIR:OUT;SFP:1101;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?j2wCOMrAt2PLnbdSKVfiS+f/WHST5pV7Rb9dEl6567tX163G+qHbW9Za1Ic4?=
- =?us-ascii?Q?vWOce/3huEjQuUbpM5P1c0BYvZvCWkNQMzma8MMybboF/Oypg0SBAPNREkL7?=
- =?us-ascii?Q?KLrD/tPLj+HbPRAF9+581k5iIUVxU9xnQtA4+E6yY+QhX+zNtKEL2hKjFhPi?=
- =?us-ascii?Q?UD3q5ACpcyDc792Tq1dL/S0exB+CKGnjscoBCwG/GsNmwAQ2NcKEzLc/ITRv?=
- =?us-ascii?Q?Sx4gcHXECgjxbtHnrPpGh7mmB+zJvcdkR7JfunjPDrHLTiLE8r6npe0Shx5y?=
- =?us-ascii?Q?4Ozl/xNwufJfBH5t/NtuTJSNqPUNpxVyMBx7B289yxyziEabwld2hTtzTDoZ?=
- =?us-ascii?Q?y7iwNYQb3937MnwC5jHiSq3i0JWOMy74P0BUlfsazt1993XC53asDR5H0dSK?=
- =?us-ascii?Q?Xe0rg11umRIMS20rCZebFhLeqto59aTvZy8HOLHd4sZMvwWo3wzVOzt22ghQ?=
- =?us-ascii?Q?u+yeomSFQGnxEHmXqPBWDhbmlIF8rkYxkeNHsvJwm7ysru7j3TnrreqVqmpD?=
- =?us-ascii?Q?EVtkqZfYgStbxoj1BZnKFrvm1vDJYDNrF16BasJBunAMxpprkdfFblfVdxbX?=
- =?us-ascii?Q?utq93zU0t/ef1r4VaJUgzAaCfvtNJy4xIxd8OekRSIetKlOsCD3gsyaFkfKg?=
- =?us-ascii?Q?7OhfMQqXB9kx1Xy62D2KCmtM9iey2S2ZuWGOTcTZPRjZnH5FBYItCpmsR6KM?=
- =?us-ascii?Q?mqEHnIjmymL8LiQol+cPlTD/XP5ayr0ItI75zoWuHpuktRTY0CU3QRlsv2Yz?=
- =?us-ascii?Q?t863pkPS7UtAlZ+oj9NRSdCyyXMY9Kusm7PqHZmnp2WceR/0OGBF0D/wcsCY?=
- =?us-ascii?Q?Jd7L/cQU6yMSCDgEPsQRYg7aoXR9Xo8Q0T+L4pGjJ8GMEwhByM84j/47Gfot?=
- =?us-ascii?Q?HV6hASan2TuxRmJotVIIe4qTxL7jhBMQDpzYDFCTeqmPR3WX4jqoIbLuQqsM?=
- =?us-ascii?Q?KYCo0EXJYoLbBm6Jg11pbcz88SNsXdREsW4w1MY4hDpLAvyInJC/whqGLOw+?=
- =?us-ascii?Q?MnmZePJ7NWu0C9XQ99CL7XNw0uZbo8atK0/NOjUXzt8Lzj/kGeglfv1qTiGr?=
- =?us-ascii?Q?NzQGz00+CCpVqEi30B2ie+uysK60xMcEpQKdrRfJGezjRZsUfK+YFwJN+bFV?=
- =?us-ascii?Q?L5Sp5t/UiJJtRblTyzJCbDAc2hKiwOyuNcUr4Xcbdd0JTwCCyHWLmKNp+tRs?=
- =?us-ascii?Q?dvRt1mtlW9skqEBRY5fz8ctUx6wPw5yqyKmU3s5SgOwrWb6W8jbeo3FfnAJH?=
- =?us-ascii?Q?NKC8hXGat6OFpInL7un1B4YaIYusvVbtj7mkMLmfBc2L+5/onO3HvnXBbj4k?=
- =?us-ascii?Q?YooXASWtcWuXVGE5tEvij5mx9adl3355mVUmv/QYd9v/HUqA9pvUzOhfT1kI?=
- =?us-ascii?Q?I4abk0JUDSzodzJhzJGDzgDzj7P4IthQ3XFca+qDbbj3BDhxg9OUW0xU57M4?=
- =?us-ascii?Q?QbPtxAuGOPmjtS81S4869tp9pSVHhwONd7sxkOwQ6aJt03WpdWXs3ey9w2a4?=
- =?us-ascii?Q?i6kUtcDJxWaSE14GFiv8LhjoY7xVPYSxlOVfHdm0qF5iiaVcrT1NfPbmDwzZ?=
- =?us-ascii?Q?03yX8Xyp7lwubQaNnByIh2TzH+JFnE9DmLkbcFBoMKK6XMDpnFUit50noclx?=
- =?us-ascii?Q?wOwAuwdfedmN+P4tNRHUT3cgpogYC/xgBl44sAVj7MgusvTFYw2JYXoHskzq?=
- =?us-ascii?Q?SXPlv2qU0hmDQnyOoqoHWDPqtyg18Czm2IMBgJjHsl79Dsn7?=
+	id 1wCuKF-00000000hDd-0rwp
+	for kvm-riscv@lists.infradead.org;
+	Wed, 15 Apr 2026 07:06:17 +0000
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.spacemit.com;
+	s=mxsw2412; t=1776236758;
+	bh=6I3bBZmLh72H2avsIFwM++E65eh7BrZ80xu8h1RyaDQ=;
+	h=Message-ID:Date:MIME-Version:Subject:To:From;
+	b=Piu/S8D4sZkK6hfaniAuJuhRpc7VOJ3jYg1N87I1mO+u+z3swAkZ3oOna4JAO1aWn
+	 pn90hKxF0l8b5IYWlDvN5/vbUo5rb+vgKZHEeTzQJVcOG3aXv5WfN842dPqTQ5DBJs
+	 GzF8QKXh1QLOgKtXgePiB9A0/KSBvY5VTXF3jttg=
+X-QQ-mid: esmtpgz12t1776236755t9a02ae7c
+X-QQ-Originating-IP: 48JPQq2xqbbxOrNHcGYJAji1baJVzYwWPu0JffE55WE=
+Received: from [127.0.0.1] ( [120.237.158.181])
+	by bizesmtp.qq.com (ESMTP) with 
+	id ; Wed, 15 Apr 2026 15:05:53 +0800 (CST)
+X-QQ-SSF: 0000000000000000000000000000000
+X-QQ-GoodBg: 0
+X-BIZMAIL-ID: 14424645630730695149
+Message-ID: <96AFE36BFF9E072C+72a6bd92-35de-48ee-bf52-c0ae86cbe846@linux.spacemit.com>
+Date: Wed, 15 Apr 2026 15:05:53 +0800
 MIME-Version: 1.0
-X-Exchange-RoutingPolicyChecked: iMpKuqz6ZEq7lTOqT5NV2mc2oFSGge8vpmrt8kyTBCQlUZDLaI11swZL6mhqlxJKHoY51h1uWyOsF+4UF2eYI8wpGtGXwverlDKxFAaHqmFfiWK5VJRWnKx85dagtBsKIWk/S9trT+Fiy7U9ThYaMFEsMROaYoMQua2KlWgxd5DV42hvRQUKQJx5SMCE3f5ZvEmi88J4q4M2tGzjc2McgTRo0IaT0qfQ6Fg5KZFF7v/nvSansOPYgBQ3YUMt/i2TQI+Gdha9PU4+rlvXrU9j0tFkrRhpW32Cwa0xYtz7UDx+bSJNAFNfLqpn9jAtTtc1lJ+gUQLtRwukImyiECzZhQ==
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: BN9PR11MB5276.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: f5702f34-81c5-454c-6b6b-08de9abb86e2
-X-MS-Exchange-CrossTenant-originalarrivaltime: 15 Apr 2026 06:52:14.5477
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: YjI/RBSrntJTsp3J1Zs7c2y8lp6pO4TaeL1BIcfkBc22zZf8HrHFXck2xIMs/LzeM3vBFMlNCJ1zEXiuQvitHw==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH0PR11MB4856
-X-OriginatorOrg: intel.com
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH RFC 05/11] riscv: cpufeature: Add Sdtrig optional CSRs
+ checks
+To: Max Hsu <max.hsu@sifive.com>, Conor Dooley <conor@kernel.org>,
+ Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+ Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt
+ <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
+ "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@ucw.cz>,
+ Anup Patel <anup@brainfault.org>, Atish Patra <atishp@atishpatra.org>,
+ Paolo Bonzini <pbonzini@redhat.com>, Shuah Khan <shuah@kernel.org>
+Cc: Palmer Dabbelt <palmer@sifive.com>, linux-riscv@lists.infradead.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org, kvm@vger.kernel.org,
+ kvm-riscv@lists.infradead.org, linux-kselftest@vger.kernel.org
+References: <20240329-dev-maxh-lin-452-6-9-v1-0-1534f93b94a7@sifive.com>
+ <20240329-dev-maxh-lin-452-6-9-v1-5-1534f93b94a7@sifive.com>
+From: Zane Leung <liangzhen@linux.spacemit.com>
+In-Reply-To: <20240329-dev-maxh-lin-452-6-9-v1-5-1534f93b94a7@sifive.com>
+X-QQ-SENDSIZE: 520
+Feedback-ID: esmtpgz:linux.spacemit.com:qybglogicsvrgz:qybglogicsvrgz6b-0
+X-QQ-XMAILINFO: NV+fGFr24pKXcxjEYk3jJ0G/748Pgpd+q28+m88e1oSKuonkjdH0zBjK
+	lIKplGbE2jSYk5bCy3eWGsWDiuMY4U/u07HSqfgJXph1X9hCAGkcloyWfHBBr4PugKzr+m4
+	QPkLxSV7K7HSA0WzyR2Zl1N7+ihljEH4sADJr/W8ZIZilGFWQOOFHMntswSYg40tjj5sRPG
+	vVixTNcWOFmmU8m2gqug6/dNuVIg9+iU8Id8pnkTCIzGykohypkI7dZr3mbJ7rV5mVMbtck
+	GenUGtfhry+5YtmRpJcBiNxwl8GZsrlLdiy975oSWzUqjrVbc0MQ7oWBseAS9nULI9nWA9x
+	1mo+mo8D2vfBC4hHYZX595DegAKD+97srrT98yBoAFfPyLu+f4d/LpXEKDvPcsR6SbOlilL
+	cofrWn4D0MRH77+OfFof9ROBpuzM32iURQfKEm3rBT7cwi4in/opKP7G3DiT3FVGJKT2tky
+	3UnN54iP+zDFhi2z8LAGHt/Ku6iOOA7KmAo5N7bOXj//wqrwZypS3CrCUu5J/pevEifHG9p
+	T7Rzmb+daYKZvQVuKAIxJfmDxrMvRKbD2cMFlNIbIM2aYKfMDRdkzAyYsGL7wSAwLBIxe9S
+	zOV0MzoQT1KB3n8dqKWq9EK5Erb43Sm0wqlJkeuNrSEoE+hzgJ3Eu9DjcpFLjmFzhinB1Eu
+	N+pCBX6VCDGSGyBoinQAhRHJnjD/bcshGei0NKYVnkizxFU3xS+DJFxLwnSlSDY2QLBhB3e
+	80W5Pi9aH9IWvjAdYqIMy1XnCCU+x0KMSdoanFo9m5fUv1ekiwBo0cYWF4EYJpHbuKBNS1X
+	/tc5N1kRaVUe294s2ED0/R1QGoUMxu9M2mllUfFI1U8wu5iYNzSjukgtQ/5jyVoA1ApNdeR
+	ZW8Cu8JsDIRWExu8PAtpd3vwdfvi7ZiGGumE8mHjrjmxJwWZP4P8ql51RzMa6QCXvP/T79j
+	IwMstM0lL3rpR9xASBLEUlUg14q+4VpfvMUdkhwLb8PvceO8hDErQ3whHVaqwiIDvGz+w4P
+	WmuJWw2n382tQCt0fKxI2MmoGyqi8BqBG4XXayGrjedZa8pGwYE27kmzpemasQf/bWGGzcO
+	A==
+X-QQ-XMRINFO: MSVp+SPm3vtSI1QTLgDHQqIV1w2oNKDqfg==
+X-QQ-RECHKSPAM: 0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260414_235226_183477_B952D93E 
-X-CRM114-Status: UNSURE (   6.92  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20260415_000616_158644_2F80301C 
+X-CRM114-Status: GOOD (  30.52  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -187,28 +104,225 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-> From: fangyu.yu@linux.alibaba.com <fangyu.yu@linux.alibaba.com>
-> Sent: Tuesday, April 14, 2026 7:02 PM
-> 
-> From: Fangyu Yu <fangyu.yu@linux.alibaba.com>
-> 
-> When the RISC-V IOMMU page table format support Svpbmt, PBMT provides
-> a way to tag mappings with page-based memory types. Encode memory type
-> via PBMT in RISC-V IOMMU PTEs:
-> 
->   - IOMMU_MMIO   -> PBMT=IO
->   - !IOMMU_MMIO && !IOMMU_CACHE -> PBMT=NC
->   - otherwise    -> PBMT=Normal (PBMT=0)
-> 
-> Only touch PBMT when PT_FEAT_RISCV_SVPBMT is advertised.
-> 
-> Signed-off-by: Fangyu Yu <fangyu.yu@linux.alibaba.com>
-> Reviewed-by: Jason Gunthorpe <jgg@nvidia.com>
-> Reviewed-by: Anup Patel <anup@brainfault.org>
-> Reviewed-by: Guo Ren <guoren@kernel.org>
-> Reviewed-by: Nutty Liu <nutty.liu@hotmail.com>
 
-Reviewed-by: Kevin Tian <kevin.tian@intel.com>
+On 3/29/2024 5:26 PM, Max Hsu wrote:
+> Sdtrig extension introduce two optional CSRs [hcontext/scontext],
+> that will be storing PID/Guest OS ID for the debug feature.
+>
+> The availability of these two CSRs will be determined by
+> DTS and Smstateen extension [h/s]stateen0 CSR bit 57.
+>
+> If all CPUs hcontext/scontext checks are satisfied, it will enable the
+> use_hcontext/use_scontext static branch.
+>
+> Signed-off-by: Max Hsu <max.hsu@sifive.com>
+> ---
+>  arch/riscv/include/asm/switch_to.h |   6 ++
+>  arch/riscv/kernel/cpufeature.c     | 161 +++++++++++++++++++++++++++++++++++++
+>  2 files changed, 167 insertions(+)
+>
+> diff --git a/arch/riscv/include/asm/switch_to.h b/arch/riscv/include/asm/switch_to.h
+> index 7efdb0584d47..07432550ed54 100644
+> --- a/arch/riscv/include/asm/switch_to.h
+> +++ b/arch/riscv/include/asm/switch_to.h
+> @@ -69,6 +69,12 @@ static __always_inline bool has_fpu(void) { return false; }
+>  #define __switch_to_fpu(__prev, __next) do { } while (0)
+>  #endif
+>  
+> +DECLARE_STATIC_KEY_FALSE(use_scontext);
+> +static __always_inline bool has_scontext(void)
+> +{
+> +	return static_branch_likely(&use_scontext);
+> +}
+> +
+>  extern struct task_struct *__switch_to(struct task_struct *,
+>  				       struct task_struct *);
+>  
+> diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
+> index 080c06b76f53..44ff84b920af 100644
+> --- a/arch/riscv/kernel/cpufeature.c
+> +++ b/arch/riscv/kernel/cpufeature.c
+> @@ -35,6 +35,19 @@ static DECLARE_BITMAP(riscv_isa, RISCV_ISA_EXT_MAX) __read_mostly;
+>  /* Per-cpu ISA extensions. */
+>  struct riscv_isainfo hart_isa[NR_CPUS];
+>  
+> +atomic_t hcontext_disable;
+> +atomic_t scontext_disable;
+> +
+> +DEFINE_STATIC_KEY_FALSE_RO(use_hcontext);
+> +EXPORT_SYMBOL(use_hcontext);
+> +
+> +DEFINE_STATIC_KEY_FALSE_RO(use_scontext);
+> +EXPORT_SYMBOL(use_scontext);
+> +
+> +/* Record the maximum number that the hcontext CSR allowed to hold */
+> +atomic_long_t hcontext_id_share;
+> +EXPORT_SYMBOL(hcontext_id_share);
+> +
+>  /**
+>   * riscv_isa_extension_base() - Get base extension word
+>   *
+> @@ -719,6 +732,154 @@ unsigned long riscv_get_elf_hwcap(void)
+>  	return hwcap;
+>  }
+>  
+> +static void __init sdtrig_percpu_csrs_check(void *data)
+> +{
+> +	struct device_node *node;
+> +	struct device_node *debug_node;
+> +	struct device_node *trigger_module;
+> +
+> +	unsigned int cpu = smp_processor_id();
+> +
+> +	/*
+> +	 * Expect every cpu node has the [h/s]context-present property
+> +	 * otherwise, jump to sdtrig_csrs_disable_all to disable all access to
+> +	 * [h/s]context CSRs
+> +	 */
+> +	node = of_cpu_device_node_get(cpu);
+> +	if (!node)
+> +		goto sdtrig_csrs_disable_all;
+> +
+> +	debug_node = of_get_compatible_child(node, "riscv,debug-v1.0.0");
+> +	of_node_put(node);
+> +
+> +	if (!debug_node)
+> +		goto sdtrig_csrs_disable_all;
+> +
+> +	trigger_module = of_get_child_by_name(debug_node, "trigger-module");
+> +	of_node_put(debug_node);
+> +
+> +	if (!trigger_module)
+> +		goto sdtrig_csrs_disable_all;
+> +
+> +	if (!(IS_ENABLED(CONFIG_KVM) &&
+> +	      of_property_read_bool(trigger_module, "hcontext-present")))
+> +		atomic_inc(&hcontext_disable);
+> +
+> +	if (!of_property_read_bool(trigger_module, "scontext-present"))
+> +		atomic_inc(&scontext_disable);
+> +
+> +	of_node_put(trigger_module);
+> +
+> +	/*
+> +	 * Before access to hcontext/scontext CSRs, if the smstateen
+> +	 * extension is present, the accessibility will be controlled
+> +	 * by the hstateen0[H]/sstateen0 CSRs.
+> +	 */
+> +	if (__riscv_isa_extension_available(NULL, RISCV_ISA_EXT_SMSTATEEN)) {
+> +		u64 hstateen_bit, sstateen_bit;
+> +
+> +		if (__riscv_isa_extension_available(NULL, RISCV_ISA_EXT_h)) {
+> +#if __riscv_xlen > 32
+> +			csr_set(CSR_HSTATEEN0, SMSTATEEN0_HSCONTEXT);
+> +			hstateen_bit = csr_read(CSR_HSTATEEN0);
+> +#else
+> +			csr_set(CSR_HSTATEEN0H, SMSTATEEN0_HSCONTEXT >> 32);
+> +			hstateen_bit = csr_read(CSR_HSTATEEN0H) << 32;
+> +#endif
+> +			if (!(hstateen_bit & SMSTATEEN0_HSCONTEXT))
+> +				goto sdtrig_csrs_disable_all;
+> +
+> +		} else {
+> +			if (IS_ENABLED(CONFIG_KVM))
+> +				atomic_inc(&hcontext_disable);
+> +
+> +			/*
+> +			 * In RV32, the smstateen extension doesn't provide
+> +			 * high 32 bits of sstateen0 CSR which represent
+> +			 * accessibility for scontext CSR;
+> +			 * The decision is left on whether the dts has the
+> +			 * property to access the scontext CSR.
+> +			 */
+> +#if __riscv_xlen > 32
+> +			csr_set(CSR_SSTATEEN0, SMSTATEEN0_HSCONTEXT);
+> +			sstateen_bit = csr_read(CSR_SSTATEEN0);
+> +
+> +			if (!(sstateen_bit & SMSTATEEN0_HSCONTEXT))
+> +				atomic_inc(&scontext_disable);
+> +#endif
+For the supervisor-level sstateen registers, high-half CSRs are not added at this time because
+it is expected the upper 32 bits of these registers will always be zeros. see:
+https://github.com/riscv/riscv-isa-manual/blob/dca12d638b140d86441ad0b067997c70d2017017/src/priv/smstateen.adoc#L71-L7
+
+
+> +		}
+> +	}
+> +
+> +	/*
+> +	 * The code can only access hcontext/scontext CSRs if:
+> +	 * The cpu dts node have [h/s]context-present;
+> +	 * If Smstateen extension is presented, then the accessibility bit
+> +	 * toward hcontext/scontext CSRs is enabled; Or the Smstateen extension
+> +	 * isn't available, thus the access won't be blocked by it.
+> +	 *
+> +	 * With writing 1 to the every bit of these CSRs, we retrieve the
+> +	 * maximum bits that is available on the CSRs. and decide
+> +	 * whether it's suit for its context recording operation.
+> +	 */
+> +	if (IS_ENABLED(CONFIG_KVM) &&
+> +	    !atomic_read(&hcontext_disable)) {
+> +		unsigned long hcontext_available_bits = 0;
+> +
+> +		csr_write(CSR_HCONTEXT, -1UL);
+> +		hcontext_available_bits = csr_swap(CSR_HCONTEXT, hcontext_available_bits);
+> +
+> +		/* hcontext CSR is required by at least 1 bit */
+> +		if (hcontext_available_bits)
+> +			atomic_long_and(hcontext_available_bits, &hcontext_id_share);
+> +		else
+> +			atomic_inc(&hcontext_disable);
+> +	}
+> +
+> +	if (!atomic_read(&scontext_disable)) {
+> +		unsigned long scontext_available_bits = 0;
+> +
+> +		csr_write(CSR_SCONTEXT, -1UL);
+> +		scontext_available_bits = csr_swap(CSR_SCONTEXT, scontext_available_bits);
+> +
+> +		/* scontext CSR is required by at least the sizeof pid_t */
+> +		if (scontext_available_bits < ((1UL << (sizeof(pid_t) << 3)) - 1))
+> +			atomic_inc(&scontext_disable);
+> +	}
+> +
+> +	return;
+> +
+> +sdtrig_csrs_disable_all:
+> +	if (IS_ENABLED(CONFIG_KVM))
+> +		atomic_inc(&hcontext_disable);
+> +
+> +	atomic_inc(&scontext_disable);
+> +}
+> +
+> +static int __init sdtrig_enable_csrs_fill(void)
+> +{
+> +	if (__riscv_isa_extension_available(NULL, RISCV_ISA_EXT_SDTRIG)) {
+> +		atomic_long_set(&hcontext_id_share, -1UL);
+> +
+> +		/* check every CPUs sdtrig extension optional CSRs */
+> +		sdtrig_percpu_csrs_check(NULL);
+> +		smp_call_function(sdtrig_percpu_csrs_check, NULL, 1);
+> +
+> +		if (IS_ENABLED(CONFIG_KVM) &&
+> +		    !atomic_read(&hcontext_disable)) {
+> +			pr_info("riscv-sdtrig: Writing 'GuestOS ID' to hcontext CSR is enabled\n");
+> +			static_branch_enable(&use_hcontext);
+> +		}
+> +
+> +		if (!atomic_read(&scontext_disable)) {
+> +			pr_info("riscv-sdtrig: Writing 'PID' to scontext CSR is enabled\n");
+> +			static_branch_enable(&use_scontext);
+> +		}
+> +	}
+> +	return 0;
+> +}
+> +
+> +arch_initcall(sdtrig_enable_csrs_fill);
+> +
+>  void riscv_user_isa_enable(void)
+>  {
+>  	if (riscv_cpu_has_extension_unlikely(smp_processor_id(), RISCV_ISA_EXT_ZICBOZ))
+>
 
 -- 
 kvm-riscv mailing list
