@@ -4,91 +4,132 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE05BF433CE
-	for <kvm-riscv@archiver.kernel.org>; Wed, 15 Apr 2026 22:10:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AA7E9F8A145
+	for <kvm-riscv@archiver.kernel.org>; Thu, 16 Apr 2026 08:56:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
-	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=t4QTMj+VA1T3qUfDS1+xfoInu7076OxR/W/FoTzmNys=; b=GGfYvnP9vO0dx2
-	YkQ1bteqdCAGgXiSUolO/EXKAfW3iGZ5Ada4u0CNGJLEuBRhjEo5bMPlBdvS9b7IwnAAWJuH51pe7
-	tmFFR5+0DkrfufWhQpJVPM3GQaIEzjjCU7mRi8nxUjWKk+YnnbTnbgsYHLZz3MnDYhyVEzQ7Xuv2W
-	kqmdcN+FW4z7RkMkfy9i52BiKdpm3crricTju2pRY/FnpWzGDtCRYAI4610FVsBNlGgKZlqpjwT3c
-	jyzULxe4qWa5BlM1Phoacb4cUr0uOkSSANMH1ZqeYBCGE55hHH+PEPPfcH7CHjcLSgrrURtbyN9to
-	OsbFVNeHVFfdBKB+iIjg==;
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
+	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=0q1tg8GOfgOORshIsMmVR18fQaAlmIfdCQ6fJ8C1LZA=; b=MnNza6rz/hGNpk
+	UpMF/pgafyw2+sPSgCECxmZbeNGg0UI4zjigWruNYye8B0SPonxZFbAHgj7n9L3n13OD1bYGVgkHe
+	rjIzsexOVam9RR9XlR8NbYjhoffDMvcECrO/MsxTO6zNF3g4TUHNqXa+PRXud2BXp70NAp83b8Rh8
+	4xHTvxInq5K4VcmF2foL4xkr6h1/YqXRKBbqsL86lK2nhG8TosP1mjODE15gsK2fYsmS5YFJTGSUh
+	jbLXzc0Yc0KB4vL9bLwDusCji2nnbIJkK4QHrMpLy4KJmQhjvbN79i9WjTYHl8QZe/GA6ahZ5EgHe
+	UUxbIRkYkVfrp3zaTK/A==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1wD8RO-00000001fJ2-10ol;
-	Wed, 15 Apr 2026 22:10:34 +0000
-Received: from mail-wm1-x331.google.com ([2a00:1450:4864:20::331])
+	id 1wDIWQ-00000002CdV-0B16;
+	Thu, 16 Apr 2026 08:56:26 +0000
+Received: from mx0b-0031df01.pphosted.com ([205.220.180.131])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1wD8RH-00000001fIF-1DTZ
+	id 1wDIWM-00000002Cbt-4AHy
 	for kvm-riscv@lists.infradead.org;
-	Wed, 15 Apr 2026 22:10:31 +0000
-Received: by mail-wm1-x331.google.com with SMTP id 5b1f17b1804b1-48334ee0aeaso71849865e9.1
-        for <kvm-riscv@lists.infradead.org>; Wed, 15 Apr 2026 15:10:26 -0700 (PDT)
+	Thu, 16 Apr 2026 08:56:24 +0000
+Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63G6ohx1218870
+	for <kvm-riscv@lists.infradead.org>; Thu, 16 Apr 2026 08:56:22 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=qcppdkim1; bh=7PJKkSl8igezGMSjj7lPVu8P
+	ECVNUlUo2WNQqgBP0H4=; b=NbxAPdKoDsZzWMXdXMrFQoUQxjz31jjjxA/6ZbLe
+	RevTpxrcJ5W3ZfKhvZXzz59whcSQ/ePhzXVzjs1ci0f9z1Rst7ygLV8ft+RaWocI
+	ATrwYD5ULhHpxIDwxu9VayTd3UZp1idaxB4KMM/mBmH7UlfYMLAmGUGMqiz0lVAE
+	EphmRqC63AJzfBcl8I5yrQ6sMjM9zxR1e7a/sc5i/xnXOaXL+aBvXiavsjzugbDV
+	giCzqIh2ZcMQQIDeubrBvG8d1yM1UmzGYfGOfEGV/DCrx+LpAYqpOqstytoHZqMR
+	dFFf1sbGIoMUDzEho72lSHF9uDLZ/O+KBHFIicULn8pSLg==
+Received: from mail-dl1-f69.google.com (mail-dl1-f69.google.com [74.125.82.69])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4djtuygg7b-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <kvm-riscv@lists.infradead.org>; Thu, 16 Apr 2026 08:56:21 +0000 (GMT)
+Received: by mail-dl1-f69.google.com with SMTP id a92af1059eb24-12c56ad1a90so19045937c88.0
+        for <kvm-riscv@lists.infradead.org>; Thu, 16 Apr 2026 01:56:21 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1776291025; x=1776895825; darn=lists.infradead.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=Gu9AQw7MI1mCAjsGD/n0+Be2DCItWXbhRChOUsm24MI=;
-        b=F/NzA5xM3sfj/palAWln3SSJeciKURawdAKImfmJGAMRFxvJWJqV4cGkyR649ddcL5
-         btlL1mw42alVRGxgtISZix36BiBraiZ/qzO8c9glyxH7hn9Tvj6EdXGW3ugWvaMqYIpP
-         F61hi1pJrUvrFNkg63LUjByJG8Yht/0JdGQOea551vO1cMiXr8c6ioL73Ck4R2M2TdaD
-         8sZIcY6Paz1Ta6aHQ0DSdBVU5lAoRtpLIC8+wna+3Bs95O3EK8AC791zbnnzTclp/yk/
-         WLVBEmb2ymH7BrpsdqXOAKLuvlqPicTfL9FOcWHgN3S3B6uEk0YIFPT9FgioPpiQvboF
-         BqKA==
+        d=oss.qualcomm.com; s=google; t=1776329781; x=1776934581; darn=lists.infradead.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=7PJKkSl8igezGMSjj7lPVu8PECVNUlUo2WNQqgBP0H4=;
+        b=f/svGJYboks70Aduje9hYDP4BJWK5xVJrYBMC4xepSGm05Rzfr0hkADQuW2zni41cj
+         RdKJeUJyrMa4smsUoR3lOixYt3y7qJDixO68ubPysKSD+6Yh+Uvwz+MqdeHDV/62PlZR
+         TMDLxl7hvWQIj3W8OegY0nbQ5WPbGb9ScMDj2HFfybjjlr20SgtQOa9KuyYJHxGHeQWQ
+         2ZHSj07tKvUgbg1f9qwmQ+/VnFzeeXC6B1TYMo1ibq0yBMgNwGOIKv8hCVHV/+f6vZuA
+         LVlHvi8AzsfjGVRcNdSEziLzsGNf4tzKreqiwi/rBSaSEZyODMa5g/02UpmIvGoY9Cws
+         9uSA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776291025; x=1776895825;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Gu9AQw7MI1mCAjsGD/n0+Be2DCItWXbhRChOUsm24MI=;
-        b=mysa13v38VQNWe5X+WWIHNo0uVUOmWEmoKRwLZ7LXlE6b0yQSSuNFercamF4Y5CAhq
-         hJC/OqUGbS/g09E/qAmhnvUz/sZXtasR7l34BfTHCmPDJI6i+2kdY3i5lhWxUL5Dz7kA
-         lwbrdjUOz9+7op3/ByqrFzWgQAO7MKHI8qXcwdyzDa5do6ArGQ7fc/EjwkiJtoxamyod
-         HYX3cUS0vKGHiBHMOgOKhXMBSF2bRgxgNBlmUdLcbqad5B8QXXYnNl6KXu/0pvW8Nl0D
-         JTMN0kQ7QWLjmbNTwgN2PK2Bwk2Q82c8F3GokZRstPoI1B+8198qfOPjyG7aOLHnT3+t
-         4m0Q==
-X-Forwarded-Encrypted: i=1; AFNElJ/1ZoVCdDZaqo6XpE56+s2rTIjgsRTyrraFYNoqFpDJji0LOuS8t7IfzrL9vD8miqxOIdsJs9O48sU=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yz9x89Ri3MS7eEKWA7SjkEbzMZj4ewS1LYCxU+0hklT/BTZKOS1
-	sfdZULyxKhoK0mSvk59HZUu83o8QOLE+WPibCZq/VFLx6sZvqmZnxNv8
-X-Gm-Gg: AeBDieu31gwngcY3v4ckpTXjWmEJD+Q0jlfKMA2RFcPZ8LM8EeMNP4Kf7Q3aZQbU/Ii
-	vq981SAsAGjd1ZGYTs7buDp/9Fq+GQvbw/VFGDDR6chunzEQT/NBA939eWn6FE3+x0Wvpp0q0Si
-	zskyewOCXJCs6kAAXMUyZDGc0zRJMcRxlvOvKOkWcLQwuwltVQSDnTOe2JphoomP2jwgX5ZUgtX
-	qvF4xrXHBiEwron0sCnWkeJwClJs4CgN5S3ia7y524IcCx57zb985PNsI/zT1I1oGKXJztgmdXA
-	xyoMSh2VL7DAnf8qkKskK+44rV51Cy6eoHaANtBspWnQxH7zv3+LC1hKSmoZJcLlf+SQMHyEeN+
-	uGOVkg5/oknnREx4LQKK7V2ZSlZSJ3+BSfDg7b0AgY4/iwgkCazdorOPlbkQvjBDVH5sAOPxoBW
-	BnEgCMsf5xjE/U8zYhXZRaCT7VR2Dn2x1gcDW7/vrJqseSFaca9WreQg4MHVY=
-X-Received: by 2002:a05:600c:474c:b0:485:35d3:ce59 with SMTP id 5b1f17b1804b1-488d68101edmr302262415e9.10.1776291024748;
-        Wed, 15 Apr 2026 15:10:24 -0700 (PDT)
-Received: from osama.. ([2a02:908:1b6:8980:d20f:daca:461:1a54])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-488f5818e51sm2095695e9.5.2026.04.15.15.10.23
+        d=1e100.net; s=20251104; t=1776329781; x=1776934581;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=7PJKkSl8igezGMSjj7lPVu8PECVNUlUo2WNQqgBP0H4=;
+        b=GovdP2Vf0JM363fHeZzEpmqKKfjDU/GB2mUxqG5RfMUmRP+S+OuUNKtGTQxuaUySRs
+         nKMZ4ga7CFJjK0E6pvFSY6smYxNlFjIyIxrxuy74Hg4LCH/d+UfskcKeDGHS8Rz6OnHp
+         Ms+kR1fds+jLBN1D9JtC0Zg12cGFLuHJJms0QXmDUzaBlEhDR6fjxSvVZB0FLkBX+OFt
+         pXf/+lsjsKnWC43xVA50EnAZQBOt+MKLFhPE0Mir0pVxgc3jnl8e0fn/wrXpXnxuUu1k
+         iBhJLPdk/TpmpNjCvPEE2IGpucNglY92E/kB71SBe2qyvAemahgW7P2TfYD0g+vbNW+8
+         Zn4w==
+X-Gm-Message-State: AOJu0YwzbENkb+wp797gdz63MsOwum0r4vRrwBiiwzog0UjKJ2shM6nj
+	7jHkmXosMrSDfQTs7wFuXpPrA9ZaXr2fCOIhIwtQOTHFzYcfUgSTPg5RkEBdSZjsBPlnYZGTHww
+	Hw3p7xKb0yB1zmRfSi3d7lke90mXpQIcF9y68dKnxgM7LKKn9QIjpB4fgfQ7LA4mHIjbt
+X-Gm-Gg: AeBDietAJNrm2N7UxVILdb+SCKo1t4tk/L5dVG4KNMm0AQRzvtlYBGnJpIeZrBmSkrC
+	x7abHETZHORuDKoKikhDAe9MXGHnaR1fA70NbjxjJh9kqABwXKeIsM3o6sUDaNoEciiiw73l8yH
+	iN3zSQpUTCyRxtFKCnuRbnsQOq94QFQk4mqvjVocsHfmoHHtYCL/pWfJMEzumVBAqsFGGU14Qhm
+	YyRS2rbR54xWp2mEHNIDYyg8OJcpBCjaz6Gr/J9UVHs/+F9o3MoHBBw8i8jo8+TQmO0Af978v1g
+	ggBhf+HDuMAf9WSNHZisXuS/8/vCc8Zacj+AiOO1fxh5iVd7cHbdd1Ix2pZmwtFJdWTcMhXLwDR
+	qsx0bski5tumTNmTVYH9pIfYHUehsQ+kkT9GQKNNSJU0PPFtuDsiBRC+NwYIt
+X-Received: by 2002:a05:7022:ec6:b0:11d:f89d:85a0 with SMTP id a92af1059eb24-12c34edf982mr14938560c88.27.1776329780602;
+        Thu, 16 Apr 2026 01:56:20 -0700 (PDT)
+X-Received: by 2002:a05:7022:ec6:b0:11d:f89d:85a0 with SMTP id a92af1059eb24-12c34edf982mr14938542c88.27.1776329780065;
+        Thu, 16 Apr 2026 01:56:20 -0700 (PDT)
+Received: from localhost (ip-86-49-249-15.bb.vodafone.cz. [86.49.249.15])
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-12c5e6b6a05sm5919161c88.14.2026.04.16.01.56.19
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 15 Apr 2026 15:10:24 -0700 (PDT)
-From: Osama Abdelkader <osama.abdelkader@gmail.com>
-To: Anup Patel <anup@brainfault.org>,
-	Atish Patra <atish.patra@linux.dev>,
-	Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Alexandre Ghiti <alex@ghiti.fr>,
-	kvm@vger.kernel.org,
-	kvm-riscv@lists.infradead.org,
-	linux-riscv@lists.infradead.org,
-	linux-kernel@vger.kernel.org
-Cc: Osama Abdelkader <osama.abdelkader@gmail.com>
-Subject: [RFC PATCH] riscv: kvm: return SBI_ERR_FAILURE for PMU shmem OOM
-Date: Thu, 16 Apr 2026 00:09:30 +0200
-Message-ID: <20260415220930.287592-1-osama.abdelkader@gmail.com>
-X-Mailer: git-send-email 2.43.0
+        Thu, 16 Apr 2026 01:56:19 -0700 (PDT)
+Date: Thu, 16 Apr 2026 10:56:17 +0200
+From: Andrew Jones <andrew.jones@oss.qualcomm.com>
+To: Jiakai Xu <xujiakai2025@iscas.ac.cn>
+Cc: kvm-riscv@lists.infradead.org, kvm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
+        Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+        Andrew Jones <ajones@ventanamicro.com>,
+        Anup Patel <anup@brainfault.org>, Atish Patra <atish.patra@linux.dev>,
+        Palmer Dabbelt <palmer@dabbelt.com>, Paul Walmsley <pjw@kernel.org>,
+        Jiakai Xu <jiakaiPeanut@gmail.com>
+Subject: Re: [PATCH] RISC-V: KVM: Fix invalid HVA warning in steal-time
+ recording
+Message-ID: <ddka3tcpcus5od4hmzauxyyqzwodqdeyzj4ttq4op5iusfugve@yacboe7mg5e2>
+References: <20260415075216.2757427-1-xujiakai2025@iscas.ac.cn>
 MIME-Version: 1.0
+Content-Disposition: inline
+In-Reply-To: <20260415075216.2757427-1-xujiakai2025@iscas.ac.cn>
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDE2MDA4MyBTYWx0ZWRfX4/sc0qYI1rvi
+ SBptvC/Baqhx5uWOcAEgJNRnUG/ufFjTpUgLcCrVyv1dZ0+19VT/PzQRLDyccXEw/jaMO2HZ0uP
+ glzzNaz4W3BuSGTRCIgxbltxDZAV2jX4YeQJ2szTw6/mLiGQDp6KO2dGYfVL03/fE0/SGfdEWv0
+ JzltJ6GTdNZ5ZOOOolPxU9AGN/9RDkzWHnPAb1zhyoGVWq2NMYL4ntae3vDQSUTDq1ZBPwOzLh4
+ 2w0HDaJflgcRsFNHihNdB/FlgeEoo3AhIyE1LEKDGvC/+SVjP/iVW87QmResBk7kxMgx4dpmALf
+ hY9KWq1FbTw77jRvCklMChPHJ1C4bsZkmw1Mfwm8C7zImxaRuFlQC7x7bH0OZ2P1wZPHiOX05Ww
+ apwfDL+phFrpk5RVY5d8zjMh5HEcyXIXodgtgagSfEcN/79Eh9fywEbSMHvlu0cpVuByLyxWzdy
+ mdnXXLHQkx0K9wvCLVw==
+X-Proofpoint-ORIG-GUID: LQh8uTDoJeKUsfp4uzMd6e7CINZucUcO
+X-Authority-Analysis: v=2.4 cv=Ipgutr/g c=1 sm=1 tr=0 ts=69e0a435 cx=c_pps
+ a=kVLUcbK0zfr7ocalXnG1qA==:117 a=fuErIE+P63Icv3tqjtEZBw==:17
+ a=kj9zAlcOel0A:10 a=A5OVakUREuEA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_glEPmIy2e8OvE2BGh3C:22
+ a=pGLkceISAAAA:8 a=EUspDBNiAAAA:8 a=KdkbrdStzu5tqnZBQrIA:9 a=CjuIK1q_8ugA:10
+ a=vr4QvYf-bLy2KjpDp97w:22
+X-Proofpoint-GUID: LQh8uTDoJeKUsfp4uzMd6e7CINZucUcO
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-04-16_02,2026-04-13_04,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 bulkscore=0 clxscore=1015 impostorscore=0
+ lowpriorityscore=0 adultscore=0 malwarescore=0 phishscore=0 spamscore=0
+ suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2604070000
+ definitions=main-2604160083
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260415_151027_974554_8E751D53 
-X-CRM114-Status: UNSURE (   9.89  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20260416_015623_143236_2516C5CC 
+X-CRM114-Status: GOOD (  26.85  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -105,51 +146,53 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-kvm_riscv_vcpu_pmu_snapshot_set_shmem() and kvm_riscv_vcpu_pmu_event_info()
-returned -ENOMEM from the SBI extension handler, which caused 
-kvm_riscv_vcpu_sbi_ecall() to abort KVM_RUN and surface the error to 
-userspace instead of completing the ECALL with a negative SBI error in a0.
-Use SBI_ERR_FAILURE and the normal retdata path, matching other PMU
-handlers and kvm_sbi_ext_pmu_handler comment.
+On Wed, Apr 15, 2026 at 07:52:16AM +0000, Jiakai Xu wrote:
+> kvm_riscv_vcpu_record_steal_time() assumes that the steal-time shared
+> memory GPA (vcpu->arch.sta.shmem) is always backed by a valid guest
+> memory slot. However, this assumption is not guaranteed by the KVM
+> userspace ABI.
+> 
+> A malicious or buggy userspace can set the STA shared memory GPA via
+> KVM_SET_ONE_REG without establishing a corresponding memory region via
+> KVM_SET_USER_MEMORY_REGION. In such cases, the GPA cannot be translated
+> to a valid HVA and kvm_vcpu_gfn_to_hva() returns an error address.
+> 
+> The current implementation incorrectly treats this as a kernel warning
+> using WARN_ON(), which may escalate to a kernel panic when panic_on_warn
+> is enabled.
+> 
+> This is not a kernel bug condition but a normal invalid configuration
+> from userspace, and should be handled gracefully.
+> 
+> Fix it by removing WARN_ON() and treating invalid HVA as a normal
+> failure case, resetting the STA shared memory state.
+> 
+> Fixes: e9f12b5fff8ad0 ("RISC-V: KVM: Implement SBI STA extension")
+> Signed-off-by: Jiakai Xu <xujiakai2025@iscas.ac.cn>
+> Signed-off-by: Jiakai Xu <jiakaiPeanut@gmail.com>
+> Assisted-by: OpenClaw:DeepSeek-V3.2
+> ---
+>  arch/riscv/kvm/vcpu_sbi_sta.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/arch/riscv/kvm/vcpu_sbi_sta.c b/arch/riscv/kvm/vcpu_sbi_sta.c
+> index 3b834709b429f..60e50296a0085 100644
+> --- a/arch/riscv/kvm/vcpu_sbi_sta.c
+> +++ b/arch/riscv/kvm/vcpu_sbi_sta.c
+> @@ -46,7 +46,7 @@ void kvm_riscv_vcpu_record_steal_time(struct kvm_vcpu *vcpu)
+>  	gfn = shmem >> PAGE_SHIFT;
+>  	hva = kvm_vcpu_gfn_to_hva(vcpu, gfn);
+>  
+> -	if (WARN_ON(kvm_is_error_hva(hva))) {
+> +	if (kvm_is_error_hva(hva)) {
+>  		vcpu->arch.sta.shmem = INVALID_GPA;
+>  		return;
+>  	}
+> -- 
+> 2.34.1
+>
 
-Signed-off-by: Osama Abdelkader <osama.abdelkader@gmail.com>
----
- arch/riscv/kvm/vcpu_pmu.c | 12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
-
-diff --git a/arch/riscv/kvm/vcpu_pmu.c b/arch/riscv/kvm/vcpu_pmu.c
-index e873430e596b..f36b099f447c 100644
---- a/arch/riscv/kvm/vcpu_pmu.c
-+++ b/arch/riscv/kvm/vcpu_pmu.c
-@@ -435,8 +435,10 @@ int kvm_riscv_vcpu_pmu_snapshot_set_shmem(struct kvm_vcpu *vcpu, unsigned long s
- 	}
- 
- 	kvpmu->sdata = kzalloc(snapshot_area_size, GFP_ATOMIC);
--	if (!kvpmu->sdata)
--		return -ENOMEM;
-+	if (!kvpmu->sdata) {
-+		sbiret = SBI_ERR_FAILURE;
-+		goto out;
-+	}
- 
- 	/* No need to check writable slot explicitly as kvm_vcpu_write_guest does it internally */
- 	if (kvm_vcpu_write_guest(vcpu, saddr, kvpmu->sdata, snapshot_area_size)) {
-@@ -480,8 +482,10 @@ int kvm_riscv_vcpu_pmu_event_info(struct kvm_vcpu *vcpu, unsigned long saddr_low
- 	}
- 
- 	einfo = kzalloc(shmem_size, GFP_KERNEL);
--	if (!einfo)
--		return -ENOMEM;
-+	if (!einfo) {
-+		ret = SBI_ERR_FAILURE;
-+		goto out;
-+	}
- 
- 	ret = kvm_vcpu_read_guest(vcpu, shmem, einfo, shmem_size);
- 	if (ret) {
--- 
-2.43.0
-
+Reviewed-by: Andrew Jones <andrew.jones@oss.qualcomm.com>
 
 -- 
 kvm-riscv mailing list
