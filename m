@@ -4,69 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24428F5A8BC
-	for <kvm-riscv@archiver.kernel.org>; Mon, 20 Apr 2026 21:20:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EF919F5A8BC
+	for <kvm-riscv@archiver.kernel.org>; Mon, 20 Apr 2026 21:20:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:Reply-To:List-Subscribe:List-Help:
 	List-Post:List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID
 	:References:Mime-Version:In-Reply-To:Date:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=R31AO+bUyBU/FHFsvrOJ8bYoa3+sBYLmg6g+aRjBwm8=; b=eLmeNJUGlXg2VO
-	cijL2E+72e/5wbUN83hvdM/hdZ8NfvY04H34f0XFWwJ+2GE+kbTayfht44qKBKaLVSezonKz0qw7r
-	q+PwWSg0VjmQrsoffYD3eotVbPrwEWup7QtuQUqXRnsqCHcX4tpvoOelNnc8vF5/iuQiLkfI4KwrE
-	F2nVbsq3MoP4ICpOOTdph4KXnmzsub89rZLS5TsZG24PaTBfxNsf/widiVw7W6F1HYP1w8UGcD6q9
-	rQ+UNLzgStM4FtMgcOy5hD7NOhq6TL65FN6Qs3sK1be46xekXVbKoEzRCYr+Y6kAwnqQbvnXWGToK
-	Dk8ckO81/9h50G2ASqZA==;
+	List-Owner; bh=5l+TlunLsuLIdrIz9uP+hF8SOpHkObNtocGfGiDIw6w=; b=kjpWLmT4LXtkVc
+	XeHEr+ALPIsWB6TvrQxH5wIep/5eBnZBKsIBV0VlZP0UEgxZtOVwhex3dzfbj0THCO++c0xm5yEzI
+	nXVe1I9Ucn4ZS7VQ52XDlbq8rrYL8KlISnaGiYxw7BdxJwKA8+owXBHZM9dCaVCCKCUTIUa1i4C+z
+	EgtV9w/ZqJ/7q7VMt08bwpufiq/n3q/b/0eMcctCD8w1x3NHshPDzwABLKtcGAYwYq0+M1oMHsCm1
+	0DpGAhbQCohL3PVtOfWRb20NQ/90xY32kjTYeOAFnrM8VxdXDrU72aYAeIyzpw64cF+PAnh4Qku9P
+	v8U+bNEBxWb2N3fjS/Kg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1wEw2V-00000007fcF-2onl;
-	Mon, 20 Apr 2026 21:20:19 +0000
-Received: from mail-pf1-x449.google.com ([2607:f8b0:4864:20::449])
+	id 1wEw2i-00000007frn-2vYj;
+	Mon, 20 Apr 2026 21:20:32 +0000
+Received: from mail-pg1-x549.google.com ([2607:f8b0:4864:20::549])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1wEw2P-00000007fUy-05Jw
+	id 1wEw2T-00000007fYg-0pH8
 	for kvm-riscv@lists.infradead.org;
-	Mon, 20 Apr 2026 21:20:16 +0000
-Received: by mail-pf1-x449.google.com with SMTP id d2e1a72fcca58-82fa1c94b37so1754716b3a.0
-        for <kvm-riscv@lists.infradead.org>; Mon, 20 Apr 2026 14:20:12 -0700 (PDT)
+	Mon, 20 Apr 2026 21:20:21 +0000
+Received: by mail-pg1-x549.google.com with SMTP id 41be03b00d2f7-c7976ded5c5so3300500a12.0
+        for <kvm-riscv@lists.infradead.org>; Mon, 20 Apr 2026 14:20:16 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1776720012; x=1777324812; darn=lists.infradead.org;
+        d=google.com; s=20251104; t=1776720016; x=1777324816; darn=lists.infradead.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:from:to:cc:subject:date:message-id:reply-to;
-        bh=sEgidxfCrHeWAn/iqKdfWB4mQGqG7JFMt/kzEyBGoSw=;
-        b=TTTXV5v1+cBoOW5sJoFSM0JZADvFCfac3RjpqSRfPvk9wsaa8NToXmYcvnSHz1N3rp
-         D+uYTAGy0yKvVcwOuNK//TmyoGorV2tH99UDNEZTTkAbWKmoPKJ7ssbWZTmr0jZ0RFb7
-         QA2FzimoXAT8J6gwaCcivKDdb+GGabnvJksM6K4ZQjzZJQM2XSihT6t7BPsIIE7QFrkl
-         iHBmX6m9/ejaz22AGZBbhC/ol44uYd5WDbg256ah5YAOcMphoMX051TFb740erkPtiDd
-         Yd0zWgJPDoIi+ZKaSfBhTD+8lGwJCMuPRJ57vnUUDq32IxtuE7Ome2HkSXpK1iI4CSkZ
-         9PAA==
+        bh=LgSbE/Mgjmr5sEfkbBcIyWDe7SVs47UFLiamE2DA5JI=;
+        b=WtnaL0rXoRjTO3mGlrNft5CKHwULJ5pSjGHmsuAD/DxQeNgx8plt6NEgKD62vdaGUa
+         6AdENKLIVMrsUfK95DBBRb1FJYigd4KdqZhuqCDmiNJ2aEfiF+CDNmslPfK11HEkjWpd
+         CLFrP2hTes+3wnABiIZ9AdiZxXqgc8MY0WCegsR2j+jDHFSg3LSw72cZsU30f2kuS0Gy
+         4SG5MEPZTX5GshYqNiDDdffDmxcjLc74NcfTo86fdNK/SLNU7B3WWfmdjgMt9HgB78cs
+         AJc6DiEvsWPmr48SGTWq+Xlh3eS7HoFFItoibgxW1p133C5KYrtvxjoSfmrF9aASHF2j
+         A+nQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776720012; x=1777324812;
+        d=1e100.net; s=20251104; t=1776720016; x=1777324816;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=sEgidxfCrHeWAn/iqKdfWB4mQGqG7JFMt/kzEyBGoSw=;
-        b=SiEdQePcFcvvbAAprMdOABbFxbrPgVWZBttZWAzIgapqrcAyPVGC6FnNHAVJgKlBxj
-         jc8s9Q+iMHFUZYiq4Ekb4G2mxznvVFOa0ERo5++T3AI8SA5iMQoP0s/wxdneGGp2j6Os
-         mrhwxuKSPH6Wo9Ubz+kASRv93t6Tw9GXuUqWnGrpvglG8evfJtMaSE8pgGhdI9NKGAoW
-         qIigZfNhh1IF2d3XDE1mEtv0zZIUrEjE0Rgj5t9LV6p0wlZDw/MGvkBg/2X2oy3Ui4Ov
-         LXw8tqmq1nf6k2XuXLSausurbPRNv3k3gV8j8DJRL1BFEAbpv848b6S8U/455FMq9RxK
-         aTFw==
-X-Forwarded-Encrypted: i=1; AFNElJ9sfEYa1JmLIphCuy9l4UhzQ+icmWwJk3N3qE6AJN49FXvHHuEHVQ1Ah54y3AJQueIcpPblZmrZlo4=@lists.infradead.org
-X-Gm-Message-State: AOJu0YxqlOfbZXFcjyRVfs2Qtzne2Lls+PfSIsvcPpmklShmYJhJ7I2F
-	ZH9hqUSD/DoR+KxstzzuBNEsyI1eanuat1BIT0U2Rkj/1ZRxJwTc9o+JcV4bbl9Iz7z0yjRn7Jr
-	Zm4TyHQ==
-X-Received: from pfbli8.prod.google.com ([2002:a05:6a00:7188:b0:82f:54e9:c13e])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a00:27ab:b0:82f:6eca:563e
- with SMTP id d2e1a72fcca58-82f8b573171mr11858630b3a.34.1776720011915; Mon, 20
- Apr 2026 14:20:11 -0700 (PDT)
-Date: Mon, 20 Apr 2026 14:19:48 -0700
+        bh=LgSbE/Mgjmr5sEfkbBcIyWDe7SVs47UFLiamE2DA5JI=;
+        b=dwX51aASLIknFdg8yCv8pDrw6kuNctuigppUkOxLU6h7cDjtkK5KVxjuk4Y5zh8gTp
+         MWrQjiGJsrGTi08ixfWJpGPxghDDMA31XXNOkxa2/krHFO3ERJkiVxyiCIEWzt/KzMlj
+         FwP9pUmZuX82julqbIqiGcheySpSd8ljRrrpAvO1WvdBFHwh6a3SIBj6GvgJH1IHnXZM
+         zOp0YL+rrgYuwEAtjtorAJRlT49FKw96WVPYhrfAY6yv02B3YbF4z95TWKS4DFJ2A7IA
+         pyU1/GMPdl+ftTZURF/8Dji59VvjLKcY04L7RFimlwiHey68mjPkIB3Za1Jc8BpGhQXj
+         co8A==
+X-Forwarded-Encrypted: i=1; AFNElJ+uW6fJFXY6J3ezbOYwyjeHmU21z32fBUYZCPbzjkiolggyCyjBZx19hzjniDzmgh3kcHgwT6tkTHw=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yy/kSpwAHma2mApcoOgN5J+iUqxtmDtlAQIiEKLc6EdNlGmcjZS
+	qKlz9F6gVJnGhb47qju4CGdkRtuRAsFrSgkhSGQyDKFNuLubDQB7Ni1IXSqQgJKJDUFGIxZL69D
+	L4wUTWw==
+X-Received: from pfbjw21.prod.google.com ([2002:a05:6a00:9295:b0:82f:a4cc:2fb3])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a00:bd0a:b0:82c:9897:70e6
+ with SMTP id d2e1a72fcca58-82f8c8e8aaemr16257900b3a.34.1776720015506; Mon, 20
+ Apr 2026 14:20:15 -0700 (PDT)
+Date: Mon, 20 Apr 2026 14:19:50 -0700
 In-Reply-To: <20260420212004.3938325-1-seanjc@google.com>
 Mime-Version: 1.0
 References: <20260420212004.3938325-1-seanjc@google.com>
 X-Mailer: git-send-email 2.54.0.rc1.555.g9c883467ad-goog
-Message-ID: <20260420212004.3938325-4-seanjc@google.com>
-Subject: [PATCH v3 03/19] KVM: selftests: Use gpa_t for GPAs in Hyper-V selftests
+Message-ID: <20260420212004.3938325-6-seanjc@google.com>
+Subject: [PATCH v3 05/19] KVM: selftests: Use s64 instead of int64_t
 From: Sean Christopherson <seanjc@google.com>
 To: Paolo Bonzini <pbonzini@redhat.com>, Marc Zyngier <maz@kernel.org>, 
 	Oliver Upton <oupton@kernel.org>, Tianrui Zhao <zhaotianrui@loongson.cn>, 
@@ -80,8 +80,8 @@ Cc: kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
 	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
 	linux-kernel@vger.kernel.org, David Matlack <dmatlack@google.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260420_142013_131387_14C8B540 
-X-CRM114-Status: GOOD (  12.06  )
+X-CRM114-CacheID: sfid-20260420_142017_279611_744F5B64 
+X-CRM114-Status: GOOD (  17.41  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -101,91 +101,236 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 From: David Matlack <dmatlack@google.com>
 
-Fix various Hyper-V selftests to use gpa_t for variables that contain
-guest physical addresses, rather than gva_t.  In practice, the bugs are
-benign as both gva_t and gpa_t are u64 typedefs, i.e. gpa_t and gva_t are
-interchangeable from a functional perspective, the code is just confusing.
+Use s64 instead of int64_t to make the KVM selftests code more concise
+and more similar to the kernel (since selftests are primarily developed
+by kernel developers).
+
+This commit was generated with the following command:
+
+  git ls-files tools/testing/selftests/kvm | xargs sed -i 's/int64_t/s64/g'
+
+Then by manually adjusting whitespace to make checkpatch.pl happy.
 
 No functional change intended.
 
 Signed-off-by: David Matlack <dmatlack@google.com>
-[sean: call out that both are u64 typedefs]
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- tools/testing/selftests/kvm/x86/hyperv_evmcs.c    | 2 +-
- tools/testing/selftests/kvm/x86/hyperv_features.c | 2 +-
- tools/testing/selftests/kvm/x86/hyperv_ipi.c      | 6 +++---
- tools/testing/selftests/kvm/x86/hyperv_svm_test.c | 2 +-
- 4 files changed, 6 insertions(+), 6 deletions(-)
+ tools/testing/selftests/kvm/arm64/sea_to_user.c  |  2 +-
+ tools/testing/selftests/kvm/arm64/set_id_regs.c  |  2 +-
+ tools/testing/selftests/kvm/guest_print_test.c   |  2 +-
+ tools/testing/selftests/kvm/include/test_util.h  |  4 ++--
+ tools/testing/selftests/kvm/lib/test_util.c      | 16 ++++++++--------
+ .../testing/selftests/kvm/lib/userfaultfd_util.c |  2 +-
+ tools/testing/selftests/kvm/lib/x86/processor.c  |  2 +-
+ tools/testing/selftests/kvm/memslot_perf_test.c  |  2 +-
+ tools/testing/selftests/kvm/steal_time.c         |  4 ++--
+ tools/testing/selftests/kvm/x86/kvm_clock_test.c |  2 +-
+ .../selftests/kvm/x86/nested_tsc_adjust_test.c   |  6 +++---
+ 11 files changed, 22 insertions(+), 22 deletions(-)
 
-diff --git a/tools/testing/selftests/kvm/x86/hyperv_evmcs.c b/tools/testing/selftests/kvm/x86/hyperv_evmcs.c
-index c2de5ac799ee..2d1733f9303a 100644
---- a/tools/testing/selftests/kvm/x86/hyperv_evmcs.c
-+++ b/tools/testing/selftests/kvm/x86/hyperv_evmcs.c
-@@ -76,7 +76,7 @@ void l2_guest_code(void)
+diff --git a/tools/testing/selftests/kvm/arm64/sea_to_user.c b/tools/testing/selftests/kvm/arm64/sea_to_user.c
+index 61954f2221e4..7285eade4acf 100644
+--- a/tools/testing/selftests/kvm/arm64/sea_to_user.c
++++ b/tools/testing/selftests/kvm/arm64/sea_to_user.c
+@@ -59,7 +59,7 @@ static bool far_invalid;
+ static u64 translate_to_host_paddr(unsigned long vaddr)
+ {
+ 	u64 pinfo;
+-	int64_t offset = vaddr / getpagesize() * sizeof(pinfo);
++	s64 offset = vaddr / getpagesize() * sizeof(pinfo);
+ 	int fd;
+ 	u64 page_addr;
+ 	u64 paddr;
+diff --git a/tools/testing/selftests/kvm/arm64/set_id_regs.c b/tools/testing/selftests/kvm/arm64/set_id_regs.c
+index 9b9c04c963a1..4402f317f7d9 100644
+--- a/tools/testing/selftests/kvm/arm64/set_id_regs.c
++++ b/tools/testing/selftests/kvm/arm64/set_id_regs.c
+@@ -36,7 +36,7 @@ struct reg_ftr_bits {
+ 	 * For FTR_EXACT, safe_val is used as the exact safe value.
+ 	 * For FTR_LOWER_SAFE, safe_val is used as the minimal safe value.
+ 	 */
+-	int64_t safe_val;
++	s64 safe_val;
+ 
+ 	/* Allowed to be changed by the host after run */
+ 	bool mutable;
+diff --git a/tools/testing/selftests/kvm/guest_print_test.c b/tools/testing/selftests/kvm/guest_print_test.c
+index 894ef7d2481e..b059abcf1a5b 100644
+--- a/tools/testing/selftests/kvm/guest_print_test.c
++++ b/tools/testing/selftests/kvm/guest_print_test.c
+@@ -25,7 +25,7 @@ static struct guest_vals vals;
+ 
+ /* GUEST_PRINTF()/GUEST_ASSERT_FMT() does not support float or double. */
+ #define TYPE_LIST					\
+-TYPE(test_type_i64,  I64,  "%ld",   int64_t)		\
++TYPE(test_type_i64,  I64,  "%ld",   s64)		\
+ TYPE(test_type_u64,  U64u, "%lu",   u64)		\
+ TYPE(test_type_x64,  U64x, "0x%lx", u64)		\
+ TYPE(test_type_X64,  U64X, "0x%lX", u64)		\
+diff --git a/tools/testing/selftests/kvm/include/test_util.h b/tools/testing/selftests/kvm/include/test_util.h
+index 62fe83763021..d7489db738bf 100644
+--- a/tools/testing/selftests/kvm/include/test_util.h
++++ b/tools/testing/selftests/kvm/include/test_util.h
+@@ -101,8 +101,8 @@ do {										\
+ 
+ size_t parse_size(const char *size);
+ 
+-int64_t timespec_to_ns(struct timespec ts);
+-struct timespec timespec_add_ns(struct timespec ts, int64_t ns);
++s64 timespec_to_ns(struct timespec ts);
++struct timespec timespec_add_ns(struct timespec ts, s64 ns);
+ struct timespec timespec_add(struct timespec ts1, struct timespec ts2);
+ struct timespec timespec_sub(struct timespec ts1, struct timespec ts2);
+ struct timespec timespec_elapsed(struct timespec start);
+diff --git a/tools/testing/selftests/kvm/lib/test_util.c b/tools/testing/selftests/kvm/lib/test_util.c
+index d863705f6795..f5b460c445be 100644
+--- a/tools/testing/selftests/kvm/lib/test_util.c
++++ b/tools/testing/selftests/kvm/lib/test_util.c
+@@ -83,12 +83,12 @@ size_t parse_size(const char *size)
+ 	return base << shift;
  }
  
- void guest_code(struct vmx_pages *vmx_pages, struct hyperv_test_pages *hv_pages,
--		gva_t hv_hcall_page_gpa)
-+		gpa_t hv_hcall_page_gpa)
+-int64_t timespec_to_ns(struct timespec ts)
++s64 timespec_to_ns(struct timespec ts)
  {
- #define L2_GUEST_STACK_SIZE 64
- 	unsigned long l2_guest_stack[L2_GUEST_STACK_SIZE];
-diff --git a/tools/testing/selftests/kvm/x86/hyperv_features.c b/tools/testing/selftests/kvm/x86/hyperv_features.c
-index 1059fcc460e3..0360fa5915c0 100644
---- a/tools/testing/selftests/kvm/x86/hyperv_features.c
-+++ b/tools/testing/selftests/kvm/x86/hyperv_features.c
-@@ -82,7 +82,7 @@ static void guest_msr(struct msr_data *msr)
+-	return (int64_t)ts.tv_nsec + 1000000000LL * (int64_t)ts.tv_sec;
++	return (s64)ts.tv_nsec + 1000000000LL * (s64)ts.tv_sec;
+ }
+ 
+-struct timespec timespec_add_ns(struct timespec ts, int64_t ns)
++struct timespec timespec_add_ns(struct timespec ts, s64 ns)
+ {
+ 	struct timespec res;
+ 
+@@ -101,15 +101,15 @@ struct timespec timespec_add_ns(struct timespec ts, int64_t ns)
+ 
+ struct timespec timespec_add(struct timespec ts1, struct timespec ts2)
+ {
+-	int64_t ns1 = timespec_to_ns(ts1);
+-	int64_t ns2 = timespec_to_ns(ts2);
++	s64 ns1 = timespec_to_ns(ts1);
++	s64 ns2 = timespec_to_ns(ts2);
+ 	return timespec_add_ns((struct timespec){0}, ns1 + ns2);
+ }
+ 
+ struct timespec timespec_sub(struct timespec ts1, struct timespec ts2)
+ {
+-	int64_t ns1 = timespec_to_ns(ts1);
+-	int64_t ns2 = timespec_to_ns(ts2);
++	s64 ns1 = timespec_to_ns(ts1);
++	s64 ns2 = timespec_to_ns(ts2);
+ 	return timespec_add_ns((struct timespec){0}, ns1 - ns2);
+ }
+ 
+@@ -123,7 +123,7 @@ struct timespec timespec_elapsed(struct timespec start)
+ 
+ struct timespec timespec_div(struct timespec ts, int divisor)
+ {
+-	int64_t ns = timespec_to_ns(ts) / divisor;
++	s64 ns = timespec_to_ns(ts) / divisor;
+ 
+ 	return timespec_add_ns((struct timespec){0}, ns);
+ }
+diff --git a/tools/testing/selftests/kvm/lib/userfaultfd_util.c b/tools/testing/selftests/kvm/lib/userfaultfd_util.c
+index 2f069ce6a446..ef8d76f71f83 100644
+--- a/tools/testing/selftests/kvm/lib/userfaultfd_util.c
++++ b/tools/testing/selftests/kvm/lib/userfaultfd_util.c
+@@ -27,7 +27,7 @@ static void *uffd_handler_thread_fn(void *arg)
+ {
+ 	struct uffd_reader_args *reader_args = (struct uffd_reader_args *)arg;
+ 	int uffd = reader_args->uffd;
+-	int64_t pages = 0;
++	s64 pages = 0;
+ 	struct timespec start;
+ 	struct timespec ts_diff;
+ 	struct epoll_event evt;
+diff --git a/tools/testing/selftests/kvm/lib/x86/processor.c b/tools/testing/selftests/kvm/lib/x86/processor.c
+index 81f5dea51fc3..802543aa588c 100644
+--- a/tools/testing/selftests/kvm/lib/x86/processor.c
++++ b/tools/testing/selftests/kvm/lib/x86/processor.c
+@@ -379,7 +379,7 @@ static u64 *__vm_get_page_table_entry(struct kvm_vm *vm,
+ 	 * Check that the vaddr is a sign-extended va_width value.
+ 	 */
+ 	TEST_ASSERT(vaddr ==
+-		    (((int64_t)vaddr << (64 - va_width) >> (64 - va_width))),
++		    (((s64)vaddr << (64 - va_width) >> (64 - va_width))),
+ 		    "Canonical check failed.  The virtual address is invalid.");
+ 
+ 	for (current_level = mmu->pgtable_levels;
+diff --git a/tools/testing/selftests/kvm/memslot_perf_test.c b/tools/testing/selftests/kvm/memslot_perf_test.c
+index d5161e8aee14..bf62b522d32e 100644
+--- a/tools/testing/selftests/kvm/memslot_perf_test.c
++++ b/tools/testing/selftests/kvm/memslot_perf_test.c
+@@ -1040,7 +1040,7 @@ static bool parse_args(int argc, char *argv[],
+ 
+ struct test_result {
+ 	struct timespec slot_runtime, guest_runtime, iter_runtime;
+-	int64_t slottimens, runtimens;
++	s64 slottimens, runtimens;
+ 	u64 nloops;
+ };
+ 
+diff --git a/tools/testing/selftests/kvm/steal_time.c b/tools/testing/selftests/kvm/steal_time.c
+index 6379f47af422..d0a41a2bcccb 100644
+--- a/tools/testing/selftests/kvm/steal_time.c
++++ b/tools/testing/selftests/kvm/steal_time.c
+@@ -123,7 +123,7 @@ struct st_time {
+ 	u64 st_time;
+ };
+ 
+-static int64_t smccc(uint32_t func, u64 arg)
++static s64 smccc(uint32_t func, u64 arg)
+ {
+ 	struct arm_smccc_res res;
+ 
+@@ -140,7 +140,7 @@ static void check_status(struct st_time *st)
+ static void guest_code(int cpu)
+ {
+ 	struct st_time *st;
+-	int64_t status;
++	s64 status;
+ 
+ 	status = smccc(SMCCC_ARCH_FEATURES, PV_TIME_FEATURES);
+ 	GUEST_ASSERT_EQ(status, 0);
+diff --git a/tools/testing/selftests/kvm/x86/kvm_clock_test.c b/tools/testing/selftests/kvm/x86/kvm_clock_test.c
+index 5df0cceec03b..2b8a3feee1f8 100644
+--- a/tools/testing/selftests/kvm/x86/kvm_clock_test.c
++++ b/tools/testing/selftests/kvm/x86/kvm_clock_test.c
+@@ -18,7 +18,7 @@
+ 
+ struct test_case {
+ 	u64 kvmclock_base;
+-	int64_t realtime_offset;
++	s64 realtime_offset;
+ };
+ 
+ static struct test_case test_cases[] = {
+diff --git a/tools/testing/selftests/kvm/x86/nested_tsc_adjust_test.c b/tools/testing/selftests/kvm/x86/nested_tsc_adjust_test.c
+index db0d44b8fbd6..a18b0cfd42e2 100644
+--- a/tools/testing/selftests/kvm/x86/nested_tsc_adjust_test.c
++++ b/tools/testing/selftests/kvm/x86/nested_tsc_adjust_test.c
+@@ -53,9 +53,9 @@ enum {
+ /* The virtual machine object. */
+ static struct kvm_vm *vm;
+ 
+-static void check_ia32_tsc_adjust(int64_t max)
++static void check_ia32_tsc_adjust(s64 max)
+ {
+-	int64_t adjust;
++	s64 adjust;
+ 
+ 	adjust = rdmsr(MSR_IA32_TSC_ADJUST);
+ 	GUEST_SYNC(adjust);
+@@ -117,7 +117,7 @@ static void l1_guest_code(void *data)
  	GUEST_DONE();
  }
  
--static void guest_hcall(gva_t pgs_gpa, struct hcall_data *hcall)
-+static void guest_hcall(gpa_t pgs_gpa, struct hcall_data *hcall)
+-static void report(int64_t val)
++static void report(s64 val)
  {
- 	u64 res, input, output;
- 	uint8_t vector;
-diff --git a/tools/testing/selftests/kvm/x86/hyperv_ipi.c b/tools/testing/selftests/kvm/x86/hyperv_ipi.c
-index 7d648219833c..5369867efac3 100644
---- a/tools/testing/selftests/kvm/x86/hyperv_ipi.c
-+++ b/tools/testing/selftests/kvm/x86/hyperv_ipi.c
-@@ -45,13 +45,13 @@ struct hv_send_ipi_ex {
- 	struct hv_vpset vp_set;
- };
- 
--static inline void hv_init(gva_t pgs_gpa)
-+static inline void hv_init(gpa_t pgs_gpa)
- {
- 	wrmsr(HV_X64_MSR_GUEST_OS_ID, HYPERV_LINUX_OS_ID);
- 	wrmsr(HV_X64_MSR_HYPERCALL, pgs_gpa);
- }
- 
--static void receiver_code(void *hcall_page, gva_t pgs_gpa)
-+static void receiver_code(void *hcall_page, gpa_t pgs_gpa)
- {
- 	u32 vcpu_id;
- 
-@@ -85,7 +85,7 @@ static inline void nop_loop(void)
- 		asm volatile("nop");
- }
- 
--static void sender_guest_code(void *hcall_page, gva_t pgs_gpa)
-+static void sender_guest_code(void *hcall_page, gpa_t pgs_gpa)
- {
- 	struct hv_send_ipi *ipi = (struct hv_send_ipi *)hcall_page;
- 	struct hv_send_ipi_ex *ipi_ex = (struct hv_send_ipi_ex *)hcall_page;
-diff --git a/tools/testing/selftests/kvm/x86/hyperv_svm_test.c b/tools/testing/selftests/kvm/x86/hyperv_svm_test.c
-index e0caf5ea14bd..54a1a6dad4d5 100644
---- a/tools/testing/selftests/kvm/x86/hyperv_svm_test.c
-+++ b/tools/testing/selftests/kvm/x86/hyperv_svm_test.c
-@@ -67,7 +67,7 @@ void l2_guest_code(void)
- 
- static void __attribute__((__flatten__)) guest_code(struct svm_test_data *svm,
- 						    struct hyperv_test_pages *hv_pages,
--						    gva_t pgs_gpa)
-+						    gpa_t pgs_gpa)
- {
- 	unsigned long l2_guest_stack[L2_GUEST_STACK_SIZE];
- 	struct vmcb *vmcb = svm->vmcb;
+ 	pr_info("IA32_TSC_ADJUST is %ld (%lld * TSC_ADJUST_VALUE + %lld).\n",
+ 		val, val / TSC_ADJUST_VALUE, val % TSC_ADJUST_VALUE);
 -- 
 2.54.0.rc1.555.g9c883467ad-goog
 
