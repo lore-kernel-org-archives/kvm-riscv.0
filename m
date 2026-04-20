@@ -4,98 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BD6DFF5A8B9
-	for <kvm-riscv@archiver.kernel.org>; Mon, 20 Apr 2026 20:16:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 72D57F5A8C5
+	for <kvm-riscv@archiver.kernel.org>; Mon, 20 Apr 2026 20:43:31 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:Subject:Message-ID:Date:From:
-	In-Reply-To:References:MIME-Version:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=wGuL3ju0FzF134hUOY9WV31YETHP99VoSzJQSWrpfY8=; b=lPQxQdEdPC+PDy
-	DO9GcB+6asZ7N5fdnA/ydv0dpLJ1z9DMHpJ0FrXhF/lkHFnoR9Rq59pbYyMwnCLO6GYrysTGlhkom
-	B1oHY4GArIDqUxYNrxQhjgnpt7iQT219Mqi4m7VYhUZtoxrQce/i2xnDczZr7iLAlZQOO1v3VieL9
-	Rga8cE94dLE18Jo0pbe5W9g4nN4Nhlz6N+qko0ZeAABXVjdlVbhUTWA6XfinApqlA8UJ1BKZtIJtz
-	tzEeFkz6mn3+W/tTV4JEiD6qatKqz4NJa37P4r4uktxlG+9HcI2w5WjZT1E78IBc7yebUvAtekefW
-	IBkXUzTgx6utWVqfUpUw==;
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID:
+	References:Mime-Version:In-Reply-To:Date:Reply-To:Content-ID:
+	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+	:Resent-Message-ID:List-Owner;
+	bh=g4ScG2zH/ODIBsUvMLnbh0Kl0k/OmrdLFgCf81USDlI=; b=q/TZ7CYj1YgMP8oRRGP9bReNmr
+	YgRiT8xrww8+b7IRgHxZLdO+NUk9EpLnSv5GRZgLwDi8nmNT/SKfMe54m5vodXRf70HN6P4Fbmli2
+	b450s8BxD6wp6UllVEUD7JFz9Ux7ranT77lwAhab42sDkPcLAVE8lFLi4P394QjDTlpUl8w5ljM9A
+	xN+McrO9w9AB0+Wu2W/L3ktKx2Fqzk1YthSANfGD/ejyyPZueFHuGdnEbN1V30VahBjlQCrPIev7Q
+	103cH8q1BknUr9x/vnZ8oiCRiIrnoaaCj3ndTBSyx6JAbn6slAzeodsWLRlKRo0r+W2PaRVIrZcoC
+	Te3zxTkQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1wEv2p-00000007cPO-1itD;
-	Mon, 20 Apr 2026 20:16:35 +0000
-Received: from mail-lj1-x22e.google.com ([2a00:1450:4864:20::22e])
+	id 1wEvSt-00000007dbn-00Q0;
+	Mon, 20 Apr 2026 20:43:31 +0000
+Received: from mail-pl1-x64a.google.com ([2607:f8b0:4864:20::64a])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1wEv2m-00000007cO0-15Sf
+	id 1wEvSr-00000007daq-0ouz
 	for kvm-riscv@lists.infradead.org;
-	Mon, 20 Apr 2026 20:16:34 +0000
-Received: by mail-lj1-x22e.google.com with SMTP id 38308e7fff4ca-38dd9f11a09so32600521fa.2
-        for <kvm-riscv@lists.infradead.org>; Mon, 20 Apr 2026 13:16:30 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1776716189; cv=none;
-        d=google.com; s=arc-20240605;
-        b=AgJ4eG5F5D/eFYdcUSPUG79iLPo1sk2okGXiOLwleZjU31wuoEqzlELsltPIBom9XL
-         J7Hug3ghmf9fEX/2BPgQN+z5y2BV5deVe2laUJxUZwSv2wLfCt8gICw0OxFMMP/L/32Y
-         JhncibMZEr1Osny+JORnZ/lqtrhsM3AnuRh/r6nX7Q9xEkj0/iNbtJvx8mRmdlh/++ZD
-         96MatlRn1FhOjgt8r9uBqNGURyFPXgN8COJBKqE0CUuqXPhhaQtmtUkJkGP0/Sllq117
-         6v4ykuRkfJ4TaA3BqbWgD1XPuLC9zShq/RhhB770/l9nM/iWFEBHiY6Syq+yIuJ3PO/0
-         WiZg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=uT/kFgtDJcz1r8Wwv13r6DbOoiLv2w0cC+Hfy6lE6eQ=;
-        fh=nquImGCi8H24eHm9xe1cOEvP+Qv6AbN9SJ6Ai9rcfos=;
-        b=hYV/d3RRn8DcJ5+L4e3Z0CihF9rsFi5x3Vm/3sAazSxrurGXM7hFHFXd9m5pQiEY2Q
-         hF7blIG9xbroQPV5yalkrHnLl5+goztCuivRSTodVCoH4JQyCSnH1A+ssCO7GdQchHtR
-         0GwzTQflZdY5qEK0dWtSL77q+JRVzgLQLHSVyGDJVRPGdiAvfsMKirMcoeqnKq2kujQ5
-         1fLwdHdEWaOVZw+L4C6s7hk9MMEKspl6QyYqWEXkGFr9D8Oe8/m74nYfq5IGqJv+zCsQ
-         uQXlbFuG0Fz0z8963NI7vu18Q25TjzMC5C3iPjrRlVnGimksk8AU2V20UgYgVCyBuvWT
-         jJ/g==;
-        darn=lists.infradead.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	Mon, 20 Apr 2026 20:43:30 +0000
+Received: by mail-pl1-x64a.google.com with SMTP id d9443c01a7336-2b242b9359aso33970645ad.0
+        for <kvm-riscv@lists.infradead.org>; Mon, 20 Apr 2026 13:43:28 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1776716189; x=1777320989; darn=lists.infradead.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=uT/kFgtDJcz1r8Wwv13r6DbOoiLv2w0cC+Hfy6lE6eQ=;
-        b=dSPIYs9Pl0xoW5aPKoV+vgjZO6pmcldvcj2FX60RjCfI2IpZn8kRfTXQoMmKxGP+BB
-         6plqmrAAIBGz0fRBWenyDRaGOpiJOsQZ67d1lkVAeTKpOQwsSoDQhxHufcIWXfT4pNec
-         Vp0X52TmI2uz3pgN99wqKcTM+Q07GEEntt8evvRWwiML0mYkCh/mXTy/D4TPTTuzFFbb
-         lWuWvUxZMwbUVsenhkI/qWzl3ndN3W8eFq4hH1PhhuMeJRFfaWjOFx2H7NBiMS0rMoQW
-         rbXweAE+ynvWAApV/zNQdIyFpAcMnNKIO+wvlJoTvQ77BzLWAC1/meHUCtT0T6hEbGWy
-         e9Kg==
+        d=google.com; s=20251104; t=1776717808; x=1777322608; darn=lists.infradead.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=Bw/xOa4cMDz+3Y150IRREEsvI8FeQ6LscRd2k8rTaIk=;
+        b=HGu8nbHdwEH1ht1VIiu5NeqGRskHHXBu4YE2oH1pg0ZyAuKaPKL6y1ZUY6gJ8/58L+
+         B2U9vOWiFPiYDNBB8FUcWHb0TuuPUBQLBgmgctj69Sf836fT5WpYm9FP8wwvfyj1Btde
+         DsNj8+j2FNKMzfe4ubkCKGvNOC4JowrN5wJugMjQJN/SBIPKuFuiDjpZd4LwGUfkaevW
+         yJ+eEqTuWsC5R14hhFHyPefVtaEnSasShodQJVSn7nqTbL52Z3mlBajXavwIEjUjs3WJ
+         nl/CdJ0PA0KkDeTY2J5dFX3B1Bqr+aAumg/ID8mrL6QcbJ74ZoCGiI09/1FzyaOyMXQb
+         jXfQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776716189; x=1777320989;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=uT/kFgtDJcz1r8Wwv13r6DbOoiLv2w0cC+Hfy6lE6eQ=;
-        b=Xss10NNi5lY3KsW2srMYehfw32LDskecdPOxUO/+pIeHuZiu5p56VfwSXSFYy/evdV
-         SgLrGv/AdT6M+5mBpTsEkmjHhU/aRYQt9ZeO4q2nierbZHRl2bol8OWINOL1UU1+LKd5
-         WC9jVkubOSYEsI9j4CzSRmf/prAHAuHvpsNBNTJoxXACGxhB5J3qeXaRXLYE7jFcarfL
-         X1Xt5KWl75udIR3/kFc/11B9QB0lhXJIZbqZXzJbNiSRWeAM6dN5Mn64ghoXlcu4wMGS
-         aXuiyN1ZJLQd6ND6SQYFjdIEg4JKFPqSuV05yOpeL5/W6tPtfJL9Unyr4yWGGydoQJ4M
-         SI9Q==
-X-Forwarded-Encrypted: i=1; AFNElJ9Q7reeYocXSR3uglmUAD2lp+pYQqe17eX3dc7yYsGNBYv0iRCqd1MqD0Z/cc9TmfED3Wev68w7l7s=@lists.infradead.org
-X-Gm-Message-State: AOJu0YxfrYdD5XGLd7ROjOTKOnrwsc71gvA1AFKeOmwWb5NPfhtDphKx
-	2e8vQXdZI2St/UuEWq1qb+bdPpKjnbo+1p9kIKxmNoAG/2PSssb1JZxVym2SIALIbS7VJc5opAg
-	bMWRDaI6Cwdm7Wfw6dDNKj3WkwXPaIH5fCjhIisvJ
-X-Gm-Gg: AeBDievv2VECiTwGDhchzDlYDV6XW5+uNuyMUAV/17erIIfp49BDPLB1TJEmza2bgHY
-	liPIuyJl/X+dDUxwuUqpZS7prhpeZYZQr44zVlE9IkIyqpPzlo0Mz23zekejZIqfYTO1PzONBO5
-	yV+zfDrukvDiLvmCThgfJPG3IdPyHHiek7VHJgZlS7jdIM7BToHdtBwUnREEdOENo/sdRtVRuQU
-	kwNyB0fv08tH2PP+aHgXFhRVK+6s5K2O/IaedPA2VkPHZzA10FeuzNsM+yE1IvzUxsEOPw/B3nl
-	/xL56jtzJEqSFwkmtzcckhg3tzWTZunzSOCspgzy
-X-Received: by 2002:a05:651c:400e:b0:38e:76c2:dc8f with SMTP id
- 38308e7fff4ca-38ec7ae0487mr32714001fa.25.1776716188389; Mon, 20 Apr 2026
- 13:16:28 -0700 (PDT)
-MIME-Version: 1.0
-References: <20260220004223.4168331-1-dmatlack@google.com> <20260220004223.4168331-2-dmatlack@google.com>
- <aeaHPYwzs0dhwX9-@google.com>
-In-Reply-To: <aeaHPYwzs0dhwX9-@google.com>
-From: David Matlack <dmatlack@google.com>
-Date: Mon, 20 Apr 2026 13:15:59 -0700
-X-Gm-Features: AQROBzA7QaU-uTclKNPqPjm7N83BGZYqy9MhPcyoyTd2bRZSTk_SV3WPxct_hj8
-Message-ID: <CALzav=dvNr2s3UzDKPyxS3JUcaWykKNvYPJUW+8g21DA9SzJLw@mail.gmail.com>
-Subject: Re: [PATCH v2 01/10] KVM: selftests: Use gva_t instead of vm_vaddr_t
-To: Sean Christopherson <seanjc@google.com>
+        d=1e100.net; s=20251104; t=1776717808; x=1777322608;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=Bw/xOa4cMDz+3Y150IRREEsvI8FeQ6LscRd2k8rTaIk=;
+        b=B1Op+iSXaf3GpYZulktaZDjgch3kyJlTAm9NEIdtXp655Pv+j68CAbnyH/ja14KXFI
+         yPjz2hQTzvPhlSdNkbabcWHJ9ji6+bmv/+N/WykCIHWx8fx1q7Fiv/qEkXj6ebr3REJv
+         +fzy3NOuuujYV77CDgmfimDEOia8EHEpOrtUb10yGelM8xqurG9faVuA5AOdYSz0etSn
+         0YotxuIwbAgOYtAPYKD3dVnyHN0TKd3oRx9WKlAcKW3ZWmq0rwxUzrHnDKC/xMOBXmNO
+         6hPoIiOgGZgB1lLsCzjwV44Erb+i5faKEiLk3sXEGF86+7ZYZTXfb/sozZW4/1/nviKi
+         GAKA==
+X-Forwarded-Encrypted: i=1; AFNElJ+4JlAGFVEM01z5zXDy1EHXU8AGekjt6yHgx4+Bh77kM+T87YS0ZFrxJpat+/7uUeCfXcSMglbOB1I=@lists.infradead.org
+X-Gm-Message-State: AOJu0Ywiq5P8BxmSQGE70dfnT5LfWxr8FVu2URMm1QAnmxRZ5qcRY3+u
+	4Cqi/C80QrMWVZh2n3gxL12/v1rHIu1MS6JHWSVEPZQZWu1F2pEIOWnf8we8JLQGGNTCcbpsxfi
+	SNOnlLQ==
+X-Received: from plai2.prod.google.com ([2002:a17:902:c942:b0:2b3:2649:c9c1])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:902:d30b:b0:2b0:673a:7c90
+ with SMTP id d9443c01a7336-2b5f9f50051mr108270095ad.28.1776717807739; Mon, 20
+ Apr 2026 13:43:27 -0700 (PDT)
+Date: Mon, 20 Apr 2026 13:43:26 -0700
+In-Reply-To: <20260220004223.4168331-5-dmatlack@google.com>
+Mime-Version: 1.0
+References: <20260220004223.4168331-1-dmatlack@google.com> <20260220004223.4168331-5-dmatlack@google.com>
+Message-ID: <aeaP7kPPlyBZE-1h@google.com>
+Subject: Re: [PATCH v2 04/10] KVM: selftests: Use u64 instead of uint64_t
+From: Sean Christopherson <seanjc@google.com>
+To: David Matlack <dmatlack@google.com>
 Cc: Paolo Bonzini <pbonzini@redhat.com>, Ackerley Tng <ackerleytng@google.com>, 
 	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, 
 	Andrew Jones <ajones@ventanamicro.com>, Anup Patel <anup@brainfault.org>, 
@@ -115,8 +87,8 @@ Cc: Paolo Bonzini <pbonzini@redhat.com>, Ackerley Tng <ackerleytng@google.com>,
 	Wu Fei <wu.fei9@sanechips.com.cn>, Yosry Ahmed <yosry.ahmed@linux.dev>, 
 	Zenghui Yu <yuzenghui@huawei.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260420_131632_337129_E0B0640C 
-X-CRM114-Status: GOOD (  19.23  )
+X-CRM114-CacheID: sfid-20260420_134329_268096_C78323E2 
+X-CRM114-Status: GOOD (  10.77  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -128,73 +100,30 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-T24gTW9uLCBBcHIgMjAsIDIwMjYgYXQgMTowNuKAr1BNIFNlYW4gQ2hyaXN0b3BoZXJzb24gPHNl
-YW5qY0Bnb29nbGUuY29tPiB3cm90ZToKPgo+IE9uIEZyaSwgRmViIDIwLCAyMDI2LCBEYXZpZCBN
-YXRsYWNrIHdyb3RlOgo+ID4gUmVwbGFjZSBhbGwgb2NjdXJyZW5jZXMgb2Ygdm1fdmFkZHJfdCB3
-aXRoIGd2YV90IHRvIGFsaWduIHdpdGggS1ZNIGNvZGUKPiA+IGFuZCB3aXRoIHRoZSBjb252ZXJz
-aW9uIGhlbHBlcnMgKGUuZy4gYWRkcl9ndmEyaHZhKCkpLiBBbHNvIHJlcGxhY2UKPiA+IHZtX3Zh
-ZGRyIGluIGZ1bmN0aW9uIG5hbWVzIHdpdGggZ3ZhIHRvIGFsaWduIHdpdGggdGhlIG5ldyB0eXBl
-IG5hbWUuCj4KPiAuLi4KPgo+ID4gQEAgLTcxNiwyMiArNzE2LDIyIEBAIHZvaWQgdm1fbWVtX3Jl
-Z2lvbl9tb3ZlKHN0cnVjdCBrdm1fdm0gKnZtLCB1aW50MzJfdCBzbG90LCB1aW50NjRfdCBuZXdf
-Z3BhKTsKPiA+ICB2b2lkIHZtX21lbV9yZWdpb25fZGVsZXRlKHN0cnVjdCBrdm1fdm0gKnZtLCB1
-aW50MzJfdCBzbG90KTsKPiA+ICBzdHJ1Y3Qga3ZtX3ZjcHUgKl9fdm1fdmNwdV9hZGQoc3RydWN0
-IGt2bV92bSAqdm0sIHVpbnQzMl90IHZjcHVfaWQpOwo+ID4gIHZvaWQgdm1fcG9wdWxhdGVfdmFk
-ZHJfYml0bWFwKHN0cnVjdCBrdm1fdm0gKnZtKTsKPiA+IC12bV92YWRkcl90IHZtX3ZhZGRyX3Vu
-dXNlZF9nYXAoc3RydWN0IGt2bV92bSAqdm0sIHNpemVfdCBzeiwgdm1fdmFkZHJfdCB2YWRkcl9t
-aW4pOwo+ID4gLXZtX3ZhZGRyX3Qgdm1fdmFkZHJfYWxsb2Moc3RydWN0IGt2bV92bSAqdm0sIHNp
-emVfdCBzeiwgdm1fdmFkZHJfdCB2YWRkcl9taW4pOwo+ID4gLXZtX3ZhZGRyX3QgX192bV92YWRk
-cl9hbGxvYyhzdHJ1Y3Qga3ZtX3ZtICp2bSwgc2l6ZV90IHN6LCB2bV92YWRkcl90IHZhZGRyX21p
-biwKPiA+IC0gICAgICAgICAgICAgICAgICAgICAgICAgZW51bSBrdm1fbWVtX3JlZ2lvbl90eXBl
-IHR5cGUpOwo+ID4gLXZtX3ZhZGRyX3Qgdm1fdmFkZHJfYWxsb2Nfc2hhcmVkKHN0cnVjdCBrdm1f
-dm0gKnZtLCBzaXplX3Qgc3osCj4gPiAtICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgdm1f
-dmFkZHJfdCB2YWRkcl9taW4sCj4gPiAtICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgZW51
-bSBrdm1fbWVtX3JlZ2lvbl90eXBlIHR5cGUpOwo+ID4gLXZtX3ZhZGRyX3Qgdm1fdmFkZHJfYWxs
-b2NfcGFnZXMoc3RydWN0IGt2bV92bSAqdm0sIGludCBucl9wYWdlcyk7Cj4gPiAtdm1fdmFkZHJf
-dCBfX3ZtX3ZhZGRyX2FsbG9jX3BhZ2Uoc3RydWN0IGt2bV92bSAqdm0sCj4gPiAtICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgZW51bSBrdm1fbWVtX3JlZ2lvbl90eXBlIHR5cGUpOwo+ID4g
-LXZtX3ZhZGRyX3Qgdm1fdmFkZHJfYWxsb2NfcGFnZShzdHJ1Y3Qga3ZtX3ZtICp2bSk7Cj4gPiAr
-Z3ZhX3QgZ3ZhX3VudXNlZF9nYXAoc3RydWN0IGt2bV92bSAqdm0sIHNpemVfdCBzeiwgZ3ZhX3Qg
-dmFkZHJfbWluKTsKPiA+ICtndmFfdCBndmFfYWxsb2Moc3RydWN0IGt2bV92bSAqdm0sIHNpemVf
-dCBzeiwgZ3ZhX3QgdmFkZHJfbWluKTsKPiA+ICtndmFfdCBfX2d2YV9hbGxvYyhzdHJ1Y3Qga3Zt
-X3ZtICp2bSwgc2l6ZV90IHN6LCBndmFfdCB2YWRkcl9taW4sCj4gPiArICAgICAgICAgICAgICAg
-ZW51bSBrdm1fbWVtX3JlZ2lvbl90eXBlIHR5cGUpOwo+ID4gK2d2YV90IGd2YV9hbGxvY19zaGFy
-ZWQoc3RydWN0IGt2bV92bSAqdm0sIHNpemVfdCBzeiwKPiA+ICsgICAgICAgICAgICAgICAgICAg
-IGd2YV90IHZhZGRyX21pbiwKPiA+ICsgICAgICAgICAgICAgICAgICAgIGVudW0ga3ZtX21lbV9y
-ZWdpb25fdHlwZSB0eXBlKTsKPiA+ICtndmFfdCBndmFfYWxsb2NfcGFnZXMoc3RydWN0IGt2bV92
-bSAqdm0sIGludCBucl9wYWdlcyk7Cj4gPiArZ3ZhX3QgX19ndmFfYWxsb2NfcGFnZShzdHJ1Y3Qg
-a3ZtX3ZtICp2bSwKPiA+ICsgICAgICAgICAgICAgICAgICAgIGVudW0ga3ZtX21lbV9yZWdpb25f
-dHlwZSB0eXBlKTsKPiA+ICtndmFfdCBndmFfYWxsb2NfcGFnZShzdHJ1Y3Qga3ZtX3ZtICp2bSk7
-Cj4KPiBUaGUgZXhpc3Rpbmcgdm1fdmFkZHJfYWxsb2MoKSBhbmQgZnJpZW5kcyBhcmUgcHJldHR5
-IGJhZCBuYW1lcy4gIGd2YV9hbGxvYygpIGlzCj4gZmFyLCBmYXIgd29yc2UuICBUaGUgQVBJcyBh
-cmVuJ3QganVzdCBhbGxvY2F0aW9uIGEgZ3Vlc3QgdmlydHVhbCBhZGRyZXNzLCB0aGV5J3JlCj4g
-YWxsb2NhdGluZyBndWVzdCBwaHlzaWNhbCBtZW1vcnksIGZpbmRpbmcgYSB1c2FibGUgdmlydHVh
-bCBhZGRyZXNzLCBhbmQgY3JlYXRpbmcKPiBtYXBwaW5ncy4KPgo+IEkgZG9uJ3Qgc2VlIGFueSBy
-ZWFzb24gdG8gaGF2ZSB2YWRkciBvciBndmEgaW4gdGhlIG5hbWUuICBFLmcuIG1hbGxvYygpIGlz
-bid0Cj4gdmlydF9tYWxsb2MoKS4gIEJ1dCBJIGRvIHRoaW5rIHRoZXkgbmVlZCB0byBiZSBleHBs
-aWNpdGx5IHNjb3BlZCB0byBLVk0sIGFuZCB0bwo+IGEgVk0uICBJJ2xsIGRyb3AgQVBJIHJlbmFt
-ZXMgZnJvbSB0aGlzIHBhdGNoLCBhbmQgcmVuYW1lIHRoZW0gdG8gdm1fYWxsb2MoKSBhbmQKPiBm
-cmllbmRzIGluIGEgc2VwYXJhdGUgcGF0Y2guICBBbXVzaW5nbHksIHRoYXQgbmFtaW5nIHNjaGVt
-ZSB3aWxsIHN0aWxsIHdvcmsgaWYKPiAidm0iIGlzIG1pc2NvbnN0cnVlZCBhcyAidmlydHVhbCBt
-ZW1vcnkiIGluc3RlYWQgb2YgInZpcnR1YWwgbWFjaGluZSIuCgpTb3VuZHMgZ29vZCB0byBtZS4K
-Cj4gUC5TLiBUaGlzIGlzIGEgZ3JlYXQgZXhhbXBsZSBvZiB3aHkgSSBpbnNpc3Qgb24gb25lIGxv
-Z2ljYWwgY2hhbmdlIHBlciBwYXRjaCwgd2l0aAo+IGp1ZGljaW91cyBleGVtcHRpb25zIGZvciBv
-cHBvcnR1bmlzdGljIGNsZWFudXBzL2NoYW5nZXMuICBJZiB0aGlzIGhhcyBiZWVuIGEKPiBzZXBh
-cmF0ZSBwYXRjaCwgaXQgd291bGQgaGF2ZSB0YWtlbiBtZSBhbGwgb2YgdHdvIHNlY29uZHMgdG8g
-dW53aW5kLiAgQXMgaXQgd2FzLAo+IEkgc3BlbnQgYSBnb29kIDEwLTE1IG1pbnV0ZXMgZGVhbGlu
-ZyB3aXRoIHRoaXMuICBJbiBsYXJnZSBwYXJ0IGJlY2F1c2UgSSBrZXB0Cj4gbWFraW5nIGdvb2Zz
-LCBidXQgdGhhdCdzIHRoZSB3aG9sZSBwb2ludDogdGhlcmUgd2FzIG5vIHJlYXNvbiB0byBwdXQg
-bWUgaW4gYQo+IHBvc2l0aW9uIHRvIG1ha2UgZ29vZnMuCj4KPiBUaGUgb3RoZXIgYXJndW1lbnQg
-YWdhaW5zdCB0aGVzZSBzb3J0cyBvZiAiQWxzbyBkbyB4eXoiIGFkZC1vbnMgaXMgdGhhdCBvZiBh
-Cj4gc2xpcHBlcnkgc2xvcGUuICBXaHkgcmVuYW1lIHRoZXNlIEFQSXMgaW4gdGhpcyBwYXRjaCwg
-YnV0IG5vdCB0aGUgbXlyaWFkIHZhZGRyCj4gdmFyaWFibGVzPyAgVGhlbiBhZnRlciBhIGZldyAi
-SSdsbCBqdXN0IGNsZWFuIHRoaXMgdXAgdG9vIiBjaGFuZ2VzLCB0aGVyZSdzIGFuCj4gZW50aXJl
-IHNlcmllcyBpbiB3aGF0IGlzIHB1cnBvcnRlZGx5IGp1c3QgYSB0eXBlZGVmIHJlbmFtZS4KCllv
-dSdyZSByaWdodCwgdGhlIEFQSSByZW5hbWUgc2hvdWxkIGhhdmUgYmVlbiBzcGxpdCBvZmYgaW50
-byBpdHMgb3duIHBhdGNoLgpUaGFua3MgZm9yIHRoZSBndWlkYW5jZSEKCi0tIAprdm0tcmlzY3Yg
-bWFpbGluZyBsaXN0Cmt2bS1yaXNjdkBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5p
-bmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8va3ZtLXJpc2N2Cg==
+On Fri, Feb 20, 2026, David Matlack wrote:
+> Use u64 instead of uint64_t to make the KVM selftests code more concise
+> and more similar to the kernel (since selftests are primarily developed
+> by kernel developers).
+> 
+> This commit was generated with the following command:
+> 
+>   git ls-files tools/testing/selftests/kvm | xargs sed -i 's/uint64_t/u64/g'
+> 
+> Then by manually adjusting whitespace to make checkpatch.pl happy.
+> 
+> Also include <linux/types.h> in include/test_util.h and
+> include/x86/pmu.h to avoid compilation failure.
+
+kvm_util_types.h also needs to include types.h, as it blatantly uses u64 without
+any includes.  It obviously works thanks to ordering, but it's a lurking trap for
+others.
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
