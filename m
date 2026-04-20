@@ -4,84 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E95F5F5A8C8
-	for <kvm-riscv@archiver.kernel.org>; Mon, 20 Apr 2026 21:21:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DAB3BF5A8C7
+	for <kvm-riscv@archiver.kernel.org>; Mon, 20 Apr 2026 21:21:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:Reply-To:List-Subscribe:List-Help:
 	List-Post:List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID
 	:References:Mime-Version:In-Reply-To:Date:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=SbSBgzU3R1QJLMzRlZ2z18kN+NRZ7QaDt8VJ8rrMXcs=; b=kvBNHaU6sgheNc
-	o8S+t61Bf6w2atOn5oN1AymrymZxcf4kFtE8E6xl4suDhZCVIO2sNb1fJo32C39LvOLTHyBO1BHuF
-	BPPym83rB/ItBwWxLkVK58daeTF2akzZvky97/yGbNppFMw/ytiEpExCMWFR5IU+lxBinshQdv8sX
-	ODODlb0AG++u/jb73JZFNPk5hDVnpJTYL2N5JnV+OxevYxFJWFw4yVk08cYIoeWugIVJ4riNL+3hz
-	7MMI6mCp+GywZpAJRvvjWHSGcEUTcDUqNzmtqsQN4nfWtcFxyWSz1Avi6oAo1M5oe4kQDAye9XIAz
-	/8fvcKuuyUlWiLV8Guug==;
+	List-Owner; bh=EZFeBN5fVTXn+Dc2es8ksE5P5Nd2UbGdNm3nQupUx1I=; b=4BneRPIXTYrV9a
+	EIkMr8TElazHGcXDdCYrzScnoETe1IO2b7hka6GCD0Wg30/AKkZzKMggBITTwDO4D3MEJtMQVTDl1
+	hMO6uchMTfdbien7jOoSjr7rM+KhipY0cwsvydPwyoVmH1LIufnsDE8hDz3qYj0LlSUaf+fkMJ/35
+	VvXP51VH7McLv81/fqWRvhi7WBBtyMO9U+maP0hBw9KehI35do8ZEzn4yDxwRfIRx+FAGaW0wT0Es
+	hm++JW5Oukj1BF+j7fYd0qSHWKgxO+8RHnIJclI39+af7JkpTeKQNUDOFE3AmZyO9Mp1lckUUsql7
+	abAQg4pOG6AzpkDGD1gg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1wEw3P-00000007gjI-2qIg;
-	Mon, 20 Apr 2026 21:21:15 +0000
+	id 1wEw3Q-00000007gkl-1hoi;
+	Mon, 20 Apr 2026 21:21:16 +0000
 Received: from casper.infradead.org ([2001:8b0:10b:1236::1])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1wEw2s-00000007g2g-3qQT
+	id 1wEw2u-00000007g4S-1FYD
 	for kvm-riscv@bombadil.infradead.org;
-	Mon, 20 Apr 2026 21:20:42 +0000
+	Mon, 20 Apr 2026 21:20:44 +0000
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=casper.20170209; h=Content-Type:Cc:To:From:Subject:
 	Message-ID:References:Mime-Version:In-Reply-To:Date:Reply-To:Sender:
 	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=nGTpsdZingcIJU13AR/rz9Q7jpP4FQBt7uSTt0uhGT8=; b=SyW5c8k0RBYuMDSvGYz1R127T/
-	n3vbZrmZP5TCCZI9USdKCxPuVgjPorn7pP5zAKbuh1AodnvVVBFomhOnfTgTBgqYiXAgkE0CmlxhA
-	bfcYTjiROY8DdmbEO2E8YRVP1N6vZKugpbBsB6UqY1SAkKny9TxXCm5FPAX+2PaTLdthQEsfnsMGh
-	Hrx/ciD1KdQ6PnRcU4u0cTctVKbjlkly78c40EqLEPTAdJfb8qmqN6flcqxOmEFhRa9nhRSUhPfMm
-	BZU0sb88V8W0/dr3+BoB+ATafmyJr/7TAOi+E7ip4n94ev51bkEZeBHdvUcizMKcClvZbjy6tT4dI
-	9xKKp0cQ==;
-Received: from mail-pl1-x649.google.com ([2607:f8b0:4864:20::649])
+	bh=SJ5CEXYUlDO7gWqtPrHpSvURrk9AOobHS7RyhGBvd6g=; b=bwZZXAcjH4ER4kFH14qEp2j6YS
+	+K+Mm451I2+ntgspTwFJR/2kxwgQB32PDBrSU4w/B4McYAu67gl6bplp/pT0Mj8fsippR9n4biool
+	rLsIPqv1lYr8Okl3Cz6qRKpOL2xxOQitMgxOSREvuRYpC4KHzsjgi4Qq0mUtGYe7VtdIFer93uuda
+	QCcfklh8ue9nKT8h9tAjSniSIcE2hTmBmx80CCrDWlxFIDTpkgS9/26XEVIJFbq5xnd5+52/c1JkT
+	wiZKtYRfzRA0EdTDMynVwPtuqj7UL9YeeWKoN9bz0TRy2LykSqlpkXWSreMlUSfauc39rX75AMlUg
+	TC5i2C/g==;
+Received: from mail-pj1-x104a.google.com ([2607:f8b0:4864:20::104a])
 	by casper.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1wEw2p-000000093Os-25D3
+	id 1wEw2q-000000093Oz-2cvp
 	for kvm-riscv@lists.infradead.org;
-	Mon, 20 Apr 2026 21:20:41 +0000
-Received: by mail-pl1-x649.google.com with SMTP id d9443c01a7336-2b2eba42b8dso32128505ad.0
-        for <kvm-riscv@lists.infradead.org>; Mon, 20 Apr 2026 14:20:38 -0700 (PDT)
+	Mon, 20 Apr 2026 21:20:42 +0000
+Received: by mail-pj1-x104a.google.com with SMTP id 98e67ed59e1d1-35fbaada2f3so6227098a91.0
+        for <kvm-riscv@lists.infradead.org>; Mon, 20 Apr 2026 14:20:39 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1776720033; x=1777324833; darn=lists.infradead.org;
+        d=google.com; s=20251104; t=1776720037; x=1777324837; darn=lists.infradead.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:from:to:cc:subject:date:message-id:reply-to;
-        bh=nGTpsdZingcIJU13AR/rz9Q7jpP4FQBt7uSTt0uhGT8=;
-        b=Cqm0naYsWOZBuStLbVrhD2JxXkMisudmVaGN4G2XTGCNC5EfGWqj1fG+2hQjtAACjP
-         /V6FwPuZXtY9iVDWHqStMvBfBd49hTxTdJe+2ke5ikLsIBM2Q6+aoP6+kCQMl5dtE66n
-         pTInXFAROnQVdHfjkFc/fU/ImDDMuQgWdzcwUMCIPjd9/JgDfSg7nSJMD+3eSUTX8Lj4
-         fcMzKrpLD2leoudZ2xXrxSgoN7CyVzYFS9jhQKbv14AAiOEurbTUSf/bpMnzF1Xu+/k3
-         nzklU0NhmeSEHE0v5tY4kOc7rJQW7FL9cNEmbj9PmkejY0Rjzchd9/Jq49/rJHHCi8L6
-         ybxg==
+        bh=SJ5CEXYUlDO7gWqtPrHpSvURrk9AOobHS7RyhGBvd6g=;
+        b=FQg0KyKQc0Xqi0rPzZRSunvEVw5RAQfOs3UlNsmG4eIHVQ0PZSz33Tt2i3Ayi6OwN0
+         dW1tENAVtuX3pCyOClu93UM9J4sLYT3lY0uFKYf8F/OtJQtJkC00v3jOCFvA34tu85DB
+         9uVhIQztrCy7eBJO9t8c7j+17foctm/CLLsCwvShPMthL8q1QYN+TeNI6RSisiPqWYaI
+         5DrwDA2ZyTLhr6De+7CKFJKK1vjoL5OctPLBUT9s6vwyn3r1MrQ6xPGhHcrpowC7BehH
+         tLW2TBAc+4DNJT8++nuUXfHuATlI6iJo+foq10PBkgEpQoujujXu0GxIHqOpkZfy5P7s
+         M6Jw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776720033; x=1777324833;
+        d=1e100.net; s=20251104; t=1776720037; x=1777324837;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=nGTpsdZingcIJU13AR/rz9Q7jpP4FQBt7uSTt0uhGT8=;
-        b=T/KP9XHrN/pNLU1hmmV/3VCYgtU5fLZH6MOsy9v+AQqa7rZqkMxlnf2pZFzYwZMU2F
-         34cnBQnyzj62L3Wec/Tw3NE4WaAN29k6qYhbNLeCVEjp/babMgWZ9ZdMDd6ImpCuODaG
-         ol4BDNd7ilHeQZSVzvIA2nKYHgpAx1pu80wt9+GvVaLrTNjPPbmib7R055lNXOVlVLk5
-         1oeszQ3dKpMjGW5/gZud+QguYN4wannHZhc3z/C1xEq3Nr9BFt8mVAHgWuXLc6CFxrg/
-         aS2MPRZzVF0R5WKxVpwel6Gv+k1wIULuJQCra8wKsK6MY8g3oUzS8Ra/VaX3PRktnO3B
-         wGfQ==
-X-Forwarded-Encrypted: i=1; AFNElJ9RQvqynU4M1FZf+wzmGeB5tHO2NICCqehdFinAdwZ78o6Bek+lRN31I3S7KB4OVMazfJZt0OZ3bUc=@lists.infradead.org
-X-Gm-Message-State: AOJu0YyIRXveayo+2ywbZ93iJoUFLOtvwDEr4HxtZvyD2DjAoFxB1aiY
-	YV3J4DMbNGL6A9LsX/ilt6IhMJYJy/7/nP5aTiNvRUOT56BN7CktlJhEEp4mzswpNo+cDGGie3s
-	9aW5a8g==
-X-Received: from pldt14.prod.google.com ([2002:a17:903:40ce:b0:2b4:5ded:6ecb])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:902:d58a:b0:2b0:ac1e:9737
- with SMTP id d9443c01a7336-2b5f9ec5ea7mr159040275ad.12.1776720033096; Mon, 20
- Apr 2026 14:20:33 -0700 (PDT)
-Date: Mon, 20 Apr 2026 14:19:59 -0700
+        bh=SJ5CEXYUlDO7gWqtPrHpSvURrk9AOobHS7RyhGBvd6g=;
+        b=h2WuViLHhk5dOdPtxkAlKmA4jjsxk92Ut+nuhWXsdMlOoJjDQFCP0XUbyxE6acJ3tH
+         Fwy8h371qWyhRWJhnSjuHTUzDXWL6e3mfbNbVr4Bv4jTXhp/Ci679jJSSyUfvb00ntmu
+         O4XE9bonEt1f0sAzLxZHdDKFZWVtKAq35WJaoLApHfAAepjEYEh1o6F/TMNiygsXc/sU
+         ZmzlZ4GfniQL2P3+q/mgqALFA9mTyHt4cD6C5+/cE+4OmOJqFjD2/A5ob5rI2F4RXzii
+         hzTHpRChzBMKFnsVJOu/OjsNDd+gkpQXcMcb3r8Oj8XhWE1t+6bp6Tg0m7bf3Fs54t6g
+         kPdA==
+X-Forwarded-Encrypted: i=1; AFNElJ+la4TlAfzNAJjO28QbLG46GDY9ulgKCDavUhS0YXbxfBSDXDclJKxxGabJfXiqTtevTmCtfdobWnA=@lists.infradead.org
+X-Gm-Message-State: AOJu0YzTdsU07QuXyuWOzblSmNCgwtIa6/1usrIgvolej5a6T5sKj5RR
+	zmxPZsmDm2z2Jfjz1LM0xalLb18fPsulWbW+a4HexCHPB6c6Jze9Q4eK7QCkxHhWpQYaW0cyxWW
+	e8+DrYg==
+X-Received: from pllm7.prod.google.com ([2002:a17:902:7687:b0:2ae:c8e0:1f12])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:5865:b0:35e:27ec:dea
+ with SMTP id 98e67ed59e1d1-36140493410mr16500380a91.23.1776720036561; Mon, 20
+ Apr 2026 14:20:36 -0700 (PDT)
+Date: Mon, 20 Apr 2026 14:20:00 -0700
 In-Reply-To: <20260420212004.3938325-1-seanjc@google.com>
 Mime-Version: 1.0
 References: <20260420212004.3938325-1-seanjc@google.com>
 X-Mailer: git-send-email 2.54.0.rc1.555.g9c883467ad-goog
-Message-ID: <20260420212004.3938325-15-seanjc@google.com>
-Subject: [PATCH v3 14/19] KVM: selftests: Rename translate_to_host_paddr() => translate_hva_to_hpa()
+Message-ID: <20260420212004.3938325-16-seanjc@google.com>
+Subject: [PATCH v3 15/19] KVM: selftests: Clarify that arm64's inject_uer()
+ takes a host PA, not a guest PA
 From: Sean Christopherson <seanjc@google.com>
 To: Paolo Bonzini <pbonzini@redhat.com>, Marc Zyngier <maz@kernel.org>, 
 	Oliver Upton <oupton@kernel.org>, Tianrui Zhao <zhaotianrui@loongson.cn>, 
@@ -95,8 +96,8 @@ Cc: kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
 	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
 	linux-kernel@vger.kernel.org, David Matlack <dmatlack@google.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260420_222039_607673_9ECE9657 
-X-CRM114-Status: UNSURE (   7.86  )
+X-CRM114-CacheID: sfid-20260420_222040_745061_1C37E9B3 
+X-CRM114-Status: UNSURE (   9.51  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -115,61 +116,38 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Rename arm64's translate_to_host_paddr() to translate_hva_to_hpa() and
-update variable names to match, as using "vaddr" and "paddr" terminology
-is super confusing due to selftests using those exact names for *guest*
-addresses.
-
-Opportunisitically drop superfluous local page_addr and paddr variables.
+Rename inject_uer()'s @paddr to @hpa to make it more obvious that it
+injects an error using a host PA, not a guest PA.
 
 No functional change intended.
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- tools/testing/selftests/kvm/arm64/sea_to_user.c | 13 +++++--------
- 1 file changed, 5 insertions(+), 8 deletions(-)
+ tools/testing/selftests/kvm/arm64/sea_to_user.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/tools/testing/selftests/kvm/arm64/sea_to_user.c b/tools/testing/selftests/kvm/arm64/sea_to_user.c
-index 7285eade4acf..fb06b9dcb3d9 100644
+index fb06b9dcb3d9..e16034852470 100644
 --- a/tools/testing/selftests/kvm/arm64/sea_to_user.c
 +++ b/tools/testing/selftests/kvm/arm64/sea_to_user.c
-@@ -56,13 +56,11 @@ static void *einj_hva;
- static u64 einj_hpa;
- static bool far_invalid;
- 
--static u64 translate_to_host_paddr(unsigned long vaddr)
-+static u64 translate_hva_to_hpa(unsigned long hva)
- {
- 	u64 pinfo;
--	s64 offset = vaddr / getpagesize() * sizeof(pinfo);
-+	s64 offset = hva / getpagesize() * sizeof(pinfo);
- 	int fd;
--	u64 page_addr;
--	u64 paddr;
- 
- 	fd = open("/proc/self/pagemap", O_RDONLY);
- 	if (fd < 0)
-@@ -77,9 +75,8 @@ static u64 translate_to_host_paddr(unsigned long vaddr)
- 	if ((pinfo & PAGE_PRESENT) == 0)
- 		ksft_exit_fail_perror("Page not present");
- 
--	page_addr = (pinfo & PAGE_PHYSICAL) << MIN_PAGE_SHIFT;
--	paddr = page_addr + (vaddr & (getpagesize() - 1));
--	return paddr;
-+	return ((pinfo & PAGE_PHYSICAL) << MIN_PAGE_SHIFT) +
-+	       (hva & (getpagesize() - 1));
+@@ -93,7 +93,7 @@ static void write_einj_entry(const char *einj_path, u64 val)
+ 		ksft_exit_fail_perror("Failed to write EINJ entry");
  }
  
- static void write_einj_entry(const char *einj_path, u64 val)
-@@ -303,7 +300,7 @@ static void vm_inject_memory_uer(struct kvm_vm *vm)
- 	ksft_print_msg("Before EINJect: data=%#lx\n",
- 		guest_data);
+-static void inject_uer(u64 paddr)
++static void inject_uer(u64 hpa)
+ {
+ 	if (access("/sys/firmware/acpi/tables/EINJ", R_OK) == -1)
+ 		ksft_test_result_skip("EINJ table no available in firmware");
+@@ -103,7 +103,7 @@ static void inject_uer(u64 paddr)
  
--	einj_hpa = translate_to_host_paddr((unsigned long)einj_hva);
-+	einj_hpa = translate_hva_to_hpa((unsigned long)einj_hva);
- 
- 	ksft_print_msg("EINJ_GVA=%#lx, einj_gpa=%#lx, einj_hva=%p, einj_hpa=%#lx\n",
- 		       EINJ_GVA, einj_gpa, einj_hva, einj_hpa);
+ 	write_einj_entry(EINJ_ETYPE, ERROR_TYPE_MEMORY_UER);
+ 	write_einj_entry(EINJ_FLAGS, MASK_MEMORY_UER);
+-	write_einj_entry(EINJ_ADDR, paddr);
++	write_einj_entry(EINJ_ADDR, hpa);
+ 	write_einj_entry(EINJ_MASK, ~0x0UL);
+ 	write_einj_entry(EINJ_NOTRIGGER, 1);
+ 	write_einj_entry(EINJ_DOIT, 1);
 -- 
 2.54.0.rc1.555.g9c883467ad-goog
 
