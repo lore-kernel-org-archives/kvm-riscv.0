@@ -4,43 +4,43 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1369FF8FA8E
-	for <kvm-riscv@archiver.kernel.org>; Tue, 21 Apr 2026 14:55:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9EC28F8FA8E
+	for <kvm-riscv@archiver.kernel.org>; Tue, 21 Apr 2026 14:55:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-Id:Date:Subject:Cc
-	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=W8QSmL62s7noXyJxJgWKvtzzZDfoDiHdsv7M63awBoU=; b=RzSw0GNgCh6THA
-	657dIBOaUpU5hEElHwf9JzVY7pfvJt4iiaZuWZaTERowPzQlbW1CSLwlUCtr3GEzdVJVtp0SawiGs
-	b/wwTd3t51ipvim060RtiPopKXf0jy2adB5EcvhiYTwosCEhsGrrgJxDjDRP2VakLGrruXZ/s9UoH
-	oxCKACXDBWXpyyH9TlMXQz+wo4ZGpj1oC+VBT6I3ta1OwqkLNkdi6oKKWlFUUwvtpGaAgykDJtnbL
-	YKvjI4kKw4LQivu7qWG/f3gqqBygH2mcv33LRfbjYrvGG4dwgUrQDlhn2hd2+Rhf9ze+yEiAQxKXM
-	mZmpixnDKs750ZpaMrmQ==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=ZIXBpMVlBug+GeiMlQGRBhcKipeEyXsBqbyXQTybdsg=; b=lR+H90oczSR2Va
+	HFtjKC4/htziuKiZcD4jCOLA6SBdus0pUCZwCPk+WSkKoQA0KXU8XTHOWdD99JMXMbdjjlbmlHWuQ
+	zvCGwBcCJdaboDIFlUwqHqcFlyTJFiNV6EKk5pEU0ttip/VOqT10pVHI6f7n0BdCZjgNne/n3sTBP
+	z6q4hG0n6cuTSQHHZZ6nB4txA53461O57BJWr4ggiEd2aldYt5RRsiKCXkxwqIKfdOG9so+0ux0F8
+	neb9tTVcdRcWaztlGen/nKc/Y2aVVTnOj8N5gMziYdRGZ+SjVmXTRnmDP0Kz0+B9vRSkXRbe6vaic
+	tp6gh+WNZBgvgArHshSQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1wFCVh-00000008n1I-2qJx;
-	Tue, 21 Apr 2026 14:55:33 +0000
+	id 1wFCVo-00000008n2w-1Zhv;
+	Tue, 21 Apr 2026 14:55:40 +0000
 Received: from tor.source.kernel.org ([172.105.4.254])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1wFCVg-00000008n19-24rS;
-	Tue, 21 Apr 2026 14:55:32 +0000
+	id 1wFCVn-00000008n2l-07gs;
+	Tue, 21 Apr 2026 14:55:39 +0000
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 8C1196001A;
-	Tue, 21 Apr 2026 14:55:31 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 37742C2BCB0;
-	Tue, 21 Apr 2026 14:55:21 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 7905F6001A;
+	Tue, 21 Apr 2026 14:55:38 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A00CDC2BCB7;
+	Tue, 21 Apr 2026 14:55:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776783331;
-	bh=YJ2E3MhSG9OVK7lke/JRpHjm6mu73ya3Y7+/iS3WWDM=;
-	h=From:To:Cc:Subject:Date:From;
-	b=HZ/sEA+K10hNXtWTJvFffYw8Z3Vg0VinNxwMcbVAvO33uI31wLuDQc0g8bj3/aTSX
-	 gtOmieO+tBvgy/ufiZkK+9wVDFxD2xxQZBmqIU+zaSiSQNmZN9SYdtSUIfiK2Kyvua
-	 wGfRaVQoD4+KjzCQzJzZ7o/Nzq/kR01SCP/9pvc8nFAMlZueDB08So+crDElLkPscZ
-	 aEd8WHpEtf1OO7uAap7uHq5quL1CvY3j/0mDbqJnwWoqrSBIohIexYjpuBv+gcCJfP
-	 d1Y8KZnhK/4gRINqaO7b4Yr2uLUzKjqe8xLBNRU6Ud/LZOeK6jHvy5kQUbXdM4lj9B
-	 7zi6Dho/j6Lxg==
+	s=k20201202; t=1776783338;
+	bh=yNgRE8sbFsnNOSNkaFVjWslqS4WljCPIev13eHJ7d2Y=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=RTKaUxrB6CCnvZO9DbKdwed0dvhzWBIhh60yKBBdZYUyGLOrHzPTFZA7VguG797+W
+	 kVkG6kerplCHTSg9AX1bJ2r91cZYFZzb2YEoem/3RRDl8AhkXZK3jb2w88mhKz+JZ+
+	 gcxQWAC2bM15un1YqKrH6ktP5Or/M4bAZc8FhwcLWqzcWWn/iJCC+1f45RNGNoxRdI
+	 N3eJR/humoI3w9Besak31t3dcQXLb+Fj7b/Kh7Q9VMZ3eR9G03rLKRM6NbsSoBkI8n
+	 Tgckp5xr4/ct4QeAcsTQsjsXF+jAkXG5sKawrPriiiEyd7etliMmg2LWM+5eEsEUuS
+	 olYFcyAOSDeQg==
 From: guoren@kernel.org
 To: fangyu.yu@linux.alibaba.com,
 	cp0613@linux.alibaba.com,
@@ -59,10 +59,12 @@ Cc: kvm-riscv@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	"Guo Ren (Alibaba DAMO Academy)" <guoren@kernel.org>,
 	linux-riscv@lists.infradead.org
-Subject: [PATCH 0/3] RISC-V: KVM: AIA: Convert HGEI management to fully per-HART
-Date: Tue, 21 Apr 2026 10:54:47 -0400
-Message-Id: <20260421145451.1597930-1-guoren@kernel.org>
+Subject: [PATCH 1/3] RISC-V: KVM: AIA: Make HGEI number and management fully per-CPU
+Date: Tue, 21 Apr 2026 10:54:48 -0400
+Message-Id: <20260421145451.1597930-2-guoren@kernel.org>
 X-Mailer: git-send-email 2.40.1
+In-Reply-To: <20260421145451.1597930-1-guoren@kernel.org>
+References: <20260421145451.1597930-1-guoren@kernel.org>
 MIME-Version: 1.0
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -82,37 +84,121 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 From: "Guo Ren (Alibaba DAMO Academy)" <guoren@kernel.org>
 
-This short series converts RISC-V KVM AIA's Hypervisor Guest External
-Interrupt (HGEI) line management from a global "one-size-fits-all"
-model to a fully per-HART (per-CPU) model. It also performs the
-corresponding cleanup in the IMSIC irqchip driver.
+Previously the number of Hypervisor Guest External Interrupt (HGEI)
+lines was stored in a single global variable `kvm_riscv_aia_nr_hgei`
+and assumed to be the same for all HARTs. This assumption does not
+hold on heterogeneous RISC-V SoCs where different cores may expose
+different HGEIE CSR widths.
 
-The motivation is to properly support heterogeneous RISC-V SoCs
-(big.LITTLE, multi-vendor core mixes) where different HARTs may
-expose different numbers of guest interrupt files / HGEIE bits.
-The old global `kvm_riscv_aia_nr_hgei` and
-`imsic_global_config::nr_guest_files` assumptions are no longer
-tenable and are removed.
+Introduce `nr_hgei` field into the per-CPU `struct aia_hgei_control`
+and probe the actual supported HGEI count for the current HART in
+`kvm_riscv_aia_enable()` using the standard RISC-V CSR probe
+technique:
 
-After this series, HGEI allocation, freeing, and interrupt delivery
-are completely per-HART, the code is simpler and clearer, and there
-are no remaining global assumptions about guest interrupt file
-counts.
+    csr_write(CSR_HGEIE, -1UL);
+    nr = fls_long(csr_read(CSR_HGEIE));
+    if (nr)
+        nr--;
 
-Guo Ren (Alibaba DAMO Academy) (3):
-  RISC-V: KVM: AIA: Make HGEI number and management fully per-CPU
-  RISC-V: KVM: AIA: Replace global HGEI count with simple enabled bool
-  irqchip/riscv-imsic: Remove global nr_guest_files after KVM AIA
-    per-HART conversion
+All HGEI allocation, free and disable paths (`kvm_riscv_aia_free_hgei()`,
+`kvm_riscv_aia_disable()`, etc.) now use the per-CPU value instead of
+the global one.
 
- arch/riscv/include/asm/kvm_aia.h        |  2 +-
- arch/riscv/kvm/aia.c                    | 58 ++++++++++++++-----------
- arch/riscv/kvm/aia_device.c             |  4 +-
- arch/riscv/kvm/main.c                   |  3 +-
- drivers/irqchip/irq-riscv-imsic-state.c | 12 +----
- include/linux/irqchip/riscv-imsic.h     |  3 --
- 6 files changed, 37 insertions(+), 45 deletions(-)
+The early global `kvm_riscv_aia_nr_hgei` is kept only for deciding
+whether SGEI interrupt registration is needed; the real per-HART
+initialization of lock and free_bitmap is moved to enable time.
 
+This makes KVM AIA robust on big.LITTLE-style and multi-vendor
+asymmetric platforms.
+
+Signed-off-by: Guo Ren (Alibaba DAMO Academy) <guoren@kernel.org>
+---
+ arch/riscv/kvm/aia.c | 40 ++++++++++++++++++++++++----------------
+ 1 file changed, 24 insertions(+), 16 deletions(-)
+
+diff --git a/arch/riscv/kvm/aia.c b/arch/riscv/kvm/aia.c
+index 5ec503288555..a23729052cfb 100644
+--- a/arch/riscv/kvm/aia.c
++++ b/arch/riscv/kvm/aia.c
+@@ -23,6 +23,7 @@ struct aia_hgei_control {
+ 	raw_spinlock_t lock;
+ 	unsigned long free_bitmap;
+ 	struct kvm_vcpu *owners[BITS_PER_LONG];
++	unsigned int nr_hgei;
+ };
+ static DEFINE_PER_CPU(struct aia_hgei_control, aia_hgei);
+ static int hgei_parent_irq;
+@@ -452,7 +453,7 @@ void kvm_riscv_aia_free_hgei(int cpu, int hgei)
+ 
+ 	raw_spin_lock_irqsave(&hgctrl->lock, flags);
+ 
+-	if (hgei > 0 && hgei <= kvm_riscv_aia_nr_hgei) {
++	if (hgei > 0 && hgei <= hgctrl->nr_hgei) {
+ 		if (!(hgctrl->free_bitmap & BIT(hgei))) {
+ 			hgctrl->free_bitmap |= BIT(hgei);
+ 			hgctrl->owners[hgei] = NULL;
+@@ -486,21 +487,8 @@ static irqreturn_t hgei_interrupt(int irq, void *dev_id)
+ 
+ static int aia_hgei_init(void)
+ {
+-	int cpu, rc;
++	int rc;
+ 	struct irq_domain *domain;
+-	struct aia_hgei_control *hgctrl;
+-
+-	/* Initialize per-CPU guest external interrupt line management */
+-	for_each_possible_cpu(cpu) {
+-		hgctrl = per_cpu_ptr(&aia_hgei, cpu);
+-		raw_spin_lock_init(&hgctrl->lock);
+-		if (kvm_riscv_aia_nr_hgei) {
+-			hgctrl->free_bitmap =
+-				BIT(kvm_riscv_aia_nr_hgei + 1) - 1;
+-			hgctrl->free_bitmap &= ~BIT(0);
+-		} else
+-			hgctrl->free_bitmap = 0;
+-	}
+ 
+ 	/* Skip SGEI interrupt setup for zero guest external interrupts */
+ 	if (!kvm_riscv_aia_nr_hgei)
+@@ -545,9 +533,29 @@ static void aia_hgei_exit(void)
+ 
+ void kvm_riscv_aia_enable(void)
+ {
++	struct aia_hgei_control *hgctrl;
++
+ 	if (!kvm_riscv_aia_available())
+ 		return;
+ 
++	hgctrl = this_cpu_ptr(&aia_hgei);
++
++	/* Figure-out number of bits in HGEIE */
++	csr_write(CSR_HGEIE, -1UL);
++	hgctrl->nr_hgei = fls_long(csr_read(CSR_HGEIE));
++	csr_write(CSR_HGEIE, 0);
++	if (hgctrl->nr_hgei)
++		hgctrl->nr_hgei--;
++
++	if (hgctrl->nr_hgei) {
++		hgctrl->free_bitmap = BIT(hgctrl->nr_hgei + 1) - 1;
++		hgctrl->free_bitmap &= ~BIT(0);
++	} else {
++		hgctrl->free_bitmap = 0;
++	}
++
++	raw_spin_lock_init(&hgctrl->lock);
++
+ 	csr_write(CSR_HVICTL, aia_hvictl_value(false));
+ 	csr_write(CSR_HVIPRIO1, 0x0);
+ 	csr_write(CSR_HVIPRIO2, 0x0);
+@@ -588,7 +596,7 @@ void kvm_riscv_aia_disable(void)
+ 
+ 	raw_spin_lock_irqsave(&hgctrl->lock, flags);
+ 
+-	for (i = 0; i <= kvm_riscv_aia_nr_hgei; i++) {
++	for (i = 0; i <= hgctrl->nr_hgei; i++) {
+ 		vcpu = hgctrl->owners[i];
+ 		if (!vcpu)
+ 			continue;
 -- 
 2.40.1
 
