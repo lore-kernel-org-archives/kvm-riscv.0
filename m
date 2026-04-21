@@ -4,99 +4,123 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6844DF5A8C5
-	for <kvm-riscv@archiver.kernel.org>; Mon, 20 Apr 2026 21:21:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F9BBF327C2
+	for <kvm-riscv@archiver.kernel.org>; Tue, 21 Apr 2026 09:25:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
-	Content-Transfer-Encoding:Content-Type:Reply-To:List-Subscribe:List-Help:
-	List-Post:List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID
-	:References:Mime-Version:In-Reply-To:Date:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=xn9+lRicPuHXWjtf95Dlb0B8X8oKJy0W2JA2EhzcdU8=; b=NppRvYB/M06ehz
-	0FDqgYNkEJm75OpLfN0hqf7jHedoVGeeAhYwgcKvvTbqiohHaOX7F6xP3BMVNGseE/a6u5hgqJl1C
-	ZD4L0AioGoG05nkDSdzokRQXHDF9fpDtDwjZQ8GbCIOfS2+CCzY3o52W+kozNILwRI+JpiOWATJ/G
-	PGwlbgF1Zra/wVn7L+0PkX3g2hP7Huiij556PM54IVrOGdwPYPyTPuUJi3jvTfaFsbiIjMYe0aidO
-	ptQNLIrzIVfbz4eBeFIkcFTjSQ9pJ3ZOCY5B09D2dVJN9e4XE9WV40t7ouatqrzvKRGkmzMaeT11J
-	dW15/UofGVEbhv6lj8LA==;
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-Id:Date:Subject:To
+	:From:Reply-To:Cc:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=W5ewv7+NSZH4L1pk59zJdA0h9yUGRKpJk+4fiDnnnDs=; b=AlCCeae3ehoRZd
+	0in4lx56/0gxJs5mCA0mR86+g+YqapDzdNEyd/IsrPXkX8BbAlxVaj4J758U4ESb0/FZE1aCB1nQ+
+	IbOD85hYPC3yecCNG0VhiE8ddTJgzkFHbxcnsUi+/jU9nCa2W6P9+TW1dn4A0LWSMwGwFafLEI4Yu
+	khsy1pNzt1XedQxxFCm55sAoNfAYzzhBChF6TzP9x04vJj0kDCAAa0H6k72udc72K5KzSaPigDxnZ
+	cV1oJBgfs98QeOSd4+e0TcWLJxzogbgIgcaVgt/mJ6pkY7Pv443EUetRFj5j7DHz/g/bNIRAAVce7
+	skGCd02TYBMQSwJ0swJQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1wEw41-00000007hhS-1hgr;
-	Mon, 20 Apr 2026 21:21:53 +0000
-Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+	id 1wF7M4-00000008KHB-2vnd;
+	Tue, 21 Apr 2026 09:25:16 +0000
+Received: from mail-pl1-x633.google.com ([2607:f8b0:4864:20::633])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1wEw3M-00000007gdh-4BAA
-	for kvm-riscv@bombadil.infradead.org;
-	Mon, 20 Apr 2026 21:21:13 +0000
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=Content-Type:Cc:To:From:Subject:
-	Message-ID:References:Mime-Version:In-Reply-To:Date:Reply-To:Sender:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=U5TkYNL94NKu0U/OFCNswNWigEfxOEAkzVOSoJlSIOI=; b=i6vN3qclkEnGkLKayAHsesmxEs
-	vh7ahaEUkYFNEhA36TzcASSW9QjogqbpU0agkLKlFdKNzTYVEIB2VGyT9/sjJIQa7qTLXBLVUtczB
-	eQDJTtpBx9qK945W9+dEy7o9sE2Qu3GOqZd55bs5eik6MNoLakkMS9uVSlRejKKQZaQw8lhFyYfQM
-	ew6CujYG7OWA/lSS2JB09hYkAgwQGdoLGXUITXFVHhaCPgWnKr8a3Ic+g3D/6IuVIDoAPkQbREJEE
-	b+VL3hONiUwagPrHkm6rV9M3PRLMneK0g2wF2hhCVOaYUokICraPpbHSHoxmjAuSWN/MnsEJ9QnoM
-	jp+M3Dwg==;
-Received: from mail-pf1-x449.google.com ([2607:f8b0:4864:20::449])
-	by desiato.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1wEw2c-00000008pgG-3M0K
+	id 1wF7M2-00000008KGP-0NvQ
 	for kvm-riscv@lists.infradead.org;
-	Mon, 20 Apr 2026 21:20:44 +0000
-Received: by mail-pf1-x449.google.com with SMTP id d2e1a72fcca58-82f6e6a3a76so4309228b3a.0
-        for <kvm-riscv@lists.infradead.org>; Mon, 20 Apr 2026 14:20:25 -0700 (PDT)
+	Tue, 21 Apr 2026 09:25:15 +0000
+Received: by mail-pl1-x633.google.com with SMTP id d9443c01a7336-2b45cb89f7eso28890545ad.0
+        for <kvm-riscv@lists.infradead.org>; Tue, 21 Apr 2026 02:25:11 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1776720023; x=1777324823; darn=lists.infradead.org;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:reply-to:from:to:cc:subject:date:message-id:reply-to;
-        bh=U5TkYNL94NKu0U/OFCNswNWigEfxOEAkzVOSoJlSIOI=;
-        b=DRTw94zdP/8GKW941hnQepgcQWjJ09qkn8LI3YW2pblAegS6FMt9w5Pm+6AvdrE4Jy
-         tGB8UjfQocqTfk181ClVVO82JqQDTYS5YjhQjAJ/hL8EXL56FuHtwUnojddoWOqJe63+
-         KYPp2TmbymhmwzKsx2aM5DtYMjihD1mwyT/8msSk1R8RnNISchNGBUE9aNp1T7fYuifr
-         vMnQqTU2XEBewzRy8TJ01IxHqV1j/qptE027RoOeLHfEudzluGkSZShXCdn2u/ednit7
-         I7PopQBqUJheSvpHybbd1GugilA4hymewtTIRps0YAPPw7Jxal5Qd4wd2497et7I/Rq5
-         QJeg==
+        d=bytedance.com; s=google; t=1776763510; x=1777368310; darn=lists.infradead.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:to
+         :from:from:to:cc:subject:date:message-id:reply-to;
+        bh=TYfKwapVQTASKc189TeQO1FVNxhT1wLsuvJTPgVY/gk=;
+        b=darQBRhP9F5IlzCgnhdF2InrqHdlku9ihpraGs7v60Q2x7dqtTS0P47BBGuQdbszlI
+         TCyIXewOpj/eHRkQZ4uazQQzZ+6vcxWbmPoo7UQ0WwznqGb9sS8q+cxtZt8bxCkaXB8z
+         PW0GTr47180oG+Y5DObtyB+bzpm96jVHwyNYTRx6lkBY+/ZA5yykw0t247waZ8SS81uZ
+         0i8XTd3ybD7x/0DqDa79cWkjqB4MpFi8AJMpDIAWCOHBHfJ45GxXgzjDHdoo4kCWIxUX
+         x6huWTlQ1LNmmwcaahHaDBMFdDPjCepMyzuUSPkLZYGti7lxUbdk7Y3Wsx9NIOREZjCI
+         jydQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776720023; x=1777324823;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:reply-to:x-gm-message-state:from:to:cc:subject:date:message-id
+        d=1e100.net; s=20251104; t=1776763510; x=1777368310;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:to
+         :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=U5TkYNL94NKu0U/OFCNswNWigEfxOEAkzVOSoJlSIOI=;
-        b=PL6E0gON6C8L9WZMt8YRVgPExo2WS4IIYcD25QVZl7wVH/LZZQFOeVW/Tp5vY1jnpc
-         ROI8zCuV2QKnDasP0ZEwOY7OwxeRKxCyuiFzbBk7aAAjNNtbSl5qOW7ZjufZTR3PSv8p
-         uU5mJ3eZECMEg2MXDJ3n3/+kVfzh06HVaQ/OCemB+OtouigmKbHEfnjp/NmrBO4QND86
-         rNplLUDtLuhzd4hTGapVVeEXsZAiBzsicw18DvtaO/DkpWUGKQ62IsRsj6DWTXuOjwI3
-         iMeJ6Zv9GwzAXzqslCXfI5ZV4RYJmZi/aPVzTBfPXsF/fbJmetERPsa6LWhKojZThFdA
-         oYfw==
-X-Forwarded-Encrypted: i=1; AFNElJ8Wsc1F4cTH+vq8ZB9SQA5s2kHtpF7ZKirJJwiXDmQ4esVtSjS49yj1hx1da0kHd/i5MwGr8Ey/bOg=@lists.infradead.org
-X-Gm-Message-State: AOJu0YzGSHadECYNoGC1JwQ2uF8TS3selwousxM1Rv5bsHkfuMgWB5Sw
-	7AFN0Swc2eYrRRQ0uO1ZnXlU3VNY/IZT6VO7ZWyh1u8eJSVbY57UyAD5dqVg24slfT0y9vrw13q
-	WeAkzJg==
-X-Received: from pfve12.prod.google.com ([2002:a05:6a00:1a8c:b0:82f:6a57:a9aa])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a00:3cc7:b0:82f:5051:f024
- with SMTP id d2e1a72fcca58-82f8c8ca07fmr16761487b3a.27.1776720023205; Mon, 20
- Apr 2026 14:20:23 -0700 (PDT)
-Date: Mon, 20 Apr 2026 14:19:54 -0700
-In-Reply-To: <20260420212004.3938325-1-seanjc@google.com>
-Mime-Version: 1.0
-References: <20260420212004.3938325-1-seanjc@google.com>
-X-Mailer: git-send-email 2.54.0.rc1.555.g9c883467ad-goog
-Message-ID: <20260420212004.3938325-10-seanjc@google.com>
-Subject: [PATCH v3 09/19] KVM: selftests: Use s16 instead of int16_t
-From: Sean Christopherson <seanjc@google.com>
-To: Paolo Bonzini <pbonzini@redhat.com>, Marc Zyngier <maz@kernel.org>, 
-	Oliver Upton <oupton@kernel.org>, Tianrui Zhao <zhaotianrui@loongson.cn>, 
-	Bibo Mao <maobibo@loongson.cn>, Huacai Chen <chenhuacai@kernel.org>, 
-	Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, 
-	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
-	Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, 
-	Claudio Imbrenda <imbrenda@linux.ibm.com>, Sean Christopherson <seanjc@google.com>
-Cc: kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	kvmarm@lists.linux.dev, loongarch@lists.linux.dev, 
-	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
-	linux-kernel@vger.kernel.org, David Matlack <dmatlack@google.com>
+        bh=TYfKwapVQTASKc189TeQO1FVNxhT1wLsuvJTPgVY/gk=;
+        b=l5qseSZA2y4qMZC2tHOd/NNMKCeDTgxohpFcxHAIysI6C2bURr7yObIKV55TAL5N6m
+         o/+8sNy5kut0dSSKKbSRg3j5gH0CZXZZeW4F8MPnZEvgPDTR8XUA9wu2/y9DCCrr7tfq
+         ddUkRr5atycWPEPviianWpXhiATk7qvdhyuXgix2P+DDEXG8qtMh9ItdAvze9nqhtZxJ
+         dY+RfjPP6eaqcRga9eoHmm5md4Me1iONXg3nxVejbZ0o915eKSWVBIMJpV0Rc3kXSOA7
+         XLkL1dvRDZHwfE8rtKHApvc+wsTVYDKOKQVwDyBo2qGOVThGNwGPvtjMjxuWy2TlRgL4
+         F9TQ==
+X-Forwarded-Encrypted: i=1; AFNElJ/KEcS1Kg7qeZ956chRbiJl1xp5Xvqy1AspVtGlVL0vgzjc9cTUOptJLGTyWlgyDJ8iZ5X8gX9U8iQ=@lists.infradead.org
+X-Gm-Message-State: AOJu0YzDw95JuQovnaYRE3eMXNSswUK8n3X9b4MdIJq08u67J8tfeDfE
+	wJW1/l6KhO0caixcB/jMmEC4HjFY91NOrnp7Lgc/k70rdugpRMdxyUZDIWhK8PzIrNE=
+X-Gm-Gg: AeBDietTBmTROGB4m8FsL12vtwuALgD6FCNDXqDhOu/qzcf+NkkfXo1fYkU4f0g4rur
+	DIzrabnSjDNgcPkNM2etDgZKSMt45x78UgoTVc/1Hxodaa99RSxfJFz9EayvioD52ckXV6Hwort
+	bGVmTpeJ0JRbWKtJ8kDSJr8zxvOEKOFhC1TURNHy/IOawsSW95l0Lt01yLCxc6c/hKlVBdgtbCD
+	9gBOuPP25g3v33t90+IqI+Una+U9LvSYElY5yIe+sWOwQKgCiAdvRNicNfFwIc7v8LiWXw8FDbX
+	mSD8MMzL+KSWqMBgxgxrHKX4KtkR3dS7osvvtPnqd64Xvc/eVU820PAYRqV/y2G5Xu+VXGXZBBo
+	zlil5C1N3nt2KzSEhm5aQzXFmiPx9prWYbaRxwH/9iIZ/WelUFGu66kt/yK8q/9zC3vkuTgWayy
+	oTt6dpe3vkjQW6nr6Yj9oSdgV/zRXyde257KQNWZIncjliRmJQGavlaI4AUYz8AwS6Fps5ozD18
+	/DqK0k=
+X-Received: by 2002:a17:903:1ac8:b0:2b0:70c8:ccea with SMTP id d9443c01a7336-2b5f9eaeba2mr175964215ad.13.1776763510266;
+        Tue, 21 Apr 2026 02:25:10 -0700 (PDT)
+Received: from L6YN4KR4K9.bytedance.net ([61.213.176.6])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b5fa9ff39csm131965105ad.4.2026.04.21.02.25.01
+        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+        Tue, 21 Apr 2026 02:25:09 -0700 (PDT)
+From: Yunhui Cui <cuiyunhui@bytedance.com>
+To: akpm@linux-foundation.org,
+	alex@ghiti.fr,
+	andrew+kernel@donnellan.id.au,
+	andreyknvl@gmail.com,
+	anup@brainfault.org,
+	aou@eecs.berkeley.edu,
+	apopple@nvidia.com,
+	ardb@kernel.org,
+	atish.patra@linux.dev,
+	baolin.wang@linux.alibaba.com,
+	cuiyunhui@bytedance.com,
+	david@kernel.org,
+	debug@rivosinc.com,
+	djordje.todorovic@htecgroup.com,
+	dvyukov@google.com,
+	elver@google.com,
+	glider@google.com,
+	ilias.apalodimas@linaro.org,
+	junhui.liu@pigmoral.tech,
+	kasan-dev@googlegroups.com,
+	kees@kernel.org,
+	kevin.brodsky@arm.com,
+	kvm-riscv@lists.infradead.org,
+	kvm@vger.kernel.org,
+	linux-efi@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-riscv@lists.infradead.org,
+	liu.xuemei1@zte.com.cn,
+	ljs@kernel.org,
+	namcao@linutronix.de,
+	osalvador@suse.de,
+	palmer@dabbelt.com,
+	pjw@kernel.org,
+	rmclure@linux.ibm.com,
+	rostedt@goodmis.org,
+	rppt@kernel.org,
+	ryabinin.a.a@gmail.com,
+	surenb@google.com,
+	vincenzo.frascino@arm.com,
+	vishal.moola@gmail.com,
+	wangruikang@iscas.ac.cn,
+	zhangchunyan@iscas.ac.cn
+Subject: [PATCH v1 0/7] riscv: add Svnapot-based contiguous PTE support
+Date: Tue, 21 Apr 2026 17:24:50 +0800
+Message-Id: <20260421092457.37649-1-cuiyunhui@bytedance.com>
+X-Mailer: git-send-email 2.39.2 (Apple Git-143)
+MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260420_222031_055516_1F437CE8 
-X-CRM114-Status: GOOD (  12.68  )
+X-CRM114-CacheID: sfid-20260421_022514_320205_5643D36B 
+X-CRM114-Status: UNSURE (   9.38  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -108,47 +132,68 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Reply-To: Sean Christopherson <seanjc@google.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-From: David Matlack <dmatlack@google.com>
+Hi,
 
-Use s16 instead of int16_t to make the KVM selftests code more concise
-and more similar to the kernel (since selftests are primarily developed
-by kernel developers).
+First of all, thanks to Ryan Roberts for the work on mTHP and
+Contiguous PTE support on arm64. That work provides a very useful
+reference for reducing page fault overhead and TLB pressure for
+large but still PTE-mapped memory ranges.
 
-This commit was generated with the following command:
+This series adds Svnapot-based contiguous PTE support for RISC-V.
 
-  git ls-files tools/testing/selftests/kvm | xargs sed -i 's/int16_t/s16/g'
+To achieve similar benefits on RISC-V, this series introduces a
+Contiguous-PTE-like mechanism built on top of the Svnapot extension.
+The intent is to preserve the core-MM PTE semantics while allowing
+RISC-V to transparently fold eligible base-page mappings into
+Svnapot-encoded contiguous mappings when possible.
 
-Then by manually adjusting whitespace to make checkpatch.pl happy.
+The series splits the low-level raw PTE helpers from the public
+core-MM-facing PTE helpers, so that:
 
-No functional change intended.
+-the __xxx helpers expose the raw hardware PTE encoding,
+-the xxx helpers provide the semantic view expected by core MM,
+-and Svnapot-aware handling is centralized in the public wrapper layer.
 
-Signed-off-by: David Matlack <dmatlack@google.com>
-Signed-off-by: Sean Christopherson <seanjc@google.com>
----
- tools/testing/selftests/kvm/lib/guest_sprintf.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Performance results:
 
-diff --git a/tools/testing/selftests/kvm/lib/guest_sprintf.c b/tools/testing/selftests/kvm/lib/guest_sprintf.c
-index 8d60aa81e27e..2a3ab9c168f0 100644
---- a/tools/testing/selftests/kvm/lib/guest_sprintf.c
-+++ b/tools/testing/selftests/kvm/lib/guest_sprintf.c
-@@ -288,7 +288,7 @@ int guest_vsnprintf(char *buf, int n, const char *fmt, va_list args)
- 		else if (qualifier == 'h') {
- 			num = (u16)va_arg(args, int);
- 			if (flags & SIGN)
--				num = (int16_t)num;
-+				num = (s16)num;
- 		} else if (flags & SIGN)
- 			num = va_arg(args, int);
- 		else
+-Compared with the native 4K base-page setup, the mTHP + PTE fold
+scheme improves overall SPEC CPU performance by about 2%.
+-The native 4K page setup shows higher memory access latency, and its
+memory read latency is about 12% higher than this scheme.
+
+Yunhui Cui (7):
+  riscv: mm: split raw and public PTE helpers
+  riscv/kvm: use raw PTE helpers for G-stage leaf PTEs
+  riscv: mm: add Svnapot-aware contiguous PTE wrappers
+  riscv: hugetlb: switch NAPOT mappings to raw PTE helpers
+  riscv: add contiguous PTE range clearing helpers
+  riscv: batch write-protect contiguous PTE ranges
+  riscv: add Svnapot-aware pte_batch_hint support
+
+ arch/riscv/include/asm/kfence.h  |   4 +-
+ arch/riscv/include/asm/pgtable.h | 455 +++++++++++++++++++++-
+ arch/riscv/kernel/efi.c          |   4 +-
+ arch/riscv/kernel/hibernate.c    |   2 +-
+ arch/riscv/kvm/gstage.c          |  48 +--
+ arch/riscv/kvm/mmu.c             |   4 +-
+ arch/riscv/mm/Makefile           |   1 +
+ arch/riscv/mm/contpte.c          | 650 +++++++++++++++++++++++++++++++
+ arch/riscv/mm/fault.c            |   4 +-
+ arch/riscv/mm/hugetlbpage.c      |  55 ++-
+ arch/riscv/mm/init.c             |   8 +-
+ arch/riscv/mm/kasan_init.c       |  14 +-
+ arch/riscv/mm/pageattr.c         |  12 +-
+ arch/riscv/mm/pgtable.c          |  58 ++-
+ 14 files changed, 1222 insertions(+), 97 deletions(-)
+ create mode 100644 arch/riscv/mm/contpte.c
+
 -- 
-2.54.0.rc1.555.g9c883467ad-goog
+2.39.5
 
 
 -- 
