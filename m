@@ -4,52 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 75FBAFF8850
-	for <kvm-riscv@archiver.kernel.org>; Sat, 25 Apr 2026 01:06:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 949CAFF8850
+	for <kvm-riscv@archiver.kernel.org>; Sat, 25 Apr 2026 01:08:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=D/cpMNfssQhuhcnqqLhOhY5r8O48KeHCLPrfI+5cI2U=; b=y0+BRTRiHY1PJw
-	Ir0HqTkaEACfGk+lNiZxqyZlcTcGQ7v9MBYMq1dRtVaDh+MuzOW0GWozvShG5EPMv6jKt3J5Cz6F0
-	47ySdTwPupNC2xcGCglW5Cu2e1XlNj7umtHFZ/vxqpiyFiVhCRLyUNcwDkI4a9NDQYpQBcLHxIN3n
-	I1sV4d5bcdqrJif3acadIRCsuRxQbicRiyMXG4TBme39D0GEGzpmoMG9/FqWu+D8sCR42GnQzQ50U
-	Ywis2qELcPtDSdGy3UhEmC4tKX+ZSpX5iKcZiTS7hy9j4912dWPMzuVxS7+oaxA3GD35y5mLAbPgd
-	43kUUP4nspcK8UmVlPhQ==;
+	List-Owner; bh=D/cpMNfssQhuhcnqqLhOhY5r8O48KeHCLPrfI+5cI2U=; b=UUsDy2NdsX50Hq
+	YY8JFC+WVTQt9ubxTitVpdUv5+r9jaCe1r7+F8wnPvsvKz/5fztaLrsbKFGr7nO+9izF18Deh5oDV
+	tgA30Y3EYfkWfiPFtvEsaCdps3tqu+YLsAb5kRVtWglDaJCzft5mtOXTDZPJF7ZYuHHYtmn3wg7uN
+	onIdDkIY9qje9YJiv7jmSJ1ia9a+f+esW/0E4CRZo3Ns8XZKfAyns0mvm4dCerx0IHs8ZrMOnXD5b
+	aFGYW/qK4on3u/WihYvTBrXtE6DmN1XiYQrOvHW+vz10MFIhI15kowgA3f6/PERNl1INpxxNWPzZg
+	HKSBjuMPY/C4jt46JBJw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1wGRTR-0000000DxCg-2Y35;
-	Sat, 25 Apr 2026 01:06:21 +0000
+	id 1wGRV2-0000000DxLj-10KH;
+	Sat, 25 Apr 2026 01:08:00 +0000
 Received: from sea.source.kernel.org ([2600:3c0a:e001:78e:0:1991:8:25])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1wGRTP-0000000DxCI-3OJK;
-	Sat, 25 Apr 2026 01:06:21 +0000
+	id 1wGRUz-0000000DxLM-0kO4;
+	Sat, 25 Apr 2026 01:07:58 +0000
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id C122043B0D;
-	Sat, 25 Apr 2026 01:06:18 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 20170C19425;
-	Sat, 25 Apr 2026 01:06:13 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id C781842B04;
+	Sat, 25 Apr 2026 01:07:56 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EB7A8C19425;
+	Sat, 25 Apr 2026 01:07:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1777079178;
+	s=k20201202; t=1777079276;
 	bh=v6TTWDx8y13lbMK9v0dMxzlyEZMB61u6UeeQLu+kS7o=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=s6gMX2V91tEk1P5uAwjQg8ks2apnyaD7defQMsAgj4LngklvwnnMiGt8ZoJRTWek5
-	 3LBjPHdQ8vgxc6lt14gCyF7Cz0tXpFtMHIpXJjeqwxS9GkWhTgqOdQT5NzCeOESjm5
-	 F3/Dt0CX2Ln14Q+zl9TLA+M9dTOpjM7T8pgu5skqjn8yWuda1j0KhgUQjUk7cHer/u
-	 BefQPh6K8RPa1hgkqzhfiyABJkLaOKSYbN8ib+iF3UBhfFBObY2IAAeYKR8UJqdUtW
-	 lxq5jXc6fjkV7S3NCEROCNF1ySPIzXAOCTc1pEQhl8hE3l0vxC7dIfK3O89GrmPjBM
-	 GxefZy0CGj1wA==
+	b=tlhtXKH0EVFKOmlfv1FSUM+pB992ZoOzPQvvQdkG9ATMCBSmxDqKSjCy2RxKOswqV
+	 6UcnoCZfnEZ1j397uONDgWa6+8yhPN5WIvgmUio4ja9q6T8/m32ho7cngG5YcvJQNg
+	 In75JQpWNI4/632P40A64yUbH2CiSr2BtKUo3EBuRZYVtZ29jOW3Hc2EK+tR24OMRA
+	 pCmxvxsn3HnPvt/hS6AK7BJwTQDh0XTv4Ui8/xNDis6khjpVKeLnqqob64LjqShpPy
+	 go/2aG04ydp2ndOYUt2F885tYnszBajCIMlmKn6rtvjoP6p7l7XdBwWToNZDTLtSsF
+	 vSICW1jZ3te1Q==
 From: guoren@kernel.org
-To: guoren@kernel.org
+To: anup@brainfault.org
 Cc: alex@ghiti.fr,
-	anup@brainfault.org,
 	aou@eecs.berkeley.edu,
 	atish.patra@linux.dev,
 	cp0613@linux.alibaba.com,
 	fangyu.yu@linux.alibaba.com,
 	gaohan@iscas.ac.cn,
+	guoren@kernel.org,
 	inochiama@gmail.com,
 	kvm-riscv@lists.infradead.org,
 	kvm@vger.kernel.org,
@@ -60,15 +60,15 @@ Cc: alex@ghiti.fr,
 	pjw@kernel.org,
 	tglx@kernel.org
 Subject: Re: Re: [PATCH 3/3] irqchip/riscv-imsic: Remove global nr_guest_files after KVM AIA per-HART conversion
-Date: Sat, 25 Apr 2026 01:06:07 +0000
-Message-ID: <20260425010611.3322320-1-guoren@kernel.org>
+Date: Sat, 25 Apr 2026 01:07:41 +0000
+Message-ID: <20260425010750.3322337-1-guoren@kernel.org>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260425005916.3321811-1-guoren@kernel.org>
-References: <20260425005916.3321811-1-guoren@kernel.org>
+In-Reply-To: <CAAhSdy2RBs15ndXbUMs=k7fw8CH_5+b9k=+o6SNzxpvb-YKDig@mail.gmail.com>
+References: <CAAhSdy2RBs15ndXbUMs=k7fw8CH_5+b9k=+o6SNzxpvb-YKDig@mail.gmail.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260424_180619_867282_2B47DFCB 
-X-CRM114-Status: UNSURE (   9.94  )
+X-CRM114-CacheID: sfid-20260424_180757_229419_FBCF72A2 
+X-CRM114-Status: UNSURE (   9.83  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
