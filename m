@@ -4,37 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 76FBAFF8875
-	for <kvm-riscv@archiver.kernel.org>; Wed, 29 Apr 2026 01:21:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1EEDEFF885A
+	for <kvm-riscv@archiver.kernel.org>; Wed, 29 Apr 2026 01:41:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=x8BFOl2tKASUU0g6dkbqXXM+CFAHhFlHvJRV22gHB0k=; b=rPiWOVYIsYEAJs
-	UPTEcv3UGzU/NbJ6bzV7n7CcuLZ/gUjOBjum7ynfWrCypwQxulUI0P1MajtDPwiHFOsOIiIxSWBXS
-	MvCDhEn3fVn0vctfKlxUQ03uehscV0dfoFLbovUFEuwhrFEtxlCc8d0aK5O+tPtaa2rSyPUHni4A7
-	12QjNdUi5NOwJTJ4mvcvK5SltzM5v95UCCSMNfzAefnzpmjm47YCtj3JM+D+Ppb7ysbCMApQFVtYU
-	DrqkdoreV9TrHdR0h+aV5Dedy0so69BRHMrSFiyIw9McuiZLEMenoWypM1Uzlq17XYzBDMjWBec2/
-	wTIfiO8iNwWPn+tcqJpw==;
+	List-Owner; bh=NkfTEdmDPPBDsQ3Htl0FM5v32c0Vi7DRs4r/feH7cMk=; b=WVGKROdPS+MXCx
+	sI2qM4B2t31N9k94IQyhqdJmQcXm/THkOTKVWmAHGgDfLP+s1TG4q7J1PTdHARobk9tp3U0fafiML
+	moMbJjLQeNo1zyuOJ7xnqL5cztbm+MmKVufajyzInTTzsSxn7RV/3NJ0fYcPhvpC4HgSXq/PDDSxu
+	PilxKnTt3ioQJFdME4DROynidXoGiMISt2LIBI9a+5/GXbxzorYcl5BO4a0kDIlM8k1VgZgLVcv0v
+	/Q0+MissgKJE4GGvW4ziYn4O+tQT5AmgQ2QnUqY4pWslVBfXxyTbVqJkJ72ZixGhtlDCOiJhRsUpz
+	gdfFRccDLBpDX8hhc8Ag==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1wHtc4-00000002i7t-0dO7;
-	Wed, 29 Apr 2026 01:21:16 +0000
-Received: from out30-111.freemail.mail.aliyun.com ([115.124.30.111])
+	id 1wHtvj-00000002jkk-2vkF;
+	Wed, 29 Apr 2026 01:41:35 +0000
+Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1wHtc1-00000002i7W-2PMM;
-	Wed, 29 Apr 2026 01:21:14 +0000
+	id 1wHtvi-00000002jkU-0Cek;
+	Wed, 29 Apr 2026 01:41:34 +0000
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:MIME-Version
+	:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
+	Content-Type:Content-ID:Content-Description;
+	bh=Oq4NJwjoZstdZY8Yv5UU3SU2nsmNBMRQGsHhZADtKDA=; b=abhByb7cl5u2oLtixwcqYPdyzv
+	fs4lCbWAHErcVV/TOSPv3ZNEsGKp/UBeVlzK5S0uTP30I2B+fbm62xDpr2mcdek5UTda8tl2CwB8P
+	OYV5B5UtQjR/J84ddD2GBkduYPMAVhBPtDvK4v1XQ2m1qw40vWHfIsFI6F2o3zYnijIV4iT5Ff1k6
+	9Bc6tky+KZrmK31JWLDUZTKUvsEUgmfLvcFiu1XiuiuGa6Po+ocLtooq5/qgi9ePCJM+J75ob40bv
+	9rs2v5x391zO+CpOV7qqJnlQw1GiR5482fL75bgXE25twfDK7EuT9Q5RJUOG58NDrXArG6xLJXcPN
+	xIxY6Cuw==;
+Received: from out30-124.freemail.mail.aliyun.com ([115.124.30.124])
+	by desiato.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1wHtvd-00000004Qfv-15JH;
+	Wed, 29 Apr 2026 01:41:32 +0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
 	d=linux.alibaba.com; s=default;
-	t=1777425671; h=From:To:Subject:Date:Message-Id:MIME-Version;
-	bh=7LnoYXtUgcLK+iuuo/ay/+wU4q11Fd3/PO7qvUkxaPc=;
-	b=ietmYhrIthf4zgEGsMHAYg+ZxgGqEnenFRZYf81CFJEJcpZm9hXaZJs1CYDQWaNnX0fi7hxRgFdTrLe3HnVwLfSqCVVRn4H1ZstM/VifV3tFP/U7PZ/nEe2MDQ+7zg66FnsHgpyT7WedhNEnovCXfMpgiAyZYTEGhC0VbKg05oc=
-X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R131e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam033045133197;MF=fangyu.yu@linux.alibaba.com;NM=1;PH=DS;RN=22;SR=0;TI=SMTPD_---0X1vuGUZ_1777425666;
-Received: from localhost.localdomain(mailfrom:fangyu.yu@linux.alibaba.com fp:SMTPD_---0X1vuGUZ_1777425666 cluster:ay36)
+	t=1777426874; h=From:To:Subject:Date:Message-Id:MIME-Version;
+	bh=Oq4NJwjoZstdZY8Yv5UU3SU2nsmNBMRQGsHhZADtKDA=;
+	b=VSKdml4w+HMgsPobpPzzMENsn167DbERLU8UY+XHlLS0vmBsM9zz7A+xjEDpNwNqkg9JlTD/ypDTJmdUQJrmWqTfDM9rojxYuHC7L0NRF1ct9EHMOU5rAFBdI2CUJnHpg9EmHmdkQeyLBfWh9Quw7y4m2td/OwePRRkSfCWl2V8=
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R101e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam011083073210;MF=fangyu.yu@linux.alibaba.com;NM=1;PH=DS;RN=22;SR=0;TI=SMTPD_---0X1vlN.5_1777426869;
+Received: from localhost.localdomain(mailfrom:fangyu.yu@linux.alibaba.com fp:SMTPD_---0X1vlN.5_1777426869 cluster:ay36)
           by smtp.aliyun-inc.com;
-          Wed, 29 Apr 2026 09:21:08 +0800
+          Wed, 29 Apr 2026 09:41:11 +0800
 From: fangyu.yu@linux.alibaba.com
 To: jgg@ziepe.ca
 Cc: alex@ghiti.fr,
@@ -58,16 +72,16 @@ Cc: alex@ghiti.fr,
 	tjeznach@rivosinc.com,
 	vasant.hegde@amd.com,
 	will@kernel.org
-Subject: Re: Re: [RFC PATCH 06/11] iommu/riscv: Add domain_alloc_paging_flags for second-stage domain 
-Date: Wed, 29 Apr 2026 09:21:06 +0800
-Message-Id: <20260429012106.63618-1-fangyu.yu@linux.alibaba.com>
+Subject: Re: Re: [RFC PATCH 07/11] iommupt: Don't preset D when RISC-V IOMMU dirty tracking on 
+Date: Wed, 29 Apr 2026 09:41:05 +0800
+Message-Id: <20260429014105.66404-1-fangyu.yu@linux.alibaba.com>
 X-Mailer: git-send-email 2.39.3 (Apple Git-146)
-In-Reply-To: <20260428133501.GE849557@ziepe.ca>
-References: <20260428133501.GE849557@ziepe.ca>
+In-Reply-To: <20260428133641.GF849557@ziepe.ca>
+References: <20260428133641.GF849557@ziepe.ca>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260428_182113_817205_37465526 
-X-CRM114-Status: UNSURE (   3.37  )
+X-CRM114-CacheID: sfid-20260429_024130_416203_0A017910 
+X-CRM114-Status: UNSURE (   5.01  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -85,10 +99,31 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Understood. I will rework the flags handling to follow the switch/case pattern
-used by other drivers, and remove the dev_err() on the failure path.
+>> From: Fangyu Yu <fangyu.yu@linux.alibaba.com>
+>> 
+>> When mapping writable pages, the RISC-V format code currently
+>> pre-sets the PTE D bit unconditionally.
+>> 
+>> If hardware dirty tracking is active (DC.tc.GADE set), the IOMMU
+>> sets D autonomously on the first write. Pre-setting D makes every
+>> new mapping appear dirty immediately and breaks dirty tracking.
+>> 
+>> Introduce PT_FEAT_RISCV_DIRTY_TRACKING_ACTIVE and, when set, leave
+>> D cleared for new writable mappings so hardware can capture the
+>> first write. Keep pre-setting D when dirty tracking is inactive.
+>> 
+>> Only meaningful for second-stage (iohgatp) page tables.
+>
+>You shouldn't need anything like this, the D bit is managed by the
+>iommufd core appropriately. It *should* start out pre-set as that is
+>faster when not tacking. Only once dirty tracking is started does D
+>get cleared. User space is supposed to assume that everything is dirty
+>prior to its first D clear.
+>
 
-Thanks,
+Thanks, that makes sense. I will drop PT_FEAT_RISCV_DIRTY_TRACKING_ACTIVE
+and rely on the iommufd core to manage D bit.
+
 Fangyu
 
 >Jason
