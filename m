@@ -4,80 +4,97 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B4419FF8867
-	for <kvm-riscv@archiver.kernel.org>; Wed, 29 Apr 2026 09:36:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7AA3CFF8867
+	for <kvm-riscv@archiver.kernel.org>; Wed, 29 Apr 2026 12:18:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Subject:Cc:To:From:Mime-Version:Date:
-	References:In-Reply-To:Message-ID:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
+	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=6+qpmM+J7rK8LXI/78IoK6N+jV+qSIqHrmJ6YOjzR0I=; b=lgbRPiJ1/Uaz0P
-	xW+tuh7UjU+SYiGpmBZWHtn1+yOj6aXFmeIq0QxI0eTjxUBwubdo2l/Hi88fd2tqWzDqA3NLkZyht
-	Y1mmcNSD2ZVtT+gEHP2MEveZ2u06e6jFPP9mlRl53JlPb0xBsTxXiK9NXboJk4fsWDOUWYcJiAj2L
-	ZuTTaphwbfCmAGOOkUn/v6oKDZp1L1vK5/ECNaOUEs51qVXgjFEKFVpsALi+/o0qr7CQkjDAhqjYC
-	hJxG9MOZLBU04fV0EF7xtifvFDfJy0YmL67X3czOY2WRDp9ZgBNVKb9MjGgAkL7NJ2w7qd8eJgqcK
-	168MkDxFeSsLsgBg8oCQ==;
+	List-Owner; bh=PF/WjaWJgrhRZYgJLGoofv8WueWDa76Vt6lGVSsFI30=; b=gJvjenQcXEsdZ9
+	Clnuj+tjlIr5f6YQ02zXQ4njRF1S/ezItro2SO4sic6mMJqBCJhZS3BdTRhbG7v7qxyhKoSvAdfnr
+	iBOa5neGwiADy5lFlkQ/MJlPQSCvnFW4LB6ALU1hlVI6B8a8bGRUzXLX2/YGK1mHlvyns66hO0g+k
+	M4dUM+9+Oqt9jNtawOpxD0GXbiwtUARUjxwISfWldk4hSsHyXl37dNX8utsBqD0tePQg3fiSGB/CU
+	kkdnPiEGv29ceaYVMV80FD/1S3JuK9J8/CcNcav1RUUChnH8SCT0xkWY4n9fXKk06uMTABkY16SaH
+	5I7FQOD8XOOMYDa942Tw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1wI1Kr-00000003Lzr-1yFS;
-	Wed, 29 Apr 2026 09:36:01 +0000
-Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+	id 1wI3s3-00000003Z70-04Il;
+	Wed, 29 Apr 2026 12:18:27 +0000
+Received: from mail-qk1-x72b.google.com ([2607:f8b0:4864:20::72b])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1wI1Kq-00000003Lze-2g74;
-	Wed, 29 Apr 2026 09:36:00 +0000
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=Content-Type:Subject:Cc:To:From:
-	Mime-Version:Date:References:In-Reply-To:Message-ID:Sender:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=VsjapjatcUjgveKVVuGAGrVAUAVmi85t1fVzS3fNdeM=; b=Jtwm1UN0M9TMXjdzVF4Aa+PLje
-	/W77L3kWwHk4iMUE+0pkoDArL9qM3OKcQ6EjfFRpxmwYc2LvGdiJoduSxV5cIUhng9tOhu9fSNYde
-	z5c/l1YApA0bPeex1SkpO56f1KpMVWvnWFjC7s+I22RGdXJaFThjwYwgZWeaveUWAmDS+UPC39wX6
-	QGaFYNiABKLYABY3PoPlM1A3+N50sf5Zmdmdg19AtyPtrqVW3wfx9/HvYZywDeBcae2e/pCQQFdPV
-	IzMcicF7Znz3YLVreUFhQmCaL5pzhoGq+NYK0Yi5yWH7Jy1LTm6BC4Feh4QfNCbl1wWTZpVk/ISkP
-	D5vXagww==;
-Received: from mxct.zte.com.cn ([183.62.165.209])
-	by desiato.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1wI1Km-00000004zRZ-2P1c;
-	Wed, 29 Apr 2026 09:35:59 +0000
-Received: from mse-fl1.zte.com.cn (unknown [10.5.228.132])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mxct.zte.com.cn (FangMail) with ESMTPS id 4g5Bxd5tKVz51N23;
-	Wed, 29 Apr 2026 17:35:49 +0800 (CST)
-Received: from szxlzmapp03.zte.com.cn ([10.5.231.207])
-	by mse-fl1.zte.com.cn with SMTP id 63T9ZbHM066310;
-	Wed, 29 Apr 2026 17:35:37 +0800 (+08)
-	(envelope-from wang.yechao255@zte.com.cn)
-Received: from mapi (szxl2zmapp06[null])
-	by mapi (Zmail) with MAPI id mid12;
-	Wed, 29 Apr 2026 17:35:39 +0800 (CST)
-X-Zmail-TransId: 2b0869f1d0eba34-9a5bc
-X-Mailer: Zmail v1.0
-Message-ID: <20260429173539941luiwhNDDtflTHOClbNtk4@zte.com.cn>
-In-Reply-To: <20260429173002565bdp1o7P0bvOs6yTz64yNx@zte.com.cn>
-References: 20260429173002565bdp1o7P0bvOs6yTz64yNx@zte.com.cn
-Date: Wed, 29 Apr 2026 17:35:39 +0800 (CST)
-Mime-Version: 1.0
-From: <wang.yechao255@zte.com.cn>
-To: <anup@brainfault.org>, <atish.patra@linux.dev>, <pjw@kernel.org>,
-        <palmer@dabbelt.com>, <aou@eecs.berkeley.edu>, <alex@ghiti.fr>
-Cc: <kvm@vger.kernel.org>, <kvm-riscv@lists.infradead.org>,
-        <linux-riscv@lists.infradead.org>, <linux-kernel@vger.kernel.org>
-Subject: =?UTF-8?B?W1BBVENIIHYyIDMvM10gUklTQy1WOiBLVk06IFJlY292ZXIgZ3N0YWdlIGh1Z2UgcGFnZSBtYXBwaW5ncyBkdXJpbmfCoGRpc2FibGUtZGlydHktbG9n?=
-X-MAIL: mse-fl1.zte.com.cn 63T9ZbHM066310
-X-TLS: YES
-X-SPF-DOMAIN: zte.com.cn
-X-ENVELOPE-SENDER: wang.yechao255@zte.com.cn
-X-SPF: None
-X-SOURCE-IP: 10.5.228.132 unknown Wed, 29 Apr 2026 17:35:49 +0800
-X-Fangmail-Anti-Spam-Filtered: true
-X-Fangmail-MID-QID: 69F1D0F5.001/4g5Bxd5tKVz51N23
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+	id 1wI3rz-00000003Z5f-1rpM
+	for kvm-riscv@lists.infradead.org;
+	Wed, 29 Apr 2026 12:18:24 +0000
+Received: by mail-qk1-x72b.google.com with SMTP id af79cd13be357-8f15e900586so301416085a.1
+        for <kvm-riscv@lists.infradead.org>; Wed, 29 Apr 2026 05:18:22 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ziepe.ca; s=google; t=1777465102; x=1778069902; darn=lists.infradead.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=MPHSzoCIyDIC9QP5+spsNloO0c/6uT0t+rTHSV9tUV0=;
+        b=PEwS3tC+sQ/PWU9mQr5kSjCjb2w6c6TwEPcLKovS7zzzF6wp4aYCJJlbt/DXBfi/ZT
+         8KhOVbwZqK0m+DHpeDhq1mH5Xlp0DwqyB/eFYCe8lDJ89aNuktz3fIs2q8kU7f9LlnIL
+         dRPNCowlnr4KLRApitSc2QQGQ5bv3R2Y/uyUN0KMqNXW55CzU8eiyhGDgxi1eyNjtCQh
+         GhiZ9/IWH493Q6yBdPVB7boAhZqOp6kXkEKCdDKRCplGJfYuooMhxNMQf/vRomgh4i9o
+         m+AAC7kVXpCPCyjO+lZcPCOctgQOq1ZVniu3aBusa1S1PpI2YJSSxvVzjbiS6/M1qg0I
+         1gEQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1777465102; x=1778069902;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=MPHSzoCIyDIC9QP5+spsNloO0c/6uT0t+rTHSV9tUV0=;
+        b=sIOpwDX1kFyqgGv/yjHyU2C7+jcVN10oryTXCneQARo9TMQQkm090UF+ruSryRLU3I
+         gHHyWb1DL6DC74cAZ96DCDuUfUtnuODzakMVOeIx43fRhjt3fHkt3CTb8VeVXin2sPkw
+         42W1tPzMcXvpcAQADDUTmPF+1iqwC8JX1UAnUtoN69MIIFDRhpRdrAOsSLOks7TvMojf
+         WbnqsMVX71B4//Nw7n1B1D2rn/epvff6qw1hdrzEFBWKSt4XiXTYM1OgRJA+ivHx907g
+         XYyb03S6qq4ACpGHNOYvLSRhmo98AvElUvInMLI0AjENT9oYCH5xvO0SApClxkojB6VJ
+         j1Ig==
+X-Forwarded-Encrypted: i=1; AFNElJ8/NH8UPdrix0JGSRS/wXLauGDjgXavYK77BNhu9QCVfHf7WZeeihC4GnumNNq8rXeUic2y9IRqq2g=@lists.infradead.org
+X-Gm-Message-State: AOJu0YzZIp7vJ6tkx+8SB9n2lArrkk40+lSfr9wFQZXJfX3oQx/t1cC1
+	hvHrYCm9wp7gB3URJuWrZqyqBjpwTOSo0r2DBQ2/K6cdPNoL5SFtCDwsP5jGMmocph0=
+X-Gm-Gg: AeBDievrvzv7MWu/XjXFMAFTcqif18JtOSyH3kRi8xKrDGWWutj8fA/qPWZi9w2bV93
+	i9CnL0Eza1XHiDQf6h/ufAFNDq4yRvEdyG6YimH7Uyol1VdOzjxN77RuoGMJfpYLDRRSn1eJ6/U
+	ZfOSheFGZbCKf7CWMFI91g0PGY4Xe/Ca0OSFIL7ADXiflWVKoymcqB77HE4K77zTRNkjksjKNDd
+	dmotWwzmEtKkE/b92HzFXPUCGi07MVpGJ0sA5nzMMciFBSOQnYOw116W0p4lqNHvomVgSXSUHLl
+	ehEpry964QeZXrXRf4sGtGbZb0tWaUNd8GY7IZp7PYtULyR8hwd4FRDcfs60SE/cNzinWUub/Fp
+	2vJHfXeLM8RKs/bHC7CBWh8EadyoNEmuekwwEnqaBuE1nycb6IWuEeg7i5LLFmS5pG0bljRKouk
+	PzqEz08Se3pMwYCn56BZHXXHusVwaQWGtyJh8jkPT9UqkNZkprMeJtkq9hdeiyw+7xAaHNuNk+0
+	dR1pvAk8RRV/rom
+X-Received: by 2002:a05:620a:4481:b0:8cf:df8b:1e5e with SMTP id af79cd13be357-8f8f3534220mr552478185a.5.1777465101412;
+        Wed, 29 Apr 2026 05:18:21 -0700 (PDT)
+Received: from ziepe.ca (crbknf0213w-47-54-130-67.pppoe-dynamic.high-speed.nl.bellaliant.net. [47.54.130.67])
+        by smtp.gmail.com with ESMTPSA id af79cd13be357-8f940051f0bsm152785185a.40.2026.04.29.05.18.20
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 29 Apr 2026 05:18:20 -0700 (PDT)
+Received: from jgg by wakko with local (Exim 4.97)
+	(envelope-from <jgg@ziepe.ca>)
+	id 1wI3rw-0000000HF8A-18yU;
+	Wed, 29 Apr 2026 09:18:20 -0300
+Date: Wed, 29 Apr 2026 09:18:20 -0300
+From: Jason Gunthorpe <jgg@ziepe.ca>
+To: fangyu.yu@linux.alibaba.com
+Cc: alex@ghiti.fr, anup@brainfault.org, aou@eecs.berkeley.edu,
+	atish.patra@linux.dev, baolu.lu@linux.intel.com, guoren@kernel.org,
+	iommu@lists.linux.dev, joro@8bytes.org, kevin.tian@intel.com,
+	kvm-riscv@lists.infradead.org, kvm@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
+	palmer@dabbelt.com, pjw@kernel.org, robin.murphy@arm.com,
+	skhawaja@google.com, tjeznach@rivosinc.com, vasant.hegde@amd.com,
+	will@kernel.org
+Subject: Re: Re: [RFC PATCH 01/11] iommupt: Add RISC-V Second-stage (iohgatp)
+ page table support
+Message-ID: <20260429121820.GL849557@ziepe.ca>
+References: <20260428133239.GC849557@ziepe.ca>
+ <20260429010650.61646-1-fangyu.yu@linux.alibaba.com>
+MIME-Version: 1.0
+Content-Disposition: inline
+In-Reply-To: <20260429010650.61646-1-fangyu.yu@linux.alibaba.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260429_103557_480867_B3CF4B06 
-X-CRM114-Status: GOOD (  14.91  )
+X-CRM114-CacheID: sfid-20260429_051823_612992_473A53CE 
+X-CRM114-Status: GOOD (  10.48  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -94,169 +111,29 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-From: Wang Yechao <wang.yechao255@zte.com.cn>
+On Wed, Apr 29, 2026 at 09:06:50AM +0800, fangyu.yu@linux.alibaba.com wrote:
+> >> @@ -263,6 +281,22 @@ riscvpt_iommu_fmt_init(struct pt_iommu_riscv_64 *iommu_table,
+> >>  	case 57:
+> >>  		pt_top_set_level(&table->common, 4);
+> >>  		break;
+> >> +	/*
+> >> +	 * Second-stage (iohgatp): Sv39x4 / Sv48x4 / Sv57x4.
+> >> +	 * The top level is the same as for the first-stage counterpart.
+> >> +	 */
+> >> +	case 41:
+> >> +		pt_top_set_level(&table->common, 2);
+> >> +		table->second_stage = true;
+> >> +		break;
+> >
+> >Second stage needs to be an explicit PT_FEAT not implicitly deduced
+> >based on the vasz.
+> 
+> Agreed. I will add an explicit PT_FEAT_RISCV_SECOND_STAGE flag and
+> stop deriving second-stage semantics from vasz.
 
-When dirty logging is enabled, the gstage mappings are split into
-4K pages to track dirty pages. If the migration fails or is canceled,
-in order to keep the VM's performance consistent with that before
-dirty logging was enabled, the gstage huge page mappings are recoverd
-when dirty logging is disabled.
+PT_FEAT_RISCV_S2 would match what I have for ARM
 
-With this patch, dirty_log_perf_test shows a decrease in the number of
-vCPU faults:
-
-$ perf stat -e kvm:kvm_page_fault \
-/dirty_log_perf_test -s anonymous_hugetlb_1gb -v 1 -e -b 1G
-
-Before: 524,819      kvm:kvm_page_fault
-After : 263,211      kvm:kvm_page_fault
-
-Signed-off-by: Wang Yechao <wang.yechao255@zte.com.cn>
----
- arch/riscv/include/asm/kvm_gstage.h |  4 +++
- arch/riscv/kvm/gstage.c             | 42 ++++++++++++++++++++++++++
- arch/riscv/kvm/mmu.c                | 47 +++++++++++++++++++++++++++++
- 3 files changed, 93 insertions(+)
-
-diff --git a/arch/riscv/include/asm/kvm_gstage.h b/arch/riscv/include/asm/kvm_gstage.h
-index 9c908432bc17..a074493596d1 100644
---- a/arch/riscv/include/asm/kvm_gstage.h
-+++ b/arch/riscv/include/asm/kvm_gstage.h
-@@ -64,6 +64,10 @@ int kvm_riscv_gstage_split_huge(struct kvm_gstage *gstage,
- 				struct kvm_mmu_memory_cache *pcache,
- 				gpa_t addr, u32 target_level, bool flush);
-
-+void kvm_riscv_gstage_recover_huge(struct kvm_gstage *gstage, gpa_t addr,
-+				   unsigned long taget_page_size,
-+				   unsigned long *page_size);
-+
- enum kvm_riscv_gstage_op {
- 	GSTAGE_OP_NOP = 0,	/* Nothing */
- 	GSTAGE_OP_CLEAR,	/* Clear/Unmap */
-diff --git a/arch/riscv/kvm/gstage.c b/arch/riscv/kvm/gstage.c
-index d9fe8be2a151..e2c8cbac30d9 100644
---- a/arch/riscv/kvm/gstage.c
-+++ b/arch/riscv/kvm/gstage.c
-@@ -337,6 +337,48 @@ int kvm_riscv_gstage_split_huge(struct kvm_gstage *gstage,
- 	return 0;
- }
-
-+void kvm_riscv_gstage_recover_huge(struct kvm_gstage *gstage, gpa_t addr,
-+				   unsigned long target_page_size,
-+				   unsigned long *page_size)
-+{
-+	u32 current_level = gstage->pgd_levels - 1;
-+	pte_t *next_ptep = (pte_t *)gstage->pgd;
-+	u32 target_level, out_level;
-+	pte_t *ptep, *child_ptep;
-+	int ret;
-+
-+	out_level = 0;
-+	ret = gstage_page_size_to_level(gstage, target_page_size, &target_level);
-+	if (ret)
-+		goto out;
-+
-+	while (current_level >= target_level) {
-+		ptep = (pte_t *)&next_ptep[gstage_pte_index(gstage, addr, current_level)];
-+
-+		out_level = current_level;
-+		if (!pte_val(ptep_get(ptep)))
-+			goto out;
-+
-+		/* The mapping is already a huge page mapping. */
-+		if (gstage_pte_leaf(ptep))
-+			goto out;
-+
-+		next_ptep = (pte_t *)gstage_pte_page_vaddr(ptep_get(ptep));
-+		current_level--;
-+	}
-+
-+	/* Replace the huge PTE with the first PTE entry of the child.*/
-+	child_ptep = (pte_t *)&next_ptep[0];
-+	if (gstage_pte_leaf(child_ptep)) {
-+		set_pte(ptep, __pte(pte_val(ptep_get(child_ptep))));
-+		gstage_tlb_flush(gstage, target_level, addr);
-+		put_page(virt_to_page(next_ptep));
-+	}
-+
-+out:
-+	gstage_level_to_page_size(gstage, out_level, page_size);
-+}
-+
- void kvm_riscv_gstage_op_pte(struct kvm_gstage *gstage, gpa_t addr,
- 			     pte_t *ptep, u32 ptep_level, enum kvm_riscv_gstage_op op)
- {
-diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-index dc6a8efde99e..789e3362144f 100644
---- a/arch/riscv/kvm/mmu.c
-+++ b/arch/riscv/kvm/mmu.c
-@@ -16,6 +16,8 @@
- #include <asm/kvm_mmu.h>
- #include <asm/kvm_nacl.h>
-
-+static void kvm_mmu_recover_huge_pages(struct kvm *kvm, int slot);
-+
- static void mmu_wp_memory_region(struct kvm *kvm, int slot)
- {
- 	struct kvm_memslots *slots = kvm_memslots(kvm);
-@@ -160,6 +162,17 @@ void kvm_arch_commit_memory_region(struct kvm *kvm,
- 		if (kvm_dirty_log_manual_protect_and_init_set(kvm))
- 			return;
- 		mmu_wp_memory_region(kvm, new->id);
-+	} else {
-+		/*
-+		 * Recover huge page mappings in the slot now that dirty logging
-+		 * is disabled, i.e. now that KVM does not have to track guest
-+		 * writes at 4KiB granularity.
-+		 *
-+		 * Dirty logging might be disabled by userspace if an ongoing VM
-+		 * live migration is cancelled and the VM must continue running
-+		 * on the source.
-+		 */
-+		kvm_mmu_recover_huge_pages(kvm, new->id);
- 	}
- }
-
-@@ -598,3 +611,37 @@ void kvm_riscv_mmu_update_hgatp(struct kvm_vcpu *vcpu)
- 	if (!kvm_riscv_gstage_vmid_bits())
- 		kvm_riscv_local_hfence_gvma_all();
- }
-+
-+static void kvm_mmu_recover_huge_pages(struct kvm *kvm, int slot)
-+{
-+	struct kvm_memslots *slots = kvm_memslots(kvm);
-+	struct kvm_memory_slot *memslot = id_to_memslot(slots, slot);
-+	unsigned long hva = gfn_to_hva(kvm, memslot->base_gfn);
-+	phys_addr_t start = memslot->base_gfn << PAGE_SHIFT;
-+	phys_addr_t end = (memslot->base_gfn + memslot->npages) << PAGE_SHIFT;
-+	phys_addr_t addr = start;
-+	struct kvm_gstage gstage;
-+	unsigned long page_size;
-+
-+	if (!fault_supports_gstage_huge_mapping(memslot, hva))
-+		return;
-+
-+	kvm_riscv_gstage_init(&gstage, kvm);
-+
-+	spin_lock(&kvm->mmu_lock);
-+
-+	while (addr < end) {
-+		if (get_hva_mapping_size(kvm, hva) < PMD_SIZE) {
-+			addr += PMD_SIZE;
-+			hva  += PMD_SIZE;
-+			continue;
-+		}
-+
-+		kvm_riscv_gstage_recover_huge(&gstage, addr, PMD_SIZE, &page_size);
-+
-+		addr += page_size;
-+		hva  += page_size;
-+		cond_resched_lock(&kvm->mmu_lock);
-+	}
-+	spin_unlock(&kvm->mmu_lock);
-+}
--- 
-2.43.5
+Jason
 
 -- 
 kvm-riscv mailing list
