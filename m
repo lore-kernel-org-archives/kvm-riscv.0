@@ -4,81 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 16977CD98CE
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 76671CD98D1
 	for <kvm-riscv@archiver.kernel.org>; Wed, 10 Jun 2026 16:48:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
-	Content-Transfer-Encoding:Content-Type:Reply-To:List-Subscribe:List-Help:
-	List-Post:List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID
-	:References:Mime-Version:In-Reply-To:Date:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=LhwoPmNVyg5s4peyI9yijkLdKR+cYbGpwV5e4i2QwOM=; b=s8E8WvUgzHZWAq
-	CAvzclmacry2Aya66GVI3sLTp5rTt5WfiqSjtLz1NykPPLZScX1ZKtufHjXUk88f6ddNvjmc7qH5W
-	buQd2O28+Pkoww6BvopIEaWVbm2oXrhHXi6yAkV3w6+gGsSTDI2WrlwpHIo2J5AGLUCJDsH5Zv6tL
-	zddO+85PichgNPdtZW4ZMdVwVCnjVMxHN/MhZrBU2jJ2WlLAxJ+2s4+2wStWYizh/1LqGfEWDAqIa
-	DmVyUSo8+ZOG4fQ6aCPJMFif30AnenJXPUvnYiZDa4OTrlbaW9hOHM+CvldCp1oRRFH1CVcI2pN5A
-	QGhH8K+5n8Yq7/S69KhQ==;
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
+	List-Subscribe:List-Help:List-Post:List-Archive:List-Unsubscribe:List-Id:
+	In-Reply-To:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:
+	Reply-To:Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date
+	:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Owner;
+	bh=g8Tz3JM137lYnV6VC9M1Ocnf2Ghf4jWvOOEyp7ZlwWo=; b=UmLnkrOFRDQxe+dLroQm0vrjSh
+	pzWcEDDqMY97wkObxtJLLTjpvNUbbnT4pqJcwBnKEKKB+ZWtQHmdRkoK2Sf/3vWSqLVaEOjOFOegq
+	YQYxbcWLsXanh1FZ9b0aow2uDuwGpD//jmCWOsC4QrjTifKmoiHVBOvnnR4MfyNw7wEPJCovCwxlT
+	sc3e/6+nhu06wHmzvfl4xcgjr2yVMAXpClndguT0N3k3Fhmt7u8LG4tvk6qtiqgGnKOk9yyOLtqQS
+	7EsBvei6V/FSvWe9gwX3kCj+f9m6lfHyWxt5UvZgZsVqEiGd1xyvgzXvy8fjaA+8VBIwHXqi1ZZ91
+	pM7YsYeA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wXM6U-000000089iD-3D98;
-	Wed, 10 Jun 2026 16:48:34 +0000
-Received: from mail-pj1-x104a.google.com ([2607:f8b0:4864:20::104a])
+	id 1wXM6V-000000089in-0h47;
+	Wed, 10 Jun 2026 16:48:35 +0000
+Received: from sea.source.kernel.org ([172.234.252.31])
 	by bombadil.infradead.org with esmtps (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1wEw2V-00000007fav-1I7y
-	for kvm-riscv@lists.infradead.org;
-	Mon, 20 Apr 2026 21:20:27 +0000
-Received: by mail-pj1-x104a.google.com with SMTP id 98e67ed59e1d1-35842aa350fso7079187a91.0
-        for <kvm-riscv@lists.infradead.org>; Mon, 20 Apr 2026 14:20:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1776720018; x=1777324818; darn=lists.infradead.org;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:reply-to:from:to:cc:subject:date:message-id:reply-to;
-        bh=x4NVqMxmwz4+zEGoWtd4lpZ7VEcKldPsBbR7rls+PLg=;
-        b=eOVXgyTGuDA7YBBWoYtV61EDsz1rq49XqfyfmUhLmzkyhoK7SuSBObD1GZ6E4WUWF9
-         n3hQmHYh75fv/ceGtwfZEAGPKL/EVrobd0JprawYCEkRI8g3RgZcBNsNkgpcwBxkiT+3
-         tpVmmKs5FqPQist9YlQwxLLRlaos5NEEDbTiH1+AkDEiC3fL54Yfcfoj/2gUhkXKFDbF
-         k8rZ6mkeEneF0na/I48YzhEVi1GVC9mKrQnPQsmUgCHxrvf2h3Gq21LszUKvUfwNZIUo
-         B9lMK8dT3uw3JE55BO9hUAjT5vUGCfZkjEFibU09RsaFY7z+rqJAEZny33sImBUmTZ6z
-         pXKw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776720018; x=1777324818;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:reply-to:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=x4NVqMxmwz4+zEGoWtd4lpZ7VEcKldPsBbR7rls+PLg=;
-        b=Ji67UzNh5V5BTr2ci147W2IBkbnz9VdPKo1WDbsfvukQ3fQmAGSeYdIeyLG9dJ6pMq
-         Lj2oZuTxKpyAxOkjUNmrfNY+NvSTB35Al6DQ0InHu7gukMOpm8xChHpEkPEiXeAoB/Ld
-         92xompZ/YUZtHcGBGTHGWJ+HyeCDCAKG0kUTxsTKoBvVP6TQRcuMj+XRIUQ92aoJRtYn
-         mGD1ew8SfkgxeE0RgrwC7mfdYCBWPOZSZMCDpbLtQQMPgvb9PJ7XM+v7YTHbBpcbEBCC
-         xJblvrtRCQHl670ZZFwi5fpqDrf3XrogV2FMMNauiLL+P4/AFT3/2rspIhF1M5acexKC
-         ELGA==
-X-Forwarded-Encrypted: i=1; AFNElJ93kOTH8y+TvqNZtdOIXYX92SBAkwF/BuZkoweSMoFRbJxY9l7xbvnofZAbiuDb2lTHS7INWR1+i9Q=@lists.infradead.org
-X-Gm-Message-State: AOJu0YxvsJ/KPQQTwUQMHEq4GQxoiCxPpcTSyrDNLrtFaXTrpmtvDUp5
-	b+tWwowFGrENTt7MtRkV/Y3E85EU7hBUvslhkDgRF1xZUHGPWs71mQsbqY2LXbMGXUlfi6Zy7nH
-	YMvSlfQ==
-X-Received: from pjbkb10.prod.google.com ([2002:a17:90a:e7ca:b0:35f:b452:ed86])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:4b87:b0:35b:e56e:a17e
- with SMTP id 98e67ed59e1d1-361404692b3mr16258798a91.17.1776720017472; Mon, 20
- Apr 2026 14:20:17 -0700 (PDT)
-Date: Mon, 20 Apr 2026 14:19:51 -0700
-In-Reply-To: <20260420212004.3938325-1-seanjc@google.com>
-Mime-Version: 1.0
-References: <20260420212004.3938325-1-seanjc@google.com>
-X-Mailer: git-send-email 2.54.0.rc1.555.g9c883467ad-goog
-Message-ID: <20260420212004.3938325-7-seanjc@google.com>
-Subject: [PATCH v3 06/19] KVM: selftests: Use u32 instead of uint32_t
-From: Sean Christopherson <seanjc@google.com>
-To: Paolo Bonzini <pbonzini@redhat.com>, Marc Zyngier <maz@kernel.org>, 
-	Oliver Upton <oupton@kernel.org>, Tianrui Zhao <zhaotianrui@loongson.cn>, 
-	Bibo Mao <maobibo@loongson.cn>, Huacai Chen <chenhuacai@kernel.org>, 
-	Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, 
-	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
-	Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, 
-	Claudio Imbrenda <imbrenda@linux.ibm.com>, Sean Christopherson <seanjc@google.com>
-Cc: kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	kvmarm@lists.linux.dev, loongarch@lists.linux.dev, 
-	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
-	linux-kernel@vger.kernel.org, David Matlack <dmatlack@google.com>
+	id 1wIPXA-00000005Ntw-41C2;
+	Thu, 30 Apr 2026 11:26:23 +0000
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id CC97C40773;
+	Thu, 30 Apr 2026 11:26:19 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0857FC2BCB3;
+	Thu, 30 Apr 2026 11:26:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1777548379;
+	bh=Zo9YfYHfvQZmYXQ8v6knGZeqBaoyVI+iVGiSUDl9pGo=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=n1QAFXtv3CrZPadkmxxbuUOQOATHqvwWuL4LhWMhfeiYT9q5OKa4KgOAh1MsufVO/
+	 HE9XM+e5omMiERr3nibTMdXzDzB7U+JqgMt+ZhWlcSQMmjmeg0MB8WeWJZDNCUVb73
+	 kQZG4ONMP0zHCbDRUrDw5/NeKXCfx1oIvD2mgX5uTnMf1++ee3uK3C/74bmmuOX1ka
+	 HBVUvZ1GEVZElOitChLJ3o/VBTTwAvazzU8GUGs95wevWddXGARFodRFNC4htJjtPN
+	 IlQ08TfTOzcMz4PdMWgGcu3i09C2koWCBKmjW4kB/HwN0ez3o51Vx6Xqx3okkjFfEf
+	 m9e7Kmy5GsPqg==
+Received: by finisterre.sirena.org.uk (Postfix, from userid 1000)
+	id A26771AC585E; Thu, 30 Apr 2026 12:26:16 +0100 (BST)
+Date: Thu, 30 Apr 2026 20:26:16 +0900
+From: Mark Brown <broonie@kernel.org>
+To: Jiakai Xu <xujiakai2025@iscas.ac.cn>
+Cc: linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
+	kvm-riscv@lists.infradead.org, linux-kselftest@vger.kernel.org,
+	kvm@vger.kernel.org, Alexandre Ghiti <alex@ghiti.fr>,
+	Paolo Bonzini <pbonzini@redhat.com>, Shuah Khan <shuah@kernel.org>,
+	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+	Andrew Jones <ajones@ventanamicro.com>,
+	Anup Patel <anup@brainfault.org>,
+	Atish Patra <atish.patra@linux.dev>,
+	Albert Ou <aou@eecs.berkeley.edu>,
+	Andrew Jones <andrew.jones@oss.qualcomm.com>,
+	Jiakai Xu <jiakaiPeanut@gmail.com>
+Subject: Re: [PATCH v10 2/3] KVM: selftests: Refactor UAPI tests into
+ dedicated function
+Message-ID: <afM8WEe4gG5tL4fH@sirena.co.uk>
+References: <20260303010859.1763177-1-xujiakai2025@iscas.ac.cn>
+ <20260303010859.1763177-3-xujiakai2025@iscas.ac.cn>
+MIME-Version: 1.0
+In-Reply-To: <20260303010859.1763177-3-xujiakai2025@iscas.ac.cn>
+X-Cookie: You will outgrow your usefulness.
 X-Mailman-Approved-At: Wed, 10 Jun 2026 09:48:29 -0700
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -91,4952 +77,2286 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Reply-To: Sean Christopherson <seanjc@google.com>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============8602638286253765945=="
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-From: David Matlack <dmatlack@google.com>
 
-Use u32 instead of uint32_t to make the KVM selftests code more concise
-and more similar to the kernel (since selftests are primarily developed
-by kernel developers).
+--===============8602638286253765945==
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="T6sO/LScCfNvsmYY"
+Content-Disposition: inline
 
-This commit was generated with the following command:
 
-  git ls-files tools/testing/selftests/kvm | xargs sed -i 's/uint32_t/u32/g'
+--T6sO/LScCfNvsmYY
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Then by manually adjusting whitespace to make checkpatch.pl happy.
+On Tue, Mar 03, 2026 at 01:08:58AM +0000, Jiakai Xu wrote:
+> Move steal time UAPI tests from steal_time_init() into a separate
+> check_steal_time_uapi() function for better code organization and
+> maintainability.
+>=20
+> Previously, x86 and ARM64 architectures performed UAPI validation
+> tests within steal_time_init(), mixing initialization logic with
+> uapi tests.
 
-No functional change intended.
+I'm seeing a regression in -next in steal_time on what appears to be all
+arm64 platforms (including qemu) which bisects to this patch:
 
-Signed-off-by: David Matlack <dmatlack@google.com>
-Signed-off-by: Sean Christopherson <seanjc@google.com>
----
- tools/testing/selftests/kvm/arch_timer.c      |   6 +-
- .../testing/selftests/kvm/arm64/arch_timer.c  |   6 +-
- .../kvm/arm64/arch_timer_edge_cases.c         |  26 ++--
- .../selftests/kvm/arm64/debug-exceptions.c    |  12 +-
- .../testing/selftests/kvm/arm64/hypercalls.c  |   6 +-
- .../selftests/kvm/arm64/page_fault_test.c     |   6 +-
- tools/testing/selftests/kvm/arm64/psci_test.c |   2 +-
- .../testing/selftests/kvm/arm64/set_id_regs.c |   8 +-
- .../selftests/kvm/arm64/smccc_filter.c        |  10 +-
- tools/testing/selftests/kvm/arm64/vgic_init.c |  30 ++---
- tools/testing/selftests/kvm/arm64/vgic_irq.c  |  91 ++++++-------
- tools/testing/selftests/kvm/arm64/vgic_v5.c   |   8 +-
- .../testing/selftests/kvm/coalesced_io_test.c |  22 ++--
- .../selftests/kvm/dirty_log_perf_test.c       |   2 +-
- tools/testing/selftests/kvm/dirty_log_test.c  |  36 ++---
- .../testing/selftests/kvm/guest_print_test.c  |   6 +-
- .../selftests/kvm/hardware_disable_test.c     |   6 +-
- .../selftests/kvm/include/arm64/arch_timer.h  |  10 +-
- .../testing/selftests/kvm/include/arm64/gic.h |   2 +-
- .../selftests/kvm/include/arm64/processor.h   |  10 +-
- .../selftests/kvm/include/arm64/vgic.h        |  16 +--
- .../testing/selftests/kvm/include/kvm_util.h  | 124 +++++++++---------
- .../testing/selftests/kvm/include/memstress.h |  10 +-
- .../selftests/kvm/include/riscv/arch_timer.h  |   2 +-
- .../testing/selftests/kvm/include/test_util.h |  20 +--
- .../selftests/kvm/include/timer_test.h        |  12 +-
- .../testing/selftests/kvm/include/x86/apic.h  |  10 +-
- .../testing/selftests/kvm/include/x86/evmcs.h |   2 +-
- .../selftests/kvm/include/x86/processor.h     | 100 +++++++-------
- tools/testing/selftests/kvm/include/x86/sev.h |   4 +-
- tools/testing/selftests/kvm/include/x86/vmx.h |   6 +-
- .../selftests/kvm/kvm_page_table_test.c       |   2 +-
- tools/testing/selftests/kvm/lib/arm64/gic.c   |   2 +-
- .../selftests/kvm/lib/arm64/gic_private.h     |  22 ++--
- .../testing/selftests/kvm/lib/arm64/gic_v3.c  |  80 +++++------
- .../selftests/kvm/lib/arm64/processor.c       |  22 ++--
- tools/testing/selftests/kvm/lib/arm64/vgic.c  |  22 ++--
- tools/testing/selftests/kvm/lib/guest_modes.c |   2 +-
- .../testing/selftests/kvm/lib/guest_sprintf.c |   6 +-
- tools/testing/selftests/kvm/lib/kvm_util.c    |  77 ++++++-----
- .../selftests/kvm/lib/loongarch/processor.c   |   6 +-
- tools/testing/selftests/kvm/lib/memstress.c   |   4 +-
- .../selftests/kvm/lib/riscv/processor.c       |   6 +-
- .../selftests/kvm/lib/s390/processor.c        |   2 +-
- tools/testing/selftests/kvm/lib/sparsebit.c   |   4 +-
- tools/testing/selftests/kvm/lib/test_util.c   |  14 +-
- .../testing/selftests/kvm/lib/x86/processor.c |  24 ++--
- tools/testing/selftests/kvm/lib/x86/sev.c     |   4 +-
- tools/testing/selftests/kvm/lib/x86/vmx.c     |  10 +-
- .../selftests/kvm/loongarch/arch_timer.c      |  20 +--
- .../selftests/kvm/loongarch/pmu_test.c        |   6 +-
- .../testing/selftests/kvm/memslot_perf_test.c |  50 +++----
- .../selftests/kvm/pre_fault_memory_test.c     |   2 +-
- .../testing/selftests/kvm/riscv/arch_timer.c  |   6 +-
- tools/testing/selftests/kvm/s390/memop.c      |  18 +--
- .../selftests/kvm/set_memory_region_test.c    |   8 +-
- tools/testing/selftests/kvm/steal_time.c      |  32 ++---
- tools/testing/selftests/kvm/x86/amx_test.c    |   4 +-
- .../selftests/kvm/x86/aperfmperf_test.c       |   2 +-
- .../selftests/kvm/x86/apic_bus_clock_test.c   |  12 +-
- tools/testing/selftests/kvm/x86/debug_regs.c  |   2 +-
- .../testing/selftests/kvm/x86/fastops_test.c  |   4 +-
- .../selftests/kvm/x86/feature_msrs_test.c     |   8 +-
- .../testing/selftests/kvm/x86/hyperv_evmcs.c  |   2 +-
- .../selftests/kvm/x86/hyperv_features.c       |   4 +-
- .../selftests/kvm/x86/hyperv_svm_test.c       |   2 +-
- tools/testing/selftests/kvm/x86/kvm_pv_test.c |   2 +-
- .../selftests/kvm/x86/nested_emulation_test.c |  10 +-
- .../kvm/x86/nested_exceptions_test.c          |   4 +-
- .../kvm/x86/nested_tsc_adjust_test.c          |   2 +-
- .../kvm/x86/nested_tsc_scaling_test.c         |   2 +-
- .../selftests/kvm/x86/pmu_counters_test.c     |  36 ++---
- .../selftests/kvm/x86/pmu_event_filter_test.c |  20 +--
- .../kvm/x86/private_mem_conversions_test.c    |   8 +-
- .../kvm/x86/private_mem_kvm_exits_test.c      |   8 +-
- .../selftests/kvm/x86/set_boot_cpu_id.c       |   6 +-
- .../selftests/kvm/x86/sev_init2_tests.c       |   4 +-
- .../selftests/kvm/x86/sev_smoke_test.c        |  10 +-
- .../selftests/kvm/x86/ucna_injection_test.c   |   2 +-
- .../kvm/x86/userspace_msr_exit_test.c         |  28 ++--
- .../selftests/kvm/x86/vmx_apic_access_test.c  |   2 +-
- .../kvm/x86/vmx_apicv_updates_test.c          |   2 +-
- .../testing/selftests/kvm/x86/vmx_msrs_test.c |   8 +-
- .../selftests/kvm/x86/xapic_ipi_test.c        |  16 +--
- .../selftests/kvm/x86/xapic_state_test.c      |   4 +-
- .../selftests/kvm/x86/xapic_tpr_test.c        |   6 +-
- .../selftests/kvm/x86/xen_shinfo_test.c       |   6 +-
- 87 files changed, 642 insertions(+), 646 deletions(-)
+# selftests: kvm: steal_time
+# Random seed: 0x6b8b4567
+# TAP version 13
+# 1..4
+# =3D=3D=3D=3D Test Assertion Failure =3D=3D=3D=3D
+#   steal_time.c:229: !ret
+#   pid=3D1596 tid=3D1596 errno=3D22 - Invalid argument
+# sh: 1: addr2line: not found
+#   KVM_SET_DEVICE_ATTR failed, rc: -1 errno: 22 (Invalid argument)
+not ok 40 selftests: kvm: steal_time # exit=3D254
 
-diff --git a/tools/testing/selftests/kvm/arch_timer.c b/tools/testing/selftests/kvm/arch_timer.c
-index cf8fb67104f1..90c475a61b22 100644
---- a/tools/testing/selftests/kvm/arch_timer.c
-+++ b/tools/testing/selftests/kvm/arch_timer.c
-@@ -78,9 +78,9 @@ static void *test_vcpu_run(void *arg)
- 	return NULL;
- }
- 
--static uint32_t test_get_pcpu(void)
-+static u32 test_get_pcpu(void)
- {
--	uint32_t pcpu;
-+	u32 pcpu;
- 	unsigned int nproc_conf;
- 	cpu_set_t online_cpuset;
- 
-@@ -98,7 +98,7 @@ static uint32_t test_get_pcpu(void)
- static int test_migrate_vcpu(unsigned int vcpu_idx)
- {
- 	int ret;
--	uint32_t new_pcpu = test_get_pcpu();
-+	u32 new_pcpu = test_get_pcpu();
- 
- 	pr_debug("Migrating vCPU: %u to pCPU: %u\n", vcpu_idx, new_pcpu);
- 
-diff --git a/tools/testing/selftests/kvm/arm64/arch_timer.c b/tools/testing/selftests/kvm/arm64/arch_timer.c
-index 3e5f32bd2352..5fa5c0ec2b3e 100644
---- a/tools/testing/selftests/kvm/arm64/arch_timer.c
-+++ b/tools/testing/selftests/kvm/arm64/arch_timer.c
-@@ -105,7 +105,7 @@ static void guest_validate_irq(unsigned int intid,
- static void guest_irq_handler(struct ex_regs *regs)
- {
- 	unsigned int intid = gic_get_and_ack_irq();
--	uint32_t cpu = guest_get_vcpuid();
-+	u32 cpu = guest_get_vcpuid();
- 	struct test_vcpu_shared_data *shared_data = &vcpu_shared_data[cpu];
- 
- 	guest_validate_irq(intid, shared_data);
-@@ -116,7 +116,7 @@ static void guest_irq_handler(struct ex_regs *regs)
- static void guest_run_stage(struct test_vcpu_shared_data *shared_data,
- 				enum guest_stage stage)
- {
--	uint32_t irq_iter, config_iter;
-+	u32 irq_iter, config_iter;
- 
- 	shared_data->guest_stage = stage;
- 	shared_data->nr_iter = 0;
-@@ -140,7 +140,7 @@ static void guest_run_stage(struct test_vcpu_shared_data *shared_data,
- 
- static void guest_code(void)
- {
--	uint32_t cpu = guest_get_vcpuid();
-+	u32 cpu = guest_get_vcpuid();
- 	struct test_vcpu_shared_data *shared_data = &vcpu_shared_data[cpu];
- 
- 	local_irq_disable();
-diff --git a/tools/testing/selftests/kvm/arm64/arch_timer_edge_cases.c b/tools/testing/selftests/kvm/arm64/arch_timer_edge_cases.c
-index 7aed5dd2a347..f8b183f13864 100644
---- a/tools/testing/selftests/kvm/arm64/arch_timer_edge_cases.c
-+++ b/tools/testing/selftests/kvm/arm64/arch_timer_edge_cases.c
-@@ -29,19 +29,19 @@ static const int32_t TVAL_MAX = INT32_MAX;
- static const int32_t TVAL_MIN = INT32_MIN;
- 
- /* After how much time we say there is no IRQ. */
--static const uint32_t TIMEOUT_NO_IRQ_US = 50000;
-+static const u32 TIMEOUT_NO_IRQ_US = 50000;
- 
- /* Counter value to use as the starting one for most tests. Set to CVAL_MAX/2 */
- static u64 DEF_CNT;
- 
- /* Number of runs. */
--static const uint32_t NR_TEST_ITERS_DEF = 5;
-+static const u32 NR_TEST_ITERS_DEF = 5;
- 
- /* Default wait test time in ms. */
--static const uint32_t WAIT_TEST_MS = 10;
-+static const u32 WAIT_TEST_MS = 10;
- 
- /* Default "long" wait test time in ms. */
--static const uint32_t LONG_WAIT_TEST_MS = 100;
-+static const u32 LONG_WAIT_TEST_MS = 100;
- 
- /* Shared with IRQ handler. */
- struct test_vcpu_shared_data {
-@@ -115,7 +115,7 @@ enum timer_view {
- 	TIMER_TVAL,
- };
- 
--static void assert_irqs_handled(uint32_t n)
-+static void assert_irqs_handled(u32 n)
- {
- 	int h = atomic_read(&shared_data.handled);
- 
-@@ -147,7 +147,7 @@ static void guest_irq_handler(struct ex_regs *regs)
- 	unsigned int intid = gic_get_and_ack_irq();
- 	enum arch_timer timer;
- 	u64 cnt, cval;
--	uint32_t ctl;
-+	u32 ctl;
- 	bool timer_condition, istatus;
- 
- 	if (intid == IAR_SPURIOUS) {
-@@ -179,7 +179,7 @@ static void guest_irq_handler(struct ex_regs *regs)
- }
- 
- static void set_cval_irq(enum arch_timer timer, u64 cval_cycles,
--			 uint32_t ctl)
-+			 u32 ctl)
- {
- 	atomic_set(&shared_data.handled, 0);
- 	atomic_set(&shared_data.spurious, 0);
-@@ -188,7 +188,7 @@ static void set_cval_irq(enum arch_timer timer, u64 cval_cycles,
- }
- 
- static void set_tval_irq(enum arch_timer timer, u64 tval_cycles,
--			 uint32_t ctl)
-+			 u32 ctl)
- {
- 	atomic_set(&shared_data.handled, 0);
- 	atomic_set(&shared_data.spurious, 0);
-@@ -196,7 +196,7 @@ static void set_tval_irq(enum arch_timer timer, u64 tval_cycles,
- 	timer_set_ctl(timer, ctl);
- }
- 
--static void set_xval_irq(enum arch_timer timer, u64 xval, uint32_t ctl,
-+static void set_xval_irq(enum arch_timer timer, u64 xval, u32 ctl,
- 			 enum timer_view tv)
- {
- 	switch (tv) {
-@@ -845,11 +845,11 @@ static void guest_code(enum arch_timer timer)
- 
- static cpu_set_t default_cpuset;
- 
--static uint32_t next_pcpu(void)
-+static u32 next_pcpu(void)
- {
--	uint32_t max = get_nprocs();
--	uint32_t cur = sched_getcpu();
--	uint32_t next = cur;
-+	u32 max = get_nprocs();
-+	u32 cur = sched_getcpu();
-+	u32 next = cur;
- 	cpu_set_t cpuset = default_cpuset;
- 
- 	TEST_ASSERT(max > 1, "Need at least two physical cpus");
-diff --git a/tools/testing/selftests/kvm/arm64/debug-exceptions.c b/tools/testing/selftests/kvm/arm64/debug-exceptions.c
-index c19f143bed25..5931915ea00a 100644
---- a/tools/testing/selftests/kvm/arm64/debug-exceptions.c
-+++ b/tools/testing/selftests/kvm/arm64/debug-exceptions.c
-@@ -151,7 +151,7 @@ static void enable_monitor_debug_exceptions(void)
- 
- static void install_wp(uint8_t wpn, u64 addr)
- {
--	uint32_t wcr;
-+	u32 wcr;
- 
- 	wcr = DBGWCR_LEN8 | DBGWCR_RD | DBGWCR_WR | DBGWCR_EL1 | DBGWCR_E;
- 	write_dbgwcr(wpn, wcr);
-@@ -164,7 +164,7 @@ static void install_wp(uint8_t wpn, u64 addr)
- 
- static void install_hw_bp(uint8_t bpn, u64 addr)
- {
--	uint32_t bcr;
-+	u32 bcr;
- 
- 	bcr = DBGBCR_LEN8 | DBGBCR_EXEC | DBGBCR_EL1 | DBGBCR_E;
- 	write_dbgbcr(bpn, bcr);
-@@ -177,7 +177,7 @@ static void install_hw_bp(uint8_t bpn, u64 addr)
- static void install_wp_ctx(uint8_t addr_wp, uint8_t ctx_bp, u64 addr,
- 			   u64 ctx)
- {
--	uint32_t wcr;
-+	u32 wcr;
- 	u64 ctx_bcr;
- 
- 	/* Setup a context-aware breakpoint for Linked Context ID Match */
-@@ -188,7 +188,7 @@ static void install_wp_ctx(uint8_t addr_wp, uint8_t ctx_bp, u64 addr,
- 
- 	/* Setup a linked watchpoint (linked to the context-aware breakpoint) */
- 	wcr = DBGWCR_LEN8 | DBGWCR_RD | DBGWCR_WR | DBGWCR_EL1 | DBGWCR_E |
--	      DBGWCR_WT_LINK | ((uint32_t)ctx_bp << DBGWCR_LBN_SHIFT);
-+	      DBGWCR_WT_LINK | ((u32)ctx_bp << DBGWCR_LBN_SHIFT);
- 	write_dbgwcr(addr_wp, wcr);
- 	write_dbgwvr(addr_wp, addr);
- 	isb();
-@@ -199,7 +199,7 @@ static void install_wp_ctx(uint8_t addr_wp, uint8_t ctx_bp, u64 addr,
- void install_hw_bp_ctx(uint8_t addr_bp, uint8_t ctx_bp, u64 addr,
- 		       u64 ctx)
- {
--	uint32_t addr_bcr, ctx_bcr;
-+	u32 addr_bcr, ctx_bcr;
- 
- 	/* Setup a context-aware breakpoint for Linked Context ID Match */
- 	ctx_bcr = DBGBCR_LEN8 | DBGBCR_EXEC | DBGBCR_EL1 | DBGBCR_E |
-@@ -213,7 +213,7 @@ void install_hw_bp_ctx(uint8_t addr_bp, uint8_t ctx_bp, u64 addr,
- 	 */
- 	addr_bcr = DBGBCR_LEN8 | DBGBCR_EXEC | DBGBCR_EL1 | DBGBCR_E |
- 		   DBGBCR_BT_ADDR_LINK_CTX |
--		   ((uint32_t)ctx_bp << DBGBCR_LBN_SHIFT);
-+		   ((u32)ctx_bp << DBGBCR_LBN_SHIFT);
- 	write_dbgbcr(addr_bp, addr_bcr);
- 	write_dbgbvr(addr_bp, addr);
- 	isb();
-diff --git a/tools/testing/selftests/kvm/arm64/hypercalls.c b/tools/testing/selftests/kvm/arm64/hypercalls.c
-index 4f24105baaf3..5d96cdf382c4 100644
---- a/tools/testing/selftests/kvm/arm64/hypercalls.c
-+++ b/tools/testing/selftests/kvm/arm64/hypercalls.c
-@@ -59,7 +59,7 @@ enum test_stage {
- static int stage = TEST_STAGE_REG_IFACE;
- 
- struct test_hvc_info {
--	uint32_t func_id;
-+	u32 func_id;
- 	u64 arg1;
- };
- 
-@@ -152,8 +152,8 @@ static void guest_code(void)
- }
- 
- struct st_time {
--	uint32_t rev;
--	uint32_t attr;
-+	u32 rev;
-+	u32 attr;
- 	u64 st_time;
- };
- 
-diff --git a/tools/testing/selftests/kvm/arm64/page_fault_test.c b/tools/testing/selftests/kvm/arm64/page_fault_test.c
-index 5d629ea95c4d..cb52ac8aa0a5 100644
---- a/tools/testing/selftests/kvm/arm64/page_fault_test.c
-+++ b/tools/testing/selftests/kvm/arm64/page_fault_test.c
-@@ -59,8 +59,8 @@ struct test_desc {
- 	void (*iabt_handler)(struct ex_regs *regs);
- 	void (*mmio_handler)(struct kvm_vm *vm, struct kvm_run *run);
- 	void (*fail_vcpu_run_handler)(int ret);
--	uint32_t pt_memslot_flags;
--	uint32_t data_memslot_flags;
-+	u32 pt_memslot_flags;
-+	u32 data_memslot_flags;
- 	bool skip;
- 	struct event_cnt expected_events;
- };
-@@ -510,7 +510,7 @@ void fail_vcpu_run_mmio_no_syndrome_handler(int ret)
- 	events.fail_vcpu_runs += 1;
- }
- 
--typedef uint32_t aarch64_insn_t;
-+typedef u32 aarch64_insn_t;
- extern aarch64_insn_t __exec_test[2];
- 
- noinline void __return_0x77(void)
-diff --git a/tools/testing/selftests/kvm/arm64/psci_test.c b/tools/testing/selftests/kvm/arm64/psci_test.c
-index 0a67dc3136d4..e775faf20868 100644
---- a/tools/testing/selftests/kvm/arm64/psci_test.c
-+++ b/tools/testing/selftests/kvm/arm64/psci_test.c
-@@ -61,7 +61,7 @@ static u64 psci_system_off2(u64 type, u64 cookie)
- 	return res.a0;
- }
- 
--static u64 psci_features(uint32_t func_id)
-+static u64 psci_features(u32 func_id)
- {
- 	struct arm_smccc_res res;
- 
-diff --git a/tools/testing/selftests/kvm/arm64/set_id_regs.c b/tools/testing/selftests/kvm/arm64/set_id_regs.c
-index 4402f317f7d9..8bf9c717b698 100644
---- a/tools/testing/selftests/kvm/arm64/set_id_regs.c
-+++ b/tools/testing/selftests/kvm/arm64/set_id_regs.c
-@@ -43,7 +43,7 @@ struct reg_ftr_bits {
- };
- 
- struct test_feature_reg {
--	uint32_t reg;
-+	u32 reg;
- 	const struct reg_ftr_bits *ftr_bits;
- };
- 
-@@ -457,7 +457,7 @@ static void test_vm_ftr_id_regs(struct kvm_vcpu *vcpu, bool aarch64_only)
- 
- 	for (int i = 0; i < ARRAY_SIZE(test_regs); i++) {
- 		const struct reg_ftr_bits *ftr_bits = test_regs[i].ftr_bits;
--		uint32_t reg_id = test_regs[i].reg;
-+		u32 reg_id = test_regs[i].reg;
- 		u64 reg = KVM_ARM64_SYS_REG(reg_id);
- 		int idx;
- 
-@@ -643,7 +643,7 @@ static void test_user_set_mte_reg(struct kvm_vcpu *vcpu)
- 		ksft_test_result_pass("ID_AA64PFR1_EL1.MTE_frac no longer 0xF\n");
- }
- 
--static u64 reset_mutable_bits(uint32_t id, u64 val)
-+static u64 reset_mutable_bits(u32 id, u64 val)
- {
- 	struct test_feature_reg *reg = NULL;
- 
-@@ -771,7 +771,7 @@ static void test_vcpu_non_ftr_id_regs(struct kvm_vcpu *vcpu)
- 	ksft_test_result_pass("%s\n", __func__);
- }
- 
--static void test_assert_id_reg_unchanged(struct kvm_vcpu *vcpu, uint32_t encoding)
-+static void test_assert_id_reg_unchanged(struct kvm_vcpu *vcpu, u32 encoding)
- {
- 	size_t idx = encoding_to_range_idx(encoding);
- 	u64 observed;
-diff --git a/tools/testing/selftests/kvm/arm64/smccc_filter.c b/tools/testing/selftests/kvm/arm64/smccc_filter.c
-index 1763b9d45400..21e41880261b 100644
---- a/tools/testing/selftests/kvm/arm64/smccc_filter.c
-+++ b/tools/testing/selftests/kvm/arm64/smccc_filter.c
-@@ -37,7 +37,7 @@ static bool test_runs_at_el2(void)
- 	for (conduit = test_runs_at_el2() ? SMC_INSN : HVC_INSN;	\
- 	     conduit <= SMC_INSN; conduit++)
- 
--static void guest_main(uint32_t func_id, enum smccc_conduit conduit)
-+static void guest_main(u32 func_id, enum smccc_conduit conduit)
- {
- 	struct arm_smccc_res res;
- 
-@@ -49,7 +49,7 @@ static void guest_main(uint32_t func_id, enum smccc_conduit conduit)
- 	GUEST_SYNC(res.a0);
- }
- 
--static int __set_smccc_filter(struct kvm_vm *vm, uint32_t start, uint32_t nr_functions,
-+static int __set_smccc_filter(struct kvm_vm *vm, u32 start, u32 nr_functions,
- 			      enum kvm_smccc_filter_action action)
- {
- 	struct kvm_smccc_filter filter = {
-@@ -62,7 +62,7 @@ static int __set_smccc_filter(struct kvm_vm *vm, uint32_t start, uint32_t nr_fun
- 				     KVM_ARM_VM_SMCCC_FILTER, &filter);
- }
- 
--static void set_smccc_filter(struct kvm_vm *vm, uint32_t start, uint32_t nr_functions,
-+static void set_smccc_filter(struct kvm_vm *vm, u32 start, u32 nr_functions,
- 			     enum kvm_smccc_filter_action action)
- {
- 	int ret = __set_smccc_filter(vm, start, nr_functions, action);
-@@ -112,7 +112,7 @@ static void test_filter_reserved_range(void)
- {
- 	struct kvm_vcpu *vcpu;
- 	struct kvm_vm *vm = setup_vm(&vcpu);
--	uint32_t smc64_fn;
-+	u32 smc64_fn;
- 	int r;
- 
- 	r = __set_smccc_filter(vm, ARM_SMCCC_ARCH_WORKAROUND_1,
-@@ -217,7 +217,7 @@ static void test_filter_denied(void)
- 	}
- }
- 
--static void expect_call_fwd_to_user(struct kvm_vcpu *vcpu, uint32_t func_id,
-+static void expect_call_fwd_to_user(struct kvm_vcpu *vcpu, u32 func_id,
- 				    enum smccc_conduit conduit)
- {
- 	struct kvm_run *run = vcpu->run;
-diff --git a/tools/testing/selftests/kvm/arm64/vgic_init.c b/tools/testing/selftests/kvm/arm64/vgic_init.c
-index 0d8ddb371b89..47e34b43afb2 100644
---- a/tools/testing/selftests/kvm/arm64/vgic_init.c
-+++ b/tools/testing/selftests/kvm/arm64/vgic_init.c
-@@ -27,7 +27,7 @@
- struct vm_gic {
- 	struct kvm_vm *vm;
- 	int gic_fd;
--	uint32_t gic_dev_type;
-+	u32 gic_dev_type;
- };
- 
- static u64 max_phys_size;
-@@ -39,17 +39,17 @@ static u64 max_phys_size;
- static void v3_redist_reg_get_errno(int gicv3_fd, int vcpu, int offset,
- 				    int want, const char *msg)
- {
--	uint32_t ignored_val;
-+	u32 ignored_val;
- 	int ret = __kvm_device_attr_get(gicv3_fd, KVM_DEV_ARM_VGIC_GRP_REDIST_REGS,
- 					REG_OFFSET(vcpu, offset), &ignored_val);
- 
- 	TEST_ASSERT(ret && errno == want, "%s; want errno = %d", msg, want);
- }
- 
--static void v3_redist_reg_get(int gicv3_fd, int vcpu, int offset, uint32_t want,
-+static void v3_redist_reg_get(int gicv3_fd, int vcpu, int offset, u32 want,
- 			      const char *msg)
- {
--	uint32_t val;
-+	u32 val;
- 
- 	kvm_device_attr_get(gicv3_fd, KVM_DEV_ARM_VGIC_GRP_REDIST_REGS,
- 			    REG_OFFSET(vcpu, offset), &val);
-@@ -71,8 +71,8 @@ static int run_vcpu(struct kvm_vcpu *vcpu)
- 	return __vcpu_run(vcpu) ? -errno : 0;
- }
- 
--static struct vm_gic vm_gic_create_with_vcpus(uint32_t gic_dev_type,
--					      uint32_t nr_vcpus,
-+static struct vm_gic vm_gic_create_with_vcpus(u32 gic_dev_type,
-+					      u32 nr_vcpus,
- 					      struct kvm_vcpu *vcpus[])
- {
- 	struct vm_gic v;
-@@ -84,7 +84,7 @@ static struct vm_gic vm_gic_create_with_vcpus(uint32_t gic_dev_type,
- 	return v;
- }
- 
--static struct vm_gic vm_gic_create_barebones(uint32_t gic_dev_type)
-+static struct vm_gic vm_gic_create_barebones(u32 gic_dev_type)
- {
- 	struct vm_gic v;
- 
-@@ -332,7 +332,7 @@ static void subtest_v3_redist_regions(struct vm_gic *v)
-  * VGIC KVM device is created and initialized before the secondary CPUs
-  * get created
-  */
--static void test_vgic_then_vcpus(uint32_t gic_dev_type)
-+static void test_vgic_then_vcpus(u32 gic_dev_type)
- {
- 	struct kvm_vcpu *vcpus[NR_VCPUS];
- 	struct vm_gic v;
-@@ -353,7 +353,7 @@ static void test_vgic_then_vcpus(uint32_t gic_dev_type)
- }
- 
- /* All the VCPUs are created before the VGIC KVM device gets initialized */
--static void test_vcpus_then_vgic(uint32_t gic_dev_type)
-+static void test_vcpus_then_vgic(u32 gic_dev_type)
- {
- 	struct kvm_vcpu *vcpus[NR_VCPUS];
- 	struct vm_gic v;
-@@ -518,7 +518,7 @@ static void test_v3_typer_accesses(void)
- }
- 
- static struct vm_gic vm_gic_v3_create_with_vcpuids(int nr_vcpus,
--						   uint32_t vcpuids[])
-+						   u32 vcpuids[])
- {
- 	struct vm_gic v;
- 	int i;
-@@ -544,7 +544,7 @@ static struct vm_gic vm_gic_v3_create_with_vcpuids(int nr_vcpus,
-  */
- static void test_v3_last_bit_redist_regions(void)
- {
--	uint32_t vcpuids[] = { 0, 3, 5, 4, 1, 2 };
-+	u32 vcpuids[] = { 0, 3, 5, 4, 1, 2 };
- 	struct vm_gic v;
- 	u64 addr;
- 
-@@ -578,7 +578,7 @@ static void test_v3_last_bit_redist_regions(void)
- /* Test last bit with legacy region */
- static void test_v3_last_bit_single_rdist(void)
- {
--	uint32_t vcpuids[] = { 0, 3, 5, 4, 1, 2 };
-+	u32 vcpuids[] = { 0, 3, 5, 4, 1, 2 };
- 	struct vm_gic v;
- 	u64 addr;
- 
-@@ -717,11 +717,11 @@ static void test_v3_nassgicap(void)
- /*
-  * Returns 0 if it's possible to create GIC device of a given type (V2 or V3).
-  */
--int test_kvm_device(uint32_t gic_dev_type)
-+int test_kvm_device(u32 gic_dev_type)
- {
- 	struct kvm_vcpu *vcpus[NR_VCPUS];
- 	struct vm_gic v;
--	uint32_t other;
-+	u32 other;
- 	int ret;
- 
- 	v.vm = vm_create_with_vcpus(NR_VCPUS, guest_code, vcpus);
-@@ -968,7 +968,7 @@ static void test_v3_sysregs(void)
- 	kvm_vm_free(vm);
- }
- 
--void run_tests(uint32_t gic_dev_type)
-+void run_tests(u32 gic_dev_type)
- {
- 	test_vcpus_then_vgic(gic_dev_type);
- 	test_vgic_then_vcpus(gic_dev_type);
-diff --git a/tools/testing/selftests/kvm/arm64/vgic_irq.c b/tools/testing/selftests/kvm/arm64/vgic_irq.c
-index eae4aeb44926..8a9dd79123d4 100644
---- a/tools/testing/selftests/kvm/arm64/vgic_irq.c
-+++ b/tools/testing/selftests/kvm/arm64/vgic_irq.c
-@@ -24,12 +24,12 @@
-  * function.
-  */
- struct test_args {
--	uint32_t nr_irqs; /* number of KVM supported IRQs. */
-+	u32 nr_irqs; /* number of KVM supported IRQs. */
- 	bool eoi_split; /* 1 is eoir+dir, 0 is eoir only */
- 	bool level_sensitive; /* 1 is level, 0 is edge */
- 	int kvm_max_routes; /* output of KVM_CAP_IRQ_ROUTING */
- 	bool kvm_supports_irqfd; /* output of KVM_CAP_IRQFD */
--	uint32_t shared_data;
-+	u32 shared_data;
- };
- 
- /*
-@@ -64,15 +64,15 @@ typedef enum {
- 
- struct kvm_inject_args {
- 	kvm_inject_cmd cmd;
--	uint32_t first_intid;
--	uint32_t num;
-+	u32 first_intid;
-+	u32 num;
- 	int level;
- 	bool expect_failure;
- };
- 
- /* Used on the guest side to perform the hypercall. */
--static void kvm_inject_call(kvm_inject_cmd cmd, uint32_t first_intid,
--		uint32_t num, int level, bool expect_failure);
-+static void kvm_inject_call(kvm_inject_cmd cmd, u32 first_intid,
-+			    u32 num, int level, bool expect_failure);
- 
- /* Used on the host side to get the hypercall info. */
- static void kvm_inject_get_call(struct kvm_vm *vm, struct ucall *uc,
-@@ -134,7 +134,7 @@ static struct kvm_inject_desc set_active_fns[] = {
- 
- /* Shared between the guest main thread and the IRQ handlers. */
- volatile u64 irq_handled;
--volatile uint32_t irqnr_received[MAX_SPI + 1];
-+volatile u32 irqnr_received[MAX_SPI + 1];
- 
- static void reset_stats(void)
- {
-@@ -159,11 +159,11 @@ static void gic_write_ap1r0(u64 val)
- 	isb();
- }
- 
--static void guest_set_irq_line(uint32_t intid, uint32_t level);
-+static void guest_set_irq_line(u32 intid, u32 level);
- 
- static void guest_irq_generic_handler(bool eoi_split, bool level_sensitive)
- {
--	uint32_t intid = gic_get_and_ack_irq();
-+	u32 intid = gic_get_and_ack_irq();
- 
- 	if (intid == IAR_SPURIOUS)
- 		return;
-@@ -189,8 +189,8 @@ static void guest_irq_generic_handler(bool eoi_split, bool level_sensitive)
- 	GUEST_ASSERT(!gic_irq_get_pending(intid));
- }
- 
--static void kvm_inject_call(kvm_inject_cmd cmd, uint32_t first_intid,
--		uint32_t num, int level, bool expect_failure)
-+static void kvm_inject_call(kvm_inject_cmd cmd, u32 first_intid,
-+			    u32 num, int level, bool expect_failure)
- {
- 	struct kvm_inject_args args = {
- 		.cmd = cmd,
-@@ -204,7 +204,7 @@ static void kvm_inject_call(kvm_inject_cmd cmd, uint32_t first_intid,
- 
- #define GUEST_ASSERT_IAR_EMPTY()						\
- do { 										\
--	uint32_t _intid;							\
-+	u32 _intid;							\
- 	_intid = gic_get_and_ack_irq();						\
- 	GUEST_ASSERT(_intid == IAR_SPURIOUS);					\
- } while (0)
-@@ -237,13 +237,13 @@ static void reset_priorities(struct test_args *args)
- 		gic_set_priority(i, IRQ_DEFAULT_PRIO_REG);
- }
- 
--static void guest_set_irq_line(uint32_t intid, uint32_t level)
-+static void guest_set_irq_line(u32 intid, u32 level)
- {
- 	kvm_inject_call(KVM_SET_IRQ_LINE, intid, 1, level, false);
- }
- 
- static void test_inject_fail(struct test_args *args,
--		uint32_t intid, kvm_inject_cmd cmd)
-+			     u32 intid, kvm_inject_cmd cmd)
- {
- 	reset_stats();
- 
-@@ -255,10 +255,10 @@ static void test_inject_fail(struct test_args *args,
- }
- 
- static void guest_inject(struct test_args *args,
--		uint32_t first_intid, uint32_t num,
--		kvm_inject_cmd cmd)
-+			 u32 first_intid, u32 num,
-+			 kvm_inject_cmd cmd)
- {
--	uint32_t i;
-+	u32 i;
- 
- 	reset_stats();
- 
-@@ -292,10 +292,10 @@ static void guest_inject(struct test_args *args,
-  * deactivated yet.
-  */
- static void guest_restore_active(struct test_args *args,
--		uint32_t first_intid, uint32_t num,
--		kvm_inject_cmd cmd)
-+				 u32 first_intid, u32 num,
-+				 kvm_inject_cmd cmd)
- {
--	uint32_t prio, intid, ap1r;
-+	u32 prio, intid, ap1r;
- 	int i;
- 
- 	/*
-@@ -342,9 +342,9 @@ static void guest_restore_active(struct test_args *args,
-  * This function should only be used in test_inject_preemption (with IRQs
-  * masked).
-  */
--static uint32_t wait_for_and_activate_irq(void)
-+static u32 wait_for_and_activate_irq(void)
- {
--	uint32_t intid;
-+	u32 intid;
- 
- 	do {
- 		asm volatile("wfi" : : : "memory");
-@@ -360,11 +360,11 @@ static uint32_t wait_for_and_activate_irq(void)
-  * interrupts for the whole test.
-  */
- static void test_inject_preemption(struct test_args *args,
--				   uint32_t first_intid, int num,
-+				   u32 first_intid, int num,
- 				   const unsigned long *exclude,
- 				   kvm_inject_cmd cmd)
- {
--	uint32_t intid, prio, step = KVM_PRIO_STEPS;
-+	u32 intid, prio, step = KVM_PRIO_STEPS;
- 	int i;
- 
- 	/* Set the priorities of the first (KVM_NUM_PRIOS - 1) IRQs
-@@ -379,7 +379,7 @@ static void test_inject_preemption(struct test_args *args,
- 	local_irq_disable();
- 
- 	for (i = 0; i < num; i++) {
--		uint32_t tmp;
-+		u32 tmp;
- 		intid = i + first_intid;
- 
- 		if (exclude && test_bit(i, exclude))
-@@ -431,7 +431,7 @@ static void test_inject_preemption(struct test_args *args,
- 
- static void test_injection(struct test_args *args, struct kvm_inject_desc *f)
- {
--	uint32_t nr_irqs = args->nr_irqs;
-+	u32 nr_irqs = args->nr_irqs;
- 
- 	if (f->sgi) {
- 		guest_inject(args, MIN_SGI, 1, f->cmd);
-@@ -451,7 +451,7 @@ static void test_injection(struct test_args *args, struct kvm_inject_desc *f)
- static void test_injection_failure(struct test_args *args,
- 		struct kvm_inject_desc *f)
- {
--	uint32_t bad_intid[] = { args->nr_irqs, 1020, 1024, 1120, 5120, ~0U, };
-+	u32 bad_intid[] = { args->nr_irqs, 1020, 1024, 1120, 5120, ~0U, };
- 	int i;
- 
- 	for (i = 0; i < ARRAY_SIZE(bad_intid); i++)
-@@ -490,7 +490,7 @@ static void test_restore_active(struct test_args *args, struct kvm_inject_desc *
- 
- static void guest_code(struct test_args *args)
- {
--	uint32_t i, nr_irqs = args->nr_irqs;
-+	u32 i, nr_irqs = args->nr_irqs;
- 	bool level_sensitive = args->level_sensitive;
- 	struct kvm_inject_desc *f, *inject_fns;
- 
-@@ -529,8 +529,8 @@ static void guest_code(struct test_args *args)
- 	GUEST_DONE();
- }
- 
--static void kvm_irq_line_check(struct kvm_vm *vm, uint32_t intid, int level,
--			struct test_args *test_args, bool expect_failure)
-+static void kvm_irq_line_check(struct kvm_vm *vm, u32 intid, int level,
-+			       struct test_args *test_args, bool expect_failure)
- {
- 	int ret;
- 
-@@ -548,8 +548,8 @@ static void kvm_irq_line_check(struct kvm_vm *vm, uint32_t intid, int level,
- 	}
- }
- 
--void kvm_irq_set_level_info_check(int gic_fd, uint32_t intid, int level,
--			bool expect_failure)
-+void kvm_irq_set_level_info_check(int gic_fd, u32 intid, int level,
-+				  bool expect_failure)
- {
- 	if (!expect_failure) {
- 		kvm_irq_set_level_info(gic_fd, intid, level);
-@@ -573,8 +573,9 @@ void kvm_irq_set_level_info_check(int gic_fd, uint32_t intid, int level,
- }
- 
- static void kvm_set_gsi_routing_irqchip_check(struct kvm_vm *vm,
--		uint32_t intid, uint32_t num, uint32_t kvm_max_routes,
--		bool expect_failure)
-+					      u32 intid, u32 num,
-+					      u32 kvm_max_routes,
-+					      bool expect_failure)
- {
- 	struct kvm_irq_routing *routing;
- 	int ret;
-@@ -602,7 +603,7 @@ static void kvm_set_gsi_routing_irqchip_check(struct kvm_vm *vm,
- 	}
- }
- 
--static void kvm_irq_write_ispendr_check(int gic_fd, uint32_t intid,
-+static void kvm_irq_write_ispendr_check(int gic_fd, u32 intid,
- 					struct kvm_vcpu *vcpu,
- 					bool expect_failure)
- {
-@@ -618,8 +619,8 @@ static void kvm_irq_write_ispendr_check(int gic_fd, uint32_t intid,
- }
- 
- static void kvm_routing_and_irqfd_check(struct kvm_vm *vm,
--		uint32_t intid, uint32_t num, uint32_t kvm_max_routes,
--		bool expect_failure)
-+					u32 intid, u32 num, u32 kvm_max_routes,
-+					bool expect_failure)
- {
- 	int fd[MAX_SPI];
- 	u64 val;
-@@ -673,13 +674,13 @@ static void run_guest_cmd(struct kvm_vcpu *vcpu, int gic_fd,
- 			  struct test_args *test_args)
- {
- 	kvm_inject_cmd cmd = inject_args->cmd;
--	uint32_t intid = inject_args->first_intid;
--	uint32_t num = inject_args->num;
-+	u32 intid = inject_args->first_intid;
-+	u32 num = inject_args->num;
- 	int level = inject_args->level;
- 	bool expect_failure = inject_args->expect_failure;
- 	struct kvm_vm *vm = vcpu->vm;
- 	u64 tmp;
--	uint32_t i;
-+	u32 i;
- 
- 	/* handles the valid case: intid=0xffffffff num=1 */
- 	assert(intid < UINT_MAX - num || num == 1);
-@@ -745,7 +746,7 @@ static void print_args(struct test_args *args)
- 			args->eoi_split);
- }
- 
--static void test_vgic(uint32_t nr_irqs, bool level_sensitive, bool eoi_split)
-+static void test_vgic(u32 nr_irqs, bool level_sensitive, bool eoi_split)
- {
- 	struct ucall uc;
- 	int gic_fd;
-@@ -810,7 +811,7 @@ static void guest_code_asym_dir(struct test_args *args, int cpuid)
- 	gic_set_priority_mask(CPU_PRIO_MASK);
- 
- 	if (cpuid == 0) {
--		uint32_t intid;
-+		u32 intid;
- 
- 		local_irq_disable();
- 
-@@ -848,7 +849,7 @@ static void guest_code_asym_dir(struct test_args *args, int cpuid)
- 
- static void guest_code_group_en(struct test_args *args, int cpuid)
- {
--	uint32_t intid;
-+	u32 intid;
- 
- 	gic_init(GIC_V3, 2);
- 
-@@ -896,7 +897,7 @@ static void guest_code_group_en(struct test_args *args, int cpuid)
- 
- static void guest_code_timer_spi(struct test_args *args, int cpuid)
- {
--	uint32_t intid;
-+	u32 intid;
- 	u64 val;
- 
- 	gic_init(GIC_V3, 2);
-@@ -1033,7 +1034,7 @@ static void help(const char *name)
- 
- int main(int argc, char **argv)
- {
--	uint32_t nr_irqs = 64;
-+	u32 nr_irqs = 64;
- 	bool default_args = true;
- 	bool level_sensitive = false;
- 	int opt;
-diff --git a/tools/testing/selftests/kvm/arm64/vgic_v5.c b/tools/testing/selftests/kvm/arm64/vgic_v5.c
-index 80be71704450..d785b660d847 100644
---- a/tools/testing/selftests/kvm/arm64/vgic_v5.c
-+++ b/tools/testing/selftests/kvm/arm64/vgic_v5.c
-@@ -17,7 +17,7 @@
- struct vm_gic {
- 	struct kvm_vm *vm;
- 	int gic_fd;
--	uint32_t gic_dev_type;
-+	u32 gic_dev_type;
- };
- 
- static u64 max_phys_size;
-@@ -96,7 +96,7 @@ static void vm_gic_destroy(struct vm_gic *v)
- 	kvm_vm_free(v->vm);
- }
- 
--static void test_vgic_v5_ppis(uint32_t gic_dev_type)
-+static void test_vgic_v5_ppis(u32 gic_dev_type)
- {
- 	struct kvm_vcpu *vcpus[NR_VCPUS];
- 	struct ucall uc;
-@@ -173,7 +173,7 @@ static void test_vgic_v5_ppis(uint32_t gic_dev_type)
- /*
-  * Returns 0 if it's possible to create GIC device of a given type (V5).
-  */
--int test_kvm_device(uint32_t gic_dev_type)
-+int test_kvm_device(u32 gic_dev_type)
- {
- 	struct kvm_vcpu *vcpus[NR_VCPUS];
- 	struct vm_gic v;
-@@ -199,7 +199,7 @@ int test_kvm_device(uint32_t gic_dev_type)
- 	return 0;
- }
- 
--void run_tests(uint32_t gic_dev_type)
-+void run_tests(u32 gic_dev_type)
- {
- 	pr_info("Test VGICv5 PPIs\n");
- 	test_vgic_v5_ppis(gic_dev_type);
-diff --git a/tools/testing/selftests/kvm/coalesced_io_test.c b/tools/testing/selftests/kvm/coalesced_io_test.c
-index ed6a66020b1e..f5ab412d2042 100644
---- a/tools/testing/selftests/kvm/coalesced_io_test.c
-+++ b/tools/testing/selftests/kvm/coalesced_io_test.c
-@@ -14,7 +14,7 @@
- 
- struct kvm_coalesced_io {
- 	struct kvm_coalesced_mmio_ring *ring;
--	uint32_t ring_size;
-+	u32 ring_size;
- 	u64 mmio_gpa;
- 	u64 *mmio;
- 
-@@ -70,13 +70,13 @@ static void guest_code(struct kvm_coalesced_io *io)
- 
- static void vcpu_run_and_verify_io_exit(struct kvm_vcpu *vcpu,
- 					struct kvm_coalesced_io *io,
--					uint32_t ring_start,
--					uint32_t expected_exit)
-+					u32 ring_start,
-+					u32 expected_exit)
- {
- 	const bool want_pio = expected_exit == KVM_EXIT_IO;
- 	struct kvm_coalesced_mmio_ring *ring = io->ring;
- 	struct kvm_run *run = vcpu->run;
--	uint32_t pio_value;
-+	u32 pio_value;
- 
- 	WRITE_ONCE(ring->first, ring_start);
- 	WRITE_ONCE(ring->last, ring_start);
-@@ -88,7 +88,7 @@ static void vcpu_run_and_verify_io_exit(struct kvm_vcpu *vcpu,
- 	 * data_offset is garbage, e.g. an MMIO gpa.
- 	 */
- 	if (run->exit_reason == KVM_EXIT_IO)
--		pio_value = *(uint32_t *)((void *)run + run->io.data_offset);
-+		pio_value = *(u32 *)((void *)run + run->io.data_offset);
- 	else
- 		pio_value = 0;
- 
-@@ -111,8 +111,8 @@ static void vcpu_run_and_verify_io_exit(struct kvm_vcpu *vcpu,
- 
- static void vcpu_run_and_verify_coalesced_io(struct kvm_vcpu *vcpu,
- 					     struct kvm_coalesced_io *io,
--					     uint32_t ring_start,
--					     uint32_t expected_exit)
-+					     u32 ring_start,
-+					     u32 expected_exit)
- {
- 	struct kvm_coalesced_mmio_ring *ring = io->ring;
- 	int i;
-@@ -124,18 +124,18 @@ static void vcpu_run_and_verify_coalesced_io(struct kvm_vcpu *vcpu,
- 		    ring->first, ring->last, io->ring_size, ring_start);
- 
- 	for (i = 0; i < io->ring_size - 1; i++) {
--		uint32_t idx = (ring->first + i) % io->ring_size;
-+		u32 idx = (ring->first + i) % io->ring_size;
- 		struct kvm_coalesced_mmio *entry = &ring->coalesced_mmio[idx];
- 
- #ifdef __x86_64__
- 		if (i & 1)
- 			TEST_ASSERT(entry->phys_addr == io->pio_port &&
- 				    entry->len == 4 && entry->pio &&
--				    *(uint32_t *)entry->data == io->pio_port + i,
-+				    *(u32 *)entry->data == io->pio_port + i,
- 				    "Wanted 4-byte port I/O 0x%x = 0x%x in entry %u, got %u-byte %s 0x%llx = 0x%x",
- 				    io->pio_port, io->pio_port + i, i,
- 				    entry->len, entry->pio ? "PIO" : "MMIO",
--				    entry->phys_addr, *(uint32_t *)entry->data);
-+				    entry->phys_addr, *(u32 *)entry->data);
- 		else
- #endif
- 			TEST_ASSERT(entry->phys_addr == io->mmio_gpa &&
-@@ -148,7 +148,7 @@ static void vcpu_run_and_verify_coalesced_io(struct kvm_vcpu *vcpu,
- }
- 
- static void test_coalesced_io(struct kvm_vcpu *vcpu,
--			      struct kvm_coalesced_io *io, uint32_t ring_start)
-+			      struct kvm_coalesced_io *io, u32 ring_start)
- {
- 	struct kvm_coalesced_mmio_ring *ring = io->ring;
- 
-diff --git a/tools/testing/selftests/kvm/dirty_log_perf_test.c b/tools/testing/selftests/kvm/dirty_log_perf_test.c
-index 7d170694e9c1..ef779fa91827 100644
---- a/tools/testing/selftests/kvm/dirty_log_perf_test.c
-+++ b/tools/testing/selftests/kvm/dirty_log_perf_test.c
-@@ -97,7 +97,7 @@ struct test_params {
- 	bool partition_vcpu_memory_access;
- 	enum vm_mem_backing_src_type backing_src;
- 	int slots;
--	uint32_t write_percent;
-+	u32 write_percent;
- 	bool random_access;
- };
- 
-diff --git a/tools/testing/selftests/kvm/dirty_log_test.c b/tools/testing/selftests/kvm/dirty_log_test.c
-index fae924ddb64e..12446a4b6e8d 100644
---- a/tools/testing/selftests/kvm/dirty_log_test.c
-+++ b/tools/testing/selftests/kvm/dirty_log_test.c
-@@ -236,7 +236,7 @@ static enum log_mode_t host_log_mode_option = LOG_MODE_ALL;
- /* Logging mode for current run */
- static enum log_mode_t host_log_mode;
- static pthread_t vcpu_thread;
--static uint32_t test_dirty_ring_count = TEST_DIRTY_RING_COUNT;
-+static u32 test_dirty_ring_count = TEST_DIRTY_RING_COUNT;
- 
- static bool clear_log_supported(void)
- {
-@@ -255,15 +255,15 @@ static void clear_log_create_vm_done(struct kvm_vm *vm)
- }
- 
- static void dirty_log_collect_dirty_pages(struct kvm_vcpu *vcpu, int slot,
--					  void *bitmap, uint32_t num_pages,
--					  uint32_t *unused)
-+					  void *bitmap, u32 num_pages,
-+					  u32 *unused)
- {
- 	kvm_vm_get_dirty_log(vcpu->vm, slot, bitmap);
- }
- 
- static void clear_log_collect_dirty_pages(struct kvm_vcpu *vcpu, int slot,
--					  void *bitmap, uint32_t num_pages,
--					  uint32_t *unused)
-+					  void *bitmap, u32 num_pages,
-+					  u32 *unused)
- {
- 	kvm_vm_get_dirty_log(vcpu->vm, slot, bitmap);
- 	kvm_vm_clear_dirty_log(vcpu->vm, slot, bitmap, 0, num_pages);
-@@ -298,7 +298,7 @@ static bool dirty_ring_supported(void)
- static void dirty_ring_create_vm_done(struct kvm_vm *vm)
- {
- 	u64 pages;
--	uint32_t limit;
-+	u32 limit;
- 
- 	/*
- 	 * We rely on vcpu exit due to full dirty ring state. Adjust
-@@ -333,12 +333,12 @@ static inline void dirty_gfn_set_collected(struct kvm_dirty_gfn *gfn)
- 	smp_store_release(&gfn->flags, KVM_DIRTY_GFN_F_RESET);
- }
- 
--static uint32_t dirty_ring_collect_one(struct kvm_dirty_gfn *dirty_gfns,
--				       int slot, void *bitmap,
--				       uint32_t num_pages, uint32_t *fetch_index)
-+static u32 dirty_ring_collect_one(struct kvm_dirty_gfn *dirty_gfns,
-+				  int slot, void *bitmap,
-+				  u32 num_pages, u32 *fetch_index)
- {
- 	struct kvm_dirty_gfn *cur;
--	uint32_t count = 0;
-+	u32 count = 0;
- 
- 	while (true) {
- 		cur = &dirty_gfns[*fetch_index % test_dirty_ring_count];
-@@ -359,10 +359,10 @@ static uint32_t dirty_ring_collect_one(struct kvm_dirty_gfn *dirty_gfns,
- }
- 
- static void dirty_ring_collect_dirty_pages(struct kvm_vcpu *vcpu, int slot,
--					   void *bitmap, uint32_t num_pages,
--					   uint32_t *ring_buf_idx)
-+					   void *bitmap, u32 num_pages,
-+					   u32 *ring_buf_idx)
- {
--	uint32_t count, cleared;
-+	u32 count, cleared;
- 
- 	/* Only have one vcpu */
- 	count = dirty_ring_collect_one(vcpu_map_dirty_ring(vcpu),
-@@ -404,8 +404,8 @@ struct log_mode {
- 	void (*create_vm_done)(struct kvm_vm *vm);
- 	/* Hook to collect the dirty pages into the bitmap provided */
- 	void (*collect_dirty_pages) (struct kvm_vcpu *vcpu, int slot,
--				     void *bitmap, uint32_t num_pages,
--				     uint32_t *ring_buf_idx);
-+				     void *bitmap, u32 num_pages,
-+				     u32 *ring_buf_idx);
- 	/* Hook to call when after each vcpu run */
- 	void (*after_vcpu_run)(struct kvm_vcpu *vcpu);
- } log_modes[LOG_MODE_NUM] = {
-@@ -459,8 +459,8 @@ static void log_mode_create_vm_done(struct kvm_vm *vm)
- }
- 
- static void log_mode_collect_dirty_pages(struct kvm_vcpu *vcpu, int slot,
--					 void *bitmap, uint32_t num_pages,
--					 uint32_t *ring_buf_idx)
-+					 void *bitmap, u32 num_pages,
-+					 u32 *ring_buf_idx)
- {
- 	struct log_mode *mode = &log_modes[host_log_mode];
- 
-@@ -601,7 +601,7 @@ static void run_test(enum vm_guest_mode mode, void *arg)
- 	struct kvm_vcpu *vcpu;
- 	struct kvm_vm *vm;
- 	unsigned long *bmap[2];
--	uint32_t ring_buf_idx = 0;
-+	u32 ring_buf_idx = 0;
- 	int sem_val;
- 
- 	if (!log_mode_supported()) {
-diff --git a/tools/testing/selftests/kvm/guest_print_test.c b/tools/testing/selftests/kvm/guest_print_test.c
-index b059abcf1a5b..79d3fc326e91 100644
---- a/tools/testing/selftests/kvm/guest_print_test.c
-+++ b/tools/testing/selftests/kvm/guest_print_test.c
-@@ -29,9 +29,9 @@ TYPE(test_type_i64,  I64,  "%ld",   s64)		\
- TYPE(test_type_u64,  U64u, "%lu",   u64)		\
- TYPE(test_type_x64,  U64x, "0x%lx", u64)		\
- TYPE(test_type_X64,  U64X, "0x%lX", u64)		\
--TYPE(test_type_u32,  U32u, "%u",    uint32_t)		\
--TYPE(test_type_x32,  U32x, "0x%x",  uint32_t)		\
--TYPE(test_type_X32,  U32X, "0x%X",  uint32_t)		\
-+TYPE(test_type_u32,  U32u, "%u",    u32)		\
-+TYPE(test_type_x32,  U32x, "0x%x",  u32)		\
-+TYPE(test_type_X32,  U32X, "0x%X",  u32)		\
- TYPE(test_type_int,  INT,  "%d",    int)		\
- TYPE(test_type_char, CHAR, "%c",    char)		\
- TYPE(test_type_str,  STR,  "'%s'",  const char *)	\
-diff --git a/tools/testing/selftests/kvm/hardware_disable_test.c b/tools/testing/selftests/kvm/hardware_disable_test.c
-index 94bd6ed24cf3..3147f5c97e94 100644
---- a/tools/testing/selftests/kvm/hardware_disable_test.c
-+++ b/tools/testing/selftests/kvm/hardware_disable_test.c
-@@ -80,7 +80,7 @@ static inline void check_join(pthread_t thread, void **retval)
- 	TEST_ASSERT(r == 0, "%s: failed to join thread", __func__);
- }
- 
--static void run_test(uint32_t run)
-+static void run_test(u32 run)
- {
- 	struct kvm_vcpu *vcpu;
- 	struct kvm_vm *vm;
-@@ -88,7 +88,7 @@ static void run_test(uint32_t run)
- 	pthread_t threads[VCPU_NUM];
- 	pthread_t throw_away;
- 	void *b;
--	uint32_t i, j;
-+	u32 i, j;
- 
- 	CPU_ZERO(&cpu_set);
- 	for (i = 0; i < VCPU_NUM; i++)
-@@ -149,7 +149,7 @@ void wait_for_child_setup(pid_t pid)
- 
- int main(int argc, char **argv)
- {
--	uint32_t i;
-+	u32 i;
- 	int s, r;
- 	pid_t pid;
- 
-diff --git a/tools/testing/selftests/kvm/include/arm64/arch_timer.h b/tools/testing/selftests/kvm/include/arm64/arch_timer.h
-index 290b65e58d3c..4fe0e0d07584 100644
---- a/tools/testing/selftests/kvm/include/arm64/arch_timer.h
-+++ b/tools/testing/selftests/kvm/include/arm64/arch_timer.h
-@@ -26,7 +26,7 @@ enum arch_timer {
- #define cycles_to_usec(cycles) \
- 	((u64)(cycles) * 1000000 / timer_get_cntfrq())
- 
--static inline uint32_t timer_get_cntfrq(void)
-+static inline u32 timer_get_cntfrq(void)
- {
- 	return read_sysreg(cntfrq_el0);
- }
-@@ -111,7 +111,7 @@ static inline int32_t timer_get_tval(enum arch_timer timer)
- 	return 0;
- }
- 
--static inline void timer_set_ctl(enum arch_timer timer, uint32_t ctl)
-+static inline void timer_set_ctl(enum arch_timer timer, u32 ctl)
- {
- 	switch (timer) {
- 	case VIRTUAL:
-@@ -127,7 +127,7 @@ static inline void timer_set_ctl(enum arch_timer timer, uint32_t ctl)
- 	isb();
- }
- 
--static inline uint32_t timer_get_ctl(enum arch_timer timer)
-+static inline u32 timer_get_ctl(enum arch_timer timer)
- {
- 	switch (timer) {
- 	case VIRTUAL:
-@@ -142,7 +142,7 @@ static inline uint32_t timer_get_ctl(enum arch_timer timer)
- 	return 0;
- }
- 
--static inline void timer_set_next_cval_ms(enum arch_timer timer, uint32_t msec)
-+static inline void timer_set_next_cval_ms(enum arch_timer timer, u32 msec)
- {
- 	u64 now_ct = timer_get_cntct(timer);
- 	u64 next_ct = now_ct + msec_to_cycles(msec);
-@@ -150,7 +150,7 @@ static inline void timer_set_next_cval_ms(enum arch_timer timer, uint32_t msec)
- 	timer_set_cval(timer, next_ct);
- }
- 
--static inline void timer_set_next_tval_ms(enum arch_timer timer, uint32_t msec)
-+static inline void timer_set_next_tval_ms(enum arch_timer timer, u32 msec)
- {
- 	timer_set_tval(timer, msec_to_cycles(msec));
- }
-diff --git a/tools/testing/selftests/kvm/include/arm64/gic.h b/tools/testing/selftests/kvm/include/arm64/gic.h
-index c36a4eafeb5a..615745093c98 100644
---- a/tools/testing/selftests/kvm/include/arm64/gic.h
-+++ b/tools/testing/selftests/kvm/include/arm64/gic.h
-@@ -49,7 +49,7 @@ void gic_set_dir(unsigned int intid);
-  */
- void gic_set_eoi_split(bool split);
- void gic_set_priority_mask(u64 mask);
--void gic_set_priority(uint32_t intid, uint32_t prio);
-+void gic_set_priority(u32 intid, u32 prio);
- void gic_irq_set_active(unsigned int intid);
- void gic_irq_clear_active(unsigned int intid);
- bool gic_irq_get_active(unsigned int intid);
-diff --git a/tools/testing/selftests/kvm/include/arm64/processor.h b/tools/testing/selftests/kvm/include/arm64/processor.h
-index 618d112cb08a..b8a902ba8573 100644
---- a/tools/testing/selftests/kvm/include/arm64/processor.h
-+++ b/tools/testing/selftests/kvm/include/arm64/processor.h
-@@ -128,7 +128,7 @@
- #define PTE_ADDR_51_50_LPA2_SHIFT	8
- 
- void aarch64_vcpu_setup(struct kvm_vcpu *vcpu, struct kvm_vcpu_init *init);
--struct kvm_vcpu *aarch64_vcpu_add(struct kvm_vm *vm, uint32_t vcpu_id,
-+struct kvm_vcpu *aarch64_vcpu_add(struct kvm_vm *vm, u32 vcpu_id,
- 				  struct kvm_vcpu_init *init, void *guest_code);
- 
- struct ex_regs {
-@@ -167,8 +167,8 @@ enum {
- 			   (v) == VECTOR_SYNC_LOWER_64    || \
- 			   (v) == VECTOR_SYNC_LOWER_32)
- 
--void aarch64_get_supported_page_sizes(uint32_t ipa, uint32_t *ipa4k,
--					uint32_t *ipa16k, uint32_t *ipa64k);
-+void aarch64_get_supported_page_sizes(u32 ipa, u32 *ipa4k,
-+				      u32 *ipa16k, u32 *ipa64k);
- 
- void vm_init_descriptor_tables(struct kvm_vm *vm);
- void vcpu_init_descriptor_tables(struct kvm_vcpu *vcpu);
-@@ -287,7 +287,7 @@ struct arm_smccc_res {
-  * @res: pointer to write the return values from registers x0-x3
-  *
-  */
--void smccc_hvc(uint32_t function_id, u64 arg0, u64 arg1,
-+void smccc_hvc(u32 function_id, u64 arg0, u64 arg1,
- 	       u64 arg2, u64 arg3, u64 arg4, u64 arg5,
- 	       u64 arg6, struct arm_smccc_res *res);
- 
-@@ -298,7 +298,7 @@ void smccc_hvc(uint32_t function_id, u64 arg0, u64 arg1,
-  * @res: pointer to write the return values from registers x0-x3
-  *
-  */
--void smccc_smc(uint32_t function_id, u64 arg0, u64 arg1,
-+void smccc_smc(u32 function_id, u64 arg0, u64 arg1,
- 	       u64 arg2, u64 arg3, u64 arg4, u64 arg5,
- 	       u64 arg6, struct arm_smccc_res *res);
- 
-diff --git a/tools/testing/selftests/kvm/include/arm64/vgic.h b/tools/testing/selftests/kvm/include/arm64/vgic.h
-index 2fde1fd8f96a..1f8b04373987 100644
---- a/tools/testing/selftests/kvm/include/arm64/vgic.h
-+++ b/tools/testing/selftests/kvm/include/arm64/vgic.h
-@@ -17,21 +17,21 @@
- 	index)
- 
- bool kvm_supports_vgic_v3(void);
--int __vgic_v3_setup(struct kvm_vm *vm, unsigned int nr_vcpus, uint32_t nr_irqs);
-+int __vgic_v3_setup(struct kvm_vm *vm, unsigned int nr_vcpus, u32 nr_irqs);
- void __vgic_v3_init(int fd);
--int vgic_v3_setup(struct kvm_vm *vm, unsigned int nr_vcpus, uint32_t nr_irqs);
-+int vgic_v3_setup(struct kvm_vm *vm, unsigned int nr_vcpus, u32 nr_irqs);
- 
- #define VGIC_MAX_RESERVED	1023
- 
--void kvm_irq_set_level_info(int gic_fd, uint32_t intid, int level);
--int _kvm_irq_set_level_info(int gic_fd, uint32_t intid, int level);
-+void kvm_irq_set_level_info(int gic_fd, u32 intid, int level);
-+int _kvm_irq_set_level_info(int gic_fd, u32 intid, int level);
- 
--void kvm_arm_irq_line(struct kvm_vm *vm, uint32_t intid, int level);
--int _kvm_arm_irq_line(struct kvm_vm *vm, uint32_t intid, int level);
-+void kvm_arm_irq_line(struct kvm_vm *vm, u32 intid, int level);
-+int _kvm_arm_irq_line(struct kvm_vm *vm, u32 intid, int level);
- 
- /* The vcpu arg only applies to private interrupts. */
--void kvm_irq_write_ispendr(int gic_fd, uint32_t intid, struct kvm_vcpu *vcpu);
--void kvm_irq_write_isactiver(int gic_fd, uint32_t intid, struct kvm_vcpu *vcpu);
-+void kvm_irq_write_ispendr(int gic_fd, u32 intid, struct kvm_vcpu *vcpu);
-+void kvm_irq_write_isactiver(int gic_fd, u32 intid, struct kvm_vcpu *vcpu);
- 
- #define KVM_IRQCHIP_NUM_PINS	(1020 - 32)
- 
-diff --git a/tools/testing/selftests/kvm/include/kvm_util.h b/tools/testing/selftests/kvm/include/kvm_util.h
-index 40bac473b460..bdb91f627433 100644
---- a/tools/testing/selftests/kvm/include/kvm_util.h
-+++ b/tools/testing/selftests/kvm/include/kvm_util.h
-@@ -58,7 +58,7 @@ struct kvm_binary_stats {
- 
- struct kvm_vcpu {
- 	struct list_head list;
--	uint32_t id;
-+	u32 id;
- 	int fd;
- 	struct kvm_vm *vm;
- 	struct kvm_run *run;
-@@ -70,8 +70,8 @@ struct kvm_vcpu {
- #endif
- 	struct kvm_binary_stats stats;
- 	struct kvm_dirty_gfn *dirty_gfns;
--	uint32_t fetch_index;
--	uint32_t dirty_gfns_count;
-+	u32 fetch_index;
-+	u32 dirty_gfns_count;
- };
- 
- struct userspace_mem_regions {
-@@ -113,7 +113,7 @@ struct kvm_vm {
- 	bool has_irqchip;
- 	gpa_t ucall_mmio_addr;
- 	gva_t handlers;
--	uint32_t dirty_ring_size;
-+	u32 dirty_ring_size;
- 	u64 gpa_tag_mask;
- 
- 	/*
-@@ -132,7 +132,7 @@ struct kvm_vm {
- 	 * allocators, e.g., lib/elf uses the memslots[MEM_REGION_CODE]
- 	 * memslot.
- 	 */
--	uint32_t memslots[NR_MEM_REGIONS];
-+	u32 memslots[NR_MEM_REGIONS];
- };
- 
- struct vcpu_reg_sublist {
-@@ -164,7 +164,7 @@ struct vcpu_reg_list {
- 		else
- 
- struct userspace_mem_region *
--memslot2region(struct kvm_vm *vm, uint32_t memslot);
-+memslot2region(struct kvm_vm *vm, u32 memslot);
- 
- static inline struct userspace_mem_region *vm_get_mem_region(struct kvm_vm *vm,
- 							     enum kvm_mem_region_type type)
-@@ -213,7 +213,7 @@ enum vm_guest_mode {
- };
- 
- struct vm_shape {
--	uint32_t type;
-+	u32 type;
- 	uint8_t  mode;
- 	uint8_t  pad0;
- 	uint16_t pad1;
-@@ -404,14 +404,14 @@ static inline int vm_check_cap(struct kvm_vm *vm, long cap)
- 	return ret;
- }
- 
--static inline int __vm_enable_cap(struct kvm_vm *vm, uint32_t cap, u64 arg0)
-+static inline int __vm_enable_cap(struct kvm_vm *vm, u32 cap, u64 arg0)
- {
- 	struct kvm_enable_cap enable_cap = { .cap = cap, .args = { arg0 } };
- 
- 	return __vm_ioctl(vm, KVM_ENABLE_CAP, &enable_cap);
- }
- 
--static inline void vm_enable_cap(struct kvm_vm *vm, uint32_t cap, u64 arg0)
-+static inline void vm_enable_cap(struct kvm_vm *vm, u32 cap, u64 arg0)
- {
- 	struct kvm_enable_cap enable_cap = { .cap = cap, .args = { arg0 } };
- 
-@@ -466,8 +466,8 @@ static inline void vm_guest_mem_allocate(struct kvm_vm *vm, u64 gpa,
- 	vm_guest_mem_fallocate(vm, gpa, size, false);
- }
- 
--void vm_enable_dirty_ring(struct kvm_vm *vm, uint32_t ring_size);
--const char *vm_guest_mode_string(uint32_t i);
-+void vm_enable_dirty_ring(struct kvm_vm *vm, u32 ring_size);
-+const char *vm_guest_mode_string(u32 i);
- 
- void kvm_vm_free(struct kvm_vm *vmp);
- void kvm_vm_restart(struct kvm_vm *vmp);
-@@ -485,7 +485,7 @@ static inline void kvm_vm_get_dirty_log(struct kvm_vm *vm, int slot, void *log)
- }
- 
- static inline void kvm_vm_clear_dirty_log(struct kvm_vm *vm, int slot, void *log,
--					  u64 first_page, uint32_t num_pages)
-+					  u64 first_page, u32 num_pages)
- {
- 	struct kvm_clear_dirty_log args = {
- 		.dirty_bitmap = log,
-@@ -497,7 +497,7 @@ static inline void kvm_vm_clear_dirty_log(struct kvm_vm *vm, int slot, void *log
- 	vm_ioctl(vm, KVM_CLEAR_DIRTY_LOG, &args);
- }
- 
--static inline uint32_t kvm_vm_reset_dirty_ring(struct kvm_vm *vm)
-+static inline u32 kvm_vm_reset_dirty_ring(struct kvm_vm *vm)
- {
- 	return __vm_ioctl(vm, KVM_RESET_DIRTY_RINGS, NULL);
- }
-@@ -536,8 +536,8 @@ static inline int vm_get_stats_fd(struct kvm_vm *vm)
- 	return fd;
- }
- 
--static inline int __kvm_irqfd(struct kvm_vm *vm, uint32_t gsi, int eventfd,
--			      uint32_t flags)
-+static inline int __kvm_irqfd(struct kvm_vm *vm, u32 gsi, int eventfd,
-+			      u32 flags)
- {
- 	struct kvm_irqfd irqfd = {
- 		.fd = eventfd,
-@@ -549,20 +549,19 @@ static inline int __kvm_irqfd(struct kvm_vm *vm, uint32_t gsi, int eventfd,
- 	return __vm_ioctl(vm, KVM_IRQFD, &irqfd);
- }
- 
--static inline void kvm_irqfd(struct kvm_vm *vm, uint32_t gsi, int eventfd,
--			      uint32_t flags)
-+static inline void kvm_irqfd(struct kvm_vm *vm, u32 gsi, int eventfd, u32 flags)
- {
- 	int ret = __kvm_irqfd(vm, gsi, eventfd, flags);
- 
- 	TEST_ASSERT_VM_VCPU_IOCTL(!ret, KVM_IRQFD, ret, vm);
- }
- 
--static inline void kvm_assign_irqfd(struct kvm_vm *vm, uint32_t gsi, int eventfd)
-+static inline void kvm_assign_irqfd(struct kvm_vm *vm, u32 gsi, int eventfd)
- {
- 	kvm_irqfd(vm, gsi, eventfd, 0);
- }
- 
--static inline void kvm_deassign_irqfd(struct kvm_vm *vm, uint32_t gsi, int eventfd)
-+static inline void kvm_deassign_irqfd(struct kvm_vm *vm, u32 gsi, int eventfd)
- {
- 	kvm_irqfd(vm, gsi, eventfd, KVM_IRQFD_FLAG_DEASSIGN);
- }
-@@ -685,23 +684,22 @@ static inline int vm_create_guest_memfd(struct kvm_vm *vm, u64 size,
- 	return fd;
- }
- 
--void vm_set_user_memory_region(struct kvm_vm *vm, uint32_t slot, uint32_t flags,
-+void vm_set_user_memory_region(struct kvm_vm *vm, u32 slot, u32 flags,
- 			       u64 gpa, u64 size, void *hva);
--int __vm_set_user_memory_region(struct kvm_vm *vm, uint32_t slot, uint32_t flags,
-+int __vm_set_user_memory_region(struct kvm_vm *vm, u32 slot, u32 flags,
- 				u64 gpa, u64 size, void *hva);
--void vm_set_user_memory_region2(struct kvm_vm *vm, uint32_t slot, uint32_t flags,
-+void vm_set_user_memory_region2(struct kvm_vm *vm, u32 slot, u32 flags,
- 				u64 gpa, u64 size, void *hva,
--				uint32_t guest_memfd, u64 guest_memfd_offset);
--int __vm_set_user_memory_region2(struct kvm_vm *vm, uint32_t slot, uint32_t flags,
-+				u32 guest_memfd, u64 guest_memfd_offset);
-+int __vm_set_user_memory_region2(struct kvm_vm *vm, u32 slot, u32 flags,
- 				 u64 gpa, u64 size, void *hva,
--				 uint32_t guest_memfd, u64 guest_memfd_offset);
-+				 u32 guest_memfd, u64 guest_memfd_offset);
- 
- void vm_userspace_mem_region_add(struct kvm_vm *vm,
- 				 enum vm_mem_backing_src_type src_type,
--				 u64 gpa, uint32_t slot, u64 npages,
--				 uint32_t flags);
-+				 u64 gpa, u32 slot, u64 npages, u32 flags);
- void vm_mem_add(struct kvm_vm *vm, enum vm_mem_backing_src_type src_type,
--		u64 gpa, uint32_t slot, u64 npages, uint32_t flags,
-+		u64 gpa, u32 slot, u64 npages, u32 flags,
- 		int guest_memfd_fd, u64 guest_memfd_offset);
- 
- #ifndef vm_arch_has_protected_memory
-@@ -711,11 +709,11 @@ static inline bool vm_arch_has_protected_memory(struct kvm_vm *vm)
- }
- #endif
- 
--void vm_mem_region_set_flags(struct kvm_vm *vm, uint32_t slot, uint32_t flags);
--void vm_mem_region_reload(struct kvm_vm *vm, uint32_t slot);
--void vm_mem_region_move(struct kvm_vm *vm, uint32_t slot, u64 new_gpa);
--void vm_mem_region_delete(struct kvm_vm *vm, uint32_t slot);
--struct kvm_vcpu *__vm_vcpu_add(struct kvm_vm *vm, uint32_t vcpu_id);
-+void vm_mem_region_set_flags(struct kvm_vm *vm, u32 slot, u32 flags);
-+void vm_mem_region_reload(struct kvm_vm *vm, u32 slot);
-+void vm_mem_region_move(struct kvm_vm *vm, u32 slot, u64 new_gpa);
-+void vm_mem_region_delete(struct kvm_vm *vm, u32 slot);
-+struct kvm_vcpu *__vm_vcpu_add(struct kvm_vm *vm, u32 vcpu_id);
- void vm_populate_vaddr_bitmap(struct kvm_vm *vm);
- gva_t vm_vaddr_unused_gap(struct kvm_vm *vm, size_t sz, gva_t vaddr_min);
- gva_t vm_vaddr_alloc(struct kvm_vm *vm, size_t sz, gva_t vaddr_min);
-@@ -754,7 +752,7 @@ static inline int __vcpu_run(struct kvm_vcpu *vcpu)
- void vcpu_run_complete_io(struct kvm_vcpu *vcpu);
- struct kvm_reg_list *vcpu_get_reg_list(struct kvm_vcpu *vcpu);
- 
--static inline void vcpu_enable_cap(struct kvm_vcpu *vcpu, uint32_t cap,
-+static inline void vcpu_enable_cap(struct kvm_vcpu *vcpu, u32 cap,
- 				   u64 arg0)
- {
- 	struct kvm_enable_cap enable_cap = { .cap = cap, .args = { arg0 } };
-@@ -882,18 +880,18 @@ static inline int vcpu_get_stats_fd(struct kvm_vcpu *vcpu)
- 	return fd;
- }
- 
--int __kvm_has_device_attr(int dev_fd, uint32_t group, u64 attr);
-+int __kvm_has_device_attr(int dev_fd, u32 group, u64 attr);
- 
--static inline void kvm_has_device_attr(int dev_fd, uint32_t group, u64 attr)
-+static inline void kvm_has_device_attr(int dev_fd, u32 group, u64 attr)
- {
- 	int ret = __kvm_has_device_attr(dev_fd, group, attr);
- 
- 	TEST_ASSERT(!ret, "KVM_HAS_DEVICE_ATTR failed, rc: %i errno: %i", ret, errno);
- }
- 
--int __kvm_device_attr_get(int dev_fd, uint32_t group, u64 attr, void *val);
-+int __kvm_device_attr_get(int dev_fd, u32 group, u64 attr, void *val);
- 
--static inline void kvm_device_attr_get(int dev_fd, uint32_t group,
-+static inline void kvm_device_attr_get(int dev_fd, u32 group,
- 				       u64 attr, void *val)
- {
- 	int ret = __kvm_device_attr_get(dev_fd, group, attr, val);
-@@ -901,9 +899,9 @@ static inline void kvm_device_attr_get(int dev_fd, uint32_t group,
- 	TEST_ASSERT(!ret, KVM_IOCTL_ERROR(KVM_GET_DEVICE_ATTR, ret));
- }
- 
--int __kvm_device_attr_set(int dev_fd, uint32_t group, u64 attr, void *val);
-+int __kvm_device_attr_set(int dev_fd, u32 group, u64 attr, void *val);
- 
--static inline void kvm_device_attr_set(int dev_fd, uint32_t group,
-+static inline void kvm_device_attr_set(int dev_fd, u32 group,
- 				       u64 attr, void *val)
- {
- 	int ret = __kvm_device_attr_set(dev_fd, group, attr, val);
-@@ -911,37 +909,37 @@ static inline void kvm_device_attr_set(int dev_fd, uint32_t group,
- 	TEST_ASSERT(!ret, KVM_IOCTL_ERROR(KVM_SET_DEVICE_ATTR, ret));
- }
- 
--static inline int __vcpu_has_device_attr(struct kvm_vcpu *vcpu, uint32_t group,
-+static inline int __vcpu_has_device_attr(struct kvm_vcpu *vcpu, u32 group,
- 					 u64 attr)
- {
- 	return __kvm_has_device_attr(vcpu->fd, group, attr);
- }
- 
--static inline void vcpu_has_device_attr(struct kvm_vcpu *vcpu, uint32_t group,
-+static inline void vcpu_has_device_attr(struct kvm_vcpu *vcpu, u32 group,
- 					u64 attr)
- {
- 	kvm_has_device_attr(vcpu->fd, group, attr);
- }
- 
--static inline int __vcpu_device_attr_get(struct kvm_vcpu *vcpu, uint32_t group,
-+static inline int __vcpu_device_attr_get(struct kvm_vcpu *vcpu, u32 group,
- 					 u64 attr, void *val)
- {
- 	return __kvm_device_attr_get(vcpu->fd, group, attr, val);
- }
- 
--static inline void vcpu_device_attr_get(struct kvm_vcpu *vcpu, uint32_t group,
-+static inline void vcpu_device_attr_get(struct kvm_vcpu *vcpu, u32 group,
- 					u64 attr, void *val)
- {
- 	kvm_device_attr_get(vcpu->fd, group, attr, val);
- }
- 
--static inline int __vcpu_device_attr_set(struct kvm_vcpu *vcpu, uint32_t group,
-+static inline int __vcpu_device_attr_set(struct kvm_vcpu *vcpu, u32 group,
- 					 u64 attr, void *val)
- {
- 	return __kvm_device_attr_set(vcpu->fd, group, attr, val);
- }
- 
--static inline void vcpu_device_attr_set(struct kvm_vcpu *vcpu, uint32_t group,
-+static inline void vcpu_device_attr_set(struct kvm_vcpu *vcpu, u32 group,
- 					u64 attr, void *val)
- {
- 	kvm_device_attr_set(vcpu->fd, group, attr, val);
-@@ -979,27 +977,27 @@ void *vcpu_map_dirty_ring(struct kvm_vcpu *vcpu);
-  */
- void vcpu_args_set(struct kvm_vcpu *vcpu, unsigned int num, ...);
- 
--void kvm_irq_line(struct kvm_vm *vm, uint32_t irq, int level);
--int _kvm_irq_line(struct kvm_vm *vm, uint32_t irq, int level);
-+void kvm_irq_line(struct kvm_vm *vm, u32 irq, int level);
-+int _kvm_irq_line(struct kvm_vm *vm, u32 irq, int level);
- 
- #define KVM_MAX_IRQ_ROUTES		4096
- 
- struct kvm_irq_routing *kvm_gsi_routing_create(void);
- void kvm_gsi_routing_irqchip_add(struct kvm_irq_routing *routing,
--		uint32_t gsi, uint32_t pin);
-+		u32 gsi, u32 pin);
- int _kvm_gsi_routing_write(struct kvm_vm *vm, struct kvm_irq_routing *routing);
- void kvm_gsi_routing_write(struct kvm_vm *vm, struct kvm_irq_routing *routing);
- 
- const char *exit_reason_str(unsigned int exit_reason);
- 
--gpa_t vm_phy_page_alloc(struct kvm_vm *vm, gpa_t paddr_min, uint32_t memslot);
-+gpa_t vm_phy_page_alloc(struct kvm_vm *vm, gpa_t paddr_min, u32 memslot);
- gpa_t __vm_phy_pages_alloc(struct kvm_vm *vm, size_t num,
--			   gpa_t paddr_min, uint32_t memslot,
-+			   gpa_t paddr_min, u32 memslot,
- 			   bool protected);
- gpa_t vm_alloc_page_table(struct kvm_vm *vm);
- 
- static inline gpa_t vm_phy_pages_alloc(struct kvm_vm *vm, size_t num,
--				       gpa_t paddr_min, uint32_t memslot)
-+				       gpa_t paddr_min, u32 memslot)
- {
- 	/*
- 	 * By default, allocate memory as protected for VMs that support
-@@ -1017,7 +1015,7 @@ static inline gpa_t vm_phy_pages_alloc(struct kvm_vm *vm, size_t num,
-  * calculate the amount of memory needed for per-vCPU data, e.g. stacks.
-  */
- struct kvm_vm *____vm_create(struct vm_shape shape);
--struct kvm_vm *__vm_create(struct vm_shape shape, uint32_t nr_runnable_vcpus,
-+struct kvm_vm *__vm_create(struct vm_shape shape, u32 nr_runnable_vcpus,
- 			   u64 nr_extra_pages);
- 
- static inline struct kvm_vm *vm_create_barebones(void)
-@@ -1035,16 +1033,16 @@ static inline struct kvm_vm *vm_create_barebones_type(unsigned long type)
- 	return ____vm_create(shape);
- }
- 
--static inline struct kvm_vm *vm_create(uint32_t nr_runnable_vcpus)
-+static inline struct kvm_vm *vm_create(u32 nr_runnable_vcpus)
- {
- 	return __vm_create(VM_SHAPE_DEFAULT, nr_runnable_vcpus, 0);
- }
- 
--struct kvm_vm *__vm_create_with_vcpus(struct vm_shape shape, uint32_t nr_vcpus,
-+struct kvm_vm *__vm_create_with_vcpus(struct vm_shape shape, u32 nr_vcpus,
- 				      u64 extra_mem_pages,
- 				      void *guest_code, struct kvm_vcpu *vcpus[]);
- 
--static inline struct kvm_vm *vm_create_with_vcpus(uint32_t nr_vcpus,
-+static inline struct kvm_vm *vm_create_with_vcpus(u32 nr_vcpus,
- 						  void *guest_code,
- 						  struct kvm_vcpu *vcpus[])
- {
-@@ -1085,7 +1083,7 @@ static inline struct kvm_vm *vm_create_shape_with_one_vcpu(struct vm_shape shape
- 
- struct kvm_vcpu *vm_recreate_with_one_vcpu(struct kvm_vm *vm);
- 
--void kvm_set_files_rlimit(uint32_t nr_vcpus);
-+void kvm_set_files_rlimit(u32 nr_vcpus);
- 
- int __pin_task_to_cpu(pthread_t task, int cpu);
- 
-@@ -1116,7 +1114,7 @@ static inline int pin_self_to_any_cpu(void)
- }
- 
- void kvm_print_vcpu_pinning_help(void);
--void kvm_parse_vcpu_pinning(const char *pcpus_string, uint32_t vcpu_to_pcpu[],
-+void kvm_parse_vcpu_pinning(const char *pcpus_string, u32 vcpu_to_pcpu[],
- 			    int nr_vcpus);
- 
- unsigned long vm_compute_max_gfn(struct kvm_vm *vm);
-@@ -1172,10 +1170,10 @@ static inline void vcpu_dump(FILE *stream, struct kvm_vcpu *vcpu,
-  *   vm - Virtual Machine
-  *   vcpu_id - The id of the VCPU to add to the VM.
-  */
--struct kvm_vcpu *vm_arch_vcpu_add(struct kvm_vm *vm, uint32_t vcpu_id);
-+struct kvm_vcpu *vm_arch_vcpu_add(struct kvm_vm *vm, u32 vcpu_id);
- void vcpu_arch_set_entry_point(struct kvm_vcpu *vcpu, void *guest_code);
- 
--static inline struct kvm_vcpu *vm_vcpu_add(struct kvm_vm *vm, uint32_t vcpu_id,
-+static inline struct kvm_vcpu *vm_vcpu_add(struct kvm_vm *vm, u32 vcpu_id,
- 					   void *guest_code)
- {
- 	struct kvm_vcpu *vcpu = vm_arch_vcpu_add(vm, vcpu_id);
-@@ -1186,10 +1184,10 @@ static inline struct kvm_vcpu *vm_vcpu_add(struct kvm_vm *vm, uint32_t vcpu_id,
- }
- 
- /* Re-create a vCPU after restarting a VM, e.g. for state save/restore tests. */
--struct kvm_vcpu *vm_arch_vcpu_recreate(struct kvm_vm *vm, uint32_t vcpu_id);
-+struct kvm_vcpu *vm_arch_vcpu_recreate(struct kvm_vm *vm, u32 vcpu_id);
- 
- static inline struct kvm_vcpu *vm_vcpu_recreate(struct kvm_vm *vm,
--						uint32_t vcpu_id)
-+						u32 vcpu_id)
- {
- 	return vm_arch_vcpu_recreate(vm, vcpu_id);
- }
-@@ -1296,7 +1294,7 @@ void kvm_arch_vm_release(struct kvm_vm *vm);
- 
- bool vm_is_gpa_protected(struct kvm_vm *vm, gpa_t paddr);
- 
--uint32_t guest_get_vcpuid(void);
-+u32 guest_get_vcpuid(void);
- 
- bool kvm_arch_has_default_irqchip(void);
- 
-diff --git a/tools/testing/selftests/kvm/include/memstress.h b/tools/testing/selftests/kvm/include/memstress.h
-index 71296909302c..e3e4b4d6a27a 100644
---- a/tools/testing/selftests/kvm/include/memstress.h
-+++ b/tools/testing/selftests/kvm/include/memstress.h
-@@ -35,8 +35,8 @@ struct memstress_args {
- 	u64 gpa;
- 	u64 size;
- 	u64 guest_page_size;
--	uint32_t random_seed;
--	uint32_t write_percent;
-+	u32 random_seed;
-+	u32 write_percent;
- 
- 	/* Run vCPUs in L2 instead of L1, if the architecture supports it. */
- 	bool nested;
-@@ -45,7 +45,7 @@ struct memstress_args {
- 	/* True if all vCPUs are pinned to pCPUs */
- 	bool pin_vcpus;
- 	/* The vCPU=>pCPU pinning map. Only valid if pin_vcpus is true. */
--	uint32_t vcpu_to_pcpu[KVM_MAX_VCPUS];
-+	u32 vcpu_to_pcpu[KVM_MAX_VCPUS];
- 
-  	/* Test is done, stop running vCPUs. */
-  	bool stop_vcpus;
-@@ -61,12 +61,12 @@ struct kvm_vm *memstress_create_vm(enum vm_guest_mode mode, int nr_vcpus,
- 				   bool partition_vcpu_memory_access);
- void memstress_destroy_vm(struct kvm_vm *vm);
- 
--void memstress_set_write_percent(struct kvm_vm *vm, uint32_t write_percent);
-+void memstress_set_write_percent(struct kvm_vm *vm, u32 write_percent);
- void memstress_set_random_access(struct kvm_vm *vm, bool random_access);
- 
- void memstress_start_vcpu_threads(int vcpus, void (*vcpu_fn)(struct memstress_vcpu_args *));
- void memstress_join_vcpu_threads(int vcpus);
--void memstress_guest_code(uint32_t vcpu_id);
-+void memstress_guest_code(u32 vcpu_id);
- 
- u64 memstress_nested_pages(int nr_vcpus);
- void memstress_setup_nested(struct kvm_vm *vm, int nr_vcpus, struct kvm_vcpu *vcpus[]);
-diff --git a/tools/testing/selftests/kvm/include/riscv/arch_timer.h b/tools/testing/selftests/kvm/include/riscv/arch_timer.h
-index 66ed7e36a7cb..28ffc014da2a 100644
---- a/tools/testing/selftests/kvm/include/riscv/arch_timer.h
-+++ b/tools/testing/selftests/kvm/include/riscv/arch_timer.h
-@@ -47,7 +47,7 @@ static inline void timer_irq_disable(void)
- 	csr_clear(CSR_SIE, IE_TIE);
- }
- 
--static inline void timer_set_next_cmp_ms(uint32_t msec)
-+static inline void timer_set_next_cmp_ms(u32 msec)
- {
- 	u64 now_ct = timer_get_cycles();
- 	u64 next_ct = now_ct + msec_to_cycles(msec);
-diff --git a/tools/testing/selftests/kvm/include/test_util.h b/tools/testing/selftests/kvm/include/test_util.h
-index d7489db738bf..fb24347c6e6c 100644
---- a/tools/testing/selftests/kvm/include/test_util.h
-+++ b/tools/testing/selftests/kvm/include/test_util.h
-@@ -109,14 +109,14 @@ struct timespec timespec_elapsed(struct timespec start);
- struct timespec timespec_div(struct timespec ts, int divisor);
- 
- struct guest_random_state {
--	uint32_t seed;
-+	u32 seed;
- };
- 
--extern uint32_t guest_random_seed;
-+extern u32 guest_random_seed;
- extern struct guest_random_state guest_rng;
- 
--struct guest_random_state new_guest_random_state(uint32_t seed);
--uint32_t guest_random_u32(struct guest_random_state *state);
-+struct guest_random_state new_guest_random_state(u32 seed);
-+u32 guest_random_u32(struct guest_random_state *state);
- 
- static inline bool __guest_random_bool(struct guest_random_state *state,
- 				       uint8_t percent)
-@@ -160,7 +160,7 @@ enum vm_mem_backing_src_type {
- 
- struct vm_mem_backing_src_alias {
- 	const char *name;
--	uint32_t flag;
-+	u32 flag;
- };
- 
- #define MIN_RUN_DELAY_NS	200000UL
-@@ -168,9 +168,9 @@ struct vm_mem_backing_src_alias {
- bool thp_configured(void);
- size_t get_trans_hugepagesz(void);
- size_t get_def_hugetlb_pagesz(void);
--const struct vm_mem_backing_src_alias *vm_mem_backing_src_alias(uint32_t i);
--size_t get_backing_src_pagesz(uint32_t i);
--bool is_backing_src_hugetlb(uint32_t i);
-+const struct vm_mem_backing_src_alias *vm_mem_backing_src_alias(u32 i);
-+size_t get_backing_src_pagesz(u32 i);
-+bool is_backing_src_hugetlb(u32 i);
- void backing_src_help(const char *flag);
- enum vm_mem_backing_src_type parse_backing_src_type(const char *type_name);
- long get_run_delay(void);
-@@ -217,7 +217,7 @@ static inline void *align_ptr_up(void *x, size_t size)
- 
- int atoi_paranoid(const char *num_str);
- 
--static inline uint32_t atoi_positive(const char *name, const char *num_str)
-+static inline u32 atoi_positive(const char *name, const char *num_str)
- {
- 	int num = atoi_paranoid(num_str);
- 
-@@ -225,7 +225,7 @@ static inline uint32_t atoi_positive(const char *name, const char *num_str)
- 	return num;
- }
- 
--static inline uint32_t atoi_non_negative(const char *name, const char *num_str)
-+static inline u32 atoi_non_negative(const char *name, const char *num_str)
- {
- 	int num = atoi_paranoid(num_str);
- 
-diff --git a/tools/testing/selftests/kvm/include/timer_test.h b/tools/testing/selftests/kvm/include/timer_test.h
-index 9501c6c825e2..b7d5d2c84701 100644
---- a/tools/testing/selftests/kvm/include/timer_test.h
-+++ b/tools/testing/selftests/kvm/include/timer_test.h
-@@ -18,11 +18,11 @@
- 
- /* Timer test cmdline parameters */
- struct test_args {
--	uint32_t nr_vcpus;
--	uint32_t nr_iter;
--	uint32_t timer_period_ms;
--	uint32_t migration_freq_ms;
--	uint32_t timer_err_margin_us;
-+	u32 nr_vcpus;
-+	u32 nr_iter;
-+	u32 timer_period_ms;
-+	u32 migration_freq_ms;
-+	u32 timer_err_margin_us;
- 	/* Members of struct kvm_arm_counter_offset */
- 	u64 counter_offset;
- 	u64 reserved;
-@@ -30,7 +30,7 @@ struct test_args {
- 
- /* Shared variables between host and guest */
- struct test_vcpu_shared_data {
--	uint32_t nr_iter;
-+	u32 nr_iter;
- 	int guest_stage;
- 	u64 xcnt;
- };
-diff --git a/tools/testing/selftests/kvm/include/x86/apic.h b/tools/testing/selftests/kvm/include/x86/apic.h
-index 05573dedabd3..74eaa3bd335d 100644
---- a/tools/testing/selftests/kvm/include/x86/apic.h
-+++ b/tools/testing/selftests/kvm/include/x86/apic.h
-@@ -79,19 +79,19 @@ void apic_disable(void);
- void xapic_enable(void);
- void x2apic_enable(void);
- 
--static inline uint32_t get_bsp_flag(void)
-+static inline u32 get_bsp_flag(void)
- {
- 	return rdmsr(MSR_IA32_APICBASE) & MSR_IA32_APICBASE_BSP;
- }
- 
--static inline uint32_t xapic_read_reg(unsigned int reg)
-+static inline u32 xapic_read_reg(unsigned int reg)
- {
--	return ((volatile uint32_t *)APIC_DEFAULT_GPA)[reg >> 2];
-+	return ((volatile u32 *)APIC_DEFAULT_GPA)[reg >> 2];
- }
- 
--static inline void xapic_write_reg(unsigned int reg, uint32_t val)
-+static inline void xapic_write_reg(unsigned int reg, u32 val)
- {
--	((volatile uint32_t *)APIC_DEFAULT_GPA)[reg >> 2] = val;
-+	((volatile u32 *)APIC_DEFAULT_GPA)[reg >> 2] = val;
- }
- 
- static inline u64 x2apic_read_reg(unsigned int reg)
-diff --git a/tools/testing/selftests/kvm/include/x86/evmcs.h b/tools/testing/selftests/kvm/include/x86/evmcs.h
-index 5ec5cca6f9e4..3b0f96b881f9 100644
---- a/tools/testing/selftests/kvm/include/x86/evmcs.h
-+++ b/tools/testing/selftests/kvm/include/x86/evmcs.h
-@@ -11,7 +11,7 @@
- #include "vmx.h"
- 
- #define u16 uint16_t
--#define u32 uint32_t
-+#define u32 u32
- #define u64 u64
- 
- #define EVMCS_VERSION 1
-diff --git a/tools/testing/selftests/kvm/include/x86/processor.h b/tools/testing/selftests/kvm/include/x86/processor.h
-index dd7a68729ad0..3898665ad2e9 100644
---- a/tools/testing/selftests/kvm/include/x86/processor.h
-+++ b/tools/testing/selftests/kvm/include/x86/processor.h
-@@ -403,8 +403,8 @@ struct desc64 {
- 	uint16_t base0;
- 	unsigned base1:8, type:4, s:1, dpl:2, p:1;
- 	unsigned limit1:4, avl:1, l:1, db:1, g:1, base2:8;
--	uint32_t base3;
--	uint32_t zero1;
-+	u32 base3;
-+	u32 zero1;
- } __attribute__((packed));
- 
- struct desc_ptr {
-@@ -437,7 +437,7 @@ static inline u64 get_desc64_base(const struct desc64 *desc)
- 
- static inline u64 rdtsc(void)
- {
--	uint32_t eax, edx;
-+	u32 eax, edx;
- 	u64 tsc_val;
- 	/*
- 	 * The lfence is to wait (on Intel CPUs) until all previous
-@@ -450,27 +450,27 @@ static inline u64 rdtsc(void)
- 	return tsc_val;
- }
- 
--static inline u64 rdtscp(uint32_t *aux)
-+static inline u64 rdtscp(u32 *aux)
- {
--	uint32_t eax, edx;
-+	u32 eax, edx;
- 
- 	__asm__ __volatile__("rdtscp" : "=a"(eax), "=d"(edx), "=c"(*aux));
- 	return ((u64)edx) << 32 | eax;
- }
- 
--static inline u64 rdmsr(uint32_t msr)
-+static inline u64 rdmsr(u32 msr)
- {
--	uint32_t a, d;
-+	u32 a, d;
- 
- 	__asm__ __volatile__("rdmsr" : "=a"(a), "=d"(d) : "c"(msr) : "memory");
- 
- 	return a | ((u64)d << 32);
- }
- 
--static inline void wrmsr(uint32_t msr, u64 value)
-+static inline void wrmsr(u32 msr, u64 value)
- {
--	uint32_t a = value;
--	uint32_t d = value >> 32;
-+	u32 a = value;
-+	u32 d = value >> 32;
- 
- 	__asm__ __volatile__("wrmsr" :: "a"(a), "d"(d), "c"(msr) : "memory");
- }
-@@ -651,14 +651,14 @@ static inline struct desc_ptr get_idt(void)
- 	return idt;
- }
- 
--static inline void outl(uint16_t port, uint32_t value)
-+static inline void outl(uint16_t port, u32 value)
- {
- 	__asm__ __volatile__("outl %%eax, %%dx" : : "d"(port), "a"(value));
- }
- 
--static inline void __cpuid(uint32_t function, uint32_t index,
--			   uint32_t *eax, uint32_t *ebx,
--			   uint32_t *ecx, uint32_t *edx)
-+static inline void __cpuid(u32 function, u32 index,
-+			   u32 *eax, u32 *ebx,
-+			   u32 *ecx, u32 *edx)
- {
- 	*eax = function;
- 	*ecx = index;
-@@ -672,35 +672,35 @@ static inline void __cpuid(uint32_t function, uint32_t index,
- 	    : "memory");
- }
- 
--static inline void cpuid(uint32_t function,
--			 uint32_t *eax, uint32_t *ebx,
--			 uint32_t *ecx, uint32_t *edx)
-+static inline void cpuid(u32 function,
-+			 u32 *eax, u32 *ebx,
-+			 u32 *ecx, u32 *edx)
- {
- 	return __cpuid(function, 0, eax, ebx, ecx, edx);
- }
- 
--static inline uint32_t this_cpu_fms(void)
-+static inline u32 this_cpu_fms(void)
- {
--	uint32_t eax, ebx, ecx, edx;
-+	u32 eax, ebx, ecx, edx;
- 
- 	cpuid(1, &eax, &ebx, &ecx, &edx);
- 	return eax;
- }
- 
--static inline uint32_t this_cpu_family(void)
-+static inline u32 this_cpu_family(void)
- {
- 	return x86_family(this_cpu_fms());
- }
- 
--static inline uint32_t this_cpu_model(void)
-+static inline u32 this_cpu_model(void)
- {
- 	return x86_model(this_cpu_fms());
- }
- 
- static inline bool this_cpu_vendor_string_is(const char *vendor)
- {
--	const uint32_t *chunk = (const uint32_t *)vendor;
--	uint32_t eax, ebx, ecx, edx;
-+	const u32 *chunk = (const u32 *)vendor;
-+	u32 eax, ebx, ecx, edx;
- 
- 	cpuid(0, &eax, &ebx, &ecx, &edx);
- 	return (ebx == chunk[0] && edx == chunk[1] && ecx == chunk[2]);
-@@ -724,10 +724,10 @@ static inline bool this_cpu_is_hygon(void)
- 	return this_cpu_vendor_string_is("HygonGenuine");
- }
- 
--static inline uint32_t __this_cpu_has(uint32_t function, uint32_t index,
--				      uint8_t reg, uint8_t lo, uint8_t hi)
-+static inline u32 __this_cpu_has(u32 function, u32 index,
-+				 uint8_t reg, uint8_t lo, uint8_t hi)
- {
--	uint32_t gprs[4];
-+	u32 gprs[4];
- 
- 	__cpuid(function, index,
- 		&gprs[KVM_CPUID_EAX], &gprs[KVM_CPUID_EBX],
-@@ -742,7 +742,7 @@ static inline bool this_cpu_has(struct kvm_x86_cpu_feature feature)
- 			      feature.reg, feature.bit, feature.bit);
- }
- 
--static inline uint32_t this_cpu_property(struct kvm_x86_cpu_property property)
-+static inline u32 this_cpu_property(struct kvm_x86_cpu_property property)
- {
- 	return __this_cpu_has(property.function, property.index,
- 			      property.reg, property.lo_bit, property.hi_bit);
-@@ -750,7 +750,7 @@ static inline uint32_t this_cpu_property(struct kvm_x86_cpu_property property)
- 
- static __always_inline bool this_cpu_has_p(struct kvm_x86_cpu_property property)
- {
--	uint32_t max_leaf;
-+	u32 max_leaf;
- 
- 	switch (property.function & 0xc0000000) {
- 	case 0:
-@@ -770,7 +770,7 @@ static __always_inline bool this_cpu_has_p(struct kvm_x86_cpu_property property)
- 
- static inline bool this_pmu_has(struct kvm_x86_pmu_feature feature)
- {
--	uint32_t nr_bits;
-+	u32 nr_bits;
- 
- 	if (feature.f.reg == KVM_CPUID_EBX) {
- 		nr_bits = this_cpu_property(X86_PROPERTY_PMU_EBX_BIT_VECTOR_LENGTH);
-@@ -898,7 +898,7 @@ void kvm_x86_state_cleanup(struct kvm_x86_state *state);
- 
- const struct kvm_msr_list *kvm_get_msr_index_list(void);
- const struct kvm_msr_list *kvm_get_feature_msr_index_list(void);
--bool kvm_msr_is_in_save_restore_list(uint32_t msr_index);
-+bool kvm_msr_is_in_save_restore_list(u32 msr_index);
- u64 kvm_get_feature_msr(u64 msr_index);
- 
- static inline void vcpu_msrs_get(struct kvm_vcpu *vcpu,
-@@ -954,20 +954,20 @@ static inline void vcpu_xcrs_set(struct kvm_vcpu *vcpu, struct kvm_xcrs *xcrs)
- }
- 
- const struct kvm_cpuid_entry2 *get_cpuid_entry(const struct kvm_cpuid2 *cpuid,
--					       uint32_t function, uint32_t index);
-+					       u32 function, u32 index);
- const struct kvm_cpuid2 *kvm_get_supported_cpuid(void);
- 
--static inline uint32_t kvm_cpu_fms(void)
-+static inline u32 kvm_cpu_fms(void)
- {
- 	return get_cpuid_entry(kvm_get_supported_cpuid(), 0x1, 0)->eax;
- }
- 
--static inline uint32_t kvm_cpu_family(void)
-+static inline u32 kvm_cpu_family(void)
- {
- 	return x86_family(kvm_cpu_fms());
- }
- 
--static inline uint32_t kvm_cpu_model(void)
-+static inline u32 kvm_cpu_model(void)
- {
- 	return x86_model(kvm_cpu_fms());
- }
-@@ -980,17 +980,17 @@ static inline bool kvm_cpu_has(struct kvm_x86_cpu_feature feature)
- 	return kvm_cpuid_has(kvm_get_supported_cpuid(), feature);
- }
- 
--uint32_t kvm_cpuid_property(const struct kvm_cpuid2 *cpuid,
--			    struct kvm_x86_cpu_property property);
-+u32 kvm_cpuid_property(const struct kvm_cpuid2 *cpuid,
-+		       struct kvm_x86_cpu_property property);
- 
--static inline uint32_t kvm_cpu_property(struct kvm_x86_cpu_property property)
-+static inline u32 kvm_cpu_property(struct kvm_x86_cpu_property property)
- {
- 	return kvm_cpuid_property(kvm_get_supported_cpuid(), property);
- }
- 
- static __always_inline bool kvm_cpu_has_p(struct kvm_x86_cpu_property property)
- {
--	uint32_t max_leaf;
-+	u32 max_leaf;
- 
- 	switch (property.function & 0xc0000000) {
- 	case 0:
-@@ -1010,7 +1010,7 @@ static __always_inline bool kvm_cpu_has_p(struct kvm_x86_cpu_property property)
- 
- static inline bool kvm_pmu_has(struct kvm_x86_pmu_feature feature)
- {
--	uint32_t nr_bits;
-+	u32 nr_bits;
- 
- 	if (feature.f.reg == KVM_CPUID_EBX) {
- 		nr_bits = kvm_cpu_property(X86_PROPERTY_PMU_EBX_BIT_VECTOR_LENGTH);
-@@ -1062,8 +1062,8 @@ static inline void vcpu_get_cpuid(struct kvm_vcpu *vcpu)
- }
- 
- static inline struct kvm_cpuid_entry2 *__vcpu_get_cpuid_entry(struct kvm_vcpu *vcpu,
--							      uint32_t function,
--							      uint32_t index)
-+							      u32 function,
-+							      u32 index)
- {
- 	TEST_ASSERT(vcpu->cpuid, "Must do vcpu_init_cpuid() first (or equivalent)");
- 
-@@ -1074,7 +1074,7 @@ static inline struct kvm_cpuid_entry2 *__vcpu_get_cpuid_entry(struct kvm_vcpu *v
- }
- 
- static inline struct kvm_cpuid_entry2 *vcpu_get_cpuid_entry(struct kvm_vcpu *vcpu,
--							    uint32_t function)
-+							    u32 function)
- {
- 	return __vcpu_get_cpuid_entry(vcpu, function, 0);
- }
-@@ -1104,10 +1104,10 @@ static inline void vcpu_set_cpuid(struct kvm_vcpu *vcpu)
- 
- void vcpu_set_cpuid_property(struct kvm_vcpu *vcpu,
- 			     struct kvm_x86_cpu_property property,
--			     uint32_t value);
-+			     u32 value);
- void vcpu_set_cpuid_maxphyaddr(struct kvm_vcpu *vcpu, uint8_t maxphyaddr);
- 
--void vcpu_clear_cpuid_entry(struct kvm_vcpu *vcpu, uint32_t function);
-+void vcpu_clear_cpuid_entry(struct kvm_vcpu *vcpu, u32 function);
- 
- static inline bool vcpu_cpuid_has(struct kvm_vcpu *vcpu,
- 				  struct kvm_x86_cpu_feature feature)
-@@ -1161,7 +1161,7 @@ do {										\
-  * is changing, etc.  This is NOT an exhaustive list!  The intent is to filter
-  * out MSRs that are not durable _and_ that a selftest wants to write.
-  */
--static inline bool is_durable_msr(uint32_t msr)
-+static inline bool is_durable_msr(u32 msr)
- {
- 	return msr != MSR_IA32_TSC;
- }
-@@ -1203,7 +1203,7 @@ struct idt_entry {
- 	uint16_t dpl : 2;
- 	uint16_t p : 1;
- 	uint16_t offset1;
--	uint32_t offset2; uint32_t reserved;
-+	u32 offset2; u32 reserved;
- };
- 
- void vm_install_exception_handler(struct kvm_vm *vm, int vector,
-@@ -1307,11 +1307,11 @@ void vm_install_exception_handler(struct kvm_vm *vm, int vector,
- })
- 
- #define BUILD_READ_U64_SAFE_HELPER(insn, _fep, _FEP)			\
--static inline uint8_t insn##_safe ##_fep(uint32_t idx, u64 *val)	\
-+static inline uint8_t insn##_safe ##_fep(u32 idx, u64 *val)	\
- {									\
- 	u64 error_code;						\
- 	uint8_t vector;							\
--	uint32_t a, d;							\
-+	u32 a, d;							\
- 									\
- 	asm volatile(KVM_ASM_SAFE##_FEP(#insn)				\
- 		     : "=a"(a), "=d"(d),				\
-@@ -1335,12 +1335,12 @@ BUILD_READ_U64_SAFE_HELPERS(rdmsr)
- BUILD_READ_U64_SAFE_HELPERS(rdpmc)
- BUILD_READ_U64_SAFE_HELPERS(xgetbv)
- 
--static inline uint8_t wrmsr_safe(uint32_t msr, u64 val)
-+static inline uint8_t wrmsr_safe(u32 msr, u64 val)
- {
- 	return kvm_asm_safe("wrmsr", "a"(val & -1u), "d"(val >> 32), "c"(msr));
- }
- 
--static inline uint8_t xsetbv_safe(uint32_t index, u64 value)
-+static inline uint8_t xsetbv_safe(u32 index, u64 value)
- {
- 	u32 eax = value;
- 	u32 edx = value >> 32;
-diff --git a/tools/testing/selftests/kvm/include/x86/sev.h b/tools/testing/selftests/kvm/include/x86/sev.h
-index f65e3361c7c0..4f91c1179416 100644
---- a/tools/testing/selftests/kvm/include/x86/sev.h
-+++ b/tools/testing/selftests/kvm/include/x86/sev.h
-@@ -46,14 +46,14 @@ static inline bool is_sev_vm(struct kvm_vm *vm)
- 	return is_sev_es_vm(vm) || vm->type == KVM_X86_SEV_VM;
- }
- 
--void sev_vm_launch(struct kvm_vm *vm, uint32_t policy);
-+void sev_vm_launch(struct kvm_vm *vm, u32 policy);
- void sev_vm_launch_measure(struct kvm_vm *vm, uint8_t *measurement);
- void sev_vm_launch_finish(struct kvm_vm *vm);
- void snp_vm_launch_start(struct kvm_vm *vm, u64 policy);
- void snp_vm_launch_update(struct kvm_vm *vm);
- void snp_vm_launch_finish(struct kvm_vm *vm);
- 
--struct kvm_vm *vm_sev_create_with_one_vcpu(uint32_t type, void *guest_code,
-+struct kvm_vm *vm_sev_create_with_one_vcpu(u32 type, void *guest_code,
- 					   struct kvm_vcpu **cpu);
- void vm_sev_launch(struct kvm_vm *vm, u64 policy, uint8_t *measurement);
- 
-diff --git a/tools/testing/selftests/kvm/include/x86/vmx.h b/tools/testing/selftests/kvm/include/x86/vmx.h
-index 5e9810fb9d20..6cd6bb7efbc2 100644
---- a/tools/testing/selftests/kvm/include/x86/vmx.h
-+++ b/tools/testing/selftests/kvm/include/x86/vmx.h
-@@ -285,8 +285,8 @@ enum vmcs_field {
- };
- 
- struct vmx_msr_entry {
--	uint32_t index;
--	uint32_t reserved;
-+	u32 index;
-+	u32 reserved;
- 	u64 value;
- } __attribute__ ((aligned(16)));
- 
-@@ -490,7 +490,7 @@ static inline int vmwrite(u64 encoding, u64 value)
- 	return ret;
- }
- 
--static inline uint32_t vmcs_revision(void)
-+static inline u32 vmcs_revision(void)
- {
- 	return rdmsr(MSR_IA32_VMX_BASIC);
- }
-diff --git a/tools/testing/selftests/kvm/kvm_page_table_test.c b/tools/testing/selftests/kvm/kvm_page_table_test.c
-index fd3e0d03e370..fc5242fb956f 100644
---- a/tools/testing/selftests/kvm/kvm_page_table_test.c
-+++ b/tools/testing/selftests/kvm/kvm_page_table_test.c
-@@ -63,7 +63,7 @@ struct test_args {
- static enum test_stage guest_test_stage;
- 
- /* Host variables */
--static uint32_t nr_vcpus = 1;
-+static u32 nr_vcpus = 1;
- static struct test_args test_args;
- static enum test_stage *current_stage;
- static bool host_quit;
-diff --git a/tools/testing/selftests/kvm/lib/arm64/gic.c b/tools/testing/selftests/kvm/lib/arm64/gic.c
-index 3b0aa4eff557..011dfe1dfcb3 100644
---- a/tools/testing/selftests/kvm/lib/arm64/gic.c
-+++ b/tools/testing/selftests/kvm/lib/arm64/gic.c
-@@ -50,7 +50,7 @@ static void gic_dist_init(enum gic_type type, unsigned int nr_cpus)
- 
- void gic_init(enum gic_type type, unsigned int nr_cpus)
- {
--	uint32_t cpu = guest_get_vcpuid();
-+	u32 cpu = guest_get_vcpuid();
- 
- 	GUEST_ASSERT(type < GIC_TYPE_MAX);
- 	GUEST_ASSERT(nr_cpus);
-diff --git a/tools/testing/selftests/kvm/lib/arm64/gic_private.h b/tools/testing/selftests/kvm/lib/arm64/gic_private.h
-index 4ccc72533b35..6d393f5c5685 100644
---- a/tools/testing/selftests/kvm/lib/arm64/gic_private.h
-+++ b/tools/testing/selftests/kvm/lib/arm64/gic_private.h
-@@ -13,19 +13,19 @@ struct gic_common_ops {
- 	void (*gic_irq_enable)(unsigned int intid);
- 	void (*gic_irq_disable)(unsigned int intid);
- 	u64 (*gic_read_iar)(void);
--	void (*gic_write_eoir)(uint32_t irq);
--	void (*gic_write_dir)(uint32_t irq);
-+	void (*gic_write_eoir)(u32 irq);
-+	void (*gic_write_dir)(u32 irq);
- 	void (*gic_set_eoi_split)(bool split);
- 	void (*gic_set_priority_mask)(u64 mask);
--	void (*gic_set_priority)(uint32_t intid, uint32_t prio);
--	void (*gic_irq_set_active)(uint32_t intid);
--	void (*gic_irq_clear_active)(uint32_t intid);
--	bool (*gic_irq_get_active)(uint32_t intid);
--	void (*gic_irq_set_pending)(uint32_t intid);
--	void (*gic_irq_clear_pending)(uint32_t intid);
--	bool (*gic_irq_get_pending)(uint32_t intid);
--	void (*gic_irq_set_config)(uint32_t intid, bool is_edge);
--	void (*gic_irq_set_group)(uint32_t intid, bool group);
-+	void (*gic_set_priority)(u32 intid, u32 prio);
-+	void (*gic_irq_set_active)(u32 intid);
-+	void (*gic_irq_clear_active)(u32 intid);
-+	bool (*gic_irq_get_active)(u32 intid);
-+	void (*gic_irq_set_pending)(u32 intid);
-+	void (*gic_irq_clear_pending)(u32 intid);
-+	bool (*gic_irq_get_pending)(u32 intid);
-+	void (*gic_irq_set_config)(u32 intid, bool is_edge);
-+	void (*gic_irq_set_group)(u32 intid, bool group);
- };
- 
- extern const struct gic_common_ops gicv3_ops;
-diff --git a/tools/testing/selftests/kvm/lib/arm64/gic_v3.c b/tools/testing/selftests/kvm/lib/arm64/gic_v3.c
-index cdd29245c84e..a99a53accfe9 100644
---- a/tools/testing/selftests/kvm/lib/arm64/gic_v3.c
-+++ b/tools/testing/selftests/kvm/lib/arm64/gic_v3.c
-@@ -50,13 +50,13 @@ static void gicv3_gicd_wait_for_rwp(void)
- 	}
- }
- 
--static inline volatile void *gicr_base_cpu(uint32_t cpu)
-+static inline volatile void *gicr_base_cpu(u32 cpu)
- {
- 	/* Align all the redistributors sequentially */
- 	return GICR_BASE_GVA + cpu * SZ_64K * 2;
- }
- 
--static void gicv3_gicr_wait_for_rwp(uint32_t cpu)
-+static void gicv3_gicr_wait_for_rwp(u32 cpu)
- {
- 	unsigned int count = 100000; /* 1s */
- 
-@@ -66,7 +66,7 @@ static void gicv3_gicr_wait_for_rwp(uint32_t cpu)
- 	}
- }
- 
--static void gicv3_wait_for_rwp(uint32_t cpu_or_dist)
-+static void gicv3_wait_for_rwp(u32 cpu_or_dist)
- {
- 	if (cpu_or_dist & DIST_BIT)
- 		gicv3_gicd_wait_for_rwp();
-@@ -99,13 +99,13 @@ static u64 gicv3_read_iar(void)
- 	return irqstat;
- }
- 
--static void gicv3_write_eoir(uint32_t irq)
-+static void gicv3_write_eoir(u32 irq)
- {
- 	write_sysreg_s(irq, SYS_ICC_EOIR1_EL1);
- 	isb();
- }
- 
--static void gicv3_write_dir(uint32_t irq)
-+static void gicv3_write_dir(u32 irq)
- {
- 	write_sysreg_s(irq, SYS_ICC_DIR_EL1);
- 	isb();
-@@ -118,7 +118,7 @@ static void gicv3_set_priority_mask(u64 mask)
- 
- static void gicv3_set_eoi_split(bool split)
- {
--	uint32_t val;
-+	u32 val;
- 
- 	/*
- 	 * All other fields are read-only, so no need to read CTLR first. In
-@@ -129,29 +129,29 @@ static void gicv3_set_eoi_split(bool split)
- 	isb();
- }
- 
--uint32_t gicv3_reg_readl(uint32_t cpu_or_dist, u64 offset)
-+u32 gicv3_reg_readl(u32 cpu_or_dist, u64 offset)
- {
- 	volatile void *base = cpu_or_dist & DIST_BIT ? GICD_BASE_GVA
- 			: sgi_base_from_redist(gicr_base_cpu(cpu_or_dist));
- 	return readl(base + offset);
- }
- 
--void gicv3_reg_writel(uint32_t cpu_or_dist, u64 offset, uint32_t reg_val)
-+void gicv3_reg_writel(u32 cpu_or_dist, u64 offset, u32 reg_val)
- {
- 	volatile void *base = cpu_or_dist & DIST_BIT ? GICD_BASE_GVA
- 			: sgi_base_from_redist(gicr_base_cpu(cpu_or_dist));
- 	writel(reg_val, base + offset);
- }
- 
--uint32_t gicv3_getl_fields(uint32_t cpu_or_dist, u64 offset, uint32_t mask)
-+u32 gicv3_getl_fields(u32 cpu_or_dist, u64 offset, u32 mask)
- {
- 	return gicv3_reg_readl(cpu_or_dist, offset) & mask;
- }
- 
--void gicv3_setl_fields(uint32_t cpu_or_dist, u64 offset,
--		       uint32_t mask, uint32_t reg_val)
-+void gicv3_setl_fields(u32 cpu_or_dist, u64 offset,
-+		       u32 mask, u32 reg_val)
- {
--	uint32_t tmp = gicv3_reg_readl(cpu_or_dist, offset) & ~mask;
-+	u32 tmp = gicv3_reg_readl(cpu_or_dist, offset) & ~mask;
- 
- 	tmp |= (reg_val & mask);
- 	gicv3_reg_writel(cpu_or_dist, offset, tmp);
-@@ -165,14 +165,14 @@ void gicv3_setl_fields(uint32_t cpu_or_dist, u64 offset,
-  * map that doesn't implement it; like GICR_WAKER's offset of 0x0014 being
-  * marked as "Reserved" in the Distributor map.
-  */
--static void gicv3_access_reg(uint32_t intid, u64 offset,
--			     uint32_t reg_bits, uint32_t bits_per_field,
--			     bool write, uint32_t *val)
-+static void gicv3_access_reg(u32 intid, u64 offset,
-+			     u32 reg_bits, u32 bits_per_field,
-+			     bool write, u32 *val)
- {
--	uint32_t cpu = guest_get_vcpuid();
-+	u32 cpu = guest_get_vcpuid();
- 	enum gicv3_intid_range intid_range = get_intid_range(intid);
--	uint32_t fields_per_reg, index, mask, shift;
--	uint32_t cpu_or_dist;
-+	u32 fields_per_reg, index, mask, shift;
-+	u32 cpu_or_dist;
- 
- 	GUEST_ASSERT(bits_per_field <= reg_bits);
- 	GUEST_ASSERT(!write || *val < (1U << bits_per_field));
-@@ -197,32 +197,32 @@ static void gicv3_access_reg(uint32_t intid, u64 offset,
- 	*val = gicv3_getl_fields(cpu_or_dist, offset, mask) >> shift;
- }
- 
--static void gicv3_write_reg(uint32_t intid, u64 offset,
--			    uint32_t reg_bits, uint32_t bits_per_field, uint32_t val)
-+static void gicv3_write_reg(u32 intid, u64 offset,
-+			    u32 reg_bits, u32 bits_per_field, u32 val)
- {
- 	gicv3_access_reg(intid, offset, reg_bits,
- 			bits_per_field, true, &val);
- }
- 
--static uint32_t gicv3_read_reg(uint32_t intid, u64 offset,
--			       uint32_t reg_bits, uint32_t bits_per_field)
-+static u32 gicv3_read_reg(u32 intid, u64 offset,
-+			  u32 reg_bits, u32 bits_per_field)
- {
--	uint32_t val;
-+	u32 val;
- 
- 	gicv3_access_reg(intid, offset, reg_bits,
- 			bits_per_field, false, &val);
- 	return val;
- }
- 
--static void gicv3_set_priority(uint32_t intid, uint32_t prio)
-+static void gicv3_set_priority(u32 intid, u32 prio)
- {
- 	gicv3_write_reg(intid, GICD_IPRIORITYR, 32, 8, prio);
- }
- 
- /* Sets the intid to be level-sensitive or edge-triggered. */
--static void gicv3_irq_set_config(uint32_t intid, bool is_edge)
-+static void gicv3_irq_set_config(u32 intid, bool is_edge)
- {
--	uint32_t val;
-+	u32 val;
- 
- 	/* N/A for private interrupts. */
- 	GUEST_ASSERT(get_intid_range(intid) == SPI_RANGE);
-@@ -230,57 +230,57 @@ static void gicv3_irq_set_config(uint32_t intid, bool is_edge)
- 	gicv3_write_reg(intid, GICD_ICFGR, 32, 2, val);
- }
- 
--static void gicv3_irq_enable(uint32_t intid)
-+static void gicv3_irq_enable(u32 intid)
- {
- 	bool is_spi = get_intid_range(intid) == SPI_RANGE;
--	uint32_t cpu = guest_get_vcpuid();
-+	u32 cpu = guest_get_vcpuid();
- 
- 	gicv3_write_reg(intid, GICD_ISENABLER, 32, 1, 1);
- 	gicv3_wait_for_rwp(is_spi ? DIST_BIT : cpu);
- }
- 
--static void gicv3_irq_disable(uint32_t intid)
-+static void gicv3_irq_disable(u32 intid)
- {
- 	bool is_spi = get_intid_range(intid) == SPI_RANGE;
--	uint32_t cpu = guest_get_vcpuid();
-+	u32 cpu = guest_get_vcpuid();
- 
- 	gicv3_write_reg(intid, GICD_ICENABLER, 32, 1, 1);
- 	gicv3_wait_for_rwp(is_spi ? DIST_BIT : cpu);
- }
- 
--static void gicv3_irq_set_active(uint32_t intid)
-+static void gicv3_irq_set_active(u32 intid)
- {
- 	gicv3_write_reg(intid, GICD_ISACTIVER, 32, 1, 1);
- }
- 
--static void gicv3_irq_clear_active(uint32_t intid)
-+static void gicv3_irq_clear_active(u32 intid)
- {
- 	gicv3_write_reg(intid, GICD_ICACTIVER, 32, 1, 1);
- }
- 
--static bool gicv3_irq_get_active(uint32_t intid)
-+static bool gicv3_irq_get_active(u32 intid)
- {
- 	return gicv3_read_reg(intid, GICD_ISACTIVER, 32, 1);
- }
- 
--static void gicv3_irq_set_pending(uint32_t intid)
-+static void gicv3_irq_set_pending(u32 intid)
- {
- 	gicv3_write_reg(intid, GICD_ISPENDR, 32, 1, 1);
- }
- 
--static void gicv3_irq_clear_pending(uint32_t intid)
-+static void gicv3_irq_clear_pending(u32 intid)
- {
- 	gicv3_write_reg(intid, GICD_ICPENDR, 32, 1, 1);
- }
- 
--static bool gicv3_irq_get_pending(uint32_t intid)
-+static bool gicv3_irq_get_pending(u32 intid)
- {
- 	return gicv3_read_reg(intid, GICD_ISPENDR, 32, 1);
- }
- 
- static void gicv3_enable_redist(volatile void *redist_base)
- {
--	uint32_t val = readl(redist_base + GICR_WAKER);
-+	u32 val = readl(redist_base + GICR_WAKER);
- 	unsigned int count = 100000; /* 1s */
- 
- 	val &= ~GICR_WAKER_ProcessorSleep;
-@@ -293,10 +293,10 @@ static void gicv3_enable_redist(volatile void *redist_base)
- 	}
- }
- 
--static void gicv3_set_group(uint32_t intid, bool grp)
-+static void gicv3_set_group(u32 intid, bool grp)
- {
--	uint32_t cpu_or_dist;
--	uint32_t val;
-+	u32 cpu_or_dist;
-+	u32 val;
- 
- 	cpu_or_dist = (get_intid_range(intid) == SPI_RANGE) ? DIST_BIT : guest_get_vcpuid();
- 	val = gicv3_reg_readl(cpu_or_dist, GICD_IGROUPR + (intid / 32) * 4);
-diff --git a/tools/testing/selftests/kvm/lib/arm64/processor.c b/tools/testing/selftests/kvm/lib/arm64/processor.c
-index 159368036325..f96513262c5b 100644
---- a/tools/testing/selftests/kvm/lib/arm64/processor.c
-+++ b/tools/testing/selftests/kvm/lib/arm64/processor.c
-@@ -413,7 +413,7 @@ void vcpu_arch_set_entry_point(struct kvm_vcpu *vcpu, void *guest_code)
- 	vcpu_set_reg(vcpu, ARM64_CORE_REG(regs.pc), (u64)guest_code);
- }
- 
--static struct kvm_vcpu *__aarch64_vcpu_add(struct kvm_vm *vm, uint32_t vcpu_id,
-+static struct kvm_vcpu *__aarch64_vcpu_add(struct kvm_vm *vm, u32 vcpu_id,
- 					   struct kvm_vcpu_init *init)
- {
- 	size_t stack_size;
-@@ -432,7 +432,7 @@ static struct kvm_vcpu *__aarch64_vcpu_add(struct kvm_vm *vm, uint32_t vcpu_id,
- 	return vcpu;
- }
- 
--struct kvm_vcpu *aarch64_vcpu_add(struct kvm_vm *vm, uint32_t vcpu_id,
-+struct kvm_vcpu *aarch64_vcpu_add(struct kvm_vm *vm, u32 vcpu_id,
- 				  struct kvm_vcpu_init *init, void *guest_code)
- {
- 	struct kvm_vcpu *vcpu = __aarch64_vcpu_add(vm, vcpu_id, init);
-@@ -442,7 +442,7 @@ struct kvm_vcpu *aarch64_vcpu_add(struct kvm_vm *vm, uint32_t vcpu_id,
- 	return vcpu;
- }
- 
--struct kvm_vcpu *vm_arch_vcpu_add(struct kvm_vm *vm, uint32_t vcpu_id)
-+struct kvm_vcpu *vm_arch_vcpu_add(struct kvm_vm *vm, u32 vcpu_id)
- {
- 	return __aarch64_vcpu_add(vm, vcpu_id, NULL);
- }
-@@ -563,13 +563,13 @@ void vm_install_exception_handler(struct kvm_vm *vm, int vector,
- 	handlers->exception_handlers[vector][0] = handler;
- }
- 
--uint32_t guest_get_vcpuid(void)
-+u32 guest_get_vcpuid(void)
- {
- 	return read_sysreg(tpidr_el1);
- }
- 
--static uint32_t max_ipa_for_page_size(uint32_t vm_ipa, uint32_t gran,
--				uint32_t not_sup_val, uint32_t ipa52_min_val)
-+static u32 max_ipa_for_page_size(u32 vm_ipa, u32 gran,
-+				 u32 not_sup_val, u32 ipa52_min_val)
- {
- 	if (gran == not_sup_val)
- 		return 0;
-@@ -579,13 +579,13 @@ static uint32_t max_ipa_for_page_size(uint32_t vm_ipa, uint32_t gran,
- 		return min(vm_ipa, 48U);
- }
- 
--void aarch64_get_supported_page_sizes(uint32_t ipa, uint32_t *ipa4k,
--					uint32_t *ipa16k, uint32_t *ipa64k)
-+void aarch64_get_supported_page_sizes(u32 ipa, u32 *ipa4k,
-+				      u32 *ipa16k, u32 *ipa64k)
- {
- 	struct kvm_vcpu_init preferred_init;
- 	int kvm_fd, vm_fd, vcpu_fd, err;
- 	u64 val;
--	uint32_t gran;
-+	u32 gran;
- 	struct kvm_one_reg reg = {
- 		.id	= KVM_ARM64_SYS_REG(SYS_ID_AA64MMFR0_EL1),
- 		.addr	= (u64)&val,
-@@ -646,7 +646,7 @@ void aarch64_get_supported_page_sizes(uint32_t ipa, uint32_t *ipa4k,
- 		     : "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7")
- 
- 
--void smccc_hvc(uint32_t function_id, u64 arg0, u64 arg1,
-+void smccc_hvc(u32 function_id, u64 arg0, u64 arg1,
- 	       u64 arg2, u64 arg3, u64 arg4, u64 arg5,
- 	       u64 arg6, struct arm_smccc_res *res)
- {
-@@ -654,7 +654,7 @@ void smccc_hvc(uint32_t function_id, u64 arg0, u64 arg1,
- 		     arg6, res);
- }
- 
--void smccc_smc(uint32_t function_id, u64 arg0, u64 arg1,
-+void smccc_smc(u32 function_id, u64 arg0, u64 arg1,
- 	       u64 arg2, u64 arg3, u64 arg4, u64 arg5,
- 	       u64 arg6, struct arm_smccc_res *res)
- {
-diff --git a/tools/testing/selftests/kvm/lib/arm64/vgic.c b/tools/testing/selftests/kvm/lib/arm64/vgic.c
-index 166637d6abf5..4ecebf3146a2 100644
---- a/tools/testing/selftests/kvm/lib/arm64/vgic.c
-+++ b/tools/testing/selftests/kvm/lib/arm64/vgic.c
-@@ -41,7 +41,7 @@ bool kvm_supports_vgic_v3(void)
-  * redistributor regions of the guest. Since it depends on the number of
-  * vCPUs for the VM, it must be called after all the vCPUs have been created.
-  */
--int __vgic_v3_setup(struct kvm_vm *vm, unsigned int nr_vcpus, uint32_t nr_irqs)
-+int __vgic_v3_setup(struct kvm_vm *vm, unsigned int nr_vcpus, u32 nr_irqs)
- {
- 	int gic_fd;
- 	u64 attr;
-@@ -77,7 +77,7 @@ void __vgic_v3_init(int fd)
- 			    KVM_DEV_ARM_VGIC_CTRL_INIT, NULL);
- }
- 
--int vgic_v3_setup(struct kvm_vm *vm, unsigned int nr_vcpus, uint32_t nr_irqs)
-+int vgic_v3_setup(struct kvm_vm *vm, unsigned int nr_vcpus, u32 nr_irqs)
- {
- 	unsigned int nr_vcpus_created = 0;
- 	struct list_head *iter;
-@@ -104,7 +104,7 @@ int vgic_v3_setup(struct kvm_vm *vm, unsigned int nr_vcpus, uint32_t nr_irqs)
- }
- 
- /* should only work for level sensitive interrupts */
--int _kvm_irq_set_level_info(int gic_fd, uint32_t intid, int level)
-+int _kvm_irq_set_level_info(int gic_fd, u32 intid, int level)
- {
- 	u64 attr = 32 * (intid / 32);
- 	u64 index = intid % 32;
-@@ -122,16 +122,16 @@ int _kvm_irq_set_level_info(int gic_fd, uint32_t intid, int level)
- 	return ret;
- }
- 
--void kvm_irq_set_level_info(int gic_fd, uint32_t intid, int level)
-+void kvm_irq_set_level_info(int gic_fd, u32 intid, int level)
- {
- 	int ret = _kvm_irq_set_level_info(gic_fd, intid, level);
- 
- 	TEST_ASSERT(!ret, KVM_IOCTL_ERROR(KVM_DEV_ARM_VGIC_GRP_LEVEL_INFO, ret));
- }
- 
--int _kvm_arm_irq_line(struct kvm_vm *vm, uint32_t intid, int level)
-+int _kvm_arm_irq_line(struct kvm_vm *vm, u32 intid, int level)
- {
--	uint32_t irq = intid & KVM_ARM_IRQ_NUM_MASK;
-+	u32 irq = intid & KVM_ARM_IRQ_NUM_MASK;
- 
- 	TEST_ASSERT(!INTID_IS_SGI(intid), "KVM_IRQ_LINE's interface itself "
- 		"doesn't allow injecting SGIs. There's no mask for it.");
-@@ -144,14 +144,14 @@ int _kvm_arm_irq_line(struct kvm_vm *vm, uint32_t intid, int level)
- 	return _kvm_irq_line(vm, irq, level);
- }
- 
--void kvm_arm_irq_line(struct kvm_vm *vm, uint32_t intid, int level)
-+void kvm_arm_irq_line(struct kvm_vm *vm, u32 intid, int level)
- {
- 	int ret = _kvm_arm_irq_line(vm, intid, level);
- 
- 	TEST_ASSERT(!ret, KVM_IOCTL_ERROR(KVM_IRQ_LINE, ret));
- }
- 
--static void vgic_poke_irq(int gic_fd, uint32_t intid, struct kvm_vcpu *vcpu,
-+static void vgic_poke_irq(int gic_fd, u32 intid, struct kvm_vcpu *vcpu,
- 			  u64 reg_off)
- {
- 	u64 reg = intid / 32;
-@@ -160,7 +160,7 @@ static void vgic_poke_irq(int gic_fd, uint32_t intid, struct kvm_vcpu *vcpu,
- 	u64 val;
- 	bool intid_is_private = INTID_IS_SGI(intid) || INTID_IS_PPI(intid);
- 
--	uint32_t group = intid_is_private ? KVM_DEV_ARM_VGIC_GRP_REDIST_REGS
-+	u32 group = intid_is_private ? KVM_DEV_ARM_VGIC_GRP_REDIST_REGS
- 					  : KVM_DEV_ARM_VGIC_GRP_DIST_REGS;
- 
- 	if (intid_is_private) {
-@@ -183,12 +183,12 @@ static void vgic_poke_irq(int gic_fd, uint32_t intid, struct kvm_vcpu *vcpu,
- 	kvm_device_attr_set(gic_fd, group, attr, &val);
- }
- 
--void kvm_irq_write_ispendr(int gic_fd, uint32_t intid, struct kvm_vcpu *vcpu)
-+void kvm_irq_write_ispendr(int gic_fd, u32 intid, struct kvm_vcpu *vcpu)
- {
- 	vgic_poke_irq(gic_fd, intid, vcpu, GICD_ISPENDR);
- }
- 
--void kvm_irq_write_isactiver(int gic_fd, uint32_t intid, struct kvm_vcpu *vcpu)
-+void kvm_irq_write_isactiver(int gic_fd, u32 intid, struct kvm_vcpu *vcpu)
- {
- 	vgic_poke_irq(gic_fd, intid, vcpu, GICD_ISACTIVER);
- }
-diff --git a/tools/testing/selftests/kvm/lib/guest_modes.c b/tools/testing/selftests/kvm/lib/guest_modes.c
-index ce3099630397..7a96c43b5704 100644
---- a/tools/testing/selftests/kvm/lib/guest_modes.c
-+++ b/tools/testing/selftests/kvm/lib/guest_modes.c
-@@ -20,7 +20,7 @@ void guest_modes_append_default(void)
- #ifdef __aarch64__
- 	{
- 		unsigned int limit = kvm_check_cap(KVM_CAP_ARM_VM_IPA_SIZE);
--		uint32_t ipa4k, ipa16k, ipa64k;
-+		u32 ipa4k, ipa16k, ipa64k;
- 		int i;
- 
- 		aarch64_get_supported_page_sizes(limit, &ipa4k, &ipa16k, &ipa64k);
-diff --git a/tools/testing/selftests/kvm/lib/guest_sprintf.c b/tools/testing/selftests/kvm/lib/guest_sprintf.c
-index a3a44657e72d..551ad6c658aa 100644
---- a/tools/testing/selftests/kvm/lib/guest_sprintf.c
-+++ b/tools/testing/selftests/kvm/lib/guest_sprintf.c
-@@ -35,8 +35,8 @@ static int skip_atoi(const char **s)
- ({							\
- 	int __res;					\
- 							\
--	__res = ((u64)n) % (uint32_t) base;		\
--	n = ((u64)n) / (uint32_t) base;			\
-+	__res = ((u64)n) % (u32)base;			\
-+	n = ((u64)n) / (u32)base;			\
- 	__res;						\
- })
- 
-@@ -292,7 +292,7 @@ int guest_vsnprintf(char *buf, int n, const char *fmt, va_list args)
- 		} else if (flags & SIGN)
- 			num = va_arg(args, int);
- 		else
--			num = va_arg(args, uint32_t);
-+			num = va_arg(args, u32);
- 		str = number(str, end, num, base, field_width, precision, flags);
- 	}
- 
-diff --git a/tools/testing/selftests/kvm/lib/kvm_util.c b/tools/testing/selftests/kvm/lib/kvm_util.c
-index d97bf1141a55..9f80e2e03001 100644
---- a/tools/testing/selftests/kvm/lib/kvm_util.c
-+++ b/tools/testing/selftests/kvm/lib/kvm_util.c
-@@ -20,9 +20,9 @@
- 
- #define KVM_UTIL_MIN_PFN	2
- 
--uint32_t guest_random_seed;
-+u32 guest_random_seed;
- struct guest_random_state guest_rng;
--static uint32_t last_guest_seed;
-+static u32 last_guest_seed;
- 
- static size_t vcpu_mmap_sz(void);
- 
-@@ -165,7 +165,7 @@ unsigned int kvm_check_cap(long cap)
- 	return (unsigned int)ret;
- }
- 
--void vm_enable_dirty_ring(struct kvm_vm *vm, uint32_t ring_size)
-+void vm_enable_dirty_ring(struct kvm_vm *vm, u32 ring_size)
- {
- 	if (vm_check_cap(vm, KVM_CAP_DIRTY_LOG_RING_ACQ_REL))
- 		vm_enable_cap(vm, KVM_CAP_DIRTY_LOG_RING_ACQ_REL, ring_size);
-@@ -189,7 +189,7 @@ static void vm_open(struct kvm_vm *vm)
- 		vm->stats.fd = -1;
- }
- 
--const char *vm_guest_mode_string(uint32_t i)
-+const char *vm_guest_mode_string(u32 i)
- {
- 	static const char * const strings[] = {
- 		[VM_MODE_P52V48_4K]	= "PA-bits:52,  VA-bits:48,  4K pages",
-@@ -397,7 +397,7 @@ struct kvm_vm *____vm_create(struct vm_shape shape)
- }
- 
- static u64 vm_nr_pages_required(enum vm_guest_mode mode,
--				uint32_t nr_runnable_vcpus,
-+				u32 nr_runnable_vcpus,
- 				u64 extra_mem_pages)
- {
- 	u64 page_size = vm_guest_mode_params[mode].page_size;
-@@ -435,7 +435,7 @@ static u64 vm_nr_pages_required(enum vm_guest_mode mode,
- 	return vm_adjust_num_guest_pages(mode, nr_pages);
- }
- 
--void kvm_set_files_rlimit(uint32_t nr_vcpus)
-+void kvm_set_files_rlimit(u32 nr_vcpus)
- {
- 	/*
- 	 * Each vCPU will open two file descriptors: the vCPU itself and the
-@@ -476,7 +476,7 @@ static bool is_guest_memfd_required(struct vm_shape shape)
- #endif
- }
- 
--struct kvm_vm *__vm_create(struct vm_shape shape, uint32_t nr_runnable_vcpus,
-+struct kvm_vm *__vm_create(struct vm_shape shape, u32 nr_runnable_vcpus,
- 			   u64 nr_extra_pages)
- {
- 	u64 nr_pages = vm_nr_pages_required(shape.mode, nr_runnable_vcpus,
-@@ -546,7 +546,7 @@ struct kvm_vm *__vm_create(struct vm_shape shape, uint32_t nr_runnable_vcpus,
-  * extra_mem_pages is only used to calculate the maximum page table size,
-  * no real memory allocation for non-slot0 memory in this function.
-  */
--struct kvm_vm *__vm_create_with_vcpus(struct vm_shape shape, uint32_t nr_vcpus,
-+struct kvm_vm *__vm_create_with_vcpus(struct vm_shape shape, u32 nr_vcpus,
- 				      u64 extra_mem_pages,
- 				      void *guest_code, struct kvm_vcpu *vcpus[])
- {
-@@ -614,7 +614,7 @@ void kvm_vm_restart(struct kvm_vm *vmp)
- }
- 
- __weak struct kvm_vcpu *vm_arch_vcpu_recreate(struct kvm_vm *vm,
--					      uint32_t vcpu_id)
-+					      u32 vcpu_id)
- {
- 	return __vm_vcpu_add(vm, vcpu_id);
- }
-@@ -636,9 +636,9 @@ int __pin_task_to_cpu(pthread_t task, int cpu)
- 	return pthread_setaffinity_np(task, sizeof(cpuset), &cpuset);
- }
- 
--static uint32_t parse_pcpu(const char *cpu_str, const cpu_set_t *allowed_mask)
-+static u32 parse_pcpu(const char *cpu_str, const cpu_set_t *allowed_mask)
- {
--	uint32_t pcpu = atoi_non_negative("CPU number", cpu_str);
-+	u32 pcpu = atoi_non_negative("CPU number", cpu_str);
- 
- 	TEST_ASSERT(CPU_ISSET(pcpu, allowed_mask),
- 		    "Not allowed to run on pCPU '%d', check cgroups?", pcpu);
-@@ -662,7 +662,7 @@ void kvm_print_vcpu_pinning_help(void)
- 	       "     (default: no pinning)\n", name, name);
- }
- 
--void kvm_parse_vcpu_pinning(const char *pcpus_string, uint32_t vcpu_to_pcpu[],
-+void kvm_parse_vcpu_pinning(const char *pcpus_string, u32 vcpu_to_pcpu[],
- 			    int nr_vcpus)
- {
- 	cpu_set_t allowed_mask;
-@@ -918,7 +918,7 @@ static void vm_userspace_mem_region_hva_insert(struct rb_root *hva_tree,
- }
- 
- 
--int __vm_set_user_memory_region(struct kvm_vm *vm, uint32_t slot, uint32_t flags,
-+int __vm_set_user_memory_region(struct kvm_vm *vm, u32 slot, u32 flags,
- 				u64 gpa, u64 size, void *hva)
- {
- 	struct kvm_userspace_memory_region region = {
-@@ -932,7 +932,7 @@ int __vm_set_user_memory_region(struct kvm_vm *vm, uint32_t slot, uint32_t flags
- 	return ioctl(vm->fd, KVM_SET_USER_MEMORY_REGION, &region);
- }
- 
--void vm_set_user_memory_region(struct kvm_vm *vm, uint32_t slot, uint32_t flags,
-+void vm_set_user_memory_region(struct kvm_vm *vm, u32 slot, u32 flags,
- 			       u64 gpa, u64 size, void *hva)
- {
- 	int ret = __vm_set_user_memory_region(vm, slot, flags, gpa, size, hva);
-@@ -945,9 +945,9 @@ void vm_set_user_memory_region(struct kvm_vm *vm, uint32_t slot, uint32_t flags,
- 	__TEST_REQUIRE(kvm_has_cap(KVM_CAP_USER_MEMORY2),	\
- 		       "KVM selftests now require KVM_SET_USER_MEMORY_REGION2 (introduced in v6.8)")
- 
--int __vm_set_user_memory_region2(struct kvm_vm *vm, uint32_t slot, uint32_t flags,
-+int __vm_set_user_memory_region2(struct kvm_vm *vm, u32 slot, u32 flags,
- 				 u64 gpa, u64 size, void *hva,
--				 uint32_t guest_memfd, u64 guest_memfd_offset)
-+				 u32 guest_memfd, u64 guest_memfd_offset)
- {
- 	struct kvm_userspace_memory_region2 region = {
- 		.slot = slot,
-@@ -964,9 +964,9 @@ int __vm_set_user_memory_region2(struct kvm_vm *vm, uint32_t slot, uint32_t flag
- 	return ioctl(vm->fd, KVM_SET_USER_MEMORY_REGION2, &region);
- }
- 
--void vm_set_user_memory_region2(struct kvm_vm *vm, uint32_t slot, uint32_t flags,
-+void vm_set_user_memory_region2(struct kvm_vm *vm, u32 slot, u32 flags,
- 				u64 gpa, u64 size, void *hva,
--				uint32_t guest_memfd, u64 guest_memfd_offset)
-+				u32 guest_memfd, u64 guest_memfd_offset)
- {
- 	int ret = __vm_set_user_memory_region2(vm, slot, flags, gpa, size, hva,
- 					       guest_memfd, guest_memfd_offset);
-@@ -978,7 +978,7 @@ void vm_set_user_memory_region2(struct kvm_vm *vm, uint32_t slot, uint32_t flags
- 
- /* FIXME: This thing needs to be ripped apart and rewritten. */
- void vm_mem_add(struct kvm_vm *vm, enum vm_mem_backing_src_type src_type,
--		u64 gpa, uint32_t slot, u64 npages, uint32_t flags,
-+		u64 gpa, u32 slot, u64 npages, u32 flags,
- 		int guest_memfd, u64 guest_memfd_offset)
- {
- 	int ret;
-@@ -1085,7 +1085,7 @@ void vm_mem_add(struct kvm_vm *vm, enum vm_mem_backing_src_type src_type,
- 
- 	if (flags & KVM_MEM_GUEST_MEMFD) {
- 		if (guest_memfd < 0) {
--			uint32_t guest_memfd_flags = 0;
-+			u32 guest_memfd_flags = 0;
- 			TEST_ASSERT(!guest_memfd_offset,
- 				    "Offset must be zero when creating new guest_memfd");
- 			guest_memfd = vm_create_guest_memfd(vm, mem_size, guest_memfd_flags);
-@@ -1141,8 +1141,7 @@ void vm_mem_add(struct kvm_vm *vm, enum vm_mem_backing_src_type src_type,
- 
- void vm_userspace_mem_region_add(struct kvm_vm *vm,
- 				 enum vm_mem_backing_src_type src_type,
--				 u64 gpa, uint32_t slot, u64 npages,
--				 uint32_t flags)
-+				 u64 gpa, u32 slot, u64 npages, u32 flags)
- {
- 	vm_mem_add(vm, src_type, gpa, slot, npages, flags, -1, 0);
- }
-@@ -1163,7 +1162,7 @@ void vm_userspace_mem_region_add(struct kvm_vm *vm,
-  *   memory slot ID).
-  */
- struct userspace_mem_region *
--memslot2region(struct kvm_vm *vm, uint32_t memslot)
-+memslot2region(struct kvm_vm *vm, u32 memslot)
- {
- 	struct userspace_mem_region *region;
- 
-@@ -1194,7 +1193,7 @@ memslot2region(struct kvm_vm *vm, uint32_t memslot)
-  * Sets the flags of the memory region specified by the value of slot,
-  * to the values given by flags.
-  */
--void vm_mem_region_set_flags(struct kvm_vm *vm, uint32_t slot, uint32_t flags)
-+void vm_mem_region_set_flags(struct kvm_vm *vm, u32 slot, u32 flags)
- {
- 	int ret;
- 	struct userspace_mem_region *region;
-@@ -1210,7 +1209,7 @@ void vm_mem_region_set_flags(struct kvm_vm *vm, uint32_t slot, uint32_t flags)
- 		ret, errno, slot, flags);
- }
- 
--void vm_mem_region_reload(struct kvm_vm *vm, uint32_t slot)
-+void vm_mem_region_reload(struct kvm_vm *vm, u32 slot)
- {
- 	struct userspace_mem_region *region = memslot2region(vm, slot);
- 	struct kvm_userspace_memory_region2 tmp = region->region;
-@@ -1234,7 +1233,7 @@ void vm_mem_region_reload(struct kvm_vm *vm, uint32_t slot)
-  *
-  * Change the gpa of a memory region.
-  */
--void vm_mem_region_move(struct kvm_vm *vm, uint32_t slot, u64 new_gpa)
-+void vm_mem_region_move(struct kvm_vm *vm, u32 slot, u64 new_gpa)
- {
- 	struct userspace_mem_region *region;
- 	int ret;
-@@ -1263,7 +1262,7 @@ void vm_mem_region_move(struct kvm_vm *vm, uint32_t slot, u64 new_gpa)
-  *
-  * Delete a memory region.
-  */
--void vm_mem_region_delete(struct kvm_vm *vm, uint32_t slot)
-+void vm_mem_region_delete(struct kvm_vm *vm, u32 slot)
- {
- 	struct userspace_mem_region *region = memslot2region(vm, slot);
- 
-@@ -1317,7 +1316,7 @@ static size_t vcpu_mmap_sz(void)
- 	return ret;
- }
- 
--static bool vcpu_exists(struct kvm_vm *vm, uint32_t vcpu_id)
-+static bool vcpu_exists(struct kvm_vm *vm, u32 vcpu_id)
- {
- 	struct kvm_vcpu *vcpu;
- 
-@@ -1333,7 +1332,7 @@ static bool vcpu_exists(struct kvm_vm *vm, uint32_t vcpu_id)
-  * Adds a virtual CPU to the VM specified by vm with the ID given by vcpu_id.
-  * No additional vCPU setup is done.  Returns the vCPU.
-  */
--struct kvm_vcpu *__vm_vcpu_add(struct kvm_vm *vm, uint32_t vcpu_id)
-+struct kvm_vcpu *__vm_vcpu_add(struct kvm_vm *vm, u32 vcpu_id)
- {
- 	struct kvm_vcpu *vcpu;
- 
-@@ -1777,8 +1776,8 @@ struct kvm_reg_list *vcpu_get_reg_list(struct kvm_vcpu *vcpu)
- 
- void *vcpu_map_dirty_ring(struct kvm_vcpu *vcpu)
- {
--	uint32_t page_size = getpagesize();
--	uint32_t size = vcpu->vm->dirty_ring_size;
-+	u32 page_size = getpagesize();
-+	u32 size = vcpu->vm->dirty_ring_size;
- 
- 	TEST_ASSERT(size > 0, "Should enable dirty ring first");
- 
-@@ -1807,7 +1806,7 @@ void *vcpu_map_dirty_ring(struct kvm_vcpu *vcpu)
-  * Device Ioctl
-  */
- 
--int __kvm_has_device_attr(int dev_fd, uint32_t group, u64 attr)
-+int __kvm_has_device_attr(int dev_fd, u32 group, u64 attr)
- {
- 	struct kvm_device_attr attribute = {
- 		.group = group,
-@@ -1842,7 +1841,7 @@ int __kvm_create_device(struct kvm_vm *vm, u64 type)
- 	return err ? : create_dev.fd;
- }
- 
--int __kvm_device_attr_get(int dev_fd, uint32_t group, u64 attr, void *val)
-+int __kvm_device_attr_get(int dev_fd, u32 group, u64 attr, void *val)
- {
- 	struct kvm_device_attr kvmattr = {
- 		.group = group,
-@@ -1854,7 +1853,7 @@ int __kvm_device_attr_get(int dev_fd, uint32_t group, u64 attr, void *val)
- 	return __kvm_ioctl(dev_fd, KVM_GET_DEVICE_ATTR, &kvmattr);
- }
- 
--int __kvm_device_attr_set(int dev_fd, uint32_t group, u64 attr, void *val)
-+int __kvm_device_attr_set(int dev_fd, u32 group, u64 attr, void *val)
- {
- 	struct kvm_device_attr kvmattr = {
- 		.group = group,
-@@ -1870,7 +1869,7 @@ int __kvm_device_attr_set(int dev_fd, uint32_t group, u64 attr, void *val)
-  * IRQ related functions.
-  */
- 
--int _kvm_irq_line(struct kvm_vm *vm, uint32_t irq, int level)
-+int _kvm_irq_line(struct kvm_vm *vm, u32 irq, int level)
- {
- 	struct kvm_irq_level irq_level = {
- 		.irq    = irq,
-@@ -1880,7 +1879,7 @@ int _kvm_irq_line(struct kvm_vm *vm, uint32_t irq, int level)
- 	return __vm_ioctl(vm, KVM_IRQ_LINE, &irq_level);
- }
- 
--void kvm_irq_line(struct kvm_vm *vm, uint32_t irq, int level)
-+void kvm_irq_line(struct kvm_vm *vm, u32 irq, int level)
- {
- 	int ret = _kvm_irq_line(vm, irq, level);
- 
-@@ -1902,7 +1901,7 @@ struct kvm_irq_routing *kvm_gsi_routing_create(void)
- }
- 
- void kvm_gsi_routing_irqchip_add(struct kvm_irq_routing *routing,
--		uint32_t gsi, uint32_t pin)
-+		u32 gsi, u32 pin)
- {
- 	int i;
- 
-@@ -2088,7 +2087,7 @@ const char *exit_reason_str(unsigned int exit_reason)
-  * not enough pages are available at or above paddr_min.
-  */
- gpa_t __vm_phy_pages_alloc(struct kvm_vm *vm, size_t num,
--			   gpa_t paddr_min, uint32_t memslot,
-+			   gpa_t paddr_min, u32 memslot,
- 			   bool protected)
- {
- 	struct userspace_mem_region *region;
-@@ -2133,7 +2132,7 @@ gpa_t __vm_phy_pages_alloc(struct kvm_vm *vm, size_t num,
- 	return base * vm->page_size;
- }
- 
--gpa_t vm_phy_page_alloc(struct kvm_vm *vm, gpa_t paddr_min, uint32_t memslot)
-+gpa_t vm_phy_page_alloc(struct kvm_vm *vm, gpa_t paddr_min, u32 memslot)
- {
- 	return vm_phy_pages_alloc(vm, 1, paddr_min, memslot);
- }
-diff --git a/tools/testing/selftests/kvm/lib/loongarch/processor.c b/tools/testing/selftests/kvm/lib/loongarch/processor.c
-index 989473b3da7b..38ee62c6cbfb 100644
---- a/tools/testing/selftests/kvm/lib/loongarch/processor.c
-+++ b/tools/testing/selftests/kvm/lib/loongarch/processor.c
-@@ -118,7 +118,7 @@ gpa_t addr_arch_gva2gpa(struct kvm_vm *vm, gva_t gva)
- 
- void virt_arch_pg_map(struct kvm_vm *vm, u64 vaddr, u64 paddr)
- {
--	uint32_t prot_bits;
-+	u32 prot_bits;
- 	u64 *ptep;
- 
- 	TEST_ASSERT((vaddr % vm->page_size) == 0,
-@@ -223,7 +223,7 @@ void vm_install_exception_handler(struct kvm_vm *vm, int vector, handler_fn hand
- 	handlers->exception_handlers[vector] = handler;
- }
- 
--uint32_t guest_get_vcpuid(void)
-+u32 guest_get_vcpuid(void)
- {
- 	return csr_read(LOONGARCH_CSR_CPUID);
- }
-@@ -369,7 +369,7 @@ void loongarch_vcpu_setup(struct kvm_vcpu *vcpu)
- 	loongarch_set_csr(vcpu, LOONGARCH_CSR_TMID,  vcpu->id);
- }
- 
--struct kvm_vcpu *vm_arch_vcpu_add(struct kvm_vm *vm, uint32_t vcpu_id)
-+struct kvm_vcpu *vm_arch_vcpu_add(struct kvm_vm *vm, u32 vcpu_id)
- {
- 	size_t stack_size;
- 	u64 stack_vaddr;
-diff --git a/tools/testing/selftests/kvm/lib/memstress.c b/tools/testing/selftests/kvm/lib/memstress.c
-index 5fcae17f687e..b59dc3344ff3 100644
---- a/tools/testing/selftests/kvm/lib/memstress.c
-+++ b/tools/testing/selftests/kvm/lib/memstress.c
-@@ -44,7 +44,7 @@ static struct kvm_vcpu *vcpus[KVM_MAX_VCPUS];
-  * Continuously write to the first 8 bytes of each page in the
-  * specified region.
-  */
--void memstress_guest_code(uint32_t vcpu_idx)
-+void memstress_guest_code(u32 vcpu_idx)
- {
- 	struct memstress_args *args = &memstress_args;
- 	struct memstress_vcpu_args *vcpu_args = &args->vcpu_args[vcpu_idx];
-@@ -232,7 +232,7 @@ void memstress_destroy_vm(struct kvm_vm *vm)
- 	kvm_vm_free(vm);
- }
- 
--void memstress_set_write_percent(struct kvm_vm *vm, uint32_t write_percent)
-+void memstress_set_write_percent(struct kvm_vm *vm, u32 write_percent)
- {
- 	memstress_args.write_percent = write_percent;
- 	sync_global_to_guest(vm, memstress_args.write_percent);
-diff --git a/tools/testing/selftests/kvm/lib/riscv/processor.c b/tools/testing/selftests/kvm/lib/riscv/processor.c
-index a1f5c8660952..d7646eebcfab 100644
---- a/tools/testing/selftests/kvm/lib/riscv/processor.c
-+++ b/tools/testing/selftests/kvm/lib/riscv/processor.c
-@@ -45,7 +45,7 @@ static u64 pte_index_mask[] = {
- 	PGTBL_L3_INDEX_MASK,
- };
- 
--static uint32_t pte_index_shift[] = {
-+static u32 pte_index_shift[] = {
- 	PGTBL_L0_INDEX_SHIFT,
- 	PGTBL_L1_INDEX_SHIFT,
- 	PGTBL_L2_INDEX_SHIFT,
-@@ -311,7 +311,7 @@ void vcpu_arch_set_entry_point(struct kvm_vcpu *vcpu, void *guest_code)
- 	vcpu_set_reg(vcpu, RISCV_CORE_REG(regs.pc), (unsigned long)guest_code);
- }
- 
--struct kvm_vcpu *vm_arch_vcpu_add(struct kvm_vm *vm, uint32_t vcpu_id)
-+struct kvm_vcpu *vm_arch_vcpu_add(struct kvm_vm *vm, u32 vcpu_id)
- {
- 	int r;
- 	size_t stack_size;
-@@ -470,7 +470,7 @@ void vm_install_interrupt_handler(struct kvm_vm *vm, exception_handler_fn handle
- 	handlers->exception_handlers[1][0] = handler;
- }
- 
--uint32_t guest_get_vcpuid(void)
-+u32 guest_get_vcpuid(void)
- {
- 	return csr_read(CSR_SSCRATCH);
- }
-diff --git a/tools/testing/selftests/kvm/lib/s390/processor.c b/tools/testing/selftests/kvm/lib/s390/processor.c
-index a83a2b76524b..7591c5167927 100644
---- a/tools/testing/selftests/kvm/lib/s390/processor.c
-+++ b/tools/testing/selftests/kvm/lib/s390/processor.c
-@@ -160,7 +160,7 @@ void vcpu_arch_set_entry_point(struct kvm_vcpu *vcpu, void *guest_code)
- 	vcpu->run->psw_addr = (uintptr_t)guest_code;
- }
- 
--struct kvm_vcpu *vm_arch_vcpu_add(struct kvm_vm *vm, uint32_t vcpu_id)
-+struct kvm_vcpu *vm_arch_vcpu_add(struct kvm_vm *vm, u32 vcpu_id)
- {
- 	size_t stack_size =  DEFAULT_STACK_PGS * getpagesize();
- 	u64 stack_vaddr;
-diff --git a/tools/testing/selftests/kvm/lib/sparsebit.c b/tools/testing/selftests/kvm/lib/sparsebit.c
-index 8a472dcb3d5e..7e7734088f2f 100644
---- a/tools/testing/selftests/kvm/lib/sparsebit.c
-+++ b/tools/testing/selftests/kvm/lib/sparsebit.c
-@@ -80,7 +80,7 @@
-  *   typedef u64 sparsebit_num_t;
-  *
-  *   sparsebit_idx_t idx;
-- *   uint32_t mask;
-+ *   u32 mask;
-  *   sparsebit_num_t num_after;
-  *
-  * The idx member contains the bit index of the first bit described by this
-@@ -162,7 +162,7 @@
- 
- #define DUMP_LINE_MAX 100 /* Does not include indent amount */
- 
--typedef uint32_t mask_t;
-+typedef u32 mask_t;
- #define MASK_BITS (sizeof(mask_t) * CHAR_BIT)
- 
- struct node {
-diff --git a/tools/testing/selftests/kvm/lib/test_util.c b/tools/testing/selftests/kvm/lib/test_util.c
-index f5b460c445be..bab1bd2b775b 100644
---- a/tools/testing/selftests/kvm/lib/test_util.c
-+++ b/tools/testing/selftests/kvm/lib/test_util.c
-@@ -30,15 +30,15 @@ void __attribute__((used)) expect_sigbus_handler(int signum)
-  * Park-Miller LCG using standard constants.
-  */
- 
--struct guest_random_state new_guest_random_state(uint32_t seed)
-+struct guest_random_state new_guest_random_state(u32 seed)
- {
- 	struct guest_random_state s = {.seed = seed};
- 	return s;
- }
- 
--uint32_t guest_random_u32(struct guest_random_state *state)
-+u32 guest_random_u32(struct guest_random_state *state)
- {
--	state->seed = (u64)state->seed * 48271 % ((uint32_t)(1 << 31) - 1);
-+	state->seed = (u64)state->seed * 48271 % ((u32)(1 << 31) - 1);
- 	return state->seed;
- }
- 
-@@ -225,7 +225,7 @@ size_t get_def_hugetlb_pagesz(void)
- #define ANON_FLAGS	(MAP_PRIVATE | MAP_ANONYMOUS)
- #define ANON_HUGE_FLAGS	(ANON_FLAGS | MAP_HUGETLB)
- 
--const struct vm_mem_backing_src_alias *vm_mem_backing_src_alias(uint32_t i)
-+const struct vm_mem_backing_src_alias *vm_mem_backing_src_alias(u32 i)
- {
- 	static const struct vm_mem_backing_src_alias aliases[] = {
- 		[VM_MEM_SRC_ANONYMOUS] = {
-@@ -317,9 +317,9 @@ const struct vm_mem_backing_src_alias *vm_mem_backing_src_alias(uint32_t i)
- 
- #define MAP_HUGE_PAGE_SIZE(x) (1ULL << ((x >> MAP_HUGE_SHIFT) & MAP_HUGE_MASK))
- 
--size_t get_backing_src_pagesz(uint32_t i)
-+size_t get_backing_src_pagesz(u32 i)
- {
--	uint32_t flag = vm_mem_backing_src_alias(i)->flag;
-+	u32 flag = vm_mem_backing_src_alias(i)->flag;
- 
- 	switch (i) {
- 	case VM_MEM_SRC_ANONYMOUS:
-@@ -335,7 +335,7 @@ size_t get_backing_src_pagesz(uint32_t i)
- 	}
- }
- 
--bool is_backing_src_hugetlb(uint32_t i)
-+bool is_backing_src_hugetlb(u32 i)
- {
- 	return !!(vm_mem_backing_src_alias(i)->flag & MAP_HUGETLB);
- }
-diff --git a/tools/testing/selftests/kvm/lib/x86/processor.c b/tools/testing/selftests/kvm/lib/x86/processor.c
-index 802543aa588c..dc31236b004b 100644
---- a/tools/testing/selftests/kvm/lib/x86/processor.c
-+++ b/tools/testing/selftests/kvm/lib/x86/processor.c
-@@ -525,7 +525,7 @@ void tdp_map(struct kvm_vm *vm, u64 nested_paddr, u64 paddr,
-  */
- void tdp_identity_map_default_memslots(struct kvm_vm *vm)
- {
--	uint32_t s, memslot = 0;
-+	u32 s, memslot = 0;
- 	sparsebit_idx_t i, last;
- 	struct userspace_mem_region *region = memslot2region(vm, memslot);
- 
-@@ -821,7 +821,7 @@ void vcpu_arch_set_entry_point(struct kvm_vcpu *vcpu, void *guest_code)
- 	vcpu_regs_set(vcpu, &regs);
- }
- 
--struct kvm_vcpu *vm_arch_vcpu_add(struct kvm_vm *vm, uint32_t vcpu_id)
-+struct kvm_vcpu *vm_arch_vcpu_add(struct kvm_vm *vm, u32 vcpu_id)
- {
- 	struct kvm_mp_state mp_state;
- 	struct kvm_regs regs;
-@@ -872,7 +872,7 @@ struct kvm_vcpu *vm_arch_vcpu_add(struct kvm_vm *vm, uint32_t vcpu_id)
- 	return vcpu;
- }
- 
--struct kvm_vcpu *vm_arch_vcpu_recreate(struct kvm_vm *vm, uint32_t vcpu_id)
-+struct kvm_vcpu *vm_arch_vcpu_recreate(struct kvm_vm *vm, u32 vcpu_id)
- {
- 	struct kvm_vcpu *vcpu = __vm_vcpu_add(vm, vcpu_id);
- 
-@@ -907,9 +907,9 @@ const struct kvm_cpuid2 *kvm_get_supported_cpuid(void)
- 	return kvm_supported_cpuid;
- }
- 
--static uint32_t __kvm_cpu_has(const struct kvm_cpuid2 *cpuid,
--			      uint32_t function, uint32_t index,
--			      uint8_t reg, uint8_t lo, uint8_t hi)
-+static u32 __kvm_cpu_has(const struct kvm_cpuid2 *cpuid,
-+			 u32 function, u32 index,
-+			 uint8_t reg, uint8_t lo, uint8_t hi)
- {
- 	const struct kvm_cpuid_entry2 *entry;
- 	int i;
-@@ -936,8 +936,8 @@ bool kvm_cpuid_has(const struct kvm_cpuid2 *cpuid,
- 			     feature.reg, feature.bit, feature.bit);
- }
- 
--uint32_t kvm_cpuid_property(const struct kvm_cpuid2 *cpuid,
--			    struct kvm_x86_cpu_property property)
-+u32 kvm_cpuid_property(const struct kvm_cpuid2 *cpuid,
-+		       struct kvm_x86_cpu_property property)
- {
- 	return __kvm_cpu_has(cpuid, property.function, property.index,
- 			     property.reg, property.lo_bit, property.hi_bit);
-@@ -1019,7 +1019,7 @@ void vcpu_init_cpuid(struct kvm_vcpu *vcpu, const struct kvm_cpuid2 *cpuid)
- 
- void vcpu_set_cpuid_property(struct kvm_vcpu *vcpu,
- 			     struct kvm_x86_cpu_property property,
--			     uint32_t value)
-+			     u32 value)
- {
- 	struct kvm_cpuid_entry2 *entry;
- 
-@@ -1034,7 +1034,7 @@ void vcpu_set_cpuid_property(struct kvm_vcpu *vcpu,
- 	TEST_ASSERT_EQ(kvm_cpuid_property(vcpu->cpuid, property), value);
- }
- 
--void vcpu_clear_cpuid_entry(struct kvm_vcpu *vcpu, uint32_t function)
-+void vcpu_clear_cpuid_entry(struct kvm_vcpu *vcpu, u32 function)
- {
- 	struct kvm_cpuid_entry2 *entry = vcpu_get_cpuid_entry(vcpu, function);
- 
-@@ -1196,7 +1196,7 @@ const struct kvm_msr_list *kvm_get_feature_msr_index_list(void)
- 	return list;
- }
- 
--bool kvm_msr_is_in_save_restore_list(uint32_t msr_index)
-+bool kvm_msr_is_in_save_restore_list(u32 msr_index)
- {
- 	const struct kvm_msr_list *list = kvm_get_msr_index_list();
- 	int i;
-@@ -1327,7 +1327,7 @@ void kvm_init_vm_address_properties(struct kvm_vm *vm)
- }
- 
- const struct kvm_cpuid_entry2 *get_cpuid_entry(const struct kvm_cpuid2 *cpuid,
--					       uint32_t function, uint32_t index)
-+					       u32 function, u32 index)
- {
- 	int i;
- 
-diff --git a/tools/testing/selftests/kvm/lib/x86/sev.c b/tools/testing/selftests/kvm/lib/x86/sev.c
-index 555198348159..d82f677b7c5e 100644
---- a/tools/testing/selftests/kvm/lib/x86/sev.c
-+++ b/tools/testing/selftests/kvm/lib/x86/sev.c
-@@ -79,7 +79,7 @@ void snp_vm_init(struct kvm_vm *vm)
- 	vm_sev_ioctl(vm, KVM_SEV_INIT2, &init);
- }
- 
--void sev_vm_launch(struct kvm_vm *vm, uint32_t policy)
-+void sev_vm_launch(struct kvm_vm *vm, u32 policy)
- {
- 	struct kvm_sev_launch_start launch_start = {
- 		.policy = policy,
-@@ -158,7 +158,7 @@ void snp_vm_launch_finish(struct kvm_vm *vm)
- 	vm_sev_ioctl(vm, KVM_SEV_SNP_LAUNCH_FINISH, &launch_finish);
- }
- 
--struct kvm_vm *vm_sev_create_with_one_vcpu(uint32_t type, void *guest_code,
-+struct kvm_vm *vm_sev_create_with_one_vcpu(u32 type, void *guest_code,
- 					   struct kvm_vcpu **cpu)
- {
- 	struct vm_shape shape = {
-diff --git a/tools/testing/selftests/kvm/lib/x86/vmx.c b/tools/testing/selftests/kvm/lib/x86/vmx.c
-index 1d3d9bcfcf8a..73b7faa7f357 100644
---- a/tools/testing/selftests/kvm/lib/x86/vmx.c
-+++ b/tools/testing/selftests/kvm/lib/x86/vmx.c
-@@ -160,7 +160,7 @@ bool prepare_for_vmx_operation(struct vmx_pages *vmx)
- 		wrmsr(MSR_IA32_FEAT_CTL, feature_control | required);
- 
- 	/* Enter VMX root operation. */
--	*(uint32_t *)(vmx->vmxon) = vmcs_revision();
-+	*(u32 *)(vmx->vmxon) = vmcs_revision();
- 	if (vmxon(vmx->vmxon_gpa))
- 		return false;
- 
-@@ -170,7 +170,7 @@ bool prepare_for_vmx_operation(struct vmx_pages *vmx)
- bool load_vmcs(struct vmx_pages *vmx)
- {
- 	/* Load a VMCS. */
--	*(uint32_t *)(vmx->vmcs) = vmcs_revision();
-+	*(u32 *)(vmx->vmcs) = vmcs_revision();
- 	if (vmclear(vmx->vmcs_gpa))
- 		return false;
- 
-@@ -178,7 +178,7 @@ bool load_vmcs(struct vmx_pages *vmx)
- 		return false;
- 
- 	/* Setup shadow VMCS, do not load it yet. */
--	*(uint32_t *)(vmx->shadow_vmcs) = vmcs_revision() | 0x80000000ul;
-+	*(u32 *)(vmx->shadow_vmcs) = vmcs_revision() | 0x80000000ul;
- 	if (vmclear(vmx->shadow_vmcs_gpa))
- 		return false;
- 
-@@ -200,7 +200,7 @@ bool ept_1g_pages_supported(void)
-  */
- static inline void init_vmcs_control_fields(struct vmx_pages *vmx)
- {
--	uint32_t sec_exec_ctl = 0;
-+	u32 sec_exec_ctl = 0;
- 
- 	vmwrite(VIRTUAL_PROCESSOR_ID, 0);
- 	vmwrite(POSTED_INTR_NV, 0);
-@@ -259,7 +259,7 @@ static inline void init_vmcs_control_fields(struct vmx_pages *vmx)
-  */
- static inline void init_vmcs_host_state(void)
- {
--	uint32_t exit_controls = vmreadz(VM_EXIT_CONTROLS);
-+	u32 exit_controls = vmreadz(VM_EXIT_CONTROLS);
- 
- 	vmwrite(HOST_ES_SELECTOR, get_es());
- 	vmwrite(HOST_CS_SELECTOR, get_cs());
-diff --git a/tools/testing/selftests/kvm/loongarch/arch_timer.c b/tools/testing/selftests/kvm/loongarch/arch_timer.c
-index f80e36962879..a7279ded8518 100644
---- a/tools/testing/selftests/kvm/loongarch/arch_timer.c
-+++ b/tools/testing/selftests/kvm/loongarch/arch_timer.c
-@@ -27,7 +27,7 @@ static void do_idle(void)
- static void guest_irq_handler(struct ex_regs *regs)
- {
- 	unsigned int intid;
--	uint32_t cpu = guest_get_vcpuid();
-+	u32 cpu = guest_get_vcpuid();
- 	u64 xcnt, val, cfg, xcnt_diff_us;
- 	struct test_vcpu_shared_data *shared_data = &vcpu_shared_data[cpu];
- 
-@@ -62,9 +62,9 @@ static void guest_irq_handler(struct ex_regs *regs)
- 	WRITE_ONCE(shared_data->nr_iter, shared_data->nr_iter + 1);
- }
- 
--static void guest_test_period_timer(uint32_t cpu)
-+static void guest_test_period_timer(u32 cpu)
- {
--	uint32_t irq_iter, config_iter;
-+	u32 irq_iter, config_iter;
- 	u64 us;
- 	struct test_vcpu_shared_data *shared_data = &vcpu_shared_data[cpu];
- 
-@@ -86,9 +86,9 @@ static void guest_test_period_timer(uint32_t cpu)
- 			irq_iter);
- }
- 
--static void guest_test_oneshot_timer(uint32_t cpu)
-+static void guest_test_oneshot_timer(u32 cpu)
- {
--	uint32_t irq_iter, config_iter;
-+	u32 irq_iter, config_iter;
- 	u64 us;
- 	struct test_vcpu_shared_data *shared_data = &vcpu_shared_data[cpu];
- 
-@@ -112,9 +112,9 @@ static void guest_test_oneshot_timer(uint32_t cpu)
- 	}
- }
- 
--static void guest_test_emulate_timer(uint32_t cpu)
-+static void guest_test_emulate_timer(u32 cpu)
- {
--	uint32_t config_iter;
-+	u32 config_iter;
- 	u64 xcnt_diff_us, us;
- 	struct test_vcpu_shared_data *shared_data = &vcpu_shared_data[cpu];
- 
-@@ -136,9 +136,9 @@ static void guest_test_emulate_timer(uint32_t cpu)
- 	local_irq_enable();
- }
- 
--static void guest_time_count_test(uint32_t cpu)
-+static void guest_time_count_test(u32 cpu)
- {
--	uint32_t config_iter;
-+	u32 config_iter;
- 	unsigned long start, end, prev, us;
- 
- 	/* Assuming that test case starts to run in 1 second */
-@@ -165,7 +165,7 @@ static void guest_time_count_test(uint32_t cpu)
- 
- static void guest_code(void)
- {
--	uint32_t cpu = guest_get_vcpuid();
-+	u32 cpu = guest_get_vcpuid();
- 
- 	/* must run at first */
- 	guest_time_count_test(cpu);
-diff --git a/tools/testing/selftests/kvm/loongarch/pmu_test.c b/tools/testing/selftests/kvm/loongarch/pmu_test.c
-index bf5249c87f75..ec3fefb9ea97 100644
---- a/tools/testing/selftests/kvm/loongarch/pmu_test.c
-+++ b/tools/testing/selftests/kvm/loongarch/pmu_test.c
-@@ -15,7 +15,7 @@ static int pmu_irq_count;
- /* Check PMU support */
- static bool has_pmu_support(void)
- {
--	uint32_t cfg6;
-+	u32 cfg6;
- 
- 	/* Read CPUCFG6 to check PMU */
- 	cfg6 = read_cpucfg(LOONGARCH_CPUCFG6);
-@@ -34,7 +34,7 @@ static bool has_pmu_support(void)
- /* Dump PMU capabilities */
- static void dump_pmu_caps(void)
- {
--	uint32_t cfg6;
-+	u32 cfg6;
- 	int nr_counters, counter_bits;
- 
- 	cfg6 = read_cpucfg(LOONGARCH_CPUCFG6);
-@@ -51,7 +51,7 @@ static void dump_pmu_caps(void)
- static void guest_pmu_base_test(void)
- {
- 	int i;
--	uint32_t cfg6, pmnum;
-+	u32 cfg6, pmnum;
- 	u64 cnt[4];
- 
- 	cfg6 = read_cpucfg(LOONGARCH_CPUCFG6);
-diff --git a/tools/testing/selftests/kvm/memslot_perf_test.c b/tools/testing/selftests/kvm/memslot_perf_test.c
-index bf62b522d32e..c2b36a4ac638 100644
---- a/tools/testing/selftests/kvm/memslot_perf_test.c
-+++ b/tools/testing/selftests/kvm/memslot_perf_test.c
-@@ -85,7 +85,7 @@ struct vm_data {
- 	struct kvm_vm *vm;
- 	struct kvm_vcpu *vcpu;
- 	pthread_t vcpu_thread;
--	uint32_t nslots;
-+	u32 nslots;
- 	u64 npages;
- 	u64 pages_per_slot;
- 	void **hva_slots;
-@@ -95,7 +95,7 @@ struct vm_data {
- };
- 
- struct sync_area {
--	uint32_t    guest_page_size;
-+	u32    guest_page_size;
- 	atomic_bool start_flag;
- 	atomic_bool exit_flag;
- 	atomic_bool sync_flag;
-@@ -189,9 +189,9 @@ static void wait_for_vcpu(void)
- static void *vm_gpa2hva(struct vm_data *data, u64 gpa, u64 *rempages)
- {
- 	u64 gpage, pgoffs;
--	uint32_t slot, slotoffs;
-+	u32 slot, slotoffs;
- 	void *base;
--	uint32_t guest_page_size = data->vm->page_size;
-+	u32 guest_page_size = data->vm->page_size;
- 
- 	TEST_ASSERT(gpa >= MEM_GPA, "Too low gpa to translate");
- 	TEST_ASSERT(gpa < MEM_GPA + data->npages * guest_page_size,
-@@ -220,9 +220,9 @@ static void *vm_gpa2hva(struct vm_data *data, u64 gpa, u64 *rempages)
- 	return (uint8_t *)base + slotoffs * guest_page_size + pgoffs;
- }
- 
--static u64 vm_slot2gpa(struct vm_data *data, uint32_t slot)
-+static u64 vm_slot2gpa(struct vm_data *data, u32 slot)
- {
--	uint32_t guest_page_size = data->vm->page_size;
-+	u32 guest_page_size = data->vm->page_size;
- 
- 	TEST_ASSERT(slot < data->nslots, "Too high slot number");
- 
-@@ -243,7 +243,7 @@ static struct vm_data *alloc_vm(void)
- 	return data;
- }
- 
--static bool check_slot_pages(uint32_t host_page_size, uint32_t guest_page_size,
-+static bool check_slot_pages(u32 host_page_size, u32 guest_page_size,
- 			     u64 pages_per_slot, u64 rempages)
- {
- 	if (!pages_per_slot)
-@@ -259,9 +259,9 @@ static bool check_slot_pages(uint32_t host_page_size, uint32_t guest_page_size,
- }
- 
- 
--static u64 get_max_slots(struct vm_data *data, uint32_t host_page_size)
-+static u64 get_max_slots(struct vm_data *data, u32 host_page_size)
- {
--	uint32_t guest_page_size = data->vm->page_size;
-+	u32 guest_page_size = data->vm->page_size;
- 	u64 mempages, pages_per_slot, rempages;
- 	u64 slots;
- 
-@@ -287,7 +287,7 @@ static bool prepare_vm(struct vm_data *data, int nslots, u64 *maxslots,
- {
- 	u64 mempages, rempages;
- 	u64 guest_addr;
--	uint32_t slot, host_page_size, guest_page_size;
-+	u32 slot, host_page_size, guest_page_size;
- 	struct timespec tstart;
- 	struct sync_area *sync;
- 
-@@ -448,7 +448,7 @@ static bool guest_perform_sync(void)
- static void guest_code_test_memslot_move(void)
- {
- 	struct sync_area *sync = (typeof(sync))MEM_SYNC_GPA;
--	uint32_t page_size = (typeof(page_size))READ_ONCE(sync->guest_page_size);
-+	u32 page_size = (typeof(page_size))READ_ONCE(sync->guest_page_size);
- 	uintptr_t base = (typeof(base))READ_ONCE(sync->move_area_ptr);
- 
- 	GUEST_SYNC(0);
-@@ -477,7 +477,7 @@ static void guest_code_test_memslot_move(void)
- static void guest_code_test_memslot_map(void)
- {
- 	struct sync_area *sync = (typeof(sync))MEM_SYNC_GPA;
--	uint32_t page_size = (typeof(page_size))READ_ONCE(sync->guest_page_size);
-+	u32 page_size = (typeof(page_size))READ_ONCE(sync->guest_page_size);
- 
- 	GUEST_SYNC(0);
- 
-@@ -544,7 +544,7 @@ static void guest_code_test_memslot_unmap(void)
- static void guest_code_test_memslot_rw(void)
- {
- 	struct sync_area *sync = (typeof(sync))MEM_SYNC_GPA;
--	uint32_t page_size = (typeof(page_size))READ_ONCE(sync->guest_page_size);
-+	u32 page_size = (typeof(page_size))READ_ONCE(sync->guest_page_size);
- 
- 	GUEST_SYNC(0);
- 
-@@ -579,7 +579,7 @@ static bool test_memslot_move_prepare(struct vm_data *data,
- 				      struct sync_area *sync,
- 				      u64 *maxslots, bool isactive)
- {
--	uint32_t guest_page_size = data->vm->page_size;
-+	u32 guest_page_size = data->vm->page_size;
- 	u64 movesrcgpa, movetestgpa;
- 
- #ifdef __x86_64__
-@@ -639,7 +639,7 @@ static void test_memslot_do_unmap(struct vm_data *data,
- 				  u64 offsp, u64 count)
- {
- 	u64 gpa, ctr;
--	uint32_t guest_page_size = data->vm->page_size;
-+	u32 guest_page_size = data->vm->page_size;
- 
- 	for (gpa = MEM_TEST_GPA + offsp * guest_page_size, ctr = 0; ctr < count; ) {
- 		u64 npages;
-@@ -665,7 +665,7 @@ static void test_memslot_map_unmap_check(struct vm_data *data,
- {
- 	u64 gpa;
- 	u64 *val;
--	uint32_t guest_page_size = data->vm->page_size;
-+	u32 guest_page_size = data->vm->page_size;
- 
- 	if (!map_unmap_verify)
- 		return;
-@@ -680,7 +680,7 @@ static void test_memslot_map_unmap_check(struct vm_data *data,
- 
- static void test_memslot_map_loop(struct vm_data *data, struct sync_area *sync)
- {
--	uint32_t guest_page_size = data->vm->page_size;
-+	u32 guest_page_size = data->vm->page_size;
- 	u64 guest_pages = MEM_TEST_MAP_SIZE / guest_page_size;
- 
- 	/*
-@@ -720,7 +720,7 @@ static void test_memslot_unmap_loop_common(struct vm_data *data,
- 					   struct sync_area *sync,
- 					   u64 chunk)
- {
--	uint32_t guest_page_size = data->vm->page_size;
-+	u32 guest_page_size = data->vm->page_size;
- 	u64 guest_pages = MEM_TEST_UNMAP_SIZE / guest_page_size;
- 	u64 ctr;
- 
-@@ -746,8 +746,8 @@ static void test_memslot_unmap_loop_common(struct vm_data *data,
- static void test_memslot_unmap_loop(struct vm_data *data,
- 				    struct sync_area *sync)
- {
--	uint32_t host_page_size = getpagesize();
--	uint32_t guest_page_size = data->vm->page_size;
-+	u32 host_page_size = getpagesize();
-+	u32 guest_page_size = data->vm->page_size;
- 	u64 guest_chunk_pages = guest_page_size >= host_page_size ?
- 					1 : host_page_size / guest_page_size;
- 
-@@ -757,7 +757,7 @@ static void test_memslot_unmap_loop(struct vm_data *data,
- static void test_memslot_unmap_loop_chunked(struct vm_data *data,
- 					    struct sync_area *sync)
- {
--	uint32_t guest_page_size = data->vm->page_size;
-+	u32 guest_page_size = data->vm->page_size;
- 	u64 guest_chunk_pages = MEM_TEST_UNMAP_CHUNK_SIZE / guest_page_size;
- 
- 	test_memslot_unmap_loop_common(data, sync, guest_chunk_pages);
-@@ -766,7 +766,7 @@ static void test_memslot_unmap_loop_chunked(struct vm_data *data,
- static void test_memslot_rw_loop(struct vm_data *data, struct sync_area *sync)
- {
- 	u64 gptr;
--	uint32_t guest_page_size = data->vm->page_size;
-+	u32 guest_page_size = data->vm->page_size;
- 
- 	for (gptr = MEM_TEST_GPA + guest_page_size / 2;
- 	     gptr < MEM_TEST_GPA + MEM_TEST_SIZE; gptr += guest_page_size)
-@@ -924,8 +924,8 @@ static void help(char *name, struct test_args *targs)
- 
- static bool check_memory_sizes(void)
- {
--	uint32_t host_page_size = getpagesize();
--	uint32_t guest_page_size = vm_guest_mode_params[VM_MODE_DEFAULT].page_size;
-+	u32 host_page_size = getpagesize();
-+	u32 guest_page_size = vm_guest_mode_params[VM_MODE_DEFAULT].page_size;
- 
- 	if (host_page_size > SZ_64K || guest_page_size > SZ_64K) {
- 		pr_info("Unsupported page size on host (0x%x) or guest (0x%x)\n",
-@@ -961,7 +961,7 @@ static bool check_memory_sizes(void)
- static bool parse_args(int argc, char *argv[],
- 		       struct test_args *targs)
- {
--	uint32_t max_mem_slots;
-+	u32 max_mem_slots;
- 	int opt;
- 
- 	while ((opt = getopt(argc, argv, "hvdqs:f:e:l:r:")) != -1) {
-diff --git a/tools/testing/selftests/kvm/pre_fault_memory_test.c b/tools/testing/selftests/kvm/pre_fault_memory_test.c
-index 1fa9800aa7df..bfdaaeed3a8c 100644
---- a/tools/testing/selftests/kvm/pre_fault_memory_test.c
-+++ b/tools/testing/selftests/kvm/pre_fault_memory_test.c
-@@ -34,7 +34,7 @@ static void guest_code(u64 base_gva)
- struct slot_worker_data {
- 	struct kvm_vm *vm;
- 	u64 gpa;
--	uint32_t flags;
-+	u32 flags;
- 	bool worker_ready;
- 	bool prefault_ready;
- 	bool recreate_slot;
-diff --git a/tools/testing/selftests/kvm/riscv/arch_timer.c b/tools/testing/selftests/kvm/riscv/arch_timer.c
-index 99d87e6eb5aa..d67c918ee310 100644
---- a/tools/testing/selftests/kvm/riscv/arch_timer.c
-+++ b/tools/testing/selftests/kvm/riscv/arch_timer.c
-@@ -19,7 +19,7 @@ static void guest_irq_handler(struct pt_regs *regs)
- {
- 	u64 xcnt, xcnt_diff_us, cmp;
- 	unsigned int intid = regs->cause & ~CAUSE_IRQ_FLAG;
--	uint32_t cpu = guest_get_vcpuid();
-+	u32 cpu = guest_get_vcpuid();
- 	struct test_vcpu_shared_data *shared_data = &vcpu_shared_data[cpu];
- 
- 	timer_irq_disable();
-@@ -40,7 +40,7 @@ static void guest_irq_handler(struct pt_regs *regs)
- 
- static void guest_run(struct test_vcpu_shared_data *shared_data)
- {
--	uint32_t irq_iter, config_iter;
-+	u32 irq_iter, config_iter;
- 
- 	shared_data->nr_iter = 0;
- 	shared_data->guest_stage = 0;
-@@ -66,7 +66,7 @@ static void guest_run(struct test_vcpu_shared_data *shared_data)
- 
- static void guest_code(void)
- {
--	uint32_t cpu = guest_get_vcpuid();
-+	u32 cpu = guest_get_vcpuid();
- 	struct test_vcpu_shared_data *shared_data = &vcpu_shared_data[cpu];
- 
- 	timer_irq_disable();
-diff --git a/tools/testing/selftests/kvm/s390/memop.c b/tools/testing/selftests/kvm/s390/memop.c
-index e8bda1ab7fb0..1cd7b8f81fff 100644
---- a/tools/testing/selftests/kvm/s390/memop.c
-+++ b/tools/testing/selftests/kvm/s390/memop.c
-@@ -42,11 +42,11 @@ struct mop_desc {
- 	unsigned int _set_flags : 1;
- 	unsigned int _sida_offset : 1;
- 	unsigned int _ar : 1;
--	uint32_t size;
-+	u32 size;
- 	enum mop_target target;
- 	enum mop_access_mode mode;
- 	void *buf;
--	uint32_t sida_offset;
-+	u32 sida_offset;
- 	void *old;
- 	uint8_t old_value[16];
- 	bool *cmpxchg_success;
-@@ -296,7 +296,7 @@ static void prepare_mem12(void)
- 	TEST_ASSERT(!memcmp(p1, p2, size), "Memory contents do not match!")
- 
- static void default_write_read(struct test_info copy_cpu, struct test_info mop_cpu,
--			       enum mop_target mop_target, uint32_t size, uint8_t key)
-+			       enum mop_target mop_target, u32 size, uint8_t key)
- {
- 	prepare_mem12();
- 	CHECK_N_DO(MOP, mop_cpu, mop_target, WRITE, mem1, size,
-@@ -308,7 +308,7 @@ static void default_write_read(struct test_info copy_cpu, struct test_info mop_c
- }
- 
- static void default_read(struct test_info copy_cpu, struct test_info mop_cpu,
--			 enum mop_target mop_target, uint32_t size, uint8_t key)
-+			 enum mop_target mop_target, u32 size, uint8_t key)
- {
- 	prepare_mem12();
- 	CHECK_N_DO(MOP, mop_cpu, mop_target, WRITE, mem1, size, GADDR_V(mem1));
-@@ -487,7 +487,7 @@ static __uint128_t cut_to_size(int size, __uint128_t val)
- 	case 2:
- 		return (uint16_t)val;
- 	case 4:
--		return (uint32_t)val;
-+		return (u32)val;
- 	case 8:
- 		return (u64)val;
- 	case 16:
-@@ -585,15 +585,15 @@ static bool _cmpxchg(int size, void *target, __uint128_t *old_addr, __uint128_t
- 
- 	switch (size) {
- 	case 4: {
--			uint32_t old = *old_addr;
-+			u32 old = *old_addr;
- 
- 			asm volatile ("cs %[old],%[new],%[address]"
- 			    : [old] "+d" (old),
--			      [address] "+Q" (*(uint32_t *)(target))
--			    : [new] "d" ((uint32_t)new)
-+			      [address] "+Q" (*(u32 *)(target))
-+			    : [new] "d" ((u32)new)
- 			    : "cc"
- 			);
--			ret = old == (uint32_t)*old_addr;
-+			ret = old == (u32)*old_addr;
- 			*old_addr = old;
- 			return ret;
- 		}
-diff --git a/tools/testing/selftests/kvm/set_memory_region_test.c b/tools/testing/selftests/kvm/set_memory_region_test.c
-index 413281e277ac..59a6eae30946 100644
---- a/tools/testing/selftests/kvm/set_memory_region_test.c
-+++ b/tools/testing/selftests/kvm/set_memory_region_test.c
-@@ -345,8 +345,8 @@ static void test_zero_memory_regions(void)
- 
- static void test_invalid_memory_region_flags(void)
- {
--	uint32_t supported_flags = KVM_MEM_LOG_DIRTY_PAGES;
--	const uint32_t v2_only_flags = KVM_MEM_GUEST_MEMFD;
-+	u32 supported_flags = KVM_MEM_LOG_DIRTY_PAGES;
-+	const u32 v2_only_flags = KVM_MEM_GUEST_MEMFD;
- 	struct kvm_vm *vm;
- 	int r, i;
- 
-@@ -410,8 +410,8 @@ static void test_add_max_memory_regions(void)
- {
- 	int ret;
- 	struct kvm_vm *vm;
--	uint32_t max_mem_slots;
--	uint32_t slot;
-+	u32 max_mem_slots;
-+	u32 slot;
- 	void *mem, *mem_aligned, *mem_extra;
- 	size_t alignment = 1;
- 
-diff --git a/tools/testing/selftests/kvm/steal_time.c b/tools/testing/selftests/kvm/steal_time.c
-index d0a41a2bcccb..85fabe262864 100644
---- a/tools/testing/selftests/kvm/steal_time.c
-+++ b/tools/testing/selftests/kvm/steal_time.c
-@@ -42,7 +42,7 @@ static void check_status(struct kvm_steal_time *st)
- static void guest_code(int cpu)
- {
- 	struct kvm_steal_time *st = st_gva[cpu];
--	uint32_t version;
-+	u32 version;
- 
- 	GUEST_ASSERT_EQ(rdmsr(MSR_KVM_STEAL_TIME), ((u64)st_gva[cpu] | KVM_MSR_ENABLED));
- 
-@@ -67,7 +67,7 @@ static bool is_steal_time_supported(struct kvm_vcpu *vcpu)
- 	return kvm_cpu_has(X86_FEATURE_KVM_STEAL_TIME);
- }
- 
--static void steal_time_init(struct kvm_vcpu *vcpu, uint32_t i)
-+static void steal_time_init(struct kvm_vcpu *vcpu, u32 i)
- {
- 	/* ST_GPA_BASE is identity mapped */
- 	st_gva[i] = (void *)(ST_GPA_BASE + i * STEAL_TIME_SIZE);
-@@ -76,7 +76,7 @@ static void steal_time_init(struct kvm_vcpu *vcpu, uint32_t i)
- 	vcpu_set_msr(vcpu, MSR_KVM_STEAL_TIME, (ulong)st_gva[i] | KVM_MSR_ENABLED);
- }
- 
--static void steal_time_dump(struct kvm_vm *vm, uint32_t vcpu_idx)
-+static void steal_time_dump(struct kvm_vm *vm, u32 vcpu_idx)
- {
- 	struct kvm_steal_time *st = addr_gva2hva(vm, (ulong)st_gva[vcpu_idx]);
- 
-@@ -118,12 +118,12 @@ static void check_steal_time_uapi(void)
- #define PV_TIME_ST		0xc5000021
- 
- struct st_time {
--	uint32_t rev;
--	uint32_t attr;
-+	u32 rev;
-+	u32 attr;
- 	u64 st_time;
- };
- 
--static s64 smccc(uint32_t func, u64 arg)
-+static s64 smccc(u32 func, u64 arg)
- {
- 	struct arm_smccc_res res;
- 
-@@ -175,7 +175,7 @@ static bool is_steal_time_supported(struct kvm_vcpu *vcpu)
- 	return !__vcpu_ioctl(vcpu, KVM_HAS_DEVICE_ATTR, &dev);
- }
- 
--static void steal_time_init(struct kvm_vcpu *vcpu, uint32_t i)
-+static void steal_time_init(struct kvm_vcpu *vcpu, u32 i)
- {
- 	struct kvm_vm *vm = vcpu->vm;
- 	u64 st_ipa;
-@@ -194,7 +194,7 @@ static void steal_time_init(struct kvm_vcpu *vcpu, uint32_t i)
- 	vcpu_ioctl(vcpu, KVM_SET_DEVICE_ATTR, &dev);
- }
- 
--static void steal_time_dump(struct kvm_vm *vm, uint32_t vcpu_idx)
-+static void steal_time_dump(struct kvm_vm *vm, u32 vcpu_idx)
- {
- 	struct st_time *st = addr_gva2hva(vm, (ulong)st_gva[vcpu_idx]);
- 
-@@ -242,8 +242,8 @@ static void check_steal_time_uapi(void)
- static gpa_t st_gpa[NR_VCPUS];
- 
- struct sta_struct {
--	uint32_t sequence;
--	uint32_t flags;
-+	u32 sequence;
-+	u32 flags;
- 	u64 steal;
- 	uint8_t preempted;
- 	uint8_t pad[47];
-@@ -272,7 +272,7 @@ static void check_status(struct sta_struct *st)
- static void guest_code(int cpu)
- {
- 	struct sta_struct *st = st_gva[cpu];
--	uint32_t sequence;
-+	u32 sequence;
- 	long out_val = 0;
- 	bool probe;
- 
-@@ -305,7 +305,7 @@ static bool is_steal_time_supported(struct kvm_vcpu *vcpu)
- 	return enabled;
- }
- 
--static void steal_time_init(struct kvm_vcpu *vcpu, uint32_t i)
-+static void steal_time_init(struct kvm_vcpu *vcpu, u32 i)
- {
- 	/* ST_GPA_BASE is identity mapped */
- 	st_gva[i] = (void *)(ST_GPA_BASE + i * STEAL_TIME_SIZE);
-@@ -314,7 +314,7 @@ static void steal_time_init(struct kvm_vcpu *vcpu, uint32_t i)
- 	sync_global_to_guest(vcpu->vm, st_gpa[i]);
- }
- 
--static void steal_time_dump(struct kvm_vm *vm, uint32_t vcpu_idx)
-+static void steal_time_dump(struct kvm_vm *vm, u32 vcpu_idx)
- {
- 	struct sta_struct *st = addr_gva2hva(vm, (ulong)st_gva[vcpu_idx]);
- 	int i;
-@@ -388,7 +388,7 @@ static void check_status(struct kvm_steal_time *st)
- 
- static void guest_code(int cpu)
- {
--	uint32_t version;
-+	u32 version;
- 	struct kvm_steal_time *st = st_gva[cpu];
- 
- 	memset(st, 0, sizeof(*st));
-@@ -428,7 +428,7 @@ static bool is_steal_time_supported(struct kvm_vcpu *vcpu)
- 	return val & BIT(KVM_FEATURE_STEAL_TIME);
- }
- 
--static void steal_time_init(struct kvm_vcpu *vcpu, uint32_t i)
-+static void steal_time_init(struct kvm_vcpu *vcpu, u32 i)
- {
- 	int err;
- 	u64 st_gpa;
-@@ -451,7 +451,7 @@ static void steal_time_init(struct kvm_vcpu *vcpu, uint32_t i)
- 	TEST_ASSERT(err == 0, "Fail to set PV stealtime GPA");
- }
- 
--static void steal_time_dump(struct kvm_vm *vm, uint32_t vcpu_idx)
-+static void steal_time_dump(struct kvm_vm *vm, u32 vcpu_idx)
- {
- 	struct kvm_steal_time *st = addr_gva2hva(vm, (ulong)st_gva[vcpu_idx]);
- 
-diff --git a/tools/testing/selftests/kvm/x86/amx_test.c b/tools/testing/selftests/kvm/x86/amx_test.c
-index 7e3aab912082..9ecf7515442b 100644
---- a/tools/testing/selftests/kvm/x86/amx_test.c
-+++ b/tools/testing/selftests/kvm/x86/amx_test.c
-@@ -82,8 +82,8 @@ static inline void __tilerelease(void)
- 
- static inline void __xsavec(struct xstate *xstate, u64 rfbm)
- {
--	uint32_t rfbm_lo = rfbm;
--	uint32_t rfbm_hi = rfbm >> 32;
-+	u32 rfbm_lo = rfbm;
-+	u32 rfbm_hi = rfbm >> 32;
- 
- 	asm volatile("xsavec (%%rdi)"
- 		     : : "D" (xstate), "a" (rfbm_lo), "d" (rfbm_hi)
-diff --git a/tools/testing/selftests/kvm/x86/aperfmperf_test.c b/tools/testing/selftests/kvm/x86/aperfmperf_test.c
-index d3f21f2f5d28..620809cf35da 100644
---- a/tools/testing/selftests/kvm/x86/aperfmperf_test.c
-+++ b/tools/testing/selftests/kvm/x86/aperfmperf_test.c
-@@ -35,7 +35,7 @@ static int open_dev_msr(int cpu)
- 	return open_path_or_exit(path, O_RDONLY);
- }
- 
--static u64 read_dev_msr(int msr_fd, uint32_t msr)
-+static u64 read_dev_msr(int msr_fd, u32 msr)
- {
- 	u64 data;
- 	ssize_t rc;
-diff --git a/tools/testing/selftests/kvm/x86/apic_bus_clock_test.c b/tools/testing/selftests/kvm/x86/apic_bus_clock_test.c
-index 81f76c7d5621..404f0028e110 100644
---- a/tools/testing/selftests/kvm/x86/apic_bus_clock_test.c
-+++ b/tools/testing/selftests/kvm/x86/apic_bus_clock_test.c
-@@ -19,8 +19,8 @@
-  * timer frequency.
-  */
- static const struct {
--	const uint32_t tdcr;
--	const uint32_t divide_count;
-+	const u32 tdcr;
-+	const u32 divide_count;
- } tdcrs[] = {
- 	{0x0, 2},
- 	{0x1, 4},
-@@ -42,12 +42,12 @@ static void apic_enable(void)
- 		xapic_enable();
- }
- 
--static uint32_t apic_read_reg(unsigned int reg)
-+static u32 apic_read_reg(unsigned int reg)
- {
- 	return is_x2apic ? x2apic_read_reg(reg) : xapic_read_reg(reg);
- }
- 
--static void apic_write_reg(unsigned int reg, uint32_t val)
-+static void apic_write_reg(unsigned int reg, u32 val)
- {
- 	if (is_x2apic)
- 		x2apic_write_reg(reg, val);
-@@ -58,9 +58,9 @@ static void apic_write_reg(unsigned int reg, uint32_t val)
- static void apic_guest_code(u64 apic_hz, u64 delay_ms)
- {
- 	u64 tsc_hz = guest_tsc_khz * 1000;
--	const uint32_t tmict = ~0u;
-+	const u32 tmict = ~0u;
- 	u64 tsc0, tsc1, freq;
--	uint32_t tmcct;
-+	u32 tmcct;
- 	int i;
- 
- 	apic_enable();
-diff --git a/tools/testing/selftests/kvm/x86/debug_regs.c b/tools/testing/selftests/kvm/x86/debug_regs.c
-index 542a0eac0f32..0dfaf03cd0a0 100644
---- a/tools/testing/selftests/kvm/x86/debug_regs.c
-+++ b/tools/testing/selftests/kvm/x86/debug_regs.c
-@@ -16,7 +16,7 @@
- #define IRQ_VECTOR 0xAA
- 
- /* For testing data access debug BP */
--uint32_t guest_value;
-+u32 guest_value;
- 
- extern unsigned char sw_bp, hw_bp, write_data, ss_start, bd_start;
- 
-diff --git a/tools/testing/selftests/kvm/x86/fastops_test.c b/tools/testing/selftests/kvm/x86/fastops_test.c
-index 51416328cc69..a634bc281546 100644
---- a/tools/testing/selftests/kvm/x86/fastops_test.c
-+++ b/tools/testing/selftests/kvm/x86/fastops_test.c
-@@ -15,7 +15,7 @@
- 	"pop %[flags]\n\t"
- 
- #define flags_constraint(flags_val) [flags]"=r"(flags_val)
--#define bt_constraint(__bt_val) [bt_val]"rm"((uint32_t)__bt_val)
-+#define bt_constraint(__bt_val) [bt_val]"rm"((u32)__bt_val)
- 
- #define guest_execute_fastop_1(FEP, insn, __val, __flags)				\
- ({											\
-@@ -187,7 +187,7 @@ static void guest_code(void)
- {
- 	guest_test_fastops(uint8_t, "b");
- 	guest_test_fastops(uint16_t, "w");
--	guest_test_fastops(uint32_t, "l");
-+	guest_test_fastops(u32, "l");
- 	guest_test_fastops(u64, "q");
- 
- 	GUEST_DONE();
-diff --git a/tools/testing/selftests/kvm/x86/feature_msrs_test.c b/tools/testing/selftests/kvm/x86/feature_msrs_test.c
-index a0e54af60544..158550701771 100644
---- a/tools/testing/selftests/kvm/x86/feature_msrs_test.c
-+++ b/tools/testing/selftests/kvm/x86/feature_msrs_test.c
-@@ -12,7 +12,7 @@
- #include "kvm_util.h"
- #include "processor.h"
- 
--static bool is_kvm_controlled_msr(uint32_t msr)
-+static bool is_kvm_controlled_msr(u32 msr)
- {
- 	return msr == MSR_IA32_VMX_CR0_FIXED1 || msr == MSR_IA32_VMX_CR4_FIXED1;
- }
-@@ -21,7 +21,7 @@ static bool is_kvm_controlled_msr(uint32_t msr)
-  * For VMX MSRs with a "true" variant, KVM requires userspace to set the "true"
-  * MSR, and doesn't allow setting the hidden version.
-  */
--static bool is_hidden_vmx_msr(uint32_t msr)
-+static bool is_hidden_vmx_msr(u32 msr)
- {
- 	switch (msr) {
- 	case MSR_IA32_VMX_PINBASED_CTLS:
-@@ -34,12 +34,12 @@ static bool is_hidden_vmx_msr(uint32_t msr)
- 	}
- }
- 
--static bool is_quirked_msr(uint32_t msr)
-+static bool is_quirked_msr(u32 msr)
- {
- 	return msr != MSR_AMD64_DE_CFG;
- }
- 
--static void test_feature_msr(uint32_t msr)
-+static void test_feature_msr(u32 msr)
- {
- 	const u64 supported_mask = kvm_get_feature_msr(msr);
- 	u64 reset_value = is_quirked_msr(msr) ? supported_mask : 0;
-diff --git a/tools/testing/selftests/kvm/x86/hyperv_evmcs.c b/tools/testing/selftests/kvm/x86/hyperv_evmcs.c
-index 2d1733f9303a..061d9e1f02c0 100644
---- a/tools/testing/selftests/kvm/x86/hyperv_evmcs.c
-+++ b/tools/testing/selftests/kvm/x86/hyperv_evmcs.c
-@@ -30,7 +30,7 @@ static void guest_nmi_handler(struct ex_regs *regs)
- {
- }
- 
--static inline void rdmsr_from_l2(uint32_t msr)
-+static inline void rdmsr_from_l2(u32 msr)
- {
- 	/* Currently, L1 doesn't preserve GPRs during vmexits. */
- 	__asm__ __volatile__ ("rdmsr" : : "c"(msr) :
-diff --git a/tools/testing/selftests/kvm/x86/hyperv_features.c b/tools/testing/selftests/kvm/x86/hyperv_features.c
-index 7bce2bcc3a73..80588b7ea259 100644
---- a/tools/testing/selftests/kvm/x86/hyperv_features.c
-+++ b/tools/testing/selftests/kvm/x86/hyperv_features.c
-@@ -22,7 +22,7 @@
- 	KVM_X86_CPU_FEATURE(HYPERV_CPUID_ENLIGHTMENT_INFO, 0, EBX, 0)
- 
- struct msr_data {
--	uint32_t idx;
-+	u32 idx;
- 	bool fault_expected;
- 	bool write;
- 	u64 write_val;
-@@ -34,7 +34,7 @@ struct hcall_data {
- 	bool ud_expected;
- };
- 
--static bool is_write_only_msr(uint32_t msr)
-+static bool is_write_only_msr(u32 msr)
- {
- 	return msr == HV_X64_MSR_EOI;
- }
-diff --git a/tools/testing/selftests/kvm/x86/hyperv_svm_test.c b/tools/testing/selftests/kvm/x86/hyperv_svm_test.c
-index 54a1a6dad4d5..77b774b5041c 100644
---- a/tools/testing/selftests/kvm/x86/hyperv_svm_test.c
-+++ b/tools/testing/selftests/kvm/x86/hyperv_svm_test.c
-@@ -21,7 +21,7 @@
- #define L2_GUEST_STACK_SIZE 256
- 
- /* Exit to L1 from L2 with RDMSR instruction */
--static inline void rdmsr_from_l2(uint32_t msr)
-+static inline void rdmsr_from_l2(u32 msr)
- {
- 	/* Currently, L1 doesn't preserve GPRs during vmexits. */
- 	__asm__ __volatile__ ("rdmsr" : : "c"(msr) :
-diff --git a/tools/testing/selftests/kvm/x86/kvm_pv_test.c b/tools/testing/selftests/kvm/x86/kvm_pv_test.c
-index e49ae65f8171..babf0f95165a 100644
---- a/tools/testing/selftests/kvm/x86/kvm_pv_test.c
-+++ b/tools/testing/selftests/kvm/x86/kvm_pv_test.c
-@@ -13,7 +13,7 @@
- #include "processor.h"
- 
- struct msr_data {
--	uint32_t idx;
-+	u32 idx;
- 	const char *name;
- };
- 
-diff --git a/tools/testing/selftests/kvm/x86/nested_emulation_test.c b/tools/testing/selftests/kvm/x86/nested_emulation_test.c
-index d398add21e4c..42fd24567e26 100644
---- a/tools/testing/selftests/kvm/x86/nested_emulation_test.c
-+++ b/tools/testing/selftests/kvm/x86/nested_emulation_test.c
-@@ -14,7 +14,7 @@ enum {
- struct emulated_instruction {
- 	const char name[32];
- 	uint8_t opcode[15];
--	uint32_t exit_reason[NR_VIRTUALIZATION_FLAVORS];
-+	u32 exit_reason[NR_VIRTUALIZATION_FLAVORS];
- };
- 
- static struct emulated_instruction instructions[] = {
-@@ -36,9 +36,9 @@ static uint8_t kvm_fep[] = { 0x0f, 0x0b, 0x6b, 0x76, 0x6d };	/* ud2 ; .ascii "kv
- static uint8_t l2_guest_code[sizeof(kvm_fep) + 15];
- static uint8_t *l2_instruction = &l2_guest_code[sizeof(kvm_fep)];
- 
--static uint32_t get_instruction_length(struct emulated_instruction *insn)
-+static u32 get_instruction_length(struct emulated_instruction *insn)
- {
--	uint32_t i;
-+	u32 i;
- 
- 	for (i = 0; i < ARRAY_SIZE(insn->opcode) && insn->opcode[i]; i++)
- 		;
-@@ -81,8 +81,8 @@ static void guest_code(void *test_data)
- 
- 	for (i = 0; i < ARRAY_SIZE(instructions); i++) {
- 		struct emulated_instruction *insn = &instructions[i];
--		uint32_t insn_len = get_instruction_length(insn);
--		uint32_t exit_insn_len;
-+		u32 insn_len = get_instruction_length(insn);
-+		u32 exit_insn_len;
- 		u32 exit_reason;
- 
- 		/*
-diff --git a/tools/testing/selftests/kvm/x86/nested_exceptions_test.c b/tools/testing/selftests/kvm/x86/nested_exceptions_test.c
-index 646cfb0022b3..186e980aa8ee 100644
---- a/tools/testing/selftests/kvm/x86/nested_exceptions_test.c
-+++ b/tools/testing/selftests/kvm/x86/nested_exceptions_test.c
-@@ -72,7 +72,7 @@ static void l2_ss_injected_tf_test(void)
- }
- 
- static void svm_run_l2(struct svm_test_data *svm, void *l2_code, int vector,
--		       uint32_t error_code)
-+		       u32 error_code)
- {
- 	struct vmcb *vmcb = svm->vmcb;
- 	struct vmcb_control_area *ctrl = &vmcb->control;
-@@ -111,7 +111,7 @@ static void l1_svm_code(struct svm_test_data *svm)
- 	GUEST_DONE();
- }
- 
--static void vmx_run_l2(void *l2_code, int vector, uint32_t error_code)
-+static void vmx_run_l2(void *l2_code, int vector, u32 error_code)
- {
- 	GUEST_ASSERT(!vmwrite(GUEST_RIP, (u64)l2_code));
- 
-diff --git a/tools/testing/selftests/kvm/x86/nested_tsc_adjust_test.c b/tools/testing/selftests/kvm/x86/nested_tsc_adjust_test.c
-index a18b0cfd42e2..f0e4adac4751 100644
---- a/tools/testing/selftests/kvm/x86/nested_tsc_adjust_test.c
-+++ b/tools/testing/selftests/kvm/x86/nested_tsc_adjust_test.c
-@@ -88,7 +88,7 @@ static void l1_guest_code(void *data)
- 	 */
- 	if (this_cpu_has(X86_FEATURE_VMX)) {
- 		struct vmx_pages *vmx_pages = data;
--		uint32_t control;
-+		u32 control;
- 
- 		GUEST_ASSERT(prepare_for_vmx_operation(vmx_pages));
- 		GUEST_ASSERT(load_vmcs(vmx_pages));
-diff --git a/tools/testing/selftests/kvm/x86/nested_tsc_scaling_test.c b/tools/testing/selftests/kvm/x86/nested_tsc_scaling_test.c
-index b37b0fef7fde..190e93af20a1 100644
---- a/tools/testing/selftests/kvm/x86/nested_tsc_scaling_test.c
-+++ b/tools/testing/selftests/kvm/x86/nested_tsc_scaling_test.c
-@@ -106,7 +106,7 @@ static void l1_svm_code(struct svm_test_data *svm)
- static void l1_vmx_code(struct vmx_pages *vmx_pages)
- {
- 	unsigned long l2_guest_stack[L2_GUEST_STACK_SIZE];
--	uint32_t control;
-+	u32 control;
- 
- 	/* check that L1's frequency looks alright before launching L2 */
- 	check_tsc_freq(UCHECK_L1);
-diff --git a/tools/testing/selftests/kvm/x86/pmu_counters_test.c b/tools/testing/selftests/kvm/x86/pmu_counters_test.c
-index 16fabcf1eabd..2a12c2d42697 100644
---- a/tools/testing/selftests/kvm/x86/pmu_counters_test.c
-+++ b/tools/testing/selftests/kvm/x86/pmu_counters_test.c
-@@ -30,7 +30,7 @@
- #define NUM_INSNS_RETIRED		(NUM_LOOPS * NUM_INSNS_PER_LOOP + NUM_EXTRA_INSNS)
- 
- /* Track which architectural events are supported by hardware. */
--static uint32_t hardware_pmu_arch_events;
-+static u32 hardware_pmu_arch_events;
- 
- static uint8_t kvm_pmu_version;
- static bool kvm_has_perf_caps;
-@@ -153,7 +153,7 @@ static uint8_t guest_get_pmu_version(void)
-  * Sanity check that in all cases, the event doesn't count when it's disabled,
-  * and that KVM correctly emulates the write of an arbitrary value.
-  */
--static void guest_assert_event_count(uint8_t idx, uint32_t pmc, uint32_t pmc_msr)
-+static void guest_assert_event_count(uint8_t idx, u32 pmc, u32 pmc_msr)
- {
- 	u64 count;
- 
-@@ -236,7 +236,7 @@ do {										\
- 			     FEP "xor %%eax, %%eax\n\t"				\
- 			     FEP "xor %%edx, %%edx\n\t"				\
- 			     "wrmsr\n\t"					\
--			     :: "a"((uint32_t)_value), "d"(_value >> 32),	\
-+			     :: "a"((u32)_value), "d"(_value >> 32),	\
- 				"c"(_msr), "D"(_msr), [m]"m"(kvm_pmu_version)	\
- 	);									\
- } while (0)
-@@ -255,8 +255,8 @@ do {										\
- 	guest_assert_event_count(_idx, _pmc, _pmc_msr);				\
- } while (0)
- 
--static void __guest_test_arch_event(uint8_t idx, uint32_t pmc, uint32_t pmc_msr,
--				    uint32_t ctrl_msr, u64 ctrl_msr_value)
-+static void __guest_test_arch_event(uint8_t idx, u32 pmc, u32 pmc_msr,
-+				    u32 ctrl_msr, u64 ctrl_msr_value)
- {
- 	GUEST_TEST_EVENT(idx, pmc, pmc_msr, ctrl_msr, ctrl_msr_value, "");
- 
-@@ -266,12 +266,12 @@ static void __guest_test_arch_event(uint8_t idx, uint32_t pmc, uint32_t pmc_msr,
- 
- static void guest_test_arch_event(uint8_t idx)
- {
--	uint32_t nr_gp_counters = this_cpu_property(X86_PROPERTY_PMU_NR_GP_COUNTERS);
--	uint32_t pmu_version = guest_get_pmu_version();
-+	u32 nr_gp_counters = this_cpu_property(X86_PROPERTY_PMU_NR_GP_COUNTERS);
-+	u32 pmu_version = guest_get_pmu_version();
- 	/* PERF_GLOBAL_CTRL exists only for Architectural PMU Version 2+. */
- 	bool guest_has_perf_global_ctrl = pmu_version >= 2;
- 	struct kvm_x86_pmu_feature gp_event, fixed_event;
--	uint32_t base_pmc_msr;
-+	u32 base_pmc_msr;
- 	unsigned int i;
- 
- 	/* The host side shouldn't invoke this without a guest PMU. */
-@@ -329,7 +329,7 @@ static void guest_test_arch_events(void)
- }
- 
- static void test_arch_events(uint8_t pmu_version, u64 perf_capabilities,
--			     uint8_t length, uint32_t unavailable_mask)
-+			     uint8_t length, u32 unavailable_mask)
- {
- 	struct kvm_vcpu *vcpu;
- 	struct kvm_vm *vm;
-@@ -373,7 +373,7 @@ __GUEST_ASSERT(expect_gp ? vector == GP_VECTOR : !vector,			\
- 		       "Expected " #insn "(0x%x) to yield 0x%lx, got 0x%lx",	\
- 		       msr, expected, val);
- 
--static void guest_test_rdpmc(uint32_t rdpmc_idx, bool expect_success,
-+static void guest_test_rdpmc(u32 rdpmc_idx, bool expect_success,
- 			     u64 expected_val)
- {
- 	uint8_t vector;
-@@ -393,8 +393,8 @@ static void guest_test_rdpmc(uint32_t rdpmc_idx, bool expect_success,
- 		GUEST_ASSERT_PMC_VALUE(RDPMC, rdpmc_idx, val, expected_val);
- }
- 
--static void guest_rd_wr_counters(uint32_t base_msr, uint8_t nr_possible_counters,
--				 uint8_t nr_counters, uint32_t or_mask)
-+static void guest_rd_wr_counters(u32 base_msr, uint8_t nr_possible_counters,
-+				 uint8_t nr_counters, u32 or_mask)
- {
- 	const bool pmu_has_fast_mode = !guest_get_pmu_version();
- 	uint8_t i;
-@@ -405,7 +405,7 @@ static void guest_rd_wr_counters(uint32_t base_msr, uint8_t nr_possible_counters
- 		 * width of the counters.
- 		 */
- 		const u64 test_val = 0xffff;
--		const uint32_t msr = base_msr + i;
-+		const u32 msr = base_msr + i;
- 
- 		/*
- 		 * Fixed counters are supported if the counter is less than the
-@@ -421,7 +421,7 @@ static void guest_rd_wr_counters(uint32_t base_msr, uint8_t nr_possible_counters
- 		const u64 expected_val = expect_success ? test_val : 0;
- 		const bool expect_gp = !expect_success && msr != MSR_P6_PERFCTR0 &&
- 				       msr != MSR_P6_PERFCTR1;
--		uint32_t rdpmc_idx;
-+		u32 rdpmc_idx;
- 		uint8_t vector;
- 		u64 val;
- 
-@@ -463,7 +463,7 @@ static void guest_test_gp_counters(void)
- {
- 	uint8_t pmu_version = guest_get_pmu_version();
- 	uint8_t nr_gp_counters = 0;
--	uint32_t base_msr;
-+	u32 base_msr;
- 
- 	if (pmu_version)
- 		nr_gp_counters = this_cpu_property(X86_PROPERTY_PMU_NR_GP_COUNTERS);
-@@ -563,7 +563,7 @@ static void guest_test_fixed_counters(void)
- 
- static void test_fixed_counters(uint8_t pmu_version, u64 perf_capabilities,
- 				uint8_t nr_fixed_counters,
--				uint32_t supported_bitmask)
-+				u32 supported_bitmask)
- {
- 	struct kvm_vcpu *vcpu;
- 	struct kvm_vm *vm;
-@@ -588,7 +588,7 @@ static void test_intel_counters(void)
- 	uint8_t pmu_version = kvm_cpu_property(X86_PROPERTY_PMU_VERSION);
- 	unsigned int i;
- 	uint8_t v, j;
--	uint32_t k;
-+	u32 k;
- 
- 	const u64 perf_caps[] = {
- 		0,
-@@ -602,7 +602,7 @@ static void test_intel_counters(void)
- 	 * as alternating bit sequencues, e.g. to detect if KVM is checking the
- 	 * wrong bit(s).
- 	 */
--	const uint32_t unavailable_masks[] = {
-+	const u32 unavailable_masks[] = {
- 		0x0,
- 		0xffffffffu,
- 		0xaaaaaaaau,
-diff --git a/tools/testing/selftests/kvm/x86/pmu_event_filter_test.c b/tools/testing/selftests/kvm/x86/pmu_event_filter_test.c
-index 88857670ab93..5d607b114aeb 100644
---- a/tools/testing/selftests/kvm/x86/pmu_event_filter_test.c
-+++ b/tools/testing/selftests/kvm/x86/pmu_event_filter_test.c
-@@ -75,7 +75,7 @@ static void guest_gp_handler(struct ex_regs *regs)
-  *
-  * Return on success. GUEST_SYNC(0) on error.
-  */
--static void check_msr(uint32_t msr, u64 bits_to_flip)
-+static void check_msr(u32 msr, u64 bits_to_flip)
- {
- 	u64 v = rdmsr(msr) ^ bits_to_flip;
- 
-@@ -89,7 +89,7 @@ static void check_msr(uint32_t msr, u64 bits_to_flip)
- 		GUEST_SYNC(-EIO);
- }
- 
--static void run_and_measure_loop(uint32_t msr_base)
-+static void run_and_measure_loop(u32 msr_base)
- {
- 	const u64 branches_retired = rdmsr(msr_base + 0);
- 	const u64 insn_retired = rdmsr(msr_base + 1);
-@@ -378,7 +378,7 @@ static bool use_amd_pmu(void)
- 
- static bool supports_event_mem_inst_retired(void)
- {
--	uint32_t eax, ebx, ecx, edx;
-+	u32 eax, ebx, ecx, edx;
- 
- 	cpuid(1, &eax, &ebx, &ecx, &edx);
- 	if (x86_family(eax) == 0x6) {
-@@ -415,7 +415,7 @@ static bool supports_event_mem_inst_retired(void)
- #define EXCLUDE_MASKED_ENTRY(event_select, mask, match) \
- 	KVM_PMU_ENCODE_MASKED_ENTRY(event_select, mask, match, true)
- 
--static void masked_events_guest_test(uint32_t msr_base)
-+static void masked_events_guest_test(u32 msr_base)
- {
- 	/*
- 	 * The actual value of the counters don't determine the outcome of
-@@ -499,7 +499,7 @@ struct masked_events_test {
- 	u64 amd_events[MAX_TEST_EVENTS];
- 	u64 amd_event_end;
- 	const char *msg;
--	uint32_t flags;
-+	u32 flags;
- };
- 
- /*
-@@ -669,7 +669,7 @@ static int set_pmu_event_filter(struct kvm_vcpu *vcpu,
- }
- 
- static int set_pmu_single_event_filter(struct kvm_vcpu *vcpu, u64 event,
--				       uint32_t flags, uint32_t action)
-+				       u32 flags, u32 action)
- {
- 	struct __kvm_pmu_event_filter f = {
- 		.nevents = 1,
-@@ -746,7 +746,7 @@ static void intel_run_fixed_counter_guest_code(uint8_t idx)
- }
- 
- static u64 test_with_fixed_counter_filter(struct kvm_vcpu *vcpu,
--					  uint32_t action, uint32_t bitmap)
-+					  u32 action, u32 bitmap)
- {
- 	struct __kvm_pmu_event_filter f = {
- 		.action = action,
-@@ -758,8 +758,8 @@ static u64 test_with_fixed_counter_filter(struct kvm_vcpu *vcpu,
- }
- 
- static u64 test_set_gp_and_fixed_event_filter(struct kvm_vcpu *vcpu,
--					      uint32_t action,
--					      uint32_t bitmap)
-+					      u32 action,
-+					      u32 bitmap)
- {
- 	struct __kvm_pmu_event_filter f = base_event_filter;
- 
-@@ -774,7 +774,7 @@ static void __test_fixed_counter_bitmap(struct kvm_vcpu *vcpu, uint8_t idx,
- 					uint8_t nr_fixed_counters)
- {
- 	unsigned int i;
--	uint32_t bitmap;
-+	u32 bitmap;
- 	u64 count;
- 
- 	TEST_ASSERT(nr_fixed_counters < sizeof(bitmap) * 8,
-diff --git a/tools/testing/selftests/kvm/x86/private_mem_conversions_test.c b/tools/testing/selftests/kvm/x86/private_mem_conversions_test.c
-index 2e3a68837d0e..0bf86d822ee0 100644
---- a/tools/testing/selftests/kvm/x86/private_mem_conversions_test.c
-+++ b/tools/testing/selftests/kvm/x86/private_mem_conversions_test.c
-@@ -366,8 +366,8 @@ static void *__test_mem_conversions(void *__vcpu)
- 	}
- }
- 
--static void test_mem_conversions(enum vm_mem_backing_src_type src_type, uint32_t nr_vcpus,
--				 uint32_t nr_memslots)
-+static void test_mem_conversions(enum vm_mem_backing_src_type src_type, u32 nr_vcpus,
-+				 u32 nr_memslots)
- {
- 	/*
- 	 * Allocate enough memory so that each vCPU's chunk of memory can be
-@@ -450,8 +450,8 @@ static void usage(const char *cmd)
- int main(int argc, char *argv[])
- {
- 	enum vm_mem_backing_src_type src_type = DEFAULT_VM_MEM_SRC;
--	uint32_t nr_memslots = 1;
--	uint32_t nr_vcpus = 1;
-+	u32 nr_memslots = 1;
-+	u32 nr_vcpus = 1;
- 	int opt;
- 
- 	TEST_REQUIRE(kvm_check_cap(KVM_CAP_VM_TYPES) & BIT(KVM_X86_SW_PROTECTED_VM));
-diff --git a/tools/testing/selftests/kvm/x86/private_mem_kvm_exits_test.c b/tools/testing/selftests/kvm/x86/private_mem_kvm_exits_test.c
-index 925040f394de..10db9fe6d906 100644
---- a/tools/testing/selftests/kvm/x86/private_mem_kvm_exits_test.c
-+++ b/tools/testing/selftests/kvm/x86/private_mem_kvm_exits_test.c
-@@ -27,7 +27,7 @@ static u64 guest_repeatedly_read(void)
- 	return value;
- }
- 
--static uint32_t run_vcpu_get_exit_reason(struct kvm_vcpu *vcpu)
-+static u32 run_vcpu_get_exit_reason(struct kvm_vcpu *vcpu)
- {
- 	int r;
- 
-@@ -50,7 +50,7 @@ static void test_private_access_memslot_deleted(void)
- 	struct kvm_vcpu *vcpu;
- 	pthread_t vm_thread;
- 	void *thread_return;
--	uint32_t exit_reason;
-+	u32 exit_reason;
- 
- 	vm = vm_create_shape_with_one_vcpu(protected_vm_shape, &vcpu,
- 					   guest_repeatedly_read);
-@@ -72,7 +72,7 @@ static void test_private_access_memslot_deleted(void)
- 	vm_mem_region_delete(vm, EXITS_TEST_SLOT);
- 
- 	pthread_join(vm_thread, &thread_return);
--	exit_reason = (uint32_t)(u64)thread_return;
-+	exit_reason = (u32)(u64)thread_return;
- 
- 	TEST_ASSERT_EQ(exit_reason, KVM_EXIT_MEMORY_FAULT);
- 	TEST_ASSERT_EQ(vcpu->run->memory_fault.flags, KVM_MEMORY_EXIT_FLAG_PRIVATE);
-@@ -86,7 +86,7 @@ static void test_private_access_memslot_not_private(void)
- {
- 	struct kvm_vm *vm;
- 	struct kvm_vcpu *vcpu;
--	uint32_t exit_reason;
-+	u32 exit_reason;
- 
- 	vm = vm_create_shape_with_one_vcpu(protected_vm_shape, &vcpu,
- 					   guest_repeatedly_read);
-diff --git a/tools/testing/selftests/kvm/x86/set_boot_cpu_id.c b/tools/testing/selftests/kvm/x86/set_boot_cpu_id.c
-index 49913784bc82..8e3898646c69 100644
---- a/tools/testing/selftests/kvm/x86/set_boot_cpu_id.c
-+++ b/tools/testing/selftests/kvm/x86/set_boot_cpu_id.c
-@@ -86,11 +86,11 @@ static void run_vcpu(struct kvm_vcpu *vcpu)
- 	}
- }
- 
--static struct kvm_vm *create_vm(uint32_t nr_vcpus, uint32_t bsp_vcpu_id,
-+static struct kvm_vm *create_vm(u32 nr_vcpus, u32 bsp_vcpu_id,
- 				struct kvm_vcpu *vcpus[])
- {
- 	struct kvm_vm *vm;
--	uint32_t i;
-+	u32 i;
- 
- 	vm = vm_create(nr_vcpus);
- 
-@@ -104,7 +104,7 @@ static struct kvm_vm *create_vm(uint32_t nr_vcpus, uint32_t bsp_vcpu_id,
- 	return vm;
- }
- 
--static void run_vm_bsp(uint32_t bsp_vcpu_id)
-+static void run_vm_bsp(u32 bsp_vcpu_id)
- {
- 	struct kvm_vcpu *vcpus[2];
- 	struct kvm_vm *vm;
-diff --git a/tools/testing/selftests/kvm/x86/sev_init2_tests.c b/tools/testing/selftests/kvm/x86/sev_init2_tests.c
-index eec093819ff3..8eeba2327c7c 100644
---- a/tools/testing/selftests/kvm/x86/sev_init2_tests.c
-+++ b/tools/testing/selftests/kvm/x86/sev_init2_tests.c
-@@ -94,7 +94,7 @@ void test_vm_types(void)
- 				   "VM type is KVM_X86_SW_PROTECTED_VM");
- }
- 
--void test_flags(uint32_t vm_type)
-+void test_flags(u32 vm_type)
- {
- 	int i;
- 
-@@ -104,7 +104,7 @@ void test_flags(uint32_t vm_type)
- 			"invalid flag");
- }
- 
--void test_features(uint32_t vm_type, u64 supported_features)
-+void test_features(u32 vm_type, u64 supported_features)
- {
- 	int i;
- 
-diff --git a/tools/testing/selftests/kvm/x86/sev_smoke_test.c b/tools/testing/selftests/kvm/x86/sev_smoke_test.c
-index f9be10d9b92d..4e037795dc33 100644
---- a/tools/testing/selftests/kvm/x86/sev_smoke_test.c
-+++ b/tools/testing/selftests/kvm/x86/sev_smoke_test.c
-@@ -13,7 +13,7 @@
- #include "linux/psp-sev.h"
- #include "sev.h"
- 
--static void guest_sev_test_msr(uint32_t msr)
-+static void guest_sev_test_msr(u32 msr)
- {
- 	u64 val = rdmsr(msr);
- 
-@@ -104,7 +104,7 @@ static void compare_xsave(u8 *from_host, u8 *from_guest)
- 		abort();
- }
- 
--static void test_sync_vmsa(uint32_t type, u64 policy)
-+static void test_sync_vmsa(u32 type, u64 policy)
- {
- 	struct kvm_vcpu *vcpu;
- 	struct kvm_vm *vm;
-@@ -150,7 +150,7 @@ static void test_sync_vmsa(uint32_t type, u64 policy)
- 	kvm_vm_free(vm);
- }
- 
--static void test_sev(void *guest_code, uint32_t type, u64 policy)
-+static void test_sev(void *guest_code, u32 type, u64 policy)
- {
- 	struct kvm_vcpu *vcpu;
- 	struct kvm_vm *vm;
-@@ -201,7 +201,7 @@ static void guest_shutdown_code(void)
- 	__asm__ __volatile__("ud2");
- }
- 
--static void test_sev_shutdown(uint32_t type, u64 policy)
-+static void test_sev_shutdown(u32 type, u64 policy)
- {
- 	struct kvm_vcpu *vcpu;
- 	struct kvm_vm *vm;
-@@ -218,7 +218,7 @@ static void test_sev_shutdown(uint32_t type, u64 policy)
- 	kvm_vm_free(vm);
- }
- 
--static void test_sev_smoke(void *guest, uint32_t type, u64 policy)
-+static void test_sev_smoke(void *guest, u32 type, u64 policy)
- {
- 	const u64 xf_mask = XFEATURE_MASK_X87_AVX;
- 
-diff --git a/tools/testing/selftests/kvm/x86/ucna_injection_test.c b/tools/testing/selftests/kvm/x86/ucna_injection_test.c
-index 27aae6c92a38..df1ec8209c76 100644
---- a/tools/testing/selftests/kvm/x86/ucna_injection_test.c
-+++ b/tools/testing/selftests/kvm/x86/ucna_injection_test.c
-@@ -251,7 +251,7 @@ static void setup_mce_cap(struct kvm_vcpu *vcpu, bool enable_cmci_p)
- 	vcpu_ioctl(vcpu, KVM_X86_SETUP_MCE, &mcg_caps);
- }
- 
--static struct kvm_vcpu *create_vcpu_with_mce_cap(struct kvm_vm *vm, uint32_t vcpuid,
-+static struct kvm_vcpu *create_vcpu_with_mce_cap(struct kvm_vm *vm, u32 vcpuid,
- 						 bool enable_cmci_p, void *guest_code)
- {
- 	struct kvm_vcpu *vcpu = vm_vcpu_add(vm, vcpuid, guest_code);
-diff --git a/tools/testing/selftests/kvm/x86/userspace_msr_exit_test.c b/tools/testing/selftests/kvm/x86/userspace_msr_exit_test.c
-index b673c3450886..98b8d285dbb7 100644
---- a/tools/testing/selftests/kvm/x86/userspace_msr_exit_test.c
-+++ b/tools/testing/selftests/kvm/x86/userspace_msr_exit_test.c
-@@ -142,9 +142,9 @@ struct kvm_msr_filter no_filter_deny = {
-  * Note: Force test_rdmsr() to not be inlined to prevent the labels,
-  * rdmsr_start and rdmsr_end, from being defined multiple times.
-  */
--static noinline u64 test_rdmsr(uint32_t msr)
-+static noinline u64 test_rdmsr(u32 msr)
- {
--	uint32_t a, d;
-+	u32 a, d;
- 
- 	guest_exception_count = 0;
- 
-@@ -158,10 +158,10 @@ static noinline u64 test_rdmsr(uint32_t msr)
-  * Note: Force test_wrmsr() to not be inlined to prevent the labels,
-  * wrmsr_start and wrmsr_end, from being defined multiple times.
-  */
--static noinline void test_wrmsr(uint32_t msr, u64 value)
-+static noinline void test_wrmsr(u32 msr, u64 value)
- {
--	uint32_t a = value;
--	uint32_t d = value >> 32;
-+	u32 a = value;
-+	u32 d = value >> 32;
- 
- 	guest_exception_count = 0;
- 
-@@ -176,9 +176,9 @@ extern char wrmsr_start, wrmsr_end;
-  * Note: Force test_em_rdmsr() to not be inlined to prevent the labels,
-  * rdmsr_start and rdmsr_end, from being defined multiple times.
-  */
--static noinline u64 test_em_rdmsr(uint32_t msr)
-+static noinline u64 test_em_rdmsr(u32 msr)
- {
--	uint32_t a, d;
-+	u32 a, d;
- 
- 	guest_exception_count = 0;
- 
-@@ -192,10 +192,10 @@ static noinline u64 test_em_rdmsr(uint32_t msr)
-  * Note: Force test_em_wrmsr() to not be inlined to prevent the labels,
-  * wrmsr_start and wrmsr_end, from being defined multiple times.
-  */
--static noinline void test_em_wrmsr(uint32_t msr, u64 value)
-+static noinline void test_em_wrmsr(u32 msr, u64 value)
- {
--	uint32_t a = value;
--	uint32_t d = value >> 32;
-+	u32 a = value;
-+	u32 d = value >> 32;
- 
- 	guest_exception_count = 0;
- 
-@@ -391,7 +391,7 @@ static void check_for_guest_assert(struct kvm_vcpu *vcpu)
- 	}
- }
- 
--static void process_rdmsr(struct kvm_vcpu *vcpu, uint32_t msr_index)
-+static void process_rdmsr(struct kvm_vcpu *vcpu, u32 msr_index)
- {
- 	struct kvm_run *run = vcpu->run;
- 
-@@ -423,7 +423,7 @@ static void process_rdmsr(struct kvm_vcpu *vcpu, uint32_t msr_index)
- 	}
- }
- 
--static void process_wrmsr(struct kvm_vcpu *vcpu, uint32_t msr_index)
-+static void process_wrmsr(struct kvm_vcpu *vcpu, u32 msr_index)
- {
- 	struct kvm_run *run = vcpu->run;
- 
-@@ -489,14 +489,14 @@ static u64 process_ucall(struct kvm_vcpu *vcpu)
- }
- 
- static void run_guest_then_process_rdmsr(struct kvm_vcpu *vcpu,
--					 uint32_t msr_index)
-+					 u32 msr_index)
- {
- 	vcpu_run(vcpu);
- 	process_rdmsr(vcpu, msr_index);
- }
- 
- static void run_guest_then_process_wrmsr(struct kvm_vcpu *vcpu,
--					 uint32_t msr_index)
-+					 u32 msr_index)
- {
- 	vcpu_run(vcpu);
- 	process_wrmsr(vcpu, msr_index);
-diff --git a/tools/testing/selftests/kvm/x86/vmx_apic_access_test.c b/tools/testing/selftests/kvm/x86/vmx_apic_access_test.c
-index dc5c3d1db346..1720113eae79 100644
---- a/tools/testing/selftests/kvm/x86/vmx_apic_access_test.c
-+++ b/tools/testing/selftests/kvm/x86/vmx_apic_access_test.c
-@@ -38,7 +38,7 @@ static void l1_guest_code(struct vmx_pages *vmx_pages, unsigned long high_gpa)
- {
- #define L2_GUEST_STACK_SIZE 64
- 	unsigned long l2_guest_stack[L2_GUEST_STACK_SIZE];
--	uint32_t control;
-+	u32 control;
- 
- 	GUEST_ASSERT(prepare_for_vmx_operation(vmx_pages));
- 	GUEST_ASSERT(load_vmcs(vmx_pages));
-diff --git a/tools/testing/selftests/kvm/x86/vmx_apicv_updates_test.c b/tools/testing/selftests/kvm/x86/vmx_apicv_updates_test.c
-index 7f84cc92feaf..80a4fd1e5bbb 100644
---- a/tools/testing/selftests/kvm/x86/vmx_apicv_updates_test.c
-+++ b/tools/testing/selftests/kvm/x86/vmx_apicv_updates_test.c
-@@ -33,7 +33,7 @@ static void l1_guest_code(struct vmx_pages *vmx_pages)
- {
- #define L2_GUEST_STACK_SIZE 64
- 	unsigned long l2_guest_stack[L2_GUEST_STACK_SIZE];
--	uint32_t control;
-+	u32 control;
- 
- 	GUEST_ASSERT(prepare_for_vmx_operation(vmx_pages));
- 	GUEST_ASSERT(load_vmcs(vmx_pages));
-diff --git a/tools/testing/selftests/kvm/x86/vmx_msrs_test.c b/tools/testing/selftests/kvm/x86/vmx_msrs_test.c
-index d61c8c69ade3..c1e8632a1bb6 100644
---- a/tools/testing/selftests/kvm/x86/vmx_msrs_test.c
-+++ b/tools/testing/selftests/kvm/x86/vmx_msrs_test.c
-@@ -12,8 +12,7 @@
- #include "kvm_util.h"
- #include "vmx.h"
- 
--static void vmx_fixed1_msr_test(struct kvm_vcpu *vcpu, uint32_t msr_index,
--				  u64 mask)
-+static void vmx_fixed1_msr_test(struct kvm_vcpu *vcpu, u32 msr_index, u64 mask)
- {
- 	u64 val = vcpu_get_msr(vcpu, msr_index);
- 	u64 bit;
-@@ -26,8 +25,7 @@ static void vmx_fixed1_msr_test(struct kvm_vcpu *vcpu, uint32_t msr_index,
- 	}
- }
- 
--static void vmx_fixed0_msr_test(struct kvm_vcpu *vcpu, uint32_t msr_index,
--				u64 mask)
-+static void vmx_fixed0_msr_test(struct kvm_vcpu *vcpu, u32 msr_index, u64 mask)
- {
- 	u64 val = vcpu_get_msr(vcpu, msr_index);
- 	u64 bit;
-@@ -40,7 +38,7 @@ static void vmx_fixed0_msr_test(struct kvm_vcpu *vcpu, uint32_t msr_index,
- 	}
- }
- 
--static void vmx_fixed0and1_msr_test(struct kvm_vcpu *vcpu, uint32_t msr_index)
-+static void vmx_fixed0and1_msr_test(struct kvm_vcpu *vcpu, u32 msr_index)
- {
- 	vmx_fixed0_msr_test(vcpu, msr_index, GENMASK_ULL(31, 0));
- 	vmx_fixed1_msr_test(vcpu, msr_index, GENMASK_ULL(63, 32));
-diff --git a/tools/testing/selftests/kvm/x86/xapic_ipi_test.c b/tools/testing/selftests/kvm/x86/xapic_ipi_test.c
-index 97e07b7bc3dd..3df6df2a1b55 100644
---- a/tools/testing/selftests/kvm/x86/xapic_ipi_test.c
-+++ b/tools/testing/selftests/kvm/x86/xapic_ipi_test.c
-@@ -52,16 +52,16 @@ static volatile u64 ipis_rcvd;
- 
- /* Data struct shared between host main thread and vCPUs */
- struct test_data_page {
--	uint32_t halter_apic_id;
-+	u32 halter_apic_id;
- 	volatile u64 hlt_count;
- 	volatile u64 wake_count;
- 	u64 ipis_sent;
- 	u64 migrations_attempted;
- 	u64 migrations_completed;
--	uint32_t icr;
--	uint32_t icr2;
--	uint32_t halter_tpr;
--	uint32_t halter_ppr;
-+	u32 icr;
-+	u32 icr2;
-+	u32 halter_tpr;
-+	u32 halter_ppr;
- 
- 	/*
- 	 *  Record local version register as a cross-check that APIC access
-@@ -69,7 +69,7 @@ struct test_data_page {
- 	 *  arch/x86/kvm/lapic.c). If test is failing, check that values match
- 	 *  to determine whether APIC access exits are working.
- 	 */
--	uint32_t halter_lvr;
-+	u32 halter_lvr;
- };
- 
- struct thread_params {
-@@ -128,8 +128,8 @@ static void sender_guest_code(struct test_data_page *data)
- 	u64 last_wake_count;
- 	u64 last_hlt_count;
- 	u64 last_ipis_rcvd_count;
--	uint32_t icr_val;
--	uint32_t icr2_val;
-+	u32 icr_val;
-+	u32 icr2_val;
- 	u64 tsc_start;
- 
- 	verify_apic_base_addr();
-diff --git a/tools/testing/selftests/kvm/x86/xapic_state_test.c b/tools/testing/selftests/kvm/x86/xapic_state_test.c
-index e71471ac5bd5..637bb90c1d93 100644
---- a/tools/testing/selftests/kvm/x86/xapic_state_test.c
-+++ b/tools/testing/selftests/kvm/x86/xapic_state_test.c
-@@ -144,7 +144,7 @@ static void test_icr(struct xapic_vcpu *x)
- 
- static void __test_apic_id(struct kvm_vcpu *vcpu, u64 apic_base)
- {
--	uint32_t apic_id, expected;
-+	u32 apic_id, expected;
- 	struct kvm_lapic_state xapic;
- 
- 	vcpu_set_msr(vcpu, MSR_IA32_APICBASE, apic_base);
-@@ -170,7 +170,7 @@ static void __test_apic_id(struct kvm_vcpu *vcpu, u64 apic_base)
-  */
- static void test_apic_id(void)
- {
--	const uint32_t NR_VCPUS = 3;
-+	const u32 NR_VCPUS = 3;
- 	struct kvm_vcpu *vcpus[NR_VCPUS];
- 	u64 apic_base;
- 	struct kvm_vm *vm;
-diff --git a/tools/testing/selftests/kvm/x86/xapic_tpr_test.c b/tools/testing/selftests/kvm/x86/xapic_tpr_test.c
-index 14052e94d553..af1fe833ad4f 100644
---- a/tools/testing/selftests/kvm/x86/xapic_tpr_test.c
-+++ b/tools/testing/selftests/kvm/x86/xapic_tpr_test.c
-@@ -58,7 +58,7 @@ static void tpr_guest_irq_queue(void)
- 	if (is_x2apic) {
- 		x2apic_write_reg(APIC_SELF_IPI, IRQ_VECTOR);
- 	} else {
--		uint32_t icr, icr2;
-+		u32 icr, icr2;
- 
- 		icr = APIC_DEST_SELF | APIC_DEST_PHYSICAL | APIC_DM_FIXED |
- 			IRQ_VECTOR;
-@@ -71,7 +71,7 @@ static void tpr_guest_irq_queue(void)
- 
- static uint8_t tpr_guest_tpr_get(void)
- {
--	uint32_t taskpri;
-+	u32 taskpri;
- 
- 	if (is_x2apic)
- 		taskpri = x2apic_read_reg(APIC_TASKPRI);
-@@ -83,7 +83,7 @@ static uint8_t tpr_guest_tpr_get(void)
- 
- static uint8_t tpr_guest_ppr_get(void)
- {
--	uint32_t procpri;
-+	u32 procpri;
- 
- 	if (is_x2apic)
- 		procpri = x2apic_read_reg(APIC_PROCPRI);
-diff --git a/tools/testing/selftests/kvm/x86/xen_shinfo_test.c b/tools/testing/selftests/kvm/x86/xen_shinfo_test.c
-index 83aab75ac792..c6d00205b59d 100644
---- a/tools/testing/selftests/kvm/x86/xen_shinfo_test.c
-+++ b/tools/testing/selftests/kvm/x86/xen_shinfo_test.c
-@@ -116,13 +116,13 @@ struct pvclock_wall_clock {
- } __attribute__((__packed__));
- 
- struct vcpu_runstate_info {
--	uint32_t state;
-+	u32 state;
- 	u64 state_entry_time;
- 	u64 time[5]; /* Extra field for overrun check */
- };
- 
- struct compat_vcpu_runstate_info {
--	uint32_t state;
-+	u32 state;
- 	u64 state_entry_time;
- 	u64 time[5];
- } __attribute__((__packed__));
-@@ -145,7 +145,7 @@ struct shared_info {
- 	unsigned long evtchn_pending[64];
- 	unsigned long evtchn_mask[64];
- 	struct pvclock_wall_clock wc;
--	uint32_t wc_sec_hi;
-+	u32 wc_sec_hi;
- 	/* arch_shared_info here */
- };
- 
--- 
-2.54.0.rc1.555.g9c883467ad-goog
+Not done any more investigation than seeing that this test was updated.
 
+Full log:
+
+   https://lava.sirena.org.uk/scheduler/job/2701624#L2796
+
+# bad: [e75a43c7cec459a07d91ed17de4de13ede2b7758] Merge tag 'trace-v7.1-rc1=
+' of git://git.kernel.org/pub/scm/linux/kernel/git/trace/linux-trace
+# good: [05f7e89ab9731565d8a62e3b5d1ec206485eeb0b] Linux 6.19
+# good: [33c3f6c2b48cd84b441dba1ee3e62290e53930f4] mm/damon/core: fix damos=
+_walk() vs kdamond_fn() exit race
+# good: [118c3908242076c6e281c7010d29c2d0607c3190] liveupdate: remove luo_s=
+ession_quiesce()
+# good: [b3ca98297cd98a51ee9d6d491d0a4ee0ca79b515] mm: workingset: prevent =
+memory cgroup release in lru_gen_eviction()
+# good: [38d76018bb412dc66b08837097eff53d21e8df29] Merge branch 'for-7.1/pi=
+dff' into for-linus
+# good: [faecdd423c27f0d6090156a435ba9dbbac0eaddb] of: unittest: fix use-af=
+ter-free in of_unittest_changeset()
+# good: [5d0d3623303775d750e122a2542d1a26c8573d38] Merge tag 'kbuild-7.1-1'=
+ of git://git.kernel.org/pub/scm/linux/kernel/git/kbuild/linux
+# good: [c43267e6794a36013fd495a4d81bf7f748fe4615] Merge tag 'arm64-upstrea=
+m' of git://git.kernel.org/pub/scm/linux/kernel/git/arm64/linux
+# good: [bc28831d7a09f7058cdca4658d81e5faf635bed7] MAINTAINERS: Add netkit =
+selftest files
+# good: [1c3b68f0d55b5932eb38eda602a61aec6d6f5e5e] Merge tag 'sched-core-20=
+26-04-13' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip
+# good: [d568788baab24875604c231f723dbb72387fb081] Merge tag 'hardening-v7.=
+1-rc1' of git://git.kernel.org/pub/scm/linux/kernel/git/kees/linux
+# good: [b8f82cb0d84d00c04cdbdce42f67df71b8507e8b] Merge tag 'landlock-7.1-=
+rc1' of git://git.kernel.org/pub/scm/linux/kernel/git/mic/linux
+# good: [d60bc140158342716e13ff0f8aa65642f43ba053] Merge tag 'pwrseq-update=
+s-for-v7.1-rc1' of git://git.kernel.org/pub/scm/linux/kernel/git/brgl/linux
+# good: [0f00132132937ca01a99feaf8985109a9087c9ff] Merge tag 'vfs-7.1-rc1.i=
+ntegrity' of git://git.kernel.org/pub/scm/linux/kernel/git/vfs/vfs
+# good: [d354e47f6464bddd777916f3939bafa1673156c7] dt-bindings: timestamp: =
+Add Tegra264 support
+# good: [80bb50e2d459213cccff3111d5ef98ed4238c0d5] ALSA: caiaq: take a refe=
+rence on the USB device in create_card()
+# good: [10d97b74e2eef787d823f9bc05cb044b47d25c41] Merge tag 'edac_urgent_f=
+or_7.0' of git://git.kernel.org/pub/scm/linux/kernel/git/ras/ras
+# good: [028ef9c96e96197026887c0f092424679298aae8] Linux 7.0
+# good: [35bdc192d829164a6e47184d06401918fe3d7f1f] Merge tag 'wq-for-7.0-rc=
+7-fixes' of git://git.kernel.org/pub/scm/linux/kernel/git/tj/wq
+# good: [f5459048c38a00fc583658d6dcd0f894aff6df8f] Merge tag 'i2c-for-7.0-f=
+inal' of git://git.kernel.org/pub/scm/linux/kernel/git/wsa/linux
+# good: [5aa81ab21de30b7b058202102f052289115298ef] Merge tag 'tenstorrent-c=
+lk-for-v7.1' of git://git.kernel.org/pub/scm/linux/kernel/git/tenstorrent/l=
+inux into clk-tenstorrent
+# good: [e774d5f1bc27a85f858bce7688509e866f8e8a4e] Merge tag 'riscv-for-lin=
+us-v7.0-rc8' of git://git.kernel.org/pub/scm/linux/kernel/git/riscv/linux
+# good: [e753c16cb3dd1e8feee6977c330d21fbe0e2db0b] Merge tag 'spi-fix-v7.0-=
+rc7' of git://git.kernel.org/pub/scm/linux/kernel/git/broonie/spi
+# good: [0e4dc6fbddb01b2ce0d0b4d67ad5f70e976bedcc] selftests/bpf: Add BTF s=
+anitize test covering BTF layout
+# good: [7c6c4ed80b874f721bc7c2c937e098c56e37d2f0] Merge tag 'vfs-7.0-rc8.f=
+ixes' of git://git.kernel.org/pub/scm/linux/kernel/git/vfs/vfs
+# good: [08e57f5e1a9067d5fbf33993aa7f51d60b3d13a4] hwmon: (powerz) Fix use-=
+after-free on USB disconnect
+# good: [e719e17d99aaf3922dbc15ae3ac3bb62fac32bad] sched_ext: Warn on task-=
+based SCX op recursion
+# good: [738dd185d3e447e1dfa65b5287730fef456089bf] dt-bindings: sram: Allow=
+ multiple-word prefixes to sram subnode
+# good: [9a9c8ce300cd3859cc87b408ef552cd697cc2ab7] Merge tag 'kbuild-fixes-=
+7.0-4' of git://git.kernel.org/pub/scm/linux/kernel/git/kbuild/linux
+# good: [a55f7f5f29b32c2c53cc291899cf9b0c25a07f7c] Merge tag 'net-7.0-rc8' =
+of git://git.kernel.org/pub/scm/linux/kernel/git/netdev/net
+# good: [14d2714d6537a9df5bea2515185034dbb9d30f03] LoongArch: KVM: Check kv=
+m_request_pending() in kvm_late_check_requests()
+# good: [34b3eef48d980cd37b876e128bbf314f69fb5d70] PCI: tegra194: Fix CBB t=
+imeout caused by DBI access before core power-on
+# good: [7f87a5ea75f011d2c9bc8ac0167e5e2d1adb1594] Merge tag 'hid-for-linus=
+-2026040801' of git://git.kernel.org/pub/scm/linux/kernel/git/hid/hid
+# good: [6f468ea360f0a6a1e45854afbc3019842ed891a8] Input: pc110pad - remove=
+ driver
+# good: [3036cd0d3328220a1858b1ab390be8b562774e8a] Merge tag 'ata-7.0-final=
+' of git://git.kernel.org/pub/scm/linux/kernel/git/libata/linux
+# good: [b16df0dacb3a77d4c1ce95f21c58a2b99ae10213] wifi: mac80211: export i=
+eee80211_calculate_rx_timestamp
+# good: [bfe62a454542cfad3379f6ef5680b125f41e20f4] Merge tag 'soc-fixes-7.0=
+-2' of git://git.kernel.org/pub/scm/linux/kernel/git/soc/soc
+# good: [d78ddeb8938a366aabfabf60255c1a94de8d8ea1] ASoC: soc.h: remove unus=
+ed card->pmdown_time
+# good: [81469ef61cf710274ef42999a3ebe96a5c204ee5] ARM: dts: imx: rename io=
+muxc to pinmux
+# good: [591cd656a1bf5ea94a222af5ef2ee76df029c1d2] Linux 7.0-rc7
+# good: [9d80de66a04606eef625cb9141b6d1d8c970dbcb] mm/memory_hotplug: remov=
+e for_each_valid_pfn() usage
+# good: [909632714f687560627f3e8c21fb5f5180373afd] mm/oom_kill.c: simpilfy =
+rcu call with guard(rcu)
+# good: [1791c390149f56313c425e8add1fd15baf40afb8] Merge tag 'char-misc-7.0=
+-rc7' of git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/char-misc
+# good: [3aae9383f42f687221c011d7ee87529398e826b3] Merge tag 'input-for-v7.=
+0-rc6' of git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input
+# good: [7ca6d1cfec80ebe46cc063f3284c5896c344d9a1] Merge tag 'powerpc-7.0-4=
+' of git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux
+# good: [631919fb12fe7b1f0453fe1035e62ce704bc3923] Merge tag 'sched_ext-for=
+-7.0-rc6-fixes-2' of git://git.kernel.org/pub/scm/linux/kernel/git/tj/sched=
+_ext
+# good: [503d21ef8eac1437d76919921115acf0aef328a0] bpf: Do register range v=
+alidation early
+# good: [03738dd159db60a27378e9b5b93fd187218519ba] crash_dump/dm-crypt: don=
+'t print in arch-specific code
+# good: [6fab063bd8d64f15cde2d194c08a159ad3afdf27] powerpc64/bpf: Implement=
+ fsession support
+# good: [d8a9a4b11a137909e306e50346148fc5c3b63f9d] Merge tag 'v7.0-rc6-smb3=
+-client-fix' of git://git.samba.org/sfrench/cifs-2.6
+# good: [2e80b497497c0d49d7809702f0e70465f88fe7a4] dt-bindings: arm: qcom: =
+Document the Lenovo IdeaCentre Mini X
+# good: [0629c33fe1873a48e1e06078409de76c5a159fdb] power: reset: drop unnee=
+ded dependencies on OF_GPIO
+# good: [5619b098e2fbf3a23bf13d91897056a1fe238c6d] Merge tag 'for-7.0-rc6-t=
+ag' of git://git.kernel.org/pub/scm/linux/kernel/git/kdave/linux
+# good: [5bf4b30ed49b9af281bdf11c788f382faa432cfd] tools/nolibc: drop super=
+fluous invocation of 'make headers'
+# good: [1558905669e4da922fbaa7cf6507eb14779bffbd] ALSA: aoa/tas: Fix OF no=
+de leak on probe failure
+# good: [710c166c0fc377433906f1f2979eca657e9a50c3] Merge tag 'qcom-arm32-fo=
+r-7.1' of https://git.kernel.org/pub/scm/linux/kernel/git/qcom/linux into s=
+oc/dt
+# good: [47f28a5bd154a95d5aa563dde02a801bd32ddb81] ASoC: fsl_easrc: Change =
+the type for iec958 channel status controls
+# good: [7090420420d5a7d7c88b21d16962f2a230be3ef3] drm/msm/dpu: drop INTF_0=
+ on MSM8953
+# good: [d3e2c7476e378089d56067202f4d29969fbd47b3] dt-bindings: i2c: intel,=
+ixp4xx-i2c: Convert to DT schema
+# good: [9147566d801602c9e7fc7f85e989735735bf38ba] Merge tag 'sched_ext-for=
+-7.0-rc6-fixes' of git://git.kernel.org/pub/scm/linux/kernel/git/tj/sched_e=
+xt
+# good: [dbf00d8d23b43a7a1d717e704c50651731d01d71] Merge tag 'fs_for_v7.0-r=
+c7' of git://git.kernel.org/pub/scm/linux/kernel/git/jack/linux-fs
+# good: [a9cdba5c35c5cca6bd0b922bc235b843a41b3a57] fbdev: atyfb: Remove unu=
+sed fb_list
+# good: [25bd73562941b04cfba1a278d8c84f2b1c69b8e9] dma: contiguous: Turn he=
+ap registration logic around
+# good: [d0c3bcd5b8976159d835a897254048e078f447e6] Merge tag 'libcrypto-for=
+-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/ebiggers/linux
+# good: [5c36fd7fc6a84f36bebbef72fe29bec0682a6589] drm/amdgpu: reset ras ee=
+prom table when it is invalid
+# good: [2fb4883b884a437d760bd7bdf7695a7e5a60bba3] drm/amdgpu: Fix wait aft=
+er reset sequence in S4
+# good: [5b6471fc72a42e6110adca54f46fd2c287dc49d4] PCI/VGA: Fail pci_set_vg=
+a_state() if VGA decoding not supported
+# good: [feae58b6ee45096b1d8c29076f0d8098d9788e57] KVM: arm64: Extend pKVM =
+page ownership selftests to cover guest hvcs
+# good: [7658e9b94849ca861ded82d641f52fcec303210d] arm64: dts: qcom: purwa-=
+iot-evk: Enable UFS
+# good: [7aaa8047eafd0bd628065b15757d9b48c5f9c07d] Linux 7.0-rc6
+# good: [2a83ffc5575013784ea41739daf9e10200e44e7c] NFSD: Sign filehandles
+# good: [a3d97d1d3fa68253927a6e6c2fdfe7c039073af7] Merge tag 'ovl-fixes-7.0=
+-rc6' of git://git.kernel.org/pub/scm/linux/kernel/git/overlayfs/vfs
+# good: [cbfffcca2bf0622b601b7eaf477aa29035169184] Merge tag 'trace-v7.0-rc=
+5' of git://git.kernel.org/pub/scm/linux/kernel/git/trace/linux-trace
+# good: [ac354b5cb04d2077c3821a6cbfbc7981ad45f84a] Merge tag 'for-linus' of=
+ git://git.kernel.org/pub/scm/virt/kvm/kvm
+# good: [defec2ca7cd743c9b8a29be5012ad7381a5ecbb3] crash_dump: use sysfs_em=
+it in sysfs show functions
+# good: [26df51adf30b3d440293eed38d01f953ae0bb6f4] Merge tag 'drm-fixes-202=
+6-03-28-1' of https://gitlab.freedesktop.org/drm/kernel
+# good: [be762d8b6dd7efacb61937d20f8475db8f207655] Merge tag 'hwmon-for-v7.=
+0-rc6' of git://git.kernel.org/pub/scm/linux/kernel/git/groeck/linux-staging
+# good: [7df48e36313029e4c0907b2023905dd7213fd678] Merge tag 'for-linus' of=
+ git://git.kernel.org/pub/scm/linux/kernel/git/rdma/rdma
+# good: [bec2988b470ef278c2e7238e8d7edd097853a4ea] arm64: dts: freescale: A=
+dd support for Variscite DART-MX95
+# good: [44b580a74fcd39d0c53b8c9d6b865cfbd05a947e] arm64: dts: imx943-evk: =
+Add nxp,ctrl-ids for scmi_misc
+# good: [d813f421930c5b01b9f61043932de02602dd6ae3] Merge tag 'pm-7.0-rc6' o=
+f git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm
+# good: [46b513250491a7bfc97d98791dbe6a10bcc8129d] Merge tag 'v7.0-rc5-smb3=
+-client-fix' of git://git.samba.org/sfrench/cifs-2.6
+# good: [1ee4716a5a28eaef81ae1f280d983258bee49623] PCI: Fix premature remov=
+al from realloc_head list during resource assignment
+# good: [fa9681ed5c6ae980af18545690e31d8f9c088c33] RISC-V: KVM: Validate SB=
+I STA shmem alignment in kvm_sbi_ext_sta_set_reg()
+# good: [fc1d43826702d8c14845c187d3ea0743fdf8f223] dm vdo: save the formatt=
+ed metadata to disk
+# good: [a8aef26417963f66a98f03f5473033fc2b022863] arm64: dts: qcom: sdm845=
+-db845c: describe WiFi/BT properly
+# good: [c1014a629d0181ce7739caf1448fb8e22d4cba9c] arm64: dts: qcom: Add Ma=
+hua SoC and CRD
+# good: [bba8d9ba7df8f6592552377049fc84958fd0575a] arm64: dts: qcom: monaco=
+: correct Iris corners for the MXC rail
+# good: [fd55319692151de2b89c21356d1445bce364769b] media: Add t4ka3 camera =
+sensor driver
+# good: [0138af2472dfdef0d56fc4697416eaa0ff2589bd] Merge tag 'erofs-for-7.0=
+-rc6-fixes' of git://git.kernel.org/pub/scm/linux/kernel/git/xiang/erofs
+# good: [f7a1c0283f135833db164cc0fac8d422fed2079e] ecryptfs: Replace memcpy=
+ + manual NUL termination with strscpy
+# good: [d2a43e7f89da55d6f0f96aaadaa243f35557291e] Merge tag 'hardening-v7.=
+0-rc6' of git://git.kernel.org/pub/scm/linux/kernel/git/kees/linux
+# good: [17de8a68ac9807adf551f7d2d980e26d1196e41a] dt-bindings: mtd: gpmi-n=
+and: ref to nand-controller-legacy.yaml
+# good: [1ce61688875da281ab109bb143ec6ba756493c39] drm/msm/dpu: drop VBIF i=
+ndex from the VBIF params
+# good: [bbeb83d3182abe0d245318e274e8531e5dd7a948] Merge tag 'kbuild-fixes-=
+7.0-3' of git://git.kernel.org/pub/scm/linux/kernel/git/kbuild/linux
+# good: [24f9515de8778410e4b84c85b196c9850d2c1e18] Merge tag 'for-linus' of=
+ git://git.kernel.org/pub/scm/virt/kvm/kvm
+# good: [7b4f1a29c704f2c28f32dca5fea6d173891c16a9] selftests/bpf: Test 32-b=
+it scalar spill pruning in stacksafe()
+# good: [e3c33bc767b5512dbfec643a02abf58ce608f3b2] Merge tag 'mm-hotfixes-s=
+table-2026-03-23-17-56' of git://git.kernel.org/pub/scm/linux/kernel/git/ak=
+pm/mm
+# good: [141efa53b9875c059d0edec5212fbcd311ec4896] ASoC: amd: yc: Add MSI T=
+hin A15 B7VF to quirk table
+# good: [1b065199ea1934e6d06d1a9b2dc7ed7c79321484] media: i2c: ov8856: pars=
+e and register V4L2 device tree properties
+# good: [c369299895a591d96745d6492d4888259b004a9e] Linux 7.0-rc5
+# good: [f03ffe53ab6ffc798ed8291090cebf19c6e5fa3b] tools/sched_ext: Add com=
+pat handling for sub-scheduler ops
+# good: [ec69c9e88315c4be70c283f18c2ff130da6320b5] i2c: tegra: Don't mark d=
+evices with pins as IRQ safe
+# good: [113ae7b4decc6c2d95bdbbe52e615a0137ef7f9f] Merge tag 'hwmon-for-v7.=
+0-rc5' of git://git.kernel.org/pub/scm/linux/kernel/git/groeck/linux-staging
+# good: [42bddab0563fe67882b2722620a66dd98c8dbf33] Merge tag 'execve-v7.0-r=
+c5' of git://git.kernel.org/pub/scm/linux/kernel/git/kees/linux
+# good: [a0c83177734ab98623795e1ba2cf4b72c23de5e7] Merge tag 'drm-fixes-202=
+6-03-21' of https://gitlab.freedesktop.org/drm/kernel
+# good: [165160265e4be3a6639dd4ea5ca0953a858e2156] Merge tag 'arm64-fixes' =
+of git://git.kernel.org/pub/scm/linux/kernel/git/arm64/linux
+# good: [ce29261ec6482de54320c03398eb30e9615aee40] KVM: arm64: selftests: A=
+dd no-vgic-v5 selftest
+# good: [0e4f8f1a3d081e834be5fd0a62bdb2554fadd307] Merge tag 'parisc-for-7.=
+0-rc5' of git://git.kernel.org/pub/scm/linux/kernel/git/deller/parisc-linux
+# good: [a1d9d8e833781c44ab688708804ce35f20f3cbbd] Merge tag 'net-7.0-rc5' =
+of git://git.kernel.org/pub/scm/linux/kernel/git/netdev/net
+# good: [da8d9636be7e0761f69c3dadf747c725732312ff] KVM: arm64: gic-v5: Init=
+ Private IRQs (PPIs) for GICv5
+# good: [3fe1dcbc2d20c5dbc581c0bb458e05365bfffcf7] module: expose imported =
+namespaces via sysfs
+# good: [af325e87af5da2f686d1ad547edc96f731418f2a] KVM: arm64: gic-v5: Add =
+vgic-v5 save/restore hyp interface
+# good: [ac977b900907f621e117184e71766f297a2f702b] HID: mcp2221: Fix spelli=
+ng mistake "Enfore" -> "Enforce"
+# good: [a258a383b91774ac646517ec1003a442964d8946] KVM: arm64: gic-v5: Sani=
+tize ID_AA64PFR2_EL1.GCIE
+# good: [9d6d9514c08f462d162040b48526bda60def9de1] KVM: arm64: gic-v5: Supp=
+ort GICv5 FGTs & FGUs
+# good: [f656807150e3e1c6f76cab918e5adfad6d881d58] KVM: arm64: gic-v5: Dete=
+ct implemented PPIs on boot
+# good: [e9825d1c79570b4c11259e826b3f7c1511544a85] Merge tag 'pm-7.0-rc5' o=
+f git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm
+# good: [8a30aeb0d1b4e4aaf7f7bae72f20f2ae75385ccb] Merge tag 'nfsd-7.0-2' o=
+f git://git.kernel.org/pub/scm/linux/kernel/git/cel/linux
+# good: [04a9f1766954687f0a1b7a0f7184dc4f86edcb30] Merge tag 'soc-fixes-7.0=
+' of git://git.kernel.org/pub/scm/linux/kernel/git/soc/soc
+# good: [7aec47be7c2bbed4823325e888df3e91dde33253] arm64: dts: qcom: qcs830=
+0: Add clocks for QoS configuration
+# good: [d98b978446d249df1a662b4fef4c0bbfa1d650b8] firmware: qcom: scom: Si=
+mplify mutex with guard
+# good: [8020c41b39f514941d93f3322b598afdce487064] usb: core: allow ACPI-ma=
+naged hard-wired ports to power off
+# good: [a989fde763f4f24209e4702f50a45be572340e68] Merge tag 'libnvdimm-fix=
+es-7.0-rc5' of git://git.kernel.org/pub/scm/linux/kernel/git/nvdimm/nvdimm
+# good: [f0caa1d49cc07b30a7e2f104d3853ec6dc1c3cad] Merge tag 'hid-for-linus=
+-2026031701' of git://git.kernel.org/pub/scm/linux/kernel/git/hid/hid
+# good: [cffcb42c57686e9a801dfcf37a3d0c62e51c1c3e] drm/bridge: dw-hdmi-qp: =
+fix multi-channel audio output
+# good: [67253b28a61f0dff31f8f00dca8c9586f089b852] drm/pagemap_util: Ensure=
+ proper cache lock management on free
+# good: [2d7f05cddf4c268cc36256a2476946041dbdd36d] drm/imagination: Synchro=
+nize interrupts before suspending the GPU
+# good: [8510d054b7e086a71a9191ac3399231290dfd272] KVM: arm64: avoid unused=
+-variable warning
+# good: [09e70e4f119ff650d24c96161fd2f62ac7e424b0] regmap: Synchronize cach=
+e for the page selector
+# good: [2d1373e4246da3b58e1df058374ed6b101804e07] Merge tag 'for-7.0-rc4-t=
+ag' of git://git.kernel.org/pub/scm/linux/kernel/git/kdave/linux
+# good: [4f3df2e5ea69f5717d2721922aff263c31957548] Merge tag 'powerpc-7.0-3=
+' of git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux
+# good: [f338e77383789c0cae23ca3d48adcc5e9e137e3c] Linux 7.0-rc4
+# good: [267594792a71018788af69e836c52e34bb8054af] Merge tag 'rust-fixes-7.=
+0-2' of git://git.kernel.org/pub/scm/linux/kernel/git/ojeda/linux
+# good: [69237f8c1f69112cca7388af7fab6d0ee45a2525] Merge tag 'usb-7.0-rc4' =
+of git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/usb
+# good: [9abff5748e4fb2055a54de6b8e43f4395d2481d9] Merge tag 'wq-for-7.0-rc=
+3-fixes' of git://git.kernel.org/pub/scm/linux/kernel/git/tj/wq
+# good: [1c9982b4961334c1edb0745a04cabd34bc2de675] Merge tag 'drm-fixes-202=
+6-03-14' of https://gitlab.freedesktop.org/drm/kernel
+# good: [399af66228cfd7df79dc360810b6b673000f8090] Merge tag 'xfs-fixes-7.0=
+-rc4' of git://git.kernel.org/pub/scm/fs/xfs/xfs-linux
+# good: [0257f64bdac7fdca30fa3cae0df8b9ecbec7733a] Merge tag 'pm-7.0-rc4' o=
+f git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm
+# good: [c670267ff50d5f9beb486f0203cdede580a99ae3] tty: constify tty_ldisc_=
+ops
+# good: [80234b5ab240f52fa45d201e899e207b9265ef91] Merge tag 'rproc-v7.0-fi=
+xes' of git://git.kernel.org/pub/scm/linux/kernel/git/remoteproc/linux
+# good: [786bf7ef564e97f195a2fca379fa7866a4c3ea08] usb: musb: Use safer str=
+scpy() instead of strcpy()
+# good: [b29fb8829bff243512bb8c8908fd39406f9fd4c3] Merge tag 'v7.0-rc3-ksmb=
+d-server-fixes' of git://git.samba.org/ksmbd
+# good: [b4f0dd314b39ea154f62f3bd3115ed0470f9f71e] Merge tag 'mm-hotfixes-s=
+table-2026-03-09-16-36' of git://git.kernel.org/pub/scm/linux/kernel/git/ak=
+pm/mm
+# good: [21b3fb7dc19caa488d285e3c47999f7f1a179334] regulator: pca9450: Corr=
+ect probed name for PCA9452
+# good: [9be71d462c33b1a00acfa4ab8f0f5332ed592817] firmware: cs_dsp: Simpli=
+fy suppressing log messages during KUnit testing
+# good: [8fc5c7895185d1119ae76b509892a1d14e0bd483] ASoC: wm_adsp: Combine s=
+ome similar code in firmware file search
+# good: [7b3f8db159f710d432c4edc024fcefa9e62e8b4b] ASoC: fsl_xcvr: add bitc=
+ount and timestamp controls
+# good: [7cb259eacc08df8e5d1b17e6a75a19518e5de7ca] dt-bindings: leds: sun50=
+i-a100: Add compatible for Allwinner A523 SoC
+# good: [4185b95f8a42d92d68c49289b4644546b51e252b] ASoC: simple-card-utils:=
+ fix graph_util_is_ports0() for DT overlays
+# good: [5e783510b5c09bc8a9d83a34488ed924769085f2] pinctrl: realtek: Simpli=
+fy error handling with dev_err_probe()
+# good: [95bc5c225513fc3c4ce169563fb5e3929fbb938b] ASoC: soc-core: flush de=
+layed work before removing DAIs and widgets
+# good: [981b080a79724738882b0af1c5bb7ade30d94f24] spi: fsl-qspi: Use reini=
+t_completion() for repeated operations
+# good: [ed0313223ce6514dbd39c049e25f702980d7e3cc] ASoC: codecs: wcd9335: R=
+emove potential undefined behavior in wcd9335_slimbus_irq()
+# good: [111e2863372c322e836e0c896f6dd9cf4ee08c71] spi: rockchip-sfc: Fix d=
+ouble-free in remove() callback
+# good: [1bc17c67194716f53037685b7059a22cc1a911b2] ASoC: tegra: Add support=
+ for Tegra238 soundcard
+# good: [6fdc70794cc15b450e3fd750ca048318764a343e] platform/x86: acer-wirel=
+ess: Register ACPI notify handler directly
+# good: [97af961568c8682c44506c9ad4b26c8a5455ec1d] ASoC: cs35l56: Put OTP r=
+egister defines in correct address order
+# good: [ad0e9ac2d5f5ab7a773c2c07ecf06ee59db9259f] spi: atcspi200: Fix doub=
+le-free in atcspi_configure_dma()
+# good: [0a208adefecb287d22321054470d4619cb303839] ASoC: cs42l43: Add suppo=
+rt for the B variant
+# good: [b6376ccdcb4bf7163fc4cbe5f83e265bc1660d4f] phy: can-transceiver: re=
+name temporary helper function to avoid conflict
+# good: [facfdef64d11c08e6f1e69d02a0b87cb74cee0f5] firmware: cs_dsp: Fix fr=
+agmentation regression in firmware download
+# good: [ff85a2ebacbdaec9f28c4660c991295ace93cd1c] RDMA/umem: Add pinned re=
+vocable dmabuf import interface
+# good: [1f318b96cc84d7c2ab792fcc0bfd42a7ca890681] Linux 7.0-rc3
+# good: [a8075ada4a341ce58ebf8bef0188cefe6c2f6487] ASoC: ti: davinci-mcasp:=
+ improve aux_div selection for mid-range dividers
+# good: [1954c4f012206147c34acda8da04f827aa7d3ee3] eventpoll: Convert epoll=
+_put_uevent() to scoped user access
+# good: [2e4cfaa78eb98d2623367818c859225c6b6bf701] memory: tegra: Group SoC=
+ specific fields
+# good: [c23719abc3308df7ed3ad35650ad211fb2d2003d] Merge tag 'x86-urgent-20=
+26-03-08' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip
+# good: [fb07430e6f98ccff61f6f1a06d01d7f12e29c6d3] Merge tag 'fbdev-for-7.0=
+-rc3' of git://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev
+# good: [4ae12d8bd9a830799db335ee661d6cbc6597f838] Merge tag 'kbuild-fixes-=
+7.0-2' of git://git.kernel.org/pub/scm/linux/kernel/git/kbuild/linux
+# good: [8e235bc43326f47adfd77d926c7d6ad39077569a] docs: netdev: refine net=
+devsim testing guidance
+# good: [325a118c12045239076b7ea9e66391dd6f56f72e] Merge tag 'pci-v7.0-fixe=
+s-3' of git://git.kernel.org/pub/scm/linux/kernel/git/pci/pci
+# good: [651690480a965ca196ce42d4562543f3e61cb226] Merge tag 'spi-fix-v7.0-=
+rc2' of git://git.kernel.org/pub/scm/linux/kernel/git/broonie/spi
+# good: [aa3d0c93a333182e887426366a4f3e5f06ee0d83] regulator: max20411: sho=
+w failure on register
+# good: [b1ef855c62601ed4de2c4b0ff75a075877e3dac8] regmap: Simplify devres =
+handling
+# good: [5ee8dbf54602dc340d6235b1d6aa17c0f283f48c] Merge tag 'fsverity-for-=
+linus' of git://git.kernel.org/pub/scm/fs/fsverity/linux
+# good: [ef0b4783afc211a4b120e72b5a57f3d0340a9981] ASoC: cs35l56: KUnit tes=
+ts for reading speaker ID from host GPIOs
+# good: [e7662bced2e98ffa2c572126677deb9cf55d43b3] regcache: Move HW readba=
+ck after cache initialisation
+# good: [c107785c7e8dbabd1c18301a1c362544b5786282] Merge tag 'modules-7.0-r=
+c3.fixes' of git://git.kernel.org/pub/scm/linux/kernel/git/modules/linux
+# good: [0b3bb205808195159be633a8cefb602670e856fb] Merge tag 'vfs-7.0-rc3.f=
+ixes' of git://git.kernel.org/pub/scm/linux/kernel/git/vfs/vfs
+# good: [b709087e9e544259d1d075ced91cc4ab769a8ae2] KVM: nSVM: Restrict mapp=
+ing vmcb12 on nested VMRUN
+# good: [ecc64d2dc9ff9738d2a896beb68e02c2feaf9a02] Merge tag 'sysctl-7.00-f=
+ixes-rc3' of git://git.kernel.org/pub/scm/linux/kernel/git/sysctl/sysctl
+# good: [cfc69c2e6c699c96949f7b0455195b0bfb7dc715] i2c: i801: Revert "i2c: =
+i801: replace acpi_lock with I2C bus lock"
+# good: [325291b20f8a6f14b9c82edbf5d12e4e71f6adaa] ASoC: amd: yc: Add DMI q=
+uirk for ASUS EXPERTBOOK PM1503CDA
+# good: [0031c06807cfa8aa51a759ff8aa09e1aa48149af] Merge tag 'cgroup-for-7.=
+0-rc2-fixes' of git://git.kernel.org/pub/scm/linux/kernel/git/tj/cgroup
+# good: [2adac914c72b6cb5aba2612f49050c82aecd498e] ASoC: cs35l56-test: Add =
+test cases without onchip pulls defined
+# good: [96f06d055ca03d1dfb5830fd07ff6eadbd66264c] spi: dt-bindings: mpfs-s=
+pi: remove clock-names
+# good: [27990181031fdcdbe0f7c46011f6404e5d116386] ASoC: SDCA: Add allocati=
+on failure check for Entity name
+# good: [9891b52ba12e9d5fed5901b6b5f6e0cdcd424390] regcache: Factor out reg=
+cache_hw_exit() helper
+# good: [f48e7a246a567e3764112e2463274c479d95cd96] ASoC: soc-core: Use guar=
+d()/scoped_guard() for mutex lock
+# good: [3b46d61890632c8f8b117147b6923bff4b42ccb7] spi: spi-dw-dma: fix pri=
+nt error log when wait finish transaction
+# good: [af4e9ef3d78420feb8fe58cd9a1ab80c501b3c08] uaccess: Fix scoped_user=
+_read_access() for 'pointer to const'
+# good: [e84141846decb77d2826e553318a608b256804e5] regulator: pf9453: Allow=
+ shared IRQ
+# good: [a8df7892a9f42b2e2d5851f8835c734bd7fe8ad4] ASoC: dt-bindings: tegra=
+: Add compatible for Tegra238 sound card
+# good: [2d85ecd6fb0eb2fee0ffa040ec1ddea57b09bc38] regulator: pf9453: Respe=
+ct IRQ trigger settings from firmware
+# good: [9ab637ac5d3826606947f4e861107da958eda324] regcache: Amend printf()=
+ specifiers when printing registers
+# good: [1696fad8b259a2d46e51cd6e17e4bcdbe02279fa] ASoC: sti: use managed r=
+egmap_field allocations
+# good: [17c6bf433742e0c1ff5ce175145877c0194e4a7a] ASoC: cs35l45: Hibernate=
+ wm_adsp on runtime suspend
+# good: [23942b71f07cc99e39d9216a5b370df494759d8c] regulator: mt6363: Fix i=
+ncorrect and redundant IRQ disposal in probe
+# good: [11439c4635edd669ae435eec308f4ab8a0804808] Linux 7.0-rc2
+# good: [31ddc62c1cd92e51b9db61d7954b85ae2ec224da] ASoC: fsl_easrc: Fix eve=
+nt generation in fsl_easrc_iec958_set_reg()
+# good: [34b4fc44e4f904fbb81335d53163ffdcb0180000] ASoC: soc_sdw_utils: rem=
+ove index from sdca codec name
+# good: [da37bfe76b5b4ccc01ed8132215098e20d78e5f3] ASoC: cs42xx8: add error=
+ checks for constraints in TDM mode
+# good: [ca5056f5a78ce62588878d138e8141f01d70e61b] ASoC: cs35l56: Suppress =
+pointless warning about number of GPIO pulls
+# good: [eb71ab2bf72260054677e348498ba995a057c463] Merge tag 'bpf-fixes' of=
+ git://git.kernel.org/pub/scm/linux/kernel/git/bpf/bpf
+# good: [39c633261414f12cb533a8b802ee57e2d2e3c482] Merge tag 'scsi-fixes' o=
+f git://git.kernel.org/pub/scm/linux/kernel/git/jejb/scsi
+# good: [06dba254de95b16e7793224d29daa5195de2e581] ASoC: dt-bindings: nvidi=
+a,tegra-audio-max9808x: document additional board pins
+# good: [d3b693a13b39bce16e284e1c737874966b3a96de] spi: spi-mem: clean up k=
+ernel-doc in spi-mem.h
+# good: [9197e5949a41cfb5d44a6b8a860766266340d558] firewire: ohci: initiali=
+ze page array to use alloc_pages_bulk() correctly
+# good: [42eb01783091e49020221a8a7d6c00e154ae7e58] Merge tag 'v7.0rc1-smb3-=
+client-fixes' of git://git.samba.org/sfrench/cifs-2.6
+# good: [4d349ee5c7782f8b27f6cb550f112c5e26fff38d] Merge tag 'arm64-fixes' =
+of git://git.kernel.org/pub/scm/linux/kernel/git/arm64/linux
+# good: [aed968f8a6cd60a4aa32b5e9c0973c95c443ef4e] Merge tag 'cxl-fixes-7.0=
+-rc2' of git://git.kernel.org/pub/scm/linux/kernel/git/cxl/cxl
+# good: [ac9ccb6e75c5af84095bece1019f22cb45ab43e5] ntfs: Fix possible deadl=
+ock
+# good: [2974aa42e6696a1d95b727d677dc01a71af5b998] ASoC: remove snd_soc_pcm=
+_subclass
+# good: [501efdcb3b3ab099fc0ce2f6e668b1c4095dd476] ASoC: SDCA: Pull the Q7.=
+8 volume helpers out of soc-ops
+# good: [3f4a08e64442340f4807de63e30aef22cc308830] Merge tag 'kmalloc_obj-v=
+7.0-rc2' of git://git.kernel.org/pub/scm/linux/kernel/git/kees/linux
+# good: [e96493229a6399e902062213c6381162464cdd50] spi: stm32: fix missing =
+pointer assignment in case of dma chaining
+# good: [e3c81bae4f282a6be56bc22e05e2ce3dd92ae301] Merge tag 'for-linus' of=
+ git://git.kernel.org/pub/scm/linux/kernel/git/rdma/rdma
+# good: [a75cb869a8ccc88b0bc7a44e1597d9c7995c56e5] Merge tag 'v7.0-rc1-ksmb=
+d-server-fixes' of git://git.samba.org/ksmbd
+# good: [d90c0f78379454d51a428e312ac6db573060185c] regulator: cpcap-regulat=
+or: add support for Mot regulators
+# good: [f4d0ec0aa20d49f09dc01d82894ce80d72de0560] Merge tag 'erofs-for-7.0=
+-rc2-fixes' of git://git.kernel.org/pub/scm/linux/kernel/git/xiang/erofs
+# good: [d9d32e5bd5a4e57675f2b70ddf73c3dc5cf44fc2] Merge tag 'ata-7.0-rc2' =
+of git://git.kernel.org/pub/scm/linux/kernel/git/libata/linux
+# good: [5c74a008ffc62fc57a041602b4517519c8bf9436] firmware: cs_dsp: Mark K=
+Unit test suites KUNIT_SPEED_SLOW
+# good: [260c3fff1fefc570d8f23e87953e181d7d248861] ASoC: cs-amp-lib-test: S=
+top including platform_device.h
+# good: [8bd9b67dc6e272f88c59365a2f55d38d52091cf9] staging: sm750fb: Fix "v=
+arios" typo in ddk750_swi2c.c
+# good: [e02902dd493bf9c9b05353c761737ac514ad7a5c] spi: add devm_spi_new_an=
+cillary_device()
+# good: [bfd7db781e2e7a99b086d645a104d16e368f58ff] regulator: Kconfig: fix =
+a typo
+# good: [ada32396f90951e12465224c04742607ca56a982] ASoC: SDCA: Add CS47L47 =
+to class driver
+# good: [7c12f6ead4672cb08b74e6f6115eb04dca8ccfa4] spi: tegra210-quad: Add =
+runtime autosuspend support
+# good: [297318a1c26dabb5a2d8540fdf436c22094eb2d7] spi: dt-bindings: snps,d=
+w-abp-ssi: Remove unused bindings
+# good: [37983fad7f3ef296fa0504c8e945987459dc5487] regmap: define cleanup h=
+elper for regmap_field
+# good: [9a5eb2adb1ec90f854d9b45c75f0fcb3ae981356] ata: libata-scsi: simpli=
+fy ata_scsi_requeue_deferred_qc()
+# good: [7dff99b354601dd01829e1511711846e04340a69] Remove WARN_ALL_UNSEEDED=
+_RANDOM kernel config option
+# good: [507a071d9868cb60e4e76f8a06fc8eb014f59ae4] spi: pxa2xx: use min() i=
+nstead of min_t()
+# good: [32fc4168fa56f6301d858c778a3d712774e9657e] ASoC: amd: yc: Add ASUS =
+EXPERTBOOK BM1503CDA to quirk table
+# good: [4b73231b2a61c4142a027613d277a19c484dfcc3] regulator: tps65185: che=
+ck devm_kzalloc() result in probe
+# good: [5ebc20921b7fff9feb44de465448e17a382c9965] ASoC: tas2552: Allow aud=
+io enable GPIO to sleep
+# good: [c740532de087009b18981ab14be42c45494c246d] dt-bindings: mmc: arm,pl=
+18x: Do not use plural form of a proper noun PrimeCell
+# good: [6510e1324bcdc8caf21f6d17efe27604c48f0d64] ASoC: cs42l43: Report in=
+sert for exotic peripherals
+# good: [fed6e5084894373d76270cad4a32eb6479ad8247] spi: atcspi200: Remove r=
+edundant assignment to .owner
+# good: [32a92f8c89326985e05dce8b22d3f0aa07a3e1bd] Convert more 'alloc_obj'=
+ cases to default GFP_KERNEL arguments
+# good: [be704107e79696e855aa41e901a926039b6d2410] regulator: dt-bindings: =
+mt6359: make regulator names unique
+# good: [fbb4c52ccdcb4a612d2b7f800aa57090eeee16d7] regulator: spacemit-p1: =
+Update supply names
+# good: [189f164e573e18d9f8876dbd3ad8fcbe11f93037] Convert remaining multi-=
+line kmalloc_obj/flex GFP_KERNEL uses
+# good: [bf122191473e26a8f195308b1ba924c98424c8e1] ASoC: rt5677-spi: Add SP=
+I device ID matching table
+# good: [c2bcf62ca75c541ec4297e6ff02a68ddc2e02029] regcache: Split regcache=
+_count_cacheable_registers() helper
+# good: [d075cef4af6327a5de4bee7bf77591e3201e54f4] ASoC: simple-card-utils:=
+ add sysclk ordering support
+# good: [78dfbd4ad0be9f51de7b9a19388809254aeccd26] ASoC: Add quirk for Leco=
+o Bellator N176
+# good: [0556bb42a84ee391a2145ddba86756f9747bc27f] regulator: pf0900: Make =
+regu_irqs variable static const
+# good: [171b3663f33e1efdc97f5112f49be10b47b20fa8] ASoC: codecs: aw88261: A=
+dd firmware-name support
+# good: [1dd419145d090f8fdf149cbb39dea6d968659dd2] Merge tag 'rust-fixes-7.=
+0' of git://git.kernel.org/pub/scm/linux/kernel/git/ojeda/linux
+# good: [a95f71ad3e2e224277508e006580c333d0a5fe36] Merge tag 'for-linus' of=
+ git://git.kernel.org/pub/scm/linux/kernel/git/rmk/linux
+# good: [d79526b89571ae447c1a5cfd3d627efa07098348] Merge tag 'spi-fix-v7.0-=
+merge-window' of git://git.kernel.org/pub/scm/linux/kernel/git/broonie/spi
+# good: [8bf22c33e7a172fbc72464f4cc484d23a6b412ba] Merge tag 'net-7.0-rc1' =
+of git://git.kernel.org/pub/scm/linux/kernel/git/netdev/net
+# good: [956b9cbd7f156c8672dac94a00de3c6a0939c692] Merge tag 'kbuild-fixes-=
+7.0-1' of git://git.kernel.org/pub/scm/linux/kernel/git/kbuild/linux
+# good: [80ca113671a005430207d351cb403c1637106212] ASoC: dt-bindings: asahi=
+-kasei,ak5558: Fix the supply names
+# good: [0783052534f547f8f201dd4554b1df9f1f8615b5] ASoC: rockchip: i2s-tdm:=
+ Use param rate if not provided by set_sysclk
+# good: [2b7a25df823dc7d8f56f8ce7c2d2dac391cea9c2] Merge tag 'mm-nonmm-stab=
+le-2026-02-18-19-56' of git://git.kernel.org/pub/scm/linux/kernel/git/akpm/=
+mm
+# good: [87a367f1bffadf1db5def15bd0cd2148acd057ad] Merge tag 'ceph-for-7.0-=
+rc1' of https://github.com/ceph/ceph-client
+# good: [40534d19ed2afb880ecf202dab26a8e7a5808d16] spi: spidev: fix lock in=
+version between spi_lock and buf_lock
+# good: [e81dd54f62c753dd423d1a9b62481a1c599fb975] Merge tag 'dmaengine-7.0=
+-rc1' of git://git.kernel.org/pub/scm/linux/kernel/git/vkoul/dmaengine
+# good: [0d68ad088e334088b031423e59886ae118c11202] ASoC: tas2783A: add expl=
+icit port prepare handling
+# good: [957e5be2e1ff10d4b5e86d420c12580897069114] ASoC: qcom: sm8250: Add =
+quinary MI2S support
+# good: [bb7a3fc2c976b5d0deb35a54ca237519816d7ba9] Merge tag 'i2c-for-7.0-r=
+c1' of git://git.kernel.org/pub/scm/linux/kernel/git/wsa/linux
+# good: [26a4cfaff82a2dcb810f6bfd5f4842f9b6046c8a] Merge tag 'docs-7.0-2' o=
+f git://git.kernel.org/pub/scm/linux/kernel/git/docs/linux
+# good: [09ad01a530bb6ad260bda4fa56bab84619d90968] regulator: s2mps11: fix =
+pctrlsel macro usage in s2mpg10_of_parse_cb()
+# good: [ca4ee40bf13dbd3a4be3b40a00c33a1153d487e5] Partly revert "drm/hyper=
+v: Remove reference to hyperv_fb driver"
+# good: [45a43ac5acc90b8f4835eea92692f620e561a06b] Merge tag 'vfs-7.0-rc1.m=
+isc.2' of git://git.kernel.org/pub/scm/linux/kernel/git/vfs/vfs
+# good: [57d76ceccee4b497eb835831206b50e72915a501] Merge tag 'linux-watchdo=
+g-6.20-rc1' of git://www.linux-watchdog.org/linux-watchdog
+# good: [0f2acd3148e0ef42bdacbd477f90e8533f96b2ac] Merge tag 'm68knommu-for=
+-v7.0' of git://git.kernel.org/pub/scm/linux/kernel/git/gerg/m68knommu
+# good: [770aaedb461a055f79b971d538678942b6607894] Merge tag 'bootconfig-v7=
+=2E0' of git://git.kernel.org/pub/scm/linux/kernel/git/trace/linux-trace
+# good: [f50822fd8675c68d294e89bd102f7b487ca3acd3] Merge tag 'platform-driv=
+ers-x86-v7.0-1' of git://git.kernel.org/pub/scm/linux/kernel/git/pdx86/plat=
+form-drivers-x86
+# good: [44331bd6a6107a33f8082521b227ffa4ec063a40] Merge tag 'mm-hotfixes-s=
+table-2026-02-13-07-14' of git://git.kernel.org/pub/scm/linux/kernel/git/ak=
+pm/mm
+# good: [3e48a11675c50698374d4ac596fb506736eb1c53] Merge tag 'f2fs-for-7.0-=
+rc1' of git://git.kernel.org/pub/scm/linux/kernel/git/jaegeuk/f2fs
+# good: [7449f86bafcdb588422bb14a4babfd285e723670] Merge tag 'nfs-for-7.0-1=
+' of git://git.linux-nfs.org/projects/anna/linux-nfs
+# good: [6be5c151eb1ebf4d5007b9f60c729f7381255a23] tools/power turbostat: E=
+xpunge logical_cpu_id
+# good: [5e160646f4dbca7cf9cc09abc31a22931e362b8a] tools/power turbostat: R=
+ename physical_core_id to core_id
+# good: [888a0a802c467bbe34a42167bdf9d7331333440a] spi: wpcm-fiu: Fix poten=
+tial NULL pointer dereference in wpcm_fiu_probe()
+# good: [cee73b1e840c154f64ace682cb477c1ae2e29cc4] Merge tag 'riscv-for-lin=
+us-7.0-mw1' of git://git.kernel.org/pub/scm/linux/kernel/git/riscv/linux
+# good: [541c43310e85dbf35368b43b720c6724bc8ad8ec] Merge tag 'fs_for_v6.20-=
+rc1' of git://git.kernel.org/pub/scm/linux/kernel/git/jack/linux-fs
+# good: [582a1ef360a05bff4350bbf6e383f61d26b804f0] Merge tag 'trace-rtla-v7=
+=2E0' of git://git.kernel.org/pub/scm/linux/kernel/git/trace/linux-trace
+# good: [b7ef56a07672e0d7ebe71c9d9b45f959f0c2f8e8] Merge tag 'media/v7.0-2'=
+ of git://git.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-media
+# good: [c22e26bd0906e9c8325462993f01adb16b8ea2c0] Merge tag 'landlock-7.0-=
+rc1' of git://git.kernel.org/pub/scm/linux/kernel/git/mic/linux
+# good: [e243cdd87b911ce9968b62e4ab2b680dfadc4341] regulator: core: Remove =
+regulator supply_name length limit
+# good: [1e83ccd5921a610ef409a7d4e56db27822b4ea39] sched/mmcid: Don't assum=
+e CID is CPU owned on mode switch
+# good: [b82fa9b0c26eeb2fde6017f7de2c3c544484efef] ASoC: codecs: aw88261: F=
+ix erroneous bitmask logic in Awinic init
+# good: [37a93dd5c49b5fda807fd204edf2547c3493319c] Merge tag 'net-next-7.0'=
+ of git://git.kernel.org/pub/scm/linux/kernel/git/netdev/net-next
+# good: [6589b3d76db2d6adbf8f2084c303fb24252a0dc6] Merge tag 'soc-dt-7.0' o=
+f git://git.kernel.org/pub/scm/linux/kernel/git/soc/soc
+# good: [192c0159402e6bfbe13de6f8379546943297783d] Merge tag 'powerpc-7.0-1=
+' of git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux
+# good: [dc855b77719fe452d670cae2cf64da1eb51f16cc] Merge tag 'irq-drivers-2=
+026-02-09' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip
+# good: [9f16d96e1222391a6b996a1b676bec14fb91e3b2] ASoC: fsl_xcvr: Revert f=
+ix missing lock in fsl_xcvr_mode_put()
+# good: [1a4b0c999101b2532723f9bd9818b70ffa7580f4] regulator: mt6363: Fix i=
+nterrmittent timeout
+# good: [a9aabb3b839aba094ed80861054993785c61462c] Merge tag 'rust-6.20-7.0=
+' of git://git.kernel.org/pub/scm/linux/kernel/git/ojeda/linux
+# good: [43185067c6fd55b548ecb648a69d9569fcf622b5] configfs-tsm-report: tdx=
+_guest: Increase Quote buffer size to 128KB
+# good: [5578da7d957fbaf91f6c39ba2363c2d2e4273183] ASoC: rt721-sdca: Fix is=
+sue of fail to detect OMTP jack type
+# good: [2619c62b7ef2f463bcbbb34af122689c09855c23] Merge tag 'x86-irq-2026-=
+02-09' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip
+# good: [27125df9a5d3b4cfd03bce3a8ec405a368cc9aae] mm/slab: drop the OBJEXT=
+S_NOSPIN_ALLOC flag from enum objext_flags
+# good: [3673dd3c7dc1f37baf0448164d323d7c7a44d1da] Merge patch series "Reve=
+rt "pid: make __task_pid_nr_ns(ns =3D> NULL) safe for zombie callers""
+# good: [8a5203c630c67d578975ff237413f5e0b5000af8] Merge tag 'v7.0-rc-part1=
+-smb3-client-fixes' of git://git.samba.org/sfrench/cifs-2.6
+# good: [72c395024dac5e215136cbff793455f065603b06] Merge tag 'docs-7.0' of =
+git://git.kernel.org/pub/scm/linux/kernel/git/docs/linux
+# good: [f8f774913b4b599169381073f6674e20976e5529] ASoC: SOF: ipc4-control:=
+ Set correct error code in refresh_bytes_control
+# good: [c5226b96c08a010ebef5fdf4c90572bcd89e4299] fs/ntfs3: avoid calling =
+run_get_entry() when run =3D=3D NULL in ntfs_read_run_nb_ra()
+# good: [5af56f30c4fcbade4a92f94dadfea517d1db9703] spi: tools: Add include =
+folder to .gitignore
+# good: [b010c782341b79edbeb80706360b772db908daa6] ASoC: fsl_asrc_dma: allo=
+cate memory from dma device
+# good: [a40236feb62ccbf2b36d288550a483122b3205e5] spi: cadence-qspi: Add s=
+upport for the Renesas RZ/N1 controller
+# good: [84faa91585fa22a161763f2fe8f84a602a196c87] ASoC: fsl: imx-rpmsg: us=
+e snd_soc_find_dai_with_mutex() in probe
+# good: [922f9dec5d19df4cfbb7070275e5c131d10c80f3] drm/vmwgfx: Set a unique=
+ ID for each submitted command buffer
+# good: [d94ea902462ac39846d878aa67b78408727e0674] ASoC: rockchip: spdif: C=
+onvert to FIELD_PREP
+# good: [5023ca80f9589295cb60735016e39fc5cc714243] drm/vmwgfx: Return the c=
+orrect value in vmw_translate_ptr functions
+# good: [6f220440399afba29165e0597fa2c3aa836191d7] ASoC: cs35l56: KUnit tes=
+ts for parsing and using onchip GPIOs
+# good: [fef1f756155c30511397bbcd9d55640ab2e44d99] ASoC: cs4271: Fix resour=
+ce leak in cs4271_soc_resume()
+# good: [55137f5a68b5e888504ad36d07221cd749bb8956] ASoC: tas2781: Put three=
+ different calibrated data solution into the same data structure
+# good: [fe8429a2717fc01082502b0adf680a50b230eff7] regulator: s2mps11: more=
+ descriptive gpio consumer name
+# good: [9db327083f7e0da702e2ec0169f8a34f3576f371] ASoC: ti: davinci-mcasp:=
+ Add asynchronous mode support
+# good: [6516169fa7f6110ce42a5958c921255f2d0968bc] spi: geni-qcom: Add targ=
+et abort support
+# good: [812ff1baa764080ba37bb0729e0c23c0e869b542] ASoC: SDCA: Limit values=
+ user can write to Selected Mode
+# good: [3a17ba6557e28d5d99b7e3cad31f22ad28a36cc2] mfd: sec: Add support fo=
+r S2MPG11 PMIC via ACPM
+# good: [6c52fda42066a87b76fd140e027280907071dd8a] ASoC: SOF: Intel: hda: A=
+dd a virtual CPU DAI
+# good: [4cc4ace709860c37f7f8019e950380a4694eb101] spi: xilinx: use device =
+property accessors.
+# good: [330d1deb410fe75f7f79bd1e5025f2827365eb83] ASoC: SOF: Intel: hda-sd=
+w-bpt: support simultaneous audio and BPT streams
+# good: [bb6a3c2db281c7d5aaa79b2a6fa00bcd10c0bb8f] ASoC: SOF: Intel: hda: a=
+dd SDCA property check
+# good: [dedfae78f00960d703badc500422d10e1f12b2bc] fs: add porting notes ab=
+out readlink_copy()
+# good: [4c9d53794bcfd3db45103269696b019d5ef09d41] dt-bindings: spi: Add bi=
+nding for Faraday FTSSP010
+# good: [8a066a81ee0c1b6cdbd81393536c3b2d19ccef25] ASoC: qcom: q6asm: drop =
+DSP responses for closed data streams
+# good: [0ec5ed7c95d1ba6a74491928ff38abb351dbed36] spi: axi-spi-engine: sup=
+port SPI_MULTI_LANE_MODE_STRIPE
+# good: [a145cfd0ffe7bd7d61ce25839cec737c449b0d2c] ASoC: codecs: aw87390: A=
+dd Anbernic RG-DS amp driver
+# good: [8232e6079ae6f8d3a61d87973cb427385aa469b9] ASoC: es8328: Add error =
+unwind in resume
+# good: [ab89060fbc92edd6e852bf0f533f29140afabe0e] pidfs: return -EREMOTE w=
+hen PIDFD_GET_INFO is called on another ns
+# good: [742048f2e128c06d0ef89ffc334519cb8e991f66] ASoC: fsl_sai: add IMX_S=
+CMI_MISC_DRV dependency
+# good: [ddd9bf2212ab80bb90fa986cd987c671de53bd44] ASoC: amd: acp: Add ACP7=
+=2E0 match entries for Cirrus Logic parts
+# good: [8eeb611b3d16241559bbf81ae5d938368c87818c] rtc: s35390a: implement =
+nvmem support
+# good: [a1d14d8364eac2611fe1391c73ff0e5b26064f0e] ASoC: codecs: max98390: =
+Check return value of devm_gpiod_get_optional() in max98390_i2c_probe()
+# good: [bbb758a6943e19c483ab752cf8220140b46cf22c] ASoC: sdca: Fix missing =
+regmap dependencies in Kconfig
+# good: [da0a672268b34279aa999664860e6becc38f3f51] spi: dw: Remove not-goin=
+g-to-be-supported code for Baikal SoC
+# good: [77ee3ba5d4152f01ba4674b0e0ae51f8a51250bf] spi: cadence-qspi: Use a=
+ default value for cdns,fifo-width
+# good: [7ae4d097b752d77c41dd26068d92ef34e9c66be9] spi: spi-fsl-lpspi: Hand=
+le clock polarity and phase
+# good: [88340fc880cae6a2953a366aa6ad0900fd9830da] ASoC: soc-core: add lock=
+dep_assert_held() at snd_soc_unregister_dai()
+# good: [ab3f4f0c7f3aa050cd602cc32830e24ac4aaee97] ASoC: wm8962: add .set_t=
+dm_slot callback function
+# good: [071588136007482d70fd2667b827036bc60b1f8f] ipc: don't audit capabil=
+ity check in ipc_permissions()
+# good: [5c6808d10499f6c8a8d5ee948a22fc93814f6d66] spi: dw: Remove duplicat=
+e error message
+# good: [9409d18bf7d58ab716337749e28e2caba0d64cb0] ASoC: tegra: set reg_def=
+ault_cb callback
+# good: [8cf19b19dba8814ccc8b1179dabf28b7f8eefc22] ASoC: sophgo: cv1800b: t=
+idy Kconfig spacing
+# good: [e540be7d56d740144b1bd6f220b61ffe2f3830d4] spi: SPI_AXIADO should d=
+epend on ARCH_AXIADO
+# good: [04f7516ab70f7b82aae1d2830af2ee6f17f3fe98] spi: aspeed: Add support=
+ for non-spi-mem devices
+# good: [b3eb755e2db07d85c30e8ff4043ffb9a14b4ece7] ASoC: sophgo: add CV1800=
+B internal DAC codec driver
+# good: [c76d50b71e898694c946993eb3c77f50efa97254] ASoC: ac97: Convert to G=
+PIO descriptors
+# good: [74823db9ba2e13f3ec007b354759b3d8125e462c] ASoC: sunxi: sun50i-dmic=
+: Add missing check for devm_regmap_init_mmio
+# good: [a8b6e3738c872d35f1cf7b3cd3ce67d86d38e7cf] spi: dw-mmio: support su=
+spend/resume
+# good: [6ffdc7eb48bd2268c37c2accad454c043b9cc987] regcache: Demote default=
+s readback from HW to debug print
+# good: [70a65c53d228562cf0c8ae0f38c847d2a5dd59e6] regmap: add KUnit covera=
+ge for reg_default_cb callback
+# good: [0e47251e8cc438d5b59fcd86d27efade01976fe1] perf hwmon_pmu: Constify=
+ the variables returning bsearch() on const tables
+# good: [87ee3f05bfe2f5955c2c77ae26a1be236fd615a5] ASoC: codecs: wm8731: Re=
+move unnecessary NULL check before clk_prepare_enable/clk_disable_unprepare
+# good: [19b08fd23b20593ebe43708308dbddb02507877d] ASoC: fsl_sai: Add AUDMI=
+X mode support on i.MX952
+# good: [af6d53db28e6448b1e0ce9aa314bc5da494d35ab] ASoC: soc-dapm: tidyup f=
+unction naming
+# good: [10d366a846be648aa47cdcd3dc7b7346a4143a6c] ASoC: amd: acp: Fix Kcon=
+fig dependencies for SND_SOC_ACPI_AMD_SDCA_QUIRKS
+# good: [702ce71d32f2c30b4f45b7c6b701d87583c58df8] ASoC: SDCA: Add NO_DIREC=
+T_COMPLETE flag to class driver
+# good: [d0ab89951197f0fc509a0cd732d830880e79c2d4] ASoC: cs35l56: Add KUnit=
+ testing of cs35l56_set_fw_suffix()
+# good: [d8f87aa5fa0a4276491fa8ef436cd22605a3f9ba] net: remove HIPPI suppor=
+t and RoadRunner HIPPI driver
+# good: [7f428282fde34f06f3ab898b8a9081bf93a41f22] ALSA: hda: controllers: =
+intel: add support for Nova Lake
+# good: [66c744e28b69d931b142adb6b9f5e56ac9644f79] media: venus: assign uni=
+que bus_info strings for encoder and decoder
+# good: [3495a5df94a9ad7a8940bcb3ebfda58255f5b952] spi: dt-bindings: nxp,im=
+x94-xspi: add nxp,imx952-xspi
+# good: [00ca2dd431fa2acb07b3ecc6ce49fb9a0a4d72cb] ASoC: SOF: Intel: hda: R=
+emove MODULE_SOFTDEP for snd-hda-codec-hdmi
+# good: [cafadbf430f4b2f3ca4158de48ef6ba4d97fbf17] ASoC: renesas: rz-ssi: D=
+rop goto label
+# good: [37fbc1ab0f225d23f0839260a11375b4f1f7cf8c] spi: Drop duplicate devi=
+ce_set_node() call
+# good: [83ba6efa711fad83a0fbf02178ad64d3906d8d09] spi: rockchip: Use plain=
+ request_irq()
+# good: [c3608162a95a259c669cf9fdccf900782fa8d902] spi: xilinx: make irq op=
+tional
+# good: [3c5ddd56aa93048314c64533c21e731a44b0f067] ASoC: codecs: es8323: En=
+able proper DAPM widgets for chip power
+# good: [20c4701b75a3d6ce09d61e17125aefe77e7eb333] dt-bindings: regulator: =
+mark regulator-suspend-microvolt as deprecated
+# good: [a18467a50eddbd7c6548b53b25b68e5454ceb587] ASoC: realtek: fix missp=
+elling of "minimum" in comments
+# good: [4fbd3b2ec04dc6ef93090ec24733a5c5671fb71f] ASoC: soc-acpi-intel-ptl=
+-match: use aggregated endpoint in ptl_rt722_l0_rt1320_l23
+# good: [ebc2164a4cd4314503f1a0c8e7aaf76d7e5fa211] RDMA/mlx5: Fix UMR hang =
+in LAG error state unload
+# good: [d3922f6dad69b3d1f7656c9035bd0e82f73091b7] RDMA/rxe: Remove unused =
+page_offset member
+# good: [dccc66b0e92d48d9a1908a3ccb8142e0ee3381f5] regmap: Enable REGMAP wh=
+en REGMAP_SLIMBUS is enabled
+# good: [7a3d1b04d938f31e112fe09c0ffc1af830ba1f6d] ASoC: SDCA: Handle CONFI=
+G_PM_SLEEP not being set
+# good: [61d2a7699ab39d448f44919ef15c16187e6f70ec] ASoC: SDCA: Tidy up some=
+ memory allocations
+# good: [354e7a6d448b5744362bf33a24315d4d1d0bb7ef] RDMA/hns: Support drain =
+SQ and RQ
+# good: [8a98e7f55f975360975083166e21982ef307b8fd] ASoC: tlv320adcx140: add=
+ channel sum control
+# good: [519d0a6b2ca5a891340b6c24a4c40545f518e1a8] ASoC: codecs: aw88261: u=
+se dvdd-supply regulator
+# good: [10303b32519f52a5afd40593a507543143c8ec6a] dt-bindings: sound: goog=
+le,goldfish-audio: Convert to DT schema
+# good: [da7afdc79cba00f952df12cd579e44832d829c0a] ASoC: SDCA: Add lock to =
+serialise the Function initialisation
+# good: [62b04225e99a5d1c71c5c73d2aa6618bc2c0738f] regulator: dt-bindings: =
+rpi-panel: Mark 7" Raspberry Pi as GPIO controller
+# good: [de9f1b1583aecb246b659effb03f2456604fab64] regulator: dt-bindings: =
+mediatek,mt6331: Add missing ldo-vio28 vreg
+# good: [c32eaba2d760ef0ec5426b207cf0ce750064cf36] RDMA/rtrs-srv: Add check=
+ and closure for possible zombie paths
+# good: [a014c203b54d9013ad52ad8a531cf46e71028f2b] spi: fsi: Simplify with =
+scoped for each OF child loop
+# good: [e7c30ac379b429d439eb62ae1bb69720a6701e26] ASoC: amd: acp: soc-acpi=
+: add is_device_rt712_vb() helper
+# good: [2a3602030d800b6600ef55c31e21bc54611f7770] cgroup/cpuset: Don't inv=
+alidate sibling partitions on cpuset.cpus conflict
+# good: [09dc08b396c954820f119e1ab0c7d72333c18323] regulator: dummy, make d=
+ummy_regulator_driver static
+# good: [6be9ea62afedef0f976eb3dba4c117be0c1d3809] ASoC: codecs: rtq9128: A=
+dd compatible changes for rtq9154
+# good: [fc6ceb7e4ea746e663ff8c5593e67ad8ccbee34a] ASoC: sof ipc4: Add sof_=
+ipc4_widget_setup_msg_payload() and call it
+# good: [83aee46dc2142eed2dc40b5cef0e9e08e14cac42] ASoC: SOF: ipc/ops: Use =
+guard() for spinlocks
+# good: [e590752119029d87ce46d725e11245a52d22e1fe] ASoC: wm8962: Don't repo=
+rt a microphone if it's shorted to ground on plug
+# good: [77157cb45c66bd652a08a360693fcced558c5ef9] ASoC: codecs: rt1320-sdw=
+: convert to snd_soc_dapm_xxx()
+# good: [b0fc1e7701940d12ea2c41f386aa552bc4cc3629] regulator: Add TPS65185 =
+driver
+# good: [8618271887ca10ac5108fe7e1d82ba8f1b152cf9] spi: spi-mem: Limit octa=
+l DTR constraints to octal DTR situations
+# good: [8672e4b51adfc57150f3862b1665faff0acf1bad] spi: dt-bindings: nxp,lp=
+c3220-spi: Add DMA specific properties
+# good: [8d38423d9dea7353a8a54a3ab2e0d0aa04ed34d0] regulator: core: don't f=
+ail regulator_register() with missing required supply
+# good: [db4371d13f82fb12463fe053f4864980a2af2106] MAINTAINERS: Add entries=
+ for the Axiado SPI DB controller
+# good: [b9198ce5c6dfee19b9662dda95ba559af9cdf53f] ASoC: codecs: aw88261: A=
+dd devicetree support
+# good: [6dd70757213fc046e5f86901e4baf11ed894da6b] KVM: selftests: Move PTE=
+ bitmasks to kvm_mmu
+# good: [b6376dbed8e173f9571583b5d358b08ff394e864] spi: Simplify devm_spi_*=
+_controller()
+# good: [0cd9bf6a6d9a1861087236cc5c275b3bea83cfdd] ASoC: codecs: da7213: Mo=
+ve comma operator at the end of the line
+# good: [2f2a72de673513247cd6fae14e53f6c40c5841ef] drm/amdgpu: fix drm pani=
+c null pointer when driver not support atomic
+# good: [2d7b4a44fb768e1887e7e4cdd8b86817ccd9c3bf] gpu: nova-core: use CStr=
+::from_bytes_until_nul() in elf64_section()
+# good: [da8264ce6c5c02b78f95d31021e942ab38d8dd39] gpu: nova-core: use CStr=
+::from_bytes_until_nul() and remove util.rs
+# good: [22a4776a9ce50aa47f602d28f53ba9d613a38f49] ASoC: codecs: es8375: re=
+move unnecessary format check
+# good: [a5a9fd93d2c3c2bd31d27a25a601ae313d4aa74f] drm/i915/lt_phy_regs: Fi=
+x the SPDX identifier comment
+# good: [8618307b52ef2fa5caa87f1b7938125cb410e777] rust: bitops: add __rust=
+_helper to helpers
+# good: [75d208bddcca55ec31481420fbb4d6c9703ba195] spi: stm32: avoid __mayb=
+e_unused and use pm_ptr
+# good: [04b61513dfe40f80f0dcc795003637b510522b3c] ASoC: SDCA: Replace use =
+of system_wq with system_dfl_wq
+# good: [6b6dbf3e4ecfd7d1086bd7cd8b31ca8e45d4dc1f] selftests/nolibc: always=
+ build sparc32 tests with -mcpu=3Dv8
+# good: [2b39d48a0ab368bca4c7a0458fa9cdd05ebcacb6] drm/amd/display: Replace=
+ log macro for analog display detection
+# good: [96d337436fe0921177a6090aeb5bb214753654fc] spi: dt-bindings: at91: =
+add microchip,lan9691-spi
+# good: [420739112e95c9bb286b4e87875706925970abd3] ASoC: rt5575: Add the co=
+dec driver for the ALC5575
+# good: [52ddc0106c77ff0eacf07b309833ae6e6a4e8587] ASoC: es8328: Remove dup=
+licate DAPM routes
+# good: [9bf0bd7bdea6c402007ffb784dd0c0f704aa2310] ASoC: nau8821: Sort #inc=
+lude directives
+# good: [211243b69533e968cc6f0259fb80ffee02fbe0ca] firmware: cs_dsp: test_b=
+in: Add tests for offsets > 0xffff
+# good: [4c5e6d5b31bc623d89185d551681ab91cfd037c9] ASoC: codecs: ES8389: Up=
+date clock configuration
+# good: [255153afbcfdcf30d20048fb76a6d9418537b5d9] drm/nova: Align GEM memo=
+ry allocation to system page size
+# good: [7acc70476f14661149774ab88d3fe23d83ba4249] gpu: nova-core: gsp: mov=
+e appropriate code into pin initializer
+# good: [25abdc151a448a17d500ea9468ce32582c479faa] ASoC: rt1320: fix the re=
+mainder calculation of r0 value
+# good: [284853affe73fe1ca9786bd52b934eb9d420a942] ASoC: rt1320: fix size_t=
+ format string
+# good: [b2440442ccb68479fa6d307917419983f3c87e83] dma: dma-axi-dmac: suppo=
+rt bigger than 32bits addresses
+# good: [45e9066f3a487e9e26b842644364d045af054775] ASoC: Intel: avs: replac=
+e strcmp with sysfs_streq
+# good: [0f698d742f628d02ab2a222f8cf5f793443865d0] spi: bcm63xx-hsspi: add =
+support for 1-2-2 read ops
+# good: [8db50f0fa43efe8799fd40b872dcdd39a90d7549] ASoC: rt1320: fix the wa=
+rning the string may be truncated
+# good: [4ab48cc63e15cb619d641d1edf9a15a0a98875b2] ASoC: qcom: audioreach: =
+Constify function arguments
+# good: [c6bca73d699cfe00d3419566fdb2a45e112f44b0] ASoC: rt1320: Fix retry =
+checking in rt1320_rae_load()
+# good: [b0655377aa5a410df02d89170c20141a1a5bbc28] rust: regulator: replace=
+ `kernel::c_str!` with C-Strings
+# good: [99a3ef1e81cd1775bc1f8cc2ad188b1fc755d5cd] ASoC: SDCA: Add ASoC jac=
+k hookup in class driver
+# good: [a2a631830deb382a3d27b6f52b2d654a3e6bb427] ASoC: qcom: Constify APR=
+/GPR result structs
+# good: [7a8447fc71a09000cee5a2372b6efde45735d2c8] ASoC: codecs: wcd939x-sd=
+w: use devres for regmap allocation
+# good: [32a708ba5db50cf928a1f1b2039ceef33de2c286] regulator: Add rt8092 su=
+pport
+# good: [3622dc47a4b13e0ec86358c7b54a0b33bfcaa03c] ASoC: codec: rt286: Use =
+devm_request_threaded_irq to manage IRQ lifetime and fix smatch warning
+# good: [b39ef93a2e5b5f4289a3486d8a94a09a1e6a4c67] spi: stm32: perform smal=
+l transfer in polling mode
+# good: [2a28b5240f2b328495c6565d277f438dbc583d61] ASoC: SOF: ipc4-control:=
+ Add support for generic bytes control
+# good: [1303c2903889b01d581083ed92e439e7544dd3e5] MAINTAINERS: Add MAINTAI=
+NERS entry for the ATCSPI200 SPI controller driver
+# good: [f764645cb85a8b8f58067289cdfed28f6c1cdf49] ASoC: codecs: tas2780: t=
+idyup format check in tas2780_set_fmt()
+# good: [7f7b350e4a65446f5d52ea8ae99e12eac8a972db] spi: stm32-qspi: Remove =
+unneeded semicolon
+# good: [02e7af5b6423d2dbf82f852572f2fa8c00aafb19] ASoC: Intel: sof_rt5682:=
+ add tas2563 speaker amp support
+# good: [29c8c00d9f9db5fb659b6f05f9e8964afc13f3e2] spi: add driver for NXP =
+XSPI controller
+# good: [9a6bc0a406608e2520f18d996483c9d2e4a9fb27] ASoC: codecs: ES8326: Ad=
+d kcontrol for DRE
+# good: [2497eda57025abe1349207a9726da02aae699bca] drm/amd/display: Add use=
+_max_lsw parameter
+# good: [f25c7d709b93602ee9a08eba522808a18e1f5d56] ASoC: SOF: Intel: pci-nv=
+l: Set on_demand_dsp_boot for NVL-S
+# good: [f4acea9eef704607d1a950909ce3a52a770d6be2] spi: dt-bindings: st,stm=
+32-spi: add 'power-domains' property
+# good: [524ee559948d8d079b13466e70fa741f909699c0] ASoC: SOF: Intel: hda: O=
+nly check SSP MCLK mask in case of IPC3
+# good: [b884e34994ca41f7b7819f3c41b78ff494787b27] spi: spi-fsl-lpspi: conv=
+ert min_t() to simple min()
+# good: [e39011184f23de3d04ca8e80b4df76c9047b4026] ASoC: SDCA: functions: F=
+ix confusing cleanup.h syntax
+# good: [fa08b566860bca8ebf9300090b85174c34de7ca5] spi: rzv2h-rspi: add sup=
+port for DMA mode
+# good: [03d281f384768610bf90697bce9e35d3d596de77] rust: regulator: add __r=
+ust_helper to helpers
+# good: [aa30193af8873b3ccfd70a4275336ab6cbd4e5e6] ASoC: Intel: catpt: Drop=
+ superfluous space in PCM code
+# good: [ba9b28652c75b07383e267328f1759195d5430f7] spi: imx: enable DMA mod=
+e for target operation
+# good: [81acbdc51bbbec822a1525481f2f70677c47aee0] ASoC: sdw-mockup: Drop d=
+ummy remove function
+# good: [9e92c559d49d6fb903af17a31a469aac51b1766d] regulator: max77675: Add=
+ MAX77675 regulator driver
+# good: [fee876b2ec75dcc18fdea154eae1f5bf14d82659] spi: stm32-qspi: Simplif=
+y SMIE interrupt test
+# good: [0bb160c92ad400c692984763996b758458adea17] ASoC: qcom: Minor readab=
+ility improve with new lines
+# good: [124f6155f3d97b0e33f178c10a5138a42c8fd207] ASoC: renesas: rz-ssi: A=
+dd support for 32 bits sample width
+git bisect start 'e75a43c7cec459a07d91ed17de4de13ede2b7758' '05f7e89ab97315=
+65d8a62e3b5d1ec206485eeb0b' '33c3f6c2b48cd84b441dba1ee3e62290e53930f4' '118=
+c3908242076c6e281c7010d29c2d0607c3190' 'b3ca98297cd98a51ee9d6d491d0a4ee0ca7=
+9b515' '38d76018bb412dc66b08837097eff53d21e8df29' 'faecdd423c27f0d6090156a4=
+35ba9dbbac0eaddb' '5d0d3623303775d750e122a2542d1a26c8573d38' 'c43267e6794a3=
+6013fd495a4d81bf7f748fe4615' 'bc28831d7a09f7058cdca4658d81e5faf635bed7' '1c=
+3b68f0d55b5932eb38eda602a61aec6d6f5e5e' 'd568788baab24875604c231f723dbb7238=
+7fb081' 'b8f82cb0d84d00c04cdbdce42f67df71b8507e8b' 'd60bc140158342716e13ff0=
+f8aa65642f43ba053' '0f00132132937ca01a99feaf8985109a9087c9ff' 'd354e47f6464=
+bddd777916f3939bafa1673156c7' '80bb50e2d459213cccff3111d5ef98ed4238c0d5' '1=
+0d97b74e2eef787d823f9bc05cb044b47d25c41' '028ef9c96e96197026887c0f092424679=
+298aae8' '35bdc192d829164a6e47184d06401918fe3d7f1f' 'f5459048c38a00fc583658=
+d6dcd0f894aff6df8f' '5aa81ab21de30b7b058202102f052289115298ef' 'e774d5f1bc2=
+7a85f858bce7688509e866f8e8a4e' 'e753c16cb3dd1e8feee6977c330d21fbe0e2db0b' '=
+0e4dc6fbddb01b2ce0d0b4d67ad5f70e976bedcc' '7c6c4ed80b874f721bc7c2c937e098c5=
+6e37d2f0' '08e57f5e1a9067d5fbf33993aa7f51d60b3d13a4' 'e719e17d99aaf3922dbc1=
+5ae3ac3bb62fac32bad' '738dd185d3e447e1dfa65b5287730fef456089bf' '9a9c8ce300=
+cd3859cc87b408ef552cd697cc2ab7' 'a55f7f5f29b32c2c53cc291899cf9b0c25a07f7c' =
+'14d2714d6537a9df5bea2515185034dbb9d30f03' '34b3eef48d980cd37b876e128bbf314=
+f69fb5d70' '7f87a5ea75f011d2c9bc8ac0167e5e2d1adb1594' '6f468ea360f0a6a1e458=
+54afbc3019842ed891a8' '3036cd0d3328220a1858b1ab390be8b562774e8a' 'b16df0dac=
+b3a77d4c1ce95f21c58a2b99ae10213' 'bfe62a454542cfad3379f6ef5680b125f41e20f4'=
+ 'd78ddeb8938a366aabfabf60255c1a94de8d8ea1' '81469ef61cf710274ef42999a3ebe9=
+6a5c204ee5' '591cd656a1bf5ea94a222af5ef2ee76df029c1d2' '9d80de66a04606eef62=
+5cb9141b6d1d8c970dbcb' '909632714f687560627f3e8c21fb5f5180373afd' '1791c390=
+149f56313c425e8add1fd15baf40afb8' '3aae9383f42f687221c011d7ee87529398e826b3=
+' '7ca6d1cfec80ebe46cc063f3284c5896c344d9a1' '631919fb12fe7b1f0453fe1035e62=
+ce704bc3923' '503d21ef8eac1437d76919921115acf0aef328a0' '03738dd159db60a273=
+78e9b5b93fd187218519ba' '6fab063bd8d64f15cde2d194c08a159ad3afdf27' 'd8a9a4b=
+11a137909e306e50346148fc5c3b63f9d' '2e80b497497c0d49d7809702f0e70465f88fe7a=
+4' '0629c33fe1873a48e1e06078409de76c5a159fdb' '5619b098e2fbf3a23bf13d918970=
+56a1fe238c6d' '5bf4b30ed49b9af281bdf11c788f382faa432cfd' '1558905669e4da922=
+fbaa7cf6507eb14779bffbd' '710c166c0fc377433906f1f2979eca657e9a50c3' '47f28a=
+5bd154a95d5aa563dde02a801bd32ddb81' '7090420420d5a7d7c88b21d16962f2a230be3e=
+f3' 'd3e2c7476e378089d56067202f4d29969fbd47b3' '9147566d801602c9e7fc7f85e98=
+9735735bf38ba' 'dbf00d8d23b43a7a1d717e704c50651731d01d71' 'a9cdba5c35c5cca6=
+bd0b922bc235b843a41b3a57' '25bd73562941b04cfba1a278d8c84f2b1c69b8e9' 'd0c3b=
+cd5b8976159d835a897254048e078f447e6' '5c36fd7fc6a84f36bebbef72fe29bec0682a6=
+589' '2fb4883b884a437d760bd7bdf7695a7e5a60bba3' '5b6471fc72a42e6110adca54f4=
+6fd2c287dc49d4' 'feae58b6ee45096b1d8c29076f0d8098d9788e57' '7658e9b94849ca8=
+61ded82d641f52fcec303210d' '7aaa8047eafd0bd628065b15757d9b48c5f9c07d' '2a83=
+ffc5575013784ea41739daf9e10200e44e7c' 'a3d97d1d3fa68253927a6e6c2fdfe7c03907=
+3af7' 'cbfffcca2bf0622b601b7eaf477aa29035169184' 'ac354b5cb04d2077c3821a6cb=
+fbc7981ad45f84a' 'defec2ca7cd743c9b8a29be5012ad7381a5ecbb3' '26df51adf30b3d=
+440293eed38d01f953ae0bb6f4' 'be762d8b6dd7efacb61937d20f8475db8f207655' '7df=
+48e36313029e4c0907b2023905dd7213fd678' 'bec2988b470ef278c2e7238e8d7edd09785=
+3a4ea' '44b580a74fcd39d0c53b8c9d6b865cfbd05a947e' 'd813f421930c5b01b9f61043=
+932de02602dd6ae3' '46b513250491a7bfc97d98791dbe6a10bcc8129d' '1ee4716a5a28e=
+aef81ae1f280d983258bee49623' 'fa9681ed5c6ae980af18545690e31d8f9c088c33' 'fc=
+1d43826702d8c14845c187d3ea0743fdf8f223' 'a8aef26417963f66a98f03f5473033fc2b=
+022863' 'c1014a629d0181ce7739caf1448fb8e22d4cba9c' 'bba8d9ba7df8f6592552377=
+049fc84958fd0575a' 'fd55319692151de2b89c21356d1445bce364769b' '0138af2472df=
+def0d56fc4697416eaa0ff2589bd' 'f7a1c0283f135833db164cc0fac8d422fed2079e' 'd=
+2a43e7f89da55d6f0f96aaadaa243f35557291e' '17de8a68ac9807adf551f7d2d980e26d1=
+196e41a' '1ce61688875da281ab109bb143ec6ba756493c39' 'bbeb83d3182abe0d245318=
+e274e8531e5dd7a948' '24f9515de8778410e4b84c85b196c9850d2c1e18' '7b4f1a29c70=
+4f2c28f32dca5fea6d173891c16a9' 'e3c33bc767b5512dbfec643a02abf58ce608f3b2' '=
+141efa53b9875c059d0edec5212fbcd311ec4896' '1b065199ea1934e6d06d1a9b2dc7ed7c=
+79321484' 'c369299895a591d96745d6492d4888259b004a9e' 'f03ffe53ab6ffc798ed82=
+91090cebf19c6e5fa3b' 'ec69c9e88315c4be70c283f18c2ff130da6320b5' '113ae7b4de=
+cc6c2d95bdbbe52e615a0137ef7f9f' '42bddab0563fe67882b2722620a66dd98c8dbf33' =
+'a0c83177734ab98623795e1ba2cf4b72c23de5e7' '165160265e4be3a6639dd4ea5ca0953=
+a858e2156' 'ce29261ec6482de54320c03398eb30e9615aee40' '0e4f8f1a3d081e834be5=
+fd0a62bdb2554fadd307' 'a1d9d8e833781c44ab688708804ce35f20f3cbbd' 'da8d9636b=
+e7e0761f69c3dadf747c725732312ff' '3fe1dcbc2d20c5dbc581c0bb458e05365bfffcf7'=
+ 'af325e87af5da2f686d1ad547edc96f731418f2a' 'ac977b900907f621e117184e71766f=
+297a2f702b' 'a258a383b91774ac646517ec1003a442964d8946' '9d6d9514c08f462d162=
+040b48526bda60def9de1' 'f656807150e3e1c6f76cab918e5adfad6d881d58' 'e9825d1c=
+79570b4c11259e826b3f7c1511544a85' '8a30aeb0d1b4e4aaf7f7bae72f20f2ae75385ccb=
+' '04a9f1766954687f0a1b7a0f7184dc4f86edcb30' '7aec47be7c2bbed4823325e888df3=
+e91dde33253' 'd98b978446d249df1a662b4fef4c0bbfa1d650b8' '8020c41b39f514941d=
+93f3322b598afdce487064' 'a989fde763f4f24209e4702f50a45be572340e68' 'f0caa1d=
+49cc07b30a7e2f104d3853ec6dc1c3cad' 'cffcb42c57686e9a801dfcf37a3d0c62e51c1c3=
+e' '67253b28a61f0dff31f8f00dca8c9586f089b852' '2d7f05cddf4c268cc36256a24769=
+46041dbdd36d' '8510d054b7e086a71a9191ac3399231290dfd272' '09e70e4f119ff650d=
+24c96161fd2f62ac7e424b0' '2d1373e4246da3b58e1df058374ed6b101804e07' '4f3df2=
+e5ea69f5717d2721922aff263c31957548' 'f338e77383789c0cae23ca3d48adcc5e9e137e=
+3c' '267594792a71018788af69e836c52e34bb8054af' '69237f8c1f69112cca7388af7fa=
+b6d0ee45a2525' '9abff5748e4fb2055a54de6b8e43f4395d2481d9' '1c9982b4961334c1=
+edb0745a04cabd34bc2de675' '399af66228cfd7df79dc360810b6b673000f8090' '0257f=
+64bdac7fdca30fa3cae0df8b9ecbec7733a' 'c670267ff50d5f9beb486f0203cdede580a99=
+ae3' '80234b5ab240f52fa45d201e899e207b9265ef91' '786bf7ef564e97f195a2fca379=
+fa7866a4c3ea08' 'b29fb8829bff243512bb8c8908fd39406f9fd4c3' 'b4f0dd314b39ea1=
+54f62f3bd3115ed0470f9f71e' '21b3fb7dc19caa488d285e3c47999f7f1a179334' '9be7=
+1d462c33b1a00acfa4ab8f0f5332ed592817' '8fc5c7895185d1119ae76b509892a1d14e0b=
+d483' '7b3f8db159f710d432c4edc024fcefa9e62e8b4b' '7cb259eacc08df8e5d1b17e6a=
+75a19518e5de7ca' '4185b95f8a42d92d68c49289b4644546b51e252b' '5e783510b5c09b=
+c8a9d83a34488ed924769085f2' '95bc5c225513fc3c4ce169563fb5e3929fbb938b' '981=
+b080a79724738882b0af1c5bb7ade30d94f24' 'ed0313223ce6514dbd39c049e25f702980d=
+7e3cc' '111e2863372c322e836e0c896f6dd9cf4ee08c71' '1bc17c67194716f53037685b=
+7059a22cc1a911b2' '6fdc70794cc15b450e3fd750ca048318764a343e' '97af961568c86=
+82c44506c9ad4b26c8a5455ec1d' 'ad0e9ac2d5f5ab7a773c2c07ecf06ee59db9259f' '0a=
+208adefecb287d22321054470d4619cb303839' 'b6376ccdcb4bf7163fc4cbe5f83e265bc1=
+660d4f' 'facfdef64d11c08e6f1e69d02a0b87cb74cee0f5' 'ff85a2ebacbdaec9f28c466=
+0c991295ace93cd1c' '1f318b96cc84d7c2ab792fcc0bfd42a7ca890681' 'a8075ada4a34=
+1ce58ebf8bef0188cefe6c2f6487' '1954c4f012206147c34acda8da04f827aa7d3ee3' '2=
+e4cfaa78eb98d2623367818c859225c6b6bf701' 'c23719abc3308df7ed3ad35650ad211fb=
+2d2003d' 'fb07430e6f98ccff61f6f1a06d01d7f12e29c6d3' '4ae12d8bd9a830799db335=
+ee661d6cbc6597f838' '8e235bc43326f47adfd77d926c7d6ad39077569a' '325a118c120=
+45239076b7ea9e66391dd6f56f72e' '651690480a965ca196ce42d4562543f3e61cb226' '=
+aa3d0c93a333182e887426366a4f3e5f06ee0d83' 'b1ef855c62601ed4de2c4b0ff75a0758=
+77e3dac8' '5ee8dbf54602dc340d6235b1d6aa17c0f283f48c' 'ef0b4783afc211a4b120e=
+72b5a57f3d0340a9981' 'e7662bced2e98ffa2c572126677deb9cf55d43b3' 'c107785c7e=
+8dbabd1c18301a1c362544b5786282' '0b3bb205808195159be633a8cefb602670e856fb' =
+'b709087e9e544259d1d075ced91cc4ab769a8ae2' 'ecc64d2dc9ff9738d2a896beb68e02c=
+2feaf9a02' 'cfc69c2e6c699c96949f7b0455195b0bfb7dc715' '325291b20f8a6f14b9c8=
+2edbf5d12e4e71f6adaa' '0031c06807cfa8aa51a759ff8aa09e1aa48149af' '2adac914c=
+72b6cb5aba2612f49050c82aecd498e' '96f06d055ca03d1dfb5830fd07ff6eadbd66264c'=
+ '27990181031fdcdbe0f7c46011f6404e5d116386' '9891b52ba12e9d5fed5901b6b5f6e0=
+cdcd424390' 'f48e7a246a567e3764112e2463274c479d95cd96' '3b46d61890632c8f8b1=
+17147b6923bff4b42ccb7' 'af4e9ef3d78420feb8fe58cd9a1ab80c501b3c08' 'e8414184=
+6decb77d2826e553318a608b256804e5' 'a8df7892a9f42b2e2d5851f8835c734bd7fe8ad4=
+' '2d85ecd6fb0eb2fee0ffa040ec1ddea57b09bc38' '9ab637ac5d3826606947f4e861107=
+da958eda324' '1696fad8b259a2d46e51cd6e17e4bcdbe02279fa' '17c6bf433742e0c1ff=
+5ce175145877c0194e4a7a' '23942b71f07cc99e39d9216a5b370df494759d8c' '11439c4=
+635edd669ae435eec308f4ab8a0804808' '31ddc62c1cd92e51b9db61d7954b85ae2ec224d=
+a' '34b4fc44e4f904fbb81335d53163ffdcb0180000' 'da37bfe76b5b4ccc01ed81322150=
+98e20d78e5f3' 'ca5056f5a78ce62588878d138e8141f01d70e61b' 'eb71ab2bf72260054=
+677e348498ba995a057c463' '39c633261414f12cb533a8b802ee57e2d2e3c482' '06dba2=
+54de95b16e7793224d29daa5195de2e581' 'd3b693a13b39bce16e284e1c737874966b3a96=
+de' '9197e5949a41cfb5d44a6b8a860766266340d558' '42eb01783091e49020221a8a7d6=
+c00e154ae7e58' '4d349ee5c7782f8b27f6cb550f112c5e26fff38d' 'aed968f8a6cd60a4=
+aa32b5e9c0973c95c443ef4e' 'ac9ccb6e75c5af84095bece1019f22cb45ab43e5' '2974a=
+a42e6696a1d95b727d677dc01a71af5b998' '501efdcb3b3ab099fc0ce2f6e668b1c4095dd=
+476' '3f4a08e64442340f4807de63e30aef22cc308830' 'e96493229a6399e902062213c6=
+381162464cdd50' 'e3c81bae4f282a6be56bc22e05e2ce3dd92ae301' 'a75cb869a8ccc88=
+b0bc7a44e1597d9c7995c56e5' 'd90c0f78379454d51a428e312ac6db573060185c' 'f4d0=
+ec0aa20d49f09dc01d82894ce80d72de0560' 'd9d32e5bd5a4e57675f2b70ddf73c3dc5cf4=
+4fc2' '5c74a008ffc62fc57a041602b4517519c8bf9436' '260c3fff1fefc570d8f23e879=
+53e181d7d248861' '8bd9b67dc6e272f88c59365a2f55d38d52091cf9' 'e02902dd493bf9=
+c9b05353c761737ac514ad7a5c' 'bfd7db781e2e7a99b086d645a104d16e368f58ff' 'ada=
+32396f90951e12465224c04742607ca56a982' '7c12f6ead4672cb08b74e6f6115eb04dca8=
+ccfa4' '297318a1c26dabb5a2d8540fdf436c22094eb2d7' '37983fad7f3ef296fa0504c8=
+e945987459dc5487' '9a5eb2adb1ec90f854d9b45c75f0fcb3ae981356' '7dff99b354601=
+dd01829e1511711846e04340a69' '507a071d9868cb60e4e76f8a06fc8eb014f59ae4' '32=
+fc4168fa56f6301d858c778a3d712774e9657e' '4b73231b2a61c4142a027613d277a19c48=
+4dfcc3' '5ebc20921b7fff9feb44de465448e17a382c9965' 'c740532de087009b18981ab=
+14be42c45494c246d' '6510e1324bcdc8caf21f6d17efe27604c48f0d64' 'fed6e5084894=
+373d76270cad4a32eb6479ad8247' '32a92f8c89326985e05dce8b22d3f0aa07a3e1bd' 'b=
+e704107e79696e855aa41e901a926039b6d2410' 'fbb4c52ccdcb4a612d2b7f800aa57090e=
+eee16d7' '189f164e573e18d9f8876dbd3ad8fcbe11f93037' 'bf122191473e26a8f19530=
+8b1ba924c98424c8e1' 'c2bcf62ca75c541ec4297e6ff02a68ddc2e02029' 'd075cef4af6=
+327a5de4bee7bf77591e3201e54f4' '78dfbd4ad0be9f51de7b9a19388809254aeccd26' '=
+0556bb42a84ee391a2145ddba86756f9747bc27f' '171b3663f33e1efdc97f5112f49be10b=
+47b20fa8' '1dd419145d090f8fdf149cbb39dea6d968659dd2' 'a95f71ad3e2e224277508=
+e006580c333d0a5fe36' 'd79526b89571ae447c1a5cfd3d627efa07098348' '8bf22c33e7=
+a172fbc72464f4cc484d23a6b412ba' '956b9cbd7f156c8672dac94a00de3c6a0939c692' =
+'80ca113671a005430207d351cb403c1637106212' '0783052534f547f8f201dd4554b1df9=
+f1f8615b5' '2b7a25df823dc7d8f56f8ce7c2d2dac391cea9c2' '87a367f1bffadf1db5de=
+f15bd0cd2148acd057ad' '40534d19ed2afb880ecf202dab26a8e7a5808d16' 'e81dd54f6=
+2c753dd423d1a9b62481a1c599fb975' '0d68ad088e334088b031423e59886ae118c11202'=
+ '957e5be2e1ff10d4b5e86d420c12580897069114' 'bb7a3fc2c976b5d0deb35a54ca2375=
+19816d7ba9' '26a4cfaff82a2dcb810f6bfd5f4842f9b6046c8a' '09ad01a530bb6ad260b=
+da4fa56bab84619d90968' 'ca4ee40bf13dbd3a4be3b40a00c33a1153d487e5' '45a43ac5=
+acc90b8f4835eea92692f620e561a06b' '57d76ceccee4b497eb835831206b50e72915a501=
+' '0f2acd3148e0ef42bdacbd477f90e8533f96b2ac' '770aaedb461a055f79b971d538678=
+942b6607894' 'f50822fd8675c68d294e89bd102f7b487ca3acd3' '44331bd6a6107a33f8=
+082521b227ffa4ec063a40' '3e48a11675c50698374d4ac596fb506736eb1c53' '7449f86=
+bafcdb588422bb14a4babfd285e723670' '6be5c151eb1ebf4d5007b9f60c729f7381255a2=
+3' '5e160646f4dbca7cf9cc09abc31a22931e362b8a' '888a0a802c467bbe34a42167bdf9=
+d7331333440a' 'cee73b1e840c154f64ace682cb477c1ae2e29cc4' '541c43310e85dbf35=
+368b43b720c6724bc8ad8ec' '582a1ef360a05bff4350bbf6e383f61d26b804f0' 'b7ef56=
+a07672e0d7ebe71c9d9b45f959f0c2f8e8' 'c22e26bd0906e9c8325462993f01adb16b8ea2=
+c0' 'e243cdd87b911ce9968b62e4ab2b680dfadc4341' '1e83ccd5921a610ef409a7d4e56=
+db27822b4ea39' 'b82fa9b0c26eeb2fde6017f7de2c3c544484efef' '37a93dd5c49b5fda=
+807fd204edf2547c3493319c' '6589b3d76db2d6adbf8f2084c303fb24252a0dc6' '192c0=
+159402e6bfbe13de6f8379546943297783d' 'dc855b77719fe452d670cae2cf64da1eb51f1=
+6cc' '9f16d96e1222391a6b996a1b676bec14fb91e3b2' '1a4b0c999101b2532723f9bd98=
+18b70ffa7580f4' 'a9aabb3b839aba094ed80861054993785c61462c' '43185067c6fd55b=
+548ecb648a69d9569fcf622b5' '5578da7d957fbaf91f6c39ba2363c2d2e4273183' '2619=
+c62b7ef2f463bcbbb34af122689c09855c23' '27125df9a5d3b4cfd03bce3a8ec405a368cc=
+9aae' '3673dd3c7dc1f37baf0448164d323d7c7a44d1da' '8a5203c630c67d578975ff237=
+413f5e0b5000af8' '72c395024dac5e215136cbff793455f065603b06' 'f8f774913b4b59=
+9169381073f6674e20976e5529' 'c5226b96c08a010ebef5fdf4c90572bcd89e4299' '5af=
+56f30c4fcbade4a92f94dadfea517d1db9703' 'b010c782341b79edbeb80706360b772db90=
+8daa6' 'a40236feb62ccbf2b36d288550a483122b3205e5' '84faa91585fa22a161763f2f=
+e8f84a602a196c87' '922f9dec5d19df4cfbb7070275e5c131d10c80f3' 'd94ea902462ac=
+39846d878aa67b78408727e0674' '5023ca80f9589295cb60735016e39fc5cc714243' '6f=
+220440399afba29165e0597fa2c3aa836191d7' 'fef1f756155c30511397bbcd9d55640ab2=
+e44d99' '55137f5a68b5e888504ad36d07221cd749bb8956' 'fe8429a2717fc01082502b0=
+adf680a50b230eff7' '9db327083f7e0da702e2ec0169f8a34f3576f371' '6516169fa7f6=
+110ce42a5958c921255f2d0968bc' '812ff1baa764080ba37bb0729e0c23c0e869b542' '3=
+a17ba6557e28d5d99b7e3cad31f22ad28a36cc2' '6c52fda42066a87b76fd140e027280907=
+071dd8a' '4cc4ace709860c37f7f8019e950380a4694eb101' '330d1deb410fe75f7f79bd=
+1e5025f2827365eb83' 'bb6a3c2db281c7d5aaa79b2a6fa00bcd10c0bb8f' 'dedfae78f00=
+960d703badc500422d10e1f12b2bc' '4c9d53794bcfd3db45103269696b019d5ef09d41' '=
+8a066a81ee0c1b6cdbd81393536c3b2d19ccef25' '0ec5ed7c95d1ba6a74491928ff38abb3=
+51dbed36' 'a145cfd0ffe7bd7d61ce25839cec737c449b0d2c' '8232e6079ae6f8d3a61d8=
+7973cb427385aa469b9' 'ab89060fbc92edd6e852bf0f533f29140afabe0e' '742048f2e1=
+28c06d0ef89ffc334519cb8e991f66' 'ddd9bf2212ab80bb90fa986cd987c671de53bd44' =
+'8eeb611b3d16241559bbf81ae5d938368c87818c' 'a1d14d8364eac2611fe1391c73ff0e5=
+b26064f0e' 'bbb758a6943e19c483ab752cf8220140b46cf22c' 'da0a672268b34279aa99=
+9664860e6becc38f3f51' '77ee3ba5d4152f01ba4674b0e0ae51f8a51250bf' '7ae4d097b=
+752d77c41dd26068d92ef34e9c66be9' '88340fc880cae6a2953a366aa6ad0900fd9830da'=
+ 'ab3f4f0c7f3aa050cd602cc32830e24ac4aaee97' '071588136007482d70fd2667b82703=
+6bc60b1f8f' '5c6808d10499f6c8a8d5ee948a22fc93814f6d66' '9409d18bf7d58ab7163=
+37749e28e2caba0d64cb0' '8cf19b19dba8814ccc8b1179dabf28b7f8eefc22' 'e540be7d=
+56d740144b1bd6f220b61ffe2f3830d4' '04f7516ab70f7b82aae1d2830af2ee6f17f3fe98=
+' 'b3eb755e2db07d85c30e8ff4043ffb9a14b4ece7' 'c76d50b71e898694c946993eb3c77=
+f50efa97254' '74823db9ba2e13f3ec007b354759b3d8125e462c' 'a8b6e3738c872d35f1=
+cf7b3cd3ce67d86d38e7cf' '6ffdc7eb48bd2268c37c2accad454c043b9cc987' '70a65c5=
+3d228562cf0c8ae0f38c847d2a5dd59e6' '0e47251e8cc438d5b59fcd86d27efade01976fe=
+1' '87ee3f05bfe2f5955c2c77ae26a1be236fd615a5' '19b08fd23b20593ebe43708308db=
+ddb02507877d' 'af6d53db28e6448b1e0ce9aa314bc5da494d35ab' '10d366a846be648aa=
+47cdcd3dc7b7346a4143a6c' '702ce71d32f2c30b4f45b7c6b701d87583c58df8' 'd0ab89=
+951197f0fc509a0cd732d830880e79c2d4' 'd8f87aa5fa0a4276491fa8ef436cd22605a3f9=
+ba' '7f428282fde34f06f3ab898b8a9081bf93a41f22' '66c744e28b69d931b142adb6b9f=
+5e56ac9644f79' '3495a5df94a9ad7a8940bcb3ebfda58255f5b952' '00ca2dd431fa2acb=
+07b3ecc6ce49fb9a0a4d72cb' 'cafadbf430f4b2f3ca4158de48ef6ba4d97fbf17' '37fbc=
+1ab0f225d23f0839260a11375b4f1f7cf8c' '83ba6efa711fad83a0fbf02178ad64d3906d8=
+d09' 'c3608162a95a259c669cf9fdccf900782fa8d902' '3c5ddd56aa93048314c64533c2=
+1e731a44b0f067' '20c4701b75a3d6ce09d61e17125aefe77e7eb333' 'a18467a50eddbd7=
+c6548b53b25b68e5454ceb587' '4fbd3b2ec04dc6ef93090ec24733a5c5671fb71f' 'ebc2=
+164a4cd4314503f1a0c8e7aaf76d7e5fa211' 'd3922f6dad69b3d1f7656c9035bd0e82f730=
+91b7' 'dccc66b0e92d48d9a1908a3ccb8142e0ee3381f5' '7a3d1b04d938f31e112fe09c0=
+ffc1af830ba1f6d' '61d2a7699ab39d448f44919ef15c16187e6f70ec' '354e7a6d448b57=
+44362bf33a24315d4d1d0bb7ef' '8a98e7f55f975360975083166e21982ef307b8fd' '519=
+d0a6b2ca5a891340b6c24a4c40545f518e1a8' '10303b32519f52a5afd40593a507543143c=
+8ec6a' 'da7afdc79cba00f952df12cd579e44832d829c0a' '62b04225e99a5d1c71c5c73d=
+2aa6618bc2c0738f' 'de9f1b1583aecb246b659effb03f2456604fab64' 'c32eaba2d760e=
+f0ec5426b207cf0ce750064cf36' 'a014c203b54d9013ad52ad8a531cf46e71028f2b' 'e7=
+c30ac379b429d439eb62ae1bb69720a6701e26' '2a3602030d800b6600ef55c31e21bc5461=
+1f7770' '09dc08b396c954820f119e1ab0c7d72333c18323' '6be9ea62afedef0f976eb3d=
+ba4c117be0c1d3809' 'fc6ceb7e4ea746e663ff8c5593e67ad8ccbee34a' '83aee46dc214=
+2eed2dc40b5cef0e9e08e14cac42' 'e590752119029d87ce46d725e11245a52d22e1fe' '7=
+7157cb45c66bd652a08a360693fcced558c5ef9' 'b0fc1e7701940d12ea2c41f386aa552bc=
+4cc3629' '8618271887ca10ac5108fe7e1d82ba8f1b152cf9' '8672e4b51adfc57150f386=
+2b1665faff0acf1bad' '8d38423d9dea7353a8a54a3ab2e0d0aa04ed34d0' 'db4371d13f8=
+2fb12463fe053f4864980a2af2106' 'b9198ce5c6dfee19b9662dda95ba559af9cdf53f' '=
+6dd70757213fc046e5f86901e4baf11ed894da6b' 'b6376dbed8e173f9571583b5d358b08f=
+f394e864' '0cd9bf6a6d9a1861087236cc5c275b3bea83cfdd' '2f2a72de673513247cd6f=
+ae14e53f6c40c5841ef' '2d7b4a44fb768e1887e7e4cdd8b86817ccd9c3bf' 'da8264ce6c=
+5c02b78f95d31021e942ab38d8dd39' '22a4776a9ce50aa47f602d28f53ba9d613a38f49' =
+'a5a9fd93d2c3c2bd31d27a25a601ae313d4aa74f' '8618307b52ef2fa5caa87f1b7938125=
+cb410e777' '75d208bddcca55ec31481420fbb4d6c9703ba195' '04b61513dfe40f80f0dc=
+c795003637b510522b3c' '6b6dbf3e4ecfd7d1086bd7cd8b31ca8e45d4dc1f' '2b39d48a0=
+ab368bca4c7a0458fa9cdd05ebcacb6' '96d337436fe0921177a6090aeb5bb214753654fc'=
+ '420739112e95c9bb286b4e87875706925970abd3' '52ddc0106c77ff0eacf07b309833ae=
+6e6a4e8587' '9bf0bd7bdea6c402007ffb784dd0c0f704aa2310' '211243b69533e968cc6=
+f0259fb80ffee02fbe0ca' '4c5e6d5b31bc623d89185d551681ab91cfd037c9' '255153af=
+bcfdcf30d20048fb76a6d9418537b5d9' '7acc70476f14661149774ab88d3fe23d83ba4249=
+' '25abdc151a448a17d500ea9468ce32582c479faa' '284853affe73fe1ca9786bd52b934=
+eb9d420a942' 'b2440442ccb68479fa6d307917419983f3c87e83' '45e9066f3a487e9e26=
+b842644364d045af054775' '0f698d742f628d02ab2a222f8cf5f793443865d0' '8db50f0=
+fa43efe8799fd40b872dcdd39a90d7549' '4ab48cc63e15cb619d641d1edf9a15a0a98875b=
+2' 'c6bca73d699cfe00d3419566fdb2a45e112f44b0' 'b0655377aa5a410df02d89170c20=
+141a1a5bbc28' '99a3ef1e81cd1775bc1f8cc2ad188b1fc755d5cd' 'a2a631830deb382a3=
+d27b6f52b2d654a3e6bb427' '7a8447fc71a09000cee5a2372b6efde45735d2c8' '32a708=
+ba5db50cf928a1f1b2039ceef33de2c286' '3622dc47a4b13e0ec86358c7b54a0b33bfcaa0=
+3c' 'b39ef93a2e5b5f4289a3486d8a94a09a1e6a4c67' '2a28b5240f2b328495c6565d277=
+f438dbc583d61' '1303c2903889b01d581083ed92e439e7544dd3e5' 'f764645cb85a8b8f=
+58067289cdfed28f6c1cdf49' '7f7b350e4a65446f5d52ea8ae99e12eac8a972db' '02e7a=
+f5b6423d2dbf82f852572f2fa8c00aafb19' '29c8c00d9f9db5fb659b6f05f9e8964afc13f=
+3e2' '9a6bc0a406608e2520f18d996483c9d2e4a9fb27' '2497eda57025abe1349207a972=
+6da02aae699bca' 'f25c7d709b93602ee9a08eba522808a18e1f5d56' 'f4acea9eef70460=
+7d1a950909ce3a52a770d6be2' '524ee559948d8d079b13466e70fa741f909699c0' 'b884=
+e34994ca41f7b7819f3c41b78ff494787b27' 'e39011184f23de3d04ca8e80b4df76c9047b=
+4026' 'fa08b566860bca8ebf9300090b85174c34de7ca5' '03d281f384768610bf90697bc=
+e9e35d3d596de77' 'aa30193af8873b3ccfd70a4275336ab6cbd4e5e6' 'ba9b28652c75b0=
+7383e267328f1759195d5430f7' '81acbdc51bbbec822a1525481f2f70677c47aee0' '9e9=
+2c559d49d6fb903af17a31a469aac51b1766d' 'fee876b2ec75dcc18fdea154eae1f5bf14d=
+82659' '0bb160c92ad400c692984763996b758458adea17' '124f6155f3d97b0e33f178c1=
+0a5138a42c8fd207'
+# test job: [33c3f6c2b48cd84b441dba1ee3e62290e53930f4] https://lava.sirena.=
+org.uk/scheduler/job/2690173
+# test job: [118c3908242076c6e281c7010d29c2d0607c3190] https://lava.sirena.=
+org.uk/scheduler/job/2689019
+# test job: [b3ca98297cd98a51ee9d6d491d0a4ee0ca79b515] https://lava.sirena.=
+org.uk/scheduler/job/2686619
+# test job: [38d76018bb412dc66b08837097eff53d21e8df29] https://lava.sirena.=
+org.uk/scheduler/job/2699449
+# test job: [faecdd423c27f0d6090156a435ba9dbbac0eaddb] https://lava.sirena.=
+org.uk/scheduler/job/2700913
+# test job: [5d0d3623303775d750e122a2542d1a26c8573d38] https://lava.sirena.=
+org.uk/scheduler/job/2658283
+# test job: [c43267e6794a36013fd495a4d81bf7f748fe4615] https://lava.sirena.=
+org.uk/scheduler/job/2660057
+# test job: [bc28831d7a09f7058cdca4658d81e5faf635bed7] https://lava.sirena.=
+org.uk/scheduler/job/2684350
+# test job: [1c3b68f0d55b5932eb38eda602a61aec6d6f5e5e] https://lava.sirena.=
+org.uk/scheduler/job/2658955
+# test job: [d568788baab24875604c231f723dbb72387fb081] https://lava.sirena.=
+org.uk/scheduler/job/2655763
+# test job: [b8f82cb0d84d00c04cdbdce42f67df71b8507e8b] https://lava.sirena.=
+org.uk/scheduler/job/2655127
+# test job: [d60bc140158342716e13ff0f8aa65642f43ba053] https://lava.sirena.=
+org.uk/scheduler/job/2656163
+# test job: [0f00132132937ca01a99feaf8985109a9087c9ff] https://lava.sirena.=
+org.uk/scheduler/job/2653786
+# test job: [d354e47f6464bddd777916f3939bafa1673156c7] https://lava.sirena.=
+org.uk/scheduler/job/2684028
+# test job: [80bb50e2d459213cccff3111d5ef98ed4238c0d5] https://lava.sirena.=
+org.uk/scheduler/job/2688238
+# test job: [10d97b74e2eef787d823f9bc05cb044b47d25c41] https://lava.sirena.=
+org.uk/scheduler/job/2650801
+# test job: [028ef9c96e96197026887c0f092424679298aae8] https://lava.sirena.=
+org.uk/scheduler/job/2651189
+# test job: [35bdc192d829164a6e47184d06401918fe3d7f1f] https://lava.sirena.=
+org.uk/scheduler/job/2650182
+# test job: [f5459048c38a00fc583658d6dcd0f894aff6df8f] https://lava.sirena.=
+org.uk/scheduler/job/2649672
+# test job: [5aa81ab21de30b7b058202102f052289115298ef] https://lava.sirena.=
+org.uk/scheduler/job/2681085
+# test job: [e774d5f1bc27a85f858bce7688509e866f8e8a4e] https://lava.sirena.=
+org.uk/scheduler/job/2647598
+# test job: [e753c16cb3dd1e8feee6977c330d21fbe0e2db0b] https://lava.sirena.=
+org.uk/scheduler/job/2649137
+# test job: [0e4dc6fbddb01b2ce0d0b4d67ad5f70e976bedcc] https://lava.sirena.=
+org.uk/scheduler/job/2697007
+# test job: [7c6c4ed80b874f721bc7c2c937e098c56e37d2f0] https://lava.sirena.=
+org.uk/scheduler/job/2646968
+# test job: [08e57f5e1a9067d5fbf33993aa7f51d60b3d13a4] https://lava.sirena.=
+org.uk/scheduler/job/2691269
+# test job: [e719e17d99aaf3922dbc15ae3ac3bb62fac32bad] https://lava.sirena.=
+org.uk/scheduler/job/2695515
+# test job: [738dd185d3e447e1dfa65b5287730fef456089bf] https://lava.sirena.=
+org.uk/scheduler/job/2695076
+# test job: [9a9c8ce300cd3859cc87b408ef552cd697cc2ab7] https://lava.sirena.=
+org.uk/scheduler/job/2644553
+# test job: [a55f7f5f29b32c2c53cc291899cf9b0c25a07f7c] https://lava.sirena.=
+org.uk/scheduler/job/2643296
+# test job: [14d2714d6537a9df5bea2515185034dbb9d30f03] https://lava.sirena.=
+org.uk/scheduler/job/2699522
+# test job: [34b3eef48d980cd37b876e128bbf314f69fb5d70] https://lava.sirena.=
+org.uk/scheduler/job/2698703
+# test job: [7f87a5ea75f011d2c9bc8ac0167e5e2d1adb1594] https://lava.sirena.=
+org.uk/scheduler/job/2640092
+# test job: [6f468ea360f0a6a1e45854afbc3019842ed891a8] https://lava.sirena.=
+org.uk/scheduler/job/2695821
+# test job: [3036cd0d3328220a1858b1ab390be8b562774e8a] https://lava.sirena.=
+org.uk/scheduler/job/2636554
+# test job: [b16df0dacb3a77d4c1ce95f21c58a2b99ae10213] https://lava.sirena.=
+org.uk/scheduler/job/2683777
+# test job: [bfe62a454542cfad3379f6ef5680b125f41e20f4] https://lava.sirena.=
+org.uk/scheduler/job/2634141
+# test job: [d78ddeb8938a366aabfabf60255c1a94de8d8ea1] https://lava.sirena.=
+org.uk/scheduler/job/2694993
+# test job: [81469ef61cf710274ef42999a3ebe96a5c204ee5] https://lava.sirena.=
+org.uk/scheduler/job/2688419
+# test job: [591cd656a1bf5ea94a222af5ef2ee76df029c1d2] https://lava.sirena.=
+org.uk/scheduler/job/2632803
+# test job: [9d80de66a04606eef625cb9141b6d1d8c970dbcb] https://lava.sirena.=
+org.uk/scheduler/job/2684187
+# test job: [909632714f687560627f3e8c21fb5f5180373afd] https://lava.sirena.=
+org.uk/scheduler/job/2679804
+# test job: [1791c390149f56313c425e8add1fd15baf40afb8] https://lava.sirena.=
+org.uk/scheduler/job/2632581
+# test job: [3aae9383f42f687221c011d7ee87529398e826b3] https://lava.sirena.=
+org.uk/scheduler/job/2631919
+# test job: [7ca6d1cfec80ebe46cc063f3284c5896c344d9a1] https://lava.sirena.=
+org.uk/scheduler/job/2631436
+# test job: [631919fb12fe7b1f0453fe1035e62ce704bc3923] https://lava.sirena.=
+org.uk/scheduler/job/2630961
+# test job: [503d21ef8eac1437d76919921115acf0aef328a0] https://lava.sirena.=
+org.uk/scheduler/job/2689888
+# test job: [03738dd159db60a27378e9b5b93fd187218519ba] https://lava.sirena.=
+org.uk/scheduler/job/2690420
+# test job: [6fab063bd8d64f15cde2d194c08a159ad3afdf27] https://lava.sirena.=
+org.uk/scheduler/job/2692534
+# test job: [d8a9a4b11a137909e306e50346148fc5c3b63f9d] https://lava.sirena.=
+org.uk/scheduler/job/2629543
+# test job: [2e80b497497c0d49d7809702f0e70465f88fe7a4] https://lava.sirena.=
+org.uk/scheduler/job/2700283
+# test job: [0629c33fe1873a48e1e06078409de76c5a159fdb] https://lava.sirena.=
+org.uk/scheduler/job/2692260
+# test job: [5619b098e2fbf3a23bf13d91897056a1fe238c6d] https://lava.sirena.=
+org.uk/scheduler/job/2628656
+# test job: [5bf4b30ed49b9af281bdf11c788f382faa432cfd] https://lava.sirena.=
+org.uk/scheduler/job/2695709
+# test job: [1558905669e4da922fbaa7cf6507eb14779bffbd] https://lava.sirena.=
+org.uk/scheduler/job/2687158
+# test job: [710c166c0fc377433906f1f2979eca657e9a50c3] https://lava.sirena.=
+org.uk/scheduler/job/2696348
+# test job: [47f28a5bd154a95d5aa563dde02a801bd32ddb81] https://lava.sirena.=
+org.uk/scheduler/job/2627688
+# test job: [7090420420d5a7d7c88b21d16962f2a230be3ef3] https://lava.sirena.=
+org.uk/scheduler/job/2694103
+# test job: [d3e2c7476e378089d56067202f4d29969fbd47b3] https://lava.sirena.=
+org.uk/scheduler/job/2693163
+# test job: [9147566d801602c9e7fc7f85e989735735bf38ba] https://lava.sirena.=
+org.uk/scheduler/job/2623039
+# test job: [dbf00d8d23b43a7a1d717e704c50651731d01d71] https://lava.sirena.=
+org.uk/scheduler/job/2622200
+# test job: [a9cdba5c35c5cca6bd0b922bc235b843a41b3a57] https://lava.sirena.=
+org.uk/scheduler/job/2697521
+# test job: [25bd73562941b04cfba1a278d8c84f2b1c69b8e9] https://lava.sirena.=
+org.uk/scheduler/job/2699421
+# test job: [d0c3bcd5b8976159d835a897254048e078f447e6] https://lava.sirena.=
+org.uk/scheduler/job/2618049
+# test job: [5c36fd7fc6a84f36bebbef72fe29bec0682a6589] https://lava.sirena.=
+org.uk/scheduler/job/2660925
+# test job: [2fb4883b884a437d760bd7bdf7695a7e5a60bba3] https://lava.sirena.=
+org.uk/scheduler/job/2690812
+# test job: [5b6471fc72a42e6110adca54f46fd2c287dc49d4] https://lava.sirena.=
+org.uk/scheduler/job/2699761
+# test job: [feae58b6ee45096b1d8c29076f0d8098d9788e57] https://lava.sirena.=
+org.uk/scheduler/job/2699140
+# test job: [7658e9b94849ca861ded82d641f52fcec303210d] https://lava.sirena.=
+org.uk/scheduler/job/2699838
+# test job: [7aaa8047eafd0bd628065b15757d9b48c5f9c07d] https://lava.sirena.=
+org.uk/scheduler/job/2615115
+# test job: [2a83ffc5575013784ea41739daf9e10200e44e7c] https://lava.sirena.=
+org.uk/scheduler/job/2693766
+# test job: [a3d97d1d3fa68253927a6e6c2fdfe7c039073af7] https://lava.sirena.=
+org.uk/scheduler/job/2613970
+# test job: [cbfffcca2bf0622b601b7eaf477aa29035169184] https://lava.sirena.=
+org.uk/scheduler/job/2613067
+# test job: [ac354b5cb04d2077c3821a6cbfbc7981ad45f84a] https://lava.sirena.=
+org.uk/scheduler/job/2614636
+# test job: [defec2ca7cd743c9b8a29be5012ad7381a5ecbb3] https://lava.sirena.=
+org.uk/scheduler/job/2690050
+# test job: [26df51adf30b3d440293eed38d01f953ae0bb6f4] https://lava.sirena.=
+org.uk/scheduler/job/2612082
+# test job: [be762d8b6dd7efacb61937d20f8475db8f207655] https://lava.sirena.=
+org.uk/scheduler/job/2612646
+# test job: [7df48e36313029e4c0907b2023905dd7213fd678] https://lava.sirena.=
+org.uk/scheduler/job/2611155
+# test job: [bec2988b470ef278c2e7238e8d7edd097853a4ea] https://lava.sirena.=
+org.uk/scheduler/job/2689751
+# test job: [44b580a74fcd39d0c53b8c9d6b865cfbd05a947e] https://lava.sirena.=
+org.uk/scheduler/job/2690313
+# test job: [d813f421930c5b01b9f61043932de02602dd6ae3] https://lava.sirena.=
+org.uk/scheduler/job/2607375
+# test job: [46b513250491a7bfc97d98791dbe6a10bcc8129d] https://lava.sirena.=
+org.uk/scheduler/job/2608295
+# test job: [1ee4716a5a28eaef81ae1f280d983258bee49623] https://lava.sirena.=
+org.uk/scheduler/job/2691003
+# test job: [fa9681ed5c6ae980af18545690e31d8f9c088c33] https://lava.sirena.=
+org.uk/scheduler/job/2701671
+# test job: [fc1d43826702d8c14845c187d3ea0743fdf8f223] https://lava.sirena.=
+org.uk/scheduler/job/2687586
+# test job: [a8aef26417963f66a98f03f5473033fc2b022863] https://lava.sirena.=
+org.uk/scheduler/job/2694685
+# test job: [c1014a629d0181ce7739caf1448fb8e22d4cba9c] https://lava.sirena.=
+org.uk/scheduler/job/2687041
+# test job: [bba8d9ba7df8f6592552377049fc84958fd0575a] https://lava.sirena.=
+org.uk/scheduler/job/2690507
+# test job: [fd55319692151de2b89c21356d1445bce364769b] https://lava.sirena.=
+org.uk/scheduler/job/2689482
+# test job: [0138af2472dfdef0d56fc4697416eaa0ff2589bd] https://lava.sirena.=
+org.uk/scheduler/job/2604671
+# test job: [f7a1c0283f135833db164cc0fac8d422fed2079e] https://lava.sirena.=
+org.uk/scheduler/job/2683884
+# test job: [d2a43e7f89da55d6f0f96aaadaa243f35557291e] https://lava.sirena.=
+org.uk/scheduler/job/2604208
+# test job: [17de8a68ac9807adf551f7d2d980e26d1196e41a] https://lava.sirena.=
+org.uk/scheduler/job/2694494
+# test job: [1ce61688875da281ab109bb143ec6ba756493c39] https://lava.sirena.=
+org.uk/scheduler/job/2687435
+# test job: [bbeb83d3182abe0d245318e274e8531e5dd7a948] https://lava.sirena.=
+org.uk/scheduler/job/2599713
+# test job: [24f9515de8778410e4b84c85b196c9850d2c1e18] https://lava.sirena.=
+org.uk/scheduler/job/2599347
+# test job: [7b4f1a29c704f2c28f32dca5fea6d173891c16a9] https://lava.sirena.=
+org.uk/scheduler/job/2687302
+# test job: [e3c33bc767b5512dbfec643a02abf58ce608f3b2] https://lava.sirena.=
+org.uk/scheduler/job/2598095
+# test job: [141efa53b9875c059d0edec5212fbcd311ec4896] https://lava.sirena.=
+org.uk/scheduler/job/2681574
+# test job: [1b065199ea1934e6d06d1a9b2dc7ed7c79321484] https://lava.sirena.=
+org.uk/scheduler/job/2682194
+# test job: [c369299895a591d96745d6492d4888259b004a9e] https://lava.sirena.=
+org.uk/scheduler/job/2589953
+# test job: [f03ffe53ab6ffc798ed8291090cebf19c6e5fa3b] https://lava.sirena.=
+org.uk/scheduler/job/2694822
+# test job: [ec69c9e88315c4be70c283f18c2ff130da6320b5] https://lava.sirena.=
+org.uk/scheduler/job/2589634
+# test job: [113ae7b4decc6c2d95bdbbe52e615a0137ef7f9f] https://lava.sirena.=
+org.uk/scheduler/job/2588688
+# test job: [42bddab0563fe67882b2722620a66dd98c8dbf33] https://lava.sirena.=
+org.uk/scheduler/job/2586728
+# test job: [a0c83177734ab98623795e1ba2cf4b72c23de5e7] https://lava.sirena.=
+org.uk/scheduler/job/2588042
+# test job: [165160265e4be3a6639dd4ea5ca0953a858e2156] https://lava.sirena.=
+org.uk/scheduler/job/2585766
+# test job: [ce29261ec6482de54320c03398eb30e9615aee40] https://lava.sirena.=
+org.uk/scheduler/job/2585277
+# test job: [0e4f8f1a3d081e834be5fd0a62bdb2554fadd307] https://lava.sirena.=
+org.uk/scheduler/job/2583450
+# test job: [a1d9d8e833781c44ab688708804ce35f20f3cbbd] https://lava.sirena.=
+org.uk/scheduler/job/2582549
+# test job: [da8d9636be7e0761f69c3dadf747c725732312ff] https://lava.sirena.=
+org.uk/scheduler/job/2585466
+# test job: [3fe1dcbc2d20c5dbc581c0bb458e05365bfffcf7] https://lava.sirena.=
+org.uk/scheduler/job/2689611
+# test job: [af325e87af5da2f686d1ad547edc96f731418f2a] https://lava.sirena.=
+org.uk/scheduler/job/2586230
+# test job: [ac977b900907f621e117184e71766f297a2f702b] https://lava.sirena.=
+org.uk/scheduler/job/2695901
+# test job: [a258a383b91774ac646517ec1003a442964d8946] https://lava.sirena.=
+org.uk/scheduler/job/2586591
+# test job: [9d6d9514c08f462d162040b48526bda60def9de1] https://lava.sirena.=
+org.uk/scheduler/job/2586447
+# test job: [f656807150e3e1c6f76cab918e5adfad6d881d58] https://lava.sirena.=
+org.uk/scheduler/job/2585871
+# test job: [e9825d1c79570b4c11259e826b3f7c1511544a85] https://lava.sirena.=
+org.uk/scheduler/job/2581393
+# test job: [8a30aeb0d1b4e4aaf7f7bae72f20f2ae75385ccb] https://lava.sirena.=
+org.uk/scheduler/job/2579160
+# test job: [04a9f1766954687f0a1b7a0f7184dc4f86edcb30] https://lava.sirena.=
+org.uk/scheduler/job/2578661
+# test job: [7aec47be7c2bbed4823325e888df3e91dde33253] https://lava.sirena.=
+org.uk/scheduler/job/2686158
+# test job: [d98b978446d249df1a662b4fef4c0bbfa1d650b8] https://lava.sirena.=
+org.uk/scheduler/job/2695312
+# test job: [8020c41b39f514941d93f3322b598afdce487064] https://lava.sirena.=
+org.uk/scheduler/job/2696114
+# test job: [a989fde763f4f24209e4702f50a45be572340e68] https://lava.sirena.=
+org.uk/scheduler/job/2574458
+# test job: [f0caa1d49cc07b30a7e2f104d3853ec6dc1c3cad] https://lava.sirena.=
+org.uk/scheduler/job/2573096
+# test job: [cffcb42c57686e9a801dfcf37a3d0c62e51c1c3e] https://lava.sirena.=
+org.uk/scheduler/job/2581560
+# test job: [67253b28a61f0dff31f8f00dca8c9586f089b852] https://lava.sirena.=
+org.uk/scheduler/job/2581436
+# test job: [2d7f05cddf4c268cc36256a2476946041dbdd36d] https://lava.sirena.=
+org.uk/scheduler/job/2581160
+# test job: [8510d054b7e086a71a9191ac3399231290dfd272] https://lava.sirena.=
+org.uk/scheduler/job/2688926
+# test job: [09e70e4f119ff650d24c96161fd2f62ac7e424b0] https://lava.sirena.=
+org.uk/scheduler/job/2565597
+# test job: [2d1373e4246da3b58e1df058374ed6b101804e07] https://lava.sirena.=
+org.uk/scheduler/job/2567714
+# test job: [4f3df2e5ea69f5717d2721922aff263c31957548] https://lava.sirena.=
+org.uk/scheduler/job/2564138
+# test job: [f338e77383789c0cae23ca3d48adcc5e9e137e3c] https://lava.sirena.=
+org.uk/scheduler/job/2564271
+# test job: [267594792a71018788af69e836c52e34bb8054af] https://lava.sirena.=
+org.uk/scheduler/job/2563704
+# test job: [69237f8c1f69112cca7388af7fab6d0ee45a2525] https://lava.sirena.=
+org.uk/scheduler/job/2563564
+# test job: [9abff5748e4fb2055a54de6b8e43f4395d2481d9] https://lava.sirena.=
+org.uk/scheduler/job/2561936
+# test job: [1c9982b4961334c1edb0745a04cabd34bc2de675] https://lava.sirena.=
+org.uk/scheduler/job/2562778
+# test job: [399af66228cfd7df79dc360810b6b673000f8090] https://lava.sirena.=
+org.uk/scheduler/job/2561222
+# test job: [0257f64bdac7fdca30fa3cae0df8b9ecbec7733a] https://lava.sirena.=
+org.uk/scheduler/job/2556288
+# test job: [c670267ff50d5f9beb486f0203cdede580a99ae3] https://lava.sirena.=
+org.uk/scheduler/job/2700438
+# test job: [80234b5ab240f52fa45d201e899e207b9265ef91] https://lava.sirena.=
+org.uk/scheduler/job/2552995
+# test job: [786bf7ef564e97f195a2fca379fa7866a4c3ea08] https://lava.sirena.=
+org.uk/scheduler/job/2684954
+# test job: [b29fb8829bff243512bb8c8908fd39406f9fd4c3] https://lava.sirena.=
+org.uk/scheduler/job/2551072
+# test job: [b4f0dd314b39ea154f62f3bd3115ed0470f9f71e] https://lava.sirena.=
+org.uk/scheduler/job/2550294
+# test job: [21b3fb7dc19caa488d285e3c47999f7f1a179334] https://lava.sirena.=
+org.uk/scheduler/job/2548672
+# test job: [9be71d462c33b1a00acfa4ab8f0f5332ed592817] https://lava.sirena.=
+org.uk/scheduler/job/2548723
+# test job: [8fc5c7895185d1119ae76b509892a1d14e0bd483] https://lava.sirena.=
+org.uk/scheduler/job/2548853
+# test job: [7b3f8db159f710d432c4edc024fcefa9e62e8b4b] https://lava.sirena.=
+org.uk/scheduler/job/2548249
+# test job: [7cb259eacc08df8e5d1b17e6a75a19518e5de7ca] https://lava.sirena.=
+org.uk/scheduler/job/2695613
+# test job: [4185b95f8a42d92d68c49289b4644546b51e252b] https://lava.sirena.=
+org.uk/scheduler/job/2546307
+# test job: [5e783510b5c09bc8a9d83a34488ed924769085f2] https://lava.sirena.=
+org.uk/scheduler/job/2693958
+# test job: [95bc5c225513fc3c4ce169563fb5e3929fbb938b] https://lava.sirena.=
+org.uk/scheduler/job/2545648
+# test job: [981b080a79724738882b0af1c5bb7ade30d94f24] https://lava.sirena.=
+org.uk/scheduler/job/2545057
+# test job: [ed0313223ce6514dbd39c049e25f702980d7e3cc] https://lava.sirena.=
+org.uk/scheduler/job/2544894
+# test job: [111e2863372c322e836e0c896f6dd9cf4ee08c71] https://lava.sirena.=
+org.uk/scheduler/job/2544717
+# test job: [1bc17c67194716f53037685b7059a22cc1a911b2] https://lava.sirena.=
+org.uk/scheduler/job/2543763
+# test job: [6fdc70794cc15b450e3fd750ca048318764a343e] https://lava.sirena.=
+org.uk/scheduler/job/2694923
+# test job: [97af961568c8682c44506c9ad4b26c8a5455ec1d] https://lava.sirena.=
+org.uk/scheduler/job/2543903
+# test job: [ad0e9ac2d5f5ab7a773c2c07ecf06ee59db9259f] https://lava.sirena.=
+org.uk/scheduler/job/2543269
+# test job: [0a208adefecb287d22321054470d4619cb303839] https://lava.sirena.=
+org.uk/scheduler/job/2542852
+# test job: [b6376ccdcb4bf7163fc4cbe5f83e265bc1660d4f] https://lava.sirena.=
+org.uk/scheduler/job/2688053
+# test job: [facfdef64d11c08e6f1e69d02a0b87cb74cee0f5] https://lava.sirena.=
+org.uk/scheduler/job/2540870
+# test job: [ff85a2ebacbdaec9f28c4660c991295ace93cd1c] https://lava.sirena.=
+org.uk/scheduler/job/2691619
+# test job: [1f318b96cc84d7c2ab792fcc0bfd42a7ca890681] https://lava.sirena.=
+org.uk/scheduler/job/2541741
+# test job: [a8075ada4a341ce58ebf8bef0188cefe6c2f6487] https://lava.sirena.=
+org.uk/scheduler/job/2540938
+# test job: [1954c4f012206147c34acda8da04f827aa7d3ee3] https://lava.sirena.=
+org.uk/scheduler/job/2538222
+# test job: [2e4cfaa78eb98d2623367818c859225c6b6bf701] https://lava.sirena.=
+org.uk/scheduler/job/2695418
+# test job: [c23719abc3308df7ed3ad35650ad211fb2d2003d] https://lava.sirena.=
+org.uk/scheduler/job/2538826
+# test job: [fb07430e6f98ccff61f6f1a06d01d7f12e29c6d3] https://lava.sirena.=
+org.uk/scheduler/job/2537690
+# test job: [4ae12d8bd9a830799db335ee661d6cbc6597f838] https://lava.sirena.=
+org.uk/scheduler/job/2536969
+# test job: [8e235bc43326f47adfd77d926c7d6ad39077569a] https://lava.sirena.=
+org.uk/scheduler/job/2682869
+# test job: [325a118c12045239076b7ea9e66391dd6f56f72e] https://lava.sirena.=
+org.uk/scheduler/job/2536466
+# test job: [651690480a965ca196ce42d4562543f3e61cb226] https://lava.sirena.=
+org.uk/scheduler/job/2535334
+# test job: [aa3d0c93a333182e887426366a4f3e5f06ee0d83] https://lava.sirena.=
+org.uk/scheduler/job/2531519
+# test job: [b1ef855c62601ed4de2c4b0ff75a075877e3dac8] https://lava.sirena.=
+org.uk/scheduler/job/2531879
+# test job: [5ee8dbf54602dc340d6235b1d6aa17c0f283f48c] https://lava.sirena.=
+org.uk/scheduler/job/2532057
+# test job: [ef0b4783afc211a4b120e72b5a57f3d0340a9981] https://lava.sirena.=
+org.uk/scheduler/job/2530863
+# test job: [e7662bced2e98ffa2c572126677deb9cf55d43b3] https://lava.sirena.=
+org.uk/scheduler/job/2530748
+# test job: [c107785c7e8dbabd1c18301a1c362544b5786282] https://lava.sirena.=
+org.uk/scheduler/job/2529647
+# test job: [0b3bb205808195159be633a8cefb602670e856fb] https://lava.sirena.=
+org.uk/scheduler/job/2528608
+# test job: [b709087e9e544259d1d075ced91cc4ab769a8ae2] https://lava.sirena.=
+org.uk/scheduler/job/2689352
+# test job: [ecc64d2dc9ff9738d2a896beb68e02c2feaf9a02] https://lava.sirena.=
+org.uk/scheduler/job/2528015
+# test job: [cfc69c2e6c699c96949f7b0455195b0bfb7dc715] https://lava.sirena.=
+org.uk/scheduler/job/2540357
+# test job: [325291b20f8a6f14b9c82edbf5d12e4e71f6adaa] https://lava.sirena.=
+org.uk/scheduler/job/2526331
+# test job: [0031c06807cfa8aa51a759ff8aa09e1aa48149af] https://lava.sirena.=
+org.uk/scheduler/job/2525421
+# test job: [2adac914c72b6cb5aba2612f49050c82aecd498e] https://lava.sirena.=
+org.uk/scheduler/job/2523903
+# test job: [96f06d055ca03d1dfb5830fd07ff6eadbd66264c] https://lava.sirena.=
+org.uk/scheduler/job/2523386
+# test job: [27990181031fdcdbe0f7c46011f6404e5d116386] https://lava.sirena.=
+org.uk/scheduler/job/2522657
+# test job: [9891b52ba12e9d5fed5901b6b5f6e0cdcd424390] https://lava.sirena.=
+org.uk/scheduler/job/2522231
+# test job: [f48e7a246a567e3764112e2463274c479d95cd96] https://lava.sirena.=
+org.uk/scheduler/job/2522174
+# test job: [3b46d61890632c8f8b117147b6923bff4b42ccb7] https://lava.sirena.=
+org.uk/scheduler/job/2518699
+# test job: [af4e9ef3d78420feb8fe58cd9a1ab80c501b3c08] https://lava.sirena.=
+org.uk/scheduler/job/2517681
+# test job: [e84141846decb77d2826e553318a608b256804e5] https://lava.sirena.=
+org.uk/scheduler/job/2516929
+# test job: [a8df7892a9f42b2e2d5851f8835c734bd7fe8ad4] https://lava.sirena.=
+org.uk/scheduler/job/2515751
+# test job: [2d85ecd6fb0eb2fee0ffa040ec1ddea57b09bc38] https://lava.sirena.=
+org.uk/scheduler/job/2516104
+# test job: [9ab637ac5d3826606947f4e861107da958eda324] https://lava.sirena.=
+org.uk/scheduler/job/2516447
+# test job: [1696fad8b259a2d46e51cd6e17e4bcdbe02279fa] https://lava.sirena.=
+org.uk/scheduler/job/2514123
+# test job: [17c6bf433742e0c1ff5ce175145877c0194e4a7a] https://lava.sirena.=
+org.uk/scheduler/job/2513108
+# test job: [23942b71f07cc99e39d9216a5b370df494759d8c] https://lava.sirena.=
+org.uk/scheduler/job/2512778
+# test job: [11439c4635edd669ae435eec308f4ab8a0804808] https://lava.sirena.=
+org.uk/scheduler/job/2513485
+# test job: [31ddc62c1cd92e51b9db61d7954b85ae2ec224da] https://lava.sirena.=
+org.uk/scheduler/job/2512899
+# test job: [34b4fc44e4f904fbb81335d53163ffdcb0180000] https://lava.sirena.=
+org.uk/scheduler/job/2513581
+# test job: [da37bfe76b5b4ccc01ed8132215098e20d78e5f3] https://lava.sirena.=
+org.uk/scheduler/job/2511917
+# test job: [ca5056f5a78ce62588878d138e8141f01d70e61b] https://lava.sirena.=
+org.uk/scheduler/job/2514178
+# test job: [eb71ab2bf72260054677e348498ba995a057c463] https://lava.sirena.=
+org.uk/scheduler/job/2511424
+# test job: [39c633261414f12cb533a8b802ee57e2d2e3c482] https://lava.sirena.=
+org.uk/scheduler/job/2512165
+# test job: [06dba254de95b16e7793224d29daa5195de2e581] https://lava.sirena.=
+org.uk/scheduler/job/2513625
+# test job: [d3b693a13b39bce16e284e1c737874966b3a96de] https://lava.sirena.=
+org.uk/scheduler/job/2511826
+# test job: [9197e5949a41cfb5d44a6b8a860766266340d558] https://lava.sirena.=
+org.uk/scheduler/job/2509387
+# test job: [42eb01783091e49020221a8a7d6c00e154ae7e58] https://lava.sirena.=
+org.uk/scheduler/job/2510248
+# test job: [4d349ee5c7782f8b27f6cb550f112c5e26fff38d] https://lava.sirena.=
+org.uk/scheduler/job/2506638
+# test job: [aed968f8a6cd60a4aa32b5e9c0973c95c443ef4e] https://lava.sirena.=
+org.uk/scheduler/job/2506149
+# test job: [ac9ccb6e75c5af84095bece1019f22cb45ab43e5] https://lava.sirena.=
+org.uk/scheduler/job/2692959
+# test job: [2974aa42e6696a1d95b727d677dc01a71af5b998] https://lava.sirena.=
+org.uk/scheduler/job/2502197
+# test job: [501efdcb3b3ab099fc0ce2f6e668b1c4095dd476] https://lava.sirena.=
+org.uk/scheduler/job/2500552
+# test job: [3f4a08e64442340f4807de63e30aef22cc308830] https://lava.sirena.=
+org.uk/scheduler/job/2500985
+# test job: [e96493229a6399e902062213c6381162464cdd50] https://lava.sirena.=
+org.uk/scheduler/job/2501463
+# test job: [e3c81bae4f282a6be56bc22e05e2ce3dd92ae301] https://lava.sirena.=
+org.uk/scheduler/job/2500082
+# test job: [a75cb869a8ccc88b0bc7a44e1597d9c7995c56e5] https://lava.sirena.=
+org.uk/scheduler/job/2502646
+# test job: [d90c0f78379454d51a428e312ac6db573060185c] https://lava.sirena.=
+org.uk/scheduler/job/2500295
+# test job: [f4d0ec0aa20d49f09dc01d82894ce80d72de0560] https://lava.sirena.=
+org.uk/scheduler/job/2498273
+# test job: [d9d32e5bd5a4e57675f2b70ddf73c3dc5cf44fc2] https://lava.sirena.=
+org.uk/scheduler/job/2497174
+# test job: [5c74a008ffc62fc57a041602b4517519c8bf9436] https://lava.sirena.=
+org.uk/scheduler/job/2496434
+# test job: [260c3fff1fefc570d8f23e87953e181d7d248861] https://lava.sirena.=
+org.uk/scheduler/job/2494122
+# test job: [8bd9b67dc6e272f88c59365a2f55d38d52091cf9] https://lava.sirena.=
+org.uk/scheduler/job/2696005
+# test job: [e02902dd493bf9c9b05353c761737ac514ad7a5c] https://lava.sirena.=
+org.uk/scheduler/job/2489677
+# test job: [bfd7db781e2e7a99b086d645a104d16e368f58ff] https://lava.sirena.=
+org.uk/scheduler/job/2489546
+# test job: [ada32396f90951e12465224c04742607ca56a982] https://lava.sirena.=
+org.uk/scheduler/job/2489133
+# test job: [7c12f6ead4672cb08b74e6f6115eb04dca8ccfa4] https://lava.sirena.=
+org.uk/scheduler/job/2488535
+# test job: [297318a1c26dabb5a2d8540fdf436c22094eb2d7] https://lava.sirena.=
+org.uk/scheduler/job/2488755
+# test job: [37983fad7f3ef296fa0504c8e945987459dc5487] https://lava.sirena.=
+org.uk/scheduler/job/2489152
+# test job: [9a5eb2adb1ec90f854d9b45c75f0fcb3ae981356] https://lava.sirena.=
+org.uk/scheduler/job/2696627
+# test job: [7dff99b354601dd01829e1511711846e04340a69] https://lava.sirena.=
+org.uk/scheduler/job/2486772
+# test job: [507a071d9868cb60e4e76f8a06fc8eb014f59ae4] https://lava.sirena.=
+org.uk/scheduler/job/2486379
+# test job: [32fc4168fa56f6301d858c778a3d712774e9657e] https://lava.sirena.=
+org.uk/scheduler/job/2485139
+# test job: [4b73231b2a61c4142a027613d277a19c484dfcc3] https://lava.sirena.=
+org.uk/scheduler/job/2485283
+# test job: [5ebc20921b7fff9feb44de465448e17a382c9965] https://lava.sirena.=
+org.uk/scheduler/job/2485106
+# test job: [c740532de087009b18981ab14be42c45494c246d] https://lava.sirena.=
+org.uk/scheduler/job/2695195
+# test job: [6510e1324bcdc8caf21f6d17efe27604c48f0d64] https://lava.sirena.=
+org.uk/scheduler/job/2484428
+# test job: [fed6e5084894373d76270cad4a32eb6479ad8247] https://lava.sirena.=
+org.uk/scheduler/job/2484708
+# test job: [32a92f8c89326985e05dce8b22d3f0aa07a3e1bd] https://lava.sirena.=
+org.uk/scheduler/job/2480826
+# test job: [be704107e79696e855aa41e901a926039b6d2410] https://lava.sirena.=
+org.uk/scheduler/job/2483003
+# test job: [fbb4c52ccdcb4a612d2b7f800aa57090eeee16d7] https://lava.sirena.=
+org.uk/scheduler/job/2482419
+# test job: [189f164e573e18d9f8876dbd3ad8fcbe11f93037] https://lava.sirena.=
+org.uk/scheduler/job/2481417
+# test job: [bf122191473e26a8f195308b1ba924c98424c8e1] https://lava.sirena.=
+org.uk/scheduler/job/2482794
+# test job: [c2bcf62ca75c541ec4297e6ff02a68ddc2e02029] https://lava.sirena.=
+org.uk/scheduler/job/2483289
+# test job: [d075cef4af6327a5de4bee7bf77591e3201e54f4] https://lava.sirena.=
+org.uk/scheduler/job/2484632
+# test job: [78dfbd4ad0be9f51de7b9a19388809254aeccd26] https://lava.sirena.=
+org.uk/scheduler/job/2483030
+# test job: [0556bb42a84ee391a2145ddba86756f9747bc27f] https://lava.sirena.=
+org.uk/scheduler/job/2483142
+# test job: [171b3663f33e1efdc97f5112f49be10b47b20fa8] https://lava.sirena.=
+org.uk/scheduler/job/2482595
+# test job: [1dd419145d090f8fdf149cbb39dea6d968659dd2] https://lava.sirena.=
+org.uk/scheduler/job/2483727
+# test job: [a95f71ad3e2e224277508e006580c333d0a5fe36] https://lava.sirena.=
+org.uk/scheduler/job/2477903
+# test job: [d79526b89571ae447c1a5cfd3d627efa07098348] https://lava.sirena.=
+org.uk/scheduler/job/2478096
+# test job: [8bf22c33e7a172fbc72464f4cc484d23a6b412ba] https://lava.sirena.=
+org.uk/scheduler/job/2475632
+# test job: [956b9cbd7f156c8672dac94a00de3c6a0939c692] https://lava.sirena.=
+org.uk/scheduler/job/2472378
+# test job: [80ca113671a005430207d351cb403c1637106212] https://lava.sirena.=
+org.uk/scheduler/job/2471484
+# test job: [0783052534f547f8f201dd4554b1df9f1f8615b5] https://lava.sirena.=
+org.uk/scheduler/job/2474072
+# test job: [2b7a25df823dc7d8f56f8ce7c2d2dac391cea9c2] https://lava.sirena.=
+org.uk/scheduler/job/2473244
+# test job: [87a367f1bffadf1db5def15bd0cd2148acd057ad] https://lava.sirena.=
+org.uk/scheduler/job/2469521
+# test job: [40534d19ed2afb880ecf202dab26a8e7a5808d16] https://lava.sirena.=
+org.uk/scheduler/job/2466086
+# test job: [e81dd54f62c753dd423d1a9b62481a1c599fb975] https://lava.sirena.=
+org.uk/scheduler/job/2467364
+# test job: [0d68ad088e334088b031423e59886ae118c11202] https://lava.sirena.=
+org.uk/scheduler/job/2465468
+# test job: [957e5be2e1ff10d4b5e86d420c12580897069114] https://lava.sirena.=
+org.uk/scheduler/job/2462289
+# test job: [bb7a3fc2c976b5d0deb35a54ca237519816d7ba9] https://lava.sirena.=
+org.uk/scheduler/job/2459527
+# test job: [26a4cfaff82a2dcb810f6bfd5f4842f9b6046c8a] https://lava.sirena.=
+org.uk/scheduler/job/2459951
+# test job: [09ad01a530bb6ad260bda4fa56bab84619d90968] https://lava.sirena.=
+org.uk/scheduler/job/2462147
+# test job: [ca4ee40bf13dbd3a4be3b40a00c33a1153d487e5] https://lava.sirena.=
+org.uk/scheduler/job/2458902
+# test job: [45a43ac5acc90b8f4835eea92692f620e561a06b] https://lava.sirena.=
+org.uk/scheduler/job/2464648
+# test job: [57d76ceccee4b497eb835831206b50e72915a501] https://lava.sirena.=
+org.uk/scheduler/job/2463278
+# test job: [0f2acd3148e0ef42bdacbd477f90e8533f96b2ac] https://lava.sirena.=
+org.uk/scheduler/job/2460568
+# test job: [770aaedb461a055f79b971d538678942b6607894] https://lava.sirena.=
+org.uk/scheduler/job/2457958
+# test job: [f50822fd8675c68d294e89bd102f7b487ca3acd3] https://lava.sirena.=
+org.uk/scheduler/job/2457515
+# test job: [44331bd6a6107a33f8082521b227ffa4ec063a40] https://lava.sirena.=
+org.uk/scheduler/job/2456224
+# test job: [3e48a11675c50698374d4ac596fb506736eb1c53] https://lava.sirena.=
+org.uk/scheduler/job/2458596
+# test job: [7449f86bafcdb588422bb14a4babfd285e723670] https://lava.sirena.=
+org.uk/scheduler/job/2453333
+# test job: [6be5c151eb1ebf4d5007b9f60c729f7381255a23] https://lava.sirena.=
+org.uk/scheduler/job/2472278
+# test job: [5e160646f4dbca7cf9cc09abc31a22931e362b8a] https://lava.sirena.=
+org.uk/scheduler/job/2472234
+# test job: [888a0a802c467bbe34a42167bdf9d7331333440a] https://lava.sirena.=
+org.uk/scheduler/job/2455471
+# test job: [cee73b1e840c154f64ace682cb477c1ae2e29cc4] https://lava.sirena.=
+org.uk/scheduler/job/2453841
+# test job: [541c43310e85dbf35368b43b720c6724bc8ad8ec] https://lava.sirena.=
+org.uk/scheduler/job/2452555
+# test job: [582a1ef360a05bff4350bbf6e383f61d26b804f0] https://lava.sirena.=
+org.uk/scheduler/job/2452898
+# test job: [b7ef56a07672e0d7ebe71c9d9b45f959f0c2f8e8] https://lava.sirena.=
+org.uk/scheduler/job/2449378
+# test job: [c22e26bd0906e9c8325462993f01adb16b8ea2c0] https://lava.sirena.=
+org.uk/scheduler/job/2450395
+# test job: [e243cdd87b911ce9968b62e4ab2b680dfadc4341] https://lava.sirena.=
+org.uk/scheduler/job/2451217
+# test job: [1e83ccd5921a610ef409a7d4e56db27822b4ea39] https://lava.sirena.=
+org.uk/scheduler/job/2449972
+# test job: [b82fa9b0c26eeb2fde6017f7de2c3c544484efef] https://lava.sirena.=
+org.uk/scheduler/job/2451265
+# test job: [37a93dd5c49b5fda807fd204edf2547c3493319c] https://lava.sirena.=
+org.uk/scheduler/job/2450814
+# test job: [6589b3d76db2d6adbf8f2084c303fb24252a0dc6] https://lava.sirena.=
+org.uk/scheduler/job/2447032
+# test job: [192c0159402e6bfbe13de6f8379546943297783d] https://lava.sirena.=
+org.uk/scheduler/job/2447411
+# test job: [dc855b77719fe452d670cae2cf64da1eb51f16cc] https://lava.sirena.=
+org.uk/scheduler/job/2446120
+# test job: [9f16d96e1222391a6b996a1b676bec14fb91e3b2] https://lava.sirena.=
+org.uk/scheduler/job/2445281
+# test job: [1a4b0c999101b2532723f9bd9818b70ffa7580f4] https://lava.sirena.=
+org.uk/scheduler/job/2444914
+# test job: [a9aabb3b839aba094ed80861054993785c61462c] https://lava.sirena.=
+org.uk/scheduler/job/2445624
+# test job: [43185067c6fd55b548ecb648a69d9569fcf622b5] https://lava.sirena.=
+org.uk/scheduler/job/2449776
+# test job: [5578da7d957fbaf91f6c39ba2363c2d2e4273183] https://lava.sirena.=
+org.uk/scheduler/job/2444838
+# test job: [2619c62b7ef2f463bcbbb34af122689c09855c23] https://lava.sirena.=
+org.uk/scheduler/job/2446583
+# test job: [27125df9a5d3b4cfd03bce3a8ec405a368cc9aae] https://lava.sirena.=
+org.uk/scheduler/job/2464369
+# test job: [3673dd3c7dc1f37baf0448164d323d7c7a44d1da] https://lava.sirena.=
+org.uk/scheduler/job/2463891
+# test job: [8a5203c630c67d578975ff237413f5e0b5000af8] https://lava.sirena.=
+org.uk/scheduler/job/2443552
+# test job: [72c395024dac5e215136cbff793455f065603b06] https://lava.sirena.=
+org.uk/scheduler/job/2444127
+# test job: [f8f774913b4b599169381073f6674e20976e5529] https://lava.sirena.=
+org.uk/scheduler/job/2440830
+# test job: [c5226b96c08a010ebef5fdf4c90572bcd89e4299] https://lava.sirena.=
+org.uk/scheduler/job/2472175
+# test job: [5af56f30c4fcbade4a92f94dadfea517d1db9703] https://lava.sirena.=
+org.uk/scheduler/job/2440922
+# test job: [b010c782341b79edbeb80706360b772db908daa6] https://lava.sirena.=
+org.uk/scheduler/job/2437213
+# test job: [a40236feb62ccbf2b36d288550a483122b3205e5] https://lava.sirena.=
+org.uk/scheduler/job/2434525
+# test job: [84faa91585fa22a161763f2fe8f84a602a196c87] https://lava.sirena.=
+org.uk/scheduler/job/2434300
+# test job: [922f9dec5d19df4cfbb7070275e5c131d10c80f3] https://lava.sirena.=
+org.uk/scheduler/job/2440490
+# test job: [d94ea902462ac39846d878aa67b78408727e0674] https://lava.sirena.=
+org.uk/scheduler/job/2434637
+# test job: [5023ca80f9589295cb60735016e39fc5cc714243] https://lava.sirena.=
+org.uk/scheduler/job/2440532
+# test job: [6f220440399afba29165e0597fa2c3aa836191d7] https://lava.sirena.=
+org.uk/scheduler/job/2434110
+# test job: [fef1f756155c30511397bbcd9d55640ab2e44d99] https://lava.sirena.=
+org.uk/scheduler/job/2432333
+# test job: [55137f5a68b5e888504ad36d07221cd749bb8956] https://lava.sirena.=
+org.uk/scheduler/job/2429730
+# test job: [fe8429a2717fc01082502b0adf680a50b230eff7] https://lava.sirena.=
+org.uk/scheduler/job/2429399
+# test job: [9db327083f7e0da702e2ec0169f8a34f3576f371] https://lava.sirena.=
+org.uk/scheduler/job/2430957
+# test job: [6516169fa7f6110ce42a5958c921255f2d0968bc] https://lava.sirena.=
+org.uk/scheduler/job/2430985
+# test job: [812ff1baa764080ba37bb0729e0c23c0e869b542] https://lava.sirena.=
+org.uk/scheduler/job/2429264
+# test job: [3a17ba6557e28d5d99b7e3cad31f22ad28a36cc2] https://lava.sirena.=
+org.uk/scheduler/job/2430484
+# test job: [6c52fda42066a87b76fd140e027280907071dd8a] https://lava.sirena.=
+org.uk/scheduler/job/2429441
+# test job: [4cc4ace709860c37f7f8019e950380a4694eb101] https://lava.sirena.=
+org.uk/scheduler/job/2427098
+# test job: [330d1deb410fe75f7f79bd1e5025f2827365eb83] https://lava.sirena.=
+org.uk/scheduler/job/2425326
+# test job: [bb6a3c2db281c7d5aaa79b2a6fa00bcd10c0bb8f] https://lava.sirena.=
+org.uk/scheduler/job/2425531
+# test job: [dedfae78f00960d703badc500422d10e1f12b2bc] https://lava.sirena.=
+org.uk/scheduler/job/2464600
+# test job: [4c9d53794bcfd3db45103269696b019d5ef09d41] https://lava.sirena.=
+org.uk/scheduler/job/2425021
+# test job: [8a066a81ee0c1b6cdbd81393536c3b2d19ccef25] https://lava.sirena.=
+org.uk/scheduler/job/2423914
+# test job: [0ec5ed7c95d1ba6a74491928ff38abb351dbed36] https://lava.sirena.=
+org.uk/scheduler/job/2421606
+# test job: [a145cfd0ffe7bd7d61ce25839cec737c449b0d2c] https://lava.sirena.=
+org.uk/scheduler/job/2422102
+# test job: [8232e6079ae6f8d3a61d87973cb427385aa469b9] https://lava.sirena.=
+org.uk/scheduler/job/2421934
+# test job: [ab89060fbc92edd6e852bf0f533f29140afabe0e] https://lava.sirena.=
+org.uk/scheduler/job/2463777
+# test job: [742048f2e128c06d0ef89ffc334519cb8e991f66] https://lava.sirena.=
+org.uk/scheduler/job/2421522
+# test job: [ddd9bf2212ab80bb90fa986cd987c671de53bd44] https://lava.sirena.=
+org.uk/scheduler/job/2422556
+# test job: [8eeb611b3d16241559bbf81ae5d938368c87818c] https://lava.sirena.=
+org.uk/scheduler/job/2481833
+# test job: [a1d14d8364eac2611fe1391c73ff0e5b26064f0e] https://lava.sirena.=
+org.uk/scheduler/job/2418402
+# test job: [bbb758a6943e19c483ab752cf8220140b46cf22c] https://lava.sirena.=
+org.uk/scheduler/job/2416269
+# test job: [da0a672268b34279aa999664860e6becc38f3f51] https://lava.sirena.=
+org.uk/scheduler/job/2415912
+# test job: [77ee3ba5d4152f01ba4674b0e0ae51f8a51250bf] https://lava.sirena.=
+org.uk/scheduler/job/2413973
+# test job: [7ae4d097b752d77c41dd26068d92ef34e9c66be9] https://lava.sirena.=
+org.uk/scheduler/job/2412884
+# test job: [88340fc880cae6a2953a366aa6ad0900fd9830da] https://lava.sirena.=
+org.uk/scheduler/job/2413708
+# test job: [ab3f4f0c7f3aa050cd602cc32830e24ac4aaee97] https://lava.sirena.=
+org.uk/scheduler/job/2411922
+# test job: [071588136007482d70fd2667b827036bc60b1f8f] https://lava.sirena.=
+org.uk/scheduler/job/2450036
+# test job: [5c6808d10499f6c8a8d5ee948a22fc93814f6d66] https://lava.sirena.=
+org.uk/scheduler/job/2412168
+# test job: [9409d18bf7d58ab716337749e28e2caba0d64cb0] https://lava.sirena.=
+org.uk/scheduler/job/2412310
+# test job: [8cf19b19dba8814ccc8b1179dabf28b7f8eefc22] https://lava.sirena.=
+org.uk/scheduler/job/2410591
+# test job: [e540be7d56d740144b1bd6f220b61ffe2f3830d4] https://lava.sirena.=
+org.uk/scheduler/job/2410963
+# test job: [04f7516ab70f7b82aae1d2830af2ee6f17f3fe98] https://lava.sirena.=
+org.uk/scheduler/job/2409388
+# test job: [b3eb755e2db07d85c30e8ff4043ffb9a14b4ece7] https://lava.sirena.=
+org.uk/scheduler/job/2408934
+# test job: [c76d50b71e898694c946993eb3c77f50efa97254] https://lava.sirena.=
+org.uk/scheduler/job/2408595
+# test job: [74823db9ba2e13f3ec007b354759b3d8125e462c] https://lava.sirena.=
+org.uk/scheduler/job/2408681
+# test job: [a8b6e3738c872d35f1cf7b3cd3ce67d86d38e7cf] https://lava.sirena.=
+org.uk/scheduler/job/2408621
+# test job: [6ffdc7eb48bd2268c37c2accad454c043b9cc987] https://lava.sirena.=
+org.uk/scheduler/job/2409155
+# test job: [70a65c53d228562cf0c8ae0f38c847d2a5dd59e6] https://lava.sirena.=
+org.uk/scheduler/job/2408976
+# test job: [0e47251e8cc438d5b59fcd86d27efade01976fe1] https://lava.sirena.=
+org.uk/scheduler/job/2480024
+# test job: [87ee3f05bfe2f5955c2c77ae26a1be236fd615a5] https://lava.sirena.=
+org.uk/scheduler/job/2406917
+# test job: [19b08fd23b20593ebe43708308dbddb02507877d] https://lava.sirena.=
+org.uk/scheduler/job/2405629
+# test job: [af6d53db28e6448b1e0ce9aa314bc5da494d35ab] https://lava.sirena.=
+org.uk/scheduler/job/2405575
+# test job: [10d366a846be648aa47cdcd3dc7b7346a4143a6c] https://lava.sirena.=
+org.uk/scheduler/job/2400550
+# test job: [702ce71d32f2c30b4f45b7c6b701d87583c58df8] https://lava.sirena.=
+org.uk/scheduler/job/2393354
+# test job: [d0ab89951197f0fc509a0cd732d830880e79c2d4] https://lava.sirena.=
+org.uk/scheduler/job/2392913
+# test job: [d8f87aa5fa0a4276491fa8ef436cd22605a3f9ba] https://lava.sirena.=
+org.uk/scheduler/job/2394221
+# test job: [7f428282fde34f06f3ab898b8a9081bf93a41f22] https://lava.sirena.=
+org.uk/scheduler/job/2391310
+# test job: [66c744e28b69d931b142adb6b9f5e56ac9644f79] https://lava.sirena.=
+org.uk/scheduler/job/2394368
+# test job: [3495a5df94a9ad7a8940bcb3ebfda58255f5b952] https://lava.sirena.=
+org.uk/scheduler/job/2389418
+# test job: [00ca2dd431fa2acb07b3ecc6ce49fb9a0a4d72cb] https://lava.sirena.=
+org.uk/scheduler/job/2389615
+# test job: [cafadbf430f4b2f3ca4158de48ef6ba4d97fbf17] https://lava.sirena.=
+org.uk/scheduler/job/2389605
+# test job: [37fbc1ab0f225d23f0839260a11375b4f1f7cf8c] https://lava.sirena.=
+org.uk/scheduler/job/2386714
+# test job: [83ba6efa711fad83a0fbf02178ad64d3906d8d09] https://lava.sirena.=
+org.uk/scheduler/job/2386957
+# test job: [c3608162a95a259c669cf9fdccf900782fa8d902] https://lava.sirena.=
+org.uk/scheduler/job/2387927
+# test job: [3c5ddd56aa93048314c64533c21e731a44b0f067] https://lava.sirena.=
+org.uk/scheduler/job/2386973
+# test job: [20c4701b75a3d6ce09d61e17125aefe77e7eb333] https://lava.sirena.=
+org.uk/scheduler/job/2386275
+# test job: [a18467a50eddbd7c6548b53b25b68e5454ceb587] https://lava.sirena.=
+org.uk/scheduler/job/2386052
+# test job: [4fbd3b2ec04dc6ef93090ec24733a5c5671fb71f] https://lava.sirena.=
+org.uk/scheduler/job/2387176
+# test job: [ebc2164a4cd4314503f1a0c8e7aaf76d7e5fa211] https://lava.sirena.=
+org.uk/scheduler/job/2395367
+# test job: [d3922f6dad69b3d1f7656c9035bd0e82f73091b7] https://lava.sirena.=
+org.uk/scheduler/job/2395549
+# test job: [dccc66b0e92d48d9a1908a3ccb8142e0ee3381f5] https://lava.sirena.=
+org.uk/scheduler/job/2377194
+# test job: [7a3d1b04d938f31e112fe09c0ffc1af830ba1f6d] https://lava.sirena.=
+org.uk/scheduler/job/2377284
+# test job: [61d2a7699ab39d448f44919ef15c16187e6f70ec] https://lava.sirena.=
+org.uk/scheduler/job/2375563
+# test job: [354e7a6d448b5744362bf33a24315d4d1d0bb7ef] https://lava.sirena.=
+org.uk/scheduler/job/2394904
+# test job: [8a98e7f55f975360975083166e21982ef307b8fd] https://lava.sirena.=
+org.uk/scheduler/job/2372658
+# test job: [519d0a6b2ca5a891340b6c24a4c40545f518e1a8] https://lava.sirena.=
+org.uk/scheduler/job/2372197
+# test job: [10303b32519f52a5afd40593a507543143c8ec6a] https://lava.sirena.=
+org.uk/scheduler/job/2372558
+# test job: [da7afdc79cba00f952df12cd579e44832d829c0a] https://lava.sirena.=
+org.uk/scheduler/job/2372316
+# test job: [62b04225e99a5d1c71c5c73d2aa6618bc2c0738f] https://lava.sirena.=
+org.uk/scheduler/job/2369371
+# test job: [de9f1b1583aecb246b659effb03f2456604fab64] https://lava.sirena.=
+org.uk/scheduler/job/2368838
+# test job: [c32eaba2d760ef0ec5426b207cf0ce750064cf36] https://lava.sirena.=
+org.uk/scheduler/job/2394739
+# test job: [a014c203b54d9013ad52ad8a531cf46e71028f2b] https://lava.sirena.=
+org.uk/scheduler/job/2368465
+# test job: [e7c30ac379b429d439eb62ae1bb69720a6701e26] https://lava.sirena.=
+org.uk/scheduler/job/2366041
+# test job: [2a3602030d800b6600ef55c31e21bc54611f7770] https://lava.sirena.=
+org.uk/scheduler/job/2388634
+# test job: [09dc08b396c954820f119e1ab0c7d72333c18323] https://lava.sirena.=
+org.uk/scheduler/job/2365423
+# test job: [6be9ea62afedef0f976eb3dba4c117be0c1d3809] https://lava.sirena.=
+org.uk/scheduler/job/2365587
+# test job: [fc6ceb7e4ea746e663ff8c5593e67ad8ccbee34a] https://lava.sirena.=
+org.uk/scheduler/job/2364488
+# test job: [83aee46dc2142eed2dc40b5cef0e9e08e14cac42] https://lava.sirena.=
+org.uk/scheduler/job/2363968
+# test job: [e590752119029d87ce46d725e11245a52d22e1fe] https://lava.sirena.=
+org.uk/scheduler/job/2365028
+# test job: [77157cb45c66bd652a08a360693fcced558c5ef9] https://lava.sirena.=
+org.uk/scheduler/job/2363742
+# test job: [b0fc1e7701940d12ea2c41f386aa552bc4cc3629] https://lava.sirena.=
+org.uk/scheduler/job/2364657
+# test job: [8618271887ca10ac5108fe7e1d82ba8f1b152cf9] https://lava.sirena.=
+org.uk/scheduler/job/2364941
+# test job: [8672e4b51adfc57150f3862b1665faff0acf1bad] https://lava.sirena.=
+org.uk/scheduler/job/2364073
+# test job: [8d38423d9dea7353a8a54a3ab2e0d0aa04ed34d0] https://lava.sirena.=
+org.uk/scheduler/job/2354081
+# test job: [db4371d13f82fb12463fe053f4864980a2af2106] https://lava.sirena.=
+org.uk/scheduler/job/2353928
+# test job: [b9198ce5c6dfee19b9662dda95ba559af9cdf53f] https://lava.sirena.=
+org.uk/scheduler/job/2354787
+# test job: [6dd70757213fc046e5f86901e4baf11ed894da6b] https://lava.sirena.=
+org.uk/scheduler/job/2427273
+# test job: [b6376dbed8e173f9571583b5d358b08ff394e864] https://lava.sirena.=
+org.uk/scheduler/job/2349559
+# test job: [0cd9bf6a6d9a1861087236cc5c275b3bea83cfdd] https://lava.sirena.=
+org.uk/scheduler/job/2348746
+# test job: [2f2a72de673513247cd6fae14e53f6c40c5841ef] https://lava.sirena.=
+org.uk/scheduler/job/2352389
+# test job: [2d7b4a44fb768e1887e7e4cdd8b86817ccd9c3bf] https://lava.sirena.=
+org.uk/scheduler/job/2353052
+# test job: [da8264ce6c5c02b78f95d31021e942ab38d8dd39] https://lava.sirena.=
+org.uk/scheduler/job/2352938
+# test job: [22a4776a9ce50aa47f602d28f53ba9d613a38f49] https://lava.sirena.=
+org.uk/scheduler/job/2343162
+# test job: [a5a9fd93d2c3c2bd31d27a25a601ae313d4aa74f] https://lava.sirena.=
+org.uk/scheduler/job/2352245
+# test job: [8618307b52ef2fa5caa87f1b7938125cb410e777] https://lava.sirena.=
+org.uk/scheduler/job/2347262
+# test job: [75d208bddcca55ec31481420fbb4d6c9703ba195] https://lava.sirena.=
+org.uk/scheduler/job/2337448
+# test job: [04b61513dfe40f80f0dcc795003637b510522b3c] https://lava.sirena.=
+org.uk/scheduler/job/2337692
+# test job: [6b6dbf3e4ecfd7d1086bd7cd8b31ca8e45d4dc1f] https://lava.sirena.=
+org.uk/scheduler/job/2346835
+# test job: [2b39d48a0ab368bca4c7a0458fa9cdd05ebcacb6] https://lava.sirena.=
+org.uk/scheduler/job/2352116
+# test job: [96d337436fe0921177a6090aeb5bb214753654fc] https://lava.sirena.=
+org.uk/scheduler/job/2330388
+# test job: [420739112e95c9bb286b4e87875706925970abd3] https://lava.sirena.=
+org.uk/scheduler/job/2331644
+# test job: [52ddc0106c77ff0eacf07b309833ae6e6a4e8587] https://lava.sirena.=
+org.uk/scheduler/job/2330750
+# test job: [9bf0bd7bdea6c402007ffb784dd0c0f704aa2310] https://lava.sirena.=
+org.uk/scheduler/job/2330775
+# test job: [211243b69533e968cc6f0259fb80ffee02fbe0ca] https://lava.sirena.=
+org.uk/scheduler/job/2330726
+# test job: [4c5e6d5b31bc623d89185d551681ab91cfd037c9] https://lava.sirena.=
+org.uk/scheduler/job/2331884
+# test job: [255153afbcfdcf30d20048fb76a6d9418537b5d9] https://lava.sirena.=
+org.uk/scheduler/job/2352692
+# test job: [7acc70476f14661149774ab88d3fe23d83ba4249] https://lava.sirena.=
+org.uk/scheduler/job/2352815
+# test job: [25abdc151a448a17d500ea9468ce32582c479faa] https://lava.sirena.=
+org.uk/scheduler/job/2307377
+# test job: [284853affe73fe1ca9786bd52b934eb9d420a942] https://lava.sirena.=
+org.uk/scheduler/job/2297975
+# test job: [b2440442ccb68479fa6d307917419983f3c87e83] https://lava.sirena.=
+org.uk/scheduler/job/2388724
+# test job: [45e9066f3a487e9e26b842644364d045af054775] https://lava.sirena.=
+org.uk/scheduler/job/2295646
+# test job: [0f698d742f628d02ab2a222f8cf5f793443865d0] https://lava.sirena.=
+org.uk/scheduler/job/2295219
+# test job: [8db50f0fa43efe8799fd40b872dcdd39a90d7549] https://lava.sirena.=
+org.uk/scheduler/job/2292110
+# test job: [4ab48cc63e15cb619d641d1edf9a15a0a98875b2] https://lava.sirena.=
+org.uk/scheduler/job/2290366
+# test job: [c6bca73d699cfe00d3419566fdb2a45e112f44b0] https://lava.sirena.=
+org.uk/scheduler/job/2290152
+# test job: [b0655377aa5a410df02d89170c20141a1a5bbc28] https://lava.sirena.=
+org.uk/scheduler/job/2291667
+# test job: [99a3ef1e81cd1775bc1f8cc2ad188b1fc755d5cd] https://lava.sirena.=
+org.uk/scheduler/job/2290719
+# test job: [a2a631830deb382a3d27b6f52b2d654a3e6bb427] https://lava.sirena.=
+org.uk/scheduler/job/2281817
+# test job: [7a8447fc71a09000cee5a2372b6efde45735d2c8] https://lava.sirena.=
+org.uk/scheduler/job/2271804
+# test job: [32a708ba5db50cf928a1f1b2039ceef33de2c286] https://lava.sirena.=
+org.uk/scheduler/job/2279409
+# test job: [3622dc47a4b13e0ec86358c7b54a0b33bfcaa03c] https://lava.sirena.=
+org.uk/scheduler/job/2268655
+# test job: [b39ef93a2e5b5f4289a3486d8a94a09a1e6a4c67] https://lava.sirena.=
+org.uk/scheduler/job/2269626
+# test job: [2a28b5240f2b328495c6565d277f438dbc583d61] https://lava.sirena.=
+org.uk/scheduler/job/2266238
+# test job: [1303c2903889b01d581083ed92e439e7544dd3e5] https://lava.sirena.=
+org.uk/scheduler/job/2262705
+# test job: [f764645cb85a8b8f58067289cdfed28f6c1cdf49] https://lava.sirena.=
+org.uk/scheduler/job/2264028
+# test job: [7f7b350e4a65446f5d52ea8ae99e12eac8a972db] https://lava.sirena.=
+org.uk/scheduler/job/2263919
+# test job: [02e7af5b6423d2dbf82f852572f2fa8c00aafb19] https://lava.sirena.=
+org.uk/scheduler/job/2262685
+# test job: [29c8c00d9f9db5fb659b6f05f9e8964afc13f3e2] https://lava.sirena.=
+org.uk/scheduler/job/2263997
+# test job: [9a6bc0a406608e2520f18d996483c9d2e4a9fb27] https://lava.sirena.=
+org.uk/scheduler/job/2264327
+# test job: [2497eda57025abe1349207a9726da02aae699bca] https://lava.sirena.=
+org.uk/scheduler/job/2351979
+# test job: [f25c7d709b93602ee9a08eba522808a18e1f5d56] https://lava.sirena.=
+org.uk/scheduler/job/2244127
+# test job: [f4acea9eef704607d1a950909ce3a52a770d6be2] https://lava.sirena.=
+org.uk/scheduler/job/2243872
+# test job: [524ee559948d8d079b13466e70fa741f909699c0] https://lava.sirena.=
+org.uk/scheduler/job/2243958
+# test job: [b884e34994ca41f7b7819f3c41b78ff494787b27] https://lava.sirena.=
+org.uk/scheduler/job/2231774
+# test job: [e39011184f23de3d04ca8e80b4df76c9047b4026] https://lava.sirena.=
+org.uk/scheduler/job/2232461
+# test job: [fa08b566860bca8ebf9300090b85174c34de7ca5] https://lava.sirena.=
+org.uk/scheduler/job/2232923
+# test job: [03d281f384768610bf90697bce9e35d3d596de77] https://lava.sirena.=
+org.uk/scheduler/job/2231116
+# test job: [aa30193af8873b3ccfd70a4275336ab6cbd4e5e6] https://lava.sirena.=
+org.uk/scheduler/job/2232677
+# test job: [ba9b28652c75b07383e267328f1759195d5430f7] https://lava.sirena.=
+org.uk/scheduler/job/2231398
+# test job: [81acbdc51bbbec822a1525481f2f70677c47aee0] https://lava.sirena.=
+org.uk/scheduler/job/2232917
+# test job: [9e92c559d49d6fb903af17a31a469aac51b1766d] https://lava.sirena.=
+org.uk/scheduler/job/2232508
+# test job: [fee876b2ec75dcc18fdea154eae1f5bf14d82659] https://lava.sirena.=
+org.uk/scheduler/job/2231252
+# test job: [0bb160c92ad400c692984763996b758458adea17] https://lava.sirena.=
+org.uk/scheduler/job/2233044
+# test job: [124f6155f3d97b0e33f178c10a5138a42c8fd207] https://lava.sirena.=
+org.uk/scheduler/job/2232834
+# test job: [27d128c1cff64c3b8012cc56dd5a1391bb4f1821] https://lava.sirena.=
+org.uk/scheduler/job/2701318
+# bad: [27d128c1cff64c3b8012cc56dd5a1391bb4f1821] Merge tag 'trace-ring-buf=
+fer-v7.1-3' of git://git.kernel.org/pub/scm/linux/kernel/git/trace/linux-tr=
+ace
+git bisect bad 27d128c1cff64c3b8012cc56dd5a1391bb4f1821
+# test job: [ac2dc6d57425ffa9629941d7c9d7c0e51082cb5a] https://lava.sirena.=
+org.uk/scheduler/job/2699970
+# bad: [ac2dc6d57425ffa9629941d7c9d7c0e51082cb5a] Merge tag 'ceph-for-7.1-r=
+c1' of https://github.com/ceph/ceph-client
+git bisect bad ac2dc6d57425ffa9629941d7c9d7c0e51082cb5a
+# test job: [254f49634ee16a731174d2ae34bc50bd5f45e731] https://lava.sirena.=
+org.uk/scheduler/job/2705481
+# bad: [254f49634ee16a731174d2ae34bc50bd5f45e731] Linux 7.1-rc1
+git bisect bad 254f49634ee16a731174d2ae34bc50bd5f45e731
+# test job: [57b8e2d666a31fa201432d58f5fe3469a0dd83ba] https://lava.sirena.=
+org.uk/scheduler/job/2716359
+# bad: [57b8e2d666a31fa201432d58f5fe3469a0dd83ba] Merge tag 'for-linus' of =
+git://git.kernel.org/pub/scm/virt/kvm/kvm
+git bisect bad 57b8e2d666a31fa201432d58f5fe3469a0dd83ba
+# test job: [3b3bea6d4b9c162f9e555905d96b8c1da67ecd5b] https://lava.sirena.=
+org.uk/scheduler/job/2711131
+# bad: [3b3bea6d4b9c162f9e555905d96b8c1da67ecd5b] Merge tag 'cgroup-for-7.1=
+-rc1-fixes' of git://git.kernel.org/pub/scm/linux/kernel/git/tj/cgroup
+git bisect bad 3b3bea6d4b9c162f9e555905d96b8c1da67ecd5b
+# test job: [897d54018cc9aa97fd1529ca08a53b429d05a566] https://lava.sirena.=
+org.uk/scheduler/job/2702857
+# bad: [897d54018cc9aa97fd1529ca08a53b429d05a566] Merge tag 'fbdev-for-7.1-=
+rc1-2' of git://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev
+git bisect bad 897d54018cc9aa97fd1529ca08a53b429d05a566
+# test job: [dca922e019dd758b4c1b4bec8f1d509efddeaab4] https://lava.sirena.=
+org.uk/scheduler/job/2713248
+# bad: [dca922e019dd758b4c1b4bec8f1d509efddeaab4] Merge tag 'xsa48x-7.1-tag=
+' of git://git.kernel.org/pub/scm/linux/kernel/git/xen/tip
+git bisect bad dca922e019dd758b4c1b4bec8f1d509efddeaab4
+# test job: [dd6c438c3e64a5ff0b5d7e78f7f9be547803ef1b] https://lava.sirena.=
+org.uk/scheduler/job/2694234
+# bad: [dd6c438c3e64a5ff0b5d7e78f7f9be547803ef1b] Merge tag 'vfs-7.1-rc1.fi=
+xes' of git://git.kernel.org/pub/scm/linux/kernel/git/vfs/vfs
+git bisect bad dd6c438c3e64a5ff0b5d7e78f7f9be547803ef1b
+# test job: [e75a43c7cec459a07d91ed17de4de13ede2b7758] https://lava.sirena.=
+org.uk/scheduler/job/2717765
+# bad: [e75a43c7cec459a07d91ed17de4de13ede2b7758] Merge tag 'trace-v7.1-rc1=
+' of git://git.kernel.org/pub/scm/linux/kernel/git/trace/linux-trace
+git bisect bad e75a43c7cec459a07d91ed17de4de13ede2b7758
+# test job: [507bd4b66c85d5b65696150cc16d31ac0b2ab151] https://lava.sirena.=
+org.uk/scheduler/job/2692741
+# bad: [507bd4b66c85d5b65696150cc16d31ac0b2ab151] Merge tag 'soc-late-7.1' =
+of git://git.kernel.org/pub/scm/linux/kernel/git/soc/soc
+git bisect bad 507bd4b66c85d5b65696150cc16d31ac0b2ab151
+# test job: [45dcf5e28813954da4150e7260ccb61e95856176] https://lava.sirena.=
+org.uk/scheduler/job/2693571
+# bad: [45dcf5e28813954da4150e7260ccb61e95856176] Merge tag 'pcmcia-7.1-rc1=
+' of git://git.kernel.org/pub/scm/linux/kernel/git/brodo/linux
+git bisect bad 45dcf5e28813954da4150e7260ccb61e95856176
+# test job: [2a4c0c11c0193889446cdb6f1540cc2b9aff97dd] https://lava.sirena.=
+org.uk/scheduler/job/2687735
+# bad: [2a4c0c11c0193889446cdb6f1540cc2b9aff97dd] Merge tag 's390-7.1-1' of=
+ git://git.kernel.org/pub/scm/linux/kernel/git/s390/linux
+git bisect bad 2a4c0c11c0193889446cdb6f1540cc2b9aff97dd
+# test job: [2e68039281932e6dc37718a1ea7cbb8e2cda42e6] https://lava.sirena.=
+org.uk/scheduler/job/2688644
+# bad: [2e68039281932e6dc37718a1ea7cbb8e2cda42e6] Merge tag 'tracefs-v7.1-2=
+' of git://git.kernel.org/pub/scm/linux/kernel/git/trace/linux-trace
+git bisect bad 2e68039281932e6dc37718a1ea7cbb8e2cda42e6
+# test job: [d46dd0d88341e45f8e0226fdef5462f5270898fc] https://lava.sirena.=
+org.uk/scheduler/job/2682320
+# bad: [d46dd0d88341e45f8e0226fdef5462f5270898fc] Merge tag 'f2fs-for-7.1-r=
+c1' of git://git.kernel.org/pub/scm/linux/kernel/git/jaegeuk/f2fs
+git bisect bad d46dd0d88341e45f8e0226fdef5462f5270898fc
+# test job: [e2683c8868d03382da7e1ce8453b543a043066d1] https://lava.sirena.=
+org.uk/scheduler/job/2681413
+# bad: [e2683c8868d03382da7e1ce8453b543a043066d1] Merge tag 'libcrypto-for-=
+linus' of git://git.kernel.org/pub/scm/linux/kernel/git/ebiggers/linux
+git bisect bad e2683c8868d03382da7e1ce8453b543a043066d1
+# test job: [6596a02b207886e9e00bb0161c7fd59fea53c081] https://lava.sirena.=
+org.uk/scheduler/job/2683069
+# bad: [6596a02b207886e9e00bb0161c7fd59fea53c081] Merge tag 'drm-next-2026-=
+04-22' of https://gitlab.freedesktop.org/drm/kernel
+git bisect bad 6596a02b207886e9e00bb0161c7fd59fea53c081
+# test job: [b4e07588e743c989499ca24d49e752c074924a9a] https://lava.sirena.=
+org.uk/scheduler/job/2678242
+# bad: [b4e07588e743c989499ca24d49e752c074924a9a] tracing: tell git to igno=
+re the generated 'undefsyms_base.c' file
+git bisect bad b4e07588e743c989499ca24d49e752c074924a9a
+# test job: [4ee64205ffaa587e8114d84a67ac721399ccb369] https://lava.sirena.=
+org.uk/scheduler/job/2680233
+# bad: [4ee64205ffaa587e8114d84a67ac721399ccb369] Merge tag 'clk-for-linus'=
+ of git://git.kernel.org/pub/scm/linux/kernel/git/clk/linux
+git bisect bad 4ee64205ffaa587e8114d84a67ac721399ccb369
+# test job: [310e2096b082ae0010e7afef666073b966ac2fa7] https://lava.sirena.=
+org.uk/scheduler/job/2701528
+# bad: [310e2096b082ae0010e7afef666073b966ac2fa7] RISC-V: KVM: Fix double-f=
+ree of sdata in kvm_pmu_clear_snapshot_area()
+git bisect bad 310e2096b082ae0010e7afef666073b966ac2fa7
+# test job: [aa35bcf2e76234fef7bbca9bf364039692a27661] https://lava.sirena.=
+org.uk/scheduler/job/2701572
+# bad: [aa35bcf2e76234fef7bbca9bf364039692a27661] RISC-V: KVM: fix PMU snap=
+shot_set_shmem on 32-bit hosts
+git bisect bad aa35bcf2e76234fef7bbca9bf364039692a27661
+# test job: [7c61e7433b49ca948dc8cc2b70a20b3dbc36363d] https://lava.sirena.=
+org.uk/scheduler/job/2702915
+# bad: [7c61e7433b49ca948dc8cc2b70a20b3dbc36363d] RISC-V: KVM: selftests: A=
+dd RISC-V SBI STA shmem alignment tests
+git bisect bad 7c61e7433b49ca948dc8cc2b70a20b3dbc36363d
+# test job: [40351ed924dd30ded1b43c7333ce695a4a835f7b] https://lava.sirena.=
+org.uk/scheduler/job/2701624
+# bad: [40351ed924dd30ded1b43c7333ce695a4a835f7b] KVM: selftests: Refactor =
+UAPI tests into dedicated function
+git bisect bad 40351ed924dd30ded1b43c7333ce695a4a835f7b
+# first bad commit: [40351ed924dd30ded1b43c7333ce695a4a835f7b] KVM: selftes=
+ts: Refactor UAPI tests into dedicated function
+# test job: [40351ed924dd30ded1b43c7333ce695a4a835f7b] https://lava.sirena.=
+org.uk/scheduler/job/2701624
+# bad: [40351ed924dd30ded1b43c7333ce695a4a835f7b] KVM: selftests: Refactor =
+UAPI tests into dedicated function
+git bisect bad 40351ed924dd30ded1b43c7333ce695a4a835f7b
+# first bad commit: [40351ed924dd30ded1b43c7333ce695a4a835f7b] KVM: selftes=
+ts: Refactor UAPI tests into dedicated function
+
+--T6sO/LScCfNvsmYY
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmnzPFEACgkQJNaLcl1U
+h9CriAf/RSU6ztnJYp8pH71XN2bllyp9OV3CQcXTjj3fdLgmUUubeR38D7y9WCDP
+vvUNA37s0iTMP+QYhm2fqSYodV1YVa55Eg3Q5vcwz8KWFGsVV4Y1H+7OgDKfbdFs
+PF4v9P8NvA5l0JMxWAV0yQWurMo3rK74AEXSgXV2oone9Wb3aeVRDZxNoMQHguR6
+i/DICP4KFx96+LjxTT5UJWPrPRS5dvgXmvbYvg41CDO5R4qJ1wtV09JOQbK3qnhP
+1qC1SkaxYmhThhVNlL0fbvGP8UGLTOGkOikp17VOChENYuHrBHKIj1RAgxkRrq+h
+TI7OMWvBpqxGQcPvc1hEi3tMYT7vuQ==
+=AT0o
+-----END PGP SIGNATURE-----
+
+--T6sO/LScCfNvsmYY--
+
+
+--===============8602638286253765945==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 -- 
 kvm-riscv mailing list
 kvm-riscv@lists.infradead.org
 http://lists.infradead.org/mailman/listinfo/kvm-riscv
+
+--===============8602638286253765945==--
+
