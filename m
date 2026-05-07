@@ -4,7 +4,7 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68EE6CD3427
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 765E7CD3442
 	for <kvm-riscv@archiver.kernel.org>; Thu,  7 May 2026 11:37:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
@@ -12,29 +12,29 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=afdrzjtI9F5ltJ6ABXiQn9t7tdDdnesAWKZeE/jzISE=; b=gOv6nQknduhQxe
-	5wdzcucBh+JpugXlNWbcHLYMZmI12rbEOpXltcOHwNK7aTe6q7TFdsS7Gpeg/IWo3Z+wnJPv1cRDg
-	lyuv7MzTWwQH3bLC06Nh2tuP6EFC16NshUf4S1iXVpvo21WDEyhZBBuXeZdhLQGJHPeU+TR6eF7HM
-	YMs9q4j3nlLqs6kt50oBYewAd/rNjVWX0WHQQ/nJ3Bg86w8LspTtIjSwsyQy63jx4cBScNEcKzwnv
-	jlxssz4BeJ5jzjxFTrcbMKnMOtVO3Kf5Jko/IiFIaN8zm9HQfCOqfJixHQAmcyAQW+wmCcMevEh3t
-	nIGNHYxZq5NEcRgHtU2w==;
+	List-Owner; bh=5VD/b+en39tGOC7vZDlzAKM3nYzkPC/Y0xzZ9r+uqQQ=; b=JzqXqfgGM78vp8
+	uCXA4C/6RnY6cytVMt6hjpzmAWSa7ktOl0y0qSd/d3OFz8TRE5UI/dY0zBZpQULb3MnUp+gLP+0+r
+	euGkEtR/0oshGmbCN8Jb+5792SUmBkc5KgB0uJTgwNJib7DD15viyeMagElxQQ7QdLR7+kFQCLINi
+	qoYGCDDWFmMZVjcsIp1icpeCFBcpvyHxHPRqsIqGDnAWGtrtEpO6RVusLB7t5j2g6y45CZPdteGoV
+	ic48XdJAe437Q6IJsx3igiGeoUkxB5NNF3OygsGb6q+iE5JAx/B0CONwJjWmAWoDgzHKvlTTYR1TE
+	21LtvB4oVsSEzE9QoRsQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wKx2n-00000003egD-0UHE;
-	Thu, 07 May 2026 11:37:29 +0000
-Received: from out30-111.freemail.mail.aliyun.com ([115.124.30.111])
+	id 1wKx2m-00000003efY-3Ykb;
+	Thu, 07 May 2026 11:37:28 +0000
+Received: from out30-110.freemail.mail.aliyun.com ([115.124.30.110])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wKx2h-00000003eao-3HyO;
-	Thu, 07 May 2026 11:37:27 +0000
+	id 1wKx2h-00000003ebc-2Qaj;
+	Thu, 07 May 2026 11:37:26 +0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
 	d=linux.alibaba.com; s=default;
-	t=1778153835; h=From:To:Subject:Date:Message-Id:MIME-Version;
-	bh=oSq7eCXtjOsx2ohWmDqI2E1f3GZbwF4QYb8Qk+5aDsU=;
-	b=WP5thkpP3BzkPQ/8J3w7obNWHdfVS18gdG/f2dmwrf5nMPRUg4JgMeA32IA9kGDkbU+pEGx7KBHnzh8jRIBd5I/Tyt1gGHWrJAD0xsST7a5nUNFLiJu1zQYDQJbd8owEJt9pF7AG6OQj9boagJGJ22owh6HvtWDvG3XkS1cGKNA=
-X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R191e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam033045133197;MF=fangyu.yu@linux.alibaba.com;NM=1;PH=DS;RN=24;SR=0;TI=SMTPD_---0X2UVF-A_1778153831;
-Received: from localhost.localdomain(mailfrom:fangyu.yu@linux.alibaba.com fp:SMTPD_---0X2UVF-A_1778153831 cluster:ay36)
+	t=1778153840; h=From:To:Subject:Date:Message-Id:MIME-Version;
+	bh=F51Id+NmnokdCAoFLH+RndXo5++Xd5bwtOM8r+G9Jts=;
+	b=G91RIY6cRtQbr/+1CcNVpJBxExrhtYAOsOml6uO64rOTGg5AmhM6lUTh+FvXjoSitHE2S0BxcxQZw0l1ejue0Mfz2g6oJ0KEUFggvakBkbmio2FXv8ZRFJcAQbZw8U9Jlinc+nVP8HKsHBQBTkiOw+szhRKL8ZSY3MUBL9Eo/V4=
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R181e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam011083073210;MF=fangyu.yu@linux.alibaba.com;NM=1;PH=DS;RN=25;SR=0;TI=SMTPD_---0X2UVF.m_1778153836;
+Received: from localhost.localdomain(mailfrom:fangyu.yu@linux.alibaba.com fp:SMTPD_---0X2UVF.m_1778153836 cluster:ay36)
           by smtp.aliyun-inc.com;
-          Thu, 07 May 2026 19:37:12 +0800
+          Thu, 07 May 2026 19:37:17 +0800
 From: fangyu.yu@linux.alibaba.com
 To: joro@8bytes.org,
 	will@kernel.org,
@@ -59,17 +59,18 @@ Cc: guoren@kernel.org,
 	kvm-riscv@lists.infradead.org,
 	linux-riscv@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
+	Zong Li <zong.li@sifive.com>,
 	Fangyu Yu <fangyu.yu@linux.alibaba.com>
-Subject: [RFC PATCH v2 01/10] iommupt: Add RISC-V Second-stage (iohgatp) page table support
-Date: Thu,  7 May 2026 19:36:57 +0800
-Message-Id: <20260507113706.11400-2-fangyu.yu@linux.alibaba.com>
+Subject: [RFC PATCH v2 04/10] iommu/riscv: use data structure instead of individual values
+Date: Thu,  7 May 2026 19:37:00 +0800
+Message-Id: <20260507113706.11400-5-fangyu.yu@linux.alibaba.com>
 X-Mailer: git-send-email 2.39.3 (Apple Git-146)
 In-Reply-To: <20260507113706.11400-1-fangyu.yu@linux.alibaba.com>
 References: <20260507113706.11400-1-fangyu.yu@linux.alibaba.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260507_043724_167396_9852F29A 
-X-CRM114-Status: GOOD (  14.63  )
+X-CRM114-CacheID: sfid-20260507_043724_109945_2F047B36 
+X-CRM114-Status: GOOD (  10.91  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -86,178 +87,100 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-From: Fangyu Yu <fangyu.yu@linux.alibaba.com>
+From: Zong Li <zong.li@sifive.com>
 
-Add support for Sv39x4/Sv48x4/Sv57x4 Second-stage page tables used by
-the RISC-V IOMMU iohgatp register. The x4 root page table is 16 KiB
-instead of the usual 4 KiB, covering 2 extra GPA bits (hw_max_vasz_lg2
-= 41/50/59).
+The parameter will be increased when we need to set up more
+bit fields in the device context. Use a data structure to
+wrap them up.
 
+Signed-off-by: Zong Li <zong.li@sifive.com>
 Signed-off-by: Fangyu Yu <fangyu.yu@linux.alibaba.com>
 ---
- drivers/iommu/generic_pt/fmt/riscv.h | 61 +++++++++++++++++++++++++---
- include/linux/generic_pt/common.h    |  5 ++-
- include/linux/generic_pt/iommu.h     | 17 +++++++-
- 3 files changed, 76 insertions(+), 7 deletions(-)
+ drivers/iommu/riscv/iommu.c | 27 +++++++++++++++++----------
+ 1 file changed, 17 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/iommu/generic_pt/fmt/riscv.h b/drivers/iommu/generic_pt/fmt/riscv.h
-index a7fef6266a36..777887335696 100644
---- a/drivers/iommu/generic_pt/fmt/riscv.h
-+++ b/drivers/iommu/generic_pt/fmt/riscv.h
-@@ -37,7 +37,16 @@ enum {
- 	PT_MAX_OUTPUT_ADDRESS_LG2 = 34,
- 	PT_MAX_TOP_LEVEL = 1,
- #else
--	PT_MAX_VA_ADDRESS_LG2 = 57,
-+	/*
-+	 * PT_MAX_VA_ADDRESS_LG2 is the upper bound accepted by the generic
-+	 * pt_iommu_init() range check.  It must cover both first-stage and
-+	 * second-stage (G-stage) modes:
-+	 *
-+	 *   First-stage  (fsc/iosatp): Sv39=39, Sv48=48, Sv57=57
-+	 *   Second-stage (iohgatp):    Sv39x4=41, Sv48x4=50, Sv57x4=59
-+	 *
-+	 */
-+	PT_MAX_VA_ADDRESS_LG2 = 59,
- 	PT_MAX_OUTPUT_ADDRESS_LG2 = 56,
- 	PT_MAX_TOP_LEVEL = 4,
- #endif
-@@ -124,6 +133,14 @@ riscvpt_entry_num_contig_lg2(const struct pt_state *pts)
- 
- static inline unsigned int riscvpt_num_items_lg2(const struct pt_state *pts)
+diff --git a/drivers/iommu/riscv/iommu.c b/drivers/iommu/riscv/iommu.c
+index bd36e3b5d13f..5b8e0072cd1a 100644
+--- a/drivers/iommu/riscv/iommu.c
++++ b/drivers/iommu/riscv/iommu.c
+@@ -1077,7 +1077,7 @@ static void riscv_iommu_iodir_iotinval(struct riscv_iommu_device *iommu,
+  * interim translation faults.
+  */
+ static void riscv_iommu_iodir_update(struct riscv_iommu_device *iommu,
+-				     struct device *dev, u64 fsc, u64 ta)
++				     struct device *dev, struct riscv_iommu_dc *new_dc)
  {
-+	/*
-+	 * Second-stage (iohgatp) root page tables have 4x the usual number of
-+	 * entries (2048 = 2^11 instead of 512 = 2^9) to cover the 2 extra GPA
-+	 * bits in Sv39x4/Sv48x4/Sv57x4.  Only the root (top) level is
-+	 * enlarged; all other levels remain at the standard 9-bit index width.
-+	 */
-+	if (pts_feature(pts, PT_FEAT_RISCV_S2) && pts->level == pts->range->top_level)
-+		return PT_TABLEMEM_LG2SZ - ilog2(sizeof(u64)) + 2;
- 	return PT_TABLEMEM_LG2SZ - ilog2(sizeof(u64));
- }
- #define pt_num_items_lg2 riscvpt_num_items_lg2
-@@ -254,6 +271,7 @@ riscvpt_iommu_fmt_init(struct pt_iommu_riscv_64 *iommu_table,
- 	struct pt_riscv *table = &iommu_table->riscv_64pt;
+ 	struct iommu_fwspec *fwspec = dev_iommu_fwspec_get(dev);
+ 	struct riscv_iommu_dc *dc;
+@@ -1116,10 +1116,10 @@ static void riscv_iommu_iodir_update(struct riscv_iommu_device *iommu,
+ 	for (i = 0; i < fwspec->num_ids; i++) {
+ 		dc = riscv_iommu_get_dc(iommu, fwspec->ids[i]);
+ 		tc = READ_ONCE(dc->tc);
+-		tc |= ta & RISCV_IOMMU_DC_TC_V;
++		tc |= new_dc->ta & RISCV_IOMMU_DC_TC_V;
  
- 	switch (cfg->common.hw_max_vasz_lg2) {
-+	/* First-stage (fsc/iosatp): Sv39 / Sv48 / Sv57 */
- 	case 39:
- 		pt_top_set_level(&table->common, 2);
- 		break;
-@@ -263,6 +281,19 @@ riscvpt_iommu_fmt_init(struct pt_iommu_riscv_64 *iommu_table,
- 	case 57:
- 		pt_top_set_level(&table->common, 4);
- 		break;
-+	/*
-+	 * Second-stage (iohgatp): Sv39x4 / Sv48x4 / Sv57x4.
-+	 * The top level is the same as for the first-stage counterpart.
-+	 */
-+	case 41:
-+		pt_top_set_level(&table->common, 2);
-+		break;
-+	case 50:
-+		pt_top_set_level(&table->common, 3);
-+		break;
-+	case 59:
-+		pt_top_set_level(&table->common, 4);
-+		break;
- 	default:
- 		return -EINVAL;
- 	}
-@@ -283,10 +314,17 @@ riscvpt_iommu_fmt_hw_info(struct pt_iommu_riscv_64 *table,
- 	PT_WARN_ON(top_phys & ~PT_TOP_PHYS_MASK);
+-		WRITE_ONCE(dc->fsc, fsc);
+-		WRITE_ONCE(dc->ta, ta & RISCV_IOMMU_PC_TA_PSCID);
++		WRITE_ONCE(dc->fsc, new_dc->fsc);
++		WRITE_ONCE(dc->ta, new_dc->ta & RISCV_IOMMU_PC_TA_PSCID);
+ 		/* Update device context, write TC.V as the last step. */
+ 		dma_wmb();
+ 		WRITE_ONCE(dc->tc, tc);
+@@ -1205,22 +1205,22 @@ static int riscv_iommu_attach_paging_domain(struct iommu_domain *iommu_domain,
+ 	struct riscv_iommu_device *iommu = dev_to_iommu(dev);
+ 	struct riscv_iommu_info *info = dev_iommu_priv_get(dev);
+ 	struct pt_iommu_riscv_64_hw_info pt_info;
+-	u64 fsc, ta;
++	struct riscv_iommu_dc dc = {0};
  
- 	/*
--	 * See Table 3. Encodings of iosatp.MODE field" for DC.tx.SXL = 0:
--	 *  8 = Sv39 = top level 2
--	 *  9 = Sv38 = top level 3
--	 *  10 = Sv57 = top level 4
-+	 * Both first-stage (fsc/iosatp) and second-stage (iohgatp) share the
-+	 * same MODE numeric values for a given top level:
-+	 *   top_level 2 -> MODE 8  (Sv39 / Sv39x4)
-+	 *   top_level 3 -> MODE 9  (Sv48 / Sv48x4)
-+	 *   top_level 4 -> MODE 10 (Sv57 / Sv57x4)
-+	 *
-+	 * The union members fsc_iosatp_mode and iohgatp_mode occupy the same
-+	 * byte; the caller selects the appropriate name based on domain type.
-+	 *
-+	 * See "Table 3. Encodings of iosatp.MODE field" (DC.tc.SXL = 0) and
-+	 * "Table 2. Encoding of iohgatp.MODE field" in the RISC-V IOMMU spec.
- 	 */
- 	info->fsc_iosatp_mode = top_range->top_level + 6;
- }
-@@ -294,6 +332,7 @@ riscvpt_iommu_fmt_hw_info(struct pt_iommu_riscv_64 *table,
+ 	pt_iommu_riscv_64_hw_info(&domain->riscvpt, &pt_info);
  
- #if defined(GENERIC_PT_KUNIT)
- static const struct pt_iommu_riscv_64_cfg riscv_64_kunit_fmt_cfgs[] = {
-+	/* First-stage (fsc/iosatp): Sv39 / Sv48 / Sv57 */
- 	[0] = { .common.features = BIT(PT_FEAT_RISCV_SVNAPOT_64K),
- 		.common.hw_max_oasz_lg2 = 56,
- 		.common.hw_max_vasz_lg2 = 39 },
-@@ -303,6 +342,18 @@ static const struct pt_iommu_riscv_64_cfg riscv_64_kunit_fmt_cfgs[] = {
- 	[2] = { .common.features = BIT(PT_FEAT_RISCV_SVNAPOT_64K),
- 		.common.hw_max_oasz_lg2 = 56,
- 		.common.hw_max_vasz_lg2 = 57 },
-+	/*
-+	 * Second-stage (iohgatp): Sv39x4 / Sv48x4 / Sv57x4.
-+	 */
-+	[3] = { .common.features = BIT(PT_FEAT_RISCV_SVNAPOT_64K),
-+		.common.hw_max_oasz_lg2 = 56,
-+		.common.hw_max_vasz_lg2 = 41 },
-+	[4] = { .common.features = 0,
-+		.common.hw_max_oasz_lg2 = 56,
-+		.common.hw_max_vasz_lg2 = 50 },
-+	[5] = { .common.features = BIT(PT_FEAT_RISCV_SVNAPOT_64K),
-+		.common.hw_max_oasz_lg2 = 56,
-+		.common.hw_max_vasz_lg2 = 59 },
- };
- #define kunit_fmt_cfgs riscv_64_kunit_fmt_cfgs
- enum {
-diff --git a/include/linux/generic_pt/common.h b/include/linux/generic_pt/common.h
-index fc5d0b5edadc..59448125159e 100644
---- a/include/linux/generic_pt/common.h
-+++ b/include/linux/generic_pt/common.h
-@@ -188,7 +188,10 @@ enum {
- 	 * Support the 64k contiguous page size following the Svnapot extension.
- 	 */
- 	PT_FEAT_RISCV_SVNAPOT_64K = PT_FEAT_FMT_START,
--
-+	/*
-+	 * Using second-stage / iohgatp address translation.
-+	 */
-+	PT_FEAT_RISCV_S2,
- };
+ 	if (!riscv_iommu_pt_supported(iommu, pt_info.fsc_iosatp_mode))
+ 		return -ENODEV;
  
- struct pt_x86_64 {
-diff --git a/include/linux/generic_pt/iommu.h b/include/linux/generic_pt/iommu.h
-index dd0edd02a48a..f27d229ff318 100644
---- a/include/linux/generic_pt/iommu.h
-+++ b/include/linux/generic_pt/iommu.h
-@@ -328,7 +328,22 @@ struct pt_iommu_riscv_64_cfg {
+-	fsc = FIELD_PREP(RISCV_IOMMU_PC_FSC_MODE, pt_info.fsc_iosatp_mode) |
++	dc.fsc = FIELD_PREP(RISCV_IOMMU_PC_FSC_MODE, pt_info.fsc_iosatp_mode) |
+ 	      FIELD_PREP(RISCV_IOMMU_PC_FSC_PPN, pt_info.ppn);
+-	ta = FIELD_PREP(RISCV_IOMMU_PC_TA_PSCID, domain->pscid) |
++	dc.ta = FIELD_PREP(RISCV_IOMMU_PC_TA_PSCID, domain->pscid) |
+ 	     RISCV_IOMMU_PC_TA_V;
  
- struct pt_iommu_riscv_64_hw_info {
- 	u64 ppn;
--	u8 fsc_iosatp_mode;
-+	union {
-+		/*
-+		 * First-stage (fsc/iosatp) MODE encoding:
-+		 *   8 = Sv39, 9 = Sv48, 10 = Sv57
-+		 * Used to program DC.fsc.iosatp.MODE.
-+		 */
-+		u8 fsc_iosatp_mode;
-+		/*
-+		 * Second-stage (iohgatp) MODE encoding:
-+		 *   8 = Sv39x4, 9 = Sv48x4, 10 = Sv57x4
-+		 * Used to program DC.iohgatp.MODE.
-+		 * The numeric values are identical to fsc_iosatp_mode;
-+		 * the caller selects the interpretation based on domain type.
-+		 */
-+		u8 iohgatp_mode;
-+	};
- };
+ 	if (riscv_iommu_bond_link(domain, dev))
+ 		return -ENOMEM;
  
- IOMMU_FORMAT(riscv_64, riscv_64pt);
+-	riscv_iommu_iodir_update(iommu, dev, fsc, ta);
++	riscv_iommu_iodir_update(iommu, dev, &dc);
+ 	riscv_iommu_bond_unlink(info->domain, dev);
+ 	info->domain = domain;
+ 
+@@ -1292,9 +1292,12 @@ static int riscv_iommu_attach_blocking_domain(struct iommu_domain *iommu_domain,
+ {
+ 	struct riscv_iommu_device *iommu = dev_to_iommu(dev);
+ 	struct riscv_iommu_info *info = dev_iommu_priv_get(dev);
++	struct riscv_iommu_dc dc = {0};
++
++	dc.fsc = RISCV_IOMMU_FSC_BARE;
+ 
+ 	/* Make device context invalid, translation requests will fault w/ #258 */
+-	riscv_iommu_iodir_update(iommu, dev, RISCV_IOMMU_FSC_BARE, 0);
++	riscv_iommu_iodir_update(iommu, dev, &dc);
+ 	riscv_iommu_bond_unlink(info->domain, dev);
+ 	info->domain = NULL;
+ 
+@@ -1314,8 +1317,12 @@ static int riscv_iommu_attach_identity_domain(struct iommu_domain *iommu_domain,
+ {
+ 	struct riscv_iommu_device *iommu = dev_to_iommu(dev);
+ 	struct riscv_iommu_info *info = dev_iommu_priv_get(dev);
++	struct riscv_iommu_dc dc = {0};
++
++	dc.fsc = RISCV_IOMMU_FSC_BARE;
++	dc.ta = RISCV_IOMMU_PC_TA_V;
+ 
+-	riscv_iommu_iodir_update(iommu, dev, RISCV_IOMMU_FSC_BARE, RISCV_IOMMU_PC_TA_V);
++	riscv_iommu_iodir_update(iommu, dev, &dc);
+ 	riscv_iommu_bond_unlink(info->domain, dev);
+ 	info->domain = NULL;
+ 
 -- 
 2.50.1
 
