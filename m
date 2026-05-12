@@ -4,76 +4,76 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7CCECCD37BE
-	for <kvm-riscv@archiver.kernel.org>; Mon, 11 May 2026 13:36:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8422CD37AC
+	for <kvm-riscv@archiver.kernel.org>; Mon, 11 May 2026 13:36:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Message-Id
 	:MIME-Version:Subject:Date:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=/TExPhNxo3tsdO353Q7to1VIbXgNoumRTyQSW597B80=; b=yWKtSfuXGTr4tU
-	wAfpUuBcCq0OIXE5siWFtykxu3KsH7+qJd/QhAnU4vyR+Ub+6Ra5+T7y5u1ZhHFwfwFdNZ+8Xg0LH
-	XEEUgpYgNvClL2PqN55PavrBhgAei2SaPzby0eNEBu0KEkn54R90oTHzFc4wk3LEsVNPz9WdP0xOH
-	SaUmDREl0RYQrwo4tvWweMVv1/hRB0en64bztKJZYseSWagrNj7846mhioasR5N8YGSLHt2Wf25Ty
-	3o8S9/bGgPxYoJY1YADE/ZYG7KMErK6fR6ewT2Wq7uY+7mz4Xb+KeRm5rUfDBrxYCATw560/xEJFF
-	vsfaqEzALNJqTIV9aHZA==;
+	List-Owner; bh=Hcc2LSALzIMSxhsI8NRdfVAJaL+THNmqTzSRbD3ia7Q=; b=ajQlGRHcEwROpQ
+	XBfXVFQjDYpQ47/x/B9ZJGGbZCTURDw90ANXzxUbXbFBiQlDluNs7i+Mm2mdh8URBfPj8ncBGSrpp
+	Sf+UYS43Y5h7R5F93JFGtxipGvsqYeKbD/+goXdWbmX7P5C4nRhmc/8VQdU6L5fq7YsVr/5MZ3FPb
+	KqtlbzE91hNHS1Yd03w79J3SV9rKR14btsdczs85srKdmSKE9/LBXxETIr6RyD2aqqXROZAF2o5dc
+	R+KXJVxk5ysI8093fQaN2FB133dm3EbXdnXpoF2v4zSPjgKNgPfPfOX0pBqD+nHRGRqYyckWoGlC8
+	DrpX3vPnR41c0Qcnu18Q==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wMQoD-0000000Dle3-45EQ;
-	Mon, 11 May 2026 13:36:34 +0000
-Received: from mail-pj1-x1031.google.com ([2607:f8b0:4864:20::1031])
+	id 1wMQoK-0000000Dlhv-2C18;
+	Mon, 11 May 2026 13:36:40 +0000
+Received: from mail-pj1-x1035.google.com ([2607:f8b0:4864:20::1035])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wMQoA-0000000DlcP-45zj
+	id 1wMQoH-0000000Dlfp-3oT0
 	for kvm-riscv@lists.infradead.org;
-	Mon, 11 May 2026 13:36:32 +0000
-Received: by mail-pj1-x1031.google.com with SMTP id 98e67ed59e1d1-362e50b4641so2458358a91.0
-        for <kvm-riscv@lists.infradead.org>; Mon, 11 May 2026 06:36:30 -0700 (PDT)
+	Mon, 11 May 2026 13:36:39 +0000
+Received: by mail-pj1-x1035.google.com with SMTP id 98e67ed59e1d1-3665a90bcd3so2652095a91.1
+        for <kvm-riscv@lists.infradead.org>; Mon, 11 May 2026 06:36:37 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=riscstar-com.20251104.gappssmtp.com; s=20251104; t=1778506590; x=1779111390; darn=lists.infradead.org;
+        d=riscstar-com.20251104.gappssmtp.com; s=20251104; t=1778506597; x=1779111397; darn=lists.infradead.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=EOFE3ehNiNk6algJYrLucEv0fxL7pkMWqS8jdXvY7Mk=;
-        b=rpZUQyIO+wb2o3iT4msGE++ieeSN8lqR6zwgmut8JIn3Rzvc6ABrnBY/jlyS7u/ufN
-         ZeWjo5wDOdHs6xAzuG25ayPaJI2n80Rg2GkHc5EV0/vTWCPmf9iRuAP3sjb1ujkqr5Yi
-         zoWMPmXlBUsjTyRa+bO6hNCNKkIY8YfO8UUDcagWTL9bE0PWESRUk/EqiXEpLMFYlV28
-         LJJfcHPO24RFJNEUyp3Hugn14KqEnKl8cXrcqZ11ZszkMDPWkwVPkS/Guf8rbcC2/YVP
-         y5rLAZpXxbzDiTMB4QHH61ge07Apq4VFZkXjGJNxnkzh0WQqAjTQmsniuYwA1CZmub5Z
-         uPrQ==
+        bh=zkBT5A6/LBnTeUPklgGzPFjB6isZzD11PPCRi8U3YM0=;
+        b=eZnpMboOEB/2jV7mtonj2/HifWzOxtpahBl9zAJ03dEk67SxHLV6ytMqfV/nGLcXod
+         j7qicXvVsHIZN9oKoA3pUgJal3P9mex07m2dDghDoBPW20g55akvedLbw5oEK0GpRjVl
+         mpjou2q4bQvLU6QyNu3HQ+e635X9M400SQ+lw1OJnsrWRFcUc2lo9fLubViqZQy6T8oI
+         VU12KYT5kjsdgkTVg0ttY4PHJqedQG06vAdC4eI7B6aHFaF4nxSp6RzJ/o6VswvqMTeI
+         ElDaQIubNnf+DamxABFRYUKdf4bvbIYofuneC3Xi+humQgWXdF6eOzAPOKGz1y5KV0d7
+         R2Aw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778506590; x=1779111390;
+        d=1e100.net; s=20251104; t=1778506597; x=1779111397;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
          :cc:subject:date:message-id:reply-to;
-        bh=EOFE3ehNiNk6algJYrLucEv0fxL7pkMWqS8jdXvY7Mk=;
-        b=KS9nw5ZWOhs3G9puvpAe0iowirAHDG6cVXR7A1TXwQugYDMaQLgNQ1Fw/Os9QnokXD
-         X7b4OsZihjNc5Cy0vy41Yk0b4sgjGJPHVePyIVNGxAS5AnmDhfFDMWTLF0DzUaT3Un8w
-         1N2LizmyUn2FxGLUiQJb/qkU+1pYKUf/rz1523bswWONUupmTYBnn6MYLXYDRI41E+Fl
-         u8VWxx7RptfqbQC8VzeKxWcFeP4LL02l4gb1kejXHSQAkAgeaZccFhGYeoC8cf8eLcDl
-         lFu5LB0gspQ0pVnFzgWFJbnsYYdAg5XTKihYIh6bp4OLgNDbD3Cx7arO218HyiwjMgnf
-         wpkw==
-X-Forwarded-Encrypted: i=1; AFNElJ8jSWVisa6pmywM15MvMfh41Qa1lKm+DWK55sjvvu4QL665LUwMPnrRqyF5H06Z8q643ZxQukZd800=@lists.infradead.org
-X-Gm-Message-State: AOJu0YyjMrGscTtmDq8KoeXF2D08At1f1hSZldH83l2Drybqze+Zavui
-	wf5FG3lb5sbrVlm4O5W9ZTM7GQNBilr0SYnZ2QyfB9D0Y0lsOZXpTZsEnXV1Qn9RrRE=
-X-Gm-Gg: Acq92OH0Cb0M4YR0R+NiIO1YV2KI5A/GKrjn/8lffbi/kdv7kk96CZsqeCDxHPwPgDL
-	Kq9K9W7vR8j/+Mjq6riiV5esIbvRmzmwfk84vdDL8I06FtA6BgM924t/rR9LTK0IQ8lQAnzRfjz
-	dEOM5wtU1hhS34ybAYfXmYh4qjyC9h2yF3nhtxY3Q7fTCeKlXrWxKDJ5Q12yec9OL/1gZNBkvjH
-	9ZQybUPGeadF/lTF9JxBVyGc9XlT4BvKl+x7BwPiH84EQoLfCKLGQpNaPAvswobPJ18CiNM408+
-	xrOqxlCnytygr1/Zq0ply03QCC3AXPI0bD9Rp5nxcF38w81fNpzfJsycyVtBD2wjLWSCkSFPodL
-	9Z1yCV1+TmMesLqEZsD784w2iQpwAMNn3BjCHkucqwK41S7N92BF63gpzZJPjKi2QOPOB7jbIn2
-	E7wxOpA36FCzm4GvrSIJprn+fAfDC4moVDF159E91ZvFY=
-X-Received: by 2002:a17:90b:38c2:b0:362:e7e5:a20a with SMTP id 98e67ed59e1d1-367d46c6798mr10065289a91.4.1778506590008;
-        Mon, 11 May 2026 06:36:30 -0700 (PDT)
+        bh=zkBT5A6/LBnTeUPklgGzPFjB6isZzD11PPCRi8U3YM0=;
+        b=qpOMrBM+ZB2gF1tUVqyTioD3JMUSEQ2vVqE/n5AZpcSwAy3jpFUBFvGwbptBJxLo3p
+         zjKi8s3RaNuKc1YK4QUA7tAidIgl/fAgbkw5fleSt5Y1Tu3pgXd81G7VK6r7qcvt6WrY
+         cS8SO675E55mSORV6FvvAnTm6sgowg0CaCbj0ugqjGkRUSg4JWhaY754piySnpO3eBxY
+         DyhlN+e8QaHXHpml3u5kJQnr306AuJr4VDpJcZUbKZDZzHyGXBc7FQX7TjIMIMP5Jzyb
+         JspbUBLl2kEi/eqNRa4h5kGmBOhz17Y+UndqhJxnMjvuRCn0ucywVvtt/SnuFgMYJeml
+         gnAw==
+X-Forwarded-Encrypted: i=1; AFNElJ9vPLB61N4wapzghl4jnz5YpGjfvZf/nL296fMh+hpH400hH+RDc8DEDid035SDMiA4mdHNhX9Hcko=@lists.infradead.org
+X-Gm-Message-State: AOJu0YwugvsJOXH4Q7zIse/+XIsXHmpjtVOBrDCwYQ/pdvfDUJk9SeQ1
+	noAXfN68Zo5Z8wOFfnQp9mCEsA+kjEDMDvc9Um3ewTtxKfQK/9jntiL6F7D2QHWx4/A=
+X-Gm-Gg: Acq92OFuhNB5/250XuKJbyJ52wyKDP2OctxVUpxPHDpGAfBHy+PdoCARQXvufvvjaSn
+	/GEV9Y3X4FIDgClRffWs82TG12HIDXmtCiDygn7+0EzQ4z1z2s70E2JGMFM2g++XuzbVAsu6i2t
+	p1kPF+RlYDQM4MPQiO7PYnOSYJOw/MiOvcmj2ByMpy4vz54VBJjnfkhI1LXEfOKUWr9h/sBMvsP
+	+4/vqIscO6nhuhJaUq7mWrDcoV64RZubd29Of7XyVlGjD10xE+4wkByQmWRM7rub+70DKD8fUWX
+	NGperQQqEZbJ00IKa+j6cbqX4HyCUVR+GmqMaA+9UFA5sX9Xg8uBUY1XyEIVkKoXm9DRgw4o+YS
+	fV/M72fExmcyxjib04GUMqDbCb9/IWhvgUFAL553DJRjHQDoUKd7xqDjzttT7QOhQ+l1i32n1Vs
+	oFNq81KxreTXu/Oh5dIxyWslbFtIY/gfd3c1JXDQxHNN0=
+X-Received: by 2002:a17:90a:d883:b0:359:8de8:1229 with SMTP id 98e67ed59e1d1-367d487d1cbmr11028452a91.21.1778506596853;
+        Mon, 11 May 2026 06:36:36 -0700 (PDT)
 Received: from [127.0.1.1] ([2a12:a305:4::30f3])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-367be3daafesm3034326a91.8.2026.05.11.06.36.23
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-367be3daafesm3034326a91.8.2026.05.11.06.36.30
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 11 May 2026 06:36:29 -0700 (PDT)
+        Mon, 11 May 2026 06:36:36 -0700 (PDT)
 From: Guodong Xu <guodong@riscstar.com>
-Date: Mon, 11 May 2026 21:34:46 -0400
-Subject: [PATCH v2 01/10] riscv: hwprobe.rst: Document EXT_ZICFISS
+Date: Mon, 11 May 2026 21:34:47 -0400
+Subject: [PATCH v2 02/10] riscv: hwprobe.rst: Replace tabs with spaces
 MIME-Version: 1.0
-Message-Id: <20260511-rva23u64-hwprobe-v2-v2-1-21c5a544f1dc@riscstar.com>
+Message-Id: <20260511-rva23u64-hwprobe-v2-v2-2-21c5a544f1dc@riscstar.com>
 References: <20260511-rva23u64-hwprobe-v2-v2-0-21c5a544f1dc@riscstar.com>
 In-Reply-To: <20260511-rva23u64-hwprobe-v2-v2-0-21c5a544f1dc@riscstar.com>
 To: Jonathan Corbet <corbet@lwn.net>, Paul Walmsley <pjw@kernel.org>, 
@@ -92,9 +92,8 @@ Cc: Andrew Jones <andrew.jones@oss.qualcomm.com>,
  kvm-riscv@lists.infradead.org, Guodong Xu <guodong@riscstar.com>
 X-Mailer: b4 0.15.1
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260511_063631_031287_5EB9B52C 
-X-CRM114-Status: UNSURE (   8.29  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20260511_063637_961846_E348A1BC 
+X-CRM114-Status: GOOD (  10.30  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -111,31 +110,59 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Commit 30c3099036a9 ("riscv/hwprobe: add zicfilp / zicfiss
-enumeration in hwprobe") added RISCV_HWPROBE_EXT_ZICFISS as bit 0 of
-RISCV_HWPROBE_KEY_IMA_EXT_1 but did not add a matching entry to
-Documentation/arch/riscv/hwprobe.rst.  Add it now.
+From: Andrew Jones <andrew.jones@oss.qualcomm.com>
 
-Fixes: 30c3099036a9 ("riscv/hwprobe: add zicfilp / zicfiss enumeration in hwprobe")
+A handful of vendor-extension entries indent continuation lines with a
+tab character, while the rest of hwprobe.rst uses spaces. Replace
+those tabs with spaces so the file is consistently space-indented.
+
+Cosmetic update, no functional change.
+
+Signed-off-by: Andrew Jones <andrew.jones@oss.qualcomm.com>
 Signed-off-by: Guodong Xu <guodong@riscstar.com>
 ---
-v2: New patch.
+v2: No change.
 ---
- Documentation/arch/riscv/hwprobe.rst | 4 ++++
- 1 file changed, 4 insertions(+)
+ Documentation/arch/riscv/hwprobe.rst | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/Documentation/arch/riscv/hwprobe.rst b/Documentation/arch/riscv/hwprobe.rst
-index c420a8349bc68..b1a84ac06da75 100644
+index b1a84ac06da75..c3bb26d70c748 100644
 --- a/Documentation/arch/riscv/hwprobe.rst
 +++ b/Documentation/arch/riscv/hwprobe.rst
-@@ -391,3 +391,7 @@ The following keys are defined:
- * :c:macro:`RISCV_HWPROBE_KEY_IMA_EXT_1`: A bitmask containing additional
-   extensions that are compatible with the
-   :c:macro:`RISCV_HWPROBE_BASE_BEHAVIOR_IMA`: base system behavior.
-+
-+  * :c:macro:`RISCV_HWPROBE_EXT_ZICFISS`: The Zicfiss extension is supported,
-+       as defined in version 1.0 of the RISC-V Control-flow Integrity (CFI)
-+       extensions specification, ratified 2024-07.
+@@ -358,7 +358,7 @@ The following keys are defined:
+ 
+     * :c:macro:`RISCV_HWPROBE_VENDOR_EXT_XTHEADVECTOR`: The xtheadvector vendor
+         extension is supported in the T-Head ISA extensions spec starting from
+-	commit a18c801634 ("Add T-Head VECTOR vendor extension. ").
++        commit a18c801634 ("Add T-Head VECTOR vendor extension. ").
+ 
+ * :c:macro:`RISCV_HWPROBE_KEY_ZICBOM_BLOCK_SIZE`: An unsigned int which
+   represents the size of the Zicbom block in bytes.
+@@ -371,19 +371,19 @@ The following keys are defined:
+ 
+     * :c:macro:`RISCV_HWPROBE_VENDOR_EXT_XSFVQMACCDOD`: The Xsfqmaccdod vendor
+         extension is supported in version 1.1 of SiFive Int8 Matrix Multiplication
+-	Extensions Specification.
++        Extensions Specification.
+ 
+     * :c:macro:`RISCV_HWPROBE_VENDOR_EXT_XSFVQMACCQOQ`: The Xsfqmaccqoq vendor
+         extension is supported in version 1.1 of SiFive Int8 Matrix Multiplication
+-	Instruction Extensions Specification.
++        Instruction Extensions Specification.
+ 
+     * :c:macro:`RISCV_HWPROBE_VENDOR_EXT_XSFVFNRCLIPXFQF`: The Xsfvfnrclipxfqf
+         vendor extension is supported in version 1.0 of SiFive FP32-to-int8 Ranged
+-	Clip Instructions Extensions Specification.
++        Clip Instructions Extensions Specification.
+ 
+     * :c:macro:`RISCV_HWPROBE_VENDOR_EXT_XSFVFWMACCQQQ`: The Xsfvfwmaccqqq
+         vendor extension is supported in version 1.0 of Matrix Multiply Accumulate
+-	Instruction Extensions Specification.
++        Instruction Extensions Specification.
+ 
+ * :c:macro:`RISCV_HWPROBE_KEY_ZICBOP_BLOCK_SIZE`: An unsigned int which
+   represents the size of the Zicbop block in bytes.
 
 -- 
 2.43.0
