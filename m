@@ -4,37 +4,37 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 46ECBCD4F47
-	for <kvm-riscv@archiver.kernel.org>; Sun, 17 May 2026 15:37:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7F635CD37AC
+	for <kvm-riscv@archiver.kernel.org>; Sun, 17 May 2026 15:37:07 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=9Ikg9pDjOSO/p8T4119f8l+kE3zR45lvcA8KmiUs/rM=; b=QxipvSQ6dxpGvT
-	3TuBu6sEticbPd+//GzR1HAnnmgwhVb7zZL9CgaTXXvBV6o4G5XOXyIKCrpgkFExntGOClWj9RP4O
-	gkNNtkDsm5eQ+VJJK+Beh1qlM5RF5DVgNozoyirchwpwieAK4Cuw+581eIbk5n49lVUh2or7Bd5ib
-	kJYAGyrZOby0BKlszmWh1OsIEpftD8zgJ3S9HEhHwIqrpEHJO5t1/EnBaI6tyhxZzqossrdGB45Il
-	wfKKtyoafD2N1dqMoo5YcBb4t3/4fdBPsYTwm3W3d9g9gPd/UPcEhpuOiDnGFpGdG7XoB/qi7VM42
-	eFxW3MxmW5/uJs5rIg9A==;
+	List-Owner; bh=obpJMSAdybw7yDNwblFVMXj61RArz7g9KKHMBspuns0=; b=BMtdWTM7UH/XhJ
+	yJtkztPBpS4eQLronu4EmRB+RMUr+CerEot2eo8xuHg0LruYa6w8Su/1deua/17xmLcFjq/JZrRh7
+	ifUFdw1Z27xai14P2KkK3PHdkqIV+ov4iXWjpjHO0I5Y4B7muYMyfBGsFBx1oAmuTQftIn4qsSAZA
+	K81NyZRlzNCDy3dXUOXmC2JXO8LnIPfYQixuKAIq7Vrx6R1qhAoqxI9S/BXIWr2/QO8+nHG+/UOlJ
+	i3RJ5TJQoD356/L3bykvoMvwNjr1sLhA7mMsFekwSFW6wwIInNEv+GL2wbw1lUCH1O8iKnLOC9Rfo
+	Yzi1Nzqj21uF2jAcILgA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wOdY8-0000000CwMe-05l7;
-	Sun, 17 May 2026 15:37:04 +0000
-Received: from m16.mail.163.com ([220.197.31.4])
+	id 1wOdYB-0000000CwQU-10mG;
+	Sun, 17 May 2026 15:37:07 +0000
+Received: from m16.mail.163.com ([117.135.210.3])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wOdY4-0000000CwHv-1dEN;
-	Sun, 17 May 2026 15:37:01 +0000
+	id 1wOdY8-0000000CwK8-0TK0;
+	Sun, 17 May 2026 15:37:05 +0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:To:Subject:Date:Message-ID:MIME-Version; bh=9R
-	f9BG0sjCh68FBbnMMLHnS9NUGEPuZsSwjCC3kbcqQ=; b=FYbpwpwgIo0lGzFsbz
-	hX6xv1NIJRlP3nRIxVATezqUzgrHq/5A4KXMmIk7VE71SuKpt/Nzxj2A7PWUlEse
-	PEr0Mxx1WzszTftHSwhtgQ5/kl7kfwGRTuI7kppv30J+qA3REcVo7NG3BPzHKnFv
-	WKsylKbvCCwRW7avekh618u8Y=
+	s=s110527; h=From:To:Subject:Date:Message-ID:MIME-Version; bh=Js
+	QLXeUloxPxSDxUurZ8XAjjViIbjwSl2vEzwM1rPDs=; b=Ag3HJO3k8B2qchnUoR
+	9HXK3xEF+q/x78VQ12mLVpxXO8uIvXu82vwdwcH84Je4028gRVJ3/vXIkH4HvaMP
+	I1qxKZFHcNOBlOgUYLOHkfazAD6ypzCHTyDMvYT3pNapRJsdkDZISK/NYz5pWEnc
+	/ccQVlqHy8hFx3GraoNcGFwQc=
 Received: from localhost.localdomain (unknown [])
-	by gzga-smtp-mtada-g1-3 (Coremail) with SMTP id _____wA3ylwO4AlqyKW7Bw--.10227S4;
-	Sun, 17 May 2026 23:34:55 +0800 (CST)
+	by gzga-smtp-mtada-g1-3 (Coremail) with SMTP id _____wA3ylwO4AlqyKW7Bw--.10227S3;
+	Sun, 17 May 2026 23:34:41 +0800 (CST)
 From: Jinyu Tang <tjytimi@163.com>
 To: Anup Patel <apatel@ventanamicro.com>,
 	Anup Patel <anup@brainfault.org>,
@@ -56,23 +56,23 @@ Cc: kvm@vger.kernel.org,
 	Yong-Xuan Wang <yongxuan.wang@sifive.com>,
 	Nutty Liu <nutty.liu@hotmail.com>,
 	Jinyu Tang <tjytimi@163.com>
-Subject: [PATCH 2/5] KVM: riscv: Use an rwlock for mmu_lock
-Date: Sun, 17 May 2026 23:34:24 +0800
-Message-ID: <20260517153427.94889-3-tjytimi@163.com>
+Subject: [PATCH 1/5] KVM: riscv: Rely on common MMU notifier locking
+Date: Sun, 17 May 2026 23:34:23 +0800
+Message-ID: <20260517153427.94889-2-tjytimi@163.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260517153427.94889-1-tjytimi@163.com>
 References: <20260517153427.94889-1-tjytimi@163.com>
 MIME-Version: 1.0
-X-CM-TRANSID: _____wA3ylwO4AlqyKW7Bw--.10227S4
-X-Coremail-Antispam: 1Uf129KBjvJXoWxXFW3uFyfuw1UWw1fXF1DZFb_yoWrZrW7pF
-	4q9FZxur1Sqr4kZFZrKF1DZr1DWw4vgw1fJFy5CF95AF4YyrZxZrn29342qr98Jr1xZFZ3
-	ZF4DJa45Ar40ywUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0ziGQ6XUUUUU=
+X-CM-TRANSID: _____wA3ylwO4AlqyKW7Bw--.10227S3
+X-Coremail-Antispam: 1Uf129KBjvJXoW7Aw4fGw1xAFWxtw1DAF4UCFg_yoW8Arykpr
+	WjkrZ0krWrXr4DuFyUt3WkZryj9w4vgFn7X34rJaykJrs0q3s3Ga4vqas2gF15Jrs5XFZx
+	ZF40q3WrCry5AaDanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0piaFAZUUUUU=
 X-Originating-IP: [2408:823d:2011:b54:9f00:c5fa:7b13:491e]
-X-CM-SenderInfo: xwm13xlpl6il2tof0z/xtbC0B8clGoJ4B+ytQAA3c
+X-CM-SenderInfo: xwm13xlpl6il2tof0z/xtbC0BEZkWoJ4BGw1wAA38
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260517_083700_772752_641ED7C0 
-X-CRM114-Status: UNSURE (   9.82  )
+X-CRM114-CacheID: sfid-20260517_083704_578114_C0BE863A 
+X-CRM114-Status: UNSURE (   7.55  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -90,135 +90,61 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-RISC-V KVM currently uses a spinlock for mmu_lock. That serializes all
-G-stage MMU operations, including permission-only updates that do not
-allocate or free page-table pages.
+The common KVM invalidation paths call kvm_unmap_gfn_range() with
+mmu_lock already held for write.
 
-Use KVM's rwlock form of mmu_lock, as x86 and arm64 already do. Keep the
-existing map, unmap and teardown paths on the write side. This prepares
-RISC-V for read-side handling of G-stage permission updates.
+For the standard MMU notifier path, the call chain is:
+
+  kvm_mmu_notifier_invalidate_range_start()
+    kvm_handle_hva_range()
+      kvm_unmap_gfn_range()
+
+kvm_mmu_notifier_invalidate_range_start() leaves range.lockless clear.
+kvm_handle_hva_range() therefore takes KVM_MMU_LOCK(kvm) before invoking
+the handler.
+
+The guest_memfd path has the same locking contract:
+
+  __kvm_gmem_invalidate_begin()
+    kvm_mmu_unmap_gfn_range()
+      kvm_unmap_gfn_range()
+
+__kvm_gmem_invalidate_begin() explicitly takes KVM_MMU_LOCK(kvm) before
+calling kvm_mmu_unmap_gfn_range().
+
+So remove the local trylock and make the common locking contract explicit 
+with lockdep_assert_held_write() like x86.
 
 Signed-off-by: Jinyu Tang <tjytimi@163.com>
 ---
- arch/riscv/include/asm/kvm_host.h |  2 ++
- arch/riscv/kvm/gstage.c           |  2 +-
- arch/riscv/kvm/mmu.c              | 24 ++++++++++++------------
- 3 files changed, 15 insertions(+), 13 deletions(-)
+ arch/riscv/kvm/mmu.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
-index 75b0a951c..60017ceec 100644
---- a/arch/riscv/include/asm/kvm_host.h
-+++ b/arch/riscv/include/asm/kvm_host.h
-@@ -48,6 +48,8 @@
- 
- #define __KVM_HAVE_ARCH_FLUSH_REMOTE_TLBS_RANGE
- 
-+#define KVM_HAVE_MMU_RWLOCK
-+
- #define KVM_DIRTY_LOG_MANUAL_CAPS	(KVM_DIRTY_LOG_MANUAL_PROTECT_ENABLE | \
- 					 KVM_DIRTY_LOG_INITIALLY_SET)
- 
-diff --git a/arch/riscv/kvm/gstage.c b/arch/riscv/kvm/gstage.c
-index d9fe8be2a..6f934cb4a 100644
---- a/arch/riscv/kvm/gstage.c
-+++ b/arch/riscv/kvm/gstage.c
-@@ -410,7 +410,7 @@ void kvm_riscv_gstage_unmap_range(struct kvm_gstage *gstage,
- 		 * to prevent starvation and lockup detector warnings.
- 		 */
- 		if (!(gstage->flags & KVM_GSTAGE_FLAGS_LOCAL) && may_block && addr < end)
--			cond_resched_lock(&gstage->kvm->mmu_lock);
-+			cond_resched_rwlock_write(&gstage->kvm->mmu_lock);
- 	}
- }
- 
 diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-index 0197e41fc..48f16e52f 100644
+index 2d3def024..0197e41fc 100644
 --- a/arch/riscv/kvm/mmu.c
 +++ b/arch/riscv/kvm/mmu.c
-@@ -26,9 +26,9 @@ static void mmu_wp_memory_region(struct kvm *kvm, int slot)
- 
- 	kvm_riscv_gstage_init(&gstage, kvm);
- 
--	spin_lock(&kvm->mmu_lock);
-+	write_lock(&kvm->mmu_lock);
- 	kvm_riscv_gstage_wp_range(&gstage, start, end);
--	spin_unlock(&kvm->mmu_lock);
-+	write_unlock(&kvm->mmu_lock);
- 	kvm_flush_remote_tlbs_memslot(kvm, memslot);
- }
- 
-@@ -65,9 +65,9 @@ int kvm_riscv_mmu_ioremap(struct kvm *kvm, gpa_t gpa, phys_addr_t hpa,
- 		if (ret)
- 			goto out;
- 
--		spin_lock(&kvm->mmu_lock);
-+		write_lock(&kvm->mmu_lock);
- 		ret = kvm_riscv_gstage_set_pte(&gstage, &pcache, &map);
--		spin_unlock(&kvm->mmu_lock);
-+		write_unlock(&kvm->mmu_lock);
- 		if (ret)
- 			goto out;
- 
-@@ -85,9 +85,9 @@ void kvm_riscv_mmu_iounmap(struct kvm *kvm, gpa_t gpa, unsigned long size)
- 
- 	kvm_riscv_gstage_init(&gstage, kvm);
- 
--	spin_lock(&kvm->mmu_lock);
-+	write_lock(&kvm->mmu_lock);
- 	kvm_riscv_gstage_unmap_range(&gstage, gpa, size, false);
--	spin_unlock(&kvm->mmu_lock);
-+	write_unlock(&kvm->mmu_lock);
- }
- 
- void kvm_arch_mmu_enable_log_dirty_pt_masked(struct kvm *kvm,
-@@ -131,9 +131,9 @@ void kvm_arch_flush_shadow_memslot(struct kvm *kvm,
- 
- 	kvm_riscv_gstage_init(&gstage, kvm);
- 
--	spin_lock(&kvm->mmu_lock);
-+	write_lock(&kvm->mmu_lock);
- 	kvm_riscv_gstage_unmap_range(&gstage, gpa, size, false);
--	spin_unlock(&kvm->mmu_lock);
-+	write_unlock(&kvm->mmu_lock);
- }
- 
- void kvm_arch_commit_memory_region(struct kvm *kvm,
-@@ -504,7 +504,7 @@ int kvm_riscv_mmu_map(struct kvm_vcpu *vcpu, struct kvm_memory_slot *memslot,
- 	if (logging && !is_write)
- 		writable = false;
- 
--	spin_lock(&kvm->mmu_lock);
-+	write_lock(&kvm->mmu_lock);
- 
- 	if (mmu_invalidate_retry(kvm, mmu_seq))
- 		goto out_unlock;
-@@ -527,7 +527,7 @@ int kvm_riscv_mmu_map(struct kvm_vcpu *vcpu, struct kvm_memory_slot *memslot,
- 
- out_unlock:
- 	kvm_release_faultin_page(kvm, page, ret && ret != -EEXIST, writable);
--	spin_unlock(&kvm->mmu_lock);
-+	write_unlock(&kvm->mmu_lock);
- 	return ret;
- }
- 
-@@ -556,7 +556,7 @@ void kvm_riscv_mmu_free_pgd(struct kvm *kvm)
+@@ -230,18 +230,16 @@ int kvm_arch_prepare_memory_region(struct kvm *kvm,
+ bool kvm_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range)
+ {
  	struct kvm_gstage gstage;
- 	void *pgd = NULL;
+-	bool mmu_locked;
  
--	spin_lock(&kvm->mmu_lock);
-+	write_lock(&kvm->mmu_lock);
- 	if (kvm->arch.pgd) {
- 		kvm_riscv_gstage_init(&gstage, kvm);
- 		kvm_riscv_gstage_unmap_range(&gstage, 0UL,
-@@ -566,7 +566,7 @@ void kvm_riscv_mmu_free_pgd(struct kvm *kvm)
- 		kvm->arch.pgd_phys = 0;
- 		kvm->arch.pgd_levels = 0;
- 	}
--	spin_unlock(&kvm->mmu_lock);
-+	write_unlock(&kvm->mmu_lock);
+ 	if (!kvm->arch.pgd)
+ 		return false;
  
- 	if (pgd)
- 		free_pages((unsigned long)pgd, get_order(kvm_riscv_gstage_pgd_size));
++	lockdep_assert_held_write(&kvm->mmu_lock);
++
+ 	kvm_riscv_gstage_init(&gstage, kvm);
+-	mmu_locked = spin_trylock(&kvm->mmu_lock);
+ 	kvm_riscv_gstage_unmap_range(&gstage, range->start << PAGE_SHIFT,
+ 				     (range->end - range->start) << PAGE_SHIFT,
+ 				     range->may_block);
+-	if (mmu_locked)
+-		spin_unlock(&kvm->mmu_lock);
+ 	return false;
+ }
+ 
 -- 
 2.43.0
 
