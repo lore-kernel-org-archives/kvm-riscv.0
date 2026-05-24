@@ -4,106 +4,106 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 49DEBCD4F54
-	for <kvm-riscv@archiver.kernel.org>; Sun, 24 May 2026 05:26:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 29A61CD5BAB
+	for <kvm-riscv@archiver.kernel.org>; Sun, 24 May 2026 13:21:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:Subject:Message-ID:Date:From:
-	In-Reply-To:References:MIME-Version:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=Za7nDPn3SLiHFhgx9RnqK3tNvqQ2tSkbr7sbjwp5JB4=; b=EuF52HN3wj636Y
-	n8cfrHEVq5oBt2RHuiaEzpA5MTVzcR/RMIfBHSX/On3S7nBm6zA8ZA+Dqzk/0sK3nrpWe+UiJt1tC
-	FM32cVTgTG/rB3VAyzTe82bg1Txgtu4LjQVjEhdwgfxmxNzJ0YJCFw87QbVx5xmYrOSNKq4Oiozs3
-	tBrl6RfJXOofIXVCTvZIKMfh37eRbaIufKjWjfHy2XRfJyNhLIePGl+pORlB1K+RgLsp26INFOmlx
-	M6uE61BnOOSVjWHijeol8WFCLVABKd13EHwvARu/G5YJ23E8NsYfas1DRcoWCa/nWQYP2ZbEo0mOm
-	5FLuk2AYfqGbHUOQOVpA==;
+	List-Owner; bh=6MsLQdMDCGsug1Fgu3icFSIjVOEqlbYtkWbrA/lTk3Y=; b=VK46LTRzaT3u1T
+	VIVrqTi5K5vZ6WJ/1Nfe7MfelA8q85Oua2GeECBLsR2ijWLEHZ5XYPUUPY2Jid6hAXltm7+Aa15AM
+	Vsv6WxCzWKz2LwheDJz9MpakaiTXdfEPV5gUGz20p/mrQQFS8JYRaBVfwD4OLnlTsIEjZEJFOW7Mc
+	aq1aJ5glJIBQmgBmhlcflCOMQSTymgFJk84Nzg1JCEKUnkIXx1otPSSWITqFcrMi9+qMjBf7NmJPx
+	/P3SUYTxSw3fR+0ROYOgOLLMDWDEtW/GtxwOyzSLm5Il7mMKLFfvA4q+gaHCop0ndZtZpuHy7nDpw
+	5wjmAhqNDZcirs+g6LSA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wR1Lm-0000000EUgX-0BeN;
-	Sun, 24 May 2026 05:26:10 +0000
-Received: from mail-ot1-x32a.google.com ([2607:f8b0:4864:20::32a])
+	id 1wR8lZ-0000000F0ka-3KHf;
+	Sun, 24 May 2026 13:21:17 +0000
+Received: from mx0a-0031df01.pphosted.com ([205.220.168.131])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wR1Lj-0000000EUfQ-2ptG
-	for kvm-riscv@lists.infradead.org;
-	Sun, 24 May 2026 05:26:09 +0000
-Received: by mail-ot1-x32a.google.com with SMTP id 46e09a7af769-7e61e25199bso289035a34.1
-        for <kvm-riscv@lists.infradead.org>; Sat, 23 May 2026 22:26:07 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1779600366; cv=none;
-        d=google.com; s=arc-20240605;
-        b=gWuDxO54T1uBwMkw5zSASQeIACXT8c8B9/iUWk4/b/jfkdMLzqesa+UPIHYmvq+rOh
-         LkV63iHNECuvmGYgeOSK9XxdgJsCwUJWJ7IWjblRVsdYWuu8q++pxf8mVePegSCJTHVr
-         kjGZgGFrmX1RFIVC+Vf915Zs60Fd1wTG/hh9lwD8Ng7RWN77X5TIQka2RIgxa9tmyZ0/
-         CXWau9lBye4A6M0mK/HqAoOLDsgXClBW43R7t5PdT8oXFk+n6LO1WYOM//cyKOjEkyol
-         Yjzl7qjHtxu/57mNj23WR5nDu7gbOTgEW2jJyW3U8BuKxRUBy6R438pNSnjiZuKVJQLR
-         AqwQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=eE6+eEhD+C63Fu1K/v95BeKlMaBi30euPUmiLWrnqTo=;
-        fh=JT5xXUSXw6FH2bzBaJ45R1yDtSW/JZRx0Up0XSrM4TI=;
-        b=ZwqciBw7bvqUdcwcP91BjF9sBCmpWt9LPOUlGUXYuZnOn9l8Xt9dFCzSUM7/U26R1a
-         yeCqt5Wfh9mnZ203fo3d62UlvsvzMI9BTIdTA4YSreD/qN/2X0qjR9QBeI01j6SgLith
-         2XZbMWYoOwkk9aEi2k3uLHYvUCGMA7yoBfThQDFKvERFxQ8S3hVgmvHlk5y/VNRku3pr
-         Y632fHKlDLfaNqom1yK8GBkTey//rqTIsvN4STurj9n4tH7U95o5x80oA2GZFW7TzCTM
-         gzqg9gxQCiOkeJbxmCzxr49PLiB9XfOdMLq4jfCVlpnp5LmuktrUUdvHAWqYexKs3mtq
-         NbNQ==;
-        darn=lists.infradead.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=brainfault-org.20251104.gappssmtp.com; s=20251104; t=1779600366; x=1780205166; darn=lists.infradead.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=eE6+eEhD+C63Fu1K/v95BeKlMaBi30euPUmiLWrnqTo=;
-        b=Kcy+YARBghRSr5JfCVc+54sHnItVN70TtUGy8TPen+LF2OA/PMIWZxX3zd3lN/GDRa
-         mXCX1VZ5Cp1MIP28R6j1BnsuJ3kVEEA0Wct2lUd2VHxx40Fk1ixd0ue938FR052tuzea
-         LfXaGEx1DTz9/rBGr4pF0vZMRxizIthb63JIChNR0Oyp7LljuVEhOcJjTNsR/Hy7UdWE
-         3m2tDFmIds96Ra/Cq84zHH6cXKePLlGObvedOACyoGGPDH7LoD3K2+k9l/CF9JQzjpC2
-         t1IwBio1+ji9Qye5qFECwhJ3F/X1uCgvSVr8Mxglg6GOiNwnqWgUo9PKLQN+X+HBlLUs
-         jNpg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779600366; x=1780205166;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=eE6+eEhD+C63Fu1K/v95BeKlMaBi30euPUmiLWrnqTo=;
-        b=FpwpZtg1/tUF9zrlzTmQYqjs2o5ZHraD8l1v9QMyQD7v3cCfGSYCfhVhGWQbiiH+Gk
-         LazZGQJP6BoD71CiXv6Rt9wlPRNh4keLLw/wr2eoBv3udZ7tJOf95GtNkGSoWjOZz+Ps
-         91M2Yhfcrg5NUmDlFOMevcdIZMicEUmBaa9pbTp11XmMT7o11Zdcna6W0EHzOtMslExj
-         qWp5LfmiXA60Q/T2hSFu4sWdQSY/vXx2pmpcJNJJujL4n6YSk+pQGSvdnYDuRkOivUkB
-         GKepyykHpOkz3Qmf4ZG5k34VFYivITa6SEXep0fdgtmcVebEDq2qEKnmFrMDo5bPMu40
-         wTvg==
-X-Forwarded-Encrypted: i=1; AFNElJ8Ah0RXEZdJ1v7aAz8OmyvwXJ/nvvv6B3MdxxRLO4A1edQTsF030A35JDr0xB/Vip53mttBQGgOXOI=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yw9GcEnIdwuG0BaZG6kuFn85JWMPzsY7EyEhrU4zmXNwmZroAhI
-	imLVIZ5OwyRicmgts/zL7upMGidwzVSzCjJ+AMKklj6jG6/xlYP4IKBwEZRqYwlvyaOkkMF95LQ
-	+uj1N8brChDOJwYz4eAt+e8f6VAyb4bBb4thSsd2G0Q==
-X-Gm-Gg: Acq92OGN/HyQu0ob7MoOiiZ7OE/VD2dnp4+N6CA1I53q0s1CshVXZXXk3IcnY6FOEgj
-	T+vIHgMLP6N0fBLh7mX9ueuDBa2esv3+y5WKS1swZFFSl6UeCBAIvTrCOXhNf5lzmEQxHsSZJBN
-	vgL0BDr5+qn0krTNedwNJtBqld55Ge14lyOc/sYwwmxIeLwdVA2qAONbmi4SlPnt68MjihIZgsB
-	whYSmsH1umyLwiwAnagx8AJaAMiOa1to0HJvIRK9B0pkA/vYw83SguhcUoRb/nPSD3QaeQvbmTZ
-	4GcsK6pokScH84OaBM6wntN2I8IY1P0DNd/njRg02Ac8bLHY1Dw2FSUx5Ei75bHSNbcdW+lh6Dl
-	qyLhh7LTLbNhOawCRwn7Pld6OJIM=
-X-Received: by 2002:a05:6820:868b:b0:69b:5f97:de79 with SMTP id
- 006d021491bc7-69d7eb91b64mr4064957eaf.19.1779600366573; Sat, 23 May 2026
- 22:26:06 -0700 (PDT)
+	id 1wR8lW-0000000F0j5-3A81;
+	Sun, 24 May 2026 13:21:15 +0000
+Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64OAxt5J335207;
+	Sun, 24 May 2026 13:21:03 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=qcppdkim1; bh=VqN21vzvn/n
+	BLPhaHYlcmo4rXms5WRMKGKY9USyjovA=; b=mERksEt8Aimu9WX4F1T/rody5Sz
+	T5tsLWs08ur6FVC5Mc8yBVjVD9F4wxFX2Ew5eDtxPiygkP5qLTFs2+ZbAc+y6xF0
+	j1l2GhfvIxANbYHP51t3dNyBV+yiovwDyXR+h1N6fCWu5FhmXjc/R0A9r4e/M7WS
+	XvKQu6J/etv3LTE21fOwa/C+ZHCLexbvjjBuj7tza/iUNt1y3WExYTFtSqkocAUW
+	+ZQ89oB4lpHCWof5BImzMpjY3R8yJSstDShIIplMfBex1gS+DsOr24aSdv0YGeV3
+	okRT7p/fwMiEQYthtMYsX2QFIGY2YuG362MSNcIrl5DsdytUZRo70m+iftQ==
+Received: from apblrppmta01.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4eb88w2qpe-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sun, 24 May 2026 13:21:02 +0000 (GMT)
+Received: from pps.filterd (APBLRPPMTA01.qualcomm.com [127.0.0.1])
+	by APBLRPPMTA01.qualcomm.com (8.18.1.7/8.18.1.7) with ESMTP id 64ODKxLU009279;
+	Sun, 24 May 2026 13:20:59 GMT
+Received: from pps.reinject (localhost [127.0.0.1])
+	by APBLRPPMTA01.qualcomm.com (PPS) with ESMTPS id 4eb5ahgq6t-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sun, 24 May 2026 13:20:59 +0000 (GMT)
+Received: from APBLRPPMTA01.qualcomm.com (APBLRPPMTA01.qualcomm.com [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.1.12) with ESMTP id 64ODKxRV009266;
+	Sun, 24 May 2026 13:20:59 GMT
+Received: from hu-devc-blr-u24-a.qualcomm.com (hu-anuppate-blr.qualcomm.com [10.131.36.165])
+	by APBLRPPMTA01.qualcomm.com (PPS) with ESMTPS id 64ODKxMd009262
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sun, 24 May 2026 13:20:59 +0000 (GMT)
+Received: by hu-devc-blr-u24-a.qualcomm.com (Postfix, from userid 486687)
+	id 7BF6021A78; Sun, 24 May 2026 18:50:58 +0530 (+0530)
+From: Anup Patel <anup.patel@oss.qualcomm.com>
+To: Paolo Bonzini <pbonzini@redhat.com>, Atish Patra <atish.patra@linux.dev>,
+        Thomas Gleixner <tglx@kernel.org>
+Cc: Palmer Dabbelt <palmer@dabbelt.com>, Paul Walmsley <pjw@kernel.org>,
+        Anup Patel <anup@brainfault.org>,
+        Andrew Jones <andrew.jones@oss.qualcomm.com>,
+        kvm-riscv@lists.infradead.org, kvm@vger.kernel.org,
+        linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
+        "Guo Ren (Alibaba DAMO Academy)" <guoren@kernel.org>,
+        Anup Patel <anup.patel@oss.qualcomm.com>
+Subject: [PATCH v3 1/2] irqchip/riscv-imsic: Add nr_guest_files in per-HART local config
+Date: Sun, 24 May 2026 18:50:56 +0530
+Message-ID: <20260524132057.2425034-2-anup.patel@oss.qualcomm.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20260524132057.2425034-1-anup.patel@oss.qualcomm.com>
+References: <20260524132057.2425034-1-anup.patel@oss.qualcomm.com>
 MIME-Version: 1.0
-References: <20260425005916.3321811-1-guoren@kernel.org>
-In-Reply-To: <20260425005916.3321811-1-guoren@kernel.org>
-From: Anup Patel <anup@brainfault.org>
-Date: Sun, 24 May 2026 10:55:55 +0530
-X-Gm-Features: AVHnY4JBNFDLe44QojpCNBOQNUnwD6PWyRl75taA_4p2OczkddPd-j2jxpb_QyM
-Message-ID: <CAAhSdy3T32AuG=MujHOhjw08h7h8UAyYjkORVNxUgR77Gn1ZWQ@mail.gmail.com>
-Subject: Re: [PATCH V2 0/4] RISC-V: KVM: AIA: Convert HGEI management to fully per-HART
-To: guoren@kernel.org
-Cc: alex@ghiti.fr, aou@eecs.berkeley.edu, atish.patra@linux.dev, 
-	cp0613@linux.alibaba.com, fangyu.yu@linux.alibaba.com, gaohan@iscas.ac.cn, 
-	inochiama@gmail.com, kvm-riscv@lists.infradead.org, kvm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org, me@ziyao.cc, 
-	palmer@dabbelt.com, pjw@kernel.org, tglx@kernel.org
+X-QCInternal: smtphost
+X-QCInternal: smtphost
+X-Authority-Analysis: v=2.4 cv=S/jpBosP c=1 sm=1 tr=0 ts=6a12fb3f cx=c_pps
+ a=Ou0eQOY4+eZoSc0qltEV5Q==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
+ a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
+ a=eoimf2acIAo5FJnRuUoq:22 a=VwQbUJbxAAAA:8 a=EUspDBNiAAAA:8
+ a=oD6YGmB8v4GqGCjrqTEA:9
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTI0MDEzNSBTYWx0ZWRfXxUP+gnUjoIVY
+ BVWe7nNzPAwOsQWiftr0sya4D7N3/rB+K5+4zQ1zaBrOf+Yu1MgdVq0+KDCSbdLZ+c7sG/Eav5F
+ WRkEM20Kq8WKldGUdqUHZBS3fORaWZNnxJi6gAGmau59xkUCFd51J2KDEExSBisdsQy1wiz2TAr
+ ZMhj/yOXb5BOV/uiDPOZLLaPILxmE8yCXAkujjbtPS6asbUnV85uHq35dH7aumXjlsSYERhJYR6
+ Rr41cbuXF8PucCqbWhRP0IuZqHmenDRjhWiym+EnPJvfuRH1E/99GkqrRIA0glJkYdnMcB2EWq1
+ TUH+vJJETo+/vBOSCZO8bq5Tg9iECfx/znyEgHvwQERA9L1At2OD9eXFBSZ70dAVoqEr3RQSsL0
+ go5dIS7x4patFzvJDhjHQeaPtYnEpvcSqZU80WHYu/hhwr0lO+4qyPcgUVPFFm9HRURpF0Hzpwj
+ zuSC2t657RD3YY7Bi+Q==
+X-Proofpoint-ORIG-GUID: 2O3GlNlgBjCFVSqrFbhno7vm2pdbVGER
+X-Proofpoint-GUID: 2O3GlNlgBjCFVSqrFbhno7vm2pdbVGER
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-24_04,2026-05-18_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 lowpriorityscore=0 malwarescore=0 clxscore=1015
+ priorityscore=1501 impostorscore=0 adultscore=0 phishscore=0 spamscore=0
+ bulkscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
+ adjust=0 reason=mlx scancount=1 engine=8.22.0-2605130000
+ definitions=main-2605240135
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260523_222607_718629_75C68A2E 
-X-CRM114-Status: GOOD (  14.63  )
+X-CRM114-CacheID: sfid-20260524_062114_796338_AB1C0F9A 
+X-CRM114-Status: GOOD (  13.84  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -115,45 +115,79 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-T24gU2F0LCBBcHIgMjUsIDIwMjYgYXQgNjoyOeKAr0FNIDxndW9yZW5Aa2VybmVsLm9yZz4gd3Jv
-dGU6Cj4KPiBGcm9tOiAiR3VvIFJlbiAoQWxpYmFiYSBEQU1PIEFjYWRlbXkpIiA8Z3VvcmVuQGtl
-cm5lbC5vcmc+Cj4KPiBUaGlzIHNob3J0IHNlcmllcyBjb252ZXJ0cyBSSVNDLVYgS1ZNIEFJQSdz
-IEh5cGVydmlzb3IgR3Vlc3QgRXh0ZXJuYWwKPiBJbnRlcnJ1cHQgKEhHRUkpIGxpbmUgbWFuYWdl
-bWVudCBmcm9tIGEgZ2xvYmFsICJvbmUtc2l6ZS1maXRzLWFsbCIKPiBtb2RlbCB0byBhIGZ1bGx5
-IHBlci1IQVJUIChwZXItQ1BVKSBtb2RlbC4gSXQgYWxzbyBwZXJmb3JtcyB0aGUKPiBjb3JyZXNw
-b25kaW5nIGNsZWFudXAgaW4gdGhlIElNU0lDIGlycWNoaXAgZHJpdmVyLgo+Cj4gVGhlIG1vdGl2
-YXRpb24gaXMgdG8gcHJvcGVybHkgc3VwcG9ydCBoZXRlcm9nZW5lb3VzIFJJU0MtViBTb0NzCj4g
-KGJpZy5MSVRUTEUsIG11bHRpLXZlbmRvciBjb3JlIG1peGVzKSB3aGVyZSBkaWZmZXJlbnQgSEFS
-VHMgbWF5Cj4gZXhwb3NlIGRpZmZlcmVudCBudW1iZXJzIG9mIGd1ZXN0IGludGVycnVwdCBmaWxl
-cyAvIEhHRUlFIGJpdHMuCj4gVGhlIG9sZCBnbG9iYWwgYGt2bV9yaXNjdl9haWFfbnJfaGdlaWAg
-YW5kCj4gYGltc2ljX2dsb2JhbF9jb25maWc6Om5yX2d1ZXN0X2ZpbGVzYCBhc3N1bXB0aW9ucyBh
-cmUgbm8gbG9uZ2VyCj4gdGVuYWJsZSBhbmQgYXJlIHJlbW92ZWQuCj4KPiBBZnRlciB0aGlzIHNl
-cmllcywgSEdFSSBhbGxvY2F0aW9uLCBmcmVlaW5nLCBhbmQgaW50ZXJydXB0IGRlbGl2ZXJ5Cj4g
-YXJlIGNvbXBsZXRlbHkgcGVyLUhBUlQsIHRoZSBjb2RlIGlzIHNpbXBsZXIgYW5kIGNsZWFyZXIs
-IGFuZCB0aGVyZQo+IGFyZSBubyByZW1haW5pbmcgZ2xvYmFsIGFzc3VtcHRpb25zIGFib3V0IGd1
-ZXN0IGludGVycnVwdCBmaWxlCj4gY291bnRzLgo+Cj4gQ2hhbmdlbG9nOgo+IFYyOgo+ICAtIEFk
-ZCBwZXItSEFSVCBJTVNJQyBndWVzdCBmaWxlcyB0byBjb21wdXRlIGZpbmFsIEhHRUkgY291bnQu
-Cj4gIC0gQWRkIG1pbihsb2NhbC0+bnJfZ3Vlc3RfZmlsZXMsIG5yX2d1ZXN0X2ZpbGVzKTsKPgo+
-IFYxOgo+IGh0dHBzOi8vbG9yZS5rZXJuZWwub3JnL2t2bS1yaXNjdi8yMDI2MDQyMTE0NTQ1MS4x
-NTk3OTMwLTEtZ3VvcmVuQGtlcm5lbC5vcmcvCj4KPiBHdW8gUmVuIChBbGliYWJhIERBTU8gQWNh
-ZGVteSkgKDQpOgo+ICAgUklTQy1WOiBLVk06IEFJQTogTWFrZSBIR0VJIG51bWJlciBhbmQgbWFu
-YWdlbWVudCBmdWxseSBwZXItQ1BVCj4gICBSSVNDLVY6IEtWTTogQUlBOiBSZXBsYWNlIGdsb2Jh
-bCBIR0VJIGNvdW50IHdpdGggc2ltcGxlIGVuYWJsZWQgYm9vbAo+ICAgaXJxY2hpcC9yaXNjdi1p
-bXNpYzogTW92ZSBucl9ndWVzdF9maWxlcyB0byBwZXItSEFSVCBsb2NhbCBjb25maWcKPiAgIFJJ
-U0MtVjogS1ZNOiBBSUE6IFVzZSBwZXItSEFSVCBJTVNJQyBndWVzdCBmaWxlcyB0byBjb21wdXRl
-IGZpbmFsIEhHRUkKPiAgICAgY291bnQKPgo+ICBhcmNoL3Jpc2N2L2luY2x1ZGUvYXNtL2t2bV9h
-aWEuaCAgICAgICAgfCAgMiArLQo+ICBhcmNoL3Jpc2N2L2t2bS9haWEuYyAgICAgICAgICAgICAg
-ICAgICAgfCA2NiArKysrKysrKysrKysrKystLS0tLS0tLS0tCj4gIGFyY2gvcmlzY3Yva3ZtL2Fp
-YV9kZXZpY2UuYyAgICAgICAgICAgICB8ICA0ICstCj4gIGFyY2gvcmlzY3Yva3ZtL21haW4uYyAg
-ICAgICAgICAgICAgICAgICB8ICAzICstCj4gIGRyaXZlcnMvaXJxY2hpcC9pcnEtcmlzY3YtaW1z
-aWMtc3RhdGUuYyB8IDEwICsrLS0KPiAgaW5jbHVkZS9saW51eC9pcnFjaGlwL3Jpc2N2LWltc2lj
-LmggICAgIHwgIDYgKy0tCj4gIDYgZmlsZXMgY2hhbmdlZCwgNTMgaW5zZXJ0aW9ucygrKSwgMzgg
-ZGVsZXRpb25zKC0pCj4KPiAtLQo+IDIuNDMuMAo+CgpJIHdpbGwgc2VuZCBvdXQgdjMgc2VyaWVz
-IHRvIGF2b2lkIHNvbWUgYmFjay1uLWZvcnRoLgoKUmVnYXJkcywKQW51cAoKLS0gCmt2bS1yaXNj
-diBtYWlsaW5nIGxpc3QKa3ZtLXJpc2N2QGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3Rz
-LmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9rdm0tcmlzY3YK
+From: "Guo Ren (Alibaba DAMO Academy)" <guoren@kernel.org>
+
+Add nr_guest_files in per-HART local config to represent the number of
+guest files available on a particular HART whereas the nr_guest_files
+in the global config represents the number of guest files available
+across all HARTs.
+
+This allows KVM RISC-V to use nr_guest_files from per-HART local
+config for asymmetric big.Little systems.
+
+Signed-off-by: Guo Ren (Alibaba DAMO Academy) <guoren@kernel.org>
+Acked-by: Thomas Gleixner <tglx@kernel.org>
+Signed-off-by: Anup Patel <anup.patel@oss.qualcomm.com>
+---
+ drivers/irqchip/irq-riscv-imsic-state.c | 9 ++++-----
+ include/linux/irqchip/riscv-imsic.h     | 5 ++++-
+ 2 files changed, 8 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/irqchip/irq-riscv-imsic-state.c b/drivers/irqchip/irq-riscv-imsic-state.c
+index e3ed874d89e7..b8d1bbbf42f7 100644
+--- a/drivers/irqchip/irq-riscv-imsic-state.c
++++ b/drivers/irqchip/irq-riscv-imsic-state.c
+@@ -920,13 +920,12 @@ int __init imsic_setup_state(struct fwnode_handle *fwnode, void *opaque)
+ 		local->msi_va = mmios_va[index] + reloff;
+ 
+ 		/*
+-		 * KVM uses global->nr_guest_files to determine the available guest
+-		 * interrupt files on each CPU. Take the minimum number of guest
+-		 * interrupt files across all CPUs to avoid KVM incorrectly allocating
+-		 * an unexisted or unmapped guest interrupt file on some CPUs.
++		 * KVM uses both local->nr_guest_files and global->nr_guest_files
++		 * to determine the available guest interrupt files on each CPU.
+ 		 */
+ 		nr_guest_files = (resource_size(&mmios[index]) - reloff) / IMSIC_MMIO_PAGE_SZ - 1;
+-		global->nr_guest_files = min(global->nr_guest_files, nr_guest_files);
++		local->nr_guest_files = min((BIT(global->guest_index_bits) - 1), nr_guest_files);
++		global->nr_guest_files = min(global->nr_guest_files, local->nr_guest_files);
+ 
+ 		nr_handlers++;
+ 	}
+diff --git a/include/linux/irqchip/riscv-imsic.h b/include/linux/irqchip/riscv-imsic.h
+index 4b348836de7a..61af3a5bea09 100644
+--- a/include/linux/irqchip/riscv-imsic.h
++++ b/include/linux/irqchip/riscv-imsic.h
+@@ -40,6 +40,9 @@
+ struct imsic_local_config {
+ 	phys_addr_t				msi_pa;
+ 	void __iomem				*msi_va;
++
++	/* Number of guest interrupt files per-HART */
++	u32					nr_guest_files;
+ };
+ 
+ struct imsic_global_config {
+@@ -68,7 +71,7 @@ struct imsic_global_config {
+ 	/* Number of guest interrupt identities */
+ 	u32					nr_guest_ids;
+ 
+-	/* Number of guest interrupt files per core */
++	/* Number of guest interrupt files across all HARTs */
+ 	u32					nr_guest_files;
+ 
+ 	/* Per-CPU IMSIC addresses */
+-- 
+2.43.0
+
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
