@@ -4,72 +4,106 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 178D2CD5BAB
-	for <kvm-riscv@archiver.kernel.org>; Mon, 25 May 2026 01:36:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 26AF9CD5BC8
+	for <kvm-riscv@archiver.kernel.org>; Mon, 25 May 2026 09:50:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-Id:Date:Subject:Cc
-	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=K891bIJcKEgE5WPDoxC3/RHsQfzLWvvhDU+6pnGTfQg=; b=js+8jbgX+l8Ega
-	EDrK7KaDrQb6FABYos+erYUDqGiLfgWP4AmWBTBS77RR8M2lv6qTGVn5W3em2gQ89SPBg9cd8wOXI
-	UjRT6dCrnBNK7x3bDnULEbqHTklrqt82uy4NaufY8zrFKzQVp9uC4O+emucjfncFc76wLLxbns9s3
-	ci0zv/bgZAYcUmLDUtoR6pEsOmH8n/yHcxQ1ggAnU6Df17XUcs1wYXXv66fnQwhPFTKLzXxFtOkv5
-	O+uQZLdQFCColEi1hyJQnGtmzkC5Xte7QAMpvn863/0pfDACdZ6g1g00OVJWt4zr5f7FuTpqvtr2c
-	hU4MsU0evyxJQtY1CL+A==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=6MsLQdMDCGsug1Fgu3icFSIjVOEqlbYtkWbrA/lTk3Y=; b=EslK6AzTlTkE4M
+	OPLuPRj0pLCnkvA1mYb3WMNn5gtYkor+pd74Pwrax1oqghiJbfzZdfQqqf8ihq9xKGjroTD/pCwfk
+	OomD29E2jRsqc66z8BReXeuZ+M+QoUtnrxVyfddwHkhireVK661MdSJcaFNGBLbPVpoK2sguXx+aK
+	jRuZOuNPqAEd9mCcsQYDS4+9dG3EfZ5W91w2hPMrIcssDVt5KYourdwJlnEhlqAN3G1jAqvE6RJme
+	Q4tGYmsmZjF5Pu3WgG4OFIkR2++zQ61M7QD/Lj3qMYFzO2Eehkhs3M4HV3onWa6sXGE3tku7X9JIq
+	PNmPJiDJKRGNGPJadEfQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wRKFU-0000000G1NI-2NCT;
-	Mon, 25 May 2026 01:36:56 +0000
-Received: from smtp81.cstnet.cn ([159.226.251.81] helo=cstnet.cn)
+	id 1wRRwd-0000000Grgf-2cLE;
+	Mon, 25 May 2026 09:49:59 +0000
+Received: from mx0a-0031df01.pphosted.com ([205.220.168.131])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wRKFS-0000000G1Mm-0LCS;
-	Mon, 25 May 2026 01:36:55 +0000
-Received: from fric.. (unknown [36.110.52.2])
-	by APP-03 (Coremail) with SMTP id rQCowABXcdirpxNquvA8Eg--.6572S2;
-	Mon, 25 May 2026 09:36:44 +0800 (CST)
-From: Jiakai Xu <xujiakai2025@iscas.ac.cn>
-To: kvm-riscv@lists.infradead.org,
-	kvm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-riscv@lists.infradead.org
-Cc: Albert Ou <aou@eecs.berkeley.edu>,
-	Alexandre Ghiti <alex@ghiti.fr>,
-	Anup Patel <anup@brainfault.org>,
-	Atish Patra <atish.patra@linux.dev>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Paul Walmsley <pjw@kernel.org>,
-	Jiakai Xu <xujiakai2025@iscas.ac.cn>,
-	Jiakai Xu <jiakaiPeanut@gmail.com>
-Subject: [PATCH v2] RISC-V: KVM: Document a TOCTOU race in SBI system suspend handler
-Date: Mon, 25 May 2026 01:36:42 +0000
-Message-Id: <20260525013642.999187-1-xujiakai2025@iscas.ac.cn>
-X-Mailer: git-send-email 2.34.1
+	id 1wRRwb-0000000GrfV-1QCe;
+	Mon, 25 May 2026 09:49:58 +0000
+Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64P6WfYt119484;
+	Mon, 25 May 2026 09:49:50 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=qcppdkim1; bh=VqN21vzvn/n
+	BLPhaHYlcmo4rXms5WRMKGKY9USyjovA=; b=T0ii8/yKWFykk/tg6D2QXTyCnyj
+	I67W33GEjvREhOJnwsZT/+tPXNXMZWcDCkuw32UA1XB/viGf4CL3d3GVoWeZg9qA
+	Qz2pzs+1FKtoBx1ZahcbMW6D+PlChAkkkTm7nN+8puVtZw6MGvobkKmleFkJw/oh
+	JgMgTX1R+tSBlzv9bp165cr0pco9/SpfS/NNRitG32LLVJ1o9+fUMqU4ncZYVlCO
+	cMHpNqHYnlsGx9T0y6MY2SkPTLcLYjhnlFpK3Sv7xygvn6032VZSMSzTIZd7VWdC
+	m3oTqSCoZkxRFSCLUM9bEoY/fSbS69BjmZ3RGX/SSRTcKJClqnrGW2LCcEg==
+Received: from apblrppmta02.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4eb4f3e2ra-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 25 May 2026 09:49:50 +0000 (GMT)
+Received: from pps.filterd (APBLRPPMTA02.qualcomm.com [127.0.0.1])
+	by APBLRPPMTA02.qualcomm.com (8.18.1.7/8.18.1.7) with ESMTP id 64P9nl5S019449;
+	Mon, 25 May 2026 09:49:47 GMT
+Received: from pps.reinject (localhost [127.0.0.1])
+	by APBLRPPMTA02.qualcomm.com (PPS) with ESMTPS id 4eb5ajeh9w-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 25 May 2026 09:49:47 +0000 (GMT)
+Received: from APBLRPPMTA02.qualcomm.com (APBLRPPMTA02.qualcomm.com [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.1.12) with ESMTP id 64P9nlV6019434;
+	Mon, 25 May 2026 09:49:47 GMT
+Received: from hu-devc-blr-u24-a.qualcomm.com (hu-anuppate-blr.qualcomm.com [10.131.36.165])
+	by APBLRPPMTA02.qualcomm.com (PPS) with ESMTPS id 64P9nlQH019429
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 25 May 2026 09:49:47 +0000 (GMT)
+Received: by hu-devc-blr-u24-a.qualcomm.com (Postfix, from userid 486687)
+	id 6577422668; Mon, 25 May 2026 15:19:46 +0530 (+0530)
+From: Anup Patel <anup.patel@oss.qualcomm.com>
+To: Paolo Bonzini <pbonzini@redhat.com>, Atish Patra <atish.patra@linux.dev>,
+        Thomas Gleixner <tglx@kernel.org>
+Cc: Palmer Dabbelt <palmer@dabbelt.com>, Paul Walmsley <pjw@kernel.org>,
+        Anup Patel <anup@brainfault.org>,
+        Andrew Jones <andrew.jones@oss.qualcomm.com>,
+        kvm-riscv@lists.infradead.org, kvm@vger.kernel.org,
+        linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
+        "Guo Ren (Alibaba DAMO Academy)" <guoren@kernel.org>,
+        Anup Patel <anup.patel@oss.qualcomm.com>
+Subject: [PATCH v5 1/2] irqchip/riscv-imsic: Add nr_guest_files in per-HART local config
+Date: Mon, 25 May 2026 15:19:44 +0530
+Message-ID: <20260525094945.3721783-2-anup.patel@oss.qualcomm.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20260525094945.3721783-1-anup.patel@oss.qualcomm.com>
+References: <20260525094945.3721783-1-anup.patel@oss.qualcomm.com>
 MIME-Version: 1.0
-X-CM-TRANSID: rQCowABXcdirpxNquvA8Eg--.6572S2
-X-Coremail-Antispam: 1UD129KBjvJXoW7tF45Ww4ruF48Ww4DXr15twb_yoW8AFW5pr
-	sYkFnIgws5Gr4Ika1IyanrXr1Sg3yvgF4aqrZ2yFW5Ww1qva40krs3urWUXryUAFZYqryf
-	Ar4jvF1ruwn8ZaUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUUBa14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
-	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
-	1l84ACjcxK6xIIjxv20xvE14v26F1j6w1UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4U
-	JVWxJr1l84ACjcxK6I8E87Iv67AKxVWxJr0_GcWl84ACjcxK6I8E87Iv6xkF7I0E14v26F
-	4UJVW0owAac4AC62xK8xCEY4vEwIxC4wAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40E
-	FcxC0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AKxVWUXVWUAwAv7VC2z280aVAFwI0_Jr
-	0_Gr1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48IcxkI7VAKI48JM4x0x7Aq67IIx4CEVc8v
-	x2IErcIFxwACI402YVCY1x02628vn2kIc2xKxwCY1x0262kKe7AKxVWUtVW8ZwCF04k20x
-	vY0x0EwIxGrwCFx2IqxVCFs4IE7xkEbVWUJVW8JwC20s026c02F40E14v26r1j6r18MI8I
-	3I0E7480Y4vE14v26r106r1rMI8E67AF67kF1VAFwI0_Jw0_GFylIxkGc2Ij64vIr41lIx
-	AIcVC0I7IYx2IY67AKxVWUJVWUCwCI42IY6xIIjxv20xvEc7CjxVAFwI0_Gr0_Cr1lIxAI
-	cVCF04k26cxKx2IYs7xG6r1j6r1xMIIF0xvEx4A2jsIE14v26r1j6r4UMIIF0xvEx4A2js
-	IEc7CjxVAFwI0_Gr0_Gr1UYxBIdaVFxhVjvjDU0xZFpf9x0JUl-eOUUUUU=
-X-Originating-IP: [36.110.52.2]
-X-CM-SenderInfo: 50xmxthndljiysv6x2xfdvhtffof0/1tbiDAgSCWoTok4USQAAsX
+X-QCInternal: smtphost
+X-QCInternal: smtphost
+X-Proofpoint-ORIG-GUID: uaoG8qfql68Ha4I_kExK7fwOk16HLcuE
+X-Authority-Analysis: v=2.4 cv=WvYb99fv c=1 sm=1 tr=0 ts=6a141b3e cx=c_pps
+ a=Ou0eQOY4+eZoSc0qltEV5Q==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
+ a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
+ a=yOCtJkima9RkubShWh1s:22 a=VwQbUJbxAAAA:8 a=EUspDBNiAAAA:8
+ a=oD6YGmB8v4GqGCjrqTEA:9
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTI1MDEwMCBTYWx0ZWRfXxh21r715OrRZ
+ IoiofQqtz86YjHQXjcOf03tL2uGHei3y+Hfe38VSvNj8H9pmxhBFiv0Wh2SK6AedUnnuA0H+szA
+ izW+Ok+20WB3RPgCKACEMvx0mcKxfv9AZ6BY8lV6oqbDW8loeCwlt/us2q/betZ8OHTYMGyCSGV
+ YLk8258QeiCJYJstjGzYCgluy3LZ3KyX8hyYWN7X4obgld1PKMDDG1jVt82iA1cpcwTCcZFqdqK
+ f8nc1/pFoDeiu5cMST5CphDyq2SK45lFTwPchT8ZXmtRib332Az0d7iSmKVXYBemBmllQ2chC/G
+ 94j+r608Blh3v8J6KGBVV6eHk0VkF7/BxSS4Vtr196QDbJdB7yTsYUPZ1s6knFtglGuSvHrnZRp
+ P7huH1kn5ByRp9FGNh2I+7VGX9sa4nphgTlWNUxC02rSc1qhyizSVIMeBfas7asFbwX/ALCe7n+
+ 4W9WKVis+zO4rxRelLw==
+X-Proofpoint-GUID: uaoG8qfql68Ha4I_kExK7fwOk16HLcuE
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-25_02,2026-05-18_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 priorityscore=1501 lowpriorityscore=0 spamscore=0
+ clxscore=1015 phishscore=0 adultscore=0 suspectscore=0 impostorscore=0
+ bulkscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
+ adjust=0 reason=mlx scancount=1 engine=8.22.0-2605130000
+ definitions=main-2605250100
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260524_183654_501939_2A4FF444 
-X-CRM114-Status: UNSURE (   9.80  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20260525_024957_375658_B6830FE3 
+X-CRM114-Status: GOOD (  13.94  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -86,55 +120,71 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-The SUSP handler checks that all other vCPUs are stopped before
-entering system suspend, but a concurrent HSM HART_START can start
-a vCPU after it has already passed the check.
+From: "Guo Ren (Alibaba DAMO Academy)" <guoren@kernel.org>
 
-This is a known TOCTOU race. We do not fix it because:
-1. Triggering it requires a pathological guest.
-2. Only guest state is at risk, not host integrity.
-3. Userspace can double-check vCPU states before suspend.
+Add nr_guest_files in per-HART local config to represent the number of
+guest files available on a particular HART whereas the nr_guest_files
+in the global config represents the number of guest files available
+across all HARTs.
 
-Add a comment documenting the race and the rationale for not fixing it.
+This allows KVM RISC-V to use nr_guest_files from per-HART local
+config for asymmetric big.Little systems.
 
-Signed-off-by: Jiakai Xu <jiakaiPeanut@gmail.com>
-Signed-off-by: Jiakai Xu <xujiakai2025@iscas.ac.cn>
-Assisted-by: YuanSheng:DeepSeek-V3.2
+Signed-off-by: Guo Ren (Alibaba DAMO Academy) <guoren@kernel.org>
+Acked-by: Thomas Gleixner <tglx@kernel.org>
+Signed-off-by: Anup Patel <anup.patel@oss.qualcomm.com>
 ---
-V1 -> V2:
-- Replaced the fix with a comment.
-Link: https://lore.kernel.org/linux-riscv/20260521142030.1560861-1-xujiakai2025@iscas.ac.cn/t/#u
----
- arch/riscv/kvm/vcpu_sbi_system.c | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ drivers/irqchip/irq-riscv-imsic-state.c | 9 ++++-----
+ include/linux/irqchip/riscv-imsic.h     | 5 ++++-
+ 2 files changed, 8 insertions(+), 6 deletions(-)
 
-diff --git a/arch/riscv/kvm/vcpu_sbi_system.c b/arch/riscv/kvm/vcpu_sbi_system.c
-index c6f7e609ac794..6f64a59e5d3c4 100644
---- a/arch/riscv/kvm/vcpu_sbi_system.c
-+++ b/arch/riscv/kvm/vcpu_sbi_system.c
-@@ -35,6 +35,20 @@ static int kvm_sbi_ext_susp_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
- 			return 0;
- 		}
+diff --git a/drivers/irqchip/irq-riscv-imsic-state.c b/drivers/irqchip/irq-riscv-imsic-state.c
+index e3ed874d89e7..b8d1bbbf42f7 100644
+--- a/drivers/irqchip/irq-riscv-imsic-state.c
++++ b/drivers/irqchip/irq-riscv-imsic-state.c
+@@ -920,13 +920,12 @@ int __init imsic_setup_state(struct fwnode_handle *fwnode, void *opaque)
+ 		local->msi_va = mmios_va[index] + reloff;
  
-+		/*
-+		 * Check that all other vCPUs are stopped before entering
-+		 * system suspend.
-+		 *
-+		 * There is a known TOCTOU race here: a concurrent HSM
-+		 * HART_START on another vCPU can start a vCPU after it
-+		 * has already passed this check, violating the invariant.
-+		 *
-+		 * We do not fix this because:
-+		 * 1. Triggering the race requires a pathological guest.
-+		 * 2. Only guest state is at risk, not host integrity.
-+		 * 3. Userspace can double-check vCPU states before
-+		 *    proceeding with suspend.
-+		 */
- 		kvm_for_each_vcpu(i, tmp, vcpu->kvm) {
- 			if (tmp == vcpu)
- 				continue;
+ 		/*
+-		 * KVM uses global->nr_guest_files to determine the available guest
+-		 * interrupt files on each CPU. Take the minimum number of guest
+-		 * interrupt files across all CPUs to avoid KVM incorrectly allocating
+-		 * an unexisted or unmapped guest interrupt file on some CPUs.
++		 * KVM uses both local->nr_guest_files and global->nr_guest_files
++		 * to determine the available guest interrupt files on each CPU.
+ 		 */
+ 		nr_guest_files = (resource_size(&mmios[index]) - reloff) / IMSIC_MMIO_PAGE_SZ - 1;
+-		global->nr_guest_files = min(global->nr_guest_files, nr_guest_files);
++		local->nr_guest_files = min((BIT(global->guest_index_bits) - 1), nr_guest_files);
++		global->nr_guest_files = min(global->nr_guest_files, local->nr_guest_files);
+ 
+ 		nr_handlers++;
+ 	}
+diff --git a/include/linux/irqchip/riscv-imsic.h b/include/linux/irqchip/riscv-imsic.h
+index 4b348836de7a..61af3a5bea09 100644
+--- a/include/linux/irqchip/riscv-imsic.h
++++ b/include/linux/irqchip/riscv-imsic.h
+@@ -40,6 +40,9 @@
+ struct imsic_local_config {
+ 	phys_addr_t				msi_pa;
+ 	void __iomem				*msi_va;
++
++	/* Number of guest interrupt files per-HART */
++	u32					nr_guest_files;
+ };
+ 
+ struct imsic_global_config {
+@@ -68,7 +71,7 @@ struct imsic_global_config {
+ 	/* Number of guest interrupt identities */
+ 	u32					nr_guest_ids;
+ 
+-	/* Number of guest interrupt files per core */
++	/* Number of guest interrupt files across all HARTs */
+ 	u32					nr_guest_files;
+ 
+ 	/* Per-CPU IMSIC addresses */
 -- 
-2.34.1
+2.43.0
 
 
 -- 
