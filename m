@@ -4,37 +4,37 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08943CD5BD0
-	for <kvm-riscv@archiver.kernel.org>; Tue, 26 May 2026 12:50:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14C58CD6E43
+	for <kvm-riscv@archiver.kernel.org>; Tue, 26 May 2026 12:50:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=g9HnOD+CegzxRwgaqvsGjmBivo4k60cPvSFjWKtqZ4U=; b=tY7lNSXp2adMAi
-	mT1LCoM28SlyWr8++/iWFJzLEgvqQQKVbYJcNjdZyqXSXSJq2m38g0uoy/abwUr7/Y3KCE+ryq4nd
-	SDWJpoICwAkXj4/sxznn2oH67bC/jyt6Nc0zV0uId8vOp4aAUWDqmB8KF9P68aDYN6KeAapYsAXb9
-	oTVpiTbGIdZqqbK7U8f8l0wdUpcJlakJoctrvRmUJEGUOA+qzBkX/wg/d6Ah+tvMsgM7P3S2M+T+t
-	ObaSLlg4DDKCniM3si55WFFZE+OID3zw6s24PSXecVukLcIhpholqskdskBSsSQGhDXh5pAyVR4GF
-	J2JeSTT3v9MYVU2B6Z4w==;
+	List-Owner; bh=onsHz54XfiNXmXNAopSoWyn/+KMxjw/pMDPUqI9AfTw=; b=qRe3zhR36VSLGO
+	l4QgDGjXmW4uvcmpjae1WwzgcwvHuW1fo27QRh2RTb8C5SoFblg5mKyxyz1m4QjvcwGL8W2yPqxJp
+	GC9vEIHn49kUrU75Ozr++pQG0Z2mRRt9xiOjXQApu6or17HWrmJGVDWIl9gWeYrbVsrCc5UrXJUtL
+	SGkadRDDLS6/R+S6KX7SxF1iq9e+4f/xKzworlX0VxH2YFMZ75aqE4W/xXX6yjvcsEvpECXOckoAT
+	aUiil77HyKm36KDOrxaOX9xU27nBe+365+1E7naNeiy4kS+dY2xKK0+fGKBDPwdLP+6Vf4m8fKoDI
+	BhMPybTuWvMiYzzuLsgQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wRrEw-00000001xij-32DJ;
-	Tue, 26 May 2026 12:50:34 +0000
-Received: from out30-132.freemail.mail.aliyun.com ([115.124.30.132])
+	id 1wRrEx-00000001xl8-33b9;
+	Tue, 26 May 2026 12:50:35 +0000
+Received: from out30-111.freemail.mail.aliyun.com ([115.124.30.111])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wRrEp-00000001xcB-0kwt;
-	Tue, 26 May 2026 12:50:30 +0000
+	id 1wRrEs-00000001xcx-0XLS;
+	Tue, 26 May 2026 12:50:31 +0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
 	d=linux.alibaba.com; s=default;
-	t=1779799821; h=From:To:Subject:Date:Message-Id:MIME-Version;
-	bh=DvfO0VeeEacS9q7ZhAuHErWFEWy3R6Vu+rVPY71B4m0=;
-	b=YFUxxZsEg3TL69wygoYTOkVhurcT1GLGf+EVtPbndq37jUdyCOAb+JcgYwd3/cy4ED8dr3KKvuTTEf4wjCeKw5Qfa9bjd+bJ/Y0bGw58TfceU9uPkCt+WEY2lSqiIsNTi00uehdUp5UvvRuObjSU03YbCUvRBGTxqu3q8A5SsBw=
-X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R561e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam033037026112;MF=fangyu.yu@linux.alibaba.com;NM=1;PH=DS;RN=24;SR=0;TI=SMTPD_---0X3gDNKm_1779799818;
-Received: from localhost.localdomain(mailfrom:fangyu.yu@linux.alibaba.com fp:SMTPD_---0X3gDNKm_1779799818 cluster:ay36)
+	t=1779799827; h=From:To:Subject:Date:Message-Id:MIME-Version;
+	bh=CG77WpWSVnm3Eju7kwY3q1qRZqr7VASAGJnhObRcxEo=;
+	b=a5PUtPn8EksWgzRsQ0O4kfVN6xO5Ah3UbDuYQvM6V5Mp78NomgjN20i9Cz1EYL1mcXZobIkV4t5xk6n/hzcT3ktOilOjBTAecxMC779P4J+WknReV8A+nT5kw8VmnlZVBGzdOr5zwXBd7NPeIf3wIbkS+70itg7nzJGPpz8l3O4=
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R131e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam033037026112;MF=fangyu.yu@linux.alibaba.com;NM=1;PH=DS;RN=24;SR=0;TI=SMTPD_---0X3gDNMZ_1779799822;
+Received: from localhost.localdomain(mailfrom:fangyu.yu@linux.alibaba.com fp:SMTPD_---0X3gDNMZ_1779799822 cluster:ay36)
           by smtp.aliyun-inc.com;
-          Tue, 26 May 2026 20:50:19 +0800
+          Tue, 26 May 2026 20:50:23 +0800
 From: fangyu.yu@linux.alibaba.com
 To: Paul Walmsley <pjw@kernel.org>,
 	Palmer Dabbelt <palmer@dabbelt.com>,
@@ -60,16 +60,16 @@ Cc: Song Shuai <songshuaishuai@tinylab.org>,
 	kvm-riscv@lists.infradead.org,
 	kvm@vger.kernel.org,
 	Fangyu Yu <fangyu.yu@linux.alibaba.com>
-Subject: [PATCH v2 3/7] riscv: kexec: Build trampoline page tables for crash kernel entry
-Date: Tue, 26 May 2026 20:50:05 +0800
-Message-Id: <20260526125009.2404-4-fangyu.yu@linux.alibaba.com>
+Subject: [PATCH v2 6/7] riscv: kexec: Add the relocate-trampoline wrapper
+Date: Tue, 26 May 2026 20:50:08 +0800
+Message-Id: <20260526125009.2404-7-fangyu.yu@linux.alibaba.com>
 X-Mailer: git-send-email 2.39.3 (Apple Git-146)
 In-Reply-To: <20260526125009.2404-1-fangyu.yu@linux.alibaba.com>
 References: <20260526125009.2404-1-fangyu.yu@linux.alibaba.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260526_055027_823078_4EBD1094 
-X-CRM114-Status: GOOD (  12.00  )
+X-CRM114-CacheID: sfid-20260526_055030_348500_6BAB734B 
+X-CRM114-Status: GOOD (  10.26  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -88,107 +88,112 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 From: Fangyu Yu <fangyu.yu@linux.alibaba.com>
 
-Crash kexec uses riscv_kexec_norelocate as a trampoline to jump into
-the crashkernel. Add a small helper to build dedicated 4KB page tables
-that map the trampoline page as executable.
+Add riscv_kexec_relocate_entry to .kexec.tramp.text and the two
+asm-visible globals (riscv_kexec_relocate_entry_pa and
+riscv_kexec_cc_buffer_pa) that the wrapper consumes.
 
-Two mappings are installed:
-  - VA(__kexec_tramp_text_start) -> PA(__kexec_tramp_text_start)
-  - PA(__kexec_tramp_text_start) -> PA(__kexec_tramp_text_start)
+The wrapper performs the same two-step transition used by the crash
+path: switch to the trampoline pgd, jump to the PA of self, then drop
+the MMU with PC already on a PA. It finally jumps to the PA of
+control_code_buffer.
 
-This allows the trampoline to run regardless of whether it is entered
-via its linked virtual address or its physical address.
+machine_kexec_prepare() publishes the wrapper PA and the
+control_code_buffer PA via WRITE_ONCE for non-crash images.
+Nothing routes to the wrapper yet; the switchover happens in the
+follow-up patch.
 
 Signed-off-by: Fangyu Yu <fangyu.yu@linux.alibaba.com>
 ---
- arch/riscv/kernel/machine_kexec.c | 67 +++++++++++++++++++++++++++++++
- 1 file changed, 67 insertions(+)
+ arch/riscv/include/asm/kexec.h     |  1 +
+ arch/riscv/kernel/kexec_relocate.S | 37 ++++++++++++++++++++++++++++++
+ arch/riscv/kernel/machine_kexec.c  |  7 ++++++
+ 3 files changed, 45 insertions(+)
 
+diff --git a/arch/riscv/include/asm/kexec.h b/arch/riscv/include/asm/kexec.h
+index 6466c1f00d41..b75cab959e53 100644
+--- a/arch/riscv/include/asm/kexec.h
++++ b/arch/riscv/include/asm/kexec.h
+@@ -53,6 +53,7 @@ typedef void (*riscv_kexec_method)(unsigned long first_ind_entry,
+ 				   unsigned long va_pa_off);
+ 
+ extern riscv_kexec_method riscv_kexec_norelocate;
++extern riscv_kexec_method riscv_kexec_relocate_entry;
+ 
+ #ifdef CONFIG_KEXEC_FILE
+ extern const struct kexec_file_ops elf_kexec_ops;
+diff --git a/arch/riscv/kernel/kexec_relocate.S b/arch/riscv/kernel/kexec_relocate.S
+index 2b9892bf04f2..1baadad1b546 100644
+--- a/arch/riscv/kernel/kexec_relocate.S
++++ b/arch/riscv/kernel/kexec_relocate.S
+@@ -231,6 +231,43 @@ SYM_CODE_START(riscv_kexec_norelocate)
+ 
+ SYM_CODE_END(riscv_kexec_norelocate)
+ 
++.extern riscv_kexec_relocate_entry_pa
++.extern riscv_kexec_cc_buffer_pa
++.section ".kexec.tramp.text", "ax"
++SYM_CODE_START(riscv_kexec_relocate_entry)
++	/*
++	 * Two-pass entry, identical in shape to riscv_kexec_norelocate:
++	 *   - 1st entry: t3 == 0 (initialized by machine_kexec()).
++	 *   - 2nd entry: t3 == PA of riscv_kexec_relocate_entry, so auipc
++	 *                matches t3 and we fall through to label 1.
++	 * Args a0..a4 are passed through unchanged to riscv_kexec_relocate.
++	 */
++	auipc	t0, 0
++	beq	t0, t3, 1f
++
++	la	t0, riscv_kexec_relocate_entry_pa
++	REG_L	t3, 0(t0)
++	la	t0, kexec_tramp_satp
++	REG_L	t1, 0(t0)
++	csrw	CSR_SATP, t1
++	sfence.vma x0, x0
++
++	jr	t3
++1:
++	/*
++	 * Now executing at the PA of this wrapper with the trampoline pgd
++	 * installed (identity-mapped). Drop the MMU; PC stays valid because
++	 * it is already a PA.
++	 */
++	csrw	CSR_SATP, zero
++	sfence.vma x0, x0
++
++	/* Jump to the PA of control_code_buffer to run the relocate body. */
++	la	t0, riscv_kexec_cc_buffer_pa
++	REG_L	t0, 0(t0)
++	jr	t0
++SYM_CODE_END(riscv_kexec_relocate_entry)
++
+ .section ".rodata"
+ SYM_DATA(riscv_kexec_relocate_size,
+ 	.long riscv_kexec_relocate_end - riscv_kexec_relocate)
 diff --git a/arch/riscv/kernel/machine_kexec.c b/arch/riscv/kernel/machine_kexec.c
-index 2306ce3e5f22..9b4b495e7c15 100644
+index 556b76bcf96e..e3eb1e71920a 100644
 --- a/arch/riscv/kernel/machine_kexec.c
 +++ b/arch/riscv/kernel/machine_kexec.c
-@@ -18,6 +18,65 @@
- #include <linux/interrupt.h>
- #include <linux/irq.h>
+@@ -20,6 +20,8 @@
  
-+static pgd_t kexec_tramp_pgd[PTRS_PER_PGD] __aligned(PAGE_SIZE);
-+static p4d_t kexec_tramp_p4d[PTRS_PER_P4D] __aligned(PAGE_SIZE);
-+static pud_t kexec_tramp_pud[PTRS_PER_PUD] __aligned(PAGE_SIZE);
-+static pmd_t kexec_tramp_pmd[PTRS_PER_PMD] __aligned(PAGE_SIZE);
-+static pte_t kexec_tramp_pte[PTRS_PER_PTE] __aligned(PAGE_SIZE);
-+static p4d_t kexec_tramp_p4d2[PTRS_PER_P4D] __aligned(PAGE_SIZE);
-+static pud_t kexec_tramp_pud2[PTRS_PER_PUD] __aligned(PAGE_SIZE);
-+static pmd_t kexec_tramp_pmd2[PTRS_PER_PMD] __aligned(PAGE_SIZE);
-+static pte_t kexec_tramp_pte2[PTRS_PER_PTE] __aligned(PAGE_SIZE);
-+
-+static void map_tramp_page(p4d_t *p4ds, pud_t *puds, pmd_t *pmds, pte_t *ptes,
-+			   unsigned long va, unsigned long pa)
-+{
-+	pgd_t *pgd = (pgd_t *)kexec_tramp_pgd + pgd_index(va);
-+	pmd_t *pmd;
-+
-+	if (pgtable_l5_enabled) {
-+		p4d_t *p4d;
-+
-+		set_pgd(pgd, pfn_pgd(PFN_DOWN(__pa_symbol(p4ds)), PAGE_TABLE));
-+		p4d = (p4d_t *)p4ds + p4d_index(va);
-+		if (pgtable_l4_enabled)
-+			set_p4d(p4d, pfn_p4d(PFN_DOWN(__pa_symbol(puds)),
-+				PAGE_TABLE));
-+		else
-+			set_p4d(p4d, pfn_p4d(PFN_DOWN(__pa_symbol(pmds)),
-+				PAGE_TABLE));
-+	} else {
-+		set_pgd(pgd, pfn_pgd(PFN_DOWN(__pa_symbol(puds)), PAGE_TABLE));
-+	}
-+
-+	if (pgtable_l4_enabled) {
-+		pud_t *pud = (pud_t *)puds + pud_index(va);
-+
-+		set_pud(pud, pfn_pud(PFN_DOWN(__pa_symbol(pmds)), PAGE_TABLE));
-+		pmd = (pmd_t *)pmds + pmd_index(va);
-+	} else {
-+		pmd = (pmd_t *)puds + pmd_index(va);
-+	}
-+	set_pmd(pmd, pfn_pmd(PFN_DOWN(__pa_symbol(ptes)), PAGE_TABLE));
-+
-+	set_pte((pte_t *)ptes + pte_index(va),
-+		pfn_pte(PFN_DOWN(pa), PAGE_KERNEL_EXEC));
-+}
-+
-+static void riscv_kexec_build_tramp(unsigned long va, unsigned long pa)
-+{
-+	/* VA -> PA: map the trampoline page via its kernel VA. */
-+	map_tramp_page(kexec_tramp_p4d,  kexec_tramp_pud,
-+		       kexec_tramp_pmd,  kexec_tramp_pte,  va, pa);
-+
-+	/*
-+	 * PA -> PA: identity-map the same page so the second-pass code
-+	 * can keep executing after the kernel VA mapping is dropped.
-+	 */
-+	map_tramp_page(kexec_tramp_p4d2, kexec_tramp_pud2,
-+		       kexec_tramp_pmd2, kexec_tramp_pte2, pa, pa);
-+}
-+
- /*
-  * machine_kexec_prepare - Initialize kexec
-  *
-@@ -73,6 +132,14 @@ machine_kexec_prepare(struct kimage *image)
+ unsigned long kexec_tramp_satp;
+ unsigned long riscv_kexec_norelocate_pa;
++unsigned long riscv_kexec_relocate_entry_pa;
++unsigned long riscv_kexec_cc_buffer_pa;
+ static pgd_t kexec_tramp_pgd[PTRS_PER_PGD] __aligned(PAGE_SIZE);
+ static p4d_t kexec_tramp_p4d[PTRS_PER_P4D] __aligned(PAGE_SIZE);
+ static pud_t kexec_tramp_pud[PTRS_PER_PUD] __aligned(PAGE_SIZE);
+@@ -144,6 +146,11 @@ machine_kexec_prepare(struct kimage *image)
  
  		/* Mark the control page executable */
  		set_memory_x((unsigned long) control_code_buffer, 1);
-+	} else {
-+		/*
-+		 * Crash kexec uses riscv_kexec_norelocate as a trampoline.
-+		 * Pre-build the trampoline page tables here so the panic
-+		 * path only has to switch satp and jump.
-+		 */
-+		riscv_kexec_build_tramp((unsigned long)__kexec_tramp_text_start,
-+					__pa_symbol(__kexec_tramp_text_start));
- 	}
- 
- 	return 0;
++
++		WRITE_ONCE(riscv_kexec_relocate_entry_pa,
++			   __pa_symbol(&riscv_kexec_relocate_entry));
++		WRITE_ONCE(riscv_kexec_cc_buffer_pa,
++			   __pa(control_code_buffer));
+ 	} else {
+ 		WRITE_ONCE(riscv_kexec_norelocate_pa,
+ 			   __pa_symbol(&riscv_kexec_norelocate));
 -- 
 2.50.1
 
