@@ -4,98 +4,93 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D823CD4F54
-	for <kvm-riscv@archiver.kernel.org>; Thu, 28 May 2026 19:11:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5A3CBCD5BD5
+	for <kvm-riscv@archiver.kernel.org>; Thu, 28 May 2026 22:36:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
-	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
+	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=C7l2wPaf4mmdVMh/hwIcH/dTnK2aDkPk9i/ezjSMcHo=; b=25oYVwPzgv7ipj
-	yLQCbUR4CdfnWcmcrg7tO4NL7ZrnrPwVcmLN6FPdSDsUYi+TzgSxdiXfAG/32dqPf6ECTkpXzuBvq
-	YvnS7EL86s/D5ltC88a/8UvXafdimpWI5l54odqgp+7BOkhusMOwjckGe0HIo+ny9259nBghDWodu
-	OeXLvDvK6rV6bIo5IbP2fn3Uv9xaeN5VPVgnJACWMn6M/GC0CsZ944db1/4CqTe+yW7kwQRdVW2/k
-	aorVUGUWzezsZqZFTMguxCy7O3xuPk0NSSlngx7nlPkyeILHP6pEZ8D1CDWobrEBLhp/VIFDbcup3
-	VDvlG2XRWAEnE0KAODug==;
+	List-Owner; bh=3aq8aMsZVM1SJ/gkUruNwlw5FZspw987L+fMQtutgt8=; b=WMFAfk92iNa8hw
+	1YzpP4tji7bU2BmZVSPkrYnUTR78eN2tmqc5eX9L0PkY/pV09I7/BVwN9PD2WRmqui7dH5R6/R2Bx
+	mUWSyf1BqxHQK8SA9JH36/WDPzYJ3N21R8VZ8inzCZ8ub2ybioIEwC2yN2w5ChvF6CuVMjBvJow+I
+	rVcEkh67fzVqiddYd1Bs31j5oX90QAxJDRYsrhP86ulf5ksv//PWEWilRyrsevS44DN15XgoAhBn9
+	3XGcCbH2g/9EvSNvceDHZ9OKx4u7ippfrbF8y4jJT7LcdTp5ly1jYEvh04FuXrOAN76+yHm5evdip
+	ZYVbWgflx2t93vM8ix2Q==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wSg8M-00000006Fzn-21rE;
-	Thu, 28 May 2026 19:11:10 +0000
-Received: from mail-ot1-x32a.google.com ([2607:f8b0:4864:20::32a])
+	id 1wSjKj-00000006UYi-45DE;
+	Thu, 28 May 2026 22:36:09 +0000
+Received: from mail-pl1-x62d.google.com ([2607:f8b0:4864:20::62d])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wSg8K-00000006Fyo-3IHs
+	id 1wSjKh-00000006UXt-2rzC
 	for kvm-riscv@lists.infradead.org;
-	Thu, 28 May 2026 19:11:09 +0000
-Received: by mail-ot1-x32a.google.com with SMTP id 46e09a7af769-7e5fd39cf11so6016652a34.0
-        for <kvm-riscv@lists.infradead.org>; Thu, 28 May 2026 12:11:08 -0700 (PDT)
+	Thu, 28 May 2026 22:36:08 +0000
+Received: by mail-pl1-x62d.google.com with SMTP id d9443c01a7336-2b788a98557so87803315ad.2
+        for <kvm-riscv@lists.infradead.org>; Thu, 28 May 2026 15:36:07 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=tenstorrent.com; s=google; t=1779995468; x=1780600268; darn=lists.infradead.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=So1Dot4XH9WMIAQdwvqn+C0MDAzA9ANdxsQAk9WKwiw=;
-        b=RZa1+AiIZhLMhBytsyR0NcyMmyYAblXh77xgfKNgt/clxtoTfT9pli0b5tztNR4Z8I
-         kcx7mFgEW3MXMvGIWYlMeVfudIEEplggRfhDwdIbgzZQtXBzuK+51TzP2ZaGtmdSIz95
-         DdcMX2eUAaqqjiouej7rduCjUPuEEF4rOL4r3gnGiUjB8lVCK7NBM9BXCBvwjJpwaGo4
-         8jvjQQBPZORANlrYN7QoOgNIrGDcO05x1QNFoUv3r5NOYlKVkcs3tnykHAFYUQ51NNmH
-         +sbr8PbOB5vOemfTNbnUk5lTDcMZ4Ih6lY61HeADWciGll3lih6ns5TWhyWOCA5Vzpuv
-         TuxQ==
+        d=gmail.com; s=20251104; t=1780007767; x=1780612567; darn=lists.infradead.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=j6G7TGbV2srXAXSbKsGpAGcrEaEACN1hpS7t4zOGNfc=;
+        b=e0CIJB2NNVVFWqW2PHWng6ArbmVHFxq4Q4E+zSD4uYqeCN8Thh7G439GvFeDoAwA8n
+         Rrzr7MUmygNQVu/zLpkGVkS/L5sX7YzT+QRAqoljrKjXaFGyrnZcaUue+fWNMeSh6el4
+         rjm6E3mtHrhxbI7b/r7ymUPqHv1Ofqcmg02hBzwDT86gFfRgtN3JZYItN4FK+TzKOrfY
+         24z+civOEDIMJuyF+8nqVSEri9J+OXrII0GefpQiOxNRz8Pu3Mu1tlP3sAWCvZ1r6s0M
+         nDdpjtodRzop+nIVh2JrjamnISoGlVtAwKd74RC6O2rbHGExPov5B7sR2zBMZTktsNJH
+         Og+Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779995468; x=1780600268;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=So1Dot4XH9WMIAQdwvqn+C0MDAzA9ANdxsQAk9WKwiw=;
-        b=eEo7vKq7nxqjtWBy6CzVq2gmGrat1mj2y2dn44vtdxu6GJQhDHMOwMXm9YF/j/i2Vf
-         7bqsscN8TP/VnDKuAbk2ay1TRwXv0Gzat/uQiX2YHuLt+8CMxr/h7BTm7YpeF7BMbU1h
-         f46WqLXqFg2rte4dIngGOPd9ulU0uLrOrHI64hwWwL5S8pk8Q4QdNOYyfk9eavmtYpON
-         dCH9ZUuuKymem4FVbUGRI+22xwk8E3cKT14QU/8Yz7yM1mBekuepSteCavYZTZJpT/5d
-         XBgiuM+yBuMiMZ5tl+ra58fSHLBAh11FdnGwp+wojj/9sIvbwsHK+fMdxZjQdVi4gFxf
-         CDfA==
-X-Forwarded-Encrypted: i=1; AFNElJ+guidoPeSzQw/iyJtWznVX209ffQmg69gA0fTPkJgNJG1BL1zcrHHfz494Cndk00OCrqRe5WibMv0=@lists.infradead.org
-X-Gm-Message-State: AOJu0YzKJc3aov/TlsmJRlCIjRSUamO5f9oefCFUSSsD7lQIuMSc7UQR
-	EiHEGQ/CRyzPsh5WjRCjPC+EkcTbkPKafrVPIsMHTOVYmzFJZxThTnIbFwDZc9OsO8o=
-X-Gm-Gg: Acq92OFD46XTUDchqcDwujwh4zAA2w76/8+cKtmhO6XKGisYZwO32r/vHjpZqokel2N
-	uhpVP6FwXHBJVSEjmi0xvPNTv7CZmM0DtXAKDKbsvhPT7txQX0E1tV4x4UMhBG90OD4vLPdEIqA
-	YR54LMipDFrxvrf689jcjcmmBlJ0Y404/9Jr+4jLbkbsPMDK/659NazCON6vlPes2A9iM1osznw
-	01YFe/+L+VrtHX+EAaQLEyGTPqc0zG37xyPtdP5g0b2Q7IczjCaDFeCk3IWAqOE7r3KiLegSy5w
-	uhRjwuRXnratMQ1TtLYRg45T6uyUk6zvQhoj4tMgsZkwoSvMonYnVPBH1xTM/WyTSa/UBRsGRFP
-	dkTRwz+GkEjVDWb3hRWWPG3kYG/92TD6TSY/xzhMBkxM9g/4usEL+wwVvTolq85mKpH6FmzPIg6
-	z5EjoQzaF+4P8ENc3mH5YgyHuqwl6rTGTKezGf8IigFhG4Wv5dD1MLWYBcvYq9m4ZEWkg=
-X-Received: by 2002:a05:6830:3698:b0:7dc:e37b:b5d3 with SMTP id 46e09a7af769-7e694499e54mr8407a34.7.1779995467759;
-        Thu, 28 May 2026 12:11:07 -0700 (PDT)
-Received: from lima-default.tail89d63.ts.net ([12.55.13.134])
-        by smtp.gmail.com with ESMTPSA id 46e09a7af769-7e606482b65sm14849267a34.10.2026.05.28.12.11.06
+        d=1e100.net; s=20251104; t=1780007767; x=1780612567;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=j6G7TGbV2srXAXSbKsGpAGcrEaEACN1hpS7t4zOGNfc=;
+        b=RIl/DmjhYb5cD3B6WOjUDeNucAMHAjKu7YRIPs6PYNC6dn6guTG3fbfO3COmljHpKS
+         IBbUfr+KM/86SUmYrKvgGzXxxK1VUTJKgxeCISgaJTZ2wxMtRtvn3yIop2Nvnr7lLn2a
+         15n1cQaWSl5QgaPIQ6hH435PKZbaZIqUQkK1FbUAvV41/SuuSTCzwnwEc/mptbrQVk6t
+         ckAHqRTvJubhloOS0DgriMqRYmM9hQ2cZrWyVy/arF/iWiNfGPR/6iKO4iggbVlwA8CB
+         XEEBSENiyuwxQNw/NhWgbL79kf7ID/KOxszqDY6hjcqwd6V0WrvUTgyf9GBWm8DWRnUa
+         igLw==
+X-Forwarded-Encrypted: i=1; AFNElJ+fc7q27lC/VOVl3JIU6G3KO4UPOqKdCi+vG6GsbJPbZ4JbMmzdY4fsMRGlDdDJD9OsNUKfFBAcpCs=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yw/5LO+b/fZsVUHPNTQUXQIuHYN80DKXeN1j/UjFAoT05N1vADa
+	L/1WQlpzJ4ZyDr+xELJqb+RXvOn/Zevn67vunpvzjEPCuOwuapyyP3l5
+X-Gm-Gg: Acq92OEDUKEcl5nAIKK1XVpI3pLhqRn+05oz/eOCI8y4Veyje7tBEBETuxwGQjVV91M
+	TsaBauMs0VIFl86JygOZO99me0NxHzbO9PyNUIari5UtyvqQwkBlHB0a19iGMD3yuTwwz6IKJwD
+	9EXcLeeukw+KY+qH0Y/3Zu82b/22UbD84pDSg3BCNmN4LDbKmKqssd/+ZonUhoIScJvliDuWNd+
+	TPDkVefZDK3MVf250CTJmyLyaJtJ4XGVjBAqO5dQnyA0lhuDsue3nLhxYYvVm2KV9DV4jcOQtD0
+	JWzFsysJHtPptutvWCc9I70oflmgQDRKpAFfJVqplUeMOYbX/maFfYI4MgYQ66s7r9poNBfN63F
+	2Pl5EVjr1ve5dy6YgwsmXRZvmAx7IBVKIodKbXb3IMFoSer5bDEBZlpfJR04gY8vYYe+xIrTR0y
+	bzDFslp1TbQWzaf0KNxTIB+0BQv5lXTLBwOg==
+X-Received: by 2002:a17:902:fc8f:b0:2b9:ec37:2977 with SMTP id d9443c01a7336-2bf20cf15a1mr3611585ad.38.1780007766821;
+        Thu, 28 May 2026 15:36:06 -0700 (PDT)
+Received: from localhost ([2001:19f0:8001:1b2d:5400:5ff:fefa:a95d])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2bf218a2535sm855155ad.29.2026.05.28.15.36.05
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 28 May 2026 12:11:07 -0700 (PDT)
-From: Andy Chiu <tchiu@tenstorrent.com>
-To: Anup Patel <anup@brainfault.org>,
-	Atish Patra <atish.patra@linux.dev>,
-	Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Alexandre Ghiti <alex@ghiti.fr>,
-	kvm@vger.kernel.org,
-	kvm-riscv@lists.infradead.org,
-	linux-riscv@lists.infradead.org
-Cc: Andy Chiu <tchiu@tenstorrent.com>,
-	dfustini@oss.tenstorrent.com,
-	greentime.hu@sifive.com,
-	daichengrong <daichengrong@iscas.ac.cn>,
-	Han Gao <rabenda.cn@gmail.com>,
-	Yong-Xuan Wang <yongxuan.wang@sifive.com>
-Subject: [[PATCH] v4 1/4] riscv: vector: refactor vector context operations
-Date: Thu, 28 May 2026 14:09:12 -0500
-Message-ID: <20260528190927.886558-2-tchiu@tenstorrent.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260528190927.886558-1-tchiu@tenstorrent.com>
-References: <ag_N8H3e3YzjRb8j@chonkvm.lixom.net>
- <20260528190927.886558-1-tchiu@tenstorrent.com>
+        Thu, 28 May 2026 15:36:05 -0700 (PDT)
+Date: Fri, 29 May 2026 06:35:54 +0800
+From: Inochi Amaoto <inochiama@gmail.com>
+To: Jinyu Tang <tjytimi@163.com>, Anup Patel <apatel@ventanamicro.com>, 
+	Anup Patel <anup@brainfault.org>, Paolo Bonzini <pbonzini@redhat.com>, 
+	Sean Christopherson <seanjc@google.com>
+Cc: kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
+	linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	Atish Patra <atish.patra@linux.dev>, Paul Walmsley <pjw@kernel.org>, 
+	Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt <palmer@dabbelt.com>, 
+	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, 
+	Radim =?utf-8?B?S3LEjW3DocWZ?= <radim.krcmar@oss.qualcomm.com>, Andrew Jones <andrew.jones@oss.qualcomm.com>, 
+	Conor Dooley <conor.dooley@microchip.com>, Yong-Xuan Wang <yongxuan.wang@sifive.com>, 
+	Nutty Liu <nutty.liu@hotmail.com>
+Subject: Re: [PATCH 5/5] KVM: riscv: Fast-path dirty logging write faults
+Message-ID: <ahjBHptPfNgDfncW@inochi.infowork>
+References: <20260517153427.94889-1-tjytimi@163.com>
+ <20260517153427.94889-6-tjytimi@163.com>
 MIME-Version: 1.0
+Content-Disposition: inline
+In-Reply-To: <20260517153427.94889-6-tjytimi@163.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260528_121108_835113_87A33372 
-X-CRM114-Status: GOOD (  17.22  )
+X-CRM114-CacheID: sfid-20260528_153607_729153_A99E2CFB 
+X-CRM114-Status: GOOD (  28.74  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -112,247 +107,150 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Lift riscv_v_{enable,disable} out of __*vstate_{save,restore,discard} so
-that we can reuse some functions without repeatedly turning on/off
-vector.
+On Sun, May 17, 2026 at 11:34:27PM +0800, Jinyu Tang wrote:
+> With dirty logging enabled, guest writes often fault on an existing 4K
+> G-stage leaf that was write-protected only for dirty tracking. The slow
+> path still performs the full fault handling flow and takes mmu_lock for
+> write, even though the page-table shape does not change.
+> 
+> x86 handles the analogous case in its fast page fault path by atomically
+> making a writable SPTE writable again when the fault is only a
+> write-protection fault. Add the same style of fast path for RISC-V. If a
+> write fault hits an existing 4K leaf in a writable dirty-log memslot,
+> mark the page dirty and atomically set the PTE writable and dirty under
+> the read side of mmu_lock.
+> 
+> The dirty bitmap is updated before the PTE becomes writable again. The
+> PTE D bit is also set so systems that trap on a clear D bit do not fall
+> back to the slow path for a writable but clean PTE.
+> 
+> Signed-off-by: Jinyu Tang <tjytimi@163.com>
+> ---
+>  arch/riscv/kvm/mmu.c | 75 ++++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 75 insertions(+)
+> 
+> diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
+> index 48f16e52f..980059e09 100644
+> --- a/arch/riscv/kvm/mmu.c
+> +++ b/arch/riscv/kvm/mmu.c
+> @@ -419,6 +419,77 @@ static unsigned long transparent_hugepage_adjust(struct kvm *kvm,
+>  	return PAGE_SIZE;
+>  }
+>  
+> +static bool kvm_riscv_mmu_dirty_log_write_fault_fast(struct kvm *kvm,
+> +						     struct kvm_memory_slot *memslot,
+> +						     gpa_t gpa,
+> +						     struct kvm_gstage_mapping *out_map)
+> +{
+> +	struct kvm_gstage gstage;
+> +	unsigned long mmu_seq;
+> +	pte_t old_pte, new_pte;
+> +	pte_t *ptep;
+> +	gfn_t gfn = gpa >> PAGE_SHIFT;
+> +	u32 ptep_level;
+> +	bool dirty_marked = false;
+> +	bool ret;
+> +
+> +	kvm_riscv_gstage_init(&gstage, kvm);
+> +	mmu_seq = kvm->mmu_invalidate_seq;
+> +
+> +	read_lock(&kvm->mmu_lock);
+> +
+> +	if (mmu_invalidate_retry_gfn(kvm, mmu_seq, gfn)) {
+> +		ret = false;
+> +		goto out_unlock;
+> +	}
+> +
 
-Also, refactor and document about the user context save in preempt_v to
-make code more readable.
+> +	if (!kvm_riscv_gstage_get_leaf(&gstage, gpa, &ptep, &ptep_level) ||
+> +	    ptep_level) {
+> +		ret = false;
+> +		goto out_unlock;
+> +	}
+> +
 
-Signed-off-by: Andy Chiu <tchiu@tenstorrent.com>
----
-Changelog v4:
- - fix an unused variable warning (Olof)
-Changelog v3:
- - new patch since v3
----
- arch/riscv/include/asm/kvm_vcpu_vector.h |  8 +++++--
- arch/riscv/include/asm/vector.h          | 15 ++++++------
- arch/riscv/kernel/kernel_mode_vector.c   | 29 +++++++++++++++++++-----
- arch/riscv/kvm/vcpu_vector.c             |  8 +++----
- 4 files changed, 41 insertions(+), 19 deletions(-)
+Add a check here: if this is a huge page and is a logging page, 
+we should fallback to slow path to apply page spltting.
 
-diff --git a/arch/riscv/include/asm/kvm_vcpu_vector.h b/arch/riscv/include/asm/kvm_vcpu_vector.h
-index 57a798a4cb0d..e679869e2ba3 100644
---- a/arch/riscv/include/asm/kvm_vcpu_vector.h
-+++ b/arch/riscv/include/asm/kvm_vcpu_vector.h
-@@ -16,14 +16,18 @@
- #include <asm/vector.h>
- #include <asm/kvm_host.h>
- 
--static __always_inline void __kvm_riscv_vector_save(struct kvm_cpu_context *context)
-+static __always_inline void kvm_riscv_vector_save(struct kvm_cpu_context *context)
- {
-+	riscv_v_enable();
- 	__riscv_v_vstate_save(&context->vector, context->vector.datap);
-+	riscv_v_disable();
- }
- 
--static __always_inline void __kvm_riscv_vector_restore(struct kvm_cpu_context *context)
-+static __always_inline void kvm_riscv_vector_restore(struct kvm_cpu_context *context)
- {
-+	riscv_v_enable();
- 	__riscv_v_vstate_restore(&context->vector, context->vector.datap);
-+	riscv_v_disable();
- }
- 
- void kvm_riscv_vcpu_vector_reset(struct kvm_vcpu *vcpu);
-diff --git a/arch/riscv/include/asm/vector.h b/arch/riscv/include/asm/vector.h
-index 00cb9c0982b1..45820cd900d6 100644
---- a/arch/riscv/include/asm/vector.h
-+++ b/arch/riscv/include/asm/vector.h
-@@ -198,7 +198,6 @@ static inline void __riscv_v_vstate_save(struct __riscv_v_ext_state *save_to,
- {
- 	unsigned long vl;
- 
--	riscv_v_enable();
- 	__vstate_csr_save(save_to);
- 	if (has_xtheadvector()) {
- 		asm volatile (
-@@ -227,7 +226,6 @@ static inline void __riscv_v_vstate_save(struct __riscv_v_ext_state *save_to,
- 			".option pop\n\t"
- 			: "=&r" (vl) : "r" (datap) : "memory");
- 	}
--	riscv_v_disable();
- }
- 
- static inline void __riscv_v_vstate_restore(struct __riscv_v_ext_state *restore_from,
-@@ -235,7 +233,6 @@ static inline void __riscv_v_vstate_restore(struct __riscv_v_ext_state *restore_
- {
- 	unsigned long vl;
- 
--	riscv_v_enable();
- 	if (has_xtheadvector()) {
- 		asm volatile (
- 			"mv t0, %0\n\t"
-@@ -264,14 +261,12 @@ static inline void __riscv_v_vstate_restore(struct __riscv_v_ext_state *restore_
- 			: "=&r" (vl) : "r" (datap) : "memory");
- 	}
- 	__vstate_csr_restore(restore_from);
--	riscv_v_disable();
- }
- 
- static inline void __riscv_v_vstate_discard(void)
- {
- 	unsigned long vl, vtype_inval = 1UL << (BITS_PER_LONG - 1);
- 
--	riscv_v_enable();
- 	if (has_xtheadvector())
- 		asm volatile (THEAD_VSETVLI_T4X0E8M8D1 : : : "t4");
- 	else
-@@ -291,14 +286,14 @@ static inline void __riscv_v_vstate_discard(void)
- 		"vsetvl		%0, x0, %1\n\t"
- 		".option pop\n\t"
- 		: "=&r" (vl) : "r" (vtype_inval));
--
--	riscv_v_disable();
- }
- 
- static inline void riscv_v_vstate_discard(struct pt_regs *regs)
- {
- 	if (riscv_v_vstate_query(regs)) {
-+		riscv_v_enable();
- 		__riscv_v_vstate_discard();
-+		riscv_v_disable();
- 		__riscv_v_vstate_dirty(regs);
- 	}
- }
-@@ -307,7 +302,9 @@ static inline void riscv_v_vstate_save(struct __riscv_v_ext_state *vstate,
- 				       struct pt_regs *regs)
- {
- 	if (__riscv_v_vstate_check(regs->status, DIRTY)) {
-+		riscv_v_enable();
- 		__riscv_v_vstate_save(vstate, vstate->datap);
-+		riscv_v_disable();
- 		__riscv_v_vstate_clean(regs);
- 	}
- }
-@@ -316,7 +313,9 @@ static inline void riscv_v_vstate_restore(struct __riscv_v_ext_state *vstate,
- 					  struct pt_regs *regs)
- {
- 	if (riscv_v_vstate_query(regs)) {
-+		riscv_v_enable();
- 		__riscv_v_vstate_restore(vstate, vstate->datap);
-+		riscv_v_disable();
- 		__riscv_v_vstate_clean(regs);
- 	}
- }
-@@ -378,8 +377,10 @@ static inline void __switch_to_vector(struct task_struct *prev,
- 			prev->thread.riscv_v_flags |= RISCV_PREEMPT_V_IN_SCHEDULE;
- 		}
- 		if (riscv_preempt_v_dirty(prev)) {
-+			riscv_v_enable();
- 			__riscv_v_vstate_save(&prev->thread.kernel_vstate,
- 					      prev->thread.kernel_vstate.datap);
-+			riscv_v_disable();
- 			riscv_preempt_v_clear_dirty(prev);
- 		}
- 	} else {
-diff --git a/arch/riscv/kernel/kernel_mode_vector.c b/arch/riscv/kernel/kernel_mode_vector.c
-index 99972a48e86b..21127b33fea8 100644
---- a/arch/riscv/kernel/kernel_mode_vector.c
-+++ b/arch/riscv/kernel/kernel_mode_vector.c
-@@ -123,7 +123,7 @@ static int riscv_v_stop_kernel_context(void)
- 
- static int riscv_v_start_kernel_context(bool *is_nested)
- {
--	struct __riscv_v_ext_state *kvstate, *uvstate;
-+	struct __riscv_v_ext_state *kvstate;
- 
- 	kvstate = &current->thread.kernel_vstate;
- 	if (!kvstate->datap)
-@@ -134,20 +134,35 @@ static int riscv_v_start_kernel_context(bool *is_nested)
- 		*is_nested = true;
- 		get_cpu_vector_context();
- 		if (riscv_preempt_v_dirty(current)) {
-+			riscv_v_enable();
- 			__riscv_v_vstate_save(kvstate, kvstate->datap);
-+			riscv_v_disable();
- 			riscv_preempt_v_clear_dirty(current);
- 		}
- 		riscv_preempt_v_set_restore(current);
- 		return 0;
- 	}
- 
--	/* Transfer the ownership of V from user to kernel, then save */
--	riscv_v_start(RISCV_PREEMPT_V | RISCV_PREEMPT_V_DIRTY);
-+	/*
-+	 * Skip saving user's context if it is not DIRTY. We would have to start KMV in "dirty" if
-+	 * this check is performed after KMV starts, to protect user's ctx. Then, we could waste
-+	 * time saving already "clean" context once KMV is started in "dirty".
-+	 */
- 	if (__riscv_v_vstate_check(task_pt_regs(current)->status, DIRTY)) {
--		uvstate = &current->thread.vstate;
--		__riscv_v_vstate_save(uvstate, uvstate->datap);
-+		/* Transfer the ownership of V from user to kernel, then save */
-+		riscv_v_start(RISCV_PREEMPT_V | RISCV_PREEMPT_V_DIRTY);
-+		/*
-+		 * Calling the guarded version of vstate_save to make the code cleaner. Also, the
-+		 * vstate check within the call is necessary as context switch may happen between
-+		 * __riscv_v_vstate_check and riscv_v_start. In such case we are not supposed to
-+		 * save the context again.
-+		 */
-+		riscv_v_vstate_save(&current->thread.vstate, task_pt_regs(current));
-+		riscv_preempt_v_clear_dirty(current);
-+		return 0;
- 	}
--	riscv_preempt_v_clear_dirty(current);
-+
-+	riscv_v_start(RISCV_PREEMPT_V);
- 	return 0;
- }
- 
-@@ -180,7 +195,9 @@ asmlinkage void riscv_v_context_nesting_end(struct pt_regs *regs)
- 	depth = riscv_v_ctx_get_depth();
- 	if (depth == 0) {
- 		if (riscv_preempt_v_restore(current)) {
-+			riscv_v_enable();
- 			__riscv_v_vstate_restore(vstate, vstate->datap);
-+			riscv_v_disable();
- 			__riscv_v_vstate_clean(regs);
- 			riscv_preempt_v_reset_flags();
- 		}
-diff --git a/arch/riscv/kvm/vcpu_vector.c b/arch/riscv/kvm/vcpu_vector.c
-index 62d2fb77bb9b..da6c6db846c1 100644
---- a/arch/riscv/kvm/vcpu_vector.c
-+++ b/arch/riscv/kvm/vcpu_vector.c
-@@ -46,7 +46,7 @@ void kvm_riscv_vcpu_guest_vector_save(struct kvm_cpu_context *cntx,
- {
- 	if ((cntx->sstatus & SR_VS) == SR_VS_DIRTY) {
- 		if (riscv_isa_extension_available(isa, v))
--			__kvm_riscv_vector_save(cntx);
-+			kvm_riscv_vector_save(cntx);
- 		kvm_riscv_vcpu_vector_clean(cntx);
- 	}
- }
-@@ -56,7 +56,7 @@ void kvm_riscv_vcpu_guest_vector_restore(struct kvm_cpu_context *cntx,
- {
- 	if ((cntx->sstatus & SR_VS) != SR_VS_OFF) {
- 		if (riscv_isa_extension_available(isa, v))
--			__kvm_riscv_vector_restore(cntx);
-+			kvm_riscv_vector_restore(cntx);
- 		kvm_riscv_vcpu_vector_clean(cntx);
- 	}
- }
-@@ -65,13 +65,13 @@ void kvm_riscv_vcpu_host_vector_save(struct kvm_cpu_context *cntx)
- {
- 	/* No need to check host sstatus as it can be modified outside */
- 	if (!kvm_riscv_isa_check_host(V))
--		__kvm_riscv_vector_save(cntx);
-+		kvm_riscv_vector_save(cntx);
- }
- 
- void kvm_riscv_vcpu_host_vector_restore(struct kvm_cpu_context *cntx)
- {
- 	if (!kvm_riscv_isa_check_host(V))
--		__kvm_riscv_vector_restore(cntx);
-+		kvm_riscv_vector_restore(cntx);
- }
- 
- int kvm_riscv_vcpu_alloc_vector_context(struct kvm_vcpu *vcpu)
--- 
-2.43.0
+> +	for (;;) {
+> +		old_pte = ptep_get(ptep);
+> +		if (!(pte_val(old_pte) & _PAGE_LEAF)) {
 
+Use pmd_present() here.
+
+> +			ret = false;
+> +			break;
+> +		}
+> +
+
+> +		if (!dirty_marked) {
+> +			mark_page_dirty_in_slot(kvm, memslot, gfn);
+> +			dirty_marked = true;
+> +		}
+
+Only log dirty entry when the updating is success, otherwise
+the page could be record twice in both fast and slow path.
+
+> +
+> +		if ((pte_val(old_pte) & (_PAGE_WRITE | _PAGE_DIRTY)) ==
+> +		    (_PAGE_WRITE | _PAGE_DIRTY)) {
+
+I think only pte_write is required, for write-protected path,
+only write permission is needed to be checked, as we always
+set dirty bit. For the future dirty log hardware extension,
+the Svadu will update the dirty bit so no need for this logic.
+
+> +			new_pte = old_pte;
+> +			ret = true;
+> +			break;
+> +		}
+> +
+
+> +		new_pte = pte_mkdirty(pte_mkwrite_novma(old_pte));
+
+pte_mkyoung is also needed.
+
+> +
+> +		if (kvm_riscv_gstage_try_update_pte(&gstage, ptep_level, gpa,
+> +						    ptep, old_pte, new_pte)) {
+> +			ret = true;
+> +			break;
+> +		}
+> +		cpu_relax();
+> +	}
+> +
+> +out_unlock:
+> +	read_unlock(&kvm->mmu_lock);
+> +
+> +	if (ret) {
+> +		out_map->addr = gpa & PAGE_MASK;
+> +		out_map->level = 0;
+> +		out_map->pte = new_pte;
+> +	}
+> +
+> +	return ret;
+> +}
+> +
+>  int kvm_riscv_mmu_map(struct kvm_vcpu *vcpu, struct kvm_memory_slot *memslot,
+>  		      gpa_t gpa, unsigned long hva, bool is_write,
+>  		      struct kvm_gstage_mapping *out_map)
+> @@ -442,6 +513,10 @@ int kvm_riscv_mmu_map(struct kvm_vcpu *vcpu, struct kvm_memory_slot *memslot,
+>  	/* Setup initial state of output mapping */
+>  	memset(out_map, 0, sizeof(*out_map));
+>  
+> +	if (is_write && logging &&
+> +	    kvm_riscv_mmu_dirty_log_write_fault_fast(kvm, memslot, gpa, out_map))
+> +		return 0;
+> +
+>  	/* We need minimum second+third level pages */
+>  	ret = kvm_mmu_topup_memory_cache(pcache, kvm->arch.pgd_levels);
+>  	if (ret) {
+> -- 
+> 2.43.0
+> 
+
+Regards,
+Inochi
 
 -- 
 kvm-riscv mailing list
