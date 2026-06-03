@@ -4,77 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 48351CD6E5D
-	for <kvm-riscv@archiver.kernel.org>; Tue,  2 Jun 2026 23:14:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 871D1CD5BD1
+	for <kvm-riscv@archiver.kernel.org>; Tue,  2 Jun 2026 23:14:46 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Message-Id
 	:MIME-Version:Subject:Date:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=QC9scCB0mdq06tlo1NcpQu/r3MLxDvsqSRFHctK6o7Q=; b=5FF11Pbu0cf8fw
-	TzFRHozyK4QinYOrAWMwp/j0+Sbm0054ZG2MgupKPRqGQMiUHCglcpLxjyXkGI3TyQENK2jnccSY/
-	cRYN1rc6riQn1aTw6/jzTuCH/jFksLcK4KQMnRAzIpHQctv0XdtU14Q7afsLz3jhLnFh/b60uksqh
-	GzP4iKnGZDnDvJG9NAJB30SwHn89eZmwTVQx9d3dmZwJKT4iBEHxZvEAiPTBqo07g4A4azU+qUqsO
-	3VJvYsTS7yV9/GSusbMlY6pdMch8h/g+Eg2DTPJzu5j4JnkwH0Zt+VkL8ZIFkn4Jc7cvL7UuUoRMy
-	7xZPRfsmjxUN69IyoxWg==;
+	List-Owner; bh=8n5YSzJxHm2pste+vLUSSCGseTw4PKKvdAc01TpnHG8=; b=2INthd50IA2VGG
+	EIRmE0DI/3NVK7MPgKSRUYpHX+0Q6l5TQpdi6uxfHDGCS12ANOHjm+y17z9CB/V0fuITaTjKxtmnR
+	OAd/hX1J7Jg1G5Bb6QINUsaPo0juHXt/BgOY6AN0j09sKl5IE9R49qpwswLythqi4PKxRqU1VuuAA
+	dGDs1hxq6usXuCIwMw9a07/dqLXAP+9JzcZA0GdyWsJhWFR5qZFFvLIT9QSRAjvboeryuS3KshiSF
+	a6GqLqk595++AniEs3BwN+lymVP0eAG/akUtYWoCBIUjNw/AZIkuo+GlnVqwsPqk2BreLwj8R+tUJ
+	/+h0hvr+IWwEJu8dO4UA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wUYJb-0000000DvwJ-09gx;
-	Tue, 02 Jun 2026 23:14:31 +0000
-Received: from mail-pg1-x52d.google.com ([2607:f8b0:4864:20::52d])
+	id 1wUYJq-0000000Dw40-1II9;
+	Tue, 02 Jun 2026 23:14:46 +0000
+Received: from casper.infradead.org ([2001:8b0:10b:1236::1])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wUYJX-0000000Dvtm-36BA
+	id 1wUYJp-0000000Dw2t-0mcK
+	for kvm-riscv@bombadil.infradead.org;
+	Tue, 02 Jun 2026 23:14:45 +0000
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=casper.20170209; h=Cc:To:In-Reply-To:References:Message-Id
+	:Content-Transfer-Encoding:Content-Type:MIME-Version:Subject:Date:From:Sender
+	:Reply-To:Content-ID:Content-Description;
+	bh=V8Fuf4QXCppsW5bDsc2WfyDl0yodmONaopvjB2bbG7o=; b=Ecrg4+mPBXnj2hdfjCD0QKMc3F
+	KOINwkVQrd7CZiQQs+fcVzv+ugUO96iA9SlZIkdcgc/j7rQLCW/JyQMhrOnWhiSa8QfJOf5YU0MYK
+	GrtanADTfImGh2TASz27L7trrCG5OXY/8xfPfO2jkQwngROCqFSY+hzTmO0YbaSHLKY38yTUD416o
+	NJv+6btaKQcIlrhb0u0MdtoVUxsX5NYUs2YrExKSG9jDQZsWwDoM6nJjbydPwuIyN1mx4ob0O/8F7
+	u51DhvA2BKUMSK9HHviEItAWFyuDjkzn+59bW188M4GPEHa82DaBN4AIWrCWmvbneCx/EXx8ATkw6
+	mj7u8XZw==;
+Received: from mail-pl1-x630.google.com ([2607:f8b0:4864:20::630])
+	by casper.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
+	id 1wUYJl-00000002mWG-2FTt
 	for kvm-riscv@lists.infradead.org;
-	Tue, 02 Jun 2026 23:14:29 +0000
-Received: by mail-pg1-x52d.google.com with SMTP id 41be03b00d2f7-c85a2ca7bf7so1283046a12.3
-        for <kvm-riscv@lists.infradead.org>; Tue, 02 Jun 2026 16:14:27 -0700 (PDT)
+	Tue, 02 Jun 2026 23:14:43 +0000
+Received: by mail-pl1-x630.google.com with SMTP id d9443c01a7336-2bf2247e38eso40693365ad.3
+        for <kvm-riscv@lists.infradead.org>; Tue, 02 Jun 2026 16:14:40 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1780442067; x=1781046867; darn=lists.infradead.org;
+        d=gmail.com; s=20251104; t=1780442078; x=1781046878; darn=lists.infradead.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=XmtWh5mcf4mzD0yR3n/eyuF9cs7/fUbeD923xQ2EWiI=;
-        b=MoevUJskCAJafN3XMRi2l0GMydrUbU+SX0atNKDCiRw89LA7PSHcpEIhkFXrBPbo+R
-         CpHgZh+Ef/voGBZHCLGSh+n0NmGq2BLa/BOYRMaqiNotWXgVkdbHfMX1b+HKRPe69WD7
-         t1snBipw2wBZycdX43Ybec/oKoridnxN5eM1WEfBzh+pUtesVTbpPc99d6DVAx/rMbyJ
-         wvT4vEMR9CjVyqdZMrYd6DIzHd+xCQ/2Ta35/8MXH6DunOk9dM16hkwD2AMsUwNRiaF6
-         t4tRCgVhWlFUIxAlOw9wDAVOePgKWh9ZIiFN+vU5fHHtwLsyMfsYOJQw+XwHes+PGue0
-         VlTA==
+        bh=V8Fuf4QXCppsW5bDsc2WfyDl0yodmONaopvjB2bbG7o=;
+        b=OH45+VrD7lycvcPmUqS8Upbl5ECvMuG/OSJDd7lqv+ry1wuA0rDdBTgBqpyzg2ZSPi
+         6ZYtwkETSC30831Qk55NLoQCfXa8YlboZvfiYIcdgeBSFkrxMikFtfVV8R6Vtk9+cFZR
+         PceaNde2ou8Elvf3p9x3+KbPogRk7BeYkAOcW2J2A0H/JFdDGOnX4cVYHa3m08niYcvE
+         PQSVJqjLEo4Bpsw6oisWn6s0BVY3eckFBNk5eOzmmT3Q5QttHdfJ4TnwQml17A4kO33G
+         sLO2GidceWC9Ae9zZUJcBjk28uyM9hhlNxqb5drpHZpHa6ZYbYDHXKWbRr/ucD7MCMrp
+         vYMg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780442067; x=1781046867;
+        d=1e100.net; s=20251104; t=1780442078; x=1781046878;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
          :cc:subject:date:message-id:reply-to;
-        bh=XmtWh5mcf4mzD0yR3n/eyuF9cs7/fUbeD923xQ2EWiI=;
-        b=LrvedPUz1N1JLYiwbl0E9Uk+xut2rZ6wq52F9Xm8kjxcQ6EC7O6Fk3mXmVTYEmSce3
-         0pt+RiLiDFgXRTQeN0w/2RtjYK7293k0Pb+R2UHRN14gDUSdh1C26aQktrPBPaWlJwP1
-         CVkcgJcAMAi9JROEMUEkS+kjoD0/mx4NYf9LzuD/hC8CM1JCjHSCvp7GPmb7gWZaU5vW
-         wI/WTnLM48yDrLDdrhYeGbZXa69qnkZbf9e9T+7RgYSYB9AIxFydYIqq681ahSgOf80X
-         yHUJ4JN816pzx6rDJh1GxlXyxeOT9nCAkyemv55VXRMCHBN+YPbqh7MeTPYGXOWnROzE
-         2cRQ==
-X-Forwarded-Encrypted: i=1; AFNElJ9gwY4vyhBMtV+hgkBH93xdxbAZKIZmCI4jeWmDv0w0UaxTigIkZv6JpzZ9ixTqpx2O8Qv793yrXQ8=@lists.infradead.org
-X-Gm-Message-State: AOJu0YxcrGHBlsxIoYG6WSyS5Ml0vAeLsMJurhZzuH6ahdk952yPeUAD
-	8c5mNCD8Juq33almJH0bjVwGtK4iOjepHlmvVZZgbYwqYaKXQ9cdGrVm
-X-Gm-Gg: Acq92OHg32F0E2drTFX3dk/6s5sNnAlFjzXP3JSAG7NhNM+n06hSTrdTNARkX+OuSlP
-	PG3W/KNe98fM/1VP4Bv56+UNVdsTFYePusLJpcRepa5IFwIY5p3NgxQmGLOejm8v7eFW6IY6xtj
-	mfWinQgO3woU/CCmM93+fKp5AFDAq7HPPCiU32vQtmRiyrtds8PENHCytcy9Sj1aBVH7wm4rJGp
-	bG3Y4foIZA+AqHhNKBx/F1TCHzpSmWMgaBtLDsdTHvvGR9TBuhI8/CStYc3uQdbGaONsD10x6Ef
-	365n98M69qjFK8bOWsiHJM8wOx8hPztR53V0lhQPZyZiY5k/y7WtErEyOwETWOMP4yZb1bGzynT
-	z9/tNdkE4CJaMYnNnCWV7B+y0talFIlahOX19s26RtF8OoLXlg3c35yHUr0Q/Cc309/0sAbOfMk
-	DZxw7ox4JZIQ==
-X-Received: by 2002:a17:903:b8d:b0:2bf:172d:ef7e with SMTP id d9443c01a7336-2c1644b3047mr6913055ad.34.1780442066775;
-        Tue, 02 Jun 2026 16:14:26 -0700 (PDT)
+        bh=V8Fuf4QXCppsW5bDsc2WfyDl0yodmONaopvjB2bbG7o=;
+        b=Z0bhQivLraHUDITsYlyllU0TDWH9OB5VVmJ6UrbqFbqucX8bjq9C9ZEm1sqitm7Mj9
+         yocLqkhQ4irEhseMFSTmyA6Xv0cB8qKCZlYr1+1e8g/G7ENvznvvrqRAmqjiTlWtHNmJ
+         clj8o/UA+leW1TgMS0D8HnOm4FRz8T0A//W6gPb52QyNt/MqybYQn9AqiME7WsOPYm8x
+         kQPHLR5OdhI6f4vwWrWjnSTkQ5VSdAGkpA/CLl681gPnDfKx7tTHhTxQeZoY1gq5mlxv
+         agmT07AkONjasvJtMa1CWuADZ+SW/u/7NCLNgiOGyB1Z9Jo+JEKBADPxGijj6ygMCFQo
+         3fSA==
+X-Forwarded-Encrypted: i=1; AFNElJ9vKnHU4vqqeRNugKn0aZyQaTIRbQjEP3Fvwn/fyCcHRK9COqT3kSaBbV4Cfxv2PDti3pLjHlphnu4=@lists.infradead.org
+X-Gm-Message-State: AOJu0YwzE2i6hbvK+Y78shxZ5Oz222TlUpceb3ZcIVhDgaitjXpmjfea
+	C/eoym72ZSsSGBGskfXsA2T15sbum/ByzsfnNGtOI4O04rX0mw2CrvbN
+X-Gm-Gg: Acq92OE7bS7Yk6FB2cK0GPnWHVXQ6xUldQkCuaNvd3sEesjjH5N0kgso2ibzdBx0aSA
+	lgscY4XgOCiWz6g4QxucejhlgN5gI06FFqufrGV0QrR89hxySrVFiULkCPwdXZe6Y5mNYIK8D0U
+	zMR0xxxh8+Oe8bfgOkFFpR+jHlyakNX0RnVM6nH2WE9nASGG3B23FwadhlOlykLiP9JihgoJnK6
+	VI0EVtZYhpAOq8UoESb4hfEXUvqFm0zxHbeWGsllVlo3KjiLY+G6LKnCR2z6ccvIM/tlwJeGxFv
+	i3YeUV2rpK/Y2UFajnyQI85b7j5SZdT0aYdCEnFEHU57z8+XSxZ6DjEAd0sqXu3cAsybzUWvl+s
+	IMdoypAPH1gTfEYm+ESZ8Xn39qcKFIMLqFOwr8YIRZKI3vi6ahOydYwt/6eka4MBKkOZK6X56JD
+	fkRuleIcVeSw==
+X-Received: by 2002:a17:902:e78b:b0:2c0:fa4e:9208 with SMTP id d9443c01a7336-2c163a2bb94mr7334255ad.14.1780442077667;
+        Tue, 02 Jun 2026 16:14:37 -0700 (PDT)
 Received: from [127.0.1.1] ([2a12:a305:4::40e9])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2c16649d2dfsm3302965ad.75.2026.06.02.16.14.16
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2c16649d2dfsm3302965ad.75.2026.06.02.16.14.27
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 02 Jun 2026 16:14:26 -0700 (PDT)
+        Tue, 02 Jun 2026 16:14:37 -0700 (PDT)
 From: Guodong Xu <docular.xu@gmail.com>
-Date: Wed, 03 Jun 2026 07:12:04 -0400
-Subject: [PATCH v3 09/15] riscv: dts: spacemit: k3: Add Zic64b ISA
+Date: Wed, 03 Jun 2026 07:12:05 -0400
+Subject: [PATCH v3 10/15] riscv: dts: spacemit: k1: Add Zic64b ISA
  extension
 MIME-Version: 1.0
-Message-Id: <20260603-rva23u64-hwprobe-v2-v3-9-5529a7b28384@gmail.com>
+Message-Id: <20260603-rva23u64-hwprobe-v2-v3-10-5529a7b28384@gmail.com>
 References: <20260603-rva23u64-hwprobe-v2-v3-0-5529a7b28384@gmail.com>
 In-Reply-To: <20260603-rva23u64-hwprobe-v2-v3-0-5529a7b28384@gmail.com>
 To: Jonathan Corbet <corbet@lwn.net>, 
@@ -99,17 +114,17 @@ Cc: linux-doc@vger.kernel.org, linux-riscv@lists.infradead.org,
  Samuel Holland <samuel.holland@sifive.com>, 
  Guodong Xu <docular.xu@gmail.com>
 X-Mailer: b4 0.15.1
-X-Developer-Signature: v=1; a=openpgp-sha256; l=6761; i=docular.xu@gmail.com;
- h=from:subject:message-id; bh=hn5Y84v6I4GaSTkzERKI8t9IzJT3/S3blS9lduPRHwg=;
- b=owGbwMvMwCXWtEl1Z3CGpCDjabUkhiwFHtbeyV+9ZDQPSScKpR2ZFqLK13l1zeyJCx4bBshnN
- TJH/nPoKGVhEONikBVTZDl8tCV76yufaN/nnD9g5rAygQxh4OIUgInsFmT4H1y3R2LXA5HOSecX
- p1ieO5phIeAonnLw781Fl7WWXTslVMvw3+lp0IRNMvtbTexfvzhdJHby9Ikgw0RevbLttUe/uP3
- y4gAA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=10074; i=docular.xu@gmail.com;
+ h=from:subject:message-id; bh=Q7RYZju2TF5FEkiS6NU6Z8BhXvcsipUIIAlY+MksXC4=;
+ b=owGbwMvMwCXWtEl1Z3CGpCDjabUkhiwFHtYKyZl+nmwaId+LzlkfeXVeTUokc9GleR9TWLkCm
+ ZSm/T3eUcrCIMbFICumyHL4aEv21lc+0b7POX/AzGFlAhnCwMUpABOpWMnIcHbdlCcKC308t586
+ 6bTzYMKFtmn5n8wSl74IuC7m/FTgeDzD/7Kvh7K5/p3YE/vWo9extXFm394pDUWNp05MCjtSqjz
+ NjBkA
 X-Developer-Key: i=docular.xu@gmail.com; a=openpgp;
  fpr=90B1DC3DF0BD10FD1227BD6344F254AF42F143EE
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260602_161427_780419_4B2E51DF 
-X-CRM114-Status: UNSURE (   7.87  )
+X-CRM114-CacheID: sfid-20260603_001442_044014_8506E4E9 
+X-CRM114-Status: UNSURE (   7.91  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -127,125 +142,165 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-The K3 X100 cores have 64-byte cache blocks, already described by their
-cbom/cbop/cboz-block-size of 64, so they implement Zic64b, a mandatory
-RVA23 extension.  Declare it in each core's riscv,isa-extensions.
+The K1 X60 cores have 64-byte cache blocks, described by their
+cbom/cbop/cboz-block-size of 64, so they implement Zic64b.  Declare it in
+each core's riscv,isa-extensions and in the deprecated riscv,isa string.
 
 Signed-off-by: Guodong Xu <docular.xu@gmail.com>
 ---
 v3: New patch.
 ---
- arch/riscv/boot/dts/spacemit/k3.dtsi | 48 ++++++++++++++++++------------------
- 1 file changed, 24 insertions(+), 24 deletions(-)
+ arch/riscv/boot/dts/spacemit/k1.dtsi | 80 ++++++++++++++++++------------------
+ 1 file changed, 40 insertions(+), 40 deletions(-)
 
-diff --git a/arch/riscv/boot/dts/spacemit/k3.dtsi b/arch/riscv/boot/dts/spacemit/k3.dtsi
-index 4ac457399b583..b5aa983f0bfa1 100644
---- a/arch/riscv/boot/dts/spacemit/k3.dtsi
-+++ b/arch/riscv/boot/dts/spacemit/k3.dtsi
-@@ -35,9 +35,9 @@ cpu_0: cpu@0 {
- 					       "svinval", "svnapot", "svpbmt", "za64rs",
- 					       "zawrs", "zba", "zbb", "zbc", "zbs", "zca",
- 					       "zcb", "zcd", "zcmop", "zfa", "zfbfmin",
--					       "zfh", "zfhmin", "zicbom", "zicbop", "zicboz",
--					       "ziccamoa", "ziccif", "zicclsm", "ziccrse", "zicntr",
--					       "zicond", "zicsr", "zifencei", "zihintntl",
-+					       "zfh", "zfhmin", "zic64b", "zicbom", "zicbop",
-+					       "zicboz", "ziccamoa", "ziccif", "zicclsm", "ziccrse",
-+					       "zicntr", "zicond", "zicsr", "zifencei", "zihintntl",
- 					       "zihintpause", "zihpm", "zimop", "zkt", "zvbb",
- 					       "zvbc", "zvfbfmin", "zvfbfwma", "zvfh",
- 					       "zvfhmin", "zvkb", "zvkg", "zvkn", "zvknc",
-@@ -76,9 +76,9 @@ cpu_1: cpu@1 {
- 					       "svinval", "svnapot", "svpbmt", "za64rs",
- 					       "zawrs", "zba", "zbb", "zbc", "zbs", "zca",
- 					       "zcb", "zcd", "zcmop", "zfa", "zfbfmin",
--					       "zfh", "zfhmin", "zicbom", "zicbop", "zicboz",
--					       "ziccamoa", "ziccif", "zicclsm", "ziccrse", "zicntr",
--					       "zicond", "zicsr", "zifencei", "zihintntl",
-+					       "zfh", "zfhmin", "zic64b", "zicbom", "zicbop",
-+					       "zicboz", "ziccamoa", "ziccif", "zicclsm", "ziccrse",
-+					       "zicntr", "zicond", "zicsr", "zifencei", "zihintntl",
- 					       "zihintpause", "zihpm", "zimop", "zkt", "zvbb",
- 					       "zvbc", "zvfbfmin", "zvfbfwma", "zvfh",
- 					       "zvfhmin", "zvkb", "zvkg", "zvkn", "zvknc",
-@@ -117,9 +117,9 @@ cpu_2: cpu@2 {
- 					       "svinval", "svnapot", "svpbmt", "za64rs",
- 					       "zawrs", "zba", "zbb", "zbc", "zbs", "zca",
- 					       "zcb", "zcd", "zcmop", "zfa", "zfbfmin",
--					       "zfh", "zfhmin", "zicbom", "zicbop", "zicboz",
--					       "ziccamoa", "ziccif", "zicclsm", "ziccrse", "zicntr",
--					       "zicond", "zicsr", "zifencei", "zihintntl",
-+					       "zfh", "zfhmin", "zic64b", "zicbom", "zicbop",
-+					       "zicboz", "ziccamoa", "ziccif", "zicclsm", "ziccrse",
-+					       "zicntr", "zicond", "zicsr", "zifencei", "zihintntl",
- 					       "zihintpause", "zihpm", "zimop", "zkt", "zvbb",
- 					       "zvbc", "zvfbfmin", "zvfbfwma", "zvfh",
- 					       "zvfhmin", "zvkb", "zvkg", "zvkn", "zvknc",
-@@ -158,9 +158,9 @@ cpu_3: cpu@3 {
- 					       "svinval", "svnapot", "svpbmt", "za64rs",
- 					       "zawrs", "zba", "zbb", "zbc", "zbs", "zca",
- 					       "zcb", "zcd", "zcmop", "zfa", "zfbfmin",
--					       "zfh", "zfhmin", "zicbom", "zicbop", "zicboz",
--					       "ziccamoa", "ziccif", "zicclsm", "ziccrse", "zicntr",
--					       "zicond", "zicsr", "zifencei", "zihintntl",
-+					       "zfh", "zfhmin", "zic64b", "zicbom", "zicbop",
-+					       "zicboz", "ziccamoa", "ziccif", "zicclsm", "ziccrse",
-+					       "zicntr", "zicond", "zicsr", "zifencei", "zihintntl",
- 					       "zihintpause", "zihpm", "zimop", "zkt", "zvbb",
- 					       "zvbc", "zvfbfmin", "zvfbfwma", "zvfh",
- 					       "zvfhmin", "zvkb", "zvkg", "zvkn", "zvknc",
-@@ -199,9 +199,9 @@ cpu_4: cpu@4 {
- 					       "svinval", "svnapot", "svpbmt", "za64rs",
- 					       "zawrs", "zba", "zbb", "zbc", "zbs", "zca",
- 					       "zcb", "zcd", "zcmop", "zfa", "zfbfmin",
--					       "zfh", "zfhmin", "zicbom", "zicbop", "zicboz",
--					       "ziccamoa", "ziccif", "zicclsm", "ziccrse", "zicntr",
--					       "zicond", "zicsr", "zifencei", "zihintntl",
-+					       "zfh", "zfhmin", "zic64b", "zicbom", "zicbop",
-+					       "zicboz", "ziccamoa", "ziccif", "zicclsm", "ziccrse",
-+					       "zicntr", "zicond", "zicsr", "zifencei", "zihintntl",
- 					       "zihintpause", "zihpm", "zimop", "zkt", "zvbb",
- 					       "zvbc", "zvfbfmin", "zvfbfwma", "zvfh",
- 					       "zvfhmin", "zvkb", "zvkg", "zvkn", "zvknc",
-@@ -240,9 +240,9 @@ cpu_5: cpu@5 {
- 					       "svinval", "svnapot", "svpbmt", "za64rs",
- 					       "zawrs", "zba", "zbb", "zbc", "zbs", "zca",
- 					       "zcb", "zcd", "zcmop", "zfa", "zfbfmin",
--					       "zfh", "zfhmin", "zicbom", "zicbop", "zicboz",
--					       "ziccamoa", "ziccif", "zicclsm", "ziccrse", "zicntr",
--					       "zicond", "zicsr", "zifencei", "zihintntl",
-+					       "zfh", "zfhmin", "zic64b", "zicbom", "zicbop",
-+					       "zicboz", "ziccamoa", "ziccif", "zicclsm", "ziccrse",
-+					       "zicntr", "zicond", "zicsr", "zifencei", "zihintntl",
- 					       "zihintpause", "zihpm", "zimop", "zkt", "zvbb",
- 					       "zvbc", "zvfbfmin", "zvfbfwma", "zvfh",
- 					       "zvfhmin", "zvkb", "zvkg", "zvkn", "zvknc",
-@@ -281,9 +281,9 @@ cpu_6: cpu@6 {
- 					       "svinval", "svnapot", "svpbmt", "za64rs",
- 					       "zawrs", "zba", "zbb", "zbc", "zbs", "zca",
- 					       "zcb", "zcd", "zcmop", "zfa", "zfbfmin",
--					       "zfh", "zfhmin", "zicbom", "zicbop", "zicboz",
--					       "ziccamoa", "ziccif", "zicclsm", "ziccrse", "zicntr",
--					       "zicond", "zicsr", "zifencei", "zihintntl",
-+					       "zfh", "zfhmin", "zic64b", "zicbom", "zicbop",
-+					       "zicboz", "ziccamoa", "ziccif", "zicclsm", "ziccrse",
-+					       "zicntr", "zicond", "zicsr", "zifencei", "zihintntl",
- 					       "zihintpause", "zihpm", "zimop", "zkt", "zvbb",
- 					       "zvbc", "zvfbfmin", "zvfbfwma", "zvfh",
- 					       "zvfhmin", "zvkb", "zvkg", "zvkn", "zvknc",
-@@ -322,9 +322,9 @@ cpu_7: cpu@7 {
- 					       "svinval", "svnapot", "svpbmt", "za64rs",
- 					       "zawrs", "zba", "zbb", "zbc", "zbs", "zca",
- 					       "zcb", "zcd", "zcmop", "zfa", "zfbfmin",
--					       "zfh", "zfhmin", "zicbom", "zicbop", "zicboz",
--					       "ziccamoa", "ziccif", "zicclsm", "ziccrse", "zicntr",
--					       "zicond", "zicsr", "zifencei", "zihintntl",
-+					       "zfh", "zfhmin", "zic64b", "zicbom", "zicbop",
-+					       "zicboz", "ziccamoa", "ziccif", "zicclsm", "ziccrse",
-+					       "zicntr", "zicond", "zicsr", "zifencei", "zihintntl",
- 					       "zihintpause", "zihpm", "zimop", "zkt", "zvbb",
- 					       "zvbc", "zvfbfmin", "zvfbfwma", "zvfh",
- 					       "zvfhmin", "zvkb", "zvkg", "zvkn", "zvknc",
+diff --git a/arch/riscv/boot/dts/spacemit/k1.dtsi b/arch/riscv/boot/dts/spacemit/k1.dtsi
+index f0bad6855c970..e6fc684ad3898 100644
+--- a/arch/riscv/boot/dts/spacemit/k1.dtsi
++++ b/arch/riscv/boot/dts/spacemit/k1.dtsi
+@@ -54,12 +54,12 @@ cpu_0: cpu@0 {
+ 			compatible = "spacemit,x60", "riscv";
+ 			device_type = "cpu";
+ 			reg = <0>;
+-			riscv,isa = "rv64imafdcbv_zicbom_zicbop_zicboz_zicntr_zicond_zicsr_zifencei_zihintpause_zihpm_zfh_zba_zbb_zbc_zbs_zkt_zvfh_zvkt_sscofpmf_sstc_svinval_svnapot_svpbmt";
++			riscv,isa = "rv64imafdcbv_zic64b_zicbom_zicbop_zicboz_zicntr_zicond_zicsr_zifencei_zihintpause_zihpm_zfh_zba_zbb_zbc_zbs_zkt_zvfh_zvkt_sscofpmf_sstc_svinval_svnapot_svpbmt";
+ 			riscv,isa-base = "rv64i";
+-			riscv,isa-extensions = "i", "m", "a", "f", "d", "c", "b", "v", "zicbom",
+-					       "zicbop", "zicboz", "zicntr", "zicond", "zicsr",
+-					       "zifencei", "zihintpause", "zihpm", "zfh", "zba",
+-					       "zbb", "zbc", "zbs", "zkt", "zvfh", "zvkt",
++			riscv,isa-extensions = "i", "m", "a", "f", "d", "c", "b", "v", "zic64b",
++					       "zicbom", "zicbop", "zicboz", "zicntr", "zicond",
++					       "zicsr", "zifencei", "zihintpause", "zihpm", "zfh",
++					       "zba", "zbb", "zbc", "zbs", "zkt", "zvfh", "zvkt",
+ 					       "sscofpmf", "sstc", "svinval", "svnapot", "svpbmt";
+ 			riscv,cbom-block-size = <64>;
+ 			riscv,cbop-block-size = <64>;
+@@ -84,12 +84,12 @@ cpu_1: cpu@1 {
+ 			compatible = "spacemit,x60", "riscv";
+ 			device_type = "cpu";
+ 			reg = <1>;
+-			riscv,isa = "rv64imafdcbv_zicbom_zicbop_zicboz_zicntr_zicond_zicsr_zifencei_zihintpause_zihpm_zfh_zba_zbb_zbc_zbs_zkt_zvfh_zvkt_sscofpmf_sstc_svinval_svnapot_svpbmt";
++			riscv,isa = "rv64imafdcbv_zic64b_zicbom_zicbop_zicboz_zicntr_zicond_zicsr_zifencei_zihintpause_zihpm_zfh_zba_zbb_zbc_zbs_zkt_zvfh_zvkt_sscofpmf_sstc_svinval_svnapot_svpbmt";
+ 			riscv,isa-base = "rv64i";
+-			riscv,isa-extensions = "i", "m", "a", "f", "d", "c", "b", "v", "zicbom",
+-					       "zicbop", "zicboz", "zicntr", "zicond", "zicsr",
+-					       "zifencei", "zihintpause", "zihpm", "zfh", "zba",
+-					       "zbb", "zbc", "zbs", "zkt", "zvfh", "zvkt",
++			riscv,isa-extensions = "i", "m", "a", "f", "d", "c", "b", "v", "zic64b",
++					       "zicbom", "zicbop", "zicboz", "zicntr", "zicond",
++					       "zicsr", "zifencei", "zihintpause", "zihpm", "zfh",
++					       "zba", "zbb", "zbc", "zbs", "zkt", "zvfh", "zvkt",
+ 					       "sscofpmf", "sstc", "svinval", "svnapot", "svpbmt";
+ 			riscv,cbom-block-size = <64>;
+ 			riscv,cbop-block-size = <64>;
+@@ -114,12 +114,12 @@ cpu_2: cpu@2 {
+ 			compatible = "spacemit,x60", "riscv";
+ 			device_type = "cpu";
+ 			reg = <2>;
+-			riscv,isa = "rv64imafdcbv_zicbom_zicbop_zicboz_zicntr_zicond_zicsr_zifencei_zihintpause_zihpm_zfh_zba_zbb_zbc_zbs_zkt_zvfh_zvkt_sscofpmf_sstc_svinval_svnapot_svpbmt";
++			riscv,isa = "rv64imafdcbv_zic64b_zicbom_zicbop_zicboz_zicntr_zicond_zicsr_zifencei_zihintpause_zihpm_zfh_zba_zbb_zbc_zbs_zkt_zvfh_zvkt_sscofpmf_sstc_svinval_svnapot_svpbmt";
+ 			riscv,isa-base = "rv64i";
+-			riscv,isa-extensions = "i", "m", "a", "f", "d", "c", "b", "v", "zicbom",
+-					       "zicbop", "zicboz", "zicntr", "zicond", "zicsr",
+-					       "zifencei", "zihintpause", "zihpm", "zfh", "zba",
+-					       "zbb", "zbc", "zbs", "zkt", "zvfh", "zvkt",
++			riscv,isa-extensions = "i", "m", "a", "f", "d", "c", "b", "v", "zic64b",
++					       "zicbom", "zicbop", "zicboz", "zicntr", "zicond",
++					       "zicsr", "zifencei", "zihintpause", "zihpm", "zfh",
++					       "zba", "zbb", "zbc", "zbs", "zkt", "zvfh", "zvkt",
+ 					       "sscofpmf", "sstc", "svinval", "svnapot", "svpbmt";
+ 			riscv,cbom-block-size = <64>;
+ 			riscv,cbop-block-size = <64>;
+@@ -144,12 +144,12 @@ cpu_3: cpu@3 {
+ 			compatible = "spacemit,x60", "riscv";
+ 			device_type = "cpu";
+ 			reg = <3>;
+-			riscv,isa = "rv64imafdcbv_zicbom_zicbop_zicboz_zicntr_zicond_zicsr_zifencei_zihintpause_zihpm_zfh_zba_zbb_zbc_zbs_zkt_zvfh_zvkt_sscofpmf_sstc_svinval_svnapot_svpbmt";
++			riscv,isa = "rv64imafdcbv_zic64b_zicbom_zicbop_zicboz_zicntr_zicond_zicsr_zifencei_zihintpause_zihpm_zfh_zba_zbb_zbc_zbs_zkt_zvfh_zvkt_sscofpmf_sstc_svinval_svnapot_svpbmt";
+ 			riscv,isa-base = "rv64i";
+-			riscv,isa-extensions = "i", "m", "a", "f", "d", "c", "b", "v", "zicbom",
+-					       "zicbop", "zicboz", "zicntr", "zicond", "zicsr",
+-					       "zifencei", "zihintpause", "zihpm", "zfh", "zba",
+-					       "zbb", "zbc", "zbs", "zkt", "zvfh", "zvkt",
++			riscv,isa-extensions = "i", "m", "a", "f", "d", "c", "b", "v", "zic64b",
++					       "zicbom", "zicbop", "zicboz", "zicntr", "zicond",
++					       "zicsr", "zifencei", "zihintpause", "zihpm", "zfh",
++					       "zba", "zbb", "zbc", "zbs", "zkt", "zvfh", "zvkt",
+ 					       "sscofpmf", "sstc", "svinval", "svnapot", "svpbmt";
+ 			riscv,cbom-block-size = <64>;
+ 			riscv,cbop-block-size = <64>;
+@@ -174,12 +174,12 @@ cpu_4: cpu@4 {
+ 			compatible = "spacemit,x60", "riscv";
+ 			device_type = "cpu";
+ 			reg = <4>;
+-			riscv,isa = "rv64imafdcbv_zicbom_zicbop_zicboz_zicntr_zicond_zicsr_zifencei_zihintpause_zihpm_zfh_zba_zbb_zbc_zbs_zkt_zvfh_zvkt_sscofpmf_sstc_svinval_svnapot_svpbmt";
++			riscv,isa = "rv64imafdcbv_zic64b_zicbom_zicbop_zicboz_zicntr_zicond_zicsr_zifencei_zihintpause_zihpm_zfh_zba_zbb_zbc_zbs_zkt_zvfh_zvkt_sscofpmf_sstc_svinval_svnapot_svpbmt";
+ 			riscv,isa-base = "rv64i";
+-			riscv,isa-extensions = "i", "m", "a", "f", "d", "c", "b", "v", "zicbom",
+-					       "zicbop", "zicboz", "zicntr", "zicond", "zicsr",
+-					       "zifencei", "zihintpause", "zihpm", "zfh", "zba",
+-					       "zbb", "zbc", "zbs", "zkt", "zvfh", "zvkt",
++			riscv,isa-extensions = "i", "m", "a", "f", "d", "c", "b", "v", "zic64b",
++					       "zicbom", "zicbop", "zicboz", "zicntr", "zicond",
++					       "zicsr", "zifencei", "zihintpause", "zihpm", "zfh",
++					       "zba", "zbb", "zbc", "zbs", "zkt", "zvfh", "zvkt",
+ 					       "sscofpmf", "sstc", "svinval", "svnapot", "svpbmt";
+ 			riscv,cbom-block-size = <64>;
+ 			riscv,cbop-block-size = <64>;
+@@ -204,12 +204,12 @@ cpu_5: cpu@5 {
+ 			compatible = "spacemit,x60", "riscv";
+ 			device_type = "cpu";
+ 			reg = <5>;
+-			riscv,isa = "rv64imafdcbv_zicbom_zicbop_zicboz_zicntr_zicond_zicsr_zifencei_zihintpause_zihpm_zfh_zba_zbb_zbc_zbs_zkt_zvfh_zvkt_sscofpmf_sstc_svinval_svnapot_svpbmt";
++			riscv,isa = "rv64imafdcbv_zic64b_zicbom_zicbop_zicboz_zicntr_zicond_zicsr_zifencei_zihintpause_zihpm_zfh_zba_zbb_zbc_zbs_zkt_zvfh_zvkt_sscofpmf_sstc_svinval_svnapot_svpbmt";
+ 			riscv,isa-base = "rv64i";
+-			riscv,isa-extensions = "i", "m", "a", "f", "d", "c", "b", "v", "zicbom",
+-					       "zicbop", "zicboz", "zicntr", "zicond", "zicsr",
+-					       "zifencei", "zihintpause", "zihpm", "zfh", "zba",
+-					       "zbb", "zbc", "zbs", "zkt", "zvfh", "zvkt",
++			riscv,isa-extensions = "i", "m", "a", "f", "d", "c", "b", "v", "zic64b",
++					       "zicbom", "zicbop", "zicboz", "zicntr", "zicond",
++					       "zicsr", "zifencei", "zihintpause", "zihpm", "zfh",
++					       "zba", "zbb", "zbc", "zbs", "zkt", "zvfh", "zvkt",
+ 					       "sscofpmf", "sstc", "svinval", "svnapot", "svpbmt";
+ 			riscv,cbom-block-size = <64>;
+ 			riscv,cbop-block-size = <64>;
+@@ -234,12 +234,12 @@ cpu_6: cpu@6 {
+ 			compatible = "spacemit,x60", "riscv";
+ 			device_type = "cpu";
+ 			reg = <6>;
+-			riscv,isa = "rv64imafdcbv_zicbom_zicbop_zicboz_zicntr_zicond_zicsr_zifencei_zihintpause_zihpm_zfh_zba_zbb_zbc_zbs_zkt_zvfh_zvkt_sscofpmf_sstc_svinval_svnapot_svpbmt";
++			riscv,isa = "rv64imafdcbv_zic64b_zicbom_zicbop_zicboz_zicntr_zicond_zicsr_zifencei_zihintpause_zihpm_zfh_zba_zbb_zbc_zbs_zkt_zvfh_zvkt_sscofpmf_sstc_svinval_svnapot_svpbmt";
+ 			riscv,isa-base = "rv64i";
+-			riscv,isa-extensions = "i", "m", "a", "f", "d", "c", "b", "v", "zicbom",
+-					       "zicbop", "zicboz", "zicntr", "zicond", "zicsr",
+-					       "zifencei", "zihintpause", "zihpm", "zfh", "zba",
+-					       "zbb", "zbc", "zbs", "zkt", "zvfh", "zvkt",
++			riscv,isa-extensions = "i", "m", "a", "f", "d", "c", "b", "v", "zic64b",
++					       "zicbom", "zicbop", "zicboz", "zicntr", "zicond",
++					       "zicsr", "zifencei", "zihintpause", "zihpm", "zfh",
++					       "zba", "zbb", "zbc", "zbs", "zkt", "zvfh", "zvkt",
+ 					       "sscofpmf", "sstc", "svinval", "svnapot", "svpbmt";
+ 			riscv,cbom-block-size = <64>;
+ 			riscv,cbop-block-size = <64>;
+@@ -264,12 +264,12 @@ cpu_7: cpu@7 {
+ 			compatible = "spacemit,x60", "riscv";
+ 			device_type = "cpu";
+ 			reg = <7>;
+-			riscv,isa = "rv64imafdcbv_zicbom_zicbop_zicboz_zicntr_zicond_zicsr_zifencei_zihintpause_zihpm_zfh_zba_zbb_zbc_zbs_zkt_zvfh_zvkt_sscofpmf_sstc_svinval_svnapot_svpbmt";
++			riscv,isa = "rv64imafdcbv_zic64b_zicbom_zicbop_zicboz_zicntr_zicond_zicsr_zifencei_zihintpause_zihpm_zfh_zba_zbb_zbc_zbs_zkt_zvfh_zvkt_sscofpmf_sstc_svinval_svnapot_svpbmt";
+ 			riscv,isa-base = "rv64i";
+-			riscv,isa-extensions = "i", "m", "a", "f", "d", "c", "b", "v", "zicbom",
+-					       "zicbop", "zicboz", "zicntr", "zicond", "zicsr",
+-					       "zifencei", "zihintpause", "zihpm", "zfh", "zba",
+-					       "zbb", "zbc", "zbs", "zkt", "zvfh", "zvkt",
++			riscv,isa-extensions = "i", "m", "a", "f", "d", "c", "b", "v", "zic64b",
++					       "zicbom", "zicbop", "zicboz", "zicntr", "zicond",
++					       "zicsr", "zifencei", "zihintpause", "zihpm", "zfh",
++					       "zba", "zbb", "zbc", "zbs", "zkt", "zvfh", "zvkt",
+ 					       "sscofpmf", "sstc", "svinval", "svnapot", "svpbmt";
+ 			riscv,cbom-block-size = <64>;
+ 			riscv,cbop-block-size = <64>;
 
 -- 
 2.43.0
