@@ -4,91 +4,76 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4255BCD5BD1
-	for <kvm-riscv@archiver.kernel.org>; Tue,  2 Jun 2026 23:15:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AA5D5CD5BD1
+	for <kvm-riscv@archiver.kernel.org>; Tue,  2 Jun 2026 23:15:23 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Message-Id
 	:MIME-Version:Subject:Date:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=2WSz5N4P5TSBoRp0XT6FIjiFwp584PUAiQJL7a9/6Rs=; b=DSvGeCVbjCQ6hy
-	D8tmJ3+ffC34LRfApQnwI3Wiukzj6OUcujImJJ73pMKTvYEQm98rwFFymfAF/IOBHC9mPiQlnNafP
-	g01eUXn+s+yXKGm7S/lpRAvad0Xz+dhQX8nNR8yb4SHIDR18t9egrIQgjIU6OvmR8keeayPd0R3dy
-	K7E8pPGiCe0GRULjBsTGQN3ogF3587GPSVTi3Da9+Br/atOFG83t3PyQu4PHjV2tV5SDjCQNqQk0k
-	hDI5FMmOl9VAxKyvJXLCDapIibH7yCxWqMhwbFYdlOrzP1KPWTkfs51oQgMKZAwyDZGyeJtyZF/W6
-	y4RtUkmxii617qgi2Arw==;
+	List-Owner; bh=f1m1fXMK547shJnrv3gKuIfysmhqEjX28PPdDIuA5WY=; b=pg8s2CoLtBFYYH
+	/xzdO9CCNdASMKjEoGOh9qCQuSTXgzQhOO+A3B/S6X9E4FDQ500gHkshSUb06tG13R0vdCkqUvVti
+	mUhtr4afEkNgRTLeW87vW3AeyvZk6YJ+Fj/i5uu2PO4NFmT7cjPQo+B9mMZjIeFCEQTGLXdEdaAWL
+	XdHqEsi5UbL50h7V8rn/dUoupqC9jKBz6u5Ccp5bzdjn96cmnkhi4RpDhheKmUuLEoIr/y9c42SlM
+	iVEcGqtIlQa2cQI/R0nwmNmpxUv123tDtd4XTLunk7CjSKbZt+bmFL2GPOQaMVDhz4jsJo284CgP/
+	+xpJqLM1gj04ILiMT+jA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wUYKJ-0000000DwHq-03CV;
-	Tue, 02 Jun 2026 23:15:15 +0000
-Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+	id 1wUYKR-0000000DwP8-1qw3;
+	Tue, 02 Jun 2026 23:15:23 +0000
+Received: from mail-pj1-x1030.google.com ([2607:f8b0:4864:20::1030])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wUYKH-0000000DwGZ-0qHe
-	for kvm-riscv@bombadil.infradead.org;
-	Tue, 02 Jun 2026 23:15:13 +0000
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=Cc:To:In-Reply-To:References:
-	Message-Id:Content-Transfer-Encoding:Content-Type:MIME-Version:Subject:Date:
-	From:Sender:Reply-To:Content-ID:Content-Description;
-	bh=7boHfA/wFrzsz1sM7I2UAXGjLvkEYWGhZgOkDT/r/jQ=; b=QwZ2kGfs9UWgIUCyhLcHbHygz1
-	tCFQUEKwRg9r1UKdvdKaTLAEBD9/xYUpYEqBR+GLGTOVklJWSO9NH6tocGcOcJWG1zA4Yb8HFan6g
-	GrL1L86a90ach/Q7YHJOjvP87LBrPEiU//0gvkYp+8dJCNwXHa7uNvJGKjJriW9juJAO6YpmuBhZ1
-	Bhx14Uqa66sL3LY9jSj7ZeerkBdCd+lmpvSLn4Pp+jgXlE6B2KhcszzarrwT0ftkru6xshp+tBF3G
-	XDIS+WQ9WrWCzCB3z2PbZUVDfklzc27N6DkmRoF2YIiJ8qhrzi3n28RmCFro4tgdveRjSVPdN6btx
-	P6PVmVSg==;
-Received: from mail-pl1-x62c.google.com ([2607:f8b0:4864:20::62c])
-	by desiato.infradead.org with esmtps (Exim 4.99.2 #2 (Red Hat Linux))
-	id 1wUYK5-0000000Afny-31qE
+	id 1wUYKP-0000000DwMU-2Gya
 	for kvm-riscv@lists.infradead.org;
-	Tue, 02 Jun 2026 23:15:10 +0000
-Received: by mail-pl1-x62c.google.com with SMTP id d9443c01a7336-2c0a5354da1so593685ad.0
-        for <kvm-riscv@lists.infradead.org>; Tue, 02 Jun 2026 16:15:01 -0700 (PDT)
+	Tue, 02 Jun 2026 23:15:22 +0000
+Received: by mail-pj1-x1030.google.com with SMTP id 98e67ed59e1d1-36d98b68d68so2094587a91.2
+        for <kvm-riscv@lists.infradead.org>; Tue, 02 Jun 2026 16:15:21 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1780442100; x=1781046900; darn=lists.infradead.org;
+        d=gmail.com; s=20251104; t=1780442121; x=1781046921; darn=lists.infradead.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=7boHfA/wFrzsz1sM7I2UAXGjLvkEYWGhZgOkDT/r/jQ=;
-        b=PelFHTuM++P5boBUlME5Qok4sD8t0LvsmbfxM/8ePOaO5+41EUbSp0T/TNzcIrJ8NE
-         FE5iaZPvsGzHyn5oqVoUnF5jAf95vXkdCzOQ7fFIX3qFZ7WYurm0dIDI0sIeuxYz1u3t
-         pjRwd2AP53tNmBqULKic5ospM9FkbJsPl2E2gG7kOgygpJaGTh//egk607X2RpMbUkVV
-         MK7XeO1w9n3G4kENjwgwyI+WdZfnBlQhxA0CxdqQPV7qxlIRMZ81MI9sbcovSoUPhbks
-         amizXYL0dc299WdM1J1moRJyH8sZbaHgd/f/4GxOURd5teo1bK7YVu9jtdIr1OuPUA6W
-         jsFA==
+        bh=iPBQ++ePsPMFHRPcO/XS56r+jXgkNVBk54cuehJ0cRo=;
+        b=W3kYPzebKaSm0lK3A1uqEI+kCwu8Fn3qUdIY+WDtxlDYSXuV3JWVUlGhLTUP1aQsta
+         1NrtCqLfQ8fYkGVZls4kHnLTFu6CZEN0o4WTou5DO/DO6eTTDbJf2nGNBq9fmz+y0aaC
+         dhXj7/L3enANeBkagrq9CfJNmrfmxCw2CO0Lnt8pTEoq3LyTFfk0sYCA4U/YDh5mZlF3
+         zg1Po80thhagli1pxL9VCrfG8m/HPr/+YEmqenU0aUAmIYIO2M1NIrAqfgI7ooNDm2BD
+         /pneatvKQ2cwpBLoUnyT3dYil/1ZrVE8fLTHg6RSps9Hc1650uOV8bymKp8m51slvE7F
+         lmHQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780442100; x=1781046900;
+        d=1e100.net; s=20251104; t=1780442121; x=1781046921;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
          :cc:subject:date:message-id:reply-to;
-        bh=7boHfA/wFrzsz1sM7I2UAXGjLvkEYWGhZgOkDT/r/jQ=;
-        b=lUqCzi4pQNFXdyCbohtKECJN3Pn175z5ux8EA1deQsQEvDkxcNo1wEb1yFKWilV30S
-         j2EbHLAtKZYukjHf1PGYd3wzIH73KB3pgt6dL3YVXChg5hA+5y7tLiXkNi8Bp/6g1GZl
-         b/Dev5PARahiOHSTQRQvha9eiUHaFIhKFQZrdwRNqsXKhxHB0y968oX0zsxsMeFAw6/+
-         /td0Zvg/UE/XRxzLNAdP4jAWXWSUEv/KkcbMbSW+b1jNg56AJXg5nwiSmYBazcWjFjAZ
-         BLx2sBFZUPlZ35uGiks7dY7iuITIzpWdoc/+2tY2w4TBQqj7UctZYP/NNoToJRy/MSCw
-         +VaQ==
-X-Forwarded-Encrypted: i=1; AFNElJ9zC4Eb2ezltXYZjXFrMiiD6OZ4hpTDfUOXBbG+vHIjEl5zR+md+K1KKxyHfhK47CdJXP/cgNRLDMs=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yzr6eo8mlKjlzNgO3d2rr+s4+QUFjnUB4yqtwqrt0SrDI1jlXeE
-	Vv0Kk2dnf1iF7YSI0VyAOoNkRU6dDBoRZAVz0n68w3kqmBJAAOqVopWHIDLnid0IyvWqGQ==
-X-Gm-Gg: Acq92OG1vakZ9gst1IPvYe7lUfoMKxEl35flqIwsoa0wBdCxZmTR7A143RYDmnQ2KVN
-	/zxwPdAkj17nLSB4onJeYckiTEJ67g9NMSsRpMpWdNYX/k94id3VRNdwM7GNiiBgMjj1qL3lUmB
-	UmRWhEehMrXVRQ7oM1OZJV+aK5qZe8qz4dLA0WdOATXa4YyGpgUrvyrMFcNaLGBKRO3w3t8eJbY
-	/7lMiQpivR33x/N5xD75wmIBWQBuoxMnG66NbWdle3NfbiRf//L6yMzERYz0DFs0Rf24CIwMWSl
-	XrGCL3NwtxNKzusxx3uXl40TLCghC1EDcK/sIn/0O/cq9GM8mvytLEj3VJCuwe3IahlWXdzNLbY
-	gx3wbJOTm0mI49LoNeZE2G9/kE5nXYIXDhq5MPMbeLYkb1KijC4Zux+zOdn72DlUPtiH6As7Xg+
-	3qC8BTRuCRmA==
-X-Received: by 2002:a17:903:37ce:b0:2c0:d29b:34ff with SMTP id d9443c01a7336-2c1646eaeacmr5471065ad.10.1780442099816;
-        Tue, 02 Jun 2026 16:14:59 -0700 (PDT)
+        bh=iPBQ++ePsPMFHRPcO/XS56r+jXgkNVBk54cuehJ0cRo=;
+        b=C75JKpgsY6+F2JNhSZYGrmL7ogrfHMsxKIcPEh7Hyd/LxfRHNLAGOPdydT3/XQa2IC
+         cwPbR5bT3G2By1a8rl4cfPQPaI60Rj+AN1gHhGLyy37x6t6UjKGYvlapldTrUy9iAys0
+         BavoYpwJozltprHyVUuKaA0F+ZRW7ACMW7N2NWHtw9YkBgqHdDOAehMoFzhCkSjtr2do
+         6Iot14VugIFXWaQYcY6BCxqzmR/mzjq6XVjJZqv7qMBWL1EDssQubBAOfpSWI/lbWZZZ
+         a8W0PrqGBA01tcV8scEM8kFmVNZD/yF4UOJ8199+wRDO4CLuExCfQ9MLtPOU+/qgqa3e
+         83hQ==
+X-Forwarded-Encrypted: i=1; AFNElJ+0irsBLwU3vnFCa/jThR47kbuaA/i1Nnka65TDG8VrRpiQrFA19c3/2x52QW7zDuYWQEK+gUX/7ug=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yw7Qsm79amsT9WQQuWB4ehnmzhRb5M6NWVkqCk+1gdaJG8LEBnn
+	PUcZtxlr2G5CmjWBFF+uxyiKVERyfSZAmMX+qe9OCw4cCHY2uUU0xFu7
+X-Gm-Gg: Acq92OGMVQlaaMkkvCkY6kERbgLHygRWREv68B1Fy+723H1fRDCELgMzVxx8SJpCukC
+	5YKJ6ouLH/Q9OOWmtins0JHZ0R0xyD7SE+Sp6PnLV+Mdmz9Jzwz8F/O6qg/mkNDFAZTlP3TzpU8
+	eJtLFJu2hbfV0faB+erJZGt8DwyZvQ3igm2JuJT13ttghkikI/Eelq0eV28Q0k0Lver7UQ9Z25J
+	2cLyNul8gQVYePrM85PpNxcaO1Y9FDCHgOC7rD1J3vr687wzVnNb+iyXBSR/hJzDarUC71ZhyW+
+	zDzQuSXd6W6JW4VUd+CWRvUH8eXKY6oZBFhVjxTEjKqddoajpgqbGwu1mUI3K/M22BzRvkKTGcp
+	6w47fSBz4ZvKxjYFjanO7wbjV+hdhH1y7aCVwdqT6DsSs4iRXhNrTnEbx1JbEiDJem0ny2VdW9O
+	cLZZ4m2zvLog==
+X-Received: by 2002:a17:90b:1fc7:b0:36d:8f51:fe29 with SMTP id 98e67ed59e1d1-36e32285958mr783171a91.17.1780442120719;
+        Tue, 02 Jun 2026 16:15:20 -0700 (PDT)
 Received: from [127.0.1.1] ([2a12:a305:4::40e9])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2c16649d2dfsm3302965ad.75.2026.06.02.16.14.48
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2c16649d2dfsm3302965ad.75.2026.06.02.16.15.10
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 02 Jun 2026 16:14:59 -0700 (PDT)
+        Tue, 02 Jun 2026 16:15:20 -0700 (PDT)
 From: Guodong Xu <docular.xu@gmail.com>
-Date: Wed, 03 Jun 2026 07:12:07 -0400
-Subject: [PATCH v3 12/15] riscv: Add a getter for user PMLEN support
+Date: Wed, 03 Jun 2026 07:12:09 -0400
+Subject: [PATCH v3 14/15] riscv: cpu: Output isa bases lines in cpuinfo
 MIME-Version: 1.0
-Message-Id: <20260603-rva23u64-hwprobe-v2-v3-12-5529a7b28384@gmail.com>
+Message-Id: <20260603-rva23u64-hwprobe-v2-v3-14-5529a7b28384@gmail.com>
 References: <20260603-rva23u64-hwprobe-v2-v3-0-5529a7b28384@gmail.com>
 In-Reply-To: <20260603-rva23u64-hwprobe-v2-v3-0-5529a7b28384@gmail.com>
 To: Jonathan Corbet <corbet@lwn.net>, 
@@ -113,17 +98,17 @@ Cc: linux-doc@vger.kernel.org, linux-riscv@lists.infradead.org,
  Samuel Holland <samuel.holland@sifive.com>, 
  Guodong Xu <docular.xu@gmail.com>
 X-Mailer: b4 0.15.1
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1911; i=docular.xu@gmail.com;
- h=from:subject:message-id; bh=EL8rlxjtR8czox+vDhBwL1idMRjEpfUrJqNmOC0hv58=;
- b=owGbwMvMwCXWtEl1Z3CGpCDjabUkhiwFHrZY9+q9B3v8ZK6p7otLtTvI4VC+6oT7t0uLhDc13
- /XllYvtKGVhEONikBVTZDl8tCV76yufaN/nnD9g5rAygQxh4OIUgIm4SzEyzDZ3u9ASoOlvfSuw
- pOCJRaxy6cHlb+Zqq85+p/fB6qJvGyPD/E0qV+YFOtwqmPx9rvh/8bKo3NgHqXcrN6WX3/cPMJn
- PCwA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2801; i=docular.xu@gmail.com;
+ h=from:subject:message-id; bh=sOGp0iB3i67htt/vt0YyWfexKgE348qHxnlSOAaqgUc=;
+ b=owGbwMvMwCXWtEl1Z3CGpCDjabUkhiwFHvbsu0dSf3uxan3W+P3ws4linXtVZZ/tdq3sy5l8B
+ wK7f5t2lLIwiHExyIopshw+2pK99ZVPtO9zzh8wc1iZQIYwcHEKwET8VjIybPJi3bXcy+RQWf6x
+ r3t0GIXNS9Yy3+L21ZSRiO683bLhOSPD3YeMk3iVKxc06qYfmb89acLLpOA9pQsPtry7kjdFtju
+ CBQA=
 X-Developer-Key: i=docular.xu@gmail.com; a=openpgp;
  fpr=90B1DC3DF0BD10FD1227BD6344F254AF42F143EE
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260603_001507_559983_8CD5DDE0 
-X-CRM114-Status: GOOD (  10.96  )
+X-CRM114-CacheID: sfid-20260602_161521_593781_2680BE22 
+X-CRM114-Status: GOOD (  13.28  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -140,62 +125,90 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-From: Andrew Jones <andrew.jones@oss.qualcomm.com>
+Output two new lines per processor in /proc/cpuinfo:
 
-Querying whether a given user PMLEN is supported is needed for
-RVA23U64 base detection from outside arch/riscv/kernel/process.c.
-Add riscv_have_user_pmlen() to expose this.
+  isa bases       : <bases that all harts conform to>
+  hart isa bases  : <bases that this specific hart conforms to>
 
-Link: https://lore.kernel.org/linux-riscv/rfuwa7a3ebe76udmnwyrssjy7shkkgxntvhwzn6oquysj4tuyp@xzvpylcfhz53/
+These read directly from the cached riscv_isa_bases and
+hart_isa[cpu].isa_bases bitmaps populated at boot by
+riscv_init_isa_bases().
+
+Example output on qemu booted with -cpu rva23s64,sv39=on,pmp=on
+(showing only the new lines plus their neighbors for context):
+
+  processor       : 0
+  hart            : 4
+  isa bases       : rv64ima rva23u64
+  isa             : rv64imafdcbvh_zicbom_zicbop_...
+  mmu             : sv39
+  ...
+  mimpid          : 0x0
+  hart isa bases  : rv64ima rva23u64
+  hart isa        : rv64imafdcbvh_zicbom_zicbop_...
+
 Signed-off-by: Andrew Jones <andrew.jones@oss.qualcomm.com>
-[Guodong: replace exported booleans with getter per Andrew's suggestion]
 Signed-off-by: Guodong Xu <docular.xu@gmail.com>
 ---
 v3: No change.
-v2: Add a getter for user PMLEN.
+v2:
+- Read from the cached riscv_isa_bases and hart_isa[cpu_id].isa_bases
+  bitmaps populated by riscv_init_isa_bases() at init time.
 ---
- arch/riscv/include/asm/processor.h |  4 ++++
- arch/riscv/kernel/process.c        | 12 ++++++++++++
- 2 files changed, 16 insertions(+)
+ arch/riscv/kernel/cpu.c | 26 ++++++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
 
-diff --git a/arch/riscv/include/asm/processor.h b/arch/riscv/include/asm/processor.h
-index 812517b2cec13..febf51e127f70 100644
---- a/arch/riscv/include/asm/processor.h
-+++ b/arch/riscv/include/asm/processor.h
-@@ -214,6 +214,10 @@ long set_tagged_addr_ctrl(struct task_struct *task, unsigned long arg);
- long get_tagged_addr_ctrl(struct task_struct *task);
- #define SET_TAGGED_ADDR_CTRL(arg)	set_tagged_addr_ctrl(current, arg)
- #define GET_TAGGED_ADDR_CTRL()		get_tagged_addr_ctrl(current)
-+
-+bool riscv_have_user_pmlen(u8 len);
+diff --git a/arch/riscv/kernel/cpu.c b/arch/riscv/kernel/cpu.c
+index 3dbc8cc557dd1..31e2857dcdcf1 100644
+--- a/arch/riscv/kernel/cpu.c
++++ b/arch/riscv/kernel/cpu.c
+@@ -305,6 +305,26 @@ static void print_mmu(struct seq_file *f)
+ 	seq_printf(f, "mmu\t\t: %s\n", sv_type);
+ }
+ 
++static const char * const riscv_isa_base_names[] = {
++#ifdef CONFIG_32BIT
++	[RISCV_ISA_BASE_IMA] = "rv32ima",
 +#else
-+static inline bool riscv_have_user_pmlen(u8 len) { return false; }
- #endif
- 
- #endif /* __ASSEMBLER__ */
-diff --git a/arch/riscv/kernel/process.c b/arch/riscv/kernel/process.c
-index b2df7f72241a5..5d9cb108a6232 100644
---- a/arch/riscv/kernel/process.c
-+++ b/arch/riscv/kernel/process.c
-@@ -302,6 +302,18 @@ enum {
- static bool have_user_pmlen_7;
- static bool have_user_pmlen_16;
- 
-+bool riscv_have_user_pmlen(u8 len)
++	[RISCV_ISA_BASE_IMA] = "rv64ima",
++#endif
++	[RISCV_ISA_BASE_RVA23U64] = "rva23u64",
++};
++
++static void print_isa_bases(struct seq_file *m, const unsigned long *isa_bases)
 +{
-+	switch (len) {
-+	case PMLEN_7:
-+		return have_user_pmlen_7;
-+	case PMLEN_16:
-+		return have_user_pmlen_16;
-+	default:
-+		return false;
++	unsigned int i;
++
++	for (i = 0; i < RISCV_NR_ISA_BASES; i++) {
++		if (test_bit(i, isa_bases))
++			seq_printf(m, " %s", riscv_isa_base_names[i]);
 +	}
++	seq_puts(m, "\n");
 +}
 +
- /*
-  * Control the relaxed ABI allowing tagged user addresses into the kernel.
-  */
+ static void *c_start(struct seq_file *m, loff_t *pos)
+ {
+ 	if (*pos == nr_cpu_ids)
+@@ -336,6 +356,9 @@ static int c_show(struct seq_file *m, void *v)
+ 	seq_printf(m, "processor\t: %lu\n", cpu_id);
+ 	seq_printf(m, "hart\t\t: %lu\n", cpuid_to_hartid_map(cpu_id));
+ 
++	seq_puts(m, "isa bases\t:");
++	print_isa_bases(m, riscv_isa_bases);
++
+ 	/*
+ 	 * For historical raisins, the isa: line is limited to the lowest common
+ 	 * denominator of extensions supported across all harts. A true list of
+@@ -360,6 +383,9 @@ static int c_show(struct seq_file *m, void *v)
+ 	seq_printf(m, "marchid\t\t: 0x%lx\n", ci->marchid);
+ 	seq_printf(m, "mimpid\t\t: 0x%lx\n", ci->mimpid);
+ 
++	seq_puts(m, "hart isa bases\t:");
++	print_isa_bases(m, hart_isa[cpu_id].isa_bases);
++
+ 	/*
+ 	 * Print the ISA extensions specific to this hart, which may show
+ 	 * additional extensions not present across all harts.
 
 -- 
 2.43.0
