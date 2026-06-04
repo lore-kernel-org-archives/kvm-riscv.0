@@ -4,37 +4,37 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ED2C6CD6E77
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E0345CD6E75
 	for <kvm-riscv@archiver.kernel.org>; Thu,  4 Jun 2026 23:05:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
-	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=mzs+lSgOleZdp5tlk5a7TMDcEMrGBSrWNUj6T2PAIls=; b=N3f8ft9bdHrSda
-	LwsjJOoO9B0AQvm8WWCc8xjzQU/ULx3s4kfx8qZoAX1DkESlRiP9XOOdMTpGQhSSKQsnB/0zcjoV3
-	V4CmGyGHDaR7klM3P4vVD180vP1wFwJIVieKOwlPLog0j7TX/Tff3Sr1DxrufaFj0xLl+7oE5H6FJ
-	hjPOhgL2Cga1k+Txm4wr0FYPh9Ebd0baTWjTM0W2ede2MYz2P0Usbyos6y9TdjgJN6mwIsCTqeehC
-	VEtrhsNzyJtq/esUH1bnCSCO3u0Z33VKK4ifeA9IdTT9FaEFInnDjmZUrbnOl/POJU92CP5+SfjzZ
-	b6ruiU1OLBefzvs8JGAw==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=LJv1WicxYb9yjDAHS69zt9pqBRRUJsiIDCd48+I1QGw=; b=BwXFadK1gfiuHP
+	xmI9+gdD8ii+1/NkbeD0ONjRMLN8BOFRpzg2FrvDs6EnT4Qqq+V5rVWsEb/1rnMuQ1teizS4E6zC/
+	r5WyaepGOuyUjZJJux101dLdKg/Ucf12M1KC5XfZkGUdcRhCtPfAjQfF6ectlcmBmzneCv+vN7Oqi
+	yA3QRxhTrFDmSWylloUPmyKkfvxwuEr4QR9DYtv4a+ra64XOdnQQiTVeJwM+iS09UxD/QnlfTb0FJ
+	BFrnXKBzjrkjVG/eF70lWiBVrvBNUJ9HZCOZ+QhekR3+Q+wSEWxaRIx5vK7Z/xGMbpwIXn2qbte0T
+	18Pws3dGVQWH2bwIZFcg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wVH7W-0000000HQeY-2gVi;
-	Thu, 04 Jun 2026 23:05:02 +0000
-Received: from m16.mail.163.com ([117.135.210.5])
+	id 1wVH7V-0000000HQe9-1sMj;
+	Thu, 04 Jun 2026 23:05:01 +0000
+Received: from m16.mail.163.com ([117.135.210.2])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wVH7T-0000000HQcm-0Hh9;
+	id 1wVH7S-0000000HQcf-1YUG;
 	Thu, 04 Jun 2026 23:05:00 +0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:To:Subject:Date:Message-ID:MIME-Version; bh=vw
-	XeKstSB0GbnzZJywYDxzZVE02bB56coa++tH6Xf6I=; b=JWmUvWsUWhRUWhvgrG
-	mUpTBPvQUiyJlJl4SY6AcOVJOP4thhMdMTfftnpKd6PJo+5GcD0vmU9AcfUcTtQG
-	q3w+1jl9V8KmeslOTJlg9djUHxt9ux4QrLhTY0OonghIrr1eI32IUUHKeGejcsU3
-	QR3g+SMABNecfP6vNbPtkP1SE=
+	s=s110527; h=From:To:Subject:Date:Message-ID:MIME-Version; bh=31
+	aVyHUumnhXwzCExpLEJUIkTMuPZna46h2rihqSFBc=; b=PHwg3m0fzy5cEX1++E
+	LczfKuSQNhaelLXuY8+tJtZY4N16853GJZAhl4Yxs/x1BrOaFN1ByNUIJeToOosh
+	yhSpxfCXVa7zvPGSQDungnI3sIj79g5Psh21b83a0ad0uGiQu7hAbVF4xXD5z2hj
+	rbQrqiuvlgPnWcp05dfYR1Ow4=
 Received: from wufei (unknown [])
-	by gzga-smtp-mtada-g0-3 (Coremail) with SMTP id _____wA3H9tJBCJqsfP6BQ--.26783S3;
-	Fri, 05 Jun 2026 07:03:49 +0800 (CST)
+	by gzga-smtp-mtada-g0-3 (Coremail) with SMTP id _____wA3H9tJBCJqsfP6BQ--.26783S2;
+	Fri, 05 Jun 2026 07:03:44 +0800 (CST)
 From: atwufei@163.com
 To: seanjc@google.com,
 	Anup Patel <anup@brainfault.org>,
@@ -48,23 +48,22 @@ Cc: Wu Fei <wu.fei9@sanechips.com.cn>,
 	kvm-riscv@lists.infradead.org,
 	linux-riscv@lists.infradead.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH v2 1/2] RISC-V: KVM: Fix skip of valid pages in kvm_riscv_gstage_wp_range
-Date: Fri,  5 Jun 2026 07:03:14 +0800
-Message-ID: <20260604230317.30501-2-atwufei@163.com>
+Subject: [PATCH v2 0/2] RISC-V: KVM: Fix skip of valid pages in gstage ops
+Date: Fri,  5 Jun 2026 07:03:13 +0800
+Message-ID: <20260604230317.30501-1-atwufei@163.com>
 X-Mailer: git-send-email 2.51.0
-In-Reply-To: <20260604230317.30501-1-atwufei@163.com>
-References: <20260604230317.30501-1-atwufei@163.com>
 MIME-Version: 1.0
-X-CM-TRANSID: _____wA3H9tJBCJqsfP6BQ--.26783S3
-X-Coremail-Antispam: 1Uf129KBjvJXoW7GFyUtrW8Cw4fKFWUKF47XFb_yoW8JF1rpF
-	sxuFy5Cr1rJFs3CF13tFZ8ZwsxKrs8Ka15KryUCa409Fn0grWUtrn7XrW29rW3Xr1kXrW3
-	uFZ0qFy5ur4xKaUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07jxgAwUUUUU=
+X-CM-TRANSID: _____wA3H9tJBCJqsfP6BQ--.26783S2
+X-Coremail-Antispam: 1Uf129KBjvdXoW7GFyUtrW8Cw4fKFWUKF47XFb_yoWkKrg_uF
+	WrJFykCwsrXa4xJF90k3s8A3s7WrWj9r4jvFnFvan3t34ftF1UJa18uFZ7XrWxX3yUC3W7
+	u34Y9r18Ar1SkjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+	9fnUUvcSsGvfC2KfnxnUUI43ZEXa7IU86wZ7UUUUU==
 X-Originating-IP: [240e:38c:8516:b200:1f3:8926:223c:5bc8]
-X-CM-SenderInfo: pdwz3wlhl6il2tof0z/xtbC7xU52moiBFXcQgAA3e
+X-CM-SenderInfo: pdwz3wlhl6il2tof0z/xtbCzhA42WoiBFDygwAA3S
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260604_160459_488654_E8DA9ACB 
-X-CRM114-Status: GOOD (  10.12  )
+X-CRM114-CacheID: sfid-20260604_160458_822052_5985046A 
+X-CRM114-Status: UNSURE (   7.14  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -85,42 +84,29 @@ From: Wu Fei <wu.fei9@sanechips.com.cn>
 
 The current gstage range walker unconditionally advances by 'page_size'
 when a leaf PTE is not found, e.g. when the range to wp is
-[0xfffff01fc000, 0xfffff023c000) and page_size is 2MB, if found_leaf of
-0xfffff01fc000 returns false, it skip the whole range, but it's possible
-to have valid entries in [0xfffff0200000, 0xfffff023c000).
+[0xfffff01fc000, 0xfffff023c000) , if found_leaf of 0xfffff01fc000
+returns false and page_size is 2MB, it skips the whole range, but it's
+possible to have valid entries in [0xfffff0200000, 0xfffff023c000), so
+only [0xfffff01fc000, 0xfffff0200000) can be skipped safely. Both
+wp/unamp have the same pattern.
 
-Signed-off-by: Wu Fei <wu.fei9@sanechips.com.cn>
----
- arch/riscv/kvm/gstage.c | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+dirty_log_test intentionally sets up the unaligned guest physical
+address, after riscv kvm enabling KVM_DIRTY_LOG_INITIALLY_SET, it's easy
+to trigger this bug if there is a larger window for guest to write more
+pages before first collect_dirty_pages.
 
-diff --git a/arch/riscv/kvm/gstage.c b/arch/riscv/kvm/gstage.c
-index d9fe8be2a151..2b141a78ecac 100644
---- a/arch/riscv/kvm/gstage.c
-+++ b/arch/riscv/kvm/gstage.c
-@@ -429,14 +429,14 @@ void kvm_riscv_gstage_wp_range(struct kvm_gstage *gstage, gpa_t start, gpa_t end
- 		if (ret)
- 			break;
- 
--		if (!found_leaf)
--			goto next;
--
--		addr = ALIGN_DOWN(addr, page_size);
--		kvm_riscv_gstage_op_pte(gstage, addr, ptep,
--					ptep_level, GSTAGE_OP_WP);
--next:
--		addr += page_size;
-+		if (!found_leaf) {
-+			addr = ALIGN(addr + 1, page_size);
-+		} else {
-+			addr = ALIGN_DOWN(addr, page_size);
-+			kvm_riscv_gstage_op_pte(gstage, addr, ptep,
-+						ptep_level, GSTAGE_OP_WP);
-+			addr += page_size;
-+		}
- 	}
- }
- 
+v2:
+* reformat
+* drop the patch to dirty_log_test, which is replaced by the one from
+  Sean: https://github.com/kvm-x86/linux/commit/4e0fdd9b0d7d
+
+Wu Fei (2):
+  RISC-V: KVM: Fix skip of valid pages in kvm_riscv_gstage_wp_range
+  RISC-V: KVM: Fix skip of valid pages in kvm_riscv_gstage_unmap_range
+
+ arch/riscv/kvm/gstage.c | 38 +++++++++++++++++++++-----------------
+ 1 file changed, 21 insertions(+), 17 deletions(-)
+
 -- 
 2.51.0
 
