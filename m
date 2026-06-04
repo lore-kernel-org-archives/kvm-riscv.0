@@ -4,7 +4,7 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 01AF9CD6E4A
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1D461CD6E6B
 	for <kvm-riscv@archiver.kernel.org>; Thu,  4 Jun 2026 13:24:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
@@ -12,29 +12,29 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=SMP+G+T1prqwvsaIiKHPRvfkiqYQkXvi4x/S0CBBaMA=; b=UGR/XgVAueh2Up
-	jwdR0vDdlIBHoXGy4jHXy3WQF4DgDf6DP8c7Z1DZyaCGBBU36DnOH5ZE4s8v4jHKgUOPFBX1ZLJ5g
-	/ZA1uX8EsJWOOlsLru5+XGUvx3Re5uDvFOtRHd/vV+AU3FG9YqWpT2CAyQYY0yNNS/fKHJnTWpj8D
-	eZwALJlFhnIaOVR3SsM36un4TYAZCYGceos2Ks74Lz4tIK9AI9AhuozlgdmK6s7bQIR9N2bjfFdqt
-	nPntTYGQaMVvVcsDrYHMqg4BtvPh5JFM5+XCAkF4+24O84Xdhe+ryIIUamXO/RrinDMVULvVXWm+0
-	3h2zlDbfnwR6eCID0avQ==;
+	List-Owner; bh=WDGw8KfBU9gRZOzPBhbTgnE76TyNX4BK+aAu0KvseHE=; b=P1M8PKg/gWfjaP
+	JET7Hd6auZPJMzJqnxT1imquHtILOne0Fsgvt9PZzNZuDwJPZW9VSSuhaUIy5nWszTVocjBkAaIZx
+	dmAnkK3FdNdZhUrMn6MmtULalEr3o9AU3RBY10DcaWRru4YsH4owcMJQQtfhk707A95DGld2/QMsY
+	/zDJd/2XsOJh3Yaz7lrDMhPuCgoPzbNe2QjmG6vEknyIB64QhyudxZg0ecL/skG085nsyrihIZpCZ
+	9K41K639KrlNcwYSeWvvuSc7nzLUFnAJ66G0J5aF8L8KpfqGP2NVRoiTmncZ+SsII6IUongbmId2r
+	IUE3aTN5L9KaDuam7soQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wV83t-0000000GmDx-1Okd;
+	id 1wV83t-0000000GmEG-2Qj6;
 	Thu, 04 Jun 2026 13:24:41 +0000
-Received: from out30-124.freemail.mail.aliyun.com ([115.124.30.124])
+Received: from out30-133.freemail.mail.aliyun.com ([115.124.30.133])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wV83p-0000000GmAY-1cMO;
+	id 1wV83n-0000000GmAe-170N;
 	Thu, 04 Jun 2026 13:24:40 +0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
 	d=linux.alibaba.com; s=default;
-	t=1780579466; h=From:To:Subject:Date:Message-Id:MIME-Version;
-	bh=/yMhiuP+Blm+ANy4YIKSZBeqw55+G0nlxi+JWHCA5d8=;
-	b=S8zh3jHOwUiHsWACoJKv6JVNLtLsvCrJhu7d8rU5vx/KF3zGLtb1Nh/hf6/HYTJmmzWegcdwPEau4KHnNF3l1Xxyhj+9K3FduVHeyyfmU6dueM48fHSNdOk3/ywVcZ0Iit+2ojKOwysy2GBLUO+DEo08Pa3Uz/zg0hwt/OWsYRg=
-X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R141e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam033037009110;MF=fangyu.yu@linux.alibaba.com;NM=1;PH=DS;RN=24;SR=0;TI=SMTPD_---0X4AKnWu_1780579463;
-Received: from localhost.localdomain(mailfrom:fangyu.yu@linux.alibaba.com fp:SMTPD_---0X4AKnWu_1780579463 cluster:ay36)
+	t=1780579468; h=From:To:Subject:Date:Message-Id:MIME-Version;
+	bh=hnfOs1moHlmKQb6ZUmVUxruUKOqYR4tMlxRWD85j61U=;
+	b=ac2IZqhg1BOO+0PS3TFqpaskgR0v4BA/ngc8TgWSq/HvnsBfQl/kAf0gNuitAmrrCe4cYU+SBuF8bU12Gvr1C3wxu+VGgl08ju7u8l2he+Jejo1ghqIqMY/TtVuTLN7P/5vO4vS6Xxy5MQ+gvFeViPhr8rxAM7ETbfzsim3JEmY=
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R141e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam033037033178;MF=fangyu.yu@linux.alibaba.com;NM=1;PH=DS;RN=24;SR=0;TI=SMTPD_---0X4AKnXP_1780579465;
+Received: from localhost.localdomain(mailfrom:fangyu.yu@linux.alibaba.com fp:SMTPD_---0X4AKnXP_1780579465 cluster:ay36)
           by smtp.aliyun-inc.com;
-          Thu, 04 Jun 2026 21:24:24 +0800
+          Thu, 04 Jun 2026 21:24:26 +0800
 From: fangyu.yu@linux.alibaba.com
 To: Paul Walmsley <pjw@kernel.org>,
 	Palmer Dabbelt <palmer@dabbelt.com>,
@@ -60,16 +60,16 @@ Cc: Song Shuai <songshuaishuai@tinylab.org>,
 	kvm-riscv@lists.infradead.org,
 	kvm@vger.kernel.org,
 	Fangyu Yu <fangyu.yu@linux.alibaba.com>
-Subject: [PATCH v3 1/9] riscv: kexec: Reset executable bit on the control code page in cleanup
-Date: Thu,  4 Jun 2026 21:24:10 +0800
-Message-Id: <20260604132418.15725-2-fangyu.yu@linux.alibaba.com>
+Subject: [PATCH v3 2/9] riscv: kexec: Bound FDT search by source buffer size, not destination
+Date: Thu,  4 Jun 2026 21:24:11 +0800
+Message-Id: <20260604132418.15725-3-fangyu.yu@linux.alibaba.com>
 X-Mailer: git-send-email 2.39.3 (Apple Git-146)
 In-Reply-To: <20260604132418.15725-1-fangyu.yu@linux.alibaba.com>
 References: <20260604132418.15725-1-fangyu.yu@linux.alibaba.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260604_062437_999894_22A1CE3B 
-X-CRM114-Status: GOOD (  11.94  )
+X-CRM114-CacheID: sfid-20260604_062438_001118_C3392CA2 
+X-CRM114-Status: GOOD (  11.42  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -88,52 +88,48 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 From: Fangyu Yu <fangyu.yu@linux.alibaba.com>
 
-machine_kexec_prepare() calls set_memory_x() on the per-image
-control_code_page so the relocate stub copied into it can be executed
-during a normal kexec. machine_kexec_cleanup() is empty, so when the
-image is freed (via kexec -u, or because a later step in load failed)
-the page is returned to the buddy allocator with its executable bit
-still set. Once the page is reallocated for arbitrary kernel data,
-the W^X invariant is broken: a writable page also marked executable.
+The FDT search loop in machine_kexec_prepare() reads sizeof(fdt) bytes
+from segment[i].buf to identify the device tree, but it gates the read
+on segment[i].memsz, which is the destination size in the next kernel.
+kexec allows bufsz < memsz (the loaded image is zero-padded at the
+destination), so a caller can craft a segment with bufsz=10 and
+memsz=1MB:
 
-Implement the architecture cleanup hook to call set_memory_nx() on
-the control code page for non-crash images, mirroring the
-set_memory_x() in prepare().
+	if (image->segment[i].memsz <= sizeof(fdt))   /* 1MB > 40, OK */
+		continue;
+	memcpy(&fdt, image->segment[i].buf, sizeof(fdt));  /* reads 40
+							      from a 10-byte
+							      kbuf */
 
-The crash path does not call set_memory_x() (the crash kernel is
-loaded into the reserved crashkernel region whose pages are not in
-the buddy allocator) and so does not need the cleanup.
+For kexec_file_load (image->file_mode), the read walks 30 bytes past
+the kernel-allocated kbuf. In the worst case the trailing bytes fall
+in an unmapped guard page and the read faults the kernel; in the
+common case the read returns garbage which fdt_check_header() rejects
+and the loop continues. The plain kexec_load path is shielded by
+copy_from_user(), which validates the read against the user mapping.
+
+Replace the memsz check with the bufsz check, which is the right
+bound for the read site.
 
 Fixes: fba8a8674f68 ("RISC-V: Add kexec support")
 Signed-off-by: Fangyu Yu <fangyu.yu@linux.alibaba.com>
 ---
- arch/riscv/kernel/machine_kexec.c | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+ arch/riscv/kernel/machine_kexec.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/arch/riscv/kernel/machine_kexec.c b/arch/riscv/kernel/machine_kexec.c
-index 2306ce3e5f22..ea6794c9f4c2 100644
+index ea6794c9f4c2..e6e179cffc44 100644
 --- a/arch/riscv/kernel/machine_kexec.c
 +++ b/arch/riscv/kernel/machine_kexec.c
-@@ -91,6 +91,19 @@ machine_kexec_prepare(struct kimage *image)
- void
- machine_kexec_cleanup(struct kimage *image)
- {
-+	void *control_code_buffer;
-+
-+	if (image->type == KEXEC_TYPE_CRASH || !image->control_code_page)
-+		return;
-+
-+	/*
-+	 * machine_kexec_prepare() called set_memory_x() on the control
-+	 * code page for non-crash images. Revert it before kimage_free()
-+	 * returns the page to the buddy allocator, so we do not leak an
-+	 * executable page back into general allocation.
-+	 */
-+	control_code_buffer = page_address(image->control_code_page);
-+	set_memory_nx((unsigned long)control_code_buffer, 1);
- }
+@@ -38,7 +38,7 @@ machine_kexec_prepare(struct kimage *image)
  
+ 	/* Find the Flattened Device Tree and save its physical address */
+ 	for (i = 0; i < image->nr_segments; i++) {
+-		if (image->segment[i].memsz <= sizeof(fdt))
++		if (image->segment[i].bufsz < sizeof(fdt))
+ 			continue;
  
+ 		if (image->file_mode)
 -- 
 2.50.1
 
