@@ -4,37 +4,37 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1D461CD6E6B
-	for <kvm-riscv@archiver.kernel.org>; Thu,  4 Jun 2026 13:24:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DD6D7CD6E6B
+	for <kvm-riscv@archiver.kernel.org>; Thu,  4 Jun 2026 13:24:44 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=WDGw8KfBU9gRZOzPBhbTgnE76TyNX4BK+aAu0KvseHE=; b=P1M8PKg/gWfjaP
-	JET7Hd6auZPJMzJqnxT1imquHtILOne0Fsgvt9PZzNZuDwJPZW9VSSuhaUIy5nWszTVocjBkAaIZx
-	dmAnkK3FdNdZhUrMn6MmtULalEr3o9AU3RBY10DcaWRru4YsH4owcMJQQtfhk707A95DGld2/QMsY
-	/zDJd/2XsOJh3Yaz7lrDMhPuCgoPzbNe2QjmG6vEknyIB64QhyudxZg0ecL/skG085nsyrihIZpCZ
-	9K41K639KrlNcwYSeWvvuSc7nzLUFnAJ66G0J5aF8L8KpfqGP2NVRoiTmncZ+SsII6IUongbmId2r
-	IUE3aTN5L9KaDuam7soQ==;
+	List-Owner; bh=FG6IaJSfZcKA2w5j7qTicmao0e+tWDSezbk2e6ptC00=; b=B1/aPiuGdyi9P/
+	YW0aEAs2hWfrrXM6n4E1poK9xC6KXtqRzmtGvxUkJCSh/hiQNOvqpxCLLjoL4qOADQeoUy3Cvpoqi
+	pABNSCajaJ91JDbz4PXZ9x4LywLHxLOScdYpo20cnP/u0sqqQ6qZe1ROQRrYFBIyfAvpcuCsX8SXM
+	k0bUwMNcZ0S8WRM/gmG6rfkETv3OTkUuOYtqwBQWFhadP1GwvmqdDfGShyOXbAxsQ9s/Sk8dfxqqW
+	0GtVfLnFIU2EgvAADalVEZOpASttxcZpvQE/Fqr9JKHyPftHHC5b1IgWgT+IjwG5/m4c6rnr2GZC/
+	VBgrAllXDliQ3ik/ocuQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wV83t-0000000GmEG-2Qj6;
-	Thu, 04 Jun 2026 13:24:41 +0000
-Received: from out30-133.freemail.mail.aliyun.com ([115.124.30.133])
+	id 1wV83w-0000000GmII-2P67;
+	Thu, 04 Jun 2026 13:24:44 +0000
+Received: from out30-110.freemail.mail.aliyun.com ([115.124.30.110])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wV83n-0000000GmAe-170N;
-	Thu, 04 Jun 2026 13:24:40 +0000
+	id 1wV83q-0000000GmBD-3FNx;
+	Thu, 04 Jun 2026 13:24:41 +0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
 	d=linux.alibaba.com; s=default;
-	t=1780579468; h=From:To:Subject:Date:Message-Id:MIME-Version;
-	bh=hnfOs1moHlmKQb6ZUmVUxruUKOqYR4tMlxRWD85j61U=;
-	b=ac2IZqhg1BOO+0PS3TFqpaskgR0v4BA/ngc8TgWSq/HvnsBfQl/kAf0gNuitAmrrCe4cYU+SBuF8bU12Gvr1C3wxu+VGgl08ju7u8l2he+Jejo1ghqIqMY/TtVuTLN7P/5vO4vS6Xxy5MQ+gvFeViPhr8rxAM7ETbfzsim3JEmY=
-X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R141e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam033037033178;MF=fangyu.yu@linux.alibaba.com;NM=1;PH=DS;RN=24;SR=0;TI=SMTPD_---0X4AKnXP_1780579465;
-Received: from localhost.localdomain(mailfrom:fangyu.yu@linux.alibaba.com fp:SMTPD_---0X4AKnXP_1780579465 cluster:ay36)
+	t=1780579474; h=From:To:Subject:Date:Message-Id:MIME-Version;
+	bh=wGJTJ/FaZhfGglBz44gxrkrG5R80OdCp7c0qc5/blwo=;
+	b=BJ0CaUFNsbnPI/84BUZ99dTZx32FpNtT5AlrdeY416kn0xUnujFouGQkGPEqs/HDAs/G1tGeDWKmA7n2tjr1rtbQkM7a/hrCA5KThxUtBJuJpDKVkDt8t3fdd1Rm30Itp6+9vUgLgvI2XIBVBksE8Wh2uNIaR/hdwTXlTV9sZRE=
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R721e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam033037026112;MF=fangyu.yu@linux.alibaba.com;NM=1;PH=DS;RN=24;SR=0;TI=SMTPD_---0X4AKnXk_1780579466;
+Received: from localhost.localdomain(mailfrom:fangyu.yu@linux.alibaba.com fp:SMTPD_---0X4AKnXk_1780579466 cluster:ay36)
           by smtp.aliyun-inc.com;
-          Thu, 04 Jun 2026 21:24:26 +0800
+          Thu, 04 Jun 2026 21:24:27 +0800
 From: fangyu.yu@linux.alibaba.com
 To: Paul Walmsley <pjw@kernel.org>,
 	Palmer Dabbelt <palmer@dabbelt.com>,
@@ -60,16 +60,17 @@ Cc: Song Shuai <songshuaishuai@tinylab.org>,
 	kvm-riscv@lists.infradead.org,
 	kvm@vger.kernel.org,
 	Fangyu Yu <fangyu.yu@linux.alibaba.com>
-Subject: [PATCH v3 2/9] riscv: kexec: Bound FDT search by source buffer size, not destination
-Date: Thu,  4 Jun 2026 21:24:11 +0800
-Message-Id: <20260604132418.15725-3-fangyu.yu@linux.alibaba.com>
+Subject: [PATCH v3 3/9] riscv: Add kexec trampoline text section to vmlinux.lds.S
+Date: Thu,  4 Jun 2026 21:24:12 +0800
+Message-Id: <20260604132418.15725-4-fangyu.yu@linux.alibaba.com>
 X-Mailer: git-send-email 2.39.3 (Apple Git-146)
 In-Reply-To: <20260604132418.15725-1-fangyu.yu@linux.alibaba.com>
 References: <20260604132418.15725-1-fangyu.yu@linux.alibaba.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260604_062438_001118_C3392CA2 
-X-CRM114-Status: GOOD (  11.42  )
+X-CRM114-CacheID: sfid-20260604_062439_005185_D6DBADC4 
+X-CRM114-Status: UNSURE (   7.63  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -88,48 +89,48 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 From: Fangyu Yu <fangyu.yu@linux.alibaba.com>
 
-The FDT search loop in machine_kexec_prepare() reads sizeof(fdt) bytes
-from segment[i].buf to identify the device tree, but it gates the read
-on segment[i].memsz, which is the destination size in the next kernel.
-kexec allows bufsz < memsz (the loaded image is zero-padded at the
-destination), so a caller can craft a segment with bufsz=10 and
-memsz=1MB:
+When CONFIG_KEXEC_CORE is enabled, add a dedicated .kexec.tramp.text
+area to the RISC-V kernel linker script.
 
-	if (image->segment[i].memsz <= sizeof(fdt))   /* 1MB > 40, OK */
-		continue;
-	memcpy(&fdt, image->segment[i].buf, sizeof(fdt));  /* reads 40
-							      from a 10-byte
-							      kbuf */
+Extend vmlinux.lds.S to:
+  - align both the start and the end to PAGE_SIZE
+  - define __kexec_tramp_text_start/__kexec_tramp_text_end
+  - KEEP all .kexec.tramp.text* input sections
+  - ASSERT the trampoline text fits within one page
 
-For kexec_file_load (image->file_mode), the read walks 30 bytes past
-the kernel-allocated kbuf. In the worst case the trailing bytes fall
-in an unmapped guard page and the read faults the kernel; in the
-common case the read returns garbage which fdt_check_header() rejects
-and the loop continues. The plain kexec_load path is shielded by
-copy_from_user(), which validates the read against the user mapping.
+The end-of-section page alignment guarantees that the trampoline page,
+which is later identity-mapped as PAGE_KERNEL_EXEC, contains nothing but
+the trampoline code and padding (no shared neighbour data).
 
-Replace the memsz check with the bufsz check, which is the right
-bound for the read site.
+When kexec is disabled, the whole block is excluded via #ifdef
+CONFIG_KEXEC_CORE.
 
-Fixes: fba8a8674f68 ("RISC-V: Add kexec support")
 Signed-off-by: Fangyu Yu <fangyu.yu@linux.alibaba.com>
 ---
- arch/riscv/kernel/machine_kexec.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/riscv/kernel/vmlinux.lds.S | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/arch/riscv/kernel/machine_kexec.c b/arch/riscv/kernel/machine_kexec.c
-index ea6794c9f4c2..e6e179cffc44 100644
---- a/arch/riscv/kernel/machine_kexec.c
-+++ b/arch/riscv/kernel/machine_kexec.c
-@@ -38,7 +38,7 @@ machine_kexec_prepare(struct kimage *image)
+diff --git a/arch/riscv/kernel/vmlinux.lds.S b/arch/riscv/kernel/vmlinux.lds.S
+index 1f4f8496941a..bc615f7b702f 100644
+--- a/arch/riscv/kernel/vmlinux.lds.S
++++ b/arch/riscv/kernel/vmlinux.lds.S
+@@ -41,6 +41,16 @@ SECTIONS
+ 		ENTRY_TEXT
+ 		IRQENTRY_TEXT
+ 		SOFTIRQENTRY_TEXT
++#ifdef CONFIG_KEXEC_CORE
++		. = ALIGN(PAGE_SIZE);
++		__kexec_tramp_text_start = .;
++		KEEP(*(.kexec.tramp.text))
++		KEEP(*(.kexec.tramp.text.*))
++		__kexec_tramp_text_end = .;
++		ASSERT((__kexec_tramp_text_end - __kexec_tramp_text_start) <= PAGE_SIZE,
++		       ".kexec.tramp.text exceeds PAGE_SIZE");
++		. = ALIGN(PAGE_SIZE);
++#endif
+ 		_etext = .;
+ 	}
  
- 	/* Find the Flattened Device Tree and save its physical address */
- 	for (i = 0; i < image->nr_segments; i++) {
--		if (image->segment[i].memsz <= sizeof(fdt))
-+		if (image->segment[i].bufsz < sizeof(fdt))
- 			continue;
- 
- 		if (image->file_mode)
 -- 
 2.50.1
 
