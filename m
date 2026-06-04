@@ -4,162 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64EDCCD6E4A
-	for <kvm-riscv@archiver.kernel.org>; Thu,  4 Jun 2026 16:03:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B12CECD6E6D
+	for <kvm-riscv@archiver.kernel.org>; Thu,  4 Jun 2026 16:22:24 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
-	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=cyP6BmogAUAZAI2sNFPEIfL9WYuIeYNRDVuP/X4Oz88=; b=piD+59Lzus5UFw
-	TWrcnaL77DGNKIxyrHjsELXCnEvSKsRdyMOgM8N1aq5szcaAXaHJneCIgRqRobE3rkCs/oJpMKyho
-	3oQ0aDp2OunAyc8rT8ZMKj8SuaLZTMjFHgsi3sEMmgxC9cM69KMFyDP7JmSI7VFMeWXutTq2NmyUd
-	+OO24NcYUe+0gKXfepzgLTLsRXE7slEtc9aRriP4O6JW6Ck+A04gzy+tJfT45/i7l7bU/jlezbqE4
-	+DH0KMSRQNJ1Kwj2KRngNwrHhSLvKkh6+4wrURl+ifqMlFzqg6cI0hnnd0e9DqBA79074DkmQ1v0Z
-	dejpqW28cRZQEvy3YZ1A==;
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
+	List-Subscribe:List-Help:List-Post:List-Archive:List-Unsubscribe:List-Id:
+	In-Reply-To:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:
+	Reply-To:Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date
+	:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Owner;
+	bh=yy2GsVDdLL4lY0Kpt60WOYXppEcANuxfgV+psQiJBAI=; b=Ou8d09TBPorR8eFRHBzf9TGKkA
+	0luLPV78R2GlyYbElLifeOD54CYWYq2QFoQJG8g739wYwLHvQ5RYmb/UdYVGSrOsWrUSgpQWZQsp7
+	5EeF4RIim8kjerT5N3d+qHDeqDCyQvCPA739RBvIk0zkcYiCLKne5H/LoqPTzbgjegeG6xzPd5NjE
+	FsXAKH4aa5qMjrNaS8f7FN0dB3pa7vRrVIBk7qCXpivVbAlJ/3hvPuFUakW/m6dKbdYIjHLMHiY8I
+	7K9heVpE5GxhC8vI2KykEeZ+ohhTWWReRy1/FELAgPLJEi1mSHCY67yAhIPE7aXNEr/dRl3ZHD3ji
+	1Bj4+5RQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wVAXm-0000000H25F-0EjD;
-	Thu, 04 Jun 2026 16:03:42 +0000
-Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+	id 1wVAps-0000000H3lm-14sJ;
+	Thu, 04 Jun 2026 16:22:24 +0000
+Received: from tor.source.kernel.org ([172.105.4.254])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wVAXl-0000000H24n-0CuY
-	for kvm-riscv@bombadil.infradead.org;
-	Thu, 04 Jun 2026 16:03:41 +0000
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=8T3I1JSi6bPzTWMglkCJmeKMpAKkFgJd3nlCAFBxxjI=; b=oP4GYmiiT+2jJLSczN8H2W1KLu
-	D4LITmg3A4gR/BvU0i4llSMORu7RU6cfYB2XUUT4VtfLLRh2bzbr7y/TiFsCoD2a/5PxNPIDgW39k
-	Q3Xzy/tqKivuHqYwGD/at/VPpulstAKWvLUbcYWgGHfKYhZaBCi4W49fmkWghm9jMWkeMDGBQpxaQ
-	jLkBV+Sd9gWJIpXe1ERxCzCmFVzY4pKepfpgoh+w+DQ4oCcQYGbvogMGd+39at7iFEK1y77rxMd91
-	AbmGcU/YPB6BAhxlHAAoAfYzkxaNjxTXIiiem/sRMSzi5TZjkVpMrFfNofEu8RSqc3Uu3x+YqfWhf
-	USWajkjg==;
-Received: from mx0b-0031df01.pphosted.com ([205.220.180.131])
-	by desiato.infradead.org with esmtps (Exim 4.99.2 #2 (Red Hat Linux))
-	id 1wVAXg-0000000EY6e-2Xbm
-	for kvm-riscv@lists.infradead.org;
-	Thu, 04 Jun 2026 16:03:39 +0000
-Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 654EFl331132186
-	for <kvm-riscv@lists.infradead.org>; Thu, 4 Jun 2026 16:03:34 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=qcppdkim1; bh=8T3I1JSi6bPzTWMglkCJmeKM
-	pAKkFgJd3nlCAFBxxjI=; b=R57WYhlKJl3K8bFUdl58ZqjkhTtCV46ZT5QO6j0A
-	Kddjcmp6YEGcd8WIruVAt0ZMvC+hOWwkGsLEYz7Yb32W3tRSjhQMXgZc94DdG/6u
-	YU3sFnnQtRqKdtqQjus9VHxy5Ee7e1r+jsPLX0pbfzq5ydcL/dpmaF0z9cdGphrJ
-	/WYa44pwTb1IiQegKIZ9sqhZSST8w2Iiz/tW0BAkpcmqQsPp61iSH/YrPG4o0pxF
-	PHXOOSiUGCCBEuyEbblKvDPdgi5d/iDCJwe1OMDiZjxZ7Cg1LrZfd6m3m8FpJylJ
-	7poDjZlZipbJF3WIo4ECfDqr2LrUdd2XCKi/I3p96YyXYw==
-Received: from mail-vs1-f72.google.com (mail-vs1-f72.google.com [209.85.217.72])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4ek5wshv6a-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <kvm-riscv@lists.infradead.org>; Thu, 04 Jun 2026 16:03:34 +0000 (GMT)
-Received: by mail-vs1-f72.google.com with SMTP id ada2fe7eead31-6cfd65ab97aso1437366137.1
-        for <kvm-riscv@lists.infradead.org>; Thu, 04 Jun 2026 09:03:34 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1780589014; x=1781193814; darn=lists.infradead.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=8T3I1JSi6bPzTWMglkCJmeKMpAKkFgJd3nlCAFBxxjI=;
-        b=TsBpb91k6a5UJwQCPc90iYo+wMTCqoRkMF5QyDVb1lXT/pkrHwPx70d8E9A18S8ux+
-         0D7/ArUGr2KXeP64tNoh+HZshmqupVfEsaGfROXnsRD0XyTlzj7i7/NUf6uyXPsp5xCf
-         7Hch8UfGIUFZaQKCTRwwhgGCF8tkh6chdGQVzGzrWht/WMTpywPUmeAYTxkrODqRALxi
-         MVxDt+/QaSojY0u3NFvCiWconBoGz8htW8Q+UfYAs1dlZsBeky8OKGa+ePO22peq3Woo
-         TiqPWoseaemn8bG0m28MEsINT9vEdVgSx9RgN+AeVEzkgSZ4fyfjXv5PkUm+Cv9QINmG
-         7yhw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780589014; x=1781193814;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=8T3I1JSi6bPzTWMglkCJmeKMpAKkFgJd3nlCAFBxxjI=;
-        b=WAxMb2UumFIalr74YsUf+sVXW952ZGdhRJU4W3w0u7X1Xb5QkZ0mJ7gkAbkzBPeGps
-         0/toiDik2bVMNbM8+camg0YpVNFEW3lvd5aA1ROwZ4KLioYGG8Kenn1O9vFwqP9VS+kR
-         i2TDWRgzlJ/2TX3lyyzKZsCVGaRAldveBLaZ4vHOwgFUJONR+hJSDDB5TPeCo+RAGtlr
-         vnqpD4Qgn5icdxXzPr/DMmmeGIHeoPHYhvPdIT/hKkKaWUFsPPEFY/88g5ayUfPBsURt
-         XXxINLAMVX7K+MbMyiP+jKKcCCbMBLTmWYJklQ0D/S051vXaKmoeU5Aatc7yUXYs0GEm
-         brTA==
-X-Forwarded-Encrypted: i=1; AFNElJ/Ck6sU0A0KCsAt4xapky4tPg5gkVxHgkShsVXe6Oa3sa7HyOIGd5hZsbxFUG9B4+UOcBVDL7kWL7U=@lists.infradead.org
-X-Gm-Message-State: AOJu0YxYy4yvN+YHoLs+LoN8VAxO25FPNsvTtGw3C+H1ar7UN9Q9U7yn
-	884u06W3OYkPTT3BUeiyJDVh/C+Gfq6KaKch4i0xdAICNmGw0tR9XiYiIxE95EMTFcLbLGZexBR
-	1iXxRYTTZfKrI6VqedJXxT7bq26Py00O69f4U+IqO5PfW1VplOyw/ZIuhUfpAA6iHn/qqwq7EL2
-	Y2
-X-Gm-Gg: Acq92OETQR39aLwiB0AzjHHtoFV0E/4dYi2uxOOK/Yxrk6DrqGV3FHoIwDaP5Xa4D6K
-	Xop6yOWtsG+7TEaMpA3MOaKK7c1gzP6uEzybYEHyP/vuSmfPbqvGdE1m069dB5BbU0DH1Hn1ZjM
-	E1r/aNY73wDVbEtUshoFtBmQ8M/GZaeOTPplK6CoSjSN70SM0pFPq0WDaqeCzno8BRCE1gIFPeo
-	/8WzGOaeUtgaAeYiL+vSPZimIMxRcCkMyybukP+oCHx/c3qIdLVHCC6MDTrHVV9OQIa9Im39K00
-	Xi4hfUYVsvuFJjfs1e8r5z9LpFrcwOsmlp6KE87K6/wLBlOfqtrVSx/gI9thLm/w/lHJ0dwwVYv
-	A6Z7Aa0/lHUGCXBaAHMVa/fUml+i32khKODyfhy1Dew==
-X-Received: by 2002:a05:6102:a47:b0:631:44d9:2ca2 with SMTP id ada2fe7eead31-6ec4e2917bcmr5951850137.30.1780589013462;
-        Thu, 04 Jun 2026 09:03:33 -0700 (PDT)
-X-Received: by 2002:a05:7301:100c:b0:304:4f23:4466 with SMTP id 5a478bee46e88-3074faa488dmr4046204eec.15.1780589001468;
-        Thu, 04 Jun 2026 09:03:21 -0700 (PDT)
-Received: from localhost ([140.82.166.162])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3074db55f60sm6911110eec.6.2026.06.04.09.03.20
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 04 Jun 2026 09:03:20 -0700 (PDT)
-Date: Thu, 4 Jun 2026 11:03:19 -0500
-From: Andrew Jones <andrew.jones@oss.qualcomm.com>
-To: Guodong Xu <docular.xu@gmail.com>
-Cc: Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>,
-        Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
-        Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
-        Zong Li <zong.li@sifive.com>, Deepak Gupta <debug@rivosinc.com>,
-        Anup Patel <anup@brainfault.org>, Atish Patra <atish.patra@linux.dev>,
-        Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>, Yixun Lan <dlan@kernel.org>,
-        Chen Wang <unicorn_wang@outlook.com>,
-        Inochi Amaoto <inochiama@gmail.com>,
-        Conor Dooley <conor.dooley@microchip.com>,
-        Shuah Khan <shuah@kernel.org>, Christian Brauner <brauner@kernel.org>,
-        linux-doc@vger.kernel.org, linux-riscv@lists.infradead.org,
-        linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
-        kvm-riscv@lists.infradead.org,
-        Paul Walmsley <paul.walmsley@sifive.com>,
-        Palmer Dabbelt <palmer@sifive.com>, Conor Dooley <conor@kernel.org>,
-        devicetree@vger.kernel.org, spacemit@lists.linux.dev,
-        sophgo@lists.linux.dev, linux-kselftest@vger.kernel.org,
-        Charles Jenkins <thecharlesjenkins@gmail.com>,
-        Samuel Holland <samuel.holland@sifive.com>,
-        Charlie Jenkins <charlie@rivosinc.com>,
-        Jesse Taube <jesse@rivosinc.com>, Andy Chiu <andybnac@gmail.com>
-Subject: Re: [PATCH v3 00/15] riscv: hwprobe: Expose RVA23U64 base behavior
-Message-ID: <dyafwgy6wgahizpld2vfuk56nzhueh727u6vzblmasmw24vb23@uw46cc5sxpb2>
-References: <20260603-rva23u64-hwprobe-v2-v3-0-5529a7b28384@gmail.com>
+	id 1wVApr-0000000H3ld-0aAh;
+	Thu, 04 Jun 2026 16:22:23 +0000
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 2B4ED600AE;
+	Thu,  4 Jun 2026 16:22:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 914261F00893;
+	Thu,  4 Jun 2026 16:22:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1780590141;
+	bh=F2TSuSy2fzh9HuIAd56pwrl0AaEkrI23dzAjyDp0t9A=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=ViiY4wnouQ9k6t1sxmqMVFMCul6eUzunF8oKW0rsiW/ZTfAivON+rEvptHkvOW4uD
+	 TlktGmGVUAJjYF39NnCL2WFkTS4og2KJPMJS46w1Nn/p3Rmk3ob3AGoWKt33Mflioc
+	 TAYaFyB47q7z3p2KtWMb2N8/6Hn0dRH7HxtmBeEIS59BUIyqgMs/vfVgiKCNlCxsWt
+	 aBks9x6b8hSHQsdh5d+ducLM5LillQ6kxM0VlrNv3y3VQliF3d1z3Vc+W0Qex2r5G1
+	 geh5DRYhVLNpRPu21Gs0PcWAEcIAha7agUbWKXVI88AyRMpgdCsoZkTXCdbrUgfEfQ
+	 RQNWbN7VfJ+Kw==
+Date: Thu, 4 Jun 2026 17:22:15 +0100
+From: Conor Dooley <conor@kernel.org>
+To: Andrew Jones <andrew.jones@oss.qualcomm.com>
+Cc: Guodong Xu <guodong@riscstar.com>, Jonathan Corbet <corbet@lwn.net>,
+	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+	Conor Dooley <conor.dooley@microchip.com>,
+	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+	Shuah Khan <shuah@kernel.org>, Anup Patel <anup@brainfault.org>,
+	Atish Patra <atish.patra@linux.dev>,
+	Shuah Khan <skhan@linuxfoundation.org>,
+	Deepak Gupta <debug@rivosinc.com>, Zong Li <zong.li@sifive.com>,
+	Christian Brauner <brauner@kernel.org>,
+	Charlie Jenkins <charlie@rivosinc.com>,
+	Samuel Holland <samuel.holland@sifive.com>,
+	linux-doc@vger.kernel.org, linux-riscv@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org,
+	kvm@vger.kernel.org, kvm-riscv@lists.infradead.org,
+	Guodong Xu <docularxu@outlook.com>
+Subject: Re: [PATCH v2 08/10] riscv: cpufeature: Introduce ISA bases bitmap
+ and rva23u64 detection
+Message-ID: <20260604-decency-salaried-4cb69e1c9fa9@spud>
+References: <20260511-rva23u64-hwprobe-v2-v2-0-21c5a544f1dc@riscstar.com>
+ <20260511-rva23u64-hwprobe-v2-v2-8-21c5a544f1dc@riscstar.com>
+ <5tjmypgyxbhgxfjub5q6ne475uysse6yl473sxisjoammkdvbu@yebejqbiy6e3>
+ <CAH1PCMa-5W9PsX8cDLUk6-MkcM53HOz2QtaxCHd+XOr7DgH5+w@mail.gmail.com>
+ <ug2cipududshcbv24ruicqpugzinujnamvdcuy6pubkwh67bfp@2fysrplz3nr4>
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <20260603-rva23u64-hwprobe-v2-v3-0-5529a7b28384@gmail.com>
-X-Proofpoint-GUID: N8OTNgpLgDt0s_2PyXRGDWXgCHB1s4qE
-X-Proofpoint-ORIG-GUID: N8OTNgpLgDt0s_2PyXRGDWXgCHB1s4qE
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjA0MDE1NyBTYWx0ZWRfXxFVi8Gy7j4Hl
- FsTS2sO3CesNoa0JAWyCJ1WZvwjML41Yw+N6B9wwKDEugutvFKZ4d56s6XjgmT9/CYRWpi/4k/5
- vpTbUpRSy5pHALVeJAz1avMtsZ2XXUFWdaRZJYJzmtku0FGjPTTpIgpFxNdvfyvm7iajY0EaSSc
- B5UbDh36uBaZ3scj676L3G4wb5/wnCNqBOw8cPvpSYNLM8WXESdudDiVqBAFrNPc7a6L5B0DLJ3
- nWKaFn9BpqIiFg7qjeeCgGv+fA59yXZKqJrMDi6XOa52/Q27nWUm/5Z19Mx2seShXh+lyu3DhIM
- TXIsDPCHjFIAQwGaAUX0jNOOmNCUyqj7QG2NU8NCMxEWbBhmoDkagO8IMLgiL5gQbBww47tS/E9
- 2eIUKmF8EbZb9IY7LrBe/eBvq1aSaHr0OrUy1JrQnl07MGXJPMN/eB87m44XwTctJZ9wdcjUd6h
- 6D5FWeONvz7lmLoCxnA==
-X-Authority-Analysis: v=2.4 cv=POc/P/qC c=1 sm=1 tr=0 ts=6a21a1d6 cx=c_pps
- a=DUEm7b3gzWu7BqY5nP7+9g==:117 a=cvcws7F5//HeuvjG1O1erQ==:17
- a=kj9zAlcOel0A:10 a=FelO9ux0wxsA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=ZpdpYltYx_vBUK5n70dp:22
- a=bmEhWVV90QwrJAxICpMA:9 a=CjuIK1q_8ugA:10 a=-aSRE8QhW-JAV6biHavz:22
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-04_04,2026-05-28_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0 phishscore=0 malwarescore=0 clxscore=1015 bulkscore=0
- impostorscore=0 priorityscore=1501 spamscore=0 adultscore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605210000 definitions=main-2606040157
-X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260604_170336_925589_E20AD69D 
-X-CRM114-Status: GOOD (  15.27  )
+In-Reply-To: <ug2cipududshcbv24ruicqpugzinujnamvdcuy6pubkwh67bfp@2fysrplz3nr4>
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -171,31 +80,158 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============5129994988242456759=="
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Wed, Jun 03, 2026 at 07:11:55AM -0400, Guodong Xu wrote:
-> This series builds on Andrew Jones's earlier RFC [1]. It lets
-> userspace check for RVA23U64 conformance in one call, instead of
-> walking hwprobe + prctl across every mandatory extension.
-> 
-> The series adds a small framework that resolves profile-class
-> bases (IMA and RVA23U64) from the kernel's ISA extension bitmap at
-> init time, and surfaces the result through both /proc/cpuinfo and
-> hwprobe. Later patches can add RVA23S64, and backward RVA22 / RVA20
-> detection, to riscv_set_isa_bases() without changes to the
-> surrounding code.
->
 
-Hi Guodong,
+--===============5129994988242456759==
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="5cyPpCm7a4usSWqT"
+Content-Disposition: inline
 
-The series looks good to me. Thanks a lot for picking up this work!
 
-drew
+--5cyPpCm7a4usSWqT
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Thu, Jun 04, 2026 at 10:29:19AM -0500, Andrew Jones wrote:
+> On Sat, May 30, 2026 at 08:42:29AM +0800, Guodong Xu wrote:
+> > On Thu, May 28, 2026 at 12:35=E2=80=AFAM Andrew Jones
+> > > Sashiko points out a few things about this patch which I think I
+> > > agree with
+> > >
+> > > https://sashiko.dev/#/patchset/20260511-rva23u64-hwprobe-v2-v2-0-21c5=
+a544f1dc%40riscstar.com?part=3D8
+> >=20
+> > Quote the following from Sashiko.dev:
+> > > Should this mask specify the individual subset extensions required by=
+ the
+> > > profile instead of the superset extensions like RISCV_ISA_EXT_B,
+> > > RISCV_ISA_EXT_C, and RISCV_ISA_EXT_V?
+> >=20
+> > My preference is to leave the mask on B/C/V (and A) as-is. I'd prefer to
+> > keep matching on the single-letter, rather than expanding them. Here is=
+ why:
+> >=20
+> > - The RVA23 profile lists A, B, C and V as single-letter mandatory
+> >   extensions; it doesn't enumerate Zaamo/Zalrsc, Zba/Zbb/Zbs, Zc* or the
+> >   Zve*/Zvl* subsets in the mandatory set.
+> >=20
+> > - In current merged code, hwprobe_isa_ext0() is already using
+> >   riscv_isa_extension_available() signle letter checking for C and V.
+> >=20
+> > PS:
+> > B maybe a special one, just in case anybody raise it. As the community
+> > discussed when I adding it into the bindings, because B comes later than
+> > its sub-components zba/zbb/zbs, so, when I added B, I cleaned up all
+> > in-tree dts files which declared zba/zbb/zbs but not B and made them de=
+clare
+> > both.
+> >=20
+> > Link: https://lore.kernel.org/linux-riscv/20260115-adding-b-dtsi-v2-0-2=
+54dd61cf947@riscstar.com/
+> > [1]
+> >=20
+> > Also, in the bindings: extensions.yaml, a schema rule is added which re=
+quires
+> > a node listing zba, zbb and zbs to also list b (and the reverse). Movin=
+g on,
+> > new dtsi/dts fils, a node with only the subsets fails dtbs_check.
+> >=20
+> > One may argue that the schema check doesn't cover ACPI path. But again,
+> > shouldn't the vendor who publishs RVA23 hardware be conformant to the
+> > extensions wording in RVA23 v1.0 spec?
+> >=20
+> > What do you think?
+> >
+>=20
+> I certainly see a case for the kernel staying out of the extension
+> dependency validation game. I think it makes sense for an ISA string
+> validation tool to exist for vendors to do sanity checks on their
+> ISA strings, but that's not the kernel's role. OTOH, whether or not
+> the kernel wants to try and detect inconsistencies with the ISA
+> string in order to build confidence in using what it sees there
+> and publishing what it sees there to usermode, through hwprobe, might
+> still be worth debating.
+
+On the dt front, our policy is that it is not the kernel's job to
+check that the dt matches the hardware. It is the firmware's job to
+accurately report what the hardware is. There's definitely some
+exceptions to that already (*cough thead vector cough*) but that's in
+part because we failed to come up with concrete descriptions in the
+first place.
+
+Yesterday I commented on a patch that was adding this kind of thing:
+| The point of validate callbacks is twofold: checking that the kernel
+| configuration supports the extension and that extensions that the kernel
+| depends on to support the one in question are present.
+
+The latter is because you could depend on an extension that is affected
+by the former.
+Looking at the list of validate callbacks, I think there are some that
+actually don't follow this policy (I saw riscv_ext_zca_depends() that
+has no real purpose, but didn't look much further).
+I'm not even sure that the validate callback added in this series for
+zic64b should be added, it's borderline for me. I'm only really not
+objecting to it because it outputs a warning if someone has the
+retroactively added extension without the relevant dt/acpi properties
+and expects things to work.
+
+> Without CPUID / ID_* registers for Linux to be able to check an
+> authoritative source of truth about what is and isn't supported by
+> the CPU, riscv Linux has to decide to either blindly trust the
+> hardware description or do sanity checks / probes in order to
+> confirm what it sees there. Maybe we can assume that any extension
+> used by the kernel will trip over itself quickly, alerting vendors
+> to fix their ISA strings, but I'm not sure we can make that assumption
+> for usermode extensions that Linux doesn't use, but does expose
+> through hwprobe. What apps need to run in testing to exercise them?
+> How long will those apps need to run before they trip over something?
+>=20
+> The more I think I about it, the more I think the lack of CPUID / ID_*
+> registers puts Linux in a tight spot. If Linux trustingly publishes
+> what firmware tells it to to userspace and userspace blows up, Linux
+> will have to share some of the blame for having misled it. So, should
+> Linux validate everything it publishes somehow? Or, should it at least
+> do relatively cheap sanity checks on everything it publishes in order
+> to build some confidence?
+
+Part of me wants to know why we should be going to a bunch of effort to
+cover up for inaccurate devicetrees etc. Garbage in -> garbage out and let
+them keep the pieces.
+That said, if we were to do something with checks, we can't actually
+even check everything and my opinion is that either we certify that
+everything is VerifiedTM or we don't certify at all.
+
+Cheers,
+Conor.
+
+--5cyPpCm7a4usSWqT
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYKAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCaiGmNwAKCRB4tDGHoIJi
+0hptAP4n8/eEpWp31Uijt9FDzlcZE1va/I9dJJ5pHP5ldvSQNgD/aPo4Nice+Y6x
+WG57+HLwQioheX4qt2I60jJ46gTx7wE=
+=5ZRN
+-----END PGP SIGNATURE-----
+
+--5cyPpCm7a4usSWqT--
+
+
+--===============5129994988242456759==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 -- 
 kvm-riscv mailing list
 kvm-riscv@lists.infradead.org
 http://lists.infradead.org/mailman/listinfo/kvm-riscv
+
+--===============5129994988242456759==--
+
