@@ -4,72 +4,77 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C4F89CD6E6B
-	for <kvm-riscv@archiver.kernel.org>; Thu,  4 Jun 2026 13:24:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F923CD6E4A
+	for <kvm-riscv@archiver.kernel.org>; Thu,  4 Jun 2026 14:27:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
-	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
+	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=I/WV2Rm4TB7Xa14OYaJBW/TQg1Yo1/drkAaUXExML0E=; b=t6fxg2SGRpcjcI
-	cKtV4QpaHHbJ5WBZ96UCru/Y2qyLe9/fR+4RBE2osZcvA3bF45BJrmU7hbWyZMOIFwgm3yDLZUf+Q
-	PPk/LDcgKIO6m4SblusIS3HMUeO23raTXMfG2/ghdM4lMbd4Z2r6YAjTukr+XE2MFaSyJKccMyUhk
-	KMz1mxC/syvvJ6/07RrbTwAImoboJZ2Ep3fic4yurlEn46vVJ3qLXtVlup30tUeGxo0durnrBxD7t
-	xFWqJQqsi2uK+EAeVxx3gbgXzJhU+LpmlnbHL3ExbsNxL9XzekBjF9T6p//o5CjyNr9meB2tx6ciC
-	AizPfTEMVHVxEoTBv+hw==;
+	List-Owner; bh=0STLGJpUtLkAc1U1exgm8wRVxU2SXSYZ4BNV0GNn22Q=; b=CaIzuuXcHSNglL
+	Lfn/9AxCIOq6Efbw18MVBXQ4Wt8XFAqEY8Tjn7+9uGAkhiDquu1W//w7XWGD/eIX/sdgR3cdvDB2s
+	Lrywx+1klggBFcKnabWy90qBWcXaBqTjnx4TJDRod2Gq/XXKNrZCOoh7y6cMPti2svb0GKous4ZcE
+	S/i34apOhFXthzIdJjfXulMXLX2XGjEzr3RsBkutza4BxFW63cgNhMIY3kj1lqvXng6IpAXWYJotm
+	AWEhclVRl/hjtDreC4ivcvkNnn/qdPCRQbPUpUuAm4wfBhs0D4A2IycENKmQZePZF+Z968okH27s8
+	AliLZP6B6+cIEwuazZGw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wV841-0000000GmWq-1pRq;
-	Thu, 04 Jun 2026 13:24:49 +0000
-Received: from out30-113.freemail.mail.aliyun.com ([115.124.30.113])
+	id 1wV931-0000000Gtd8-2Yn6;
+	Thu, 04 Jun 2026 14:27:51 +0000
+Received: from m16.mail.163.com ([117.135.210.3])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wV83w-0000000GmG7-3xzD;
-	Thu, 04 Jun 2026 13:24:46 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux.alibaba.com; s=default;
-	t=1780579482; h=From:To:Subject:Date:Message-Id:MIME-Version;
-	bh=J7s4VhYWDzfgsMhyPuOD4XJGNCr8wTQOFNPdHWvxnVw=;
-	b=twSWQmUYNcnXJLh6a2noi5+h2JCo//Bnl5qMjs/eS8m2vDIltRDIYTU4tAIvTBr47Xdv5xn6S/tZ+84PmNzmb8MvzbWbFzG2+zKe7iE6AoHesb6UL2LHbZ8rEkvVJE/uDv+y/bwRZ3OSAeoRO7SSytN1X5l5s2ruayz34ixAqOY=
-X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R141e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam033037026112;MF=fangyu.yu@linux.alibaba.com;NM=1;PH=DS;RN=24;SR=0;TI=SMTPD_---0X4AKnau_1780579475;
-Received: from localhost.localdomain(mailfrom:fangyu.yu@linux.alibaba.com fp:SMTPD_---0X4AKnau_1780579475 cluster:ay36)
-          by smtp.aliyun-inc.com;
-          Thu, 04 Jun 2026 21:24:36 +0800
-From: fangyu.yu@linux.alibaba.com
-To: Paul Walmsley <pjw@kernel.org>,
+	id 1wV92x-0000000GtbK-3mPs;
+	Thu, 04 Jun 2026 14:27:49 +0000
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+	s=s110527; h=From:To:Subject:Date:Message-ID:MIME-Version; bh=4z
+	HbRJ4AiR5mFPQ8rQUHGwM8CN+rCT/lxSBfEBPuX4s=; b=azP3yeTYBfb5P9yAXH
+	C5vss+RW1tu0+rguZUXsYXjj3LYYwAfmmmuVqkb3szJmBGjJL1CgUEHCa5Pd4ggY
+	62HPkR/6lO5TZwCJMmO5LFJuihkBLpZ3iYkLTptXcgjtw/oiScERGM864Ne9QSKF
+	ROqFfqC27mjslfOYiSitC4qvU=
+Received: from localhost.localdomain (unknown [])
+	by gzsmtp1 (Coremail) with SMTP id PCgvCgC3VJAIiyFqSKmLAQ--.50067S3;
+	Thu, 04 Jun 2026 22:26:20 +0800 (CST)
+From: Jinyu Tang <tjytimi@163.com>
+To: Anup Patel <anup@brainfault.org>,
+	Anup Patel <apatel@ventanamicro.com>,
+	Paolo Bonzini <pbonzini@redhat.com>
+Cc: Atish Patra <atish.patra@linux.dev>,
+	Paul Walmsley <pjw@kernel.org>,
+	Paul Walmsley <paul.walmsley@sifive.com>,
 	Palmer Dabbelt <palmer@dabbelt.com>,
 	Albert Ou <aou@eecs.berkeley.edu>,
 	Alexandre Ghiti <alex@ghiti.fr>,
-	Anup Patel <anup@brainfault.org>,
-	Atish Patra <atishp@atishpatra.org>,
-	Nick Kossifidis <mick@ics.forth.gr>
-Cc: Song Shuai <songshuaishuai@tinylab.org>,
-	=?UTF-8?q?Bj=C3=B6rn=20T=C3=B6pel?= <bjorn@rivosinc.com>,
-	Ard Biesheuvel <ardb@kernel.org>,
+	Shuah Khan <shuah@kernel.org>,
+	Sean Christopherson <seanjc@google.com>,
+	=?UTF-8?q?Radim=20Kr=C4=8Dm=C3=A1=C5=99?= <radim.krcmar@oss.qualcomm.com>,
+	Andrew Jones <andrew.jones@oss.qualcomm.com>,
 	Conor Dooley <conor.dooley@microchip.com>,
-	Arnd Bergmann <arnd@arndb.de>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Richard Lyu <richard.lyu@suse.com>,
-	Nam Cao <namcao@linutronix.de>,
-	Jisheng Zhang <jszhang@kernel.org>,
-	Nathan Chancellor <nathan@kernel.org>,
-	guoren@kernel.org,
+	Yong-Xuan Wang <yongxuan.wang@sifive.com>,
+	Nutty Liu <nutty.liu@hotmail.com>,
+	kvm@vger.kernel.org,
+	kvm-riscv@lists.infradead.org,
 	linux-riscv@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
-	kexec@lists.infradead.org,
-	kvm-riscv@lists.infradead.org,
-	kvm@vger.kernel.org,
-	Fangyu Yu <fangyu.yu@linux.alibaba.com>
-Subject: [PATCH v3 9/9] riscv: kexec: Route normal kexec through the trampoline page table
-Date: Thu,  4 Jun 2026 21:24:18 +0800
-Message-Id: <20260604132418.15725-10-fangyu.yu@linux.alibaba.com>
-X-Mailer: git-send-email 2.39.3 (Apple Git-146)
-In-Reply-To: <20260604132418.15725-1-fangyu.yu@linux.alibaba.com>
-References: <20260604132418.15725-1-fangyu.yu@linux.alibaba.com>
+	linux-kselftest@vger.kernel.org,
+	Jinyu Tang <tjytimi@163.com>
+Subject: [PATCH v2 1/2] KVM: riscv: Check hugetlb block mappings against memslot bounds
+Date: Thu,  4 Jun 2026 22:26:01 +0800
+Message-ID: <20260604142602.3582602-2-tjytimi@163.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20260604142602.3582602-1-tjytimi@163.com>
+References: <20260604142602.3582602-1-tjytimi@163.com>
 MIME-Version: 1.0
+X-CM-TRANSID: PCgvCgC3VJAIiyFqSKmLAQ--.50067S3
+X-Coremail-Antispam: 1Uf129KBjvJXoW3XFy7ZF1rAw4Dtw43Gr4fuFg_yoWxJw1DpF
+	47Ga15CrW5try3Kr4xAwnru345Zw4rW34UAFyfJa90vrsxKFyagaykAay5XrWrZrn3XF4x
+	ZFsxZFWUurZ0g3DanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0z_AwI7UUUUU=
+X-Originating-IP: [2408:823d:2011:21a8:b05b:a8f3:53a1:f680]
+X-CM-SenderInfo: xwm13xlpl6il2tof0z/xtbC8QzIQWohiwxZhQAA3k
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260604_062445_321165_DE8DE7FD 
-X-CRM114-Status: GOOD (  17.37  )
+X-CRM114-CacheID: sfid-20260604_072748_429200_19475A7B 
+X-CRM114-Status: GOOD (  21.11  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -86,136 +91,172 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-From: Fangyu Yu <fangyu.yu@linux.alibaba.com>
+RISC-V KVM has used the hugetlb VMA size directly as the G-stage
+mapping size since stage-2 page table support was added. That is safe
+only if the block covered by the fault is fully contained in the
+memslot and the userspace address has the same offset as the GPA
+within that block.
 
-riscv_kexec_relocate (copied into control_code_buffer) uses an stvec
-trick to drop the MMU and land on the PA of the next loop label.
-Under VS-mode KVM cannot emulate this single-step transition and the
-VCPU dies with "kvm run failed Operation not supported".
+The THP path already checks those constraints before installing a PMD
+block mapping. The hugetlb path did not, so an unaligned memslot could
+make KVM install a PMD or PUD sized G-stage block that covers memory
+outside the slot or maps the wrong host pages.
 
-Route normal kexec through riscv_kexec_relocate_entry, the trampoline
-wrapper added in the previous patch. It drops SATP with PC already on
-a PA, then hands off to control_code_buffer where the relocate body
-runs with SATP=0.
+Pass the target mapping size into fault_supports_gstage_huge_mapping().
+The same helper can be used for both THP PMD mappings and hugetlb
+PMD/PUD mappings.
 
-Drop the stvec trick from the relocate body and pass first_ind_entry
-as a physical address since the body now starts with SATP=0. The
-".align 2" plus filler "nop" that ensured the PA of the loop top was
-4-byte aligned -- required because the legacy stvec trick wrote that
-PA into stvec.BASE, whose low two bits are MODE and are discarded by
-the hardware -- is no longer load-bearing and is removed as well.
+Select hugetlb mapping sizes through the same memslot-boundary check,
+falling back from PUD to PMD to PAGE_SIZE. When a smaller hugetlb
+mapping size is selected, fault the GFN aligned to that selected size
+instead of the original VMA size.
 
-Signed-off-by: Fangyu Yu <fangyu.yu@linux.alibaba.com>
+Also keep hugetlb mappings out of transparent_hugepage_adjust(). Once
+the hugetlb path has chosen PAGE_SIZE, promoting it again through the
+THP helper would miss the hugetlb fallback decision.
+
+Fixes: 9d05c1fee837 ("RISC-V: KVM: Implement stage2 page table programming")
+Signed-off-by: Jinyu Tang <tjytimi@163.com>
+Reviewed-by: Nutty Liu <nutty.liu@hotmail.com>
 ---
- arch/riscv/kernel/kexec_relocate.S | 26 ++++++--------------------
- arch/riscv/kernel/machine_kexec.c  | 27 +++++++++++++++++++--------
- 2 files changed, 25 insertions(+), 28 deletions(-)
+v1 -> v2:
+  - Squash the helper parameterization into this hugetlb fix.
+  - Use the ALIGN()/ALIGN_DOWN() form suggested by Nutty Liu and Anup
+    for the memslot boundary check.
 
-diff --git a/arch/riscv/kernel/kexec_relocate.S b/arch/riscv/kernel/kexec_relocate.S
-index 6c624560c9ac..7ffb83ea45fc 100644
---- a/arch/riscv/kernel/kexec_relocate.S
-+++ b/arch/riscv/kernel/kexec_relocate.S
-@@ -34,27 +34,13 @@ SYM_CODE_START(riscv_kexec_relocate)
- 	csrw	CSR_SIP, zero
+ arch/riscv/kvm/mmu.c | 54 ++++++++++++++++++++++++++++++++++++--------
+ 1 file changed, 44 insertions(+), 10 deletions(-)
+
+diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
+index 2d3def024..0adf017a2 100644
+--- a/arch/riscv/kvm/mmu.c
++++ b/arch/riscv/kvm/mmu.c
+@@ -286,7 +286,8 @@ bool kvm_test_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
+ }
+ 
+ static bool fault_supports_gstage_huge_mapping(struct kvm_memory_slot *memslot,
+-					       unsigned long hva)
++					       unsigned long hva,
++					       unsigned long map_size)
+ {
+ 	hva_t uaddr_start, uaddr_end;
+ 	gpa_t gpa_start;
+@@ -300,8 +301,8 @@ static bool fault_supports_gstage_huge_mapping(struct kvm_memory_slot *memslot,
  
  	/*
--	 * When we switch SATP.MODE to "Bare" we'll only
--	 * play with physical addresses. However the first time
--	 * we try to jump somewhere, the offset on the jump
--	 * will be relative to pc which will still be on VA. To
--	 * deal with this we set stvec to the physical address at
--	 * the start of the loop below so that we jump there in
--	 * any case.
-+	 * The trampoline wrapper (riscv_kexec_relocate_entry) has already
-+	 * dropped the MMU and handed control to us at this PA copy of the
-+	 * relocate code. From here on the entire loop runs with SATP=0 and
-+	 * every address (s0, s5, source/dest pointers) is a physical one.
+ 	 * Pages belonging to memslots that don't have the same alignment
+-	 * within a PMD for userspace and GPA cannot be mapped with g-stage
+-	 * PMD entries, because we'll end up mapping the wrong pages.
++	 * within a huge page for userspace and GPA cannot be mapped with
++	 * g-stage block entries, because we'll end up mapping the wrong pages.
+ 	 *
+ 	 * Consider a layout like the following:
+ 	 *
+@@ -321,7 +322,7 @@ static bool fault_supports_gstage_huge_mapping(struct kvm_memory_slot *memslot,
+ 	 *   e -> g
+ 	 *   f -> h
  	 */
--	la	s6, 1f
--	sub	s6, s6, s4
--	csrw	CSR_STVEC, s6
--
--	/*
--	 * With C-extension, here we get 42 Bytes and the next
--	 * .align directive would pad zeros here up to 44 Bytes.
--	 * So manually put a nop here to avoid zeros padding.
--	*/
--	nop
+-	if ((gpa_start & (PMD_SIZE - 1)) != (uaddr_start & (PMD_SIZE - 1)))
++	if ((gpa_start & (map_size - 1)) != (uaddr_start & (map_size - 1)))
+ 		return false;
  
- 	/* Process entries in a loop */
--.align 2
- 1:
- 	REG_L	t0, 0(s0)		/* t0 = *image->entry */
- 	addi	s0, s0, RISCV_SZPTR	/* image->entry++ */
-@@ -70,8 +56,8 @@ SYM_CODE_START(riscv_kexec_relocate)
- 	andi	t1, t0, 0x2
- 	beqz	t1, 2f
- 	andi	s0, t0, ~0x2
--	csrw	CSR_SATP, zero
--	jr	s6
-+	/* MMU is already off; the entry wrapper handled the transition. */
-+	j	1b
+ 	/*
+@@ -336,7 +337,8 @@ static bool fault_supports_gstage_huge_mapping(struct kvm_memory_slot *memslot,
+ 	 * userspace_addr or the base_gfn, as both are equally aligned (per
+ 	 * the check above) and equally sized.
+ 	 */
+-	return (hva >= ALIGN(uaddr_start, PMD_SIZE)) && (hva < ALIGN_DOWN(uaddr_end, PMD_SIZE));
++	return (hva >= ALIGN(uaddr_start, map_size)) &&
++	       (hva < ALIGN_DOWN(uaddr_end, map_size));
+ }
  
- 2:
- 	/* IND_DONE entry ? -> jump to done label */
-diff --git a/arch/riscv/kernel/machine_kexec.c b/arch/riscv/kernel/machine_kexec.c
-index 71688c63af65..82fcb84a03ec 100644
---- a/arch/riscv/kernel/machine_kexec.c
-+++ b/arch/riscv/kernel/machine_kexec.c
-@@ -164,9 +164,6 @@ machine_kexec_prepare(struct kimage *image)
- 		memcpy(control_code_buffer, riscv_kexec_relocate,
- 			riscv_kexec_relocate_size);
+ static int get_hva_mapping_size(struct kvm *kvm,
+@@ -404,7 +406,7 @@ static unsigned long transparent_hugepage_adjust(struct kvm *kvm,
+ 	 * sure that the HVA and GPA are sufficiently aligned and that the
+ 	 * block map is contained within the memslot.
+ 	 */
+-	if (fault_supports_gstage_huge_mapping(memslot, hva)) {
++	if (fault_supports_gstage_huge_mapping(memslot, hva, PMD_SIZE)) {
+ 		int sz;
  
--		/* Mark the control page executable */
--		set_memory_x((unsigned long) control_code_buffer, 1);
--
- 		WRITE_ONCE(riscv_kexec_relocate_entry_pa,
- 			   __pa_symbol(&riscv_kexec_relocate_entry));
- 	} else {
-@@ -262,11 +259,15 @@ machine_kexec(struct kimage *image)
- {
- 	struct kimage_arch *internal = &image->arch;
- 	unsigned long jump_addr = (unsigned long) image->start;
--	unsigned long first_ind_entry = (unsigned long) &image->head;
-+	/*
-+	 * The relocate body runs entirely with the MMU off (the wrapper
-+	 * drops SATP before jumping into control_code_buffer), so the very
-+	 * first entry must be a physical address.
-+	 */
-+	unsigned long first_ind_entry = __pa(&image->head);
- 	unsigned long this_cpu_id = __smp_processor_id();
- 	unsigned long this_hart_id = cpuid_to_hartid_map(this_cpu_id);
- 	unsigned long fdt_addr = internal->fdt_addr;
--	void *control_code_buffer = page_address(image->control_code_page);
- 	riscv_kexec_method kexec_method = NULL;
+ 		sz = get_hva_mapping_size(kvm, hva);
+@@ -421,12 +423,33 @@ static unsigned long transparent_hugepage_adjust(struct kvm *kvm,
+ 	return PAGE_SIZE;
+ }
  
- #ifdef CONFIG_SMP
-@@ -274,10 +275,20 @@ machine_kexec(struct kimage *image)
- 		"Some CPUs may be stale, kdump will be unreliable.\n");
- #endif
- 
--	if (image->type != KEXEC_TYPE_CRASH)
--		kexec_method = control_code_buffer;
--	else
-+	if (image->type != KEXEC_TYPE_CRASH) {
-+		kexec_method = (riscv_kexec_method) &riscv_kexec_relocate_entry;
-+		/*
-+		 * Publish the per-image control_code_buffer PA at dispatch
-+		 * time rather than in machine_kexec_prepare(). machine_kexec()
-+		 * only runs once the image has been fully loaded and committed
-+		 * as kexec_image, so the global cannot be left pointing at a
-+		 * page freed by a failed load.
-+		 */
-+		WRITE_ONCE(riscv_kexec_cc_buffer_pa,
-+			   __pa(page_address(image->control_code_page)));
-+	} else {
- 		kexec_method = (riscv_kexec_method) &riscv_kexec_norelocate;
++static unsigned long hugetlb_mapping_size(struct kvm_memory_slot *memslot,
++					  unsigned long hva,
++					  unsigned long map_size)
++{
++	switch (map_size) {
++	case PUD_SIZE:
++		if (fault_supports_gstage_huge_mapping(memslot, hva, PUD_SIZE))
++			return PUD_SIZE;
++		fallthrough;
++	case PMD_SIZE:
++		if (fault_supports_gstage_huge_mapping(memslot, hva, PMD_SIZE))
++			return PMD_SIZE;
++		fallthrough;
++	case PAGE_SIZE:
++		return PAGE_SIZE;
++	default:
++		return map_size;
 +	}
++}
++
+ int kvm_riscv_mmu_map(struct kvm_vcpu *vcpu, struct kvm_memory_slot *memslot,
+ 		      gpa_t gpa, unsigned long hva, bool is_write,
+ 		      struct kvm_gstage_mapping *out_map)
+ {
+ 	int ret;
+ 	kvm_pfn_t hfn;
++	bool is_hugetlb;
+ 	bool writable;
+ 	short vma_pageshift;
+ 	gfn_t gfn = gpa >> PAGE_SHIFT;
+@@ -460,16 +483,23 @@ int kvm_riscv_mmu_map(struct kvm_vcpu *vcpu, struct kvm_memory_slot *memslot,
+ 		return -EFAULT;
+ 	}
  
- 	pr_notice("Will call new kernel at %08lx from hart id %lx\n",
- 		  jump_addr, this_hart_id);
+-	if (is_vm_hugetlb_page(vma))
++	is_hugetlb = is_vm_hugetlb_page(vma);
++	if (is_hugetlb)
+ 		vma_pageshift = huge_page_shift(hstate_vma(vma));
+ 	else
+ 		vma_pageshift = PAGE_SHIFT;
+ 	vma_pagesize = 1ULL << vma_pageshift;
+ 	if (logging || (vma->vm_flags & VM_PFNMAP))
+ 		vma_pagesize = PAGE_SIZE;
++	else if (is_hugetlb)
++		vma_pagesize = hugetlb_mapping_size(memslot, hva, vma_pagesize);
+ 
++	/*
++	 * For hugetlb mappings, vma_pagesize might have been reduced from the
++	 * VMA size to a smaller safe mapping size.
++	 */
+ 	if (vma_pagesize == PMD_SIZE || vma_pagesize == PUD_SIZE)
+-		gfn = (gpa & huge_page_mask(hstate_vma(vma))) >> PAGE_SHIFT;
++		gfn = ALIGN_DOWN(gpa, vma_pagesize) >> PAGE_SHIFT;
+ 
+ 	/*
+ 	 * Read mmu_invalidate_seq so that KVM can detect if the results of
+@@ -511,8 +541,12 @@ int kvm_riscv_mmu_map(struct kvm_vcpu *vcpu, struct kvm_memory_slot *memslot,
+ 	if (mmu_invalidate_retry(kvm, mmu_seq))
+ 		goto out_unlock;
+ 
+-	/* Check if we are backed by a THP and thus use block mapping if possible */
+-	if (!logging && (vma_pagesize == PAGE_SIZE))
++	/*
++	 * Check if we are backed by a THP and thus use block mapping if
++	 * possible. Hugetlb mappings already selected their target size above,
++	 * so do not promote them through the THP helper.
++	 */
++	if (!logging && !is_hugetlb && vma_pagesize == PAGE_SIZE)
+ 		vma_pagesize = transparent_hugepage_adjust(kvm, memslot, hva, &hfn, &gpa);
+ 
+ 	if (writable) {
 -- 
-2.50.1
+2.43.0
 
 
 -- 
