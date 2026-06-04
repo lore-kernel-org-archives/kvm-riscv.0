@@ -4,37 +4,37 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DD6D7CD6E6B
-	for <kvm-riscv@archiver.kernel.org>; Thu,  4 Jun 2026 13:24:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D369DCD6E79
+	for <kvm-riscv@archiver.kernel.org>; Thu,  4 Jun 2026 13:24:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=FG6IaJSfZcKA2w5j7qTicmao0e+tWDSezbk2e6ptC00=; b=B1/aPiuGdyi9P/
-	YW0aEAs2hWfrrXM6n4E1poK9xC6KXtqRzmtGvxUkJCSh/hiQNOvqpxCLLjoL4qOADQeoUy3Cvpoqi
-	pABNSCajaJ91JDbz4PXZ9x4LywLHxLOScdYpo20cnP/u0sqqQ6qZe1ROQRrYFBIyfAvpcuCsX8SXM
-	k0bUwMNcZ0S8WRM/gmG6rfkETv3OTkUuOYtqwBQWFhadP1GwvmqdDfGShyOXbAxsQ9s/Sk8dfxqqW
-	0GtVfLnFIU2EgvAADalVEZOpASttxcZpvQE/Fqr9JKHyPftHHC5b1IgWgT+IjwG5/m4c6rnr2GZC/
-	VBgrAllXDliQ3ik/ocuQ==;
+	List-Owner; bh=05TpETBeiR66MBxBL/3/AmfOgZvk6Ij3cYIobY/I89w=; b=GDezenYouCStXA
+	vNNcuHHxNpgdWOWfBb097t17+MuVaDLpsuMtE3sZyZsXmCRqmkTO50ncqbmpP/5/X8nWcQgaw8KjP
+	JqDJ+JMtCQ/2p+WycY3jbgch5Em/ml9fTuhPyzDPfsmuQnkSenzCJutQ4SikX7ThnQs0EZMAGz8CJ
+	NCJzkKkFG/HlYW1zZMsQ21y1p1XkF4SOtUYJMn8zV2X1YhmPy+g3YoS6rqYQ6HBIW5SOTEFZ3HwKB
+	iSE+Q2iPQXVYztMNK55lBeeujbDYLZxlAd3gPcuEViCON/mTPDVmeUoeqpYEVaZA2XWUd0PfBFAJD
+	i2ABTuGqYyBuQ2hKEtvA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wV83w-0000000GmII-2P67;
-	Thu, 04 Jun 2026 13:24:44 +0000
-Received: from out30-110.freemail.mail.aliyun.com ([115.124.30.110])
+	id 1wV83x-0000000GmKm-1p9J;
+	Thu, 04 Jun 2026 13:24:45 +0000
+Received: from out30-99.freemail.mail.aliyun.com ([115.124.30.99])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wV83q-0000000GmBD-3FNx;
-	Thu, 04 Jun 2026 13:24:41 +0000
+	id 1wV83p-0000000GmBC-2rCe;
+	Thu, 04 Jun 2026 13:24:42 +0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
 	d=linux.alibaba.com; s=default;
 	t=1780579474; h=From:To:Subject:Date:Message-Id:MIME-Version;
-	bh=wGJTJ/FaZhfGglBz44gxrkrG5R80OdCp7c0qc5/blwo=;
-	b=BJ0CaUFNsbnPI/84BUZ99dTZx32FpNtT5AlrdeY416kn0xUnujFouGQkGPEqs/HDAs/G1tGeDWKmA7n2tjr1rtbQkM7a/hrCA5KThxUtBJuJpDKVkDt8t3fdd1Rm30Itp6+9vUgLgvI2XIBVBksE8Wh2uNIaR/hdwTXlTV9sZRE=
-X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R721e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam033037026112;MF=fangyu.yu@linux.alibaba.com;NM=1;PH=DS;RN=24;SR=0;TI=SMTPD_---0X4AKnXk_1780579466;
-Received: from localhost.localdomain(mailfrom:fangyu.yu@linux.alibaba.com fp:SMTPD_---0X4AKnXk_1780579466 cluster:ay36)
+	bh=4g9/cguTkXnZOmW3mc5bH5fjRguARWthM2VYsbDUHZY=;
+	b=BfI3GR8Wf9p+eM119OPAtc1jYY1XAKBnwAWwwmAuJfrNnA8rWRA66B+adDqu+TDJFX7sx59nltxi84AzA9GdtI1pTjhoLn84zNI6GsYvck2NrwZnBLPaO83Jq4AgAhv36PNjk4K6vktPGiS/FnqhIPT0X0weigtTWq8q7JcDUx0=
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R191e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam033037033178;MF=fangyu.yu@linux.alibaba.com;NM=1;PH=DS;RN=24;SR=0;TI=SMTPD_---0X4AKnYF_1780579468;
+Received: from localhost.localdomain(mailfrom:fangyu.yu@linux.alibaba.com fp:SMTPD_---0X4AKnYF_1780579468 cluster:ay36)
           by smtp.aliyun-inc.com;
-          Thu, 04 Jun 2026 21:24:27 +0800
+          Thu, 04 Jun 2026 21:24:29 +0800
 From: fangyu.yu@linux.alibaba.com
 To: Paul Walmsley <pjw@kernel.org>,
 	Palmer Dabbelt <palmer@dabbelt.com>,
@@ -60,16 +60,16 @@ Cc: Song Shuai <songshuaishuai@tinylab.org>,
 	kvm-riscv@lists.infradead.org,
 	kvm@vger.kernel.org,
 	Fangyu Yu <fangyu.yu@linux.alibaba.com>
-Subject: [PATCH v3 3/9] riscv: Add kexec trampoline text section to vmlinux.lds.S
-Date: Thu,  4 Jun 2026 21:24:12 +0800
-Message-Id: <20260604132418.15725-4-fangyu.yu@linux.alibaba.com>
+Subject: [PATCH v3 4/9] riscv: kexec: Place norelocate trampoline into .kexec.tramp.text
+Date: Thu,  4 Jun 2026 21:24:13 +0800
+Message-Id: <20260604132418.15725-5-fangyu.yu@linux.alibaba.com>
 X-Mailer: git-send-email 2.39.3 (Apple Git-146)
 In-Reply-To: <20260604132418.15725-1-fangyu.yu@linux.alibaba.com>
 References: <20260604132418.15725-1-fangyu.yu@linux.alibaba.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260604_062439_005185_D6DBADC4 
-X-CRM114-Status: UNSURE (   7.63  )
+X-CRM114-CacheID: sfid-20260604_062438_301262_F20B8CE9 
+X-CRM114-Status: UNSURE (   6.46  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -89,48 +89,41 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 From: Fangyu Yu <fangyu.yu@linux.alibaba.com>
 
-When CONFIG_KEXEC_CORE is enabled, add a dedicated .kexec.tramp.text
-area to the RISC-V kernel linker script.
-
-Extend vmlinux.lds.S to:
-  - align both the start and the end to PAGE_SIZE
-  - define __kexec_tramp_text_start/__kexec_tramp_text_end
-  - KEEP all .kexec.tramp.text* input sections
-  - ASSERT the trampoline text fits within one page
-
-The end-of-section page alignment guarantees that the trampoline page,
-which is later identity-mapped as PAGE_KERNEL_EXEC, contains nothing but
-the trampoline code and padding (no shared neighbour data).
-
-When kexec is disabled, the whole block is excluded via #ifdef
-CONFIG_KEXEC_CORE.
+Move riscv_kexec_norelocate out of the generic .text section and into
+a dedicated executable trampoline section, .kexec.tramp.text.
 
 Signed-off-by: Fangyu Yu <fangyu.yu@linux.alibaba.com>
 ---
- arch/riscv/kernel/vmlinux.lds.S | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ arch/riscv/include/asm/kexec.h     | 4 ++++
+ arch/riscv/kernel/kexec_relocate.S | 2 +-
+ 2 files changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/arch/riscv/kernel/vmlinux.lds.S b/arch/riscv/kernel/vmlinux.lds.S
-index 1f4f8496941a..bc615f7b702f 100644
---- a/arch/riscv/kernel/vmlinux.lds.S
-+++ b/arch/riscv/kernel/vmlinux.lds.S
-@@ -41,6 +41,16 @@ SECTIONS
- 		ENTRY_TEXT
- 		IRQENTRY_TEXT
- 		SOFTIRQENTRY_TEXT
-+#ifdef CONFIG_KEXEC_CORE
-+		. = ALIGN(PAGE_SIZE);
-+		__kexec_tramp_text_start = .;
-+		KEEP(*(.kexec.tramp.text))
-+		KEEP(*(.kexec.tramp.text.*))
-+		__kexec_tramp_text_end = .;
-+		ASSERT((__kexec_tramp_text_end - __kexec_tramp_text_start) <= PAGE_SIZE,
-+		       ".kexec.tramp.text exceeds PAGE_SIZE");
-+		. = ALIGN(PAGE_SIZE);
-+#endif
- 		_etext = .;
- 	}
+diff --git a/arch/riscv/include/asm/kexec.h b/arch/riscv/include/asm/kexec.h
+index b9ee8346cc8c..6466c1f00d41 100644
+--- a/arch/riscv/include/asm/kexec.h
++++ b/arch/riscv/include/asm/kexec.h
+@@ -75,4 +75,8 @@ int load_extra_segments(struct kimage *image, unsigned long kernel_start,
+ 			unsigned long cmdline_len);
+ #endif
  
++#ifndef __ASSEMBLY__
++extern char __kexec_tramp_text_start[];
++#endif
++
+ #endif
+diff --git a/arch/riscv/kernel/kexec_relocate.S b/arch/riscv/kernel/kexec_relocate.S
+index de0a4b35d01e..af6b99f5b0fd 100644
+--- a/arch/riscv/kernel/kexec_relocate.S
++++ b/arch/riscv/kernel/kexec_relocate.S
+@@ -147,7 +147,7 @@ riscv_kexec_relocate_end:
+ 
+ 
+ /* Used for jumping to crashkernel */
+-.section ".text"
++.section ".kexec.tramp.text", "ax"
+ SYM_CODE_START(riscv_kexec_norelocate)
+ 	/*
+ 	 * s0: (const) Phys address to jump to
 -- 
 2.50.1
 
