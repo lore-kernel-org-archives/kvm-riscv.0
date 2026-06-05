@@ -4,47 +4,47 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1D4B2CD6E6B
-	for <kvm-riscv@archiver.kernel.org>; Fri,  5 Jun 2026 08:03:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4D445CD6E74
+	for <kvm-riscv@archiver.kernel.org>; Fri,  5 Jun 2026 08:04:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:Subject:Cc:To:From:Mime-Version:Date:
 	References:In-Reply-To:Message-ID:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=Wpu5bX9l2MR6yMZ4QdTDtqbXhhxKQ7qGTypPTF/JiiU=; b=2UcUZAO6OpYpMM
-	jX3e5VuMn36DH6s/x+kXSf+IT5zj/thq7bMkfRpwkQ13a5iGHC79CjiIhfl2g+YMHNUNl7X2xhrxU
-	s1Rp5iDY1EvHxwepkeOCcXPGVMysGPN0fwkcErNnVEcGkN/MJjSUS0hM7gpGgKtiY6SK3LfJ3nAZ0
-	piL88t8nJRL6qGIgFQ87F3D/boKNXdpm+egtW+Kt9FR2omPaC41CAvJ5KXyCG0NEWZtcoqDAT/g/Q
-	P1dsNIQHclAmfUgenJ7FFSkPptyc6bTFcWASTvF85o7WpbF61fwQ3FlBClxCGW6xEPGkt981lO6yq
-	psquR4xZNZhL0AVrdx9Q==;
+	List-Owner; bh=bsqHrW5z4JNvBROf4qL6z2TkDWyD/yaE5laYvuHfi24=; b=i6NboH/dAZhODj
+	Idc45q57jsW4IFV2Gg7/UBwEP2niSePpf5tfTo3AxDq3CqwmR4ELTXPCMAySbgfumnGxAPCSp+tVp
+	M1bt+koq1OPxrVDtcaSQFikJYAe1hcpj9D6pqWiuhTwKRy0jVaT4sI8IkQNdJ4H8U3rDyNmw5Nuy+
+	ibsEibBZ7op6DMRa+ylhCEaJ3yobZrbVXMSXOSxM39AWHJvjfl5oVK20moWE7dOUXw4DzzoFx8fcf
+	XhahVrNiVBQDoAAe+Ec6OHaHRMGymcCcOcWo1331me+HJWydn1iyQeckBXGjyaH4nyCvzioCvZncd
+	1Goren5AtBeA4bgunutw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wVPWK-00000000HUX-35As;
-	Fri, 05 Jun 2026 08:03:12 +0000
-Received: from mxhk.zte.com.cn ([160.30.148.34])
+	id 1wVPXu-00000000Hba-04sf;
+	Fri, 05 Jun 2026 08:04:50 +0000
+Received: from mxhk.zte.com.cn ([160.30.148.35])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wVPWI-00000000HTx-34fX;
-	Fri, 05 Jun 2026 08:03:12 +0000
+	id 1wVPXq-00000000Haw-3jAh;
+	Fri, 05 Jun 2026 08:04:48 +0000
 Received: from mse-fl1.zte.com.cn (unknown [10.5.228.132])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mxhk.zte.com.cn (FangMail) with ESMTPS id 4gWv7c3N4bz5B135;
-	Fri, 05 Jun 2026 16:03:08 +0800 (CST)
-Received: from szxl2zmapp06.zte.com.cn ([10.1.32.108])
-	by mse-fl1.zte.com.cn with SMTP id 655830bJ035909;
-	Fri, 5 Jun 2026 16:03:00 +0800 (+08)
+	by mxhk.zte.com.cn (FangMail) with ESMTPS id 4gWv9S36x6z8XrrZ;
+	Fri, 05 Jun 2026 16:04:44 +0800 (CST)
+Received: from szxl2zmapp07.zte.com.cn ([10.1.32.52])
+	by mse-fl1.zte.com.cn with SMTP id 65584aXL038080;
+	Fri, 5 Jun 2026 16:04:36 +0800 (+08)
 	(envelope-from wang.yechao255@zte.com.cn)
-Received: from mapi (szxl2zmapp06[null])
+Received: from mapi (szxlzmapp01[null])
 	by mapi (Zmail) with MAPI id mid12;
-	Fri, 5 Jun 2026 16:03:02 +0800 (CST)
-X-Zmail-TransId: 2b086a2282b6558-07ac4
+	Fri, 5 Jun 2026 16:04:38 +0800 (CST)
+X-Zmail-TransId: 2b036a228316065-0e5ca
 X-Mailer: Zmail v1.0
-Message-ID: <20260605160302493P3Y6frbLrzPhv4K8MjiX4@zte.com.cn>
+Message-ID: <202606051604386666MCW-cbGqPCadNZW8w_Q5@zte.com.cn>
 In-Reply-To: <20260605160019772GJy5SDmWQQF7sSqvJ0JtC@zte.com.cn>
 References: 20260605160019772GJy5SDmWQQF7sSqvJ0JtC@zte.com.cn
-Date: Fri, 5 Jun 2026 16:03:02 +0800 (CST)
+Date: Fri, 5 Jun 2026 16:04:38 +0800 (CST)
 Mime-Version: 1.0
 From: <wang.yechao255@zte.com.cn>
 To: <anup@brainfault.org>, <atish.patra@linux.dev>, <pjw@kernel.org>,
@@ -52,19 +52,18 @@ To: <anup@brainfault.org>, <atish.patra@linux.dev>, <pjw@kernel.org>,
 Cc: <kvm@vger.kernel.org>, <kvm-riscv@lists.infradead.org>,
         <linux-riscv@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
         <wang.yechao255@zte.com.cn>
-Subject: =?UTF-8?B?W1BBVENIIHYzIDIvM10gUklTQy1WOiBLVk06IGFkZCB0cmFjZXBvaW50IGZvciBndWVzdCBwYWdlIGZhdWx0c8KgwqA=?=
-X-MAIL: mse-fl1.zte.com.cn 655830bJ035909
+Subject: =?UTF-8?B?wqBbUEFUQ0ggdjMgMy8zXSBSSVNDLVY6IEtWTTogUmVjb3ZlciBnc3RhZ2UgaHVnZSBwYWdlIG1hcHBpbmdzIGR1cmluZyBkaXNhYmxlLWRpcnR5LWxvZw==?=
+X-MAIL: mse-fl1.zte.com.cn 65584aXL038080
 X-TLS: YES
 X-ENVELOPE-SENDER: wang.yechao255@zte.com.cn
-X-SOURCE-IP: 10.5.228.132 unknown Fri, 05 Jun 2026 16:03:08 +0800
+X-SOURCE-IP: 10.5.228.132 unknown Fri, 05 Jun 2026 16:04:44 +0800
 X-CLEAN: YES
 X-Fangmail-Anti-Spam-Filtered: true
-X-Fangmail-MID-QID: 6A2282BC.000/4gWv7c3N4bz5B135
+X-Fangmail-MID-QID: 6A22831C.001/4gWv9S36x6z8XrrZ
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260605_010310_932202_42E8D524 
-X-CRM114-Status: UNSURE (   7.32  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20260605_010447_243601_AFA54D83 
+X-CRM114-Status: GOOD (  16.42  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -83,72 +82,242 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 From: Wang Yechao <wang.yechao255@zte.com.cn>
 
-Add the kvm_page_fault event tracepoint to count the number of KVM
-guest page faults.
+When dirty logging is enabled, the gstage mappings are split into
+4K pages to track dirty pages. If the migration fails or is canceled,
+in order to keep the VM's performance consistent with that before
+dirty logging was enabled, the gstage huge page mappings are recoverd
+when dirty logging is disabled.
+
+With this patch, dirty_log_perf_test shows a decrease in the number of
+vCPU faults:
+
+$ perf stat -e kvm:kvm_page_fault \
+/dirty_log_perf_test -s anonymous_hugetlb_1gb -v 1 -e -b 1G
+
+Before: 524,819      kvm:kvm_page_fault
+After : 262,685      kvm:kvm_page_fault
 
 Signed-off-by: Wang Yechao <wang.yechao255@zte.com.cn>
 ---
- arch/riscv/kvm/trace.h     | 25 +++++++++++++++++++++++++
- arch/riscv/kvm/vcpu_exit.c |  3 +++
- 2 files changed, 28 insertions(+)
+ arch/riscv/include/asm/kvm_gstage.h |   4 ++
+ arch/riscv/kvm/gstage.c             |  61 ++++++++++++++++
+ arch/riscv/kvm/mmu.c                | 105 ++++++++++++++++++++++++++++
+ 3 files changed, 170 insertions(+)
 
-diff --git a/arch/riscv/kvm/trace.h b/arch/riscv/kvm/trace.h
-index 3d54175d805c..9056cc9883cf 100644
---- a/arch/riscv/kvm/trace.h
-+++ b/arch/riscv/kvm/trace.h
-@@ -56,6 +56,31 @@ TRACE_EVENT(kvm_exit,
- 		__entry->htinst)
- );
+diff --git a/arch/riscv/include/asm/kvm_gstage.h b/arch/riscv/include/asm/kvm_gstage.h
+index 21e2019df0cf..bef1d4f11564 100644
+--- a/arch/riscv/include/asm/kvm_gstage.h
++++ b/arch/riscv/include/asm/kvm_gstage.h
+@@ -68,6 +68,10 @@ int kvm_riscv_gstage_split_huge(struct kvm_gstage *gstage,
+ 				struct kvm_mmu_memory_cache *pcache,
+ 				gpa_t addr, u32 target_level, bool flush);
 
-+/*
-+ * Tracepoint for page fault.
-+ */
-+TRACE_EVENT(kvm_page_fault,
-+	TP_PROTO(struct kvm_vcpu *vcpu, u64 fault_address, u64 error_code),
-+	TP_ARGS(vcpu, fault_address, error_code),
++void kvm_riscv_gstage_recover_huge(struct kvm_gstage *gstage, gpa_t addr,
++				   unsigned long taget_page_size,
++				   unsigned long *page_size);
 +
-+	TP_STRUCT__entry(
-+		__field(unsigned int,   vcpu_id)
-+		__field(u64,            fault_address)
-+		__field(u64,            error_code)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->vcpu_id        = vcpu->vcpu_id;
-+		__entry->fault_address  = fault_address;
-+		__entry->error_code     = error_code;
-+	),
-+
-+	TP_printk("vcpu %u address 0x%016llx error_code 0x%llx",
-+		__entry->vcpu_id,
-+		__entry->fault_address,
-+		__entry->error_code)
-+);
-+
- #endif /* _TRACE_RSICV_KVM_H */
+ enum kvm_riscv_gstage_op {
+ 	GSTAGE_OP_NOP = 0,	/* Nothing */
+ 	GSTAGE_OP_CLEAR,	/* Clear/Unmap */
+diff --git a/arch/riscv/kvm/gstage.c b/arch/riscv/kvm/gstage.c
+index b83b85d1c016..11d4062fdd22 100644
+--- a/arch/riscv/kvm/gstage.c
++++ b/arch/riscv/kvm/gstage.c
+@@ -356,6 +356,67 @@ int kvm_riscv_gstage_split_huge(struct kvm_gstage *gstage,
+ 	return 0;
+ }
 
- #undef TRACE_INCLUDE_PATH
-diff --git a/arch/riscv/kvm/vcpu_exit.c b/arch/riscv/kvm/vcpu_exit.c
-index 0bb0c51e3c89..57a21a246aa8 100644
---- a/arch/riscv/kvm/vcpu_exit.c
-+++ b/arch/riscv/kvm/vcpu_exit.c
-@@ -11,6 +11,7 @@
- #include <asm/insn-def.h>
++static inline unsigned long make_huge_pte(unsigned long child_pte, int index,
++					  unsigned long child_page_size)
++{
++	unsigned long huge_pte = child_pte;
++	unsigned long child_pfn_offset;
++
++	child_pfn_offset = index * (child_page_size / PAGE_SIZE);
++	huge_pte -= pte_val(pfn_pte(child_pfn_offset, __pgprot(0)));
++
++	return huge_pte;
++}
++
++void kvm_riscv_gstage_recover_huge(struct kvm_gstage *gstage, gpa_t addr,
++				   unsigned long target_page_size,
++				   unsigned long *page_size)
++{
++	u32 current_level = gstage->pgd_levels - 1;
++	pte_t *next_ptep = (pte_t *)gstage->pgd;
++	u32 target_level, out_level;
++	pte_t *ptep, *child_ptep;
++	unsigned long huge_pte;
++	int ret, i;
++
++	out_level = 0;
++	ret = gstage_page_size_to_level(gstage, target_page_size, &target_level);
++	if (ret)
++		goto out;
++
++	while (current_level >= target_level) {
++		ptep = (pte_t *)&next_ptep[gstage_pte_index(gstage, addr, current_level)];
++
++		out_level = current_level;
++		if (!pte_val(ptep_get(ptep)))
++			goto out;
++
++		/* The mapping is already a huge page mapping. */
++		if (gstage_pte_leaf(ptep))
++			goto out;
++
++		next_ptep = (pte_t *)gstage_pte_page_vaddr(ptep_get(ptep));
++		current_level--;
++	}
++
++	for (i = 0; i < PTRS_PER_PTE; i++) {
++		child_ptep = (pte_t *)&next_ptep[i];
++		if (!gstage_pte_leaf(child_ptep))
++			continue;
++
++		huge_pte = make_huge_pte(pte_val(ptep_get(child_ptep)),
++					 i, target_page_size / PTRS_PER_PTE);
++		set_pte(ptep, __pte(huge_pte));
++		gstage_tlb_flush(gstage, target_level, addr);
++		put_page(virt_to_page(next_ptep));
++
++		break;
++	}
++
++out:
++	gstage_level_to_page_size(gstage, out_level, page_size);
++}
++
+ bool kvm_riscv_gstage_op_pte(struct kvm_gstage *gstage, gpa_t addr,
+ 			     pte_t *ptep, u32 ptep_level, enum kvm_riscv_gstage_op op)
+ {
+diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
+index 5645e247e198..990fc483a765 100644
+--- a/arch/riscv/kvm/mmu.c
++++ b/arch/riscv/kvm/mmu.c
+@@ -16,6 +16,8 @@
  #include <asm/kvm_mmu.h>
  #include <asm/kvm_nacl.h>
-+#include "trace.h"
 
- static int gstage_page_fault(struct kvm_vcpu *vcpu, struct kvm_run *run,
- 			     struct kvm_cpu_trap *trap)
-@@ -27,6 +28,8 @@ static int gstage_page_fault(struct kvm_vcpu *vcpu, struct kvm_run *run,
- 	memslot = gfn_to_memslot(vcpu->kvm, gfn);
- 	hva = gfn_to_hva_memslot_prot(memslot, gfn, &writable);
-
-+	trace_kvm_page_fault(vcpu, fault_addr, trap->scause);
++static void mmu_recover_huge_pages(struct kvm *kvm, int slot);
 +
- 	if (kvm_is_error_hva(hva) ||
- 	    (trap->scause == EXC_STORE_GUEST_PAGE_FAULT && !writable)) {
- 		switch (trap->scause) {
+ static void mmu_wp_memory_region(struct kvm *kvm, int slot)
+ {
+ 	struct kvm_memslots *slots = kvm_memslots(kvm);
+@@ -170,6 +172,26 @@ void kvm_arch_commit_memory_region(struct kvm *kvm,
+ 		if (kvm_dirty_log_manual_protect_and_init_set(kvm))
+ 			return;
+ 		mmu_wp_memory_region(kvm, new->id);
++	} else {
++		/*
++		 * Only when change == KVM_MR_FLAGS_ONLY, this branch handles the
++		 * disable-dirty-log case. For other changes (KVM_MR_CREATE,
++		 * KVM_MR_DELETE, KVM_MR_MOVE), there is no need to recover
++		 * huge pages.
++		 */
++		if (change != KVM_MR_FLAGS_ONLY)
++			return;
++
++		/*
++		 * Recover huge page mappings in the slot now that dirty logging
++		 * is disabled, i.e. now that KVM does not have to track guest
++		 * writes at 4KiB granularity.
++		 *
++		 * Dirty logging might be disabled by userspace if an ongoing VM
++		 * live migration is cancelled and the VM must continue running
++		 * on the source.
++		 */
++		mmu_recover_huge_pages(kvm, new->id);
+ 	}
+ }
+
+@@ -689,3 +711,86 @@ void kvm_riscv_mmu_update_hgatp(struct kvm_vcpu *vcpu)
+ 	if (!kvm_riscv_gstage_vmid_bits())
+ 		kvm_riscv_local_hfence_gvma_all();
+ }
++
++static void mmu_recover_huge_pages_range(struct kvm_gstage *gstage,
++					 unsigned long *page_size,
++					 gpa_t range_start,
++					 gpa_t range_end)
++{
++	phys_addr_t start = range_start;
++	phys_addr_t end = range_end;
++	unsigned long pg_sz = 0;
++
++	/*
++	 *  Phase 1: recover 2MB hugepages mapping within the range.
++	 */
++	while (start < end) {
++		kvm_riscv_gstage_recover_huge(gstage, start, PMD_SIZE, &pg_sz);
++		start += pg_sz;
++	}
++
++	/*
++	 * Phase 2: if 1GB hugepages are desired, try to recover the whole range
++	 * as one 1GB hugepages mapping.
++	 */
++	if (*page_size == PUD_SIZE) {
++		start = range_start;
++		kvm_riscv_gstage_recover_huge(gstage, start, PUD_SIZE, &pg_sz);
++	}
++
++	*page_size = pg_sz;
++}
++
++static void mmu_recover_huge_pages(struct kvm *kvm, int slot)
++{
++	struct kvm_memslots *slots = kvm_memslots(kvm);
++	struct kvm_memory_slot *memslot = id_to_memslot(slots, slot);
++	phys_addr_t start = memslot->base_gfn << PAGE_SHIFT;
++	phys_addr_t end = (memslot->base_gfn + memslot->npages) << PAGE_SHIFT;
++	phys_addr_t addr = start;
++	struct kvm_gstage gstage;
++	unsigned long page_size;
++	phys_addr_t range_start;
++	phys_addr_t range_end;
++	unsigned long hva;
++
++	kvm_riscv_gstage_init(&gstage, kvm);
++
++	write_lock(&kvm->mmu_lock);
++
++	while (addr < end) {
++		/*
++		 * If a very large memslot is mapped exclusively with
++		 * 4KB host pages, or too many hugepages need to recover,
++		 * release the kvm->mmu_lock to prevent starvation and
++		 * lockup detector warnings.
++		 */
++		cond_resched_rwlock_write(&kvm->mmu_lock);
++
++		hva = gfn_to_hva(kvm, addr >> PAGE_SHIFT);
++		page_size = get_hva_mapping_size(kvm, hva);
++		if (page_size == PAGE_SIZE) {
++			addr += page_size;
++			continue;
++		}
++
++		range_start = ALIGN_DOWN(addr, page_size);
++		range_end = range_start + page_size;
++
++		/*
++		 * Make sure the recover range [range_start, range_end)
++		 * is within the slot range.
++		 */
++		if (range_start < start || range_end > end) {
++			addr = range_end;
++			continue;
++		}
++
++		mmu_recover_huge_pages_range(&gstage, &page_size,
++					     range_start, range_end);
++
++		addr = range_start + page_size;
++	}
++
++	write_unlock(&kvm->mmu_lock);
++}
 -- 
 2.43.5
 
