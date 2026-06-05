@@ -4,66 +4,106 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4D445CD6E74
-	for <kvm-riscv@archiver.kernel.org>; Fri,  5 Jun 2026 08:04:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A00E9CD6E7D
+	for <kvm-riscv@archiver.kernel.org>; Fri,  5 Jun 2026 14:54:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Subject:Cc:To:From:Mime-Version:Date:
-	References:In-Reply-To:Message-ID:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:Subject:Message-ID:Date:From:
+	In-Reply-To:References:MIME-Version:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=bsqHrW5z4JNvBROf4qL6z2TkDWyD/yaE5laYvuHfi24=; b=i6NboH/dAZhODj
-	Idc45q57jsW4IFV2Gg7/UBwEP2niSePpf5tfTo3AxDq3CqwmR4ELTXPCMAySbgfumnGxAPCSp+tVp
-	M1bt+koq1OPxrVDtcaSQFikJYAe1hcpj9D6pqWiuhTwKRy0jVaT4sI8IkQNdJ4H8U3rDyNmw5Nuy+
-	ibsEibBZ7op6DMRa+ylhCEaJ3yobZrbVXMSXOSxM39AWHJvjfl5oVK20moWE7dOUXw4DzzoFx8fcf
-	XhahVrNiVBQDoAAe+Ec6OHaHRMGymcCcOcWo1331me+HJWydn1iyQeckBXGjyaH4nyCvzioCvZncd
-	1Goren5AtBeA4bgunutw==;
+	List-Owner; bh=xlOBpTn8f6lvbq2tCOFlshy+Z5tnr5o9qxUulYT9jJs=; b=IpVquE7b2FD96s
+	T3QDTwUr+5QmhtIA98HHSkA5u5KDfNWGp4YehYYrwsU6Pyg7oJ1/2Q2FH8KPpyx7IFs/fOTOhVnZ6
+	G+gLsFkHfvqMUS22lAZ68JTLcDt85yU/LovMrieqYOVSCDrdV+HAh56HrfblFxPlxg7jz6FVZ9uyJ
+	UzQrMnSPMZdx6QwKLA5X07ZnHWQHLW1s5nRXApPX91uMfeNzhTbZaMQ20R+M8J0JrglTiKvoUX5iu
+	VszfjY5nnWpWBkplJRHt0Mxk5Po4YaRY88vvjFySrZJaBy+O5hASXdn6MVmgtAPRTIWgNRn++f9sf
+	fxkZ4nohxr35gwr0CKCA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wVPXu-00000000Hba-04sf;
-	Fri, 05 Jun 2026 08:04:50 +0000
-Received: from mxhk.zte.com.cn ([160.30.148.35])
+	id 1wVVwW-00000000kwE-0xLD;
+	Fri, 05 Jun 2026 14:54:40 +0000
+Received: from mail-qt1-x82f.google.com ([2607:f8b0:4864:20::82f])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wVPXq-00000000Haw-3jAh;
-	Fri, 05 Jun 2026 08:04:48 +0000
-Received: from mse-fl1.zte.com.cn (unknown [10.5.228.132])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mxhk.zte.com.cn (FangMail) with ESMTPS id 4gWv9S36x6z8XrrZ;
-	Fri, 05 Jun 2026 16:04:44 +0800 (CST)
-Received: from szxl2zmapp07.zte.com.cn ([10.1.32.52])
-	by mse-fl1.zte.com.cn with SMTP id 65584aXL038080;
-	Fri, 5 Jun 2026 16:04:36 +0800 (+08)
-	(envelope-from wang.yechao255@zte.com.cn)
-Received: from mapi (szxlzmapp01[null])
-	by mapi (Zmail) with MAPI id mid12;
-	Fri, 5 Jun 2026 16:04:38 +0800 (CST)
-X-Zmail-TransId: 2b036a228316065-0e5ca
-X-Mailer: Zmail v1.0
-Message-ID: <202606051604386666MCW-cbGqPCadNZW8w_Q5@zte.com.cn>
-In-Reply-To: <20260605160019772GJy5SDmWQQF7sSqvJ0JtC@zte.com.cn>
-References: 20260605160019772GJy5SDmWQQF7sSqvJ0JtC@zte.com.cn
-Date: Fri, 5 Jun 2026 16:04:38 +0800 (CST)
-Mime-Version: 1.0
-From: <wang.yechao255@zte.com.cn>
-To: <anup@brainfault.org>, <atish.patra@linux.dev>, <pjw@kernel.org>,
-        <palmer@dabbelt.com>, <aou@eecs.berkeley.edu>, <alex@ghiti.fr>
-Cc: <kvm@vger.kernel.org>, <kvm-riscv@lists.infradead.org>,
-        <linux-riscv@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
-        <wang.yechao255@zte.com.cn>
-Subject: =?UTF-8?B?wqBbUEFUQ0ggdjMgMy8zXSBSSVNDLVY6IEtWTTogUmVjb3ZlciBnc3RhZ2UgaHVnZSBwYWdlIG1hcHBpbmdzIGR1cmluZyBkaXNhYmxlLWRpcnR5LWxvZw==?=
-X-MAIL: mse-fl1.zte.com.cn 65584aXL038080
-X-TLS: YES
-X-ENVELOPE-SENDER: wang.yechao255@zte.com.cn
-X-SOURCE-IP: 10.5.228.132 unknown Fri, 05 Jun 2026 16:04:44 +0800
-X-CLEAN: YES
-X-Fangmail-Anti-Spam-Filtered: true
-X-Fangmail-MID-QID: 6A22831C.001/4gWv9S36x6z8XrrZ
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+	id 1wVVwS-00000000kur-2gYV
+	for kvm-riscv@lists.infradead.org;
+	Fri, 05 Jun 2026 14:54:39 +0000
+Received: by mail-qt1-x82f.google.com with SMTP id d75a77b69052e-5174a3d9598so17989441cf.3
+        for <kvm-riscv@lists.infradead.org>; Fri, 05 Jun 2026 07:54:36 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1780671275; cv=none;
+        d=google.com; s=arc-20240605;
+        b=eelj7q4c+W9UG98/XhXmnC2+a0PIYSqbPhvGyoHpjmjkfxRkMXW0IRvuSpOND4/2+N
+         05mblRL/zoJiQQnaOixP+piGU28633xLgkhIQi2GSAq70uk3KqwUCqQ6WxkK5EuffxQS
+         QWut2PiQXA9zNsc7HfSFDwdY2wSS3PcqxADds15N3j08rYEvtDtMOMd5uzY+91K2EfAb
+         GX5k2jqLzqlF8h+ob4J7cFhPZuhX/VagEhEF04vy22+OZdZFLQOkEtTPpmxgOuvMtqvq
+         Da67Q0bteBIaeuAFI8gzPXCXodVxc3yaepMzzyC6ZwLPHfF9rG+T2LP3Aca3rgrIe37R
+         XyCw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=QjX98Uht19FjoE2NcL+rrjlJpfTyguEM6t6ATWltAqU=;
+        fh=5n7JWaxMgPAGnDeZ9q4eBEUyQfA1jTHaailGX0euzV8=;
+        b=QTQaDaYrgmuFwCk3p1vwVRU6ftgAm78MQmjk/CJqp+EsjbuKEBDnyKtUwZL4C2Ezcz
+         Kx7QNAqpcewxMMQR9wzQhBWSlf85cFcPRXTUnJETyz290LqzKVsr69/lreHK+Pu6Igys
+         QHbWDN7LWAs21IfQ6FCWag80CfSqqxzIWOys9Hixwt6jPE7YUgqunEDWwdJEotZXXUgQ
+         6drINKMmxdA4LU2hbuxFpxJh2VggTqqHjSluHOh7b3odLtKyyg2WXWymCCnFmdnvRRmJ
+         2gtFM898BYDrnQRbfu6QHVbJlpnAHsiy5YOUy3dXaiShmkEQYZ5FdxCrjYerwNow5D6W
+         rbeg==;
+        darn=lists.infradead.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=brainfault-org.20251104.gappssmtp.com; s=20251104; t=1780671275; x=1781276075; darn=lists.infradead.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=QjX98Uht19FjoE2NcL+rrjlJpfTyguEM6t6ATWltAqU=;
+        b=gHpXelhXjWTaKxMdF4SwiGMFzkOkhWEyUYdr4Cx4Q8MU4wZQYZl2USdbqn4Pf0HlQM
+         2OGScdHM0tAafAcSD72pi+vZPyC307H0TlkvowMN7DYkfz+OJgB8mRKy/fP+lODlV6fw
+         gWRz/HLijh+nY0AN0v9nHLcV9EEIZ1dRiH35c87b7qAIXY1uPd2JYyJb6MKD4UPmfGL3
+         Y9OlDdarfVjC7u0UZxLwgmwLclGTTCa+zgWkwQqenDjqY+VsyUp6iMasYZiWvmNgchqe
+         ZOWmqLwfChxEJYZaFi0kdLT/UxxdVgUCKV4HIG1OQsv/X3JeKaNt/ILIjqdEzoqeYdlh
+         JW2w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1780671275; x=1781276075;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=QjX98Uht19FjoE2NcL+rrjlJpfTyguEM6t6ATWltAqU=;
+        b=J9PHebC64pyC095PUSzt1a04BmqltjAZyI17eq1TtxDNTopxK5kLb9qj9vaanwuNM7
+         olzfO9rmQcjG9ev+vPXhZ8zMVIALh5sXSzqMW2NaaWKCUNa2YvAYzK614wZeoiRs1vLA
+         bRsY3iNllaigU4NcaBIjjXozbnliG3Ab2rF2EuHtuk+ZVXi8jx13kbHTjoGPG+StHqFU
+         dwUEd1V8YDDxClMZV0Z/mlHMAJO4OViY0+mXfCehFhGpLtNyvYr2/PqrGKTnduuXY37N
+         xq8ICWZyfs1jfxCXtXb6gFBAxdabKaAFnPjh49rOeIO3ln9JehenMwdaM+7T0zaVMV2G
+         RZGA==
+X-Forwarded-Encrypted: i=1; AFNElJ+DX8UD1dtcrlCj2m78XmnSMSjdXd9QYF96eD7NZCe6R2sa0f9UhKsE2H6XGzozTjYqJMXlTOD15MQ=@lists.infradead.org
+X-Gm-Message-State: AOJu0YyDkDYV1xDaabwkS9rVIYCRPeQtn5B8WwBqoPyZJKscoXnU1g31
+	8+zvVVee0SyhbQV3Qw1HDDVF0v5NYo6JiEeasbfjTC8YBKOnbiXd+p4U+QMh6roDbQyXU1k2j0A
+	l4WfS6avFHaApgq2d26ILLux7pFhW9z+mW1HIP4sDvA==
+X-Gm-Gg: Acq92OGcNgcL5OclDrSJAT5FXt2+KMibpxEA1LBlDc9pJi37vLnnSli398KAVbrndnB
+	vPPsEixn4ZUKF9gLDU9y9cVR1w+S9xZBWvI7TwWltvQs/TSu8yy0sG8/B3/0ns+ItnKek4qaBFT
+	dF99LwGRberAZNFbBTDREjCQdlLbI5GTvpDaz1Sz5laPBhu/BRGVTVPGDo/q2PT7AjiveXsn44V
+	C7yFWjPqchMpDblXq8MeaPlf60ZTMSDzP2cUe62J5/iX16PkynVKgAXyVIo4AsyC6MF7D3WqcG1
+	22eur/2dy5bOj9gFkOtGfP414ovZllf2yQS/NniZPghCqTu6IGK6sH7ZOiiDRDudFT1BzNvYfg9
+	W475tofdOOJcSj4AIB5sWVeduY6XvD4UVMC3Sgw==
+X-Received: by 2002:ac8:41cc:0:b0:517:9648:f71f with SMTP id
+ d75a77b69052e-5179648fc59mr42366971cf.45.1780671275119; Fri, 05 Jun 2026
+ 07:54:35 -0700 (PDT)
+MIME-Version: 1.0
+References: <20260528113840.2629186-1-inochiama@gmail.com>
+In-Reply-To: <20260528113840.2629186-1-inochiama@gmail.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Fri, 5 Jun 2026 20:24:21 +0530
+X-Gm-Features: AVHnY4KB369R15pBBirZiowSu3UvfNZTrfqaGWoeJbgD61ZJLwhslkozizsMbN0
+Message-ID: <CAAhSdy1svqDsgNSMhawR4xJN0=LLpRv2dkTu54oc9S7BmqfVzg@mail.gmail.com>
+Subject: Re: [PATCH] RISC-V: KVM: Enhance the logging check for mmu mapping
+To: Inochi Amaoto <inochiama@gmail.com>
+Cc: Atish Patra <atish.patra@linux.dev>, Paul Walmsley <pjw@kernel.org>, 
+	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+	Alexandre Ghiti <alex@ghiti.fr>, kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
+	linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	Yixun Lan <dlan@gentoo.org>, Longbin Li <looong.bin@gmail.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260605_010447_243601_AFA54D83 
-X-CRM114-Status: GOOD (  16.42  )
+X-CRM114-CacheID: sfid-20260605_075436_936301_7E96ADC4 
+X-CRM114-Status: GOOD (  20.45  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -75,253 +115,50 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-From: Wang Yechao <wang.yechao255@zte.com.cn>
-
-When dirty logging is enabled, the gstage mappings are split into
-4K pages to track dirty pages. If the migration fails or is canceled,
-in order to keep the VM's performance consistent with that before
-dirty logging was enabled, the gstage huge page mappings are recoverd
-when dirty logging is disabled.
-
-With this patch, dirty_log_perf_test shows a decrease in the number of
-vCPU faults:
-
-$ perf stat -e kvm:kvm_page_fault \
-/dirty_log_perf_test -s anonymous_hugetlb_1gb -v 1 -e -b 1G
-
-Before: 524,819      kvm:kvm_page_fault
-After : 262,685      kvm:kvm_page_fault
-
-Signed-off-by: Wang Yechao <wang.yechao255@zte.com.cn>
----
- arch/riscv/include/asm/kvm_gstage.h |   4 ++
- arch/riscv/kvm/gstage.c             |  61 ++++++++++++++++
- arch/riscv/kvm/mmu.c                | 105 ++++++++++++++++++++++++++++
- 3 files changed, 170 insertions(+)
-
-diff --git a/arch/riscv/include/asm/kvm_gstage.h b/arch/riscv/include/asm/kvm_gstage.h
-index 21e2019df0cf..bef1d4f11564 100644
---- a/arch/riscv/include/asm/kvm_gstage.h
-+++ b/arch/riscv/include/asm/kvm_gstage.h
-@@ -68,6 +68,10 @@ int kvm_riscv_gstage_split_huge(struct kvm_gstage *gstage,
- 				struct kvm_mmu_memory_cache *pcache,
- 				gpa_t addr, u32 target_level, bool flush);
-
-+void kvm_riscv_gstage_recover_huge(struct kvm_gstage *gstage, gpa_t addr,
-+				   unsigned long taget_page_size,
-+				   unsigned long *page_size);
-+
- enum kvm_riscv_gstage_op {
- 	GSTAGE_OP_NOP = 0,	/* Nothing */
- 	GSTAGE_OP_CLEAR,	/* Clear/Unmap */
-diff --git a/arch/riscv/kvm/gstage.c b/arch/riscv/kvm/gstage.c
-index b83b85d1c016..11d4062fdd22 100644
---- a/arch/riscv/kvm/gstage.c
-+++ b/arch/riscv/kvm/gstage.c
-@@ -356,6 +356,67 @@ int kvm_riscv_gstage_split_huge(struct kvm_gstage *gstage,
- 	return 0;
- }
-
-+static inline unsigned long make_huge_pte(unsigned long child_pte, int index,
-+					  unsigned long child_page_size)
-+{
-+	unsigned long huge_pte = child_pte;
-+	unsigned long child_pfn_offset;
-+
-+	child_pfn_offset = index * (child_page_size / PAGE_SIZE);
-+	huge_pte -= pte_val(pfn_pte(child_pfn_offset, __pgprot(0)));
-+
-+	return huge_pte;
-+}
-+
-+void kvm_riscv_gstage_recover_huge(struct kvm_gstage *gstage, gpa_t addr,
-+				   unsigned long target_page_size,
-+				   unsigned long *page_size)
-+{
-+	u32 current_level = gstage->pgd_levels - 1;
-+	pte_t *next_ptep = (pte_t *)gstage->pgd;
-+	u32 target_level, out_level;
-+	pte_t *ptep, *child_ptep;
-+	unsigned long huge_pte;
-+	int ret, i;
-+
-+	out_level = 0;
-+	ret = gstage_page_size_to_level(gstage, target_page_size, &target_level);
-+	if (ret)
-+		goto out;
-+
-+	while (current_level >= target_level) {
-+		ptep = (pte_t *)&next_ptep[gstage_pte_index(gstage, addr, current_level)];
-+
-+		out_level = current_level;
-+		if (!pte_val(ptep_get(ptep)))
-+			goto out;
-+
-+		/* The mapping is already a huge page mapping. */
-+		if (gstage_pte_leaf(ptep))
-+			goto out;
-+
-+		next_ptep = (pte_t *)gstage_pte_page_vaddr(ptep_get(ptep));
-+		current_level--;
-+	}
-+
-+	for (i = 0; i < PTRS_PER_PTE; i++) {
-+		child_ptep = (pte_t *)&next_ptep[i];
-+		if (!gstage_pte_leaf(child_ptep))
-+			continue;
-+
-+		huge_pte = make_huge_pte(pte_val(ptep_get(child_ptep)),
-+					 i, target_page_size / PTRS_PER_PTE);
-+		set_pte(ptep, __pte(huge_pte));
-+		gstage_tlb_flush(gstage, target_level, addr);
-+		put_page(virt_to_page(next_ptep));
-+
-+		break;
-+	}
-+
-+out:
-+	gstage_level_to_page_size(gstage, out_level, page_size);
-+}
-+
- bool kvm_riscv_gstage_op_pte(struct kvm_gstage *gstage, gpa_t addr,
- 			     pte_t *ptep, u32 ptep_level, enum kvm_riscv_gstage_op op)
- {
-diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-index 5645e247e198..990fc483a765 100644
---- a/arch/riscv/kvm/mmu.c
-+++ b/arch/riscv/kvm/mmu.c
-@@ -16,6 +16,8 @@
- #include <asm/kvm_mmu.h>
- #include <asm/kvm_nacl.h>
-
-+static void mmu_recover_huge_pages(struct kvm *kvm, int slot);
-+
- static void mmu_wp_memory_region(struct kvm *kvm, int slot)
- {
- 	struct kvm_memslots *slots = kvm_memslots(kvm);
-@@ -170,6 +172,26 @@ void kvm_arch_commit_memory_region(struct kvm *kvm,
- 		if (kvm_dirty_log_manual_protect_and_init_set(kvm))
- 			return;
- 		mmu_wp_memory_region(kvm, new->id);
-+	} else {
-+		/*
-+		 * Only when change == KVM_MR_FLAGS_ONLY, this branch handles the
-+		 * disable-dirty-log case. For other changes (KVM_MR_CREATE,
-+		 * KVM_MR_DELETE, KVM_MR_MOVE), there is no need to recover
-+		 * huge pages.
-+		 */
-+		if (change != KVM_MR_FLAGS_ONLY)
-+			return;
-+
-+		/*
-+		 * Recover huge page mappings in the slot now that dirty logging
-+		 * is disabled, i.e. now that KVM does not have to track guest
-+		 * writes at 4KiB granularity.
-+		 *
-+		 * Dirty logging might be disabled by userspace if an ongoing VM
-+		 * live migration is cancelled and the VM must continue running
-+		 * on the source.
-+		 */
-+		mmu_recover_huge_pages(kvm, new->id);
- 	}
- }
-
-@@ -689,3 +711,86 @@ void kvm_riscv_mmu_update_hgatp(struct kvm_vcpu *vcpu)
- 	if (!kvm_riscv_gstage_vmid_bits())
- 		kvm_riscv_local_hfence_gvma_all();
- }
-+
-+static void mmu_recover_huge_pages_range(struct kvm_gstage *gstage,
-+					 unsigned long *page_size,
-+					 gpa_t range_start,
-+					 gpa_t range_end)
-+{
-+	phys_addr_t start = range_start;
-+	phys_addr_t end = range_end;
-+	unsigned long pg_sz = 0;
-+
-+	/*
-+	 *  Phase 1: recover 2MB hugepages mapping within the range.
-+	 */
-+	while (start < end) {
-+		kvm_riscv_gstage_recover_huge(gstage, start, PMD_SIZE, &pg_sz);
-+		start += pg_sz;
-+	}
-+
-+	/*
-+	 * Phase 2: if 1GB hugepages are desired, try to recover the whole range
-+	 * as one 1GB hugepages mapping.
-+	 */
-+	if (*page_size == PUD_SIZE) {
-+		start = range_start;
-+		kvm_riscv_gstage_recover_huge(gstage, start, PUD_SIZE, &pg_sz);
-+	}
-+
-+	*page_size = pg_sz;
-+}
-+
-+static void mmu_recover_huge_pages(struct kvm *kvm, int slot)
-+{
-+	struct kvm_memslots *slots = kvm_memslots(kvm);
-+	struct kvm_memory_slot *memslot = id_to_memslot(slots, slot);
-+	phys_addr_t start = memslot->base_gfn << PAGE_SHIFT;
-+	phys_addr_t end = (memslot->base_gfn + memslot->npages) << PAGE_SHIFT;
-+	phys_addr_t addr = start;
-+	struct kvm_gstage gstage;
-+	unsigned long page_size;
-+	phys_addr_t range_start;
-+	phys_addr_t range_end;
-+	unsigned long hva;
-+
-+	kvm_riscv_gstage_init(&gstage, kvm);
-+
-+	write_lock(&kvm->mmu_lock);
-+
-+	while (addr < end) {
-+		/*
-+		 * If a very large memslot is mapped exclusively with
-+		 * 4KB host pages, or too many hugepages need to recover,
-+		 * release the kvm->mmu_lock to prevent starvation and
-+		 * lockup detector warnings.
-+		 */
-+		cond_resched_rwlock_write(&kvm->mmu_lock);
-+
-+		hva = gfn_to_hva(kvm, addr >> PAGE_SHIFT);
-+		page_size = get_hva_mapping_size(kvm, hva);
-+		if (page_size == PAGE_SIZE) {
-+			addr += page_size;
-+			continue;
-+		}
-+
-+		range_start = ALIGN_DOWN(addr, page_size);
-+		range_end = range_start + page_size;
-+
-+		/*
-+		 * Make sure the recover range [range_start, range_end)
-+		 * is within the slot range.
-+		 */
-+		if (range_start < start || range_end > end) {
-+			addr = range_end;
-+			continue;
-+		}
-+
-+		mmu_recover_huge_pages_range(&gstage, &page_size,
-+					     range_start, range_end);
-+
-+		addr = range_start + page_size;
-+	}
-+
-+	write_unlock(&kvm->mmu_lock);
-+}
--- 
-2.43.5
-
--- 
-kvm-riscv mailing list
-kvm-riscv@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/kvm-riscv
+T24gVGh1LCBNYXkgMjgsIDIwMjYgYXQgNTowOOKAr1BNIElub2NoaSBBbWFvdG8gPGlub2NoaWFt
+YUBnbWFpbC5jb20+IHdyb3RlOgo+Cj4gV2hlbiBlbmFibGluZyBkaXJ0eSByaW5nLCB0aGUgZGly
+dHkgYml0bWFwIGlzIGRpc2FibGUsIGFuZCB0aGUgbG9nZ2luZwo+IGNoZWNrIGlzIGFsd2F5cyBm
+YWxzZSBhcyB0aGUgUklTQy1WIGFyY2hpdGVjdHVyZSBkb2VzIG5vdCBzZWxlY3QKPiAiTkVFRF9L
+Vk1fRElSVFlfUklOR19XSVRIX0JJVE1BUCIuIEFsdGhvdWdoIHRoZSBkaXJ0eSBsb2cgaXMgcmVj
+b3JkZWQKPiBzaW5jZSB0aGUgd3JpdGUgcGF0aCBhbHJlYWR5IHRyeWluZyB0byBhZGQgdGhlIGRp
+cnR5IGxvZywgdGhlIGxvZ2ljIGZvcgo+IGxvZ2dpbmcgY2hlY2sgaXMgYnJva2VuIGFuZCBzb21l
+IHNpZGUgZWZmZWN0IHdpbGwgb2NjdXJzLgo+Cj4gRW5oYW5jZSB0aGUgbG9nZ2luZyBjaGVjayBm
+b3IgbW11IG1hcHBpbmcgc28gaXQgY2FuIGNoZWNrIGJvdGggdGhlIGRpcnR5Cj4gcmluZyBhbmQg
+dGhlIGRpcnR5IGJpdG1hcC4KPgo+IFNpZ25lZC1vZmYtYnk6IElub2NoaSBBbWFvdG8gPGlub2No
+aWFtYUBnbWFpbC5jb20+CgpMR1RNLgoKUmV2aWV3ZWQtYnk6IEFudXAgUGF0ZWwgPGFudXBAYnJh
+aW5mYXVsdC5vcmc+CgpRdWV1ZWQgdGhpcyBwYXRjaCBmb3IgTGludXgtNy4yCgpUaGFua3MsCkFu
+dXAKCj4gLS0tCj4gIGFyY2gvcmlzY3Yva3ZtL21tdS5jIHwgOSArKysrLS0tLS0KPiAgMSBmaWxl
+IGNoYW5nZWQsIDQgaW5zZXJ0aW9ucygrKSwgNSBkZWxldGlvbnMoLSkKPgo+IGRpZmYgLS1naXQg
+YS9hcmNoL3Jpc2N2L2t2bS9tbXUuYyBiL2FyY2gvcmlzY3Yva3ZtL21tdS5jCj4gaW5kZXggMmQz
+ZGVmMDI0MjcwLi5iNTg3M2JjYTlkY2UgMTAwNjQ0Cj4gLS0tIGEvYXJjaC9yaXNjdi9rdm0vbW11
+LmMKPiArKysgYi9hcmNoL3Jpc2N2L2t2bS9tbXUuYwo+IEBAIC0xNDIsOSArMTQyLDggQEAgdm9p
+ZCBrdm1fYXJjaF9jb21taXRfbWVtb3J5X3JlZ2lvbihzdHJ1Y3Qga3ZtICprdm0sCj4gICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICBlbnVtIGt2bV9tcl9jaGFuZ2UgY2hhbmdlKQo+ICB7
+Cj4gICAgICAgICAvKgo+IC0gICAgICAgICogQXQgdGhpcyBwb2ludCBtZW1zbG90IGhhcyBiZWVu
+IGNvbW1pdHRlZCBhbmQgdGhlcmUgaXMgYW4KPiAtICAgICAgICAqIGFsbG9jYXRlZCBkaXJ0eV9i
+aXRtYXBbXSwgZGlydHkgcGFnZXMgd2lsbCBiZSB0cmFja2VkIHdoaWxlCj4gLSAgICAgICAgKiB0
+aGUgbWVtb3J5IHNsb3QgaXMgd3JpdGUgcHJvdGVjdGVkLgo+ICsgICAgICAgICogQXQgdGhpcyBw
+b2ludCBtZW1zbG90IGhhcyBiZWVuIGNvbW1pdHRlZCBhbmQgZGlydHkgcGFnZXMgd2lsbCBiZQo+
+ICsgICAgICAgICogdHJhY2tlZCB3aGlsZSB0aGUgbWVtb3J5IHNsb3QgaXMgd3JpdGUgcHJvdGVj
+dGVkLgo+ICAgICAgICAgICovCj4gICAgICAgICBpZiAoY2hhbmdlICE9IEtWTV9NUl9ERUxFVEUg
+JiYgbmV3LT5mbGFncyAmIEtWTV9NRU1fTE9HX0RJUlRZX1BBR0VTKSB7Cj4gICAgICAgICAgICAg
+ICAgIGlmIChrdm1fZGlydHlfbG9nX21hbnVhbF9wcm90ZWN0X2FuZF9pbml0X3NldChrdm0pKQo+
+IEBAIC00MzMsOCArNDMyLDggQEAgaW50IGt2bV9yaXNjdl9tbXVfbWFwKHN0cnVjdCBrdm1fdmNw
+dSAqdmNwdSwgc3RydWN0IGt2bV9tZW1vcnlfc2xvdCAqbWVtc2xvdCwKPiAgICAgICAgIHN0cnVj
+dCB2bV9hcmVhX3N0cnVjdCAqdm1hOwo+ICAgICAgICAgc3RydWN0IGt2bSAqa3ZtID0gdmNwdS0+
+a3ZtOwo+ICAgICAgICAgc3RydWN0IGt2bV9tbXVfbWVtb3J5X2NhY2hlICpwY2FjaGUgPSAmdmNw
+dS0+YXJjaC5tbXVfcGFnZV9jYWNoZTsKPiAtICAgICAgIGJvb2wgbG9nZ2luZyA9IChtZW1zbG90
+LT5kaXJ0eV9iaXRtYXAgJiYKPiAtICAgICAgICAgICAgICAgICAgICAgICAhKG1lbXNsb3QtPmZs
+YWdzICYgS1ZNX01FTV9SRUFET05MWSkpID8gdHJ1ZSA6IGZhbHNlOwo+ICsgICAgICAgYm9vbCBs
+b2dnaW5nID0ga3ZtX3Nsb3RfZGlydHlfdHJhY2tfZW5hYmxlZChtZW1zbG90KSAmJgo+ICsgICAg
+ICAgICAgICAgICAgICAgICAgIShtZW1zbG90LT5mbGFncyAmIEtWTV9NRU1fUkVBRE9OTFkpOwo+
+ICAgICAgICAgdW5zaWduZWQgbG9uZyB2bWFfcGFnZXNpemUsIG1tdV9zZXE7Cj4gICAgICAgICBz
+dHJ1Y3Qga3ZtX2dzdGFnZSBnc3RhZ2U7Cj4gICAgICAgICBzdHJ1Y3QgcGFnZSAqcGFnZTsKPiAt
+LQo+IDIuNTQuMAo+CgotLSAKa3ZtLXJpc2N2IG1haWxpbmcgbGlzdAprdm0tcmlzY3ZAbGlzdHMu
+aW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZv
+L2t2bS1yaXNjdgo=
