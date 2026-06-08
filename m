@@ -4,7 +4,7 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 65C87CD98C9
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E8306CD98CB
 	for <kvm-riscv@archiver.kernel.org>; Mon,  8 Jun 2026 14:43:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
@@ -12,42 +12,27 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=VWdZ0pZ/MFzMLZCk2MJyRrzX7NYhYGA3FAUgNZYfSFM=; b=FC2kKGdcBLzrPE
-	Ewt0nH5VX/JNF505S6sx80EAQdMO9RRzZ+x4A/XdeOitGU4rBl+KeH3b+xNPj1zqqUcoYgEpVyIwQ
-	47RTVafCSgbSCWw79mMmyfs8ymhW3ftipjKh1o4bzLkAzmb9fMC/Sx9WhAPLHii1Ji0ZPiJ1XoRTf
-	TgWTeBjKrPCPc3UaqhL4dBPc8Tnu8qxHuiMJUiRcdi4vKANGlM7coWOpUf7pWuCzAFyvYOlYaefje
-	Q7LpgmZgHv4gCv7kYyLWRhjXK11zOgCZemUC69mjOz6b4KXHZGK5T06YKrvstpOmOsq8/SOTbXBFU
-	t5Hi9Lfic2tDUW4uF/Og==;
+	List-Owner; bh=eBa005qBUoBgUbZKK9RQd0ezaYPhEo47gdW36n0aH94=; b=0pk5R4coDblZBe
+	IxPsDxli/jp86RbX+ZOb1l0EYoYbpXaH/l/YVsQ/Xj289tIGXBN/fGJB8NG+Bvq9PTopptfK9OzKu
+	GfiYNrIKOZZwEzqS0F/dbYu8I/ydPE4N/zs+WUtWEOd/6aywPx2pLWLVjZ67rl7/+NwvgTGvCOQsI
+	OHa8zd2H7Wnk4+VkGfu+AVDhHcaig+/h6E32dFVVEROIotaIArVjT/hiaQmuaEL9pu/JpHzFfBS0i
+	5GHIGpwJGBO5phhUGVI3SguJNmPy9HMDFWAgYzhc/9kqUdhV8nOn8916beOBzG09jwlL/VHSoPpF4
+	6KUTQ2AGa9hEJ42rZPFg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wWbCM-00000003q2u-04DU;
+	id 1wWbCM-00000003q3n-1sQj;
 	Mon, 08 Jun 2026 14:43:30 +0000
-Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
-	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wWbCD-00000003pkg-3jfi
-	for kvm-riscv@bombadil.infradead.org;
-	Mon, 08 Jun 2026 14:43:22 +0000
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:MIME-Version
-	:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:
-	Content-Type:Content-ID:Content-Description;
-	bh=a88BMcsT0/Qb7iogK9L3bwkMtRQzl9J5097Gytot2S4=; b=R/9V71w1jkKiGAIVIrXFmBc2Zk
-	IiHdnlqU/G+sZsobFXscMOrn4lpAkZnOnMGCHDXAQeLfj25IWFrQj0tc+GNYLBxCFjD3ZbhdABx5p
-	ocJ2gpRAXehbIEHbPjFikDzeeUt+qwRDts/a/koOWa0uvb5I3PSyhT8AguqAnh6r4A8izcdJC5np3
-	4UscZ0MJZzWHg96rLL1+o8e2Mb6FIAw+86c7YTo2XvIqWNDgrOMrc/b6yTJAqcEykhOshZv2mJA6S
-	jYx5gSB9gT2JWABnbrUJwQW39SQC6b3FQZoNy2RH1IfPm0eFkL42c+6aXKCPAQ/MZEtDup2G8Dwxs
-	NtH4ICUQ==;
 Received: from mail.8bytes.org ([2a01:238:42d9:3f00:e505:6202:4f0c:f051])
-	by desiato.infradead.org with esmtp (Exim 4.99.2 #2 (Red Hat Linux))
-	id 1wWbC9-000000019B2-0Tr4
+	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
+	id 1wWbCA-00000003pTK-02Uz
 	for kvm-riscv@lists.infradead.org;
-	Mon, 08 Jun 2026 14:43:20 +0000
+	Mon, 08 Jun 2026 14:43:22 +0000
 Received: from io.home.8bytes.org (p4ffe1d30.dip0.t-ipconnect.de [79.254.29.48])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.8bytes.org (Postfix) with ESMTPSA id E8B912028C3;
-	Mon,  8 Jun 2026 16:43:11 +0200 (CEST)
+	by mail.8bytes.org (Postfix) with ESMTPSA id 0BE7C2028C8;
+	Mon,  8 Jun 2026 16:43:13 +0200 (CEST)
 From: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
 To: Paolo Bonzini <pbonzini@redhat.com>,
 	Sean Christopherson <seanjc@google.com>
@@ -68,16 +53,16 @@ Cc: Tom Lendacky <thomas.lendacky@amd.com>,
 	x86@kernel.org,
 	coconut-svsm@lists.linux.dev,
 	joerg.roedel@amd.com
-Subject: [PATCH 32/60] kvm: Allocate struct kvm_run only for struct kvm_vcpu_common
-Date: Mon,  8 Jun 2026 16:42:24 +0200
-Message-ID: <20260608144252.351443-33-joro@8bytes.org>
+Subject: [PATCH 37/60] kvm: Pass plane_level to kvm_set_routing_entry()
+Date: Mon,  8 Jun 2026 16:42:29 +0200
+Message-ID: <20260608144252.351443-38-joro@8bytes.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260608144252.351443-1-joro@8bytes.org>
 References: <20260608144252.351443-1-joro@8bytes.org>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260608_154318_567706_B297B8EA 
-X-CRM114-Status: GOOD (  13.88  )
+X-CRM114-CacheID: sfid-20260608_074318_802534_FD464BC5 
+X-CRM114-Status: GOOD (  13.86  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -94,133 +79,197 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-From: Paolo Bonzini <pbonzini@redhat.com>
+From: Joerg Roedel <joerg.roedel@amd.com>
 
-Share the struct kvm_run across all planes for one VCPU id.
+The plane_level is used to route MSI IRQs to the correct plane.
 
-Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
-Co-developed-by: Joerg Roedel <joerg.roedel@amd.com>
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- include/linux/kvm_host.h |  3 +++
- virt/kvm/kvm_main.c      | 29 ++++++++++++++++-------------
- 2 files changed, 19 insertions(+), 13 deletions(-)
+ arch/arm64/kvm/vgic/vgic-irqfd.c | 6 ++++--
+ arch/loongarch/kvm/irqfd.c       | 6 ++++--
+ arch/powerpc/kvm/mpic.c          | 5 +++--
+ arch/riscv/kvm/vm.c              | 5 +++--
+ arch/s390/kvm/interrupt.c        | 3 ++-
+ arch/x86/kvm/irq.c               | 7 ++++---
+ include/linux/kvm_host.h         | 3 ++-
+ virt/kvm/irqchip.c               | 2 +-
+ 8 files changed, 23 insertions(+), 14 deletions(-)
 
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 55e3e9046975..385e1ee8fd3a 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -327,6 +327,9 @@ struct kvm_mmio_fragment {
- struct kvm_vcpu_common {
- 	struct kvm *kvm;
- 
-+	/* kvm_run struct shared across all planes */
-+	struct kvm_run *run;
-+
- 	int vcpu_idx; /* index into kvm->planes[]->vcpu_array */
- 
- 	/* Currently active VCPU */
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 4f2c8f46a0d3..2d0d5f4fd356 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -441,6 +441,7 @@ void *kvm_mmu_memory_cache_alloc(struct kvm_mmu_memory_cache *mc)
- static int kvm_vcpu_init_common(struct kvm_vcpu *vcpu, struct kvm *kvm, unsigned long id)
- {
- 	struct kvm_vcpu_common *common __free(kfree) = kzalloc(sizeof(*common), GFP_KERNEL_ACCOUNT);
-+	struct page *page;
- 	int r;
- 
- 	/*
-@@ -466,6 +467,14 @@ static int kvm_vcpu_init_common(struct kvm_vcpu *vcpu, struct kvm *kvm, unsigned
- 
- 	common->vcpu_idx = atomic_read(&kvm->online_vcpus);
- 
-+	BUILD_BUG_ON(sizeof(struct kvm_run) > PAGE_SIZE);
-+	page = alloc_page(GFP_KERNEL_ACCOUNT | __GFP_ZERO);
-+	if (!page) {
-+		r = -ENOMEM;
-+		goto out_drop_counter;
-+	}
-+	common->run = page_address(page);
-+
- 	mutex_init(&common->mutex);
- 
- #ifndef __KVM_HAVE_ARCH_WQP
-@@ -487,7 +496,7 @@ static int kvm_vcpu_init_common(struct kvm_vcpu *vcpu, struct kvm *kvm, unsigned
- 		r = kvm_dirty_ring_alloc(kvm, &common->dirty_ring,
- 					 id, kvm->dirty_ring_size);
- 		if (r)
--			goto out_drop_counter;
-+			goto out_free_run;
- 	}
- 
- 	r = kvm_arch_vcpu_common_init(common);
-@@ -503,6 +512,8 @@ static int kvm_vcpu_init_common(struct kvm_vcpu *vcpu, struct kvm *kvm, unsigned
- 
- out_free_dirty_ring:
- 	kvm_dirty_ring_free(&common->dirty_ring);
-+out_free_run:
-+	free_page((unsigned long)common->run);
- out_drop_counter:
- 	mutex_lock(&kvm->lock);
- 	kvm->created_vcpus--;
-@@ -546,6 +557,7 @@ static void kvm_vcpu_common_destroy(struct kvm_vcpu *vcpu)
- 	struct kvm *kvm = common->kvm;
- 
- 	vcpu->common = NULL;
-+	vcpu->run = NULL;
- 
- 	if (vcpu->plane_level != 0)
- 	       return;
-@@ -563,6 +575,7 @@ static void kvm_vcpu_common_destroy(struct kvm_vcpu *vcpu)
- 	 */
- 	put_pid(common->pid);
- 	kvm_dirty_ring_free(&common->dirty_ring);
-+	free_page((unsigned long)common->run);
- 	kfree(common);
- }
- 
-@@ -4337,7 +4350,6 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, unsigned long id)
+diff --git a/arch/arm64/kvm/vgic/vgic-irqfd.c b/arch/arm64/kvm/vgic/vgic-irqfd.c
+index 479b896c8954..53e5fcc591d7 100644
+--- a/arch/arm64/kvm/vgic/vgic-irqfd.c
++++ b/arch/arm64/kvm/vgic/vgic-irqfd.c
+@@ -33,11 +33,13 @@ static int vgic_irqfd_set_irq(struct kvm_kernel_irq_routing_entry *e,
+  * @kvm: the VM this entry is applied to
+  * @e: kvm kernel routing entry handle
+  * @ue: user api routing entry handle
++ * @plane_level: target plane level
+  * return 0 on success, -EINVAL on errors.
+  */
+ int kvm_set_routing_entry(struct kvm *kvm,
+ 			  struct kvm_kernel_irq_routing_entry *e,
+-			  const struct kvm_irq_routing_entry *ue)
++			  const struct kvm_irq_routing_entry *ue,
++			  unsigned plane_level)
  {
  	int r = -EINVAL;
- 	struct kvm_vcpu *vcpu;
--	struct page *page;
  
- 	mutex_lock(&kvm->lock);
- 	if (kvm->created_vcpus >= kvm->max_vcpus) {
-@@ -4359,20 +4371,13 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, unsigned long id)
- 		goto vcpu_free;
+@@ -57,7 +59,7 @@ int kvm_set_routing_entry(struct kvm *kvm,
+ 		e->msi.data = ue->u.msi.data;
+ 		e->msi.flags = ue->flags;
+ 		e->msi.devid = ue->u.msi.devid;
+-		e->msi.plane_level = 0;
++		e->msi.plane_level = plane_level;
+ 		break;
+ 	default:
+ 		goto out;
+diff --git a/arch/loongarch/kvm/irqfd.c b/arch/loongarch/kvm/irqfd.c
+index 50f0c32df46c..a36a8a9d8a66 100644
+--- a/arch/loongarch/kvm/irqfd.c
++++ b/arch/loongarch/kvm/irqfd.c
+@@ -39,11 +39,13 @@ int kvm_set_msi(struct kvm_kernel_irq_routing_entry *e,
+  * @kvm: the VM this entry is applied to
+  * @e: kvm kernel routing entry handle
+  * @ue: user api routing entry handle
++ * @plane_level: target plane level
+  * return 0 on success, -EINVAL on errors.
+  */
+ int kvm_set_routing_entry(struct kvm *kvm,
+ 			struct kvm_kernel_irq_routing_entry *e,
+-			const struct kvm_irq_routing_entry *ue)
++			const struct kvm_irq_routing_entry *ue,
++			unsigned plane_level)
+ {
+ 	switch (ue->type) {
+ 	case KVM_IRQ_ROUTING_IRQCHIP:
+@@ -60,7 +62,7 @@ int kvm_set_routing_entry(struct kvm *kvm,
+ 		e->msi.address_lo = ue->u.msi.address_lo;
+ 		e->msi.address_hi = ue->u.msi.address_hi;
+ 		e->msi.data = ue->u.msi.data;
+-		e->msi.plane_level = 0;
++		e->msi.plane_level = plane_level;
+ 		return 0;
+ 	default:
+ 		return -EINVAL;
+diff --git a/arch/powerpc/kvm/mpic.c b/arch/powerpc/kvm/mpic.c
+index 0f568f5fff8b..6b6eba7fbf75 100644
+--- a/arch/powerpc/kvm/mpic.c
++++ b/arch/powerpc/kvm/mpic.c
+@@ -1824,7 +1824,8 @@ int kvm_set_msi(struct kvm_kernel_irq_routing_entry *e,
  
- 	vcpu->vcpu_idx = vcpu->common->vcpu_idx;
--
--	BUILD_BUG_ON(sizeof(struct kvm_run) > PAGE_SIZE);
--	page = alloc_page(GFP_KERNEL_ACCOUNT | __GFP_ZERO);
--	if (!page) {
--		r = -ENOMEM;
--		goto vcpu_free_common;
--	}
--	vcpu->run = page_address(page);
-+	vcpu->run = vcpu->common->run;
+ int kvm_set_routing_entry(struct kvm *kvm,
+ 			  struct kvm_kernel_irq_routing_entry *e,
+-			  const struct kvm_irq_routing_entry *ue)
++			  const struct kvm_irq_routing_entry *ue,
++			  unsigned plane_level)
+ {
+ 	int r = -EINVAL;
  
- 	kvm_vcpu_init(vcpu, kvm, id);
+@@ -1841,7 +1842,7 @@ int kvm_set_routing_entry(struct kvm *kvm,
+ 		e->msi.address_lo = ue->u.msi.address_lo;
+ 		e->msi.address_hi = ue->u.msi.address_hi;
+ 		e->msi.data = ue->u.msi.data;
+-		e->msi.plane_level = 0;
++		e->msi.plane_level = plane_level;
+ 		break;
+ 	default:
+ 		goto out;
+diff --git a/arch/riscv/kvm/vm.c b/arch/riscv/kvm/vm.c
+index f518247e699b..6b3c8a0e74e2 100644
+--- a/arch/riscv/kvm/vm.c
++++ b/arch/riscv/kvm/vm.c
+@@ -118,7 +118,8 @@ bool kvm_arch_can_set_irq_routing(struct kvm *kvm)
  
- 	r = kvm_arch_vcpu_create(vcpu);
+ int kvm_set_routing_entry(struct kvm *kvm,
+ 			  struct kvm_kernel_irq_routing_entry *e,
+-			  const struct kvm_irq_routing_entry *ue)
++			  const struct kvm_irq_routing_entry *ue,
++			  unsigned plane_level)
+ {
+ 	int r = -EINVAL;
+ 
+@@ -138,7 +139,7 @@ int kvm_set_routing_entry(struct kvm *kvm,
+ 		e->msi.data = ue->u.msi.data;
+ 		e->msi.flags = ue->flags;
+ 		e->msi.devid = ue->u.msi.devid;
+-		e->msi.plane_level = 0;
++		e->msi.plane_level = plane_level;
+ 		break;
+ 	default:
+ 		goto out;
+diff --git a/arch/s390/kvm/interrupt.c b/arch/s390/kvm/interrupt.c
+index 1d66ef9f7527..dbd6029773aa 100644
+--- a/arch/s390/kvm/interrupt.c
++++ b/arch/s390/kvm/interrupt.c
+@@ -2862,7 +2862,8 @@ void kvm_s390_reinject_machine_check(struct kvm_vcpu *vcpu,
+ 
+ int kvm_set_routing_entry(struct kvm *kvm,
+ 			  struct kvm_kernel_irq_routing_entry *e,
+-			  const struct kvm_irq_routing_entry *ue)
++			  const struct kvm_irq_routing_entry *ue,
++			  unsigned plane_level)
+ {
+ 	const struct kvm_irq_routing_s390_adapter *adapter;
+ 	u64 uaddr_s, uaddr_i;
+diff --git a/arch/x86/kvm/irq.c b/arch/x86/kvm/irq.c
+index b7e08eddb765..d2ecfd54d57a 100644
+--- a/arch/x86/kvm/irq.c
++++ b/arch/x86/kvm/irq.c
+@@ -295,7 +295,8 @@ bool kvm_arch_can_set_irq_routing(struct kvm *kvm)
+ 
+ int kvm_set_routing_entry(struct kvm *kvm,
+ 			  struct kvm_kernel_irq_routing_entry *e,
+-			  const struct kvm_irq_routing_entry *ue)
++			  const struct kvm_irq_routing_entry *ue,
++			  unsigned plane_level)
+ {
+ 	/* We can't check irqchip_in_kernel() here as some callers are
+ 	 * currently initializing the irqchip. Other callers should therefore
+@@ -304,7 +305,7 @@ int kvm_set_routing_entry(struct kvm *kvm,
+ 	switch (ue->type) {
+ #ifdef CONFIG_KVM_IOAPIC
+ 	case KVM_IRQ_ROUTING_IRQCHIP:
+-		if (irqchip_split(kvm))
++		if (irqchip_split(kvm) || plane_level != 0)
+ 			return -EINVAL;
+ 		e->irqchip.pin = ue->u.irqchip.pin;
+ 		switch (ue->u.irqchip.irqchip) {
+@@ -332,7 +333,7 @@ int kvm_set_routing_entry(struct kvm *kvm,
+ 		e->msi.address_lo = ue->u.msi.address_lo;
+ 		e->msi.address_hi = ue->u.msi.address_hi;
+ 		e->msi.data = ue->u.msi.data;
+-		e->msi.plane_level = 0;
++		e->msi.plane_level = plane_level;
+ 
+ 		if (kvm_msi_route_invalid(kvm, e))
+ 			return -EINVAL;
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index 16dcca3132d3..cfb6911d6771 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -2355,7 +2355,8 @@ int kvm_set_irq_routing(struct kvm *kvm,
+ int kvm_init_irq_routing(struct kvm *kvm);
+ int kvm_set_routing_entry(struct kvm *kvm,
+ 			  struct kvm_kernel_irq_routing_entry *e,
+-			  const struct kvm_irq_routing_entry *ue);
++			  const struct kvm_irq_routing_entry *ue,
++			  unsigned plane_level);
+ void kvm_free_irq_routing(struct kvm *kvm);
+ 
+ #else
+diff --git a/virt/kvm/irqchip.c b/virt/kvm/irqchip.c
+index ae47e56176f1..14480d1df4f9 100644
+--- a/virt/kvm/irqchip.c
++++ b/virt/kvm/irqchip.c
+@@ -146,7 +146,7 @@ static int setup_routing_entry(struct kvm *kvm,
+ 
+ 	e->gsi = gsi;
+ 	e->type = ue->type;
+-	r = kvm_set_routing_entry(kvm, e, ue);
++	r = kvm_set_routing_entry(kvm, e, ue, 0);
  	if (r)
--		goto vcpu_free_run_page;
-+		goto vcpu_free_common;
- 
- 	mutex_lock(&kvm->lock);
- 
-@@ -4415,8 +4420,6 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, unsigned long id)
- unlock_vcpu_destroy:
- 	mutex_unlock(&kvm->lock);
- 	kvm_arch_vcpu_destroy(vcpu);
--vcpu_free_run_page:
--	free_page((unsigned long)vcpu->run);
- vcpu_free_common:
- 	kvm_vcpu_common_destroy(vcpu);
- vcpu_free:
+ 		return r;
+ 	if (e->type == KVM_IRQ_ROUTING_IRQCHIP)
 -- 
 2.53.0
 
