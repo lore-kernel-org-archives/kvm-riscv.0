@@ -4,50 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 38D47CD98C5
-	for <kvm-riscv@archiver.kernel.org>; Mon,  8 Jun 2026 14:43:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 598D9CD8CBD
+	for <kvm-riscv@archiver.kernel.org>; Mon,  8 Jun 2026 14:43:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=pBLxv17ozGzj2g3xN6EFwUHK+DQO9TaiM7M3HPKPUnQ=; b=AbXb0gDvRRekS1
-	4zvBXmrwtZz4mYtnT/W7auOKjetu5znxDkRETc9ai9RG8gOmP3mX2LGEUGtgrb4wVdRHUtyvq/J1n
-	ZusiybnE4ywcAZhpIbpb5uP+qExZNBfsC81OajRRSf1AoxyBQJl0Ro4J3VIRNCOd2+89svRxt9LAd
-	wqOaauqlR9fa3q5jf3yi0LepBtLbM7g0bCdHYvQ2efO9Q1dJ3cL7OeL0D7Ls/RTr3N5hRGQv41y+Q
-	6OTXy8ZM9IQbb7160Un5+WhJPBGIUTicGeKGnhRbJRxvXmSM5q9n+4fesJJTP14qZz0SdryYvTgXA
-	fIAHE5qlu3y6PoYTubYA==;
+	List-Owner; bh=MUgviC4xb+PHKdJrIG6iC4wrpERkv7G8lVta1a51t+Q=; b=uHeOlDIs+iGo2f
+	3fgJmIr6EYZuhWAtntK8LVPOqq7p4Squk7zTkRT5SmGP4YeXH0mASVlVr9GkK+lAwPGqS8vjZCW/z
+	0UjtSwaN14l+PhM9EeZ057VXPTs0bAVcECjpFmcmupqsSmkdVLeWhdqSum+3gQjnOymorNoPejsHI
+	3/u9XQ0yO+yVeHtZFWdZxU522+KBhQm+O4gk86unyE+LvhAepoySR1E8WNXuBEotMxKAGlkjQlNQM
+	6j2tSq77MbYXy1lCiFG7rPHvYm7fdpxssmIxpOioHWkgys9tDQI6j2koAHCPO//qjxZSe9nT+n4SL
+	INKefwzNQwGTUSGdHUEw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wWbCI-00000003pwd-2vlG;
-	Mon, 08 Jun 2026 14:43:26 +0000
+	id 1wWbCH-00000003puA-3GCp;
+	Mon, 08 Jun 2026 14:43:25 +0000
 Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wWbCC-00000003piF-2bOp
+	id 1wWbCC-00000003phn-1ixP
 	for kvm-riscv@bombadil.infradead.org;
 	Mon, 08 Jun 2026 14:43:20 +0000
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:MIME-Version
 	:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:
 	Content-Type:Content-ID:Content-Description;
-	bh=OA+8JHuLaM5UvW2gO/S/amZB7s61iYVyWjXtASLST60=; b=dIjEn5ruM+Cb1DZ0TSCmGt+7lh
-	WIwdigOfJzVBwoHOpPW5wEOxzs2Fgt5XC1PNgWh2HI9TMNrhAcz6MgQZgcXg7vPdUMdGO23T16SR+
-	siePS8Mo69XAfpeFZZw5VAtZDShTzX7bud6DpQ+wZmwlhtsyztIhqaFLIq9RjnWCrF+zh7rPG74lk
-	4raUO9cfSqcfi8i/MDHWuBEZEyJUGzKW6CfF7rehmr+eSDsSgFWFy52beD3S2neZPRn0BPUJOVhda
-	KrxpgoKwauksVJK5lQNci9Sjcycg9bntnCUU+qhtnDBC12YxxXp9HvkkDivzoOqTGTpZWALTOTWob
-	7LfuKiiQ==;
+	bh=m0vec3q2r87JZbYocmzbbn8eTYWjMJPhatmO8uxz9Rk=; b=A82Dp7DDWbmuV6TEAcayG6dWgz
+	3QoCpQAdHOdROqeU4ZpcYeF2DpoE6yv4c31JjSJp4lInI5nLtRKacE0WjTp6tXffw9M1EbBOhIFQz
+	/sNAuJOSP55dhO+vPC0JA93h4QD8ryIQV4fPesLwWuomkiWUNrbFgaO4JcuZ73A+xGscicEXGbiIf
+	OCdqHXXETRCOBOomZPHgdT/naoe9O2odXNwjlXsDyb9vs+tfb8DQfmovIYHPEHfHepSYrsQpk8Yg2
+	0l39wjVeKZLFMReUxrTimGMjd5REer2fDSfSaMPlFulHIf/YmbaWpFirDvK1eDVXcvLuuFQ7IoqV5
+	T2xOe/hg==;
 Received: from mail.8bytes.org ([85.214.250.239])
 	by desiato.infradead.org with esmtp (Exim 4.99.2 #2 (Red Hat Linux))
-	id 1wWbC7-0000000199H-3omB
+	id 1wWbC7-0000000198t-2x0I
 	for kvm-riscv@lists.infradead.org;
 	Mon, 08 Jun 2026 14:43:18 +0000
 Received: from io.home.8bytes.org (p4ffe1d30.dip0.t-ipconnect.de [79.254.29.48])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.8bytes.org (Postfix) with ESMTPSA id D09802028BE;
-	Mon,  8 Jun 2026 16:43:10 +0200 (CEST)
+	by mail.8bytes.org (Postfix) with ESMTPSA id 5A8A72028B6;
+	Mon,  8 Jun 2026 16:43:09 +0200 (CEST)
 From: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
 To: Paolo Bonzini <pbonzini@redhat.com>,
 	Sean Christopherson <seanjc@google.com>
@@ -68,16 +68,16 @@ Cc: Tom Lendacky <thomas.lendacky@amd.com>,
 	x86@kernel.org,
 	coconut-svsm@lists.linux.dev,
 	joerg.roedel@amd.com
-Subject: [PATCH 27/60] kvm: Introduce arch-specific part of struct kvm_vcpu_common
-Date: Mon,  8 Jun 2026 16:42:19 +0200
-Message-ID: <20260608144252.351443-28-joro@8bytes.org>
+Subject: [PATCH 20/60] kvm: Move kvm_vcpu mode and requests field to struct kvm_vcpu_common
+Date: Mon,  8 Jun 2026 16:42:12 +0200
+Message-ID: <20260608144252.351443-21-joro@8bytes.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260608144252.351443-1-joro@8bytes.org>
 References: <20260608144252.351443-1-joro@8bytes.org>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260608_154316_530279_4D9312E5 
-X-CRM114-Status: GOOD (  12.34  )
+X-CRM114-CacheID: sfid-20260608_154315_993916_E12B75A6 
+X-CRM114-Status: GOOD (  11.19  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -96,193 +96,145 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 From: Joerg Roedel <joerg.roedel@amd.com>
 
-Give architectures a place to store their VCPU state which is shared
-across all planes.
+These fields must be shared across all planes of a given VCPU.
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/arm64/include/asm/kvm_host.h     | 5 +++++
- arch/loongarch/include/asm/kvm_host.h | 5 +++++
- arch/mips/include/asm/kvm_host.h      | 5 +++++
- arch/powerpc/include/asm/kvm_host.h   | 5 +++++
- arch/riscv/include/asm/kvm_host.h     | 5 +++++
- arch/s390/include/asm/kvm_host.h      | 5 +++++
- arch/x86/include/asm/kvm_host.h       | 5 +++++
- include/linux/kvm_host.h              | 2 ++
- include/linux/kvm_types.h             | 1 +
- virt/kvm/kvm_main.c                   | 8 ++++++++
- 10 files changed, 46 insertions(+)
+ arch/powerpc/kvm/trace.h |  2 +-
+ arch/x86/kvm/trace.h     |  2 +-
+ include/linux/kvm_host.h | 27 ++++++++++++++-------------
+ 3 files changed, 16 insertions(+), 15 deletions(-)
 
-diff --git a/arch/arm64/include/asm/kvm_host.h b/arch/arm64/include/asm/kvm_host.h
-index e9cca2adb371..de9ca00ce4f4 100644
---- a/arch/arm64/include/asm/kvm_host.h
-+++ b/arch/arm64/include/asm/kvm_host.h
-@@ -869,6 +869,11 @@ struct vcpu_reset_state {
+diff --git a/arch/powerpc/kvm/trace.h b/arch/powerpc/kvm/trace.h
+index ea1d7c808319..35c000d918bb 100644
+--- a/arch/powerpc/kvm/trace.h
++++ b/arch/powerpc/kvm/trace.h
+@@ -108,7 +108,7 @@ TRACE_EVENT(kvm_check_requests,
  
- struct vncr_tlb;
+ 	TP_fast_assign(
+ 		__entry->cpu_nr		= vcpu->vcpu_id;
+-		__entry->requests	= vcpu->requests;
++		__entry->requests	= vcpu->common->requests;
+ 	),
  
-+struct kvm_vcpu_arch_common {};
-+
-+static inline int kvm_arch_vcpu_common_init(struct kvm_vcpu_common *common) { return 0; }
-+static inline void kvm_arch_vcpu_common_destroy(struct kvm_vcpu_common *common) {}
-+
- struct kvm_vcpu_arch {
- 	struct kvm_cpu_context ctxt;
- 
-diff --git a/arch/loongarch/include/asm/kvm_host.h b/arch/loongarch/include/asm/kvm_host.h
-index 225aa87ebbdd..7317dceda6b4 100644
---- a/arch/loongarch/include/asm/kvm_host.h
-+++ b/arch/loongarch/include/asm/kvm_host.h
-@@ -150,6 +150,11 @@ struct kvm_arch {
- 	struct loongarch_pch_pic *pch_pic;
- };
- 
-+struct kvm_vcpu_arch_common {};
-+
-+static inline int kvm_arch_vcpu_common_init(struct kvm_vcpu_common *common) { return 0; }
-+static inline void kvm_arch_vcpu_common_destroy(struct kvm_vcpu_common *common) {}
-+
- #define CSR_MAX_NUMS		0x800
- 
- struct loongarch_csrs {
-diff --git a/arch/mips/include/asm/kvm_host.h b/arch/mips/include/asm/kvm_host.h
-index b01911eb9064..c48bca79207b 100644
---- a/arch/mips/include/asm/kvm_host.h
-+++ b/arch/mips/include/asm/kvm_host.h
-@@ -194,6 +194,11 @@ struct kvm_arch {
- #endif
- };
- 
-+struct kvm_vcpu_arch_common {};
-+
-+static inline int kvm_arch_vcpu_common_init(struct kvm_vcpu_common *common) { return 0; }
-+static inline void kvm_arch_vcpu_common_destroy(struct kvm_vcpu_common *common) {}
-+
- #define N_MIPS_COPROC_REGS	32
- #define N_MIPS_COPROC_SEL	8
- 
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index c5b9fbaf34f3..47d9900c4f85 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -349,6 +349,11 @@ struct kvm_arch {
- #endif
- };
- 
-+struct kvm_vcpu_arch_common {};
-+
-+static inline int kvm_arch_vcpu_common_init(struct kvm_vcpu_common *common) { return 0; }
-+static inline void kvm_arch_vcpu_common_destroy(struct kvm_vcpu_common *common) {}
-+
- #define VCORE_ENTRY_MAP(vc)	((vc)->entry_exit_map & 0xff)
- #define VCORE_EXIT_MAP(vc)	((vc)->entry_exit_map >> 8)
- #define VCORE_IS_EXITING(vc)	(VCORE_EXIT_MAP(vc) != 0)
-diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
-index bcbf487d4cb7..397491587f5b 100644
---- a/arch/riscv/include/asm/kvm_host.h
-+++ b/arch/riscv/include/asm/kvm_host.h
-@@ -107,6 +107,11 @@ struct kvm_arch {
- 	bool mp_state_reset;
- };
- 
-+struct kvm_vcpu_arch_common {};
-+
-+static inline int kvm_arch_vcpu_common_init(struct kvm_vcpu_common *common) { return 0; }
-+static inline void kvm_arch_vcpu_common_destroy(struct kvm_vcpu_common *common) {}
-+
- struct kvm_cpu_trap {
- 	unsigned long sepc;
- 	unsigned long scause;
-diff --git a/arch/s390/include/asm/kvm_host.h b/arch/s390/include/asm/kvm_host.h
-index bb3bfbfd35d8..90fd8c0f1a2b 100644
---- a/arch/s390/include/asm/kvm_host.h
-+++ b/arch/s390/include/asm/kvm_host.h
-@@ -413,6 +413,11 @@ struct kvm_s390_pv_vcpu {
- 	unsigned long stor_base;
- };
- 
-+struct kvm_vcpu_arch_common {};
-+
-+static inline int kvm_arch_vcpu_common_init(struct kvm_vcpu_common *common) { return 0; }
-+static inline void kvm_arch_vcpu_common_destroy(struct kvm_vcpu_common *common) {}
-+
- struct kvm_vcpu_arch {
- 	struct kvm_s390_sie_block *sie_block;
- 	/* if vsie is active, currently executed shadow sie control block */
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index dd95c70bfdba..1393566741a0 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -794,6 +794,11 @@ enum kvm_only_cpuid_leafs {
- 	NKVMCAPINTS = NR_KVM_CPU_CAPS - NCAPINTS,
- };
- 
-+struct kvm_vcpu_arch_common {};
-+
-+static inline int kvm_arch_vcpu_common_init(struct kvm_vcpu_common *common) { return 0; }
-+static inline void kvm_arch_vcpu_common_destroy(struct kvm_vcpu_common *common) {}
-+
- struct kvm_vcpu_arch {
- 	/*
- 	 * rip and regs accesses must go through
+ 	TP_printk("vcpu=%x requests=%x",
+diff --git a/arch/x86/kvm/trace.h b/arch/x86/kvm/trace.h
+index 0db25bba17f6..0d2dd25bed12 100644
+--- a/arch/x86/kvm/trace.h
++++ b/arch/x86/kvm/trace.h
+@@ -409,7 +409,7 @@ TRACE_EVENT(name,							     \
+ 		__entry->guest_rip	= tracing_kvm_rip_read(vcpu);		     \
+ 		__entry->isa            = isa;				     \
+ 		__entry->vcpu_id        = vcpu->vcpu_id;		     \
+-		__entry->requests       = READ_ONCE(vcpu->requests);	     \
++		__entry->requests       = READ_ONCE(vcpu->common->requests); \
+ 		kvm_x86_call(get_exit_info)(vcpu,			     \
+ 					    &__entry->exit_reason,	     \
+ 					    &__entry->info1,		     \
 diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 4a0eaa1de479..291bccce9b74 100644
+index 45286b3b35c9..7704820986da 100644
 --- a/include/linux/kvm_host.h
 +++ b/include/linux/kvm_host.h
-@@ -375,6 +375,8 @@ struct kvm_vcpu_common {
- 	bool scheduled_out;
+@@ -180,7 +180,7 @@ static inline bool kvm_is_error_gpa(gpa_t gpa)
+ #define KVM_REQ_OUTSIDE_GUEST_MODE	(KVM_REQUEST_NO_ACTION | KVM_REQUEST_WAIT | KVM_REQUEST_NO_WAKEUP)
  
- 	struct kvm_dirty_ring dirty_ring;
+ #define KVM_ARCH_REQ_FLAGS(nr, flags) ({ \
+-	BUILD_BUG_ON((unsigned)(nr) >= (sizeof_field(struct kvm_vcpu, requests) * 8) - KVM_REQUEST_ARCH_BASE); \
++	BUILD_BUG_ON((unsigned)(nr) >= (sizeof_field(struct kvm_vcpu_common, requests) * 8) - KVM_REQUEST_ARCH_BASE); \
+ 	(unsigned)(((nr) + KVM_REQUEST_ARCH_BASE) | (flags)); \
+ })
+ #define KVM_ARCH_REQ(nr)           KVM_ARCH_REQ_FLAGS(nr, 0)
+@@ -341,6 +341,9 @@ struct kvm_vcpu_common {
+ 	struct rcuwait wait;
+ #endif
+ 
++	int mode;
++	u64 requests;
 +
-+	struct kvm_vcpu_arch_common arch;
- };
+ 	/* Scheduling state */
+ #ifdef CONFIG_PREEMPT_NOTIFIERS
+ 	struct preempt_notifier preempt_notifier;
+@@ -359,8 +362,6 @@ struct kvm_vcpu {
+ 	int vcpu_id; /* id given by userspace at creation */
+ 	int vcpu_idx; /* index into kvm->planes[]->vcpu_array */
  
- struct kvm_vcpu {
-diff --git a/include/linux/kvm_types.h b/include/linux/kvm_types.h
-index 07e82928c948..06799efe6a12 100644
---- a/include/linux/kvm_types.h
-+++ b/include/linux/kvm_types.h
-@@ -46,6 +46,7 @@ struct kvm_plane;
- struct kvm_run;
- struct kvm_userspace_memory_region;
- struct kvm_vcpu;
-+struct kvm_vcpu_common;
- struct kvm_vcpu_init;
- struct kvm_memslots;
+-	int mode;
+-	u64 requests;
+ 	unsigned long guest_debug;
  
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 91fb9abf9b31..7a0b632e3ac0 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -490,6 +490,10 @@ static int kvm_vcpu_init_common(struct kvm_vcpu *vcpu, struct kvm *kvm, unsigned
- 			goto out_drop_counter;
- 	}
+ 	struct kvm_run *run;
+@@ -442,27 +443,27 @@ static inline bool kvm_vcpu_scheduled_out(struct kvm_vcpu *vcpu)
  
-+	r = kvm_arch_vcpu_common_init(common);
-+	if (r)
-+		goto out_free_dirty_ring;
-+
- 	vcpu->common = no_free_ptr(common);
+ static inline int kvm_vcpu_mode(struct kvm_vcpu *vcpu)
+ {
+-	return vcpu->mode;
++	return vcpu->common->mode;
+ }
  
- 	kvm_vcpu_set_in_spin_loop(vcpu, false);
-@@ -497,6 +501,8 @@ static int kvm_vcpu_init_common(struct kvm_vcpu *vcpu, struct kvm *kvm, unsigned
+ static inline int kvm_vcpu_mode_acquire(struct kvm_vcpu *vcpu)
+ {
+-	return smp_load_acquire(&vcpu->mode);
++	return smp_load_acquire(&vcpu->common->mode);
+ }
  
- 	return 0;
+ static inline void kvm_vcpu_set_mode(struct kvm_vcpu *vcpu, int mode)
+ {
+-	vcpu->mode = mode;
++	vcpu->common->mode = mode;
+ }
  
-+out_free_dirty_ring:
-+	kvm_dirty_ring_free(&common->dirty_ring);
- out_drop_counter:
- 	mutex_lock(&kvm->lock);
- 	kvm->created_vcpus--;
-@@ -548,6 +554,8 @@ static void kvm_vcpu_common_destroy(struct kvm_vcpu *vcpu)
- 	kvm->created_vcpus--;
- 	mutex_unlock(&common->kvm->lock);
+ static inline void kvm_vcpu_set_mode_mb(struct kvm_vcpu *vcpu, int mode)
+ {
+-	smp_store_mb(vcpu->mode, mode);
++	smp_store_mb(vcpu->common->mode, mode);
+ }
  
-+	kvm_arch_vcpu_common_destroy(common);
-+
- 	/*
- 	 * No need for rcu_read_lock as VCPU_RUN is the only place that changes
- 	 * the common->pid pointer, and at destruction time all file descriptors
+ static inline void kvm_vcpu_set_mode_release(struct kvm_vcpu *vcpu, int mode)
+ {
+-	smp_store_release(&vcpu->mode, mode);
++	smp_store_release(&vcpu->common->mode, mode);
+ }
+ 
+ /*
+@@ -630,7 +631,7 @@ static inline int kvm_vcpu_exiting_guest_mode(struct kvm_vcpu *vcpu)
+ 	 * memory barrier following the write of vcpu->mode in VCPU RUN.
+ 	 */
+ 	smp_mb__before_atomic();
+-	return cmpxchg(&vcpu->mode, IN_GUEST_MODE, EXITING_GUEST_MODE);
++	return cmpxchg(&vcpu->common->mode, IN_GUEST_MODE, EXITING_GUEST_MODE);
+ }
+ 
+ /*
+@@ -2355,7 +2356,7 @@ static inline void __kvm_make_request(int req, struct kvm_vcpu *vcpu)
+ 	 * caller.  Paired with the smp_mb__after_atomic in kvm_check_request.
+ 	 */
+ 	smp_wmb();
+-	set_bit(req & KVM_REQUEST_MASK, (void *)&vcpu->requests);
++	set_bit(req & KVM_REQUEST_MASK, (void *)&vcpu->common->requests);
+ }
+ 
+ static __always_inline void kvm_make_request(int req, struct kvm_vcpu *vcpu)
+@@ -2381,17 +2382,17 @@ static inline void kvm_make_request_and_kick(int req, struct kvm_vcpu *vcpu)
+ 
+ static inline bool kvm_request_pending(struct kvm_vcpu *vcpu)
+ {
+-	return READ_ONCE(vcpu->requests);
++	return READ_ONCE(vcpu->common->requests);
+ }
+ 
+ static inline bool kvm_test_request(int req, struct kvm_vcpu *vcpu)
+ {
+-	return test_bit(req & KVM_REQUEST_MASK, (void *)&vcpu->requests);
++	return test_bit(req & KVM_REQUEST_MASK, (void *)&vcpu->common->requests);
+ }
+ 
+ static inline void kvm_clear_request(int req, struct kvm_vcpu *vcpu)
+ {
+-	clear_bit(req & KVM_REQUEST_MASK, (void *)&vcpu->requests);
++	clear_bit(req & KVM_REQUEST_MASK, (void *)&vcpu->common->requests);
+ }
+ 
+ static inline bool kvm_check_request(int req, struct kvm_vcpu *vcpu)
 -- 
 2.53.0
 
