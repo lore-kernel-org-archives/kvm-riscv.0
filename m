@@ -4,34 +4,34 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41661CD8C92
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8BCE0CD8CAA
 	for <kvm-riscv@archiver.kernel.org>; Mon,  8 Jun 2026 14:43:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
-	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=oVcDUKs9gEZEV9i9XOI8tyfBAyD9gG04vhDSX1Y3ij0=; b=vAtmakKgeenx65
-	vrDeC9eeiOKaFM7kYFLXcU/wbZ3GHK5/YdFQ/fFIcPZ08OeCryzk+s2yKUSgRoGM3x04Vr+GGZABg
-	lv0giYYx7sxXViD2hlGwDe3NpkAfp0ZdN4CpXe+E3nVEVhTlaFZBELpz0/6jrbj2D/+29q9wPnJDc
-	vP5P1VrOJtpvZisOwTC5Rv4gezj6yQy57mCuR728ZDSeTcOfG6TZMk7MvuoZTkQu/xzZTMrYgizXd
-	wb83hY1T4LOtCzkCnzwTwVtbRAMGF1xlaqU9vlV7lP+nh6hVbPAZnEAdwPTNQpMzvqTQksfYynPBr
-	pxIfL4VEC3+Ldoa/Qz2Q==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=i0cOgFS0GXer8p52qyW9AhCBGFqgVPBo8W41FGGjkFI=; b=Vi9POVQ2f7z3vN
+	VHbxeo5YETCim205nRFTJz7vbu0L5AGWpHtbwJJ82PKRLBKVvJ1YXsFuIw9kW16iMHTiKk2ed1P/p
+	sF5SdE19sjzJOIeJkvxForienxIhfPYylZqn0xiPYN8GgzcyDbtMLiOPVHvZsKdTuy0bWK5qqfzCm
+	Aj03rdXL8cBfTc/VnO1FRnIUM12mWGAAMTr2+7MGP9DW7sfeyEDbqawk95S5qeXb0tcHLfWwEvIGS
+	WeB82fNNHsprIzfnc8wGQrAHPg1IKuvioeplj+TtHcDyrQ0pGcr5TuOZKcKch3t2rNUaCxLwDCLO0
+	fEvDs+mZ4awJuXG10jJg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wWbC6-00000003pXb-3sKD;
-	Mon, 08 Jun 2026 14:43:14 +0000
-Received: from mail.8bytes.org ([2a01:238:42d9:3f00:e505:6202:4f0c:f051])
+	id 1wWbC7-00000003pXu-0G5Q;
+	Mon, 08 Jun 2026 14:43:15 +0000
+Received: from mail.8bytes.org ([85.214.250.239])
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wWbC1-00000003pQH-2CWX
+	id 1wWbC1-00000003pQK-1jFq
 	for kvm-riscv@lists.infradead.org;
 	Mon, 08 Jun 2026 14:43:12 +0000
 Received: from io.home.8bytes.org (p4ffe1d30.dip0.t-ipconnect.de [79.254.29.48])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.8bytes.org (Postfix) with ESMTPSA id A453A2028A6;
+	by mail.8bytes.org (Postfix) with ESMTPSA id 0EB79202536;
 	Mon,  8 Jun 2026 16:43:05 +0200 (CEST)
 From: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
 To: Paolo Bonzini <pbonzini@redhat.com>,
@@ -53,16 +53,14 @@ Cc: Tom Lendacky <thomas.lendacky@amd.com>,
 	x86@kernel.org,
 	coconut-svsm@lists.linux.dev,
 	joerg.roedel@amd.com
-Subject: [PATCH 03/60] KVM: SVM: Inject #HV when Restricted Injection is active
-Date: Mon,  8 Jun 2026 16:41:55 +0200
-Message-ID: <20260608144252.351443-4-joro@8bytes.org>
+Subject: [PATCH 00/60] KVM Planes + SEV-SNP Support
+Date: Mon,  8 Jun 2026 16:41:52 +0200
+Message-ID: <20260608144252.351443-1-joro@8bytes.org>
 X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260608144252.351443-1-joro@8bytes.org>
-References: <20260608144252.351443-1-joro@8bytes.org>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260608_074309_712221_A8739E9D 
-X-CRM114-Status: GOOD (  21.10  )
+X-CRM114-CacheID: sfid-20260608_074309_607606_5134F702 
+X-CRM114-Status: GOOD (  15.40  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -79,287 +77,197 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-From: Melody Wang <huibo.wang@amd.com>
+From: Joerg Roedel <joerg.roedel@amd.com>
 
-When Restricted Injection is active, only #HV exceptions can be injected into
-the SEV-SNP guest. Detect that, and then follow the #HV doorbell communication
-from the GHCB specification to inject the interrupt or exception.
+Hi,
 
-Co-developed-by: Thomas Lendacky <thomas.lendacky@amd.com>
-Signed-off-by: Thomas Lendacky <thomas.lendacky@amd.com>
-Signed-off-by: Melody Wang <huibo.wang@amd.com>
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- arch/x86/kvm/svm/sev.c | 164 +++++++++++++++++++++++++++++++++++++++++
- arch/x86/kvm/svm/svm.c |  14 +++-
- arch/x86/kvm/svm/svm.h |  21 ++++++
- 3 files changed, 197 insertions(+), 2 deletions(-)
+Here is the updated patch-set implementing support for planes in KVM.
+Planes is KVMs name for supporting various privilege separation
+features of hardware (AMD SEV-SNP VMPLs, Intel TDX, ARM CCA Planes) or
+software (Hyper-V VSM) in KVM.
 
-diff --git a/arch/x86/kvm/svm/sev.c b/arch/x86/kvm/svm/sev.c
-index b9ad1169cb2c..f2f40f81ba86 100644
---- a/arch/x86/kvm/svm/sev.c
-+++ b/arch/x86/kvm/svm/sev.c
-@@ -5380,3 +5380,167 @@ void sev_free_decrypted_vmsa(struct kvm_vcpu *vcpu, struct vmcb_save_area *vmsa)
- 
- 	free_page((unsigned long)vmsa);
- }
-+
-+static void prepare_hv_injection(struct vcpu_svm *svm, struct hvdb *hvdb)
-+{
-+	if (hvdb->events.no_further_signal)
-+		return;
-+
-+	svm->vmcb->control.event_inj = HV_VECTOR |
-+				       SVM_EVTINJ_TYPE_EXEPT |
-+				       SVM_EVTINJ_VALID;
-+	svm->vmcb->control.event_inj_err = 0;
-+
-+	hvdb->events.no_further_signal = 1;
-+}
-+
-+static void unmap_hvdb(struct kvm_vcpu *vcpu, struct kvm_host_map *map)
-+{
-+	kvm_vcpu_unmap(vcpu, map);
-+}
-+
-+static struct hvdb *map_hvdb(struct kvm_vcpu *vcpu, struct kvm_host_map *map)
-+{
-+	struct vcpu_svm *svm = to_svm(vcpu);
-+
-+	if (!VALID_PAGE(svm->sev_es.hvdb_gpa))
-+		return NULL;
-+
-+	if (kvm_vcpu_map(vcpu, gpa_to_gfn(svm->sev_es.hvdb_gpa), map)) {
-+		vcpu_unimpl(vcpu, "snp: error mapping #HV doorbell page [%#llx] from guest\n",
-+			    svm->sev_es.hvdb_gpa);
-+
-+		return NULL;
-+	}
-+
-+	return map->hva;
-+}
-+
-+static void __sev_snp_inject(enum inject_type type, struct kvm_vcpu *vcpu)
-+{
-+	struct vcpu_svm *svm = to_svm(vcpu);
-+	struct kvm_host_map hvdb_map;
-+	struct hvdb *hvdb;
-+
-+	hvdb = map_hvdb(vcpu, &hvdb_map);
-+	if (!hvdb) {
-+		WARN_ONCE(1, "Restricted Injection enabled, hvdb page mapping failed\n");
-+		return;
-+	}
-+
-+	hvdb->events.vector = vcpu->arch.interrupt.nr;
-+
-+	prepare_hv_injection(svm, hvdb);
-+
-+	unmap_hvdb(vcpu, &hvdb_map);
-+}
-+
-+bool sev_snp_queue_exception(struct kvm_vcpu *vcpu)
-+{
-+	struct vcpu_svm *svm = to_svm(vcpu);
-+
-+	if (!sev_snp_is_rinj_active(vcpu))
-+		return false;
-+
-+	/*
-+	 * Restricted Injection is enabled, only #HV is supported.
-+	 * If the vector is not HV_VECTOR, do not inject the exception,
-+	 * then return true to skip the original injection path.
-+	 */
-+	if (WARN_ONCE(vcpu->arch.exception.vector != HV_VECTOR,
-+		      "Restricted Injection enabled, exception vector %u injection not supported\n",
-+		      vcpu->arch.exception.vector))
-+		return true;
-+
-+	/*
-+	 * An intercept likely occurred during #HV delivery, so re-inject it
-+	 * using the current HVDB pending event values.
-+	 */
-+	svm->vmcb->control.event_inj = HV_VECTOR |
-+				       SVM_EVTINJ_TYPE_EXEPT |
-+				       SVM_EVTINJ_VALID;
-+	svm->vmcb->control.event_inj_err = 0;
-+
-+	return true;
-+}
-+
-+bool sev_snp_inject(enum inject_type type, struct kvm_vcpu *vcpu)
-+{
-+	if (!sev_snp_is_rinj_active(vcpu))
-+		return false;
-+
-+	__sev_snp_inject(type, vcpu);
-+
-+	return true;
-+}
-+
-+void sev_snp_cancel_injection(struct kvm_vcpu *vcpu)
-+{
-+	struct vcpu_svm *svm = to_svm(vcpu);
-+	struct kvm_host_map hvdb_map;
-+	struct hvdb *hvdb;
-+
-+	if (!sev_snp_is_rinj_active(vcpu))
-+		return;
-+
-+	if (!svm->vmcb->control.event_inj)
-+		return;
-+
-+	if (WARN_ONCE((svm->vmcb->control.event_inj & SVM_EVTINJ_VEC_MASK) != HV_VECTOR,
-+			"Restricted Injection enabled,  %u vector not supported\n",
-+			svm->vmcb->control.event_inj & SVM_EVTINJ_VEC_MASK))
-+		return;
-+
-+	/*
-+	 * Copy the information in the doorbell page into the event injection
-+	 * fields to complete the cancellation flow.
-+	 */
-+	hvdb = map_hvdb(vcpu, &hvdb_map);
-+	if (!hvdb)
-+		return;
-+
-+	if (!hvdb->events.pending_events) {
-+		/* No pending events, then event_inj field should be 0 */
-+		WARN_ON_ONCE(svm->vmcb->control.event_inj);
-+		goto out;
-+	}
-+
-+	/* Copy info back into event_inj field (replaces #HV) */
-+	svm->vmcb->control.event_inj = SVM_EVTINJ_VALID;
-+
-+	if (hvdb->events.vector)
-+		svm->vmcb->control.event_inj |= hvdb->events.vector |
-+						SVM_EVTINJ_TYPE_INTR;
-+
-+	hvdb->events.pending_events = 0;
-+
-+out:
-+	unmap_hvdb(vcpu, &hvdb_map);
-+}
-+
-+/*
-+ * sev_snp_blocked() is for each vector - interrupt, NMI and MCE.  It is
-+ * checking if there is an interrupt handled by the guest when
-+ * another interrupt is pending. So hvdb->events.vector will be used for
-+ * checking while no_further_signal is signaling to the guest that a #HV
-+ * is presented by the hypervisor. So no_further_signal is checked when
-+ * a #HV needs to be presented to the guest.
-+ */
-+bool sev_snp_blocked(enum inject_type type, struct kvm_vcpu *vcpu)
-+{
-+	struct kvm_host_map hvdb_map;
-+	struct hvdb *hvdb;
-+	bool blocked;
-+
-+	/* Indicate interrupts are blocked if doorbell page can't be mapped */
-+	hvdb = map_hvdb(vcpu, &hvdb_map);
-+	if (!hvdb)
-+		return true;
-+
-+	/* Indicate interrupts blocked based on guest acknowledgment */
-+	blocked = !!hvdb->events.vector;
-+
-+	unmap_hvdb(vcpu, &hvdb_map);
-+
-+	return blocked;
-+}
-diff --git a/arch/x86/kvm/svm/svm.c b/arch/x86/kvm/svm/svm.c
-index 7981e7583384..7253936c460c 100644
---- a/arch/x86/kvm/svm/svm.c
-+++ b/arch/x86/kvm/svm/svm.c
-@@ -392,6 +392,9 @@ static void svm_inject_exception(struct kvm_vcpu *vcpu)
- 	    svm_update_soft_interrupt_rip(vcpu, ex->vector))
- 		return;
- 
-+	if (sev_snp_queue_exception(vcpu))
-+		return;
-+
- 	svm->vmcb->control.event_inj = ex->vector
- 		| SVM_EVTINJ_VALID
- 		| (ex->has_error_code ? SVM_EVTINJ_VALID_ERR : 0)
-@@ -3818,9 +3821,11 @@ static void svm_inject_irq(struct kvm_vcpu *vcpu, bool reinjected)
- 	}
- 
- 	trace_kvm_inj_virq(intr->nr, intr->soft, reinjected);
--	++vcpu->stat.irq_injections;
- 
--	svm->vmcb->control.event_inj = intr->nr | SVM_EVTINJ_VALID | type;
-+	if (!sev_snp_inject(INJECT_IRQ, vcpu))
-+		svm->vmcb->control.event_inj = intr->nr | SVM_EVTINJ_VALID | type;
-+
-+	++vcpu->stat.irq_injections;
- }
- 
- static void svm_fixup_nested_rips(struct kvm_vcpu *vcpu)
-@@ -3995,6 +4000,9 @@ bool svm_interrupt_blocked(struct kvm_vcpu *vcpu)
- 	if (!gif_set(svm))
- 		return true;
- 
-+	if (sev_snp_is_rinj_active(vcpu))
-+		return sev_snp_blocked(INJECT_IRQ, vcpu);
-+
- 	if (is_guest_mode(vcpu)) {
- 		/* As long as interrupts are being delivered...  */
- 		if ((svm->nested.ctl.int_ctl & V_INTR_MASKING_MASK)
-@@ -4345,6 +4353,8 @@ static void svm_cancel_injection(struct kvm_vcpu *vcpu)
- 	struct vcpu_svm *svm = to_svm(vcpu);
- 	struct vmcb_control_area *control = &svm->vmcb->control;
- 
-+	sev_snp_cancel_injection(vcpu);
-+
- 	control->exit_int_info = control->event_inj;
- 	control->exit_int_info_err = control->event_inj_err;
- 	control->event_inj = 0;
-diff --git a/arch/x86/kvm/svm/svm.h b/arch/x86/kvm/svm/svm.h
-index fb956c37c941..a22ad5de03ea 100644
---- a/arch/x86/kvm/svm/svm.h
-+++ b/arch/x86/kvm/svm/svm.h
-@@ -55,6 +55,10 @@ extern int tsc_aux_uret_slot __ro_after_init;
- 
- extern struct kvm_x86_ops svm_x86_ops __initdata;
- 
-+enum inject_type {
-+	INJECT_IRQ,
-+};
-+
- /*
-  * Clean bits in VMCB.
-  * VMCB_ALL_CLEAN_MASK might also need to
-@@ -971,6 +975,17 @@ void sev_gmem_invalidate(kvm_pfn_t start, kvm_pfn_t end);
- int sev_gmem_max_mapping_level(struct kvm *kvm, kvm_pfn_t pfn, bool is_private);
- struct vmcb_save_area *sev_decrypt_vmsa(struct kvm_vcpu *vcpu);
- void sev_free_decrypted_vmsa(struct kvm_vcpu *vcpu, struct vmcb_save_area *vmsa);
-+bool sev_snp_queue_exception(struct kvm_vcpu *vcpu);
-+bool sev_snp_inject(enum inject_type type, struct kvm_vcpu *vcpu);
-+void sev_snp_cancel_injection(struct kvm_vcpu *vcpu);
-+bool sev_snp_blocked(enum inject_type type, struct kvm_vcpu *vcpu);
-+static inline bool sev_snp_is_rinj_active(struct kvm_vcpu *vcpu)
-+{
-+	struct kvm_sev_info *sev = &to_kvm_svm(vcpu->kvm)->sev_info;
-+
-+	return is_sev_snp_guest(vcpu) &&
-+		(sev->vmsa_features & SVM_SEV_FEAT_RESTRICTED_INJECTION);
-+};
- #else
- static inline struct page *snp_safe_alloc_page_node(int node, gfp_t gfp)
- {
-@@ -1008,6 +1023,12 @@ static inline struct vmcb_save_area *sev_decrypt_vmsa(struct kvm_vcpu *vcpu)
- 	return NULL;
- }
- static inline void sev_free_decrypted_vmsa(struct kvm_vcpu *vcpu, struct vmcb_save_area *vmsa) {}
-+
-+static inline bool sev_snp_queue_exception(struct kvm_vcpu *vcpu) { return false; }
-+static inline bool sev_snp_inject(enum inject_type type, struct kvm_vcpu *vcpu) { return false; }
-+static inline void sev_snp_cancel_injection(struct kvm_vcpu *vcpu) {}
-+static inline bool sev_snp_blocked(enum inject_type type, struct kvm_vcpu *vcpu) { return false; }
-+static inline bool sev_snp_is_rinj_active(struct kvm_vcpu *vcpu) { return false; }
- #endif
- 
- /* vmenter.S */
+The code posted here is based on prior work by Tom Lendacky, Roy
+Hopkins[1] and Paolo Bonzini[2] as well as the numerous participants
+of the KVM Planes BoF at KVM Forum 2024.
+
+The user-space interface has slightly changed compared to the previous
+patches posted by Paolo. The Documentation patch has the details.
+
+The changes implement the base-support in KVM and X86 as well as the
+parts required for AMD SEV-SNP VMPLs. The patches are based on
+v7.1-rc7 and can be used to run an SEV-SNP VM with COCONUT-SVSM[3] in
+VMPL0 with a Linux guest in VMPL2. An updated QEMU is needed as well,
+the changes for that will be posted separately.
+
+This changes depend on Melodys patches for supporting restricted
+injection. As they are required to run COCONUT-SVSM, they are included
+here for completeness.
+
+KVM planes support as posted here has a number of known limitations:
+
+	- Using planes requires IRQ-Chip in split mode
+	- IRQFD not yet supported
+	- Memory attributes are not per-plane yet - this is required
+	  for VSM
+
+The patches are also in this git branch:
+
+	https://github.com/joergroedel/linux/tree/kvm-planes-v7.1
+
+And can be used together with this QEMU tree:
+
+	https://github.com/joergroedel/qemu/tree/qemu-planes-linux-v7.1
+
+Please review.
+
+-Joerg
+
+[1] https://lore.kernel.org/all/cover.1726506534.git.roy.hopkins@suse.com/
+[2] https://lore.kernel.org/all/20250401161106.790710-1-pbonzini@redhat.com/
+[3] https://github.com/coconut-svsm/svsm/
+
+Joerg Roedel (37):
+  kvm: Introduce struct kvm_vcpu_common
+  kvm: Move vcpu accounting to struct kvm_vcpu_common
+  kvm: Add read accessors for kvm_vcpu scheduling state
+  kvm: Make kvm_running_vcpus point to struct kvm_vcpu_common
+  kvm: Move VCPU scheduling state to struct kvm_vcpu_common
+  kvm: Add accessors for kvm_vcpu->mutex
+  kvm: Move VCPU locking to struct kvm_vcpu_common
+  kvm: Move kvm_vcpu->rcuwait to struct kvm_vcpu_common
+  kvm: Introduce accessors for kvm_vcpu->mode
+  kvm: Move kvm_vcpu mode and requests field to struct kvm_vcpu_common
+  kvm: Introduce per-plane VCPU requests
+  kvm: Move kvm_vcpu pid members to struct kvm_vcpu_common
+  kvm: Move kvm_vcpu sigset members to struct kvm_vcpu_common
+  kvm: Move kvm_vcpu spinloop members to struct kvm_vcpu_common
+  kvm: Move kvm_vcpu->dirty_ring to struct kvm_vcpu_common
+  kvm: Introduce arch-specific plane state
+  kvm: Introduce arch-specific part of struct kvm_vcpu_common
+  kvm: Allocate struct kvm_plane in architecture code
+  KVM: Implement KVM_CREATE_VCPU ioctl for planes
+  kvm: Keep track of plane VCPUs in struct kvm_vcpu_common
+  kvm: Add VCPU plane-scheduling state and helpers
+  kvm: Add plane_level to kvm_kernel_irq_routing_entry
+  kvm: Pass plane_level to kvm_set_routing_entry()
+  kvm: Make KVM_SET_GSI_ROUTING per plane
+  kvm: x86: Handle IOAPIC EOIs per plane
+  kvm: x86: Move CPUID state to struct kvm_vcpu_arch_common
+  kvm: x86: Move cpu_caps to struct kvm_vcpu_arch_common
+  kvm: x86: Update state for all plane VCPUs after CPUID update
+  kvm: x86: Share MTRR state across planes
+  kvm: x86: Select a plane to run
+  kvm: x86: Make event injection VCPU requests per-plane
+  kvm: x86: Allow hardware backend to overwrite struct kvm_plane
+    allocation
+  kvm: x86: Make KVM_REQ_UPDATE_PROTECTED_GUEST_STATE per plane
+  kvm: x86: Share pio_data across planes
+  kvm: x86: Switch to plane0 if it has events
+  kvm: x86: Restrict KVM planes support to KVM_IRQCHIP_SPLIT
+  kvm: svm: Track vmsa_features per plane
+
+Melody Wang (7):
+  x86/sev: Define the #HV doorbell page structure
+  KVM: SVM: Add support for the SEV-SNP #HV doorbell page NAE event
+  KVM: SVM: Inject #HV when Restricted Injection is active
+  KVM: SVM: Inject NMIs when Restricted Injection is active
+  KVM: SVM: Inject MCEs when Restricted Injection is active
+  KVM: SVM: Enable Restricted Injection for an SEV-SNP guest
+  KVM: SVM: Add support for the SEV-SNP #HV IPI NAE event
+
+Paolo Bonzini (11):
+  Documentation: kvm: introduce "VM plane" concept
+  kvm: Introduce struct kvm_plane
+  kvm: Move vcpu_array to struct kvm_plane
+  kvm: Implement KVM_CAP_PLANES
+  kvm: Implement KVM_CREATE_PLANE ioctl
+  kvm: Add KVM_EXIT_PLANE_EVENT
+  kvm: Allocate struct kvm_run only for struct kvm_vcpu_common
+  kvm: Make KVM_SIGNAL_MSI per plane
+  kvm: x86: Make apic_map per plane
+  kvm: x86: Make local APIC code aware of planes
+  kvm: x86: Introduce max_planes x86-op
+
+Tom Lendacky (5):
+  kvm: svm: Implement GET_AP_APIC_IDS NAE event
+  kvm: sev: Allow for VMPL level specification in AP create
+  kvm: svm: Invoke a specified VMPL level VMSA for the vCPU
+  kvm: svm: Implement max_planes x86 operation
+  kvm: svm: Advertise full multi-VMPL support to the SNP guest
+
+ Documentation/virt/kvm/api.rst        | 102 +++-
+ arch/arm64/include/asm/kvm_host.h     |  19 +-
+ arch/arm64/kvm/arch_timer.c           |   3 +-
+ arch/arm64/kvm/arm.c                  |  37 +-
+ arch/arm64/kvm/inject_fault.c         |   4 +-
+ arch/arm64/kvm/nested.c               |   2 +-
+ arch/arm64/kvm/vgic/vgic-init.c       |   3 +-
+ arch/arm64/kvm/vgic/vgic-irqfd.c      |   7 +-
+ arch/loongarch/include/asm/kvm_host.h |  17 +
+ arch/loongarch/kvm/intc/pch_pic.c     |   2 +-
+ arch/loongarch/kvm/irqfd.c            |   5 +-
+ arch/loongarch/kvm/timer.c            |   2 +-
+ arch/loongarch/kvm/vcpu.c             |  16 +-
+ arch/loongarch/kvm/vm.c               |  18 +
+ arch/mips/include/asm/kvm_host.h      |  17 +
+ arch/mips/kvm/mips.c                  |  35 +-
+ arch/powerpc/include/asm/kvm_host.h   |  17 +
+ arch/powerpc/kvm/book3s_pr.c          |   2 +-
+ arch/powerpc/kvm/book3s_xics.c        |   4 +-
+ arch/powerpc/kvm/book3s_xive.c        |   4 +-
+ arch/powerpc/kvm/book3s_xive_native.c |   4 +-
+ arch/powerpc/kvm/booke.c              |   2 +-
+ arch/powerpc/kvm/mpic.c               |   6 +-
+ arch/powerpc/kvm/powerpc.c            |  27 +-
+ arch/powerpc/kvm/trace.h              |   2 +-
+ arch/riscv/include/asm/kvm_host.h     |  17 +
+ arch/riscv/kvm/aia_device.c           |   4 +-
+ arch/riscv/kvm/main.c                 |  18 +
+ arch/riscv/kvm/vcpu.c                 |  13 +-
+ arch/riscv/kvm/vm.c                   |   6 +-
+ arch/s390/include/asm/kvm_host.h      |  17 +
+ arch/s390/kvm/interrupt.c             |  11 +-
+ arch/s390/kvm/kvm-s390.c              |  33 +-
+ arch/s390/kvm/pv.c                    |   2 +-
+ arch/x86/include/asm/cpufeatures.h    |   1 +
+ arch/x86/include/asm/kvm-x86-ops.h    |   4 +
+ arch/x86/include/asm/kvm_host.h       |  96 ++--
+ arch/x86/include/asm/sev-common.h     |   8 +
+ arch/x86/include/asm/svm.h            |  42 ++
+ arch/x86/include/uapi/asm/svm.h       |   9 +
+ arch/x86/kvm/cpuid.c                  |  70 ++-
+ arch/x86/kvm/cpuid.h                  |  31 +-
+ arch/x86/kvm/hyperv.c                 |   2 +-
+ arch/x86/kvm/i8254.c                  |   2 +-
+ arch/x86/kvm/ioapic.c                 |   8 +-
+ arch/x86/kvm/irq.c                    |  19 +-
+ arch/x86/kvm/lapic.c                  | 144 +++--
+ arch/x86/kvm/lapic.h                  |  14 +-
+ arch/x86/kvm/mmu/mmu.c                |   4 +-
+ arch/x86/kvm/mtrr.c                   |  12 +-
+ arch/x86/kvm/smm.c                    |   2 +-
+ arch/x86/kvm/svm/sev.c                | 644 ++++++++++++++++++++--
+ arch/x86/kvm/svm/svm.c                |  85 ++-
+ arch/x86/kvm/svm/svm.h                |  52 +-
+ arch/x86/kvm/trace.h                  |   2 +-
+ arch/x86/kvm/vmx/common.h             |   2 +-
+ arch/x86/kvm/vmx/main.c               |  16 +-
+ arch/x86/kvm/vmx/nested.h             |   4 +-
+ arch/x86/kvm/vmx/posted_intr.c        |   2 +-
+ arch/x86/kvm/vmx/vmx.c                |  11 +-
+ arch/x86/kvm/vmx/x86_ops.h            |   1 +
+ arch/x86/kvm/x86.c                    | 237 ++++++--
+ arch/x86/kvm/x86.h                    |   5 +
+ arch/x86/kvm/xen.c                    |   2 +-
+ arch/x86/kvm/xen.h                    |   2 +-
+ include/linux/kvm_host.h              | 278 ++++++++--
+ include/linux/kvm_types.h             |   2 +
+ include/uapi/linux/kvm.h              |  18 +
+ virt/kvm/dirty_ring.c                 |   4 +-
+ virt/kvm/irqchip.c                    |  13 +-
+ virt/kvm/kvm_main.c                   | 764 +++++++++++++++++++-------
+ 71 files changed, 2460 insertions(+), 630 deletions(-)
+
 -- 
 2.53.0
 
