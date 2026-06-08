@@ -4,7 +4,7 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7C149CD98CF
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 95D2FCD8CAE
 	for <kvm-riscv@archiver.kernel.org>; Mon,  8 Jun 2026 14:43:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
@@ -12,42 +12,42 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=SbDIYY3XStsTcnJiLoIctXilIod2+P4tGUsI5yVQB/U=; b=Jb9DV0YhCYYv5u
-	Ll/MYcW+Pb1TldHEHP9CFesh8WKXHPbNInCVVeR1GfGq22jlHpg3UXWl7aink6VeOqSqMdOlcRmFz
-	BCDU+goeXQYJLlyKBOWK+4wMHzsOu9YuuYlLlyqJ1NjPcyDnRM3gR4lCeBouh3iv8qkm4QAcRDTYm
-	xJdc+USe9PFgpq2TkpngQNcw2FiByvoQRljvNrpjyIpoefDOHryksuyDXOLY+8GXWhzhhhrJnaox0
-	O0kOHJAvzPMK724JpWCZVOdv+RRM3hTx3XeigxY9mXqEH7nYh38BHvkXFWjJSHnCGtnLv4IXKWDJ5
-	x+E7bPj2mQRbsNq7myyw==;
+	List-Owner; bh=sscXwklOnYV0gFFVUJ8RREKxesyFEnFoEys4ws3GOQY=; b=0aPo86n45DSSR5
+	OdqGOaXgprhHa9Qqnop+gczM6JuSZLjHUspHbTFZxLZgdbUDHNmg136IOSxB9OZ8aywFSnNLpoMBp
+	XjiIUV+iOyeJA84cdM3+ZCF6QG0niR6vnd8D9T7RwPtGjokOiZ2W1JXflhb0C1+xxAQ8uru3vML2q
+	GjVXkoiN6nOodTnb8bo2GE11ExG73FRQxc2d/zXGBjItodaxb1UbtZZMuGiiWactpNKr0Z4ADXaZF
+	CikcsbDiVupKJd4poEOkPmn8pn14LF50/59RQhNMuDF2wfcC5qlgmmhsdsDkxqUS9ferXZHvFu1tN
+	F4xu4/qP6Zvg4/ujzM1Q==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wWbCN-00000003q7c-3xHh;
-	Mon, 08 Jun 2026 14:43:31 +0000
+	id 1wWbCO-00000003q8A-0Oe5;
+	Mon, 08 Jun 2026 14:43:32 +0000
 Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wWbCF-00000003pmo-09ja
+	id 1wWbCG-00000003pp1-0Y61
 	for kvm-riscv@bombadil.infradead.org;
-	Mon, 08 Jun 2026 14:43:23 +0000
+	Mon, 08 Jun 2026 14:43:24 +0000
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:MIME-Version
 	:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:
 	Content-Type:Content-ID:Content-Description;
-	bh=QLQl4mcTCJJkecYSh/tVe4nXOxB6DsGl6T6pB2ut37k=; b=U54q58Uxhqj322qvj1RrAEMxvf
-	6La7qfukh1YxHE10RM25v4h22ZNqSB6EnyP8OgvdULpZgt9+yfWsoyGm0xlzVrjSloD6Wpjtjo945
-	x2Q4AiCFoPdCCdfxGa/Embd+kCi81HT6oj9rVkydd33tNKr/3kJZbBSsW4UgDbRdSQbWTzafuWrOx
-	FXUlMmNuQXZCJgqO2m+TyZoalNzubBtKATGVAzWTW0fDxlLwgLbKULY8+V8yPxLsWbCfTBG2guOCT
-	1cgXkv/MKXRr0ccXWWI8f7vit1UJN/H0n0A8cSpt2y5Kls3fCcATsstsxEXFOtv5oZErfjFMd6HJJ
-	AQjN80QA==;
-Received: from mail.8bytes.org ([85.214.250.239])
+	bh=FWOGUYeWOxsT4UPy/dLhzZ1VIiE+P/0sgaBT4DvO4Pc=; b=PeCUgNwe7+PhK/BE01pCGyA2yA
+	75Dr/+yjESoLPZEmAnKNaeXgouRinRx+Bm/+T5EHASdo1U0Txqgj7qi4pNNciUmYxQzbUCOHWqaZb
+	Lw0wpyoG3X/V4OBM117oS6G9uryDTnz3jbYrSk4+Tsr3vk7BZCsuEDNI3v9GYthHhSI6aeCuNX2uN
+	M8kjRcBDI5ymAKIIE1j8mqSC5vge4rFpM6AIP2BMrgkNgADXCEeImyl6jCcUzwdO0AWlPy/Nx90ev
+	GkCOZBJKbOsnhX/nVZPP1emk38Q+vXS1t3UXc+ycSt8n9pyyiBnhGTVSn0gdNUiRIpuUv4dPADo3i
+	KhphK8mA==;
+Received: from mail.8bytes.org ([2a01:238:42d9:3f00:e505:6202:4f0c:f051])
 	by desiato.infradead.org with esmtp (Exim 4.99.2 #2 (Red Hat Linux))
-	id 1wWbCB-00000001991-39rB
+	id 1wWbCB-0000000198y-3AaI
 	for kvm-riscv@lists.infradead.org;
-	Mon, 08 Jun 2026 14:43:21 +0000
+	Mon, 08 Jun 2026 14:43:22 +0000
 Received: from io.home.8bytes.org (p4ffe1d30.dip0.t-ipconnect.de [79.254.29.48])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.8bytes.org (Postfix) with ESMTPSA id 2E2042028D2;
-	Mon,  8 Jun 2026 16:43:15 +0200 (CEST)
+	by mail.8bytes.org (Postfix) with ESMTPSA id B9A7C2028D0;
+	Mon,  8 Jun 2026 16:43:14 +0200 (CEST)
 From: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
 To: Paolo Bonzini <pbonzini@redhat.com>,
 	Sean Christopherson <seanjc@google.com>
@@ -68,16 +68,16 @@ Cc: Tom Lendacky <thomas.lendacky@amd.com>,
 	x86@kernel.org,
 	coconut-svsm@lists.linux.dev,
 	joerg.roedel@amd.com
-Subject: [PATCH 47/60] kvm: x86: Select a plane to run
-Date: Mon,  8 Jun 2026 16:42:39 +0200
-Message-ID: <20260608144252.351443-48-joro@8bytes.org>
+Subject: [PATCH 45/60] kvm: x86: Update state for all plane VCPUs after CPUID update
+Date: Mon,  8 Jun 2026 16:42:37 +0200
+Message-ID: <20260608144252.351443-46-joro@8bytes.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260608144252.351443-1-joro@8bytes.org>
 References: <20260608144252.351443-1-joro@8bytes.org>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260608_154320_021411_F07CF856 
-X-CRM114-Status: GOOD (  11.78  )
+X-CRM114-CacheID: sfid-20260608_154320_065911_F1208E31 
+X-CRM114-Status: GOOD (  10.84  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -96,69 +96,57 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 From: Joerg Roedel <joerg.roedel@amd.com>
 
-In the KVM_RUN path, select a runnable VCPU plane and use it to enter
-the guest. Also handle KVM_REQ_PLANE_RESCHED events to switch planes
-without exiting to user-space.
+Make sure to update CPUID dependent state for all VCPUs of a given
+plane when CPUID state is updated.
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/x86/kvm/x86.c | 29 ++++++++++++++++++++++++++++-
- 1 file changed, 28 insertions(+), 1 deletion(-)
+ arch/x86/kvm/cpuid.c | 16 +++++++++++-----
+ 1 file changed, 11 insertions(+), 5 deletions(-)
 
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 7e94a378b3d2..b9828cd31136 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -11398,6 +11398,12 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
- 				goto out;
- 			}
- 		}
-+
-+		if (kvm_check_request(KVM_REQ_PLANE_RESCHED, vcpu)) {
-+			vcpu->common->plane_switch = true;
-+			r = 0;
-+			goto out;
+diff --git a/arch/x86/kvm/cpuid.c b/arch/x86/kvm/cpuid.c
+index 27e2f7e25038..fab075bb6fdc 100644
+--- a/arch/x86/kvm/cpuid.c
++++ b/arch/x86/kvm/cpuid.c
+@@ -513,6 +513,8 @@ static int kvm_set_cpuid(struct kvm_vcpu *vcpu, struct kvm_cpuid_entry2 *e2,
+ {
+ 	struct kvm_vcpu_common *common = vcpu->common;
+ 	u32 vcpu_caps[NR_KVM_CPU_CAPS];
++	struct kvm_vcpu *v;
++	unsigned i;
+ 	int r;
+ 
+ 	/*
+@@ -562,9 +564,11 @@ static int kvm_set_cpuid(struct kvm_vcpu *vcpu, struct kvm_cpuid_entry2 *e2,
+ 
+ #ifdef CONFIG_KVM_HYPERV
+ 	if (kvm_cpuid_has_hyperv(vcpu)) {
+-		r = kvm_hv_vcpu_init(vcpu);
+-		if (r)
+-			goto err;
++		vcpu_for_each_plane(common, i, v) {
++			r = kvm_hv_vcpu_init(vcpu);
++			if (r)
++				goto err;
 +		}
  	}
+ #endif
  
- 	if (kvm_check_request(KVM_REQ_EVENT, vcpu) || req_int_win ||
-@@ -12076,7 +12082,7 @@ static int kvm_x86_vcpu_pre_run(struct kvm_vcpu *vcpu)
- 	return kvm_x86_call(vcpu_pre_run)(vcpu);
- }
+@@ -572,10 +576,12 @@ static int kvm_set_cpuid(struct kvm_vcpu *vcpu, struct kvm_cpuid_entry2 *e2,
+ 	if (r)
+ 		goto err;
  
--int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
-+static int __kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
- {
- 	struct kvm_queued_exception *ex = &vcpu->arch.exception;
- 	struct kvm_run *kvm_run = vcpu->run;
-@@ -12196,6 +12202,27 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
- 	return r;
- }
++	vcpu_for_each_plane(vcpu->common, i, v) {
+ #ifdef CONFIG_KVM_XEN
+-	vcpu->arch.xen.cpuid = kvm_get_hypervisor_cpuid(vcpu, XEN_SIGNATURE);
++		v->arch.xen.cpuid = kvm_get_hypervisor_cpuid(vcpu, XEN_SIGNATURE);
+ #endif
+-	kvm_vcpu_after_set_cpuid(vcpu);
++		kvm_vcpu_after_set_cpuid(v);
++	}
  
-+int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu_plane0)
-+{
-+	struct kvm_vcpu_common *common = vcpu_plane0->common;
-+	int ret;
-+
-+	do {
-+		struct kvm_vcpu *vcpu = kvm_vcpu_select_plane(vcpu_plane0);
-+
-+		if (vcpu == NULL)
-+			return -EINVAL;
-+
-+		common->plane_switch = false;
-+
-+		ret = __kvm_arch_vcpu_ioctl_run(vcpu);
-+		if (ret)
-+		       break;
-+	} while (vcpu_plane0->common->plane_switch);
-+
-+	return ret;
-+}
-+
- static void __get_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
- {
- 	if (vcpu->arch.emulate_regs_need_sync_to_vcpu) {
+ success:
+ 	kvfree(e2);
 -- 
 2.53.0
 
