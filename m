@@ -4,35 +4,35 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0CFBBCD8C92
-	for <kvm-riscv@archiver.kernel.org>; Mon,  8 Jun 2026 14:43:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 12DA0CD8CBD
+	for <kvm-riscv@archiver.kernel.org>; Mon,  8 Jun 2026 14:43:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=N0ERyUFm+9g6A8DOIucHMI2RuDGouObjlENC2K8PF94=; b=uHxX+/gPcXYD6T
-	7jQjNmwpiqmhFHk6rNfYnPy9R+lv3l4t4VBk79ZkiYU4K6uU446nyZZ0nydFmKYs4+AGuqZXQpy2b
-	dB7N584Jvu6nYIkdppA5Ht9RYbu+9cDs10UnahLjvRFweZBW0acJtHLHmHALt/KKdWfc3rgIDDnO5
-	9r3v4/oXkUQXIMjLqK+6Wh7PAM+soupUT5tfEh2EuUPdZGEYOKokofJ8jM6xIV9UbL8l3f2K54OW3
-	ItLNFhUVxGNQGk5Mtbt2PTdvjYitCiV189u2xwNRowysqjbatxPZ+sBXLx7yqrF+PSrrJaw5ZPF1w
-	3wfqnVlex7Mhaf+7snTQ==;
+	List-Owner; bh=aIHE26KuCEaY0VLafr2FYxon5fd2jo9SlNgFCRGacyY=; b=H5asOYUamQlzyv
+	uVcjX0V9nE4ZFmnlZNJOvTk0dBDhvnTukAIBaXTabJM0X+0Y0cSwvbSvifqlpt11eSnEYdqt5hVrq
+	7Rxg/Ok1nobnR4BPxd1X73TOvEru61JLFhlKpS0Kh2sQ4i4u6UqejPb3yXRS0PmOqbt+fuQ4QB+mx
+	iqK1uEn91zpJJ4yFVIaUv+JQfld6BHjf0RQ/Y+IzD869jwrzr1YDzBwyYM1Qd51wugz9JKUMQU/8/
+	QXDrBJUJI7KVGjH7T2IXQqFGamSYmyy9ifwuxXLqJS4qEE2TCvC0UelXZ6wC7hoVYVP/x80oqlGu6
+	icMuCdaKv4KYv2HngrLA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wWbC9-00000003pe3-40mu;
+	id 1wWbC9-00000003pdX-3Gs9;
 	Mon, 08 Jun 2026 14:43:17 +0000
 Received: from mail.8bytes.org ([2a01:238:42d9:3f00:e505:6202:4f0c:f051])
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wWbC5-00000003pTt-0bgz
+	id 1wWbC4-00000003pTc-3zoU
 	for kvm-riscv@lists.infradead.org;
-	Mon, 08 Jun 2026 14:43:15 +0000
+	Mon, 08 Jun 2026 14:43:14 +0000
 Received: from io.home.8bytes.org (p4ffe1d30.dip0.t-ipconnect.de [79.254.29.48])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.8bytes.org (Postfix) with ESMTPSA id 16F122028B1;
-	Mon,  8 Jun 2026 16:43:08 +0200 (CEST)
+	by mail.8bytes.org (Postfix) with ESMTPSA id 8D3EE2028AF;
+	Mon,  8 Jun 2026 16:43:07 +0200 (CEST)
 From: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
 To: Paolo Bonzini <pbonzini@redhat.com>,
 	Sean Christopherson <seanjc@google.com>
@@ -52,17 +52,18 @@ Cc: Tom Lendacky <thomas.lendacky@amd.com>,
 	kvm-riscv@lists.infradead.org,
 	x86@kernel.org,
 	coconut-svsm@lists.linux.dev,
-	joerg.roedel@amd.com
-Subject: [PATCH 14/60] kvm: Make kvm_running_vcpus point to struct kvm_vcpu_common
-Date: Mon,  8 Jun 2026 16:42:06 +0200
-Message-ID: <20260608144252.351443-15-joro@8bytes.org>
+	joerg.roedel@amd.com,
+	=?UTF-8?q?Carlos=20L=C3=B3pez?= <clopez@suse.de>
+Subject: [PATCH 12/60] kvm: Move vcpu accounting to struct kvm_vcpu_common
+Date: Mon,  8 Jun 2026 16:42:04 +0200
+Message-ID: <20260608144252.351443-13-joro@8bytes.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260608144252.351443-1-joro@8bytes.org>
 References: <20260608144252.351443-1-joro@8bytes.org>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260608_074313_402819_56719E32 
-X-CRM114-Status: GOOD (  13.63  )
+X-CRM114-CacheID: sfid-20260608_074313_161223_9C915B5C 
+X-CRM114-Status: GOOD (  18.55  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -74,138 +75,110 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-From: Joerg Roedel <joerg.roedel@amd.com>
-
-This will remove the need to update kvm_running_vcpu on plane
-switches.
-
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- arch/arm64/kvm/arch_timer.c     |  3 ++-
- arch/arm64/kvm/vgic/vgic-init.c |  3 ++-
- include/linux/kvm_host.h        |  2 +-
- virt/kvm/kvm_main.c             | 18 +++++++++++-------
- 4 files changed, 16 insertions(+), 10 deletions(-)
-
-diff --git a/arch/arm64/kvm/arch_timer.c b/arch/arm64/kvm/arch_timer.c
-index cbea4d9ee955..b2c4f422414e 100644
---- a/arch/arm64/kvm/arch_timer.c
-+++ b/arch/arm64/kvm/arch_timer.c
-@@ -204,7 +204,8 @@ static void soft_timer_cancel(struct hrtimer *hrt)
- 
- static irqreturn_t kvm_arch_timer_handler(int irq, void *dev_id)
- {
--	struct kvm_vcpu *vcpu = *(struct kvm_vcpu **)dev_id;
-+	struct kvm_vcpu_common *common = *(struct kvm_vcpu_common **)dev_id;
-+	struct kvm_vcpu *vcpu = common->current_vcpu;
- 	struct arch_timer_context *ctx;
- 	struct timer_map map;
- 
-diff --git a/arch/arm64/kvm/vgic/vgic-init.c b/arch/arm64/kvm/vgic/vgic-init.c
-index 933983bb2005..a12b89b423d5 100644
---- a/arch/arm64/kvm/vgic/vgic-init.c
-+++ b/arch/arm64/kvm/vgic/vgic-init.c
-@@ -730,7 +730,8 @@ void kvm_vgic_cpu_down(void)
- 
- static irqreturn_t vgic_maintenance_handler(int irq, void *data)
- {
--	struct kvm_vcpu *vcpu = *(struct kvm_vcpu **)data;
-+	struct kvm_vcpu_common *common = *(struct kvm_vcpu_common **)data;
-+	struct kvm_vcpu *vcpu = common->current_vcpu;
- 
- 	/*
- 	 * We cannot rely on the vgic maintenance interrupt to be
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index b334c15d834e..d54f299218a4 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -2462,7 +2462,7 @@ static inline bool kvm_is_visible_memslot(struct kvm_memory_slot *memslot)
- }
- 
- struct kvm_vcpu *kvm_get_running_vcpu(void);
--struct kvm_vcpu * __percpu *kvm_get_running_vcpus(void);
-+struct kvm_vcpu_common * __percpu *kvm_get_running_vcpus(void);
- 
- #if IS_ENABLED(CONFIG_HAVE_KVM_IRQ_BYPASS)
- struct kvm_kernel_irqfd;
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 2c16e124a507..9c07321e30f4 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -113,7 +113,7 @@ LIST_HEAD(vm_list);
- static struct kmem_cache *kvm_vcpu_cache;
- 
- static __read_mostly struct preempt_ops kvm_preempt_ops;
--static DEFINE_PER_CPU(struct kvm_vcpu *, kvm_running_vcpu);
-+static DEFINE_PER_CPU(struct kvm_vcpu_common *, kvm_running_vcpu);
- 
- static struct dentry *kvm_debugfs_dir;
- 
-@@ -165,7 +165,7 @@ void vcpu_load(struct kvm_vcpu *vcpu)
- {
- 	int cpu = get_cpu();
- 
--	__this_cpu_write(kvm_running_vcpu, vcpu);
-+	__this_cpu_write(kvm_running_vcpu, vcpu->common);
- 	preempt_notifier_register(&vcpu->preempt_notifier);
- 	kvm_arch_vcpu_load(vcpu, cpu);
- 	put_cpu();
-@@ -3954,7 +3954,7 @@ void __kvm_vcpu_kick(struct kvm_vcpu *vcpu, bool wait)
- 	 * kick" check does not need atomic operations if kvm_vcpu_kick is used
- 	 * within the vCPU thread itself.
- 	 */
--	if (vcpu == __this_cpu_read(kvm_running_vcpu)) {
-+	if (vcpu == kvm_get_running_vcpu()) {
- 		if (vcpu->mode == IN_GUEST_MODE)
- 			WRITE_ONCE(vcpu->mode, EXITING_GUEST_MODE);
- 		goto out;
-@@ -6500,7 +6500,7 @@ static void kvm_sched_in(struct preempt_notifier *pn, int cpu)
- 	WRITE_ONCE(vcpu->preempted, false);
- 	WRITE_ONCE(vcpu->ready, false);
- 
--	__this_cpu_write(kvm_running_vcpu, vcpu);
-+	__this_cpu_write(kvm_running_vcpu, vcpu->common);
- 	kvm_arch_vcpu_load(vcpu, cpu);
- 
- 	WRITE_ONCE(vcpu->scheduled_out, false);
-@@ -6532,12 +6532,16 @@ static void kvm_sched_out(struct preempt_notifier *pn,
-  */
- struct kvm_vcpu *kvm_get_running_vcpu(void)
- {
--	struct kvm_vcpu *vcpu;
-+	struct kvm_vcpu_common *common;
-+	struct kvm_vcpu *vcpu = NULL;
- 
- 	preempt_disable();
--	vcpu = __this_cpu_read(kvm_running_vcpu);
-+	common = __this_cpu_read(kvm_running_vcpu);
- 	preempt_enable();
- 
-+	if (common)
-+		vcpu = common->current_vcpu;
-+
- 	return vcpu;
- }
- EXPORT_SYMBOL_FOR_KVM_INTERNAL(kvm_get_running_vcpu);
-@@ -6545,7 +6549,7 @@ EXPORT_SYMBOL_FOR_KVM_INTERNAL(kvm_get_running_vcpu);
- /**
-  * kvm_get_running_vcpus - get the per-CPU array of currently running vcpus.
-  */
--struct kvm_vcpu * __percpu *kvm_get_running_vcpus(void)
-+struct kvm_vcpu_common * __percpu *kvm_get_running_vcpus(void)
- {
-         return &kvm_running_vcpu;
- }
--- 
-2.53.0
-
-
--- 
-kvm-riscv mailing list
-kvm-riscv@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/kvm-riscv
+RnJvbTogSm9lcmcgUm9lZGVsIDxqb2VyZy5yb2VkZWxAYW1kLmNvbT4KCkRvIHRoZSBhY2NvdW50
+aW5nIG9mIGNyZWF0ZWQgdmNwdXMgYW5kIHRoZSBzYW5pdHkgY2hlY2tzIG9ubHkgb25jZSBwZXIK
+cGxhbmUuCgpDby1kZXZlbG9wZWQtYnk6IENhcmxvcyBMw7NwZXogPGNsb3BlekBzdXNlLmRlPgpT
+aWduZWQtb2ZmLWJ5OiBKb2VyZyBSb2VkZWwgPGpvZXJnLnJvZWRlbEBhbWQuY29tPgotLS0KIGlu
+Y2x1ZGUvbGludXgva3ZtX2hvc3QuaCB8ICAgMiArCiB2aXJ0L2t2bS9rdm1fbWFpbi5jICAgICAg
+fCAxMDggKysrKysrKysrKysrKysrKysrKysrKysrLS0tLS0tLS0tLS0tLS0tCiAyIGZpbGVzIGNo
+YW5nZWQsIDY4IGluc2VydGlvbnMoKyksIDQyIGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2lu
+Y2x1ZGUvbGludXgva3ZtX2hvc3QuaCBiL2luY2x1ZGUvbGludXgva3ZtX2hvc3QuaAppbmRleCBj
+NGM0OTIyZGY5NjUuLjQ3MTQ0YTgzZjljNSAxMDA2NDQKLS0tIGEvaW5jbHVkZS9saW51eC9rdm1f
+aG9zdC5oCisrKyBiL2luY2x1ZGUvbGludXgva3ZtX2hvc3QuaApAQCAtMzI1LDYgKzMyNSw4IEBA
+IHN0cnVjdCBrdm1fbW1pb19mcmFnbWVudCB7CiBzdHJ1Y3Qga3ZtX3ZjcHVfY29tbW9uIHsKIAlz
+dHJ1Y3Qga3ZtICprdm07CiAKKwlpbnQgdmNwdV9pZHg7IC8qIGluZGV4IGludG8ga3ZtLT5wbGFu
+ZXNbXS0+dmNwdV9hcnJheSAqLworCiAJLyogQ3VycmVudGx5IGFjdGl2ZSBWQ1BVICovCiAJc3Ry
+dWN0IGt2bV92Y3B1ICpjdXJyZW50X3ZjcHU7CiB9OwpkaWZmIC0tZ2l0IGEvdmlydC9rdm0va3Zt
+X21haW4uYyBiL3ZpcnQva3ZtL2t2bV9tYWluLmMKaW5kZXggZmI4NDBkMDI5YzU2Li4xNGU3NGNk
+YzQ3MDkgMTAwNjQ0Ci0tLSBhL3ZpcnQva3ZtL2t2bV9tYWluLmMKKysrIGIvdmlydC9rdm0va3Zt
+X21haW4uYwpAQCAtNDM4LDE4ICs0MzgsNTggQEAgdm9pZCAqa3ZtX21tdV9tZW1vcnlfY2FjaGVf
+YWxsb2Moc3RydWN0IGt2bV9tbXVfbWVtb3J5X2NhY2hlICptYykKIH0KICNlbmRpZgogCi1zdGF0
+aWMgaW50IGt2bV92Y3B1X2luaXRfY29tbW9uKHN0cnVjdCBrdm1fdmNwdSAqdmNwdSwgc3RydWN0
+IGt2bSAqa3ZtKQorc3RhdGljIGludCBrdm1fdmNwdV9pbml0X2NvbW1vbihzdHJ1Y3Qga3ZtX3Zj
+cHUgKnZjcHUsIHN0cnVjdCBrdm0gKmt2bSwgdW5zaWduZWQgbG9uZyBpZCkKIHsKLQlzdHJ1Y3Qg
+a3ZtX3ZjcHVfY29tbW9uICpjb21tb24gPSBremFsbG9jKHNpemVvZigqY29tbW9uKSwgR0ZQX0tF
+Uk5FTF9BQ0NPVU5UKTsKKwlzdHJ1Y3Qga3ZtX3ZjcHVfY29tbW9uICpjb21tb24gX19mcmVlKGtm
+cmVlKSA9IGt6YWxsb2Moc2l6ZW9mKCpjb21tb24pLCBHRlBfS0VSTkVMX0FDQ09VTlQpOworCWlu
+dCByOwogCi0JaWYgKGNvbW1vbiA9PSBOVUxMKQotCQlyZXR1cm4gLUVOT01FTTsKKwkvKgorCSAq
+IEtWTSB0cmFja3MgdkNQVSBJRHMgYXMgJ2ludCcsIGJlIGtpbmQgdG8gdXNlcnNwYWNlIGFuZCBy
+ZWplY3QKKwkgKiB0b28tbGFyZ2UgdmFsdWVzIGluc3RlYWQgb2Ygc2lsZW50bHkgdHJ1bmNhdGlu
+Zy4KKwkgKgorCSAqIEVuc3VyZSBLVk1fTUFYX1ZDUFVfSURTIGlzbid0IHB1c2hlZCBhYm92ZSBJ
+TlRfTUFYIHdpdGhvdXQgZmlyc3QKKwkgKiBjaGFuZ2luZyB0aGUgc3RvcmFnZSB0eXBlIChhdCB0
+aGUgdmVyeSBsZWFzdCwgSURzIHNob3VsZCBiZSB0cmFja2VkCisJICogYXMgdW5zaWduZWQgaW50
+cykuCisJICovCisJQlVJTERfQlVHX09OKEtWTV9NQVhfVkNQVV9JRFMgPiBJTlRfTUFYKTsKKwlp
+ZiAoaWQgPj0gS1ZNX01BWF9WQ1BVX0lEUykKKwkJcmV0dXJuIC1FSU5WQUw7CisKKwltdXRleF9s
+b2NrKCZrdm0tPmxvY2spOworCWt2bS0+Y3JlYXRlZF92Y3B1cysrOworCW11dGV4X3VubG9jaygm
+a3ZtLT5sb2NrKTsKKworCWlmIChjb21tb24gPT0gTlVMTCkgeworCQlyID0gLUVOT01FTTsKKwkJ
+Z290byBvdXRfZHJvcF9jb3VudGVyOworCX0KKworCWNvbW1vbi0+dmNwdV9pZHggPSBhdG9taWNf
+cmVhZCgma3ZtLT5vbmxpbmVfdmNwdXMpOwogCiAJY29tbW9uLT5rdm0gPSBrdm07CiAJY29tbW9u
+LT5jdXJyZW50X3ZjcHUgPSB2Y3B1OwotCXZjcHUtPmNvbW1vbiA9IGNvbW1vbjsKKwl2Y3B1LT5j
+b21tb24gPSBub19mcmVlX3B0cihjb21tb24pOwogCiAJcmV0dXJuIDA7CisKK291dF9kcm9wX2Nv
+dW50ZXI6CisJbXV0ZXhfbG9jaygma3ZtLT5sb2NrKTsKKwlrdm0tPmNyZWF0ZWRfdmNwdXMtLTsK
+KwltdXRleF91bmxvY2soJmt2bS0+bG9jayk7CisKKwlyZXR1cm4gcjsKK30KKworc3RhdGljIHZv
+aWQga3ZtX3ZjcHVfZmluaXNoX2NvbW1vbihzdHJ1Y3Qga3ZtX3ZjcHUgKnZjcHUpCit7CisJc21w
+X3dtYigpOworCWlmICh2Y3B1LT5wbGFuZV9sZXZlbCA9PSAwKSB7CisJCS8qCisJCSAqIFBhaXJz
+IHdpdGggc21wX3JtYigpIGluIGt2bV9nZXRfdmNwdS4gIFN0b3JlIHRoZSB2Y3B1CisJCSAqIHBv
+aW50ZXIgYmVmb3JlIGt2bS0+b25saW5lX3ZjcHUncyBpbmNyZW1lbnRlZCB2YWx1ZS4KKwkJICov
+CisJCWF0b21pY19pbmMoJnZjcHUtPmt2bS0+b25saW5lX3ZjcHVzKTsKKwl9CiB9CiAKIHN0YXRp
+YyB2b2lkIGt2bV92Y3B1X2luaXQoc3RydWN0IGt2bV92Y3B1ICp2Y3B1LCBzdHJ1Y3Qga3ZtICpr
+dm0sIHVuc2lnbmVkIGlkKQpAQCAtNDgyLDEwICs1MjIsMTkgQEAgc3RhdGljIHZvaWQga3ZtX3Zj
+cHVfaW5pdChzdHJ1Y3Qga3ZtX3ZjcHUgKnZjcHUsIHN0cnVjdCBrdm0gKmt2bSwgdW5zaWduZWQg
+aWQpCiAKIHN0YXRpYyB2b2lkIGt2bV92Y3B1X2NvbW1vbl9kZXN0cm95KHN0cnVjdCBrdm1fdmNw
+dSAqdmNwdSkKIHsKLQlpZiAodmNwdS0+cGxhbmVfbGV2ZWwgPT0gMCkKLQkJa2ZyZWUodmNwdS0+
+Y29tbW9uKTsKKwlzdHJ1Y3Qga3ZtX3ZjcHVfY29tbW9uICpjb21tb24gPSB2Y3B1LT5jb21tb247
+CisJc3RydWN0IGt2bSAqa3ZtID0gY29tbW9uLT5rdm07CiAKIAl2Y3B1LT5jb21tb24gPSBOVUxM
+OworCisJaWYgKHZjcHUtPnBsYW5lX2xldmVsICE9IDApCisJICAgICAgIHJldHVybjsKKworCW11
+dGV4X2xvY2soJmNvbW1vbi0+a3ZtLT5sb2NrKTsKKwlrdm0tPmNyZWF0ZWRfdmNwdXMtLTsKKwlt
+dXRleF91bmxvY2soJmNvbW1vbi0+a3ZtLT5sb2NrKTsKKworCWtmcmVlKGNvbW1vbik7CiB9CiAK
+IHN0YXRpYyB2b2lkIGt2bV92Y3B1X2Rlc3Ryb3koc3RydWN0IGt2bV92Y3B1ICp2Y3B1KQpAQCAt
+NDIzNSwyMiArNDI4NCwxMCBAQCBzdGF0aWMgdm9pZCBrdm1fY3JlYXRlX3ZjcHVfZGVidWdmcyhz
+dHJ1Y3Qga3ZtX3ZjcHUgKnZjcHUpCiAgKi8KIHN0YXRpYyBpbnQga3ZtX3ZtX2lvY3RsX2NyZWF0
+ZV92Y3B1KHN0cnVjdCBrdm0gKmt2bSwgdW5zaWduZWQgbG9uZyBpZCkKIHsKLQlpbnQgcjsKKwlp
+bnQgciA9IC1FSU5WQUw7CiAJc3RydWN0IGt2bV92Y3B1ICp2Y3B1OwogCXN0cnVjdCBwYWdlICpw
+YWdlOwogCi0JLyoKLQkgKiBLVk0gdHJhY2tzIHZDUFUgSURzIGFzICdpbnQnLCBiZSBraW5kIHRv
+IHVzZXJzcGFjZSBhbmQgcmVqZWN0Ci0JICogdG9vLWxhcmdlIHZhbHVlcyBpbnN0ZWFkIG9mIHNp
+bGVudGx5IHRydW5jYXRpbmcuCi0JICoKLQkgKiBFbnN1cmUgS1ZNX01BWF9WQ1BVX0lEUyBpc24n
+dCBwdXNoZWQgYWJvdmUgSU5UX01BWCB3aXRob3V0IGZpcnN0Ci0JICogY2hhbmdpbmcgdGhlIHN0
+b3JhZ2UgdHlwZSAoYXQgdGhlIHZlcnkgbGVhc3QsIElEcyBzaG91bGQgYmUgdHJhY2tlZAotCSAq
+IGFzIHVuc2lnbmVkIGludHMpLgotCSAqLwotCUJVSUxEX0JVR19PTihLVk1fTUFYX1ZDUFVfSURT
+ID4gSU5UX01BWCk7Ci0JaWYgKGlkID49IEtWTV9NQVhfVkNQVV9JRFMpCi0JCXJldHVybiAtRUlO
+VkFMOwotCiAJbXV0ZXhfbG9jaygma3ZtLT5sb2NrKTsKIAlpZiAoa3ZtLT5jcmVhdGVkX3ZjcHVz
+ID49IGt2bS0+bWF4X3ZjcHVzKSB7CiAJCW11dGV4X3VubG9jaygma3ZtLT5sb2NrKTsKQEAgLTQy
+NTgsMjQgKzQyOTUsMjAgQEAgc3RhdGljIGludCBrdm1fdm1faW9jdGxfY3JlYXRlX3ZjcHUoc3Ry
+dWN0IGt2bSAqa3ZtLCB1bnNpZ25lZCBsb25nIGlkKQogCX0KIAogCXIgPSBrdm1fYXJjaF92Y3B1
+X3ByZWNyZWF0ZShrdm0sIGlkKTsKLQlpZiAocikgewotCQltdXRleF91bmxvY2soJmt2bS0+bG9j
+ayk7Ci0JCXJldHVybiByOwotCX0KLQotCWt2bS0+Y3JlYXRlZF92Y3B1cysrOwogCW11dGV4X3Vu
+bG9jaygma3ZtLT5sb2NrKTsKKwlpZiAocikKKwkJcmV0dXJuIHI7CiAKIAl2Y3B1ID0ga21lbV9j
+YWNoZV96YWxsb2Moa3ZtX3ZjcHVfY2FjaGUsIEdGUF9LRVJORUxfQUNDT1VOVCk7Ci0JaWYgKCF2
+Y3B1KSB7Ci0JCXIgPSAtRU5PTUVNOwotCQlnb3RvIHZjcHVfZGVjcmVtZW50OwotCX0KKwlpZiAo
+IXZjcHUpCisJCXJldHVybiAtRU5PTUVNOwogCi0JciA9IGt2bV92Y3B1X2luaXRfY29tbW9uKHZj
+cHUsIGt2bSk7CisJciA9IGt2bV92Y3B1X2luaXRfY29tbW9uKHZjcHUsIGt2bSwgaWQpOwogCWlm
+IChyKQogCQlnb3RvIHZjcHVfZnJlZTsKIAorCXZjcHUtPnZjcHVfaWR4ID0gdmNwdS0+Y29tbW9u
+LT52Y3B1X2lkeDsKKwogCUJVSUxEX0JVR19PTihzaXplb2Yoc3RydWN0IGt2bV9ydW4pID4gUEFH
+RV9TSVpFKTsKIAlwYWdlID0gYWxsb2NfcGFnZShHRlBfS0VSTkVMX0FDQ09VTlQgfCBfX0dGUF9a
+RVJPKTsKIAlpZiAoIXBhZ2UpIHsKQEAgLTQzMDQsNyArNDMzNyw2IEBAIHN0YXRpYyBpbnQga3Zt
+X3ZtX2lvY3RsX2NyZWF0ZV92Y3B1KHN0cnVjdCBrdm0gKmt2bSwgdW5zaWduZWQgbG9uZyBpZCkK
+IAkJZ290byB1bmxvY2tfdmNwdV9kZXN0cm95OwogCX0KIAotCXZjcHUtPnZjcHVfaWR4ID0gYXRv
+bWljX3JlYWQoJmt2bS0+b25saW5lX3ZjcHVzKTsKIAlyID0geGFfaW5zZXJ0KCZrdm0tPnBsYW5l
+c1swXS0+dmNwdV9hcnJheSwgdmNwdS0+dmNwdV9pZHgsIHZjcHUsIEdGUF9LRVJORUxfQUNDT1VO
+VCk7CiAJV0FSTl9PTl9PTkNFKHIgPT0gLUVCVVNZKTsKIAlpZiAocikKQEAgLTQzMjQsMTIgKzQz
+NTYsNyBAQCBzdGF0aWMgaW50IGt2bV92bV9pb2N0bF9jcmVhdGVfdmNwdShzdHJ1Y3Qga3ZtICpr
+dm0sIHVuc2lnbmVkIGxvbmcgaWQpCiAJaWYgKHIgPCAwKQogCQlnb3RvIGt2bV9wdXRfeGFfZXJh
+c2U7CiAKLQkvKgotCSAqIFBhaXJzIHdpdGggc21wX3JtYigpIGluIGt2bV9nZXRfdmNwdS4gIFN0
+b3JlIHRoZSB2Y3B1Ci0JICogcG9pbnRlciBiZWZvcmUga3ZtLT5vbmxpbmVfdmNwdSdzIGluY3Jl
+bWVudGVkIHZhbHVlLgotCSAqLwotCXNtcF93bWIoKTsKLQlhdG9taWNfaW5jKCZrdm0tPm9ubGlu
+ZV92Y3B1cyk7CisJa3ZtX3ZjcHVfZmluaXNoX2NvbW1vbih2Y3B1KTsKIAltdXRleF91bmxvY2so
+JnZjcHUtPm11dGV4KTsKIAogCW11dGV4X3VubG9jaygma3ZtLT5sb2NrKTsKQEAgLTQzNTIsMTAg
+KzQzNzksNyBAQCBzdGF0aWMgaW50IGt2bV92bV9pb2N0bF9jcmVhdGVfdmNwdShzdHJ1Y3Qga3Zt
+ICprdm0sIHVuc2lnbmVkIGxvbmcgaWQpCiAJa3ZtX3ZjcHVfY29tbW9uX2Rlc3Ryb3kodmNwdSk7
+CiB2Y3B1X2ZyZWU6CiAJa21lbV9jYWNoZV9mcmVlKGt2bV92Y3B1X2NhY2hlLCB2Y3B1KTsKLXZj
+cHVfZGVjcmVtZW50OgotCW11dGV4X2xvY2soJmt2bS0+bG9jayk7Ci0Ja3ZtLT5jcmVhdGVkX3Zj
+cHVzLS07Ci0JbXV0ZXhfdW5sb2NrKCZrdm0tPmxvY2spOworCiAJcmV0dXJuIHI7CiB9CiAKLS0g
+CjIuNTMuMAoKCi0tIAprdm0tcmlzY3YgbWFpbGluZyBsaXN0Cmt2bS1yaXNjdkBsaXN0cy5pbmZy
+YWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8va3Zt
+LXJpc2N2Cg==
