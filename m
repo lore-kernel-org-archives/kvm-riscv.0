@@ -4,35 +4,35 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 17DF1CD8CA4
-	for <kvm-riscv@archiver.kernel.org>; Mon,  8 Jun 2026 14:43:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51AE9CD8CB9
+	for <kvm-riscv@archiver.kernel.org>; Mon,  8 Jun 2026 14:43:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=472IHxs4J/bgOZ0wZh1kUmI67XxQUzXqAhKW+ICOCHI=; b=IPSYWH8x8K6sAV
-	ngR4AHaTunngKK2hx7LIxoJg4nXmnbIDqYXklpMhkurfdyZo2hWGvq7qRTN2h2jAsCwAipuXPJObu
-	yLePt2tyFEg0otUepWiWSezNtv2QLHQioLewCLwN+7F3TRZ7NVH0XvNP4zlacEAQQFTS7fkWOm4dY
-	LLBEeyyBK55g585czqMs+WYzf+7Ok0ldTKOdjrOv2ko+ER/WeaTL+BKubtNv7QyTqCbC1gIg1EkCd
-	BIlzAWoE+5pTHRXvsmfaPpBfK0cWdrQgOB/6FiUzsJv72xmmYDldJ5+tNCXQE5e80ez7PWLrMhDR7
-	mcIPQaoRjOXZy3wIDb+w==;
+	List-Owner; bh=xbeRh0GPlYFIVsa7943GF/QIHP3curFjS0ZsvFBhn+U=; b=qoZv/FgUSdTqTn
+	zow/mIRoyLKTwGlam7QqmEnoyVBJc5qT1O4mG1FmsN/wcI4LJCQvpl4XVdTgIwAPeU2649pN6miDq
+	XCFkPgRf9enhjXyySrLtc+gwWVZzJNLzr8gAWVa6PA6Yf549QtSen8oiPMv6WFs2XjZkMDE2LSc7m
+	OZEEC2izlIrKoRl7FYZcGwcXMbZvWNxOGuJlMYmu+VJOL9DlGnefUbn8c0pzRtBfmtMoHGkyOxMoG
+	iTQIwIFcYXd50ENa4HX7aFbVLgMXsPUd2Jxkf4sQ3jnDbhDGwEaESJp1QLZCn3GNNlOJYOCP+w5I3
+	pgOH6b36mgUJt4JNEKRw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wWbCH-00000003pti-2atH;
-	Mon, 08 Jun 2026 14:43:25 +0000
-Received: from mail.8bytes.org ([85.214.250.239])
+	id 1wWbCG-00000003psM-3qqh;
+	Mon, 08 Jun 2026 14:43:24 +0000
+Received: from mail.8bytes.org ([2a01:238:42d9:3f00:e505:6202:4f0c:f051])
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wWbC9-00000003pSK-2oBH
+	id 1wWbC8-00000003pTt-0ciO
 	for kvm-riscv@lists.infradead.org;
 	Mon, 08 Jun 2026 14:43:20 +0000
 Received: from io.home.8bytes.org (p4ffe1d30.dip0.t-ipconnect.de [79.254.29.48])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.8bytes.org (Postfix) with ESMTPSA id 9229F2028C6;
-	Mon,  8 Jun 2026 16:43:12 +0200 (CEST)
+	by mail.8bytes.org (Postfix) with ESMTPSA id 80CE32028C1;
+	Mon,  8 Jun 2026 16:43:11 +0200 (CEST)
 From: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
 To: Paolo Bonzini <pbonzini@redhat.com>,
 	Sean Christopherson <seanjc@google.com>
@@ -53,16 +53,16 @@ Cc: Tom Lendacky <thomas.lendacky@amd.com>,
 	x86@kernel.org,
 	coconut-svsm@lists.linux.dev,
 	joerg.roedel@amd.com
-Subject: [PATCH 35/60] kvm: Add VCPU plane-scheduling state and helpers
-Date: Mon,  8 Jun 2026 16:42:27 +0200
-Message-ID: <20260608144252.351443-36-joro@8bytes.org>
+Subject: [PATCH 30/60] kvm: Add KVM_EXIT_PLANE_EVENT
+Date: Mon,  8 Jun 2026 16:42:22 +0200
+Message-ID: <20260608144252.351443-31-joro@8bytes.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260608144252.351443-1-joro@8bytes.org>
 References: <20260608144252.351443-1-joro@8bytes.org>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260608_074317_901544_8210AA53 
-X-CRM114-Status: GOOD (  14.41  )
+X-CRM114-CacheID: sfid-20260608_074316_362626_741EC5A0 
+X-CRM114-Status: GOOD (  12.08  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -79,143 +79,91 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-From: Joerg Roedel <joerg.roedel@amd.com>
+From: Paolo Bonzini <pbonzini@redhat.com>
 
-The algorithm is to always run the lowest runnable plane. Plane
-switches are done by stopping the current plane and setting another
-runnable.
+Add a new exit-type to KVM for telling user-space that a plane-vcpu is
+missing. Create a helper which fills out the kvm_run exit structure.
 
+Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
+Co-developed-by: Joerg Roedel <joerg.roedel@amd.com>
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- include/linux/kvm_host.h | 16 ++++++++++++++
- virt/kvm/kvm_main.c      | 45 ++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 61 insertions(+)
+ include/linux/kvm_host.h |  2 ++
+ include/uapi/linux/kvm.h | 10 ++++++++++
+ virt/kvm/kvm_main.c      | 12 ++++++++++++
+ 3 files changed, 24 insertions(+)
 
 diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 5c3f9dfa15ea..e3611e6cc3e4 100644
+index 3ecd472c7cfa..90b97137840e 100644
 --- a/include/linux/kvm_host.h
 +++ b/include/linux/kvm_host.h
-@@ -168,6 +168,7 @@ static inline bool kvm_is_error_gpa(gpa_t gpa)
- #define KVM_REQ_VM_DEAD			(1 | KVM_REQUEST_WAIT | KVM_REQUEST_NO_WAKEUP)
- #define KVM_REQ_UNBLOCK			2
- #define KVM_REQ_DIRTY_RING_SOFT_FULL	3
-+#define KVM_REQ_PLANE_RESCHED		4
- #define KVM_REQUEST_ARCH_BASE		8
+@@ -1649,6 +1649,8 @@ void kvm_arch_vcpu_blocking(struct kvm_vcpu *vcpu);
+ void kvm_arch_vcpu_unblocking(struct kvm_vcpu *vcpu);
+ bool kvm_vcpu_wake_up(struct kvm_vcpu *vcpu);
  
- /*
-@@ -324,6 +325,8 @@ struct kvm_mmio_fragment {
- 	unsigned int len;
++int kvm_request_create_plane(struct kvm_vcpu *vcpu, unsigned plane, u64 apic_id);
++
+ #ifndef CONFIG_S390
+ void __kvm_vcpu_kick(struct kvm_vcpu *vcpu, bool wait);
+ 
+diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+index 24e34b8e4819..a88d987c7882 100644
+--- a/include/uapi/linux/kvm.h
++++ b/include/uapi/linux/kvm.h
+@@ -146,6 +146,13 @@ struct kvm_exit_snp_req_certs {
+ 	__u64 ret;
  };
  
-+
-+
- struct kvm_vcpu_common {
- 	struct kvm *kvm;
- 
-@@ -381,6 +384,8 @@ struct kvm_vcpu_common {
- 
- 	struct kvm_dirty_ring dirty_ring;
- 
-+	bool plane_switch;
-+
- 	struct kvm_vcpu_arch_common arch;
- };
- 
-@@ -388,6 +393,12 @@ struct kvm_vcpu_common {
- 	for ((i) = 0; (i) < KVM_MAX_PLANES; ++(i))		\
- 		if (((v) = common->vcpus[(i)]) != NULL)
- 
-+/* Tracked per plane-VCPU - used for deciding which plane-vcpu to run */
-+enum kvm_vcpu_state {
-+	STOPPED,
-+	RUNNABLE,
++struct kvm_plane_event_exit {
++#define KVM_PLANE_EVENT_CREATE_VCPU	1
++	__u32 cause;
++	__u32 plane;
++	__u64 extra[8];
 +};
 +
- struct kvm_vcpu {
- 	struct kvm *kvm;
- 	struct kvm_plane *plane;
-@@ -401,6 +412,7 @@ struct kvm_vcpu {
- 	struct kvm_run *run;
+ #define KVM_S390_GET_SKEYS_NONE   1
+ #define KVM_S390_SKEYS_MAX        1048576
  
- 	u64 plane_requests;
-+	enum kvm_vcpu_state plane_state;
+@@ -193,6 +200,7 @@ struct kvm_exit_snp_req_certs {
+ #define KVM_EXIT_ARM_SEA          41
+ #define KVM_EXIT_ARM_LDST64B      42
+ #define KVM_EXIT_SNP_REQ_CERTS    43
++#define KVM_EXIT_PLANE_EVENT      44
  
- 	/* S390 only */
- 	bool valid_wakeup;
-@@ -440,6 +452,10 @@ struct kvm_vcpu {
- 	unsigned plane_level;
- };
- 
-+void kvm_vcpu_set_plane_runnable(struct kvm_vcpu *vcpu);
-+void kvm_vcpu_set_plane_stopped(struct kvm_vcpu *vcpu);
-+struct kvm_vcpu *kvm_vcpu_select_plane(struct kvm_vcpu *vcpu);
-+
- static inline bool kvm_vcpu_wants_to_run(struct kvm_vcpu *vcpu)
- {
- 	return vcpu->common->wants_to_run;
+ /* For KVM_EXIT_INTERNAL_ERROR */
+ /* Emulate instruction failed. */
+@@ -497,6 +505,8 @@ struct kvm_run {
+ 		} arm_sea;
+ 		/* KVM_EXIT_SNP_REQ_CERTS */
+ 		struct kvm_exit_snp_req_certs snp_req_certs;
++		/* KVM_EXIT_PLANE_EVENT */
++		struct kvm_plane_event_exit plane_event;
+ 		/* Fix the size of the union. */
+ 		char padding[256];
+ 	};
 diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 9d30fd85ce5f..a30123b77112 100644
+index 03a44ff62f0f..f0f78bb74e51 100644
 --- a/virt/kvm/kvm_main.c
 +++ b/virt/kvm/kvm_main.c
-@@ -4397,6 +4397,7 @@ static int kvm_plane_ioctl_create_vcpu(struct kvm_plane *plane, unsigned long id
- 	vcpu->vcpu_idx = vcpu->common->vcpu_idx;
- 	vcpu->plane = plane;
- 	vcpu->plane_level = plane->level;
-+	vcpu->plane_state = STOPPED;
- 	vcpu->run = vcpu->common->run;
+@@ -3973,6 +3973,18 @@ bool kvm_vcpu_wake_up(struct kvm_vcpu *vcpu)
+ }
+ EXPORT_SYMBOL_FOR_KVM_INTERNAL(kvm_vcpu_wake_up);
  
- 	kvm_vcpu_init(vcpu, kvm, id);
-@@ -4938,6 +4939,50 @@ static struct file_operations kvm_plane_fops = {
- 	KVM_COMPAT(kvm_plane_ioctl),
- };
- 
-+void kvm_vcpu_set_plane_runnable(struct kvm_vcpu *vcpu)
++int kvm_request_create_plane(struct kvm_vcpu *vcpu, unsigned plane, u64 apic_id)
 +{
-+	vcpu->plane_state = RUNNABLE;
-+	vcpu->common->plane_switch = true;
-+	kvm_make_request(KVM_REQ_PLANE_RESCHED, vcpu);
++	vcpu->run->exit_reason = KVM_EXIT_PLANE_EVENT;
++	memset(&vcpu->run->plane_event, 0, sizeof(vcpu->run->plane_event));
++	vcpu->run->plane_event.cause = KVM_PLANE_EVENT_CREATE_VCPU;
++	vcpu->run->plane_event.plane = plane;
++	vcpu->run->plane_event.extra[0] = apic_id;
++
++	return 0;
 +}
-+EXPORT_SYMBOL_FOR_KVM_INTERNAL(kvm_vcpu_set_plane_runnable);
++EXPORT_SYMBOL_FOR_KVM_INTERNAL(kvm_request_create_plane);
 +
-+void kvm_vcpu_set_plane_stopped(struct kvm_vcpu *vcpu)
-+{
-+	vcpu->plane_state = STOPPED;
-+	kvm_make_request(KVM_REQ_PLANE_RESCHED, vcpu);
-+}
-+EXPORT_SYMBOL_FOR_KVM_INTERNAL(kvm_vcpu_set_plane_stopped);
-+
-+struct kvm_vcpu *kvm_vcpu_select_plane(struct kvm_vcpu *vcpu)
-+{
-+	struct kvm_vcpu_common *common = vcpu->common;
-+	struct kvm_vcpu *ret = NULL;
-+	unsigned i;
-+
-+	for (i = 0; i < KVM_MAX_PLANES; i++) {
-+		if (common->vcpus[i] == NULL)
-+			continue;
-+
-+		if (common->vcpus[i]->plane_state == RUNNABLE) {
-+			ret = common->vcpus[i];
-+			break;
-+		}
-+	}
-+
-+	if (ret == NULL) {
-+		ret = common->vcpus[0];
-+		ret->plane_state = RUNNABLE;
-+	}
-+
-+	common->current_vcpu = ret;
-+
-+	common->plane_switch = false;
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_FOR_KVM_INTERNAL(kvm_vcpu_select_plane);
-+
- static int kvm_device_mmap(struct file *filp, struct vm_area_struct *vma)
- {
- 	struct kvm_device *dev = filp->private_data;
+ #ifndef CONFIG_S390
+ /*
+  * Kick a sleeping VCPU, or a guest VCPU in guest mode, into host kernel mode.
 -- 
 2.53.0
 
