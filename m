@@ -4,7 +4,7 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 598D9CD8CBD
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D15E7CD98C3
 	for <kvm-riscv@archiver.kernel.org>; Mon,  8 Jun 2026 14:43:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
@@ -12,42 +12,42 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=MUgviC4xb+PHKdJrIG6iC4wrpERkv7G8lVta1a51t+Q=; b=uHeOlDIs+iGo2f
-	3fgJmIr6EYZuhWAtntK8LVPOqq7p4Squk7zTkRT5SmGP4YeXH0mASVlVr9GkK+lAwPGqS8vjZCW/z
-	0UjtSwaN14l+PhM9EeZ057VXPTs0bAVcECjpFmcmupqsSmkdVLeWhdqSum+3gQjnOymorNoPejsHI
-	3/u9XQ0yO+yVeHtZFWdZxU522+KBhQm+O4gk86unyE+LvhAepoySR1E8WNXuBEotMxKAGlkjQlNQM
-	6j2tSq77MbYXy1lCiFG7rPHvYm7fdpxssmIxpOioHWkgys9tDQI6j2koAHCPO//qjxZSe9nT+n4SL
-	INKefwzNQwGTUSGdHUEw==;
+	List-Owner; bh=+fDLbVP0/03vtAk24J0g4xFUhXqAHm7ngLBbxS1NlMc=; b=mW5QJbT4ts/Mms
+	/0QIX0cHcmLc49OtRSGivwc0EdBCaAzrbONMIAm/Pkzxqnn47c5dcSu4Rvkp/GRRgyRbn2xDb4PvE
+	vmjl7WbY+s/6Uh3DiD1hwVOn5eg6jogVjvtZf0Qi/LuYDzBk7Utms54C/iuTz77kT3t4RWfkt0ROz
+	XzH4Q2zukUICwgXMXkTg5ZczWuXtIvJrJ6VjWf3GpGgQxsgc2dNRODGF9nzc2MpOLo99RR74kkmj9
+	eXndgEWJm9VoDbU+ukFz7PZhxlQZK+SaUWSTRdPSR19pY4zSCUMa3o82BS3QNsOMDtWD/0MdyF+zz
+	K9OSDSng7Y9IIQ1cqKGw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wWbCH-00000003puA-3GCp;
-	Mon, 08 Jun 2026 14:43:25 +0000
+	id 1wWbCI-00000003pvH-0reF;
+	Mon, 08 Jun 2026 14:43:26 +0000
 Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wWbCC-00000003phn-1ixP
+	id 1wWbCC-00000003piB-2PVu
 	for kvm-riscv@bombadil.infradead.org;
 	Mon, 08 Jun 2026 14:43:20 +0000
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:MIME-Version
 	:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:
 	Content-Type:Content-ID:Content-Description;
-	bh=m0vec3q2r87JZbYocmzbbn8eTYWjMJPhatmO8uxz9Rk=; b=A82Dp7DDWbmuV6TEAcayG6dWgz
-	3QoCpQAdHOdROqeU4ZpcYeF2DpoE6yv4c31JjSJp4lInI5nLtRKacE0WjTp6tXffw9M1EbBOhIFQz
-	/sNAuJOSP55dhO+vPC0JA93h4QD8ryIQV4fPesLwWuomkiWUNrbFgaO4JcuZ73A+xGscicEXGbiIf
-	OCdqHXXETRCOBOomZPHgdT/naoe9O2odXNwjlXsDyb9vs+tfb8DQfmovIYHPEHfHepSYrsQpk8Yg2
-	0l39wjVeKZLFMReUxrTimGMjd5REer2fDSfSaMPlFulHIf/YmbaWpFirDvK1eDVXcvLuuFQ7IoqV5
-	T2xOe/hg==;
-Received: from mail.8bytes.org ([85.214.250.239])
+	bh=hNQP7/EdSG3cCeW6Faawmy/E0oUQJiBDgFzOTeJqXM8=; b=c4n9zD15KQiRR5N2EBMcq0CoSG
+	ONjYKgmIswOsVkN5pWFvHrbDNHnSpa5FAX+Jbbl0RMwEDxUxf2k0cK5KmKRga9+zttLySgweYcBtb
+	FroOtyUeOMvvjA6exOysU3xon7wUu2Kb/xlLKcB414sXfdeDS/O9wCYpjwzuDMfF8t1dVLZVwBay3
+	Qfrci3MVXVji2fzsVzwRF0KOfMAM/Ta/+W130Y3U+omfZ3084UiQuyWzm0pmYJlmu51CLbqYt8NnW
+	/mV1KmujlIKA2lytQa0gq9yYUz649G3GhNAg5oX4AlZM27fj8HP6QiFur74LbAqxnHxe4KTVukvKe
+	O04Gu3rA==;
+Received: from mail.8bytes.org ([2a01:238:42d9:3f00:e505:6202:4f0c:f051])
 	by desiato.infradead.org with esmtp (Exim 4.99.2 #2 (Red Hat Linux))
-	id 1wWbC7-0000000198t-2x0I
+	id 1wWbC7-0000000198z-2xFl
 	for kvm-riscv@lists.infradead.org;
 	Mon, 08 Jun 2026 14:43:18 +0000
 Received: from io.home.8bytes.org (p4ffe1d30.dip0.t-ipconnect.de [79.254.29.48])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.8bytes.org (Postfix) with ESMTPSA id 5A8A72028B6;
-	Mon,  8 Jun 2026 16:43:09 +0200 (CEST)
+	by mail.8bytes.org (Postfix) with ESMTPSA id 337162028BB;
+	Mon,  8 Jun 2026 16:43:10 +0200 (CEST)
 From: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
 To: Paolo Bonzini <pbonzini@redhat.com>,
 	Sean Christopherson <seanjc@google.com>
@@ -68,16 +68,16 @@ Cc: Tom Lendacky <thomas.lendacky@amd.com>,
 	x86@kernel.org,
 	coconut-svsm@lists.linux.dev,
 	joerg.roedel@amd.com
-Subject: [PATCH 20/60] kvm: Move kvm_vcpu mode and requests field to struct kvm_vcpu_common
-Date: Mon,  8 Jun 2026 16:42:12 +0200
-Message-ID: <20260608144252.351443-21-joro@8bytes.org>
+Subject: [PATCH 24/60] kvm: Move kvm_vcpu spinloop members to struct kvm_vcpu_common
+Date: Mon,  8 Jun 2026 16:42:16 +0200
+Message-ID: <20260608144252.351443-25-joro@8bytes.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260608144252.351443-1-joro@8bytes.org>
 References: <20260608144252.351443-1-joro@8bytes.org>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260608_154315_993916_E12B75A6 
-X-CRM114-Status: GOOD (  11.19  )
+X-CRM114-CacheID: sfid-20260608_154316_026295_21AF4830 
+X-CRM114-Status: GOOD (  18.90  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -96,145 +96,214 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 From: Joerg Roedel <joerg.roedel@amd.com>
 
-These fields must be shared across all planes of a given VCPU.
+Onlyh one struct kvm_vcpu across all planes can be in a spin-loop.
+Move the state to struct kvm_vcpu_common to make detection independent
+of the active struct kvm_vcpu.
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/powerpc/kvm/trace.h |  2 +-
- arch/x86/kvm/trace.h     |  2 +-
- include/linux/kvm_host.h | 27 ++++++++++++++-------------
- 3 files changed, 16 insertions(+), 15 deletions(-)
+ include/linux/kvm_host.h | 32 +++++++++++++++----------------
+ virt/kvm/kvm_main.c      | 41 ++++++++++++++++++++++------------------
+ 2 files changed, 39 insertions(+), 34 deletions(-)
 
-diff --git a/arch/powerpc/kvm/trace.h b/arch/powerpc/kvm/trace.h
-index ea1d7c808319..35c000d918bb 100644
---- a/arch/powerpc/kvm/trace.h
-+++ b/arch/powerpc/kvm/trace.h
-@@ -108,7 +108,7 @@ TRACE_EVENT(kvm_check_requests,
- 
- 	TP_fast_assign(
- 		__entry->cpu_nr		= vcpu->vcpu_id;
--		__entry->requests	= vcpu->requests;
-+		__entry->requests	= vcpu->common->requests;
- 	),
- 
- 	TP_printk("vcpu=%x requests=%x",
-diff --git a/arch/x86/kvm/trace.h b/arch/x86/kvm/trace.h
-index 0db25bba17f6..0d2dd25bed12 100644
---- a/arch/x86/kvm/trace.h
-+++ b/arch/x86/kvm/trace.h
-@@ -409,7 +409,7 @@ TRACE_EVENT(name,							     \
- 		__entry->guest_rip	= tracing_kvm_rip_read(vcpu);		     \
- 		__entry->isa            = isa;				     \
- 		__entry->vcpu_id        = vcpu->vcpu_id;		     \
--		__entry->requests       = READ_ONCE(vcpu->requests);	     \
-+		__entry->requests       = READ_ONCE(vcpu->common->requests); \
- 		kvm_x86_call(get_exit_info)(vcpu,			     \
- 					    &__entry->exit_reason,	     \
- 					    &__entry->info1,		     \
 diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 45286b3b35c9..7704820986da 100644
+index 9220c452aa3a..f6e8a0b653b3 100644
 --- a/include/linux/kvm_host.h
 +++ b/include/linux/kvm_host.h
-@@ -180,7 +180,7 @@ static inline bool kvm_is_error_gpa(gpa_t gpa)
- #define KVM_REQ_OUTSIDE_GUEST_MODE	(KVM_REQUEST_NO_ACTION | KVM_REQUEST_WAIT | KVM_REQUEST_NO_WAKEUP)
- 
- #define KVM_ARCH_REQ_FLAGS(nr, flags) ({ \
--	BUILD_BUG_ON((unsigned)(nr) >= (sizeof_field(struct kvm_vcpu, requests) * 8) - KVM_REQUEST_ARCH_BASE); \
-+	BUILD_BUG_ON((unsigned)(nr) >= (sizeof_field(struct kvm_vcpu_common, requests) * 8) - KVM_REQUEST_ARCH_BASE); \
- 	(unsigned)(((nr) + KVM_REQUEST_ARCH_BASE) | (flags)); \
- })
- #define KVM_ARCH_REQ(nr)           KVM_ARCH_REQ_FLAGS(nr, 0)
-@@ -341,6 +341,9 @@ struct kvm_vcpu_common {
- 	struct rcuwait wait;
- #endif
- 
-+	int mode;
-+	u64 requests;
+@@ -350,6 +350,20 @@ struct kvm_vcpu_common {
+ 	rwlock_t pid_lock;
+ 	int sigset_active;
+ 	sigset_t sigset;
++	unsigned int halt_poll_ns;
 +
++#ifdef CONFIG_HAVE_KVM_CPU_RELAX_INTERCEPT
++	/*
++	 * Cpu relax intercept or pause loop exit optimization
++	 * in_spin_loop: set when a vcpu does a pause loop exit
++	 *  or cpu relax intercepted.
++	 * dy_eligible: indicates whether vcpu is eligible for directed yield.
++	 */
++	struct {
++		bool in_spin_loop;
++		bool dy_eligible;
++	} spin_loop;
++#endif
+ 
  	/* Scheduling state */
  #ifdef CONFIG_PREEMPT_NOTIFIERS
- 	struct preempt_notifier preempt_notifier;
-@@ -359,8 +362,6 @@ struct kvm_vcpu {
- 	int vcpu_id; /* id given by userspace at creation */
- 	int vcpu_idx; /* index into kvm->planes[]->vcpu_array */
- 
--	int mode;
--	u64 requests;
- 	unsigned long guest_debug;
+@@ -373,8 +387,6 @@ struct kvm_vcpu {
  
  	struct kvm_run *run;
-@@ -442,27 +443,27 @@ static inline bool kvm_vcpu_scheduled_out(struct kvm_vcpu *vcpu)
  
- static inline int kvm_vcpu_mode(struct kvm_vcpu *vcpu)
+-	unsigned int halt_poll_ns;
+-
+ 	u64 plane_requests;
+ 
+ 	/* S390 only */
+@@ -398,18 +410,6 @@ struct kvm_vcpu {
+ 	} async_pf;
+ #endif
+ 
+-#ifdef CONFIG_HAVE_KVM_CPU_RELAX_INTERCEPT
+-	/*
+-	 * Cpu relax intercept or pause loop exit optimization
+-	 * in_spin_loop: set when a vcpu does a pause loop exit
+-	 *  or cpu relax intercepted.
+-	 * dy_eligible: indicates whether vcpu is eligible for directed yield.
+-	 */
+-	struct {
+-		bool in_spin_loop;
+-		bool dy_eligible;
+-	} spin_loop;
+-#endif
+ 	struct kvm_vcpu_arch arch;
+ 	struct kvm_vcpu_stat stat;
+ 	char stats_id[KVM_STATS_NAME_SIZE];
+@@ -2500,11 +2500,11 @@ extern struct kvm_device_ops kvm_arm_vgic_v5_ops;
+ 
+ static inline void kvm_vcpu_set_in_spin_loop(struct kvm_vcpu *vcpu, bool val)
  {
--	return vcpu->mode;
-+	return vcpu->common->mode;
+-	vcpu->spin_loop.in_spin_loop = val;
++	vcpu->common->spin_loop.in_spin_loop = val;
  }
- 
- static inline int kvm_vcpu_mode_acquire(struct kvm_vcpu *vcpu)
+ static inline void kvm_vcpu_set_dy_eligible(struct kvm_vcpu *vcpu, bool val)
  {
--	return smp_load_acquire(&vcpu->mode);
-+	return smp_load_acquire(&vcpu->common->mode);
+-	vcpu->spin_loop.dy_eligible = val;
++	vcpu->common->spin_loop.dy_eligible = val;
  }
  
- static inline void kvm_vcpu_set_mode(struct kvm_vcpu *vcpu, int mode)
+ #else /* !CONFIG_HAVE_KVM_CPU_RELAX_INTERCEPT */
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 1858880ee3d3..24ff8748a317 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -485,6 +485,9 @@ static int kvm_vcpu_init_common(struct kvm_vcpu *vcpu, struct kvm *kvm, unsigned
+ 
+ 	vcpu->common = no_free_ptr(common);
+ 
++	kvm_vcpu_set_in_spin_loop(vcpu, false);
++	kvm_vcpu_set_dy_eligible(vcpu, false);
++
+ 	return 0;
+ 
+ out_drop_counter:
+@@ -515,8 +518,6 @@ static void kvm_vcpu_init(struct kvm_vcpu *vcpu, struct kvm *kvm, unsigned id)
+ 	vcpu->vcpu_id = id;
+ 	kvm_async_pf_vcpu_init(vcpu);
+ 
+-	kvm_vcpu_set_in_spin_loop(vcpu, false);
+-	kvm_vcpu_set_dy_eligible(vcpu, false);
+ 	vcpu->last_used_slot = NULL;
+ 
+ 	vcpu->plane_level = 0;
+@@ -3721,9 +3722,10 @@ void kvm_sigset_deactivate(struct kvm_vcpu *vcpu)
+ 
+ static void grow_halt_poll_ns(struct kvm_vcpu *vcpu)
  {
--	vcpu->mode = mode;
-+	vcpu->common->mode = mode;
++	struct kvm_vcpu_common *common = vcpu->common;
+ 	unsigned int old, val, grow, grow_start;
+ 
+-	old = val = vcpu->halt_poll_ns;
++	old = val = common->halt_poll_ns;
+ 	grow_start = READ_ONCE(halt_poll_ns_grow_start);
+ 	grow = READ_ONCE(halt_poll_ns_grow);
+ 	if (!grow)
+@@ -3733,16 +3735,17 @@ static void grow_halt_poll_ns(struct kvm_vcpu *vcpu)
+ 	if (val < grow_start)
+ 		val = grow_start;
+ 
+-	vcpu->halt_poll_ns = val;
++	common->halt_poll_ns = val;
+ out:
+ 	trace_kvm_halt_poll_ns_grow(vcpu->vcpu_id, val, old);
  }
  
- static inline void kvm_vcpu_set_mode_mb(struct kvm_vcpu *vcpu, int mode)
+ static void shrink_halt_poll_ns(struct kvm_vcpu *vcpu)
  {
--	smp_store_mb(vcpu->mode, mode);
-+	smp_store_mb(vcpu->common->mode, mode);
++	struct kvm_vcpu_common *common = vcpu->common;
+ 	unsigned int old, val, shrink, grow_start;
+ 
+-	old = val = vcpu->halt_poll_ns;
++	old = val = common->halt_poll_ns;
+ 	shrink = READ_ONCE(halt_poll_ns_shrink);
+ 	grow_start = READ_ONCE(halt_poll_ns_grow_start);
+ 	if (shrink == 0)
+@@ -3753,7 +3756,7 @@ static void shrink_halt_poll_ns(struct kvm_vcpu *vcpu)
+ 	if (val < grow_start)
+ 		val = 0;
+ 
+-	vcpu->halt_poll_ns = val;
++	common->halt_poll_ns = val;
+ 	trace_kvm_halt_poll_ns_shrink(vcpu->vcpu_id, val, old);
  }
  
- static inline void kvm_vcpu_set_mode_release(struct kvm_vcpu *vcpu, int mode)
+@@ -3864,19 +3867,20 @@ void kvm_vcpu_halt(struct kvm_vcpu *vcpu)
  {
--	smp_store_release(&vcpu->mode, mode);
-+	smp_store_release(&vcpu->common->mode, mode);
- }
+ 	unsigned int max_halt_poll_ns = kvm_vcpu_max_halt_poll_ns(vcpu);
+ 	bool halt_poll_allowed = !kvm_arch_no_poll(vcpu);
++	struct kvm_vcpu_common *common = vcpu->common;
+ 	ktime_t start, cur, poll_end;
+ 	bool waited = false;
+ 	bool do_halt_poll;
+ 	u64 halt_ns;
  
- /*
-@@ -630,7 +631,7 @@ static inline int kvm_vcpu_exiting_guest_mode(struct kvm_vcpu *vcpu)
- 	 * memory barrier following the write of vcpu->mode in VCPU RUN.
- 	 */
- 	smp_mb__before_atomic();
--	return cmpxchg(&vcpu->mode, IN_GUEST_MODE, EXITING_GUEST_MODE);
-+	return cmpxchg(&vcpu->common->mode, IN_GUEST_MODE, EXITING_GUEST_MODE);
- }
+-	if (vcpu->halt_poll_ns > max_halt_poll_ns)
+-		vcpu->halt_poll_ns = max_halt_poll_ns;
++	if (common->halt_poll_ns > max_halt_poll_ns)
++		common->halt_poll_ns = max_halt_poll_ns;
  
- /*
-@@ -2355,7 +2356,7 @@ static inline void __kvm_make_request(int req, struct kvm_vcpu *vcpu)
- 	 * caller.  Paired with the smp_mb__after_atomic in kvm_check_request.
- 	 */
- 	smp_wmb();
--	set_bit(req & KVM_REQUEST_MASK, (void *)&vcpu->requests);
-+	set_bit(req & KVM_REQUEST_MASK, (void *)&vcpu->common->requests);
- }
+-	do_halt_poll = halt_poll_allowed && vcpu->halt_poll_ns;
++	do_halt_poll = halt_poll_allowed && common->halt_poll_ns;
  
- static __always_inline void kvm_make_request(int req, struct kvm_vcpu *vcpu)
-@@ -2381,17 +2382,17 @@ static inline void kvm_make_request_and_kick(int req, struct kvm_vcpu *vcpu)
+ 	start = cur = poll_end = ktime_get();
+ 	if (do_halt_poll) {
+-		ktime_t stop = ktime_add_ns(start, vcpu->halt_poll_ns);
++		ktime_t stop = ktime_add_ns(start, common->halt_poll_ns);
  
- static inline bool kvm_request_pending(struct kvm_vcpu *vcpu)
+ 		do {
+ 			if (kvm_vcpu_check_block(vcpu) < 0)
+@@ -3914,18 +3918,18 @@ void kvm_vcpu_halt(struct kvm_vcpu *vcpu)
+ 		if (!vcpu_valid_wakeup(vcpu)) {
+ 			shrink_halt_poll_ns(vcpu);
+ 		} else if (max_halt_poll_ns) {
+-			if (halt_ns <= vcpu->halt_poll_ns)
++			if (halt_ns <= common->halt_poll_ns)
+ 				;
+ 			/* we had a long block, shrink polling */
+-			else if (vcpu->halt_poll_ns &&
++			else if (common->halt_poll_ns &&
+ 				 halt_ns > max_halt_poll_ns)
+ 				shrink_halt_poll_ns(vcpu);
+ 			/* we had a short halt and our poll time is too small */
+-			else if (vcpu->halt_poll_ns < max_halt_poll_ns &&
++			else if (common->halt_poll_ns < max_halt_poll_ns &&
+ 				 halt_ns < max_halt_poll_ns)
+ 				grow_halt_poll_ns(vcpu);
+ 		} else {
+-			vcpu->halt_poll_ns = 0;
++			common->halt_poll_ns = 0;
+ 		}
+ 	}
+ 
+@@ -4046,13 +4050,14 @@ EXPORT_SYMBOL_FOR_KVM_INTERNAL(kvm_vcpu_yield_to);
+ static bool kvm_vcpu_eligible_for_directed_yield(struct kvm_vcpu *vcpu)
  {
--	return READ_ONCE(vcpu->requests);
-+	return READ_ONCE(vcpu->common->requests);
- }
+ #ifdef CONFIG_HAVE_KVM_CPU_RELAX_INTERCEPT
++	struct kvm_vcpu_common *common = vcpu->common;
+ 	bool eligible;
  
- static inline bool kvm_test_request(int req, struct kvm_vcpu *vcpu)
- {
--	return test_bit(req & KVM_REQUEST_MASK, (void *)&vcpu->requests);
-+	return test_bit(req & KVM_REQUEST_MASK, (void *)&vcpu->common->requests);
- }
+-	eligible = !vcpu->spin_loop.in_spin_loop ||
+-		    vcpu->spin_loop.dy_eligible;
++	eligible = !common->spin_loop.in_spin_loop ||
++		    common->spin_loop.dy_eligible;
  
- static inline void kvm_clear_request(int req, struct kvm_vcpu *vcpu)
- {
--	clear_bit(req & KVM_REQUEST_MASK, (void *)&vcpu->requests);
-+	clear_bit(req & KVM_REQUEST_MASK, (void *)&vcpu->common->requests);
- }
+-	if (vcpu->spin_loop.in_spin_loop)
+-		kvm_vcpu_set_dy_eligible(vcpu, !vcpu->spin_loop.dy_eligible);
++	if (common->spin_loop.in_spin_loop)
++		kvm_vcpu_set_dy_eligible(vcpu, !common->spin_loop.dy_eligible);
  
- static inline bool kvm_check_request(int req, struct kvm_vcpu *vcpu)
+ 	return eligible;
+ #else
 -- 
 2.53.0
 
