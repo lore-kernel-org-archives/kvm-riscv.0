@@ -4,7 +4,7 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3CB1DCD98C5
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C6590CD98D2
 	for <kvm-riscv@archiver.kernel.org>; Mon,  8 Jun 2026 14:43:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
@@ -12,41 +12,41 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=e9XpymnmTYjiSb/x34C7pfyiROQoS1elmUHdKsBoQTI=; b=NQPO9dcgaeyE8X
-	X97n1EjFZWMxbaqz6tbhC2AGmlAKZr1CjCaEF/fcME5qTJSN3joxTzhPQexlRRLKJKLUxMiUKZ5Fr
-	iecrhsuhLlRBNlJmuHcTk7y3X2Sagt2Y20xCJa/FAxTOM3U4Du26FPR58laboMbLrKoYZzF6lqteG
-	KvYWpY9A3AHQXPfkjMmnM8sX6khHGcIbC01H/KtAfo2q1BuAk8GFmPoo44ITv93q9bzexvVscFMYW
-	1zDGUPHvftx/ff8GNBzFsx8HoxcsbdsQIlm7kL5QBvvVgTp+HUedt8Bh7JxmFggZoUJjk/5PTHdFo
-	7EcUQgYNX3ACDl2573XA==;
+	List-Owner; bh=GGyOrKa3Yv8ehJMMUGWXf+9wzFYuHKxI2IYSF5zG0OE=; b=MqNxppVoQ4PccM
+	OEFa5nYVmENwAKH2IMS0coJvly/mle+21hjtNC8iJZtQbC8UUYeDkSfA+WtuqPQ41KAvELiZvPW6H
+	Oeg+YZT/CCpPWzmAQHy2MTpFIcBSJilVK3ATg0THaxmQFMu+Nw2GmHSvG8GObN+ot1WA2ljs0AlpC
+	/nS236woMn7JVq+LCtui2SITxOD7+EDeL2XoTCSjF+xbhPQujQSKfyipwZ9wuF6MU9VK8djTRISBu
+	il2+n35PNfs8jr538+ULA+5sxS/FpPRD/GXpOQwapWerkcLSdj4Xzf1bQtH6+8gQFM4wAcCoppPyU
+	EIy7N3yGV/YvtKra93tg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wWbCT-00000003qK3-1gra;
-	Mon, 08 Jun 2026 14:43:37 +0000
+	id 1wWbCU-00000003qLs-0QZ5;
+	Mon, 08 Jun 2026 14:43:38 +0000
 Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wWbCH-00000003psE-2YCw
+	id 1wWbCI-00000003ptU-1y3K
 	for kvm-riscv@bombadil.infradead.org;
-	Mon, 08 Jun 2026 14:43:25 +0000
+	Mon, 08 Jun 2026 14:43:26 +0000
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:Content-Type
-	:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
-	Sender:Reply-To:Content-ID:Content-Description;
-	bh=LNUuDVI1KkoIRppMY4NW5nNX3FDZR1s/xMi9kfXb6Xc=; b=VZbLzoq2UAJHHSs/m59q8/sZJq
-	3KZfGExKDGkF+y713GVQSmGPCxR27yHT4IWdoDvb7Y6TuamVJQH2IYgrjXKgOXvgb5kx49wrZJSQP
-	gcReqBMqA6UHmCxCTlI1z6es3axQyhs5dzI4vyTyE1Ci6uoLUUaI7+DoU0ZwPZskDgcVAowiQUj+K
-	MqYhTQz6dL/aceIywrb+5p8wGJxqZbk9wMGH5dn7/g1LaZNgIt+EfQsIkv0mwfM/YbIxTqihDrsgy
-	eg/6RpkuFbO/69isylZ+W/EshpV1pNtAK4/Qj9U3tun5xNDNZZENVKr736dUmc11JxzQCWfcj6fpC
-	x5x3nRcg==;
+	d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:MIME-Version
+	:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:
+	Content-Type:Content-ID:Content-Description;
+	bh=rt1rp+CREwIHUhdETzqNqnn91aXd15btjFtTngyGv/8=; b=dbXZtit7p5kizBYxHe/ujHhRH6
+	zvHr4D3yha7aYYWX7STcF2YMVIUsKaUrA+KV755/tuD/5mDF6WefFSvLEIbKPOVj6AAuF1Cm5kA3S
+	R6fQxyAEb6EonwX5jc5MUw2+u+My0SywqS8OBjWcod+cj2ARpTGgoEwOqMFgAwT0h3spXTedK4siV
+	MhXwf/MB2bxssCR3Nnf51q6sYZsKbD8KDMhEHIZKVd1n37uNnR4WCS8isMkzzZYgeaWZI5DSfueHx
+	kzYgAu/y9reiIVmRqq6lZ9+8BZ8332HWh4kNL2kvO1kwSMGmieIU3vVeeOVyppLtbWFrVqinOJO28
+	82PDUK4w==;
 Received: from mail.8bytes.org ([2a01:238:42d9:3f00:e505:6202:4f0c:f051])
 	by desiato.infradead.org with esmtp (Exim 4.99.2 #2 (Red Hat Linux))
-	id 1wWbCD-0000000198i-33fc
+	id 1wWbCE-0000000198z-0rfA
 	for kvm-riscv@lists.infradead.org;
 	Mon, 08 Jun 2026 14:43:24 +0000
 Received: from io.home.8bytes.org (p4ffe1d30.dip0.t-ipconnect.de [79.254.29.48])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.8bytes.org (Postfix) with ESMTPSA id 180AF2028DB;
+	by mail.8bytes.org (Postfix) with ESMTPSA id 841DF2028DD;
 	Mon,  8 Jun 2026 16:43:17 +0200 (CEST)
 From: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
 To: Paolo Bonzini <pbonzini@redhat.com>,
@@ -67,18 +67,17 @@ Cc: Tom Lendacky <thomas.lendacky@amd.com>,
 	kvm-riscv@lists.infradead.org,
 	x86@kernel.org,
 	coconut-svsm@lists.linux.dev,
-	joerg.roedel@amd.com,
-	=?UTF-8?q?Carlos=20L=C3=B3pez?= <clopez@suse.de>
-Subject: [PATCH 56/60] kvm: svm: Implement GET_AP_APIC_IDS NAE event
-Date: Mon,  8 Jun 2026 16:42:48 +0200
-Message-ID: <20260608144252.351443-57-joro@8bytes.org>
+	joerg.roedel@amd.com
+Subject: [PATCH 58/60] kvm: svm: Invoke a specified VMPL level VMSA for the vCPU
+Date: Mon,  8 Jun 2026 16:42:50 +0200
+Message-ID: <20260608144252.351443-59-joro@8bytes.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260608144252.351443-1-joro@8bytes.org>
 References: <20260608144252.351443-1-joro@8bytes.org>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260608_154322_000773_01FA7C4F 
-X-CRM114-Status: GOOD (  18.71  )
+X-CRM114-CacheID: sfid-20260608_154322_517244_61A841EB 
+X-CRM114-Status: GOOD (  14.02  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -90,99 +89,157 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-RnJvbTogVG9tIExlbmRhY2t5IDx0aG9tYXMubGVuZGFja3lAYW1kLmNvbT4KCkltcGxlbWVudCB0
-aGUgR0VUX0FQSUNfSURTIE5BRSBldmVudCB0byBnYXRoZXIgYW5kIHJldHVybiB0aGUgbGlzdCBv
-ZgpBUElDIElEcyBmb3IgYWxsIHZDUFVzIGluIHRoZSBndWVzdC4KClNpbmNlIGl0IGlzIG5vdyBw
-b3NzaWJsZSB0byBsYXVuY2ggdkNQVXMgd2l0aG91dCBnb2luZyB0aHJvdWdoIHRoZQpMQVVOQ0hf
-VVBEQVRFIHByb2Nlc3MsIGJlIHN1cmUgdG8gbWFyayB0aGUgZ3Vlc3Qgc3RhdGUgcHJvdGVjdGVk
-IGFuZCB0bwplbmFibGUgTEJSIHZpcnR1YWxpemF0aW9uLgoKU2luY2UgaXQgaXMgbm93IHBvc3Np
-YmxlIHRvIGxhdW5jaCB2Q1BVcyBieSBBUElDIElEIGJlZm9yZSB0aGUgZmlyc3QKSU5JVC1TSVBJ
-IHJlcXVlc3QsIGJlIHN1cmUgdG8gY2hlY2sgZm9yIHRoZSBBUCBjcmVhdGUgZXZlbnQgaW4gdGhl
-Cmt2bV9hcmNoX3ZjcHVfaW9jdGxfcnVuKCkgbG9vcCB3aGVuIHRoZSBBUCBpcyBpbiB0aGUgdW5p
-bml0aWFsaXplZCBzdGF0ZS4KClNpZ25lZC1vZmYtYnk6IFRvbSBMZW5kYWNreSA8dGhvbWFzLmxl
-bmRhY2t5QGFtZC5jb20+CkNvLWRldmVsb3BlZC1ieTogSm9lcmcgUm9lZGVsIDxqb2VyZy5yb2Vk
-ZWxAYW1kLmNvbT4KQ28tZGV2ZWxvcGVkLWJ5OiBDYXJsb3MgTMOzcGV6IDxjbG9wZXpAc3VzZS5k
-ZT4KU2lnbmVkLW9mZi1ieTogSm9lcmcgUm9lZGVsIDxqb2VyZy5yb2VkZWxAYW1kLmNvbT4KLS0t
-CiBhcmNoL3g4Ni9pbmNsdWRlL2FzbS9zZXYtY29tbW9uLmggfCAgMSArCiBhcmNoL3g4Ni9pbmNs
-dWRlL3VhcGkvYXNtL3N2bS5oICAgfCAgMSArCiBhcmNoL3g4Ni9rdm0vc3ZtL3Nldi5jICAgICAg
-ICAgICAgfCA4NyArKysrKysrKysrKysrKysrKysrKysrKysrKysrKy0tCiAzIGZpbGVzIGNoYW5n
-ZWQsIDg2IGluc2VydGlvbnMoKyksIDMgZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvYXJjaC94
-ODYvaW5jbHVkZS9hc20vc2V2LWNvbW1vbi5oIGIvYXJjaC94ODYvaW5jbHVkZS9hc20vc2V2LWNv
-bW1vbi5oCmluZGV4IGVlMTdhMzU0MWI1NS4uY2VkYjdlYTkxZGE1IDEwMDY0NAotLS0gYS9hcmNo
-L3g4Ni9pbmNsdWRlL2FzbS9zZXYtY29tbW9uLmgKKysrIGIvYXJjaC94ODYvaW5jbHVkZS9hc20v
-c2V2LWNvbW1vbi5oCkBAIC0xMzcsNiArMTM3LDcgQEAgZW51bSBwc2Nfb3AgewogI2RlZmluZSBH
-SENCX0hWX0ZUX1NOUAkJCUJJVF9VTEwoMCkKICNkZWZpbmUgR0hDQl9IVl9GVF9TTlBfQVBfQ1JF
-QVRJT04JQklUX1VMTCgxKQogI2RlZmluZSBHSENCX0hWX0ZUX1NOUF9SSU5KCQkoQklUX1VMTCgy
-KSB8IEdIQ0JfSFZfRlRfU05QX0FQX0NSRUFUSU9OKQorI2RlZmluZSBHSENCX0hWX0ZUX0FQSUNf
-SURfTElTVAkJQklUX1VMTCg0KQogI2RlZmluZSBHSENCX0hWX0ZUX1NOUF9NVUxUSV9WTVBMCUJJ
-VF9VTEwoNSkKIAogLyoKZGlmZiAtLWdpdCBhL2FyY2gveDg2L2luY2x1ZGUvdWFwaS9hc20vc3Zt
-LmggYi9hcmNoL3g4Ni9pbmNsdWRlL3VhcGkvYXNtL3N2bS5oCmluZGV4IGQyODFkZDIxYzU0MC4u
-OTEzOTViODJlYWRkIDEwMDY0NAotLS0gYS9hcmNoL3g4Ni9pbmNsdWRlL3VhcGkvYXNtL3N2bS5o
-CisrKyBiL2FyY2gveDg2L2luY2x1ZGUvdWFwaS9hc20vc3ZtLmgKQEAgLTEyMyw2ICsxMjMsNyBA
-QAogI2RlZmluZSBTVk1fVk1HRVhJVF9IVkRCX1FVRVJZCQkJMgogI2RlZmluZSBTVk1fVk1HRVhJ
-VF9IVkRCX0NMRUFSCQkJMwogI2RlZmluZSBTVk1fVk1HRVhJVF9IVl9JUEkgICAgICAgICAgICAg
-ICAgICAgICAgMHg4MDAwMDAxNXVsbAorI2RlZmluZSBTVk1fVk1HRVhJVF9HRVRfQVBJQ19JRFMJ
-CTB4ODAwMDAwMTd1bGwKICNkZWZpbmUgU1ZNX1ZNR0VYSVRfU05QX1JVTl9WTVBMCQkweDgwMDAw
-MDE4dWxsCiAjZGVmaW5lIFNWTV9WTUdFWElUX1NBVklDCQkJMHg4MDAwMDAxYXVsbAogI2RlZmlu
-ZSBTVk1fVk1HRVhJVF9TQVZJQ19SRUdJU1RFUl9HUEEJCTAKZGlmZiAtLWdpdCBhL2FyY2gveDg2
-L2t2bS9zdm0vc2V2LmMgYi9hcmNoL3g4Ni9rdm0vc3ZtL3Nldi5jCmluZGV4IDEyYjAzOTgyM2Mx
-Yy4uYzBiMjg3OWY4ZTlmIDEwMDY0NAotLS0gYS9hcmNoL3g4Ni9rdm0vc3ZtL3Nldi5jCisrKyBi
-L2FyY2gveDg2L2t2bS9zdm0vc2V2LmMKQEAgLTQwLDkgKzQwLDEwIEBACiAjZGVmaW5lIEdIQ0Jf
-VkVSU0lPTl9NQVgJMlVMTAogI2RlZmluZSBHSENCX1ZFUlNJT05fTUlOCTFVTEwKIAotI2RlZmlu
-ZSBHSENCX0hWX0ZUX1NVUFBPUlRFRAkoR0hDQl9IVl9GVF9TTlAgfAkJXAotCQkJCSBHSENCX0hW
-X0ZUX1NOUF9BUF9DUkVBVElPTiB8CVwKLQkJCQkgR0hDQl9IVl9GVF9TTlBfUklOSikKKyNkZWZp
-bmUgR0hDQl9IVl9GVF9TVVBQT1JURUQJKEdIQ0JfSFZfRlRfU05QCQkJfCBcCisJCQkJIEdIQ0Jf
-SFZfRlRfU05QX0FQX0NSRUFUSU9OCXwgXAorCQkJCSBHSENCX0hWX0ZUX1NOUF9SSU5KCQl8IFwK
-KwkJCQkgR0hDQl9IVl9GVF9BUElDX0lEX0xJU1QpCiAKIC8qCiAgKiBUaGUgR0hDQiBzcGVjIGVz
-c2VudGlhbGx5IHN0YXRlcyB0aGF0IGFsbCBub24temVybyBlcnJvciBjb2RlcyBvdGhlciB0aGFu
-CkBAIC0zNTE4LDYgKzM1MTksMTAgQEAgc3RhdGljIGludCBzZXZfZXNfdmFsaWRhdGVfdm1nZXhp
-dChzdHJ1Y3QgdmNwdV9zdm0gKnN2bSkKIAkJCWlmICgha3ZtX2doY2JfcmF4X2lzX3ZhbGlkKHN2
-bSkpCiAJCQkJZ290byB2bWdleGl0X2VycjsKIAkJYnJlYWs7CisJY2FzZSBTVk1fVk1HRVhJVF9H
-RVRfQVBJQ19JRFM6CisJCWlmICgha3ZtX2doY2JfcmF4X2lzX3ZhbGlkKHN2bSkpCisJCQlnb3Rv
-IHZtZ2V4aXRfZXJyOworCQlicmVhazsKIAljYXNlIFNWTV9WTUdFWElUX05NSV9DT01QTEVURToK
-IAljYXNlIFNWTV9WTUdFWElUX0FQX0hMVF9MT09QOgogCWNhc2UgU1ZNX1ZNR0VYSVRfQVBfSlVN
-UF9UQUJMRToKQEAgLTQ0MzksNiArNDQ0NCw3OCBAQCBzdGF0aWMgaW50IHNldl9zbnBfaHZfaXBp
-KHN0cnVjdCB2Y3B1X3N2bSAqc3ZtKQogCXJldHVybiAwOwogfQogCitzdHJ1Y3Qgc2V2X2FwaWNf
-aWRfZGVzYyB7CisJdTMyCW51bV9lbnRyaWVzOworCXUzMglhcGljX2lkc1tdOworfTsKKworc3Rh
-dGljIHZvaWQgc2V2X2dldF9hcGljX2lkcyhzdHJ1Y3QgdmNwdV9zdm0gKnN2bSkKK3sKKwlzdHJ1
-Y3QgZ2hjYiAqZ2hjYiA9IHN2bS0+c2V2X2VzLmdoY2I7CisJc3RydWN0IGt2bV92Y3B1ICp2Y3B1
-ID0gJnN2bS0+dmNwdSwgKmxvb3BfdmNwdTsKKwlzdHJ1Y3Qga3ZtICprdm0gPSB2Y3B1LT5rdm07
-CisJdW5zaWduZWQgaW50IGlkX2Rlc2Nfc2l6ZTsKKwlzdHJ1Y3Qgc2V2X2FwaWNfaWRfZGVzYyAq
-ZGVzYzsKKwlzdHJ1Y3QgcGFnZSAqcGFnZTsKKwlncGFfdCBncGE7CisJdTY0IHBhZ2VzOworCXVu
-c2lnbmVkIGxvbmcgaTsKKwlpbnQgbjsKKworCXBhZ2VzID0gdmNwdS0+YXJjaC5yZWdzW1ZDUFVf
-UkVHU19SQVhdOworCisJLyogRWFjaCBBUElDIElEIGlzIDMyLWJpdHMgaW4gc2l6ZSwgc28gbWFr
-ZSBzdXJlIHRoZXJlIGlzIHJvb20gKi8KKwluID0gYXRvbWljX3JlYWQoJmt2bS0+b25saW5lX3Zj
-cHVzKTsKKwkvKlRPRE86IGlzIHRoaXMgcG9zc2libGU/ICovCisJaWYgKG4gPCAwKQorCQlyZXR1
-cm47CisKKwlpZF9kZXNjX3NpemUgPSBzaXplb2YoKmRlc2MpOworCWlkX2Rlc2Nfc2l6ZSArPSBu
-ICogc2l6ZW9mKGRlc2MtPmFwaWNfaWRzWzBdKTsKKwlpZiAoaWRfZGVzY19zaXplID4gKHBhZ2Vz
-ICogUEFHRV9TSVpFKSkgeworCQl2Y3B1LT5hcmNoLnJlZ3NbVkNQVV9SRUdTX1JBWF0gPSBQRk5f
-VVAoaWRfZGVzY19zaXplKTsKKwkJcmV0dXJuOworCX0KKworCWdwYSA9IHN2bS0+dm1jYi0+Y29u
-dHJvbC5leGl0X2luZm9fMTsKKworCWdoY2Jfc2V0X3N3X2V4aXRfaW5mb18xKGdoY2IsIDIpOwor
-CWdoY2Jfc2V0X3N3X2V4aXRfaW5mb18yKGdoY2IsIDUpOworCisJaWYgKCFwYWdlX2FkZHJlc3Nf
-dmFsaWQodmNwdSwgZ3BhKSkKKwkJcmV0dXJuOworCisJcGFnZSA9IGdmbl90b19wYWdlKGt2bSwg
-Z3BhX3RvX2dmbihncGEpKTsKKwlrdm1fcmVsZWFzZV9wYWdlX3VudXNlZChwYWdlKTsKKwlpZiAo
-IXBhZ2UpCisJCXJldHVybjsKKworCWlmICghcGFnZXMpCisJCXJldHVybjsKKworCS8qIEFsbG9j
-YXRlIGEgYnVmZmVyIHRvIGhvbGQgdGhlIEFQSUMgSURzICovCisJZGVzYyA9IGt2emFsbG9jKGlk
-X2Rlc2Nfc2l6ZSwgR0ZQX0tFUk5FTF9BQ0NPVU5UKTsKKwlpZiAoIWRlc2MpCisJCXJldHVybjsK
-KworCWRlc2MtPm51bV9lbnRyaWVzID0gbjsKKwlrdm1fZm9yX2VhY2hfdmNwdShpLCBsb29wX3Zj
-cHUsIGt2bSkgeworCQkvKlRPRE86IGlzIHRoaXMgcG9zc2libGU/ICovCisJCWlmIChpID49IG4p
-CisJCQlicmVhazsKKworCQlkZXNjLT5hcGljX2lkc1tpXSA9IGxvb3BfdmNwdS0+dmNwdV9pZDsK
-Kwl9CisKKwlpZiAoIWt2bV93cml0ZV9ndWVzdChrdm0sIGdwYSwgZGVzYywgaWRfZGVzY19zaXpl
-KSkgeworCQkvKiBJRHMgd2VyZSBzdWNjZXNzZnVsbHkgd3JpdHRlbiAqLworCQlnaGNiX3NldF9z
-d19leGl0X2luZm9fMShnaGNiLCAwKTsKKwkJZ2hjYl9zZXRfc3dfZXhpdF9pbmZvXzIoZ2hjYiwg
-MCk7CisJfQorCisJa3ZmcmVlKGRlc2MpOworfQorCiBzdGF0aWMgaW50IHNldl9oYW5kbGVfdm1n
-ZXhpdF9tc3JfcHJvdG9jb2woc3RydWN0IHZjcHVfc3ZtICpzdm0pCiB7CiAJc3RydWN0IHZtY2Jf
-Y29udHJvbF9hcmVhICpjb250cm9sID0gJnN2bS0+dm1jYi0+Y29udHJvbDsKQEAgLTQ3MzAsNiAr
-NDgwNywxMCBAQCBpbnQgc2V2X2hhbmRsZV92bWdleGl0KHN0cnVjdCBrdm1fdmNwdSAqdmNwdSkK
-IAkJfQogCQlyZXQgPSAxOwogCQlicmVhazsKKwljYXNlIFNWTV9WTUdFWElUX0dFVF9BUElDX0lE
-UzoKKwkJc2V2X2dldF9hcGljX2lkcyhzdm0pOworCQlyZXQgPSAxOworCQlicmVhazsKIAljYXNl
-IFNWTV9WTUdFWElUX1VOU1VQUE9SVEVEX0VWRU5UOgogCQl2Y3B1X3VuaW1wbCh2Y3B1LAogCQkJ
-ICAgICJ2bWdleGl0OiB1bnN1cHBvcnRlZCBldmVudCAtIGV4aXRfaW5mb18xPSUjbGx4LCBleGl0
-X2luZm9fMj0lI2xseFxuIiwKLS0gCjIuNTMuMAoKCi0tIAprdm0tcmlzY3YgbWFpbGluZyBsaXN0
-Cmt2bS1yaXNjdkBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3Jn
-L21haWxtYW4vbGlzdGluZm8va3ZtLXJpc2N2Cg==
+From: Tom Lendacky <thomas.lendacky@amd.com>
+
+Implement the SNP Run VMPL NAE event and MSR protocol to allow a guest to
+request a different VMPL level VMSA be run for the vCPU. This allows the
+guest to "call" an SVSM to process an SVSM request.
+
+Signed-off-by: Tom Lendacky <thomas.lendacky@amd.com>
+Co-developed-by: Joerg Roedel <joerg.roedel@amd.com>
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+---
+ arch/x86/include/asm/sev-common.h |  6 +++
+ arch/x86/kvm/svm/sev.c            | 71 +++++++++++++++++++++++++++++++
+ 2 files changed, 77 insertions(+)
+
+diff --git a/arch/x86/include/asm/sev-common.h b/arch/x86/include/asm/sev-common.h
+index cedb7ea91da5..a09cf5690aba 100644
+--- a/arch/x86/include/asm/sev-common.h
++++ b/arch/x86/include/asm/sev-common.h
+@@ -114,6 +114,8 @@ enum psc_op {
+ 
+ /* GHCB Run at VMPL Request/Response */
+ #define GHCB_MSR_VMPL_REQ		0x016
++#define GHCB_MSR_VMPL_LEVEL_POS		32
++#define GHCB_MSR_VMPL_LEVEL_MASK	GENMASK_ULL(7, 0)
+ #define GHCB_MSR_VMPL_REQ_LEVEL(v)			\
+ 	/* GHCBData[39:32] */				\
+ 	((((u64)(v) & GENMASK_ULL(7, 0)) << 32) |	\
+@@ -121,6 +123,10 @@ enum psc_op {
+ 	GHCB_MSR_VMPL_REQ)
+ 
+ #define GHCB_MSR_VMPL_RESP		0x017
++#define GHCB_MSR_VMPL_ERROR_POS		32
++#define GHCB_MSR_VMPL_ERROR_MASK	GENMASK_ULL(31, 0)
++#define GHCB_MSR_VMPL_RSVD_POS		12
++#define GHCB_MSR_VMPL_RSVD_MASK		GENMASK_ULL(19, 0)
+ #define GHCB_MSR_VMPL_RESP_VAL(v)			\
+ 	/* GHCBData[63:32] */				\
+ 	(((u64)(v) & GENMASK_ULL(63, 32)) >> 32)
+diff --git a/arch/x86/kvm/svm/sev.c b/arch/x86/kvm/svm/sev.c
+index 53cd3aba7368..b67566fcb69e 100644
+--- a/arch/x86/kvm/svm/sev.c
++++ b/arch/x86/kvm/svm/sev.c
+@@ -3556,6 +3556,10 @@ static int sev_es_validate_vmgexit(struct vcpu_svm *svm)
+ 		if (!sev_snp_guest(vcpu->kvm))
+ 			goto vmgexit_err;
+ 		break;
++	case SVM_VMGEXIT_SNP_RUN_VMPL:
++		if (!sev_snp_guest(vcpu->kvm))
++			goto vmgexit_err;
++		break;
+ 	default:
+ 		reason = GHCB_ERR_INVALID_EVENT;
+ 		goto vmgexit_err;
+@@ -4593,6 +4597,45 @@ static void sev_get_apic_ids(struct vcpu_svm *svm)
+ 	kvfree(desc);
+ }
+ 
++static int __sev_snp_run_vmpl(struct vcpu_svm *svm, unsigned int vmpl)
++{
++	struct kvm_vcpu *vcpu = &svm->vcpu;
++	struct kvm_vcpu *target = vcpu->common->vcpus[vmpl];
++	struct vcpu_svm *target_svm = to_svm(target);
++
++	if (!target)
++		return -EINVAL;
++
++	/* Mark current plane as stopped so it is not selected */
++	kvm_set_mp_state(target, KVM_MP_STATE_RUNNABLE);
++	/* In case KVM_REQ_UPDATE_PROTECTED_GUEST_STATE is set - mark the new VMSA as runnable */
++	target_svm->sev_es.snp_ap_runnable = true;
++	kvm_vcpu_set_plane_runnable(target);
++	kvm_vcpu_set_plane_stopped(vcpu);
++
++	kvm_make_request(KVM_REQ_PLANE_RESCHED, vcpu);
++
++	return 1;
++}
++
++static int sev_snp_run_vmpl(struct vcpu_svm *svm)
++{
++	struct ghcb *ghcb = svm->sev_es.ghcb;
++	struct kvm_vcpu *vcpu = &svm->vcpu;
++	unsigned int vmpl;
++
++	vmpl = lower_32_bits(svm->vmcb->control.exit_info_1);
++	if (vmpl >= SVM_SEV_VMPL_MAX) {
++		vcpu_unimpl(vcpu, "vmgexit: invalid VMPL level [%u] from guest\n", vmpl);
++		return -EINVAL;
++	}
++
++	ghcb_set_sw_exit_info_1(ghcb, 0);
++	ghcb_set_sw_exit_info_2(ghcb, 0);
++
++	return __sev_snp_run_vmpl(svm, vmpl);
++}
++
+ static int sev_handle_vmgexit_msr_protocol(struct vcpu_svm *svm)
+ {
+ 	struct vmcb_control_area *control = &svm->vmcb->control;
+@@ -4704,6 +4747,27 @@ static int sev_handle_vmgexit_msr_protocol(struct vcpu_svm *svm)
+ 
+ 		ret = snp_begin_psc_msr(svm, control->ghcb_gpa);
+ 		break;
++	case GHCB_MSR_VMPL_REQ: {
++		unsigned int vmpl;
++
++		if (!sev_snp_guest(vcpu->kvm))
++			goto out_terminate;
++
++		vmpl = get_ghcb_msr_bits(svm, GHCB_MSR_VMPL_LEVEL_MASK, GHCB_MSR_VMPL_LEVEL_POS);
++
++		set_ghcb_msr_bits(svm, 0, GHCB_MSR_VMPL_ERROR_MASK, GHCB_MSR_VMPL_ERROR_POS);
++		set_ghcb_msr_bits(svm, 0, GHCB_MSR_VMPL_RSVD_MASK, GHCB_MSR_VMPL_RSVD_POS);
++		set_ghcb_msr_bits(svm, GHCB_MSR_VMPL_RESP, GHCB_MSR_INFO_MASK, GHCB_MSR_INFO_POS);
++
++		if (vmpl >= SVM_SEV_VMPL_MAX) {
++			vcpu_unimpl(vcpu, "vmgexit: invalid VMPL level [%u] from guest\n", vmpl);
++			set_ghcb_msr_bits(svm, 1, GHCB_MSR_VMPL_ERROR_MASK, GHCB_MSR_VMPL_ERROR_POS);
++			break;
++		}
++
++		ret = __sev_snp_run_vmpl(svm, vmpl);
++		break;
++	}
+ 	case GHCB_MSR_TERM_REQ: {
+ 		u64 reason_set, reason_code;
+ 
+@@ -4887,6 +4951,13 @@ int sev_handle_vmgexit(struct kvm_vcpu *vcpu)
+ 		sev_get_apic_ids(svm);
+ 		ret = 1;
+ 		break;
++	case SVM_VMGEXIT_SNP_RUN_VMPL:
++		ret = sev_snp_run_vmpl(svm);
++		if (ret < 0) {
++			svm_vmgexit_bad_input(svm, GHCB_ERR_INVALID_INPUT);
++			ret = 1;
++		}
++		break;
+ 	case SVM_VMGEXIT_UNSUPPORTED_EVENT:
+ 		vcpu_unimpl(vcpu,
+ 			    "vmgexit: unsupported event - exit_info_1=%#llx, exit_info_2=%#llx\n",
+-- 
+2.53.0
+
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
