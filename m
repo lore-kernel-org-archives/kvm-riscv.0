@@ -4,34 +4,34 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B3697CD8CAD
-	for <kvm-riscv@archiver.kernel.org>; Mon,  8 Jun 2026 14:43:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0C9BACD8CAB
+	for <kvm-riscv@archiver.kernel.org>; Mon,  8 Jun 2026 14:43:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=cI/ZKvuaxebJ/yeIL7K8Z+9r2oXivdW0KwsWoovYX5E=; b=WduKX8j92NWuhA
-	Yy4caNi0CL/9Ys9wg0UkguDNWIdy8fEgCbCVjqHIFto3UPwr0Pd27u7tlCz7XvZUFLNxaOSeAg5Z3
-	iDdPbnVdaCu+nzULtqwK92XKQLWIHEWuEE8SMXz5057OXwIHD50eOUUZrA4Fk1X6h2XVK3YArvH1u
-	6BB25fJdaYMbn/TvRKoas2eBVUJSzJyvVlqjtyiSmtXgzjz8UxFvTvj50LPNvmJMMK0eqO+HoTmAT
-	vMjzXi87vg+lt3/rcpzPj5g5oTAUgz+zCnauuM1W4CpnfkZ2CAa5oSEC5MUPoEkoNmUSJ5GWRqDpd
-	KUN4kHHX02DeU5IXL99Q==;
+	List-Owner; bh=7nO+/rFlCq2XFyDvpWaCYTuJYUSxmI4HX89iopDsaHg=; b=lR8mEeAlo6RH28
+	Gyb244HYUVdWLFx6P4S+wHJ5GqCCtP8ge/yiCogrLd/Pv2r/zTm56DqfiIT7rxNioC0lI893GDdhs
+	gvSjVhMHQvFZt2qo0TPIbnKId5y38CJkDUgJ4YI8s+bvQinviqo8o+CS7pjyqO0itlWtbuPbDEOM8
+	17DUOMPdc85R9wQUTpTbdAP8COrFS+ljjOSa9w7yuZo9ptuOmRucF5GxemS91yFgGl090yncsUK7T
+	mhfpH3ebmi4a/sWeYk6w1077MDK9ZIFxT8Oh2BTljXVdU0hySBHwvjGN2VOOhyT4PIPHsLyGvSXnm
+	zt2/tWII7kjG/LuV4g7Q==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wWbC7-00000003pYm-1Jou;
+	id 1wWbC7-00000003pZc-2x1f;
 	Mon, 08 Jun 2026 14:43:15 +0000
-Received: from mail.8bytes.org ([85.214.250.239])
+Received: from mail.8bytes.org ([2a01:238:42d9:3f00:e505:6202:4f0c:f051])
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wWbC3-00000003pSK-35p8
+	id 1wWbC3-00000003pSJ-30gR
 	for kvm-riscv@lists.infradead.org;
 	Mon, 08 Jun 2026 14:43:13 +0000
 Received: from io.home.8bytes.org (p4ffe1d30.dip0.t-ipconnect.de [79.254.29.48])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.8bytes.org (Postfix) with ESMTPSA id 15F052028A8;
+	by mail.8bytes.org (Postfix) with ESMTPSA id 4A0A72028A9;
 	Mon,  8 Jun 2026 16:43:06 +0200 (CEST)
 From: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
 To: Paolo Bonzini <pbonzini@redhat.com>,
@@ -53,16 +53,16 @@ Cc: Tom Lendacky <thomas.lendacky@amd.com>,
 	x86@kernel.org,
 	coconut-svsm@lists.linux.dev,
 	joerg.roedel@amd.com
-Subject: [PATCH 05/60] KVM: SVM: Inject MCEs when Restricted Injection is active
-Date: Mon,  8 Jun 2026 16:41:57 +0200
-Message-ID: <20260608144252.351443-6-joro@8bytes.org>
+Subject: [PATCH 06/60] KVM: SVM: Enable Restricted Injection for an SEV-SNP guest
+Date: Mon,  8 Jun 2026 16:41:58 +0200
+Message-ID: <20260608144252.351443-7-joro@8bytes.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260608144252.351443-1-joro@8bytes.org>
 References: <20260608144252.351443-1-joro@8bytes.org>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260608_074311_961690_600D7FE1 
-X-CRM114-Status: GOOD (  18.80  )
+X-CRM114-CacheID: sfid-20260608_074311_922119_CFC3017A 
+X-CRM114-Status: GOOD (  14.25  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -81,245 +81,114 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 From: Melody Wang <huibo.wang@amd.com>
 
-When Restricted Injection is active, only #HV exceptions can be injected
-into the SEV-SNP guest.
+Enable Restricted Injection in an SEV-SNP guest by setting the corresponding
+bit in the VMSA SEV features field (SEV_FEATURES[3]) from QEMU.
 
-Detect that, and then follow the #HV doorbell communication from the
-GHCB specification to inject the MCEs.
+Add Restricted Injection to the supported hypervisor features.
 
 Co-developed-by: Thomas Lendacky <thomas.lendacky@amd.com>
 Signed-off-by: Thomas Lendacky <thomas.lendacky@amd.com>
 Signed-off-by: Melody Wang <huibo.wang@amd.com>
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/x86/include/asm/kvm-x86-ops.h |  1 +
- arch/x86/include/asm/kvm_host.h    |  1 +
- arch/x86/kvm/svm/sev.c             | 16 ++++++++++++++--
- arch/x86/kvm/svm/svm.c             | 17 +++++++++++++++++
- arch/x86/kvm/svm/svm.h             |  2 ++
- arch/x86/kvm/vmx/main.c            | 10 ++++++++++
- arch/x86/kvm/vmx/vmx.c             |  5 +++++
- arch/x86/kvm/vmx/x86_ops.h         |  1 +
- arch/x86/kvm/x86.c                 |  7 +++++++
- 9 files changed, 58 insertions(+), 2 deletions(-)
+ arch/x86/include/asm/cpufeatures.h |  1 +
+ arch/x86/include/asm/sev-common.h  |  1 +
+ arch/x86/kvm/svm/sev.c             | 26 +++++++++++++++++++++++++-
+ 3 files changed, 27 insertions(+), 1 deletion(-)
 
-diff --git a/arch/x86/include/asm/kvm-x86-ops.h b/arch/x86/include/asm/kvm-x86-ops.h
-index 3776cf5382a2..c8bff1e9325e 100644
---- a/arch/x86/include/asm/kvm-x86-ops.h
-+++ b/arch/x86/include/asm/kvm-x86-ops.h
-@@ -79,6 +79,7 @@ KVM_X86_OP(inject_exception)
- KVM_X86_OP(cancel_injection)
- KVM_X86_OP(interrupt_allowed)
- KVM_X86_OP(nmi_allowed)
-+KVM_X86_OP_OPTIONAL(mce_allowed)
- KVM_X86_OP(get_nmi_mask)
- KVM_X86_OP(set_nmi_mask)
- KVM_X86_OP(enable_nmi_window)
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index f14009f25a3b..43c92f0ada1e 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -1861,6 +1861,7 @@ struct kvm_x86_ops {
- 	void (*cancel_injection)(struct kvm_vcpu *vcpu);
- 	int (*interrupt_allowed)(struct kvm_vcpu *vcpu, bool for_injection);
- 	int (*nmi_allowed)(struct kvm_vcpu *vcpu, bool for_injection);
-+	int (*mce_allowed)(struct kvm_vcpu *vcpu);
- 	bool (*get_nmi_mask)(struct kvm_vcpu *vcpu);
- 	void (*set_nmi_mask)(struct kvm_vcpu *vcpu, bool masked);
- 	/* Whether or not a virtual NMI is pending in hardware. */
-diff --git a/arch/x86/kvm/svm/sev.c b/arch/x86/kvm/svm/sev.c
-index b48745fad8c5..6d5d66563b0d 100644
---- a/arch/x86/kvm/svm/sev.c
-+++ b/arch/x86/kvm/svm/sev.c
-@@ -5430,6 +5430,8 @@ static void __sev_snp_inject(enum inject_type type, struct kvm_vcpu *vcpu)
+diff --git a/arch/x86/include/asm/cpufeatures.h b/arch/x86/include/asm/cpufeatures.h
+index 1d506e5d6f46..41af7bd2473c 100644
+--- a/arch/x86/include/asm/cpufeatures.h
++++ b/arch/x86/include/asm/cpufeatures.h
+@@ -453,6 +453,7 @@
+ #define X86_FEATURE_SNP_SECURE_TSC	(19*32+ 8) /* SEV-SNP Secure TSC */
+ #define X86_FEATURE_V_TSC_AUX		(19*32+ 9) /* Virtual TSC_AUX */
+ #define X86_FEATURE_SME_COHERENT	(19*32+10) /* hardware-enforced cache coherency */
++#define X86_FEATURE_RESTRICTED_INJECTION (19*32+12) /* Restricted Injection */
+ #define X86_FEATURE_DEBUG_SWAP		(19*32+14) /* "debug_swap" SEV-ES full debug state swap support */
+ #define X86_FEATURE_RMPREAD		(19*32+21) /* RMPREAD instruction */
+ #define X86_FEATURE_SEGMENTED_RMP	(19*32+23) /* Segmented RMP support */
+diff --git a/arch/x86/include/asm/sev-common.h b/arch/x86/include/asm/sev-common.h
+index 01a6e4dbe423..ee17a3541b55 100644
+--- a/arch/x86/include/asm/sev-common.h
++++ b/arch/x86/include/asm/sev-common.h
+@@ -136,6 +136,7 @@ enum psc_op {
  
- 	if (type == INJECT_NMI)
- 		hvdb->events.nmi = 1;
-+	else if (type == INJECT_MCE)
-+		hvdb->events.mce = 1;
- 	else
- 		hvdb->events.vector = vcpu->arch.interrupt.nr;
- 
-@@ -5445,6 +5447,11 @@ bool sev_snp_queue_exception(struct kvm_vcpu *vcpu)
- 	if (!sev_snp_is_rinj_active(vcpu))
- 		return false;
- 
-+	if (vcpu->arch.exception.vector == MC_VECTOR) {
-+		__sev_snp_inject(INJECT_MCE, vcpu);
-+		return true;
-+	}
-+
- 	/*
- 	 * Restricted Injection is enabled, only #HV is supported.
- 	 * If the vector is not HV_VECTOR, do not inject the exception,
-@@ -5513,7 +5520,7 @@ void sev_snp_cancel_injection(struct kvm_vcpu *vcpu)
- 
- 	/*
- 	 * KVM only injects a single event each time (prepare_hv_injection),
--	 * so when events.nmi is true, the vector will be zero
-+	 * so when events.nmi is true, the MCE and vector will be zero.
- 	 */
- 	if (hvdb->events.vector)
- 		svm->vmcb->control.event_inj |= hvdb->events.vector |
-@@ -5522,6 +5529,9 @@ void sev_snp_cancel_injection(struct kvm_vcpu *vcpu)
- 	if (hvdb->events.nmi)
- 		svm->vmcb->control.event_inj |= SVM_EVTINJ_TYPE_NMI;
- 
-+	if (hvdb->events.mce)
-+		svm->vmcb->control.event_inj |= MC_VECTOR | SVM_EVTINJ_TYPE_EXEPT;
-+
- 	hvdb->events.pending_events = 0;
- 
- out:
-@@ -5547,9 +5557,11 @@ bool sev_snp_blocked(enum inject_type type, struct kvm_vcpu *vcpu)
- 	if (!hvdb)
- 		return true;
- 
--	/* Indicate NMIs and interrupts blocked based on guest acknowledgment */
-+	/* Indicate NMIs, MCEs and interrupts blocked based on guest acknowledgment */
- 	if (type == INJECT_NMI)
- 		blocked = hvdb->events.nmi;
-+	else if (type == INJECT_MCE)
-+		blocked = hvdb->events.mce;
- 	else
- 		blocked = !!hvdb->events.vector;
- 
-diff --git a/arch/x86/kvm/svm/svm.c b/arch/x86/kvm/svm/svm.c
-index 5255393986cc..295e02c17b9b 100644
---- a/arch/x86/kvm/svm/svm.c
-+++ b/arch/x86/kvm/svm/svm.c
-@@ -4049,6 +4049,22 @@ static int svm_interrupt_allowed(struct kvm_vcpu *vcpu, bool for_injection)
- 	return 1;
- }
- 
-+bool svm_mce_blocked(struct kvm_vcpu *vcpu)
-+{
-+	if (sev_snp_is_rinj_active(vcpu))
-+		return sev_snp_blocked(INJECT_MCE, vcpu);
-+
-+	return false;
-+}
-+
-+static int svm_mce_allowed(struct kvm_vcpu *vcpu)
-+{
-+	if (svm_mce_blocked(vcpu))
-+		return 0;
-+
-+	return 1;
-+}
-+
- static void svm_enable_irq_window(struct kvm_vcpu *vcpu)
- {
- 	struct vcpu_svm *svm = to_svm(vcpu);
-@@ -5362,6 +5378,7 @@ struct kvm_x86_ops svm_x86_ops __initdata = {
- 	.cancel_injection = svm_cancel_injection,
- 	.interrupt_allowed = svm_interrupt_allowed,
- 	.nmi_allowed = svm_nmi_allowed,
-+	.mce_allowed = svm_mce_allowed,
- 	.get_nmi_mask = svm_get_nmi_mask,
- 	.set_nmi_mask = svm_set_nmi_mask,
- 	.enable_nmi_window = svm_enable_nmi_window,
-diff --git a/arch/x86/kvm/svm/svm.h b/arch/x86/kvm/svm/svm.h
-index bb0e5bfdb9a6..7d27ed7099a8 100644
---- a/arch/x86/kvm/svm/svm.h
-+++ b/arch/x86/kvm/svm/svm.h
-@@ -58,6 +58,7 @@ extern struct kvm_x86_ops svm_x86_ops __initdata;
- enum inject_type {
- 	INJECT_IRQ,
- 	INJECT_NMI,
-+	INJECT_MCE,
- };
+ #define GHCB_HV_FT_SNP			BIT_ULL(0)
+ #define GHCB_HV_FT_SNP_AP_CREATION	BIT_ULL(1)
++#define GHCB_HV_FT_SNP_RINJ		(BIT_ULL(2) | GHCB_HV_FT_SNP_AP_CREATION)
+ #define GHCB_HV_FT_SNP_MULTI_VMPL	BIT_ULL(5)
  
  /*
-@@ -801,6 +802,7 @@ void svm_set_cr4(struct kvm_vcpu *vcpu, unsigned long cr4);
- void disable_nmi_singlestep(struct vcpu_svm *svm);
- bool svm_smi_blocked(struct kvm_vcpu *vcpu);
- bool svm_nmi_blocked(struct kvm_vcpu *vcpu);
-+bool svm_mce_blocked(struct kvm_vcpu *vcpu);
- bool svm_interrupt_blocked(struct kvm_vcpu *vcpu);
- void svm_set_gif(struct vcpu_svm *svm, bool value);
- int svm_invoke_exit_handler(struct kvm_vcpu *vcpu, u64 exit_code);
-diff --git a/arch/x86/kvm/vmx/main.c b/arch/x86/kvm/vmx/main.c
-index dbebddf648be..f9c4703dda54 100644
---- a/arch/x86/kvm/vmx/main.c
-+++ b/arch/x86/kvm/vmx/main.c
-@@ -812,6 +812,15 @@ static void vt_cancel_hv_timer(struct kvm_vcpu *vcpu)
- }
- #endif
+diff --git a/arch/x86/kvm/svm/sev.c b/arch/x86/kvm/svm/sev.c
+index 6d5d66563b0d..369fb1e36f58 100644
+--- a/arch/x86/kvm/svm/sev.c
++++ b/arch/x86/kvm/svm/sev.c
+@@ -39,7 +39,9 @@
+ #define GHCB_VERSION_MAX	2ULL
+ #define GHCB_VERSION_MIN	1ULL
  
-+static int vt_mce_allowed(struct kvm_vcpu *vcpu)
-+{
-+	if (is_td_vcpu(vcpu))
-+		return 0;
+-#define GHCB_HV_FT_SUPPORTED	(GHCB_HV_FT_SNP | GHCB_HV_FT_SNP_AP_CREATION)
++#define GHCB_HV_FT_SUPPORTED	(GHCB_HV_FT_SNP |		\
++				 GHCB_HV_FT_SNP_AP_CREATION |	\
++				 GHCB_HV_FT_SNP_RINJ)
+ 
+ /*
+  * The GHCB spec essentially states that all non-zero error codes other than
+@@ -63,6 +65,10 @@ module_param_named(sev_es, sev_es_enabled, bool, 0444);
+ static bool __ro_after_init sev_snp_enabled = true;
+ module_param_named(sev_snp, sev_snp_enabled, bool, 0444);
+ 
++/* enable/disable SEV-SNP Restricted Injection support */
++static bool sev_snp_restricted_injection_enabled = true;
++module_param_named(restricted_injection, sev_snp_restricted_injection_enabled, bool, 0444);
 +
-+	return vmx_mce_allowed(vcpu);
-+}
+ static unsigned int __ro_after_init nr_ciphertext_hiding_asids;
+ module_param_named(ciphertext_hiding_asids, nr_ciphertext_hiding_asids, uint, 0444);
+ 
+@@ -3223,6 +3229,12 @@ void __init sev_hardware_setup(void)
+ 
+ 	if (sev_snp_enabled && tsc_khz && cpu_feature_enabled(X86_FEATURE_SNP_SECURE_TSC))
+ 		sev_supported_vmsa_features |= SVM_SEV_FEAT_SECURE_TSC;
 +
++	if (!sev_snp_enabled || !cpu_feature_enabled(X86_FEATURE_RESTRICTED_INJECTION))
++		sev_snp_restricted_injection_enabled = false;
 +
- static void vt_setup_mce(struct kvm_vcpu *vcpu)
- {
- 	if (is_td_vcpu(vcpu))
-@@ -945,6 +954,7 @@ struct kvm_x86_ops vt_x86_ops __initdata = {
- 	.cancel_injection = vt_op(cancel_injection),
- 	.interrupt_allowed = vt_op(interrupt_allowed),
- 	.nmi_allowed = vt_op(nmi_allowed),
-+	.mce_allowed = vt_op(mce_allowed),
- 	.get_nmi_mask = vt_op(get_nmi_mask),
- 	.set_nmi_mask = vt_op(set_nmi_mask),
- 	.enable_nmi_window = vt_op(enable_nmi_window),
-diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
-index b9103de01428..a82a4197d18a 100644
---- a/arch/x86/kvm/vmx/vmx.c
-+++ b/arch/x86/kvm/vmx/vmx.c
-@@ -5220,6 +5220,11 @@ int vmx_interrupt_allowed(struct kvm_vcpu *vcpu, bool for_injection)
- 	return !vmx_interrupt_blocked(vcpu);
++	if (sev_snp_restricted_injection_enabled)
++		sev_supported_vmsa_features |= SVM_SEV_FEAT_RESTRICTED_INJECTION;
  }
  
-+int vmx_mce_allowed(struct kvm_vcpu *vcpu)
+ void sev_hardware_unsetup(void)
+@@ -4773,10 +4785,20 @@ void sev_vcpu_after_set_cpuid(struct vcpu_svm *svm)
+ 		vcpu->arch.reserved_gpa_bits &= ~(1UL << (best->ebx & 0x3f));
+ }
+ 
++static void sev_snp_init_vmcb(struct vcpu_svm *svm)
 +{
-+	return 1;
++	struct kvm_sev_info *sev = &to_kvm_svm(svm->vcpu.kvm)->sev_info;
++
++	/* V_NMI is not supported when Restricted Injection is enabled */
++	if (sev->vmsa_features & SVM_SEV_FEAT_RESTRICTED_INJECTION)
++		svm->vmcb->control.int_ctl &= ~V_NMI_ENABLE_MASK;
 +}
 +
- int vmx_set_tss_addr(struct kvm *kvm, unsigned int addr)
+ static void sev_es_init_vmcb(struct vcpu_svm *svm, bool init_event)
  {
- 	void __user *ret;
-diff --git a/arch/x86/kvm/vmx/x86_ops.h b/arch/x86/kvm/vmx/x86_ops.h
-index d09abeac2b56..b75dfe7f039d 100644
---- a/arch/x86/kvm/vmx/x86_ops.h
-+++ b/arch/x86/kvm/vmx/x86_ops.h
-@@ -92,6 +92,7 @@ void vmx_inject_exception(struct kvm_vcpu *vcpu);
- void vmx_cancel_injection(struct kvm_vcpu *vcpu);
- int vmx_interrupt_allowed(struct kvm_vcpu *vcpu, bool for_injection);
- int vmx_nmi_allowed(struct kvm_vcpu *vcpu, bool for_injection);
-+int vmx_mce_allowed(struct kvm_vcpu *vcpu);
- bool vmx_get_nmi_mask(struct kvm_vcpu *vcpu);
- void vmx_set_nmi_mask(struct kvm_vcpu *vcpu, bool masked);
- void vmx_enable_nmi_window(struct kvm_vcpu *vcpu);
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 0550359ed798..4b6b628efa21 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -10794,6 +10794,12 @@ static int kvm_check_and_inject_events(struct kvm_vcpu *vcpu,
- 			kvm_update_dr7(vcpu);
- 		}
+ 	struct kvm_sev_info *sev = to_kvm_sev_info(svm->vcpu.kvm);
+ 	struct vmcb *vmcb = svm->vmcb01.ptr;
++	struct kvm_vcpu *vcpu = &svm->vcpu;
  
-+		if (vcpu->arch.exception.vector == MC_VECTOR) {
-+			r = static_call(kvm_x86_mce_allowed)(vcpu);
-+			if (!r)
-+				goto out_except;
-+		}
-+
- 		kvm_inject_exception(vcpu);
+ 	svm->vmcb->control.misc_ctl |= SVM_MISC_ENABLE_SEV_ES;
  
- 		vcpu->arch.exception.pending = false;
-@@ -10801,6 +10807,7 @@ static int kvm_check_and_inject_events(struct kvm_vcpu *vcpu,
+@@ -4843,6 +4865,8 @@ static void sev_es_init_vmcb(struct vcpu_svm *svm, bool init_event)
+ 		set_ghcb_msr(svm, GHCB_MSR_SEV_INFO((__u64)sev->ghcb_version,
+ 						    GHCB_VERSION_MIN,
+ 						    sev_enc_bit));
++	if (is_sev_snp_guest(vcpu))
++		sev_snp_init_vmcb(svm);
+ }
  
- 		can_inject = false;
- 	}
-+out_except:
- 
- 	/* Don't inject interrupts if the user asked to avoid doing so */
- 	if (vcpu->guest_debug & KVM_GUESTDBG_BLOCKIRQ)
+ void sev_init_vmcb(struct vcpu_svm *svm, bool init_event)
 -- 
 2.53.0
 
