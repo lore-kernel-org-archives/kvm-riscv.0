@@ -4,138 +4,94 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8E864CD8C90
-	for <kvm-riscv@archiver.kernel.org>; Wed, 10 Jun 2026 18:14:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 35F61CD98C5
+	for <kvm-riscv@archiver.kernel.org>; Thu, 11 Jun 2026 01:06:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
-	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
-	List-Unsubscribe:List-Id:MIME-Version:In-Reply-To:From:References:Cc:To:
-	Subject:Date:Message-ID:Reply-To:Content-ID:Content-Description:Resent-Date:
-	Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Owner;
-	bh=7V174nO/N9LnDke01+MpwL/ms2lloRnczHAIK2paMJ4=; b=yeeNa05Z7Zpv4tpPUcbDKkxq9g
-	9UMV4LuFntbOH3KdvGVkfYw3yYFLX7l/utqB28CAhJ78qZ5L9L2hCVC4JlU9RJS1UV3GhjKJrv7gF
-	u6N+/AYi1Q1xAMs+DgipY/ekrfulUk8JgKgrdvzOrKFS0KvlkE4kV0Xjxht2pVY9dUxuiuftFI0/G
-	qrp24gvWpn5LeMjwnNtIUjZ+qi3KLDzcCmFArv3W1kN7XTfdhHPsFbBdULlsdAXGzNLwfIWgPOtkA
-	ZujqsmgMuHLz2zR9GzDorhlxLQPwbcYAfVonJ24ZSCo9VOYbPutBVDelOLevNnVslazhJwC1Jq5Gs
-	4FKEKNzA==;
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
+	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=0U6CbeRrnsz8NrfNLzHbC8hohuSXmIh4bczEjb1Rd9g=; b=Q0Hl+OEIMxD5Om
+	UQ65NJfzHtiiO+KNIzVbkewNvNreS9pGBnLycOLTn5Nd6wBKPhsdIDT6Pphl7oMD1uhoFjBIzZLqQ
+	JBQRVZnLF0r4bdRW5re+KjLzRrGGXSkF6j7XOFPQeCm9hPZRKA16N5SCey/s+50SveAzDDac1yLyS
+	WTzhQARY40Cnun61f7EPLOqid3JS2CYE6bN/xnr6bbJPywMPUhHYauybbvDejQW/QMDUE+SmBolm+
+	nPCmkFmreIlx0tGwcPEN6D4TkfuEwMpGY7wGhJA2W6TJEQ5cAEEEh3f7EkX9qPocT4NXBH8fuz2IT
+	EaavTAT8ThnuWWWbwTBA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wXNRN-00000008ECw-2AaI;
-	Wed, 10 Jun 2026 18:14:13 +0000
-Received: from mail-centralusazon11011062.outbound.protection.outlook.com ([52.101.62.62] helo=DM5PR21CU001.outbound.protection.outlook.com)
+	id 1wXTs7-00000008WBQ-3bZm;
+	Thu, 11 Jun 2026 01:06:15 +0000
+Received: from mail-dy1-x1333.google.com ([2607:f8b0:4864:20::1333])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wXNRK-00000008ECQ-02N0
+	id 1wXTs4-00000008WAh-3MQm
 	for kvm-riscv@lists.infradead.org;
-	Wed, 10 Jun 2026 18:14:12 +0000
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=XT369nfkbHNw7KmVRlTSq4RQKqCOE/jKD30QFDpVPC+vYzmnMjTGIAthqlMRsEaanv4sxiukPjKnxasiOkP1w0JohwnRAhNzlzR13FJ9qj+IBjpxsKMt/F2zCb7WKCL1fHd8AGEmjhUURvqnp02wOPhLtkje4MdpSaRhgdwUaG9WAFnciZwrryDO4YMkAkS0RgojT2Jyb3i2uwaGj6PO7AKAExAeml5HC6udC54oMU1mEz5AEU0AwusCvitvQetmy7AadFIx22uCiBlmHZNByWOo+VxZvwNeH54YveSHjcDXT/bZXnX7LJHvfJZbLj3LVfbWt2UnU6btaEmunz9Ttg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=DkS1FTd+qbaNr9HqaYWVqCBsm78oGqOVbxJkY8Ve68Y=;
- b=g25dqjAmevSWxqBgZXiGBB7ZjMC624tFM/A4u7fLTSLvsaG/PanBUU7YUhcix/j7wmgp8wymgAnSt749I6JBb1lrFMXWKO3YnD7yCLgWyxprsESZuPITj1fwBIT1zGF4mcDdoNyLzJPewnWGDcCEnD9Vv+0J8zMO8tV29txpDOpsJeO+yqClHxh9j/E/41HThe1HimZ1bfaKzTexnAZDKVs6qCWR3rGW2Snq4Jt0PsBzy2bZvlP+j+uMn1f+O0vGVMe2+Qf/fkvmY6jpY2nxTqnDlGS4RXWcA6zooVsKXhTKbQf8TgGcXbAiynz8NZCwKUSywDsF5qxOW90PR8dp/g==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=DkS1FTd+qbaNr9HqaYWVqCBsm78oGqOVbxJkY8Ve68Y=;
- b=VLO5u0YpzdY5MiuzFIRaEu6JSGGiiRpjua7AecQFkFBVMOVip0aPhuJq9lH4VVC9XWnzHYnq6Gz6W0D3Ksn0csYNdWx7LSGmCutAyv2+YHrcntfG/30bFDir52IIsLlYMoaIscPG2KFhS5/2fHHJBlLYSsyiH+OiSRPOlBwHVnI=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amd.com;
-Received: from CH1PR12MB9575.namprd12.prod.outlook.com (2603:10b6:610:2ad::12)
- by IA1PR12MB6044.namprd12.prod.outlook.com (2603:10b6:208:3d4::20) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.92.12; Wed, 10 Jun
- 2026 18:14:00 +0000
-Received: from CH1PR12MB9575.namprd12.prod.outlook.com
- ([fe80::2aab:a788:44ed:f4da]) by CH1PR12MB9575.namprd12.prod.outlook.com
- ([fe80::2aab:a788:44ed:f4da%6]) with mapi id 15.21.0092.011; Wed, 10 Jun 2026
- 18:14:00 +0000
-Message-ID: <3c4c6c24-ec76-4085-b6da-cadfc8a229aa@amd.com>
-Date: Wed, 10 Jun 2026 11:13:57 -0700
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 00/60] KVM Planes + SEV-SNP Support
-To: =?UTF-8?B?SsO2cmcgUsO2ZGVs?= <joro@8bytes.org>,
- Paolo Bonzini <pbonzini@redhat.com>, Sean Christopherson <seanjc@google.com>
-Cc: Tom Lendacky <thomas.lendacky@amd.com>, ashish.kalra@amd.com,
- michael.roth@amd.com, nsaenz@amazon.com, anelkz@amazon.de,
- James.Bottomley@HansenPartnership.com, kvm@vger.kernel.org,
- linux-kernel@vger.kernel.org, kvmarm@lists.linux.dev,
- loongarch@lists.linux.dev, linux-mips@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, kvm-riscv@lists.infradead.org,
- x86@kernel.org, coconut-svsm@lists.linux.dev, joerg.roedel@amd.com
-References: <20260608144252.351443-1-joro@8bytes.org>
-Content-Language: en-US
-From: Melody Wang <huibo.wang@amd.com>
-In-Reply-To: <20260608144252.351443-1-joro@8bytes.org>
-X-ClientProxiedBy: BY3PR04CA0020.namprd04.prod.outlook.com
- (2603:10b6:a03:217::25) To CH1PR12MB9575.namprd12.prod.outlook.com
- (2603:10b6:610:2ad::12)
+	Thu, 11 Jun 2026 01:06:14 +0000
+Received: by mail-dy1-x1333.google.com with SMTP id 5a478bee46e88-304d7f31215so6677825eec.1
+        for <kvm-riscv@lists.infradead.org>; Wed, 10 Jun 2026 18:06:11 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1781139971; x=1781744771; darn=lists.infradead.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=VboLQNAR8iiox5vG6qq6qNpSq+23FwPh2uptUxiLAaw=;
+        b=LdgjRiLtfpvIFoGtn9J08Ry+vFo/Hb7Q9IVBg9iSvoKCjfCRoKxV2fZW8RPRMtmw7s
+         n7I7iJO8J4YHtcTYJ3Z4nSpScWdnKODre+QLiiK4Lsb3vpURqtMCpVXEZMm1Lkc6E8xG
+         euggwm7dKzX5e4DiR1HguRZbsFGFsEsQCVZYit7Bh9BcrLfe6VoyqvO9+vX9hf7+ByZl
+         D59uypuvrnDcvhRaFmZmqfgCVs9cAwEsQVU4LdR0b8Pw02DEcta9TOOzElt+wPH7Ns3x
+         7U+OZulRoKouXE5FZXRubrlbsTgygs4JfzwBdDq14s+CLuH19y14d6kGejdmSFQVQ87m
+         9XtQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1781139971; x=1781744771;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=VboLQNAR8iiox5vG6qq6qNpSq+23FwPh2uptUxiLAaw=;
+        b=QmpZpY9srZdZ+2pb61wi7ffb9+L5rK+9bIcR1oXqVpJplQvDfUtPE5O+018lS0AGxW
+         gbV2g+HUzYMKh14vj972ArPGSZpWd03XviI+jkPrmm1TR2tJygvy3bQ4NIY2z2HK7q7t
+         t3S2hJ7mrvnCETvUN7rb/jXhDY82JJHFkGQ0DaCPsCVHt34S0J1hayQ8or9ompKas1dH
+         AlX/C/wI+jcFpPtLtjjTvlaVhilF31XBKnrm+Zwjm/zZUCTHDrsDPTDhE3bNrUhHFm3N
+         o7ZqLoJAlRhkDgJ9VlJkmsZjuT1XCbcqHUwS5QDFh/mUA9IK0JayeLcFnbsmBToVO688
+         VQbw==
+X-Forwarded-Encrypted: i=1; AFNElJ/U5UHcjIM6juoNVfCW85XQOR1ZxhDubGCDy6CJnnOBOs0J63HOWdn0MfzzdeKFZQtsnKweoSOeROY=@lists.infradead.org
+X-Gm-Message-State: AOJu0YxX+TYCyOXv10Z28F/pG5KHw1U9mIdanbYTry6KoybXt5xQ293o
+	JzOyT6h6tXAb1Qf4ISZ7JRwhuhhnBJFPgljm8+vhgI+3VH4IuCf/YOLw
+X-Gm-Gg: Acq92OGYK89g/hWwiP8xSt3BPaOVH6QTlG/xgKnbLq2CCpINZ6oH2E31HeLuZpg2hXk
+	S+FKFajr8Ho6vlXMyvUVni4oZSCieGuuNRNsJhshUeeGWXe9Q+NsLGgk3x3mf92177k9HxmDZFe
+	zkad5c7w9J94WqwtaIfLvptAx+YQdCLS0VhdcdAq3NfUyD4Hk+daArz3mpxWuubZbEtvzxjDNjs
+	qcAKiZCO/DfkE19ZlHK1xqFiRHZ6pHcSHRE8O0cq/ZXzaxU5gl0AzJmtGBY9VQq47+ETmErzejL
+	cZmbg4gC30PN0U85RDwbnDRr/umjLSMlaySjrHiZHcInjLy3ip9QUkIMn+xSZrP/I/2Dx1/xq6X
+	M2dMEhG/xsCohLoz5p2KOZgqY7waHUCKLU7QFGsn4YrlFA9MnNKiNC6Z1duRylCNEJXtJeMh0yk
+	KyNLMd/P9pXqmOFPivbtmxZQ==
+X-Received: by 2002:a05:7300:510:b0:2f3:986d:2d01 with SMTP id 5a478bee46e88-30804bbdd85mr548716eec.19.1781139971040;
+        Wed, 10 Jun 2026 18:06:11 -0700 (PDT)
+Received: from blinky ([2601:647:6700:64d0::92d1])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-30806ebb79bsm71245eec.25.2026.06.10.18.06.09
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 10 Jun 2026 18:06:10 -0700 (PDT)
+Date: Wed, 10 Jun 2026 18:06:07 -0700
+From: Charlie Jenkins <thecharlesjenkins@gmail.com>
+To: Nam Cao <namcao@linutronix.de>
+Cc: Charlie Jenkins via B4 Relay <devnull+thecharlesjenkins.gmail.com@kernel.org>,
+	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+	Alexandre Ghiti <alex@ghiti.fr>, Anup Patel <anup@brainfault.org>,
+	Atish Patra <atish.patra@linux.dev>,
+	Conor Dooley <conor@kernel.org>,
+	Paolo Bonzini <pbonzini@redhat.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Shuah Khan <shuah@kernel.org>, linux-riscv@lists.infradead.org,
+	linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
+	kvm-riscv@lists.infradead.org, linux-kselftest@vger.kernel.org
+Subject: Re: [PATCH 01/16] riscv: Introduce instruction table generation
+Message-ID: <aioJ_5SIXdGQg55R@blinky>
+References: <20260407-riscv_insn_table-v1-0-54b4736a1e77@gmail.com>
+ <20260407-riscv_insn_table-v1-1-54b4736a1e77@gmail.com>
+ <878q8m1j9y.fsf@yellow.woof>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CH1PR12MB9575:EE_|IA1PR12MB6044:EE_
-X-MS-Office365-Filtering-Correlation-Id: c6b4ca4c-1c34-4f54-d74d-08dec71c0b89
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;ARA:13230040|366016|376014|7416014|1800799024|23010399003|11063799006|56012099006|22082099003|18002099003;
-X-Microsoft-Antispam-Message-Info: 85rVobyKmzAiMmj0x9bsU7nkxs2Ql9SZvtnsjHoHirXMbPzb7KoTTAbXcInHr+dDsC0rWdRdA1MPfbMB1ZYC9yjdt1OM9u4tM+Y0HNvJmjeFxeRqxtmu/byzJPJMWDkO07lopvy5zRxgFWAHixBUvaTG5IjxBxEJwa9+Biex/XMkB7ktzh6JnoNa67BUbSZ/Oa5nTvDJ2zpRjOIfjqDzaii+bjGz06ndPhpsrmWpbYYhHdkRkBEjSa9SP0QutITV1PnaJp0o7E5UFBICbi8fd6Dib0b51H/BHuoScV7lKiuWU1QgGaf9PBoA6/xGQdD4pR0opRiONWOZIj5QWCGuNlqNJ24M2oViLZ/yy6XITXhZ7FD+9uz2u2rm36xzhjpmanMI6gQmPxFEQ/d3ut1vSQq28QgxyP386sM/ljUl6MTRxMGJJIafHmhmarRuu7BKrplcMRibayOgdtLJ/uJa9tDjYv/VmLQmhoVjgQ3Twjz8q35HMx+GLg/csoWWir1OPu0Oy/OphO52+6Ap7OLhkiOdnrYZzbO2xkCZwc7TtbGTo5nmOYFWkB7mwfBTmyXH517lNvTU/PIzeWyaD9bqCwWo0vpAQG4vLyiPpfZRLyzkHDqnqwOcw+2sAcJhoaHwoKZdKi7+FUXeQolCRkpHJ5ieXCm7I+gDkdPPu38XknKKOTBWloB3KmQ5LngJ4sxI
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CH1PR12MB9575.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(376014)(7416014)(1800799024)(23010399003)(11063799006)(56012099006)(22082099003)(18002099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?cUJwYndwY3ZQOE1aeHkxbS94cGp5NmRvd0k2QVppNmZhMGdGUEppUEpkTlMv?=
- =?utf-8?B?aUFWdGZoZHU4bk9yUWp2RmpsczJycFpKcmorR212TFZNVGo4QXQ3ME12Mjg5?=
- =?utf-8?B?aXZMdEpjNURVWFN2enhSM1lvZEhLazE3QndQN2p4VFg1aVE3c1RnVUVQRGl0?=
- =?utf-8?B?aDZUSkJXQjhtVldHOENGdVhUbVphdzRsRjdPMVYvRG9hTWR4SStKL1VFN1Fy?=
- =?utf-8?B?OFJ3TGttU1MxK1ZHVlorRWh0UXE1VzRmU2JNTWUxdUFWb1ZNWEcvZjd6OVgw?=
- =?utf-8?B?d3F1TFN3QmR5ZlJodXVsd1B4bFhZVHpySE9zbFliMklubEt0K2UyeWl3eWhh?=
- =?utf-8?B?OTZGQi9BOCtTQVVacm5vYm55ajk3M0tLVTFIc0JFeCtYNkF3aVRYcS9IcWMz?=
- =?utf-8?B?eHNPakswelpFYXo0YVhXNmxZOGNNK2dEaUJEZmdXTzJtNDJzWGFrd0N4Ty9y?=
- =?utf-8?B?ZVdrUFV2ekNtOTB0ZnFBd2RTU2hTVXFDcHhjNWs1a09TQ3IzbzZnQUJnckpS?=
- =?utf-8?B?SWRhUkJOMzV2Nis5WGVIUTBneEtSZkkvY0RyVWI0R3EyYVJjTWV3VnorNDgy?=
- =?utf-8?B?YWNXNy9QSHliaHJRUFFDcUxYVTdBNHJTWUErSHRDeGdhVUFNUTl3LzFGMGdW?=
- =?utf-8?B?aHNWczh6YTRaeE1JY1RKUzVNU2U4Rmd4OWxuUHVpdjZFL0hKcVArV1BUcDI2?=
- =?utf-8?B?eW01b2NDTFVQckxFV1p4REs2M2pOcnVPcC9TdGxjR0Y0M3dSamhSa1ZFVjFL?=
- =?utf-8?B?TzRWaklxNWN6MGJ5Zy9WYmJYdkZ3VDVOdytQK1VBL05zOFRxcVcxQTdLbTlK?=
- =?utf-8?B?clIweGthdU1BdDV5ZlBTRWxJa2crWkdJZVIxMUZWQTd3NXBTS3Vrbk5SakFD?=
- =?utf-8?B?aHIrZTM1STE0UUNmMGlOcE96ZVV1SzlCaFUwbjZSeFJXZ2hVL3c5Z3JseElm?=
- =?utf-8?B?cy84T1R0OTc1ZzAwVWppVXZTdjNqTW54dnlHZjY3Rk1aS3JHYTdBR1BjSDZB?=
- =?utf-8?B?L1VTcHY4b3NYUGU2RUh1RnQveCtadHhPeHhGZFNTV2NEWVZxRUZHRVF6ZHpx?=
- =?utf-8?B?MTYvNDNRdy9vck1zWVEydS8yOU1JZnlKeUYwT0VJbGdzU0hnaDQ4VldVcjRJ?=
- =?utf-8?B?UXR2bU9KYThnZ3BIbTBka3c0V0M4dFRUZVVEbDdYTUdxRFdiN1BFaWFwWDBI?=
- =?utf-8?B?UHpXeFBIbndNd0k4OWZlZXZJQWxqZmZhRC82dG1WRzFKOFhxQmN6M1ZKcmpp?=
- =?utf-8?B?OEV0dzFFcEdEVWNJZWZoYnlWa2kyKzZnc2djbHdBK3RJdncrd1ZpRDdKZTFG?=
- =?utf-8?B?WU1KUlZTZllOckM2T210b3IvVDB5K1hNblZIT3BGQUxWY3M5aUFhaWNOc3hP?=
- =?utf-8?B?Q3NNYmpFVHRvN3RyMVN0dHVxNWdnSUN6TmxTbUg1TzN5dENPMnhwZy81REs3?=
- =?utf-8?B?NHZvbDFXQ2ppb0JocStzU2pPNHMrdjE2dVR1UlFxUFZMTHJMdXNka09zdG45?=
- =?utf-8?B?d09aVDdiSzY5SlliVHpUbG1BYVlmWXZ6NDBoUExDRTc4UTFzY2FpdTdCaS9x?=
- =?utf-8?B?TXZoR1l6Y2w4VHoxSmwvbXlpVmY0MGZ6eGx3ajZUQnBhaTNURWVmN1ZLZHh5?=
- =?utf-8?B?dU5LT3VvSXpmVk9EVkVDT1RpTDZrU3NNOGYwbWRHRm93RjZBM2FaVXpxdzEz?=
- =?utf-8?B?Ty91SHd2d0NaWGN2WDdWMmN1VlRFT2RSQ0V1aEFtQkVwakI0bkZIZGVNSWgy?=
- =?utf-8?B?MEp3cC9YaVRyMCthYUpNQjNOK0F5QWF2VlNtRU1Cdnk3OFB2V0lucTJZK293?=
- =?utf-8?B?b1JpTFpxY0w4YTJWWmQ3Smc3MHdMYmRlTkYxdURPaDJ4K3VORjllWDZjZ3dF?=
- =?utf-8?B?MGZkRHNFOVdMOGpWaXRkeklmbGVRWUpnODU0MTVrZzlzNFR3WkJxSmF4S0pz?=
- =?utf-8?B?VS9yTmpnZnlOZFV6VGFtVEpDM0lVTDkvSURxSm9ib1JiQnQ2S0Y0Rmdvbkhk?=
- =?utf-8?B?QzhwODRoOWxCT2dncXdhMWJRb1F1VGxETFpMdDJwU1Z6N2doZExCc2R4cTJY?=
- =?utf-8?B?ZndhMVg3dVpFOWVJT2pYV1pRWlM3L1R0VE5rRnowenlZd3J5Qi90TzFqUE9Q?=
- =?utf-8?B?UDdvNGZnOHRHVHRMdVI2bWNLSDBwYmZnYnVIN3RXbVBLVFFCSVUxWmFyb25H?=
- =?utf-8?B?TEg3ZEtpLzFpNlZ3Sy9zY1lqM2VNbkczVlJjNVB6cmF5dU5ZcTJQQXc2R2Vq?=
- =?utf-8?B?VnpVUXZMMkNJTzk0bnJVL3h2akJUNFprQThPM2QzQ2hzTWp5Z2dkVnZhVHdO?=
- =?utf-8?B?eHh1V3NGekowNUx1aU9jRCtZSUNrQkJLZkVGSlJ1WGNRbHNTWXpZZz09?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: c6b4ca4c-1c34-4f54-d74d-08dec71c0b89
-X-MS-Exchange-CrossTenant-AuthSource: CH1PR12MB9575.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Jun 2026 18:14:00.1893
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: i+Rg3KGvROGFm1p95CNRxo1p8Fw3mpQCssxc/9Xmhd4JJxA6pqRX6qTQQvbV0FtEYTz03B48tas2e9pYtD/xLg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA1PR12MB6044
+Content-Disposition: inline
+In-Reply-To: <878q8m1j9y.fsf@yellow.woof>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260610_111410_190808_4BBE6D4A 
-X-CRM114-Status: UNSURE (   6.89  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20260610_180612_850825_08BFA894 
+X-CRM114-Status: GOOD (  26.21  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -147,18 +103,126 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-SGksCgpPbiA2LzgvMjYgNzo0MSBBTSwgSsO2cmcgUsO2ZGVsIHdyb3RlOgo+IEZyb206IEpvZXJn
-IFJvZWRlbCA8am9lcmcucm9lZGVsQGFtZC5jb20+CiA+IC4uLgo+IFRoaXMgY2hhbmdlcyBkZXBl
-bmQgb24gTWVsb2R5cyBwYXRjaGVzIGZvciBzdXBwb3J0aW5nIHJlc3RyaWN0ZWQKPiBpbmplY3Rp
-b24uIEFzIHRoZXkgYXJlIHJlcXVpcmVkIHRvIHJ1biBDT0NPTlVULVNWU00sIHRoZXkgYXJlIGlu
-Y2x1ZGVkCj4gaGVyZSBmb3IgY29tcGxldGVuZXNzLgoKQnR3LCBJIGFtIGZpeGluZyB1cCB0aGUg
-cmVzdHJpY3RlZCBpbmplY3Rpb24gcGF0Y2hlcyBiYXNlZCBvbiBBSSAKcmV2aWV3cywgd2lsbCBz
-ZW5kIHRoZSBuZXcgdmVyc2lvbiBvdXQgdXBzdHJlYW0gc29vbi4gU28geW91IGRvbnQgbmVlZCAK
-dG8gcmV2aWV3IHRoZSBjdXJyZW50IHZlcnNpb24uCgotLSAKVGhhbmtzLApNZWxvZHkKCgotLSAK
-a3ZtLXJpc2N2IG1haWxpbmcgbGlzdAprdm0tcmlzY3ZAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRw
-Oi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2t2bS1yaXNjdgo=
+On Wed, Jun 10, 2026 at 05:56:25PM +0200, Nam Cao wrote:
+> Charlie Jenkins via B4 Relay
+> <devnull+thecharlesjenkins.gmail.com@kernel.org> writes:
+> > From: Charlie Jenkins <thecharlesjenkins@gmail.com>
+> >
+> > Eliminate the need to hand-write riscv instructions by using a shell
+> > script to autogenerate a header from an instruction table. This is modeled
+> > after the syscall table infrastructure.
+> >
+> > The table is generated externally by riscv-unified-db [1], but is
+> > in a simple format to make it possible to use other tools or modify
+> > manually.
+> >
+> > [1] https://github.com/riscv-software-src/riscv-unified-db
+> >
+> > Signed-off-by: Charlie Jenkins <thecharlesjenkins@gmail.com>
+> 
+> Thanks for the work, I really like the idea. This will make it much
+> easier to maintain the instruction stuffs.
+> 
+> > +c.ld common,32 011<13|00<0 imm<3=6-5|12-10 xd!1!3!5!7=4-2 xs1=9-7
+> > +c.ld common,64 011<13|00<0 imm<3=6-5|12-10 xd=4-2 xs1=9-7
+> 
+> Not sure if I confuse something, but the spec says "C.LD is an
+> RV64C-only instruction". Why do we have 32 here?
+
+This is a weird one. The Ziclsd extension introduces it for RV32[1]. All
+of the data is generated from the riscv-unified-db and because it is in
+the Ziclsd extension, c.ld is included for 32-bit in the c.ld
+description [2]. 
+
+[1] https://docs.riscv.org/reference/isa/extensions/zilsd/_attachments/riscv-zilsd.pdf
+[2] https://github.com/riscv/riscv-unified-db/blob/main/spec/std/isa/inst/C/c.ld.yaml
+
+> 
+> > +echo "#define COMMA ," >> $outfile
+> > +echo "#define SEMICOLON ;" >> $outfile
+> > +echo "#define SINGLE_ARG(...) __VA_ARGS__" >> $outfile
+> 
+> Aren't these macro unused?
+
+Yes thanks, I had them for an earlier version and never removed them.
+
+> 
+> > +echo >> $outfile
+> > +
+> > +grep -E "^[a-z\.0-9]+[[:space:]]+" "$infile" | {
+> > +    while read name base fixed variables; do
+> > +        echo "/* $name */"
+> > +
+> > +        compressed_name=${name##c.*}
+> 	   ^^^^^^^^^^^^^^^
+> 	   this name is misleading
+
+That's fair, I can rename it to be something like "compressed_inst"?
+
+> 
+> > +        invalid_inst_functions=""
+> > +        variable_params=""
+> > +        constraints=""
+> > +        match=""
+> > +        mask=""
+> > +        make=""
+> > +
+> > +        # All compressed instructions start with "c."
+> > +        size=${compressed_name:+32};
+> > +        size=${size:-16};
+> > +
+> > +        # Replace all . with _
+> > +        formatted_inst_name=$name
+> > +        while [ ! ${formatted_inst_name##*.*} ]; do
+> > +            prefix=${formatted_inst_name%.*}
+> > +            suffix=${formatted_inst_name##*.}
+> > +            contains_dot=${formatted_inst_name##*.*}
+> > +            formatted_inst_name=${contains_dot:-${prefix}_${suffix}}
+> > +        done
+> 
+> Does the simplier
+>      formatted_inst_name=$(echo $name | tr '.' '_')
+> work?
+
+That does work, but it dramatically slows down the time. I was trying to
+avoid using external programs because this is called on every
+compilation and there are a lot of instructions to parse. On my system,
+it's about 10x slower to use echo/tr. Taking the time from about 150us
+to 1.5ms for each iteration and the total time from around 0.8s to
+around 3.5s.
+
+> 
+> > +            echo "static __always_inline ${type}${size} riscv_insn_${formatted_inst_name}_extract_${variable_name}(u${size} ${insn})"
+> > +            echo "{"
+> > +            echo "\treturn ${extract};"
+> > +            echo "}"
+> > +            echo "static __always_inline void riscv_insn_${formatted_inst_name}_insert_${variable_name}(u${size} *${insn}, ${type}32 ${var})"
+> > +            echo "{"
+> > +            echo "\t*_insn &= ${insert_mask# & };"
+> 
+> Why is this required? Isn't this part always zero at this point?
+> 
+> > +            echo "\t*_insn |= ${insert# | };"
+> > +            echo "}"
+> > +
+> > +            if [ "${only_base}" ]; then
+> > +                invalid_inst_functions="${invalid_inst_functions}static __always_inline ${type}${size} riscv_insn_${formatted_inst_name}_extract_${variable_name}(u${size} ${insn}) {\n\tpanic(\"${name} is not supported on non ${only_base}-bit systems.\");\n}\n"
+> 
+> Instead of panic(), can we do BUILD_BUG() instead?
+
+That's a better solution :)
+
+- Charlie
+
+> 
+> Nam
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
