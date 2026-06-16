@@ -4,96 +4,90 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5C028CD98E1
-	for <kvm-riscv@archiver.kernel.org>; Tue, 16 Jun 2026 18:30:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2DB9CCD98D2
+	for <kvm-riscv@archiver.kernel.org>; Tue, 16 Jun 2026 21:43:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
 	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=usGFqo1vcJ5NSO2qq3uDA+ESnRwKJZfshdGQAWeq2CU=; b=GNyvCGXxt2CQ/u
-	qHKvOJPX5uV8QHUYhvbtBtZvDIDRlH7MgSeJ3Xtn1xj2z/OTiZaBqdysNND/O1o6XvVfLvENdfDbf
-	892X70yFoeQ6G15ZiPR8VmeFS2Y6i4VOM5tBAaNW4KI1PB8uKON9KJhhFYE0ZPWRhn4iNGqY26MFY
-	AiB/ui2eXj5cy6mznqwN1oj0Ky1IGc1rKdLzWTmGzY/pXvEuOqOeYwoMlNhYykDRp4NXWaXhEti7O
-	CdErfrxRSY+PWcuQpn4IC48XAIwo703KOqYzWYGYzjTTXnoVT32jXgljzjBVVNcfsGn1wxCnOvBMb
-	q0qqe0FzMEduNkVSGiBw==;
+	List-Owner; bh=lobYY+lU7I2Zg2XJHfpjdawRcgJnRMTnO4Xj8zoNwjw=; b=FAYvnhvhYypmjF
+	JUbYb9YLdItcVBNwULk4nf3wUCjMVhvBgSB2MbAe14aNzsSQ4PnNSuOnRD2GEXDxItYJOQ5DlhTVA
+	Ss+guahkl++Wm6JvsWGlcBPWpnCr6hbEIdz/gKnKB4EpEucozruJFL31UDKNLWASRduDe+CjbVwsW
+	jDMBMP8TdOXLE8pTOcke8QNimpXavbFpVCS/r42vsYjI0w0LTlMnaClArGmgkNBpGO0DdIZawRXl2
+	NLjG+el/kVHRoUi2rDspnrn9GRUhZWifitR0lpmD0LBNm5fdwjyCZMAcRUI3GGi83Bkp6WZlOb1kI
+	yZyYRYMRlDoCjpqWq7DQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wZYY2-0000000GD6l-2od8;
-	Tue, 16 Jun 2026 18:30:06 +0000
-Received: from mail-pl1-x62c.google.com ([2607:f8b0:4864:20::62c])
+	id 1wZbZ0-0000000GM8C-1QYr;
+	Tue, 16 Jun 2026 21:43:18 +0000
+Received: from mail-pl1-x632.google.com ([2607:f8b0:4864:20::632])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wZYY0-0000000GD6N-2OEu
+	id 1wZbYx-0000000GM7n-3mra
 	for kvm-riscv@lists.infradead.org;
-	Tue, 16 Jun 2026 18:30:05 +0000
-Received: by mail-pl1-x62c.google.com with SMTP id d9443c01a7336-2c69fa0b1f8so10405ad.0
-        for <kvm-riscv@lists.infradead.org>; Tue, 16 Jun 2026 11:30:03 -0700 (PDT)
+	Tue, 16 Jun 2026 21:43:17 +0000
+Received: by mail-pl1-x632.google.com with SMTP id d9443c01a7336-2c69fa0b1f8so22185ad.0
+        for <kvm-riscv@lists.infradead.org>; Tue, 16 Jun 2026 14:43:15 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1781634602; x=1782239402; darn=lists.infradead.org;
+        d=google.com; s=20251104; t=1781646195; x=1782250995; darn=lists.infradead.org;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=cX4ssr4Y9/OOfcYZ2FcReQvMLH2Gq4SbTEa5005JITE=;
-        b=gqxs+QrhM1kQ3n5R1+9x0055cT4F2g1EXquhz6gq7y1vP/FHOceZzkfJiOw3j5ECWa
-         fWto+rkcHrhJRzeVm5nzoN6CWfurv9JjPZ5caiPTF2sUx+bX44WvUGhee9rUsw7kZ1GH
-         GqIfiNn9S/kNGOsCqMdoK/o2osQmEcAy7lH8g/KkeRbLGG3kRCsFjPUKq4oWIogpnlvM
-         mCOpZozfgGgWaZxK6g8zYqU57oAklxvlh0nP8Dv9FvZ+vRvW9MwufCE8aeaUzO8/p4Hr
-         D1BuLoXRZGzYIckfAUW3zUGws3TNq0WyxDrMkenw2yy4O1tt6Y3hLcUiNQGv8b4NqEmr
-         CqGQ==
+        bh=YMGez037eq5i2gLRSfEcQdwkg5zUJPnIQY7TCbEX9MY=;
+        b=HVeXpdy1bIdIT8noIWcK66KErOQr/pK37VEb3EQjI/Yp047E3KKff5gdNdrqr0+ttu
+         MA2WUqZfKY8LrvtVuL0WAXfE/ri5qR4bXhTNjEQExQD2YM8/d4T99yL/7a11xxlQy3nA
+         DxkDxLty6UJfrNwl2aZdWLOdoH7qV0x6R4oYQZLVZozjlP+vhImNUdagFKFn8UxSbMO4
+         qHwSp5PbGJPGOgzLSv0BCOWAILq7CN4Qtykbj94p8wAMTU1b5danR4y0gYKDJ0TQcCIB
+         UbuOqJKw5N9WX2OQREPSJMrE0PZzfBc0nOVwI6FF6EkLCWxw7s2CXvXcezfzDR0TruFU
+         YJ6A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781634602; x=1782239402;
+        d=1e100.net; s=20251104; t=1781646195; x=1782250995;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=cX4ssr4Y9/OOfcYZ2FcReQvMLH2Gq4SbTEa5005JITE=;
-        b=gYhigAC17YH6nYmfnfucVLYop9Q7dC91a9Mjgl/t9gj1ttbwO8XSb7J3TIy4qvRHua
-         x4cT/F8+fuIOOakkjal0yZo8CfP1v0XYLLkZa/rAGhPspt/kphQfP7xcqCQu/cyUwjJB
-         RK5lH4mtp7hCEsPVPQHuYZAwjLrbxwQ0x6MkiM+PUKYdPQ8vaiJqWcPmAQoxGr9dxmZx
-         yI/9QbskwXhMHztgdMfeIWiWUZAYOPNZ8Otx133dlQTqhz1QaZs2QMfQ9Ju9KvRdIfFK
-         k+2KNwqvKsDDj8Y71IWElM6H6Kce390Ut4/iM250/waxCQkw5uhB1jiTewvYriFmK9WP
-         +Y4g==
-X-Forwarded-Encrypted: i=1; AFNElJ+MAJg9LRjdL+GbgIwCA/dOU/aXppG73o01J3+8Dd50jh9YRv6SoCDjeJ+NuHVL+7F7bl+J/33qiws=@lists.infradead.org
-X-Gm-Message-State: AOJu0YzWDz5BqCz26EOmCTQQHcbGfEWf+E7VM9/FaKB3zbGFmjo30L2E
-	NQ7FyZfHh/DIIk2VSkx8/gAsRYYVRXw1JK31P1AzACyiHXWNtqM/qEE2cbgxCwJ+eA==
-X-Gm-Gg: AfdE7cmx9MPSkj/5rPckPTEP8qw8ZqVZFuKjz6NEmCNrhpaAQxwBAS5x/5sSmx5T3ud
-	1moj0/iAZec6a6MOACbQdnzeUtiGn+dJqa57KMP9H+2T7cC0PHBfLoSWBZaBmJqh0w8mLA//n+W
-	CNgQ7RwxudxUbhN8EGzMqf0iJnGe7HEGpXT/umAHjh5RDRppOE+KDlNcK/tTQXX9MqYmwj9D7i8
-	dGXwQAO81FN5sQ1xxQSnaVO5lv/Ac7NubCSZVjU7k/YOFm39TtVq5h8fCZ5VTIwz5ZvwMITiLDF
-	faO/dDcwJuveWpzwcnMGxPAnhfi7P2DlFVx+IaiseMz/l+c/935wjygHxfucLMwjobup8zbEqYF
-	jMThBeKka31H8pvDEe+Y/mjzHYmLlQ4GVG1ykDvnf/w4ujovbxpwzSgI/KYUJXlg++nfasGt5JW
-	qUVa+fdh00YSNk1e2vqkY2PEt663LvUx/KEt0mhN1t2hAss39nLRmG+TmK9g==
-X-Received: by 2002:a17:902:ce91:b0:2bd:7bec:f0e6 with SMTP id d9443c01a7336-2c6bbc6030fmr270055ad.1.1781634602099;
-        Tue, 16 Jun 2026 11:30:02 -0700 (PDT)
+        bh=YMGez037eq5i2gLRSfEcQdwkg5zUJPnIQY7TCbEX9MY=;
+        b=ei6RZul4k7HZJPFljVCVs3Q+Tu5ErQ+a/vt6HOFyGYbgdm7jIlK+gTFX30RYjSULLd
+         ORzAeEF5JO/K+Y/ikuUStrJ05Ml5lGy9q5e78ub4vow/zO+DZbkDwiucbqGlLuIueWXB
+         TBvCNTQOSqTeZsiRjpomQmBQI4OfqXS5TBdiRfL/O8Ogy6Hm+8SJdd2ygCVPeAo9JTTx
+         o1ZRLVFi4vxm4vKeKUXR8fUyShqGwqSucSdqDMIMc0kPn9yLnFJr6euoUR+kSONRyMwa
+         BTtKWz/Vpk6ksZvdKNfMVqs8GyKK7TCNl6nigee3mNRXC7Dw6a/mYGpW6sh7QSran+jF
+         kaQA==
+X-Forwarded-Encrypted: i=1; AFNElJ9CU7Dm4idUZfM5Wy2q54ZcS+cANj8dJj81hInOVBdWfRm0orFqhqYwe7Uc5oeWR9ZzUynEE/r5CvA=@lists.infradead.org
+X-Gm-Message-State: AOJu0YxMfd9KuVoNkELJpmoO7YhbXVA0630ZA8QGMZ6j7YGLzlFzXIAs
+	WAiIvH0TC+KtG3/RXP0WdmEMwqj3aTMTQH73efF5pRqoiK1twDBw/wVFRlJPWnnXzA==
+X-Gm-Gg: AfdE7clkkckEhah4mO9JHLDeZm0rffqElWY89mYV3ZtskTdMyHJNUzQY+bQ+nsWO+jM
+	ZZN4sgLYpACi11nx5NPxcWnr1dIaJ3pf5ixof6tlMv4bJegZFxFsjibyPh0kgDkIi1EXH8qCHsC
+	QZEWz5vFe4uLElVKnThsS/loJvN6OiEgsR+VSK5hF4tU3XOr3i3J87PcoezLaQ+ENaUo4qfxE1O
+	ANGiiEcV71FxZFMsCnlBi2c4dc04tKJfgInX+5KRKJxWnwSSQoQkYQGkOHkMoh0Sya621riI9Qe
+	td8I3T3y9jvs9d4cAeveEkVcwx3YBS+MFhiT8J4zEOEdeon65wfZbhSH5OfYytu9BwVylOgYoHs
+	Ber1xO0gNrHk27pJoVRIwbYhXuV9umZ+oS2+WioATAdErGA/ToU9zR3/trOZWGJWgnM/xaRJtx0
+	rly1mZi4tO27EUUD1miggISpTac2lSbn+fo35gvae5GIp5hKoepEmvqce3rA3i/d0xjSTs
+X-Received: by 2002:a17:903:1a8f:b0:2c1:4228:3321 with SMTP id d9443c01a7336-2c6bb8b16ddmr657765ad.12.1781646194557;
+        Tue, 16 Jun 2026 14:43:14 -0700 (PDT)
 Received: from google.com (60.89.247.35.bc.googleusercontent.com. [35.247.89.60])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-37c521aa047sm4617808a91.3.2026.06.16.11.30.01
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-37c5df3588dsm2346191a91.8.2026.06.16.14.43.13
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 16 Jun 2026 11:30:01 -0700 (PDT)
-Date: Tue, 16 Jun 2026 11:29:56 -0700
+        Tue, 16 Jun 2026 14:43:13 -0700 (PDT)
+Date: Tue, 16 Jun 2026 14:43:09 -0700
 From: Vipin Sharma <vipinsh@google.com>
 To: Ackerley Tng <ackerleytng@google.com>
-Cc: Sean Christopherson <seanjc@google.com>, kvm@vger.kernel.org, 
-	kvmarm@lists.linux.dev, kvm-riscv@lists.infradead.org, pbonzini@redhat.com, 
+Cc: kvm@vger.kernel.org, kvmarm@lists.linux.dev, 
+	kvm-riscv@lists.infradead.org, seanjc@google.com, pbonzini@redhat.com, 
 	borntraeger@linux.ibm.com, frankja@linux.ibm.com, imbrenda@linux.ibm.com, 
 	anup@brainfault.org, atish.patra@linux.dev, zhaotianrui@loongson.cn, 
 	maobibo@loongson.cn, chenhuacai@kernel.org, maz@kernel.org, oliver.upton@linux.dev, 
 	ajones@ventanamicro.com
 Subject: Re: [PATCH v4 1/9] KVM: selftest: Create KVM selftest runner
-Message-ID: <20260616175210.GA1675268.vipinsh@google.com>
+Message-ID: <20260616194000.GC1675268.vipinsh@google.com>
 References: <20260331194202.1722082-1-vipinsh@google.com>
  <20260331194202.1722082-2-vipinsh@google.com>
  <CAEvNRgGrPKBXh=VA3QBLJOczKRpMOB4nDmZL0XRwV6B3PT_7+Q@mail.gmail.com>
- <aisHySKe0PwM5DSg@google.com>
- <CAEvNRgE-qt8DAjOeE5ANpXzrgEKs+2_wh4YSmY=pe6krngBXqQ@mail.gmail.com>
- <aitbveI2Sdx4s4BP@google.com>
- <CAEvNRgFLnGkqvvks3joAwPjqLz=ATmqiS0UWk71g+YEsxNsfsg@mail.gmail.com>
- <aiycmwMbhWuYghJh@google.com>
- <CAEvNRgGkjcVN80W7cNd1-tEUXAfnFXEekokh_VbMDb9XdecVVQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <CAEvNRgGkjcVN80W7cNd1-tEUXAfnFXEekokh_VbMDb9XdecVVQ@mail.gmail.com>
+In-Reply-To: <CAEvNRgGrPKBXh=VA3QBLJOczKRpMOB4nDmZL0XRwV6B3PT_7+Q@mail.gmail.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260616_113004_655074_55C99FB8 
-X-CRM114-Status: GOOD (  35.04  )
+X-CRM114-CacheID: sfid-20260616_144315_950377_444D572C 
+X-CRM114-Status: GOOD (  34.39  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -110,100 +104,150 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Tue, Jun 16, 2026 at 09:15:24AM -0700, Ackerley Tng wrote:
-> Sean Christopherson <seanjc@google.com> writes:
+On Wed, Jun 10, 2026 at 06:17:26PM -0700, Ackerley Tng wrote:
+> Vipin Sharma <vipinsh@google.com> writes:
 > 
-> > On Fri, Jun 12, 2026, Ackerley Tng wrote:
-> >> Sean Christopherson <seanjc@google.com> writes:
-> >>
-> >> > On Thu, Jun 11, 2026, Ackerley Tng wrote:
-> >> >> Sean Christopherson <seanjc@google.com> writes:
-> >> >>
-> >> >> > On Wed, Jun 10, 2026, Ackerley Tng wrote:
-> >> >> >> Vipin Sharma <vipinsh@google.com> writes:
-> >> >> >> My (future) use case is that with hugepages, I want to run something
-> >> >> >> like
-> >> >> >>
-> >> >> >>   ./guest_memfd_test --order=0
-> >> >> >>   ./guest_memfd_test --order=9
-> >> >> >>   ./guest_memfd_test --order=18
-> >> >> >>
-> >> >> >> And 0, 9 and 18 are the supported HugeTLB orders on the machine being
-> >> >> >> tested. I'd like to iterate over supported HugeTLB orders at runner
-> >> >> >> runtime instead of at build time.
-> >> >> >
-> >> >> > No.  The right way to handle this is to define testcases for the "interesting"
-> >> >> > sizes, and then rely on the test itself to SKIP if the size is unsupported.  This
-> >> >> > is no different than a test that requires EPT, or nested VMX, or nested SVM, etc.
-> >> >>
-> >> >> That should work too. So at build time I'd make it define all the
-> >> >> possible HugeTLB sizes on every arch, and then skip as necessary.
-> >> >
-> >> > Not necessarily at "build time", the testcases can also come from your local
-> >> > environment.
-> >> >
-> >> >> Why though, why not find the supported sizes at runtime?
-> >> >
-> >> > You can find the supported sizes at runtime, just not in the test runner.  I want
-> >> > the runner itself to be largely oblivious to what's its running.  Disallowing
-> >> > more or less _any_ test specific configuration/setup in the runner is the only
-> >> > way I see of keeping the runner strictly focused on running tests/testcases.
-> >>
-> >> The runner should 100% focus on running tests, I think it's hard for the
-> >> runner to avoid the process of test discovery though.
-> >>
-> >> The current test discovery process is to go down the tree of directories
-> >> and find files, 1 file == 1 testcase. Each file should (statically)
-> >> contain a single command.
-> >>
-> >> Since you're not opposed to runtime discovery of test cases, how about
-> >> something like:
-> >>
-> >>     if the test case file has executable permissions
-> >>         execute it and get back a list of test cases to be run.
 > >
-> > I don't hate it, but I still dislike the idea.  I am all in favor of runtime
-> > *discovery* of testcases, but I am staunchly opposed to runtime *definition* of
-> > testcases.
-
-I don't think we should support this kind of usecase. Our goal is to
-keep test runner as simple as possible. This will add one extra parsing
-logic in the runner and also add more wrapper scripts in kvm selftests
-for tests to create their own dynamic variants.
-
-If dynamic variation is needed, then there is one option in this runner.
-As testcases are executed by runner in a shell environment. This
-basically means the test will run as a shell script and provide variable
-expansion or call other terminal commands if present. One can define
-interesting configuration which can be dynamic based on the host in a
-testcase file. For example if one writes a test command as:
-
-  dirty_log_perf_test -x 1 -v $(nproc) -i $(( (RANDOM % 5) + 2 ))
-
-This will run above dirty_log_perf_test with the number of vCPUs equal
-to the host CPU count and some randomly selected iteration count between
-2 to 6.
-
-This way one can provide interesting configurations which can test max
-of a system in a separate test directory which can be invoked when
-needed.
-
-For predefined input values of a test, either one can write multiple
-*.test files or use kselftest harness and add kselftest API based test
-cases. Both option will still require that test should SKIP if something
-needed is not present on the host as mentioned below.
-
+> > [...snip...]
 > >
-> > If I define guest_memfd testcases for 4KiB, 2MiB, and 1GiB pages, but the
-> > underlying system only support 4KiB and 2MiB, then I want to see a SKIP for the
-> > 1GiB testcase.  If the definition is dynamic, then the 1GiB testcase simply won't
-> > exist.
-> >
+> > +def setup_logging():
+> > +    class TerminalColorFormatter(logging.Formatter):
+> > +        reset = "\033[0m"
+> > +        red_bold = "\033[31;1m"
+> > +        green = "\033[32m"
+> > +        yellow = "\033[33m"
+> > +        blue = "\033[34m"
+> > +
+> > +        COLORS = {
+> > +            SelftestStatus.PASSED: green,
+> > +            SelftestStatus.NO_RUN: blue,
+> > +            SelftestStatus.SKIPPED: yellow,
+> > +            SelftestStatus.FAILED: red_bold
+> > +        }
+> > +
+> > +        def __init__(self, fmt=None, datefmt=None):
+> > +            super().__init__(fmt, datefmt)
+> > +
+> > +        def format(self, record):
+> > +            return (self.COLORS.get(record.levelno, "") +
+> > +                    super().format(record) + self.reset)
+> > +
 > 
-> Seeing the SKIP is a huge advantage over dynamic definition. Thanks for
-> explaining. Makes a lot of sense now to have everything defined statically.
+> The commit message above says the printing will be in colors when the
+> terminal supports it, but if I'm reading this correctly, the colors will
+> always be printed.
+
+I meant if a terminal doesn't have support for printing color output
+then it won't be printed in color. Almost all modern terminal supports
+these ANSI escape sequence, so it will always be printed. Its kind of
+a dumb statement I wrote in the commit log.
+> 
+> I was expecting something like if the output is piped to some file or
+> like "not TTY" then don't print colors.
+> 
+> Would you consider not printing in color at all? Or adding some kind of
+> "turn off all display magic" flag?
+
+Good point about color on/off. I can make following
+changes in following priority, starting with the highest:
+
+1. If NO_COLOR enivornment variable is set then don't print color at
+   all.
+2. If FORCE_COLOR environment variable is set then print color
+   (default).
+3. If output is not TTY then don't print color.
+4. Print color.
+
+> 
+> I also saw code for a sticky footer in another patch in this series,
+> that's probably not nice for other stuff wrapping this runner.
+> 
+For sticky update, I can hide it if there is no TTY.
+
+> > +if __name__ == "__main__":
+> > +    PYTHON_VERSION = (3, 6)
+> > +    if sys.version_info < PYTHON_VERSION:
+> > +        print(f"Minimum required python version {PYTHON_VERSION}, found {sys.version}")
+> > +        sys.exit(1)
+> > +
+> > +    sys.exit(main())
+> 
+> This shouldn't block merge: why not align with the kernel's official
+> required python version?
 > 
 
+When I first proposed official version was 3.5, it got upgraded to 3.9
+in commit 5e25b972a22b ("docs: changes: update Python minimal version")
+
+I was using some APIs which were not present in 3.5 and 3.6 was the
+minimum version I was able to run all the features I needed.
+
+It just stayed that version and I never checked to keep it in sync with
+the latest python version.
+
+> > +
+> > +        run_args = {
+> > +            "universal_newlines": True,
+> > +            "shell": True,
+> > +            "stdout": subprocess.PIPE,
+> > +            "stderr": subprocess.PIPE
+> > +        }
+> > +        proc = subprocess.run(self.command, **run_args)
+> > +
+> > +        out, err = proc.stdout, proc.stderr
+> > +        self.stdout = out.decode("utf-8", "replace") if isinstance(out, bytes) else (out or "")
+> > +        self.stderr = err.decode("utf-8", "replace") if isinstance(err, bytes) else (err or "")
+> 
+> I think it would be useful to capture stdout and stderr in order that it
+> was output, so that the output being saved shows everything
+> interleaved. I think the order could be useful in debugging.
+> 
+> I can see benefits in knowing which was on stdout and which was on
+> stderr too, so is there some way of having both?
+> 
+
+Both approaches are useful, I am not sure how to achieve what you are
+asking reliably.
+
+However, I think separate stdout and stderr is more useful in automation/CI
+tools. Considering, runner is for the human use I am more inclined on
+having combined output of stdout and stderr as you are suggsting.
+
+I will change it to combined output in next version, new filename will
+be "out" consisting of both stdout and stderr. If there is ever
+need for separate dumps we can revisit it.
+
+One thing we will lose is in current approach, non-zero stderr is signal
+of finding errored out runs. Not a big loss as same information can be
+grepped using master log file.
+
+
+> > +
+> > +        if proc.returncode == 0:
+> > +            self.status = SelftestStatus.PASSED
+> > +        elif proc.returncode == 4:
+> > +            self.status = SelftestStatus.SKIPPED
+> > +        else:
+> > +            self.status = SelftestStatus.FAILED
+> 
+> Using this class-based pattern requires us to do
+> Selftest(test_path).run(). Would you consider using a function-based
+> pattern, like run_selftest(test_path) instead?
+> 
+
+I find current class model provides an easy way to group data in
+hierarchy. For example, test_runner has list of selftests which it needs to
+execute. Selftests have their own test command, output data, result
+status, etc.
+
+Both are suitable to implement runner. But I am little hesitant to
+change it now considering it is already written. If you can provide
+benefits of using functions approach here then I am open to
+rewrite.
+
+> >
+> > [...snip...]
+> >
 
 -- 
 kvm-riscv mailing list
