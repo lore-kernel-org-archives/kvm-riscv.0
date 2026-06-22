@@ -4,53 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D2E3FCDB47A
-	for <kvm-riscv@archiver.kernel.org>; Mon, 22 Jun 2026 04:01:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A3569CDB46F
+	for <kvm-riscv@archiver.kernel.org>; Mon, 22 Jun 2026 04:01:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:Reply-To:List-Subscribe:List-Help:
-	List-Post:List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:
-	Message-Id:MIME-Version:Subject:Date:From:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=4QGJxjVlYhEyIzP/+ouPLGQzP3TJJQOV77HqkNNt/2E=; b=FrtKjagXj5Am5u
-	DfXueQ4c1ZNS2Xx7Gb0+mNNaR0qMUW1beLJqpq/tHMjUi+38oqujLh8WI/uBCwxqTvfYs/5QvJKbQ
-	0wSCLGxK5Vj5s8ycvQhdgMxexDXBg/Ryz1XR4zSBs55oWDZyN0ciuGewUo/EyRYVnpWdyjA7XpSx7
-	ExI4CHiQT/RHrk+QYY2e0sjxo2aBk1Q5iESrCfV15ra8012hGx48t2Z+qd1KoyTHzuUm9BxVIiB0B
-	PF/YmVO9YJf20KktP3+xA3Z/GFkm5TbZWclM9oJhA+GF20Hc5yY0DPb6FH5dV6Zbqh8mOq18D/QlX
-	23IFI7wiwiN3JjdXEjsg==;
+	List-Post:List-Archive:List-Unsubscribe:List-Id:Cc:To:MIME-Version:Message-Id
+	:Date:Subject:From:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=UOdDEmUPg7nZmLS1rdQIWIwfpHU4PyU4gWLTkEhxnnU=; b=St8RuFS+RJOcGT
+	3tXtl+08IzDLhYK+Ml0tulcFOHM9Kmu6aRvAknmlXnfq7RbxaG5D/ewnMwxFpPZwRM8dRwD+FM53M
+	B4rlV8yzaFmv92G3NORuv4zCxdSKaEor35+BpJe3kHeaTr5XYc4pb30k/1AsPJe1xSd+Gb4W5ekRK
+	rFdH/l6ABM2JjDfWQWeKFphqdqNphwwrWBQLbhekps1ecZGlwRldgzZN+khdYF8oh7mXXc3TS6EN8
+	dIooLlgaEtRqqrKiKQ1tM9LKsrSQFVxsuxpXkMOGnY8VuuaN64/9AOM8fl8fQOGnVsOSwZ/TV1SpI
+	4d8Iaou5OXoYNbbFnGRQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wbVr1-00000004MY1-1PhX;
-	Mon, 22 Jun 2026 04:01:47 +0000
-Received: from sea.source.kernel.org ([2600:3c0a:e001:78e:0:1991:8:25])
+	id 1wbVr6-00000004Mad-1W7m;
+	Mon, 22 Jun 2026 04:01:52 +0000
+Received: from tor.source.kernel.org ([2600:3c04:e001:324:0:1991:8:25])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wbVqx-00000004MTO-0Ndq;
+	id 1wbVqx-00000004MTM-0NY8;
 	Mon, 22 Jun 2026 04:01:43 +0000
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id B44A044518;
+	by tor.source.kernel.org (Postfix) with ESMTP id 9C3776008A;
 	Mon, 22 Jun 2026 04:01:41 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 8D122C2BCFB;
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 45224C2BCB4;
 	Mon, 22 Jun 2026 04:01:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1782100901;
-	bh=vQqqZr7DhoJ8ZrKIl6jOAn+rh2nQyLdMh5PQwl3TZ2U=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=DXRJ2Vg3/o7OPhxeCnmLCS90Kq+TO/T1O6CHH5ls3ktkZROCVd52iw0SEOUaXkrjS
-	 vfsZ4Rsgg3jO8DAPdr0xzJ8GxpXPp1V/9qSTpeBVK1fd4zyVY7kswcZsVktN5Wx7eg
-	 cc10Wb8EgyQwXj+b+nmAIhhs2v+GDiezueXmnZ/UDtdsFP8ptXiUVID8i13nq0u1nJ
-	 recfzv+AYWqzzVTmSLLbMdAt/f0NUNcFGLM2N6LS5EspAMw8xwBNoZAqHNDsVVnnUt
-	 c/hJs3KwVMDnumLLIfHf6HUrBcZEG26bu4wwcs1aS0iOHY1t93GC6V8Jph+lfNYjx5
-	 aUPPheWrQBbhw==
+	bh=2Ue0OQWnzEfJvkx9yKoYjaChcgTBWEXuzcW+rzKXsR8=;
+	h=From:Subject:Date:To:Cc:Reply-To:From;
+	b=SLA34/lORaq2vkbGVFcFXeaClBUdvgLejrAyf6dDarlAcLMHXyRXjwPu8O8cySp6+
+	 4VT981sldiiCAU5IDyVhvFBOfTsuscyI8ffF8PdMcMjuty0HmiSgq9iUahleLqKQ6/
+	 COlJ/aBt+z4/9daFb3yB90wdNptgAQQxGESdhXMbCCv2Ys7WeGsi5xwD8L+EoAGNkQ
+	 hNG4Dvg1bK7OplDRptvAXJHUHG+UWDtAPbDOSPcXK0WB08sxp0E18Qn6ggVEw6VAMU
+	 +n/B1+usjS7sGtY/rnU58YfgYnTpbgpHpx/Vu0xaKg5eCjkamz31xZOaHVX2f2z01/
+	 ijotvrfwL9Z4w==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 814DDCDB46F;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2827FCDB46F;
 	Mon, 22 Jun 2026 04:01:41 +0000 (UTC)
 From: Charlie Jenkins via B4 Relay <devnull+thecharlesjenkins.gmail.com@kernel.org>
-Date: Sun, 21 Jun 2026 21:01:22 -0700
-Subject: [PATCH v2 04/16] riscv: Add kprobes instruction simulation KUnit
+Subject: [PATCH v2 00/16] riscv: Generate riscv instruction functions
+Date: Sun, 21 Jun 2026 21:01:18 -0700
+Message-Id: <20260621-riscv_insn_table-v2-0-7f0810ee2274@gmail.com>
 MIME-Version: 1.0
-Message-Id: <20260621-riscv_insn_table-v2-4-7f0810ee2274@gmail.com>
-References: <20260621-riscv_insn_table-v2-0-7f0810ee2274@gmail.com>
-In-Reply-To: <20260621-riscv_insn_table-v2-0-7f0810ee2274@gmail.com>
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/2WNQQqDMBREryJ/3ZTERNN21XsUkWi++kGTkkhoE
+ e/e1C4Ls3kD82aDiIEwwq3YIGCiSN5lKE8F9JNxIzKymaHkZc2FUCxQ7FNLLrp2Nd2MTF7Utcq
+ xg5WQZ8+AA70O5aPJPFFcfXgfD0l8259Mcf0vS4JxVqlOaVkbgVrfx8XQfO79As2+7x81PW/7s
+ AAAAA==
+X-Change-ID: 20260114-riscv_insn_table-38495495dfd3
 To: Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
  Nam Cao <namcao@linutronix.de>, Alexandre Ghiti <alex@ghiti.fr>, 
  Anup Patel <anup@brainfault.org>, Atish Patra <atish.patra@linux.dev>, 
@@ -62,11 +65,11 @@ Cc: linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
  linux-kselftest@vger.kernel.org, 
  Charlie Jenkins <thecharlesjenkins@gmail.com>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1782100900; l=11557;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1782100900; l=5328;
  i=thecharlesjenkins@gmail.com; s=20260605; h=from:subject:message-id;
- bh=+jKWnHeDczH8xoiHIK3Lygi5Gw6AxgY9uMrA5zkeP54=;
- b=eBbrfi0UK3lHu/X+8/rzc81EDyRBf+eKcjHqg9HPWAjCsF8mvuP6WWEhWNSllFspkQrO4MQPC
- TTyzd5JsR9hBbtO1kzgTASbBmrlASY1HJ7/W8B4x4h5EVE/sw3/WLDK
+ bh=2Ue0OQWnzEfJvkx9yKoYjaChcgTBWEXuzcW+rzKXsR8=;
+ b=ne5wljDoG4zphFx5l9ULUKiRBpeUuwuxY2AbZ2BeN3QgGMMOIAhW6sy1FiM117AEx+Bc6kL8v
+ lqEFZx/bszkD8yBFpdr3oY3ukUz9KPteAWALGmMar+HG5pTqTeSTnDX
 X-Developer-Key: i=thecharlesjenkins@gmail.com; a=ed25519;
  pk=ajnnRQ98PIdwKp4HeMkq9U32okYbnh6Zb4G3o5XXvkg=
 X-Endpoint-Received: by B4 Relay for thecharlesjenkins@gmail.com/20260605
@@ -89,331 +92,109 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-From: Charlie Jenkins <thecharlesjenkins@gmail.com>
+There is a lot of code that is manually manipulating riscv instructions.
+Constructing these headers for new instructions is time consuming and
+error prone.
 
-This KUnit iterates through all 32-bit integers and validates that the
-simulation code for kprobes simulates properly. These tests are very
-slow so they are gated behind a new kconfig option
-CONFIG_RISCV_KPROBES_SIMULATE_KUNIT.
+The first patch in this series introduces the instruction definition
+table along with a script that runs at compile time to create all of the
+associated instruction manipulation functions. The remaining patches
+migrate all of the manual instruction code to use these generated
+functions.
+
+The instruction definition table is generated from the
+riscv-unified-db[1], an open source RVI project for instruction
+specifications. I got this table generation merged into
+riscv-unified-db, that PR can be accessed on github [2].
+
+A lot of the validation for these changes is from running all possible
+32-bit or 16-bit integers through these functions to see that any given
+instruction will produce to expected result. I give more detail on the
+test cases in the notes of the first couple of patches.
+
+For the KVM patches, I also introduce two test cases to ensure that the
+instruction manipulation is working as expected.
+
+[1] https://github.com/riscv/riscv-unified-db
+[2] https://github.com/riscv/riscv-unified-db/pull/1780
 
 Signed-off-by: Charlie Jenkins <thecharlesjenkins@gmail.com>
 ---
- arch/riscv/kernel/tests/Kconfig.debug              |  13 ++
- arch/riscv/kernel/tests/kprobes/Makefile           |   2 +
- .../kernel/tests/kprobes/test-kprobes-simulate.c   | 250 +++++++++++++++++++++
- arch/riscv/kernel/tests/kprobes/test-kprobes.h     |   6 +
- 4 files changed, 271 insertions(+)
+Changes in v2:
+- rebased on v7.1
+- I dropped the patch fixing the mmio bug in kvm because in the
+  meantime that bug has been fixed in a different patch
+- Calls to panic() for instructions not support on current hardware have
+  been changed into BUG_ON()
+- Fixed incorrect handling of branches in simulate_*()
+- Added CONFIG_RISCV_KPROBES_SIMULATE_KUNIT for more detailed
+  simulate_*() testing
+- Updated insn.tbl based on new merged in changes to riscv-unified-db
+- Link to v1: https://lore.kernel.org/r/20260407-riscv_insn_table-v1-0-54b4736a1e77@gmail.com
 
-diff --git a/arch/riscv/kernel/tests/Kconfig.debug b/arch/riscv/kernel/tests/Kconfig.debug
-index 40f8dafffa0a..9eda8938ec15 100644
---- a/arch/riscv/kernel/tests/Kconfig.debug
-+++ b/arch/riscv/kernel/tests/Kconfig.debug
-@@ -42,6 +42,19 @@ config RISCV_KPROBES_KUNIT
- 
-          If unsure, say N.
- 
-+config RISCV_KPROBES_SIMULATE_KUNIT
-+       tristate "KUnit test for riscv kprobes instruction simulation" if !KUNIT_ALL_TESTS
-+       depends on KUNIT
-+       depends on KPROBES
-+       default KUNIT_ALL_TESTS
-+       help
-+         Enable testing for riscv kprobes instruction simulation. Useful for
-+         riscv and/or kprobes development. The test verifies that kprobes
-+         instruction simulation properly simulates the instructions. These tests
-+         are very slow.
-+
-+         If unsure, say N.
-+
- endif # RUNTIME_TESTING_MENU
- 
- endmenu # "arch/riscv/kernel runtime Testing"
-diff --git a/arch/riscv/kernel/tests/kprobes/Makefile b/arch/riscv/kernel/tests/kprobes/Makefile
-index df7256f62313..34db6044e87f 100644
---- a/arch/riscv/kernel/tests/kprobes/Makefile
-+++ b/arch/riscv/kernel/tests/kprobes/Makefile
-@@ -1,3 +1,5 @@
- obj-$(CONFIG_RISCV_KPROBES_KUNIT) += kprobes_riscv_kunit.o
-+obj-$(CONFIG_RISCV_KPROBES_SIMULATE_KUNIT) += kprobes_simulate_riscv_kunit.o
- 
- kprobes_riscv_kunit-objs := test-kprobes.o test-kprobes-asm.o
-+kprobes_simulate_riscv_kunit-objs := test-kprobes-simulate.o
-diff --git a/arch/riscv/kernel/tests/kprobes/test-kprobes-simulate.c b/arch/riscv/kernel/tests/kprobes/test-kprobes-simulate.c
-new file mode 100644
-index 000000000000..d82706685823
---- /dev/null
-+++ b/arch/riscv/kernel/tests/kprobes/test-kprobes-simulate.c
-@@ -0,0 +1,250 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+
-+#include <linux/kernel.h>
-+#include <linux/kprobes.h>
-+#include <kunit/test.h>
-+
-+#include "../../probes/simulate-insn.h"
-+
-+#include <asm/insn.h>
-+#include <asm/text-patching.h>
-+
-+static void test_kprobe_simulate_riscv(struct kunit *test)
-+{
-+	unsigned int addr = 0xdeadbeef;
-+	unsigned int i = 0;
-+
-+	do {
-+		struct pt_regs regs = { 0 };
-+
-+		if (riscv_insn_is_jal(i)) {
-+			s32 offset = riscv_insn_jal_extract_imm(i);
-+			u32 xd_index = riscv_insn_jal_extract_xd(i);
-+
-+			simulate_jal(i, addr, &regs);
-+
-+			KUNIT_EXPECT_EQ_MSG(test, regs.epc, addr + offset,
-+					    "jal instruction (0x%x) incorrectly simulated", i);
-+
-+			if (xd_index)
-+				KUNIT_EXPECT_EQ_MSG(
-+					test,
-+					riscv_insn_reg_get_val((unsigned long *)&regs, xd_index),
-+					addr + 4, "jal instruction (0x%x) incorrectly simulated",
-+					i);
-+		}
-+		if (riscv_insn_is_jalr(i)) {
-+			unsigned long reg_addr = 0xffff;
-+			s32 offset = riscv_insn_jalr_extract_imm(i);
-+			u32 rd_index = riscv_insn_jalr_extract_xd(i);
-+			u32 rs1_index = riscv_insn_jalr_extract_xs1(i);
-+
-+			if (rs1_index)
-+				riscv_insn_reg_set_val((unsigned long *)&regs, rs1_index, reg_addr);
-+			else
-+				reg_addr = 0;
-+
-+			simulate_jalr(i, addr, &regs);
-+
-+			KUNIT_EXPECT_EQ_MSG(test, regs.epc, (reg_addr + offset) & ~1,
-+					    "jalr instruction (0x%x) incorrectly simulated", i);
-+
-+			if (rd_index)
-+				KUNIT_EXPECT_EQ_MSG(
-+					test,
-+					riscv_insn_reg_get_val((unsigned long *)&regs, rd_index),
-+					addr + 4, "jalr instruction (0x%x) incorrectly simulated",
-+					i);
-+		} else if (riscv_insn_is_auipc(i)) {
-+			s32 offset = riscv_insn_auipc_extract_imm(i);
-+			u32 rd_index = riscv_insn_auipc_extract_xd(i);
-+
-+			simulate_auipc(i, addr, &regs);
-+
-+			KUNIT_EXPECT_EQ_MSG(test, regs.epc, addr + 4,
-+					    "auipc instruction (0x%x) incorrectly simulated", i);
-+
-+			if (rd_index)
-+				KUNIT_EXPECT_EQ_MSG(
-+					test,
-+					riscv_insn_reg_get_val((unsigned long *)&regs, rd_index),
-+					(unsigned long)addr + offset,
-+					"auipc instruction (0x%x) incorrectly simulated", i);
-+		} else if (riscv_insn_is_beq(i)) {
-+			s32 offset = riscv_insn_beq_extract_imm(i);
-+			u32 rs1_index = riscv_insn_beq_extract_xs1(i);
-+			u32 rs2_index = riscv_insn_beq_extract_xs2(i);
-+
-+			simulate_beq(i, addr, &regs);
-+
-+			if (riscv_insn_reg_get_val((unsigned long *)&regs, rs1_index) ==
-+			    riscv_insn_reg_get_val((unsigned long *)&regs, rs2_index)) {
-+				KUNIT_EXPECT_EQ_MSG(test, regs.epc, addr + offset,
-+						    "beq instruction (0x%x) incorrectly simulated",
-+						    i);
-+			} else {
-+				KUNIT_EXPECT_EQ_MSG(test, regs.epc, addr + 4,
-+						    "beq instruction (0x%x) incorrectly simulated",
-+						    i);
-+			}
-+		} else if (riscv_insn_is_bne(i)) {
-+			s32 offset = riscv_insn_bne_extract_imm(i);
-+			u32 rs1_index = riscv_insn_bne_extract_xs1(i);
-+			u32 rs2_index = riscv_insn_bne_extract_xs2(i);
-+
-+			simulate_bne(i, addr, &regs);
-+
-+			if (riscv_insn_reg_get_val((unsigned long *)&regs, rs1_index) !=
-+			    riscv_insn_reg_get_val((unsigned long *)&regs, rs2_index)) {
-+				KUNIT_EXPECT_EQ_MSG(test, regs.epc, addr + offset,
-+						    "bne instruction (0x%x) incorrectly simulated",
-+						    i);
-+			} else {
-+				KUNIT_EXPECT_EQ_MSG(test, regs.epc, addr + 4,
-+						    "bne instruction (0x%x) incorrectly simulated",
-+						    i);
-+			}
-+		} else if (riscv_insn_is_blt(i)) {
-+			s32 offset = riscv_insn_blt_extract_imm(i);
-+			u32 rs1_index = riscv_insn_blt_extract_xs1(i);
-+			u32 rs2_index = riscv_insn_blt_extract_xs2(i);
-+
-+			simulate_blt(i, addr, &regs);
-+
-+			if ((long)riscv_insn_reg_get_val((unsigned long *)&regs, rs1_index) <
-+			    (long)riscv_insn_reg_get_val((unsigned long *)&regs, rs2_index)) {
-+				KUNIT_EXPECT_EQ_MSG(test, regs.epc, addr + offset,
-+						    "blt instruction (0x%x) incorrectly simulated",
-+						    i);
-+			} else {
-+				KUNIT_EXPECT_EQ_MSG(test, regs.epc, addr + 4,
-+						    "blt instruction (0x%x) incorrectly simulated",
-+						    i);
-+			}
-+		} else if (riscv_insn_is_bge(i)) {
-+			s32 offset = riscv_insn_bge_extract_imm(i);
-+			u32 rs1_index = riscv_insn_bge_extract_xs1(i);
-+			u32 rs2_index = riscv_insn_bge_extract_xs2(i);
-+
-+			simulate_bge(i, addr, &regs);
-+
-+			if ((long)riscv_insn_reg_get_val((unsigned long *)&regs, rs1_index) >=
-+			    (long)riscv_insn_reg_get_val((unsigned long *)&regs, rs2_index)) {
-+				KUNIT_EXPECT_EQ_MSG(test, regs.epc, addr + offset,
-+						    "bge instruction (0x%x) incorrectly simulated",
-+						    i);
-+			} else {
-+				KUNIT_EXPECT_EQ_MSG(test, regs.epc, addr + 4,
-+						    "bge instruction (0x%x) incorrectly simulated",
-+						    i);
-+			}
-+		} else if (riscv_insn_is_bltu(i)) {
-+			s32 offset = riscv_insn_bltu_extract_imm(i);
-+			u32 rs1_index = riscv_insn_bltu_extract_xs1(i);
-+			u32 rs2_index = riscv_insn_bltu_extract_xs2(i);
-+
-+			simulate_bltu(i, addr, &regs);
-+
-+			if (riscv_insn_reg_get_val((unsigned long *)&regs, rs1_index) <
-+			    riscv_insn_reg_get_val((unsigned long *)&regs, rs2_index)) {
-+				KUNIT_EXPECT_EQ_MSG(test, regs.epc, addr + offset,
-+						    "bltu instruction (0x%x) incorrectly simulated",
-+						    i);
-+			} else {
-+				KUNIT_EXPECT_EQ_MSG(test, regs.epc, addr + 4,
-+						    "bltu instruction (0x%x) incorrectly simulated",
-+						    i);
-+			}
-+		} else if (riscv_insn_is_bgeu(i)) {
-+			s32 offset = riscv_insn_bgeu_extract_imm(i);
-+			u32 rs1_index = riscv_insn_bgeu_extract_xs1(i);
-+			u32 rs2_index = riscv_insn_bgeu_extract_xs2(i);
-+
-+			simulate_bgeu(i, addr, &regs);
-+
-+			if (riscv_insn_reg_get_val((unsigned long *)&regs, rs1_index) >=
-+			    riscv_insn_reg_get_val((unsigned long *)&regs, rs2_index)) {
-+				KUNIT_EXPECT_EQ_MSG(test, regs.epc, addr + offset,
-+						    "bgeu instruction (0x%x) incorrectly simulated",
-+						    i);
-+			} else {
-+				KUNIT_EXPECT_EQ_MSG(test, regs.epc, addr + 4,
-+						    "bgeu instruction (0x%x) incorrectly simulated",
-+						    i);
-+			}
-+		} else if (riscv_insn_is_c_j(i)) {
-+			s32 offset = riscv_insn_c_j_extract_imm(i);
-+
-+			simulate_c_j(i, addr, &regs);
-+
-+			KUNIT_EXPECT_EQ_MSG(test, regs.epc, addr + offset,
-+					    "c.j instruction (0x%x) incorrectly simulated", i);
-+		} else if (riscv_insn_is_c_jr(i)) {
-+			u32 rs1_index = riscv_insn_c_jr_extract_xs1(i);
-+
-+			simulate_c_jr(i, addr, &regs);
-+
-+			KUNIT_EXPECT_EQ_MSG(test, regs.epc,
-+					    riscv_insn_reg_get_val((unsigned long *)&regs,
-+								   rs1_index),
-+					    "c.jr instruction (0x%x) incorrectly simulated", i);
-+		} else if (riscv_insn_is_c_jalr(i)) {
-+			unsigned long reg_addr = 0xffff;
-+			u32 rs1_index = riscv_insn_c_jalr_extract_xs1(i);
-+
-+			if (rs1_index)
-+				riscv_insn_reg_set_val((unsigned long *)&regs, rs1_index, reg_addr);
-+			else
-+				reg_addr = 0;
-+
-+			simulate_c_jalr(i, addr, &regs);
-+
-+			KUNIT_EXPECT_EQ_MSG(test, regs.epc, reg_addr,
-+					    "c.jalr instruction (0x%x) incorrectly simulated", i);
-+
-+			KUNIT_EXPECT_EQ_MSG(test, regs.ra, addr + 2,
-+					    "c.jalr instruction (0x%x) incorrectly simulated", i);
-+		} else if (riscv_insn_is_c_bnez(i)) {
-+			u32 offset;
-+			u32 rs1_index = riscv_insn_c_bnez_extract_xs1(i);
-+
-+			simulate_c_bnez(i, addr, &regs);
-+
-+			if (riscv_insn_reg_get_val((unsigned long *)&regs, rs1_index + 8) != 0)
-+				offset = riscv_insn_c_bnez_extract_imm(i);
-+			else
-+				offset = 2;
-+
-+			KUNIT_EXPECT_EQ_MSG(test, regs.epc, addr + offset,
-+					    "c.bnez instruction (0x%x) incorrectly simulated", i);
-+		} else if (riscv_insn_is_c_beqz(i)) {
-+			u32 offset;
-+			u32 rs1_index = riscv_insn_c_beqz_extract_xs1(i);
-+
-+			simulate_c_beqz(i, addr, &regs);
-+
-+			if (riscv_insn_reg_get_val((unsigned long *)&regs, rs1_index + 8) == 0)
-+				offset = riscv_insn_c_beqz_extract_imm(i);
-+			else
-+				offset = 2;
-+
-+			KUNIT_EXPECT_EQ_MSG(test, regs.epc, addr + offset,
-+					    "c.beqz instruction (0x%x) incorrectly simulated", i);
-+		}
-+	} while (++i > 0);
-+}
-+
-+static struct kunit_case kprobes_simulate_testcases[] = {
-+	KUNIT_CASE_SLOW(test_kprobe_simulate_riscv),
-+	{}
-+};
-+
-+static struct kunit_suite kprobes_simulate_test_suite = {
-+	.name = "kprobes_simulate_riscv",
-+	.test_cases = kprobes_simulate_testcases,
-+};
-+
-+kunit_test_suites(&kprobes_simulate_test_suite);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_DESCRIPTION("KUnit test for riscv kprobes instruction simulatation");
-diff --git a/arch/riscv/kernel/tests/kprobes/test-kprobes.h b/arch/riscv/kernel/tests/kprobes/test-kprobes.h
-index 537f44aa9d3f..7a672de8f130 100644
---- a/arch/riscv/kernel/tests/kprobes/test-kprobes.h
-+++ b/arch/riscv/kernel/tests/kprobes/test-kprobes.h
-@@ -19,6 +19,12 @@ extern void *test_kprobes_addresses[];
- /* array of functions that return KPROBE_TEST_MAGIC */
- extern long (*test_kprobes_functions[])(void);
- 
-+void test_kprobes_arbitrary(void);
-+
-+extern unsigned int *test_kprobes_arbitrary_addr;
-+
-+extern unsigned int *test_kprobes_c_bnez_addr1;
-+
- #endif /* __ASSEMBLER__ */
- 
- #endif /* TEST_KPROBES_H */
+---
+Charlie Jenkins (16):
+      riscv: Introduce instruction table generation
+      riscv: alternatives: Use generated instruction headers for patching code
+      riscv: kgdb: Use generated instruction headers
+      riscv: Add kprobes instruction simulation KUnit
+      riscv: kprobes: Use generated instruction headers
+      riscv: cfi: Use generated instruction headers
+      riscv: Use generated instruction headers for misaligned loads/stores
+      riscv: kvm: Use generated instruction headers for csr code
+      KVM: device: Add test device
+      KVM: riscv: selftests: Add mmio test
+      riscv: kvm: Use generated instruction headers for mmio emulation
+      riscv: kvm: Add emulated test csr
+      KVM: riscv: selftests: Add csr emulation test
+      riscv: kvm: Use generated instruction headers for csr emulation
+      riscv: kexec: Use generated instruction headers for kexec relocations
+      riscv: Remove unused instruction headers
 
--- 
-2.54.0
+ arch/riscv/Kconfig.debug                           |    1 +
+ arch/riscv/Makefile                                |    3 +
+ arch/riscv/include/asm/Kbuild                      |    1 +
+ arch/riscv/include/asm/insn.h                      |  563 +-------
+ arch/riscv/include/asm/kvm_host.h                  |   10 +
+ arch/riscv/include/asm/kvm_vcpu_insn.h             |    5 +-
+ arch/riscv/include/asm/kvm_vcpu_test_csr.h         |   15 +
+ arch/riscv/kernel/alternative.c                    |   23 +-
+ arch/riscv/kernel/cfi.c                            |    6 +-
+ arch/riscv/kernel/kgdb.c                           |  102 +-
+ arch/riscv/kernel/machine_kexec_file.c             |   55 +-
+ arch/riscv/kernel/probes/decode-insn.c             |    7 +-
+ arch/riscv/kernel/probes/simulate-insn.c           |  253 ++--
+ arch/riscv/kernel/probes/simulate-insn.h           |    7 +-
+ arch/riscv/kernel/tests/Kconfig.debug              |   13 +
+ arch/riscv/kernel/tests/kprobes/Makefile           |    2 +
+ .../kernel/tests/kprobes/test-kprobes-simulate.c   |  250 ++++
+ arch/riscv/kernel/tests/kprobes/test-kprobes.h     |    6 +
+ arch/riscv/kernel/traps_misaligned.c               |  183 ++-
+ arch/riscv/kvm/Kconfig.debug                       |   16 +
+ arch/riscv/kvm/Makefile                            |    1 +
+ arch/riscv/kvm/vcpu_insn.c                         |  232 ++--
+ arch/riscv/kvm/vcpu_test_csr.c                     |   21 +
+ arch/riscv/tools/Makefile                          |   22 +
+ arch/riscv/tools/insn.tbl                          | 1392 ++++++++++++++++++++
+ arch/riscv/tools/insn_tbl.sh                       |  256 ++++
+ include/uapi/linux/kvm.h                           |    2 +
+ lib/Kconfig.debug                                  |    6 +
+ tools/testing/selftests/kvm/Makefile.kvm           |    2 +
+ tools/testing/selftests/kvm/riscv/csr_test.c       |  126 ++
+ tools/testing/selftests/kvm/riscv/mmio_test.c      |  184 +++
+ virt/kvm/Kconfig.debug                             |   16 +
+ virt/kvm/Makefile.kvm                              |    1 +
+ virt/kvm/kvm_main.c                                |    8 +
+ virt/kvm/mmio_test.c                               |   95 ++
+ virt/kvm/mmio_test.h                               |   18 +
+ 36 files changed, 2897 insertions(+), 1006 deletions(-)
+---
+base-commit: 8cd9520d35a6c38db6567e97dd93b1f11f185dc6
+change-id: 20260114-riscv_insn_table-38495495dfd3
+
+Best regards,
+--  
+Charlie Jenkins <thecharlesjenkins@gmail.com>
 
 
 
