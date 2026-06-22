@@ -4,51 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7E961CD98F6
-	for <kvm-riscv@archiver.kernel.org>; Mon, 22 Jun 2026 04:01:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E2B9CDB46F
+	for <kvm-riscv@archiver.kernel.org>; Mon, 22 Jun 2026 04:01:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:Reply-To:List-Subscribe:List-Help:
 	List-Post:List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:
 	Message-Id:MIME-Version:Subject:Date:From:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=ywCW5KM3cVwSOJCjzn3u6Fs0mdvXnmNTIBZyHmHg7do=; b=ILUYV66GNZEIF+
-	3nBg/9S/gL0hMT/AP8IFcHJR5zhBSujff/03Ts+xNG/S/EL//EMBLFU8fHXS2yeWMcM5dcIeARYe3
-	bNMS/ZrMZkgoX7dIJOl9O1wSynfnNE+ZwL38zUsNVhgfwVaN5B/j58JbZD4/l2lh+tQPHZi1VXIAD
-	ZvTiIugJ5vP7Ov6SrMS3RKATqTgaUGRM91FMCP/3UNHQW1Kufvd9a0kBn+dIUzmwTfl2OhgCs38qQ
-	/nJwzarvApWbDVR/PfwhXSxMU20rdsaLYOYmuJlE7kt6c0tJ+HxOZ4y5R0bNsAmEVaK02nwIAruoo
-	IGhbs4PupN6bJUKJnIdw==;
+	List-Owner; bh=2DtsZ/HI9a7fa1upg9NVLuNf3E/c1f1GtnHX2CbsQBw=; b=RUAni69QOxISxX
+	6U05NmDc1jrpDNnN80MLUKxj9ZNACIIeND8BeqqKjlW0mhHKwNZRLsBDwsGc4YdnXf3azjCvupgBU
+	H2eKZHcjSSccka2o1xuOQyv/Fuwq2q80iP60z/kp0M9kIkfSM/20wrAQLbNBMlCkj54oNRq4xgwzj
+	O9GYAPhH7T1StoRgEMIIWpFvGTY1LWPkk3V55atzNe1NTwR7Y8bZvz6b0ELbjeBVyHTs7TFPSmdHv
+	DzdyFyzt8sv2dNZiDOf5sV6sKW/g46dsZhYeMrgdFpfmdRXsPZbqSn563pR5mwcFE264r8butK9cn
+	++umqqgVOusPSmtDq5aQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wbVqx-00000004MUm-2Shu;
-	Mon, 22 Jun 2026 04:01:43 +0000
+	id 1wbVqy-00000004MVo-188n;
+	Mon, 22 Jun 2026 04:01:44 +0000
 Received: from sea.source.kernel.org ([172.234.252.31])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wbVqw-00000004MTL-14LW;
+	id 1wbVqw-00000004MTQ-2h74;
 	Mon, 22 Jun 2026 04:01:42 +0000
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id A77A3444DD;
+	by sea.source.kernel.org (Postfix) with ESMTP id C70EB44543;
 	Mon, 22 Jun 2026 04:01:41 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 82ACFC2BCC6;
+Received: by smtp.kernel.org (Postfix) with ESMTPS id A8B03C4AF0F;
 	Mon, 22 Jun 2026 04:01:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1782100901;
-	bh=UndNbueqQlR7gHvo3p/nXm7hpBs6hwZjn4+uUSmyX8k=;
+	bh=bl8bqy5n0SUc6nwqkyl4Zjq5llPXFc6fIFQnzW3sCvk=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=D+U/KAETt5htAxWinaB5eUc4u+qCd0+1FX9L1R2ofdm+iDBZdcHGfqtU1SKlPWoJG
-	 8Y5o4M9fWg3MSLKZ4kilodnFsTWLnqhtNfZECE+Z7oRlO/XZ76SEx4EfiJ05yNG7kx
-	 B6xCVptxTEIKeZri8SmMCc2bQ4KwqcRW3xXkT0LIupeuxQKnj4TYt1ak8P9vEyr8r+
-	 jKQOiC9xXChmVd1eC2TcWFfA7sb+jSaabaTrwZgKQ0k7pSrUgVW3jGyYJ9QTQ9brEO
-	 HNsH024IOk/4bkUMFstNhklMFtTcrTOOPQ6ao/OcWwITRzOV4yRZe8A0H6x0Gj/gg/
-	 Y6iDt0tE4pIug==
+	b=lXXUTEBMRmH9nF9S/9oGHurafzIpiEQ8eO55/DZUn1VONa+1XrlATpqK0Jxdt6lql
+	 eKvYZ8RKpuqD4PQRuEKrETeF6SN2tH/YLmwhXJgbclgxk7F5ycUoJyidS6eofGtCNZ
+	 hY5FNxH2rJceC3d1RKUs8gdk9DXFOGHP+jUB2gHrCbTpx7CO7cwzahMjNfpecz180H
+	 5x4X9O2TN2IMfW3Hcvzlb6Gl6Hq7coCbWWW/+5gViygrLavIWUPTijoDfY3Dfnrd2S
+	 FvusMPfZaSBIHgjOVF57kYIwxtBI2VijlXRq98+56UEKtaXfmxf49VCPc5Tzdat0Wt
+	 QuA6uxpbpbi6Q==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 70949CDB471;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A1D1BCDB470;
 	Mon, 22 Jun 2026 04:01:41 +0000 (UTC)
 From: Charlie Jenkins via B4 Relay <devnull+thecharlesjenkins.gmail.com@kernel.org>
-Date: Sun, 21 Jun 2026 21:01:21 -0700
-Subject: [PATCH v2 03/16] riscv: kgdb: Use generated instruction headers
+Date: Sun, 21 Jun 2026 21:01:24 -0700
+Subject: [PATCH v2 06/16] riscv: cfi: Use generated instruction headers
 MIME-Version: 1.0
-Message-Id: <20260621-riscv_insn_table-v2-3-7f0810ee2274@gmail.com>
+Message-Id: <20260621-riscv_insn_table-v2-6-7f0810ee2274@gmail.com>
 References: <20260621-riscv_insn_table-v2-0-7f0810ee2274@gmail.com>
 In-Reply-To: <20260621-riscv_insn_table-v2-0-7f0810ee2274@gmail.com>
 To: Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
@@ -62,11 +62,11 @@ Cc: linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
  linux-kselftest@vger.kernel.org, 
  Charlie Jenkins <thecharlesjenkins@gmail.com>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1782100900; l=7745;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1782100900; l=1198;
  i=thecharlesjenkins@gmail.com; s=20260605; h=from:subject:message-id;
- bh=IjVaLmAyDsdmOm3A507KtKDP292jEnsVxwzZ/J7AzEQ=;
- b=jOxpTVFGnfeaJAg11T53NuRSVgcZf3eM6Ot52Ddm7Op+qZbGPKAEL62aIcCJns3RnJ3NV4aXW
- CmEdZhmhg6cCR1yDM1jPemyj98jKp9yiJX0PyAJlXSAUNHCb0nphWKj
+ bh=1tICEVIvaC4ZLr/Ax7sSaci3FTAyWazsJABtM7N8+oQ=;
+ b=cj48hhT9/crCMIqdmT/HMa6q0vDybyuUu6PkaMxzG4Wbulb7zCbgf3j8oz9FPs5+HtjmMrrPN
+ pHcOnVIJ+0pCvD7Bo9NqpBGHgiYkApd4kB90aUQdDZ0fMLBriiT6QVe
 X-Developer-Key: i=thecharlesjenkins@gmail.com; a=ed25519;
  pk=ajnnRQ98PIdwKp4HeMkq9U32okYbnh6Zb4G3o5XXvkg=
 X-Endpoint-Received: by B4 Relay for thecharlesjenkins@gmail.com/20260605
@@ -91,206 +91,41 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 From: Charlie Jenkins <thecharlesjenkins@gmail.com>
 
-Migrate the code that is decoding instructions for the use of kgdb
-single stepping to use the generated instruction headers instead of the
-hand-written instruction functions.
+Migrate the code that is decoding cfi instructions to use the generated
+instruction headers.
 
 Signed-off-by: Charlie Jenkins <thecharlesjenkins@gmail.com>
 
 ---
 
-I tested this again by comparing the original get_step_address()
-function with this new version and input all possible 32 bit numbers and
-checked that the next_addr was the same in every case.
-
-This is the code I used:
-
-void check_step()
-{
-	for (unsigned long opcode = 0; opcode < ((1ULL << 32) - 1); opcode++) {
-		unsigned long next_addr, next_addr2;
-		get_step_address(opcode, &next_addr);
-		get_step_address2(opcode, &next_addr2);
-		if (next_addr != next_addr2) {
-			printf("opcode: %lu -> %lu != %lu\n", opcode, next_addr, next_addr2);
-		}
-	}
-}
+This function generates the same assembly as before.
 ---
- arch/riscv/include/asm/insn.h |  21 +++++++++
- arch/riscv/kernel/kgdb.c      | 102 ++++++++++++++++--------------------------
- 2 files changed, 60 insertions(+), 63 deletions(-)
+ arch/riscv/kernel/cfi.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/riscv/include/asm/insn.h b/arch/riscv/include/asm/insn.h
-index d0e137f9bcd7..b92c71896c00 100644
---- a/arch/riscv/include/asm/insn.h
-+++ b/arch/riscv/include/asm/insn.h
-@@ -514,4 +514,25 @@ static __always_inline bool riscv_insn_is_branch(u32 code)
+diff --git a/arch/riscv/kernel/cfi.c b/arch/riscv/kernel/cfi.c
+index 6ec9dbd7292e..e38d5f863747 100644
+--- a/arch/riscv/kernel/cfi.c
++++ b/arch/riscv/kernel/cfi.c
+@@ -40,16 +40,16 @@ static bool decode_cfi_insn(struct pt_regs *regs, unsigned long *target,
+ 	if (!riscv_insn_is_beq(insn))
+ 		return false;
  
- #define RVV_EXTRACT_VL_VS_WIDTH(x) RVFDQ_EXTRACT_FL_FS_WIDTH(x)
+-	*type = (u32)regs_ptr[RV_EXTRACT_RS1_REG(insn)];
++	*type = (u32)regs_ptr[riscv_insn_beq_extract_xs1(insn)];
  
-+static inline unsigned long riscv_insn_reg_get_val(unsigned long *regs, u32 index)
-+{
-+	/* register 0 is always 0 and not stored in the register struct */
-+	return index ? *(regs + index) : 0;
-+}
-+
-+#define riscv_insn_branch(_insn, regs_ptr, _opcode, _pc, _comparison, type)     \
-+	({                                                                      \
-+		unsigned long _ret;                                             \
-+		if ((type)riscv_insn_reg_get_val(                               \
-+			    regs_ptr,                                           \
-+			    riscv_insn_##_insn##_extract_xs1(_opcode))          \
-+			    _comparison(type) riscv_insn_reg_get_val(           \
-+				    regs_ptr,                                   \
-+				    riscv_insn_##_insn##_extract_xs2(_opcode))) \
-+			_ret = _pc + riscv_insn_##_insn##_extract_imm(_opcode); \
-+		else                                                            \
-+			_ret = _pc + 4;                                         \
-+		_ret;                                                           \
-+	})
-+
- #endif /* _ASM_RISCV_INSN_H */
-diff --git a/arch/riscv/kernel/kgdb.c b/arch/riscv/kernel/kgdb.c
-index 0bf629204c76..fcf7cda3cc33 100644
---- a/arch/riscv/kernel/kgdb.c
-+++ b/arch/riscv/kernel/kgdb.c
-@@ -23,97 +23,73 @@ enum {
- static unsigned long stepped_address;
- static unsigned int stepped_opcode;
+ 	if (get_kernel_nofault(insn, (void *)regs->epc) ||
+ 	    get_kernel_nofault(insn, (void *)regs->epc + GET_INSN_LENGTH(insn)))
+ 		return false;
  
--static int decode_register_index(unsigned long opcode, int offset)
--{
--	return (opcode >> offset) & 0x1F;
--}
--
--static int decode_register_index_short(unsigned long opcode, int offset)
--{
--	return ((opcode >> offset) & 0x7) + 8;
--}
--
--/* Calculate the new address for after a step */
- static int get_step_address(struct pt_regs *regs, unsigned long *next_addr)
- {
- 	unsigned long pc = regs->epc;
- 	unsigned long *regs_ptr = (unsigned long *)regs;
--	unsigned int rs1_num, rs2_num;
-+	unsigned int rs1_num;
- 	int op_code;
- 
- 	if (get_kernel_nofault(op_code, (void *)pc))
- 		return -EINVAL;
-+
- 	if ((op_code & __INSN_LENGTH_MASK) != __INSN_LENGTH_GE_32) {
--		if (riscv_insn_is_c_jalr(op_code) ||
--		    riscv_insn_is_c_jr(op_code)) {
--			rs1_num = decode_register_index(op_code, RVC_C2_RS1_OPOFF);
--			*next_addr = regs_ptr[rs1_num];
--		} else if (riscv_insn_is_c_j(op_code) ||
--			   riscv_insn_is_c_jal(op_code)) {
--			*next_addr = RVC_EXTRACT_JTYPE_IMM(op_code) + pc;
-+		if (riscv_insn_is_c_jalr(op_code)) {
-+			*next_addr = regs_ptr[riscv_insn_c_jalr_extract_xs1(op_code)];
-+		} else if (riscv_insn_is_c_jr(op_code)) {
-+			*next_addr = regs_ptr[riscv_insn_c_jr_extract_xs1(op_code)];
-+		} else if (riscv_insn_is_c_j(op_code)) {
-+			*next_addr = riscv_insn_c_j_extract_imm(op_code) + pc;
-+		} else if (riscv_insn_is_c_jal(op_code)) {
-+			*next_addr = riscv_insn_c_jal_extract_imm(op_code) + pc;
- 		} else if (riscv_insn_is_c_beqz(op_code)) {
--			rs1_num = decode_register_index_short(op_code,
--							      RVC_C1_RS1_OPOFF);
--			if (!rs1_num || regs_ptr[rs1_num] == 0)
--				*next_addr = RVC_EXTRACT_BTYPE_IMM(op_code) + pc;
-+			rs1_num = riscv_insn_c_beqz_extract_xs1(op_code);
-+			if (regs_ptr[8 + rs1_num] == 0)
-+				*next_addr = riscv_insn_c_beqz_extract_imm(op_code) + pc;
- 			else
- 				*next_addr = pc + 2;
- 		} else if (riscv_insn_is_c_bnez(op_code)) {
--			rs1_num =
--			    decode_register_index_short(op_code, RVC_C1_RS1_OPOFF);
--			if (rs1_num && regs_ptr[rs1_num] != 0)
--				*next_addr = RVC_EXTRACT_BTYPE_IMM(op_code) + pc;
-+			rs1_num = riscv_insn_c_bnez_extract_xs1(op_code);
-+			if (regs_ptr[8 + rs1_num] != 0)
-+				*next_addr = riscv_insn_c_bnez_extract_imm(op_code) + pc;
- 			else
- 				*next_addr = pc + 2;
- 		} else {
- 			*next_addr = pc + 2;
- 		}
- 	} else {
--		if ((op_code & __INSN_OPCODE_MASK) == __INSN_BRANCH_OPCODE) {
--			bool result = false;
--			long imm = RV_EXTRACT_BTYPE_IMM(op_code);
--			unsigned long rs1_val = 0, rs2_val = 0;
--
--			rs1_num = decode_register_index(op_code, RVG_RS1_OPOFF);
--			rs2_num = decode_register_index(op_code, RVG_RS2_OPOFF);
--			if (rs1_num)
--				rs1_val = regs_ptr[rs1_num];
--			if (rs2_num)
--				rs2_val = regs_ptr[rs2_num];
--
--			if (riscv_insn_is_beq(op_code))
--				result = (rs1_val == rs2_val) ? true : false;
--			else if (riscv_insn_is_bne(op_code))
--				result = (rs1_val != rs2_val) ? true : false;
--			else if (riscv_insn_is_blt(op_code))
--				result =
--				    ((long)rs1_val <
--				     (long)rs2_val) ? true : false;
--			else if (riscv_insn_is_bge(op_code))
--				result =
--				    ((long)rs1_val >=
--				     (long)rs2_val) ? true : false;
--			else if (riscv_insn_is_bltu(op_code))
--				result = (rs1_val < rs2_val) ? true : false;
--			else if (riscv_insn_is_bgeu(op_code))
--				result = (rs1_val >= rs2_val) ? true : false;
--			if (result)
--				*next_addr = imm + pc;
--			else
--				*next_addr = pc + 4;
-+		if (riscv_insn_is_beq(op_code)) {
-+			*next_addr = riscv_insn_branch(beq, regs_ptr, op_code,
-+						       pc, ==, unsigned long);
-+		} else if (riscv_insn_is_bne(op_code)) {
-+			*next_addr = riscv_insn_branch(bne, regs_ptr, op_code,
-+						       pc, !=, unsigned long);
-+		} else if (riscv_insn_is_blt(op_code)) {
-+			*next_addr = riscv_insn_branch(blt, regs_ptr, op_code,
-+						       pc, <, long);
-+		} else if (riscv_insn_is_bge(op_code)) {
-+			*next_addr = riscv_insn_branch(bge, regs_ptr, op_code,
-+						       pc, >=, long);
-+		} else if (riscv_insn_is_bltu(op_code)) {
-+			*next_addr = riscv_insn_branch(bltu, regs_ptr, op_code,
-+						       pc, <, unsigned long);
-+		} else if (riscv_insn_is_bgeu(op_code)) {
-+			*next_addr = riscv_insn_branch(bgeu, regs_ptr, op_code,
-+						       pc, >=, unsigned long);
- 		} else if (riscv_insn_is_jal(op_code)) {
--			*next_addr = RV_EXTRACT_JTYPE_IMM(op_code) + pc;
-+			*next_addr = riscv_insn_jal_extract_imm(op_code) + pc;
- 		} else if (riscv_insn_is_jalr(op_code)) {
--			rs1_num = decode_register_index(op_code, RVG_RS1_OPOFF);
-+			rs1_num = riscv_insn_jalr_extract_xs1(op_code);
- 			if (rs1_num)
--				*next_addr = ((unsigned long *)regs)[rs1_num];
--			*next_addr += RV_EXTRACT_ITYPE_IMM(op_code);
-+				*next_addr = regs_ptr[rs1_num];
-+			*next_addr += riscv_insn_jalr_extract_imm(op_code);
- 		} else if (riscv_insn_is_sret(op_code)) {
- 			*next_addr = pc;
- 		} else {
- 			*next_addr = pc + 4;
- 		}
- 	}
-+
- 	return 0;
- }
+ 	if (riscv_insn_is_jalr(insn))
+-		rs1_num = RV_EXTRACT_RS1_REG(insn);
++		rs1_num = riscv_insn_jalr_extract_xs1(insn);
+ 	else if (riscv_insn_is_c_jalr(insn))
+-		rs1_num = RVC_EXTRACT_C2_RS1_REG(insn);
++		rs1_num = riscv_insn_c_jalr_extract_xs1(insn);
+ 	else
+ 		return false;
  
 
 -- 
