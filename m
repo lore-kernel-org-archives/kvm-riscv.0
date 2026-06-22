@@ -4,56 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A3569CDB46F
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B7B33CD98F6
 	for <kvm-riscv@archiver.kernel.org>; Mon, 22 Jun 2026 04:01:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:Reply-To:List-Subscribe:List-Help:
-	List-Post:List-Archive:List-Unsubscribe:List-Id:Cc:To:MIME-Version:Message-Id
-	:Date:Subject:From:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=UOdDEmUPg7nZmLS1rdQIWIwfpHU4PyU4gWLTkEhxnnU=; b=St8RuFS+RJOcGT
-	3tXtl+08IzDLhYK+Ml0tulcFOHM9Kmu6aRvAknmlXnfq7RbxaG5D/ewnMwxFpPZwRM8dRwD+FM53M
-	B4rlV8yzaFmv92G3NORuv4zCxdSKaEor35+BpJe3kHeaTr5XYc4pb30k/1AsPJe1xSd+Gb4W5ekRK
-	rFdH/l6ABM2JjDfWQWeKFphqdqNphwwrWBQLbhekps1ecZGlwRldgzZN+khdYF8oh7mXXc3TS6EN8
-	dIooLlgaEtRqqrKiKQ1tM9LKsrSQFVxsuxpXkMOGnY8VuuaN64/9AOM8fl8fQOGnVsOSwZ/TV1SpI
-	4d8Iaou5OXoYNbbFnGRQ==;
+	List-Post:List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:
+	Message-Id:MIME-Version:Subject:Date:From:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=ZmWKGLVG+uY4UVKn4tCguvP11wvSqSaDtvOn7SFTfmU=; b=fiLzRr/k4v5M0i
+	2cQm4IzSyLISWcE6SIZF6Rwnf1vcz8A9QjwCiSe8pIVYiwFqQDla0Y6ln/pAz+oskd65s604+rVF6
+	yho+hNz4KvYeBpDCgsuaY6T/si5fVyCcirew4GzrtRbkpubfjYlX/S/6JPPra+eBKyj1sF2mef8vw
+	bUG7sEzsaVNcO4gI5sFmfrZa0kSZjpTIvDPqojWZR8aIVS0xA4eAJj4fcE+bIYzx84Zjks1xl0C5J
+	PExVj45EU8s5qy+Jqix2YMxTPLtIY7cjzY8G0obdJdwq5LCdPo3/0syYwl4ArWR/X76MVv5imF13F
+	Rnd9J8Jjx09rV52zq+lQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wbVr6-00000004Mad-1W7m;
+	id 1wbVr6-00000004Mao-24aP;
 	Mon, 22 Jun 2026 04:01:52 +0000
-Received: from tor.source.kernel.org ([2600:3c04:e001:324:0:1991:8:25])
+Received: from sea.source.kernel.org ([2600:3c0a:e001:78e:0:1991:8:25])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wbVqx-00000004MTM-0NY8;
+	id 1wbVqx-00000004MTW-0Noh;
 	Mon, 22 Jun 2026 04:01:43 +0000
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 9C3776008A;
+	by sea.source.kernel.org (Postfix) with ESMTP id D9C1E4454B;
 	Mon, 22 Jun 2026 04:01:41 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 45224C2BCB4;
+Received: by smtp.kernel.org (Postfix) with ESMTPS id BB6FCC2BCFC;
 	Mon, 22 Jun 2026 04:01:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1782100901;
-	bh=2Ue0OQWnzEfJvkx9yKoYjaChcgTBWEXuzcW+rzKXsR8=;
-	h=From:Subject:Date:To:Cc:Reply-To:From;
-	b=SLA34/lORaq2vkbGVFcFXeaClBUdvgLejrAyf6dDarlAcLMHXyRXjwPu8O8cySp6+
-	 4VT981sldiiCAU5IDyVhvFBOfTsuscyI8ffF8PdMcMjuty0HmiSgq9iUahleLqKQ6/
-	 COlJ/aBt+z4/9daFb3yB90wdNptgAQQxGESdhXMbCCv2Ys7WeGsi5xwD8L+EoAGNkQ
-	 hNG4Dvg1bK7OplDRptvAXJHUHG+UWDtAPbDOSPcXK0WB08sxp0E18Qn6ggVEw6VAMU
-	 +n/B1+usjS7sGtY/rnU58YfgYnTpbgpHpx/Vu0xaKg5eCjkamz31xZOaHVX2f2z01/
-	 ijotvrfwL9Z4w==
+	bh=/s7s07LIxVqEDoz5hXdHh/rwgg1EE8173MuDCxAexBY=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=HVAcvBCJqqhLpcx7sldi8YtBoYx/Mzc+nWU7oVsMe8Og5QbVjExsDNZpeN+kUjSyD
+	 BnGndv5AJH2tTvWEIC76hTqiXHE/7o6CbPzJQ4PVppowYCpBEwK92ACTetyPQCCjI8
+	 vCSRL4N61SnUKsNk4Fo+BswlZC0b8c7cwBgvtd1l983UJo7qWSKC9l5gtcxiVJhtGP
+	 9Q0zMM1/joTedefyQr/BoYVphfmeNHn1slhlxGkaXjzVacPnI674TFtD1O2NLjfUW7
+	 rQ3O8r1fbz22dBOb/ieAyMU4BJjTqvaCKUL3qshbCQ5YA8S+KKLLRLklv4cSzJZ+oA
+	 3aicbVYppZhRQ==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2827FCDB46F;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B270FCD98F6;
 	Mon, 22 Jun 2026 04:01:41 +0000 (UTC)
 From: Charlie Jenkins via B4 Relay <devnull+thecharlesjenkins.gmail.com@kernel.org>
-Subject: [PATCH v2 00/16] riscv: Generate riscv instruction functions
-Date: Sun, 21 Jun 2026 21:01:18 -0700
-Message-Id: <20260621-riscv_insn_table-v2-0-7f0810ee2274@gmail.com>
+Date: Sun, 21 Jun 2026 21:01:25 -0700
+Subject: [PATCH v2 07/16] riscv: Use generated instruction headers for
+ misaligned loads/stores
 MIME-Version: 1.0
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/2WNQQqDMBREryJ/3ZTERNN21XsUkWi++kGTkkhoE
- e/e1C4Ls3kD82aDiIEwwq3YIGCiSN5lKE8F9JNxIzKymaHkZc2FUCxQ7FNLLrp2Nd2MTF7Utcq
- xg5WQZ8+AA70O5aPJPFFcfXgfD0l8259Mcf0vS4JxVqlOaVkbgVrfx8XQfO79As2+7x81PW/7s
- AAAAA==
-X-Change-ID: 20260114-riscv_insn_table-38495495dfd3
+Message-Id: <20260621-riscv_insn_table-v2-7-7f0810ee2274@gmail.com>
+References: <20260621-riscv_insn_table-v2-0-7f0810ee2274@gmail.com>
+In-Reply-To: <20260621-riscv_insn_table-v2-0-7f0810ee2274@gmail.com>
 To: Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
  Nam Cao <namcao@linutronix.de>, Alexandre Ghiti <alex@ghiti.fr>, 
  Anup Patel <anup@brainfault.org>, Atish Patra <atish.patra@linux.dev>, 
@@ -65,11 +63,11 @@ Cc: linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
  linux-kselftest@vger.kernel.org, 
  Charlie Jenkins <thecharlesjenkins@gmail.com>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1782100900; l=5328;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1782100900; l=12714;
  i=thecharlesjenkins@gmail.com; s=20260605; h=from:subject:message-id;
- bh=2Ue0OQWnzEfJvkx9yKoYjaChcgTBWEXuzcW+rzKXsR8=;
- b=ne5wljDoG4zphFx5l9ULUKiRBpeUuwuxY2AbZ2BeN3QgGMMOIAhW6sy1FiM117AEx+Bc6kL8v
- lqEFZx/bszkD8yBFpdr3oY3ukUz9KPteAWALGmMar+HG5pTqTeSTnDX
+ bh=ZAiLZFKdSr+pr2o3OBlX9XLjRZtoG/b8FwQl9m8qk5Y=;
+ b=y7IVZIEmcoljWJ93+YDaiUC+saBrOzoRz/XrCAyavNyO5zSoQSRFnaLkIZOJi0JJBm15P69lU
+ Domxcx36VgcAuc5RmVVDjS7l9pp/yTkT62qaIugZmhW37lekgm4fYbd
 X-Developer-Key: i=thecharlesjenkins@gmail.com; a=ed25519;
  pk=ajnnRQ98PIdwKp4HeMkq9U32okYbnh6Zb4G3o5XXvkg=
 X-Endpoint-Received: by B4 Relay for thecharlesjenkins@gmail.com/20260605
@@ -92,109 +90,373 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-There is a lot of code that is manually manipulating riscv instructions.
-Constructing these headers for new instructions is time consuming and
-error prone.
+From: Charlie Jenkins <thecharlesjenkins@gmail.com>
 
-The first patch in this series introduces the instruction definition
-table along with a script that runs at compile time to create all of the
-associated instruction manipulation functions. The remaining patches
-migrate all of the manual instruction code to use these generated
-functions.
-
-The instruction definition table is generated from the
-riscv-unified-db[1], an open source RVI project for instruction
-specifications. I got this table generation merged into
-riscv-unified-db, that PR can be accessed on github [2].
-
-A lot of the validation for these changes is from running all possible
-32-bit or 16-bit integers through these functions to see that any given
-instruction will produce to expected result. I give more detail on the
-test cases in the notes of the first couple of patches.
-
-For the KVM patches, I also introduce two test cases to ensure that the
-instruction manipulation is working as expected.
-
-[1] https://github.com/riscv/riscv-unified-db
-[2] https://github.com/riscv/riscv-unified-db/pull/1780
+Migrate the misaligned loads/store code to use the generated instruction
+headers instead of the hand-written instruction composition functions.
 
 Signed-off-by: Charlie Jenkins <thecharlesjenkins@gmail.com>
----
-Changes in v2:
-- rebased on v7.1
-- I dropped the patch fixing the mmio bug in kvm because in the
-  meantime that bug has been fixed in a different patch
-- Calls to panic() for instructions not support on current hardware have
-  been changed into BUG_ON()
-- Fixed incorrect handling of branches in simulate_*()
-- Added CONFIG_RISCV_KPROBES_SIMULATE_KUNIT for more detailed
-  simulate_*() testing
-- Updated insn.tbl based on new merged in changes to riscv-unified-db
-- Link to v1: https://lore.kernel.org/r/20260407-riscv_insn_table-v1-0-54b4736a1e77@gmail.com
 
 ---
-Charlie Jenkins (16):
-      riscv: Introduce instruction table generation
-      riscv: alternatives: Use generated instruction headers for patching code
-      riscv: kgdb: Use generated instruction headers
-      riscv: Add kprobes instruction simulation KUnit
-      riscv: kprobes: Use generated instruction headers
-      riscv: cfi: Use generated instruction headers
-      riscv: Use generated instruction headers for misaligned loads/stores
-      riscv: kvm: Use generated instruction headers for csr code
-      KVM: device: Add test device
-      KVM: riscv: selftests: Add mmio test
-      riscv: kvm: Use generated instruction headers for mmio emulation
-      riscv: kvm: Add emulated test csr
-      KVM: riscv: selftests: Add csr emulation test
-      riscv: kvm: Use generated instruction headers for csr emulation
-      riscv: kexec: Use generated instruction headers for kexec relocations
-      riscv: Remove unused instruction headers
 
- arch/riscv/Kconfig.debug                           |    1 +
- arch/riscv/Makefile                                |    3 +
- arch/riscv/include/asm/Kbuild                      |    1 +
- arch/riscv/include/asm/insn.h                      |  563 +-------
- arch/riscv/include/asm/kvm_host.h                  |   10 +
- arch/riscv/include/asm/kvm_vcpu_insn.h             |    5 +-
- arch/riscv/include/asm/kvm_vcpu_test_csr.h         |   15 +
- arch/riscv/kernel/alternative.c                    |   23 +-
- arch/riscv/kernel/cfi.c                            |    6 +-
- arch/riscv/kernel/kgdb.c                           |  102 +-
- arch/riscv/kernel/machine_kexec_file.c             |   55 +-
- arch/riscv/kernel/probes/decode-insn.c             |    7 +-
- arch/riscv/kernel/probes/simulate-insn.c           |  253 ++--
- arch/riscv/kernel/probes/simulate-insn.h           |    7 +-
- arch/riscv/kernel/tests/Kconfig.debug              |   13 +
- arch/riscv/kernel/tests/kprobes/Makefile           |    2 +
- .../kernel/tests/kprobes/test-kprobes-simulate.c   |  250 ++++
- arch/riscv/kernel/tests/kprobes/test-kprobes.h     |    6 +
- arch/riscv/kernel/traps_misaligned.c               |  183 ++-
- arch/riscv/kvm/Kconfig.debug                       |   16 +
- arch/riscv/kvm/Makefile                            |    1 +
- arch/riscv/kvm/vcpu_insn.c                         |  232 ++--
- arch/riscv/kvm/vcpu_test_csr.c                     |   21 +
- arch/riscv/tools/Makefile                          |   22 +
- arch/riscv/tools/insn.tbl                          | 1392 ++++++++++++++++++++
- arch/riscv/tools/insn_tbl.sh                       |  256 ++++
- include/uapi/linux/kvm.h                           |    2 +
- lib/Kconfig.debug                                  |    6 +
- tools/testing/selftests/kvm/Makefile.kvm           |    2 +
- tools/testing/selftests/kvm/riscv/csr_test.c       |  126 ++
- tools/testing/selftests/kvm/riscv/mmio_test.c      |  184 +++
- virt/kvm/Kconfig.debug                             |   16 +
- virt/kvm/Makefile.kvm                              |    1 +
- virt/kvm/kvm_main.c                                |    8 +
- virt/kvm/mmio_test.c                               |   95 ++
- virt/kvm/mmio_test.h                               |   18 +
- 36 files changed, 2897 insertions(+), 1006 deletions(-)
+Similar to the other patches of this series, I extracted out the logic
+of this function and brute forced all possible inputs to validate that
+the outputs are the same. To verify this change in the kernel, I booted
+on Spike and used the misaligned access checker which does some
+misaligned accesses.
 ---
-base-commit: 8cd9520d35a6c38db6567e97dd93b1f11f185dc6
-change-id: 20260114-riscv_insn_table-38495495dfd3
+ arch/riscv/kernel/traps_misaligned.c | 183 ++++++++++++++++-------------------
+ 1 file changed, 83 insertions(+), 100 deletions(-)
 
-Best regards,
---  
-Charlie Jenkins <thecharlesjenkins@gmail.com>
+diff --git a/arch/riscv/kernel/traps_misaligned.c b/arch/riscv/kernel/traps_misaligned.c
+index 81b7682e6c6d..4d2a2432e0c4 100644
+--- a/arch/riscv/kernel/traps_misaligned.c
++++ b/arch/riscv/kernel/traps_misaligned.c
+@@ -22,15 +22,11 @@
+ 
+ #ifdef CONFIG_FPU
+ 
+-#define FP_GET_RD(insn)		(insn >> 7 & 0x1F)
+-
+ extern void put_f32_reg(unsigned long fp_reg, unsigned long value);
+ 
+-static int set_f32_rd(unsigned long insn, struct pt_regs *regs,
++static int set_f32_rd(unsigned long fp_reg, struct pt_regs *regs,
+ 		      unsigned long val)
+ {
+-	unsigned long fp_reg = FP_GET_RD(insn);
+-
+ 	put_f32_reg(fp_reg, val);
+ 	regs->status |= SR_FS_DIRTY;
+ 
+@@ -39,9 +35,8 @@ static int set_f32_rd(unsigned long insn, struct pt_regs *regs,
+ 
+ extern void put_f64_reg(unsigned long fp_reg, unsigned long value);
+ 
+-static int set_f64_rd(unsigned long insn, struct pt_regs *regs, u64 val)
++static int set_f64_rd(unsigned long fp_reg, struct pt_regs *regs, u64 val)
+ {
+-	unsigned long fp_reg = FP_GET_RD(insn);
+ 	unsigned long value;
+ 
+ #if __riscv_xlen == 32
+@@ -58,10 +53,8 @@ static int set_f64_rd(unsigned long insn, struct pt_regs *regs, u64 val)
+ #if __riscv_xlen == 32
+ extern void get_f64_reg(unsigned long fp_reg, u64 *value);
+ 
+-static u64 get_f64_rs(unsigned long insn, u8 fp_reg_offset,
+-		      struct pt_regs *regs)
++static u64 get_f64_rs(unsigned long fp_reg, struct pt_regs *regs)
+ {
+-	unsigned long fp_reg = (insn >> fp_reg_offset) & 0x1F;
+ 	u64 val;
+ 
+ 	get_f64_reg(fp_reg, &val);
+@@ -73,10 +66,8 @@ static u64 get_f64_rs(unsigned long insn, u8 fp_reg_offset,
+ 
+ extern unsigned long get_f64_reg(unsigned long fp_reg);
+ 
+-static unsigned long get_f64_rs(unsigned long insn, u8 fp_reg_offset,
+-				struct pt_regs *regs)
++static unsigned long get_f64_rs(unsigned long fp_reg, struct pt_regs *regs)
+ {
+-	unsigned long fp_reg = (insn >> fp_reg_offset) & 0x1F;
+ 	unsigned long val;
+ 
+ 	val = get_f64_reg(fp_reg);
+@@ -89,10 +80,8 @@ static unsigned long get_f64_rs(unsigned long insn, u8 fp_reg_offset,
+ 
+ extern unsigned long get_f32_reg(unsigned long fp_reg);
+ 
+-static unsigned long get_f32_rs(unsigned long insn, u8 fp_reg_offset,
+-				struct pt_regs *regs)
++static unsigned long get_f32_rs(unsigned long fp_reg, struct pt_regs *regs)
+ {
+-	unsigned long fp_reg = (insn >> fp_reg_offset) & 0x1F;
+ 	unsigned long val;
+ 
+ 	val = get_f32_reg(fp_reg);
+@@ -107,28 +96,18 @@ static void set_f32_rd(unsigned long insn, struct pt_regs *regs,
+ 
+ static void set_f64_rd(unsigned long insn, struct pt_regs *regs, u64 val) {}
+ 
+-static unsigned long get_f64_rs(unsigned long insn, u8 fp_reg_offset,
+-				struct pt_regs *regs)
++static unsigned long get_f64_rs(unsigned long fp_reg, struct pt_regs *regs)
+ {
+ 	return 0;
+ }
+ 
+-static unsigned long get_f32_rs(unsigned long insn, u8 fp_reg_offset,
+-				struct pt_regs *regs)
++static unsigned long get_f32_rs(unsigned long fp_reg, struct pt_regs *regs)
+ {
+ 	return 0;
+ }
+ 
+ #endif
+ 
+-#define GET_F64_RS2(insn, regs) (get_f64_rs(insn, 20, regs))
+-#define GET_F64_RS2C(insn, regs) (get_f64_rs(insn, 2, regs))
+-#define GET_F64_RS2S(insn, regs) (get_f64_rs(RVC_RS2S(insn), 0, regs))
+-
+-#define GET_F32_RS2(insn, regs) (get_f32_rs(insn, 20, regs))
+-#define GET_F32_RS2C(insn, regs) (get_f32_rs(insn, 2, regs))
+-#define GET_F32_RS2S(insn, regs) (get_f32_rs(RVC_RS2S(insn), 0, regs))
+-
+ #define __read_insn(regs, insn, insn_addr, type)	\
+ ({							\
+ 	int __ret;					\
+@@ -217,13 +196,13 @@ static int handle_vector_misaligned_load(struct pt_regs *regs)
+ }
+ #endif
+ 
+-static int handle_scalar_misaligned_load(struct pt_regs *regs)
++static noinline int handle_scalar_misaligned_load(struct pt_regs *regs)
+ {
+ 	union reg_data val;
+ 	unsigned long epc = regs->epc;
+ 	unsigned long insn;
+ 	unsigned long addr = regs->badaddr;
+-	int fp = 0, shift = 0, len = 0;
++	int fp = 0, shift = 0, len = 0, rd = 0;
+ 
+ 	perf_sw_event(PERF_COUNT_SW_ALIGNMENT_FAULTS, 1, regs, addr);
+ 
+@@ -240,68 +219,71 @@ static int handle_scalar_misaligned_load(struct pt_regs *regs)
+ 
+ 	regs->epc = 0;
+ 
+-	if ((insn & INSN_MASK_LW) == INSN_MATCH_LW) {
++	if (riscv_insn_is_lw(insn)) {
+ 		len = 4;
+ 		shift = 8 * (sizeof(unsigned long) - len);
+-#if defined(CONFIG_64BIT)
+-	} else if ((insn & INSN_MASK_LD) == INSN_MATCH_LD) {
++		rd = riscv_insn_lw_extract_xd(insn);
++	} else if (riscv_insn_is_ld(insn)) {
+ 		len = 8;
+ 		shift = 8 * (sizeof(unsigned long) - len);
+-	} else if ((insn & INSN_MASK_LWU) == INSN_MATCH_LWU) {
++		rd = riscv_insn_ld_extract_xd(insn);
++	} else if (riscv_insn_is_lwu(insn)) {
+ 		len = 4;
+-#endif
+-	} else if ((insn & INSN_MASK_FLD) == INSN_MATCH_FLD) {
++		rd = riscv_insn_lwu_extract_xd(insn);
++	} else if (riscv_insn_is_fld(insn)) {
+ 		fp = 1;
+ 		len = 8;
+-	} else if ((insn & INSN_MASK_FLW) == INSN_MATCH_FLW) {
++		rd = riscv_insn_fld_extract_fd(insn);
++	} else if (riscv_insn_is_flw(insn)) {
+ 		fp = 1;
+ 		len = 4;
+-	} else if ((insn & INSN_MASK_LH) == INSN_MATCH_LH) {
++		rd = riscv_insn_flw_extract_fd(insn);
++	} else if (riscv_insn_is_lh(insn)) {
+ 		len = 2;
+ 		shift = 8 * (sizeof(unsigned long) - len);
+-	} else if ((insn & INSN_MASK_LHU) == INSN_MATCH_LHU) {
++		rd = riscv_insn_lh_extract_xd(insn);
++	} else if (riscv_insn_is_lhu(insn)) {
+ 		len = 2;
+-#if defined(CONFIG_64BIT)
+-	} else if ((insn & INSN_MASK_C_LD) == INSN_MATCH_C_LD) {
++		rd = riscv_insn_lhu_extract_xd(insn);
++	} else if (riscv_insn_is_c_ld(insn)) {
+ 		len = 8;
+ 		shift = 8 * (sizeof(unsigned long) - len);
+-		insn = RVC_RS2S(insn) << SH_RD;
+-	} else if ((insn & INSN_MASK_C_LDSP) == INSN_MATCH_C_LDSP &&
+-		   ((insn >> SH_RD) & 0x1f)) {
++		rd = (8 + riscv_insn_c_ld_extract_xd(insn));
++	} else if (riscv_insn_is_c_ldsp(insn)) {
+ 		len = 8;
+ 		shift = 8 * (sizeof(unsigned long) - len);
+-#endif
+-	} else if ((insn & INSN_MASK_C_LW) == INSN_MATCH_C_LW) {
++		rd = riscv_insn_c_ldsp_extract_xd(insn);
++	} else if (riscv_insn_is_c_lw(insn)) {
+ 		len = 4;
+ 		shift = 8 * (sizeof(unsigned long) - len);
+-		insn = RVC_RS2S(insn) << SH_RD;
+-	} else if ((insn & INSN_MASK_C_LWSP) == INSN_MATCH_C_LWSP &&
+-		   ((insn >> SH_RD) & 0x1f)) {
++		rd = (8 + riscv_insn_c_lw_extract_xd(insn));
++	} else if (riscv_insn_is_c_lwsp(insn)) {
+ 		len = 4;
+ 		shift = 8 * (sizeof(unsigned long) - len);
+-	} else if ((insn & INSN_MASK_C_FLD) == INSN_MATCH_C_FLD) {
++		rd = riscv_insn_c_lwsp_extract_xd(insn);
++	} else if (riscv_insn_is_c_fld(insn)) {
+ 		fp = 1;
+ 		len = 8;
+-		insn = RVC_RS2S(insn) << SH_RD;
+-	} else if ((insn & INSN_MASK_C_FLDSP) == INSN_MATCH_C_FLDSP) {
++		rd = (8 + riscv_insn_c_fld_extract_fd(insn));
++	} else if (riscv_insn_is_c_fldsp(insn)) {
+ 		fp = 1;
+ 		len = 8;
+-#if defined(CONFIG_32BIT)
+-	} else if ((insn & INSN_MASK_C_FLW) == INSN_MATCH_C_FLW) {
++		rd = riscv_insn_c_fldsp_extract_fd(insn);
++	} else if (riscv_insn_is_c_flw(insn)) {
+ 		fp = 1;
+ 		len = 4;
+-		insn = RVC_RS2S(insn) << SH_RD;
+-	} else if ((insn & INSN_MASK_C_FLWSP) == INSN_MATCH_C_FLWSP) {
++		rd = (8 + riscv_insn_c_flw_extract_fd(insn));
++	} else if (riscv_insn_is_c_flwsp(insn)) {
+ 		fp = 1;
+ 		len = 4;
+-#endif
+-	} else if ((insn & INSN_MASK_C_LHU) == INSN_MATCH_C_LHU) {
++		rd = riscv_insn_c_flwsp_extract_fd(insn);
++	} else if (riscv_insn_is_c_lhu(insn)) {
+ 		len = 2;
+-		insn = RVC_RS2S(insn) << SH_RD;
+-	} else if ((insn & INSN_MASK_C_LH) == INSN_MATCH_C_LH) {
++		rd = (8 + riscv_insn_c_lhu_extract_xd(insn));
++	} else if (riscv_insn_is_c_lh(insn)) {
+ 		len = 2;
+-		shift = 8 * (sizeof(ulong) - len);
+-		insn = RVC_RS2S(insn) << SH_RD;
++		shift = 8 * (sizeof(unsigned long) - len);
++		rd = (8 + riscv_insn_c_lh_extract_xd(insn));
+ 	} else {
+ 		regs->epc = epc;
+ 		return -1;
+@@ -319,11 +301,11 @@ static int handle_scalar_misaligned_load(struct pt_regs *regs)
+ 	}
+ 
+ 	if (!fp)
+-		SET_RD(insn, regs, (long)(val.data_ulong << shift) >> shift);
++		*(unsigned long *)((unsigned long *)regs + rd) = val.data_ulong << shift;
+ 	else if (len == 8)
+-		set_f64_rd(insn, regs, val.data_u64);
++		set_f64_rd(rd, regs, val.data_u64);
+ 	else
+-		set_f32_rd(insn, regs, val.data_ulong);
++		set_f32_rd(rd, regs, val.data_ulong);
+ 
+ 	regs->epc = epc + INSN_LEN(insn);
+ 
+@@ -336,7 +318,7 @@ static int handle_scalar_misaligned_store(struct pt_regs *regs)
+ 	unsigned long epc = regs->epc;
+ 	unsigned long insn;
+ 	unsigned long addr = regs->badaddr;
+-	int len = 0, fp = 0;
++	int fp = 0, len = 0, rd = 0;
+ 
+ 	perf_sw_event(PERF_COUNT_SW_ALIGNMENT_FAULTS, 1, regs, addr);
+ 
+@@ -351,67 +333,68 @@ static int handle_scalar_misaligned_store(struct pt_regs *regs)
+ 
+ 	regs->epc = 0;
+ 
+-	val.data_ulong = GET_RS2(insn, regs);
+-
+-	if ((insn & INSN_MASK_SW) == INSN_MATCH_SW) {
++	if (riscv_insn_is_sw(insn)) {
+ 		len = 4;
+-#if defined(CONFIG_64BIT)
+-	} else if ((insn & INSN_MASK_SD) == INSN_MATCH_SD) {
++		rd = riscv_insn_sw_extract_xs2(insn);
++	} else if (riscv_insn_is_sd(insn)) {
+ 		len = 8;
+-#endif
+-	} else if ((insn & INSN_MASK_FSD) == INSN_MATCH_FSD) {
++		rd = riscv_insn_sd_extract_xs2(insn);
++	} else if (riscv_insn_is_fsd(insn)) {
+ 		fp = 1;
+ 		len = 8;
+-		val.data_u64 = GET_F64_RS2(insn, regs);
+-	} else if ((insn & INSN_MASK_FSW) == INSN_MATCH_FSW) {
++		rd = riscv_insn_fsd_extract_fs2(insn);
++	} else if (riscv_insn_is_fsw(insn)) {
+ 		fp = 1;
+ 		len = 4;
+-		val.data_ulong = GET_F32_RS2(insn, regs);
+-	} else if ((insn & INSN_MASK_SH) == INSN_MATCH_SH) {
++		rd = riscv_insn_fsw_extract_fs2(insn);
++	} else if (riscv_insn_is_sh(insn)) {
+ 		len = 2;
+-#if defined(CONFIG_64BIT)
+-	} else if ((insn & INSN_MASK_C_SD) == INSN_MATCH_C_SD) {
++		rd = riscv_insn_sh_extract_xs2(insn);
++	} else if (riscv_insn_is_c_sd(insn)) {
+ 		len = 8;
+-		val.data_ulong = GET_RS2S(insn, regs);
+-	} else if ((insn & INSN_MASK_C_SDSP) == INSN_MATCH_C_SDSP) {
++		rd = riscv_insn_c_sd_extract_xs2(insn);
++	} else if (riscv_insn_is_c_sdsp(insn)) {
+ 		len = 8;
+-		val.data_ulong = GET_RS2C(insn, regs);
+-#endif
+-	} else if ((insn & INSN_MASK_C_SW) == INSN_MATCH_C_SW) {
++		rd = riscv_insn_c_sdsp_extract_xs2(insn);
++	} else if (riscv_insn_is_c_sw(insn)) {
+ 		len = 4;
+-		val.data_ulong = GET_RS2S(insn, regs);
+-	} else if ((insn & INSN_MASK_C_SWSP) == INSN_MATCH_C_SWSP) {
++		rd = riscv_insn_c_sw_extract_xs2(insn);
++	} else if (riscv_insn_is_c_swsp(insn)) {
+ 		len = 4;
+-		val.data_ulong = GET_RS2C(insn, regs);
+-	} else if ((insn & INSN_MASK_C_FSD) == INSN_MATCH_C_FSD) {
++		rd = riscv_insn_c_swsp_extract_xs2(insn);
++	} else if (riscv_insn_is_c_fsd(insn)) {
+ 		fp = 1;
+ 		len = 8;
+-		val.data_u64 = GET_F64_RS2S(insn, regs);
+-	} else if ((insn & INSN_MASK_C_FSDSP) == INSN_MATCH_C_FSDSP) {
++		rd = riscv_insn_c_fsd_extract_fs2(insn);
++	} else if (riscv_insn_is_c_fsdsp(insn)) {
+ 		fp = 1;
+ 		len = 8;
+-		val.data_u64 = GET_F64_RS2C(insn, regs);
+-#if !defined(CONFIG_64BIT)
+-	} else if ((insn & INSN_MASK_C_FSW) == INSN_MATCH_C_FSW) {
++		rd = riscv_insn_c_fsdsp_extract_fs2(insn);
++	} else if (riscv_insn_is_c_fsw(insn)) {
+ 		fp = 1;
+ 		len = 4;
+-		val.data_ulong = GET_F32_RS2S(insn, regs);
+-	} else if ((insn & INSN_MASK_C_FSWSP) == INSN_MATCH_C_FSWSP) {
++		rd = riscv_insn_c_fsw_extract_fs2(insn);
++	} else if (riscv_insn_is_c_fswsp(insn)) {
+ 		fp = 1;
+ 		len = 4;
+-		val.data_ulong = GET_F32_RS2C(insn, regs);
+-#endif
+-	} else if ((insn & INSN_MASK_C_SH) == INSN_MATCH_C_SH) {
++		rd = riscv_insn_c_fswsp_extract_fs2(insn);
++	} else if (riscv_insn_is_c_sh(insn)) {
+ 		len = 2;
+-		val.data_ulong = GET_RS2S(insn, regs);
++		rd = riscv_insn_c_sh_extract_xs2(insn);
+ 	} else {
+-		regs->epc = epc;
+ 		return -1;
+ 	}
+ 
+ 	if (!IS_ENABLED(CONFIG_FPU) && fp)
+ 		return -EOPNOTSUPP;
+ 
++	if (!fp)
++		val.data_ulong = *(unsigned long *)((unsigned long *)regs + rd);
++	else if (len == 8)
++		val.data_u64 = get_f64_rs(rd, regs);
++	else
++		val.data_ulong = get_f32_rs(rd, regs);
++
+ 	if (user_mode(regs)) {
+ 		if (copy_to_user((u8 __user *)addr, &val, len))
+ 			return -1;
+
+-- 
+2.54.0
 
 
 
