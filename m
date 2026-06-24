@@ -4,45 +4,47 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F5D5CDB47F
-	for <kvm-riscv@archiver.kernel.org>; Wed, 24 Jun 2026 08:01:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E2B6ECDB47F
+	for <kvm-riscv@archiver.kernel.org>; Wed, 24 Jun 2026 08:06:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:Subject:Cc:To:From:Mime-Version:Date:
-	Message-ID:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=ICmBY6oE0L5Ijog4N/tET3sqhRG69Lz3uWMQkvhHJco=; b=smOS3M3urfM/fw
-	K7a9K7c/M+Qs1skF6I//58q7OzPZjFC00Y+xTV+RApqj1oF0nI6mkgxqe8DK9keCH3Q6rolG6CbJQ
-	K+0S2AP2c4Ka1EcDOvbHvjlZeRHGvXwqR0yhr5WXL5+L/KptMXVa/YwRpS5tZzeEHfz/lHue9lLoU
-	x152IVlWgHXxABVyZ6TCwiiI5dZYzEE9e7wqLP9ARXN9t76nanVF8ELyJli2ws79sr85l+QmC2hqf
-	1M60qlLpo1Gobsio37DC3nnFm2NUBLEyBLMC7MIIZ4Fbcocu7fS8K87lyll0AsN0/Lr/ZSPV32sR2
-	qPGWzeO7vl5xLJwlyQ4Q==;
+	References:In-Reply-To:Message-ID:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=OSlknBCUWGSm2PYKkjK8LBDMvoKqBznWVcG0iWKpeyY=; b=Q+tgrpUCcPCpxO
+	mH7WSA6w0kubVlx2PwRo2LeVm5VX9957SLp+b11i4admchXF/IShgxi6BDjWBoar/YHiBNFeFMiTn
+	Gq0XXYzsA5h7HDYqEBjzYMFwic4bGvbpXqdOqrzPyCmGQsLYhIxDhHH4W9pgehK35aXTmmiAJTd+5
+	Mk+W4UXTQRurdFKPI97Dgj7eSJXntuufBeQ6TFEqCQ0Dd354BbYm7DuqmRKZV/vGdG7RbRIDq3sPG
+	D+GdTXzDNj6BgLbMp6CU0Gu6fKJkFVcJYh7GAN/A/iCag9P+7eNMXytPc+NE2E9ygOsq3ubceAW9H
+	ovyDtITpFCIHKxjzJxBQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wcIXl-00000007MhF-0MVD;
-	Wed, 24 Jun 2026 08:01:09 +0000
-Received: from mxhk.zte.com.cn ([160.30.148.35])
+	id 1wcIcX-00000007N4c-2cOR;
+	Wed, 24 Jun 2026 08:06:05 +0000
+Received: from mxhk.zte.com.cn ([160.30.148.34])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wcIXi-00000007Mgl-0cuX;
-	Wed, 24 Jun 2026 08:01:07 +0000
-Received: from mse-fl2.zte.com.cn (unknown [10.5.228.133])
+	id 1wcIcU-00000007N3t-3u0o;
+	Wed, 24 Jun 2026 08:06:04 +0000
+Received: from mse-fl1.zte.com.cn (unknown [10.5.228.132])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mxhk.zte.com.cn (FangMail) with ESMTPS id 4glZBR49Ywz8Xrrf;
-	Wed, 24 Jun 2026 16:01:03 +0800 (CST)
-Received: from szxl2zmapp06.zte.com.cn ([10.1.32.108])
-	by mse-fl2.zte.com.cn with SMTP id 65O80qZY088369;
-	Wed, 24 Jun 2026 16:00:52 +0800 (+08)
+	by mxhk.zte.com.cn (FangMail) with ESMTPS id 4glZJ82GXgz5B11h;
+	Wed, 24 Jun 2026 16:06:00 +0800 (CST)
+Received: from szxlzmapp04.zte.com.cn ([10.5.231.166])
+	by mse-fl1.zte.com.cn with SMTP id 65O85pNv082678;
+	Wed, 24 Jun 2026 16:05:51 +0800 (+08)
 	(envelope-from wang.yechao255@zte.com.cn)
-Received: from mapi (szxlzmapp02[null])
+Received: from mapi (szxl2zmapp05[null])
 	by mapi (Zmail) with MAPI id mid12;
-	Wed, 24 Jun 2026 16:00:54 +0800 (CST)
-X-Zmail-TransId: 2b046a3b8eb661b-fd032
+	Wed, 24 Jun 2026 16:05:53 +0800 (CST)
+X-Zmail-TransId: 2b076a3b8fe19e0-254cf
 X-Mailer: Zmail v1.0
-Message-ID: <20260624160054463wcDvJaMoydSggcNOWgcfB@zte.com.cn>
-Date: Wed, 24 Jun 2026 16:00:54 +0800 (CST)
+Message-ID: <20260624160553981H6ohuNq_2dotOBuS6RYpA@zte.com.cn>
+In-Reply-To: <20260624160054463wcDvJaMoydSggcNOWgcfB@zte.com.cn>
+References: 20260624160054463wcDvJaMoydSggcNOWgcfB@zte.com.cn
+Date: Wed, 24 Jun 2026 16:05:53 +0800 (CST)
 Mime-Version: 1.0
 From: <wang.yechao255@zte.com.cn>
 To: <anup@brainfault.org>, <kvm@vger.kernel.org>,
@@ -50,17 +52,19 @@ To: <anup@brainfault.org>, <kvm@vger.kernel.org>,
         <linux-kernel@vger.kernel.org>
 Cc: <pjw@kernel.org>, <palmer@dabbelt.com>, <aou@eecs.berkeley.edu>,
         <atish.patra@linux.dev>, <alex@ghiti.fr>, <wang.yechao255@zte.com.cn>
-Subject: =?UTF-8?B?W1BBVENIIHYzIFJFU0VORCAwLzVdIEltcGxlbWVudCBFYWdlciBQYWdlIFNwbGl0dGluZyBmb3IgUklTQy1W?=
-X-MAIL: mse-fl2.zte.com.cn 65O80qZY088369
+Subject: =?UTF-8?B?wqBbUEFUQ0ggdjMgUkVTRU5EIDEvNV0gUklTQy1WOiBLVk06IEFkZCB0aGUgc3BsaXQgcGFnZSBjYWNoZSBmb3IgaW9jdGwgY29udGV4dA==?=
+X-MAIL: mse-fl1.zte.com.cn 65O85pNv082678
 X-TLS: YES
 X-ENVELOPE-SENDER: wang.yechao255@zte.com.cn
-X-SOURCE-IP: 10.5.228.133 unknown Wed, 24 Jun 2026 16:01:03 +0800
+X-SOURCE-IP: 10.5.228.132 unknown Wed, 24 Jun 2026 16:06:00 +0800
 X-CLEAN: YES
 X-Fangmail-Anti-Spam-Filtered: true
-X-Fangmail-MID-QID: 6A3B8EBF.001/4glZBR49Ywz8Xrrf
+X-Fangmail-MID-QID: 6A3B8FE8.000/4glZJ82GXgz5B11h
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260624_010106_350281_8E34521F 
-X-CRM114-Status: GOOD (  10.83  )
+X-CRM114-CacheID: sfid-20260624_010603_127086_672D19E2 
+X-CRM114-Status: UNSURE (   7.26  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -79,67 +83,57 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 From: Wang Yechao <wang.yechao255@zte.com.cn>
 
-Eager Page Splitting is implemented on x86 and ARM. It improves the
-performance of dirty logging (used in live migrations) when guest memory
-is backed by huge pages.
+Add the split page cache for dirty logging enablement and the
+KVM_CLEAR_DIRTY_LOG ioctl.
 
-This series implement Eager Page Splitting for RISC-V. The Implementation
-similar to x86 and ARM. It provides two ways to split huge pages in ioctl
-context instead of on fault in vCPU context:
+Signed-off-by: Wang Yechao <wang.yechao255@zte.com.cn>
+---
+ arch/riscv/include/asm/kvm_host.h | 1 +
+ arch/riscv/kvm/mmu.c              | 1 +
+ arch/riscv/kvm/vm.c               | 6 ++++++
+ 3 files changed, 8 insertions(+)
 
-- Split huge pages when dirty logging is enabled when
-  KVM_DIRTY_LOG_INITIALLY_SET is not set. This happens when enabling the
-  KVM_MEM_LOG_DIRTY_PAGES flag of a memslot, and splits the whole memslot
-  into 4K mappings.
+diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
+index 60017ceec9d2a..69f73fd106a94 100644
+--- a/arch/riscv/include/asm/kvm_host.h
++++ b/arch/riscv/include/asm/kvm_host.h
+@@ -86,6 +86,7 @@ struct kvm_arch {
+ 	pgd_t *pgd;
+ 	phys_addr_t pgd_phys;
+ 	unsigned long pgd_levels;
++	struct kvm_mmu_memory_cache pgd_split_page_cache;
 
-- Split huge pages during KVM_CLEAR_DIRTY_LOG when
-  KVM_DIRTY_LOG_INITIALLY_SET is set. This happens when enabling dirty log
-  in small chunks. It does not split the whole memslot, but only the
-  requested chunk range.
+ 	/* Guest Timer */
+ 	struct kvm_guest_timer timer;
+diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
+index 082f9b2617338..9cf69bc28b9c5 100644
+--- a/arch/riscv/kvm/mmu.c
++++ b/arch/riscv/kvm/mmu.c
+@@ -676,6 +676,7 @@ int kvm_riscv_mmu_alloc_pgd(struct kvm *kvm)
+ 	kvm->arch.pgd = page_to_virt(pgd_page);
+ 	kvm->arch.pgd_phys = page_to_phys(pgd_page);
+ 	kvm->arch.pgd_levels = kvm_riscv_gstage_max_pgd_levels;
++	kvm->arch.pgd_split_page_cache.gfp_zero = __GFP_ZERO;
 
-Changes in v3 resend:
- - Fix patch format to ensure emails reach the linux-riscv and kvm-riscv
-   mailing lists.
- - Move the free pgd_split_page_cache into kvm_arch_destroy_vm().
+ 	return 0;
+ }
+diff --git a/arch/riscv/kvm/vm.c b/arch/riscv/kvm/vm.c
+index a9f083feeb767..be38f24a297d6 100644
+--- a/arch/riscv/kvm/vm.c
++++ b/arch/riscv/kvm/vm.c
+@@ -54,6 +54,12 @@ void kvm_arch_destroy_vm(struct kvm *kvm)
+ 	kvm_destroy_vcpus(kvm);
 
-Changes in v3:
- - Rebase on v7.1 version.
- - Add patch03 to remove the redundant TLB flush operations.
+ 	kvm_riscv_aia_destroy_vm(kvm);
++
++	/*
++	 * Free the split page cache after all vCPUs and devices are destroyed.
++	 * At this point, there are no concurrent accesses to the cache.
++	 */
++	kvm_mmu_free_memory_cache(&kvm->arch.pgd_split_page_cache);
+ }
 
- sashiko-bot AI review
- (https://sashiko.dev/#/message/20260603104847.9692C1F00893%40smtp.kernel.org)
- - Check the kvm->arch.pgd before split huge pages.
- - Align the start address to PMD_SIZE before split.
- - Flushing remote TLBs before Dropping mmu_lock.
-
-Changes in v2:
- - Rename the split_page_cache.
- - Rename the kvm_riscv_split_huge_pages and
-   kvm_riscv_split_memory_region.
- - Add lockdep_assert_held check before split huge pages.
- - Update Documentation/admin-guide/kernel-parameters.txt.
- - Link to v2
- https://lore.kernel.org/linux-riscv/20260603175256408L0jnqGs1cJGc0ijCdujci@zte.com.cn/
-
- - Link to v1:
- https://lore.kernel.org/linux-riscv/20260513153656847l3c4fI5hBsAyoIZi8aGIs@zte.com.cn/
-
-
-Wang Yechao (5):
-  RISC-V: KVM: Add the split page cache for ioctl context
-  RISC-V: KVM: Split huge pages when dirty logging is enabled
-  RISC-V: KVM: Remove redundant TLB flush operations
-  RISC-V: KVM: Split huge pages during KVM_CLEAR_DIRTY_LOG
-  RISC-V: KVM: Add the eager_page_split module parameter
-
- .../admin-guide/kernel-parameters.txt         |  7 +-
- arch/riscv/include/asm/kvm_gstage.h           |  6 +-
- arch/riscv/include/asm/kvm_host.h             |  1 +
- arch/riscv/kvm/gstage.c                       | 21 +++--
- arch/riscv/kvm/mmu.c                          | 91 ++++++++++++++++++-
- arch/riscv/kvm/vm.c                           |  6 ++
- 6 files changed, 116 insertions(+), 16 deletions(-)
-
+ int kvm_vm_ioctl_irq_line(struct kvm *kvm, struct kvm_irq_level *irql,
 -- 
 2.43.5
 
