@@ -4,60 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D4FE5CDE016
-	for <kvm-riscv@archiver.kernel.org>; Fri, 26 Jun 2026 08:21:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2931CCDE00E
+	for <kvm-riscv@archiver.kernel.org>; Fri, 26 Jun 2026 08:21:49 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Date:
 	Message-Id:From:Subject:MIME-Version:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=cBdFFi3aLKvY/rM4OEh7/fL05V2TLtQpj/vUcAwq0fY=; b=l2kRkbrfFxbose
-	4CMZL2g/uvMfGZjLRBfyUp5pa9Gwkzy2L/KVkz7AdINBOZ7Yp2QQL3ayBYHBMzeis6Js6YoS0rAzS
-	WkOEkKBM3V9ubG6PUO5kkf0lN5/O2zF0/BBUfr7vXlvEO42yDtDA2CHfszyz8fAT6I5gKr09eWHnt
-	u3pJ0Yfhmp80XqppPbGmvvVDmqmRnGT5hablWERqoCQyFnbN0cwqX02KxAjPwQgxwTA/T7tqpy5Ns
-	i50bcwLPiynrNh/CfCbw1yLQCGCg9ySxmYtE3CI/dJ38J19Wb+qAdEm304HUC3lRyaDKYV/lhEAvh
-	fNukw/YKXhl8yK7qQdwA==;
+	List-Owner; bh=aGR/Hndrx0tRBJeiYe3TFVeTTLcRQ0+uP0WMuVKwnBo=; b=YtHCPjkaumDtwm
+	yr1MomGJuMK+2FRLOdKMJLOz7UclviSlETJHEYUjdDS4eN67SsSphhFlbw6am86w8uwBpegQXVoR9
+	JhiI1PVI5/fN3T41dgxAf9yg1d2uwwEwfDjuOa2hx80ewLousQJe2FeBTZ26Io12Y2C0e3BIe2+mx
+	xqDS6ZRJ4jJuhTNiuVKyAvwQ6d/nKfwawElf7+3Hy1mf6WN2DcPppygKZrfJTnTlU8AewL65gscKI
+	bNn0rh3ovtfxmub8Ialm7g/X8/MGRkCK3C0j6BnccStvv4cMp+YUCvv7yot86Y6iOJqRS6yNKzSEU
+	nHuDVutYrYJs6KMgEK4Q==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wd1oO-0000000AnDv-2Ib9;
-	Fri, 26 Jun 2026 08:21:20 +0000
-Received: from sea.source.kernel.org ([172.234.252.31])
+	id 1wd1oq-0000000Ao63-2EyC;
+	Fri, 26 Jun 2026 08:21:48 +0000
+Received: from sea.source.kernel.org ([2600:3c0a:e001:78e:0:1991:8:25])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wd1oM-0000000An9Z-44Y1;
-	Fri, 26 Jun 2026 08:21:19 +0000
+	id 1wd1od-0000000Andh-1aMe;
+	Fri, 26 Jun 2026 08:21:35 +0000
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id B21FF40A8E;
-	Fri, 26 Jun 2026 08:21:18 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 946431F00A3F;
-	Fri, 26 Jun 2026 08:21:18 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id EE11E442D8;
+	Fri, 26 Jun 2026 08:21:33 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D090C1F000E9;
+	Fri, 26 Jun 2026 08:21:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782462078;
-	bh=JI0GxwAojLxKVFwlEOU4ZPICdfzGKw9cICvZEMficB8=;
+	s=k20260515; t=1782462093;
+	bh=p5+rIqdVv344EQDk5zZnFOdYzj2jMyT9lQ7p6WTw/Os=;
 	h=Subject:From:Date:References:In-Reply-To:To:Cc;
-	b=I6xKGOM7/fsBQEKDF7dia1uD6RiDe1aFMJruUQis5I9vTwn0YNsK6D2SxTFHivvxq
-	 pDeY0fVr1TMG85kvEefOc2/Vg0HbxreL9gDXLR/3h2OTYwBiCgvSeaw5te5ws9XInA
-	 ExQiy0LqB1rnjTl1mIz2cN70ybxsPI42URHmE0C18xvjsF11jnSybCBFtaLVfNAkum
-	 6CM40mcgNBrrUxIyXmAnVmIUKGmJ/gkJpXB+q7zpcja89npZZxT78x0QsiUSzLJv5C
-	 37zTEizn9T1NYR2iBPbbsxPxR+Ra20Y2yvc+9mP23hgcK69ElukKON03y3j6XmQoN9
-	 j/bhWMw9cnrsA==
+	b=AqxGMNNytH3yg2QXdoyhU9CAHGPY90p1k6s3uowWLx6ea3WXmlnZ3vzgQS4KLBOHe
+	 +KFJfvXWvyDW5YLRusseh09kaj695+9bqcQUpqxrnjgVwetdjOR2JxmVBQwg5VlhIB
+	 PTJ3cnRE3KwvbWnuMoNO0fT7tGR7BhQEwvFtkeMLdASmixXxD2fQlmZ+lK9JPch9mn
+	 t7+jyKnIbQFE+QtZ1Sb9L5Aq5TQgQRUUUPMAmITLivRKIwBKGrn04Lkxi3DAOP+hSU
+	 4JlJ7OFphSa22D5OXHRQ8P5D9J84BgNkWARuQoiDJFgnBcHjtYSB3bj58AIReMmS9H
+	 uSD+zHAFPodYg==
 Received: from [10.30.226.235] (localhost [IPv6:::1])
-	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id D09BA39389E8;
-	Fri, 26 Jun 2026 08:21:06 +0000 (UTC)
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 1975839389E8;
+	Fri, 26 Jun 2026 08:21:22 +0000 (UTC)
 MIME-Version: 1.0
-Subject: Re: [PATCH] RISC-V: KVM: Fix invalid HVA warning in steal-time
- recording
+Subject: Re: [PATCH 0/5] KVM: riscv: Speed up dirty logging write faults
 From: patchwork-bot+linux-riscv@kernel.org
-Message-Id: <178246206549.3816447.5536790669750884836.git-patchwork-notify@kernel.org>
-Date: Fri, 26 Jun 2026 08:21:05 +0000
-References: <20260415075216.2757427-1-xujiakai2025@iscas.ac.cn>
-In-Reply-To: <20260415075216.2757427-1-xujiakai2025@iscas.ac.cn>
-To: Jiakai Xu <xujiakai2025@iscas.ac.cn>
-Cc: linux-riscv@lists.infradead.org, kvm-riscv@lists.infradead.org,
- kvm@vger.kernel.org, linux-kernel@vger.kernel.org, aou@eecs.berkeley.edu,
- alex@ghiti.fr, ajones@ventanamicro.com, anup@brainfault.org,
- atish.patra@linux.dev, palmer@dabbelt.com, pjw@kernel.org,
- jiakaiPeanut@gmail.com
+Message-Id: <178246208080.3816447.14235715613320602429.git-patchwork-notify@kernel.org>
+Date: Fri, 26 Jun 2026 08:21:20 +0000
+References: <20260517153427.94889-1-tjytimi@163.com>
+In-Reply-To: <20260517153427.94889-1-tjytimi@163.com>
+To: Jinyu Tang <tjytimi@163.com>
+Cc: linux-riscv@lists.infradead.org, apatel@ventanamicro.com,
+ anup@brainfault.org, pbonzini@redhat.com, seanjc@google.com,
+ kvm@vger.kernel.org, kvm-riscv@lists.infradead.org,
+ linux-kernel@vger.kernel.org, atish.patra@linux.dev, pjw@kernel.org,
+ paul.walmsley@sifive.com, palmer@dabbelt.com, aou@eecs.berkeley.edu,
+ alex@ghiti.fr, radim.krcmar@oss.qualcomm.com, andrew.jones@oss.qualcomm.com,
+ conor.dooley@microchip.com, yongxuan.wang@sifive.com, nutty.liu@hotmail.com
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -76,25 +77,31 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 Hello:
 
-This patch was applied to riscv/linux.git (fixes)
+This series was applied to riscv/linux.git (fixes)
 by Anup Patel <anup@brainfault.org>:
 
-On Wed, 15 Apr 2026 07:52:16 +0000 you wrote:
-> kvm_riscv_vcpu_record_steal_time() assumes that the steal-time shared
-> memory GPA (vcpu->arch.sta.shmem) is always backed by a valid guest
-> memory slot. However, this assumption is not guaranteed by the KVM
-> userspace ABI.
+On Sun, 17 May 2026 23:34:22 +0800 you wrote:
+> This series speeds up the common dirty logging write fault path for
+> RISC-V KVM.
 > 
-> A malicious or buggy userspace can set the STA shared memory GPA via
-> KVM_SET_ONE_REG without establishing a corresponding memory region via
-> KVM_SET_USER_MEMORY_REGION. In such cases, the GPA cannot be translated
-> to a valid HVA and kvm_vcpu_gfn_to_hva() returns an error address.
+> When dirty logging is enabled, guest writes to write-protected G-stage
+> 4K leaves currently go through the full fault path and take mmu_lock for
+> write.  That is expensive once the leaf already exists and
+> only needs its permission and dirty state updated.
 > 
 > [...]
 
 Here is the summary with links:
-  - RISC-V: KVM: Fix invalid HVA warning in steal-time recording
-    https://git.kernel.org/riscv/c/653f17c74260
+  - [1/5] KVM: riscv: Rely on common MMU notifier locking
+    (no matching commit)
+  - [2/5] KVM: riscv: Use an rwlock for mmu_lock
+    (no matching commit)
+  - [3/5] KVM: riscv: Add a G-stage PTE cmpxchg helper
+    https://git.kernel.org/riscv/c/7dd416fdd3fb
+  - [4/5] KVM: riscv: Update G-stage PTE permissions atomically
+    https://git.kernel.org/riscv/c/d7a26a0ba715
+  - [5/5] KVM: riscv: Fast-path dirty logging write faults
+    https://git.kernel.org/riscv/c/7705be59eb2d
 
 You are awesome, thank you!
 -- 
