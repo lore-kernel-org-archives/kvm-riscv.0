@@ -4,71 +4,74 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68567C43458
-	for <kvm-riscv@archiver.kernel.org>; Wed,  1 Jul 2026 15:54:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B25A3C43458
+	for <kvm-riscv@archiver.kernel.org>; Wed,  1 Jul 2026 20:39:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
-	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Subject:Message-Id:References:
-	In-Reply-To:To:Cc:From:MIME-Version:Date:Reply-To:Content-ID:
-	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
-	:Resent-Message-ID:List-Owner;
-	bh=bcjK52lnhvpdHjJZJ9k97xs723NeoZ4XZPKsKrMjEYI=; b=LvVCGuGNwRfN7VihbSPqo9N83d
-	g1ABsBTDkGaCbW1gbWTbI7bRw3fWn4Y/u9VPapVW0Cx9jXd9TbsjPwV/vCDtf1OMpStkn6lJegdm/
-	Gq0s+0Z+hliocgrbw3NLbCwhpKN7ivesIM9so+BguJPRI4pGZfCKxvWk7LamOgDr0ZlFs99d6hJR5
-	mA+R5NJHfkT7WGql3Q6ufF06GxgqcIq9Wl+U4M0kVh8Zyb+FqfLWek8Efhbsg0X0p13yYKUAbCB7w
-	1U5seTqwLSxzANWJbD4k1B86PLtWoyDjDTST+va7oI8BgwhDb3/RIK9UZfJPbiWlUcBmjtr8oi97O
-	b6gloxGw==;
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
+	List-Subscribe:List-Help:List-Post:List-Archive:List-Unsubscribe:List-Id:
+	In-Reply-To:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:
+	Reply-To:Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date
+	:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Owner;
+	bh=ULN2OmV6jvxcLWYGSaoAWTvZ6nEYbLTf0uFKBGbM0dQ=; b=gGrn47O1knLwUfINzIBHjo8JJg
+	ZHXp03h9TsFY8JFCTsG+kQ1bd1bMUqWR7LJpGpsWvOhJQxN4zCqQs03M376peFe4+NrABuPdU8L0M
+	S6WSLgYBdLJ0L4y0pDsEPA9rKssGXby6Fbxcl2JJnzfHdtL0yQrnadZbnkDLXx9RiGv+BziW/ANcP
+	Pao3/obreYjKvM1DGu2A5FSQ+LMGmu0yZ3B9yuYOqeNNTiJJLqeaVTx7ByCC0hVb9Qd86mbYqHVTp
+	NunEo3ikGT51T9M/dyHXo9Z8j+MedjQFM8F8TnnX9PNjlqBRY2zlt6tsE7C5OT2Lr16q2tz1258As
+	Za2uIcrw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wexGR-00000002Rjz-48l2;
-	Wed, 01 Jul 2026 15:54:16 +0000
-Received: from tor.source.kernel.org ([2600:3c04:e001:324:0:1991:8:25])
+	id 1wf1iS-00000002yTy-3raS;
+	Wed, 01 Jul 2026 20:39:28 +0000
+Received: from sea.source.kernel.org ([172.234.252.31])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wexGQ-00000002RjW-1eve;
-	Wed, 01 Jul 2026 15:54:14 +0000
+	id 1wf1iR-00000002yTo-2Sqi;
+	Wed, 01 Jul 2026 20:39:27 +0000
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 825246001D;
-	Wed,  1 Jul 2026 15:54:13 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E90E71F000E9;
-	Wed,  1 Jul 2026 15:54:12 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 184124004F;
+	Wed,  1 Jul 2026 20:39:27 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5CC711F000E9;
+	Wed,  1 Jul 2026 20:39:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782921253;
-	bh=Day1pHQbKZLb168bI+sP1UZxbLRw56ZZ/BDr3gtOMiQ=;
-	h=Date:From:Cc:To:In-Reply-To:References:Subject;
-	b=OEOXN1CbmqbmzOHS4xMU9zz61FwVoCI0s68qSt/fMFnPQAtQDSI9WRjlK+tUTfm7W
-	 YMGFkMn0G8o79DO1GWLJHoAFBmpvbYb7AMyNFQ1CBAOH3lIZ1XdwqwfXztENUdEGOP
-	 VsJ8LHmL5fgC5eFahjw3d+/4fx6zGP30xf5NOjXyx57RHcxnBNqPOqpIcjlEu09pgX
-	 kM2HD76Qskh2xjdNXvo423hw6HGkgGW4VB6wuRzMNJ90GISmxlQfHInTfCe6v9hs0B
-	 S3fk2J2JC82vh8hKsk0tW2YbnNLhgV8eJWG7PcgoKKGbVj8C8+JV1L+g+4CbHU04gr
-	 MuldJFsj5M1IQ==
-Date: Wed, 01 Jul 2026 10:54:12 -0500
-MIME-Version: 1.0
-From: "Rob Herring (Arm)" <robh@kernel.org>
-Cc: Deepak Gupta <debug@rivosinc.com>, sophgo@lists.linux.dev, 
- Conor Dooley <conor.dooley@microchip.com>, Alexandre Ghiti <alex@ghiti.fr>, 
- Jonathan Corbet <corbet@lwn.net>, Inochi Amaoto <inochiama@gmail.com>, 
- kvm@vger.kernel.org, spacemit@lists.linux.dev, 
- Jesse Taube <jtaubepe@redhat.com>, Atish Patra <atish.patra@linux.dev>, 
- Paul Walmsley <paul.walmsley@sifive.com>, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org, Conor Dooley <conor+dt@kernel.org>, 
- Paul Walmsley <pjw@kernel.org>, Yixun Lan <dlan@kernel.org>, 
- Chen Wang <unicorn_wang@outlook.com>, linux-doc@vger.kernel.org, 
- Zong Li <zong.li@sifive.com>, Conor Dooley <conor@kernel.org>, 
- Shuah Khan <skhan@linuxfoundation.org>, Albert Ou <aou@eecs.berkeley.edu>, 
- Anup Patel <anup@brainfault.org>, 
- Charlie Jenkins <thecharlesjenkins@gmail.com>, 
- Andrew Jones <andrew.jones@oss.qualcomm.com>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, linux-riscv@lists.infradead.org, 
- Chen Wang <chen.wang@linux.dev>, linux-kselftest@vger.kernel.org, 
- kvm-riscv@lists.infradead.org, Palmer Dabbelt <palmer@dabbelt.com>
+	s=k20260515; t=1782938367;
+	bh=f6QVBJJnOqTAmv9bGgn42fUJj2cY0FZxJ1ME1xdC+T8=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=RJRDi4cwA05SdSW+713uFlPiyHLZCwR49gpm/dBeCn1+LQodBzos5L0rNrOeB3byQ
+	 WYhZPYks9Se42SWieNvBWgUMjEsqBcwWOs4xOFFLRMbHi6ddQDqKg30NUNu0SRnybo
+	 Dxb53nC6CoI0/DRmyz5F3NPVghBQyDdplb73P47xUpH/v/YS8//CW0poBUhA6iC8QZ
+	 umZIFhJEUn1UA3tMpqYUH5xGl95l2jJ2JSaktuQKz/5/5/JCb3OwudfJXCtAean9jS
+	 MjQR6siiOHHeuqOsor+6mVOYZFjNM2kgMm41a5faaSghy28LcMtS8/BW+wK19MQomK
+	 Bdzqn1x2pljIA==
+Date: Wed, 1 Jul 2026 21:39:19 +0100
+From: Conor Dooley <conor@kernel.org>
 To: Guodong Xu <docular.xu@gmail.com>
-In-Reply-To: <20260701-rva23u64-hwprobe-v2-v5-8-2c61f94a695a@gmail.com>
-References: <20260701-rva23u64-hwprobe-v2-v5-0-2c61f94a695a@gmail.com>
- <20260701-rva23u64-hwprobe-v2-v5-8-2c61f94a695a@gmail.com>
-Message-Id: <178292125218.626337.4829523300943840761.robh@kernel.org>
+Cc: Jonathan Corbet <corbet@lwn.net>,
+	Shuah Khan <skhan@linuxfoundation.org>,
+	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+	Zong Li <zong.li@sifive.com>, Deepak Gupta <debug@rivosinc.com>,
+	Anup Patel <anup@brainfault.org>,
+	Atish Patra <atish.patra@linux.dev>, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Yixun Lan <dlan@kernel.org>,
+	Chen Wang <unicorn_wang@outlook.com>,
+	Inochi Amaoto <inochiama@gmail.com>,
+	Chen Wang <chen.wang@linux.dev>, linux-doc@vger.kernel.org,
+	linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
+	kvm@vger.kernel.org, kvm-riscv@lists.infradead.org,
+	Paul Walmsley <paul.walmsley@sifive.com>,
+	Jesse Taube <jtaubepe@redhat.com>,
+	Charlie Jenkins <thecharlesjenkins@gmail.com>,
+	Andrew Jones <andrew.jones@oss.qualcomm.com>,
+	devicetree@vger.kernel.org, spacemit@lists.linux.dev,
+	sophgo@lists.linux.dev, linux-kselftest@vger.kernel.org,
+	Conor Dooley <conor.dooley@microchip.com>
 Subject: Re: [PATCH v5 08/17] dt-bindings: riscv: Require block-size for
  Zicbom, Zicbop, and Zicboz
+Message-ID: <20260701-squiggle-aging-459cd99cb2dc@spud>
+References: <20260701-rva23u64-hwprobe-v2-v5-0-2c61f94a695a@gmail.com>
+ <20260701-rva23u64-hwprobe-v2-v5-8-2c61f94a695a@gmail.com>
+MIME-Version: 1.0
+In-Reply-To: <20260701-rva23u64-hwprobe-v2-v5-8-2c61f94a695a@gmail.com>
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -80,84 +83,110 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============1648921951228000963=="
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
+--===============1648921951228000963==
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="dKXZ0SKTAmT4FGH2"
+Content-Disposition: inline
 
-On Wed, 01 Jul 2026 08:52:21 -0400, Guodong Xu wrote:
+--dKXZ0SKTAmT4FGH2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, Jul 01, 2026 at 08:52:21AM -0400, Guodong Xu wrote:
 > Zicbom, Zicbop, and Zicboz have no default cache block size, so a
 > devicetree that declares one must also provide the matching
 > riscv,cbom/cbop/cboz-block-size property. Make it required so a
 > missing block-size property can be caught by dtbs_check.
-> 
+>=20
 > Suggested-by: Conor Dooley <conor.dooley@microchip.com>
 > Signed-off-by: Guodong Xu <docular.xu@gmail.com>
 > ---
 > v5: New patch.
 > ---
->  .../devicetree/bindings/riscv/extensions.yaml      | 26 ++++++++++++++++++++++
+>  .../devicetree/bindings/riscv/extensions.yaml      | 26 ++++++++++++++++=
+++++++
 >  1 file changed, 26 insertions(+)
-> 
+>=20
+> diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Do=
+cumentation/devicetree/bindings/riscv/extensions.yaml
+> index 5ffc40d599c02..f4dd34d446c02 100644
+> --- a/Documentation/devicetree/bindings/riscv/extensions.yaml
+> +++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
+> @@ -1142,6 +1142,32 @@ allOf:
+>            not:
+>              contains:
+>                const: zilsd
+> +  # All three Zicbo* extensions require their block size property as the=
+re's no
+> +  # default.
+> +  - if:
+> +      properties:
+> +        riscv,isa-extensions:
+> +          contains:
+> +            const: zicbom
 
-My bot found errors running 'make dt_binding_check' on your patch:
+I think the way to fix this is to add
+  required:
+    - riscv,isa-extensions
+to each of these if conditions
+(not got time to test it right now, sorry)
 
-yamllint warnings/errors:
+> +    then:
+> +      required:
+> +        - riscv,cbom-block-size
+> +  - if:
+> +      properties:
+> +        riscv,isa-extensions:
+> +          contains:
+> +            const: zicbop
+> +    then:
+> +      required:
+> +        - riscv,cbop-block-size
+> +  - if:
+> +      properties:
+> +        riscv,isa-extensions:
+> +          contains:
+> +            const: zicboz
+> +    then:
+> +      required:
+> +        - riscv,cboz-block-size
+> =20
+>  additionalProperties: true
+>  ...
+>=20
+> --=20
+> 2.43.0
+>=20
 
-dtschema/dtc warnings/errors:
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/cpu/idle-states.example.dtb: cpu@0 (riscv): 'riscv,cbom-block-size' is a required property
-	from schema $id: http://devicetree.org/schemas/riscv/cpus.yaml
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/cpu/idle-states.example.dtb: cpu@0 (riscv): 'riscv,cbop-block-size' is a required property
-	from schema $id: http://devicetree.org/schemas/riscv/cpus.yaml
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/cpu/idle-states.example.dtb: cpu@0 (riscv): 'riscv,cboz-block-size' is a required property
-	from schema $id: http://devicetree.org/schemas/riscv/cpus.yaml
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/cpu/idle-states.example.dtb: cpu@0 (riscv): Unevaluated properties are not allowed ('riscv,isa' was unexpected)
-	from schema $id: http://devicetree.org/schemas/riscv/cpus.yaml
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/cpu/idle-states.example.dtb: cpu@1 (riscv): 'riscv,cbom-block-size' is a required property
-	from schema $id: http://devicetree.org/schemas/riscv/cpus.yaml
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/cpu/idle-states.example.dtb: cpu@1 (riscv): 'riscv,cbop-block-size' is a required property
-	from schema $id: http://devicetree.org/schemas/riscv/cpus.yaml
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/cpu/idle-states.example.dtb: cpu@1 (riscv): 'riscv,cboz-block-size' is a required property
-	from schema $id: http://devicetree.org/schemas/riscv/cpus.yaml
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/cpu/idle-states.example.dtb: cpu@1 (riscv): Unevaluated properties are not allowed ('riscv,isa' was unexpected)
-	from schema $id: http://devicetree.org/schemas/riscv/cpus.yaml
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/cpu/idle-states.example.dtb: cpu@10 (riscv): 'riscv,cbom-block-size' is a required property
-	from schema $id: http://devicetree.org/schemas/riscv/cpus.yaml
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/cpu/idle-states.example.dtb: cpu@10 (riscv): 'riscv,cbop-block-size' is a required property
-	from schema $id: http://devicetree.org/schemas/riscv/cpus.yaml
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/cpu/idle-states.example.dtb: cpu@10 (riscv): 'riscv,cboz-block-size' is a required property
-	from schema $id: http://devicetree.org/schemas/riscv/cpus.yaml
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/cpu/idle-states.example.dtb: cpu@10 (riscv): Unevaluated properties are not allowed ('riscv,isa' was unexpected)
-	from schema $id: http://devicetree.org/schemas/riscv/cpus.yaml
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/cpu/idle-states.example.dtb: cpu@11 (riscv): 'riscv,cbom-block-size' is a required property
-	from schema $id: http://devicetree.org/schemas/riscv/cpus.yaml
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/cpu/idle-states.example.dtb: cpu@11 (riscv): 'riscv,cbop-block-size' is a required property
-	from schema $id: http://devicetree.org/schemas/riscv/cpus.yaml
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/cpu/idle-states.example.dtb: cpu@11 (riscv): 'riscv,cboz-block-size' is a required property
-	from schema $id: http://devicetree.org/schemas/riscv/cpus.yaml
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/cpu/idle-states.example.dtb: cpu@11 (riscv): Unevaluated properties are not allowed ('riscv,isa' was unexpected)
-	from schema $id: http://devicetree.org/schemas/riscv/cpus.yaml
+--dKXZ0SKTAmT4FGH2
+Content-Type: application/pgp-signature; name=signature.asc
 
-doc reference errors (make refcheckdocs):
+-----BEGIN PGP SIGNATURE-----
 
-See https://patchwork.kernel.org/project/devicetree/patch/20260701-rva23u64-hwprobe-v2-v5-8-2c61f94a695a@gmail.com
+iHUEABYKAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCakV69wAKCRB4tDGHoIJi
+0qZuAPsE7PpkS7Q9Q/QdOXMXVi0vMgDYbeEgMRtzf0lMlv6w6gEA1JDV5vGVvkwY
+e3dZ2Ec1Eq1CjjFHEnDtDfSSbocyhQw=
+=AQmB
+-----END PGP SIGNATURE-----
 
-The base for the series is generally the latest rc1. A different dependency
-should be noted in *this* patch.
+--dKXZ0SKTAmT4FGH2--
 
-If you already ran 'make dt_binding_check' and didn't see the above
-error(s), then make sure 'yamllint' is installed and dt-schema is up to
-date:
 
-pip3 install dtschema --upgrade
-
-Please check and re-submit after running the above command yourself. Note
-that DT_SCHEMA_FILES can be set to your schema file to speed up checking
-your schema. However, it must be unset to test all examples with your schema.
-
+--===============1648921951228000963==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 -- 
 kvm-riscv mailing list
 kvm-riscv@lists.infradead.org
 http://lists.infradead.org/mailman/listinfo/kvm-riscv
+
+--===============1648921951228000963==--
+
