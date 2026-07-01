@@ -4,85 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9D33AC43458
-	for <kvm-riscv@archiver.kernel.org>; Wed,  1 Jul 2026 08:51:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 740EAC43458
+	for <kvm-riscv@archiver.kernel.org>; Wed,  1 Jul 2026 08:51:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-Id:Date:Subject:Cc
-	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=tlxZQuAJID7JV2Cp7MtRngEcgBtsqsXIAgd7RDusyHY=; b=sn7Wtzio4rH+og
-	IJCXOH6u5I1wZX/G7ChheB9zxzOFilFXy7qY/KrotizGECFVNH/ybHrfw5cWi0yLhgpL0w3chMeZU
-	7yhhG8/kDtUtWomQxmE6RUdOqC8v+StvZyf4NZ8xt0vn4blIvRUKpvr/U8HEt6wExY5M3jPPJVfYz
-	xH2o+KKUJs7PcM9Tt545xd5ZUSyW9irPgow/OH0Xj26+r5Mv0XWO+MRWRxefsCfcIxpi/OhehnowF
-	t9A/6L4nQ7c/pUXECL7QRYvu4AkiXtZ/YuOVyYAmHiTBQ+Uq6Rzjwcix8mkTy9mGhV4lrqDZO/Eqp
-	zywYXPgUsCICH7C4wkTQ==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=QLAe4k0jeGtgQJAuqE2loQ5RJ3myPVWOPZvQEfkGbpc=; b=AMzy0YVV6Xvjqb
+	mSs/zd9WYaVxIf/5Ay+ybHnJmkPEn7UDLdPUpreWjVtqfseJZXTt10CPOWiADEVM7FTQehN7Sx1zq
+	d0hK8CrrgiWR0GuqDfV0luCb5pkZmwRzmHQR1TCj5aLmDLW/YKx+sAfgeNuu8Wh4ToNtmc9QVazjI
+	gvTrK0hOG3IMhps2h03eXB066S6X4FyP1g22ihAyh0HPtUPDll82J0z24ZsWO1EuMzlLsXvbyiCxd
+	2JnukH5esN38/bh0b7AUCSBiw3II7f+LE/1MNP3Q5sdUewtLERod/t9VUMawS23WwxJR/LBoyXYYc
+	kTTmJMQ4Z0OQvhbs9QFw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1weqeq-000000017W6-0jug;
-	Wed, 01 Jul 2026 08:51:00 +0000
+	id 1weqf0-000000017a4-0bo9;
+	Wed, 01 Jul 2026 08:51:10 +0000
 Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1weqep-000000017Vj-1l6s
+	id 1weqez-000000017ZX-1rQ1
 	for kvm-riscv@bombadil.infradead.org;
-	Wed, 01 Jul 2026 08:50:59 +0000
+	Wed, 01 Jul 2026 08:51:09 +0000
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:MIME-Version
-	:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:
-	Content-Description:In-Reply-To:References;
-	bh=Sq6xhPxioPByN8YmUNTYsI/Wb+4488jJwlA/SYfNZdg=; b=GNqNYNJkhDQeguVSQjyzYeuiVd
-	0DCitKHn0dosGTOgsgRZ0myUGu75goZra89L5mnbqps42mbNqFsSGrKCrGhSsTNrYzSnWvadBpWLj
-	sav9HzB35bhZVxpcbT5q45UyNpMmqB+7FPkic/HsqzNt5c0AEzYrwK8M+OYMvOMu4Anig2o8ZcpHo
-	WRHQpX4mCCbTSE+f4Pyq3v5PNkOb5zY3pPRg6bMBFFgfzQojg0oUkIM+ScVSkZqLOmsiOJ1Sqdv0E
-	ymZTrx3Zqo3KI7M4C9G7vrwnzfZ8lG5ZAoFbx9aRlBVI8j+8lvf9XJcEvTMDAKxxoM69Su7ntfGC1
-	Xa3Zaq8g==;
-Received: from mail-pj2-x02.google.com ([2607:f8b0:4864:39::2])
+	:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
+	Content-Type:Content-ID:Content-Description;
+	bh=EHr0PdDJXi6QKtc3/lV/35MnBQo9rJrsZa0CT7ri5ow=; b=gQdUyjurF7Rdh86pQcC3H7v1a9
+	9XE7Aheq2lFr9kti3A+WqDiNX9v2SVkMkJQjg4dSZRYrAFuy9iJ1PyVLPixQH9f6HMgZSvOI5V5YK
+	cje5m+NmDyE3/YeWTw4HEic7PgqmjKSz/DE8rrhCT+BDm37cDzZl0XWVXAjt6WEcN3+qs0zeRj8HF
+	SFtP8jQ4i8nTU+YhB+eSPlPcm8kzyoJ5je/JFANYFUm9jp26v4N/t+eP5Lm81O+lgnF30YTzSMbwl
+	HIeXlYAmPJnDdwvhsYxWhBWvzxqLkcZfsk8qgkrb6FmVnl7WAZRIKXWiesiq5zouxEbr9lpCDcyZ/
+	AJNrn6xw==;
+Received: from mail-pj2-x04.google.com ([2607:f8b0:4864:39::4])
 	by desiato.infradead.org with esmtps (Exim 4.99.2 #2 (Red Hat Linux))
-	id 1weqem-00000002XDf-12ZD
+	id 1weqev-00000002XEh-2kQS
 	for kvm-riscv@lists.infradead.org;
-	Wed, 01 Jul 2026 08:50:58 +0000
-Received: by mail-pj2-x02.google.com with SMTP id 98e67ed59e1d1-37fd7db8cf1so208865a91.1
-        for <kvm-riscv@lists.infradead.org>; Wed, 01 Jul 2026 01:50:55 -0700 (PDT)
+	Wed, 01 Jul 2026 08:51:08 +0000
+Received: by mail-pj2-x04.google.com with SMTP id 98e67ed59e1d1-37d77008a28so172058a91.0
+        for <kvm-riscv@lists.infradead.org>; Wed, 01 Jul 2026 01:51:04 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1782895853; x=1783500653; darn=lists.infradead.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=Sq6xhPxioPByN8YmUNTYsI/Wb+4488jJwlA/SYfNZdg=;
-        b=ezz9Mcb6n03087Gi41sj7vOxsbLvZh/Nl5o4XT1BOQXSAx04zw8Lip8UYlHQVIwvIz
-         vUdDjj9u1HBEfp4FkagWAD081ayPHgshHFzEjsFCG3XNaYcVz/yT/mcS975DcP+7w/kx
-         RnoWQoAmf3Mx0Wj5SWn8ArU5qAIUVK1XdPdJYxR6g6xgLDBaxEqojCQMoRGkt8m1eSHw
-         vj7uQAadwAwAUXG4ZhtgE2AozFQuZ7cQGhgOTFl8eyCSwQyz5OtrJqNIe6O1aWcmQkfi
-         aJ6qus4cUGknsLbOV47P3cXNNWo0lzglsSNzrTjwykY7eVbE/63U6uL/TZ/TCJ1tOmGD
-         RPpA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782895853; x=1783500653;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=gmail.com; s=20251104; t=1782895863; x=1783500663; darn=lists.infradead.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=Sq6xhPxioPByN8YmUNTYsI/Wb+4488jJwlA/SYfNZdg=;
-        b=QmZ8YOV5TRLmyVLQ0ggcXAzXNVSB95cX3cscFQZe8fRAca85MG+2BpAb9UP8MDIsow
-         a56QF1ubhoSGJ/1UVD88qSAIg5LkeWt00NU15DmXhVzrcnXd8E1l754fD+uxhhw0HAeH
-         VLd6DiKcaBGY1eURgzU/+f5XXQ4dlGymFh54geRtumzUs4y4HSbTv2cbrNObPQc2kkoh
-         g9OrX8Q31fpRdpuGFr4Kk75t2MUpXK5wG/vHYYS0+Jbyvv5HKlNh7vOZZrEdiRfIKQ0k
-         E/dXiJB8aV+tO/zwb5HCBKKAtJg6e4jZ38luYducVtITF0Lh6fZQl5MZD560gtuO1yld
-         5ctA==
-X-Forwarded-Encrypted: i=1; AHgh+RpqgWbASBbhg7NFAxywJYY/Bh5sF5zz/QL/gghR2JCBwm3nf7bCi29y0YbYjQYVs5DwU5lJAkdUPjA=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yz4UKseqPc3SDMPdquZHbo29MXKXgPEcAVir5SF517fDUSWfV7B
-	MqwAhyNZx5fGroELQT5EJd5jjdcMU6zJsSGi0NVXv6WOpePQRZ1/atF7
-X-Gm-Gg: AfdE7cnzMjYFYXpZEOY04W6GjpaKjJcHgHp0XyHqIUkxuP/p8AXzkr5Hblk4GtcqYiY
-	TNekSZfmC/i/Tm+AR2aeSHr+P1gq5RxMC9Q4xc4HbHKpXCTr/xTEVEmBeVNaexevuMQnhlhSGFs
-	vEEz/3/24sTKLpVEtTwDzEh8NoBGEVQkj+WKiPlz32kcKyu+uBmF2DNpG5jEBiHqKprU8IJJ4ls
-	VQCdnTZXFygH/nTgbipdjkvcuZlAtJfpcUcSygqvHxVgvWia8tPHyO7XbH6Dl2ScYv8M80s8Jye
-	mMqUEVY3EwTOuyTaCi1qIuVclfP6exkYLTtCscQIXJkB6ofJv/cWNiZoy0Hb2lKHrRE35uEXIVa
-	iCuqUJaPfsXC//oIgW9sry0c8EERUfuv8gEOUHPGqwXHxxRSJftVU0/mCW2zlvO4TjidY2G0cPn
-	iM76zA/FKWxo+hTsTfcb5+
-X-Received: by 2002:a17:90b:562c:b0:37f:9ce3:ca97 with SMTP id 98e67ed59e1d1-380aa20e0cemr685220a91.32.1782895853475;
-        Wed, 01 Jul 2026 01:50:53 -0700 (PDT)
+        bh=EHr0PdDJXi6QKtc3/lV/35MnBQo9rJrsZa0CT7ri5ow=;
+        b=IIbIfSrtiLqlC38nEKKkEHvh3I9ku3etaZInYkJBsxviUghFmULRvcGNC/jFGgd/V7
+         l4dI3t63oTTH9YPVp5MnklBZ//qhOv90ADTYR2KJCI0hpjSlAaYJhYlnVP2GtMSdXhso
+         F4ZQCCnZ3pL3DF2Jl0u/lRkv5pc5GUmhLWpdWP26q4nX10AdnzYKax4ZX+u025QTFd5v
+         raRcZTiI9ySu3SZ0X/UVS1c+yp+f8R9NT9dV3iydWXAXxuFM9Kdz/eiujdXXfC5BevjB
+         bsJxYExm9RtgpTEtWPKfCX0v+9VJNevPs/w7WS2ro0S6wwSKrHNbjRpbNJyMfQW9aiUS
+         84Sw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1782895863; x=1783500663;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=EHr0PdDJXi6QKtc3/lV/35MnBQo9rJrsZa0CT7ri5ow=;
+        b=BohCDHuK5FymshSwndpDB5RtK9tFJhHkbEuVpb3iJ2tK/VzOVQo9CUW+c/viwtE6lB
+         5uPqeQygnz2cdHqTWyNyF6881gOKzx+/26Bn3Q9v0Khw0RtDcyTGV2XQB5IAlR/g+TDV
+         DIOdYTZWh9wHFxKK9otaoTnTxX4sGupAZLJk/Udm9ZmYOZOfXzBoK8aFaam9QeyKbFaG
+         Ykz1BNvugJoTq11pGWy9OCzl2zJdpiiPhOnu6aiUWPgc9GEcISPORP9VU/nvYx5sdiLG
+         8mMM+FnCONSt/05UfqG/sESnurzEGTb9YxAhx4Ej4yU/zhOZN16BdMLB7wIda0K7rZ3k
+         F68A==
+X-Forwarded-Encrypted: i=1; AHgh+RrXw3l/Ok+tBHF6oFwx89/+r84azWs4pAXcHjyiAkNTYWY+gIQEVRR1c2XU12qNS0Z7ZWGuTyeAylY=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yz61QmJtOEEct1kyjRMjnurOdLrqQ8HRIXT8W5kTG5lrB1Ghk+u
+	3TExO0r6aL2ygrcmStVW7cWzT2SlaOZZxmPFYbwFcHOaSeCfREMrsdRs
+X-Gm-Gg: AfdE7cktdm6DlSaJ2TONnrSZ5WsagJ4GpzwYXh8qkAjtQn4GmJyEa04YYHsZlVF5YQv
+	y6az+CfFKff8MaABjjplTYorRTSgNVZ3kZ9pIt50nyY6TH12xk2slWHwqwYuPgSKZHjLinfWFsB
+	Zt3WPxDr6cOh8GvdGtWtbrj6zG6hCCgmtH9vT/yTrOKV/x5Gqc5dZVZlKBN1NRhEW02Z4of9pSi
+	o63T2SFZVGSBQwZjIbUnCcA8kP7q9xdbRH7IzoJ7GogykGNurzlQJLdgJvPOjIJLX0EYdI+2D7c
+	LLyRy0oymW/BvYB33PFqTpEuXi4j0nCl2fC/A3CSSCkUkeDE+TEm5OO9EIpDnIfkUCIYoFvNUuF
+	muCKGYeePL86EharNpPsY8SmemyQ0C+8rxJpPTC1fKZcJ1qfGUhNU2R0O3C9V037ziP8SkETfnr
+	XbaNbx9FCreHsqKJ20I8pl
+X-Received: by 2002:a17:90b:4acb:b0:37f:d6f3:450d with SMTP id 98e67ed59e1d1-380aa1313ecmr827599a91.14.1782895863350;
+        Wed, 01 Jul 2026 01:51:03 -0700 (PDT)
 Received: from wud.bbrouter ([2409:8a1e:9473:9f10:5de9:783b:c249:18c5])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-38097ba48d0sm550782a91.1.2026.07.01.01.50.47
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-38097ba48d0sm550782a91.1.2026.07.01.01.50.57
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 01 Jul 2026 01:50:53 -0700 (PDT)
+        Wed, 01 Jul 2026 01:51:03 -0700 (PDT)
 From: "Dylan.Wu" <fredwudi0305@gmail.com>
 To: palmer@dabbelt.com,
 	pjw@kernel.org,
@@ -96,15 +97,16 @@ Cc: alex@ghiti.fr,
 	kvm-riscv@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	"Dylan.Wu" <fredwudi0305@gmail.com>
-Subject: [PATCH 0/2] riscv: ptdump: Refactor for KVM gstage ptdump support
-Date: Wed,  1 Jul 2026 04:50:28 -0400
-Message-Id: <20260701085030.124579-1-fredwudi0305@gmail.com>
+Subject: [PATCH 1/2] riscv: ptdump: Move pagetable definitions to common header
+Date: Wed,  1 Jul 2026 04:50:29 -0400
+Message-Id: <20260701085030.124579-2-fredwudi0305@gmail.com>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20260701085030.124579-1-fredwudi0305@gmail.com>
+References: <20260701085030.124579-1-fredwudi0305@gmail.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260701_095056_526855_AC15DDFB 
-X-CRM114-Status: UNSURE (   9.00  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20260701_095105_920930_8F2DED3A 
+X-CRM114-Status: GOOD (  26.43  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -121,62 +123,297 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-This series refactors the RISC-V ptdump implementation to support
-dumping KVM gstage (stage-2) page tables via debugfs.
+Move the pagetable walking state and level definitions to a new
+arch/riscv/include/asm/ptdump.h header. This allows other parts
+of the kernel (like KVM) to reuse the ptdump attribute parsing
+logic.
 
-Patch 1 moves the pagetable walking state and level definitions to a
-common header (arch/riscv/include/asm/ptdump.h), updates the attribute
-parsing logic to use per-level bit definitions, and exports note_page()
-so that it can be reused by the KVM ptdump implementation.
+To support different pagetable types (like G-stage), the attribute
+parsing logic in dump_prot() is updated to use attribute bits
+defined within the pg_level structure rather than a global array.
 
-Patch 2 introduces KVM gstage ptdump support, registering a
-'gstage_page_tables' file under the guest debugfs directory. This
-allows userspace to inspect the gstage layout and permissions, which
-is useful for architectural debugging and memory management audits.
-
-Testing:
-  - Booted on QEMU riscv64 with CONFIG_PTDUMP_DEBUGFS=y and
-    CONFIG_PTDUMP_GSTAGE_DEBUGFS=y
-  - Verified /sys/kernel/debug/kernel_page_tables output unchanged
-  - Created a KVM guest and verified gstage_page_tables output: 
-0x0000000080200000-0x0000000080209000    0x000000010c94e000        36K PTE   ..   D A U X W R V
-0x000000008020a000-0x0000000080223000    0x000000010c9af000       100K PTE   ..   D A U X W R V
-0x0000000080229000-0x000000008022b000    0x000000010c978000         8K PTE   ..   D A U X W R V
-0x000000008022d000-0x000000008022e000    0x000000010c844000         4K PTE   ..   D A U X W R V
-0x000000008022f000-0x0000000080232000    0x000000010c846000        12K PTE   ..   D A U X W R V
-0x0000000080234000-0x0000000080238000    0x000000010ca13000        16K PTE   ..   D A U X W R V
-0x000000008023a000-0x000000008023f000    0x00000001083bd000        20K PTE   ..   D A U X W R V
-0x0000000080242000-0x000000008024b000    0x0000000106975000        36K PTE   ..   D A U X W R V
-0x000000008024d000-0x0000000080252000    0x000000010cb54000        20K PTE   ..   D A U X W R V
-0x0000000080255000-0x0000000080258000    0x000000010c164000        12K PTE   ..   D A U X W R V
-0x000000008025a000-0x000000008025c000    0x00000001036a9000         8K PTE   ..   D A U X W R V
-0x0000000080260000-0x0000000080275000    0x0000000107917000        84K PTE   ..   D A U X W R V
-0x0000000080276000-0x000000008027e000    0x00000001078ed000        32K PTE   ..   D A U X W R V
-0x000000008027f000-0x00000000802bb000    0x0000000108986000       240K PTE   ..   D A U X W R V
-0x00000000802bc000-0x00000000802c0000    0x000000010762b000        16K PTE   ..   D A U X W R V
-0x00000000802c2000-0x00000000802d2000    0x00000001083fd000        64K PTE   ..   D A U X W R V
-0x00000000802d4000-0x00000000802e0000    0x000000010790b000        48K PTE   ..   D A U X W R V
-0x00000000802e1000-0x00000000802e4000    0x0000000102f74000        12K PTE   ..   D A U X W R V
-0x00000000802e5000-0x00000000802ef000    0x0000000104b9c000        40K PTE   ..   D A U X W R V
-0x00000000802f1000-0x00000000802f2000    0x0000000103778000         4K PTE   ..   D A U X W R V
-0x00000000802f3000-0x00000000802f9000    0x000000010377a000        24K PTE   ..   D A U X W R V
-
-
-Dylan.Wu (2):
-  riscv: ptdump: Move pagetable definitions to common header
-  KVM: riscv: Register ptdump with debugfs on guest creation
-
- arch/riscv/include/asm/kvm_host.h |   6 +
- arch/riscv/include/asm/ptdump.h   |  42 +++++++
- arch/riscv/kvm/Kconfig            |  15 +++
- arch/riscv/kvm/Makefile           |   1 +
- arch/riscv/kvm/ptdump.c           | 178 ++++++++++++++++++++++++++++++
- arch/riscv/kvm/vm.c               |   5 +
- arch/riscv/mm/ptdump.c            | 102 ++++++-----------
- 7 files changed, 282 insertions(+), 67 deletions(-)
+Assisted-by: YuanSheng: deepseek-v4-pro
+Co-developed-by: Quan Zhou <zhouquan@iscas.ac.cn>
+Signed-off-by: Quan Zhou <zhouquan@iscas.ac.cn>
+Signed-off-by: Dylan.Wu <fredwudi0305@gmail.com>
+---
+ arch/riscv/include/asm/ptdump.h |  42 +++++++++++++
+ arch/riscv/mm/ptdump.c          | 102 +++++++++++---------------------
+ 2 files changed, 77 insertions(+), 67 deletions(-)
  create mode 100644 arch/riscv/include/asm/ptdump.h
- create mode 100644 arch/riscv/kvm/ptdump.c
 
+diff --git a/arch/riscv/include/asm/ptdump.h b/arch/riscv/include/asm/ptdump.h
+new file mode 100644
+index 000000000..9173910fa
+--- /dev/null
++++ b/arch/riscv/include/asm/ptdump.h
+@@ -0,0 +1,42 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++#ifndef _ASM_RISCV_PTDUMP_H
++#define _ASM_RISCV_PTDUMP_H
++
++#include <linux/ptdump.h>
++#include <linux/seq_file.h>
++
++struct addr_marker {
++	unsigned long start_address;
++	const char *name;
++};
++
++struct ptdump_prot_bits {
++	u64 mask;
++	const char *set;
++	const char *clear;
++};
++
++struct ptdump_pg_level {
++	const struct ptdump_prot_bits *bits;
++	const char *name;
++	u64 mask;
++	int num;
++};
++
++struct ptdump_pg_state {
++	struct ptdump_state ptdump;
++	struct seq_file *seq;
++	const struct addr_marker *marker;
++	const struct ptdump_pg_level *pg_level;
++	unsigned long start_address;
++	unsigned long start_pa;
++	unsigned long last_pa;
++	int level;
++	u64 current_prot;
++	bool check_wx;
++	unsigned long wx_pages;
++};
++
++void note_page(struct ptdump_state *pt_st, unsigned long addr, int level, u64 val);
++
++#endif /* _ASM_RISCV_PTDUMP_H */
+diff --git a/arch/riscv/mm/ptdump.c b/arch/riscv/mm/ptdump.c
+index f4b4a9fcb..7e55656cb 100644
+--- a/arch/riscv/mm/ptdump.c
++++ b/arch/riscv/mm/ptdump.c
+@@ -11,6 +11,7 @@
+ #include <linux/ptdump.h>
+ 
+ #include <linux/pgtable.h>
++#include <asm/ptdump.h>
+ #include <asm/kasan.h>
+ 
+ #define pt_dump_seq_printf(m, fmt, args...)	\
+@@ -25,31 +26,6 @@
+ 		seq_puts(m, fmt);	\
+ })
+ 
+-/*
+- * The page dumper groups page table entries of the same type into a single
+- * description. It uses pg_state to track the range information while
+- * iterating over the pte entries. When the continuity is broken it then
+- * dumps out a description of the range.
+- */
+-struct pg_state {
+-	struct ptdump_state ptdump;
+-	struct seq_file *seq;
+-	const struct addr_marker *marker;
+-	unsigned long start_address;
+-	unsigned long start_pa;
+-	unsigned long last_pa;
+-	int level;
+-	u64 current_prot;
+-	bool check_wx;
+-	unsigned long wx_pages;
+-};
+-
+-/* Address marker */
+-struct addr_marker {
+-	unsigned long start_address;
+-	const char *name;
+-};
+-
+ /* Private information for debugfs */
+ struct ptd_mm_info {
+ 	struct mm_struct		*mm;
+@@ -126,14 +102,7 @@ static struct ptd_mm_info efi_ptd_info = {
+ };
+ #endif
+ 
+-/* Page Table Entry */
+-struct prot_bits {
+-	u64 mask;
+-	const char *set;
+-	const char *clear;
+-};
+-
+-static const struct prot_bits pte_bits[] = {
++static const struct ptdump_prot_bits pte_bits[] = {
+ 	{
+ #ifdef CONFIG_64BIT
+ 		.mask = _PAGE_NAPOT,
+@@ -183,52 +152,48 @@ static const struct prot_bits pte_bits[] = {
+ 	}
+ };
+ 
+-/* Page Level */
+-struct pg_level {
+-	const char *name;
+-	u64 mask;
+-};
+-
+-static struct pg_level pg_level[] = {
++static struct ptdump_pg_level kernel_pg_levels[] = {
+ 	{ /* pgd */
+ 		.name = "PGD",
+ 	}, { /* p4d */
+-		.name = (CONFIG_PGTABLE_LEVELS > 4) ? "P4D" : "PGD",
++		.name = "P4D",
+ 	}, { /* pud */
+-		.name = (CONFIG_PGTABLE_LEVELS > 3) ? "PUD" : "PGD",
++		.name = "PUD",
+ 	}, { /* pmd */
+-		.name = (CONFIG_PGTABLE_LEVELS > 2) ? "PMD" : "PGD",
++		.name = "PMD",
+ 	}, { /* pte */
+ 		.name = "PTE",
+ 	},
+ };
+ 
+-static void dump_prot(struct pg_state *st)
++static void dump_prot(struct ptdump_pg_state *st)
+ {
+ 	unsigned int i;
++	const struct ptdump_pg_level *lvl = &st->pg_level[st->level];
++	const struct ptdump_prot_bits *bits = lvl->bits;
+ 
+-	for (i = 0; i < ARRAY_SIZE(pte_bits); i++) {
++	for (i = 0; i < lvl->num; i++) {
+ 		char s[7];
+ 		unsigned long val;
+ 
+-		val = st->current_prot & pte_bits[i].mask;
++		val = st->current_prot & bits[i].mask;
+ 		if (val) {
+-			if (pte_bits[i].mask == _PAGE_SOFT)
+-				snprintf(s, sizeof(s), pte_bits[i].set, val >> 8);
++			if (bits[i].mask == _PAGE_SOFT)
++				snprintf(s, sizeof(s), bits[i].set, val >> 8);
+ #ifdef CONFIG_64BIT
+-			else if (pte_bits[i].mask == _PAGE_MTMASK_SVPBMT) {
++			else if (bits[i].mask == _PAGE_MTMASK_SVPBMT) {
+ 				if (val == _PAGE_NOCACHE_SVPBMT)
+-					snprintf(s, sizeof(s), pte_bits[i].set, "NC");
++					snprintf(s, sizeof(s), bits[i].set, "NC");
+ 				else if (val == _PAGE_IO_SVPBMT)
+-					snprintf(s, sizeof(s), pte_bits[i].set, "IO");
++					snprintf(s, sizeof(s), bits[i].set, "IO");
+ 				else
+-					snprintf(s, sizeof(s), pte_bits[i].set, "??");
++					snprintf(s, sizeof(s), bits[i].set, "??");
+ 			}
+ #endif
+ 			else
+-				strscpy(s, pte_bits[i].set);
++				strscpy(s, bits[i].set);
+ 		} else {
+-			strscpy(s, pte_bits[i].clear);
++			strscpy(s, bits[i].clear);
+ 		}
+ 
+ 		pt_dump_seq_printf(st->seq, " %s", s);
+@@ -240,7 +205,7 @@ static void dump_prot(struct pg_state *st)
+ #else
+ #define ADDR_FORMAT	"0x%08lx"
+ #endif
+-static void dump_addr(struct pg_state *st, unsigned long addr)
++static void dump_addr(struct ptdump_pg_state *st, unsigned long addr)
+ {
+ 	static const char units[] = "KMGTPE";
+ 	const char *unit = units;
+@@ -258,10 +223,10 @@ static void dump_addr(struct pg_state *st, unsigned long addr)
+ 	}
+ 
+ 	pt_dump_seq_printf(st->seq, "%9lu%c %s", delta, *unit,
+-			   pg_level[st->level].name);
++			   st->pg_level[st->level].name);
+ }
+ 
+-static void note_prot_wx(struct pg_state *st, unsigned long addr)
++static void note_prot_wx(struct ptdump_pg_state *st, unsigned long addr)
+ {
+ 	if (!st->check_wx)
+ 		return;
+@@ -276,15 +241,15 @@ static void note_prot_wx(struct pg_state *st, unsigned long addr)
+ 	st->wx_pages += (addr - st->start_address) / PAGE_SIZE;
+ }
+ 
+-static void note_page(struct ptdump_state *pt_st, unsigned long addr,
+-		      int level, u64 val)
++void note_page(struct ptdump_state *pt_st, unsigned long addr,
++	       int level, u64 val)
+ {
+-	struct pg_state *st = container_of(pt_st, struct pg_state, ptdump);
++	struct ptdump_pg_state *st = container_of(pt_st, struct ptdump_pg_state, ptdump);
+ 	u64 pa = PFN_PHYS(pte_pfn(__pte(val)));
+ 	u64 prot = 0;
+ 
+ 	if (level >= 0)
+-		prot = val & pg_level[level].mask;
++		prot = val & st->pg_level[level].mask;
+ 
+ 	if (st->level == -1) {
+ 		st->level = level;
+@@ -317,6 +282,7 @@ static void note_page(struct ptdump_state *pt_st, unsigned long addr,
+ 		st->last_pa = pa;
+ 	}
+ }
++EXPORT_SYMBOL_GPL(note_page);
+ 
+ static void note_page_pte(struct ptdump_state *pt_st, unsigned long addr, pte_t pte)
+ {
+@@ -352,9 +318,10 @@ static void note_page_flush(struct ptdump_state *pt_st)
+ 
+ static void ptdump_walk(struct seq_file *s, struct ptd_mm_info *pinfo)
+ {
+-	struct pg_state st = {
++	struct ptdump_pg_state st = {
+ 		.seq = s,
+ 		.marker = pinfo->markers,
++		.pg_level = kernel_pg_levels,
+ 		.level = -1,
+ 		.ptdump = {
+ 			.note_page_pte = note_page_pte,
+@@ -375,12 +342,13 @@ static void ptdump_walk(struct seq_file *s, struct ptd_mm_info *pinfo)
+ 
+ bool ptdump_check_wx(void)
+ {
+-	struct pg_state st = {
++	struct ptdump_pg_state st = {
+ 		.seq = NULL,
+ 		.marker = (struct addr_marker[]) {
+ 			{0, NULL},
+ 			{-1, NULL},
+ 		},
++		.pg_level = kernel_pg_levels,
+ 		.level = -1,
+ 		.check_wx = true,
+ 		.ptdump = {
+@@ -446,12 +414,12 @@ static int __init ptdump_init(void)
+ 
+ 	kernel_ptd_info.base_addr = KERN_VIRT_START;
+ 
+-	pg_level[1].name = pgtable_l5_enabled ? "P4D" : "PGD";
+-	pg_level[2].name = pgtable_l4_enabled ? "PUD" : "PGD";
++	kernel_pg_levels[1].name = pgtable_l5_enabled ? "P4D" : "PGD";
++	kernel_pg_levels[2].name = pgtable_l4_enabled ? "PUD" : "PGD";
+ 
+-	for (i = 0; i < ARRAY_SIZE(pg_level); i++)
++	for (i = 0; i < ARRAY_SIZE(kernel_pg_levels); i++)
+ 		for (j = 0; j < ARRAY_SIZE(pte_bits); j++)
+-			pg_level[i].mask |= pte_bits[j].mask;
++			kernel_pg_levels[i].mask |= pte_bits[j].mask;
+ 
+ 	debugfs_create_file("kernel_page_tables", 0400, NULL, &kernel_ptd_info,
+ 			    &ptdump_fops);
 -- 
 2.34.1
 
