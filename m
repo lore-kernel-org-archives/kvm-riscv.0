@@ -4,91 +4,106 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4D9C8C43327
-	for <kvm-riscv@archiver.kernel.org>; Wed,  1 Jul 2026 07:53:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9D33AC43458
+	for <kvm-riscv@archiver.kernel.org>; Wed,  1 Jul 2026 08:51:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-Id:Date:Subject:Cc
 	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
 	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=qg79U4uwbXYzsXzM0Og+KP+256gdc3HRRB00wN0MRiE=; b=A8j55/+6ZeK+eC
-	6KIhkLsd+H/zcHAS2AJyxTltg8IY7DbY1WQu9sfryOle1vd1hhpNJX1r1ghTNCXJBIWSDXhnmVRP9
-	3I3BIgJk07cZdqn9Qjk1uOpAC/T0H1nF584q7XkxvN9JA3C8t05/PzWSHLVrsQMMZNkDhOjSedWgd
-	ifnTtGOhs0mAcJd0n/dO6QWOEF5/uNm3K6/Fr8K7p1Z7WvKmoacojTMQFr8hY+FopnEXwgXPuk9Hn
-	7cQREAoe2ED2L7Pewv1821y8nV5MxXlTL5qIaM0DGeSvD3f2z8nqY/xhWuZyrUp3EGe27AcZ8K5RX
-	AbeH2AJab5ZbQKFD2dDA==;
+	List-Owner; bh=tlxZQuAJID7JV2Cp7MtRngEcgBtsqsXIAgd7RDusyHY=; b=sn7Wtzio4rH+og
+	IJCXOH6u5I1wZX/G7ChheB9zxzOFilFXy7qY/KrotizGECFVNH/ybHrfw5cWi0yLhgpL0w3chMeZU
+	7yhhG8/kDtUtWomQxmE6RUdOqC8v+StvZyf4NZ8xt0vn4blIvRUKpvr/U8HEt6wExY5M3jPPJVfYz
+	xH2o+KKUJs7PcM9Tt545xd5ZUSyW9irPgow/OH0Xj26+r5Mv0XWO+MRWRxefsCfcIxpi/OhehnowF
+	t9A/6L4nQ7c/pUXECL7QRYvu4AkiXtZ/YuOVyYAmHiTBQ+Uq6Rzjwcix8mkTy9mGhV4lrqDZO/Eqp
+	zywYXPgUsCICH7C4wkTQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wepkn-00000000xnE-43j3;
-	Wed, 01 Jul 2026 07:53:06 +0000
-Received: from mail-pz2-x00.google.com ([2607:f8b0:4864:3b::])
+	id 1weqeq-000000017W6-0jug;
+	Wed, 01 Jul 2026 08:51:00 +0000
+Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wepkk-00000000xmX-2CVX
+	id 1weqep-000000017Vj-1l6s
+	for kvm-riscv@bombadil.infradead.org;
+	Wed, 01 Jul 2026 08:50:59 +0000
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:MIME-Version
+	:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:
+	Content-Description:In-Reply-To:References;
+	bh=Sq6xhPxioPByN8YmUNTYsI/Wb+4488jJwlA/SYfNZdg=; b=GNqNYNJkhDQeguVSQjyzYeuiVd
+	0DCitKHn0dosGTOgsgRZ0myUGu75goZra89L5mnbqps42mbNqFsSGrKCrGhSsTNrYzSnWvadBpWLj
+	sav9HzB35bhZVxpcbT5q45UyNpMmqB+7FPkic/HsqzNt5c0AEzYrwK8M+OYMvOMu4Anig2o8ZcpHo
+	WRHQpX4mCCbTSE+f4Pyq3v5PNkOb5zY3pPRg6bMBFFgfzQojg0oUkIM+ScVSkZqLOmsiOJ1Sqdv0E
+	ymZTrx3Zqo3KI7M4C9G7vrwnzfZ8lG5ZAoFbx9aRlBVI8j+8lvf9XJcEvTMDAKxxoM69Su7ntfGC1
+	Xa3Zaq8g==;
+Received: from mail-pj2-x02.google.com ([2607:f8b0:4864:39::2])
+	by desiato.infradead.org with esmtps (Exim 4.99.2 #2 (Red Hat Linux))
+	id 1weqem-00000002XDf-12ZD
 	for kvm-riscv@lists.infradead.org;
-	Wed, 01 Jul 2026 07:53:04 +0000
-Received: by mail-pz2-x00.google.com with SMTP id 41be03b00d2f7-c96739a46acso131353a12.1
-        for <kvm-riscv@lists.infradead.org>; Wed, 01 Jul 2026 00:53:01 -0700 (PDT)
+	Wed, 01 Jul 2026 08:50:58 +0000
+Received: by mail-pj2-x02.google.com with SMTP id 98e67ed59e1d1-37fd7db8cf1so208865a91.1
+        for <kvm-riscv@lists.infradead.org>; Wed, 01 Jul 2026 01:50:55 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1782892381; x=1783497181; darn=lists.infradead.org;
+        d=gmail.com; s=20251104; t=1782895853; x=1783500653; darn=lists.infradead.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=puBKmxakpyuhyti8JVghjO1VLPpzeh7Dz9u+N6AR8/o=;
-        b=XHo6KquhZUqPV1IBIIVPdM77Bg5Qx7PxNLxgy3KCWEjs8szl4eJqlYH4QmG1Hq94Ns
-         JGqaiKkBtEJgcDNvLwBJE0Ynt8Hxj2cwE1eUMGzi1o9eAa4OktQujZA+LU65V0C5BdpN
-         WZdgM3fSQehfBazzqLwd3et1WgjyQyq0dZ1RbDYj8TEnWwBd8IjiTVufJrI8YmjY5Z2i
-         DfNbWSrg7C49h0YgBNqWqV5wtvgu1X0HgcR24X5qRi/vyzAj9i5bh8rliHPh4C8hXurP
-         9n/ImXKp2h3uuUHN+YI+7Xq25SbsNvjfN4G5pJBcuz+sEiwPeIamBfzohaN+2YfEHe6I
-         CM3A==
+        bh=Sq6xhPxioPByN8YmUNTYsI/Wb+4488jJwlA/SYfNZdg=;
+        b=ezz9Mcb6n03087Gi41sj7vOxsbLvZh/Nl5o4XT1BOQXSAx04zw8Lip8UYlHQVIwvIz
+         vUdDjj9u1HBEfp4FkagWAD081ayPHgshHFzEjsFCG3XNaYcVz/yT/mcS975DcP+7w/kx
+         RnoWQoAmf3Mx0Wj5SWn8ArU5qAIUVK1XdPdJYxR6g6xgLDBaxEqojCQMoRGkt8m1eSHw
+         vj7uQAadwAwAUXG4ZhtgE2AozFQuZ7cQGhgOTFl8eyCSwQyz5OtrJqNIe6O1aWcmQkfi
+         aJ6qus4cUGknsLbOV47P3cXNNWo0lzglsSNzrTjwykY7eVbE/63U6uL/TZ/TCJ1tOmGD
+         RPpA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782892381; x=1783497181;
+        d=1e100.net; s=20251104; t=1782895853; x=1783500653;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=puBKmxakpyuhyti8JVghjO1VLPpzeh7Dz9u+N6AR8/o=;
-        b=IwIB08nh8ck3Oquyuk9IioYDaY+0XwtINgw2z4OO735iIjInt5wgFx3YISbI23NhVz
-         5bUYplu0+8TO480fp5axYkCqobqZ18h9bdrD6IdDPJrYT5Mex/wpL+Nty3QNbyPHjljk
-         orskSKZFDqlP/jrsVGHgsQA3I7MQwxrZec8y2IaXn4TouebfrVxlbANw6qOhiKbSKLmP
-         kul4R6BZ3bjRM1k2lP93Zbo0UWlir2lZxGLvEPKRnTs+Ayqo28GrfHlFJOcNeG7Ka4/5
-         tg0aWO+HPoWsImEybDfL7XpwnH60IJRxFdvwv8DYwbDPR2t5ffITW+sTkQ8cd5R2ssgK
-         3rBg==
-X-Forwarded-Encrypted: i=1; AHgh+RpuDPohH9zjvkaxlJohotoLmBIHfV3KmHJBxmXCHN0QXnQVu3dsg2Fv6zGXJEy/gIrzE7EN+qE8n6w=@lists.infradead.org
-X-Gm-Message-State: AOJu0YwFQuiRCiF6MiArQ95fHKSVfL79THtzhmeVlO0tj9NJaElmOTw/
-	onYE+bdp6bXHI503/FkKyovrbpqVXHy84HHrXs27JpZYGHKAca7lP8ME
-X-Gm-Gg: AfdE7cmF7aSC+3ObJT4r8I7jgl9pkz5fP7Mkq8pTsmmdI0aSPr17Y6QLMpQPDPTHJbK
-	fy3g6dPvuqOSSNQK/fkp+NCXKS/iNO36TycrO7NagCil0/k6LDocd63YI2SvE3poRdNNubx+D1Y
-	xatC5SrdBiubVgyolNztGouHZk6fDz4rXZogbThYre8khf/uo2gLfEigrvgih6sMWWoFbeWpOgF
-	cA6yQVs8RWhND9pFBWTc7pNXWhfEvZRAa9kZJ8W0pIgHhTkn7V8bzZcqRRwdVYo+zNJxZom/M3C
-	2yKT4H2fR2cKikEAqspzl5iQuMMbcw52Gw0m3q+kzrNltyxiTrEOCX+WS2t5UWrpjNGajLGkRAS
-	KwlqTXOXCeDcmwXIN+9QYqW9JLDk0RsPcHVBagG4NRZKKk9mEsED4q6pXUeVAeMdzsefxUzHp3F
-	ETcEg1vl3CoTt/EQOycuWoYKsBUUF8k6k=
-X-Received: by 2002:a05:6a00:3d56:b0:845:e9e5:cdec with SMTP id d2e1a72fcca58-847c097e705mr532613b3a.62.1782892380950;
-        Wed, 01 Jul 2026 00:53:00 -0700 (PDT)
+        bh=Sq6xhPxioPByN8YmUNTYsI/Wb+4488jJwlA/SYfNZdg=;
+        b=QmZ8YOV5TRLmyVLQ0ggcXAzXNVSB95cX3cscFQZe8fRAca85MG+2BpAb9UP8MDIsow
+         a56QF1ubhoSGJ/1UVD88qSAIg5LkeWt00NU15DmXhVzrcnXd8E1l754fD+uxhhw0HAeH
+         VLd6DiKcaBGY1eURgzU/+f5XXQ4dlGymFh54geRtumzUs4y4HSbTv2cbrNObPQc2kkoh
+         g9OrX8Q31fpRdpuGFr4Kk75t2MUpXK5wG/vHYYS0+Jbyvv5HKlNh7vOZZrEdiRfIKQ0k
+         E/dXiJB8aV+tO/zwb5HCBKKAtJg6e4jZ38luYducVtITF0Lh6fZQl5MZD560gtuO1yld
+         5ctA==
+X-Forwarded-Encrypted: i=1; AHgh+RpqgWbASBbhg7NFAxywJYY/Bh5sF5zz/QL/gghR2JCBwm3nf7bCi29y0YbYjQYVs5DwU5lJAkdUPjA=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yz4UKseqPc3SDMPdquZHbo29MXKXgPEcAVir5SF517fDUSWfV7B
+	MqwAhyNZx5fGroELQT5EJd5jjdcMU6zJsSGi0NVXv6WOpePQRZ1/atF7
+X-Gm-Gg: AfdE7cnzMjYFYXpZEOY04W6GjpaKjJcHgHp0XyHqIUkxuP/p8AXzkr5Hblk4GtcqYiY
+	TNekSZfmC/i/Tm+AR2aeSHr+P1gq5RxMC9Q4xc4HbHKpXCTr/xTEVEmBeVNaexevuMQnhlhSGFs
+	vEEz/3/24sTKLpVEtTwDzEh8NoBGEVQkj+WKiPlz32kcKyu+uBmF2DNpG5jEBiHqKprU8IJJ4ls
+	VQCdnTZXFygH/nTgbipdjkvcuZlAtJfpcUcSygqvHxVgvWia8tPHyO7XbH6Dl2ScYv8M80s8Jye
+	mMqUEVY3EwTOuyTaCi1qIuVclfP6exkYLTtCscQIXJkB6ofJv/cWNiZoy0Hb2lKHrRE35uEXIVa
+	iCuqUJaPfsXC//oIgW9sry0c8EERUfuv8gEOUHPGqwXHxxRSJftVU0/mCW2zlvO4TjidY2G0cPn
+	iM76zA/FKWxo+hTsTfcb5+
+X-Received: by 2002:a17:90b:562c:b0:37f:9ce3:ca97 with SMTP id 98e67ed59e1d1-380aa20e0cemr685220a91.32.1782895853475;
+        Wed, 01 Jul 2026 01:50:53 -0700 (PDT)
 Received: from wud.bbrouter ([2409:8a1e:9473:9f10:5de9:783b:c249:18c5])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8479ff8f959sm3608232b3a.3.2026.07.01.00.52.57
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-38097ba48d0sm550782a91.1.2026.07.01.01.50.47
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 01 Jul 2026 00:53:00 -0700 (PDT)
+        Wed, 01 Jul 2026 01:50:53 -0700 (PDT)
 From: "Dylan.Wu" <fredwudi0305@gmail.com>
-To: anup@brainfault.org,
-	palmer@dabbelt.com
-Cc: atish.patra@linux.dev,
+To: palmer@dabbelt.com,
 	pjw@kernel.org,
 	aou@eecs.berkeley.edu,
-	alex@ghiti.fr,
+	anup@brainfault.org
+Cc: alex@ghiti.fr,
+	atish.patra@linux.dev,
 	zhouquan@iscas.ac.cn,
+	linux-riscv@lists.infradead.org,
 	kvm@vger.kernel.org,
 	kvm-riscv@lists.infradead.org,
-	linux-riscv@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	"Dylan.Wu" <fredwudi0305@gmail.com>
-Subject: [PATCH] riscv: kvm: Skip preventive hfence.gvma for new G-stage mappings with Svvptc
-Date: Wed,  1 Jul 2026 03:52:39 -0400
-Message-Id: <20260701075239.95542-1-fredwudi0305@gmail.com>
+Subject: [PATCH 0/2] riscv: ptdump: Refactor for KVM gstage ptdump support
+Date: Wed,  1 Jul 2026 04:50:28 -0400
+Message-Id: <20260701085030.124579-1-fredwudi0305@gmail.com>
 X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260701_005302_564983_7B73497B 
-X-CRM114-Status: UNSURE (   9.36  )
+X-CRM114-CacheID: sfid-20260701_095056_526855_AC15DDFB 
+X-CRM114-Status: UNSURE (   9.00  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -106,48 +121,62 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-For Invalid->Valid G-stage leaf PTE updates, the flush in
-kvm_riscv_gstage_set_pte() is preventive. When Svvptc is available, new
-valid PTEs become visible to the page-table walker within a bounded
-time, so an immediate hfence.gvma is unnecessary.
+This series refactors the RISC-V ptdump implementation to support
+dumping KVM gstage (stage-2) page tables via debugfs.
 
-Skip gstage_tlb_flush() for that case. Permission-restricting updates
-continue to use the existing flush path.
+Patch 1 moves the pagetable walking state and level definitions to a
+common header (arch/riscv/include/asm/ptdump.h), updates the attribute
+parsing logic to use per-level bit definitions, and exports note_page()
+so that it can be reused by the KVM ptdump implementation.
 
-Assisted-by: YuanSheng: deepseek-v4-pro
-Co-developed-by: Quan Zhou <zhouquan@iscas.ac.cn>
-Signed-off-by: Quan Zhou <zhouquan@iscas.ac.cn>
-Signed-off-by: Dylan.Wu <fredwudi0305@gmail.com>
----
- arch/riscv/kvm/gstage.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+Patch 2 introduces KVM gstage ptdump support, registering a
+'gstage_page_tables' file under the guest debugfs directory. This
+allows userspace to inspect the gstage layout and permissions, which
+is useful for architectural debugging and memory management audits.
 
-diff --git a/arch/riscv/kvm/gstage.c b/arch/riscv/kvm/gstage.c
-index c4c3b7956..7b805112d 100644
---- a/arch/riscv/kvm/gstage.c
-+++ b/arch/riscv/kvm/gstage.c
-@@ -10,6 +10,8 @@
- #include <linux/module.h>
- #include <linux/pgtable.h>
- #include <asm/kvm_gstage.h>
-+#include <asm/cpufeature.h>
-+#include <asm/hwcap.h>
- 
- #ifdef CONFIG_64BIT
- unsigned long kvm_riscv_gstage_max_pgd_levels __ro_after_init = 3;
-@@ -171,8 +173,11 @@ int kvm_riscv_gstage_set_pte(struct kvm_gstage *gstage,
- 	}
- 
- 	if (pte_val(*ptep) != pte_val(map->pte)) {
-+		bool was_invalid = !pte_val(*ptep);
- 		set_pte(ptep, map->pte);
--		if (gstage_pte_leaf(ptep))
-+		if (gstage_pte_leaf(ptep) &&
-+		    !(was_invalid &&
-+		      riscv_has_extension_unlikely(RISCV_ISA_EXT_SVVPTC)))
- 			gstage_tlb_flush(gstage, current_level, map->addr);
- 	}
- 
+Testing:
+  - Booted on QEMU riscv64 with CONFIG_PTDUMP_DEBUGFS=y and
+    CONFIG_PTDUMP_GSTAGE_DEBUGFS=y
+  - Verified /sys/kernel/debug/kernel_page_tables output unchanged
+  - Created a KVM guest and verified gstage_page_tables output: 
+0x0000000080200000-0x0000000080209000    0x000000010c94e000        36K PTE   ..   D A U X W R V
+0x000000008020a000-0x0000000080223000    0x000000010c9af000       100K PTE   ..   D A U X W R V
+0x0000000080229000-0x000000008022b000    0x000000010c978000         8K PTE   ..   D A U X W R V
+0x000000008022d000-0x000000008022e000    0x000000010c844000         4K PTE   ..   D A U X W R V
+0x000000008022f000-0x0000000080232000    0x000000010c846000        12K PTE   ..   D A U X W R V
+0x0000000080234000-0x0000000080238000    0x000000010ca13000        16K PTE   ..   D A U X W R V
+0x000000008023a000-0x000000008023f000    0x00000001083bd000        20K PTE   ..   D A U X W R V
+0x0000000080242000-0x000000008024b000    0x0000000106975000        36K PTE   ..   D A U X W R V
+0x000000008024d000-0x0000000080252000    0x000000010cb54000        20K PTE   ..   D A U X W R V
+0x0000000080255000-0x0000000080258000    0x000000010c164000        12K PTE   ..   D A U X W R V
+0x000000008025a000-0x000000008025c000    0x00000001036a9000         8K PTE   ..   D A U X W R V
+0x0000000080260000-0x0000000080275000    0x0000000107917000        84K PTE   ..   D A U X W R V
+0x0000000080276000-0x000000008027e000    0x00000001078ed000        32K PTE   ..   D A U X W R V
+0x000000008027f000-0x00000000802bb000    0x0000000108986000       240K PTE   ..   D A U X W R V
+0x00000000802bc000-0x00000000802c0000    0x000000010762b000        16K PTE   ..   D A U X W R V
+0x00000000802c2000-0x00000000802d2000    0x00000001083fd000        64K PTE   ..   D A U X W R V
+0x00000000802d4000-0x00000000802e0000    0x000000010790b000        48K PTE   ..   D A U X W R V
+0x00000000802e1000-0x00000000802e4000    0x0000000102f74000        12K PTE   ..   D A U X W R V
+0x00000000802e5000-0x00000000802ef000    0x0000000104b9c000        40K PTE   ..   D A U X W R V
+0x00000000802f1000-0x00000000802f2000    0x0000000103778000         4K PTE   ..   D A U X W R V
+0x00000000802f3000-0x00000000802f9000    0x000000010377a000        24K PTE   ..   D A U X W R V
+
+
+Dylan.Wu (2):
+  riscv: ptdump: Move pagetable definitions to common header
+  KVM: riscv: Register ptdump with debugfs on guest creation
+
+ arch/riscv/include/asm/kvm_host.h |   6 +
+ arch/riscv/include/asm/ptdump.h   |  42 +++++++
+ arch/riscv/kvm/Kconfig            |  15 +++
+ arch/riscv/kvm/Makefile           |   1 +
+ arch/riscv/kvm/ptdump.c           | 178 ++++++++++++++++++++++++++++++
+ arch/riscv/kvm/vm.c               |   5 +
+ arch/riscv/mm/ptdump.c            | 102 ++++++-----------
+ 7 files changed, 282 insertions(+), 67 deletions(-)
+ create mode 100644 arch/riscv/include/asm/ptdump.h
+ create mode 100644 arch/riscv/kvm/ptdump.c
+
 -- 
 2.34.1
 
