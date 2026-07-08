@@ -4,77 +4,78 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1CCACC43602
-	for <kvm-riscv@archiver.kernel.org>; Wed,  8 Jul 2026 03:37:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EF285C44503
+	for <kvm-riscv@archiver.kernel.org>; Wed,  8 Jul 2026 03:37:24 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Message-Id
 	:MIME-Version:Subject:Date:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=x6KANhhZE4kH4oXPJhwXh0NiPIzCjfZh8ggt9gqx7uw=; b=Z8ToWSoxVYEzdu
-	OiHALDZy0wdSGGg/qSFccAjku8QsOEWdFPJ23AZUjIuehhXacEOuksEUK9Ypx/+Vq5AKuMmtDGk2F
-	+VhhUxT/fQkYdHcWLo1WVq+axn6esnmlnlCmGeH8lwxxYe2d3WGxtLKeJjZ75/+HtAeRZ0ambto11
-	P7odBmxDgqk/UsnfKkxnwzHL7gPS7PSMS3JEZ7a2nqfgzto4BtF6pSq/ZYa6IUeSa3KSZ1gsGiUv6
-	CQmF6SUCh5SS9QwiAyVw3kEmcuxrPJzlyzaOfIUxlEp1PPX3Fb32Nn358mTkeus5Qln2NYOxmB+rn
-	ozQuV1bBnkc26sQcNQQA==;
+	List-Owner; bh=kEakCNwKyK7sP18zgsATcNXldXPqWyb0Rtk+gp55E6w=; b=YobW774DjsjHp7
+	RplMx4fRO+rjzNwrHT79VF7ZRREckGKaM92Z5nFn+zreiYxBIorpBFjl9lkzBW9NJ1Po3LIq9Z4/a
+	7bnvXrqZSxo1GQHQhnkwihrks3Zw+rmjbMcR77ExPAMBdOVhgHhH3ogBHoBOWHEvM77oHjgWCwh29
+	DY3AVEesLuVo3enzpxTV76WqgZJ/qlvaXc+VSSwOYp4Ydy2a0ZZY//B2pZzy2xeidDWAZ7WnsvORP
+	+IiIo2wIExqbt6Ab2QHVSE5Ci2iEjfMAk7fYNqe/ywf782iJl/FRCfnh+noo8Kl51FQcW61VE3cSy
+	PHHBi/XpWpk70LytMz+A==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1whJ68-0000000GGcW-2Rvw;
-	Wed, 08 Jul 2026 03:37:20 +0000
-Received: from mail-pj1-x1031.google.com ([2607:f8b0:4864:20::1031])
+	id 1whJ6C-0000000GGid-2jd4;
+	Wed, 08 Jul 2026 03:37:24 +0000
+Received: from mail-pg1-x535.google.com ([2607:f8b0:4864:20::535])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1whJ5Z-0000000GFuR-0EGf
+	id 1whJ5a-0000000GFwp-2Oxu
 	for kvm-riscv@lists.infradead.org;
-	Wed, 08 Jul 2026 03:36:55 +0000
-Received: by mail-pj1-x1031.google.com with SMTP id 98e67ed59e1d1-38511175ad3so172838a91.2
-        for <kvm-riscv@lists.infradead.org>; Tue, 07 Jul 2026 20:36:44 -0700 (PDT)
+	Wed, 08 Jul 2026 03:36:56 +0000
+Received: by mail-pg1-x535.google.com with SMTP id 41be03b00d2f7-c99eaa1f020so170459a12.2
+        for <kvm-riscv@lists.infradead.org>; Tue, 07 Jul 2026 20:36:46 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1783481804; x=1784086604; darn=lists.infradead.org;
+        d=gmail.com; s=20251104; t=1783481806; x=1784086606; darn=lists.infradead.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=fwKZNNWDlhtCi/I1t4B53H1ja1azSKNpa2D1FOM09UA=;
-        b=fKzbpYgEisLhcM/6Cq2W7wGqeCc9YPmQmpvkVA2fxOxPr9IJtESStOFWVkv62SYktJ
-         smr0BTSKotY5HbFKbweeZ4lti66iKyHOqlSVC97wob83+3dyrYfyDMbiZdMvwqr/455B
-         UBTEQ2fP6o7uMQWShoEATOrPmSzh2dwte+igVftCpaWiDWFvavb9HqnxeL/OSOgGNpn5
-         g86R3Gi/2SUQZr8d76nt5ItNA61T5C3WCjHjaAhnicxPXQi4uNdMMx1KUUf1fxuzag1i
-         faDByTKrC/jpD5mkBDa3X5hQj1ZgKlwaT31I3xmJ/jZbyU5G4wU2W7+rWIWrwDZGgdn1
-         CQPA==
+         :content-type:mime-version:subject:date:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=GJBmXlsdV1hfdU5uODx6ZlHlbgxAOvIQb43p46Hii1A=;
+        b=MEukdrSlR/seJxDlyfRlfDF3V1CIvJRDmZJfCjtg+S16PlYf4+Ifetev/LEIeqcSo0
+         yb2qNpdxxv9+J03KPPzHzX4vf54BL/qffHNSDPENQ4tu4nYwZj3lbuRvKzQp/4zZmbDa
+         urgoi9CYZR7tdsCXmYJ9CjyL48JsWK8TjKoST2RjrTX03BsABoIZ4HRMCKUa9LNEIncH
+         dzAiMOu5CTQpxlAF8inH2C/Ya9dvZlvXJk+sXlf+ifwgqMMXJ+/XgtGnJ6o1q40pCkix
+         5+zV97FCexCfDgPVYSzsn7gA51TYLGjY7IwlGU28ksDDJfvRDUFUJiUu3/x//nBvxdGE
+         U3WQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783481804; x=1784086604;
+        d=1e100.net; s=20251104; t=1783481806; x=1784086606;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=fwKZNNWDlhtCi/I1t4B53H1ja1azSKNpa2D1FOM09UA=;
-        b=pqGfIbFgeypGPeiLlZEQAHJSmhGZosZ1ytWO7E6BVqvQaW0vP7TsVD8BpyYMYBg50L
-         1lc7fWSj6bAd7MXGdh+YZi7CEwEpRjY8WkUCG7F0Ax5VKRvkNhT5d5TK+UQbHAJk7/fT
-         v18uGDQr2jIaRNlcSRYaW5BnliCeLQC8u5+e1MxcZtTeli+RmEDF8bRifW72Y0nqu8F/
-         qg8oGy3c5quVkiXQFk7OW/WQzNMgXcCM7/kWcWTm3Rxk+Kza+PZw6U3S/Ll56W/I+rx4
-         rLfgHXHObi6O2gBqgLgIWiY/9ZsqCsME8DseI0NCvcL5xnMybGlhgG5yH4/BdEe5o5RG
-         8yuQ==
-X-Forwarded-Encrypted: i=1; AHgh+Rop2nALRoq2LUSAGIaxg+9S+1fpP6oTOuh7oNOLnuvlXYHIecoo84TCR/AFX1cKy5/x+oi2yQa7mDg=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yy+1qdXJpnBe222C4ISwVqLmd118QqXwEWRXyK0vFB9oikDFHi4
-	hd/D53Jw0izePYmtIx5nqfAZ0mConPxGDshP6XeO9t66y2PTt8uBpwdr
-X-Gm-Gg: AfdE7cncsLnDKLPwrsm6zEPNxIsLhV0+qDVGd966pNBGtoOqeqXOSHlX+AOwJPWd5KU
-	6qm6eOaO8XyMSJ+qLxX3LQsUhMN2iryUc0QvE55wbMd325nMdyPw//fw5g5uxY7sNfc9OoJZZC+
-	peOdba5dA6fL2GyBgGLJGsnBzbcmqPGb1AKUmM5xIMkL/RLvTtqLXNZSu1eZ38GY636XWhT2vzC
-	dxTdYUK1b20FhN5uAj2TjvnQ51RsfQvkbVq5dORSsGmHhQqXMzM7E5IWly64mbkHes+A5ttU/NT
-	J6XxkOwo+LUjBEGOTCu2/GPDghctetMGG7GZ9PWi8IwGYe4d+MQTqEx6Gu16kO6DQRgmRFqxFbk
-	U4ULpelXOKk4Ua5LaAsg3ymYVs9KOQMgY2m5OSd+PcsBD/kPnW6nhWBn0HKkC66j9n6zHkj0mwh
-	Bqc4BowMqssYSgkLcIUChE25IpV2eQ2jNBka/EV/FYbuvmtH+HeA==
-X-Received: by 2002:a17:90b:568c:b0:37f:c97a:939f with SMTP id 98e67ed59e1d1-3893f69432cmr693499a91.7.1783481804248;
-        Tue, 07 Jul 2026 20:36:44 -0700 (PDT)
+         :content-type:mime-version:subject:date:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=GJBmXlsdV1hfdU5uODx6ZlHlbgxAOvIQb43p46Hii1A=;
+        b=Jn1IocAAZ2Cm0QjKNv5njGMSn70xroA7Hd+7BvqwSKj8p5GxBHdInTYMnGUWvFwsx0
+         QKWvwFVNDAd2ZQNN1FjhP4vtBJ3WwqVQ6TAMIoxu/a0Gti+5dzbvUAuZSGfOAPhvelU9
+         XK0tqqimkrlEY+fooXB2b3kdV2fIvw6Oyg8xnAW88mlK2apDm04flWAE3vQbMTqIAmx/
+         SwKiTzWcJ/Y9Lf1C8ygMM6imtupA77yvdGJiNCMxh105/TugTCMPAcVVpdOX2QCbmKLf
+         wiQAaZ7H3fRgLygs85eSE5Fa58tdv0/eJai/bhRi1zTCcHjkZQRTNMtjizdxSCNIiopN
+         KuNw==
+X-Forwarded-Encrypted: i=1; AHgh+RqETcfwxoICRg/0EnEnHYi4D+9zFgCBRSeFnJ0qAtR/l1DGr4MckHm1eVxcfasvWbU1gNoXBOx5+3o=@lists.infradead.org
+X-Gm-Message-State: AOJu0YzRZ4hSuJdUJPyOjJq1SBvo/moVPGUj7uUzRLhHfNa6K8A/uYHC
+	jIOEMUh5i5ng/Pn46RfYzeSvWAqhQdR+BHKwYhJjRPhGmfwh3nINutmU
+X-Gm-Gg: AfdE7ckt7H9pxuvW+pez7xDjFfsH+FzEfuoZio/+knMXkl4l+Yxe0jJBdHwygm401gn
+	0lXYF/i10w5AGfslAARhCdNsUpbZGb7fIP4tZgz53uwUMuCC6mLDD3aFSxt4L4oCsMBlhX4Uq1N
+	XmuXBunNrw5eizZQSVIuiK7P1hHDAVInCu0rvnxjsU7YzdSkfQwnoD1TAR/Qix94KMUTwP8cCtU
+	Qks/axFPGYKq3yhH7VqztPxeLN8iObIZQXhq7dQ9wUNltdoxfYfkcZC4TCtdGg12QmHbymj+OYD
+	kvjwlTvwcyCgpfrapLu3aOpdyYx0eE6myrTstUHSpFS1pPZx6BJUAve/2R8xkFMdpXvpxNSLsd6
+	V4I8KAWO8btrJtIJ7ws/SDKBN/TiwEWYNQxC8JssSigIsmNkkHLz2BYkggb9xN0RPcg2XDllvsh
+	EQu3qQE/2s9mnt2n9rgjpM/nP6xdoWr76BiPgfrFU=
+X-Received: by 2002:a05:6a21:400d:b0:3c0:9c1b:d0b5 with SMTP id adf61e73a8af0-3c0bd2ab6e9mr595240637.64.1783481805671;
+        Tue, 07 Jul 2026 20:36:45 -0700 (PDT)
 Received: from [10.0.0.65] ([2601:647:6700:64d0::94ac])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-31174accae5sm21092850eec.29.2026.07.07.20.36.43
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-31174accae5sm21092850eec.29.2026.07.07.20.36.44
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 07 Jul 2026 20:36:43 -0700 (PDT)
+        Tue, 07 Jul 2026 20:36:45 -0700 (PDT)
 From: Charlie Jenkins <thecharlesjenkins@gmail.com>
-Date: Tue, 07 Jul 2026 20:34:38 -0700
-Subject: [PATCH v3 15/17] riscv: kvm: Use generated instruction headers for
- csr emulation
+Date: Tue, 07 Jul 2026 20:34:39 -0700
+Subject: [PATCH v3 16/17] riscv: kexec: Use generated instruction headers
+ for kexec relocations
 MIME-Version: 1.0
-Message-Id: <20260707-riscv_insn_table-v3-15-3f8e5f75ba97@gmail.com>
+Message-Id: <20260707-riscv_insn_table-v3-16-3f8e5f75ba97@gmail.com>
 References: <20260707-riscv_insn_table-v3-0-3f8e5f75ba97@gmail.com>
 In-Reply-To: <20260707-riscv_insn_table-v3-0-3f8e5f75ba97@gmail.com>
 To: Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
@@ -89,16 +90,16 @@ Cc: linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
  linux-kselftest@vger.kernel.org, 
  Charlie Jenkins <thecharlesjenkins@gmail.com>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1783481778; l=5969;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1783481778; l=3956;
  i=thecharlesjenkins@gmail.com; s=20260605; h=from:subject:message-id;
- bh=hnVz9t5TgQFrn5i8H9B8U1HHkKZ7eeoy5Aq5WPkBZMA=;
- b=+XjFaVjA4ADLYfjCy0QAF21tn1MRxeL2Yc23hMKGiKfmZLsS7F6q4BenoZimYvWAU9jj5uzkF
- je6smMa/JoLAk9CNQMqAS7wP5VuOh5YfCAlJcWv2vnr14dGWzkq/8Q7
+ bh=34NvWLgWZxGAYVZyLbG0y/AhPlMD8oyGVqDaoGR9FaA=;
+ b=HHAGABMOnP/KQwIk7NT3288oN7tkMvICA9VbvqP0An0Jr7dhNcfRSg/YZPfDaqToCGW60/N8b
+ Vx8IQZDIJiIAoEmMNb7Y6NORWvzqH2Zg06kLdzkam58TbLZddvI5bvS
 X-Developer-Key: i=thecharlesjenkins@gmail.com; a=ed25519;
  pk=ajnnRQ98PIdwKp4HeMkq9U32okYbnh6Zb4G3o5XXvkg=
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260707_203645_388299_3FEC31FF 
-X-CRM114-Status: GOOD (  20.67  )
+X-CRM114-CacheID: sfid-20260707_203648_298343_23989E8F 
+X-CRM114-Status: GOOD (  11.77  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -115,190 +116,105 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Migrate the csr emulation code to use the generated instruction headers
-instead of the hand-written instruction composition functions.
+Migrate the kexec relocation code to use the generated instruction
+headers instead of the hand-written instruction composition functions.
 
 Signed-off-by: Charlie Jenkins <thecharlesjenkins@gmail.com>
 
 ---
-This can be tested with the introduced csr_test selftest.
----
- arch/riscv/include/asm/kvm_vcpu_insn.h |  3 +-
- arch/riscv/kvm/vcpu_insn.c             | 59 +++++++++++++++++-----------------
- 2 files changed, 31 insertions(+), 31 deletions(-)
 
-diff --git a/arch/riscv/include/asm/kvm_vcpu_insn.h b/arch/riscv/include/asm/kvm_vcpu_insn.h
-index 106fb4c45108..01efdaaede21 100644
---- a/arch/riscv/include/asm/kvm_vcpu_insn.h
-+++ b/arch/riscv/include/asm/kvm_vcpu_insn.h
-@@ -19,7 +19,8 @@ struct kvm_mmio_decode {
- };
+This was again tested by brute forcing all possible inputs to the value
+fed into the immediates.
+---
+ arch/riscv/kernel/machine_kexec_file.c | 55 ++++++++++++----------------------
+ 1 file changed, 19 insertions(+), 36 deletions(-)
+
+diff --git a/arch/riscv/kernel/machine_kexec_file.c b/arch/riscv/kernel/machine_kexec_file.c
+index 54e2d9552e93..cad40e4afd86 100644
+--- a/arch/riscv/kernel/machine_kexec_file.c
++++ b/arch/riscv/kernel/machine_kexec_file.c
+@@ -116,32 +116,6 @@ static char *setup_kdump_cmdline(struct kimage *image, char *cmdline,
+ 	(((x) + (RISCV_IMM_REACH >> 1)) & ~(RISCV_IMM_REACH - 1))
+ #define RISCV_CONST_LOW_PART(x) ((x) - RISCV_CONST_HIGH_PART(x))
  
- struct kvm_csr_decode {
--	unsigned long insn;
-+	unsigned long rd;
-+	unsigned long insn_len;
- 	int return_handled;
- };
- 
-diff --git a/arch/riscv/kvm/vcpu_insn.c b/arch/riscv/kvm/vcpu_insn.c
-index c3e4cf2cd44b..51eb2c717bff 100644
---- a/arch/riscv/kvm/vcpu_insn.c
-+++ b/arch/riscv/kvm/vcpu_insn.c
-@@ -13,8 +13,7 @@
- #include <asm/kvm_vcpu_test_csr.h>
- 
- struct insn_func {
--	unsigned long mask;
--	unsigned long match;
-+	bool (*cmp)(u32 insn);
- 	/*
- 	 * Possible return values are as follows:
- 	 * 1) Returns < 0 for error case
-@@ -131,20 +130,17 @@ static const struct csr_func csr_funcs[] = {
-  */
- int kvm_riscv_vcpu_csr_return(struct kvm_vcpu *vcpu, struct kvm_run *run)
- {
--	ulong insn;
+-#define ENCODE_ITYPE_IMM(x) \
+-	(RV_X(x, 0, 12) << 20)
+-#define ENCODE_BTYPE_IMM(x) \
+-	((RV_X(x, 1, 4) << 8) | (RV_X(x, 5, 6) << 25) | \
+-	(RV_X(x, 11, 1) << 7) | (RV_X(x, 12, 1) << 31))
+-#define ENCODE_UTYPE_IMM(x) \
+-	(RV_X(x, 12, 20) << 12)
+-#define ENCODE_JTYPE_IMM(x) \
+-	((RV_X(x, 1, 10) << 21) | (RV_X(x, 11, 1) << 20) | \
+-	(RV_X(x, 12, 8) << 12) | (RV_X(x, 20, 1) << 31))
+-#define ENCODE_CBTYPE_IMM(x) \
+-	((RV_X(x, 1, 2) << 3) | (RV_X(x, 3, 2) << 10) | (RV_X(x, 5, 1) << 2) | \
+-	(RV_X(x, 6, 2) << 5) | (RV_X(x, 8, 1) << 12))
+-#define ENCODE_CJTYPE_IMM(x) \
+-	((RV_X(x, 1, 3) << 3) | (RV_X(x, 4, 1) << 11) | (RV_X(x, 5, 1) << 2) | \
+-	(RV_X(x, 6, 1) << 7) | (RV_X(x, 7, 1) << 6) | (RV_X(x, 8, 2) << 9) | \
+-	(RV_X(x, 10, 1) << 8) | (RV_X(x, 11, 1) << 12))
+-#define ENCODE_UJTYPE_IMM(x) \
+-	(ENCODE_UTYPE_IMM(RISCV_CONST_HIGH_PART(x)) | \
+-	(ENCODE_ITYPE_IMM(RISCV_CONST_LOW_PART(x)) << 32))
+-#define ENCODE_UITYPE_IMM(x) \
+-	(ENCODE_UTYPE_IMM(x) | (ENCODE_ITYPE_IMM(x) << 32))
 -
- 	if (vcpu->arch.csr_decode.return_handled)
- 		return 0;
- 	vcpu->arch.csr_decode.return_handled = 1;
+-#define CLEAN_IMM(type, x) \
+-	((~ENCODE_##type##_IMM((uint64_t)(-1))) & (x))
+-
+ int arch_kexec_apply_relocations_add(struct purgatory_info *pi,
+ 				     Elf_Shdr *section,
+ 				     const Elf_Shdr *relsec,
+@@ -197,12 +171,14 @@ int arch_kexec_apply_relocations_add(struct purgatory_info *pi,
  
- 	/* Update destination register for CSR reads */
--	insn = vcpu->arch.csr_decode.insn;
--	if ((insn >> SH_RD) & MASK_RX)
--		SET_RD(insn, &vcpu->arch.guest_context,
--		       run->riscv_csr.ret_value);
-+	if (vcpu->arch.csr_decode.rd)
-+		*((ulong *)&vcpu->arch.guest_context +
-+		  vcpu->arch.csr_decode.rd) = run->riscv_csr.ret_value;
- 
- 	/* Move to next instruction */
--	vcpu->arch.guest_context.sepc += INSN_LEN(insn);
-+	vcpu->arch.guest_context.sepc += vcpu->arch.csr_decode.insn_len;
- 
- 	return 0;
- }
-@@ -157,7 +153,7 @@ static inline unsigned long get_reg(struct kvm_cpu_context *context, unsigned in
- static int csr_insn(struct kvm_vcpu *vcpu, struct kvm_run *run, ulong insn)
- {
- 	int i, rc = KVM_INSN_ILLEGAL_TRAP;
--	unsigned int csr_num;
-+	unsigned int csr_num, rd;
- 	const struct csr_func *tcfn, *cfn = NULL;
- 	ulong val = 0, wr_mask = 0, new_val = 0;
- 
-@@ -166,26 +162,32 @@ static int csr_insn(struct kvm_vcpu *vcpu, struct kvm_run *run, ulong insn)
- 		wr_mask = -1UL;
- 		new_val = get_reg(&vcpu->arch.guest_context, riscv_insn_csrrw_extract_xs1(insn));
- 		csr_num = riscv_insn_csrrw_extract_csr(insn);
-+		rd = riscv_insn_csrrw_extract_xd(insn);
- 	} else if (riscv_insn_is_csrrs(insn)) {
- 		wr_mask = get_reg(&vcpu->arch.guest_context, riscv_insn_csrrs_extract_xs1(insn));
- 		new_val = -1UL;
- 		csr_num = riscv_insn_csrrs_extract_csr(insn);
-+		rd = riscv_insn_csrrs_extract_xd(insn);
- 	} else if (riscv_insn_is_csrrc(insn)) {
- 		wr_mask = get_reg(&vcpu->arch.guest_context, riscv_insn_csrrc_extract_xs1(insn));
- 		new_val = 0;
- 		csr_num = riscv_insn_csrrc_extract_csr(insn);
-+		rd = riscv_insn_csrrc_extract_xd(insn);
- 	} else if (riscv_insn_is_csrrwi(insn)) {
- 		wr_mask = -1UL;
- 		new_val = riscv_insn_csrrwi_extract_imm(insn);
- 		csr_num = riscv_insn_csrrwi_extract_csr(insn);
-+		rd = riscv_insn_csrrwi_extract_xd(insn);
- 	} else if (riscv_insn_is_csrrsi(insn)) {
- 		wr_mask = riscv_insn_csrrwi_extract_imm(insn);
- 		new_val = -1UL;
- 		csr_num = riscv_insn_csrrsi_extract_csr(insn);
-+		rd = riscv_insn_csrrsi_extract_xd(insn);
- 	} else if (riscv_insn_is_csrrci(insn)) {
--		wr_mask = GET_REG(riscv_insn_csrrwi_extract_imm(insn));
-+		wr_mask = riscv_insn_csrrci_extract_imm(insn);
- 		new_val = 0;
--		csr_num = riscv_insn_csrrwi_extract_csr(insn);
-+		csr_num = riscv_insn_csrrci_extract_csr(insn);
-+		rd = riscv_insn_csrrci_extract_xd(insn);
- 	} else {
- 		return rc;
- 	}
-@@ -193,7 +195,8 @@ static int csr_insn(struct kvm_vcpu *vcpu, struct kvm_run *run, ulong insn)
- 	#undef GET_REG
- 
- 	/* Save instruction decode info */
--	vcpu->arch.csr_decode.insn = insn;
-+	vcpu->arch.csr_decode.rd = rd;
-+	vcpu->arch.csr_decode.insn_len = INSN_LEN(insn);
- 	vcpu->arch.csr_decode.return_handled = 0;
- 
- 	/* Update CSR details in kvm_run struct */
-@@ -237,43 +240,39 @@ static int csr_insn(struct kvm_vcpu *vcpu, struct kvm_run *run, ulong insn)
- 
- static const struct insn_func system_opcode_funcs[] = {
- 	{
--		.mask  = INSN_MASK_CSRRW,
--		.match = INSN_MATCH_CSRRW,
-+		.cmp  = riscv_insn_is_csrrw,
- 		.func  = csr_insn,
- 	},
- 	{
--		.mask  = INSN_MASK_CSRRS,
--		.match = INSN_MATCH_CSRRS,
-+		.cmp  = riscv_insn_is_csrrs,
- 		.func  = csr_insn,
- 	},
- 	{
--		.mask  = INSN_MASK_CSRRC,
--		.match = INSN_MATCH_CSRRC,
-+		.cmp  = riscv_insn_is_csrrc,
- 		.func  = csr_insn,
- 	},
- 	{
--		.mask  = INSN_MASK_CSRRWI,
--		.match = INSN_MATCH_CSRRWI,
-+		.cmp  = riscv_insn_is_csrrwi,
- 		.func  = csr_insn,
- 	},
- 	{
--		.mask  = INSN_MASK_CSRRSI,
--		.match = INSN_MATCH_CSRRSI,
-+		.cmp  = riscv_insn_is_csrrsi,
- 		.func  = csr_insn,
- 	},
- 	{
--		.mask  = INSN_MASK_CSRRCI,
--		.match = INSN_MATCH_CSRRCI,
-+		.cmp  = riscv_insn_is_csrrci,
- 		.func  = csr_insn,
- 	},
- 	{
--		.mask  = INSN_MASK_WFI,
--		.match = INSN_MATCH_WFI,
-+		.cmp  = riscv_insn_is_wfi,
- 		.func  = wfi_insn,
- 	},
- 	{
--		.mask  = INSN_MASK_WRS,
--		.match = INSN_MATCH_WRS,
-+		.cmp  = riscv_insn_is_wrs_nto,
-+		.func  = wrs_insn,
-+	},
-+	{
-+		.cmp  = riscv_insn_is_wrs_sto,
- 		.func  = wrs_insn,
- 	},
- };
-@@ -286,7 +285,7 @@ static int system_opcode_insn(struct kvm_vcpu *vcpu, struct kvm_run *run,
- 
- 	for (i = 0; i < ARRAY_SIZE(system_opcode_funcs); i++) {
- 		ifn = &system_opcode_funcs[i];
--		if ((insn & ifn->mask) == ifn->match) {
-+		if (ifn->cmp(insn)) {
- 			rc = ifn->func(vcpu, run, insn);
+ 		switch (r_type) {
+ 		case R_RISCV_BRANCH:
+-			*(u32 *)loc = CLEAN_IMM(BTYPE, *(u32 *)loc) |
+-				 ENCODE_BTYPE_IMM(val - addr);
++			/*
++			 * For simplicity, use beq as represenative of all
++			 * branches (they all have the same imm encoding)
++			 */
++			riscv_insn_beq_insert_imm((u32 *)loc, val - addr);
  			break;
- 		}
+ 		case R_RISCV_JAL:
+-			*(u32 *)loc = CLEAN_IMM(JTYPE, *(u32 *)loc) |
+-				 ENCODE_JTYPE_IMM(val - addr);
++			riscv_insn_jal_insert_imm((u32 *)loc, val  - addr);
+ 			break;
+ 		/*
+ 		 * With no R_RISCV_PCREL_LO12_S, R_RISCV_PCREL_LO12_I
+@@ -213,16 +189,23 @@ int arch_kexec_apply_relocations_add(struct purgatory_info *pi,
+ 		case R_RISCV_PCREL_HI20:
+ 		case R_RISCV_CALL_PLT:
+ 		case R_RISCV_CALL:
+-			*(u64 *)loc = CLEAN_IMM(UITYPE, *(u64 *)loc) |
+-				 ENCODE_UJTYPE_IMM(val - addr);
++			riscv_insn_auipc_insert_imm((u32 *)loc, RISCV_CONST_HIGH_PART(val - addr));
++			riscv_insn_jalr_insert_imm((u32 *)loc + 1,
++						   RISCV_CONST_LOW_PART(val - addr));
+ 			break;
+ 		case R_RISCV_RVC_BRANCH:
+-			*(u32 *)loc = CLEAN_IMM(CBTYPE, *(u32 *)loc) |
+-				 ENCODE_CBTYPE_IMM(val - addr);
++			/*
++			 * For simplicity, use c.beqz as represenative of all
++			 * compressed branches (they all have the same imm encoding)
++			 */
++			riscv_insn_c_beqz_insert_imm((u16 *)loc, val - addr);
+ 			break;
+ 		case R_RISCV_RVC_JUMP:
+-			*(u32 *)loc = CLEAN_IMM(CJTYPE, *(u32 *)loc) |
+-				 ENCODE_CJTYPE_IMM(val - addr);
++			/*
++			 * For simplicity, use c.j as represenative of all
++			 * compressed jumps (they all have the same imm encoding)
++			 */
++			riscv_insn_c_j_insert_imm((u16 *)loc, val - addr);
+ 			break;
+ 		case R_RISCV_ADD16:
+ 			*(u16 *)loc += val;
 
 -- 
 2.54.0
