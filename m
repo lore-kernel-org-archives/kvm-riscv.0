@@ -4,108 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E1843C43458
-	for <kvm-riscv@archiver.kernel.org>; Thu,  9 Jul 2026 11:56:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 43A2AC43458
+	for <kvm-riscv@archiver.kernel.org>; Thu,  9 Jul 2026 13:00:49 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-Id:Date:Subject:Cc
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
 	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
 	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=fKGHuHwxxOWsjXp1zgUPe+Fhwn+X+eWcNTHUY4cGs9o=; b=1RmiwvnnyakFl+
-	+7Uv9N5Mvt0/0fm/s0sB0vlgZzkjiKMTd5Msi/Xleaz3MlF1P7KKyKNFEpvB4nlEadi7JbqcuwCW9
-	UBX02dyUU+avnOgswmA3csazVMZq6Fw5Z3yVoP1Bbw1YD3c6xX7rahfsxZEgs21lhSI17II/7RbEo
-	xv4vMVpyDIzA6NtKt5elgKN08ci04ULbHNMRR1EdUsg0akJ9vmzKkkp5mZ+N9MSOkJlc5ebzVEqGp
-	VYu/i/ug1A+9hvGtdHnzdnr3rLaOpp5wJoJCjiMHDuZA2zArVJk7XikpOW7GLUERINdCWJFHxxEiX
-	J7dZif8GKUGzF+lllmRg==;
+	List-Owner; bh=NZ2vVdlYxaXTS8OjyaYTuIKyJsnL8NxxcziIhmoQJ60=; b=V2Z2rSryO6vbm6
+	WmXmudEfeSNeDDz+lX/OBn/ZecWeL7KKny/f979nNSVlUPBEAFJWXwJBzADTMNz0+sZV4gcYSesZr
+	gSLxibz1ed2BqZPIRhfjuKN6vQrNLoP0lkrxwx9I09ZAFzVsjB8CXujhfp3wA/CVUL89D7MTLNe5R
+	OiKTsOXOHlc/+DqPbxBe61PlQd1lEVgdEk/F6ZEozp+U1/dk64eZxQHguwvw7bJPXjkPAOc0fh0Gk
+	ug2nTqNd0GCrTPcsDd1rFOzffkqN4p8sU5f5t31kim9OYRNjX7/hBA98A1armQk8LvNYHAkDV3qb3
+	qXLKCSiDTyg35/3RAZyw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1whnMj-00000002HLw-1nRc;
-	Thu, 09 Jul 2026 11:56:29 +0000
-Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+	id 1whoMy-00000002UQq-3VuL;
+	Thu, 09 Jul 2026 13:00:48 +0000
+Received: from mail-pz2-x00.google.com ([2607:f8b0:4864:3b::])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1whnMh-00000002HLC-3QkV
-	for kvm-riscv@bombadil.infradead.org;
-	Thu, 09 Jul 2026 11:56:28 +0000
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:MIME-Version
-	:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:
-	Content-Description:In-Reply-To:References;
-	bh=CivCo3sxABn6gVyRhQlVLSU7JseOeDcuh4Y0SWmJVu4=; b=FqO/xwxfQrnXcno8dSFs4IMT8r
-	H6HfgGuZInesMddv4LEJkLCmPOeji8OYao2yUwgDLiV/veOTA9CLIp1jC/r5ByG48AYr2kJMVi2kG
-	Ai53mT6c5X3H0k6pEHsPKXW6iUSClVOlFCKHPcM6IvvY5DrxRdCMQ69jkYb3X04FWyox372oEYU6+
-	r+gfQdeYofT0w+NAh5HkE2gSuPgzvTR8a+DjISoEiuJu2UhDlxiSiPEdDoQT9pMwrBb/YSoYGYfgZ
-	WWedJekxBdQSu8ojjDZ3UZzLXGUKYNVBjFLwDSY9N153tHNpn7cTBMLhdJn7coxPLuDs4PwCnjnZh
-	UamfHCXQ==;
-Received: from mail-pl1-x634.google.com ([2607:f8b0:4864:20::634])
-	by desiato.infradead.org with esmtps (Exim 4.99.2 #2 (Red Hat Linux))
-	id 1whnMd-00000009Ard-2uEC
+	id 1whoMw-00000002UOr-0Evu
 	for kvm-riscv@lists.infradead.org;
-	Thu, 09 Jul 2026 11:56:25 +0000
-Received: by mail-pl1-x634.google.com with SMTP id d9443c01a7336-2caed617615so17044785ad.3
-        for <kvm-riscv@lists.infradead.org>; Thu, 09 Jul 2026 04:56:22 -0700 (PDT)
+	Thu, 09 Jul 2026 13:00:47 +0000
+Received: by mail-pz2-x00.google.com with SMTP id 41be03b00d2f7-c95bd574471so711358a12.0
+        for <kvm-riscv@lists.infradead.org>; Thu, 09 Jul 2026 06:00:45 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1783598181; x=1784202981; darn=lists.infradead.org;
+        d=gmail.com; s=20251104; t=1783602045; x=1784206845; darn=lists.infradead.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=CivCo3sxABn6gVyRhQlVLSU7JseOeDcuh4Y0SWmJVu4=;
-        b=WqVyNPAy7hnkOH3mV0eUM5AwH7lM7u7BwwcXCdIzCdF2CFdi2lIE5L3SgWT7+Cr/v+
-         RWm0k+NVreoZ2Wx99A5QSfFAENfzGkAgBh+uXPR0MkdtgoGI2X0kUpKkUQZnc+oNGDjH
-         T7aNStgREnvqHVnak1EyraSGbzBQqz8tdekMmdYicfTvDKLdVCGAcUZA6Jmh4tv/MrVj
-         JTLMd3WUyJ/A4rHVu19IzXCIpB1rNwuVjWinoAyuYXbHvUFOkQJ66TZ84mMcOuVs+fis
-         y7VA3VA6UuZ2cuZcI19oyhIAXB/BdPVo33UyC993103jjKOTVEPqh2YD37TYx1nW1rey
-         HfEw==
+        bh=lg4645HSiS5JZdY+bW3DgGTrgEGwdoGfmFw6PnvB3Go=;
+        b=SthabmedeHyG8rFGBsory//B1eOpDL3eqTgQcloQQLn95jk90/4UBGpgbcbN9gH5Us
+         4yl+m4rPSbEpp5f1yIIitJFwZPV4gMUcpWVLX8X6T77CP1OnACduEQpXi0l573rKth7+
+         nwDOR1E6yssH7vAZK7O047nIfb6oU2rXGD8nrhl9WVhnqW6GY+teG09QMVpSn0udLp84
+         fcLnYSHyN/IgX1L2Amwfh4diAp9rWUYD7sDxG84HqtDoZ+Dkf52tjJusupzKpJ5WaO9b
+         ILRGhZ9X4VohwinrtREuDh+d+4fc37zrok+ZzBBtu3Ii1NhIjijXMX/+kvuzZojSnYX+
+         yBqQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783598181; x=1784202981;
+        d=1e100.net; s=20251104; t=1783602045; x=1784206845;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=CivCo3sxABn6gVyRhQlVLSU7JseOeDcuh4Y0SWmJVu4=;
-        b=GeXAGizeOiiszj467N9gkiasxrkzQeHInfgdqlC1mWqYcLjdpdPOcA7C/VBPMOIzDZ
-         xA+AySbvBWkA5NKFOlbckWkfSKLJAZgUZL7TbGtbYqs5fb7XFmrZFEYHGvqd0SGJQzHq
-         ukhJYhpUDSSKwo7H1N1hEewaT+OgzEVI/UPlq4tQlCHBw1IjjOX7SQu03gLo4WwMa6sm
-         TtaMbJkWpQ85ewwjbi+EunHSFhqpBsG7gy9+D06YxPD2FMw4Eqr2aUrnmTGEntkjQBvt
-         E9Uw2NgdNKPYp5Oh/ghwRzxF7ZcIOhlNIhJR4T8EvqRDWI7P6vEg4eGgJi3/nvSVARa6
-         Lp/A==
-X-Forwarded-Encrypted: i=1; AHgh+Rp+BCGCIrv8ftOzo/w4Hx9fQ5tm0XwrcTXwqheZnAnyGswIuMOCRaSsnfoJNrTVcUeMpJcZHDrJbPQ=@lists.infradead.org
-X-Gm-Message-State: AOJu0YyHmcw/SI9MJ3Mvb/B0FU6vghuSYYqhWBdmZHm6ipTbgDjeZR5C
-	oOLYLbi0qsos+iuwiZM+ZOQzEcChrlh7ntRywK+VlszFo9PFdVep2odm
-X-Gm-Gg: AfdE7clNNQhl3PaQLw5bFOkpLjKd16a4MiZWiiZt+VHTMVg2mLyCqvx9PWhc+DtQXvx
-	Ie4vZE4i8ddZuM7a7yRztUsBi0bEWp1MUWDG18LAcXXKA7k2+EgmzGmv0TxRLxfSFr+3usZ1txA
-	RyXKU9FPbZK5mv1yKdagZoeRSRINGJDT1ysmDmVphhx3/M8bSmkFmmjkag+Vv70RwA8SQ5MI+o8
-	DglCY8lJ5mx6lry/wOVWRGAbkS5UTkq9d4VCbPmegnBD/mqbft5k9Nv5R8G+5IAnPvEE1+oZe7B
-	j+ot+ACdTmGw8vu3eEFi2GwTKuaDRAewwXfXyMqQfUBMYADnW4hdEsQAk0oghnIX0rGxS5gNUXB
-	eEqaBr+ev3/xZwYAtxAqqUWZVEDKicS3/OO8RC7C64XzD9i5r3ZmPx0d5EsUI7Fmue1o/4mzwLI
-	4qbYutcd+9lm04xrxE2AKSCHIuycOcOZUSEbfGiFczNw==
-X-Received: by 2002:a17:903:4b4e:b0:2cc:98b4:e7e2 with SMTP id d9443c01a7336-2ccea5a815emr69832995ad.44.1783598180886;
-        Thu, 09 Jul 2026 04:56:20 -0700 (PDT)
-Received: from cyh-System-Product-Name.. ([129.227.183.200])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2ccc9d3b906sm43917145ad.56.2026.07.09.04.56.16
+        bh=lg4645HSiS5JZdY+bW3DgGTrgEGwdoGfmFw6PnvB3Go=;
+        b=ogWA5h4SBfDWIkF0TJRMzg1gMLY5qnQHpHHnoST1quwUXT89tajv39I6Z117t7C9gS
+         YVb0c5/sF+pPLB7GJLUhFcL1x+N0RrUgj5voi1mQe9KX5+wi3wivjuIv59BZMVdVuWAV
+         o/2259wlxtIdSxXMzdn05Zu2VH4O9bI5tcrLhf7a5tDjoJUVVWbCKGpeXbpZCyg1Pb26
+         QeTc0XeI2VBJcvpOff7vpkk9YryyK9D9NNzn0U7SsACng7ePtfLumuwNu3kFtS/6yPQJ
+         M5QKSXCYlg58hl9a9/dCA43XvkDxj8T5LHexy0la94mAc6ZZXgigb9+HeawhkMF5Z0Iz
+         6ubA==
+X-Forwarded-Encrypted: i=1; AHgh+RrcDI2uIvQQpwueImE9MiNHfeoUxweYmIRwNvqjhz5lPdD7o3+KE1YHRiSr+tItufF/zlSh1TKa2OI=@lists.infradead.org
+X-Gm-Message-State: AOJu0YzzJervD44Ubz39pMMUMcZ0rl4D+8brLnf1db68cHKN8aEkufyO
+	0I+cZr2yRMfLrMYYmj3DruvE7jQlbFAGR7lui2pYSKkQ8Fc3UuahRQoR
+X-Gm-Gg: AfdE7cmfIgqAHIG9Lvijk14UPYHKGdvyaSmfyRwpC/+uaTe5TbLHz0eWEpfMSVgg0K1
+	+sWYcxHg4GEEJvNqxwk9NPMa3FrRsx/Sa3jnNIpeV/fS8hVkJKLkZHnWqff6M3aYZ0RMqnZLOtO
+	N+p+JNY8ziMDg/YtYauhUkaJQl53lezv4YBZBWWPoAB59+X6BrNzlpI07NSHaXeBN0niwfiu5xa
+	aVRHD639n2/dgpsT4BXl5PGKz8rvlZSlkaK/r2z+RhuOnfzIUA3fHjtcjK8I93g/QmVPkIVDMdq
+	eckEIViLpprI/5G795E3cuZzJA9fWPtuaRbZWw0n8Q84HYyc6kqPr9XTNfhr3ymPimMFsENKtb6
+	sB3k7DGJlzU3yV+gazwG/vOToECDc3mI+rKdYCL6zyevt7CipSAucgeithKuGy+DiyEazoEJiVy
+	fmR3aekj9bsK01EbUDOEHnCvVgltk=
+X-Received: by 2002:a05:6a00:859f:b0:848:5935:2e11 with SMTP id d2e1a72fcca58-8485935322amr2775708b3a.48.1783602044433;
+        Thu, 09 Jul 2026 06:00:44 -0700 (PDT)
+Received: from q-System-Product-Name ([129.227.183.200])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-847f6b975a0sm8752976b3a.14.2026.07.09.06.00.42
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 09 Jul 2026 04:56:20 -0700 (PDT)
-From: "Yuhang.chen" <yhchen312@gmail.com>
-To: Anup Patel <anup@brainfault.org>
-Cc: Atish Patra <atish.patra@linux.dev>,
-	Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Alexandre Ghiti <alex@ghiti.fr>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Shuah Khan <skhan@linuxfoundation.org>,
-	Quan Zhou <zhouquan@iscas.ac.cn>,
-	linux-doc@vger.kernel.org,
+        Thu, 09 Jul 2026 06:00:44 -0700 (PDT)
+From: "Bingyu.Xian" <shanbeeyoo@gmail.com>
+To: anup@brainfault.org
+Cc: atish.patra@linux.dev,
 	kvm@vger.kernel.org,
 	kvm-riscv@lists.infradead.org,
 	linux-riscv@lists.infradead.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] RISC-V: KVM: Add kvm-riscv.wfi_trap_policy to control VS-mode WFI trapping
-Date: Thu,  9 Jul 2026 19:56:10 +0800
-Message-Id: <20260709115610.287420-1-yhchen312@gmail.com>
-X-Mailer: git-send-email 2.34.1
+	"Bingyu.Xian" <Shanbeeyoo@gmail.com>
+Subject: [PATCH RFC 0/1] KVM: riscv: G-stage PMD block mappings for VM_PFNMAP
+Date: Thu,  9 Jul 2026 21:00:35 +0800
+Message-ID: <20260709130036.1708586-1-shanbeeyoo@gmail.com>
+X-Mailer: git-send-email 2.54.0
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260709_125623_895044_A601E8BA 
-X-CRM114-Status: GOOD (  14.63  )
+X-CRM114-CacheID: sfid-20260709_060046_101143_2977CB39 
+X-CRM114-Status: GOOD (  10.99  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -122,123 +99,81 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Add a kernel command-line option, kvm-riscv.wfi_trap_policy=trap|notrap,
-that controls whether a WFI executed by a VS-mode guest traps into KVM
-(HS-mode) or executes natively.
+From: "Bingyu.Xian" <Shanbeeyoo@gmail.com>
 
-Measured results (wfi_exit_stat delta / guest wake count over 3 s):
+This RFC adapts the arm64 "stage-2 block mapping for host device MMIO"
+idea (commit 2aa53d68cee6) to RISC-V KVM, allowing VM_PFNMAP regions
+such as VFIO-assigned PCI BARs to use 2 MB G-stage PMD block mappings
+instead of being forced to 4 KB PTEs.
 
-  policy        WFI_EXITS   WAKE_CNT
-  ----------    ---------   --------
-  default       295         294      (== trap, no regression)
-  trap          295         294
-  notrap          0         298
+=== Why this matters for RISC-V ===
 
-Assisted-by: YuanSheng:deepseek-v4-pro
-Co-developed-by: Quan Zhou <zhouquan@iscas.ac.cn>
-Signed-off-by: Quan Zhou <zhouquan@iscas.ac.cn>
-Signed-off-by: Yuhang.chen <yhchen312@gmail.com>
----
- .../admin-guide/kernel-parameters.txt         | 14 ++++++
- arch/riscv/kvm/vcpu.c                         | 44 ++++++++++++++++++-
- 2 files changed, 57 insertions(+), 1 deletion(-)
+1. RISC-V virtualization is maturing rapidly.  The H-extension was
+   ratified in 2021 and KVM/riscv has been upstream since v5.15, but
+   many performance optimizations that exist on arm64 and x86 are still
+   missing.  This patch closes one of those gaps.
 
-diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index b5493a7f8f22..ee6603b30033 100644
---- a/Documentation/admin-guide/kernel-parameters.txt
-+++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -3254,6 +3254,20 @@ Kernel parameters
- 
- 			notrap: clear WFI instruction trap
- 
-+	kvm-riscv.wfi_trap_policy=
-+			[KVM,RISCV] Control when to set the WFI instruction
-+			trap for KVM VMs. When set, a VS-mode WFI traps into
-+			KVM and is emulated; when clear, the guest executes
-+			WFI natively and blocks until a VS-mode interrupt
-+			(e.g. the sstc timer) is pending.
-+
-+			trap: set WFI instruction trap (HSTATUS.VTW=1)
-+
-+			notrap: clear WFI instruction trap (HSTATUS.VTW=0)
-+
-+			Defaults to trap, preserving the previous
-+			unconditional behavior.
-+
- 	kvm_cma_resv_ratio=n [PPC,EARLY]
- 			Reserves given percentage from system memory area for
- 			contiguous memory allocation for KVM hash pagetable
-diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index c3672513b4e9..d50b47ed280e 100644
---- a/arch/riscv/kvm/vcpu.c
-+++ b/arch/riscv/kvm/vcpu.c
-@@ -12,6 +12,7 @@
- #include <linux/kdebug.h>
- #include <linux/module.h>
- #include <linux/percpu.h>
-+#include <linux/string.h>
- #include <linux/vmalloc.h>
- #include <linux/sched/signal.h>
- #include <linux/fs.h>
-@@ -26,6 +27,42 @@
- 
- static DEFINE_PER_CPU(struct kvm_vcpu *, kvm_former_vcpu);
- 
-+/*
-+ * WFI trap policy for VS-mode guests, controllable through the
-+ * kvm-riscv.wfi_trap_policy= kernel command-line option.
-+ */
-+enum kvm_riscv_wfi_trap_policy {
-+	KVM_RISCV_WFI_TRAP,	/* Default: trap VS-mode WFI into KVM */
-+	KVM_RISCV_WFI_NOTRAP,	/* Let VS-mode WFI execute natively */
-+};
-+
-+static enum kvm_riscv_wfi_trap_policy kvm_riscv_wfi_trap_policy __read_mostly =
-+	KVM_RISCV_WFI_TRAP;
-+
-+static int __init early_kvm_riscv_wfi_trap_policy_cfg(char *arg)
-+{
-+	if (!arg)
-+		return -EINVAL;
-+
-+	if (strcmp(arg, "trap") == 0) {
-+		kvm_riscv_wfi_trap_policy = KVM_RISCV_WFI_TRAP;
-+		return 0;
-+	}
-+
-+	if (strcmp(arg, "notrap") == 0) {
-+		kvm_riscv_wfi_trap_policy = KVM_RISCV_WFI_NOTRAP;
-+		return 0;
-+	}
-+
-+	return -EINVAL;
-+}
-+early_param("kvm-riscv.wfi_trap_policy", early_kvm_riscv_wfi_trap_policy_cfg);
-+
-+static bool kvm_riscv_vcpu_wfi_should_trap(struct kvm_vcpu *vcpu)
-+{
-+	return kvm_riscv_wfi_trap_policy == KVM_RISCV_WFI_TRAP;
-+}
-+
- const struct kvm_stats_desc kvm_vcpu_stats_desc[] = {
- 	KVM_GENERIC_VCPU_STATS(),
- 	STATS_DESC_COUNTER(VCPU, ecall_exit_stat),
-@@ -73,7 +110,12 @@ static void kvm_riscv_vcpu_context_reset(struct kvm_vcpu *vcpu,
- 	/* Setup reset state of shadow SSTATUS and HSTATUS CSRs */
- 	cntx->sstatus = SR_SPP | SR_SPIE;
- 
--	cntx->hstatus |= HSTATUS_VTW;
-+	/*
-+	 * Trap VS-mode WFI into KVM unless the WFI trap policy lets the guest
-+	 * execute it natively. See kvm_riscv_wfi_trap_policy.
-+	 */
-+	if (kvm_riscv_vcpu_wfi_should_trap(vcpu))
-+		cntx->hstatus |= HSTATUS_VTW;
- 	cntx->hstatus |= HSTATUS_SPVP;
- 	cntx->hstatus |= HSTATUS_SPV;
- }
--- 
-2.34.1
+2. Server-class RISC-V platforms are on the roadmap.  Device passthrough
+   (VFIO) for GPUs, NPUs, and high-speed NICs is essential for
+   data-center workloads.  These devices have BARs ranging from tens of
+   MB to multiple GB.  Without this patch, a single 256 MB GPU BAR
+   requires 65 536 G-stage PTEs (512 KB of page-table memory and 65 536
+   G-stage faults), compared to 128 PMD blocks with this optimization.
+
+3. RISC-V IOMMU specification was ratified in March 2023 and Linux
+   driver support is under active development.  Once RISC-V IOMMU
+   hardware becomes available, VFIO passthrough will be a first-class
+   use case.  This KVM G-stage optimization is a prerequisite for
+   acceptable passthrough performance.
+
+4. RISC-V has a natural advantage over arm64 here: the memory type is
+   determined by the physical address' PMA (Physical Memory Attribute),
+   not by the G-stage PTE attributes.  So promoting 4 KB -> 2 MB does
+   not alter memory-type semantics, unlike arm64 where the stage-2 PTE
+   MemAttr field requires careful handling.
+
+=== Design choices ===
+
+Unlike arm64's original implementation which derives the host physical
+address from vma->vm_pgoff, this patch walks the host page tables via
+get_hva_mapping_size().  This is more conservative but safer: if the
+host mm itself has not installed a PMD leaf, KVM falls back to 4 KB
+exactly as before.  The vm_pgoff approach is unreliable since the VFIO
+unmap_mapping_range() changes discussed on the RISC-V list in 2025.
+
+The first version is deliberately conservative:
+  - Only PMD (2 MB) blocks, not PUD (1 GB)
+  - dirty logging still forces PAGE_SIZE
+  - falls back to PAGE_SIZE whenever contiguity/alignment cannot be
+    proven
+
+=== Testing ===
+
+Verified on QEMU (rv64, h=true, sstc=true) with a custom kernel module
+(pfnmap-huge-test.ko) that installs a PMD leaf in the host page table
+for a VM_PFNMAP VMA, simulating a VFIO BAR with a 2 MB host mapping.
+
+Tracepoint kvm_mmu_map confirms all three scenarios:
+  - anonymous memory:      size=4KB    pfnmap=0  (control group)
+  - /dev/mem (4KB host):   size=4KB    pfnmap=1  (safe fallback works)
+  - PMD leaf module:       size=2048KB pfnmap=1  (block mapping works!)
+
+I welcome feedback on:
+  - Whether the host-page-table-walk approach is preferred over the
+    arm64 vm_pgoff approach
+  - Whether PUD (1 GB) block support should be added now or deferred
+  - Whether the tracepoint should be kept or removed before non-RFC
+    submission
+
+Bingyu.Xian (1):
+  KVM: riscv: Allow safe G-stage PMD block mappings for VM_PFNMAP
+
+ arch/riscv/kvm/mmu.c   | 45 ++++++++++++++++++++++++++++++++++++------
+ arch/riscv/kvm/trace.h | 29 +++++++++++++++++++++++++++
+ 2 files changed, 68 insertions(+), 6 deletions(-)
+
+--
+2.54.0
 
 
 -- 
