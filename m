@@ -4,40 +4,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 17078C43458
-	for <kvm-riscv@archiver.kernel.org>; Mon, 13 Jul 2026 13:57:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5EA20C43458
+	for <kvm-riscv@archiver.kernel.org>; Mon, 13 Jul 2026 13:57:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=ArUyFIon0GD1z0kfkP7AQ7P8iCEyXKrGD69IL0RTrEM=; b=Vp2pz6SDi+cRFP
-	V1h0W+jk+6+8MjUCs2vci6ADXTjk5FbmsSMU9VqoVrSkiHrJkr0boGIwwHVLg1zgOWaseSeRKGrbz
-	45WF2d8/jwPEYqJoczHtLY87wtH2kBLblnc/YIu6+IXt8nh1ayWqLEKL21Fw4TBLfAeWe+GPTFk8f
-	PF1jUeXmStekJwnRGL5xxiuB/GbGl9S4CfMypgPCUtjnQBfMdc6U6cW7xuytj/BQABYsEzdwqKPUA
-	ZSDeAkymO75bgaWKi8DHfsLZiD0TqE8X7sPodoiwNc8ouKTlXgFVRUH5E+nIQ70p3wb/7OuO3kJQ2
-	+QBpWy1h6msqK3kTMIMw==;
+	List-Owner; bh=vIkkOHlrCKhJZSJxhFqhPGNA7s73GI/epdj4YUZr6Nk=; b=X1lJVe9fF+MW1A
+	mn7dbuTfgox9g0zHFHlcCnA7Eq0dlagywVumAXMvcVF2dRv/V1nXt3i7/IItFNbgeEAGbxk9AAslI
+	EbomeceOaYihn2rHXAeBN4pe4GhQBEtnnSt7bPWJNbTchFhPj8jbCr9C6UL3qr+qffKW5BfDGjSkf
+	O9Bwp1btyErwAcfO+YNeiHcDOZlPFoIwoYpCha50wVoyehnlrQ4FzFDBv7OtKkMguwx3mF6Bl/dA2
+	c+3LnCTThHwg+gzjcv5C/Sr4zOfwqYOxDqoWLdjjZLxkG+ZAMlQ6b4O23KZBvMdsnF3YUXAHpyBmu
+	/vpwHl/l/jX6FZPM0gkg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wjHA7-00000009TPg-3L6p;
-	Mon, 13 Jul 2026 13:57:35 +0000
+	id 1wjHAK-00000009TWq-0Tp9;
+	Mon, 13 Jul 2026 13:57:48 +0000
 Received: from foss.arm.com ([217.140.110.172])
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wjHA5-00000009TNu-1C2l;
-	Mon, 13 Jul 2026 13:57:34 +0000
+	id 1wjHAH-00000009TV5-17ow;
+	Mon, 13 Jul 2026 13:57:47 +0000
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id AAE3C1762;
-	Mon, 13 Jul 2026 06:57:27 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 3AEAC19F6;
+	Mon, 13 Jul 2026 06:57:40 -0700 (PDT)
 Received: from e129823.cambridge.arm.com (e129823.arm.com [10.2.213.3])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id B722D3F7B4;
-	Mon, 13 Jul 2026 06:57:19 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 4970C3F7B4;
+	Mon, 13 Jul 2026 06:57:32 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1783951051; bh=oSezCrKL2Fk7poSDNawI1oGiL0c4tvCRcuxmLXVbtSQ=;
+	t=1783951064; bh=+wlkvTnUhNj5X+Jcus2Dg3eJDK2S2S29W5HpBiFUdRY=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=K66vVOhBLzzxW23h+F5Tho08YRxhhBDqZaVIwqzzKmxHxjFFfOTH39HIQn9UubZB9
-	 ostz+VD+rNqz3d1AIRrmBFuhT8Dz+J436yj1g/aksCCRtwL4cnhHD6Y41NzMibYLax
-	 4UW+8HiauiTZaLk62sJwJVSuoF95kYl1EtAPrS8U=
+	b=J5MkpaCaSv3kFtqaQdEe0MdW+p2gEX5+XB6f8GLT2O9yjzlcPk5t+tUUhBCiT83/h
+	 acN+MOOvsX6N5cQ1AzaIvPrte5DvovLtAlnQBbqqmWwiamEimxB/2A3wgvvQ8JWF4k
+	 8VfOKrj6G8/0Ii6qdT8ATQ/tvsryMfs1XmyXthBk=
 From: Yeoreum Yun <yeoreum.yun@arm.com>
 To: linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
@@ -134,17 +134,16 @@ Cc: david@kernel.org,
 	jonas@southpole.se,
 	stefan.kristiansson@saunalahti.fi,
 	Yeoreum Yun <yeoreum.yun@arm.com>
-Subject: [RFC PATCH 05/34] MIPS: mm: define pud_leaf() only when PUD exists
-Date: Mon, 13 Jul 2026 14:55:44 +0100
-Message-ID: <20260713135614.1618183-6-yeoreum.yun@arm.com>
+Subject: [RFC PATCH 06/34] mm/pgtable: define (pgd|p4d|pud)_leaf() for folded page tables
+Date: Mon, 13 Jul 2026 14:55:45 +0100
+Message-ID: <20260713135614.1618183-7-yeoreum.yun@arm.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260713135614.1618183-1-yeoreum.yun@arm.com>
 References: <20260713135614.1618183-1-yeoreum.yun@arm.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260713_065733_413121_2A0CF8E6 
-X-CRM114-Status: UNSURE (   6.86  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20260713_065745_402227_C2309070 
+X-CRM114-Status: GOOD (  12.51  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -163,34 +162,107 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 
-In include/asm-generic/pgtable-nopmd.h, we do have a hard-coded
-pud_leaf()=false inline function, but we miss the "define pud_leaf
-pud_leaf" part.
+Let's define (pgd|p4d|pud)_leaf(), hard-coding it to "false". Note
+that we missed to define pud_leaf() before, allowing architectures to
+unknowingly overwrite it.
 
- To prepare for fixing that, define pud_leaf() only if we don't have
- __PAGETABLE_PMD_FOLDED.
+Still use static inline functions (type checking), and while at it, just
+use "bool" as a return value.
+
+We can now drop the arm64 custom variant that did that. As it documents:
+
+	Note: reusing the original pointer means that we may
+	dereference the same (live) page-table entry multiple times.
+	This is safe because it is still only loaded once in the
+	context of each level and the CPU guarantees same-address
+	read-after-read ordering.
+
+We now have the same situation. Don't document that, as we will be
+removing the double read next.
 
 Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
 Signed-off-by: Yeoreum Yun <yeoreum.yun@arm.com>
 ---
- arch/mips/include/asm/pgtable.h | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/arm64/include/asm/pgtable.h    | 23 -----------------------
+ include/asm-generic/pgtable-nop4d.h |  2 ++
+ include/asm-generic/pgtable-nopmd.h |  3 ++-
+ include/asm-generic/pgtable-nopud.h |  2 ++
+ 4 files changed, 6 insertions(+), 24 deletions(-)
 
-diff --git a/arch/mips/include/asm/pgtable.h b/arch/mips/include/asm/pgtable.h
-index fa7b935f947ca..151f4d15bd12b 100644
---- a/arch/mips/include/asm/pgtable.h
-+++ b/arch/mips/include/asm/pgtable.h
-@@ -745,8 +745,10 @@ static inline pmd_t pmdp_huge_get_and_clear(struct mm_struct *mm,
+diff --git a/arch/arm64/include/asm/pgtable.h b/arch/arm64/include/asm/pgtable.h
+index a2681d7553584..6185fc291fd7d 100644
+--- a/arch/arm64/include/asm/pgtable.h
++++ b/arch/arm64/include/asm/pgtable.h
+@@ -1188,29 +1188,6 @@ static inline bool pgtable_l5_enabled(void) { return false; }
+ #define p4d_clear_fixmap()
  
- #ifdef _PAGE_HUGE
- #define pmd_leaf(pmd)	((pmd_val(pmd) & _PAGE_HUGE) != 0)
-+#ifndef __PAGETABLE_PMD_FOLDED
- #define pud_leaf(pud)	((pud_val(pud) & _PAGE_HUGE) != 0)
- #endif
-+#endif
+ #define p4d_offset_kimg(dir,addr)	((p4d_t *)dir)
+-
+-static inline
+-p4d_t *p4d_offset_lockless_folded(pgd_t *pgdp, pgd_t pgd, unsigned long addr)
+-{
+-	/*
+-	 * With runtime folding of the pud, pud_offset_lockless() passes
+-	 * the 'pgd_t *' we return here to p4d_to_folded_pud(), which
+-	 * will offset the pointer assuming that it points into
+-	 * a page-table page. However, the fast GUP path passes us a
+-	 * pgd_t allocated on the stack and so we must use the original
+-	 * pointer in 'pgdp' to construct the p4d pointer instead of
+-	 * using the generic p4d_offset_lockless() implementation.
+-	 *
+-	 * Note: reusing the original pointer means that we may
+-	 * dereference the same (live) page-table entry multiple times.
+-	 * This is safe because it is still only loaded once in the
+-	 * context of each level and the CPU guarantees same-address
+-	 * read-after-read ordering.
+-	 */
+-	return p4d_offset(pgdp, addr);
+-}
+-#define p4d_offset_lockless p4d_offset_lockless_folded
+-
+ #endif  /* CONFIG_PGTABLE_LEVELS > 4 */
  
- #define gup_fast_permitted(start, end)	(!cpu_has_dc_aliases)
+ #define pgd_ERROR(e)	\
+diff --git a/include/asm-generic/pgtable-nop4d.h b/include/asm-generic/pgtable-nop4d.h
+index 89c21f84cffbe..c6a5a43899b50 100644
+--- a/include/asm-generic/pgtable-nop4d.h
++++ b/include/asm-generic/pgtable-nop4d.h
+@@ -22,6 +22,8 @@ static inline int pgd_none(pgd_t pgd)		{ return 0; }
+ static inline int pgd_bad(pgd_t pgd)		{ return 0; }
+ static inline int pgd_present(pgd_t pgd)	{ return 1; }
+ static inline void pgd_clear(pgd_t *pgd)	{ }
++static inline bool pgd_leaf(pgd_t pgd)		{ return false; }
++#define pgd_leaf pgd_leaf
+ #define p4d_ERROR(p4d)				(pgd_ERROR((p4d).pgd))
  
+ #define pgd_populate(mm, pgd, p4d)		do { } while (0)
+diff --git a/include/asm-generic/pgtable-nopmd.h b/include/asm-generic/pgtable-nopmd.h
+index 36b6490ed1808..dbd38b4c3a056 100644
+--- a/include/asm-generic/pgtable-nopmd.h
++++ b/include/asm-generic/pgtable-nopmd.h
+@@ -31,7 +31,8 @@ static inline int pud_none(pud_t pud)		{ return 0; }
+ static inline int pud_bad(pud_t pud)		{ return 0; }
+ static inline int pud_present(pud_t pud)	{ return 1; }
+ static inline int pud_user(pud_t pud)		{ return 0; }
+-static inline int pud_leaf(pud_t pud)		{ return 0; }
++static inline bool pud_leaf(pud_t pud)		{ return false; }
++#define pud_leaf pud_leaf
+ static inline void pud_clear(pud_t *pud)	{ }
+ #define pmd_ERROR(pmd)				(pud_ERROR((pmd).pud))
+ 
+diff --git a/include/asm-generic/pgtable-nopud.h b/include/asm-generic/pgtable-nopud.h
+index 356cbfbaab247..6c9bca78047c4 100644
+--- a/include/asm-generic/pgtable-nopud.h
++++ b/include/asm-generic/pgtable-nopud.h
+@@ -29,6 +29,8 @@ static inline int p4d_none(p4d_t p4d)		{ return 0; }
+ static inline int p4d_bad(p4d_t p4d)		{ return 0; }
+ static inline int p4d_present(p4d_t p4d)	{ return 1; }
+ static inline void p4d_clear(p4d_t *p4d)	{ }
++static inline bool p4d_leaf(p4d_t p4d)		{ return false; }
++#define p4d_leaf p4d_leaf
+ #define pud_ERROR(pud)				(p4d_ERROR((pud).p4d))
+ 
+ #define p4d_populate(mm, p4d, pud)		do { } while (0)
 -- 
 LEVI:{C3F47F37-75D8-414A-A8BA-3980EC8A46D7}
 
