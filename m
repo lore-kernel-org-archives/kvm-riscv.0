@@ -4,40 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 66E56C44507
-	for <kvm-riscv@archiver.kernel.org>; Mon, 13 Jul 2026 14:01:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A38A9C43458
+	for <kvm-riscv@archiver.kernel.org>; Mon, 13 Jul 2026 14:02:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=HdkNiO3IcfXbA6baY3ZPNuydoF8Eih+dc0w8owfjrQY=; b=C9W/djI3/HCbUS
-	mvInpUlxQkE0y976kW8cySSSSlHZgPdvnhZHbCXcw+peAzRciVtp7yCPhvvpsO5MM6ZF6YsrELHHr
-	mSowrALZ9YY8ogE4Nr4ycTVV6NO9lWursUgYxiAKmZArqQL9bThx6/ZI941ZI/eACkGV5kdxAWzGR
-	xbhuY5ffd6G0kI/rwGH2zkql/XSkNGLefJ+XgXa4+RgrsQ5h5H9m3AwiQHJHhevWBr+FCFU1SJ+Oc
-	3FGaOqUmNdE7qz5b7V+sKXADYDW1vsncaj3SKwfukVcK9VZHOaZKO/ABNy1Mer4AukkmXR3vARs7h
-	0LpP7V1gC05V344zY2UA==;
+	List-Owner; bh=U8kxnp+e6mo3FF0yJfHiTio3RIDBL8B3slXQmKpb32c=; b=1Kbl9SjDFuZON0
+	grBE4r10uxG+qJFNqi+UU+BzrabTnTaYaNMNJTyw+nrANAOD8BXtNw8IYGFT+1lMUOdDt6FXPS1gE
+	nKSuEG0QJQ75ijKROy/G2elzT/3tRaaX7Tc2op6Jrtbj8nLfV38jKm7p3UaxBDCoO29cQyLUkyGy5
+	GKbb/lK0RP19y+i/1dQkbM33u9pL+657g6oWUVYv7E+/CU6EsWXbCfOTMXpI/ZUGhLyQ8tDpEULIj
+	oFwhRCfE/70s+opqWDQxwdVCl1H2MuE0ZpSYSrQmrs1YFwJ2yRNRO+OJ7O97vXbMAgY67Yxe9cpiw
+	e9ADCsIh6SxAB71Uz8Zw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wjHEC-00000009W4W-0jSZ;
-	Mon, 13 Jul 2026 14:01:48 +0000
+	id 1wjHEQ-00000009WEE-1eo4;
+	Mon, 13 Jul 2026 14:02:02 +0000
+Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
+	id 1wjHEP-00000009WCo-1Zn9;
+	Mon, 13 Jul 2026 14:02:01 +0000
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:MIME-Version
+	:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:
+	Content-Type:Content-ID:Content-Description;
+	bh=zhAsgK3gsDksjrzh8KmnSN9JVu+PAuTqe5GUp1rD9BU=; b=ROIrYMkwyXQaDVbHCUUF0dL+LQ
+	VUa4/Qtv5T1Ex49B5rzJv5hr7yA9L1xmiPCFUEkH8AU2l2aJUa08ewbspD5697P25EG+9yB7L4IhQ
+	MW2aKV6t+JDGurYsGWfxxmLbyJ8vzwlxviRvm6dMu37H5LJgg8XHC5HfEJ97tpYrG+9IYKhkslod9
+	NFBilNQKwXlEkFXmaNbXm1kkoTlBiDFG9ak9DHCnGcgyGOgVeYbNbZKPcl13f+mi0nR7Rk5hcRzFp
+	hS9eYgGF3cX14FrfnoLVtpJbvFloe2ZWhna2klWusGttw3mRnikJk2G6Qf3WLXjc6moXgWdJlRa0Q
+	6kYKmDjg==;
 Received: from foss.arm.com ([217.140.110.172])
-	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wjHE7-00000009W1t-3D96;
-	Mon, 13 Jul 2026 14:01:46 +0000
+	by desiato.infradead.org with esmtp (Exim 4.99.2 #2 (Red Hat Linux))
+	id 1wjHEL-0000000BgQw-0uNP;
+	Mon, 13 Jul 2026 14:02:00 +0000
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id A69112050;
-	Mon, 13 Jul 2026 07:01:38 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 372552050;
+	Mon, 13 Jul 2026 07:01:51 -0700 (PDT)
 Received: from e129823.cambridge.arm.com (e129823.arm.com [10.2.213.3])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id AC5243F7B4;
-	Mon, 13 Jul 2026 07:01:30 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 4529A3F7B4;
+	Mon, 13 Jul 2026 07:01:43 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1783951302; bh=LOmsIF99gDivwRx9XPk8OZOaXIoiL2NNZLIFwLFlP7s=;
+	t=1783951315; bh=5txBzx0EcURJkNAuc+8dIy//7Ndx3nQZCeAyxFF+hc8=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=MBKMtffjH/2TsrVbH+SkmMXbiGJBeEJHhF8LadP3YgGbjdont1gw/VdepmxscZqrJ
-	 /zxxH1NjBOLeGlqg7U0kAEtuxNOn3OYUZZYCUv8EE0HqcQu7y53to5uLHDgursFMhJ
-	 NOUTvMkS9bdptcq+ZJMUX8Jo+95uFVvJ1WPxsglA=
+	b=GhD/FhhrE7VIh9xgVETVworlnkqkIBeIUJEQQAK4POtvXx3Dj6UMrg8P7fTvYOE8S
+	 tRHZozAfzY5mC3R99GiOXD/IpPJuYKpDccI8BcWs77tdxl5v3eW7vdgNYQdTAAdpCQ
+	 N2sCBaB0GvonDmslkruANwxq2R7C/YYYXnY6tbF0=
 From: Yeoreum Yun <yeoreum.yun@arm.com>
 To: linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
@@ -134,16 +148,17 @@ Cc: david@kernel.org,
 	jonas@southpole.se,
 	stefan.kristiansson@saunalahti.fi,
 	Yeoreum Yun <yeoreum.yun@arm.com>
-Subject: [RFC PATCH 25/34] x86: mm: remove usage of pgd_page_vaddr() for CONFIG_x86_PAE
-Date: Mon, 13 Jul 2026 14:56:04 +0100
-Message-ID: <20260713135614.1618183-26-yeoreum.yun@arm.com>
+Subject: [RFC PATCH 26/34] x86: mm: define pudp_set_access_flags() when CONFIG_HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD is enabled only.
+Date: Mon, 13 Jul 2026 14:56:05 +0100
+Message-ID: <20260713135614.1618183-27-yeoreum.yun@arm.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260713135614.1618183-1-yeoreum.yun@arm.com>
 References: <20260713135614.1618183-1-yeoreum.yun@arm.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260713_070143_908868_14FEE013 
-X-CRM114-Status: GOOD (  11.12  )
+X-CRM114-CacheID: sfid-20260713_150157_554231_FC258983 
+X-CRM114-Status: UNSURE (   7.22  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -160,106 +175,39 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-We want to rework how pgd_page_vaddr() behaves for generic compile-time
-folded page tables by disallowing its use and triggering a compile-time
-error when it is used improperly, ensuring that the actual first-level
-pXd_pgtable() function is used instead.
+We want to rework how set_pXd() behaves for generic compile-time folded
+page tables by disallowing its use and triggering a compile-time error
+when it is used improperly, ensuring that the actual first-level
+set_pXd() function is used instead.
 
-For this, change usage of pgd_page_vaddr() to pud_pgtable() for
-the functions used when CONFIG_x86_PAE is enabled where PGTABLE_LEVELS=3
-and replace direct check value of pgd_val() with pud_none().
-
-There should be no functional change.
+For this, define pudp_set_access_flags() when
+CONFIG_HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD is enabled only.
 
 Signed-off-by: Yeoreum Yun <yeoreum.yun@arm.com>
 ---
- arch/x86/mm/pgtable.c | 41 ++++++++++++++++++++++++-----------------
- 1 file changed, 24 insertions(+), 17 deletions(-)
+ arch/x86/mm/pgtable.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
 diff --git a/arch/x86/mm/pgtable.c b/arch/x86/mm/pgtable.c
-index f32facdb30354..e4bf6a1d63618 100644
+index e4bf6a1d63618..a263625cdcd6b 100644
 --- a/arch/x86/mm/pgtable.c
 +++ b/arch/x86/mm/pgtable.c
-@@ -207,14 +207,17 @@ static int preallocate_pmds(struct mm_struct *mm, pmd_t *pmds[], int count)
-  */
- static void mop_up_one_pmd(struct mm_struct *mm, pgd_t *pgdp)
+@@ -418,6 +418,7 @@ int pmdp_set_access_flags(struct vm_area_struct *vma,
+ 	return changed;
+ }
+ 
++#ifdef CONFIG_HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD
+ int pudp_set_access_flags(struct vm_area_struct *vma, unsigned long address,
+ 			  pud_t *pudp, pud_t entry, int dirty)
  {
--	pgd_t pgd = *pgdp;
-+	pud_t *pudp, pud;
+@@ -437,6 +438,7 @@ int pudp_set_access_flags(struct vm_area_struct *vma, unsigned long address,
  
--	if (pgd_val(pgd) != 0) {
--		pmd_t *pmd = (pmd_t *)pgd_page_vaddr(pgd);
-+	pudp = pud_offset(p4d_offset(pgdp, 0), 0);
-+	pud = *pudp;
- 
--		pgd_clear(pgdp);
-+	if (!pud_none(pud)) {
-+		pmd_t *pmd = pud_pgtable(pud);
- 
--		paravirt_release_pmd(pgd_val(pgd) >> PAGE_SHIFT);
-+		pud_clear(pudp);
-+
-+		paravirt_release_pmd(pud_pfn(pud));
- 		pmd_free(mm, pmd);
- 		mm_dec_nr_pmds(mm);
- 	}
-@@ -239,23 +242,24 @@ static void pgd_mop_up_pmds(struct mm_struct *mm, pgd_t *pgdp)
+ 	return changed;
+ }
++#endif /* CONFIG_HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD */
  #endif
- }
  
--static void pgd_prepopulate_pmd(struct mm_struct *mm, pgd_t *pgd, pmd_t *pmds[])
-+static void pgd_prepopulate_pmd(struct mm_struct *mm, pgd_t *pgdp, pmd_t *pmds[])
- {
--	p4d_t *p4d;
--	pud_t *pud;
-+	pud_t *pudp, *pudp_s;
- 	int i;
- 
--	p4d = p4d_offset(pgd, 0);
--	pud = pud_offset(p4d, 0);
-+	pudp = pud_offset(p4d_offset(pgdp, 0), 0);
- 
--	for (i = 0; i < PREALLOCATED_PMDS; i++, pud++) {
-+	for (i = 0; i < PREALLOCATED_PMDS; i++, pudp++) {
- 		pmd_t *pmd = pmds[i];
- 
--		if (i >= KERNEL_PGD_BOUNDARY)
--			memcpy(pmd, (pmd_t *)pgd_page_vaddr(swapper_pg_dir[i]),
-+		if (i >= KERNEL_PGD_BOUNDARY) {
-+			pudp_s = pud_offset(p4d_offset(&swapper_pg_dir[i], 0), 0);
-+
-+			memcpy(pmd, (pmd_t *)pud_pgtable(*pudp_s),
- 			       sizeof(pmd_t) * PTRS_PER_PMD);
-+		}
- 
--		pud_populate(mm, pud, pmd);
-+		pud_populate(mm, pudp, pmd);
- 	}
- }
- 
-@@ -265,8 +269,8 @@ static void pgd_prepopulate_user_pmd(struct mm_struct *mm,
- {
- 	pgd_t *s_pgd = kernel_to_user_pgdp(swapper_pg_dir);
- 	pgd_t *u_pgd = kernel_to_user_pgdp(k_pgd);
--	p4d_t *u_p4d;
--	pud_t *u_pud;
-+	p4d_t *s_p4d, *u_p4d;
-+	pud_t *s_pud, *u_pud;
- 	int i;
- 
- 	u_p4d = p4d_offset(u_pgd, 0);
-@@ -278,7 +282,10 @@ static void pgd_prepopulate_user_pmd(struct mm_struct *mm,
- 	for (i = 0; i < PREALLOCATED_USER_PMDS; i++, u_pud++, s_pgd++) {
- 		pmd_t *pmd = pmds[i];
- 
--		memcpy(pmd, (pmd_t *)pgd_page_vaddr(*s_pgd),
-+		s_p4d = p4d_offset(s_pgd, 0);
-+		s_pud = pud_offset(s_p4d, 0);
-+
-+		memcpy(pmd, (pmd_t *)pud_pgtable(*s_pud),
- 		       sizeof(pmd_t) * PTRS_PER_PMD);
- 
- 		pud_populate(mm, u_pud, pmd);
+ bool ptep_test_and_clear_young(struct vm_area_struct *vma,
 -- 
 LEVI:{C3F47F37-75D8-414A-A8BA-3980EC8A46D7}
 
