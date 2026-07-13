@@ -4,40 +4,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D39CDC43458
-	for <kvm-riscv@archiver.kernel.org>; Mon, 13 Jul 2026 13:56:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4079BC43458
+	for <kvm-riscv@archiver.kernel.org>; Mon, 13 Jul 2026 13:56:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
-	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=cOjb6i9+oHUyJETICW/zywExf/TOn3kKmm5uxEDqbVk=; b=3935AcGgfCWp4e
-	o9rpmvEW8y4oRQRs1uJNTagOM5JofrHiJe64P2xeTi2E9HhTamW5BGmiSWwtjzwlned2ksg7XQikn
-	bxEzfuPPZUpOagnxeTcqpszPnTHnL2X0viur9KxlvkLAlQYTWRAxFt0vOBvWAeHlg0pfnNGcGpp53
-	jayOErhkuZ6QdDQB1k4vAMukM6UeRpCQIALAUhLLN3SFmSsI6nk6CZGGX2zoeQtCcd/ciCKs5bbnn
-	dhEPutss3pqHjxaTw7scqYogG8/JdZqoFFbhPzw1mwyKhXv+131FTyU+p9rpFOFIw3QdpMwTWZ3Aq
-	8z9KVXjjnwheWuDp7jEA==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=1lo0PuCihvugQu+8dATBhZ8CGVIZE+FduwsNx+iO4aM=; b=BbHFfbh2PJn5nG
+	M8IkndaATF6jbjSPmSZ5IWyqusJwi8mv0acS81722B21Du1gxixP1Ut8JeUl4ymIduD+LVQxEWtlU
+	32m6V+rD9McoPskNoEfjsVzSpOMRnxvyhyJLiUEQoRnr9ZxkL9GCBAVBb6zpeCqKYK1aHqHv3P0CN
+	t/yVKg1sbQTwRomKxxsAzZNVx/tf7wDadvXKCshwnAumDI3zUwdZMXK+fzM+igih000MAaX6D3705
+	SiF13J3POCC9nmwZHiuKwsbWJbGU8yPHLcLQ7vODhBZN89rhkiTTZJEDtz7RlgIEpeJoAQv7XBXkQ
+	bZl2IeSTOqTtbfovENbg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wjH98-00000009SrM-0kaC;
-	Mon, 13 Jul 2026 13:56:34 +0000
+	id 1wjH9J-00000009SvT-04Ce;
+	Mon, 13 Jul 2026 13:56:45 +0000
 Received: from foss.arm.com ([217.140.110.172])
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wjH96-00000009SqN-0i7z;
-	Mon, 13 Jul 2026 13:56:33 +0000
+	id 1wjH9G-00000009Su0-2k5a;
+	Mon, 13 Jul 2026 13:56:43 +0000
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id E30B71576;
-	Mon, 13 Jul 2026 06:56:24 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 748D31595;
+	Mon, 13 Jul 2026 06:56:37 -0700 (PDT)
 Received: from e129823.cambridge.arm.com (e129823.arm.com [10.2.213.3])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id EC1153F7B4;
-	Mon, 13 Jul 2026 06:56:16 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 821263F7B4;
+	Mon, 13 Jul 2026 06:56:29 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1783950989; bh=a803yHhNKkzlLM5udi9zzm2zAj+wvACzTi3ySnyKLew=;
-	h=From:To:Cc:Subject:Date:From;
-	b=jgMpd1XNQv71U7DXeJ1h7jnvieXwYpoUFE20Nk1qreF39M5EDswShoN8YI1iYonao
-	 mpbbq893Ohfpd/mgYuCRux/Rcp6Kx9soqI0ZGO7Z8o4N5y6pRlcAocE+2YLNFetElg
-	 7W3XeJO4AuPs2v4nW1+sFx6aMUzfa+PGz771bJow=
+	t=1783951001; bh=fhtk2Xbf5M20Fxp59EylK3EnVtDC1Q/eeV1ASjlJfRc=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=NtKweSPBJrXSpruqKL8D3x+JeiFzhsYRAqoppMDvPH1+z+gBaMYJrhxqE2/Axq7Hj
+	 B2j/+nweOkOaE5PxSeWVRUeh4V8VRfIU8trmx3TCZAiPfWyIc/PW5GR+ysVbs5MA5r
+	 LFYf1KUJXku0EHVhXV74N8EhZamEA79TBKfQ11+4=
 From: Yeoreum Yun <yeoreum.yun@arm.com>
 To: linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
@@ -134,14 +134,16 @@ Cc: david@kernel.org,
 	jonas@southpole.se,
 	stefan.kristiansson@saunalahti.fi,
 	Yeoreum Yun <yeoreum.yun@arm.com>
-Subject: [RFC PATCH 00/34] mm: optimize unnecessary loads due to ptep_get() and friends out
-Date: Mon, 13 Jul 2026 14:55:39 +0100
-Message-ID: <20260713135614.1618183-1-yeoreum.yun@arm.com>
+Subject: [RFC PATCH 01/34] ARM: mm: make nommu pgd_t a scalar
+Date: Mon, 13 Jul 2026 14:55:40 +0100
+Message-ID: <20260713135614.1618183-2-yeoreum.yun@arm.com>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20260713135614.1618183-1-yeoreum.yun@arm.com>
+References: <20260713135614.1618183-1-yeoreum.yun@arm.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260713_065632_306254_A9194F6B 
-X-CRM114-Status: GOOD (  16.67  )
+X-CRM114-CacheID: sfid-20260713_065642_785459_BBDD677C 
+X-CRM114-Status: GOOD (  10.08  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -158,215 +160,42 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Using ptep_get() and its counterparts in common code is suboptimal on
-kernel configurations with generic compile-time folded page tables.
-By default, ptep_get() and its friends expands to READ_ONCE(),
-forcing the compiler to emit a load even when the value is not used afterwards.
+From: "David Hildenbrand (Arm)" <david@kernel.org>
 
-This issue was recently reported by Christophe Leroy [1] for ppc32
-preventing futher code conversion to ptep_get()/pmdp_get()/... helper
-and the same behavior can also be observed on arm64 when built with
-2- or 3-level page tables
+We don't want pgd_t to be an array, as it prohibits returning it from a
+function, like ptep_get().
 
-e.g) perf_get_page_size() in arm64 with CONFIG_PGTABLE_LEVEL=3:
+There is no need to match the actual arm page tables, because with nommu
+there are no page tables. It's all just in place to make the compiler
+happy. Making it a scalar will make the compiler happy.
 
-00000000000052a0 <perf_get_page_size>:
-    ...
-    52dc: d53b4234     	mrs	x20, DAIF
-    52e0: d50343df     	msr	DAIFSet, #0x3
-    ...
-    52fc: d35e9a69     	ubfx	x9, x19, #30, #9        /* pud_offset_lockless() */
-    5300: f9403508     	ldr	x8, [x8, #0x68]
-    5304: f869790a     	ldr	x10, [x8, x9, lsl #3]   /* pudp_get() */
-    5308: f90007ea     	str	x10, [sp, #0x8]
-    530c: f8697908     	ldr	x8, [x8, x9, lsl #3]    /* pudp_get() */
-    ...
-    5360: 90000009     	adrp	x9, 0x5000 <perf_prepare_sample+0x548>
-    5364: 92746908     	and	x8, x8, #0x7ffffff000
-    5368: d3557675     	ubfx	x21, x19, #21, #9       /* pmd_offset_lockless() */
-    ...
-    5394: f8757ac8     	ldr	x8, [x22, x21, lsl #3]  /* pmdp_get() */
+So let's just use an u32.
 
-Though PGTABLE_LEVEL=3, since the pudp_get() still remain with
-READ_ONCE(), there's redundant load for the pud which is folded.
+Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
+Signed-off-by: Yeoreum Yun <yeoreum.yun@arm.com>
+---
+ arch/arm/include/asm/page-nommu.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-To prevent generating suboptimal code, define dummy pXdp_get() and
-pXd_offset_lockless() in the pgtable-nopXd.h to handle folded page tables
-properly.
-
-As the pXdp_get() can return *dummy* entry, some of code using
-the stack value where saves the pXdp_get() could be a problematic:
-
-  1. Passing address of stack value where saves the pXdp_get() result
-     to pXd_offset() for example:
-
-       pud_t *pudp, pud;
-       pmd_t *pmdp;
-
-       pud = pudp_get(pudp, address);
-       pmdp = pmd_offset(&pud, pud, address);
-
-     (e.g. host_pfn_mapping_level() in loongarch).
-
-  2. Using the pXdp_get() result to use as argument of pXd_val() and
-     to check prot without checking pgtable is folded.
-     for example, x86's effective_prot().
-
-  3. Using set_pXd() with pXdp_get() will set problematic dummy entry
-     in folded page table like:
-
-       set_pXd(pxdp, pXdp_get(pxdp_k));
-
-     To prevent this, Let set_pXd() triggers the compile error
-     to catch the wrong usage of set_pXd() in the generic compile-time
-     folded page table and change the set_pgd() usage to set the
-     first-level page table with the proper set_pXd().
-
-  4. Using pgd_page_vaddr() to get the first-level pgtable.
-     passing dummy pxdp_get() for pgd_page_vaddr() will return wrong
-     address. Therefore, make pgd_page_vaddr() and pXd_pgtable() to
-     trigger the error for improper usage in the generic compile-time
-     folded pgtable.
-
-Thanksfully, above cases are rare since (1) most of usage using
-pXd_offset() with result of upper pXd_offset(), (2) it's extreamely
-rare to use pXd_val() for non-leaf entry in the kernel,
-(3) is to handle the vmalloc_fault or set the first level of page table
-and (4) to setup early page table and etc.
-
-Therefore, convert this kind of problematic rare pattern properly.
-
-Furthermore, passing the ptep_get() (or its counterparts) as argument
-directly to pte_present() and related helpers can generate suboptimal code,
-in arm64 as the current macro implementation may evaluate its argument
-more than once like:
-
-  !pte_val(READ_ONCE(*pte) || pte_present_invalid(READ_ONCE(*pte))
-
-resulting in redundant loads.
-
-A typical example is pud_free_pmd_page(), where the expansion of
-pmd_present() generates:
-    ...
-    /* pmd_present() (x20 = pmdp) */
-    1b88: f9400288     ldr	x8, [x20]        // read pmdp.
-    1b8c: f9000fa8     str	x8, [x29, #0x18]
-    1b90: 3707fec8     tbnz	w8, #0x0, 0x1b68 <pud_free_pmd_page+0xd0>
-    1b94: f9400288     ldr	x8, [x20]        // redundant read of pmdp.
-    1b98: 8a170109     and	x9, x8, x23
-    1b9c: f9000fa8     str	x8, [x29, #0x18]
-    1ba0: f120013f     cmp	x9, #0x800
-    1ba4: 54fffe20     b.eq	0x1b68 <pud_free_pmd_page+0xd0>
-    1ba8: 17fffff4     b	0x1b78 <pud_free_pmd_page+0xe0>
-    ...
-
-To address this in arm64, convert pte_present() macro and its friends
-to static inline function.
-
-Future work
-===========
- - print_bad_page_map() and show_pte() still prints dummy values
-   instead of printing the same content for all generic compile-time
-   folded page tables. We might want to skip printing dummy values later.
-
- - We currently catch abuse of dummy values on the stack at compile-time by
-   relying on constant propagation by the compiler. Usama's work [3] on using
-   distinct types for sw vs. hw PTEs could help here as well."
-
-Link: [1] https://lore.kernel.org/all/0019d675-ce3d-4a5c-89ed-f126c45145c9@kernel.org/
-Link: [2] https://lore.kernel.org/all/20251113014656.2605447-1-samuel.holland@sifive.com/
-Link: [3] https://lore.kernel.org/r/74182e50-b54f-4d2d-a27f-3a59a538d6bc@arm.com
-
-David Hildenbrand (Arm) (13):
-  ARM: mm: make nommu pgd_t a scalar
-  ARM: mm: make 2-level pgd_t a scalar
-  ARM: mm: remove custom pgdp_get()
-  LoongArch: mm: define pud_leaf() only when PUD exists
-  MIPS: mm: define pud_leaf() only when PUD exists
-  mm/pgtable: define (pgd|p4d|pud)_leaf() for folded page tables
-  mm/pgtable: define (pgd|p4d|pud)_offset_lockless() for folded page
-    tables
-  x86: mm: carve out the generic compile-time folded pgtable case in
-    effective_prot()
-  mm/pgtable: disallow calling folded set_pgd/set_p4d/set_pud
-  mm/pgtable: disallow calling folded (pgd|p4d|pud)_page,
-    pgd_page_vaddr() and (p4d|pud)_pgtable
-  mm/pgtable: optimize pmdp_get() and friends for folded pagetable
-    levels
-  openrisc/pgtable: drop __pmd_offset()
-  mm/pgtable: catch abuse of folded dummy pgd_t/p4d_t/pud_t
-
-Yeoreum Yun (21):
-  loongarch: kvm: remove stack copy address of pXd in pXd_offset()
-  riscv: kvm: remove stack copy address of pXd in pXd_offset()
-  mm: vmscan: remove stack copy address of pud pass in wallk_pud_range()
-  arm64: mm: use proper set_pXd() for generic compile-time folded
-    patable in kasan_early_init()
-  arm64: mm: define pud_set_huge() when __PGTABLE_PMD_FOLDED not defined
-  csky: mm: use proper set_pXd() for generic compile-time folded patable
-    in vmalloc_fault()
-  mips: mm: use proper set_pXd() for generic compile-time folded patable
-    in vmalloc_fault path
-  nios2: mm: use proper set_pXd() for generic compile-time folded
-    patable in vmalloc_fault path
-  riscv: mm: use proper set_pXd() for generic compile-time folded
-    patable in vmalloc_fault()
-  riscv: mm: use proper set_pXd() for generic compile-time folded
-    patable in setup_vm_final()
-  x86: power: use proper set_pXd() for generic compile-time folded
-    patable in resume_one_md_table_init()
-  x86: kexec: use proper set_pXd() for generic compile-time folded
-    patable in machine_kexec_page_table_set_one()
-  x86: platform: use proper set_pXd() for generic compile-time folded
-    patable in setup_olpc_ofw_pgd()
-  x86: mm: use proper set_pXd() for generic compile-time folded patable
-    in one_md_table_init()
-  x86: mm: skip pud setup when using generic compile-time folded
-    pagetable
-  x86: mm: call try_to_free_pmd_page() when CONFIG_PGTABLE_LEVELS > 2
-  x86: mm: remove usage of pgd_page_vaddr() for CONFIG_x86_PAE
-  x86: mm: define pudp_set_access_flags() when
-    CONFIG_HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD is enabled only.
-  m68k: mm: remove usage of pgd_page_vaddr() for CONFIG_PGTABLE_LEVELS=3
-  arm: mm: use proper pgtable APIs for generic compile-time folded
-    patable in kasan_init()
-  arm64: pgtable: convert pte_present() from macro to static inline
-
- arch/arm/include/asm/page-nommu.h           |  4 +-
- arch/arm/include/asm/pgtable-2level-types.h | 13 ++++--
- arch/arm/include/asm/pgtable.h              |  2 -
- arch/arm/mm/kasan_init.c                    |  8 ++--
- arch/arm64/include/asm/pgtable.h            | 35 ++++----------
- arch/arm64/mm/kasan_init.c                  | 26 ++++++++++-
- arch/arm64/mm/mmu.c                         |  2 +
- arch/csky/mm/fault.c                        | 35 +++++---------
- arch/loongarch/include/asm/pgtable.h        |  2 +
- arch/loongarch/kvm/mmu.c                    | 20 ++++----
- arch/m68k/mm/init.c                         |  2 +-
- arch/m68k/mm/motorola.c                     |  2 +-
- arch/mips/include/asm/pgtable.h             |  2 +
- arch/mips/mm/fault.c                        | 13 ++++--
- arch/nios2/mm/fault.c                       | 36 +++++---------
- arch/openrisc/include/asm/pgtable.h         |  3 --
- arch/riscv/kvm/mmu.c                        | 20 ++++----
- arch/riscv/mm/fault.c                       | 52 +++++++++++++--------
- arch/riscv/mm/init.c                        |  7 ++-
- arch/x86/kernel/machine_kexec_32.c          |  8 ++--
- arch/x86/mm/dump_pagetables.c               | 18 ++++++-
- arch/x86/mm/init_32.c                       | 10 ++--
- arch/x86/mm/pat/set_memory.c                |  9 ++--
- arch/x86/mm/pgtable.c                       | 43 ++++++++++-------
- arch/x86/platform/olpc/olpc_ofw.c           |  5 +-
- arch/x86/power/hibernate_32.c               | 14 ++----
- include/asm-generic/pgtable-nop4d.h         | 45 ++++++++++++++----
- include/asm-generic/pgtable-nopmd.h         | 46 +++++++++++++-----
- include/asm-generic/pgtable-nopud.h         | 46 ++++++++++++++----
- include/linux/pgtable.h                     |  5 ++
- mm/vmscan.c                                 |  2 +-
- 31 files changed, 329 insertions(+), 206 deletions(-)
-
-
-base-commit: bdc38bfc1262e3d1432afadd2aa2ffd83d139dbb
+diff --git a/arch/arm/include/asm/page-nommu.h b/arch/arm/include/asm/page-nommu.h
+index e74415c959bea..88659b38e2364 100644
+--- a/arch/arm/include/asm/page-nommu.h
++++ b/arch/arm/include/asm/page-nommu.h
+@@ -18,12 +18,12 @@
+  */
+ typedef unsigned long pte_t;
+ typedef unsigned long pmd_t;
+-typedef unsigned long pgd_t[2];
++typedef unsigned long pgd_t;
+ typedef unsigned long pgprot_t;
+ 
+ #define pte_val(x)      (x)
+ #define pmd_val(x)      (x)
+-#define pgd_val(x)	((x)[0])
++#define pgd_val(x)      (x)
+ #define pgprot_val(x)   (x)
+ 
+ #define __pte(x)        (x)
 -- 
 LEVI:{C3F47F37-75D8-414A-A8BA-3980EC8A46D7}
 
