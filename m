@@ -4,54 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A38A9C43458
-	for <kvm-riscv@archiver.kernel.org>; Mon, 13 Jul 2026 14:02:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DBC2BC44501
+	for <kvm-riscv@archiver.kernel.org>; Mon, 13 Jul 2026 14:02:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=U8kxnp+e6mo3FF0yJfHiTio3RIDBL8B3slXQmKpb32c=; b=1Kbl9SjDFuZON0
-	grBE4r10uxG+qJFNqi+UU+BzrabTnTaYaNMNJTyw+nrANAOD8BXtNw8IYGFT+1lMUOdDt6FXPS1gE
-	nKSuEG0QJQ75ijKROy/G2elzT/3tRaaX7Tc2op6Jrtbj8nLfV38jKm7p3UaxBDCoO29cQyLUkyGy5
-	GKbb/lK0RP19y+i/1dQkbM33u9pL+657g6oWUVYv7E+/CU6EsWXbCfOTMXpI/ZUGhLyQ8tDpEULIj
-	oFwhRCfE/70s+opqWDQxwdVCl1H2MuE0ZpSYSrQmrs1YFwJ2yRNRO+OJ7O97vXbMAgY67Yxe9cpiw
-	e9ADCsIh6SxAB71Uz8Zw==;
+	List-Owner; bh=tNRnqEACrLyA0XbXEQnurF/yjk1iRAwltDevwPhOE5c=; b=JNVagTcLZ3t7wy
+	fGsVKJxeeNGaqWMGaF+P+fatAocB6uCT0bCslSZezQWnGFKGXqYX9Y6KCCluCKtpjb2Ms5THsVxG5
+	/slYcKe9qnd6apVRd1x055waOL6gQcay5NLRixf4lCh1lr8Fi7OoDAWz5+6hCaRb4XYXxxX6haB5r
+	4rMtVRON0NE0jCAiRmc4P52MtqFViRYqydvnMcxBuKYfOYXhFy2H9SU4JkGaRd7Tyz3NvVWHYlPcv
+	rqtk9T/rJJiAbi5PyslC2l857tR8TFzleStCTkI9z50HjOmpydY1zzFqhkijdPCAoNriWXZU8vUp6
+	DGbxHwOKnkUfj7nRThOg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wjHEQ-00000009WEE-1eo4;
-	Mon, 13 Jul 2026 14:02:02 +0000
+	id 1wjHEc-00000009WO6-2kvh;
+	Mon, 13 Jul 2026 14:02:14 +0000
 Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wjHEP-00000009WCo-1Zn9;
-	Mon, 13 Jul 2026 14:02:01 +0000
+	id 1wjHEb-00000009WMQ-0Kbe;
+	Mon, 13 Jul 2026 14:02:13 +0000
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:MIME-Version
 	:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:
 	Content-Type:Content-ID:Content-Description;
-	bh=zhAsgK3gsDksjrzh8KmnSN9JVu+PAuTqe5GUp1rD9BU=; b=ROIrYMkwyXQaDVbHCUUF0dL+LQ
-	VUa4/Qtv5T1Ex49B5rzJv5hr7yA9L1xmiPCFUEkH8AU2l2aJUa08ewbspD5697P25EG+9yB7L4IhQ
-	MW2aKV6t+JDGurYsGWfxxmLbyJ8vzwlxviRvm6dMu37H5LJgg8XHC5HfEJ97tpYrG+9IYKhkslod9
-	NFBilNQKwXlEkFXmaNbXm1kkoTlBiDFG9ak9DHCnGcgyGOgVeYbNbZKPcl13f+mi0nR7Rk5hcRzFp
-	hS9eYgGF3cX14FrfnoLVtpJbvFloe2ZWhna2klWusGttw3mRnikJk2G6Qf3WLXjc6moXgWdJlRa0Q
-	6kYKmDjg==;
+	bh=+RCDGrorkyNOOuJOjX5fZBtuLdr9gFJ37Diu3XLCTDo=; b=RmW4uCp41EvKy0CZWCt64WJw53
+	j1EnOgYuLnaIr3bbnZbfXn1Ld1LqTKzweM+mZ0GdZg2dfDFU9X7NxMgJRNxSdGHanNegPfkKRxWMY
+	rSV6V+j1OjHmCsP/kWIUpl+NGkEnn8wXvUmcLUMeZ54OkYykkc4JYOQISCATIObJJOIQxCcWj5VTY
+	IXJMVu+PKeyW6U0kDkt2Z1iTPfLxmZ3N+1s6ucOy9ZtPMs3ysRL9LQVt49tbtFZTK8edJTWydjgVw
+	nA7wo2zXAI+dRfeG31jNQCyzPbh7/+WjJbuaQq0Ut5Uh2bEctlD9PnkuKkoMhW83LtIUA6lZwvsE/
+	afJfCLiw==;
 Received: from foss.arm.com ([217.140.110.172])
 	by desiato.infradead.org with esmtp (Exim 4.99.2 #2 (Red Hat Linux))
-	id 1wjHEL-0000000BgQw-0uNP;
-	Mon, 13 Jul 2026 14:02:00 +0000
+	id 1wjHEX-0000000BgSs-1b0L;
+	Mon, 13 Jul 2026 14:02:11 +0000
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 372552050;
-	Mon, 13 Jul 2026 07:01:51 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id B917F2050;
+	Mon, 13 Jul 2026 07:02:03 -0700 (PDT)
 Received: from e129823.cambridge.arm.com (e129823.arm.com [10.2.213.3])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 4529A3F7B4;
-	Mon, 13 Jul 2026 07:01:43 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id CA4093F7B4;
+	Mon, 13 Jul 2026 07:01:55 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1783951315; bh=5txBzx0EcURJkNAuc+8dIy//7Ndx3nQZCeAyxFF+hc8=;
+	t=1783951328; bh=ROB8+gk0/dcoXkR4gcvO5thlCnhrFywn7RQWaf7FRNk=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=GhD/FhhrE7VIh9xgVETVworlnkqkIBeIUJEQQAK4POtvXx3Dj6UMrg8P7fTvYOE8S
-	 tRHZozAfzY5mC3R99GiOXD/IpPJuYKpDccI8BcWs77tdxl5v3eW7vdgNYQdTAAdpCQ
-	 N2sCBaB0GvonDmslkruANwxq2R7C/YYYXnY6tbF0=
+	b=ASMMRSEElZbqH3kcSv3cgBHwRCD0y7h1wgH3UWFgn/baB5FeIwo7Xk+LbUkFullBo
+	 ek3GdG2jwdbkGcS6tjY0I29itz5ZOSbh5hHu9lh1E6V9LwiKw1W6kVKW+GJRoc6YC2
+	 dPS2W1hLic9wNvgpjDdvMv047vveZPnluRUq3ZWI=
 From: Yeoreum Yun <yeoreum.yun@arm.com>
 To: linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
@@ -148,17 +148,16 @@ Cc: david@kernel.org,
 	jonas@southpole.se,
 	stefan.kristiansson@saunalahti.fi,
 	Yeoreum Yun <yeoreum.yun@arm.com>
-Subject: [RFC PATCH 26/34] x86: mm: define pudp_set_access_flags() when CONFIG_HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD is enabled only.
-Date: Mon, 13 Jul 2026 14:56:05 +0100
-Message-ID: <20260713135614.1618183-27-yeoreum.yun@arm.com>
+Subject: [RFC PATCH 27/34] m68k: mm: remove usage of pgd_page_vaddr() for CONFIG_PGTABLE_LEVELS=3
+Date: Mon, 13 Jul 2026 14:56:06 +0100
+Message-ID: <20260713135614.1618183-28-yeoreum.yun@arm.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260713135614.1618183-1-yeoreum.yun@arm.com>
 References: <20260713135614.1618183-1-yeoreum.yun@arm.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260713_150157_554231_FC258983 
-X-CRM114-Status: UNSURE (   7.22  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20260713_150209_783047_00694686 
+X-CRM114-Status: GOOD (  10.34  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -175,39 +174,48 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-We want to rework how set_pXd() behaves for generic compile-time folded
-page tables by disallowing its use and triggering a compile-time error
-when it is used improperly, ensuring that the actual first-level
-set_pXd() function is used instead.
+We want to rework how pgd_page_vaddr() behaves for generic compile-time
+folded page tables by disallowing its use and triggering a compile-time
+error when it is used improperly, ensuring that the actual first-level
+pXd_pgtable() function is used instead.
 
-For this, define pudp_set_access_flags() when
-CONFIG_HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD is enabled only.
+For this, change usage of pgd_page_vaddr() to pud_pgtable() for
+the functions used when PGTABLE_LEVELS=3.
+
+There should be no functional change.
 
 Signed-off-by: Yeoreum Yun <yeoreum.yun@arm.com>
 ---
- arch/x86/mm/pgtable.c | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/m68k/mm/init.c     | 2 +-
+ arch/m68k/mm/motorola.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/mm/pgtable.c b/arch/x86/mm/pgtable.c
-index e4bf6a1d63618..a263625cdcd6b 100644
---- a/arch/x86/mm/pgtable.c
-+++ b/arch/x86/mm/pgtable.c
-@@ -418,6 +418,7 @@ int pmdp_set_access_flags(struct vm_area_struct *vma,
- 	return changed;
- }
+diff --git a/arch/m68k/mm/init.c b/arch/m68k/mm/init.c
+index 3b88c0dd1616d..d8351c210f58d 100644
+--- a/arch/m68k/mm/init.c
++++ b/arch/m68k/mm/init.c
+@@ -95,7 +95,7 @@ static inline void init_pointer_tables(void)
+ 		if (!pud_present(*pud))
+ 			continue;
  
-+#ifdef CONFIG_HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD
- int pudp_set_access_flags(struct vm_area_struct *vma, unsigned long address,
- 			  pud_t *pudp, pud_t entry, int dirty)
- {
-@@ -437,6 +438,7 @@ int pudp_set_access_flags(struct vm_area_struct *vma, unsigned long address,
+-		pmd_dir = (pmd_t *)pgd_page_vaddr(kernel_pg_dir[i]);
++		pmd_dir = pud_pgtable(*pud);
+ 		init_pointer_table(pmd_dir, TABLE_PMD);
  
- 	return changed;
- }
-+#endif /* CONFIG_HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD */
- #endif
+ 		for (j = 0; j < PTRS_PER_PMD; j++) {
+diff --git a/arch/m68k/mm/motorola.c b/arch/m68k/mm/motorola.c
+index b30aa69a73a6a..03235d0618ef0 100644
+--- a/arch/m68k/mm/motorola.c
++++ b/arch/m68k/mm/motorola.c
+@@ -273,7 +273,7 @@ static pmd_t * __init kernel_ptr_table(void)
  
- bool ptep_test_and_clear_young(struct vm_area_struct *vma,
+ 			if (!pud_present(*pud))
+ 				continue;
+-			pmd = pgd_page_vaddr(kernel_pg_dir[i]);
++			pmd = (unsigned long)pud_pgtable(*pud);
+ 			if (pmd > last)
+ 				last = pmd;
+ 		}
 -- 
 LEVI:{C3F47F37-75D8-414A-A8BA-3980EC8A46D7}
 
