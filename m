@@ -4,40 +4,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C10BEC43458
-	for <kvm-riscv@archiver.kernel.org>; Mon, 13 Jul 2026 13:57:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 17078C43458
+	for <kvm-riscv@archiver.kernel.org>; Mon, 13 Jul 2026 13:57:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=hKFulbXYnMXnYF8YQ3kHigztZ5Ait3u/Lk0H+APuwnI=; b=H2CZFea1zHJwWx
-	BnWSu05xnfDAqbuEGQQ/gQpcFohD1E17gcd7HpstzgQM/SoAZrlA9vbeNoAo2ufzaTSEjuOa7NHkZ
-	PpDuj27j3fKuBQBvWEi/gE2xsvnxbqqGD8WLCcxAHmCMO+xSEQWTe7V9bsphQGX9qetZMJFs/eu2r
-	L6obn0RAVSEIhLVAdwE4FDFAoLEj/+E5lX3GsgRxorSFICPSE8LrytmGJRLrKpmycPmLAxFG+ihZ4
-	+WSvoY4ZrSsceD6d9pNlAMQgWutWMs+JZXhtdSVCw9yBhwjM6AXaKloGKOAVTPYJfIlKC6S+PzI1m
-	l2Navz2pbetuxH3cDIOA==;
+	List-Owner; bh=ArUyFIon0GD1z0kfkP7AQ7P8iCEyXKrGD69IL0RTrEM=; b=Vp2pz6SDi+cRFP
+	V1h0W+jk+6+8MjUCs2vci6ADXTjk5FbmsSMU9VqoVrSkiHrJkr0boGIwwHVLg1zgOWaseSeRKGrbz
+	45WF2d8/jwPEYqJoczHtLY87wtH2kBLblnc/YIu6+IXt8nh1ayWqLEKL21Fw4TBLfAeWe+GPTFk8f
+	PF1jUeXmStekJwnRGL5xxiuB/GbGl9S4CfMypgPCUtjnQBfMdc6U6cW7xuytj/BQABYsEzdwqKPUA
+	ZSDeAkymO75bgaWKi8DHfsLZiD0TqE8X7sPodoiwNc8ouKTlXgFVRUH5E+nIQ70p3wb/7OuO3kJQ2
+	+QBpWy1h6msqK3kTMIMw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wjH9v-00000009THT-2AAf;
-	Mon, 13 Jul 2026 13:57:23 +0000
+	id 1wjHA7-00000009TPg-3L6p;
+	Mon, 13 Jul 2026 13:57:35 +0000
 Received: from foss.arm.com ([217.140.110.172])
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wjH9t-00000009TFz-0OXg;
-	Mon, 13 Jul 2026 13:57:22 +0000
+	id 1wjHA5-00000009TNu-1C2l;
+	Mon, 13 Jul 2026 13:57:34 +0000
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 21B261713;
-	Mon, 13 Jul 2026 06:57:15 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id AAE3C1762;
+	Mon, 13 Jul 2026 06:57:27 -0700 (PDT)
 Received: from e129823.cambridge.arm.com (e129823.arm.com [10.2.213.3])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 310683F7B4;
-	Mon, 13 Jul 2026 06:57:07 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id B722D3F7B4;
+	Mon, 13 Jul 2026 06:57:19 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1783951039; bh=rWnh71eP4ExKejhtZMDlAoDG+E13CnFWq7MJbiy4Prg=;
+	t=1783951051; bh=oSezCrKL2Fk7poSDNawI1oGiL0c4tvCRcuxmLXVbtSQ=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=BjUetTWKI+nFC6Nb4ya683onv52KMTRNW2dVnNgT8le31HCD8GqM+yxsQ7Xn9inlp
-	 BJwD2Sxlmir5mOjCFoMbNwgdOl1hgNAdS8x3+8JhdyHZ0gJlQfi6DP+vPi7SoI9phc
-	 9Vq5JzPmq8OqLNQQBIhWm1+azrXVisoqqRFDxEc4=
+	b=K66vVOhBLzzxW23h+F5Tho08YRxhhBDqZaVIwqzzKmxHxjFFfOTH39HIQn9UubZB9
+	 ostz+VD+rNqz3d1AIRrmBFuhT8Dz+J436yj1g/aksCCRtwL4cnhHD6Y41NzMibYLax
+	 4UW+8HiauiTZaLk62sJwJVSuoF95kYl1EtAPrS8U=
 From: Yeoreum Yun <yeoreum.yun@arm.com>
 To: linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
@@ -134,16 +134,16 @@ Cc: david@kernel.org,
 	jonas@southpole.se,
 	stefan.kristiansson@saunalahti.fi,
 	Yeoreum Yun <yeoreum.yun@arm.com>
-Subject: [RFC PATCH 04/34] LoongArch: mm: define pud_leaf() only when PUD exists
-Date: Mon, 13 Jul 2026 14:55:43 +0100
-Message-ID: <20260713135614.1618183-5-yeoreum.yun@arm.com>
+Subject: [RFC PATCH 05/34] MIPS: mm: define pud_leaf() only when PUD exists
+Date: Mon, 13 Jul 2026 14:55:44 +0100
+Message-ID: <20260713135614.1618183-6-yeoreum.yun@arm.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260713135614.1618183-1-yeoreum.yun@arm.com>
 References: <20260713135614.1618183-1-yeoreum.yun@arm.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260713_065721_221518_41C04031 
-X-CRM114-Status: UNSURE (   8.03  )
+X-CRM114-CacheID: sfid-20260713_065733_413121_2A0CF8E6 
+X-CRM114-Status: UNSURE (   6.86  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -167,29 +167,30 @@ In include/asm-generic/pgtable-nopmd.h, we do have a hard-coded
 pud_leaf()=false inline function, but we miss the "define pud_leaf
 pud_leaf" part.
 
-To prepare for fixing that, define pud_leaf() only if we don't have
-__PAGETABLE_PMD_FOLDED.
+ To prepare for fixing that, define pud_leaf() only if we don't have
+ __PAGETABLE_PMD_FOLDED.
 
 Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
 Signed-off-by: Yeoreum Yun <yeoreum.yun@arm.com>
 ---
- arch/loongarch/include/asm/pgtable.h | 2 ++
+ arch/mips/include/asm/pgtable.h | 2 ++
  1 file changed, 2 insertions(+)
 
-diff --git a/arch/loongarch/include/asm/pgtable.h b/arch/loongarch/include/asm/pgtable.h
-index 1952e34bc8ee0..434e5b4834664 100644
---- a/arch/loongarch/include/asm/pgtable.h
-+++ b/arch/loongarch/include/asm/pgtable.h
-@@ -636,7 +636,9 @@ static inline long pmd_protnone(pmd_t pmd)
- #endif /* CONFIG_ARCH_HAS_PTE_PROTNONE */
+diff --git a/arch/mips/include/asm/pgtable.h b/arch/mips/include/asm/pgtable.h
+index fa7b935f947ca..151f4d15bd12b 100644
+--- a/arch/mips/include/asm/pgtable.h
++++ b/arch/mips/include/asm/pgtable.h
+@@ -745,8 +745,10 @@ static inline pmd_t pmdp_huge_get_and_clear(struct mm_struct *mm,
  
- #define pmd_leaf(pmd)		((pmd_val(pmd) & _PAGE_HUGE) != 0)
+ #ifdef _PAGE_HUGE
+ #define pmd_leaf(pmd)	((pmd_val(pmd) & _PAGE_HUGE) != 0)
 +#ifndef __PAGETABLE_PMD_FOLDED
- #define pud_leaf(pud)		((pud_val(pud) & _PAGE_HUGE) != 0)
+ #define pud_leaf(pud)	((pud_val(pud) & _PAGE_HUGE) != 0)
+ #endif
 +#endif
  
- /*
-  * We provide our own get_unmapped area to cope with the virtual aliasing
+ #define gup_fast_permitted(start, end)	(!cpu_has_dc_aliases)
+ 
 -- 
 LEVI:{C3F47F37-75D8-414A-A8BA-3980EC8A46D7}
 
