@@ -4,54 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BCC0BC44501
-	for <kvm-riscv@archiver.kernel.org>; Mon, 13 Jul 2026 14:01:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CE351C44501
+	for <kvm-riscv@archiver.kernel.org>; Mon, 13 Jul 2026 14:01:24 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=JeS6ua9Lcu9KWEF//+l74k4cZ5RgX59Imzlo3+UfYwc=; b=cTzMMXYmRKkVXT
-	U8URFkani0BncwKWBa5WbDOR7T5vFInd0B2gmpx+bM8enhkDL20zSzp9ieQYJodwOd1vlO2VbKfgd
-	QmZYtlAcanyrG+qfntwNX+nHAK5QEVq+yNnmg9azkgxegUBAvXsee4zBHYJPVxskZjrm1o8hCT2yg
-	qJ/RBrwEByz5B/3mQmcqChPO3JwGgj9Hvz2997iiswiq9vYc+l0jYrB87IXeeM2e56/b6M21NZg9E
-	7mVoH/LNRMWX0WyLkKiPfSz8GF0Yg7gCtvYi6/7p8jdB3cRuz5yMbE69olbpCBJiMDZ3PBCn2Cja/
-	foxGBR7bPGKSZ1/zedaw==;
+	List-Owner; bh=0unjKym+Fc9I5UXqvxvfwBGCLqFAAZ2+4ojme53sbq4=; b=vsK5jZ8E9JTnoG
+	gk7TO8jkvd911sqMy3kDZSOscQX9002JhvXvhaoD+FxtP9wY1xXU9GCzYmrAzsM9yOxDgm5fo3Ylu
+	fyylmVzElZ4OCrr9/0YKZWHzpj1dLyS9zKNKlZktBctI7O3pQY8OXLODqbKZncNyApXBAgJLDIMhj
+	VQqWqpYM4wNeDF3YdqjobeOc3GxRvoYIeYrjoJuGYteuaNUAGRMtLRuDpW45yRapkaFwVkpRZ39jc
+	4j0tmqXTmSxauUh3qhrEpaUYEf1zVwWnhVxDW+8d7EztHJXfVpf8UCqY5OHlxs12zA9Z6dyC3OeT8
+	Obbs/SdBB+62SRGgFg+Q==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wjHDg-00000009Vgc-23wZ;
-	Mon, 13 Jul 2026 14:01:16 +0000
+	id 1wjHDo-00000009Vmz-2QNQ;
+	Mon, 13 Jul 2026 14:01:24 +0000
 Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wjHDf-00000009Vf8-14qw;
-	Mon, 13 Jul 2026 14:01:15 +0000
+	id 1wjHDn-00000009Vla-1VPP;
+	Mon, 13 Jul 2026 14:01:23 +0000
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:MIME-Version
 	:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:
 	Content-Type:Content-ID:Content-Description;
-	bh=XODR0DLFMAasX2k3OQcGxT82RYcB26wTIaaFE1uMq2Q=; b=Qrc88aLK99zYOdTovOe2eryyRr
-	uO967xeEzT6zTuC2RDZT0jcT6Qs5VYUaQJFHi2w+mpr4t/sNs/XnDqDRR92q61OiZhiPAkK4gpKfr
-	1P5+UcDzRSADwMotmXS+/scWNqO3njyh0aoKWMHLG9NYR14K4tGW9bnnug0YvMcwqFqMFYoVOGGdi
-	aqvg+tA6pYf+ch8DbnjjW9u0rwrdc4r61cz4A9aR3CnsxvuMENQdBUuwTq6YEz8seGCZhlHsOX+Wv
-	gajv9Hd8RbV8EeH/pJepO9yvfh+uE06KtB0ooB/HfvVhMlhEedltdAlDp53l9iKVc/Io0y0o8ftqe
-	M+RInBPg==;
+	bh=Mgg4AxTbIvWGpBzw8PA5RCq5W28aRH0DxqHB/NvCldY=; b=C4s5C7PQZ2eXpVsj5O5O3rLPf0
+	+44dhN4BUYO/iWFLOh1xxKV40YCfFZKxj4jnzE04qeOe+LrwDI0UGCswKKu/jnMvses9W8pUlrNSL
+	IoE3VjYA7JaMZKiZofSpwhiQLLTYXs2Q+BOQjJEOyQDH0tjxmprz7A5Q+6RSiIjWlO4huvgLF06up
+	KOlJ4RXcUe7HcDG4FKAp12+OHolZDtVw/HWah3EXs27b7+ifsXw6CXqz0feOpb89VmM4B62YyfkQi
+	yGZynB+SWqMJRskwtKQ8L4i+BW8xoTBAvSIRyUpJr9mCNzhWG1egZkoVM32nODqJ0oExrB9v7reaU
+	TtaNfjJQ==;
 Received: from foss.arm.com ([217.140.110.172])
 	by desiato.infradead.org with esmtp (Exim 4.99.2 #2 (Red Hat Linux))
-	id 1wjHDW-0000000BgK6-30QZ;
-	Mon, 13 Jul 2026 14:01:12 +0000
+	id 1wjHDj-0000000BgMF-0TpW;
+	Mon, 13 Jul 2026 14:01:22 +0000
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 01BDE1FC7;
-	Mon, 13 Jul 2026 07:01:01 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 870EA2050;
+	Mon, 13 Jul 2026 07:01:13 -0700 (PDT)
 Received: from e129823.cambridge.arm.com (e129823.arm.com [10.2.213.3])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 0FC353FAF5;
-	Mon, 13 Jul 2026 07:00:52 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 9427A3F7B4;
+	Mon, 13 Jul 2026 07:01:05 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1783951265; bh=3LP3kSBkF9WZ5FN+GThlw2ZrRbb/NM3CavuBMu2UCX8=;
+	t=1783951277; bh=fo69NRGTbHPdRvMyzMnGDIUWtNXuhxqOSbA3GBc5Vfk=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=jQFofxhrlY9xhPCZ1KjOb60Oo8vAAMeW3u9/kR3kEqBO6OD+WGUbi6FH+GoBuTLyI
-	 oSdIVLUVAjxaEDlOi7+HOeEkX3qQLhK46xPY7D5gKofzHDHQHSoEVb/gRv4q0kvsfj
-	 z/WGz+7bjb/oyahedBcZbasHVxrEPI9iv40gFe5k=
+	b=GAoyiDy3vQ1X7bdgWU7XAqeF1NKi8cZXbh0Pcm7PEb8ix60O+FJhN+xRdssvSqs1z
+	 QUdqoUMHf+/1uEN0SYPKe9v1SzW67hzTIIH7Bt1jnn7qbYXsKmfGK0AWyBU4GfbNGV
+	 9+KtfQlIc1qITAsw0F6XCnotwh3TKW8ydrkXRCY0=
 From: Yeoreum Yun <yeoreum.yun@arm.com>
 To: linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
@@ -148,17 +148,16 @@ Cc: david@kernel.org,
 	jonas@southpole.se,
 	stefan.kristiansson@saunalahti.fi,
 	Yeoreum Yun <yeoreum.yun@arm.com>
-Subject: [RFC PATCH 22/34] x86: mm: use proper set_pXd() for generic compile-time folded patable in one_md_table_init()
-Date: Mon, 13 Jul 2026 14:56:01 +0100
-Message-ID: <20260713135614.1618183-23-yeoreum.yun@arm.com>
+Subject: [RFC PATCH 23/34] x86: mm: skip pud setup when using generic compile-time folded pagetable
+Date: Mon, 13 Jul 2026 14:56:02 +0100
+Message-ID: <20260713135614.1618183-24-yeoreum.yun@arm.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260713135614.1618183-1-yeoreum.yun@arm.com>
 References: <20260713135614.1618183-1-yeoreum.yun@arm.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260713_150107_090962_B1ADD3FF 
-X-CRM114-Status: UNSURE (   8.87  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20260713_150119_622837_0A259D0D 
+X-CRM114-Status: GOOD (  10.34  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -177,47 +176,42 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 We want to rework how set_pXd() behaves for generic compile-time folded
 page tables by disallowing its use and triggering a compile-time error
-when it is used improperly, ensuring that the actual first-level
-set_pXd() function is used instead.
+when it is used improperly, ensuring that the actual first-level set_pXd()
+function is used instead.
 
-Therefore, replace set_pgd() with set_pud() to setup first-level pgtable
-in case of X86_PAE.
+Therefore, skip collapse_pud_page() and populate_pud() according to
+CONFIG_PGTABLE_LEVELS.
 
 There should be no functional change.
 
 Signed-off-by: Yeoreum Yun <yeoreum.yun@arm.com>
 ---
- arch/x86/mm/init_32.c | 10 ++++------
- 1 file changed, 4 insertions(+), 6 deletions(-)
+ arch/x86/mm/pat/set_memory.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
-index 0908c44d51e6f..690afa27a631b 100644
---- a/arch/x86/mm/init_32.c
-+++ b/arch/x86/mm/init_32.c
-@@ -70,19 +70,17 @@ static pmd_t * __init one_md_table_init(pgd_t *pgd)
- 	pud_t *pud;
- 	pmd_t *pmd_table;
+diff --git a/arch/x86/mm/pat/set_memory.c b/arch/x86/mm/pat/set_memory.c
+index d023a40a1e034..cffb1cef869cc 100644
+--- a/arch/x86/mm/pat/set_memory.c
++++ b/arch/x86/mm/pat/set_memory.c
+@@ -1326,7 +1326,7 @@ static int collapse_pud_page(pud_t *pud, unsigned long addr,
+ 	pmd_t *pmd, first;
+ 	int i;
  
-+	p4d = p4d_offset(pgd, 0);
-+	pud = pud_offset(p4d, 0);
- #ifdef CONFIG_X86_PAE
--	if (!(pgd_val(*pgd) & _PAGE_PRESENT)) {
-+	if (!(pud_val(*pud) & _PAGE_PRESENT)) {
- 		pmd_table = (pmd_t *)alloc_low_page();
--		set_pgd(pgd, __pgd(__pa(pmd_table) | _PAGE_PRESENT));
--		p4d = p4d_offset(pgd, 0);
--		pud = pud_offset(p4d, 0);
-+		set_pud(pud, __pud(__pa(pmd_table) | _PAGE_PRESENT));
- 		BUG_ON(pmd_table != pmd_offset(pud, 0));
+-	if (!direct_gbpages)
++	if (CONFIG_PGTABLE_LEVELS == 2 || !direct_gbpages)
+ 		return 0;
  
- 		return pmd_table;
- 	}
- #endif
--	p4d = p4d_offset(pgd, 0);
--	pud = pud_offset(p4d, 0);
- 	pmd_table = pmd_offset(pud, 0);
+ 	addr &= PUD_MASK;
+@@ -1710,7 +1710,8 @@ static int populate_pud(struct cpa_data *cpa, unsigned long start, p4d_t *p4d,
+ 	/*
+ 	 * Map everything starting from the Gb boundary, possibly with 1G pages
+ 	 */
+-	while (boot_cpu_has(X86_FEATURE_GBPAGES) && end - start >= PUD_SIZE) {
++	while (CONFIG_PGTABLE_LEVELS > 3 && boot_cpu_has(X86_FEATURE_GBPAGES) &&
++	       end - start >= PUD_SIZE) {
+ 		set_pud(pud, pud_mkhuge(pfn_pud(cpa->pfn,
+ 				   canon_pgprot(pud_pgprot))));
  
- 	return pmd_table;
 -- 
 LEVI:{C3F47F37-75D8-414A-A8BA-3980EC8A46D7}
 
