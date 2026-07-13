@@ -4,54 +4,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7D269C43458
-	for <kvm-riscv@archiver.kernel.org>; Mon, 13 Jul 2026 14:00:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B1750C44501
+	for <kvm-riscv@archiver.kernel.org>; Mon, 13 Jul 2026 14:00:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=kHCcGlAey5cTU2bzbXc/t4TtSurWuCunUI6TMplWOhw=; b=i9EMtkPfcDa7p5
-	qb3KnjNJcOSSeYbx47SPQhSWTTne0sRbQZqHceQMFVgBcjVleQAn3Cw709TpdzhcdE+3mGxHNlwD7
-	Y5DQ3OJRxN7XowiAfk+7gI8E1zCrvJz0BdLLbqU0lstXhNYl8d1del4IAcxaMmAHaLzk2YikGXlEL
-	4pTcoA0Guj51PzY894Wlk9doCA/YJU2VSsD0aOieu5UIeJ+QWReb11P/+TfvmSHGZwHqiBjtch4Ep
-	rKfLiCTVgYNWPp14f8+LzRDw5xpPiixiHjv1U3eUnfC/gnipiyH0c+XYMB5v4uULIYkA6o2EylaZG
-	UEE+NrK2VbZy37O21+1w==;
+	List-Owner; bh=I40TpJLm3g41A0titH+hDdHS8twCbWlcfxIBWi3/bEo=; b=J/lP3GD/B3wzqK
+	2XV7+QojxaELQRT83uWxmuYpHyeL3eyWrWPP86YUU2jtQs848xp1EFqms8teffC8MErHU3BWi2pkC
+	4KJQwxJpwddRCXlf8XZKgbBqb3yRxm/lR9iuE00X6ma91oFsV4FasHQTOFtcHSEe0mPJjs84m94ov
+	4P5Kejuh4M2v9RI3n1mPerAXQVxrjfuqujRm/i5N4YZHmLrOxhEWg0HKr8wqPaptXTUU7CJ2EJVKT
+	W/3chClKY89sSjCxNyAXxAIiMVieQkgjnoUCx1YGoQdqGCRfVCwgLBRxfRlezGbkZj7nlG2MdA4DU
+	lxg+H7bdIIApFas9gT1w==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wjHD1-00000009V97-17z8;
-	Mon, 13 Jul 2026 14:00:35 +0000
-Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
-	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wjHCz-00000009V86-2phI;
-	Mon, 13 Jul 2026 14:00:33 +0000
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:MIME-Version
-	:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:
-	Content-Type:Content-ID:Content-Description;
-	bh=pCQv8M7VrBm4TU+MPV6p2csh/ijl3jkmOGWWVQbEQ04=; b=Ci4j027mCCQslE/WTOtKLmPpNC
-	EI/f/D+pT9DKcjm9+Y0RcMHjl/dMC11yiUfZ4UeVQsilhUjsvC/m0raTf6jZ1k4ORn2DRfhaCZTcP
-	QVYitg6JY5wZpANWlNj1zPfWcc/pam1r8OtXDwgJX27TigNeW8xVNAJHcvR4V4Q42zKJOKeAqJZDB
-	4J1BcFF4y70qLhKEmmyamS468JV4zVj3sVsMIU/w10e346ZgIeuSitGhdaylRMvDhtpzEtt17d3zV
-	pmpusdagNBjjTk6VEZvnxrKi2gmMFfrG53Ky0Bc4aBUv8jMsUh2LfZQxIiOXW/giztZwdiJPA2plo
-	Aof5YFPA==;
+	id 1wjHDB-00000009VEz-23mr;
+	Mon, 13 Jul 2026 14:00:45 +0000
 Received: from foss.arm.com ([217.140.110.172])
-	by desiato.infradead.org with esmtp (Exim 4.99.2 #2 (Red Hat Linux))
-	id 1wjHCv-0000000BgDo-19WN;
-	Mon, 13 Jul 2026 14:00:32 +0000
+	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
+	id 1wjHD7-00000009VCZ-3kMB;
+	Mon, 13 Jul 2026 14:00:44 +0000
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 5F1DC2103;
-	Mon, 13 Jul 2026 07:00:23 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id E365722C7;
+	Mon, 13 Jul 2026 07:00:35 -0700 (PDT)
 Received: from e129823.cambridge.arm.com (e129823.arm.com [10.2.213.3])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 651783F7B4;
-	Mon, 13 Jul 2026 07:00:15 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id F00E63F7B4;
+	Mon, 13 Jul 2026 07:00:27 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1783951227; bh=LTSOz6r8IXywEsuWgl9722tiR9WcqjiHFXGXDRX3spM=;
+	t=1783951240; bh=va0q48sXcle/0V8qWAZnWr4Xakv6qUZD5loRZgnhZRY=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=pGt+wVwXPP9bqbNiSoGoTQf7vUj9+h+rjcGEu7v6x9h5jUGGL61je/MuOfCB0IGbL
-	 MCwtdgvHi9xbeiGHPrEgzoOWMgwuAwIORymTP+QSMvNXbWLSJ5lnVb/8rcQcLGe2HS
-	 V32gOsFvzZEGe9nESYJjvb3kHILH3HN1uCBfzjGg=
+	b=MOz3M/no7GPM/RnhkzFTAVpZxS2ERKQvlXCwbsNiVRL2yYzWglw+94qjOt1vYID/N
+	 vyPd1NMFFKbOMm+vDptBUDLnohT7IckowlWYW8T/UQ7ot7g+j7Fi6uF15Cuk4eUFdO
+	 qI5ngs3cD0CTMXkzBMuGvFfPsf6DqKwnnjUpXmno=
 From: Yeoreum Yun <yeoreum.yun@arm.com>
 To: linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
@@ -148,16 +134,16 @@ Cc: david@kernel.org,
 	jonas@southpole.se,
 	stefan.kristiansson@saunalahti.fi,
 	Yeoreum Yun <yeoreum.yun@arm.com>
-Subject: [RFC PATCH 19/34] x86: power: use proper set_pXd() for generic compile-time folded patable in resume_one_md_table_init()
-Date: Mon, 13 Jul 2026 14:55:58 +0100
-Message-ID: <20260713135614.1618183-20-yeoreum.yun@arm.com>
+Subject: [RFC PATCH 20/34] x86: kexec: use proper set_pXd() for generic compile-time folded patable in machine_kexec_page_table_set_one()
+Date: Mon, 13 Jul 2026 14:55:59 +0100
+Message-ID: <20260713135614.1618183-21-yeoreum.yun@arm.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260713135614.1618183-1-yeoreum.yun@arm.com>
 References: <20260713135614.1618183-1-yeoreum.yun@arm.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260713_150029_654526_60C0E55E 
-X-CRM114-Status: UNSURE (   9.83  )
+X-CRM114-CacheID: sfid-20260713_070042_020974_511A864C 
+X-CRM114-Status: UNSURE (   8.56  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -187,54 +173,30 @@ There should be no functional change.
 
 Signed-off-by: Yeoreum Yun <yeoreum.yun@arm.com>
 ---
- arch/x86/power/hibernate_32.c | 14 +++++---------
- 1 file changed, 5 insertions(+), 9 deletions(-)
+ arch/x86/kernel/machine_kexec_32.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/power/hibernate_32.c b/arch/x86/power/hibernate_32.c
-index 223d5bca29b86..ab5a203b45cb3 100644
---- a/arch/x86/power/hibernate_32.c
-+++ b/arch/x86/power/hibernate_32.c
-@@ -29,8 +29,7 @@ pgd_t *resume_pg_dir;
-  */
- static pmd_t *resume_one_md_table_init(pgd_t *pgd)
- {
--	p4d_t *p4d;
--	pud_t *pud;
-+	pud_t *pud = pud_offset(p4d_offset(pgd, 0), 0);
- 	pmd_t *pmd_table;
+diff --git a/arch/x86/kernel/machine_kexec_32.c b/arch/x86/kernel/machine_kexec_32.c
+index 1f325304c4a84..a36321ee9f24f 100644
+--- a/arch/x86/kernel/machine_kexec_32.c
++++ b/arch/x86/kernel/machine_kexec_32.c
+@@ -84,12 +84,12 @@ static void machine_kexec_page_table_set_one(
+ 	pud_t *pud;
  
- #ifdef CONFIG_X86_PAE
-@@ -38,14 +37,10 @@ static pmd_t *resume_one_md_table_init(pgd_t *pgd)
- 	if (!pmd_table)
- 		return NULL;
- 
--	set_pgd(pgd, __pgd(__pa(pmd_table) | _PAGE_PRESENT));
--	p4d = p4d_offset(pgd, 0);
--	pud = pud_offset(p4d, 0);
-+	set_pud(pud, __pud(__pa(pmd_table) | _PAGE_PRESENT));
- 
- 	BUG_ON(pmd_table != pmd_offset(pud, 0));
- #else
--	p4d = p4d_offset(pgd, 0);
--	pud = pud_offset(p4d, 0);
- 	pmd_table = pmd_offset(pud, 0);
- #endif
- 
-@@ -134,11 +129,12 @@ static inline void resume_init_first_level_page_table(pgd_t *pg_dir)
- {
- #ifdef CONFIG_X86_PAE
- 	int i;
-+	pud_t *pud = pud_offset(p4d_offset(pg_dir, 0), 0);
- 
- 	/* Init entries of the first-level page table to the zero page */
- 	for (i = 0; i < PTRS_PER_PGD; i++)
--		set_pgd(pg_dir + i,
--			__pgd(__pa(empty_zero_page) | _PAGE_PRESENT));
-+		set_pud(pud + i,
-+			__pud(__pa(empty_zero_page) | _PAGE_PRESENT));
- #endif
- }
- 
+ 	pgd += pgd_index(vaddr);
+-#ifdef CONFIG_X86_PAE
+-	if (!(pgd_val(*pgd) & _PAGE_PRESENT))
+-		set_pgd(pgd, __pgd(__pa(pmd) | _PAGE_PRESENT));
+-#endif
+ 	p4d = p4d_offset(pgd, vaddr);
+ 	pud = pud_offset(p4d, vaddr);
++#ifdef CONFIG_X86_PAE
++	if (!(pud_val(*pud) & _PAGE_PRESENT))
++		set_pud(pud, __pud(__pa(pmd) | _PAGE_PRESENT));
++#endif
+ 	pmd = pmd_offset(pud, vaddr);
+ 	if (!(pmd_val(*pmd) & _PAGE_PRESENT))
+ 		set_pmd(pmd, __pmd(__pa(pte) | _PAGE_TABLE));
 -- 
 LEVI:{C3F47F37-75D8-414A-A8BA-3980EC8A46D7}
 
