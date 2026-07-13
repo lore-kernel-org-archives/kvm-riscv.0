@@ -4,106 +4,144 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E8942C43458
-	for <kvm-riscv@archiver.kernel.org>; Mon, 13 Jul 2026 12:58:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D39CDC43458
+	for <kvm-riscv@archiver.kernel.org>; Mon, 13 Jul 2026 13:56:34 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:Subject:Message-ID:Date:From:
-	In-Reply-To:References:MIME-Version:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=Cm+i1cUYOGDtEVUlYXnHTgkewK6qX4omOb1BIsdPUxY=; b=ba/3KgcEOsMZXF
-	21esPPKuLYnwne6XqYcDLEwvEh1Zc/p0aoT2jIwHILgKXKZZeFNpA3zBKNQJyrSJO3EuLbMzk10qc
-	w+S9NoW4QtJl3Fv7d7MxO+JgS6Ww/mrZF+suKBHLT8IbekxrvaB7VSUicVUOOMVh664AYEPEovEww
-	NcY50VESVGrKhrPo/FDpHDdLh7IBR2V8cXyUkB6ByOMR4YFZSLjYtlxEM1H7qHJtvAWF8Gye+H3nF
-	XWlPkLgR+geWjCBSLP2ysJZTS7Znndm4CRniyQNDyZIVRhD/ga7TXy3/JNaHvPkpS0Mov1xr+jpNq
-	Kj6KvFXwhceHJJfFwFng==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=cOjb6i9+oHUyJETICW/zywExf/TOn3kKmm5uxEDqbVk=; b=3935AcGgfCWp4e
+	o9rpmvEW8y4oRQRs1uJNTagOM5JofrHiJe64P2xeTi2E9HhTamW5BGmiSWwtjzwlned2ksg7XQikn
+	bxEzfuPPZUpOagnxeTcqpszPnTHnL2X0viur9KxlvkLAlQYTWRAxFt0vOBvWAeHlg0pfnNGcGpp53
+	jayOErhkuZ6QdDQB1k4vAMukM6UeRpCQIALAUhLLN3SFmSsI6nk6CZGGX2zoeQtCcd/ciCKs5bbnn
+	dhEPutss3pqHjxaTw7scqYogG8/JdZqoFFbhPzw1mwyKhXv+131FTyU+p9rpFOFIw3QdpMwTWZ3Aq
+	8z9KVXjjnwheWuDp7jEA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wjGEV-00000009GaK-2fMP;
-	Mon, 13 Jul 2026 12:58:03 +0000
-Received: from mail-wm1-x329.google.com ([2a00:1450:4864:20::329])
-	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wjGES-00000009GYi-0HwK
-	for kvm-riscv@lists.infradead.org;
-	Mon, 13 Jul 2026 12:58:01 +0000
-Received: by mail-wm1-x329.google.com with SMTP id 5b1f17b1804b1-493bfe9f886so16436745e9.0
-        for <kvm-riscv@lists.infradead.org>; Mon, 13 Jul 2026 05:57:59 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1783947478; cv=none;
-        d=google.com; s=arc-20260327;
-        b=UfVB8nQ5UGZsCbTpgDhDW4lhrGC4MYWVNhTUp/KIX523XCPx74xXBVNYGm3O26rQLB
-         6RyJXFiLo5SzK9bsuvnOd7h2+kJeen6E0L9+LZxpIxasADyuBbjXlvcUItKIqlzdzmPr
-         4wcu461YS8cj8kgahldMouWELqvG0wE+dzNjUthngMfKUOA2nc+nADqvMKZfiwBVF6gV
-         yKgw5JMowbzHEwHRDE8IwVPhL3NuDVl4yG7wBYLwAZ0AKt83+uclQuue33LthGnqZ9sm
-         vN87Fb2/pdeSTkkOL7ixNSdBh0WBic+Yf0WGD1Njqq/UU2tWWYOyKVq3+PVZYJrW+TG5
-         OCAA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=tXeqG3zuIObLsUUPmSnJNLKn59cdNhsnjYph6ZlnxA4=;
-        fh=eupJLbG5BiAk94F9QEcDFXAdAbgvGXdUGVRKvo9mLkw=;
-        b=HaGtw6Y51RDD3j0eF19k4q1zpjgDg9kklSKlZy9BSLMagDVkhjtAKBuPhfDCo/uSEK
-         87fiH4fdPYrlUPb3aLuKsCgYLXlnz2o1SSCUiONOVeSXBOmjga9+a4QZtAVFhRNj+99N
-         VUU/lH+4IS67kSeaAsy0cleWK8Eg9sd+RyJkm8kgFNr+dX0HeD3DfU0PNg0Fkfq1xuuH
-         8zfphf7xKqnx5wO3+YAhIKrBHahR8VAJODrHpuLi2poMfKmDIN7MZ9KNkU0uKxgmFE8Q
-         wPEeM07jDrAyxt0QIldRNMpd8Xzkm40IQR2CNpoDKOeJvFlG4KGyLGtXGUz/T+Yn6d0K
-         G9+Q==;
-        darn=lists.infradead.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=brainfault-org.20251104.gappssmtp.com; s=20251104; t=1783947478; x=1784552278; darn=lists.infradead.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=tXeqG3zuIObLsUUPmSnJNLKn59cdNhsnjYph6ZlnxA4=;
-        b=HcKLehGEXkBB6mk7QHwVfxy5Vv9jlzkkI8k7FoPwwgOnizcyPHIFcEN/wcR3Qyl8vA
-         ooM4wN5uMuNjorIcGWMBz1jWAVZC/nFMzvuDmStaDsjAxsNRh7ygqtZWLNzcX3/DLlv0
-         fCJGjO95DPvIaXFhb2ctslRk/VcDCS0WMnrPK/nwqDL9R/GPu4nW+Z/M19Hom6iX88fO
-         Hn/8KcuLi5rrkPy0Xna0OA5nCPBU6MjvQLp4zAdfzFZPBZpWoeBZoFa1F17gcecSdUso
-         dMy4Vc5MGEYgJMPFKZUFRfOAV0bjDIRBCNtsfit9I8lZ0qF7yp0wslS3dWyz5TN26IxV
-         +Now==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783947478; x=1784552278;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=tXeqG3zuIObLsUUPmSnJNLKn59cdNhsnjYph6ZlnxA4=;
-        b=IUYTl/d3Fp/9bfLtg+e0Ua8byGwbmxLBieEiEU7G9Cuqis/MYNUI7MTaDID9etVofR
-         y/jO1sQ7dLBr4buAj05cHPn2Xw3ayTDDhPwUIpWGQU0FU/s2c0LQQZzMpp4rccSG+6ES
-         QjbPHO0aW93vDbqo9yeIQy59FW2ZrTlNfVRqxFfQpDLVcC96ZrHmc6wLvOloAImZCyjY
-         EYMbVIKK9L0i5mMizMK8ty5PbG/eISKUGN450ckXB9cprk+gn9q0oy2DucELrE3mDqto
-         QbVeymHHjFs3kg7e1+Aq++tJ3OBJ1qq8VNdyrBd5lZAzfsd7HkDHEqwwjFyaZGUAP+j5
-         eXEA==
-X-Forwarded-Encrypted: i=1; AHgh+RphKNVOazFPDPs93xwt+ZOpTnmM8kUB8Xs3JIi1BqCJBsuoeS/rD1R5/JWYJMoK9dFZx0ri7cAof1s=@lists.infradead.org
-X-Gm-Message-State: AOJu0YxIFQ2QoQjKMHfmXBktvlLLBFwjzKGk55D18EHEfOKc3cNlWJ92
-	qIynhPB7mGUnkidDR/90u3OPCkTVW8VxPj6yot0EoGouT8+v1HA+U2kQAOfIPa7jWdAYRedPQb6
-	f/Cby52fM3xV5haVWtjhHnd8LQgmYJXQnBqp8vqAabg==
-X-Gm-Gg: AfdE7cmLp3IU4UsW+0lThcPG56rtD4Dggj5+MEiufKzAMivY0OhtWRIsrbTSRVtz0ZG
-	ps4joY7pBgglsNqP2yGd9eRhWKBFG0NhoPmzOAwBOtaBGT8xDTfrl6BK0wrk0cWJUQ3PET1ocXY
-	uG1CAanXJ+QZZBXOrwY66w0j9cOOBtLcT8mPxlRq9xze3xUfPxSLtP4F5xcFCb4UIdodlFYHcSJ
-	7Y1wJZcbtIgdEkoBMIXT4sJcP/5HO3sopnZNXZVhxtZ9xwX8EeAl6kujt5t6DbNhGvjEh91B8dz
-	zcnsJfK1nrNxCBxHnOUq8qtIA3oLKeTQs0mt3db7fbiVC+s2NBdgL5NHqSqRN2dAhZMCvTzq0uA
-	wk3xN+yaZVdhmhhf7O1TgXL1jyQ==
-X-Received: by 2002:a05:600c:a47:b0:493:c83b:50d7 with SMTP id
- 5b1f17b1804b1-493fa5ebd55mr76298675e9.6.1783947478052; Mon, 13 Jul 2026
- 05:57:58 -0700 (PDT)
+	id 1wjH98-00000009SrM-0kaC;
+	Mon, 13 Jul 2026 13:56:34 +0000
+Received: from foss.arm.com ([217.140.110.172])
+	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
+	id 1wjH96-00000009SqN-0i7z;
+	Mon, 13 Jul 2026 13:56:33 +0000
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id E30B71576;
+	Mon, 13 Jul 2026 06:56:24 -0700 (PDT)
+Received: from e129823.cambridge.arm.com (e129823.arm.com [10.2.213.3])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id EC1153F7B4;
+	Mon, 13 Jul 2026 06:56:16 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1783950989; bh=a803yHhNKkzlLM5udi9zzm2zAj+wvACzTi3ySnyKLew=;
+	h=From:To:Cc:Subject:Date:From;
+	b=jgMpd1XNQv71U7DXeJ1h7jnvieXwYpoUFE20Nk1qreF39M5EDswShoN8YI1iYonao
+	 mpbbq893Ohfpd/mgYuCRux/Rcp6Kx9soqI0ZGO7Z8o4N5y6pRlcAocE+2YLNFetElg
+	 7W3XeJO4AuPs2v4nW1+sFx6aMUzfa+PGz771bJow=
+From: Yeoreum Yun <yeoreum.yun@arm.com>
+To: linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	loongarch@lists.linux.dev,
+	linux-mips@vger.kernel.org,
+	linux-arch@vger.kernel.org,
+	kvm-riscv@lists.infradead.org,
+	linux-riscv@lists.infradead.org,
+	x86@kernel.org,
+	linux-mm@kvack.org,
+	kasan-dev@googlegroups.com,
+	linux-csky@vger.kernel.org,
+	linux-m68k@lists.linux-m68k.org,
+	linux-openrisc@vger.kernel.org
+Cc: david@kernel.org,
+	linux@armlinux.org.uk,
+	akpm@linux-foundation.org,
+	ankur.a.arora@oracle.com,
+	rppt@kernel.org,
+	linmag7@gmail.com,
+	chleroy@kernel.org,
+	klarasmodin@gmail.com,
+	chenhuacai@kernel.org,
+	kernel@xen0n.name,
+	kas@kernel.org,
+	zhangtianyang@loongson.cn,
+	wangyuli@aosc.io,
+	tsbogend@alpha.franken.de,
+	ljs@kernel.org,
+	jgg@ziepe.ca,
+	catalin.marinas@arm.com,
+	will@kernel.org,
+	arnd@arndb.de,
+	ryan.roberts@arm.com,
+	pasha.tatashin@soleen.com,
+	rmclure@linux.ibm.com,
+	baolin.wang@linux.alibaba.com,
+	tj@kernel.org,
+	kevin.brodsky@arm.com,
+	anup@brainfault.org,
+	atish.patra@linux.dev,
+	pjw@kernel.org,
+	palmer@dabbelt.com,
+	aou@eecs.berkeley.edu,
+	alex@ghiti.fr,
+	dave.hansen@linux.intel.com,
+	luto@kernel.org,
+	peterz@infradead.org,
+	tglx@kernel.org,
+	mingo@redhat.com,
+	bp@alien8.de,
+	hpa@zytor.com,
+	hannes@cmpxchg.org,
+	mhocko@kernel.org,
+	qi.zheng@linux.dev,
+	shakeel.butt@linux.dev,
+	kasong@tencent.com,
+	baohua@kernel.org,
+	axelrasmussen@google.com,
+	yuanchu@google.com,
+	weixugc@google.com,
+	ryabinin.a.a@gmail.com,
+	glider@google.com,
+	andreyknvl@gmail.com,
+	dvyukov@google.com,
+	vincenzo.frascino@arm.com,
+	anshuman.khandual@arm.com,
+	yang@os.amperecomputing.com,
+	chaitanyas.prakash@arm.com,
+	ardb@kernel.org,
+	guoren@kernel.org,
+	yang.li85200@gmail.com,
+	viro@zeniv.linux.org.uk,
+	dinguyen@kernel.org,
+	schuster.simon@siemens-energy.com,
+	wangruikang@iscas.ac.cn,
+	junhui.liu@pigmoral.tech,
+	muchun.song@linux.dev,
+	vishal.moola@gmail.com,
+	namcao@linutronix.de,
+	pavel@kernel.org,
+	djbw@kernel.org,
+	yu-cheng.yu@intel.com,
+	baolu.lu@linux.intel.com,
+	Jonathan.Cameron@huawei.com,
+	coxu@redhat.com,
+	andreas@gaisler.com,
+	liam@infradead.org,
+	vbabka@kernel.org,
+	surenb@google.com,
+	mhocko@suse.com,
+	geert@linux-m68k.org,
+	shorne@gmail.com,
+	jonas@southpole.se,
+	stefan.kristiansson@saunalahti.fi,
+	Yeoreum Yun <yeoreum.yun@arm.com>
+Subject: [RFC PATCH 00/34] mm: optimize unnecessary loads due to ptep_get() and friends out
+Date: Mon, 13 Jul 2026 14:55:39 +0100
+Message-ID: <20260713135614.1618183-1-yeoreum.yun@arm.com>
+X-Mailer: git-send-email 2.43.0
 MIME-Version: 1.0
-References: <20260706181522.2003922-1-anup.patel@oss.qualcomm.com>
-In-Reply-To: <20260706181522.2003922-1-anup.patel@oss.qualcomm.com>
-From: Anup Patel <anup@brainfault.org>
-Date: Mon, 13 Jul 2026 18:27:46 +0530
-X-Gm-Features: AUfX_mznFq7jX5befSvsp60hLHfBrfMBiRvyp7t191jwa3YkScOz4hbTAguUPZ4
-Message-ID: <CAAhSdy2Z1Rm+pFsv=SV8p9ZoYcu5uZNb1ihjYi46L3uQV2MHtA@mail.gmail.com>
-Subject: Re: [PATCH v3] RISC-V: KVM: Zicbo[m|z|p] block sizes should be always
- present in ONE_REG
-To: Anup Patel <anup.patel@oss.qualcomm.com>
-Cc: Paolo Bonzini <pbonzini@redhat.com>, Atish Patra <atish.patra@linux.dev>, 
-	Andrew Jones <andrew.jones@oss.qualcomm.com>, kvm-riscv@lists.infradead.org, 
-	kvm@vger.kernel.org, linux-riscv@lists.infradead.org
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260713_055800_147161_782A62A1 
-X-CRM114-Status: GOOD (  21.91  )
+X-CRM114-CacheID: sfid-20260713_065632_306254_A9194F6B 
+X-CRM114-Status: GOOD (  16.67  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -115,104 +153,225 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-T24gTW9uLCBKdWwgNiwgMjAyNiBhdCAxMTo0NeKAr1BNIEFudXAgUGF0ZWwgPGFudXAucGF0ZWxA
-b3NzLnF1YWxjb21tLmNvbT4gd3JvdGU6Cj4KPiBBbGwgY29uZmlnIGFuZCBjb3JlIHJlZ2lzdGVy
-cyBvZiB0aGUgS1ZNIFJJU0MtViBPTkVfUkVHIGludGVyZmFjZSBhcmUKPiBleHBlY3RlZCB0byBi
-ZSBhbHdheXMgYXZhaWxhYmxlIHRvIHRoZSBLVk0gdXNlci1zcGFjZSBhbmQgdGhlIEtWTQo+IGdl
-dC1yZWctbGlzdCBzZWxmdGVzdCBhc3N1bWVzIHRoZXNlIHJlZ2lzdGVycyB0byBiZSBhcyBiYXNl
-IHJlZ2lzdGVycy4KPgo+IEN1cnJlbnRseSwgdGhlIFppY2JvW218enxwXSBibG9jayBzaXplIGNv
-bmZpZyByZWdpc3RlcnMgYXJlIG9ubHkKPiBhdmFpbGFibGUgd2hlbiBjb3JyZXNwb25kaW5nIElT
-QSBleHRlbnNpb24gaXMgcHJlc2VudCBvbiB0aGUgaG9zdAo+IHdoaWNoIGJyZWFrcyB0aGUgYWJv
-dmUgZXhwZWN0YXRpb24uIEluIGZhY3QsIEtWTSBnZXQtcmVnLWxpc3Qgc2VsZnRlc3QKPiBmYWls
-cyB3aGVuIGFueSBvZiB0aGUgWmljYm9bbXx6fHBdIElTQSBleHRlbnNpb24gaXMgbm90IHByZXNl
-bnQgb24KPiBob3N0LiBUbyBhZGRyZXNzIHRoaXMgaXNzdWUsIGRyb3AgdGhlIElTQSBleHRlbnNp
-b24gY2hlY2tzIGZyb20KPiBrdm1fcmlzY3ZfdmNwdV9nZXQvc2V0X3JlZ19jb25maWcoKSBhbmQg
-Y29weV9jb25maWdfcmVnX2luZGljZXMoKQo+IGZ1bmN0aW9ucy4KPgo+IEZpeGVzOiAwMzFmOWVm
-YWZjMDggKCJLVk06IHJpc2N2OiBBZGQgS1ZNX0dFVF9SRUdfTElTVCBBUEkgc3VwcG9ydCIpCj4g
-Rml4ZXM6IGEwNDRlZjcxMDQzZSAoIlJJU0MtVjogS1ZNOiB1c2UgRU5PRU5UIGluICpfb25lX3Jl
-ZygpIHdoZW4gZXh0ZW5zaW9uIGlzIHVuYXZhaWxhYmxlIikKPiBGaXhlczogNDhlMmZlYmNkYTc0
-ICgiUklTQy1WOiBLVk06IFByb3ZpZGUgVUFQSSBmb3IgWmljYm9wIGJsb2NrIHNpemUiKQo+IEZp
-eGVzOiBjZjA1YjA1OWQ1OWYgKCJSSVNDLVY6IEtWTTogSW50cm9kdWNlIGNvbW1vbiBrdm1fcmlz
-Y3ZfaXNhX2NoZWNrX2hvc3QoKSIpCj4gU2lnbmVkLW9mZi1ieTogQW51cCBQYXRlbCA8YW51cC5w
-YXRlbEBvc3MucXVhbGNvbW0uY29tPgoKUXVldWVkIHRoaXMgcGF0Y2ggYXMgYSBmaXggZm9yIExp
-bnV4LTcuMi1yY1gKClRoYW5rcywKQW51cAoKPiAtLS0KPiBDaGFuZ2VzIHNpbmNlIHYyOgo+ICAt
-IFVwZGF0ZSBrdm1fcmlzY3ZfdmNwdV9zZXRfcmVnX2NvbmZpZygpIHRvIHJldHVybiAtRUlOVkFM
-Cj4gICAgb25seSB3aGVuIHZhbHVlIGlzIG5vbi16ZXJvIGFuZCBkb2VzIG5vdCBtYXRjaCB1bmRl
-cmx5aW5nCj4gICAgaG9zdCBjYWNoZSBibG9jayBzaXplLgo+IENoYW5nZXMgc2luY2UgdjE6Cj4g
-IC0gVXBkYXRlIGt2bV9yaXNjdl92Y3B1X3NldF9yZWdfY29uZmlnKCkgdG8gcmV0dXJuIC1FSU5W
-QUwKPiAgICBvbmx5IHdoZW4gWmljYm9bbXx6fHBdIElTQSBleHRlbnNpb24gaXMgZW5hYmxlZCBm
-b3IgVkNQVQo+IC0tLQo+ICBhcmNoL3Jpc2N2L2t2bS92Y3B1X29uZXJlZy5jIHwgMzggKysrKysr
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCj4gIDEgZmlsZSBjaGFuZ2VkLCA2IGluc2Vy
-dGlvbnMoKyksIDMyIGRlbGV0aW9ucygtKQo+Cj4gZGlmZiAtLWdpdCBhL2FyY2gvcmlzY3Yva3Zt
-L3ZjcHVfb25lcmVnLmMgYi9hcmNoL3Jpc2N2L2t2bS92Y3B1X29uZXJlZy5jCj4gaW5kZXggYmI5
-MjBlODkyM2M5Li42MTk4ODM4MjU3MGYgMTAwNjQ0Cj4gLS0tIGEvYXJjaC9yaXNjdi9rdm0vdmNw
-dV9vbmVyZWcuYwo+ICsrKyBiL2FyY2gvcmlzY3Yva3ZtL3ZjcHVfb25lcmVnLmMKPiBAQCAtNTAs
-MTkgKzUwLDEzIEBAIHN0YXRpYyBpbnQga3ZtX3Jpc2N2X3ZjcHVfZ2V0X3JlZ19jb25maWcoc3Ry
-dWN0IGt2bV92Y3B1ICp2Y3B1LAo+ICAgICAgICAgICAgICAgICByZWdfdmFsID0gdmNwdS0+YXJj
-aC5pc2FbMF0gJiBLVk1fUklTQ1ZfQkFTRV9JU0FfTUFTSzsKPiAgICAgICAgICAgICAgICAgYnJl
-YWs7Cj4gICAgICAgICBjYXNlIEtWTV9SRUdfUklTQ1ZfQ09ORklHX1JFRyh6aWNib21fYmxvY2tf
-c2l6ZSk6Cj4gLSAgICAgICAgICAgICAgIGlmIChrdm1fcmlzY3ZfaXNhX2NoZWNrX2hvc3QoWklD
-Qk9NKSkKPiAtICAgICAgICAgICAgICAgICAgICAgICByZXR1cm4gLUVOT0VOVDsKPiAtICAgICAg
-ICAgICAgICAgcmVnX3ZhbCA9IHJpc2N2X2Nib21fYmxvY2tfc2l6ZTsKPiArICAgICAgICAgICAg
-ICAgcmVnX3ZhbCA9IChrdm1fcmlzY3ZfaXNhX2NoZWNrX2hvc3QoWklDQk9NKSkgPyAwIDogcmlz
-Y3ZfY2JvbV9ibG9ja19zaXplOwo+ICAgICAgICAgICAgICAgICBicmVhazsKPiAgICAgICAgIGNh
-c2UgS1ZNX1JFR19SSVNDVl9DT05GSUdfUkVHKHppY2Jvel9ibG9ja19zaXplKToKPiAtICAgICAg
-ICAgICAgICAgaWYgKGt2bV9yaXNjdl9pc2FfY2hlY2tfaG9zdChaSUNCT1opKQo+IC0gICAgICAg
-ICAgICAgICAgICAgICAgIHJldHVybiAtRU5PRU5UOwo+IC0gICAgICAgICAgICAgICByZWdfdmFs
-ID0gcmlzY3ZfY2Jvel9ibG9ja19zaXplOwo+ICsgICAgICAgICAgICAgICByZWdfdmFsID0gKGt2
-bV9yaXNjdl9pc2FfY2hlY2tfaG9zdChaSUNCT1opKSA/IDAgOiByaXNjdl9jYm96X2Jsb2NrX3Np
-emU7Cj4gICAgICAgICAgICAgICAgIGJyZWFrOwo+ICAgICAgICAgY2FzZSBLVk1fUkVHX1JJU0NW
-X0NPTkZJR19SRUcoemljYm9wX2Jsb2NrX3NpemUpOgo+IC0gICAgICAgICAgICAgICBpZiAoa3Zt
-X3Jpc2N2X2lzYV9jaGVja19ob3N0KFpJQ0JPUCkpCj4gLSAgICAgICAgICAgICAgICAgICAgICAg
-cmV0dXJuIC1FTk9FTlQ7Cj4gLSAgICAgICAgICAgICAgIHJlZ192YWwgPSByaXNjdl9jYm9wX2Js
-b2NrX3NpemU7Cj4gKyAgICAgICAgICAgICAgIHJlZ192YWwgPSAoa3ZtX3Jpc2N2X2lzYV9jaGVj
-a19ob3N0KFpJQ0JPUCkpID8gMCA6IHJpc2N2X2Nib3BfYmxvY2tfc2l6ZTsKPiAgICAgICAgICAg
-ICAgICAgYnJlYWs7Cj4gICAgICAgICBjYXNlIEtWTV9SRUdfUklTQ1ZfQ09ORklHX1JFRyhtdmVu
-ZG9yaWQpOgo+ICAgICAgICAgICAgICAgICByZWdfdmFsID0gdmNwdS0+YXJjaC5tdmVuZG9yaWQ7
-Cj4gQEAgLTE0NCwyMSArMTM4LDE1IEBAIHN0YXRpYyBpbnQga3ZtX3Jpc2N2X3ZjcHVfc2V0X3Jl
-Z19jb25maWcoc3RydWN0IGt2bV92Y3B1ICp2Y3B1LAo+ICAgICAgICAgICAgICAgICB9Cj4gICAg
-ICAgICAgICAgICAgIGJyZWFrOwo+ICAgICAgICAgY2FzZSBLVk1fUkVHX1JJU0NWX0NPTkZJR19S
-RUcoemljYm9tX2Jsb2NrX3NpemUpOgo+IC0gICAgICAgICAgICAgICBpZiAoa3ZtX3Jpc2N2X2lz
-YV9jaGVja19ob3N0KFpJQ0JPTSkpCj4gLSAgICAgICAgICAgICAgICAgICAgICAgcmV0dXJuIC1F
-Tk9FTlQ7Cj4gLSAgICAgICAgICAgICAgIGlmIChyZWdfdmFsICE9IHJpc2N2X2Nib21fYmxvY2tf
-c2l6ZSkKPiArICAgICAgICAgICAgICAgaWYgKHJlZ192YWwgJiYgcmVnX3ZhbCAhPSByaXNjdl9j
-Ym9tX2Jsb2NrX3NpemUpCj4gICAgICAgICAgICAgICAgICAgICAgICAgcmV0dXJuIC1FSU5WQUw7
-Cj4gICAgICAgICAgICAgICAgIGJyZWFrOwo+ICAgICAgICAgY2FzZSBLVk1fUkVHX1JJU0NWX0NP
-TkZJR19SRUcoemljYm96X2Jsb2NrX3NpemUpOgo+IC0gICAgICAgICAgICAgICBpZiAoa3ZtX3Jp
-c2N2X2lzYV9jaGVja19ob3N0KFpJQ0JPWikpCj4gLSAgICAgICAgICAgICAgICAgICAgICAgcmV0
-dXJuIC1FTk9FTlQ7Cj4gLSAgICAgICAgICAgICAgIGlmIChyZWdfdmFsICE9IHJpc2N2X2Nib3pf
-YmxvY2tfc2l6ZSkKPiArICAgICAgICAgICAgICAgaWYgKHJlZ192YWwgJiYgcmVnX3ZhbCAhPSBy
-aXNjdl9jYm96X2Jsb2NrX3NpemUpCj4gICAgICAgICAgICAgICAgICAgICAgICAgcmV0dXJuIC1F
-SU5WQUw7Cj4gICAgICAgICAgICAgICAgIGJyZWFrOwo+ICAgICAgICAgY2FzZSBLVk1fUkVHX1JJ
-U0NWX0NPTkZJR19SRUcoemljYm9wX2Jsb2NrX3NpemUpOgo+IC0gICAgICAgICAgICAgICBpZiAo
-a3ZtX3Jpc2N2X2lzYV9jaGVja19ob3N0KFpJQ0JPUCkpCj4gLSAgICAgICAgICAgICAgICAgICAg
-ICAgcmV0dXJuIC1FTk9FTlQ7Cj4gLSAgICAgICAgICAgICAgIGlmIChyZWdfdmFsICE9IHJpc2N2
-X2Nib3BfYmxvY2tfc2l6ZSkKPiArICAgICAgICAgICAgICAgaWYgKHJlZ192YWwgJiYgcmVnX3Zh
-bCAhPSByaXNjdl9jYm9wX2Jsb2NrX3NpemUpCj4gICAgICAgICAgICAgICAgICAgICAgICAgcmV0
-dXJuIC1FSU5WQUw7Cj4gICAgICAgICAgICAgICAgIGJyZWFrOwo+ICAgICAgICAgY2FzZSBLVk1f
-UkVHX1JJU0NWX0NPTkZJR19SRUcobXZlbmRvcmlkKToKPiBAQCAtNjE0LDIwICs2MDIsNiBAQCBz
-dGF0aWMgaW50IGNvcHlfY29uZmlnX3JlZ19pbmRpY2VzKGNvbnN0IHN0cnVjdCBrdm1fdmNwdSAq
-dmNwdSwKPiAgICAgICAgICAgICAgICAgdTY0IHNpemU7Cj4gICAgICAgICAgICAgICAgIHU2NCBy
-ZWc7Cj4KPiAtICAgICAgICAgICAgICAgLyoKPiAtICAgICAgICAgICAgICAgICogQXZvaWQgcmVw
-b3J0aW5nIGNvbmZpZyByZWcgaWYgdGhlIGNvcnJlc3BvbmRpbmcgZXh0ZW5zaW9uCj4gLSAgICAg
-ICAgICAgICAgICAqIHdhcyBub3QgYXZhaWxhYmxlLgo+IC0gICAgICAgICAgICAgICAgKi8KPiAt
-ICAgICAgICAgICAgICAgaWYgKGkgPT0gS1ZNX1JFR19SSVNDVl9DT05GSUdfUkVHKHppY2JvbV9i
-bG9ja19zaXplKSAmJgo+IC0gICAgICAgICAgICAgICAgICAga3ZtX3Jpc2N2X2lzYV9jaGVja19o
-b3N0KFpJQ0JPTSkpCj4gLSAgICAgICAgICAgICAgICAgICAgICAgY29udGludWU7Cj4gLSAgICAg
-ICAgICAgICAgIGVsc2UgaWYgKGkgPT0gS1ZNX1JFR19SSVNDVl9DT05GSUdfUkVHKHppY2Jvel9i
-bG9ja19zaXplKSAmJgo+IC0gICAgICAgICAgICAgICAgICAgICAgICBrdm1fcmlzY3ZfaXNhX2No
-ZWNrX2hvc3QoWklDQk9aKSkKPiAtICAgICAgICAgICAgICAgICAgICAgICBjb250aW51ZTsKPiAt
-ICAgICAgICAgICAgICAgZWxzZSBpZiAoaSA9PSBLVk1fUkVHX1JJU0NWX0NPTkZJR19SRUcoemlj
-Ym9wX2Jsb2NrX3NpemUpICYmCj4gLSAgICAgICAgICAgICAgICAgICAgICAgIGt2bV9yaXNjdl9p
-c2FfY2hlY2tfaG9zdChaSUNCT1ApKQo+IC0gICAgICAgICAgICAgICAgICAgICAgIGNvbnRpbnVl
-Owo+IC0KPiAgICAgICAgICAgICAgICAgc2l6ZSA9IElTX0VOQUJMRUQoQ09ORklHXzMyQklUKSA/
-IEtWTV9SRUdfU0laRV9VMzIgOiBLVk1fUkVHX1NJWkVfVTY0Owo+ICAgICAgICAgICAgICAgICBy
-ZWcgPSBLVk1fUkVHX1JJU0NWIHwgc2l6ZSB8IEtWTV9SRUdfUklTQ1ZfQ09ORklHIHwgaTsKPgo+
-IC0tCj4gMi40My4wCj4KCi0tIAprdm0tcmlzY3YgbWFpbGluZyBsaXN0Cmt2bS1yaXNjdkBsaXN0
-cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGlu
-Zm8va3ZtLXJpc2N2Cg==
+Using ptep_get() and its counterparts in common code is suboptimal on
+kernel configurations with generic compile-time folded page tables.
+By default, ptep_get() and its friends expands to READ_ONCE(),
+forcing the compiler to emit a load even when the value is not used afterwards.
+
+This issue was recently reported by Christophe Leroy [1] for ppc32
+preventing futher code conversion to ptep_get()/pmdp_get()/... helper
+and the same behavior can also be observed on arm64 when built with
+2- or 3-level page tables
+
+e.g) perf_get_page_size() in arm64 with CONFIG_PGTABLE_LEVEL=3:
+
+00000000000052a0 <perf_get_page_size>:
+    ...
+    52dc: d53b4234     	mrs	x20, DAIF
+    52e0: d50343df     	msr	DAIFSet, #0x3
+    ...
+    52fc: d35e9a69     	ubfx	x9, x19, #30, #9        /* pud_offset_lockless() */
+    5300: f9403508     	ldr	x8, [x8, #0x68]
+    5304: f869790a     	ldr	x10, [x8, x9, lsl #3]   /* pudp_get() */
+    5308: f90007ea     	str	x10, [sp, #0x8]
+    530c: f8697908     	ldr	x8, [x8, x9, lsl #3]    /* pudp_get() */
+    ...
+    5360: 90000009     	adrp	x9, 0x5000 <perf_prepare_sample+0x548>
+    5364: 92746908     	and	x8, x8, #0x7ffffff000
+    5368: d3557675     	ubfx	x21, x19, #21, #9       /* pmd_offset_lockless() */
+    ...
+    5394: f8757ac8     	ldr	x8, [x22, x21, lsl #3]  /* pmdp_get() */
+
+Though PGTABLE_LEVEL=3, since the pudp_get() still remain with
+READ_ONCE(), there's redundant load for the pud which is folded.
+
+To prevent generating suboptimal code, define dummy pXdp_get() and
+pXd_offset_lockless() in the pgtable-nopXd.h to handle folded page tables
+properly.
+
+As the pXdp_get() can return *dummy* entry, some of code using
+the stack value where saves the pXdp_get() could be a problematic:
+
+  1. Passing address of stack value where saves the pXdp_get() result
+     to pXd_offset() for example:
+
+       pud_t *pudp, pud;
+       pmd_t *pmdp;
+
+       pud = pudp_get(pudp, address);
+       pmdp = pmd_offset(&pud, pud, address);
+
+     (e.g. host_pfn_mapping_level() in loongarch).
+
+  2. Using the pXdp_get() result to use as argument of pXd_val() and
+     to check prot without checking pgtable is folded.
+     for example, x86's effective_prot().
+
+  3. Using set_pXd() with pXdp_get() will set problematic dummy entry
+     in folded page table like:
+
+       set_pXd(pxdp, pXdp_get(pxdp_k));
+
+     To prevent this, Let set_pXd() triggers the compile error
+     to catch the wrong usage of set_pXd() in the generic compile-time
+     folded page table and change the set_pgd() usage to set the
+     first-level page table with the proper set_pXd().
+
+  4. Using pgd_page_vaddr() to get the first-level pgtable.
+     passing dummy pxdp_get() for pgd_page_vaddr() will return wrong
+     address. Therefore, make pgd_page_vaddr() and pXd_pgtable() to
+     trigger the error for improper usage in the generic compile-time
+     folded pgtable.
+
+Thanksfully, above cases are rare since (1) most of usage using
+pXd_offset() with result of upper pXd_offset(), (2) it's extreamely
+rare to use pXd_val() for non-leaf entry in the kernel,
+(3) is to handle the vmalloc_fault or set the first level of page table
+and (4) to setup early page table and etc.
+
+Therefore, convert this kind of problematic rare pattern properly.
+
+Furthermore, passing the ptep_get() (or its counterparts) as argument
+directly to pte_present() and related helpers can generate suboptimal code,
+in arm64 as the current macro implementation may evaluate its argument
+more than once like:
+
+  !pte_val(READ_ONCE(*pte) || pte_present_invalid(READ_ONCE(*pte))
+
+resulting in redundant loads.
+
+A typical example is pud_free_pmd_page(), where the expansion of
+pmd_present() generates:
+    ...
+    /* pmd_present() (x20 = pmdp) */
+    1b88: f9400288     ldr	x8, [x20]        // read pmdp.
+    1b8c: f9000fa8     str	x8, [x29, #0x18]
+    1b90: 3707fec8     tbnz	w8, #0x0, 0x1b68 <pud_free_pmd_page+0xd0>
+    1b94: f9400288     ldr	x8, [x20]        // redundant read of pmdp.
+    1b98: 8a170109     and	x9, x8, x23
+    1b9c: f9000fa8     str	x8, [x29, #0x18]
+    1ba0: f120013f     cmp	x9, #0x800
+    1ba4: 54fffe20     b.eq	0x1b68 <pud_free_pmd_page+0xd0>
+    1ba8: 17fffff4     b	0x1b78 <pud_free_pmd_page+0xe0>
+    ...
+
+To address this in arm64, convert pte_present() macro and its friends
+to static inline function.
+
+Future work
+===========
+ - print_bad_page_map() and show_pte() still prints dummy values
+   instead of printing the same content for all generic compile-time
+   folded page tables. We might want to skip printing dummy values later.
+
+ - We currently catch abuse of dummy values on the stack at compile-time by
+   relying on constant propagation by the compiler. Usama's work [3] on using
+   distinct types for sw vs. hw PTEs could help here as well."
+
+Link: [1] https://lore.kernel.org/all/0019d675-ce3d-4a5c-89ed-f126c45145c9@kernel.org/
+Link: [2] https://lore.kernel.org/all/20251113014656.2605447-1-samuel.holland@sifive.com/
+Link: [3] https://lore.kernel.org/r/74182e50-b54f-4d2d-a27f-3a59a538d6bc@arm.com
+
+David Hildenbrand (Arm) (13):
+  ARM: mm: make nommu pgd_t a scalar
+  ARM: mm: make 2-level pgd_t a scalar
+  ARM: mm: remove custom pgdp_get()
+  LoongArch: mm: define pud_leaf() only when PUD exists
+  MIPS: mm: define pud_leaf() only when PUD exists
+  mm/pgtable: define (pgd|p4d|pud)_leaf() for folded page tables
+  mm/pgtable: define (pgd|p4d|pud)_offset_lockless() for folded page
+    tables
+  x86: mm: carve out the generic compile-time folded pgtable case in
+    effective_prot()
+  mm/pgtable: disallow calling folded set_pgd/set_p4d/set_pud
+  mm/pgtable: disallow calling folded (pgd|p4d|pud)_page,
+    pgd_page_vaddr() and (p4d|pud)_pgtable
+  mm/pgtable: optimize pmdp_get() and friends for folded pagetable
+    levels
+  openrisc/pgtable: drop __pmd_offset()
+  mm/pgtable: catch abuse of folded dummy pgd_t/p4d_t/pud_t
+
+Yeoreum Yun (21):
+  loongarch: kvm: remove stack copy address of pXd in pXd_offset()
+  riscv: kvm: remove stack copy address of pXd in pXd_offset()
+  mm: vmscan: remove stack copy address of pud pass in wallk_pud_range()
+  arm64: mm: use proper set_pXd() for generic compile-time folded
+    patable in kasan_early_init()
+  arm64: mm: define pud_set_huge() when __PGTABLE_PMD_FOLDED not defined
+  csky: mm: use proper set_pXd() for generic compile-time folded patable
+    in vmalloc_fault()
+  mips: mm: use proper set_pXd() for generic compile-time folded patable
+    in vmalloc_fault path
+  nios2: mm: use proper set_pXd() for generic compile-time folded
+    patable in vmalloc_fault path
+  riscv: mm: use proper set_pXd() for generic compile-time folded
+    patable in vmalloc_fault()
+  riscv: mm: use proper set_pXd() for generic compile-time folded
+    patable in setup_vm_final()
+  x86: power: use proper set_pXd() for generic compile-time folded
+    patable in resume_one_md_table_init()
+  x86: kexec: use proper set_pXd() for generic compile-time folded
+    patable in machine_kexec_page_table_set_one()
+  x86: platform: use proper set_pXd() for generic compile-time folded
+    patable in setup_olpc_ofw_pgd()
+  x86: mm: use proper set_pXd() for generic compile-time folded patable
+    in one_md_table_init()
+  x86: mm: skip pud setup when using generic compile-time folded
+    pagetable
+  x86: mm: call try_to_free_pmd_page() when CONFIG_PGTABLE_LEVELS > 2
+  x86: mm: remove usage of pgd_page_vaddr() for CONFIG_x86_PAE
+  x86: mm: define pudp_set_access_flags() when
+    CONFIG_HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD is enabled only.
+  m68k: mm: remove usage of pgd_page_vaddr() for CONFIG_PGTABLE_LEVELS=3
+  arm: mm: use proper pgtable APIs for generic compile-time folded
+    patable in kasan_init()
+  arm64: pgtable: convert pte_present() from macro to static inline
+
+ arch/arm/include/asm/page-nommu.h           |  4 +-
+ arch/arm/include/asm/pgtable-2level-types.h | 13 ++++--
+ arch/arm/include/asm/pgtable.h              |  2 -
+ arch/arm/mm/kasan_init.c                    |  8 ++--
+ arch/arm64/include/asm/pgtable.h            | 35 ++++----------
+ arch/arm64/mm/kasan_init.c                  | 26 ++++++++++-
+ arch/arm64/mm/mmu.c                         |  2 +
+ arch/csky/mm/fault.c                        | 35 +++++---------
+ arch/loongarch/include/asm/pgtable.h        |  2 +
+ arch/loongarch/kvm/mmu.c                    | 20 ++++----
+ arch/m68k/mm/init.c                         |  2 +-
+ arch/m68k/mm/motorola.c                     |  2 +-
+ arch/mips/include/asm/pgtable.h             |  2 +
+ arch/mips/mm/fault.c                        | 13 ++++--
+ arch/nios2/mm/fault.c                       | 36 +++++---------
+ arch/openrisc/include/asm/pgtable.h         |  3 --
+ arch/riscv/kvm/mmu.c                        | 20 ++++----
+ arch/riscv/mm/fault.c                       | 52 +++++++++++++--------
+ arch/riscv/mm/init.c                        |  7 ++-
+ arch/x86/kernel/machine_kexec_32.c          |  8 ++--
+ arch/x86/mm/dump_pagetables.c               | 18 ++++++-
+ arch/x86/mm/init_32.c                       | 10 ++--
+ arch/x86/mm/pat/set_memory.c                |  9 ++--
+ arch/x86/mm/pgtable.c                       | 43 ++++++++++-------
+ arch/x86/platform/olpc/olpc_ofw.c           |  5 +-
+ arch/x86/power/hibernate_32.c               | 14 ++----
+ include/asm-generic/pgtable-nop4d.h         | 45 ++++++++++++++----
+ include/asm-generic/pgtable-nopmd.h         | 46 +++++++++++++-----
+ include/asm-generic/pgtable-nopud.h         | 46 ++++++++++++++----
+ include/linux/pgtable.h                     |  5 ++
+ mm/vmscan.c                                 |  2 +-
+ 31 files changed, 329 insertions(+), 206 deletions(-)
+
+
+base-commit: bdc38bfc1262e3d1432afadd2aa2ffd83d139dbb
+-- 
+LEVI:{C3F47F37-75D8-414A-A8BA-3980EC8A46D7}
+
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
