@@ -4,40 +4,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1E006C44507
-	for <kvm-riscv@archiver.kernel.org>; Mon, 13 Jul 2026 14:02:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 95DB3C43458
+	for <kvm-riscv@archiver.kernel.org>; Mon, 13 Jul 2026 14:02:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=SKxmTEhUdWG7EeGGrDA+PS/i0gmxD8lfj+JP/Jq2SZc=; b=2aI+gifok6VUZ0
-	F3GrpAaLI2JbxwU9JaVbs3ueVoDMk2dyw0QtYyVaQ7VzzUMqQmhitANdyxpiV2ZD7iPbICQj04nya
-	LzrkVOJG37wCFU6nCGUH9JVFokN5JPfI+Tl3bt3ROtwf40xpmg9j63x866uxFDxC5A9vEWdePAPhc
-	tFSobzwvIgF0rcpEG7dVE5f9aaB3gK+Dsam/TbOEK2oYnrsQaTDyx75xK3GpQC6zWK8g2kRqipoYB
-	yKUh5itaBFqu8+a+/8o0J3eKn47y/xT+jmhYNiBITlFI1W1vwjcukVdQn4j/0tvreHyfy5guj/BPD
-	srEufUoUmigXz8IqYxXQ==;
+	List-Owner; bh=597q57bEphjRsdsR8bhDUBbSruurewaB+cnYFVrOvW0=; b=IWEhFE9W5v5iqm
+	+HvCcvCZfyyrP1xV1NiVD15//680VyhmwmQYEw8nRc+EDw8TUfVnHTwnSfQhYSsQJ6zHDCvhGy/TX
+	jjLNF1ov2L9FFxCqssbXFHrHa8SjTrlLjCvkng6Rxj8HL/8180QGqq0rucmd27QdShjxhCTPSp5aD
+	ABcqElg16TGXNjV+ggUTlvXFek3AwMhOggosPQFBEkdCYXPf3erYaRyYFjh96Kz5m40MHbmZTWsPW
+	ATg7WXLGtmGwaiMhXYvh6PQVmwPelDG/hdhNGeRgry1f/GBkUQVQbm47TMsIogHXjcTYkx2Dog8Nd
+	9mU0VbElXU3sQITfJwog==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wjHEm-00000009WXi-3bUx;
-	Mon, 13 Jul 2026 14:02:24 +0000
+	id 1wjHEy-00000009WiN-1ZpE;
+	Mon, 13 Jul 2026 14:02:36 +0000
 Received: from foss.arm.com ([217.140.110.172])
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wjHEk-00000009WUq-2748;
-	Mon, 13 Jul 2026 14:02:23 +0000
+	id 1wjHEv-00000009WfT-3NZh;
+	Mon, 13 Jul 2026 14:02:35 +0000
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 4A08822EE;
-	Mon, 13 Jul 2026 07:02:16 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id D18E822FA;
+	Mon, 13 Jul 2026 07:02:28 -0700 (PDT)
 Received: from e129823.cambridge.arm.com (e129823.arm.com [10.2.213.3])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 5A7E43F7B4;
-	Mon, 13 Jul 2026 07:02:08 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id DCD6F3F7B4;
+	Mon, 13 Jul 2026 07:02:20 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1783951340; bh=R7X1v/dPRywnjhTJaufMLIEBeJXmfSh2dxcNZPFXmUk=;
+	t=1783951353; bh=+NT3cTeI21UAw19SApYQa9wvOem7QSZHxFow4rdsqrQ=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=WxYMXM3stJVkarl0onHVvx2q0utHhv+ca4Xh1PjXiaHoLZOx2b9/eB8Jxp+JxfTCS
-	 JW32l7L8LDJYDVsnGOGM14LrM3Sxq9zRru5MUhFjB6zJ107aeayV33c/AAZj7Y2O0H
-	 jsgGeM/V6uNISg+QDgu59hDEB7yZ1lEDilX+MIPI=
+	b=kQi5KYkL3fHUQ5wzM7nbpmj1EtHhLRPjBJnrkYS9Zzqf0kFPLCsSqU6cUypYE4xrs
+	 aDmelYX1ib2gx0LZfNu8Ej1VKfxxq7gw6N5EX8GpuqZWWWG/hmARmOMI4JXrGrMdBC
+	 xRXONdbm0dRfh+5IGK2weG5JUL+Uqhwoup6EF75g=
 From: Yeoreum Yun <yeoreum.yun@arm.com>
 To: linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
@@ -134,16 +134,17 @@ Cc: david@kernel.org,
 	jonas@southpole.se,
 	stefan.kristiansson@saunalahti.fi,
 	Yeoreum Yun <yeoreum.yun@arm.com>
-Subject: [RFC PATCH 28/34] arm: mm: use proper pgtable APIs for generic compile-time folded patable in kasan_init()
-Date: Mon, 13 Jul 2026 14:56:07 +0100
-Message-ID: <20260713135614.1618183-29-yeoreum.yun@arm.com>
+Subject: [RFC PATCH 29/34] mm/pgtable: disallow calling folded set_pgd/set_p4d/set_pud
+Date: Mon, 13 Jul 2026 14:56:08 +0100
+Message-ID: <20260713135614.1618183-30-yeoreum.yun@arm.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260713135614.1618183-1-yeoreum.yun@arm.com>
 References: <20260713135614.1618183-1-yeoreum.yun@arm.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260713_070222_637139_2BE0972B 
-X-CRM114-Status: GOOD (  12.89  )
+X-CRM114-CacheID: sfid-20260713_070233_924513_D3251DDE 
+X-CRM114-Status: UNSURE (   9.14  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -160,70 +161,78 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-We want to rework how set_pXd() and pgd_page_vaddr() behaves for
-generic compile-time folded page tables by disallowing its use and
-triggering a compile-time error when they're used improperly,
-ensuring that the actual first-level pgtable APIs are used instead.
+From: "David Hildenbrand (Arm)" <david@kernel.org>
 
-For this, Replace set_pgd() with set_pud() and pgd_page_vaddr() with pud_pgtable()
-to setup kasan early patable since it used with LPAE and PGTABLE_LEVEL as 3
+The stubs are documented to "doesn't get actually called", which was
+false for a couple of instances.
 
-Since the first page-level is 3 to get a first page-level properly
-introduce new helper pud_off_k() and replace direct dereference of
-first page-table entry with pudp_get().
+The helpers are dangerous, especially with some upcoming changes.
 
-There should be no functional change.
+We made all code compile-out any calls to set_pgd/set_p4d/set_pud for
+folded page tables. So let's make the compiler complain if these helpers
+are abused in wrong context.
 
+Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
 Signed-off-by: Yeoreum Yun <yeoreum.yun@arm.com>
 ---
- arch/arm/mm/kasan_init.c | 8 +++++---
- include/linux/pgtable.h  | 5 +++++
- 2 files changed, 10 insertions(+), 3 deletions(-)
+ include/asm-generic/pgtable-nop4d.h | 7 ++-----
+ include/asm-generic/pgtable-nopmd.h | 6 +-----
+ include/asm-generic/pgtable-nopud.h | 7 ++-----
+ 3 files changed, 5 insertions(+), 15 deletions(-)
 
-diff --git a/arch/arm/mm/kasan_init.c b/arch/arm/mm/kasan_init.c
-index c6625e808bf85..31fa1b11816c7 100644
---- a/arch/arm/mm/kasan_init.c
-+++ b/arch/arm/mm/kasan_init.c
-@@ -211,6 +211,7 @@ void __init kasan_init(void)
- {
- 	phys_addr_t pa_start, pa_end;
- 	u64 i;
-+	pud_t *pudp __maybe_unused;
+diff --git a/include/asm-generic/pgtable-nop4d.h b/include/asm-generic/pgtable-nop4d.h
+index 019c3f074b771..0f3b56deaa165 100644
+--- a/include/asm-generic/pgtable-nop4d.h
++++ b/include/asm-generic/pgtable-nop4d.h
+@@ -28,11 +28,8 @@ static inline bool pgd_leaf(pgd_t pgd)		{ return false; }
  
- 	/*
- 	 * We are going to perform proper setup of shadow memory.
-@@ -230,11 +231,12 @@ void __init kasan_init(void)
- 	/* We need to be in the same PGD or this won't work */
- 	BUILD_BUG_ON(pgd_index(KASAN_SHADOW_START) !=
- 		     pgd_index(KASAN_SHADOW_END));
-+	pudp = pud_off_k(KASAN_SHADOW_START);
- 	memcpy(tmp_pmd_table,
--	       (void*)pgd_page_vaddr(*pgd_offset_k(KASAN_SHADOW_START)),
-+	       (void*)pud_pgtable(pudp_get(pudp)),
- 	       sizeof(tmp_pmd_table));
--	set_pgd(&tmp_pgd_table[pgd_index(KASAN_SHADOW_START)],
--		__pgd(__pa(tmp_pmd_table) | PMD_TYPE_TABLE | L_PGD_SWAPPER));
-+	set_pud(&tmp_pgd_table[pgd_index(KASAN_SHADOW_START)],
-+		__pmd(__pa(tmp_pmd_table) | PMD_TYPE_TABLE | L_PGD_SWAPPER));
- #endif
- 	cpu_switch_mm(tmp_pgd_table, &init_mm);
- 	local_flush_tlb_all();
-diff --git a/include/linux/pgtable.h b/include/linux/pgtable.h
-index 8c093c119e5a8..4962d9764b487 100644
---- a/include/linux/pgtable.h
-+++ b/include/linux/pgtable.h
-@@ -155,6 +155,11 @@ static inline pgd_t *pgd_offset_pgd(pgd_t *pgd, unsigned long address)
-  */
- #define pgd_offset_k(address)		pgd_offset(&init_mm, (address))
- 
-+static inline pud_t *pud_off_k(unsigned long va)
-+{
-+	return pud_offset(p4d_offset(pgd_offset_k(va), va), va);
-+}
+ #define pgd_populate(mm, pgd, p4d)		do { } while (0)
+ #define pgd_populate_safe(mm, pgd, p4d)		do { } while (0)
+-/*
+- * (p4ds are folded into pgds so this doesn't get actually called,
+- * but the define is needed for a generic inline function.)
+- */
+-#define set_pgd(pgdptr, pgdval)	set_p4d((p4d_t *)(pgdptr), (p4d_t) { pgdval })
 +
- /*
-  * In many cases it is known that a virtual address is mapped at PMD or PTE
-  * level, so instead of traversing all the page table levels, we can get a
++#define set_pgd(pgdptr, pgdval)			BUILD_BUG()
+ 
+ static inline p4d_t *p4d_offset(pgd_t *pgd, unsigned long address)
+ {
+diff --git a/include/asm-generic/pgtable-nopmd.h b/include/asm-generic/pgtable-nopmd.h
+index ae2eff44889ac..9d854211a55a5 100644
+--- a/include/asm-generic/pgtable-nopmd.h
++++ b/include/asm-generic/pgtable-nopmd.h
+@@ -38,11 +38,7 @@ static inline void pud_clear(pud_t *pud)	{ }
+ 
+ #define pud_populate(mm, pmd, pte)		do { } while (0)
+ 
+-/*
+- * (pmds are folded into puds so this doesn't get actually called,
+- * but the define is needed for a generic inline function.)
+- */
+-#define set_pud(pudptr, pudval)			set_pmd((pmd_t *)(pudptr), (pmd_t) { pudval })
++#define set_pud(pudptr, pudval)			BUILD_BUG()
+ 
+ static inline pmd_t * pmd_offset(pud_t * pud, unsigned long address)
+ {
+diff --git a/include/asm-generic/pgtable-nopud.h b/include/asm-generic/pgtable-nopud.h
+index 5a2b0a81ae197..aa8a6ce139e47 100644
+--- a/include/asm-generic/pgtable-nopud.h
++++ b/include/asm-generic/pgtable-nopud.h
+@@ -35,11 +35,8 @@ static inline bool p4d_leaf(p4d_t p4d)		{ return false; }
+ 
+ #define p4d_populate(mm, p4d, pud)		do { } while (0)
+ #define p4d_populate_safe(mm, p4d, pud)		do { } while (0)
+-/*
+- * (puds are folded into p4ds so this doesn't get actually called,
+- * but the define is needed for a generic inline function.)
+- */
+-#define set_p4d(p4dptr, p4dval)	set_pud((pud_t *)(p4dptr), (pud_t) { p4dval })
++
++#define set_p4d(p4dptr, p4dval)			BUILD_BUG()
+ 
+ static inline pud_t *pud_offset(p4d_t *p4d, unsigned long address)
+ {
 -- 
 LEVI:{C3F47F37-75D8-414A-A8BA-3980EC8A46D7}
 
