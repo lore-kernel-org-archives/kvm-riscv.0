@@ -4,40 +4,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 95DB3C43458
-	for <kvm-riscv@archiver.kernel.org>; Mon, 13 Jul 2026 14:02:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5FDCDC44501
+	for <kvm-riscv@archiver.kernel.org>; Mon, 13 Jul 2026 14:02:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=597q57bEphjRsdsR8bhDUBbSruurewaB+cnYFVrOvW0=; b=IWEhFE9W5v5iqm
-	+HvCcvCZfyyrP1xV1NiVD15//680VyhmwmQYEw8nRc+EDw8TUfVnHTwnSfQhYSsQJ6zHDCvhGy/TX
-	jjLNF1ov2L9FFxCqssbXFHrHa8SjTrlLjCvkng6Rxj8HL/8180QGqq0rucmd27QdShjxhCTPSp5aD
-	ABcqElg16TGXNjV+ggUTlvXFek3AwMhOggosPQFBEkdCYXPf3erYaRyYFjh96Kz5m40MHbmZTWsPW
-	ATg7WXLGtmGwaiMhXYvh6PQVmwPelDG/hdhNGeRgry1f/GBkUQVQbm47TMsIogHXjcTYkx2Dog8Nd
-	9mU0VbElXU3sQITfJwog==;
+	List-Owner; bh=UVCyb6iriDZO8+szs6iKiOb19pZ5lE689voKhKBTl4o=; b=mNk1A9doKwPBxM
+	AU1pUwfA9TfAd6iYOrsM8t8CGyqw/mIpZRQiHl5MmNeQcw0ZFzd7OpFD/H0835ISXNlkXvUr2c5X5
+	kWuqFomeit50YpvqsUcv+jfsdjQd3/MgCbJ+voMB+ujIZvQ9KhWtc+JbK4HVn8mJ/bA6yocovSUlj
+	v1KoQcRAW99SSlUQO/9L8A6m3gN3nqEdLV/MhoPerFbyq9XSVhsO98f8Q1uedbycRN2iKfShpr+de
+	kQ8BiGCHtAyv9IbvEhgGRbL16WUJSNvXOoCf5j99pvfrG5knmfqe+nDn+cLwtYbIdlM5fGk4Hv41l
+	PwhKlCnLPjMsm6TplBGA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wjHEy-00000009WiN-1ZpE;
-	Mon, 13 Jul 2026 14:02:36 +0000
+	id 1wjHFF-00000009WuJ-0cg9;
+	Mon, 13 Jul 2026 14:02:53 +0000
 Received: from foss.arm.com ([217.140.110.172])
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wjHEv-00000009WfT-3NZh;
-	Mon, 13 Jul 2026 14:02:35 +0000
+	id 1wjHF8-00000009WqB-2J0x;
+	Mon, 13 Jul 2026 14:02:49 +0000
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id D18E822FA;
-	Mon, 13 Jul 2026 07:02:28 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 6B7FD2308;
+	Mon, 13 Jul 2026 07:02:41 -0700 (PDT)
 Received: from e129823.cambridge.arm.com (e129823.arm.com [10.2.213.3])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id DCD6F3F7B4;
-	Mon, 13 Jul 2026 07:02:20 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 6F3783F7B4;
+	Mon, 13 Jul 2026 07:02:33 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1783951353; bh=+NT3cTeI21UAw19SApYQa9wvOem7QSZHxFow4rdsqrQ=;
+	t=1783951365; bh=bIKoPb0bNMxSfp09kSEpc6GfFg6xieua9pE2L9NCvH0=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=kQi5KYkL3fHUQ5wzM7nbpmj1EtHhLRPjBJnrkYS9Zzqf0kFPLCsSqU6cUypYE4xrs
-	 aDmelYX1ib2gx0LZfNu8Ej1VKfxxq7gw6N5EX8GpuqZWWWG/hmARmOMI4JXrGrMdBC
-	 xRXONdbm0dRfh+5IGK2weG5JUL+Uqhwoup6EF75g=
+	b=WULz4y4YGBEo8OxYiDQxjd3ysksN4y37aXjVMj1APMpW6oYyyzlT2yQ9xycWe8eq1
+	 JbXFkQQYvjUOrSyYV49ZYubVKBtMB+ARWadXw+OMlzoS2V4DZrO9+UJT10fnE4iycW
+	 mu1W2yH62wJX/KyaBePfncLl5wroe1c443crwqTc=
 From: Yeoreum Yun <yeoreum.yun@arm.com>
 To: linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
@@ -134,16 +134,16 @@ Cc: david@kernel.org,
 	jonas@southpole.se,
 	stefan.kristiansson@saunalahti.fi,
 	Yeoreum Yun <yeoreum.yun@arm.com>
-Subject: [RFC PATCH 29/34] mm/pgtable: disallow calling folded set_pgd/set_p4d/set_pud
-Date: Mon, 13 Jul 2026 14:56:08 +0100
-Message-ID: <20260713135614.1618183-30-yeoreum.yun@arm.com>
+Subject: [RFC PATCH 30/34] mm/pgtable: disallow calling folded (pgd|p4d|pud)_page, pgd_page_vaddr() and (p4d|pud)_pgtable
+Date: Mon, 13 Jul 2026 14:56:09 +0100
+Message-ID: <20260713135614.1618183-31-yeoreum.yun@arm.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260713135614.1618183-1-yeoreum.yun@arm.com>
 References: <20260713135614.1618183-1-yeoreum.yun@arm.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260713_070233_924513_D3251DDE 
-X-CRM114-Status: UNSURE (   9.14  )
+X-CRM114-CacheID: sfid-20260713_070246_836449_3ECA2741 
+X-CRM114-Status: UNSURE (   8.89  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -163,76 +163,65 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 
-The stubs are documented to "doesn't get actually called", which was
-false for a couple of instances.
+These helpers that silently fallback to the folded level
+are dangerous, especially with some upcoming changes.
 
-The helpers are dangerous, especially with some upcoming changes.
-
-We made all code compile-out any calls to set_pgd/set_p4d/set_pud for
-folded page tables. So let's make the compiler complain if these helpers
-are abused in wrong context.
+We made all code compile-out any calls to these helpers. So let's make the
+compiler complain if these helpers are abused in wrong context.
 
 Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
 Signed-off-by: Yeoreum Yun <yeoreum.yun@arm.com>
 ---
- include/asm-generic/pgtable-nop4d.h | 7 ++-----
- include/asm-generic/pgtable-nopmd.h | 6 +-----
- include/asm-generic/pgtable-nopud.h | 7 ++-----
- 3 files changed, 5 insertions(+), 15 deletions(-)
+ include/asm-generic/pgtable-nop4d.h | 4 ++--
+ include/asm-generic/pgtable-nopmd.h | 4 ++--
+ include/asm-generic/pgtable-nopud.h | 4 ++--
+ 3 files changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/include/asm-generic/pgtable-nop4d.h b/include/asm-generic/pgtable-nop4d.h
-index 019c3f074b771..0f3b56deaa165 100644
+index 0f3b56deaa165..25c26a587b512 100644
 --- a/include/asm-generic/pgtable-nop4d.h
 +++ b/include/asm-generic/pgtable-nop4d.h
-@@ -28,11 +28,8 @@ static inline bool pgd_leaf(pgd_t pgd)		{ return false; }
+@@ -46,8 +46,8 @@ static inline p4d_t *p4d_offset_lockless(pgd_t *pgdp, pgd_t pgd,
+ #define p4d_val(x)				(pgd_val((x).pgd))
+ #define __p4d(x)				((p4d_t) { __pgd(x) })
  
- #define pgd_populate(mm, pgd, p4d)		do { } while (0)
- #define pgd_populate_safe(mm, pgd, p4d)		do { } while (0)
--/*
-- * (p4ds are folded into pgds so this doesn't get actually called,
-- * but the define is needed for a generic inline function.)
-- */
--#define set_pgd(pgdptr, pgdval)	set_p4d((p4d_t *)(pgdptr), (p4d_t) { pgdval })
-+
-+#define set_pgd(pgdptr, pgdval)			BUILD_BUG()
+-#define pgd_page(pgd)				(p4d_page((p4d_t){ pgd }))
+-#define pgd_page_vaddr(pgd)			((unsigned long)(p4d_pgtable((p4d_t){ pgd })))
++#define pgd_page(pgd)				({ BUILD_BUG(); (struct page *)NULL; })
++#define pgd_page_vaddr(pgd)			({ BUILD_BUG(); 0UL; })
  
- static inline p4d_t *p4d_offset(pgd_t *pgd, unsigned long address)
- {
+ /*
+  * allocating and freeing a p4d is trivial: the 1-entry p4d is
 diff --git a/include/asm-generic/pgtable-nopmd.h b/include/asm-generic/pgtable-nopmd.h
-index ae2eff44889ac..9d854211a55a5 100644
+index 9d854211a55a5..75650fa9111cd 100644
 --- a/include/asm-generic/pgtable-nopmd.h
 +++ b/include/asm-generic/pgtable-nopmd.h
-@@ -38,11 +38,7 @@ static inline void pud_clear(pud_t *pud)	{ }
+@@ -56,8 +56,8 @@ static inline pmd_t *pmd_offset_lockless(pud_t *pudp, pud_t pud,
+ #define pmd_val(x)				(pud_val((x).pud))
+ #define __pmd(x)				((pmd_t) { __pud(x) } )
  
- #define pud_populate(mm, pmd, pte)		do { } while (0)
+-#define pud_page(pud)				(pmd_page((pmd_t){ pud }))
+-#define pud_pgtable(pud)			((pmd_t *)(pmd_page_vaddr((pmd_t){ pud })))
++#define pud_page(pud)				({ BUILD_BUG(); (struct page *)NULL; })
++#define pud_pgtable(pud)			({ BUILD_BUG(); NULL; })
  
--/*
-- * (pmds are folded into puds so this doesn't get actually called,
-- * but the define is needed for a generic inline function.)
-- */
--#define set_pud(pudptr, pudval)			set_pmd((pmd_t *)(pudptr), (pmd_t) { pudval })
-+#define set_pud(pudptr, pudval)			BUILD_BUG()
- 
- static inline pmd_t * pmd_offset(pud_t * pud, unsigned long address)
- {
+ /*
+  * allocating and freeing a pmd is trivial: the 1-entry pmd is
 diff --git a/include/asm-generic/pgtable-nopud.h b/include/asm-generic/pgtable-nopud.h
-index 5a2b0a81ae197..aa8a6ce139e47 100644
+index aa8a6ce139e47..b592fff18887a 100644
 --- a/include/asm-generic/pgtable-nopud.h
 +++ b/include/asm-generic/pgtable-nopud.h
-@@ -35,11 +35,8 @@ static inline bool p4d_leaf(p4d_t p4d)		{ return false; }
+@@ -54,8 +54,8 @@ static inline pud_t *pud_offset_lockless(p4d_t *p4dp, p4d_t p4d,
+ #define pud_val(x)				(p4d_val((x).p4d))
+ #define __pud(x)				((pud_t) { __p4d(x) })
  
- #define p4d_populate(mm, p4d, pud)		do { } while (0)
- #define p4d_populate_safe(mm, p4d, pud)		do { } while (0)
--/*
-- * (puds are folded into p4ds so this doesn't get actually called,
-- * but the define is needed for a generic inline function.)
-- */
--#define set_p4d(p4dptr, p4dval)	set_pud((pud_t *)(p4dptr), (pud_t) { p4dval })
-+
-+#define set_p4d(p4dptr, p4dval)			BUILD_BUG()
+-#define p4d_page(p4d)				(pud_page((pud_t){ p4d }))
+-#define p4d_pgtable(p4d)			((pud_t *)(pud_pgtable((pud_t){ p4d })))
++#define p4d_page(p4d)				({ BUILD_BUG(); (struct page *)NULL; })
++#define p4d_pgtable(p4d)			({ BUILD_BUG(); NULL; })
  
- static inline pud_t *pud_offset(p4d_t *p4d, unsigned long address)
- {
+ /*
+  * allocating and freeing a pud is trivial: the 1-entry pud is
 -- 
 LEVI:{C3F47F37-75D8-414A-A8BA-3980EC8A46D7}
 
