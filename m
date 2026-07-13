@@ -4,84 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D84AAC43458
-	for <kvm-riscv@archiver.kernel.org>; Mon, 13 Jul 2026 14:55:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 224E0C43458
+	for <kvm-riscv@archiver.kernel.org>; Mon, 13 Jul 2026 14:59:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:
 	Subject:MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=DSqT2+HVJIUMYCuPllUUa8OtHrRVnuK+N2RPiRNz9Fc=; b=jviQkX+Choaw/r
-	ccmEiItZMbEzbhcEYEGQyLWjKXLZT/wWOHmzgoJH/rtcybL81/A5BSdh9bdcb2Z7RfPgeO42++cjK
-	jXNgnScKabYV9sWWtgm0p1QYx8h/NivCoZ17gbvpkxty9ZUlUcTanZRL9bu8fuzotHj6iZj9RA3ri
-	XSKNF+L1sMBrjPJB7L+Ih1NizIzobZktZ3pPt4WJ2LziXHXOs/LbETfpAbvRVssfn1PpcUAuH2OLB
-	nN5Z4PhPMJgv5Izyru1PYVPOtKdC/qk/7DLxLU4iDeUEdyj+5lpG+rzWgaFHUIByz1XYWSB7ZDjRD
-	EvhIlikEkemKyyjKLC7A==;
+	List-Owner; bh=83HUFzJCB2cIvOIjJMYIIBazJ9kMIq+qZmfTT1uEgqg=; b=2/Z2yLKS5T8PGT
+	2FNAlwj9KIRAhvSm1mkUdOD0H05CkidVRLDHIkiGeb9+rApkrTkdtlOIdTWEvSoTj+JXEqxbW4ocp
+	kUSEfALghWX8ONfRUrnzA7GVJXbmhsDPNI8VD6FR6g7WZddFDgb2JaGqar6LZw5WiHWryAWuWpsxl
+	vt+MUKKkoBqwsZdAtyEbz6vk9rvYSsKSS26Q+o2h2MtpTLBSpOjQRDO/waPuYu7gJ7mxQ+Os2V1nd
+	nqAJ5Fr9shWc/p61+8bM4rqWXF7DITswuOa8sQpu9KrYdZutVljyO0J6SjMK+xIpvtvLL7Vw3LvmE
+	1nr47eg4v6KgIZRcX/FQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wjI4Z-00000009fu6-0jwR;
-	Mon, 13 Jul 2026 14:55:55 +0000
-Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+	id 1wjHVj-00000009ZoN-0btY;
+	Mon, 13 Jul 2026 14:19:55 +0000
+Received: from mgamail.intel.com ([198.175.65.10])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wjI4G-00000009fbi-0eaw;
-	Mon, 13 Jul 2026 14:55:36 +0000
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:Content-Type
-	:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:Message-ID:
-	Sender:Reply-To:Content-ID:Content-Description;
-	bh=0MfDofiY2Gmbjmnj1RvYUotVS2zPd0Y+nfag8esS2yk=; b=JbBwZMuOWShA3Q2lgjBqGx2liS
-	Aau47Sr/iGX7zW2o60IYScZJKh2cuohpF2PMaeWX7C4FW0KcLRhtcqb3VQ0qb6XomsCbYfk5CU37X
-	884P+zA24HM1KrD3JXgCA/GijhgzPKCrRxhJTtD5EhhukSYEjeVIS0g8FPmLFi7oKb4HdXDji32vp
-	gqYPwXLJR8UwbE9oYGoNkj7AxxRcTWpJtuIALD7LMWHgtTsGEJjnA+8oEUrVORStqgBblcugcBoVp
-	6XGnwFVv8APyZ0It05ONbQza61214RKSUxl3/6ALYMAdkkVR6I74sPxKXOOfG7DqfsieQEHeNLZTc
-	X//zIQzQ==;
-Received: from mgamail.intel.com ([192.198.163.8])
-	by desiato.infradead.org with esmtps (Exim 4.99.2 #2 (Red Hat Linux))
-	id 1wjI4C-0000000Bjyk-3wIK;
-	Mon, 13 Jul 2026 14:55:35 +0000
+	id 1wjHVh-00000009Znu-0fFi;
+	Mon, 13 Jul 2026 14:19:54 +0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1783954533; x=1815490533;
+  t=1783952393; x=1815488393;
   h=message-id:date:mime-version:subject:to:cc:references:
    from:in-reply-to:content-transfer-encoding;
-  bh=0MfDofiY2Gmbjmnj1RvYUotVS2zPd0Y+nfag8esS2yk=;
-  b=L6DZt5dTKPwG7jil6s7V642imFvlYbm4H9IvAIa4EitZbFGKnlhd3gom
-   rUBU3GHZehm5QNzNa/7ae7kcx3pgC1eT0YdWwh4Ob23JL/284O+KgyASk
-   5J5MhUzo11jfY5YzvgAxz/9c+vsyPy50lXQr5gkXCiAyRbqV0u9sjmyMg
-   QrMTfkmbsx+K6lTVUlVsI9hZD/ACjFZrNxj85lpS3GoE4IykjnwO+/iKb
-   xJrCFBOihtNWiiYUQ+J+p9K7mpv5Uy+IMQ5e9L/RtpmCWBlS8fFyAucVz
-   lJEUmn0XD9bzk9BcgbZtKxFVCyFeJfqOT1DqMcAMWd/E+zWIRIzCdojv+
-   g==;
-X-CSE-ConnectionGUID: Jveo2iVyTLmrkKsO6rTJEw==
-X-CSE-MsgGUID: ylHoYjnzSFagn1imIla5oQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11841"; a="102114266"
+  bh=ACEEsriG9dCD5Makw171QvwlNnRaGMIWxBoV9AUffyw=;
+  b=PF9aArZ/c7feJhtAJstOq0HyU1Eh9f6tZKO7S0mm6x5dLWcYF0lNR+E0
+   BNbP8K8ydJ9gSaBQxeecnKFDEjQSss644QqDGTEnRNvwX4Sk3koehWBlH
+   JU1zhR35973zIObXyrB8pjAUvZlBaXbq0siDgd/UEEFyBT4quzsJBZCl0
+   tmhvDypxFVvvCnJ6o/ioaVz/x78PkQZmRKVRcTLQSFiLNZCfV9KG+G8aw
+   uoSAOW2F8ei4vWezfLdYH37/Ir8qWBtd6VMoy1jur5Bj3IxVhUxzAg4wA
+   2wv/7V2fuhIkj24pzvldV5mV66pGlG99sWoUv5QVKbt0MzYfo0t10QtyL
+   Q==;
+X-CSE-ConnectionGUID: zCNeEY++Sn6vYQTchLk1lw==
+X-CSE-MsgGUID: 3K53w8RkRpSCK5N6L9asIw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11841"; a="101986175"
 X-IronPort-AV: E=Sophos;i="6.25,154,1779174000"; 
-   d="scan'208";a="102114266"
-Received: from orviesa006.jf.intel.com ([10.64.159.146])
-  by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Jul 2026 07:55:29 -0700
-X-CSE-ConnectionGUID: 8iQLhZ6PQQm6Wp6XafDZ/w==
-X-CSE-MsgGUID: myzw+Bw8TMuHbEAQ1H/KWQ==
+   d="scan'208";a="101986175"
+Received: from fmviesa009.fm.intel.com ([10.60.135.149])
+  by orvoesa102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Jul 2026 07:19:50 -0700
+X-CSE-ConnectionGUID: Bhu909OcTi2Jw8FWWspLNQ==
+X-CSE-MsgGUID: etPWERUSRBqiiOVfAtNJ+A==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.25,154,1779174000"; 
-   d="scan'208";a="253839285"
+   d="scan'208";a="249209989"
 Received: from gabaabhi-mobl2.amr.corp.intel.com (HELO [10.125.108.45]) ([10.125.108.45])
-  by orviesa006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Jul 2026 07:55:28 -0700
-Message-ID: <710b7eb0-8e0c-4f07-991c-2285c77e1beb@intel.com>
-Date: Mon, 13 Jul 2026 07:55:09 -0700
+  by fmviesa009-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Jul 2026 07:19:47 -0700
+Message-ID: <c3edfb13-08ec-419c-bc05-8f3f64186b24@intel.com>
+Date: Mon, 13 Jul 2026 07:19:47 -0700
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [RFC PATCH 10/34] x86: mm: carve out the generic compile-time
  folded pgtable case in effective_prot()
-To: "David Hildenbrand (Arm)" <david@kernel.org>,
- Yeoreum Yun <yeoreum.yun@arm.com>, linux-arm-kernel@lists.infradead.org,
+To: Yeoreum Yun <yeoreum.yun@arm.com>, linux-arm-kernel@lists.infradead.org,
  linux-kernel@vger.kernel.org, loongarch@lists.linux.dev,
  linux-mips@vger.kernel.org, linux-arch@vger.kernel.org,
  kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
  x86@kernel.org, linux-mm@kvack.org, kasan-dev@googlegroups.com,
  linux-csky@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
  linux-openrisc@vger.kernel.org
-Cc: linux@armlinux.org.uk, akpm@linux-foundation.org,
+Cc: david@kernel.org, linux@armlinux.org.uk, akpm@linux-foundation.org,
  ankur.a.arora@oracle.com, rppt@kernel.org, linmag7@gmail.com,
  chleroy@kernel.org, klarasmodin@gmail.com, chenhuacai@kernel.org,
  kernel@xen0n.name, kas@kernel.org, zhangtianyang@loongson.cn,
@@ -110,8 +95,6 @@ Cc: linux@armlinux.org.uk, akpm@linux-foundation.org,
  stefan.kristiansson@saunalahti.fi
 References: <20260713135614.1618183-1-yeoreum.yun@arm.com>
  <20260713135614.1618183-11-yeoreum.yun@arm.com>
- <c3edfb13-08ec-419c-bc05-8f3f64186b24@intel.com>
- <ac365196-8ccc-4d8b-83d7-28fec763e75c@kernel.org>
 From: Dave Hansen <dave.hansen@intel.com>
 Content-Language: en-US
 Autocrypt: addr=dave.hansen@intel.com; keydata=
@@ -157,11 +140,10 @@ Autocrypt: addr=dave.hansen@intel.com; keydata=
  MTsCeQDdjpgHsj+P2ZDeEKCbma4m6Ez/YWs4+zDm1X8uZDkZcfQlD9NldbKDJEXLIjYWo1PH
  hYepSffIWPyvBMBTW2W5FRjJ4vLRrJSUoEfJuPQ3vW9Y73foyo/qFoURHO48AinGPZ7PC7TF
  vUaNOTjKedrqHkaOcqB185ahG2had0xnFsDPlx5y
-In-Reply-To: <ac365196-8ccc-4d8b-83d7-28fec763e75c@kernel.org>
+In-Reply-To: <20260713135614.1618183-11-yeoreum.yun@arm.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260713_155533_443195_2B33CB75 
-X-CRM114-Status: UNSURE (   6.89  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20260713_071953_259301_ED40E82C 
+X-CRM114-Status: GOOD (  11.65  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -178,27 +160,31 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On 7/13/26 07:41, David Hildenbrand (Arm) wrote:
-> Essentially, we have to teach x86 code to ignore levels that are folded (e.g.,
-> pgd, p4d) and start collecting effective prots from the actual first non-folded
-> level.
+On 7/13/26 06:55, Yeoreum Yun wrote:
+> We want to change how pXdp_get() works with generic compile-time folded
+> page tables. To prepare for that, rework effective_prot() to ignore any
+> folded page tables entries, as it will unconditionally get called by
+> ptdump core with pXd_val(pXdp_get()), and we really should be ignoring
+> that value for folded entries.
+> 
+> For this, identify the first real page-table level and
+> update effective_prot only when the current entry is not folded.
 
-I guess that's what the series really comes down to.
+Nit: could you please clean up the "we's" and move over to imperative
+voice for the series? We're picky about it on the x86 side, but I do
+think it's generally a good preferred practice across the kernel.
 
-The model is moving from (using 3-level PAE as an example):
+Also I really do think this made the code worse. effective_prot() is a
+pretty tidy function. This change more than doubles the size and is also
+basically the same block copied and pasted twice.
 
- PGD => ...folding => PMD => PTE
+Further, this does seem like it will stop filling out some of the
+st->prot_levels[] entries. That seems like it might break things. It
+definitely needs to be covered in the changelog.
 
-to
-
- ...folding => PUD => PMD => PTE
-
-Right?
-
-That's actually not the worst thing in the world, but it is a pretty big
-change. It moves the software model away from how the hardware works.
-It's a bit more grand than I thought from glancing at the cover letter.
-
+So, in the end, I'm not 100% sure what this is doing. Is it "optimizing"
+the ptdump code? Or is it preemptively fixing code that will soon be
+throwing a compile error?
 
 -- 
 kvm-riscv mailing list
