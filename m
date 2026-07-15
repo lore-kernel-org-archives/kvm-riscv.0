@@ -4,103 +4,163 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1E711C44508
-	for <kvm-riscv@archiver.kernel.org>; Wed, 15 Jul 2026 05:17:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8B90BC4450A
+	for <kvm-riscv@archiver.kernel.org>; Wed, 15 Jul 2026 06:12:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
-	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=AXmCKiVjN9TGkYDf3IyNZ03qeuDZmFxeHIiCw8HCINQ=; b=hBmPLv7M6mDZeh
-	Z5B1dJE+L+73nAsxKXJBLOSD9dQWm1BCCCMQkaMTqVqU0XwKb17yTQGnNgBN2Fytxp9rCqmFWwj8Z
-	uWVMclCy1zm42N4MD5UAbeA6/tpyBegNnknTG4KFCxEhhfqCaGs3+LR55S6WmlawYdr+XiqEGIE/6
-	V2ThSfSF4kfldowNIKfi0PVSkdRoUGk8IrfCYwlGYvVLewgEPP2UmSlqx8p9N4TGAxr9NJTXJnkPZ
-	A2wIVOr0e877RO8MrHRaq0JWcRBxNlZsSujWXaxUs1jYB7rIn3D71WQylqMkS5yUYlZxdXGkE/Ppk
-	V8h6+iivxyaLQyxvzlbw==;
+	List-Archive:List-Unsubscribe:List-Id:Subject:References:In-Reply-To:
+	Message-Id:Cc:To:From:Date:MIME-Version:Reply-To:Content-ID:
+	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+	:Resent-Message-ID:List-Owner;
+	bh=oB4iSbmf+8cui0wQSWEpvQ7ROCEREU6MmGL2CMHdzHI=; b=B7qAyg2d28fZwk8a1sfgIeA+py
+	fZuHaT5qBIE2eTQQai03A7/pr0JSuyscAqDkm+fVI0RcdWVsggP2OqRa0rDlyN5KkVrxHxRQPgjuG
+	+uRlbchAs1l/McI/6jPgfZ9Fu4D60wIMeXRwPQdLH8S92cKY0mMBo5VJ78WZVhhmcwyTr53BQ1Mhh
+	6GMraR3Sh6sjlN/O7WurJDnSvKuLeJJyt/lRp3A4ktwaIiG3iNDL55Unm947yiZ/rjouUjmmPlWXh
+	pZe53bqU86q2z4rNRQawzn5PI/u7nRHw/hLmQ+dseZ1Iw3M+Lr43xNdCwOq5SzgDYXWAsVowlY8X3
+	hNh8682w==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wjrze-0000000Dmnd-3HO0;
-	Wed, 15 Jul 2026 05:17:14 +0000
-Received: from mail-yx1-xb12e.google.com ([2607:f8b0:4864:20::b12e])
+	id 1wjsqp-0000000DrGs-0oqZ;
+	Wed, 15 Jul 2026 06:12:11 +0000
+Received: from flow-a6-smtp.messagingengine.com ([103.168.172.141])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wjrzc-0000000Dmle-3klS
-	for kvm-riscv@lists.infradead.org;
-	Wed, 15 Jul 2026 05:17:14 +0000
-Received: by mail-yx1-xb12e.google.com with SMTP id 956f58d0204a3-664a09bc459so8044800d50.1
-        for <kvm-riscv@lists.infradead.org>; Tue, 14 Jul 2026 22:17:12 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=tenstorrent.com; s=google; t=1784092632; x=1784697432; darn=lists.infradead.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=/qu2jpdxEtSpgK1477zsO8Jas8eGGsDBJ5u6c9q18Qo=;
-        b=Dg0UE/H6/ba3vqOY48w90BpkM+lsTX134KM1ARXEZZobzX91ofeC+aA48qSASB3EqZ
-         xtU5MNY+ALCDUHWhOKn0al3Wexk6Qh0bflpV/0yxTptAUodvgU81S3M13D+AaJNwJrg/
-         +9TE5w0wKX8J0KMzvo1sDOAJL4fwSycd+MQYs79YE+6LHyuvmdT/zyksTtOnAAnP1vKk
-         v3vZMC2j2Spz/8ecpExE8I73YlfWw+u0Z/Qb5rHQRxiDmD4G0BHC4M+r8eFGdJDX9QLm
-         EzRQqE0AU5e6LEwaszL9nWvYJkjK53D+TWKDep8vyZWZH9AVuTam4J3rGgIx6su1f4JV
-         rmuw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784092632; x=1784697432;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=/qu2jpdxEtSpgK1477zsO8Jas8eGGsDBJ5u6c9q18Qo=;
-        b=ghg3VqjH70s6lHPn5G6pwVf9cotYf/WTLBQ96X+8RI8P1eChGOclFfzfLYzIYmt6W2
-         CSlszUKChgFub8EMf7gFWi0HvpCLlgTtgE79dy+oJ23Fa4HdPGd+4icy4KuR8jQFuFIm
-         VKoK5YI1FRbnr90GxNgzNa3xgHMNcA8vS7Mwmh6nwFRxAyLg/HzyRxmqYesXlHLpLLe0
-         LE6F1p8HD9O8LX9wYqEARPyHWJ+h6qwOm4xZcgVP+DQ7vQGNGVe/QDtuYwg8V2kRNVut
-         HLlw8IN+hx42PGdH3HbuDsS1uC5nhtcMunTiHnTCfof0dKa7Ak4000PtCvT3FRh4MmQR
-         KXKw==
-X-Forwarded-Encrypted: i=1; AHgh+Rq4sDuBwZMd0EG1uCJuv7rRFa7xXhCDM21mtLsi+MzfGtZ//poLdb0ZWTSbkkrvHf2P3clgvfyJemU=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yz2kLVHnfYLKQLsoN4q7YTfihl2bCrsr4uTw6+8IdXKRizNbf3e
-	EFX/j5Roez/O/q/BBbWwta6hT4hM5jG2f56btLNlRPQBSflqlvVedXXM94m51xy/9UU=
-X-Gm-Gg: AfdE7cmxQ+HJDgC+lH3wugn/UyfGZhkUAkcqC/SYBm/ZZS+Mxu+PNqI3xu7uK59z9BK
-	mDaiEZRKEmbDkrnXPJVjEMpWjTm41RMKQquojAPZqA65oj6b+KXmzu3MahNZKf9tc7Eb+g+Nuc1
-	laB6IrkhrLAcp55IPLUwZ+rGDfXmyIOdBg5whcHclF0dIjvXKkIQN6fVQ1qqOf4y1FEFr/3gV4z
-	1VCHN3xUpqR9iwLZq7ZxE4hOQnqtkFRWnYNRLhsqkVG21OOUVv+cKBLtaynqrz1pyzEKravc6y8
-	7S860vVH5slQ/WdFsnZdsDWYJmUAzZShrwcirCySdeVq2Sv+6BQFc0/XOVSBAfunt9aRdghpjOY
-	3G0otlSH057qWTIiO5iSyVP7vkY1LYu+NMlvd/fm9TtGH6Q7bXYnjIjzRKLD41pfpHZHDnQxoqF
-	0Xw8Tu5wYwiiwyP6GXgDmWkuJf02sQzsuzhyh/sSF+Dbk4qT5G2e+GOcY17b7hGCdURL6VlBraS
-	+TGsGf/34UkR5JB2PJV+nQdOAwB4A==
-X-Received: by 2002:a05:690c:6e10:b0:81e:ba92:b255 with SMTP id 00721157ae682-81ecfb5b8famr10617457b3.68.1784092631800;
-        Tue, 14 Jul 2026 22:17:11 -0700 (PDT)
-Received: from lima-default.tail89d63.ts.net (108-196-157-19.lightspeed.austtx.sbcglobal.net. [108.196.157.19])
-        by smtp.gmail.com with ESMTPSA id 00721157ae682-81e6c23939fsm159625657b3.46.2026.07.14.22.17.10
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 14 Jul 2026 22:17:11 -0700 (PDT)
-From: Andy Chiu <tchiu@tenstorrent.com>
-To: anup@brainfault.org,
-	Atish Patra <atish.patra@linux.dev>,
-	Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Alexandre Ghiti <alex@ghiti.fr>,
-	Greentime Hu <greentime.hu@sifive.com>,
-	Andy Chiu <andybnac@gmail.com>,
-	Eric Biggers <ebiggers@google.com>,
-	Vincent Chen <vincent.chen@sifive.com>,
-	kvm@vger.kernel.org,
-	kvm-riscv@lists.infradead.org,
-	linux-riscv@lists.infradead.org
-Cc: Andy Chiu <tchiu@tenstorrent.com>,
-	dfustini@oss.tenstorrent.com,
-	Deepak Gupta <debug@rivosinc.com>,
-	Charlie Jenkins <charlie@rivosinc.com>,
-	Sean Chang <seanwascoding@gmail.com>,
-	Thomas Huth <thuth@redhat.com>,
-	Yong-Xuan Wang <yongxuan.wang@sifive.com>
-Subject: [PATCH v2 3/3] RISC-V: KVM: fix vcpu vector context handling for kernel-mode vector
-Date: Wed, 15 Jul 2026 00:16:22 -0500
-Message-ID: <20260715051629.1169645-4-tchiu@tenstorrent.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260715051629.1169645-1-tchiu@tenstorrent.com>
-References: <20260715051629.1169645-1-tchiu@tenstorrent.com>
+	id 1wjsqm-0000000DrG3-1wEk;
+	Wed, 15 Jul 2026 06:12:10 +0000
+Received: from phl-compute-04.internal (phl-compute-04.internal [10.202.2.44])
+	by mailflow.phl.internal (Postfix) with ESMTP id B2B0C1380119;
+	Wed, 15 Jul 2026 02:12:04 -0400 (EDT)
+Received: from phl-imap-05 ([10.202.2.95])
+  by phl-compute-04.internal (MEProxy); Wed, 15 Jul 2026 02:12:04 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+	:cc:content-transfer-encoding:content-type:content-type:date
+	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to; s=fm1; t=1784095924;
+	 x=1784103124; bh=EUNLiWQIu7iTIlSyfAVZR84DufWom2g2RocOGGt7G9c=; b=
+	a8RAtuNHzJgQpRc7/V/O9hKgDUcjQuU4FAYwrHP9pWXQ1LGjnWdufjScf0CPwLXl
+	ebuDD6/m8uMBMtjsmLyRxDwVm1W5D0UJ0qFrV0ql5UaaznPi/OAuQsTYCEfebhpp
+	JHIhGETCVDZx0JCaK9T9XiGI+2yaxkBs8jBbV10wvybX7j6xe0sWdssCQibesp9r
+	8ZMwvxPimz5JxUH87zSSHB/s3y19KyXU5yXlSf0yZzwka5szmKRHrUeXKTOPvbxu
+	8UFr61JQoQs0kR0U0732WlMu3psRIJPB7il4skw3eB3PnoehddPNJJ7Z6aIeeXcJ
+	ul6zn0HGzKLpoMSy/XjsvA==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:feedback-id:feedback-id
+	:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm2; t=1784095924; x=
+	1784103124; bh=EUNLiWQIu7iTIlSyfAVZR84DufWom2g2RocOGGt7G9c=; b=J
+	r1iBAn+v7XqSR2sRD6G+XUnRGoxSwquZxwHfJPlKD5bUqHSELpk97BYD0EI7qYuB
+	tWPI68KHKqboodxMu2iPmU+7Uedw5ij7bDSpzusWe1PzwiizuSoR7PsPJkwFOAQr
+	7TPp2tbWpukaZ8XIir6cdpKNlalTJRq9E4cNzSIIAGTgF6mrZH25az8g3Hd2T4NB
+	azOIXT0CQfO2WJ/tJg/fW7aTy/7uAKCIs9WoNMGmYLB1hshS6J5WksM8AcR43gHn
+	Snwxa1Y/HFo9DknVQUJNoJ9eaM7isTSaAOA9nPwbhGSy8SQYoHrXcnJDBDL/x/Yy
+	PUj7y749VmENuoYCyqf4w==
+X-ME-Sender: <xms:ryRXamxegDT7PDmJNNPgLswItiV1L0wADqQ55UdRMZ1ltF3sBg21_w>
+    <xme:ryRXatEPnD47JuD9gtMrdA80Zx5AuYb_KJjzokHu0vEJRORd3VW5eC0IF6w3LN35z
+    51IafVJylssdT0E2yYiYe0hVEKysEzyz3cHKOnAoA9mfqtNj47zCyiI>
+X-ME-Proxy-Cause: dmFkZTGFJUT9q0RQslH+2LbGJNpjb93/J6MhXke5wQ0bwjzy+neOq13hjf56wjlruzpSKf
+    YmQ8WX1FNCCuKclqu4rBYjdK+D9Fgwgeg5Cv9tvMeiYLsueu8zGPzHHzgdW8nhVvRSu7sd
+    Adqa+XD8nn68rTK01FmplsUZnMHbxOBRt/Onegc1p4/ensfrizVXWshbh6naWEPhzyQb/h
+    ZU3V0wHuBvzTGhcjIY7HBhH4r1pbDyidwblxIuDazjX/A64isrjWWp33IvQYz2XBSkFm2z
+    vXCH/0NzPAchHQOC4XNZPKm1lTi0avCvBxltVxR8oZ5vaE5uQ/r8uxDe6hFyc5XAHHPMP1
+    Ca3gLCSlhDaJMXMB/cNV90FOM/5FsDVccx+UMiFyGSSOCZH1gLSBoeRsW+OB8cS8yHkX9P
+    0oxzCUds8E++pvQSsElVI1d6rJw7dSCHBSo1I+Ra1KDy2P7SgXUbS1AsPzIUBbxY8XxaDX
+    rJt/bMPTYoQte8pVgPCNmTjaADKFnid+D+Hi9XFCuMQdsX8uYEx6JY/ru3lwl4mxF/21O4
+    1LJGVV+PHrWsBtp6R6m3VX9gyDeiH/sJW2YGARSv6w1T0Vp3iqzKE58cKA467FvKs/R1MT
+    QFAnYmCsN4PVXVZLmJvc0YtS1dw86/rcfWf9MV22qTW9UKDOpN9kexkBYKKQ
+X-ME-Proxy: <xmx:sCRXahm_eEKhKv0bT_bm3ckpgyWzIY0tMOn02kO6iYQkbS1lslkAHg>
+    <xmx:sCRXaqizgUvqruPJ3B5irYcNhpEnpTDlGmnQKfe63XHaekM5e1IlaQ>
+    <xmx:sCRXavtVEWvBAmUP25RuhVS1F5dVNlz5NZeNWYAatfQ0I-E2bXxEDQ>
+    <xmx:sCRXap8AdlLW1OLuSsMNrFn9w4kjhfhTG_k4v-qvGOs35ggJ6BXMJw>
+    <xmx:tCRXanaMRI-1Cl0xSo1dwVai7gVVaK0YQWMAziD5wV1tzfGL7RowtiwY>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.phl.internal (Postfix, from userid 501)
+	id DA915182007E; Wed, 15 Jul 2026 02:11:59 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
 MIME-Version: 1.0
+X-ThreadId: ASU80-mPZ9gg
+Date: Wed, 15 Jul 2026 08:11:39 +0200
+From: "Arnd Bergmann" <arnd@arndb.de>
+To: "David Laight" <david.laight.linux@gmail.com>
+Cc: "Pedro Falcato" <pfalcato@suse.de>, "Yeoreum Yun" <yeoreum.yun@arm.com>,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ loongarch@lists.linux.dev, linux-mips@vger.kernel.org,
+ Linux-Arch <linux-arch@vger.kernel.org>, kvm-riscv@lists.infradead.org,
+ linux-riscv@lists.infradead.org, x86@kernel.org, linux-mm@kvack.org,
+ kasan-dev@googlegroups.com,
+ "linux-csky@vger.kernel.org" <linux-csky@vger.kernel.org>,
+ linux-m68k@lists.linux-m68k.org,
+ "linux-openrisc@vger.kernel.org" <linux-openrisc@vger.kernel.org>,
+ "David Hildenbrand (Red Hat)" <david@kernel.org>,
+ "Russell King" <linux@armlinux.org.uk>,
+ "Andrew Morton" <akpm@linux-foundation.org>,
+ "Ankur Arora" <ankur.a.arora@oracle.com>,
+ "Mike Rapoport" <rppt@kernel.org>, "Magnus Lindholm" <linmag7@gmail.com>,
+ "Christophe Leroy" <chleroy@kernel.org>,
+ "Klara Modin" <klarasmodin@gmail.com>,
+ "Huacai Chen" <chenhuacai@kernel.org>, "WANG Xuerui" <kernel@xen0n.name>,
+ "Kirill A. Shutemov" <kas@kernel.org>, zhangtianyang@loongson.cn,
+ wangyuli@aosc.io, "Thomas Bogendoerfer" <tsbogend@alpha.franken.de>,
+ "Lorenzo Stoakes" <ljs@kernel.org>, "Jason Gunthorpe" <jgg@ziepe.ca>,
+ "Catalin Marinas" <catalin.marinas@arm.com>,
+ "Will Deacon" <will@kernel.org>, "Ryan Roberts" <ryan.roberts@arm.com>,
+ "Pasha Tatashin" <pasha.tatashin@soleen.com>,
+ "Rohan McLure" <rmclure@linux.ibm.com>,
+ "Baolin Wang" <baolin.wang@linux.alibaba.com>,
+ "Tejun Heo" <tj@kernel.org>, "Kevin Brodsky" <kevin.brodsky@arm.com>,
+ "Anup Patel" <anup@brainfault.org>, atish.patra@linux.dev,
+ "Paul Walmsley" <pjw@kernel.org>, "Palmer Dabbelt" <palmer@dabbelt.com>,
+ "Albert Ou" <aou@eecs.berkeley.edu>, "Alexandre Ghiti" <alex@ghiti.fr>,
+ "Dave Hansen" <dave.hansen@linux.intel.com>,
+ "Andy Lutomirski" <luto@kernel.org>,
+ "Peter Zijlstra" <peterz@infradead.org>,
+ "Thomas Gleixner" <tglx@kernel.org>, "Ingo Molnar" <mingo@redhat.com>,
+ "Borislav Petkov" <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>,
+ "Johannes Weiner" <hannes@cmpxchg.org>,
+ "Michal Hocko" <mhocko@kernel.org>, qi.zheng@linux.dev,
+ "Shakeel Butt" <shakeel.butt@linux.dev>,
+ "Kairui Song" <kasong@tencent.com>, "Barry Song" <baohua@kernel.org>,
+ "Axel Rasmussen" <axelrasmussen@google.com>,
+ "Yuanchu Xie" <yuanchu@google.com>, "Wei Xu" <weixugc@google.com>,
+ "Andrey Ryabinin" <ryabinin.a.a@gmail.com>,
+ "Alexander Potapenko" <glider@google.com>,
+ "Andrey Konovalov" <andreyknvl@gmail.com>,
+ "Dmitry Vyukov" <dvyukov@google.com>,
+ "Vincenzo Frascino" <vincenzo.frascino@arm.com>,
+ "Anshuman Khandual" <anshuman.khandual@arm.com>,
+ "Yang Shi" <yang@os.amperecomputing.com>, chaitanyas.prakash@arm.com,
+ "Ard Biesheuvel" <ardb@kernel.org>, guoren <guoren@kernel.org>,
+ yang.li85200@gmail.com, "Alexander Viro" <viro@zeniv.linux.org.uk>,
+ "Dinh Nguyen" <dinguyen@kernel.org>,
+ "schuster.simon@siemens-energy.com" <schuster.simon@siemens-energy.com>,
+ "Vivian Wang" <wangruikang@iscas.ac.cn>, junhui.liu@pigmoral.tech,
+ "Muchun Song" <muchun.song@linux.dev>,
+ "Vishal Moola (Oracle)" <vishal.moola@gmail.com>,
+ "Nam Cao" <namcao@linutronix.de>, "Pavel Machek" <pavel@kernel.org>,
+ djbw@kernel.org, yu-cheng.yu@intel.com,
+ "Baolu Lu" <baolu.lu@linux.intel.com>,
+ "Jonathan Cameron" <Jonathan.Cameron@huawei.com>,
+ "Coiby Xu" <coxu@redhat.com>, "Andreas Larsson" <andreas@gaisler.com>,
+ "Liam R. Howlett" <liam@infradead.org>,
+ "Vlastimil Babka (SUSE)" <vbabka@kernel.org>,
+ "Suren Baghdasaryan" <surenb@google.com>,
+ "Michal Hocko" <mhocko@suse.com>,
+ "Geert Uytterhoeven" <geert@linux-m68k.org>,
+ "Stafford Horne" <shorne@gmail.com>, "Jonas Bonn" <jonas@southpole.se>,
+ "Stefan Kristiansson" <stefan.kristiansson@saunalahti.fi>
+Message-Id: <d0b34b90-fb12-4579-a965-ea5b90284f18@app.fastmail.com>
+In-Reply-To: <20260714224553.583c8445@pumpkin>
+References: <20260713135614.1618183-1-yeoreum.yun@arm.com>
+ <20260713135614.1618183-3-yeoreum.yun@arm.com> <alYL7B0HAvmLVHGU@pedro-suse>
+ <b7dbc476-1477-4004-93b3-c5e667e24df8@app.fastmail.com>
+ <20260714143450.61a94085@pumpkin>
+ <aceb8582-bafa-41b3-8f56-77fec89a4d90@app.fastmail.com>
+ <20260714224553.583c8445@pumpkin>
+Subject: Re: [RFC PATCH 02/34] ARM: mm: make 2-level pgd_t a scalar
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260714_221712_948994_1501630B 
-X-CRM114-Status: GOOD (  22.79  )
+X-CRM114-CacheID: sfid-20260714_231208_707536_5A57488D 
+X-CRM114-Status: GOOD (  14.56  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -117,345 +177,31 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Running vector workloads like perf + mcf on KVM can result in an
-unexpected termination due to a vtype corruption. This happens because
-the kernel-mode vector (KMV) misattributes the guest's vcpu context as
-the user's context and source from a wrong status.VS.
+On Tue, Jul 14, 2026, at 23:45, David Laight wrote:
+> On Tue, 14 Jul 2026 17:06:00 +0200
+> "Arnd Bergmann" <arnd@arndb.de> wrote:
+> > For the 2-level page table, this only concerns pgd_t, which is
+> > rarely passed around or returned by value. The 3-level page
+> > table has a 64-bit pte_t, which means we probably won't
+> > want STRICT_MM_TYPECHECKS there.
+>
+> Is the 64bit pte_t needed to get the extra modified and accessed
+> flags there aren't free bits for in the hardware pte?
+> Would it have been possible to use bits that are fixed in the hardware
+> pte for the extra bits and write the value to pte[0] and pte[256] fixing
+> up the value written to pte[0] (that the hardware reads).
 
-The simplified call chain that results in this problem is shown as
-follow:
+The 64-bit pte_t for 3-level tables (armv7ve/lpae) is the hardware
+table entry, following the same format as arm64, and similar to
+how x86/pae works.
 
-__riscv_sys_ioctl()
-    kvm_arch_vcpu_ioctl_run()
-      kvm_riscv_vcpu_exit()
-        kvm_riscv_vcpu_sbi_ecall()
-          kvm_riscv_vcpu_pmu_ctr_stop()
-            kvm_vcpu_write_guest()
-              __copy_to_user()
-                enter_vector_usercopy()
-                  kernel_vector_begin()
+The special cases with double pmd_t entries four 1024 byte tables to
+hold hardware and software entries that David Hildenbrand cited
+is only for the old 2-level tables (armv3 through armv7-a).
+The Linux pte_t is only 32-bit wide here, and gets copied into
+the CPU specific hardware pte in the cpu_*_set_pte_ext() function.
 
-kernel_vector_begin() should use the sstatus.VS from guest's vcpu
-context instead of task_pt_reg(current). Also, it should not save
-guest's v-reg into the user's context memory.
-
-To resolve this, the vcpu context must be correctly saved when KMV is
-serving a guest. However, invoking KVM functions directly from generic
-RISC-V architecture code introduces a reverse dependency, breaking
-builds when KVM is configured as N or M.
-
-Address this by registering an RCU-protected callback for context
-flushing. KVM registers this callback at module initialization and
-unregisters it on exit. When KMV starts a kernel context, it can now
-safely flush the vector context via the callback.
-
-Fixes: ecd2ada8a5e0 ("riscv: Add support for kernel mode vector")
-Signed-off-by: Andy Chiu <tchiu@tenstorrent.com>
-
----
-Changelog v2: address concerns pointed out by sashiko
- - encloses vcpu_flush_v_callback() with rcu_read_{lock,unlock}
- - put riscv_v_start before put_cpu_vector_context() to prevent
-   redundant context save
- - protect v context operations against softirqs
- - apply bitmask when reading SR_VS out of guest's sstatus
----
- arch/riscv/include/asm/kvm_vcpu_vector.h | 24 +++++++++++
- arch/riscv/include/asm/processor.h       |  2 +
- arch/riscv/include/asm/vector.h          |  5 +++
- arch/riscv/kernel/kernel_mode_vector.c   | 51 ++++++++++++++++++------
- arch/riscv/kvm/main.c                    |  4 ++
- arch/riscv/kvm/vcpu.c                    | 10 +++++
- arch/riscv/kvm/vcpu_vector.c             | 20 ++++++++++
- 7 files changed, 104 insertions(+), 12 deletions(-)
-
-diff --git a/arch/riscv/include/asm/kvm_vcpu_vector.h b/arch/riscv/include/asm/kvm_vcpu_vector.h
-index 57a798a4cb0d..6371d5ea5392 100644
---- a/arch/riscv/include/asm/kvm_vcpu_vector.h
-+++ b/arch/riscv/include/asm/kvm_vcpu_vector.h
-@@ -35,6 +35,22 @@ void kvm_riscv_vcpu_host_vector_save(struct kvm_cpu_context *cntx);
- void kvm_riscv_vcpu_host_vector_restore(struct kvm_cpu_context *cntx);
- int kvm_riscv_vcpu_alloc_vector_context(struct kvm_vcpu *vcpu);
- void kvm_riscv_vcpu_free_vector_context(struct kvm_vcpu *vcpu);
-+void kvm_riscv_register_vctx_callback(void (*func)(void));
-+void kvm_riscv_unregister_vctx_callback(void);
-+void kvm_riscv_vcpu_flush_vector(void);
-+
-+static inline void kvm_riscv_v_init(void)
-+{
-+	if (has_vector())
-+		kvm_riscv_register_vctx_callback(&kvm_riscv_vcpu_flush_vector);
-+}
-+
-+static inline void kvm_riscv_v_exit(void)
-+{
-+	if (has_vector())
-+		kvm_riscv_unregister_vctx_callback();
-+}
-+
- #else
- 
- struct kvm_cpu_context;
-@@ -69,6 +85,14 @@ static inline int kvm_riscv_vcpu_alloc_vector_context(struct kvm_vcpu *vcpu)
- static inline void kvm_riscv_vcpu_free_vector_context(struct kvm_vcpu *vcpu)
- {
- }
-+
-+static inline void kvm_riscv_v_init(void)
-+{
-+}
-+
-+static inline void kvm_riscv_v_exit(void)
-+{
-+}
- #endif
- 
- int kvm_riscv_vcpu_get_reg_vector(struct kvm_vcpu *vcpu,
-diff --git a/arch/riscv/include/asm/processor.h b/arch/riscv/include/asm/processor.h
-index 812517b2cec1..6e9db2b209e6 100644
---- a/arch/riscv/include/asm/processor.h
-+++ b/arch/riscv/include/asm/processor.h
-@@ -97,6 +97,8 @@ struct pt_regs;
- 
- #define RISCV_V_CTX_UNIT_DEPTH		0x00010000
- #define RISCV_KERNEL_MODE_V		0x00000001
-+#define RISCV_V_VCPU_NEED_RESTORE	0x00000002
-+#define RISCV_V_VCPU_CTX		0x00000004
- #define RISCV_PREEMPT_V			0x00000100
- #define RISCV_PREEMPT_V_DIRTY		0x80000000
- #define RISCV_PREEMPT_V_NEED_RESTORE	0x40000000
-diff --git a/arch/riscv/include/asm/vector.h b/arch/riscv/include/asm/vector.h
-index 00cb9c0982b1..fffe72a77208 100644
---- a/arch/riscv/include/asm/vector.h
-+++ b/arch/riscv/include/asm/vector.h
-@@ -58,6 +58,11 @@ static inline u32 riscv_v_flags(void)
- 	return READ_ONCE(current->thread.riscv_v_flags);
- }
- 
-+static inline void riscv_v_flags_set(u32 flags)
-+{
-+	WRITE_ONCE(current->thread.riscv_v_flags, flags);
-+}
-+
- static __always_inline bool has_vector(void)
- {
- 	return riscv_has_extension_unlikely(RISCV_ISA_EXT_ZVE32X);
-diff --git a/arch/riscv/kernel/kernel_mode_vector.c b/arch/riscv/kernel/kernel_mode_vector.c
-index 6627e1a82e19..1c2463aee247 100644
---- a/arch/riscv/kernel/kernel_mode_vector.c
-+++ b/arch/riscv/kernel/kernel_mode_vector.c
-@@ -12,16 +12,31 @@
- #include <linux/types.h>
- 
- #include <asm/vector.h>
-+#include <asm/kvm_vcpu_vector.h>
- #include <asm/switch_to.h>
- #include <asm/simd.h>
- #ifdef CONFIG_RISCV_ISA_V_PREEMPTIVE
- #include <asm/asm-prototypes.h>
- #endif
- 
--static inline void riscv_v_flags_set(u32 flags)
-+static void (* __rcu kvm_flush_vector_ctx_callback)(void);
-+
-+void kvm_riscv_register_vctx_callback(void (*func)(void))
- {
--	WRITE_ONCE(current->thread.riscv_v_flags, flags);
-+	if (WARN_ON_ONCE(rcu_access_pointer(kvm_flush_vector_ctx_callback)))
-+		return;
-+
-+	rcu_assign_pointer(kvm_flush_vector_ctx_callback, func);
- }
-+EXPORT_SYMBOL_GPL(kvm_riscv_register_vctx_callback);
-+
-+void kvm_riscv_unregister_vctx_callback(void)
-+{
-+	rcu_assign_pointer(kvm_flush_vector_ctx_callback, NULL);
-+	synchronize_rcu();
-+}
-+EXPORT_SYMBOL_GPL(kvm_riscv_unregister_vctx_callback);
-+
- 
- static inline void riscv_v_start(u32 flags)
- {
-@@ -86,6 +101,22 @@ void put_cpu_vector_context(void)
- }
- EXPORT_SYMBOL_GPL(put_cpu_vector_context);
- 
-+static void __riscv_flush_vector_context(void)
-+{
-+	void (*vcpu_flush_v_callback)(void);
-+
-+	if (riscv_v_flags() & RISCV_V_VCPU_CTX) {
-+		rcu_read_lock();
-+		vcpu_flush_v_callback = rcu_dereference(kvm_flush_vector_ctx_callback);
-+		vcpu_flush_v_callback();
-+		rcu_read_unlock();
-+		return;
-+	}
-+
-+	riscv_v_vstate_save(&current->thread.vstate, task_pt_regs(current));
-+	riscv_v_vstate_set_restore(current, task_pt_regs(current));
-+}
-+
- #ifdef CONFIG_RISCV_ISA_V_PREEMPTIVE
- static __always_inline u32 *riscv_v_flags_ptr(void)
- {
-@@ -129,7 +160,7 @@ static int riscv_v_stop_kernel_context(void)
- 
- static int riscv_v_start_kernel_context(void)
- {
--	struct __riscv_v_ext_state *kvstate, *uvstate;
-+	struct __riscv_v_ext_state *kvstate;
- 
- 	kvstate = &current->thread.kernel_vstate;
- 	if (!kvstate->datap)
-@@ -147,13 +178,10 @@ static int riscv_v_start_kernel_context(void)
- 	}
- 
- 	/* Transfer the ownership of V from user to kernel, then save */
--	riscv_v_start(RISCV_PREEMPT_V | RISCV_PREEMPT_V_DIRTY);
--	if (__riscv_v_vstate_check(task_pt_regs(current)->status, DIRTY)) {
--		uvstate = &current->thread.vstate;
--		__riscv_v_vstate_save(uvstate, uvstate->datap);
--	}
--	riscv_preempt_v_clear_dirty(current);
--	riscv_v_vstate_set_restore(current, task_pt_regs(current));
-+	get_cpu_vector_context();
-+	__riscv_flush_vector_context();
-+	riscv_v_start(RISCV_PREEMPT_V);
-+	put_cpu_vector_context();
- 	return 0;
- }
- 
-@@ -219,8 +247,7 @@ void kernel_vector_begin(void)
- 
- 	if (riscv_v_start_kernel_context()) {
- 		get_cpu_vector_context();
--		riscv_v_vstate_save(&current->thread.vstate, task_pt_regs(current));
--		riscv_v_vstate_set_restore(current, task_pt_regs(current));
-+		__riscv_flush_vector_context();
- 	}
- 
- 	riscv_v_enable();
-diff --git a/arch/riscv/kvm/main.c b/arch/riscv/kvm/main.c
-index 0924c75100a2..da8a5f6d4b4d 100644
---- a/arch/riscv/kvm/main.c
-+++ b/arch/riscv/kvm/main.c
-@@ -14,6 +14,7 @@
- #include <asm/kvm_mmu.h>
- #include <asm/kvm_nacl.h>
- #include <asm/sbi.h>
-+#include <asm/kvm_vcpu_vector.h>
- 
- DEFINE_STATIC_KEY_FALSE(kvm_riscv_vsstage_tlb_no_gpa);
- 
-@@ -76,6 +77,7 @@ static void kvm_riscv_teardown(void)
- {
- 	kvm_riscv_aia_exit();
- 	kvm_riscv_nacl_exit();
-+	kvm_riscv_v_exit();
- 	kvm_unregister_perf_callbacks();
- }
- 
-@@ -170,6 +172,8 @@ static int __init riscv_kvm_init(void)
- 
- 	kvm_riscv_setup_vendor_features();
- 
-+	kvm_riscv_v_init();
-+
- 	kvm_register_perf_callbacks();
- 
- 	rc = kvm_init(sizeof(struct kvm_vcpu), 0, THIS_MODULE);
-diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index cf6e231e76e2..b7b68809a581 100644
---- a/arch/riscv/kvm/vcpu.c
-+++ b/arch/riscv/kvm/vcpu.c
-@@ -603,9 +603,11 @@ void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
- 	kvm_riscv_vcpu_host_fp_save(&vcpu->arch.host_context);
- 	kvm_riscv_vcpu_guest_fp_restore(&vcpu->arch.guest_context,
- 					vcpu->arch.isa);
-+	get_cpu_vector_context();
- 	kvm_riscv_vcpu_host_vector_save(&vcpu->arch.host_context);
- 	kvm_riscv_vcpu_guest_vector_restore(&vcpu->arch.guest_context,
- 					    vcpu->arch.isa);
-+	put_cpu_vector_context();
- 
- 	kvm_make_request(KVM_REQ_STEAL_UPDATE, vcpu);
- 
-@@ -626,9 +628,11 @@ void kvm_arch_vcpu_put(struct kvm_vcpu *vcpu)
- 	kvm_riscv_vcpu_host_fp_restore(&vcpu->arch.host_context);
- 
- 	kvm_riscv_vcpu_timer_save(vcpu);
-+	get_cpu_vector_context();
- 	kvm_riscv_vcpu_guest_vector_save(&vcpu->arch.guest_context,
- 					 vcpu->arch.isa);
- 	kvm_riscv_vcpu_host_vector_restore(&vcpu->arch.host_context);
-+	put_cpu_vector_context();
- 
- 	if (kvm_riscv_nacl_available()) {
- 		nsh = nacl_shmem();
-@@ -765,6 +769,12 @@ static void noinstr kvm_riscv_vcpu_enter_exit(struct kvm_vcpu *vcpu,
- 	kvm_riscv_vcpu_swap_in_guest_state(vcpu);
- 	guest_state_enter_irqoff();
- 
-+	if (current->thread.riscv_v_flags & RISCV_V_VCPU_NEED_RESTORE) {
-+		current->thread.riscv_v_flags &= ~RISCV_V_VCPU_NEED_RESTORE;
-+		__kvm_riscv_vector_restore(gcntx);
-+		gcntx->sstatus = (gcntx->sstatus & ~SR_VS) | SR_VS_CLEAN;
-+	}
-+
- 	if (kvm_riscv_nacl_sync_sret_available()) {
- 		nsh = nacl_shmem();
- 
-diff --git a/arch/riscv/kvm/vcpu_vector.c b/arch/riscv/kvm/vcpu_vector.c
-index 62d2fb77bb9b..d25c10bd99a8 100644
---- a/arch/riscv/kvm/vcpu_vector.c
-+++ b/arch/riscv/kvm/vcpu_vector.c
-@@ -58,6 +58,7 @@ void kvm_riscv_vcpu_guest_vector_restore(struct kvm_cpu_context *cntx,
- 		if (riscv_isa_extension_available(isa, v))
- 			__kvm_riscv_vector_restore(cntx);
- 		kvm_riscv_vcpu_vector_clean(cntx);
-+		riscv_v_flags_set(riscv_v_flags() | RISCV_V_VCPU_CTX);
- 	}
- }
- 
-@@ -72,6 +73,7 @@ void kvm_riscv_vcpu_host_vector_restore(struct kvm_cpu_context *cntx)
- {
- 	if (!kvm_riscv_isa_check_host(V))
- 		__kvm_riscv_vector_restore(cntx);
-+	riscv_v_flags_set(riscv_v_flags() & ~RISCV_V_VCPU_CTX);
- }
- 
- int kvm_riscv_vcpu_alloc_vector_context(struct kvm_vcpu *vcpu)
-@@ -95,6 +97,24 @@ void kvm_riscv_vcpu_free_vector_context(struct kvm_vcpu *vcpu)
- 	kfree(vcpu->arch.guest_context.vector.datap);
- 	kfree(vcpu->arch.host_context.vector.datap);
- }
-+
-+void kvm_riscv_vcpu_flush_vector(void)
-+{
-+	struct kvm_vcpu *vcpu = *this_cpu_ptr(kvm_get_running_vcpus());
-+
-+	/*
-+	 * Only reached from __riscv_flush_vector_context() when RISCV_V_VCPU_CTX is set, which
-+	 * always have kvm_get_running_vcpus non-NULL.
-+	 */
-+	if (WARN_ON_ONCE(!vcpu))
-+		return;
-+
-+	kvm_riscv_vcpu_guest_vector_save(&vcpu->arch.guest_context, vcpu->arch.isa);
-+
-+	if ((vcpu->arch.guest_context.sstatus & SR_VS) != SR_VS_OFF)
-+		riscv_v_flags_set(riscv_v_flags() | RISCV_V_VCPU_NEED_RESTORE);
-+}
-+
- #endif
- 
- static int kvm_riscv_vcpu_vreg_addr(struct kvm_vcpu *vcpu,
--- 
-2.43.0
-
+    Arnd
 
 -- 
 kvm-riscv mailing list
