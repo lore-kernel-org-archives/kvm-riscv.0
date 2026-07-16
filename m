@@ -4,71 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24DCDC4450A
-	for <kvm-riscv@archiver.kernel.org>; Thu, 16 Jul 2026 12:44:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5BDE0C4450A
+	for <kvm-riscv@archiver.kernel.org>; Thu, 16 Jul 2026 12:44:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=UV5VkfFHwRS3ImNrP4/CAyhD6oOKx5eB7gME8FplnGI=; b=y9ms9K5pKpCQO0
-	fI7/39mwY0Zds8RVGC5TlvmSOy2wACEUcRIR1495yZczXdIMjPySSAaGjHX3EgQMaxp+rTaPrtF5F
-	xF+YesOesGYELP61pF3Br2mvNSzAPCQyQfh+8NUb8Uf0pyX6IBEfS4bY+OrnU2hHhdGzPWkz7Eed8
-	nF0LR+dDXhHOpuqIje7XibsI0Twfynl0kkteswLvGzNbQo+V+0hImfVnQO42922KKBtzeMnY9K/NU
-	ZuGamXkT0A+VFPdrzjglSrWOuyKdL9Pev0fixr7Uo+Fg9F14YN5ScPnoP4QmWS8aPE3vRJuhhFcsb
-	jNv+VxrSRpO/o38UEpXg==;
+	List-Owner; bh=G8SMmrvhvuA2mVsy9ZuPksGf0SxhYs9rFhP/TFZPeSc=; b=k02G34shzEaWg0
+	3UQdW2AGVo0wcV+GC8yRI1PvF4YhLyduNb952rt8Hbu0mjZVv6Zrgl8aSywnjhP/M6IW99mW/H991
+	i4WafB2j9Pj0TcWjy5qvUhN2562YDXOJ4MdQcRLgA6Zv5idKVwqbzpYDrLyhIK8JlD4iT57ajEsgA
+	gdIVpBNgjKZGgs5yniK43KkDAL1FuNY9mkC06ydWMm9ZPSS2UZdY/7jyab/ROBRcRz+EWnoRHjJ2v
+	3sZ2/HBFMupNpCpCrXECRYOCwsDdvNZVjUPyrTGX+ZO6F6oUNqv0ZwPheQ8PxxOkRppzjUW5AupN0
+	3iuboVuE5dJqa25tz+sA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wkLS2-0000000HJir-3FnP;
-	Thu, 16 Jul 2026 12:44:30 +0000
-Received: from mail-pf1-x430.google.com ([2607:f8b0:4864:20::430])
+	id 1wkLSF-0000000HJx7-0Duu;
+	Thu, 16 Jul 2026 12:44:43 +0000
+Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wkLRw-0000000HJYh-0wd7
+	id 1wkLSD-0000000HJth-03ZW
+	for kvm-riscv@bombadil.infradead.org;
+	Thu, 16 Jul 2026 12:44:41 +0000
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:MIME-Version
+	:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
+	Content-Type:Content-ID:Content-Description;
+	bh=s0haKjxFEA+XqfWLiPeMGRklJhvkZG2bsdABvuKjaV0=; b=BnowcMcnbk1gDaqz7jikTxFaIP
+	jP9pD+e4n1x/4V0aOZhX3vK9uFMQKTGMMsflgwunFSkPJyMepYxIL1T1dEy9sxbcxoCSa9r3ckAEK
+	l8Z7VhsbEq6U+AAkEwizrsr6mRjcWvcHGFgWQnJctpv7Q7JWqnX9gH91sMaJyg2q3kfEEppWzzJie
+	Su7tGg3nQcBqgyJhKKYutdLgAhaNCpqoODXTKdUwgFkaS6X00Gq63tv8Vo5uBfl/3aJSe0DbXSS3q
+	nIoQBsAxtJFWJ9GpBRZJ/Jcy8C4MVZ6dnKhC68ljAoZCF4ctjbUiHN2WRo+2irvnfrvgEul/uCocj
+	cFIVebcQ==;
+Received: from mail-pg1-x52a.google.com ([2607:f8b0:4864:20::52a])
+	by desiato.infradead.org with esmtps (Exim 4.99.2 #2 (Red Hat Linux))
+	id 1wkLSA-0000000E37K-0bST
 	for kvm-riscv@lists.infradead.org;
-	Thu, 16 Jul 2026 12:44:29 +0000
-Received: by mail-pf1-x430.google.com with SMTP id d2e1a72fcca58-84861fc51f5so3650286b3a.1
-        for <kvm-riscv@lists.infradead.org>; Thu, 16 Jul 2026 05:44:23 -0700 (PDT)
+	Thu, 16 Jul 2026 12:44:39 +0000
+Received: by mail-pg1-x52a.google.com with SMTP id 41be03b00d2f7-ca913a601fbso4545373a12.3
+        for <kvm-riscv@lists.infradead.org>; Thu, 16 Jul 2026 05:44:33 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bytedance.com; s=google; t=1784205863; x=1784810663; darn=lists.infradead.org;
+        d=bytedance.com; s=google; t=1784205872; x=1784810672; darn=lists.infradead.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=MW3VkNC58mnWKcn8BtrFop2mUDTlw3bfVwg/aYM+yrM=;
-        b=I/I2ivd63Cm998WrNygaFsbuokYI75uuARjFE123bNhex8aElOjpT+Kd4JbqRMza+u
-         CkL331yE8OyYgY/d5lCYycVA+BymqBlxT5PyUrOriOURns3K8OiSmsPbnTto9stMZY9H
-         /kOp4UaSSTeSQLIffB2yLtgXkGxz91n3dZlfJeSjmXO60mYAGHB1JVZCIlfWEaYa0qg5
-         t3UbeZd3MKPlOG43jWc/q+oEV51jMh40h4WWuq58hfwRW2Jp7oe7OhD6NvNXUK7F0fcO
-         P8KgMg+1oZGzT/EXMwaBgESiire0kScwjFDAo4oBuJ/Iv8cJAp47d8vcvARoiGeN8fn2
-         koJw==
+        bh=s0haKjxFEA+XqfWLiPeMGRklJhvkZG2bsdABvuKjaV0=;
+        b=bNzOVh7I4KaEO+bBuo529tYKucrzCStv4ETdl9vE4rKZgwVkg0B2iqUd5ulFShjcNV
+         CrcGmE4ACoXM+COE4QQU0UD0CzR55uT0zyt7zhiMLPHMVwZnH53C+9dSdySO14QgM3vG
+         kMMpduIiHTgBdWCYi+KSRwWiV24nke872fqgsl9hxaapP5IviXlB+JD8IW8JFvRhFxHH
+         R18BUOxMvBhjh/d4SsMJ/NhYZSnKvtfnFA56zVEb6VrYZC2r8dxG4Sx9/eRvvVT9afe0
+         k6kA4SFAp9VljycYPQKeySYoKD4p8Q0XykmpBqWdiXb81YWYm3yyXuVWYlUZkcYznOE6
+         hxfg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784205863; x=1784810663;
+        d=1e100.net; s=20251104; t=1784205872; x=1784810672;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=MW3VkNC58mnWKcn8BtrFop2mUDTlw3bfVwg/aYM+yrM=;
-        b=rmI2ml6pksHgvK5SJkzJah5cwuhu6MOmtmITZ1J990xeGE15SZ7rruwnH/8hAACcmn
-         YdhWDLDr/KA3skbtC9AXgINGBAODAcHwlsfTGXa8kcF+h8tZxQ36/hN70Kr1ScfRzYKc
-         MgKwXR739bHZ1Nb/Ik7L+N2AE3S5c3SxPBtLFD6LVWRp2rJZbzVrLZadpqGWQZdrAWOZ
-         p4gXmlcvSmVBm3jpscd44Ncv4FHo+QMlObS/HSE6hY3l+LIL3TDK0me6kksCyQxikK8J
-         lCtUDG/3FngidoerbMEViCHBbAdFXueFfBi5UQZMeLPrVMgxT1tYBaCZwg2aq8CRR0d4
-         TzCw==
-X-Forwarded-Encrypted: i=1; AHgh+RpGQ+hmNldtWpYSykelZ8LQdFW+tMBOaLnwUwIEiJ2xmZqlnaz7sxid6/07BJSH97rwKbA8sHbvjN8=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yx85Ym7SCbl1dhY1H64YPJdPXtlD0XMqsYXZLUfifRTZj0MpPDD
-	whL3lf8TwVqWGWcBOf0dl8k6BrbIU64r+jP6li2GoH9UPubmRAP/JPqMTYK/78PLoTM=
-X-Gm-Gg: AfdE7ck8VW/7k++V/bquc1pizbXIogo8hEJ6YeyAml2HV7oSiD1wDboeM7Wmmzo84t0
-	bgXdbbbpSwon7Yf5jlb9AlBuDcV1PdLkz+ay7Mm4ob+NFStDQBzD8uUUcn5T8uMr9QuMts3iHqo
-	CJZ2YIpjTNzPGHN0br37rpu4rVsljiAa7fsYmiCEeOnIuSeTHmnoUuqOB1yN7PstaidovGTQBtg
-	XwZqUT88AxRs/VQ0SDvQ1cRc1LGTa79S1UE0+erWPSUJe8K/ZYx+Gr+euTgv7Ar9ENx7jb+ee2k
-	GnXRDgavSlv2E2fvUScAicbgQ4j4XpHEvBPVtSLjKvhgD3CWqkJ8QDQxd0Rv/LLg2L24gnC/uQL
-	flCB9ki0dSDzt6eEAAbQFuw8gADcO2jI4BVl8uC1brrTY1BGqzsw2bGF08j5bX5ePQzpWACTakn
-	gwvrT+wnfFChzvSpP+5d6Bcx8=
-X-Received: by 2002:a05:6a00:4c98:b0:848:4b27:36ce with SMTP id d2e1a72fcca58-84a673c79a1mr6078389b3a.73.1784205863094;
-        Thu, 16 Jul 2026 05:44:23 -0700 (PDT)
+        bh=s0haKjxFEA+XqfWLiPeMGRklJhvkZG2bsdABvuKjaV0=;
+        b=TVfbxgX+2g7kaB9PLoQ3NVZZENIDzo93IenQOvOucZXgJ8HkW7EDg/3Y63V4nm99o/
+         MzGESQxt/gm41a985uTw3Fl1aQdA/5B+d/8THNJAIk6uq8t/5MtvHLyDaN+GDBHwF5jJ
+         5nweUrMw18lraIdD4yWyE1qoy+tyDYP3EOwQVtGn1RsUBuDjJjONw0JD7N2alWMRj5jr
+         LNTeqmf0OcqX7louP3K7gTLQmkjA0v6V7YiHjMjK99VB3N0J9JrFrS18OfLKVKPHCXZl
+         vCMFDbJ117OHGnQbJBsmq4mO9tYS0n/BafJM3PIVSU9SGfNrgN0jJyxe3/uYVk5BG3Et
+         S3lQ==
+X-Forwarded-Encrypted: i=1; AHgh+RoWnco5xgP85HhTdvxZWYwkiiwvIYhYuueHick830d9EH33PwTpNpumNy4cWO7s01hkkPIi5bi0jVQ=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yx3Lj1iUbifOaoNwkSpu9P3Jiqeoo3BNQ0ZaT4r2IBcduzVnpAj
+	ob5wVC1EVjgN7hhKDNq4RQA2l8Y8R0Bow+6lOZv2NWYPF6E+w/HF0SX1NgrSbvXT5Hg=
+X-Gm-Gg: AfdE7cnYsZKQ/ibuhdv+BAX8fatKLM5N/xYdX4bmbR0cnMJDwPDNo/iKAkfe7MpWv7M
+	+uhPWfbh1LFoZgD1byl2z2eiByjEp5UTTKeu/PoVRyUVX+yf+c5CAWjZEnSOgsdYrXNlCd66w3e
+	3LQwaSFWllj89VdhaLvca2RupO/7aDvu8k1tifXkm3RMXjW2Ytn/YvicV9WAS72jTvjyRI+8LXx
+	XZrY2dtptdhTB7r/QEd+aEZv3wzblTltIfiRLaO17uPJdlgtdreVRiEowl2w9RpcMTWI+RTMfr/
+	k+QiSCmcUIzStMUlITQaT3cJ9e0TfTyNvRpcSAg2a8atwVO5C9WehDas+3keDYjrQNjFmhu9sTp
+	CxRGWJzHJTgdTVpfs6NcSmyx8nbs0XxUV3U061LfEDOxVJ2c4/1+OT21wb84PfuVGVrUgDDRbpE
+	Yr5/XX1STeaNfg5ih8afvhwBpM+5giFJOxfA==
+X-Received: by 2002:a05:6a20:e615:b0:3c0:9c19:6590 with SMTP id adf61e73a8af0-3c3576c37f6mr12235735637.74.1784205871769;
+        Thu, 16 Jul 2026 05:44:31 -0700 (PDT)
 Received: from L6YN4KR4K9.bytedance.net ([2408:8606:1800:501::2:f])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-cb258eeaba2sm1730793a12.12.2026.07.16.05.44.14
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-cb258eeaba2sm1730793a12.12.2026.07.16.05.44.23
         (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Thu, 16 Jul 2026 05:44:21 -0700 (PDT)
+        Thu, 16 Jul 2026 05:44:31 -0700 (PDT)
 From: Yunhui Cui <cuiyunhui@bytedance.com>
 To: linux-riscv@lists.infradead.org,
 	linux-mm@kvack.org,
@@ -81,16 +96,17 @@ Cc: linux-arch@vger.kernel.org,
 	linux-perf-users@vger.kernel.org,
 	kasan-dev@googlegroups.com,
 	Yunhui Cui <cuiyunhui@bytedance.com>
-Subject: [PATCH v2 11/15] riscv: mm: avoid Svnapot A/D aggregation in fast-GUP
-Date: Thu, 16 Jul 2026 20:41:46 +0800
-Message-Id: <95699db9c9b90fd1f95310e9d95b000eb8cfc616.1784201104.git.cuiyunhui@bytedance.com>
+Subject: [PATCH v2 12/15] arm64: mm: avoid contpte A/D aggregation in fast-GUP
+Date: Thu, 16 Jul 2026 20:41:47 +0800
+Message-Id: <92fbae3247b4bf0d7989ba20a8763ecb836d0279.1784201104.git.cuiyunhui@bytedance.com>
 X-Mailer: git-send-email 2.39.2 (Apple Git-143)
 In-Reply-To: <cover.1784201104.git.cuiyunhui@bytedance.com>
 References: <cover.1784201104.git.cuiyunhui@bytedance.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260716_054424_291856_96A343BF 
-X-CRM114-Status: GOOD (  10.13  )
+X-CRM114-CacheID: sfid-20260716_134438_314368_D2C89E3B 
+X-CRM114-Status: UNSURE (   8.04  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -109,82 +125,45 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 fast-GUP only needs the PTE state for the current virtual address and
 revalidates the raw PTE after pinning the page. It does not consume the
-block-wide accessed/dirty aggregation provided by the public Svnapot
+contpte block-wide accessed/dirty aggregation provided by the public
 lockless getter.
 
-Override the fast-GUP PTE helpers to translate a NAPOT PTE into the
-current sub-PTE without scanning the whole NAPOT block. Keep the public
-ptep_get_lockless() semantics unchanged for other lockless users.
-
-With 64K THP enabled in always mode, fio 4K random direct read
-throughput improves by about 10% over the previous implementation on the
-same system, from 2.615M to 2.874M IOPS and from 9.97GiB/s to 11.0GiB/s,
-while average clat drops from 95.54 usec to 86.97 usec.
+Override the fast-GUP PTE helpers to use the raw PTE for the current
+entry and raw revalidation. Keep the public ptep_get_lockless() semantics
+unchanged for other lockless users.
 
 Signed-off-by: Yunhui Cui <cuiyunhui@bytedance.com>
 ---
- arch/riscv/include/asm/pgtable.h | 20 ++++++++++++++++++++
- arch/riscv/mm/contpte.c          |  9 +++++++++
- 2 files changed, 29 insertions(+)
+ arch/arm64/include/asm/pgtable.h | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
-diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
-index dd56c20a817bb..3727c148fa0fc 100644
---- a/arch/riscv/include/asm/pgtable.h
-+++ b/arch/riscv/include/asm/pgtable.h
-@@ -597,6 +597,7 @@ void __napotpte_try_unfold(struct mm_struct *mm, unsigned long addr,
- 			   pte_t *ptep, pte_t pte);
- pte_t napotpte_ptep_get(pte_t *ptep, pte_t orig_pte);
- pte_t napotpte_ptep_get_lockless(pte_t *ptep);
-+pte_t napotpte_ptep_get_gup_fast(pte_t *ptep, pte_t orig_pte);
- void napotpte_set_ptes(struct mm_struct *mm, unsigned long addr,
- 		       pte_t *ptep, pte_t pte, unsigned int nr);
- void napotpte_clear_full_ptes(struct mm_struct *mm, unsigned long addr,
-@@ -956,6 +957,25 @@ static inline pte_t ptep_get_lockless(pte_t *ptep)
- 	return napotpte_ptep_get_lockless(ptep);
+diff --git a/arch/arm64/include/asm/pgtable.h b/arch/arm64/include/asm/pgtable.h
+index 018781a1fcbee..d1e08dce9f7c5 100644
+--- a/arch/arm64/include/asm/pgtable.h
++++ b/arch/arm64/include/asm/pgtable.h
+@@ -1760,6 +1760,22 @@ static inline pte_t ptep_get_lockless(pte_t *ptep)
+ 	return contpte_ptep_get_lockless(ptep);
  }
  
 +#define gup_ptep_get_lockless gup_ptep_get_lockless
 +static inline pte_t gup_ptep_get_lockless(pte_t *ptep, pte_t *rawp)
 +{
-+	pte_t pte = __ptep_get_lockless(ptep);
++	pte_t pte = __ptep_get(ptep);
 +
 +	*rawp = pte;
 +
-+	if (likely(!pte_present_napot(pte)))
-+		return pte;
-+
-+	return napotpte_ptep_get_gup_fast(ptep, pte);
++	return pte;
 +}
 +
 +#define gup_ptep_revalidate gup_ptep_revalidate
 +static inline bool gup_ptep_revalidate(pte_t *ptep, pte_t raw_pte)
 +{
-+	return pte_val(raw_pte) == pte_val(__ptep_get_lockless(ptep));
++	return pte_val(raw_pte) == pte_val(__ptep_get(ptep));
 +}
 +
- #define set_ptes set_ptes
- static inline void set_ptes(struct mm_struct *mm, unsigned long addr,
- 			    pte_t *ptep, pte_t pteval, unsigned int nr)
-diff --git a/arch/riscv/mm/contpte.c b/arch/riscv/mm/contpte.c
-index 0f66426b0ecfd..b0b8ff0aade3a 100644
---- a/arch/riscv/mm/contpte.c
-+++ b/arch/riscv/mm/contpte.c
-@@ -413,6 +413,15 @@ pte_t napotpte_ptep_get_lockless(pte_t *orig_ptep)
- }
- EXPORT_SYMBOL(napotpte_ptep_get_lockless);
- 
-+pte_t napotpte_ptep_get_gup_fast(pte_t *orig_ptep, pte_t orig_pte)
-+{
-+	if (!napot_hw_supported() || !pte_present_napot(orig_pte))
-+		return orig_pte;
-+
-+	return napotpte_subpte(orig_ptep, orig_pte);
-+}
-+EXPORT_SYMBOL(napotpte_ptep_get_gup_fast);
-+
- unsigned int napotpte_pte_batch_hint_from_pte(pte_t *ptep, pte_t orig_pte,
- 					      fpb_t flags)
+ static inline void set_pte(pte_t *ptep, pte_t pte)
  {
+ 	/*
 -- 
 2.39.5
 
