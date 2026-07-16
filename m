@@ -4,64 +4,99 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E00ACC4450A
-	for <kvm-riscv@archiver.kernel.org>; Thu, 16 Jul 2026 07:39:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0979CC44501
+	for <kvm-riscv@archiver.kernel.org>; Thu, 16 Jul 2026 07:50:07 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-Id:Date:Subject:Cc
-	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=IId9JFgKJLwJYJOEFQ/gsHbpSbQgPSUDVP8vFNaOqD8=; b=yJ3hMgqYYEhvPV
-	8zEFedNGsy2x9HCCOB0DFuVbafQPRRE8v63UxtbaQ/5fMg1Tbj+VK2cttXit4MG01o4gsNYOji+ZY
-	cum5rHEZIHEyALuzMe6Rvgm7/XyV03JRtpO+0SQKeiHj6S2IuqoncGZwtB9ephvylDlIEBQ2gTZfm
-	jamqZJMBc6M/GNdDlnjxIGAnwG+tqZydvAM318kvFaTgsdSoQP4/HmLexZbUBVvEeyRrIdY0gVcDb
-	Xo1Yn51PakP9fq40Y1duYqQa+jByk37zkUxBgZU5TINKFxJRVbwWStSCREGb5PyWUyNC2CECQ/lav
-	1zxv7MMmvdks41YDPM6A==;
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
+	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=XAhByPras0gy/SP7U/1O+rlW1mJfygQFRpvny0ddrCc=; b=Zrmf6nenW2xxHf
+	vN6qZExbAsnrgf9DVlHhzbptcgDWFuKiAoU7vAq55HCHX/Q3HDrJSVIYWiqDMR/70c4Vnx3W93zqw
+	bIanwakid8MQspwNsvdgJrNjPCb1ZHKrTjbrbwte8LqvUCF+L7555izw4SZ+fxoPMG8C4svixuocB
+	pYizMJDbb8ZrzRAbqZo+eQ+eby3RevC9NuBHwyNpu818YjS81N+Hxmlps9IfDf2zOfdgVZ0JgXqzC
+	FKLbhTPZXBMhkOVEO9dZDQHNzLx5kDWOJzQkscQX3pwdGjBs2JmlNr3OztqeDHWxIbyew84KuWDPW
+	KevMKL0/fkoKouIouq+g==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wkGgc-0000000Gfnr-0b4n;
-	Thu, 16 Jul 2026 07:39:14 +0000
-Received: from m16.mail.163.com ([117.135.210.2])
-	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wkGgZ-0000000GflU-1a2I;
-	Thu, 16 Jul 2026 07:39:13 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=0J
-	XU3cAUzaSbuwG+IlW2Ctt3lxfI9p33+cxpVmrZTCY=; b=BpfmbnTxJjIhkGOMH4
-	evePfG+TieRPYpeMG7SNLkqTTeuA1k8xRJmqZbjG3CM+xyanBeAa10dvjwGALRw+
-	d9mtF3Auf40V8cyk4QvabMEiBdgZdaPWrHZZZaOkHyE6oZizvbxxf9f5IUylarnS
-	3z5yiL4qxscG9vju/XdDlscS0=
-Received: from thinkpadx13gen2i.. (unknown [])
-	by gzga-smtp-mtada-g1-2 (Coremail) with SMTP id _____wBXvgNdilhqW6A9Jw--.32504S2;
-	Thu, 16 Jul 2026 15:38:06 +0800 (CST)
-From: Zongmin Zhou <min_halo@163.com>
-To: anup@brainfault.org,
-	atish.patra@linux.dev,
-	pjw@kernel.org,
-	palmer@dabbelt.com,
-	aou@eecs.berkeley.edu,
-	alex@ghiti.fr
-Cc: kvm@vger.kernel.org,
-	kvm-riscv@lists.infradead.org,
-	linux-riscv@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	Zongmin Zhou <zhouzongmin@kylinos.cn>
-Subject: [PATCH] KVM: riscv: Fix infinite loop in NACL hfence entry allocation
-Date: Thu, 16 Jul 2026 15:37:56 +0800
-Message-Id: <20260716073756.44153-1-min_halo@163.com>
-X-Mailer: git-send-email 2.34.1
+	id 1wkGr8-0000000Ggvm-3KrH;
+	Thu, 16 Jul 2026 07:50:06 +0000
+Received: from foss.arm.com ([217.140.110.172])
+	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
+	id 1wkGr5-0000000Gguu-1KwI;
+	Thu, 16 Jul 2026 07:50:05 +0000
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 7269C168F;
+	Thu, 16 Jul 2026 00:49:55 -0700 (PDT)
+Received: from e129823.arm.com (e129823.arm.com [10.2.213.3])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 4FEE73F905;
+	Thu, 16 Jul 2026 00:49:49 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1784188199; bh=SezQaQ3kr0/h0JyFQ0VLykJSkvx0NJJphcsYvOpsEN4=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=gQRl7YUQCBVoiNIinaXRRJ6iLdSG3Rzd0xV0hEu2lGo5w6z86vYyNhkSIYX9L3nd9
+	 q4q4/O6JNDXm4XNPNif4MOp4E6vcDqWFBACswg6z3701KGFgiJeJvUAoj008c2kew8
+	 5BJk9bAjoi8xDDesBwIO6jPMcRzOrdrOp8BTmyaQ=
+Date: Thu, 16 Jul 2026 08:49:47 +0100
+From: Yeoreum Yun <yeoreum.yun@arm.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Yeoreum Yun <yeoreum.yun@arm.com>, Dave Hansen <dave.hansen@intel.com>,
+	"David Hildenbrand (Arm)" <david@kernel.org>,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	loongarch@lists.linux.dev, linux-mips@vger.kernel.org,
+	linux-arch@vger.kernel.org, kvm-riscv@lists.infradead.org,
+	linux-riscv@lists.infradead.org, x86@kernel.org, linux-mm@kvack.org,
+	kasan-dev@googlegroups.com, linux-csky@vger.kernel.org,
+	linux-m68k@lists.linux-m68k.org, linux-openrisc@vger.kernel.org,
+	linux@armlinux.org.uk, akpm@linux-foundation.org,
+	ankur.a.arora@oracle.com, rppt@kernel.org, linmag7@gmail.com,
+	chleroy@kernel.org, klarasmodin@gmail.com, chenhuacai@kernel.org,
+	kernel@xen0n.name, kas@kernel.org, zhangtianyang@loongson.cn,
+	wangyuli@aosc.io, tsbogend@alpha.franken.de, ljs@kernel.org,
+	jgg@ziepe.ca, catalin.marinas@arm.com, will@kernel.org,
+	arnd@arndb.de, ryan.roberts@arm.com, pasha.tatashin@soleen.com,
+	rmclure@linux.ibm.com, baolin.wang@linux.alibaba.com, tj@kernel.org,
+	kevin.brodsky@arm.com, anup@brainfault.org, atish.patra@linux.dev,
+	pjw@kernel.org, palmer@dabbelt.com, aou@eecs.berkeley.edu,
+	alex@ghiti.fr, dave.hansen@linux.intel.com, luto@kernel.org,
+	peterz@infradead.org, tglx@kernel.org, mingo@redhat.com,
+	bp@alien8.de, hpa@zytor.com, hannes@cmpxchg.org, mhocko@kernel.org,
+	qi.zheng@linux.dev, shakeel.butt@linux.dev, kasong@tencent.com,
+	baohua@kernel.org, axelrasmussen@google.com, yuanchu@google.com,
+	weixugc@google.com, ryabinin.a.a@gmail.com, glider@google.com,
+	andreyknvl@gmail.com, dvyukov@google.com, vincenzo.frascino@arm.com,
+	anshuman.khandual@arm.com, yang@os.amperecomputing.com,
+	chaitanyas.prakash@arm.com, ardb@kernel.org, guoren@kernel.org,
+	yang.li85200@gmail.com, viro@zeniv.linux.org.uk,
+	dinguyen@kernel.org, schuster.simon@siemens-energy.com,
+	wangruikang@iscas.ac.cn, junhui.liu@pigmoral.tech,
+	muchun.song@linux.dev, vishal.moola@gmail.com, namcao@linutronix.de,
+	pavel@kernel.org, djbw@kernel.org, yu-cheng.yu@intel.com,
+	baolu.lu@linux.intel.com, Jonathan.Cameron@huawei.com,
+	coxu@redhat.com, andreas@gaisler.com, liam@infradead.org,
+	vbabka@kernel.org, surenb@google.com, mhocko@suse.com,
+	shorne@gmail.com, jonas@southpole.se,
+	stefan.kristiansson@saunalahti.fi
+Subject: Re: [RFC PATCH 10/34] x86: mm: carve out the generic compile-time
+ folded pgtable case in effective_prot()
+Message-ID: <aliNG7OGphxzH7Wr@e129823.arm.com>
+References: <31988089-095a-4eed-b5e2-c677c70f79f6@kernel.org>
+ <14e250db-1641-4085-8d13-02f819657d5f@intel.com>
+ <d83c76b3-ea4d-4c41-b4c5-f5ae558ace55@kernel.org>
+ <alYgMxKqRnF6_X0A@e129823.arm.com>
+ <6df814c9-405c-48d8-96ea-929c4b28949b@intel.com>
+ <alZe-Cu7yQw9qRXU@e129823.arm.com>
+ <alZo9feSrSB_StfO@e129823.arm.com>
+ <CAMuHMdUqL=vJFAzYgcRVNbD_VWWwhehwTuhTfwLt_yRR8c+B0g@mail.gmail.com>
+ <aldV23PwIXnFloaN@e129823.arm.com>
+ <CAMuHMdVOHm6MmP9QsNVvxLsGp1e0jC9u9RGb6+xee0ZBs4Zwfw@mail.gmail.com>
 MIME-Version: 1.0
-X-CM-TRANSID: _____wBXvgNdilhqW6A9Jw--.32504S2
-X-Coremail-Antispam: 1Uf129KBjvdXoWrKrWrGFy3AF45Gr1UAry3XFb_yoWDWwc_C3
-	WxX3yxWrW8ta1jv3Z3Ww4rXF4aya98C34DGr1Iyry7ta4Fq3yaqa4kKw1DGryUAr45Zasx
-	Jr1rXr13Z3ZrujkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
-	9fnUUvcSsGvfC2KfnxnUUI43ZEXa7IU8jiiDUUUUU==
-X-Originating-IP: [116.128.244.169]
-X-CM-SenderInfo: pplqsxxdorqiywtou0bp/xtbC8x5qFmpYil75OQAA33
+Content-Disposition: inline
+In-Reply-To: <CAMuHMdVOHm6MmP9QsNVvxLsGp1e0jC9u9RGb6+xee0ZBs4Zwfw@mail.gmail.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260716_003911_851164_ED513363 
-X-CRM114-Status: GOOD (  10.41  )
+X-CRM114-CacheID: sfid-20260716_005003_529079_B313CC8F 
+X-CRM114-Status: GOOD (  15.69  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -78,40 +113,52 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-From: Zongmin Zhou <zhouzongmin@kylinos.cn>
+On Wed, Jul 15, 2026 at 12:34:29PM +0200, Geert Uytterhoeven wrote:
+> Hi Yeoreum,
+> 
+> On Wed, 15 Jul 2026 at 11:42, Yeoreum Yun <yeoreum.yun@arm.com> wrote:
+> > > On Tue, 14 Jul 2026 at 18:51, Yeoreum Yun <yeoreum.yun@arm.com> wrote:
+> > > > --- a/mm/ptdump.c
+> > > > +++ b/mm/ptdump.c
+> > > > @@ -190,6 +190,23 @@ void ptdump_walk_pgd(struct ptdump_state *st, struct mm_struct *mm, pgd_t *pgd)
+> > > >         st->note_page_flush(st);
+> > > >  }
+> > > >
+> > > > +bool pdtump_pt_level_first(struct mm_struct *mm, int level)
+> > > > +{
+> > > > +       if (!mm || level > CONFIG_PGTABLE_LEVELS)
+> > > > +               return false;
+> > > > +
+> > > > +       if (mm_pmd_folded(mm) && level == 3)
+> > > > +               return true;
+> > > > +       if (mm_pud_folded(mm) && level == 2)
+> > > > +               return true;
+> > > > +       if (mm_p4d_folded(mm) && level == 1)
+> > > > +               return true;
+> > >
+> > > Is this order (... && level == ...) the optimal order?
+> > > On arm64, mm_pud_folded() and mm_p4d_folded() perform several checks.
+> > >
+> > > > +       if (level == 0)
+> > > > +               return true;
+> > > > +
+> > > > +       return false;
+> > > > +}
+> >
+> > It is. since the purpose of ptdump_pt_level_first is designed to be used
+> > in the *callback* of pXd_entry(). IOW, if we check level 0 first,
+> > it always returns wrong return in folded case.
+> 
+> I meant the order inside the if () conditions.
+> E.g.
+> "if (mm_pud_folded(mm) && level == 2)" does the expensive check first.
+> "if (level == 2 && mm_pud_folded(mm))" does the cheap check first.
 
-try_count is initialized to 5 but never decremented in the retry path,
-making the `if (try_count)` check always true. If all NACL shared memory
-hfence entries remain in the pending state after sync, the function loops
-forever, causing a soft lockup. Decrement try_count on each retry so the
-fallback warning and return become reachable.
+Ah. Yeap that would be better. Thanks!
 
-Fixes: d466c19cead5 ("RISC-V: KVM: Add common nested acceleration support")
-Signed-off-by: Zongmin Zhou <zhouzongmin@kylinos.cn>
----
- arch/riscv/kvm/nacl.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/riscv/kvm/nacl.c b/arch/riscv/kvm/nacl.c
-index 6f9f8963e9dd..9aff03c4f667 100644
---- a/arch/riscv/kvm/nacl.c
-+++ b/arch/riscv/kvm/nacl.c
-@@ -33,7 +33,7 @@ void __kvm_riscv_nacl_hfence(void *shmem,
- 	}
- 
- 	if (ent < 0) {
--		if (try_count) {
-+		if (try_count--) {
- 			nacl_sync_hfence(-1UL);
- 			goto again;
- 		} else {
 -- 
-2.34.1
-
-
-No virus found
-		Checked by Hillstone Network AntiVirus
-
+Sincerely,
+Yeoreum Yun
 
 -- 
 kvm-riscv mailing list
