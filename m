@@ -4,45 +4,44 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0979CC44501
-	for <kvm-riscv@archiver.kernel.org>; Thu, 16 Jul 2026 07:50:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 50A2CC44501
+	for <kvm-riscv@archiver.kernel.org>; Thu, 16 Jul 2026 08:48:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
 	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=XAhByPras0gy/SP7U/1O+rlW1mJfygQFRpvny0ddrCc=; b=Zrmf6nenW2xxHf
-	vN6qZExbAsnrgf9DVlHhzbptcgDWFuKiAoU7vAq55HCHX/Q3HDrJSVIYWiqDMR/70c4Vnx3W93zqw
-	bIanwakid8MQspwNsvdgJrNjPCb1ZHKrTjbrbwte8LqvUCF+L7555izw4SZ+fxoPMG8C4svixuocB
-	pYizMJDbb8ZrzRAbqZo+eQ+eby3RevC9NuBHwyNpu818YjS81N+Hxmlps9IfDf2zOfdgVZ0JgXqzC
-	FKLbhTPZXBMhkOVEO9dZDQHNzLx5kDWOJzQkscQX3pwdGjBs2JmlNr3OztqeDHWxIbyew84KuWDPW
-	KevMKL0/fkoKouIouq+g==;
+	List-Owner; bh=CB8JXaGJvDf3EcpqqX1vCxLzvPfmnaZd7mGBEsxtuTE=; b=bKiBKVkdquNeE7
+	YGzWH1kRK03jqLez9NfXm3lMZC10vqSzpAWq+pjFnujgXfxq2y9P5D3lsmtjyyjZxkijcPTo/rkC7
+	o4R9pwtffM4nuhNRU9SuFsYKmcQb0Ib9iOl6fkLlpyOiwuBvPy73s9OmrSFDvC91VhEpVuAxy5/DH
+	nNPSOewAS8NVQVPA11PLg+Et72hFMqj9m3YUCILKRRlTMTeSGbDtQcFxzUHKW2ovg9Xva+TnJcjlM
+	01RM/n5++dOCycGYUStJ4M1wzItTVKoNB7dZ6IlRytOgGBWBYpdzafaoa0aU5AY5oPDQWxni6TPVm
+	F29YRvltJie3qRxvmTEQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wkGr8-0000000Ggvm-3KrH;
-	Thu, 16 Jul 2026 07:50:06 +0000
+	id 1wkHlD-0000000Gmg3-2rHN;
+	Thu, 16 Jul 2026 08:48:03 +0000
 Received: from foss.arm.com ([217.140.110.172])
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wkGr5-0000000Gguu-1KwI;
-	Thu, 16 Jul 2026 07:50:05 +0000
+	id 1wkHlA-0000000GmfK-3yOS;
+	Thu, 16 Jul 2026 08:48:02 +0000
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 7269C168F;
-	Thu, 16 Jul 2026 00:49:55 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 6B9A21477;
+	Thu, 16 Jul 2026 01:47:54 -0700 (PDT)
 Received: from e129823.arm.com (e129823.arm.com [10.2.213.3])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 4FEE73F905;
-	Thu, 16 Jul 2026 00:49:49 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 49F693F7B4;
+	Thu, 16 Jul 2026 01:47:46 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1784188199; bh=SezQaQ3kr0/h0JyFQ0VLykJSkvx0NJJphcsYvOpsEN4=;
+	t=1784191678; bh=7QMKKDkHs0y71hejlsCYJzHb+xCedfa9P65PLvvFIKc=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=gQRl7YUQCBVoiNIinaXRRJ6iLdSG3Rzd0xV0hEu2lGo5w6z86vYyNhkSIYX9L3nd9
-	 q4q4/O6JNDXm4XNPNif4MOp4E6vcDqWFBACswg6z3701KGFgiJeJvUAoj008c2kew8
-	 5BJk9bAjoi8xDDesBwIO6jPMcRzOrdrOp8BTmyaQ=
-Date: Thu, 16 Jul 2026 08:49:47 +0100
+	b=axdTxfndxhIm2l9wF115JT8EyHK0aYwwshKm81eWDFzjzgjVJJ7BS+4WpMIvME3P1
+	 uIFkxgagimtncp13PjU0JSxgZ0WhcaaecC63vGJVGl7xPiIi3KUjXJnW5Hw9bPiUOw
+	 JESTB8MB3ZDJ0nw4fAi/iJ9gtqgqsVDoZ01LWgek=
+Date: Thu, 16 Jul 2026 09:47:43 +0100
 From: Yeoreum Yun <yeoreum.yun@arm.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
+To: "David Hildenbrand (Arm)" <david@kernel.org>
 Cc: Yeoreum Yun <yeoreum.yun@arm.com>, Dave Hansen <dave.hansen@intel.com>,
-	"David Hildenbrand (Arm)" <david@kernel.org>,
 	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
 	loongarch@lists.linux.dev, linux-mips@vger.kernel.org,
 	linux-arch@vger.kernel.org, kvm-riscv@lists.infradead.org,
@@ -76,11 +75,11 @@ Cc: Yeoreum Yun <yeoreum.yun@arm.com>, Dave Hansen <dave.hansen@intel.com>,
 	baolu.lu@linux.intel.com, Jonathan.Cameron@huawei.com,
 	coxu@redhat.com, andreas@gaisler.com, liam@infradead.org,
 	vbabka@kernel.org, surenb@google.com, mhocko@suse.com,
-	shorne@gmail.com, jonas@southpole.se,
+	geert@linux-m68k.org, shorne@gmail.com, jonas@southpole.se,
 	stefan.kristiansson@saunalahti.fi
 Subject: Re: [RFC PATCH 10/34] x86: mm: carve out the generic compile-time
  folded pgtable case in effective_prot()
-Message-ID: <aliNG7OGphxzH7Wr@e129823.arm.com>
+Message-ID: <aliar2eyG2WMFWMz@e129823.arm.com>
 References: <31988089-095a-4eed-b5e2-c677c70f79f6@kernel.org>
  <14e250db-1641-4085-8d13-02f819657d5f@intel.com>
  <d83c76b3-ea4d-4c41-b4c5-f5ae558ace55@kernel.org>
@@ -88,15 +87,15 @@ References: <31988089-095a-4eed-b5e2-c677c70f79f6@kernel.org>
  <6df814c9-405c-48d8-96ea-929c4b28949b@intel.com>
  <alZe-Cu7yQw9qRXU@e129823.arm.com>
  <alZo9feSrSB_StfO@e129823.arm.com>
- <CAMuHMdUqL=vJFAzYgcRVNbD_VWWwhehwTuhTfwLt_yRR8c+B0g@mail.gmail.com>
- <aldV23PwIXnFloaN@e129823.arm.com>
- <CAMuHMdVOHm6MmP9QsNVvxLsGp1e0jC9u9RGb6+xee0ZBs4Zwfw@mail.gmail.com>
+ <7cff02d6-d3ce-4315-b667-34911fc6f321@kernel.org>
+ <alZ44XdgTEVFX6jU@e129823.arm.com>
+ <a7e6a281-d1a4-42a6-9672-b1304107f888@kernel.org>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <CAMuHMdVOHm6MmP9QsNVvxLsGp1e0jC9u9RGb6+xee0ZBs4Zwfw@mail.gmail.com>
+In-Reply-To: <a7e6a281-d1a4-42a6-9672-b1304107f888@kernel.org>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260716_005003_529079_B313CC8F 
-X-CRM114-Status: GOOD (  15.69  )
+X-CRM114-CacheID: sfid-20260716_014801_091976_891E09B2 
+X-CRM114-Status: GOOD (  21.35  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -113,48 +112,104 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Wed, Jul 15, 2026 at 12:34:29PM +0200, Geert Uytterhoeven wrote:
-> Hi Yeoreum,
+On Wed, Jul 15, 2026 at 11:44:51AM +0200, David Hildenbrand (Arm) wrote:
+> On 7/14/26 19:58, Yeoreum Yun wrote:
+> > On Tue, Jul 14, 2026 at 07:29:38PM +0200, David Hildenbrand (Arm) wrote:
+> >> On 7/14/26 18:51, Yeoreum Yun wrote:
+> >>>
+> >>> Furthermore, the effective_prot() need to require to identify whether
+> >>> it's the first pgtable to prevent the inheriting from dummy value.
+> >>> So I think it seems to make a ptdump_pt_level_first() like:
+> >>>
+> >>> diff --git a/mm/ptdump.c b/mm/ptdump.c
+> >>> index 973020000096c..2ec5700e4be5e 100644
+> >>> --- a/mm/ptdump.c
+> >>> +++ b/mm/ptdump.c
+> >>> @@ -190,6 +190,23 @@ void ptdump_walk_pgd(struct ptdump_state *st, struct mm_struct *mm, pgd_t *pgd)
+> >>>         st->note_page_flush(st);
+> >>>  }
+> >>>
+> >>> +bool pdtump_pt_level_first(struct mm_struct *mm, int level)
+> >>> +{
+> >>> +       if (!mm || level > CONFIG_PGTABLE_LEVELS)
+> >>> +               return false;
+> >>
+> >> Do we actually ever get !mm ?
+> > 
+> > Yes. for the case of s390 use mm anyway for folded check.
+> That's not what I meant, let me clarify.
 > 
-> On Wed, 15 Jul 2026 at 11:42, Yeoreum Yun <yeoreum.yun@arm.com> wrote:
-> > > On Tue, 14 Jul 2026 at 18:51, Yeoreum Yun <yeoreum.yun@arm.com> wrote:
-> > > > --- a/mm/ptdump.c
-> > > > +++ b/mm/ptdump.c
-> > > > @@ -190,6 +190,23 @@ void ptdump_walk_pgd(struct ptdump_state *st, struct mm_struct *mm, pgd_t *pgd)
-> > > >         st->note_page_flush(st);
-> > > >  }
-> > > >
-> > > > +bool pdtump_pt_level_first(struct mm_struct *mm, int level)
-> > > > +{
-> > > > +       if (!mm || level > CONFIG_PGTABLE_LEVELS)
-> > > > +               return false;
-> > > > +
-> > > > +       if (mm_pmd_folded(mm) && level == 3)
-> > > > +               return true;
-> > > > +       if (mm_pud_folded(mm) && level == 2)
-> > > > +               return true;
-> > > > +       if (mm_p4d_folded(mm) && level == 1)
-> > > > +               return true;
-> > >
-> > > Is this order (... && level == ...) the optimal order?
-> > > On arm64, mm_pud_folded() and mm_p4d_folded() perform several checks.
-> > >
-> > > > +       if (level == 0)
-> > > > +               return true;
-> > > > +
-> > > > +       return false;
-> > > > +}
-> >
-> > It is. since the purpose of ptdump_pt_level_first is designed to be used
-> > in the *callback* of pXd_entry(). IOW, if we check level 0 first,
-> > it always returns wrong return in folded case.
-> 
-> I meant the order inside the if () conditions.
-> E.g.
-> "if (mm_pud_folded(mm) && level == 2)" does the expensive check first.
-> "if (level == 2 && mm_pud_folded(mm))" does the cheap check first.
+> I think in ptdump_walk_pgd() it is guaranteed that mm != NULL, so I am wondering
+> why you are handling mm == NULL.
 
-Ah. Yeap that would be better. Thanks!
+Agree. I'll remove it.
+BTW, this helper is incorrect because it returns true even for folded
+upper-level page tables. For example, if p4d is folded,
+level 0 would still be treated as the first level.
+
+So, it would better to the following:
+
+diff --git a/arch/x86/mm/dump_pagetables.c b/arch/x86/mm/dump_pagetables.c
+index 2afa7a23340e9..4e545988953a0 100644
+--- a/arch/x86/mm/dump_pagetables.c
++++ b/arch/x86/mm/dump_pagetables.c
+@@ -27,6 +27,7 @@
+  */
+ struct pg_state {
+        struct ptdump_state ptdump;
++       int first_level;
+        int level;
+        pgprotval_t current_prot;
+        pgprotval_t effective_prot;
+@@ -254,7 +255,7 @@ static void effective_prot(struct ptdump_state *pt_st, int level, u64 val)
+        pgprotval_t prot = val & PTE_FLAGS_MASK;
+        pgprotval_t effective;
+
+-       if (level > 0) {
++       if (level > st->first_level) {
+                pgprotval_t higher_prot = st->prot_levels[level - 1];
+
+                effective = (higher_prot & prot & (_PAGE_USER | _PAGE_RW)) |
+@@ -455,6 +456,8 @@ bool ptdump_walk_pgd_level_core(struct seq_file *m,
+                .seq            = m
+        };
+
++       st.first_level = ptdump_pt_level_first(mm);
++
+        ptdump_walk_pgd(&st.ptdump, mm, pgd);
+
+        if (!checkwx)
+diff --git a/include/linux/ptdump.h b/include/linux/ptdump.h
+index 240bd3bff18dd..26fa624eac44e 100644
+--- a/include/linux/ptdump.h
++++ b/include/linux/ptdump.h
+@@ -29,6 +29,7 @@ bool ptdump_walk_pgd_level_core(struct seq_file *m,
+                                struct mm_struct *mm, pgd_t *pgd,
+                                bool checkwx, bool dmesg);
+ void ptdump_walk_pgd(struct ptdump_state *st, struct mm_struct *mm, pgd_t *pgd);
++int ptdump_pt_level_first(struct mm_struct *mm);
+ bool ptdump_check_wx(void);
+
+ static inline void debug_checkwx(void)
+diff --git a/mm/ptdump.c b/mm/ptdump.c
+index 973020000096c..b1d06ac4c0555 100644
+--- a/mm/ptdump.c
++++ b/mm/ptdump.c
+@@ -190,6 +190,17 @@ void ptdump_walk_pgd(struct ptdump_state *st, struct mm_struct *mm, pgd_t *pgd)
+        st->note_page_flush(st);
+ }
+
++int ptdump_pt_level_first(struct mm_struct *mm)
++{
++       if (mm_pmd_folded(mm))
++               return 3;
++       if (mm_pud_folded(mm))
++               return 2;
++       if (mm_p4d_folded(mm))
++               return 1;
++       return 0;
++}
++
 
 -- 
 Sincerely,
