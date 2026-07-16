@@ -4,88 +4,95 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99129C44501
-	for <kvm-riscv@archiver.kernel.org>; Wed, 15 Jul 2026 13:44:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54A73C44512
+	for <kvm-riscv@archiver.kernel.org>; Thu, 16 Jul 2026 06:41:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:From:References:To:Subject:
-	Cc:MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=6Je8G/9dh9NcSgAnustv18PTq1mmnq5kk/BOtDd7ZEk=; b=aad8HjfXqDWFib
-	A47Hqzf3sdzjMaJWpEfHCpWO+4FhYWBY57PbOveqvQvOV20+HS/CuRcfa4FQtbJbrQGKJ5fPHVEuS
-	yQTzeXPymRmjqtB6aV+Kp3TJaL8E741YuQvzA0zHHkS/UwGQmFyaA0DWcWNlRPv4NBenvCFq5qr57
-	e6kkkTRZj7A5/WnwfIhruXuOCNfdsjTgVAJUOP5W097sq2eUTeSGUKnfnyq2GRFFUwg2SvbmuFB+0
-	SoFGkCAZmc+DBThj42GqS9HowdTCCFLOknfq/oYx9XO4cmnR2xV6ySMBDKB6Qq9ZHfapFBCRvA+vm
-	Y77soR8BmM9zU1ptU8IA==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-Id:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=4b+10Zru7RLZhINyUKqK2rrXnSAQaXf/a5eXBcRrecA=; b=A1A3GZMaCO7U40
+	gVwhpe+QHW67EL8vtzg0eZGhviIXtD4jHofQhtgMrgGnlVTtlE9JQdwAyu3LllK6CFUtVouJazv7n
+	OqBXAk4tLApcrOFGeFbRElRDEi7cj8AtsuH3AfIOTq469MCIdQYPYDFsbQMlIj80ESEz1MPzZRYcX
+	16WTnIehC3fYXw4BWRa7MyEJzXgqyXTX84A2qm1fuPewoDCQOi52H3OZ5YdZ374hradUNtaASAYF2
+	5xtFzNfYD5RE9jjST+DqGq1ioe3bISEk38zQH8P5Wl2ptel0OcjzW0hoNp5Dw7nlKti09M94sEd6H
+	AQJwjHl4g8sV9reJ9d+Q==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wjzuW-0000000Eyo1-0wze;
-	Wed, 15 Jul 2026 13:44:28 +0000
-Received: from foss.arm.com ([217.140.110.172])
-	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wjzuU-0000000EynT-1oXW;
-	Wed, 15 Jul 2026 13:44:27 +0000
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id BC4D31477;
-	Wed, 15 Jul 2026 06:44:18 -0700 (PDT)
-Received: from [10.2.198.93] (e142334-100.cambridge.arm.com [10.2.198.93])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id A51C63F915;
-	Wed, 15 Jul 2026 06:44:12 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1784123063; bh=eIgpCTRPgqPTqdx54P+55ycRFoiVAMVPyrH/hSOkxIw=;
-	h=Date:Cc:Subject:To:References:From:In-Reply-To:From;
-	b=XUDBCE9uKhapcjpn3hEyydo6n8Z10XJL4DGb4h958hMrkQQ51e4U0TkwAjNzJDzOk
-	 eD/LOzYvppL+1IQtFhflB4XCT6Ncvq4/Hh0/F3eNv5PwdHMKH6kHWKs0fpugu38REX
-	 eGLtl9O5j7jNXOw9fMgYIdBX0uaZplN8x21Nq5zc=
-Message-ID: <1dcd93fa-4922-433b-9f1d-c096c0de3665@arm.com>
-Date: Wed, 15 Jul 2026 14:44:11 +0100
+	id 1wkFmW-0000000GYOA-0v2u;
+	Thu, 16 Jul 2026 06:41:16 +0000
+Received: from mail-pg1-x52d.google.com ([2607:f8b0:4864:20::52d])
+	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
+	id 1wkFmT-0000000GYNL-2jYX
+	for kvm-riscv@lists.infradead.org;
+	Thu, 16 Jul 2026 06:41:15 +0000
+Received: by mail-pg1-x52d.google.com with SMTP id 41be03b00d2f7-c99eaa1f020so2842327a12.2
+        for <kvm-riscv@lists.infradead.org>; Wed, 15 Jul 2026 23:41:12 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1784184072; x=1784788872; darn=lists.infradead.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=8J2PB70MWAXXQG95F609SxeXRC3aZLcryE0e4szEh2g=;
+        b=IAgshyo49FYaU59XoV3zgs0EBYtWcwhgQcndT92zxNjfKX5drkGYhKe24VDfAaaI5B
+         WVKfTNjnb4vkAKfDU5mUx/WQ2t/+MSbhmWv+60TL6Q5oCmD1ycuGoE4QacYy9+J15TuC
+         /d5WIBri2XhSNk5nFZhPYLXmPcCAF9sdpq0SIw0ATEVVPHkADXK7mH4MhBYsAF0pQYCF
+         z8BiOodNJ4AG/cPsHRToayW3+JkPKzzF8TwtlEt3B6rXnwvX9SDZ8NU+4/5GX1ey7MXa
+         wj+sue7bUX6eVhDA0puz0zdvsVUcFJHmSc1f0HNneYWudl2DaYYAbx4s6aEN//jcj5L4
+         rojQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1784184072; x=1784788872;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=8J2PB70MWAXXQG95F609SxeXRC3aZLcryE0e4szEh2g=;
+        b=lYNcAsvJoxmbjyhT+AACRmn6oxBGNdG8+w8eGXTZHUPLacLe3W6B5eKCp+VJZGLf0S
+         orf79NpENmMf/rqNtL7ta+5eZn4JZniVYmYA8WHWOEwIM7XyxpnQCLZjPXqO0sVgBnAS
+         e8bgIuM0IQUIfb2WIn+tRIrB2xuq9awda+QHlq0eoEQ7TXFsDKXec2ck197YHnqQXVlT
+         8QX4T7U/uQ4DhrmX/FoTwCNntlKISTvfQO+NlKcC+jrFUn3cjhVCjaFoqCLfRAvC0Kpo
+         xHWaMRsh/wpgpvP0gep6doEmW5yKZhHBZ1i/eBd3yDq9+KidNMRxYCvoeF8mOxGgAvLQ
+         X/5Q==
+X-Forwarded-Encrypted: i=1; AHgh+RoVVumzTfNxvzQoUeNluzsOvZNW0TKyF9Q/E8JZb67zFP5U94lDhpLzMmWN+cYSHpuvmsVpcvJZEvM=@lists.infradead.org
+X-Gm-Message-State: AOJu0YxNqNtX9+PuwRispudqCVm+AuzYCpwvmFd1+YLbzFlRarNfG9HZ
+	xXucIiv72BRD4iT79qCjx9FgL7755SiHkUJ6V0uTN/q5XUyQecWYRmYy
+X-Gm-Gg: AfdE7clLf3jAGE1X+QcMroYlADHtRtSUtpalp9SFyYqLhSsSvabIDymps6J/53oy00T
+	gRONs64TlRXsgu7VP0Bx/yis0u/m5GpMgSX9QsYWnkbJgx/Tg4BredOYMjt+HD+XEfuVdIihXhi
+	3+pvXv/USQxWzt+hKNl5oediFTupTPBnLvWQkIBHDJxPdcl1CFEsG5fiTxv9+dc+yYqyUUN6L5Y
+	tW+UPB5Nbx9RelOjM2lodnLgCAYreMDHSkpqwOWlYWzSoo6rubCB/TaHCYBe66I8ZasVOTOoHxY
+	qLcI80zCkT9XIv3NBthzKAhn0ydYzDEB61lDjVSANs9Bi+hBm7eWfAsK9mBbASeWoBuDtgM9oh/
+	wor5uqOJx6v2cwD768Loxm4FS6VMFZUpn9xi8T9G3IJHdD3Ivdiwz9DUR1d9yGfgoPfXpvq6N9L
+	elR6EFE7bHo/D4McrqERtW
+X-Received: by 2002:a05:6a21:495:b0:3c0:9c1b:d0b5 with SMTP id adf61e73a8af0-3c1109f44ebmr22579230637.64.1784184072215;
+        Wed, 15 Jul 2026 23:41:12 -0700 (PDT)
+Received: from cyh-System-Product-Name.. ([129.227.183.200])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-cb258eb856dsm1412425a12.6.2026.07.15.23.41.09
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 15 Jul 2026 23:41:11 -0700 (PDT)
+From: yhchen312@gmail.com
+To: anup@brainfault.org
+Cc: atish.patra@linux.dev,
+	pjw@kernel.org,
+	palmer@dabbelt.com,
+	aou@eecs.berkeley.edu,
+	alex@ghiti.fr,
+	bigeasy@linutronix.de,
+	clrkwllms@kernel.org,
+	rostedt@goodmis.org,
+	kvm@vger.kernel.org,
+	kvm-riscv@lists.infradead.org,
+	linux-riscv@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	linux-rt-devel@lists.linux.dev,
+	"Yuhang.chen" <yhchen312@gmail.com>,
+	Quan Zhou <zhouquan@iscas.ac.cn>
+Subject: [PATCH] RISC-V: KVM: Use raw_spinlock for VMID update critical section
+Date: Thu, 16 Jul 2026 14:40:11 +0800
+Message-Id: <20260716064011.2387501-1-yhchen312@gmail.com>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Cc: usama.anjum@arm.com, david@kernel.org, linux@armlinux.org.uk,
- akpm@linux-foundation.org, ankur.a.arora@oracle.com, rppt@kernel.org,
- linmag7@gmail.com, chleroy@kernel.org, klarasmodin@gmail.com,
- chenhuacai@kernel.org, kernel@xen0n.name, kas@kernel.org,
- zhangtianyang@loongson.cn, wangyuli@aosc.io, tsbogend@alpha.franken.de,
- ljs@kernel.org, jgg@ziepe.ca, catalin.marinas@arm.com, will@kernel.org,
- arnd@arndb.de, ryan.roberts@arm.com, pasha.tatashin@soleen.com,
- rmclure@linux.ibm.com, baolin.wang@linux.alibaba.com, tj@kernel.org,
- kevin.brodsky@arm.com, anup@brainfault.org, atish.patra@linux.dev,
- pjw@kernel.org, palmer@dabbelt.com, aou@eecs.berkeley.edu, alex@ghiti.fr,
- dave.hansen@linux.intel.com, luto@kernel.org, peterz@infradead.org,
- tglx@kernel.org, mingo@redhat.com, bp@alien8.de, hpa@zytor.com,
- hannes@cmpxchg.org, mhocko@kernel.org, qi.zheng@linux.dev,
- shakeel.butt@linux.dev, kasong@tencent.com, baohua@kernel.org,
- axelrasmussen@google.com, yuanchu@google.com, weixugc@google.com,
- ryabinin.a.a@gmail.com, glider@google.com, andreyknvl@gmail.com,
- dvyukov@google.com, vincenzo.frascino@arm.com, anshuman.khandual@arm.com,
- yang@os.amperecomputing.com, chaitanyas.prakash@arm.com, ardb@kernel.org,
- guoren@kernel.org, yang.li85200@gmail.com, viro@zeniv.linux.org.uk,
- dinguyen@kernel.org, schuster.simon@siemens-energy.com,
- wangruikang@iscas.ac.cn, junhui.liu@pigmoral.tech, muchun.song@linux.dev,
- vishal.moola@gmail.com, namcao@linutronix.de, pavel@kernel.org,
- djbw@kernel.org, yu-cheng.yu@intel.com, baolu.lu@linux.intel.com,
- Jonathan.Cameron@huawei.com, coxu@redhat.com, andreas@gaisler.com,
- liam@infradead.org, vbabka@kernel.org, surenb@google.com, mhocko@suse.com,
- geert@linux-m68k.org, shorne@gmail.com, jonas@southpole.se,
- stefan.kristiansson@saunalahti.fi
-Subject: Re: [RFC PATCH 11/34] mm: vmscan: remove stack copy address of pud
- pass in wallk_pud_range()
-To: Yeoreum Yun <yeoreum.yun@arm.com>, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org, loongarch@lists.linux.dev,
- linux-mips@vger.kernel.org, linux-arch@vger.kernel.org,
- kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
- x86@kernel.org, linux-mm@kvack.org, kasan-dev@googlegroups.com,
- linux-csky@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
- linux-openrisc@vger.kernel.org
-References: <20260713135614.1618183-1-yeoreum.yun@arm.com>
- <20260713135614.1618183-12-yeoreum.yun@arm.com>
-From: Usama Anjum <usama.anjum@arm.com>
-Content-Language: en-US
-In-Reply-To: <20260713135614.1618183-12-yeoreum.yun@arm.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260715_064426_716122_3BFE0755 
-X-CRM114-Status: GOOD (  15.77  )
+X-CRM114-CacheID: sfid-20260715_234113_698866_BC104DD7 
+X-CRM114-Status: GOOD (  10.89  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -102,37 +109,63 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On 13/07/2026 2:55 pm, Yeoreum Yun wrote:
-> We want to change how pXdp_get() works with generic compile-time folded
-> page tables. To prepare for that, replace passing the address of a stack
-> copy of a pXd to walk_pmd_range() with pud pointer directly so that
-> the ignoring the value of folded entries.
-> 
-> There should be no functional change.
-> 
-> Signed-off-by: Yeoreum Yun <yeoreum.yun@arm.com>
-> ---
->  mm/vmscan.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/mm/vmscan.c b/mm/vmscan.c
-> index 986dde8e7429f..61470223d8213 100644
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -3725,7 +3725,7 @@ static int walk_pud_range(p4d_t *p4d, unsigned long start, unsigned long end,
->  		if (!pud_present(val) || WARN_ON_ONCE(pud_leaf(val)))
->  			continue;
->  
-> -		walk_pmd_range(&val, addr, next, args);
-> +		walk_pmd_range(pud + i, addr, next, args);
-While I was working on converting these page table types to hardware types, I
-had this exact patch for this problem.
+From: "Yuhang.chen" <yhchen312@gmail.com>
 
-Reviewed-by: Muhammad Usama Anjum <usama.anjum@arm.com>
+The VMID update critical section performs an IPI broadcast via
+on_each_cpu_mask() on VMID version rollover, which must not be preempted
+under PREEMPT_RT. Convert vmid_lock to raw_spinlock_t and use plain
+raw_spin_lock()/raw_spin_unlock() (interrupts stay enabled, since
+on_each_cpu_mask() requires it).
 
->  
->  		if (need_resched() || walk->batched >= MAX_LRU_BATCH) {
->  			end = (addr | ~PUD_MASK) + 1;
+Assisted-by: YuanSheng:deepseek-v4-pro
+Co-developed-by: Quan Zhou <zhouquan@iscas.ac.cn>
+Signed-off-by: Quan Zhou <zhouquan@iscas.ac.cn>
+Signed-off-by: Yuhang.chen <yhchen312@gmail.com>
+---
+ arch/riscv/kvm/vmid.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/arch/riscv/kvm/vmid.c b/arch/riscv/kvm/vmid.c
+index c15bdb1dd8be..21c2b276b55d 100644
+--- a/arch/riscv/kvm/vmid.c
++++ b/arch/riscv/kvm/vmid.c
+@@ -21,7 +21,7 @@
+ static unsigned long vmid_version = 1;
+ static unsigned long vmid_next;
+ static unsigned long vmid_bits __ro_after_init;
+-static DEFINE_SPINLOCK(vmid_lock);
++static DEFINE_RAW_SPINLOCK(vmid_lock);
+ 
+ void __init kvm_riscv_gstage_vmid_detect(void)
+ {
+@@ -78,14 +78,14 @@ void kvm_riscv_gstage_vmid_update(struct kvm_vcpu *vcpu)
+ 	if (!kvm_riscv_gstage_vmid_ver_changed(vmid))
+ 		return;
+ 
+-	spin_lock(&vmid_lock);
++	raw_spin_lock(&vmid_lock);
+ 
+ 	/*
+ 	 * We need to re-check the vmid_version here to ensure that if
+ 	 * another vcpu already allocated a valid vmid for this vm.
+ 	 */
+ 	if (!kvm_riscv_gstage_vmid_ver_changed(vmid)) {
+-		spin_unlock(&vmid_lock);
++		raw_spin_unlock(&vmid_lock);
+ 		return;
+ 	}
+ 
+@@ -117,7 +117,7 @@ void kvm_riscv_gstage_vmid_update(struct kvm_vcpu *vcpu)
+ 
+ 	WRITE_ONCE(vmid->vmid_version, READ_ONCE(vmid_version));
+ 
+-	spin_unlock(&vmid_lock);
++	raw_spin_unlock(&vmid_lock);
+ 
+ 	/* Request G-stage page table update for all VCPUs */
+ 	kvm_for_each_vcpu(i, v, vcpu->kvm)
+-- 
+2.34.1
 
 
 -- 
