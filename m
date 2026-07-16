@@ -4,71 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 89713C44514
-	for <kvm-riscv@archiver.kernel.org>; Thu, 16 Jul 2026 12:44:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C2E1C44501
+	for <kvm-riscv@archiver.kernel.org>; Thu, 16 Jul 2026 12:44:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=FKr09wfEGPpEgCLsXK5lPDLZJp+zZQwZ/jpyG15RPMA=; b=iI2ZDtzRavJMLa
-	zjGvfa18IuzvM3tApiP1kjdeWHS6+lunH92YyPdmsx5KDVMD9L7UAR3DIMLC3CxBE0It0ME3If3B6
-	GtL7N0yUGJzdkt7CQ/VxdDICSjb05ftH8UK8mSQTgk2m9wXo8VvDy6ZR/ZEuXuB+EDTZwVEso/KCD
-	cjnyW7Rop2+J+dNb0b1DGWIXmhy2b+MDBBQBPIwOujKN5nnSHdFrvME5k0xWtQK0Atj2QnKwcPwcc
-	djfLhW3pbFY8Qf34CYWyb4sY2x79rcLMdaTYWT8/sOTnvWBYTVWrKOeof9uSMR5dm2hbeUxtJ3KbM
-	9sWo4T+HYdxJqn+1vEFQ==;
+	List-Owner; bh=eAwsSjZf2rHXd3/oT0O683oh31kbnT9HpHzc8hzl33w=; b=BeHdwIQn9PwfWk
+	0ImH+DqKi52iXiWQ/oyAlPN5PuX6OO4o0RhVmxjwZ1kNZIyOmJ0eMkX/Bw7dL+UFGhHlZNwZfn+Lm
+	ysKuXgjPMLEMJoA72UdHE0JHyfM6EDSAfau95XaJH+Vn63rjMRe5ewPyF8Ea7Ea3tsmEP+0Ma4AU1
+	b0UoKT06KwVL5XdmrXkGC9WI0pobJ4wZetEy7HrrY4cwIbClZKZIfye0L43gJsvc+MTHO1DLJ+1pA
+	beNckaSn8fM+mffQIGO9BDC5DUWrZQjmD+oLwsJw3f6nDxf0bYOv0f3kueBYuHVsTYnKrfueID3AB
+	h7oTKyXdkQU78GxZE1YQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wkLRg-0000000HJES-0fmq;
-	Thu, 16 Jul 2026 12:44:08 +0000
-Received: from mail-pg1-x52b.google.com ([2607:f8b0:4864:20::52b])
+	id 1wkLRt-0000000HJWE-3e5h;
+	Thu, 16 Jul 2026 12:44:21 +0000
+Received: from mail-pf1-x42b.google.com ([2607:f8b0:4864:20::42b])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wkLRd-0000000HJ8z-03WG
+	id 1wkLRm-0000000HJMm-30w9
 	for kvm-riscv@lists.infradead.org;
-	Thu, 16 Jul 2026 12:44:06 +0000
-Received: by mail-pg1-x52b.google.com with SMTP id 41be03b00d2f7-c998fd549a8so4401603a12.2
-        for <kvm-riscv@lists.infradead.org>; Thu, 16 Jul 2026 05:44:04 -0700 (PDT)
+	Thu, 16 Jul 2026 12:44:20 +0000
+Received: by mail-pf1-x42b.google.com with SMTP id d2e1a72fcca58-848743155bcso1367535b3a.0
+        for <kvm-riscv@lists.infradead.org>; Thu, 16 Jul 2026 05:44:14 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bytedance.com; s=google; t=1784205844; x=1784810644; darn=lists.infradead.org;
+        d=bytedance.com; s=google; t=1784205854; x=1784810654; darn=lists.infradead.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=RVEhlrHEVqIN0Ar3D+s2eFCiOScwlS1S3mz2hTaXKkY=;
-        b=UkvSIu4F+y6+lIIhCSdhh9YBCP4tsgHjMyHNUEnBvlkX5Lv1gU0piGw9bjjNtBEpKN
-         rE0lWG2EsIPrzieEuGn/TniwkeIFlmXx0g7DmPTUwuoo5dj7B1eBOxKEw9t2yJkBqALv
-         RpjAAA0b+8CnQQi6hx0vBXtaCcEi5xpmkPFFHYRY9kFWkM+vvoQxFU9pc1FHyPt9lifS
-         qDNWqQTzUx+5qZqZtILpG7OkbqqhnMQDQF3rF3cXjrRx3y9+OF69D0OeRRfVU7oyu1Ix
-         JyXjEERYNX7J1yzc/rgOA36V8OKY/vxMGLBQivLr+6QSKRdsfcYmfeuxOm9F4x51j9I4
-         5eOQ==
+        bh=ZqzuyyB7zI40Qj8rdd4/j/Hz77YcBH2L+r/0EHWbI6M=;
+        b=C6QRhTV5mo9nVNw+cIvrpS+ZP5zIUiQq87LD0j4lydPnGdyMTOTLOwYOJrcxM71/fa
+         z27E8weFdL1sogXnC5TJvbQ6zh7G5iuwtW7EfYQ3lqAHgmFCLB5A4DNKunJDShlyT4e7
+         um0/ibTQhd63a5Nznh9pn9i0z6vWvyV9ylM7b56l4yRfugpUXH08jkUiVCer1hCfxorS
+         weRTJNm+xvbZb6pd2O4gVnlohmHMjdzn/+lzkp03LXkp/6QDxayOy1UWJO9406nWkB0/
+         8q1jynlwydR6nlI8eXEkPXVv8imA8ULuwE/atD5O8jWLVt0Wh0Jq4Rjiv2A6a0VkdWJQ
+         rynw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784205844; x=1784810644;
+        d=1e100.net; s=20251104; t=1784205854; x=1784810654;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=RVEhlrHEVqIN0Ar3D+s2eFCiOScwlS1S3mz2hTaXKkY=;
-        b=f+m+S+LCp3PhqyP4zM0jWIY3YNVmTzGoChvWQPXVRIGMRTkEAxiVhCLo4/KezHyO0J
-         HWBZQyZy9ezBMlbX/mq62d2/SimiGD2evKLZiDgQW4uBz2kbOHbAkTwrZfFXwn5iM8TF
-         mTyNVgA9EU6ccHoa4kf+W8E2Zm3fOO7j59iiJTBcsrtoMMlUzB87N81lKAxjqMfToaBE
-         geMtb4z3n2vKJecDhVe+X4PjCxHWCi2z37W1GtFhn2CCIOZ7BtvhdVrNjQNNuqWGFvJp
-         AvoQn2sym23Fb7yxoQMRKCMESB/WXw2t/L5j2CcGQn/ukWLbpBOvwS/iXrcbXaFKhf7s
-         mh/g==
-X-Forwarded-Encrypted: i=1; AHgh+RrwCtPt3XgitvolsfXpal6cdTHmiT0+Ui9VD87/+FZqb3SCUQrtJQMtXXUdpdqyK6YilGr8dPfWBpc=@lists.infradead.org
-X-Gm-Message-State: AOJu0YzPUW+pX5n9bu1rYJSA7M2565QmXxZh5qGf/+bP+6DoB8qdF02k
-	g6nEOjT6RWZ6aYVtTjxtNXx9GdGCFrFD+zALjtJ3Yp8RbYSvaLwhY+Xv8233DHMG1/s=
-X-Gm-Gg: AfdE7cm5Iwo/gCV7uNxhpp39C/IqnUfU7mycUxMiO+HvaVMGpfFXDnVMhAvw6Yg4ZSx
-	8G7qMPMjk0eDxaRGRJI2e7/VrNZtJAioTWc3qySC1VIWung7648Mqv1O4SLeLiIS71Fh7ikJkGY
-	bZRXJUjlDoYPGQs+tgjuEZbDm96osoajj4Odat1uqCu3Ioomy8ICUEfBY9nydkKQIYF8ZfYYtMg
-	H0JJ/vrpRdvKxPj0hlj341tKm/B71B0qLiyLw7Kb0FF5u8koNavQGudl1M0fRG0eu30aCh952sD
-	rNHy18qC27AJFrho/KpSm5g+diZDwJww57Ro+t7UIX6iyN3EwohmXyloXViKy0OlXSiupCSWD9G
-	E6FguOXDTrwUDXV31hdIu8/QX8W2ghP9M5qvrLis1QO8x1/TloMHe+KsyhJpZTHojn466A7PZOG
-	r724HeeLUhZgsv5WAJGI/vTkk=
-X-Received: by 2002:a05:6a20:4308:b0:3ba:cd5b:3dc8 with SMTP id adf61e73a8af0-3c36c1f1e9dmr7530059637.31.1784205844222;
-        Thu, 16 Jul 2026 05:44:04 -0700 (PDT)
+        bh=ZqzuyyB7zI40Qj8rdd4/j/Hz77YcBH2L+r/0EHWbI6M=;
+        b=U0Y8Cq/vke7sREaPqeR7ek+s8gqXo1fqd6aTK2E1bqlwk9+izmgghISoSEJAT2e5cO
+         qW1cvk/sTiRPrLxNX044wugJ1nmwcaElXTDwC+3TwIQS7WGSb6yzaKl6LAfnbawDkLeD
+         jIOc5apQuCjArD1iqxLWZ5LbOgh/1ZQi7CwzezF+IvsT+fzl7eyMNZUnl+knOnQrbuLc
+         22Xb6wU6zdr4YRbBp9TzeQJgm92R0jKcQuJ+kPeoeiAHaHFoSULqN7yETnaLP016abSY
+         caErBOnSojSPPUo/9tiBYQBhvb5a4BRzwuczjf6Mpt0WJf5NzoFoVCzFW8op64n9Gyxg
+         OZBg==
+X-Forwarded-Encrypted: i=1; AHgh+RpNTh2tGKNFjwIpA0m6kPGPKGx4DEwWfj48Qzwqmsy1mGeN2rfj8dxg+4cNpHrqXVV79BN9Ju/r6+k=@lists.infradead.org
+X-Gm-Message-State: AOJu0YxVednn/9mcdS2z9TJdqTc8gNqXfBfPE0EP0Q1TwmVCKKk1hC7c
+	CC5pBs+trzS2R4B2duNN4CmGUA/gqmc0BF03ZEbJ7ikvQ0EkPl1yqUvxcoR58k0ABMI=
+X-Gm-Gg: AfdE7clovzRCEe1aYO4ZJ9a3VdFqK3B17zZ0+qTMDYiaLW4hd/HT1VNxsUjAZGV1xk8
+	Kmzji8bZh8/8E60YIrI371Sjre7gDZ+yqKtq/0kq11ThMEjzEmlvWzhvGwjIsbJ/bmxjwKIlG0I
+	X1Qxe4PmbJo8WNZfo42SKAcRz/Y6Wa8LBYa0yARsYq89jUkSSANdvADx9GQsYL/eRbG8OfmzVQk
+	9RWFgpywftqXypkNjI2xT7TCsjUT2vfE0WoL0NlVhLiGrO0bXBEktXa7fLWLkjZphqwDPc4tPp0
+	VWlBS207APM9xMR+A0wuGnDUenSBlPcJA8aFc2s0ESaw8zL1lAwNdiiQ/lXbwKyCLLmjP3Z8R/e
+	9WwYq5lIC+OAnn6BD+cNmIHZM7bVsC3oIqDj6BOOJVT5DKG+xgegaPV4r1XIG6rNVrRpgcmObgf
+	VpC9jTiu/JPVnPrM9k979s4l4=
+X-Received: by 2002:a05:6a00:21d2:b0:845:c6fc:2821 with SMTP id d2e1a72fcca58-84889604f51mr19555102b3a.22.1784205853705;
+        Thu, 16 Jul 2026 05:44:13 -0700 (PDT)
 Received: from L6YN4KR4K9.bytedance.net ([2408:8606:1800:501::2:f])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-cb258eeaba2sm1730793a12.12.2026.07.16.05.43.55
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-cb258eeaba2sm1730793a12.12.2026.07.16.05.44.04
         (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Thu, 16 Jul 2026 05:44:03 -0700 (PDT)
+        Thu, 16 Jul 2026 05:44:12 -0700 (PDT)
 From: Yunhui Cui <cuiyunhui@bytedance.com>
 To: linux-riscv@lists.infradead.org,
 	linux-mm@kvack.org,
@@ -81,16 +81,16 @@ Cc: linux-arch@vger.kernel.org,
 	linux-perf-users@vger.kernel.org,
 	kasan-dev@googlegroups.com,
 	Yunhui Cui <cuiyunhui@bytedance.com>
-Subject: [PATCH v2 09/15] riscv/mm: avoid Svnapot consistency checks in ptep_get()
-Date: Thu, 16 Jul 2026 20:41:44 +0800
-Message-Id: <687dadf430c49a840e24976e37ba09f991bc3222.1784201104.git.cuiyunhui@bytedance.com>
+Subject: [PATCH v2 10/15] mm/gup: add fast-GUP specific lockless PTE helpers
+Date: Thu, 16 Jul 2026 20:41:45 +0800
+Message-Id: <138d74aa9863ae8ff445e16a2798d062895b75bc.1784201104.git.cuiyunhui@bytedance.com>
 X-Mailer: git-send-email 2.39.2 (Apple Git-143)
 In-Reply-To: <cover.1784201104.git.cuiyunhui@bytedance.com>
 References: <cover.1784201104.git.cuiyunhui@bytedance.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260716_054405_060842_D709182B 
-X-CRM114-Status: GOOD (  14.05  )
+X-CRM114-CacheID: sfid-20260716_054414_770869_D792BA44 
+X-CRM114-Status: GOOD (  10.50  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -107,100 +107,79 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-napotpte_ptep_get() builds the returned logical sub-PTE from the
-initial PTE observed at the target address. Neighbouring entries in the
-NAPOT block are only scanned to gather accessed and dirty state, so they
-cannot contribute PFN, permission, present or writable state to the
-returned PTE.
+fast-GUP snapshots a PTE without holding the PTL, pins the page, and
+then revalidates that the PTE did not change. Keep both reads under the
+same lockless PTE semantics by defaulting the fast-GUP revalidation to
+ptep_get_lockless().
 
-Drop the range consistency checks from this ptep_get() path. Callers
-that rely on the block-wide A/D view are expected to hold the PTL. There
-are generic lockless ptep_get() users, such as userfaultfd_must_wait()
-and HMM walks after pte_offset_map(), but those paths use the present,
-marker, write and PFN state and do not consume the gathered A/D bits.
-
-Keep the consistency checks in napotpte_ptep_get_lockless(). That API
-must return a self-consistent PTE snapshot to lockless walkers and fault
-retry paths. napotpte_is_consistent() verifies that every scanned entry
-still belongs to the same NAPOT mapping, ignoring A/D bits, and retries
-if a concurrent unfold, rewrite or refold tears the range while A/D
-state is being gathered.
+Introduce fast-GUP specific PTE snapshot and revalidation helpers. The
+default implementation preserves the existing ptep_get_lockless()
+semantics, while allowing architectures to override the helpers when the
+public lockless getter provides extra semantics that fast-GUP does not
+consume.
 
 Signed-off-by: Yunhui Cui <cuiyunhui@bytedance.com>
 ---
- arch/riscv/include/asm/pgtable.h |  3 +++
- arch/riscv/mm/contpte.c          | 19 +++++++++++++------
- 2 files changed, 16 insertions(+), 6 deletions(-)
+ include/linux/pgtable.h | 18 ++++++++++++++++++
+ mm/gup.c                |  6 ++++--
+ 2 files changed, 22 insertions(+), 2 deletions(-)
 
-diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
-index e4b9c05014c00..dd56c20a817bb 100644
---- a/arch/riscv/include/asm/pgtable.h
-+++ b/arch/riscv/include/asm/pgtable.h
-@@ -930,6 +930,9 @@ static __always_inline void napotpte_try_unfold(struct mm_struct *mm,
- /*
-  * Public PTE helpers may transparently handle Svnapot-encoded mappings.
-  * NAPOT-aware arch users should stick to the private/raw __pte* helpers.
-+ * Callers relying on the block-wide A/D view from ptep_get() are
-+ * expected to hold the PTL. Lockless callers that require a
-+ * self-consistent Svnapot range must use ptep_get_lockless().
-  */
- #define ptep_get ptep_get
- static inline pte_t ptep_get(pte_t *ptep)
-diff --git a/arch/riscv/mm/contpte.c b/arch/riscv/mm/contpte.c
-index 70f9a0668b50c..0f66426b0ecfd 100644
---- a/arch/riscv/mm/contpte.c
-+++ b/arch/riscv/mm/contpte.c
-@@ -294,6 +294,13 @@ EXPORT_SYMBOL(__napotpte_try_unfold);
+diff --git a/include/linux/pgtable.h b/include/linux/pgtable.h
+index da14328093a86..62943fcbf7046 100644
+--- a/include/linux/pgtable.h
++++ b/include/linux/pgtable.h
+@@ -813,6 +813,24 @@ static inline pte_t ptep_get_lockless(pte_t *ptep)
+ }
+ #endif
  
- pte_t napotpte_ptep_get(pte_t *ptep, pte_t orig_pte)
- {
-+	/*
-+	 * Gather access/dirty bits from the whole NAPOT range for the
-+	 * ptep_get() view. The returned sub-PTE is built from orig_pte;
-+	 * neighbouring entries only contribute A/D state. Lockless callers
-+	 * requiring a self-consistent range must use ptep_get_lockless().
-+	 */
++#ifndef gup_ptep_get_lockless
++static inline pte_t gup_ptep_get_lockless(pte_t *ptep, pte_t *rawp)
++{
++	pte_t pte = ptep_get_lockless(ptep);
 +
- 	pte_t pte, cur;
- 	pte_t *start;
- 	unsigned int i, nr;
-@@ -307,14 +314,10 @@ pte_t napotpte_ptep_get(pte_t *ptep, pte_t orig_pte)
- 
- 	for (i = 0; i < nr; i++) {
- 		cur = READ_ONCE(start[i]);
--		if (!napotpte_is_consistent(cur, orig_pte))
--			return napotpte_subpte(ptep, orig_pte);
- 		if (pte_dirty(cur)) {
- 			pte = riscv_pte_mkhwdirty(pte);
- 			for (; i < nr; i++) {
- 				cur = READ_ONCE(start[i]);
--				if (!napotpte_is_consistent(cur, orig_pte))
--					return napotpte_subpte(ptep, orig_pte);
- 				if (pte_young(cur)) {
- 					pte = pte_mkyoung(pte);
- 					break;
-@@ -328,8 +331,6 @@ pte_t napotpte_ptep_get(pte_t *ptep, pte_t orig_pte)
- 			i++;
- 			for (; i < nr; i++) {
- 				cur = READ_ONCE(start[i]);
--				if (!napotpte_is_consistent(cur, orig_pte))
--					return napotpte_subpte(ptep, orig_pte);
- 				if (pte_dirty(cur)) {
- 					pte = riscv_pte_mkhwdirty(pte);
- 					break;
-@@ -345,6 +346,12 @@ EXPORT_SYMBOL(napotpte_ptep_get);
- 
- pte_t napotpte_ptep_get_lockless(pte_t *orig_ptep)
++	*rawp = pte;
++
++	return pte;
++}
++#endif
++
++#ifndef gup_ptep_revalidate
++static inline bool gup_ptep_revalidate(pte_t *ptep, pte_t raw_pte)
++{
++	return pte_val(raw_pte) == pte_val(ptep_get_lockless(ptep));
++}
++#endif
++
+ #ifndef pmdp_get_lockless
+ static inline pmd_t pmdp_get_lockless(pmd_t *pmdp)
  {
-+	/*
-+	 * ptep_get_lockless() must return a self-consistent PTE without the
-+	 * PTL. Recheck that the whole NAPOT range still describes the same
-+	 * mapping, ignoring A/D bits, and retry if a concurrent update tears
-+	 * the range while A/D state is being gathered.
-+	 */
- 	pte_t orig_pte, pte;
- 	pte_t *ptep;
- 	unsigned int i, nr;
+diff --git a/mm/gup.c b/mm/gup.c
+index 99902c15703b0..72fb147193e55 100644
+--- a/mm/gup.c
++++ b/mm/gup.c
+@@ -2842,10 +2842,12 @@ static int gup_fast_pte_range(pmd_t pmd, pmd_t *pmdp, unsigned long addr,
+ 	if (!ptep)
+ 		return 0;
+ 	do {
+-		pte_t pte = ptep_get_lockless(ptep);
++		pte_t raw_pte, pte;
+ 		struct page *page;
+ 		struct folio *folio;
+ 
++		pte = gup_ptep_get_lockless(ptep, &raw_pte);
++
+ 		/*
+ 		 * Always fallback to ordinary GUP on PROT_NONE-mapped pages:
+ 		 * pte_access_permitted() better should reject these pages
+@@ -2871,7 +2873,7 @@ static int gup_fast_pte_range(pmd_t pmd, pmd_t *pmdp, unsigned long addr,
+ 			goto pte_unmap;
+ 
+ 		if (unlikely(pmd_val(pmd) != pmd_val(pmdp_get_lockless(pmdp))) ||
+-		    unlikely(pte_val(pte) != pte_val(ptep_get_lockless(ptep)))) {
++		    unlikely(!gup_ptep_revalidate(ptep, raw_pte))) {
+ 			gup_put_folio(folio, 1, flags);
+ 			goto pte_unmap;
+ 		}
 -- 
 2.39.5
 
