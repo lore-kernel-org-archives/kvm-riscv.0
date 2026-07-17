@@ -4,70 +4,125 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3A837C4450F
-	for <kvm-riscv@archiver.kernel.org>; Fri, 17 Jul 2026 07:03:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8CE50C44514
+	for <kvm-riscv@archiver.kernel.org>; Fri, 17 Jul 2026 07:55:54 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
 	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=hTopl2DuWm9+Uyw/qMNhyi/WsokwBG53O6ULVl3e3LA=; b=uX9xU7SjHsRjZ1
-	G89S/03DFzDOtLvQc58CstO2NNzbfhLW+UD982C46nfJqMdudVdijqDl3EDb6hUy91ALd9UJDSJHB
-	Wf3NtsMxPfC8yRIFW9gyg1iM1c+sN7SN15Dg5/VaIO2b+zdqqS+f2tuuXH4LmmLp59QH+6gn7J4wM
-	d3cwxO4T7R2G0PHAceV9Y58sYYx648fXssHMRcpmG0qUEYevoPYCfCvQshJe3IMZsXtNROPl9BHkM
-	xEmcSGwoD/NBUUHEojQcau36PYV6liP0qXSTZ/PfyBJf1HRYOSrY2Eh5S4ESR94M9KoudUD5dw7jk
-	l6KTzn/BDM/9R4avWFAA==;
+	List-Owner; bh=v/QVHqVoKYWjmnZG0d2T7TmtWXE8yB3rRtl5LZ/kYc4=; b=yAncCrGIyd9ZuP
+	pxAxqCBgz+OF7MfIjsGsnUQGRGY8YriDDCqrUdfWjTtvSocn2DTTl6FucwRzkTG8SOhIPtPsXO0+g
+	p9umtshy5fXobbzV//GNQnMjtTzKL+udVwfvBrIPTufFP5ogcb3+0Jcte05lm9ozgqpOdmrWf9I1g
+	cmIzdrZpLXz0Ws+v6FfZAibqZtGQf9xjgmNYFrR9LAYAm/yC5PcGMEwlLn3gzOohEvNeruO1NjxXQ
+	ft9wZl9gEBgFXJCz5Qj+4B5INueFWO0o1AL9HwO12s0WqOb8qfJIv2jPiJnFsKRbsS1Zu5hthin8N
+	zQf42HldnQ0DHngqbo+g==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wkcbz-00000001MGf-3iWC;
-	Fri, 17 Jul 2026 07:03:55 +0000
-Received: from galois.linutronix.de ([2a0a:51c0:0:12e:550::1])
-	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wkcbx-00000001MGA-2mpP;
-	Fri, 17 Jul 2026 07:03:55 +0000
-Date: Fri, 17 Jul 2026 09:03:50 +0200
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1784271831;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=J6cmnfycj2KUStP4y16+55TqqyQRiz2ZkFVvw4HoG7s=;
-	b=QVlMtu5oYdpL8vCova70McyDA8s5E6hK3ttlamnKs8onYsKMhOHnYX7VRxBnocTqVhhF0H
-	YZovUehKcG5A7KjX2UWFrxPxICsdTHvCxUrD2aIso7davCtt3Og+9JMtEh5JFvPPb/B5dZ
-	fOiLqvVO79+rP/7GQLKf4PKxtzuhyk+z5J80TUwR8M6tYB4ZSh6/H4NdSHg/pXU8afWWrB
-	CHcQQDJbmh2VswojFQltLxyOZbJLdcF77KBceQNpOaliBGAa3+Mqewmg9WwZWdueKDsY0b
-	81ILjNxGKhszt6stbpYZYSzYjXmthC/qBMzSrLS29z+uwZKOIwCfNYz1L6l0fw==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1784271831;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=J6cmnfycj2KUStP4y16+55TqqyQRiz2ZkFVvw4HoG7s=;
-	b=zMb0AeHznCksJfhHizeScTwUKgpupuXMrqjA8KRtRqr68auHRoa9dm5yolBPkEmQY7XGzA
-	pEzEK2nXlcMSniCQ==
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-To: Andy Chiu <tchiu@tenstorrent.com>
-Cc: anup@brainfault.org, Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
+	id 1wkdQI-00000001WLt-0sdq;
+	Fri, 17 Jul 2026 07:55:54 +0000
+Received: from foss.arm.com ([217.140.110.172])
+	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
+	id 1wkdQF-00000001WLC-0TqO;
+	Fri, 17 Jul 2026 07:55:53 +0000
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id E66881477;
+	Fri, 17 Jul 2026 00:55:43 -0700 (PDT)
+Received: from e129823.arm.com (e129823.arm.com [10.2.213.3])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id AAAC53F7B4;
+	Fri, 17 Jul 2026 00:55:36 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1784274948; bh=VCEVOs29qy41aLYqLsGVMHFWJos3BWY8pBqqujyqSaI=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=DU+ugemJvHBveBuL7dk8dm1kcBJotHvCGONmuQ5C4OeV57RJUzo7ZQjdR10jl5Jx7
+	 5L9Qh62wclbS5bjS5wPcNYuj7MV0SVESp9mh+ohyQWIHooRsWMeuoL7g/xSUEC0PGr
+	 Xt2Bp1YeFZMziIbvkg6+QSc6bbWvC8xsO7Wptwks=
+Date: Fri, 17 Jul 2026 08:55:34 +0100
+From: Yeoreum Yun <yeoreum.yun@arm.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Yeoreum Yun <yeoreum.yun@arm.com>, Pedro Falcato <pfalcato@suse.de>,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	loongarch@lists.linux.dev, linux-mips@vger.kernel.org,
+	Linux-Arch <linux-arch@vger.kernel.org>,
+	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
+	x86@kernel.org, linux-mm@kvack.org, kasan-dev@googlegroups.com,
+	"linux-csky@vger.kernel.org" <linux-csky@vger.kernel.org>,
+	linux-m68k@lists.linux-m68k.org,
+	"linux-openrisc@vger.kernel.org" <linux-openrisc@vger.kernel.org>,
+	"David Hildenbrand (Red Hat)" <david@kernel.org>,
+	Russell King <linux@armlinux.org.uk>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Ankur Arora <ankur.a.arora@oracle.com>,
+	Mike Rapoport <rppt@kernel.org>,
+	Magnus Lindholm <linmag7@gmail.com>,
+	Christophe Leroy <chleroy@kernel.org>,
+	Klara Modin <klarasmodin@gmail.com>,
+	Huacai Chen <chenhuacai@kernel.org>,
+	WANG Xuerui <kernel@xen0n.name>,
+	"Kirill A. Shutemov" <kas@kernel.org>, zhangtianyang@loongson.cn,
+	wangyuli@aosc.io, Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+	Lorenzo Stoakes <ljs@kernel.org>, Jason Gunthorpe <jgg@ziepe.ca>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Will Deacon <will@kernel.org>, Ryan Roberts <ryan.roberts@arm.com>,
+	Pasha Tatashin <pasha.tatashin@soleen.com>,
+	Rohan McLure <rmclure@linux.ibm.com>,
+	Baolin Wang <baolin.wang@linux.alibaba.com>,
+	Tejun Heo <tj@kernel.org>, Kevin Brodsky <kevin.brodsky@arm.com>,
+	Anup Patel <anup@brainfault.org>, atish.patra@linux.dev,
+	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
 	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
-	Clark Williams <clrkwllms@kernel.org>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	linux-riscv@lists.infradead.org, linux-rt-devel@lists.linux.dev,
-	kvm-riscv@lists.infradead.org, dfustini@oss.tenstorrent.com,
-	greentime.hu@sifive.com
-Subject: Re: [PATCH v2 2/3] riscv: vector: allow non-preemptible kernel-mode
- vector with IRQs off
-Message-ID: <20260717070350.Vw9N1GT-@linutronix.de>
-References: <20260715051629.1169645-1-tchiu@tenstorrent.com>
- <20260715051629.1169645-3-tchiu@tenstorrent.com>
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	Andy Lutomirski <luto@kernel.org>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+	Borislav Petkov <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>,
+	Johannes Weiner <hannes@cmpxchg.org>,
+	Michal Hocko <mhocko@kernel.org>, qi.zheng@linux.dev,
+	Shakeel Butt <shakeel.butt@linux.dev>,
+	Kairui Song <kasong@tencent.com>, Barry Song <baohua@kernel.org>,
+	Axel Rasmussen <axelrasmussen@google.com>,
+	Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>,
+	Andrey Ryabinin <ryabinin.a.a@gmail.com>,
+	Alexander Potapenko <glider@google.com>,
+	Andrey Konovalov <andreyknvl@gmail.com>,
+	Dmitry Vyukov <dvyukov@google.com>,
+	Vincenzo Frascino <vincenzo.frascino@arm.com>,
+	Anshuman Khandual <anshuman.khandual@arm.com>,
+	Yang Shi <yang@os.amperecomputing.com>, chaitanyas.prakash@arm.com,
+	Ard Biesheuvel <ardb@kernel.org>, guoren <guoren@kernel.org>,
+	yang.li85200@gmail.com, Alexander Viro <viro@zeniv.linux.org.uk>,
+	Dinh Nguyen <dinguyen@kernel.org>,
+	"schuster.simon@siemens-energy.com" <schuster.simon@siemens-energy.com>,
+	Vivian Wang <wangruikang@iscas.ac.cn>, junhui.liu@pigmoral.tech,
+	Muchun Song <muchun.song@linux.dev>,
+	"Vishal Moola (Oracle)" <vishal.moola@gmail.com>,
+	Nam Cao <namcao@linutronix.de>, Pavel Machek <pavel@kernel.org>,
+	djbw@kernel.org, yu-cheng.yu@intel.com,
+	Baolu Lu <baolu.lu@linux.intel.com>,
+	Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+	Coiby Xu <coxu@redhat.com>, Andreas Larsson <andreas@gaisler.com>,
+	"Liam R. Howlett" <liam@infradead.org>,
+	"Vlastimil Babka (SUSE)" <vbabka@kernel.org>,
+	Suren Baghdasaryan <surenb@google.com>,
+	Michal Hocko <mhocko@suse.com>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	Stafford Horne <shorne@gmail.com>, Jonas Bonn <jonas@southpole.se>,
+	Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>
+Subject: Re: [RFC PATCH 02/34] ARM: mm: make 2-level pgd_t a scalar
+Message-ID: <alnf9noAVTTpCtaC@e129823.arm.com>
+References: <20260713135614.1618183-1-yeoreum.yun@arm.com>
+ <20260713135614.1618183-3-yeoreum.yun@arm.com>
+ <alYL7B0HAvmLVHGU@pedro-suse>
+ <b7dbc476-1477-4004-93b3-c5e667e24df8@app.fastmail.com>
+ <alkrWNECXmoxkrUC@e129823.arm.com>
+ <4c3067df-20f0-43e8-8e62-354888afac04@app.fastmail.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20260715051629.1169645-3-tchiu@tenstorrent.com>
+In-Reply-To: <4c3067df-20f0-43e8-8e62-354888afac04@app.fastmail.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260717_000353_973139_4D63D269 
-X-CRM114-Status: UNSURE (   9.14  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20260717_005551_344237_B2D842AD 
+X-CRM114-Status: GOOD (  26.11  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -84,32 +139,58 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On 2026-07-15 00:16:21 [-0500], Andy Chiu wrote:
-> diff --git a/arch/riscv/kernel/kernel_mode_vector.c b/arch/riscv/kernel/kernel_mode_vector.c
-> index 307ac369c3d4..6627e1a82e19 100644
-> --- a/arch/riscv/kernel/kernel_mode_vector.c
-> +++ b/arch/riscv/kernel/kernel_mode_vector.c
-> @@ -55,13 +55,16 @@ void get_cpu_vector_context(void)
->  	 * disable softirqs so it is impossible for softirqs to nest
->  	 * get_cpu_vector_context() when kernel is actively using Vector.
->  	 */
-> -	if (!IS_ENABLED(CONFIG_PREEMPT_RT))
-> -		local_bh_disable();
-> -	else
-> +	if (!IS_ENABLED(CONFIG_PREEMPT_RT)) {
-> +		if (!irqs_disabled())
-> +			local_bh_disable();
-> +	} else {
->  		preempt_disable();
-> +	}
->  
->  	riscv_v_start(RISCV_KERNEL_MODE_V);
->  }
-> +EXPORT_SYMBOL_GPL(get_cpu_vector_context);
+On Fri, Jul 17, 2026 at 08:16:55AM +0200, Arnd Bergmann wrote:
+> On Thu, Jul 16, 2026, at 21:04, Yeoreum Yun wrote:
+> >>
+> >> > Ugh. This isn't correct C code. It only works because the kernel passes
+> >> > -fno-strict-aliasing.
+> >> 
+> >> I think the bigger problem is the code dereferencing the pgd
+> >> pointer in the first place: Since the pgd pair is written in
+> >> 32-bit units in __pmd_populate(), anything reading it would
+> >> technically have to operate on both entries.
+> >> 
+> >> As the kernel relies on -fno-strict-aliasing, the type mismatch
+> >> is less of a problem than actually doing the potentially wrong
+> >> thing.
+> >> 
+> >> As far as I can tell, we are however saved by pgd_val()
+> >> only ever being used for debug prints, where printing
+> >> the first entry is likely all that is needed to analyse
+> >> the real bug.
+> >> 
+> >> > I would recommend either forcing a struct here, or
+> >> > using a u64 with bitmasks/shifts.
+> >> 
+> >> That would require extra complexity for the big-endian
+> >> case though.
+> >
+> > Agree. And since the users of pgd_val() mostly uses with
+> > pmd_pfn(), pmd_page() and etc. I think it doesn't matter to return
+> > lower pmdval_t or higher one.
+> >
+> > Therefore, without considering endianess, it's enough with downcast
+> > like:
+> >
+> >    #define pgd_val(x)      ((pmdval_t)x)
+> >
+> > Could we apply this in next version?
+> 
+> I would just leave the original version here, at least it
+> keeps the current behavior for something that is easy to
+> get wrong. Taking the second entry on big-endian sounds
+> counterintuitive, especially when you have a hugetlb
+> mapping where the two don't just point to the same page.
 
-EXPORT_SYMBOL_FOR_KVM ?
+Thanks. Even my simple tests with GCC versions 8.5.0 through 16.1.0 in [0],
+did not spill to the stack. So keeping David's original implementation
+seems reasonable.
 
-Sebastian
+Link: [0] https://www.kernel.org/pub/tools/crosstool/
+
+-- 
+Sincerely,
+Yeoreum Yun
 
 -- 
 kvm-riscv mailing list
