@@ -4,125 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8CE50C44514
-	for <kvm-riscv@archiver.kernel.org>; Fri, 17 Jul 2026 07:55:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CE083C44507
+	for <kvm-riscv@archiver.kernel.org>; Fri, 17 Jul 2026 08:09:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=v/QVHqVoKYWjmnZG0d2T7TmtWXE8yB3rRtl5LZ/kYc4=; b=yAncCrGIyd9ZuP
-	pxAxqCBgz+OF7MfIjsGsnUQGRGY8YriDDCqrUdfWjTtvSocn2DTTl6FucwRzkTG8SOhIPtPsXO0+g
-	p9umtshy5fXobbzV//GNQnMjtTzKL+udVwfvBrIPTufFP5ogcb3+0Jcte05lm9ozgqpOdmrWf9I1g
-	cmIzdrZpLXz0Ws+v6FfZAibqZtGQf9xjgmNYFrR9LAYAm/yC5PcGMEwlLn3gzOohEvNeruO1NjxXQ
-	ft9wZl9gEBgFXJCz5Qj+4B5INueFWO0o1AL9HwO12s0WqOb8qfJIv2jPiJnFsKRbsS1Zu5hthin8N
-	zQf42HldnQ0DHngqbo+g==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=HTdhatFpy0JhxbWljAUayeDy42BaL4oX73R33151WRU=; b=BmgSU5SCYWmktZ
+	rt8XgxUnYn1AFXHLbr9dlwznOo8205GPhFVsReLEqA/pTNOBtMC4QzsxjGVVNEFIehA0QIJ+K0w5D
+	VZ8GpgUUdmIuTl93N8MrmIx+34BHGWFN/Xy2mOHNWy9oREST78T3fP4VWYKM3ywNxIQbxQqQECbF3
+	RwgX6YvM3RJcpI41QBhqlWm5HLypqXb/LoD7dC85Z29nCB/grmuHFH4WENJdPF2DQ1V3RfepuIvIi
+	01ARlLyjzatiChTmfk0Ukb6IfctITYaqp80TuXVH97YxtZOhI9BXRuOIXNJ1ep6XTQx2zyPBLUFDf
+	7je6XrLiLlcj328FOu6A==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wkdQI-00000001WLt-0sdq;
-	Fri, 17 Jul 2026 07:55:54 +0000
-Received: from foss.arm.com ([217.140.110.172])
-	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wkdQF-00000001WLC-0TqO;
-	Fri, 17 Jul 2026 07:55:53 +0000
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id E66881477;
-	Fri, 17 Jul 2026 00:55:43 -0700 (PDT)
-Received: from e129823.arm.com (e129823.arm.com [10.2.213.3])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id AAAC53F7B4;
-	Fri, 17 Jul 2026 00:55:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1784274948; bh=VCEVOs29qy41aLYqLsGVMHFWJos3BWY8pBqqujyqSaI=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=DU+ugemJvHBveBuL7dk8dm1kcBJotHvCGONmuQ5C4OeV57RJUzo7ZQjdR10jl5Jx7
-	 5L9Qh62wclbS5bjS5wPcNYuj7MV0SVESp9mh+ohyQWIHooRsWMeuoL7g/xSUEC0PGr
-	 Xt2Bp1YeFZMziIbvkg6+QSc6bbWvC8xsO7Wptwks=
-Date: Fri, 17 Jul 2026 08:55:34 +0100
-From: Yeoreum Yun <yeoreum.yun@arm.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Yeoreum Yun <yeoreum.yun@arm.com>, Pedro Falcato <pfalcato@suse.de>,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	loongarch@lists.linux.dev, linux-mips@vger.kernel.org,
-	Linux-Arch <linux-arch@vger.kernel.org>,
-	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
-	x86@kernel.org, linux-mm@kvack.org, kasan-dev@googlegroups.com,
-	"linux-csky@vger.kernel.org" <linux-csky@vger.kernel.org>,
-	linux-m68k@lists.linux-m68k.org,
-	"linux-openrisc@vger.kernel.org" <linux-openrisc@vger.kernel.org>,
-	"David Hildenbrand (Red Hat)" <david@kernel.org>,
-	Russell King <linux@armlinux.org.uk>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Ankur Arora <ankur.a.arora@oracle.com>,
-	Mike Rapoport <rppt@kernel.org>,
-	Magnus Lindholm <linmag7@gmail.com>,
-	Christophe Leroy <chleroy@kernel.org>,
-	Klara Modin <klarasmodin@gmail.com>,
-	Huacai Chen <chenhuacai@kernel.org>,
-	WANG Xuerui <kernel@xen0n.name>,
-	"Kirill A. Shutemov" <kas@kernel.org>, zhangtianyang@loongson.cn,
-	wangyuli@aosc.io, Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Lorenzo Stoakes <ljs@kernel.org>, Jason Gunthorpe <jgg@ziepe.ca>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>, Ryan Roberts <ryan.roberts@arm.com>,
-	Pasha Tatashin <pasha.tatashin@soleen.com>,
-	Rohan McLure <rmclure@linux.ibm.com>,
-	Baolin Wang <baolin.wang@linux.alibaba.com>,
-	Tejun Heo <tj@kernel.org>, Kevin Brodsky <kevin.brodsky@arm.com>,
-	Anup Patel <anup@brainfault.org>, atish.patra@linux.dev,
-	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	Andy Lutomirski <luto@kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>,
-	Johannes Weiner <hannes@cmpxchg.org>,
-	Michal Hocko <mhocko@kernel.org>, qi.zheng@linux.dev,
-	Shakeel Butt <shakeel.butt@linux.dev>,
-	Kairui Song <kasong@tencent.com>, Barry Song <baohua@kernel.org>,
-	Axel Rasmussen <axelrasmussen@google.com>,
-	Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>,
-	Andrey Ryabinin <ryabinin.a.a@gmail.com>,
-	Alexander Potapenko <glider@google.com>,
-	Andrey Konovalov <andreyknvl@gmail.com>,
-	Dmitry Vyukov <dvyukov@google.com>,
-	Vincenzo Frascino <vincenzo.frascino@arm.com>,
-	Anshuman Khandual <anshuman.khandual@arm.com>,
-	Yang Shi <yang@os.amperecomputing.com>, chaitanyas.prakash@arm.com,
-	Ard Biesheuvel <ardb@kernel.org>, guoren <guoren@kernel.org>,
-	yang.li85200@gmail.com, Alexander Viro <viro@zeniv.linux.org.uk>,
-	Dinh Nguyen <dinguyen@kernel.org>,
-	"schuster.simon@siemens-energy.com" <schuster.simon@siemens-energy.com>,
-	Vivian Wang <wangruikang@iscas.ac.cn>, junhui.liu@pigmoral.tech,
-	Muchun Song <muchun.song@linux.dev>,
-	"Vishal Moola (Oracle)" <vishal.moola@gmail.com>,
-	Nam Cao <namcao@linutronix.de>, Pavel Machek <pavel@kernel.org>,
-	djbw@kernel.org, yu-cheng.yu@intel.com,
-	Baolu Lu <baolu.lu@linux.intel.com>,
-	Jonathan Cameron <Jonathan.Cameron@huawei.com>,
-	Coiby Xu <coxu@redhat.com>, Andreas Larsson <andreas@gaisler.com>,
-	"Liam R. Howlett" <liam@infradead.org>,
-	"Vlastimil Babka (SUSE)" <vbabka@kernel.org>,
-	Suren Baghdasaryan <surenb@google.com>,
-	Michal Hocko <mhocko@suse.com>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	Stafford Horne <shorne@gmail.com>, Jonas Bonn <jonas@southpole.se>,
-	Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>
-Subject: Re: [RFC PATCH 02/34] ARM: mm: make 2-level pgd_t a scalar
-Message-ID: <alnf9noAVTTpCtaC@e129823.arm.com>
-References: <20260713135614.1618183-1-yeoreum.yun@arm.com>
- <20260713135614.1618183-3-yeoreum.yun@arm.com>
- <alYL7B0HAvmLVHGU@pedro-suse>
- <b7dbc476-1477-4004-93b3-c5e667e24df8@app.fastmail.com>
- <alkrWNECXmoxkrUC@e129823.arm.com>
- <4c3067df-20f0-43e8-8e62-354888afac04@app.fastmail.com>
+	id 1wkddK-00000001Zsu-22u6;
+	Fri, 17 Jul 2026 08:09:22 +0000
+Received: from mxhk.zte.com.cn ([160.30.148.34])
+	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
+	id 1wkddH-00000001ZqW-2iOx;
+	Fri, 17 Jul 2026 08:09:21 +0000
+Received: from mse-fl2.zte.com.cn (unknown [10.5.228.133])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mxhk.zte.com.cn (FangMail) with ESMTPS id 4h1jHF4n6vz57DCl;
+	Fri, 17 Jul 2026 16:09:13 +0800 (CST)
+Received: from szxl2zmapp06.zte.com.cn ([10.1.32.108])
+	by mse-fl2.zte.com.cn with SMTP id 66H893dv038215;
+	Fri, 17 Jul 2026 16:09:03 +0800 (+08)
+	(envelope-from wang.yechao255@zte.com.cn)
+Received: from localhost.localdomain (unknown [10.234.74.162])
+	by smtp (Zmail) with SMTP;
+	Fri, 17 Jul 2026 16:09:05 +0800
+X-Zmail-TransId: 3e816a59e32100c-6117a
+X-Zmail-LocalSMTP: 1
+X-ZMAIL-USEORIGINALEMLTOOUTBOUND: 1
+X-Zmail-RealSender: wang.yechao255@zte.com.cn
+From: Wang Yechao <wang.yechao255@zte.com.cn>
+To: Anup Patel <anup@brainfault.org>, kvm@vger.kernel.org,
+        kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
+        linux-kernel@vger.kernel.org
+Cc: Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+        Albert Ou <aou@eecs.berkeley.edu>, Atish Patra <atish.patra@linux.dev>,
+        Alexandre Ghiti <alex@ghiti.fr>,
+        Wang Yechao <wang.yechao255@zte.com.cn>
+Subject: [PATCH] RISC-V: KVM: Improve dirty log clearing by skipping zero bits in mask
+Date: Fri, 17 Jul 2026 16:06:41 +0800
+Message-ID: <20260717080654.877151-1-wang.yechao255@zte.com.cn>
+X-Mailer: git-send-email 2.41.0
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <4c3067df-20f0-43e8-8e62-354888afac04@app.fastmail.com>
+X-MAIL: mse-fl2.zte.com.cn 66H893dv038215
+X-TLS: YES
+X-ENVELOPE-SENDER: wang.yechao255@zte.com.cn
+X-SOURCE-IP: 10.5.228.133 unknown Fri, 17 Jul 2026 16:09:13 +0800
+X-CLEAN: YES
+X-Fangmail-Anti-Spam-Filtered: true
+X-Fangmail-MID-QID: 6A59E329.001/4h1jHF4n6vz57DCl
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260717_005551_344237_B2D842AD 
-X-CRM114-Status: GOOD (  26.11  )
+X-CRM114-CacheID: sfid-20260717_010920_003481_6E914A62 
+X-CRM114-Status: GOOD (  16.95  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -139,58 +82,157 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Fri, Jul 17, 2026 at 08:16:55AM +0200, Arnd Bergmann wrote:
-> On Thu, Jul 16, 2026, at 21:04, Yeoreum Yun wrote:
-> >>
-> >> > Ugh. This isn't correct C code. It only works because the kernel passes
-> >> > -fno-strict-aliasing.
-> >> 
-> >> I think the bigger problem is the code dereferencing the pgd
-> >> pointer in the first place: Since the pgd pair is written in
-> >> 32-bit units in __pmd_populate(), anything reading it would
-> >> technically have to operate on both entries.
-> >> 
-> >> As the kernel relies on -fno-strict-aliasing, the type mismatch
-> >> is less of a problem than actually doing the potentially wrong
-> >> thing.
-> >> 
-> >> As far as I can tell, we are however saved by pgd_val()
-> >> only ever being used for debug prints, where printing
-> >> the first entry is likely all that is needed to analyse
-> >> the real bug.
-> >> 
-> >> > I would recommend either forcing a struct here, or
-> >> > using a u64 with bitmasks/shifts.
-> >> 
-> >> That would require extra complexity for the big-endian
-> >> case though.
-> >
-> > Agree. And since the users of pgd_val() mostly uses with
-> > pmd_pfn(), pmd_page() and etc. I think it doesn't matter to return
-> > lower pmdval_t or higher one.
-> >
-> > Therefore, without considering endianess, it's enough with downcast
-> > like:
-> >
-> >    #define pgd_val(x)      ((pmdval_t)x)
-> >
-> > Could we apply this in next version?
-> 
-> I would just leave the original version here, at least it
-> keeps the current behavior for something that is easy to
-> get wrong. Taking the second entry on big-endian sounds
-> counterintuitive, especially when you have a hugetlb
-> mapping where the two don't just point to the same page.
+The existing kvm_riscv_gstage_wp_range() walks the entire [start, end)
+range to apply write protection for dirty log clearing, even when the
+provided mask has zero bits (i.e., many GFNs do not need protection).
+This leads to unnecessary page table walks when the mask is sparse.
 
-Thanks. Even my simple tests with GCC versions 8.5.0 through 16.1.0 in [0],
-did not spill to the stack. So keeping David's original implementation
-seems reasonable.
+Replace the range-based approach with a new function
+kvm_riscv_gstage_wp_pt_masked() that iterates only over the set bits in
+the mask. For each set bit, it looks up the leaf PTE and applies write
+protection. Once a huge page is encountered, the entire huge-page range
+is processed in one go, and the corresponding bits in the mask are cleared
+using bitmap_clear().
 
-Link: [0] https://www.kernel.org/pub/tools/crosstool/
+Performance was measured with KVM selftests dirty_log_perf_test on a
+Spacemit k3 host with the following configuration:
+- vCPUs: 2 (-v 2)
+- Memory: 1GB (-b 1G)
+- Iterations: 3 (-i 3)
+- Write percentage varied via -w parameter to simulate different
+  dirty mask densities.
 
+The following data shows the time spent in the clear-dirty-log phase
+(i.e., the KVM_CLEAR_DIRTY_LOG ioctl) under each configuration.
+
++------------------+------------------+------------------+-------------+
+| Write Percentage | Original (s)     | Patched (s)      | Improvement |
++------------------+------------------+------------------+-------------+
+| 10%              | 0.012905         | 0.009213         | +28.6%      |
+| 30%              | 0.014217         | 0.010287         | +27.6%      |
+| 50%              | 0.014606         | 0.011772         | +19.4%      |
+| 70%              | 0.014735         | 0.013199         | +10.4%      |
+| 100%             | 0.014759         | 0.015294         | -3.6%       |
++------------------+------------------+------------------+-------------+
+
+The performance improvement is most significant when the dirty mask is
+sparse (low write percentage), which is common in real-world scenarios
+with low to moderate memory write intensity. In the worst-case scenario
+where the mask is fully set (100% write), the optimization introduces
+a slight 3.6% overhead due to the additional bit operations, which is
+acceptable given the substantial gains in common cases.
+
+This change significantly reduces the number of page-table walks when
+the dirty mask has many zero bits, improving the efficiency of
+KVM_CLEAR_DIRTY_LOG and related ioctls.
+
+Signed-off-by: Wang Yechao <wang.yechao255@zte.com.cn>
+---
+ arch/riscv/include/asm/kvm_gstage.h |  3 ++
+ arch/riscv/kvm/gstage.c             | 59 +++++++++++++++++++++++++++++
+ arch/riscv/kvm/mmu.c                |  2 +-
+ 3 files changed, 63 insertions(+), 1 deletion(-)
+
+diff --git a/arch/riscv/include/asm/kvm_gstage.h b/arch/riscv/include/asm/kvm_gstage.h
+index 21e2019df0cf..50c74527ddd2 100644
+--- a/arch/riscv/include/asm/kvm_gstage.h
++++ b/arch/riscv/include/asm/kvm_gstage.h
+@@ -82,6 +82,9 @@ bool kvm_riscv_gstage_unmap_range(struct kvm_gstage *gstage,
+ 
+ bool kvm_riscv_gstage_wp_range(struct kvm_gstage *gstage, gpa_t start, gpa_t end);
+ 
++bool kvm_riscv_gstage_wp_pt_masked(struct kvm_gstage *gstage, gfn_t base_gfn,
++				   unsigned long mask);
++
+ void kvm_riscv_gstage_mode_detect(void);
+ 
+ static inline unsigned long kvm_riscv_gstage_mode(unsigned long pgd_levels)
+diff --git a/arch/riscv/kvm/gstage.c b/arch/riscv/kvm/gstage.c
+index c4c3b79567f1..9af86b1c5e3c 100644
+--- a/arch/riscv/kvm/gstage.c
++++ b/arch/riscv/kvm/gstage.c
+@@ -472,6 +472,65 @@ bool kvm_riscv_gstage_wp_range(struct kvm_gstage *gstage, gpa_t start, gpa_t end
+ 	return flush;
+ }
+ 
++static inline void clear_huge_mask(unsigned long *mask, unsigned long page_size,
++				   gfn_t base_gfn, gpa_t addr)
++{
++	unsigned long start_index = 0;
++	unsigned long end_index = BITS_PER_LONG - 1;
++	unsigned long end_gfn = base_gfn + end_index;
++	unsigned long aligned_start_gfn = addr >> PAGE_SHIFT;
++	unsigned long aligned_end_gfn = aligned_start_gfn + (page_size >> PAGE_SHIFT) - 1;
++	unsigned int nbits = 0;
++
++	if (aligned_start_gfn > base_gfn)
++		start_index = aligned_start_gfn - base_gfn;
++
++	if (aligned_end_gfn < end_gfn)
++		end_index = aligned_end_gfn - base_gfn;
++
++	nbits = end_index - start_index + 1;
++	bitmap_clear(mask, start_index, nbits);
++}
++
++bool kvm_riscv_gstage_wp_pt_masked(struct kvm_gstage *gstage, gfn_t base_gfn,
++				   unsigned long mask)
++{
++	unsigned long page_size;
++	bool flush = false;
++	bool found_leaf;
++	u32 ptep_level;
++	pte_t *ptep;
++	gpa_t addr = 0;
++	int ret;
++
++	while (mask) {
++		addr = (base_gfn + __ffs(mask)) << PAGE_SHIFT;
++
++		found_leaf = kvm_riscv_gstage_get_leaf(gstage, addr, &ptep, &ptep_level);
++		ret = gstage_level_to_page_size(gstage, ptep_level, &page_size);
++		if (ret)
++			break;
++
++		if (found_leaf) {
++			if (ptep_level) {
++				addr = ALIGN_DOWN(addr, page_size);
++				clear_huge_mask(&mask, page_size, base_gfn, addr);
++			}
++
++			flush |= kvm_riscv_gstage_op_pte(gstage, addr, ptep,
++							 ptep_level, GSTAGE_OP_WP);
++
++			if (ptep_level)
++				continue;
++		}
++
++		/* clear the first set bit*/
++		mask &= mask - 1;
++	}
++
++	return flush;
++}
++
+ void __init kvm_riscv_gstage_mode_detect(void)
+ {
+ #ifdef CONFIG_64BIT
+diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
+index 082f9b261733..7eab58ff63f9 100644
+--- a/arch/riscv/kvm/mmu.c
++++ b/arch/riscv/kvm/mmu.c
+@@ -110,7 +110,7 @@ void kvm_arch_mmu_enable_log_dirty_pt_masked(struct kvm *kvm,
+ 
+ 	kvm_riscv_gstage_init(&gstage, kvm);
+ 
+-	flush = kvm_riscv_gstage_wp_range(&gstage, start, end);
++	flush = kvm_riscv_gstage_wp_pt_masked(&gstage, base_gfn, mask);
+ 	if (flush)
+ 		kvm_flush_remote_tlbs_range(kvm, start >> PAGE_SHIFT,
+ 					    (end - start) >> PAGE_SHIFT);
 -- 
-Sincerely,
-Yeoreum Yun
+2.27.0
+
 
 -- 
 kvm-riscv mailing list
