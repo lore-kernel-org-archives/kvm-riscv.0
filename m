@@ -4,66 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D012BC4450F
-	for <kvm-riscv@archiver.kernel.org>; Fri, 17 Jul 2026 06:51:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3A837C4450F
+	for <kvm-riscv@archiver.kernel.org>; Fri, 17 Jul 2026 07:03:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
 	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=M/67JCJjufTXYlUgtRxE0cnG+eDwrfsOhh8+cU03lcw=; b=GXE1Nz+e6X/f+3
-	DoMyBO6ylvlgkr9v6kYGkzJ7YOR7kz+R7fNG85c6j7rNf8gWVMYB8x6fZhJhS3wtqHvlXxE1PLi0H
-	7HbrtojLKi913CBfNHHkGhatbDaJXg7z6PzzRKgnHe/RGT+RRK6fIg4IY5mpkyaVvy9tx2QmLiIfE
-	FKH78ZhYDCi2/b8giGqmoYnM3BMKjUl0YohWm9la+41G7I6xbLRBGCNiRBY7Mo7etiicYrhLG51/C
-	PYQJXQhs48DIMyPspis3/7zVBptv8+IEnyaAR2KMndBxGNiyQE8Xkli3jSNodsUi8U3WAv+KeTxFh
-	OtqyqeZ+gobNglJtaboQ==;
+	List-Owner; bh=hTopl2DuWm9+Uyw/qMNhyi/WsokwBG53O6ULVl3e3LA=; b=uX9xU7SjHsRjZ1
+	G89S/03DFzDOtLvQc58CstO2NNzbfhLW+UD982C46nfJqMdudVdijqDl3EDb6hUy91ALd9UJDSJHB
+	Wf3NtsMxPfC8yRIFW9gyg1iM1c+sN7SN15Dg5/VaIO2b+zdqqS+f2tuuXH4LmmLp59QH+6gn7J4wM
+	d3cwxO4T7R2G0PHAceV9Y58sYYx648fXssHMRcpmG0qUEYevoPYCfCvQshJe3IMZsXtNROPl9BHkM
+	xEmcSGwoD/NBUUHEojQcau36PYV6liP0qXSTZ/PfyBJf1HRYOSrY2Eh5S4ESR94M9KoudUD5dw7jk
+	l6KTzn/BDM/9R4avWFAA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wkcQE-00000001Izs-1Z68;
-	Fri, 17 Jul 2026 06:51:46 +0000
-Received: from galois.linutronix.de ([193.142.43.55])
+	id 1wkcbz-00000001MGf-3iWC;
+	Fri, 17 Jul 2026 07:03:55 +0000
+Received: from galois.linutronix.de ([2a0a:51c0:0:12e:550::1])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wkcQC-00000001Iyu-0Jfd;
-	Fri, 17 Jul 2026 06:51:45 +0000
-Date: Fri, 17 Jul 2026 08:51:37 +0200
+	id 1wkcbx-00000001MGA-2mpP;
+	Fri, 17 Jul 2026 07:03:55 +0000
+Date: Fri, 17 Jul 2026 09:03:50 +0200
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1784271098;
+	s=2020; t=1784271831;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=iHloH8eQez70XTBWP+YOYs861I04WwMlKGR/B+8UyX8=;
-	b=uRQvpXx+VHdKwA2Zj2s2fbig4bRKStK7eaDY1daStzkR7P22iO9Wv/mOHOYI+rtZw+b8CS
-	OzvGBYweVqeYmrgTzjfH/1muSHvA+JyIJ/lMIXJzByR7Rbcdoy+ctwHWbLdaUFoCsStAhK
-	/76Jzaflrb91HsjSkPf9dv0Shr5t4ZuPVhDoy4L9w7JhEZRGQOQMPjgtutOeQCOE2Zk9y4
-	PyeZhpOUAkFXEUgRc+d4PAlG8u8sKDu6xs7vo0AkhZeejAMtP/kNINsrDxnNxgtRjgu6U+
-	OS7k2r+py4/9210hQi+pGc7p/v3ZsuKRiA/QQ+ZorhGk7yJIgkSPo2yX2jiiAw==
+	bh=J6cmnfycj2KUStP4y16+55TqqyQRiz2ZkFVvw4HoG7s=;
+	b=QVlMtu5oYdpL8vCova70McyDA8s5E6hK3ttlamnKs8onYsKMhOHnYX7VRxBnocTqVhhF0H
+	YZovUehKcG5A7KjX2UWFrxPxICsdTHvCxUrD2aIso7davCtt3Og+9JMtEh5JFvPPb/B5dZ
+	fOiLqvVO79+rP/7GQLKf4PKxtzuhyk+z5J80TUwR8M6tYB4ZSh6/H4NdSHg/pXU8afWWrB
+	CHcQQDJbmh2VswojFQltLxyOZbJLdcF77KBceQNpOaliBGAa3+Mqewmg9WwZWdueKDsY0b
+	81ILjNxGKhszt6stbpYZYSzYjXmthC/qBMzSrLS29z+uwZKOIwCfNYz1L6l0fw==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1784271098;
+	s=2020e; t=1784271831;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=iHloH8eQez70XTBWP+YOYs861I04WwMlKGR/B+8UyX8=;
-	b=k/6lWgISwZ5cyfj3K2nN/MhzIKDOdKXhc2tWD6i0TuTGy3ssBlaCDjfo5BfTemhyzIQH/F
-	6FbjUnX0tN/c0+BA==
+	bh=J6cmnfycj2KUStP4y16+55TqqyQRiz2ZkFVvw4HoG7s=;
+	b=zMb0AeHznCksJfhHizeScTwUKgpupuXMrqjA8KRtRqr68auHRoa9dm5yolBPkEmQY7XGzA
+	pEzEK2nXlcMSniCQ==
 From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-To: yhchen312@gmail.com
-Cc: anup@brainfault.org, atish.patra@linux.dev, pjw@kernel.org,
-	palmer@dabbelt.com, aou@eecs.berkeley.edu, alex@ghiti.fr,
-	clrkwllms@kernel.org, rostedt@goodmis.org, kvm@vger.kernel.org,
-	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
-	linux-kernel@vger.kernel.org, linux-rt-devel@lists.linux.dev,
-	Quan Zhou <zhouquan@iscas.ac.cn>
-Subject: Re: [PATCH] RISC-V: KVM: Use raw_spinlock for VMID update critical
- section
-Message-ID: <20260717065137.FQ5Ax2W-@linutronix.de>
-References: <20260716064011.2387501-1-yhchen312@gmail.com>
+To: Andy Chiu <tchiu@tenstorrent.com>
+Cc: anup@brainfault.org, Paul Walmsley <pjw@kernel.org>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+	Clark Williams <clrkwllms@kernel.org>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	linux-riscv@lists.infradead.org, linux-rt-devel@lists.linux.dev,
+	kvm-riscv@lists.infradead.org, dfustini@oss.tenstorrent.com,
+	greentime.hu@sifive.com
+Subject: Re: [PATCH v2 2/3] riscv: vector: allow non-preemptible kernel-mode
+ vector with IRQs off
+Message-ID: <20260717070350.Vw9N1GT-@linutronix.de>
+References: <20260715051629.1169645-1-tchiu@tenstorrent.com>
+ <20260715051629.1169645-3-tchiu@tenstorrent.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20260716064011.2387501-1-yhchen312@gmail.com>
+In-Reply-To: <20260715051629.1169645-3-tchiu@tenstorrent.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260716_235144_267950_7A6DD31A 
-X-CRM114-Status: UNSURE (   5.71  )
+X-CRM114-CacheID: sfid-20260717_000353_973139_4D63D269 
+X-CRM114-Status: UNSURE (   9.14  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -81,26 +84,30 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On 2026-07-16 14:40:11 [+0800], yhchen312@gmail.com wrote:
-> From: "Yuhang.chen" <yhchen312@gmail.com>
-> 
-> The VMID update critical section performs an IPI broadcast via
-> on_each_cpu_mask() on VMID version rollover, which must not be preempted
-> under PREEMPT_RT.
+On 2026-07-15 00:16:21 [-0500], Andy Chiu wrote:
+> diff --git a/arch/riscv/kernel/kernel_mode_vector.c b/arch/riscv/kernel/kernel_mode_vector.c
+> index 307ac369c3d4..6627e1a82e19 100644
+> --- a/arch/riscv/kernel/kernel_mode_vector.c
+> +++ b/arch/riscv/kernel/kernel_mode_vector.c
+> @@ -55,13 +55,16 @@ void get_cpu_vector_context(void)
+>  	 * disable softirqs so it is impossible for softirqs to nest
+>  	 * get_cpu_vector_context() when kernel is actively using Vector.
+>  	 */
+> -	if (!IS_ENABLED(CONFIG_PREEMPT_RT))
+> -		local_bh_disable();
+> -	else
+> +	if (!IS_ENABLED(CONFIG_PREEMPT_RT)) {
+> +		if (!irqs_disabled())
+> +			local_bh_disable();
+> +	} else {
+>  		preempt_disable();
+> +	}
+>  
+>  	riscv_v_start(RISCV_KERNEL_MODE_V);
+>  }
+> +EXPORT_SYMBOL_GPL(get_cpu_vector_context);
 
-Here you state _why_ it must not be preempted. What would be the worst
-that could happen.
-
->                   Convert vmid_lock to raw_spinlock_t and use plain
-That part starting with "Convert" belongs into into a new line.
-
-> raw_spin_lock()/raw_spin_unlock() (interrupts stay enabled, since
-> on_each_cpu_mask() requires it).
-> 
-> Assisted-by: YuanSheng:deepseek-v4-pro
-> Co-developed-by: Quan Zhou <zhouquan@iscas.ac.cn>
-> Signed-off-by: Quan Zhou <zhouquan@iscas.ac.cn>
-> Signed-off-by: Yuhang.chen <yhchen312@gmail.com>
+EXPORT_SYMBOL_FOR_KVM ?
 
 Sebastian
 
