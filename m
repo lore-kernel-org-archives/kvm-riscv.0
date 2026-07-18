@@ -4,103 +4,90 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 43E61C4451C
-	for <kvm-riscv@archiver.kernel.org>; Sat, 18 Jul 2026 08:03:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 03EA1C4451C
+	for <kvm-riscv@archiver.kernel.org>; Sat, 18 Jul 2026 15:36:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:Subject:Message-ID:Date:From:
-	MIME-Version:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
 	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=Q6uSU4SVPG+mWMAJPxZgKSCNQfymrgdrV8PTqjqCWRQ=; b=R25+0X9F5uqVeC
-	taHzYlbTwW9JYBBqYzinNNDecKchO7yM86cUQaHoU4f3ZD+5lQUOK3lwCuW2bTgRO8r6OevP80Vz8
-	mb0ncta/aHOeR+bVMVhh/cxQ/l8rdGUuQj7O8dalWb8/HelcWA/reRbJXcOyKtvhh1Pqesb10Rd83
-	ENiBq4CBNJJzacrYlY35q387NgXY/GDgNKv/jZVobmnkOPfjl91+UuViGMMRgtVhpiOGVyaDLDbP1
-	fBCUjGZYpybQgnGKqj+c0IoHL31GohSjNtEQd7xSLcXmQmWn1A5L25XaSipZb2efeegxGKwi4uUPp
-	8vrPsD/TrpJKn1UmUJ5w==;
+	List-Owner; bh=Aksnk6ScIwYActXg34lsm4kxNIeXOOa20gFYdZbsLDY=; b=XRUp0eebQCXryq
+	d/xA59QukSZwB51EnJr4gBHL9ImdrA/U2gB9Z1MCA+RlJBY7MzM27mZpdSsala7gPwz3iTz8/0lQT
+	JepX8jZN5mUpFgyoalLFDfORb+3U9zVZ75cifENNdxthpFooxPAkFJ/2LI9O9iE1Cc59RVd5y2Np2
+	IU4eGkxqzFY6bhJXtmPSl/V3eyVOwLp4AeSobXfYv4LXkEDrxHMSjvyKcNO3l/IfaWCishBdVcibg
+	M45L4o9L3LMa6HFmw4HzSZ0S5OOc4U1Cg7oh7Lb1r4zG5YwSOOMB26lB2xYPGEFdlLMX1KvrVh8t1
+	6F3809hAVyAZYkgg/ERQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wl00k-00000003sSa-1jo9;
-	Sat, 18 Jul 2026 08:03:02 +0000
-Received: from mail-wm1-x329.google.com ([2a00:1450:4864:20::329])
+	id 1wl75c-00000004Dud-20Gi;
+	Sat, 18 Jul 2026 15:36:32 +0000
+Received: from mail-pf1-x42d.google.com ([2607:f8b0:4864:20::42d])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wl00h-00000003sRv-2oDl
+	id 1wl75a-00000004Dtt-01z1
 	for kvm-riscv@lists.infradead.org;
-	Sat, 18 Jul 2026 08:03:01 +0000
-Received: by mail-wm1-x329.google.com with SMTP id 5b1f17b1804b1-49548aebcd8so9749065e9.3
-        for <kvm-riscv@lists.infradead.org>; Sat, 18 Jul 2026 01:02:58 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1784361777; cv=none;
-        d=google.com; s=arc-20260327;
-        b=Mjcrn5IsKaNIHNRtqB2KVtLd27egQ4G2sk5vEiE7CFGKCt4xPTusfkMJN5OdZrF21D
-         w7d0Lyl4110DwvqMWimmwi2aaCpzSDlSf9dkHfKOweylb/kTfFsejXlTEeW3eel/szNf
-         PTbRamP60nk3L13gcZkgI572GNo5oOfcK0o38W2/Vmi78QB45wnmBvMyY5pylHE6zroM
-         dEYTok9fjq27K5doH/bfY85njxWX6YWiiqVyOowCZWV8J9wij4dzGeLwMfmR/R3wK8Dq
-         KLoE2Atna4Z3Mva2ZgedULojGYx43RLY3l7utkF3+dPMZkWkvWfmg/nbzmsTxfXsze1N
-         psCg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=cc:to:subject:message-id:date:from:mime-version:dkim-signature;
-        bh=Rm7XhSy4D7GsNEFlHs1pBrGpKvn/WVAo06Ys8zEN9MY=;
-        fh=07SwOF2h/hI+PkB82iAj/UojJX4yw7cBYU3VrwxNvPM=;
-        b=eIZjP9FX1UirZwV56b4STXZUmYV6q8v4HGjc2q8/jx9iiFMjzEBugytptefpM7l2Pl
-         trlwJiKBA60DvnNfbXymVy20FGS6XoOBegOgQ0/eA/6taD4PX3a7gEJBkz73b7PRc5qI
-         HA/SwpbDmeNbpXXskt35bgv6KVvTiIUrsHIeVx1+fsbVATZTzYkhWE+LedTII3d/7PmB
-         GBOnSLM6JTz1rFV5XELwH6LyAWBF2zvJRQzz7RffuWFmaDb+lmlHT10LH9uE6M29t/HT
-         V8gHmWz/7PTSSGjgBjB4/9JTIhl9opi+FqfCfqkWAZ+kKZq0hr/480uoFe/KRxL3RW9h
-         0ZWQ==;
-        darn=lists.infradead.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	Sat, 18 Jul 2026 15:36:31 +0000
+Received: by mail-pf1-x42d.google.com with SMTP id d2e1a72fcca58-8486672f03cso8799640b3a.0
+        for <kvm-riscv@lists.infradead.org>; Sat, 18 Jul 2026 08:36:29 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=brainfault-org.20251104.gappssmtp.com; s=20251104; t=1784361777; x=1784966577; darn=lists.infradead.org;
-        h=content-type:cc:to:subject:message-id:date:from:mime-version:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=Rm7XhSy4D7GsNEFlHs1pBrGpKvn/WVAo06Ys8zEN9MY=;
-        b=p4xw7sPglkYk0f4fjGdSEZHUZ5pVNhZIjClDLZce2DXhDxII6aa7rJ5z4KYJLrRLfj
-         FFMa6qFd0tFPHfvtoUbTmWcJc3UdXW1qv7pgsDCcfeqW47FxUR5bwF4J6Mr/XdyqNZtP
-         upFhaGItiw+X0Pg81pi9PMBLIdWZo2DzZnWkaq/6GzExJD87QzggFk3OPcyLQV89c7rL
-         nr9rDPnl8lILW+dlBmaEf8FLWQsi+y6DrCFCv2hxVwb4LLfeXlk94H/7nlJ8uCSbS6gc
-         qqPhYY7e3X2irAaXpw4u1sXmQ/e3QBOrIZ5TRDSchMqoZHCo0Fo/z01OJBRRRCY/F8dd
-         PJ+w==
+        d=gmail.com; s=20251104; t=1784388988; x=1784993788; darn=lists.infradead.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=Vo3O4C85dd8u4rAF/3VjEGqMnG6FGHT5+qn329tDhDM=;
+        b=a1TL25TF66jvyN0RriJm68j5/EGeuodwux1F0K5OMKi1HGzyNBwts+Snr0v+8L9Tk6
+         CmOsp41+ZpaZJjhCmvbWao8T+qfO9tUWRPHGSl5IhSC9RJ5HvBzxGZ96m04M1kPD2PA5
+         DfNIdP2KjfhFjHaFzSPMEnBKXqT4qNX9Zb1ers2yAAWrS842McE7tvvGtEkZ0g1nnQqx
+         n5P35OBU1Lf9es9lruYkY09ojtk6v3pXZ6g9KnFSzhGSsusvZuqeSkT/Xz7FyeJMK3nT
+         PIAJTtEx4UVo4SUbhJHKOGz3ya4M3xHsJ9v+b3i/B3v/zAHENANadcqY/exsq7QxoP/D
+         ri6w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784361777; x=1784966577;
-        h=content-type:cc:to:subject:message-id:date:from:mime-version
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=Rm7XhSy4D7GsNEFlHs1pBrGpKvn/WVAo06Ys8zEN9MY=;
-        b=OK1vbKm2nTQyG46ISupL4msjR9S1IeXascFsMmTx4NpcT5F21KxVVSakS61VBkgogG
-         /ruy8iCJNUsKkkSIhHoyeDDGu/wtjpR+nFEsjl3K3UatuIAwKC/lea7gRk6T7r3qKpDV
-         SPnhkGLPjrF4YmqCbSMODOJ5lC/tqV1TfXZwsLC8mLKDgoJ7UBrCpnBdhTevMN28LP2c
-         KknNWAu0QmyxrYs+jN5/gch/HMZUr35flh/alcSel9ZDMq+3tnEcRWzsTBxkY2HXg3Vn
-         VHehj05YDVDw+sxDS2/3L1nQ81RMI78yCqN1S1J5H2dBeEBSJtnyxI+fc6X6Eq+X3FWA
-         gszg==
-X-Forwarded-Encrypted: i=1; AHgh+RqQzt6xv+S1Ytajcm9/I4zkGsDM4F/DMTIo+pfc/HEvHC1ipEPURuyhFLrtc+Z0xHXeG0GQbST22/Q=@lists.infradead.org
-X-Gm-Message-State: AOJu0YxexM2NWRaH9q8zFmlON6nczgTDESWL/uyi9XXn40VxKuMAL4HJ
-	lTMEt8T9XE8xxOTG+RHHVloc8m6yIyBwLtIkjMH500AhuIcGnPVIvBKzlOQ5rnQdz9wgAZql6Oa
-	wKG+n9H46L+rpEkLrOhrmLlgSC9xEtl4zNRq8FAg0U78C7juIjn06PB8=
-X-Gm-Gg: AfdE7cmwkhkljdu7E51thL3eYw29BO8YhNEsRCUj+dzX74TOETpamiDqi7c7ErBtJzh
-	T8WJenCTByjR8XJnuZNo4LGbLCiwNcGBKNCKCP2/Q6VWJQ8YiEs0tEALawnhTo+9HtkW6/K15KS
-	FORhXREJ0XN//XipayyjUx9tcY38ccDNohrfcqL6pDfK+ze4iCztilisgkMg5ZZpA7HcAXEQKoG
-	rl+bZuZx6C3nUDFCu3oPN9cRoWFTduQTgy1ZMOKunIabQT8ZB0SlJdNYGFkG8vIL7ZCNW1F2xhV
-	8T8LtDuNui5wApikx05riKEI4NP8QsPySHOs0Kys8Wq7mUZpWq0udntBiVSwNiMgOOp8TD4+wdY
-	GZLBy
-X-Received: by 2002:a05:600c:4f09:b0:490:e19b:bd99 with SMTP id
- 5b1f17b1804b1-4954a40bc1emr61521315e9.30.1784361776913; Sat, 18 Jul 2026
- 01:02:56 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1784388988; x=1784993788;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=Vo3O4C85dd8u4rAF/3VjEGqMnG6FGHT5+qn329tDhDM=;
+        b=CJ8hiSo96qqA6ihQ6Bi/H+H4D6/gBAcBKTYBTOPvHv7eQCRTrcDfV5O6u1P4jBh34C
+         KvhW+79dpvdadxSjfV67LbiZ/AXq3pmP889h3w2MwzSqIlYDX1SKW4EsED9bmiM1qpTQ
+         Aw6DyqE9TZDGTFCIWENhbf93gts2ss7hlSun4Os8Dns1lbSwkY3EzAZCN7/Seym+cvig
+         0uapDyFoOXH0chNqzWW8w21x2xfQNULl2SzBGPx4AqFbHQTy7OV/bZyJ/Z4xV54+XEHb
+         ttKQkTePXYQ0ej7AaUDgWENFW5W/2E7x45xS0wT2uqnxCzapine/8zH7tOMbkiiKkM+z
+         Pi7A==
+X-Forwarded-Encrypted: i=1; AHgh+RrfpkyO+GRm47oMAOk7NYil1FsArVOktPnk82DW07OnH/yDqixcPVTs1Xd6qveGsR107+LI8NZKvBQ=@lists.infradead.org
+X-Gm-Message-State: AOJu0YzeWrKpSVvahxeE7hrZ023o+XB2almXZcaMlJ1pyy7Gvc+2xB5J
+	s9Nq7l830eUhfBt12xdqMYMMOE6Lduwv9zu23mi4VHj6VyAbuVLp4V0h
+X-Gm-Gg: AfdE7cluml+N9epGKDdOVmur6xKA7csV/yyFiiHm0h4o8MA67y8CP9eB1I+FDXwaqA6
+	IHTpfR/FmKXVwyXNtIScBr/OM9MkDP7BZrdcWOQLdDjuZTAOaxUg6Q7UtklSEqKe0ZhS8Vzh+Kq
+	WQdG5HCSznKtmN9XfABaMc5P+aWg/YwK+rbbh6BHnjCSJcw/08AZt8x+dSVO3/mmeoWDe07AzTe
+	phsee8Rns78H+SJUmHHHNDOdp3POO4ot4WQgSd7aDbPF1wGSKK89n57+P5nNx39dIuZxqEMciw0
+	eiCkWV2/F09L7YiX7XRPS7lDKsrGNnJVYaGXoV8+CHWPjmvvjQAfFiepOO6bQXDEyPL+P+XJLCV
+	ypHUuQlYt10CXnzas9HU3iYP27sCOxYfr1KyTnzrjCi9Ub6ozdo4VHto8zrh5Q5Ynl8QMBzIde+
+	WJnKX2nDIGzkA=
+X-Received: by 2002:a05:6300:2703:20b0:3c3:bb40:790 with SMTP id adf61e73a8af0-3c3bb4015femr4507067637.66.1784388988414;
+        Sat, 18 Jul 2026 08:36:28 -0700 (PDT)
+Received: from 2045L.localdomain ([36.112.122.101])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-cb5159b11a5sm2235615a12.0.2026.07.18.08.36.22
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 18 Jul 2026 08:36:26 -0700 (PDT)
+From: Guidong Han <2045gemini@gmail.com>
+To: Anup Patel <anup@brainfault.org>,
+	Atish Patra <atish.patra@linux.dev>
+Cc: Paul Walmsley <pjw@kernel.org>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>,
+	Alexandre Ghiti <alex@ghiti.fr>,
+	kvm@vger.kernel.org,
+	kvm-riscv@lists.infradead.org,
+	linux-riscv@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	Guidong Han <2045gemini@gmail.com>
+Subject: [PATCH] RISC-V: KVM: Fix PMU event info array size overflow
+Date: Sat, 18 Jul 2026 23:36:20 +0800
+Message-ID: <20260718153620.829378-1-2045gemini@gmail.com>
+X-Mailer: git-send-email 2.43.0
 MIME-Version: 1.0
-From: Anup Patel <anup@brainfault.org>
-Date: Sat, 18 Jul 2026 13:32:45 +0530
-X-Gm-Features: AUfX_myMNGzt4ZSbXXn9B7HyuNCD1fPJy5lCNbHrmQgj6yVz1oiBXt5EwnVWQEg
-Message-ID: <CAAhSdy2iT3GmYz+n_jzbQ4V_5P7UdfFhmq=BSOgYCDEQ6PPuZA@mail.gmail.com>
-Subject: [GIT PULL] KVM/riscv fixes for 7.2 take #1
-To: Paolo Bonzini <pbonzini@redhat.com>
-Cc: Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
-	Atish Patra <atish.patra@linux.dev>, Andrew Jones <andrew.jones@oss.qualcomm.com>, 
-	KVM General <kvm@vger.kernel.org>, 
-	"KVM RISC-V (KVM/riscv)" <kvm-riscv@lists.infradead.org>, 
-	linux-riscv <linux-riscv@lists.infradead.org>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260718_010259_947614_CF382A6C 
-X-CRM114-Status: UNSURE (   6.45  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20260718_083630_041322_0B0551FD 
+X-CRM114-Status: GOOD (  12.51  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -117,84 +104,92 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Hi Paolo,
+SBI PMU EVENT_GET_INFO stores guest-controlled
+num_events * sizeof(*einfo) in an int. On RV64, num_events = 0x10000001
+makes 0x100000010 truncate to 16. KVM then allocates one entry but loops
+over the original num_events, causing out-of-bounds reads and writes. A
+nested guest triggered:
 
-We have the following fixes for the 7.2 kernel:
-1) Avoid redundant page-table allocations in ioremap pcache topup
-2) Apply SBI FWFT LOCK flag only on successful set
-3) Bound SBI PMU counter mask scan to BITS_PER_LONG
-4) Skip TLB flush when G-stage PTE becomes valid with Svvptc
-5) Zicbo[m|z|p] block sizes should be always present in ONE_REG
-6) Inject instruction access fault on unmapped guest fetch
-7) Serialize virtual interrupt pending state updates using a raw spinlock
-8) Fix Spectre-v1 in vector register access via ONE_REG
+BUG: KASAN: slab-out-of-bounds in kvm_riscv_vcpu_pmu_event_info+0xa4/0x142
+Read of size 4 at addr ff600000074d46b0 by task init/1
+Call Trace:
+[<ffffffff8006471c>] kvm_riscv_vcpu_pmu_event_info+0xa4/0x142
+[<ffffffff800690c0>] kvm_sbi_ext_pmu_handler+0xca/0x268
+[<ffffffff8006779e>] kvm_riscv_vcpu_sbi_ecall+0xec/0x1e6
+[<ffffffff8006008c>] kvm_riscv_vcpu_exit+0x48c/0x540
+[<ffffffff8005ea0a>] kvm_arch_vcpu_ioctl_run+0x37e/0xc80
+Allocated by task 1:
+ __kmalloc_noprof+0x19e/0x4b0
+ kvm_riscv_vcpu_pmu_event_info+0x72/0x142
+ kvm_sbi_ext_pmu_handler+0xca/0x268
+ kvm_riscv_vcpu_sbi_ecall+0xec/0x1e6
+ kvm_riscv_vcpu_exit+0x48c/0x540
+ kvm_arch_vcpu_ioctl_run+0x37e/0xc80
+The buggy address is located 0 bytes to the right of
+ allocated 16-byte region [ff600000074d46a0, ff600000074d46b0)
 
-Please pull.
+Store the shared-memory size in size_t and reject multiplication overflow.
+Reject sizes beyond KMALLOC_MAX_SIZE to avoid triggering WARN_ON_ONCE_GFP()
+for an impossible allocation order. Use an unsigned long loop index to
+match num_events.
 
-Regards,
-Anup
+Fixes: e309fd113b9f ("RISC-V: KVM: Implement get event info function")
+Cc: stable@vger.kernel.org
+Signed-off-by: Guidong Han <2045gemini@gmail.com>
+---
+ arch/riscv/kvm/vcpu_pmu.c | 13 ++++++++++---
+ 1 file changed, 10 insertions(+), 3 deletions(-)
 
-The following changes since commit a13c140cc289c0b7b3770bce5b3ad42ab35074aa:
+diff --git a/arch/riscv/kvm/vcpu_pmu.c b/arch/riscv/kvm/vcpu_pmu.c
+index bb46dcbfb24d..8b489fc3051f 100644
+--- a/arch/riscv/kvm/vcpu_pmu.c
++++ b/arch/riscv/kvm/vcpu_pmu.c
+@@ -12,7 +12,9 @@
+ #include <linux/err.h>
+ #include <linux/kvm_host.h>
+ #include <linux/nospec.h>
++#include <linux/overflow.h>
+ #include <linux/perf/riscv_pmu.h>
++#include <linux/slab.h>
+ #include <asm/csr.h>
+ #include <asm/kvm_isa.h>
+ #include <asm/kvm_vcpu_sbi.h>
+@@ -479,16 +481,21 @@ int kvm_riscv_vcpu_pmu_event_info(struct kvm_vcpu *vcpu, unsigned long saddr_low
+ 				  unsigned long flags, struct kvm_vcpu_sbi_return *retdata)
+ {
+ 	struct riscv_pmu_event_info *einfo = NULL;
+-	int shmem_size = num_events * sizeof(*einfo);
++	size_t shmem_size;
+ 	gpa_t shmem;
+ 	u32 eidx, etype;
+ 	u64 econfig;
+ 	int ret;
+ 
+-	if (flags != 0 || (saddr_low & (SZ_16 - 1) || num_events == 0)) {
++	if (flags != 0 || (saddr_low & (SZ_16 - 1)) || num_events == 0 ||
++	    check_mul_overflow(num_events, sizeof(*einfo), &shmem_size)) {
+ 		ret = SBI_ERR_INVALID_PARAM;
+ 		goto out;
+ 	}
++	if (shmem_size > KMALLOC_MAX_SIZE) {
++		ret = SBI_ERR_FAILURE;
++		goto out;
++	}
+ 
+ 	shmem = saddr_low;
+ 	if (saddr_high != 0) {
+@@ -512,7 +519,7 @@ int kvm_riscv_vcpu_pmu_event_info(struct kvm_vcpu *vcpu, unsigned long saddr_low
+ 		goto free_mem;
+ 	}
+ 
+-	for (int i = 0; i < num_events; i++) {
++	for (unsigned long i = 0; i < num_events; i++) {
+ 		eidx = einfo[i].event_idx;
+ 		etype = kvm_pmu_get_perf_event_type(eidx);
+ 		econfig = kvm_pmu_get_perf_event_config(eidx, einfo[i].event_data);
+-- 
+2.43.0
 
-  Linux 7.2-rc3 (2026-07-12 14:16:39 -0700)
-
-are available in the Git repository at:
-
-  https://github.com/kvm-riscv/linux.git tags/kvm-riscv-fixes-7.2-1
-
-for you to fetch changes up to 8d9c9b135b5c23de9811a8426257cbd2fa024a99:
-
-  KVM: riscv: Fix Spectre-v1 in vector register access (2026-07-15
-18:06:16 +0530)
-
-----------------------------------------------------------------
-KVM/riscv fixes for 7.2, take #1
-
-- Avoid redundant page-table allocations in ioremap pcache topup
-- Apply SBI FWFT LOCK flag only on successful set
-- Bound SBI PMU counter mask scan to BITS_PER_LONG
-- Skip TLB flush when G-stage PTE becomes valid with Svvptc
-- Zicbo[m|z|p] block sizes should be always present in ONE_REG
-- Inject instruction access fault on unmapped guest fetch
-- Serialize virtual interrupt pending state updates using raw spinlock
-- Fix Spectre-v1 in vector register access via ONE_REG
-
-----------------------------------------------------------------
-Anup Patel (1):
-      RISC-V: KVM: Zicbo[m|z|p] block sizes should be always present in ONE_REG
-
-Dylan.Wu (1):
-      riscv: kvm: Skip TLB flush when G-stage PTE becomes valid with Svvptc
-
-Fangyu Yu (1):
-      RISC-V: KVM: Avoid redundant page-table allocations in ioremap topup
-
-Qingwei Hu (1):
-      RISC-V: KVM: Inject instruction access fault on unmapped guest fetch
-
-SeungJu Cheon (1):
-      KVM: riscv: SBI FWFT: Apply LOCK flag only on successful set
-
-Shengwen Cheng (1):
-      KVM: riscv: PMU: Bound counter mask scan to BITS_PER_LONG
-
-Xie Bo (1):
-      RISC-V: KVM: Serialize virtual interrupt pending state updates
-
-Zongmin Zhou (1):
-      KVM: riscv: Fix Spectre-v1 in vector register access
-
- arch/riscv/include/asm/kvm_host.h | 10 +++---
- arch/riscv/kvm/aia.c              | 35 ++++++++++++++++----
- arch/riscv/kvm/gstage.c           |  6 +++-
- arch/riscv/kvm/mmu.c              |  3 +-
- arch/riscv/kvm/vcpu.c             | 68 +++++++++++++++++++++++++++------------
- arch/riscv/kvm/vcpu_exit.c        | 19 +++++++++++
- arch/riscv/kvm/vcpu_onereg.c      | 46 +++++++-------------------
- arch/riscv/kvm/vcpu_pmu.c         |  4 +--
- arch/riscv/kvm/vcpu_sbi_fwft.c    |  6 ++--
- arch/riscv/kvm/vcpu_vector.c      | 14 ++++++--
- 10 files changed, 137 insertions(+), 74 deletions(-)
 
 -- 
 kvm-riscv mailing list
