@@ -4,31 +4,31 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41464C4450A
-	for <kvm-riscv@archiver.kernel.org>; Sat, 18 Jul 2026 03:52:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 52EEFC4451C
+	for <kvm-riscv@archiver.kernel.org>; Sat, 18 Jul 2026 04:35:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
 	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
 	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=crDUmoGgu3neBozQcf1hQVHT+sQjOHJdDIbtUeGYg/8=; b=KzIq8rjv3USx6s
-	uuXI/zaT2hNzxdAikZI/3PvZc/HjJ7zuXbyfuBHUrVmSqZWtMldkE6alU4SQMh01EqqgsluuPrMAX
-	TjhnXk1j1pUqiaCSXxhaxzZyt1eI8G+r/t76HTAIxg1tOQpsPZRG4YYWFQyOHiA7oswukF1jUFivG
-	y9lFkMscFuLQAilO0koBzjZQiX1Wl4ABIhFZZkLGxpmW4Y+w88hqsRyFGVgHBxGWuPZ+fbs2qnzxD
-	6R0oviW7qkm0VamfJKh9+IXr9TIw7NMRnS9TTBOTmrPX73QBqjMudShzAOxDogM5l7RU9roSOOvj2
-	2Vj2IpOlT1Hihhi+/5vw==;
+	List-Owner; bh=dwuZwcDFCejCMLL6SQhyZx3pUd4z1Mu8vnNJpiUuLUk=; b=hgnUcn1bSKylpw
+	ts7NGgh8tAczeK5BUxdl6TeizFMjhxJ9a3lz8urZzXK9/UQi9a5PMCTVKQNaOhQLzuRMML3Z4A3LO
+	cq7SYgd1rXpNsTd2han8L8xoRnOz8zNnQJKrMduVQWZU9hITGbQPofYsC0fcqQ0EdRs3qwxMQPqVR
+	2eiHwav/YAQsO0sZaX+BOjfbQ+vcHuDBdwZZx5+nwSIi3seDSbua75PmAPc9JZ4hJ5huCt7kyg9j4
+	8+0j1aK6gEdmCR2zkLj6UeiFbLcRtgYyu4kLCt17y0sZegqdFEL4J2Qa/LEaDV4RmBOHtZkbv6Y/o
+	r95uGvlCNUjLQO0BgwOg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wkw6a-00000003dnR-3MbJ;
-	Sat, 18 Jul 2026 03:52:48 +0000
+	id 1wkwmF-00000003gRc-43z6;
+	Sat, 18 Jul 2026 04:35:51 +0000
 Received: from smtp81.cstnet.cn ([159.226.251.81] helo=cstnet.cn)
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wkw6Y-00000003dmU-0rvo;
-	Sat, 18 Jul 2026 03:52:47 +0000
+	id 1wkwmD-00000003gR4-1RLi;
+	Sat, 18 Jul 2026 04:35:50 +0000
 Received: from localhost.localdomain (unknown [111.196.245.140])
-	by APP-03 (Coremail) with SMTP id rQCowACnc0GE+Fpq398tAA--.37353S2;
-	Sat, 18 Jul 2026 11:52:36 +0800 (CST)
+	by APP-03 (Coremail) with SMTP id rQCowAD3AUCcAltqvEsuAA--.37031S2;
+	Sat, 18 Jul 2026 12:35:40 +0800 (CST)
 From: Pengpeng Hou <pengpeng@iscas.ac.cn>
 To: Anup Patel <anup@brainfault.org>,
 	Atish Patra <atish.patra@linux.dev>
@@ -37,39 +37,37 @@ Cc: Pengpeng Hou <pengpeng@iscas.ac.cn>,
 	Palmer Dabbelt <palmer@dabbelt.com>,
 	Albert Ou <aou@eecs.berkeley.edu>,
 	Alexandre Ghiti <alex@ghiti.fr>,
-	Paolo Bonzini <pbonzini@redhat.com>,
-	Yifei Jiang <jiangyifei@huawei.com>,
 	kvm@vger.kernel.org,
 	kvm-riscv@lists.infradead.org,
 	linux-riscv@lists.infradead.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH] RISC-V: KVM: Allow memslots ending at the GPA limit
-Date: Sat, 18 Jul 2026 11:52:36 +0800
-Message-ID: <20260718033646.002.31dc89f2-caplitmus-rv@iscas.ac.cn>
+Subject: [PATCH] RISC-V: KVM: Reject overlapping AIA IMSIC address fields
+Date: Sat, 18 Jul 2026 12:35:40 +0800
+Message-ID: <20260718040000.005.6ede2881-caplitmus-rv@iscas.ac.cn>
 X-Mailer: git-send-email 2.50.1
 MIME-Version: 1.0
-X-CM-TRANSID: rQCowACnc0GE+Fpq398tAA--.37353S2
-X-Coremail-Antispam: 1UD129KBjvdXoWruryDtFW8Xr4DAw48WFy8Xwb_yoWkXrg_WF
-	n7Ga97XFWDAF4xuasxKw4Sk3yxX395GFnrArZrZry8G3sYvF4Sk3ySvws8X345Ar43WF1Y
-	y34kArW3tr42vjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
-	9fnUUIcSsGvfJTRUUUba8FF20E14v26r4j6ryUM7CY07I20VC2zVCF04k26cxKx2IYs7xG
-	6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4kI8w
-	A2z4x0Y4vE2Ix0cI8IcVAFwI0_Gr0_Xr1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Gr0_
-	Cr1l84ACjcxK6I8E87Iv67AKxVW8Jr0_Cr1UM28EF7xvwVC2z280aVCY1x0267AKxVW8Jr
-	0_Cr1UM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj
-	6xIIjxv20xvE14v26r106r15McIj6I8E87Iv67AKxVWUJVW8JwAm72CE4IkC6x0Yz7v_Jr
-	0_Gr1lF7xvr2IYc2Ij64vIr41lF7I21c0EjII2zVCS5cI20VAGYxC7M4IIrI8v6xkF7I0E
-	8cxan2IY04v7MxkF7I0En4kS14v26r1q6r43MxAIw28IcxkI7VAKI48JMxC20s026xCaFV
-	Cjc4AY6r1j6r4UMI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_JrI_JrWl
-	x4CE17CEb7AF67AKxVWUtVW8ZwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v26r1j6r
-	1xMIIF0xvE2Ix0cI8IcVCY1x0267AKxVW8JVWxJwCI42IY6xAIw20EY4v20xvaj40_Jr0_
-	JF4lIxAIcVC2z280aVAFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x0267AKxVW8JVW8JrUvcS
-	sGvfC2KfnxnUUI43ZEXa7VU13ku3UUUUU==
+X-CM-TRANSID: rQCowAD3AUCcAltqvEsuAA--.37031S2
+X-Coremail-Antispam: 1UD129KBjvJXoW7Kr43Ww17Kw45tF1UKw1DGFg_yoW8WFyUpr
+	ZxKF4Fkryjgry7KFZY9w1Igw48C3Wvkw43JryUAr12kr1Iyr92kFn0grWUZFs5Ars2q3yf
+	tF4Y93yv934UAF7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUU9214x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
+	1l84ACjcxK6xIIjxv20xvE14v26r1I6r4UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4j
+	6F4UM28EF7xvwVC2z280aVAFwI0_Gr1j6F4UJwA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_Gr
+	1j6F4UJwAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40EFcxC0VAKzVAqx4xG6I80ewAv
+	7VC0I7IYx2IY67AKxVWUXVWUAwAv7VC2z280aVAFwI0_Jr0_Gr1lOx8S6xCaFVCjc4AY6r
+	1j6r4UM4x0Y48IcxkI7VAKI48JM4x0x7Aq67IIx4CEVc8vx2IErcIFxwACI402YVCY1x02
+	628vn2kIc2xKxwCY1x0262kKe7AKxVWUtVW8ZwCF04k20xvY0x0EwIxGrwCFx2IqxVCFs4
+	IE7xkEbVWUJVW8JwC20s026c02F40E14v26r1j6r18MI8I3I0E7480Y4vE14v26r106r1r
+	MI8E67AF67kF1VAFwI0_Jw0_GFylIxkGc2Ij64vIr41lIxAIcVC0I7IYx2IY67AKxVWUJV
+	WUCwCI42IY6xIIjxv20xvEc7CjxVAFwI0_Gr0_Cr1lIxAIcVCF04k26cxKx2IYs7xG6r1j
+	6r1xMIIF0xvEx4A2jsIE14v26r1j6r4UMIIF0xvEx4A2jsIEc7CjxVAFwI0_Gr0_Gr1UYx
+	BIdaVFxhVjvjDU0xZFpf9x0JUpwZcUUUUU=
 X-Originating-IP: [111.196.245.140]
 X-CM-SenderInfo: pshqw1xhqjqxpvfd2hldfou0/
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260717_205246_621362_C525FB62 
-X-CRM114-Status: UNSURE (   8.48  )
+X-CRM114-CacheID: sfid-20260717_213549_771603_4F372B02 
+X-CRM114-Status: UNSURE (   7.92  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -87,33 +85,44 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-KVM memslots describe half-open ranges [base_gfn, base_gfn + npages). A
-slot ending exactly at the guest physical-address limit has its final page
-below that limit and is valid.
+KVM lets userspace configure the IMSIC guest, HART, group-width, and
+group-shift fields independently. The individual bounds allow a layout
+such as guest_bits=7, hart_bits=6, group_bits=1, and group_shift=24.
 
-The current greater-than-or-equal comparison rejects a valid boundary case.
-Use a strict greater-than comparison, matching equivalent KVM architecture
-checks.
+That layout places the group index bit at bit 24 while the lower
+guest+HART field also extends through bit 24. The IMSIC address helpers
+later consume these values as one address layout: aia_imsic_ppn() masks
+the lower guest+HART field and the group field, while
+aia_imsic_hart_index() combines the group and HART index. Allowing an
+overlapping configuration therefore gives one address bit two different
+meanings.
 
-Fixes: 9d05c1fee837 ("RISC-V: KVM: Implement stage2 page table programming")
+Reject group-index layouts that start before the end of the guest+HART
+field before initializing the in-kernel irqchip.
+
+Fixes: 89d01306e34d ("RISC-V: KVM: Implement device interface for AIA irqchip")
 Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>
 ---
- arch/riscv/kvm/mmu.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/riscv/kvm/aia_device.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-index 082f9b2617338..d3c0c699adb60 100644
---- a/arch/riscv/kvm/mmu.c
-+++ b/arch/riscv/kvm/mmu.c
-@@ -184,7 +184,7 @@ int kvm_arch_prepare_memory_region(struct kvm *kvm,
- 	 * Prevent userspace from creating a memory region outside of the GPA
- 	 * space addressable by the KVM guest GPA space.
- 	 */
--	if ((new->base_gfn + new->npages) >=
-+	if ((new->base_gfn + new->npages) >
- 	     kvm_riscv_gstage_gpa_size(kvm->arch.pgd_levels) >> PAGE_SHIFT)
- 		return -EFAULT;
+diff --git a/arch/riscv/kvm/aia_device.c b/arch/riscv/kvm/aia_device.c
+index be83c2d5fc308..0793d4d4cf5e3 100644
+--- a/arch/riscv/kvm/aia_device.c
++++ b/arch/riscv/kvm/aia_device.c
+@@ -248,6 +248,12 @@ static int aia_init(struct kvm *kvm)
+ 	if (aia->nr_sources && aia->aplic_addr == KVM_RISCV_AIA_UNDEF_ADDR)
+ 		return -EINVAL;
  
++	/* Group index bits must not overlap guest and HART index bits. */
++	if (aia->nr_group_bits &&
++	    aia->nr_group_shift < IMSIC_MMIO_PAGE_SHIFT +
++					  aia->nr_guest_bits + aia->nr_hart_bits)
++		return -EINVAL;
++
+ 	/* Initialize APLIC */
+ 	ret = kvm_riscv_aia_aplic_init(kvm);
+ 	if (ret)
 -- 
 2.43.0
 
