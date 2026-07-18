@@ -4,104 +4,73 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CE168C4451B
-	for <kvm-riscv@archiver.kernel.org>; Fri, 17 Jul 2026 18:26:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41464C4450A
+	for <kvm-riscv@archiver.kernel.org>; Sat, 18 Jul 2026 03:52:49 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
-	Date:Cc:To:From:Subject:Message-ID:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=IzEbG8xKiLO/DkW+sCyClTgUPp9YCAxyRb94A7Xr0eE=; b=dkKUsT4aFh6G0x
-	uDdW4osMs5lTKFzubrV6ogUlys12AcqvReUpmheVbvJoZ7iv2mTdvuGsBYI545Nzvb8nT8J6BJwFV
-	PRn8ADWQbozaXyizI6db8YIUVJDfbWX5kKphtZP6y3dVBo+As2w2gdItgbTVDB4QbqSS+dZv8I8yo
-	2ub9Ye21NVMDjiivQfIGcvPO4mFmOXOcbkG9SKS6GcXaD1PRKcf2IE1eH85VjlSjMWcJ0F1E3e6dU
-	9G3a8Mb7DoWtr7DXd+o+HiM5+Ufuhh9wOxUoCY/e0Bv8m8GxXL+iRFoacGgz42PpBXgjt7wipGskv
-	HjL6toNvBmGy8IATJPiA==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=crDUmoGgu3neBozQcf1hQVHT+sQjOHJdDIbtUeGYg/8=; b=KzIq8rjv3USx6s
+	uuXI/zaT2hNzxdAikZI/3PvZc/HjJ7zuXbyfuBHUrVmSqZWtMldkE6alU4SQMh01EqqgsluuPrMAX
+	TjhnXk1j1pUqiaCSXxhaxzZyt1eI8G+r/t76HTAIxg1tOQpsPZRG4YYWFQyOHiA7oswukF1jUFivG
+	y9lFkMscFuLQAilO0koBzjZQiX1Wl4ABIhFZZkLGxpmW4Y+w88hqsRyFGVgHBxGWuPZ+fbs2qnzxD
+	6R0oviW7qkm0VamfJKh9+IXr9TIw7NMRnS9TTBOTmrPX73QBqjMudShzAOxDogM5l7RU9roSOOvj2
+	2Vj2IpOlT1Hihhi+/5vw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wknGq-000000031Bc-1sLG;
-	Fri, 17 Jul 2026 18:26:48 +0000
-Received: from lamorak.hansenpartnership.com ([2604:f440:8:8::2])
+	id 1wkw6a-00000003dnR-3MbJ;
+	Sat, 18 Jul 2026 03:52:48 +0000
+Received: from smtp81.cstnet.cn ([159.226.251.81] helo=cstnet.cn)
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wknGn-000000031Av-46Qu
-	for kvm-riscv@lists.infradead.org;
-	Fri, 17 Jul 2026 18:26:47 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=hansenpartnership.com; s=20151216; t=1784312803;
-	bh=j9EW4FIwSUEDfQEZzduIwipOWgGQyApHfWxvJ08O9xk=;
-	h=Message-ID:Subject:From:To:Date:In-Reply-To:References:From;
-	b=H5D2LU12iBOHilk/nOzeUp4ZvKBs+i7bbfPhCzAA721rNfph60WER/+r4o7ApVPjk
-	 wn9U4Sko57CiVWMYgrkUEqUQQf5XAbU95LhUdz6jMPiMc04p0wX4T/xVxhNPirMzjz
-	 jGgvP8X9Myk6XD3stu/upYGy99g06ADfkdYj6fgM=
-Received: from lingrow.int.hansenpartnership.com (unknown [IPv6:2601:5c4:4300:d341::8c71])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519MLKEM768 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lamorak.hansenpartnership.com (Postfix) with ESMTPSA id 186CA1C0276;
-	Fri, 17 Jul 2026 14:26:43 -0400 (EDT)
-Message-ID: <1f06c5c65fcf00d45ce93c97e1434f70626997fa.camel@HansenPartnership.com>
-Subject: Re: [PATCH 35/60] kvm: Add VCPU plane-scheduling state and helpers
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: "Saenz Julienne, Nicolas" <nsaenz@amazon.es>, 
- =?ISO-8859-1?Q?J=F6rg_R=F6del?=
-	 <joro@8bytes.org>, Paolo Bonzini <pbonzini@redhat.com>
-Cc: Sean Christopherson <seanjc@google.com>, Tom Lendacky	
- <thomas.lendacky@amd.com>, "ashish.kalra@amd.com" <ashish.kalra@amd.com>, 
- "michael.roth@amd.com"	 <michael.roth@amd.com>, "Orazgaliyeva, Anel"
- <anelkz@amazon.de>, Melody Wang	 <huibo.wang@amd.com>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>, 
- "linux-kernel@vger.kernel.org"	 <linux-kernel@vger.kernel.org>,
- "kvmarm@lists.linux.dev"	 <kvmarm@lists.linux.dev>,
- "loongarch@lists.linux.dev"	 <loongarch@lists.linux.dev>,
- "linux-mips@vger.kernel.org"	 <linux-mips@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org"	 <linuxppc-dev@lists.ozlabs.org>,
- "kvm-riscv@lists.infradead.org"	 <kvm-riscv@lists.infradead.org>,
- "x86@kernel.org" <x86@kernel.org>,  "coconut-svsm@lists.linux.dev"	
- <coconut-svsm@lists.linux.dev>, "joerg.roedel@amd.com"
- <joerg.roedel@amd.com>
-Date: Fri, 17 Jul 2026 14:26:42 -0400
-In-Reply-To: <DK10YP78VVQO.7BFETGMA9P4F@amazon.com>
-References: <20260608144252.351443-1-joro@8bytes.org>
-	 <20260608144252.351443-36-joro@8bytes.org>
-	 <e7eb0dba-790a-4644-9895-5c9a7420d7fe@redhat.com>
-	 <aib8n5lO6HKbLC4Y@8bytes.org>
-	 <CABgObfbUsDeStnZF-7oyR-W-Bvd4qTMoeUwGizgn10UTdKtZ2A@mail.gmail.com>
-	 <aigE2EvJyZlYDz0V@8bytes.org> <DK0W6G329B6W.2KGT7FAVSKNYS@amazon.com>
-	 <976f1a8316438d5b7c2f446a0369dcda3289cc92.camel@HansenPartnership.com>
-	 <DK10YP78VVQO.7BFETGMA9P4F@amazon.com>
-Autocrypt: addr=James.Bottomley@HansenPartnership.com;
- keydata=mQENBE58FlABCADPM714lRLxGmba4JFjkocqpj1/6/Cx+IXezcS22azZetzCXDpm2MfNE
- lecY3qkFjfnoffQiw5rrOO0/oRSATOh8+2fmJ6el7naRbDuh+i8lVESfdlkoqX57H5R8h/UTIp6gn
- 1mpNlxjQv6QSZbl551zQ1nmkSVRbA5TbEp4br5GZeJ58esmYDCBwxuFTsSsdzbOBNthLcudWpJZHU
- RfMc0ew24By1nldL9F37AktNcCipKpC2U0NtGlJjYPNSVXrCd1izxKmO7te7BLP+7B4DNj1VRnaf8
- X9+VIApCi/l4Kdx+ZR3aLTqSuNsIMmXUJ3T8JRl+ag7kby/KBp+0OpotABEBAAG0N0phbWVzIEJvd
- HRvbWxleSA8SmFtZXMuQm90dG9tbGV5QEhhbnNlblBhcnRuZXJzaGlwLmNvbT6JAVgEEwEIAEICGw
- MGCwkIBwMCBhUIAgkKCwQWAgMBAh4BAheAAhkBFiEE1WBuc8i0YnG+rZrfgUrkfCFIVNYFAml2ZBI
- FCS3GUMIACgkQgUrkfCFIVNZKjQf/deRzlXZClKxTC/Ee2yEPqqS7mm/INUA49KdQQ5oIhSxkUBy0
- 9J4qjMIo5F8ZFkFTqikBqeL35LKu7O7rn8WETfX8Bxvos3HUsl3jHo34DES4MUFIpoQPgtiLRGwLb
- K0cVCAArR2u2qj4ABmTRrs1I1kvdjEw6gatOuXtEe/j5O2fvfzTq9GBr0Q3n2IAsFXi4hLlx6VPE8
- tyWUZ8BWJKtih3JAeUiXFvASL3McV0rV9RnU0VbjEQEhSE7PMYhWpnDC9AyBb0lXJllQRvC3NSkUB
- 8KVQgNNxRPss0WE/nBoZ4dFA42jTyzTz8lNylxZoAWV7WJb3QxVg4oCodRVrxxrQhSmFtZXMgQm90
- dG9tbGV5IDxqZWpiQGtlcm5lbC5vcmc+iQFVBBMBCAA/AhsDBgsJCAcDAgYVCAIJCgsEFgIDAQIeA
- QIXgBYhBNVgbnPItGJxvq2a34FK5HwhSFTWBQJgS5mYBQkbNYS9AAoJEIFK5HwhSFTWBpwIAL5Bk3
- 5FB34U6iHmDzzgdCbxLTs43T/YQyJpcGIvopBvnI/fDY8oSG6Df64/O6B+1R+A8TDp6ZG5ysUWnCC
- 6GuIaEHemBYkitMPglR6+sGCMQY7O0mlsPvdssvKK1KI9Bno4VU6ogaF2qVzefSqg1Djmf/DcsxWP
- rI/jdJ8FB5AYR2rjIdDFc+zRdAJuavo1/anyY2wgpFh/3R8IOYAEfWV9nGgYkf9+tA4EIn1sxE0I3
- L5oW2N3mbyRrkzuBwO8ztMCwqEPk7moWzhokcZqMXiAIahaZdkashJC+s2X2RZSGCy+g+pvY5NN4B
- BVG5XwLgVBqbHMTcxE0fbmPqz+q6O0LEphbWVzIEJvdHRvbWxleSA8amVqYkBoYW5zZW5wYXJ0bmV
- yc2hpcC5jb20+iQFXBBMBCABBFiEE1WBuc8i0YnG+rZrfgUrkfCFIVNYFAmODZ5ACGwMFCRs1hL0F
- CwkIBwICIgIGFQoJCAsCBBYCAwECHgcCF4AACgkQgUrkfCFIVNZu0Af/TzvL2/NdgAcw9uN3x60H8
- jc4QUq14VpxcFEFEMpcj1morkX/G93V+56HBBaXZj+yK8PhxIA/SIz+sU7C/0YvKuvzakP8ZX/7WJ
- e32SOUtjfr/VTaqjIBzNj6OxLvZpmNbBw7s6DwhhNpHOWqJ/1ml+PtDRDV71IB58yVqQjp1xlNKVl
- ZppcJ5908EJzsFnRIVjiQiDSKoppqB2BCibBbrWcln7CiWMyOC/cco6SIn6twH+f7+aivJ3xGcOE2
- a9gBKF5rNi9TBoX9oyPmshv/TDmnohsVrH7AYXlGYfZTk15SWEiROh1QX8/uD9wl/gcIv5EDUpT/F
- L2jzOsA5663bw==
-User-Agent: Evolution 3.56.2 
+	id 1wkw6Y-00000003dmU-0rvo;
+	Sat, 18 Jul 2026 03:52:47 +0000
+Received: from localhost.localdomain (unknown [111.196.245.140])
+	by APP-03 (Coremail) with SMTP id rQCowACnc0GE+Fpq398tAA--.37353S2;
+	Sat, 18 Jul 2026 11:52:36 +0800 (CST)
+From: Pengpeng Hou <pengpeng@iscas.ac.cn>
+To: Anup Patel <anup@brainfault.org>,
+	Atish Patra <atish.patra@linux.dev>
+Cc: Pengpeng Hou <pengpeng@iscas.ac.cn>,
+	Paul Walmsley <pjw@kernel.org>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>,
+	Alexandre Ghiti <alex@ghiti.fr>,
+	Paolo Bonzini <pbonzini@redhat.com>,
+	Yifei Jiang <jiangyifei@huawei.com>,
+	kvm@vger.kernel.org,
+	kvm-riscv@lists.infradead.org,
+	linux-riscv@lists.infradead.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] RISC-V: KVM: Allow memslots ending at the GPA limit
+Date: Sat, 18 Jul 2026 11:52:36 +0800
+Message-ID: <20260718033646.002.31dc89f2-caplitmus-rv@iscas.ac.cn>
+X-Mailer: git-send-email 2.50.1
 MIME-Version: 1.0
+X-CM-TRANSID: rQCowACnc0GE+Fpq398tAA--.37353S2
+X-Coremail-Antispam: 1UD129KBjvdXoWruryDtFW8Xr4DAw48WFy8Xwb_yoWkXrg_WF
+	n7Ga97XFWDAF4xuasxKw4Sk3yxX395GFnrArZrZry8G3sYvF4Sk3ySvws8X345Ar43WF1Y
+	y34kArW3tr42vjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+	9fnUUIcSsGvfJTRUUUba8FF20E14v26r4j6ryUM7CY07I20VC2zVCF04k26cxKx2IYs7xG
+	6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4kI8w
+	A2z4x0Y4vE2Ix0cI8IcVAFwI0_Gr0_Xr1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Gr0_
+	Cr1l84ACjcxK6I8E87Iv67AKxVW8Jr0_Cr1UM28EF7xvwVC2z280aVCY1x0267AKxVW8Jr
+	0_Cr1UM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj
+	6xIIjxv20xvE14v26r106r15McIj6I8E87Iv67AKxVWUJVW8JwAm72CE4IkC6x0Yz7v_Jr
+	0_Gr1lF7xvr2IYc2Ij64vIr41lF7I21c0EjII2zVCS5cI20VAGYxC7M4IIrI8v6xkF7I0E
+	8cxan2IY04v7MxkF7I0En4kS14v26r1q6r43MxAIw28IcxkI7VAKI48JMxC20s026xCaFV
+	Cjc4AY6r1j6r4UMI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_JrI_JrWl
+	x4CE17CEb7AF67AKxVWUtVW8ZwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v26r1j6r
+	1xMIIF0xvE2Ix0cI8IcVCY1x0267AKxVW8JVWxJwCI42IY6xAIw20EY4v20xvaj40_Jr0_
+	JF4lIxAIcVC2z280aVAFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x0267AKxVW8JVW8JrUvcS
+	sGvfC2KfnxnUUI43ZEXa7VU13ku3UUUUU==
+X-Originating-IP: [111.196.245.140]
+X-CM-SenderInfo: pshqw1xhqjqxpvfd2hldfou0/
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260717_112646_549525_53DF7AA8 
-X-CRM114-Status: GOOD (  21.06  )
+X-CRM114-CacheID: sfid-20260717_205246_621362_C525FB62 
+X-CRM114-Status: UNSURE (   8.48  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -113,49 +82,43 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-T24gRnJpLCAyMDI2LTA3LTE3IGF0IDE3OjMzICswMDAwLCBTYWVueiBKdWxpZW5uZSwgTmljb2xh
-cyB3cm90ZToKPiBPbiBGcmkgSnVsIDE3LCAyMDI2IGF0IDU6NTYgUE0gQ0VTVCwgSmFtZXMgQm90
-dG9tbGV5IHdyb3RlOgpbLi4uXQo+ID4gSG93ZXZlciwgZnJvbSBhIHF1aWNrIHNraW0sIHRoZSBt
-YWluIHRoaW5nIGlzIHRoYXQgeW91IHVzZWQKPiA+IG11bHRpcGxlIEtWTSBzdHJ1Y3R1cmVzIHRv
-IG1hbmFnZSB0aGUgcGxhbmVzIHdoaWNoIG1lYW5zIGVhY2ggcGxhbmUKPiA+IG5hdHVyYWxseSBn
-ZXRzIGl0cyBvd24gYWRkcmVzcyBzcGFjZS7CoCBJbiB0aGUgY3VycmVudCBwbGFuZXMgbW9kZWwK
-PiA+IHNvIGZhciB0aGVyZSdzIG9ubHkgb25lIGFkZHJlc3Mgc3BhY2UgKG9yIHR3byBpZiB5b3Ug
-aGF2ZSBTTU0pLsKgCj4gPiBTTlAgZG9lc24ndCBuZWVkIGFueXRoaW5nIGFib3ZlIHRoaXMgYmVj
-YXVzZSB0aGUgVk1QTCBwcm90ZWN0aW9uIGlzCj4gPiBuYXR1cmFsbHkgbWFuYWdlZCBpbnNpZGUg
-dGhlIGd1ZXN0IChzbyBub3QgcmVhbGx5IHZpc2libGUgdG8gdGhlCj4gPiBob3N0KSBidXQgYSBW
-VEwgaW1wbGVtZW50YXRpb24gd2lsbC7CoCBTbyBJIHRoaW5rIHRoZSBiaWcgcXVlc3Rpb24KPiA+
-IGJlY29tZXMgaG93IGFyZSB3ZSBnb2luZyB0byBhY2hpZXZlIGFkZHJlc3Mgc3BhY2Ugc2VwYXJh
-dGlvbiBmb3IKPiA+IHBsYW5lcz/CoCBJdCdzIHRlbXB0aW5nIHRvIHNheSBzaW1wbHkgb25lIGFk
-ZHJlc3Mgc3BhY2UgcGVyIHBsYW5lCj4gPiBhbmQgbWFrZSBTTU0gaXRzIG93biBwbGFuZSB3aXRo
-IGRpZmZlcmVudCBzd2l0Y2hpbmcgYnV0IGl0J3MgYW4KPiA+IGF3ZnVsIGxvdCBvZiBvdmVyaGVh
-ZCBlc3BlY2lhbGx5IGFzIG1vc3QgVk1zIHdvbid0IGV2ZW4gdXNlIHBsYW5lcywKPiA+IHNvIGl0
-IGxvb2tzIGxpa2UgdGhlcmUgaGFzIHRvIGJlIGEgbW9yZSBvcHBvcnR1bmlzdGljIG1vZGVsIGZv
-cgo+ID4gcGxhbmVzIGFkZHJlc3Mgc3BhY2VzLgo+IAo+IFdoaWxlIGFkcmVzcyBzcGFjZXMgYXJl
-IHBlciBWTSwgS1ZNIG1lbW9yeSBhdHRyaWJ1dGVzIGFyZSBwZXIgcGxhbmUuCj4gSXQgc2hvdWxk
-IGJlIGVub3VnaCB0byBpbXBsZW1lbnQgVlNNJ3MgbWVtb3J5IHByb3RlY3Rpb25zIGFzIHdlbGwg
-YXMKPiB0aGUgZW5jbGF2ZXMgZGVzaWduIHlvdSBtZW50aW9uZWQuIFdlIGhhdmUgYSBzZXJpZXMg
-aW4tZmx1eAo+IGltcGxlbWVudGluZyBSV1ggbWVtb3J5IGF0dHJpYnV0ZXMgWzFdLgoKV2UgbWln
-aHQgZ2V0IHRoaXMgdG8gd29yayBpZiB3ZSdyZSBjYXJlZnVsLiAgSXQganVzdCBtZWFucyB3aGVu
-IHR3bwpwbGFuZXMgYWdyZWUgb24gY2h1bmtzIG9mIG1lbW9yeSB0byBzZWFsIGFuZCBzaGFyZSBp
-dCdzIGhlbHBmdWwgaWYKdGhleSdyZSBndWVzdCBwaHlzaWNhbGx5IGNvbnRpZ3VvdXMuCgo+IFRo
-ZSBvbmx5IHRoaW5nIHRoYXQncyBub3QgZmVhc2libGUgIm5hdHVyYWxseSIgd2l0aCBhdHRyaWJ1
-dGVzIGFyZQo+IG1lbW9yeSBvdmVybGF5cyBvciBhbnkgc2l0dWF0aW9uIHdoZXJlIHdlJ2QgbmVl
-ZCB0byBjaGFuZ2UgdGhlCj4gYmFja2luZyBtZW1vcnkgb2YgYSBndWVzdCBwaHlzaWNhbCBhZGRy
-ZXNzIHJhbmdlIGp1c3QgZm9yIGEgc2luZ2xlCj4gcGxhbmUuIEZyb20gYSBWU00gcGVyc3BlY3Rp
-dmUgaXQncyBmaW5lLiBUaGUgb25seSB1c2UtY2FzZSBmcm9tIGEgVlNNCj4gcGVyc3BlY3RpdmUg
-YXJlIG1lbW9yeSBvdmVybGF5cyAoYW5kIHRob3NlLCBmcm9tIG15IGV4cGVyaWVuY2UsIGFyZQo+
-IHVzZWxlc3MpLiBJIGRvbid0IGtub3cgdGhhdCdzIGEgZGVhbC1icmVha2VyIHRoZSBtdXR1YWxs
-eSBkaXN0cnVzdGluZwo+IG1vZGVsLgoKSSBkb24ndCB0aGluayBzby4gIEkgZG9uJ3Qgc2VlIGl0
-IGFzIGEgcHJvYmxlbSB0aGF0IHRoZSBndWVzdCBwaHlzaWNhbAptZW1vcnkgbWFwIGxvb2tzIHRo
-ZSBzYW1lIHRvIGV2ZXJ5IHBsYW5lIGV2ZW4gaWYgdGhlIHBhZ2UgcHJvdGVjdGlvbnMKbWlnaHQg
-YmUgZGlmZmVyZW50LiAgVGhpcyBpcyBzbGlnaHRseSBkaWZmZXJlbnQgZnJvbSBTTU0gd2hlcmUg
-dGhlIHNtbQptZW1ibG9jayBpcyBtaXNzaW5nIGZyb20gdGhlIGd1ZXN0IG1hcCwgc28gaXQgbWln
-aHQgYmUgdGhlIGNhc2UgdGhhdCB3ZQpkb24ndCBuZWVkIGRpZmZlcmVudCBhZGRyZXNzIHNwYWNl
-cyB0byBjb3BlIHdpdGggdGhpcy4KClJlZ2FyZHMsCgpKYW1lcwoKLS0gCmt2bS1yaXNjdiBtYWls
-aW5nIGxpc3QKa3ZtLXJpc2N2QGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJh
-ZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9rdm0tcmlzY3YK
+KVM memslots describe half-open ranges [base_gfn, base_gfn + npages). A
+slot ending exactly at the guest physical-address limit has its final page
+below that limit and is valid.
+
+The current greater-than-or-equal comparison rejects a valid boundary case.
+Use a strict greater-than comparison, matching equivalent KVM architecture
+checks.
+
+Fixes: 9d05c1fee837 ("RISC-V: KVM: Implement stage2 page table programming")
+Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>
+---
+ arch/riscv/kvm/mmu.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
+index 082f9b2617338..d3c0c699adb60 100644
+--- a/arch/riscv/kvm/mmu.c
++++ b/arch/riscv/kvm/mmu.c
+@@ -184,7 +184,7 @@ int kvm_arch_prepare_memory_region(struct kvm *kvm,
+ 	 * Prevent userspace from creating a memory region outside of the GPA
+ 	 * space addressable by the KVM guest GPA space.
+ 	 */
+-	if ((new->base_gfn + new->npages) >=
++	if ((new->base_gfn + new->npages) >
+ 	     kvm_riscv_gstage_gpa_size(kvm->arch.pgd_levels) >> PAGE_SHIFT)
+ 		return -EFAULT;
+ 
+-- 
+2.43.0
+
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
