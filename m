@@ -4,36 +4,36 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 17A29C4451C
-	for <kvm-riscv@archiver.kernel.org>; Tue, 21 Jul 2026 11:57:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9E8A3C44529
+	for <kvm-riscv@archiver.kernel.org>; Tue, 21 Jul 2026 12:26:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=ihmdJQIdILS5lX/DSv3flKsgHCy4U2XKUC7YkBrMKAY=; b=Cgq4Hg3K8QOJrb
-	7NzZ0ft9mrGAGDH3uPpOHd/88COOk/DeSRzY7jROlTBXibfmpiy35OB8y4c224NW/Iq/eRciPWsns
-	nr+rwlJrcYBSvkYV9vgkH+Vt9dqesm18/vAbEpnIPIPWTg/dfwAwbsb8NZRfFwYQ1s24YiZ07Gg1N
-	QRDGVIwKL38DmLxJJXgsc6C/GOIvSekLe+dhBO8GadE4Ce6vMEq0HABWnNg70Qgj/2xEgFsCx3j5c
-	mKO0ZflEDv0OzurdqnW/02E3UVfNTI152j1fi+g3QquNRST3zhXL2/hWYh9ZwUat0MiaEDvKE6W6j
-	BTo2jFvs7omUo/mq7YFw==;
+	List-Owner; bh=3L5dtOt17RYuZbxpglGWKSSzyIIW4rGZ8/oOPciSkew=; b=MG0ilfMUPoj+qW
+	nISlxIxamHbiGtCSlKdqwZYv/3KR8VlbFr5dyM4I2+H4ReOpv4g/xroC7fy43JvU3d5fHR6x0brDb
+	//RIlhGlQmQjWL/jQ6sF69vIq6KiAgMWvJx7mIDWmXlx6LnwyGTt3RcndK3Zes3A7IgZ1h1Q7oCOW
+	1BQxLwzLmWbKv1PWKj6U3kreP/DjOjaA8FTgmG/RoIpNjNGokedgq12qgYi3UIHJpbFA6eijMgsy2
+	ZCUbfK4fnjpcKxYNBjFji10nPcajXoNZ/xIu9jO7XHxm5Hs4f9JCPytR4dz/aeJwc45QMbkyXkYOU
+	BkbTOs+fiVcLAtkgvZvg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wm961-00000009MQr-2veq;
-	Tue, 21 Jul 2026 11:57:13 +0000
-Received: from smtpbguseast1.qq.com ([54.204.34.129])
+	id 1wm9Y3-00000009Pog-3Tza;
+	Tue, 21 Jul 2026 12:26:11 +0000
+Received: from smtpbgeu1.qq.com ([52.59.177.22])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wm95x-00000009MQ1-1Fsw;
-	Tue, 21 Jul 2026 11:57:11 +0000
-X-QQ-mid: zesmtpsz6t1784634963t6e8a6e90
-X-QQ-Originating-IP: 7UTGWJP3KrvUOqnlyru4WDx7yxHshRvG5L4FHHW3S5o=
+	id 1wm9Xw-00000009Plj-1A18;
+	Tue, 21 Jul 2026 12:26:10 +0000
+X-QQ-mid: zesmtpgz5t1784636697t1ab0bdb5
+X-QQ-Originating-IP: E4jMg68m2VMQeBL41dE2uKWfCFRZ8sl2sAgZLc0GIa0=
 Received: from rsl ( [183.242.33.186])
 	by bizesmtp.qq.com (ESMTP) with 
-	id ; Tue, 21 Jul 2026 19:56:00 +0800 (CST)
+	id ; Tue, 21 Jul 2026 20:24:54 +0800 (CST)
 X-QQ-SSF: 0000000000000000000000000000000
 X-QQ-GoodBg: 0
-X-BIZMAIL-ID: 18011628127360508405
+X-BIZMAIL-ID: 8024588964083147569
 EX-QQ-RecipientCnt: 14
 From: JinRui <jinrui@haiwei.tech>
 To: Anup Patel <anup@brainfault.org>,
@@ -50,37 +50,37 @@ Cc: Atish Patra <atish.patra@linux.dev>,
 	linux-kselftest@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	jinrui <jinrui@haiwei.tech>
-Subject: [PATCH v4] KVM: selftests: riscv: Add lazy V extension enablement for guests
-Date: Tue, 21 Jul 2026 11:55:58 +0000
-Message-ID: <759A31C23819178D+20260721115558.341592-1-jinrui@haiwei.tech>
+Subject: [PATCH v5] KVM: selftests: riscv: Add lazy V extension enablement for guests
+Date: Tue, 21 Jul 2026 12:24:42 +0000
+Message-ID: <2D686C2069E3C0F9+20260721122442.351865-1-jinrui@haiwei.tech>
 X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260721112454.330498-1-jinrui@haiwei.tech>
-References: <20260721112454.330498-1-jinrui@haiwei.tech>
+In-Reply-To: <20260721115558.341592-1-jinrui@haiwei.tech>
+References: <20260721115558.341592-1-jinrui@haiwei.tech>
 MIME-Version: 1.0
 X-QQ-SENDSIZE: 520
-Feedback-ID: zesmtpsz:haiwei.tech:qybglogicsvrgz:qybglogicsvrgz6b-0
-X-QQ-XMAILINFO: MWqDrZRYA17xUkBBiUuWLwKBGYHEGnwmnclZeyLeIWUaajabgXgqhpXS
-	VyGC0+zay4rO8M1CQrdDzeMKPffAW33/CDT7IFMKU09GFV+5C4eD5iAXzc4DP3tlhZiAmob
-	GTzI+QR1mYF57d/EeO50jBOKNcYi/cBKM841+/7NhC9PAcgCHVwcnW7pBGRmRiYmwUYRnbr
-	GDNjuwcw7PnlW1g/RWpE8Qe4+GuEleMriwN+1pmSuzNkr22qW8/gBWYASpOc4SJB2a6fY7m
-	zgOk8VTakWr3h6aXYZcqzMw/uRtxR4ISmtTaYY/rzTa3FK7f/aqyUkF+Yefe0FJ1oFd093Y
-	4YLNr0fVh/Lu2skBusl5wSXZExpZWSxYrn80DmyDvNG0X5zGrHAM19jMgT2HEXgIcv8lH4p
-	ToWw1D16GKbHYxaisRD8UrNv3i0TKhgj6pN6yRx5KMG0mj4tNxD2m88Na1dVI9X86HOFG0W
-	YrBElMlZqa3mpUKI8ZtaYgEUQKy0ISUXuh/FTZw4F/RUtCNyM0O1EhgOuGoCIPl8hTfoZP5
-	HL6AplEJcpCibcxfjmnQ4ztQuQTBbLfpdrIIxkqXgWuMZn4L772+nG5GwfmXpNcYakf3Lx/
-	StoN+V9S69SZ73MJIrGuHx+zP0SN6yHrLETCmC5/ohEpeetCVqKe87Dq1M1xTQRD9+17mkE
-	AwugxaLWJUTbpuyutFCJuO5i+L7u6492sjCmx4HRxq7YKC+41cOIyU6cgm2J19Cw9NTuWuK
-	jyNn8UZ5aUHzwaklJaapx4IEN1y9qgpHtBdxtutpJ16j8JjHbjdcuYbzjcmI6GPc0ywCGSj
-	Oh9h5/frYrfmDlfiSljc6eu6m3OKXOckyfPEd1YjUxdgdsF+MJWoOZo3RRjuRiJnQ3DKp5F
-	BxQnf57R+srDWaDGJCr3vXs4C8baiDKEw/zkYE0wcZNPNocvQ7+ECz3RWJBfyuYUmAuBhOS
-	I/wLd67fP8AymGbdYACDQ0J/a7PP3gQBSuIU6hvnsBcFDyCahQffbMZTct0SMogs0Tmylzq
-	GzU3UoAHIGX8P37l7b5clqtQtvvQDLvhvtjnOhe00z885BBHGAjvBAOWTnwa87zXBuRV3NV
-	BTK4LkqcCF9Gklnf4AEexo=
-X-QQ-XMRINFO: Nq+8W0+stu50tPAe92KXseR0ZZmBTk3gLg==
+Feedback-ID: zesmtpgz:haiwei.tech:qybglogicsvrgz:qybglogicsvrgz6b-0
+X-QQ-XMAILINFO: MwaoY2AN32k1Q53p115PmcpfaJDIr/AK4wKioXOJw69Pn34RaQZh9kzo
+	/vE5bG+Ioylh+9OwKm5/jSxW2MKgWVYaoGdq/h1bftvfxnkffinNa66RxNQi4dj5WqQqKmg
+	xkmlqIo8NqMQtgT/Rp0K8GmaQvpjjM6jtSsTdelI1iCUkRp2lVJ0gfiabbMw5sHwL+oUCMh
+	KDpS3t6H3y8RyJo2EaxxppmgdhjfhLYVygr/IDfV2KSiuxvAjZ/it+facta/u3aRay8B/Xp
+	UOGlnVN6XUVdCVMh9f5sDXYLvuA9ZDjNLcwf4eByqnLnbR8Mnw/7p+WsMbBWOX6rDHEx2Kl
+	9X2M/OqKrapRGvCA4JP4kx8QleObnsuLzkfwLRRZK8nDdbF6IZEAdd/VedIczOMQRRVZm8o
+	Ld+TY6LWgL3Qc/kzDDww0FYc8Bwp7+LTgcYSLPD81+LBqa6m8CFdyLqCdBQZVpzW7yW3zwY
+	oLHElB1ukBZ8blQjOFZyBC/IAlpx/PMrLoNMAgCqpMS2627N4sjzSq+rrKE/b+fynGiEW2W
+	oC/6gQS42iZr2s+xBz/jRVwQ02Nob974HVZHVHz/DVqjUOSBye85moW6DAiR6gVOKWpxcRi
+	aZY0RpMCryPraIKZt9JT2PROfzNUsL4dHyoLmwYk6+fq0EfsfxpgfNTb4AG4Ez3rdHnZ2e1
+	faYggu6LhYHrkBE279kLaqYQZCUHyUFZ3fGSdXGJRw+ZrahewzTN/ESTqZvT+SRObcCmVzf
+	unndQeCc9bvVD6BF5SMsBgpZtdHLGmltkBIUugD9AKRD7AcEycMPeRrpkuWpAJK8k0ABWQD
+	Rq1ywEH1iP5w1CzJ7bCDuo/gXsJsG42JcSnbG6EBNXfPsfu3tPANPvH1XJcwznYpxMv9So7
+	5ay1aKAjRc7tBCxlw58WHyq/g/o9KmgDSONFzCRtODviffjE2Q3VRqnxpKxUTM9KEXkj3N1
+	H5qHvWJhn4N15GJOHm9PRixZlbYVLHo0vlqZtfZ3E34EM3ADlMlkb1PA8yOuGNWutCMC4tt
+	o20P2ot0D8nirWckafm+ln4WRnzjJ7tRd1/6saoaTJQWSf1RBTgM3lph3a7vXmQNe1VgqE/
+	c4Prqo913NUUaxho1lZZUfG/D8m/9FZTQ==
+X-QQ-XMRINFO: M/715EihBoGS47X28/vv4NpnfpeBLnr4Qg==
 X-QQ-RECHKSPAM: 0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260721_045709_864673_38683391 
-X-CRM114-Status: GOOD (  18.17  )
+X-CRM114-CacheID: sfid-20260721_052604_787185_3EAD6E47 
+X-CRM114-Status: GOOD (  20.32  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -139,23 +139,27 @@ binaries pass.
 
 Signed-off-by: jinrui <jinrui@haiwei.tech>
 ---
+Changes in v5:
+- Replace the one-shot v_available flag with per-vcpu (epc, vcpu_id)
+  tracking to correctly handle multi-vCPU tests and the case where V
+  is disabled after vCPU creation without causing false-positive
+  bailouts on other vCPUs.
 Changes in v4:
-- Add vcpu_dump() call in assert_on_unhandled_exception() to restore
-  the register dump that was lost when guest_unexp_trap() was removed.
+- Add vcpu_dump() in assert_on_unhandled_exception() to restore the
+  register dump lost when guest_unexp_trap() was removed.
 Changes in v3:
 - Move v_available from a host-side static variable into struct
-  handlers (Guest memory), fixing synchronization issue between
-  host (writer) and Guest (reader).
+  handlers (Guest memory), fixing host-to-Guest synchronization.
 Changes in v2:
 - Add a v_available flag to prevent infinite exception loops on
   hosts without the V extension.
 - Use regs->status instead of reading the live sstatus CSR.
 
- .../selftests/kvm/lib/riscv/processor.c       | 69 ++++++++++++++++---
- 1 file changed, 59 insertions(+), 10 deletions(-)
+ .../selftests/kvm/lib/riscv/processor.c       | 85 ++++++++++++++++---
+ 1 file changed, 75 insertions(+), 10 deletions(-)
 
 diff --git a/tools/testing/selftests/kvm/lib/riscv/processor.c b/tools/testing/selftests/kvm/lib/riscv/processor.c
-index ded5429f3448..bf0675cc86d6 100644
+index ded5429f3448..03a3223a0466 100644
 --- a/tools/testing/selftests/kvm/lib/riscv/processor.c
 +++ b/tools/testing/selftests/kvm/lib/riscv/processor.c
 @@ -297,14 +297,6 @@ void vcpu_arch_dump(FILE *stream, struct kvm_vcpu *vcpu, u8 indent)
@@ -173,7 +177,7 @@ index ded5429f3448..bf0675cc86d6 100644
  void vcpu_arch_set_entry_point(struct kvm_vcpu *vcpu, void *guest_code)
  {
  	vcpu_set_reg(vcpu, RISCV_CORE_REG(regs.pc), (unsigned long)guest_code);
-@@ -348,8 +340,33 @@ struct kvm_vcpu *vm_arch_vcpu_add(struct kvm_vm *vm, u32 vcpu_id)
+@@ -348,8 +340,34 @@ struct kvm_vcpu *vm_arch_vcpu_add(struct kvm_vm *vm, u32 vcpu_id)
  	/* Setup sscratch for guest_get_vcpuid() */
  	vcpu_set_reg(vcpu, RISCV_GENERAL_CSR_REG(sscratch), vcpu_id);
  
@@ -205,11 +209,12 @@ index ded5429f3448..bf0675cc86d6 100644
 +		struct handlers *h = addr_gva2hva(vm, vm->handlers);
 +
 +		h->v_available = __vcpu_has_isa_ext(vcpu, KVM_RISCV_ISA_EXT_V);
++		h->v_vcpu = -1;
 +	}
  
  	return vcpu;
  }
-@@ -408,6 +425,7 @@ void assert_on_unhandled_exception(struct kvm_vcpu *vcpu)
+@@ -408,6 +426,7 @@ void assert_on_unhandled_exception(struct kvm_vcpu *vcpu)
  	struct ucall uc;
  
  	if (get_ucall(vcpu, &uc) == UCALL_UNHANDLED) {
@@ -217,15 +222,17 @@ index ded5429f3448..bf0675cc86d6 100644
  		TEST_FAIL("Unexpected exception (vector:0x%lx, ec:0x%lx)",
  			uc.args[0], uc.args[1]);
  	}
-@@ -415,6 +433,7 @@ void assert_on_unhandled_exception(struct kvm_vcpu *vcpu)
+@@ -415,6 +434,9 @@ void assert_on_unhandled_exception(struct kvm_vcpu *vcpu)
  
  struct handlers {
  	exception_handler_fn exception_handlers[NR_VECTORS][NR_EXCEPTIONS];
 +	bool v_available;
++	unsigned long v_epc;
++	int v_vcpu;
  };
  
  void route_exception(struct pt_regs *regs)
-@@ -432,6 +451,33 @@ void route_exception(struct pt_regs *regs)
+@@ -432,6 +454,46 @@ void route_exception(struct pt_regs *regs)
  		ec = 0;
  	}
  
@@ -245,21 +252,34 @@ index ded5429f3448..bf0675cc86d6 100644
 +		/*
 +		 * If KVM supports the V extension for this Guest and VS
 +		 * (Vector Status) is Off in the saved sstatus, set it to
-+		 * Initial and sret to re-execute the faulting instruction.
++		 * Initial and re-execute the faulting instruction.
++		 *
 +		 * Use regs->status (saved at exception entry) rather than
-+		 * reading the live CSR to avoid a TOCTOU race with nested
-+		 * exceptions.
++		 * reading the live CSR to avoid a TOCTOU race.
++		 *
++		 * Compare (epc, vcpu_id) against the last attempted
++		 * enablement to avoid an infinite loop when V is available
++		 * but the test later disabled it or the hardware rejects
++		 * the VS change.
 +		 */
 +		if (handlers && handlers->v_available && !(regs->status & SR_VS)) {
-+			regs->status |= SR_VS_INITIAL;
-+			return;
++			int vcpu_id = 0;
++
++			asm volatile("csrr %0, sscratch" : "=r" (vcpu_id));
++			if (handlers->v_epc != regs->epc ||
++			    handlers->v_vcpu != vcpu_id) {
++				handlers->v_epc = regs->epc;
++				handlers->v_vcpu = vcpu_id;
++				regs->status |= SR_VS_INITIAL;
++				return;
++			}
 +		}
 +	}
 +
  	if (handlers && handlers->exception_handlers[vector][ec])
  		return handlers->exception_handlers[vector][ec](regs);
  
-@@ -448,6 +494,9 @@ void vcpu_init_vector_tables(struct kvm_vcpu *vcpu)
+@@ -448,6 +510,9 @@ void vcpu_init_vector_tables(struct kvm_vcpu *vcpu)
  
  void vm_init_vector_tables(struct kvm_vm *vm)
  {
