@@ -4,60 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 351B2C4453E
-	for <kvm-riscv@archiver.kernel.org>; Wed, 22 Jul 2026 15:32:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 79DEFC4453F
+	for <kvm-riscv@archiver.kernel.org>; Wed, 22 Jul 2026 15:32:59 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Message-Id
 	:MIME-Version:Subject:Date:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=xe6QR4VnktcxyH/ulM4BhUxkzXEuQd4ISElw8vNBBik=; b=MC/Do/YROdCuLA
-	ZUv6lIMyVWaTYJdMh2uZ3R8Jg46XqBbJC77uCMORyLJsuNMA7iTaSBtV5rHjNtGw6dWUci7eOHDzh
-	9eJVN164KHXYrQyaWmgAZNY8K8r9HqNEzRIxXo459ldYiYbex0x5HPPp3hPgOu498NQGIRsHb7AV3
-	gHdWOtdq/TomkzHgbV8T3Eo8lOaLoE3mQUHuDbqhKN8AbFE0V8KYxRfd40RFnXxbUtqa21ISzPq/R
-	d7pM81miMgxQnFF5ttP8IAlQh9kfh+cFIsWhrnhpHzbFC4b5rEmQy+9stXW7ETzGDVDdgFdr3FOlE
-	L74sptQkEXo4CciDVsnw==;
+	List-Owner; bh=DGy4Y0DOkqu/ScyJfz4Vqzav7YOqQOIgcGIcRwNIlH4=; b=0J4/oolpX111me
+	pX4C9SMH5vLqX74ziBrnVeRen/V2EXVQi6RrBcvS/h61tMnrMBu6p4TCeVUiLJq+EXSVU3OT7ThlB
+	KuwaehGBdqxXERwKcuR6L8Pxokjq/EhXA+CHgSFPVTzdFQSYfg6JzcqLXtq4ztoG4nJMScQIdomvo
+	Mj5WS9bK4ebjZ52jNE1ra/Vh0aXZIsD2VdU+jfFOYdKU1svBEhRhn1yIjQ+aprQD49dZyNkT6BUpi
+	N4w9ZuyUbHrq9jupSMl6D9lhjc4ReE/hkYLMexZonOzyTkTvjhq/dQjF74WU+koeavus8xlU7ZIsG
+	26hHds5ZUmjvcPVHnHIQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wmYwI-0000000CBhv-3Tlb;
-	Wed, 22 Jul 2026 15:32:54 +0000
-Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
-	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wmYwH-0000000CBg4-3Apu;
-	Wed, 22 Jul 2026 15:32:53 +0000
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=Cc:To:In-Reply-To:References:
-	Message-Id:Content-Transfer-Encoding:Content-Type:MIME-Version:Subject:Date:
-	From:Sender:Reply-To:Content-ID:Content-Description;
-	bh=HnJ4+dHf8jsBzBjQ9rsg2ZSJwrG4H1yPEKkLqaEtc2I=; b=pRTCXK3Lo4qyARJuIs5Jo86+mx
-	UZLAPSVD2XIRXdZpSzxRG1oeGCQNUBuC+ogdJgPUnnIg8bgaCEIq2ccDRKONaOmzRaDstBptKCI6y
-	eL/okZ2Hh5r/E7tTwV8ClxQj9sa76DMiwKz4f39xWasBH7sjWMW39E4BWzvEI5Uo3d7+JvC/JjElz
-	jwqGKmuzp7z9D8S7TDBCCaMYNEq9sc0piy0Oh41PPBBtFNDPUK9QoWIO5+5jNI5+XbEm+xZIhf00a
-	DwAgj2YdbWC8NiYzB8n/5cUQtdycu027aGxDRgE7igQee2BKdV3j2E/IBGB4VV3BFVGsQRr7GYMce
-	hHl0QVDA==;
+	id 1wmYwN-0000000CBmc-0Nfu;
+	Wed, 22 Jul 2026 15:32:59 +0000
 Received: from foss.arm.com ([217.140.110.172])
-	by desiato.infradead.org with esmtp (Exim 4.99.2 #2 (Red Hat Linux))
-	id 1wmYwE-00000000xDy-2mwg;
-	Wed, 22 Jul 2026 15:32:52 +0000
+	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
+	id 1wmYwL-0000000CBjv-0LbQ;
+	Wed, 22 Jul 2026 15:32:58 +0000
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0DDC5168F;
-	Wed, 22 Jul 2026 08:32:45 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 23D0D168F;
+	Wed, 22 Jul 2026 08:32:52 -0700 (PDT)
 Received: from e129823.arm.com (e129823.arm.com [10.2.213.3])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 6AB133F66F;
-	Wed, 22 Jul 2026 08:32:42 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 814893F66F;
+	Wed, 22 Jul 2026 08:32:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1784734369; bh=32SOK5uh9E5GblRgaV7XM5xO+tgYklgQI1N792ThLp8=;
+	t=1784734376; bh=Rrla32h3UFOwfDCIJ6mk+qS084GnFvMqrfkCfZ9JSzY=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=Z9iQmzRIV9pJnoh2hiGVa9ykrtfqzzjDRhpsVG7HB9mUxK1Ydq79kvbnesR5P85vg
-	 l5qCgCFo61s2z6vCbkE9bR3zFUgYTlJwz83TKSEc0aENmhFNGRIAQ3EbNpHzJLxnGS
-	 JEq4PENZLBxO5Ajnd4KcJxsDCzfyRWplfYCjcNpI=
+	b=XyJKsFxPiHVmHyMB5tdKC0VZOaJ5wDUT6AKN3Lte8vHdVyPzXh/uia/Z0HVn8xxLZ
+	 MJpub7dt7bxTTRhnbNvCnV3PmBb+Vtgk1WPyZ7OiGixI1C5hpGVoPBrfhbhS1kEDgb
+	 lEXOBfK4WlUhNlmJl4mGFF+ZmyhWn0p25in03lgQ=
 From: Yeoreum Yun <yeoreum.yun@arm.com>
-Date: Wed, 22 Jul 2026 16:30:26 +0100
-Subject: [PATCH RFC v2 18/20] mm/pgtable: disallow calling folded
- set_pgd/set_p4d/set_pud with dummy
+Date: Wed, 22 Jul 2026 16:30:27 +0100
+Subject: [PATCH RFC v2 19/20] openrisc/pgtable: drop __pmd_offset()
 MIME-Version: 1.0
-Message-Id: <20260722-dummy_ptxp3-v2-18-d9e4bad31e0a@arm.com>
+Message-Id: <20260722-dummy_ptxp3-v2-19-d9e4bad31e0a@arm.com>
 References: <20260722-dummy_ptxp3-v2-0-d9e4bad31e0a@arm.com>
 In-Reply-To: <20260722-dummy_ptxp3-v2-0-d9e4bad31e0a@arm.com>
 To: Russell King <linux@armlinux.org.uk>, 
@@ -90,22 +75,23 @@ Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
  kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
  linux-openrisc@vger.kernel.org
 X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2943; i=yeoreum.yun@arm.com;
- h=from:subject:message-id; bh=72r/KAfsnxC0TtxtNsnKFwa+EPFsf1mj7ooxl5Dvfk4=;
- b=owEB7QES/pANAwAKAW3Vw9FaxTEzAcsmYgBqYOIYpRCL2kb+SSUvVch8xReBRMPEyqCZIVn8X
- b/zh0aeNKWJAbMEAAEKAB0WIQQtg+CS3QUzuFh1pJ1t1cPRWsUxMwUCamDiGAAKCRBt1cPRWsUx
- M+pbC/9CtkmpOcQ9F4GGyLnOuiLOEo5b2ROwD1I5zPd1cPHGuVTNUZXHqOLTTLv+feYvEaRNS3Z
- IURhne2r5mprDEF78/YPTYMXnMHtqv2lrbabG6OVkp8cC54ISx13HX75MGXoTZnKz4kVIuTHDQN
- iy95ZvXGHln787hkEX1cila15mNcOBZRLTpB5wTUPuo2xeaQxEUwN5tBg578CXt3rFT2Z0kTDDm
- aDJnKlAyUDoc9zOFK7KHnYUvXU2myPODDiuJXp3rWmAZjMBvarSdGTkbAww6NLEBebM7kGyl4KN
- AF460tD32ygD8fYb2KRxPuECIt8Kw0VVf2M0wcJmMfOIHiUFl8FXcatscWKDuEqDy6vFa7+cPcJ
- yw9ypwNhnSgFVejzmjhJqtSzTppFlH0iH4p0RQNUGe+i1lo+NCeNyetGLAdAbcNug3p+7MvZoaN
- f+L0PmWXEePXWK4caevkf2aHZEHRkD4ToFUz3RuAB9s9Do544YGwAjEdmnP5hpsMi6da4=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=881; i=yeoreum.yun@arm.com;
+ h=from:subject:message-id; bh=1xb3Ozyh2JOl/Co51IUX05GaQJt/5FuoyIGgUorDpg0=;
+ b=owEB7QES/pANAwAKAW3Vw9FaxTEzAcsmYgBqYOIYnrk3rC8ElTnTfer6SHj2oBWybBYLfju+d
+ 4SncyB+MwqJAbMEAAEKAB0WIQQtg+CS3QUzuFh1pJ1t1cPRWsUxMwUCamDiGAAKCRBt1cPRWsUx
+ M4boDAC/KmDndZaDO1jJrApOeQCuvkJuqhLMfdqukXrHibqTGpXvh7Lwc4sNcH7N5YegBcGYZnV
+ j8OQzx42GbLagf+9QG/YfGPDybE4rC2OL5XPwimSbLMb+WN4I8/lilSnKa7wUaS7SL/b4GC2vkg
+ 8Jq/RbDvH+rgu805sIkfBKek5svMwWjMRRI14lIYZMBfgew6aO6qlqM9ztketbWrILpth4EwCEc
+ cSBBO3cC/Pg7wWs25SiumksIV8bHn8Ze+9gPUFVMnrNwv9tddfeydkYK/jz7okv12hujP/fvdkj
+ LDxJHLgKAtFsXVIjaQzaCp3WphsglIEJV99pn+5cw/JahUqiDyGT0p7IQT1hBvRb4s4d4fUo+Se
+ D+tYt8k4B/cELCEj0LrTzVGfuWx+FVIESJpI0CfO6g+/Xzmfr7HkNrp4FAXv/nHkZbTes//Vc1B
+ +otIwlYp1llqRUcFvB/JSLg+dlLxLagbPM2+dPFj+lO9ocdyz9TFn83w7Ns0+BMZmq00I=
 X-Developer-Key: i=yeoreum.yun@arm.com; a=openpgp;
  fpr=2D83E092DD0533B85875A49D6DD5C3D15AC53133
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260722_163251_035377_1DD18996 
-X-CRM114-Status: GOOD (  12.11  )
+X-CRM114-CacheID: sfid-20260722_083257_231596_9885596B 
+X-CRM114-Status: UNSURE (   8.89  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -124,83 +110,28 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 
-Make all code compile-out any calls to set_pgd/set_p4d/set_pud for
-folded page tables. So let's make the compiler complain if these helpers
-are abused with dummy.
+The macro is unused, and will collide with a folded page table helper.
+Let's just remove it.
 
 Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
 ---
- include/asm-generic/pgtable-nop4d.h | 11 ++++++-----
- include/asm-generic/pgtable-nopmd.h | 10 +++++-----
- include/asm-generic/pgtable-nopud.h | 12 +++++++-----
- 3 files changed, 18 insertions(+), 15 deletions(-)
+ arch/openrisc/include/asm/pgtable.h | 3 ---
+ 1 file changed, 3 deletions(-)
 
-diff --git a/include/asm-generic/pgtable-nop4d.h b/include/asm-generic/pgtable-nop4d.h
-index 05c3acc0884b..19f5a6eda76c 100644
---- a/include/asm-generic/pgtable-nop4d.h
-+++ b/include/asm-generic/pgtable-nop4d.h
-@@ -28,11 +28,12 @@ static inline bool pgd_leaf(pgd_t pgd)		{ return false; }
+diff --git a/arch/openrisc/include/asm/pgtable.h b/arch/openrisc/include/asm/pgtable.h
+index 6b89996d0b62..5a491cd0f008 100644
+--- a/arch/openrisc/include/asm/pgtable.h
++++ b/arch/openrisc/include/asm/pgtable.h
+@@ -331,9 +331,6 @@ static inline unsigned long pmd_page_vaddr(pmd_t pmd)
+ 	return ((unsigned long) __va(pmd_val(pmd) & PAGE_MASK));
+ }
  
- #define pgd_populate(mm, pgd, p4d)		do { } while (0)
- #define pgd_populate_safe(mm, pgd, p4d)		do { } while (0)
--/*
-- * (p4ds are folded into pgds so this doesn't get actually called,
-- * but the define is needed for a generic inline function.)
-- */
--#define set_pgd(pgdptr, pgdval)	set_p4d((p4d_t *)(pgdptr), (p4d_t) { pgdval })
-+
-+#define set_pgd(pgdptr, pgdval)						\
-+({									\
-+	pgd_check_dummy(pgdval);					\
-+	set_p4d((p4d_t *)(pgdptr), (p4d_t) { pgdval });			\
-+})
- 
- static __always_inline pgd_t pgdp_get(pgd_t *p4dp)
- {
-diff --git a/include/asm-generic/pgtable-nopmd.h b/include/asm-generic/pgtable-nopmd.h
-index aa4902f63c0e..61852eb4b150 100644
---- a/include/asm-generic/pgtable-nopmd.h
-+++ b/include/asm-generic/pgtable-nopmd.h
-@@ -38,11 +38,11 @@ static inline void pud_clear(pud_t *pud)	{ }
- 
- #define pud_populate(mm, pmd, pte)		do { } while (0)
- 
--/*
-- * (pmds are folded into puds so this doesn't get actually called,
-- * but the define is needed for a generic inline function.)
-- */
--#define set_pud(pudptr, pudval)			set_pmd((pmd_t *)(pudptr), (pmd_t) { pudval })
-+#define set_pud(pudptr, pudval)						\
-+({									\
-+	pud_check_dummy(pudval);					\
-+	set_pmd((pmd_t *)(pudptr), (pmd_t) { pudval });			\
-+})
- 
- static __always_inline pud_t pudp_get(pud_t *pudp)
- {
-diff --git a/include/asm-generic/pgtable-nopud.h b/include/asm-generic/pgtable-nopud.h
-index 3264673c0c38..5ee8f1852cd8 100644
---- a/include/asm-generic/pgtable-nopud.h
-+++ b/include/asm-generic/pgtable-nopud.h
-@@ -35,11 +35,13 @@ static inline bool p4d_leaf(p4d_t p4d)		{ return false; }
- 
- #define p4d_populate(mm, p4d, pud)		do { } while (0)
- #define p4d_populate_safe(mm, p4d, pud)		do { } while (0)
--/*
-- * (puds are folded into p4ds so this doesn't get actually called,
-- * but the define is needed for a generic inline function.)
-- */
--#define set_p4d(p4dptr, p4dval)	set_pud((pud_t *)(p4dptr), (pud_t) { p4dval })
-+
-+#define set_p4d(p4dptr, p4dval)						\
-+({									\
-+	p4d_check_dummy(p4dval);					\
-+	set_pud((pud_t *)(p4dptr), (pud_t) { p4dval });			\
-+})
-+
- 
- static __always_inline p4d_t p4dp_get(p4d_t *p4dp)
- {
+-#define __pmd_offset(address) \
+-	(((address) >> PMD_SHIFT) & (PTRS_PER_PMD-1))
+-
+ #define PFN_PTE_SHIFT		PAGE_SHIFT
+ #define pte_pfn(x)		((unsigned long)(((x).pte)) >> PAGE_SHIFT)
+ #define pfn_pte(pfn, prot)  __pte((((pfn) << PAGE_SHIFT)) | pgprot_val(prot))
 
 -- 
 2.43.0
