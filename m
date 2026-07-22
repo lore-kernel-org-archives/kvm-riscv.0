@@ -4,145 +4,90 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B41DC44536
-	for <kvm-riscv@archiver.kernel.org>; Wed, 22 Jul 2026 20:22:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DEC91C4453A
+	for <kvm-riscv@archiver.kernel.org>; Wed, 22 Jul 2026 20:29:57 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:
-	Subject:MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:References:
+	In-Reply-To:Subject:CC:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=jBRUtTC3RPa9RjwubJ4Ey82bcTFxZhJZPWiMj01HMH4=; b=GrL33Oj2GcmNy5
-	h1hbeHK1ogWg0nZ8RyvjsaoZG0rf1sUZ00AXYYkBu+orY16EA4Cd28VjoeLGdB9tW/kkV3N2HTILP
-	6o7uBf9Bpl5Zir851XK10j/krTzWD8mGBJZwLWojKgv/cfnj3heEWPMAV74lhuflfCd2HkvZQwhmi
-	x+jAe/ZVLh+cCYzpdAPujX+c0aybKWeVQdLTjY355UjuLAevSbzpUg3YDI96veJdYu2eEPqT7JzYm
-	h1Wel76lLgovEsWUfFAzCJoiRXAL0XzipWSjxZQ8rd+xYjML1M3KZjKemmbsuwLbr+tqELKrx79dl
-	KX6HbNXpoz/L+uIhey0Q==;
+	List-Owner; bh=xBkNLCAwQmejGr2Fa7wDJu/MiL9T38prQHx8l5IwCBM=; b=3p/UcBEeYcnwDA
+	GSzNwG0tWtVZAEyWa7S9IJ04g1iBHU6QCMRYWORkFnvCfdZLHKBYeQiUBxoBbzX8X0Lnkxb2HfD5X
+	HQ14ZSoGZZ+vo958vpXJOw+IacA2BdxnOEsfOGm+ndvfUctwxp5FGDgQLvduY1x/ZYUkc83MM2wzz
+	xVyHrpPiBOTQ0IJcz9WS7wJeTiIAuIlIgTRX9l0EFIJyXkHkgdaare+vmOg9txgwL5HOiGBVrG6o9
+	q108EZxZ+gHz3H+hyeXEfq2/54vun8nco+DDb4dTMX/UGoc8qYUZ5OCSf04LnM/o1bI9XRYVYiNz5
+	XZXrFukRDEjNtGoqJpZg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wmdSG-0000000Chys-28oP;
-	Wed, 22 Jul 2026 20:22:12 +0000
-Received: from mgamail.intel.com ([198.175.65.18])
+	id 1wmdZl-0000000CjCZ-2PgK;
+	Wed, 22 Jul 2026 20:29:57 +0000
+Received: from terminus.zytor.com ([2607:7c80:54:3::136] helo=mail.zytor.com)
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wmdSD-0000000Chxr-3BDo;
-	Wed, 22 Jul 2026 20:22:11 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1784751729; x=1816287729;
-  h=message-id:date:mime-version:subject:to:cc:references:
-   from:in-reply-to:content-transfer-encoding;
-  bh=C07OTvTr7coVCVH6Y9d+rRwSbozP4VPBHbTE6ss77ds=;
-  b=kNdi5SqssyvZP0QxKwxYIfoH4n+87Wyh4WuT3puyWi9GHslh1ACPGZ97
-   J/U18MdRYpUT6jbpPh0/o8b1adLTQrSJLhw8SL2Y+kIIVGYB7UCyKXT0/
-   2TFrOnLrzfz1/exH4rOcRxM/9sgmzOF8rFXc+xeMwQsya98GIltabpja4
-   ltz6Dz8BSQQkvvaVK6nbYamYO7LD3R6a6o8IemTFRR/F2iH+8VjTILJd+
-   mqw5ystL30EvneUiwcq4JH4LbxkUKszNijjvdcDntXgU+jhLGIQGo7pQB
-   czX8bv2HnfV1hDAsGaBRD0W+dc4BOgSAlQf5qYeqGK/oe/6renvBu4Irn
-   g==;
-X-CSE-ConnectionGUID: CYyE1ALETS+5ZYWTGD05Ig==
-X-CSE-MsgGUID: aysw5iSgQlqJznNhXjZCww==
-X-IronPort-AV: E=McAfee;i="6800,10657,11854"; a="85489106"
-X-IronPort-AV: E=Sophos;i="6.25,179,1779174000"; 
-   d="scan'208";a="85489106"
-Received: from orviesa001.jf.intel.com ([10.64.159.141])
-  by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Jul 2026 13:22:08 -0700
-X-CSE-ConnectionGUID: j/27Y88ERYO041Pa3i8rxQ==
-X-CSE-MsgGUID: whhMVyXKTNOu5lad8draKQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.25,179,1779174000"; 
-   d="scan'208";a="296398206"
-Received: from sghuge-mobl2.amr.corp.intel.com (HELO [10.125.110.58]) ([10.125.110.58])
-  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Jul 2026 13:22:07 -0700
-Message-ID: <3620750c-54d7-45a0-b067-bc813dd3cd9b@intel.com>
-Date: Wed, 22 Jul 2026 13:22:04 -0700
+	id 1wmdZi-0000000CjBt-2xo0;
+	Wed, 22 Jul 2026 20:29:55 +0000
+Received: from ehlo.thunderbird.net (c-76-133-66-138.hsd1.ca.comcast.net [76.133.66.138])
+	(authenticated bits=0)
+	by mail.zytor.com (8.18.1/8.17.1) with ESMTPSA id 66MKSjqC1278121
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NO);
+	Wed, 22 Jul 2026 13:28:45 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 mail.zytor.com 66MKSjqC1278121
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zytor.com;
+	s=2026062701; t=1784752128;
+	bh=HZenVVn2FbCkGx5eN7DH3cc/7/vouTK11eR/A2iTBKg=;
+	h=Date:From:To:CC:Subject:In-Reply-To:References:From;
+	b=mW/pv4H7D68XMTeHNm3fkahmI1TOoQEIJW+FwVE9P9RGRCZMU1yzbf00780LWbIf5
+	 lMWCsDDWgkZ3mQzVdUbc+FUFxB7JHa3IfHG5IbCuO8SZA6RTlV+u0eNfDswjtkOwJJ
+	 Y2hRrVSp1jdcROOVerDK5arOVeJfRBuUCw2mWnH5UEIVqM4Sfocn/bTEIR/tUd1smD
+	 Zaxm0lLCm7G7q63HYdxg5RWgzqqc51+h+OCNW7g0YR4tmW0S5bxHte7PAw5QRC4Ie0
+	 FNPgy+3wnQSj+WodmlD6kmUH+2AJq2gPFIl3XR7z52JBDBgAbc8SIQ4cGUTO4UriAI
+	 ZJk0nTNhjK4sQ==
+Date: Wed, 22 Jul 2026 13:28:40 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+To: Dave Hansen <dave.hansen@intel.com>, Yeoreum Yun <yeoreum.yun@arm.com>
+CC: Russell King <linux@armlinux.org.uk>, Huacai Chen <chenhuacai@kernel.org>,
+        WANG Xuerui <kernel@xen0n.name>,
+        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+        Catalin Marinas <catalin.marinas@arm.com>,
+        Will Deacon <will@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Kairui Song <kasong@tencent.com>, Qi Zheng <qi.zheng@linux.dev>,
+        Shakeel Butt <shakeel.butt@linux.dev>, Barry Song <baohua@kernel.org>,
+        Axel Rasmussen <axelrasmussen@google.com>,
+        Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>,
+        Johannes Weiner <hannes@cmpxchg.org>,
+        David Hildenbrand <david@kernel.org>, Michal Hocko <mhocko@kernel.org>,
+        Lorenzo Stoakes <ljs@kernel.org>,
+        Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>,
+        Anup Patel <anup@brainfault.org>, Atish Patra <atish.patra@linux.dev>,
+        Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+        Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+        Dave Hansen <dave.hansen@linux.intel.com>,
+        Andy Lutomirski <luto@kernel.org>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+        Borislav Petkov <bp@alien8.de>, x86@kernel.org,
+        "Liam R. Howlett" <liam@infradead.org>,
+        Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>,
+        Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
+        Jonas Bonn <jonas@southpole.se>,
+        Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+        Stafford Horne <shorne@gmail.com>,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        loongarch@lists.linux.dev, linux-mips@vger.kernel.org,
+        linux-arch@vger.kernel.org, linux-mm@kvack.org, kvm@vger.kernel.org,
+        kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
+        linux-openrisc@vger.kernel.org
+Subject: =?US-ASCII?Q?Re=3A_=5BPATCH_RFC_v2_14/20=5D_x86=3A_mm=3A_skip_pud_setup?=
+ =?US-ASCII?Q?_when_using_generic_compile-time_folded_pagetable?=
+User-Agent: K-9 Mail for Android
+In-Reply-To: <3620750c-54d7-45a0-b067-bc813dd3cd9b@intel.com>
+References: <20260722-dummy_ptxp3-v2-0-d9e4bad31e0a@arm.com> <20260722-dummy_ptxp3-v2-14-d9e4bad31e0a@arm.com> <0ea931f1-4801-4d32-b6ce-4787a8d3daa9@intel.com> <amD7ab_KuJPdBQBh@e129823.arm.com> <6f5060a7-0a64-49fc-81a3-ae88729ef794@intel.com> <amElnEbvRTjv2hyU@e129823.arm.com> <3620750c-54d7-45a0-b067-bc813dd3cd9b@intel.com>
+Message-ID: <1064CF47-9371-4D9C-B2AD-1457CA41CDB2@zytor.com>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH RFC v2 14/20] x86: mm: skip pud setup when using generic
- compile-time folded pagetable
-To: Yeoreum Yun <yeoreum.yun@arm.com>
-Cc: Russell King <linux@armlinux.org.uk>, Huacai Chen
- <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
- Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>,
- Kairui Song <kasong@tencent.com>, Qi Zheng <qi.zheng@linux.dev>,
- Shakeel Butt <shakeel.butt@linux.dev>, Barry Song <baohua@kernel.org>,
- Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>,
- Wei Xu <weixugc@google.com>, Johannes Weiner <hannes@cmpxchg.org>,
- David Hildenbrand <david@kernel.org>, Michal Hocko <mhocko@kernel.org>,
- Lorenzo Stoakes <ljs@kernel.org>, Tianrui Zhao <zhaotianrui@loongson.cn>,
- Bibo Mao <maobibo@loongson.cn>, Anup Patel <anup@brainfault.org>,
- Atish Patra <atish.patra@linux.dev>, Paul Walmsley <pjw@kernel.org>,
- Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Alexandre Ghiti <alex@ghiti.fr>, Dave Hansen <dave.hansen@linux.intel.com>,
- Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
- Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
- Borislav Petkov <bp@alien8.de>, x86@kernel.org,
- "H. Peter Anvin" <hpa@zytor.com>, "Liam R. Howlett" <liam@infradead.org>,
- Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>,
- Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
- Jonas Bonn <jonas@southpole.se>,
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- Stafford Horne <shorne@gmail.com>, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org, loongarch@lists.linux.dev,
- linux-mips@vger.kernel.org, linux-arch@vger.kernel.org, linux-mm@kvack.org,
- kvm@vger.kernel.org, kvm-riscv@lists.infradead.org,
- linux-riscv@lists.infradead.org, linux-openrisc@vger.kernel.org
-References: <20260722-dummy_ptxp3-v2-0-d9e4bad31e0a@arm.com>
- <20260722-dummy_ptxp3-v2-14-d9e4bad31e0a@arm.com>
- <0ea931f1-4801-4d32-b6ce-4787a8d3daa9@intel.com>
- <amD7ab_KuJPdBQBh@e129823.arm.com>
- <6f5060a7-0a64-49fc-81a3-ae88729ef794@intel.com>
- <amElnEbvRTjv2hyU@e129823.arm.com>
-From: Dave Hansen <dave.hansen@intel.com>
-Content-Language: en-US
-Autocrypt: addr=dave.hansen@intel.com; keydata=
- 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
-In-Reply-To: <amElnEbvRTjv2hyU@e129823.arm.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260722_132209_838993_9DBBF997 
-X-CRM114-Status: UNSURE (   8.95  )
+X-CRM114-CacheID: sfid-20260722_132954_747541_AB6706E2 
+X-CRM114-Status: UNSURE (   9.25  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -160,15 +105,18 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On 7/22/26 13:18, Yeoreum Yun wrote:
-> Sorry. But do you mean check with cpu_feature_enabled() not with
-> boot_cpu_has()?
-> IIRC, the boot_cpu_has() doesn't use the DISABLE_MASK_BIT_SET() but
-> uses REQUIRED_MASK_BIT_SET() and I don't expect it wouldn't make
-> an optimisation to constant check which is contrast to DISABLE_MASK_BIT_SET().
+On July 22, 2026 1:22:04 PM PDT, Dave Hansen <dave.hansen@intel.com> wrote:
+>On 7/22/26 13:18, Yeoreum Yun wrote:
+>> Sorry. But do you mean check with cpu_feature_enabled() not with
+>> boot_cpu_has()?
+>> IIRC, the boot_cpu_has() doesn't use the DISABLE_MASK_BIT_SET() but
+>> uses REQUIRED_MASK_BIT_SET() and I don't expect it wouldn't make
+>> an optimisation to constant check which is contrast to DISABLE_MASK_BIT_SET().
+>
+>Ahh, yes. I forgot about that nuance! Moving to cpu_feature_enabled()
+>would be great!
 
-Ahh, yes. I forgot about that nuance! Moving to cpu_feature_enabled()
-would be great!
+It is supposed to. That's the point of the required mask.
 
 -- 
 kvm-riscv mailing list
