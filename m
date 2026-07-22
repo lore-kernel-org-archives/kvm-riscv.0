@@ -4,95 +4,95 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CB309C44539
-	for <kvm-riscv@archiver.kernel.org>; Wed, 22 Jul 2026 12:33:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 675C9C4453C
+	for <kvm-riscv@archiver.kernel.org>; Wed, 22 Jul 2026 15:30:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
-	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=ZDgqFCFsNNiyOqDaldaE3vVf1HmFF6AsuBVBoknOy04=; b=UcNeKU4D6PxaA4
-	pG/G9ovk2p8xWsHkSSPCGrChF1TZHGJy5QsaiezZnyV4LMoKPY1GsnMYajLYsydS7XZ6Iet1xRDhG
-	VTfyvKET9eOe9HQm0czk7KCHP1Qc/4UwDeVpGxr7tL3+7GiIYWzl+2NBdY+OYve8LCNgPSnbYxSid
-	/QTDTI09QqAh9P9fZhplVbGh+honrtxjUnRDwHAqvDSpGKsfvLbmdXE16xrHajxvoyvHlXnwphJRi
-	w2bByrI03LcfSgytbmbjuPsrpjVuZIWqN5SHwjMaWTo4h4Q/qRVFwZ9cyvJDhBtmmWl+iUNaDUSuO
-	if9ptkVxtd79UqLD9aqQ==;
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:MIME-Version:Message-Id:Date:
+	Subject:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=nNhYXCy1CoPnNkr7zrFCNUI2jlgZINRID1GpLd1YONk=; b=3kNb9Cb/R9S5NS
+	7v2zeGDU9kWDkF9MlL7U0iFFN512n/jnw9se77yiaKi1yDnot+eAN3KQi9dPM4KWd+zxdNHYpgVsJ
+	ajYkLBrdMyNB73MOiDeLj9L3DLEb2ZN7V1a4hiZfc0DDURvLqwh88RHpu4gLnUBteBdXWs0iYk32I
+	X8D4EjIzEFpxwjNU8nuABWWgUwf+hpZmgObF/zjrFVEWq48xY/zwFLm51Ww8VZbUZXdQuafFu30np
+	4b1uR/XpxgPJrCwWzyXkmF1dRmlWCk0+7lIRHXlJp43XCmmwS2UD5twtQI1MqTJ+ld/es1fgtwC0l
+	0OU1u57totTlbim46j7g==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wmW97-0000000Bm0m-1aGH;
-	Wed, 22 Jul 2026 12:33:57 +0000
-Received: from mail-pl1-x629.google.com ([2607:f8b0:4864:20::629])
-	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wmW95-0000000Bm0A-0h2g
-	for kvm-riscv@lists.infradead.org;
-	Wed, 22 Jul 2026 12:33:56 +0000
-Received: by mail-pl1-x629.google.com with SMTP id d9443c01a7336-2cf50c6f235so46691645ad.0
-        for <kvm-riscv@lists.infradead.org>; Wed, 22 Jul 2026 05:33:54 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1784723634; x=1785328434; darn=lists.infradead.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=QxIfKuOVaE3EcHJclM4dn0Mc9MrDfV6Rgh6T8FHUwMI=;
-        b=syGwzo9URj9YElQSGnyw4aHHLNEzhSXumhyHrNA6+9ZJ3TgGwgHzbzMvSHTkF4UmQO
-         1S48/f4SLM2gAPqTQwScTaSXJVDj5S3zbBqwvwkUZ8468emIgDlamEacDPQ27tyQBc8x
-         4XPveKaK/tRV6t/nbxTUBdL7xxqCZ613wyZb/s9tuJUOKTLzW1sg7vZTw01jcjj4oLa+
-         JkYspO5J8O9FzuOxkSLYj//zsWo71EQf8ZOUCpRndKHtkt/XbyCp+DS1kWJ824KC7TD3
-         +CcY+nd0/vKoe15D+2Ktl/ru4IpYd/MjbOmk9K1rAsd2CPdcIanJp+29vJey9N3NlR6s
-         l2Mw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784723634; x=1785328434;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=QxIfKuOVaE3EcHJclM4dn0Mc9MrDfV6Rgh6T8FHUwMI=;
-        b=LbbwJHhbwgPemE7hJGJ19VZOfQ/LdN7w0faeHhZOuThwm0xfFEz/6vLs7jtvNfgTrr
-         GXN7D2/cuF7Bmoq+s+NGGxCxBUEc5H3syFB2bbhi54i5mHWcc40c0+JaGbvzbMyuwqJ/
-         Qv2ST7VsQ0xfNDuwdGTBpFQ4865pMPN2Ta+qATMIXTuhzAmyE/o6u+lIKZdYuci+9iaZ
-         WQa1R+CwOojXh+hkG+bhI4ffT2viPbY9fki+1A5FN0/fTSZuABi5p+L0rOP3BaHBKUlp
-         gMjiPhbWfgBWpfNvutElHI29TihipIso2ly5ad00QSTofZJgpDVnlAFL0769xAh3LvYN
-         jejQ==
-X-Forwarded-Encrypted: i=1; AHgh+Rp7lFj9XwBRoEaIWYD8hkcsLe1q/+/9Je5t8qiKQnshbgtV71xDrpIvaT5vLELb5nUGPbbPHfHi12g=@lists.infradead.org
-X-Gm-Message-State: AOJu0Ywuh+N2zf+a7OrHG6XY6j64EgE/47QTdQ1/LwJjIXcDGnTtDB63
-	fLIxyr0CU5VH6iOapIqRVZ/OaO6UFO5chzX+5H6em6rYY4yb+ABiID10
-X-Gm-Gg: AR+sD12PaEA5ZMELonpbb4tIpAtm7f7XMqNaOBENrERJaweuTOURjRahmzhOeL82Y8x
-	cdQ+XK/m4JnJtIFI3U0bxQg3Zyangw1kPtJOfMor/j9bpmhjYzfZL0yEgIGYYR8Dy+yl2FA2Rzd
-	z6NDZ9rHbR7WPDYzVHAfRs6YhdSlUicyoVbh/+kNmwEA0751Pd1tsiIvLzGI6PqC0YpBroSuo7R
-	x8mKjBfkJLP1OTTcSsnGY9+NSImAcw2vOc1f577m8oVEfWUQnb7kMDPA8O+/r/aptga1w21xLBJ
-	JaTMXE6fDvTmbDnH69baH10nTiFatG9csVnvxtCtyjVAMIc1dprBy59q73U4sYkW+7vS8oSucBc
-	4x+nK/eAOb/W2qQzXvFBb/NX65hG+fY4KAuzVvsuiMxObhf3JYQongRAUBWd7GXaquac+Wi4e80
-	KtYZsDokJ7fmNmY258M6us
-X-Received: by 2002:a17:902:e548:b0:2c8:4c29:afeb with SMTP id d9443c01a7336-2cf348213a8mr249494965ad.8.1784723633958;
-        Wed, 22 Jul 2026 05:33:53 -0700 (PDT)
-Received: from cyh-System-Product-Name.. ([129.227.183.200])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2cf96ac33eesm7214735ad.72.2026.07.22.05.33.51
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 22 Jul 2026 05:33:53 -0700 (PDT)
-From: "Yuhang.chen" <yhchen312@gmail.com>
-To: bigeasy@linutronix.de
-Cc: anup@brainfault.org,
-	atish.patra@linux.dev,
-	clrkwllms@kernel.org,
-	rostedt@goodmis.org,
-	kvm@vger.kernel.org,
-	kvm-riscv@lists.infradead.org,
-	linux-riscv@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	linux-rt-devel@lists.linux.dev,
-	zhouquan@iscas.ac.cn,
-	"Yuhang . chen" <yhchen312@gmail.com>
-Subject: Re: [PATCH] RISC-V: KVM: Use raw_spinlock for VMID update critical section
-Date: Wed, 22 Jul 2026 20:33:50 +0800
-Message-Id: <20260722123350.3697232-1-yhchen312@gmail.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20260717065137.FQ5Ax2W-@linutronix.de>
-References: <20260717065137.FQ5Ax2W-@linutronix.de>
+	id 1wmYuF-0000000C9oy-0EKE;
+	Wed, 22 Jul 2026 15:30:47 +0000
+Received: from foss.arm.com ([217.140.110.172])
+	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
+	id 1wmYuB-0000000C9oN-23HD;
+	Wed, 22 Jul 2026 15:30:45 +0000
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 63CA51595;
+	Wed, 22 Jul 2026 08:30:36 -0700 (PDT)
+Received: from e129823.arm.com (e129823.arm.com [10.2.213.3])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 9BCA83F66F;
+	Wed, 22 Jul 2026 08:30:33 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1784734240; bh=y9r6C8+qmxpZN2UriTf9GnZ7z+Z5djCU/+tffpW++Gs=;
+	h=From:Subject:Date:To:Cc:From;
+	b=iMZDIMeNT8qFLRIp9mZGMzTNdCLxPs+SbFGoNqqV7NhK9FC/O1Qd9fvZM9RhF4+jK
+	 NkKYC3o+KWe4RMXbpZxziOHIvxV/17L5RnTcDfCKrGWx6MYCHNtI4kbJx4Bjx2YYT2
+	 IsqTp15KkeDZurSwN14rAFyyajBrU4DIFIv8hR0A=
+From: Yeoreum Yun <yeoreum.yun@arm.com>
+Subject: [PATCH RFC v2 00/20] mm: optimize unnecessary loads due to
+ ptep_get() and friends out
+Date: Wed, 22 Jul 2026 16:30:08 +0100
+Message-Id: <20260722-dummy_ptxp3-v2-0-d9e4bad31e0a@arm.com>
 MIME-Version: 1.0
+X-B4-Tracking: v=1; b=H4sIAAHiYGoC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyjHQUlJIzE
+ vPSU3UzU4B8JSMDIzMDcyMj3ZTS3NzK+IKSigJjXWNzE8MUc4vkZHODNCWgjoKi1LTMCrBp0Up
+ Bbs5KsbW1AF5jcBpiAAAA
+To: Russell King <linux@armlinux.org.uk>, 
+ Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>, 
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, 
+ Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>, 
+ Kairui Song <kasong@tencent.com>, Qi Zheng <qi.zheng@linux.dev>, 
+ Shakeel Butt <shakeel.butt@linux.dev>, Barry Song <baohua@kernel.org>, 
+ Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>, 
+ Wei Xu <weixugc@google.com>, Johannes Weiner <hannes@cmpxchg.org>, 
+ David Hildenbrand <david@kernel.org>, Michal Hocko <mhocko@kernel.org>, 
+ Lorenzo Stoakes <ljs@kernel.org>, Tianrui Zhao <zhaotianrui@loongson.cn>, 
+ Bibo Mao <maobibo@loongson.cn>, Anup Patel <anup@brainfault.org>, 
+ Atish Patra <atish.patra@linux.dev>, Paul Walmsley <pjw@kernel.org>, 
+ Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+ Alexandre Ghiti <alex@ghiti.fr>, Dave Hansen <dave.hansen@linux.intel.com>, 
+ Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>, 
+ Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, 
+ Borislav Petkov <bp@alien8.de>, x86@kernel.org, 
+ "H. Peter Anvin" <hpa@zytor.com>, "Liam R. Howlett" <liam@infradead.org>, 
+ Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>, 
+ Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, 
+ Jonas Bonn <jonas@southpole.se>, 
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, 
+ Stafford Horne <shorne@gmail.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
+ loongarch@lists.linux.dev, linux-mips@vger.kernel.org, 
+ linux-arch@vger.kernel.org, linux-mm@kvack.org, kvm@vger.kernel.org, 
+ kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
+ linux-openrisc@vger.kernel.org, Yeoreum Yun <yeoreum.yun@arm.com>
+X-Mailer: b4 0.13.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=8345; i=yeoreum.yun@arm.com;
+ h=from:subject:message-id; bh=y9r6C8+qmxpZN2UriTf9GnZ7z+Z5djCU/+tffpW++Gs=;
+ b=owEB7QES/pANAwAKAW3Vw9FaxTEzAcsmYgBqYOIPXVkSrUGz6mKXI6y0yEWq3o4owe66Petn8
+ nVDY4vdlKeJAbMEAAEKAB0WIQQtg+CS3QUzuFh1pJ1t1cPRWsUxMwUCamDiDwAKCRBt1cPRWsUx
+ M6JADADUr5G59lCYM0wOiw4e2HcD5OSYYLyafRctz8vNY6yo6bDPeo/0n6TxR2SqscwfZl0awE6
+ 8hMwJkf4/KbPw/TRaZWxT5b0H+U8Rvz+Ean8sjIqKsbxe+Wws/80SPkj4/51VEsYxHqrtYimCz0
+ s6CL89gclwhq1maxc397Bsz2j9PeL4Ai4DwWQI+MMGhDT1ibZsMGZjhTz22Mub0Bjfg7FtDp0pz
+ 1MnX3FKqxBBo7Uz1al5+cu4UruXkkf6wXd7Ksxhx5hHUSrdhMqHSfYxtFyQd4Glf3JyO1PluA5c
+ ABW8JArJI7O6GCYANLd+xOUk5TdU9NiBS9mnhvFM03eK+i8cZO6WP2fS8geXrdJBukKV0P/NBHN
+ ClsFohnF95WHZfsmcM7pusk1JlST9nms2bR3jYGHvUYYdBAYD2nZ8WjK318BqY2PQQB4jh9wZ38
+ 5KYWiZ+o3Xs1I1a0X0Os55pPGTIY9/E9pKwQPGeB2VIJZ5ELMC1Xfb0ATvuBZ78cwqAS0=
+X-Developer-Key: i=yeoreum.yun@arm.com; a=openpgp;
+ fpr=2D83E092DD0533B85875A49D6DD5C3D15AC53133
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260722_053355_203897_01C41137 
-X-CRM114-Status: UNSURE (   8.29  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20260722_083044_603758_F8D6D5E3 
+X-CRM114-Status: GOOD (  19.49  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -109,34 +109,190 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Hi Sebastian,
+Using ptep_get() and its counterparts in common code is suboptimal on
+kernel configurations with generic compile-time folded page tables.
+By default, ptep_get() and its friends expands to READ_ONCE(),
+forcing the compiler to emit a load even when the value is not used afterwards.
 
-thanks for having a look.
+This issue was recently reported by Christophe Leroy [1] for ppc32
+preventing futher code conversion to ptep_get()/pmdp_get()/... helper
+and the same behavior can also be observed on arm64 when built with
+2- or 3-level page tables
 
-On 2026-07-17 06:51:37 [+0000], Sebastian Andrzej Siewior wrote:
-> Here you state _why_ it must not be preempted. What would be the worst
-> that could happen.
+e.g) perf_get_page_size() in arm64 with CONFIG_PGTABLE_LEVEL=3:
 
-The worst case is an unbounded hold of vmid_lock that stalls guest entry
-system-wide. On rollover the section bumps vmid_version and then broadcasts
-a guest-TLB flush via on_each_cpu_mask(..., wait=1) before assigning a
-fresh VMID. Under PREEMPT_RT a plain spinlock_t is preemptible, so the
-holder could be scheduled out while still waiting for that broadcast flush
-to finish and keep vmid_lock held for an unbounded scheduling delay; every
-other vCPU reaching the VMID-(re)assignment path on its way into the guest
-would then block on the lock. The rollover is otherwise a short critical
-section (a version bump plus one IPI), so keeping it non-preemptible with
-raw_spinlock_t bounds its hold time.
+00000000000052a0 <perf_get_page_size>:
+    ...
+    52dc: d53b4234     	mrs	x20, DAIF
+    52e0: d50343df     	msr	DAIFSet, #0x3
+    ...
+    52fc: d35e9a69     	ubfx	x9, x19, #30, #9        /* pud_offset_lockless() */
+    5300: f9403508     	ldr	x8, [x8, #0x68]
+    5304: f869790a     	ldr	x10, [x8, x9, lsl #3]   /* pudp_get() */
+    5308: f90007ea     	str	x10, [sp, #0x8]
+    530c: f8697908     	ldr	x8, [x8, x9, lsl #3]    /* pudp_get() */
+    ...
+    5360: 90000009     	adrp	x9, 0x5000 <perf_prepare_sample+0x548>
+    5364: 92746908     	and	x8, x8, #0x7ffffff000
+    5368: d3557675     	ubfx	x21, x19, #21, #9       /* pmd_offset_lockless() */
+    ...
+    5394: f8757ac8     	ldr	x8, [x22, x21, lsl #3]  /* pmdp_get() */
 
-I'll fold that into the commit log.
+Though PGTABLE_LEVEL=3, since the pudp_get() still remain with
+READ_ONCE(), there's redundant load for the pud which is folded.
 
-> That part starting with "Convert" belongs into into a new line.
+To prevent generating suboptimal code, define dummy pXdp_get() and
+pXd_offset_lockless() in the pgtable-nopXd.h to handle folded page tables
+properly.
 
-Will fix in v2.
+As the pXdp_get() can return *dummy* entry, some of code using
+the stack value where saves the pXdp_get() could be a problematic:
 
-I'll send v2 with both changes.
+  1. Passing address of stack value where saves the pXdp_get() result
+     to pXd_offset() for example:
 
-  Yuhang
+       pud_t *pudp, pud;
+       pmd_t *pmdp;
+
+       pud = pudp_get(pudp, address);
+       pmdp = pmd_offset(&pud, pud, address);
+
+     (e.g. host_pfn_mapping_level() in loongarch).
+
+  2. Using the pXdp_get() result to use as argument of pXd_val() and
+     to check prot without checking pgtable is folded.
+     for example, x86's effective_prot().
+
+  3. Using set_pXd() with pXdp_get() will set problematic dummy entry
+     in folded page table like:
+
+       set_pXd(pxdp, pXdp_get(pxdp_k));
+
+     To prevent this, Let set_pXd() triggers the compile error
+     to catch the wrong usage with folded dummy entry of set_pXd() in
+     the generic compile-time folded pgtable.
+
+  4. Using pgd_page_vaddr() to get the first-level pgtable.
+     passing dummy pxdp_get() for pgd_page_vaddr() will return wrong
+     address. Therefore, make pgd_page_vaddr() and pXd_pgtable() to
+     trigger the error for improper usage with folded dummy entry in the
+     generic compile-time folded pgtable.
+
+Thanksfully, above cases are rare since (1) most of usage using
+pXd_offset() with result of upper pXd_offset(), (2) it's extreamely
+rare to use pXd_val() for non-leaf entry in the kernel,
+(3) is to handle the vmalloc_fault or set the first level of page table
+and (4) to setup early page table and etc.
+
+Therefore, convert this kind of problematic rare pattern properly.
+
+Furthermore, passing the ptep_get() (or its counterparts) as argument
+directly to pte_present() and related helpers can generate suboptimal code,
+in arm64 as the current macro implementation may evaluate its argument
+more than once like:
+
+  !pte_val(READ_ONCE(*pte) || pte_present_invalid(READ_ONCE(*pte))
+
+resulting in redundant loads.
+
+A typical example is pud_free_pmd_page(), where the expansion of
+pmd_present() generates:
+    ...
+    /* pmd_present() (x20 = pmdp) */
+    1b88: f9400288     ldr	x8, [x20]        // read pmdp.
+    1b8c: f9000fa8     str	x8, [x29, #0x18]
+    1b90: 3707fec8     tbnz	w8, #0x0, 0x1b68 <pud_free_pmd_page+0xd0>
+    1b94: f9400288     ldr	x8, [x20]        // redundant read of pmdp.
+    1b98: 8a170109     and	x9, x8, x23
+    1b9c: f9000fa8     str	x8, [x29, #0x18]
+    1ba0: f120013f     cmp	x9, #0x800
+    1ba4: 54fffe20     b.eq	0x1b68 <pud_free_pmd_page+0xd0>
+    1ba8: 17fffff4     b	0x1b78 <pud_free_pmd_page+0xe0>
+    ...
+
+To address this in arm64, convert pte_present() macro and its friends
+to static inline function.
+
+This patch is based on mm-unstable.
+
+Future work
+===========
+ - print_bad_page_map() and show_pte() still prints dummy values
+   instead of printing the same content for all generic compile-time
+   folded page tables. We might want to skip printing dummy values later.
+
+ - We currently catch abuse of dummy values on the stack at compile-time by
+   relying on constant propagation by the compiler. Usama's work [3] on using
+   distinct types for sw vs. hw PTEs could help here as well."
+
+Patch History
+=============
+from v1 to v2:
+  - Restore slient fallback to next pXd in set_pXd() and pXd_pgtable()
+    and add check whether they're called with dummy entry.
+
+  - Add some comment for returning first entry of pgd in arm with
+    2 pgtable-level
+
+  - https://lore.kernel.org/all/20260713135614.1618183-1-yeoreum.yun@arm.com/
+
+Link: [1] https://lore.kernel.org/all/0019d675-ce3d-4a5c-89ed-f126c45145c9@kernel.org/
+Link: [2] https://lore.kernel.org/all/20251113014656.2605447-1-samuel.holland@sifive.com/
+Link: [3] https://lore.kernel.org/r/74182e50-b54f-4d2d-a27f-3a59a538d6bc@arm.com
+---
+David Hildenbrand (Arm) (13):
+      ARM: mm: make nommu pgd_t a scalar
+      ARM: mm: make 2-level pgd_t a scalar
+      ARM: mm: remove custom pgdp_get()
+      LoongArch: mm: define pud_leaf() only when PUD exists
+      MIPS: mm: define pud_leaf() only when PUD exists
+      mm/pgtable: define (pgd|p4d|pud)_leaf() for folded page tables
+      mm/pgtable: define (pgd|p4d|pud)_offset_lockless() for folded page tables
+      x86: mm: carve out the generic compile-time folded pgtable case in effective_prot()
+      mm/pgtable: optimize pmdp_get() and friends for folded pagetable levels
+      mm/pgtable: catch abuse of folded dummy pgd_t/p4d_t/pud_t
+      mm/pgtable: disallow calling (pgd|p4d|pud)_page, pgd_page_vaddr() and (p4d|pud)_pgtable with dummy
+      mm/pgtable: disallow calling folded set_pgd/set_p4d/set_pud with dummy
+      openrisc/pgtable: drop __pmd_offset()
+
+Yeoreum Yun (7):
+      mm: vmscan: remove stack copy address of pud pass in wallk_pud_range()
+      loongarch: kvm: remove stack copy address of pXd in pXd_offset()
+      riscv: kvm: remove stack copy address of pXd in pXd_offset()
+      riscv: mm: use proper set_pXd() for generic compile-time folded patable in vmalloc_fault()
+      x86: mm: define pudp_set_access_flags() when CONFIG_HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD is enabled only.
+      x86: mm: skip pud setup when using generic compile-time folded pagetable
+      arm64: pgtable: convert pte_present() from macro to static inline
+
+ arch/arm/include/asm/page-nommu.h           |  4 +--
+ arch/arm/include/asm/pgtable-2level-types.h | 24 +++++++++++--
+ arch/arm/include/asm/pgtable.h              |  2 --
+ arch/arm64/include/asm/pgtable.h            | 35 +++++-------------
+ arch/loongarch/include/asm/pgtable.h        |  2 ++
+ arch/loongarch/kvm/mmu.c                    | 20 ++++++-----
+ arch/mips/include/asm/pgtable.h             |  2 ++
+ arch/openrisc/include/asm/pgtable.h         |  3 --
+ arch/riscv/kvm/mmu.c                        | 20 ++++++-----
+ arch/riscv/mm/fault.c                       | 52 +++++++++++++++++----------
+ arch/x86/mm/dump_pagetables.c               |  5 ++-
+ arch/x86/mm/pat/set_memory.c                |  5 +--
+ arch/x86/mm/pgtable.c                       |  2 ++
+ include/asm-generic/pgtable-nop4d.h         | 53 ++++++++++++++++++++++-----
+ include/asm-generic/pgtable-nopmd.h         | 54 ++++++++++++++++++++++------
+ include/asm-generic/pgtable-nopud.h         | 55 +++++++++++++++++++++++------
+ include/linux/ptdump.h                      |  1 +
+ mm/ptdump.c                                 | 11 ++++++
+ mm/vmscan.c                                 |  2 +-
+ 19 files changed, 246 insertions(+), 106 deletions(-)
+---
+base-commit: 7368ccdeff50c27809d3a8276c85bae7e402c96c
+change-id: 20260722-dummy_ptxp3-3741d78cc70f
+
+Best regards,
+-- 
+Sincerely,
+Yeoreum Yun
+
 
 -- 
 kvm-riscv mailing list
