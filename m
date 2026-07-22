@@ -4,77 +4,102 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E89B5C4452B
-	for <kvm-riscv@archiver.kernel.org>; Tue, 21 Jul 2026 23:07:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E1E85C4452D
+	for <kvm-riscv@archiver.kernel.org>; Wed, 22 Jul 2026 05:52:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
-	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
-	List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID:Mime-Version:
-	In-Reply-To:Date:Reply-To:Content-ID:Content-Description:Resent-Date:
-	Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:References:
-	List-Owner; bh=YIK2DXj7+rFPj2nALxH2UYt2+gBBFpPQrJ6gO8cBSRA=; b=nhFjXTajg+EOHm
-	sMAVx1HobBdjpypnTPRtNdelkWTPS57BYV76A4Piher5CGL/wBCICd+zNjg1RPXWIm8nwWWPAMPU1
-	ftDih+rZwPMcA/fykrL6M7aAuP/Ve6GIov/R+9PsKXfQbieoCmfkTZAYMKBCDzujKkMGadR9ZnC1n
-	MSfPD1HPba7YYo+VNL3f1OeBzzVokZWe2YJ4P1jZYcgBL/QDNUNqQ3A6paEFJ6x3qrh1X+WkoQ6Fs
-	WuIqJy+ZuoeOfzG7j/6VhACpgLYffTfLo93fYc6WOt4JFqkgllrZkujBRw2hURnuIukb7ppeqoG2/
-	HvWdGf3OH5CrXo8u9DtQ==;
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Message-Id
+	:MIME-Version:Subject:Date:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=w5zjx07xe1D4SJJC3pUOQU5IaUeUHKWioKbgY0znqWU=; b=Sau3gv3qQqYp8r
+	G8vVlphpkHEDE+2j2a+9HqZKThzhgD7BjqTfS/M4cGHeu0+P0JTT8zyKIEZEX//gKrrIMngm4pfAC
+	qJlqIaMMjUI5LEyBqYYeuFRLU5WnCcpuxJvUVNKtEo34ZClq4hSlTXfYxo0MuHDvfPeHPFmvgI7lk
+	7jkRmfqpa0FtDnXhwiJqHKYxg71VPTg1cRFD+zHzGZz6k+EF07peBstSE6sWyTkDb6S4YurljTNGI
+	wXjc8giosRhCb+RaVImbGKhJ/+YOkbrIQu+9klSkdbszh9KhuNZlmDttoqZcent1o4vF6FoHBU1ij
+	/P/xUe+BovX63Hq8ZM1A==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wmJYo-0000000AYCn-0JnA;
-	Tue, 21 Jul 2026 23:07:38 +0000
-Received: from mail-oi1-x245.google.com ([2607:f8b0:4864:20::245])
+	id 1wmPsK-0000000AwNZ-2CgL;
+	Wed, 22 Jul 2026 05:52:12 +0000
+Received: from mail-pf1-x433.google.com ([2607:f8b0:4864:20::433])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wmJYk-0000000AYCS-3yML
+	id 1wmPsG-0000000AwLX-159H
 	for kvm-riscv@lists.infradead.org;
-	Tue, 21 Jul 2026 23:07:37 +0000
-Received: by mail-oi1-x245.google.com with SMTP id 5614622812f47-49226201eb8so11347931b6e.1
-        for <kvm-riscv@lists.infradead.org>; Tue, 21 Jul 2026 16:07:34 -0700 (PDT)
+	Wed, 22 Jul 2026 05:52:10 +0000
+Received: by mail-pf1-x433.google.com with SMTP id d2e1a72fcca58-84a2dcede83so11754403b3a.3
+        for <kvm-riscv@lists.infradead.org>; Tue, 21 Jul 2026 22:52:07 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1784675253; x=1785280053; darn=lists.infradead.org;
-        h=content-type:cc:to:from:subject:message-id:mime-version:in-reply-to
-         :date:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=QXklq3z1zPJM73DGXfVs9Rwe/LHFVQt6fqyhM9xa818=;
-        b=al6rDsuHfvBzkjTSF0Wq4/dz2tNqGVAVvVQRpoAYNbfeT8Lddkea7YL5Yvn8LI9GeN
-         GRDBTPjOoPYkv5SuLk39f6JL4MkIOdl4ei9lE+bghhiasR7aD9qn3QRYSQ3706vK/k5b
-         d5kD9NdQAKlexXI3FhRBIhk4Ta1REunh4yD6+qP7sI9cq4l4+j2l7OAKPc5ztG+B2sM5
-         ZHylERNcCxLBfBcW/vqX6kWvKzJAMJ9Fd0kiP0DR5hfFTx76Usc4nYNrQBKs0lVJI9Fa
-         GciJzh+lDrfY44DgXE75GqagxEdmbizwaBLChbEuKhffNRMwG+8a4VQF4JbBcgKOsi5A
-         dCZA==
+        d=sifive.com; s=google; t=1784699527; x=1785304327; darn=lists.infradead.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :content-type:mime-version:subject:date:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=k8TjMER5gISFlQ4SyOMczlZr2aeQOkgr25LHVZl1LkM=;
+        b=mTYPAjxkMADpDyhVOACzo1u/h+mhA5C7q3mEDc0uqF4qjVMb40CvAtonMiwX2PQFmm
+         0Oj+XdG3bKweiMxiP75DPVjZgrfCIuVsCIWz22gcI1M4/MBH48iQF6uVJaWZ+bvvxHdW
+         y8QmrvuesaEYToFnMXW0+zGTCUTiWFOp7L3OeOBQAnY7g/dztBlxZcKVDLZruSabeKeM
+         FLQb7d0Tm8byfKyTldW8t1ZUMTi/ZixFqJdFd/oFVjzds6qHWUDZLw+K8HmRaAlJvQ71
+         NHrDgif1Lxh6XFLynJsuo4A4OcTs4F7tXMtWv4UJbHP+l/2MP1sD15uOFDqKD/03VlaE
+         T7AA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784675253; x=1785280053;
-        h=content-type:cc:to:from:subject:message-id:mime-version:in-reply-to
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+        d=1e100.net; s=20251104; t=1784699527; x=1785304327;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :content-type:mime-version:subject:date:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=QXklq3z1zPJM73DGXfVs9Rwe/LHFVQt6fqyhM9xa818=;
-        b=WVVTMW2pGUvgbDtG4SwrySpS+BFm4SEr0vhH5eAqDy3NJF1dVgdo+gqcmImlikwP7m
-         8eZOLRS20VfzUnz+NFifhab04agDU4+EXiOj/OsjGIA2sygmhKtWObssbJ+r9wiDRY5x
-         75fCovYircA+TC4228NQxtjk914IOmamFLrrN+e4vFmovakhsTbauXT+KNRH8a+lFdSO
-         DWeOfJoZ23EbUUpVQeaX29slArCov+XGo8TJa+9dgiZGMKZMcxjuWSM3V8D9F13w03zt
-         jAmOh1NNQHD+TGTAbAYlYuVJKhwviePqPS/Hx93Xz/ZtNzaPqN155Krtsi2VfQsi4VtK
-         iC+g==
-X-Forwarded-Encrypted: i=1; AHgh+RqRaUzUWO23arxgBJZKLaN1qw6PPTCpkbvgAn7IO5M64lMvCn8rPDzwehUseRtYCq5cEo4YF8uzOjA=@lists.infradead.org
-X-Gm-Message-State: AOJu0YyoZPUN8NKpFxOKdFQg+Y96fk37M32iIOWp1sAvD3oC1OqS/tR2
-	/uRXDVDbNtoWz5VWerx8xYLbL4myw4UolkqVgbe4AFJ2e/SEL9xr9+vTtvQoPSQTL2PkeBLbYy3
-	YFkchhiKT5qI8WdbdjaUUhUULJA==
-X-Received: from ilnt5.prod.google.com ([2002:a92:dc05:0:b0:503:9301:3c0f])
- (user=coltonlewis job=prod-delivery.src-stubby-dispatcher) by
- 2002:a05:6808:15a7:b0:4a4:25b4:a0be with SMTP id 5614622812f47-4a4d0344556mr13073948b6e.2.1784675253077;
- Tue, 21 Jul 2026 16:07:33 -0700 (PDT)
-Date: Tue, 21 Jul 2026 23:07:32 +0000
-In-Reply-To: <lxhagolfvr6w5h5xujrhq33pzx7hb6db5ihga46z6qn3dba4nx@q5b2fdclitqs>
- (message from Andrew Jones on Tue, 21 Jul 2026 10:58:08 +0200)
-Mime-Version: 1.0
-Message-ID: <gsnt5x2854cr.fsf@coltonlewis-kvm.c.googlers.com>
-Subject: Re: [kvm-unit-tests PATCH] Makefile: efi: preserve .dynstr section
- for LLVM objcopy compatibility
-From: Colton Lewis <coltonlewis@google.com>
-To: Andrew Jones <andrew.jones@linux.dev>
-Cc: pbonzini@redhat.com, alexandru.elisei@arm.com, eric.auger@redhat.com, 
-	kvmarm@lists.linux.dev, kvm@vger.kernel.org, kvm-riscv@lists.infradead.org
+        bh=k8TjMER5gISFlQ4SyOMczlZr2aeQOkgr25LHVZl1LkM=;
+        b=iR8A+z5a6f74mv6urZIZNEKw7ptgGfQUbvTd6A6xkLi22qjccWXJzzWpPDi+wdTiFv
+         JVR7pQg2H8f8Zufi1+5WvYibHlm/3D24BrtlJCwX6KJlWUhxeuaG1I83E8UvIdJDhIlm
+         PurJ7vhnmjEpxuou+F5JMt4KQzttvQbKTatoh1YJB2elFcwIR2BZtw0IA3nyKnDwrQgX
+         dd4m97otAPXFDxlABS+gJoYyDKxVZG1SP/LwINOLX+A+8ca9F6BpmKdpIEGg33fTFB4n
+         J9ZqqspxuCPZA5Kz8TUuIeMJTKOlZYxScOyImDmIvFfcVe7iyWWL5pdTn2LeN6hTqckn
+         1IkA==
+X-Forwarded-Encrypted: i=1; AHgh+RqArKoQiUGlka+Y63BL2Z3yZTih0vyvclXYGrPH9PFIucL9zaNHpf4qHH6SmqeDeow+ZAVA+/UOMPY=@lists.infradead.org
+X-Gm-Message-State: AOJu0YzXIJURzdhb2GbdFDMdFriY1vVLfHpZS1UrJWKWwyORvw4qRTMw
+	nYOBByEgvuGjMuRlAzCOvR6EiSazwjgxBHC2Xd6uT6MDuJT2JfXSlUskCR8W0NJ1ZKs5/Qc/3eN
+	YUslP
+X-Gm-Gg: AR+sD13c1pe+qFeNQapRKY5BS+BQXnE/yEVB9LeQWKsqd0nAtFGuJnUiWYGOkGfxWwj
+	sR/Guze/jNjJeoFS1gr2oX1xJHIoxT5hMcGq3xfgWCVScEwh5UaAE+KxfNsg6wpz3bpFVGt2IJc
+	kDgyC2O0jFLwk21Y8nRivTjHkY9QsKm/epESu5wRMxqfLPNTnpuVeHIs0CQYd5s5W9GsB+UyoZ+
+	Ak5EF0U0BYgXUzyzd1RjYjix3nW+g4sp03HDulWTDdfbBGzcsvLUdNo0y8/NuYc1A1Wsjk0zCxT
+	s39FeuSk2JX7CMB6WaVphYra0CTFlaDYQYRCUvA8t7Lr9wf6oTapjNdoIEY+Rql9WeT2Ya0kxGc
+	nwrBySii9d9W5lhn/b6gNRoaDWWJmme0HBBvsJ0UCPnI/7YAaq7q5Slwnm9be0aR6Qg26ALtWK2
+	ytmvNj3WLBlP9nafFx3tN6aw==
+X-Received: by 2002:a05:6300:95:b0:3c3:75ff:95b6 with SMTP id adf61e73a8af0-3c3ad7a1c86mr22612818637.31.1784699527388;
+        Tue, 21 Jul 2026 22:52:07 -0700 (PDT)
+Received: from sw07.internal.sifive.com ([4.53.31.132])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3147e081985sm5133138eec.23.2026.07.21.22.52.06
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 21 Jul 2026 22:52:06 -0700 (PDT)
+From: Yong-Xuan Wang <yongxuan.wang@sifive.com>
+Date: Tue, 21 Jul 2026 22:52:02 -0700
+Subject: [PATCH v4 1/2] KVM: RISC-V: Clear former VCPU cache on
+ virtualization disable
+MIME-Version: 1.0
+Message-Id: <20260721-kvm-cpu-pm-v4-1-146bf942547d@sifive.com>
+References: <20260721-kvm-cpu-pm-v4-0-146bf942547d@sifive.com>
+In-Reply-To: <20260721-kvm-cpu-pm-v4-0-146bf942547d@sifive.com>
+To: Anup Patel <anup@brainfault.org>, Atish Patra <atish.patra@linux.dev>, 
+ Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
+ Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, 
+ =?utf-8?q?Radim_Kr=C4=8Dm=C3=A1=C5=99?= <radim.krcmar@oss.qualcomm.com>, 
+ Andrew Jones <andrew.jones@oss.qualcomm.com>, 
+ Nutty Liu <nutty.liu@hotmail.com>, Jinyu Tang <tjytimi@163.com>
+Cc: greentime.hu@sifive.com, vincent.chen@sifive.com, zong.li@sifive.com, 
+ kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
+ linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, 
+ Yong-Xuan Wang <yongxuan.wang@sifive.com>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1784699525; l=2593;
+ i=yongxuan.wang@sifive.com; s=20260424; h=from:subject:message-id;
+ bh=VCtdpA7YF5advtu0bupY3qxS+FfCYS20j33S3YKJEL0=;
+ b=JVqpzramZxn2NBonw83b4SpU8QHsxBwc5n13yl9dz3mE7zfum5e6pHLRs/HTawKeBJnVx9mIq
+ jRg8U/NpPlIAX207kgtiWv3SWtVQJ5M8q4R3IGkTs1fF02pBhi3t6i3
+X-Developer-Key: i=yongxuan.wang@sifive.com; a=ed25519;
+ pk=+8NCHB1ZJvZthQAmZspOAaqjo+/snaW8mFSiDx45HxY=
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260721_160735_008684_46D94BC7 
-X-CRM114-Status: UNSURE (   8.57  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20260721_225208_308798_792CA108 
+X-CRM114-Status: GOOD (  12.24  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -86,39 +111,83 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"; DelSp="yes"
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Thanks Andrew!
+When a CPU is taken offline or enters deep idle states, hypervisor CSR
+state is lost. The kvm_former_vcpu fast-path optimization caches the
+last VCPU that ran on each CPU to avoid expensive CSR restoration when
+the same VCPU is re-scheduled on the same CPU. However, if this cache
+is not cleared when CSR state is lost, the next VCPU entry will
+incorrectly skip CSR restoration, leading to corrupt hypervisor state.
 
-Andrew Jones <andrew.jones@linux.dev> writes:
+Add kvm_riscv_clear_former_vcpu() to invalidate the per-CPU cache and
+call it from kvm_arch_disable_virtualization_cpu() to ensure proper CSR
+restoration after CPU offline or system suspend events.
 
-> On Thu, Jul 16, 2026 at 05:33:15PM +0000, Colton Lewis wrote:
->> When building EFI binaries with llvm-objcopy, keeping sections with
->> '-j .dynamic -j .dynsym' without '-j .dynstr' fails with:
+Fixes: 1323a5cfe52c ("KVM: riscv: Skip CSR restore if VCPU is reloaded on the same core")
 
->>    llvm-objcopy: error: 'arm/spinlock-test.so': section '.dynstr'
->>    cannot be removed because it is referenced by the section '.dynamic'
+Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
+---
+ arch/riscv/include/asm/kvm_host.h |  2 ++
+ arch/riscv/kvm/main.c             |  2 ++
+ arch/riscv/kvm/vcpu.c             | 11 +++++++++++
+ 3 files changed, 15 insertions(+)
 
->> Include '.dynstr' in the list of preserved sections across
->> arm/Makefile.common, riscv/Makefile, and x86/Makefile.common so that
->> EFI binaries can be built cleanly using llvm-objcopy.
+diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
+index 60017ceec9d2..808b4ee1bd10 100644
+--- a/arch/riscv/include/asm/kvm_host.h
++++ b/arch/riscv/include/asm/kvm_host.h
+@@ -319,6 +319,8 @@ bool kvm_riscv_vcpu_stopped(struct kvm_vcpu *vcpu);
+ 
+ void kvm_riscv_vcpu_record_steal_time(struct kvm_vcpu *vcpu);
+ 
++void kvm_riscv_clear_former_vcpu(void);
++
+ /* Flags representing implementation specific details */
+ DECLARE_STATIC_KEY_FALSE(kvm_riscv_vsstage_tlb_no_gpa);
+ 
+diff --git a/arch/riscv/kvm/main.c b/arch/riscv/kvm/main.c
+index 0924c75100a2..350e4f097d6e 100644
+--- a/arch/riscv/kvm/main.c
++++ b/arch/riscv/kvm/main.c
+@@ -69,6 +69,8 @@ void kvm_arch_disable_virtualization_cpu(void)
+ 	csr_write(CSR_HEDELEG, 0);
+ 	csr_write(CSR_HIDELEG, 0);
+ 
++	kvm_riscv_clear_former_vcpu();
++
+ 	kvm_riscv_nacl_disable();
+ }
+ 
+diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+index cf6e231e76e2..e48338f907f4 100644
+--- a/arch/riscv/kvm/vcpu.c
++++ b/arch/riscv/kvm/vcpu.c
+@@ -26,6 +26,17 @@
+ 
+ static DEFINE_PER_CPU(struct kvm_vcpu *, kvm_former_vcpu);
+ 
++void kvm_riscv_clear_former_vcpu(void)
++{
++	/*
++	 * Clear the per-CPU former VCPU pointer because hypervisor CSR state
++	 * will be lost. This ensures that the next VCPU entry will properly
++	 * restore all CSRs instead of incorrectly skipping CSR restoration
++	 * via the fast-path optimization.
++	 */
++	__this_cpu_write(kvm_former_vcpu, NULL);
++}
++
+ const struct kvm_stats_desc kvm_vcpu_stats_desc[] = {
+ 	KVM_GENERIC_VCPU_STATS(),
+ 	STATS_DESC_COUNTER(VCPU, ecall_exit_stat),
 
->> Assisted-by: Gemini:gemini-next
->> Signed-off-by: Colton Lewis <coltonlewis@google.com>
->> ---
->>   arm/Makefile.common | 2 +-
->>   riscv/Makefile      | 2 +-
->>   x86/Makefile.common | 2 +-
->>   3 files changed, 3 insertions(+), 3 deletions(-)
+-- 
+2.43.7
 
-
-> Pushed.
-
-> Thanks,
-> drew
 
 -- 
 kvm-riscv mailing list
