@@ -4,154 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 235F1C44524
-	for <kvm-riscv@archiver.kernel.org>; Thu, 23 Jul 2026 07:59:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 12714C531CB
+	for <kvm-riscv@archiver.kernel.org>; Thu, 23 Jul 2026 08:10:49 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
-	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
-	List-Unsubscribe:List-Id:MIME-Version:In-Reply-To:From:References:Cc:To:
-	Subject:Date:Message-ID:Reply-To:Content-ID:Content-Description:Resent-Date:
-	Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Owner;
-	bh=QUVlfEvoGaUegKKhMOk+IgRwB2KLE4WMAdBhMEmaewE=; b=tuKYIDa96nnISuP28ZtqIJ+8g9
-	UgXhGTVq866Jfcxv0Wy5gzeow5lI9lD6yjTiBZ3yaEh1TsVZ0BJc66woQlRt1d5XMZ2TsMY/hKLQr
-	UaK5WpnERQ9obvT+SkFuSy2M95jrtpa37FF2cKqK/6XJTBFgXP29jxy8ZMfEc6V0DcK086F/vDuBT
-	MifuuI0gT0LJAyFe8yLZtfeV1mvgTZ9rkyBU/WdYqINHbjHtd4PgUmG5oJaA9sXYLDpriLshuaPJd
-	JQG/4dqXc7BQ9izHQUKBfizY48NM2KRFnlYACsyNHNQLcu1ZqGV7exE9bps9mhXrKNHhkgI6Zv3tI
-	YBX/NNcw==;
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=JtRLV35JbaLP2rnSe7pb1ziw7kn7JFdvNqv9CogzPmY=; b=p309qmvNmP9Hdd
+	SnvIBkSAEZ5KzA4Pgb5HH6jxND5CF9lLs59Qm83UPLUCalH0wjuxxbQSGzDjlKw88MMwGdAM4sA3j
+	shCZ2e7whqSQSRXjo81Q+4UnQIehS1M9JIci+8lk6ebMFpOpD38LoN9oeLg3E40KFNOKtLE1yGYON
+	LFsA+94KRaEBQxf+bQ8OltzsY+ll77UF1BmtA3QOVWBY+jvwsG0EKpbO1+9UH1XDg0iSD+wziprMI
+	nhkB4C+90ouTohlKZIEJGG0a+/bYOuHBVjNRKH9c+AJc9vYxecCc8TCjMFfBDCm5oWrOm8eP9kbN5
+	xxQxAeV6ZK1pM2XyQ9BQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wmoKi-0000000DgmW-32Hu;
-	Thu, 23 Jul 2026 07:59:08 +0000
-Received: from mail-japaneastazolkn19012057.outbound.protection.outlook.com ([52.103.43.57] helo=TYPPR03CU001.outbound.protection.outlook.com)
-	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wmoKf-0000000Dglt-2rUF;
-	Thu, 23 Jul 2026 07:59:06 +0000
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=aRV0uAq/zJ5LO2cKmMBarL81tU+/783aeqnQHl81F2ErpUxi5ue+jUxk5g4WywLAGGcrBkHDJyRgbKbEs1JNeET8+W24Ha8lR4y0DJ/etVI4LL1c2KX/fBE4gCkSHplsJrK4akQn3JROzjF3d2wTCPRZVsktamXYChgS+QSPcbNt40d8hYxzjoNxAtcJW4phwVHVnVBFCK/zxfNXIfV+05UnFdgtso5zzg+GSZuQrnJyrZouQ7mVd5MmmYhxponCWH7h1evyqIrtT3/Dkylya5o4J+zNu5BGSrBlldH16jjSl1+F6p3tdDM/u531FsnaTSjSqGq9W49+pZ8T82PbVA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=UTWppCNywUMJwMJDMxU1XaTV1bw/7tF//tybjGEQ6/A=;
- b=JvRKpFvxYKklE1lQ0ExjSwkDGbCKGe7tw+db1mxTtVx++6YtI+dsXNYYcu2cZlk9n4pSFqnVHArRzYGLf+hdj1V/YVXsRwIycYjtHv6qCtXkbb5ap6A4sVDg9dusJTtBe9y4GufnhlG7GV/3A2alm6s9QqzhK7HKhYTiaXIsKgdO86nmXTJ9TiOqLqXehUKweDX26vY4zhclXCwix5oyOkqmmOZEsArgNth/rvsh7au4KIcHZdR/iR57npiCAY+ssJolcFcth+5ZGbqsEIKcHu42rsUN6gnHUfZwj4rAETnjVd9Em5NkYfwXULK2yjDQohGYC9FehY3GH6xIEKec7A==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
- dkim=none; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=hotmail.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=UTWppCNywUMJwMJDMxU1XaTV1bw/7tF//tybjGEQ6/A=;
- b=SgPNuBj0CRiBbU+qhNVPwDaiC1+V3HjTvKZlZmhernY+uqQeigt03AWNeciWEHSmiZqqPAzX5b3yrDpcZeQAlvjL/lxZvgN/24dJo3WrmEwd+Tp0CVkzpBOphk2A0dDg6ngjDhq3QBAGB7nf4UeVSFO7yizRyzq7PAuSVx0XDf+6mV+ns8vNjBbRE2NcQWqLWK5xfvMuRJjAleranlDD2Qxj5K1nhTkK5LcZSxkuOhstMQc8U7S+UW92Eog1bM+RWyREvInqslqWZmHhTpMyj5PAl3YbrQC6i/xjgHU369QuT5XUyeTCQIIZJ/Ht0jWrM4W8cz4hQDLI4uRSTNk3eg==
-Received: from SE3PR04MB8922.apcprd04.prod.outlook.com (2603:1096:101:2e9::7)
- by KUYPR04MB9536.apcprd04.prod.outlook.com (2603:1096:d10:99::17) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.202.16; Thu, 23 Jul
- 2026 07:58:51 +0000
-Received: from SE3PR04MB8922.apcprd04.prod.outlook.com
- ([fe80::3450:f139:5238:8f58]) by SE3PR04MB8922.apcprd04.prod.outlook.com
- ([fe80::3450:f139:5238:8f58%5]) with mapi id 15.21.0245.009; Thu, 23 Jul 2026
- 07:58:51 +0000
-Message-ID: <SE3PR04MB8922D15851D5F0167E65F63AF3C02@SE3PR04MB8922.apcprd04.prod.outlook.com>
-Date: Thu, 23 Jul 2026 15:58:40 +0800
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 1/2] KVM: RISC-V: Clear former VCPU cache on
- virtualization disable
-To: Yong-Xuan Wang <yongxuan.wang@sifive.com>,
- Anup Patel <anup@brainfault.org>, Atish Patra <atish.patra@linux.dev>,
- Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
- Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
- =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <radim.krcmar@oss.qualcomm.com>,
- Andrew Jones <andrew.jones@oss.qualcomm.com>, Jinyu Tang <tjytimi@163.com>
-Cc: greentime.hu@sifive.com, vincent.chen@sifive.com, zong.li@sifive.com,
- kvm@vger.kernel.org, kvm-riscv@lists.infradead.org,
- linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org
-References: <20260721-kvm-cpu-pm-v4-0-146bf942547d@sifive.com>
- <20260721-kvm-cpu-pm-v4-1-146bf942547d@sifive.com>
-Content-Language: en-US
-From: "Nutty.Liu" <nutty.liu@hotmail.com>
-In-Reply-To: <20260721-kvm-cpu-pm-v4-1-146bf942547d@sifive.com>
-X-ClientProxiedBy: SI1PR02CA0024.apcprd02.prod.outlook.com
- (2603:1096:4:1f4::12) To SE3PR04MB8922.apcprd04.prod.outlook.com
- (2603:1096:101:2e9::7)
-X-Microsoft-Original-Message-ID: <6f3ada0d-4dd2-4419-bfb3-7dbc4e80295e@hotmail.com>
+	id 1wmoW0-0000000DhVi-1dHA;
+	Thu, 23 Jul 2026 08:10:48 +0000
+Received: from foss.arm.com ([217.140.110.172])
+	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
+	id 1wmoVw-0000000DhV0-0sMA;
+	Thu, 23 Jul 2026 08:10:47 +0000
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id BD4851477;
+	Thu, 23 Jul 2026 01:10:38 -0700 (PDT)
+Received: from e129823.cambridge.arm.com (e129823.arm.com [10.2.213.3])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id E3A113F86F;
+	Thu, 23 Jul 2026 01:10:40 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1784794242; bh=VwswH8JhWrZQe5Rh/s4NWY+0YHgxDEZK0fxwcE3tmC4=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=ZsKSCke41l+piIezCdsjVMCTycpwyBxBfv7cVpgUUcClGAM9ujUfUEk2EpanfRxZJ
+	 acXhRw1TtHmQygGi/rOp++vlaGKB/odW5HbrUODJQ29zMZJuEBsamNuoJFYZmPvDIo
+	 2Cs26OmAVBZMccc0uflFY2F7f+U0rPR2u2lp9iGQ=
+From: Yeoreum Yun <yeoreum.yun@arm.com>
+To: David.Hildenbrand@arm.com,
+	david@kernel.rog
+Cc: yeoruem.yun@arm.com,
+	Yeoreum Yun <yeoreum.yun@arm.com>,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	loongarch@lists.linux.dev,
+	linux-mips@vger.kernel.org,
+	linux-arch@vger.kernel.org,
+	linux-mm@kvack.org,
+	kvm@vger.kernel.org,
+	kvm-riscv@lists.infradead.org,
+	linux-riscv@lists.infradead.org,
+	linux-openrisc@vger.kernel.org
+Subject: [INTERNAL REVIEW] [RFC PATCH v3 01/20] mm: change behavior of pXdp_get()/pXd_page() in compile-time folded pgtable
+Date: Thu, 23 Jul 2026 09:10:16 +0100
+Message-ID: <20260723081036.1461495-2-yeoreum.yun@arm.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20260723081036.1461495-1-yeoreum.yun@arm.com>
+References: <20260723081036.1461495-1-yeoreum.yun@arm.com>
 MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SE3PR04MB8922:EE_|KUYPR04MB9536:EE_
-X-MS-Office365-Filtering-Correlation-Id: aad5ef2e-2d8d-47ed-9acd-08dee8903b35
-X-MS-Exchange-SLBlob-MailProps: obhAqMD0nT+6TxoHw5fNkboUl/ASnSn2OBesNPSjYbOUimaFtzI2zfAiP6GJs9T0ryKbkVVJPV9UPnz/EpauxJrPopMcHs7UelwnhCDF2/s/NJZA4n7UOJuLOGmaCHZO4K7zvW0Kys2cbR0rkCUutBGMeMeCL/5pm3cc7KX12v1oLgWo4vUZvm3U7qqbJSuaMKGHLsN5T0Thrrz/TWAiDSt4KLJUFCmwVHhSa9cfgUJOg5l1cpzqiWTFmUdk89ljka+wQQkBy0xRU4yZ28ddlbia1yRCm9gL6ArdgoVq1iFG+2jCUeNUOeL75G7/KRIOKL/xTmHi7fWP4l0Ec/x101iABjLxs2YRtnm3Sv69cDvUZEiUCxjOjWQexynQbQK6xivqNIZsijcmddaY/tUPRr/QEhdGlEF9/k5WLyRNJzT3FinAxIFOWthRgMPPCNFfb2GtyLho/cZzVmb72Y9twNI09YhejD9tcfIzQgMuGAktOq0QeQDFvLHcj4jj480iZ/AQt8VWLBCVxSJU+Fk9hWj+1A1mZxZ7fbz03LWK81kiGoHalzti0EfojcaJKbOBVfTLvfl/ohggSk/CMVyhax3WEMwnQuzPJ41B0A9MPgb5wG621d620L0LjI/KVvwa9W+FJFi93kK2CXMqC3mTpnAYVRWW7+pcgWN1pNoAd2lsBq6x1nddhpIN6gi9ZIh+g+ZSRcKm3FMRUJolJX3PcUA4CmYKyPiloWp1ElJN50bY0Ns0WIv15s+S1R3x5uU9lo7as+LS3t9OhVJ+/ZJH4a5Rw1BZhpG7/b2SLbk+sXb624MQnCX82P6P1XLrlSaE
-X-Microsoft-Antispam: BCL:0;ARA:14566002|22121099003|15080799012|55001999006|6090799003|8060799015|19101099003|39105399006|22091999003|4140399003|5072599009|19110799012|25010399006|24121999003|23021999003|40105399003|41105399003|26121999007|440099028|3412199025;
-X-Microsoft-Antispam-Message-Info: =?utf-8?B?cnpkVnlyS2hIRms2MllLeFhzRlBCdUQ4VGkxVE1DdVF2NVBOZVp5dWNNRHJB?=
- =?utf-8?B?QTJOV0N0RFF6dkZkcEd0a0szc3g4NUNNNXBPLzR4ZzlsRjBXZ2k5Q1JaK1Vq?=
- =?utf-8?B?MHJNQmpOMUxlRkFQZFByZFBNTUczcFRzU0E3TkpReFFrU0JHT09sbGtjRmhW?=
- =?utf-8?B?TFJxNzNXWTdhTGhNNnRUMWlxbnR5TXBGVUl2c3BhbEFDTWRJVFBFQ01TcEww?=
- =?utf-8?B?ZHlwL2NUQ29scitoZnF4YTBMT1Z6bGxFY0ZzYW1yQmFxNW1KM0x2YnFCdTJG?=
- =?utf-8?B?czFOaGNFSXU5S0RiL0ovMm44SXZybzJlaVlLZ0VCb2dBSTYwMHdCVUdjVjNE?=
- =?utf-8?B?NWRNYmNxMTVmalZQV1FyUmNiVFZsVEQ5QldheHgrWUdxVDlqNkVoSlJkeENL?=
- =?utf-8?B?ck5xaG4rSURqbUUxM3ZWeWIyMEJ1S2xuSnJ4ZkpUODQ0QnRJMlJwcXIwaEgz?=
- =?utf-8?B?OWVqQ2h1SnhXQ3pCUDFNWHo3SVNacm40by9GQ0V2UlFpNXBOd1ExR0VWVGVQ?=
- =?utf-8?B?TzFuMUd3N3EzVEVldE4zWVROMVVyWEtpTFowQlRUVUpqeFlLZ0NvSVBtUE11?=
- =?utf-8?B?VUVwZnlDNHVkSUZmZm1tRjF6UW9rZWFRMXZaYVNKOVJ1NHJ6eVVoTUdycCt6?=
- =?utf-8?B?YXlhb0U4aFc3czd0SnMrRVZvSnl0MWc5bDhvYkdRc2VPVlJZT256Z09ia3Iz?=
- =?utf-8?B?MGVzc1JFb3BsTXRnM0JhNWtUeURJYmxVUVlibnpaVzhpMUpNMFN0ODl5KzVF?=
- =?utf-8?B?RE14NzBvYVFwRlBReTNVTVh1cU5zYlBDYTZrU1dIRm9ZQnZNc0FycTQ0b1ln?=
- =?utf-8?B?aU50YU1NcTJtNUJmbCtKRkVxaCs1bWQ5L0JWRkpycWZmSG5JaThJd01EMWtQ?=
- =?utf-8?B?Q2wyQVQzK3hoTHFNajVQWHBqQnYvK1dwbEtwUHNURGlYUDVpTWhIZmhUYnVn?=
- =?utf-8?B?SXBQWm9icU9oVXZ5eTBjZFh0YU1UOW0yNldXSkFjTHJxWVZVNXVWZFNtdXA1?=
- =?utf-8?B?TXU4R1h3T1RYbW52bGpqTGcvdXpQT0E0TWlycVpMeHhqUWxrd1M5MS9kV3lL?=
- =?utf-8?B?V2dPZkR2Z1VkaWoxWGhBV040WkQ5N2NqV0Erb09xMUpoN0FKbGxmN28wMnh6?=
- =?utf-8?B?Zm9BZWk4SXFJRUNUNWUxMXdMbDNSK2paaHkzY3M5RmdpYm5UaUs0VnFaSE13?=
- =?utf-8?B?aFNJenhDSW5kNG5pSExSK0ZIU25KMkVVZEhwUVVjOCtXMEtvK1lNWFU5QmFM?=
- =?utf-8?B?SzFmSGNML053K01WVW1hU2VKQmJodHNYbmFqb2lWeVh2MjY2MTVVWlRwR3VM?=
- =?utf-8?B?elI1Z1dFMVEzelRiNWc0eFZ3cTV5SVFKRStXSjZNeXRnQ3JCSUVPcnlSZnZL?=
- =?utf-8?B?QllGOHpNM0JJZTU5YVR2UHdLUExuZ3J4TEpQWW4wRm9FaEtzbTEvbXUrS25Z?=
- =?utf-8?B?QnpZei9VMFJNcXdhQWk3OFZERjA5ai9vNk05Yll0eTBoQ2x2Y1VmRFJYVGVZ?=
- =?utf-8?B?aGZtdzZ4ZVAvQ0d6dDNSQkhHeGtDdVdWOG0zMHE1blhma3NYTFE3T2Jha1hC?=
- =?utf-8?B?dXBodz09?=
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?T1NWOWIvKys3Rk1uOVBqRzhMVE1LMkdoTDBNamlsemVlQTlLSW1aOVRQbXZ0?=
- =?utf-8?B?bzNJUHVWdElnSGltQ2RwNVgzUTVnZWh2T0JPSmwvNXNKU2RNbGFaa20yWC9p?=
- =?utf-8?B?bjF4Q1M0TmR1UGRlcTJ5YzN2dHhGUktZd2NyUmFUSG5SSktQZXJWN1JDbTlJ?=
- =?utf-8?B?TU1FWSttMjVGNGlnejR6aXBvQjRVU29CTVA5T01UeGM1bHYwTFZ1Q1ZGay9j?=
- =?utf-8?B?NG1EbVpHZE8zMG1KTGZyemVzUFdaVnpMRXFkakRldU41V2dMZVpGTmN0dE52?=
- =?utf-8?B?ZWdpSElscUJpWkRMdEJYeXpGR2FUcDNub1ZuSytKVDF5anM4cFFlZWUrQU1q?=
- =?utf-8?B?aEMzamhQQ041NkdGb2FrOUdUS1l0M1lLWGNGSTVLWWFNNDlNdndSOVVWa3dH?=
- =?utf-8?B?SVJTcVhneEJ4djg3QXFBKzNKclc2dXpvNDJqeStCdVZsREh4OGFZb0tWK3VU?=
- =?utf-8?B?T29rVjJoT21QR1dkSWlIeFc4VUtFK0F6VFlYYi9mY09SNHBBZjVpZEtiWnFh?=
- =?utf-8?B?NU5QWnY1WXU4QWJIRzRnMml1R0FLYWpSN3JUaXhxZE9EY0RjdFVLMmFQQkpH?=
- =?utf-8?B?R3U2WEI0Nmp0QThXL3J5TDhXNGoyZjhWL3JrYjhxem1rTnVYa2tuVFNXMElu?=
- =?utf-8?B?dGRnU0U5aTJlZWNpYWJIUkNzWlhLdUlWaWxmVm1VV1YwakorOFlBbFBkT2w3?=
- =?utf-8?B?NUFudDBHWStLd0NNNXpZSFBwUi9rUjNDRmJXRFFQdEt4Z093THFZNUtleWFE?=
- =?utf-8?B?cDA2YTgwRGNBdVJSVWdneC83RzJjbEZ6YlBuTnNyMHZzd3Y3bXdSZm10dnpL?=
- =?utf-8?B?N21kYTQxNmdKdVZkK1ZvYzVaTEc1Nm5ZbWgrUnhWRXFhVml0KzB4SFd6UXJJ?=
- =?utf-8?B?VUo5L3poTnhQaG8zeWRxU21ud2Fzb29xM04vSStPTktSU0hXVnpMQ3gvU0RC?=
- =?utf-8?B?QllPK0doYkZsTWpPS21YSk9aTUZQNVNQMjBFcFNqVGhQeldyZW5Wa01UWFdo?=
- =?utf-8?B?SytuYlA2a0dFM1RGaUFCRmg5Sm50a3diUURRd3oxYjM3YW1pSUQ1WnFWRGph?=
- =?utf-8?B?YXFMakpJQUo0aTA1L0V5bng1WUhFNzVrbzl3YWk4aENvVVltZ1ZwN3VvTWt6?=
- =?utf-8?B?SGdscGprMHBUd0l6ZnhQbEhSUmwxNE1KcDZWSTAyajEzSEhJdEdkQkpQdHFV?=
- =?utf-8?B?elVGMk91ZUVSbEZvOFVkMS9XTmtxNU1nUDQ4OG11SWM4dVhQU0tuc3NMeW1K?=
- =?utf-8?B?UVNRbmhtT0pGZkwyOGJ5b1BaQXhxbXI2djBVbWwxUzY4RGV5RnZYYmx5Y3hC?=
- =?utf-8?B?d05qN2NlVGdGcVlJOHlWZlhXaG0vWUE0UFNJL3kyK0xOMVN5aU9iSGg5M0tw?=
- =?utf-8?B?MnZjMG1GS2tEZ3puVkpVbWV2eU9vSGZVM3ZYTXp5V1lmNEt5REM0bVlhSzVB?=
- =?utf-8?B?MTNrK3NBL0c2TWJ1aVh4V2RYVUNHbmlSbWFzTHdUbDMvQk5UU1JuYlR2WXNQ?=
- =?utf-8?B?SUoranN5eGw0Rmd4bURVczd4MXc1cXRaWFplNkxRbGNSdXg0eHhnSnlzRS9m?=
- =?utf-8?B?R1BGL0hPblJSaDMzU1p4b0lBWWpLTkx0UjUzMWRSZ2VPOFBoMG9xak9ZeWVJ?=
- =?utf-8?B?RVNXY2RHTFlGRHgya0RQOVBiNy9NUFVPMUh1aWFzRk53ampxazJrT1RrYk1E?=
- =?utf-8?B?RjJNTlBuVUJsSTU0VFdjSXBtYXhZWXljeUZUdWxNR2tpMGxtcWlWUzVQckR2?=
- =?utf-8?B?MGR0emRVVDZpSHdqV2VORmFFNmVmZy9rY3ByT1ZGQVFEUnRjK2c4cTNRMDhX?=
- =?utf-8?B?Ylk4ZDJTYk5WM1lvL1dYZ3pMLy9JdGdwaEFnL3BWc01XbUZLNW81TEQ4UGdY?=
- =?utf-8?Q?rYUpk/6h2687Z?=
-X-OriginatorOrg: sct-15-20-9412-4-msonline-outlook-c3e7a.templateTenant
-X-MS-Exchange-CrossTenant-Network-Message-Id: aad5ef2e-2d8d-47ed-9acd-08dee8903b35
-X-MS-Exchange-CrossTenant-AuthSource: SE3PR04MB8922.apcprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 23 Jul 2026 07:58:51.3851
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
-X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: KUYPR04MB9536
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260723_005905_859551_634DE7BB 
-X-CRM114-Status: GOOD (  19.19  )
+X-CRM114-CacheID: sfid-20260723_011044_422756_F0B1B368 
+X-CRM114-Status: GOOD (  20.66  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -163,86 +74,220 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
+Using ptep_get() and its counterparts in common code is suboptimal on
+kernel configurations with generic compile-time folded page tables.
+By default, ptep_get() and its friends expands to READ_ONCE(),
+forcing the compiler to emit a load even when the value is not used afterwards.
 
-On 7/22/2026 1:52 PM, Yong-Xuan Wang wrote:
-> When a CPU is taken offline or enters deep idle states, hypervisor CSR
-> state is lost. The kvm_former_vcpu fast-path optimization caches the
-> last VCPU that ran on each CPU to avoid expensive CSR restoration when
-> the same VCPU is re-scheduled on the same CPU. However, if this cache
-> is not cleared when CSR state is lost, the next VCPU entry will
-> incorrectly skip CSR restoration, leading to corrupt hypervisor state.
->
-> Add kvm_riscv_clear_former_vcpu() to invalidate the per-CPU cache and
-> call it from kvm_arch_disable_virtualization_cpu() to ensure proper CSR
-> restoration after CPU offline or system suspend events.
->
-> Fixes: 1323a5cfe52c ("KVM: riscv: Skip CSR restore if VCPU is reloaded on the same core")
->
-> Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
-Reviewed-by: Nutty Liu <nutty.liu@hotmail.com>
+This issue was recently reported by Christophe Leroy [1] for ppc32
+preventing futher code conversion to ptep_get()/pmdp_get()/... helper
+and the same behavior can also be observed on arm64 when built with
+2- or 3-level page tables
 
-Thanks,
-Nutty
-> ---
->   arch/riscv/include/asm/kvm_host.h |  2 ++
->   arch/riscv/kvm/main.c             |  2 ++
->   arch/riscv/kvm/vcpu.c             | 11 +++++++++++
->   3 files changed, 15 insertions(+)
->
-> diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
-> index 60017ceec9d2..808b4ee1bd10 100644
-> --- a/arch/riscv/include/asm/kvm_host.h
-> +++ b/arch/riscv/include/asm/kvm_host.h
-> @@ -319,6 +319,8 @@ bool kvm_riscv_vcpu_stopped(struct kvm_vcpu *vcpu);
->   
->   void kvm_riscv_vcpu_record_steal_time(struct kvm_vcpu *vcpu);
->   
-> +void kvm_riscv_clear_former_vcpu(void);
-> +
->   /* Flags representing implementation specific details */
->   DECLARE_STATIC_KEY_FALSE(kvm_riscv_vsstage_tlb_no_gpa);
->   
-> diff --git a/arch/riscv/kvm/main.c b/arch/riscv/kvm/main.c
-> index 0924c75100a2..350e4f097d6e 100644
-> --- a/arch/riscv/kvm/main.c
-> +++ b/arch/riscv/kvm/main.c
-> @@ -69,6 +69,8 @@ void kvm_arch_disable_virtualization_cpu(void)
->   	csr_write(CSR_HEDELEG, 0);
->   	csr_write(CSR_HIDELEG, 0);
->   
-> +	kvm_riscv_clear_former_vcpu();
-> +
->   	kvm_riscv_nacl_disable();
->   }
->   
-> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-> index cf6e231e76e2..e48338f907f4 100644
-> --- a/arch/riscv/kvm/vcpu.c
-> +++ b/arch/riscv/kvm/vcpu.c
-> @@ -26,6 +26,17 @@
->   
->   static DEFINE_PER_CPU(struct kvm_vcpu *, kvm_former_vcpu);
->   
-> +void kvm_riscv_clear_former_vcpu(void)
-> +{
-> +	/*
-> +	 * Clear the per-CPU former VCPU pointer because hypervisor CSR state
-> +	 * will be lost. This ensures that the next VCPU entry will properly
-> +	 * restore all CSRs instead of incorrectly skipping CSR restoration
-> +	 * via the fast-path optimization.
-> +	 */
-> +	__this_cpu_write(kvm_former_vcpu, NULL);
-> +}
-> +
->   const struct kvm_stats_desc kvm_vcpu_stats_desc[] = {
->   	KVM_GENERIC_VCPU_STATS(),
->   	STATS_DESC_COUNTER(VCPU, ecall_exit_stat),
->
+e.g) perf_get_page_size() in arm64 with CONFIG_PGTABLE_LEVEL=3:
+
+00000000000052a0 <perf_get_page_size>:
+    ...
+    52dc: d53b4234     	mrs	x20, DAIF
+    52e0: d50343df     	msr	DAIFSet, #0x3
+    ...
+    52fc: d35e9a69     	ubfx	x9, x19, #30, #9        /* pud_offset_lockless() */
+    5300: f9403508     	ldr	x8, [x8, #0x68]
+    5304: f869790a     	ldr	x10, [x8, x9, lsl #3]   /* pudp_get() */
+    5308: f90007ea     	str	x10, [sp, #0x8]
+    530c: f8697908     	ldr	x8, [x8, x9, lsl #3]    /* pudp_get() */
+    ...
+    5360: 90000009     	adrp	x9, 0x5000 <perf_prepare_sample+0x548>
+    5364: 92746908     	and	x8, x8, #0x7ffffff000
+    5368: d3557675     	ubfx	x21, x19, #21, #9       /* pmd_offset_lockless() */
+    ...
+    5394: f8757ac8     	ldr	x8, [x22, x21, lsl #3]  /* pmdp_get() */
+
+Though PGTABLE_LEVEL=3, since the pudp_get() still remain with
+READ_ONCE(), there's redundant load for the pud which is folded.
+
+To prevent generating suboptimal code, make pXdp_get() return a dummy
+entry for compile-time folded page tables and prohibit calls to
+pXd_page() in pgtable-nopXd.h.
+
+Also make the helpers in pgtable-nopXd.h, such as pXd_offset_lockless(),
+validate dummy entries at compile time to catch the wrong usage.
+
+As the pXdp_get() can return *dummy* entry, some of code using
+the stack value where saves the pXdp_get() could be a problematic:
+
+  1. Passing address of stack value where saves the pXdp_get() result
+     to pXd_offset() for example:
+
+       pud_t *pudp, pud;
+       pmd_t *pmdp;
+
+       pud = pudp_get(pudp, address);
+       pmdp = pmd_offset(&pud, pud, address);
+
+     (e.g. host_pfn_mapping_level() in loongarch).
+
+  2. Using the pXdp_get() result to use as argument of pXd_val() and
+     to check prot without checking pgtable is folded.
+     for example, x86's effective_prot().
+
+  3. Using set_pXd() with pXdp_get() will set problematic dummy entry
+     in folded page table like:
+
+       set_pXd(pxdp, pXdp_get(pxdp_k));
+
+  4. Using pgd_page_vaddr() to get the first-level pgtable.
+     passing dummy pxdp_get() for pgd_page_vaddr() will return wrong
+     address. Therefore, make pgd_page_vaddr() and pXd_pgtable() to
+     trigger the error for improper usage with folded dummy entry in the
+     generic compile-time folded pgtable.
+
+Thanksfully, above cases are rare since (1) most of usage using
+pXd_offset() with result of upper pXd_offset(), (2) it's extreamely
+rare to use pXd_val() for non-leaf entry in the kernel,
+(3) is to handle the vmalloc_fault or set the first level of page table
+and (4) to setup early page table and etc.
+
+Therefore, convert this kind of problematic rare pattern properly.
+
+Furthermore, passing the ptep_get() (or its counterparts) as argument
+directly to pte_present() and related helpers can generate suboptimal code,
+in arm64 as the current macro implementation may evaluate its argument
+more than once like:
+
+  !pte_val(READ_ONCE(*pte) || pte_present_invalid(READ_ONCE(*pte))
+
+resulting in redundant loads.
+
+A typical example is pud_free_pmd_page(), where the expansion of
+pmd_present() generates:
+    ...
+    /* pmd_present() (x20 = pmdp) */
+    1b88: f9400288     ldr	x8, [x20]        // read pmdp.
+    1b8c: f9000fa8     str	x8, [x29, #0x18]
+    1b90: 3707fec8     tbnz	w8, #0x0, 0x1b68 <pud_free_pmd_page+0xd0>
+    1b94: f9400288     ldr	x8, [x20]        // redundant read of pmdp.
+    1b98: 8a170109     and	x9, x8, x23
+    1b9c: f9000fa8     str	x8, [x29, #0x18]
+    1ba0: f120013f     cmp	x9, #0x800
+    1ba4: 54fffe20     b.eq	0x1b68 <pud_free_pmd_page+0xd0>
+    1ba8: 17fffff4     b	0x1b78 <pud_free_pmd_page+0xe0>
+    ...
+
+To address this in arm64, convert pte_present() macro and its friends
+to static inline function.
+
+This patch is based on mm-unstable.
+
+Future work
+===========
+ - print_bad_page_map() and show_pte() still prints dummy values
+   instead of printing the same content for all generic compile-time
+   folded page tables. We might want to skip printing dummy values later.
+
+ - We currently catch abuse of dummy values on the stack at compile-time by
+   relying on constant propagation by the compiler. Usama's work [3] on using
+   distinct types for sw vs. hw PTEs could help here as well."
+
+Patch History
+=============
+from v2 to v3:
+  - repasre commit message
+  - move ptdump_pgtable_first_level() into pgalloc.h
+  - skip the huge pud operation when CONFIG_X86_DIRECT_GBPAGES is
+    disabled
+  - https://lore.kernel.org/all/20260722-dummy_ptxp3-v2-0-d9e4bad31e0a@arm.com/
+
+from v1 to v2:
+  - Restore slient fallback to next pXd in set_pXd() and pXd_pgtable()
+    and add check whether they're called with dummy entry.
+  - Add some comment for returning first entry of pgd in arm with
+    2 pgtable-level
+  - https://lore.kernel.org/all/20260713135614.1618183-1-yeoreum.yun@arm.com/
+
+To: Russell King <linux@armlinux.org.uk>
+To: Huacai Chen <chenhuacai@kernel.org>
+To: WANG Xuerui <kernel@xen0n.name>
+To: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+To: Catalin Marinas <catalin.marinas@arm.com>
+To: Will Deacon <will@kernel.org>
+To: Arnd Bergmann <arnd@arndb.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+To: Kairui Song <kasong@tencent.com>
+To: Qi Zheng <qi.zheng@linux.dev>
+To: Shakeel Butt <shakeel.butt@linux.dev>
+To: Barry Song <baohua@kernel.org>
+To: Axel Rasmussen <axelrasmussen@google.com>
+To: Yuanchu Xie <yuanchu@google.com>
+To: Wei Xu <weixugc@google.com>
+To: Johannes Weiner <hannes@cmpxchg.org>
+To: David Hildenbrand <david@kernel.org>
+To: Michal Hocko <mhocko@kernel.org>
+To: Lorenzo Stoakes <ljs@kernel.org>
+To: Tianrui Zhao <zhaotianrui@loongson.cn>
+To: Bibo Mao <maobibo@loongson.cn>
+To: Anup Patel <anup@brainfault.org>
+To: Atish Patra <atish.patra@linux.dev>
+To: Paul Walmsley <pjw@kernel.org>
+To: Palmer Dabbelt <palmer@dabbelt.com>
+To: Albert Ou <aou@eecs.berkeley.edu>
+To: Alexandre Ghiti <alex@ghiti.fr>
+To: Dave Hansen <dave.hansen@linux.intel.com>
+To: Andy Lutomirski <luto@kernel.org>
+To: Peter Zijlstra <peterz@infradead.org>
+To: Thomas Gleixner <tglx@kernel.org>
+To: Ingo Molnar <mingo@redhat.com>
+To: Borislav Petkov <bp@alien8.de>
+To: x86@kernel.org
+To: H. Peter Anvin <hpa@zytor.com>
+To: Liam R. Howlett <liam@infradead.org>
+To: Vlastimil Babka <vbabka@kernel.org>
+To: Mike Rapoport <rppt@kernel.org>
+To: Suren Baghdasaryan <surenb@google.com>
+To: Michal Hocko <mhocko@suse.com>
+To: Jonas Bonn <jonas@southpole.se>
+To: Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>
+To: Stafford Horne <shorne@gmail.com>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+Cc: loongarch@lists.linux.dev
+Cc: linux-mips@vger.kernel.org
+Cc: linux-arch@vger.kernel.org
+Cc: linux-mm@kvack.org
+Cc: kvm@vger.kernel.org
+Cc: kvm-riscv@lists.infradead.org
+Cc: linux-riscv@lists.infradead.org
+Cc: linux-openrisc@vger.kernel.org
+Link: [1] https://lore.kernel.org/all/0019d675-ce3d-4a5c-89ed-f126c45145c9@kernel.org/
+Link: [2] https://lore.kernel.org/all/20251113014656.2605447-1-samuel.holland@sifive.com/
+Link: [3] https://lore.kernel.org/r/74182e50-b54f-4d2d-a27f-3a59a538d6bc@arm.com
+
+--- b4-submit-tracking ---
+# This section is used internally by b4 prep for tracking purposes.
+{
+  "series": {
+    "revision": 3,
+    "change-id": "20260722-dummy_ptxp3-3741d78cc70f",
+    "prefixes": [
+      "RFC"
+    ],
+    "history": {
+      "v2": [
+        "20260722-dummy_ptxp3-v2-0-d9e4bad31e0a@arm.com"
+      ]
+    }
+  }
+}
+
+Signed-off-by: Yeoreum Yun <yeoreum.yun@arm.com>
+-- 
+LEVI:{C3F47F37-75D8-414A-A8BA-3980EC8A46D7}
+
 
 -- 
 kvm-riscv mailing list
