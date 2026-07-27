@@ -4,70 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AAD05C53219
-	for <kvm-riscv@archiver.kernel.org>; Mon, 27 Jul 2026 12:30:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0425C53219
+	for <kvm-riscv@archiver.kernel.org>; Mon, 27 Jul 2026 12:30:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=p6DsmPm+Hml+su+jKNfneoCSksRBZZJMmdTvaMw2p8I=; b=urti3aO+4YvgUT
-	9DlyE4zWrwz0NcdryhMozjA0p9ju2a5J1NvqGiAicyDioRAAzc2D41FlweWIQY+bnzPy4LyOImIUX
-	Htkd6ot6S3n1P1xTmrl4YElFyR8RjC0Ny4H8NpymiIO4eUWMePImYOPEG12jUiu5W14SikA9k2WP5
-	yYILCu29RXXXFe7U/q/QDQipdwvAxxHzAZuc6LcSokzJ8ML99NP7nsXod1R06bO0m6aKC8PakQi3Y
-	/b9e8Qau1L7AHeoq/y61QMbxAtJtgyvcGMPrd3E8FjnrzuMPVDO2/E84Z9L4d5iMgS4OiE2TwPlZ3
-	J5N4eVRe5PJ7a4f5jQug==;
+	List-Owner; bh=TRrQT0Gd6eStyC814NI10+XtVo0E2EK7HZtQ25kkfII=; b=iqHjH3gEnEq3eT
+	TjZGbA1owjwmRjVuNdmMsJHhCJsKLGcNO75N2IhEdztDyTKAeoCeG915DPBDg5RIsb8f8RZB5uFY3
+	SvxDS65Znih0Q10khTTMD4Tjs7BS4aP8SOvexVTS6zOb7vwYGZkgOLBBaR4sUmtnnWK65JpPT/qWz
+	X0xjSlvd/JYt5iQwrbO7zK74wTIf/yxW3/a29aG+bgLC4wsrauffL9xiGOrecjNcXjwq0r3i+i9di
+	sGMUA83+xbc92yl8+5PPxonVRZ7XOSuFQ8ivWLTcTMT8uwvl9q6HmtgJAlAKzubueIDDg+dPOQK6H
+	vNCJ2UZauFgqgPO/yoQQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1woKTn-00000002i0j-1NOI;
-	Mon, 27 Jul 2026 12:30:47 +0000
-Received: from mail-pj2-x03.google.com ([2607:f8b0:4864:39::3])
+	id 1woKTs-00000002i49-205K;
+	Mon, 27 Jul 2026 12:30:52 +0000
+Received: from mail-pj2-x00.google.com ([2607:f8b0:4864:39::])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1woKTk-00000002hya-1dSk
+	id 1woKTp-00000002i2J-3eFl
 	for kvm-riscv@lists.infradead.org;
-	Mon, 27 Jul 2026 12:30:45 +0000
-Received: by mail-pj2-x03.google.com with SMTP id d9443c01a7336-2ccb0e85312so17154375ad.0
-        for <kvm-riscv@lists.infradead.org>; Mon, 27 Jul 2026 05:30:44 -0700 (PDT)
+	Mon, 27 Jul 2026 12:30:50 +0000
+Received: by mail-pj2-x00.google.com with SMTP id d9443c01a7336-2cc7a345f51so22142255ad.0
+        for <kvm-riscv@lists.infradead.org>; Mon, 27 Jul 2026 05:30:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1785155444; x=1785760244; darn=lists.infradead.org;
+        d=gmail.com; s=20251104; t=1785155449; x=1785760249; darn=lists.infradead.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=VTdBdaepYR3Npq5LgKxtOuDeDw6yKDcmDYCQg+CRMR4=;
-        b=bYSJHOHHp6/7SGg4vQo+oxOle8dcEhVx8ZsjpnPG700xqSqvThKqSVx9Dnm0xhhAwY
-         8xEP7qVjpfBhMZYOv79AZ+fFDlccz7ByJDAz0qZ2ikKmQcXPGo1SmvTFzuALk98Hwvoz
-         T/W1JuPETRPlRgqoLEwdy42Hx5OeffaeIE6SLqWwxl0dC509Rm8zVL4AIbt5Q7Hx54CT
-         4BM8GMMIID08wCcT9JEKVG7pdskJY+EEAJvS1Q0cJ8TCADj/E1T4fRWLl69y6OOIn74v
-         539dIOXEj56MojJNIOnAAYlglpUwMlF74vNgKTYIP/itQUqVsLYQ6OkYA9PF4P8s5gnF
-         hS6g==
+        bh=Y8pTPbeEWjqJ3+0nUuuuXn5xR6k5GcUeJgsv7M+Os0c=;
+        b=sU4c849ZN7IHPJzlJ32uq5ogzBNmpvrsZz4m3Z+3lceX+pbXjqk11sOUl9IcKdKZpt
+         2v8j7Oep+o7Ef+gVmY66XPfbO2rFQp/pnX/w8jeVh9kgW0rTqd/y/uWp7cpqBJFkqqA1
+         w5XN4H3M4frhhqIk+FtfeYh7pijTIC3+ZE+dyHDYWMWEI0gRvpE6ZM/hQqjtV2LIs8tH
+         CRANJTSjDBbZWv7M4UYSs30KECDNVbCGukUzMQyKwNMkjdJq//je595qxagx4lo5aDCK
+         NqceiJ1bi8WGgYPDVXKItxYp34QnXci4k2qHThnPYf17671u45faUaGM1Wr9J6JUCAf6
+         ENpw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785155444; x=1785760244;
+        d=1e100.net; s=20251104; t=1785155449; x=1785760249;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=VTdBdaepYR3Npq5LgKxtOuDeDw6yKDcmDYCQg+CRMR4=;
-        b=Np/rW8X6Jn/fyZTa50KzACXClLfgruJIitZcq5CGfH1LDvzDfDZMsGU0DcRnu3nfze
-         qoZjaRXPZkZbnSCyDj+KmDg9fTKOTQ93bKHAhj/LMgthslO3Tu1Znf0beQdel7b14lHg
-         hpyZcyOayS60vKPmUbFl6CEBflZ4UKTCK/ClnmHGUYV9TacY5/x1+pOPLMrg84WUwLVO
-         4++wnUrxtP5zy3pqs1RnJt49PHbLufW77ENMuNB3rQ7tMKyq3WGAHdOU6KnLiD/ux1Xz
-         t9oM61LcliIcwQEVISpbcHsEo9UiIJicJiawtNR75Tuj6W2YBYHAvy8ogAR7qetPYDHt
-         28Ww==
-X-Forwarded-Encrypted: i=1; AHgh+RrPDtC2C79zTA3JeDUJydx44wUq+SeQPwnUbmgoy46wu+kM7mZ0Es6TNlPltZcnO90Agq8cUqnC8VI=@lists.infradead.org
-X-Gm-Message-State: AOJu0YxHDQRAkkNN5q70HxaYBhTSVvV1tp6zp42Jej1l5Kj5HUEVgy/I
-	MUp2tG0k+PA3sOnwMMEBjW9V8Bmzbv8MAOjc3598QhalWR8xqnYfILsH
-X-Gm-Gg: AR+sD10OSq0sJBOo+wqriuMvkm1MEwFJekpsr8lEv8GzqeO+vqjXQ1/YJSbPINQsIwT
-	mAwb7CKkRpfayrMZqwZ5gUjwiRftRJxIvQR6DbbkcxNMRGVhl0vcyO+eQAyl3iSBtR6QN2nSYHx
-	8iDMEUS9viFzztOJyuYd9casIe2KQxhGABznsvnRBIxTUf00T7qjhucxS8rAbRepiFh0bzLJa12
-	Xv98VV6zEF+FluTurq+yfmcIzpYJggOm2epAAKqdsOySlVHGSAjMwXk1hxJ+uzKpuDbgnyop5Gj
-	HjelVztNN+2bqnY9vag/u9sagrb0zsZtZTSUBbJCf2G/ziYoM7Sh7sEPhQhM/3DZXIaHvrhQJ+z
-	yxvGLnAQEmSpa0z8LKZnCm22zeh2g1688N0qPjEHp47+rtvTC15j+ZsxldHjvQUkbeXDrpKo=
-X-Received: by 2002:a17:903:2284:b0:2c9:ff83:41fa with SMTP id d9443c01a7336-2cfde85fb71mr79666365ad.24.1785155441655;
-        Mon, 27 Jul 2026 05:30:41 -0700 (PDT)
+        bh=Y8pTPbeEWjqJ3+0nUuuuXn5xR6k5GcUeJgsv7M+Os0c=;
+        b=nA860Dm5w72j6SVD0jey7Ue4BI6SfoPFNekkmLE3gr6N+9UZVXhkAT6xQUOVl1Kog8
+         IjpZZeykq9BGwGE6r000a9vuLkdSbW3c+qUeAkfQlUvSQMWTRfR/Y0nojiUY0Bf4afV6
+         4YA3NK1IiKgEBWFP11EUp1a2KHZHKwpAm+Iww/Y764EUd/94bGXgWFHhzby/J+DPuaDl
+         l5lThVdVfw3zlm8IktbxTt/EiN5FP5TJd0u22UxSExQ+zHP0TwGjGEOAGe75kCXb7J0c
+         jbXBh4uy7Y/UrRVvbHTN8IuwF/faRTT9gg/SEldvBmHyndG/v3p97Zlhi2VxL0iDvlh4
+         DLPg==
+X-Forwarded-Encrypted: i=1; AHgh+Rq5WIQmXJcsXIRgho5rTE/F2TzPZgRGH09wnjFCyw5elzBsSAfxqiUQJYPDTUnW20bDSpMCXIULXME=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yy7yFSvGzJXzBEMTwWOel965/9/Lq4zlTN3bFgji3ehpEE9RWu8
+	lgd0AIAeVM4iBad9WS7CqvOqEaEWtjw7B/gG8zqicYJaCoy+GV1i3vqg
+X-Gm-Gg: AR+sD13b5CnKkp3YqrUP3kpvft0V0Miif6BU6KUXFpBN2DdSKXY5oEJ7xLnWFcw2PTE
+	D888tiaQJgLyQMGu9e8ypkf1eqRLC3ylTtVU1JE2gyRgdAZ31gzqpAXBP9mFxtnSZCv4EE0zWRa
+	q11BsQPz8SaQWg04hudABj1o3rL5DtCvaRq6baIcuQmzK8jVzeMBJrIzaQ8Xr8Hhan+V+xMxrzc
+	ky1dQlRXaOv41u+fwRSFA88FjzdDDW4GcwNuHs5yPgWROPE01t3+xBrcb4rnMfzULv+t9kOifai
+	juXHvm/1ePc07X6fA/RiVhwWZ2SgoP2feYn4ol6YGWAEurXsJp7rQVkrhIlUwD0srKd8peeZO4r
+	WUOqy0GsuuiIt4C+68OiC4K8pbQ8z81bgSG+7/hFWqDXFwwkz8m02NL3b+OM60DSisljTkDk=
+X-Received: by 2002:a17:903:468c:b0:2c9:aae1:a61a with SMTP id d9443c01a7336-2cfde7b3a14mr78013425ad.14.1785155445847;
+        Mon, 27 Jul 2026 05:30:45 -0700 (PDT)
 Received: from wud.. ([218.194.32.52])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2cfe1ab9c71sm30679775ad.73.2026.07.27.05.30.37
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2cfe1ab9c71sm30679775ad.73.2026.07.27.05.30.42
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 27 Jul 2026 05:30:41 -0700 (PDT)
+        Mon, 27 Jul 2026 05:30:45 -0700 (PDT)
 From: "Dylan.Wu" <fredwudi0305@gmail.com>
 To: palmer@dabbelt.com,
 	pjw@kernel.org,
@@ -81,16 +81,16 @@ Cc: alex@ghiti.fr,
 	kvm-riscv@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	"Dylan.Wu" <fredwudi0305@gmail.com>
-Subject: [PATCH v2 1/3] riscv: ptdump: Create ptdump.h and move declarations
-Date: Mon, 27 Jul 2026 08:30:11 -0400
-Message-Id: <20260727123013.118984-2-fredwudi0305@gmail.com>
+Subject: [PATCH v2 2/3] riscv: ptdump: Use per-level attribute bits for parsing
+Date: Mon, 27 Jul 2026 08:30:12 -0400
+Message-Id: <20260727123013.118984-3-fredwudi0305@gmail.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260727123013.118984-1-fredwudi0305@gmail.com>
 References: <20260727123013.118984-1-fredwudi0305@gmail.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260727_053044_460642_AD729ED2 
-X-CRM114-Status: GOOD (  21.49  )
+X-CRM114-CacheID: sfid-20260727_053049_911889_C4A36397 
+X-CRM114-Status: GOOD (  18.33  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -107,213 +107,161 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Create a new arch/riscv/include/asm/ptdump.h header file and move the
-pagetable walking state structures and level definitions there. This
-allows other parts of the kernel (like KVM) to reuse the ptdump data
-structures.
+Instead of using the global pte_bits array in dump_prot(), use the
+per-level bits and num from the associated pg_level entry passed via
+ptdump_pg_state. This makes the attribute parsing logic fully driven by
+the per-level configuration, which allows KVM (and other future users)
+to plug in their own set of protection bits for their pagetable levels.
 
-Also export the note_page() symbol so it can be used by other kernel
-components.
+Rename the local pg_level[] array to kernel_pg_levels[] to avoid
+shadowing the pg_level pointer in struct ptdump_pg_state.
 
 Assisted-by: YuanSheng: deepseek-v4-pro
 Co-developed-by: Quan Zhou <zhouquan@iscas.ac.cn>
 Signed-off-by: Quan Zhou <zhouquan@iscas.ac.cn>
 Signed-off-by: Dylan.Wu <fredwudi0305@gmail.com>
 ---
- arch/riscv/include/asm/ptdump.h | 41 ++++++++++++++++++++++
- arch/riscv/mm/ptdump.c          | 60 +++++++--------------------------
- 2 files changed, 53 insertions(+), 48 deletions(-)
- create mode 100644 arch/riscv/include/asm/ptdump.h
+ arch/riscv/include/asm/ptdump.h |  1 +
+ arch/riscv/mm/ptdump.c          | 48 +++++++++++++++++++++------------
+ 2 files changed, 32 insertions(+), 17 deletions(-)
 
 diff --git a/arch/riscv/include/asm/ptdump.h b/arch/riscv/include/asm/ptdump.h
-new file mode 100644
-index 000000000..eb9d11dab
---- /dev/null
+index eb9d11dab..14a262bd0 100644
+--- a/arch/riscv/include/asm/ptdump.h
 +++ b/arch/riscv/include/asm/ptdump.h
-@@ -0,0 +1,41 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+#ifndef _ASM_RISCV_PTDUMP_H
-+#define _ASM_RISCV_PTDUMP_H
-+
-+#include <linux/ptdump.h>
-+#include <linux/seq_file.h>
-+
-+struct addr_marker {
-+	unsigned long start_address;
-+	const char *name;
-+};
-+
-+struct ptdump_prot_bits {
-+	u64 mask;
-+	const char *set;
-+	const char *clear;
-+};
-+
-+struct ptdump_pg_level {
-+	const struct ptdump_prot_bits *bits;
-+	const char *name;
-+	u64 mask;
-+	int num;
-+};
-+
-+struct ptdump_pg_state {
-+	struct ptdump_state ptdump;
-+	struct seq_file *seq;
-+	const struct addr_marker *marker;
-+	unsigned long start_address;
-+	unsigned long start_pa;
-+	unsigned long last_pa;
-+	int level;
-+	u64 current_prot;
-+	bool check_wx;
-+	unsigned long wx_pages;
-+};
-+
-+void note_page(struct ptdump_state *pt_st, unsigned long addr, int level, u64 val);
-+
-+#endif /* _ASM_RISCV_PTDUMP_H */
+@@ -28,6 +28,7 @@ struct ptdump_pg_state {
+ 	struct seq_file *seq;
+ 	const struct addr_marker *marker;
+ 	unsigned long start_address;
++	const struct ptdump_pg_level *pg_level;
+ 	unsigned long start_pa;
+ 	unsigned long last_pa;
+ 	int level;
 diff --git a/arch/riscv/mm/ptdump.c b/arch/riscv/mm/ptdump.c
-index f4b4a9fcb..63655a9c8 100644
+index 63655a9c8..06c0217f0 100644
 --- a/arch/riscv/mm/ptdump.c
 +++ b/arch/riscv/mm/ptdump.c
-@@ -11,6 +11,7 @@
- #include <linux/ptdump.h>
- 
- #include <linux/pgtable.h>
-+#include <asm/ptdump.h>
- #include <asm/kasan.h>
- 
- #define pt_dump_seq_printf(m, fmt, args...)	\
-@@ -25,31 +26,6 @@
- 		seq_puts(m, fmt);	\
- })
- 
--/*
-- * The page dumper groups page table entries of the same type into a single
-- * description. It uses pg_state to track the range information while
-- * iterating over the pte entries. When the continuity is broken it then
-- * dumps out a description of the range.
-- */
--struct pg_state {
--	struct ptdump_state ptdump;
--	struct seq_file *seq;
--	const struct addr_marker *marker;
--	unsigned long start_address;
--	unsigned long start_pa;
--	unsigned long last_pa;
--	int level;
--	u64 current_prot;
--	bool check_wx;
--	unsigned long wx_pages;
--};
--
--/* Address marker */
--struct addr_marker {
--	unsigned long start_address;
--	const char *name;
--};
--
- /* Private information for debugfs */
- struct ptd_mm_info {
- 	struct mm_struct		*mm;
-@@ -126,14 +102,7 @@ static struct ptd_mm_info efi_ptd_info = {
- };
- #endif
- 
--/* Page Table Entry */
--struct prot_bits {
--	u64 mask;
--	const char *set;
--	const char *clear;
--};
--
--static const struct prot_bits pte_bits[] = {
-+static const struct ptdump_prot_bits pte_bits[] = {
- 	{
- #ifdef CONFIG_64BIT
- 		.mask = _PAGE_NAPOT,
-@@ -183,13 +152,7 @@ static const struct prot_bits pte_bits[] = {
+@@ -152,46 +152,58 @@ static const struct ptdump_prot_bits pte_bits[] = {
  	}
  };
  
--/* Page Level */
--struct pg_level {
--	const char *name;
--	u64 mask;
--};
--
--static struct pg_level pg_level[] = {
-+static struct ptdump_pg_level pg_level[] = {
+-static struct ptdump_pg_level pg_level[] = {
++static struct ptdump_pg_level kernel_pg_levels[] = {
  	{ /* pgd */
++		.bits = pte_bits,
++		.num = ARRAY_SIZE(pte_bits),
  		.name = "PGD",
  	}, { /* p4d */
-@@ -203,7 +166,7 @@ static struct pg_level pg_level[] = {
++		.bits = pte_bits,
++		.num = ARRAY_SIZE(pte_bits),
+ 		.name = (CONFIG_PGTABLE_LEVELS > 4) ? "P4D" : "PGD",
+ 	}, { /* pud */
++		.bits = pte_bits,
++		.num = ARRAY_SIZE(pte_bits),
+ 		.name = (CONFIG_PGTABLE_LEVELS > 3) ? "PUD" : "PGD",
+ 	}, { /* pmd */
++		.bits = pte_bits,
++		.num = ARRAY_SIZE(pte_bits),
+ 		.name = (CONFIG_PGTABLE_LEVELS > 2) ? "PMD" : "PGD",
+ 	}, { /* pte */
++		.bits = pte_bits,
++		.num = ARRAY_SIZE(pte_bits),
+ 		.name = "PTE",
  	},
  };
  
--static void dump_prot(struct pg_state *st)
-+static void dump_prot(struct ptdump_pg_state *st)
+ static void dump_prot(struct ptdump_pg_state *st)
  {
++	const struct ptdump_pg_level *lvl = &st->pg_level[st->level];
++	const struct ptdump_prot_bits *bits = lvl->bits;
  	unsigned int i;
  
-@@ -240,7 +203,7 @@ static void dump_prot(struct pg_state *st)
- #else
- #define ADDR_FORMAT	"0x%08lx"
+-	for (i = 0; i < ARRAY_SIZE(pte_bits); i++) {
++	for (i = 0; i < lvl->num; i++) {
+ 		char s[7];
+ 		unsigned long val;
+ 
+-		val = st->current_prot & pte_bits[i].mask;
++		val = st->current_prot & bits[i].mask;
+ 		if (val) {
+-			if (pte_bits[i].mask == _PAGE_SOFT)
+-				snprintf(s, sizeof(s), pte_bits[i].set, val >> 8);
++			if (bits[i].mask == _PAGE_SOFT)
++				snprintf(s, sizeof(s), bits[i].set, val >> 8);
+ #ifdef CONFIG_64BIT
+-			else if (pte_bits[i].mask == _PAGE_MTMASK_SVPBMT) {
++			else if (bits[i].mask == _PAGE_MTMASK_SVPBMT) {
+ 				if (val == _PAGE_NOCACHE_SVPBMT)
+-					snprintf(s, sizeof(s), pte_bits[i].set, "NC");
++					snprintf(s, sizeof(s), bits[i].set, "NC");
+ 				else if (val == _PAGE_IO_SVPBMT)
+-					snprintf(s, sizeof(s), pte_bits[i].set, "IO");
++					snprintf(s, sizeof(s), bits[i].set, "IO");
+ 				else
+-					snprintf(s, sizeof(s), pte_bits[i].set, "??");
++					snprintf(s, sizeof(s), bits[i].set, "??");
+ 			}
  #endif
--static void dump_addr(struct pg_state *st, unsigned long addr)
-+static void dump_addr(struct ptdump_pg_state *st, unsigned long addr)
- {
- 	static const char units[] = "KMGTPE";
- 	const char *unit = units;
-@@ -261,7 +224,7 @@ static void dump_addr(struct pg_state *st, unsigned long addr)
- 			   pg_level[st->level].name);
+ 			else
+-				strscpy(s, pte_bits[i].set);
++				strscpy(s, bits[i].set);
+ 		} else {
+-			strscpy(s, pte_bits[i].clear);
++			strscpy(s, bits[i].clear);
+ 		}
+ 
+ 		pt_dump_seq_printf(st->seq, " %s", s);
+@@ -221,7 +233,7 @@ static void dump_addr(struct ptdump_pg_state *st, unsigned long addr)
+ 	}
+ 
+ 	pt_dump_seq_printf(st->seq, "%9lu%c %s", delta, *unit,
+-			   pg_level[st->level].name);
++			   kernel_pg_levels[st->level].name);
  }
  
--static void note_prot_wx(struct pg_state *st, unsigned long addr)
-+static void note_prot_wx(struct ptdump_pg_state *st, unsigned long addr)
- {
- 	if (!st->check_wx)
- 		return;
-@@ -276,10 +239,10 @@ static void note_prot_wx(struct pg_state *st, unsigned long addr)
- 	st->wx_pages += (addr - st->start_address) / PAGE_SIZE;
- }
- 
--static void note_page(struct ptdump_state *pt_st, unsigned long addr,
--		      int level, u64 val)
-+void note_page(struct ptdump_state *pt_st, unsigned long addr,
-+	       int level, u64 val)
- {
--	struct pg_state *st = container_of(pt_st, struct pg_state, ptdump);
-+	struct ptdump_pg_state *st = container_of(pt_st, struct ptdump_pg_state, ptdump);
- 	u64 pa = PFN_PHYS(pte_pfn(__pte(val)));
+ static void note_prot_wx(struct ptdump_pg_state *st, unsigned long addr)
+@@ -247,7 +259,7 @@ void note_page(struct ptdump_state *pt_st, unsigned long addr,
  	u64 prot = 0;
  
-@@ -317,6 +280,7 @@ static void note_page(struct ptdump_state *pt_st, unsigned long addr,
- 		st->last_pa = pa;
- 	}
- }
-+EXPORT_SYMBOL_GPL(note_page);
+ 	if (level >= 0)
+-		prot = val & pg_level[level].mask;
++		prot = val & kernel_pg_levels[level].mask;
  
- static void note_page_pte(struct ptdump_state *pt_st, unsigned long addr, pte_t pte)
- {
-@@ -352,7 +316,7 @@ static void note_page_flush(struct ptdump_state *pt_st)
- 
- static void ptdump_walk(struct seq_file *s, struct ptd_mm_info *pinfo)
- {
--	struct pg_state st = {
-+	struct ptdump_pg_state st = {
+ 	if (st->level == -1) {
+ 		st->level = level;
+@@ -320,6 +332,7 @@ static void ptdump_walk(struct seq_file *s, struct ptd_mm_info *pinfo)
  		.seq = s,
  		.marker = pinfo->markers,
  		.level = -1,
-@@ -375,7 +339,7 @@ static void ptdump_walk(struct seq_file *s, struct ptd_mm_info *pinfo)
++		.pg_level = kernel_pg_levels,
+ 		.ptdump = {
+ 			.note_page_pte = note_page_pte,
+ 			.note_page_pmd = note_page_pmd,
+@@ -346,6 +359,7 @@ bool ptdump_check_wx(void)
+ 			{-1, NULL},
+ 		},
+ 		.level = -1,
++		.pg_level = kernel_pg_levels,
+ 		.check_wx = true,
+ 		.ptdump = {
+ 			.note_page_pte = note_page_pte,
+@@ -410,12 +424,12 @@ static int __init ptdump_init(void)
  
- bool ptdump_check_wx(void)
- {
--	struct pg_state st = {
-+	struct ptdump_pg_state st = {
- 		.seq = NULL,
- 		.marker = (struct addr_marker[]) {
- 			{0, NULL},
+ 	kernel_ptd_info.base_addr = KERN_VIRT_START;
+ 
+-	pg_level[1].name = pgtable_l5_enabled ? "P4D" : "PGD";
+-	pg_level[2].name = pgtable_l4_enabled ? "PUD" : "PGD";
++	kernel_pg_levels[1].name = pgtable_l5_enabled ? "P4D" : "PGD";
++	kernel_pg_levels[2].name = pgtable_l4_enabled ? "PUD" : "PGD";
+ 
+-	for (i = 0; i < ARRAY_SIZE(pg_level); i++)
++	for (i = 0; i < ARRAY_SIZE(kernel_pg_levels); i++)
+ 		for (j = 0; j < ARRAY_SIZE(pte_bits); j++)
+-			pg_level[i].mask |= pte_bits[j].mask;
++			kernel_pg_levels[i].mask |= pte_bits[j].mask;
+ 
+ 	debugfs_create_file("kernel_page_tables", 0400, NULL, &kernel_ptd_info,
+ 			    &ptdump_fops);
 -- 
 2.34.1
 
