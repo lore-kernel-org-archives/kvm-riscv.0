@@ -4,51 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CC011C531D0
-	for <kvm-riscv@archiver.kernel.org>; Mon, 27 Jul 2026 14:53:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84F19C531FC
+	for <kvm-riscv@archiver.kernel.org>; Mon, 27 Jul 2026 15:02:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:
 	Subject:MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=HzzRD84/zIu+ORL9Bxv8lSLCIu2/F2CksQ2dlWdnU0U=; b=PZd2a7d430Jku3
-	ISaVpiE99ywToqoKlvaphSnO8lmjm/zA6UppCR5NIdDoot/A3Uw4B01z9g91xns2Yza1G3KXpL9cv
-	5Nhse441oZjYfRhoaCrPdX2ZcuQtOz1sSyQVgUFqzOYD9UHqr5cevRUQ1y9QclWjdAKgTBSLUOiK6
-	D5t8TUSBLOnyvBS31E10Sc5NDORM8O4g7KsKR6a2GrzbiNYotRZJbdkhueaDMK11sbqVq7cHw1DGg
-	08a3gQTS6zgdDJWP0PsPF0854kbyBdLzAqQiGUxCWfmsIFEhIORPzP9lS2i+iSGutOSpf4l5QDN8I
-	TuF+z1ywLlBrBg7kHeog==;
+	List-Owner; bh=IJzawqqqGovNcKqPWQ51tdt3qape+H4mSVpuYUE007s=; b=vgN3vo14uZuAjG
+	5AQpRlgsdQrIb6n+ypaWIeCra9nOtC06RhZvNBHXmQ1gT2sScNmbdZ7XJ9eZvq3MgvNl3Nv+UmsbP
+	wCfXzFh8EyhWNKawG/qFhxaDvVn79hPdFThyX+Lomr4c4HR0TkPa4agHdAadiQIspFfVTiqT5JqpL
+	Onx+KS96YHaLc93FG+b7anyeA1FRQGSA+QSib4oJm8otDA9NbSZ9/CbD50HOe0Rju7hCi/mMHwbor
+	w5tqvpMRpYXiDdPFEvSfE4WBdFj0rF8grG0Aj5rhHujsKuXTeQahxgSWHZkLjBxAtaXevHh/k0xJk
+	i1TAAdarv5kIwElFTwJw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1woMi4-000000035oL-2EfY;
-	Mon, 27 Jul 2026 14:53:40 +0000
-Received: from tor.source.kernel.org ([172.105.4.254])
+	id 1woMqS-000000037I0-0SPN;
+	Mon, 27 Jul 2026 15:02:20 +0000
+Received: from sea.source.kernel.org ([172.234.252.31])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1woMi3-000000035ns-0sm9;
-	Mon, 27 Jul 2026 14:53:39 +0000
+	id 1woMqQ-000000037HZ-3btv;
+	Mon, 27 Jul 2026 15:02:18 +0000
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 8A4E1601ED;
-	Mon, 27 Jul 2026 14:53:37 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 516591F000E9;
-	Mon, 27 Jul 2026 14:53:21 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id E40FF4346F;
+	Mon, 27 Jul 2026 15:02:17 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DD2AB1F000E9;
+	Mon, 27 Jul 2026 15:02:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785164017;
-	bh=O0I3AbznuXO2mE0TFpsCIg9z38N+5sXNAYMvOlNx8ss=;
+	s=k20260515; t=1785164537;
+	bh=GMsj86qUImXvesh2jycuBRWJLhN2UfJjZ0XxDz3JzMg=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=Zgu9IHywQkl2KWenokXQBUF+jY0uFmmy17+h8GUQ5iFgZKLbCfdUzfpwqisSTfW5e
-	 p6FG3cFXLjkkFIiqLgoasU5ILijpG8E0yBJ81Dd9IcEdsEwLGkuABt+S3DUykaoGG/
-	 nw6SG+p/C0gxJjXFaUvl+h1m1/bpIGJias8e/PLtCM9J/IkAjtv0uL/p7i4zExwNYy
-	 xZOjdtcCcqfB0p8Qxmjiu8Yw9ofWtG7PrUMdNqISlK1Y+GA7wQV7yZAOeey4pohl35
-	 5MldWmxihWYvo4mcv3xTxeBkYnM4jZoy1DlD96sPOKpO12ADxz7VHiJwruDKAw1mLb
-	 WTDJPWv9rugZg==
-Message-ID: <ff769460-e6fa-43a4-8258-33abfe91c1b5@kernel.org>
-Date: Mon, 27 Jul 2026 16:53:20 +0200
+	b=EMEaHSteJJbpefcd9Kd01LIDQkr7+ZelsCRFi8qlLdp8EguIxG3hQVRarc6ZhqX/j
+	 TRVy6z8dDQvQx9ZyKMS+5c5cIu09i0mjG5la5uOtxMUKM70WYkgXpPhi2p1HL3FUjS
+	 O0EF7xrwhN0LHiafD7HZCb/GplkMVcPUCJ4Moo0j1IzJ8t3zA1uqUDYBOicoYDwjGz
+	 7FheRA9OYUI0E8QgC3tjwsl6QVhG7Yz+yEBYmCqXY583OP4loarW5AvqBFL9NuoS92
+	 dUJcGoTl8cRskWUSlNE2n3h5/iqKYrtoK3PjmBoVCNoGrWh/TVABdE+BON+GaekUwT
+	 e6I74UNRxMVbQ==
+Message-ID: <4dbf7e54-a541-45de-b4b9-43ee5add287b@kernel.org>
+Date: Mon, 27 Jul 2026 17:02:00 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH RFC v2 10/20] riscv: kvm: remove stack copy address of pXd
- in pXd_offset()
-To: Yeoreum Yun <yeoreum.yun@arm.com>, Russell King <linux@armlinux.org.uk>,
- Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>,
+Subject: Re: [PATCH RFC v2 12/20] x86: mm: define pudp_set_access_flags() when
+ CONFIG_HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD is enabled only.
+To: Yeoreum Yun <yeoreum.yun@arm.com>, Dave Hansen <dave.hansen@intel.com>
+Cc: Russell King <linux@armlinux.org.uk>, Huacai Chen
+ <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>,
  Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
  Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
  Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>,
@@ -70,14 +71,15 @@ To: Yeoreum Yun <yeoreum.yun@arm.com>, Russell King <linux@armlinux.org.uk>,
  Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
  Jonas Bonn <jonas@southpole.se>,
  Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- Stafford Horne <shorne@gmail.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- loongarch@lists.linux.dev, linux-mips@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-mm@kvack.org, kvm@vger.kernel.org,
- kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
- linux-openrisc@vger.kernel.org
+ Stafford Horne <shorne@gmail.com>, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, loongarch@lists.linux.dev,
+ linux-mips@vger.kernel.org, linux-arch@vger.kernel.org, linux-mm@kvack.org,
+ kvm@vger.kernel.org, kvm-riscv@lists.infradead.org,
+ linux-riscv@lists.infradead.org, linux-openrisc@vger.kernel.org
 References: <20260722-dummy_ptxp3-v2-0-d9e4bad31e0a@arm.com>
- <20260722-dummy_ptxp3-v2-10-d9e4bad31e0a@arm.com>
+ <20260722-dummy_ptxp3-v2-12-d9e4bad31e0a@arm.com>
+ <188623a9-dba0-4229-a7ff-5feb2ef0c088@intel.com>
+ <amD9iD7rjmU__9b6@e129823.arm.com>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -124,7 +126,7 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <20260722-dummy_ptxp3-v2-10-d9e4bad31e0a@arm.com>
+In-Reply-To: <amD9iD7rjmU__9b6@e129823.arm.com>
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -141,19 +143,58 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On 7/22/26 17:30, Yeoreum Yun wrote:
-> The behaviour of pXdp_get() will change with generic compile-time folded
-> page tables. To prepare for that, rework get_hva_mapping_size() to avoid
-> use of a stack copy of a pXd and pass it as argument to pXd_offset() so that
-> the folded entries value is ignored.
+On 7/22/26 19:27, Yeoreum Yun wrote:
+> Hi Dave,
 > 
-> Replace direct uses of stack-based pXd values with pXd_offset_lockless()
-> and there should be no functional change.
+>>> diff --git a/arch/x86/mm/pgtable.c b/arch/x86/mm/pgtable.c
+>>> index f32facdb3035..edad847a2ecd 100644
+>>> --- a/arch/x86/mm/pgtable.c
+>>> +++ b/arch/x86/mm/pgtable.c
+>>> @@ -411,6 +411,7 @@ int pmdp_set_access_flags(struct vm_area_struct *vma,
+>>>  	return changed;
+>>>  }
+>>>  
+>>> +#ifdef CONFIG_HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD
+>>>  int pudp_set_access_flags(struct vm_area_struct *vma, unsigned long address,
+>>>  			  pud_t *pudp, pud_t entry, int dirty)
+>>>  {
+>>> @@ -430,6 +431,7 @@ int pudp_set_access_flags(struct vm_area_struct *vma, unsigned long address,
+>>>  
+>>>  	return changed;
+>>>  }
+>>> +#endif /* CONFIG_HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD */
+>>>  #endif
+>>>  
+>>>  bool ptep_test_and_clear_young(struct vm_area_struct *vma,
+>>
+>> #ifdefs in .c files are evil.
+>>
+>> The changelog doesn't make a strong enough case for why this evil should
+>> be tolerated.
+>>
+>> These are also _precisely_ the kind of #ifdefs that cause compilation
+>> problems. This one is:
+>>
+>> #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+>> /// function here
+>> #ifdef CONFIG_HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD
+>> /// another function here
+>> #endif
+>> #endif
+>>
+>> So there end up being a couple of dependent config options in play. If
+>> there are compile problems, this makes them harder to find.
+>>
+>> What is the _actual_ goal here? Saving 50 bytes of kernel text?
 > 
-> Signed-off-by: Yeoreum Yun <yeoreum.yun@arm.com>
-> ---
+> TBH, this came from for v1's change of behavior set_pud() where
+> triggered compiliation problem with v2 this change wouldn't require.
 
-Reviewed-by: David Hildenbrand (Arm) <david@kernel.org>
+If the patch is not required right now, let's drop it.
+
+I agree that it's the right thing to do: just look at pudp_invalidate() in the
+very same file, but if we can reduce the churn and leave the cleanups to x86
+folks, that seems to be preferred.
 
 -- 
 Cheers,
