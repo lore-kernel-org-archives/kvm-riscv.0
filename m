@@ -4,93 +4,127 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7748DC531D0
-	for <kvm-riscv@archiver.kernel.org>; Mon, 27 Jul 2026 12:39:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF9BBC531FC
+	for <kvm-riscv@archiver.kernel.org>; Mon, 27 Jul 2026 14:53:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
-	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:
+	Subject:MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=ccyPwUrAlE3ATclprEayS6BUvL44qpuRg/srVvKtK6o=; b=cBCPcHuf/BngZg
-	is7c/nj07Vi3zWLbbxabyV7yqWylTpqR4XDunfCLaxpRiLbIU1FEXbl91PtWEGN7oxV5ZNpBvKJ2C
-	HzUqPmrO4jIqgxx/dr+A7dNn7+vGkZUJOpR5fwR73YULs3a6uYm7BZmUN3xaIzVXdfORKMw/ukqsk
-	aqol73Y+ZtH7UyiGKuxKjSqXfuJVPYlnmYgmG6f8ZvmC4qPrsKRsqjJDrPfMUDjBe4We8Eq+/Pop8
-	0di+P4t6nAXdc5qCvhbPMgOgksy51kZddTKAm9/X17uhoYuxbsdYqKgCsUdKmXeXDadiogTerDS3Y
-	olM5YM+WHLFkO5Y60hSw==;
+	List-Owner; bh=zNNYuYS9KcBr3tyvWfaKJHDHZI58GdCMcH4Y+qMzzhw=; b=TWLcbwgZ2jvUn2
+	B9meADEpiBERWVxo0z+gw9gQk0KTGIkrfhRBKQaZdHf8Sa+hQZUk9ok8KMqe/kOW1fvLbGDAAxsrF
+	t5ss51SDgsP2dkbJ4GQLD4OxjI8ccw+FExC8SOLJ2VnEiOrpq03hbTTA+m3rVks1KkasTfgFtxRCC
+	jkO6KAKDp52OSSZWHcSD87PCKpOZTSMLf7xaTfQObR3/5rBtJ3o7auJz7bkyTfsXKdEidUUFNE7ao
+	T+4N5AWL6DuZVYHhQYizgwBaSdzrMS7ZJtuDH5lhyzcnFUvx3vc4p1hIKkTNyqLi8rkD2Y5OrtUcL
+	zmgKyVbIPgrTMgsPKd6w==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1woKcA-00000002j9a-00I1;
-	Mon, 27 Jul 2026 12:39:26 +0000
-Received: from mail-pz2-x01.google.com ([2607:f8b0:4864:3b::1])
+	id 1woMhm-000000035hb-124r;
+	Mon, 27 Jul 2026 14:53:22 +0000
+Received: from sea.source.kernel.org ([2600:3c0a:e001:78e:0:1991:8:25])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1woKc6-00000002j8i-1sPq
-	for kvm-riscv@lists.infradead.org;
-	Mon, 27 Jul 2026 12:39:24 +0000
-Received: by mail-pz2-x01.google.com with SMTP id 41be03b00d2f7-c9fcd903839so1211308a12.1
-        for <kvm-riscv@lists.infradead.org>; Mon, 27 Jul 2026 05:39:22 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1785155962; x=1785760762; darn=lists.infradead.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=rHRV5gwUjVGQwdFF5biWwFHxQewlnY4tVqU7C1q5tGI=;
-        b=emzXZXaYfrDPtUEU3xPVoviKsWeQh5R7cTukMQkh7oksfvEQUZ2vzrZ2iWiMyJWIbh
-         yFU1OFu9CoctLmC+lH8KW41OVV3ZkwJA54hDygjk9+SRIuluMk6/L/OOLASL0vn/+Iq3
-         piNr+ompWRL1VMVlu4/mt25DgfUMiD4l9Q5nr8+jAR65YFi8nxW03poQ4NNPCfLTmNZW
-         JVsycl276VWolAnDOqeRLtsY154seeAhlge0trmqnZEzl/TeJo9+9ZRrjjrlscoxVpKg
-         SetX4hZ9h/LPPfc74jUPTRK2ZSGuRb3dKYWGhopB0rD78+6Zj1+YTAKtRaaeUZSrshf7
-         v4VA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785155962; x=1785760762;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=rHRV5gwUjVGQwdFF5biWwFHxQewlnY4tVqU7C1q5tGI=;
-        b=FyKIBdPrMhlichQQ8/uJPEct3k+fuzs7qxnNztbwjtWFyKJWZAjgPikv1EOA6WDk3n
-         TMF4VlVZQ69yb+GfAFH3BEDrtuX+jvWRhPbfXxqmtDbaFZuSGne5nfk2AzxXifqIF0yd
-         VHfoBGsQGC3J+6CCe17XNdIJ5RPbqsf4EC7O5uIF+aqptCTYwaRsOFjMM7WlFIMZLTHF
-         aJzzXGkNrAZJYQnvC9BmUmWpw/G3B34BjzAZ6bwY2ga3BTQAQgCtOqmLpbO5O5sMWfvS
-         qCY0mdSRjHHTK9K4M5inJZPIESS4YShZ1MGbUY9G6e0MqRg5TCow54Ru3nPDjc95Rn0Q
-         KrfQ==
-X-Forwarded-Encrypted: i=1; AHgh+Roq+Je6OLeuwsHEuauWeYH/WN+rdqtA3v1v2Qw0bL+lBkZo0ZpzV5gViM+TEbm+3kd5bKzayojV79A=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yy5NnHptSizt0aAu/AxVsQFXGVA7BxQiA2ukN+AfeLoXGLccRsM
-	J3ztJtIdZpx72iZTeD6JvnuXro7g+75cHmi1H9aRbn5uT50bMuUVfTnl
-X-Gm-Gg: AR+sD10IUmCqu/p0ITZJb4/kK9c11X5WXGxlr/ZSlYzA2VGI6Ut0y0SwJedMvN669RF
-	DzKFMkj63lxcBUCZm3KHNM6otuJeVWHZiKUJtUZqQ+YkW7zpQ1j2smkvqvRr0hQX3MrUA/046wE
-	VY+ViUNyV0tgIfZlYVU19aOIxhFDKun6+AWDIle2cLeNOL2gnvdMxjfky70MxRZDBwq6ETfOxSP
-	QEr1WWsJdR3b08jm6Nr4zfmQgvvxjoP0l2InYYJFX5FgYj1oRGntgpzaH16IV6JGVTdyQNk6Pau
-	sX+2C10lSlv3hgjPfOYHcbHs154l9T9Ig6G6EySy9H+vw93tcKNKJ8sX0QCVPLvy3ivs+5DKOCd
-	8+I3DvGv60XejINFMpiqkgrE0hJskAiPe562djK/lY/c2UaljKWWCn00ajo69bI1oRHZtr/g=
-X-Received: by 2002:a05:6a00:983:b0:848:4123:68ff with SMTP id d2e1a72fcca58-84e5958eeb8mr6476053b3a.65.1785155961592;
-        Mon, 27 Jul 2026 05:39:21 -0700 (PDT)
-Received: from wud.. ([218.194.32.52])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84e533d1386sm3036732b3a.36.2026.07.27.05.39.18
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 27 Jul 2026 05:39:21 -0700 (PDT)
-From: "Dylan.Wu" <fredwudi0305@gmail.com>
-To: pjw@kernel.org
-Cc: palmer@dabbelt.com,
-	aou@eecs.berkeley.edu,
-	anup@brainfault.org,
-	alex@ghiti.fr,
-	atish.patra@linux.dev,
-	zhouquan@iscas.ac.cn,
-	linux-riscv@lists.infradead.org,
-	kvm-riscv@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	kvm@vger.kernel.org
-Subject: Re: [PATCH 1/2] riscv: ptdump: Move pagetable definitions to common header
-Date: Mon, 27 Jul 2026 08:39:15 -0400
-Message-Id: <20260727123915.119650-1-fredwudi0305@gmail.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <3bb2f519-c70b-6c35-c404-6fbfe8adbeb1@kernel.org>
-References: <3bb2f519-c70b-6c35-c404-6fbfe8adbeb1@kernel.org>
+	id 1woMhl-000000035gp-1AXH;
+	Mon, 27 Jul 2026 14:53:21 +0000
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id BCB73403AD;
+	Mon, 27 Jul 2026 14:53:19 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 269D91F000E9;
+	Mon, 27 Jul 2026 14:53:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1785163999;
+	bh=KsPWWj7/VTaNMsY0Ly9AHV2InjiwaGth2AKqfNGyj+w=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=EoFro7FlP6DBJWBjJtDm0DgGwR0HEdBwb92smUr4Z9Hpfdye6lxhg0B0SHEdVI818
+	 cVUfjKOS4E2qpx3ZeSRB1CduYZuC80SzEGx5sVN/LoESnxN97vo9WDlJ51up0gXQxv
+	 qAUAjSod2KJ+lyoHGa0JTGuxU+LtgsgQbLOvBSUaw5/eJ15gfxgD9dEt2I9h70Pt66
+	 7o+8oRC62Vbj1WHQWht4OnK+nDKSH7zmIit5Up0mQIccfaW0OMKmFn1higp+x2gmzj
+	 lvswWjJFmL/Pr6s+GAZpy8YUNIjBSKJefvjpR4kPBzHJW947RU6K99Tz/wE0OJFHL/
+	 Zny76WM8E3voA==
+Message-ID: <f0826f69-bc21-4a96-bb71-6a616025a2a9@kernel.org>
+Date: Mon, 27 Jul 2026 16:53:03 +0200
 MIME-Version: 1.0
-X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260727_053922_507414_4F9FE0A2 
-X-CRM114-Status: UNSURE (   8.03  )
-X-CRM114-Notice: Please train this message.
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH RFC v2 09/20] loongarch: kvm: remove stack copy address of
+ pXd in pXd_offset()
+To: Yeoreum Yun <yeoreum.yun@arm.com>, Russell King <linux@armlinux.org.uk>,
+ Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
+ Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>,
+ Kairui Song <kasong@tencent.com>, Qi Zheng <qi.zheng@linux.dev>,
+ Shakeel Butt <shakeel.butt@linux.dev>, Barry Song <baohua@kernel.org>,
+ Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>,
+ Wei Xu <weixugc@google.com>, Johannes Weiner <hannes@cmpxchg.org>,
+ Michal Hocko <mhocko@kernel.org>, Lorenzo Stoakes <ljs@kernel.org>,
+ Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>,
+ Anup Patel <anup@brainfault.org>, Atish Patra <atish.patra@linux.dev>,
+ Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+ Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+ Dave Hansen <dave.hansen@linux.intel.com>, Andy Lutomirski
+ <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+ Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, x86@kernel.org,
+ "H. Peter Anvin" <hpa@zytor.com>, "Liam R. Howlett" <liam@infradead.org>,
+ Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>,
+ Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
+ Jonas Bonn <jonas@southpole.se>,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ Stafford Horne <shorne@gmail.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ loongarch@lists.linux.dev, linux-mips@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-mm@kvack.org, kvm@vger.kernel.org,
+ kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
+ linux-openrisc@vger.kernel.org
+References: <20260722-dummy_ptxp3-v2-0-d9e4bad31e0a@arm.com>
+ <20260722-dummy_ptxp3-v2-9-d9e4bad31e0a@arm.com>
+From: "David Hildenbrand (Arm)" <david@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=david@kernel.org; keydata=
+ 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
+ qIws/H2t
+In-Reply-To: <20260722-dummy_ptxp3-v2-9-d9e4bad31e0a@arm.com>
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -107,25 +141,24 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Hi Paul,
+On 7/22/26 17:30, Yeoreum Yun wrote:
+> The behaviour of pXdp_get() will change with generic compile-time folded
+> page tables. To prepare for that,  rework host_pfn_mapping_level() to avoid
+> use of a stack copy of a pXd and pass it as argument to pXd_offset() so that
+> the folded entries value is ignored.
+> 
+> Replace direct uses of stack-based pXd values with pXd_offset_lockless().
+> And there should be no functional change.
+> 
+> Signed-off-by: Yeoreum Yun <yeoreum.yun@arm.com>
+> ---
 
-Thank you very much for taking the time to review this patch and for
-the helpful suggestion.
+Reviewed-by: David Hildenbrand (Arm) <david@kernel.org>
 
-I have split the patch as you requested and sent v2:
+-- 
+Cheers,
 
-  https://lore.kernel.org/linux-riscv/20260727122745.118764-1-fredwudi0305@gmail.com/
-
-Changes in v2:
-  - Patch 1/3: Create ptdump.h, move declarations there, and export note_page()
-  - Patch 2/3: Make attribute parsing use per-level bits, rename
-               pg_level[] to kernel_pg_levels[]
-  - Patch 3/3: KVM gstage ptdump
-
-I would greatly appreciate any further feedback you may have.
-
-Best regards,
-Dylan
+David
 
 -- 
 kvm-riscv mailing list
