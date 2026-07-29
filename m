@@ -4,71 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 10716C54F51
-	for <kvm-riscv@archiver.kernel.org>; Wed, 29 Jul 2026 07:08:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4CBE5C54F51
+	for <kvm-riscv@archiver.kernel.org>; Wed, 29 Jul 2026 07:08:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
 	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
 	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=uJjnPExiQGOt5NXVhLXOMPR8V9vt1sNBduwd8sHi9iI=; b=psR1n02vZyRn1G
-	qKLhxcl+Xfqr5tlbV9Prjd099XxCXYWeWA81TUL6FXTM0WR8Z9GE4z0fGfSs+pKrRVD0C6gALfOiF
-	gIGyWlh47xxHRzJn6QUe04Bi6+Kp3ZY8Hl9BjFZnytSfOkO4fHfXQX9lFLSNTPiE4CQ/MpERONsQr
-	o2lc5rCKw973U7RBzJm2i1QvIGNdXXx3KyHfT5O9xszmYgo1FmdYNlWb9gTML9QxH/2XxBsKXJIx9
-	+EdHvz/3b5cYkwRfMhff19HnP9yyaYxdTsEVTb0Ie6D879Tkc8t0rSOiIGIYH1gFsHVv4Hi47eR/y
-	MSg9WzOMl/ou8ymPx70g==;
+	List-Owner; bh=8BuK3vbocRsOSuBiG9OhitttL/Voth2KdUmyHwC7wW8=; b=jz6JUGn8Q2JYrp
+	soU9dgT8E2fca0y+m+tkbrMP8dBDkFkIJhS6Bxl6mts4VmvgX/JxpYEsH027Zg1iAhip1BV0bhSbv
+	275EUS5cUPl4zO4U4epWkr66dUcmVGXHUCzSevn09/wjymXzMYi4JzQnx2OFMI7jYepyHATbRDTyX
+	GPbcXcnUvlraXSC6KmNDyiOx521E7qCbUgqaYNaS4avGvWxhIXShbOoyhJavVDwMkdcbP5lyri3Up
+	jOn6ckUUeczPvcfHVA17SkZ2XJBvOCY2DS686GtQp1b+lmfryPgQTFTaG9VEBAWZrh/OY/nqpdW9b
+	r+IpP35BowUTTDm32nyQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1woyOd-0000000759f-310a;
-	Wed, 29 Jul 2026 07:08:07 +0000
-Received: from mail-pj2-x07.google.com ([2607:f8b0:4864:39::7])
+	id 1woyPM-000000075L0-42j9;
+	Wed, 29 Jul 2026 07:08:52 +0000
+Received: from mail-pj2-x0b.google.com ([2607:f8b0:4864:39::b])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1woyOb-0000000758o-0RoL
+	id 1woyPK-000000075Jy-0aVz
 	for kvm-riscv@lists.infradead.org;
-	Wed, 29 Jul 2026 07:08:06 +0000
-Received: by mail-pj2-x07.google.com with SMTP id 98e67ed59e1d1-38dcd98e5easo346500a91.0
-        for <kvm-riscv@lists.infradead.org>; Wed, 29 Jul 2026 00:08:04 -0700 (PDT)
+	Wed, 29 Jul 2026 07:08:51 +0000
+Received: by mail-pj2-x0b.google.com with SMTP id d9443c01a7336-2ceb5a39c48so2223415ad.1
+        for <kvm-riscv@lists.infradead.org>; Wed, 29 Jul 2026 00:08:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1785308884; x=1785913684; darn=lists.infradead.org;
+        d=gmail.com; s=20251104; t=1785308929; x=1785913729; darn=lists.infradead.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=X3JdpARdvO6SntweUzlxloeUTF3+X8KQZf2BNPxyxhE=;
-        b=FamMNHlfHR7tf47O7TzuXNU0xf0t3faSHAzhEy2ym0Ffgr0JV0ZA35j32p1uB8TRBt
-         fOMbyKUyeXj9xR4gv27Szrl8AXb5VgO5BJNY8w9zDwEOAoSURmHr0+9C15k4Jb/lgOle
-         5ue3rqMwsOKArLvy7VmXX0dkWb8qcNw2UppQRqRx1g0BxlyK6PFwKCGjmVA80hxwdK56
-         xj9KBeTTm3lr+4l7AAGiofC+NzxCtSjAw8ulkYNqDZyEqGJvWk/T/et2gg8czrS1Fg4s
-         blk/+a+5ZfzJ6/nvRsRpCQSUF2b/WylH1O+N8Awv27/Kz9JOmHux9R2/oIlr+Y0PVF5O
-         uvNQ==
+        bh=zVkfFwU99PAS9bFh1/EwhXDgeOkNzrTt6+RDhpCA128=;
+        b=iKSAAk3OfHRDh7VVTCX3B85ahiL6jKgCf4f1l5RG4GxycHMZqUAS3E+ipr9Prpf1y2
+         ASUKCze5dI+9ACkehTV/2ZV3Ye6j9f42w5bhC6bGlaS7y/84mOzrvtYRgMhySLKMgZSd
+         Zuqv3BihslqztOTp0tq7+M2ZDtwHiQv7kF42OTGfnjKPZNtmVNwtJrNKm1K0crx4QQWX
+         cXc5AZLo3NcFMtchgc7f+ZeZPLFh5eUsA/0mxdkJztKMFraoDyCRrWu6SPNg1T92AD+Z
+         aP3E0ZTi5vTGMxfJJCR48OgFQYj0U6Xq574HOhPQRN/QyyoHP6gOArucxNRF6foEP3XQ
+         dWnA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785308884; x=1785913684;
+        d=1e100.net; s=20251104; t=1785308929; x=1785913729;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=X3JdpARdvO6SntweUzlxloeUTF3+X8KQZf2BNPxyxhE=;
-        b=rls26wMek3NYYFOva22McqiWRTN3b3qh1vi/KvhXwjNHOIv1P5uLtGtqWniTNCNhtm
-         Q9zrZMokQL+SOEUNdKIDJnxTKQGELQjK8aL5jWHMJYlsWI6YaPhlSOMGX5QfYNXvNyGh
-         gSaR0DJ+jNbW9Ua8PuL09FxJ+62Vo95cPj3JgtjYoHUz/lNqMKNwBEuc8Q0/t+/XwxAG
-         9fUZhABw2l76ttV0PvWWtWGhQRJvvyFG2qmLJUzZjDlzBEHObbSY5qGm7LK10F/FlO30
-         1k+5fn3k2Z7ACu1sCAwxFGc1Fk2RJoXqlsy4l7JQAKCWavZtJOnF4NDgQOKBWAbGn1Pv
-         1WRQ==
-X-Forwarded-Encrypted: i=1; AHgh+RrVZ6Hcotf5o2G0PGJVsdsWlU0eXHCj72SHNV2hXDiqFSOdYgAVhCufo8TccXi8Ky10POHQY2ixvgc=@lists.infradead.org
-X-Gm-Message-State: AOJu0YyXRFXrkzRwwOrSJ6bk3cXppTLYTDyUjr/lVD/NHKqjdaarQJZ0
-	W/rdbvYbs3I0EDGdNL/gCkdtV42qKEkhQFG0pKE9qYvSht2B5l8jPiEy
-X-Gm-Gg: AR+sD10/pOfxJCpLQgidXPGYFZsOOcKQMVVCksFERggAIIV+aUXDJdbFVFBJzjRawEx
-	gJUXd1/4lRdKWbeYvcT+GwQijNd/iFJOpgspst8NdhITX7lA2CEwf1oJ7uOi09RH051jILUaZI6
-	3+E0NpV/ZPLPTpt9yK1liGwEsm6Rr8i39iCgS4RoT9hbjHh1mfOVd6a8/JvrKvVTViQI7E0bV+M
-	alzAZNowtxTeRFf+Rs+15Im8wejHN2A/uM4UYfdNifCAf0biwHiMdix1BNpMI6DGYclAsGVv0m+
-	jB9Dc6LmvJ4Lxl0VJkfP1X5cG+6qvWNQ0mU/yUo96CxnVBaWLO7M8fBcpwZxCbMHHdgkGoYIl9T
-	dYJMJupvA+9gRGlU619cqK2wTpPBvVFKGeDwCKx4aD925iYQjRB0WYWt88TPNgal4EzNb8v1IlI
-	tCKfBHtj7xN+doXmkmyIWUeTP3twvzsP3NSvwaopcXPCfodOz/QoyTVWyD8C8ZkLQG06Xnif2IF
-	Jo=
-X-Received: by 2002:a17:90b:3c12:b0:381:9028:5945 with SMTP id 98e67ed59e1d1-38f6a44b7a8mr6072575a91.14.1785308884161;
-        Wed, 29 Jul 2026 00:08:04 -0700 (PDT)
+        bh=zVkfFwU99PAS9bFh1/EwhXDgeOkNzrTt6+RDhpCA128=;
+        b=i2xGctacPMyW2Pn03VpeoxVuPxi58fAvRQ3TCZHzymHKq/D2zqif5ih6D5OwsrVygG
+         GQUtcReaNFZ4jks0jzny0BDoVGBNAs7Y2lu+NJKyjgk6ncy1TbZR9/b2vfUImVGpQpND
+         9ZykhHIZ0NV50m0cZ5Sg338rmmlAwNm/S05xd045DwtPU+FZbn29EPDTLNJVCdc5PiGv
+         3Mob+Fce74+hTV+kIhrUJ+K3A62PO7GMKVIgRL2nENm2lcKRX5q9xXLXaybG6kn2DPna
+         3QK5X49BlKyBEaKls6ZUDurKlXHHXaqib2aXRY1Eojcxjf+IQk21eDOer/8MI+fKlg1x
+         yIKQ==
+X-Forwarded-Encrypted: i=1; AHgh+Rq1x01GZrdb1ICKxKfObXvqwolmw+W7s7qhdWWOdf4WtVuM+l1LyCYVDWxNiUIzfv3kYDRAb8x9jG4=@lists.infradead.org
+X-Gm-Message-State: AOJu0YzvGiNH84c6ZPsVNN8FuDC9o5NZFM0iGroXUzyQI227NLSOm7LU
+	iNdJ+R0S4jfyhF+Q4/y6z1sPrknf1Zu6Yx9F0bzZN5pOCRKIpFhH8zVL
+X-Gm-Gg: AR+sD10A/tQ2mO9gkfXDhV9lv2D0f2eHXI5q4956uOja1+rJNJZW+yBv8lO8Uq5RyUP
+	0zJgw0SYcKDQa9ehwhZZNEfC6nhcKbaFXQRyENll8EV4++RBaUMHyGrtVsOWfLtfNxMqMVH0i2y
+	79qB9/4lrC9n0pQxDRWMIo63T1KQUrZeHj4Sci9lxG2eivl7khM9vJN0CtU+F2TG0MdRi4zHu8u
+	DQXVvxJ290AncON6idDDkmOTKFWAqojOqiKJLDcGPhGLdC/xrUBb3p/F4g6Jpi5sP6GdUDss77K
+	0O4kP+E6FMf8YneifWeSMWLQ0XimFXM8HxtpMoMB9dcuqJiPOCyPjL2qyXSKr7DkI5vToPEJucd
+	rZuKuPOQ2Dn5zJEWnXflbBDt2hSi/UJ1xPlvp33McaLlUfGdrrtKqmfAMjWPgwTX0IXWkz2E7u2
+	nccVtkxIdiNGhE/YEP0cZGGy1XusvsHt418MGEBcLbXHMEOGEsNttOSt9XDHtRSXSb3urzap6gC
+	Y4=
+X-Received: by 2002:a17:903:948:b0:2cf:ca89:499d with SMTP id d9443c01a7336-2d015abe469mr65912835ad.7.1785308929138;
+        Wed, 29 Jul 2026 00:08:49 -0700 (PDT)
 Received: from q-System-Product-Name ([129.227.183.200])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-38f7f292af9sm873721a91.11.2026.07.29.00.08.01
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2d022a15215sm6786125ad.8.2026.07.29.00.08.46
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 29 Jul 2026 00:08:03 -0700 (PDT)
+        Wed, 29 Jul 2026 00:08:48 -0700 (PDT)
 From: "Bingyu.Xian" <shanbeeyoo@gmail.com>
 To: Anup Patel <anup@brainfault.org>
 Cc: Atish Patra <atish.patra@linux.dev>,
@@ -81,15 +81,16 @@ Cc: Atish Patra <atish.patra@linux.dev>,
 	linux-riscv@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	Quan Zhou <zhouquan@iscas.ac.cn>,
+	James Houghton <jthoughton@google.com>,
 	Bingyu Xian <shanbeeyoo@gmail.com>
-Subject: [RFC PATCH] RISC-V: KVM: Add minimal guest_memfd support
-Date: Wed, 29 Jul 2026 15:07:56 +0800
-Message-ID: <20260729070756.730312-1-shanbeeyoo@gmail.com>
+Subject: [RFC PATCH] RISC-V: KVM: Enable KVM_MEM_USERFAULT support
+Date: Wed, 29 Jul 2026 15:08:43 +0800
+Message-ID: <20260729070843.730578-1-shanbeeyoo@gmail.com>
 X-Mailer: git-send-email 2.54.0
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260729_000805_176851_ACEFAE8B 
-X-CRM114-Status: GOOD (  12.49  )
+X-CRM114-CacheID: sfid-20260729_000850_182643_DF242EDA 
+X-CRM114-Status: GOOD (  16.21  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -106,85 +107,98 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Add minimal guest_memfd support for RISC-V KVM, following the same
-pattern as x86 and arm64.
+Add support for KVM_MEM_USERFAULT on RISC-V, which allows userspace
+VMMs (e.g. QEMU) to handle post-copy live migration via userfaultfd.
 
-1. Select KVM_GUEST_MEMFD in Kconfig
-2. In kvm_riscv_mmu_map(), check kvm_slot_has_gmem() early, before
-   taking mmap_read_lock(). For gmem memslots, resolve the PFN via
-   kvm_gmem_get_pfn(), then acquire kvm->mmu_lock and jump to G-stage
-   mapping, bypassing vma_lookup()/__kvm_faultin_pfn(). The gmem PFN
-   is resolved before mmap_read_lock() so the mmu_lock taken for the
-   mapping is never held while waiting for mmap_lock, which would
-   deadlock against mmu_notifier invalidation (mmu_lock -> mmap_lock).
-3. Skip kvm_release_faultin_page() for gmem pages; their lifetime is
-   managed by the gmem inode and invalidation notifiers.
+The implementation follows the same pattern as x86 and arm64:
 
-Verified: defconfig + CONFIG_KVM_GUEST_MEMFD=y compiles cleanly.
+1. Force PAGE_SIZE mappings when KVM_MEM_USERFAULT is set on a memslot.
+   The userfault bitmap is tracked at PAGE_SIZE granularity, so block
+   mappings must be disabled to ensure every guest page fault reaches
+   the bitmap check in gstage_page_fault().
+
+2. Check the userfault bitmap in gstage_page_fault() before installing
+   a G-stage mapping. If the faulting gfn is marked as pending
+   userspace resolution, prepare a KVM_EXIT_MEMORY_FAULT exit and
+   return 0 instead of proceeding with the mapping.
+
+3. Advertise KVM_CAP_USERFAULT capability to userspace.
+
+The mmu_notifier invalidation flush on userfault enable guarantees that
+we never fault on a page that's already mapped, so the bitmap set bits
+can be safely checked without holding the mmu_lock during the lookup.
+
+Builds on the gstage fault path type cleanup ("RISC-V: KVM: Fix
+spurious -EEXIST and clean up gstage fault path types"), which is sent
+separately as an independent fix.
+
+Depends-on: James Houghton's KVM_MEM_USERFAULT generic series
+Link: https://lore.kernel.org/kvm/20260618205753.2600064-1-jthoughton@google.com/
 
 Assisted-by: YuanSheng: deepseek-v4-pro
 Co-developed-by: Quan Zhou <zhouquan@iscas.ac.cn>
 Signed-off-by: Quan Zhou <zhouquan@iscas.ac.cn>
 Signed-off-by: Bingyu Xian <shanbeeyoo@gmail.com>
 ---
- arch/riscv/kvm/Kconfig |  1 +
- arch/riscv/kvm/mmu.c   | 17 ++++++++++++++++-
- 2 files changed, 17 insertions(+), 1 deletion(-)
+ arch/riscv/kvm/mmu.c       | 6 ++++--
+ arch/riscv/kvm/vcpu_exit.c | 7 +++++++
+ arch/riscv/kvm/vm.c        | 1 +
+ 3 files changed, 12 insertions(+), 2 deletions(-)
 
-diff --git a/arch/riscv/kvm/Kconfig b/arch/riscv/kvm/Kconfig
-index ec2cee0a39e0..77121100579f 100644
---- a/arch/riscv/kvm/Kconfig
-+++ b/arch/riscv/kvm/Kconfig
-@@ -29,6 +29,7 @@ config KVM
- 	select KVM_GENERIC_DIRTYLOG_READ_PROTECT
- 	select KVM_GENERIC_HARDWARE_ENABLING
- 	select KVM_MMIO
-+	select KVM_GUEST_MEMFD
- 	select VIRT_XFER_TO_GUEST_WORK
- 	select SCHED_INFO
- 	select GUEST_PERF_EVENTS if PERF_EVENTS
 diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-index d2a06a54be17..a9d61d0366e2 100644
+index d2a06a54be17..c33810b71d89 100644
 --- a/arch/riscv/kvm/mmu.c
 +++ b/arch/riscv/kvm/mmu.c
-@@ -557,6 +557,19 @@ int kvm_riscv_mmu_map(struct kvm_vcpu *vcpu, struct kvm_memory_slot *memslot,
- 	/* Setup initial state of output mapping */
- 	memset(out_map, 0, sizeof(*out_map));
- 
-+	if (kvm_slot_has_gmem(memslot)) {
-+		int max_order;
+@@ -583,7 +583,9 @@ int kvm_riscv_mmu_map(struct kvm_vcpu *vcpu, struct kvm_memory_slot *memslot,
+ 	else
+ 		vma_pageshift = PAGE_SHIFT;
+ 	vma_pagesize = 1ULL << vma_pageshift;
+-	if (logging || (vma->vm_flags & VM_PFNMAP))
++	bool userfault = !!(memslot->flags & KVM_MEM_USERFAULT);
 +
-+		ret = kvm_gmem_get_pfn(kvm, memslot, gfn, &hfn, &page, &max_order);
-+		if (ret)
-+			return ret;
-+
-+		vma_pagesize = PAGE_SIZE;
-+		writable = true;
-+		write_lock(&kvm->mmu_lock);
-+		goto map_gstage;
-+	}
-+
- 	if (is_write && logging &&
- 	    kvm_riscv_mmu_dirty_log_write_fault_fast(kvm, memslot, gpa, out_map))
- 		return 0;
-@@ -643,6 +656,7 @@ int kvm_riscv_mmu_map(struct kvm_vcpu *vcpu, struct kvm_memory_slot *memslot,
- 	if (!logging && !is_hugetlb && vma_pagesize == PAGE_SIZE)
++	if (logging || userfault || (vma->vm_flags & VM_PFNMAP))
+ 		vma_pagesize = PAGE_SIZE;
+ 	else if (is_hugetlb)
+ 		vma_pagesize = hugetlb_mapping_size(memslot, hva, vma_pagesize);
+@@ -640,7 +642,7 @@ int kvm_riscv_mmu_map(struct kvm_vcpu *vcpu, struct kvm_memory_slot *memslot,
+ 	 * possible. Hugetlb mappings already selected their target size above,
+ 	 * so do not promote them through the THP helper.
+ 	 */
+-	if (!logging && !is_hugetlb && vma_pagesize == PAGE_SIZE)
++	if (!logging && !userfault && !is_hugetlb && vma_pagesize == PAGE_SIZE)
  		vma_pagesize = transparent_hugepage_adjust(kvm, memslot, hva, &hfn, &gpa);
  
-+map_gstage:
  	if (writable) {
- 		mark_page_dirty_in_slot(kvm, memslot, gfn);
- 		ret = kvm_riscv_gstage_map_page(&gstage, pcache, gpa, hfn << PAGE_SHIFT,
-@@ -658,7 +672,8 @@ int kvm_riscv_mmu_map(struct kvm_vcpu *vcpu, struct kvm_memory_slot *memslot,
- 		kvm_err("Failed to map in G-stage\n");
+diff --git a/arch/riscv/kvm/vcpu_exit.c b/arch/riscv/kvm/vcpu_exit.c
+index 76cceecee5ab..0919e1c8a6ad 100644
+--- a/arch/riscv/kvm/vcpu_exit.c
++++ b/arch/riscv/kvm/vcpu_exit.c
+@@ -63,6 +63,13 @@ static int gstage_page_fault(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ 		};
+ 	}
  
- out_unlock:
--	kvm_release_faultin_page(kvm, page, ret, writable);
-+	if (!kvm_slot_has_gmem(memslot))
-+		kvm_release_faultin_page(kvm, page, ret, writable);
- 	write_unlock(&kvm->mmu_lock);
- 	return ret;
- }
++	if (kvm_slot_userfault_fault(memslot, gfn)) {
++		kvm_prepare_memory_fault_exit(vcpu, fault_addr, PAGE_SIZE,
++					trap->scause == EXC_STORE_GUEST_PAGE_FAULT,
++					trap->scause == EXC_INST_GUEST_PAGE_FAULT, false);
++		return 0;
++	}
++
+ 	ret = kvm_riscv_mmu_map(vcpu, memslot, fault_addr, hva,
+ 				(trap->scause == EXC_STORE_GUEST_PAGE_FAULT) ? true : false,
+ 				&host_map);
+diff --git a/arch/riscv/kvm/vm.c b/arch/riscv/kvm/vm.c
+index a9f083feeb76..1bb3918c70da 100644
+--- a/arch/riscv/kvm/vm.c
++++ b/arch/riscv/kvm/vm.c
+@@ -186,6 +186,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+ 	case KVM_CAP_READONLY_MEM:
+ 	case KVM_CAP_MP_STATE:
+ 	case KVM_CAP_IMMEDIATE_EXIT:
++	case KVM_CAP_USERFAULT:
+ 	case KVM_CAP_SET_GUEST_DEBUG:
+ 		r = 1;
+ 		break;
 -- 
 2.54.0
 
