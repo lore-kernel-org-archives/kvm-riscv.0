@@ -4,71 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B29E8C53200
-	for <kvm-riscv@archiver.kernel.org>; Wed, 29 Jul 2026 23:25:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D86D2C54FCD
+	for <kvm-riscv@archiver.kernel.org>; Wed, 29 Jul 2026 23:25:54 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=GEbudrlmhvW/EpcfnIVP/twC37SOmhApeYIi9gBiiCY=; b=Z+dLiiE7CBeYOo
-	HD5XZDK1kv/E8PFM5ono5qgXd6heQ5GTIdBMTE4EydoDjax96tY4M4/YnTFKNSKG+bmz2smCKwecL
-	uhsPayfp4ACxlk/Kn1Oq/jKOB7ltf5a+1XWnY8ib9xn9AirbXRRZdMiHfl1mQ5xBz8U0grL7VtNPk
-	XyfLuxsleIo/RFwaDpDBPYZGuh4oTvTqEJczGTafFljDACvaSrK3fCEPSfQ6GG2o7dZqJetqKrfv4
-	Ct+8YE8jqhUC4fHG/QXy6Zg7FaQYIGYRdBRzuVyBt++Yxfiy5xMVmWAjSPO+4dBB8zicjuyJEjPyy
-	7LkrZr+AS2jpOLb1NELw==;
+	List-Owner; bh=U+MN96B16tXxv0nBP0yT1ZqJuLq+2ZWV7u5kpP0sulA=; b=wXxuCz5JOdlZFW
+	7h0UK77aVMHNKj9y6rRYS0hS99YvF6ZZ/xtMYt7Kjr9OaSkpG0nSckU7jvYW1cJDE3P45slvktMHk
+	Z09HKSHPELKwzRBCgBlQNMEdZFPVafPlu+jhStolEwN6lJ5VbB6UjJw6zQf4mtjnKsBFRpCAI8EVx
+	c3rRBp7Mnwt6FhusXzbBEOVhqqWgklowiyEzbZx5a/X0e1a62Tkavul7cZe5YI0acKzL5Uk66QQR7
+	73TnTKvYS0qq3NgONnEL8TTf6ZUy07u1bPj6NmDUbeaG55BvYUsJbNDASuCpT9k5t9PPmLC3O7lY9
+	sN/nQffCoTQmJYrGQCQw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wpDep-0000000971p-1ZA0;
-	Wed, 29 Jul 2026 23:25:51 +0000
-Received: from mail-pl1-x631.google.com ([2607:f8b0:4864:20::631])
+	id 1wpDes-0000000973s-2DEY;
+	Wed, 29 Jul 2026 23:25:54 +0000
+Received: from mail-pj1-x1029.google.com ([2607:f8b0:4864:20::1029])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wpDem-000000096yy-3Keh
+	id 1wpDep-0000000971J-1xjv
 	for kvm-riscv@lists.infradead.org;
-	Wed, 29 Jul 2026 23:25:49 +0000
-Received: by mail-pl1-x631.google.com with SMTP id d9443c01a7336-2ce7d2adef4so22816065ad.3
-        for <kvm-riscv@lists.infradead.org>; Wed, 29 Jul 2026 16:25:48 -0700 (PDT)
+	Wed, 29 Jul 2026 23:25:52 +0000
+Received: by mail-pj1-x1029.google.com with SMTP id 98e67ed59e1d1-3856d6fbcb3so1208350a91.2
+        for <kvm-riscv@lists.infradead.org>; Wed, 29 Jul 2026 16:25:51 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1785367548; x=1785972348; darn=lists.infradead.org;
+        d=gmail.com; s=20251104; t=1785367550; x=1785972350; darn=lists.infradead.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=fOohDTGKU0Fji4CKKyS8ZYpTWzbljIE/mTc4CCY1QKo=;
-        b=BVfnGZ/tkSwSN9pSSV9lS+wuXFOo+7VOSMwMGQHVXiwbKAQH6rZQ8LpiuIZsi1mVud
-         TrIVyDyW4vax9gyQTrDYCv0sISBWiXjWeEo8k+0hIvX7H2rCqP3Gm/9tYJYYWzGr+fcV
-         B+nmZXv61IuUdMBlilBPTLgTDM7YmjdVaPIxHTviIp3D3/VMc+fI3ih2jkA0Pymi6M3F
-         hHp5fbajlxRRzMeEXbfeJwdjg4OpOnDrsrqXvAw7IRlNoA1uJRV/RiD0ymwbsjD9jiIl
-         Bo4ZDAcnN5zNB06O4wq7yfWPcQcl5mp7F5ybHpIY4XIY34tX2f0pdFh3T+xj/8yAJsNG
-         /imA==
+        bh=kW8oqLZffY6X0abqSuvd+PUmx3S3p3riWWcGYu4Az1s=;
+        b=BxnCfS9ACJOmxqbzHEDwrFio4C2fOr7Uc5a1lzde1j8SwmbqpetGYoijaujp2h0tZm
+         9GHi6C5zvA4P/YXL4Ki3RlSI0nI0+dN2ZpxOsfqhRNumx3AGcss2mvmXeVTgmWKFELZv
+         +AQhMlE136+59xdmm7j1HC7pGNyRUuftXakJxhqfik/IraanfXS0TpP9/YrhnHjiiMjX
+         I6yGxm9zy3XJXc+EFJrAJzgt7caKqePe4XQEh19QQMOD30wZGcmZeJA349feSE0A10VC
+         jjVQf2Qcl/yCNbIMMHXB4jr8X5g/5azuKOaLMH9czR8C7u6o4BENC04708OwnFNuLcuh
+         QicQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785367548; x=1785972348;
+        d=1e100.net; s=20251104; t=1785367550; x=1785972350;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=fOohDTGKU0Fji4CKKyS8ZYpTWzbljIE/mTc4CCY1QKo=;
-        b=P1VKFeGHYqSH7EZApbTjCrz3IHVPk4JL/7pS+SDxfKYwTqEqr77aeTWjHTX5af2e3X
-         blN7mvD/FxPqx84B0/QjccXuvS7WgsK7koC5DoKY79USCpn4lnEHtY0gWanN2+qn7pGI
-         Dw3x2gUAAWEmyvF7cMnve9zoqOOu7II/vYtU91u9P741qHb0BmvTg8b+MHoh89qaeffn
-         dcJX5uOsVeiiPFevYLYVSRLl41Mas11Sm5K+RaI9cML4XTf64MTLsrwM+ezoU4A2CKxf
-         XgLqHg2pcicvyHA/TLMjrBMvdhHEL7ru9mR7EwtmVWI5q4g4hgpbVFk4aKIzcM+8t3pg
-         1Gwg==
-X-Forwarded-Encrypted: i=1; AHgh+Rp7S56OvroysDjnKFtfmpEq5M5vZzDHOgfzLyYZaw9jOJH5wX5gqvUgXx9M2Z4cqpBbH48ctjMdWYM=@lists.infradead.org
-X-Gm-Message-State: AOJu0YxY4blsRf7jtg77YoEFRPo6Xaj1iyCAg/Nl8TVTZjOWcwe5HhMM
-	GyHdg8f3Zpbo68oPg4y3vQU3YMX7stNAvvhsXTfoflqnU0ew79j93yIg
-X-Gm-Gg: AR+sD12VWDJH/TQBut1BjVrMWSnpegCgmIMG7hxbzYaAHzgwjDSuR5zYVNWynGVWrbe
-	3eriLmu8+zryvyrOibuQYXFp6QmACeAKFo4dKf10iRhetxm2SG5iy+oFE2hvKNTgxnAAtv4GAGj
-	wMEKl9R8CnlYnwZOs4gaQ+hDoFdxDiaaSafXPJg6JjJHpXLYQWZwdpIXOFInvDlf1mpWxty87i3
-	tD5J/8t2Y5QVssIaOf0awPpbJn9NLhpo3PdgKRXB6Mgdq/8Uufemr/lAUBl1di5FX28qVrVH98D
-	JA9JPkBcnDrcDIIAEqjsiLA8XBa/JkmuwNCMHQ1STpmE3W6AoavZvaEUP4WY3MKJ3CQSAyPyfmg
-	vb341yrZf5jfyBOMTFjEdTIxI5h127FhHAEZY+YYZe3TOsS/t2QdyCPbVoduxPMpAoRUiMm9hhq
-	8ADWRhgQE2PJ/dAFZC3R5YaQGJ5kBFJYlGRCTE1q1GEI+zJvvFyLzRBQXDDzI=
-X-Received: by 2002:a17:902:d48b:b0:2cc:80c5:73be with SMTP id d9443c01a7336-2d035d154dfmr3101295ad.40.1785367547941;
-        Wed, 29 Jul 2026 16:25:47 -0700 (PDT)
+        bh=kW8oqLZffY6X0abqSuvd+PUmx3S3p3riWWcGYu4Az1s=;
+        b=pazDY3mRLE/o02zB8JRTzMFwoUb2E4Tn3OUvQkLqAP5zYue2fa/873OYbZ4stkGOYX
+         IWUiBs6ZhDpaUavo2R/0kuzujhOdYMwqY9Me5Rq8gH0+lPLmg3Ajw4RLpGQziS1egGHm
+         kR+DBr11Q7ytLbxvv584YWo3bbHoraGNHm+RLw3ejtdRj7Fkw8ICP7+ECNr8FfRjBolW
+         4xK4BBR3eZVKj7ae1fkkVpXJyXtmKFKJh73aCIUJysDOPBNR8glqEGjR/SH9xrHzjRyI
+         FmOCuc2q6P/HbJ7dyEbN2FD/xTmiQ4uHYkXXCMmEvd18+f1/gQIjeFXs/Ww461KEqcLF
+         UHpA==
+X-Forwarded-Encrypted: i=1; AHgh+RpbCc4Zx5t2Mqq7eubwwdjWSMFs5pPSTioFnWho4bnRRvH+9+vC2vGOZF4OtUo1GyoZlxmDppygcjE=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yx9OZwUlZeuQNF2yW1Szs4O1ihns5D8I+kK8kKLwEFPSipM205B
+	euwvDU69TNGfAEh3FoC4k4QCcoA59iFmTtSrrm4YAFr8MUUgOdUTFkzZ
+X-Gm-Gg: AR+sD13om6nzgqDcKL1I8WuxHPXOHczZlG3wLe+gRAcjBWLZ/7Sc4yP7m9wmW4qUAkD
+	9wYtHWSM3kyfJjeShyKkEFteor9tOmO+TJPKPN1QwNESe5WyVHxtnp5k2Yj8vtWuGSnbMcfkJ2f
+	YGFZPmiEribhp6gJvYR2D79bH1r2yMNy3uSxJWtNqQNIDQd3uwjn3sCLdbIPH9pUMPnLCbXfAJy
+	OzY7ihA0APW40C6P8YSpCXGG3v2YYmYIVXcRFEqmYFAE3Am25Ril+mmTMXYM4Ge0PToexOuFrFS
+	8s3lYfNo0zj5bOBjkDIO0eqtflUia7FyO9MYvdp6E2bv/53zbq1SZ1P8sVDNVezJefPTEg+8p8Y
+	mM9G6yzJd6tAPj8r7oc9bTZD7Xr/AEF5CMq4TNZmEXtAJrTRNf48fhpbL2kmNC8rXLeQMZnMP88
+	vxR5CLvanuHWBYw6pcZ/l3st1NlVxPfU01xqt84qHrkBHJe8wRjcHDyaybIEE=
+X-Received: by 2002:a17:90b:1b43:b0:387:e0db:bc2c with SMTP id 98e67ed59e1d1-38f9c032891mr269925a91.34.1785367550506;
+        Wed, 29 Jul 2026 16:25:50 -0700 (PDT)
 Received: from localhost ([2001:19f0:8000:3e6e:5400:6ff:fe38:3d01])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2d022a15215sm17512995ad.8.2026.07.29.16.25.47
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-38f9b7ace53sm90033a91.17.2026.07.29.16.25.49
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 29 Jul 2026 16:25:47 -0700 (PDT)
+        Wed, 29 Jul 2026 16:25:50 -0700 (PDT)
 From: Inochi Amaoto <inochiama@gmail.com>
 To: Anup Patel <anup@brainfault.org>,
 	Atish Patra <atish.patra@linux.dev>,
@@ -83,16 +83,16 @@ Cc: Inochi Amaoto <inochiama@gmail.com>,
 	linux-kernel@vger.kernel.org,
 	Yixun Lan <dlan@gentoo.org>,
 	Longbin Li <looong.bin@gmail.com>
-Subject: [PATCH v3 3/4] RISC-V: KVM: Reset the SBI extension when disable it
-Date: Thu, 30 Jul 2026 07:25:24 +0800
-Message-ID: <20260729232527.139183-4-inochiama@gmail.com>
+Subject: [PATCH v3 4/4] RISC-V: KVM: Mark the reset callback of FWFT extension always dirties CSR
+Date: Thu, 30 Jul 2026 07:25:25 +0800
+Message-ID: <20260729232527.139183-5-inochiama@gmail.com>
 X-Mailer: git-send-email 2.55.0
 In-Reply-To: <20260729232527.139183-1-inochiama@gmail.com>
 References: <20260729232527.139183-1-inochiama@gmail.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260729_162548_841609_E6342B8F 
-X-CRM114-Status: GOOD (  11.61  )
+X-CRM114-CacheID: sfid-20260729_162551_543694_EB9EAED5 
+X-CRM114-Status: GOOD (  10.03  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -109,43 +109,29 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-The SBI extension validation callback can only fix the parameter if
-the extension is enabled. However, if the extension is disabled after
-modifty some parameters, the state of the extension is still broken.
-
-Reset the extension when the extension is disabled so it can have
-a clear context.
+As the CSR is only flushed when the csr_dirty is set, always set the
+csr_dirty field in kvm_sbi_ext_fwft_reset() so the CSR change can take
+effect immediately. This unconditional set should be safe as all
+supported FWFT features change the CSR state currently.
 
 Signed-off-by: Inochi Amaoto <inochiama@gmail.com>
 ---
- arch/riscv/kvm/vcpu_sbi.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+ arch/riscv/kvm/vcpu_sbi_fwft.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
-index b737e9a7a12a..1c4f874368fb 100644
---- a/arch/riscv/kvm/vcpu_sbi.c
-+++ b/arch/riscv/kvm/vcpu_sbi.c
-@@ -221,6 +221,7 @@ static int riscv_vcpu_set_sbi_ext_single(struct kvm_vcpu *vcpu,
- {
- 	struct kvm_vcpu_sbi_context *scontext = &vcpu->arch.sbi_context;
- 	const struct kvm_riscv_sbi_extension_entry *sext;
-+	const struct kvm_vcpu_sbi_extension *ext;
- 
- 	if (reg_val != 1 && reg_val != 0)
- 		return -EINVAL;
-@@ -229,6 +230,12 @@ static int riscv_vcpu_set_sbi_ext_single(struct kvm_vcpu *vcpu,
- 	if (!sext || scontext->ext_status[sext->ext_idx] == KVM_RISCV_SBI_EXT_STATUS_UNAVAILABLE)
- 		return -ENOENT;
- 
-+	ext = sext->ext_ptr;
+diff --git a/arch/riscv/kvm/vcpu_sbi_fwft.c b/arch/riscv/kvm/vcpu_sbi_fwft.c
+index 56fb59afe02a..2e35e7e12327 100644
+--- a/arch/riscv/kvm/vcpu_sbi_fwft.c
++++ b/arch/riscv/kvm/vcpu_sbi_fwft.c
+@@ -601,6 +601,8 @@ static void kvm_sbi_ext_fwft_reset(struct kvm_vcpu *vcpu)
+ 		if (feature->reset)
+ 			feature->reset(vcpu);
+ 	}
 +
-+	if (!reg_val && scontext->ext_status[sext->ext_idx] == KVM_RISCV_SBI_EXT_STATUS_ENABLED &&
-+	    ext->reset)
-+		ext->reset(vcpu);
-+
- 	scontext->ext_status[sext->ext_idx] = (reg_val) ?
- 			KVM_RISCV_SBI_EXT_STATUS_ENABLED :
- 			KVM_RISCV_SBI_EXT_STATUS_DISABLED;
++	vcpu->arch.csr_dirty = true;
+ }
+ 
+ static void kvm_sbi_ext_fwft_validate(struct kvm_vcpu *vcpu)
 -- 
 2.55.0
 
