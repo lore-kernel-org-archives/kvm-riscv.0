@@ -4,8 +4,8 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AC1F5C53200
-	for <kvm-riscv@archiver.kernel.org>; Wed, 29 Jul 2026 19:07:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 85621C53219
+	for <kvm-riscv@archiver.kernel.org>; Wed, 29 Jul 2026 19:09:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
@@ -13,62 +13,62 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	References:Mime-Version:In-Reply-To:Date:Reply-To:Content-ID:
 	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
 	:Resent-Message-ID:List-Owner;
-	bh=0s4K/3PbTg1ziG2DNbmuqECXlvEi+M9bgVP6GdRMGpo=; b=IAS9CAeEwb2lPCqTijC+TE2DJb
-	vZfc3WmxhFc4iR0E6S1vQ/tJ9gSIyK7crDpK3/fOXCfd7N1cprKqb2o60c3smsZ+w8B6DtX4saKG0
-	ERyOAkZzfWtpVHO21dNix41lovs/4UCc4fMCfnTyM646tj24HUWqL9bFr5/LMNIdYkpKLRSiWli/p
-	UfMFBrw/mpTSs9uenIf5irgoXWd4KTFa6qmsh4S6d5R6ggmK14SZ0E2RFWYAtKe57QKsQlyS/sDJx
-	vx6E3xRIA78NZSJDOWWdPGcb1+1NuDtafmxFyNNOrJZyh/izc3HPDDh8pG0XWq1AD3FIrx0GKc+F/
-	mDqN9amg==;
+	bh=Tqg7OWGoM2hapTpG3oS1yV+7sUW42Jc9HCmhUkSxI1s=; b=p6s1RQuWb8FmpFQdhllZC34J9x
+	c/UjcTEblFQ77XYPsvOoljMAhz2bQ8HybuRiE3e5FBR1uxgXbxys6nK7qwaZlbNb+29mpNCLtZ0wE
+	VCobFFYDPYvvUbPS/Ud2XT1IMgwhGRLbdXYIbLqko7YQAscD1bT1bJ/oGDafcRQUvuNXbJ+F9WZ5e
+	PqT+eFyN9VinD6lYNtp8QdKlxSAPyyCy1a+ldJ6aV6lrT4aIZDS2X4mr3zpkEg4RxU9uG3bNgNz82
+	aRVnzqeXsuFeJvtXgiMzudUQ7CKcREggt8pChVkDSEsuIaEjXeOuRNvJf4dZqY16jCeYw1fYKrl4+
+	68pQqz1w==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wp9cx-00000008rVD-3dA8;
-	Wed, 29 Jul 2026 19:07:39 +0000
-Received: from mail-pf1-x445.google.com ([2607:f8b0:4864:20::445])
+	id 1wp9f2-00000008rea-10lW;
+	Wed, 29 Jul 2026 19:09:48 +0000
+Received: from mail-pf1-x446.google.com ([2607:f8b0:4864:20::446])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wp9cv-00000008rUs-34ep
+	id 1wp9f0-00000008rdo-0Yfi
 	for kvm-riscv@lists.infradead.org;
-	Wed, 29 Jul 2026 19:07:38 +0000
-Received: by mail-pf1-x445.google.com with SMTP id d2e1a72fcca58-84e3d575d6eso2338959b3a.3
-        for <kvm-riscv@lists.infradead.org>; Wed, 29 Jul 2026 12:07:36 -0700 (PDT)
+	Wed, 29 Jul 2026 19:09:47 +0000
+Received: by mail-pf1-x446.google.com with SMTP id d2e1a72fcca58-84a67b16217so2215709b3a.3
+        for <kvm-riscv@lists.infradead.org>; Wed, 29 Jul 2026 12:09:44 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1785352056; x=1785956856; darn=lists.infradead.org;
+        d=google.com; s=20251104; t=1785352184; x=1785956984; darn=lists.infradead.org;
         h=content-type:cc:to:from:subject:message-id:references:mime-version
          :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=2b3fQxiZ8vmEMZ/LriNEMYs2OUmWmCeVFavLD+6FbmM=;
-        b=se4b2jGLsKGHWVleFByRR9oQMR6lHhEWErJmUhWV9nmKQoNrS9zeo6eTaNeWRTnKzr
-         BrjLyDIsf/lfbbKLdnE9mYK3RlzaG3IrDID5J2/8FKjBz5OK6XOQ2uBUeQFE8fHffVaj
-         MU5OinEVpYVKmlwHAFX8nRKQVpZuzQfyMWS9QKzPItGziTvtdxBiFGsJIoWNjplq1JWK
-         QeUS/qAoy+7Nj/+8X3uACZu44dh0aklyGgVxQal6xmqv5i+yc6XepkX7XpeAqDw2W6ML
-         M7k7nQmFlEDn1S8CcOZ2cN8C/UjOBM/dLgnmzufmqRIL5oGMaQGo8EcozKuzO/smguQj
-         EPNQ==
+        bh=+XMot+n6JciyNBBWBYdqJ5JavyhMGOvDIbDy5VtGrOA=;
+        b=rKHm3K2ZckzWG5E3Cc12fUvdm+J4q0/JGtrRSARabJSc4+sc4ruYR/AC1fmc0u/INu
+         3ZkgwSrcPBj1aP2rjnaXavEWFW0WGPfuDh8jlcESxhWi7nPlCTynr7gxLgUnUy9l82sc
+         Vqsz/cIB8Y39AUcHVCbZPHGnFe/PknoCnJ0Ysar/I9/i6LWmURy+UmBLhHc3dTjID93e
+         Cteozo/g8zwEjZxOqVfuNocIV1iMMLDZ4THUGC+N5nQYRsp01hI4U9ZUZt1LRTH7IrOi
+         rYF50NFMrXpG0gwN043KqA2W8CUZ4nSXT2L28f2OM7IGXBnuJQqc/Tya2rPb8zQ+lTN4
+         5vpw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785352056; x=1785956856;
+        d=1e100.net; s=20251104; t=1785352184; x=1785956984;
         h=content-type:cc:to:from:subject:message-id:references:mime-version
          :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=2b3fQxiZ8vmEMZ/LriNEMYs2OUmWmCeVFavLD+6FbmM=;
-        b=VhfjAXZO4P3rzYemYIxM3a5/cALO1yqLU6/MG0Rdmi5XUcxNmquxRUG4U0eLzWyzP9
-         zInzahyuQ7ZqnjRGTy86YqfMuOYBkadFKPVgn1znGFx0bmldyc/vlLiW7f5Q36sAPERA
-         /jOCIVRuoDBOnjpyJa+o74oOYUHwr4jQjRABXK4rTBESVG6Y321T+hPJnMjBn2UYuF25
-         CLseZFDRzLl+06zsAF7/3PQF17wrrp7r7AljGF/ZLEZeODUn2JrrqqqmlVQ/TlUZdgmX
-         eqD9M6awPSIRIabPv5NxgryRE8XqQYmCVFC1MP6ZJvphrJPCJtMOniEUZZbNtZLh3N7R
-         IyzA==
-X-Forwarded-Encrypted: i=1; AHgh+Rr8NaIUFWh0XJMemy8+zrwqiUalx5Vj1oqfbapirg+4fTksOpQmHyN4gRZzJ8C2aX7qeLbbLdS1SUQ=@lists.infradead.org
-X-Gm-Message-State: AOJu0YzAOwLpQMT0lw3RU+qEqcv8MSVpRpU4XhDZ/t8bcj9fM5IUwXZg
-	QUhh0yCA7TaAs+G1q/HSuscm9+SUpyL/ptoXuXR1ajlg/pol6Ag0+Bv/bBnL5KhFOkSibzhkZ31
-	GYWS1DA==
-X-Received: from pfblc11.prod.google.com ([2002:a05:6a00:4f4b:b0:84a:894f:23e6])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a00:391d:b0:848:56d4:3288
- with SMTP id d2e1a72fcca58-84eb9e86fccmr34880b3a.4.1785352055899; Wed, 29 Jul
- 2026 12:07:35 -0700 (PDT)
-Date: Wed, 29 Jul 2026 12:07:35 -0700
-In-Reply-To: <20260331194202.1722082-9-vipinsh@google.com>
+        bh=+XMot+n6JciyNBBWBYdqJ5JavyhMGOvDIbDy5VtGrOA=;
+        b=deMX7yYcr+7bbfMpqAC6tsHWv1qUmNWq/4fPqaCLb2dEiZnCdGZXud93iNnFzi/2fA
+         7ipqhtlkD08cGdLkiaIxjvmpzzsX7Tqic37LSUC3fluY/51iotyvWybHxsJ+Wqy3ZP4m
+         CvPoO2T7iNOAXsCRgHGBjAIZHL5cXaJq4Q/pTHJGfElaQI539yPStG98Kheb17RBiSQp
+         hNyQbGpPQkg6UFcZdqVyIUwP+FBl1nlxvmYkj6qPZVFQwLhcU4+wftn2LofWWl2ib7NT
+         eh0u8yo68wEl33S11mHyARGduRN70K5wUatOLV9KAsP9Tv9VMjlTJHInozz7sok/VzqU
+         Xd8g==
+X-Forwarded-Encrypted: i=1; AHgh+Ro5Gp5vQAex5I6BxRD/sXh7Tz9ug3+BDoyseGURt+clJ2sAOh+WDB5tmIZetNaNyl1g/1GeB9Maliw=@lists.infradead.org
+X-Gm-Message-State: AOJu0YxE5fsUVgJlmHDalyP2ugVV2C1s4sBSlLR/1dcpFDwWDcEnoCiz
+	kfg07f3qEl5GmMK/GRStUuQ2qloMcKUt++F9pxz9HfzI5spKoeBeZ7zsWgDgEKNINgjBdaIhyIt
+	axm8yCA==
+X-Received: from pffz14.prod.google.com ([2002:aa7:990e:0:b0:848:49f6:6f5c])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a00:9290:b0:848:88e6:95d3
+ with SMTP id d2e1a72fcca58-84eba1ecb98mr1356b3a.72.1785352184010; Wed, 29 Jul
+ 2026 12:09:44 -0700 (PDT)
+Date: Wed, 29 Jul 2026 12:09:43 -0700
+In-Reply-To: <20260331194202.1722082-10-vipinsh@google.com>
 Mime-Version: 1.0
-References: <20260331194202.1722082-1-vipinsh@google.com> <20260331194202.1722082-9-vipinsh@google.com>
-Message-ID: <ampPd9szwRoGKwds@google.com>
-Subject: Re: [PATCH v4 8/9] KVM: selftests: Add rule to generate default tests
- for KVM selftests runner
+References: <20260331194202.1722082-1-vipinsh@google.com> <20260331194202.1722082-10-vipinsh@google.com>
+Message-ID: <ampP93AEMawDmv4E@google.com>
+Subject: Re: [PATCH v4 9/9] KVM: selftests: Provide README.rst for KVM
+ selftests runner
 From: Sean Christopherson <seanjc@google.com>
 To: Vipin Sharma <vipinsh@google.com>
 Cc: kvm@vger.kernel.org, kvmarm@lists.linux.dev, kvm-riscv@lists.infradead.org, 
@@ -77,8 +77,8 @@ Cc: kvm@vger.kernel.org, kvmarm@lists.linux.dev, kvm-riscv@lists.infradead.org,
 	zhaotianrui@loongson.cn, maobibo@loongson.cn, chenhuacai@kernel.org, 
 	maz@kernel.org, oliver.upton@linux.dev, ajones@ventanamicro.com
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260729_120737_807904_DBB6A029 
-X-CRM114-Status: GOOD (  28.78  )
+X-CRM114-CacheID: sfid-20260729_120946_172743_2D20C298 
+X-CRM114-Status: GOOD (  13.57  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -96,202 +96,134 @@ Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 On Tue, Mar 31, 2026, Vipin Sharma wrote:
-> Add 'tests_install' rule in the Makefile.kvm to auto generate default
-> testcases for KVM selftests runner. Preserve the hierarchy of test
-> executables for autogenerated files. Remove these testcases on
-> invocation of 'make clean'.
-> 
-> Autogeneration of default test files allows runner to execute default
-> testcases easily. These default testcases don't need to be checked in as
-> they are just executing the test without any command line options.
-> 
-> Signed-off-by: Vipin Sharma <vipinsh@google.com>
-> ---
->  tools/testing/selftests/kvm/.gitignore   |  1 +
->  tools/testing/selftests/kvm/Makefile.kvm | 26 +++++++++++++++++++++++-
->  2 files changed, 26 insertions(+), 1 deletion(-)
-> 
-> diff --git a/tools/testing/selftests/kvm/.gitignore b/tools/testing/selftests/kvm/.gitignore
-> index 95af97b1ff9e..548d435bde2f 100644
-> --- a/tools/testing/selftests/kvm/.gitignore
-> +++ b/tools/testing/selftests/kvm/.gitignore
-> @@ -7,6 +7,7 @@
->  !*.S
->  !*.sh
->  !*.test
-> +default.test
->  !.gitignore
->  !config
->  !settings
-> diff --git a/tools/testing/selftests/kvm/Makefile.kvm b/tools/testing/selftests/kvm/Makefile.kvm
-> index 6471fa214a9f..fb9439cb5f3d 100644
-> --- a/tools/testing/selftests/kvm/Makefile.kvm
-> +++ b/tools/testing/selftests/kvm/Makefile.kvm
-> @@ -1,7 +1,7 @@
->  # SPDX-License-Identifier: GPL-2.0-only
->  include ../../../build/Build.include
->  
-> -all:
-> +all: tests_install
->  
->  LIBKVM += lib/assert.c
->  LIBKVM += lib/elf.c
-> @@ -330,11 +330,15 @@ $(SPLIT_TEST_GEN_PROGS): $(OUTPUT)/%: $(OUTPUT)/%.o $(OUTPUT)/$(ARCH)/%.o
->  $(SPLIT_TEST_GEN_OBJ): $(OUTPUT)/$(ARCH)/%.o: $(ARCH)/%.c
->  	$(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c $< -o $@
->  
-> +# Default testcases for KVM selftests runner will be generated in this directory.
-> +DEFAULT_TESTCASES = testcases_default_gen
+> +Generate Default Tests
+> +======================
+> +
+> +Generate the default test case files using the provided make target::
+> +
+> +  # make tests_install
+> +
+> +This creates the ``testcases_default_gen`` directory containing ``default.test``
+> +files. Each KVM selftest has a directory with a ``default.test`` file. This file
+> +contains the executable path relative to the KVM selftest root directory
+> +(``/tools/testing/selftests/kvm``). For example, the ``dirty_log_perf_test``
+> +entry looks like::
+> +
+> +  # cat testcases_default_gen/dirty_log_perf_test/default.test
+> +  dirty_log_perf_test
+> +
+> +In above testcase, the runner executes ``dirty_log_perf_test``. Testcase files
+> +can provide extra arguments to the test::
+> +
+> +  # cat tests/dirty_log_perf_test/2slot_5vcpu_10iter.test
+> +  dirty_log_perf_test -x 2 -v 5 -i 10
 
-That's a cumbersome name.  It was also written by Yoda :-) How about default_testcases?
+This is obviously not about the default tests.
 
 > +
->  EXTRA_CLEAN += $(GEN_HDRS) \
->  	       $(LIBKVM_OBJS) \
->  	       $(SPLIT_TEST_GEN_OBJ) \
->  	       $(TEST_DEP_FILES) \
->  	       $(TEST_GEN_OBJ) \
-> +	       $(OUTPUT)/$(DEFAULT_TESTCASES) \
->  	       cscope.*
->  
->  $(LIBKVM_C_OBJ): $(OUTPUT)/%.o: %.c $(GEN_HDRS)
-> @@ -363,3 +367,23 @@ cscope:
->  	find . -name '*.c' \
->  		-exec realpath --relative-base=$(PWD) {} \;) | sort -u > cscope.files
->  	cscope -b
+> +In this case, the runner executes ``dirty_log_perf_test`` with the specified
+> +options.
 > +
-> +# Generate runner testcases in DEFAULT_TESTCASES directory.
-> +# $(OUTPUT) is either CWD or specified in the make command.
-> +tests_install: list_progs = $(patsubst $(OUTPUT)/%,%,$(TEST_GEN_PROGS))
-> +tests_install:
-
-This is very much *not* an install.  In fact, install is broken, because the
-runner isn't added to TEST_FILES.
-
-Another issue with install is that it flattens the directory structures, i.e.
-drops the $ARCH/ subdirectories.  That causes issues for the default.test testcases
-due to them using partially qualified paths.
-
-And coming back to this with fresh eyes, I don't love generating the testcases
-for the "normal" build.  It necessitates adding default.test to .gitignore,
-effectively requires copying the runner to the output directory, and is pure
-noise for folks that don't want to utilize the runner.
-
-Rather than generate testcases for the default build, what if we make this 100%
-opt-in, and take a hard dependency on install?  That should obviate the need for
-ignoring default.test, because if someone is silly enough to install testcases
-in the source tree, they get to deal with the noise.
-
-And we can commit to having the default testcases provide completely unqualified
-paths, so that the Just Work with the flattened output.  If someone wants to run
-with an unflattened tree, then we should update the runner itself to handle
-multiple paths, a la the actual PATH variable.
-
-The other nice thing is that we can make the runner opt-in, without requiring the
-user to run multiple make commands, by chaining testcases => install => all.  If
-we try to generate testcases as an optional step to the normal build, then we'll
-end up being able to run install without having generated the testcases, which
-is "fine", but probably not what we want for people that are trying to use the
-runner.
-
-The obvious downside is that it requires doing an install to get the default
-testcases, but IMO that's an acceptable tradeoff.
-
-> +	$(foreach tc, $(TEST_PROGS), \
-> +		$(shell mkdir -p $(OUTPUT)/$(DEFAULT_TESTCASES)/$(patsubst %.sh,%,$(tc))))
-> +	$(foreach tc, $(TEST_PROGS), \
-> +		$(shell echo $(tc) > $(patsubst %.sh,$(OUTPUT)/$(DEFAULT_TESTCASES)/%/default.test,$(tc))))
+> +Examples
+> +========
 > +
-> +	$(foreach tc, $(list_progs), \
-> +		$(shell mkdir -p $(OUTPUT)/$(DEFAULT_TESTCASES)/$(tc)))
-> +	$(foreach tc, $(list_progs), \
-> +		$(shell echo $(tc) > $(patsubst %,$(OUTPUT)/$(DEFAULT_TESTCASES)/%/default.test,$(tc))))
+> +Display all options::
 > +
-> +	@if [ ! -d $(OUTPUT)/runner ]; then             \
-
-This is very wrong, as this will fail to pick up any changes made to the runner.
-
-All in all, this as fixup?
-
-diff --git a/tools/testing/selftests/kvm/.gitignore b/tools/testing/selftests/kvm/.gitignore
-index 83aa2fe01bac..91d2b21d396f 100644
---- a/tools/testing/selftests/kvm/.gitignore
-+++ b/tools/testing/selftests/kvm/.gitignore
-@@ -8,7 +8,6 @@
- !*.S
- !*.sh
- !*.test
--default.test
- !.gitignore
- !config
- !settings
-diff --git a/tools/testing/selftests/kvm/Makefile.kvm b/tools/testing/selftests/kvm/Makefile.kvm
-index c5821d495ea6..fc9dc41fdbeb 100644
---- a/tools/testing/selftests/kvm/Makefile.kvm
-+++ b/tools/testing/selftests/kvm/Makefile.kvm
-@@ -1,8 +1,6 @@
- # SPDX-License-Identifier: GPL-2.0-only
- include ../../../build/Build.include
- 
--all: tests_install
--
- LIBKVM += lib/assert.c
- LIBKVM += lib/elf.c
- LIBKVM += lib/guest_modes.c
-@@ -347,15 +345,13 @@ $(SPLIT_TEST_GEN_PROGS): $(OUTPUT)/%: $(OUTPUT)/%.o $(OUTPUT)/$(ARCH)/%.o
- $(SPLIT_TEST_GEN_OBJ): $(OUTPUT)/$(ARCH)/%.o: $(ARCH)/%.c
-        $(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c $< -o $@
- 
--# Default testcases for KVM selftests runner will be generated in this directory.
--DEFAULT_TESTCASES = testcases_default_gen
-+TEST_FILES := $(selfdir)/kvm/runner
- 
- EXTRA_CLEAN += $(GEN_HDRS) \
-               $(LIBKVM_OBJS) \
-               $(SPLIT_TEST_GEN_OBJ) \
-               $(TEST_DEP_FILES) \
-               $(TEST_GEN_OBJ) \
--              $(OUTPUT)/$(DEFAULT_TESTCASES) \
-               cscope.*
- 
- $(LIBKVM_C_OBJ): $(OUTPUT)/%.o: %.c $(GEN_HDRS)
-@@ -386,21 +382,18 @@ cscope:
-        cscope -b
- 
- # Generate runner testcases in DEFAULT_TESTCASES directory.
--# $(OUTPUT) is either CWD or specified in the make command.
--tests_install: list_progs = $(patsubst $(OUTPUT)/%,%,$(TEST_GEN_PROGS))
--tests_install:
--       $(foreach tc, $(TEST_PROGS), \
--               $(shell mkdir -p $(OUTPUT)/$(DEFAULT_TESTCASES)/$(patsubst %.sh,%,$(tc))))
--       $(foreach tc, $(TEST_PROGS), \
--               $(shell echo $(tc) > $(patsubst %.sh,$(OUTPUT)/$(DEFAULT_TESTCASES)/%/default.test,$(tc))))
-+DEFAULT_TESTCASES = default_testcases
-+
-+testcases: list_progs = $(notdir $(patsubst $(OUTPUT)/%,%,$(TEST_GEN_PROGS)))
-+testcases: install
-+       $(foreach tc, $(notdir $(TEST_PROGS)), \
-+               $(shell mkdir -p $(INSTALL_PATH)/$(DEFAULT_TESTCASES)/$(notdir $(patsubst %.sh,%,$(tc)))))
-+       $(foreach tc, $(notdir $(TEST_PROGS)), \
-+               $(shell echo $(tc) > $(patsubst %.sh,$(INSTALL_PATH)/$(DEFAULT_TESTCASES)/%/default.test,$(tc))))
- 
-        $(foreach tc, $(list_progs), \
--               $(shell mkdir -p $(OUTPUT)/$(DEFAULT_TESTCASES)/$(tc)))
-+               $(shell mkdir -p $(INSTALL_PATH)/$(DEFAULT_TESTCASES)/$(tc)))
-        $(foreach tc, $(list_progs), \
--               $(shell echo $(tc) > $(patsubst %,$(OUTPUT)/$(DEFAULT_TESTCASES)/%/default.test,$(tc))))
--
--       @if [ ! -d $(OUTPUT)/runner ]; then             \
--               cp -r $(selfdir)/kvm/runner $(OUTPUT);  \
--       fi
-+               $(shell echo $(tc) > $(patsubst %,$(INSTALL_PATH)/$(DEFAULT_TESTCASES)/%/default.test,$(tc))))
- 
-        @:
-
-> +		cp -r $(selfdir)/kvm/runner $(OUTPUT);  \
-> +	fi
+> +  # python3 runner -h
 > +
-> +	@:
+> +Run all default tests::
+> +
+> +  # python3 runner -d testcases_default_gen
+
+s/testcases_default_gen/$(DEFAULT_TESTCASES), because the user (like me) might
+change it.
+
+Something like this, if we go testcases => install route?
+
+Generate Default Tests
+======================
+
+Generate the default test case files using the provided make target::
+
+  # make testcases
+
+Create a ``$(INSTALL_PATH)/$(DEFAULT_TESTCASES)`` directory and a sub-directory
+for each KVM selftest, and populate each selftest sub-directory with a
+``default.test`` file, where ``default.test`` contains the unqualified
+executable path.
+
+For example, the ``dirty_log_perf_test`` entry looks like::
+
+  # cat $(DEFAULT_TESTCASES)/dirty_log_perf_test/default.test
+  dirty_log_perf_test
+
+Note, the ``testcases`` target is dependent on the ``install`` target, i.e.
+installing testcases will also run ``install``.
+
+Testcase Syntax
+===============
+
+Testcase files can provide extra arguments to the test::
+
+  # cat tests/dirty_log_perf_test/2slot_5vcpu_10iter.test
+  dirty_log_perf_test -x 2 -v 5 -i 10
+
+In this case, the runner executes ``dirty_log_perf_test`` with the specified
+options. 
+
+Examples 
+========
+
+Display all options::
+
+  # python3 runner -h
+
+Run all default tests::
+
+  # python3 runner -d $(DEFAULT_TESTCASES)
+
+Run tests in parallel::
+
+  # python3 runner -d $(DEFAULT_TESTCASES) -j 40
+
+Print only passed test status and failed test stderr::
+
+  # python3 runner -d $(DEFAULT_TESTCASES) --print-passed status \
+  --print-failed stderr
+
+Run test binaries from a different directory (e.g., out-of-tree builds)::
+
+  # python3 runner -d $(DEFAULT_TESTCASES) -p /path/to/binaries
+
+Save all test outputs (stdout, stderr, status) to a directory::
+
+  # python3 runner -d $(DEFAULT_TESTCASES) -o test_outputs
+
+Run specific testcase files::
+
+  # python3 runner -t tests/dirty_log_perf_test/2slot_5vcpu_10iter.test
+
+> +
+> +Run tests in parallel::
+> +
+> +  # python3 runner -d testcases_default_gen -j 40
+> +
+> +Print only passed test status and failed test stderr::
+> +
+> +  # python3 runner -d testcases_default_gen --print-passed status \
+> +  --print-failed stderr
+> +
+> +Run test binaries from a different directory (e.g., out-of-tree builds)::
+> +
+> +  # python3 runner -d testcases_default_gen -p /path/to/binaries
+> +
+> +Save all test outputs (stdout, stderr, status) to a directory::
+> +
+> +  # python3 runner -d testcases_default_gen -o test_outputs
+> +
+> +Run specific testcase files::
+> +
+> +  # python3 runner -t tests/dirty_log_perf_test/2slot_5vcpu_10iter.test
 > -- 
 > 2.53.0.1118.gaef5881109-goog
 > 
