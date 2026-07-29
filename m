@@ -4,72 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C7705C53200
-	for <kvm-riscv@archiver.kernel.org>; Wed, 29 Jul 2026 12:07:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7F1FC54F51
+	for <kvm-riscv@archiver.kernel.org>; Wed, 29 Jul 2026 12:07:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=VWD8Y4qBfDqx/G2XEO4D3cdca4zoA82Y53ExgufRSQw=; b=rza88nlndwDCCd
-	HnOaBTogcP7CHx1Ukk7GTNOy8phpyyiLiTOWXVzGqz2v76d5vwNu5h4aLWey/CN18SEtA8Zl01vfr
-	/OS42nbCe4WYl3sqYL4TscydC5nEwMGd/VH19MB2bmC/xjEIhr7dBHintgrZR9yQ3PKzo8hhgZMw4
-	lIPUro0BY8DHCx5pLfeqf6A/2At+Tv5iUpTLh2sPJTvyxcVFlFJlKL/Si3sYaO3LDxhlilxg2GEwF
-	Lva3XtIolstAa5FqkbUaiGeQ6B2Hv7W6qDr8gqnKO0+UaHFN1ZmldmRJWqEoGuQsgpuq93RDJmyDu
-	WGOMowUo+UWBdZapN5NQ==;
+	List-Owner; bh=U/8JRyHC5qh9XR9rLNA9VW7RM9d8adggN5ZJmMVe6dY=; b=AWvxZy+2TPd8kR
+	Iq6xTcGjS6qAoqyhijp8IyLUNrr2gnCilfNyF+g5FUPeA3NzcUwwUvSPwhOPNcRJq0IK3i04Ti5L0
+	NYQLnzV01Y0iok0/RaVnhOkrMR7EyAR1RwMEOCArS80mnZvUrxJv4qLS68+uwKM/tw/yksLE9d92g
+	QwDgAeHrTQCzGl3eQVhvj8bPllK93CyTjgmJYtnylvzQtvY9W19hGJS/mtWOp4IAfHI6OwVdRhIgw
+	3LJX+yVp1vExr/5vZz6Rkin4CEPdi7efTMzmdxuTQWtMaY3EiGVbwH88kRz1sHXI7b94lpb13dsRl
+	MsfbpbpDCY9bDnu2OScg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wp34b-00000007pPM-1xuK;
-	Wed, 29 Jul 2026 12:07:45 +0000
+	id 1wp34e-00000007pRY-2oGQ;
+	Wed, 29 Jul 2026 12:07:48 +0000
 Received: from mail-pz2-x01.google.com ([2607:f8b0:4864:3b::1])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wp34Z-00000007pNw-1oma
+	id 1wp34c-00000007pPt-01Me
 	for kvm-riscv@lists.infradead.org;
-	Wed, 29 Jul 2026 12:07:44 +0000
-Received: by mail-pz2-x01.google.com with SMTP id 41be03b00d2f7-ca696c4b152so264675a12.1
-        for <kvm-riscv@lists.infradead.org>; Wed, 29 Jul 2026 05:07:43 -0700 (PDT)
+	Wed, 29 Jul 2026 12:07:47 +0000
+Received: by mail-pz2-x01.google.com with SMTP id 41be03b00d2f7-cbb8ebaca74so341961a12.1
+        for <kvm-riscv@lists.infradead.org>; Wed, 29 Jul 2026 05:07:45 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1785326863; x=1785931663; darn=lists.infradead.org;
+        d=gmail.com; s=20251104; t=1785326865; x=1785931665; darn=lists.infradead.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=KyJMaQ1sYDuVfSZMuwHiwzVH9paIzHnqdE6/bJyXJ+M=;
-        b=hOi7zRu7jbXaHEUe4MzzljG7Qb4Wwndc2RdGfY2QqMy7q8pFKLkO/m51P7mIvnefso
-         T1ioqRxoYc/0S4ICZ9JjuSYTfK89U0zPEuq21KPn6M0rlDHdx6cfs/OupL4X/jlFb50s
-         zCjYlSkgfuRdUI+Y17rDWnV3uDTMYzTzvoxQaHGpK35S9tP5I8jcxpCfHF33Aec/vC6m
-         W7JvWQ56P6HT5JEVFLtku3eaibtNrVESTmAoDbuP+pQ9jQzdLdMwac45uNH6woKhp8B6
-         NuDP4NULGpoEbPRkn1msgAGPMmwfy7B4AdXqMVzIngk7UaKoHjL8fx9pq7N/PRLpR78v
-         /WDQ==
+        bh=Reyg7Uf6tDZ8+7RMN+GpyxgR6kpVXfUwi59Uf40QnCY=;
+        b=EFsu1lqMD5VqwqAb9/6bhpKJ9ecJr//RGPDa/kDAhmIUWIEJiUNtafv0Qa7Ut7L1lN
+         poOzoeUN+Zd/8z/3xykRtM3ec6gnWMwUNy/FuNJaxMghq/nb6ae8MiSMSsz40tPGncg+
+         M7NKJq85/MIgMS/gcdguscZm7kATLMGodTfhfvm31ozO2BN2izepYoHqY0r7Y/DlBLWo
+         M3nqwBov7fmkRgH0/y5fZC0M8WCy65ole0dqfLisD3XY6XoTb6W9fbhbM46o56axYzgA
+         OOQ2GLBmHZ/7HnY2uJaI+tf5isFKiFtjWC2bRKH30q4T+5kugVSpytfKho3UfSS0bpZe
+         9Twg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785326863; x=1785931663;
+        d=1e100.net; s=20251104; t=1785326865; x=1785931665;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=KyJMaQ1sYDuVfSZMuwHiwzVH9paIzHnqdE6/bJyXJ+M=;
-        b=kvX05NQ0QyIO0UGatuN78FsLAg6v9EAHCzz+TbsRm8hdelvC6P2R5kO0FfpzsmcvBM
-         ZSZVIZt455O48NNNu+NNwk/IhwDpbAilF6RBGNSh7mobIb8N3uBHt/jXVru/mJTrKnl+
-         4+sWRz1CfLD5B6KYql1tvGcpEaNc8AFOzL9u+D4DxBE3hcETsVgXez9C7smCdINo5gS7
-         aGTFLWgLNlqRPhVsde2UBhcd3xjkhDs1zWWx6aufV0fSm/ZOfJZKQ2GE7tbgjtpYJTlt
-         TjmUwAOBNZstOLgdv3YSVka9coRkzuKK7KRdQ/zk255I0xVvAZqTlwytwaRx+LIaAPpH
-         mIoA==
-X-Forwarded-Encrypted: i=1; AHgh+RpZkrhQs5TMZ1PoNLD5GM1P0PZSHRN+1IpYMo2/x6aaewvWSLOWU7SCcoZDZSS42EBrhZjG2MbtOdY=@lists.infradead.org
-X-Gm-Message-State: AOJu0YzP8CR1cT6k+kg84ccMCLVRO05yaMztI53386SEHl46+nDHktY4
-	4GPXJO5cTdWh7ovp6bxcj9kHVYBYvDrtqu5cPPUw5a1is6/wtUzJkF6I
-X-Gm-Gg: AR+sD12HdNI9I9QVIHu4wZj/MbZcq4PbVkbCJuhEXy5sNTwW3x5ALHlMcWNIDbgGw9Q
-	C9JiQQbNghSLc0w0q/KFjHGtvQkeIvsXutLZBBRpUhBciia+tm5SYGNPQ0BGDPuz6EoQxiqwa9D
-	uQRKNobljIZJgom79CgKdjgRLHg3/JBnWZ/RjDrHdfTx8pZ9GRvzG/u4HJFz7V9oHQi7XNHMEH0
-	t9sHQHI2zKbpR6UnuH9BKzykzCwNMC8+DtLxGXXPYN4BiASa/s/S0MMBSsIOGIEB13CRSVlP7wf
-	I6Pw9a+FN99HX3zqkh1rbSYvLyfYZXqrY8lxjTTn6cE2gulEhOOHfIWoypnygf6zLmWPjq0ZOEx
-	WukxdmY71mo7K8rZ48UsyfwwZyEH9gIc/BoadIx/uzRV4a+aEZaoiEjGBqQcxJ39YLBKhj7qrUZ
-	yS2VgtD4sI+IhlEATyo8Y+DoMeZMB1A5eVCDNfj3hLSt7/zfrIG2PddHoR9uxL/IlqBWbWxAjg4
-	MSVYxQ22UcYJw==
-X-Received: by 2002:a05:6a00:b4e:b0:84c:1cd2:142b with SMTP id d2e1a72fcca58-84e932ca245mr6604434b3a.9.1785326862618;
-        Wed, 29 Jul 2026 05:07:42 -0700 (PDT)
+        bh=Reyg7Uf6tDZ8+7RMN+GpyxgR6kpVXfUwi59Uf40QnCY=;
+        b=qtgV29myHbFGVqVT2EVIMuIVVqUsagee3KtN2FATcE1BJy3pessPUeISmeEtXc0aOE
+         WoAqv4+hcOpqSA6L69QePkB+XgQJNilnhK0an/CiPMDp1IOBasz7MqHFkSyr5asVTX8x
+         NEr6okuHmdD+I7Ia9/fQgFO1z24vY0weYDRdwjoLqC4K/FCoED5eMArMOV7BSRQ2I9lX
+         o6ayVq6QwemEqZHT+/R55RSkLHDDyIWtKGdyxbFtzjbKcVujZsnZCGpy0UErChU/gv1W
+         HG7lhwEiIm0UjMz1KYFMwOKnPzWOJFpE700660iJXLSdl+j5Yd1viqr+VU1KqA3IFFg+
+         EFog==
+X-Forwarded-Encrypted: i=1; AHgh+RoHm36QlPCQlTGvMvLNRTS2WtNrnPMi/mBGBzd6T/uPatx/sRuKIloiLuYRqmh8t9qURwcq87xv4HQ=@lists.infradead.org
+X-Gm-Message-State: AOJu0YyjjZ/A2DFvGyfMrIW0IbdoHWfNX4yrF+/eXLyH3hCXno1LpPXL
+	Q0+WBdUFBgBMHi8PEHZHAfypuZ230jdDKD4IeviVuf+JM14v9wQS3XMx
+X-Gm-Gg: AR+sD10Pw5ZTf9imLdM1AClwxtxFOCOf4fspDzTyCPtUg3B6P4ei+9GwtJW/XtQZDGM
+	dPZEuXKRJpWAif47yzQ5wmqiDzyQivfwhWObWDxLXGbs/AvG+6nfMIVNYsT80Pbg/QFW/wok+QW
+	NKDYFY7vSKY6P61xJ5UJuZtH+PEhYkloWpEl/zaNjbTFWM53fjmko2ZGtMI0LNVsuXzGTMEHXwV
+	QTesfgwO/Qq3BFBB3KsGNy58RfPgO/ZXa1KQVbF5/aPJ/U9WLXiTct+2dB8atjLgIDhpgXn8ngV
+	GSKWc+2WJd8GNRoc5yJ/A0HN0SxjWf4vBz5oKfegfrDgYZTswtLmsAyD3Pm3aM2FMn2//VHwMNF
+	YGoWhBedAauCQW/JkHzRalVxnH66q4OxskYdYTBPU93Uzpk4eiceTzDdNVM1VBnmC/nlb0sGcr+
+	xSAI3wStTB7147DOf+MRw8H7pzuAp8juWGg4mJpINTRcrGCR4hF1e1D/n6sb6RYDxTe9QESE0ON
+	/4pefm+xb8X8NwBC9QgmkwMwg==
+X-Received: by 2002:a05:6a00:4f83:b0:845:c7f1:29fa with SMTP id d2e1a72fcca58-84e93250f57mr6434871b3a.30.1785326865329;
+        Wed, 29 Jul 2026 05:07:45 -0700 (PDT)
 Received: from q-System-Product-Name ([129.227.183.200])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84ea0055133sm1309570b3a.18.2026.07.29.05.07.40
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84ea0055133sm1309570b3a.18.2026.07.29.05.07.42
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 29 Jul 2026 05:07:42 -0700 (PDT)
+        Wed, 29 Jul 2026 05:07:45 -0700 (PDT)
 From: "Bingyu.Xian" <shanbeeyoo@gmail.com>
 To: Anup Patel <anup@brainfault.org>
 Cc: Atish Patra <atish.patra@linux.dev>,
@@ -84,17 +84,18 @@ Cc: Atish Patra <atish.patra@linux.dev>,
 	Quan Zhou <zhouquan@iscas.ac.cn>,
 	stable@vger.kernel.org,
 	Bingyu Xian <shanbeeyoo@gmail.com>
-Subject: [PATCH v3 1/3] RISC-V: KVM: Treat -EEXIST from G-stage map as success
-Date: Wed, 29 Jul 2026 20:07:31 +0800
-Message-ID: <20260729120733.829457-2-shanbeeyoo@gmail.com>
+Subject: [PATCH v3 2/3] RISC-V: KVM: Use unsigned int for vma_pageshift
+Date: Wed, 29 Jul 2026 20:07:32 +0800
+Message-ID: <20260729120733.829457-3-shanbeeyoo@gmail.com>
 X-Mailer: git-send-email 2.54.0
 In-Reply-To: <20260729120733.829457-1-shanbeeyoo@gmail.com>
 References: <20260729075230.743030-1-shanbeeyoo@gmail.com>
  <20260729120733.829457-1-shanbeeyoo@gmail.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260729_050743_480506_E7EA1BE3 
-X-CRM114-Status: GOOD (  13.16  )
+X-CRM114-CacheID: sfid-20260729_050746_059389_383DA633 
+X-CRM114-Status: UNSURE (   9.98  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -111,48 +112,32 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-When a concurrent vCPU installs the same G-stage mapping while we are
-waiting for mmu_lock, kvm_riscv_gstage_map_page() returns -EEXIST.
-This is not an error -- the page is correctly mapped and the faulting
-vCPU can simply retry the guest instruction -- but KVM was treating it
-as one: printing "Failed to map in G-stage" to dmesg and propagating
--EEXIST all the way to userspace.
+vma_pageshift in kvm_riscv_mmu_map() was declared short.  Use unsigned
+int, the conventional kernel type for bit widths and shift counts, in
+preparation for sharing a common struct kvm_page_fault across
+architectures.  No functional change.
 
-Align RISC-V with x86 and arm64, which already swallow -EEXIST in
-their respective fault handlers.  This also lets kvm_release_faultin_page()
-drop its "ret && ret != -EEXIST" special case: with ret normalized to 0
-the regular release path is correct.
-
-Fixes: 9d05c1fee837 ("RISC-V: KVM: Implement stage2 page table programming")
-Cc: stable@vger.kernel.org
 Assisted-by: YuanSheng: deepseek-v4-pro
 Co-developed-by: Quan Zhou <zhouquan@iscas.ac.cn>
 Signed-off-by: Quan Zhou <zhouquan@iscas.ac.cn>
 Signed-off-by: Bingyu Xian <shanbeeyoo@gmail.com>
 ---
- arch/riscv/kvm/mmu.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ arch/riscv/kvm/mmu.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-index 8a0aa5e0e216..943d8dc72105 100644
+index 943d8dc72105..d2a06a54be17 100644
 --- a/arch/riscv/kvm/mmu.c
 +++ b/arch/riscv/kvm/mmu.c
-@@ -652,11 +652,13 @@ int kvm_riscv_mmu_map(struct kvm_vcpu *vcpu, struct kvm_memory_slot *memslot,
- 						vma_pagesize, true, true, out_map);
- 	}
- 
--	if (ret)
-+	if (ret == -EEXIST)
-+		ret = 0;
-+	else if (ret)
- 		kvm_err("Failed to map in G-stage\n");
- 
- out_unlock:
--	kvm_release_faultin_page(kvm, page, ret && ret != -EEXIST, writable);
-+	kvm_release_faultin_page(kvm, page, ret, writable);
- 	write_unlock(&kvm->mmu_lock);
- 	return ret;
- }
+@@ -541,7 +541,7 @@ int kvm_riscv_mmu_map(struct kvm_vcpu *vcpu, struct kvm_memory_slot *memslot,
+ 	kvm_pfn_t hfn;
+ 	bool is_hugetlb;
+ 	bool writable;
+-	short vma_pageshift;
++	unsigned int vma_pageshift;
+ 	gfn_t gfn = gpa >> PAGE_SHIFT;
+ 	struct vm_area_struct *vma;
+ 	struct kvm *kvm = vcpu->kvm;
 -- 
 2.54.0
 
