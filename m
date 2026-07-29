@@ -4,80 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2A1D9C53200
-	for <kvm-riscv@archiver.kernel.org>; Wed, 29 Jul 2026 19:39:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 17445C53200
+	for <kvm-riscv@archiver.kernel.org>; Wed, 29 Jul 2026 22:34:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID:
-	References:Mime-Version:In-Reply-To:Date:Reply-To:Content-ID:
-	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
-	:Resent-Message-ID:List-Owner;
-	bh=RU9XBsJXSvFav2Q5kTz2B/OqTSPPrBh5l7DFQ64Qw9M=; b=ZvBNynZ1e29Y4YHI89bLlzFIg/
-	7usm4Wmest30DJ9ua9QG6dGb0qOdvnWLlEdM6blf3SPEIhhHoUU02rS9XlcKmwCCfNuqDirxdea21
-	9HQfjZrxNIq3YCniKYD0RmYLjWqDZPfhq72I2O8l9kemJNFXLgHSQK1FnKbJXoGljLB+I7VMXFQkx
-	WxyfIfrjRnpQKaMBXSHtzKN5Gwe6ay+zAuhBKem5OpPuZg/e1eekSrMK6z2OlIMy1jfz0d8o6t4cJ
-	6uwBA7H0gCeGVW4PFygCjFN03RGXanuMtePsOaYW/XgK1azaVpzVMSqKAnYWzjfLbSEPuJ7RKhkpA
-	kXtPhyGg==;
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
+	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=IRH9qFyg/kBxP+n1iVnyreiPCPoGaDNcYZrQBIhEAvA=; b=KKE9m22C70c4ng
+	hZwVaPoXpnDPEpWk2rw+IPcR/SPsBjY+i61O8FHBYu0E9iNgg2syUswIYSISShAQ2JDzZAU0pFis3
+	/ZkUfgpiOK2/0LrXUYD4uKUIE0RC8pVNnCsrxhLeFC1FUg7ANTek7MJ8s4fVwTn+7zw+iCk0MSGq5
+	xr452C4jmUSJsCJgO4apA3PYVCdTeNSZ7h426IV6wH+pWQB4b54mGzp4adHOJBlNxWsdy4KZ0e12I
+	/lHmQMF8HtHgt1TAJBRPjjDVBhd15hiQ0U8QFrQE2+ilG48ERMQl3dDOnRnGGbbZYHJ2cVeBJDJs/
+	R5vsT0y7s155zDH6GrAQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wpA7T-00000008uDR-2U1u;
-	Wed, 29 Jul 2026 19:39:11 +0000
-Received: from mail-pg1-x545.google.com ([2607:f8b0:4864:20::545])
+	id 1wpCqg-000000094KA-0ivD;
+	Wed, 29 Jul 2026 22:34:02 +0000
+Received: from mail-pl1-x62e.google.com ([2607:f8b0:4864:20::62e])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wpA7R-00000008uCq-06Sh
+	id 1wpCqe-000000094JR-1IfW
 	for kvm-riscv@lists.infradead.org;
-	Wed, 29 Jul 2026 19:39:10 +0000
-Received: by mail-pg1-x545.google.com with SMTP id 41be03b00d2f7-cb711c88f2eso877500a12.2
-        for <kvm-riscv@lists.infradead.org>; Wed, 29 Jul 2026 12:39:08 -0700 (PDT)
+	Wed, 29 Jul 2026 22:34:01 +0000
+Received: by mail-pl1-x62e.google.com with SMTP id d9443c01a7336-2cedda2ce6fso13062575ad.1
+        for <kvm-riscv@lists.infradead.org>; Wed, 29 Jul 2026 15:33:59 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1785353947; x=1785958747; darn=lists.infradead.org;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=yz+Y4cDmmkJFalPabDMm+ynUXO0OUxXd4k3RBua3jcw=;
-        b=EeAO6eoQXnuOKr4M94h1ze0XUymP1MjFCLamasFFRGpYbxqM203jLxREhp84AtVS9r
-         LD6V+1DCoeusek6ZesdQRWYgp3SX2vB7g4v4jyg19gPKqddsn0EYJh3GbDp4lSoqe5Ld
-         kOncdNqtKCds5EE/K3z6w3WXhfJun++WpfTgteWXLcl+4Q7Uxl0GfWi/iSLv7/nzDcsM
-         7vmVmS6/6ZvrwmPiWlzEr0WlHyiH1SjDB7buzFw1DLr/MxZax6SjfUoUC9DKvrNF6F+a
-         6FCXOchNSh9fiilak48BPo/DVh3anD5EYG3H8wmHUYYA7qPXUERgFl3b/Jq30tyDiN5D
-         q1aQ==
+        d=gmail.com; s=20251104; t=1785364439; x=1785969239; darn=lists.infradead.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :content-type:mime-version:references:message-id:subject:cc:to:from
+         :date:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=XmJqv3LbtEXaKjjxddFIB/CCzuAW9BtsEymREcKNJvA=;
+        b=qBN8Lad5xZVnWVRMSV74IKVCnNe8SR8LjokaLKYPovfY6AgpCynxcef7zfY7VHjYO4
+         pyAIShH+cnUuRfIN+bW2vQlQP2aNWFsod3n83F8TDKo0wsUtW00hukc1gIBx6imu3TJ3
+         aZLceKzxmd71coalvTX+vhUu2lPWvKPLTYkdeklPjQLXDifdNueW/mXM9T0dFSQcHM+J
+         yXVdaM2BEWhOA3V9sdfHq0IW+8OOxnKyp906q8VvrDCZ83Up0gZ5dH++WITWrvLe3Okx
+         osi5TOziiHV1oCjz6x60nd43We98iOQTV+poP/IOikK2+C9Hd5BBHmiy2INNWR7TYNpc
+         c08g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785353947; x=1785958747;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=yz+Y4cDmmkJFalPabDMm+ynUXO0OUxXd4k3RBua3jcw=;
-        b=oTdn9J98b0nOgFprVAjx9Mwl/kSV7lXcHK0m/Dw4tki7OwSlUPdWBEg7IpHzoS1ezs
-         7aztsaJw8TleO1JtnLhsoNNuOEaIE8qBvE9UTM6yY24RUtecDUJZPyP5e3EIFxuE1hii
-         5GfC9ZsHVgC1MaFgFIhlEMJet6GT0+AtTuZ2jT4zdWEtFNEtOO5KGVWL6FTJU80ZBnhh
-         s0Ldzlg+gLM5lVaqAOtsiUelqIb0WGmi26QuaPQ9f1WZNVH+ljUPljNqIj641dme0Qhp
-         kihOIDYFj/awLX5eRKCBySFr4P1d50kF7trh5igbo0TyeykogajZsVin5CQ3MNS+Lh/s
-         4mAg==
-X-Forwarded-Encrypted: i=1; AHgh+Rqz9nQpUDzwAcM3lUAQeKbu8/zpriAdMFoHb6SmnbdmIEELreijbYhI8WqwwsqD0p3fWJYNJ6CH1Jg=@lists.infradead.org
-X-Gm-Message-State: AOJu0YxLG0ys1Nl0JPBK/q6jEkeskFWUoNY5pcu39pSIQQzXPB+qYyaM
-	JT6hucHq3y3SC0WRACwElTidOZfDCc/C2VgRlKxym0oXZtcA1TZWv8QVRdr159XM3g4vkNlOtWy
-	NPOgewA==
-X-Received: from pjbcn20.prod.google.com ([2002:a17:90a:f094:b0:38e:6163:aa2b])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:37c7:b0:37f:f4ae:5f25
- with SMTP id 98e67ed59e1d1-38f99253d52mr179898a91.20.1785353947403; Wed, 29
- Jul 2026 12:39:07 -0700 (PDT)
-Date: Wed, 29 Jul 2026 12:39:06 -0700
-In-Reply-To: <20260331194202.1722082-4-vipinsh@google.com>
-Mime-Version: 1.0
-References: <20260331194202.1722082-1-vipinsh@google.com> <20260331194202.1722082-4-vipinsh@google.com>
-Message-ID: <ampW2iHhp6EA21I5@google.com>
-Subject: Re: [PATCH v4 3/9] KVM: selftests: Add timeout option in selftests runner
-From: Sean Christopherson <seanjc@google.com>
-To: Vipin Sharma <vipinsh@google.com>, t@google.com
-Cc: kvm@vger.kernel.org, kvmarm@lists.linux.dev, kvm-riscv@lists.infradead.org, 
-	pbonzini@redhat.com, borntraeger@linux.ibm.com, frankja@linux.ibm.com, 
-	imbrenda@linux.ibm.com, anup@brainfault.org, atish.patra@linux.dev, 
-	zhaotianrui@loongson.cn, maobibo@loongson.cn, chenhuacai@kernel.org, 
-	maz@kernel.org, oliver.upton@linux.dev, ajones@ventanamicro.com
+        d=1e100.net; s=20251104; t=1785364439; x=1785969239;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :content-type:mime-version:references:message-id:subject:cc:to:from
+         :date:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=XmJqv3LbtEXaKjjxddFIB/CCzuAW9BtsEymREcKNJvA=;
+        b=B+mVZsApM54MOHP+RCHOvuOjynCUU+lFycLJBDaOjYeqGATp7DG+dqF7NeVZoYgT3q
+         Uieupm9aySeo7GoIt7LH9lkOHb1mqj/yAfwKKxprxI8hEKsDPHQnGcz6i+MeXGxmtcHD
+         4jJ5c/Mgk6nr8tcbLCdDeRnfUbpnIsbrGqOqC7U5LbjtwG97DbHwa3tzd8PpzK203IPg
+         m7LkXYR/Ap/aaeBx7wm8smCCfsalXvrLc+04NdNnhTXbbqlmaW1Jikwfaz0LPerWewn/
+         re84B0kQHFSntmat9vIKlsN9s6YJU3uKZ2HlVzqmXMVBY3+jPeimecLLnliYoulDDSUj
+         rlvQ==
+X-Forwarded-Encrypted: i=1; AHgh+RqzfQPGQbqqgdPgQYMH1mqRBPUuId1zY4U1k+xIc3NWVQEf+js6z2RA/ZjLpp7EM3qYhX7dP6vdOK4=@lists.infradead.org
+X-Gm-Message-State: AOJu0YyrdBArc7Hf0ABD2rdysTkp2eH09b+1X+eHY2aBrKrBOWdo8Th6
+	S4Mqzc875QTqvYm0mT/mBSUAd92hDNClTOj4I2+9TwiaoAv0/A0c9pPBP2+41/1n
+X-Gm-Gg: AR+sD12yK+1nAoS6GW52TbHvttfkQ2QIeYB7rtb9lvN2RTwpe3cIAxp2tFiBm0tqqC9
+	PZT9r4JamIC9b3AnwUyZQy0ZwISuyMlqY0dI5dcJ3tHlByvkPHbGG9WxNXsuYTMveiIAyI0qdqr
+	Hxa0X1Xi+3ErV9g01N6oL+BeJdxeshvMn4wacQm3+2Nobjs+JhzHDoihCFvO+iXYIb5qFcItFLv
+	GdTuEOnTRavVX/uu2lPGaI94s35GhDN0/VOZgeWmYqMwhNfP3yZYXLn/UsLEcyrA/z5+gZaCvpV
+	yQD3tAgpTnICRijsKacQAXmCC1I4xl92HeWmxnUyhLGJr5BozEGDjZ4ZXfjQxBO/6rc7UYFH42g
+	Y/eve9yJ5LYwzy5ZoOPHTWS+qZ917ZDoX6Un77mcATdA8aZ45yqOYBHqyMGHxN9R0rOJcEAgSTT
+	NDOe+89jDHHCm9m5o3TmliRDgn/DP1kwI7UxyT1GIqYPJGS1LV3ALk35HtGSw=
+X-Received: by 2002:a17:902:e888:b0:2ca:d151:383a with SMTP id d9443c01a7336-2d035c10f84mr2037815ad.20.1785364439062;
+        Wed, 29 Jul 2026 15:33:59 -0700 (PDT)
+Received: from localhost ([2001:19f0:8000:3e6e:5400:6ff:fe38:3d01])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2d022a468f7sm17125555ad.28.2026.07.29.15.33.58
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 29 Jul 2026 15:33:58 -0700 (PDT)
+Date: Thu, 30 Jul 2026 06:33:45 +0800
+From: Inochi Amaoto <inochiama@gmail.com>
+To: Anup Patel <anup@brainfault.org>, Inochi Amaoto <inochiama@gmail.com>
+Cc: Atish Patra <atish.patra@linux.dev>, Paul Walmsley <pjw@kernel.org>, 
+	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+	Alexandre Ghiti <alex@ghiti.fr>, kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
+	linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, Yixun Lan <dlan@gentoo.org>, 
+	Longbin Li <looong.bin@gmail.com>
+Subject: Re: [PATCH v2 3/3] RISC-V: KVM: Reset the SBI extension when disable
+ it
+Message-ID: <amp_hOi78SGkPjAp@inochi.infowork>
+References: <20260706021154.210289-1-inochiama@gmail.com>
+ <20260706021154.210289-4-inochiama@gmail.com>
+ <CAAhSdy3qnvWF1cdxJxnJxR9jf0_BUpKbauNAuJcY_AAVaJw9AQ@mail.gmail.com>
+MIME-Version: 1.0
+Content-Disposition: inline
+In-Reply-To: <CAAhSdy3qnvWF1cdxJxnJxR9jf0_BUpKbauNAuJcY_AAVaJw9AQ@mail.gmail.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260729_123909_104888_629F0F4D 
-X-CRM114-Status: GOOD (  19.40  )
+X-CRM114-CacheID: sfid-20260729_153400_351933_AAB14F17 
+X-CRM114-Status: GOOD (  22.71  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -89,137 +101,51 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Tue, Mar 31, 2026, Vipin Sharma wrote:
-> Add a command line argument in KVM selftest runner to limit amount of
-> time (seconds) given to a test for execution. Kill the test if it
-> exceeds the given timeout. Define a new SelftestStatus.TIMED_OUT to
-> denote a selftest final result. Add terminal color for status messages
-> of timed out tests.
-> 
-> Set the default value of 120 seconds for all tests.
-> 
-> Signed-off-by: Vipin Sharma <vipinsh@google.com>
-> ---
->  .../testing/selftests/kvm/runner/__main__.py  |  9 +++++-
->  .../testing/selftests/kvm/runner/selftest.py  | 29 ++++++++++++-------
->  .../selftests/kvm/runner/test_runner.py       |  2 +-
->  3 files changed, 27 insertions(+), 13 deletions(-)
-> 
-> diff --git a/tools/testing/selftests/kvm/runner/__main__.py b/tools/testing/selftests/kvm/runner/__main__.py
-> index 9b6c78e69c64..82c543d11c34 100644
-> --- a/tools/testing/selftests/kvm/runner/__main__.py
-> +++ b/tools/testing/selftests/kvm/runner/__main__.py
-> @@ -37,6 +37,11 @@ def cli():
->                          default=".",
->                          help="Finds the test executables in the given path. Default is the current directory.")
->  
-> +    parser.add_argument("--timeout",
-> +                        default=120,
-> +                        type=int,
-> +                        help="Timeout, in seconds, before runner kills the running test. (Default: 120 seconds)")
-> +
->      return parser.parse_args()
->  
->  
-> @@ -44,6 +49,7 @@ def setup_logging():
->      class TerminalColorFormatter(logging.Formatter):
->          reset = "\033[0m"
->          red_bold = "\033[31;1m"
-> +        red = "\033[31;1m"
->          green = "\033[32m"
->          yellow = "\033[33m"
->          blue = "\033[34m"
-> @@ -52,7 +58,8 @@ def setup_logging():
->              SelftestStatus.PASSED: green,
->              SelftestStatus.NO_RUN: blue,
->              SelftestStatus.SKIPPED: yellow,
-> -            SelftestStatus.FAILED: red_bold
-> +            SelftestStatus.FAILED: red_bold,
-> +            SelftestStatus.TIMED_OUT: red
-
-Responding here because it's easier to see...
-
-In my experience, uniquely identifying segfaults can be super helpful, e.g. (with
-the stderr/stdout changes too).
-
-diff --git a/tools/testing/selftests/kvm/runner/__main__.py b/tools/testing/selftests/kvm/runner/__main__.py
-index 13f4cbea1fa7..93ce46e25caf 100644
---- a/tools/testing/selftests/kvm/runner/__main__.py
-+++ b/tools/testing/selftests/kvm/runner/__main__.py
-@@ -122,6 +122,7 @@ def setup_logging(args):
-             SelftestStatus.NO_RUN: blue,
-             SelftestStatus.SKIPPED: yellow,
-             SelftestStatus.FAILED: red_bold,
-+            SelftestStatus.SEGFAULT: red_bold,
-             SelftestStatus.TIMED_OUT: red
-         }
- 
-diff --git a/tools/testing/selftests/kvm/runner/selftest.py b/tools/testing/selftests/kvm/runner/selftest.py
-index 76c3e6d463ee..9ccdeef62a3e 100644
---- a/tools/testing/selftests/kvm/runner/selftest.py
-+++ b/tools/testing/selftests/kvm/runner/selftest.py
-@@ -18,7 +18,8 @@ class SelftestStatus(enum.IntEnum):
-     NO_RUN = 22
-     SKIPPED = 23
-     FAILED = 24
--    TIMED_OUT = 25
-+    SEGFAULT = 25
-+    TIMED_OUT = 26
- 
-     def __str__(self):
-         return str.__str__(self.name)
-@@ -63,6 +64,8 @@ class Selftest:
-                 self.status = SelftestStatus.PASSED
-             elif proc.returncode == 4:
-                 self.status = SelftestStatus.SKIPPED
-+            elif proc.returncode == 139:
-+                self.state = SelftestStatus.SEGFAULT
-             else:
-                 self.status = SelftestStatus.FAILED
-         except subprocess.TimeoutExpired as e:
-diff --git a/tools/testing/selftests/kvm/runner/test_runner.py b/tools/testing/selftests/kvm/runner/test_runner.py
-index 66a3c3711a8a..f06965c68520 100644
---- a/tools/testing/selftests/kvm/runner/test_runner.py
-+++ b/tools/testing/selftests/kvm/runner/test_runner.py
-@@ -21,6 +21,7 @@ class TestRunner:
-         self.print_stds = {
-             SelftestStatus.PASSED: args.print_passed,
-             SelftestStatus.FAILED: args.print_failed,
-+            SelftestStatus.SEGFAULT: args.print_failed,
-             SelftestStatus.SKIPPED: args.print_skipped,
-             SelftestStatus.TIMED_OUT: args.print_timed_out,
-             SelftestStatus.NO_RUN: args.print_no_run
-@@ -38,6 +39,7 @@ class TestRunner:
-         print(f"\r\033[1mTotal: {self.tests_ran}/{len(self.tests)}" \
-                 f"\033[32;1m Passed: {self.status[SelftestStatus.PASSED]}" \
-                 f"\033[31;1m Failed: {self.status[SelftestStatus.FAILED]}" \
-+                f"\033[31;1m Segfaults: {self.status[SelftestStatus.SEGFAULT]}" \
-                 f"\033[33;1m Skipped: {self.status[SelftestStatus.SKIPPED]}"\
-                 f"\033[91;1m Timed Out: {self.status[SelftestStatus.TIMED_OUT]}"\
-                 f"\033[34;1m No Run: {self.status[SelftestStatus.NO_RUN]}\033[0m",
-@@ -47,10 +49,14 @@ class TestRunner:
-         print_level = self.print_stds.get(test_result.status, "full")
- 
-         print("\033[2K", end="\r", flush=True)
--        if (print_level == "full" or print_level == "stdout"):
-+        if (print_level == "full"):
-             logger.info("*** stdout ***\n" + test_result.stdout)
--        if (print_level == "full" or print_level == "stderr"):
-             logger.info("*** stderr ***\n" + test_result.stderr)
-+        elif (print_level == "stdout"):
-+            logger.info(test_result.stdout)
-+        elif (print_level == "stderr"):
-+            logger.info(test_result.stderr)
-+
-         if (print_level != "off"):
-             logger.log(test_result.status, f"[{test_result.status.name}] {test_result.test_path}")
-
--- 
-kvm-riscv mailing list
-kvm-riscv@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/kvm-riscv
+T24gV2VkLCBKdWwgMjksIDIwMjYgYXQgMDE6MzI6NDBQTSArMDUzMCwgQW51cCBQYXRlbCB3cm90
+ZToKPiBPbiBNb24sIEp1bCA2LCAyMDI2IGF0IDc6NDLigK9BTSBJbm9jaGkgQW1hb3RvIDxpbm9j
+aGlhbWFAZ21haWwuY29tPiB3cm90ZToKPiA+Cj4gPiBUaGUgU0JJIGV4dGVuc2lvbiB2YWxpZGF0
+aW9uIGNhbGxiYWNrIGNhbiBvbmx5IGZpeCB0aGUgcGFyYW1ldGVyIGlmCj4gPiB0aGUgZXh0ZW5z
+aW9uIGlzIGVuYWJsZWQuIEhvd2V2ZXIsIGlmIHRoZSBleHRlbnNpb24gaXMgZGlzYWJsZWQgYWZ0
+ZXIKPiA+IG1vZGlmdHkgc29tZSBwYXJhbWV0ZXJzLCB0aGUgc3RhdGUgb2YgdGhlIGV4dGVuc2lv
+biBpcyBzdGlsbCBicm9rZW4uCj4gPgo+ID4gUmVzZXQgdGhlIGV4dGVuc2lvbiB3aGVuIHRoZSBl
+eHRlbmlvbiBpcyBkaXNhYmxlZCBzbyBpdCBjYW4gaGF2ZQo+IAo+IHMvZXh0ZW5pb24vZXh0ZW5z
+aW9uLwo+IAo+ID4gYSBjbGVhciBjb250ZXh0Lgo+ID4KPiA+IFNpZ25lZC1vZmYtYnk6IElub2No
+aSBBbWFvdG8gPGlub2NoaWFtYUBnbWFpbC5jb20+Cj4gPiAtLS0KPiA+ICBhcmNoL3Jpc2N2L2t2
+bS92Y3B1X3NiaS5jIHwgMTAgKysrKysrKysrKwo+ID4gIDEgZmlsZSBjaGFuZ2VkLCAxMCBpbnNl
+cnRpb25zKCspCj4gPgo+ID4gZGlmZiAtLWdpdCBhL2FyY2gvcmlzY3Yva3ZtL3ZjcHVfc2JpLmMg
+Yi9hcmNoL3Jpc2N2L2t2bS92Y3B1X3NiaS5jCj4gPiBpbmRleCBiNzM3ZTlhN2ExMmEuLjNlYjdi
+N2M1NzA1OSAxMDA2NDQKPiA+IC0tLSBhL2FyY2gvcmlzY3Yva3ZtL3ZjcHVfc2JpLmMKPiA+ICsr
+KyBiL2FyY2gvcmlzY3Yva3ZtL3ZjcHVfc2JpLmMKPiA+IEBAIC0yMjEsNiArMjIxLDcgQEAgc3Rh
+dGljIGludCByaXNjdl92Y3B1X3NldF9zYmlfZXh0X3NpbmdsZShzdHJ1Y3Qga3ZtX3ZjcHUgKnZj
+cHUsCj4gPiAgewo+ID4gICAgICAgICBzdHJ1Y3Qga3ZtX3ZjcHVfc2JpX2NvbnRleHQgKnNjb250
+ZXh0ID0gJnZjcHUtPmFyY2guc2JpX2NvbnRleHQ7Cj4gPiAgICAgICAgIGNvbnN0IHN0cnVjdCBr
+dm1fcmlzY3Zfc2JpX2V4dGVuc2lvbl9lbnRyeSAqc2V4dDsKPiA+ICsgICAgICAgY29uc3Qgc3Ry
+dWN0IGt2bV92Y3B1X3NiaV9leHRlbnNpb24gKmV4dDsKPiA+Cj4gPiAgICAgICAgIGlmIChyZWdf
+dmFsICE9IDEgJiYgcmVnX3ZhbCAhPSAwKQo+ID4gICAgICAgICAgICAgICAgIHJldHVybiAtRUlO
+VkFMOwo+ID4gQEAgLTIyOSw2ICsyMzAsMTUgQEAgc3RhdGljIGludCByaXNjdl92Y3B1X3NldF9z
+YmlfZXh0X3NpbmdsZShzdHJ1Y3Qga3ZtX3ZjcHUgKnZjcHUsCj4gPiAgICAgICAgIGlmICghc2V4
+dCB8fCBzY29udGV4dC0+ZXh0X3N0YXR1c1tzZXh0LT5leHRfaWR4XSA9PSBLVk1fUklTQ1ZfU0JJ
+X0VYVF9TVEFUVVNfVU5BVkFJTEFCTEUpCj4gPiAgICAgICAgICAgICAgICAgcmV0dXJuIC1FTk9F
+TlQ7Cj4gPgo+ID4gKyAgICAgICBleHQgPSBzZXh0LT5leHRfcHRyOwo+ID4gKwo+ID4gKyAgICAg
+ICBpZiAoIXJlZ192YWwgJiYgc2NvbnRleHQtPmV4dF9zdGF0dXNbc2V4dC0+ZXh0X2lkeF0gPT0g
+S1ZNX1JJU0NWX1NCSV9FWFRfU1RBVFVTX0VOQUJMRUQpIHsKPiA+ICsgICAgICAgICAgICAgICBp
+ZiAoZXh0LT5yZXNldCkgewo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgZXh0LT5yZXNldCh2
+Y3B1KTsKPiA+ICsgICAgICAgICAgICAgICAgICAgICAgIHZjcHUtPmFyY2guY3NyX2RpcnR5ID0g
+dHJ1ZTsKPiAKPiBMZXQncyBub3QgYmxpbmRseSBzZXQgImNzcl9kaXJ0eSIgd2hlbiBhbnkgU0JJ
+IGV4dGVuc2lvbiBpcyBkaXNhYmxlZCwKPiBpbnN0ZWFkIHdlIHNob3VsZCBzZXQgImNzcl9kaXJ0
+cnkiIGluIGt2bV9zYmlfZXh0X2Z3ZnRfcmVzZXQoKSAoanVzdAo+IGxpa2Ugd2UgZG8gaW4ga3Zt
+X3NiaV9leHRfZndmdF9zZXRfcmVnKCkpLgo+IAoKR29vZCwgSSB3aWxsIG1vdmUgdGhpcyBsaW5l
+IHRvIHRoZSBrdm1fc2JpX2V4dF9md2Z0X3Jlc2V0KCkgaW4gdGhlIG5ldyB2ZXJzaW9uLgoKPiA+
+ICsgICAgICAgICAgICAgICB9Cj4gPiArICAgICAgIH0KPiA+ICsKPiA+ICAgICAgICAgc2NvbnRl
+eHQtPmV4dF9zdGF0dXNbc2V4dC0+ZXh0X2lkeF0gPSAocmVnX3ZhbCkgPwo+ID4gICAgICAgICAg
+ICAgICAgICAgICAgICAgS1ZNX1JJU0NWX1NCSV9FWFRfU1RBVFVTX0VOQUJMRUQgOgo+ID4gICAg
+ICAgICAgICAgICAgICAgICAgICAgS1ZNX1JJU0NWX1NCSV9FWFRfU1RBVFVTX0RJU0FCTEVEOwo+
+ID4gLS0KPiA+IDIuNTUuMAo+ID4KPiAKPiBSZWdhcmRzLAo+IEFudXAKPiAKClJlZ2FyZHMsCklu
+b2NoaQoKLS0gCmt2bS1yaXNjdiBtYWlsaW5nIGxpc3QKa3ZtLXJpc2N2QGxpc3RzLmluZnJhZGVh
+ZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9rdm0tcmlz
+Y3YK
