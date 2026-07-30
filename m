@@ -4,92 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 76739C54FD2
-	for <kvm-riscv@archiver.kernel.org>; Thu, 30 Jul 2026 09:25:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A5E81C54FD2
+	for <kvm-riscv@archiver.kernel.org>; Thu, 30 Jul 2026 09:36:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
-	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	List-Archive:List-Unsubscribe:List-Id:From:Subject:Mime-Version:To:Date:Cc:
+	Message-Id:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
 	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=pHA+Q2UU36d+BNJS1kdnOL2C+ehXimjHYquYsg/BW1M=; b=YN1TfFui+IxTsL
-	+fWGp4awzEaRDxqlK0IlhzVFVYrcWQTor2Zb9oHDV2pl+AhjfYngbDGBvm7NXwg2St73fEJzmUOT2
-	7gocKXQJyhq7mJFRgPCcRPGDdeUo+fXxZfsnviVCq/XNCydUwgZTBLEEdSXuDCzugPPju3LO38N2z
-	hft+oecx6eRQA9NEnkh+FTIWdZmSIaC9uLVwLF33S2qhv6+hD21GJqccS0ct8zwhbAxCmQaE/4Oyw
-	z/GQ67OI3j0w/H5cPZM1Mpu1dmnq4VQkvjko+l15JpIwUG2o2B6AaSXZpXul59ZGGwnbKsoKLpFCc
-	75dbDZUvNjDf3c3U8zbw==;
+	List-Owner; bh=Q3ImfBYW35RhXIcIzwn6/D0m00mkFI9epJ9w7/EC0hU=; b=VmTRyqH06ALzuj
+	Td0xEDpJHsLstkMmXfYLD0CRhHJXkzC5KHaQBB4RrmqAn0pDpl5mcxrsjDZMRn9fru0G9yVMUapP8
+	hINKfiJzws3x/RvpXtd21u9BUlmzn0NDjEdgS1n/WkDP5hHoLHpHgPnn1oz24oJeJ8hgxUtXKYWaI
+	QaFbYUi2ngtWJ7pCI8JGPlzEq6a2L85Y43mNSJC6v3Uf10EbM4o7+R5ju6pjZakuxN/M0/gGrOnue
+	8MNwkkFv4YELPWY2KdkmqfdjL/Dlf73m4oAuaW1DeVoiE3fC7LcNFQvruKLhktE5JnHSKO32jU2r1
+	Z4FDNV4qJCBBTP+kbLQg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wpN1M-00000009zqR-0RII;
-	Thu, 30 Jul 2026 09:25:44 +0000
-Received: from mail-pf1-x436.google.com ([2607:f8b0:4864:20::436])
+	id 1wpNBx-0000000A22B-1Gun;
+	Thu, 30 Jul 2026 09:36:41 +0000
+Received: from va-2-45.ptr.blmpb.com ([209.127.231.45])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wpN1J-00000009zpO-0KxO
+	id 1wpNBr-0000000A1ym-3qCe
 	for kvm-riscv@lists.infradead.org;
-	Thu, 30 Jul 2026 09:25:42 +0000
-Received: by mail-pf1-x436.google.com with SMTP id d2e1a72fcca58-84e507b079dso1339651b3a.0
-        for <kvm-riscv@lists.infradead.org>; Thu, 30 Jul 2026 02:25:40 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1785403540; x=1786008340; darn=lists.infradead.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=O9A8tKmgH/5kniasHlafAxdvgLATzr/Vyh67WvhGtfs=;
-        b=D4mXTgLvcr8GEwsC/UnovD710KXf7GuqPKT1RuhhjXSUwJe+fulkP1QDLQpI27mgpY
-         94TIO4Phwd/FRVcS6M53/okIuvou4DQ0LPa89tSRypzy5iyHZo5gSUND9UftT+hfaobK
-         xoLPOICGDtX0d1DukVO7s58ZTcCReM8u76JbnxA7tlnI36hX4m1fUoG+0f7lCVXhbgKA
-         PMOmV0OTNpmHyB8hVRk9laKKNTdiUVtXL1FhRV3d5r63xE2dJwksmvJVgKETzo5Oqn3W
-         YlSFlQNFmW8TEnosowgkJCa6XlCFYU3YJwayiZihKpjURVjSeN+l7V1/hKOtR7Maeey1
-         MZhA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785403540; x=1786008340;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=O9A8tKmgH/5kniasHlafAxdvgLATzr/Vyh67WvhGtfs=;
-        b=gEDLt3Iwn+QVXhWWAPkeZ1jZMJxcT7r7HPryFpLJjBTH8Ps8CiLyoZzPXgD2MXm8Vs
-         YIaiP8mNsPgCkkYwBWkG9ZNOJHrFNCnaNu0MK1r9KhNo5WRm+RpTjmqzvYDRpPsqaVoj
-         hQBjlfOM2FQKJIqAqAZjvDwk8qZVKu8dMpXuJbjS/82eTaRCeRPq3lAw31z2a0jGOo9+
-         XqqIoZWEHSb6xh17WrfNQBuxaLjNQYPmPHIqfQg1vQerSXuQSQOvD4yFQ1bigg5tNMVr
-         WLGzXyZ1ZMoJHAor5CSeNsDp68xo6PQxIL49C6v6enrsTBWITP6JZgzZizq+C3VvLyDu
-         zbog==
-X-Forwarded-Encrypted: i=1; AHgh+RrpuLTIhkwxgey148FlGX0IKSI53AKTmpwO1l5qrNgG4FKkJLaqqXw8sNlXaamGpg/lAeNALQ4pClg=@lists.infradead.org
-X-Gm-Message-State: AOJu0YyM9djHTguBJMZb7JoET4kNJ1HAWUGL9dQzCcGHDJPwUbuQW7iJ
-	XH42UGZ8jTEQpkz6AdUv2NhkZW4nlO/t3ZXyJpqcMy/Xwc4KXsJcoEj9
-X-Gm-Gg: AR+sD13NbMtaFRjixOuSqc5DhjxyjcGynWX6X5ZSnuybMKnVNvERtNrWOH0IRqCcQxm
-	k0kSjfpRWNwuYcbIDxGClDut+5JIJsI+94GbbLzH/9cpmyAJbXG9D6Ke8UlGGNPvqIJTeUgqlf1
-	9VJqlwPlnSEmUnMWbIt4hnD1YgT4KIlCnpx3zdcPeWN+KzbsZoZgHhqgTxu0qars89F34Z2sYfN
-	YTuUttwZpGrG1obYWgcel6eV8RHxBJXQP/6b8BBxdyFh/gJTbTFanyHhHUsvNSK9b9XlXRPoAoP
-	DLALIr+DsfqrRD/esjTiRHb9NKKULwhrdzwtPA+pf1Sg5UkYJV00yYDAD0TIbBwH12OnRK6ACJE
-	AH6QXuxnMP2peLB8X2a5tp88zPOTnvnlYbtNyLKtyZ1fVCdeH05jxN8T9gTO2YDMSX1ja0HJcOn
-	WEwQUFu/CHWr+z797l87/DjIR2K/xt288thI9NXphJZBaZBttmG7UNm8tZPgRTtyRrHieZjTN8q
-	Nh1Yw==
-X-Received: by 2002:a05:6a00:2e1e:b0:848:2f74:d8da with SMTP id d2e1a72fcca58-84ebc48638emr1624244b3a.75.1785403539951;
-        Thu, 30 Jul 2026 02:25:39 -0700 (PDT)
-Received: from 2045L.tailb1cd6d.ts.net ([36.112.122.101])
-        by smtp.googlemail.com with ESMTPSA id d2e1a72fcca58-84e9fe2153csm2753324b3a.3.2026.07.30.02.25.35
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 30 Jul 2026 02:25:39 -0700 (PDT)
-From: Guidong Han <2045gemini@gmail.com>
-To: Anup Patel <anup@brainfault.org>,
-	Atish Patra <atish.patra@linux.dev>
-Cc: Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Alexandre Ghiti <alex@ghiti.fr>,
-	Naveed Khan <naveed@digiscrypt.com>,
-	kvm@vger.kernel.org,
-	kvm-riscv@lists.infradead.org,
-	linux-riscv@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	Guidong Han <2045gemini@gmail.com>
-Subject: [PATCH v2 RESEND] RISC-V: KVM: Fix PMU event info array size overflow
-Date: Thu, 30 Jul 2026 17:25:33 +0800
-Message-ID: <20260730092533.1369531-1-2045gemini@gmail.com>
-X-Mailer: git-send-email 2.43.0
-MIME-Version: 1.0
+	Thu, 30 Jul 2026 09:36:40 +0000
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ s=s1; d=lanxincomputing-com.20200927.dkim.feishu.cn; t=1785404187;
+  h=from:subject:mime-version:from:date:message-id:subject:to:cc:
+ reply-to:content-type:mime-version:in-reply-to:message-id;
+ bh=bN7RFHsa0lOlR0S7CzP3PJMMnicWDiS8G1yRtLup2oQ=;
+ b=XfP99j6IYupWVtM58ve71L1Oecbs6/gteir5Z119TgLunremC/3oauWTNKnlHVEtKlQF+f
+ a4RdhIGG22NFu5oWz3sN2WLPdhTHLdCflZGznIwA92ChxhmeXrPSOgdM+NvsdZlUwLNlDB
+ YU/19ajL3bX4VlYGf0mLQZ6fmhA2R6XoiHPKLgaMbqxEtItf5TGm4AGcvNf0qXpu/T50Qv
+ rBRf460uLu2tKJAts33mhdddOzv2Krbm+/rUVbtdSnpiBIrL92pLQTMQGCZQ1TXljUyVhp
+ ea7Z1Pm33cvbH4uOnPK9tMzuy5RGikYGug9+DPIiA7LvKkPiXWGv6OVlRQjwcQ==
+Message-Id: <20260730093614.983508-1-xiangwencheng@lanxincomputing.com>
+X-Mailer: git-send-email 2.53.0
+Cc: <atish.patra@linux.dev>, <pjw@kernel.org>, <palmer@dabbelt.com>, 
+	<aou@eecs.berkeley.edu>, <alex@ghiti.fr>, <kvm@vger.kernel.org>, 
+	<kvm-riscv@lists.infradead.org>, <linux-riscv@lists.infradead.org>, 
+	<linux-kernel@vger.kernel.org>, <xiangwencheng@lanxincomputing.com>
+Date: Thu, 30 Jul 2026 17:36:14 +0800
+X-Original-From: BillXiang <xiangwencheng@lanxincomputing.com>
+To: <anup@brainfault.org>
+Mime-Version: 1.0
+Subject: [PATCH] riscv: KVM: Add hart-to-vCPU mapping for faster MSI injection
+Received: from lanxin-ThinkBook-16-G5-IRH ([123.120.5.129]) by smtp.feishu.cn with ESMTP; Thu, 30 Jul 2026 17:36:25 +0800
+X-Lms-Return-Path: <lba+26a6b1b19+a6466b+lists.infradead.org+xiangwencheng@lanxincomputing.com>
+From: "BillXiang" <xiangwencheng@lanxincomputing.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260730_022541_130257_49B60695 
-X-CRM114-Status: GOOD (  13.09  )
+X-CRM114-CacheID: sfid-20260730_023636_066230_0E467193 
+X-CRM114-Status: GOOD (  16.40  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -106,117 +70,166 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-SBI PMU EVENT_GET_INFO stores guest-controlled
-num_events * sizeof(*einfo) in an int. On RV64, num_events = 0x10000001
-makes 0x100000010 truncate to 16. KVM then allocates one entry but loops
-over the original num_events, causing out-of-bounds reads and writes. A
-nested guest triggered:
+Replace linear searches over all vCPUs in MSI injection paths with a
+direct hart_index -> vCPU lookup table. This avoids O(n) scans on
+every injected interrupt and improves performance when the number of
+vCPUs is large.
 
-BUG: KASAN: slab-out-of-bounds in kvm_riscv_vcpu_pmu_event_info+0xa4/0x142
-Read of size 4 at addr ff600000074d46b0 by task init/1
-Call Trace:
-[<ffffffff8006471c>] kvm_riscv_vcpu_pmu_event_info+0xa4/0x142
-[<ffffffff800690c0>] kvm_sbi_ext_pmu_handler+0xca/0x268
-[<ffffffff8006779e>] kvm_riscv_vcpu_sbi_ecall+0xec/0x1e6
-[<ffffffff8006008c>] kvm_riscv_vcpu_exit+0x48c/0x540
-[<ffffffff8005ea0a>] kvm_arch_vcpu_ioctl_run+0x37e/0xc80
-Allocated by task 1:
- __kmalloc_noprof+0x19e/0x4b0
- kvm_riscv_vcpu_pmu_event_info+0x72/0x142
- kvm_sbi_ext_pmu_handler+0xca/0x268
- kvm_riscv_vcpu_sbi_ecall+0xec/0x1e6
- kvm_riscv_vcpu_exit+0x48c/0x540
- kvm_arch_vcpu_ioctl_run+0x37e/0xc80
-The buggy address is located 0 bytes to the right of
- allocated 16-byte region [ff600000074d46a0, ff600000074d46b0)
+Both kvm_riscv_aia_inject_msi_by_id() and kvm_riscv_aia_inject_msi()
+now use the table instead of iterating over the vCPU list.
 
-Store the shared-memory size in size_t and reject multiplication overflow.
-Allocate the guest-driven array with GFP_KERNEL_ACCOUNT so it is charged
-to kmemcg, and use __GFP_NOWARN to suppress allocation failure warnings.
-Use kvcalloc() to allow vmalloc fallback and an unsigned long loop index
-to match num_events.
-
-Reported-by: Naveed Khan <naveed@digiscrypt.com>
-Closes: https://lore.kernel.org/kvm/178345245327.72065.13249716450708539854@digiscrypt.com/
-Fixes: e309fd113b9f ("RISC-V: KVM: Implement get event info function")
-Cc: stable@vger.kernel.org
-Signed-off-by: Guidong Han <2045gemini@gmail.com>
+Signed-off-by: BillXiang <xiangwencheng@lanxincomputing.com>
 ---
-RESEND:
-- Send v2 as a new top-level thread instead of replying to v1.
+ arch/riscv/include/asm/kvm_aia.h |  2 +
+ arch/riscv/kvm/aia_device.c      | 67 +++++++++++++++++++++-----------
+ 2 files changed, 47 insertions(+), 22 deletions(-)
 
-Changes in v2:
-- Use an accounted, no-warning kvcalloc() allocation and kvfree(), as
-  suggested by Sashiko.
-- Naveed Khan reported the issue before v1. I missed his report at the
-  time, so add Reported-by and Closes tags to credit him.
-
-Link to v1: https://lore.kernel.org/kvm/20260718153620.829378-1-2045gemini@gmail.com/
----
- arch/riscv/kvm/vcpu_pmu.c | 14 +++++++++-----
- 1 file changed, 9 insertions(+), 5 deletions(-)
-
-diff --git a/arch/riscv/kvm/vcpu_pmu.c b/arch/riscv/kvm/vcpu_pmu.c
-index bb46dcbfb24d..8e1f6abb84e2 100644
---- a/arch/riscv/kvm/vcpu_pmu.c
-+++ b/arch/riscv/kvm/vcpu_pmu.c
-@@ -12,7 +12,9 @@
- #include <linux/err.h>
- #include <linux/kvm_host.h>
- #include <linux/nospec.h>
-+#include <linux/overflow.h>
- #include <linux/perf/riscv_pmu.h>
-+#include <linux/slab.h>
- #include <asm/csr.h>
- #include <asm/kvm_isa.h>
- #include <asm/kvm_vcpu_sbi.h>
-@@ -479,13 +481,14 @@ int kvm_riscv_vcpu_pmu_event_info(struct kvm_vcpu *vcpu, unsigned long saddr_low
- 				  unsigned long flags, struct kvm_vcpu_sbi_return *retdata)
+diff --git a/arch/riscv/include/asm/kvm_aia.h b/arch/riscv/include/asm/kvm_aia.h
+index c67ec5ac0..71240b0a2 100644
+--- a/arch/riscv/include/asm/kvm_aia.h
++++ b/arch/riscv/include/asm/kvm_aia.h
+@@ -47,6 +47,8 @@ struct kvm_aia {
+ 
+ 	/* Internal state of APLIC */
+ 	void		*aplic_state;
++
++	struct kvm_vcpu **hart_to_vcpu;
+ };
+ 
+ struct kvm_vcpu_aia_csr {
+diff --git a/arch/riscv/kvm/aia_device.c b/arch/riscv/kvm/aia_device.c
+index be83c2d5f..595553817 100644
+--- a/arch/riscv/kvm/aia_device.c
++++ b/arch/riscv/kvm/aia_device.c
+@@ -253,6 +253,14 @@ static int aia_init(struct kvm *kvm)
+ 	if (ret)
+ 		return ret;
+ 
++	aia->hart_to_vcpu = kcalloc(kvm->created_vcpus,
++					sizeof(struct kvm_vcpu*),
++					GFP_KERNEL);
++	if (!aia->hart_to_vcpu) {
++		ret = -ENOMEM;
++		goto fail_cleanup_aplic;
++	}
++
+ 	/* Iterate over each VCPU */
+ 	kvm_for_each_vcpu(idx, vcpu, kvm) {
+ 		vaia = &vcpu->arch.aia_context;
+@@ -274,6 +282,12 @@ static int aia_init(struct kvm *kvm)
+ 		/* Update HART index of the IMSIC based on IMSIC base */
+ 		vaia->hart_index = aia_imsic_hart_index(aia,
+ 							vaia->imsic_addr);
++		
++		if (aia->hart_to_vcpu[vaia->hart_index]) {
++			ret = -EINVAL;
++			goto fail_cleanup_imsics;
++		}
++		aia->hart_to_vcpu[vaia->hart_index] = vcpu;
+ 
+ 		/* Initialize IMSIC for this VCPU */
+ 		ret = kvm_riscv_vcpu_aia_imsic_init(vcpu);
+@@ -293,6 +307,9 @@ static int aia_init(struct kvm *kvm)
+ 			continue;
+ 		kvm_riscv_vcpu_aia_imsic_cleanup(vcpu);
+ 	}
++	kfree(aia->hart_to_vcpu);
++	aia->hart_to_vcpu = NULL;
++fail_cleanup_aplic:
+ 	kvm_riscv_aia_aplic_cleanup(kvm);
+ 	return ret;
+ }
+@@ -551,30 +568,28 @@ void kvm_riscv_vcpu_aia_deinit(struct kvm_vcpu *vcpu)
+ int kvm_riscv_aia_inject_msi_by_id(struct kvm *kvm, u32 hart_index,
+ 				   u32 guest_index, u32 iid)
  {
- 	struct riscv_pmu_event_info *einfo = NULL;
--	int shmem_size = num_events * sizeof(*einfo);
-+	size_t shmem_size;
- 	gpa_t shmem;
- 	u32 eidx, etype;
- 	u64 econfig;
- 	int ret;
+-	unsigned long idx;
+ 	struct kvm_vcpu *vcpu;
++	struct kvm_aia *aia = &kvm->arch.aia;
  
--	if (flags != 0 || (saddr_low & (SZ_16 - 1) || num_events == 0)) {
-+	if (flags != 0 || (saddr_low & (SZ_16 - 1)) || num_events == 0 ||
-+	    check_mul_overflow(num_events, sizeof(*einfo), &shmem_size)) {
- 		ret = SBI_ERR_INVALID_PARAM;
- 		goto out;
- 	}
-@@ -500,7 +503,8 @@ int kvm_riscv_vcpu_pmu_event_info(struct kvm_vcpu *vcpu, unsigned long saddr_low
- 		}
- 	}
+ 	/* Proceed only if AIA was initialized successfully */
+ 	if (!kvm_riscv_aia_initialized(kvm))
+ 		return -EBUSY;
  
--	einfo = kzalloc(shmem_size, GFP_KERNEL);
-+	einfo = kvcalloc(num_events, sizeof(*einfo),
-+			 GFP_KERNEL_ACCOUNT | __GFP_NOWARN);
- 	if (!einfo) {
- 		ret = SBI_ERR_FAILURE;
- 		goto out;
-@@ -512,7 +516,7 @@ int kvm_riscv_vcpu_pmu_event_info(struct kvm_vcpu *vcpu, unsigned long saddr_low
- 		goto free_mem;
- 	}
+-	/* Inject MSI to matching VCPU */
+-	kvm_for_each_vcpu(idx, vcpu, kvm) {
+-		if (vcpu->arch.aia_context.hart_index == hart_index)
+-			return kvm_riscv_vcpu_aia_imsic_inject(vcpu,
+-							       guest_index,
+-							       0, iid);
+-	}
++	if (!aia->hart_to_vcpu || hart_index >= kvm->created_vcpus)
++		return 0;
  
--	for (int i = 0; i < num_events; i++) {
-+	for (unsigned long i = 0; i < num_events; i++) {
- 		eidx = einfo[i].event_idx;
- 		etype = kvm_pmu_get_perf_event_type(eidx);
- 		econfig = kvm_pmu_get_perf_event_config(eidx, einfo[i].event_data);
-@@ -525,7 +529,7 @@ int kvm_riscv_vcpu_pmu_event_info(struct kvm_vcpu *vcpu, unsigned long saddr_low
- 		ret = SBI_ERR_INVALID_ADDRESS;
+-	return 0;
++	vcpu = aia->hart_to_vcpu[hart_index];
++	if (!vcpu)
++		return 0;
++	
++	return kvm_riscv_vcpu_aia_imsic_inject(vcpu, guest_index, 0, iid);
+ }
  
- free_mem:
--	kfree(einfo);
-+	kvfree(einfo);
- out:
- 	retdata->err_val = ret;
+ int kvm_riscv_aia_inject_msi(struct kvm *kvm, struct kvm_msi *msi)
+ {
+ 	gpa_t tppn, ippn;
+-	unsigned long idx;
+ 	struct kvm_vcpu *vcpu;
+-	u32 g, toff, iid = msi->data;
++	u32 g, toff, iid = msi->data, hart_index;
+ 	struct kvm_aia *aia = &kvm->arch.aia;
+ 	gpa_t target = (((gpa_t)msi->address_hi) << 32) | msi->address_lo;
  
+@@ -589,18 +604,22 @@ int kvm_riscv_aia_inject_msi(struct kvm *kvm, struct kvm_msi *msi)
+ 	g = tppn & (BIT(aia->nr_guest_bits) - 1);
+ 	tppn &= ~((gpa_t)(BIT(aia->nr_guest_bits) - 1));
+ 
+-	/* Inject MSI to matching VCPU */
+-	kvm_for_each_vcpu(idx, vcpu, kvm) {
+-		ippn = vcpu->arch.aia_context.imsic_addr >>
+-					IMSIC_MMIO_PAGE_SHIFT;
+-		if (ippn == tppn) {
+-			toff = target & (IMSIC_MMIO_PAGE_SZ - 1);
+-			return kvm_riscv_vcpu_aia_imsic_inject(vcpu, g,
+-							       toff, iid);
+-		}
+-	}
++	if (!aia->hart_to_vcpu)
++		return 0;
+ 
+-	return 0;
++	hart_index = aia_imsic_hart_index(aia, target);
++	if(hart_index >= kvm->created_vcpus)
++		return 0;
++	
++	vcpu = aia->hart_to_vcpu[hart_index];
++	if (!vcpu)
++		return 0;
++
++	ippn = vcpu->arch.aia_context.imsic_addr >> IMSIC_MMIO_PAGE_SHIFT;
++	if (ippn != tppn)
++		return 0;
++	toff = target & (IMSIC_MMIO_PAGE_SZ - 1);
++	return kvm_riscv_vcpu_aia_imsic_inject(vcpu, g,	toff, iid);
+ }
+ 
+ int kvm_riscv_aia_inject_irq(struct kvm *kvm, unsigned int irq, bool level)
+@@ -641,10 +660,14 @@ void kvm_riscv_aia_init_vm(struct kvm *kvm)
+ 
+ void kvm_riscv_aia_destroy_vm(struct kvm *kvm)
+ {
++	struct kvm_aia *aia = &kvm->arch.aia;
+ 	/* Proceed only if AIA was initialized successfully */
+ 	if (!kvm_riscv_aia_initialized(kvm))
+ 		return;
+ 
++	kfree(aia->hart_to_vcpu);
++	aia->hart_to_vcpu = NULL;
++
+ 	/* Cleanup APLIC context */
+ 	kvm_riscv_aia_aplic_cleanup(kvm);
+ }
 -- 
-2.43.0
+2.53.0
 
 -- 
 kvm-riscv mailing list
