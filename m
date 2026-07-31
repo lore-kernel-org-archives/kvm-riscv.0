@@ -4,90 +4,80 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4BD5AC54F54
-	for <kvm-riscv@archiver.kernel.org>; Fri, 31 Jul 2026 16:35:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 96871C5516F
+	for <kvm-riscv@archiver.kernel.org>; Fri, 31 Jul 2026 20:11:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
-	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=pZUBvvhTEPRBp2oKMR+DpD1n84s829Nnr7AHZvdWscs=; b=JHSFsyUvH+WLts
-	vBvzV8mSUEOpugs8Y/WjwfeoXfWNMjF8JKJFzVJISgB2+7FaIeRZ8La49wg3ssDD0NIORGwUwioQp
-	bQgNUDPZVPDO6Oyv35/I5Zb7gmQ6srywx9lRzCASFH+P+nxQG2mM6JiJ5mgb2nYnKjMA++VtJvE3U
-	3LC1kDvcbBDqW40y2lHFjUxIXxgH0jpC8Sj7g2h3IvnGDj1mDdQGouxuQUGstIP8RgX+775pr9x4t
-	3ypNj1DkeLhQBfvSgY2kc7DVheta0fXUf56OrUwXP0sxY/3Gi47COG4pW7yK7qX9v+Wk8hRMoF7K7
-	9ZRv5OPpJtywCUGmh1EA==;
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID:
+	References:Mime-Version:In-Reply-To:Date:Reply-To:Content-ID:
+	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+	:Resent-Message-ID:List-Owner;
+	bh=KFVS+2mobyBnTX+bSOK68IfOd7CRBweFAK0DBS+Dcnw=; b=aoScSiYy3nUmkoLWpiVM6mEBCu
+	e3pS1jxBVSGhgGXMq+Dk1uNWEWSHqKEyEF+m+NFRO+q45D99ZsbO9Q/sVWxbr6RlUX7X8WNiMVRJj
+	+4KhewRQvftTETiiiSwk4F2LORJD3H7zhG9V9gYfZ5pcl6FFTWOB8uoFejfM5L+0rjS1fAaVWVyKG
+	P2wkqA5wRmkWQzh1uvq1lBBZo6e8JeMgvuIFt+y4kXE06IHFpaRgEV4jy8XVU5lJYdj8IxqU6B7DN
+	8oWN+N0S/8IhzuAWDUFIpGRbn+nlzl4TTlzDKU21bQeQN0EzPSBxJFsQoqAvuHHxH+pa5oxfdwL6e
+	DQHl2xqw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wpqDF-0000000D9YI-40gC;
-	Fri, 31 Jul 2026 16:35:57 +0000
-Received: from mail-pf1-x434.google.com ([2607:f8b0:4864:20::434])
+	id 1wptZx-0000000DWkE-2oUM;
+	Fri, 31 Jul 2026 20:11:37 +0000
+Received: from mail-pj1-x1048.google.com ([2607:f8b0:4864:20::1048])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wpqDD-0000000D9X0-3orY
+	id 1wptZu-0000000DWjP-3BJS
 	for kvm-riscv@lists.infradead.org;
-	Fri, 31 Jul 2026 16:35:57 +0000
-Received: by mail-pf1-x434.google.com with SMTP id d2e1a72fcca58-8486ac3f347so2323785b3a.1
-        for <kvm-riscv@lists.infradead.org>; Fri, 31 Jul 2026 09:35:55 -0700 (PDT)
+	Fri, 31 Jul 2026 20:11:36 +0000
+Received: by mail-pj1-x1048.google.com with SMTP id 98e67ed59e1d1-38827cee19eso1858897a91.3
+        for <kvm-riscv@lists.infradead.org>; Fri, 31 Jul 2026 13:11:33 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1785515755; x=1786120555; darn=lists.infradead.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=rU2QgWWmiwDOTc97tpYJfn2gTZC2cyR2MioCmCqpMNY=;
-        b=N93DYTU93s3rTeg3xaiUsCN3SZn4TR8grNCzgM+kd8knnuZ4c+MUlntHgkGLB814Z7
-         9lzbA+LSF2xmMTn9ZkJxlB7ywnGvlYBIVbYogYkroza2Y3qhgPfk4dSVLzXIs4TPwd3I
-         zU1olDgZ/WGshQvUT8nAnYLXBvFWaFe7Tb/SiCIYHStJZGXmKZfU4BDaBZ5gKI6LsZmH
-         TziSA6W8SbxAHIZ4PuqzbCxP2TXX76Ua8vzRMYAOg+f0OAYXlz0Pk3nxa8ZKMuNmLRvG
-         556QGYR0uYmEX7QUBfnJXFiT7s7y3RkoCvXgQXy9I0fkKRhzT2f8Xw7KT0tHBfiKPhny
-         RRCg==
+        d=google.com; s=20251104; t=1785528693; x=1786133493; darn=lists.infradead.org;
+        h=content-type:cc:to:from:subject:message-id:references:mime-version
+         :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=mohi3fwyxgZMgHq0qHNtqMEnkOy5lhGMQOSIxwStBVQ=;
+        b=icqIVktp+QBGKzh/uLgruoV2gNgY5wk5McVs8aOf0HblMzwDdtzork6by8AcmXhYzP
+         OR7r7Uw2IbCx36ZOxmkGg8MJwy4Y7krvtWYxai1I/u7zfXwgSUQQOv53lY/VeYKQoLP8
+         byPrwvm19oVhETHTVKGPNKDU5g8j281XY+0HtvRGkIsrmG2vp3c/iVJRHH2CXkMe0v8J
+         vUNftm1e+Sk4bnQqpqXbBeSzUWrVKRo4eUWx5ZziYnS9rdiFU4vuuwcjBmcAU84Ahm73
+         2RrijyBSSACAo4IkZPlfeQ1ONnaV7QVaC+M1JVTP4HcJBpiRlj73WuudBxSp9290/Ey3
+         K/ow==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785515755; x=1786120555;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=rU2QgWWmiwDOTc97tpYJfn2gTZC2cyR2MioCmCqpMNY=;
-        b=oxxyUDviPoE8qAabpackougdQCiwYr6mxubE5lFvbSXmtafWXlsthBlfEDVlJYFTeE
-         3+5EBuQTdjGXdGHdBz3OVk4aBKJQzlZ5ffpycKQTieS7sEX+yIBF2vIwKb6F8Y/KAmEM
-         u43hjD88rUVD6mBInxJ0pb5b0EMajSc+fZSpynGEHc8P2ZoQS+f4+s6cYxEfpgygD9XK
-         qZhpxXk1+LxX6QbrW8F8q3y5uJyWCjiJ3q/DymwKE2vTAKH2cROLT8k34zlAEBiGQNZl
-         59MZfC9CgziJex/GLqaDyEImEkN+e5zEEfkgQ0vLSVFnOj/nHqWQiNRGcNngCNydU/CW
-         /WqQ==
-X-Forwarded-Encrypted: i=1; AHgh+RrjTvfZtmhR2ypAA6A8r+p7LnjhDdnEjDt31x6cryblxjIz1Qo8VIKQ0zzxCe8cl/iPm1tjep/7Jic=@lists.infradead.org
-X-Gm-Message-State: AOJu0YwrbCNcm9sMzW+JpgR6BuNhkQJ+W9AitpjPeosAK2IhuSRz56kk
-	0TrzI/4WjxO3mLCbejtib8ugEKQ8h2kP7j9YcT0lrknKHjGaO0WlZ4k=
-X-Gm-Gg: AR+sD11x8jYz+YgbAZ2FOgtr9nXAlKf7pgOQEP47xtNlA2KK2yvZ9XMsLB3ewQiS8A3
-	bPVefQaS2emukrX6REMyuAY5AugbDCCKPw8b0I+VCFWAmYWHVVhOaeKfn0fbslVf54MO9uvUlej
-	7uPybrYAhfP6keAXAbiylM8/Bs0OIAhjlSmF4bresWR9sfVnNgqQRI5b6Jn/XfWj7SYBb0iWAue
-	F/SOTFCM5c+/NDHGRy/FdrwE4PziB/STxTvibg3ALCTqz0zsFuzhpcutKwCbU34LnHTgqYRUPeG
-	0mwxUDXRYX11g52T83SikXVKkXtE0zdYO6hTNth83jcJFM9wTnFnpL+95aHAsHZWz6N4F8Ywfde
-	IDttJTAAaL5R5NhbGe65Pu0VN6PsMAd5XK+9RnOumoq1EfeMbvIQiJH8Rc+ZWCy+kmyncZk+AWH
-	Cw0le0pU+B62jU0QVny6Rht38pP9ywhKweNWiu9yvUoHLjF0bNlpYumPTR77LClSBHHscE1fDXA
-	eCAvjSQQXSfKO5VeDCYhYtJqBmAH/umQur+mJssJp6l8+LROGA8CsNLIkzC0sATYa5JfJVSGAv9
-	Z8GsSdGwzBsdxx+Sm9JwQuw=
-X-Received: by 2002:a05:6a00:14cd:b0:848:40f5:ff5e with SMTP id d2e1a72fcca58-84ed7517231mr2195457b3a.37.1785515754707;
-        Fri, 31 Jul 2026 09:35:54 -0700 (PDT)
-Received: from localhost.localdomain ([1.226.165.54])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84edc422ff9sm674942b3a.54.2026.07.31.09.35.52
-        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Fri, 31 Jul 2026 09:35:53 -0700 (PDT)
-From: Myeonghun Pak <mhun512@gmail.com>
-To: anup@brainfault.org
-Cc: atish.patra@linux.dev,
-	kvm@vger.kernel.org,
-	kvm-riscv@lists.infradead.org,
-	linux-riscv@lists.infradead.org,
-	stable@vger.kernel.org
-Subject: [PATCH v2] RISC-V: KVM: Synchronize hrtimer callback during teardown
-Date: Sat,  1 Aug 2026 01:35:50 +0900
-Message-ID: <20260731163550.46991-1-mhun512@gmail.com>
-X-Mailer: git-send-email 2.50.1
-In-Reply-To: <CAGEsz8GNHFCOZ=-_y56rK1aX+Ze7w8qVqZSQ-OuGo_dPC4bXCw@mail.gmail.com>
-References: <CAGEsz8GNHFCOZ=-_y56rK1aX+Ze7w8qVqZSQ-OuGo_dPC4bXCw@mail.gmail.com>
-MIME-Version: 1.0
+        d=1e100.net; s=20251104; t=1785528693; x=1786133493;
+        h=content-type:cc:to:from:subject:message-id:references:mime-version
+         :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=mohi3fwyxgZMgHq0qHNtqMEnkOy5lhGMQOSIxwStBVQ=;
+        b=bDjHaXpcjH0vHcEpE9st/llndZgeIniTxQWx7scDOJ2Uh+ucQ5TX7GOSeF7R5qAGM8
+         AN/+MKaD4pnwA4lI4XqFk+cokAVwlh9PhX/9jXInKfVuSb9NIbQSx8pl4wvMrTgPCNJ+
+         +29hPiRZPmQYo+uoXyLKWGMGMmfmXvpEMyXOlsK0I8pHUxdk3XXcBXMxq4nuzlhcfaS7
+         bL2WTB0jH604MKt43OzBtHi1rl0EjsoxMu/wFJb9996jd6gSHP5tKdGBOI/y8X97tzda
+         Femhy/tCcz3rEuaBjCYWmi1p080vlyo+yS6wV7OwFRhw2C80x/R3YBOH3h3/n0ORfoqy
+         cK/A==
+X-Forwarded-Encrypted: i=1; AHgh+Rrb1tqQ2qwT/LWdS2jMO3YlA32HKNpX+HdBx71k8nJHSKW/v8+EmhnsI7o1Fwr/uThg+mCHPlA3sqs=@lists.infradead.org
+X-Gm-Message-State: AOJu0YzOcrKj6etpVy5AOKv9kymo8Y1dtaJbS/yQsnQcse4BaGnP5tPb
+	Hyj4VeuzLFmyyyYCn18UcSthUShnoZ7UWuSDmnlSQ8Q3y3BsoVrKaWJ7LCHaw82XAtKj5DhvZQD
+	QuU1k0A==
+X-Received: from pjbgz8.prod.google.com ([2002:a17:90b:ec8:b0:380:60d8:dafc])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90a:d445:b0:38e:5717:9cc8
+ with SMTP id 98e67ed59e1d1-38fbc56c639mr915252a91.31.1785528692799; Fri, 31
+ Jul 2026 13:11:32 -0700 (PDT)
+Date: Fri, 31 Jul 2026 13:10:07 -0700
+In-Reply-To: <20260717162838.1562808-1-shivanksharma2376543@gmail.com>
+Mime-Version: 1.0
+References: <20260717162838.1562808-1-shivanksharma2376543@gmail.com>
+X-Mailer: git-send-email 2.55.0.508.g3f0d502094-goog
+Message-ID: <178552833004.2710599.12265437445033912305.b4-ty@google.com>
+Subject: Re: [PATCH] KVM: selftests: Fix typos in x86 and riscv tests
+From: Sean Christopherson <seanjc@google.com>
+To: Sean Christopherson <seanjc@google.com>, pbonzini@redhat.com, anup@brainfault.org, 
+	Shivank Sharma <shivanksharma2376543@gmail.com>
+Cc: kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
+	linux-kselftest@vger.kernel.org
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260731_093555_949191_D4DBFDE0 
-X-CRM114-Status: GOOD (  13.85  )
+X-CRM114-CacheID: sfid-20260731_131134_799776_89FFF65C 
+X-CRM114-Status: UNSURE (   5.14  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -104,87 +94,17 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-The non-Sstc hrtimer callback clears next_set before its final uses of
-the enclosing vCPU.  If teardown observes next_set as false while the
-callback is still running, kvm_riscv_vcpu_timer_cancel() skips
-hrtimer_cancel() and kvm_destroy_vcpus() can free the vCPU before the
-callback enters kvm_riscv_vcpu_set_interrupt().
+On Fri, 17 Jul 2026 21:58:38 +0530, Shivank Sharma wrote:
+> Fix spelling typos found by an automated checker in the KVM
+> selftests for x86 and RISC-V.
 
-A guest can arm the timer with SBI TIME and request shutdown with SBI
-legacy shutdown or SRST.  A VMM that honors KVM_EXIT_SYSTEM_EVENT and
-destroys the VM supplies the teardown side of the race; no post-launch
-host ioctl is needed to arm or request teardown.
+Applied to kvm-x86 selftests, thanks!
 
-On upstream master 62cc90241548, generic KASAN reported:
+[1/1] KVM: selftests: Fix typos in x86 and riscv tests
+      https://github.com/kvm-x86/linux/commit/653857a5af46
 
-  BUG: KASAN: slab-use-after-free in do_raw_spin_lock
-  Write of size 4 at addr ff60000005e58898
-
-  kvm_riscv_vcpu_set_interrupt
-  kvm_riscv_vcpu_hrtimer_expired
-  __hrtimer_run_queues
-  hrtimer_interrupt
-
-The object was allocated by KVM_CREATE_VCPU and freed concurrently by:
-
-  kvm_destroy_vcpus
-  kvm_arch_destroy_vm
-  kvm_destroy_vm
-  __fput
-
-For deterministic validation, I added mdelay(1000) immediately after
-the existing next_set = false assignment.  This only widens the
-existing post-clear callback window.  A no-delay trace build naturally
-reached the callback-after-teardown-start/before-deinit ordering in 12
-of 200 runs, but 1,500 stock-kernel stress iterations did not produce a
-KASAN report, so natural reproduction is timing-sensitive.
-
-Always invoke hrtimer_cancel() for an initialized timer.  Preserve the
-existing -EINVAL result when the timer is no longer set, but only after
-synchronizing with a running callback.
-
-With this patch, hrtimer_cancel() blocked for the full widened callback
-window before vCPU destruction.  KASAN reported no error in 100
-fixed-and-widened runs or 200 fix-only timing-sweep runs.
-
-Fixes: 3a9f66cb25e1 ("RISC-V: KVM: Add timer functionality")
-Cc: stable@vger.kernel.org
-Assisted-by: OpenAI:GPT-5.6
-Signed-off-by: Myeonghun Pak <mhun512@gmail.com>
----
-Changes in v2:
-- Add the required Assisted-by trailer.
-- Drop security@kernel.org from the recipients.
-
- arch/riscv/kvm/vcpu_timer.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
-
-AI disclosure: I used AI assistance during the audit and am treating the
-issue as public as required by Documentation/process/security-bugs.rst.
-The reproducer and full KASAN trace have not been posted publicly and
-are available on request.
-
-diff --git a/arch/riscv/kvm/vcpu_timer.c b/arch/riscv/kvm/vcpu_timer.c
-index ae53133c7ab0..a2cd277a4059 100644
---- a/arch/riscv/kvm/vcpu_timer.c
-+++ b/arch/riscv/kvm/vcpu_timer.c
-@@ -61,10 +61,13 @@ kvm_riscv_vcpu_hrtimer_expired(struct hrtimer *h)
- 
- static int kvm_riscv_vcpu_timer_cancel(struct kvm_vcpu_timer *t)
- {
--	if (!t->init_done || !t->next_set)
-+	if (!t->init_done)
- 		return -EINVAL;
- 
- 	hrtimer_cancel(&t->hrt);
-+
-+	if (!t->next_set)
-+		return -EINVAL;
- 	t->next_set = false;
- 
- 	return 0;
 --
-2.47.2
+https://github.com/kvm-x86/linux/tree/next
 
 -- 
 kvm-riscv mailing list
