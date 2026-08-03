@@ -4,93 +4,98 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 76AB5C55196
-	for <kvm-riscv@archiver.kernel.org>; Mon,  3 Aug 2026 21:53:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 53ED5C55182
+	for <kvm-riscv@archiver.kernel.org>; Mon,  3 Aug 2026 21:53:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
-	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=B5Osp1XL8ea+Hhbft4+i1tomfkYodI9LLeyj0iDRjt0=; b=4iqRmkZGCCWcrw
-	+PeLfILRQRzlVtzorQYNr0ekZLXhJK4/vw71xucDhVWWhcao8v5+AP8LpNs151fRb/xBkZUrHc3LW
-	OcNIGRYvU5yaicGOHyDFrWlGsoTkc2aLE611ysqrA+1C5NLwz6QveKF3G88/C/HmtOFrHh8L685Xk
-	bWkw7o3y0C030lmRUnLp+jdFvle5R1pEwVtfevHfcVL/CXm7ZjEg5qJD0OtHzR1BmSMsgFJ8h1HR2
-	Baa8N4OVMQnleBHw7+CsIaxOd+kdebnNBu85MD4RakGQlKui9vg/BSlk1dRghUSOz5hfXgeBpjtsU
-	ThhDX4T9mJYH+U6SniAA==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=8WJ6AqlWX5SSAUWLvFaTefpzKeYqd3g0Vojf5MRNFa0=; b=4/tgmH8uMbpHud
+	WZUr4VO4iIunp4kghWyJmzn69rCuO251xIvaOlWGPtZnMyR9Tng3vDQ79zyH4qVo0iG9wVZW5m5AP
+	ysCnKJBu029YJuty2yUbZYt0u51m/pAlo8VmzYU3Z8pNGuqhoTw8awzX5+5Q64E4TAfveTYpshbN4
+	1uYBgYIRhOVL/DAg0I/8gGHOfQ+csGcrK+UFOvlIZ0ig0o3DP1JLW+SjVWOIbC2jz+Sz1rIbHh8Mx
+	SvRgQTnwhE/D/f/1+029b5hH1hw7IqtVGpfUZFlYSspzDTnmHdO7rQS+EjyXHbApIUEj40EQQVN4Q
+	m+k10YGaz1S0uzb659pQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wr0ay-00000000Yhf-2lwP;
-	Mon, 03 Aug 2026 21:53:16 +0000
-Received: from mail-ot1-x333.google.com ([2607:f8b0:4864:20::333])
+	id 1wr0b2-00000000Yk2-3ylm;
+	Mon, 03 Aug 2026 21:53:20 +0000
+Received: from mail-oi1-x22d.google.com ([2607:f8b0:4864:20::22d])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wr0av-00000000Yg1-2Ijx
+	id 1wr0b0-00000000YiY-0uMN
 	for kvm-riscv@lists.infradead.org;
-	Mon, 03 Aug 2026 21:53:15 +0000
-Received: by mail-ot1-x333.google.com with SMTP id 46e09a7af769-7eb5bdb50fcso2563655a34.1
-        for <kvm-riscv@lists.infradead.org>; Mon, 03 Aug 2026 14:53:12 -0700 (PDT)
+	Mon, 03 Aug 2026 21:53:19 +0000
+Received: by mail-oi1-x22d.google.com with SMTP id 5614622812f47-4896ae35be9so1280074b6e.0
+        for <kvm-riscv@lists.infradead.org>; Mon, 03 Aug 2026 14:53:17 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=tenstorrent.com; s=google; t=1785793992; x=1786398792; darn=lists.infradead.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=hFj5fkOWDX6E8mPElA+UXDuk02rZ/QIYAtSZ8WctP1Y=;
-        b=EwsGPlulTuOhgXXsBe4wK6bl7qGspWGbmZNwkl9hOZUSFz5DtTgF+OfFqQ8LtyO9o5
-         5qsMiwAnHdujh8Mk/uLSCfO6uB/SrV40mJO7It9qRJhOwVhZv1S+EFFo/l4/eo+ukDCF
-         G/26FVzTyv8LjWCLjVaWydevZScGDcTvHpIBoBnxw1X62yGqbDI5axDVtSBjL3fsqFij
-         127K726TwHKoAohbPkKc5WQI548oh66c113g6REKKMV+MKeWBV120HEnP12mxaGCgi01
-         zw6bWwR+G9qDwGSzkHjdgv1NqEAyTrZlPSJUhcUPYaaQCJwDsk1jOfWYLKhnDe7P01p/
-         cZsg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785793992; x=1786398792;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=tenstorrent.com; s=google; t=1785793997; x=1786398797; darn=lists.infradead.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=hFj5fkOWDX6E8mPElA+UXDuk02rZ/QIYAtSZ8WctP1Y=;
-        b=dfNmKgrr2+7c18KyW9ZnH8xPMcvS//iQXkKZf86kx2r8mzjDM9pjKy2q+FPaBsUDzV
-         9bhXHhuB/vz3/whpX6JjK6X1gb+5tjJGzHKWjJWdmaqWbqB16XYEdpvkfe5eAdYSo7ia
-         cEiwj2gChCoprYkwqTnEeZsv8PskvlB6JRCNuDbANh8vbsfCJcihPauvhNEXeT+gZSQ8
-         tkV4eOnyx1qYF6ckntSdvg7W1DUdvsELycB6wYyHvquhYHB2oe4rxBaLru37m6xlTToL
-         ovRwgE4R1XB1mGht4IvmDsk2sh31UT+LcsUEtuMfU1wpxGKa4UWj5eZc+L89tB4Iku66
-         wv7Q==
-X-Gm-Message-State: AOJu0Ywh4O7LMXJ5guLMmbeREq9+4wdt732dLWKKvY1Kl/OIW0X127+j
-	JJB8X2jM3FV7OOL0Yqgd9fmq8RB6gxCTtTqFX6MrV53Xy6Kay5GM2rcjn1pXP5VXDaI=
-X-Gm-Gg: AR+sD12B88YGs92Vkrm9lsAzi2FE4r2s1atZbfxa3iNg7e2cHDgth5JtGXr4Qj+OCud
-	ct0F9ijdnselJWBbs0/fR7vzJje7Rx8A3+IqeQc+Dw8652OsuYDdSoz47j6P4sKyK5szozOjINV
-	Id21qY1Dooh7nymcdUyIV1VVi+elwjBcqXH5WKMFnS7MrDcSl6nKXJnULHJuqNBXoP7jk+Oi+Ph
-	LtsloPsL16JZAPZlK4OFBpaSZB8uftpArBbcDZwWjEqpp22J/idhMmGQLX6c62oA8lwnVxZM9LN
-	C9F0UH5BY9SD23hwW6pq37xafQoUh0W0ImuntbBJHwjqQ3L3z6NDGf/SJdKjHTfJtMuXaxznk8n
-	7FTYzJ7KwJEcJTs8sD8InsM0tGK0MGZ2PhZr8TIE2OD4O3X9CAA7hDH2nmdSFgUqruhMzvaXv/2
-	+lzyeTHExxPvdUf1CVUZnPhGjviqgCaX5T+OGpYSHKSzb3IkB5ixvpqwbddrNxi+OfQDoFZadiD
-	GNfh24//sqVbl7b4I5rb4F9dTpP1e64mWjF0Q==
-X-Received: by 2002:a05:6808:2221:b0:4a4:866:c39e with SMTP id 5614622812f47-4af5e1ce788mr16822670b6e.11.1785793992035;
-        Mon, 03 Aug 2026 14:53:12 -0700 (PDT)
+        bh=OYj46W8Df7hirMITCsNQUAF2P+9YRrFHR/TmGqySuFI=;
+        b=XnmN14ip0sWO6CZs1Wyd/yJRZMnOCHgrAtxpi7bw4bXaGAAyZvJ/z8ONOBRarW1KDi
+         2+L2JOTtFg+rPHZudmCtNKEcURAJp89DoQOc+bCcOwpgnbHkX4pvHEaoQu1jjiZDSLg1
+         cw1E+nx8tXYZ8gDOD2rdDcwpxJAZyDieaO4CWJFna5wmxNbwub+lxPh0B9UWMutL+VUs
+         FR39yX1QfGPph8Tx2vffWka4dxY8XxOva/MylAtMb+svo9cWzLSlVirPqrwlHtRTVu0P
+         NM6B4hsHhgUh6mmooNYBQjg0fhJchlDMiwXVL+fHfT9QRsJMn3Ictoe1a9ag7K1Fpm3P
+         xxWQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785793997; x=1786398797;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=OYj46W8Df7hirMITCsNQUAF2P+9YRrFHR/TmGqySuFI=;
+        b=Ook5+G43Nh4lo7tvBDklhm9ztMsWMyR6FQiyHMWCJlbf/9R9k8d/UazpFdqDhPGh+f
+         L4n0cWVjx9tfiQU0EmHNrG9Ifxbrwe76iLsZwz+NFA2OzGtLrCURbNHAKpP9cDi0WGL7
+         /kWqGcXLYNixiXIbvG6xXbIDNOR4hkPdFr/xvgMYkfWS+372MrlJ/DO9osbck3gpDaa0
+         r0ZM3m2t4KTljkqYdaOVnPPKQUyX+CMYQyKo8flvqCuWAHzdAydnsJkr3bi31ybUt8Ue
+         yAdXkQcBzoZS/7IAoxsh3caCy5JE4nkyOAoA8BppHwq9PJfi1jE/h47d7pz2FoQg5pf8
+         4fUA==
+X-Gm-Message-State: AOJu0YzRSEIRejW5uQIuoCeEwB/X6PfpplwsduRju1XGAjEiqQ7ExbmU
+	fvK7nZJiOG9tkFcpl6PGbE+tStYt5Qoxj0WOXWsubznjhGfIETaPHAQ3arKlQWsPB5I=
+X-Gm-Gg: AR+sD10AYwrJo7A4T+5ochY7n7T7Ro3q9U76FAz3MGLMtq4vp+fbJZhzLxQ4vsONRYV
+	xrs0NmXKjVYdGu1kt2FbhOh9lkrhLcC/wialNUgPE2VReQzz1aj1LNovoZYzLFqNAngKbL8uEBQ
+	fxBcVYM/5HleZQH3bzRbHcYs1urqV5Xt+2B9oZUU8RkvFTndVMnWkq17t2jSInyMq+LmV+dHDrK
+	16ZgbHhT06GyV/9hfxX2tmGMfkVbsTPiBLAhFgT0v7pPXwFFZzIUYiEyz1siGBw+Rm5brc305zg
+	+vWo8iVel1LrJeSQpk4rzDHXMevz5/KC1atrHxBcsg61Ka2NDOilC09qJ2Q7ccuoqdlYcjzaYeU
+	D6S4vpd1m/GHZwwC0UJargCB6ZOo9cGxk85UcPX68hbUVnJRAsbJtz3G5TnMrs8BZNj1NfYgmrB
+	LLNrqQYRJYJjRSSHGE430/PA76vwDNByTC3gxyRQfdGwsXoxkDUD5gXRYoCbLtWoCpPJ7npNaF0
+	U0QtQAnVXyD6h8xlbQWpFgzOxo=
+X-Received: by 2002:a05:6808:2f0c:b0:495:fa73:2e44 with SMTP id 5614622812f47-4af5e227274mr18564363b6e.15.1785793997051;
+        Mon, 03 Aug 2026 14:53:17 -0700 (PDT)
 Received: from lima-default.tail89d63.ts.net ([12.55.13.134])
-        by smtp.gmail.com with ESMTPSA id 5614622812f47-4af58e9551dsm7403958b6e.11.2026.08.03.14.53.11
+        by smtp.gmail.com with ESMTPSA id 5614622812f47-4af58e9551dsm7403958b6e.11.2026.08.03.14.53.16
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 03 Aug 2026 14:53:11 -0700 (PDT)
+        Mon, 03 Aug 2026 14:53:16 -0700 (PDT)
 From: Andy Chiu <tchiu@tenstorrent.com>
 To: anup@brainfault.org,
 	Paul Walmsley <pjw@kernel.org>,
 	Palmer Dabbelt <palmer@dabbelt.com>,
 	Albert Ou <aou@eecs.berkeley.edu>,
 	Alexandre Ghiti <alex@ghiti.fr>,
-	linux-riscv@lists.infradead.org
+	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+	Clark Williams <clrkwllms@kernel.org>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	linux-riscv@lists.infradead.org,
+	linux-rt-devel@lists.linux.dev
 Cc: kvm-riscv@lists.infradead.org,
 	Andy Chiu <tchiu@tenstorrent.com>,
 	dfustini@oss.tenstorrent.com,
 	greentime.hu@sifive.com,
 	andybnac@gmail.com,
-	linux-kernel@vger.kernel.org,
-	olof@lixom.net,
 	Yong-Xuan Wang <yongxuan.wang@sifive.com>
-Subject: [PATCH v5 0/3] RISC-V: KVM: fix vcpu vector context handling
-Date: Mon,  3 Aug 2026 16:52:39 -0500
-Message-ID: <20260803215250.824417-1-tchiu@tenstorrent.com>
+Subject: [PATCH v5 2/3] riscv: vector: allow non-preemptible kernel-mode vector with IRQs off
+Date: Mon,  3 Aug 2026 16:52:41 -0500
+Message-ID: <20260803215250.824417-3-tchiu@tenstorrent.com>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20260803215250.824417-1-tchiu@tenstorrent.com>
+References: <20260803215250.824417-1-tchiu@tenstorrent.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260803_145313_599791_1C7D1F97 
-X-CRM114-Status: GOOD (  15.27  )
+X-CRM114-CacheID: sfid-20260803_145318_254935_AFBD4145 
+X-CRM114-Status: GOOD (  17.31  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -107,95 +112,105 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-This series fixes a vtype corruption encountered when running perf +
-vector workload on KVM.
+Similar to commit 7137a203b251 ("arm64/fpsimd: Permit kernel mode NEON
+with IRQs off"), we are upgrading get/put_cpu_vector_context such that
+kvm_arch_vcpu_load/put can be safely called under both irq off and
+regular process context.
 
-The root cause of the bug is that the kernel-mode vector (KMV)
-misattributes the guest's vcpu context as the user's context. To solve
-this, we need to correctly save the vcpu context when the kernel-mode
-vector is serving a guest.
+Also, export both symbols so the kvm module can call into it.
 
-However, calling directly into KVM from RISC-V generic architecture code
-creates a reverse dependency, which is problematic when KVM is built as
-a module. To address this, we introduce an RCU-protected callback for
-context flushing, which KVM registers during module init.
+Signed-off-by: Andy Chiu <tchiu@tenstorrent.com>
+---
+Changelog v4:
+ - Include the linux/kvm_types.h to prevent build fail (patchwork ci)
+ - drop preempt_v_started check in may_use_simd()
+Changelog v3:
+ - Export {get,put}_cpu_vector_context() only to kvm modules (Sebastian)
+Changelog v2:
+ - new patch since v2
+---
+ arch/riscv/include/asm/simd.h          | 16 +++-------------
+ arch/riscv/kernel/kernel_mode_vector.c | 19 +++++++++++++------
+ 2 files changed, 16 insertions(+), 19 deletions(-)
 
-Patch 1 is a preparatory cleanup that refactors
-riscv_v_start_kernel_context().
-Patch 2 prepares get/put_cpu_vector_context() for gaurding the use of
-vector in kvm_arch_vcpu_load/put()
-Patch 3 implements the callback mechanism and fixes the context handling.
-
-Reason for this respin:
-
-put_cpu_vector_context may casue a volutary ctxswch. If we prematurely
-set RISCV_PREEMPT_V, the context restore path will rasise NEED_RESTORE
-for this kernel thread. As the result, any irq taken during the
-subsequence preempt_v would trigger a restore from the empty/stale
-context memory on the irq return path in riscv_v_context_nesting_end()
-
-The fix is summarized as below:
+diff --git a/arch/riscv/include/asm/simd.h b/arch/riscv/include/asm/simd.h
+index adb50f3ec205..f176a8072c62 100644
+--- a/arch/riscv/include/asm/simd.h
++++ b/arch/riscv/include/asm/simd.h
+@@ -36,20 +36,10 @@ static __must_check inline bool may_use_simd(void)
+ 	/*
+ 	 * Nesting is achieved in preempt_v by spreading the control for
+ 	 * preemptible and non-preemptible kernel-mode Vector into two fields.
+-	 * Always try to match with preempt_v if kernel V-context exists. Then,
+-	 * fallback to check non preempt_v if nesting happens, or if the config
+-	 * is not set.
++	 * Only non-preempt_v can nest on top of preempt_v, if non-preempt_v is
++	 * unavailable, then preempt_v is not allowed.
+ 	 */
+-	if (IS_ENABLED(CONFIG_RISCV_ISA_V_PREEMPTIVE) && current->thread.kernel_vstate.datap) {
+-		if (!riscv_preempt_v_started(current))
+-			return true;
+-	}
+-	/*
+-	 * Non-preemptible kernel-mode Vector temporarily disables bh. So we
+-	 * must not return true on irq_disabled(). Otherwise we would fail the
+-	 * lockdep check calling local_bh_enable()
+-	 */
+-	return !irqs_disabled() && !(riscv_v_flags() & RISCV_KERNEL_MODE_V);
++	return !(riscv_v_flags() & RISCV_KERNEL_MODE_V);
+ }
+ 
+ #else /* ! CONFIG_RISCV_ISA_V */
+diff --git a/arch/riscv/kernel/kernel_mode_vector.c b/arch/riscv/kernel/kernel_mode_vector.c
+index 307ac369c3d4..965c8edbe984 100644
 --- a/arch/riscv/kernel/kernel_mode_vector.c
 +++ b/arch/riscv/kernel/kernel_mode_vector.c
-@@ -181,8 +181,8 @@ static int riscv_v_start_kernel_context(void)
-        /* Transfer the ownership of V from user to kernel, then save */
-        get_cpu_vector_context();
-        __riscv_flush_vector_context();
--       riscv_v_start(RISCV_PREEMPT_V);
-        put_cpu_vector_context();
-+       riscv_v_start(RISCV_PREEMPT_V);
-        return 0;
+@@ -10,6 +10,7 @@
+ #include <linux/percpu.h>
+ #include <linux/preempt.h>
+ #include <linux/types.h>
++#include <linux/kvm_types.h>
+ 
+ #include <asm/vector.h>
+ #include <asm/switch_to.h>
+@@ -55,13 +56,16 @@ void get_cpu_vector_context(void)
+ 	 * disable softirqs so it is impossible for softirqs to nest
+ 	 * get_cpu_vector_context() when kernel is actively using Vector.
+ 	 */
+-	if (!IS_ENABLED(CONFIG_PREEMPT_RT))
+-		local_bh_disable();
+-	else
++	if (!IS_ENABLED(CONFIG_PREEMPT_RT)) {
++		if (!irqs_disabled())
++			local_bh_disable();
++	} else {
+ 		preempt_disable();
++	}
+ 
+ 	riscv_v_start(RISCV_KERNEL_MODE_V);
  }
-
-We will send a optimization patch that removes the costly riscv_v_is_on()
-for voluntary switch detection. A kselftest that stresses the vectorized
-user copy will also be included into that series.
-
-Patch summary:
- - unchanged patch: 1, 2
- - new patch: none
- - modified patch: 3
-
-Changelog v5:
- - add the r-b from Yong-Xuan
- - fix a guest boot fail that hits ~1/100 in host kernel-mode vector
- - Link to v4: https://lore.kernel.org/all/20260725001749.2579274-1-tchiu@tenstorrent.com/
-
-Changelog v4:
- - Include a header to solve a mid-series build fail (patchwork ci)
- - Drop preempt_v_started test in may_use_simd (Sashiko)
- - Link to v3: https://lore.kernel.org/all/20260724165001.2317788-1-tchiu@tenstorrent.com/
-
-Changelog v3:
- - Limit the export scope for {get,put}_cpu_vector_context()
- - clears RISCV_V_VCPU_NEED_RESTORE flag in host restore to prevent
-   leaking
- - consolidates guest vector restore at returning to guest to prevent
-   unnecessary save/restore between the preemptible window from
-   vcpu_load to vcpu_enter_exit
- - Document flags added to riscv_v_flags
- - Link to v2: https://lore.kernel.org/all/20260715051629.1169645-1-tchiu@tenstorrent.com/
-
-Changelog v2:
- - Address issues pointed out by sashiko (2, 3)
- - Link to v1: https://lore.kernel.org/all/20260711015835.767259-1-tchiu@tenstorrent.com/
-
-
-Andy Chiu (3):
-  riscv: vector: refactor riscv_v_start_kernel_context
-  riscv: vector: allow non-preemptible kernel-mode vector with IRQs off
-  RISC-V: KVM: fix vcpu vector context handling for kernel-mode vector
-
- arch/riscv/include/asm/kvm_vcpu_vector.h | 24 +++++++
- arch/riscv/include/asm/processor.h       |  8 +++
- arch/riscv/include/asm/simd.h            | 16 +----
- arch/riscv/include/asm/vector.h          |  5 ++
- arch/riscv/kernel/kernel_mode_vector.c   | 88 +++++++++++++++++-------
- arch/riscv/kvm/main.c                    |  4 ++
- arch/riscv/kvm/vcpu.c                    | 12 ++++
- arch/riscv/kvm/vcpu_vector.c             | 22 +++++-
- 8 files changed, 139 insertions(+), 40 deletions(-)
-
++EXPORT_SYMBOL_FOR_KVM(get_cpu_vector_context);
+ 
+ /*
+  * Release the CPU vector context.
+@@ -74,11 +78,14 @@ void put_cpu_vector_context(void)
+ {
+ 	riscv_v_stop(RISCV_KERNEL_MODE_V);
+ 
+-	if (!IS_ENABLED(CONFIG_PREEMPT_RT))
+-		local_bh_enable();
+-	else
++	if (!IS_ENABLED(CONFIG_PREEMPT_RT)) {
++		if (!irqs_disabled())
++			local_bh_enable();
++	} else {
+ 		preempt_enable();
++	}
+ }
++EXPORT_SYMBOL_FOR_KVM(put_cpu_vector_context);
+ 
+ #ifdef CONFIG_RISCV_ISA_V_PREEMPTIVE
+ static __always_inline u32 *riscv_v_flags_ptr(void)
 -- 
 2.43.0
 
