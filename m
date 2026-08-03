@@ -4,59 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4B0A4C55162
-	for <kvm-riscv@archiver.kernel.org>; Sun,  2 Aug 2026 05:01:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99042C55179
+	for <kvm-riscv@archiver.kernel.org>; Mon,  3 Aug 2026 13:55:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
-	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=5mrqMEtZzNhmphPpfAiXUjlSAzL1DNANMQOLB318fEQ=; b=DkYqYEH34Vl3e2
-	0reppdvYqG5hcQvH+quhXYg9bYMCjSYLDJF+Z9qF7rrSmrOidB4J4aQPIV0jsyuDlq/epsvvR80UE
-	sqUHzbUVBR2TRLMtCkRF3bnIlZqGyi78dNT55l/qgsv5L9K+kHQ9UWGWFwn7Yv2AAsLvDQXOHY0pO
-	zXuWNLy1EAoTq3QN0y/CDL1Cqo5Dw8LvwGBUfSpCIgqOJPNX1Ns2tfehhjVCA2ah6kclLUmr/Gbd6
-	anPNwXzJKhTACT8eweWg68xkgNmmfNNA4Tn8v1sdSHuT/CbvUxGAf3WrXG2m6UfJ1JL1RUfGxWHlj
-	M0nmTDn4E1nRwOM7KAFQ==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=wydaXa5cNdbcj/ZQSuFxhRcUGbCFxlZwHXuwitZDQAQ=; b=ECnngms6P6lQEe
+	ijCI4gJDggUaLVDvVQkSDjBT1iMJc/2gmkBvdMpxoIxivW55LcWVGgBjOirXyzhG0x666c7XozzVp
+	nyIVc2ae4PvDAE1KRdf5HSY5rSD3VVZ6sS2Pa5mMLA3fu4fJNY54RvpFwdq21T+ptkhBNsmcIF6Md
+	/ZYdGgyIPkp/X/Ps7Ad27N7WTU6QBeJGCrm35uCOjCnUuYVXyzvmauXG+USrYq4jb3XOLYLHXjFfM
+	tBQCUalhLVApj3+o5sn4tGCcuuWWp8DWq7pRBjo+sqbGHP0YCJIMlq520P9lWbFY/e+cLyHVziETZ
+	qdQ2i126T04pbweGIPyw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wqOJv-0000000FMRC-1Apq;
-	Sun, 02 Aug 2026 05:01:07 +0000
-Received: from out28-123.mail.aliyun.com ([115.124.28.123])
+	id 1wqt8k-0000000HH8k-10vl;
+	Mon, 03 Aug 2026 13:55:38 +0000
+Received: from sea.source.kernel.org ([2600:3c0a:e001:78e:0:1991:8:25])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wqOJs-0000000FMQI-0F62;
-	Sun, 02 Aug 2026 05:01:06 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=bosc.ac.cn; s=default;
-	t=1785646855; h=From:To:Subject:Date:Message-ID:MIME-Version;
-	bh=Pt73grlFBLxMuyEprmpx00JxnCh3hf5B0ZaySBUrw7M=;
-	b=BSnsmRsvEjQqU3gY5n4nFBMC034RyLlYSNOTORmGyfG3V82JQ2ZthcG9Qm3nW9Y/kc/73NZoCAb7Lo/ZgNTHSt96+QZQZNUM12aAsaccu22+B7C61GwEeuuiT9dzSWHNkB+tnhcI5N/Y6YSZ2nsvs9rzPfKLEBD/4wiMRrKQ4KUnZcchbdLsb0t3y4WHA3Schib/VFAa7g/1Ss4D3GoVE/lt8iEAU18jfQ9lfiT6kQwrvQPlqbyWGvMrVsNfB00k8cLny1ttnGQUOGFG2Phxob25fxYEKkby0TNunBvFTqJlJzHn+PRUyBIufdwrrOkV0r9XTNT2azL08xXJewbbkA==
-X-Alimail-AntiSpam: AC=CONTINUE;BC=0.07511541|-1;CH=green;DM=|CONTINUE|false|;DS=CONTINUE|ham_regular_dialog|0.143854-0.0024158-0.85373;FP=16572605649191133682|0|0|0|0|-1|-1|-1;HT=maildocker-contentspam033032053168;MF=guoyaxing@bosc.ac.cn;NM=1;PH=DS;RN=13;RT=13;SR=0;TI=SMTPD_---.ibc6NmS_1785646816;
-Received: from guoyaxing..(mailfrom:guoyaxing@bosc.ac.cn fp:SMTPD_---.ibc6NmS_1785646816 cluster:ay29)
-          by smtp.aliyun-inc.com;
-          Sun, 02 Aug 2026 13:00:54 +0800
-From: Yaxing Guo <guoyaxing@bosc.ac.cn>
-To: Anup Patel <anup@brainfault.org>,
-	Atish Patra <atish.patra@linux.dev>,
-	kvm-riscv@lists.infradead.org
-Cc: kvm@vger.kernel.org,
+	id 1wqt8i-0000000HH8I-2Ssx;
+	Mon, 03 Aug 2026 13:55:36 +0000
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 192B441AB1;
+	Mon,  3 Aug 2026 13:55:36 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D471D1F000E9;
+	Mon,  3 Aug 2026 13:55:28 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1785765336;
+	bh=/wWrSnfW58pauafNrE+p0KzqqpQFCnPVL21BrXaLMbA=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=aquetkbGJCwL2l9qEk33SedqffSbzmgdGlkzRTXPNGyUVCVQWi30wZ79AkHKC1sxx
+	 lVBBvn0a31gjeQw2TDWBkny2IJdZ2dhcLQGvX1K7SHN3eaib+eWZzMCrsvQZ78hgsk
+	 ib9lk0EE+dgK3U5mCi+7hyw8LcZL1ih4UeiwHGdZ86GyIg7SOeoXfQU/YCTlwRRMIZ
+	 tvmd4jLnLU55HCHUczdUVKx54bioUztPGKmURbqEkJCxKnrhBLY1/pLE6oA45bMz0s
+	 ToRFQV69nd8jvmgDB86aLIX1J6ZN8SniGiRwA6peUuievcOEP7yOLyoU6ZrIfgtGxX
+	 bE7TdyAmtXsYg==
+From: Guo Ren <guoren@kernel.org>
+To: guoyaxing@bosc.ac.cn
+Cc: alex@ghiti.fr,
+	anup@brainfault.org,
+	aou@eecs.berkeley.edu,
+	atish.patra@linux.dev,
+	kvm-riscv@lists.infradead.org,
+	kvm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
 	linux-riscv@lists.infradead.org,
-	Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Alexandre Ghiti <alex@ghiti.fr>,
-	Hui Min Mina Chou <minachou@andestech.com>,
-	guoyaxing@bosc.ac.cn,
 	majiuyue@bosc.ac.cn,
-	linux-kernel@vger.kernel.org
-Subject: [RFC] RISC-V KVM: guest local sfence.vma may miss stale VS-stage TLB after vCPU migration
-Date: Sun,  2 Aug 2026 13:00:15 +0800
-Message-ID: <20260802050015.104795-1-guoyaxing@bosc.ac.cn>
+	minachou@andestech.com,
+	palmer@dabbelt.com,
+	pjw@kernel.org,
+	"Guo Ren (Alibaba DAMO Academy)" <guoren@kernel.org>
+Subject: [PATCH] riscv: KVM: Flush VS-stage stale entries
+Date: Mon,  3 Aug 2026 13:54:54 +0000
+Message-ID: <20260803135454.2726112-1-guoren@kernel.org>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20260802050015.104795-1-guoyaxing@bosc.ac.cn>
+References: <20260802050015.104795-1-guoyaxing@bosc.ac.cn>
 MIME-Version: 1.0
-X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260801_220104_706121_23A5EF9A 
-X-CRM114-Status: GOOD (  19.31  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -68,98 +74,61 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Hi all,
-
-I would like to ask whether RISC-V KVM has a gap around guest sfence.vma
-and VS-stage TLB invalidation when a vCPU migrates across host CPUs.
-
-On bare metal, Linux uses mm_cpumask in __flush_tlb_range() to decide
-whether to send a local or remote sfence.vma. That works because the cpumask
-reflects physical CPUs. In a guest, however, the kernel only sees vCPUs, so
-from the guest point of view a task may never "migrate" even though the
-underlying vCPU moved to a different host CPU. In other words, guest
-mm_cpumask is effectively a vCPU mask, not a host CPU mask.
-
-There is also a related switch_mm()/set_mm_asid() aspect. With the ASID
-allocator enabled, RISC-V Linux does not flush on every context switch. A
-local_flush_tlb_all() is only done when a deferred ASID rollover flush is
-pending for the current CPU. That is fine on bare metal, because previous
-shootdowns are also based on physical CPUs. In a guest, however, the earlier
-shootdown may have been only a guest-local sfence.vma and may have missed an
-old host CPU where the same vCPU ran previously.
-
-A simplified sequence is:
-
-1. A guest task with mm A runs on vcpu0 while vcpu0 is scheduled on host
-   CPU1. CPU1 fills a VS-stage TLB entry for that mm/ASID.
-2. vcpu0 migrates to host CPU0. KVM's vCPU migration sanitization is local
-   to the current host CPU, so it does not invalidate the VS-stage TLB entry
-   that was left on host CPU1.
-3. The guest later updates mm A's page table from vcpu0, for example due to
-   COW. Since the guest still sees mm A as having run only on guest CPU0,
-   __flush_tlb_range() can choose a local sfence.vma. That local sfence.vma
-   only affects host CPU0, where vcpu0 is currently running, so the stale
-   VS-stage entry on host CPU1 remains.
-4. Later, the task is scheduled again while vcpu0 is running on host CPU1.
-   If the ASID is still valid and no deferred ASID rollover flush is pending,
-   set_mm_asid() may not issue any flush. The access on host CPU1 can then
-   hit the old VS-stage TLB entry.
-
-We hit this on a XiangShan RISC-V system. A bash task in the guest was
-scheduled on vcpu0 while that vCPU was running on host CPU1. A read-only
-page was prefetched and cached in CPU1's VS-stage TLB. Later the same vCPU
-migrated to host CPU0, the guest triggered COW and updated the mapping, and
-the guest still issued only a local sfence.vma. The stale VS-stage entry on
-CPU1 was not invalidated. After running for some time, the task later
-accessed that mapping while running on host CPU1 again and hit the stale
-translation. The data in that page was a pointer from the GOT, so it
-dereferenced to NULL and eventually caused a segmentation fault.
-
-I checked current upstream RISC-V KVM (v7.0.2) and I do not see HSTATUS.VTVM
-being enabled, so guest sfence.vma is not trapped. I found
-kvm_riscv_local_tlb_sanitize() on host CPU migration, which handles G-stage
-VMID entries on the current host CPU, but I do not think it generally solves
-the stale VS-stage TLB case described above.
-
-I also noticed the vendor-specific kvm_riscv_vsstage_tlb_no_gpa path in
-current upstream. It looks like a workaround for a particular implementation
-issue on Andes AX66, where the VS-stage TLB does not cache guest physical
-address and VMID, so the normal VMID/GPA-based invalidation model is
-insufficient. In that sense, it does not seem to be a generic solution for
-guest sfence.vma coherence across vCPU migration.
-
-I am wondering what the right direction should be. Enabling HSTATUS.VTVM and
-trapping guest sfence.vma would allow KVM to translate guest local sfence.vma
-into the required host-side hfence.vvma, but that may be too heavy for the
-common case. Another possible direction may be to make the current
-Andes-specific vCPU migration flush logic more generic, so implementations
-that need VS-stage TLB sanitization on vCPU migration can opt in through a
-common mechanism. A third possibility may be to define a lightweight SBI
-interface for guest local sfence.vma, so Linux could use it in
-__flush_tlb_range() for the local case when running under KVM, and KVM could
-then decide whether a local sfence.vma is sufficient or whether host-side
-hfence.vvma is also needed.
-
-My questions are:
-1. Is the behavior above expected on current RISC-V KVM?
-2. If not, what would be the preferred fix direction?
-3. Should this be handled by trapping guest sfence.vma with VTVM, by
-   generalizing the existing vCPU-migration VS-stage TLB flush logic, or by
-   adding a lighter SBI-mediated path for guest local sfence.vma?
-4. Or is there another intended mechanism to keep VS-stage TLB state coherent
-   across vCPU migration?
-
-If needed, I can send a reproducer and the exact hardware/kernel details.
-
-Thanks,
-Yaxing Guo
-
--- 
-kvm-riscv mailing list
-kvm-riscv@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/kvm-riscv
+RnJvbTogIkd1byBSZW4gKEFsaWJhYmEgREFNTyBBY2FkZW15KSIgPGd1b3JlbkBrZXJuZWwub3Jn
+PgoKV2hlbiBhIHZDUFUgbWlncmF0ZXMgdG8gYSBkaWZmZXJlbnQgaG9zdCBDUFUsIHRoZSBuZXcg
+Q1BVIG1heSByZXRhaW4Kc3RhbGUgVlMtc3RhZ2UgVExCIGVudHJpZXMgKEdWQSDihpIgR1BBKSBs
+ZWZ0IGJ5IGEgcHJldmlvdXMgcnVuIG9mIHRoZQpzYW1lIGd1ZXN0LiBJc3N1ZSBhbiBIRkVOQ0Uu
+VlZNQSAoYWxsIEFTSURzLCBhbGwgYWRkcmVzc2VzKSBpbnNpZGUKa3ZtX3Jpc2N2X21tdV91cGRh
+dGVfaGdhdHAoKSB3aGVuZXZlciB0aGUgdkNQVSBpcyBsb2FkZWQgb24gYSBDUFUKZGlmZmVyZW50
+IGZyb20gdGhlIG9uZSBpdCBsYXN0IGV4aXRlZCBvbi4KClNpZ25lZC1vZmYtYnk6IEd1byBSZW4g
+KEFsaWJhYmEgREFNTyBBY2FkZW15KSA8Z3VvcmVuQGtlcm5lbC5vcmc+Ci0tLQpEb2VzIHRoaXMg
+cGF0Y2ggc29sdmUgeW91ciBwcm9ibGVtPyBJIHdvdWxkIHByZWZlciB0byBpc3N1ZSBhIGZ1bGwK
+SEZFTkNFLlZWTUEgd2hlbmV2ZXIgYSBuZXcgVk1JRCBpcyBpbnN0YWxsZWQgb24gYSBwQ1BVLgot
+LS0KIGFyY2gvcmlzY3YvaW5jbHVkZS9hc20va3ZtX21tdS5oIHwgMiArLQogYXJjaC9yaXNjdi9r
+dm0vbW11LmMgICAgICAgICAgICAgfCA1ICsrKystCiBhcmNoL3Jpc2N2L2t2bS92Y3B1LmMgICAg
+ICAgICAgICB8IDQgKystLQogMyBmaWxlcyBjaGFuZ2VkLCA3IGluc2VydGlvbnMoKyksIDQgZGVs
+ZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvYXJjaC9yaXNjdi9pbmNsdWRlL2FzbS9rdm1fbW11Lmgg
+Yi9hcmNoL3Jpc2N2L2luY2x1ZGUvYXNtL2t2bV9tbXUuaAppbmRleCA1NDM5ZTc2ZjBhOTYuLmYw
+YzVkMmQwMTA1MiAxMDA2NDQKLS0tIGEvYXJjaC9yaXNjdi9pbmNsdWRlL2FzbS9rdm1fbW11LmgK
+KysrIGIvYXJjaC9yaXNjdi9pbmNsdWRlL2FzbS9rdm1fbW11LmgKQEAgLTE2LDYgKzE2LDYgQEAg
+aW50IGt2bV9yaXNjdl9tbXVfbWFwKHN0cnVjdCBrdm1fdmNwdSAqdmNwdSwgc3RydWN0IGt2bV9t
+ZW1vcnlfc2xvdCAqbWVtc2xvdCwKIAkJICAgICAgc3RydWN0IGt2bV9nc3RhZ2VfbWFwcGluZyAq
+b3V0X21hcCk7CiBpbnQga3ZtX3Jpc2N2X21tdV9hbGxvY19wZ2Qoc3RydWN0IGt2bSAqa3ZtKTsK
+IHZvaWQga3ZtX3Jpc2N2X21tdV9mcmVlX3BnZChzdHJ1Y3Qga3ZtICprdm0pOwotdm9pZCBrdm1f
+cmlzY3ZfbW11X3VwZGF0ZV9oZ2F0cChzdHJ1Y3Qga3ZtX3ZjcHUgKnZjcHUpOwordm9pZCBrdm1f
+cmlzY3ZfbW11X3VwZGF0ZV9oZ2F0cChzdHJ1Y3Qga3ZtX3ZjcHUgKnZjcHUsIGludCBjcHUpOwog
+CiAjZW5kaWYKZGlmZiAtLWdpdCBhL2FyY2gvcmlzY3Yva3ZtL21tdS5jIGIvYXJjaC9yaXNjdi9r
+dm0vbW11LmMKaW5kZXggMDgyZjliMjYxNzMzLi5iNzZhOTBmNTgxMWEgMTAwNjQ0Ci0tLSBhL2Fy
+Y2gvcmlzY3Yva3ZtL21tdS5jCisrKyBiL2FyY2gvcmlzY3Yva3ZtL21tdS5jCkBAIC03MDUsNyAr
+NzA1LDcgQEAgdm9pZCBrdm1fcmlzY3ZfbW11X2ZyZWVfcGdkKHN0cnVjdCBrdm0gKmt2bSkKIAkJ
+ZnJlZV9wYWdlcygodW5zaWduZWQgbG9uZylwZ2QsIGdldF9vcmRlcihrdm1fcmlzY3ZfZ3N0YWdl
+X3BnZF9zaXplKSk7CiB9CiAKLXZvaWQga3ZtX3Jpc2N2X21tdV91cGRhdGVfaGdhdHAoc3RydWN0
+IGt2bV92Y3B1ICp2Y3B1KQordm9pZCBrdm1fcmlzY3ZfbW11X3VwZGF0ZV9oZ2F0cChzdHJ1Y3Qg
+a3ZtX3ZjcHUgKnZjcHUsIGludCBjcHUpCiB7CiAJc3RydWN0IGt2bV9hcmNoICprYSA9ICZ2Y3B1
+LT5rdm0tPmFyY2g7CiAJdW5zaWduZWQgbG9uZyBoZ2F0cCA9IGt2bV9yaXNjdl9nc3RhZ2VfbW9k
+ZShrYS0+cGdkX2xldmVscykKQEAgLTcxOCw0ICs3MTgsNyBAQCB2b2lkIGt2bV9yaXNjdl9tbXVf
+dXBkYXRlX2hnYXRwKHN0cnVjdCBrdm1fdmNwdSAqdmNwdSkKIAogCWlmICgha3ZtX3Jpc2N2X2dz
+dGFnZV92bWlkX2JpdHMoKSkKIAkJa3ZtX3Jpc2N2X2xvY2FsX2hmZW5jZV9ndm1hX2FsbCgpOwor
+CisJaWYgKHZjcHUtPmFyY2gubGFzdF9leGl0X2NwdSAhPSBjcHUpCisJCWFzbSB2b2xhdGlsZShI
+RkVOQ0VfVlZNQSh6ZXJvLCB6ZXJvKSA6IDogOiAibWVtb3J5Iik7CiB9CmRpZmYgLS1naXQgYS9h
+cmNoL3Jpc2N2L2t2bS92Y3B1LmMgYi9hcmNoL3Jpc2N2L2t2bS92Y3B1LmMKaW5kZXggY2Y2ZTIz
+MWU3NmUyLi45NjkyZjVmNWE3MGEgMTAwNjQ0Ci0tLSBhL2FyY2gvcmlzY3Yva3ZtL3ZjcHUuYwor
+KysgYi9hcmNoL3Jpc2N2L2t2bS92Y3B1LmMKQEAgLTU5Myw3ICs1OTMsNyBAQCB2b2lkIGt2bV9h
+cmNoX3ZjcHVfbG9hZChzdHJ1Y3Qga3ZtX3ZjcHUgKnZjcHUsIGludCBjcHUpCiAJCWNzcl93cml0
+ZShDU1JfVlNBVFAsIGNzci0+dnNhdHApOwogCX0KIAotCWt2bV9yaXNjdl9tbXVfdXBkYXRlX2hn
+YXRwKHZjcHUpOworCWt2bV9yaXNjdl9tbXVfdXBkYXRlX2hnYXRwKHZjcHUsIGNwdSk7CiAKIAlr
+dm1fcmlzY3ZfdmNwdV9haWFfbG9hZCh2Y3B1LCBjcHUpOwogCkBAIC02ODYsNyArNjg2LDcgQEAg
+c3RhdGljIGludCBrdm1fcmlzY3ZfY2hlY2tfdmNwdV9yZXF1ZXN0cyhzdHJ1Y3Qga3ZtX3ZjcHUg
+KnZjcHUpCiAJCQlrdm1fcmlzY3ZfcmVzZXRfdmNwdSh2Y3B1LCB0cnVlKTsKIAogCQlpZiAoa3Zt
+X2NoZWNrX3JlcXVlc3QoS1ZNX1JFUV9VUERBVEVfSEdBVFAsIHZjcHUpKQotCQkJa3ZtX3Jpc2N2
+X21tdV91cGRhdGVfaGdhdHAodmNwdSk7CisJCQlrdm1fcmlzY3ZfbW11X3VwZGF0ZV9oZ2F0cCh2
+Y3B1LCB2Y3B1LT5jcHUpOwogCiAJCWlmIChrdm1fY2hlY2tfcmVxdWVzdChLVk1fUkVRX0ZFTkNF
+X0ksIHZjcHUpKQogCQkJa3ZtX3Jpc2N2X2ZlbmNlX2lfcHJvY2Vzcyh2Y3B1KTsKLS0gCjIuNDMu
+MAoKCi0tIAprdm0tcmlzY3YgbWFpbGluZyBsaXN0Cmt2bS1yaXNjdkBsaXN0cy5pbmZyYWRlYWQu
+b3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8va3ZtLXJpc2N2
+Cg==
