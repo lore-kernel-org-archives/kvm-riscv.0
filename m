@@ -4,68 +4,106 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DF82BC56205
-	for <kvm-riscv@archiver.kernel.org>; Thu,  6 Aug 2026 16:36:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 33C2CC56208
+	for <kvm-riscv@archiver.kernel.org>; Thu,  6 Aug 2026 17:12:44 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:
-	Subject:MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=tY0VGIgo8dJ6cO2VemfXWmI5A0ZDjrX3QHjcgUCumaA=; b=PN79jgKjdlrRE7
-	H9zSlJPWcct1AHx/7ESmfT9hQnrgY4OPc4tOMqKHq/YuaiWxYt+sjnsQ0B+0Xy77kxB7I6AysioqG
-	if7mDZ95yH9uXhV6Gin5idBpkUoaIOqnO+qDZ8W4DYPB0oRLqSBYUK0eTxdzSjd2MKrO8NXGv9nOf
-	ZNsbyvxDXefCZOgxUL2PUxM78drnwx3QdzRHT+0Zv1W/7qlsOUUCuEGkPMJglIDRknAvgIRk6BQkY
-	LIyf7+ueAwIVhuwTjaWcrMnHd0sKTa/yRwzjK//DnT49sgE9b3v6Kb1m10g7mIkmTDe4k/O1ZIc2j
-	Mfbw8bQItcH/YQ4x7QkA==;
+	List-Owner; bh=CgfQM2wN3QdOdo2ezaNH6N/FjSlEpvV0hLavQVRcNVg=; b=qTR2/zleZCMbdC
+	inltVVM9JHYdonHq/k6gYlHeTK8tPbJS6apjh9PrZS3xyDyx1FbrHWXjnhWaxyvrFiyYJ1ZOnWFtM
+	xqmFVvVhURA6Q6dT17E8kgIS9ryWKYiRU8Eer7d5A+E9iVjtgGnIoMo4t3FVl/vpJT1CN00qP72st
+	+kMlDToN87xG4fS9hI+h2zeDCiJNIgiCGC3MMnA9gSAC3A9TWySZ2GcN29k9U6d/RwzYvRyG3eA9I
+	peFvC51y+KrzVQs7khr331Eyhb1apNfuGpwr3Cd/kdvhQJ+Fh359LWA63BtjFaXGHs2D2K+fV3vsE
+	ufZCpQFlJfx/dIobfmpg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1ws15C-00000006EfL-217E;
-	Thu, 06 Aug 2026 16:36:38 +0000
-Received: from sea.source.kernel.org ([172.234.252.31])
+	id 1ws1e7-00000006L6O-3IbG;
+	Thu, 06 Aug 2026 17:12:43 +0000
+Received: from tor.source.kernel.org ([2600:3c04:e001:324:0:1991:8:25])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1ws15B-00000006EfA-0lb2;
-	Thu, 06 Aug 2026 16:36:37 +0000
+	id 1ws1e5-00000006L3p-3Vvv;
+	Thu, 06 Aug 2026 17:12:41 +0000
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id CE51F419C8;
-	Thu,  6 Aug 2026 16:36:36 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 276711F000E9;
-	Thu,  6 Aug 2026 16:36:36 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 4556760AB1;
+	Thu,  6 Aug 2026 17:12:41 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 14BA71F000E9;
+	Thu,  6 Aug 2026 17:12:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1786034196;
-	bh=dYgTROmA3S9YYxoIX0RnvvNWtlrrmgkIbAsRfNBVPWk=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=W2tNMIwEAfNCTwDDnhL0AFQucPE5sv85OfGCC5ymuYtjo8GULNbbUz0sRypf8w/Hb
-	 2wUIU99yWex7ZwO/wqqjm1+lQxJtFRF9cn/XlibJHtYd7gQqvN61fC9TBx8cFl8Ejy
-	 Nb+/TZJ6cpRATbqWrcXFyTG171V8vI1eb6kTf90x3qJ73U68vo7ffd+ip0vQW/U83+
-	 2Jj+qC6v4Y3zYwtkBToz2v49qwTjn92dDszm0ferAxlrCm1IpXR0ONxCXUJjoEKeNx
-	 P6VXwozmDt/s27fPNPoEgrGIAZ+8pR7V+eQjbm+SxK+DYsuaKWjaQF6jZxOO+L38qU
-	 KMaDmaySwmZag==
-Message-ID: <956a07d1-8f70-4376-9505-623db0223479@kernel.org>
-Date: Thu, 6 Aug 2026 09:36:32 -0700
+	s=k20260515; t=1786036361;
+	bh=i2yjrrVc+H/dOZF8X/JCAszDBzatuRJpY6enVbVkXDU=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=c8OYpXn/lbymZWYNNGPbBk8+3HfighE8u/aLjR6Id3SpcMlVswuIxuoFT6i8+sJVG
+	 33bgpDZK07lgJdRnLMQQM5x5OHdfGvrUlwrg07n1Vrb5Uhrfcf7XF85qEDFGTpmbzJ
+	 qifqGwAx2bDkh0NXTIgleM+IkLM3PHw2BFHX6yZMbeRqljFQbSRqJcqKkhvmOKwx4y
+	 8hBZqfwDXrrUJpo3Surfw1/jC6G5IUWLTS95IreVfJCJJxrzmp1dOhdDQ+kcloC6rE
+	 eCHWu6iyOrudRbovBNdMtzXkfpZdjrLsc4CWBTA/u9nkgylUVc+I/jIl/BOLL8csMs
+	 892czlr7RY3TA==
+From: Will Deacon <will@kernel.org>
+To: Russell King <linux@armlinux.org.uk>,
+	Huacai Chen <chenhuacai@kernel.org>,
+	WANG Xuerui <kernel@xen0n.name>,
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Kairui Song <kasong@tencent.com>,
+	Qi Zheng <qi.zheng@linux.dev>,
+	Shakeel Butt <shakeel.butt@linux.dev>,
+	Barry Song <baohua@kernel.org>,
+	Axel Rasmussen <axelrasmussen@google.com>,
+	Yuanchu Xie <yuanchu@google.com>,
+	Wei Xu <weixugc@google.com>,
+	Johannes Weiner <hannes@cmpxchg.org>,
+	David Hildenbrand <david@kernel.org>,
+	Michal Hocko <mhocko@kernel.org>,
+	Lorenzo Stoakes <ljs@kernel.org>,
+	Tianrui Zhao <zhaotianrui@loongson.cn>,
+	Bibo Mao <maobibo@loongson.cn>,
+	Anup Patel <anup@brainfault.org>,
+	Atish Patra <atish.patra@linux.dev>,
+	Paul Walmsley <pjw@kernel.org>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>,
+	Alexandre Ghiti <alex@ghiti.fr>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	Andy Lutomirski <luto@kernel.org>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Thomas Gleixner <tglx@kernel.org>,
+	Ingo Molnar <mingo@redhat.com>,
+	Borislav Petkov <bp@alien8.de>,
+	x86@kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	"Liam R. Howlett" <liam@infradead.org>,
+	Vlastimil Babka <vbabka@kernel.org>,
+	Mike Rapoport <rppt@kernel.org>,
+	Suren Baghdasaryan <surenb@google.com>,
+	Michal Hocko <mhocko@suse.com>,
+	Jonas Bonn <jonas@southpole.se>,
+	Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+	Stafford Horne <shorne@gmail.com>,
+	Yeoreum Yun <yeoreum.yun@arm.com>
+Cc: kernel-team@android.com,
+	Will Deacon <will@kernel.org>,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	loongarch@lists.linux.dev,
+	linux-mips@vger.kernel.org,
+	linux-arch@vger.kernel.org,
+	linux-mm@kvack.org,
+	kvm@vger.kernel.org,
+	kvm-riscv@lists.infradead.org,
+	linux-riscv@lists.infradead.org,
+	linux-openrisc@vger.kernel.org
+Subject: Re: [PATCH RFC v2 00/20] mm: optimize unnecessary loads due to ptep_get() and friends out
+Date: Thu,  6 Aug 2026 18:11:50 +0100
+Message-ID: <178601690203.388302.5785771709606318463.b4-ty@kernel.org>
+X-Mailer: git-send-email 2.47.3
+In-Reply-To: <20260722-dummy_ptxp3-v2-0-d9e4bad31e0a@arm.com>
+References: <20260722-dummy_ptxp3-v2-0-d9e4bad31e0a@arm.com>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 07/17] riscv: Maintain epc on misaligned emulation
- error
-To: Nam Cao <namcao@linutronix.de>,
- Charlie Jenkins <thecharlesjenkins@gmail.com>, Paul Walmsley
- <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
- Alexandre Ghiti <alex@ghiti.fr>, Anup Patel <anup@brainfault.org>,
- Atish Patra <atish.patra@linux.dev>, Conor Dooley <conor@kernel.org>,
- Paolo Bonzini <pbonzini@redhat.com>,
- Andrew Morton <akpm@linux-foundation.org>, Shuah Khan <shuah@kernel.org>,
- =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <radim.krcmar@oss.qualcomm.com>,
- Jesse Taube <jtaubepe@redhat.com>
-Cc: linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
- kvm@vger.kernel.org, kvm-riscv@lists.infradead.org,
- linux-kselftest@vger.kernel.org, Damien Le Moal <damien.lemoal@wdc.com>
-References: <20260707-riscv_insn_table-v3-0-3f8e5f75ba97@gmail.com>
- <20260707-riscv_insn_table-v3-7-3f8e5f75ba97@gmail.com>
- <87cxvvd4o4.fsf@yellow.woof>
-From: Damien Le Moal <dlemoal@kernel.org>
-Content-Language: en-US
-Organization: Western Digital Research
-In-Reply-To: <87cxvvd4o4.fsf@yellow.woof>
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -82,31 +120,31 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On 2026/08/06 1:38, Nam Cao wrote:
-> Charlie Jenkins <thecharlesjenkins@gmail.com> writes:
->> Currently the epc is set to zero when there is a misaligned emulation
->> error. This will print a misleading error message with the current epc
->> value of zero instead of the epc value that triggered the emulation.
->> Avoid setting epc to zero to maintain the state of epc.
->>
->> Signed-off-by: Charlie Jenkins <thecharlesjenkins@gmail.com>
+On Wed, 22 Jul 2026 16:30:08 +0100, Yeoreum Yun wrote:
+> Using ptep_get() and its counterparts in common code is suboptimal on
+> kernel configurations with generic compile-time folded page tables.
+> By default, ptep_get() and its friends expands to READ_ONCE(),
+> forcing the compiler to emit a load even when the value is not used afterwards.
 > 
-> I see no reason why epc must be set to zero, so:
-> Reviewed-by: Nam Cao <namcao@linutronix.de>
+> This issue was recently reported by Christophe Leroy [1] for ppc32
+> preventing futher code conversion to ptep_get()/pmdp_get()/... helper
+> and the same behavior can also be observed on arm64 when built with
+> 2- or 3-level page tables
 > 
-> But to be sure, I add to CC: Damien Le Moal <damien.lemoal@wdc.com>
-> 
-> Damien, any reason that epc must be cleared?
+> [...]
 
-It has been a while since I touched this, and frankly, I do not remember at all.
-As the original commit 956d705dd279f says: Code heavily inspired from the
-OpenSBI project. So I may have copied this without thinking too much. That's
-likely Anup's code, so maybe Anup can weight in here.
+Applied the arm64 patch on the end to arm64 (for-next/mm), thanks!
 
+[20/20] arm64: pgtable: convert pte_present() from macro to static inline
+        https://git.kernel.org/arm64/c/3b56ebafecc4
 
+Cheers,
 -- 
-Damien Le Moal
-Western Digital Research
+Will
+
+https://fixes.arm64.dev
+https://next.arm64.dev
+https://will.arm64.dev
 
 -- 
 kvm-riscv mailing list
