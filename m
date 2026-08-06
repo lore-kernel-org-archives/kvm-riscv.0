@@ -4,48 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2FC6DC55ABF
-	for <kvm-riscv@archiver.kernel.org>; Wed,  5 Aug 2026 11:32:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F4E7C55ABF
+	for <kvm-riscv@archiver.kernel.org>; Thu,  6 Aug 2026 06:50:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:References
 	:In-Reply-To:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=b6PckvqvaV53vj/hLzqduOHKWkHMRCBJD5KxXKer/1E=; b=AoJ1KQODDcZB+w
-	KYHhx0LOpGAyn/ymM+Onyb7Kvnpmubpf3fjJmEnLnTFtwqVdiydwLwQSo0NnNDe9Q1ghoAn8Zsn/P
-	7LgEkKTu4QU8x6bHzwR+3m54xVWC+YOShJpueh7TUoF8qsC6cE+CAq+kYPn7VgRTVMjZkHFpYbMBp
-	o+W9Dg+ZICKktoh6P7tmKUHWQMzK+Al2QZvDG5kc3sAdUGVwU5LnDH17u5riw3z56fRI8AbOn0RvN
-	Cwd56xT+n68uKkzkNkKtV27xCKQbVNEz81/0TA8nXRaORBzbt8EyveAhgPIbobqU1M+WOdnTI7F1U
-	sddtMtLCm82rts5JVGNA==;
+	List-Owner; bh=b/0zGd5x7g2arxXzYaXYFmSJtMmjEGw8k3ZTFzPqNds=; b=CjZRZCqnTMkFtT
+	skSHxTnnESiQW2Ey63BgHZH5m8nOpW/BtZ0el6lsOpPFRp2ahtrB0fR+3q7ifasK60oKhm0VBY3oD
+	V4g0I2ignAEyqv6IIxm6arrBsypQyYwsF5e/2a27JEARvVT4WOMgQYyphA04c89FAQnUpH/wGiFE0
+	T9Ze0x9s8lRt4aOEWDedMMHTXLG22vW3ePcMQPxQEVNSDyZIaQM3gRfE9v6xiUidBQeiY9qSijuXI
+	5VZ6KWAO0mF4/oskTFKSXrpqunqKT2JVL40MD57LX1PCy63gqDgwahIRkFgeRWDJ8jTH0hxk6btrj
+	K4ut+x+IvnCevtgEUDQg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wrZrV-00000003p0c-0rsj;
-	Wed, 05 Aug 2026 11:32:41 +0000
-Received: from galois.linutronix.de ([193.142.43.55])
+	id 1wrrw8-000000055Qq-3wzd;
+	Thu, 06 Aug 2026 06:50:40 +0000
+Received: from galois.linutronix.de ([2a0a:51c0:0:12e:550::1])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wrZrS-00000003p0E-1ijK;
-	Wed, 05 Aug 2026 11:32:39 +0000
+	id 1wrrw6-000000055QS-2Dof;
+	Thu, 06 Aug 2026 06:50:39 +0000
 From: Nam Cao <namcao@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1785929556;
+	s=2020; t=1785999034;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=P/Nf6Gxd/9lfzxOV0ouil77PrRiaEFU9fAACLKEQtOY=;
-	b=D4u5DeMcHBr5Jvn13Ts7KxRLuaWEUxiEJ45DAneVZfkLVTBIyo9wvmYiu9TU+Nv/VR6xA7
-	v79jHnmt7zVdnZLq7cZrV6iHvh3JJF6y6Lj7SYiS/22jhZe2IqAmq6OQxrDpEexT6MOfHC
-	mrLV5alkk0bi5KO0o4TH6teeP0SK1xVl/UO7ou/iYuonEIBUPaD4Ennxco2dUqlU+WAnpB
-	+meWBcqsWk4lOKVUoRucAfiyIShLcbwlLuo1qfCpmc1V6X4smcCKnJFvTAMP+zAeFON80x
-	LYX52nD/TpYB/qZfU4esytHVfC0Ryuf/20hM7ZvOiSWQ7bfSw4Zerefilm32dg==
+	bh=a3YEdpBzGJfCE9OG01zLjkQZVUUGB2Ok8wj7FV80Wpo=;
+	b=IeOlfN+uUd41IzpnVVeFTGiSNJzEZiJDadZyDldZWHnQFj0Cjb+64np/UNsudJCXnfbDiU
+	3Z1WAvs1jg8VgQQa5eZUNlDk/UrcL/KON9Zss9ZrBCkqEybinXlDr1rSneL8Y+hsrFwrZ/
+	Zsk3Fe/WYyX8L/1k/uMPl67wN8yXysW5bIVpHQkfkpEjudbIBtBlJZ/QvnfiPMqTbgidzf
+	4T7wHiyTZOK/ZZbdYXdrIUoAv3nfiNcI0+4z9cNwmSygyu869QOuXC8X29m6+82u2iYjj7
+	9Kj0ksoNGpm2B2hsbY9lxuzvCbqzud31ryL3OuxD+UpTVCvvw29cGEfMuAPZ6A==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1785929556;
+	s=2020e; t=1785999034;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=P/Nf6Gxd/9lfzxOV0ouil77PrRiaEFU9fAACLKEQtOY=;
-	b=MEB8PzqI5BETYkCdp/BgCLKYzCRG3v74fMGD8qYkXY6irlE/pWNs1VTPronLaaa1Ov7KPA
-	pVD+5x5D8AWi/pCA==
+	bh=a3YEdpBzGJfCE9OG01zLjkQZVUUGB2Ok8wj7FV80Wpo=;
+	b=JtCtLWZWHSsSUdkjhlr/qrdsxP8mDAZVs7eb0+pCe/dXM8MCf6cXP0BCZtYYzfUFx7e1LM
+	czhWMq2Lo1n2JVCw==
 To: Charlie Jenkins <thecharlesjenkins@gmail.com>, Paul Walmsley
  <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Alexandre Ghiti
  <alex@ghiti.fr>, Anup Patel <anup@brainfault.org>, Atish Patra
@@ -58,17 +58,17 @@ Cc: linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
  kvm@vger.kernel.org, kvm-riscv@lists.infradead.org,
  linux-kselftest@vger.kernel.org, Charlie Jenkins
  <thecharlesjenkins@gmail.com>
-Subject: Re: [PATCH v3 01/17] riscv: Introduce instruction table generation
-In-Reply-To: <20260707-riscv_insn_table-v3-1-3f8e5f75ba97@gmail.com>
+Subject: Re: [PATCH v3 02/17] riscv: alternatives: Use generated instruction
+ headers for patching code
+In-Reply-To: <20260707-riscv_insn_table-v3-2-3f8e5f75ba97@gmail.com>
 References: <20260707-riscv_insn_table-v3-0-3f8e5f75ba97@gmail.com>
- <20260707-riscv_insn_table-v3-1-3f8e5f75ba97@gmail.com>
-Date: Wed, 05 Aug 2026 13:32:35 +0200
-Message-ID: <87v79o950s.fsf@yellow.woof>
+ <20260707-riscv_insn_table-v3-2-3f8e5f75ba97@gmail.com>
+Date: Thu, 06 Aug 2026 08:50:32 +0200
+Message-ID: <87qzkbd9on.fsf@yellow.woof>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260805_043238_649434_828A50D5 
-X-CRM114-Status: UNSURE (   4.41  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20260805_235038_711843_0A75AE91 
+X-CRM114-Status: GOOD (  10.15  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -86,24 +86,46 @@ Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 Charlie Jenkins <thecharlesjenkins@gmail.com> writes:
-> +        # Replace all . with _
-> +        formatted_inst_name=$name
-> +        while [ ! ${formatted_inst_name##*.*} ]; do
-> +            prefix=${formatted_inst_name%.*}
-> +            suffix=${formatted_inst_name##*.}
-> +            contains_dot=${formatted_inst_name##*.*}
+> @@ -78,14 +79,24 @@ static void riscv_alternative_fix_auipc_jalr(void *ptr, u32 auipc_insn,
+>  					     u32 jalr_insn, int patch_offset)
+>  {
+>  	u32 call[2] = { auipc_insn, jalr_insn };
+> +	u32 auipc_imm;
+>  	s32 imm;
+>  
+>  	/* get and adjust new target address */
+> -	imm = riscv_insn_extract_utype_itype_imm(auipc_insn, jalr_insn);
+> +	imm = riscv_insn_auipc_extract_imm(auipc_insn) + riscv_insn_jalr_extract_imm(jalr_insn);
+>  	imm -= patch_offset;
+>  
+> +	/*
+> +	 * When the 32-bit immediate is split across auipc and jalr, the
+> +	 * constructed immediates need to be treated as individually sign
+> +	 * extended numbers. Add the sign bit of the lower 12 bits to the upper
+> +	 * 20 bits to undo the bleeding of the sign.
+> +	 */
+> +	auipc_imm = (imm & BIT(11)) << 1;
+> +
+>  	/* update instructions */
+> -	riscv_insn_insert_utype_itype_imm(&call[0], &call[1], imm);
+> +	riscv_insn_auipc_insert_imm(&call[0], auipc_imm);
+> +	riscv_insn_jalr_insert_imm(&call[1], imm);
 
-Isn't contains_dot always empty, because we only get here if
-formatted_inst_name has a dot?
+Looking at the old riscv_insn_insert_utype_itype_imm(), for auipc we have
 
-> +        # Instruction only appears in one base
-> +        only_base=
-> +        if [ "${base}" != "${base%32}" ]; then
+	*utype_insn &= ~(RV_U_IMM_31_12_MASK);
+	*utype_insn |= (imm & RV_U_IMM_31_12_MASK) + ((imm & BIT(11)) << 1);
 
-Does
-           if [ "${base}" = "32" ]; then
+but the new code does
 
-work?
+	auipc_imm = (imm & BIT(11)) << 1;
+	*_insn &= ~GENMASK(31, 12);
+	*_insn |= (((auipc_imm >> 12) & GENMASK(19, 0)) << 12);
+
+which is not equivalent. The new code is missing (imm & RV_U_IMM_31_12_MASK)
+from the old code.
+
+Or am I confused somewhere?
 
 Nam
 
