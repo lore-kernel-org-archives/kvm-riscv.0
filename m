@@ -4,71 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EA87BC55838
-	for <kvm-riscv@archiver.kernel.org>; Thu,  6 Aug 2026 07:09:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4A988C55838
+	for <kvm-riscv@archiver.kernel.org>; Thu,  6 Aug 2026 07:34:46 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:References
-	:In-Reply-To:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
+	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=jgmuSPqslr2OCtDswTXE+kgnmSFzP4W7FI9j/5XrF/c=; b=wu7QNvZ8Uw5kvC
-	/lYJaLnf9ft++PcvHWTM44HVAd9JLV8quCPgn+zqihkGwFsaSjn98GqggoWfPkKUMwVGm2WR6VFlJ
-	ispeTFdBFLIPq2O452bSriKsg/1WtoHD5+8fDQAob2yYR+Omx9b4yZw1lH/Bpy/ZA30A+mV8F6mQG
-	1KROYltPN8zOOQp8kFVhIsKISq2X+vRJqaIv9+TaU1AGkzMkT8xGbZnmu7Q03h1IeGfpGP3Wj85Un
-	6r7lxXI9/lfG1LeMokQ9j4thXmQB2usOVM0kyt0n2lEhICYuNpHP8Ue/ytfeaZ3C+IkpTqXPoiwlP
-	inq0ri5Omb2ikNYWXOQw==;
+	List-Owner; bh=Vl/l3cfJtNpR+BSw1LJwqccvT3xoEJy1wKy9znvOrbw=; b=mWyusrEKqoqyrU
+	vOZ+jQWU84rNggfQnZzeiPse4qAX15WnLkUi9+PqX8iwj9AAiKOjIxwxsVr3mm8sszsQFYn4YrSwp
+	JLSSprRL0GXK1gMu2fwLNQJj8spZOH5ojaq30Uo3+CYPNfm9+EGAXh0pprraNvSMR3LRdDoaNzP8C
+	X3dW+V62HZZdREdZqFw0fQhxNwXRAuY+Ls21zwhwxzMmBExRIRsCvfnplmdtvqPyqQudUjbuWWITF
+	sppuBj/U6may9ll8Rlw2e6+6+/XYXyitdRX8YW54LPu4mJyNgCEJTTYyUUt9V1quA2wh1HqdM1DbQ
+	J6CPcCNWlQw3UoA5/fGA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wrsEm-000000057BC-0wvr;
-	Thu, 06 Aug 2026 07:09:56 +0000
-Received: from galois.linutronix.de ([193.142.43.55])
+	id 1wrscn-000000059FI-3WPm;
+	Thu, 06 Aug 2026 07:34:45 +0000
+Received: from tor.source.kernel.org ([2600:3c04:e001:324:0:1991:8:25])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wrsEj-000000057A8-3E9p;
-	Thu, 06 Aug 2026 07:09:55 +0000
-From: Nam Cao <namcao@linutronix.de>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1786000190;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=eMT4S1LkWt8Ik0+XZRVYI9d+h5TnrJVOqIGCgTgfYIs=;
-	b=oy/uxERExhL2WaAwWd/K4RgtnvN0AEg7Hn6/85XUvPfoyLwYN+HaaO4X4und2xDRys+BBU
-	MpBH0BaoZFoyEbNcnHB189Mh8a2kPnIWAq30qF/8Ie9HBs+EGNLZWlzk+vEVMoNR8m+kAa
-	6IsNmonvA0YcReWDC+MwoXW6UqZFGq38AbM5YvUEoAgYZDQqIoMkhf8OkVUSq9Kj6Tfxyg
-	zBMcceT5pUQcKbaOdb7XxAdm3Fp+3/K99p5MSm0VqvkGW+2O3YevJLnrIwH77x4wYceT9S
-	Han6Wz9QBij6Fwpb5P/HGP2E3FqjgBJwlUBlyViDqC5XvJdAMDXEzQYsw2wFaw==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1786000190;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=eMT4S1LkWt8Ik0+XZRVYI9d+h5TnrJVOqIGCgTgfYIs=;
-	b=bwtbJhpx1H17PQArbXdA2T8ILJ7epNL6NyKp17SWMYNcd47jKpDMPD0hISSHG0iOqz1J9X
-	uuvpwRmzWve4/8AQ==
-To: Charlie Jenkins <thecharlesjenkins@gmail.com>, Paul Walmsley
- <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Alexandre Ghiti
- <alex@ghiti.fr>, Anup Patel <anup@brainfault.org>, Atish Patra
- <atish.patra@linux.dev>, Conor Dooley <conor@kernel.org>, Paolo Bonzini
- <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Shuah
- Khan <shuah@kernel.org>, Radim =?utf-8?B?S3LEjW3DocWZ?=
- <radim.krcmar@oss.qualcomm.com>,
- Jesse Taube <jtaubepe@redhat.com>
-Cc: linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
- kvm@vger.kernel.org, kvm-riscv@lists.infradead.org,
- linux-kselftest@vger.kernel.org, Charlie Jenkins
- <thecharlesjenkins@gmail.com>
-Subject: Re: [PATCH v3 03/17] riscv: kgdb: Use generated instruction headers
-In-Reply-To: <20260707-riscv_insn_table-v3-3-3f8e5f75ba97@gmail.com>
-References: <20260707-riscv_insn_table-v3-0-3f8e5f75ba97@gmail.com>
- <20260707-riscv_insn_table-v3-3-3f8e5f75ba97@gmail.com>
-Date: Thu, 06 Aug 2026 09:09:50 +0200
-Message-ID: <87o6ffd8sh.fsf@yellow.woof>
+	id 1wrscl-000000059En-3enf;
+	Thu, 06 Aug 2026 07:34:44 +0000
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 0A43C60A9D;
+	Thu,  6 Aug 2026 07:34:43 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7EA9D1F000E9;
+	Thu,  6 Aug 2026 07:34:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1786001682;
+	bh=y3wUW9A5onn8mXoBrGXcecd/b5GN4A+lRTgjr2p0JTI=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=gRtWObilZ/zqY2xNJFCFGkSOxfW+x1vY1mLHvaVfFn3nCz/YO+ctLWfNTTs4szgnu
+	 yTVCVopxmFl5NcnYpG991e8Bt2Ezz8pE1lZATTWxE8x5kpf0Cga4wRPeWCS7E5HqWv
+	 XYFKlbUMhZXVnLOpWi/i+ZQVJSvS2hDlXe0DDN6dURjWleKZWV49tMZzt2Af3x0wCx
+	 girzSHfnN2fGQM3POEWVr+brhoQK6GI2hxA4PAd23gY3P1IVF+HqesJZch2/8pByI2
+	 /EHEMqZTbBwqX/8U8p+wI2vggLbJGqS41xPiSDTkTcAYl1PUWUd+oug/OamioWoiLi
+	 FVdw8NszJIKKQ==
+Date: Thu, 6 Aug 2026 08:34:22 +0100
+From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+To: Yunhui Cui <cuiyunhui@bytedance.com>
+Cc: linux-riscv@lists.infradead.org, linux-mm@kvack.org, 
+	linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org, kvm-riscv@lists.infradead.org, 
+	kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-efi@vger.kernel.org, 
+	linux-perf-users@vger.kernel.org, kasan-dev@googlegroups.com, 
+	Andrew Morton <akpm@linux-foundation.org>, David Hildenbrand <david@kernel.org>, 
+	"Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, 
+	Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, 
+	Michal Hocko <mhocko@suse.com>, Jason Gunthorpe <jgg@ziepe.ca>, 
+	John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>
+Subject: Re: [PATCH v2 10/15] mm/gup: add fast-GUP specific lockless PTE
+ helpers
+Message-ID: <anQ2bW3JxraT6PFY@lucifer>
+References: <cover.1784201104.git.cuiyunhui@bytedance.com>
+ <138d74aa9863ae8ff445e16a2798d062895b75bc.1784201104.git.cuiyunhui@bytedance.com>
 MIME-Version: 1.0
-X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260806_000953_960899_87D71819 
-X-CRM114-Status: UNSURE (   6.67  )
-X-CRM114-Notice: Please train this message.
+Content-Disposition: inline
+In-Reply-To: <138d74aa9863ae8ff445e16a2798d062895b75bc.1784201104.git.cuiyunhui@bytedance.com>
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -85,34 +77,130 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Charlie Jenkins <thecharlesjenkins@gmail.com> writes:
-> +#define riscv_insn_branch(_insn, regs_ptr, _opcode, _pc, _comparison, type)     \
-> +	({                                                                      \
-> +		unsigned long _ret;                                             \
-> +		if ((type)riscv_insn_reg_get_val(                               \
-> +			    regs_ptr,                                           \
-> +			    riscv_insn_##_insn##_extract_xs1(_opcode))          \
-> +			    _comparison(type) riscv_insn_reg_get_val(           \
++cc literally everybody you failed to contact...!
 
-That _comparison(type) looks like _comparison is a function and type is
-its argument.
+Why on earth are you doing sending a series like this which changes core mm,
+non-RFC and at v2 to boot, without bothering to Cc relevant people?
 
-Can we change to
-    _comparison (type)riscv_insn_reg_get_val(
-to make it clearer?
+I am also very confused as to why you are sending an ostensible RISC-V series
+then changing how core mm works to fit it, that's not how that works.
 
->  		} else if (riscv_insn_is_c_beqz(op_code)) {
-> -			rs1_num = decode_register_index_short(op_code,
-> -							      RVC_C1_RS1_OPOFF);
-> -			if (!rs1_num || regs_ptr[rs1_num] == 0)
-> -				*next_addr = RVC_EXTRACT_BTYPE_IMM(op_code) + pc;
-> +			rs1_num = riscv_insn_c_beqz_extract_xs1(op_code);
-> +			if (regs_ptr[8 + rs1_num] == 0)
-> +				*next_addr = riscv_insn_c_beqz_extract_imm(op_code) + pc;
+And if you're seeking to change core mm send it as an RFC!
 
-Would it make sense to include the +8 part in riscv_insn_c_beqz_extract_xs1()?
+On Thu, Jul 16, 2026 at 08:41:45PM +0800, Yunhui Cui wrote:
+> fast-GUP snapshots a PTE without holding the PTL, pins the page, and
+> then revalidates that the PTE did not change. Keep both reads under the
+> same lockless PTE semantics by defaulting the fast-GUP revalidation to
+> ptep_get_lockless().
 
-Nam
+Why?...
+
+>
+> Introduce fast-GUP specific PTE snapshot and revalidation helpers. The
+> default implementation preserves the existing ptep_get_lockless()
+> semantics, while allowing architectures to override the helpers when the
+> public lockless getter provides extra semantics that fast-GUP does not
+> consume.
+>
+> Signed-off-by: Yunhui Cui <cuiyunhui@bytedance.com>
+> ---
+>  include/linux/pgtable.h | 18 ++++++++++++++++++
+>  mm/gup.c                |  6 ++++--
+>  2 files changed, 22 insertions(+), 2 deletions(-)
+>
+> diff --git a/include/linux/pgtable.h b/include/linux/pgtable.h
+> index da14328093a86..62943fcbf7046 100644
+> --- a/include/linux/pgtable.h
+> +++ b/include/linux/pgtable.h
+> @@ -813,6 +813,24 @@ static inline pte_t ptep_get_lockless(pte_t *ptep)
+>  }
+>  #endif
+>
+
+Of course, no comments, helpful!
+
+> +#ifndef gup_ptep_get_lockless
+> +static inline pte_t gup_ptep_get_lockless(pte_t *ptep, pte_t *rawp)
+
+rawp? This is terrible naming.
+
+And 'gup_ptep_get_lockless()' is worse. What on earth is this function meant to
+do? And why is 'gup lockless' considered different from lockless?
+
+And you return the value twice, because of course you do. Why? Who knows.
+
+> +{
+> +	pte_t pte = ptep_get_lockless(ptep);
+> +
+> +	*rawp = pte;
+> +
+> +	return pte;
+> +}
+> +#endif
+> +
+> +#ifndef gup_ptep_revalidate
+> +static inline bool gup_ptep_revalidate(pte_t *ptep, pte_t raw_pte)
+> +{
+> +	return pte_val(raw_pte) == pte_val(ptep_get_lockless(ptep));
+> +}
+
+Again this naming is utterly terrible and I'm at a loss as to why on earth
+you're doing this?
+
+We don't need to abstract equality checks?
+
+> +#endif
+> +
+>  #ifndef pmdp_get_lockless
+>  static inline pmd_t pmdp_get_lockless(pmd_t *pmdp)
+>  {
+> diff --git a/mm/gup.c b/mm/gup.c
+> index 99902c15703b0..72fb147193e55 100644
+> --- a/mm/gup.c
+> +++ b/mm/gup.c
+> @@ -2842,10 +2842,12 @@ static int gup_fast_pte_range(pmd_t pmd, pmd_t *pmdp, unsigned long addr,
+>  	if (!ptep)
+>  		return 0;
+>  	do {
+> -		pte_t pte = ptep_get_lockless(ptep);
+> +		pte_t raw_pte, pte;
+
+What on earth is a 'raw' PTE?
+
+>  		struct page *page;
+>  		struct folio *folio;
+>
+> +		pte = gup_ptep_get_lockless(ptep, &raw_pte);
+> +
+>  		/*
+>  		 * Always fallback to ordinary GUP on PROT_NONE-mapped pages:
+>  		 * pte_access_permitted() better should reject these pages
+> @@ -2871,7 +2873,7 @@ static int gup_fast_pte_range(pmd_t pmd, pmd_t *pmdp, unsigned long addr,
+>  			goto pte_unmap;
+>
+>  		if (unlikely(pmd_val(pmd) != pmd_val(pmdp_get_lockless(pmdp))) ||
+> -		    unlikely(pte_val(pte) != pte_val(ptep_get_lockless(ptep)))) {
+> +		    unlikely(!gup_ptep_revalidate(ptep, raw_pte))) {
+
+Why do we need to refadctor a comparison between a local variable and a lockless
+get?
+
+I'm just so confused by what on earth this patch is meant to be or why it's here...
+
+>  			gup_put_folio(folio, 1, flags);
+>  			goto pte_unmap;
+>  		}
+> --
+> 2.39.5
+>
+>
+> _______________________________________________
+> linux-riscv mailing list
+> linux-riscv@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-riscv
+
+--
+Cheers, Lorenzo
 
 -- 
 kvm-riscv mailing list
