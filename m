@@ -4,48 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51C48C55ABF
-	for <kvm-riscv@archiver.kernel.org>; Thu,  6 Aug 2026 08:30:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C16BFC561E6
+	for <kvm-riscv@archiver.kernel.org>; Thu,  6 Aug 2026 08:38:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:References
 	:In-Reply-To:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=W8ey4FfTWM0e8JdG1GEX7P7StNJNyOKgetu++ateksY=; b=eR8OkzgkirYsEh
-	KmOyWMfUye+c4zzcoHsKXD46o526hb7S5xw+zYpp5RTCi1E02JpLUoxO+xQHrXj/4IpFQLN15MxzJ
-	5+uwd/UQZs1uMx5ncF79KSl0gSPoBP0/TwDE1aRZyrac6XD2c4bU+Q2JPpDyuFaDZbyP7WQ3RR7sm
-	BY1PPuaxDzekrt9Rz+pl7dpjlSjvUtFx7ABEbmLzlDTxuLlab7MTXOJZ8ZkHPh0iRpttAIvGBh5nd
-	n5HOjWIbggMTSporSgXSPrdKcFFgPpUgMEh3h6ORmGyeFfLh4/jI5UMlCuzeMBW+y5jjOe8JlHY0T
-	BRxw72qPwKv05KcVkuKg==;
+	List-Owner; bh=daWnewcj0lqkN72zbzwXt5qVmyOnQWvlZMzOK9W1k1g=; b=OUcuVDLiA2iZPl
+	8sOA+hCm5W8lHWnRyNB3I/9bq0bMEakXFvrb7yZC4s+bCgg1ah0w2vbkBabNGnHjGyDIbQpb60S2A
+	9hBh1ug7f09Dz15hU3LSSNCdVA1Uh6VxdPUjfISoNc0A7BfKU52rVmA+8jOa44U6mG2oJVY4AhJ+X
+	g9FfG4nzweeYlZUIkaJ/DYDcipQq0IO31hkFsF2XnszmOSw+RtSJrp2uhXN5ImgPf7ewTnMKrEgHJ
+	ajAmzG6QEQXEJCL9RU54r4EdKM82HxVD/Nw6OUZWwdMbgFXkXeTwUYlcZMeKCloCf0IWEh/yry85d
+	mv6lOLqN0DipZ7NaZZBw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wrtUx-00000005F32-07kB;
-	Thu, 06 Aug 2026 08:30:43 +0000
-Received: from galois.linutronix.de ([2a0a:51c0:0:12e:550::1])
+	id 1wrtcu-00000005GFl-1YWF;
+	Thu, 06 Aug 2026 08:38:56 +0000
+Received: from galois.linutronix.de ([193.142.43.55])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wrtUu-00000005F1g-1Kge;
-	Thu, 06 Aug 2026 08:30:41 +0000
+	id 1wrtcs-00000005GFO-1Jbp;
+	Thu, 06 Aug 2026 08:38:55 +0000
 From: Nam Cao <namcao@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1786005038;
+	s=2020; t=1786005532;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=tZf7xKKc+1d2MNQgkLvIjW8ujEjid1DyCjtobMNJ3tM=;
-	b=3U+sDmtsKA+gIobhreS8X5tZMGQYfmuSSZS4qPnpbkB12L0+Q3YwHunpfZzVLtSTHcdcNw
-	KfJ8EABF/J+YRK8Cn6tP73xzTRSFvvT9kALj8HH5CSFMGnEXfZOGx4KAZZYLLMD4jPGvTI
-	RYpCZwU8sqymXkEx1lXTGSd30O+M0LkB0lE3Sj2dCuQGfh2RByjotBPRF/nUi3D7SYq+KB
-	M6tNTsZ0RPQ3Ie7pMYkyaYCI92qPAoq3stLeXEy3ilNNAk0J6/+EHtxl7XI4k5np7JKGpn
-	UWLAlnXZH6XVL0jJZAJAuMuNB+i0++CK4BhRWVQ9xNTI5QWvI5rjt7u6G4LTNA==
+	bh=9nIA4g8t7lcsSLy8SKolUFQCcXI9D58a3Po16VlQMr8=;
+	b=FHTUUJudzFS9p3kUWAKr1SALxyX8dITqDTYMVXAx1huMmCgpVLP16nMVY4hcklrJVWcPqR
+	w7xImKjr/LQ01tnIrxqVA3UoQHb5TfPHrNmNcr3eIZeGHvSLPuf82pFFMpcMWyY10ggoMy
+	6M8g3cUMahaQwRseVEhEYmG1lOJoXFKPwkOVGeUp7vlqmw1KZIqDuCmYf7BySxV4CtRqbn
+	x0cePGBoIA0fRtAPfgYtQhpjZh0okiLhwau7Yp6CYyhdXK8F3j98Gh1gIGB9q4/54UFNG6
+	MO9amqq1MPvisx9UdAuDyFTvTnWiUYEHsIlwEykL7w0mVNt9CkDznC0ZIY1VFA==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1786005038;
+	s=2020e; t=1786005532;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=tZf7xKKc+1d2MNQgkLvIjW8ujEjid1DyCjtobMNJ3tM=;
-	b=7o8EsxQcewlMoX0tfcRt/S/CFJgOsMEMUZCKY2z4IwAgXrtmyS+s+DlSYK9o+PaWyj0g+3
-	Dx3nZz0cNTv/iSAQ==
+	bh=9nIA4g8t7lcsSLy8SKolUFQCcXI9D58a3Po16VlQMr8=;
+	b=ZTgQaNPBgxMk/DdAp7Z2FCXvOe+jMg5wVDgIbdDAwvGdPZW+a8kUN6/Kjq+YrXGTVD/0FE
+	PyrDu/wCuK5cK8BQ==
 To: Charlie Jenkins <thecharlesjenkins@gmail.com>, Paul Walmsley
  <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Alexandre Ghiti
  <alex@ghiti.fr>, Anup Patel <anup@brainfault.org>, Atish Patra
@@ -57,17 +57,17 @@ To: Charlie Jenkins <thecharlesjenkins@gmail.com>, Paul Walmsley
 Cc: linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
  kvm@vger.kernel.org, kvm-riscv@lists.infradead.org,
  linux-kselftest@vger.kernel.org, Charlie Jenkins
- <thecharlesjenkins@gmail.com>
-Subject: Re: [PATCH v3 06/17] riscv: cfi: Use generated instruction headers
-In-Reply-To: <20260707-riscv_insn_table-v3-6-3f8e5f75ba97@gmail.com>
+ <thecharlesjenkins@gmail.com>, Damien Le Moal <damien.lemoal@wdc.com>
+Subject: Re: [PATCH v3 07/17] riscv: Maintain epc on misaligned emulation error
+In-Reply-To: <20260707-riscv_insn_table-v3-7-3f8e5f75ba97@gmail.com>
 References: <20260707-riscv_insn_table-v3-0-3f8e5f75ba97@gmail.com>
- <20260707-riscv_insn_table-v3-6-3f8e5f75ba97@gmail.com>
-Date: Thu, 06 Aug 2026 10:30:37 +0200
-Message-ID: <87fr0rd51u.fsf@yellow.woof>
+ <20260707-riscv_insn_table-v3-7-3f8e5f75ba97@gmail.com>
+Date: Thu, 06 Aug 2026 10:38:51 +0200
+Message-ID: <87cxvvd4o4.fsf@yellow.woof>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260806_013040_496294_52B780B5 
-X-CRM114-Status: UNSURE (   3.16  )
+X-CRM114-CacheID: sfid-20260806_013854_495890_2E49FAF8 
+X-CRM114-Status: UNSURE (   6.28  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -86,13 +86,21 @@ Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 Charlie Jenkins <thecharlesjenkins@gmail.com> writes:
-
-> Migrate the code that is decoding cfi instructions to use the generated
-> instruction headers.
+> Currently the epc is set to zero when there is a misaligned emulation
+> error. This will print a misleading error message with the current epc
+> value of zero instead of the epc value that triggered the emulation.
+> Avoid setting epc to zero to maintain the state of epc.
 >
 > Signed-off-by: Charlie Jenkins <thecharlesjenkins@gmail.com>
 
+I see no reason why epc must be set to zero, so:
 Reviewed-by: Nam Cao <namcao@linutronix.de>
+
+But to be sure, I add to CC: Damien Le Moal <damien.lemoal@wdc.com>
+
+Damien, any reason that epc must be cleared?
+
+Nam
 
 -- 
 kvm-riscv mailing list
