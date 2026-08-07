@@ -4,98 +4,107 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 93825C2A09B
-	for <kvm-riscv@archiver.kernel.org>; Fri,  7 Aug 2026 05:33:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AC8F3C5AC7A
+	for <kvm-riscv@archiver.kernel.org>; Fri,  7 Aug 2026 16:40:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
-	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:Subject:Message-ID:Date:From:
+	In-Reply-To:References:MIME-Version:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=5tzJ202V9o8PetPRhwXYVqUy+lWK/qPDih2tKIa9lRM=; b=2F4fA67K57ud9t
-	/MmTK5MvNoM66vcIhZXz0/Ora25I6pJYBhOm7FSTbk9NC6HZYoFo8NrYQNSklR/PGQpDjV5fXTqd/
-	VseCN9HzPhvULCMugfB0Hq1j+kfhlwrnG7x5kVoWX0Dz5uP7A/ihvzaeaCN1eCVkNI18GT8yLGSbX
-	BZJ45CMzDjSRHmpmyzvbhgUD4NiJtgyCeBeulci5mRBpUpXSMSAzW34zdg0MckcrVLl16pD/BFRVi
-	3M+GeemKFlmBYH9ws56EEQEicNoa0zb2ZQEz00avm/r/Krt9P2EGDAYOFvwgMwXrAZrLpud7d5J3p
-	uPae+EY3wBQrPRGPrknA==;
+	List-Owner; bh=NEqdM9WbZBgZHHTlxVapsgmFgNF+ErsjmNE3svjxjP4=; b=2onSjNv1nhpSzl
+	tNIyTJ4a7+2mt2CxrROeXb/tCh5/SPT2ymO9HCeYross9tCTEIYx4083dTUmiZhRLlVP9s/FW2ITr
+	koLdoevJp4N9CiBUhfnnGL2LDfh69DGehm+c8mBWbKhma+v1dkOsujhuruYjY70QQ7BEHIa3L2dhy
+	Un1xC98Le/2roGQroTISNEO5/2f/gud8VYb5cIHqupE2DviziH5y3ngFjOe+sH5Sc9wJINPvaC1vk
+	rOXakFLy082oV9GBkr2hbjZknWzBsSYRGfnzUOa2oijRkcjVDuO2wNjX0ysJn/6Yl6ejrj4NdqrBz
+	QPKtkChAIPMjxxFavFSA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wsDCW-000000077bd-0Df0;
-	Fri, 07 Aug 2026 05:33:00 +0000
-Received: from mail-pf1-x42b.google.com ([2607:f8b0:4864:20::42b])
+	id 1wsNcZ-00000008RUz-0RRY;
+	Fri, 07 Aug 2026 16:40:35 +0000
+Received: from mail-wm1-x336.google.com ([2a00:1450:4864:20::336])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wsDCT-000000077aZ-2Lf9
+	id 1wsNcV-00000008RTV-34fl
 	for kvm-riscv@lists.infradead.org;
-	Fri, 07 Aug 2026 05:32:58 +0000
-Received: by mail-pf1-x42b.google.com with SMTP id d2e1a72fcca58-84e0688b7e8so2867664b3a.1
-        for <kvm-riscv@lists.infradead.org>; Thu, 06 Aug 2026 22:32:57 -0700 (PDT)
+	Fri, 07 Aug 2026 16:40:33 +0000
+Received: by mail-wm1-x336.google.com with SMTP id 5b1f17b1804b1-495757ccbc1so38187875e9.2
+        for <kvm-riscv@lists.infradead.org>; Fri, 07 Aug 2026 09:40:30 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1786120828; cv=none;
+        d=google.com; s=arc-20260327;
+        b=lj9Ks5PYENp9/7zXFPmZgc4Z0aFGwJL7YqaYYjzHrN7oNEsObFQXyEawc2z+RTdJZe
+         vXwK/dP8g1My5X3MlQUzO7uKVH7Rt6SbnHUoImwVZcnHThzNyd4qsx9lbtCDjMyHYuFL
+         QU4oA/HQwC2avJVtqX1pB2dS0c+EjjNLNK64F20qo1QPBfSRCyE2D4fTB2yxbvs3uduk
+         6eU812giWYqGNRNE4/q4wmqwhDCTYyQxWSegz2WwwPnVqeD3YZbD70vGLuTYrleDpXVu
+         tcNuCfsM3aH3gDgFpp/eRE75JAxgXl1cEJmXF3Va0eVwIQ5Gs62wpNODXd0K5WYs0LGs
+         DYwQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=GSyds6W5OQ66XFXpi1LlEJdTPFK3iE4acomSvTp9bj8=;
+        fh=gqKkhKehkNG+i1HWNUxV7a8ptlQQZdGVjF3GJw/3q4I=;
+        b=qqTwSHH7rihsx7Fbtl4Jx3ecFZrvcY1VZFt12AVW2hv9xEoPMb639qNpUjPwsWzU9G
+         0N+EVWMBktIe8obLz/XC6lXo9n+/InHavHTCt/jQqWuX3KXFHCtrR/GDz15Zx1h5dPx0
+         fDnVu1AgjQCz5ng+mMRvJ1Q5F4RdOREYTKNF68AFtHLcHq5GVpHrZauy25aarPSHE+ts
+         AkT64zKtPtB6B8q0J0MXLSOgZ2MiUAIJc6IwekdBQ4Ne4SfGzC75N45EkmfqKa6I3GlT
+         s84juFYFW1ZUAWdz+434w7nRvLqm6pLckSBYFGWrQzfitKBA3H73mVbJQ2Lke+C0aQBf
+         h9Yw==;
+        darn=lists.infradead.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1786080777; x=1786685577; darn=lists.infradead.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=roc/IS/aTyNJNRiP/nrbSlyNrCVYc83nltBjgP79s1s=;
-        b=l4nYWp2Et5sLzwCfxRoWap/7tEBDTqB6IQRp2LvzZf2UUbEXAd2PedJS2rFlAzLxLg
-         druqplSWTbj1npWFJAvM/veuVZdqaEBxkxCsgHQCPrIpi3LpjDSH/A9BiJ73nITGiMz8
-         3bueqszWcNmQq4d4OpsWapGWmgaGx5iYNbIVdYOyUdDOR9imMZZyNrRycpImXW25m50l
-         LS4tvA1cREpdKPniwa0xP2dfZLCbofDFULnSK4v1TlfeMHQfqg7PwE0YlgRYX2YOI59e
-         C/Bqsrcf4ZlgI7f4yOAqanPJHhn2WtM4Uxs+bkClYhONsutVirg6uymJfUDdmt8UDXRs
-         FTwg==
+        d=brainfault.org; s=google; t=1786120828; x=1786725628; darn=lists.infradead.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=GSyds6W5OQ66XFXpi1LlEJdTPFK3iE4acomSvTp9bj8=;
+        b=FoHtLLC7bg12D6+Fgc3tjnAtu65EF7AVgyeyRUEn59+B7FSBix6SkV0fuzbLZqSlvs
+         hhecM2jJcj4JoESQswApJRElQAUTfrbwp0205nJYTtMf5XfE7sX+SDXqpL2Xidh1329S
+         ped1xSLXQB7fTcLs5gxVV6Yinu5VzPupx/ROy7lU/5TQU3SqB4V02CF7mSI5/CfYr4bB
+         VuBhNOJyeetPMfA37UUu2rz09oSQlbjeItEmGcgCXUBYs4bTg++A4gIUCE3Yz3G5isZa
+         VAQ/9yPXtBMPOA0fF2vRpP1S2OO9HnULuTSvjdz+fKNahqDciRJYTT3X8tx3N9RWjIsX
+         XOUw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786080777; x=1786685577;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=roc/IS/aTyNJNRiP/nrbSlyNrCVYc83nltBjgP79s1s=;
-        b=EHUY1KKVYKg9a1enUrs3BPHjvXtGX4w2sqOhFD8wXqs+oB57CCiX5unR+VDj61y95s
-         N/g1rICwto9TE1tWiARSoBsF4vVlyNjTLixlR8Y7siJggyyUiGEONLwVWtHdKXkQlBrF
-         YssOMxemxhlijpEGIHsL6ksunTQIm3y7YhILFUed4AKjNIjWHXRTS29XoafzMDlph2Zc
-         CCCQHrYVa3Hex7MxxIarSO7NpG0MUcKP2nvEXK1gG4QX+mvNU/+RvWuHl5ymslu9sZ4G
-         RT9RdZ2n+87g2X2okQwlYFHZHfwq405PtN6LquZsWRTGo04wdqhUvtOj6hEEPCrI2/Oz
-         E16Q==
-X-Forwarded-Encrypted: i=1; AHgh+RrjhSdhwCtXX4O7l8d2DUCr1gVjZjvCioCFREQxP6GhJs2GtJyO/oPVYp9/d8bzI7ttkswp1YqQpeY=@lists.infradead.org
-X-Gm-Message-State: AOJu0YxNEpKNTpqUMVYteyBZRoS5QsbpwiF1/iioh7nIHy0alWFLwZWA
-	jN7UTIDgzfvSGJoPOr7ZSO+k2F8dJFxafNIxZzOoD9f5CvqHl9CJHs0i
-X-Gm-Gg: AR+sD10ZTa6VkNxYINiC3wLjd27PVjJxBBIpRCCh/7+tHSnzXNrSdX1gE6VtgxKg0z7
-	wpGSG6M5iECqv7kE7j35Frm5OvX/gg5OCFMN/aZIYogJggyo5IwTQh1P1fAOgDdJewyiTiqG0qL
-	2+JQXbw/yw2fZaozaeQQW2luxZuWdvWi/UY4isv4pqLjo0V1q11fFHmNXi0wCFmj9uh4qmHZUDM
-	u3tCEC7ffh5//AvJdA5lvI1nVg+B0AmT2AajnGyBbVHNoH4Izy2kp+Mk80x1qwAjlSyKbP9q9AH
-	0t4ULoW5/0aAKjNYSr36y2Ah/cljje2Qv10snAPzQ55Vx9JQY+d5bYaECNkq1zTAscZtCWtZJ5W
-	YaxnFUkeXoYRhxG/xM+ZukWFPdZoVHfuv3Pj0F2zPiHPl2C76XDJwNTDJqW+YqEObZIVvUOeUnB
-	kBl1Uj8HmUP1Yf9jXODW8nmdtHB5SCQxmz7FVgij9eaNp6QK0F3+OzqP2KIBtekyLkzXpea0Q9c
-	8HJImI=
-X-Received: by 2002:a05:6a00:4fc4:b0:847:99bb:b6d8 with SMTP id d2e1a72fcca58-84f2e009b31mr21558233b3a.26.1786080776836;
-        Thu, 06 Aug 2026 22:32:56 -0700 (PDT)
-Received: from cyh-System-Product-Name.. ([129.227.183.200])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-cbe8f19634dsm108940a12.7.2026.08.06.22.32.53
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 06 Aug 2026 22:32:56 -0700 (PDT)
-From: "Yuhang.chen" <yhchen312@gmail.com>
-To: anup@brainfault.org
-Cc: atish.patra@linux.dev,
-	palmer@dabbelt.com,
-	pjw@kernel.org,
-	aou@eecs.berkeley.edu,
-	alex@ghiti.fr,
-	pbonzini@redhat.com,
-	shuah@kernel.org,
-	kvm@vger.kernel.org,
-	kvm-riscv@lists.infradead.org,
-	linux-riscv@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	linux-kselftest@vger.kernel.org,
-	zhouquan@iscas.ac.cn,
-	"Yuhang.chen" <yhchen312@gmail.com>
-Subject: [PATCH v2 2/2] RISC-V: KVM: selftests: Add PMU event filter test
-Date: Fri,  7 Aug 2026 13:32:27 +0800
-Message-Id: <20260807053227.341700-3-yhchen312@gmail.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20260807053227.341700-1-yhchen312@gmail.com>
-References: <20260807053227.341700-1-yhchen312@gmail.com>
+        d=1e100.net; s=20251104; t=1786120828; x=1786725628;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=GSyds6W5OQ66XFXpi1LlEJdTPFK3iE4acomSvTp9bj8=;
+        b=TBsNu5xhDPnZEo4QkIwT/kVq1omHqzonX8J6NZ8Rb65XD+hsIoePdkFc3P2dIPldI2
+         PSTuwj5y2khqreCCnrXJTOIg1rAiwC7cISOP7pXTXt2VQHBwDQbzRBA3qwBlVC/I2XPr
+         WP6FGYGsGSlg3Isr2irQTQjzrsqnrWX4Gpc1Q98ZGm6s121SoXbSnKQlqSa5GNB+7xDW
+         Fq55x+qiQSKXB0FzlJ9c/y03bOThUWIssQ3cl63CmErz38suiUjtbamhMwBVB/eGZ6hP
+         ohZ4o5VRBVyt76thuzfiTBJgRVJwkoOEM2kscoV+Ez9LsL/JiBVQuNqYDYQKFF9RMTrj
+         uMmQ==
+X-Forwarded-Encrypted: i=1; AHgh+RqUuuZgUqTTeXHydgSw+I0TlW9Ja4rOljePGUfDrM5rAWH8xasQlyL+fLcBG4UAGT1vKm/eJn/34u8=@lists.infradead.org
+X-Gm-Message-State: AOJu0YyzB85xia9pyIgCsMG8wybtV4LqnD8pykS4WzkC3DIaZt2DkuZk
+	Cp+1+yyi4kxeyB/S5KcUWrtZe/S9fWdKKFaGUf/EDoRrZ2fYU2cmQ7ICHpXo63ALOhtE9gLLTR6
+	McdQPkLu5YczTvSvHSfAPgXXyvU0pEuZ+q1Lelbxf/TlIsHcONCjusTk=
+X-Gm-Gg: AR+sD10zf+UTkT7Ok65aiffewzFoYoC9mAlohWvND0XZ5nenmlVP4Tw+xvez+rHImVZ
+	Xuvn8QDfaNJEn16TtuICkFOOqtcD2sqhmsdW+ZUzNo2rlzh71FLXG7aL7MX8NdieyNnMzRFHODb
+	SPmWcJKKfiOg/Lt+AfbM7fVF5d/SYFFlnJv7TM/dNPtbcoCfpg48icMMwClAtm4Pqzh+KMKce9e
+	D2oZcWIfzHsthZohL1Et/M/xDILJ4ibvh4fpNGO/guzx3lbYjieN0TnwiJZJjB7D81f6rszsKkG
+	l8tazY5xqvx1UAw6JQXCVAB1rpMMe1mVjQB9buyae2oosb0a+6LTKvADto72iGLOh4jJhxHgK9+
+	8d0mGrusaeYi+ekDhaarJl0Rwp0Ql9+wVMegdR26gS6HF33VjjiDjEHYt/IAG7Aj0
+X-Received: by 2002:a05:600c:3545:b0:499:52dd:c1f0 with SMTP id
+ 5b1f17b1804b1-49952ddd05amr206480125e9.1.1786120828407; Fri, 07 Aug 2026
+ 09:40:28 -0700 (PDT)
 MIME-Version: 1.0
+References: <20260717080654.877151-1-wang.yechao255@zte.com.cn>
+In-Reply-To: <20260717080654.877151-1-wang.yechao255@zte.com.cn>
+From: Anup Patel <anup@brainfault.org>
+Date: Fri, 7 Aug 2026 22:10:16 +0530
+X-Gm-Features: AUfX_mzs5xvuhUuNS2PSxFtD2Spckea2gbhirvVXYUtFbIp9N-L4RwLlBOai4MM
+Message-ID: <CAAhSdy1g5Qa0OVUyjfz4c+bySkcXyk12LcSnsuDUOCCQo=7_ZQ@mail.gmail.com>
+Subject: Re: [PATCH] RISC-V: KVM: Improve dirty log clearing by skipping zero
+ bits in mask
+To: Wang Yechao <wang.yechao255@zte.com.cn>
+Cc: kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
+	linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+	Atish Patra <atish.patra@linux.dev>, Alexandre Ghiti <alex@ghiti.fr>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260806_223257_602782_EB9F51FC 
-X-CRM114-Status: GOOD (  22.38  )
+X-CRM114-CacheID: sfid-20260807_094031_838345_96C43A76 
+X-CRM114-Status: GOOD (  29.55  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -107,255 +116,128 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Add a selftest that exercises KVM_SET_PMU_EVENT_FILTER on RISC-V. The
-guest programs the CPU cycles and instructions SBI PMU events through
-SBI_EXT_PMU_COUNTER_CFG_MATCH while the host installs filters with the
-ALLOW and DENY actions, asserting that disallowed events return
-SBI_ERR_NOT_SUPPORTED and allowed events succeed.
-
-The test also validates ioctl argument rejection: an invalid action, a
-non-zero flags field, and an over-large nevents value are each expected
-to fail with -EINVAL or -E2BIG. A baseline run verifies PMU
-availability and the test skips (KSFT_SKIP) when PMU or the filter
-capability is absent.
-
-Assisted-by: YuanSheng:deepseek-v4-pro
-Co-developed-by: Quan Zhou <zhouquan@iscas.ac.cn>
-Signed-off-by: Quan Zhou <zhouquan@iscas.ac.cn>
-Signed-off-by: Yuhang.chen <yhchen312@gmail.com>
----
- tools/testing/selftests/kvm/Makefile.kvm      |   1 +
- .../kvm/riscv/pmu_event_filter_test.c         | 199 ++++++++++++++++++
- 2 files changed, 200 insertions(+)
- create mode 100644 tools/testing/selftests/kvm/riscv/pmu_event_filter_test.c
-
-diff --git a/tools/testing/selftests/kvm/Makefile.kvm b/tools/testing/selftests/kvm/Makefile.kvm
-index d28a057fa6c2..5d2dc3b25eac 100644
---- a/tools/testing/selftests/kvm/Makefile.kvm
-+++ b/tools/testing/selftests/kvm/Makefile.kvm
-@@ -218,6 +218,7 @@ TEST_GEN_PROGS_s390 += pre_fault_memory_test
- TEST_GEN_PROGS_riscv = $(TEST_GEN_PROGS_COMMON)
- TEST_GEN_PROGS_riscv += riscv/sbi_pmu_test
- TEST_GEN_PROGS_riscv += riscv/ebreak_test
-+TEST_GEN_PROGS_riscv += riscv/pmu_event_filter_test
- TEST_GEN_PROGS_riscv += access_tracking_perf_test
- TEST_GEN_PROGS_riscv += arch_timer
- TEST_GEN_PROGS_riscv += coalesced_io_test
-diff --git a/tools/testing/selftests/kvm/riscv/pmu_event_filter_test.c b/tools/testing/selftests/kvm/riscv/pmu_event_filter_test.c
-new file mode 100644
-index 000000000000..1a76fce2aca6
---- /dev/null
-+++ b/tools/testing/selftests/kvm/riscv/pmu_event_filter_test.c
-@@ -0,0 +1,199 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Test for RISC-V KVM_SET_PMU_EVENT_FILTER.
-+ *
-+ * Verify that a VM-scoped PMU event filter installed via the
-+ * KVM_SET_PMU_EVENT_FILTER ioctl is enforced when a guest configures a
-+ * counter through the SBI PMU COUNTER_CFG_MATCH call:
-+ *
-+ *   - with no filter, events are programmable (baseline / PMU probe);
-+ *   - KVM_PMU_EVENT_DENY rejects the listed events;
-+ *   - KVM_PMU_EVENT_ALLOW admits only the listed events;
-+ *   - replacing the filter with an empty DENY list re-enables everything.
-+ *
-+ * The filter is checked before any perf event is created, so the test only
-+ * ever programs the cycle event (always supported by the host PMU) and varies
-+ * the filter *list* contents to exercise membership without depending on host
-+ * support for other events.  Counter management and SBI error reporting happen
-+ * in the guest; the host installs filters and checks the reported errors.
-+ */
-+#include <errno.h>
-+#include <stdlib.h>
-+#include <string.h>
-+
-+#include "kvm_util.h"
-+#include "test_util.h"
-+#include "processor.h"
-+#include "ucall_common.h"
-+#include "sbi.h"
-+
-+/* SBI PMU hardware event indexes (type == HW == 0, so eidx == code). */
-+#define EV_CYCLES	SBI_PMU_HW_CPU_CYCLES		/* 1 */
-+#define EV_INSTR	SBI_PMU_HW_INSTRUCTIONS		/* 2 */
-+
-+/* Must match KVM_PMU_EVENT_FILTER_MAX_EVENTS in arch/riscv/kvm/vm.c. */
-+#define MAX_EVENTS	256
-+
-+static void guest_code(void)
-+{
-+	struct sbiret ret;
-+	unsigned long ctr;
-+	long err;
-+
-+	for (;;) {
-+		/*
-+		 * Request the fixed cycle counter (cbase=0, cmask=1) for the
-+		 * cycle event.  The host installs (or clears) the filter
-+		 * before each entry, so the result reflects the active policy.
-+		 */
-+		ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_CFG_MATCH,
-+				0, 1, 0, EV_CYCLES, 0, 0);
-+		err = ret.error;
-+		ctr = ret.value;
-+
-+		/* Release the counter on success so the next iteration reuses it. */
-+		if (!err)
-+			sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_STOP,
-+				  ctr, 1, SBI_PMU_STOP_FLAG_RESET, 0, 0, 0);
-+
-+		GUEST_SYNC1(err);
-+	}
-+}
-+
-+static struct kvm_pmu_event_filter *
-+build_filter(__u32 action, __u32 flags, const __u64 *events, __u32 nevents)
-+{
-+	struct kvm_pmu_event_filter *f;
-+	size_t size = sizeof(*f) + (size_t)nevents * sizeof(__u64);
-+
-+	f = calloc(1, size);
-+	TEST_ASSERT(f, "calloc(pmu_event_filter)");
-+	f->action = action;
-+	f->nevents = nevents;
-+	f->flags = flags;
-+	if (nevents && events)
-+		memcpy(f->events, events, nevents * sizeof(__u64));
-+	return f;
-+}
-+
-+/* Install a filter, asserting success. */
-+static void set_filter(struct kvm_vm *vm, __u32 action,
-+		       const __u64 *events, __u32 nevents)
-+{
-+	struct kvm_pmu_event_filter *f = build_filter(action, 0, events, nevents);
-+
-+	vm_ioctl(vm, KVM_SET_PMU_EVENT_FILTER, f);
-+	free(f);
-+}
-+
-+/* Install a filter and return the raw ioctl result (for negative tests). */
-+static int try_set_filter(struct kvm_vm *vm, __u32 action, __u32 flags,
-+			  const __u64 *events, __u32 nevents)
-+{
-+	struct kvm_pmu_event_filter *f = build_filter(action, flags, events, nevents);
-+	int ret = __vm_ioctl(vm, KVM_SET_PMU_EVENT_FILTER, f);
-+
-+	free(f);
-+	return ret;
-+}
-+
-+/* Run the guest one step and return the cfg_match error code it reports. */
-+static long run_one(struct kvm_vcpu *vcpu)
-+{
-+	struct ucall uc;
-+
-+	vcpu_run(vcpu);
-+	TEST_ASSERT_EQ(get_ucall(vcpu, &uc), UCALL_SYNC);
-+	return (long)uc.args[0];
-+}
-+
-+static void test_filter_case(struct kvm_vm *vm, struct kvm_vcpu *vcpu,
-+			     __u32 action, const __u64 *events, __u32 nevents,
-+			     long expect, const char *desc)
-+{
-+	long err;
-+
-+	set_filter(vm, action, events, nevents);
-+	err = run_one(vcpu);
-+	TEST_ASSERT_EQ(err, expect);
-+	pr_info("%s: err=%ld (expected %ld)\n", desc, err, expect);
-+}
-+
-+static void test_bad_args(struct kvm_vm *vm)
-+{
-+	__u64 ev = EV_CYCLES;
-+	int ret;
-+
-+	/* Invalid action. */
-+	errno = 0;
-+	ret = try_set_filter(vm, 2, 0, &ev, 1);
-+	TEST_ASSERT(ret < 0 && errno == EINVAL,
-+		    "invalid action should fail with EINVAL, got ret=%d errno=%d",
-+		    ret, errno);
-+
-+	/* Non-zero flags are not supported. */
-+	errno = 0;
-+	ret = try_set_filter(vm, KVM_PMU_EVENT_ALLOW, 1, &ev, 1);
-+	TEST_ASSERT(ret < 0 && errno == EINVAL,
-+		    "non-zero flags should fail with EINVAL, got ret=%d errno=%d",
-+		    ret, errno);
-+
-+	/* Too many events. */
-+	errno = 0;
-+	ret = try_set_filter(vm, KVM_PMU_EVENT_DENY, 0, NULL, MAX_EVENTS + 1);
-+	TEST_ASSERT(ret < 0 && errno == E2BIG,
-+		    "nevents > max should fail with E2BIG, got ret=%d errno=%d",
-+		    ret, errno);
-+}
-+
-+int main(void)
-+{
-+	struct kvm_vm *vm;
-+	struct kvm_vcpu *vcpu;
-+	long err;
-+
-+	TEST_REQUIRE(kvm_has_cap(KVM_CAP_PMU_EVENT_FILTER));
-+
-+	vm = vm_create_with_one_vcpu(&vcpu, guest_code);
-+
-+	/*
-+	 * Baseline / PMU probe: with no filter the cycle event must be
-+	 * programmable.  If it isn't, the host PMU is unusable in this
-+	 * environment (e.g. Sscofpmf unavailable under TCG); skip the rest.
-+	 */
-+	err = run_one(vcpu);
-+	if (err) {
-+		pr_info("PMU unavailable (baseline cfg_match err=%ld), skipping\n",
-+			err);
-+		kvm_vm_free(vm);
-+		exit(KSFT_SKIP);
-+	}
-+
-+	/* DENY{cycles}: the cycle event is rejected. */
-+	test_filter_case(vm, vcpu, KVM_PMU_EVENT_DENY,
-+			 &(__u64){ EV_CYCLES }, 1,
-+			 SBI_ERR_NOT_SUPPORTED, "deny cycles");
-+
-+	/* ALLOW{cycles}: the cycle event is admitted. */
-+	test_filter_case(vm, vcpu, KVM_PMU_EVENT_ALLOW,
-+			 &(__u64){ EV_CYCLES }, 1,
-+			 0, "allow cycles");
-+
-+	/*
-+	 * ALLOW{instructions}: cycles is not in the allow list, so it is
-+	 * rejected.  Instructions itself is never programmed, so host support
-+	 * for it is irrelevant.
-+	 */
-+	test_filter_case(vm, vcpu, KVM_PMU_EVENT_ALLOW,
-+			 &(__u64){ EV_INSTR }, 1,
-+			 SBI_ERR_NOT_SUPPORTED, "cycles not in allow{instr}");
-+
-+	/* Empty DENY list: nothing is denied, cycles is programmable again. */
-+	test_filter_case(vm, vcpu, KVM_PMU_EVENT_DENY, NULL, 0,
-+			 0, "clear (deny empty)");
-+
-+	test_bad_args(vm);
-+
-+	kvm_vm_free(vm);
-+	return 0;
-+}
--- 
-2.34.1
-
-
--- 
-kvm-riscv mailing list
-kvm-riscv@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/kvm-riscv
+T24gRnJpLCBKdWwgMTcsIDIwMjYgYXQgMTozOeKAr1BNIFdhbmcgWWVjaGFvIDx3YW5nLnllY2hh
+bzI1NUB6dGUuY29tLmNuPiB3cm90ZToKPgo+IFRoZSBleGlzdGluZyBrdm1fcmlzY3ZfZ3N0YWdl
+X3dwX3JhbmdlKCkgd2Fsa3MgdGhlIGVudGlyZSBbc3RhcnQsIGVuZCkKPiByYW5nZSB0byBhcHBs
+eSB3cml0ZSBwcm90ZWN0aW9uIGZvciBkaXJ0eSBsb2cgY2xlYXJpbmcsIGV2ZW4gd2hlbiB0aGUK
+PiBwcm92aWRlZCBtYXNrIGhhcyB6ZXJvIGJpdHMgKGkuZS4sIG1hbnkgR0ZOcyBkbyBub3QgbmVl
+ZCBwcm90ZWN0aW9uKS4KPiBUaGlzIGxlYWRzIHRvIHVubmVjZXNzYXJ5IHBhZ2UgdGFibGUgd2Fs
+a3Mgd2hlbiB0aGUgbWFzayBpcyBzcGFyc2UuCj4KPiBSZXBsYWNlIHRoZSByYW5nZS1iYXNlZCBh
+cHByb2FjaCB3aXRoIGEgbmV3IGZ1bmN0aW9uCj4ga3ZtX3Jpc2N2X2dzdGFnZV93cF9wdF9tYXNr
+ZWQoKSB0aGF0IGl0ZXJhdGVzIG9ubHkgb3ZlciB0aGUgc2V0IGJpdHMgaW4KPiB0aGUgbWFzay4g
+Rm9yIGVhY2ggc2V0IGJpdCwgaXQgbG9va3MgdXAgdGhlIGxlYWYgUFRFIGFuZCBhcHBsaWVzIHdy
+aXRlCj4gcHJvdGVjdGlvbi4gT25jZSBhIGh1Z2UgcGFnZSBpcyBlbmNvdW50ZXJlZCwgdGhlIGVu
+dGlyZSBodWdlLXBhZ2UgcmFuZ2UKPiBpcyBwcm9jZXNzZWQgaW4gb25lIGdvLCBhbmQgdGhlIGNv
+cnJlc3BvbmRpbmcgYml0cyBpbiB0aGUgbWFzayBhcmUgY2xlYXJlZAo+IHVzaW5nIGJpdG1hcF9j
+bGVhcigpLgo+Cj4gUGVyZm9ybWFuY2Ugd2FzIG1lYXN1cmVkIHdpdGggS1ZNIHNlbGZ0ZXN0cyBk
+aXJ0eV9sb2dfcGVyZl90ZXN0IG9uIGEKPiBTcGFjZW1pdCBrMyBob3N0IHdpdGggdGhlIGZvbGxv
+d2luZyBjb25maWd1cmF0aW9uOgo+IC0gdkNQVXM6IDIgKC12IDIpCj4gLSBNZW1vcnk6IDFHQiAo
+LWIgMUcpCj4gLSBJdGVyYXRpb25zOiAzICgtaSAzKQo+IC0gV3JpdGUgcGVyY2VudGFnZSB2YXJp
+ZWQgdmlhIC13IHBhcmFtZXRlciB0byBzaW11bGF0ZSBkaWZmZXJlbnQKPiAgIGRpcnR5IG1hc2sg
+ZGVuc2l0aWVzLgo+Cj4gVGhlIGZvbGxvd2luZyBkYXRhIHNob3dzIHRoZSB0aW1lIHNwZW50IGlu
+IHRoZSBjbGVhci1kaXJ0eS1sb2cgcGhhc2UKPiAoaS5lLiwgdGhlIEtWTV9DTEVBUl9ESVJUWV9M
+T0cgaW9jdGwpIHVuZGVyIGVhY2ggY29uZmlndXJhdGlvbi4KPgo+ICstLS0tLS0tLS0tLS0tLS0t
+LS0rLS0tLS0tLS0tLS0tLS0tLS0tKy0tLS0tLS0tLS0tLS0tLS0tLSstLS0tLS0tLS0tLS0tKwo+
+IHwgV3JpdGUgUGVyY2VudGFnZSB8IE9yaWdpbmFsIChzKSAgICAgfCBQYXRjaGVkIChzKSAgICAg
+IHwgSW1wcm92ZW1lbnQgfAo+ICstLS0tLS0tLS0tLS0tLS0tLS0rLS0tLS0tLS0tLS0tLS0tLS0t
+Ky0tLS0tLS0tLS0tLS0tLS0tLSstLS0tLS0tLS0tLS0tKwo+IHwgMTAlICAgICAgICAgICAgICB8
+IDAuMDEyOTA1ICAgICAgICAgfCAwLjAwOTIxMyAgICAgICAgIHwgKzI4LjYlICAgICAgfAo+IHwg
+MzAlICAgICAgICAgICAgICB8IDAuMDE0MjE3ICAgICAgICAgfCAwLjAxMDI4NyAgICAgICAgIHwg
+KzI3LjYlICAgICAgfAo+IHwgNTAlICAgICAgICAgICAgICB8IDAuMDE0NjA2ICAgICAgICAgfCAw
+LjAxMTc3MiAgICAgICAgIHwgKzE5LjQlICAgICAgfAo+IHwgNzAlICAgICAgICAgICAgICB8IDAu
+MDE0NzM1ICAgICAgICAgfCAwLjAxMzE5OSAgICAgICAgIHwgKzEwLjQlICAgICAgfAo+IHwgMTAw
+JSAgICAgICAgICAgICB8IDAuMDE0NzU5ICAgICAgICAgfCAwLjAxNTI5NCAgICAgICAgIHwgLTMu
+NiUgICAgICAgfAo+ICstLS0tLS0tLS0tLS0tLS0tLS0rLS0tLS0tLS0tLS0tLS0tLS0tKy0tLS0t
+LS0tLS0tLS0tLS0tLSstLS0tLS0tLS0tLS0tKwo+Cj4gVGhlIHBlcmZvcm1hbmNlIGltcHJvdmVt
+ZW50IGlzIG1vc3Qgc2lnbmlmaWNhbnQgd2hlbiB0aGUgZGlydHkgbWFzayBpcwo+IHNwYXJzZSAo
+bG93IHdyaXRlIHBlcmNlbnRhZ2UpLCB3aGljaCBpcyBjb21tb24gaW4gcmVhbC13b3JsZCBzY2Vu
+YXJpb3MKPiB3aXRoIGxvdyB0byBtb2RlcmF0ZSBtZW1vcnkgd3JpdGUgaW50ZW5zaXR5LiBJbiB0
+aGUgd29yc3QtY2FzZSBzY2VuYXJpbwo+IHdoZXJlIHRoZSBtYXNrIGlzIGZ1bGx5IHNldCAoMTAw
+JSB3cml0ZSksIHRoZSBvcHRpbWl6YXRpb24gaW50cm9kdWNlcwo+IGEgc2xpZ2h0IDMuNiUgb3Zl
+cmhlYWQgZHVlIHRvIHRoZSBhZGRpdGlvbmFsIGJpdCBvcGVyYXRpb25zLCB3aGljaCBpcwo+IGFj
+Y2VwdGFibGUgZ2l2ZW4gdGhlIHN1YnN0YW50aWFsIGdhaW5zIGluIGNvbW1vbiBjYXNlcy4KPgo+
+IFRoaXMgY2hhbmdlIHNpZ25pZmljYW50bHkgcmVkdWNlcyB0aGUgbnVtYmVyIG9mIHBhZ2UtdGFi
+bGUgd2Fsa3Mgd2hlbgo+IHRoZSBkaXJ0eSBtYXNrIGhhcyBtYW55IHplcm8gYml0cywgaW1wcm92
+aW5nIHRoZSBlZmZpY2llbmN5IG9mCj4gS1ZNX0NMRUFSX0RJUlRZX0xPRyBhbmQgcmVsYXRlZCBp
+b2N0bHMuCj4KPiBTaWduZWQtb2ZmLWJ5OiBXYW5nIFllY2hhbyA8d2FuZy55ZWNoYW8yNTVAenRl
+LmNvbS5jbj4KCkxHVE0uCgpSZXZpZXdlZC1ieTogQW51cCBQYXRlbCA8YW51cEBicmFpbmZhdWx0
+Lm9yZz4KClF1ZXVlZCB0aGlzIHBhdGNoIGZvciBMaW51eC03LjMKClRoYW5rcywKQW51cAoKCj4g
+LS0tCj4gIGFyY2gvcmlzY3YvaW5jbHVkZS9hc20va3ZtX2dzdGFnZS5oIHwgIDMgKysKPiAgYXJj
+aC9yaXNjdi9rdm0vZ3N0YWdlLmMgICAgICAgICAgICAgfCA1OSArKysrKysrKysrKysrKysrKysr
+KysrKysrKysrKwo+ICBhcmNoL3Jpc2N2L2t2bS9tbXUuYyAgICAgICAgICAgICAgICB8ICAyICst
+Cj4gIDMgZmlsZXMgY2hhbmdlZCwgNjMgaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbigtKQo+Cj4g
+ZGlmZiAtLWdpdCBhL2FyY2gvcmlzY3YvaW5jbHVkZS9hc20va3ZtX2dzdGFnZS5oIGIvYXJjaC9y
+aXNjdi9pbmNsdWRlL2FzbS9rdm1fZ3N0YWdlLmgKPiBpbmRleCAyMWUyMDE5ZGYwY2YuLjUwYzc0
+NTI3ZGRkMiAxMDA2NDQKPiAtLS0gYS9hcmNoL3Jpc2N2L2luY2x1ZGUvYXNtL2t2bV9nc3RhZ2Uu
+aAo+ICsrKyBiL2FyY2gvcmlzY3YvaW5jbHVkZS9hc20va3ZtX2dzdGFnZS5oCj4gQEAgLTgyLDYg
+KzgyLDkgQEAgYm9vbCBrdm1fcmlzY3ZfZ3N0YWdlX3VubWFwX3JhbmdlKHN0cnVjdCBrdm1fZ3N0
+YWdlICpnc3RhZ2UsCj4KPiAgYm9vbCBrdm1fcmlzY3ZfZ3N0YWdlX3dwX3JhbmdlKHN0cnVjdCBr
+dm1fZ3N0YWdlICpnc3RhZ2UsIGdwYV90IHN0YXJ0LCBncGFfdCBlbmQpOwo+Cj4gK2Jvb2wga3Zt
+X3Jpc2N2X2dzdGFnZV93cF9wdF9tYXNrZWQoc3RydWN0IGt2bV9nc3RhZ2UgKmdzdGFnZSwgZ2Zu
+X3QgYmFzZV9nZm4sCj4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB1bnNpZ25l
+ZCBsb25nIG1hc2spOwo+ICsKPiAgdm9pZCBrdm1fcmlzY3ZfZ3N0YWdlX21vZGVfZGV0ZWN0KHZv
+aWQpOwo+Cj4gIHN0YXRpYyBpbmxpbmUgdW5zaWduZWQgbG9uZyBrdm1fcmlzY3ZfZ3N0YWdlX21v
+ZGUodW5zaWduZWQgbG9uZyBwZ2RfbGV2ZWxzKQo+IGRpZmYgLS1naXQgYS9hcmNoL3Jpc2N2L2t2
+bS9nc3RhZ2UuYyBiL2FyY2gvcmlzY3Yva3ZtL2dzdGFnZS5jCj4gaW5kZXggYzRjM2I3OTU2N2Yx
+Li45YWY4NmIxYzVlM2MgMTAwNjQ0Cj4gLS0tIGEvYXJjaC9yaXNjdi9rdm0vZ3N0YWdlLmMKPiAr
+KysgYi9hcmNoL3Jpc2N2L2t2bS9nc3RhZ2UuYwo+IEBAIC00NzIsNiArNDcyLDY1IEBAIGJvb2wg
+a3ZtX3Jpc2N2X2dzdGFnZV93cF9yYW5nZShzdHJ1Y3Qga3ZtX2dzdGFnZSAqZ3N0YWdlLCBncGFf
+dCBzdGFydCwgZ3BhX3QgZW5kCj4gICAgICAgICByZXR1cm4gZmx1c2g7Cj4gIH0KPgo+ICtzdGF0
+aWMgaW5saW5lIHZvaWQgY2xlYXJfaHVnZV9tYXNrKHVuc2lnbmVkIGxvbmcgKm1hc2ssIHVuc2ln
+bmVkIGxvbmcgcGFnZV9zaXplLAo+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+Z2ZuX3QgYmFzZV9nZm4sIGdwYV90IGFkZHIpCj4gK3sKPiArICAgICAgIHVuc2lnbmVkIGxvbmcg
+c3RhcnRfaW5kZXggPSAwOwo+ICsgICAgICAgdW5zaWduZWQgbG9uZyBlbmRfaW5kZXggPSBCSVRT
+X1BFUl9MT05HIC0gMTsKPiArICAgICAgIHVuc2lnbmVkIGxvbmcgZW5kX2dmbiA9IGJhc2VfZ2Zu
+ICsgZW5kX2luZGV4Owo+ICsgICAgICAgdW5zaWduZWQgbG9uZyBhbGlnbmVkX3N0YXJ0X2dmbiA9
+IGFkZHIgPj4gUEFHRV9TSElGVDsKPiArICAgICAgIHVuc2lnbmVkIGxvbmcgYWxpZ25lZF9lbmRf
+Z2ZuID0gYWxpZ25lZF9zdGFydF9nZm4gKyAocGFnZV9zaXplID4+IFBBR0VfU0hJRlQpIC0gMTsK
+PiArICAgICAgIHVuc2lnbmVkIGludCBuYml0cyA9IDA7Cj4gKwo+ICsgICAgICAgaWYgKGFsaWdu
+ZWRfc3RhcnRfZ2ZuID4gYmFzZV9nZm4pCj4gKyAgICAgICAgICAgICAgIHN0YXJ0X2luZGV4ID0g
+YWxpZ25lZF9zdGFydF9nZm4gLSBiYXNlX2dmbjsKPiArCj4gKyAgICAgICBpZiAoYWxpZ25lZF9l
+bmRfZ2ZuIDwgZW5kX2dmbikKPiArICAgICAgICAgICAgICAgZW5kX2luZGV4ID0gYWxpZ25lZF9l
+bmRfZ2ZuIC0gYmFzZV9nZm47Cj4gKwo+ICsgICAgICAgbmJpdHMgPSBlbmRfaW5kZXggLSBzdGFy
+dF9pbmRleCArIDE7Cj4gKyAgICAgICBiaXRtYXBfY2xlYXIobWFzaywgc3RhcnRfaW5kZXgsIG5i
+aXRzKTsKPiArfQo+ICsKPiArYm9vbCBrdm1fcmlzY3ZfZ3N0YWdlX3dwX3B0X21hc2tlZChzdHJ1
+Y3Qga3ZtX2dzdGFnZSAqZ3N0YWdlLCBnZm5fdCBiYXNlX2dmbiwKPiArICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgIHVuc2lnbmVkIGxvbmcgbWFzaykKPiArewo+ICsgICAgICAgdW5z
+aWduZWQgbG9uZyBwYWdlX3NpemU7Cj4gKyAgICAgICBib29sIGZsdXNoID0gZmFsc2U7Cj4gKyAg
+ICAgICBib29sIGZvdW5kX2xlYWY7Cj4gKyAgICAgICB1MzIgcHRlcF9sZXZlbDsKPiArICAgICAg
+IHB0ZV90ICpwdGVwOwo+ICsgICAgICAgZ3BhX3QgYWRkciA9IDA7Cj4gKyAgICAgICBpbnQgcmV0
+Owo+ICsKPiArICAgICAgIHdoaWxlIChtYXNrKSB7Cj4gKyAgICAgICAgICAgICAgIGFkZHIgPSAo
+YmFzZV9nZm4gKyBfX2ZmcyhtYXNrKSkgPDwgUEFHRV9TSElGVDsKPiArCj4gKyAgICAgICAgICAg
+ICAgIGZvdW5kX2xlYWYgPSBrdm1fcmlzY3ZfZ3N0YWdlX2dldF9sZWFmKGdzdGFnZSwgYWRkciwg
+JnB0ZXAsICZwdGVwX2xldmVsKTsKPiArICAgICAgICAgICAgICAgcmV0ID0gZ3N0YWdlX2xldmVs
+X3RvX3BhZ2Vfc2l6ZShnc3RhZ2UsIHB0ZXBfbGV2ZWwsICZwYWdlX3NpemUpOwo+ICsgICAgICAg
+ICAgICAgICBpZiAocmV0KQo+ICsgICAgICAgICAgICAgICAgICAgICAgIGJyZWFrOwo+ICsKPiAr
+ICAgICAgICAgICAgICAgaWYgKGZvdW5kX2xlYWYpIHsKPiArICAgICAgICAgICAgICAgICAgICAg
+ICBpZiAocHRlcF9sZXZlbCkgewo+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgYWRk
+ciA9IEFMSUdOX0RPV04oYWRkciwgcGFnZV9zaXplKTsKPiArICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgIGNsZWFyX2h1Z2VfbWFzaygmbWFzaywgcGFnZV9zaXplLCBiYXNlX2dmbiwgYWRk
+cik7Cj4gKyAgICAgICAgICAgICAgICAgICAgICAgfQo+ICsKPiArICAgICAgICAgICAgICAgICAg
+ICAgICBmbHVzaCB8PSBrdm1fcmlzY3ZfZ3N0YWdlX29wX3B0ZShnc3RhZ2UsIGFkZHIsIHB0ZXAs
+Cj4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgcHRlcF9sZXZlbCwgR1NUQUdFX09QX1dQKTsKPiArCj4gKyAgICAgICAgICAgICAgICAgICAg
+ICAgaWYgKHB0ZXBfbGV2ZWwpCj4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBjb250
+aW51ZTsKPiArICAgICAgICAgICAgICAgfQo+ICsKPiArICAgICAgICAgICAgICAgLyogY2xlYXIg
+dGhlIGZpcnN0IHNldCBiaXQqLwo+ICsgICAgICAgICAgICAgICBtYXNrICY9IG1hc2sgLSAxOwo+
+ICsgICAgICAgfQo+ICsKPiArICAgICAgIHJldHVybiBmbHVzaDsKPiArfQo+ICsKPiAgdm9pZCBf
+X2luaXQga3ZtX3Jpc2N2X2dzdGFnZV9tb2RlX2RldGVjdCh2b2lkKQo+ICB7Cj4gICNpZmRlZiBD
+T05GSUdfNjRCSVQKPiBkaWZmIC0tZ2l0IGEvYXJjaC9yaXNjdi9rdm0vbW11LmMgYi9hcmNoL3Jp
+c2N2L2t2bS9tbXUuYwo+IGluZGV4IDA4MmY5YjI2MTczMy4uN2VhYjU4ZmY2M2Y5IDEwMDY0NAo+
+IC0tLSBhL2FyY2gvcmlzY3Yva3ZtL21tdS5jCj4gKysrIGIvYXJjaC9yaXNjdi9rdm0vbW11LmMK
+PiBAQCAtMTEwLDcgKzExMCw3IEBAIHZvaWQga3ZtX2FyY2hfbW11X2VuYWJsZV9sb2dfZGlydHlf
+cHRfbWFza2VkKHN0cnVjdCBrdm0gKmt2bSwKPgo+ICAgICAgICAga3ZtX3Jpc2N2X2dzdGFnZV9p
+bml0KCZnc3RhZ2UsIGt2bSk7Cj4KPiAtICAgICAgIGZsdXNoID0ga3ZtX3Jpc2N2X2dzdGFnZV93
+cF9yYW5nZSgmZ3N0YWdlLCBzdGFydCwgZW5kKTsKPiArICAgICAgIGZsdXNoID0ga3ZtX3Jpc2N2
+X2dzdGFnZV93cF9wdF9tYXNrZWQoJmdzdGFnZSwgYmFzZV9nZm4sIG1hc2spOwo+ICAgICAgICAg
+aWYgKGZsdXNoKQo+ICAgICAgICAgICAgICAgICBrdm1fZmx1c2hfcmVtb3RlX3RsYnNfcmFuZ2Uo
+a3ZtLCBzdGFydCA+PiBQQUdFX1NISUZULAo+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgKGVuZCAtIHN0YXJ0KSA+PiBQQUdFX1NISUZUKTsKPiAtLQo+IDIuMjcu
+MAo+CgotLSAKa3ZtLXJpc2N2IG1haWxpbmcgbGlzdAprdm0tcmlzY3ZAbGlzdHMuaW5mcmFkZWFk
+Lm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2t2bS1yaXNj
+dgo=
