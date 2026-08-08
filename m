@@ -4,107 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B5633C5AC9F
-	for <kvm-riscv@archiver.kernel.org>; Fri,  7 Aug 2026 16:40:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 431DDC5AC67
+	for <kvm-riscv@archiver.kernel.org>; Sat,  8 Aug 2026 05:51:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:Subject:Message-ID:Date:From:
-	In-Reply-To:References:MIME-Version:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=gzh2tExMbVddY0J/Ak4XEIoDXMbhJvNTgt1TqdWvaHI=; b=j8EDPfRhtI3LBz
-	z0azT3HnTQkGKKj6P15DQ1+oOHR2/TIGFdFubtaOxeD7qj1NR950lSzh4zIzc6AqhD6CLLUJrZeBs
-	MCCwJjltc7gSou1crjlEtWoC5Sk91XUtU/G+gBsT9+CQTEnc0mvOn9dy8ZxZGtr5VT4B1zmqZ4cru
-	ov3kpqKswI7uThT5S+lNcXHWY+AlJbchM5PHOQloxlFdrMRKh+lWGuA6o7HLatrpK0UJEB/BRsL0R
-	6fKfP9i0J7YzUgb/Rqna5viGnNLV2AYySxoCDwpOkpFnPRHjPcfad2nOyuI6gL3fxEZDusQu3YLqx
-	4Ds84NWywJcLbOzoRYQg==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=sLQPqRSkdwUkSMW0S7fS6LjZIZJx2La0MXRPIjrJwQY=; b=vD1Vgc4OPIMDtL
+	3NFp/YLuuLnUFK0iV+iSSHXMxRVEpKVqCa6ijmw7e7mRwztNHlyh7RF4P4dKsanainYuc3K6Z3Xlk
+	9J4J4vybfDNcpmkMrIxgu1/iINItkal0VKcg9koxbHDZVEvzVVwf8W5+b7YgS79BT5/h0aY0V+KaR
+	4Tx33EWQP9NuiVgpUzZV5VL1Z7YhV5aIJ9gLu2t2EDPVqDLSUrwDnWZe1ZT2v5CmjOmeZ4tPuuaVN
+	SziVm1DO6XCeCqAkYXFMG8QCF0rjAWwShUtYs7bBio6kA5856YAKIg3PsCVbKAfMuun35opUTglKX
+	SPeDEMwjnu8VOKe570ow==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wsNca-00000008RVa-1mBb;
-	Fri, 07 Aug 2026 16:40:36 +0000
-Received: from mail-wr1-x433.google.com ([2a00:1450:4864:20::433])
+	id 1wsZxm-000000094me-2TH5;
+	Sat, 08 Aug 2026 05:51:18 +0000
+Received: from out-173.mta0.migadu.com ([91.218.175.173])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wsNcY-00000008RUO-2CPZ
+	id 1wsZxi-000000094mF-0cS4
 	for kvm-riscv@lists.infradead.org;
-	Fri, 07 Aug 2026 16:40:35 +0000
-Received: by mail-wr1-x433.google.com with SMTP id ffacd0b85a97d-47fecbb7000so1893910f8f.2
-        for <kvm-riscv@lists.infradead.org>; Fri, 07 Aug 2026 09:40:33 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1786120832; cv=none;
-        d=google.com; s=arc-20260327;
-        b=iikKBXaaT22X3oBtXAn5yN6zoB7rYXr87TqaKMJqZos6fINvSKEtEoAtWQX49qlXex
-         YYUBZdJbI+/OIC3qaWQQUCMEu6OFPn402FbZ9/tqtPIdTHjNWfbP2JQ3eywXrDKZKGBD
-         SEXCVkSMD4xUjiLiiPhC0WU05DEYRsX17aZtJfn4Hqiyh+UNGKHrz7X/EWqnpaz9CBMa
-         iTQlFoCf62K8yUjG52H3c79uXzHrlianA2fL8UVzgovXMXhaydwBP7fxgeSNvJzVOYiE
-         f9fJJlHuMSzzCnyVW+LKIOLzkfUWZxhyzQaJUTy9vE6ecxFOtlqkyUtgN/hbl+DXO4hs
-         E+5w==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=M3ZQ4lwGybEnFTTAAMTdnaC/1E614SavXr5HowXfnfg=;
-        fh=VnVai+9Xd4G3PsGD6l/fzI1teyKplbUS+gYC0a3RLVM=;
-        b=D0CXTvPOumUdYf4jgcBHEOvi1AYWnRO/mMwgfkmL4jIO69jEFzvOx3XHQntUtnR9rB
-         w3Ns1+Y5WC84ukMDy+0rsIlouetvp401y0c1Ln2jBu32oVxc36+JyFuLxz5JVUBrYbsR
-         nzqvCvb20QWlPRjemqVh/CbReYfMrUcpbXw96wHUAodRJHlHwb+4YihPgMDFwS8elLAK
-         ba4uzZYKI/ziRIZmAberHL55JptvKvlrsblcmHBT7T3KT39gmnG+e9vT2glR4xzYo+ov
-         1gK7x1rDIVkaRhiRRNaiQG73e5z1pd9kZdLucwIYjHqahXDdDm3Quc601YINEWDx3b20
-         U6dg==;
-        darn=lists.infradead.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=brainfault.org; s=google; t=1786120832; x=1786725632; darn=lists.infradead.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=M3ZQ4lwGybEnFTTAAMTdnaC/1E614SavXr5HowXfnfg=;
-        b=aK85/PQT3eHcSXe6JGMZ/90LytbE5YARbJsgXQsiNQuf7h+J6TRFU1LD+Qbce+AL8Y
-         ArH46BNhYp1MN/YXeSvEXAP6k6IHybfaEhyPUHDAP8qrWjTx1Cf+yySCoVzOHoz/hz/3
-         H4AmrIzMlCJHAk/PmF5r7wN6m4ghnR+K0KKvW1LoyFEmsuHwPmFIjHIVi5LSq4a4bdE9
-         TInrsFMUrmr08uHSPHpkfq4nRDcyWFm7HvtETtX6FCdOtaeFs5i49B0OW21q11oVBm7X
-         iUjlKLqah5Y9vIZpd7OXxsuNFkdb43zBqnMSDslfqD7EBwvR07WTAKeLYjDpqIfRNEHN
-         aTFA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786120832; x=1786725632;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=M3ZQ4lwGybEnFTTAAMTdnaC/1E614SavXr5HowXfnfg=;
-        b=qO0m5lLAua2qM2obuc0h9UJRlYYy0YS8M0iP14qd/fxhxttWvZpEd9I7jag90e13DZ
-         /Yc5Spn1tWiqjZznzhvPy17OVA/GD1IXEGAURaEPCfFe936sPyE27vrmu1NEllY8LrTh
-         +WZsE5S3mDkKU0qej273QgOjWA5VPB2lG1NHF8aMHC26EprCX/xaGWz7jNaXHpOVei+B
-         uRsdM9g42HZBwj+FecRCvlU0djARA6UYCfo34/HhFP4QBwO5on62h48hvTvyCzWXW15n
-         qOY/apJOhIlqd7SKAvPMfMTt4UJMio7AKzJ1sfb7HzuWIiFpSQNx4iwGcfwnDRlVnUN2
-         SgiQ==
-X-Forwarded-Encrypted: i=1; AHgh+RoWC/fVs7p+U5Nfb4VX06f7ed/VqlzstQnmwCuTOX+Cg4IUwBjs7i5FJJFkKHsKB3I5yNxdFHthUqA=@lists.infradead.org
-X-Gm-Message-State: AOJu0YyaZFPClQwt09uAkMIH0m+WPu5vzvYz2H/5KHT61WG0ttyMl5xb
-	MMQMR7XdCGJ7awPFgg//ganwDvlDBtej/1hALiCYXP+ra90ic5TG+FGo6WwrE09l3eORNYdt6VR
-	IluaO8RgGA9Yar7G0F7v+Sb7J538xUUGxyYe4T7iuqA==
-X-Gm-Gg: AR+sD11JOO4ky+pZkJCuw7whxaRlfrUoA1B5RuuxPNPHPaGkfb46DB/5GzRsL/ECDK9
-	98nARuYA+5C4okFuZCEWhIbtJKEnQALlKLHKnPEhwdUrBknOQAfifor3GAy0qdoEpDIf//3Ze9X
-	CNub44oOmwVMdehPHTcExMp3S8MUAPt1hyADJ3bDw17Np1oJvVGWXnU+vs4X3T92iDXjJETSZdx
-	YItaIrzW8D5X+b0T5aKWUo2eToESFWIfh+7t8am5L/fVDNoYHyuFJcpeJdc4wcLJb5KiZQ8b9Hj
-	WAmaLlZwval19D94mEJ9OJH6Fj+mSdnkQbO5yIQKQ44gy1UH+7x2e1F6B4XTK9lJF+vfixjvadi
-	hfXSfeiDgJkyzmmn3OBKc5yvwa4hseW++zVlOC6iDHwYkv5BlpxuMU4sgpsrkWm6l
-X-Received: by 2002:adf:ec0e:0:b0:47f:4dfc:ca1e with SMTP id
- ffacd0b85a97d-48130e7e846mr1247509f8f.5.1786120832608; Fri, 07 Aug 2026
- 09:40:32 -0700 (PDT)
+	Sat, 08 Aug 2026 05:51:16 +0000
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=systemssoftware.dev;
+	s=key1; t=1786168265;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=GkulbZmOs+Mth+//HgBbAZCXbWi5X+zveQaLFheV+3w=;
+	b=Y/k1fihXWuDDMdpGfUY64PpSAcewF/r2/MdP76OvuL+IYJ6GTZLhDoSIHnKIHSGp/+pL4f
+	mQ+d4l5vlfjqIWSboLoFFwknxSmjHZU5ii30uvGbiSdoNLDdm07Klg5Z0zfa/hr/kq0I8g
+	s+gn5+KaUzkkWFjMzJCjB47eSNHwIAlIoWA8dioPkywMaLhMVe8qATwJifXTDR2aVwbctV
+	RMW3mAoPjzQJfuAIbj1f4S9+vgg66e7czrq4Ja/W7+mWCWFqN4lTG58pQfelNYjH0dEqjv
+	xv9RwGiR+11ujndZlbjyroz8SnancoE5qE2bWJYWGJS+eCTlZhqM6HNrz2Hi7g==
+From: Sainath Grandhi <sainathg@systemssoftware.dev>
+To: kvm@vger.kernel.org
+Cc: kvm-riscv@lists.infradead.org,
+	Andrew Jones <andrew.jones@linux.dev>,
+	Sainath Grandhi <sainathg@systemssoftware.dev>
+Subject: [kvm-unit-tests PATCH] riscv: Add Zicboz CBO.ZERO tests
+Date: Sat,  8 Aug 2026 05:50:40 +0000
+Message-ID: <20260808055040.2093-1-sainathg@systemssoftware.dev>
 MIME-Version: 1.0
-References: <20260718033646.002.31dc89f2-caplitmus-rv@iscas.ac.cn>
-In-Reply-To: <20260718033646.002.31dc89f2-caplitmus-rv@iscas.ac.cn>
-From: Anup Patel <anup@brainfault.org>
-Date: Fri, 7 Aug 2026 22:10:20 +0530
-X-Gm-Features: AUfX_mxaKOttqZ90LkDJu3zXy0Nxt0iXONOyY8DEizW4DWkuOLmRJN7Yk8VckPQ
-Message-ID: <CAAhSdy1pw+g84HFq9okYcfmG9_nV=Te8q0YHt5yNtf6zsYP9sQ@mail.gmail.com>
-Subject: Re: [PATCH] RISC-V: KVM: Allow memslots ending at the GPA limit
-To: Pengpeng Hou <pengpeng@iscas.ac.cn>
-Cc: Atish Patra <atish.patra@linux.dev>, Paul Walmsley <pjw@kernel.org>, 
-	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
-	Alexandre Ghiti <alex@ghiti.fr>, Paolo Bonzini <pbonzini@redhat.com>, Yifei Jiang <jiangyifei@huawei.com>, 
-	kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
-	linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org
+X-Migadu-Flow: FLOW_OUT
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260807_094034_615705_7D50F2AE 
-X-CRM114-Status: GOOD (  14.97  )
+X-CRM114-CacheID: sfid-20260807_225114_753469_3522E1BD 
+X-CRM114-Status: GOOD (  16.28  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -116,34 +63,230 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-T24gU2F0LCBKdWwgMTgsIDIwMjYgYXQgOToyMuKAr0FNIFBlbmdwZW5nIEhvdSA8cGVuZ3BlbmdA
-aXNjYXMuYWMuY24+IHdyb3RlOgo+Cj4gS1ZNIG1lbXNsb3RzIGRlc2NyaWJlIGhhbGYtb3BlbiBy
-YW5nZXMgW2Jhc2VfZ2ZuLCBiYXNlX2dmbiArIG5wYWdlcykuIEEKPiBzbG90IGVuZGluZyBleGFj
-dGx5IGF0IHRoZSBndWVzdCBwaHlzaWNhbC1hZGRyZXNzIGxpbWl0IGhhcyBpdHMgZmluYWwgcGFn
-ZQo+IGJlbG93IHRoYXQgbGltaXQgYW5kIGlzIHZhbGlkLgo+Cj4gVGhlIGN1cnJlbnQgZ3JlYXRl
-ci10aGFuLW9yLWVxdWFsIGNvbXBhcmlzb24gcmVqZWN0cyBhIHZhbGlkIGJvdW5kYXJ5IGNhc2Uu
-Cj4gVXNlIGEgc3RyaWN0IGdyZWF0ZXItdGhhbiBjb21wYXJpc29uLCBtYXRjaGluZyBlcXVpdmFs
-ZW50IEtWTSBhcmNoaXRlY3R1cmUKPiBjaGVja3MuCj4KPiBGaXhlczogOWQwNWMxZmVlODM3ICgi
-UklTQy1WOiBLVk06IEltcGxlbWVudCBzdGFnZTIgcGFnZSB0YWJsZSBwcm9ncmFtbWluZyIpCj4g
-U2lnbmVkLW9mZi1ieTogUGVuZ3BlbmcgSG91IDxwZW5ncGVuZ0Bpc2Nhcy5hYy5jbj4KCkxHVE0u
-CgpSZXZpZXdlZC1ieTogQW51cCBQYXRlbCA8YW51cEBicmFpbmZhdWx0Lm9yZz4KClF1ZXVlZCB0
-aGlzIHBhdGNoIGZvciBMaW51eC03LjMKClRoYW5rcywKQW51cAoKCj4gLS0tCj4gIGFyY2gvcmlz
-Y3Yva3ZtL21tdS5jIHwgMiArLQo+ICAxIGZpbGUgY2hhbmdlZCwgMSBpbnNlcnRpb24oKyksIDEg
-ZGVsZXRpb24oLSkKPgo+IGRpZmYgLS1naXQgYS9hcmNoL3Jpc2N2L2t2bS9tbXUuYyBiL2FyY2gv
-cmlzY3Yva3ZtL21tdS5jCj4gaW5kZXggMDgyZjliMjYxNzMzOC4uZDNjMGM2OTlhZGI2MCAxMDA2
-NDQKPiAtLS0gYS9hcmNoL3Jpc2N2L2t2bS9tbXUuYwo+ICsrKyBiL2FyY2gvcmlzY3Yva3ZtL21t
-dS5jCj4gQEAgLTE4NCw3ICsxODQsNyBAQCBpbnQga3ZtX2FyY2hfcHJlcGFyZV9tZW1vcnlfcmVn
-aW9uKHN0cnVjdCBrdm0gKmt2bSwKPiAgICAgICAgICAqIFByZXZlbnQgdXNlcnNwYWNlIGZyb20g
-Y3JlYXRpbmcgYSBtZW1vcnkgcmVnaW9uIG91dHNpZGUgb2YgdGhlIEdQQQo+ICAgICAgICAgICog
-c3BhY2UgYWRkcmVzc2FibGUgYnkgdGhlIEtWTSBndWVzdCBHUEEgc3BhY2UuCj4gICAgICAgICAg
-Ki8KPiAtICAgICAgIGlmICgobmV3LT5iYXNlX2dmbiArIG5ldy0+bnBhZ2VzKSA+PQo+ICsgICAg
-ICAgaWYgKChuZXctPmJhc2VfZ2ZuICsgbmV3LT5ucGFnZXMpID4KPiAgICAgICAgICAgICAga3Zt
-X3Jpc2N2X2dzdGFnZV9ncGFfc2l6ZShrdm0tPmFyY2gucGdkX2xldmVscykgPj4gUEFHRV9TSElG
-VCkKPiAgICAgICAgICAgICAgICAgcmV0dXJuIC1FRkFVTFQ7Cj4KPiAtLQo+IDIuNDMuMAo+Cgot
-LSAKa3ZtLXJpc2N2IG1haWxpbmcgbGlzdAprdm0tcmlzY3ZAbGlzdHMuaW5mcmFkZWFkLm9yZwpo
-dHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2t2bS1yaXNjdgo=
+Add a test for CBO.ZERO when Zicboz is advertised. Read the cache-block
+size from riscv,cboz-block-size and allocate three aligned blocks.
+Execute CBO.ZERO at multiple offsets in the middle block and verify that
+the containing block is zeroed while the adjacent blocks remain
+unchanged.
+
+Skip the test when Zicboz is unavailable.
+
+Signed-off-by: Sainath Grandhi <sainathg@systemssoftware.dev>
+---
+ riscv/Makefile      |   1 +
+ riscv/isa-zicboz.c  | 168 ++++++++++++++++++++++++++++++++++++++++++++
+ riscv/unittests.cfg |   4 ++
+ 3 files changed, 173 insertions(+)
+ create mode 100644 riscv/isa-zicboz.c
+
+diff --git a/riscv/Makefile b/riscv/Makefile
+index 348a30a7..f4a97575 100644
+--- a/riscv/Makefile
++++ b/riscv/Makefile
+@@ -15,6 +15,7 @@ tests += $(TEST_DIR)/sbi.$(exe)
+ tests += $(TEST_DIR)/selftest.$(exe)
+ tests += $(TEST_DIR)/sieve.$(exe)
+ tests += $(TEST_DIR)/isa-dbltrp.$(exe)
++tests += $(TEST_DIR)/isa-zicboz.$(exe)
+ 
+ all: $(tests)
+ 
+diff --git a/riscv/isa-zicboz.c b/riscv/isa-zicboz.c
+new file mode 100644
+index 00000000..76a2d209
+--- /dev/null
++++ b/riscv/isa-zicboz.c
+@@ -0,0 +1,168 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Zicboz cache-block-zero instruction tests
++ *
++ * Copyright (C) 2026, Sainath Grandhi <sainathg@systemssoftware.dev>
++ */
++#include <alloc.h>
++#include <devicetree.h>
++#include <libcflat.h>
++#include <string.h>
++
++#include <asm/isa.h>
++#include <asm/processor.h>
++
++#define GUARD_BEFORE_PATTERN	0xa5
++#define TARGET_PATTERN		0x5a
++#define GUARD_AFTER_PATTERN	0x3c
++
++struct zicboz_info {
++	u64 hartid;
++	u32 block_size;
++	int property_len;
++	bool found;
++};
++
++static void find_zicboz_block_size(int cpu_node, u64 hartid, void *data)
++{
++	struct zicboz_info *info = data;
++	const fdt32_t *property;
++	int len;
++
++	if (hartid != info->hartid)
++		return;
++
++	property = fdt_getprop(dt_fdt(), cpu_node,
++			       "riscv,cboz-block-size", &len);
++	if (!property)
++		return;
++
++	info->found = true;
++	info->property_len = len;
++	if (len == sizeof(*property))
++		info->block_size = fdt32_to_cpu(*property);
++}
++
++static bool get_zicboz_block_size(size_t *block_size)
++{
++	struct zicboz_info info = {
++		.hartid = current_thread_info()->hartid,
++	};
++	int ret;
++
++	ret = dt_for_each_cpu_node(find_zicboz_block_size, &info);
++	if (ret) {
++		report_fail("failed to walk CPU nodes: %s", fdt_strerror(ret));
++		return false;
++	}
++
++	if (!info.found) {
++		report_fail("riscv,cboz-block-size is missing");
++		return false;
++	}
++
++	if (info.property_len != sizeof(fdt32_t)) {
++		report_fail("riscv,cboz-block-size has invalid length %d",
++			    info.property_len);
++		return false;
++	}
++
++	if (!is_power_of_2(info.block_size)) {
++		report_fail("invalid CBO.ZERO block size %u", info.block_size);
++		return false;
++	}
++
++	*block_size = info.block_size;
++	return true;
++}
++
++static inline void cbo_zero(void *address)
++{
++	asm volatile(".option push\n"
++		".option arch, +zicboz\n"
++		"cbo.zero 0(%0)\n"
++		".option pop\n"
++		:
++		: "r" (address)
++		: "memory");
++}
++
++static bool block_has_value(const u8 *block, size_t block_size, u8 value)
++{
++	size_t i;
++
++	for (i = 0; i < block_size; i++) {
++		if (block[i] != value)
++			return false;
++	}
++
++	return true;
++}
++
++static void test_cbo_zero_at_offset(u8 *area, size_t block_size,
++				    size_t offset, const char *name)
++{
++	u8 *guard_before = area;
++	u8 *target = guard_before + block_size;
++	u8 *guard_after = target + block_size;
++
++	report_prefix_push(name);
++
++	memset(guard_before, GUARD_BEFORE_PATTERN, block_size);
++	memset(target, TARGET_PATTERN, block_size);
++	memset(guard_after, GUARD_AFTER_PATTERN, block_size);
++
++	cbo_zero(target + offset);
++	asm volatile("fence rw, rw" ::: "memory");
++
++	report(block_has_value(target, block_size, 0),
++	       "target block was zeroed");
++	report(block_has_value(guard_before, block_size,
++			       GUARD_BEFORE_PATTERN),
++	       "preceding block was preserved");
++	report(block_has_value(guard_after, block_size,
++			       GUARD_AFTER_PATTERN),
++	       "following block was preserved");
++
++	report_prefix_pop();
++}
++
++int main(int argc, char **argv)
++{
++	size_t block_size;
++	u8 *area;
++
++	report_prefix_push("zicboz");
++
++	if (!dt_available()) {
++		report_skip("device tree is not available");
++		goto out;
++	}
++
++	if (!has_ext("zicboz")) {
++		report_skip("Zicboz is not available");
++		goto out;
++	}
++
++	if (!get_zicboz_block_size(&block_size))
++		goto out;
++
++	report_info("CBO.ZERO block size is %lu bytes",
++		    (unsigned long)block_size);
++
++	area = memalign(block_size, 3 * block_size);
++
++	/* Every address within a block must select the same containing block. */
++	test_cbo_zero_at_offset(area, block_size, 0, "block-start");
++	test_cbo_zero_at_offset(area, block_size, 1, "second-byte");
++	test_cbo_zero_at_offset(area, block_size, block_size / 2,
++				"block-middle");
++	test_cbo_zero_at_offset(area, block_size, block_size - 1,
++				"block-end");
++
++	free(area);
++
++out:
++	report_prefix_pop();
++	return report_summary();
++}
+diff --git a/riscv/unittests.cfg b/riscv/unittests.cfg
+index 9e9f58d9..30594fe5 100644
+--- a/riscv/unittests.cfg
++++ b/riscv/unittests.cfg
+@@ -22,3 +22,7 @@ groups = sbi
+ [dbltrp]
+ file = isa-dbltrp.flat
+ groups = isa sbi
++
++[zicboz]
++file = isa-zicboz.flat
++groups = isa
+-- 
+2.53.0
+
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
