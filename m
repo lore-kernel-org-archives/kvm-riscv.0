@@ -4,84 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 09CDBC5CFE7
-	for <kvm-riscv@archiver.kernel.org>; Tue, 11 Aug 2026 17:18:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E143CC5CFC1
+	for <kvm-riscv@archiver.kernel.org>; Tue, 11 Aug 2026 23:03:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID:
-	References:Mime-Version:In-Reply-To:Date:Reply-To:Content-ID:
-	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
-	:Resent-Message-ID:List-Owner;
-	bh=gyohZHyDF75ClKi441aqIkXpu8jlIAInmqzKKH31km4=; b=mHV95ydT3H8+3RYtoyPHMRdWVR
-	ccREWoxJ9jHn3jmUKa9heumEMpLKTrdyY5hJEutRKLQ/GWB/J2b0XRwcMrxgBy74rQNB4AvW0jazt
-	+MUGovlikSCqvDLb+5WVYKzQ5Id2GguJdMySCEyd7bW8c6fW1Ycy14FsRHA65ujUN/oTrn31OPG0s
-	3P3evntpiedVocrxIbeakWHM44mfV/fbQSGTo9FIyX0l5G6Dd31e+rqIXu8GfXnRnOt5ORJ3ixrF6
-	rW98iHApp67eSzWAgNiFqJcYdekDsdy7gGfQ8ZFP7ho5OHrf3KdFVE6JNTk08vlArSFvaYcyAai49
-	uXN6AQGA==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=dH+FfOemJcvTlfKMf1EiRNBkuYBU+RKJ3cHQCYFBtEU=; b=qmYGR6+u7A4W9Q
+	zhH3lKvbgs25psENvwrcPusiWbrOd7XhX4DRqcXL1nll0rzKxjRCOK83OVweLBGOrEVpVTUTS0CFT
+	iKYOVlP+KBhF+BcJITTfWc7gG/EbcZgNwVwRJlqsDc7dVcaeqPDiuK8GknmqtEa8aVwBZ4mxZ9tRm
+	JYKaUQN9Cng092TffKeM4RnTqRJz8isnjI9Koy2TSAapYH3l6I2ERZqc4JorSSoKkw7VY+5zVvjMK
+	wLm0hOLDEX5smIIhdbeL3gHtEtfDuliqWRUoLAlyfKVZ8++GLphpmxLxGlXl3Pgdd69zMmXv+fIsX
+	grpUIFeDNKD4ZMkAbwlA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wtq7j-0000000EceZ-35ul;
-	Tue, 11 Aug 2026 17:18:47 +0000
-Received: from mail-pf1-x445.google.com ([2607:f8b0:4864:20::445])
+	id 1wtvVT-0000000F3cC-3tab;
+	Tue, 11 Aug 2026 23:03:39 +0000
+Received: from out-186.mta0.migadu.com ([91.218.175.186])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wtq7h-0000000EcdF-0Dhu
+	id 1wtvVQ-0000000F3bm-1R6G
 	for kvm-riscv@lists.infradead.org;
-	Tue, 11 Aug 2026 17:18:46 +0000
-Received: by mail-pf1-x445.google.com with SMTP id d2e1a72fcca58-8487eb67173so167691b3a.2
-        for <kvm-riscv@lists.infradead.org>; Tue, 11 Aug 2026 10:18:43 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1786468723; x=1787073523; darn=lists.infradead.org;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=AtIGM2NHe8OV4DKgN1nHk9aAoS7uuH7cfv4s5R8wW14=;
-        b=nS8OAauBmLYP/RnTef+SEw2rtlwTKsjT9ficnxC8IVi4511O+o+owbS7dBrDTV6Oje
-         t3M0+nyUkSEH+/SC4EB1OmHdGaP8NIrRufIqG9sFKsarGzhqwrLtfHouM0D9IVLAru1b
-         1XKdExAQ2omJhcm5vpqEdKTvtfo8JDu61On7l8U2PzRPveyyW1HKhibXXFjZ7kihc5Oq
-         qla2KylQr0obqKdd7CxN+LI4Vm1DLPCTVjKsEfpHYjb/hLFJN5kgNuOuuRDvRzWpEGyK
-         xanIT3ncCWa/kBuUhm01k+rXIfPKducwlU71jUSFCxkqLXKKfemGbxBCtPu0/uXOefIc
-         av9w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786468723; x=1787073523;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=AtIGM2NHe8OV4DKgN1nHk9aAoS7uuH7cfv4s5R8wW14=;
-        b=dnRBMXcs0JhqqoqtqcFpAOxUuwH1rSwvrUHjOILA8DkXrwm8gJLBGr8KaRfq4+Lrt7
-         MQdH0fBBNu8OGivbW/brk1oRtfnh8pBrA65zbnZl7lSUGr5KzycbgZ6IoNaHsrukVIs4
-         4/RHOgcDc5OIJ9iF76HC784nOXpOULWTDInePu443i8Kg0VOp3xqCBqBzrIxLYV2MHDH
-         /x7//J0wcK8fVATkLuAxxN+TYhtU5eDEDqWA7i+FLtNJUf+nbDcr2etDNPD5+1g/l4hz
-         +RC5P8E12TWYmBJURrESIwGvsnjbGWXLE/GKfnvVgH6rq240OOzqp9nWHYeMnHqwm47E
-         NZhA==
-X-Forwarded-Encrypted: i=1; AHgh+Rp0k6oC9++UZM7fBWoZNqsteobLp7Wj5bkLzsdGn/lKr7Q58xw+I+1acORwrW8S/yybMKJfA+FghbY=@lists.infradead.org
-X-Gm-Message-State: AOJu0YypDCOU55I9T2pivjNj6Uh76jl/NbTY6ywoBCZKbafHh7Hjj/WI
-	YXBcsnTo7eXYOZ14DncyE3GkBc/SrwQ6gmFUxjaxgHCWhBn5Iug1yAzb3Bsx6Jw5bvf9+MwWpOu
-	LPr4D7Q==
-X-Received: from pfbds7.prod.google.com ([2002:a05:6a00:4ac7:b0:848:2a35:eb83])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a00:139e:b0:848:5ed6:9d27
- with SMTP id d2e1a72fcca58-84fafa6094dmr1722392b3a.36.1786468722299; Tue, 11
- Aug 2026 10:18:42 -0700 (PDT)
-Date: Tue, 11 Aug 2026 10:18:41 -0700
-In-Reply-To: <20260811060134.106973-4-jinyu.tang@linux.dev>
-Mime-Version: 1.0
-References: <20260811060134.106973-1-jinyu.tang@linux.dev> <20260811060134.106973-4-jinyu.tang@linux.dev>
-Message-ID: <antZcYiOR0WKi5Kv@google.com>
-Subject: Re: [PATCH 3/3] KVM: selftests: Enable pre_fault_memory_test for RISC-V
-From: Sean Christopherson <seanjc@google.com>
-To: Jinyu Tang <jinyu.tang@linux.dev>
-Cc: Anup Patel <anup@brainfault.org>, Anup Patel <apatel@ventanamicro.com>, 
-	Paolo Bonzini <pbonzini@redhat.com>, kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
-	linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, 
-	linux-kselftest@vger.kernel.org, Shuah Khan <shuah@kernel.org>, 
-	Atish Patra <atish.patra@linux.dev>, Paul Walmsley <pjw@kernel.org>, 
-	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
-	Alexandre Ghiti <alex@ghiti.fr>, Andrew Jones <andrew.jones@oss.qualcomm.com>, 
-	Conor Dooley <conor.dooley@microchip.com>, Yong-Xuan Wang <yongxuan.wang@sifive.com>, 
-	Nutty Liu <nutty.liu@hotmail.com>, Jinyu Tang <tjytimi@163.com>
+	Tue, 11 Aug 2026 23:03:38 +0000
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1786489409;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=8UvpAj+F5vT5g4mqj62S8++wLHXXvTKlCPt/B/F/wRA=;
+	b=uhqDK676wfkne/SJg/zrMRXEuKOCSYL5QtpyKgvrDo0pT2IcJKOScNB6Dmfx/xf3WPo8SH
+	6f18T8GkU74//HaIFjg30nYvgx2HUPxgBLLYF9sln+zlLRBujxWy4Toy7aYHmFxjMqCaQC
+	z0RcgOXAHRHzBL7Qxh87wLjLX496R2I=
+From: Jinyu Tang <jinyu.tang@linux.dev>
+To: Anup Patel <anup@brainfault.org>,
+	Anup Patel <apatel@ventanamicro.com>,
+	Paolo Bonzini <pbonzini@redhat.com>,
+	Sean Christopherson <seanjc@google.com>
+Cc: kvm@vger.kernel.org,
+	kvm-riscv@lists.infradead.org,
+	linux-riscv@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	linux-kselftest@vger.kernel.org,
+	Atish Patra <atish.patra@linux.dev>,
+	Paul Walmsley <pjw@kernel.org>,
+	Paul Walmsley <paul.walmsley@sifive.com>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>,
+	Alexandre Ghiti <alex@ghiti.fr>,
+	Andrew Jones <andrew.jones@oss.qualcomm.com>,
+	Conor Dooley <conor.dooley@microchip.com>,
+	Yong-Xuan Wang <yongxuan.wang@sifive.com>,
+	Nutty Liu <nutty.liu@hotmail.com>,
+	Jinyu Tang <tjytimi@163.com>,
+	Jinyu Tang <jinyu.tang@linux.dev>
+Subject: [PATCH v2 0/3] KVM: riscv: Add KVM_PRE_FAULT_MEMORY support
+Date: Wed, 12 Aug 2026 07:03:13 +0800
+Message-ID: <20260811230316.218770-1-jinyu.tang@linux.dev>
+MIME-Version: 1.0
+X-Migadu-Flow: FLOW_OUT
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260811_101845_122480_E2EBA519 
-X-CRM114-Status: GOOD (  14.07  )
+X-CRM114-CacheID: sfid-20260811_160337_245731_02F92E8D 
+X-CRM114-Status: UNSURE (   7.63  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -98,55 +84,43 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Tue, Aug 11, 2026, Jinyu Tang wrote:
-> RISC-V now supports KVM_PRE_FAULT_MEMORY, so include the generic
-> pre_fault_memory_test in the RISC-V KVM selftest build.
-> 
-> The test uses PAGE_SIZE from the architecture processor header. Define
-> the normal 4K RISC-V selftest page size so the generic test can build
-> for RISC-V.
-> 
-> RISC-V selects VM_MODE_DEFAULT at runtime. Initialize the supported
-> guest modes before creating the VM so the generic test can run on
-> RISC-V hosts where the default mode is discovered from KVM
-> capabilities.
-> 
-> Signed-off-by: Jinyu Tang <jinyu.tang@linux.dev>
-> ---
+This series adds RISC-V support for the generic KVM_PRE_FAULT_MEMORY
+vcpu ioctl and enables the existing generic KVM selftest for RISC-V.
 
-...
+KVM_PRE_FAULT_MEMORY lets userspace ask KVM to populate stage-2 mappings
+for a GPA range before running a vCPU that is expected to access that
+range.  x86 already supports the ioctl; RISC-V currently falls back to
+normal first-touch G-stage faults.
 
-> diff --git a/tools/testing/selftests/kvm/pre_fault_memory_test.c b/tools/testing/selftests/kvm/pre_fault_memory_test.c
-> index a0fcae3cb7a8..6eebf0524673 100644
-> --- a/tools/testing/selftests/kvm/pre_fault_memory_test.c
-> +++ b/tools/testing/selftests/kvm/pre_fault_memory_test.c
-> @@ -8,6 +8,7 @@
->  #include <linux/sizes.h>
->  
->  #include <test_util.h>
-> +#include <guest_modes.h>
->  #include <kvm_util.h>
->  #include <processor.h>
->  #include <pthread.h>
-> @@ -219,6 +220,8 @@ static void test_pre_fault_memory(unsigned long vm_type, bool private)
->  
->  int main(int argc, char *argv[])
->  {
-> +	guest_modes_append_default();
+Patch 1 implements the RISC-V arch hook using the existing G-stage map
+path.  Patch 2 fixes the RISC-V selftest page-table walker for Sv57,
+which can be selected as the default guest mode.  Patch 3 enables
+pre_fault_memory_test for RISC-V.
 
-Can we do this for all selftests in kvm_selftest_init()?  Or perhaps even better,
-handle it in kvm_selftest_arch_init() to avoid the gnarly #ifdefs?
+Tested with pre_fault_memory_test on a RISC-V KVM host.
 
-Unless there's a meaningful downside to configuring the supported and default
-modes, I don't see any reason to force tests to manually do this work.
+Changes in v2:
+- Drop the per-test guest_modes_append_default() call from
+  pre_fault_memory_test.c.  RISC-V already initializes supported and
+  default guest modes from kvm_selftest_arch_init(), which is called by
+  the common kvm_selftest_init() constructor, as suggested by Sean.
 
-> +
->  	TEST_REQUIRE(kvm_check_cap(KVM_CAP_PRE_FAULT_MEMORY));
->  
->  	test_pre_fault_memory(0, false);
-> -- 
-> 2.43.0
-> 
+Jinyu Tang (3):
+  KVM: riscv: Implement KVM_PRE_FAULT_MEMORY
+  KVM: selftests: Add RISC-V Sv57 page table indexing
+  KVM: selftests: Enable pre_fault_memory_test for RISC-V
+
+ arch/riscv/kvm/Kconfig                        |  1 +
+ arch/riscv/kvm/gstage.c                       |  3 ++
+ arch/riscv/kvm/mmu.c                          | 33 +++++++++++++++++++
+ arch/riscv/kvm/vm.c                           |  1 +
+ tools/testing/selftests/kvm/Makefile.kvm      |  1 +
+ .../selftests/kvm/include/riscv/processor.h   |  6 ++++
+ .../selftests/kvm/lib/riscv/processor.c       |  2 ++
+ 7 files changed, 47 insertions(+)
+
+-- 
+2.43.0
 
 -- 
 kvm-riscv mailing list
