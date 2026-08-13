@@ -4,36 +4,36 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6E327C5CFDB
-	for <kvm-riscv@archiver.kernel.org>; Thu, 13 Aug 2026 09:04:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D3CACC5B572
+	for <kvm-riscv@archiver.kernel.org>; Thu, 13 Aug 2026 09:39:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=YNWmJPiizH7LjunHTuJXfxex4uRCAuerUCsjcmJTD3w=; b=y0IZLRGrWKBKRz
-	hj6QFufHmQbO+ll2IWqv0+eMvVhATRs8c33cxqPF+jC9ZsE7dQPEJgi+JPzserlI7HNpkq+1qORyL
-	7PjXVcw6DAzjvSKIWalZ3rQx0bxXofywWnoGCrSvDVQWIuEXT5YcefCbkGrr+dnSiXdCx6CdkYR4b
-	SP3U5Du+Fyex723KWrl6n8r/hpupjFfCOycwffaH/ebjZ0v2WsfigePGFN+0sftwuEm3oXj+HUjZ3
-	i+L95WSfR3N+UxQDnl1tcvqbXgsz2eeth/as9Br++i/TS391d/AfNI+ZEIVgbs38b6sYzFIp2u9G8
-	sgGW2CFsoxQunyYvT7xw==;
+	List-Owner; bh=zj7E2a/TZfvUbeto5lT+cLN4bhRHn6HrVqVXqhgl2yw=; b=GDBvSo90XKXQli
+	GDzKbZ3WAWzSc0oPkHpKb29QzPDdGuK8p/P7MmOo68/SXLgAFnXNgHw6rGN46yalHB5JdbcB8PR8e
+	n0ccIltdzpnwABpMsaRSLUCsufBEM5CusFAdz+jv1jLTAiSwcaLvPZ5pG2JKLab2v2u949GwQ/X9N
+	yvt9kDyU3jP39+/34llrIF9TJZjcbQTsJHA0NJshgXL133YqxKWitbGYJ8S6fGtguspSlzL/x2Pit
+	yENBsvLGOYYHfkQtmLatA4N25ibDOJ1MfdiVBiUYZfmkk0saLXUGAPxzoU7kDMux29tZZD24c9p9d
+	OBfizjW4CSH6xOuRen9w==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wuRMd-00000000Ewf-428r;
-	Thu, 13 Aug 2026 09:04:39 +0000
-Received: from smtpbgsg1.qq.com ([54.254.200.92])
+	id 1wuRuD-00000000L4b-29sc;
+	Thu, 13 Aug 2026 09:39:21 +0000
+Received: from smtpbgeu2.qq.com ([18.194.254.142])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wuRMa-00000000EuN-2nYj;
-	Thu, 13 Aug 2026 09:04:39 +0000
-X-QQ-mid: zesmtpsz5t1786611793tcd0fa4e6
-X-QQ-Originating-IP: R9Ej3Mabn7TW3eBk3l+R5rLw0xXXsSI9t86r56myLeo=
+	id 1wuRu6-00000000L2h-16TF;
+	Thu, 13 Aug 2026 09:39:20 +0000
+X-QQ-mid: esmtpgz11t1786613877t0b4d6c21
+X-QQ-Originating-IP: 77OyHFdQzZ+D1uG3c0OYqeX2y51hWtm/Sdj7DOWDshM=
 Received: from rsl ( [183.242.33.186])
 	by bizesmtp.qq.com (ESMTP) with 
-	id ; Thu, 13 Aug 2026 17:03:10 +0800 (CST)
+	id ; Thu, 13 Aug 2026 17:37:54 +0800 (CST)
 X-QQ-SSF: 0000000000000000000000000000000
 X-QQ-GoodBg: 0
-X-BIZMAIL-ID: 4575981333641780540
+X-BIZMAIL-ID: 5345177686403612478
 EX-QQ-RecipientCnt: 15
 From: JinRui <jinrui@haiwei.tech>
 To: anup@brainfault.org,
@@ -50,36 +50,37 @@ Cc: atish.patra@linux.dev,
 	linux-riscv@lists.infradead.org,
 	linux-kselftest@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	jinrui <jinrui@haiwei.tech>
-Subject: [PATCH v10] KVM: selftests: riscv: Add lazy V extension enablement for guests
-Date: Thu, 13 Aug 2026 09:03:06 +0000
-Message-ID: <733FC2542EECADE1+20260813090306.3756434-1-jinrui@haiwei.tech>
+	jinrui@haiwei.tech
+Subject: [PATCH v11] KVM: selftests: riscv: Add lazy V extension enablement for guests
+Date: Thu, 13 Aug 2026 09:37:51 +0000
+Message-ID: <EF5308EB97ADC8DE+20260813093751.3817371-1-jinrui@haiwei.tech>
 X-Mailer: git-send-email 2.53.0
-In-Reply-To: <034CA48A67574B32+20260811085036.2862645-1-jinrui@haiwei.tech>
-References: <034CA48A67574B32+20260811085036.2862645-1-jinrui@haiwei.tech>
+In-Reply-To: <733FC2542EECADE1+20260813090306.3756434-1-jinrui@haiwei.tech>
+References: <733FC2542EECADE1+20260813090306.3756434-1-jinrui@haiwei.tech>
 MIME-Version: 1.0
 X-QQ-SENDSIZE: 520
-Feedback-ID: zesmtpsz:haiwei.tech:qybglogicsvrgz:qybglogicsvrgz6b-0
-X-QQ-XMAILINFO: M4K5T4TFHUAHl8dlpPbV/IMNFF08u9arvqRwpzOatw+OAVnK8J159hga
-	QaaVuhOt5sU7YGZrLquNUU4vyyNnGtn7Cj3IZBpiTonyefm7wWzc7WDNoT8LV0xSGjK+dPV
-	fVmaim8akKeBGcAkpuHmrstEXieyU+PK499N/wftf/KyWeDfg/x7WXDM9BdChuoBrLvWawt
-	N41kDy0Of7rJweAubW8FCXalmbXQy77Uqc068j6vSSLvvqYG5Em5Qcmf0pYDaC81Ln6kPvC
-	SzHyukawNEN8K/1hG55kpkFvvn290SFvjKKEnUZHDAdMbpIdnF5gd84OI6qxbKfKdqHjELu
-	RZ2S4IHO07KBoA7a1SLrncUVLjdfEVuaEh7tzSiwUW2m22HtjF29FoV8mLmpcfFx/EESV0M
-	cCvq2UCSjTwPVn++pjsz8y5ArvGjMEeYoAF244OaHau9DvyIfCmuHj8/3V2JuszKkQcPBPX
-	pPdzeZJOapusS3/Oy+WKGEV/zjbrTN7uTqUkjBuzpWcazow33wubTrfRM75zq3CWErghynV
-	/CcStN2jFrslN0kEselQiDGmqdxKuViFpJ66KIqPJU/dO2nSNFSHH+Y5KClSSfUu1jQFlpQ
-	19W5GHMETAYpztZc8uNrichmbF26hZucsMPoWt5UIz69TThDRRTs15o92CkGDW4rtJAh9JI
-	axpvtZOklJFauAtDCrImxo0ciWUXmp7VNgVaP+CJ6LAfVI1yz+WHajK6olgBYtGkmhme7Nl
-	itBUfglP45r+VRWd7P3RvdvoxJ5Y7DV0ZeqWKwmnKmBqsJy4azbFze+/W5bkrFCAUGjpWOY
-	wwi3aYjx9ZdzlcaKOos0WeqFnN9riiRzy881uyosxB7AgLvaNUE3gy+uHndNSrvgyDrTlLN
-	w3r39WfKk4iE8km25OxQnxLBV/WH5CbhfWHNCmSPI++HHxqCNlRFW6GbO3c5S+Uzq5PPN7F
-	ivi4asp3wzkfzvkB2lSG6y3D5MS9XBNYG8E3nzrRZiobf+g==
-X-QQ-XMRINFO: Nq+8W0+stu50tPAe92KXseR0ZZmBTk3gLg==
+Feedback-ID: esmtpgz:haiwei.tech:qybglogicsvrgz:qybglogicsvrgz6b-0
+X-QQ-XMAILINFO: NSEFX6u+4l+KVO4MvAmRh2nf1/nJiKZx8s39L5cXlGYceS0tcIsQFlP+
+	gvOdWLbT23uZEyHfRt0aRdDUkeljoWXUdRJuRCvJToN/qlIi4S/0wmFztdGzu3vFPJUjFHr
+	SbHKoiX6/vQBTCtBdeItgEZlFGQ7pphHFzhUOazY5d3KDvMFNgklhsfG7jCwsDLQvS9cMVh
+	xUkMsTAQtTxdBC+MspyEU+sX5vyG7SSyNaHNUvk0j0hRT0D+Z7g6QUDwRGrG1zYcnRSDyjy
+	3HbRItoFQ6pwk0brYdKH4C1LZNmhdi7MIJ0az+XowaHwSvRwi9Ekxsn3G92E7nxzpjpK7kf
+	KjL9dzQKG93b9xM8r6zMyWZnLlSRurNyMJECpYIGk0M5qbptTBexYb0rKkVlr+e/WHchKQm
+	t5O74oChXawckz0OLoGwQba27J+YyHqpO68OD7Toe9pTRM6a/9aB1T8JSevBNWmq2pGy6dU
+	lhGW0n72oKttOdpK/GC0Tb6PaXgErPKfEuBy9DTv+1/Acnb/jBuVmxR1+YqPn2tDCjfI+lQ
+	T3jGsenCnqgi9KYUDHRYxKgEl2pcN3Q1NJMPCjf6XzdYoJzqwCX6lGS0zZs7MxJBnOo4jb1
+	nyZWij3F6q+Dxh55p7QbDfUwNGZERfYBa4yUU1PQEJaMIbmqd60S1q4DfZ4GcZXXH5lZdUt
+	7r/r5AiQNYT80BdmgoaiA1q3dsOIq2RRYhklVzqopaNo8pHDIMGcWCdWNlCE/suI1P7Wqp1
+	ZnX8k4T11VF5ZKlQZ3rinb9kMkyD/v7+8ckeExPrXSATZ4jMvI6O56TYRyibrI0fCnSezei
+	7bXSLWNZMnUEp2ieu/QyAwLa02KfpgwiXyjiuhHAQZzC21c5E/7zrnoEKCHmSt/7Ev/OOE6
+	i+YXXK9HStHski75DmcX0oWEKNhNOrponzg6mw4DWlzizUS3gvAcxAidc3vmOFy8XKYDfvV
+	MPwYqDWA2X+p2wX72vQnCGJt07Ib37+j3HxIeylB/tahbRQg+qEinb7fDxCgATuZqQSSLMH
+	0ppNUPxspawNCYI4vB1oGNmf8zbPO0TQOb/rZ4AACk8wm9T69R
+X-QQ-XMRINFO: NI4Ajvh11aEjEMj13RCX7UuhPEoou2bs1g==
 X-QQ-RECHKSPAM: 0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260813_020437_068632_1DDDEC74 
-X-CRM114-Status: GOOD (  19.02  )
+X-CRM114-CacheID: sfid-20260813_023914_773817_8F4FA3B9 
+X-CRM114-Status: GOOD (  20.07  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -130,16 +131,14 @@ Tested on a riscv64 host with KVM enabled.
 
 Signed-off-by: jinrui <jinrui@haiwei.tech>
 ---
-Changes in v10:
-- Decode the faulting instruction (insn_is_vector()) and only lazily
-  enable V for actual vector instructions, so genuinely illegal
-  instructions still reach the unexpected-exception path (Anup).
-- Drop the per-vCPU v_epc[] guard and KVM_CAP_MAX_VCPU_ID sizing, as
-  they are redundant with v_available and the sstatus.VS check.
+Changes in v11:
+- Fall back to reading the faulting instruction from epc when stval does
+  not hold it, matching riscv_v_first_use_handler() (Sashiko review).
+- Reword a comment to avoid a checkpatch false positive.
 
  .../selftests/kvm/include/riscv/processor.h   | 13 +++
- .../selftests/kvm/lib/riscv/processor.c       | 79 ++++++++++++++++---
- 2 files changed, 79 insertions(+), 13 deletions(-)
+ .../selftests/kvm/lib/riscv/processor.c       | 90 ++++++++++++++++---
+ 2 files changed, 90 insertions(+), 13 deletions(-)
 
 diff --git a/tools/testing/selftests/kvm/include/riscv/processor.h b/tools/testing/selftests/kvm/include/riscv/processor.h
 index e3acf2ae9881..685baefebdb1 100644
@@ -166,7 +165,7 @@ index e3acf2ae9881..685baefebdb1 100644
  {
  	return KVM_REG_RISCV | type | subtype | idx | size;
 diff --git a/tools/testing/selftests/kvm/lib/riscv/processor.c b/tools/testing/selftests/kvm/lib/riscv/processor.c
-index ded5429f3448..ffd84212c9b0 100644
+index ded5429f3448..c4171aae221d 100644
 --- a/tools/testing/selftests/kvm/lib/riscv/processor.c
 +++ b/tools/testing/selftests/kvm/lib/riscv/processor.c
 @@ -17,6 +17,11 @@
@@ -195,7 +194,7 @@ index ded5429f3448..ffd84212c9b0 100644
  void vcpu_arch_set_entry_point(struct kvm_vcpu *vcpu, void *guest_code)
  {
  	vcpu_set_reg(vcpu, RISCV_CORE_REG(regs.pc), (unsigned long)guest_code);
-@@ -348,8 +346,22 @@ struct kvm_vcpu *vm_arch_vcpu_add(struct kvm_vm *vm, u32 vcpu_id)
+@@ -348,8 +346,26 @@ struct kvm_vcpu *vm_arch_vcpu_add(struct kvm_vm *vm, u32 vcpu_id)
  	/* Setup sscratch for guest_get_vcpuid() */
  	vcpu_set_reg(vcpu, RISCV_GENERAL_CSR_REG(sscratch), vcpu_id);
  
@@ -211,7 +210,11 @@ index ded5429f3448..ffd84212c9b0 100644
 +	vm_init_vector_tables(vm);
 +	vcpu_init_vector_tables(vcpu);
 +
-+	/* Record V availability for route_exception(), which runs in guest context. */
++	/*
++	 * Record V availability for route_exception(), which runs in guest
++	 * context. V is enabled uniformly for every vCPU, so this is a
++	 * VM-wide property.
++	 */
 +	{
 +		struct handlers *h = addr_gva2hva(vm, vm->handlers);
 +
@@ -220,7 +223,7 @@ index ded5429f3448..ffd84212c9b0 100644
  
  	return vcpu;
  }
-@@ -408,19 +420,43 @@ void assert_on_unhandled_exception(struct kvm_vcpu *vcpu)
+@@ -408,19 +424,43 @@ void assert_on_unhandled_exception(struct kvm_vcpu *vcpu)
  	struct ucall uc;
  
  	if (get_ucall(vcpu, &uc) == UCALL_UNHANDLED) {
@@ -268,28 +271,35 @@ index ded5429f3448..ffd84212c9b0 100644
  
  	ec = regs->cause & ~CAUSE_IRQ_FLAG;
  	if (ec >= NR_EXCEPTIONS)
-@@ -432,6 +468,20 @@ void route_exception(struct pt_regs *regs)
+@@ -432,6 +472,27 @@ void route_exception(struct pt_regs *regs)
  		ec = 0;
  	}
  
 +	/*
 +	 * Lazily enable V on the first vector instruction: if the faulting
-+	 * instruction (stval) decodes as vector while VS is off, set VS to
-+	 * Initial and re-execute it, like the kernel's
-+	 * riscv_v_first_use_handler(). Genuinely illegal instructions fall
-+	 * through to the unexpected-exception path.
++	 * instruction decodes as vector while VS is off, set VS to Initial
++	 * and re-execute it, like the kernel's riscv_v_first_use_handler().
++	 * Genuinely illegal instructions continue to the unexpected-exception
++	 * path.
 +	 */
 +	if (!(regs->cause & CAUSE_IRQ_FLAG) && ec == EXC_INST_ILLEGAL &&
-+	    handlers && handlers->v_available && !(regs->status & SR_VS) &&
-+	    insn_is_vector((u32)regs->badaddr)) {
-+		regs->status |= SR_VS_INITIAL;
-+		return;
++	    handlers && handlers->v_available && !(regs->status & SR_VS)) {
++		u32 insn = (u32)regs->badaddr;
++
++		/* stval is not guaranteed to hold the faulting instruction */
++		if (!insn)
++			insn = *(u32 *)regs->epc;
++
++		if (insn_is_vector(insn)) {
++			regs->status |= SR_VS_INITIAL;
++			return;
++		}
 +	}
 +
  	if (handlers && handlers->exception_handlers[vector][ec])
  		return handlers->exception_handlers[vector][ec](regs);
  
-@@ -448,6 +498,9 @@ void vcpu_init_vector_tables(struct kvm_vcpu *vcpu)
+@@ -448,6 +509,9 @@ void vcpu_init_vector_tables(struct kvm_vcpu *vcpu)
  
  void vm_init_vector_tables(struct kvm_vm *vm)
  {
