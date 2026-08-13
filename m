@@ -4,36 +4,36 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D3CACC5B572
-	for <kvm-riscv@archiver.kernel.org>; Thu, 13 Aug 2026 09:39:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 01F58C5CFDB
+	for <kvm-riscv@archiver.kernel.org>; Thu, 13 Aug 2026 09:57:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=zj7E2a/TZfvUbeto5lT+cLN4bhRHn6HrVqVXqhgl2yw=; b=GDBvSo90XKXQli
-	GDzKbZ3WAWzSc0oPkHpKb29QzPDdGuK8p/P7MmOo68/SXLgAFnXNgHw6rGN46yalHB5JdbcB8PR8e
-	n0ccIltdzpnwABpMsaRSLUCsufBEM5CusFAdz+jv1jLTAiSwcaLvPZ5pG2JKLab2v2u949GwQ/X9N
-	yvt9kDyU3jP39+/34llrIF9TJZjcbQTsJHA0NJshgXL133YqxKWitbGYJ8S6fGtguspSlzL/x2Pit
-	yENBsvLGOYYHfkQtmLatA4N25ibDOJ1MfdiVBiUYZfmkk0saLXUGAPxzoU7kDMux29tZZD24c9p9d
-	OBfizjW4CSH6xOuRen9w==;
+	List-Owner; bh=sBP4adX8ACsaYj44niq/czYjhTHepXvDw1O0pBMX1rg=; b=d5OnClg3UFhwz8
+	dYHlAHHGQt6eESA0CA1zezDJx8UHRHwvQVcjdlAvo3qgWBddEB9Zds6aaGru3yxWRwNBVaRuXb+3g
+	mvRp9BntWkkfXsdkgfe4cUstR0y8aOxlVUrEEvawq40/z5Rr5KQ8/9jrkfEI9FAnnIlrP+4YGsW/m
+	4yha5+khxCXOSO3wgiuRxqfTg4nS3yu3efLKvGJLY1omxZqr7//iI48CEGxjUIjN7WFwjGWjTP16j
+	aLveoWem1c5ijiUEgFl5ra5jMbztYT1EYaUsalHTvj1vW3QcUD0ibIHyYloFvF4WyJVF29gAxoLvQ
+	6mV67BCd6uatuLr60SUw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wuRuD-00000000L4b-29sc;
-	Thu, 13 Aug 2026 09:39:21 +0000
-Received: from smtpbgeu2.qq.com ([18.194.254.142])
+	id 1wuSBr-00000000On8-22sf;
+	Thu, 13 Aug 2026 09:57:35 +0000
+Received: from smtpbguseast2.qq.com ([54.204.34.130])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wuRu6-00000000L2h-16TF;
-	Thu, 13 Aug 2026 09:39:20 +0000
-X-QQ-mid: esmtpgz11t1786613877t0b4d6c21
-X-QQ-Originating-IP: 77OyHFdQzZ+D1uG3c0OYqeX2y51hWtm/Sdj7DOWDshM=
+	id 1wuSBl-00000000OXe-0n5K;
+	Thu, 13 Aug 2026 09:57:33 +0000
+X-QQ-mid: zesmtpgz7t1786614980t0a4c8aa1
+X-QQ-Originating-IP: YI18fi8haOXgFIrcSxG0og0EAUmOcw8WGDWMzEE4JSI=
 Received: from rsl ( [183.242.33.186])
 	by bizesmtp.qq.com (ESMTP) with 
-	id ; Thu, 13 Aug 2026 17:37:54 +0800 (CST)
+	id ; Thu, 13 Aug 2026 17:56:17 +0800 (CST)
 X-QQ-SSF: 0000000000000000000000000000000
 X-QQ-GoodBg: 0
-X-BIZMAIL-ID: 5345177686403612478
+X-BIZMAIL-ID: 10837892026488473328
 EX-QQ-RecipientCnt: 15
 From: JinRui <jinrui@haiwei.tech>
 To: anup@brainfault.org,
@@ -51,36 +51,37 @@ Cc: atish.patra@linux.dev,
 	linux-kselftest@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	jinrui@haiwei.tech
-Subject: [PATCH v11] KVM: selftests: riscv: Add lazy V extension enablement for guests
-Date: Thu, 13 Aug 2026 09:37:51 +0000
-Message-ID: <EF5308EB97ADC8DE+20260813093751.3817371-1-jinrui@haiwei.tech>
+Subject: [PATCH v12] KVM: selftests: riscv: Add lazy V extension enablement for guests
+Date: Thu, 13 Aug 2026 09:56:15 +0000
+Message-ID: <7C0512E558D1614D+20260813095615.3843757-1-jinrui@haiwei.tech>
 X-Mailer: git-send-email 2.53.0
-In-Reply-To: <733FC2542EECADE1+20260813090306.3756434-1-jinrui@haiwei.tech>
-References: <733FC2542EECADE1+20260813090306.3756434-1-jinrui@haiwei.tech>
+In-Reply-To: <EF5308EB97ADC8DE+20260813093751.3817371-1-jinrui@haiwei.tech>
+References: <EF5308EB97ADC8DE+20260813093751.3817371-1-jinrui@haiwei.tech>
 MIME-Version: 1.0
 X-QQ-SENDSIZE: 520
-Feedback-ID: esmtpgz:haiwei.tech:qybglogicsvrgz:qybglogicsvrgz6b-0
-X-QQ-XMAILINFO: NSEFX6u+4l+KVO4MvAmRh2nf1/nJiKZx8s39L5cXlGYceS0tcIsQFlP+
-	gvOdWLbT23uZEyHfRt0aRdDUkeljoWXUdRJuRCvJToN/qlIi4S/0wmFztdGzu3vFPJUjFHr
-	SbHKoiX6/vQBTCtBdeItgEZlFGQ7pphHFzhUOazY5d3KDvMFNgklhsfG7jCwsDLQvS9cMVh
-	xUkMsTAQtTxdBC+MspyEU+sX5vyG7SSyNaHNUvk0j0hRT0D+Z7g6QUDwRGrG1zYcnRSDyjy
-	3HbRItoFQ6pwk0brYdKH4C1LZNmhdi7MIJ0az+XowaHwSvRwi9Ekxsn3G92E7nxzpjpK7kf
-	KjL9dzQKG93b9xM8r6zMyWZnLlSRurNyMJECpYIGk0M5qbptTBexYb0rKkVlr+e/WHchKQm
-	t5O74oChXawckz0OLoGwQba27J+YyHqpO68OD7Toe9pTRM6a/9aB1T8JSevBNWmq2pGy6dU
-	lhGW0n72oKttOdpK/GC0Tb6PaXgErPKfEuBy9DTv+1/Acnb/jBuVmxR1+YqPn2tDCjfI+lQ
-	T3jGsenCnqgi9KYUDHRYxKgEl2pcN3Q1NJMPCjf6XzdYoJzqwCX6lGS0zZs7MxJBnOo4jb1
-	nyZWij3F6q+Dxh55p7QbDfUwNGZERfYBa4yUU1PQEJaMIbmqd60S1q4DfZ4GcZXXH5lZdUt
-	7r/r5AiQNYT80BdmgoaiA1q3dsOIq2RRYhklVzqopaNo8pHDIMGcWCdWNlCE/suI1P7Wqp1
-	ZnX8k4T11VF5ZKlQZ3rinb9kMkyD/v7+8ckeExPrXSATZ4jMvI6O56TYRyibrI0fCnSezei
-	7bXSLWNZMnUEp2ieu/QyAwLa02KfpgwiXyjiuhHAQZzC21c5E/7zrnoEKCHmSt/7Ev/OOE6
-	i+YXXK9HStHski75DmcX0oWEKNhNOrponzg6mw4DWlzizUS3gvAcxAidc3vmOFy8XKYDfvV
-	MPwYqDWA2X+p2wX72vQnCGJt07Ib37+j3HxIeylB/tahbRQg+qEinb7fDxCgATuZqQSSLMH
-	0ppNUPxspawNCYI4vB1oGNmf8zbPO0TQOb/rZ4AACk8wm9T69R
-X-QQ-XMRINFO: NI4Ajvh11aEjEMj13RCX7UuhPEoou2bs1g==
+Feedback-ID: zesmtpgz:haiwei.tech:qybglogicsvrgz:qybglogicsvrgz6b-0
+X-QQ-XMAILINFO: MiUxkXieYO8R8L0HWg0nLFaiiMKuv3+zyMXLXWzQsu01wqF3s3/E0eGi
+	Xly3oO9llSFooyGv+atUP86DwwOcn8vTbBULIn9oN4kjVRbbdqYSwN0VgNLZllzDByDn9/r
+	4YDh2kG9ToA1gIqWWUkPqEKJV1PegAp9EghorlUf1ldT2SphZZQlUQ26eOVeQf7sA8UO/N5
+	UJ9Qq0DvQ9MeeDZ8jB72nKNxbvREuP0PgdFU8gXLLJgzYUqJTJMiMvDpm7nOvjVy1NN+Ug1
+	aulwfyXyR2921FL+w2xPkEn/UhjkR+cALFi1gFJ9zRNL8cxk8pmSjl68A2i+V8SLI7sWtaY
+	5TTExmThqT5MAzIs/CSeqnu4tEXlaDOT5x4BMcQFA9ABzN2VhyjqcvRMaJIOAoU8/7+jY/u
+	I33QlByi+QB91FOn6NzYF+ThDTmOr/KZ6xv0aa5jerEvTu4cQT3mFemKVR+FQyP1BpQK5+X
+	sEALXQ1BKyBTIM+q+T5pgVmhT67q/SUIZmWoZXLhPhCYJLQ9chb3jzGikV8NGbuIivcPadP
+	FGYFDFual+4i+CI2V60fMteYqeJFmQ4OK+XO4/MH2rX1CVStFIo0hjcScZblzvBZsCcV7Vs
+	SlvQuiVoiu4E3LmEfmvShDDwXDOGckGRtDOMN/LEHXaTqmkuBcZ/EQKlg5HtIB//KP2iFTg
+	oRsRBEY3f8AkA7fYeaYhC1ujtA/vNX3tyrm/3zAzleUvMxJr4FZmZUK6eykfYcn0wKdXOGC
+	d3UxoM7hyUYn3bF5rWTMnvOY9pk8EfxeohOphVtkfus+jrRugRuHSdMRwR8x3aEGo/QQmPJ
+	bLEb7IGg8OiamzVhTFQkkCr3LWYj/29/C1sueAoXzrjJlrdQ0i3oG+3NtuSRtfpw3AtA//q
+	0UUgigp3z+Pt2MJ9bNEzJEDRtpBc+VaUMKU2KXyOCl0R16VYjCXqvBlsyEDKigRoopTr+WX
+	MvD0zWz5ElI9pO6waSp1l4pO4fv63srrH7gIE/q73cTT2GJwL4o07Wo5Q0fYkWy6c57AxUx
+	kHxKdexLOq2kWQQSwbEFy0ivyQyggH8wdyt5B5DMpmmb2ekmz5dMYuflrbkBjcCjtHIv3Na
+	A==
+X-QQ-XMRINFO: OWPUhxQsoeAVwkVaQIEGSKwwgKCxK/fD5g==
 X-QQ-RECHKSPAM: 0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260813_023914_773817_8F4FA3B9 
-X-CRM114-Status: GOOD (  20.07  )
+X-CRM114-CacheID: sfid-20260813_025729_774406_95E01ABC 
+X-CRM114-Status: GOOD (  22.15  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -131,14 +132,14 @@ Tested on a riscv64 host with KVM enabled.
 
 Signed-off-by: jinrui <jinrui@haiwei.tech>
 ---
-Changes in v11:
-- Fall back to reading the faulting instruction from epc when stval does
-  not hold it, matching riscv_v_first_use_handler() (Sashiko review).
-- Reword a comment to avoid a checkpatch false positive.
+Changes in v12:
+- Read a 16-bit halfword first and only load the full 32-bit instruction
+  when it is not compressed, avoiding an unaligned or cross-page access in
+  the stval fallback (Sashiko review).
 
- .../selftests/kvm/include/riscv/processor.h   | 13 +++
- .../selftests/kvm/lib/riscv/processor.c       | 90 ++++++++++++++++---
- 2 files changed, 90 insertions(+), 13 deletions(-)
+ .../selftests/kvm/include/riscv/processor.h   |  13 +++
+ .../selftests/kvm/lib/riscv/processor.c       | 100 +++++++++++++++---
+ 2 files changed, 100 insertions(+), 13 deletions(-)
 
 diff --git a/tools/testing/selftests/kvm/include/riscv/processor.h b/tools/testing/selftests/kvm/include/riscv/processor.h
 index e3acf2ae9881..685baefebdb1 100644
@@ -165,7 +166,7 @@ index e3acf2ae9881..685baefebdb1 100644
  {
  	return KVM_REG_RISCV | type | subtype | idx | size;
 diff --git a/tools/testing/selftests/kvm/lib/riscv/processor.c b/tools/testing/selftests/kvm/lib/riscv/processor.c
-index ded5429f3448..c4171aae221d 100644
+index ded5429f3448..e677137d5e44 100644
 --- a/tools/testing/selftests/kvm/lib/riscv/processor.c
 +++ b/tools/testing/selftests/kvm/lib/riscv/processor.c
 @@ -17,6 +17,11 @@
@@ -271,7 +272,7 @@ index ded5429f3448..c4171aae221d 100644
  
  	ec = regs->cause & ~CAUSE_IRQ_FLAG;
  	if (ec >= NR_EXCEPTIONS)
-@@ -432,6 +472,27 @@ void route_exception(struct pt_regs *regs)
+@@ -432,6 +472,37 @@ void route_exception(struct pt_regs *regs)
  		ec = 0;
  	}
  
@@ -286,9 +287,19 @@ index ded5429f3448..c4171aae221d 100644
 +	    handlers && handlers->v_available && !(regs->status & SR_VS)) {
 +		u32 insn = (u32)regs->badaddr;
 +
-+		/* stval is not guaranteed to hold the faulting instruction */
-+		if (!insn)
-+			insn = *(u32 *)regs->epc;
++		/*
++		 * stval is not guaranteed to hold the faulting instruction.
++		 * Vector instructions are always 32-bit, so read a 16-bit
++		 * halfword first and only load the full 32-bit instruction when
++		 * it is not compressed; this avoids an unaligned or cross-page
++		 * access on a compressed instruction.
++		 */
++		if (!insn) {
++			u16 half = *(u16 *)regs->epc;
++
++			if ((half & 0x3) == 0x3)
++				insn = *(u32 *)regs->epc;
++		}
 +
 +		if (insn_is_vector(insn)) {
 +			regs->status |= SR_VS_INITIAL;
@@ -299,7 +310,7 @@ index ded5429f3448..c4171aae221d 100644
  	if (handlers && handlers->exception_handlers[vector][ec])
  		return handlers->exception_handlers[vector][ec](regs);
  
-@@ -448,6 +509,9 @@ void vcpu_init_vector_tables(struct kvm_vcpu *vcpu)
+@@ -448,6 +519,9 @@ void vcpu_init_vector_tables(struct kvm_vcpu *vcpu)
  
  void vm_init_vector_tables(struct kvm_vm *vm)
  {
