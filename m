@@ -4,84 +4,154 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B3CBEC5CFDB
-	for <kvm-riscv@archiver.kernel.org>; Thu, 13 Aug 2026 10:30:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2D4F8C5CFC1
+	for <kvm-riscv@archiver.kernel.org>; Fri, 14 Aug 2026 03:52:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
-	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
-	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=NX2U6CNdQmHQOfw31WNkXBt6rMvSwDj5zfo6yTXGXFY=; b=MfE/WX0rSTOxTr
-	dJ9B/8Ayd2r2YwAbjkycUkt+mew/wLrlvOYbquyY5BSQ04GLYErYnJLZDB62TPp+BKvCqAQQJvcec
-	hp7rgCrDU1rMUFKPhvHui/pLlskXobZhgcCrm5nhJWzSwae3UNKA6cuWI2D2mLwY9oMvvfMOBPoxS
-	JGPh7FBuItvg6DxTqIh/7Aqw9ZGK6kW5ZZpyhXfds4LYpYxtczQDSbo56vVh9SHTIP6ENPVDsyOwK
-	a7mK1hmDIQArAPipkDI3FuNAaUpA4SCcxKVbS5+CAnMPZoymlq3HZpBI3D86N2/OxS+J4vfrNOy3M
-	jqrfPYzW9DyVe0faUV/w==;
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
+	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
+	List-Unsubscribe:List-Id:MIME-Version:In-Reply-To:From:References:Cc:To:
+	Subject:Date:Message-ID:Reply-To:Content-ID:Content-Description:Resent-Date:
+	Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Owner;
+	bh=h9hYSUm6cuTibUYj0H5LxCjHryK8WhLJ0l889+5BrYA=; b=ZZAyBQ+dIget/Deo31PGh+Uom5
+	XdMno9k9r2VBYrwSjM+9j4wRlCmfF2J/wWaSvs1v4tKwG/IJgXrBrRogGgwPDUbwZ0gyObfFu1kTg
+	ciYs0PY0jpx56XIuaQv9DUJ1/hirXE0GyoGPi7VQs3j6VwW29HOQGODLyCJgXbVvkqFxkjRpDizQz
+	+3MjICNbW/6j4STLMpCilCTF55aLxK+Kj4AYpSDU5wkm7CvN7DOLCu1aRbEDd6TVsTNvqYUTINaYl
+	2taPl88J8FMm/nqhWOnRw3FO8WkjmxxPve1X5dEgQ4lm/w5xUqUlmJfvu4gNhhye55sGKW8Vf5EwH
+	lcrXmSmA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wuSi7-00000000UMp-13KS;
-	Thu, 13 Aug 2026 10:30:55 +0000
-Received: from smtpbgeu2.qq.com ([18.194.254.142])
+	id 1wuixv-00000001uyy-168a;
+	Fri, 14 Aug 2026 03:52:19 +0000
+Received: from mail-japaneastazolkn19012052.outbound.protection.outlook.com ([52.103.43.52] helo=TYPPR03CU001.outbound.protection.outlook.com)
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wuSi0-00000000UJy-2XXR;
-	Thu, 13 Aug 2026 10:30:53 +0000
-X-QQ-mid: esmtpgz15t1786616975tae215c51
-X-QQ-Originating-IP: OZchcY0gz9zI06/R1UDHEGCx1nSeqfz4hgfoniqGDtE=
-Received: from rsl ( [183.242.33.186])
-	by bizesmtp.qq.com (ESMTP) with 
-	id ; Thu, 13 Aug 2026 18:29:32 +0800 (CST)
-X-QQ-SSF: 0000000000000000000000000000000
-X-QQ-GoodBg: 0
-X-BIZMAIL-ID: 11012683482226331164
-EX-QQ-RecipientCnt: 15
-From: JinRui <jinrui@haiwei.tech>
-To: anup@brainfault.org,
-	pbonzini@redhat.com,
-	shuah@kernel.org,
-	paul.walmsley@sifive.com,
-	palmer@dabbelt.com,
-	aou@eecs.berkeley.edu
-Cc: atish.patra@linux.dev,
-	alex@ghiti.fr,
-	sashiko-bot@kernel.org,
-	kvm@vger.kernel.org,
-	kvm-riscv@lists.infradead.org,
-	linux-riscv@lists.infradead.org,
-	linux-kselftest@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	jinrui@haiwei.tech
-Subject: [PATCH v13] KVM: selftests: riscv: Add lazy V extension enablement for guests
-Date: Thu, 13 Aug 2026 10:29:30 +0000
-Message-ID: <20EA6EE00884FB87+20260813102930.3892251-1-jinrui@haiwei.tech>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <7C0512E558D1614D+20260813095615.3843757-1-jinrui@haiwei.tech>
-References: <7C0512E558D1614D+20260813095615.3843757-1-jinrui@haiwei.tech>
+	id 1wuixs-00000001uyZ-3GpP;
+	Fri, 14 Aug 2026 03:52:17 +0000
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=YErnnAIGEOrLITwRCjR+TA7Llzzk7S3cL8MDmIwN4fdsQ/cxhZGEndHhiONEXt+MWRJ1IIMn2sAtJvfXGjchYyDzHts6QU+sabUlQzUiA4rDMRa69ZNnah77/AtFZfDJuQulP9tvBnqUjxMoxZ49l7Moh0/v9fdYC4D9+7rWp8H5CpafIG1oyhtUvvsT4vqaqP8yM7S8ZwAVcQiihRKJNfDrrpHAGkvYLp1NCYXmyjaKd8FBCWI5gXp0goN/IWMDewPSdH9QygbJ5iRJzBU2oSjF9UqsmsugGApu9B9TtLOATBdD8ti4PhSY4Qk1+YyyEMzFPSF1Hpx7l4KczWclrg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=EVRUAjlVvNXZlUtYm7hGdxihJL4RdMCTJzPawVls514=;
+ b=SL3DqNU9QFi4w1ugIJ9HIs8ZuEgZ7jsufOfKd++o37IHYHkzvN2C0a9/96DIHvw1+yNAU8Ip16CKNzx1Jg76kz7XNkSaGVSW2qo4eqieYHLBdhWe23t7oGAKvqZi2raypfyqLNOGsPijeeugZuSppBQ6+gJtejU9wsRfSj9teyeX8VZ9IOapK26xkLNuT7KXq8Ke4JfhNVjE37KKe7Y+kCIafs3e8talgR3wS3TfGt/z9m1/CE144q1QOpfRcqvHZnSFWIIiTGblwakMpnNSeiaFjr2lP2EetOezIm2l3Fq9NaQQCMNP+KnAznjF7oABOI0+C5O3sBAjJH0SHPnAVA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
+ dkim=none; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=hotmail.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=EVRUAjlVvNXZlUtYm7hGdxihJL4RdMCTJzPawVls514=;
+ b=F/wZwa/mmunRNhV0yqQqnPjDIxCeVKXqQ7GE1VXStdRgfuGhFeJaxk0O1L6ES9hjAlNZBz4txUlNwPY11FyaTW4YZ+zS5zSWU7RVgMENey8xpl5nSiGqIEgnZEZsEEF9oQEfefu12LlVaik1cgQbnSvXNJXdPBdnss11Tzfc3KXSKe8QTBOvqelPIzNC4mXQihesOqDQ19gSq4cVblNjunvqzRJ2tIwp8yDPwLiw30ozQgP5D/MHo5k7utZdd7AGXXaUY9EPoyJxEJCbYT2i+NdiolEEq/k1TupAAI+2EbHZOTjAYiGeddJq/lo/x4re2L1QOzJHOMNtiur+yr8v5A==
+Received: from SE3PR04MB8922.apcprd04.prod.outlook.com (2603:1096:101:2e9::7)
+ by KL1PR04MB7466.apcprd04.prod.outlook.com (2603:1096:820:129::5) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.339.3; Fri, 14 Aug
+ 2026 03:51:46 +0000
+Received: from SE3PR04MB8922.apcprd04.prod.outlook.com
+ ([fe80::3450:f139:5238:8f58]) by SE3PR04MB8922.apcprd04.prod.outlook.com
+ ([fe80::3450:f139:5238:8f58%5]) with mapi id 15.21.0339.004; Fri, 14 Aug 2026
+ 03:51:46 +0000
+Message-ID: <SE3PR04MB89228527CBE8BC6CAE525B07F3DA2@SE3PR04MB8922.apcprd04.prod.outlook.com>
+Date: Fri, 14 Aug 2026 11:51:37 +0800
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 3/3] KVM: selftests: Enable pre_fault_memory_test for
+ RISC-V
+To: Jinyu Tang <jinyu.tang@linux.dev>, Anup Patel <anup@brainfault.org>,
+ Anup Patel <apatel@ventanamicro.com>, Paolo Bonzini <pbonzini@redhat.com>,
+ Sean Christopherson <seanjc@google.com>
+Cc: kvm@vger.kernel.org, kvm-riscv@lists.infradead.org,
+ linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linux-kselftest@vger.kernel.org, Atish Patra <atish.patra@linux.dev>,
+ Paul Walmsley <pjw@kernel.org>, Paul Walmsley <paul.walmsley@sifive.com>,
+ Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
+ Alexandre Ghiti <alex@ghiti.fr>, Andrew Jones
+ <andrew.jones@oss.qualcomm.com>, Conor Dooley <conor.dooley@microchip.com>,
+ Yong-Xuan Wang <yongxuan.wang@sifive.com>, Jinyu Tang <tjytimi@163.com>
+References: <20260811230316.218770-1-jinyu.tang@linux.dev>
+ <20260811230316.218770-4-jinyu.tang@linux.dev>
+Content-Language: en-US
+From: "Nutty.Liu" <nutty.liu@hotmail.com>
+In-Reply-To: <20260811230316.218770-4-jinyu.tang@linux.dev>
+X-ClientProxiedBy: TP0P295CA0034.TWNP295.PROD.OUTLOOK.COM
+ (2603:1096:910:4::19) To SE3PR04MB8922.apcprd04.prod.outlook.com
+ (2603:1096:101:2e9::7)
+X-Microsoft-Original-Message-ID: <5cfb857d-3ce0-4a2f-a9b1-83e25dcf3d75@hotmail.com>
 MIME-Version: 1.0
-X-QQ-SENDSIZE: 520
-Feedback-ID: esmtpgz:haiwei.tech:qybglogicsvrgz:qybglogicsvrgz6b-0
-X-QQ-XMAILINFO: NkbnXpgg1H1R7JDsws/6SRO4bUgh7Ma1apX3OcdxzCmCrcpQAF5gDBVd
-	u8/v2w5oLC4ZWGn59bbfjFnDPYoUlXQ3br3Lh2DHg0ggwhGkde9cndQPlg+0MyGM/dwk8sK
-	GREFcqeQ9n5xdfZGxyTxRaks+Vbm/2QHqRRizeSshOCukVtas7rKuVZYr4KWR6ImBWhVltq
-	t0S8caJNdjKE2nq0PNOyKwQa/op5Z4kGoOCB07ZNW9rMO5mHtH4+QeScYPtL29oDrNc/Cqi
-	5JoQQIUHkDBkPVGDJ0QWEfvDi/jqxSTFLjvFn+G2ff7kOGVV+hjE3gPE8wWB791asRJgNYa
-	uC4kIGTC/88plwKHwqv2SGwZMTw7TcRaOf7/mdCe6FBCu9IJxi+oQjezQ5DruRfvxC+TIqP
-	VkX8I2MjSdQl/eM2I4jDT7mydhQVnSnkWOlotoo19yebAXQAqSaU6moCq1jXDgbJGbYWok3
-	3FGdw3HpICX2L3RRuwkMASy6y0rT0p0KCnr/w9pFLe+YAD878Ecx6pawEYYoXZ/R5vzC3Mp
-	qZqKUyEun/Bkewa5M/WZepuwCAnj1X6nusHAONpzUJ3PqZIx9epXGKfgQceqXr6pmvF+x4t
-	Jt9er7MHBOtuZCgi45/BuQpqwnYx5mHz1wAgHY3d67az8zehdopaYkee7mLnqTIPhGYfPmk
-	Fzg/zwfLRnglHbq+3RkPJNQU1RERQml2nqtSjusmdJ/mgn7W6ssCxE5YsSSZHSpPoiCwtw0
-	3KQoWUwHnfjDEUN0gPVJbU1ecU+O9LQSCLPT8WKjH7r7dsUDs3uEl0zFB5ySG1iq2b5y1Il
-	ffJV+b1VO5U2D4NjHkODZpYtBg3F5hOZj5Ly627sNNE5Rr//WtzKujyjVJ5mL0/rxEYbGOr
-	qacu90LN8ZJrKlG/2hAQzKbTfOs7uyYb3qhp5gh+VJjTUWZYaPoJGCBvgV9tl5N4Qv/YmbZ
-	zMDlkz0OipQRSv++9uewXL4XCxuFchkemuq4lZ3sgdTW7lPujLJiMxa21i2jRXeIL8uxHO6
-	09d4ElBlMCvbI4/VqzPkDhZtB6I1JPwK9gk2eeRx6NiNIuVGcFekZLHCxgOmOyrzt6YKLHg
-	lxtXQeE/An+yKHD2izz4+Mrqnp5kDOfwlmOGuH57x8M
-X-QQ-XMRINFO: NS+P29fieYNwqS3WCnRCOn9D1NpZuCnCRA==
-X-QQ-RECHKSPAM: 0
+X-MS-Exchange-MessageSentRepresentingType: 1
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SE3PR04MB8922:EE_|KL1PR04MB7466:EE_
+X-MS-Office365-Filtering-Correlation-Id: 41c93703-eeb4-48da-112c-08def9b75c66
+X-Microsoft-Antispam: BCL:0;ARA:14566002|19110799012|25010399006|16041099003|19101099003|23021999003|5072599009|4140399003|8060799015|15080799012|6090799003|24121999003|22091999003|53005399003|40105399003|41105399003|26121999007|2607281247196008|3412199025|440099028;
+X-Microsoft-Antispam-Message-Info: =?utf-8?B?Qnl0WE1rOFVheXg5U0l1ZXJ2eWM1eDcyZCtNSlBoTzdkMzZhUncyakxGQ05I?=
+ =?utf-8?B?cDcwcWlsc1BjMTdVNlI1azZIRzJTZW95RkNxSjZ5aW40MmJ6a1YxRk9ob0Zh?=
+ =?utf-8?B?eVFzNlk1eWlXVzRnVmFDMCtPMlgxL2t2Sk5YWWhlZFYySUtpQm9ubDBac2Vt?=
+ =?utf-8?B?ZWFXbEZ0aEtwRXd0L1hXb2srSmxYdFVGaVFyMmtpVnppdStPWUw3cnNLbnQ5?=
+ =?utf-8?B?VmNJZ1k1R283azZoZ3NNcFVZZm9HN0Y3blVyZE11bFlPYWRyWGZ0cGV6QjdZ?=
+ =?utf-8?B?UThWZGdoR2JnY3o5SW1EcFY2MHNZc2xPTWxibUFxQ3NhV1hEb2FWbTEyZlZn?=
+ =?utf-8?B?R1l1Y0NIOHlyZWR4Z3lBM1Rvd2VuOGFiRnR5c1VNdG51RWdINHZXZU1FMVcy?=
+ =?utf-8?B?WlhRWUFQTCt5ZnRCUTFTS2ovYkRQY3dpbUdHNGdnTkhCb0VvZFl2YzBHNmt2?=
+ =?utf-8?B?OEpsTDc0c3NvQkxSZ2RvQVNjRHlSU0IyWWhkb0lhWmRxT2doTFQyME44VEhr?=
+ =?utf-8?B?WE4vQXBodG02MFNyNm9PamQ1OVZmWkxoblZmMXo4WjluN3Iyd0hoR2kyWEQ1?=
+ =?utf-8?B?V0hWempheS9wN1I1dU1ZV0FYdENEMjg3NDhWbzJ4V2FwNGNTUHlvQXN0YmUr?=
+ =?utf-8?B?cC9DV1RkcTFVQ240eWk2dFV6b0NRYnlWYUw5clJCWnpOTUNTN1ZlSUovQi9P?=
+ =?utf-8?B?UVFuOXJKNXRORlBNN1ZIZGdxdVFmZEtkdzBoa2tqZ01aSEw5MkNkb1BaNGVL?=
+ =?utf-8?B?VXEwb0ZnTWJWKzMzWXl2OUVSaHh1ZjF1UHlHNXFnRHB5alhLdFpkd1lTbzVW?=
+ =?utf-8?B?S05INEY1empVZjlYUm9jeVR3RmNVTFBGMEhPRXpnOXgrRVpmYzRXbnRnUzVh?=
+ =?utf-8?B?RTl3T3o5eVNvRWNTYWtQTFR0UXFkbFhCUEVYNWx4MVUwTkZkSzF0bC8yTm01?=
+ =?utf-8?B?TjV4NmoyU1BoVlkya3JIU0dFNWR0K3hXS2pUazZoVXR1ZUR0d25lbHBTeUV6?=
+ =?utf-8?B?MFV2Q25jNFprWlQ3Q1FkSUV0Q1RDTUJVYWtGSUJqSVJHRGlBaG01aXJJdHd5?=
+ =?utf-8?B?YlBWcDA1ZXp1OUR1ZkNyelU4UjFvSXo3bkVzY05jY2F5cTNSK1JhT2lERzJZ?=
+ =?utf-8?B?Q0VSaFNJYzZEMjlJSElTdDNQMms2R1U4ZHdpS056Zzlvb245UW5WMllvZVpp?=
+ =?utf-8?B?RFhSUXhTSnZiSFYvWjV0R0luWmhLYnI2NzkxeTRHbXRYZWkyOXVpMSt1UWdN?=
+ =?utf-8?B?SE9jeWt3eXBNQW1VVGhESXAyVGhCN0NIYWF5ZlRMTGdzSFFpeHJma1NuM3dD?=
+ =?utf-8?B?bEVHUVhQNlRwZVc5Nnk1NFh1Y2VpY2lZeWUzMTBNUlBwenhmRTBaSklpb0FY?=
+ =?utf-8?B?d01XNmU1SEwrWDEydXlwT1p1bEtIdkRHaEQxQUZtdVBsWDc0RVFITkl3VXBu?=
+ =?utf-8?B?SlFGd3plL1VnQ0w5UW9EeFE2aTdZWHlwWGZqUitiNmZMbXNtYTZyK01ZSHNt?=
+ =?utf-8?Q?HzUacnnhz9Gt30MdFCB1YzLE4vI?=
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?TTUwbTNVRXpvMGFvU3hmdFNFTzNrWmw0eU1zWHIvdUJudCt6cUFNcURVaCs3?=
+ =?utf-8?B?MFJHRnpxZStTamVnYmhaKzg1d2ZSNEtFUHh1d2JvZ1c3SHA3SFM1dk5HaE55?=
+ =?utf-8?B?YnlEMjZqbzgwbFdDdGo0NXgrS2hqZXoxSUJDY0ZyYWoyUUNWdEZlTG9uNVJM?=
+ =?utf-8?B?aXNyQnZydGRJVHdNTTNWSWVSU3BOS2Q1ci9GVUJEM1gyRjhuUlNZUm40aXh3?=
+ =?utf-8?B?YVBCSmZYV1VsQ05aLzJ2YVpJQXdmZXEvUU5wRDVsM3pQdHVURVRNZ0RmWDAw?=
+ =?utf-8?B?MFZCTHVXNFhHa2VuUCtXdGNjMldNUTFEVWNaMUNBbGdORkttUStsY2JYY0Ix?=
+ =?utf-8?B?TG8rbE9GLzRMK2ZZQTZBL0g5WExqZ1hQQWhxQTk3SjNvYURaMllCMVFjaHUx?=
+ =?utf-8?B?Rml5NzBKVnIxalJRYXpMY3hLY3VkK0MvRDYwdHk5WG05YjRlZ0NQbExyb3F3?=
+ =?utf-8?B?QXFaM3ZDNk1qWEpXaVRKUDdHQ2VkYVJKa1RUSVZoenFrbUNzTXY4SFZTbzRH?=
+ =?utf-8?B?MWUwMGM1dCsrOURSbXNhZ1FrVmZGVWRsdjgydlJTU1Jod3l5d3Q5eXM4NjBN?=
+ =?utf-8?B?Tk9aRDhLM2pZVkI0ZFlyMHMzeGtKNUpzaEpTUFdLUWJCU2tMU281ZHR1ZFNz?=
+ =?utf-8?B?TjhkSUtqa3NVYzJIMnBRcm4vbnBCQzBNQkVXRVk4ZklpTWF5aituN3ozWFdo?=
+ =?utf-8?B?UFl4YmFML1BnTHdWYmwxajF1a01NakxsTlBINzJXQ1gvT1A0Tjhab296RGo5?=
+ =?utf-8?B?dzA4QXVGaDVYWURvTHduQ2JWV1lBSFNyMlRrd2xUbnAzUHovRnhPdlI5d3I4?=
+ =?utf-8?B?ODN3RVdFdjFHNytYVG5va1NYdkVhc2tCM3RGQmFsTHp0SXFpNThGdXc5TEdu?=
+ =?utf-8?B?Zldmbk1qTU90ZG9LZ0RVd05LbkJaUTFvWHVCdGVrWTh4Nmd4VFBJQTRHOU10?=
+ =?utf-8?B?amhWR0JpWU8zb1pTQ1ZXa29ESVdyS1VwM2NYZCtxQlBmNXJBd0N4Z2czRDlF?=
+ =?utf-8?B?bXVDSFBUQXpveDBIQ3BBU05vM3RGK3VpVTUzZlhKOEZmTitUZEU4dEgwYksz?=
+ =?utf-8?B?amhZWFMycDZXTUlyWWtSTEFram1MdExhYlVwTmNzRlpxQndTMEJJQVQ2Wkk2?=
+ =?utf-8?B?YXh2T2grRFlnUGUrdUdFMHlySm5pcTNNcm5kSXVCYThQdS9nVkt5R0puOUgv?=
+ =?utf-8?B?UW10UnFib3pMSUczakUzNnFsL3FuQkNia214NFkyVFJPcmZmS2pYU1pPMjhT?=
+ =?utf-8?B?bUlCbXRLc09XVzdCbXRyRnowdC96NGpiWERRZHNtS3Y0cGx3RU1zcEpRTDF5?=
+ =?utf-8?B?czRDOCtYREpMWU9ZdnJwOTZ3NFYxOWl3b0c1R2Jsa28wQzJESUtRYnZRckUz?=
+ =?utf-8?B?aG0rTFRQKytxM0MvRkF1RUVJVVF3SmJVLzgxQ3RqK3NDSm1UTjlINExnaHhH?=
+ =?utf-8?B?VnVoM2VsTXk0bGlzbTRRRFRFRGYrZVFMRlBERjhkMGpobDlBZklYY0dFUFdN?=
+ =?utf-8?B?QzFScmlTRWZFMWxwUnRJNXFMODNwc080WFJSNDFtNnZmeUh6alRFSHJTeFh5?=
+ =?utf-8?B?NHoxcVlYdUhDS2N3ZFB6cFBiVkZXVlprd1Qvd2F0UzBMV2c3dkFuL2dxcWds?=
+ =?utf-8?B?NWdLRWUveXNhVVZoYzdzZVUvWWtSczE3MFN4WWtGQlU5UTQ0VklrYTVlaWFN?=
+ =?utf-8?B?aXVSaklyS0FONFI0U2p5d2xNdi9hbTNwREJic3lseE4zMHNKSE5haEJQQ05C?=
+ =?utf-8?B?VXduRWlTSWo2NjZBMGFGcDZ3YmhHYUtQRTFrUWJVSEZzbEJxdW83dDU4RHBO?=
+ =?utf-8?B?VFdUZUkvdHVRWkYvMHJBZEVXSkNVd282bXlvT1YzZEtuQXAzTjB4WDhOOGhn?=
+ =?utf-8?Q?7wnlrvBWqSDzV?=
+X-OriginatorOrg: sct-15-20-9412-4-msonline-outlook-c3e7a.templateTenant
+X-MS-Exchange-CrossTenant-Network-Message-Id: 41c93703-eeb4-48da-112c-08def9b75c66
+X-MS-Exchange-CrossTenant-AuthSource: SE3PR04MB8922.apcprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 14 Aug 2026 03:51:46.4161
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
+X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: KL1PR04MB7466
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260813_033049_124068_1091DBCF 
-X-CRM114-Status: GOOD (  20.73  )
+X-CRM114-CacheID: sfid-20260813_205216_844342_0AB89882 
+X-CRM114-Status: GOOD (  12.64  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -93,234 +163,62 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-From: jinrui <jinrui@haiwei.tech>
 
-When the cross-compiler defaults to an -march that includes the V
-(vector) extension, -O2 auto-vectorization generates vector instructions
-(e.g. vsetvli, vadd.vv) in guest code. Executing such an instruction with
-sstatus.VS Off raises EXC_INST_ILLEGAL (scause=2); KVM's hedeleg forwards
-it to the guest, but the bare-metal selftest cannot handle it, so all
-guest tests fail. A real kernel handles this via
-riscv_v_first_use_handler(), which enables V and re-executes the
-instruction.
+On 8/12/2026 7:03 AM, Jinyu Tang wrote:
+> RISC-V now supports KVM_PRE_FAULT_MEMORY, so include the generic
+> pre_fault_memory_test in the RISC-V KVM selftest build.
+>
+> The test uses PAGE_SIZE from the architecture processor header. Define
+> the normal 4K RISC-V selftest page size so the generic test can build
+> for RISC-V.
+>
+> Signed-off-by: Jinyu Tang <jinyu.tang@linux.dev>
+Reviewed-by: Nutty Liu <nutty.liu@hotmail.com>
 
-Fix it in processor.c:
-
-1. Delete the now-unused guest_unexp_trap() handler, replaced by the full
-   exception vector table.
-
-2. In vm_arch_vcpu_add(), advertise V to KVM via __vcpu_set_reg(V, 1)
-   (best-effort, errors ignored on hardware without V) and install the
-   full exception vector table instead of a raw stvec handler.
-
-3. In route_exception(), decode the faulting instruction (stval) with
-   insn_is_vector() and, when it is a vector instruction while sstatus.VS
-   is Off, set VS to Initial and sret to re-execute it, before any
-   test-registered handler. Genuinely illegal instructions still reach
-   the unexpected-exception path.
-
-4. Make vm_init_vector_tables() idempotent by checking vm->handlers
-   before allocating, so tests that call it directly (ebreak_test,
-   arch_timer, sbi_pmu_test) do not leak memory.
-
-Tested on a riscv64 host with KVM enabled.
-
-Signed-off-by: jinrui <jinrui@haiwei.tech>
----
-Changes in v13:
-- Assemble the 32-bit instruction from two 16-bit halfword reads instead
-  of a single 32-bit load, since with IALIGN=16 a 32-bit instruction can
-  start on a 2-byte boundary (Sashiko review).
-
- .../selftests/kvm/include/riscv/processor.h   | 13 +++
- .../selftests/kvm/lib/riscv/processor.c       | 99 ++++++++++++++++---
- 2 files changed, 99 insertions(+), 13 deletions(-)
-
-diff --git a/tools/testing/selftests/kvm/include/riscv/processor.h b/tools/testing/selftests/kvm/include/riscv/processor.h
-index e3acf2ae9881..685baefebdb1 100644
---- a/tools/testing/selftests/kvm/include/riscv/processor.h
-+++ b/tools/testing/selftests/kvm/include/riscv/processor.h
-@@ -25,6 +25,19 @@
- #define GET_RM(insn)            (((insn) & INSN_MASK_FUNCT3) >> INSN_SHIFT_FUNCT3)
- #define GET_CSR_NUM(insn)       (((insn) & INSN_CSR_MASK) >> INSN_CSR_SHIFT)
- 
-+/* Vector (V) instruction decoding, matching arch/riscv/include/asm/insn.h */
-+#define RV_INSN_OPCODE_MASK	0x7f
-+#define RVG_OPCODE_SYSTEM	0x73
-+#define RVV_OPCODE_VECTOR	0x57
-+#define RVV_OPCODE_VL		0x07
-+#define RVV_OPCODE_VS		0x27
-+#define RVV_VL_VS_WIDTH_8	0
-+#define RVV_VL_VS_WIDTH_16	5
-+#define RVV_VL_VS_WIDTH_32	6
-+#define RVV_VL_VS_WIDTH_64	7
-+#define RVV_EXTRACT_VL_VS_WIDTH(insn)	(((insn) >> 12) & 0x7)
-+#define RVG_EXTRACT_SYSTEM_CSR(insn)	(((insn) >> 20) & 0xfff)
-+
- static inline u64 __kvm_reg_id(u64 type, u64 subtype, u64 idx, u64 size)
- {
- 	return KVM_REG_RISCV | type | subtype | idx | size;
-diff --git a/tools/testing/selftests/kvm/lib/riscv/processor.c b/tools/testing/selftests/kvm/lib/riscv/processor.c
-index ded5429f3448..d00ac997291c 100644
---- a/tools/testing/selftests/kvm/lib/riscv/processor.c
-+++ b/tools/testing/selftests/kvm/lib/riscv/processor.c
-@@ -17,6 +17,11 @@
- 
- static gva_t exception_handlers;
- 
-+struct handlers {
-+	exception_handler_fn exception_handlers[NR_VECTORS][NR_EXCEPTIONS];
-+	bool v_available;
-+};
-+
- bool __vcpu_has_ext(struct kvm_vcpu *vcpu, u64 ext)
- {
- 	unsigned long value = 0;
-@@ -298,13 +303,6 @@ void vcpu_arch_dump(FILE *stream, struct kvm_vcpu *vcpu, u8 indent)
- 		core.regs.t3, core.regs.t4, core.regs.t5, core.regs.t6);
- }
- 
--static void __aligned(16) guest_unexp_trap(void)
--{
--	sbi_ecall(KVM_RISCV_SELFTESTS_SBI_EXT,
--		  KVM_RISCV_SELFTESTS_SBI_UNEXP,
--		  0, 0, 0, 0, 0, 0);
--}
--
- void vcpu_arch_set_entry_point(struct kvm_vcpu *vcpu, void *guest_code)
- {
- 	vcpu_set_reg(vcpu, RISCV_CORE_REG(regs.pc), (unsigned long)guest_code);
-@@ -348,8 +346,26 @@ struct kvm_vcpu *vm_arch_vcpu_add(struct kvm_vm *vm, u32 vcpu_id)
- 	/* Setup sscratch for guest_get_vcpuid() */
- 	vcpu_set_reg(vcpu, RISCV_GENERAL_CSR_REG(sscratch), vcpu_id);
- 
--	/* Setup default exception vector of guest */
--	vcpu_set_reg(vcpu, RISCV_GENERAL_CSR_REG(stvec), (unsigned long)guest_unexp_trap);
-+	/*
-+	 * Advertise V to KVM so -O2 auto-vectorization in guest code is valid;
-+	 * ignore errors since the tests work without V too. Use the full
-+	 * exception vector table (which lazily enables V in route_exception())
-+	 * as the default handler; vm_init_vector_tables() is idempotent.
-+	 */
-+	__vcpu_set_reg(vcpu, RISCV_ISA_EXT_REG(KVM_RISCV_ISA_EXT_V), 1);
-+	vm_init_vector_tables(vm);
-+	vcpu_init_vector_tables(vcpu);
-+
-+	/*
-+	 * Record V availability for route_exception(), which runs in guest
-+	 * context. V is enabled uniformly for every vCPU, so this is a
-+	 * VM-wide property.
-+	 */
-+	{
-+		struct handlers *h = addr_gva2hva(vm, vm->handlers);
-+
-+		h->v_available = __vcpu_has_isa_ext(vcpu, KVM_RISCV_ISA_EXT_V);
-+	}
- 
- 	return vcpu;
- }
-@@ -408,19 +424,43 @@ void assert_on_unhandled_exception(struct kvm_vcpu *vcpu)
- 	struct ucall uc;
- 
- 	if (get_ucall(vcpu, &uc) == UCALL_UNHANDLED) {
-+		vcpu_dump(stderr, vcpu, 2);
- 		TEST_FAIL("Unexpected exception (vector:0x%lx, ec:0x%lx)",
- 			uc.args[0], uc.args[1]);
- 	}
- }
- 
--struct handlers {
--	exception_handler_fn exception_handlers[NR_VECTORS][NR_EXCEPTIONS];
--};
-+static bool insn_is_vector(u32 insn)
-+{
-+	u32 opcode = insn & RV_INSN_OPCODE_MASK;
-+	u32 width, csr;
-+
-+	/* All V-related instructions are 4-byte, i.e. not compressed. */
-+	if ((insn & 0x3) != 0x3)
-+		return false;
-+
-+	switch (opcode) {
-+	case RVV_OPCODE_VECTOR:
-+		return true;
-+	case RVV_OPCODE_VL:
-+	case RVV_OPCODE_VS:
-+		width = RVV_EXTRACT_VL_VS_WIDTH(insn);
-+		return width == RVV_VL_VS_WIDTH_8 || width == RVV_VL_VS_WIDTH_16 ||
-+		       width == RVV_VL_VS_WIDTH_32 || width == RVV_VL_VS_WIDTH_64;
-+	case RVG_OPCODE_SYSTEM:
-+		csr = RVG_EXTRACT_SYSTEM_CSR(insn);
-+		return (csr >= CSR_VSTART && csr <= CSR_VCSR) ||
-+		       (csr >= CSR_VL && csr <= CSR_VLENB);
-+	}
-+
-+	return false;
-+}
- 
- void route_exception(struct pt_regs *regs)
- {
- 	struct handlers *handlers = (struct handlers *)exception_handlers;
--	int vector = 0, ec;
-+	int vector = 0;
-+	unsigned long ec;
- 
- 	ec = regs->cause & ~CAUSE_IRQ_FLAG;
- 	if (ec >= NR_EXCEPTIONS)
-@@ -432,6 +472,36 @@ void route_exception(struct pt_regs *regs)
- 		ec = 0;
- 	}
- 
-+	/*
-+	 * Lazily enable V on the first vector instruction: if the faulting
-+	 * instruction decodes as vector while VS is off, set VS to Initial
-+	 * and re-execute it, like the kernel's riscv_v_first_use_handler().
-+	 * Genuinely illegal instructions continue to the unexpected-exception
-+	 * path.
-+	 */
-+	if (!(regs->cause & CAUSE_IRQ_FLAG) && ec == EXC_INST_ILLEGAL &&
-+	    handlers && handlers->v_available && !(regs->status & SR_VS)) {
-+		u32 insn = (u32)regs->badaddr;
-+
-+		/*
-+		 * stval is not guaranteed to hold the faulting instruction.
-+		 * Vector instructions are always 32-bit, so check the first
-+		 * 16-bit halfword and, for a 32-bit instruction, assemble it
-+		 * from two halfwords to avoid an unaligned 32-bit access.
-+		 */
-+		if (!insn) {
-+			u16 half = *(u16 *)regs->epc;
-+
-+			if ((half & 0x3) == 0x3)
-+				insn = (u32)half | ((u32)*(u16 *)(regs->epc + 2) << 16);
-+		}
-+
-+		if (insn_is_vector(insn)) {
-+			regs->status |= SR_VS_INITIAL;
-+			return;
-+		}
-+	}
-+
- 	if (handlers && handlers->exception_handlers[vector][ec])
- 		return handlers->exception_handlers[vector][ec](regs);
- 
-@@ -448,6 +518,9 @@ void vcpu_init_vector_tables(struct kvm_vcpu *vcpu)
- 
- void vm_init_vector_tables(struct kvm_vm *vm)
- {
-+	if (vm->handlers)
-+		return;
-+
- 	vm->handlers = __vm_alloc(vm, sizeof(struct handlers), vm->page_size,
- 				  MEM_REGION_DATA);
- 
--- 
-2.53.0
+Thanks,
+Nutty
+> ---
+> v1 -> v2:
+> - Drop the per-test guest_modes_append_default() call from
+>    pre_fault_memory_test.c.  RISC-V already initializes supported and
+>    default guest modes from kvm_selftest_arch_init(), which is called by
+>    the common kvm_selftest_init() constructor, as suggested by Sean.
+>
+>   tools/testing/selftests/kvm/Makefile.kvm              | 1 +
+>   tools/testing/selftests/kvm/include/riscv/processor.h | 3 +++
+>   2 files changed, 4 insertions(+)
+>
+> diff --git a/tools/testing/selftests/kvm/Makefile.kvm b/tools/testing/selftests/kvm/Makefile.kvm
+> index 6fc34e9bf8e1..ac64ac92fd4b 100644
+> --- a/tools/testing/selftests/kvm/Makefile.kvm
+> +++ b/tools/testing/selftests/kvm/Makefile.kvm
+> @@ -225,6 +225,7 @@ TEST_GEN_PROGS_riscv += coalesced_io_test
+>   TEST_GEN_PROGS_riscv += dirty_log_perf_test
+>   TEST_GEN_PROGS_riscv += get-reg-list
+>   TEST_GEN_PROGS_riscv += mmu_stress_test
+> +TEST_GEN_PROGS_riscv += pre_fault_memory_test
+>   TEST_GEN_PROGS_riscv += rseq_test
+>   TEST_GEN_PROGS_riscv += steal_time
+>   
+> diff --git a/tools/testing/selftests/kvm/include/riscv/processor.h b/tools/testing/selftests/kvm/include/riscv/processor.h
+> index abde3c71c891..70487c8ed155 100644
+> --- a/tools/testing/selftests/kvm/include/riscv/processor.h
+> +++ b/tools/testing/selftests/kvm/include/riscv/processor.h
+> @@ -12,6 +12,9 @@
+>   #include <asm/vdso/processor.h>
+>   #include "kvm_util.h"
+>   
+> +#define PAGE_SHIFT		12
+> +#define PAGE_SIZE		BIT_ULL(PAGE_SHIFT)
+> +
+>   #define INSN_OPCODE_MASK	0x007c
+>   #define INSN_OPCODE_SHIFT	2
+>   #define INSN_OPCODE_SYSTEM	28
 
 -- 
 kvm-riscv mailing list
