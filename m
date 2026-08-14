@@ -4,52 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 872F8C5B572
-	for <kvm-riscv@archiver.kernel.org>; Fri, 14 Aug 2026 10:58:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 45615C5CFC1
+	for <kvm-riscv@archiver.kernel.org>; Fri, 14 Aug 2026 11:45:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
 	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
 	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=9AzoG57PG9FTJeE+ten9LyIfru4v203wfcPpfiztYAA=; b=wVim/G9o9a0QrN
-	0zsd6OSFF3UDd4v9+CTT99iP0oC5i7XimDAZt8jAQqKz8BMxN+BMhe4iQC/qim15WkjNku5itafPq
-	0QMHPf5zh3PJT1VC+5vA9mg74nH4G6+5d6lRnII+LrVGParpm/+RT2zqRoMwT9ztuZa/+9AMLLa7d
-	PrRz/M2QafBWC+0TajNbYNqUWbLztJupfThWX8XWDl7skuTiDjolGwJxN4gyZ1lS0CIFMJkbkyi5G
-	OIe8CqEJlEuFTDIRhmAC7G2ZbzF+iAm4gNz7lYR0LE1s9VEwIYb1UYtbIIiCuUJvZxfgoDqX8a8Qh
-	6onepY0wrD5ZXN2jz1sw==;
+	List-Owner; bh=vNVzyjUk4VzFvoX17yNNlziPSnRFH/jYr1LgQu35a+8=; b=3bDl38TZvWI8qN
+	o9qKXB4FHAOHJu8WuBt8GpRwtqtEOQoSA4C+mwHxkXh56Xm7OiMI9sb/8eL+JmbMy/1P8uB8lkwjS
+	fpb0JATZcJxeTZZmDMx+kMB8RZd3Y/h/BToPFtbvGeTu38I3XmIXNONLuC6U8SVHZs8yfITmp3l2h
+	JrHxYTHzbbh1y2v11S7ixNdTvwRj+DI/0/gEV1+vyOfNGVFPkN0Gicyb1j1AsHIFh16vBstfRN0eg
+	2MWpbdfV/olKdydfcZFU9Ngjqp7s9Hqxaz74qpiElZ0yVsWi+1h1PA5rglvUtc9+FZUUjToipMP3D
+	xBXB35GncVoIJZ7SDPug==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wupc7-00000002YVA-0n4j;
-	Fri, 14 Aug 2026 10:58:15 +0000
-Received: from out-231.mta1.migadu.com ([2001:41d0:203:375::e7] helo=mta1.migadu.com)
+	id 1wuqLr-00000002bhu-3lEb;
+	Fri, 14 Aug 2026 11:45:31 +0000
+Received: from out-194.mta0.migadu.com ([2001:41d0:1004:224b::c2] helo=mta0.migadu.com)
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wupc2-00000002YUS-1MJo
+	id 1wuqLp-00000002bhE-0SOJ
 	for kvm-riscv@lists.infradead.org;
-	Fri, 14 Aug 2026 10:58:13 +0000
+	Fri, 14 Aug 2026 11:45:30 +0000
 X-Envelope-To: kvm-riscv@lists.infradead.org
-DKIM-Signature: a=rsa-sha256; bh=BN80hJUPahMuBoWkUclOUZnV69Dkfc+SFkZgjZJXao0=;
+DKIM-Signature: a=rsa-sha256; bh=GOT8taQt6/EQFiPSFOU6QPaJFvivwjZtCf7FY3zWtvw=;
  c=simple/simple; d=linux.dev;
  h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1786705085; v=1; x=1787309885;
- b=ifNmiy6Q3Bv6W8Sy3llrNgWtYfS9IFotfXylgutWgBBeRPB28+JBYoLw24rRURDc1ed+o/d3
- 1IuTtfBmD5ruma5YmlrMte9Pv/+ERChHQLbKbCVrUtMXs8plPkOOudz+HP2NPBNAOeOwwpp2z+0
- zzeIaslwLzG7NU4gkJkqlZVY=
+ t=1786707926; v=1; x=1787312726;
+ b=dJ5BIi204qbL9joWj4vbh5NOkPKE9dGc+FEIk0tDnKwO/8anVKnbEyAl8e37fL8M38grg4J0
+ aJWDQ6E3PTjE07rXnqAt3v7/lYcHm3UdHavLkBsNwp2kSKX5Z/ytHuRW3lrnpatRKlgsFc9HQCe
+ 3k1EvKHEhHSBMUpJ3GnNe/xA=
 X-Envelope-To: kvm-riscv@lists.infradead.org
 Received: from localhost.localdomain (2408:823d:2011:2c0:e810:54f9:f0a3:99d)
-	by smtp.migadu.com with ESMTPS id 50b76cf9531200b1;
-	Fri, 14 Aug 2026 10:58:05 +0000
+	by smtp.migadu.com with ESMTPS id 7e7cb55356a33f08;
+	Fri, 14 Aug 2026 11:45:26 +0000
 X-Migadu-Flow: FLOW_OUT
 From: Jinyu Tang <jinyu.tang@linux.dev>
 To: Anup Patel <anup@brainfault.org>,
 	Anup Patel <apatel@ventanamicro.com>,
-	Atish Patra <atish.patra@linux.dev>
-Cc: kvm@vger.kernel.org,
+	Sean Christopherson <seanjc@google.com>
+Cc: Paolo Bonzini <pbonzini@redhat.com>,
+	kvm@vger.kernel.org,
 	kvm-riscv@lists.infradead.org,
 	linux-riscv@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
-	Paolo Bonzini <pbonzini@redhat.com>,
-	Sean Christopherson <seanjc@google.com>,
+	Atish Patra <atish.patra@linux.dev>,
 	Paul Walmsley <pjw@kernel.org>,
 	Paul Walmsley <paul.walmsley@sifive.com>,
 	Palmer Dabbelt <palmer@dabbelt.com>,
@@ -60,16 +60,16 @@ Cc: kvm@vger.kernel.org,
 	Yong-Xuan Wang <yongxuan.wang@sifive.com>,
 	Nutty Liu <nutty.liu@hotmail.com>,
 	Jinyu Tang <tjytimi@163.com>,
-	Jinyu Tang <jinyu.tang@linux.dev>,
-	Sashiko <sashiko-bot@kernel.org>
-Subject: [PATCH] KVM: riscv: Avoid overwriting existing G-stage tables with huge leaves
-Date: Fri, 14 Aug 2026 06:57:52 -0400
-Message-ID: <20260814105752.565325-1-jinyu.tang@linux.dev>
+	Jinyu Tang <jinyu.tang@linux.dev>
+Subject: [PATCH v3 0/3] KVM: riscv: Add KVM_PRE_FAULT_MEMORY support
+Date: Fri, 14 Aug 2026 07:45:04 -0400
+Message-ID: <20260814114507.583424-1-jinyu.tang@linux.dev>
 X-Mailer: git-send-email 2.43.0
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260814_035810_533221_B00E9644 
-X-CRM114-Status: GOOD (  10.91  )
+X-CRM114-CacheID: sfid-20260814_044529_431726_53F4E2F7 
+X-CRM114-Status: UNSURE (   7.90  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -86,78 +86,45 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-RISC-V KVM can overwrite an existing G-stage table entry when installing
-a huge leaf mapping. If the target huge range already has a lower-level
-page table, kvm_riscv_gstage_set_pte() can replace the non-leaf entry
-with a leaf PTE. This disconnects the lower-level page table and can
-change guest-visible mappings or leak the page-table page.
+This series adds RISC-V support for the generic KVM_PRE_FAULT_MEMORY
+vcpu ioctl and enables the existing generic KVM selftest for RISC-V.
 
-Reject replacing a valid non-leaf PTE with a leaf PTE. If huge-page
-installation hits such a conflict, fall back to a 4K mapping for the
-faulting GPA and leave the existing page-table structure intact.
+KVM_PRE_FAULT_MEMORY lets userspace ask KVM to populate stage-2 mappings
+for a GPA range before running a vCPU that is expected to access that
+range.  x86 already supports the ioctl; RISC-V currently falls back to
+normal first-touch G-stage faults.
 
-Suggested-by: Sashiko <sashiko-bot@kernel.org>
-Fixes: 9d05c1fee837 ("RISC-V: KVM: Implement stage2 page table programming")
-Signed-off-by: Jinyu Tang <jinyu.tang@linux.dev>
----
- arch/riscv/kvm/gstage.c | 22 ++++++++++++++++++++--
- 1 file changed, 20 insertions(+), 2 deletions(-)
+Patch 1 implements the RISC-V arch hook using the existing G-stage map
+path.  Patch 2 fixes the RISC-V selftest page-table walker for Sv57,
+which can be selected as the default guest mode.  Patch 3 enables
+pre_fault_memory_test for RISC-V.
 
-diff --git a/arch/riscv/kvm/gstage.c b/arch/riscv/kvm/gstage.c
-index e5002cb9cbef..23cb35e36073 100644
---- a/arch/riscv/kvm/gstage.c
-+++ b/arch/riscv/kvm/gstage.c
-@@ -174,6 +174,12 @@ int kvm_riscv_gstage_set_pte(struct kvm_gstage *gstage,
- 
- 	if (pte_val(*ptep) != pte_val(map->pte)) {
- 		bool was_invalid = !pte_val(*ptep);
-+
-+		/* Avoid replacing an existing lower-level table with a leaf mapping. */
-+		if (!gstage_pte_leaf(ptep) && !was_invalid &&
-+		    gstage_pte_leaf(&map->pte))
-+			return -EEXIST;
-+
- 		set_pte(ptep, map->pte);
- 		if (gstage_pte_leaf(ptep) &&
- 		    !(was_invalid && riscv_has_extension_unlikely(RISCV_ISA_EXT_SVVPTC)))
-@@ -211,12 +217,13 @@ int kvm_riscv_gstage_map_page(struct kvm_gstage *gstage,
- 			      struct kvm_gstage_mapping *out_map)
- {
- 	bool found_leaf;
-+	phys_addr_t huge_page_offset;
- 	u32 ptep_level;
- 	pgprot_t prot;
- 	pte_t *ptep;
- 	int ret;
- 
--	out_map->addr = gpa;
-+	out_map->addr = gpa & PAGE_MASK;
- 	out_map->level = 0;
- 
- 	ret = gstage_page_size_to_level(gstage, page_size, &out_map->level);
-@@ -287,7 +294,18 @@ int kvm_riscv_gstage_map_page(struct kvm_gstage *gstage,
- 	out_map->pte = pfn_pte(PFN_DOWN(hpa), prot);
- 	out_map->pte = pte_mkdirty(out_map->pte);
- 
--	return kvm_riscv_gstage_set_pte(gstage, pcache, out_map);
-+	ret = kvm_riscv_gstage_set_pte(gstage, pcache, out_map);
-+	if (ret == -EEXIST) {
-+		huge_page_offset = out_map->addr & (page_size - 1);
-+		hpa += huge_page_offset;
-+		out_map->level = 0;
-+		out_map->pte = pfn_pte(PFN_DOWN(hpa), prot);
-+		out_map->pte = pte_mkdirty(out_map->pte);
-+
-+		ret = kvm_riscv_gstage_set_pte(gstage, pcache, out_map);
-+	}
-+
-+	return ret;
- }
- 
- static inline unsigned long make_child_pte(unsigned long huge_pte, int index,
+Changes in v3:
+- Retry internally when the map path returns success without a visible
+  G-stage mapping, instead of exposing -EAGAIN.  (Sashiko)
+
+Changes in v2:
+- Drop the per-test guest_modes_append_default() call from
+  pre_fault_memory_test.c.  RISC-V already initializes supported and
+  default guest modes from kvm_selftest_arch_init(), which is called by
+  the common kvm_selftest_init() constructor, as suggested by Sean.
+
+Jinyu Tang (3):
+  KVM: riscv: Implement KVM_PRE_FAULT_MEMORY
+  KVM: selftests: Add RISC-V Sv57 page table indexing
+  KVM: selftests: Enable pre_fault_memory_test for RISC-V
+
+ arch/riscv/kvm/Kconfig                        |  1 +
+ arch/riscv/kvm/gstage.c                       |  3 ++
+ arch/riscv/kvm/mmu.c                          | 42 +++++++++++++++++++
+ arch/riscv/kvm/vm.c                           |  1 +
+ tools/testing/selftests/kvm/Makefile.kvm      |  1 +
+ .../selftests/kvm/include/riscv/processor.h   |  6 +++
+ .../selftests/kvm/lib/riscv/processor.c       |  2 +
+ 7 files changed, 56 insertions(+)
+
 -- 
 2.43.0
-
 
 -- 
 kvm-riscv mailing list
