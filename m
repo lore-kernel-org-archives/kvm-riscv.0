@@ -4,41 +4,41 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B443CC5CFC1
-	for <kvm-riscv@archiver.kernel.org>; Sat, 15 Aug 2026 10:31:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AB7A3C5CFC1
+	for <kvm-riscv@archiver.kernel.org>; Sat, 15 Aug 2026 10:34:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=/kpapRCTvjSrjI8Uj+XhW6JNuWh4XYnF9Bk5BrVhaMc=; b=Gt+xkDZZYyYx6b
-	gkbR+SlU9Fed/0h7tfFQA5fJdn2RMg4eVM6A358gmpEkSmNWlFWOL9tV7sXRS1XYjE6jkMYhJLzbn
-	48PsQ/13YmTLXo2aIaHFTX3Ju8zvGkNKr6jSkqOxl2ksrKmpyoFZCXR3folurecCwknHh6M1+8h+B
-	NoitBes73EAcFEjjhwfqavQw86y5w8kzNCNNjkkixoNCtHiIS2wtp0ikRpbG0BGYQQnH7AT1VF7co
-	7U6k8r2r66A/Xu6xmPzG+8ASWXqJH637/unXoxPdImmz0R4E2wai2m9svvJwvbnKD7Qo/EkRUVCn9
-	8UzyKsvc5XK1oltVTijg==;
+	List-Owner; bh=/4zOwWW75ekcmHgr5/oNwcLYI7d/4CKYMqAq6hrhGXc=; b=Tx7yfR9S4kUqIV
+	OzcqdpNAReXuWMN4s2clSLpJZ/PdjUg8XhwNfGhdrvClx0HSO5W5ZIo+AHvswtOszm1+y2xVANkHX
+	HrhYfWTGpgt8ixGoIwal63WdO2aD3crBMX/5N26nPKY4O3YHdrBWfW6OUFtGPvC4Hk5Ik8o+mQhe2
+	fpGUh7YKwXyeyJk5H8yxFd1s9lrPTqNuk8eOxfYUlSPv4OI6SMOTkvXPIeimur4mRmEpmiiavWeqN
+	65bMXT/5GMBzUSmu6D1G+5C2lhgtrlqzuEpGm6HakTW11BljEdcxlEEtayHwVwPmUEq/ysJB4RFlt
+	B9KUBxvxZKwklqcq/X7g==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wvBft-00000003kAv-1ikJ;
-	Sat, 15 Aug 2026 10:31:37 +0000
-Received: from out-194.mta0.migadu.com ([2001:41d0:1004:224b::c2] helo=mta0.migadu.com)
+	id 1wvBie-00000003kS5-08zm;
+	Sat, 15 Aug 2026 10:34:28 +0000
+Received: from out-241.mta0.migadu.com ([2001:41d0:1004:224b::f1] helo=mta0.migadu.com)
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wvBfq-00000003kAV-2ZcO
+	id 1wvBib-00000003kRH-3deJ
 	for kvm-riscv@lists.infradead.org;
-	Sat, 15 Aug 2026 10:31:35 +0000
+	Sat, 15 Aug 2026 10:34:27 +0000
 X-Envelope-To: kvm-riscv@lists.infradead.org
-DKIM-Signature: a=rsa-sha256; bh=yH/agCXDCZtwBki0zGE0wtxh6FsJiZ2Vyl/5PTnHoLo=;
+DKIM-Signature: a=rsa-sha256; bh=/XslhWPc8YWLKIGexGYeoNDF4BcQhquKIMzXN8FIw8M=;
  c=simple/simple; d=linux.dev;
  h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1786789892; v=1; x=1787394692;
- b=bmPAWIyUEvqCdZe9lURu/v+Y6PCJl223KdRPJ4HbjN68UsfZXWfSts67mMZa4Pa2B/pGI4gh
- CA3iAQwp5iV/cwgP74LiUFC2Aj16FGPLQ31xybKjZCI014OIk+3Q6RuZpIQEk2AQwLV7GMYZeFm
- ajHPmcHjgW0ROGemr2tug8hc=
+ t=1786790063; v=1; x=1787394863;
+ b=s830HcPWdB6TepSyWmegU74KNRBoTc6dPyTJ+SDO06T64jh4VEClGFCBC2JVmrE7pYrBsnmh
+ U1TVorbcAcuEq0pZnU+muWag5wde0/l+nlCWK8wrA6rg9Cr1KEq2391HL6vROV+7PMwC2lp7HAS
+ b37m/cD9bIzxZg4Pg4zbUpPk=
 X-Envelope-To: kvm-riscv@lists.infradead.org
 Received: from localhost.localdomain (2408:823d:2011:2c0:e810:54f9:f0a3:99d)
-	by smtp.migadu.com with ESMTPS id 2aea94ff0226619a;
-	Sat, 15 Aug 2026 10:31:32 +0000
+	by smtp.migadu.com with ESMTPS id 1054ad670fe58b2a;
+	Sat, 15 Aug 2026 10:34:23 +0000
 X-Migadu-Flow: FLOW_OUT
 From: Jinyu Tang <jinyu.tang@linux.dev>
 To: Anup Patel <anup@brainfault.org>,
@@ -61,16 +61,17 @@ Cc: kvm@vger.kernel.org,
 	Yong-Xuan Wang <yongxuan.wang@sifive.com>,
 	Nutty Liu <nutty.liu@hotmail.com>,
 	Jinyu Tang <tjytimi@163.com>
-Subject: [PATCH v4 RESEND 1/5] KVM: riscv: Avoid overwriting G-stage tables with huge leaves
-Date: Sat, 15 Aug 2026 06:31:23 -0400
-Message-ID: <20260815103123.864738-1-jinyu.tang@linux.dev>
+Subject: [PATCH v4 RESEND 4/5] KVM: selftests: Add RISC-V Sv57 page table indexing
+Date: Sat, 15 Aug 2026 06:34:18 -0400
+Message-ID: <20260815103418.865047-1-jinyu.tang@linux.dev>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260815102833.864330-1-jinyu.tang@linux.dev>
 References: <20260815102833.864330-1-jinyu.tang@linux.dev>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260815_033134_791336_E8742D0C 
-X-CRM114-Status: GOOD (  12.29  )
+X-CRM114-CacheID: sfid-20260815_033426_042477_4015AA8D 
+X-CRM114-Status: UNSURE (   8.42  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -87,97 +88,56 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-RISC-V KVM can overwrite an existing G-stage table entry when
-installing a huge leaf mapping. If the target huge range already has a
-lower-level page table, kvm_riscv_gstage_set_pte() can replace the
-non-leaf entry with a leaf PTE and disconnect the lower-level page
-table.
+RISC-V selftests can create guests with five page-table levels, for
+example when the selected guest mode is Sv57. The RISC-V page-table
+walker only had index arrays for levels 0 through 3, so
+virt_arch_pg_map() indexed past the end of the arrays when level 4 was
+used.
 
-Reject replacing a valid table entry with a leaf PTE. If huge-page
-installation hits such a conflict, fall back to a 4K mapping for the
-original faulting GPA in the MMU fault path, where the original GPA and
-HFN are still available.
+Add the missing L4 index mask and shift so selftests can build guest
+page tables for Sv57 VMs.
 
-Suggested-by: Sashiko <sashiko-bot@kernel.org>
-Fixes: 9d05c1fee837 ("RISC-V: KVM: Implement stage2 page table programming")
+Reviewed-by: Nutty Liu <nutty.liu@hotmail.com>
 Signed-off-by: Jinyu Tang <jinyu.tang@linux.dev>
 ---
- arch/riscv/kvm/gstage.c |  6 ++++++
- arch/riscv/kvm/mmu.c    | 24 +++++++++++++++++++++++-
- 2 files changed, 29 insertions(+), 1 deletion(-)
+ tools/testing/selftests/kvm/include/riscv/processor.h | 3 +++
+ tools/testing/selftests/kvm/lib/riscv/processor.c     | 2 ++
+ 2 files changed, 5 insertions(+)
 
-diff --git a/arch/riscv/kvm/gstage.c b/arch/riscv/kvm/gstage.c
-index e5002cb9cbef..54d45addf18f 100644
---- a/arch/riscv/kvm/gstage.c
-+++ b/arch/riscv/kvm/gstage.c
-@@ -174,6 +174,12 @@ int kvm_riscv_gstage_set_pte(struct kvm_gstage *gstage,
+diff --git a/tools/testing/selftests/kvm/include/riscv/processor.h b/tools/testing/selftests/kvm/include/riscv/processor.h
+index e3acf2ae9881..abde3c71c891 100644
+--- a/tools/testing/selftests/kvm/include/riscv/processor.h
++++ b/tools/testing/selftests/kvm/include/riscv/processor.h
+@@ -127,6 +127,9 @@ void vm_install_exception_handler(struct kvm_vm *vm, int vector, exception_handl
  
- 	if (pte_val(*ptep) != pte_val(map->pte)) {
- 		bool was_invalid = !pte_val(*ptep);
-+
-+		/* Avoid replacing an existing lower-level table with a leaf mapping. */
-+		if (!gstage_pte_leaf(ptep) && !was_invalid &&
-+		    gstage_pte_leaf(&map->pte))
-+			return -EEXIST;
-+
- 		set_pte(ptep, map->pte);
- 		if (gstage_pte_leaf(ptep) &&
- 		    !(was_invalid && riscv_has_extension_unlikely(RISCV_ISA_EXT_SVVPTC)))
-diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-index 6035b5ec9503..bfd6168ebe30 100644
---- a/arch/riscv/kvm/mmu.c
-+++ b/arch/riscv/kvm/mmu.c
-@@ -625,10 +625,11 @@ int kvm_riscv_mmu_map(struct kvm_vcpu *vcpu, struct kvm_memory_slot *memslot,
- 		      struct kvm_gstage_mapping *out_map)
- {
- 	int ret;
--	kvm_pfn_t hfn;
-+	kvm_pfn_t fault_hfn, hfn;
- 	bool is_hugetlb;
- 	bool writable;
- 	unsigned int vma_pageshift;
-+	gpa_t fault_gpa = gpa;
- 	gfn_t gfn = gpa >> PAGE_SHIFT;
- 	struct vm_area_struct *vma;
- 	struct kvm *kvm = vcpu->kvm;
-@@ -709,6 +710,7 @@ int kvm_riscv_mmu_map(struct kvm_vcpu *vcpu, struct kvm_memory_slot *memslot,
- 	}
- 	if (is_error_noslot_pfn(hfn))
- 		return -EFAULT;
-+	fault_hfn = hfn + ((fault_gpa >> PAGE_SHIFT) - gfn);
+ void vm_install_interrupt_handler(struct kvm_vm *vm, exception_handler_fn handler);
  
- 	/*
- 	 * If logging is active then we allow writable pages only
-@@ -734,9 +736,29 @@ int kvm_riscv_mmu_map(struct kvm_vcpu *vcpu, struct kvm_memory_slot *memslot,
- 		mark_page_dirty_in_slot(kvm, memslot, gfn);
- 		ret = kvm_riscv_gstage_map_page(&gstage, pcache, gpa, hfn << PAGE_SHIFT,
- 						vma_pagesize, false, true, out_map);
-+		if (ret == -EEXIST) {
-+			/*
-+			 * Retry at 4K granularity for the original faulting GPA
-+			 * when a huge leaf cannot replace an existing table.
-+			 */
-+			ret = kvm_riscv_gstage_map_page(&gstage, pcache, fault_gpa,
-+							fault_hfn << PAGE_SHIFT,
-+							PAGE_SIZE, false, true,
-+							out_map);
-+		}
- 	} else {
- 		ret = kvm_riscv_gstage_map_page(&gstage, pcache, gpa, hfn << PAGE_SHIFT,
- 						vma_pagesize, true, true, out_map);
-+		if (ret == -EEXIST) {
-+			/*
-+			 * Retry at 4K granularity for the original faulting GPA
-+			 * when a huge leaf cannot replace an existing table.
-+			 */
-+			ret = kvm_riscv_gstage_map_page(&gstage, pcache, fault_gpa,
-+							fault_hfn << PAGE_SHIFT,
-+							PAGE_SIZE, true, true,
-+							out_map);
-+		}
- 	}
++/* L4 index Bit[56:48] */
++#define PGTBL_L4_INDEX_MASK			0x01FF000000000000ULL
++#define PGTBL_L4_INDEX_SHIFT			48
+ /* L3 index Bit[47:39] */
+ #define PGTBL_L3_INDEX_MASK			0x0000FF8000000000ULL
+ #define PGTBL_L3_INDEX_SHIFT			39
+diff --git a/tools/testing/selftests/kvm/lib/riscv/processor.c b/tools/testing/selftests/kvm/lib/riscv/processor.c
+index ded5429f3448..b4d41a407553 100644
+--- a/tools/testing/selftests/kvm/lib/riscv/processor.c
++++ b/tools/testing/selftests/kvm/lib/riscv/processor.c
+@@ -43,6 +43,7 @@ static u64 pte_index_mask[] = {
+ 	PGTBL_L1_INDEX_MASK,
+ 	PGTBL_L2_INDEX_MASK,
+ 	PGTBL_L3_INDEX_MASK,
++	PGTBL_L4_INDEX_MASK,
+ };
  
- 	if (ret)
+ static u32 pte_index_shift[] = {
+@@ -50,6 +51,7 @@ static u32 pte_index_shift[] = {
+ 	PGTBL_L1_INDEX_SHIFT,
+ 	PGTBL_L2_INDEX_SHIFT,
+ 	PGTBL_L3_INDEX_SHIFT,
++	PGTBL_L4_INDEX_SHIFT,
+ };
+ 
+ static u64 pte_index(struct kvm_vm *vm, gva_t gva, int level)
 -- 
 2.43.0
 
