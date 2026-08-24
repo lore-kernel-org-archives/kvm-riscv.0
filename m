@@ -4,109 +4,82 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00B6EC5DF7D
-	for <kvm-riscv@archiver.kernel.org>; Fri, 21 Aug 2026 05:17:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0DF23C5DF81
+	for <kvm-riscv@archiver.kernel.org>; Mon, 24 Aug 2026 21:21:44 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:Subject:Message-ID:Date:From:
-	In-Reply-To:References:MIME-Version:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=8HRzN39fT5Tpp9Rmc2oc4cIMfkf3gGamiz/o2ZK5AUU=; b=sW3VrJGe9QJReG
-	ksPfkFmRNir7sthrjA5Gwh2dPIsR3uCFZAYH8PCxLeeRqcgZ7qP1VHrn164RMCFtd3eryXum682Ho
-	szAFdeOSR+rqINTiByHpn20POFjIfmjpEYKh/zD33qJxbunoC8rdEuA20eZUc+0rVpEs363bnV1MM
-	rZmpvIWf4Kwa1+HogBGDR84BzrEnHYvwxbvJmwS1y5raibEFfSjHNcDVngB3woGClKQaa2JPLGzYD
-	2L07g5MLFc5nqpHrBH/MoTnCsJK7LNT1bYVTYmxGCZVQq4dh9qNdw8yWZEBOjwcAPwL08dppOw8Pb
-	VaxG/tx/JBjAQsfUBbhw==;
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID:
+	References:Mime-Version:In-Reply-To:Date:Reply-To:Content-ID:
+	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+	:Resent-Message-ID:List-Owner;
+	bh=POpvLR0PqkTyLXLboZ+9pTWGfPg7Loc5QvOd2LwV+WQ=; b=2HGIV9ltgIeCucuYkLCtB9YMFZ
+	yCNDdGw6ZKCPSM1jsCYVOYEqDno0OJiWQjACKFMBaKGcadJdtj7WCM1lTTSpb48hDYRktNp58BFWY
+	gIVhLKOeCOjuNcWEyv8v4PkQTFDCCxYSw/Rphn1j6wDxGaGmQoEVv3PAV1hiGxfk6xZGZFK77qquq
+	JdOvz5NURyuq8OVQkNTZdUkGj8GENpoDQyUb0ZgNa3166En3ZWIhFcXBy60A9fuVix9HHJf4YD3BU
+	IOZZLu4X2/zSQtljRSdp2CYUIV+mUKjBHZaEykC3yRV63NZcbkl7G2Cmhy9I433N2ThATBxiKLhud
+	v8PBO6qQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wxHdU-0000000CYZ1-0bCS;
-	Fri, 21 Aug 2026 05:17:48 +0000
-Received: from mail-wm1-x32d.google.com ([2a00:1450:4864:20::32d])
+	id 1wyc6x-0000000HP4e-1P3X;
+	Mon, 24 Aug 2026 21:21:43 +0000
+Received: from mail-pf1-x446.google.com ([2607:f8b0:4864:20::446])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wxHdQ-0000000CYXr-0neW
+	id 1wyc6r-0000000HP42-3U9c
 	for kvm-riscv@lists.infradead.org;
-	Fri, 21 Aug 2026 05:17:46 +0000
-Received: by mail-wm1-x32d.google.com with SMTP id 5b1f17b1804b1-4980fe6b3beso13916825e9.0
-        for <kvm-riscv@lists.infradead.org>; Thu, 20 Aug 2026 22:17:43 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1787289462; cv=none;
-        d=google.com; s=arc-20260327;
-        b=gVYua4ZkhR4+KNlpH64FSLGVvVYMqtvsDdnbvvjD8LleqZtq3PNGijydUgd1CK7sJD
-         JsSHtp6w3HZMeT9gX6Kedjc2CU79FaHutU6t/CHbGdJYDoA7PQmEpOdBh8ZObe2jpRDS
-         NZ3VRv+tIq6y9PtxcurTky9st7dV3n8KcFXjwZfSfx4zWSk2b3XCEaO9u9fo4jFPKg1J
-         ThQfYRCVJ4LYDUfU28/124iVA/DlMtMZJ7zTHFMUTvit4MS0xCDfB6XHX2TswbLeyfAV
-         KNDHIQ9F0d/AsEoKToa7n4Lg0YpseZih7cU4yW7U7SzF0mQl2fWmonGa0uJTo3e8piMG
-         HHOg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=13mpJllH/Zvzc6cEE176TorQISQiQzdps6jTNyvGa88=;
-        fh=YmonYquJ+HyxaZx1k6oLtLX2thUhS7m2nlQhfdudsgg=;
-        b=Rxbu8IcuQsUrpR8+bPa/TLceRSL9ug/oNqfQXaVi+S9XxSVV2QM73uPi7e1WdbjzWf
-         D8ryA3PHKPk/2aEwpfPDTPkjSeJEjdCnSwh/rsy4ELHnjo/eeB0wro5e9yYptarl9H0d
-         1yJabYK4iLMfufMlXdN4phkx3dSg9t3TNidBDcwR1FHYyABx12xlH6N30Zp4K+MFbq49
-         alUyvljrTWsomaZXkZ0uFCoQWYUPaT5EtBacPMP+LAbdntO4bxavWw2esUzLOb9z1img
-         DQ26fEu6Ynz5b6fjV/1ySZL7n9acYnQud3QKYwOArV983jV7hzZ3cZesuQDEXNHPeLmW
-         VfcA==;
-        darn=lists.infradead.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	Mon, 24 Aug 2026 21:21:41 +0000
+Received: by mail-pf1-x446.google.com with SMTP id d2e1a72fcca58-8485d853b08so6235162b3a.1
+        for <kvm-riscv@lists.infradead.org>; Mon, 24 Aug 2026 14:21:35 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=brainfault.org; s=google; t=1787289462; x=1787894262; darn=lists.infradead.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=13mpJllH/Zvzc6cEE176TorQISQiQzdps6jTNyvGa88=;
-        b=mLpyN4LV0wZa+v8dIOQdxh9luYZgEMAxUuaZY00qugtaWvXJa3/UVdk6oxpNnn7X8M
-         q9MG4aFhXbHYiYlq42kyBuyx4+3iaIKN4UioFaUuZwfCmzwPxVVP6Z9LvtSofqAQz4Pv
-         A4DZSD4mZhq67a+sC6WFNllA0aJx7IVpOi+t8pEOautvLAdBlrk8AN5foMBfO3osdqC8
-         odCNCBLito9p2PxN6kbE2kgpl+VIiYQL7GRK8s4xTLRles4rqGVrFrJYXMzwvEysI9XV
-         om0KsQwIQ3U3zOJvBSoBwX71A/joi0bPVXXEjD3cITV3aH/BNdzRDp7TEeWo8W2RGA94
-         Clrw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787289462; x=1787894262;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+        d=google.com; s=20251104; t=1787606495; x=1788211295; darn=lists.infradead.org;
+        h=content-type:cc:to:from:subject:message-id:references:mime-version
+         :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=13mpJllH/Zvzc6cEE176TorQISQiQzdps6jTNyvGa88=;
-        b=CLsAn4K6190TECSfg7czAbcalusYxJRVX8f5IQU1kNQiE62JW9eulilaRDaXFr0gtr
-         bWMS4gBWKiDDba9H7+qeSsl3KL9ayhIXi+gMTbGROsWnAWpGM+EgacA6sc4x7W7jm8Tx
-         8i4OYsGxCgiGclzr9/AXP07l9QlmqL0OYLaQ1nfm39h1td8hJ7XGMbAH179HzLmQySdR
-         dJD4ID3OsDRQW7W6h8Xq2EZWly8rl048J3sMcY72qb7UGu5Pd9hc20s7UOYw5WloxXKH
-         dEyHhTDJznkLLO+fo9XqyJb1H1TcR44ZR6hwsMcvoTjOrY6INLgPru7Zm1GqHCVWef7W
-         qF0g==
-X-Forwarded-Encrypted: i=1; AHgh+RqfP0TfYFbWxo5oUQvUgXOnduPUfKNNGYDywYdKhuqFhEWEbJEsvL71rt/oPfEWJXuGbrf+TTwZs7Y=@lists.infradead.org
-X-Gm-Message-State: AOJu0YwrlhShXfUsZBolCvGPLhkcshUmy0Sv3Zph8Is9ErbNsSrpOQnD
-	1tuOtPD9QSNd8zx7kTk5LI8teThCrMAXaadGQODA73/0vA3S+xZbu3r4kZda78E9kNykgdhWfrp
-	6aVEliE9yLRuSKqEEMNyU0+H/ioZDDsiTserXOTafUg==
-X-Gm-Gg: AR+sD11OsSOxZTEa7FX8IdezyZoWj4yiHdJWNt+mzrao/ZPXamyrGgTQc3UUp1aHUnJ
-	B0AsQFHjdyV84Ka5Sve6rSmvzIMhOoGQ7top1RYz3GLwwNKtPm5Lvik8NNqMZdv8I1kQSIEK35Y
-	DqezGg65VoY+QPt+3rQXPFP6BaGpaUJzRXdI+hH0S+/xJJwI7HsEGy6ol0zWmCKfSUIFjy4j0ge
-	JzA/6FW94Fwbay7fkY4s1/x8BJ36sOY0eCdckULA0nemtpa8aKxUaCmA2yT39qUSbp4Zx4euVp8
-	PO13AuA/aB2mUSES1UUDhhcSWizMCGNAjMnzS45my9vlhz/3UYZTYfChxqCpmkEj3pWzK0b2xxC
-	AV0KR6qgNKinLZlwUdCJwY/PvtN7JGk29JRPBbqrC6SsEUktQfcDI6n04tiV4Q2M=
-X-Received: by 2002:a05:600c:8b63:b0:499:7f37:cb74 with SMTP id
- 5b1f17b1804b1-499b06a36demr94909825e9.1.1787289462039; Thu, 20 Aug 2026
- 22:17:42 -0700 (PDT)
-MIME-Version: 1.0
-References: <20260721073612.137259-1-xb@ultrarisc.com> <CAAhSdy3kDmRxcT_+dOpcUVAkvZ-F0kWdQett+mTy93gPDkwS+Q@mail.gmail.com>
- <178728288861.534500.12009100192281293732@ultrarisc.com>
-In-Reply-To: <178728288861.534500.12009100192281293732@ultrarisc.com>
-From: Anup Patel <anup@brainfault.org>
-Date: Fri, 21 Aug 2026 10:47:28 +0530
-X-Gm-Features: AcwNN1VyOTE5mxX9-Emhx7eOr0LfPk9cSJYrSJElhptVzuqH563CP-bjvH7fuKc
-Message-ID: <CAAhSdy1shnw8-4yNVtsO8tJdebGYdX9n2mJyhoMQ9KpuitsMoA@mail.gmail.com>
-Subject: Re: [PATCH] RISC-V: KVM: Serialize IMSIC attributes with vCPU migration
-To: Xie Bo <xb@ultrarisc.com>
-Cc: Atish Patra <atish.patra@linux.dev>, Paul Walmsley <pjw@kernel.org>, 
-	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
-	Alexandre Ghiti <alex@ghiti.fr>, kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
-	linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, 
-	stable@vger.kernel.org
+        bh=NU4DYUq1t/9abu87crupOiETuM25Ll46MNDzgrp8Cdg=;
+        b=ZfUn2RI74L9nEEFv6MANyv45UX5A3qrmlakwFeiIVRdudO/RBr8XL+9vc5EGRtaP9o
+         DDTFDBbp+UmTOVF/vIWpTvYQg6wVkLriAsrgmJnXdz59VmxgZPA9h4RBlaoZHEu5mgRv
+         Z7wcxVcyHIJjIXg2HAVdtdJrpCsRwiBNPKLvcCAIAOikuWcGrEXIocyH9b0eZj5aIqhO
+         Upe86DRjFttVtOcZoCzyqkGeh7qvuSrunpRszKXe18xbbJLyz2T7fFeYcICAkob0i5fp
+         ftIvOJkD52PfOD4A32YTpt9o4JIJ7JssvKFZgjvycfpq41lA5MyviH1/bzemsd9i9Xz+
+         dRFA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1787606495; x=1788211295;
+        h=content-type:cc:to:from:subject:message-id:references:mime-version
+         :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=NU4DYUq1t/9abu87crupOiETuM25Ll46MNDzgrp8Cdg=;
+        b=jGwxoS2axYkBImgLmjVkrbIG3vJm+Cl1NeeRsBH5pSVCDh+yjO9VCNMJ/OC4KpoASu
+         L3iHoFScTrJ5sAXXgA7uLftNYBNvDqyEekQog7DEeQK+BYq0pwqipCBHoUMSLbWfI7hv
+         DWaf8WcUPFSE56+BwMH6GmTqUf94agS5JkZNVQ5wNL2ZxjKP1lLM9b4gxdUUFLQI8Un0
+         KtiM6m9aa3dJa+USuRFT5GrojrkusBjlNpOUsQT3EHsBtKaswAdwVufV94Vc9Fg+ObFc
+         78X/+M4DZZWufEXZJYRJPpuliYPzbYZxqFGi6/qWKkeZqELIewvulspdYSeHQ389iIrJ
+         DHHw==
+X-Forwarded-Encrypted: i=1; AHgh+RpArs5mjXr1BDSgq2pUMEJJ+5sXmTWwLi6vYbwT+Jn5qQ/SajW18mjk5BjrBYq33ky14yDrE8xtI7w=@lists.infradead.org
+X-Gm-Message-State: AFuF++kG6B82rA8aSSA/KSmcWE1/diDQz/5lmwfZPCqYBfYhV8VFZK3h
+	/9aVfuK3T+3wlO5Nwto/PqlxqHIM15m6dt8jyeiZvg1Wy6+PWxc3vKF/HHs0lTtu0f23y8x7M33
+	NAeDNww==
+X-Received: from pfoi3.prod.google.com ([2002:aa7:87c3:0:b0:847:9805:8254])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a00:398a:b0:84e:2722:5d9e
+ with SMTP id d2e1a72fcca58-851f9bb5de5mr47827595b3a.1.1787606494792; Mon, 24
+ Aug 2026 14:21:34 -0700 (PDT)
+Date: Mon, 24 Aug 2026 14:21:34 -0700
+In-Reply-To: <20260820220340.GC618052.vipinsh@google.com>
+Mime-Version: 1.0
+References: <20260331194202.1722082-1-vipinsh@google.com> <20260331194202.1722082-9-vipinsh@google.com>
+ <ampPd9szwRoGKwds@google.com> <20260820220340.GC618052.vipinsh@google.com>
+Message-ID: <aoy13na7ceOOeh0K@google.com>
+Subject: Re: [PATCH v4 8/9] KVM: selftests: Add rule to generate default tests
+ for KVM selftests runner
+From: Sean Christopherson <seanjc@google.com>
+To: Vipin Sharma <vipinsh@google.com>
+Cc: kvm@vger.kernel.org, kvmarm@lists.linux.dev, kvm-riscv@lists.infradead.org, 
+	pbonzini@redhat.com, borntraeger@linux.ibm.com, frankja@linux.ibm.com, 
+	imbrenda@linux.ibm.com, anup@brainfault.org, atish.patra@linux.dev, 
+	zhaotianrui@loongson.cn, maobibo@loongson.cn, chenhuacai@kernel.org, 
+	maz@kernel.org, oliver.upton@linux.dev, ajones@ventanamicro.com
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260820_221744_245962_04DC5F23 
-X-CRM114-Status: UNSURE (   7.76  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20260824_142140_336373_54DCF9B5 
+X-CRM114-Status: GOOD (  22.69  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -118,17 +91,94 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-T24gRnJpLCBBdWcgMjEsIDIwMjYgYXQgODo1OOKAr0FNIFhpZSBCbyA8eGJAdWx0cmFyaXNjLmNv
-bT4gd3JvdGU6Cj4KPiBIaSBBbnVwLAo+Cj4gVGhlIGlzc3VlIHJlcG9ydGVkIGJ5IFNhc2hpa28g
-aGFzIGJlZW4gYWRkcmVzc2VkIGluIHYyIGJ5IHVzaW5nCj4gbXV0ZXhfbG9ja19raWxsYWJsZSgp
-IGFuZCByZXR1cm5pbmcgLUVJTlRSIHdoZW4gdGhlIGxvY2sgYWNxdWlzaXRpb24gaXMKPiBpbnRl
-cnJ1cHRlZC4KPgo+IHYyOgo+IGh0dHBzOi8vbG9yZS5rZXJuZWwub3JnL3IvMjAyNjA4MTAtaW1z
-aWMtYXR0ci1yYWNlLXYyLTEtMDBlZDk1YWQzMjFlQHVsdHJhcmlzYy5jb20KPgoKU3VyZSwgSSB3
-aWxsIGNvbnNpZGVyIHRoaXMgYXMgZml4IGZvciA3LjMKClJlZ2FyZHMsCkFudXAKCi0tIAprdm0t
-cmlzY3YgbWFpbGluZyBsaXN0Cmt2bS1yaXNjdkBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9s
-aXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8va3ZtLXJpc2N2Cg==
+On Thu, Aug 20, 2026, Vipin Sharma wrote:
+> On Wed, Jul 29, 2026 at 12:07:35PM -0700, Sean Christopherson wrote:
+> > @@ -347,15 +345,13 @@ $(SPLIT_TEST_GEN_PROGS): $(OUTPUT)/%: $(OUTPUT)/%.o $(OUTPUT)/$(ARCH)/%.o
+> >  $(SPLIT_TEST_GEN_OBJ): $(OUTPUT)/$(ARCH)/%.o: $(ARCH)/%.c
+> >         $(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c $< -o $@
+> >  
+> > -# Default testcases for KVM selftests runner will be generated in this directory.
+> > -DEFAULT_TESTCASES = testcases_default_gen
+> > +TEST_FILES := $(selfdir)/kvm/runner
+> 
+> Downside of this one is that if someone is not planning to use runner they
+> will still get this directory copied.
+> 
+> Should we instead add 'rsync -u' in 'testcases' rule below which can copy
+> runner only when it is updated or not present? This would be similar to
+> original patch but instead of 'cp' it will be 'rsync' command. This will
+> also copy runner when someone is explicitly using it.
+
+Hmm, but someone could be using the runner without (re)generating the default
+testcases.  We could add a "runner" target, but that seems like overkill.
+
+I'm good with either option, but I think my vote would be have the runner get
+copied on install, i.e. just do the "TEST_FILES := $(selfdir)/kvm/runner" above.
+But again, either way works for me.
+
+> I think we should also include 'tests' directory which we are using for
+> custom testcases and they also .
+
+Heh, they also what?
+
+> >  EXTRA_CLEAN += $(GEN_HDRS) \
+> >                $(LIBKVM_OBJS) \
+> >                $(SPLIT_TEST_GEN_OBJ) \
+> >                $(TEST_DEP_FILES) \
+> >                $(TEST_GEN_OBJ) \
+> > -              $(OUTPUT)/$(DEFAULT_TESTCASES) \
+> >                cscope.*
+> >  
+> >  $(LIBKVM_C_OBJ): $(OUTPUT)/%.o: %.c $(GEN_HDRS)
+> > @@ -386,21 +382,18 @@ cscope:
+> >         cscope -b
+> >  
+> >  # Generate runner testcases in DEFAULT_TESTCASES directory.
+> > -# $(OUTPUT) is either CWD or specified in the make command.
+> > -tests_install: list_progs = $(patsubst $(OUTPUT)/%,%,$(TEST_GEN_PROGS))
+> > -tests_install:
+> > -       $(foreach tc, $(TEST_PROGS), \
+> > -               $(shell mkdir -p $(OUTPUT)/$(DEFAULT_TESTCASES)/$(patsubst %.sh,%,$(tc))))
+> > -       $(foreach tc, $(TEST_PROGS), \
+> > -               $(shell echo $(tc) > $(patsubst %.sh,$(OUTPUT)/$(DEFAULT_TESTCASES)/%/default.test,$(tc))))
+> > +DEFAULT_TESTCASES = default_testcases
+> > +
+> > +testcases: list_progs = $(notdir $(patsubst $(OUTPUT)/%,%,$(TEST_GEN_PROGS)))
+> > +testcases: install
+> > +       $(foreach tc, $(notdir $(TEST_PROGS)), \
+> > +               $(shell mkdir -p $(INSTALL_PATH)/$(DEFAULT_TESTCASES)/$(notdir $(patsubst %.sh,%,$(tc)))))
+> > +       $(foreach tc, $(notdir $(TEST_PROGS)), \
+> > +               $(shell echo $(tc) > $(patsubst %.sh,$(INSTALL_PATH)/$(DEFAULT_TESTCASES)/%/default.test,$(tc))))
+> >  
+> >         $(foreach tc, $(list_progs), \
+> > -               $(shell mkdir -p $(OUTPUT)/$(DEFAULT_TESTCASES)/$(tc)))
+> > +               $(shell mkdir -p $(INSTALL_PATH)/$(DEFAULT_TESTCASES)/$(tc)))
+> >         $(foreach tc, $(list_progs), \
+> > -               $(shell echo $(tc) > $(patsubst %,$(OUTPUT)/$(DEFAULT_TESTCASES)/%/default.test,$(tc))))
+> > -
+> > -       @if [ ! -d $(OUTPUT)/runner ]; then             \
+> > -               cp -r $(selfdir)/kvm/runner $(OUTPUT);  \
+> > -       fi
+> > +               $(shell echo $(tc) > $(patsubst %,$(INSTALL_PATH)/$(DEFAULT_TESTCASES)/%/default.test,$(tc))))
+> 
+> All looks good here.
+> 
+> Should I send a next version of this series with the changes you have
+> suggested or you wanna take the diff you created and apply before merge?
+
+Go ahead and send the next version.  Given the number of tweaks, it'd be helpful
+to be closer to WYSIWYG.  My changes are at:
+
+  https://github.com/sean-jc/linux slf/runner
+
+if you want to use that as a reference and/or grab changes directly.
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
