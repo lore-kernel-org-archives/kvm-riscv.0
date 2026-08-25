@@ -4,82 +4,96 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0DF23C5DF81
-	for <kvm-riscv@archiver.kernel.org>; Mon, 24 Aug 2026 21:21:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F1E86C61DB6
+	for <kvm-riscv@archiver.kernel.org>; Tue, 25 Aug 2026 08:37:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID:
-	References:Mime-Version:In-Reply-To:Date:Reply-To:Content-ID:
-	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
-	:Resent-Message-ID:List-Owner;
-	bh=POpvLR0PqkTyLXLboZ+9pTWGfPg7Loc5QvOd2LwV+WQ=; b=2HGIV9ltgIeCucuYkLCtB9YMFZ
-	yCNDdGw6ZKCPSM1jsCYVOYEqDno0OJiWQjACKFMBaKGcadJdtj7WCM1lTTSpb48hDYRktNp58BFWY
-	gIVhLKOeCOjuNcWEyv8v4PkQTFDCCxYSw/Rphn1j6wDxGaGmQoEVv3PAV1hiGxfk6xZGZFK77qquq
-	JdOvz5NURyuq8OVQkNTZdUkGj8GENpoDQyUb0ZgNa3166En3ZWIhFcXBy60A9fuVix9HHJf4YD3BU
-	IOZZLu4X2/zSQtljRSdp2CYUIV+mUKjBHZaEykC3yRV63NZcbkl7G2Cmhy9I433N2ThATBxiKLhud
-	v8PBO6qQ==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=qkBrAqKQnkMerKSC/vfmJ2zD+9EPpHzMThHWUQxKCdg=; b=QrabDcChFSM6OK
+	O5YzwL75EFQ/z8QUkt4UPSCRzAPMKoNwCIu+HfviBfFapIdwi0VmC3A9xzezTSufKtIrdCy70zVRU
+	zQ73JXr6ufCwL0rpzx2Y73F1Tov+iMobETCJ8PJfLxWE4ELNUQwzhtHpmzdqBp/HnALxDNsxTbeqG
+	4oI0MvVOW8SolNMGYs+Enc0Y4XV2lc43NP7OWXmW75e6gRjg3KALPU0YaUPTGfaeSQC+xJmKSGaqg
+	5ZrZ5xP7M+UB2WULWGceCDbTtxmabahUsEzQAy+lgJMJN7tcsV9pbMROuDk1IDMoZ9sdVZOSMc/qg
+	hrYNeAYuh7nypGpS9/1g==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wyc6x-0000000HP4e-1P3X;
-	Mon, 24 Aug 2026 21:21:43 +0000
-Received: from mail-pf1-x446.google.com ([2607:f8b0:4864:20::446])
+	id 1wymf7-00000000Oo4-32sT;
+	Tue, 25 Aug 2026 08:37:42 +0000
+Received: from mail-pg1-x536.google.com ([2607:f8b0:4864:20::536])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wyc6r-0000000HP42-3U9c
+	id 1wymf5-00000000OnD-0fVv
 	for kvm-riscv@lists.infradead.org;
-	Mon, 24 Aug 2026 21:21:41 +0000
-Received: by mail-pf1-x446.google.com with SMTP id d2e1a72fcca58-8485d853b08so6235162b3a.1
-        for <kvm-riscv@lists.infradead.org>; Mon, 24 Aug 2026 14:21:35 -0700 (PDT)
+	Tue, 25 Aug 2026 08:37:40 +0000
+Received: by mail-pg1-x536.google.com with SMTP id 41be03b00d2f7-c9aea40d799so2725929a12.0
+        for <kvm-riscv@lists.infradead.org>; Tue, 25 Aug 2026 01:37:38 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1787606495; x=1788211295; darn=lists.infradead.org;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=NU4DYUq1t/9abu87crupOiETuM25Ll46MNDzgrp8Cdg=;
-        b=ZfUn2RI74L9nEEFv6MANyv45UX5A3qrmlakwFeiIVRdudO/RBr8XL+9vc5EGRtaP9o
-         DDTFDBbp+UmTOVF/vIWpTvYQg6wVkLriAsrgmJnXdz59VmxgZPA9h4RBlaoZHEu5mgRv
-         Z7wcxVcyHIJjIXg2HAVdtdJrpCsRwiBNPKLvcCAIAOikuWcGrEXIocyH9b0eZj5aIqhO
-         Upe86DRjFttVtOcZoCzyqkGeh7qvuSrunpRszKXe18xbbJLyz2T7fFeYcICAkob0i5fp
-         ftIvOJkD52PfOD4A32YTpt9o4JIJ7JssvKFZgjvycfpq41lA5MyviH1/bzemsd9i9Xz+
-         dRFA==
+        d=gmail.com; s=20251104; t=1787647058; x=1788251858; darn=lists.infradead.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=rTiqxajFCS8JhT00U7QUj901RHFXVk9RFW4qrD2ZWqc=;
+        b=n6eYs0k3dsmQDS8AzNMsknuIakC5ulwN/nuHdt/c+/9HfYt0Z46qBL6uzB2wp6rm07
+         aoHIbkTEbMQlvkzlea+kwT7JGQGtAn3fPOnMfs+15uNsZXLu69O5zIKQyPjDLyWjvGum
+         Z+arOAzBdnn4Rjs0jlJ7b0UaqOAmMMVuBlPFMl01jFamNObZEZbGqmWzzdwOZktLFm7b
+         5EL+kFoXleC+uJ0IAopS3EhbDSp8TJFNBd3tgAFqphvxZB9c+NUrJvJGHg43yUsNekLk
+         jDIiDoIIDpvt3J2l3jZVQ/qzof64uGWfLv0VGs8UK0EW2vffRStyidbt+TXYUFYk2gA6
+         FbYA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787606495; x=1788211295;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
+        d=1e100.net; s=20251104; t=1787647058; x=1788251858;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=NU4DYUq1t/9abu87crupOiETuM25Ll46MNDzgrp8Cdg=;
-        b=jGwxoS2axYkBImgLmjVkrbIG3vJm+Cl1NeeRsBH5pSVCDh+yjO9VCNMJ/OC4KpoASu
-         L3iHoFScTrJ5sAXXgA7uLftNYBNvDqyEekQog7DEeQK+BYq0pwqipCBHoUMSLbWfI7hv
-         DWaf8WcUPFSE56+BwMH6GmTqUf94agS5JkZNVQ5wNL2ZxjKP1lLM9b4gxdUUFLQI8Un0
-         KtiM6m9aa3dJa+USuRFT5GrojrkusBjlNpOUsQT3EHsBtKaswAdwVufV94Vc9Fg+ObFc
-         78X/+M4DZZWufEXZJYRJPpuliYPzbYZxqFGi6/qWKkeZqELIewvulspdYSeHQ389iIrJ
-         DHHw==
-X-Forwarded-Encrypted: i=1; AHgh+RpArs5mjXr1BDSgq2pUMEJJ+5sXmTWwLi6vYbwT+Jn5qQ/SajW18mjk5BjrBYq33ky14yDrE8xtI7w=@lists.infradead.org
-X-Gm-Message-State: AFuF++kG6B82rA8aSSA/KSmcWE1/diDQz/5lmwfZPCqYBfYhV8VFZK3h
-	/9aVfuK3T+3wlO5Nwto/PqlxqHIM15m6dt8jyeiZvg1Wy6+PWxc3vKF/HHs0lTtu0f23y8x7M33
-	NAeDNww==
-X-Received: from pfoi3.prod.google.com ([2002:aa7:87c3:0:b0:847:9805:8254])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a00:398a:b0:84e:2722:5d9e
- with SMTP id d2e1a72fcca58-851f9bb5de5mr47827595b3a.1.1787606494792; Mon, 24
- Aug 2026 14:21:34 -0700 (PDT)
-Date: Mon, 24 Aug 2026 14:21:34 -0700
-In-Reply-To: <20260820220340.GC618052.vipinsh@google.com>
-Mime-Version: 1.0
-References: <20260331194202.1722082-1-vipinsh@google.com> <20260331194202.1722082-9-vipinsh@google.com>
- <ampPd9szwRoGKwds@google.com> <20260820220340.GC618052.vipinsh@google.com>
-Message-ID: <aoy13na7ceOOeh0K@google.com>
-Subject: Re: [PATCH v4 8/9] KVM: selftests: Add rule to generate default tests
- for KVM selftests runner
-From: Sean Christopherson <seanjc@google.com>
-To: Vipin Sharma <vipinsh@google.com>
-Cc: kvm@vger.kernel.org, kvmarm@lists.linux.dev, kvm-riscv@lists.infradead.org, 
-	pbonzini@redhat.com, borntraeger@linux.ibm.com, frankja@linux.ibm.com, 
-	imbrenda@linux.ibm.com, anup@brainfault.org, atish.patra@linux.dev, 
-	zhaotianrui@loongson.cn, maobibo@loongson.cn, chenhuacai@kernel.org, 
-	maz@kernel.org, oliver.upton@linux.dev, ajones@ventanamicro.com
+        bh=rTiqxajFCS8JhT00U7QUj901RHFXVk9RFW4qrD2ZWqc=;
+        b=X4TDcROQsCsSF+s0G+NuER5pYza1VxMc07SsNET1ejCZShlDLpN7Eb/MTcOVA/lxzV
+         AoGo9/Bw2OWZS2Vqp/ZMrk6eeO9xExdmbeddlXDdVxdWBKxu0Ca/M+DhAwwNEZPOYow5
+         z2LQHJiFp/z1w9RiABbv9SPdiOIAJEaElkbY8TVmA74nNsfiKoTy7xciND09SNs8eV5C
+         DGFesaZ1aVGtviKlY2eMjskGzMWmZEf3afOTKWA3KpDAy3Sc/nJqYgNlhGrSIBGR6EZV
+         GiSEBqBNUdKdRPRXZ+PwsRnctdrtN0gB2qjJRPUlcB1OkAJa/tTcKGh3lq8Qo6FEVgkm
+         yZ5w==
+X-Forwarded-Encrypted: i=1; AHgh+RoPpS/AHtcCdm5ue7G1y6dq3j8OE956442mDFAI/ohm4V1VeYOKQt/gWrFS5Nr765N2rKplql8gPjs=@lists.infradead.org
+X-Gm-Message-State: AFuF++lkmX+nJDLC/IRAMuAGsmGZFd2ODbi8pfI/QkXagMEcGjes86P1
+	8hgaHautV4zWf+QUM3Q/1HsiKya8RyEdmUfUiaQNDRfNOHXiLrY2TnWS
+X-Gm-Gg: AR+sD12jeVOuDciyoYcj4Iu39zG8xvtoV+tTDq9mS8z4jsLGtuIkxnsDAvKejJL4pKT
+	MApI9VWpbE7D6uaZAsKk6kwDLK7I29U3V6LbyZrHAfOMQ0t3yfoUB7Sp3RVy5xMcTJGMX6KgR8/
+	4IPOjY0eNrvZG6yD5f3Tv91dDxf5b5QpKbjnxYrD0SHB7Zd/GO6soYqc7nGJD7qjBi2GU8Zfn4h
+	AcVtOvLeZEzeyzhjqIIxWNSLjBnUYxMdagogtOSDD57Vx7HYdxm+HVdMB5SW1OjH+lTUdCprlZF
+	KoIh40Si36/FTG6I+G60gcIowhQqZZFYGHKcVzs9Q7HOSQfmVr/8kcTSWVDK4usKvuYt5280Ota
+	r43ThMhkWFFEIbqM/Da3l1+rkP6gHt+3roQKZDdU5Vdw0kr1j2LbgLz5G9uBBxWS86YOSwYjVIT
+	wwpqycOqaiW3TqhVpKRmhx7IKRHSAjk7+aH6A9yA9Djy59oEbxoDYhsSrd3kkKVJr51zM4waz+H
+	B+AIzfKCo9Y
+X-Received: by 2002:a05:6a21:320b:b0:3be:b0b3:3962 with SMTP id adf61e73a8af0-3cd9125ad6dmr10437900637.9.1787647057741;
+        Tue, 25 Aug 2026 01:37:37 -0700 (PDT)
+Received: from fedora ([61.74.238.173])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-cc199e60abbsm1835887a12.23.2026.08.25.01.37.34
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 25 Aug 2026 01:37:37 -0700 (PDT)
+From: SeungJu Cheon <suunj1331@gmail.com>
+To: Anup Patel <anup@brainfault.org>,
+	Atish Patra <atish.patra@linux.dev>
+Cc: Paul Walmsley <pjw@kernel.org>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>,
+	Alexandre Ghiti <alex@ghiti.fr>,
+	Andrew Jones <ajones@ventanamicro.com>,
+	kvm@vger.kernel.org,
+	kvm-riscv@lists.infradead.org,
+	linux-riscv@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	Shuah Khan <skhan@linuxfoundation.org>,
+	linux-kernel-mentees@lists.linux.dev,
+	me@brighamcampbell.com,
+	SeungJu Cheon <suunj1331@gmail.com>
+Subject: [PATCH v1 0/3] RISC-V: KVM: Fix PMU counter handling issues
+Date: Tue, 25 Aug 2026 17:37:16 +0900
+Message-ID: <20260825083719.643970-1-suunj1331@gmail.com>
+X-Mailer: git-send-email 2.52.0
+MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260824_142140_336373_54DCF9B5 
-X-CRM114-Status: GOOD (  22.69  )
+X-CRM114-CacheID: sfid-20260825_013739_230557_315F284D 
+X-CRM114-Status: UNSURE (   6.95  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -96,87 +110,29 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Thu, Aug 20, 2026, Vipin Sharma wrote:
-> On Wed, Jul 29, 2026 at 12:07:35PM -0700, Sean Christopherson wrote:
-> > @@ -347,15 +345,13 @@ $(SPLIT_TEST_GEN_PROGS): $(OUTPUT)/%: $(OUTPUT)/%.o $(OUTPUT)/$(ARCH)/%.o
-> >  $(SPLIT_TEST_GEN_OBJ): $(OUTPUT)/$(ARCH)/%.o: $(ARCH)/%.c
-> >         $(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c $< -o $@
-> >  
-> > -# Default testcases for KVM selftests runner will be generated in this directory.
-> > -DEFAULT_TESTCASES = testcases_default_gen
-> > +TEST_FILES := $(selfdir)/kvm/runner
-> 
-> Downside of this one is that if someone is not planning to use runner they
-> will still get this directory copied.
-> 
-> Should we instead add 'rsync -u' in 'testcases' rule below which can copy
-> runner only when it is updated or not present? This would be similar to
-> original patch but instead of 'cp' it will be 'rsync' command. This will
-> also copy runner when someone is explicitly using it.
+This series fixes three issues in the KVM RISC-V PMU implementation:
 
-Hmm, but someone could be using the runner without (re)generating the default
-testcases.  We could add a "runner" target, but that seems like overkill.
+- preserve firmware counter values across stop/start;
+- report failures when writing snapshot data to guest memory; and
+- fix perf-backed counter accounting across read and stop.
 
-I'm good with either option, but I think my vote would be have the runner get
-copied on install, i.e. just do the "TEST_FILES := $(selfdir)/kvm/runner" above.
-But again, either way works for me.
+The changes were tested with the existing KVM RISC-V SBI PMU selftests
+and additional tests covering the affected stop/start, snapshot failure,
+and repeated read paths.
 
-> I think we should also include 'tests' directory which we are using for
-> custom testcases and they also .
+SeungJu Cheon (3):
+  RISC-V: KVM: Preserve firmware counter value across stop/start
+  RISC-V: KVM: Report snapshot write failure to the guest
+  RISC-V: KVM: Fix perf-backed counter accounting across stop and read
 
-Heh, they also what?
+ arch/riscv/kvm/vcpu_pmu.c | 33 +++++++++++++++++----------------
+ 1 file changed, 17 insertions(+), 16 deletions(-)
 
-> >  EXTRA_CLEAN += $(GEN_HDRS) \
-> >                $(LIBKVM_OBJS) \
-> >                $(SPLIT_TEST_GEN_OBJ) \
-> >                $(TEST_DEP_FILES) \
-> >                $(TEST_GEN_OBJ) \
-> > -              $(OUTPUT)/$(DEFAULT_TESTCASES) \
-> >                cscope.*
-> >  
-> >  $(LIBKVM_C_OBJ): $(OUTPUT)/%.o: %.c $(GEN_HDRS)
-> > @@ -386,21 +382,18 @@ cscope:
-> >         cscope -b
-> >  
-> >  # Generate runner testcases in DEFAULT_TESTCASES directory.
-> > -# $(OUTPUT) is either CWD or specified in the make command.
-> > -tests_install: list_progs = $(patsubst $(OUTPUT)/%,%,$(TEST_GEN_PROGS))
-> > -tests_install:
-> > -       $(foreach tc, $(TEST_PROGS), \
-> > -               $(shell mkdir -p $(OUTPUT)/$(DEFAULT_TESTCASES)/$(patsubst %.sh,%,$(tc))))
-> > -       $(foreach tc, $(TEST_PROGS), \
-> > -               $(shell echo $(tc) > $(patsubst %.sh,$(OUTPUT)/$(DEFAULT_TESTCASES)/%/default.test,$(tc))))
-> > +DEFAULT_TESTCASES = default_testcases
-> > +
-> > +testcases: list_progs = $(notdir $(patsubst $(OUTPUT)/%,%,$(TEST_GEN_PROGS)))
-> > +testcases: install
-> > +       $(foreach tc, $(notdir $(TEST_PROGS)), \
-> > +               $(shell mkdir -p $(INSTALL_PATH)/$(DEFAULT_TESTCASES)/$(notdir $(patsubst %.sh,%,$(tc)))))
-> > +       $(foreach tc, $(notdir $(TEST_PROGS)), \
-> > +               $(shell echo $(tc) > $(patsubst %.sh,$(INSTALL_PATH)/$(DEFAULT_TESTCASES)/%/default.test,$(tc))))
-> >  
-> >         $(foreach tc, $(list_progs), \
-> > -               $(shell mkdir -p $(OUTPUT)/$(DEFAULT_TESTCASES)/$(tc)))
-> > +               $(shell mkdir -p $(INSTALL_PATH)/$(DEFAULT_TESTCASES)/$(tc)))
-> >         $(foreach tc, $(list_progs), \
-> > -               $(shell echo $(tc) > $(patsubst %,$(OUTPUT)/$(DEFAULT_TESTCASES)/%/default.test,$(tc))))
-> > -
-> > -       @if [ ! -d $(OUTPUT)/runner ]; then             \
-> > -               cp -r $(selfdir)/kvm/runner $(OUTPUT);  \
-> > -       fi
-> > +               $(shell echo $(tc) > $(patsubst %,$(INSTALL_PATH)/$(DEFAULT_TESTCASES)/%/default.test,$(tc))))
-> 
-> All looks good here.
-> 
-> Should I send a next version of this series with the changes you have
-> suggested or you wanna take the diff you created and apply before merge?
 
-Go ahead and send the next version.  Given the number of tweaks, it'd be helpful
-to be closer to WYSIWYG.  My changes are at:
+base-commit: 0a0d1d55dad570724bf8c7ea83409639cfb4be9b
+-- 
+2.52.0
 
-  https://github.com/sean-jc/linux slf/runner
-
-if you want to use that as a reference and/or grab changes directly.
 
 -- 
 kvm-riscv mailing list
