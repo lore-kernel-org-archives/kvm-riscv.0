@@ -4,72 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 71466C5DF94
-	for <kvm-riscv@archiver.kernel.org>; Tue, 25 Aug 2026 08:37:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8A444C61DB6
+	for <kvm-riscv@archiver.kernel.org>; Tue, 25 Aug 2026 08:38:07 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=Qo8BjdoUUK0Gvq0QiNTf07p42ySnftFv6isv5yJTjdY=; b=ZzJze0VRoazpPM
-	dcDV+bcA3VueSTta3ThT1n4eKwndTAo6HBQb8x4XaOAiyRhk1r5hhHc8QhAVOTyKgVbruac/uo044
-	h6KMZ0/rnWYRYN9OAW1dreMf/8HBOC7ZFiSqGhyjgx1K/l3lMNuKXN8EUIOS1d1tXjk7mk0sg/a8O
-	V74ecqoe1StOUL/cOTxAA+HwIk6fyt0x1uAqtRV1DlWfIhYoMD1+2II9+FCweUIjQLVK9Zgk2j64q
-	+WjjRoCIsv99Q4barSwmSFUZgh2pFqcX5iKzXDe7mNWUBxXkQhCOxZwhiT6k46VGWR9lvEieOdh52
-	HkV6MVABgn0w0NZKDCLQ==;
+	List-Owner; bh=MzAD6/fegtHWZmGRGa4+CkTKdUoDugLYXQJqp5LbRus=; b=XKExkRiEQAbL0Y
+	WdeIpW3r+red5ujETQI7ls8qY2XqTCE0TzajVT8eVOPJAm0XxpjMtNswQGe9zmCo12IwOe8uugOe6
+	H8XVh0XtuOnc/IBjCvmvW6g6Tj/PFjkAbjB0hLAONWJWhSmVlJc2N3ucYXCnDdorfvpdsZ+fPYt2c
+	boRqDw+HfW4imrdD8El2qmb0kzIDy/afFRQhaH7XzJcFGYPOQIxC40wvZN9ny5sumd3aVVeZbE27g
+	i+PNzRKtjzTU7DTnqXspZhN8bSoJfeKibVN+5kRbzu6dMgZQM3Tm1STa2r1Y/3aSqMg0o01omEs3c
+	OfVwKjwYuB48R8rxN3Dw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wymfI-00000000OtL-3sfl;
-	Tue, 25 Aug 2026 08:37:53 +0000
-Received: from mail-pg1-x529.google.com ([2607:f8b0:4864:20::529])
+	id 1wymfX-00000000P2b-11p3;
+	Tue, 25 Aug 2026 08:38:07 +0000
+Received: from mail-pg1-x534.google.com ([2607:f8b0:4864:20::534])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wymfG-00000000Orw-3vYm
+	id 1wymfL-00000000OvE-3Y66
 	for kvm-riscv@lists.infradead.org;
-	Tue, 25 Aug 2026 08:37:51 +0000
-Received: by mail-pg1-x529.google.com with SMTP id 41be03b00d2f7-cc1a4c62804so1646767a12.3
-        for <kvm-riscv@lists.infradead.org>; Tue, 25 Aug 2026 01:37:50 -0700 (PDT)
+	Tue, 25 Aug 2026 08:38:06 +0000
+Received: by mail-pg1-x534.google.com with SMTP id 41be03b00d2f7-cb5b8572b70so5329114a12.2
+        for <kvm-riscv@lists.infradead.org>; Tue, 25 Aug 2026 01:37:55 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1787647070; x=1788251870; darn=lists.infradead.org;
+        d=gmail.com; s=20251104; t=1787647075; x=1788251875; darn=lists.infradead.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=SlP9O0s11C5YW6Wj3Uolvqko6ksI3Exocfu05SFa8SI=;
-        b=IvMZy+H60TyTglyt/evcUd4nhrPKIhYZutDasJuflz1uPWWV6z/9+bkXQNm3zVasjd
-         NNLPj9zM6wJ95BQpW0Gb9ohYruDCkF0BI6RE4LapoUx7/V8vTsb4trADxQ0/vUDFwoIq
-         dIk1HlOLL2Y6tTAP6rws10GA21V4aUucgBzUCAggIEw8Oi8jVwXUjYFAH+mcAT+J/1yR
-         rUAtJRS9mOLjsOUOPKLUmx/Oe2CuVsJFwYsGcQYsQY6aQOPrlvIr1Y9w207ERrKWAH/4
-         a8PyFgquB0sjDkBPBr8PX540p/Q6m+LMAb4sT2sLeTyn+MTpzdFlFg8gq87RYnJH87Nd
-         Md3g==
+        bh=hN2Jmy0Yce+ny/9mzHdZVPdF+NxcdzE2Ab9UDeAEcWs=;
+        b=lw/HX3uKXRJmA8x+lzbR/xmOc5KGO9TtWDAyMv/VF4eXDBOChVDzJViEEXT+1t32XX
+         BpVcb40Wgv7x82R3gSxQq4upQji561smm8/JDhItNIpAq+HUHl9mLFkaQoGC0lho8SFz
+         DVd7bollszw0ut3UCzT32WH7W44p1YGhLsiKSiNi+EpkQTIAPID1JzzM1UH3T41c7E3B
+         isiTO/ulPiOrPsLOFw86UWnzdWtsyzrVBMTTtro5HayM9Uu1rIWRfJA2BCv9vuWBS+XZ
+         orqRdKT5K1G3vNkEULzb+qDoIZjJQrLJdjBmjNRZLpjZBbEOX/59U27dkXn/w+q98LNA
+         FB6g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787647070; x=1788251870;
+        d=1e100.net; s=20251104; t=1787647075; x=1788251875;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=SlP9O0s11C5YW6Wj3Uolvqko6ksI3Exocfu05SFa8SI=;
-        b=Ub7QhNM0SXTr5YBjUffenCDA8AJF657poH3MZ7WRXqkjLEt98GzsHWv/CiGalxVcvy
-         lwDoxRBrlJ8b/fr/p3JTIuP/KU8FG6fsnJuDxuMM1LcOh5FMSrgeLyK4dFgPudYdy+IU
-         xUqZG/wuZ6NRtqjbTHjgAQf8UjwmhGC0TiiLahoq8zblgKzKYW3ErUsdl1dgkc0nP7AY
-         naC2m+1VGvDCJCOevRjPXF2q+atl5V/SFDTmWndKcRtN0l33RxWFS022YvulLkNlG1uo
-         filZCsSmmXokmo57SAqd4nf2mRRUFft734scGBSmC7iQTaumF5ssPgrePN6zO4F2jyGK
-         iMPA==
-X-Forwarded-Encrypted: i=1; AHgh+RrhgSvdkYfJnTpYQq+DLH9nCo0B9qNyK5QoGjGAYUq+2K1wuWS12+EHxANJfN3U4hTOm620KTv3ulo=@lists.infradead.org
-X-Gm-Message-State: AFuF++m6fniWeNYgJrBONAmkon/BK6VIWDXM0wk78oA+kY22HmLTKi8j
-	bjkOujBQ0Xw9wdwsB4TPiqU3qzTWwbhqsSFXrFygh2BtVl6aiQI7T62C
-X-Gm-Gg: AR+sD11is226WQWmR8ITycYReXXhmt9oO6jEa9lQ/RNwME+I7ioA0VXpGrlDRiTVFEi
-	Q/zpa7jbaiaowAUYp/XJm/zBMtJjZ017CZXiSRfTOsr7HzZOTiqZPJay9sbw8vHoXMSvek9BStq
-	1IZl9l9Vw+Ork2p1Wj46KjyArePKSX5S+ty/g7PHjqXVZS7/wgXdBXQGG1D1FDWXZpWJVbzJ5wZ
-	DeaWHSXNnVZ7dFBbueK7qP6dW5CmOmmT61OJ8QHFpLlECf6s7RIQQdJNckwneWz+dTt2d9XUhxX
-	F9VDAwvrMJ96q3qpr6bjXHFG8VkOOg8ogJtG6T+7bl8tpYseNs0/ZKeNv7YVJ6709gTgEXfMFWs
-	cvdZMZDfrfSnqzQkIyupdoxvByI2rHYhamYy6HCpMzZqsz2nVVbHeYfve9ViiSt18lSc13gU+o8
-	KWJdWreZwefnzCYT2XZ/gfq7SOv+AYmnei7iYFxsVtJ9X5rCIek816p5d6T4oQ26zpQVfhafiad
-	x8cAACwKFXA
-X-Received: by 2002:a05:6300:6bc7:20b0:3cd:9f99:3381 with SMTP id adf61e73a8af0-3cd9f9933bamr400900637.0.1787647069755;
-        Tue, 25 Aug 2026 01:37:49 -0700 (PDT)
+        bh=hN2Jmy0Yce+ny/9mzHdZVPdF+NxcdzE2Ab9UDeAEcWs=;
+        b=Anfmrr8avQLGx1wN6U1YshmIQ/g8oRVVSRMO5dZGtn7eBanqaylJUc/bNb50GxFJ21
+         yl1tv8RHzjQ0tmECu89oqnuqDj/Q6GWMGskgZgM3YIjGqrHRHt8g4PpMRSJx1YvGrce6
+         +rONpBIkB0e93dG4SRvPQzEpUtLhuXAiFn5y6bBWwCdKQKujzQ7P5X2xQzEaMj9B5xHn
+         VoFJNiixd/wrTXY0ugH/+yhP90mYDYPsmU7SP7dxJj+smpyEyCuqBQbUy0LpUG88W20X
+         F4msqtEaa5nHQ43VJUdocyjpwq+yRdmQAa88c41aZ0FiGHqzEoyXWkrZEyFJkxrIdEk8
+         P/UQ==
+X-Forwarded-Encrypted: i=1; AHgh+RpyfjbJA2y/vsI5X0selDAu6Ed+mi2h1EMOrioWGJoqyWpmqeUzvTcLbzWuEby78eniGmaZ6a8NgGE=@lists.infradead.org
+X-Gm-Message-State: AFuF++nr8kN9hoePnjr2paTDgaHt1nBJdC/wyH+ygGZCqmy/ZnQlQui2
+	fbkGuRiEz8e/PSgM9cbYGYFHG3CxMWcX2NPfpOa/Byn6aq7AODUJap2r
+X-Gm-Gg: AR+sD12AdUoHwOzRBuDpGuKo9YEFft6GiOFqQz7bcDqJd9GumCAu+Tup3WQapUP+hAo
+	AXpVbYVJba0mJXWvuM5JrO8ZphEzMZGImiUN1NVbep6WXa7M+QQnO70QQQaxutjIcXwCYszSd78
+	nP6/L4+o1WNwT++zWaI6oHQjK8y9sT9NrOpd25G69h0lEYJBUS4yfd9S17LM8gsSXMHpjSATxnZ
+	GSBZCds2w0nXtZFjW/Rs3fM+CCnH78epPLZliy1AFwzIaTMLOyAJ3z5IMBQBATgvKgtYss6SGeO
+	YV+KqI7WMLx3VEJENEd2aYNJep/B6EPsP2YCAa8WPg4k6Yrsl1NPZM5uxsngUTqWFM9gdKbKtym
+	ldumoLjcm2D8PI7TKDQCsQNZ1hCEFUMqNSU8NiRndBPFlMvYm/69GTIXw7fDS2DwmBozrkvHss2
+	6rGtOk25zi71mLPu7pOPslGw4My+NFVFMgwMkJFfModZ8OWpioxOUH2KMlUW9+SbLWTlIS0duDL
+	gVQoQqathTO
+X-Received: by 2002:a05:6a20:c90c:b0:3cc:22bb:8911 with SMTP id adf61e73a8af0-3cd2fe7a2cdmr66070868637.6.1787647074852;
+        Tue, 25 Aug 2026 01:37:54 -0700 (PDT)
 Received: from fedora ([61.74.238.173])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-cc199e60abbsm1835887a12.23.2026.08.25.01.37.46
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-cc199e60abbsm1835887a12.23.2026.08.25.01.37.51
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 25 Aug 2026 01:37:48 -0700 (PDT)
+        Tue, 25 Aug 2026 01:37:54 -0700 (PDT)
 From: SeungJu Cheon <suunj1331@gmail.com>
 To: Anup Patel <anup@brainfault.org>,
 	Atish Patra <atish.patra@linux.dev>
@@ -86,17 +86,16 @@ Cc: Paul Walmsley <pjw@kernel.org>,
 	linux-kernel-mentees@lists.linux.dev,
 	me@brighamcampbell.com,
 	SeungJu Cheon <suunj1331@gmail.com>
-Subject: [PATCH v1 2/3] RISC-V: KVM: Report snapshot write failure to the guest
-Date: Tue, 25 Aug 2026 17:37:18 +0900
-Message-ID: <20260825083719.643970-3-suunj1331@gmail.com>
+Subject: [PATCH v1 3/3] RISC-V: KVM: Fix perf-backed counter accounting across stop and read
+Date: Tue, 25 Aug 2026 17:37:19 +0900
+Message-ID: <20260825083719.643970-4-suunj1331@gmail.com>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <20260825083719.643970-1-suunj1331@gmail.com>
 References: <20260825083719.643970-1-suunj1331@gmail.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260825_013750_972949_C1A22045 
-X-CRM114-Status: UNSURE (   9.53  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20260825_013755_886921_660D49FC 
+X-CRM114-Status: GOOD (  15.81  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -113,36 +112,75 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-If kvm_vcpu_write_guest() fails while updating the PMU snapshot area
-on counter stop, the guest may receive SBI_SUCCESS without the
-snapshot being updated, leaving stale data in shared memory.
+pmu_ctr_read() adds the event count returned by perf_event_read_value()
+to counter_val, which can accumulate the same count repeatedly across
+reads. kvm_riscv_vcpu_pmu_ctr_stop() also leaves counter_val stale by
+not folding the current event count into it.
 
-Return SBI_ERR_FAILURE when the snapshot write fails.
+Make reads of perf-backed counters side-effect free, and use
+perf_event_pause() when stopping a counter to fold the current event
+count into counter_val while resetting it. This preserves the counter
+value across stop/start and lets the snapshot path use counter_val
+directly.
 
-Fixes: c2f41ddbcdd7 ("RISC-V: KVM: Implement SBI PMU Snapshot feature")
+Fixes: 0cb74b65d2e5 ("RISC-V: KVM: Implement perf support without sampling")
 Signed-off-by: SeungJu Cheon <suunj1331@gmail.com>
 ---
- arch/riscv/kvm/vcpu_pmu.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ arch/riscv/kvm/vcpu_pmu.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
 diff --git a/arch/riscv/kvm/vcpu_pmu.c b/arch/riscv/kvm/vcpu_pmu.c
-index 56dd5b1b2846..45dd5233340d 100644
+index 45dd5233340d..7d50490cc622 100644
 --- a/arch/riscv/kvm/vcpu_pmu.c
 +++ b/arch/riscv/kvm/vcpu_pmu.c
-@@ -723,9 +723,10 @@ int kvm_riscv_vcpu_pmu_ctr_stop(struct kvm_vcpu *vcpu, unsigned long ctr_base,
- 		}
+@@ -268,12 +268,13 @@ static int pmu_ctr_read(struct kvm_vcpu *vcpu, unsigned long cidx,
+ 			return -EINVAL;
+ 
+ 		pmc->counter_val = kvpmu->fw_event[fevent_code].value;
++		*out_val = pmc->counter_val;
+ 	} else if (pmc->perf_event) {
+-		pmc->counter_val += perf_event_read_value(pmc->perf_event, &enabled, &running);
++		*out_val = pmc->counter_val +
++			   perf_event_read_value(pmc->perf_event, &enabled, &running);
+ 	} else {
+ 		return -EINVAL;
  	}
+-	*out_val = pmc->counter_val;
  
--	if (shmem_needs_update)
--		kvm_vcpu_write_guest(vcpu, kvpmu->snapshot_addr, kvpmu->sdata,
--					     sizeof(struct riscv_pmu_snapshot_data));
-+	if (shmem_needs_update &&
-+	    kvm_vcpu_write_guest(vcpu, kvpmu->snapshot_addr, kvpmu->sdata,
-+				 sizeof(struct riscv_pmu_snapshot_data)))
-+		sbiret = SBI_ERR_FAILURE;
+ 	return 0;
+ }
+@@ -641,7 +642,6 @@ int kvm_riscv_vcpu_pmu_ctr_stop(struct kvm_vcpu *vcpu, unsigned long ctr_base,
+ {
+ 	struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
+ 	int i, pmc_index, sbiret = 0;
+-	u64 enabled, running;
+ 	struct kvm_pmc *pmc;
+ 	int fevent_code;
+ 	bool snap_flag_set = flags & SBI_PMU_STOP_FLAG_TAKE_SNAPSHOT;
+@@ -679,8 +679,11 @@ int kvm_riscv_vcpu_pmu_ctr_stop(struct kvm_vcpu *vcpu, unsigned long ctr_base,
+ 			}
+ 		} else if (pmc->perf_event) {
+ 			if (pmc->started) {
+-				/* Stop counting the counter */
+-				perf_event_disable(pmc->perf_event);
++				/*
++				 * Stop the counter and fold the live count into counter_val.
++				 * Reset the event value to avoid redundant accumulation.
++				 */
++				pmc->counter_val += perf_event_pause(pmc->perf_event, true);
+ 				pmc->started = false;
+ 			} else {
+ 				sbiret = SBI_ERR_ALREADY_STOPPED;
+@@ -694,9 +697,6 @@ int kvm_riscv_vcpu_pmu_ctr_stop(struct kvm_vcpu *vcpu, unsigned long ctr_base,
+ 		}
  
- out:
- 	retdata->err_val = sbiret;
+ 		if (snap_flag_set && !sbiret) {
+-			if (pmc->perf_event)
+-				pmc->counter_val += perf_event_read_value(pmc->perf_event,
+-									  &enabled, &running);
+ 			/*
+ 			 * The counter and overflow indices in the snapshot region are w.r.to
+ 			 * cbase. Modify the set bit in the counter mask instead of the pmc_index
 -- 
 2.52.0
 
