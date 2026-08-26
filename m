@@ -4,37 +4,37 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2606BC61DC2
-	for <kvm-riscv@archiver.kernel.org>; Wed, 26 Aug 2026 06:42:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9B829C61DBD
+	for <kvm-riscv@archiver.kernel.org>; Wed, 26 Aug 2026 07:51:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-Id:Date:Subject:Cc
 	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
 	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=HVzC1vDPUxAyjZ6vMPc9NE80FXx7Wmyl+N5orrW/+aw=; b=xxIlDAfsIjsDnk
-	JjfVbZ7aqSNU+PdPjPmEkErBuZBXrcYygesyccftNCQkL4liUWSbd1CnnwQqgaw+jl19l8/Fpw9D3
-	/FfyZGBiMinbOcFUCmnNWMnEUD1JvdfJQe+CIqBjIxJfVUECVV1FgYi+7zRH2jp2aPbysu6QVFEsX
-	oDa1rslBIXna1PTrXQ54kXO+1v0IGnNct70ScbtpHkOlMJT2n+d9HwFR0JOILVqKPkiOXHSkDOQ/B
-	eW3NUZA9F0eg1/HG/jQ4Ms1dGJmwFsJL8KtKLa/G0lK/OyB2TKYJ823nKqfNi9AFQMDMlNkcFw2wG
-	uzHWmVKZcpRTltDAfgrQ==;
+	List-Owner; bh=qBs8aiu69aCNofTp4JHMIqeTk9w2ZXdUCOpDELkidkY=; b=QEopNaHfAob16L
+	wycbUslAeBYz26oLHoQfyl/d+aY6l8uZscqdRJlZIFka3jdShPAEbPCAsnQFdXa95fi0iIVVIAl5n
+	+rUlmOjYZ4Wk6LjpvVnH56+kdQYxQMeDzoDQbKkE+ljKMabibNvUXPNlLNe8I0UHlUC+tKObWWtEC
+	KsjsfyglHdOuw3csBK31ZyGyy6TL6KfOJA9lw8gz5AF2D/CImw2LnIkYAXqRtnbgjp+uaV41O8COX
+	rCcLmxw9ensUl2UHg7V4jGIwqy+qtx6xAtiZlopA8gC9JpgLK5QMSioc4QE0be39UnfXK4D2WXlel
+	gR9HRbUZ0LtfbCyHEEYw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wz7LS-00000001yRO-1eoC;
-	Wed, 26 Aug 2026 06:42:46 +0000
-Received: from [117.135.210.5] (helo=m16.mail.163.com)
+	id 1wz8Q8-0000000223p-2Z8w;
+	Wed, 26 Aug 2026 07:51:40 +0000
+Received: from m16.mail.163.com ([220.197.31.2])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wz7LP-00000001yQi-19if;
-	Wed, 26 Aug 2026 06:42:45 +0000
+	id 1wz8Q4-0000000222s-1u2h;
+	Wed, 26 Aug 2026 07:51:39 +0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=J5
-	wmbMVjfWUBCfpN0Lp0qCoOGcsiprXR0qo1DrktL6I=; b=nHhrjsvwBUSCK4U7Zo
-	14IX8BgmYz/ItK20Q3P7zRZeaPkt1JYLsDM85BYejRgvxoApM5qKzlNnbXkFBB/h
-	EXFAIDDljjdqlmwLPseWnFwd27cRDikCbAeLk8OAP1ugD/ljcqCbUdWa0UXC2fY7
-	iblWK/GFl7sqctbXmipdDPQ2Q=
+	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=Yc
+	9zQrup+PpPpZzZy0ZJfYR/Eum3M2GHmGKdRuSVXHg=; b=TiYMbbu+bwW059ipIn
+	zUb7y8sdSdJGiJ/g9FwN57dSTtescns9k4vvx1bhe8/Yl6H9d7LS82P0YztK/83W
+	grW7+Ihz0SKcnwSez7X66VmAXFXFoMlQdUBnRSn3MW9pElJMAMWElJ0iuep0mqxM
+	Bw1+bu7YZjYU0y96UIPE/bGPs=
 Received: from thinkpadx13gen2i.. (unknown [])
-	by gzsmtp4 (Coremail) with SMTP id PygvCgBHDxyPio5qdUk4OQ--.40540S2;
-	Wed, 26 Aug 2026 14:41:19 +0800 (CST)
+	by gzga-smtp-mtada-g1-3 (Coremail) with SMTP id _____wDHjBGzmo5qahHQPg--.62147S2;
+	Wed, 26 Aug 2026 15:50:16 +0800 (CST)
 From: Zongmin Zhou <min_halo@163.com>
 To: anup@brainfault.org,
 	atish.patra@linux.dev,
@@ -42,29 +42,26 @@ To: anup@brainfault.org,
 	palmer@dabbelt.com,
 	aou@eecs.berkeley.edu,
 	alex@ghiti.fr
-Cc: ajones@ventanamicro.com,
-	kvm@vger.kernel.org,
+Cc: kvm@vger.kernel.org,
 	kvm-riscv@lists.infradead.org,
 	linux-riscv@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
-	Zongmin Zhou <zhouzongmin@kylinos.cn>,
-	stable@vger.kernel.org
-Subject: [PATCH] RISC-V: KVM: Fix sdata leak and stale snapshot_addr in snapshot_set_shmem
-Date: Wed, 26 Aug 2026 14:41:17 +0800
-Message-Id: <20260826064117.58029-1-min_halo@163.com>
+	Zongmin Zhou <zhouzongmin@kylinos.cn>
+Subject: [PATCH] KVM: riscv: Fix NACL hfence entry update order
+Date: Wed, 26 Aug 2026 15:50:09 +0800
+Message-Id: <20260826075009.68952-1-min_halo@163.com>
 X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-X-CM-TRANSID: PygvCgBHDxyPio5qdUk4OQ--.40540S2
-X-Coremail-Antispam: 1Uf129KBjvJXoW7AryUAF18AF4kGF4furykXwb_yoW8AFyxpF
-	ZxCa4FqrWrAr1fK34avFWvgrWjvws5urs8Xr4xGa48Gr45GF1Fvwna9ry8WF4Ut3y8Xa9a
-	qr4rZF98CFs0vrDanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07jbUUUUUUUU=
+X-CM-TRANSID: _____wDHjBGzmo5qahHQPg--.62147S2
+X-Coremail-Antispam: 1Uf129KBjvJXoW7uF48tw1rXr1DAFyrWFyfZwb_yoW8KF4xpF
+	WIkrWrKr4rGryag3sxZws7uryrW3Zagay5t39xuayjkrnxXa4rZwn7trZ8ZryrGr40gF1S
+	vrWj9FWj9Fn8AwUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07jjPfdUUUUU=
 X-Originating-IP: [116.128.244.169]
-X-CM-SenderInfo: pplqsxxdorqiywtou0bp/xtbC0RAFsGqOipASBQAA3d
+X-CM-SenderInfo: pplqsxxdorqiywtou0bp/xtbC9BgTvmqOmrj41QAA3q
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260825_234244_209047_B60E3EBA 
-X-CRM114-Status: UNSURE (   9.54  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20260826_005137_771834_6AB7E79C 
+X-CRM114-Status: GOOD (  11.47  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -83,44 +80,62 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 From: Zongmin Zhou <zhouzongmin@kylinos.cn>
 
-A guest may call SBI_PMU_SNAPSHOT_SET_SHMEM repeatedly. Each call
-overwrites kvpmu->sdata without freeing the old buffer (memory leak),
-and if a later kvm_vcpu_write_guest() fails, the error path frees
-sdata but leaves snapshot_addr stale. A subsequent
-SBI_PMU_COUNTER_START then passes the INVALID_GPA check and crashes
-the host with a NULL buffer in kvm_vcpu_read_guest().
+The SBI v3.0 specification (section 15.1.2) requires a nested HFENCE
+entry to be populated as follows:
+1) find an unused entry with Config.Pending == 0
+2) update the Page_Number and Page_Count words
+3) update the Config word with Config.Pending set
 
-Fix this by clearing the previously installed snapshot area before
-installing a new one, which keeps sdata and snapshot_addr consistent.
-The SBI spec suggests a single invocation but defines no error code
-for repeated calls, so KVM must tolerate them.
+__kvm_riscv_nacl_hfence() writes the Config word first, so the SBI
+implementation (or NACL hardware) can observe a pending entry with
+pnum/pcount values left over from the previous use of that entry,
+resulting in incorrect TLB flush ranges.
 
-Fixes: c2f41ddbcdd756 ("RISC-V: KVM: Implement SBI PMU Snapshot feature")
-Cc: stable@vger.kernel.org
+Write pnum and pcount first and the Config word last. Since the
+consumer is an external agent on coherent shared memory, use
+WRITE_ONCE() to stop the compiler from reordering the stores and
+smp_wmb() to make the parameter words globally visible before the
+Pending bit is set.
+
+Fixes: d466c19cead5 ("RISC-V: KVM: Add common nested acceleration support")
 Signed-off-by: Zongmin Zhou <zhouzongmin@kylinos.cn>
 ---
- arch/riscv/kvm/vcpu_pmu.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ arch/riscv/kvm/nacl.c | 20 ++++++++++++++++----
+ 1 file changed, 16 insertions(+), 4 deletions(-)
 
-diff --git a/arch/riscv/kvm/vcpu_pmu.c b/arch/riscv/kvm/vcpu_pmu.c
-index 752f1014d633e7d67f69c27b72088ed560c187ac..14f73490f12cbc5a8547859f0d1bb1170d89403b 100644
---- a/arch/riscv/kvm/vcpu_pmu.c
-+++ b/arch/riscv/kvm/vcpu_pmu.c
-@@ -454,6 +454,14 @@ int kvm_riscv_vcpu_pmu_snapshot_set_shmem(struct kvm_vcpu *vcpu, unsigned long s
+diff --git a/arch/riscv/kvm/nacl.c b/arch/riscv/kvm/nacl.c
+index 9aff03c4f667..a5cda9a65156 100644
+--- a/arch/riscv/kvm/nacl.c
++++ b/arch/riscv/kvm/nacl.c
+@@ -42,12 +42,24 @@ void __kvm_riscv_nacl_hfence(void *shmem,
  		}
  	}
  
+-	entp = shmem + SBI_NACL_SHMEM_HFENCE_ENTRY_CONFIG(i);
+-	*entp = cpu_to_lelong(control);
 +	/*
-+	 * Clear any previously installed snapshot area to avoid leaking
-+	 * the old sdata and to keep sdata/snapshot_addr consistent if
-+	 * the re-install fails below.
++	 * Per SBI v3.0 section 15.1.2, the Page_Number and Page_Count
++	 * words must be updated before the Config word with its Pending
++	 * bit set. WRITE_ONCE() stops the compiler from reordering the
++	 * stores and smp_wmb() makes the parameter words globally
++	 * visible to the SBI implementation (or NACL hardware) before
++	 * the Pending bit is set.
 +	 */
-+	if (kvpmu->snapshot_addr != INVALID_GPA)
-+		kvm_pmu_clear_snapshot_area(vcpu);
+ 	entp = shmem + SBI_NACL_SHMEM_HFENCE_ENTRY_PNUM(i);
+-	*entp = cpu_to_lelong(page_num);
++	WRITE_ONCE(*entp, cpu_to_lelong(page_num));
+ 	entp = shmem + SBI_NACL_SHMEM_HFENCE_ENTRY_PCOUNT(i);
+-	*entp = cpu_to_lelong(page_count);
++	WRITE_ONCE(*entp, cpu_to_lelong(page_count));
 +
- 	kvpmu->sdata = kzalloc(snapshot_area_size, GFP_ATOMIC | __GFP_ACCOUNT);
- 	if (!kvpmu->sdata) {
- 		sbiret = SBI_ERR_FAILURE;
++	/* Ensure the parameter words are visible before the Pending bit */
++	smp_wmb();
++
++	entp = shmem + SBI_NACL_SHMEM_HFENCE_ENTRY_CONFIG(i);
++	WRITE_ONCE(*entp, cpu_to_lelong(control));
+ }
+ 
+ int kvm_riscv_nacl_enable(void)
 -- 
 2.34.1
 
