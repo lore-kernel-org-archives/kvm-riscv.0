@@ -4,71 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 91886C61DD2
-	for <kvm-riscv@archiver.kernel.org>; Wed, 26 Aug 2026 23:05:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A5BB0C61DD3
+	for <kvm-riscv@archiver.kernel.org>; Wed, 26 Aug 2026 23:05:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:Reply-To:List-Subscribe:List-Help:
 	List-Post:List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID
 	:References:Mime-Version:In-Reply-To:Date:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=kxJDZ2sSpVs5Z6DIc3xks7gsFI7yob14VwiB7lDa7Q4=; b=SY6RdDd5LLgMMu
-	Jn4J0M0up/fzDG50RPfQLhTFVbSav+Mu+GPFQbb74DwvQFEbxFk9tKV7fsnIV7rVX1hVzol/Ru2sV
-	VhEmFysYLG0xARVes0YycTTwBhzITqhs8cn1e1/0JxeTozZOOyMp/AL1DGKnKgKM4/oIo2HHPMOk9
-	Oxaqs+k1BoQVZ1W37WEhASswnH9R3L3lZURCjHrDyBkdS4WmBB0iPFw2Tncf6u/5eIaojE/mypUKL
-	FO/BPkRDZfK2nMNi6kUJ3mTlP0ahA0Vij6PaYLC3LT0qZ44rPI48apUQwMPpxWDO4T3SZI1MKdZm1
-	EPLZldcn7qhb+vJaTlaQ==;
+	List-Owner; bh=9fQqfefD9530wgWdf4Ns1hYZZjNBI2dQnHoBoGCaJ0w=; b=c75Ig2Q6N+PVrZ
+	HTr3oDjp+UKRBKjDn4/EE6HGqz5Sp3EZc9dhC/gHa8VLOE8xnC4tzXc7d7kBqrxjw0eBy/MgT4zQe
+	k+66+wvirI9IZUDKRfcdFjx9r4fMVdT9zahj5YbQwyBaBhAB28/lOlq4d9Ldah/7RKZb8dvKdaXPs
+	Rqlg7evKj8SJ0Nf6gxPSve7WZpZ8h2rYSQ3fxXFWiOcGCLe/EOGycsb8Irm1gZ7e++XmvnGm21lN2
+	uFcgbjDrz6oTKTbUmXkw6z5GnmdsC/qioQCedkbmeqNj4ejdnIJsRechG0iXbtnd6DFNZc6J0OKBJ
+	zad67xI4VqDZAID54V5g==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wzMgp-000000036kp-0KBB;
-	Wed, 26 Aug 2026 23:05:51 +0000
-Received: from mail-pg1-x548.google.com ([2607:f8b0:4864:20::548])
+	id 1wzMgr-000000036pc-03PU;
+	Wed, 26 Aug 2026 23:05:53 +0000
+Received: from mail-pf1-x446.google.com ([2607:f8b0:4864:20::446])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wzMgP-000000036Ac-3OOM
+	id 1wzMgS-000000036Dh-3TrZ
 	for kvm-riscv@lists.infradead.org;
-	Wed, 26 Aug 2026 23:05:28 +0000
-Received: by mail-pg1-x548.google.com with SMTP id 41be03b00d2f7-cc1a439db36so1721038a12.2
-        for <kvm-riscv@lists.infradead.org>; Wed, 26 Aug 2026 16:05:25 -0700 (PDT)
+	Wed, 26 Aug 2026 23:05:29 +0000
+Received: by mail-pf1-x446.google.com with SMTP id d2e1a72fcca58-84e048a801dso2173291b3a.3
+        for <kvm-riscv@lists.infradead.org>; Wed, 26 Aug 2026 16:05:27 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1787785524; x=1788390324; darn=lists.infradead.org;
+        d=google.com; s=20251104; t=1787785527; x=1788390327; darn=lists.infradead.org;
         h=content-type:cc:to:from:subject:message-id:references:mime-version
          :in-reply-to:date:reply-to:from:to:cc:subject:date:message-id
          :reply-to:content-type;
-        bh=IKkZ5WMHTp+y0tIK6W989B7G/56Zjcmbkdc6Bf2mTQA=;
-        b=uwCWgxFleRSJRE0VZ5W5DWTK0on/YpKTxl8EU83bgsR/8sCZiESNI7wHtCMR32qLR9
-         suorfXLPnBwtCXOohiJ1foSKIe2a87+Tuou/G34wHC2khAiHZHO8PjHa8yJf8YfqhUGa
-         c1TWh4KAN40gxNK0v79OHUgKvfClcUFKwLwZ+OJ1FZqIhMHn+RlTIfj89IVN++xHtxOc
-         vdcTWeU8qBjutbnYemNJygqn/Y1MZgYYDwUTu4T8QMx1+k8EQZZZD3xWlKv4DTjAvYOw
-         o/veAIJjpIeaGi/eiNNPqUTXzmvdmo4jAKzHp0QWRMSY+q9pfiTjjhNagBHLvsNfxqol
-         1VIQ==
+        bh=O8gpVGaSftwEDfNK3yhe7P+6kzj8cM/DRvM4h41+9U8=;
+        b=RyRjkBZb9HsGuhPX7PxNcomPPDF/misO9wPnsG9uSQ9lm6nseiBBOZ11XTBnTdPgtk
+         8gCvdGeuyYP/xt1uV/aZhiHOPMFCynq2HZXMO/d4F58e+QeTDNHkrso2kdzKtb1K419q
+         EqPK3ns6WxacqosThR/Js9xwErqDy6jsIIxe/4Gv/G+Vyi4ozEuTGD3YhARGC4RWwzpy
+         WcKPQMNTOjKZ9QbRF3QlYKpgtEgq/cki8wdDsm/QvN4P7E/39kVEb0plvN/TF4jQFmfz
+         VKnDBUZbp7y27KsmOeLQAvApB1P9Ht2MB2gAgAHb4BSVwPXTk9Nl5j4ImP1lXMrfaE8c
+         Yj3Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787785524; x=1788390324;
+        d=1e100.net; s=20251104; t=1787785527; x=1788390327;
         h=content-type:cc:to:from:subject:message-id:references:mime-version
          :in-reply-to:date:reply-to:x-gm-message-state:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=IKkZ5WMHTp+y0tIK6W989B7G/56Zjcmbkdc6Bf2mTQA=;
-        b=Dal3Qycxa+o5HRZC6h+Ayb6LQ7cHgbY+MqpSYWTlB6WMQakTW+g/x8ZEboW8W2QGJy
-         cq1ZTd8DRCurp7oRH6tOJguEsT1srVKRIuWyhVW5KJH7p02Kb+SPm/+lZBXtth3SNCAT
-         faOjICEPycLcg72p8GnvquB0/4U92cFwLCCaUiKUUAK/iAB8RbwjPvr00Ck8+zuLNS1Y
-         tjw9V8DnnlJt9QTxM3HzDFawmA1WMeVmGyV+riSxdNWFr6e9Dym+ip0e/SKjYcQypXlR
-         fo1hyYWeSYK46OZItXJsS+SvCBHkKjFhtM5RHcjxigLQOFIYE3o2LL6H26k1OBoYwiWx
-         FqlA==
-X-Forwarded-Encrypted: i=1; AHgh+Rrx1pzgtSBhIjQgg5LL9QiaGw1OMhg915FGSenFJRXzvm2mY2clbr3VEN2NiYQPGHGuW2LNW8K8Zgc=@lists.infradead.org
-X-Gm-Message-State: AFuF++lVn2WmEJLp2tfKoPdt/DsXR82MKpJSpyzuOS/ddttsc4o8aeZ3
-	1qTbOWuR7883TVkdxS7fxG00oABmDn2ii8mxrRRsyIj2AgS1FUB7HrE3F/z/wYL+/nt+URju1nJ
-	lvXlMfg==
-X-Received: from pfwy20.prod.google.com ([2002:a05:6a00:1c94:b0:845:a3d5:fed])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a00:4f92:b0:848:2e3c:9955
- with SMTP id d2e1a72fcca58-85371fa599amr18012291b3a.4.1787785524196; Wed, 26
- Aug 2026 16:05:24 -0700 (PDT)
-Date: Wed, 26 Aug 2026 16:04:58 -0700
+        bh=O8gpVGaSftwEDfNK3yhe7P+6kzj8cM/DRvM4h41+9U8=;
+        b=rPrOwuyxmXux4IISXurDlfjBpKF+A0k1eAsFvReAF5AkdLILjarbGJVoLU4irSJGlm
+         1iHDmmqkFX3XYBGpXh3XOUvd4sqXJ7g1oynKuXtGuGJjzcyxlpRGysaGvYdbWjc3Mpdi
+         cl/zD+0fEcnv5DJBZEM9I6ZgEgkfToo/4UqH6PCkLbLqe0hKnO10HpiRCCtDegpXpntm
+         wuyKW9biz+vk3A9BOvGe/GkPWjTQk7yE/C7se0NNc50FVqR41hXWuq8Ilyzc+RLMGMUM
+         XfkyvxjMqGML2ARgZ3ZWlAWnKBRuj0gjvo/C3A84Vr+a2PSxs9gGGEnH61qURfCUb49V
+         uCKw==
+X-Forwarded-Encrypted: i=1; AHgh+RpSednnamY35+FrPitapzfdZZr8TgNkRfZuxDEc8OgWPyTbLwUf2CazRDSOgBwagPvFEh/dQ4Iet14=@lists.infradead.org
+X-Gm-Message-State: AFuF++myCSwuxKU66NuLWU99zSLwSrszKXn8tV0uIHbMfBIfYtELbTEr
+	Tth9V+8vj+vDkJdatEU0ZlEA2JWNVV6/bAzQmnYfjM3MgSpPdIR43nxhhFowmZgfNubgqKoHz+X
+	xzdiWuQ==
+X-Received: from pfpk15.prod.google.com ([2002:aa7:9d0f:0:b0:848:2e0e:62e])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a00:301e:b0:848:34ad:3d6c
+ with SMTP id d2e1a72fcca58-853750ccf97mr20523023b3a.15.1787785527096; Wed, 26
+ Aug 2026 16:05:27 -0700 (PDT)
+Date: Wed, 26 Aug 2026 16:05:00 -0700
 In-Reply-To: <20260826230511.972824-1-seanjc@google.com>
 Mime-Version: 1.0
 References: <20260826230511.972824-1-seanjc@google.com>
 X-Mailer: git-send-email 2.55.0.887.g758fc8c411-goog
-Message-ID: <20260826230511.972824-8-seanjc@google.com>
-Subject: [PATCH 07/20] KVM: selftests: Make the single-page allocator APIs
- static inline
+Message-ID: <20260826230511.972824-10-seanjc@google.com>
+Subject: [PATCH 09/20] KVM: selftests: Use the innermost page allocator API in
+ s390's IRQ routing test
 From: Sean Christopherson <seanjc@google.com>
 To: Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, 
 	Sean Christopherson <seanjc@google.com>, Paolo Bonzini <pbonzini@redhat.com>, 
@@ -86,9 +86,8 @@ Cc: Fuad Tabba <fuad.tabba@linux.dev>, Joey Gouly <joey.gouly@arm.com>,
 	linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, 
 	Ritesh Harjani <ritesh.list@gmail.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260826_160525_966860_75962C44 
-X-CRM114-Status: UNSURE (   8.72  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20260826_160528_880933_11D76C08 
+X-CRM114-Status: GOOD (  10.01  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -106,76 +105,33 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Move the single-page allocator APIs to kvm_util.h as inline functions, as
-the are trivial wrappers, and unlike __vm_phy_pages_alloc(), are expected
-to remain that way for the foreseeable future.
+Use the quad-underscores page allocator in s390's IRQ routing test in
+anticipation of dropping the @min_gpa param from the primary APIs.
+
+Note, it's not entirely clear that the test *needs* to use a very magical
+@min_gpa, i.e. it's possible a more elegant solution exists.  But that's a
+problem for a different day.
 
 No functional change intended.
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- tools/testing/selftests/kvm/include/kvm_util.h | 14 ++++++++++++--
- tools/testing/selftests/kvm/lib/kvm_util.c     | 11 -----------
- 2 files changed, 12 insertions(+), 13 deletions(-)
+ tools/testing/selftests/kvm/s390/irq_routing.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/tools/testing/selftests/kvm/include/kvm_util.h b/tools/testing/selftests/kvm/include/kvm_util.h
-index 96c8251c224a..2525c2cacc22 100644
---- a/tools/testing/selftests/kvm/include/kvm_util.h
-+++ b/tools/testing/selftests/kvm/include/kvm_util.h
-@@ -990,12 +990,10 @@ void kvm_gsi_routing_write(struct kvm_vm *vm, struct kvm_irq_routing *routing);
+diff --git a/tools/testing/selftests/kvm/s390/irq_routing.c b/tools/testing/selftests/kvm/s390/irq_routing.c
+index f3839284ac08..cd26cc1aed80 100644
+--- a/tools/testing/selftests/kvm/s390/irq_routing.c
++++ b/tools/testing/selftests/kvm/s390/irq_routing.c
+@@ -36,7 +36,7 @@ static void test(void)
+ 	};
  
- const char *exit_reason_str(unsigned int exit_reason);
+ 	vm = vm_create_with_one_vcpu(&vcpu, guest_code);
+-	mem = vm_phy_pages_alloc(vm, 2, 4096 * 42, 0);
++	mem = ____vm_phy_pages_alloc(vm, 2, 4096 * 42, 0, false, false);
  
--gpa_t vm_phy_page_alloc(struct kvm_vm *vm, gpa_t min_gpa, u32 memslot);
- gpa_t ____vm_phy_pages_alloc(struct kvm_vm *vm, size_t nr_pages, gpa_t min_gpa,
- 			     u32 memslot, bool protected, bool naturally_aligned);
- gpa_t __vm_phy_pages_alloc(struct kvm_vm *vm, size_t nr_pages, gpa_t min_gpa,
- 			   u32 memslot, bool protected);
--gpa_t vm_alloc_page_table(struct kvm_vm *vm);
- 
- static inline gpa_t vm_phy_pages_alloc(struct kvm_vm *vm, size_t nr_pages,
- 				       gpa_t min_gpa, u32 memslot)
-@@ -1009,6 +1007,18 @@ static inline gpa_t vm_phy_pages_alloc(struct kvm_vm *vm, size_t nr_pages,
- 				    vm_arch_has_protected_memory(vm));
- }
- 
-+static inline gpa_t vm_phy_page_alloc(struct kvm_vm *vm, gpa_t min_gpa,
-+				      u32 memslot)
-+{
-+	return vm_phy_pages_alloc(vm, 1, min_gpa, memslot);
-+}
-+
-+static inline gpa_t vm_alloc_page_table(struct kvm_vm *vm)
-+{
-+	return vm_phy_page_alloc(vm, KVM_GUEST_PAGE_TABLE_MIN_PADDR,
-+				 vm->memslots[MEM_REGION_PT]);
-+}
-+
- /*
-  * ____vm_create() does KVM_CREATE_VM and little else.  __vm_create() also
-  * loads the test binary into guest memory and creates an IRQ chip (x86 only).
-diff --git a/tools/testing/selftests/kvm/lib/kvm_util.c b/tools/testing/selftests/kvm/lib/kvm_util.c
-index 896da440659e..ce0d8fba4624 100644
---- a/tools/testing/selftests/kvm/lib/kvm_util.c
-+++ b/tools/testing/selftests/kvm/lib/kvm_util.c
-@@ -2086,17 +2086,6 @@ gpa_t __vm_phy_pages_alloc(struct kvm_vm *vm, size_t nr_pages, gpa_t min_gpa,
- 	return ____vm_phy_pages_alloc(vm, nr_pages, min_gpa, memslot, protected, false);
- }
- 
--gpa_t vm_phy_page_alloc(struct kvm_vm *vm, gpa_t min_gpa, u32 memslot)
--{
--	return vm_phy_pages_alloc(vm, 1, min_gpa, memslot);
--}
--
--gpa_t vm_alloc_page_table(struct kvm_vm *vm)
--{
--	return vm_phy_page_alloc(vm, KVM_GUEST_PAGE_TABLE_MIN_PADDR,
--				 vm->memslots[MEM_REGION_PT]);
--}
--
- /*
-  * Address Guest Virtual to Host Virtual
-  *
+ 	routing = kvm_gsi_routing_create();
+ 	routing->nr = 1;
 -- 
 2.55.0.887.g758fc8c411-goog
 
