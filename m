@@ -4,71 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8F0CC61DBE
-	for <kvm-riscv@archiver.kernel.org>; Wed, 26 Aug 2026 23:05:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 91886C61DD2
+	for <kvm-riscv@archiver.kernel.org>; Wed, 26 Aug 2026 23:05:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:Reply-To:List-Subscribe:List-Help:
 	List-Post:List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID
 	:References:Mime-Version:In-Reply-To:Date:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=qvoadXJyXCGcGt5MazFGu+Dp8KMlIXUQ/iAkRyOnJ/8=; b=S6ai3jB5ZyVguS
-	d/EMt67XMh6m9P2k1fP/36wqlZWxfQyLxblK9kCMj8jGsw3gj5KisH7mY6Ria1iZWYjisvqeb/yyH
-	Pz8hfOGbn6nSofM+ydB2Ver4NLXfxE/Yzgyi8IZSLczKz3r86Nu4OJAV/v+veUC2NHDmVjecQdUqH
-	rziGrbQK12yTSwKVltyEhBfyN8tCJpOQcEbeXsBon7XIhTWn0sthpMfVyFZbP/aB9rVezfZKm3cqY
-	8RrY3ETzQitpaxjko5q2fUdJ3BVmE2CqDcCjrulbHj3xE+pohKDt/z123deQYkKiWBo8ESSa1I6mt
-	DsTrzADhdVX/An0BPL0A==;
+	List-Owner; bh=kxJDZ2sSpVs5Z6DIc3xks7gsFI7yob14VwiB7lDa7Q4=; b=SY6RdDd5LLgMMu
+	Jn4J0M0up/fzDG50RPfQLhTFVbSav+Mu+GPFQbb74DwvQFEbxFk9tKV7fsnIV7rVX1hVzol/Ru2sV
+	VhEmFysYLG0xARVes0YycTTwBhzITqhs8cn1e1/0JxeTozZOOyMp/AL1DGKnKgKM4/oIo2HHPMOk9
+	Oxaqs+k1BoQVZ1W37WEhASswnH9R3L3lZURCjHrDyBkdS4WmBB0iPFw2Tncf6u/5eIaojE/mypUKL
+	FO/BPkRDZfK2nMNi6kUJ3mTlP0ahA0Vij6PaYLC3LT0qZ44rPI48apUQwMPpxWDO4T3SZI1MKdZm1
+	EPLZldcn7qhb+vJaTlaQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wzMgn-000000036hW-1jBu;
-	Wed, 26 Aug 2026 23:05:49 +0000
-Received: from mail-pg1-x547.google.com ([2607:f8b0:4864:20::547])
+	id 1wzMgp-000000036kp-0KBB;
+	Wed, 26 Aug 2026 23:05:51 +0000
+Received: from mail-pg1-x548.google.com ([2607:f8b0:4864:20::548])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wzMgO-0000000369G-1uDG
+	id 1wzMgP-000000036Ac-3OOM
 	for kvm-riscv@lists.infradead.org;
-	Wed, 26 Aug 2026 23:05:25 +0000
-Received: by mail-pg1-x547.google.com with SMTP id 41be03b00d2f7-cb6cf425e86so1899438a12.1
-        for <kvm-riscv@lists.infradead.org>; Wed, 26 Aug 2026 16:05:23 -0700 (PDT)
+	Wed, 26 Aug 2026 23:05:28 +0000
+Received: by mail-pg1-x548.google.com with SMTP id 41be03b00d2f7-cc1a439db36so1721038a12.2
+        for <kvm-riscv@lists.infradead.org>; Wed, 26 Aug 2026 16:05:25 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1787785523; x=1788390323; darn=lists.infradead.org;
+        d=google.com; s=20251104; t=1787785524; x=1788390324; darn=lists.infradead.org;
         h=content-type:cc:to:from:subject:message-id:references:mime-version
          :in-reply-to:date:reply-to:from:to:cc:subject:date:message-id
          :reply-to:content-type;
-        bh=ypnv5ADnidmiHmk4i8NjwAmXQS3vAgk870JArYSva+A=;
-        b=bxwmYPWAuY2oPvf1g5r3hQO4QnTRH3xxkCpUZOmrxzgS3ylQFHUQD39FG7DH7MXSYm
-         mVcF2PLjaNJjPM+BHPiAw1wK0BBptEZIZgaMCyFaYMzydd1hjURGbPC81GJPN3cBXNPO
-         2mKYXk1AoHqBV82D5GeLOTl3YC36TvVe1Um4U6VWcgbl9mdraCdjQN5HG/9qWW5RlleW
-         otV6Hum6iYYveQXzW6RJJWJSseOGRsRGf8J8tKpD7SRr4SUAhUGry+xMuvPedR3ir4U8
-         KEn436dzAQVYc41oao6HyE7IPhPqvyBhaH14wtGAdkGREsVi4GIPIJK+TCoQExPUQPbr
-         QLgg==
+        bh=IKkZ5WMHTp+y0tIK6W989B7G/56Zjcmbkdc6Bf2mTQA=;
+        b=uwCWgxFleRSJRE0VZ5W5DWTK0on/YpKTxl8EU83bgsR/8sCZiESNI7wHtCMR32qLR9
+         suorfXLPnBwtCXOohiJ1foSKIe2a87+Tuou/G34wHC2khAiHZHO8PjHa8yJf8YfqhUGa
+         c1TWh4KAN40gxNK0v79OHUgKvfClcUFKwLwZ+OJ1FZqIhMHn+RlTIfj89IVN++xHtxOc
+         vdcTWeU8qBjutbnYemNJygqn/Y1MZgYYDwUTu4T8QMx1+k8EQZZZD3xWlKv4DTjAvYOw
+         o/veAIJjpIeaGi/eiNNPqUTXzmvdmo4jAKzHp0QWRMSY+q9pfiTjjhNagBHLvsNfxqol
+         1VIQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787785523; x=1788390323;
+        d=1e100.net; s=20251104; t=1787785524; x=1788390324;
         h=content-type:cc:to:from:subject:message-id:references:mime-version
          :in-reply-to:date:reply-to:x-gm-message-state:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=ypnv5ADnidmiHmk4i8NjwAmXQS3vAgk870JArYSva+A=;
-        b=PNPxvINY1CcWqvz0qo/AktftviyAviluzpVvhTAA1GnMvhMu+0zelb5aKECnk94+n/
-         HHy2RqoSKK1PrWWiBxsnNOsBSkGSkqxsxutBOt7Y2BA5nlP6+wiqKD+Xfm23ohV3I1Tx
-         fCI9hl0DU0BezsHvZtp9NZOyRRUvoWtdrgDL4OV6UoBMHExeZr5YO5JNFwOjD7qolXZH
-         BA4Prrf+AYDnmoCsOLIV8KgAcu7nb9+o3oNKEdTlsotUBv+8BLKyNWaG0lQJtUCHpLRI
-         IqXNXaih0ojipor1rqTL25g0pMntRkUBB7rPN4h5a7zRya3Yefc+uValeHdLV1w7+r9g
-         2WQw==
-X-Forwarded-Encrypted: i=1; AHgh+RrIbinYs3C8JmeOznAe+gIIlZf0Zqz/UIh35AU8Zr3byn18m5DjonSPCk3sQuB5DTWFoNmO/jYfcnE=@lists.infradead.org
-X-Gm-Message-State: AFuF++k+9hMKy943FT2rIwEZcfjZDYcVQNQ2NO+fpUU7FxFobPdy+YXG
-	vFt9J4CTabPYAnadQXMMkrs3S5fWigd5X2G/iaQm043Pq/otDY2pRAA6/wMWZylPJinP/Dsct57
-	kKrgK0g==
-X-Received: from pghz21.prod.google.com ([2002:a63:e115:0:b0:cbe:ddc9:c670])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a20:a110:b0:3c3:33df:4d9a
- with SMTP id adf61e73a8af0-3cf7596a65cmr18790428637.1.1787785522980; Wed, 26
- Aug 2026 16:05:22 -0700 (PDT)
-Date: Wed, 26 Aug 2026 16:04:57 -0700
+        bh=IKkZ5WMHTp+y0tIK6W989B7G/56Zjcmbkdc6Bf2mTQA=;
+        b=Dal3Qycxa+o5HRZC6h+Ayb6LQ7cHgbY+MqpSYWTlB6WMQakTW+g/x8ZEboW8W2QGJy
+         cq1ZTd8DRCurp7oRH6tOJguEsT1srVKRIuWyhVW5KJH7p02Kb+SPm/+lZBXtth3SNCAT
+         faOjICEPycLcg72p8GnvquB0/4U92cFwLCCaUiKUUAK/iAB8RbwjPvr00Ck8+zuLNS1Y
+         tjw9V8DnnlJt9QTxM3HzDFawmA1WMeVmGyV+riSxdNWFr6e9Dym+ip0e/SKjYcQypXlR
+         fo1hyYWeSYK46OZItXJsS+SvCBHkKjFhtM5RHcjxigLQOFIYE3o2LL6H26k1OBoYwiWx
+         FqlA==
+X-Forwarded-Encrypted: i=1; AHgh+Rrx1pzgtSBhIjQgg5LL9QiaGw1OMhg915FGSenFJRXzvm2mY2clbr3VEN2NiYQPGHGuW2LNW8K8Zgc=@lists.infradead.org
+X-Gm-Message-State: AFuF++lVn2WmEJLp2tfKoPdt/DsXR82MKpJSpyzuOS/ddttsc4o8aeZ3
+	1qTbOWuR7883TVkdxS7fxG00oABmDn2ii8mxrRRsyIj2AgS1FUB7HrE3F/z/wYL+/nt+URju1nJ
+	lvXlMfg==
+X-Received: from pfwy20.prod.google.com ([2002:a05:6a00:1c94:b0:845:a3d5:fed])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a00:4f92:b0:848:2e3c:9955
+ with SMTP id d2e1a72fcca58-85371fa599amr18012291b3a.4.1787785524196; Wed, 26
+ Aug 2026 16:05:24 -0700 (PDT)
+Date: Wed, 26 Aug 2026 16:04:58 -0700
 In-Reply-To: <20260826230511.972824-1-seanjc@google.com>
 Mime-Version: 1.0
 References: <20260826230511.972824-1-seanjc@google.com>
 X-Mailer: git-send-email 2.55.0.887.g758fc8c411-goog
-Message-ID: <20260826230511.972824-7-seanjc@google.com>
-Subject: [PATCH 06/20] KVM: selftests: Extend page allocator to support
- naturally aligned allocations
+Message-ID: <20260826230511.972824-8-seanjc@google.com>
+Subject: [PATCH 07/20] KVM: selftests: Make the single-page allocator APIs
+ static inline
 From: Sean Christopherson <seanjc@google.com>
 To: Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, 
 	Sean Christopherson <seanjc@google.com>, Paolo Bonzini <pbonzini@redhat.com>, 
@@ -86,8 +86,9 @@ Cc: Fuad Tabba <fuad.tabba@linux.dev>, Joey Gouly <joey.gouly@arm.com>,
 	linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, 
 	Ritesh Harjani <ritesh.list@gmail.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260826_160524_540657_6F7B1661 
-X-CRM114-Status: GOOD (  10.28  )
+X-CRM114-CacheID: sfid-20260826_160525_966860_75962C44 
+X-CRM114-Status: UNSURE (   8.72  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -105,78 +106,76 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Extend the page allocator to support naturally aligned allocations, as some
-flavors of PowerPC page tables require multiple guest pages per table, and
-those tables need to be naturally aligned.
+Move the single-page allocator APIs to kvm_util.h as inline functions, as
+the are trivial wrappers, and unlike __vm_phy_pages_alloc(), are expected
+to remain that way for the foreseeable future.
 
-Take care to align the potential base address *inside* the retry loop, i.e.
-the base needs to be (re)aligned on every attempt.
+No functional change intended.
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- tools/testing/selftests/kvm/include/kvm_util.h |  2 ++
- tools/testing/selftests/kvm/lib/kvm_util.c     | 13 +++++++++++--
- 2 files changed, 13 insertions(+), 2 deletions(-)
+ tools/testing/selftests/kvm/include/kvm_util.h | 14 ++++++++++++--
+ tools/testing/selftests/kvm/lib/kvm_util.c     | 11 -----------
+ 2 files changed, 12 insertions(+), 13 deletions(-)
 
 diff --git a/tools/testing/selftests/kvm/include/kvm_util.h b/tools/testing/selftests/kvm/include/kvm_util.h
-index b1c5597b1def..96c8251c224a 100644
+index 96c8251c224a..2525c2cacc22 100644
 --- a/tools/testing/selftests/kvm/include/kvm_util.h
 +++ b/tools/testing/selftests/kvm/include/kvm_util.h
-@@ -991,6 +991,8 @@ void kvm_gsi_routing_write(struct kvm_vm *vm, struct kvm_irq_routing *routing);
+@@ -990,12 +990,10 @@ void kvm_gsi_routing_write(struct kvm_vm *vm, struct kvm_irq_routing *routing);
+ 
  const char *exit_reason_str(unsigned int exit_reason);
  
- gpa_t vm_phy_page_alloc(struct kvm_vm *vm, gpa_t min_gpa, u32 memslot);
-+gpa_t ____vm_phy_pages_alloc(struct kvm_vm *vm, size_t nr_pages, gpa_t min_gpa,
-+			     u32 memslot, bool protected, bool naturally_aligned);
+-gpa_t vm_phy_page_alloc(struct kvm_vm *vm, gpa_t min_gpa, u32 memslot);
+ gpa_t ____vm_phy_pages_alloc(struct kvm_vm *vm, size_t nr_pages, gpa_t min_gpa,
+ 			     u32 memslot, bool protected, bool naturally_aligned);
  gpa_t __vm_phy_pages_alloc(struct kvm_vm *vm, size_t nr_pages, gpa_t min_gpa,
  			   u32 memslot, bool protected);
- gpa_t vm_alloc_page_table(struct kvm_vm *vm);
-diff --git a/tools/testing/selftests/kvm/lib/kvm_util.c b/tools/testing/selftests/kvm/lib/kvm_util.c
-index bbf6d7684c0c..896da440659e 100644
---- a/tools/testing/selftests/kvm/lib/kvm_util.c
-+++ b/tools/testing/selftests/kvm/lib/kvm_util.c
-@@ -17,6 +17,7 @@
- #include <sys/stat.h>
- #include <time.h>
- #include <unistd.h>
-+#include <linux/align.h>
- #include <linux/kernel.h>
+-gpa_t vm_alloc_page_table(struct kvm_vm *vm);
  
- #define KVM_UTIL_MIN_PFN	2
-@@ -2032,9 +2033,10 @@ const char *exit_reason_str(unsigned int exit_reason)
-  *
-  * Note, success is guaranteed!
-  */
--gpa_t __vm_phy_pages_alloc(struct kvm_vm *vm, size_t nr_pages, gpa_t min_gpa,
--			   u32 memslot, bool protected)
-+gpa_t ____vm_phy_pages_alloc(struct kvm_vm *vm, size_t nr_pages, gpa_t min_gpa,
-+			     u32 memslot, bool protected, bool naturally_aligned)
- {
-+	size_t alignment = naturally_aligned ? nr_pages : 1;
- 	struct userspace_mem_region *region;
- 	sparsebit_idx_t pg, base;
- 
-@@ -2051,6 +2053,7 @@ gpa_t __vm_phy_pages_alloc(struct kvm_vm *vm, size_t nr_pages, gpa_t min_gpa,
- 
- 	base = min_gpa >> vm->page_shift;
- again:
-+	base = ALIGN(base, alignment);
- 	for (pg = base; pg < base + nr_pages; ++pg) {
- 		if (!sparsebit_is_set(region->unused_phy_pages, pg)) {
- 			base = sparsebit_next_set(region->unused_phy_pages, pg);
-@@ -2077,6 +2080,12 @@ gpa_t __vm_phy_pages_alloc(struct kvm_vm *vm, size_t nr_pages, gpa_t min_gpa,
- 	__builtin_unreachable();
+ static inline gpa_t vm_phy_pages_alloc(struct kvm_vm *vm, size_t nr_pages,
+ 				       gpa_t min_gpa, u32 memslot)
+@@ -1009,6 +1007,18 @@ static inline gpa_t vm_phy_pages_alloc(struct kvm_vm *vm, size_t nr_pages,
+ 				    vm_arch_has_protected_memory(vm));
  }
  
-+gpa_t __vm_phy_pages_alloc(struct kvm_vm *vm, size_t nr_pages, gpa_t min_gpa,
-+			   u32 memslot, bool protected)
++static inline gpa_t vm_phy_page_alloc(struct kvm_vm *vm, gpa_t min_gpa,
++				      u32 memslot)
 +{
-+	return ____vm_phy_pages_alloc(vm, nr_pages, min_gpa, memslot, protected, false);
++	return vm_phy_pages_alloc(vm, 1, min_gpa, memslot);
 +}
 +
- gpa_t vm_phy_page_alloc(struct kvm_vm *vm, gpa_t min_gpa, u32 memslot)
- {
- 	return vm_phy_pages_alloc(vm, 1, min_gpa, memslot);
++static inline gpa_t vm_alloc_page_table(struct kvm_vm *vm)
++{
++	return vm_phy_page_alloc(vm, KVM_GUEST_PAGE_TABLE_MIN_PADDR,
++				 vm->memslots[MEM_REGION_PT]);
++}
++
+ /*
+  * ____vm_create() does KVM_CREATE_VM and little else.  __vm_create() also
+  * loads the test binary into guest memory and creates an IRQ chip (x86 only).
+diff --git a/tools/testing/selftests/kvm/lib/kvm_util.c b/tools/testing/selftests/kvm/lib/kvm_util.c
+index 896da440659e..ce0d8fba4624 100644
+--- a/tools/testing/selftests/kvm/lib/kvm_util.c
++++ b/tools/testing/selftests/kvm/lib/kvm_util.c
+@@ -2086,17 +2086,6 @@ gpa_t __vm_phy_pages_alloc(struct kvm_vm *vm, size_t nr_pages, gpa_t min_gpa,
+ 	return ____vm_phy_pages_alloc(vm, nr_pages, min_gpa, memslot, protected, false);
+ }
+ 
+-gpa_t vm_phy_page_alloc(struct kvm_vm *vm, gpa_t min_gpa, u32 memslot)
+-{
+-	return vm_phy_pages_alloc(vm, 1, min_gpa, memslot);
+-}
+-
+-gpa_t vm_alloc_page_table(struct kvm_vm *vm)
+-{
+-	return vm_phy_page_alloc(vm, KVM_GUEST_PAGE_TABLE_MIN_PADDR,
+-				 vm->memslots[MEM_REGION_PT]);
+-}
+-
+ /*
+  * Address Guest Virtual to Host Virtual
+  *
 -- 
 2.55.0.887.g758fc8c411-goog
 
