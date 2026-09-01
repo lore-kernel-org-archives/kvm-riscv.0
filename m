@@ -4,101 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0A8E0C61DD6
-	for <kvm-riscv@archiver.kernel.org>; Tue,  1 Sep 2026 03:57:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BA919C624C6
+	for <kvm-riscv@archiver.kernel.org>; Tue,  1 Sep 2026 08:06:31 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:Message-Id:MIME-Version:Subject:
-	Date:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
 	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=MwfCgeeq/m7Pxcmcx5pX/FrTTlLB+pGLn3prRNT2B8U=; b=mpXW5eDrwTw8Sf
-	vc5FKh8DVLHWGFIEIqjcsSQo1BRH13xCLx+rLjr631Jtpcu9hbGVCO/1ed50+kZP3XfprnDYIdfzg
-	8GjrVPetJTL/UQHcHSWUuWBqyxSrsnMWeTKiapFnYFcIAAQ6Ddjrt4WlYfn9Wfee73EKf9o2H7Fzx
-	RHy7yne6RS1Q6S2bHs5HV7FwkT+llplK3ZnOSJ8cta67BPXmjWxemEBxV1nRbSCw55iTUS4a5zCTi
-	BCVKKeQh8oMFa/dW+RxNs3W5cxbLJuy4EWFvKF5/HS3ZhF43f+g49j5s8gxOl5V7VLcnRz+pyOkhh
-	4VIVrw3dlHRfgPTZ7MqQ==;
+	List-Owner; bh=QVS/vcjpXd4AiDQf+cMuCJ2BhSE9tFXWwflT6FniZdA=; b=idIWmnZhkm06Os
+	6xpF7LIBq6VVv7DvMJGm8VPTLZxtKZGT1U06GXhdT0h5NUGCQa6Y9dYgaRWpcxAF19jpcYoCVojGt
+	HtE6y5W5SEXN8YW2LFuk8y7BQnRS+UocGMudQYtEV4j/nCCQx0n3T8j9g/Fwi1JReraYvDAZnN7dY
+	6vH7dkBS2CT0x2M2Zw7XgskRCf+73qxL2LbUNXyumn94BGOzkDAT+4FMyuI4hAqD5lX89IvybVqn1
+	nxQ0mcno8DSWTYSWkZlTVHaaWxat3PC3AMYCtDdDOD/Z+0zzep8+j995bl77AYVIGbF8Drp5TW6Dt
+	acsqmlaqEngEgdxPSGfw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x1Fd5-0000000AxZG-1glZ;
-	Tue, 01 Sep 2026 03:57:47 +0000
-Received: from mail-pj1-x1030.google.com ([2607:f8b0:4864:20::1030])
+	id 1x1JVn-0000000BCB6-1btB;
+	Tue, 01 Sep 2026 08:06:31 +0000
+Received: from smtp21.cstnet.cn ([159.226.251.21] helo=cstnet.cn)
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x1Fd1-0000000AxYP-2y6P
-	for kvm-riscv@lists.infradead.org;
-	Tue, 01 Sep 2026 03:57:45 +0000
-Received: by mail-pj1-x1030.google.com with SMTP id 98e67ed59e1d1-398b3d66515so3056922a91.0
-        for <kvm-riscv@lists.infradead.org>; Mon, 31 Aug 2026 20:57:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=sifive.com; s=google; t=1788235062; x=1788839862; darn=lists.infradead.org;
-        h=cc:to:message-id:content-transfer-encoding:content-type
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=u6duqbr7qiU1/7HfGsJMzno+Gd8kl8JvVp30ChVEOm4=;
-        b=bTVGmgv6Oq/X/WugXsi8VI7LnX4rOmDZlHDuzqCPtxS6wUTcySwjopr7NH/OA3kSMt
-         7ZqfFDEze3/tfPZhEODpgYZTxQvzn4/ch4wzQPYcVtwVctSd3LRDXmJJwhfY3JXlGQRg
-         KjFhssGTMesN/IoajB5h9JjrO7lr7Fa2F7SCNYDu4RAoJdwuEOBclNUZUFhr+rRDsEGE
-         rkTSPhMU/IR9zsesNuVA8wLGpDzv0sqvTGjSHoq4uIeaaL1KDd2SUEf/HOMa60B+jIXF
-         dReVrCew6280JBWnvmI1mVMHy1dJ82hJHTiB6GL95a6SudZL5RT8mx8/+X8icagROYeP
-         +9XA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788235062; x=1788839862;
-        h=cc:to:message-id:content-transfer-encoding:content-type
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=u6duqbr7qiU1/7HfGsJMzno+Gd8kl8JvVp30ChVEOm4=;
-        b=BMD06Y/XNRNWGX9tcD+QlnaGgh3VyR/DmX+V1Wle0NqICgvizwYOS3YnfyHumcWqr2
-         AMePn4/p3SnA4FMbJXJVfLso+gRdl1DSl1jsqzyqphBI+rjIEZHmJwk6gNWZm75J+RIt
-         VhBX3gHsoWnvsOu9R7jL4sK/23CN3zntmuVXuYkJ+Gii88XgDyRnu8+DyVdN27dv8IdN
-         EraiMLrrHtwU80Pgv5RF0nKjBSOvKtwVp3GMm09pa+i4++aPLgDLB2HWv7NNGe8m8t6I
-         0d/O2ejr+j81OshXlinC+3wxkZf4KPIFpDWOOyjQkLmqdIYgzWfbWBfv6I46PK4y4U88
-         hbMQ==
-X-Forwarded-Encrypted: i=1; AKwUvBwtKEjFg9NQng8gkH2HLwAvw+O8YOyI+GxVmQ4m5PriSApRC+ze9iJJdV36qbb6R/eI2zI51z77EEw=@lists.infradead.org
-X-Gm-Message-State: AFuF++nb7FJg8tpl3olE9wbImVB+N9FXQSbPMgau+n9CReNuhb8VS1Lg
-	eJK8e2W9q+I57wnjGcg8mN35KJBhvFdLRtNhmq5GkeVeXcE5XK/6872p9DWkEB+DrSU=
-X-Gm-Gg: AYBFou1O6gY7oCSpGi6gNzN6iquE3kkw2rMul6W+Pe67F75uj2GV9mj+OjpjIUtDNdk
-	p0uKcCT5NckqmX9fV/lNTHrHcK/EyeCtSTOF291/fW+I0i99TLy0yCi4/qPZvA56NUU2Gm4gFSm
-	LOc8JDST4xepV+9gdPIKNGqKYl69hTGQoyanUQjiKLTo4D66Q29DwHyMBifS6JtYBHQo9T6Q5k0
-	aNT09p7UlyutjMYIQPwPWw7Y7THViGzHi+hXPcG7l5MAgXgO2aZenYyM66mH0R0t3rcjT8PdhAd
-	erPyM4H1Dxf0Z2Ca+YUpORksK2oZiMa+mpFM/yC/XP++lVhvygP7XGLDeF9PZQSN7vZ+NNYcCcu
-	ZxB7bspfbQm2RCQxn0MyWT8wWAhxTIL8O1R4UIfn8PpTLEZRmWzZv50VhpfqeZnbyaRJg0DUHSc
-	nH1oqhz71bn55GlLVzWUUuXobycUxCI7qlupOW3nDYKTqK0+mLVjM/BfS75JUNqEAbWdQD8C/+0
-	eugTJEv
-X-Received: by 2002:a17:90b:28cd:b0:398:9c00:29ee with SMTP id 98e67ed59e1d1-3989c003c08mr33472489a91.22.1788235062279;
-        Mon, 31 Aug 2026 20:57:42 -0700 (PDT)
-Received: from sw07.internal.sifive.com ([4.53.31.132])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-142e0d1b38esm31120101c88.3.2026.08.31.20.57.41
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 31 Aug 2026 20:57:41 -0700 (PDT)
-From: Yong-Xuan Wang <yongxuan.wang@sifive.com>
-Date: Mon, 31 Aug 2026 20:57:31 -0700
-Subject: [PATCH] KVM: riscv: selftests: Dump sepc/scause/stval on
- vcpu_arch_dump()
+	id 1x1JVj-0000000BC8S-1nlK;
+	Tue, 01 Sep 2026 08:06:30 +0000
+Received: from localhost.localdomain (unknown [111.196.241.250])
+	by APP-01 (Coremail) with SMTP id qwCowADHYPR1h5ZqTaP9Bg--.30584S2;
+	Tue, 01 Sep 2026 16:06:13 +0800 (CST)
+From: Pengpeng Hou <pengpeng@iscas.ac.cn>
+To: Anup Patel <anup@brainfault.org>,
+	Atish Patra <atish.patra@linux.dev>
+Cc: Pengpeng Hou <pengpeng@iscas.ac.cn>,
+	Paul Walmsley <pjw@kernel.org>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>,
+	Alexandre Ghiti <alex@ghiti.fr>,
+	kvm@vger.kernel.org,
+	kvm-riscv@lists.infradead.org,
+	linux-riscv@lists.infradead.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] RISC-V: KVM: Preserve LCOFIP when checking pending interrupts
+Date: Tue,  1 Sep 2026 16:06:08 +0800
+Message-ID: <20260901080610.91993-1-pengpeng@iscas.ac.cn>
+X-Mailer: git-send-email 2.50.1
 MIME-Version: 1.0
-Message-Id: <20260831-kvm_kselftest_dump-v1-1-55b022c6ef8e@sifive.com>
-X-B4-Tracking: v=1; b=H4sIACpNlmoC/yXMSQqEMBBA0atIrTsQR8SrSCOaVLScSUURxLsbd
- fkW/5/AaAkZiuAEizsxLbNH+AtAdfXcoiDtDZGMMpnHoRj2qRoYR+OQXaW3aRWxyXWia5OqTII
- PV4uGjnda/j/z1vSo3HOC67oB1Ih2dXYAAAA=
-X-Change-ID: 20260831-kvm_kselftest_dump-3f8d4daf5c60
-To: Anup Patel <anup@brainfault.org>, Atish Patra <atish.patra@linux.dev>, 
- Paolo Bonzini <pbonzini@redhat.com>, Shuah Khan <shuah@kernel.org>, 
- Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
- Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>
-Cc: greentime.hu@sifive.com, vincent.chen@sifive.com, zong.li@sifive.com, 
- kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
- linux-riscv@lists.infradead.org, linux-kselftest@vger.kernel.org, 
- linux-kernel@vger.kernel.org, Yong-Xuan Wang <yongxuan.wang@sifive.com>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1788235061; l=2028;
- i=yongxuan.wang@sifive.com; s=20260424; h=from:subject:message-id;
- bh=FIdRcsMOC/DZC1O8y6KtoskjQGfb9qysPZfXHsmxOnA=;
- b=LoVteimfcmkAq7Y0uj1TCSBAJ+oQpFiT8+1EsF2q0xDVvaq1Q0lmJLNnHQzUXtKthWFDMufNp
- H3de3BgwRlvDU5dnQcAf6LZWzBwvT435/qp3cbsvBGQB5/sjYFkbpwA
-X-Developer-Key: i=yongxuan.wang@sifive.com; a=ed25519;
- pk=+8NCHB1ZJvZthQAmZspOAaqjo+/snaW8mFSiDx45HxY=
+X-CM-TRANSID: qwCowADHYPR1h5ZqTaP9Bg--.30584S2
+X-Coremail-Antispam: 1UD129KBjvJXoW7CrW7tF1xWF1xCrWfuw47CFg_yoW8Zry7pr
+	4Ikw1YqrW0qa4Ik342gr40gr1Yg3ykJr43uFZ29a4UJr42qa4ruF4kKa4UAF4rGryF9a4x
+	XryIga45uas8Zw7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUU9014x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
+	1l84ACjcxK6xIIjxv20xvE14v26ryj6F1UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4j
+	6F4UM28EF7xvwVC2z280aVAFwI0_Cr1j6rxdM28EF7xvwVC2z280aVCY1x0267AKxVW0oV
+	Cq3wAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0
+	I7IYx2IY67AKxVWUJVWUGwAv7VC2z280aVAFwI0_Jr0_Gr1lOx8S6xCaFVCjc4AY6r1j6r
+	4UM4x0Y48IcxkI7VAKI48JM4x0x7Aq67IIx4CEVc8vx2IErcIFxwACI402YVCY1x02628v
+	n2kIc2xKxwCY1x0262kKe7AKxVWUtVW8ZwCF04k20xvY0x0EwIxGrwCFx2IqxVCFs4IE7x
+	kEbVWUJVW8JwC20s026c02F40E14v26r1j6r18MI8I3I0E7480Y4vE14v26r106r1rMI8E
+	67AF67kF1VAFwI0_Jw0_GFylIxkGc2Ij64vIr41lIxAIcVC0I7IYx2IY67AKxVWUJVWUCw
+	CI42IY6xIIjxv20xvEc7CjxVAFwI0_Gr0_Cr1lIxAIcVCF04k26cxKx2IYs7xG6r1j6r1x
+	MIIF0xvEx4A2jsIE14v26r1j6r4UMIIF0xvEx4A2jsIEc7CjxVAFwI0_Gr0_Gr1UYxBIda
+	VFxhVjvjDU0xZFpf9x0JUd-B_UUUUU=
+X-Originating-IP: [111.196.241.250]
+X-CM-SenderInfo: pshqw1xhqjqxpvfd2hldfou0/
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260831_205743_766648_F51EF34F 
-X-CRM114-Status: UNSURE (   9.01  )
+X-CRM114-CacheID: sfid-20260901_010627_891686_215B5E7B 
+X-CRM114-Status: UNSURE (   9.84  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -116,53 +85,51 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-vcpu_arch_dump() omits trap-related CSRs, making it hard to diagnose
-unexpected guest exceptions from the dump output alone.
+KVM injects the guest counter-overflow interrupt into HVIP bit 13 and
+records the same bit in irqs_pending. The guest enables it through VSIE
+LCOFIE, also at bit 13.
 
-Print sepc, scause, and stval alongside the existing register dump.
+kvm_riscv_vcpu_has_interrupts() shifts the complete VSIP valid mask by
+VSIP_TO_HVIP_SHIFT before matching it against irqs_pending. That maps
+SSIP, STIP, and SEIP to VSSIP, VSTIP, and VSEIP, but incorrectly moves
+LCOFIP from bit 13 to bit 14. The following high-interrupt term excludes
+all local interrupt bits, so it cannot recover LCOFIP.
 
-Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
+As a result, kvm_arch_vcpu_runnable() can report false for a vCPU waiting
+in WFI even though an enabled PMU overflow interrupt is pending.
+
+Keep LCOFIP in place while shifting the three interrupt classes that have
+distinct VS-level bit positions. This makes a vCPU halted in WFI runnable
+when its PMU overflow interrupt is pending.
+
+Fixes: 16b0bde9a37c ("RISC-V: KVM: Add perf sampling support for guests")
+Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>
 ---
- tools/testing/selftests/kvm/lib/riscv/processor.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ arch/riscv/kvm/vcpu.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/tools/testing/selftests/kvm/lib/riscv/processor.c b/tools/testing/selftests/kvm/lib/riscv/processor.c
-index ded5429f3448..bf355afa8486 100644
---- a/tools/testing/selftests/kvm/lib/riscv/processor.c
-+++ b/tools/testing/selftests/kvm/lib/riscv/processor.c
-@@ -235,6 +235,7 @@ void riscv_vcpu_mmu_setup(struct kvm_vcpu *vcpu)
- void vcpu_arch_dump(FILE *stream, struct kvm_vcpu *vcpu, u8 indent)
+diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+index e062ca1..c6eb3bd 100644
+--- a/arch/riscv/kvm/vcpu.c
++++ b/arch/riscv/kvm/vcpu.c
+@@ -487,12 +487,14 @@ int kvm_riscv_vcpu_unset_interrupt(struct kvm_vcpu *vcpu, unsigned int irq)
+ bool kvm_riscv_vcpu_has_interrupts(struct kvm_vcpu *vcpu, u64 mask)
  {
- 	struct kvm_riscv_core core;
-+	struct kvm_riscv_csr general_csr;
+ 	unsigned long flags;
+-	unsigned long ie;
++	unsigned long ie, vsie;
+ 	bool ret;
  
- 	core.mode = vcpu_get_reg(vcpu, RISCV_CORE_REG(mode));
- 	core.regs.pc = vcpu_get_reg(vcpu, RISCV_CORE_REG(regs.pc));
-@@ -270,6 +271,10 @@ void vcpu_arch_dump(FILE *stream, struct kvm_vcpu *vcpu, u8 indent)
- 	core.regs.t5 = vcpu_get_reg(vcpu, RISCV_CORE_REG(regs.t5));
- 	core.regs.t6 = vcpu_get_reg(vcpu, RISCV_CORE_REG(regs.t6));
- 
-+	general_csr.sepc = vcpu_get_reg(vcpu, RISCV_GENERAL_CSR_REG(sepc));
-+	general_csr.scause = vcpu_get_reg(vcpu, RISCV_GENERAL_CSR_REG(scause));
-+	general_csr.stval = vcpu_get_reg(vcpu, RISCV_GENERAL_CSR_REG(stval));
-+
- 	fprintf(stream,
- 		" MODE:  0x%lx\n", core.mode);
- 	fprintf(stream,
-@@ -296,6 +301,9 @@ void vcpu_arch_dump(FILE *stream, struct kvm_vcpu *vcpu, u8 indent)
- 	fprintf(stream,
- 		" T3: 0x%016lx   T4: 0x%016lx T5: 0x%016lx T6: 0x%016lx\n",
- 		core.regs.t3, core.regs.t4, core.regs.t5, core.regs.t6);
-+	fprintf(stream,
-+		"SEPC: 0x%016lx SCAUSE: 0x%016lx STVAL: 0x%016lx\n",
-+		general_csr.sepc, general_csr.scause, general_csr.stval);
- }
- 
- static void __aligned(16) guest_unexp_trap(void)
-
----
-base-commit: b5060a4aa33d7d78a8c1837ab08ef0c81ea96650
-change-id: 20260831-kvm_kselftest_dump-3f8d4daf5c60
+ 	raw_spin_lock_irqsave(&vcpu->arch.irqs_pending_lock, flags);
+-	ie = ((vcpu->arch.guest_csr.vsie & VSIP_VALID_MASK)
+-		<< VSIP_TO_HVIP_SHIFT) & (unsigned long)mask;
++	vsie = vcpu->arch.guest_csr.vsie & VSIP_VALID_MASK;
++	ie = ((vsie & ~SIP_LCOFIP) << VSIP_TO_HVIP_SHIFT) |
++	     (vsie & SIP_LCOFIP);
++	ie &= (unsigned long)mask;
+ 	ie |= vcpu->arch.guest_csr.vsie & ~IRQ_LOCAL_MASK &
+ 		(unsigned long)mask;
+ 	ret = vcpu->arch.irqs_pending[0] & ie;
 
 
 -- 
