@@ -4,60 +4,46 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6AC16C624D0
-	for <kvm-riscv@archiver.kernel.org>; Wed,  2 Sep 2026 11:58:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0EEE7C61DD6
+	for <kvm-riscv@archiver.kernel.org>; Wed,  2 Sep 2026 11:58:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Message-Id
 	:MIME-Version:Subject:Date:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=KwLxuzrwPd0PR53vxEfLM8b5B0FyWYZHaqzf8W16xAo=; b=MtqJEfPdftD5MH
-	zEmaANOgzXrnG4BV0v6mETWPx6kj1FBI7NPQtlIId2d7m3imcc0H3AODt+ffWfbpAe2fMDPVpkNj8
-	JVdIuaxcrwSV6zdgvK/fsQ58+qq2T6no7uczQFMMyqM3mm+JXhb1v0fkzq+zIJ3iClfJT6C3zokQs
-	g5LlNhrpLZxA9kVMaFqe00wFubHCUVA+aUzjW5TIhbg5mESFhP9Z6fyTyM+/FVXFGXH51RbCCCjZ+
-	COc7+z6jr+9FFKXQyYlH/3xrHZsAk/0U/Bsi5Zh0aoQrUKY1AhspRCftV5dzvR3k+S419lBpcbXEi
-	iG9E31Nb+S/UGTePDmwQ==;
+	List-Owner; bh=aGNfwGyvy+5Rc6uKWPpfOnEiQ0Hdejd7W18CPsNSzwc=; b=G672ky1S19zCPf
+	kDh3j9D8ftdda7xOmJlCxwwlwFJ6/vHTMuj8QxselJp0Y+edrV4u4yUIwUvpegw1lSOS5v0KcxaKF
+	Vo/B4AljjcGvHS4zx8ZdfiN2GlSban+YFjmU1cJIY0QZJkiD4jCgONYj43VTyF1EWLC+3EvIokwxn
+	hOv7cpnfEYjg9nq4xHOLNbsACXVwhpg2JhpOp/WdhbhA2WFfdD90NzrG2JfRSh4KYwFVPwR80Q8qV
+	PWeGpa2l01oYazJE4pJAxMdeop3vnmXbafKIOXEMcAbxpfS/Q4nET7B1iiRF4w9VX84feb/gYBUE6
+	eTN7x/XC6aPlpOFaKsWQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x1jbg-0000000EaYs-0bLW;
-	Wed, 02 Sep 2026 11:58:20 +0000
-Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
-	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x1jbe-0000000EaXY-3smH;
-	Wed, 02 Sep 2026 11:58:19 +0000
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=Cc:To:In-Reply-To:References:
-	Message-Id:Content-Transfer-Encoding:Content-Type:MIME-Version:Subject:Date:
-	From:Sender:Reply-To:Content-ID:Content-Description;
-	bh=WTVkw3ab/CFKRCPfMcchLiqENpkcFUwtICs+m7pnNZQ=; b=Ipg9+vOxU88LEugAaOo7msVJOD
-	I9Gdrb/7DuFj/+TVVbXpwebYXVZ4cfw5qKoQglTRbZUvRb+hMPMYPGaJFtVJKB1t/XOGjHj6+fD/Q
-	HtQ9qSdBD5PdyC21fdNKw4X9uJbC+siY16oKQZ0xHLwOtSjk0Cx+bmi5xNHRodpjDg5aeEVFAtl6C
-	F1QTd8HOFhxK53xh1GcPeXMdrHmGHiOOxuJKAjnVB2Sfd9xHtstbkregCHPmARhhCqDYvJJy2s9xW
-	y3dkQ/Zg2knnKTZ6A6KFWA1WJZ+LRxXKo0MfRYkcbVdPpuqFj+tLZesv7QMtC2AI2M/8TlQ+EQCap
-	ndc8psmA==;
+	id 1x1jbl-0000000Eaff-34nJ;
+	Wed, 02 Sep 2026 11:58:25 +0000
 Received: from foss.arm.com ([217.140.110.172])
-	by desiato.infradead.org with esmtp (Exim 4.99.2 #2 (Red Hat Linux))
-	id 1x1jbb-0000000Bvlu-1Hca;
-	Wed, 02 Sep 2026 11:58:17 +0000
+	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
+	id 1x1jbj-0000000EacC-0TtF;
+	Wed, 02 Sep 2026 11:58:24 +0000
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 1EBA71D70;
-	Wed,  2 Sep 2026 04:58:10 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id AE9F21682;
+	Wed,  2 Sep 2026 04:58:17 -0700 (PDT)
 Received: from e129823.arm.com (e129823.arm.com [10.2.213.3])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 9AEF93F85F;
-	Wed,  2 Sep 2026 04:58:06 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 36C953F85F;
+	Wed,  2 Sep 2026 04:58:14 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1788350293; bh=lMx8oDxLrRJvH9eMXBjYWF4f+9ZOpE9Y518eoKaPMJE=;
+	t=1788350301; bh=Cb50W6OPktHsm99acng2bApoCrgxkxuR2uk46zCbRyQ=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=krO2cV0wUbHoNz4HiaCO7WUC3BC407rFyRRBRidPDVLMxsiarl33hEi5TdBmSfdAe
-	 bp001uGnvUM1OPwKydsZG2MF9KK8CeaZyIGT4eRDw5V4mnQ/BGbKmieKcomRbkNsOO
-	 CBFUA5OOE9OOa3d84FuizOQSQ6+w2BL4az9e0MS4=
+	b=Rc4U+AYr91IKzHdGrEAPsLYegtTUEga1U3eutHDciAy900B6qzrYM3rlNvw3RNJEl
+	 b2U92FsRk4XYI3PExcwjmh0Y8XuoN5b7K9lRoBpN+Quf+pBm+ytHOePFqY/paQ+YV8
+	 bw8lajkm7Bm2daM2ku2OYMZ5yrNTbwT1GZahWWQc=
 From: Yeoreum Yun <yeoreum.yun@arm.com>
-Date: Wed, 02 Sep 2026 12:56:15 +0100
-Subject: [PATCH RFC v3 13/21] x86: mm: use pgtable_level enum in
- effective_prot_pXd()
+Date: Wed, 02 Sep 2026 12:56:16 +0100
+Subject: [PATCH RFC v3 14/21] x86: mm: carve out the generic compile-time
+ folded pgtable case in effective_prot()
 MIME-Version: 1.0
-Message-Id: <20260902-dummy_ptxp3-v3-13-5d8f5b17c25c@arm.com>
+Message-Id: <20260902-dummy_ptxp3-v3-14-5d8f5b17c25c@arm.com>
 References: <20260902-dummy_ptxp3-v3-0-5d8f5b17c25c@arm.com>
 In-Reply-To: <20260902-dummy_ptxp3-v3-0-5d8f5b17c25c@arm.com>
 To: Russell King <linux@armlinux.org.uk>, 
@@ -90,22 +76,22 @@ Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
  kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
  linux-openrisc@vger.kernel.org, Yeoreum Yun <yeoreum.yun@arm.com>
 X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2103; i=yeoreum.yun@arm.com;
- h=from:subject:message-id; bh=lMx8oDxLrRJvH9eMXBjYWF4f+9ZOpE9Y518eoKaPMJE=;
- b=owEB7QES/pANAwAKAW3Vw9FaxTEzAcsmYgBqmA7orgNlXXrDglsxwFE6HkLoSMOcv+hn/RGo5
- OZ6Np01hJGJAbMEAAEKAB0WIQQtg+CS3QUzuFh1pJ1t1cPRWsUxMwUCapgO6AAKCRBt1cPRWsUx
- M6wOC/4jh3pwjU1HOyorFYcxwSr12oxSEh2yyO74vVtlI7NHpYX5RUUsEZYTnG7+qkDv6ow2iGZ
- AmD3S0ZBxZOzZv9316P62wrPLZu+N3mv3CRuoY27dQMaReBMceQ+4a2CinVFRCeQ7E8m6YIVk5O
- fro0sHSel4RIL4bWa5rTIGwerRJl1goYmC75WreM/MYuWJL9fYxHraDTdlqR0RNnFE4gqF80Jgs
- 4TXQWJxntju4OCT7na2A1iAhwi+TjtYBPuj+OQUT0ds/9dAZMHzM6isjqvaOSBhSxnnYfCreX22
- bIQgyPKV3lI59hX7t0N7MG8fUyfmZiMKbPaY7VeioNA7Uswd+OSBeEXQYLmX4ZXfMx/qi5w198K
- t83/WRBdsBEQeChKPf05sHb1SVA5a260F4YS5f6T18Mq2g6xHN41XtDkUgU9rLheidhBTkRZ93w
- LncxMkb9iEoBk6h2+9ACSJ73MImH+il0LpD5x3Akn/XsjQWHN76L6I8KnDsqy5cVwct7g=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=4736; i=yeoreum.yun@arm.com;
+ h=from:subject:message-id; bh=Cb50W6OPktHsm99acng2bApoCrgxkxuR2uk46zCbRyQ=;
+ b=owEB7QES/pANAwAKAW3Vw9FaxTEzAcsmYgBqmA7oY0yxeEDzKGg9VZOQDuZoC6+iNuEJp05Dg
+ 0y3Q58nLraJAbMEAAEKAB0WIQQtg+CS3QUzuFh1pJ1t1cPRWsUxMwUCapgO6AAKCRBt1cPRWsUx
+ M373DAChvGuZ3AJk9EZ3+vHnShE9zNfMzgsSN3jDlyLc46ndxwuyvxED1y5m4/ZBi9RHYT2nEZF
+ qggz+o8ZraqrJ525PcbUUGlyq0lfVULWvGia9jcblHKUSuqv6F/mRdMXfn5v9LxlP4Nzo/i16sY
+ raH3qKhA3C6aV8pa4mMr+KcdtijnyAt+y/ZNg1BIuR7lW5o7FshCVnLRMz2nEvVGWhL0ejnUHhR
+ YLs/wQlG+MTzQLJ1zAtjFN7xyjaKSp4aBrod1/uVxg1wSJktl+e+Qd1Kc7vQN43pS8bTwQ7W7lO
+ Z+dpWlfGAldxA+kTXWNGmPfwZm7sVjDdQInJk4xJvf9FNZc+hAM5a/zAGReZdNiuPs0PlIoyw9B
+ b5yL9mrlXF0uF9vW7q+V/nqXlBm0ggAJuWPu6G4/luO+gCm3+QGvmGUWYvVAbbu2Bgwj5oYsA00
+ 7rg7R9wTgQ6ttclGmljukgx6LaC2Ijj/JNHnzqK22lRdOoavZMBjCinZK6X/LioZRu7uo=
 X-Developer-Key: i=yeoreum.yun@arm.com; a=openpgp;
  fpr=2D83E092DD0533B85875A49D6DD5C3D15AC53133
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260902_125815_735313_6C74A5C8 
-X-CRM114-Status: GOOD (  10.68  )
+X-CRM114-CacheID: sfid-20260902_045823_260003_0BB58F53 
+X-CRM114-Status: GOOD (  17.13  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -122,69 +108,142 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Instead of using hard-coded integer in effective_prot_pXd(), use
-pgtable level enum.
+The behaviour of pXdp_get() will change with generic compile-time folded
+page tables. To prepare for that, rework effective_prot() to ignore any
+folded page tables entries, as it will unconditionally get called by
+ptdump core with pXd_val(pXdp_get()), and the value for folded entries
+really should be ignored.
+
+For this, introduce mm_first_pgtable_level() to identify the first real
+page-table level, move mm_pXd_folded() in !__ASSEMBLER__ and
+update effective_prot with higher_prot only when the current entry is not
+folded nor the first level.
 
 There should be no functional change.
 
 Signed-off-by: Yeoreum Yun <yeoreum.yun@arm.com>
 ---
- arch/x86/mm/dump_pagetables.c | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+ arch/x86/mm/dump_pagetables.c |  6 +++--
+ include/linux/pgtable.h       | 61 ++++++++++++++++++++++++++++++++-----------
+ 2 files changed, 50 insertions(+), 17 deletions(-)
 
 diff --git a/arch/x86/mm/dump_pagetables.c b/arch/x86/mm/dump_pagetables.c
-index 2afa7a23340e..a18a61e732c3 100644
+index a18a61e732c3..2acbe41eb58f 100644
 --- a/arch/x86/mm/dump_pagetables.c
 +++ b/arch/x86/mm/dump_pagetables.c
-@@ -248,13 +248,13 @@ static void note_wx(struct pg_state *st, unsigned long addr)
- 		  (void *)st->start_address);
- }
+@@ -38,6 +38,7 @@ struct pg_state {
+ 	bool check_wx;
+ 	unsigned long wx_pages;
+ 	struct seq_file *seq;
++	struct mm_struct *mm;
+ };
  
--static void effective_prot(struct ptdump_state *pt_st, int level, u64 val)
-+static void effective_prot(struct ptdump_state *pt_st, enum pgtable_level level, u64 val)
- {
- 	struct pg_state *st = container_of(pt_st, struct pg_state, ptdump);
+ struct addr_marker {
+@@ -254,7 +255,7 @@ static void effective_prot(struct ptdump_state *pt_st, enum pgtable_level level,
  	pgprotval_t prot = val & PTE_FLAGS_MASK;
  	pgprotval_t effective;
  
--	if (level > 0) {
-+	if (level > PGTABLE_LEVEL_PGD) {
+-	if (level > PGTABLE_LEVEL_PGD) {
++	if (level > mm_first_pgtable_level(st->mm)) {
  		pgprotval_t higher_prot = st->prot_levels[level - 1];
  
  		effective = (higher_prot & prot & (_PAGE_USER | _PAGE_RW)) |
-@@ -268,27 +268,27 @@ static void effective_prot(struct ptdump_state *pt_st, int level, u64 val)
+@@ -452,7 +453,8 @@ bool ptdump_walk_pgd_level_core(struct seq_file *m,
+ 		.level = -1,
+ 		.to_dmesg	= dmesg,
+ 		.check_wx	= checkwx,
+-		.seq		= m
++		.seq		= m,
++		.mm		= mm,
+ 	};
  
- static void effective_prot_pte(struct ptdump_state *st, pte_t pte)
- {
--	effective_prot(st, 4, pte_val(pte));
-+	effective_prot(st, PGTABLE_LEVEL_PTE, pte_val(pte));
+ 	ptdump_walk_pgd(&st.ptdump, mm, pgd);
+diff --git a/include/linux/pgtable.h b/include/linux/pgtable.h
+index 3186096a6e13..ed7101a13ce9 100644
+--- a/include/linux/pgtable.h
++++ b/include/linux/pgtable.h
+@@ -392,6 +392,22 @@ static inline void lazy_mmu_mode_pause(void) {}
+ static inline void lazy_mmu_mode_resume(void) {}
+ #endif
+ 
++/*
++ * On some architectures it depends on the mm if the p4d/pud or pmd
++ * layer of the page table hierarchy is folded or not.
++ */
++#ifndef mm_p4d_folded
++#define mm_p4d_folded(mm)	__is_defined(__PAGETABLE_P4D_FOLDED)
++#endif
++
++#ifndef mm_pud_folded
++#define mm_pud_folded(mm)	__is_defined(__PAGETABLE_PUD_FOLDED)
++#endif
++
++#ifndef mm_pmd_folded
++#define mm_pmd_folded(mm)	__is_defined(__PAGETABLE_PMD_FOLDED)
++#endif
++
+ #ifndef pte_batch_hint
+ /**
+  * pte_batch_hint - Number of pages that can be added to batch without scanning.
+@@ -2313,6 +2329,36 @@ static inline const char *pgtable_level_to_str(enum pgtable_level level)
+ 	}
  }
  
- static void effective_prot_pmd(struct ptdump_state *st, pmd_t pmd)
- {
--	effective_prot(st, 3, pmd_val(pmd));
-+	effective_prot(st, PGTABLE_LEVEL_PMD, pmd_val(pmd));
- }
++#ifdef CONFIG_MMU
++/**
++ * mm_first_pgtable_level - return the first non-folded page-table level
++ * @mm: The mm structure.
++ *
++ * With runtime- or compile-time folded page tables, page-table walkers
++ * effectively skip the folded top-level page tables, treating them as
++ * always-present entries pointing to the next lower-level page table.
++ *
++ * Return the first page-table level in @mm that is not folded.
++ *
++ * Return: the first non-folded page-table level.
++ */
++static inline enum pgtable_level mm_first_pgtable_level(struct mm_struct *mm)
++{
++	/*
++	 * "PMD folded" actually means "PMD is folded into PUD", and
++	 * pud_present() etc. are hard-coded to look like present page table
++	 * levels, whereby pmd_present() etc. contain real logic.
++	 */
++	if (mm_pmd_folded(mm))
++		return PGTABLE_LEVEL_PMD;
++	if (mm_pud_folded(mm))
++		return PGTABLE_LEVEL_PUD;
++	if (mm_p4d_folded(mm))
++		return PGTABLE_LEVEL_P4D;
++	return PGTABLE_LEVEL_PGD;
++}
++#endif /* CONFIG_MMU */
++
+ void ptval_bytes_to_hex_str(char *buf, size_t buf_size, const void *entry, size_t entry_size);
  
- static void effective_prot_pud(struct ptdump_state *st, pud_t pud)
- {
--	effective_prot(st, 2, pud_val(pud));
-+	effective_prot(st, PGTABLE_LEVEL_PUD, pud_val(pud));
- }
+ #define ptval_to_str(buf, val)								\
+@@ -2349,21 +2395,6 @@ void ptval_bytes_to_hex_str(char *buf, size_t buf_size, const void *entry, size_
+ #ifndef has_transparent_pud_hugepage
+ #define has_transparent_pud_hugepage() IS_BUILTIN(CONFIG_HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD)
+ #endif
+-/*
+- * On some architectures it depends on the mm if the p4d/pud or pmd
+- * layer of the page table hierarchy is folded or not.
+- */
+-#ifndef mm_p4d_folded
+-#define mm_p4d_folded(mm)	__is_defined(__PAGETABLE_P4D_FOLDED)
+-#endif
+-
+-#ifndef mm_pud_folded
+-#define mm_pud_folded(mm)	__is_defined(__PAGETABLE_PUD_FOLDED)
+-#endif
+-
+-#ifndef mm_pmd_folded
+-#define mm_pmd_folded(mm)	__is_defined(__PAGETABLE_PMD_FOLDED)
+-#endif
  
- static void effective_prot_p4d(struct ptdump_state *st, p4d_t p4d)
- {
--	effective_prot(st, 1, p4d_val(p4d));
-+	effective_prot(st, PGTABLE_LEVEL_P4D, p4d_val(p4d));
- }
- 
- static void effective_prot_pgd(struct ptdump_state *st, pgd_t pgd)
- {
--	effective_prot(st, 0, pgd_val(pgd));
-+	effective_prot(st, PGTABLE_LEVEL_PGD, pgd_val(pgd));
- }
- 
- 
+ #ifndef p4d_offset_lockless
+ #define p4d_offset_lockless(pgdp, pgd, address) p4d_offset(&(pgd), address)
 
 -- 
 2.43.0
