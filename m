@@ -4,71 +4,98 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BA919C624C6
-	for <kvm-riscv@archiver.kernel.org>; Tue,  1 Sep 2026 08:06:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EB6AFC61DD6
+	for <kvm-riscv@archiver.kernel.org>; Wed,  2 Sep 2026 11:56:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
-	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:MIME-Version:Message-Id:Date:
+	Subject:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
 	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=QVS/vcjpXd4AiDQf+cMuCJ2BhSE9tFXWwflT6FniZdA=; b=idIWmnZhkm06Os
-	6xpF7LIBq6VVv7DvMJGm8VPTLZxtKZGT1U06GXhdT0h5NUGCQa6Y9dYgaRWpcxAF19jpcYoCVojGt
-	HtE6y5W5SEXN8YW2LFuk8y7BQnRS+UocGMudQYtEV4j/nCCQx0n3T8j9g/Fwi1JReraYvDAZnN7dY
-	6vH7dkBS2CT0x2M2Zw7XgskRCf+73qxL2LbUNXyumn94BGOzkDAT+4FMyuI4hAqD5lX89IvybVqn1
-	nxQ0mcno8DSWTYSWkZlTVHaaWxat3PC3AMYCtDdDOD/Z+0zzep8+j995bl77AYVIGbF8Drp5TW6Dt
-	acsqmlaqEngEgdxPSGfw==;
+	List-Owner; bh=nFq69BN38ZgvB8rVLM+pBIZw6MselcVBqqSjOboj9dY=; b=WzViSHKujGjVbr
+	KfbWyrDetIMbjGZ8APtesmlBR4qu4ffmzP1fQBQe9tEwHSAw3IrTkA8TZt2U/i5haRwHKRSqqMI4j
+	Nsl9n/k8DlDIY4yhddIwwhw6Zg12E8uQS4Y8+pwAs0KWbe90v9YrbW8QH4+zVQK8ug7s+stDISvQC
+	R1pN11Gr47WeFItuInZ4brV6hO4B3U8urwGwTXUIGHoxiV1bhsRpLHPngURkWgBpq2V8jIXmps84Q
+	iIoJEjR8IgxFVLplqzH2QVhFxCW/zTGhlNclhsYcvZnBI+c8qMla3DA0KK94GVmFXNAfLBSjbLbQn
+	SHwKiAW3Om7DvEKYQohg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x1JVn-0000000BCB6-1btB;
-	Tue, 01 Sep 2026 08:06:31 +0000
-Received: from smtp21.cstnet.cn ([159.226.251.21] helo=cstnet.cn)
-	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x1JVj-0000000BC8S-1nlK;
-	Tue, 01 Sep 2026 08:06:30 +0000
-Received: from localhost.localdomain (unknown [111.196.241.250])
-	by APP-01 (Coremail) with SMTP id qwCowADHYPR1h5ZqTaP9Bg--.30584S2;
-	Tue, 01 Sep 2026 16:06:13 +0800 (CST)
-From: Pengpeng Hou <pengpeng@iscas.ac.cn>
-To: Anup Patel <anup@brainfault.org>,
-	Atish Patra <atish.patra@linux.dev>
-Cc: Pengpeng Hou <pengpeng@iscas.ac.cn>,
-	Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Alexandre Ghiti <alex@ghiti.fr>,
-	kvm@vger.kernel.org,
-	kvm-riscv@lists.infradead.org,
-	linux-riscv@lists.infradead.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] RISC-V: KVM: Preserve LCOFIP when checking pending interrupts
-Date: Tue,  1 Sep 2026 16:06:08 +0800
-Message-ID: <20260901080610.91993-1-pengpeng@iscas.ac.cn>
-X-Mailer: git-send-email 2.50.1
+	id 1x1ja7-0000000EZDp-2S3n;
+	Wed, 02 Sep 2026 11:56:43 +0000
+Received: from foss.arm.com ([217.140.110.172])
+	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
+	id 1x1ja4-0000000EZD9-3nn7;
+	Wed, 02 Sep 2026 11:56:42 +0000
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 386AF1596;
+	Wed,  2 Sep 2026 04:56:32 -0700 (PDT)
+Received: from e129823.arm.com (e129823.arm.com [10.2.213.3])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 92A023F85F;
+	Wed,  2 Sep 2026 04:56:28 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1788350196; bh=YuonSXf6Kv6A3r5/HpLRgNYFjXuTFjIeFymIciQQgIg=;
+	h=From:Subject:Date:To:Cc:From;
+	b=Xxjg4fJpRJ8F5G+7cbkqdkGJjWatdFv/Ov5DeTu8h9BJf2J2coeOwj/INJ5P+pVED
+	 2qhO3ib5wRtEVRSDMIHofLwkFvhmcK5eq5jD/Ko+dLLqeQDW4AYHJ9BKS/3Cdbode0
+	 ctD+ffUCqGOB6s28nyAPSM2ecQMkC8q3HpHlE+U0=
+From: Yeoreum Yun <yeoreum.yun@arm.com>
+Subject: [PATCH RFC v3 00/21] mm: change behavior of pXdp_get()/pXd_page()
+ in compile-time folded pgtable
+Date: Wed, 02 Sep 2026 12:56:02 +0100
+Message-Id: <20260902-dummy_ptxp3-v3-0-5d8f5b17c25c@arm.com>
 MIME-Version: 1.0
-X-CM-TRANSID: qwCowADHYPR1h5ZqTaP9Bg--.30584S2
-X-Coremail-Antispam: 1UD129KBjvJXoW7CrW7tF1xWF1xCrWfuw47CFg_yoW8Zry7pr
-	4Ikw1YqrW0qa4Ik342gr40gr1Yg3ykJr43uFZ29a4UJr42qa4ruF4kKa4UAF4rGryF9a4x
-	XryIga45uas8Zw7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUU9014x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
-	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
-	1l84ACjcxK6xIIjxv20xvE14v26ryj6F1UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4j
-	6F4UM28EF7xvwVC2z280aVAFwI0_Cr1j6rxdM28EF7xvwVC2z280aVCY1x0267AKxVW0oV
-	Cq3wAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0
-	I7IYx2IY67AKxVWUJVWUGwAv7VC2z280aVAFwI0_Jr0_Gr1lOx8S6xCaFVCjc4AY6r1j6r
-	4UM4x0Y48IcxkI7VAKI48JM4x0x7Aq67IIx4CEVc8vx2IErcIFxwACI402YVCY1x02628v
-	n2kIc2xKxwCY1x0262kKe7AKxVWUtVW8ZwCF04k20xvY0x0EwIxGrwCFx2IqxVCFs4IE7x
-	kEbVWUJVW8JwC20s026c02F40E14v26r1j6r18MI8I3I0E7480Y4vE14v26r106r1rMI8E
-	67AF67kF1VAFwI0_Jw0_GFylIxkGc2Ij64vIr41lIxAIcVC0I7IYx2IY67AKxVWUJVWUCw
-	CI42IY6xIIjxv20xvEc7CjxVAFwI0_Gr0_Cr1lIxAIcVCF04k26cxKx2IYs7xG6r1j6r1x
-	MIIF0xvEx4A2jsIE14v26r1j6r4UMIIF0xvEx4A2jsIEc7CjxVAFwI0_Gr0_Gr1UYxBIda
-	VFxhVjvjDU0xZFpf9x0JUd-B_UUUUU=
-X-Originating-IP: [111.196.241.250]
-X-CM-SenderInfo: pshqw1xhqjqxpvfd2hldfou0/
+X-B4-Tracking: v=1; b=H4sIANMOmGoC/23PwWrDMAwG4FcpPtdFthLb2Wkw2APsOkpxZGX1I
+ U1wutBS8u4zgXYb7lES3y/pJiZOkSfxsrmJxHOc4nDKBW43go7+9MUyhlwLDdqA1VqG776/Hsb
+ zZUSJtlLBOiILnchiTNzFy5r2KT7e38Q+N49xOg/pum6Y9Tp6GjZrCTI0XLU+oGLwrz71Oxr6N
+ WXGv9L9l5hlSwbazmtmDA+5vR+OqhTOEzahck7VVAgHVSmsCQ0COAvclUI9EUz5nxqwDh5Koet
+ SKLSGlGkc0u+O/bIsP/ddlCSrAQAA
+To: Russell King <linux@armlinux.org.uk>, 
+ Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>, 
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, 
+ Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>, 
+ Kairui Song <kasong@tencent.com>, Qi Zheng <qi.zheng@linux.dev>, 
+ Shakeel Butt <shakeel.butt@linux.dev>, Barry Song <baohua@kernel.org>, 
+ Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>, 
+ Wei Xu <weixugc@google.com>, Johannes Weiner <hannes@cmpxchg.org>, 
+ David Hildenbrand <david@kernel.org>, Michal Hocko <mhocko@kernel.org>, 
+ Lorenzo Stoakes <ljs@kernel.org>, Tianrui Zhao <zhaotianrui@loongson.cn>, 
+ Bibo Mao <maobibo@loongson.cn>, Anup Patel <anup@brainfault.org>, 
+ Atish Patra <atish.patra@linux.dev>, Paul Walmsley <pjw@kernel.org>, 
+ Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+ Alexandre Ghiti <alex@ghiti.fr>, Dave Hansen <dave.hansen@linux.intel.com>, 
+ Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>, 
+ Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, 
+ Borislav Petkov <bp@alien8.de>, x86@kernel.org, 
+ "H. Peter Anvin" <hpa@zytor.com>, "Liam R. Howlett" <liam@infradead.org>, 
+ Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>, 
+ Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, 
+ Jonas Bonn <jonas@southpole.se>, 
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, 
+ Stafford Horne <shorne@gmail.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
+ loongarch@lists.linux.dev, linux-mips@vger.kernel.org, 
+ linux-arch@vger.kernel.org, linux-mm@kvack.org, kvm@vger.kernel.org, 
+ kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
+ linux-openrisc@vger.kernel.org, Muhammad Usama Anjum <usama.anjum@arm.com>, 
+ Yeoreum Yun <yeoreum.yun@arm.com>
+X-Mailer: b4 0.13.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=9281; i=yeoreum.yun@arm.com;
+ h=from:subject:message-id; bh=YuonSXf6Kv6A3r5/HpLRgNYFjXuTFjIeFymIciQQgIg=;
+ b=owEB7QES/pANAwAKAW3Vw9FaxTEzAcsmYgBqmA7hF91UJH19ihMYiSFd6MmKb/oB8b00GDLAW
+ UHYaZejF4qJAbMEAAEKAB0WIQQtg+CS3QUzuFh1pJ1t1cPRWsUxMwUCapgO4QAKCRBt1cPRWsUx
+ M8ccDACIIBPnKxLvshr/NbigK+M7Y5yJaArlLvis3vTY8LkJ0KrOcOnQS1OGkruG3z3mRodyiOj
+ UPC4AAl4piHxpr2RrAQjZROJkZfzhVXwn0ZGJ6fJ8rlzNJlQBNLK/GA4q1PNekyb6M7nbCDwQLC
+ 7YXNX07Mnv77V6qWHh+59365sNkoBwrdewd4Mz0hadHuAw0ys0cQNTCz9esxfWt73LzAOow/J3N
+ SgJCM1Fuk4JEJkzl/AfS+/+NOAWdAn+y4CctwAsFbbLE5bWlzSpgqzBXfH3rXUQRBlBdT5MTNYQ
+ xocI1UnUpikoZpck5Ie1JvlkArsSXc9+l7dedk/sUdyOt+vx4aXKYUgSSmx3AvEBZeOWmiSUX+r
+ AImN2O7YeU3VwFPYsnqvD6FhJT+N5rCQrBHsnW1uhBJGgBFkxU9RcFsS3awOUoIGkCe5lbp2e8J
+ hPeBnjqqsQdLL0SXOVaYPATlLVN1J781gwFBqhUoZRBDwhMecb8EXWZ5ydQjzSGZ3n4sw=
+X-Developer-Key: i=yeoreum.yun@arm.com; a=openpgp;
+ fpr=2D83E092DD0533B85875A49D6DD5C3D15AC53133
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260901_010627_891686_215B5E7B 
-X-CRM114-Status: UNSURE (   9.84  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20260902_045641_047219_09849AE1 
+X-CRM114-Status: GOOD (  24.92  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -85,51 +112,201 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-KVM injects the guest counter-overflow interrupt into HVIP bit 13 and
-records the same bit in irqs_pending. The guest enables it through VSIE
-LCOFIE, also at bit 13.
+Using ptep_get() and its counterparts in common code is suboptimal on
+kernel configurations with generic compile-time folded page tables.
+By default, ptep_get() and its friends expands to READ_ONCE(),
+forcing the compiler to emit a load even when the value is not used afterwards.
 
-kvm_riscv_vcpu_has_interrupts() shifts the complete VSIP valid mask by
-VSIP_TO_HVIP_SHIFT before matching it against irqs_pending. That maps
-SSIP, STIP, and SEIP to VSSIP, VSTIP, and VSEIP, but incorrectly moves
-LCOFIP from bit 13 to bit 14. The following high-interrupt term excludes
-all local interrupt bits, so it cannot recover LCOFIP.
+This issue was recently reported by Christophe Leroy [1] for ppc32
+preventing futher code conversion to ptep_get()/pmdp_get()/... helper
+and the same behavior can also be observed on arm64 when built with
+2- or 3-level page tables
 
-As a result, kvm_arch_vcpu_runnable() can report false for a vCPU waiting
-in WFI even though an enabled PMU overflow interrupt is pending.
+e.g) perf_get_page_size() in arm64 with CONFIG_PGTABLE_LEVEL=3:
 
-Keep LCOFIP in place while shifting the three interrupt classes that have
-distinct VS-level bit positions. This makes a vCPU halted in WFI runnable
-when its PMU overflow interrupt is pending.
+00000000000052a0 <perf_get_page_size>:
+    ...
+    52dc: d53b4234     	mrs	x20, DAIF
+    52e0: d50343df     	msr	DAIFSet, #0x3
+    ...
+    52fc: d35e9a69     	ubfx	x9, x19, #30, #9        /* pud_offset_lockless() */
+    5300: f9403508     	ldr	x8, [x8, #0x68]
+    5304: f869790a     	ldr	x10, [x8, x9, lsl #3]   /* pudp_get() */
+    5308: f90007ea     	str	x10, [sp, #0x8]
+    530c: f8697908     	ldr	x8, [x8, x9, lsl #3]    /* pudp_get() */
+    ...
+    5360: 90000009     	adrp	x9, 0x5000 <perf_prepare_sample+0x548>
+    5364: 92746908     	and	x8, x8, #0x7ffffff000
+    5368: d3557675     	ubfx	x21, x19, #21, #9       /* pmd_offset_lockless() */
+    ...
+    5394: f8757ac8     	ldr	x8, [x22, x21, lsl #3]  /* pmdp_get() */
 
-Fixes: 16b0bde9a37c ("RISC-V: KVM: Add perf sampling support for guests")
-Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>
+Though PGTABLE_LEVEL=3, since the pudp_get() still remain with
+READ_ONCE(), there's redundant load for the pud which is folded.
+
+To prevent generating suboptimal code, make pXdp_get() return a dummy
+entry for compile-time folded page tables, make the helpers such as
+pXd_offset()/pXd_offset_lockless(), set_pXd() validate dummy entries
+at compile time to catch the wrong usage and prohibit calls to
+pXd_page() in pgtable-nopXd.h.
+
+This series does not change the behaviour of existing code that directly
+manipulates folded page-table levels using set_pgd(), pgd_page_vaddr(), and
+related helpers. Those helpers continue to behave as before.
+
+The new restrictions only apply to code that adopts the pXdp_get()-based
+access model for compile-time folded page tables.
+
+As the pXdp_get() can return *dummy* entry, some of code using
+the stack value where saves the pXdp_get() could be a problematic:
+
+  1. Passing address of stack value where saves the pXdp_get() result
+     to pXd_offset() for example:
+
+       pud_t *pudp, pud;
+       pmd_t *pmdp;
+
+       pud = pudp_get(pudp, address);
+       pmdp = pmd_offset(&pud, pud, address);
+
+     (e.g. host_pfn_mapping_level() in loongarch).
+
+  2. Using the pXdp_get() result to use as argument of pXd_val() and
+     to check prot without checking pgtable is folded.
+     for example, x86's effective_prot().
+
+  3. Using set_pXd() with pXdp_get() will set problematic dummy entry
+     in folded page table like:
+
+       set_pXd(pxdp, pXdp_get(pxdp_k));
+
+  4. Using pgd_page_vaddr() to get the first-level pgtable.
+     passing dummy pxdp_get() for pgd_page_vaddr() will return wrong
+     address. Therefore, make pgd_page_vaddr() and pXd_pgtable() to
+     trigger the error for improper usage with folded dummy entry in the
+     generic compile-time folded pgtable.
+
+Thanksfully, above cases are rare since (1) most of usage using
+pXd_offset() with result of upper pXd_offset(), (2) it's extreamely
+rare to use pXd_val() for non-leaf entry in the kernel,
+(3) is to handle the vmalloc_fault or set the first level of page table
+and (4) to setup early page table and etc.
+
+Therefore, properly handle this uncommon and problematic pattern, and
+document the current design of compile-time folded page tables.
+
+This patch is based on mm-unstable.
+
+Future work
+===========
+ - print_bad_page_map() and show_pte() still prints dummy values
+   instead of printing the same content for all generic compile-time
+   folded page tables. We might want to skip printing dummy values later.
+
+ - We currently catch abuse of dummy values on the stack at compile-time by
+   relying on constant propagation by the compiler. Usama's work [3] on using
+   distinct types for sw vs. hw PTEs could help here as well."
+
+ - Clean up vmalloc fault handling by synchronizing the vmalloc entry on
+   32-bit architectures. This code is almost identical across architectures.
+
+ - Unfortunately, the current design of compile-time folded page tables appears
+   to be internally consistent but confusing. For example,
+   when CONFIG_PGTABLE_LEVELS is 2, p4d, pud, and pmd are expected to
+   be folded into pgd. However, the architecture code uses set_pmd()
+   to update the top-level page-table entry, even though it includes pgtable-nopmd.h.
+
+   In the future, it would be good to eliminate this source of confusion,
+   possibly by treating all folded upper levels consistently as dummy wrappers
+   around the highest real page-table level:
+
+         NOPGD
+   --> +------+           P4D
+       | ptr0 |-------> +------+           PUD
+       +------+         | ptr0 |-------> +-----+
+                        | ptr1 |-        | ptr | -------> ...
+                        | ptr2 | \       | ptr |
+                        | ptr3 |  \        ...
+                          ...      \
+                                    \        PUD
+                                     +----> +-----+
+                                            | ptr | -------> ...
+                                            | ptr |
+                                              ...
+
+Patch History
+=============
+from v2 to v3:
+  - repasre commit message
+  - move ptdump_pgtable_first_level() into pgalloc.h
+  - skip the huge pud operation when CONFIG_X86_DIRECT_GBPAGES is disabled
+  - docuemtns compile-time folded page table
+  - drop the applied patch.
+  - https://lore.kernel.org/all/20260722-dummy_ptxp3-v2-0-d9e4bad31e0a@arm.com/
+
+from v1 to v2:
+  - Restore slient fallback to next pXd in set_pXd() and pXd_pgtable()
+    and add check whether they're called with dummy entry.
+  - Add some comment for returning first entry of pgd in arm with
+    2 pgtable-level
+  - https://lore.kernel.org/all/20260713135614.1618183-1-yeoreum.yun@arm.com/
+
+Link: [1] https://lore.kernel.org/all/0019d675-ce3d-4a5c-89ed-f126c45145c9@kernel.org/
+Link: [2] https://lore.kernel.org/all/20251113014656.2605447-1-samuel.holland@sifive.com/
+Link: [3] https://lore.kernel.org/r/74182e50-b54f-4d2d-a27f-3a59a538d6bc@arm.com
 ---
- arch/riscv/kvm/vcpu.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+David Hildenbrand (Arm) (13):
+      ARM: mm: make nommu pgd_t a scalar
+      ARM: mm: make 2-level pgd_t a scalar
+      ARM: mm: remove custom pgdp_get()
+      LoongArch: mm: define pud_leaf() only when PUD exists
+      MIPS: mm: define pud_leaf() only when PUD exists
+      mm/pgtable: define (pgd|p4d|pud)_leaf() for folded page tables
+      mm/pgtable: define (pgd|p4d|pud)_offset_lockless() for folded page tables
+      openrisc/pgtable: drop __pmd_offset()
+      mm/pgtable: optimize pmdp_get() and friends for folded pagetable levels
+      mm/pgtable: catch abuse of folded dummy pgd_t/p4d_t/pud_t
+      mm/pgtable: disallow calling (pgd|p4d|pud)_page, pgd_page_vaddr() and (p4d|pud)_pgtable with dummy
+      mm/pgtable: disallow calling folded set_pgd/set_p4d/set_pud with dummy
+      Documentation: mm: clarify behaviour of compile-time folded page tables
 
-diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index e062ca1..c6eb3bd 100644
---- a/arch/riscv/kvm/vcpu.c
-+++ b/arch/riscv/kvm/vcpu.c
-@@ -487,12 +487,14 @@ int kvm_riscv_vcpu_unset_interrupt(struct kvm_vcpu *vcpu, unsigned int irq)
- bool kvm_riscv_vcpu_has_interrupts(struct kvm_vcpu *vcpu, u64 mask)
- {
- 	unsigned long flags;
--	unsigned long ie;
-+	unsigned long ie, vsie;
- 	bool ret;
- 
- 	raw_spin_lock_irqsave(&vcpu->arch.irqs_pending_lock, flags);
--	ie = ((vcpu->arch.guest_csr.vsie & VSIP_VALID_MASK)
--		<< VSIP_TO_HVIP_SHIFT) & (unsigned long)mask;
-+	vsie = vcpu->arch.guest_csr.vsie & VSIP_VALID_MASK;
-+	ie = ((vsie & ~SIP_LCOFIP) << VSIP_TO_HVIP_SHIFT) |
-+	     (vsie & SIP_LCOFIP);
-+	ie &= (unsigned long)mask;
- 	ie |= vcpu->arch.guest_csr.vsie & ~IRQ_LOCAL_MASK &
- 		(unsigned long)mask;
- 	ret = vcpu->arch.irqs_pending[0] & ie;
+Yeoreum Yun (8):
+      mm: vmscan: remove stack copy address of pud/pmd pass in walk_pud/pmd_range()
+      loongarch: kvm: remove stack copy address of pXd in pXd_offset()
+      riscv: kvm: remove stack copy address of pXd in pXd_offset()
+      riscv: mm: use proper set_pXd() for generic compile-time folded patable in vmalloc_fault()
+      mm/pgtable: redefine PGTABLE_LEVEL enum with ascend order from PGD
+      x86: mm: use pgtable_level enum in effective_prot_pXd()
+      x86: mm: carve out the generic compile-time folded pgtable case in effective_prot()
+      x86: mm: skip collapse_pud_page() when CONFIG_X86_DIRECT_GBPAGES disabled
+
+ Documentation/mm/page_tables.rst            | 84 +++++++++++++++++++++++++----
+ arch/arm/include/asm/page-nommu.h           |  4 +-
+ arch/arm/include/asm/pgtable-2level-types.h | 20 +++++--
+ arch/arm/include/asm/pgtable.h              |  2 -
+ arch/arm64/include/asm/pgtable.h            | 23 --------
+ arch/loongarch/include/asm/pgtable.h        |  2 +
+ arch/loongarch/kvm/mmu.c                    | 20 ++++---
+ arch/mips/include/asm/pgtable.h             |  2 +
+ arch/openrisc/include/asm/pgtable.h         |  3 --
+ arch/riscv/kvm/mmu.c                        | 20 ++++---
+ arch/riscv/mm/fault.c                       | 52 +++++++++++-------
+ arch/x86/mm/dump_pagetables.c               | 18 ++++---
+ arch/x86/mm/pat/set_memory.c                |  2 +-
+ include/asm-generic/pgtable-nop4d.h         | 54 +++++++++++++++----
+ include/asm-generic/pgtable-nopmd.h         | 54 +++++++++++++++----
+ include/asm-generic/pgtable-nopud.h         | 56 +++++++++++++++----
+ include/linux/pgtable.h                     | 69 +++++++++++++++++-------
+ mm/vmscan.c                                 |  4 +-
+ 18 files changed, 352 insertions(+), 137 deletions(-)
+---
+base-commit: e3b5239afe1b8f0194db7436b17c33e94c1988c4
+change-id: 20260722-dummy_ptxp3-3741d78cc70f
+
+Best regards,
+-- 
+Sincerely,
+Yeoreum Yun
 
 
 -- 
