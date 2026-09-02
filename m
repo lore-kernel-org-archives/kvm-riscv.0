@@ -4,46 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E3432C624D0
-	for <kvm-riscv@archiver.kernel.org>; Wed,  2 Sep 2026 11:57:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7E2C1C61DD6
+	for <kvm-riscv@archiver.kernel.org>; Wed,  2 Sep 2026 11:58:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Message-Id
 	:MIME-Version:Subject:Date:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=LBB8qRYGBS/qUhKgnIVUflik8Tvo1Vqe98DcEBf3ep8=; b=cyQZDW00G86weW
-	s731RtsRTvlEcWrwGEoz1q+DV1F5bqGFJjn6+1dwwC5tg27ovBEGCuzJ2T3bEmS3GYyRAV09A2yst
-	OkE2248bH+shk6gC5KbcmLBIrDHymh2g7Cl6IQCt+1ui6jIkd9XommjVZdDE6aGXV6/yO0rEt7Rx8
-	fxBnmGbYOEZb7QBnpDmnf42ckkVWEUg9kH77Ki5yU+FDlbDeDxFkTGdZZjkNirl+JdjZJRYQ/ygQP
-	jjW+iYB6E45DXLCjfHGXdeajUSnfolYyx8uEvqFcWVRFQQKmIEQjA4l2TE8G5CDM+zr86c89jZC7k
-	9MFw1KX9PhnSg60agBYg==;
+	List-Owner; bh=dpdsLeoiD6TOP6NFLp2IBM3wTMGI/Z2HneDYepQm0PY=; b=SEZ8Lc47gWQxCi
+	wsE0JDXGVmbNYPTfbC22EwqQMegClbT0puz/iQ0Pyoav5mq3ZEbhfmc6njenI1FbjtzfULswVOH7V
+	It+LYsnwAQRfZJmqtQgazAgxGdTCvY1uZYRwHHtKNAj4YSDqGDiBwPb1iFIBwyom3046hSBHfAjZy
+	MG5OVClxENsmPSy7gXHevThTuEjJI9xG3qWqByZIAEcX4Y1vRk0JfrONXm+0VKTepqI/OuRP6tp/m
+	UV16fHtX985NMxolu8ZY7YImDQF03qoyRwvK9EwhskwT7JMgOqdO4nzC88ET5Kuo4fwRYffNslaOL
+	xRltzJ5NLSb1vGWIez4A==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x1jb8-0000000Ea36-2lLT;
-	Wed, 02 Sep 2026 11:57:46 +0000
+	id 1x1jbM-0000000EaES-0EDK;
+	Wed, 02 Sep 2026 11:58:00 +0000
+Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
+	id 1x1jbK-0000000EaBc-0kRB;
+	Wed, 02 Sep 2026 11:57:58 +0000
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=desiato.20200630; h=Cc:To:In-Reply-To:References:
+	Message-Id:Content-Transfer-Encoding:Content-Type:MIME-Version:Subject:Date:
+	From:Sender:Reply-To:Content-ID:Content-Description;
+	bh=T4ZC5NFVeQY99+PVp2UJl7URx3a4Ea9PI7M+v45bZsw=; b=dEzLObDOppNAUqBQDt2gkt1HzL
+	v4J0SyYGjUFQAibo2Mre6lxn/4iIwLwOMy2tRHNHeQ184lUi0DfdAX0UDYxuu7usfQewnKjY4dtWx
+	i5/lSTUaSfTQl9lsHnr3xqK8iQtSdGG5BKaa2N8Tuehj/tXJJQyp7c1zlq6UIJgo+gPYhY6gj5ZXP
+	Ympsr++yC6mFc44GhZpjOUWyHoBf/33pA486QBlCg0FQTN0t4ObAhiqP/dH5qxf9uEoiNYucPUm5w
+	ZwgJQ1RxxQT+IK3/mzjDWbkSiOy+QOzGFAcWaJKYIud0fF3ai6ueET8a1YwNCTIC4gRNNAEPv6Str
+	2n7xEhFA==;
 Received: from foss.arm.com ([217.140.110.172])
-	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x1jb6-0000000Ea1G-3mY3;
-	Wed, 02 Sep 2026 11:57:46 +0000
+	by desiato.infradead.org with esmtp (Exim 4.99.2 #2 (Red Hat Linux))
+	id 1x1jbE-0000000Bvfd-3kLo;
+	Wed, 02 Sep 2026 11:57:56 +0000
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id BA2151682;
-	Wed,  2 Sep 2026 04:57:39 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 569A31E32;
+	Wed,  2 Sep 2026 04:57:47 -0700 (PDT)
 Received: from e129823.arm.com (e129823.arm.com [10.2.213.3])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 4280E3F85F;
-	Wed,  2 Sep 2026 04:57:36 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id D20183F85F;
+	Wed,  2 Sep 2026 04:57:43 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1788350263; bh=0PR5oXIOKKN44EvqTmmgCdRAk0g+3zRMhCuigLr45iw=;
+	t=1788350271; bh=u1Z77HcuVhsn6YhXUmkFsPEbxxF45OV6fwB+pGKvXaw=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=Vq+BgO/b9aFK8A71JXNvBNBhfYac165FZEWsOyfDio4LQR5ETa+QDbn0KiaPLujHS
-	 uLoEkmt86nlYEJy4d97XbCJa5a/RrJAqeUxW3ZxGdtC9wL7x8/PwJ1wvuq/GRns9N7
-	 Th6snsDoMGFDvih9v1FYFDzHDNdr4HPtcJY6+7u4=
+	b=KwVckYUFD0lh0ySdrjYJ96Swie3hj5sqm3vMY81r3S03FnG0fxHPzd0qowq8aZG5g
+	 IKesnnrhaDKSBya7uksmJfX5kn32Lpqri7nZkx6IJdyAEy0gh9YyZGvb8St62p+VF+
+	 jHU2x45mp/UblfZisQApAggIrhQmd+H9mASJWRUg=
 From: Yeoreum Yun <yeoreum.yun@arm.com>
-Date: Wed, 02 Sep 2026 12:56:11 +0100
-Subject: [PATCH RFC v3 09/21] loongarch: kvm: remove stack copy address of
- pXd in pXd_offset()
+Date: Wed, 02 Sep 2026 12:56:12 +0100
+Subject: [PATCH RFC v3 10/21] riscv: kvm: remove stack copy address of pXd
+ in pXd_offset()
 MIME-Version: 1.0
-Message-Id: <20260902-dummy_ptxp3-v3-9-5d8f5b17c25c@arm.com>
+Message-Id: <20260902-dummy_ptxp3-v3-10-5d8f5b17c25c@arm.com>
 References: <20260902-dummy_ptxp3-v3-0-5d8f5b17c25c@arm.com>
 In-Reply-To: <20260902-dummy_ptxp3-v3-0-5d8f5b17c25c@arm.com>
 To: Russell King <linux@armlinux.org.uk>, 
@@ -76,22 +90,22 @@ Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
  kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
  linux-openrisc@vger.kernel.org, Yeoreum Yun <yeoreum.yun@arm.com>
 X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2050; i=yeoreum.yun@arm.com;
- h=from:subject:message-id; bh=0PR5oXIOKKN44EvqTmmgCdRAk0g+3zRMhCuigLr45iw=;
- b=owEB7QES/pANAwAKAW3Vw9FaxTEzAcsmYgBqmA7mEvNM+bOE9I/iEnGFs4yU/Cp4f0fN/0Ksu
- pte4JObv3SJAbMEAAEKAB0WIQQtg+CS3QUzuFh1pJ1t1cPRWsUxMwUCapgO5gAKCRBt1cPRWsUx
- MyqUDACMb1+lsAjXkT07U7jCymAJfazCLi+GO5DlCm+D+flCqcZOXldliTBCwRmzRj4Jqg7Lg38
- AJyICWYXb6otlnlJHMXfPDwZu9oriA6Q74Im7EbN1oi2lrxIO9QuzLqZq9nopqL5fdnCkTBhLrY
- LFbHTE9MMndjLMFADqfDsab4Esti4VfIpOU4zi3bRjfsrOW/Jo38w74rDrf6jIb6m06O5nKgY26
- HUTG0A4hPkfkb16/8WvbC8Vx6of/7JJcOrFXcWSLZyFse+khfKtKwgfYvv0+thlQW4xRckUBLOQ
- pCH/6ZzZ187+fClXG1Fd5ju+Cgwx8GJCKMzTd6LZHMDPjzeYPM/QGHiTnBdi1v7i7Go1hTjtNtS
- 8xasNcaQ1mXrOPnuCYwf7yA4NDpzHk9ZqcO7oLb0fPGbHL+wRNcJglW9vAmoSFXEhlaV5BIFfOC
- gqUa2a8dnHBQjWCVTTuiYqmSxJ6hfeym+A4VgyETaZD+WU4xI6McKP5byVyCs1DTCNe6Y=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2078; i=yeoreum.yun@arm.com;
+ h=from:subject:message-id; bh=u1Z77HcuVhsn6YhXUmkFsPEbxxF45OV6fwB+pGKvXaw=;
+ b=owEB7QES/pANAwAKAW3Vw9FaxTEzAcsmYgBqmA7mT8hWwbLEAfZ37PxMdkX2SXibeCCh04uq4
+ LVfmdutif2JAbMEAAEKAB0WIQQtg+CS3QUzuFh1pJ1t1cPRWsUxMwUCapgO5gAKCRBt1cPRWsUx
+ M+PqC/40X13zsXs8BTi8kV5papAGh8OSIhs97QZRguA2644nXsxQL0KWVabFVdCiD01eIXjwiwK
+ xc28n/yQ0VytaKVRoLdH2uaCikWav9oZ9XDLjMzQLSF1EWLel4YSmV+pQdtzVzQsSoi9YTysn3x
+ JkUT86wqAghgrmHxTDoQ6TjpqsBNziVpG+FIHDJt0oyS1A5b6+50SiwZpCxoJktIFfQqctIE67X
+ pOpT704P02sdCZmz5tnhqEEANwjL1IDJy5g7ax557FSOnEeb1fqbAiC5aA32WSWn00wvg29OODg
+ QEENRDtdwmzRDVlc6E6KtCngcNjmmnYj3BBEb6ma3mwUfahX0QMDHlGAEFkBKP7JbWcXpjz6UMh
+ O7HhjVbbW6duC29hFpC0g4D0iBai5cCFlp4WKlyC5tzjeOm6WUg2qQJObDgIEGd6t/v+1NGFPg+
+ 7gtTrSnpWjJSAYpwvyDrtlfK3hO9M/URw/sMGNUnH2v1a6efUQCi9kCBVlEsxT7nPtlCo=
 X-Developer-Key: i=yeoreum.yun@arm.com; a=openpgp;
  fpr=2D83E092DD0533B85875A49D6DD5C3D15AC53133
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260902_045745_025101_AAEA8B23 
-X-CRM114-Status: GOOD (  12.02  )
+X-CRM114-CacheID: sfid-20260902_125753_243420_F83436C9 
+X-CRM114-Status: GOOD (  12.11  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -109,26 +123,26 @@ Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 The behaviour of pXdp_get() will change with generic compile-time folded
-page tables. To prepare for that,  rework host_pfn_mapping_level() to avoid
+page tables. To prepare for that, rework get_hva_mapping_size() to avoid
 use of a stack copy of a pXd and pass it as argument to pXd_offset() so that
 the folded entries value is ignored.
 
-Replace direct uses of stack-based pXd values with pXd_offset_lockless().
-And there should be no functional change.
+Replace direct uses of stack-based pXd values with pXd_offset_lockless()
+and there should be no functional change.
 
 Reviewed-by: David Hildenbrand (Arm) <david@kernel.org>
 Signed-off-by: Yeoreum Yun <yeoreum.yun@arm.com>
 ---
- arch/loongarch/kvm/mmu.c | 20 ++++++++++++--------
+ arch/riscv/kvm/mmu.c | 20 ++++++++++++--------
  1 file changed, 12 insertions(+), 8 deletions(-)
 
-diff --git a/arch/loongarch/kvm/mmu.c b/arch/loongarch/kvm/mmu.c
-index e104897aa532..837b40bb694f 100644
---- a/arch/loongarch/kvm/mmu.c
-+++ b/arch/loongarch/kvm/mmu.c
-@@ -669,10 +669,10 @@ static int host_pfn_mapping_level(struct kvm *kvm, gfn_t gfn,
- 	int level = 0;
- 	unsigned long hva;
+diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
+index 6035b5ec9503..dd5a7b0bd084 100644
+--- a/arch/riscv/kvm/mmu.c
++++ b/arch/riscv/kvm/mmu.c
+@@ -450,10 +450,10 @@ static int get_hva_mapping_size(struct kvm *kvm,
+ {
+ 	int size = PAGE_SIZE;
  	unsigned long flags;
 -	pgd_t pgd;
 -	p4d_t p4d;
@@ -140,8 +154,8 @@ index e104897aa532..837b40bb694f 100644
 +	pmd_t *pmdp, pmd;
  
  	/*
- 	 * Note, using the already-retrieved memslot and __gfn_to_hva_memslot()
-@@ -698,19 +698,23 @@ static int host_pfn_mapping_level(struct kvm *kvm, gfn_t gfn,
+ 	 * Disable IRQs to prevent concurrent tear down of host page tables,
+@@ -469,15 +469,18 @@ static int get_hva_mapping_size(struct kvm *kvm,
  	 * value) and then p*d_offset() walks into the target huge page instead
  	 * of the old page table (sees the new value).
  	 */
@@ -162,6 +176,10 @@ index e104897aa532..837b40bb694f 100644
 +	pud = pudp_get(pudp);
  	if (pud_none(pud) || !pud_present(pud))
  		goto out;
+ 
+@@ -486,7 +489,8 @@ static int get_hva_mapping_size(struct kvm *kvm,
+ 		goto out;
+ 	}
  
 -	pmd = pmdp_get(pmd_offset(&pud, hva));
 +	pmdp = pmd_offset_lockless(pudp, pud, hva);
