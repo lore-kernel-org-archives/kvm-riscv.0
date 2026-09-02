@@ -4,61 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A656C61DD6
-	for <kvm-riscv@archiver.kernel.org>; Wed,  2 Sep 2026 20:46:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CA4DEC624D4
+	for <kvm-riscv@archiver.kernel.org>; Wed,  2 Sep 2026 20:48:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:
 	Subject:MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=4NRjkbRAb7vsD4ld/8bUjdSGOrlvixXkjNWoAuFwJv4=; b=WuvvMPkdtj2y/F
-	KjskghsymOkdy5D9BA2eLZOw+0NFocjxrCg9aPtxtS0hIZ8CxiA+Te146ok71lUetzqa026TdvgQ8
-	UZ3MVypN5O1l2355oEp1vZBvJiofo2Tw1WJWOGcv8X7s70OEP7nX32XJzHCoNWgwzNOR4pUBxhnQA
-	l+VDaHWDDKz7XZzL2D+i2U04QAiOuWr+1GOKxSyKjweUElElsij1x5jJPBWhIFQEaDCLxWPnyLvPE
-	id+EswyHUxQ4bWUNCYXMuYIffgBNtzspIrqpHodOLEuOFU6tWNGblDTpk/BBumBJyV/HeBnwJ8O9S
-	Dn+Ty/+DgMu9y23YANKg==;
+	List-Owner; bh=9K+RONM2wNGwDqGyAdNi/KjxYp7Zr7RqD7sjvanqPtI=; b=q4tKf1oDyv8pmK
+	pL0wyG/c2rA9+EWGXIXLPk6hA7trR8VZbsl0zOtQgvpNm3YrEy0w6/xqKzfGJ4swDERfYeT/MB850
+	Sh9+2CrYDTYbHk/6NQBtMmgumin7ImCYltejeZZvRZ9BuI2t8swW9ORyFpS/S40foowmLxMAOSctq
+	n2P2RmoOjTub2y35a47yzJGbFVSLL64y1UUiLT41MOGifJX51iht4gDmvpfYAh8NK+SixH2Wj8KgV
+	lJau9P3fkugg6AgfORqL2SQkOcp3iaVSz3y1XrimRuOkvWpbcbWMe64wSylnkp8Sys1pGf2sy+oLn
+	UTL8VrfJt55RT9/LeJdg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x1rqV-0000000FtBf-0Sg1;
-	Wed, 02 Sep 2026 20:46:13 +0000
+	id 1x1rsO-0000000FtJt-1qJT;
+	Wed, 02 Sep 2026 20:48:08 +0000
 Received: from mgamail.intel.com ([198.175.65.19])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x1rqR-0000000FtBD-3dfZ;
-	Wed, 02 Sep 2026 20:46:09 +0000
+	id 1x1rsM-0000000FtJU-0EI1;
+	Wed, 02 Sep 2026 20:48:07 +0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1788381968; x=1819917968;
+  t=1788382086; x=1819918086;
   h=message-id:date:mime-version:subject:to:cc:references:
    from:in-reply-to:content-transfer-encoding;
-  bh=/vtCuOsydTOxETyWwFyCM3riLJvYW2UNVDOQEkh91GY=;
-  b=Lx3cKmkhYHnr6DO5ItwnEui9BxvUbyjUKmm+fZo5mwMkmbgQrdpZ4MxA
-   Vjfh5mUfrxsDHEm/CY+tAyoBMeI92qEWAnuSfau20+NCJZAdZrbwiiMcW
-   1989KzfDFgJYa6VW1WIXYnp2IxG7VY55bCwOq34DCWyUItfYfbuVN434W
-   l4fvZ/2giFtDx+72FlUkzOBZ0VGEcnIRUYt0fotQjSSjo6xlXLyXMrE7N
-   vA+9MpeQwZyTOge5nENnRZgiCH5dqB9pCRiLbvnJZCh9R6VxTgpu949UM
-   jKjBtvikMH8xCaBK+xBK64ybYm6hdyl3P0sy1r+leDL241uLfbzW3LZbC
-   w==;
-X-CSE-ConnectionGUID: wUM+Yb3TSF+eo6XeGjC6tA==
-X-CSE-MsgGUID: curO/0bNRTOErxp9tDtpGA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11894"; a="88776971"
+  bh=LsMn3/y0ByvC1uXtR6xF4fWxSc3am3y8Xh2THPJZMyg=;
+  b=ketJLARjgHSYkzCrJJRPcOTJytmQqpJE86bAweuoeOsk989Jf2HPjAcO
+   JQh5ONS708U0TMDK0HXPw1JKVzhGp008a1WtrOcJMx3z+dPu0/cyJOsRf
+   YtSrs3atSUCkTMA8Bm7eyw0dDUaSLXXR15ceuVf0RytH7nQ35jLjSrW4x
+   wo5YSfB+ErenSQHF19xBv2w8eJaBSMf0Q21nRODLCE5U8ky+zTi4JijQG
+   spCySYLDOjFsiVTngtXfYJe/C363AKr5H+3lpvWOlB6LoOVikW61E0DUk
+   gC1+fLnlbyyc3grT564mAuAjAKWHELCTTvS4NdBCbVA4ImbVsWRIeRrxg
+   g==;
+X-CSE-ConnectionGUID: XhC26c5YQ7yo6zZnBu0c9Q==
+X-CSE-MsgGUID: e//p5qJTQYW+KAIUnUK+PA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11894"; a="88777070"
 X-IronPort-AV: E=Sophos;i="6.25,258,1779174000"; 
-   d="scan'208";a="88776971"
+   d="scan'208";a="88777070"
 Received: from orviesa010.jf.intel.com ([10.64.159.150])
-  by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Sep 2026 13:46:06 -0700
-X-CSE-ConnectionGUID: 3r1FCCkLSvyVJEfxycNp/A==
-X-CSE-MsgGUID: 0K90+9HKRkOQqWOJaR/iiA==
+  by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Sep 2026 13:48:05 -0700
+X-CSE-ConnectionGUID: 7lG7cHPvSjGN3cya1Kgtcw==
+X-CSE-MsgGUID: iKbUXdDDS3i4/Eh3uQmPpw==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.25,258,1779174000"; 
-   d="scan'208";a="268191963"
+   d="scan'208";a="268192165"
 Received: from cjhill-mobl.amr.corp.intel.com (HELO [10.125.110.134]) ([10.125.110.134])
-  by orviesa010-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Sep 2026 13:46:05 -0700
-Message-ID: <09924551-558d-4c9b-afb7-1e592cb640a3@intel.com>
-Date: Wed, 2 Sep 2026 13:46:04 -0700
+  by orviesa010-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Sep 2026 13:48:04 -0700
+Message-ID: <8f3979a9-238a-4d7d-a040-6aa526fedec5@intel.com>
+Date: Wed, 2 Sep 2026 13:48:03 -0700
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH RFC v3 14/21] x86: mm: carve out the generic compile-time
- folded pgtable case in effective_prot()
+Subject: Re: [PATCH RFC v3 13/21] x86: mm: use pgtable_level enum in
+ effective_prot_pXd()
 To: Yeoreum Yun <yeoreum.yun@arm.com>, Russell King <linux@armlinux.org.uk>,
  Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>,
  Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
@@ -89,7 +89,7 @@ Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
  kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
  linux-openrisc@vger.kernel.org
 References: <20260902-dummy_ptxp3-v3-0-5d8f5b17c25c@arm.com>
- <20260902-dummy_ptxp3-v3-14-5d8f5b17c25c@arm.com>
+ <20260902-dummy_ptxp3-v3-13-5d8f5b17c25c@arm.com>
 From: Dave Hansen <dave.hansen@intel.com>
 Content-Language: en-US
 Autocrypt: addr=dave.hansen@intel.com; keydata=
@@ -135,10 +135,10 @@ Autocrypt: addr=dave.hansen@intel.com; keydata=
  MTsCeQDdjpgHsj+P2ZDeEKCbma4m6Ez/YWs4+zDm1X8uZDkZcfQlD9NldbKDJEXLIjYWo1PH
  hYepSffIWPyvBMBTW2W5FRjJ4vLRrJSUoEfJuPQ3vW9Y73foyo/qFoURHO48AinGPZ7PC7TF
  vUaNOTjKedrqHkaOcqB185ahG2had0xnFsDPlx5y
-In-Reply-To: <20260902-dummy_ptxp3-v3-14-5d8f5b17c25c@arm.com>
+In-Reply-To: <20260902-dummy_ptxp3-v3-13-5d8f5b17c25c@arm.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260902_134607_951036_494833A2 
-X-CRM114-Status: UNSURE (   6.25  )
+X-CRM114-CacheID: sfid-20260902_134806_169685_A66FFA77 
+X-CRM114-Status: UNSURE (   7.88  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -156,9 +156,20 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Thanks for making those changes and adding the helper to generic code.
+On 9/2/26 04:56, Yeoreum Yun wrote:
+> Instead of using hard-coded integer in effective_prot_pXd(), use
+> pgtable level enum.
+
+Does this actually *do* anything? ;)
+
+I guess it's nice to have a wee bit of type safety from the enum and it
+means that you don't have to *know* which level number a PUD is, for
+example.
+
+Either way:
 
 Acked-by: Dave Hansen <dave.hansen@linux.intel.com>
+
 
 -- 
 kvm-riscv mailing list
