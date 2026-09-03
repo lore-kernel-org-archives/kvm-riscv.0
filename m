@@ -4,100 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6240AC61DD6
-	for <kvm-riscv@archiver.kernel.org>; Thu,  3 Sep 2026 01:02:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 210C4C624A4
+	for <kvm-riscv@archiver.kernel.org>; Thu,  3 Sep 2026 04:04:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
-	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
-	List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:Date:Message-ID:From:
-	References:Cc:To:Subject:Reply-To:Content-ID:Content-Description:Resent-Date:
-	Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Owner;
-	bh=ZMsY6tRLyUSwA6a5cKEu7w2o8s7MBbDBzc2l3AaB6JE=; b=dC6Az6wyH9ogMstcoN2xY5CWKj
-	enLlpyNKYiPVN4uMIsKJxlP3qyK3Vl8DvaB59RX3Pwl+7jdKjc5svclBYHFlRew7qY1QdVLH/9DcE
-	5fQu6CBy6N8Gy3MdBrz1xVwpeiL1ikNV34pGnkDvIZ2Vht9+eu3yxA+p1LVuzpt1Lfot1RZZ4pkBp
-	wnZeCARm9rq46EzXRMX2x2tq3we6i890xj3717BU7yHb+Uw+NAf7d1S7gYzJmT/KfL+Jhj0MjZ14n
-	kjbC+P7ysIHDeyrcNo3wkI7c5drk9G9Q/W17jQUljXD7K5sivtWvW3R35FNnPZBN9OlBVeRUmKAnN
-	sJ5LOJTQ==;
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:References:In-Reply-To:Message-Id:To:
+	Mime-Version:Date:Subject:From:Cc:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=EeC4STV6P/2DAJkf4YqFe2mwmeylGqAAqq7FQDgDyuY=; b=AwTV+W7DT0ukYz
+	ZQIzYN/teRxxV2aCMoyujrVTKw4zGFBvNQv9rMY6dG1dQJlfAAMSuCYwF6mEJJW+YiLUJ2MdlJJJt
+	EXzmPynXBS77RUcfWQbj0UdaXdfAGvnnEFtHG1zKmE1b+TSAQDQ2gByMabfnUUCbTrHbWOa/X31x+
+	AIeENDaAw+VXwQNCOG+zPSInaMygHxpXe6u5iXkPIE7TLf99u3RNPdmhGyhWnkN46nMmbj+ejNjEh
+	M9Wevx381aNknkvqQCcR3laEy1Fgsh4Ke35tydLT3tCbqY4vIFA2SNq8dOCfedd+RelnbYrFp7BT5
+	Dr82+e7bDq13zxZ1Lulg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x1vq2-0000000G8nH-2LiJ;
-	Thu, 03 Sep 2026 01:01:58 +0000
-Received: from casper.infradead.org ([2001:8b0:10b:1236::1])
+	id 1x1yh2-0000000GJPN-2umz;
+	Thu, 03 Sep 2026 04:04:52 +0000
+Received: from va-2-40.ptr.blmpb.com ([209.127.231.40])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x1vq1-0000000G8my-0Vuh;
-	Thu, 03 Sep 2026 01:01:57 +0000
+	id 1x1ygz-0000000GJOR-1O4D
+	for kvm-riscv@lists.infradead.org;
+	Thu, 03 Sep 2026 04:04:51 +0000
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:Content-Type:
-	In-Reply-To:MIME-Version:Date:Message-ID:From:References:Cc:To:Subject:Sender
-	:Reply-To:Content-ID:Content-Description;
-	bh=VIRv+z3mPNZFa1bmE43M/kgaKBia3XUx5hcUcZMH5lg=; b=RvHCfdH3QVzTyy081zRM1gAbDO
-	n6QmCbiMyAI9Ifamg9FQdfvtPYDp+0W8GJAfE01p3ocP796sLiU8Wzjpbn8UEJ9RI5eGb3LJJI2QV
-	3yu31P+0GXbPnwR8JyIeyg38K84AcYjpdNy4aACSm20rhVkpjUFccdRToU/lSlZVCpqpW63KyEOlM
-	ePt+k3wEOHP+yrAP91LSnUWZmLbiNeoAg9iyGvJNhH/RHK783KYcZdP2ASBF1m8AflpC3gHAJLiKk
-	xVRwPSKVH5NAU+ga0XfyEeE2NbVwR45IImyjFyC62MCm2bygHfiUWzT4P0mTFn/YBulbsZfm6+Xq7
-	NqE0Nsig==;
-Received: from mail.loongson.cn ([114.242.206.163])
-	by casper.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x1vpw-00000008KeR-1HTv;
-	Thu, 03 Sep 2026 01:01:55 +0000
-Received: from loongson.cn (unknown [10.20.42.62])
-	by gateway (Coremail) with SMTP id _____8CxQNH3xphq0P8HAA--.22980S3;
-	Thu, 03 Sep 2026 09:01:43 +0800 (CST)
-Received: from [10.20.42.62] (unknown [10.20.42.62])
-	by front1 (Coremail) with SMTP id qMiowJDxRs30xphqzu0ZAA--.42143S2;
-	Thu, 03 Sep 2026 09:01:41 +0800 (CST)
-Subject: Re: [PATCH v2 02/20] KVM: selftests: Use the common minimum GPA for
- page tables on LoongArch
-To: Sean Christopherson <seanjc@google.com>, Marc Zyngier <maz@kernel.org>,
- Oliver Upton <oupton@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>,
- Tianrui Zhao <zhaotianrui@loongson.cn>, Huacai Chen <chenhuacai@kernel.org>,
- Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>,
- Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Janosch Frank <frankja@linux.ibm.com>,
- Claudio Imbrenda <imbrenda@linux.ibm.com>
-Cc: Fuad Tabba <fuad.tabba@linux.dev>, Joey Gouly <joey.gouly@arm.com>,
- Steffen Eiden <seiden@linux.ibm.com>,
- Suzuki K Poulose <suzuki.poulose@arm.com>, Zenghui Yu
- <yuzenghui@huawei.com>, Atish Patra <atish.patra@linux.dev>,
- Alexandre Ghiti <alex@ghiti.fr>, David Hildenbrand <david@kernel.org>,
- linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev,
- kvm@vger.kernel.org, loongarch@lists.linux.dev,
- kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
- linux-kernel@vger.kernel.org, Itaru Kitayama <itaru.kitayama@fujitsu.com>,
- Nicholas Piggin <npiggin@gmail.com>, Ritesh Harjani <ritesh.list@gmail.com>
-References: <20260902164123.2546762-1-seanjc@google.com>
- <20260902164123.2546762-3-seanjc@google.com>
-From: Bibo Mao <maobibo@loongson.cn>
-Message-ID: <170acb36-7542-e6f8-d834-250816ddfbfc@loongson.cn>
-Date: Thu, 3 Sep 2026 09:01:24 +0800
-User-Agent: Mozilla/5.0 (X11; Linux loongarch64; rv:68.0) Gecko/20100101
- Thunderbird/68.7.0
-MIME-Version: 1.0
-In-Reply-To: <20260902164123.2546762-3-seanjc@google.com>
+ s=feishu2604151535; d=picoheart.com; t=1788408283; h=from:subject:
+ mime-version:from:date:message-id:subject:to:cc:reply-to:content-type:
+ mime-version:in-reply-to:message-id;
+ bh=2OZBaXoAwW7EqSgHAZPCMtP91U5/EchCYsUN3g8ScgE=;
+ b=arIiyyN+wRvH3ue9Jj3QiX0hGL6wQvpBp7RyEptjqusbXCx+dQBfs1hN5ricIgaqqFjHvu
+ AJDeQECF3wJuDcE0XuTJxZ2ldUx9Zt6GzcrtSxLRduHuuNbJcFTO7Qc3Ofb5ABwkyr2Fol
+ 3rTwICfR/2l6SAbptjS0gFB7/anyqJFBHxaY4f1Eq8Mj9Aoy0GTNJeqIN8lZaJdngyoJwn
+ da85M2KmQ8igjV6tNatKLX+8n4hh1FUL6PMyIhBfyQvBtuT1xG6t7FQg8gS0Nuo1qIYGT8
+ vq7W1w38jHkfJfLg2ct+GG5FeOKSQ/U2tWDANIggRnZwhhynjzre7PilgYzXhw==
+Cc: <yang.yicong@picoheart.com>, "Paul Walmsley" <pjw@kernel.org>, 
+	"Palmer Dabbelt" <palmer@dabbelt.com>, 
+	"Albert Ou" <aou@eecs.berkeley.edu>, "Alexandre Ghiti" <alex@ghiti.fr>, 
+	<kvm@vger.kernel.org>, <kvm-riscv@lists.infradead.org>, 
+	<linux-riscv@lists.infradead.org>, <linux-kernel@vger.kernel.org>
+From: "Yicong Yang" <yang.yicong@picoheart.com>
+Subject: Re: [PATCH] RISC-V: KVM: Preserve LCOFIP when checking pending interrupts
+Date: Thu, 3 Sep 2026 12:04:38 +0800
+Mime-Version: 1.0
+X-Lms-Return-Path: <lba+26a98f1d9+528b20+lists.infradead.org+yang.yicong@picoheart.com>
+To: "Pengpeng Hou" <pengpeng@iscas.ac.cn>, 
+	"Anup Patel" <anup@brainfault.org>, 
+	"Atish Patra" <atish.patra@linux.dev>
+Message-Id: <7504634a-b2bb-4a17-95f0-3542065810b2@picoheart.com>
+In-Reply-To: <20260901080610.91993-1-pengpeng@iscas.ac.cn>
+Received: from [100.86.218.63] ([120.234.91.229]) by smtp.feishu.cn with ESMTPS; Thu, 03 Sep 2026 12:04:40 +0800
+User-Agent: Mozilla Thunderbird
+References: <20260901080610.91993-1-pengpeng@iscas.ac.cn>
+X-Original-From: Yicong Yang <yang.yicong@picoheart.com>
 Content-Language: en-US
-X-CM-TRANSID: qMiowJDxRs30xphqzu0ZAA--.42143S2
-X-CM-SenderInfo: xpdruxter6z05rqj20fqof0/
-X-Coremail-Antispam: 1Uk129KBj93XoW7ZF43uFy8JrWDCF15CFWUJrc_yoW8CrWUpa
-	ykAryY9r4rGr17KFZ7WwnYqFy8Wa97GFWxAr1S9ryDurnrAry2gFWxKasrXFy5Z39Yq34S
-	v3WI93W5Za1kZwbCm3ZEXasCq-sJn29KB7ZKAUJUUUUd529EdanIXcx71UUUUU7KY7ZEXa
-	sCq-sGcSsGvfJ3Ic02F40EFcxC0VAKzVAqx4xG6I80ebIjqfuFe4nvWSU5nxnvy29KBjDU
-	0xBIdaVrnRJUUUPFb4IE77IF4wAFF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2
-	IYs7xG6rWj6s0DM7CIcVAFz4kK6r1Y6r17M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48v
-	e4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Gr0_Xr1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI
-	0_Gr0_Cr1l84ACjcxK6I8E87Iv67AKxVW8JVWxJwA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_
-	Gr0_Gr1UM2kKe7AKxVWUtVW8ZwAS0I0E0xvYzxvE52x082IY62kv0487Mc804VCY07AIYI
-	kI8VC2zVCFFI0UMc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AKxVWUtVWr
-	XwAv7VC2z280aVAFwI0_Gr0_Cr1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48IcVAKI48JMx
-	k0xIA0c2IEe2xFo4CEbIxvr21lc7CjxVAaw2AFwI0_GFv_Wryl42xK82IYc2Ij64vIr41l
-	4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1l4IxYO2xFxVAFwI0_Jw0_GFylx2IqxVAqx4xG67AKxV
-	WUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r4a6rW5MIIYrxkI
-	7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Gr0_Xr1lIxAIcVC0I7IYx2IY6xkF7I0E14v26r
-	4j6F4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVW8JVWxJwCI
-	42IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIYCTnIWIevJa73UjIFyTuYvjxUShiSDUUUU
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260903_020152_974008_C1C60034 
-X-CRM114-Status: GOOD (  17.17  )
+X-CRM114-CacheID: sfid-20260902_210449_580896_B4A0C243 
+X-CRM114-Status: GOOD (  18.12  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -109,42 +71,73 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-CgpPbiAyMDI2LzkvMyDkuIrljYgxMjo0MSwgU2VhbiBDaHJpc3RvcGhlcnNvbiB3cm90ZToKPiBV
-c2UgdGhlIGNvbW1vbiBtaW5pbXVtIEdQQSBmb3IgcGFnZSB0YWJsZXMgKDB4MTgwMDAwKSBvbiBM
-b29uZ0FyY2ggaW5zdGVhZAo+IG9mIExvb25nQXJjaCdzIGN1c3RvbSBtaW5pbXVtIG9mIDB4MjAw
-MDAwLCBzbyB0aGF0IExvb25nQXJjaCBjYW4gdXNlCj4gdm1fYWxsb2NfcGFnZV90YWJsZSgpIGlu
-c3RlYWQgb2Ygb3BlbiBjb2RpbmcgYSByb3VnaCBlcXVpdmFsZW50LiAgVGhlcmUgYXJlCj4gbm8g
-a25vd24gcmVhc29ucyB3aHkgTG9vbmdBcmNoIGNhbid0IHVzZSBhIGxvd2VyLCBsZXNzLWFsaWdu
-ZWQgbWluaW11bS4KPiBUaGUgbW9yZS1hbGlnbmVkIHZhbHVlIHdhcyBvcmlnaW5hbGx5IHNlbGVj
-dGVkIHRvIHN1cHBvcnQgaHVnZSBwYWdlcyBmb3IKPiB0aGUgZ3Vlc3QsIGJ1dCB0aGF0IG9ubHkg
-cmVxdWlyZXMgdGhlIGFkZHJlc3Mgb2YgdGhlIGZpbmFsIGFsbG9jYXRpb24gdG8gYmUKPiBhbGln
-bmVkLCB0aGUgYWRkcmVzc2VzIG9mIHBhZ2UgdGFibGUgcGFnZXMgaXMgaXJyZWxldmFudCBvbiB0
-aGF0IGZyb250Lgo+IAo+IFNpZ25lZC1vZmYtYnk6IFNlYW4gQ2hyaXN0b3BoZXJzb24gPHNlYW5q
-Y0Bnb29nbGUuY29tPgo+IC0tLQo+ICAgdG9vbHMvdGVzdGluZy9zZWxmdGVzdHMva3ZtL2xpYi9s
-b29uZ2FyY2gvcHJvY2Vzc29yLmMgfCAzICstLQo+ICAgMSBmaWxlIGNoYW5nZWQsIDEgaW5zZXJ0
-aW9uKCspLCAyIGRlbGV0aW9ucygtKQo+IAo+IGRpZmYgLS1naXQgYS90b29scy90ZXN0aW5nL3Nl
-bGZ0ZXN0cy9rdm0vbGliL2xvb25nYXJjaC9wcm9jZXNzb3IuYyBiL3Rvb2xzL3Rlc3Rpbmcvc2Vs
-ZnRlc3RzL2t2bS9saWIvbG9vbmdhcmNoL3Byb2Nlc3Nvci5jCj4gaW5kZXggNDdiYmRlM2UyMDVh
-Li4wNTdhNzc3MTM1NDIgMTAwNjQ0Cj4gLS0tIGEvdG9vbHMvdGVzdGluZy9zZWxmdGVzdHMva3Zt
-L2xpYi9sb29uZ2FyY2gvcHJvY2Vzc29yLmMKPiArKysgYi90b29scy90ZXN0aW5nL3NlbGZ0ZXN0
-cy9rdm0vbGliL2xvb25nYXJjaC9wcm9jZXNzb3IuYwo+IEBAIC05LDcgKzksNiBAQAo+ICAgI2lu
-Y2x1ZGUgInByb2Nlc3Nvci5oIgo+ICAgI2luY2x1ZGUgInVjYWxsX2NvbW1vbi5oIgo+ICAgCj4g
-LSNkZWZpbmUgTE9PTkdBUkNIX1BBR0VfVEFCTEVfUEhZU19NSU4JCTB4MjAwMDAwCj4gICAjZGVm
-aW5lIExPT05HQVJDSF9HVUVTVF9TVEFDS19WQUREUl9NSU4JCTB4MjAwMDAwCj4gICAKPiAgIHN0
-YXRpYyBncGFfdCBpbnZhbGlkX3BndGFibGVbNF07Cj4gQEAgLTU3LDcgKzU2LDcgQEAgdm9pZCB2
-aXJ0X2FyY2hfcGdkX2FsbG9jKHN0cnVjdCBrdm1fdm0gKnZtKQo+ICAgCWNoaWxkID0gdGFibGUg
-PSAwOwo+ICAgCWZvciAoaSA9IDA7IGkgPCB2bS0+bW11LnBndGFibGVfbGV2ZWxzOyBpKyspIHsK
-PiAgIAkJaW52YWxpZF9wZ3RhYmxlW2ldID0gY2hpbGQ7Cj4gLQkJdGFibGUgPSB2bV9waHlfcGFn
-ZV9hbGxvYyh2bSwgTE9PTkdBUkNIX1BBR0VfVEFCTEVfUEhZU19NSU4sCj4gKwkJdGFibGUgPSB2
-bV9waHlfcGFnZV9hbGxvYyh2bSwgS1ZNX0dVRVNUX1BBR0VfVEFCTEVfTUlOX1BBRERSLAo+ICAg
-CQkJCXZtLT5tZW1zbG90c1tNRU1fUkVHSU9OX1BUXSk7Cj4gICAJCVRFU1RfQVNTRVJUKHRhYmxl
-LCAiRmFpbCB0byBhbGxvY2F0ZSBwYWdlIHRhbGUgYXQgbGV2ZWwgJWRcbiIsIGkpOwo+ICAgCQl2
-aXJ0X3NldF9wZ3RhYmxlKHZtLCB0YWJsZSwgY2hpbGQpOwo+IApSZXZpZXdlZC1ieTogQmlibyBN
-YW8gPG1hb2JpYm9AbG9vbmdzb24uY24+CgoKLS0gCmt2bS1yaXNjdiBtYWlsaW5nIGxpc3QKa3Zt
-LXJpc2N2QGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFp
-bG1hbi9saXN0aW5mby9rdm0tcmlzY3YK
+Hi,
+
+On 9/1/26 4:06 PM, Pengpeng Hou wrote:
+> KVM injects the guest counter-overflow interrupt into HVIP bit 13 and
+> records the same bit in irqs_pending. The guest enables it through VSIE
+> LCOFIE, also at bit 13.
+> 
+> kvm_riscv_vcpu_has_interrupts() shifts the complete VSIP valid mask by
+> VSIP_TO_HVIP_SHIFT before matching it against irqs_pending. That maps
+> SSIP, STIP, and SEIP to VSSIP, VSTIP, and VSEIP, but incorrectly moves
+> LCOFIP from bit 13 to bit 14. The following high-interrupt term excludes
+> all local interrupt bits, so it cannot recover LCOFIP.
+> 
+> As a result, kvm_arch_vcpu_runnable() can report false for a vCPU waiting
+> in WFI even though an enabled PMU overflow interrupt is pending.
+> 
+> Keep LCOFIP in place while shifting the three interrupt classes that have
+> distinct VS-level bit positions. This makes a vCPU halted in WFI runnable
+> when its PMU overflow interrupt is pending.
+> 
+> Fixes: 16b0bde9a37c ("RISC-V: KVM: Add perf sampling support for guests")
+> Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>
+
+i suppose it's a vsip/hvip conversion bug but currently only lcofi will
+trigger this. a fix for the conversion:
+
+https://lore.kernel.org/linux-riscv/20260804134018.85497-1-yang.yicong@picoheart.com/
+
+> ---
+>  arch/riscv/kvm/vcpu.c | 8 +++++---
+>  1 file changed, 5 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+> index e062ca1..c6eb3bd 100644
+> --- a/arch/riscv/kvm/vcpu.c
+> +++ b/arch/riscv/kvm/vcpu.c
+> @@ -487,12 +487,14 @@ int kvm_riscv_vcpu_unset_interrupt(struct kvm_vcpu *vcpu, unsigned int irq)
+>  bool kvm_riscv_vcpu_has_interrupts(struct kvm_vcpu *vcpu, u64 mask)
+>  {
+>  	unsigned long flags;
+> -	unsigned long ie;
+> +	unsigned long ie, vsie;
+>  	bool ret;
+>  
+>  	raw_spin_lock_irqsave(&vcpu->arch.irqs_pending_lock, flags);
+> -	ie = ((vcpu->arch.guest_csr.vsie & VSIP_VALID_MASK)
+> -		<< VSIP_TO_HVIP_SHIFT) & (unsigned long)mask;
+> +	vsie = vcpu->arch.guest_csr.vsie & VSIP_VALID_MASK;
+> +	ie = ((vsie & ~SIP_LCOFIP) << VSIP_TO_HVIP_SHIFT) |
+> +	     (vsie & SIP_LCOFIP);
+> +	ie &= (unsigned long)mask;
+>  	ie |= vcpu->arch.guest_csr.vsie & ~IRQ_LOCAL_MASK &
+>  		(unsigned long)mask;
+>  	ret = vcpu->arch.irqs_pending[0] & ie;
+> 
+> 
+> _______________________________________________
+> linux-riscv mailing list
+> linux-riscv@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-riscv
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
