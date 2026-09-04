@@ -4,119 +4,190 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CFC9AC79F89
-	for <kvm-riscv@archiver.kernel.org>; Fri,  4 Sep 2026 17:56:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 703C0C624D3
+	for <kvm-riscv@archiver.kernel.org>; Fri,  4 Sep 2026 20:23:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
-	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=MWzcLVq7n4BOaYHUY0O+8lpnQU0dRnAp9XV8CqCFU/g=; b=A1WvN7Bh6w3zPD
-	5NOq1D+MqWWbl7PtiDl9Tqsm6tLAXOtjaXp6mUYSN7GRqq4bxTsmagPovqvgpSNWkN2nyrL28VSOm
-	oL2ibjBnBvALwKBtJvJTIgegQflOg+7tQVZUUGe0r+qb8Xv5tBOE8ZVgn/cagiLMUoKJdsFg0OAT3
-	DjUiV5kQ3ecKSNOm6vL+F9RbH1kMV/Pht6URI5UDpT2Txz61Jo5mwrQWyHwz2N9hFZHz5i8fH1wFG
-	0ewjwZ5Wl/Sy+l/TzwDzf6k5uXD2GlmzN87wucfyZDuHeZPdO24eOeJ+hCMjB5DPxYnOh9zselGnp
-	Q1+m3+/RYe+9+HePjnfw==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:In-Reply-To:From:
+	References:Cc:To:Subject:Date:Message-ID:Reply-To:Content-ID:
+	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+	:Resent-Message-ID:List-Owner;
+	bh=41bDHPC0Wl1R8ELDZgEHqW8tbS+kATBOSTm5NT6o5cI=; b=QchzrVzSgc8jGULCwoah9qy45g
+	ZeMZ5oeKd0WEr2IUoCb/EsKtoWi0hMU+hANH3WCUhaLso3JzI8xFG1h/Yzs7hIW6d3YSFCQNQKKx+
+	5yi+TNmX40slLBsto3xf15Ol6OmHymPa8IlX26SvxGq7RvwHanFAsVEMJCZEMMm0MPcizaOze8swf
+	h5sQCfPVKi3PnoDuxIn3tlA1JlKN9k2yXIMTq+qDp/8H/27M8kLHKapGA/rKfQi1jRo8EgrNw84vr
+	ybL0r9nKq6FOxJdWEFNyuFsYZV+LJ50IhaCd1qXd+gu9HAoBpVC7n++9zjR7YncaVu+CGyEDuimRC
+	i55u+/Ww==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x2Y9O-00000002x82-2AYr;
-	Fri, 04 Sep 2026 17:56:30 +0000
-Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
-	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x2Y9L-00000002x62-2slS
-	for kvm-riscv@bombadil.infradead.org;
-	Fri, 04 Sep 2026 17:56:29 +0000
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:MIME-Version
-	:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:
-	Content-Type:Content-ID:Content-Description;
-	bh=6iXgMxHD3EX0uxPlPF+/kWo8h4vhjuK3982RDel46+Y=; b=N17Arp27ZZZVt94YAoiUWwUSBf
-	j07jbJq7PWDzF3mxbmLKKPIKklR/UNPOgFK22lo9GbEZom/60CrzaB3LFmxvmY4MICiGZX4keJzLA
-	TVT3/bKq+P7PGA398M3L79nWFfAbPu8mXy28jv0G1X7D56aWAKg+P8plH8fDW5W5aBcJH3cr1PMp2
-	hUsvILpnZwWtIZ1rGQcF0TGaIaSmtitieNNFCf5sR0o2DkIHM9oAc8zxIvwJcTa5le44IY+Rdv0LW
-	DVHSRylRyVEhFN7kjWVOhALTCA/la0Iwqs1222DLRjKPW+pqj3uJcDeHyPVWocu5cSe//0D1Zmb7K
-	oOBViqAg==;
+	id 1x2aRO-00000003Fwr-07q3;
+	Fri, 04 Sep 2026 20:23:14 +0000
 Received: from mx0a-00069f02.pphosted.com ([205.220.165.32])
-	by desiato.infradead.org with esmtps (Exim 4.99.2 #2 (Red Hat Linux))
-	id 1x2Y9I-0000000ENEP-0kYO
+	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
+	id 1x2aRK-00000003Fw4-3WAD
 	for kvm-riscv@lists.infradead.org;
-	Fri, 04 Sep 2026 17:56:26 +0000
-Received: from pps.filterd (m0333521.ppops.net [127.0.0.1])
-	by mx0b-00069f02.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 684GlMkj3750877;
-	Fri, 4 Sep 2026 17:55:55 GMT
+	Fri, 04 Sep 2026 20:23:12 +0000
+Received: from pps.filterd (m0246627.ppops.net [127.0.0.1])
+	by mx0b-00069f02.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 684KN84O3548185;
+	Fri, 4 Sep 2026 20:23:08 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=corp-2025-04-25; bh=6iXgM
-	xHD3EX0uxPlPF+/kWo8h4vhjuK3982RDel46+Y=; b=aez0rP6guOp31/pF7piym
-	Ks0t/R8THgGLN/pzybHskW0NxTWkCQzX/m4RVhZbJfjMnFaa0fgu5ZA2QKHOATXj
-	dqusLuB9x5qN495za0nXylZxvpbNpbXNFJN8iB0UdAoCaUdJu65g9lfNgMLYvLSo
-	S6w3oOUnlar1OWuGo0udB/tu68vyJsNjPOsmBlPtjVKDuYgQNSvsofsaMk01qXvn
-	oCb5SgwKsVdFVvdQG+lJ9NHaK/2r7QyQVtUqD6JDwdODmn/0Nai0QjMjo2VG77l7
-	Heyup6hbWJ9P2hfp+ZlRcdcGJ9TrLrQxyJPdsdDR2ClwVbr6D5J1vWj7I/gJARAc
-	A==
-Received: from iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta01.appoci.oracle.com [130.35.100.223])
-	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 4gbpbb3b45-1
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=
+	corp-2025-04-25; bh=FB+XofAgvq5IGYFbvi2slBGU1hjWQtmpjDXaLoS5ku8=; b=
+	ClYDhHiNDJ3taUqFVbJZ91vfdEWWSEOhI75u2LQL95Y/SIYoxVUMqahUVN4fs8qq
+	exD09fqc1AyhadI6rWiKLWtP3YKiLnF3T9bDHRw0Zxw9w+n4kX9FerlAbxYAniRq
+	xkR4VVfTouTNNi9nyciPRUy0tblViRX12Y9jPERlnRJTGXvTgFVCgyZdRcqQaTei
+	N0Srcwiu1PmPR+z7sAe4BZuudV/P0QdlLDKCf5ZiaxjgWiclEIxSbYeV0l84SH2D
+	s5zndUOB0HTISXz4xrz2JdKkdnAZZ5hs+oA2wJFPwkZaBe0d2njDApjRICZ6pOjS
+	SutkE9GFezuc9+r1LdKWAA==
+Received: from iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta02.appoci.oracle.com [147.154.18.20])
+	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 4gbp0y3eb4-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 04 Sep 2026 17:55:55 +0000 (GMT)
-Received: from pps.filterd (iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (8.18.1.7/8.18.1.7) with ESMTP id 684HoXOG016069;
-	Fri, 4 Sep 2026 17:55:54 GMT
-Received: from pps.reinject (localhost [127.0.0.1])
-	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 4gbnvv367k-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 04 Sep 2026 17:55:53 +0000 (GMT)
-Received: from iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.1.12) with ESMTP id 684HrwmH032217;
-	Fri, 4 Sep 2026 17:55:53 GMT
-Received: from donglzha-e6-vfio-setup.osdevelopmeniad.oraclevcn.com (donglzha-e6-vfio-setup.allregionaliads.osdevelopmeniad.oraclevcn.com [100.100.255.69])
-	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 4gbnvv366p-2;
-	Fri, 04 Sep 2026 17:55:53 +0000 (GMT)
-From: Dongli Zhang <dongli.zhang@oracle.com>
-To: kvm@vger.kernel.org, kvmarm@lists.linux.dev, loongarch@lists.linux.dev,
-        kvm-riscv@lists.infradead.org, linux-kselftest@vger.kernel.org
-Cc: maz@kernel.org, oupton@kernel.org, fuad.tabba@linux.dev,
-        joey.gouly@arm.com, seiden@linux.ibm.com, suzuki.poulose@arm.com,
-        yuzenghui@huawei.com, zhaotianrui@loongson.cn, maobibo@loongson.cn,
-        chenhuacai@kernel.org, anup@brainfault.org, atish.patra@linux.dev,
-        seanjc@google.com, pbonzini@redhat.com, shuah@kernel.org,
-        dwmw2@infradead.org, joe.jin@oracle.com
-Subject: [PATCH v2 1/4] KVM: Move last_steal to common struct kvm_vcpu
-Date: Fri,  4 Sep 2026 17:55:23 +0000
-Message-ID: <20260904175550.430266-2-dongli.zhang@oracle.com>
-X-Mailer: git-send-email 2.43.7
-In-Reply-To: <20260904175550.430266-1-dongli.zhang@oracle.com>
+	Fri, 04 Sep 2026 20:23:07 +0000 (GMT)
+Received: from pps.filterd (iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
+	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (8.18.1.7/8.18.1.7) with ESMTP id 684KKWWW006787;
+	Fri, 4 Sep 2026 20:23:06 GMT
+Received: from dm1pr04cu001.outbound.protection.outlook.com (mail-centralusazon11010038.outbound.protection.outlook.com [52.101.61.38])
+	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 4gdymxgvpx-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+	Fri, 04 Sep 2026 20:23:06 +0000 (GMT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=AeX6axHctMGJOvH2/B2McMgT4ypBMsDwvf4wqWp5gM2p6clzvX4xZZvhC7YBX9pSse/JAMDl6f6RwAq/BTqlXHckht7h7v4itTg5UWTsewTcSuGAkHKsl73HGUYR5vTvwx7xQMVcb+axnR0k519+bA+fTaG2agqH/F3+y+hs4lwQph27hYKD29iuvZBCQ4Zb+nM4RjqpZOs4vsaOgYOH3CEU0rChD7l2l91P/yoEravqpeRr1IPSCcb359R/QeRdmmdogx/4+OdtemNv5OQ6DV1o773I/I/2puov7KfR8rZGOdM8+l9n0eYw6SvNOcsTyKrzXd5CktvFYIYTafmNHg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=FB+XofAgvq5IGYFbvi2slBGU1hjWQtmpjDXaLoS5ku8=;
+ b=JSzt7MEB6M3h5YVWbfU2SOU5TBLFcY4GdkN0zpl47W7DLmh63C1jymNEXcvY3vaEPsITLH7xT9S7K8Ulww2hJZki3hj85JtTKME35pCiQ8KOX+wPb4IfsIpCRIaEQZFIunYYH6g8BHQr7f7KqJsfsd1+32MoVZwir2meljOwVVyW2cjiqA09nlTk89u0pWD3UramDTD/qyVmqH783l8SvYNBLxqOhwN1u/ZqqfvNot48hZtMKCJyUudDHVDvzGxQdaQEtk8fzuogFpCxkIm4cx4CQi6q0nZ5802TuBYv6D9QXNmuX5bxwlFq9nvVo+Z+va5SJYIs/Uj+EZigfzZoJg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
+ dkim=pass header.d=oracle.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=FB+XofAgvq5IGYFbvi2slBGU1hjWQtmpjDXaLoS5ku8=;
+ b=P45AGGkfhCNy1R0JmNXe5gTA3CB8sp4vI5bsT2Wk4+ISUVmQ3QQBElFc7zE7p844iZSzmZLzcXbdDvm5LCyQ2ZdMdVWoeCCFSdJKwktWpyRp/TGa1T3yYT6zOiyb2gpyFGiA5xG1Bs5nFKeKzl6jZX2XayK4QcM7ryFnwxkXRDc=
+Received: from SA1PR10MB5510.namprd10.prod.outlook.com (2603:10b6:806:1e5::6)
+ by LV8PR10MB7799.namprd10.prod.outlook.com (2603:10b6:408:1ec::15) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.406.4; Fri, 4 Sep 2026
+ 20:23:02 +0000
+Received: from SA1PR10MB5510.namprd10.prod.outlook.com
+ ([fe80::a9a8:cb4:1056:5d96]) by SA1PR10MB5510.namprd10.prod.outlook.com
+ ([fe80::a9a8:cb4:1056:5d96%6]) with mapi id 15.21.0382.007; Fri, 4 Sep 2026
+ 20:22:58 +0000
+Message-ID: <1dabaf16-f5e6-4a84-8339-742764f879c3@oracle.com>
+Date: Fri, 4 Sep 2026 13:22:56 -0700
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 1/4] KVM: Move last_steal to common struct kvm_vcpu
+To: sashiko-reviews@lists.linux.dev, kvm-riscv@lists.infradead.org
+Cc: Marc Zyngier <maz@kernel.org>, kvm@vger.kernel.org,
+        Oliver Upton <oupton@kernel.org>, kvmarm@lists.linux.dev
 References: <20260904175550.430266-1-dongli.zhang@oracle.com>
+ <20260904175550.430266-2-dongli.zhang@oracle.com>
+ <20260904180715.E5CD51F00A3E@smtp.kernel.org>
+Content-Language: en-US
+From: Dongli Zhang <dongli.zhang@oracle.com>
+In-Reply-To: <20260904180715.E5CD51F00A3E@smtp.kernel.org>
+X-ClientProxiedBy: PH8PR05CA0006.namprd05.prod.outlook.com
+ (2603:10b6:510:2cc::6) To SA1PR10MB5510.namprd10.prod.outlook.com
+ (2603:10b6:806:1e5::6)
 MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SA1PR10MB5510:EE_|LV8PR10MB7799:EE_
+X-MS-Office365-Filtering-Correlation-Id: ab4b86dd-5d2a-4636-e906-08df0ac24f37
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|366016|23010399003|1800799024|376014|10067099003|6133799003|22082099003|4143699003|56012099006|18002099003;
+X-Microsoft-Antispam-Message-Info: 5q+4ZTGRqt2tGpzrVLJszEs4uSLPhsYpbD1II85o3+hNqiRPnFWW4qQaKhLvG83TI07GzyO0D/nUP5dEsXHBk1jaibWptvLgpF9FxYcMKddAAkdb5BV/5CFnpTh1ghDs2AngtG3Y4nfFF6gTzkn59kN31vg/kC8MSEOHcMSGo7jfwRML6CjB2zxxikcPEzb0edLsFmpRcfMFhWS9x3nY7WkpUfVnn+iBJCKcVsn19U4ZY8XT9cS4+b/UaeR2188r5FGMYLYCr1JEgGgSDX/UauZe5bRitNDZntFf1i5fibEMC93ftGXmuThY599rQvXskEdrDcmkpckSzgYATvjioTYgem5SyIHx8f6UqLwV5Qgi0CdNmk6JA8ZpfTe5jZMqLqvZkkIvD4K6YlKouLHSGB+L5JD83QOOLmxMgMh4ciDHA1NHyNXJip4hETgmOwXoilqcYenTdG882Rd4yjJb+KJBeJPnHbAngI410PNyE7aEWthVnAM1qQ80HDJBn28IZcydhbTKTw76vCEoudjs6A1zvWVMBQPSEQSPcQf0go9zx+DjSRySkcnXYyBdaJk09+3H3aa5Qko6nOkgtVL13DjvW1/5I9L5UP9ETN/QpPooBW4KKQk46l0f2eWwICXNLeOw0eUulmMTxk8n3Vxu3wB5OMcJIVuImFjMhmC6l2A=
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SA1PR10MB5510.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(23010399003)(1800799024)(376014)(10067099003)(6133799003)(22082099003)(4143699003)(56012099006)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?TGNVYW9IZW43UTFWS0REMnpWd0dudjNMYnhpWm41ckZEamJpTGozOU9VVkVH?=
+ =?utf-8?B?NWdaNjRqSDZQajE2LzV5WFJ0VjdVOWxvbmZONlBDY1l1dDdoZnFkSUpNdnRP?=
+ =?utf-8?B?SFlndmdnQkJEeUNabDc5K1Q4OFptdlpPdHMyMThWV1FCZitxNTZkZFJwMkRI?=
+ =?utf-8?B?MDVQR21HS2FNUkszUU1ES3dWSCtTdlNtZjQ4b3VsUVVzRE0yMGQ1Tmc3UlR5?=
+ =?utf-8?B?Sld6eGVmSkR1eVNGdVdnRnFZaVZYNVk5SXljeTNzcjdJMXhWTGRQa0RMVHBz?=
+ =?utf-8?B?eFlSRExSWDFjZHpmSW9VQXpicW5kbUozZFljN3pVa1Y2LzNWTDhadURCbE1D?=
+ =?utf-8?B?TG13T001dXIxbEZQelRLb2Z3YmlqaVp1bXhpbGpBZHBXdDVpT3R4NldsU29w?=
+ =?utf-8?B?Z29xc0tVeFhySTA1bE1kV29NVFVFcUViOVZEdjhrcCtrRmU4RDR0YjJpRzY2?=
+ =?utf-8?B?VFZYZ0I0ZmNKRFVMNEFrQWE3eFdCZitrT2xTdWR5YjgrY0tLNVp0NnR5emdw?=
+ =?utf-8?B?RDlNSXBVZ1VHaFpta3hlOTRUVkR2MFhPL3ZIV2lnV0NYb1lKWHl2WUhWV0hu?=
+ =?utf-8?B?OXVNQVBGV1ZaNTl2ckg4MlhWa0pVeHBqaHFWRnhOQ2JRY3VhSmVERzNsdFUr?=
+ =?utf-8?B?L0tBMXZ6dnpPWkRxWHh1cmpXTXE1NUNwQlUrR3JvSWRpemRuTk1zN2dmWFB1?=
+ =?utf-8?B?MGFiNk16dVZlN1prbmtrTlhqR2luVmdmanNYN1V3aGFPWXVtMm91dEZaaisr?=
+ =?utf-8?B?STI2NVNHOEY3K1BhcHFZN2V4TEhIUXBIYTVaRE82Q01UVzkzZldYN2s2NXV1?=
+ =?utf-8?B?M0cvQ3V0ZXBSK0FLdEVmc0ZFOHIzbW1MQTRFVXRpNkg2MFUybGc0UXRFUHBp?=
+ =?utf-8?B?L1RvUmtjYnJId21iNTdGakdERVk3eWhjdHZuN2lNQ1pzZ0w1aC9JRDhZTjZF?=
+ =?utf-8?B?VlhNTitvd2NIbDYwczRKMmFJdDFMaW5pS05OK0x5cm0yVzZWT0RPaEgvRVNE?=
+ =?utf-8?B?SlRRRTFKZ3J5bzhlanpkY0VaY2pYY3QxUXJoRE9LRVFuUm9VbzIvekthcHBI?=
+ =?utf-8?B?UEZhc1ZEQnRmNFg5elpJMU5ydE8vN2l0UExWTHdRbFN5cFR3TEo0bnA4eXVt?=
+ =?utf-8?B?MG9FMndKbUMxVTQxMnNnaVQzcjdOd0VwdGI4LzBmS3ZlL0RJL2QwV1c5cWFs?=
+ =?utf-8?B?TDVPMTdkUnYrb09tOG1kOEFkc3dqdG51OGwzZDVTRDFwWnphQlYwRTJtVG9i?=
+ =?utf-8?B?bnpTMjBuKzR6a2NoczVZRy9SYmxYSnAyQlpka2F2bUYzL0EyKy9hZ2p3SFhR?=
+ =?utf-8?B?bXg2aFhyMGFqWWVkcEtSbHJTQ3hmTXpPR3QrbDB4MHFkRFZ1Z2hqWDUrMUE2?=
+ =?utf-8?B?L01ZNjN4cG5zM2lmT2NxbldpNzdMT2NIeEdlOWdrQS92VmQ5QW10dlFFMElI?=
+ =?utf-8?B?Q2U0dzVrSWxyQjgrMmo3Yjc2SlBuV1FlYVFLZk83Rk5vVG1NbVI0N2ViclZp?=
+ =?utf-8?B?cnBSRlExQmtpd1VsQjB4emFNZ0gzRlNmM0s0RWdaREhRRE80U2p4L1V1UUNE?=
+ =?utf-8?B?bGxla1pRejhpdDdmN2VzajhSUFdHY1dURTBGZXprOERPdHlDR0VMeVJVd0o1?=
+ =?utf-8?B?UmZ3YVpWaStEaklFT1lZRkdpSkxJdWlhUDZJZ2R3ZFlCMVZjQjVOdXE4REhW?=
+ =?utf-8?B?Z3RCOFQwWXBjRVF2MWk4UXdFWW05TzMzVzlmVnlTMmdMQXdpdlpWSzBaUTJi?=
+ =?utf-8?B?ejBqQkVVcUZFOUNVbFdUOWhPRU9KNXZRbkVqbmErV1ZBM3E4SjQ0N2FuQ3Jo?=
+ =?utf-8?B?V0QxRTJQd1FFVUZIVlFqQnVYVlE2Ujkzd1FORy8rQk56dE5qdmVFUnl3M3pr?=
+ =?utf-8?B?STN4SHlxUDNnL0lUckZpMlRuUEpUWWlURitJZGgzd01vc0JWZ1ArNGsvWEJt?=
+ =?utf-8?B?RS9SRGtZWTNmc2VQUHNFelVQcXZyeUhTM01zb0VXdCtsaVJGYTVoTTFGdGtu?=
+ =?utf-8?B?S1lKTmVnVnJsd3ozN0cvVkNJVit5TkRTaWtoWGxpbHhnZFNmYVlrcERMS2xQ?=
+ =?utf-8?B?YURaQWVXZVJEZ2VhckhXWG13VkpwWUNBa1g2VFROT0M4WGY1aTM3WGhLTVAy?=
+ =?utf-8?B?MHlLcllFYjNnMUZFTm5rMjA4anBMTFB0YzBJRit1N1dnYnp3cHFUZTNTKzU2?=
+ =?utf-8?B?SmdpQS9QUWFpV0FrNWhFM0JoYlVIQ0FUMDVQeVZsdG1aSXFWMjZRS2NNL0lp?=
+ =?utf-8?B?SW1VK1VYeHR0eW12d2FKWlN2RVJYTHFYc054bVdnTWFrRW5jQmt4ZUxucE5w?=
+ =?utf-8?B?anF3VHVtdlY2QnJKWG5tVGZGb3pYSXNRTjdmbEx3K2pVVnB2bjQ0RGdITFZu?=
+ =?utf-8?Q?iCDoC2TuLtzl/lSc=3D?=
+X-Exchange-RoutingPolicyChecked: CtTOUsKS12z7H3EJwBROvfAWdW18Scnk1SIyNBiTWO7QMhO0BsXIHaBXkVZcV8Wkq4TtRyOYD7SvzQxFFGZn7NY4SNYtKlFqc2OgWVidNDZdpOomKqcFXaNUNmgSSbjJe3dz7uDrRszuQTspmj55jtGyu2wwPk/hfQjSfS0bOaKmv4KCER2+DZzUx882JRuMKKF/wizSOMEyQEg8X11XJMxgCCqrNsIL1qY2uCzAqCliY4jFLFtbskpj8wrbHsLuze5+GAQWUvjmtNsxmorJ8+jY/mFiYtmjyo0n8Srf9WomfPlipPiiLIRRmrk71S8v5zC+oyHOfLJFjmOan1Vc9w==
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: fB4l9+hsDDQhUXuNNktQ663Z6sP2k0aFpQkknb0tWaCKQYytO7zB5Y40auAUCQZGx7q0iyfCP3eJAZQzhEZopePVqwHYJ36zD3DGAQIfnCebMjwAyCYMSit9pFH2Oa/11DJetaoAOh3Oa+UDA273gSZe20+lHkP6gXqfSo/kJe4OBsP6kNFeROZxlYPLvndhVCvq0sRq/KafDaau3rPsWIXAWQepT+sSCITl5QrGFT/YUT9BLVEqwLwu5eF69WkoK4FVbEZZ5Y4Yr/ATUNdMyoJ8PYCtLRa9DLfnQWMoCNMlUol+RO4Jnf74LYxZFtzmGkr/5osGA7/nCa7l6C2FtwBiPI2jEpIwiC5OuRqOcmLAwWkSF1DiSHU1tBxixbBXUkouPduXCxNuv/+q2yXUZwEVnIDLPo9tWw5jhv0RywH8nZKCpYU5rmcngXkXctmr2Ri07bEJD1Q3vm0xnoiwRP4K4XeoNe2wX7Pugf7pcfCSu93VQbRNO2A+3i3Ft48d+ONOWkvqK1+C4++/43VKomQoYpGly/NOuQ3F79VcDnVRz3AEseGkw1mGPKSsO2lrMvVAglbTu69XxIuecL19gazdcmRnzl+pHGcQaZLAbWw=
+X-OriginatorOrg: oracle.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: ab4b86dd-5d2a-4636-e906-08df0ac24f37
+X-MS-Exchange-CrossTenant-AuthSource: SA1PR10MB5510.namprd10.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 04 Sep 2026 20:22:58.0324
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: +PIlhXIur5G3kaAnSleTqQiMfceUfgMF67E/A7okQuVYLhRXhGeJ2c6jNscQobXp0pADc1twM4yZWYGXTKKltg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: LV8PR10MB7799
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-09-04_05,2026-09-03_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 malwarescore=0
- mlxscore=0 bulkscore=0 lowpriorityscore=0 phishscore=0 adultscore=0
- mlxlogscore=999 spamscore=0 suspectscore=0 classifier=spam adjust=0
- reason=mlx scancount=1 engine=8.19.0-2606160000 definitions=main-2609040163
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTA0MDE2MyBTYWx0ZWRfX9afD0e8BUuSL
- 8Pw9fO/WPp5iZGPyco+E2o+QoUqPdjsOC4Rqw8c/IHBvOZeK0hGonAOh4H+vajeWMMFzSPeVzG2
- AfQr3Url04Ucqhu3yvaJuuLSljmHVUFuHp7W9fuiy6/I+ES7zo4y
-X-Proofpoint-ORIG-GUID: bYRsaz571kuc6JEDqC_MsyCbC6FIMUMs
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTA0MDE2MyBTYWx0ZWRfX3BTJZPgvKLT2
- cZgqEKyOvbD2m0ree4dNDl/WAfE0MwySpUU7Y2diZQ38mBwFW8slILhUQDlUNLZi8AT/0FsjtjN
- cehTr/zeZjgTxzoBKT/+TPt3klI4N2ojKQsciOsbhwBjhhl8ivjWPYvKkxqm8vbtq6oGREDu4zn
- UttDG6XFVone6hER59bPyM3QpqeZbDC6xfXQnFlLUwB4ebPhhRVrot7yLeC6A/UKt82xQc1wVAw
- 0F+ZLUPTibgroqld6jE9AHjGzN6lI6tBwM0XJJ1Pqok89CEXZd7rU+x0w+KIcq4pycAOYdJXNwe
- mNYcgYj68bvarY2vxt+07UqZSAzu7PKyF1lHiOWc5fhvLO7NedzA7DZ3k+eLNVwzYPCRwypfYq0
- YG6Whj4QOaSY/1n2oGbA7Gxn7CJ+o+XZ8Sc8uV+rl54cu7w2uwYzcm6lFgYqgv893OLX89fz6H7
- mECL5+TQapBgjB9O27NXKj2xB+0YRIeqFh9Xrzrs=
-X-Authority-Analysis: v=2.4 cv=DMi/JSNb c=1 sm=1 tr=0 ts=6a9b062b b=1 cx=c_pps
- a=zPCbziy225d3KhSqZt3L1A==:117 a=zPCbziy225d3KhSqZt3L1A==:17
- a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22 a=jiCTI4zE5U7BLdzWsZGv:22
- a=x0eKOSpe3m1H3M0S9YoZ:22 a=VwQbUJbxAAAA:8 a=yPCof4ZbAAAA:8
- a=BuLvuczXJ8S_3_ykL7AA:9 a=ml6Odv02XoMIxi_K:21 a=5yU3S35YU4bGjq-dph-N:22
- a=Bho9c0fBagfJEIQBS7DQ:22 cc=ntf awl=host:12101
-X-Proofpoint-GUID: bYRsaz571kuc6JEDqC_MsyCbC6FIMUMs
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 phishscore=0
+ adultscore=0 spamscore=0 lowpriorityscore=0 malwarescore=0 suspectscore=0
+ bulkscore=0 mlxlogscore=999 mlxscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.19.0-2606160000 definitions=main-2609040187
+X-Proofpoint-ORIG-GUID: rm9W7CVWO-9UHgdZPKemu5C5oq_awQXX
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTA0MDE4OCBTYWx0ZWRfX0jS2Y7wc/7an
+ FFjs5VwnXxo6dax7mx+gGzH+ur43RifcybKRfuYlm5yXV7k1Pyz+LAG39NOf4S9cdOYS+JfEllU
+ KxN6MvrsFohjQFvEpkmGhfQbxLVnK/jQY756sLKRZHs4k01DUYxTnJ9HsdvzLPz3uYP8BR1VrNv
+ HP9lhTQFALNN7vecQm8EcufYkWSlKMQUU4quWEoOe0pvQING2bwGAgi23EaZddmJXVDfKDOGltM
+ WW3qmnO3OnUZuCX4yNGKpLRC+xsLiC+U9zlICcuN1BwvqIH8K2z3a1ARG38EOVqAaeAq/rbfnma
+ 1Xzav33V8icoddrb0J8+TI/MLPIn6JiMQNxM8YTfxgDS+Ow79F1aBuY9yIeJA8hN7e4oUx9uJvA
+ KzHUR0YMqrX3zdPXtERrP+t8cBjJZPtgtCoiawVwFB+9gfcEkoP7sXJYqMOsrrjWkMLlnFj8kbv
+ 4qLPD1UePQR5hxoRurHBw74w+9usBbUdK4YINbxU=
+X-Authority-Analysis: v=2.4 cv=Ebb4hvmC c=1 sm=1 tr=0 ts=6a9b28ab b=1 cx=c_pps
+ a=e1sVV491RgrpLwSTMOnk8w==:117 a=e1sVV491RgrpLwSTMOnk8w==:17
+ a=6eWqkTHjU83fiwn7nKZWdM+Sl24=:19 a=z/mQ4Ysz8XfWz/Q5cLBRGdckG28=:19
+ a=lCpzRmAYbLLaTzLvsPZ7Mbvzbb8=:19 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
+ a=VdqzKS8jKosA:10 a=GoEa3M9JfhUA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=jiCTI4zE5U7BLdzWsZGv:22 a=RD47p0oAkeU5bO7t-o6f:22 a=JfrnYn6hAAAA:8
+ a=VwQbUJbxAAAA:8 a=yPCof4ZbAAAA:8 a=7dML8BQ_qRT_jEr4EVoA:9 a=QEXdDO2ut3YA:10
+ a=1CNFftbPRP8L7MoqJWF3:22 a=5yU3S35YU4bGjq-dph-N:22 a=Bho9c0fBagfJEIQBS7DQ:22
+ cc=ntf awl=host:13521
+X-Proofpoint-GUID: rm9W7CVWO-9UHgdZPKemu5C5oq_awQXX
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTA0MDE4OCBTYWx0ZWRfX0oshIGhcpvQo
+ ByHqdEGR9bSCFjkNwwgxbztusq7BV+6abRfQuly7kUcDYkIfeijipr6cIWxNo+Y8Cnl5Ht54lZU
+ 55QaV3H+M5SdtgnDJzM8nMUlosm77Mxmny0ZBYInm1r84PYcThtD
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260904_185624_686283_A1544986 
-X-CRM114-Status: GOOD (  19.80  )
+X-CRM114-CacheID: sfid-20260904_132310_894465_EA04374E 
+X-CRM114-Status: GOOD (  23.37  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -133,294 +204,71 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-KVM caches per-vCPU host task's run_delay in per-architecture struct
-kvm_vcpu_arch at last_steal.
++ kvm-riscv@lists.infradead.org
 
-Move the cache to struct kvm_vcpu and convert x86, arm64, riscv, and
-loongarch to use the common field.
+The issue reported by sashiko isn't relevant to the patchset.
 
-Add HAVE_KVM_PV_STEAL_TIME so last_steal is used only for architectures
-that implement KVM stealtime.
+I don't have risc-v KVM host to reproduce this issue. It looks can be reproduced
+on purpose.
 
-Suggested-by: Marc Zyngier <maz@kernel.org>
-Signed-off-by: Dongli Zhang <dongli.zhang@oracle.com>
----
-Marc suggested reusing CONFIG_HAVE_PV_STEAL_CLOCK_GEN, but I introduced
-HAVE_KVM_PV_STEAL_TIME instead.
+Thank you very much!
 
-As I have access to only x86 and arm64 KVM hosts, I created and validated
-the selftest on those two architectures only.
+Dongli Zhang
 
- arch/arm64/include/asm/kvm_host.h     |  1 -
- arch/arm64/kvm/Kconfig                |  1 +
- arch/arm64/kvm/pvtime.c               |  8 ++++----
- arch/loongarch/include/asm/kvm_host.h |  1 -
- arch/loongarch/kvm/Kconfig            |  1 +
- arch/loongarch/kvm/exit.c             |  2 +-
- arch/loongarch/kvm/vcpu.c             |  6 +++---
- arch/riscv/include/asm/kvm_host.h     |  1 -
- arch/riscv/kvm/Kconfig                |  1 +
- arch/riscv/kvm/vcpu_sbi_sta.c         | 10 +++++-----
- arch/x86/include/asm/kvm_host.h       |  1 -
- arch/x86/kvm/Kconfig                  |  1 +
- arch/x86/kvm/x86.c                    |  5 ++---
- include/linux/kvm_host.h              |  4 ++++
- virt/kvm/Kconfig                      |  3 +++
- 15 files changed, 26 insertions(+), 20 deletions(-)
-
-diff --git a/arch/arm64/include/asm/kvm_host.h b/arch/arm64/include/asm/kvm_host.h
-index 27fe0cd5b2d7..36cb7dee988c 100644
---- a/arch/arm64/include/asm/kvm_host.h
-+++ b/arch/arm64/include/asm/kvm_host.h
-@@ -937,7 +937,6 @@ struct kvm_vcpu_arch {
- 
- 	/* Guest PV state */
- 	struct {
--		u64 last_steal;
- 		gpa_t base;
- 	} steal;
- 
-diff --git a/arch/arm64/kvm/Kconfig b/arch/arm64/kvm/Kconfig
-index 449154f9a485..f5855bfc681c 100644
---- a/arch/arm64/kvm/Kconfig
-+++ b/arch/arm64/kvm/Kconfig
-@@ -34,6 +34,7 @@ menuconfig KVM
- 	select HAVE_KVM_IRQ_BYPASS
- 	select HAVE_KVM_READONLY_MEM
- 	select HAVE_KVM_VCPU_RUN_PID_CHANGE
-+	select HAVE_KVM_PV_STEAL_TIME
- 	select SCHED_INFO
- 	select GUEST_PERF_EVENTS if PERF_EVENTS
- 	select KVM_GUEST_MEMFD
-diff --git a/arch/arm64/kvm/pvtime.c b/arch/arm64/kvm/pvtime.c
-index 4ceabaa4c30b..a67d93845d79 100644
---- a/arch/arm64/kvm/pvtime.c
-+++ b/arch/arm64/kvm/pvtime.c
-@@ -14,7 +14,7 @@ void kvm_update_stolen_time(struct kvm_vcpu *vcpu)
- {
- 	struct kvm *kvm = vcpu->kvm;
- 	u64 base = vcpu->arch.steal.base;
--	u64 last_steal = vcpu->arch.steal.last_steal;
-+	u64 last_steal = vcpu->last_steal;
- 	u64 offset = offsetof(struct pvclock_vcpu_stolen_time, stolen_time);
- 	u64 steal = 0;
- 	int idx;
-@@ -25,8 +25,8 @@ void kvm_update_stolen_time(struct kvm_vcpu *vcpu)
- 	idx = srcu_read_lock(&kvm->srcu);
- 	if (!kvm_get_guest(kvm, base + offset, steal)) {
- 		steal = le64_to_cpu(steal);
--		vcpu->arch.steal.last_steal = READ_ONCE(current->sched_info.run_delay);
--		steal += vcpu->arch.steal.last_steal - last_steal;
-+		vcpu->last_steal = READ_ONCE(current->sched_info.run_delay);
-+		steal += vcpu->last_steal - last_steal;
- 		kvm_put_guest(kvm, base + offset, cpu_to_le64(steal));
- 	}
- 	srcu_read_unlock(&kvm->srcu, idx);
-@@ -61,7 +61,7 @@ gpa_t kvm_init_stolen_time(struct kvm_vcpu *vcpu)
- 	 * Start counting stolen time from the time the guest requests
- 	 * the feature enabled.
- 	 */
--	vcpu->arch.steal.last_steal = current->sched_info.run_delay;
-+	vcpu->last_steal = current->sched_info.run_delay;
- 	kvm_write_guest_lock(kvm, base, &init_values, sizeof(init_values));
- 
- 	return base;
-diff --git a/arch/loongarch/include/asm/kvm_host.h b/arch/loongarch/include/asm/kvm_host.h
-index 23cfbecebbd7..14514a25b261 100644
---- a/arch/loongarch/include/asm/kvm_host.h
-+++ b/arch/loongarch/include/asm/kvm_host.h
-@@ -253,7 +253,6 @@ struct kvm_vcpu_arch {
- 	/* paravirt steal time */
- 	struct {
- 		u64 guest_addr;
--		u64 last_steal;
- 		struct gfn_to_hva_cache cache;
- 		u8  preempted;
- 	} st;
-diff --git a/arch/loongarch/kvm/Kconfig b/arch/loongarch/kvm/Kconfig
-index 15da2d88c0c1..4996ec9c07f9 100644
---- a/arch/loongarch/kvm/Kconfig
-+++ b/arch/loongarch/kvm/Kconfig
-@@ -26,6 +26,7 @@ config KVM
- 	select HAVE_KVM_MSI
- 	select HAVE_KVM_READONLY_MEM
- 	select KVM_COMMON
-+	select HAVE_KVM_PV_STEAL_TIME
- 	select KVM_GENERIC_DIRTYLOG_READ_PROTECT
- 	select KVM_GENERIC_HARDWARE_ENABLING
- 	select KVM_MMIO
-diff --git a/arch/loongarch/kvm/exit.c b/arch/loongarch/kvm/exit.c
-index 4f58e6e2cf86..56ae6b18f8c1 100644
---- a/arch/loongarch/kvm/exit.c
-+++ b/arch/loongarch/kvm/exit.c
-@@ -773,7 +773,7 @@ static long kvm_save_notify(struct kvm_vcpu *vcpu)
- 		if (!(data & KVM_STEAL_PHYS_VALID))
- 			return 0;
- 
--		vcpu->arch.st.last_steal = current->sched_info.run_delay;
-+		vcpu->last_steal = current->sched_info.run_delay;
- 		kvm_make_request(KVM_REQ_STEAL_UPDATE, vcpu);
- 		return 0;
- 	default:
-diff --git a/arch/loongarch/kvm/vcpu.c b/arch/loongarch/kvm/vcpu.c
-index ed9e092c97ba..728d29eba8e0 100644
---- a/arch/loongarch/kvm/vcpu.c
-+++ b/arch/loongarch/kvm/vcpu.c
-@@ -187,8 +187,8 @@ static void kvm_update_stolen_time(struct kvm_vcpu *vcpu)
- 	smp_wmb();
- 
- 	unsafe_get_user(steal, &st->steal, out);
--	steal += current->sched_info.run_delay - vcpu->arch.st.last_steal;
--	vcpu->arch.st.last_steal = current->sched_info.run_delay;
-+	steal += current->sched_info.run_delay - vcpu->last_steal;
-+	vcpu->last_steal = current->sched_info.run_delay;
- 	unsafe_put_user(steal, &st->steal, out);
- 
- 	smp_wmb();
-@@ -1205,7 +1205,7 @@ static int kvm_loongarch_pvtime_set_attr(struct kvm_vcpu *vcpu,
- 
- 	if (!ret) {
- 		vcpu->arch.st.guest_addr = gpa;
--		vcpu->arch.st.last_steal = current->sched_info.run_delay;
-+		vcpu->last_steal = current->sched_info.run_delay;
- 		kvm_make_request(KVM_REQ_STEAL_UPDATE, vcpu);
- 	}
- 
-diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
-index a30600579231..305875301c04 100644
---- a/arch/riscv/include/asm/kvm_host.h
-+++ b/arch/riscv/include/asm/kvm_host.h
-@@ -273,7 +273,6 @@ struct kvm_vcpu_arch {
- 	/* SBI steal-time accounting */
- 	struct {
- 		gpa_t shmem;
--		u64 last_steal;
- 	} sta;
- };
- 
-diff --git a/arch/riscv/kvm/Kconfig b/arch/riscv/kvm/Kconfig
-index ec2cee0a39e0..1ff07a904a02 100644
---- a/arch/riscv/kvm/Kconfig
-+++ b/arch/riscv/kvm/Kconfig
-@@ -26,6 +26,7 @@ config KVM
- 	select HAVE_KVM_READONLY_MEM
- 	select HAVE_KVM_DIRTY_RING_ACQ_REL
- 	select KVM_COMMON
-+	select HAVE_KVM_PV_STEAL_TIME
- 	select KVM_GENERIC_DIRTYLOG_READ_PROTECT
- 	select KVM_GENERIC_HARDWARE_ENABLING
- 	select KVM_MMIO
-diff --git a/arch/riscv/kvm/vcpu_sbi_sta.c b/arch/riscv/kvm/vcpu_sbi_sta.c
-index 60e50296a008..9a77d3bde7c7 100644
---- a/arch/riscv/kvm/vcpu_sbi_sta.c
-+++ b/arch/riscv/kvm/vcpu_sbi_sta.c
-@@ -19,13 +19,13 @@
- static void kvm_riscv_vcpu_sbi_sta_reset(struct kvm_vcpu *vcpu)
- {
- 	vcpu->arch.sta.shmem = INVALID_GPA;
--	vcpu->arch.sta.last_steal = 0;
-+	vcpu->last_steal = 0;
- }
- 
- void kvm_riscv_vcpu_record_steal_time(struct kvm_vcpu *vcpu)
- {
- 	gpa_t shmem = vcpu->arch.sta.shmem;
--	u64 last_steal = vcpu->arch.sta.last_steal;
-+	u64 last_steal = vcpu->last_steal;
- 	__le32 __user *sequence_ptr;
- 	__le64 __user *steal_ptr;
- 	__le32 sequence_le;
-@@ -67,8 +67,8 @@ void kvm_riscv_vcpu_record_steal_time(struct kvm_vcpu *vcpu)
- 
- 	if (!WARN_ON(get_user(steal_le, steal_ptr))) {
- 		steal = le64_to_cpu(steal_le);
--		vcpu->arch.sta.last_steal = READ_ONCE(current->sched_info.run_delay);
--		steal += vcpu->arch.sta.last_steal - last_steal;
-+		vcpu->last_steal = READ_ONCE(current->sched_info.run_delay);
-+		steal += vcpu->last_steal - last_steal;
- 		WARN_ON(put_user(cpu_to_le64(steal), steal_ptr));
- 	}
- 
-@@ -115,7 +115,7 @@ static int kvm_sbi_sta_steal_time_set_shmem(struct kvm_vcpu *vcpu)
- 		return SBI_ERR_INVALID_ADDRESS;
- 
- 	vcpu->arch.sta.shmem = shmem;
--	vcpu->arch.sta.last_steal = current->sched_info.run_delay;
-+	vcpu->last_steal = current->sched_info.run_delay;
- 
- 	return 0;
- }
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index 683bb8bf43a9..ebdd8526ae12 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -872,7 +872,6 @@ struct kvm_vcpu_arch {
- 	struct {
- 		u8 preempted;
- 		u64 msr_val;
--		u64 last_steal;
- 		struct gfn_to_hva_cache cache;
- 	} st;
- 
-diff --git a/arch/x86/kvm/Kconfig b/arch/x86/kvm/Kconfig
-index 538ed1e80332..b2aea8058841 100644
---- a/arch/x86/kvm/Kconfig
-+++ b/arch/x86/kvm/Kconfig
-@@ -40,6 +40,7 @@ config KVM_X86
- 	select HAVE_KVM_MSI
- 	select HAVE_KVM_CPU_RELAX_INTERCEPT
- 	select HAVE_KVM_NO_POLL
-+	select HAVE_KVM_PV_STEAL_TIME
- 	select VIRT_XFER_TO_GUEST_WORK
- 	select KVM_GENERIC_DIRTYLOG_READ_PROTECT
- 	select KVM_VFIO
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 79468ddfe473..927c8b1ed83d 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -2129,9 +2129,8 @@ static void record_steal_time(struct kvm_vcpu *vcpu)
- 	smp_wmb();
- 
- 	unsafe_get_user(steal, &st->steal, out);
--	steal += current->sched_info.run_delay -
--		vcpu->arch.st.last_steal;
--	vcpu->arch.st.last_steal = current->sched_info.run_delay;
-+	steal += current->sched_info.run_delay - vcpu->last_steal;
-+	vcpu->last_steal = current->sched_info.run_delay;
- 	unsafe_put_user(steal, &st->steal, out);
- 
- 	version += 1;
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 03bfc92864b6..ff9d423b6a7c 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -398,6 +398,10 @@ struct kvm_vcpu {
- 	 */
- 	struct kvm_memory_slot *last_used_slot;
- 	u64 last_used_slot_gen;
-+
-+#ifdef CONFIG_HAVE_KVM_PV_STEAL_TIME
-+	u64 last_steal;
-+#endif
- };
- 
- /*
-diff --git a/virt/kvm/Kconfig b/virt/kvm/Kconfig
-index c3c0ee253fc7..f42a3a0fc5ba 100644
---- a/virt/kvm/Kconfig
-+++ b/virt/kvm/Kconfig
-@@ -82,6 +82,9 @@ config HAVE_KVM_IRQ_BYPASS
- config HAVE_KVM_VCPU_RUN_PID_CHANGE
-        bool
- 
-+config HAVE_KVM_PV_STEAL_TIME
-+       bool
-+
- config HAVE_KVM_NO_POLL
-        bool
- 
--- 
-2.43.7
+On Fri, Sep 4, 2026 11:07:15AM -0700, sashiko-bot@kernel.org wrote:
+> Thank you for your contribution! Sashiko AI review found 1 potential issue(s) to consider:
+> 
+> Pre-existing issues:
+> - [High] Host-userspace reachable WARN_ON can cause a host crash when updating guest steal time.
+> --
+> 
+> commit 8f2f1662b1b75cda859eddacb4ef288871960d3d
+> Author: Dongli Zhang <dongli.zhang@oracle.com>
+> 
+> KVM: Move last_steal to common struct kvm_vcpu
+> 
+> This commit moves the last_steal cache field for the per-vCPU host task's
+> run_delay from architecture-specific structures into the common struct
+> kvm_vcpu. It updates x86, arm64, riscv, and loongarch to use this unified
+> field and introduces the HAVE_KVM_PV_STEAL_TIME config option.
+> 
+> [ ... ]
+> 
+>> diff --git a/arch/riscv/kvm/vcpu_sbi_sta.c b/arch/riscv/kvm/vcpu_sbi_sta.c
+>> index 60e50296a0085..9a77d3bde7c72 100644
+>> --- a/arch/riscv/kvm/vcpu_sbi_sta.c
+>> +++ b/arch/riscv/kvm/vcpu_sbi_sta.c
+> [ ... ]
+>> @@ -67,8 +67,8 @@ void kvm_riscv_vcpu_record_steal_time(struct kvm_vcpu *vcpu)
+>>  
+>>  	if (!WARN_ON(get_user(steal_le, steal_ptr))) {
+>>  		steal = le64_to_cpu(steal_le);
+>> -		vcpu->arch.sta.last_steal = READ_ONCE(current->sched_info.run_delay);
+>> -		steal += vcpu->arch.sta.last_steal - last_steal;
+>> +		vcpu->last_steal = READ_ONCE(current->sched_info.run_delay);
+>> +		steal += vcpu->last_steal - last_steal;
+>>  		WARN_ON(put_user(cpu_to_le64(steal), steal_ptr));
+>>  	}
+>>  
+> 
+> [Severity: High]
+> This is a pre-existing issue, but I noticed these WARN_ON() macros wrapping
+> get_user() and put_user() accesses to host-userspace memory in 
+> kvm_riscv_vcpu_record_steal_time() (as well as the sequence_ptr accesses
+> just above this block).
+> 
+> Could a malicious host-userspace process trigger these kernel warnings by
+> unmapping the shared memory area or protecting it with mprotect(PROT_NONE)
+> before this function runs?
+> 
+> If the virtual memory area is made inaccessible, get_user() or put_user()
+> will fail with -EFAULT, causing the WARN_ON() to fire. This allows
+> unprivileged host userspace to trigger a host kernel panic if panic_on_warn
+> is enabled.
+> 
+> Would it be better to handle these user-memory access checks as normal error
+> paths without the WARN_ON() wrappers?
+> 
 
 
 -- 
