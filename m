@@ -4,190 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 703C0C624D3
-	for <kvm-riscv@archiver.kernel.org>; Fri,  4 Sep 2026 20:23:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1559EC79F85
+	for <kvm-riscv@archiver.kernel.org>; Sun,  6 Sep 2026 08:08:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:In-Reply-To:From:
-	References:Cc:To:Subject:Date:Message-ID:Reply-To:Content-ID:
-	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
-	:Resent-Message-ID:List-Owner;
-	bh=41bDHPC0Wl1R8ELDZgEHqW8tbS+kATBOSTm5NT6o5cI=; b=QchzrVzSgc8jGULCwoah9qy45g
-	ZeMZ5oeKd0WEr2IUoCb/EsKtoWi0hMU+hANH3WCUhaLso3JzI8xFG1h/Yzs7hIW6d3YSFCQNQKKx+
-	5yi+TNmX40slLBsto3xf15Ol6OmHymPa8IlX26SvxGq7RvwHanFAsVEMJCZEMMm0MPcizaOze8swf
-	h5sQCfPVKi3PnoDuxIn3tlA1JlKN9k2yXIMTq+qDp/8H/27M8kLHKapGA/rKfQi1jRo8EgrNw84vr
-	ybL0r9nKq6FOxJdWEFNyuFsYZV+LJ50IhaCd1qXd+gu9HAoBpVC7n++9zjR7YncaVu+CGyEDuimRC
-	i55u+/Ww==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=m9dOf6bemW+TctYjWSyl/2RpmExzzz2LLfuUVO66cp0=; b=oKRH6Xlor5z1yQ
+	bmUNfrHQUCdmJIfA7wv5dgdvNW3nNO+8mNco2ggVLRXQXWJYVSOhfhIESjMmpqbLWpaZoIrVJNNB8
+	WlrzqH4zxDnvqCbeAeZG0h7lMf/RbO8JuMcTjLU9atbAdJH2w1sYv+J2dMpEyDhOSwN9a6UJJ7ujP
+	RJMiir97Ky/ZlT2zPGNJM27bh243jJMitGZfqaVYXdVswsfNp9CO8sRWYMqNuEzP9MmzAPHaMdO3H
+	hdl+t6zWvjGDR+Xg/ldLBflWefdAuJbAMebfrSmsEulSuDha2Aow/hRLCONfEiLV7ixS7NaAGtI2e
+	T2u+cX74hnm2LzTqwWVA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x2aRO-00000003Fwr-07q3;
-	Fri, 04 Sep 2026 20:23:14 +0000
-Received: from mx0a-00069f02.pphosted.com ([205.220.165.32])
+	id 1x37vD-00000004pgU-25m1;
+	Sun, 06 Sep 2026 08:08:15 +0000
+Received: from m16.mail.163.com ([117.135.210.4])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x2aRK-00000003Fw4-3WAD
-	for kvm-riscv@lists.infradead.org;
-	Fri, 04 Sep 2026 20:23:12 +0000
-Received: from pps.filterd (m0246627.ppops.net [127.0.0.1])
-	by mx0b-00069f02.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 684KN84O3548185;
-	Fri, 4 Sep 2026 20:23:08 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=
-	corp-2025-04-25; bh=FB+XofAgvq5IGYFbvi2slBGU1hjWQtmpjDXaLoS5ku8=; b=
-	ClYDhHiNDJ3taUqFVbJZ91vfdEWWSEOhI75u2LQL95Y/SIYoxVUMqahUVN4fs8qq
-	exD09fqc1AyhadI6rWiKLWtP3YKiLnF3T9bDHRw0Zxw9w+n4kX9FerlAbxYAniRq
-	xkR4VVfTouTNNi9nyciPRUy0tblViRX12Y9jPERlnRJTGXvTgFVCgyZdRcqQaTei
-	N0Srcwiu1PmPR+z7sAe4BZuudV/P0QdlLDKCf5ZiaxjgWiclEIxSbYeV0l84SH2D
-	s5zndUOB0HTISXz4xrz2JdKkdnAZZ5hs+oA2wJFPwkZaBe0d2njDApjRICZ6pOjS
-	SutkE9GFezuc9+r1LdKWAA==
-Received: from iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta02.appoci.oracle.com [147.154.18.20])
-	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 4gbp0y3eb4-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 04 Sep 2026 20:23:07 +0000 (GMT)
-Received: from pps.filterd (iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (8.18.1.7/8.18.1.7) with ESMTP id 684KKWWW006787;
-	Fri, 4 Sep 2026 20:23:06 GMT
-Received: from dm1pr04cu001.outbound.protection.outlook.com (mail-centralusazon11010038.outbound.protection.outlook.com [52.101.61.38])
-	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 4gdymxgvpx-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
-	Fri, 04 Sep 2026 20:23:06 +0000 (GMT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=AeX6axHctMGJOvH2/B2McMgT4ypBMsDwvf4wqWp5gM2p6clzvX4xZZvhC7YBX9pSse/JAMDl6f6RwAq/BTqlXHckht7h7v4itTg5UWTsewTcSuGAkHKsl73HGUYR5vTvwx7xQMVcb+axnR0k519+bA+fTaG2agqH/F3+y+hs4lwQph27hYKD29iuvZBCQ4Zb+nM4RjqpZOs4vsaOgYOH3CEU0rChD7l2l91P/yoEravqpeRr1IPSCcb359R/QeRdmmdogx/4+OdtemNv5OQ6DV1o773I/I/2puov7KfR8rZGOdM8+l9n0eYw6SvNOcsTyKrzXd5CktvFYIYTafmNHg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=FB+XofAgvq5IGYFbvi2slBGU1hjWQtmpjDXaLoS5ku8=;
- b=JSzt7MEB6M3h5YVWbfU2SOU5TBLFcY4GdkN0zpl47W7DLmh63C1jymNEXcvY3vaEPsITLH7xT9S7K8Ulww2hJZki3hj85JtTKME35pCiQ8KOX+wPb4IfsIpCRIaEQZFIunYYH6g8BHQr7f7KqJsfsd1+32MoVZwir2meljOwVVyW2cjiqA09nlTk89u0pWD3UramDTD/qyVmqH783l8SvYNBLxqOhwN1u/ZqqfvNot48hZtMKCJyUudDHVDvzGxQdaQEtk8fzuogFpCxkIm4cx4CQi6q0nZ5802TuBYv6D9QXNmuX5bxwlFq9nvVo+Z+va5SJYIs/Uj+EZigfzZoJg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
- dkim=pass header.d=oracle.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=FB+XofAgvq5IGYFbvi2slBGU1hjWQtmpjDXaLoS5ku8=;
- b=P45AGGkfhCNy1R0JmNXe5gTA3CB8sp4vI5bsT2Wk4+ISUVmQ3QQBElFc7zE7p844iZSzmZLzcXbdDvm5LCyQ2ZdMdVWoeCCFSdJKwktWpyRp/TGa1T3yYT6zOiyb2gpyFGiA5xG1Bs5nFKeKzl6jZX2XayK4QcM7ryFnwxkXRDc=
-Received: from SA1PR10MB5510.namprd10.prod.outlook.com (2603:10b6:806:1e5::6)
- by LV8PR10MB7799.namprd10.prod.outlook.com (2603:10b6:408:1ec::15) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.406.4; Fri, 4 Sep 2026
- 20:23:02 +0000
-Received: from SA1PR10MB5510.namprd10.prod.outlook.com
- ([fe80::a9a8:cb4:1056:5d96]) by SA1PR10MB5510.namprd10.prod.outlook.com
- ([fe80::a9a8:cb4:1056:5d96%6]) with mapi id 15.21.0382.007; Fri, 4 Sep 2026
- 20:22:58 +0000
-Message-ID: <1dabaf16-f5e6-4a84-8339-742764f879c3@oracle.com>
-Date: Fri, 4 Sep 2026 13:22:56 -0700
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 1/4] KVM: Move last_steal to common struct kvm_vcpu
-To: sashiko-reviews@lists.linux.dev, kvm-riscv@lists.infradead.org
-Cc: Marc Zyngier <maz@kernel.org>, kvm@vger.kernel.org,
-        Oliver Upton <oupton@kernel.org>, kvmarm@lists.linux.dev
-References: <20260904175550.430266-1-dongli.zhang@oracle.com>
- <20260904175550.430266-2-dongli.zhang@oracle.com>
- <20260904180715.E5CD51F00A3E@smtp.kernel.org>
-Content-Language: en-US
-From: Dongli Zhang <dongli.zhang@oracle.com>
-In-Reply-To: <20260904180715.E5CD51F00A3E@smtp.kernel.org>
-X-ClientProxiedBy: PH8PR05CA0006.namprd05.prod.outlook.com
- (2603:10b6:510:2cc::6) To SA1PR10MB5510.namprd10.prod.outlook.com
- (2603:10b6:806:1e5::6)
+	id 1x37v9-00000004pg5-3x6r;
+	Sun, 06 Sep 2026 08:08:14 +0000
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+	s=s110527; h=From:To:Subject:Date:Message-ID:Content-Type:
+	MIME-Version; bh=H//yKEWH7uGYDzEIgQa88pwd64vRhIeJuk+RkZvLUtI=;
+	b=lA/dXTTFCjPe65etT7koqz9kRmupLUgpvW6BXTuY/YxmF+W8aFViggbL/4KEQ2
+	mmecpRDNAhbObe4NvO4FmbqC+EFd1mI8suFdthRK176zJ66DcEU7UdA6L9h8UBKF
+	RDJAxV/dtg60JJTHfu50BDvTnVaROnRbsvFRN3/cTvCQA=
+Received: from localhost.localdomain (unknown [])
+	by gzga-smtp-mtada-g1-1 (Coremail) with SMTP id _____wDn7zMxH51qMxYMBA--.25025S2;
+	Sun, 06 Sep 2026 16:07:14 +0800 (CST)
+From: Pengpeng Hou <hppiscas@163.com>
+To: Anup Patel <anup@brainfault.org>,
+	Atish Patra <atish.patra@linux.dev>
+Cc: Pengpeng Hou <hppiscas@163.com>,
+	Paul Walmsley <pjw@kernel.org>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>,
+	Alexandre Ghiti <alex@ghiti.fr>,
+	kvm@vger.kernel.org,
+	kvm-riscv@lists.infradead.org,
+	linux-riscv@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	Andrew Jones <andrew.jones@oss.qualcomm.com>
+Subject: [PATCH] RISC-V: KVM: Publish NACL HFENCE configuration last
+Date: Sun,  6 Sep 2026 16:07:11 +0800
+Message-ID: <caplitmus-rv.c91c005b844342d9a9f60949b04c520d.d65@163.com>
+X-Mailer: git-send-email 2.50.1
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SA1PR10MB5510:EE_|LV8PR10MB7799:EE_
-X-MS-Office365-Filtering-Correlation-Id: ab4b86dd-5d2a-4636-e906-08df0ac24f37
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;ARA:13230040|366016|23010399003|1800799024|376014|10067099003|6133799003|22082099003|4143699003|56012099006|18002099003;
-X-Microsoft-Antispam-Message-Info: 5q+4ZTGRqt2tGpzrVLJszEs4uSLPhsYpbD1II85o3+hNqiRPnFWW4qQaKhLvG83TI07GzyO0D/nUP5dEsXHBk1jaibWptvLgpF9FxYcMKddAAkdb5BV/5CFnpTh1ghDs2AngtG3Y4nfFF6gTzkn59kN31vg/kC8MSEOHcMSGo7jfwRML6CjB2zxxikcPEzb0edLsFmpRcfMFhWS9x3nY7WkpUfVnn+iBJCKcVsn19U4ZY8XT9cS4+b/UaeR2188r5FGMYLYCr1JEgGgSDX/UauZe5bRitNDZntFf1i5fibEMC93ftGXmuThY599rQvXskEdrDcmkpckSzgYATvjioTYgem5SyIHx8f6UqLwV5Qgi0CdNmk6JA8ZpfTe5jZMqLqvZkkIvD4K6YlKouLHSGB+L5JD83QOOLmxMgMh4ciDHA1NHyNXJip4hETgmOwXoilqcYenTdG882Rd4yjJb+KJBeJPnHbAngI410PNyE7aEWthVnAM1qQ80HDJBn28IZcydhbTKTw76vCEoudjs6A1zvWVMBQPSEQSPcQf0go9zx+DjSRySkcnXYyBdaJk09+3H3aa5Qko6nOkgtVL13DjvW1/5I9L5UP9ETN/QpPooBW4KKQk46l0f2eWwICXNLeOw0eUulmMTxk8n3Vxu3wB5OMcJIVuImFjMhmC6l2A=
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SA1PR10MB5510.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(23010399003)(1800799024)(376014)(10067099003)(6133799003)(22082099003)(4143699003)(56012099006)(18002099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?TGNVYW9IZW43UTFWS0REMnpWd0dudjNMYnhpWm41ckZEamJpTGozOU9VVkVH?=
- =?utf-8?B?NWdaNjRqSDZQajE2LzV5WFJ0VjdVOWxvbmZONlBDY1l1dDdoZnFkSUpNdnRP?=
- =?utf-8?B?SFlndmdnQkJEeUNabDc5K1Q4OFptdlpPdHMyMThWV1FCZitxNTZkZFJwMkRI?=
- =?utf-8?B?MDVQR21HS2FNUkszUU1ES3dWSCtTdlNtZjQ4b3VsUVVzRE0yMGQ1Tmc3UlR5?=
- =?utf-8?B?Sld6eGVmSkR1eVNGdVdnRnFZaVZYNVk5SXljeTNzcjdJMXhWTGRQa0RMVHBz?=
- =?utf-8?B?eFlSRExSWDFjZHpmSW9VQXpicW5kbUozZFljN3pVa1Y2LzNWTDhadURCbE1D?=
- =?utf-8?B?TG13T001dXIxbEZQelRLb2Z3YmlqaVp1bXhpbGpBZHBXdDVpT3R4NldsU29w?=
- =?utf-8?B?Z29xc0tVeFhySTA1bE1kV29NVFVFcUViOVZEdjhrcCtrRmU4RDR0YjJpRzY2?=
- =?utf-8?B?VFZYZ0I0ZmNKRFVMNEFrQWE3eFdCZitrT2xTdWR5YjgrY0tLNVp0NnR5emdw?=
- =?utf-8?B?RDlNSXBVZ1VHaFpta3hlOTRUVkR2MFhPL3ZIV2lnV0NYb1lKWHl2WUhWV0hu?=
- =?utf-8?B?OXVNQVBGV1ZaNTl2ckg4MlhWa0pVeHBqaHFWRnhOQ2JRY3VhSmVERzNsdFUr?=
- =?utf-8?B?L0tBMXZ6dnpPWkRxWHh1cmpXTXE1NUNwQlUrR3JvSWRpemRuTk1zN2dmWFB1?=
- =?utf-8?B?MGFiNk16dVZlN1prbmtrTlhqR2luVmdmanNYN1V3aGFPWXVtMm91dEZaaisr?=
- =?utf-8?B?STI2NVNHOEY3K1BhcHFZN2V4TEhIUXBIYTVaRE82Q01UVzkzZldYN2s2NXV1?=
- =?utf-8?B?M0cvQ3V0ZXBSK0FLdEVmc0ZFOHIzbW1MQTRFVXRpNkg2MFUybGc0UXRFUHBp?=
- =?utf-8?B?L1RvUmtjYnJId21iNTdGakdERVk3eWhjdHZuN2lNQ1pzZ0w1aC9JRDhZTjZF?=
- =?utf-8?B?VlhNTitvd2NIbDYwczRKMmFJdDFMaW5pS05OK0x5cm0yVzZWT0RPaEgvRVNE?=
- =?utf-8?B?SlRRRTFKZ3J5bzhlanpkY0VaY2pYY3QxUXJoRE9LRVFuUm9VbzIvekthcHBI?=
- =?utf-8?B?UEZhc1ZEQnRmNFg5elpJMU5ydE8vN2l0UExWTHdRbFN5cFR3TEo0bnA4eXVt?=
- =?utf-8?B?MG9FMndKbUMxVTQxMnNnaVQzcjdOd0VwdGI4LzBmS3ZlL0RJL2QwV1c5cWFs?=
- =?utf-8?B?TDVPMTdkUnYrb09tOG1kOEFkc3dqdG51OGwzZDVTRDFwWnphQlYwRTJtVG9i?=
- =?utf-8?B?bnpTMjBuKzR6a2NoczVZRy9SYmxYSnAyQlpka2F2bUYzL0EyKy9hZ2p3SFhR?=
- =?utf-8?B?bXg2aFhyMGFqWWVkcEtSbHJTQ3hmTXpPR3QrbDB4MHFkRFZ1Z2hqWDUrMUE2?=
- =?utf-8?B?L01ZNjN4cG5zM2lmT2NxbldpNzdMT2NIeEdlOWdrQS92VmQ5QW10dlFFMElI?=
- =?utf-8?B?Q2U0dzVrSWxyQjgrMmo3Yjc2SlBuV1FlYVFLZk83Rk5vVG1NbVI0N2ViclZp?=
- =?utf-8?B?cnBSRlExQmtpd1VsQjB4emFNZ0gzRlNmM0s0RWdaREhRRE80U2p4L1V1UUNE?=
- =?utf-8?B?bGxla1pRejhpdDdmN2VzajhSUFdHY1dURTBGZXprOERPdHlDR0VMeVJVd0o1?=
- =?utf-8?B?UmZ3YVpWaStEaklFT1lZRkdpSkxJdWlhUDZJZ2R3ZFlCMVZjQjVOdXE4REhW?=
- =?utf-8?B?Z3RCOFQwWXBjRVF2MWk4UXdFWW05TzMzVzlmVnlTMmdMQXdpdlpWSzBaUTJi?=
- =?utf-8?B?ejBqQkVVcUZFOUNVbFdUOWhPRU9KNXZRbkVqbmErV1ZBM3E4SjQ0N2FuQ3Jo?=
- =?utf-8?B?V0QxRTJQd1FFVUZIVlFqQnVYVlE2Ujkzd1FORy8rQk56dE5qdmVFUnl3M3pr?=
- =?utf-8?B?STN4SHlxUDNnL0lUckZpMlRuUEpUWWlURitJZGgzd01vc0JWZ1ArNGsvWEJt?=
- =?utf-8?B?RS9SRGtZWTNmc2VQUHNFelVQcXZyeUhTM01zb0VXdCtsaVJGYTVoTTFGdGtu?=
- =?utf-8?B?S1lKTmVnVnJsd3ozN0cvVkNJVit5TkRTaWtoWGxpbHhnZFNmYVlrcERMS2xQ?=
- =?utf-8?B?YURaQWVXZVJEZ2VhckhXWG13VkpwWUNBa1g2VFROT0M4WGY1aTM3WGhLTVAy?=
- =?utf-8?B?MHlLcllFYjNnMUZFTm5rMjA4anBMTFB0YzBJRit1N1dnYnp3cHFUZTNTKzU2?=
- =?utf-8?B?SmdpQS9QUWFpV0FrNWhFM0JoYlVIQ0FUMDVQeVZsdG1aSXFWMjZRS2NNL0lp?=
- =?utf-8?B?SW1VK1VYeHR0eW12d2FKWlN2RVJYTHFYc054bVdnTWFrRW5jQmt4ZUxucE5w?=
- =?utf-8?B?anF3VHVtdlY2QnJKWG5tVGZGb3pYSXNRTjdmbEx3K2pVVnB2bjQ0RGdITFZu?=
- =?utf-8?Q?iCDoC2TuLtzl/lSc=3D?=
-X-Exchange-RoutingPolicyChecked: CtTOUsKS12z7H3EJwBROvfAWdW18Scnk1SIyNBiTWO7QMhO0BsXIHaBXkVZcV8Wkq4TtRyOYD7SvzQxFFGZn7NY4SNYtKlFqc2OgWVidNDZdpOomKqcFXaNUNmgSSbjJe3dz7uDrRszuQTspmj55jtGyu2wwPk/hfQjSfS0bOaKmv4KCER2+DZzUx882JRuMKKF/wizSOMEyQEg8X11XJMxgCCqrNsIL1qY2uCzAqCliY4jFLFtbskpj8wrbHsLuze5+GAQWUvjmtNsxmorJ8+jY/mFiYtmjyo0n8Srf9WomfPlipPiiLIRRmrk71S8v5zC+oyHOfLJFjmOan1Vc9w==
-X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: fB4l9+hsDDQhUXuNNktQ663Z6sP2k0aFpQkknb0tWaCKQYytO7zB5Y40auAUCQZGx7q0iyfCP3eJAZQzhEZopePVqwHYJ36zD3DGAQIfnCebMjwAyCYMSit9pFH2Oa/11DJetaoAOh3Oa+UDA273gSZe20+lHkP6gXqfSo/kJe4OBsP6kNFeROZxlYPLvndhVCvq0sRq/KafDaau3rPsWIXAWQepT+sSCITl5QrGFT/YUT9BLVEqwLwu5eF69WkoK4FVbEZZ5Y4Yr/ATUNdMyoJ8PYCtLRa9DLfnQWMoCNMlUol+RO4Jnf74LYxZFtzmGkr/5osGA7/nCa7l6C2FtwBiPI2jEpIwiC5OuRqOcmLAwWkSF1DiSHU1tBxixbBXUkouPduXCxNuv/+q2yXUZwEVnIDLPo9tWw5jhv0RywH8nZKCpYU5rmcngXkXctmr2Ri07bEJD1Q3vm0xnoiwRP4K4XeoNe2wX7Pugf7pcfCSu93VQbRNO2A+3i3Ft48d+ONOWkvqK1+C4++/43VKomQoYpGly/NOuQ3F79VcDnVRz3AEseGkw1mGPKSsO2lrMvVAglbTu69XxIuecL19gazdcmRnzl+pHGcQaZLAbWw=
-X-OriginatorOrg: oracle.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: ab4b86dd-5d2a-4636-e906-08df0ac24f37
-X-MS-Exchange-CrossTenant-AuthSource: SA1PR10MB5510.namprd10.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 04 Sep 2026 20:22:58.0324
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: +PIlhXIur5G3kaAnSleTqQiMfceUfgMF67E/A7okQuVYLhRXhGeJ2c6jNscQobXp0pADc1twM4yZWYGXTKKltg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: LV8PR10MB7799
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-04_05,2026-09-03_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 phishscore=0
- adultscore=0 spamscore=0 lowpriorityscore=0 malwarescore=0 suspectscore=0
- bulkscore=0 mlxlogscore=999 mlxscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.19.0-2606160000 definitions=main-2609040187
-X-Proofpoint-ORIG-GUID: rm9W7CVWO-9UHgdZPKemu5C5oq_awQXX
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTA0MDE4OCBTYWx0ZWRfX0jS2Y7wc/7an
- FFjs5VwnXxo6dax7mx+gGzH+ur43RifcybKRfuYlm5yXV7k1Pyz+LAG39NOf4S9cdOYS+JfEllU
- KxN6MvrsFohjQFvEpkmGhfQbxLVnK/jQY756sLKRZHs4k01DUYxTnJ9HsdvzLPz3uYP8BR1VrNv
- HP9lhTQFALNN7vecQm8EcufYkWSlKMQUU4quWEoOe0pvQING2bwGAgi23EaZddmJXVDfKDOGltM
- WW3qmnO3OnUZuCX4yNGKpLRC+xsLiC+U9zlICcuN1BwvqIH8K2z3a1ARG38EOVqAaeAq/rbfnma
- 1Xzav33V8icoddrb0J8+TI/MLPIn6JiMQNxM8YTfxgDS+Ow79F1aBuY9yIeJA8hN7e4oUx9uJvA
- KzHUR0YMqrX3zdPXtERrP+t8cBjJZPtgtCoiawVwFB+9gfcEkoP7sXJYqMOsrrjWkMLlnFj8kbv
- 4qLPD1UePQR5hxoRurHBw74w+9usBbUdK4YINbxU=
-X-Authority-Analysis: v=2.4 cv=Ebb4hvmC c=1 sm=1 tr=0 ts=6a9b28ab b=1 cx=c_pps
- a=e1sVV491RgrpLwSTMOnk8w==:117 a=e1sVV491RgrpLwSTMOnk8w==:17
- a=6eWqkTHjU83fiwn7nKZWdM+Sl24=:19 a=z/mQ4Ysz8XfWz/Q5cLBRGdckG28=:19
- a=lCpzRmAYbLLaTzLvsPZ7Mbvzbb8=:19 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
- a=VdqzKS8jKosA:10 a=GoEa3M9JfhUA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=jiCTI4zE5U7BLdzWsZGv:22 a=RD47p0oAkeU5bO7t-o6f:22 a=JfrnYn6hAAAA:8
- a=VwQbUJbxAAAA:8 a=yPCof4ZbAAAA:8 a=7dML8BQ_qRT_jEr4EVoA:9 a=QEXdDO2ut3YA:10
- a=1CNFftbPRP8L7MoqJWF3:22 a=5yU3S35YU4bGjq-dph-N:22 a=Bho9c0fBagfJEIQBS7DQ:22
- cc=ntf awl=host:13521
-X-Proofpoint-GUID: rm9W7CVWO-9UHgdZPKemu5C5oq_awQXX
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTA0MDE4OCBTYWx0ZWRfX0oshIGhcpvQo
- ByHqdEGR9bSCFjkNwwgxbztusq7BV+6abRfQuly7kUcDYkIfeijipr6cIWxNo+Y8Cnl5Ht54lZU
- 55QaV3H+M5SdtgnDJzM8nMUlosm77Mxmny0ZBYInm1r84PYcThtD
+X-CM-TRANSID: _____wDn7zMxH51qMxYMBA--.25025S2
+X-Coremail-Antispam: 1Uf129KBjvJXoW7tF1xXw13uw15urW8KFyDJrb_yoW8AFWxpF
+	ZakrWrKr1akr1fK3s0v393uryrWan5uFW7J39xuayjvwnxZ3WrX34vqrWUZa45GF4kZa1I
+	9ryY9FWjkFy5JwUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0zRdhLbUUUUU=
+X-CM-SenderInfo: 5kssx2xfdvqiywtou0bp/xtbCxhLVnmqdHzIH7QAA3v
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260904_132310_894465_EA04374E 
-X-CRM114-Status: GOOD (  23.37  )
+X-CRM114-CacheID: sfid-20260906_010812_678413_BCB0FA6F 
+X-CRM114-Status: UNSURE (   7.83  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -204,71 +79,58 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-+ kvm-riscv@lists.infradead.org
+The SBI NACL interface requires software to write Page_Number and
+Page_Count before publishing an HFENCE entry with Config.Pending set.
+__kvm_riscv_nacl_hfence() currently stores the pending configuration first.
 
-The issue reported by sashiko isn't relevant to the patchset.
+Write the payload first and order those stores before publishing the
+configuration word with WRITE_ONCE(). Use a write barrier that also
+applies to UP kernels, since the consumer is outside the Linux SMP
+domain.
 
-I don't have risc-v KVM host to reproduce this issue. It looks can be reproduced
-on purpose.
+Keep nacl_hfence_mkconfig() unchanged: setting Pending in a local value
+does not publish the entry. The shared-memory store is the publication
+point.
 
-Thank you very much!
+The issue was found by our static-analysis tool and manually reviewed.
 
-Dongli Zhang
+Fixes: d466c19cead5 ("RISC-V: KVM: Add common nested acceleration support")
+Assisted-by: GPT-5
+Signed-off-by: Pengpeng Hou <hppiscas@163.com>
+---
 
-On Fri, Sep 4, 2026 11:07:15AM -0700, sashiko-bot@kernel.org wrote:
-> Thank you for your contribution! Sashiko AI review found 1 potential issue(s) to consider:
-> 
-> Pre-existing issues:
-> - [High] Host-userspace reachable WARN_ON can cause a host crash when updating guest steal time.
-> --
-> 
-> commit 8f2f1662b1b75cda859eddacb4ef288871960d3d
-> Author: Dongli Zhang <dongli.zhang@oracle.com>
-> 
-> KVM: Move last_steal to common struct kvm_vcpu
-> 
-> This commit moves the last_steal cache field for the per-vCPU host task's
-> run_delay from architecture-specific structures into the common struct
-> kvm_vcpu. It updates x86, arm64, riscv, and loongarch to use this unified
-> field and introduces the HAVE_KVM_PV_STEAL_TIME config option.
-> 
-> [ ... ]
-> 
->> diff --git a/arch/riscv/kvm/vcpu_sbi_sta.c b/arch/riscv/kvm/vcpu_sbi_sta.c
->> index 60e50296a0085..9a77d3bde7c72 100644
->> --- a/arch/riscv/kvm/vcpu_sbi_sta.c
->> +++ b/arch/riscv/kvm/vcpu_sbi_sta.c
-> [ ... ]
->> @@ -67,8 +67,8 @@ void kvm_riscv_vcpu_record_steal_time(struct kvm_vcpu *vcpu)
->>  
->>  	if (!WARN_ON(get_user(steal_le, steal_ptr))) {
->>  		steal = le64_to_cpu(steal_le);
->> -		vcpu->arch.sta.last_steal = READ_ONCE(current->sched_info.run_delay);
->> -		steal += vcpu->arch.sta.last_steal - last_steal;
->> +		vcpu->last_steal = READ_ONCE(current->sched_info.run_delay);
->> +		steal += vcpu->last_steal - last_steal;
->>  		WARN_ON(put_user(cpu_to_le64(steal), steal_ptr));
->>  	}
->>  
-> 
-> [Severity: High]
-> This is a pre-existing issue, but I noticed these WARN_ON() macros wrapping
-> get_user() and put_user() accesses to host-userspace memory in 
-> kvm_riscv_vcpu_record_steal_time() (as well as the sequence_ptr accesses
-> just above this block).
-> 
-> Could a malicious host-userspace process trigger these kernel warnings by
-> unmapping the shared memory area or protecting it with mprotect(PROT_NONE)
-> before this function runs?
-> 
-> If the virtual memory area is made inaccessible, get_user() or put_user()
-> will fail with -EFAULT, causing the WARN_ON() to fire. This allows
-> unprivileged host userspace to trigger a host kernel panic if panic_on_warn
-> is enabled.
-> 
-> Would it be better to handle these user-memory access checks as normal error
-> paths without the WARN_ON() wrappers?
-> 
+diff --git a/arch/riscv/kvm/nacl.c b/arch/riscv/kvm/nacl.c
+index 9aff03c4..c5c4907a 100644
+--- a/arch/riscv/kvm/nacl.c
++++ b/arch/riscv/kvm/nacl.c
+@@ -5,6 +5,7 @@
+ 
+ #include <linux/kvm_host.h>
+ #include <linux/vmalloc.h>
++#include <asm/barrier.h>
+ #include <asm/kvm_nacl.h>
+ 
+ DEFINE_STATIC_KEY_FALSE(kvm_riscv_nacl_available);
+@@ -42,12 +43,15 @@ again:
+ 		}
+ 	}
+ 
+-	entp = shmem + SBI_NACL_SHMEM_HFENCE_ENTRY_CONFIG(i);
+-	*entp = cpu_to_lelong(control);
+ 	entp = shmem + SBI_NACL_SHMEM_HFENCE_ENTRY_PNUM(i);
+ 	*entp = cpu_to_lelong(page_num);
+ 	entp = shmem + SBI_NACL_SHMEM_HFENCE_ENTRY_PCOUNT(i);
+ 	*entp = cpu_to_lelong(page_count);
++
++	/* Publish the payload before setting Config.Pending. */
++	wmb();
++	entp = shmem + SBI_NACL_SHMEM_HFENCE_ENTRY_CONFIG(i);
++	WRITE_ONCE(*entp, cpu_to_lelong(control));
+ }
+ 
+ int kvm_riscv_nacl_enable(void)
+
+base-commit: 4d7d9486c04d917265f64c55bd23b2cc4fe7749c
 
 
 -- 
