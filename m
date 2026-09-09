@@ -4,59 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2FDB0C79FB6
-	for <kvm-riscv@archiver.kernel.org>; Wed,  9 Sep 2026 12:08:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 651BBC79FAD
+	for <kvm-riscv@archiver.kernel.org>; Wed,  9 Sep 2026 12:09:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Subject:Cc:To:From:Message-ID:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=ARwwEW6mmISLIDnA27wX+WWM6LHo/RSAAafzyUvrukc=; b=iFQ/N1QS9YRtwe
-	SuKt6ML97mEvYjXUaGnE14hTFTqTOD39R5PA/1oKjAozA1y2UBLvoLhdldpn8u8w9UHQbOISpBMPL
-	kFcDy1CAeCQ3b3cGIdC4g+oc5jhKF9xlPnanBfXe68HNJXtitsVRg7BNAubaPskfPlEJd9XhAZ/Xn
-	Zac5gRkwaD1GA5MTlfk7NjFq5wlRk1f2pKDJhISwhk7ij2GTXHYRv1js5Vbrj7oCmGVjivWeXltC4
-	WnnrpnLo+F8KETIxrjiCHqX1RgLPnDZy67tAWuxPQBp39pn2tkZz0+UKtc/Ey7Qa7uAt9cBCeR8ul
-	lgIxe6DCiBGjkid8nsYA==;
+	List-Owner; bh=AS7FncGIuR+grwo+9Tv3vffGxUdteIgO5kw5wjs5OYc=; b=YUbuCOAm7oSxg4
+	sg1DaYN0nSqd6vW6xtMnGIqmnXLZbuveVtuK9JOBNtdydRrFiIfli3ruoot/zePatkNX8ZdgDQ6pO
+	sk4vnHIubJjVeL2CcUzcP3hZF/lq6/rQKObi/RNB5lgpDdSD84oSAG4Bth5axh5OGF4l02138kmF5
+	eEMhLpeGRj9M1OBwJiHd4hvMKeUpet+q7ciYBAWQDfJljQR7CsS2XI5ucnRIQtPpyrO/jOqGd/a0I
+	EdyqBCHiHzTaYAbU5bzWMQWnKvQqfZUx1LaWukWyp2Ma3jNWRrOUDKDK+L5My93dM7tK5lxGiXxO+
+	7J8+j3/983xiJuTAZm4A==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x4H5x-0000000BdtP-3Ahu;
-	Wed, 09 Sep 2026 12:08:05 +0000
-Received: from tor.source.kernel.org ([172.105.4.254])
+	id 1x4H6r-0000000Be3V-0GNl;
+	Wed, 09 Sep 2026 12:09:01 +0000
+Received: from sea.source.kernel.org ([172.234.252.31])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x4H5v-0000000Bds0-3gtl;
-	Wed, 09 Sep 2026 12:08:03 +0000
+	id 1x4H6p-0000000Be39-3hHh;
+	Wed, 09 Sep 2026 12:08:59 +0000
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 05A6F6020A;
-	Wed,  9 Sep 2026 12:08:03 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 59B041F00A3D;
-	Wed,  9 Sep 2026 12:08:02 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 6B45743668;
+	Wed,  9 Sep 2026 12:08:59 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EFC671F00A3E;
+	Wed,  9 Sep 2026 12:08:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788955682;
-	bh=s0XvwQqrYpxLMLTJmGlP3OBogX+H2vHo2hOLlq5lC/4=;
+	s=k20260515; t=1788955739;
+	bh=+vl7JXesMvOyLvN4TqdpRFvW5tHWQV0Z6fTfMaOZcos=;
 	h=Date:From:To:Cc:Subject:In-Reply-To:References;
-	b=TLY49pi+Cs7EEMaDTGcn4qy6Qpcb4tCLLQabsiuxRuieFcOduuhR0SXsNy/UqV053
-	 LTLJzRsrZobFM+u8KAWi/AxL9rak8lF/hB3ASc5j/P5gK6JsTYTLznyOIjtDTtDa+k
-	 ORmjuFe/YcEbLMRVg0hXrf/0pz4nkqGBIjyKjBGWoHBcNRUe90PkvSLs5HLrZYszHB
-	 EdQZy99ss9QvvDBlcj1jiu7Nbzz/FMu6uLgae9WC6VNYg9MrsiTw00X9RT6CKbWfK3
-	 uOoG3Ngxmo6HIBl33vl+TtXZPg1CPUWrOiI2FFoUv677uPNi2hHjh6Cry1F/dt0+F4
-	 wpDbNWMsR4n5Q==
+	b=QSBO7XfB9eJuCgdZw4woX9h6hLVv1DAAKEMcqqTtIlfNGaiMpuLvQbzhC/HsUDqDy
+	 15tzsyERcKb/dCy0KrTkU176RhbTCcy21TSs/XRVe0a2CeHrpUDlqlX+4eqWNdQmSP
+	 ZwfdXLWGjYgxyEXXB+UjA+lgDSAN24eS4K+Y/at+9+bmLKnF2sQtudlKc4XZf2yWBT
+	 GWiqoV+03Qgq8XKU5kEPlMdYwMF4DBOmSD8P6FFdNW88ziMwb+5x2tUJ7KBFC2OEkv
+	 y0F1ASE9ljvI2KQ6gM2g9pgM4YchyP5SgcvLLQZd8YcLUPlszfpfiqg7ho1AxZsTq8
+	 3yCEIs6vu9sRQ==
 Received: from sofa.misterjones.org ([185.219.108.64] helo=goblin-girl.misterjones.org)
 	by disco-boy.misterjones.org with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
 	(Exim 4.98.2)
 	(envelope-from <maz@kernel.org>)
-	id 1x4H5r-00000006fj0-1Co8;
-	Wed, 09 Sep 2026 12:07:59 +0000
-Date: Wed, 09 Sep 2026 13:07:57 +0100
-Message-ID: <86y0da39wi.wl-maz@kernel.org>
+	id 1x4H6m-00000006flL-2cBD;
+	Wed, 09 Sep 2026 12:08:56 +0000
+Date: Wed, 09 Sep 2026 13:08:55 +0100
+Message-ID: <86wlsu39uw.wl-maz@kernel.org>
 From: Marc Zyngier <maz@kernel.org>
 To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>, "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, David Hildenbrand <david@kernel.org>, Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Jonathan Corbet <corbet@lwn.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>, Paul Moore <paul@paul-moore.com>, Stephen Smalley <stephen.smalley.work@gmail.com>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>, Kumar Kartikeya Dwivedi <memxor@gmail.com>, Zi Yan <ziy@nvidia.com>, Baolin Wang <baolin.wang@linux.alibaba.com>, Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, Doug Gilbert <dgilbert@interlog.com>, "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, "Martin K. Petersen" <mkp@kernel.org>, Jaya Kumar <jayalk@intworks.biz>, Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>, Sebastian Reichel <sre@kernel.org>, John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rik van Riel <riel@surriel.com>, Harry Yoo <harry@kernel.org>, Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Will Deacon <will@kernel.org>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin <npiggin@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>, "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, Oliver Upton <oupton@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, "David S. Miller" <davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Christian Brauner <brauner@kernel.org>, Matthew Brost <matthew.brost@intel.com>, Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>, Byungchul Park <byungchul@sk.com>, Gregory Price <gourry@gourry.net>, Ying Huang <ying.huang@linux.alibaba.com>, Alistair Popple <apopple@nvidia.com>, Chris Li <chrisl@kernel.org>, Kairui Song <kasong@tencent.com>, Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>, Youngjun Park <youngjun.park@lge.com>, Johannes Weiner <hannes@cmpxchg.org>, Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>, Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>, Xu Xin <xu.xin16@zte.com.cn>, Chengming Zhou <chengming.zhou@linux.dev>, Michal Hocko <mhocko@kernel.org>, Miklos Szeredi <miklos@szeredi.hu>, linux-mm@kvack.org,
  linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, linux-usb@vger.kernel.org, linux-rdma@vger.kernel.org, selinux@vger.kernel.org, linux-sound@vger.kernel.org, bpf@vger.kernel.org, linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-trace-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-arch@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, fuse-devel@lists.linux.dev
-Subject: Re: [PATCH 27/39] mm: rename is_vm_hugetlb_page() to vma_is_hugetlb()
-In-Reply-To: <20260908-b4-mmap-prepare-vma-flag-sanify-v1-27-dacf19cce22b@kernel.org>
+Subject: Re: [PATCH 28/39] mm: drop some redundant checks around hugetlb VMAs
+In-Reply-To: <20260908-b4-mmap-prepare-vma-flag-sanify-v1-28-dacf19cce22b@kernel.org>
 References: <20260908-b4-mmap-prepare-vma-flag-sanify-v1-0-dacf19cce22b@kernel.org>
-	<20260908-b4-mmap-prepare-vma-flag-sanify-v1-27-dacf19cce22b@kernel.org>
+	<20260908-b4-mmap-prepare-vma-flag-sanify-v1-28-dacf19cce22b@kernel.org>
 User-Agent: Wanderlust/2.15.9 (Almost Unreal) SEMI-EPG/1.14.7 (Harue)
  FLIM-LB/1.14.9 (=?UTF-8?B?R29qxY0=?=) APEL-LB/10.8 EasyPG/1.0.0 Emacs/30.1
  (aarch64-unknown-linux-gnu) MULE/6.0 (HANACHIRUSATO)
@@ -84,80 +84,53 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Tue, 08 Sep 2026 21:01:31 +0100,
+On Tue, 08 Sep 2026 21:01:32 +0100,
 "Lorenzo Stoakes (ARM)" <ljs@kernel.org> wrote:
 > 
-> The is_vm_hugetlb_page() predicate is badly named - the mapping can span
-> more than a page and it is inconsistent with other VMA predicates that
-> typically are prefixed by vma_.
+> Adjust code which inadvertently perform redundant checks on hugetlb VMAs
+> and clean them up:
 > 
-> Rename to vma_is_hugetlb() for consistency, and while we're here update
-> some VM_BUG_ON_VMA() to VM_WARN_ON_ONCE_VMA() as to avoid unnecessary
-> oopses.
+> * hugetlb VMAs have VMA_DONTEXPAND_BIT set so a VMA_SPECIAL_FLAGS check
+>   suffices. (migrate_vma_setup() regains an explicit hugetlb test later in
+>   the series, once VMA_SPECIAL_FLAGS is removed.)
+> 
+> * hugetlb VMAs unconditionally set vma->vm_ops, so they are never
+>   anonymous.
+> 
+> * hugetlb VMAs do not set VMA_PFNMAP_BIT so checking for this is redundant.
+> 
+> While we're here also drop a VM_BUG_ON() which the simplified check above
+> makes unreachable, and use the new VMA flag API.
 > 
 > No functional change intended.
 > 
 > Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 > ---
->  arch/arm64/kvm/mmu.c                      |  4 ++--
->  arch/powerpc/mm/book3s64/radix_tlb.c      |  6 +++---
->  arch/powerpc/mm/nohash/e500_hugetlbpage.c |  2 +-
->  arch/powerpc/mm/nohash/tlb.c              |  2 +-
->  arch/riscv/kvm/mmu.c                      |  2 +-
->  arch/riscv/mm/tlbflush.c                  |  2 +-
->  arch/s390/mm/gmap_helpers.c               |  6 +++---
->  arch/sparc/mm/init_64.c                   |  2 +-
->  drivers/gpu/drm/drm_gpusvm.c              |  2 +-
->  fs/coredump.c                             |  2 +-
->  fs/hugetlbfs/inode.c                      |  2 +-
->  fs/proc/task_mmu.c                        |  8 ++++----
->  include/asm-generic/tlb.h                 |  2 +-
->  include/linux/hugetlb.h                   |  4 ++--
->  include/linux/mm.h                        | 19 ++++++++++++++++---
->  include/linux/rmap.h                      |  2 +-
->  kernel/events/core.c                      |  2 +-
->  kernel/sched/fair.c                       |  2 +-
->  mm/gup.c                                  |  4 ++--
->  mm/huge_memory.c                          |  2 +-
->  mm/hugetlb.c                              | 14 +++++++-------
->  mm/internal.h                             |  2 +-
->  mm/madvise.c                              |  4 ++--
->  mm/memory.c                               | 12 ++++++------
->  mm/mempolicy.c                            |  2 +-
->  mm/migrate_device.c                       |  2 +-
->  mm/mmap.c                                 |  2 +-
->  mm/mmu_gather.c                           |  2 +-
->  mm/mprotect.c                             |  2 +-
->  mm/mremap.c                               |  6 +++---
->  mm/page_vma_mapped.c                      |  4 ++--
->  mm/pagewalk.c                             |  2 +-
->  mm/swapfile.c                             |  2 +-
->  mm/userfaultfd.c                          | 26 +++++++++++++-------------
->  mm/vma.c                                  |  8 ++++----
->  mm/vmscan.c                               |  2 +-
->  tools/testing/vma/include/stubs.h         |  2 +-
->  37 files changed, 92 insertions(+), 79 deletions(-)
+>  arch/arm64/kvm/mmu.c         | 4 +---
+>  drivers/gpu/drm/drm_gpusvm.c | 3 +--
+>  mm/migrate_device.c          | 4 ++--
+>  3 files changed, 4 insertions(+), 7 deletions(-)
 > 
 > diff --git a/arch/arm64/kvm/mmu.c b/arch/arm64/kvm/mmu.c
-> index 9ba86450fe4a..a7968f8d24bf 100644
+> index a7968f8d24bf..3c1240ffc38d 100644
 > --- a/arch/arm64/kvm/mmu.c
 > +++ b/arch/arm64/kvm/mmu.c
-> @@ -1463,13 +1463,13 @@ static int get_vma_page_shift(struct vm_area_struct *vma, unsigned long hva)
+> @@ -1463,14 +1463,12 @@ static int get_vma_page_shift(struct vm_area_struct *vma, unsigned long hva)
 >  {
 >  	unsigned long pa;
 >  
-> -	if (is_vm_hugetlb_page(vma) && !(vma->vm_flags & VM_PFNMAP))
-> +	if (vma_is_hugetlb(vma) && !(vma->vm_flags & VM_PFNMAP))
+> -	if (vma_is_hugetlb(vma) && !(vma->vm_flags & VM_PFNMAP))
+> +	if (vma_is_hugetlb(vma))
 >  		return huge_page_shift(hstate_vma(vma));
 >  
 >  	if (!(vma->vm_flags & VM_PFNMAP))
 >  		return PAGE_SHIFT;
 >  
-> -	VM_BUG_ON(is_vm_hugetlb_page(vma));
-> +	VM_BUG_ON(vma_is_hugetlb(vma));
->  
+> -	VM_BUG_ON(vma_is_hugetlb(vma));
+> -
 >  	pa = (vma->vm_pgoff << PAGE_SHIFT) + (hva - vma->vm_start);
 >  
+>  #ifndef __PAGETABLE_PMD_FOLDED
 
 Acked-by: Marc Zyngier <maz@kernel.org>
 
