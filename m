@@ -4,52 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2ADE5C79FB9
-	for <kvm-riscv@archiver.kernel.org>; Thu, 10 Sep 2026 11:03:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 740E3C79FB9
+	for <kvm-riscv@archiver.kernel.org>; Thu, 10 Sep 2026 11:03:24 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:
 	Subject:MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=9PW3L5ufhZfAlr4RXjRek2lEmU1YEEv/J0Ezw8g8pzA=; b=gqi1RIwIqrzXD8
-	GId5H//q6KgT7qh+BEv3Yx9zB4gQBnac5WdMhuouSX4xY+rBHzyiBo5yH2W1hIxLkkYENBU1bBx3B
-	w6otfCsZlCLwkHgEdYEXb2nSEZ9+z6Qxz9k0t40A6MtNwR9CkydH2tnHSPEIdkbviqVLS+k+gfbnJ
-	DS2t1yRYNWyX86aX3KEEzPOQtzP4EjxzaScQh4eoNoEIwYM6q+uXp0w5EojABmDamhm1sB7LwGR+F
-	e9xX/FaWDll+hlhAgJgHFIDBOMwpHCt8B/iMfknUHd8+NuYVa7G4I/NJpZz1Cc+uiHPtFOgpTVB7k
-	09D+d/0xs93NsHtJOW9g==;
+	List-Owner; bh=Lge8wF9POSYeHr7L8rGSEwufMDEn1GK/ETxpuIBccu8=; b=TbsZlvF+wFH9e+
+	+vR7XckBk/24czxbjjTbe0VxC54Jm/4behBB2RclYA+jBc34lcMONWvvxir5QQo+NaGXV8102xxSN
+	riMWWY+eVN3lOWwDtfzwtejcB70A4SNqwgTTwgEN02T6yOhPmtd1Fl03rp69K39a4hPH07rMRrVBL
+	qWkcnfk7FwXJaLX19mswBad7I4qSSCmEUwYFXafJOIsqj8voW/0ojDfq3J/TsJEBSN1alpyw8UO9d
+	1wxH7R9R9detBHp3UKsY9NElyemMA2kL9Y50dBjUm+BB2hn3lFOR9M9HRHcRaXQAV0WoZyZkZIiTB
+	AZPQoak4cJALPnAbp9Sw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x4cYY-0000000E8nf-3Wq8;
-	Thu, 10 Sep 2026 11:03:02 +0000
-Received: from tor.source.kernel.org ([172.105.4.254])
+	id 1x4cYu-0000000E8tM-0cIH;
+	Thu, 10 Sep 2026 11:03:24 +0000
+Received: from tor.source.kernel.org ([2600:3c04:e001:324:0:1991:8:25])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x4cYX-0000000E8nS-1EQE;
-	Thu, 10 Sep 2026 11:03:01 +0000
+	id 1x4cYs-0000000E8sW-2MPO;
+	Thu, 10 Sep 2026 11:03:22 +0000
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id B5177600CB;
-	Thu, 10 Sep 2026 11:03:00 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A55F31F000FF;
-	Thu, 10 Sep 2026 11:02:47 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 9CA48600CB;
+	Thu, 10 Sep 2026 11:03:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2B37C1F000FF;
+	Thu, 10 Sep 2026 11:03:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789038180;
-	bh=P32ieGJu3Afv0kkfEMjK/YLsgguxDMlrGHW+fqvIAaE=;
+	s=k20260515; t=1789038201;
+	bh=Xs5N6d4Q3VeK4CPw8sjumPscyGSXs4KBPkCsQSrD/Fg=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=mzqBx2zPfVH2uaOqGHJT+gorRxvbdB9Eu96N466UgnMc/0WaAuPusdTDE3e4SddEo
-	 oZEvVBu9/jzNKA1b4F+Fd/zt0Ue5fhsx6pWVwnjEzoEtfkHCqaECBf98JP/mtBJdKx
-	 jkJtRp37Kct1mkXbsdrbOygxZfFXYfUvPMKyUSV80GDQX7aUywvMFW23x4w0RhkWic
-	 veNENsZLVqikPST9m2zltfy+UwD7oK+w5XCZRY6eRnyLViMYHFjqJQwti6Rpznv1QE
-	 nQMOMg2uSi17MwlrDqZDBgY4oCPZ5751gua4DWnnpcb59v0nNHol5kgsOwYhuItgGM
-	 L0Uhy5a3RQsXA==
-Message-ID: <aed03085-1d9c-4a26-be9e-196c3ea941d1@kernel.org>
-Date: Thu, 10 Sep 2026 13:02:45 +0200
+	b=dXMfGLihXvyR0gahQ2AIkqMeQkGub8BMfOB+ZZ98l5ud+Ms7cAsxntVKUZ1utDJEM
+	 nQ4//pg74UjHHC8mPasRfMu8FSDkOatRrczqiiC3LaTIfHBHPmv858G9GISLwMrdX3
+	 5t3/073kFkvaDHBaTdhFkEOMDmGpUKKC4E2Cj0V1n40/0ffKbTF+hIGUn0USrigbVC
+	 D6iE/rxT2btCRdq9PqG7qeHgFtHMEe2GvT962NY0ILA2s/3pNyarm41S82N//cyR8P
+	 iMhJW8tTmz6rcSiviTtdveTTrlyb320BlmbnPfWLAUCYZfF23wyaCs92UlD0YEhg6S
+	 GHLaU697xvBxQ==
+Message-ID: <bc96d00c-f343-42d2-99fa-e1f5fb11a72e@kernel.org>
+Date: Thu, 10 Sep 2026 13:03:06 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH RFC v3 13/21] x86: mm: use pgtable_level enum in
  effective_prot_pXd()
-To: Dave Hansen <dave.hansen@intel.com>, Yeoreum Yun <yeoreum.yun@arm.com>,
- Russell King <linux@armlinux.org.uk>, Huacai Chen <chenhuacai@kernel.org>,
- WANG Xuerui <kernel@xen0n.name>,
+To: Yeoreum Yun <yeoreum.yun@arm.com>, Russell King <linux@armlinux.org.uk>,
+ Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>,
  Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
  Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
  Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>,
@@ -79,7 +78,6 @@ Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
  linux-openrisc@vger.kernel.org
 References: <20260902-dummy_ptxp3-v3-0-5d8f5b17c25c@arm.com>
  <20260902-dummy_ptxp3-v3-13-5d8f5b17c25c@arm.com>
- <8f3979a9-238a-4d7d-a040-6aa526fedec5@intel.com>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -126,7 +124,7 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <8f3979a9-238a-4d7d-a040-6aa526fedec5@intel.com>
+In-Reply-To: <20260902-dummy_ptxp3-v3-13-5d8f5b17c25c@arm.com>
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -143,22 +141,16 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On 9/2/26 22:48, Dave Hansen wrote:
-> On 9/2/26 04:56, Yeoreum Yun wrote:
->> Instead of using hard-coded integer in effective_prot_pXd(), use
->> pgtable level enum.
+On 9/2/26 13:56, Yeoreum Yun wrote:
+> Instead of using hard-coded integer in effective_prot_pXd(), use
+> pgtable level enum.
 > 
-> Does this actually *do* anything? ;)
+> There should be no functional change.
 > 
-> I guess it's nice to have a wee bit of type safety from the enum and it
-> means that you don't have to *know* which level number a PUD is, for
-> example.
+> Signed-off-by: Yeoreum Yun <yeoreum.yun@arm.com>
+> ---
 
-The next patch passes the value to mm_first_pgtable_level(). Not sure what x86's
-preference is to spell something like that out in the patch description.
-
-"Prepare for future code changes that will consume the generic enum
-pgtable_level from inside effective_prot()."
+Reviewed-by: David Hildenbrand (Arm) <david@kernel.org>
 
 -- 
 Cheers,
