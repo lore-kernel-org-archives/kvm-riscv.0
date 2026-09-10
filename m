@@ -4,140 +4,83 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 670E8C79FB9
-	for <kvm-riscv@archiver.kernel.org>; Thu, 10 Sep 2026 10:30:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D84B1C79FB9
+	for <kvm-riscv@archiver.kernel.org>; Thu, 10 Sep 2026 11:00:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
-	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
+	Content-Transfer-Encoding:Content-Type:MIME-Version:List-Subscribe:List-Help:
+	List-Post:List-Archive:List-Unsubscribe:List-Id:References:Message-ID:Date:
+	In-Reply-To:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=0T4MxSi6d6gJa6IY/s8diRrWcjjbKS7DGxclr7Mk4Mk=; b=l/b60eLrk+3Ve/
-	LoETSxS6Hy0+AsIcaXmYyl1wELbMSLDNUg74vnP3VYPQHsVZgtZcAv9qUTXSe8zy0H0x2osVsJjGM
-	t2R+MeaJZzPEUIyqZk+pyMegnSloAD9RNbOxWD3DNdEmgxWAdaTDiwDDBWyEpgHf1F2RtiwWQTqZX
-	kohTdDeBqAZQ1FV1sI3R0wnsZxb3TRTT7nW+BMEG7cCpDjwjoBf9Nhh8M7A0sGM6xsUHZ10zccFsM
-	whyVTlsnfPyHd093J7ZerMkjr/eZBpp2Zdc1u0DIpciMwWhsQ3xJm+oZlatL8TCocmp0HTkZMwthF
-	Z8vLNdVsDX8bdfNdamFw==;
+	List-Owner; bh=3a3gQcZZHuqE8tAHS5XGcATomJJXWL7avc11c57939M=; b=qrldK+CMvmz+Dz
+	ePnN8UvO6KMGQHK60DyN0LsBEQX+Lbg6lexHCXQyUDJvxzi+znAcbm2mQyAMWAdOJJERfxNB9J0Vu
+	nzjRGdjz3ocRHxM5U3svEugRXcvnxWE7ow/lbuEhDV8hOwrhOKxKUZD64Uhf2T9uE6S0ZSjptnHPI
+	sfXL1/7CYwllmBMpn1QWqTLMiyLZJC5rFgEzWiqjP+lznxFO7abKEhtgUPVLD1rS+kw7t9kmJIvQQ
+	U2xaY97UYoelWBIhwLvbZWbejKik/qhNQ2C7arZCI43xxjI029q/X5aPs3Y/pMbHpQIf9f39+eT8X
+	GeduMBZ+Q3TON30xx6lQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x4c2h-0000000E3q8-0M87;
-	Thu, 10 Sep 2026 10:30:07 +0000
-Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1])
+	id 1x4cVo-0000000E88q-1Yxs;
+	Thu, 10 Sep 2026 11:00:12 +0000
+Received: from mail-pg1-x52f.google.com ([2607:f8b0:4864:20::52f])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x4c2U-0000000E3h6-1HlV;
-	Thu, 10 Sep 2026 10:29:55 +0000
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68A91QMg576514;
-	Thu, 10 Sep 2026 10:29:38 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=2v8eQT
-	UiODkYCwW7fpRiVtvLEmXAN0QDrnYnUVfQNEQ=; b=cbBoC1WUvLIsh/Wj2cLPT2
-	vjPz/azRP2Hrwlumw/k42MGAwm24W5evh90rCcbAHhlhipSVKSOfLluTbJtU1jt6
-	Gx1m/p9cwc1yahl/k90Whze96rIxuzGLAWsoacYf1NXRxuNSdY2iIbvv9apQVJlc
-	UMZI8mcGuPuZuBg96KgDjH1Pcigve3p2ynl7rfqYTHLKARJK6yDYgZPAH82YY4WR
-	VAl1DJdg2jJ4oqrX3R8i38RcGwTWjtRRHNdV+FyDZlZBQqoJbTTQnBWLJIHA7E6v
-	y6sCElhwjdI/2YfJdtQKBJsmaGNvwQ7+69t6sq49a5r086FtooX5B8DWFJH5dewg
-	==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4gkd8n3wd8-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 10 Sep 2026 10:29:37 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 68AAQC9K004763;
-	Thu, 10 Sep 2026 10:29:36 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4gkcr33uj1-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 10 Sep 2026 10:29:36 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 68AATWNH43188604
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 10 Sep 2026 10:29:32 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 878092004D;
-	Thu, 10 Sep 2026 10:29:32 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 00B2F2004F;
-	Thu, 10 Sep 2026 10:29:30 +0000 (GMT)
-Received: from p-imbrenda (unknown [9.111.48.108])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with SMTP;
-	Thu, 10 Sep 2026 10:29:29 +0000 (GMT)
-Date: Thu, 10 Sep 2026 12:25:31 +0200
-From: Claudio Imbrenda <imbrenda@linux.ibm.com>
-To: Sean Christopherson <seanjc@google.com>
-Cc: Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>,
-        Paolo
- Bonzini <pbonzini@redhat.com>,
-        Tianrui Zhao <zhaotianrui@loongson.cn>,
-        Bibo
- Mao <maobibo@loongson.cn>, Huacai Chen <chenhuacai@kernel.org>,
-        Anup Patel
- <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>,
-        Palmer Dabbelt
- <palmer@dabbelt.com>,
-        Albert Ou <aou@eecs.berkeley.edu>,
-        Christian
- Borntraeger <borntraeger@linux.ibm.com>,
-        Janosch Frank
- <frankja@linux.ibm.com>,
-        Fuad Tabba <fuad.tabba@linux.dev>, Joey Gouly
- <joey.gouly@arm.com>,
-        Steffen Eiden <seiden@linux.ibm.com>,
-        Suzuki K
- Poulose <suzuki.poulose@arm.com>,
-        Zenghui Yu <yuzenghui@huawei.com>,
-        Atish
- Patra <atish.patra@linux.dev>, Alexandre Ghiti <alex@ghiti.fr>,
-        David
- Hildenbrand <david@kernel.org>,
-        linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev,
-        kvm@vger.kernel.org, loongarch@lists.linux.dev,
-        kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
-        linux-kernel@vger.kernel.org,
-        Itaru Kitayama <itaru.kitayama@fujitsu.com>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Ritesh Harjani <ritesh.list@gmail.com>
-Subject: Re: [PATCH v2 09/20] KVM: selftests: Use the innermost page
- allocator API in s390's IRQ routing test
-Message-ID: <20260910122531.499b565b@p-imbrenda>
-In-Reply-To: <20260902164123.2546762-10-seanjc@google.com>
-References: <20260902164123.2546762-1-seanjc@google.com>
-	<20260902164123.2546762-10-seanjc@google.com>
-Organization: IBM
-X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-redhat-linux-gnu)
-MIME-Version: 1.0
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=NMVAaE6g c=1 sm=1 tr=0 ts=6aa28691 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=kj9zAlcOel0A:10 a=VdqzKS8jKosA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=1XWaLZrsAAAA:8
- a=omOdbC7AAAAA:8 a=VnNF1IyMAAAA:8 a=ncMTWhVeLHM-VX_LCFkA:9 a=CjuIK1q_8ugA:10
-X-Proofpoint-GUID: Se5IIme47yOD2YBAO0JHuYpxPj7OtfZR
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTEwMDExNSBTYWx0ZWRfX5cTAuBi1pOw0
- eCaNg8ALKS6/QFSqT//okMnY45ig0qLvL0qlinYgrlkvM4y8dox1QEYYRVq1DSN5ZnVPcloYMzz
- qzTs+Pk68w6UnwFc5Fcytw4kHMzGKU9lWP8PiUAG2m+ymP9PrpTKt4qGBIczpWCt8vrcJ127ixD
- 9cOEVmc3sD09VEDPEv4MbzyTBatBFAjMRySMq6Z7uKPsboCi1kWWNEaH0zm6HKcEagQuJAm1OpN
- tu1bwMh0zrZb1QtvY69KWvjYeUgL88ocCGgFWt5Kn7w04RiWEPHkblVyBo+h7CTLU/NVbmG19Go
- YqhGsu0rcwe7fP7uzCqijdqHBfQYTU+Kf++VDwhvVRuQKgfW9isJuHzl54TDJJgLK0PXPFqBZzf
- 9fLBbTJ21IPM+xgRHVm03S/vZUCBKv5qnjJ6iLnNIWb5KV5w5oRjKx9vfb5EpXDcGmx6NAjtmbx
- 3eggPh0QRJRm864ZYpA==
-X-Proofpoint-ORIG-GUID: EeWyQkeZUCSSRdpkHyS1LNqruiFVZs4W
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTEwMDExNSBTYWx0ZWRfX6mMimO+EDNf/
- eJupQqfyq8zKgx+xjT0vGZK4TqN7lyOx+e+F0dUZro+XG34zrPAU7eBBA1hL2I4JHSa/bG9nlqQ
- X7lB6vw5V56GrdX2vG0c4Pn1Yf68Y1c=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-10_03,2026-09-09_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 bulkscore=0 clxscore=1015 malwarescore=0 lowpriorityscore=0
- priorityscore=1501 adultscore=0 suspectscore=0 impostorscore=0 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609100115
+	id 1x4cVk-0000000E84l-1X8k
+	for kvm-riscv@lists.infradead.org;
+	Thu, 10 Sep 2026 11:00:10 +0000
+Received: by mail-pg1-x52f.google.com with SMTP id 41be03b00d2f7-cc4b62d118aso329950a12.2
+        for <kvm-riscv@lists.infradead.org>; Thu, 10 Sep 2026 04:00:08 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1789038007; x=1789642807; darn=lists.infradead.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
+         :cc:subject:date:message-id:reply-to:content-type;
+        bh=NSugWeaGjWWxPTsA0WEUYFCIdkRuKo99PwV/yfMvTEg=;
+        b=U1Aw0CqQvxQGuc8x2nM+IKJ9zkzgfAhvCpwiO2BotjcoFUas+XPnIVzqIo0GS19PA8
+         M70e+LRKUEvgiyQJdg+hpYci04UVMmVZ2GhvbfaB6QQZpDvYnEhadl+ElEE6jFelwOD/
+         2Pb69B3VolBVHEuRBLzmWyCeAOHuUVL2vcLC782DxbEk31CgcGMSTmpFGDMDQv7UOiN2
+         ANloE9Xjh3i7Dh1Cnt4w5gmpfKH1pPRH8ny8IcXGCtrlGqH5cWfoSV0DVHDt/QtKuZwu
+         rm4YNqN/NdohxcBqLEusvox1OOHZeo+12liZr+A8TJbyAhQAxQ+1L9BAej2cZvNqTskD
+         g24g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1789038007; x=1789642807;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=NSugWeaGjWWxPTsA0WEUYFCIdkRuKo99PwV/yfMvTEg=;
+        b=eMsAEnD9LvDCLJm7Uz40bdJ/pPb1JEr+qU984cU0DM4K7TVs2hipxKQVmOrbFi1ZGw
+         aB8A/PnFQg//TEgGS7PqDa7rqMTWswm1fiwzgmxMdrDre4HE1r/cFhndgFkjDyUIZmHc
+         44E7gJAxehnohpo25sl2arbkBCTRTdh95CIwLinN/FS1PTP+8/lhsxgjdfoJEGRol0Nh
+         tKcwnq6Vgtdj7ZOhOvCKK8ZTYYLh+me3yWqBr66Z09zlVKxAHwvPlXT+0HgkUquRrNI6
+         mC946/jXAE42uYwPqlEUCC1LVtMeAONl7pZPLL0v/Lwzz7yUTYevj2f14x1LluXLLcWf
+         QodA==
+X-Forwarded-Encrypted: i=1; AKwUvBxYt/f21twlc+mVkuTi8SaIPI9SQgquy8fcheijCHoYSkV70n5+Kxgv0NV+brDU7EkqAdR2sQzG/yw=@lists.infradead.org
+X-Gm-Message-State: AFuF++k3xo5uynxxDE5Dq20AS1EflBNN2Hu1nDhcEcKSGpX6qxrGSI1C
+	ALwaMzYYUnaOyAWnAJ4PTaqTsTZVvZsuYZ3HB663PN2QODoZBPVaRYI+
+X-Gm-Gg: AYBFou3ULBH9xz9A8uFkvY8UxfOgkzietxQYzijZ0nSDE8ARlyny98/WkSpemk3LWnH
+	kyUS8qDO9kGfNHc0X1v6mCTX+14UO2VcluH8/pD2FbHYEViqScVGauWveE4bUF3I6gjc6uh2soK
+	D7nNNQCb+UmMbonV7yfyokWPqq5riGwUYqhhDExj160y67tPAp1+JziF9HNpQNGBk1NQvW98VB/
+	xktznV/M3gl3dyb5l0huBdz7+0sUMRmbTYrqiVXKU52d6uEmrppDgOtLxe/jg8XNpMjs/CWaLFi
+	VYROgTU6MDpC5p6bs5ObM5QF/of70CW+a3uqpjxW3G8ErE8VjHSSWWF4ufUAn+wmpfM8lYnjXen
+	Jmn7E4rG5qF4L0ojMKEQgWIpyjORlQT/IiZCia2an6lkwFGWB608LKNsUFx1R0p3MsxTaIuH5nf
+	P9KAh8mSvZEBe6zUtcXu0qDN5YCk2bIZab80upyr1vZVNdUdWlGRtg97rH+wmTe1MSjgipVZ7QX
+	QbgdK0h/WU8ZgPd0GG9Dk9mhW3Xi1DORVxYqGAlor+xPEYMzQVp5Lw=
+X-Received: by 2002:a17:90b:3ec5:b0:398:9c00:29ed with SMTP id 98e67ed59e1d1-39b26277673mr58529054a91.21.1789038006053;
+        Thu, 10 Sep 2026 04:00:06 -0700 (PDT)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-143243f780csm46703778c88.13.2026.09.10.03.59.55
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 10 Sep 2026 04:00:05 -0700 (PDT)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Sean Christopherson <seanjc@google.com>, Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, Sean Christopherson <seanjc@google.com>, Paolo Bonzini <pbonzini@redhat.com>, Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>, Huacai Chen <chenhuacai@kernel.org>, Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>
+Cc: Fuad Tabba <fuad.tabba@linux.dev>, Joey Gouly <joey.gouly@arm.com>, Steffen Eiden <seiden@linux.ibm.com>, Suzuki K Poulose <suzuki.poulose@arm.com>, Zenghui Yu <yuzenghui@huawei.com>, Atish Patra <atish.patra@linux.dev>, Alexandre Ghiti <alex@ghiti.fr>, David Hildenbrand <david@kernel.org>, linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, kvm@vger.kernel.org, loongarch@lists.linux.dev, kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, Itaru Kitayama <itaru.kitayama@fujitsu.com>, Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH v2 08/20] KVM: selftests: Use the innermost page allocator API in the memslot perf test
+In-Reply-To: <20260902164123.2546762-9-seanjc@google.com>
+Date: Thu, 10 Sep 2026 16:25:00 +0530
+Message-ID: <bja51im3.ritesh.list@gmail.com>
+References: <20260902164123.2546762-1-seanjc@google.com> <20260902164123.2546762-9-seanjc@google.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260910_032954_390528_9B0DB8B0 
-X-CRM114-Status: GOOD (  18.69  )
+X-CRM114-CacheID: sfid-20260910_040008_584546_3203FD9D 
+X-CRM114-Status: UNSURE (   6.24  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -149,46 +92,27 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Wed,  2 Sep 2026 09:41:12 -0700
-Sean Christopherson <seanjc@google.com> wrote:
+Sean Christopherson <seanjc@google.com> writes:
 
-> Use the quad-underscores page allocator in s390's IRQ routing test in
-> anticipation of dropping the @min_gpa param from the primary APIs.
-> 
-> Note, it's not entirely clear that the test *needs* to use a very magical
-> @min_gpa, i.e. it's possible a more elegant solution exists.  But that's a
-> problem for a different day.
-> 
+> Use the quad-underscores physical page allocator API in the memslot perf
+> test in anticipation of converting the outer versions to take the memory
+> region type instead of the raw memslot.  Stating the obvious, the memslot
+> perf test creates and allocates from multiple memslots, and so can't use
+> MEM_REGION_TEST_DATA to communicate which region/slot to allocate from.
+>
 > No functional change intended.
-> 
-> Tested-by: Itaru Kitayama <itaru.kitayama@fujitsu.com>
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
+>
 
-Acked-by: Claudio Imbrenda <imbrenda@linux.ibm.com>
+Agreed with the reasoning. LGTM.
 
-> ---
->  tools/testing/selftests/kvm/s390/irq_routing.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/tools/testing/selftests/kvm/s390/irq_routing.c b/tools/testing/selftests/kvm/s390/irq_routing.c
-> index f3839284ac08..cd26cc1aed80 100644
-> --- a/tools/testing/selftests/kvm/s390/irq_routing.c
-> +++ b/tools/testing/selftests/kvm/s390/irq_routing.c
-> @@ -36,7 +36,7 @@ static void test(void)
->  	};
->  
->  	vm = vm_create_with_one_vcpu(&vcpu, guest_code);
-> -	mem = vm_phy_pages_alloc(vm, 2, 4096 * 42, 0);
-> +	mem = ____vm_phy_pages_alloc(vm, 2, 4096 * 42, 0, false, false);
->  
->  	routing = kvm_gsi_routing_create();
->  	routing->nr = 1;
-
+Please feel free to add:
+Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 
 -- 
 kvm-riscv mailing list
