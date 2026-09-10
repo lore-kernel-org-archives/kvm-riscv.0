@@ -4,127 +4,83 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2AC57C79FB9
-	for <kvm-riscv@archiver.kernel.org>; Thu, 10 Sep 2026 11:06:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 92692C79FB9
+	for <kvm-riscv@archiver.kernel.org>; Thu, 10 Sep 2026 11:07:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
-	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:
-	Subject:MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
+	Content-Transfer-Encoding:Content-Type:MIME-Version:List-Subscribe:List-Help:
+	List-Post:List-Archive:List-Unsubscribe:List-Id:References:Message-ID:Date:
+	In-Reply-To:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=GoTzO4yujrIzIzvRnZqrlsrb3HwpvAlPOFMYCs+stvQ=; b=pCaUNcNqvUWjZz
-	ghGS/36SVNJkKZOs1r1HVFIkNF5PKPUFKC42mooOrJvt3HWfIyx87s+PJwJGZCaEa1/Jm9peSUPR7
-	GUJibwKfkmSG+4QDP0RY2Oqral2YaAAe0jJqB3PIMV+tDF29+gsLCoHfx307MsqDjSh+4xQVR9rJW
-	eHzoLvm6G0UC8FeWtvXrfL3PDygrNvjebnSho7Fam0hNR9dKs/8Z+Q4ZjKflSEJwIgouxWNafK4+6
-	qvdXKS76T8v+r2yKy+NTwOxFyOqqLVTiYipw+7foqHB92mnwE9YI1NzWrdlLnMrNGK77xOfDYnpyt
-	M+gLm/Nztw3gaXKpUmRA==;
+	List-Owner; bh=tvwmzeiJSIbefP/Fb6DxDeU2mq1U02PRG/ElQO1uj5I=; b=I9BZqg2zA/i+eJ
+	ckLyVeTtPTdp2XCipVaku45FIODgXaq7/I7bIEp/Us9Sz9j10hgffttq7UCh/fcj4T6dybZw/gYQP
+	uiyiyAYUs70YdIJKYa8G1SQPNW5+9o7LH1YWnTOrjWqLuwszc0sP0zm92UOmQfwKN4nWB+pGbPg5p
+	CiI3IdGOtsPCaGzwHn9a9hE/DzH6hwMSoFyWbUnJpZW99tkw2dhwU/p0jDx98ttD+Ag7iCrLh/eD4
+	D7ls4uz/1JROjZLp0DrtJz5H0ndkvZ6Hgi37vwyCbPGcrjDasaNO/0DuQE0AmCthqt7SW5MBX56vo
+	CwjEgYu4/Mkf5q0Z7uew==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x4cbt-0000000E9kA-3e1B;
-	Thu, 10 Sep 2026 11:06:29 +0000
-Received: from tor.source.kernel.org ([172.105.4.254])
+	id 1x4cd4-0000000EA0Q-1Ipe;
+	Thu, 10 Sep 2026 11:07:42 +0000
+Received: from mail-pj1-x1035.google.com ([2607:f8b0:4864:20::1035])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x4cbt-0000000E9jn-07Yn;
-	Thu, 10 Sep 2026 11:06:29 +0000
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 4FE3E600C8;
-	Thu, 10 Sep 2026 11:06:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0A6A41F000FF;
-	Thu, 10 Sep 2026 11:06:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789038388;
-	bh=aSzot3DdFbH1bRFQSRCfhn2f59lhOlsZ9OER6ann7aY=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=mQv2gG38DwhMioaZmlIihIcjXe1Of5Jx+44aRzTJ7yCvrfUER/jT5PGZkk3aEJsQz
-	 llwtEXey3grPl6cC3wlGm0pKh6qiIagIhA1kT8ncfBECmjszoV3jvYwo3C6HRpyKYJ
-	 IxzMP1ztXCx65ZtCGuluQ74gXB0ikTuy5CMNpTKt7Hj3lc7snpjLPDVvVz8o7RGfpK
-	 aMLsUAPj5Lib6dfiMXITwQJqBXtJOt5KnkAYdW/HPKreE6hr86GiEVwcrUvadtTDp0
-	 sgyMRboqSRuMrQQ78cLql5iy2T3CcddcS2Apy/HsfrlAkalTppILCGhN2j6p3nJWkH
-	 RwmkTeY7ro+aQ==
-Message-ID: <10eb16d9-df86-4116-9b54-4327bb1d55bd@kernel.org>
-Date: Thu, 10 Sep 2026 13:06:12 +0200
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH RFC v3 14/21] x86: mm: carve out the generic compile-time
- folded pgtable case in effective_prot()
-To: Yeoreum Yun <yeoreum.yun@arm.com>, Russell King <linux@armlinux.org.uk>,
- Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
- Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>,
- Kairui Song <kasong@tencent.com>, Qi Zheng <qi.zheng@linux.dev>,
- Shakeel Butt <shakeel.butt@linux.dev>, Barry Song <baohua@kernel.org>,
- Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>,
- Wei Xu <weixugc@google.com>, Johannes Weiner <hannes@cmpxchg.org>,
- Michal Hocko <mhocko@kernel.org>, Lorenzo Stoakes <ljs@kernel.org>,
- Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>,
- Anup Patel <anup@brainfault.org>, Atish Patra <atish.patra@linux.dev>,
- Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
- Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
- Dave Hansen <dave.hansen@linux.intel.com>, Andy Lutomirski
- <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
- Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
- Borislav Petkov <bp@alien8.de>, x86@kernel.org,
- "H. Peter Anvin" <hpa@zytor.com>, "Liam R. Howlett" <liam@infradead.org>,
- Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>,
- Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
- Jonas Bonn <jonas@southpole.se>,
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- Stafford Horne <shorne@gmail.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- loongarch@lists.linux.dev, linux-mips@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-mm@kvack.org, kvm@vger.kernel.org,
- kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
- linux-openrisc@vger.kernel.org
-References: <20260902-dummy_ptxp3-v3-0-5d8f5b17c25c@arm.com>
- <20260902-dummy_ptxp3-v3-14-5d8f5b17c25c@arm.com>
-From: "David Hildenbrand (Arm)" <david@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=david@kernel.org; keydata=
- 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
- qIws/H2t
-In-Reply-To: <20260902-dummy_ptxp3-v3-14-5d8f5b17c25c@arm.com>
+	id 1x4cd1-0000000E9yf-05Ke
+	for kvm-riscv@lists.infradead.org;
+	Thu, 10 Sep 2026 11:07:40 +0000
+Received: by mail-pj1-x1035.google.com with SMTP id 98e67ed59e1d1-3990fe066ebso5677118a91.1
+        for <kvm-riscv@lists.infradead.org>; Thu, 10 Sep 2026 04:07:38 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1789038458; x=1789643258; darn=lists.infradead.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
+         :cc:subject:date:message-id:reply-to:content-type;
+        bh=70Xrz5Ek18W9RLHK+PGrZl6neyZSU/LQLxpuqNmBXms=;
+        b=qsALKBLuc6lRqR5oN/vSJjJYT7w7eMasGac7SBilwBbckJ02iesHaDh67Ye0NByrtw
+         YGYvTT/L+zDcpLTJUt/Wo1qNINN4vzd3cHAqx0IJpsunfacx/v056DCEJetaEDiuWxPU
+         0Gb+3975X8l6JAMfE0ZQAqiApcVY7SdmyNXaDriFuIFy7j5z1sSXobZtm9wVEJ5GIT9q
+         0rdYjOd2CBdNqxN3H2JXXJnA4/tkmRhSn4YY77LEUdzBZuRzklRJyN3rciDPWjuAYfYU
+         faM9YtPZhsrEgBZO4N1eNat242aMPsmkIdPcmF6/2f09wmP0WtKNhx4XI/N4pKa0mNyq
+         xCiQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1789038458; x=1789643258;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=70Xrz5Ek18W9RLHK+PGrZl6neyZSU/LQLxpuqNmBXms=;
+        b=SX3BmTwUhM8vS2p7TgvNu4GPggRUP1/BlFSWGq4d+HJMIjrpJazjvppSr9K8jaof1K
+         J/8ciURQ0e4SrAkT5cztnwTFe6eHECyow8zVK2hxyYzoWQD319qA0pGlfd6vVgk0ZRb/
+         lv7S58FONFEMn3CBxmtnP6QCg0a7zjO3Nv95aIzY4oSxLMhn7YyF8p7otBs04zPn8YRd
+         KU6RVscacSev3eWoClUIIFjGMHrU2H8ujqY7kZIz5kJJYtGfQnV1ooWOHbojhyOpdHBW
+         NNoZPnv4sC+LkE6bbc9V0lJMvq3U5kq2Pk9ZwwpepQRDGvZBVfcQeMeN5UsKLNeo7c4N
+         nuAw==
+X-Forwarded-Encrypted: i=1; AKwUvByu5vuIrx3wWWjsqoh1zQkQcuxOnXZNjbWELxBme/OptbHG4LnQbDSer2isIwkdrOCQpccmzIJ9R5U=@lists.infradead.org
+X-Gm-Message-State: AFuF++nrlm0s9MSVwx6oDzftd2H9KTBNOEO5dOqe5J57XRumWMRlcv6w
+	7ClpcHrIRCIp/ae+mxygA9RStMBu2rn8MLHO1iw6/2MxEkBj9d/WPspC
+X-Gm-Gg: AYBFou1ChXjkP+gpJ1o/ISe6dE4EH8QOLHAOCO5lBBirPfRhlcUYqwN+55rKMEYOyLY
+	4boG47/TpanLZJ0WsxyVNcui5eNip0re89RDev+M8ZQKCPhQknMVxHGJy5hrY2V5EPjLAPeXkaV
+	xStZUDtd92yVtUPUwArZ7WSN4gnwx7MevfctmdULZCtY7eYScIUwMxw9ICwA2LFsSfvKdoCx7b9
+	T3Tw+tkq7NuoUUa/w0T2u+tYJFMDsfSl+FhfZadrg2G0JFSwphrCq2t0ESHJIGZR9l+zA2zFP1N
+	WERIQXc4vfIXE2z4bFduVLjk54akRRS8L+dQ/M1mn8C5w2EanM9eywly7m4PrdAudp/XKPmqUSO
+	pC2oxydAvBBzafbpiX5rSO0d/HHWiJ/J1BDt9/XFa2yqLrxG8uFlFifqVAnzjKaqOQRP/K4kzeG
+	VFijOV6LUzfdJUTJ7rotPJ/vYmMtm2N3o7K7ykPUeHN09gamWkr7CpgoNQ76kN5o8OUum6rEX7m
+	WCz4ghGQawzm6dugjBAzniHutp7hZqol1Xl+YR0eDMr9edlpDu84Rc=
+X-Received: by 2002:a17:90b:1b06:b0:398:9be9:ab8e with SMTP id 98e67ed59e1d1-39b2622ba26mr58218547a91.19.1789038457819;
+        Thu, 10 Sep 2026 04:07:37 -0700 (PDT)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3339a62be87sm43023781eec.6.2026.09.10.04.07.27
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 10 Sep 2026 04:07:36 -0700 (PDT)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Sean Christopherson <seanjc@google.com>, Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, Sean Christopherson <seanjc@google.com>, Paolo Bonzini <pbonzini@redhat.com>, Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>, Huacai Chen <chenhuacai@kernel.org>, Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>
+Cc: Fuad Tabba <fuad.tabba@linux.dev>, Joey Gouly <joey.gouly@arm.com>, Steffen Eiden <seiden@linux.ibm.com>, Suzuki K Poulose <suzuki.poulose@arm.com>, Zenghui Yu <yuzenghui@huawei.com>, Atish Patra <atish.patra@linux.dev>, Alexandre Ghiti <alex@ghiti.fr>, David Hildenbrand <david@kernel.org>, linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, kvm@vger.kernel.org, loongarch@lists.linux.dev, kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, Itaru Kitayama <itaru.kitayama@fujitsu.com>, Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH v2 10/20] KVM: selftests: Add a wrapper API to allocate multiple page table pages
+In-Reply-To: <20260902164123.2546762-11-seanjc@google.com>
+Date: Thu, 10 Sep 2026 16:34:41 +0530
+Message-ID: <8q591i5y.ritesh.list@gmail.com>
+References: <20260902164123.2546762-1-seanjc@google.com> <20260902164123.2546762-11-seanjc@google.com>
+X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
+X-CRM114-CacheID: sfid-20260910_040739_059555_D01A6FD3 
+X-CRM114-Status: UNSURE (   4.65  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -136,33 +92,24 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On 9/2/26 13:56, Yeoreum Yun wrote:
-> The behaviour of pXdp_get() will change with generic compile-time folded
-> page tables. To prepare for that, rework effective_prot() to ignore any
-> folded page tables entries, as it will unconditionally get called by
-> ptdump core with pXd_val(pXdp_get()), and the value for folded entries
-> really should be ignored.
-> 
-> For this, introduce mm_first_pgtable_level() to identify the first real
-> page-table level, move mm_pXd_folded() in !__ASSEMBLER__ and
-> update effective_prot with higher_prot only when the current entry is not
-> folded nor the first level.
-> 
-> There should be no functional change.
-> 
-> Signed-off-by: Yeoreum Yun <yeoreum.yun@arm.com>
+Sean Christopherson <seanjc@google.com> writes:
 
-Reviewed-by: David Hildenbrand (Arm) <david@kernel.org>
+> Add vm_alloc_page_table_pages() and use it throughout arch code to replace
+> open coded equivalents.
+>
+> No functional change intended.
+>
 
--- 
-Cheers,
+Straight forward change. LGTM.
 
-David
+Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+
 
 -- 
 kvm-riscv mailing list
