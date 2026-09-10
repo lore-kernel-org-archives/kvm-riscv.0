@@ -4,98 +4,127 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0886CC79FB9
-	for <kvm-riscv@archiver.kernel.org>; Thu, 10 Sep 2026 11:03:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE9B6C79FB9
+	for <kvm-riscv@archiver.kernel.org>; Thu, 10 Sep 2026 11:05:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
-	Content-Transfer-Encoding:Content-Type:MIME-Version:List-Subscribe:List-Help:
-	List-Post:List-Archive:List-Unsubscribe:List-Id:References:Message-ID:Date:
-	In-Reply-To:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:
+	Subject:MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=kaYW0fdXxRckJpipR92cKOKEkYFwXJiNN0DglpOTVbo=; b=ZnSzQTDeVddufg
-	oMc91u/KuZrHGe0PdlfX2TePZMLIU7SGVXq8keVzZz+nIREchSiY+/QNRnF7PHxRCY6er6cXP5SKT
-	Pn++lcbOTED0yxZznw7bQ3xwLBaFoJmvnS/vE/Klczeaip9vYMEiXxvXkoTGHdXHDkJN9Br3wA8RR
-	bu2Nqr+UkgecGtkij8W0kc3irjns0NNnbxw9vFMtNWq8bRpDLKOg+q3SMrtxziZpLQsnJEaK6A5V4
-	ozDfVpSj0l4w24CqVmXhIdc+2I3QwLIM/h2l5wiTQhvKPf1qnu8DZ546SJyZw4wojw/t+2+GEr+Hw
-	zUtzUc1OyJ66sN4PvLNA==;
+	List-Owner; bh=Mxtn6NVgd3Qnrf6SpcltlKdG70peSZMJ94FxB+TIqEA=; b=Inao3ITZzRRoDZ
+	dLi3dHhTWRh9BJD+bnAm7ftOJupe96eBJKHZBWq/gb/W3Ia2+UV7v67aBJYaBhV2SujbD6/HA82u/
+	stBR3AJ5nXhe37+GierEku3OuGqKx5AGO5CkMe21WaMc5TwEByc5f6Ku1URiKucYNddGywnbQAfHR
+	prM8yk9ww35o+F269ECUIzgKObl347/53fbO1uqEdDnmTm8VLTFY45BarhQUTj2lcTe2ijb18EyuI
+	OfkZ6yDwB4tw660E/meLbhsOHBgzy8Z8b/L+rNbnYbxXMPBB2d5kluYVbWEs9XTG0YfgQjYOEd/jy
+	RkY22u0UJCmJAsf4jkzA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x4cZB-0000000E90I-35iB;
-	Thu, 10 Sep 2026 11:03:41 +0000
-Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+	id 1x4cb1-0000000E9Xc-2Hun;
+	Thu, 10 Sep 2026 11:05:35 +0000
+Received: from sea.source.kernel.org ([172.234.252.31])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x4cZA-0000000E8yh-19Gw
-	for kvm-riscv@bombadil.infradead.org;
-	Thu, 10 Sep 2026 11:03:40 +0000
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=References:Message-ID:Date:In-Reply-To
-	:Subject:Cc:To:From:Sender:Reply-To:MIME-Version:Content-Type:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=Hx87S2Y2VYrsz+ltlElpgYkkRP/rEKOc33NOUB4sPbE=; b=cjuVZRvTb6onf8fhqkKzPmBfRm
-	V+7T52MmqmRukaq3KPFq8a1Benkh6yYRajz7f5436bpuPJ8lY6GzHRR8A1ipFCc4HU3v2P5k6cbJk
-	rboIjRKpTaixgdc6jmvcF+0B65Jfa1WNNmfxlTBlYgm1RzWEa5n1eMj099id2SXF60RZUYgJGORY9
-	oVCVKedUP26aK4fDl/fB6ZtxjbOojPbGhkaetsfBSHqeXTTYLwukSsCZB5z1T7Nsnb4VegbQK0Xvj
-	oPSTicc23j6pVt8nqpF0kpAVHJjOQyGAVXa67hvC4FDn9j4gLPEPOiQakNKitG/u0zlwj/RM4CWf2
-	2dpQur4Q==;
-Received: from mail-pj2-x10.google.com ([2607:f8b0:4864:39::10])
-	by desiato.infradead.org with esmtps (Exim 4.99.2 #2 (Red Hat Linux))
-	id 1x4cZ6-00000002Mw0-0Lx4
-	for kvm-riscv@lists.infradead.org;
-	Thu, 10 Sep 2026 11:03:39 +0000
-Received: by mail-pj2-x10.google.com with SMTP id 98e67ed59e1d1-396ccda24a3so935037a91.0
-        for <kvm-riscv@lists.infradead.org>; Thu, 10 Sep 2026 04:03:35 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789038214; x=1789643014; darn=lists.infradead.org;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=Hx87S2Y2VYrsz+ltlElpgYkkRP/rEKOc33NOUB4sPbE=;
-        b=CleKX0RN8ZNBZbfpMKOitnEuoAq4S4eJ7gG9dkPcBm2+NmlCFbxizYyYF1xNmsrgLA
-         QTKjQdYTbVRQ1ZXRkdn/cyZ4np3/731cO1+E9CzmnilEEPEwZWWsU5QwEl++7jHPpDsa
-         V9yq8Lpa3AeW04cVbqAZsnd1uqhovVGbAvu7Er0+u0hvsDIoMOR4GOGWRZlf7LJ1oMz9
-         XEKwf9I3UHxHegjYwXsf3iD+xi0+y0rXwtJcABQupTVmKLC5mStDBrgA5XXKx/bN8CYJ
-         mgeHkYi+IguW24ipWx1FDSK2J3YTN1V/Tjhto0Ehpw4/oYyD464JDiqrVGGUuSlnbq8C
-         dA1Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1789038214; x=1789643014;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=Hx87S2Y2VYrsz+ltlElpgYkkRP/rEKOc33NOUB4sPbE=;
-        b=L+Cad6qi8d0PfxLe4+ZIRqWL7rRLEZr/vmR7NEzADN3GYF5U9oAJWb2JYOAbva5kcq
-         yIanZTLKCYXDA/MrW+P1fWls7t8O/0Z1sZAS5CJBnyx9mZpAX6kO2FA8bWJhqlKs8GaA
-         fleCyiXaznZlVfON74UJKR93qcjOBfgLR3Rafvf8f7da9wl3T7t1/Mi4SsZrdKaTtVC1
-         PPK3q+fEgLG51fM+Pu2kMDbzqJkBY39svbB2jeykIaFiSmR1SASYrF04j75sPkIc9hSJ
-         GefNDtBfqQmVklr9DbPQ2YvJN1smMvlAIyS2eRuzxpeAinHWa1M5OXzCO88JoKRVt8pA
-         izLA==
-X-Forwarded-Encrypted: i=1; AKwUvBxiSy4BpTNA3xzErXVpLeYN7/7+/irgVEDXse2EuamxbkwcXLVTw6Ihaw3FB64CiubwIdANuC821mU=@lists.infradead.org
-X-Gm-Message-State: AFuF++lmPWN5oWQOULSCX3afIbM8+JZ1nfxavKnrOIrhIL1We5DaUcPf
-	6454oPQe3FwQ7NZjpof1L/8bxgScw/GYvm9BgjtxMXwtzEo+ug9XwzCh
-X-Gm-Gg: AYBFou0+5YLH64V5ILPUHkOQaYE6K62l7ULZ1qzp9J8BzBfR07B6x/fr7Djtzjnb0VF
-	npIN0ujkZQlsGqyD3qF1susCjvSalkhjEOQK/kWXbPVnmmp3U6JHbsXbPP52cLHDAxPw7AqniHt
-	cVZ/kg87c2uRb1tt06kH9dMvqSWNWKzd3UfJmXMiY/bq9hp1bnPgLRGLp7QAitraZtr4e9rDkeJ
-	ctjZ56cLFv9AumAF5NeeCpRxlObaNsmqZmgZvBLMHtnDnyXJXfaLzwJKdgK9A2q3eAmTbNyjcU4
-	x/ZgM/pqcwGV8cgNsu8mIrUYWH4tn2VLr9YHyd2MBaDUb/RevIsroGb6EDZyMpLGoZAoVWFllbU
-	BllczxgEtNtPi77nasUuYSi2PCnslWd49R+bIDxNiiExDIP+IoNmiP8iXQrIHdOyFGTMXaH6psp
-	OPNp4m62skP/dpbKsKhdMOLgoiXuAVmIcr1j9BP8f9bXG6ky03HCc5lh6El3RIl6BJYAVNzg4FO
-	Yt+99EwbdIzo4kp8rYx8eN85klv9petKPZhCXYWp1Ohhi8bQ+QDYiw=
-X-Received: by 2002:a17:90b:3e46:b0:393:194d:5366 with SMTP id 98e67ed59e1d1-39d70a5931bmr11901184a91.10.1789038213696;
-        Thu, 10 Sep 2026 04:03:33 -0700 (PDT)
-Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3339a534152sm50133517eec.10.2026.09.10.04.03.22
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 10 Sep 2026 04:03:33 -0700 (PDT)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Sean Christopherson <seanjc@google.com>, Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, Sean Christopherson <seanjc@google.com>, Paolo Bonzini <pbonzini@redhat.com>, Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>, Huacai Chen <chenhuacai@kernel.org>, Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>
-Cc: Fuad Tabba <fuad.tabba@linux.dev>, Joey Gouly <joey.gouly@arm.com>, Steffen Eiden <seiden@linux.ibm.com>, Suzuki K Poulose <suzuki.poulose@arm.com>, Zenghui Yu <yuzenghui@huawei.com>, Atish Patra <atish.patra@linux.dev>, Alexandre Ghiti <alex@ghiti.fr>, David Hildenbrand <david@kernel.org>, linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, kvm@vger.kernel.org, loongarch@lists.linux.dev, kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, Itaru Kitayama <itaru.kitayama@fujitsu.com>, Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v2 08/20] KVM: selftests: Use the innermost page allocator API in the memslot perf test
-In-Reply-To: <20260902164123.2546762-9-seanjc@google.com>
-Date: Thu, 10 Sep 2026 16:30:42 +0530
-Message-ID: <a4pp1icl.ritesh.list@gmail.com>
-References: <20260902164123.2546762-1-seanjc@google.com> <20260902164123.2546762-9-seanjc@google.com>
-X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260910_120336_273636_5C35AD60 
-X-CRM114-Status: UNSURE (   7.75  )
-X-CRM114-Notice: Please train this message.
+	id 1x4cb0-0000000E9XD-2UDx;
+	Thu, 10 Sep 2026 11:05:34 +0000
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 0FFE941FE2;
+	Thu, 10 Sep 2026 11:05:34 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9D0541F000FF;
+	Thu, 10 Sep 2026 11:05:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1789038333;
+	bh=9YZk2wCzZD7ud7nbBKJ04FWJsPn8EDTK/gTOXxFQNOk=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=O9P4brTBs+SaRO9GQMBGP55ozrj8eS/wvn34kbSVOVVvQGSv+4hQWqHtjF2Onz9AN
+	 /ZlxWsqUVNcxSq+6K2ChEbK2QSC0ahYV+IaDzTtpnV5KIEA34pSjHKM/7MiMMaRg4N
+	 6NGjbWhVcr++iGsRLdFZbdsf/hVDhqjrx8QWxMfTYgWBo7qhIU0H+PuySBwNV8ZW74
+	 Z7DtwGRBvklEoKCi+kEiUWK8uvvtvZFWP+zSaQfmwL4UlRv+cX3UlhBnZjUnzZtiEi
+	 0Jq8KHz8OyRyjw2fZOKgZ3v9cRudaLuE0woLzUhit0+rbKiNXIUYldYZPMLGJ25LzP
+	 fQeVdpHeQUxsA==
+Message-ID: <4b9f8ff1-8b9d-45f5-9012-b648d6e16689@kernel.org>
+Date: Thu, 10 Sep 2026 13:05:18 +0200
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH RFC v3 12/21] mm/pgtable: redefine PGTABLE_LEVEL enum with
+ ascend order from PGD
+To: Yeoreum Yun <yeoreum.yun@arm.com>, Russell King <linux@armlinux.org.uk>,
+ Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
+ Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>,
+ Kairui Song <kasong@tencent.com>, Qi Zheng <qi.zheng@linux.dev>,
+ Shakeel Butt <shakeel.butt@linux.dev>, Barry Song <baohua@kernel.org>,
+ Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>,
+ Wei Xu <weixugc@google.com>, Johannes Weiner <hannes@cmpxchg.org>,
+ Michal Hocko <mhocko@kernel.org>, Lorenzo Stoakes <ljs@kernel.org>,
+ Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>,
+ Anup Patel <anup@brainfault.org>, Atish Patra <atish.patra@linux.dev>,
+ Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+ Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+ Dave Hansen <dave.hansen@linux.intel.com>, Andy Lutomirski
+ <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+ Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, x86@kernel.org,
+ "H. Peter Anvin" <hpa@zytor.com>, "Liam R. Howlett" <liam@infradead.org>,
+ Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>,
+ Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
+ Jonas Bonn <jonas@southpole.se>,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ Stafford Horne <shorne@gmail.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ loongarch@lists.linux.dev, linux-mips@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-mm@kvack.org, kvm@vger.kernel.org,
+ kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
+ linux-openrisc@vger.kernel.org
+References: <20260902-dummy_ptxp3-v3-0-5d8f5b17c25c@arm.com>
+ <20260902-dummy_ptxp3-v3-12-5d8f5b17c25c@arm.com>
+From: "David Hildenbrand (Arm)" <david@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=david@kernel.org; keydata=
+ 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
+ qIws/H2t
+In-Reply-To: <20260902-dummy_ptxp3-v3-12-5d8f5b17c25c@arm.com>
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -107,29 +136,33 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Sean Christopherson <seanjc@google.com> writes:
+On 9/2/26 13:56, Yeoreum Yun wrote:
+> The PGTABLE_LEVEL enum values appear to be ordered in the opposite direction
+> from their intended usage.
+> 
+> Intuitively, higher page table levels should have smaller enum values,
+> but PTE is currently assigned 0.
+> 
+> For consistency and cleanup, reverse the enum value ordering.
+> 
+> Since there is no current user relies on these numbers to be ascending from
+> PTE->PGD, so it can be changed to be ascending from PGD->PTE, in the
+> direction of the page table walk.
+> 
+> Signed-off-by: Yeoreum Yun <yeoreum.yun@arm.com>
+> ---
 
-> Use the quad-underscores physical page allocator API in the memslot perf
-> test in anticipation of converting the outer versions to take the memory
-> region type instead of the raw memslot.  Stating the obvious, the memslot
-> perf test creates and allocates from multiple memslots, and so can't use
-> MEM_REGION_TEST_DATA to communicate which region/slot to allocate from.
->
-> No functional change intended.
->
+Reviewed-by: David Hildenbrand (Arm) <david@kernel.org>
 
-yup. Indeed the later APIs will drop the memslot argument from the
-main/outer page allocator APIs, so we need to use the
-____vm_phy_pages_alloc() variant here. The change looks good to me.
+-- 
+Cheers,
 
-Please feel free to add:
-Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+David
 
 -- 
 kvm-riscv mailing list
