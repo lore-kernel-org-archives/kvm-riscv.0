@@ -4,109 +4,89 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7778FC88E45
-	for <kvm-riscv@archiver.kernel.org>; Fri, 11 Sep 2026 07:24:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F2223C88E4C
+	for <kvm-riscv@archiver.kernel.org>; Fri, 11 Sep 2026 09:50:24 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
-	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:Subject:Message-ID:Date:From:
-	In-Reply-To:References:MIME-Version:Reply-To:Content-ID:Content-Description:
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
+	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
+	List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:Subject:
+	MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=UZ3+TXSPGRqdgiNgkntgRsMqWXnOUr0+0NeUEVghQno=; b=mAepn/fFoFkYZ3
-	yw0KSWuj8vKWaTtn8BiPJE9TX4AgafBmqtBHspBkPt3Qf9K5YVM+DUz7pUXyKvrHuzfMYcUeoVEeX
-	AzmpInowOttx3cvHCPL+Tzb60UaIe1+8LsVtHMcrpU17uiqEn+Piq4xR4Jw1HM1+nsu8TTVRSHcyj
-	Zw1EcByBHf/e64iHAjPgrS2kYL0gKVIofcARQU8EpRL+Nyq/dSoXTrVpUIOQDUnkZQs3G3zTr5vvg
-	g9Jz91Yi30BGBCCwH22g7KVMQduP2Eqa4kCT7Rh4Iw0jJNAx2Qu/HHn4GgAD+a9/KWjpVOuX+zBZR
-	EiULhiaZI5AUYDvjKdUg==;
+	List-Owner; bh=m0K7oH1j1u2w0G9qyfPTouq4y20klPQFOUm0a5eMlKA=; b=vJwW/FP4jMSmfR
+	ftJ5/v5sXz/I6ffvVXBvjilC3GzDhgmXyWxiE1O3pNk06usBdB9IuIJhtQdsk/Ao8Vm2vHk13ZS9O
+	mrWh5+NPf8nwRizEFqxPzSuCMJi0a/k+fQUoUa4iBBFRENg60NjNFiXqM/LlUym6CW4PEjDEzTAyB
+	J9pFeeQf9QzObewZ+o1OfuM3AsoIkVHHEi/lOGRP/uAIqq9bnkWA3tkp6SAAUhKz1kjmbjn9iX/jb
+	7pdxEH0Ojv1Sg9sYLEahN0c7Gu7ZblCSLz3rYtS+Irb2NNZJGyMn8Toki03k2tg7+F0M4NDGuYUSs
+	eO17Vuo/D02kace30u+g==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x4vcp-0000000G0yW-0bpM;
-	Fri, 11 Sep 2026 07:24:43 +0000
-Received: from mail-wr1-x431.google.com ([2a00:1450:4864:20::431])
+	id 1x4xto-0000000GIrY-2fAN;
+	Fri, 11 Sep 2026 09:50:24 +0000
+Received: from mail-pj2-x10.google.com ([2607:f8b0:4864:39::10])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x4vcm-0000000G0w7-0mur
+	id 1x4xtj-0000000GIqP-3iEA
 	for kvm-riscv@lists.infradead.org;
-	Fri, 11 Sep 2026 07:24:41 +0000
-Received: by mail-wr1-x431.google.com with SMTP id ffacd0b85a97d-485850cf499so421320f8f.3
-        for <kvm-riscv@lists.infradead.org>; Fri, 11 Sep 2026 00:24:39 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1789111478; cv=none;
-        d=google.com; s=arc-20260327;
-        b=bMvQf8LucEWSG3KxCcQWVwXTrWsiiDncf7AGdTORepI61vMiWykFVkqe2lY22uWveq
-         xUbKhFz60lY1WKXlo0vI54zFUb7r2oHrxJhFqyb5SdcJiUwsIlgUShOH+J9nInoeSQbA
-         Olw88viivo51zPj5m+XdhmwITcj7MRhsk3pBgZPurc8wgTYXKN5tvXQa4l9jPhSR85xS
-         zctceeTmxvsDMDbiuzejPdZAUjGRRL4QR1bfAew9XjKeuoX9PdbAvqt+AZzc8rNb+/f9
-         AnzERrZ8H2lk7OBUSa7A7q83LMVjGEhqnELH/vC/EnEZKwbCrra7lPvNAlgj+QenaGK1
-         2pIA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=7ZBw3ZTwOIgY959yo8ebXtIDcCXQztOd/7/v3zr0SCc=;
-        fh=tJ8LCegsrq+bhZDTHTb1ml0ti1gOaEn5F0RLf3llSsE=;
-        b=r8vwVizhIapIGxIEu18+dmtrut/dG16SOaqORxmXa4WJkcfXMuLOAGtzlF/HmBbnms
-         HeD+0fEEthgnCDQYVZRJ8MEzgEzrIv1po/RVAeX3EjbHRE8vF1//4c8PJ8gBwT0Kgs0m
-         3VGBbzMZK6tuY+mFCzNxkz+atdRh196eF9XZcOfGEE1FUrMRoOs7rOofucGpF9WRd7wq
-         znBehmorjhn6HmH4aWZpmlW7fi2oB0ExDqKNMtOtyF/zJBZ7XBXyWg7C2y2wxeOJLGfs
-         YPLpgDvex1tWRRfZkzDLZEHHgu/cPefVYPF1QZbzQW5w+PMreMJONLOeT32SnpDmbUeC
-         Fb3A==;
-        darn=lists.infradead.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	Fri, 11 Sep 2026 09:50:22 +0000
+Received: by mail-pj2-x10.google.com with SMTP id 98e67ed59e1d1-398c066106cso545866a91.1
+        for <kvm-riscv@lists.infradead.org>; Fri, 11 Sep 2026 02:50:19 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=brainfault.org; s=google; t=1789111478; x=1789716278; darn=lists.infradead.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=7ZBw3ZTwOIgY959yo8ebXtIDcCXQztOd/7/v3zr0SCc=;
-        b=U0JvGDzeGsslVqBcmTgaz2nvSwJszExjP1uRkUQPJyY2DezQ9+yNPcOYimD6hR+kQ2
-         HnDQ+E1geBmjxlQVUK+0Oy9e1JufaMTIxJ6QdC5ezPEUoI8z1nLuGKL0NaRVQxuhbwqg
-         CR762DT1N4rlFugrba3ro1QMjcwkltzn9TMpvyWHSz3CTey/z3cBjI0AEpZtgR7UJ3A7
-         VCb8wz4eV4HEytpMiBagiCLbQ3ufw/w4xU9tJfFPv6vOa6lrAOWZJSGGIna9yAtk6NEP
-         D4NiyqBpbMn6p6+H5v1T3tHMWEkCu4WjQbm4OBCLxnJ4J80fyUy7H9+AVYXgsoxWX5H4
-         LTeg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1789111478; x=1789716278;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+        d=gmail.com; s=20251104; t=1789120219; x=1789725019; darn=lists.infradead.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=7ZBw3ZTwOIgY959yo8ebXtIDcCXQztOd/7/v3zr0SCc=;
-        b=BOd6vmCI+Rc2xAsmK2yVEA62MR8ptXSiLLd0msq0IDwmEYLcJEwfDhYVo6seCCLL6h
-         tv/EUCOq6qoPAUVpFYWaacjSabQvoqUGBdAl2r8iJZhh2AZSbq9Qwdal1PKfxONO9BY8
-         tESPeCE68RnFdHKvjDPudpeRjp+1a4+WmMr3Cm2KkGgGkbU+iQX1llwvLz+WaduoQryf
-         +cNtH3F0FQ2CL9DeCH87xRmLUtfzoInswgnJc99onV9Zsa9201carYq5UDwGPzarVf73
-         Q3AkCD2OwX4xqj6rE0CSRvPbX0NH/1I0pRrnkRqaV5hgfPKLR4YKYozI3Q/ogrUiMwW9
-         k3lg==
-X-Forwarded-Encrypted: i=1; AKwUvByiZuAjoRoPPapOGpQHqp/rQbwYLPmenD4fwEQqC4LLFee0V8X2lG7++aAmBmf855iSFrhhc6xqk6A=@lists.infradead.org
-X-Gm-Message-State: AFuF++k8262DcKmGSRBukC/mDJ2B+WTmCh00+MaBaEdN0jR7M/CjdJdP
-	qXRT6jCZNRcSdaO6qbao0EV60L12ZxfXICLIl/HZsYRBO23VElHyfWTRrRGt6JiJOtHhvjsYkzb
-	uzIALblZqOV1x8pKvzqtguZNLBUiIJL2OkAG/fYsMJQ==
-X-Gm-Gg: AYBFou3nA64/SG75XaOjZkio7BjtY9OO3sqtK3fr1Tm3YAFQ4B0OPQE8arY1UuAOUfm
-	8DsfMUyEaY7QirVpRTvyJh63TtTc7D7hkxJptKJ2NJA8AOX8B7gy0x9NdjEzzls/ryGbG0ceZRd
-	TcXiE46Dt6OjXGN8Mo5YpYBuYUnE94bTEFAI2bvU9TDCtJUPO5MidMpbgkRZoBkBd27QeSJxyko
-	EFqvVMKgdj8vhZc7f2xiyRHZ8rNkggJn9t9fWj094UvdPuUVOvqC2FcgsLH0F3qQZAM+/wk3iAn
-	LiIUYduwjBO0RLgzLyHvRmUYTq3jVMuLBCw/vMyWI9GSS1VwmQ1VvjOAo8ub6XzFaTLW5/LsBld
-	MwVjP78R0gKnfGyJaMEhicPOy8XSQUNsTaN+xKsvl0fKWV1dNl5XaMO8qvq7JgIWZYdK/PUnIpw
-	==
-X-Received: by 2002:a05:6000:2005:b0:485:9233:a5ae with SMTP id
- ffacd0b85a97d-486eafd5eb0mr3126572f8f.3.1789111478364; Fri, 11 Sep 2026
- 00:24:38 -0700 (PDT)
+        bh=lpZ/UQ4AkTJ61oeiBTSNoMmIV3BY5yM55iesC2dqb20=;
+        b=sIuOLdnzg8tv2BEC1iC42Kc/e02gEV7d4F7dk9gO+DN59CWYrok/OH2/KoUqHUn8jQ
+         7XyQIZv0q2UWCi14NZYk37j2PsNH8LI9mpHAjZP+dUW9ysLerbTslJXlpNZZCLY3cFiH
+         9oPhTkDZvXEq90kfhM5qH/fFWYFa6s26nkHU3tYFLBjQd7rUSgQt3x5Ztlb/mmM/uIF7
+         MFQWUz7wZc8DlxwCGumNB9LjKbJsNjdPO5DugDE1zFcunikgTbpIjDXa84tAZpzj08d5
+         q0XMIVrCJBzPNm2/RkOdfoXFFOK0Dx7+PMaMHwKJCbWSADRmEPX7hET7SPi9fXEsGuO9
+         +FiQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1789120219; x=1789725019;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=lpZ/UQ4AkTJ61oeiBTSNoMmIV3BY5yM55iesC2dqb20=;
+        b=SvfqbN6+r3y88OmTrq7206TIsTJtGVHeZn85S+jpYuYi9rDsFcfKbJfeeITt58APOf
+         Mlfss/YCX3J1gkzWjxSWYwN88hGRXvcNsJe8GK1+wW/IrnL8a//deo68EG1WEVerg3oG
+         aRf77MHwEtQvCtv86fAKbFl/ysmDJBRo6GMUBn05EqouObxiA+mzgruGGtVAcu2HSZLG
+         PEqXgRfCEdR28e7IbXb5cJsQJz6WX7ZPl9qhIhs4Z502nEvyEGriJamjVHjZWzcPXHcA
+         HFFdghkr+Ac4Vg3WDbve+I/243V8wiHEFltSMTu8CfBGiAXwM8xWKvbMAXsniQsmEyeC
+         CbIw==
+X-Forwarded-Encrypted: i=1; AKwUvBwdESc2SCt7LEDmmaIIDGN2zoEHPfVwojGzXcp5A106bTwnHnqfZN01tUa8h7UA/VWSx7XeizrIScw=@lists.infradead.org
+X-Gm-Message-State: AFuF++nznzke304AmAQqvUoikqE/ZGjkUOBZA9cdBCamPQ1fxbW3iNK1
+	kLZCW40lPv9nG4JvW9G2sIaEaI4Eo25FschJe4cYpzeYyKgfF/dFLKk7
+X-Gm-Gg: AYBFou3QUpuAVEuxO7hT7rMuiiVKmdOai+wuXzezp3xSkX9PTpGAhQkMt58AcZ8+zmR
+	i09wX7BS1LV8gkUi28CkrWccCXVcLGMsXYvUMBgftHWEZ4nYQzenAqaiQhCL5BJkQsboLjTVPi7
+	XqjDcJds4g4Bl2JoXfeL51kV3IiwUAan+Gsy6HvmCSsTJXKtqv3sMogvOxUQMlHa+6F3j9LM7mc
+	jPff04sBlrHOyQNQzYa5rAciQVh+uK/KaqPCIrcf1/NBz72K/XNi+dNardasfv5YBeqx6clrFMK
+	eGraoYRSvi9mjJcavme8PedDZuZ1BZepliAqth08aJOPtL7myV/s7JyDvhw1BLZSUIYHNcwHg84
+	9IoX/Ah+hRbsghxyGCHB/cB9PEVsVZZoUBDtq6qhMegEW1EvTvovKUkMHjTaBitNG6EO8eH3Vjm
+	LPpKfVal6MOeQKd1ZhIu5CU29Jq4saH8RYJUQaagXhIcS+DqOApJZTXKc7ykz8IpuNqU47dWtr
+X-Received: by 2002:a17:90b:164a:b0:399:1b64:e0d7 with SMTP id 98e67ed59e1d1-39d9c20c6f3mr4635407a91.19.1789120218848;
+        Fri, 11 Sep 2026 02:50:18 -0700 (PDT)
+Received: from [192.168.0.13] ([172.92.174.155])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-39da6016718sm1766700a91.15.2026.09.11.02.50.18
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 11 Sep 2026 02:50:18 -0700 (PDT)
+Message-ID: <4ad187c9-44ae-461a-a29e-2531f0906a1b@gmail.com>
+Date: Fri, 11 Sep 2026 02:50:17 -0700
 MIME-Version: 1.0
-References: <cover.1786512671.git.pengpeng@iscas.ac.cn> <4852f3b8985c353811fa065e4701d76dc9a7f086.1786512671.git.pengpeng@iscas.ac.cn>
-In-Reply-To: <4852f3b8985c353811fa065e4701d76dc9a7f086.1786512671.git.pengpeng@iscas.ac.cn>
-From: Anup Patel <anup@brainfault.org>
-Date: Fri, 11 Sep 2026 12:54:26 +0530
-X-Gm-Features: AcwNN1UilFvQBMBFE1D37iU-TcFZA6Ymj5ixovFg4tSLMmtpRh77_3nZieaFccc
-Message-ID: <CAAhSdy2gxgY6yjQRVhgwV2kLB8ZGwsuseOVPWF6KJsjPOLeP_g@mail.gmail.com>
-Subject: Re: [PATCH 2/2] RISC-V: KVM: Disallow GPA-width changes after AIA init
-To: Pengpeng Hou <pengpeng@iscas.ac.cn>
-Cc: Atish Patra <atish.patra@linux.dev>, Paul Walmsley <pjw@kernel.org>, 
-	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
-	Alexandre Ghiti <alex@ghiti.fr>, Fangyu Yu <fangyu.yu@linux.alibaba.com>, 
-	Andrew Jones <andrew.jones@oss.qualcomm.com>, Nutty Liu <nutty.liu@hotmail.com>, 
-	Guo Ren <guoren@kernel.org>, kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
-	linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] riscv/kvm: Only context-switch senvcfg where it exists
+To: Davidlohr Bueso <dave@stgolabs.net>, anup@brainfault.org,
+ atish.patra@linux.dev
+Cc: pjw@kernel.org, palmer@dabbelt.com, aou@eecs.berkeley.edu,
+ linux-riscv@lists.infradead.org, kvm-riscv@lists.infradead.org
+References: <20260827211209.2871124-1-dave@stgolabs.net>
+Content-Language: en-US
+From: Bo Gan <ganboing@gmail.com>
+In-Reply-To: <20260827211209.2871124-1-dave@stgolabs.net>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260911_002440_252305_8D2DC797 
-X-CRM114-Status: GOOD (  15.38  )
+X-CRM114-CacheID: sfid-20260911_025020_955791_C4180375 
+X-CRM114-Status: GOOD (  19.99  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -118,39 +98,95 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-T24gV2VkLCBBdWcgMTIsIDIwMjYgYXQgMTE6MDnigK9BTSBQZW5ncGVuZyBIb3UgPHBlbmdwZW5n
-QGlzY2FzLmFjLmNuPiB3cm90ZToKPgo+IEtWTV9FTkFCTEVfQ0FQKEtWTV9DQVBfVk1fR1BBX0JJ
-VFMpIGFsbG93cyB1c2Vyc3BhY2UgdG8gcmVkdWNlIHRoZQo+IHN0YWdlLTIgR1BBIHdpZHRoIHdo
-aWxlIGEgVk0gaGFzIG5vIHZDUFVzIG9yIG1lbW9yeSBzbG90cy4KPgo+IEFJQSBpbml0aWFsaXph
-dGlvbiBjYW4gc3RpbGwgY29tcGxldGUgd2l0aCBhbiBBUExJQyBhbmQgbm8gdkNQVXMgb3IKPiBt
-ZW1vcnkgc2xvdHMuICBJbiB0aGF0IHN0YXRlLCB0aGUgQVBMSUMgTU1JTyBkZXZpY2UgaGFzIGFs
-cmVhZHkgYmVlbgo+IHJlZ2lzdGVyZWQsIGJ1dCB0aGUgZXhpc3RpbmcgY2hlY2tzIGFsbG93IHVz
-ZXJzcGFjZSB0byBzaHJpbmsgdGhlIEdQQQo+IHdpZHRoIGJlbG93IGl0cyBhZGRyZXNzLgo+Cj4g
-UmVqZWN0IEdQQS13aWR0aCBjaGFuZ2VzIGFmdGVyIEFJQSBpbml0aWFsaXphdGlvbi4gIEJvdGgg
-cGF0aHMgaG9sZAo+IGt2bS0+bG9jaywgc28gdGhlIGNoZWNrIGFsc28gY2xvc2VzIHRoZSByYWNl
-IGJldHdlZW4gZmluYWwgQUlBIGFkZHJlc3MKPiB2YWxpZGF0aW9uIGFuZCBwdWJsaWNhdGlvbi4K
-Pgo+IEZpeGVzOiA3MjYzYjRmZGIwYjIgKCJSSVNDLVY6IEtWTTogUmV1c2UgS1ZNX0NBUF9WTV9H
-UEFfQklUUyB0byBzZWxlY3QgSEdBVFAuTU9ERSIpCj4gU2lnbmVkLW9mZi1ieTogUGVuZ3Blbmcg
-SG91IDxwZW5ncGVuZ0Bpc2Nhcy5hYy5jbj4KCkxHVE0uCgpSZXZpZXdlZC1ieTogQW51cCBQYXRl
-bCA8YW51cEBicmFpbmZhdWx0Lm9yZz4KClRoYW5rcywKQW51cAoKCj4gLS0tCj4gIGFyY2gvcmlz
-Y3Yva3ZtL3ZtLmMgfCAzICsrLQo+ICAxIGZpbGUgY2hhbmdlZCwgMiBpbnNlcnRpb25zKCspLCAx
-IGRlbGV0aW9uKC0pCj4KPiBkaWZmIC0tZ2l0IGEvYXJjaC9yaXNjdi9rdm0vdm0uYyBiL2FyY2gv
-cmlzY3Yva3ZtL3ZtLmMKPiBpbmRleCBhOWYwODNmZWViNzYuLjY2ZWRmYWE4NjI0MyAxMDA2NDQK
-PiAtLS0gYS9hcmNoL3Jpc2N2L2t2bS92bS5jCj4gKysrIGIvYXJjaC9yaXNjdi9rdm0vdm0uYwo+
-IEBAIC0yNTAsNyArMjUwLDggQEAgaW50IGt2bV92bV9pb2N0bF9lbmFibGVfY2FwKHN0cnVjdCBr
-dm0gKmt2bSwgc3RydWN0IGt2bV9lbmFibGVfY2FwICpjYXApCj4gICAgICAgICAgICAgICAgIG11
-dGV4X2xvY2soJmt2bS0+bG9jayk7Cj4gICAgICAgICAgICAgICAgIG11dGV4X2xvY2soJmt2bS0+
-c2xvdHNfbG9jayk7Cj4KPiAtICAgICAgICAgICAgICAgaWYgKGt2bS0+Y3JlYXRlZF92Y3B1cyB8
-fCAha3ZtX2FyZV9hbGxfbWVtc2xvdHNfZW1wdHkoa3ZtKSkKPiArICAgICAgICAgICAgICAgaWYg
-KGt2bS0+Y3JlYXRlZF92Y3B1cyB8fCAha3ZtX2FyZV9hbGxfbWVtc2xvdHNfZW1wdHkoa3ZtKSB8
-fAo+ICsgICAgICAgICAgICAgICAgICAga3ZtX3Jpc2N2X2FpYV9pbml0aWFsaXplZChrdm0pKQo+
-ICAgICAgICAgICAgICAgICAgICAgICAgIHIgPSAtRUJVU1k7Cj4gICAgICAgICAgICAgICAgIGVs
-c2UKPiAgICAgICAgICAgICAgICAgICAgICAgICBrdm0tPmFyY2gucGdkX2xldmVscyA9IG5ld19s
-ZXZlbHM7Cj4gLS0KPiAyLjUwLjEgKEFwcGxlIEdpdC0xNTUpCj4KCi0tIAprdm0tcmlzY3YgbWFp
-bGluZyBsaXN0Cmt2bS1yaXNjdkBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZy
-YWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8va3ZtLXJpc2N2Cg==
+Hi Davidlohr,
+
+Thanks for attempting to fix this long standing issue on P550. While
+you are at it, can you add the conditional write of henvcfg as well?
+P550 lacks both henvcfg and senvcfg, so needs to avoid touch either
+of them. Be ware that the vendor's OpenSBI carries a patch to silently
+ignore the access of h/senvcfg:
+https://github.com/sifiveinc/meta-sifive/commit/942256244c61517d375d9359577dafeb04e258e8
+
+However, this patch is just wrong -- it doesn't set return values
+properly; it doesn't check for previous privilege levels...
+
+You can just use the latest upstream OpenSBI, where I've contributed the
+EIC7700/P550 support code, and get rid of all these vendor shenanigans.
+I've thought about doing a proper emulation of henvcfg/senvcfg and hard-
+wire them to 0 in OpenSBI, but later it's deemed not spec compliant --
+if henvcfg is available, then FIOM bits must be writable.
+
+Thus, you are doing the right thing avoiding accessing them in HS mode.
+Please add the henvcfg handling, and I can help testing it. It should be
+a pretty simple change.
+
+Bo
+
+
+On 8/27/26 14:12, Davidlohr Bueso wrote:
+> senvcfg arrived in privileged spec 1.12, but H-capable cores on a
+> 1.11 base exist, ie: sifive P500 (ESWIN EIC7700X) implements the
+> hypervisor extension yet has no senvcfg. KVM swaps the CSR
+> unconditionally on every vCPU entry, panicing the host upon a guest
+> executing its first instruction:
+> 
+>    Oops - illegal instruction [#1]
+>    Modules linked in: kvm
+>    CPU: 2 UID: 0 PID: 127 Comm: qemu-system-ris Not tainted 7.2.0-kvm73bug+ #4 PREEMPTLAZY
+>    Hardware name: Unknown Unknown Product/Unknown Product, BIOS 2024.01 01/01/2024
+>    epc : kvm_riscv_vcpu_enter_exit+0x26/0xcf8 [kvm]
+>     ra : kvm_arch_vcpu_ioctl_run+0x4ce/0x5a6 [kvm]
+>    status: 0000000200000100 badaddr: 0000000010a797f3 cause: 0000000000000002
+>    [<ffffffff01df432e>] kvm_riscv_vcpu_enter_exit+0x26/0xcf8 [kvm]
+>    [<ffffffff01deb3b0>] kvm_arch_vcpu_ioctl_run+0x4ce/0x5a6 [kvm]
+>    [<ffffffff01dd7914>] kvm_vcpu_ioctl+0x180/0x5e4 [kvm]
+>    [<ffffffff8025702e>] __riscv_sys_ioctl+0x84/0x9a
+>    [<ffffffff80dfdc72>] do_trap_ecall_u+0x1d8/0x38a
+>    [<ffffffff80e08644>] handle_exception+0x168/0x174
+>    Code: 84aa 892e b703 8887 1773 1067 3023 16e5 b783 8907 (97f3) 10a7
+> 
+> Touch the CSR only when RISCV_ISA_EXT_XLINUXENVCFG is set, similar
+> to __switch_to_envcfg() as well as other swaps conditional on
+> their extentions.
+> 
+> Fixes: db3c01c7a308 ("RISCV: KVM: Add senvcfg context save/restore")
+> Signed-off-by: Davidlohr Bueso <dave@stgolabs.net>
+> ---
+>   arch/riscv/kvm/vcpu.c | 6 ++++--
+>   1 file changed, 4 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+> index e062ca19f9d8..0c2d58db13ab 100644
+> --- a/arch/riscv/kvm/vcpu.c
+> +++ b/arch/riscv/kvm/vcpu.c
+> @@ -773,7 +773,8 @@ static __always_inline void kvm_riscv_vcpu_swap_in_guest_state(struct kvm_vcpu *
+>   	struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
+>   
+>   	vcpu->arch.host_scounteren = csr_swap(CSR_SCOUNTEREN, csr->scounteren);
+> -	vcpu->arch.host_senvcfg = csr_swap(CSR_SENVCFG, csr->senvcfg);
+> +	if (riscv_has_extension_unlikely(RISCV_ISA_EXT_XLINUXENVCFG))
+> +		vcpu->arch.host_senvcfg = csr_swap(CSR_SENVCFG, csr->senvcfg);
+>   	if (riscv_has_extension_unlikely(RISCV_ISA_EXT_SMSTATEEN))
+>   		vcpu->arch.host_sstateen0 = csr_swap(CSR_SSTATEEN0, smcsr->sstateen0);
+>   	if (riscv_has_extension_unlikely(RISCV_ISA_EXT_ZICFISS))
+> @@ -787,7 +788,8 @@ static __always_inline void kvm_riscv_vcpu_swap_in_host_state(struct kvm_vcpu *v
+>   	struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
+>   
+>   	csr->scounteren = csr_swap(CSR_SCOUNTEREN, vcpu->arch.host_scounteren);
+> -	csr->senvcfg = csr_swap(CSR_SENVCFG, vcpu->arch.host_senvcfg);
+> +	if (riscv_has_extension_unlikely(RISCV_ISA_EXT_XLINUXENVCFG))
+> +		csr->senvcfg = csr_swap(CSR_SENVCFG, vcpu->arch.host_senvcfg);
+>   	if (riscv_has_extension_unlikely(RISCV_ISA_EXT_SMSTATEEN))
+>   		smcsr->sstateen0 = csr_swap(CSR_SSTATEEN0, vcpu->arch.host_sstateen0);
+>   	if (riscv_has_extension_unlikely(RISCV_ISA_EXT_ZICFISS))
+
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
