@@ -4,89 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F2223C88E4C
-	for <kvm-riscv@archiver.kernel.org>; Fri, 11 Sep 2026 09:50:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 98C10C88E4C
+	for <kvm-riscv@archiver.kernel.org>; Fri, 11 Sep 2026 10:13:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
-	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
-	List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:Subject:
-	MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
+	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=m0K7oH1j1u2w0G9qyfPTouq4y20klPQFOUm0a5eMlKA=; b=vJwW/FP4jMSmfR
-	ftJ5/v5sXz/I6ffvVXBvjilC3GzDhgmXyWxiE1O3pNk06usBdB9IuIJhtQdsk/Ao8Vm2vHk13ZS9O
-	mrWh5+NPf8nwRizEFqxPzSuCMJi0a/k+fQUoUa4iBBFRENg60NjNFiXqM/LlUym6CW4PEjDEzTAyB
-	J9pFeeQf9QzObewZ+o1OfuM3AsoIkVHHEi/lOGRP/uAIqq9bnkWA3tkp6SAAUhKz1kjmbjn9iX/jb
-	7pdxEH0Ojv1Sg9sYLEahN0c7Gu7ZblCSLz3rYtS+Irb2NNZJGyMn8Toki03k2tg7+F0M4NDGuYUSs
-	eO17Vuo/D02kace30u+g==;
+	List-Owner; bh=HOC5oc7fSPoL/PsEE8iRiF72cb5HlDh5Gs4aiUY+bv4=; b=LwhU8vOQ7Tyoo1
+	5em45yEpQS0Y1egte+DrwFRg9ApFv2PL5Z8WMKhGLDV4H36F2ScrU9kaOWoayuyPIwgfLrzzmN3T1
+	MqGyyBlcAR6rMG28ZYgmom36ENTd0rtYF16bveUbdxXn2gdk4RFrZ35Zm3xt+Syy7XVCz8tm4cUzR
+	OxmEDNSOtFeGqSabF5FAcLT6NR0Jy/xx0OE12uFf9wdOzH70mJT2UBWYEi25/Rr1t7H5HK4tUKquH
+	hOUxs2w5Qbq7Sfe9W8CN/xuQ/4Ea+oN4Yp/VWb7C/9ULXFXQWIm1dSPvbFpY6rslsX7Q+arcfySoL
+	9Pig5sXTLtwvnCB3iFMA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x4xto-0000000GIrY-2fAN;
-	Fri, 11 Sep 2026 09:50:24 +0000
-Received: from mail-pj2-x10.google.com ([2607:f8b0:4864:39::10])
+	id 1x4yGS-0000000GLIz-1FVD;
+	Fri, 11 Sep 2026 10:13:48 +0000
+Received: from sea.source.kernel.org ([2600:3c0a:e001:78e:0:1991:8:25])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x4xtj-0000000GIqP-3iEA
-	for kvm-riscv@lists.infradead.org;
-	Fri, 11 Sep 2026 09:50:22 +0000
-Received: by mail-pj2-x10.google.com with SMTP id 98e67ed59e1d1-398c066106cso545866a91.1
-        for <kvm-riscv@lists.infradead.org>; Fri, 11 Sep 2026 02:50:19 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789120219; x=1789725019; darn=lists.infradead.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=lpZ/UQ4AkTJ61oeiBTSNoMmIV3BY5yM55iesC2dqb20=;
-        b=sIuOLdnzg8tv2BEC1iC42Kc/e02gEV7d4F7dk9gO+DN59CWYrok/OH2/KoUqHUn8jQ
-         7XyQIZv0q2UWCi14NZYk37j2PsNH8LI9mpHAjZP+dUW9ysLerbTslJXlpNZZCLY3cFiH
-         9oPhTkDZvXEq90kfhM5qH/fFWYFa6s26nkHU3tYFLBjQd7rUSgQt3x5Ztlb/mmM/uIF7
-         MFQWUz7wZc8DlxwCGumNB9LjKbJsNjdPO5DugDE1zFcunikgTbpIjDXa84tAZpzj08d5
-         q0XMIVrCJBzPNm2/RkOdfoXFFOK0Dx7+PMaMHwKJCbWSADRmEPX7hET7SPi9fXEsGuO9
-         +FiQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1789120219; x=1789725019;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=lpZ/UQ4AkTJ61oeiBTSNoMmIV3BY5yM55iesC2dqb20=;
-        b=SvfqbN6+r3y88OmTrq7206TIsTJtGVHeZn85S+jpYuYi9rDsFcfKbJfeeITt58APOf
-         Mlfss/YCX3J1gkzWjxSWYwN88hGRXvcNsJe8GK1+wW/IrnL8a//deo68EG1WEVerg3oG
-         aRf77MHwEtQvCtv86fAKbFl/ysmDJBRo6GMUBn05EqouObxiA+mzgruGGtVAcu2HSZLG
-         PEqXgRfCEdR28e7IbXb5cJsQJz6WX7ZPl9qhIhs4Z502nEvyEGriJamjVHjZWzcPXHcA
-         HFFdghkr+Ac4Vg3WDbve+I/243V8wiHEFltSMTu8CfBGiAXwM8xWKvbMAXsniQsmEyeC
-         CbIw==
-X-Forwarded-Encrypted: i=1; AKwUvBwdESc2SCt7LEDmmaIIDGN2zoEHPfVwojGzXcp5A106bTwnHnqfZN01tUa8h7UA/VWSx7XeizrIScw=@lists.infradead.org
-X-Gm-Message-State: AFuF++nznzke304AmAQqvUoikqE/ZGjkUOBZA9cdBCamPQ1fxbW3iNK1
-	kLZCW40lPv9nG4JvW9G2sIaEaI4Eo25FschJe4cYpzeYyKgfF/dFLKk7
-X-Gm-Gg: AYBFou3QUpuAVEuxO7hT7rMuiiVKmdOai+wuXzezp3xSkX9PTpGAhQkMt58AcZ8+zmR
-	i09wX7BS1LV8gkUi28CkrWccCXVcLGMsXYvUMBgftHWEZ4nYQzenAqaiQhCL5BJkQsboLjTVPi7
-	XqjDcJds4g4Bl2JoXfeL51kV3IiwUAan+Gsy6HvmCSsTJXKtqv3sMogvOxUQMlHa+6F3j9LM7mc
-	jPff04sBlrHOyQNQzYa5rAciQVh+uK/KaqPCIrcf1/NBz72K/XNi+dNardasfv5YBeqx6clrFMK
-	eGraoYRSvi9mjJcavme8PedDZuZ1BZepliAqth08aJOPtL7myV/s7JyDvhw1BLZSUIYHNcwHg84
-	9IoX/Ah+hRbsghxyGCHB/cB9PEVsVZZoUBDtq6qhMegEW1EvTvovKUkMHjTaBitNG6EO8eH3Vjm
-	LPpKfVal6MOeQKd1ZhIu5CU29Jq4saH8RYJUQaagXhIcS+DqOApJZTXKc7ykz8IpuNqU47dWtr
-X-Received: by 2002:a17:90b:164a:b0:399:1b64:e0d7 with SMTP id 98e67ed59e1d1-39d9c20c6f3mr4635407a91.19.1789120218848;
-        Fri, 11 Sep 2026 02:50:18 -0700 (PDT)
-Received: from [192.168.0.13] ([172.92.174.155])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-39da6016718sm1766700a91.15.2026.09.11.02.50.18
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 11 Sep 2026 02:50:18 -0700 (PDT)
-Message-ID: <4ad187c9-44ae-461a-a29e-2531f0906a1b@gmail.com>
-Date: Fri, 11 Sep 2026 02:50:17 -0700
+	id 1x4yGQ-0000000GLIe-3tbC;
+	Fri, 11 Sep 2026 10:13:46 +0000
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 9E893432D5;
+	Fri, 11 Sep 2026 10:13:46 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 88F4F1F000FF;
+	Fri, 11 Sep 2026 10:13:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1789121626;
+	bh=AJ4osXGfnva+GsW9Xj6wSlPvmOYx8+Z4McGwoEWWU6k=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=VXiIsYXGW7V+CUC2hoUUxshBtk//170ahXby5qOmnHCTEG6nprU1IS50u25G/fRQk
+	 sf9ytH2Ce2iGqonEAUfAmBNxEiX0H5gDZvz851NX8EhIuDaWSIQBlPZWYHnVma0aGj
+	 blDmI4LY1KM28dzcRxXSp3rNd+ml+k1Jf5jXcr5BNdmFsP+f0lE+KyInKD5utrTv18
+	 j0kWa0ZAaMlc3Pw4wRDO2h4SoWYRal6ZvW3YmHkVxX6gQf6/JqWhQp1QSVXE2Kca+2
+	 BYYLTVktrg9Xqy9CLQ0dyOX4enXiqnPzEjwUfsC5vJviK7A/gYwNlJA1GGOz2i3bhy
+	 SIFHvCnClRnig==
+Date: Fri, 11 Sep 2026 11:13:15 +0100
+From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+To: Jann Horn <jannh@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, Pedro Falcato <pfalcato@suse.de>, David Hildenbrand <david@kernel.org>, Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Jonathan Corbet <corbet@lwn.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>, Paul Moore <paul@paul-moore.com>, Stephen Smalley <stephen.smalley.work@gmail.com>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>, Kumar Kartikeya Dwivedi <memxor@gmail.com>, Zi Yan <ziy@nvidia.com>, Baolin Wang <baolin.wang@linux.alibaba.com>, Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, Doug Gilbert <dgilbert@interlog.com>, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, "Martin K. Petersen" <mkp@kernel.org>, Jaya Kumar <jayalk@intworks.biz>, Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>, Sebastian Reichel <sre@kernel.org>, John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rik van Riel <riel@surriel.com>, Harry Yoo <harry@kernel.org>, Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Will Deacon <will@kernel.org>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin <npiggin@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>, "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, "David S. Miller" <davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Christian Brauner <brauner@kernel.org>, Matthew Brost <matthew.brost@intel.com>, Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>, Byungchul Park <byungchul@sk.com>, Gregory Price <gourry@gourry.net>, Ying Huang <ying.huang@linux.alibaba.com>, Alistair Popple <apopple@nvidia.com>, Chris Li <chrisl@kernel.org>, Kairui Song <kasong@tencent.com>, Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>, Youngjun Park <youngjun.park@lge.com>, Johannes Weiner <hannes@cmpxchg.org>, Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>, Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>, Xu Xin <xu.xin16@zte.com.cn>, Chengming Zhou <chengming.zhou@linux.dev>, Michal Hocko <mhocko@kernel.org>, Miklos Szeredi <miklos@szeredi.hu>, linux-mm@kvack.org, 
+ linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, linux-usb@vger.kernel.org, linux-rdma@vger.kernel.org, selinux@vger.kernel.org, linux-sound@vger.kernel.org, bpf@vger.kernel.org, linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-trace-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-arch@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, fuse-devel@lists.linux.dev
+Subject: Re: [PATCH 11/39] selinux: reject writable opens of policy file,
+ drop mmap shared/write check
+Message-ID: <aqPS_UHU3MotlchR@gremlin>
+References: <20260908-b4-mmap-prepare-vma-flag-sanify-v1-0-dacf19cce22b@kernel.org>
+ <20260908-b4-mmap-prepare-vma-flag-sanify-v1-11-dacf19cce22b@kernel.org>
+ <CAG48ez3Ucb8HyhjC1-fijFiYJsnWcTLYHvJjzMyU710mgegxnA@mail.gmail.com>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] riscv/kvm: Only context-switch senvcfg where it exists
-To: Davidlohr Bueso <dave@stgolabs.net>, anup@brainfault.org,
- atish.patra@linux.dev
-Cc: pjw@kernel.org, palmer@dabbelt.com, aou@eecs.berkeley.edu,
- linux-riscv@lists.infradead.org, kvm-riscv@lists.infradead.org
-References: <20260827211209.2871124-1-dave@stgolabs.net>
-Content-Language: en-US
-From: Bo Gan <ganboing@gmail.com>
-In-Reply-To: <20260827211209.2871124-1-dave@stgolabs.net>
-X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260911_025020_955791_C4180375 
-X-CRM114-Status: GOOD (  19.99  )
+Content-Disposition: inline
+In-Reply-To: <CAG48ez3Ucb8HyhjC1-fijFiYJsnWcTLYHvJjzMyU710mgegxnA@mail.gmail.com>
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -98,95 +66,33 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Hi Davidlohr,
-
-Thanks for attempting to fix this long standing issue on P550. While
-you are at it, can you add the conditional write of henvcfg as well?
-P550 lacks both henvcfg and senvcfg, so needs to avoid touch either
-of them. Be ware that the vendor's OpenSBI carries a patch to silently
-ignore the access of h/senvcfg:
-https://github.com/sifiveinc/meta-sifive/commit/942256244c61517d375d9359577dafeb04e258e8
-
-However, this patch is just wrong -- it doesn't set return values
-properly; it doesn't check for previous privilege levels...
-
-You can just use the latest upstream OpenSBI, where I've contributed the
-EIC7700/P550 support code, and get rid of all these vendor shenanigans.
-I've thought about doing a proper emulation of henvcfg/senvcfg and hard-
-wire them to 0 in OpenSBI, but later it's deemed not spec compliant --
-if henvcfg is available, then FIOM bits must be writable.
-
-Thus, you are doing the right thing avoiding accessing them in HS mode.
-Please add the henvcfg handling, and I can help testing it. It should be
-a pretty simple change.
-
-Bo
-
-
-On 8/27/26 14:12, Davidlohr Bueso wrote:
-> senvcfg arrived in privileged spec 1.12, but H-capable cores on a
-> 1.11 base exist, ie: sifive P500 (ESWIN EIC7700X) implements the
-> hypervisor extension yet has no senvcfg. KVM swaps the CSR
-> unconditionally on every vCPU entry, panicing the host upon a guest
-> executing its first instruction:
-> 
->    Oops - illegal instruction [#1]
->    Modules linked in: kvm
->    CPU: 2 UID: 0 PID: 127 Comm: qemu-system-ris Not tainted 7.2.0-kvm73bug+ #4 PREEMPTLAZY
->    Hardware name: Unknown Unknown Product/Unknown Product, BIOS 2024.01 01/01/2024
->    epc : kvm_riscv_vcpu_enter_exit+0x26/0xcf8 [kvm]
->     ra : kvm_arch_vcpu_ioctl_run+0x4ce/0x5a6 [kvm]
->    status: 0000000200000100 badaddr: 0000000010a797f3 cause: 0000000000000002
->    [<ffffffff01df432e>] kvm_riscv_vcpu_enter_exit+0x26/0xcf8 [kvm]
->    [<ffffffff01deb3b0>] kvm_arch_vcpu_ioctl_run+0x4ce/0x5a6 [kvm]
->    [<ffffffff01dd7914>] kvm_vcpu_ioctl+0x180/0x5e4 [kvm]
->    [<ffffffff8025702e>] __riscv_sys_ioctl+0x84/0x9a
->    [<ffffffff80dfdc72>] do_trap_ecall_u+0x1d8/0x38a
->    [<ffffffff80e08644>] handle_exception+0x168/0x174
->    Code: 84aa 892e b703 8887 1773 1067 3023 16e5 b783 8907 (97f3) 10a7
-> 
-> Touch the CSR only when RISCV_ISA_EXT_XLINUXENVCFG is set, similar
-> to __switch_to_envcfg() as well as other swaps conditional on
-> their extentions.
-> 
-> Fixes: db3c01c7a308 ("RISCV: KVM: Add senvcfg context save/restore")
-> Signed-off-by: Davidlohr Bueso <dave@stgolabs.net>
-> ---
->   arch/riscv/kvm/vcpu.c | 6 ++++--
->   1 file changed, 4 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-> index e062ca19f9d8..0c2d58db13ab 100644
-> --- a/arch/riscv/kvm/vcpu.c
-> +++ b/arch/riscv/kvm/vcpu.c
-> @@ -773,7 +773,8 @@ static __always_inline void kvm_riscv_vcpu_swap_in_guest_state(struct kvm_vcpu *
->   	struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
->   
->   	vcpu->arch.host_scounteren = csr_swap(CSR_SCOUNTEREN, csr->scounteren);
-> -	vcpu->arch.host_senvcfg = csr_swap(CSR_SENVCFG, csr->senvcfg);
-> +	if (riscv_has_extension_unlikely(RISCV_ISA_EXT_XLINUXENVCFG))
-> +		vcpu->arch.host_senvcfg = csr_swap(CSR_SENVCFG, csr->senvcfg);
->   	if (riscv_has_extension_unlikely(RISCV_ISA_EXT_SMSTATEEN))
->   		vcpu->arch.host_sstateen0 = csr_swap(CSR_SSTATEEN0, smcsr->sstateen0);
->   	if (riscv_has_extension_unlikely(RISCV_ISA_EXT_ZICFISS))
-> @@ -787,7 +788,8 @@ static __always_inline void kvm_riscv_vcpu_swap_in_host_state(struct kvm_vcpu *v
->   	struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
->   
->   	csr->scounteren = csr_swap(CSR_SCOUNTEREN, vcpu->arch.host_scounteren);
-> -	csr->senvcfg = csr_swap(CSR_SENVCFG, vcpu->arch.host_senvcfg);
-> +	if (riscv_has_extension_unlikely(RISCV_ISA_EXT_XLINUXENVCFG))
-> +		csr->senvcfg = csr_swap(CSR_SENVCFG, vcpu->arch.host_senvcfg);
->   	if (riscv_has_extension_unlikely(RISCV_ISA_EXT_SMSTATEEN))
->   		smcsr->sstateen0 = csr_swap(CSR_SSTATEEN0, vcpu->arch.host_sstateen0);
->   	if (riscv_has_extension_unlikely(RISCV_ISA_EXT_ZICFISS))
-
-
--- 
-kvm-riscv mailing list
-kvm-riscv@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/kvm-riscv
+T24gVHVlLCBTZXAgMDgsIDIwMjYgYXQgMTA6MjI6MjBQTSArMDIwMCwgSmFubiBIb3JuIHdyb3Rl
+Ogo+IE9uIFR1ZSwgU2VwIDgsIDIwMjYgYXQgMTA6MDfigK9QTSBMb3JlbnpvIFN0b2FrZXMgKEFS
+TSkgPGxqc0BrZXJuZWwub3JnPiB3cm90ZToKPiA+IFRoZSBwb2xpY3kgZmlsZSBoYXMgbm8gd3Jp
+dGUgbWV0aG9kIGFuZCBpcyBleHBvc2VkIHJlYWQtb25seSAoU19JUlVHTyBpbgo+ID4gc2VsaW51
+eF9maWxlc1tdKSwgeWV0IHNlbF9vcGVuX3BvbGljeSgpIHBlcmZvcm1zIG5vIG9wZW4gbW9kZSBj
+aGVjaywgc28gYQo+ID4gQ0FQX0RBQ19PVkVSUklERSBjYWxsZXIgY2FuIG9wZW4gaXQgT19SRFdS
+LiBSZWplY3QgRk1PREVfV1JJVEUgYXQgb3BlbiwgYXMKPiA+IGtlcm5mcyBkb2VzLgo+ID4KPiA+
+IFRoZSBmaWxlIGNhbiB0aGVuIG5ldmVyIGJlIG1hcHBlZCB3aXRoIEZNT0RFX1dSSVRFLCBzbyBk
+b19tbWFwKCkgYWx3YXlzCj4gPiBjbGVhcnMgVk1fTUFZV1JJVEUgYW5kIFZNX1NIQVJFRCBmb3Ig
+TUFQX1NIQVJFRCBtYXBwaW5ncyBhbmQgdGhlIFZNX1NIQVJFRAo+ID4gY2hlY2sgaW4gc2VsX21t
+YXBfcG9saWN5KCkgY2Fubm90IGJlIHJlYWNoZWQuIFJlbW92ZSBpdC4KPgo+IFlvdSBzaG91bGQg
+YWxzbyBiZSBhYmxlIHRvIHJlbW92ZSB0aGUgc2VsX21tYXBfcG9saWN5X29wcy5wYWdlX21rd3Jp
+dGUKPiBoYW5kbGVyLCB3aGljaCBpcyBvbmx5IGZvciBzaGFyZWQtd3JpdGFibGUgZmF1bHRzLCBy
+aWdodD8KClllYWggSSB0aGluayB5b3UncmUgcmlnaHQsIHRob3VnaCBJIHdvbmRlciBpZiBpdCdz
+IGEgYml0IG91dCBvZiBzY29wZSBmb3IgdGhpcwpjaGFuZ2UgYXMgaXQncyBmb2N1c2VkIG9uIHJl
+bW92aW5nIGEgVk1BX01BWVdSSVRFX0JJVCBjbGVhcmFuY2UgZm9yIGEKbm9uLWtlcm5lbC1vd25l
+ZCBWTUEuCgpTbyBtYXliZSBvbmUgZm9yIGEgZm9sbG93IHVwPwoKPgo+ID4gVGhpcyBhbHNvIHN0
+b3BzIHNlbF9tbWFwX3BvbGljeSgpIGNsZWFyaW5nIFZNX01BWVdSSVRFIG9uIGEgbWFwcGluZyB0
+aGF0IGlzCj4gPiBuZWl0aGVyIGEgUEZOIG1hcCBub3IgYSBtaXhlZCBtYXAsIGFoZWFkIG9mIHRo
+ZSBjb3JlIGVuZm9yY2luZyB0aGF0IG9ubHkKPiA+IHN1Y2ggbWFwcGluZ3MgbWF5IGRvIHNvLgo+
+ID4KPiA+IFNpZ25lZC1vZmYtYnk6IExvcmVuem8gU3RvYWtlcyAoQVJNKSA8bGpzQGtlcm5lbC5v
+cmc+Cj4KPiBSZXZpZXdlZC1ieTogSmFubiBIb3JuIDxqYW5uaEBnb29nbGUuY29tPgoKVGhhbmtz
+IQoKLS0KQ2hlZXJzLCBMb3JlbnpvCgotLSAKa3ZtLXJpc2N2IG1haWxpbmcgbGlzdAprdm0tcmlz
+Y3ZAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFu
+L2xpc3RpbmZvL2t2bS1yaXNjdgo=
