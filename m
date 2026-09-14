@@ -4,49 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0954EC88E78
-	for <kvm-riscv@archiver.kernel.org>; Mon, 14 Sep 2026 15:05:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 935BCC88E75
+	for <kvm-riscv@archiver.kernel.org>; Mon, 14 Sep 2026 15:05:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Message-Id
 	:MIME-Version:Subject:Date:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=LW0HCLKNk5GyH7Nx2Vpxfi9CrpKAVYv4oVLFLeYRv3Y=; b=BPiaLNoCRb1b65
-	6zkLM5WqxAY+mk4jxMHSH/L/WjtBCGNs8rTFM2wJOSYT0XWASJ7Ls98ucHDj3/lrG12bdH/zmF7u4
-	xe2Wo9QKMEvPQ9vd2IuoGkh6Yy3oCkd/mrKSp2Cw3PDA6KOcbMphP2cX0dGAm74nwMo80YY3YLvqO
-	tDfy7YLU8nw9Ts4zDexN516jT88VQTO53jqYNm1ew8E3LYbaxRmpxncoivQ79jLplanLeLLeXuM6s
-	+UDniCV1M9vv6kG16rsw1Knb07OY999xVFURrCwLy7eO677+z9K06OPRK+m+Dumn6f2FvP+JvhNaI
-	surCvpKLwZBDCanntMUg==;
+	List-Owner; bh=0AZpqY8bItgG+w9w4xOckk6orbGQv81hsRuDiP/GHwY=; b=bAH5mEPXE0ghgU
+	NNQvP/xILq13ZQijKqcXpdixaHszqHY8ImbUTPdjZ8Y3DQPUeyYN/UpSkmaNx+4KpVYnyilFGsb5J
+	EuH5YBqtzZEenI621qqwQNqGXWbMCVAIMTexC7MsZYzn3qKgqKOpGO0REd2efvatDwTlHcraDYVCR
+	jGC+6k7J2w4QaAKKHswXg4mTNZOGHh4/2O83BcXGbYu6dEurJuBgmEiQ6C6EEIYs7sW3Mh7SuCyrG
+	kk0mDPHcauUJn/y1foBbQd8TqR8BflORfzH1jz2ChhufqXsm7mVvhdcyEPCTlIZp7Wu3xhj/IchoT
+	v94O+qtKs/TRzBVRwBZQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x68Eu-0000000461z-32ct;
-	Mon, 14 Sep 2026 15:05:00 +0000
+	id 1x68FM-000000046AO-17Xn;
+	Mon, 14 Sep 2026 15:05:28 +0000
 Received: from sea.source.kernel.org ([2600:3c0a:e001:78e:0:1991:8:25])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x68Eu-0000000461m-0nuZ;
-	Mon, 14 Sep 2026 15:05:00 +0000
+	id 1x68FL-000000046A7-3VHA;
+	Mon, 14 Sep 2026 15:05:27 +0000
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id DD46B414EF;
-	Mon, 14 Sep 2026 15:04:59 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B873C1F00893;
-	Mon, 14 Sep 2026 15:04:32 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 930A8431DE;
+	Mon, 14 Sep 2026 15:05:27 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3FB141F00898;
+	Mon, 14 Sep 2026 15:05:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789398299;
-	bh=iKPZ8QoZldXfuRlSWzMd6mSbaJJK7t2kmdRsGSTOMEc=;
+	s=k20260515; t=1789398327;
+	bh=Ht1E3XYrT6zNGxe7BXRz6LPnDrSfYBDlq1F1i7I+270=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=bHAoBXnCjLMOWtgubRwbqEhW8/63qJmiFnf7viZOnUKC23VvlKKwMTzUtqC7d9KfM
-	 shm/X3XkTr93YE4qKtOI38Pj8YcYVg7D9aPJoBatHQXy1SdYfK9QUtFlLO8wU8Jqnz
-	 PR1uM4imIjm6GSZi7j3gsVAePylt+/5gsKdL67nNlqrRxHE5U5MotjGMzG4vWiV8Lc
-	 RahJJumhPqsjra9A4bTa/uh71Z09NULtNMwLwo46z90MgsmRyr0lSZRH0Ef0tzxuv0
-	 AWZ0NY0un9zBKCh/5yTaC6kePa5QaTNYTdPVv6mznb6EuY90bUgNSoO3pN4jEeuUZp
-	 XGK7PzMQlmPlQ==
+	b=UD5PNoW4R8TJPc+RDDL3nG5Y1YQvYyAiYnzBxh0zYH0b/+Bt5gLTsU+RvcepWwXl9
+	 vGmu1XkGwSr/gCqlhbzjULKWUtKhSJS+hFruG4mLMnloiAA6CrcyK4NubUfb7quSnr
+	 +pT32wgyKeo9qghsHa0mPlmJ+DdQ8vYcXEeeirDOZzVJ+ANI96vDPfw5Z5i+P3ACOy
+	 G+NeTFtPHqQafdV1FNH9Ta2sVqxe12g43axrM9WI2nsu7Wx37vTmyVTj3S1gwIDfRa
+	 iqt6wTjJEaikYYmfVMDWTwtWfyRMP4TamLvXWLtw6mN/f+6l8nhmh8/DFWULAokJYP
+	 /2/OVRz0eRFSg==
 From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Date: Mon, 14 Sep 2026 15:57:32 +0100
-Subject: [PATCH v2 12/40] selinux: reject writable opens of policy file,
- drop mmap shared/write check
+Date: Mon, 14 Sep 2026 15:57:33 +0100
+Subject: [PATCH v2 13/40] ALSA: pcm: use vm_insert_page() to map PCM status
+ page
 MIME-Version: 1.0
-Message-Id: <20260914-b4-mmap-prepare-vma-flag-sanify-v2-12-7d9781ed5361@kernel.org>
+Message-Id: <20260914-b4-mmap-prepare-vma-flag-sanify-v2-13-7d9781ed5361@kernel.org>
 References: <20260914-b4-mmap-prepare-vma-flag-sanify-v2-0-7d9781ed5361@kernel.org>
 In-Reply-To: <20260914-b4-mmap-prepare-vma-flag-sanify-v2-0-7d9781ed5361@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>, "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, David Hildenbrand <david@kernel.org>, Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Jonathan Corbet <corbet@lwn.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>, Paul Moore <paul@paul-moore.com>, Stephen Smalley <stephen.smalley.work@gmail.com>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>, Kumar Kartikeya Dwivedi <memxor@gmail.com>, Zi Yan <ziy@nvidia.com>, Baolin Wang <baolin.wang@linux.alibaba.com>, Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, Doug Gilbert <dgilbert@interlog.com>, "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, "Martin K. Petersen" <mkp@kernel.org>, Jaya Kumar <jayalk@intworks.biz>, Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>, Sebastian Reichel <sre@kernel.org>, John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rik van Riel <riel@surriel.com>, Harry Yoo <harry@kernel.org>, Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Will Deacon <will@kernel.org>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin <npiggin@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>, "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, "David S. Miller" <davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Christian Brauner <brauner@kernel.org>, Matthew Brost <matthew.brost@intel.com>, Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>, Byungchul Park <byungchul@sk.com>, Gregory Price <gourry@gourry.net>, Ying Huang <ying.huang@linux.alibaba.com>, Alistair Popple <apopple@nvidia.com>, Chris Li <chrisl@kernel.org>, Kairui Song <kasong@tencent.com>, Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>, Youngjun Park <youngjun.park@lge.com>, Johannes Weiner <hannes@cmpxchg.org>, Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>, Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>, Chengming Zhou <chengming.zhou@linux.dev>, Michal Hocko <mhocko@kernel.org>, Miklos Szeredi <miklos@szeredi.hu>, Xu Xin <xu.xin@linux.dev>
@@ -61,14 +61,15 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, 
  kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
  linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, 
- fuse-devel@lists.linux.dev, "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+ fuse-devel@lists.linux.dev, "Lorenzo Stoakes (ARM)" <ljs@kernel.org>, 
+ Takashi Iwai <tiwai@suse.de>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1880; i=ljs@kernel.org;
- h=from:subject:message-id; bh=aNFeiTnbUkQbxAr7iS7c1JWEd9CfcPtAZlIAhlnNHxY=;
- b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLJWcK/P/j95F9+ty7p/527K+tW0JfG+DEf4P32mmh+dv
- 6vUHwd+7ihlYRDjYpAVU2R5/kV8f5BI2LzOC/5uMHNYmUCGMHBxCsBELpoxMkzsPHubz6Sm1YvB
- RI91mn2IAIPb5HWT9rbvD6zmt58vpsnwm4Wl10N5h3NGzfr/023uJ+zx2VNjEXE2/8at8MbXvpf
- zWQA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2769; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=BufAYcKoxP4rPy82Onp5UAmN13VcupWKa3H7JCJQDTQ=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLJWcK+vLojmLzf1vhywWW+2TchqpeLCfL9Hf29VfFic7
+ +R2i7O1o5SFQYyLQVZMkeX5F/H9QSJh8zov+LvBzGFlAhnCwMUpABPhf87wV+ydcNxHCf/98y12
+ rlP/3Gru9ig8qzvq2nTh51v2lIhrzmP4Z5H1ui/cUeppRvdZIXWXH7ESXP+UXt/fzuhh6JL+ZNE
+ qVgA=
 X-Developer-Key: i=ljs@kernel.org; a=openpgp;
  fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 X-BeenThere: kvm-riscv@lists.infradead.org
@@ -87,55 +88,86 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-The policy file has no write method and is exposed read-only (S_IRUGO in
-selinux_files[]), yet sel_open_policy() performs no open mode check, so a
-CAP_DAC_OVERRIDE caller can open it O_RDWR. Reject FMODE_WRITE at open, as
-kernfs does.
+There's no need to keep a fault handler around for this, instead map on
+mmap.
 
-The file can then never be mapped with FMODE_WRITE, so do_mmap() always
-clears VM_MAYWRITE and VM_SHARED for MAP_SHARED mappings and the VM_SHARED
-check in sel_mmap_policy() cannot be reached. Remove it.
+While we're here, rename area to vma to be consistent.
 
-This also stops sel_mmap_policy() clearing VM_MAYWRITE on a mapping that is
-neither a PFN map nor a mixed map, ahead of the core enforcing that only
-such mappings may do so.
+This correctly makes the mapping a mixed map mapping.
 
-Acked-by: Stephen Smalley <stephen.smalley.work@gmail.com>
-Reviewed-by: Jann Horn <jannh@google.com>
+This works towards establishing the invariant that only PFN mapped or mixed
+map mappings may clear the VM_MAYWRITE flag. The status page mapping clears
+VM_MAYWRITE, so it must be kernel-owned; the control page mapping remains
+writable and is left fault-based.
+
+The assumption is made that the struct pcm_mmap_status structure is at most
+a page in size, which is asserted as a build bug.
+
+This is safe to assume, as the size of the structure is 56 bytes at most.
+
+Acked-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 ---
- security/selinux/selinuxfs.c | 11 +++--------
- 1 file changed, 3 insertions(+), 8 deletions(-)
+ sound/core/pcm_native.c | 38 +++++++++++++-------------------------
+ 1 file changed, 13 insertions(+), 25 deletions(-)
 
-diff --git a/security/selinux/selinuxfs.c b/security/selinux/selinuxfs.c
-index c7d91476971c..545a6f89f9e7 100644
---- a/security/selinux/selinuxfs.c
-+++ b/security/selinux/selinuxfs.c
-@@ -340,6 +340,9 @@ static int sel_open_policy(struct inode *inode, struct file *filp)
- 	struct policy_load_memory *plm = NULL;
- 	int rc;
- 
-+	if (filp->f_mode & FMODE_WRITE)
-+		return -EACCES;
-+
- 	rc = avc_has_perm(current_sid(), SECINITSID_SECURITY,
- 			  SECCLASS_SECURITY, SECURITY__READ_POLICY, NULL);
- 	if (rc)
-@@ -424,14 +427,6 @@ static const struct vm_operations_struct sel_mmap_policy_ops = {
- 
- static int sel_mmap_policy(struct file *filp, struct vm_area_struct *vma)
+diff --git a/sound/core/pcm_native.c b/sound/core/pcm_native.c
+index 62324282fcae..c98fb3df14f3 100644
+--- a/sound/core/pcm_native.c
++++ b/sound/core/pcm_native.c
+@@ -3760,39 +3760,27 @@ static __poll_t snd_pcm_poll(struct file *file, poll_table *wait)
+ /*
+  * mmap status record
+  */
+-static vm_fault_t snd_pcm_mmap_status_fault(struct vm_fault *vmf)
++static int snd_pcm_mmap_status(struct snd_pcm_substream *substream, struct file *file,
++			       struct vm_area_struct *vma)
  {
--	if (vma->vm_flags & VM_SHARED) {
--		/* do not allow mprotect to make mapping writable */
--		vm_flags_clear(vma, VM_MAYWRITE);
--
--		if (vma->vm_flags & VM_WRITE)
--			return -EACCES;
--	}
--
- 	vm_flags_set(vma, VM_DONTEXPAND | VM_DONTDUMP);
- 	vma->vm_ops = &sel_mmap_policy_ops;
+-	struct snd_pcm_substream *substream = vmf->vma->vm_private_data;
++	const unsigned long size = vma->vm_end - vma->vm_start;
+ 	struct snd_pcm_runtime *runtime;
+-	
+-	if (substream == NULL)
+-		return VM_FAULT_SIGBUS;
+-	runtime = substream->runtime;
+-	vmf->page = virt_to_page(runtime->status);
+-	get_page(vmf->page);
+-	return 0;
+-}
++	struct page *page;
  
+-static const struct vm_operations_struct snd_pcm_vm_ops_status =
+-{
+-	.fault =	snd_pcm_mmap_status_fault,
+-};
++	BUILD_BUG_ON(sizeof(struct snd_pcm_mmap_status) > PAGE_SIZE);
+ 
+-static int snd_pcm_mmap_status(struct snd_pcm_substream *substream, struct file *file,
+-			       struct vm_area_struct *area)
+-{
+-	long size;
+-	if (!(area->vm_flags & VM_READ))
++	if (!(vma->vm_flags & VM_READ))
+ 		return -EINVAL;
+-	size = area->vm_end - area->vm_start;
+-	if (size != PAGE_ALIGN(sizeof(struct snd_pcm_mmap_status)))
++	if (size != PAGE_SIZE)
+ 		return -EINVAL;
+-	area->vm_ops = &snd_pcm_vm_ops_status;
+-	area->vm_private_data = substream;
+-	vm_flags_mod(area, VM_DONTEXPAND | VM_DONTDUMP,
++
++	vm_flags_mod(vma, VM_DONTEXPAND | VM_DONTDUMP,
+ 		     VM_WRITE | VM_MAYWRITE);
++	vma->vm_page_prot = vm_get_page_prot(vma->vm_flags);
+ 
+-	return 0;
++	runtime = substream->runtime;
++	page = virt_to_page(runtime->status);
++	return vm_insert_page(vma, vma->vm_start, page);
+ }
+ 
+ /*
 
 -- 
 2.55.0
