@@ -4,70 +4,73 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8996FC88E5C
-	for <kvm-riscv@archiver.kernel.org>; Sun, 13 Sep 2026 07:11:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 30361C88E64
+	for <kvm-riscv@archiver.kernel.org>; Mon, 14 Sep 2026 03:12:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
-	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=BBv4Earhxdu9gteUPxADA96iSh44ZopBgT4lpQWscK4=; b=mIijq6q6rsesY9
-	c4YCJC16xKvDKefPZB3chmepTSa1Fn875VAzyGHiugouA2zZMOQtw7Bq55MBTeKxCMRKq3+zUSjx3
-	L03TF0F1bg7KM341YjSLo320pVCy8Cf+4rfUTMvviQVzwYiFe68emFs1nuIMzXwjszSBlnkqQdT30
-	8YmPO3vtlrg69M4SMV7Six4y3G8l8aklm4Gqn0pk++Le+DYDC8/gTLqEzYgUfF0NrihEUKd9RvtTs
-	2MybeYk8K2u8QIlIlula1QP+qiBZU6unT8z51xml+N5ab5Tv6PPgvRY8fK/hTL7nfUBUh/pyGn70B
-	g5U/C7XUv7cLvQisuknA==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=6WQ6n6b/nj1oN1lSzWED5GPGwq1Y/OyAkpBi0h/8LUg=; b=CVbDQKyr2QY3nE
+	R3tGpSq5NQnZFAsWqqE3+uD/8lx+hPSmdJlTVo1SWQrWeflUCBu62ZGzWlPZsx4F2ereEzb5W8Hhq
+	q+HluFfpFygiwodVQ3DvVRvhZnNClKcQm73JbGv0h9DQHF05BJ+BET8pWO0ex9VzwTTIBnDJy/ilp
+	T2BaRMU5J+l6xX/l/M/tqOnu1MU7lyYVPguNJvXDbKabzkpfp0aYVaZQhFfAu+cX0p3cIQko7Sdc1
+	CoZQMJ0atz4SghDJTpzSimUR+aqWbeX+cQTncVkE9E93j4w9azSjhuAF5fZHotHnQTirZm1OR2baZ
+	eSbq0lnXxr29tI+w71MA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x5eNK-00000001Tij-0vvP;
-	Sun, 13 Sep 2026 07:11:42 +0000
-Received: from mxct.zte.com.cn ([183.62.165.209])
+	id 1x5x7K-00000002FRu-2sFf;
+	Mon, 14 Sep 2026 03:12:26 +0000
+Received: from smtp25.cstnet.cn ([159.226.251.25] helo=cstnet.cn)
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x5eNH-00000001Tgm-0bxq;
-	Sun, 13 Sep 2026 07:11:40 +0000
-Received: from mse-fl1.zte.com.cn (unknown [10.5.228.132])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mxct.zte.com.cn (FangMail) with ESMTPS id 4hjKFs0Bflz52SFy;
-	Sun, 13 Sep 2026 15:11:29 +0800 (CST)
-Received: from szxl2zmapp06.zte.com.cn ([10.1.32.108])
-	by mse-fl1.zte.com.cn with SMTP id 68D7BOvK093569;
-	Sun, 13 Sep 2026 15:11:24 +0800 (+08)
-	(envelope-from wang.yechao255@zte.com.cn)
-Received: from localhost.localdomain (unknown [10.234.74.162])
-	by smtp (Zmail) with SMTP;
-	Sun, 13 Sep 2026 15:11:26 +0800
-X-Zmail-TransId: 3e816aa64c9e01c-64944
-X-Zmail-LocalSMTP: 1
-X-ZMAIL-USEORIGINALEMLTOOUTBOUND: 1
-X-Zmail-RealSender: wang.yechao255@zte.com.cn
-From: Wang Yechao <wang.yechao255@zte.com.cn>
-To: Anup Patel <anup@brainfault.org>, kvm@vger.kernel.org,
-        kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
-        linux-kernel@vger.kernel.org
-Cc: Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
-        Albert Ou <aou@eecs.berkeley.edu>, Atish Patra <atish.patra@linux.dev>,
-        Alexandre Ghiti <alex@ghiti.fr>,
-        Wang Yechao <wang.yechao255@zte.com.cn>
-Subject: [PATCH v4 1/2] RISC-V: KVM: add tracepoint for guest page faults
-Date: Sun, 13 Sep 2026 15:03:45 +0800
-Message-ID: <20260913070352.3626956-2-wang.yechao255@zte.com.cn>
-X-Mailer: git-send-email 2.41.0
-In-Reply-To: <20260913070352.3626956-1-wang.yechao255@zte.com.cn>
-References: <20260913070352.3626956-1-wang.yechao255@zte.com.cn>
+	id 1x5x7F-00000002FRI-3sJ6;
+	Mon, 14 Sep 2026 03:12:25 +0000
+Received: from k3-03 (unknown [159.226.43.8])
+	by APP-05 (Coremail) with SMTP id zQCowABn0Tv4ZadqJ0crCA--.15303S2;
+	Mon, 14 Sep 2026 11:11:59 +0800 (CST)
+From: Tan Chi <tanchi25@mails.ucas.ac.cn>
+To: Anup Patel <anup@brainfault.org>,
+	Atish Patra <atish.patra@linux.dev>,
+	kvm-riscv@lists.infradead.org
+Cc: Paul Walmsley <pjw@kernel.org>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>,
+	Alexandre Ghiti <alex@ghiti.fr>,
+	Andrew Jones <ajones@ventanamicro.com>,
+	kvm@vger.kernel.org,
+	linux-riscv@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	Tan Chi <tanchi25@mails.ucas.ac.cn>,
+	stable@vger.kernel.org
+Subject: [PATCH] RISC-V: KVM: Fix HSM hart status error propagation
+Date: Mon, 14 Sep 2026 11:11:46 +0800
+Message-ID: <20260914031146.446157-1-tanchi25@mails.ucas.ac.cn>
+X-Mailer: git-send-email 2.53.0
 MIME-Version: 1.0
-X-MAIL: mse-fl1.zte.com.cn 68D7BOvK093569
-X-TLS: YES
-X-ENVELOPE-SENDER: wang.yechao255@zte.com.cn
-X-SOURCE-IP: 10.5.228.132 unknown Sun, 13 Sep 2026 15:11:29 +0800
-X-CLEAN: YES
-X-Fangmail-Anti-Spam-Filtered: true
-X-Fangmail-MID-QID: 6AA64CA1.000/4hjKFs0Bflz52SFy
+X-CM-TRANSID: zQCowABn0Tv4ZadqJ0crCA--.15303S2
+X-Coremail-Antispam: 1UD129KBjvJXoW7ur47GF48ZrWrZrW8JFWxtFb_yoW8Xr4rpr
+	ZrGa1DurWFkFy0gasFya1q9FW5uFsagrnakw1kKw4Fv3yjvFW5Xr4vg34aqry5Aa48Wr1I
+	9FWYqF90v3Z8Ja7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUUP014x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
+	1l84ACjcxK6xIIjxv20xvE14v26F1j6w1UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26F4j
+	6r4UJwA2z4x0Y4vEx4A2jsIE14v26F4UJVW0owA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_Gc
+	CE3s1lnxkEFVAIw20F6cxK64vIFxWle2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xv
+	F2IEw4CE5I8CrVC2j2WlYx0E2Ix0cI8IcVAFwI0_JrI_JrylYx0Ex4A2jsIE14v26r4j6F
+	4UMcvjeVCFs4IE7xkEbVWUJVW8JwACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I
+	648v4I1lFIxGxcIEc7CjxVA2Y2ka0xkIwI1lc7CjxVAaw2AFwI0_Jw0_GFylc2xSY4AK67
+	AK6r48MxAIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4AY6r1j6r4UMI8I3I0E5I8CrVAF
+	wI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_JrI_JrWlx4CE17CEb7AF67AKxVWUtVW8ZwCIc4
+	0Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v26r1j6r1xMIIF0xvE2Ix0cI8IcVCY1x0267AK
+	xVW8JVWxJwCI42IY6xAIw20EY4v20xvaj40_Jr0_JF4lIxAIcVC2z280aVAFwI0_Jr0_Gr
+	1lIxAIcVC2z280aVCY1x0267AKxVW8JVW8JrUvcSsGvfC2KfnxnUUI43ZEXa7VUjfb15UU
+	UUU==
+X-Originating-IP: [159.226.43.8]
+X-CM-SenderInfo: pwdquxrlsvqzpdlo2hpxfd2hldfou0/
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260913_001139_368376_E020AA20 
-X-CRM114-Status: UNSURE (   7.27  )
+X-CRM114-CacheID: sfid-20260913_201222_648154_103E7868 
+X-CRM114-Status: UNSURE (   9.81  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -85,63 +88,46 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Add the kvm_page_fault event tracepoint to count the number of KVM
-guest page faults.
+kvm_sbi_hsm_vcpu_get_status() returns SBI_ERR_INVALID_PARAM when
+the requested hart does not exist. However, the HART_STATUS case
+returns from the SBI handler without storing this error in
+retdata->err_val.
 
-Signed-off-by: Wang Yechao <wang.yechao255@zte.com.cn>
+As a result, a guest querying the status of a non-existent hart
+observes SBI_SUCCESS instead of SBI_ERR_INVALID_PARAM.
+
+Use the common SBI error handling path for HART_STATUS after
+saving a valid hart state in retdata->out_val. This preserves
+the returned error when kvm_sbi_hsm_vcpu_get_status() fails.
+
+Fixes: bae0dfd74e01 ("RISC-V: KVM: Modify SBI extension handler to return SBI error code")
+Cc: stable@vger.kernel.org
+Assisted-by: LLM
+Signed-off-by: Tan Chi <tanchi25@mails.ucas.ac.cn>
 ---
- arch/riscv/kvm/trace.h     | 22 ++++++++++++++++++++++
- arch/riscv/kvm/vcpu_exit.c |  2 ++
- 2 files changed, 24 insertions(+)
+ arch/riscv/kvm/vcpu_sbi_hsm.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/riscv/kvm/trace.h b/arch/riscv/kvm/trace.h
-index 23a5fd1b686e5..07fcf5b6059b6 100644
---- a/arch/riscv/kvm/trace.h
-+++ b/arch/riscv/kvm/trace.h
-@@ -133,6 +133,28 @@ TRACE_EVENT(kvm_vcpu_irq,
- 		  __entry->vcpu_id, __entry->irq, __entry->level)
- );
- 
-+TRACE_EVENT(kvm_page_fault,
-+	TP_PROTO(struct kvm_vcpu *vcpu, u64 fault_address, u64 error_code),
-+	TP_ARGS(vcpu, fault_address, error_code),
-+
-+	TP_STRUCT__entry(
-+		__field(unsigned int,   vcpu_id)
-+		__field(u64,            fault_address)
-+		__field(u64,            error_code)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->vcpu_id        = vcpu->vcpu_id;
-+		__entry->fault_address  = fault_address;
-+		__entry->error_code     = error_code;
-+	),
-+
-+	TP_printk("vcpu %u address 0x%016llx error_code 0x%llx",
-+		__entry->vcpu_id,
-+		__entry->fault_address,
-+		__entry->error_code)
-+);
-+
- #endif /* _TRACE_KVM_H */
- 
- #undef TRACE_INCLUDE_PATH
-diff --git a/arch/riscv/kvm/vcpu_exit.c b/arch/riscv/kvm/vcpu_exit.c
-index 88e0c369b3544..8f44e27563f85 100644
---- a/arch/riscv/kvm/vcpu_exit.c
-+++ b/arch/riscv/kvm/vcpu_exit.c
-@@ -64,6 +64,8 @@ static int gstage_page_fault(struct kvm_vcpu *vcpu, struct kvm_run *run,
- 		};
- 	}
- 
-+	trace_kvm_page_fault(vcpu, fault_addr, trap->scause);
-+
- 	ret = kvm_riscv_mmu_map(vcpu, memslot, fault_addr, hva,
- 				(trap->scause == EXC_STORE_GUEST_PAGE_FAULT) ? true : false,
- 				&host_map);
+diff --git a/arch/riscv/kvm/vcpu_sbi_hsm.c b/arch/riscv/kvm/vcpu_sbi_hsm.c
+index f26207f84bab..06a15629c26b 100644
+--- a/arch/riscv/kvm/vcpu_sbi_hsm.c
++++ b/arch/riscv/kvm/vcpu_sbi_hsm.c
+@@ -95,9 +95,9 @@ static int kvm_sbi_ext_hsm_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ 		ret = kvm_sbi_hsm_vcpu_get_status(vcpu);
+ 		if (ret >= 0) {
+ 			retdata->out_val = ret;
+-			retdata->err_val = 0;
++			ret = 0;
+ 		}
+-		return 0;
++		break;
+ 	case SBI_EXT_HSM_HART_SUSPEND:
+ 		switch (lower_32_bits(cp->a0)) {
+ 		case SBI_HSM_SUSPEND_RET_DEFAULT:
+
+base-commit: df2908090cda368b01ff43709f51890076c56157
 -- 
-2.39.3
+2.53.0
 
 
 -- 
