@@ -4,48 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 90689C88E72
-	for <kvm-riscv@archiver.kernel.org>; Thu, 17 Sep 2026 16:33:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 17F72C88E72
+	for <kvm-riscv@archiver.kernel.org>; Thu, 17 Sep 2026 16:34:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Message-Id
 	:MIME-Version:Subject:Date:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=pUR/J6jAaYTJKsZq0Akje9ma6MbF/F1sK1uzYJYhkUc=; b=ERd7MnmA2Q2Wya
-	3PmJDAriGIyoPosfTEyGpYWuMUZUUc7qMjqixJvO1lDS6W6gYYHgjtk0kQtgiRig9RK6ay43VRxpL
-	EirtnQxukcr1JSKwa5rjueJ2/i8KbnQl3h9EsxmD4I6TwrjUwIyouj4e/jOo928TGutyiPhg8QWPL
-	j/9YHpyqeMPi4qz3ERRRMFU4KLgHaRjwEuRIOD8yZmx14F/DX0y/MENrD/Tt9nNxHHVldcVqfbaDA
-	wl6f01Ig00whHW+GZ0O3CMhEbCYjcSleo861HmTv5yCijZ/RYN35Hfas7fxj1hrrNAmUyAT3ZDbRj
-	BR4/kkKTxyAupvtQYyvg==;
+	List-Owner; bh=OZyNCVIvlSb5r9F/kK3ExoRO5xdVbZqJaxaFfLg90xk=; b=zUN07bfG23SluN
+	VEAa0jAlJ2mjCPjWRTR3nkB9h7xI2ZyNHyWXaWvo8BevlV3iWC7bZ5XoEa85C+MMD8zrFcqVC/Wr9
+	Kt/aL1Vda9qKoV4t8lzqsry4ZuhVl3RUqfatobSJ2qAR6Q236R30zeRMiwZOSU0g9dc9LCCK80xyp
+	XUJDvOPfiu4EASn3HA+ADp6Uo/DiFj8+XRMGOaQfnlCxrcO/4RzKdP0JdJZcyFB7s5KsoEApWqA9O
+	NDeSaiR19pIbaPM7XQ4tKO+DAa6erBMWsyoAIpKtNOGxJJxqKY3Z5cDpf5caAx5Vz2MnS1AdQiTyS
+	QEO7/vv93woQJn9PsOkA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x7F3P-0000000BvXn-1F8o;
-	Thu, 17 Sep 2026 16:33:43 +0000
+	id 1x7F3t-0000000BvdR-2Qxk;
+	Thu, 17 Sep 2026 16:34:13 +0000
 Received: from sea.source.kernel.org ([172.234.252.31])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x7F3N-0000000BvXK-22me;
-	Thu, 17 Sep 2026 16:33:41 +0000
+	id 1x7F3s-0000000Bvd4-2PTZ;
+	Thu, 17 Sep 2026 16:34:12 +0000
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id EB01340613;
-	Thu, 17 Sep 2026 16:33:40 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 09D2F1F000FF;
-	Thu, 17 Sep 2026 16:33:10 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 5151643B19;
+	Thu, 17 Sep 2026 16:34:12 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5968D1F00893;
+	Thu, 17 Sep 2026 16:33:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789662820;
-	bh=rtYEyCC7VKqkqWelOuwt2okny02CJhbQpnc+ekNFEso=;
+	s=k20260515; t=1789662852;
+	bh=GfRJzELhUA3zmjv637fDp+tblD+oWrGBxslIXX4F7cw=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=jL/N+nAedFIcy7gClq40Pni5TcpDiYU3W6lU6py709+elTP01tPRn59duEgHxLXX0
-	 kgCAUZfQP8LDRJaXC0n/N71unVUr4ytyGLpgajOR1/c4YelJsh50RSEglvq6YMlAKH
-	 biv1yaVW5dePVs5g/Hv/jlVM0hOEtIb8Jag/bYYIcYGUqIDRRHHq0XdtEgAa+WCKje
-	 /aLWPXFVlrCjlliJACtNcUtFXB+xYLlGB8XPAz53hZJeOTI9CTWK/FHjTV9mVLJ8+S
-	 0aZkLZiwRcEq1Xk/+ULQ+CCWEkFgHVPGycWzsZevF4lLL2VqFx1YNlnabo+3m6UhqH
-	 SZaK2+UVVwY+g==
+	b=Pyt7zq3wVrUAhNpXFXSuMVbDH6B9z27BuC4N5wSlqvK2YZ+YYcE38ItXJSygGLBUo
+	 jAOODUNiB8Hl2Z9TIS2vNbKclQyw54/sJwA+VbvsXDn0TD6r5o228/oBdRI3ZVNXtE
+	 Vn6qrdsda/Xfpp6xcB32G5ie9VvVYF6zK2oGcw7N0Tr0KugM/8h8+9skPGKu81Fu1v
+	 dUTlbWz+k5DmldJr+jaFMBP1ti+JPFxPgg1webbI7hC3+m22mXIypG2Kegwu62ONHh
+	 IphxagghomlS1XLWIPjchqsW+MqR5DhD81KyMXcMv4/F4ESQ4UCrMz8qtzU5tzkm2V
+	 9qfYZxVjVZdRw==
 From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Date: Thu, 17 Sep 2026 17:22:30 +0100
-Subject: [PATCH v3 21/40] mm/gup: error out early on !VMA_MAYREAD_BIT VMAs
+Date: Thu, 17 Sep 2026 17:22:31 +0100
+Subject: [PATCH v3 22/40] uprobes: remove VM_IO, set VM_MIXEDMAP for mapped
+ kernel pages
 MIME-Version: 1.0
-Message-Id: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-21-4583d8a23bca@kernel.org>
+Message-Id: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-22-4583d8a23bca@kernel.org>
 References: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org>
 In-Reply-To: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>, "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, David Hildenbrand <david@kernel.org>, Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Jonathan Corbet <corbet@lwn.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>, Paul Moore <paul@paul-moore.com>, Stephen Smalley <stephen.smalley.work@gmail.com>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>, Kumar Kartikeya Dwivedi <memxor@gmail.com>, Zi Yan <ziy@nvidia.com>, Baolin Wang <baolin.wang@linux.alibaba.com>, Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, Doug Gilbert <dgilbert@interlog.com>, "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, "Martin K. Petersen" <mkp@kernel.org>, Jaya Kumar <jayalk@intworks.biz>, Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>, Sebastian Reichel <sre@kernel.org>, John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rik van Riel <riel@surriel.com>, Harry Yoo <harry@kernel.org>, Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Will Deacon <will@kernel.org>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin <npiggin@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>, "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, "David S. Miller" <davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Christian Brauner <brauner@kernel.org>, Matthew Brost <matthew.brost@intel.com>, Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>, Byungchul Park <byungchul@sk.com>, Gregory Price <gourry@gourry.net>, Ying Huang <ying.huang@linux.alibaba.com>, Alistair Popple <apopple@nvidia.com>, Chris Li <chrisl@kernel.org>, Kairui Song <kasong@tencent.com>, Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>, Youngjun Park <youngjun.park@lge.com>, Johannes Weiner <hannes@cmpxchg.org>, Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>, Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>, Chengming Zhou <chengming.zhou@linux.dev>, Michal Hocko <mhocko@kernel.org>, Miklos Szeredi <miklos@szeredi.hu>, Xu Xin <xu.xin@linux.dev>
@@ -62,12 +63,12 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, 
  fuse-devel@lists.linux.dev, "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1289; i=ljs@kernel.org;
- h=from:subject:message-id; bh=NwkWQQ7fmwzL5QGJDJ/xCgQWUhs8DQGRd4wM7Vj8ofA=;
- b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLLWCB96M+ncMv0Z517wyC/y7rrGInXUMERpxZ9un+9eS
- ca/pBtPd5SyMIhxMciKKbI8/yK+P0gkbF7nBX83mDmsTCBDGLg4BWAiG00Z/tclL5u+8ccfuY17
- fiz013R5ciLNuW2/7fq51ryiNWtXXapn+O/gpmbwXolVdG+JNs8Gjq3zWM8cSOs76LXyVfXh8/y
- uF/gA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2070; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=joQXUjvjM3OjL+Ta6QEJ1w5g7Vsv4M79ot1AULAZKpk=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLLWCB/q4Fj8329FrtbDMiFFC29ptVwduSnTb/sdWLDt6
+ EPNQz15HaUsDGJcDLJiiizPv4jvDxIJm9d5wd8NZg4rE8gQBi5OAZhIjAYjQysXc4jOXOkLizqe
+ C2g/vP3cILJezzj8ioBasHvjo9+dNYwMOz/GLnqz6VVSzVbf/sX67g2LDpjmmxbucpy7/tS7Rzs
+ a2AE=
 X-Developer-Key: i=ljs@kernel.org; a=openpgp;
  fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 X-BeenThere: kvm-riscv@lists.infradead.org
@@ -86,44 +87,62 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-When populating a VMA range via the aptly named populate_vma_page_range()
-an unreadable VMA will always eventually fail with -EFAULT.
+These are not MMIO pages so VMA_IO_BIT is an inappropriate flag to set.
 
-That a VMA is accessible is always checked, however VMA_MAYREAD_BIT is not.
+Instead, set them VMA_MIXEDMAP_BIT as they are kernel mappings and this is
+the appropriate flag to set for those.
 
-All user mappings always have VMA_MAYREAD_BIT set, so this check only
-impacts kernel mappings.
+This provides the semantics required - no VMA merging is permitted, but
+does not prevent GUP.
 
-It is implemented specifically to disallow population of uprobes XOL
-mappings which are exec-only.
+However this has no meaningful impact as these are refcounted and thus can
+be GUPed.
 
-A nasty interaction with these mappings may occur if they are mlocked, so
-actively disallow this early.
+A previous commit already prevented __mm_populate() from being invoked on
+XOL areas, which VMA_IO_BIT was previously relied upon to do, so that is no
+longer required.
 
-This allows a subsequent commit to remove the VM_IO check in
-__mm_populate() which otherwise requires non-MMIO mappings to be wrongly
-flagged simply as a workaround.
+Both VMAs set a VMA name, so always_dump_vma() returns true before
+vma_dump_size() reaches its VMA_IO_BIT check, and thus there is no change
+in core dump behaviour.
+
+Change this for both the core xol_add_vma() function and the x86-specific
+get_uprobe_trampoline() function.
 
 Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 ---
- mm/gup.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ arch/x86/kernel/uprobes.c | 2 +-
+ kernel/events/uprobes.c   | 4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/mm/gup.c b/mm/gup.c
-index c2dfcb4744bc..e6310a7cc05b 100644
---- a/mm/gup.c
-+++ b/mm/gup.c
-@@ -1836,6 +1836,10 @@ long populate_vma_page_range(struct vm_area_struct *vma,
- 	if (!vma_is_accessible(vma))
- 		return -EFAULT;
+diff --git a/arch/x86/kernel/uprobes.c b/arch/x86/kernel/uprobes.c
+index 65a2de82ecd2..0f60c0d076b6 100644
+--- a/arch/x86/kernel/uprobes.c
++++ b/arch/x86/kernel/uprobes.c
+@@ -715,7 +715,7 @@ static struct vm_area_struct *get_uprobe_trampoline(struct mm_struct *mm, unsign
  
-+	/* Unreadable VMAs also cannot be faulted in. */
-+	if (!vma_test(vma, VMA_MAYREAD_BIT))
-+		return -EFAULT;
-+
- 	gup_flags = FOLL_TOUCH;
- 	/*
- 	 * We want to touch writable mappings with a write fault in order
+ 	*new_mapping = true;
+ 	return _install_special_mapping(mm, vaddr, PAGE_SIZE,
+-				VM_READ|VM_EXEC|VM_MAYEXEC|VM_MAYREAD|VM_IO,
++				VM_READ|VM_EXEC|VM_MAYEXEC|VM_MAYREAD|VM_MIXEDMAP,
+ 				&tramp_mapping);
+ }
+ 
+diff --git a/kernel/events/uprobes.c b/kernel/events/uprobes.c
+index 7709ea882477..b89cc5cee002 100644
+--- a/kernel/events/uprobes.c
++++ b/kernel/events/uprobes.c
+@@ -1726,8 +1726,8 @@ static int xol_add_vma(struct mm_struct *mm, struct xol_area *area)
+ 	}
+ 
+ 	vma = _install_special_mapping(mm, area->vaddr, PAGE_SIZE,
+-				VM_EXEC|VM_MAYEXEC|VM_DONTCOPY|VM_IO|
+-				VM_SEALED_SYSMAP,
++				VM_EXEC|VM_MAYEXEC|VM_DONTCOPY|
++				VM_MIXEDMAP|VM_SEALED_SYSMAP,
+ 				&xol_mapping);
+ 	if (IS_ERR(vma)) {
+ 		ret = PTR_ERR(vma);
 
 -- 
 2.55.0
