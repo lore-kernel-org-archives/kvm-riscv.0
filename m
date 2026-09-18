@@ -4,93 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0399C982D2
-	for <kvm-riscv@archiver.kernel.org>; Fri, 18 Sep 2026 07:26:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3A482C982DC
+	for <kvm-riscv@archiver.kernel.org>; Fri, 18 Sep 2026 13:00:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
-	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=HjZgVpAyDJYbdXW0vQnihZs3iHq0aex7g+ycVs/W+xU=; b=lYXmoCdRXGhxeW
-	yAWx13X1NWhTDNbrwXsZnCBmLX8Bpc67g90eeDaUxgzpkwYyJtaIhW39rZCzSyPmDcdsYLoux4sjr
-	nqZy8k2HbIo3nxYGs0Q2Y80LZALvz99d70+tvcMduuL0knsrooHdCRRGwIJIfoELntJk7+foYPkzt
-	uF8U6x7cC910CycP61UVXPK8vUCRmJSaE0TUOnqb8Ndzk/QFsfyK6E59meuRPkM96Jo0yNbzHKfEr
-	cBTAdcXhWXRotPW2oZDadMpWfx+tavWNr2Aw66nXBYa5rJiYTOD7d7uUqSPUx7ZJM9pkvov/nLiYh
-	+ndI1jq5x8j7424FBgpg==;
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
+	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=JAqCS/lq4hwdWtDzkAZm2UK5acBREfuiJO8ixxMMNFU=; b=YR0+LhpFYnM0QM
+	REM9yboCDY07vfeJCCafCt27GZQj1zaIMkg+EEfvj2cuv0ALazE27Q6XQzjadw3Bh9nm4gqGvG0ZP
+	Fp5HhKUPvSU74q2e0XDjlQTuE0S3BMf28hbd8Y91hGltoilT1sYMccuRaBjHvgGD3W+ey6hnnMjO9
+	YVToMLOtEcIYbqDLgGTJplYAljIQqVMHi1gviG5oNUimRDko6ZPQE4L/AjWoyWmI6nav4t76PAkA3
+	q/B8PR5ihjGLJBIi8s+v2lCqBSHfFystm+XHR7GnRdlU3Jc2LfZcm3fSRxI6HkV8QKuhhFL0XmJ0/
+	IRs8kr2FbjesCHyelHyQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x7Szk-0000000DhOH-1YbU;
-	Fri, 18 Sep 2026 07:26:52 +0000
-Received: from mail-pj2-x11.google.com ([2607:f8b0:4864:39::11])
+	id 1x7YCO-0000000EQnN-29hD;
+	Fri, 18 Sep 2026 13:00:16 +0000
+Received: from stravinsky.debian.org ([2001:41b8:202:deb::311:108])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x7Szh-0000000DhMy-0aIW
-	for kvm-riscv@lists.infradead.org;
-	Fri, 18 Sep 2026 07:26:51 +0000
-Received: by mail-pj2-x11.google.com with SMTP id d9443c01a7336-2d747eb79f6so2692735ad.0
-        for <kvm-riscv@lists.infradead.org>; Fri, 18 Sep 2026 00:26:48 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789716408; x=1790321208; darn=lists.infradead.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=r0TiBnW0QZCej4PmxwEbVRI0oUSu1J4v1QwXVJOCioo=;
-        b=rwvAM4oQNsG8IM0afS6z6NAAItyHQonmZ90env1eFg8khX8nzjRQBn2e5fcjH7s/9F
-         A/JaE36+2DDzU2K1QpA5EYmv1DtP4zPvrpqi4EbYePntFiecJRyaz6yfZtGM+T6KS0zT
-         emmxKy13+ylo8NCB/pVUjqAJDbgMJHOwKE53MdfYR2+niRFDL1z+dQB9LUPtFGU2Yp4A
-         BtjwXeQWk+yCrtRW5oYfxz3ZZ/rvw4GG+0IsbK3oBESzLq62udmIDKanINc93lUevDiN
-         TKlHluuylhr+1rJwPtm67I/+J2U8zqR6WI/ePKAIqjDHkvYRcRKT7qd8DjyNIJzhTIT6
-         BXqQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789716408; x=1790321208;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=r0TiBnW0QZCej4PmxwEbVRI0oUSu1J4v1QwXVJOCioo=;
-        b=hAGviZ60QfvD8uo0BBPomKf/PP+Pydk1vNhdcZ6rf5K5deCQYu0DNE7xvWFfoXy4jZ
-         eRoHE/HyPR+/YeLq/1xubO7nO4fxYp9DBYZx9SDFA8vnhlYWmuRodAtfGVkCJOUYcD+g
-         mUcXQLJGHW7YexiICQi4sR8g2MojciXnDYwtRxsWzrILcMAgegpLYQyBz4DSX6jg8Xb+
-         mleImD/So7E5VmaLJWYu7T60v7aIwjoAQfmn1lT229PV/wGcPVakP7QMCcQiPW2V5yTk
-         eukLbbksAR2Zo4rpCjb3tHZ+3v4o7q5OIcDZabd1UiqzQOkPZ5jxx0rq2YtkajTCb2mH
-         hfig==
-X-Forwarded-Encrypted: i=1; AKwUvBw2rlwSUiSFCWhHHxHUPW0PoliD+XtoFpVttI2+VvdZ7yI/aEBivV1DZG7qQdJys3H60PqzURNvKbE=@lists.infradead.org
-X-Gm-Message-State: AFuF++mVUa19U0ZHuMi1TypzhdnYQkBzxnCVgchut3pc4ilHcTiZRmcm
-	/LdjBdIhbZVaa+MNFXt1DzBRiYAy74kW8VffqujaGNtsC6KhdF3pdbBg
-X-Gm-Gg: AYBFou01DgXb41LMi2QD2ZMTXBf1uzlJsSV4is8GpnbQlBIidTc355nKNnX6s6OvC9t
-	U4kGCekG6rWx7kz8RwCrC4rBqqBihnIs9R/lWl5xCKClX5ns4SP4r+g8wyxYELs4FFAp30+yJ0Z
-	jq7/HOhJPdZi+wjMTY9XloZA1cUJnZDNjLDWeTX/dXMdBVHF/o+K4tmqIPEJ0yWn0w6iy4jQ3O/
-	ssxLmEOOWmmEgifxCvhsHa2gFYoztt+Y58Fj/pNft7mAlncw7NerSRdA2EqLpF2wm/SYM5njuRp
-	/emdBzzFgqppXP5Z3Ps5d1Ch5aAnhTqE0U/jil1dkCHxwNwabthbo3o7xNoe5uPQjreU6YCmyAb
-	g+jP6mfgHPT9cqbNYCy12GjzJmrx9/sHEcnxtCC89T5SKRTMXJPU/jfjyDkMUKuRqCaFawtqes9
-	Ng2YWpr1S811cmkYxBWQRRP7hxs4R7tuPljdXk33cdu0fw9aKOR2e1YImuobU4L9ELr59AyTjWQ
-	UfldWDydXdaMT/sxC7cg9M=
-X-Received: by 2002:a17:902:da85:b0:2d9:3083:a3ac with SMTP id d9443c01a7336-2ddb7420950mr15441415ad.15.1789716407615;
-        Fri, 18 Sep 2026 00:26:47 -0700 (PDT)
-Received: from fedora ([61.74.238.173])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2ddb73dae10sm3772535ad.1.2026.09.18.00.26.43
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 18 Sep 2026 00:26:45 -0700 (PDT)
-From: SeungJu Cheon <suunj1331@gmail.com>
-To: Anup Patel <anup@brainfault.org>
-Cc: Atish Patra <atish.patra@linux.dev>,
-	Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Alexandre Ghiti <alex@ghiti.fr>,
-	Paolo Bonzini <pbonzini@redhat.com>,
-	Jinyu Tang <tjytimi@163.com>,
-	kvm-riscv@lists.infradead.org,
-	kvm@vger.kernel.org,
-	linux-riscv@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	SeungJu Cheon <suunj1331@gmail.com>
-Subject: [PATCH] KVM: riscv: Age all G-stage PTEs in a GFN range
-Date: Fri, 18 Sep 2026 16:26:22 +0900
-Message-ID: <20260918072622.284188-1-suunj1331@gmail.com>
-X-Mailer: git-send-email 2.52.0
+	id 1x7YCK-0000000EQmC-2XAW;
+	Fri, 18 Sep 2026 13:00:14 +0000
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=debian.org;
+	s=smtpauto.stravinsky; h=X-Debian-User:In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=tFEJAKtD9mmde2H4PbcVbjy8oluS9JrKkxB0Up7WPqU=; b=doaKhNAybvn/PmhBX86Gi+7t3T
+	QH5iPoxVyvmEHWG83eTRJM9o4ZunjctnxQa8j36AFkUmkVOgAR7y9lYyUO+8Ew7Y9LDYUjDX1Rse3
+	NACgdCdDzZb/bAGim+VyCazzwjiCtehdfLhm8bSqggh0UROL0tVLejVQjBijz+QaYJl2uetfHRc5g
+	RXK/frKyTYKFcWRh+9vzWcXg+EdL8OovvX1t0ug37AWhIuF8+67JSnP9Mdp17zAIGwNediac6ShCF
+	k2QDzSzmnlid5Z24SbXD5fKP6vGN6tHG99LV+v1Eeb6mJUW+fXAFJKwV34SNAoZUlnqryynx9XyFq
+	4XtIZ3eA==;
+Received: from authenticated-user
+	by stravinsky.debian.org with esmtpsa (TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_256_GCM:256)
+	(Exim 4.96)
+	(envelope-from <leitao@debian.org>)
+	id 1x7YAO-006k2B-2q;
+	Fri, 18 Sep 2026 12:58:13 +0000
+Date: Fri, 18 Sep 2026 05:57:51 -0700
+From: Breno Leitao <leitao@debian.org>
+To: Mike Rapoport <rppt@kernel.org>
+Cc: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, David Hildenbrand <david@kernel.org>, Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Jonathan Corbet <corbet@lwn.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>, Paul Moore <paul@paul-moore.com>, Stephen Smalley <stephen.smalley.work@gmail.com>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>, Kumar Kartikeya Dwivedi <memxor@gmail.com>, Zi Yan <ziy@nvidia.com>, Baolin Wang <baolin.wang@linux.alibaba.com>, Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, Doug Gilbert <dgilbert@interlog.com>, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, "Martin K. Petersen" <mkp@kernel.org>, Jaya Kumar <jayalk@intworks.biz>, Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>, Sebastian Reichel <sre@kernel.org>, John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rik van Riel <riel@surriel.com>, Harry Yoo <harry@kernel.org>, Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Will Deacon <will@kernel.org>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin <npiggin@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>, "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, "David S. Miller" <davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Christian Brauner <brauner@kernel.org>, Matthew Brost <matthew.brost@intel.com>, Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>, Byungchul Park <byungchul@sk.com>, Gregory Price <gourry@gourry.net>, Ying Huang <ying.huang@linux.alibaba.com>, Alistair Popple <apopple@nvidia.com>, Chris Li <chrisl@kernel.org>, Kairui Song <kasong@tencent.com>, Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>, Youngjun Park <youngjun.park@lge.com>, Johannes Weiner <hannes@cmpxchg.org>, Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>, Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>, Chengming Zhou <chengming.zhou@linux.dev>, Michal Hocko <mhocko@kernel.org>, 
+ Miklos Szeredi <miklos@szeredi.hu>, Xu Xin <xu.xin@linux.dev>, linux-mm@kvack.org, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, linux-usb@vger.kernel.org, linux-rdma@vger.kernel.org, selinux@vger.kernel.org, linux-sound@vger.kernel.org, bpf@vger.kernel.org, linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-trace-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-arch@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, fuse-devel@lists.linux.dev
+Subject: Re: [PATCH v2 01/40] mm/vma: fix mmap_prepare file handling, remove
+ file_doesnt_need_get
+Message-ID: <aq01JFp8hRReyY-O@gmail.com>
+References: <20260914-b4-mmap-prepare-vma-flag-sanify-v2-0-7d9781ed5361@kernel.org>
+ <20260914-b4-mmap-prepare-vma-flag-sanify-v2-1-7d9781ed5361@kernel.org>
+ <aquz9Z9JrK_H_E0g@kernel.org>
 MIME-Version: 1.0
+Content-Disposition: inline
+In-Reply-To: <aquz9Z9JrK_H_E0g@kernel.org>
+X-Debian-User: leitao
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260918_002649_196507_D1F9BB6F 
-X-CRM114-Status: GOOD (  14.07  )
+X-CRM114-CacheID: sfid-20260918_060012_797273_E6C466CD 
+X-CRM114-Status: GOOD (  33.42  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -107,163 +76,97 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-kvm_age_gfn() and kvm_test_age_gfn() only operate on the G-stage
-leaf covering range->start. They also warn unless the range size is
-exactly 4K, 2M, or 1G.
+On Thu, Sep 17, 2026 at 12:33:41PM +0300, Mike Rapoport wrote:
+> On Mon, Sep 14, 2026 at 03:57:21PM +0100, Lorenzo Stoakes (ARM) wrote:
+> > The map->file_doesnt_need_get flag is confusing and the existing
+> > implementation has holes.
+> > 
+> > Drivers are permitted to change the owning file of a mapping. If they do
+> > so, they are required to take a reference on that file.
+> > 
+> > The mmap() operation which ultimately invokes __mmap_region() is guaranteed
+> > to drop the refcount for the original file the mapping was made under, but
+> > this is not true for the replaced file.
+> > 
+> > This has been addressed so far by tracking map->file_doesnt_need_get, which
+> > is rather poorly named and unfortunately fails to correctly track whether
+> > or not an additional put were needed in a number of cases.
+> > 
+> > Make life easier by removing this flag, and instead drop the reference for
+> > both mmap_prepare and the deprecated mmap callback in a new function
+> > put_map().
+> > 
+> > Track whether this needs to be done by aligning mmap_state with
+> > vm_area_desc and store the original file in the map->file field, keeping
+> > the updated file in map->vm_file.
+> > 
+> > In order to have the same behaviour for both types of hooks, only drop the
+> > reference __mmap_new_file_vma() itself took in its error path, deferring
+> > the replaced file's reference to put_map().
+> > 
+> > To make this work correctly, map->vm_file has to be updated before any
+> > error handling, so update __mmap_new_file_vma() and call_mmap_prepare() to
+> > set this field first.
+> > 
+> > Also when mmap_prepare() changes the file and is then merged, the reference
+> > count also must be decremented, so update the logic to call put_map() in
+> > this case too.
+> > 
+> > Also update __compat_vma_mmap() to manually perform this step for stacked
+> > file systems using the compatibility layer, and update
+> > compat_set_vma_from_desc() to replace vma_set_file() with a correct
+> > refcount/file update.
+> > 
+> > No in-tree driver is impacted by the incorrect implementation of this
+> > currently (no driver that does this is mergeable for one), so this does not
+> > need to be a fix.
+> 
+> But the patch iteslf needs to be fixed :)
+> 
+> It seems to be the change that broke the CI.
+> 
+> The rest is from LLM, take it with a grain of salt :)
+> 
+> mm-ci mm-unstable red build - bisect analysis
+> ==============================================
+> 
+> Bad commit: 2a937a04babf1 "mm/vma: fix mmap_prepare file handling, remove
+> file_doesnt_need_get" - first patch of Lorenzo Stoakes' 40-patch series
+> "mm: make VMA flag semantics explicit, eliminate VM_SPECIAL" (v2).
+> https://lore.kernel.org/all/20260914-b4-mmap-prepare-vma-flag-sanify-v2-0-7d9781ed5361@kernel.org
+> 
+> Symptom: tools/testing/selftests/mm/pfnmap.c triggers
+> "BUG: Bad page map in process pfnmap" during __zap_vma_range()/vm_normal_page(),
+> seen on process exit/munmap. CI's run-mm-selftests.sh greps guest dmesg for
+> BUG|WARNING and fails the job regardless of the test's own exit code.
 
-The MM can pass larger ranges when batching the PTEs of a large folio.
-For example, a 64K mTHP range triggers the warning and only the first
-4K leaf is aged, leaving the Accessed bits of the remaining leaves
-unchanged.
+I am seeing something similar here and stress-ng can reproduce it:
 
-This can be reproduced on an rv64 host with Svadu by disabling 2M THP,
-enabling 64K mTHP, and running:
+      WARNING: mm/memory.c:3225 at do_remap_pfn_range+0x9b4/0x9f0, CPU#25: stress-ng-dev/354858
+      Call trace:
+       do_remap_pfn_range+0x9b4/0x9f0 (P)
+       remap_pfn_range_complete+0xac/0xd0
+       mmap_action_complete+0xcc/0x3d8
+       mmap_region+0xb54/0x1978
+       do_mmap+0x588/0xb18
+       vm_mmap_pgoff+0x1e4/0x320
+       ksys_mmap_pgoff+0x2d8/0x510
+       __arm64_sys_mmap+0x100/0x128
 
-access_tracking_perf_test -s anonymous_thp
-
-This results in:
-
-WARNING: arch/riscv/kvm/mmu.c:362 at kvm_age_gfn+0x210/0x370
-...
-[<ffffffff800c8fc8>] kvm_age_gfn+0x210/0x370
-[<ffffffff80095c90>] kvm_mmu_notifier_clear_young+0x250/0x478
-[<ffffffff80ae532e>] __mmu_notifier_clear_young+0xde/0x1a0
-[<ffffffff80932f76>] walk_pud_range+0x86e/0x1688
-[<ffffffff80a18720>] walk_pgd_range+0x518/0x17b0
-[<ffffffff80a19aa2>] __walk_page_range+0xea/0x580
-[<ffffffff80a1a422>] walk_page_range+0x3a/0x80
-[<ffffffff80931dc0>] try_to_inc_max_seq+0x520/0xe68
-[<ffffffff80939dc0>] lru_gen_seq_write+0xd08/0x1310
-
-Walk all G-stage leaves in the requested range. Advance by the leaf
-size when a mapping is found, or by the size of the non-present region
-at the level where the walk stopped. When testing the age, return as
-soon as a young leaf is found.
-
-Remove the range-size warning since arbitrary GFN ranges are valid.
-
-Fixes: 9955371cc014 ("RISC-V: KVM: Implement MMU notifiers")
-Signed-off-by: SeungJu Cheon <suunj1331@gmail.com>
----
- arch/riscv/include/asm/kvm_gstage.h |  2 ++
- arch/riscv/kvm/gstage.c             | 34 +++++++++++++++++++++++++++++
- arch/riscv/kvm/mmu.c                | 22 ++++---------------
- 3 files changed, 40 insertions(+), 18 deletions(-)
-
-diff --git a/arch/riscv/include/asm/kvm_gstage.h b/arch/riscv/include/asm/kvm_gstage.h
-index aaf080ba1b77..a03db1a10095 100644
---- a/arch/riscv/include/asm/kvm_gstage.h
-+++ b/arch/riscv/include/asm/kvm_gstage.h
-@@ -81,6 +81,8 @@ bool kvm_riscv_gstage_unmap_range(struct kvm_gstage *gstage,
- 				  gpa_t start, gpa_t size, bool may_block);
- 
- bool kvm_riscv_gstage_wp_range(struct kvm_gstage *gstage, gpa_t start, gpa_t end);
-+bool kvm_riscv_gstage_age_range(struct kvm_gstage *gstage, gpa_t start,
-+				gpa_t end, bool test_only);
- 
- bool kvm_riscv_gstage_wp_pt_masked(struct kvm_gstage *gstage, gfn_t base_gfn,
- 				   unsigned long mask);
-diff --git a/arch/riscv/kvm/gstage.c b/arch/riscv/kvm/gstage.c
-index e5002cb9cbef..f61ba434093c 100644
---- a/arch/riscv/kvm/gstage.c
-+++ b/arch/riscv/kvm/gstage.c
-@@ -485,6 +485,40 @@ bool kvm_riscv_gstage_wp_range(struct kvm_gstage *gstage, gpa_t start, gpa_t end
- 	return flush;
- }
- 
-+bool kvm_riscv_gstage_age_range(struct kvm_gstage *gstage, gpa_t start,
-+				gpa_t end, bool test_only)
-+{
-+	unsigned long page_size;
-+	bool young = false;
-+	gpa_t addr = start;
-+	pte_t *ptep;
-+	u32 level;
-+	bool found;
-+
-+	while (addr < end) {
-+		found = kvm_riscv_gstage_get_leaf(gstage, addr, &ptep, &level);
-+		if (gstage_level_to_page_size(gstage, level, &page_size))
-+			break;
-+
-+		if (found) {
-+			if (test_only) {
-+				if (pte_young(ptep_get(ptep)))
-+					return true;
-+			} else {
-+				young |= ptep_test_and_clear_young(NULL, 0, ptep);
-+			}
-+		}
-+
-+		/*
-+		 * Advance past this leaf, or past the non-present region at
-+		 * the level where the walk stopped.
-+		 */
-+		addr = ALIGN_DOWN(addr, page_size) + page_size;
-+	}
-+
-+	return young;
-+}
-+
- static inline void clear_huge_mask(unsigned long *mask, unsigned long page_size,
- 				   gfn_t base_gfn, gpa_t addr)
- {
-diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-index 3e955d808743..342f606399e5 100644
---- a/arch/riscv/kvm/mmu.c
-+++ b/arch/riscv/kvm/mmu.c
-@@ -351,42 +351,28 @@ bool kvm_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range)
- 
- bool kvm_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
- {
--	pte_t *ptep;
--	u32 ptep_level = 0;
--	u64 size = (range->end - range->start) << PAGE_SHIFT;
- 	struct kvm_gstage gstage;
- 
- 	if (!kvm->arch.pgd)
- 		return false;
- 
--	WARN_ON(size != PAGE_SIZE && size != PMD_SIZE && size != PUD_SIZE);
--
- 	kvm_riscv_gstage_init(&gstage, kvm);
--	if (!kvm_riscv_gstage_get_leaf(&gstage, range->start << PAGE_SHIFT,
--				       &ptep, &ptep_level))
--		return false;
- 
--	return ptep_test_and_clear_young(NULL, 0, ptep);
-+	return kvm_riscv_gstage_age_range(&gstage, range->start << PAGE_SHIFT,
-+					  range->end << PAGE_SHIFT, false);
- }
- 
- bool kvm_test_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
- {
--	pte_t *ptep;
--	u32 ptep_level = 0;
--	u64 size = (range->end - range->start) << PAGE_SHIFT;
- 	struct kvm_gstage gstage;
- 
- 	if (!kvm->arch.pgd)
- 		return false;
- 
--	WARN_ON(size != PAGE_SIZE && size != PMD_SIZE && size != PUD_SIZE);
--
- 	kvm_riscv_gstage_init(&gstage, kvm);
--	if (!kvm_riscv_gstage_get_leaf(&gstage, range->start << PAGE_SHIFT,
--				       &ptep, &ptep_level))
--		return false;
- 
--	return pte_young(ptep_get(ptep));
-+	return kvm_riscv_gstage_age_range(&gstage, range->start << PAGE_SHIFT,
-+					  range->end << PAGE_SHIFT, true);
- }
- 
- static bool fault_supports_gstage_huge_mapping(struct kvm_memory_slot *memslot,
-
-base-commit: 41e81f7e3ef96594fb840445343c0ee7723aa550
--- 
-2.52.0
-
+      BUG: Bad page map in process stress-ng-dev  pte:0160000000000fcf
+      addr:0000ffe8d9080000 vm_flags:00000071 anon_vma:0000000000000000 mapping:ffff0000a0c4ea98 index:0 (file) ffe8d9080 (anon)
+      file:mem fault:0x0 mmap:0x0 mmap_prepare: mmap_mem_prepare read_folio:0x0
+      Call trace:
+       print_bad_page_map+0x63c/0x740
+       vm_normal_page+0x228/0x240
+       __zap_vma_range+0xbe0/0x34a0
+       unmap_vmas+0x240/0x318
+       unmap_region+0x12c/0x238
+       vms_complete_munmap_vmas+0x318/0x958
+       do_vmi_align_munmap+0x254/0x2f8
+       do_vmi_munmap+0xc4/0xf8
+       __vm_munmap+0x174/0x288
+       __arm64_sys_munmap+0x70/0x90
 
 -- 
 kvm-riscv mailing list
