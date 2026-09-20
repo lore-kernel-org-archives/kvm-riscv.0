@@ -4,37 +4,37 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE764C982E1
-	for <kvm-riscv@archiver.kernel.org>; Sun, 20 Sep 2026 13:11:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1D8CEC982DA
+	for <kvm-riscv@archiver.kernel.org>; Sun, 20 Sep 2026 13:12:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=qPb6nEz9no3xbrL9VYtESQjKIGFB6N05VrwPhVx6F9o=; b=YggXjmqflMwSjW
-	usCmVayhcvdg3Rj6tvzCU033ANGgFLcxCu/30ZnjdTRf+fq0zTkn7pr3r8SDT5jfAsS9raZvNN5aJ
-	Gc0ylrCUzXoQIYpc9TSuZYqiR3riZsaAxdUM+SMvmdRBZZOJe3SrGtzHqqqxddfwG8o37EJDFgqsf
-	fnofjC3onNLvjNa1Uax5e0AjMwq16vpJGok1osCFFzJCnEZxasb9kh7W7kqft0J6h1pTSzYdzc066
-	bO3RNsGy24DbqL17XStvmJiz/eeJ41nwIL6ADu573Mdu+SQxQMnRfh9XCLpDpnS/sRSbVsJO1TSm1
-	e1qgRdfFk4YzoeOgy+7w==;
+	List-Owner; bh=harNf0YHMK0qBAduuALnJxaR70MVGQt7pZs/KqPCPIQ=; b=HbVtQnXy2hrFfK
+	7bT3S3A0OeUQmfH9qdbOKLOkUB8A9mYiYu01uicDY9VZkp+RxGvIR8DJ3G1F3IY1NwKRNpuatYxKl
+	L+OPXQiCQtrxFY0MUbm74Nx/wHv3HKigmdNvuwvsBvi44livJNZHn1GOS4P3ECYckL26E9VM3m1k2
+	dInNOeeOcmxalkyOX1tb8780fIjmu5AgDpkpXFp1/FKRQ6vzJv0FJEE00x72aBFd8OrLnkLEwjlpH
+	MeOj5iY++7/YomxuqtNDOTlR1hvAPFnb1yUJKObiAd6FW19iLmXzootM4qZcncoP6QelHRORD6Sfd
+	hqSeJWFyaz/iQ/5ds4pg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x8HKV-0000000HUUh-2Vsr;
-	Sun, 20 Sep 2026 13:11:39 +0000
-Received: from mail-proxy25229.mail.163.com ([103.129.252.29])
+	id 1x8HLF-0000000HUcr-3DZh;
+	Sun, 20 Sep 2026 13:12:25 +0000
+Received: from mail-proxy25256.mail.163.com ([103.129.252.56])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x8HKS-0000000HUTl-3zYl;
-	Sun, 20 Sep 2026 13:11:38 +0000
+	id 1x8HLC-0000000HUbz-47pN;
+	Sun, 20 Sep 2026 13:12:24 +0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:To:Subject:Date:Message-ID:MIME-Version; bh=iE
-	FMnbAxecubDwFBLIa6PNB7531/R3ke9Bw5hV74+qo=; b=XPN8OP0Yf76mhU3Iyf
-	oFY7EFski+crozbHMJfs2Je1V1n1rn67sRlQN2lUvQjPs7D2tLFkuZ8Z7Q/o1hSH
-	YQPeTpBpg7gjizvwe0jnq2XJvFC3m8gqmiaqdn2Iaq7QOP1YAqxT8N0XCue1Yg5H
-	3K8GElFa+f1YsQDF0ZdUyHwZM=
+	s=s110527; h=From:To:Subject:Date:Message-ID:MIME-Version; bh=fx
+	xetwQM1IVZM6P54FHuhflyKkC0LojiwyGoiT/nK4Q=; b=jKf1EJuE+KZKaKmcXE
+	poYBlGoD53ld9BzWypVlatyygE7j/FUZGXQja3WXLa9jacTBtwZ2eiXuGhx9H1gc
+	hQod2ArXlYBJpmGg+a0hfoxuadP2l0jDKZvT04ZpIcS7nFtVaDher80QEs7qVSuj
+	vpWQAyrstZpkkT0ncESG+/+BM=
 Received: from localhost.localdomain (unknown [])
-	by gzsmtp3 (Coremail) with SMTP id PigvCgD33+IA269qOrXBAQ--.40335S2;
-	Sun, 20 Sep 2026 21:09:21 +0800 (CST)
+	by gzsmtp4 (Coremail) with SMTP id PygvCgD3v1cl269qj9S_AQ--.59232S2;
+	Sun, 20 Sep 2026 21:09:58 +0800 (CST)
 From: Pengpeng Hou <hppiscas@163.com>
 To: anup@brainfault.org
 Cc: Pengpeng Hou <hppiscas@163.com>,
@@ -51,22 +51,23 @@ Cc: Pengpeng Hou <hppiscas@163.com>,
 	Nutty Liu <nutty.liu@hotmail.com>,
 	Palmer Dabbelt <palmer@dabbelt.com>,
 	Paul Walmsley <pjw@kernel.org>
-Subject: [PATCH v2 1/2] RISC-V: KVM: Validate AIA MMIO address ranges
-Date: Sun, 20 Sep 2026 21:09:18 +0800
-Message-ID: <3046cfd67c5f962014cd38e49a0e8bf28b6fb53f.1789872556.git.hppiscas@163.com>
+Subject: [PATCH v2 2/2] RISC-V: KVM: Disallow GPA-width changes after AIA init
+Date: Sun, 20 Sep 2026 21:09:55 +0800
+Message-ID: <fbe7337f6989994ad4dbc4dc03a67e8ebfa61f8d.1789872556.git.hppiscas@163.com>
 X-Mailer: git-send-email 2.50.1
 In-Reply-To: <cover.1789872556.git.hppiscas@163.com>
 References: <cover.1789872556.git.hppiscas@163.com>
 MIME-Version: 1.0
-X-CM-TRANSID: PigvCgD33+IA269qOrXBAQ--.40335S2
-X-Coremail-Antispam: 1Uf129KBjvJXoWxAw4DGr1rAFWUXr15KryUKFg_yoWrAr4kpF
-	4UGrs8XrWFqryxKwsayr1DC3yY9r1vka13JryUuF4Fkr1Iqr1SkFnYga1jqry5Ar929a1a
-	ya1rKayrur4YyaUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0ziLvKUUUUUU=
-X-CM-SenderInfo: 5kssx2xfdvqiywtou0bp/xtbC7gF9Rmqv2wEOyQAA3M
+X-CM-TRANSID: PygvCgD3v1cl269qj9S_AQ--.59232S2
+X-Coremail-Antispam: 1Uf129KBjvJXoW7Cr17try7WF45CrWUAF1fWFg_yoW8WrW3p3
+	9rGa95Zr95Wr17CrW0yws7Zr10vws5Gr1ayFyYvF43WFs0vFy0vanYyr47Jr1DAan29FWI
+	vF1Yy34Fvrs5CaUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0zil4i5UUUUU=
+X-CM-SenderInfo: 5kssx2xfdvqiywtou0bp/xtbC7QaGT2qv2yYXHwAA3S
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260920_061137_240755_5B417363 
-X-CRM114-Status: GOOD (  14.86  )
+X-CRM114-CacheID: sfid-20260920_061223_330946_D4D70E45 
+X-CRM114-Status: UNSURE (   8.85  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -83,129 +84,44 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-The AIA address setters check alignment but not the complete fixed-size
-APLIC and IMSIC MMIO regions. A range can therefore wrap when its end is
-formed or extend beyond the selected guest physical address space before
-it is registered on the KVM MMIO bus.
+KVM_ENABLE_CAP(KVM_CAP_VM_GPA_BITS) allows userspace to reduce the
+stage-2 GPA width while a VM has no vCPUs or memory slots.
 
-Check the complete range in both setters. Return -EINVAL for alignment
-or arithmetic overflow and -E2BIG for a range beyond the selected GPA
-limit, following the arm64 VGIC address-validation convention.
+AIA initialization can complete with an APLIC and no vCPUs or memory
+slots. The APLIC MMIO device has then been registered, but the existing
+checks still allow userspace to shrink the GPA width below its address.
 
-Recheck only the APLIC range during initialization: userspace can set
-its address and then change KVM_CAP_VM_GPA_BITS while the VM still has
-no vCPUs or memory slots. An IMSIC address, in contrast, can only be set
-for an existing vCPU, which already prevents subsequent GPA-width
-changes. No additional pass over the vCPUs is needed.
-
-Keep the existing required-address checks and IMSIC cleanup path.
+Reject GPA-width changes after AIA initialization. Both paths hold
+kvm->lock, serializing the width change with AIA initialization.
 
 The issue was found by our static-analysis tool.
 
-Fixes: 89d01306e34d ("RISC-V: KVM: Implement device interface for AIA irqchip")
+Fixes: 7263b4fdb0b2 ("RISC-V: KVM: Reuse KVM_CAP_VM_GPA_BITS to select HGATP.MODE")
+Reviewed-by: Anup Patel <anup@brainfault.org>
 Assisted-by: gpt 5
 Signed-off-by: Pengpeng Hou <hppiscas@163.com>
 ---
-Changes since v1: https://lore.kernel.org/r/38f87205419f328693bc6ab25ae78f021c2dd003.1786512671.git.pengpeng@iscas.ac.cn/
-- Keep the original APLIC and per-vCPU IMSIC required-address checks.
-- Drop the separate pass over all vCPUs during initialization.
-- Recheck only APLIC, whose address can be configured before GPA width
-  becomes immutable; IMSIC setters already require an existing vCPU.
+Changes since v1: https://lore.kernel.org/r/4852f3b8985c353811fa065e4701d76dc9a7f086.1786512671.git.pengpeng@iscas.ac.cn/
+- No change to the code; retain Anup's Reviewed-by.
+- Rebase and clarify the locking description.
 
- arch/riscv/kvm/aia_device.c | 42 +++++++++++++++++++++++++++++++++----
- 1 file changed, 38 insertions(+), 4 deletions(-)
+ arch/riscv/kvm/vm.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/riscv/kvm/aia_device.c b/arch/riscv/kvm/aia_device.c
-index efc7c0b..4490015 100644
---- a/arch/riscv/kvm/aia_device.c
-+++ b/arch/riscv/kvm/aia_device.c
-@@ -10,7 +10,9 @@
- #include <linux/bits.h>
- #include <linux/irqchip/riscv-imsic.h>
- #include <linux/kvm_host.h>
-+#include <linux/overflow.h>
- #include <linux/uaccess.h>
-+#include <asm/kvm_gstage.h>
- #include <asm/kvm_isa.h>
+diff --git a/arch/riscv/kvm/vm.c b/arch/riscv/kvm/vm.c
+index a9f083f..66edfaa 100644
+--- a/arch/riscv/kvm/vm.c
++++ b/arch/riscv/kvm/vm.c
+@@ -250,7 +250,8 @@ int kvm_vm_ioctl_enable_cap(struct kvm *kvm, struct kvm_enable_cap *cap)
+ 		mutex_lock(&kvm->lock);
+ 		mutex_lock(&kvm->slots_lock);
  
- static int aia_create(struct kvm_device *dev, u32 type)
-@@ -142,17 +144,37 @@ static int aia_config(struct kvm *kvm, unsigned long type,
- 	return 0;
- }
- 
-+static int aia_check_addr_range(struct kvm *kvm, u64 addr, u64 alignment,
-+				u64 size)
-+{
-+	u64 end;
-+
-+	if (!IS_ALIGNED(addr, alignment))
-+		return -EINVAL;
-+
-+	if (check_add_overflow(addr, size, &end))
-+		return -EINVAL;
-+
-+	if (end > kvm_riscv_gstage_gpa_size(kvm->arch.pgd_levels))
-+		return -E2BIG;
-+
-+	return 0;
-+}
-+
- static int aia_aplic_addr(struct kvm *kvm, u64 *addr, bool write)
- {
- 	struct kvm_aia *aia = &kvm->arch.aia;
-+	int ret;
- 
- 	if (write) {
- 		/* Writes can only be done before irqchip is initialized */
- 		if (kvm_riscv_aia_initialized(kvm))
- 			return -EBUSY;
- 
--		if (*addr & (KVM_DEV_RISCV_APLIC_ALIGN - 1))
--			return -EINVAL;
-+		ret = aia_check_addr_range(kvm, *addr, KVM_DEV_RISCV_APLIC_ALIGN,
-+					   KVM_DEV_RISCV_APLIC_SIZE);
-+		if (ret)
-+			return ret;
- 
- 		aia->aplic_addr = *addr;
- 	} else
-@@ -166,6 +188,7 @@ static int aia_imsic_addr(struct kvm *kvm, u64 *addr,
- {
- 	struct kvm_vcpu *vcpu;
- 	struct kvm_vcpu_aia *vcpu_aia;
-+	int ret;
- 
- 	vcpu = kvm_get_vcpu(kvm, vcpu_idx);
- 	if (!vcpu)
-@@ -177,8 +200,10 @@ static int aia_imsic_addr(struct kvm *kvm, u64 *addr,
- 		if (kvm_riscv_aia_initialized(kvm))
- 			return -EBUSY;
- 
--		if (*addr & (KVM_DEV_RISCV_IMSIC_ALIGN - 1))
--			return -EINVAL;
-+		ret = aia_check_addr_range(kvm, *addr, KVM_DEV_RISCV_IMSIC_ALIGN,
-+					   KVM_DEV_RISCV_IMSIC_SIZE);
-+		if (ret)
-+			return ret;
- 	}
- 
- 	mutex_lock(&vcpu->mutex);
-@@ -248,6 +273,15 @@ static int aia_init(struct kvm *kvm)
- 	if (aia->nr_sources && aia->aplic_addr == KVM_RISCV_AIA_UNDEF_ADDR)
- 		return -EINVAL;
- 
-+	/* The GPA width may change after setting APLIC's address on an empty VM. */
-+	if (aia->nr_sources) {
-+		ret = aia_check_addr_range(kvm, aia->aplic_addr,
-+					   KVM_DEV_RISCV_APLIC_ALIGN,
-+					   KVM_DEV_RISCV_APLIC_SIZE);
-+		if (ret)
-+			return ret;
-+	}
-+
- 	/* Group index bits must not overlap guest and HART index bits. */
- 	if (aia->nr_group_bits &&
- 	    aia->nr_group_shift < (IMSIC_MMIO_PAGE_SHIFT +
+-		if (kvm->created_vcpus || !kvm_are_all_memslots_empty(kvm))
++		if (kvm->created_vcpus || !kvm_are_all_memslots_empty(kvm) ||
++		    kvm_riscv_aia_initialized(kvm))
+ 			r = -EBUSY;
+ 		else
+ 			kvm->arch.pgd_levels = new_levels;
 
 
 -- 
