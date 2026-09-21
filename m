@@ -4,48 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F0062C982EE
-	for <kvm-riscv@archiver.kernel.org>; Mon, 21 Sep 2026 12:27:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4BC9DC982EE
+	for <kvm-riscv@archiver.kernel.org>; Mon, 21 Sep 2026 12:27:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Message-Id
 	:MIME-Version:Subject:Date:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=oRWCQFk5T7bYZGOoO1MPsqGgqQoeU5Iwh3cxmCKimeU=; b=idkw7YeNmyHkm/
-	0nCoKKsgHbSwh6sXfYuqbhwTZCvZOlXUa49vNkIiDGQTRxEH3iLCW0ttjEhhpIa/X5AwDbOjqlvW2
-	0clSn0Sj+10jyRoKasLMwh7JZ1bH6U9O3gjV4057J7xtm/W+A3JkqKOnWoHxekmLTbrPVw03Z3rRO
-	zFbl2FU8D/34UutxzRcpuA/YZX67W9Ti4+ObjGefg1eWn+ggbPFyZSrCbtOBJUETbXEJ1y6o+rO/Y
-	rNaGUuS0Vh0oKGKlIdSS/Bc8dG0HXP63+bnHyp/vrgURBzVekdu50pWURuDEivgu44t5qjWv5yVrV
-	7lfNE0u9TsA7l71vTOlA==;
+	List-Owner; bh=vxNia5toh/yiUUdJHw9ITS0zAlJ6KxJNS6XY1vwpky4=; b=0tluHMAUyOXuqd
+	owNY4TmSezFvUblJEerj+yBzZe+hgTzTw8dfWvqZiD5WOSNW1AW1g2x2LypKqqpsN2JKk0cXtqiC/
+	9dduDUKzLBDRUw/N8QeaM6TTen0vzbvp0jh60fG84qY5qJJuq4urcVpBVCth4SVkuRsZBzjXnIuDN
+	kaiD9MCSlFbO3Ot8N6L68ucbC6iMGVYPvodQL/VV7RHaMOlPv+e9rltdiW3GBuuvjrMnMit99T9fG
+	84sN8nvMAqPtZzIi4vpGUH52owl3pIx15jPp6o6U2cYdp7kG0iSdY+ikV2tY3z8W2ohh56bzEb/C6
+	6futJqNdPObwP3y86ZkA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x8d7N-000000023Z6-474Z;
-	Mon, 21 Sep 2026 12:27:35 +0000
+	id 1x8d7T-000000023c3-46ob;
+	Mon, 21 Sep 2026 12:27:40 +0000
 Received: from sea.source.kernel.org ([172.234.252.31])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x8d7M-000000023YL-3J33;
-	Mon, 21 Sep 2026 12:27:32 +0000
+	id 1x8d7S-000000023bN-3btu;
+	Mon, 21 Sep 2026 12:27:38 +0000
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 626FD43D8F;
+	by sea.source.kernel.org (Postfix) with ESMTP id 9499E406B8;
+	Mon, 21 Sep 2026 12:27:38 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BCB6B1F00893;
 	Mon, 21 Sep 2026 12:27:32 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BCA321F000FF;
-	Mon, 21 Sep 2026 12:27:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789993652;
-	bh=ZL+jHBhm3Lazx2elITuFIbb5JJW3ttCHLqLMtnrVQrE=;
+	s=k20260515; t=1789993658;
+	bh=npVan5VYT3AMl8n3RsICnE+OLDep7BXyveNoQgrKcOA=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=FizKey6Agi7E+O7B943oOu9OU8rX9A6+d+R5RAdFZstk/eu0fKvoM8/gcUDsap1QM
-	 v8HwFrI7KOQdTw7ftgDofA98CMyyMWD4kb/zvBUdBOFAG4la7VzUcYt+0YiZKfLf9F
-	 TJvD2cqFvmVk5DBDZSbg6LqVxKjYX6gOFaGa3SQv4Mf+W+CMruCT1Nto8PQIAHha7d
-	 eu/TXsUvKj7jSAMJwAFaMVEUuYe9jlpFyiskfVZgnj9SljcwikOLG8YisyIB437ldQ
-	 1v59Rdmf5jezzqvjwlPUCjNb3bd5F1Y6/Ot3zoDZWvYc+qnNsehKJHs8umS3XPqE91
-	 OkpvmJ8Tm2sLA==
+	b=A1Cb4P8ThKMPt2giCW4nM7EaQmmLM33Ov/QZQmZa2tIcFUjS8Q7l9LaKF6xwPTAyb
+	 xFHga9ra0KEbMXmpWx+sVZqNKmutZBveKjqGjRhkIV+S84Lq0mgyEP5yW4NSG8SD4/
+	 dDVWFR94zsYs8mHpKyZhXlOe+k0xNlYSLuDK5jugzVHc1fNr0RV3T9XY4ZY0Z/zzLF
+	 iA4zjbpCooMCQdKYj63+sKREzy75dn7cP8XMPKfQ2b0hNbrxuULvO0P91pV25XhEDs
+	 fT7ENzTXbDfCjyN3N5mDTPvh5OO3H0jVLh8eQxFFwbi7r6TS4fDAhmHiDtJdkzUbso
+	 8PUTqwSZAhPCg==
 From: "GUO Ren (XuanTie)" <guoren@kernel.org>
-Date: Mon, 21 Sep 2026 12:27:02 +0000
-Subject: [PATCH RFC v4 2/4] RISC-V: paravirt: Add pvqspinlock frontend
+Date: Mon, 21 Sep 2026 12:27:03 +0000
+Subject: [PATCH RFC v4 3/4] RISC-V: paravirt: pvqspinlock: Add trace point
+ for pv_kick/wait
 MIME-Version: 1.0
-Message-Id: <20260921-pvqspinlock-v4-2-409a22aed6ef@kernel.org>
+Message-Id: <20260921-pvqspinlock-v4-3-409a22aed6ef@kernel.org>
 References: <20260921-pvqspinlock-v4-0-409a22aed6ef@kernel.org>
 In-Reply-To: <20260921-pvqspinlock-v4-0-409a22aed6ef@kernel.org>
 To: Anup Patel <anup@brainfault.org>, Atish Patra <atish.patra@linux.dev>, 
@@ -76,232 +77,115 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Add a virtualization-friendly unfair qspinlock frontend that halts the
-virtual CPU instead of spinning.
+Add tracepoints for pv_kick and pv_wait to observe the paravirt
+qspinlock behavior:
 
-Use static_call to switch between:
-  native_queued_spin_lock_slowpath()    __pv_queued_spin_lock_slowpath()
-  native_queued_spin_unlock()           __pv_queued_spin_unlock()
-
-Add the pv_wait and pv_kick implementations.
+  # cd /sys/kernel/debug/tracing
+  # echo 1 > events/paravirt/enable
+  # cat trace
+  TASK-PID   CPU#  |||||  TIMESTAMP  FUNCTION
+     | |       |   |||||     |         |
+    sh-100   [001] d..2.  28.312294: pv_wait: cpu 1 out of wfi
+  <idle>-0   [000] d.h4.  28.322030: pv_kick: cpu 0 kick target cpu 1
 
 Reviewed-by: Leonardo Bras <leobras@redhat.com>
 Signed-off-by: GUO Ren (XuanTie) <guoren@kernel.org>
 ---
- arch/riscv/Kconfig                          | 12 ++++++
- arch/riscv/include/asm/Kbuild               |  1 -
- arch/riscv/include/asm/qspinlock.h          | 33 ++++++++++++++
- arch/riscv/include/asm/qspinlock_paravirt.h | 26 +++++++++++
- arch/riscv/kernel/Makefile                  |  2 +
- arch/riscv/kernel/qspinlock_paravirt.c      | 67 +++++++++++++++++++++++++++++
- arch/riscv/kernel/setup.c                   |  5 +++
- 7 files changed, 145 insertions(+), 1 deletion(-)
+ arch/riscv/kernel/qspinlock_paravirt.c           |  7 +++
+ arch/riscv/kernel/trace_events_filter_paravirt.h | 58 ++++++++++++++++++++++++
+ 2 files changed, 65 insertions(+)
 
-diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-index d6c2dbf8455c..9af53ef5ee95 100644
---- a/arch/riscv/Kconfig
-+++ b/arch/riscv/Kconfig
-@@ -1165,6 +1165,18 @@ config PARAVIRT_TIME_ACCOUNTING
- 
- 	  If in doubt, say N here.
- 
-+config PARAVIRT_SPINLOCKS
-+	bool "Paravirtualization layer for spinlocks"
-+	depends on QUEUED_SPINLOCKS
-+	default y
-+	help
-+	  Paravirtualized spinlocks allow a unfair qspinlock to replace the
-+	  test-set kvm-guest virt spinlock implementation with something
-+	  virtualization-friendly, for example, halt the virtual CPU rather
-+	  than spinning.
-+
-+	  If you are unsure how to answer this question, answer Y.
-+
- config RELOCATABLE
- 	bool "Build a relocatable kernel"
- 	select MODULE_SECTIONS if MODULES
-diff --git a/arch/riscv/include/asm/Kbuild b/arch/riscv/include/asm/Kbuild
-index 7721b63642f4..3d8800d4fe48 100644
---- a/arch/riscv/include/asm/Kbuild
-+++ b/arch/riscv/include/asm/Kbuild
-@@ -13,7 +13,6 @@ generic-y += spinlock_types.h
- generic-y += ticket_spinlock.h
- generic-y += qrwlock.h
- generic-y += qrwlock_types.h
--generic-y += qspinlock.h
- generic-y += ring_buffer.h
- generic-y += user.h
- generic-y += vmlinux.lds.h
-diff --git a/arch/riscv/include/asm/qspinlock.h b/arch/riscv/include/asm/qspinlock.h
-new file mode 100644
-index 000000000000..330b714edc44
---- /dev/null
-+++ b/arch/riscv/include/asm/qspinlock.h
-@@ -0,0 +1,33 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+/*
-+ * Copyright (C) 2026 GUO Ren (XuanTie) <guoren@kernel.org>
-+ */
-+
-+#ifndef _ASM_RISCV_QSPINLOCK_H
-+#define _ASM_RISCV_QSPINLOCK_H
-+
-+#ifdef CONFIG_PARAVIRT_SPINLOCKS
-+#include <asm/qspinlock_paravirt.h>
-+
-+/* How long a lock should spin before we consider blocking */
-+#define SPIN_THRESHOLD		(1 << 15)
-+
-+void native_queued_spin_lock_slowpath(struct qspinlock *lock, u32 val);
-+void __pv_init_lock_hash(void);
-+void __pv_queued_spin_lock_slowpath(struct qspinlock *lock, u32 val);
-+
-+static inline void queued_spin_lock_slowpath(struct qspinlock *lock, u32 val)
-+{
-+	static_call(pv_queued_spin_lock_slowpath)(lock, val);
-+}
-+
-+#define queued_spin_unlock	queued_spin_unlock
-+static inline void queued_spin_unlock(struct qspinlock *lock)
-+{
-+	static_call(pv_queued_spin_unlock)(lock);
-+}
-+#endif /* CONFIG_PARAVIRT_SPINLOCKS */
-+
-+#include <asm-generic/qspinlock.h>
-+
-+#endif /* _ASM_RISCV_QSPINLOCK_H */
-diff --git a/arch/riscv/include/asm/qspinlock_paravirt.h b/arch/riscv/include/asm/qspinlock_paravirt.h
-new file mode 100644
-index 000000000000..7261cd9b13b2
---- /dev/null
-+++ b/arch/riscv/include/asm/qspinlock_paravirt.h
-@@ -0,0 +1,26 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+/*
-+ * Copyright (C) 2026 GUO Ren (XuanTie) <guoren@kernel.org>
-+ */
-+
-+#ifndef _ASM_RISCV_QSPINLOCK_PARAVIRT_H
-+#define _ASM_RISCV_QSPINLOCK_PARAVIRT_H
-+
-+void pv_wait(u8 *ptr, u8 val);
-+void pv_kick(int cpu);
-+
-+void dummy_queued_spin_lock_slowpath(struct qspinlock *lock, u32 val);
-+void dummy_queued_spin_unlock(struct qspinlock *lock);
-+
-+DECLARE_STATIC_CALL(pv_queued_spin_lock_slowpath, dummy_queued_spin_lock_slowpath);
-+DECLARE_STATIC_CALL(pv_queued_spin_unlock, dummy_queued_spin_unlock);
-+
-+bool __init pv_qspinlock_init(void);
-+
-+void __pv_queued_spin_unlock_slowpath(struct qspinlock *lock, u8 locked);
-+
-+bool pv_is_native_spin_unlock(void);
-+
-+void __pv_queued_spin_unlock(struct qspinlock *lock);
-+
-+#endif /* _ASM_RISCV_QSPINLOCK_PARAVIRT_H */
-diff --git a/arch/riscv/kernel/Makefile b/arch/riscv/kernel/Makefile
-index ebe1c3588177..b9b0763dba32 100644
---- a/arch/riscv/kernel/Makefile
-+++ b/arch/riscv/kernel/Makefile
-@@ -130,3 +130,5 @@ obj-$(CONFIG_GENERIC_CPU_VULNERABILITIES) += bugs.o
- obj-$(CONFIG_RISCV_USER_CFI) += usercfi.o
- 
- obj-$(CONFIG_RISCV_ISA_SSQOSID) += qos.o
-+
-+obj-$(CONFIG_PARAVIRT_SPINLOCKS) += qspinlock_paravirt.o
 diff --git a/arch/riscv/kernel/qspinlock_paravirt.c b/arch/riscv/kernel/qspinlock_paravirt.c
-new file mode 100644
-index 000000000000..c534447437fe
---- /dev/null
+index c534447437fe..04b13994e971 100644
+--- a/arch/riscv/kernel/qspinlock_paravirt.c
 +++ b/arch/riscv/kernel/qspinlock_paravirt.c
-@@ -0,0 +1,67 @@
-+// SPDX-License-Identifier: GPL-2.0-only
+@@ -7,8 +7,13 @@
+ #include <asm/qspinlock_paravirt.h>
+ #include <asm/sbi.h>
+ 
++#define CREATE_TRACE_POINTS
++#include "trace_events_filter_paravirt.h"
++
+ void pv_kick(int cpu)
+ {
++	trace_pv_kick(smp_processor_id(), cpu);
++
+ 	sbi_ecall(SBI_EXT_PVLOCK, SBI_EXT_PVLOCK_KICK_CPU,
+ 		  cpuid_to_hartid_map(cpu), 0, 0, 0, 0, 0);
+ }
+@@ -25,6 +30,8 @@ void pv_wait(u8 *ptr, u8 val)
+ 		goto out;
+ 
+ 	wait_for_interrupt();
++
++	trace_pv_wait(smp_processor_id());
+ out:
+ 	local_irq_restore(flags);
+ }
+diff --git a/arch/riscv/kernel/trace_events_filter_paravirt.h b/arch/riscv/kernel/trace_events_filter_paravirt.h
+new file mode 100644
+index 000000000000..8d57efda2c17
+--- /dev/null
++++ b/arch/riscv/kernel/trace_events_filter_paravirt.h
+@@ -0,0 +1,58 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
 +/*
 + * Copyright (C) 2026 GUO Ren (XuanTie) <guoren@kernel.org>
 + */
++#undef TRACE_SYSTEM
++#define TRACE_SYSTEM paravirt
 +
-+#include <linux/static_call.h>
-+#include <asm/qspinlock_paravirt.h>
-+#include <asm/sbi.h>
++#if !defined(_TRACE_PARAVIRT_H) || defined(TRACE_HEADER_MULTI_READ)
++#define _TRACE_PARAVIRT_H
 +
-+void pv_kick(int cpu)
-+{
-+	sbi_ecall(SBI_EXT_PVLOCK, SBI_EXT_PVLOCK_KICK_CPU,
-+		  cpuid_to_hartid_map(cpu), 0, 0, 0, 0, 0);
-+}
++#include <linux/tracepoint.h>
 +
-+void pv_wait(u8 *ptr, u8 val)
-+{
-+	unsigned long flags;
++TRACE_EVENT(pv_kick,
++	TP_PROTO(int cpu, int target),
++	TP_ARGS(cpu, target),
 +
-+	if (in_nmi())
-+		return;
++	TP_STRUCT__entry(
++		__field(int, cpu)
++		__field(int, target)
++	),
 +
-+	local_irq_save(flags);
-+	if (READ_ONCE(*ptr) != val)
-+		goto out;
++	TP_fast_assign(
++		__entry->cpu = cpu;
++		__entry->target = target;
++	),
 +
-+	wait_for_interrupt();
-+out:
-+	local_irq_restore(flags);
-+}
++	TP_printk("cpu %d pv_kick target cpu %d",
++		__entry->cpu,
++		__entry->target
++	)
++);
 +
-+static void native_queued_spin_unlock(struct qspinlock *lock)
-+{
-+	/*
-+	 * unlock() needs release semantics:
-+	 */
-+	smp_store_release(&lock->locked, 0);
-+}
++TRACE_EVENT(pv_wait,
++	TP_PROTO(int cpu),
++	TP_ARGS(cpu),
 +
-+DEFINE_STATIC_CALL(pv_queued_spin_lock_slowpath, native_queued_spin_lock_slowpath);
-+EXPORT_STATIC_CALL(pv_queued_spin_lock_slowpath);
++	TP_STRUCT__entry(
++		__field(int, cpu)
++	),
 +
-+DEFINE_STATIC_CALL(pv_queued_spin_unlock, native_queued_spin_unlock);
-+EXPORT_STATIC_CALL(pv_queued_spin_unlock);
++	TP_fast_assign(
++		__entry->cpu = cpu;
++	),
 +
-+bool __init pv_qspinlock_init(void)
-+{
-+	if (num_possible_cpus() == 1)
-+		return false;
++	TP_printk("cpu %d out of wfi",
++		__entry->cpu
++	)
++);
 +
-+	if (!sbi_probe_extension(SBI_EXT_PVLOCK))
-+		return false;
++#endif /* _TRACE_PARAVIRT_H || TRACE_HEADER_MULTI_READ */
 +
-+	pr_info("PV qspinlocks enabled\n");
-+	__pv_init_lock_hash();
++#undef TRACE_INCLUDE_PATH
++#undef TRACE_INCLUDE_FILE
++#define TRACE_INCLUDE_PATH ../../../arch/riscv/kernel/
++#define TRACE_INCLUDE_FILE trace_events_filter_paravirt
 +
-+	static_call_update(pv_queued_spin_lock_slowpath, __pv_queued_spin_lock_slowpath);
-+	static_call_update(pv_queued_spin_unlock, __pv_queued_spin_unlock);
-+
-+	return true;
-+}
-+
-+bool pv_is_native_spin_unlock(void)
-+{
-+	return static_call_query(pv_queued_spin_unlock) ==
-+	       native_queued_spin_unlock;
-+}
-diff --git a/arch/riscv/kernel/setup.c b/arch/riscv/kernel/setup.c
-index a32344bb220d..ccfa92b7c81a 100644
---- a/arch/riscv/kernel/setup.c
-+++ b/arch/riscv/kernel/setup.c
-@@ -281,6 +281,11 @@ static void __init riscv_spinlock_init(void)
- 		return;
- 	}
- 
-+#ifdef CONFIG_PARAVIRT_SPINLOCKS
-+	if (pv_qspinlock_init())
-+		return;
-+#endif
-+
- 	if (IS_ENABLED(CONFIG_RISCV_ISA_ZABHA) &&
- 	    IS_ENABLED(CONFIG_RISCV_ISA_ZACAS) &&
- 	    IS_ENABLED(CONFIG_TOOLCHAIN_HAS_ZACAS) &&
++/* This part must be outside protection */
++#include <trace/define_trace.h>
 
 -- 
 2.43.0
