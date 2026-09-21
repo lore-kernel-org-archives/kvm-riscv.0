@@ -4,60 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E39CEC982EE
-	for <kvm-riscv@archiver.kernel.org>; Mon, 21 Sep 2026 10:58:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A8C35C982ED
+	for <kvm-riscv@archiver.kernel.org>; Mon, 21 Sep 2026 10:58:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Message-Id
 	:MIME-Version:Subject:Date:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=j8I6m1KEV1oaCaaqFDO9Li1Oi5zYdkeT7AWoRoiCM/E=; b=ORz+SPecDqVOxZ
-	xn8KMzS3EW53dlYgqsxUIvoKgTZ5gowHaiddI/xYD3qlSreSCP3+dDKBrCObRrE9UeOPPz744BDWs
-	lVmwCmKRFBVbF+GR156NPycY4X9QY0VSMjMkIpWtKCtccfic71XGM/6C2aa2IU8xPSo8477ZlPqLV
-	8278FsiEle0I8rR8eoCuun0hEPrWz1a4y7gVB0QIzle+hjR35JypNXyTmjnynh/kG3Ep3UfTUdoNS
-	1O/qcGknoKX51PFmNS0u4TblmgOY4c/ERn4qEyep7oNC11NUMsJ5JqneVCId99zG//v9EMGlAlA29
-	Adj8t/Zd5NVNYdAFdAIQ==;
+	List-Owner; bh=Viv87kHkM/xPwdMra/JH0EjBdRc6iKOqAKXDxhFv2gM=; b=MTRIsV+uCh8wsZ
+	snIVO6p2G70SydxddZF6My3zM3uVX52ShcOpRYjul0vF+6Kemh26LOzyLfLXx6GMP7hQRkIWAbh6b
+	bf+H0DJTbBilGO9qmNJ76cYDG+Kpj+xqcZU/f1phsgHcDwpolfqq/smggBqgZ8ILxDqSLW+/55PWX
+	uxJVJZLwpfM9WQOtc/2q7sk2fGDbeMXyM8jZDoiA8Vydo1tVzdwdjp1dLLA6srFtuZRXdm3WSXETI
+	ai3KZX2yf6JHpL78PN2ckXtx1gs984FPbGLui3RpBkP8krJq5waBJQD3tTRWgXEynltZnXQo+QfCh
+	yFbvmJADVVny8/jGxe5w==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x8bii-00000001mbA-2Zgo;
-	Mon, 21 Sep 2026 10:58:00 +0000
+	id 1x8bin-00000001mhB-1ZOE;
+	Mon, 21 Sep 2026 10:58:05 +0000
 Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x8bif-00000001mXW-37WG;
-	Mon, 21 Sep 2026 10:57:57 +0000
+	id 1x8bim-00000001mfO-1DmJ;
+	Mon, 21 Sep 2026 10:58:04 +0000
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=desiato.20200630; h=Cc:To:In-Reply-To:References:
 	Message-Id:Content-Transfer-Encoding:Content-Type:MIME-Version:Subject:Date:
 	From:Sender:Reply-To:Content-ID:Content-Description;
-	bh=JQeg6N8tF3c2ZKXl0aeVJdIb4rnpiEyWbh6rBzOCUVQ=; b=KlsZkyZXF7MHwQoAkDV2T68cr6
-	9tLNtJ+l3EKLtLnFAY0+W7H75efun0BgdhAmH7hyJXJQ7Cfbdu9x/xmdkrNQyPhKCnYi+1/2j0vCd
-	S2uI3CNNqfhuarUstA060kX1/rQ6eLmjnysJIxrQ9X7jcxNs1Z7z6k7DMfhWY8JXAaMMkrinU+vtp
-	AvFUkFuGeyHoXh59U7onVUxIAzPCvpDKop6sSz4JfWrDkV4Y6v3Ox3eK6smIL5qBhypdL+SuDuXz/
-	ov23HR6p2AK/GCgvgbXK0St4h2rYRnabGTC57FeV3pgwPNRpMCfqGMMnoHD8h54b/grBtoZlIrAam
-	zde6v0ww==;
+	bh=PPh7P4/uTe2DdUqFkWDXpxMIk96xx52i1UmgW1/Bvi4=; b=om5981RtHou5+rDT3S2puy51SM
+	fixl7A8ihejFaf58kkHdbTAcemDLvcDeuMd2SdcbElW1frdT24Uw2DLMvEqHiMBbVHAfn56K6qMA+
+	Ob7LMl76Fp+XuG+oLwddRdkoL8GFAszs/RR6KkSoKMQf+krNTIUGao9nQ4EA4BHmBfSprWzW7VXA9
+	JsnEj3bJCtGpREOvOS6EgPtFbxglOWxoxTAjxY+CXZ38CnwVVm6wBRypPe6wx/dw4zXuvYoYXVgpf
+	ezi7l7Pb0PqDJN0abAfHUkJazM2Rr0zIYT4ovZHuIKgHUsHdRM3qE5TlWnoPYomjSgZyruKBCirrm
+	xZlzpvCA==;
 Received: from foss.arm.com ([217.140.110.172])
 	by desiato.infradead.org with esmtp (Exim 4.99.2 #2 (Red Hat Linux))
-	id 1x8bib-0000000C9PK-0Oaj;
-	Mon, 21 Sep 2026 10:57:56 +0000
+	id 1x8bii-0000000C9RX-3G9a;
+	Mon, 21 Sep 2026 10:58:03 +0000
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 589AC1CE0;
-	Mon, 21 Sep 2026 03:57:48 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id E73E61570;
+	Mon, 21 Sep 2026 03:57:55 -0700 (PDT)
 Received: from e129823.arm.com (e129823.arm.com [10.2.213.3])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 98F113F9AB;
-	Mon, 21 Sep 2026 03:57:44 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 3592C3F86C;
+	Mon, 21 Sep 2026 03:57:52 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1789988271; bh=uF4DfWzXa9EkGf1I0Bn2aL3RfBnTbP81TBjbavbJ8QQ=;
+	t=1789988279; bh=Y8EwOxLNbw4UfgGXcWJN4XYR7fgRn1Moj06vSGiaGhw=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=b2oxv8G3acXR+b4U8Ke9KSVZQ8NqKzHIB8Xl/ycl/nGOLEQlcX18PIjAeIg7B3tpb
-	 7HmCy4J3ydk3qZfbtrFLpV4tABhoN+2/B17S+yQ+WsYgwEYTPLCQRkt0ZeSX/hLPMx
-	 Aa+nRIFl1reImGlNGptnuq9oq9dvqnppsyrc+NyE=
+	b=Acv2ig2sdtBQm1rWWS02siT0WU0ZatIgo532lzW7QnReSNXQH1ySM+8DelzsQa55e
+	 0TVi9G11NlTKdUH74Sp6k0cO+qCtLFbvrelhmtDh0SsbAsGd/j0A7ufpMeXn2Es2yz
+	 Xmxo3CKqJ1ia+7cA6vpupVw3peojMkInMbV3ExN4=
 From: Yeoreum Yun <yeoreum.yun@arm.com>
-Date: Mon, 21 Sep 2026 11:55:33 +0100
-Subject: [PATCH 11/21] riscv: mm: use proper set_pXd() for generic
- compile-time folded patable in vmalloc_fault()
+Date: Mon, 21 Sep 2026 11:55:34 +0100
+Subject: [PATCH 12/21] mm/pgtable: redefine PGTABLE_LEVEL enum with ascend
+ order from PGD
 MIME-Version: 1.0
-Message-Id: <20260921-dummy_ptxp3-v1-11-cd40cf68242e@arm.com>
+Message-Id: <20260921-dummy_ptxp3-v1-12-cd40cf68242e@arm.com>
 References: <20260921-dummy_ptxp3-v1-0-cd40cf68242e@arm.com>
 In-Reply-To: <20260921-dummy_ptxp3-v1-0-cd40cf68242e@arm.com>
 To: Russell King <linux@armlinux.org.uk>, 
@@ -90,22 +90,22 @@ Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
  kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
  linux-openrisc@vger.kernel.org, Yeoreum Yun <yeoreum.yun@arm.com>
 X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3753; i=yeoreum.yun@arm.com;
- h=from:subject:message-id; bh=uF4DfWzXa9EkGf1I0Bn2aL3RfBnTbP81TBjbavbJ8QQ=;
- b=owEB7QES/pANAwAKAW3Vw9FaxTEzAcsmYgBqsQ1QAg31Sog0FCjc3kuChuSeE5nwlfWLMD4sT
- IBC+fegfX2JAbMEAAEKAB0WIQQtg+CS3QUzuFh1pJ1t1cPRWsUxMwUCarENUAAKCRBt1cPRWsUx
- Mx8TDACfGiY1tFbMNuqJzhqG74lnH8gGDp7+4K0KfmvivFAxuHooIWaalWIlCiXzXZGwXVbHHwy
- EPxRgkJ1uw1jlH3gDOGxNETf15cT+KdPWxc2IPcZjimn44GpN/tHq3ie/ILysREci576iJCfLl4
- hZhn/31gf80m5wAoruCFpkdOoDK9vI2gDH1iAE7dcktlPtXovnfLAUzOVfzwDk1sJuYI3BsByOn
- l1dM0H6rX2RhzKIfJT02RA3stLjqjS4aqMUOuIEyQ7uCm/vePyl/toLHSfNlXeAFt+vkDA1BaNk
- G2Mqub8YtbPcYMJILsZALUoZGulrUViemuEn1MQuFSk3xeW6LvdIps5z0pgD/hyMDOQMsf9zlaq
- 43upc2P7Di2WqF1BalL1zetYzreAC4iO8Ass4iBh3zl5KSk4v4cizRvztC13VZGm8bZN2nr/A/H
- LW9L0Tf5m0dkB2RXOoknui/VOBmrN6PvMrEVqP3go7fwbJPESPNAgPLiosUQHnJ16thBo=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1282; i=yeoreum.yun@arm.com;
+ h=from:subject:message-id; bh=Y8EwOxLNbw4UfgGXcWJN4XYR7fgRn1Moj06vSGiaGhw=;
+ b=owEB7QES/pANAwAKAW3Vw9FaxTEzAcsmYgBqsQ1QUaPfd/TdZdMCVJig81AKqOVJKDuhmr9iK
+ mpmDD+NEl+JAbMEAAEKAB0WIQQtg+CS3QUzuFh1pJ1t1cPRWsUxMwUCarENUAAKCRBt1cPRWsUx
+ MzrLC/9aTw7wgAVsVSkyAx9JoerSy/E93mC4rUycb4dvDtSfmjpnvXqlvMNOZ0X4B5Tw+BHjFpL
+ 9jH7TfpouVsi3ilgGlYWmhFqe3BTMspr76UeuII7d1gg8OfdV923kIjDcgioZarrRikees4YSip
+ 5uqKCkUTlyqCGmKOuU7nhOAK7tW4wYh0FmSWSpiG0PLWIeBMOwyBw/zW8ypmQTnMIIB1wuLzs/u
+ 7ROCVrCCjQ/dan0IYAxg+t7qTPtpD8XuY7kE8NURgpEKId4bCFhy3U/wB3lIQdsLHM2mgGlnKYV
+ zy6aNQBGpN9mKjDtE/bZGY6gmk+CVWrUNVbiSTouNAfpiUTsGa+e6Yl0KqWvXhip7lrYnaQWTzm
+ Q2l8/kQPPW5++rC7+eeJkINpxVX3PFWYeBJwLOBF75Lr6+GAyvrtK5usO7NuLcJLTYaKd/1JKHL
+ OxP80e+rles/44lu4BlVndGbnxkSWb4UFg7VdtjQ5e0MfYATc+XAacUtqoHmAK6Nsi+34=
 X-Developer-Key: i=yeoreum.yun@arm.com; a=openpgp;
  fpr=2D83E092DD0533B85875A49D6DD5C3D15AC53133
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260921_115753_820527_EED1A538 
-X-CRM114-Status: GOOD (  14.81  )
+X-CRM114-CacheID: sfid-20260921_115801_640134_2C6DA3EB 
+X-CRM114-Status: GOOD (  11.76  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -122,127 +122,44 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-The behaviour of pXdp_get() will change with generic compile-time folded
-page tables, making it invalid to use set_pXd() with the result of
-pXdp_get(). Instead, the appropriate first-level set_pXd() must be paired
-with the corresponding pXdp_get().
+The PGTABLE_LEVEL enum values appear to be ordered in the opposite direction
+from their intended usage.
 
-Therefore, call the appropriate set_pXd() for generic compile-time folded
-page tables so that vmalloc_fault() continues to handle folded entries
-correctly when checking pXd_present().
+Intuitively, higher page table levels should have smaller enum values,
+but PTE is currently assigned 0.
 
-There should be no functional change.
+For consistency and cleanup, reverse the enum value ordering.
 
-Since most architectures use a similar pattern to handle vmalloc fault
-by syncing the faulted entry, it would be worth cleaning this up by
-introducing a common helper in the near future.
+Since there is no current user relies on these numbers to be ascending from
+PTE->PGD, so it can be changed to be ascending from PGD->PTE, in the
+direction of the page table walk.
 
+Reviewed-by: David Hildenbrand (Arm) <david@kernel.org>
 Signed-off-by: Yeoreum Yun <yeoreum.yun@arm.com>
 ---
- arch/riscv/mm/fault.c | 52 ++++++++++++++++++++++++++++++++-------------------
- 1 file changed, 33 insertions(+), 19 deletions(-)
+ include/linux/pgtable.h | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/riscv/mm/fault.c b/arch/riscv/mm/fault.c
-index 04ed6f8acae4f..b2bcaf10d13f1 100644
---- a/arch/riscv/mm/fault.c
-+++ b/arch/riscv/mm/fault.c
-@@ -167,14 +167,16 @@ bad_area(struct pt_regs *regs, struct mm_struct *mm, int code,
+diff --git a/include/linux/pgtable.h b/include/linux/pgtable.h
+index e3c8ab96941c5..3186096a6e130 100644
+--- a/include/linux/pgtable.h
++++ b/include/linux/pgtable.h
+@@ -2288,11 +2288,11 @@ static inline bool arch_has_pfn_modify_check(void)
+ typedef unsigned int pgtbl_mod_mask;
  
- static inline void vmalloc_fault(struct pt_regs *regs, int code, unsigned long addr)
- {
--	pgd_t *pgd, *pgd_k;
--	pud_t *pud_k;
--	p4d_t *p4d_k;
--	pmd_t *pmd_k;
--	pte_t *pte_k;
-+	pgd_t *pgdp_k, *pgdp, pgd_k;
-+	p4d_t *p4dp_k, *p4dp;
-+	pud_t *pudp_k, *pudp, pud_k;
-+	pmd_t *pmdp_k, *pmdp, pmd_k;
-+	pte_t *ptep_k;
- 	int index;
- 	unsigned long pfn;
+ enum pgtable_level {
+-	PGTABLE_LEVEL_PTE = 0,
+-	PGTABLE_LEVEL_PMD,
+-	PGTABLE_LEVEL_PUD,
++	PGTABLE_LEVEL_PGD = 0,
+ 	PGTABLE_LEVEL_P4D,
+-	PGTABLE_LEVEL_PGD,
++	PGTABLE_LEVEL_PUD,
++	PGTABLE_LEVEL_PMD,
++	PGTABLE_LEVEL_PTE,
+ };
  
-+	BUILD_BUG_ON(CONFIG_PGTABLE_LEVELS != 5 && CONFIG_PGTABLE_LEVELS != 2);
-+
- 	/* User mode accesses just cause a SIGSEGV */
- 	if (user_mode(regs))
- 		return do_trap(regs, SIGSEGV, code, addr);
-@@ -189,39 +191,51 @@ static inline void vmalloc_fault(struct pt_regs *regs, int code, unsigned long a
- 	 */
- 	index = pgd_index(addr);
- 	pfn = csr_read(CSR_SATP) & SATP_PPN;
--	pgd = (pgd_t *)pfn_to_virt(pfn) + index;
--	pgd_k = init_mm.pgd + index;
- 
--	if (!pgd_present(pgdp_get(pgd_k))) {
-+	pgdp = (pgd_t *)pfn_to_virt(pfn) + index;
-+	pgdp_k = init_mm.pgd + index;
-+
-+	pgd_k = pgdp_get(pgdp_k);
-+	if (!pgd_present(pgd_k)) {
- 		no_context(regs, addr);
- 		return;
- 	}
--	set_pgd(pgd, pgdp_get(pgd_k));
-+	if (CONFIG_PGTABLE_LEVELS == 5)
-+		set_pgd(pgdp, pgd_k);
- 
--	p4d_k = p4d_offset(pgd_k, addr);
--	if (!p4d_present(p4dp_get(p4d_k))) {
-+	p4dp = p4d_offset(pgdp, addr);
-+	p4dp_k = p4d_offset(pgdp_k, addr);
-+	if (!p4d_present(p4dp_get(p4dp_k))) {
- 		no_context(regs, addr);
- 		return;
- 	}
- 
--	pud_k = pud_offset(p4d_k, addr);
--	if (!pud_present(pudp_get(pud_k))) {
-+	pudp = pud_offset(p4dp, addr);
-+	pudp_k = pud_offset(p4dp_k, addr);
-+
-+	pud_k = pudp_get(pudp_k);
-+	if (!pud_present(pud_k)) {
- 		no_context(regs, addr);
- 		return;
- 	}
--	if (pud_leaf(pudp_get(pud_k)))
-+	if (pud_leaf(pud_k))
- 		goto flush_tlb;
- 
- 	/*
- 	 * Since the vmalloc area is global, it is unnecessary
- 	 * to copy individual PTEs
- 	 */
--	pmd_k = pmd_offset(pud_k, addr);
--	if (!pmd_present(pmdp_get(pmd_k))) {
-+	pmdp = pmd_offset(pudp, addr);
-+	pmdp_k = pmd_offset(pudp_k, addr);
-+
-+	pmd_k = pmdp_get(pmdp_k);
-+	if (!pmd_present(pmd_k)) {
- 		no_context(regs, addr);
- 		return;
- 	}
--	if (pmd_leaf(pmdp_get(pmd_k)))
-+	if (CONFIG_PGTABLE_LEVELS == 2)
-+		set_pmd(pmdp, pmd_k);
-+	if (pmd_leaf(pmd_k))
- 		goto flush_tlb;
- 
- 	/*
-@@ -230,8 +244,8 @@ static inline void vmalloc_fault(struct pt_regs *regs, int code, unsigned long a
- 	 * addresses. If we don't do this, this will just
- 	 * silently loop forever.
- 	 */
--	pte_k = pte_offset_kernel(pmd_k, addr);
--	if (!pte_present(ptep_get(pte_k))) {
-+	ptep_k = pte_offset_kernel(pmdp_k, addr);
-+	if (!pte_present(ptep_get(ptep_k))) {
- 		no_context(regs, addr);
- 		return;
- 	}
+ static inline const char *pgtable_level_to_str(enum pgtable_level level)
 
 -- 
 2.43.0
