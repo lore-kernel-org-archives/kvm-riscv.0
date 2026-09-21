@@ -4,113 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AA361C982F1
-	for <kvm-riscv@archiver.kernel.org>; Mon, 21 Sep 2026 11:14:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 350F0C982EE
+	for <kvm-riscv@archiver.kernel.org>; Mon, 21 Sep 2026 12:27:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
-	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=370kYTYMUxnzIxdQCGE4UzRBq5/bkhmwmyLNL7Kv6Yw=; b=b1BWubhgWIxGSA
-	UYCwY4P9+MhCplECeP86Q2zJbSEv6SfUPsD00gQaYv+BEWZTjwtBC/Oq7zsxEXSEZOseco3NDywDE
-	58InughQM/TOVJj6q0Dbvgbes2TQUwLTEg94NaPNckLBehR3g30dCc4agsFZGFbZh2PHtjHgHDQar
-	ZQjg0MH/QcbbrFZxKC/H1hAphwqx9v5qhXpkVs7rGNH6WtcMv6y3vOrm/03Nagc8dhvT5GeVBFyiL
-	4KZ2kzAXrh24QT2E1RGXm7nBJS3LKFfDMV7elvvGFcUxE6z8o9h5plkPeSYC1K4WbchWZJOlAP3k9
-	b9wJ/4Ilh6id3mlExj4g==;
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:MIME-Version:Message-Id:Date:
+	Subject:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=mqeEaXgemF6nukV/OUIFWr/sh5x0+3PmgyXiTT2UM88=; b=TtCQhLDfViv61Z
+	O56ZE4qoKwSoZN5s2WLy5++4NwDMLYpkLOwnSM3DRTIKn3P3uqniH8LvfKml9OFPXbhsPprs7OUl9
+	J4U7Q7JnbkKcZHfZ2yg8BOMXpRL4VZmSlVRj35Fdrst/rcNbKQsX1bHYul0Q8MhICr+EbdE6uLPe1
+	ngxlAPYzD65AwWUe6GY9A4C1qLhHXqPd7B0lWwMKTQgRAAPQVuCyPzOkkI8TAE19vnQVaQtN94qYk
+	Lwp9K3NqL9KznljsBJHiNIx2f1Htw6xGB4aijLdGniQ2g2TnvkTOJmVT5ZBlDZIvBVwdu1PcJfT4I
+	8P94TvdORu3pSKRQvhmQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x8byu-00000001qKo-1X9G;
-	Mon, 21 Sep 2026 11:14:44 +0000
-Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+	id 1x8d7E-000000023Vr-2vfF;
+	Mon, 21 Sep 2026 12:27:24 +0000
+Received: from tor.source.kernel.org ([172.105.4.254])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x8bys-00000001qHN-0BaD
-	for kvm-riscv@bombadil.infradead.org;
-	Mon, 21 Sep 2026 11:14:42 +0000
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:MIME-Version
-	:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:
-	Content-Type:Content-ID:Content-Description;
-	bh=4xMVi+cD5sodYKE++E9vQWOcZxlG7jO/nwtdaiSfROQ=; b=ddKem4njjCE7OrzQQwEzOKct5/
-	2ig9VwWLWDeP+LfmbIVKPRoCCWdM0wrMwaa0NZ555qhsp5WStyzQxhcXua71HZwTy8PejUNZpzPAW
-	N41tHneay0IldGT0dY6XRBd3zVl11r8Z5OlVHKm+JO+Abdge2ugsbOaQHH7pmZQe1cZs3KNz/4gnW
-	yjfITA0+EaoWzfGN5Ie3SI607q0N3BIHosbrT4xocBoClIj3ouJSE0m43zU6sWuXv4dFt2WjnpOu3
-	xqDVrxtFBHt3dcVXh1pEaBdWYwzGDaAIOxWSt2fOe3D+3uvxtMunpyOENBrzWYDA6T8g0lSFyuSeM
-	2CkPrkEw==;
-Received: from mail-pz2-x10.google.com ([2607:f8b0:4864:3b::10])
-	by desiato.infradead.org with esmtps (Exim 4.99.2 #2 (Red Hat Linux))
-	id 1x8byo-0000000CB6a-3I6I
-	for kvm-riscv@lists.infradead.org;
-	Mon, 21 Sep 2026 11:14:40 +0000
-Received: by mail-pz2-x10.google.com with SMTP id 41be03b00d2f7-cc1cea4c7a0so1391150a12.1
-        for <kvm-riscv@lists.infradead.org>; Mon, 21 Sep 2026 04:14:38 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789989277; x=1790594077; darn=lists.infradead.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=4xMVi+cD5sodYKE++E9vQWOcZxlG7jO/nwtdaiSfROQ=;
-        b=MafiOY1CVUumYcZkxmA0iIs7TvfWcLq1za1xXmkjXfeaxAvJvoWurdM/TyVb/Kptsz
-         7cLPI5geLRhwEmm7Adzk1oMTBN0YAZbgX6nNsrkEBqq9h1+F1sine5zwpt7vS/eYeZ0l
-         iLYwoI19puRZPDzUNaulVZfYtrhy+LruTP1wdFHQWGAYBRxYaFeeZTHoVNQke7YAcCLE
-         TJ8uxSshHitEAJB1pGuqin25EPwn9wNIo1qeyRMOHZyA8VyPsJkJFpeqsSxggne4jIq3
-         ocqqyro1Ro5tBOzF0CrvXJtpoHZhmOnabg0Newg9nTzH+Rlvm4UoWVZacIlIrQi0euDz
-         tdzQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789989277; x=1790594077;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=4xMVi+cD5sodYKE++E9vQWOcZxlG7jO/nwtdaiSfROQ=;
-        b=N6j+8/kPdsA7cTuNhA2KB0eOg2AKaMbmSr4mHxQKKWXEA2Q245Bw3yUDWlZDBQ3NuZ
-         9Ua6lcOdHDTNj5vlclmw88ltQZ1ClBCnbcMG8WkTtC4sCzeGL7Za2dMkBwYt0Bn8CGbn
-         aOV/fAbxGN3JvB/DI7Qz08CTKKCnRT3CEcS7x/efkB5my7kSitAmbM8UIYA5cxbp1H3u
-         91L/TFXnqWVxCROWCzqapctmOLeuQOchUfcSiRnwKnuTrXg1OYJ1Yy3+3nzNkqRqOHeH
-         1g4LKkG2WFpaBBToDo0Y+doBqk7NyVu/q7dhi8rwzwtr50uqk0/un7PidaUAVSUtk2uH
-         fbRg==
-X-Forwarded-Encrypted: i=1; AKwUvBxOF9S/jOOCDsP+aLS9Zbx04SSniX1VutYGcXEqBi3n46bqlvvWEmw6pwTxxp2ZbydvTkfZtx2Neq0=@lists.infradead.org
-X-Gm-Message-State: AFuF++n3DfISfmVqxptY9VDFamuZnSgOVT434tEJx7NsSkG0PmtZ0H+b
-	P/CWOBb6ySs1YvmArA//arRP8/OXR+bPdfwYCToo5zrpV7UbDkaTHEDg
-X-Gm-Gg: AYBFou02aIPwT1MpwbXJEdn2FmTnNvVgK0ScjGrf57TousZjktxOJ5rW2yE33L0YcbE
-	q86g8o27pJQwES9YsM2csOYTHsMFaFzu6C4t5wJAqO3SrH+tqidaoKQWe3USuqUe3nbNfppqgRi
-	P1Dn4ljCUN+iVbOS+hIThzdViqIMhXzVYG8UZmodYSoL1BLOvnL7G80ptsHkTcDrQYfgXEHvk2I
-	nw9hP2gFfiwUcHlC/01MvJt4RojTle6KllM/nt9Ak0H8awxIpdX0ADvPYicBhziAOHe6R4QQoyZ
-	mQNzCfCkQdKtxajQnMqWu3xSzYMD789NRx5oaw7phZnxQ2mWz5DjxgMe5bwMZwyUTWE5+99k5uM
-	rjJcysqc9jFvuBiPO5K9nE4/sRENDsLNvO3ZHqPuWLCaGeBFsqFe7/NPtGqWhE9pJ6Xm9q9e7Ny
-	z73TjgwMJ6fRdlEAnwL7s3xQO+8/VMd79qjZy7C5lTmPzF+Po5bvUyD7xlqqt/XVAh8JdO02fKJ
-	ZmoDgyM+a+Jwq3bNnlMig==
-X-Received: by 2002:a17:90b:17cc:b0:39e:135e:130e with SMTP id 98e67ed59e1d1-39e54af6a0emr16005396a91.3.1789989276896;
-        Mon, 21 Sep 2026 04:14:36 -0700 (PDT)
-Received: from fedora ([61.74.238.173])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-39e6c6dd585sm13438703a91.0.2026.09.21.04.14.33
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 21 Sep 2026 04:14:36 -0700 (PDT)
-From: SeungJu Cheon <suunj1331@gmail.com>
-To: Anup Patel <anup@brainfault.org>
-Cc: Atish Patra <atish.patra@linux.dev>,
-	Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Alexandre Ghiti <alex@ghiti.fr>,
-	Paolo Bonzini <pbonzini@redhat.com>,
-	Andrew Jones <ajones@ventanamicro.com>,
-	Jinyu Tang <tjytimi@163.com>,
-	Wang Yechao <wang.yechao255@zte.com.cn>,
-	kvm-riscv@lists.infradead.org,
-	kvm@vger.kernel.org,
-	linux-riscv@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	SeungJu Cheon <suunj1331@gmail.com>
-Subject: [PATCH v1 5/5] KVM: riscv: Age G-stage PTEs locklessly
-Date: Mon, 21 Sep 2026 20:14:02 +0900
-Message-ID: <20260921111402.120911-6-suunj1331@gmail.com>
-X-Mailer: git-send-email 2.52.0
-In-Reply-To: <20260921111402.120911-1-suunj1331@gmail.com>
-References: <20260921111402.120911-1-suunj1331@gmail.com>
+	id 1x8d7D-000000023VJ-0bVv;
+	Mon, 21 Sep 2026 12:27:23 +0000
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 8A8EE6021E;
+	Mon, 21 Sep 2026 12:27:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id ADC701F000FF;
+	Mon, 21 Sep 2026 12:27:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1789993642;
+	bh=u3kpT48+EAjuEBOYW9Un4dFvspIcpqydYwj1Scn9tqY=;
+	h=From:Subject:Date:To:Cc;
+	b=gWbfEfo8+iZGckv2O6ms2ErMihHJC39wCp36OIo9ypFslxaoOPH9SjskVsGQ5PHQ0
+	 VLLiKZEafOXRBjdpUKBaeFGoBJEPfKtU+0RI/QI3/PdC17D11z0+Uom0leM/isd2AN
+	 aibgohAuEvnOKVYIkY3vMei0iKOD+KzTCgKwIwKZT4sf4ceTpJ7QBco1cxaFZFbUtB
+	 /p9vS5++0wqgE72ezmjq/rAv6Wl5GS1CoqFUBztUc587DFSrb2bw6cnrH9vdtlkgJc
+	 ZlbE+L+SbcchctcRjgKQDr3oFwT9U/PqHig1gGeAzLbrEfqih6W9S4eVzKXy/PABnC
+	 RZNAnEdnGhVZw==
+From: "GUO Ren (XuanTie)" <guoren@kernel.org>
+Subject: [PATCH RFC v4 0/4] RISC-V: Add PARAVIRT_SPINLOCKS support
+Date: Mon, 21 Sep 2026 12:27:00 +0000
+Message-Id: <20260921-pvqspinlock-v4-0-409a22aed6ef@kernel.org>
 MIME-Version: 1.0
-X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260921_121439_325739_BFF2C368 
-X-CRM114-Status: GOOD (  12.46  )
+X-B4-Tracking: v=1; b=H4sIAJQisWoC/zWMyw6CMBBFf4XM2pJpeSiuTEz8ALfGBZQBKtjiF
+ IgJ4d8Fjctzc8+ZwRMb8nAMZmCajDfOrhDvAtBNbmsSplwZFKoUMyVFP718b2zndCv2UV6iroo
+ 4KSSsRs9Umfe3doPr5Qz33+jH4kF62DrbrWL3FEPDlP/TiVQoESOMZZhmCR6kkKIeHZM9tcSWu
+ tBxDcvyAUHIQhywAAAA
+X-Change-ID: 20260921-pvqspinlock-73ad0cfb45b1
+To: Anup Patel <anup@brainfault.org>, Atish Patra <atish.patra@linux.dev>, 
+ Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
+ Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, 
+ Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>, 
+ Randy Dunlap <rdunlap@infradead.org>, 
+ Fangyu Yu <fangyu.yu@linux.alibaba.com>, 
+ CHEN Jiankang <yubin.cjk@alibaba-inc.com>
+Cc: kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
+ linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, 
+ linux-doc@vger.kernel.org, Leonardo Bras <leobras@redhat.com>, 
+ "GUO Ren (XuanTie)" <guoren@kernel.org>
+X-Mailer: b4 0.16.0
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -127,105 +79,109 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Aging G-stage PTEs currently runs with mmu_lock held for write, taken
-by the common MMU notifier code. When MGLRU or kswapd ages a large
-range, every vCPU taking a G-stage fault blocks on the lock, and the
-dirty-logging read-side fast path blocks behind aging as well.
+Paravirtualized spinlocks allow an unfair qspinlock to replace the
+ticket-lock or native fair qspinlock implementation with something
+virtualization-friendly, for example, halting the virtual CPU rather
+than spinning.
 
-The preceding patches prepare G-stage page-table walks for lockless
-aging by using consistent PTE snapshots, preserving concurrent
-Accessed-bit updates, and deferring page-table frees with RCU.
+You can observe the paravirt qspinlock behavior with the pv_kick and
+pv_wait tracepoints under /sys/kernel/debug/tracing/:
 
-Select KVM_MMU_LOCKLESS_AGING so the common code no longer takes
-mmu_lock for aging, and protect the G-stage walk with an RCU read-side
-critical section.
+  # echo 1 > /sys/kernel/debug/tracing/events/paravirt/enable
+  # cat /sys/kernel/debug/tracing/trace
+            TASK-PID     CPU#  |||||  TIMESTAMP  FUNCTION
+               | |         |   |||||     |         |
+             sh-100     [001] d..2.    28.312294: pv_wait: cpu 1 out of wfi
+         <idle>-0       [000] d.h4.    28.322030: pv_kick: cpu 0 kick target cpu 1
 
-Read the root inside the RCU read-side critical section and check the
-resulting snapshot instead of checking kvm->arch.pgd separately before
-initializing the G-stage context. This ensures that the root used by
-the walk remains protected until the walk completes.
+This series is split from [1]. The newest discussion is at [2].
 
-On QEMU TCG with 4 vCPUs, running dirty_log_perf_test -v 3 -b 256M -i 3
-with MGLRU aging of the VM's cgroup forced every 100ms (86 passes):
+[1]: https://lore.kernel.org/linux-riscv/20231225125847.2778638-1-guoren@kernel.org/
+[2]: https://lists.riscv.org/g/tech-prs/message/1211
 
-                              before      after
-  mmu_lock write wait, total  44.4 s      0.15 s
-  mmu_lock write contentions  1,002,092   30,092
-  mmu_lock read contentions   351,937     0
-  guest dirty-memory time     18.6 s      16.7 s
+Changelog:
+v4:
+ - Rebase onto v7.3-rc4.
+ - Normalize the author identity to "GUO Ren (XuanTie)".
+ - Minor commit log cleanups (fix line-wrap artifacts and typos).
 
-Before, 93% of write-lock waiters were kvm_mmu_notifier_clear_young().
-With no aging, no meaningful difference was observed between the two
-kernels.
+v3:
+https://lore.kernel.org/linux-riscv/20251201003041.695081-1-guoren@kernel.org/
+ - Rebase on linux-6.18-rc7.
+ - Simplify nopvspin usage.
 
-Signed-off-by: SeungJu Cheon <suunj1331@gmail.com>
+v2:
+https://lore.kernel.org/linux-riscv/20241227011011.2331381-1-guoren@kernel.org/
+ - Add RFC tag.
+ - Using new SBI_EXT_PVLOCK ID.
+ - Add virt_spin_lock support.
+ - Add nopvspin support.
+
+v1:
+https://lore.kernel.org/linux-riscv/20241222033917.1754495-1-guoren@kernel.org/
+
+GUO Ren (XuanTie) (5):
+  RISC-V: Add PARAVIRT_SPINLOCKS support
+  RISC-V: paravirt: Add pvqspinlock KVM backend
+  RISC-V: paravirt: Add pvqspinlock frontend
+  RISC-V: paravirt: pvqspinlock: Add trace point for pv_kick/wait
+  RISC-V: paravirt: Support nopvspin to disable PARAVIRT_SPINLOCKS
+
+ .../admin-guide/kernel-parameters.txt         |  2 +-
+ arch/riscv/Kconfig                            | 12 +++
+ arch/riscv/include/asm/Kbuild                 |  1 -
+ arch/riscv/include/asm/kvm_vcpu_sbi.h         |  1 +
+ arch/riscv/include/asm/qspinlock.h            | 57 +++++++++++++
+ arch/riscv/include/asm/qspinlock_paravirt.h   | 26 ++++++
+ arch/riscv/include/asm/sbi.h                  |  5 ++
+ arch/riscv/include/uapi/asm/kvm.h             |  1 +
+ arch/riscv/kernel/Makefile                    |  2 +
+ arch/riscv/kernel/qspinlock_paravirt.c        | 82 +++++++++++++++++++
+ arch/riscv/kernel/setup.c                     |  5 ++
+ .../kernel/trace_events_filter_paravirt.h     | 58 +++++++++++++
+ arch/riscv/kvm/Makefile                       |  1 +
+ arch/riscv/kvm/vcpu_sbi.c                     |  4 +
+ arch/riscv/kvm/vcpu_sbi_pvlock.c              | 54 ++++++++++++
+ 15 files changed, 309 insertions(+), 2 deletions(-)
+ create mode 100644 arch/riscv/include/asm/qspinlock.h
+ create mode 100644 arch/riscv/include/asm/qspinlock_paravirt.h
+ create mode 100644 arch/riscv/kernel/qspinlock_paravirt.c
+ create mode 100644 arch/riscv/kernel/trace_events_filter_paravirt.h
+ create mode 100644 arch/riscv/kvm/vcpu_sbi_pvlock.c
+
+--
+2.43.1
+
 ---
- arch/riscv/kvm/Kconfig |  1 +
- arch/riscv/kvm/mmu.c   | 26 +++++++++++++-------------
- 2 files changed, 14 insertions(+), 13 deletions(-)
+GUO Ren (XuanTie) (4):
+      RISC-V: paravirt: Add pvqspinlock KVM backend
+      RISC-V: paravirt: Add pvqspinlock frontend
+      RISC-V: paravirt: pvqspinlock: Add trace point for pv_kick/wait
+      RISC-V: paravirt: Support nopvspin to disable PARAVIRT_SPINLOCKS
 
-diff --git a/arch/riscv/kvm/Kconfig b/arch/riscv/kvm/Kconfig
-index ec2cee0a39e0..77898d58ff9a 100644
---- a/arch/riscv/kvm/Kconfig
-+++ b/arch/riscv/kvm/Kconfig
-@@ -32,6 +32,7 @@ config KVM
- 	select VIRT_XFER_TO_GUEST_WORK
- 	select SCHED_INFO
- 	select GUEST_PERF_EVENTS if PERF_EVENTS
-+	select KVM_MMU_LOCKLESS_AGING
- 	help
- 	  Support hosting virtualized guest machines.
- 
-diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-index 8aed69abf814..ff282bdbe492 100644
---- a/arch/riscv/kvm/mmu.c
-+++ b/arch/riscv/kvm/mmu.c
-@@ -349,30 +349,30 @@ bool kvm_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range)
- 	return false;
- }
- 
--bool kvm_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
-+static bool kvm_riscv_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range,
-+			      bool test_only)
- {
- 	struct kvm_gstage gstage;
- 
--	if (!kvm->arch.pgd)
--		return false;
-+	guard(rcu)();
-+	lockdep_assert_not_held(&kvm->mmu_lock);
- 
- 	kvm_riscv_gstage_init(&gstage, kvm);
-+	if (!gstage.pgd)
-+		return false;
- 
- 	return kvm_riscv_gstage_age_range(&gstage, range->start << PAGE_SHIFT,
--					  range->end << PAGE_SHIFT, false);
-+					  range->end << PAGE_SHIFT, test_only);
- }
- 
--bool kvm_test_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
-+bool kvm_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
- {
--	struct kvm_gstage gstage;
--
--	if (!kvm->arch.pgd)
--		return false;
--
--	kvm_riscv_gstage_init(&gstage, kvm);
-+	return kvm_riscv_age_gfn(kvm, range, false);
-+}
- 
--	return kvm_riscv_gstage_age_range(&gstage, range->start << PAGE_SHIFT,
--					  range->end << PAGE_SHIFT, true);
-+bool kvm_test_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
-+{
-+	return kvm_riscv_age_gfn(kvm, range, true);
- }
- 
- static bool fault_supports_gstage_huge_mapping(struct kvm_memory_slot *memslot,
--- 
-2.52.0
+ Documentation/admin-guide/kernel-parameters.txt  |  2 +-
+ arch/riscv/Kconfig                               | 12 ++++
+ arch/riscv/include/asm/Kbuild                    |  1 -
+ arch/riscv/include/asm/kvm_vcpu_sbi.h            |  1 +
+ arch/riscv/include/asm/qspinlock.h               | 57 ++++++++++++++++
+ arch/riscv/include/asm/qspinlock_paravirt.h      | 26 ++++++++
+ arch/riscv/include/asm/sbi.h                     |  5 ++
+ arch/riscv/include/uapi/asm/kvm.h                |  1 +
+ arch/riscv/kernel/Makefile                       |  2 +
+ arch/riscv/kernel/qspinlock_paravirt.c           | 82 ++++++++++++++++++++++++
+ arch/riscv/kernel/setup.c                        |  5 ++
+ arch/riscv/kernel/trace_events_filter_paravirt.h | 58 +++++++++++++++++
+ arch/riscv/kvm/Makefile                          |  1 +
+ arch/riscv/kvm/vcpu_sbi.c                        |  4 ++
+ arch/riscv/kvm/vcpu_sbi_pvlock.c                 | 54 ++++++++++++++++
+ 15 files changed, 309 insertions(+), 2 deletions(-)
+---
+base-commit: 93f51579e7df248780214094418f205253383cc5
+change-id: 20260921-pvqspinlock-73ad0cfb45b1
+
+Best regards,
+--  
+GUO Ren (XuanTie) <guoren@kernel.org>
 
 
 -- 
