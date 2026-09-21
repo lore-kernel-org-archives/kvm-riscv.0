@@ -4,94 +4,98 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0C5A4C982DE
-	for <kvm-riscv@archiver.kernel.org>; Mon, 21 Sep 2026 10:40:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B9CBC982ED
+	for <kvm-riscv@archiver.kernel.org>; Mon, 21 Sep 2026 10:56:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:Subject:Message-ID:Date:From:
-	In-Reply-To:References:MIME-Version:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=ywWIpyl0ZN/WMWuEW6cVrcgZD26aIuZWMXeLzxpPl+Q=; b=iYbWL9NPQv/01y
-	23FFp4gOWdvv12GR/U7sUHb1BBoLjyZdxjzxxtykN7TF/OugUoEPn17t6BuZxskAdnduLalRKWKXN
-	AbeCX+DxhjAiDDh7vzS2tbtUK5rshOJD+aa8iyOH+HU4bnsM3IphZ4Fx0dlbXoACpL4lP3UY9/LnJ
-	cosEAS5OQqQuUmAhgkIMZf4vbko7XOO0yDkNnmwvjY0qQ+kv7G7lnIPj1NSVFWMNO0mbXPwt4eqFT
-	M4My/iPTvM7GBvRPikA3DNpwKZf7Jd6pqDKAPToKoVNTN0uVFo4Su06sn1MmJnER7s7Po5TvDqiyx
-	WXTpihZEFacQ26g+s75g==;
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:MIME-Version:Message-Id:Date:
+	Subject:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=PGvNHliSjAJYexVYC7G/1wIH5fC85+rmQJZbRoG4yio=; b=oaIgIy0NMuePeg
+	ac2g+6xEBdGc3I/1Iokmo75ckvaAyK2+r1O2BpfOx44jD5rC7AYT/XcyRyYFYHmnVm7b4Pfmj6WMe
+	hwLXIwRQLSfW5tRzGc46E2PK5XoX+yFwHH42wN8Y5DMFWymHHZkWeFAm9vObTka/GRfO0GA5Y/Lle
+	E28iQ/oRNK1jLs0UDBfQA5jmIRU9VJGMalV392pviKNVEjmybvTBfy8SVUQ8eZ6eqy5FuR5EIPEFp
+	Jb/2QWaGAyjS+qwieaVjupRFuZ9hP453Voj0ikc/hNkFFvkg/6lFy8vY7JMXz0DFOW1uH++/HYVBm
+	y/7jTG8BSODLodeizDaw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x8bRP-00000001j3v-1WSg;
-	Mon, 21 Sep 2026 10:40:07 +0000
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124])
-	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x8bRM-00000001j30-3Tmx
-	for kvm-riscv@lists.infradead.org;
-	Mon, 21 Sep 2026 10:40:06 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1789987202;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Lg6lUtI5rOYqzjiYwf3NjDcPU/fuxjGZBEmVSz69a4U=;
-	b=g+fYj+DYnqBr5Q0iDJQcGiTQ5UPFJGLW2vjg4MfpEnVzIHt3zhh30J8LsR4UUoLRXuozgn
-	WxLXN81IZOapZ06kZvpp/CEb+VxKHN7yROfEqpjEHocYRfo0tOd+jco0vesJRJjjkxDj9Z
-	NHyXJflWqRS3KQxuQm4Kp0nT+44dQag=
-Received: from mail-wr1-f69.google.com (mail-wr1-f69.google.com
- [209.85.221.69]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-14-z_VtKlkCPfKnttNYy2lHtQ-1; Mon, 21 Sep 2026 06:40:00 -0400
-X-MC-Unique: z_VtKlkCPfKnttNYy2lHtQ-1
-X-Mimecast-MFC-AGG-ID: z_VtKlkCPfKnttNYy2lHtQ_1789987199
-Received: by mail-wr1-f69.google.com with SMTP id ffacd0b85a97d-47f2de3ba47so1975843f8f.1
-        for <kvm-riscv@lists.infradead.org>; Mon, 21 Sep 2026 03:40:00 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789987199; x=1790591999;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=Lg6lUtI5rOYqzjiYwf3NjDcPU/fuxjGZBEmVSz69a4U=;
-        b=crqHEGUGEgUPiYF3UC4Z33R3PYGu2CnqWP1BjBnD5Ct1DNzZdXkugdICCjAxR6NrEt
-         QUkiq3rp7FXMIBv3lb8VIbauYT6k7IxIcvTuCkX6A6vf6koV09+Kg7J+q5eE8PWfayen
-         TLB/RALwGbI7FaqcDlXk8JY1oYuRU2ooTqrphmdXsrSb6zm1V2eSYs3c0355POKdOoyl
-         ERu41kdU1TPPwHyhACCQD8Qu48mlYqZG5qhEpG62AQMJVvkmV15R5OxWuIHV+aQhV7nE
-         7VRoDGHDED12hDA841/OvBv97jeRd0ynKkW1VQEwEIh9EM6l0HVCfsfal/Agai8jP7gf
-         gbJg==
-X-Forwarded-Encrypted: i=1; AKwUvBygsqyXz7FohNBqMSDsW8jkeCFs9HrTXLAzUXLAT8LmQn5wApiG8IJ590/4107iA4xxJDxwTzpmvpA=@lists.infradead.org
-X-Gm-Message-State: AFuF++mJww3073dQC7YX5cUn7CH5AQ8/ghctWFJV6EJ1cG5q19kJrHbD
-	d89B+nbPzVYHmgAlJmPuqD4gH64nASxbl6FmI+T771SlkVlwt359TDGf67W8lqrNbE3WLbUuGqi
-	OHfPWG/ttpmWWHeWUiFT0VRd9inHKhWcRaQtA/EXayIG+nYrn1SpUepfkTlLQRG3We8FsdxQ8n+
-	c+GO+jmayTCK6X1L93zEhrWK/EWpaZ++ChQxxCYWSaa35VAgBZWw==
-X-Gm-Gg: AYBFou2uww1UbTqhynWJ/o5CiRLLU7nNGHXdXtXfiFj3UZPS+WC1u7zpiDYkeOEO0S2
-	YeYy6e23w70+Qm1N8LKtztxRf1KyU/lrZnlDGCZs6BvPfo1vutfiaL7CfGMEGe3uGyWANpAewmR
-	WAc+leSkh+V2cgphtF1hzU9slnRhJhlaxm022iEQzxyegHtIcs2lbi9OuQwivAnqJD24TYrzt7A
-	zSHmvZGroKXqu+4epSN61SEFMS241jsbM3+PGN/TRIWaA0wy/Kz6Lw3SWQc5w==
-X-Received: by 2002:a05:6000:2c0b:b0:487:6f0:8658 with SMTP id ffacd0b85a97d-4871e36d031mr14452306f8f.42.1789987198950;
-        Mon, 21 Sep 2026 03:39:58 -0700 (PDT)
-X-Received: by 2002:a05:6000:2c0b:b0:487:6f0:8658 with SMTP id
- ffacd0b85a97d-4871e36d031mr14452275f8f.42.1789987198577; Mon, 21 Sep 2026
- 03:39:58 -0700 (PDT)
+	id 1x8bhL-00000001lS4-3rXF;
+	Mon, 21 Sep 2026 10:56:35 +0000
+Received: from foss.arm.com ([217.140.110.172])
+	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
+	id 1x8bhJ-00000001lPo-1MCp;
+	Mon, 21 Sep 2026 10:56:34 +0000
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 9BB301570;
+	Mon, 21 Sep 2026 03:56:25 -0700 (PDT)
+Received: from e129823.arm.com (e129823.arm.com [10.2.213.3])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 7B5A33F86C;
+	Mon, 21 Sep 2026 03:56:21 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1789988189; bh=+i8NbpdYfXEvFu0AxrNhp/lyU11LX+xOPtpkodZuoZc=;
+	h=From:Subject:Date:To:Cc:From;
+	b=Bhv3DhtuD6Cc8rwixG2H8y2y5nevldUQEJ99eSoyfMk4qBO2ab0cToeT2cXbSDP1w
+	 5B9PvkL5BTasymCaQ5TeMYR9YHvDUR7NMqo9NIWozjErm7RSi1y6nW7vnof/bEQ1HK
+	 jQ+R2xJUOx4CXO2rJCd6zgJruSt0PxXkpmhjZxz8=
+From: Yeoreum Yun <yeoreum.yun@arm.com>
+Subject: [PATCH 00/21] mm: change behavior of pXdp_get()/pXd_page() in
+ compile-time folded pgtable
+Date: Mon, 21 Sep 2026 11:55:22 +0100
+Message-Id: <20260921-dummy_ptxp3-v1-0-cd40cf68242e@arm.com>
 MIME-Version: 1.0
-References: <CAAhSdy2MbSq2eGDZfh_EKt2S3OUEn7tJRWUgvncPsWNVR7vqeg@mail.gmail.com>
-In-Reply-To: <CAAhSdy2MbSq2eGDZfh_EKt2S3OUEn7tJRWUgvncPsWNVR7vqeg@mail.gmail.com>
-From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Mon, 21 Sep 2026 12:39:46 +0200
-X-Gm-Features: AcwNN1WJeaIYC81GTiQRJhjTHz-vJsYLRzgjmQPP8T2_2LmCGnbvuvv6NPrHA80
-Message-ID: <CABgObfbL5QM0T-r1FxNsx_PEZwemk_ibALL60FdiTgpT5hX4bA@mail.gmail.com>
-Subject: Re: [GIT PULL] KVM/riscv fixes for 7.3 take #1
-To: Anup Patel <anup@brainfault.org>
-Cc: Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
-	Atish Patra <atish.patra@linux.dev>, Andrew Jones <andrew.jones@oss.qualcomm.com>, 
-	KVM General <kvm@vger.kernel.org>, 
-	"KVM RISC-V (KVM/riscv)" <kvm-riscv@lists.infradead.org>, 
-	linux-riscv <linux-riscv@lists.infradead.org>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: EZh6sM8efLFJAqn7STlC7hY0H2JAvsiA1u31me7BtO4_1789987199
-X-Mimecast-Originator: redhat.com
+X-B4-Tracking: v=1; b=H4sIABoNsWoC/23P3W7CMAwF4FdBuSaTEzc/5WrvgRBKHXfkorRKW
+ QVCffcFpE1M4fJY+o7tu5g5J57FbnMXmZc0p/FcgtpuBJ3C+YtliiULDdqC01rG72G4HafLdUK
+ JrlHReSIHvShiytyn67Ntfyj5lObLmG/P8kU/pu97Fi1BxpabLkRUDOEz5OGDxkE8WhZ8lf6/x
+ CI7stD1QTNj/JPb35tR1cIHwjY23itDlfDQ1MLZ2CKAd8B9LdQbwVT+MYAmBqiFNrVQ6Cwp23q
+ kekcLuhYm+t50ypF++eOwrusPwv8YutgBAAA=
+To: Russell King <linux@armlinux.org.uk>, 
+ Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>, 
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, 
+ Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>, 
+ Kairui Song <kasong@tencent.com>, Qi Zheng <qi.zheng@linux.dev>, 
+ Shakeel Butt <shakeel.butt@linux.dev>, Barry Song <baohua@kernel.org>, 
+ Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>, 
+ Wei Xu <weixugc@google.com>, Johannes Weiner <hannes@cmpxchg.org>, 
+ David Hildenbrand <david@kernel.org>, Michal Hocko <mhocko@kernel.org>, 
+ Lorenzo Stoakes <ljs@kernel.org>, Tianrui Zhao <zhaotianrui@loongson.cn>, 
+ Bibo Mao <maobibo@loongson.cn>, Anup Patel <anup@brainfault.org>, 
+ Atish Patra <atish.patra@linux.dev>, Paul Walmsley <pjw@kernel.org>, 
+ Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+ Alexandre Ghiti <alex@ghiti.fr>, Dave Hansen <dave.hansen@linux.intel.com>, 
+ Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>, 
+ Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, 
+ Borislav Petkov <bp@alien8.de>, x86@kernel.org, 
+ "H. Peter Anvin" <hpa@zytor.com>, "Liam R. Howlett" <liam@infradead.org>, 
+ Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>, 
+ Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, 
+ Jonas Bonn <jonas@southpole.se>, 
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, 
+ Stafford Horne <shorne@gmail.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
+ loongarch@lists.linux.dev, linux-mips@vger.kernel.org, 
+ linux-arch@vger.kernel.org, linux-mm@kvack.org, kvm@vger.kernel.org, 
+ kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
+ linux-openrisc@vger.kernel.org, Muhammad Usama Anjum <usama.anjum@arm.com>, 
+ Yeoreum Yun <yeoreum.yun@arm.com>, Sohil Mehta <sohil.mehta@intel.com>
+X-Mailer: b4 0.13.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=9844; i=yeoreum.yun@arm.com;
+ h=from:subject:message-id; bh=+i8NbpdYfXEvFu0AxrNhp/lyU11LX+xOPtpkodZuoZc=;
+ b=owEB7AET/pANAwAKAW3Vw9FaxTEzAcsmYgBqsQ1KCbJJAqHkpHjl4ozK2NXp7qf/cafPN5Gsm
+ +gxHtcAZRCJAbIEAAEKAB0WIQQtg+CS3QUzuFh1pJ1t1cPRWsUxMwUCarENSgAKCRBt1cPRWsUx
+ M+6AC/iJXNspes5rnQWu8wvadRPsdMNjF1lkZkrvJR3XjCh++EMLT2t10G/96ThPJv1v5gudtBJ
+ wlETudZZqHVDDaWl8iuv4U9wk7WbgdaOFBa1UBfPa1PeulkrDL6nDPzqXPi8osXF7i3R2vbvdJg
+ IF+tCtEMy4u9DQbrEoJ9ESuzSzVxhob+Gp6+Fhs0dQhuEMQC15auP87Fbmw4AYVhYudLSzhzOt9
+ bNm0oDqDg5tIA2mbbLeiLgftFe1AxtIOyEHTtFZbZKbpwMliY5L9mYbbwr8UVLUMi1pi1vDo1R7
+ tQYmfPoyqgGZEevfxxri09zTop97HbHrhQBlUvdICPJD79ASKUhR5VlSYf444UwlyaZ5CArG4u7
+ IkCnlcTdm3AKMrK6uK/kADc4i1VSWiCF2O1j5hQVk2Vk3m2VH0asj1iA7O+iwV856nWBXdpA6vo
+ ZrN09/yEVvkZA8rhUEmyeetMXNcvxN7nCNWUOZL6wF0fqvoskNUFimzkkBvsXTShde8g==
+X-Developer-Key: i=yeoreum.yun@arm.com; a=openpgp;
+ fpr=2D83E092DD0533B85875A49D6DD5C3D15AC53133
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260921_034004_942405_7438960A 
-X-CRM114-Status: GOOD (  15.53  )
+X-CRM114-CacheID: sfid-20260921_035633_463551_BAFF4008 
+X-CRM114-Status: GOOD (  24.97  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -103,74 +107,221 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-T24gU3VuLCBTZXAgMjAsIDIwMjYgYXQgMTA6MjXigK9BTSBBbnVwIFBhdGVsIDxhbnVwQGJyYWlu
-ZmF1bHQub3JnPiB3cm90ZToKPgo+IEhpIFBhb2xvLAo+Cj4gV2UgaGF2ZSB0aGUgZm9sbG93aW5n
-IGZpeGVzIGZvciB0aGUgNy4zIGtlcm5lbDoKPiAxKSBTeW5jaHJvbml6ZSBocnRpbWVyIGR1cmlu
-ZyBWQ1BVIHRlYXJkb3duCj4gMikgRml4IHRoZSBjb252ZXJzaW9uIGJldHdlZW4gdnNpcCBhbmQg
-aHZpcCB2YWx1ZXMKPiAzKSBTZXJpYWxpemUgSU1TSUMgYXR0cmlidXRlcyB3aXRoIHZDUFUgbWln
-cmF0aW9uCj4gNCkgUmVsZWFzZSB1bnVzZWQgcGFnZSBhZnRlciBNTVUgaW52YWxpZGF0aW9uCj4g
-NSkgUHJvcGFnYXRlIGludGVycnVwdGVkIEctc3RhZ2UgZmF1bHRzIHRvIEtWTSB1c2VyLXNwYWNl
-Cj4gNikgRml4IE5BQ0wgaGZlbmNlIGVudHJ5IHVwZGF0ZSBvcmRlcgo+IDcpIEZpeCBzZGF0YSBs
-ZWFrIGFuZCBzdGFsZSBzbmFwc2hvdF9hZGRyIGluIFBNVSBzbmFwc2hvdF9zZXRfc2htZW0KPiA4
-KSBQcmVzZXJ2ZSBmaXJtd2FyZSBjb3VudGVyIHZhbHVlIGFjcm9zcyBQTVUgY291bnRlciBzdG9w
-L3N0YXJ0Cj4gOSkgUmVwb3J0IFBNVSBzbmFwc2hvdCB3cml0ZSBmYWlsdXJlIHRvIHRoZSBndWVz
-dAo+IDEwKSBGaXggcGVyZi1iYWNrZWQgY291bnRlciBhY2NvdW50aW5nIGFjcm9zcyBQTVUgc3Rv
-cCBhbmQgcmVhZAo+IDExKSBGaXggSFNNIGhhcnQgc3RhdHVzIGVycm9yIHByb3BhZ2F0aW9uCj4K
-PiBBcyB5b3UgY2FuIHNlZSwgdGhlIGZpeGVzIGFyZSBhbGwgb3ZlciB0aGUgcGxhY2UgZXhjZXB0
-IHF1aXRlCj4gZmV3IG9mIHRoZW0gKDQgZml4ZXMpIGZvY3VzIG9ubHkgb24gU0JJIFBNVSBleHRl
-bnNpb24uCj4KPiBQbGVhc2UgcHVsbC4KClB1bGxlZCwgdGhhbmtzLgoKUGFvbG8KCj4gUmVnYXJk
-cywKPiBBbnVwCj4KPiBUaGUgZm9sbG93aW5nIGNoYW5nZXMgc2luY2UgY29tbWl0IGZkNzNmNGE2
-NjU5ODk3MTkxZmEwZDQwNjk1ZmUzNzA5MjVkZDM3ODA6Cj4KPiAgIExpbnV4IDcuMy1yYzMgKDIw
-MjYtMDktMTMgMTQ6Mzg6MDIgLTA3MDApCj4KPiBhcmUgYXZhaWxhYmxlIGluIHRoZSBHaXQgcmVw
-b3NpdG9yeSBhdDoKPgo+ICAgaHR0cHM6Ly9naXRodWIuY29tL2t2bS1yaXNjdi9saW51eC5naXQg
-dGFncy9rdm0tcmlzY3YtZml4ZXMtNy4zLTEKPgo+IGZvciB5b3UgdG8gZmV0Y2ggY2hhbmdlcyB1
-cCB0byA0MWU4MWY3ZTNlZjk2NTk0ZmI4NDA0NDUzNDNjMGVlNzcyM2FhNTUwOgo+Cj4gICBSSVND
-LVY6IEtWTTogRml4IEhTTSBoYXJ0IHN0YXR1cyBlcnJvciBwcm9wYWdhdGlvbiAoMjAyNi0wOS0x
-NSAxODo1NTo1MSArMDUzMCkKPgo+IC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KPiBLVk0vcmlzY3YgZml4ZXMgZm9yIDcuMywg
-dGFrZSAjMQo+Cj4gLSBTeW5jaHJvbml6ZSBocnRpbWVyIGR1cmluZyBWQ1BVIHRlYXJkb3duCj4g
-LSBGaXggdGhlIGNvbnZlcnNpb24gYmV0d2VlbiB2c2lwIGFuZCBodmlwIHZhbHVlcwo+IC0gU2Vy
-aWFsaXplIElNU0lDIGF0dHJpYnV0ZXMgd2l0aCB2Q1BVIG1pZ3JhdGlvbgo+IC0gUmVsZWFzZSB1
-bnVzZWQgcGFnZSBhZnRlciBNTVUgaW52YWxpZGF0aW9uCj4gLSBQcm9wYWdhdGUgaW50ZXJydXB0
-ZWQgRy1zdGFnZSBmYXVsdHMgdG8gS1ZNIHVzZXItc3BhY2UKPiAtIEZpeCBOQUNMIGhmZW5jZSBl
-bnRyeSB1cGRhdGUgb3JkZXIKPiAtIEZpeCBzZGF0YSBsZWFrIGFuZCBzdGFsZSBzbmFwc2hvdF9h
-ZGRyIGluIHNuYXBzaG90X3NldF9zaG1lbQo+IC0gUHJlc2VydmUgZmlybXdhcmUgY291bnRlciB2
-YWx1ZSBhY3Jvc3MgUE1VIGNvdW50ZXIgc3RvcC9zdGFydAo+IC0gUmVwb3J0IFBNVSBzbmFwc2hv
-dCB3cml0ZSBmYWlsdXJlIHRvIHRoZSBndWVzdAo+IC0gRml4IHBlcmYtYmFja2VkIGNvdW50ZXIg
-YWNjb3VudGluZyBhY3Jvc3MgUE1VIHN0b3AgYW5kIHJlYWQKPiAtIEZpeCBIU00gaGFydCBzdGF0
-dXMgZXJyb3IgcHJvcGFnYXRpb24KPgo+IC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KPiBNeWVvbmdodW4gUGFrICgxKToKPiAg
-ICAgICBSSVNDLVY6IEtWTTogU3luY2hyb25pemUgaHJ0aW1lciBjYWxsYmFjayBkdXJpbmcgdGVh
-cmRvd24KPgo+IFNldW5nSnUgQ2hlb24gKDMpOgo+ICAgICAgIFJJU0MtVjogS1ZNOiBQcmVzZXJ2
-ZSBmaXJtd2FyZSBjb3VudGVyIHZhbHVlIGFjcm9zcyBzdG9wL3N0YXJ0Cj4gICAgICAgUklTQy1W
-OiBLVk06IFJlcG9ydCBzbmFwc2hvdCB3cml0ZSBmYWlsdXJlIHRvIHRoZSBndWVzdAo+ICAgICAg
-IFJJU0MtVjogS1ZNOiBGaXggcGVyZi1iYWNrZWQgY291bnRlciBhY2NvdW50aW5nIGFjcm9zcyBz
-dG9wIGFuZCByZWFkCj4KPiBUYW4gQ2hpICgxKToKPiAgICAgICBSSVNDLVY6IEtWTTogRml4IEhT
-TSBoYXJ0IHN0YXR1cyBlcnJvciBwcm9wYWdhdGlvbgo+Cj4gWGllIEJvICgzKToKPiAgICAgICBS
-SVNDLVY6IEtWTTogU2VyaWFsaXplIElNU0lDIGF0dHJpYnV0ZXMgd2l0aCB2Q1BVIG1pZ3JhdGlv
-bgo+ICAgICAgIFJJU0MtVjogS1ZNOiBSZWxlYXNlIHVudXNlZCBwYWdlIGFmdGVyIE1NVSBpbnZh
-bGlkYXRpb24KPiAgICAgICBSSVNDLVY6IEtWTTogUHJvcGFnYXRlIGludGVycnVwdGVkIEctc3Rh
-Z2UgZmF1bHRzCj4KPiBZaWNvbmcgWWFuZyAoMSk6Cj4gICAgICAgUklTQy1WOiBLVk06IEZpeCB0
-aGUgY29udmVyc2lvbiBiZXR3ZWVuIHZzaXAgYW5kIGh2aXAKPgo+IFpvbmdtaW4gWmhvdSAoMik6
-Cj4gICAgICAgS1ZNOiByaXNjdjogRml4IE5BQ0wgaGZlbmNlIGVudHJ5IHVwZGF0ZSBvcmRlcgo+
-ICAgICAgIFJJU0MtVjogS1ZNOiBGaXggc2RhdGEgbGVhayBhbmQgc3RhbGUgc25hcHNob3RfYWRk
-ciBpbiBzbmFwc2hvdF9zZXRfc2htZW0KPgo+ICBhcmNoL3Jpc2N2L2luY2x1ZGUvYXNtL2Nzci5o
-ICAgICAgIHwgMjAgKysrKysrKysrKysrKysrLS0tLQo+ICBhcmNoL3Jpc2N2L2t2bS9haWFfaW1z
-aWMuYyAgICAgICAgIHwgMTEgKysrKysrKystLQo+ICBhcmNoL3Jpc2N2L2t2bS9tbXUuYyAgICAg
-ICAgICAgICAgIHwgMTAgKysrKysrKystLQo+ICBhcmNoL3Jpc2N2L2t2bS9uYWNsLmMgICAgICAg
-ICAgICAgIHwgMjAgKysrKysrKysrKysrKysrLS0tLQo+ICBhcmNoL3Jpc2N2L2t2bS92Y3B1LmMg
-ICAgICAgICAgICAgIHwgIDMgKy0tCj4gIGFyY2gvcmlzY3Yva3ZtL3ZjcHVfZXhpdC5jICAgICAg
-ICAgfCAgMiArLQo+ICBhcmNoL3Jpc2N2L2t2bS92Y3B1X29uZXJlZy5jICAgICAgIHwgIDggKysr
-LS0tLS0KPiAgYXJjaC9yaXNjdi9rdm0vdmNwdV9wbXUuYyAgICAgICAgICB8IDQxICsrKysrKysr
-KysrKysrKysrKysrKysrLS0tLS0tLS0tLS0tLS0tCj4gIGFyY2gvcmlzY3Yva3ZtL3ZjcHVfc2Jp
-X2hzbS5jICAgICAgfCAgNCArKy0tCj4gIGFyY2gvcmlzY3Yva3ZtL3ZjcHVfdGltZXIuYyAgICAg
-ICAgfCAgNSArKysrLQo+ICB0b29scy9hcmNoL3Jpc2N2L2luY2x1ZGUvYXNtL2Nzci5oIHwgMjAg
-KysrKysrKysrKysrKysrLS0tLQo+ICAxMSBmaWxlcyBjaGFuZ2VkLCAxMDEgaW5zZXJ0aW9ucygr
-KSwgNDMgZGVsZXRpb25zKC0pCj4KCgotLSAKa3ZtLXJpc2N2IG1haWxpbmcgbGlzdAprdm0tcmlz
-Y3ZAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFu
-L2xpc3RpbmZvL2t2bS1yaXNjdgo=
+Using ptep_get() and its counterparts in common code is suboptimal on
+kernel configurations with generic compile-time folded page tables.
+By default, ptep_get() and its friends expands to READ_ONCE(),
+forcing the compiler to emit a load even when the value is not used afterwards.
+
+This issue was recently reported by Christophe Leroy [1] for ppc32
+preventing futher code conversion to ptep_get()/pmdp_get()/... helper
+and the same behavior can also be observed on arm64 when built with
+2- or 3-level page tables
+
+e.g) perf_get_page_size() in arm64 with CONFIG_PGTABLE_LEVEL=3:
+
+00000000000052a0 <perf_get_page_size>:
+    ...
+    52dc: d53b4234     	mrs	x20, DAIF
+    52e0: d50343df     	msr	DAIFSet, #0x3
+    ...
+    52fc: d35e9a69     	ubfx	x9, x19, #30, #9        /* pud_offset_lockless() */
+    5300: f9403508     	ldr	x8, [x8, #0x68]
+    5304: f869790a     	ldr	x10, [x8, x9, lsl #3]   /* pudp_get() */
+    5308: f90007ea     	str	x10, [sp, #0x8]
+    530c: f8697908     	ldr	x8, [x8, x9, lsl #3]    /* pudp_get() */
+    ...
+    5360: 90000009     	adrp	x9, 0x5000 <perf_prepare_sample+0x548>
+    5364: 92746908     	and	x8, x8, #0x7ffffff000
+    5368: d3557675     	ubfx	x21, x19, #21, #9       /* pmd_offset_lockless() */
+    ...
+    5394: f8757ac8     	ldr	x8, [x22, x21, lsl #3]  /* pmdp_get() */
+
+Though PGTABLE_LEVEL=3, since the pudp_get() still remain with
+READ_ONCE(), there's redundant load for the pud which is folded.
+
+To prevent generating suboptimal code, make pXdp_get() return a dummy
+entry for compile-time folded page tables, make the helpers such as
+pXd_offset()/pXd_offset_lockless(), set_pXd() validate dummy entries
+at compile time to catch the wrong usage and prohibit calls to
+pXd_page() in pgtable-nopXd.h.
+
+This series does not change the behaviour of existing code that directly
+manipulates folded page-table levels using set_pgd(), pgd_page_vaddr(), and
+related helpers. Those helpers continue to behave as before.
+
+The new restrictions only apply to code that adopts the pXdp_get()-based
+access model for compile-time folded page tables.
+
+As the pXdp_get() can return *dummy* entry, some of code using
+the stack value where saves the pXdp_get() could be a problematic:
+
+  1. Passing address of stack value where saves the pXdp_get() result
+     to pXd_offset() for example:
+
+       pud_t *pudp, pud;
+       pmd_t *pmdp;
+
+       pud = pudp_get(pudp, address);
+       pmdp = pmd_offset(&pud, pud, address);
+
+     (e.g. host_pfn_mapping_level() in loongarch).
+
+  2. Using the pXdp_get() result to use as argument of pXd_val() and
+     to check prot without checking pgtable is folded.
+     for example, x86's effective_prot().
+
+  3. Using set_pXd() with pXdp_get() will set problematic dummy entry
+     in folded page table like:
+
+       set_pXd(pxdp, pXdp_get(pxdp_k));
+
+  4. Using pgd_page_vaddr() to get the first-level pgtable.
+     passing dummy pxdp_get() for pgd_page_vaddr() will return wrong
+     address. Therefore, make pgd_page_vaddr() and pXd_pgtable() to
+     trigger the error for improper usage with folded dummy entry in the
+     generic compile-time folded pgtable.
+
+Thanksfully, above cases are rare since (1) most of usage using
+pXd_offset() with result of upper pXd_offset(), (2) it's extreamely
+rare to use pXd_val() for non-leaf entry in the kernel,
+(3) is to handle the vmalloc_fault or set the first level of page table
+and (4) to setup early page table and etc.
+
+Therefore, properly handle this uncommon and problematic pattern, and
+document the current design of compile-time folded page tables.
+
+This patch is based on mm-unstable.
+
+Future work
+===========
+ - print_bad_page_map() and show_pte() still prints dummy values
+   instead of printing the same content for all generic compile-time
+   folded page tables. We might want to skip printing dummy values later.
+
+ - We currently catch abuse of dummy values on the stack at compile-time by
+   relying on constant propagation by the compiler. Usama's work [3] on using
+   distinct types for sw vs. hw PTEs could help here as well."
+
+ - Clean up vmalloc fault handling by synchronizing the vmalloc entry on
+   32-bit architectures. This code is almost identical across architectures.
+
+ - Unfortunately, the current design of compile-time folded page tables appears
+   to be internally consistent but confusing. For example,
+   when CONFIG_PGTABLE_LEVELS is 2, p4d, pud, and pmd are expected to
+   be folded into pgd. However, the architecture code uses set_pmd()
+   to update the top-level page-table entry, even though it includes pgtable-nopmd.h.
+
+   In the future, it would be good to eliminate this source of confusion,
+   possibly by treating all folded upper levels consistently as dummy wrappers
+   around the highest real page-table level:
+
+         NOPGD
+   --> +------+           P4D
+       | ptr0 |-------> +------+           PUD
+       +------+         | ptr0 |-------> +-----+
+                        | ptr1 |-        | ptr | -------> ...
+                        | ptr2 | \       | ptr |
+                        | ptr3 |  \        ...
+                          ...      \
+                                    \        PUD
+                                     +----> +-----+
+                                            | ptr | -------> ...
+                                            | ptr |
+                                              ...
+
+Link: [1] https://lore.kernel.org/all/0019d675-ce3d-4a5c-89ed-f126c45145c9@kernel.org/
+Link: [2] https://lore.kernel.org/all/20251113014656.2605447-1-samuel.holland@sifive.com/
+Link: [3] https://lore.kernel.org/r/74182e50-b54f-4d2d-a27f-3a59a538d6bc@arm.com
+
+Patch History
+=============
+from RFC v3 to v1:
+  - Drop and rebase for CONFIG_X86_DIRECT_GBPAGES and use the Dave's
+    patch (https://lore.kernel.org/all/20260902194718.E1FF3041@davehans-spike.ostc.intel.com/)
+  - Link to RFC v3: https://lore.kernel.org/r/20260902-dummy_ptxp3-v3-0-5d8f5b17c25c@arm.com
+
+from RFC v2 to RFC v3:
+  - repasre commit message
+  - move ptdump_pgtable_first_level() into pgalloc.h
+  - skip the huge pud operation when CONFIG_X86_DIRECT_GBPAGES is disabled
+  - docuemtns compile-time folded page table
+  - drop the applied patch.
+  - Link to RFC v2: https://lore.kernel.org/all/20260722-dummy_ptxp3-v2-0-d9e4bad31e0a@arm.com/
+
+from RFC v1 to RFC v2:
+  - Restore slient fallback to next pXd in set_pXd() and pXd_pgtable()
+    and add check whether they're called with dummy entry.
+  - Add some comment for returning first entry of pgd in arm with
+    2 pgtable-level
+  - Link to RFC v1: https://lore.kernel.org/all/20260713135614.1618183-1-yeoreum.yun@arm.com/
+
+---
+Dave Hansen (1):
+      x86/mm: Introduce helper for checking direct map 1G page support
+
+David Hildenbrand (Arm) (13):
+      ARM: mm: make nommu pgd_t a scalar
+      ARM: mm: make 2-level pgd_t a scalar
+      ARM: mm: remove custom pgdp_get()
+      LoongArch: mm: define pud_leaf() only when PUD exists
+      MIPS: mm: define pud_leaf() only when PUD exists
+      mm/pgtable: define (pgd|p4d|pud)_leaf() for folded page tables
+      mm/pgtable: define (pgd|p4d|pud)_offset_lockless() for folded page tables
+      openrisc/pgtable: drop __pmd_offset()
+      mm/pgtable: optimize pmdp_get() and friends for folded pagetable levels
+      mm/pgtable: catch abuse of folded dummy pgd_t/p4d_t/pud_t
+      mm/pgtable: disallow calling (pgd|p4d|pud)_page, pgd_page_vaddr() and (p4d|pud)_pgtable with dummy
+      mm/pgtable: disallow calling folded set_pgd/set_p4d/set_pud with dummy
+      Documentation: mm: clarify behaviour of compile-time folded page tables
+
+Yeoreum Yun (7):
+      mm: vmscan: remove stack copy address of pud/pmd pass in walk_pud/pmd_range()
+      loongarch: kvm: remove stack copy address of pXd in pXd_offset()
+      riscv: kvm: remove stack copy address of pXd in pXd_offset()
+      riscv: mm: use proper set_pXd() for generic compile-time folded patable in vmalloc_fault()
+      mm/pgtable: redefine PGTABLE_LEVEL enum with ascend order from PGD
+      x86: mm: use pgtable_level enum in effective_prot_pXd()
+      x86: mm: carve out the generic compile-time folded pgtable case in effective_prot()
+
+ Documentation/mm/page_tables.rst            | 84 +++++++++++++++++++++++++----
+ arch/arm/include/asm/page-nommu.h           |  4 +-
+ arch/arm/include/asm/pgtable-2level-types.h | 20 +++++--
+ arch/arm/include/asm/pgtable.h              |  2 -
+ arch/arm64/include/asm/pgtable.h            | 23 --------
+ arch/loongarch/include/asm/pgtable.h        |  2 +
+ arch/loongarch/kvm/mmu.c                    | 20 ++++---
+ arch/mips/include/asm/pgtable.h             |  2 +
+ arch/openrisc/include/asm/pgtable.h         |  3 --
+ arch/riscv/kvm/mmu.c                        | 20 ++++---
+ arch/riscv/mm/fault.c                       | 52 +++++++++++-------
+ arch/x86/include/asm/pgtable.h              | 14 +++++
+ arch/x86/kernel/cpu/common.c                |  2 +-
+ arch/x86/kernel/machine_kexec_64.c          |  2 +-
+ arch/x86/mm/dump_pagetables.c               | 18 ++++---
+ arch/x86/mm/init.c                          |  2 +-
+ arch/x86/mm/pat/set_memory.c                |  6 +--
+ include/asm-generic/pgtable-nop4d.h         | 54 +++++++++++++++----
+ include/asm-generic/pgtable-nopmd.h         | 54 +++++++++++++++----
+ include/asm-generic/pgtable-nopud.h         | 56 +++++++++++++++----
+ include/linux/pgtable.h                     | 69 +++++++++++++++++-------
+ mm/vmscan.c                                 |  4 +-
+ 22 files changed, 371 insertions(+), 142 deletions(-)
+---
+base-commit: 8d61431ed2607386b427752505379536eb634ce8
+change-id: 20260722-dummy_ptxp3-3741d78cc70f
+
+Best regards,
+-- 
+Sincerely,
+Yeoreum Yun
+
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
