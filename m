@@ -4,60 +4,46 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A8C35C982ED
-	for <kvm-riscv@archiver.kernel.org>; Mon, 21 Sep 2026 10:58:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 12CA3C982ED
+	for <kvm-riscv@archiver.kernel.org>; Mon, 21 Sep 2026 10:58:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Message-Id
 	:MIME-Version:Subject:Date:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=Viv87kHkM/xPwdMra/JH0EjBdRc6iKOqAKXDxhFv2gM=; b=MTRIsV+uCh8wsZ
-	snIVO6p2G70SydxddZF6My3zM3uVX52ShcOpRYjul0vF+6Kemh26LOzyLfLXx6GMP7hQRkIWAbh6b
-	bf+H0DJTbBilGO9qmNJ76cYDG+Kpj+xqcZU/f1phsgHcDwpolfqq/smggBqgZ8ILxDqSLW+/55PWX
-	uxJVJZLwpfM9WQOtc/2q7sk2fGDbeMXyM8jZDoiA8Vydo1tVzdwdjp1dLLA6srFtuZRXdm3WSXETI
-	ai3KZX2yf6JHpL78PN2ckXtx1gs984FPbGLui3RpBkP8krJq5waBJQD3tTRWgXEynltZnXQo+QfCh
-	yFbvmJADVVny8/jGxe5w==;
+	List-Owner; bh=QvKA/9xcC86MS776wp/YzcOkq3k+QokiSkM9xXhg1Ls=; b=zmHxlk9h4LAdNH
+	Mpjm4z5OtXYFu7Qa1xHffW1j/YiGEp/zF8T+HVWnVnsyh0VpOkSUgwhr6R5v7QrOREQSYPqe86Amx
+	GGyN4hELpN1KEsLvhgMKkFPBSWqxa+9sAvgRTW8+4a/wn1Whc8fMqCK2b4MVBP4VqiUsaiQtZk9d/
+	VjVwlsdfZxBG3psV2giwCaNAps8mFs2k7YcsPIPOpV25w83a9p7f7ioRPlEehKfyhe7NjBjB2M/aq
+	GQC+Kyih0ec+g+eyxsV06eCFQAWFXnI8xWfCGRaBmascZJSWn6/VEjZAirn93XP7emQFaTCHx3r6q
+	qAmZC4+nOX09ynI5Fgvw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x8bin-00000001mhB-1ZOE;
-	Mon, 21 Sep 2026 10:58:05 +0000
-Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
-	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x8bim-00000001mfO-1DmJ;
-	Mon, 21 Sep 2026 10:58:04 +0000
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=Cc:To:In-Reply-To:References:
-	Message-Id:Content-Transfer-Encoding:Content-Type:MIME-Version:Subject:Date:
-	From:Sender:Reply-To:Content-ID:Content-Description;
-	bh=PPh7P4/uTe2DdUqFkWDXpxMIk96xx52i1UmgW1/Bvi4=; b=om5981RtHou5+rDT3S2puy51SM
-	fixl7A8ihejFaf58kkHdbTAcemDLvcDeuMd2SdcbElW1frdT24Uw2DLMvEqHiMBbVHAfn56K6qMA+
-	Ob7LMl76Fp+XuG+oLwddRdkoL8GFAszs/RR6KkSoKMQf+krNTIUGao9nQ4EA4BHmBfSprWzW7VXA9
-	JsnEj3bJCtGpREOvOS6EgPtFbxglOWxoxTAjxY+CXZ38CnwVVm6wBRypPe6wx/dw4zXuvYoYXVgpf
-	ezi7l7Pb0PqDJN0abAfHUkJazM2Rr0zIYT4ovZHuIKgHUsHdRM3qE5TlWnoPYomjSgZyruKBCirrm
-	xZlzpvCA==;
+	id 1x8biz-00000001mrM-39yd;
+	Mon, 21 Sep 2026 10:58:17 +0000
 Received: from foss.arm.com ([217.140.110.172])
-	by desiato.infradead.org with esmtp (Exim 4.99.2 #2 (Red Hat Linux))
-	id 1x8bii-0000000C9RX-3G9a;
-	Mon, 21 Sep 2026 10:58:03 +0000
+	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
+	id 1x8bix-00000001mot-1g0n;
+	Mon, 21 Sep 2026 10:58:16 +0000
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id E73E61570;
-	Mon, 21 Sep 2026 03:57:55 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 40BDB1570;
+	Mon, 21 Sep 2026 03:58:11 -0700 (PDT)
 Received: from e129823.arm.com (e129823.arm.com [10.2.213.3])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 3592C3F86C;
-	Mon, 21 Sep 2026 03:57:52 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 825133F86C;
+	Mon, 21 Sep 2026 03:58:07 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1789988279; bh=Y8EwOxLNbw4UfgGXcWJN4XYR7fgRn1Moj06vSGiaGhw=;
+	t=1789988294; bh=zghhBXP63HUkMVsnVTW1BBI8m5GQHzJyarBmwmrVkLw=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=Acv2ig2sdtBQm1rWWS02siT0WU0ZatIgo532lzW7QnReSNXQH1ySM+8DelzsQa55e
-	 0TVi9G11NlTKdUH74Sp6k0cO+qCtLFbvrelhmtDh0SsbAsGd/j0A7ufpMeXn2Es2yz
-	 Xmxo3CKqJ1ia+7cA6vpupVw3peojMkInMbV3ExN4=
+	b=MorCeI/0C/ThGp2D4ZEh7K7qiGRxxQCGAsOHcPHI8GDUa1xn7PAojRccrrdxW6og8
+	 7gC8n59mRHcXPujdGPAn1COCNTSdHIzjz22YYHLWyrX2pcSMdp+njUrasxT+e7EdHJ
+	 XyalCkCDo/UbMgMots6tY7qOdO97VEdNuudBqO4c=
 From: Yeoreum Yun <yeoreum.yun@arm.com>
-Date: Mon, 21 Sep 2026 11:55:34 +0100
-Subject: [PATCH 12/21] mm/pgtable: redefine PGTABLE_LEVEL enum with ascend
- order from PGD
+Date: Mon, 21 Sep 2026 11:55:36 +0100
+Subject: [PATCH 14/21] x86: mm: use pgtable_level enum in
+ effective_prot_pXd()
 MIME-Version: 1.0
-Message-Id: <20260921-dummy_ptxp3-v1-12-cd40cf68242e@arm.com>
+Message-Id: <20260921-dummy_ptxp3-v1-14-cd40cf68242e@arm.com>
 References: <20260921-dummy_ptxp3-v1-0-cd40cf68242e@arm.com>
 In-Reply-To: <20260921-dummy_ptxp3-v1-0-cd40cf68242e@arm.com>
 To: Russell King <linux@armlinux.org.uk>, 
@@ -90,22 +76,22 @@ Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
  kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
  linux-openrisc@vger.kernel.org, Yeoreum Yun <yeoreum.yun@arm.com>
 X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1282; i=yeoreum.yun@arm.com;
- h=from:subject:message-id; bh=Y8EwOxLNbw4UfgGXcWJN4XYR7fgRn1Moj06vSGiaGhw=;
- b=owEB7QES/pANAwAKAW3Vw9FaxTEzAcsmYgBqsQ1QUaPfd/TdZdMCVJig81AKqOVJKDuhmr9iK
- mpmDD+NEl+JAbMEAAEKAB0WIQQtg+CS3QUzuFh1pJ1t1cPRWsUxMwUCarENUAAKCRBt1cPRWsUx
- MzrLC/9aTw7wgAVsVSkyAx9JoerSy/E93mC4rUycb4dvDtSfmjpnvXqlvMNOZ0X4B5Tw+BHjFpL
- 9jH7TfpouVsi3ilgGlYWmhFqe3BTMspr76UeuII7d1gg8OfdV923kIjDcgioZarrRikees4YSip
- 5uqKCkUTlyqCGmKOuU7nhOAK7tW4wYh0FmSWSpiG0PLWIeBMOwyBw/zW8ypmQTnMIIB1wuLzs/u
- 7ROCVrCCjQ/dan0IYAxg+t7qTPtpD8XuY7kE8NURgpEKId4bCFhy3U/wB3lIQdsLHM2mgGlnKYV
- zy6aNQBGpN9mKjDtE/bZGY6gmk+CVWrUNVbiSTouNAfpiUTsGa+e6Yl0KqWvXhip7lrYnaQWTzm
- Q2l8/kQPPW5++rC7+eeJkINpxVX3PFWYeBJwLOBF75Lr6+GAyvrtK5usO7NuLcJLTYaKd/1JKHL
- OxP80e+rles/44lu4BlVndGbnxkSWb4UFg7VdtjQ5e0MfYATc+XAacUtqoHmAK6Nsi+34=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2497; i=yeoreum.yun@arm.com;
+ h=from:subject:message-id; bh=zghhBXP63HUkMVsnVTW1BBI8m5GQHzJyarBmwmrVkLw=;
+ b=owEB7QES/pANAwAKAW3Vw9FaxTEzAcsmYgBqsQ1RutA9R6RYKg0XGt206R+FZYSBvFY5A7m64
+ WCknKwpoKOJAbMEAAEKAB0WIQQtg+CS3QUzuFh1pJ1t1cPRWsUxMwUCarENUQAKCRBt1cPRWsUx
+ M1QqC/48OSPJozKEnLVOpX6otIW9FV5BhnqTBmb/jwyRutaZTgzJxzVOUro/bD5JHER9PhjqHfC
+ eNHCzQ1aUnfnS7hLDorqqVWwzassmuk8DAzqYuKYx91zEvDYa7JHkMxtVu+yZwGD4suG0HUTQf+
+ dBbV/wqn4/Ti6iKvRok/awM2egxq3wOCeRisJK0d/rzhD4FGVvxR1DillMtTLyoQbZfBChN9JQP
+ NS9xULrwDo4o0EjfcCUWv39K5oJhzQyWbtp9oqdCn/su/PFFe/MqZkv7neLUboJQqVqggUuY8T9
+ 0m+0FAwi7HeXPlZGKY54LikTFhGv8+Q1tjO3XDJqbLRmZjXxuoSNMR53I02cOkTtEfur207dk5u
+ PqU8kFQ9uSI+wNPOym96FPcqi5SPQomkOAkxT1DTaDPdy9LP/KsdH6btJ2oVPH4ATfgpa/1ZL5h
+ FjqEaVjHTPbvc7Tq5zEvipHN2jBSw3foGfVlRqGbIDxVSrv3u88KbKb0TC3yEmyALLVEY=
 X-Developer-Key: i=yeoreum.yun@arm.com; a=openpgp;
  fpr=2D83E092DD0533B85875A49D6DD5C3D15AC53133
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260921_115801_640134_2C6DA3EB 
-X-CRM114-Status: GOOD (  11.76  )
+X-CRM114-CacheID: sfid-20260921_035815_520474_6754E2D0 
+X-CRM114-Status: GOOD (  12.46  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -122,44 +108,76 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-The PGTABLE_LEVEL enum values appear to be ordered in the opposite direction
-from their intended usage.
+Instead of using hard-coded integers in effective_prot_pXd(), use the
+page-table level enum so that architecture code does not need to know
+the numeric value of each page-table level, while also providing type
+safety.
 
-Intuitively, higher page table levels should have smaller enum values,
-but PTE is currently assigned 0.
+This also prepares for using generic MM helpers, mm_first_pgtable_level()
+which use symbolic names for page-table levels rather than integers.
 
-For consistency and cleanup, reverse the enum value ordering.
-
-Since there is no current user relies on these numbers to be ascending from
-PTE->PGD, so it can be changed to be ascending from PGD->PTE, in the
-direction of the page table walk.
+There should be no functional change.
 
 Reviewed-by: David Hildenbrand (Arm) <david@kernel.org>
+Acked-by: Dave Hansen <dave.hansen@linux.intel.com>
 Signed-off-by: Yeoreum Yun <yeoreum.yun@arm.com>
 ---
- include/linux/pgtable.h | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ arch/x86/mm/dump_pagetables.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/include/linux/pgtable.h b/include/linux/pgtable.h
-index e3c8ab96941c5..3186096a6e130 100644
---- a/include/linux/pgtable.h
-+++ b/include/linux/pgtable.h
-@@ -2288,11 +2288,11 @@ static inline bool arch_has_pfn_modify_check(void)
- typedef unsigned int pgtbl_mod_mask;
+diff --git a/arch/x86/mm/dump_pagetables.c b/arch/x86/mm/dump_pagetables.c
+index 2afa7a23340e9..a18a61e732c3d 100644
+--- a/arch/x86/mm/dump_pagetables.c
++++ b/arch/x86/mm/dump_pagetables.c
+@@ -248,13 +248,13 @@ static void note_wx(struct pg_state *st, unsigned long addr)
+ 		  (void *)st->start_address);
+ }
  
- enum pgtable_level {
--	PGTABLE_LEVEL_PTE = 0,
--	PGTABLE_LEVEL_PMD,
--	PGTABLE_LEVEL_PUD,
-+	PGTABLE_LEVEL_PGD = 0,
- 	PGTABLE_LEVEL_P4D,
--	PGTABLE_LEVEL_PGD,
-+	PGTABLE_LEVEL_PUD,
-+	PGTABLE_LEVEL_PMD,
-+	PGTABLE_LEVEL_PTE,
- };
+-static void effective_prot(struct ptdump_state *pt_st, int level, u64 val)
++static void effective_prot(struct ptdump_state *pt_st, enum pgtable_level level, u64 val)
+ {
+ 	struct pg_state *st = container_of(pt_st, struct pg_state, ptdump);
+ 	pgprotval_t prot = val & PTE_FLAGS_MASK;
+ 	pgprotval_t effective;
  
- static inline const char *pgtable_level_to_str(enum pgtable_level level)
+-	if (level > 0) {
++	if (level > PGTABLE_LEVEL_PGD) {
+ 		pgprotval_t higher_prot = st->prot_levels[level - 1];
+ 
+ 		effective = (higher_prot & prot & (_PAGE_USER | _PAGE_RW)) |
+@@ -268,27 +268,27 @@ static void effective_prot(struct ptdump_state *pt_st, int level, u64 val)
+ 
+ static void effective_prot_pte(struct ptdump_state *st, pte_t pte)
+ {
+-	effective_prot(st, 4, pte_val(pte));
++	effective_prot(st, PGTABLE_LEVEL_PTE, pte_val(pte));
+ }
+ 
+ static void effective_prot_pmd(struct ptdump_state *st, pmd_t pmd)
+ {
+-	effective_prot(st, 3, pmd_val(pmd));
++	effective_prot(st, PGTABLE_LEVEL_PMD, pmd_val(pmd));
+ }
+ 
+ static void effective_prot_pud(struct ptdump_state *st, pud_t pud)
+ {
+-	effective_prot(st, 2, pud_val(pud));
++	effective_prot(st, PGTABLE_LEVEL_PUD, pud_val(pud));
+ }
+ 
+ static void effective_prot_p4d(struct ptdump_state *st, p4d_t p4d)
+ {
+-	effective_prot(st, 1, p4d_val(p4d));
++	effective_prot(st, PGTABLE_LEVEL_P4D, p4d_val(p4d));
+ }
+ 
+ static void effective_prot_pgd(struct ptdump_state *st, pgd_t pgd)
+ {
+-	effective_prot(st, 0, pgd_val(pgd));
++	effective_prot(st, PGTABLE_LEVEL_PGD, pgd_val(pgd));
+ }
+ 
+ 
 
 -- 
 2.43.0
