@@ -4,60 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 705DCC982E1
-	for <kvm-riscv@archiver.kernel.org>; Mon, 21 Sep 2026 10:58:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B7305C982F7
+	for <kvm-riscv@archiver.kernel.org>; Mon, 21 Sep 2026 10:58:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Message-Id
 	:MIME-Version:Subject:Date:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=oGGSdMIIoDZ1ZJFFcuq3rWoVDi69UC423SkOZKNBZXU=; b=bY2nY4LpD4WXmA
-	UhLXbw8kGlvHeshW8jKvX1uVLVxlPaXDrd0T7wwD7PoqWYtag++yUJfMJX5UyL/DEpuyjiaiG/xit
-	6FJRkLrjfrLSuy3tFB0T0gwJWgfvfc4C7MDpg0YGGGvX/WJnOg033JBJ0GaMBLAY6TwoSETvQY/J2
-	sW30r+Z8L7fkw4tj9X5n0ii3AeiCPwACBwee4Ts6/RER0RuIhQNMs0WXtEgdqMcRlXR59+LBhJ4MY
-	ZutmLQwFxPua8EOrBWb5VUNd3P3Ult6108TGuzVRlNra6/kE4A9Rj3H0BR0m42OdlW4Rmz/wQ1FRK
-	vAkzGhj9lha7lBBkpnMw==;
+	List-Owner; bh=G6QTva+VVrT1bf7GOXVVoDOSfx9D+nBlu2Sj9iDcl3k=; b=Pp5RsuKnRW+0Uv
+	DeiBycAGCDUbdE2EV6T9+Kk8dGTBHxrMLtqQrJgmbWCxh8OjrpvR+NzUp1iKE1JZmJGyJ/B4A14fT
+	R2NlZheXhbt2VOA5mYWVvD92ugZS6s/RZl4MbzqlrJbk8l/Oz4M77g9mtBZqNCrT/rDsHOeX9A7ai
+	QqPcn8kbDmsouNFmdKyKfYB5iHHwzRjMcEzJouj0XvX3v4kzUFnaezpfaaY1NFRb/euxQvBYWX49z
+	WBhcZjeenVwP970opXzeFb+KH8O31bjxBxq2eKc9h7mIqOE/XHLLQSrvWG4cb8OTFsquRcOr4tAo5
+	v/XEgCVETzkHqaKYRMVQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x8bj4-00000001mwk-0nW6;
-	Mon, 21 Sep 2026 10:58:22 +0000
+	id 1x8bjH-00000001n6D-22FT;
+	Mon, 21 Sep 2026 10:58:35 +0000
 Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x8bj3-00000001mum-1YTL;
-	Mon, 21 Sep 2026 10:58:21 +0000
+	id 1x8bjG-00000001n3y-0w43;
+	Mon, 21 Sep 2026 10:58:34 +0000
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=desiato.20200630; h=Cc:To:In-Reply-To:References:
 	Message-Id:Content-Transfer-Encoding:Content-Type:MIME-Version:Subject:Date:
 	From:Sender:Reply-To:Content-ID:Content-Description;
-	bh=p53A/KaQIOjsMct9Of5uOz5LABGxXt3L3/IO4LJKyF4=; b=n95yeevtphYS9YfFii4AsNHn+q
-	sfogIdmUcBFMambHEIPw0HuhqVFuHujS0sydxdItidgtly5govPcNsLzu2G6yl0/UyZO20ln4JoNv
-	1v/E5npVA8TeXPNBBW3sJUWTIRC01Fh8gjM4Pa4w69Bay79Wg9gzE1hz9VrgE6Ft7X/xLWQ8JqVZ6
-	DV2a9Oj2KEYUIUPkl9qSqgmJs+Pw+OgpiJkTRIvZ212hgaXOpxMK0hjN5g6uufNdd2ku+Vxsc6w2P
-	P9WAGJQ119EV1pbkRv+W4lZzdriCxbEw6/NL0d8m7jKpPIolUvsPbc7i816D0TD9bCdsYOwtTvKc0
-	M5L54h+g==;
+	bh=61mOQB/NPnyS6WFT1v6qj3vnbL64UK7nj4+n5n9dFHw=; b=FNfh2yovr/Sko1RIEOfgneE7RS
+	pZQEmEsQ9gduj326SWsImf2azeSfDEIxGuQv9EmmbKbVdKfN3hLo3SObWpRNGK68bsSCmNT7jLpcd
+	V+wdDmuTGok9ZkoTXYvnxFcLiDRZASzXGKe17rul8elgMlTm3B8CxoKaI5Gvf98NcAzJSHKD3fvhx
+	zxoasuFnC+w4bZVY0FfLmWrSjcQ2HfwbwxrFYfgZbYU68vlGf0jlYd4i3dM7xe7ecEUB/BD639NWV
+	SprbB1wCrJx1Zptwr0vhCO2XPC58hXFhes8+Zx77pk2MlIDooiEApykHaZXNG8UlMnFQN5PKZqmXa
+	4wWN1HwQ==;
 Received: from foss.arm.com ([217.140.110.172])
 	by desiato.infradead.org with esmtp (Exim 4.99.2 #2 (Red Hat Linux))
-	id 1x8bir-0000000C9Ti-4Bkz;
-	Mon, 21 Sep 2026 10:58:20 +0000
+	id 1x8bjD-0000000C9Zv-0FED;
+	Mon, 21 Sep 2026 10:58:33 +0000
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id A52AF1CE0;
-	Mon, 21 Sep 2026 03:58:03 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 4D1441CE0;
+	Mon, 21 Sep 2026 03:58:26 -0700 (PDT)
 Received: from e129823.arm.com (e129823.arm.com [10.2.213.3])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id C5BB13F86C;
-	Mon, 21 Sep 2026 03:57:59 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id AD2943F9AB;
+	Mon, 21 Sep 2026 03:58:22 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1789988287; bh=QT9fPVqU5/4s3W6imYoTDQhJSgG9AGqR+95WBjnEkEc=;
+	t=1789988309; bh=fSF1q0uZ2D6D7eSotmHP8T3BZdnaiPG7UdplRIp/5/4=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=RapZB+cyvYCqcKuvvXP8Q5zCAZ8HtO5VfaCyq+X5aXl5qtuACKqvDvIUWmBHExBam
-	 zJtjhHKa+kKgXxR2PFLZdBznGeftmCGqlKRKH/Meqcz0kAc74vnCVEPpb/p/GT8OZQ
-	 nnGLTw5FRGFiKQx715GBOH6ozV8GlMY9H1RMMOo8=
+	b=X3s/HhVMmwzSQHhqq9MFWj0m6FUOVQG5sixXBNURROyV6ePF/1f5WSnJzpvwZBNK1
+	 QqsYNRvkgifOqK8lofwytBap6NlT+LrwggMFa6+2446aU5pOoBTY1kIi1cGTtqCZTN
+	 uHkua1WMDV/dmcg1aD+uOrvLGLVf0dKrwSWDm1Ag=
 From: Yeoreum Yun <yeoreum.yun@arm.com>
-Date: Mon, 21 Sep 2026 11:55:35 +0100
-Subject: [PATCH 13/21] x86/mm: Introduce helper for checking direct map 1G
- page support
+Date: Mon, 21 Sep 2026 11:55:38 +0100
+Subject: [PATCH 16/21] openrisc/pgtable: drop __pmd_offset()
 MIME-Version: 1.0
-Message-Id: <20260921-dummy_ptxp3-v1-13-cd40cf68242e@arm.com>
+Message-Id: <20260921-dummy_ptxp3-v1-16-cd40cf68242e@arm.com>
 References: <20260921-dummy_ptxp3-v1-0-cd40cf68242e@arm.com>
 In-Reply-To: <20260921-dummy_ptxp3-v1-0-cd40cf68242e@arm.com>
 To: Russell King <linux@armlinux.org.uk>, 
@@ -88,25 +87,25 @@ Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
  loongarch@lists.linux.dev, linux-mips@vger.kernel.org, 
  linux-arch@vger.kernel.org, linux-mm@kvack.org, kvm@vger.kernel.org, 
  kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
- linux-openrisc@vger.kernel.org, Yeoreum Yun <yeoreum.yun@arm.com>, 
- Sohil Mehta <sohil.mehta@intel.com>
+ linux-openrisc@vger.kernel.org
 X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=5614; i=yeoreum.yun@arm.com;
- h=from:subject:message-id; bh=cCsKnjI6qzm+njvp4POS4T02dkWd2WA7n/CKoGzKwuk=;
- b=owEB7QES/pANAwAKAW3Vw9FaxTEzAcsmYgBqsQ1R2L2UpoT9CAW2mhYF4L0pEeRV4+Rs981h3
- CWikwBSbGyJAbMEAAEKAB0WIQQtg+CS3QUzuFh1pJ1t1cPRWsUxMwUCarENUQAKCRBt1cPRWsUx
- MwunDADTJF7Ucnl/y729ahXOh1c+4bQ17vWVJkTrbFm8evuZKa1BZQ1DJXx5lXQnN2dTlpT7HX3
- RFq17CtruESXdlm6fvsVMCx7BC2Hk/5varLSUEUD/USUM2ZFeJ5tjlPCfb10U6fFT0ZBusn9MZj
- nlnQfAV2nO8pa2iusqKGpXXdUFXVXI1doy+8AGcFEMlc9X1+2UfTHYFLC5/7gjghQUX0WSoW6Yg
- vatDG4UA42ssMXj3CIfFaS8+zsK2RNTPDMhELkhccaLuPoG0YHHHDp14BrmqS49ZU2TrZ06Aof5
- +9FE+RnthbyGI/nJVcLFDppo0wfLK1apIBJVEwMgxmpPAbdh0O5KJ/Jy6Sz2cf2gQJYFy28LcQe
- 9FpQRoZgbkspXZeONETZOq1JRpFmftUCjsy0MMLMi7OgxA1ZYWogZ7ehZe7UnX9wJGGuLEjWdxZ
- 7vKImHWTNVCMFmS6RLqnAnx1JKcEZDVAPkafX7IaDBPOBJcSHJ1X1BVTjt4S0e/v9iAiU=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=883; i=yeoreum.yun@arm.com;
+ h=from:subject:message-id; bh=HHmjFCiPkfuAa6Yg+gCAN1VqpmgkbnXOKSW8+pCvqDs=;
+ b=owEB7QES/pANAwAKAW3Vw9FaxTEzAcsmYgBqsQ1SPbcNzmztqXWyqwma14L9CzqkX4tJ7x7vo
+ vWbJ/HD30CJAbMEAAEKAB0WIQQtg+CS3QUzuFh1pJ1t1cPRWsUxMwUCarENUgAKCRBt1cPRWsUx
+ M4PADAC4wQdqV+mgxWbIBoHOjsRsIdJ4n1uUYYBv3wqYHNgh5+2Lk0XLqzv6zPlZye8658zEGXj
+ vgxv0IMjozo9kMQmRzUvCUgqElgfOwU8DUeEQsA3jlvHIGAwe+qRaQ0TO2J/59o6qpcHgJbdXh+
+ z/NlcJc72jKMSnH9rNqp4ajPHyXuddYrsjENQBZPndlr23wfYGGcWekO6uC2NH2OLbvRUOOySX9
+ FdxnXJVw3frabk+zVNtsYakl4/mWXZrhXG/zWh3Jnvq+4m6Dv0K4EUAtlRwizkYXph78QlNH4I1
+ R63HWezZlORLk45PXkp9zwMCQmssS+rzDgQf5tMm3+uvh8QGnqinH/0+s+zCmR4NZSeFg0JYM/9
+ Y2NbE8DNZ95kpUtUWkPyYG/9VYQNEejRP8eCknF95Fy7xSmh1ANcZfr515q2JunHbDNQJBtNjpr
+ g4qJObrzFSR+5ZGT/ylRR9xgwQuj6B6Ug3pDRerJOBlq011A/stSkRMHiOCGWaN60k+y8=
 X-Developer-Key: i=yeoreum.yun@arm.com; a=openpgp;
  fpr=2D83E092DD0533B85875A49D6DD5C3D15AC53133
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260921_115817_242208_02BCF22C 
-X-CRM114-Status: GOOD (  22.56  )
+X-CRM114-CacheID: sfid-20260921_115831_527476_0B39A464 
+X-CRM114-Status: UNSURE (   8.73  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -123,152 +122,30 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-From: Dave Hansen <dave.hansen@linux.intel.com>
+From: "David Hildenbrand (Arm)" <david@kernel.org>
 
-There is an existing variable (direct_gbpages) that says whether the
-kernel can and should use 1G pages in the direct map. It is driven
-by a bunch of other machinery. At least:
+The macro is unused, and will collide with a folded page table helper.
+Let's just remove it.
 
- 1. Hardware support for 1G pages
- 2. Kconfig support for 1G direct mappings
- 3. Kernel command line overrides
-
-Most code just checks the 'direct_gbpages' variable itself.  But there
-are cases where 1G mappings are compile-time disabled (via
-X86_DIRECT_GBPAGES) and 'direct_gbpages' is always 0. Unfortunately,
-that constraint is invisible to the compiler.
-
-This opacity has been historically functionally harmless; it only
-leaves a bit of dead code. But, there are plans to tigthen up the
-compile-time checks around folded page table levels. The build will
-break if that dead code appears reachable to the compiler. Making
-the compile-time config visible to the compiler fixes the build.
-
-Add a helper to replace 'direct_gbpages' checks. Check the Kconfig
-option and base CPU support before looking at the variable.
-
-This lets the compiler optimize things better, especially
-collapse_pud_page() where most of the function can now be optimized
-out when the PUD level is folded.
-
-Notes:
-
-Use boot_cpu_has() instead of cpu_feature_enabled(). There's no
-required/disabled features for 1G pages themselves
-(X86_DIRECT_GBPAGES is for kernel mappings only) and the
-static_cpu_has() infrastructure is just gets in the compiler's way.
-
-This makes 64-bit build marginally larger (20 bytes in one compile)
-and 32-bit builds less marginally _smaller_ (~700 bytes).
-
-Signed-off-by: Dave Hansen <dave.hansen@linux.intel.com>
-Reviewed-by: Yeoreum Yun <yeoreum.yun@arm.com>
-Tested-by: Yeoreum Yun <yeoreum.yun@arm.com>
-Link: https://lore.kernel.org/all/20260902-dummy_ptxp3-v3-15-5d8f5b17c25c@arm.com/ [1]
-Reviewed-by: Sohil Mehta <sohil.mehta@intel.com>
+Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
 ---
- arch/x86/include/asm/pgtable.h     | 14 ++++++++++++++
- arch/x86/kernel/cpu/common.c       |  2 +-
- arch/x86/kernel/machine_kexec_64.c |  2 +-
- arch/x86/mm/init.c                 |  2 +-
- arch/x86/mm/pat/set_memory.c       |  6 +++---
- 5 files changed, 20 insertions(+), 6 deletions(-)
+ arch/openrisc/include/asm/pgtable.h | 3 ---
+ 1 file changed, 3 deletions(-)
 
-diff --git a/arch/x86/include/asm/pgtable.h b/arch/x86/include/asm/pgtable.h
-index d5f4917c1edcb..c7adc00d49863 100644
---- a/arch/x86/include/asm/pgtable.h
-+++ b/arch/x86/include/asm/pgtable.h
-@@ -1163,6 +1163,20 @@ static inline int pgd_none(pgd_t pgd)
- #ifndef __ASSEMBLER__
- 
- extern int direct_gbpages;
-+static inline bool direct_gbpages_enabled(void)
-+{
-+	/* Check the direct map config option: */
-+	if (!IS_ENABLED(CONFIG_X86_DIRECT_GBPAGES))
-+		return false;
-+
-+	/* Check the CPU feature: */
-+	if (!boot_cpu_has(X86_FEATURE_GBPAGES))
-+		return false;
-+
-+	/* Check the command-line and early setup variable: */
-+	return direct_gbpages;
-+}
-+
- void init_mem_mapping(void);
- void early_alloc_pgt_buf(void);
- void __init poking_init(void);
-diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index c7352827f491d..4693ba98ca380 100644
---- a/arch/x86/kernel/cpu/common.c
-+++ b/arch/x86/kernel/cpu/common.c
-@@ -2660,7 +2660,7 @@ void __init arch_cpu_finalize_init(void)
- 		 * Right now we don't do that with gbpages because there seems
- 		 * very little benefit for that case.
- 		 */
--		if (!direct_gbpages)
-+		if (!direct_gbpages_enabled())
- 			set_memory_4k((unsigned long)__va(0), 1);
- 	} else {
- 		fpu__init_check_bugs();
-diff --git a/arch/x86/kernel/machine_kexec_64.c b/arch/x86/kernel/machine_kexec_64.c
-index c3f4a389992da..0da0e89f2611a 100644
---- a/arch/x86/kernel/machine_kexec_64.c
-+++ b/arch/x86/kernel/machine_kexec_64.c
-@@ -257,7 +257,7 @@ static int init_pgtable(struct kimage *image, unsigned long control_page)
- 		info.kernpg_flag |= _PAGE_ENC;
- 	}
- 
--	if (direct_gbpages)
-+	if (direct_gbpages_enabled())
- 		info.direct_gbpages = true;
- 
- 	for (i = 0; i < nr_pfn_mapped; i++) {
-diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
-index 079f8c7e9e3cd..f0f4a06584c61 100644
---- a/arch/x86/mm/init.c
-+++ b/arch/x86/mm/init.c
-@@ -251,7 +251,7 @@ static void __init probe_page_size_mask(void)
- 		__default_kernel_pte_mask &= ~_PAGE_GLOBAL;
- 
- 	/* Enable 1 GB linear kernel mappings if available: */
--	if (direct_gbpages && boot_cpu_has(X86_FEATURE_GBPAGES)) {
-+	if (direct_gbpages_enabled()) {
- 		printk(KERN_INFO "Using GB pages for direct mapping\n");
- 		page_size_mask |= 1 << PG_LEVEL_1G;
- 	} else {
-diff --git a/arch/x86/mm/pat/set_memory.c b/arch/x86/mm/pat/set_memory.c
-index a1a061d995b31..261dda5f9f57c 100644
---- a/arch/x86/mm/pat/set_memory.c
-+++ b/arch/x86/mm/pat/set_memory.c
-@@ -128,7 +128,7 @@ void arch_report_meminfo(struct seq_file *m)
- 	seq_printf(m, "DirectMap4M:    %8lu kB\n",
- 			direct_pages_count[PG_LEVEL_2M] << 12);
- #endif
--	if (direct_gbpages)
-+	if (direct_gbpages_enabled())
- 		seq_printf(m, "DirectMap1G:    %8lu kB\n",
- 			direct_pages_count[PG_LEVEL_1G] << 20);
+diff --git a/arch/openrisc/include/asm/pgtable.h b/arch/openrisc/include/asm/pgtable.h
+index 13afcc0bd8631..7fceed641610c 100644
+--- a/arch/openrisc/include/asm/pgtable.h
++++ b/arch/openrisc/include/asm/pgtable.h
+@@ -331,9 +331,6 @@ static inline unsigned long pmd_page_vaddr(pmd_t pmd)
+ 	return ((unsigned long) __va(pmd_val(pmd) & PAGE_MASK));
  }
-@@ -1315,7 +1315,7 @@ static int collapse_pud_page(pud_t *pud, unsigned long addr,
- 	pmd_t *pmd, first;
- 	int i;
  
--	if (!direct_gbpages)
-+	if (!direct_gbpages_enabled())
- 		return 0;
- 
- 	addr &= PUD_MASK;
-@@ -1697,7 +1697,7 @@ static int populate_pud(struct cpa_data *cpa, unsigned long start, p4d_t *p4d,
- 	/*
- 	 * Map everything starting from the Gb boundary, possibly with 1G pages
- 	 */
--	while (boot_cpu_has(X86_FEATURE_GBPAGES) && end - start >= PUD_SIZE) {
-+	while (direct_gbpages_enabled() && end - start >= PUD_SIZE) {
- 		set_pud(pud, pud_mkhuge(pfn_pud(cpa->pfn,
- 				   canon_pgprot(pud_pgprot))));
- 
+-#define __pmd_offset(address) \
+-	(((address) >> PMD_SHIFT) & (PTRS_PER_PMD-1))
+-
+ #define PFN_PTE_SHIFT		PAGE_SHIFT
+ #define pte_pfn(x)		((unsigned long)(((x).pte)) >> PAGE_SHIFT)
+ #define pfn_pte(pfn, prot)  __pte((((pfn) << PAGE_SHIFT)) | pgprot_val(prot))
 
 -- 
 2.43.0
