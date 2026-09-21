@@ -4,86 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CC87AC982FA
-	for <kvm-riscv@archiver.kernel.org>; Mon, 21 Sep 2026 17:44:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9D7F9C982E6
+	for <kvm-riscv@archiver.kernel.org>; Mon, 21 Sep 2026 17:45:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:Reply-To:List-Subscribe:List-Help:
 	List-Post:List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID
 	:References:Mime-Version:In-Reply-To:Date:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=DiiLENk1yeQ14JO+nV+BFOOrdzHN7upjTBtWjV4s9tk=; b=4qu4X2OtQrG/VR
-	n9WyvfeUyNOG/MAkKsHkVk8GQ7vFKz22AsYvFi5HBMVaDFYoWNrT9y2ZR90CJ84uNZCWo4AMZB/ek
-	Jq2LA0W7J3mhdx3b1Kh0RCDfxynT1oO4pF0cBLEfu54CTJD6x0fszeNqrKzA2vclJxFUtw10OkuMk
-	n/wTevnWmvtIEdaGGCrO1ZjdJD6ZV4TPkmvYwMHeNX9Ls6ztu7FT7ZUDAkXy8KQ0wh8NGmbg4C7qt
-	q/M7HWsXUQlRHSGb7I+iqi5X2lToqeadOeVHP6llSAHiiS86KJ4qLavOCg/rBg6EBC6hH/A0/PF14
-	DHJRQc11KK8Myrjj2Mww==;
+	List-Owner; bh=1tFe5ZXP8XgBHGjD4Lx5F3yhUk8Pn+z7ulKM1xSKQ5s=; b=uSK8lErhvasCCZ
+	xa47LPb7uV+N0Uy76jCDdY4qUKuI8Tnn5keO5Ao1+OOGSNAxtH5JMwkU/nJuCuT8WBi9JxiCYjS2/
+	8o+KqyKEtu2Wtc33AnsZPllFjMFE91bRBa44VEwj2GQcMFFX+dSpth4h+QSIhV+W+aAsd2NH2L/We
+	ya2VzhL9aQ7FMKOpluwY2rj7HWjijJpSnAzsrIOSWXarIy+WkVfuWJJ0/0gZr/eeWyI4Yud9ONfGY
+	VbCmXiKXmHLUr32hXgC7AlBTvVQmlfWSXPdRx5DUeXdmsAOYZJaRatTY0ZFwHKGJ+E9S90Jhvf4yT
+	BQyyJUmtpYq8OPCsTCfQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x8i4W-000000031dI-1bf7;
-	Mon, 21 Sep 2026 17:44:56 +0000
+	id 1x8i4a-000000031gj-1Deo;
+	Mon, 21 Sep 2026 17:45:00 +0000
 Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x8i4U-000000031cA-2zXI
+	id 1x8i4Y-000000031eR-2qTK
 	for kvm-riscv@bombadil.infradead.org;
-	Mon, 21 Sep 2026 17:44:54 +0000
+	Mon, 21 Sep 2026 17:44:58 +0000
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=desiato.20200630; h=Content-Type:Cc:To:From:Subject:
 	Message-ID:References:Mime-Version:In-Reply-To:Date:Reply-To:Sender:
 	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=ZLfRYJewP8aR3Y4V2zbyCdDW63inecBdjfc5u4aaKpU=; b=Cvzu4FfkgFJzd9Cb90FthEVOte
-	bV+3SNq5dyeXxH+PkI2RUX68Hz3gRKNkiYy6xyLFx12oBxPEDDzpCqe6p9/ZR0KZlS17Yn9NOB59S
-	yrtum+C47n3coeGh9pQ7n47Wz67m1N5pm1t5xXQUzn+m7Nx/PcYGV43ldExs4mUPdss6Fv0dNe6bV
-	38DkJInj1z5Q9cxz9rLB6jcUaqptqmr/lpjoI0JhaAVR6HnWN8uwQ3Jt958vzu7nU7+fShYtqEkKD
-	2vB6bZg/EkHWqsf5iIcE79OaVJwS+dUqbVP9ir2nzRKgyzG2s9sMgDL38Cv7IucFEaCF/NJRIkrfJ
-	XCkfEtfw==;
-Received: from mail-pf1-x448.google.com ([2607:f8b0:4864:20::448])
+	bh=QYiGmxrgAXU1trJ4S0lv2S3WvlXO7vDS7xlQ1HDVynU=; b=Flti1J8e1dzqo9BFYDnlt8OL8y
+	WPvqbbagd8cmMTo5sOnl5i3wbIyUJf8ZaOEeZI6VUsIfIFw9Xtb6geomrJjiZNWE/VO9ddFNFuGGY
+	8o0tj2rSujVu23MG5yxkx1GHtIpbstbf4Ja4T4j5B15Fh2fC2ig2+DFEDmBWoLJpiCcYHHUVCeqWe
+	x7sgztD3blzRYfuI6NCF1M2S6HFz7pwAzmJQw2jwN413xJwgx3jcXZB8XEr6kyxNJs7I1Jzp18K8/
+	19OqiF1DTzwpglUOnLESvQuDVa/XQHQLbnXqp5HH+AV5HoyoGP4eZA1tNZ5Dx1ai4UuuwCqaxEEpJ
+	Rka4OdRQ==;
+Received: from mail-pg1-x547.google.com ([2607:f8b0:4864:20::547])
 	by desiato.infradead.org with esmtps (Exim 4.99.2 #2 (Red Hat Linux))
-	id 1x8i4R-0000000Cdnz-12xh
+	id 1x8i4V-0000000Cdqq-2p9B
 	for kvm-riscv@lists.infradead.org;
-	Mon, 21 Sep 2026 17:44:53 +0000
-Received: by mail-pf1-x448.google.com with SMTP id d2e1a72fcca58-8679cfe5019so4671940b3a.0
-        for <kvm-riscv@lists.infradead.org>; Mon, 21 Sep 2026 10:44:50 -0700 (PDT)
+	Mon, 21 Sep 2026 17:44:57 +0000
+Received: by mail-pg1-x547.google.com with SMTP id 41be03b00d2f7-cc73895c7d5so543095a12.1
+        for <kvm-riscv@lists.infradead.org>; Mon, 21 Sep 2026 10:44:54 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1790012689; x=1790617489; darn=lists.infradead.org;
+        d=google.com; s=20251104; t=1790012693; x=1790617493; darn=lists.infradead.org;
         h=content-type:cc:to:from:subject:message-id:references:mime-version
          :in-reply-to:date:reply-to:from:to:cc:subject:date:message-id
          :reply-to:content-type;
-        bh=ZLfRYJewP8aR3Y4V2zbyCdDW63inecBdjfc5u4aaKpU=;
-        b=IwGBPBF9moi95LMGwaM061UNG9o86+ev+iykamSarUeWbWKTXbljLgzdZDy53+W2M4
-         a/g6tdwXObNVtA8qZSmOtA2ziI7GedOg/uGUOAAgX8KoTsyDxKSAnBd5Ow6zOf3x5ngg
-         aq8vuuGKCv8Pci3DY926rdvhc9TPAkmnsA3xPIfr0r+yb94LApXJwVXX4jaPgMrmPYj/
-         +qfWfsgTMzPhFGgK+PjeMoDc1Bx1UnGWQBCFMeSCjaWigBrFYnJzq3PxfdUEgAVOyNUL
-         7qEMEMJ/Ew3lDy0czY5oPOF/lTHpBqP/nmYYAsTQMkQYRbTVYK0rhWqxwS8v58T5fgHq
-         G14g==
+        bh=QYiGmxrgAXU1trJ4S0lv2S3WvlXO7vDS7xlQ1HDVynU=;
+        b=G7buLvgre07kUkrfJ8slCNIZe1DGxy4qP3Lfeb1lARrdDC/leQoSHSxjHf64BijtP/
+         RFjFQxfU4xJp6zmglhGFTMc+8GM4L+qTYWJTYIlnefjH8Qi0QsQHsOFWR1xwUadaor4R
+         GBVhXIy5V1HETUvgJvMDoPWhS5wKDpWtFdLN54P8WUD33L+e9naAoA61McBlNDc97rx9
+         bgr4Xadf+AaH+Oy4drAhP/NrLbKxnFjleGVgIRf/kqBNbup+lXiIpzbI/LZpUweNZjXU
+         LAMTztFSRoeRO5B1H+BJkUQLWO3HMsOCuhNyuuJ9FJaqFzCDdCvZ7bVqZUP0blTrqh8H
+         FIIA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790012689; x=1790617489;
+        d=1e100.net; s=20260707; t=1790012693; x=1790617493;
         h=content-type:cc:to:from:subject:message-id:references:mime-version
          :in-reply-to:date:reply-to:x-gm-message-state:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=ZLfRYJewP8aR3Y4V2zbyCdDW63inecBdjfc5u4aaKpU=;
-        b=TfjDs3D6EgbHWdlR3StsJgpcyrf7jT+hXuHg5uWaEU54MIHnr09d/RZ2DJ47vdB71M
-         xQ9lwefV1Dn527EZXvUTgZ+eQNpYXm7JsSwJ+BCto/9e6IizhYcqDkpcrr48vryqrdtM
-         Nqou2Vmvf5lL/KpDTTeuI61d6SBXCo/uDTnEXrc6OnEp1BZjbZPJ1T0I641avmFGZQbX
-         fHFBPFbOXV/JSE0x1sCYtXKrgUYPU7OnoXhV3Bg8uixk1OipDj8ShyhxB4WcFAuplTl4
-         1rswHsiXMc0pE/iRmBfRsb/+OlQGvoNDSP3sysWm/IESw9PDFMiwPNQZQo6juzQqaLYt
-         3FLQ==
-X-Forwarded-Encrypted: i=1; AKwUvBy4W0iqplde6yfnmE2jAoSr+dyNscYly+QyMVD1lRDF2mPQCxRh5fImNl0Il1IooMi0nXfbRW8RQeI=@lists.infradead.org
-X-Gm-Message-State: AFuF++l+VV/DQievKDXNjylwQxU58iisVg8+z+igfInB1bMUDTT/oHN6
-	8b84h7Ljc550JYwZ90p9EJkH69+ccJuuqa3if4GiEDyZIJmrSWBWlWCpP9fjq/vs6MlRgHxbshq
-	pXX5eoA==
-X-Received: from pfbgk3.prod.google.com ([2002:a05:6a00:8483:b0:873:d536:aebe])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a00:12dd:b0:86b:73b4:30fa
- with SMTP id d2e1a72fcca58-874dc0ff42cmr17041050b3a.11.1790012688332; Mon, 21
- Sep 2026 10:44:48 -0700 (PDT)
-Date: Mon, 21 Sep 2026 10:44:39 -0700
+        bh=QYiGmxrgAXU1trJ4S0lv2S3WvlXO7vDS7xlQ1HDVynU=;
+        b=EkvgBMi3Dfn4Y8bOfKR1jkCoTTn3MdQIhKKkorpmqwUFgOmkMexmSxvPe7xBshOK4u
+         d8l/LEH2JSDyt2pgi1kBPT6nJXL11Bz5F7I3jz2+NkOnAKFm7ZBnQ+8R3JKWCawQVRrW
+         E7HS8CLmZT3w/5+7Rrd2ZklS80pgKToos0/Gh1LxylAB738dKWM+3lURk3NjGs4Qmx0C
+         dorhXguBXlFkNRA1/AG4et5zCRRImk2kYp7vQIB+aKw3OpNKgeRQwA/hGRQ2PMhMDLK9
+         sFgEQMrX3sTsJIXp2xWb1LvZTm7My+6T9u1JDXu+zczhcrKgqO4neKmOkDex3JZgGaei
+         Lvpw==
+X-Forwarded-Encrypted: i=1; AKwUvByICZ3fg6szDOJZ+nv+4qDHGQfk5cvWP+4FpoaayNPoNbs0YROgnFGdrv01RggoO3poPW6GIy4o21A=@lists.infradead.org
+X-Gm-Message-State: AFuF++kWpLLFzJ5OAtTW4HzqucCmEQEYPTcREY7pl6idPam/VSxwPh+K
+	3PtIIReior7TZsRDHTFVo30xAMr+knAYqWOgpWLaLfTt0IwGsncMFqzcqYuo+wiBmOKwLUvAlHM
+	Y7PdQoQ==
+X-Received: from pfbhu19.prod.google.com ([2002:a05:6a00:6993:b0:879:55dd:922d])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a00:ad89:b0:85f:3d78:79cc
+ with SMTP id d2e1a72fcca58-874dc4ed21dmr15528120b3a.9.1790012693049; Mon, 21
+ Sep 2026 10:44:53 -0700 (PDT)
+Date: Mon, 21 Sep 2026 10:44:43 -0700
 In-Reply-To: <20260921174445.911676-1-seanjc@google.com>
 Mime-Version: 1.0
 References: <20260921174445.911676-1-seanjc@google.com>
 X-Mailer: git-send-email 2.55.0.1082.g2b9226bbc0-goog
-Message-ID: <20260921174445.911676-2-seanjc@google.com>
-Subject: [PATCH v2 1/7] KVM: Reject attempts to lock all vCPUs if vCPU
- creation is in-progress
+Message-ID: <20260921174445.911676-6-seanjc@google.com>
+Subject: [PATCH v2 5/7] KVM: Move check for existing vCPU ID to the top of
+ vCPU creation
 From: Sean Christopherson <seanjc@google.com>
 To: Madhavan Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>, 
 	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
@@ -97,8 +97,8 @@ Cc: Nicholas Piggin <npiggin@gmail.com>, Atish Patra <atish.patra@linux.dev>,
 	Jean-Christophe Guillain <jean-christophe@guillain.net>, 
 	"=?UTF-8?q?Pawe=C5=82=20S?=" <spawel523@gmail.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260921_184451_486773_ED4BCB77 
-X-CRM114-Status: GOOD (  12.45  )
+X-CRM114-CacheID: sfid-20260921_184455_866283_B5F2E383 
+X-CRM114-Status: GOOD (  11.83  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -116,105 +116,48 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Reject locking of all vCPUs if vCPU creation is in-progress, i.e. if the
-number of "created" vCPUs doesn't match the number of "onlined" vCPUs.
-It's simply not possible to guarantee that KVM has truly locked all vCPUs
-if one or more vCPUs are actively being created.  Holding kvm->lock does
-prevent in-flight vCPUs from being fully onlined, but it's infeasible for
-common KVM to know whether or not that provides sufficient protection.
+Now that kvm->lock is held for the entirety of vCPU creation, check for a
+conflicting vCPU ID at the begnning of vCPU creation, before the arch
+precreate() hook is invoked.  This will allow reverting commit 97d65b544f48
+("KVM: Check for duplicate vcpu_id as early as possible").  For now, keep
+the redundant vcpu_ids tracking as a sanity check.
 
-In practice, this is likely a minor bug fix for the ARM and RISC-V usage of
-kvm_trylock_all_vcpus(), and a glorified nop for everything else.  E.g.
-ARM's kvm_timer_vcpu_init() can race kvm_vm_ioctl_set_counter_offset() with
-respect to observing KVM_ARCH_FLAG_VM_COUNTER_OFFSET.
-
-Opportunistically drop x86's existing manual checks on vCPU creation being
-in-progress as all of x86's checks immediately precede or follow locking of
-all vCPUs.  Leave arm64 and RISC-V alone for the moment, as their checks
-aren't as obviously redundant/equivalent.
+No functional change intended (absent KVM bugs, checking vcpu_ids and
+walking kvm_get_vcpu_by_id() should yield the same result).
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/x86/kvm/svm/sev.c | 10 ----------
- arch/x86/kvm/vmx/tdx.c |  5 -----
- virt/kvm/kvm_main.c    |  6 ++++++
- 3 files changed, 6 insertions(+), 15 deletions(-)
+ virt/kvm/kvm_main.c | 10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
 
-diff --git a/arch/x86/kvm/svm/sev.c b/arch/x86/kvm/svm/sev.c
-index 5705723f1f41..068f8a236a35 100644
---- a/arch/x86/kvm/svm/sev.c
-+++ b/arch/x86/kvm/svm/sev.c
-@@ -1125,9 +1125,6 @@ static int sev_launch_update_vmsa(struct kvm *kvm, struct kvm_sev_cmd *argp)
- 	if (!sev_es_guest(kvm))
- 		return -ENOTTY;
- 
--	if (kvm_is_vcpu_creation_in_progress(kvm))
--		return -EBUSY;
--
- 	ret = kvm_lock_all_vcpus(kvm);
- 	if (ret)
- 		return ret;
-@@ -2115,10 +2112,6 @@ static int sev_check_source_vcpus(struct kvm *dst, struct kvm *src)
- 	struct kvm_vcpu *src_vcpu;
- 	unsigned long i;
- 
--	if (kvm_is_vcpu_creation_in_progress(src) ||
--	    kvm_is_vcpu_creation_in_progress(dst))
--		return -EBUSY;
--
- 	if (!sev_es_guest(src))
- 		return 0;
- 
-@@ -2510,9 +2503,6 @@ static int snp_launch_update_vmsa(struct kvm *kvm, struct kvm_sev_cmd *argp)
- 	unsigned long i;
- 	int ret;
- 
--	if (kvm_is_vcpu_creation_in_progress(kvm))
--		return -EBUSY;
--
- 	ret = kvm_lock_all_vcpus(kvm);
- 	if (ret)
- 		return ret;
-diff --git a/arch/x86/kvm/vmx/tdx.c b/arch/x86/kvm/vmx/tdx.c
-index b272c20586a7..58c255256e4c 100644
---- a/arch/x86/kvm/vmx/tdx.c
-+++ b/arch/x86/kvm/vmx/tdx.c
-@@ -2728,11 +2728,6 @@ static tdx_vm_state_guard_t tdx_acquire_vm_state_locks(struct kvm *kvm)
- 
- 	mutex_lock(&kvm->lock);
- 
--	if (kvm->created_vcpus != atomic_read(&kvm->online_vcpus)) {
--		r = -EBUSY;
--		goto out_err;
--	}
--
- 	r = kvm_lock_all_vcpus(kvm);
- 	if (r)
- 		goto out_err;
 diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 65eb26a0520d..78cc090435be 100644
+index c17cc8dd371b..d5524ac8c5cf 100644
 --- a/virt/kvm/kvm_main.c
 +++ b/virt/kvm/kvm_main.c
-@@ -1363,6 +1363,9 @@ int kvm_trylock_all_vcpus(struct kvm *kvm)
+@@ -4182,7 +4182,10 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, unsigned long id)
+ 	if (kvm->created_vcpus >= kvm->max_vcpus)
+ 		return -EINVAL;
  
- 	lockdep_assert_held(&kvm->lock);
- 
-+	if (kvm_is_vcpu_creation_in_progress(kvm))
-+		return -EBUSY;
+-	if (test_bit(id, kvm->vcpu_ids))
++	if (kvm_get_vcpu_by_id(kvm, id))
++		return -EEXIST;
 +
- 	kvm_for_each_vcpu(i, vcpu, kvm)
- 		if (!mutex_trylock_nest_lock(&vcpu->mutex, &kvm->lock))
- 			goto out_unlock;
-@@ -1386,6 +1389,9 @@ int kvm_lock_all_vcpus(struct kvm *kvm)
++	if (WARN_ON_ONCE(test_bit(id, kvm->vcpu_ids)))
+ 		return -EEXIST;
  
- 	lockdep_assert_held(&kvm->lock);
+ 	r = kvm_arch_vcpu_precreate(kvm, id);
+@@ -4221,11 +4224,6 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, unsigned long id)
+ 			goto arch_vcpu_destroy;
+ 	}
  
-+	if (kvm_is_vcpu_creation_in_progress(kvm))
-+		return -EBUSY;
-+
- 	kvm_for_each_vcpu(i, vcpu, kvm) {
- 		r = mutex_lock_killable_nest_lock(&vcpu->mutex, &kvm->lock);
- 		if (r)
+-	if (WARN_ON_ONCE(kvm_get_vcpu_by_id(kvm, id))) {
+-		r = -EEXIST;
+-		goto unlock_vcpu_destroy;
+-	}
+-
+ 	/*
+ 	 * Set the vCPU's index *before* the vCPU is reachable by other tasks.
+ 	 * Unwind the index back to -1 on failure so that KVM can use the index
 -- 
 2.55.0.1082.g2b9226bbc0-goog
 
