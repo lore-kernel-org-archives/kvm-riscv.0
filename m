@@ -4,108 +4,110 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C86DAC982E1
-	for <kvm-riscv@archiver.kernel.org>; Mon, 21 Sep 2026 10:59:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1C0FC982EE
+	for <kvm-riscv@archiver.kernel.org>; Mon, 21 Sep 2026 11:14:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Message-Id
-	:MIME-Version:Subject:Date:From:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=GVe91KUHQeAOIWUHG5D7dRWgaHYUje+0OQEtjGAZ3HM=; b=0cL2m0Sl4C06tH
-	YsmYjq5o0yeomYLh0JfTQwuZDvu7j5kb1AhlbeCsbDvKoWWxRXrI47uoYOq3QqVuRpra6ehki0/0X
-	kFxAcpMX1WnRjQrzdaicCk+avoT+BbkDdeF/3jSFU7St37ygRGbksY40L4eOuQeLgDNd2dyn4PxNh
-	WQtMVYhOLrh80CvHkGLGlWLLNZO22J14hQbMDBVMFu0SQ9689hBFdCiYkBeZHz+osiPPaQzvmDU4h
-	HIa2UScDvCSaeY72/2ejgBzwdFpAHBxjvFd7xV8WrMgwqy393fhGcHFSiYC2TEUJc9YMRgibSawx7
-	1W9bQdpVbYHkJHC3+WoA==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=BtB94eV4b+OIyumxr76fEyhDkLJHTmqu84fiZ8x3q7A=; b=N4imTDAqNZXZbh
+	Oou6czTJHUHONLXcndXs9TCkYf7lYPG9UgxZcsvE8kq9+RAF6PZbCytshX35O0YDAXFV6Yj7/xdzJ
+	Nk3S+ZT4Duhp2MX3xl6zjdBaimeFFPcY7LPnB1rwesLcWCtRzXS0EHUw53K541JVtZg7QZSAy4JFt
+	np3LlnpOnzC75MDJLGW3cYSaqSz6X2iOR+db+KUtSZd720jX5IUlV3VhhnSS5T6y6ycNxD3bOrFO3
+	teyEvShSsASDXunI7n0ajrUbnuKLs4Y7wQTWwtiuEJa5O/CSS/Gka4G1Di0P259OlO1dtauzyPlfY
+	YR45hbW9mlsS49i/QW1Q==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x8bk3-00000001nnE-2CJ7;
-	Mon, 21 Sep 2026 10:59:23 +0000
+	id 1x8byi-00000001qBj-28W9;
+	Mon, 21 Sep 2026 11:14:32 +0000
 Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x8bk2-00000001nlX-20Mw;
-	Mon, 21 Sep 2026 10:59:22 +0000
+	id 1x8byh-00000001qAx-189y
+	for kvm-riscv@bombadil.infradead.org;
+	Mon, 21 Sep 2026 11:14:31 +0000
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=Cc:To:In-Reply-To:References:
-	Message-Id:Content-Transfer-Encoding:Content-Type:MIME-Version:Subject:Date:
-	From:Sender:Reply-To:Content-ID:Content-Description;
-	bh=p4toMdtYioi8w9HGmKDf8lwn05tg3yomRqh2JzLPKJU=; b=FKIcgc18JJiBjQUhKTVQKEeKgM
-	wKq1MWbieO2FxI2w+bsdQNHVB7hjJGmZYJCS2FxyrdtTePXygEK/OBbq8NO1KbWisdbgDpXhydvlG
-	T5iMWhhIy5WTgrykgiMdOEVmE98VOCjgLW7KBM+914EGoQ3ZCMRrvoLrfkQaNhcBY6KpyZnFw8gxw
-	s6xsf1aWOPQ7P/XVC18LInWbbw7qQuJSAK4UrnuUfTx9r4jtzzUBDGbML7te3zJhHe5hjyM5mEuab
-	+SdIb3jNTQVCQqujrM9dj5JjJd5x8i0bRVzIiKMF1ub4vg9xmelbUsGHOYgKrhOTVmZUP7qJNkG3Q
-	ODvS7Ydg==;
-Received: from foss.arm.com ([217.140.110.172])
-	by desiato.infradead.org with esmtp (Exim 4.99.2 #2 (Red Hat Linux))
-	id 1x8bjo-0000000C9m9-30P1;
-	Mon, 21 Sep 2026 10:59:20 +0000
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id D0D821CE0;
-	Mon, 21 Sep 2026 03:59:03 -0700 (PDT)
-Received: from e129823.arm.com (e129823.arm.com [10.2.213.3])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 3E11E3F86C;
-	Mon, 21 Sep 2026 03:59:00 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1789988347; bh=Or+pfL3PXEcPJdOW4W+xPfx8ylyd8tpn0CA0i+cQDx8=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=OTPGWQ3V/YIEMLtO7u2Mynqz++o5RPwLMFLlzIT4rgUlbfJz02BoKMgw4RXvRuSNj
-	 deUYqvEpMQchecaubbKtyAiqcrqDJ3rG98HSWlUBFWHIGiqs9ocWbZVbfPkkrmm/D7
-	 ncRtII6dpeDQJvydmvJhhhL2Snuaf1u6HEPcx7TY=
-From: Yeoreum Yun <yeoreum.yun@arm.com>
-Date: Mon, 21 Sep 2026 11:55:43 +0100
-Subject: [PATCH 21/21] Documentation: mm: clarify behaviour of compile-time
- folded page tables
+	d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:MIME-Version
+	:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:
+	Content-Description:In-Reply-To:References;
+	bh=qHUJIBm2U4V64OwaSBxvcTjq0/clFqcHASwuFrVtamA=; b=dq6f9BrWHp55meJLH+CzXuPJ1B
+	QTH0KWUYurtnErIy2RyuPKjjRxeejwVyV/UAfWiplifZB6lVtLRhsg0ID9C4tmgHx0PoZrlfiJMA3
+	buLbof93eweffTVlRp+se5f/nFk/bI1qNS0nctT8Zd8AOYYmZTetlhxsMyDEW0O6w+EmlxtAwWgIK
+	z+QXVpXzCCxWz5xD3lQgtkytXL/brzoF2S21dH4w2ZQMPHt2+KCo6rSiFn1f+q3yXmGKbyeD70Wpv
+	I0IbkPnOFJEY5V41K61NvGyZKZ/aEt/0Cb0ybSE6Yea5/rpKIUj39E3QhE40WZD6eGODRbYUHF7Pi
+	nYxYRelA==;
+Received: from mail-pj2-x0e.google.com ([2607:f8b0:4864:39::e])
+	by desiato.infradead.org with esmtps (Exim 4.99.2 #2 (Red Hat Linux))
+	id 1x8byU-0000000CB25-0x40
+	for kvm-riscv@lists.infradead.org;
+	Mon, 21 Sep 2026 11:14:29 +0000
+Received: by mail-pj2-x0e.google.com with SMTP id 98e67ed59e1d1-3a02902dce2so910221a91.1
+        for <kvm-riscv@lists.infradead.org>; Mon, 21 Sep 2026 04:14:16 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1789989255; x=1790594055; darn=lists.infradead.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=qHUJIBm2U4V64OwaSBxvcTjq0/clFqcHASwuFrVtamA=;
+        b=beTVo7EhWQSWptzjMV9NLyweWMJG+mrIXeoH4I6oW2Dv3dIhliLUuYhO0NS69GiDh0
+         hlqt6qEjFvLNJH/6hlf5qNzZCJoyplIWE189S4loTzoyqoNkYBwlfJgszGTnPginO3hn
+         hdMiPrNv7+cXdmM6WrDmje6jRSJT62CbQ6MR/A76C8gxPS2eFsCEn+eCRShr4dktGw4a
+         7En/jTh9C/SDB/LbvEOm/Ml2w5ctIqycM7oqemn7lSR225HXnmnLdzxU3MSy5aFuTJZx
+         OZP/28hW6x5LodumQRIKZv7pvtpFIDmkaYhezlICs+Y06LwwB1sviVJ8zzwsK5mI9uNG
+         2Hhg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1789989255; x=1790594055;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=qHUJIBm2U4V64OwaSBxvcTjq0/clFqcHASwuFrVtamA=;
+        b=GOI7u2hEsrSWXFI/ipqfb4UQ9f2stVQs/lm5/C9SRLW8q0GOyk2ggWIG5l54NoLQPD
+         riHALtYGGW3CSPbc5YyHR1RVLlKE2x16YXfYA9mHV2Fp4SlDTrC58pfQQQqFlMHI9gcR
+         Hny5vf33Fq8sdBAcga4YSyJkRU3xFy9J+dk+nOQk1FYC7xpYCgtUdN3ufaxjej35jwOI
+         4jUz5t4Bw93+/vd8AjU6YVPeMXtwWSCCnUqObBl5h2nz03XETe8W+ykaqL/bT3HtJq0Z
+         f5oUhPbcDaO6Dj9h7OEBC8ukuXZVCMr208OQXrqRsYovPBWv8BNdw3uQ6qO23BtbTsNB
+         h0ow==
+X-Forwarded-Encrypted: i=1; AKwUvBzbQ4EhGjDweoremQHSKAw+6o9OhvMziaT8t95MaLbzhlAa9Js3dYgTZg2OHPb/TswfK8rI08g5y5Y=@lists.infradead.org
+X-Gm-Message-State: AFuF++l5zIRpOxVYW5OyuZrUFu2exygY7AqWGScAus+vPFAeGKlS8sHr
+	2RtDjc5FdtMggQyx6IOaZlFyJ1noWJubI1Go76mFRUU+2QCCHq+tF3Z8
+X-Gm-Gg: AYBFou2+6dQsQrW48LbEUELCp/0TEzhCDbS6RXfFh8WlqOh2T5BJYCKsipD+tGyYbq4
+	wfFYo2sTTV/PQyfWv7ojEX3aFHzd4ivYw/+8invjN3RlTrlmZoK+1JdqoPpBKjb/BYxqIHbvCUD
+	fnhuwMVMQtCtG40Yp9rW+Ycvh/AUzYMVFbABTiS8TrpEapmK8KS4XZo8iPpH33ydyTOK0n7eHro
+	Kvw5yvWJYOHoWxva7eUoIB40yRk73se+dLPmUziNnfpUj667xYJ2UzBNo35+XfKk9/dBLKUP95Q
+	7v4Ttrm3NckchIdkrJm6XdW9h3xVgxx7+LyhB3HP5YKdpu3pP0vqZWzYkjNdDzqXobrCurWYS6C
+	727H9F85fAbCADr0LHj+/k5Qg1OmUEyqdjF8xbpG3MqqRXpROMvCfl550oBYHoyLFnENIaTQC/P
+	vLPCvRZdWx/pkFCHlvscvGpyNmYZzuRRfGUi6gN5F5r60mcAMrjERq10U2QXpH13qjaDsq9WPG1
+	WaE6xNh2kktrv5H/hkMHQ==
+X-Received: by 2002:a17:90b:2d0c:b0:39e:6c6a:4b77 with SMTP id 98e67ed59e1d1-39e6c6a5492mr9909928a91.65.1789989255197;
+        Mon, 21 Sep 2026 04:14:15 -0700 (PDT)
+Received: from fedora ([61.74.238.173])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-39e6c6dd585sm13438703a91.0.2026.09.21.04.14.11
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 21 Sep 2026 04:14:14 -0700 (PDT)
+From: SeungJu Cheon <suunj1331@gmail.com>
+To: Anup Patel <anup@brainfault.org>
+Cc: Atish Patra <atish.patra@linux.dev>,
+	Paul Walmsley <pjw@kernel.org>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>,
+	Alexandre Ghiti <alex@ghiti.fr>,
+	Paolo Bonzini <pbonzini@redhat.com>,
+	Andrew Jones <ajones@ventanamicro.com>,
+	Jinyu Tang <tjytimi@163.com>,
+	Wang Yechao <wang.yechao255@zte.com.cn>,
+	kvm-riscv@lists.infradead.org,
+	kvm@vger.kernel.org,
+	linux-riscv@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	SeungJu Cheon <suunj1331@gmail.com>
+Subject: [PATCH v1 0/5] KVM: riscv: Age G-stage PTEs locklessly
+Date: Mon, 21 Sep 2026 20:13:57 +0900
+Message-ID: <20260921111402.120911-1-suunj1331@gmail.com>
+X-Mailer: git-send-email 2.52.0
 MIME-Version: 1.0
-Message-Id: <20260921-dummy_ptxp3-v1-21-cd40cf68242e@arm.com>
-References: <20260921-dummy_ptxp3-v1-0-cd40cf68242e@arm.com>
-In-Reply-To: <20260921-dummy_ptxp3-v1-0-cd40cf68242e@arm.com>
-To: Russell King <linux@armlinux.org.uk>, 
- Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>, 
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, 
- Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>, 
- Kairui Song <kasong@tencent.com>, Qi Zheng <qi.zheng@linux.dev>, 
- Shakeel Butt <shakeel.butt@linux.dev>, Barry Song <baohua@kernel.org>, 
- Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>, 
- Wei Xu <weixugc@google.com>, Johannes Weiner <hannes@cmpxchg.org>, 
- David Hildenbrand <david@kernel.org>, Michal Hocko <mhocko@kernel.org>, 
- Lorenzo Stoakes <ljs@kernel.org>, Tianrui Zhao <zhaotianrui@loongson.cn>, 
- Bibo Mao <maobibo@loongson.cn>, Anup Patel <anup@brainfault.org>, 
- Atish Patra <atish.patra@linux.dev>, Paul Walmsley <pjw@kernel.org>, 
- Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
- Alexandre Ghiti <alex@ghiti.fr>, Dave Hansen <dave.hansen@linux.intel.com>, 
- Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>, 
- Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, 
- Borislav Petkov <bp@alien8.de>, x86@kernel.org, 
- "H. Peter Anvin" <hpa@zytor.com>, "Liam R. Howlett" <liam@infradead.org>, 
- Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>, 
- Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, 
- Jonas Bonn <jonas@southpole.se>, 
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, 
- Stafford Horne <shorne@gmail.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
- loongarch@lists.linux.dev, linux-mips@vger.kernel.org, 
- linux-arch@vger.kernel.org, linux-mm@kvack.org, kvm@vger.kernel.org, 
- kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
- linux-openrisc@vger.kernel.org
-X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=5249; i=yeoreum.yun@arm.com;
- h=from:subject:message-id; bh=WkUI9iV+4tWIf8gUL0eT1d3WqVW3xHozxqWVF9c3f4k=;
- b=owEB7QES/pANAwAKAW3Vw9FaxTEzAcsmYgBqsQ1UvQaI/DbnQhSon1cfVb2lmVIAgB8pZa9xc
- x4itcv3wn+JAbMEAAEKAB0WIQQtg+CS3QUzuFh1pJ1t1cPRWsUxMwUCarENVAAKCRBt1cPRWsUx
- M3wVC/9HHxJ8te9GEbS6FYmVPJFsAKbIOicXI24Ln9gqlvTZxuy4kNJc4ab1vnjPxk64m8Rg+x2
- Mge3H0r3HnaL+quWGc5hhXjVijIFzCG8gpQvS3TAos58QC0AOllXSljJJW+I6bPGRHEfZbrplmH
- MSpeBY8ZsvhMVxoa7rzCNDxLL9FQI0Cc3PXqn84Rx9aaobgkmEtYiN7CNHsRZU3ng64fu67dco/
- 9XO55oYTMY5NC0dEQSGNn31KsfpblVBRsW5um+k73FHlpD7vrNWPHSDKjsItM4o3qlBwTsCwCl1
- Z7zy/Eg/ZygXnmH8QOhMc7fglKOXMvcG/maDLM9eOF/8KD3LCcwyTzCpuv5EoxT7vOhxogj2kut
- s/VQGR4ui3uesYjCw/PuXgA7Ampck2ZMBsmMmPI1k93NpLLOG4Y529M4WW6uqqGb5xddwPmnW5l
- apVpiy9rUjEUxGjRGHepEQpg+BUzcWhj6iVaP8sd5tNs9WaHGtTaNtG9oqCr4rfrjLXkY=
-X-Developer-Key: i=yeoreum.yun@arm.com; a=openpgp;
- fpr=2D83E092DD0533B85875A49D6DD5C3D15AC53133
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260921_115918_363463_D3AFA8C7 
-X-CRM114-Status: GOOD (  20.30  )
+X-CRM114-CacheID: sfid-20260921_121421_199801_C9A9BB9D 
+X-CRM114-Status: GOOD (  13.22  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -122,118 +124,108 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-From: "David Hildenbrand (Arm)" <david@kernel.org>
+Aging G-stage PTEs currently runs with mmu_lock held for write, taken
+by the common MMU notifier code. When MGLRU or kswapd ages a large
+range, every vCPU taking a G-stage fault blocks on the lock, and the
+dirty-logging read-side fast path blocks behind aging as well.
 
-Compile-time folded page tables are not necessarily easy to understand, and even
-people the were once familiar with the concept might need to refresh their memory.
+This series lets RISC-V select KVM_MMU_LOCKLESS_AGING, so G-stage
+aging can run without mmu_lock while protecting page-table walks with
+RCU.
 
-Add proper documentation, including a nice diagram, for the current design.
-Mention details about dummy functions, including the recently changed pXdp_get()
-helpers.
+  1. Age all G-stage PTEs in a GFN range
+     Bug fix, posted separately [1] and included unchanged so the
+     series applies on riscv_kvm_queue. Drop it if already applied.
 
-Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
----
- Documentation/mm/page_tables.rst | 84 +++++++++++++++++++++++++++++++++++-----
- 1 file changed, 75 insertions(+), 9 deletions(-)
+  2. Read G-stage PTEs once when walking page tables
+     A lockless walker must derive presence, leaf-ness and the child
+     address from a single snapshot of each entry.
 
-diff --git a/Documentation/mm/page_tables.rst b/Documentation/mm/page_tables.rst
-index 126c876282509..84f2715c7de0a 100644
---- a/Documentation/mm/page_tables.rst
-+++ b/Documentation/mm/page_tables.rst
-@@ -143,15 +143,81 @@ pointers on each level is architecture-defined.::
- Page Table Folding
- ==================
- 
--If the architecture does not use all the page table levels, they can be *folded*
--which means skipped, and all operations performed on page tables will be
--compile-time augmented to just skip a level when accessing the next lower
--level.
--
--Page table handling code that wishes to be architecture-neutral, such as the
--virtual memory manager, will need to be written so that it traverses all of the
--currently five levels. This style should also be preferred for
--architecture-specific code, so as to be robust to future changes.
-+Not all architectures support 5-level page tables; while for some of them
-+the exact number of supported page table levels is known at compile time,
-+others can determine the number of page table levels at runtime based on
-+hardware support and address space sizes.
-+
-+Generic page table walking code always assumes that 5 levels of page table
-+exist. To make page table walking code not have to worry about that,
-+`compile-time folding` and `runtime folding` of page tables are used.
-+Compile-time folding is mostly handled in common code, whereas runtime folding
-+is exclusively handled in architecture code.
-+
-+This description focuses on generic compile-time folded page tables; for
-+architecture-specific variants, some details can vary, however, without
-+affecting common page table walkers.
-+
-+When walking folded page tables, all upper page table levels up to the supported
-+level are skipped in page table walkers: this is achieved by (a) treating
-+entries in upper page table levels as present and pointing at a page table; and
-+(b) having page table walkers cast the entry pointer to the next-level entry
-+instead of dereferencing that table. From the perspective of a page table
-+walker, the entry points at itself.
-+
-+Assuming compile-time folded 4-level page tables, to achieve (a), pgd_present()
-+and pgd_leaf() are hard-coded to indicate a present page table entry that
-+points at a page table, and to achieve (b) p4d_offset() and
-+p4d_offset_lockless() simply cast the page table entry pointer to the next
-+lower level.
-+
-+In the current design, this is further modeled by having the P4D have a
-+single page table entry::
-+
-+        PGD
-+  --> +------+          NOP4D
-+      | ptr0 |-------> +------+           PUD
-+      | ptr1 |-        | ptr0 |-------> +-----+
-+      | ptr2 | \       +------+         | ptr |-------> ...
-+      | ptr3 |  \                       | ptr |
-+        ...      \                        ..
-+                  \        NOP4D
-+                   +----> +------+           PUD
-+                          | ptr1 |-------> +-----+
-+                          +------+         | ptr |-------> ...
-+                                           | ptr |
-+                                             ...
-+
-+Note that the arrows from PGD to NOP4D represent page-table-walker
-+transitions, not pointers stored in the pgd entries.
-+
-+Using p4d as an example, `nop4d`/`p4d folded` translates to the following:
-+
-+- p4d is considered folded into pgd; both are operating on the same page
-+ table.
-+
-+- Most pgd_* helpers are hard-coded dummy functions that ignore the passed
-+  pgd_t values entirely. Exceptions are pgd_val() and low-level helpers
-+  set_pgd() + pgd_page_vaddr(), which effectively translate to set_p4d()/
-+  p4d_pgtable() to keep existing arch code working.
-+
-+  Architectures must provide p4d_* helpers (unless further common
-+  compile-time folding applies).
-+
-+- PTRS_PER_P4D is hard-coded to 1. Architectures must define PTRS_PER_PGD.
-+
-+To avoid reading a value that will never be used but cannot be entirely
-+optimized out, compile-time folded page table code also makes pXdp_get()
-+return a constant dummy value.
-+
-+In common code, this only affects pXd_val() when used for printing page
-+table entries for debugging purposes. As we don't want architecture code
-+that uses set_pXd(), pgd_page_vaddr() or pXd_pgtable() to accidentally
-+operate on dummy values, the compiler will error out if it detects that the
-+helpers are used with dummy values. For a folded level, pXd_page() must not
-+be used and unconditionally triggers a compiler error. Architecture code must
-+instead call the helpers on the proper first page table level: e.g., set_p4d()
-+instead of set_pgd().
- 
- 
- MMU, TLB, and Page Faults
+  3. Write-protect G-stage PTEs atomically
+     Aging will clear the Accessed bit without mmu_lock; the plain
+     read-modify-write in GSTAGE_OP_WP could clobber that update.
 
+  4. Free G-stage page tables after an RCU grace period
+     Table pages and the root outlive any RCU reader. Root teardown
+     keeps pgd_levels intact so a walker holding the old root sees
+     consistent metadata.
+
+  5. Age G-stage PTEs locklessly
+     Select KVM_MMU_LOCKLESS_AGING and walk under rcu_read_lock().
+
+This builds on Jinyu Tang's rwlock and cmpxchg helpers already in
+riscv_kvm_queue. Wang Yechao's huge page recovery series [2] adds a
+second page-table free site in kvm_riscv_gstage_recover_huge();
+whichever lands second will need to switch that put_page() to
+gstage_free_page_table(). I can rebase the series as needed.
+
+A possible follow-up is to run clear-dirty-log and the general fault
+path under the read side of mmu_lock, as arm64 and x86 do. Patch 3
+provides the atomic write-protection needed for the former.
+
+Testing
+-------
+QEMU virt, -cpu rv64,h=true (Svadu), 4 vCPUs, TCG. The host kernel
+was built with KASAN, PROVE_LOCKING, PROVE_RCU, LOCK_STAT and LRU_GEN.
+
+After each patch:
+  - dirty_log_perf_test -v 2 -b 256M -i 3
+  - access_tracking_perf_test -v 2 -b 256M -s anonymous_thp
+    (2M THP disabled and 64K mTHP enabled)
+  - 20 VM create/destroy iterations
+
+With MGLRU aging forced on the VM's cgroup every 50-100ms:
+  - dirty_log_perf_test -v 3 -b 256M -i 3
+  - 30 VM create/destroy iterations
+
+With CONFIG_KVM=m, 5 module load/unload cycles, each with a VM created
+and destroyed immediately before module unload, to exercise module
+teardown after queuing RCU frees.
+
+No WARN, KASAN, lockdep or RCU reports were observed. The kvm_age_hva
+tracepoint recorded approximately 65k events per aging pass.
+
+Performance results from dirty_log_perf_test -v 3 -b 256M -i 3, with
+lock_stat enabled for mmu_lock and 86 aging passes:
+
+                           no aging          aging
+                         before  after     before   after
+  guest dirty time       12.5s   12.4s     18.6s    16.7s
+  mmu_lock W wait total  0.15s   0.17s     44.4s    0.15s
+  mmu_lock W contentions  35k     35k      1.0M     30k
+  mmu_lock R wait total   0       0        7.5s     0
+
+Before the series, 93% of write-lock waiters were from
+kvm_mmu_notifier_clear_young(), and the dirty-log read-side fast path
+waited for mmu_lock 352k times. After the series, aging does not
+acquire mmu_lock.
+
+Absolute numbers are inflated by TCG; only the relative change is
+meaningful. Under TCG, the atomic write-protect change in patch 3
+increased the clear-dirty-log time from approximately 16ms to 30ms,
+as TCG serialises AMO instructions; hardware numbers would be welcome.
+
+[1] https://lore.kernel.org/all/20260918072622.284188-1-suunj1331@gmail.com/
+[2] https://lore.kernel.org/kvm-riscv/20260914055936.3672758-1-wang.yechao255@zte.com.cn/
+
+SeungJu Cheon (5):
+  KVM: riscv: Age all G-stage PTEs in a GFN range
+  KVM: riscv: Read G-stage PTEs once when walking page tables
+  KVM: riscv: Write-protect G-stage PTEs atomically
+  KVM: riscv: Free G-stage page tables after an RCU grace period
+  KVM: riscv: Age G-stage PTEs locklessly
+
+ arch/riscv/include/asm/kvm_gstage.h |   4 +-
+ arch/riscv/kvm/Kconfig              |   1 +
+ arch/riscv/kvm/gstage.c             | 111 +++++++++++++++++++++-------
+ arch/riscv/kvm/main.c               |   3 +
+ arch/riscv/kvm/mmu.c                |  56 +++++++-------
+ 5 files changed, 117 insertions(+), 58 deletions(-)
+
+
+base-commit: 41e81f7e3ef96594fb840445343c0ee7723aa550
 -- 
-2.43.0
+2.52.0
 
 
 -- 
