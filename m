@@ -4,86 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1C0FC982EE
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CFAB2C982ED
 	for <kvm-riscv@archiver.kernel.org>; Mon, 21 Sep 2026 11:14:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
-	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=BtB94eV4b+OIyumxr76fEyhDkLJHTmqu84fiZ8x3q7A=; b=N4imTDAqNZXZbh
-	Oou6czTJHUHONLXcndXs9TCkYf7lYPG9UgxZcsvE8kq9+RAF6PZbCytshX35O0YDAXFV6Yj7/xdzJ
-	Nk3S+ZT4Duhp2MX3xl6zjdBaimeFFPcY7LPnB1rwesLcWCtRzXS0EHUw53K541JVtZg7QZSAy4JFt
-	np3LlnpOnzC75MDJLGW3cYSaqSz6X2iOR+db+KUtSZd720jX5IUlV3VhhnSS5T6y6ycNxD3bOrFO3
-	teyEvShSsASDXunI7n0ajrUbnuKLs4Y7wQTWwtiuEJa5O/CSS/Gka4G1Di0P259OlO1dtauzyPlfY
-	YR45hbW9mlsS49i/QW1Q==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=oxse3c4lvhUikQJFoQa+jmJhw+BidBywNjzLkFkN4mM=; b=MiJLEh4ReafRL5
+	xz1Qx/AcDfbKpQm75f4A61oGnNedgNJvbAxDNnnQnwUj5N69n5TKsUqHGbE46X002yPxKs3+bNgwC
+	ji9L/H7bGUbIzXu4pDDVgAOqGunY2tFbYLYAbSPq0C0EszPAabmqQC48gcLHUlkxFqh33mALzgOob
+	29VNaOJRUAJJQjO34Cy5ylSh0feWdsGPvDajXydqdX6jNTRpty76Yx+CvNLga8ikAr+s61uAXJLm+
+	7c1j1a4t8wxpwttjQGuPqGNgFiSCXCFBOINl1wfT6spz0CtEYW4g8wd+BqY7e5lcMCsOoOrr5yuU1
+	6FlltxvgRp64Qx5zBqgA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x8byi-00000001qBj-28W9;
+	id 1x8byi-00000001qBe-1vq5;
 	Mon, 21 Sep 2026 11:14:32 +0000
 Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x8byh-00000001qAx-189y
+	id 1x8byh-00000001qAj-0MOt
 	for kvm-riscv@bombadil.infradead.org;
 	Mon, 21 Sep 2026 11:14:31 +0000
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:MIME-Version
-	:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:
-	Content-Description:In-Reply-To:References;
-	bh=qHUJIBm2U4V64OwaSBxvcTjq0/clFqcHASwuFrVtamA=; b=dq6f9BrWHp55meJLH+CzXuPJ1B
-	QTH0KWUYurtnErIy2RyuPKjjRxeejwVyV/UAfWiplifZB6lVtLRhsg0ID9C4tmgHx0PoZrlfiJMA3
-	buLbof93eweffTVlRp+se5f/nFk/bI1qNS0nctT8Zd8AOYYmZTetlhxsMyDEW0O6w+EmlxtAwWgIK
-	z+QXVpXzCCxWz5xD3lQgtkytXL/brzoF2S21dH4w2ZQMPHt2+KCo6rSiFn1f+q3yXmGKbyeD70Wpv
-	I0IbkPnOFJEY5V41K61NvGyZKZ/aEt/0Cb0ybSE6Yea5/rpKIUj39E3QhE40WZD6eGODRbYUHF7Pi
-	nYxYRelA==;
+	:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:
+	Content-Type:Content-ID:Content-Description;
+	bh=01ra1AO1mSvOrLFVgo6C3hu4ILWJ3jo+KfsYZ5db6+s=; b=X8by3zTbSwj0wgKZmGlJIlbBB4
+	vA945aqUOqwCbd5iDlla9zaNzhbGhmLFHy5pgvSqiQA/ezsIt324NnFl4pLcRn8VsDV0A3QzxoQGP
+	X6cuhNICyjDbV1UVSTbVl1saFgKF7P0CEb9yZBW1a75AhDBPWU4qhGa9XoPQRANSXfco4VzzI0Nkh
+	Nj1Ynbfco+XCQ3O7v7Ju90tB/deLacUrEVOdxWLcPgh2C52GF6DZYefp1BeGvGgop1ywDfb4lVrhf
+	VQAdqog79zLrBLFrZWjL4q8+n9gyTJT9AqzIx4nuip2GU2uMafo4MQA/8RCKuoXjB3psVTGZjxm0V
+	8gPjTMtw==;
 Received: from mail-pj2-x0e.google.com ([2607:f8b0:4864:39::e])
 	by desiato.infradead.org with esmtps (Exim 4.99.2 #2 (Red Hat Linux))
-	id 1x8byU-0000000CB25-0x40
+	id 1x8byY-0000000CB2j-33mD
 	for kvm-riscv@lists.infradead.org;
 	Mon, 21 Sep 2026 11:14:29 +0000
-Received: by mail-pj2-x0e.google.com with SMTP id 98e67ed59e1d1-3a02902dce2so910221a91.1
-        for <kvm-riscv@lists.infradead.org>; Mon, 21 Sep 2026 04:14:16 -0700 (PDT)
+Received: by mail-pj2-x0e.google.com with SMTP id 98e67ed59e1d1-396ccb65437so2130489a91.3
+        for <kvm-riscv@lists.infradead.org>; Mon, 21 Sep 2026 04:14:22 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789989255; x=1790594055; darn=lists.infradead.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=qHUJIBm2U4V64OwaSBxvcTjq0/clFqcHASwuFrVtamA=;
-        b=beTVo7EhWQSWptzjMV9NLyweWMJG+mrIXeoH4I6oW2Dv3dIhliLUuYhO0NS69GiDh0
-         hlqt6qEjFvLNJH/6hlf5qNzZCJoyplIWE189S4loTzoyqoNkYBwlfJgszGTnPginO3hn
-         hdMiPrNv7+cXdmM6WrDmje6jRSJT62CbQ6MR/A76C8gxPS2eFsCEn+eCRShr4dktGw4a
-         7En/jTh9C/SDB/LbvEOm/Ml2w5ctIqycM7oqemn7lSR225HXnmnLdzxU3MSy5aFuTJZx
-         OZP/28hW6x5LodumQRIKZv7pvtpFIDmkaYhezlICs+Y06LwwB1sviVJ8zzwsK5mI9uNG
-         2Hhg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789989255; x=1790594055;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=gmail.com; s=20251104; t=1789989260; x=1790594060; darn=lists.infradead.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=qHUJIBm2U4V64OwaSBxvcTjq0/clFqcHASwuFrVtamA=;
-        b=GOI7u2hEsrSWXFI/ipqfb4UQ9f2stVQs/lm5/C9SRLW8q0GOyk2ggWIG5l54NoLQPD
-         riHALtYGGW3CSPbc5YyHR1RVLlKE2x16YXfYA9mHV2Fp4SlDTrC58pfQQQqFlMHI9gcR
-         Hny5vf33Fq8sdBAcga4YSyJkRU3xFy9J+dk+nOQk1FYC7xpYCgtUdN3ufaxjej35jwOI
-         4jUz5t4Bw93+/vd8AjU6YVPeMXtwWSCCnUqObBl5h2nz03XETe8W+ykaqL/bT3HtJq0Z
-         f5oUhPbcDaO6Dj9h7OEBC8ukuXZVCMr208OQXrqRsYovPBWv8BNdw3uQ6qO23BtbTsNB
-         h0ow==
-X-Forwarded-Encrypted: i=1; AKwUvBzbQ4EhGjDweoremQHSKAw+6o9OhvMziaT8t95MaLbzhlAa9Js3dYgTZg2OHPb/TswfK8rI08g5y5Y=@lists.infradead.org
-X-Gm-Message-State: AFuF++l5zIRpOxVYW5OyuZrUFu2exygY7AqWGScAus+vPFAeGKlS8sHr
-	2RtDjc5FdtMggQyx6IOaZlFyJ1noWJubI1Go76mFRUU+2QCCHq+tF3Z8
-X-Gm-Gg: AYBFou2+6dQsQrW48LbEUELCp/0TEzhCDbS6RXfFh8WlqOh2T5BJYCKsipD+tGyYbq4
-	wfFYo2sTTV/PQyfWv7ojEX3aFHzd4ivYw/+8invjN3RlTrlmZoK+1JdqoPpBKjb/BYxqIHbvCUD
-	fnhuwMVMQtCtG40Yp9rW+Ycvh/AUzYMVFbABTiS8TrpEapmK8KS4XZo8iPpH33ydyTOK0n7eHro
-	Kvw5yvWJYOHoWxva7eUoIB40yRk73se+dLPmUziNnfpUj667xYJ2UzBNo35+XfKk9/dBLKUP95Q
-	7v4Ttrm3NckchIdkrJm6XdW9h3xVgxx7+LyhB3HP5YKdpu3pP0vqZWzYkjNdDzqXobrCurWYS6C
-	727H9F85fAbCADr0LHj+/k5Qg1OmUEyqdjF8xbpG3MqqRXpROMvCfl550oBYHoyLFnENIaTQC/P
-	vLPCvRZdWx/pkFCHlvscvGpyNmYZzuRRfGUi6gN5F5r60mcAMrjERq10U2QXpH13qjaDsq9WPG1
-	WaE6xNh2kktrv5H/hkMHQ==
-X-Received: by 2002:a17:90b:2d0c:b0:39e:6c6a:4b77 with SMTP id 98e67ed59e1d1-39e6c6a5492mr9909928a91.65.1789989255197;
-        Mon, 21 Sep 2026 04:14:15 -0700 (PDT)
+        bh=01ra1AO1mSvOrLFVgo6C3hu4ILWJ3jo+KfsYZ5db6+s=;
+        b=RgNvUP8iDBiCY+bGs9n8KsvB28kuFYdpGHb3fcHw8VXmHcM9K+yJvk6HbYDUZQ6vyX
+         F4e/rN1OHTTDrRi5Wlom+nwDoY68+lz4RpnnARdQcMZcgIGGhB9GOOoR/41MMtAw1t7K
+         vhKKAIY29HUpCd+9sMQTjhJMxy/XI5Grl/ZcURHuolooBrenX0Zs8H9ctz4eDMxarKvi
+         /eRH/M8zKEoQpY7Hwd3265opCq7zbWJziv5FzOsvlx2LWaHSbpbGI5eQ+RRjqJb59U7t
+         KxggS//WftkAtawxViG8WFzXGNHd+1xXAnnyn6SN3XZKdELWx/wBa2EG6FGP9oFbvYhp
+         J+jw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1789989261; x=1790594061;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=01ra1AO1mSvOrLFVgo6C3hu4ILWJ3jo+KfsYZ5db6+s=;
+        b=nCOQvKD1LwB9Crpuzof79/KzjQyZwVHgxU0rqUyCt3nskoumdV/8Xgd5dz1PGmFtKu
+         PDKo616TkxrHMnBInFMraUX9MI9vUbzVnkT2b2T7FCTWrxB/vIxpsuvQoKUUjVdtF5jm
+         moMn+nhHtfoeJPcY3st/jmkyxkO/r9OFVQ3IXajZOjugqdTcGWkUyqnNGOAHq4hBoijG
+         HjZQAwGKEi/JykW1j38aEioLq4dQwKW5upUa2/PbHc9wUfXptju5+9dgzmbGQ0Xu9l4p
+         DcuHerH01iUQjEqx3eepBF2Fb1kl0plTnKL6XPrru2nrb55TPel27n7QoNBgcK8HfcBp
+         g4PA==
+X-Forwarded-Encrypted: i=1; AKwUvBz10pq16xCcwuNfTnMQBBu3gJMeBxS4epfIKRTHmzBZeAx1YAGZQxf8iRTEQLOMX+U2XUW1gfACAsY=@lists.infradead.org
+X-Gm-Message-State: AFuF++mrsSOOjYjpw2/R8ZsQgieELFX9DNuzFR5uzcsV3aBNzCfN6CwU
+	0u+Fgyc6e2NnPJ67FpL2DKUvXdAiRxm35fgGOFG1RSfdNi2CNkVSFjHI
+X-Gm-Gg: AYBFou3+xHqYwzhwNujR4q/VabMecO3fYXYvtP6u7RoXRI1uH1I5Sjpeejysucf86te
+	F89z993OW0tfol9CxrvVK9UUQPHUbKzrr+ByOhCTjsP9/wyKHrXV826W0sA/UGV14n3ZdY9/Su+
+	oec4i6BJgO7PvBY+5gc9hjy/H2Dm4N41bfP7FgDvMuYFzWJFY20uQ+SPqSzTLWYmUIGHpo8eOkd
+	npJ6xCTXT6kpa9M4KTVFWG7S37CoOR7Yii84L6XYggVgwTYUwGodDtcELKOvGgJbdNNZVJp/fRV
+	Clx26mxbNdFsW8uFth0Y2a2Hxx/+tg4axSFJmqh76cRuKLwmoIoSUBME/MOKKeIMNXhlDvvV2gM
+	6ivBtDXs19R4Ts/obTHsVSkvfgJkRpAkOcXf17uVtg5P0x5jzCYrAa3zmkAmUsZao5Bnc53vfkV
+	OwgMUwyGzL8HFUxx6nii9w1dtDzxgbb+SSX3mpl6rOyHQezq/0fy2ovRqJRjzZRCzRrBA48NXUY
+	v7I0/rVQekZVymvRGjeJ9YhoZogSEW1
+X-Received: by 2002:a17:90b:54c4:b0:39e:4c7f:7308 with SMTP id 98e67ed59e1d1-39e55071981mr15415502a91.31.1789989260551;
+        Mon, 21 Sep 2026 04:14:20 -0700 (PDT)
 Received: from fedora ([61.74.238.173])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-39e6c6dd585sm13438703a91.0.2026.09.21.04.14.11
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-39e6c6dd585sm13438703a91.0.2026.09.21.04.14.17
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 21 Sep 2026 04:14:14 -0700 (PDT)
+        Mon, 21 Sep 2026 04:14:20 -0700 (PDT)
 From: SeungJu Cheon <suunj1331@gmail.com>
 To: Anup Patel <anup@brainfault.org>
 Cc: Atish Patra <atish.patra@linux.dev>,
@@ -100,14 +101,16 @@ Cc: Atish Patra <atish.patra@linux.dev>,
 	linux-riscv@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	SeungJu Cheon <suunj1331@gmail.com>
-Subject: [PATCH v1 0/5] KVM: riscv: Age G-stage PTEs locklessly
-Date: Mon, 21 Sep 2026 20:13:57 +0900
-Message-ID: <20260921111402.120911-1-suunj1331@gmail.com>
+Subject: [PATCH v1 1/5] KVM: riscv: Age all G-stage PTEs in a GFN range
+Date: Mon, 21 Sep 2026 20:13:58 +0900
+Message-ID: <20260921111402.120911-2-suunj1331@gmail.com>
 X-Mailer: git-send-email 2.52.0
+In-Reply-To: <20260921111402.120911-1-suunj1331@gmail.com>
+References: <20260921111402.120911-1-suunj1331@gmail.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260921_121421_199801_C9A9BB9D 
-X-CRM114-Status: GOOD (  13.22  )
+X-CRM114-CacheID: sfid-20260921_121424_468168_AE48D188 
+X-CRM114-Status: GOOD (  14.80  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -124,106 +127,158 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Aging G-stage PTEs currently runs with mmu_lock held for write, taken
-by the common MMU notifier code. When MGLRU or kswapd ages a large
-range, every vCPU taking a G-stage fault blocks on the lock, and the
-dirty-logging read-side fast path blocks behind aging as well.
+kvm_age_gfn() and kvm_test_age_gfn() only operate on the G-stage
+leaf covering range->start. They also warn unless the range size is
+exactly 4K, 2M, or 1G.
 
-This series lets RISC-V select KVM_MMU_LOCKLESS_AGING, so G-stage
-aging can run without mmu_lock while protecting page-table walks with
-RCU.
+The MM can pass larger ranges when batching the PTEs of a large folio.
+For example, a 64K mTHP range triggers the warning and only the first
+4K leaf is aged, leaving the Accessed bits of the remaining leaves
+unchanged.
 
-  1. Age all G-stage PTEs in a GFN range
-     Bug fix, posted separately [1] and included unchanged so the
-     series applies on riscv_kvm_queue. Drop it if already applied.
+This can be reproduced on an rv64 host with Svadu by disabling 2M THP,
+enabling 64K mTHP, and running:
 
-  2. Read G-stage PTEs once when walking page tables
-     A lockless walker must derive presence, leaf-ness and the child
-     address from a single snapshot of each entry.
+access_tracking_perf_test -s anonymous_thp
 
-  3. Write-protect G-stage PTEs atomically
-     Aging will clear the Accessed bit without mmu_lock; the plain
-     read-modify-write in GSTAGE_OP_WP could clobber that update.
+This results in:
 
-  4. Free G-stage page tables after an RCU grace period
-     Table pages and the root outlive any RCU reader. Root teardown
-     keeps pgd_levels intact so a walker holding the old root sees
-     consistent metadata.
+WARNING: arch/riscv/kvm/mmu.c:362 at kvm_age_gfn+0x210/0x370
+...
+[<ffffffff800c8fc8>] kvm_age_gfn+0x210/0x370
+[<ffffffff80095c90>] kvm_mmu_notifier_clear_young+0x250/0x478
+[<ffffffff80ae532e>] __mmu_notifier_clear_young+0xde/0x1a0
+[<ffffffff80932f76>] walk_pud_range+0x86e/0x1688
+[<ffffffff80a18720>] walk_pgd_range+0x518/0x17b0
+[<ffffffff80a19aa2>] __walk_page_range+0xea/0x580
+[<ffffffff80a1a422>] walk_page_range+0x3a/0x80
+[<ffffffff80931dc0>] try_to_inc_max_seq+0x520/0xe68
+[<ffffffff80939dc0>] lru_gen_seq_write+0xd08/0x1310
 
-  5. Age G-stage PTEs locklessly
-     Select KVM_MMU_LOCKLESS_AGING and walk under rcu_read_lock().
+Walk all G-stage leaves in the requested range. Advance by the leaf
+size when a mapping is found, or by the size of the non-present region
+at the level where the walk stopped. When testing the age, return as
+soon as a young leaf is found.
 
-This builds on Jinyu Tang's rwlock and cmpxchg helpers already in
-riscv_kvm_queue. Wang Yechao's huge page recovery series [2] adds a
-second page-table free site in kvm_riscv_gstage_recover_huge();
-whichever lands second will need to switch that put_page() to
-gstage_free_page_table(). I can rebase the series as needed.
+Remove the range-size warning since arbitrary GFN ranges are valid.
 
-A possible follow-up is to run clear-dirty-log and the general fault
-path under the read side of mmu_lock, as arm64 and x86 do. Patch 3
-provides the atomic write-protection needed for the former.
+Fixes: 9955371cc014 ("RISC-V: KVM: Implement MMU notifiers")
+Signed-off-by: SeungJu Cheon <suunj1331@gmail.com>
+---
+ arch/riscv/include/asm/kvm_gstage.h |  2 ++
+ arch/riscv/kvm/gstage.c             | 34 +++++++++++++++++++++++++++++
+ arch/riscv/kvm/mmu.c                | 22 ++++---------------
+ 3 files changed, 40 insertions(+), 18 deletions(-)
 
-Testing
--------
-QEMU virt, -cpu rv64,h=true (Svadu), 4 vCPUs, TCG. The host kernel
-was built with KASAN, PROVE_LOCKING, PROVE_RCU, LOCK_STAT and LRU_GEN.
-
-After each patch:
-  - dirty_log_perf_test -v 2 -b 256M -i 3
-  - access_tracking_perf_test -v 2 -b 256M -s anonymous_thp
-    (2M THP disabled and 64K mTHP enabled)
-  - 20 VM create/destroy iterations
-
-With MGLRU aging forced on the VM's cgroup every 50-100ms:
-  - dirty_log_perf_test -v 3 -b 256M -i 3
-  - 30 VM create/destroy iterations
-
-With CONFIG_KVM=m, 5 module load/unload cycles, each with a VM created
-and destroyed immediately before module unload, to exercise module
-teardown after queuing RCU frees.
-
-No WARN, KASAN, lockdep or RCU reports were observed. The kvm_age_hva
-tracepoint recorded approximately 65k events per aging pass.
-
-Performance results from dirty_log_perf_test -v 3 -b 256M -i 3, with
-lock_stat enabled for mmu_lock and 86 aging passes:
-
-                           no aging          aging
-                         before  after     before   after
-  guest dirty time       12.5s   12.4s     18.6s    16.7s
-  mmu_lock W wait total  0.15s   0.17s     44.4s    0.15s
-  mmu_lock W contentions  35k     35k      1.0M     30k
-  mmu_lock R wait total   0       0        7.5s     0
-
-Before the series, 93% of write-lock waiters were from
-kvm_mmu_notifier_clear_young(), and the dirty-log read-side fast path
-waited for mmu_lock 352k times. After the series, aging does not
-acquire mmu_lock.
-
-Absolute numbers are inflated by TCG; only the relative change is
-meaningful. Under TCG, the atomic write-protect change in patch 3
-increased the clear-dirty-log time from approximately 16ms to 30ms,
-as TCG serialises AMO instructions; hardware numbers would be welcome.
-
-[1] https://lore.kernel.org/all/20260918072622.284188-1-suunj1331@gmail.com/
-[2] https://lore.kernel.org/kvm-riscv/20260914055936.3672758-1-wang.yechao255@zte.com.cn/
-
-SeungJu Cheon (5):
-  KVM: riscv: Age all G-stage PTEs in a GFN range
-  KVM: riscv: Read G-stage PTEs once when walking page tables
-  KVM: riscv: Write-protect G-stage PTEs atomically
-  KVM: riscv: Free G-stage page tables after an RCU grace period
-  KVM: riscv: Age G-stage PTEs locklessly
-
- arch/riscv/include/asm/kvm_gstage.h |   4 +-
- arch/riscv/kvm/Kconfig              |   1 +
- arch/riscv/kvm/gstage.c             | 111 +++++++++++++++++++++-------
- arch/riscv/kvm/main.c               |   3 +
- arch/riscv/kvm/mmu.c                |  56 +++++++-------
- 5 files changed, 117 insertions(+), 58 deletions(-)
-
-
-base-commit: 41e81f7e3ef96594fb840445343c0ee7723aa550
+diff --git a/arch/riscv/include/asm/kvm_gstage.h b/arch/riscv/include/asm/kvm_gstage.h
+index aaf080ba1b77..a03db1a10095 100644
+--- a/arch/riscv/include/asm/kvm_gstage.h
++++ b/arch/riscv/include/asm/kvm_gstage.h
+@@ -81,6 +81,8 @@ bool kvm_riscv_gstage_unmap_range(struct kvm_gstage *gstage,
+ 				  gpa_t start, gpa_t size, bool may_block);
+ 
+ bool kvm_riscv_gstage_wp_range(struct kvm_gstage *gstage, gpa_t start, gpa_t end);
++bool kvm_riscv_gstage_age_range(struct kvm_gstage *gstage, gpa_t start,
++				gpa_t end, bool test_only);
+ 
+ bool kvm_riscv_gstage_wp_pt_masked(struct kvm_gstage *gstage, gfn_t base_gfn,
+ 				   unsigned long mask);
+diff --git a/arch/riscv/kvm/gstage.c b/arch/riscv/kvm/gstage.c
+index e5002cb9cbef..f61ba434093c 100644
+--- a/arch/riscv/kvm/gstage.c
++++ b/arch/riscv/kvm/gstage.c
+@@ -485,6 +485,40 @@ bool kvm_riscv_gstage_wp_range(struct kvm_gstage *gstage, gpa_t start, gpa_t end
+ 	return flush;
+ }
+ 
++bool kvm_riscv_gstage_age_range(struct kvm_gstage *gstage, gpa_t start,
++				gpa_t end, bool test_only)
++{
++	unsigned long page_size;
++	bool young = false;
++	gpa_t addr = start;
++	pte_t *ptep;
++	u32 level;
++	bool found;
++
++	while (addr < end) {
++		found = kvm_riscv_gstage_get_leaf(gstage, addr, &ptep, &level);
++		if (gstage_level_to_page_size(gstage, level, &page_size))
++			break;
++
++		if (found) {
++			if (test_only) {
++				if (pte_young(ptep_get(ptep)))
++					return true;
++			} else {
++				young |= ptep_test_and_clear_young(NULL, 0, ptep);
++			}
++		}
++
++		/*
++		 * Advance past this leaf, or past the non-present region at
++		 * the level where the walk stopped.
++		 */
++		addr = ALIGN_DOWN(addr, page_size) + page_size;
++	}
++
++	return young;
++}
++
+ static inline void clear_huge_mask(unsigned long *mask, unsigned long page_size,
+ 				   gfn_t base_gfn, gpa_t addr)
+ {
+diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
+index 3e955d808743..342f606399e5 100644
+--- a/arch/riscv/kvm/mmu.c
++++ b/arch/riscv/kvm/mmu.c
+@@ -351,42 +351,28 @@ bool kvm_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range)
+ 
+ bool kvm_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
+ {
+-	pte_t *ptep;
+-	u32 ptep_level = 0;
+-	u64 size = (range->end - range->start) << PAGE_SHIFT;
+ 	struct kvm_gstage gstage;
+ 
+ 	if (!kvm->arch.pgd)
+ 		return false;
+ 
+-	WARN_ON(size != PAGE_SIZE && size != PMD_SIZE && size != PUD_SIZE);
+-
+ 	kvm_riscv_gstage_init(&gstage, kvm);
+-	if (!kvm_riscv_gstage_get_leaf(&gstage, range->start << PAGE_SHIFT,
+-				       &ptep, &ptep_level))
+-		return false;
+ 
+-	return ptep_test_and_clear_young(NULL, 0, ptep);
++	return kvm_riscv_gstage_age_range(&gstage, range->start << PAGE_SHIFT,
++					  range->end << PAGE_SHIFT, false);
+ }
+ 
+ bool kvm_test_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
+ {
+-	pte_t *ptep;
+-	u32 ptep_level = 0;
+-	u64 size = (range->end - range->start) << PAGE_SHIFT;
+ 	struct kvm_gstage gstage;
+ 
+ 	if (!kvm->arch.pgd)
+ 		return false;
+ 
+-	WARN_ON(size != PAGE_SIZE && size != PMD_SIZE && size != PUD_SIZE);
+-
+ 	kvm_riscv_gstage_init(&gstage, kvm);
+-	if (!kvm_riscv_gstage_get_leaf(&gstage, range->start << PAGE_SHIFT,
+-				       &ptep, &ptep_level))
+-		return false;
+ 
+-	return pte_young(ptep_get(ptep));
++	return kvm_riscv_gstage_age_range(&gstage, range->start << PAGE_SHIFT,
++					  range->end << PAGE_SHIFT, true);
+ }
+ 
+ static bool fault_supports_gstage_huge_mapping(struct kvm_memory_slot *memslot,
 -- 
 2.52.0
 
