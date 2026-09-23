@@ -4,63 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 15F13C98302
-	for <kvm-riscv@archiver.kernel.org>; Tue, 22 Sep 2026 19:18:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0788BC982EA
+	for <kvm-riscv@archiver.kernel.org>; Wed, 23 Sep 2026 07:07:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=RxRYUAJSyFalVP7yaXCLtooebYW+wKbYg2A+ToGUDCM=; b=sbXlwRfiSXQ9sV
-	EYvGp8dKt5Kf8oT5ET3oN7H8AaydTBPGEG5/qh3g4z8qulBVjU9r771x1E6h3fHcsdsZGoY2e6hoe
-	ZXzIp4prIJKb4UNwlAslE4pnB/UBqNLwFaDfN2RXoRtzo9UvAHT6cxy5hElft6OkY5Fvq9tDAT/b2
-	gNhZ6t6XXywlENB1pPVTYeQ2WtjfMQAVI7nzX4bDvnmjRM8a99ct85cUoG1Z6gXTkz+Q62ftDJ50X
-	ICbjBj3JbNOFQ4KginOFK641E/nR5OIX3pqMiJW39qWEvRejX/3EH8GxLZdzyg59v+hyCQHYrAoZs
-	pH2AN9sQRChOTQ/2dESw==;
+	List-Archive:List-Unsubscribe:List-Id:Message-Id:Cc:Subject:Mime-Version:Date
+	:From:To:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=vHJJ3YGE0r+klB0e6rC8HXphxReqBXGNWYrHDPNZNws=; b=V0aRWlvbkiRt8m
+	xMnVHb5KqP+P0/rJQBOvJBtS2eUy3jRmXxb+fSeu4rg0cix7OFV+AKJDcTphgxvDltuU2HsdhKWB/
+	mJLXvTIf5ZPPp6hDLqfmJTYK20IZMMRuPfKr8ikzE0oygIq0koMk1vHoPQKo80lUXEFLagBuYw06I
+	SEA1GFqSQ/iziD1F/re5NujFIyhizOueGR34Xu+R+Aa0g5D4/IGoLC8zDHBMv0GFmy6DIfZxgc0Ar
+	YfW7z4CdJ+DJTTKxQBsx0ZyamH1qriBsEc9TcIyRiHFA/Tt/b5kCYehvm2YLD9wVDed2rgNysvBor
+	ijWgOpj+bMrsMg09GgeQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x9610-00000006NKz-30Fx;
-	Tue, 22 Sep 2026 19:18:54 +0000
-Received: from sea.source.kernel.org ([172.234.252.31])
+	id 1x9H4V-00000007Lop-2u8b;
+	Wed, 23 Sep 2026 07:07:15 +0000
+Received: from sg-3-29.ptr.tlmpb.com ([101.45.255.29])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x9610-00000006NKn-12ca;
-	Tue, 22 Sep 2026 19:18:54 +0000
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id B1A71401D6;
-	Tue, 22 Sep 2026 19:18:53 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6AB921F00893;
-	Tue, 22 Sep 2026 19:18:52 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790104733;
-	bh=rG9jdeE1GgpZ721Ylayiu0WJux0e9upMn4hAQNazN1k=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=nVZNMwZymUoYnWyP9PHedZApvviQf4Cvlsyp/06Z2xBBaXCbkfJh1lO8fG0QPlX5E
-	 9CbIKE3oQ3X5YPwWe1ZvPlL9d+D8/0kHepKHOdR3CyJBFJGMaDljbvuVYus4pjWJKP
-	 qGYOQBGbQDWJSkiTYQCy1L9lvKTdbg5G0OLyjJWqJA/VSlMLlMVLUapYFccALw2jP9
-	 hXmVSigBJMTg0tgCDzSp/ymC8iFI0b80Wa764Lnt6nrXofGRVGZ8AnqYl3ShLMmvR2
-	 vj2DahjSlvc6WSBMpR8dtdWGcJAc7tuOkrmINccYugToUbmJjd1TseNI0Woo4pazI2
-	 GCbNy1MCv7Q/w==
-Date: Wed, 23 Sep 2026 00:45:39 +0530
-From: Naveen N Rao <naveen@kernel.org>
-To: Sean Christopherson <seanjc@google.com>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, 
-	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
-	Paolo Bonzini <pbonzini@redhat.com>, Kiryl Shutsemau <kas@kernel.org>, 
-	Rick Edgecombe <rick.p.edgecombe@intel.com>, Nicholas Piggin <npiggin@gmail.com>, 
-	Atish Patra <atish.patra@linux.dev>, Alexandre Ghiti <alex@ghiti.fr>, 
-	Dave Hansen <dave.hansen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, 
-	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, x86@kernel.org, 
-	linux-coco@lists.linux.dev, linux-kernel@vger.kernel.org, 
-	Jean-Christophe Guillain <jean-christophe@guillain.net>, =?utf-8?B?UGF3ZcWC?= S <spawel523@gmail.com>
-Subject: Re: [PATCH v2 0/7] KVM: Serialize vCPU creation and revert vcpu_ids
- tracking
-Message-ID: <arLSZuDixbzXrevV@blrnaveerao1>
-References: <20260921174445.911676-1-seanjc@google.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <20260921174445.911676-1-seanjc@google.com>
+	id 1x9H4S-00000007LnC-1nl3
+	for kvm-riscv@lists.infradead.org;
+	Wed, 23 Sep 2026 07:07:14 +0000
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ s=s1; d=lanxincomputing-com.20200927.dkim.feishu.cn; t=1790147189;
+  h=from:subject:mime-version:from:date:message-id:subject:to:cc:
+ reply-to:content-type:mime-version:in-reply-to:message-id;
+ bh=IozOCfZjbTL104g9rR2zsGuXkky764uBWGPbuf9IUio=;
+ b=m2k8U9SD8LI7x/66sdsnXRezYqplwELqxk9wnOJpYWWPLwWitIcBFnh1gy8DepyT2d1WDj
+ HWaA+GZ4aoEsz7wiMK7UqfM83uMxFeB7r97CWG8y7tGjQEWGhOZ4Enyk5/cBMLucih9R8t
+ q5Bko8eLhLfF8i1ItLJPhT81du3rFL2FqW63Yz6vUosKX+jXjlJPqy2nabTgdG88M8vaZ8
+ X4UmleQXY+1uQSZTOxN9xGhWSShDWKEyZvHEIr2+XMS97Iq9jVYmxORcE1+E97iuJt8pPr
+ VUA4annBn+rJUUsMGr+kUyyKRsli70HuOQvQnYcS/6VowmhupcpjBWG+vofYiw==
+To: <anup@brainfault.org>
+From: "BillXiang" <xiangwencheng@lanxincomputing.com>
+Date: Wed, 23 Sep 2026 15:03:32 +0800
+Mime-Version: 1.0
+Subject: [PATCH] RISC-V: KVM: Serialize and atomize the IMSIC's TOPEI read-and-clear operation
+X-Lms-Return-Path: <lba+26ab37a73+cb2e93+lists.infradead.org+xiangwencheng@lanxincomputing.com>
+Cc: <xb@ultrarisc.com>, <atish.patra@linux.dev>, <pjw@kernel.org>, 
+	<palmer@dabbelt.com>, <aou@eecs.berkeley.edu>, <alex@ghiti.fr>, 
+	<pbonzini@redhat.com>, <graf@amazon.com>, 
+	<kvm-riscv@lists.infradead.org>, <kvm@vger.kernel.org>, 
+	<linux-riscv@lists.infradead.org>, <linux-kernel@vger.kernel.org>, 
+	<xiangwencheng@lanxincomputing.com>
+Message-Id: <20260923070332.1376132-1-xiangwencheng@lanxincomputing.com>
+X-Original-From: BillXiang <xiangwencheng@lanxincomputing.com>
+Received: from lanxin-ThinkBook-16-G5-IRH ([123.120.5.129]) by smtp.feishu.cn with ESMTP; Wed, 23 Sep 2026 15:06:26 +0800
+X-Mailer: git-send-email 2.53.0
+X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
+X-CRM114-CacheID: sfid-20260923_000712_657874_43A29000 
+X-CRM114-Status: GOOD (  11.53  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -77,55 +72,117 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Mon, Sep 21, 2026 at 10:44:38AM -0700, Sean Christopherson wrote:
-> Serialize vCPU creation by holding kvm->lock for the entirety of
-> kvm_vm_ioctl_create_vcpu(), and then revert the now-redundant tracking adding
-> by commit 97d65b544f48 ("KVM: Check for duplicate vcpu_id as early as
-> possible").  I botched the math when justifying the vcpu_ids tracking; it's not
-> an extra 256 bytes, it's an extra 2048 bytes.  Roughly doubling the size of
-> "struct kvm" tripped x86's KVM_SANITY_CHECK_VM_STRUCT_SIZE, and obviously isn't
-> something we want to do in general.
-> 
-> The TL;DR of why it's a-ok to serialize vCPU creation is that no VMM actually
-> does parallel vCPU creation.  As with so many things, KVM's current behavior is
-> the result of decades-old cruft, not intentional, deliberate design.
-> 
-> Patches 1-3 are a tangentially related cleanups and bug fixes; I included them
-> here because holding kvm->lock for all of vCPU creation allows WARNing if KVM
-> attempts to lock all vCPUs if vCPU creation is in-progress (the caller must
-> hold kvm->lock).
-> 
-> v2:
->  - Tweak patch 1's changelog to clarify that that only x86's manual checks are
->    dropped. [Sashiko]
->  - Add patches to convert additional arm64 and RISC-V usage to 
->    kvm_is_vcpu_creation_in_progress(). [Sashiko]
->  - Remove acquisition of kvm->lock from s390 and PPC vCPU creation flows.
->    [Christian, Sashiko]
->  - Add Jean-Christophe's Tested-by to the revert.
-> 
-> v1: https://lore.kernel.org/all/20260914181223.289061-1-seanjc@google.com
-> 
-> Sean Christopherson (7):
->   KVM: Reject attempts to lock all vCPUs if vCPU creation is in-progress
->   KVM: arm64: vgic: Rely on vCPU creation check in "trylock all vCPUs"
->   KVM: RISC-V: Use kvm_is_vcpu_creation_in_progress() instead of
->     open-coded equivalent
->   KVM: Protect all of kvm_vm_ioctl_create_vcpu() with kvm->lock
->   KVM: Move check for existing vCPU ID to the top of vCPU creation
->   Revert "KVM: Check for duplicate vcpu_id as early as possible"
->   KVM: WARN if vCPU creation is in-progress when locking all vCPUs
+The TOPEI read-and-clear must be atomic with respect to
+interrupt injection (set_bit in EIP). Otherwise an
+interrupt injected between the topei read and the
+clear_bit could be silently dropped.
 
-This addresses the Secure TSC splat I reported previously:
-https://lore.kernel.org/all/apgj5l7DZGsScsNc@blrnaveerao1/
+Signed-off-by: BillXiang <xiangwencheng@lanxincomputing.com>
+---
+ arch/riscv/kvm/aia_imsic.c | 48 +++++++++++++++++++++++++++-----------
+ 1 file changed, 34 insertions(+), 14 deletions(-)
 
-I booted a SNP guest with Secure TSC enabled and didn't see any lockdep 
-reports. For what that's worth:
-Tested-by: Naveen N Rao (AMD) <naveen@kernel.org>
-
-
-- Naveen
-
+diff --git a/arch/riscv/kvm/aia_imsic.c b/arch/riscv/kvm/aia_imsic.c
+index c1af23e79ae0..1a936b39076d 100644
+--- a/arch/riscv/kvm/aia_imsic.c
++++ b/arch/riscv/kvm/aia_imsic.c
+@@ -607,26 +607,25 @@ static void imsic_vsfile_cleanup(struct imsic *imsic)
+ 		kvm_riscv_aia_free_hgei(old_vsfile_cpu, old_vsfile_hgei);
+ }
+ 
+-static void imsic_swfile_extirq_update(struct kvm_vcpu *vcpu)
++static void __imsic_swfile_extirq_update(struct kvm_vcpu *vcpu)
+ {
+ 	struct imsic *imsic = vcpu->arch.aia_context.imsic_state;
+ 	struct imsic_mrif *mrif = imsic->swfile;
+-	unsigned long flags;
+-
+-	/*
+-	 * The critical section is necessary during external interrupt
+-	 * updates to avoid the risk of losing interrupts due to potential
+-	 * interruptions between reading topei and updating pending status.
+-	 */
+-
+-	raw_spin_lock_irqsave(&imsic->swfile_extirq_lock, flags);
+ 
+ 	if (imsic_mrif_atomic_read(mrif, &mrif->eidelivery) &&
+ 	    imsic_mrif_topei(mrif, imsic->nr_eix, imsic->nr_msis))
+ 		kvm_riscv_vcpu_set_interrupt(vcpu, IRQ_VS_EXT);
+ 	else
+ 		kvm_riscv_vcpu_unset_interrupt(vcpu, IRQ_VS_EXT);
++}
++
++static void imsic_swfile_extirq_update(struct kvm_vcpu *vcpu)
++{
++	struct imsic *imsic = vcpu->arch.aia_context.imsic_state;
++	unsigned long flags;
+ 
++	raw_spin_lock_irqsave(&imsic->swfile_extirq_lock, flags);
++	__imsic_swfile_extirq_update(vcpu);
+ 	raw_spin_unlock_irqrestore(&imsic->swfile_extirq_lock, flags);
+ }
+ 
+@@ -912,12 +911,21 @@ int kvm_riscv_vcpu_aia_imsic_rmw(struct kvm_vcpu *vcpu, unsigned long isel,
+ 	struct imsic_mrif_eix *eix;
+ 	int r, rc = KVM_INSN_CONTINUE_NEXT_SEPC;
+ 	struct imsic *imsic = vcpu->arch.aia_context.imsic_state;
++	unsigned long flags;
+ 
+ 	/* If IMSIC vCPU state not initialized then forward to user space */
+ 	if (!imsic)
+ 		return KVM_INSN_EXIT_TO_USER_SPACE;
+ 
+ 	if (isel == KVM_RISCV_AIA_IMSIC_TOPEI) {
++		raw_spin_lock_irqsave(&imsic->swfile_extirq_lock, flags);
++
+ 		/* Read pending and enabled interrupt with highest priority */
+ 		topei = imsic_mrif_topei(imsic->swfile, imsic->nr_eix,
+ 					 imsic->nr_msis);
+@@ -934,16 +942,20 @@ int kvm_riscv_vcpu_aia_imsic_rmw(struct kvm_vcpu *vcpu, unsigned long isel,
+ 					  eix->eip);
+ 			}
+ 		}
++		if (wr_mask)
++			__imsic_swfile_extirq_update(vcpu);
++
++		raw_spin_unlock_irqrestore(&imsic->swfile_extirq_lock, eflags);
+ 	} else {
+ 		r = imsic_mrif_rmw(imsic->swfile, imsic->nr_eix, isel,
+ 				   val, new_val, wr_mask);
+ 		/* Forward unknown IMSIC register to user-space */
+ 		if (r)
+ 			rc = (r == -ENOENT) ? 0 : KVM_INSN_ILLEGAL_TRAP;
+-	}
+ 
+-	if (wr_mask)
+-		imsic_swfile_extirq_update(vcpu);
++		if (wr_mask)
++			imsic_swfile_extirq_update(vcpu);
++	}
+ 
+ 	return rc;
+ }
+@@ -1050,9 +1062,17 @@ int kvm_riscv_vcpu_aia_imsic_inject(struct kvm_vcpu *vcpu,
+ 	if (imsic->vsfile_cpu >= 0) {
+ 		writel(iid, imsic->vsfile_va + IMSIC_MMIO_SETIPNUM_LE);
+ 	} else {
++		/*
++		 * Serialize the EIP set + external-irq update against the
++		 * TOPEI read-and-clear path so that an injected interrupt
++		 * cannot be silently lost when the guest acknowledges a
++		 * different (or the same) interrupt concurrently.
++		 */
++		raw_spin_lock(&imsic->swfile_extirq_lock);
+ 		eix = &imsic->swfile->eix[iid / BITS_PER_TYPE(u64)];
+ 		set_bit(iid & (BITS_PER_TYPE(u64) - 1), eix->eip);
+-		imsic_swfile_extirq_update(vcpu);
++		__imsic_swfile_extirq_update(vcpu);
++		raw_spin_unlock(&imsic->swfile_extirq_lock);
+ 	}
+ 
+ 	read_unlock_irqrestore(&imsic->vsfile_lock, flags);
+-- 
+2.53.0
 
 -- 
 kvm-riscv mailing list
