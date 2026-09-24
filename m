@@ -4,32 +4,47 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E0EB3C9830D
-	for <kvm-riscv@archiver.kernel.org>; Thu, 24 Sep 2026 03:40:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 06DCFC98312
+	for <kvm-riscv@archiver.kernel.org>; Thu, 24 Sep 2026 03:40:07 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=ChrUFYnhH4YdAdOYeRcll6f/OLp+UjDlTSZSnrIsLtk=; b=g9w6TMISFr9mjo
-	FQd4g1EL+jcNO9woeaDy/CQ6NlL+urNHZc9p8QMdJ9jaSW438R9QlN7f3IG4lBAT80+wlWNV82mOx
-	ehS/v3+1G4xQB8KhZE6qRgf1/NQ20YpxddZLtcK//0qmLS1xkQYBS1uHnnOBIvDNcMDVXADfu0f2V
-	Fo+uaY12cwOfbJ6UXJ6/CesddSGCMeVpKuui5qYVBmDCzNdtpJcs/O7cMnuIi9G1Hzb/FN5jEnr4K
-	s6ozN29dN11x8nR1snf3jR6dBW5toBYWJBZVdwUsYJEvmsHBm1iggt/bgsq8wEuA8XHgDTrJZp5Kw
-	VwKnUdw+aDVoRqRZ0ZJg==;
+	List-Owner; bh=PVR66Zzuh/oSbpVnVNr+lTm5x1kYI8UNWU1sD/koe4o=; b=UZy/yslabpcrmd
+	y98thT2ShOOW/kBc51Gri9f0I4F7VIAmphz/oUcSzpHy0q5iP9uZaeP0YIoaWiMWaAjAZ8JFCnVIm
+	GNswoCv+W2N8X8oaDDwxfWIFmMUK5Y3xUKjvYutPvJnUAF3Ui6d99wpMRe6em7KBffAtBhTMarRwY
+	XRp8cdVrVn/F+HjchBXVB/ETG0dZwvYWJdAlUYneTFKeUt+vRG2YEzxNh3XU+6xiv1E4qhPKIKb8j
+	eqVQajgjh5/UaioS1f23vC88VPAUy6hr8QxFpynW7LRTfxeDsks+kxK8YFqSZIzRHcz22ouugdSKD
+	eg23j4e6B+tPsyuxtQOw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x9aJY-00000009xYz-2ZHt;
-	Thu, 24 Sep 2026 03:40:04 +0000
-Received: from smtp21.cstnet.cn ([159.226.251.21] helo=cstnet.cn)
+	id 1x9aJa-00000009xaT-2whx;
+	Thu, 24 Sep 2026 03:40:06 +0000
+Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x9aJW-00000009xXQ-1LF2
+	id 1x9aJZ-00000009xYv-0OJg
+	for kvm-riscv@bombadil.infradead.org;
+	Thu, 24 Sep 2026 03:40:05 +0000
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:MIME-Version
+	:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:
+	Content-Type:Content-ID:Content-Description;
+	bh=8zXArfsll28iyzuQ1lG8GXky8Vq4O6bzJfkHBrHbeD0=; b=Akb93crrtCURjh6YcurXx6YxeH
+	jfcI/F5Qw85GXJ9OEmCt/r6GgF3KOXsB0hagNTjP9zVQKcha44lh17fdDtUA5GeZYrHyDV5lvWpat
+	RRSeXur1M1TkKesZbxQC1zhiuIv71SrX+7RbYdBvE2dIKq/h2ehv5b060FoZm4HecEaLPmBQzKsrl
+	KT2TfG9Hi0jHnlwKVeKoB+Y4a/ewy2AxS3chIgS0pjjLo5tBAtA+rjgX1VThIG9pxpo8tC8oYIxaH
+	oMSmmfV4f4BZIhTAL4KxL/OYXANi19+Bx5hj7f46BuzGhcsyN96UoeSo5npPy3dpFpjSucKV5U7MO
+	z6ds8/IQ==;
+Received: from smtp21.cstnet.cn ([159.226.251.21] helo=cstnet.cn)
+	by desiato.infradead.org with esmtps (Exim 4.99.2 #2 (Red Hat Linux))
+	id 1x9aJS-0000000FVSw-1AfZ
 	for kvm-riscv@lists.infradead.org;
-	Thu, 24 Sep 2026 03:40:03 +0000
+	Thu, 24 Sep 2026 03:40:02 +0000
 Received: from localhost (unknown [122.194.100.201])
-	by APP-01 (Coremail) with SMTP id qwCowADHn_OHm7Rq+07JCA--.42549S2;
-	Thu, 24 Sep 2026 11:39:51 +0800 (CST)
+	by APP-01 (Coremail) with SMTP id qwCowAA3Cu6Im7RqGU_JCA--.41621S2;
+	Thu, 24 Sep 2026 11:39:52 +0800 (CST)
 From: Xiang W <wangxiang@iscas.ac.cn>
 To: kvm@vger.kernel.org,
 	kvm-riscv@lists.infradead.org
@@ -37,35 +52,36 @@ Cc: andrew.jones@linux.dev,
 	pbonzini@redhat.com,
 	thuth@redhat.com,
 	Xiang W <wangxiang@iscas.ac.cn>
-Subject: [kvm-unit-tests PATCH 3/7] riscv: Add ACPI support for timer frequency discovery
-Date: Thu, 24 Sep 2026 11:39:41 +0800
-Message-ID: <20260924033945.176581-4-wangxiang@iscas.ac.cn>
+Subject: [kvm-unit-tests PATCH 6/7] riscv: efi: Allow ACPI boots
+Date: Thu, 24 Sep 2026 11:39:44 +0800
+Message-ID: <20260924033945.176581-7-wangxiang@iscas.ac.cn>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <20260924033945.176581-1-wangxiang@iscas.ac.cn>
 References: <20260924033945.176581-1-wangxiang@iscas.ac.cn>
 MIME-Version: 1.0
-X-CM-TRANSID: qwCowADHn_OHm7Rq+07JCA--.42549S2
-X-Coremail-Antispam: 1UD129KBjvJXoWxXr4UCrWfCFW5Gr48Zw15CFg_yoW5Xr1xpF
-	s3KF43Kry7Ja4fWwnxZrn8trn5twnY93WxKr42yry3ua1DWa4DJa15Xrn2qFyfX3yDJa9x
-	Krn5GasIgr45WrJanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUUvl14x267AKxVWUJVW8JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
-	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
-	1l84ACjcxK6xIIjxv20xvE14v26ryj6F1UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4U
-	JVWxJr1l84ACjcxK6I8E87Iv67AKxVWxJr0_GcWl84ACjcxK6I8E87Iv6xkF7I0E14v26r
-	xl6s0DM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj
-	6xIIjxv20xvE14v26r1Y6r17McIj6I8E87Iv67AKxVWUJVW8JwAm72CE4IkC6x0Yz7v_Jr
-	0_Gr1lF7xvr2IYc2Ij64vIr41lF7I21c0EjII2zVCS5cI20VAGYxC7MxkF7I0En4kS14v2
-	6r126r1DMxkIecxEwVAFwVW8GwCF04k20xvY0x0EwIxGrwCFx2IqxVCFs4IE7xkEbVWUJV
-	W8JwC20s026c02F40E14v26r1j6r18MI8I3I0E7480Y4vE14v26r106r1rMI8E67AF67kF
-	1VAFwI0_JF0_Jw1lIxkGc2Ij64vIr41lIxAIcVC0I7IYx2IY67AKxVWUJVWUCwCI42IY6x
-	IIjxv20xvEc7CjxVAFwI0_Gr0_Cr1lIxAIcVCF04k26cxKx2IYs7xG6r1j6r1xMIIF0xvE
-	x4A2jsIE14v26r1j6r4UMIIF0xvEx4A2jsIEc7CjxVAFwI0_Gr0_Gr1UYxBIdaVFxhVjvj
-	DU0xZFpf9x0JUwL05UUUUU=
+X-CM-TRANSID: qwCowAA3Cu6Im7RqGU_JCA--.41621S2
+X-Coremail-Antispam: 1UD129KBjvdXoWrtr1DtF18CrWxur1fGr1UGFg_yoWfArb_Cr
+	Z7Aa97ZryYqFZrA3WUJrn5tF1rGws3Wr1DZF4UKF4jk34xWF1Yk3yvkr18A3WrAFyDGrn2
+	kanrJay7Gw4kGjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+	9fnUUIcSsGvfJTRUUUbsAFF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2IYs7xG
+	6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4kI8w
+	A2z4x0Y4vE2Ix0cI8IcVAFwI0_Ar0_tr1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Gr1j
+	6F4UJwA2z4x0Y4vEx4A2jsIE14v26F4UJVW0owA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_Gc
+	CE3s1le2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E
+	2Ix0cI8IcVAFwI0_JF0_Jw1lYx0Ex4A2jsIE14v26r1j6r4UMcvjeVCFs4IE7xkEbVWUJV
+	W8JwACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1lc7CjxVAaw2AFwI0_
+	JF0_Jw1lc2xSY4AK67AK6r48MxAIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4AY6r1j6r
+	4UMI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_JrI_JrWlx4CE17CEb7AF
+	67AKxVWUAVWUtwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v26r1I6r4UMIIF0xvE2I
+	x0cI8IcVCY1x0267AKxVW8JVWxJwCI42IY6xAIw20EY4v20xvaj40_Jr0_JF4lIxAIcVC2
+	z280aVAFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x0267AKxVW8JVW8JrUvcSsGvfC2KfnxnU
+	UI43ZEXa7VUUZ2-5UUUUU==
 X-Originating-IP: [122.194.100.201]
 X-CM-SenderInfo: pzdqw5pldqwq5lvft2wodfhubq/
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260923_204002_721900_68454CFC 
-X-CRM114-Status: GOOD (  11.69  )
+X-CRM114-CacheID: sfid-20260924_043959_182351_6369E0A8 
+X-CRM114-Status: UNSURE (   5.83  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -82,100 +98,41 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-When a DT is not provided, read the system time base frequency from
-the RHCT instead of aborting in timer_get_frequency().
+riscv/efi/run rejected EFI_USE_ACPI=y because CPU, timer and ISA
+discovery aborted without a DT. Those paths can now walk MADT and
+RHCT, so drop the early exit.
 
-RHCT Time Base Frequency is the ACPI equivalent of the DT
-/cpus timebase-frequency property and is the same for all harts.
-Keep DT as the preferred path when one is available.
+The existing runner already omits -machine acpi=off when
+EFI_USE_ACPI=y. QEMU virt defaults to ACPI enabled, so no extra
+acpi=on flag is required. DT boots are unchanged: they still pass
+acpi=off.
+
+Tested with:
+
+  EFI_USE_ACPI=y EFI_UEFI=/path/to/RISCV_VIRT_CODE.fd \
+    ./riscv/efi/run riscv/riscv-brs.efi
 
 Signed-off-by: Xiang W <wangxiang@iscas.ac.cn>
 ---
- lib/acpi.h        |  9 +++++++++
- lib/riscv/timer.c | 37 +++++++++++++++++++++++++------------
- 2 files changed, 34 insertions(+), 12 deletions(-)
+ riscv/efi/run | 5 -----
+ 1 file changed, 5 deletions(-)
 
-diff --git a/lib/acpi.h b/lib/acpi.h
-index a905807d..2597e8ce 100644
---- a/lib/acpi.h
-+++ b/lib/acpi.h
-@@ -20,6 +20,7 @@
- #define MADT_SIGNATURE ACPI_SIGNATURE('A','P','I','C')
- #define SPCR_SIGNATURE ACPI_SIGNATURE('S','P','C','R')
- #define GTDT_SIGNATURE ACPI_SIGNATURE('G','T','D','T')
-+#define RHCT_SIGNATURE ACPI_SIGNATURE('R','H','C','T')
+diff --git a/riscv/efi/run b/riscv/efi/run
+index b9b75440..a53b3a2c 100755
+--- a/riscv/efi/run
++++ b/riscv/efi/run
+@@ -39,11 +39,6 @@ if [ ! -f "$EFI_UEFI" ]; then
+ 	exit 2
+ fi
  
- #define ACPI_SIGNATURE_8BYTE(c1, c2, c3, c4, c5, c6, c7, c8) \
- 	(((uint64_t)(ACPI_SIGNATURE(c1, c2, c3, c4))) |	     \
-@@ -328,6 +329,14 @@ struct acpi_table_gtdt {
- 	u32 virtual_el2_timer_flags;
- };
- 
-+struct acpi_table_rhct {
-+	ACPI_TABLE_HEADER_DEF
-+	u32 flags;
-+	u64 timebase_frequency;
-+	u32 node_count;
-+	u32 node_offset;
-+};
-+
- /* Reset to default packing */
- #pragma pack()
- 
-diff --git a/lib/riscv/timer.c b/lib/riscv/timer.c
-index 18063b7e..2a18f0e0 100644
---- a/lib/riscv/timer.c
-+++ b/lib/riscv/timer.c
-@@ -13,24 +13,37 @@
- #include <asm/smp.h>
- #include <asm/timer.h>
- 
-+#ifdef CONFIG_EFI
-+#include <acpi.h>
-+#endif
-+
- void timer_get_frequency(void)
- {
--	const struct fdt_property *prop;
--	u32 *data;
--	int cpus, len;
+-if [ "$EFI_USE_ACPI" = "y" ]; then
+-	echo "ACPI not available"
+-	exit 2
+-fi
 -
--	assert_msg(dt_available(), "ACPI not yet supported");
-+	if (dt_available()) {
-+		const struct fdt_property *prop;
-+		u32 *data;
-+		int cpus, len;
+ # Remove the TEST_CASE from $@
+ shift 1
  
--	const void *fdt = dt_fdt();
-+		const void *fdt = dt_fdt();
- 
--	cpus = fdt_path_offset(fdt, "/cpus");
--	assert(cpus >= 0);
-+		cpus = fdt_path_offset(fdt, "/cpus");
-+		assert(cpus >= 0);
- 
--	prop = fdt_get_property(fdt, cpus, "timebase-frequency", &len);
--	assert(prop != NULL && len == 4);
-+		prop = fdt_get_property(fdt, cpus, "timebase-frequency", &len);
-+		assert(prop != NULL && len == 4);
- 
--	data = (u32 *)prop->data;
--	timebase_frequency = fdt32_to_cpu(*data);
-+		data = (u32 *)prop->data;
-+		timebase_frequency = fdt32_to_cpu(*data);
-+	} else {
-+#ifdef CONFIG_EFI
-+		struct acpi_table_rhct *rhct;
-+		rhct = find_acpi_table_addr(RHCT_SIGNATURE);
-+		assert_msg(rhct, "Cannot find ACPI RHCT");
-+		timebase_frequency = rhct->timebase_frequency;
-+#else
-+		assert_msg(false, "ACPI not available");
-+#endif
-+	}
- }
- 
- void timer_start(unsigned long duration_us)
 -- 
 2.47.3
 
