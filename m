@@ -4,101 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 13481C9830E
-	for <kvm-riscv@archiver.kernel.org>; Thu, 24 Sep 2026 10:16:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DD7ABC98311
+	for <kvm-riscv@archiver.kernel.org>; Thu, 24 Sep 2026 10:22:23 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:Message-Id:MIME-Version:Subject:
-	Date:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=xzMLabimfVPUDW5B2ni3yWmdDu3OLumDIO7XcEaicAQ=; b=JTQDd4pQ5D79nx
-	xqRhRzDWacCOr9zPrmBMYoBABCk14DJPlHngakoZXUosOzLt6LE/GASkhAeY6TjUyMGOjczDLpbGk
-	vj78vjjewp5PlZDQv9m+MQpr0Xh07D0VvHFsbvhy20z0z14mPgRuV6sUAFw30MvPxLEZx84InJ6IA
-	89yiyRqMVtlzjwTqqZRvem+f5GPZJiId2RjAYHpeVkXUoeaWfaIYWsaYxTke6g/lT/UvM8RuPxfxa
-	L4XKAnEi08g1GI5E5a4MgMQyRn/lpk1fY7LVqwl4DrEnLBYsFRxPAlvkfZAUZPwtQkGGXAIqtyFmP
-	4lhxsZ2eTbCKTeNRoLJA==;
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
+	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=JWyRKoe2c7p/K33TumKcWtKzwJvgyejv9rVo8wYgKB8=; b=lE5vwIsUy+RWEd
+	H5NwhiUxZdjh21qGzwJKrFs0J6rzjVO7nUCr2ghR2Yo76u24NSSzVdWAu4Lz4cVbSOShUdcXpww61
+	p5toXqgcgAbm5dBpbjL3qivbhIOXtpCrG2DNLBN5+VBPKa9Af/ORKywGeN2ngNDFExpE3ANFl9e+X
+	m19fwuQqWYGG3m5NRniQWYbql07XnAqaIdc+sQ5hcjRTOPm0JOOzkj/yZzs6I39gRVPN/TS6L56uE
+	KKBU6eCEZ+RBVne8D8NG6YDnp6gBu2wHkRFbAFGM8e7qe3Z4XtfoQNISTe2dqECx6Zr2baZ1t0p9Z
+	O39SAMkAafbXxIXHLuWw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x9gV8-0000000AgPU-2nyR;
-	Thu, 24 Sep 2026 10:16:26 +0000
-Received: from mail-dl2-x10.google.com ([2607:f8b0:4864:38::10])
+	id 1x9gat-0000000AhGy-1x8L;
+	Thu, 24 Sep 2026 10:22:23 +0000
+Received: from tor.source.kernel.org ([172.105.4.254])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x9gV2-0000000AgOU-1F2v
-	for kvm-riscv@lists.infradead.org;
-	Thu, 24 Sep 2026 10:16:25 +0000
-Received: by mail-dl2-x10.google.com with SMTP id a92af1059eb24-142dd025d06so1642263c88.1
-        for <kvm-riscv@lists.infradead.org>; Thu, 24 Sep 2026 03:16:19 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=sifive.com; s=google; t=1790244979; x=1790849779; darn=lists.infradead.org;
-        h=cc:to:message-id:content-transfer-encoding:content-type
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=u7LK00oqDOE3QAV0dIPEwP0ZWU0x/VHk80FlxiovFNw=;
-        b=Z/pjjbr9ig2rSNYHcbvgrfu8qcWEvSS11FjHpCw7HgbDehLMJ4doBjrey+VlH3PZAT
-         +xVtilIJW0XShC2Z0f1nz3ugzEnvwcNuYGYfe23BKtUo60PzZme6mi68epyZPN1OucpU
-         Yj3hg//NQjgdmxQx1Le9ZeUJ7j/ghcnnaHwIm1oItUEZCuR3DP7XVq/mpNYqqDI+Qlfl
-         59Jm8aXcjXjGSIC9+DQ4dY/b2I4Ac4aobYO1Ue4QY10IBTDCxBw0I1Tysc9OqX750pAH
-         BdROewG7RiiKWoNLOb/0P/yNMExV3CCMNHV2icLP5mir+c1HWPq3UODAlen0NSg12Wq3
-         EUnQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790244979; x=1790849779;
-        h=cc:to:message-id:content-transfer-encoding:content-type
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=u7LK00oqDOE3QAV0dIPEwP0ZWU0x/VHk80FlxiovFNw=;
-        b=n1RP7pbo/h3Q39VRRhuR0rKxkcEdKHtE9tVhgpdYcH8Ya1ArwsZunpwC5NlBkFJlZ+
-         b4L/a0tH03xDv+tZsTbQ7e/L/9hLNXylXqKJisngOITuzrFx7yJAqVzWt4pyNwG5+aD9
-         Q9tiDK+MP8qK3mq/wQzznStWTWG1du0DxzgSLCBYXGcTkrYC74K1A4a7TqhD85NuoyHt
-         j9SVTNGv4T2bziZeaxfpc357tz15UHmILnqS2Tuax1782VpTw6zmUKPu7HF+MvdJ7cR7
-         Zw2ghbIuYq1u21+cAoVJ7Q0MBBfrzbFDjh9T9hzgVB3/RR3NDVvvKct+QtUtwnbz4Sni
-         uAbA==
-X-Forwarded-Encrypted: i=1; AKwUvBw7Nzfl89l5YGATM0IUN0VRa3jWxwc0ShVNBNupo9cIc7dt9a/TinhmCSMNgp2BkSpJnM2LJf5y4Yk=@lists.infradead.org
-X-Gm-Message-State: AFuF++lmKElu4/75798LLnduePufkBXrqlK8u9gdvK0kY//JkfIE7Kca
-	SAkQVbkFjNhbrHs55Wf4W6oTWtwJJiR1iRgnjGwBeqiQdZ0WMl2xntPNCZsOOZ90zj4=
-X-Gm-Gg: AYBFou2POXKqwT1UzxwAnEE7x3Jhi2BbIaJLW0G15iO3sAZCr6Bd5IrtxcI7Qup1K63
-	WGiugZuEMGHcAsbHJtPNQi/8b/OTD/IiKes9/ys/ZtdpNfpsZL6U0kEatKgolL3/JMM2C52nS1V
-	dlt+QaD4a60dTZiY2g04eidllcLhtKhNGbl15QFBJXd/5TcJGpsAuMB1oG38xz4gG9uAtrm23Ik
-	uGrxtBVksJp9FuwC6RbUs/AWgJIQW/m0D+zR4L/fCtYsUvjJl4oJosQ4gpaPUy3MHCSNChJ5mU+
-	sDcXGabl6cZDTZ7g2W9lhhDwcmkJYVki/vdBo0RsbUmRwPop7jahGkXztbU7ksVTTdnHFd9az98
-	PqfDaRZdl9I3MnvgQUWly1vhn9628AXFKFGjX+j6QIlFMmP8vW1MbCwD5I9Qhex5yIJarGN87d1
-	oR309Z9OVMeE5fXYxRzc54c3TYuuMr8IFdHdt2KhA76pSUFcl5kUCQP+xPv5WKkWTSl30mn9YFI
-	mf/NKf6UvhlugJdrnU=
-X-Received: by 2002:a05:7300:c019:10b0:33b:c24c:47cd with SMTP id 5a478bee46e88-340035bf9d9mr1782888eec.16.1790244978791;
-        Thu, 24 Sep 2026 03:16:18 -0700 (PDT)
-Received: from sw07.internal.sifive.com ([4.53.31.132])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-33e975223fcsm12254595eec.31.2026.09.24.03.16.17
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 24 Sep 2026 03:16:18 -0700 (PDT)
-From: Yong-Xuan Wang <yongxuan.wang@sifive.com>
-Date: Thu, 24 Sep 2026 03:16:13 -0700
-Subject: [PATCH v2] RISC-V: Clear HSTATUS.HU on CPU initialization
+	id 1x9gar-0000000AhF3-18Wt;
+	Thu, 24 Sep 2026 10:22:21 +0000
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id ACE6560200;
+	Thu, 24 Sep 2026 10:22:20 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 75DC61F000FF;
+	Thu, 24 Sep 2026 10:21:52 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1790245340;
+	bh=/kufuYs8c40R6+aOEF8XLRCigB/kXlHZjyeo0hfMBwU=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=bK5oWCb3icJZsdzewTtJXUj2g8+OdPY584wvobmFjH9caA6XHPZPOxLC+ENgAYis7
+	 FMWfW3kg0b1pKU0W7dpIcpkH9wgepYgd+Vs0xeodvPvhS2Z2eCR6zzIfxbc+F4vYn1
+	 crr7Q7r6oewUJpom74jt6mX2gF6IAipPmH/f96jRZvGrtuVNztKClju5BP2uHo6kW6
+	 734wktJAnH1jO9c7SkfE4BGx5XUqUo3nH1YffnP3W3u3mHAJ7/dU+/pRlEDaapTJOL
+	 hEriCB9vp3MVrONwH7vOYcoqLNO15CHvH8FuBJLz8aDKeueJxc7YfwK4KfyNmRNl7E
+	 8UCm0PUzGxdsg==
+Date: Thu, 24 Sep 2026 11:21:49 +0100
+From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+To: Zi Yan <ziy@nvidia.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, David Hildenbrand <david@kernel.org>, Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Jonathan Corbet <corbet@lwn.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>, Paul Moore <paul@paul-moore.com>, Stephen Smalley <stephen.smalley.work@gmail.com>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>, Kumar Kartikeya Dwivedi <memxor@gmail.com>, Baolin Wang <baolin.wang@linux.alibaba.com>, Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, Doug Gilbert <dgilbert@interlog.com>, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, "Martin K. Petersen" <mkp@kernel.org>, Jaya Kumar <jayalk@intworks.biz>, Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>, Sebastian Reichel <sre@kernel.org>, John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rik van Riel <riel@surriel.com>, Harry Yoo <harry@kernel.org>, Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Will Deacon <will@kernel.org>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin <npiggin@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>, "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, "David S. Miller" <davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Christian Brauner <brauner@kernel.org>, Matthew Brost <matthew.brost@intel.com>, Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>, Byungchul Park <byungchul@sk.com>, Gregory Price <gourry@gourry.net>, Ying Huang <ying.huang@linux.alibaba.com>, Alistair Popple <apopple@nvidia.com>, Chris Li <chrisl@kernel.org>, Kairui Song <kasong@tencent.com>, Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>, Youngjun Park <youngjun.park@lge.com>, Johannes Weiner <hannes@cmpxchg.org>, Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>, Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>, Chengming Zhou <chengming.zhou@linux.dev>, Michal Hocko <mhocko@kernel.org>, Miklos Szeredi <miklos@szeredi.hu>, Xu Xin <xu.xin@linux.dev>, linux-mm@kvack.org, 
+ linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, linux-usb@vger.kernel.org, linux-rdma@vger.kernel.org, selinux@vger.kernel.org, linux-sound@vger.kernel.org, bpf@vger.kernel.org, linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-trace-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-arch@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, fuse-devel@lists.linux.dev
+Subject: Re: [PATCH v3 24/40] mm/mlock: eliminate weird VMA_IO_BIT abuse and
+ simplify
+Message-ID: <arT3K71l86fUVldk@gremlin>
+References: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org>
+ <20260917-b4-mmap-prepare-vma-flag-sanify-v3-24-4583d8a23bca@kernel.org>
+ <93672B94-BB0C-4713-8F8A-3619D81DB7BB@nvidia.com>
 MIME-Version: 1.0
-Message-Id: <20260924-hstatus_hu-v2-1-7e970f5f1d8d@sifive.com>
-X-B4-Tracking: v=1; b=H4sIAGz4tGoC/22NywrCMBBFf6XM2kgTHw2u/A8pkqZTM4JNySRBK
- f13m7p1eeDcc2dgDIQMl2qGgJmY/LiC2lVgnRkfKKhfGVStzrWWjXAcTUx8d0kYabQ2qrFNJ2E
- dTAEHem+xW/tjTt0TbSyFYjji6MNne8uyeH/DWQoplLang+2H7ljrK9NAGffWv6BdluULdtg/e
- rcAAAA=
-X-Change-ID: 20260817-hstatus_hu-a1a88a27c7b1
-To: Anup Patel <anup@brainfault.org>, Atish Patra <atish.patra@linux.dev>, 
- Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
- Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>
-Cc: greentime.hu@sifive.com, vincent.chen@sifive.com, zong.li@sifive.com, 
- kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
- linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, 
- Yong-Xuan Wang <yongxuan.wang@sifive.com>, 
- Samuel Holland <samuel.holland@sifive.com>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1790244977; l=3822;
- i=yongxuan.wang@sifive.com; s=20260424; h=from:subject:message-id;
- bh=MiE+4ItnXmHUBKhLrUz3zntIZyWtLRntpAxtOY0u6BY=;
- b=lJsDgeDAFpzkUZgwbf6xofjnxNK0j5K+KDvcLG59+7QXUPCuV2SrHNbl6effhqne9YSnrJDPl
- DbbQVpzEO2jBsZbYKau8bP8WWRoX/urfT4BpbtZmYrJ8aUni4lV7kqg
-X-Developer-Key: i=yongxuan.wang@sifive.com; a=ed25519;
- pk=+8NCHB1ZJvZthQAmZspOAaqjo+/snaW8mFSiDx45HxY=
-X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260924_031620_349125_66D027A6 
-X-CRM114-Status: GOOD (  12.14  )
+Content-Disposition: inline
+In-Reply-To: <93672B94-BB0C-4713-8F8A-3619D81DB7BB@nvidia.com>
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -115,111 +71,138 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-The RISC-V privileged specification does not mandate HSTATUS reset
-values, leaving the HU bit potentially set after hardware reset.
-When HU=1, hypervisor instructions (HLV/HLVX/HSV) can execute in
-U-mode to access guest memory, which may cause unintended behavior
-if not explicitly controlled.
+On Wed, Sep 23, 2026 at 04:06:14PM -0400, Zi Yan wrote:
+> On 17 Sep 2026, at 12:22, Lorenzo Stoakes (ARM) wrote:
+>
+> > When performing mlock() or munlock() otherwise normal VMAs have VMA_IO_BIT
+> > solely to fix a race with migration which might otherwise double-count
+> > mlock VMAs.
+> >
+> > This is unnecessary - at the point of applying folio mlock state, whether
+> > setting or clearing PG_mlocked, we know whether or not we are locking.
+> >
+> > Solve this in two ways - thread a boolean through the page table walk
+> > indicating whether a lock or unlock is being performed, and run a locking
+> > walk with VMA_LOCKONFAULT_BIT set and VMA_LOCKED_BIT cleared.
+> >
+> > This state never occurs otherwise, as VMA_LOCKONFAULT_BIT always implies
+> > VMA_LOCKED_BIT. These are also always cleared together.
+> >
+> > Then, update folio_add_lru_vma() and mlock_folio() to check only for
+> > VMA_LOCKED_BIT, and update try_to_unmap_one() to check for VMA_LOCKED_MASK
+> > instead.
+> >
+> > Also remove the useless invocation of allow_mlock_munlock() which simply
+> > returns true if unlocking and instead rename it to allow_mlock() and only
+> > call it when locking.
+> >
+> > Finally, with the other mlock abuse of VMA_IO_BIT addressed, update
+> > mlock_vma_folio() and folio_add_lru_vma() to simply test for
+> > VMA_LOCKED_BIT. munlock_vma_folio() tests VMA_LOCKED_MASK instead, as an
+> > unmap racing with the locking walk must still munlock folios the walk has
+> > already counted.
+> >
+> > While here, also replace some deprecated VMA flag predicates.
+> >
+> > Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+> > ---
+> >  mm/folio.c    |  2 +-
+> >  mm/internal.h | 10 +++++++---
+> >  mm/mlock.c    | 51 +++++++++++++++++++--------------------------------
+> >  mm/rmap.c     |  4 +++-
+> >  4 files changed, 30 insertions(+), 37 deletions(-)
+> >
+> > diff --git a/mm/folio.c b/mm/folio.c
+> > index 47a437e0f7fd..35e242b48870 100644
+> > --- a/mm/folio.c
+> > +++ b/mm/folio.c
+> > @@ -505,7 +505,7 @@ void folio_add_lru_vma(struct folio *folio, struct vm_area_struct *vma)
+> >  {
+> >  	VM_BUG_ON_FOLIO(folio_test_lru(folio), folio);
+> >
+> > -	if (unlikely((vma->vm_flags & (VM_LOCKED | VM_SPECIAL)) == VM_LOCKED))
+> > +	if (vma_test(vma, VMA_LOCKED_BIT))
+>
+> I think it is worth documenting VMA_LOCKONFAULT_BIT alone means mlock in
+> progress, like you did in munlock_vma_folio(). Just to keep the protocol
+> explicit for all the readers.
 
-Clear HSTATUS.HU during CPU initialization to ensure hypervisor
-instructions are only available in HS-mode, preventing unexpected
-guest memory access from U-mode code.
+Well I'm not sure it's necessary here honestly, because this never checked
+VMA_LOCKED_MASK anyway, and VMA_LOCKONFAULT_BIT never made a difference.
 
-Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
-Reviewed-by: Samuel Holland <samuel.holland@sifive.com>
----
-Changes in v2:
-- Clear the hstatus.hu in the arch core setup instead of kvm core setup
-(sashiko)
-- Link to v1: https://patch.msgid.link/20260817-hstatus_hu-v1-1-28c53cdfb408@sifive.com
----
- arch/riscv/include/asm/cpufeature.h |  2 ++
- arch/riscv/kernel/cpufeature.c      | 12 ++++++++++++
- arch/riscv/kernel/setup.c           |  2 ++
- arch/riscv/kernel/smpboot.c         |  2 ++
- arch/riscv/kernel/suspend.c         |  2 ++
- 5 files changed, 20 insertions(+)
+So the meaning of VMA_LOCKED_BIT here is strictly 'is it locked' and it's
+correctly handled.
 
-diff --git a/arch/riscv/include/asm/cpufeature.h b/arch/riscv/include/asm/cpufeature.h
-index 739fcc84bf7b..5efa72823475 100644
---- a/arch/riscv/include/asm/cpufeature.h
-+++ b/arch/riscv/include/asm/cpufeature.h
-@@ -40,6 +40,8 @@ extern u32 thead_vlenb_of;
- 
- void __init riscv_user_isa_enable(void);
- 
-+void riscv_clear_hypervisor_csr(void);
-+
- #define _RISCV_ISA_EXT_DATA(_name, _id, _subset_exts, _subset_exts_size, _validate) {	\
- 	.name = #_name,									\
- 	.property = #_name,								\
-diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-index f46aa5602d74..80767a016602 100644
---- a/arch/riscv/kernel/cpufeature.c
-+++ b/arch/riscv/kernel/cpufeature.c
-@@ -1183,6 +1183,18 @@ void __init riscv_user_isa_enable(void)
- 		pr_warn("Zicbop disabled as it is unavailable on some harts\n");
- }
- 
-+void riscv_clear_hypervisor_csr(void)
-+{
-+	if (!riscv_has_extension_unlikely(RISCV_ISA_EXT_h))
-+		return;
-+
-+	/*
-+	 * Clear HSTATUS.HU to restrict hypervisor instructions to HS-mode.
-+	 * This prevents user-mode from executing HLV/HSV instructions.
-+	 */
-+	csr_clear(CSR_HSTATUS, HSTATUS_HU);
-+}
-+
- #ifdef CONFIG_RISCV_ALTERNATIVE
- /*
-  * Alternative patch sites consider 48 bits when determining when to patch
-diff --git a/arch/riscv/kernel/setup.c b/arch/riscv/kernel/setup.c
-index 52d1d2b8f338..bf42efd848f6 100644
---- a/arch/riscv/kernel/setup.c
-+++ b/arch/riscv/kernel/setup.c
-@@ -364,6 +364,8 @@ void __init setup_arch(char **cmdline_p)
- 
- 	if (!IS_ENABLED(CONFIG_RISCV_ISA_ZBB) || !riscv_isa_extension_available(NULL, ZBB))
- 		static_branch_disable(&efficient_ffs_key);
-+
-+	riscv_clear_hypervisor_csr();
- }
- 
- bool arch_cpu_is_hotpluggable(int cpu)
-diff --git a/arch/riscv/kernel/smpboot.c b/arch/riscv/kernel/smpboot.c
-index f6ef57930b50..a9de2dae804c 100644
---- a/arch/riscv/kernel/smpboot.c
-+++ b/arch/riscv/kernel/smpboot.c
-@@ -244,6 +244,8 @@ asmlinkage __visible void smp_callin(void)
- 
- 	numa_add_cpu(curr_cpuid);
- 
-+	riscv_clear_hypervisor_csr();
-+
- 	pr_debug("CPU%u: Booted secondary hartid %lu\n", curr_cpuid,
- 		cpuid_to_hartid_map(curr_cpuid));
- 
-diff --git a/arch/riscv/kernel/suspend.c b/arch/riscv/kernel/suspend.c
-index 3efbf7874f3b..db220966f782 100644
---- a/arch/riscv/kernel/suspend.c
-+++ b/arch/riscv/kernel/suspend.c
-@@ -43,6 +43,8 @@ void suspend_save_csrs(struct suspend_context *context)
- 
- void suspend_restore_csrs(struct suspend_context *context)
- {
-+	riscv_clear_hypervisor_csr();
-+
- 	csr_write(CSR_SCRATCH, 0);
- 	if (riscv_has_extension_unlikely(RISCV_ISA_EXT_XLINUXENVCFG))
- 		csr_write(CSR_ENVCFG, context->envcfg);
+And I fear that it becomes whack-a-mole - the neat thing about this change is
+that you no longer have to special case the stupid VM_SPECIAL thing, and can in
+fact do the 'normal' thing of _just checking_ VMA_LOCKED_BIT :)
 
----
-base-commit: b5060a4aa33d7d78a8c1837ab08ef0c81ea96650
-change-id: 20260817-hstatus_hu-a1a88a27c7b1
+So I think it's better not to.
 
+>
+> >  		mlock_new_folio(folio);
+> >  	else
+> >  		folio_add_lru(folio);
+> > diff --git a/mm/internal.h b/mm/internal.h
+> > index b2c6c9435021..84aa3e6c8bac 100644
+> > --- a/mm/internal.h
+> > +++ b/mm/internal.h
+> > @@ -971,8 +971,7 @@ void mlock_folio(struct folio *folio);
+> >  static inline void mlock_vma_folio(struct folio *folio,
+> >  				struct vm_area_struct *vma)
+> >  {
+> > -	/* The VM_IO check prevents migration from double-counting during mlock. */
+> > -	if (unlikely((vma->vm_flags & (VM_LOCKED|VM_SPECIAL)) == VM_LOCKED))
+> > +	if (vma_test(vma, VMA_LOCKED_BIT))
+>
+> Ditto.
+
+Similar reasoning to above.
+
+>
+> >  		mlock_folio(folio);
+> >  }
+> >
+> > @@ -989,7 +988,12 @@ static inline void munlock_vma_folio(struct folio *folio,
+> >  	 * always munlock the folio and page reclaim will correct it
+> >  	 * if it's wrong.
+> >  	 */
+> > -	if (unlikely(vma->vm_flags & VM_LOCKED))
+> > +	/*
+> > +	 * VMA_LOCKONFAULT_BIT alone marks an mlock walk in progress, see
+> > +	 * mlock_vma_pages_range(). An unmap racing with the walk must still
+> > +	 * munlock folios the walk has already counted.
+> > +	 */
+
+Here it's worth mentioning, as it's specifically relying on the new
+behaviour. Although it's neatly using the VMA_LOCKED_MASK to handle both the
+locked case and the 'being locked' case :)
+
+> > +	if (unlikely(vma_test_any_mask(vma, VMA_LOCKED_MASK)))
+> >  		munlock_folio(folio);
+> >  }
+> >
+>
+> Why I am commenting in the middle of the series? Because I am taking
+> a quiz given by LLM based on this series to get myself enough background
+> knowledge to review this series. This mlock part came up at part E
+> and I only have part F left before I can do the full review. :)
+
+Thanks! :) I really appreciate you taking the time to look at this! Sorry it's
+so large.
+
+I held this series back from last cycle to help with review load, then spent
+some time fixing various AI-discovered things, and all the patches are necessary
+(well for the most part) to get where the series needs to go.
+
+I think the change is worth it though!
+
+>
+> Best Regards,
+> Yan, Zi
+
+--
+Cheers, Lorenzo
 
 -- 
 kvm-riscv mailing list
