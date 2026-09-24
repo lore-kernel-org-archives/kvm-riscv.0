@@ -4,57 +4,147 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DD7ABC98311
-	for <kvm-riscv@archiver.kernel.org>; Thu, 24 Sep 2026 10:22:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E680FC98311
+	for <kvm-riscv@archiver.kernel.org>; Thu, 24 Sep 2026 10:31:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
-	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=JWyRKoe2c7p/K33TumKcWtKzwJvgyejv9rVo8wYgKB8=; b=lE5vwIsUy+RWEd
-	H5NwhiUxZdjh21qGzwJKrFs0J6rzjVO7nUCr2ghR2Yo76u24NSSzVdWAu4Lz4cVbSOShUdcXpww61
-	p5toXqgcgAbm5dBpbjL3qivbhIOXtpCrG2DNLBN5+VBPKa9Af/ORKywGeN2ngNDFExpE3ANFl9e+X
-	m19fwuQqWYGG3m5NRniQWYbql07XnAqaIdc+sQ5hcjRTOPm0JOOzkj/yZzs6I39gRVPN/TS6L56uE
-	KKBU6eCEZ+RBVne8D8NG6YDnp6gBu2wHkRFbAFGM8e7qe3Z4XtfoQNISTe2dqECx6Zr2baZ1t0p9Z
-	O39SAMkAafbXxIXHLuWw==;
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
+	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
+	List-Unsubscribe:List-Id:MIME-Version:In-Reply-To:From:References:Cc:To:
+	Subject:Date:Message-ID:Reply-To:Content-ID:Content-Description:Resent-Date:
+	Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Owner;
+	bh=a/ZyHik/K6R4Wmbf3LzZQa5Q5zn/FrQj/+07/fn3Vhc=; b=KGQ5hww+ICaT3ojs9TA8FZa1BF
+	sNfwmgfdeU32SmdTlDogWeeNTo9BSvL06iW6s8JuGza/u5zZGJAq7IokDunkwc1Zuj4Kz1383HIbA
+	xqfOpkNOy86+XOGpzeUVNass9US/MnuB7NqQez9updtjglmm9oJpWW7W45dSpa5yDjXCVyfYtc/tm
+	7lHGy2wSSY/q+I+xPEfvVwNOM1H/RZJlDIHKV/Aywx8l8Pw08rLQ5O8zbnGyX4XXOlWiSu7wqzQSo
+	IJlmRyR/XfP/T45Kl7++4CTl6svkfpmI9nfFLBXOFdqXb8nFYUXMI4rcG57zYpaq3BCeRoxahKQ5j
+	Log958nw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x9gat-0000000AhGy-1x8L;
-	Thu, 24 Sep 2026 10:22:23 +0000
-Received: from tor.source.kernel.org ([172.105.4.254])
+	id 1x9gjo-0000000AjsY-2M3R;
+	Thu, 24 Sep 2026 10:31:36 +0000
+Received: from mail-japanwestazolkn190120001.outbound.protection.outlook.com ([2a01:111:f403:d406::1] helo=OS8PR02CU002.outbound.protection.outlook.com)
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x9gar-0000000AhF3-18Wt;
-	Thu, 24 Sep 2026 10:22:21 +0000
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id ACE6560200;
-	Thu, 24 Sep 2026 10:22:20 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 75DC61F000FF;
-	Thu, 24 Sep 2026 10:21:52 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790245340;
-	bh=/kufuYs8c40R6+aOEF8XLRCigB/kXlHZjyeo0hfMBwU=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=bK5oWCb3icJZsdzewTtJXUj2g8+OdPY584wvobmFjH9caA6XHPZPOxLC+ENgAYis7
-	 FMWfW3kg0b1pKU0W7dpIcpkH9wgepYgd+Vs0xeodvPvhS2Z2eCR6zzIfxbc+F4vYn1
-	 crr7Q7r6oewUJpom74jt6mX2gF6IAipPmH/f96jRZvGrtuVNztKClju5BP2uHo6kW6
-	 734wktJAnH1jO9c7SkfE4BGx5XUqUo3nH1YffnP3W3u3mHAJ7/dU+/pRlEDaapTJOL
-	 hEriCB9vp3MVrONwH7vOYcoqLNO15CHvH8FuBJLz8aDKeueJxc7YfwK4KfyNmRNl7E
-	 8UCm0PUzGxdsg==
-Date: Thu, 24 Sep 2026 11:21:49 +0100
-From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-To: Zi Yan <ziy@nvidia.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, David Hildenbrand <david@kernel.org>, Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Jonathan Corbet <corbet@lwn.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>, Paul Moore <paul@paul-moore.com>, Stephen Smalley <stephen.smalley.work@gmail.com>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>, Kumar Kartikeya Dwivedi <memxor@gmail.com>, Baolin Wang <baolin.wang@linux.alibaba.com>, Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, Doug Gilbert <dgilbert@interlog.com>, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, "Martin K. Petersen" <mkp@kernel.org>, Jaya Kumar <jayalk@intworks.biz>, Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>, Sebastian Reichel <sre@kernel.org>, John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rik van Riel <riel@surriel.com>, Harry Yoo <harry@kernel.org>, Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Will Deacon <will@kernel.org>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin <npiggin@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>, "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, "David S. Miller" <davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Christian Brauner <brauner@kernel.org>, Matthew Brost <matthew.brost@intel.com>, Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>, Byungchul Park <byungchul@sk.com>, Gregory Price <gourry@gourry.net>, Ying Huang <ying.huang@linux.alibaba.com>, Alistair Popple <apopple@nvidia.com>, Chris Li <chrisl@kernel.org>, Kairui Song <kasong@tencent.com>, Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>, Youngjun Park <youngjun.park@lge.com>, Johannes Weiner <hannes@cmpxchg.org>, Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>, Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>, Chengming Zhou <chengming.zhou@linux.dev>, Michal Hocko <mhocko@kernel.org>, Miklos Szeredi <miklos@szeredi.hu>, Xu Xin <xu.xin@linux.dev>, linux-mm@kvack.org, 
- linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, linux-usb@vger.kernel.org, linux-rdma@vger.kernel.org, selinux@vger.kernel.org, linux-sound@vger.kernel.org, bpf@vger.kernel.org, linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-trace-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-arch@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, fuse-devel@lists.linux.dev
-Subject: Re: [PATCH v3 24/40] mm/mlock: eliminate weird VMA_IO_BIT abuse and
- simplify
-Message-ID: <arT3K71l86fUVldk@gremlin>
-References: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org>
- <20260917-b4-mmap-prepare-vma-flag-sanify-v3-24-4583d8a23bca@kernel.org>
- <93672B94-BB0C-4713-8F8A-3619D81DB7BB@nvidia.com>
+	id 1x9gjm-0000000Ajqx-0UVl;
+	Thu, 24 Sep 2026 10:31:35 +0000
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=BsrjGHAXH7ZO0l3RvQe/IMXNmXox3plxOO1M1fpSO/zO0sRQscehZ96j/lD9bqTi1MLf5Z67HwYys6dwb7qqf1Q0+rdRKPnX2abmZQJiHMw5uoRucz03VAclRhm/rKe7EC1DfXOsVQFHYqC7QMjgwuiRZYhkzlYuAHx8iNV8bNDI3u8tHZMLB61cRGlZ/WPvyXFYEmeCiZISmzJtDSakcmIqjjfTAFmHZOYhR2aSGj5POW8PjY1x22VEUVMIf2Kh4VcIqOEfgZqDL+3XV2r/aWK1snLrUkWb27fTa+wzBj7Le6BBeFzURA1S1hCYsAivmoDVh69U+hKeiz8JUMVkrw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=FzTbrzaMKufJUagcNZfomKGGpYTXlMigWodziA2kk4w=;
+ b=Zs4Jhk0UPSEuKmQEgM7v24ID9dBSKp34bFz3k4L5752kSco+ED/Ibj9itAUN+8aeuN2RYhEWXgYDx0vGcTORBJt96QyQmRRyDiCTwNK1olwfreufJMajDPCq8glmvhfd/ilW/Y8il6Up0BUWQLjQPP9nDsoAt+1iyNeTeUZUUXG8lco8kzrhoqXKTtgJf4aayxs/3KOvsMHSvCd4zs7xNwyE/r7tZLP3UIGPDhsEUlRfXfJMi2yVhnPs+2II3METANUO62hcNGaF8eGybPlARIC1KgxFdqwwlZKnHzLdjvloOVFVluQOReycsjhrODPAUgO2w34gmPxxqc9oS73ifA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
+ dkim=none; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=hotmail.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=FzTbrzaMKufJUagcNZfomKGGpYTXlMigWodziA2kk4w=;
+ b=cGrkrCR4umY0GEewGYaVQ0aWcOFjUDzeAPiQazgUEPX59u9MW/+Izu/NuUCEuaEcIkdjqSdl0oTh6B/Ggp4nhOFFOAd125r20udaKL60adpfucUBus6cHCC3UnP4vaAx6P6hUR/BKLuaPJ3lqLob3cVmXCtGK7v7/EKLAa0hRk2SN9a/xIofQ58YC4dWRgu4c+KsqnevFC6CnuwWSj3L6i9n0Vs+9+s8yfMoJnipzwApON/RrgtvVZ4k+7LqqbMBYWB/3Aw+RwXY//jD7j8SU2eTGniTuv6UIVQFGzakIQ1hxoj3YP7+J8rloU/+5zskNStdmiEXCOPoxwRtGHS6Ww==
+Received: from KUZPR04MB8925.apcprd04.prod.outlook.com (2603:1096:d10:46::5)
+ by SI6PR04MB8221.apcprd04.prod.outlook.com (2603:1096:4:240::14) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.451.18; Thu, 24 Sep
+ 2026 10:31:13 +0000
+Received: from KUZPR04MB8925.apcprd04.prod.outlook.com
+ ([fe80::e3dd:6f77:3be9:b71d]) by KUZPR04MB8925.apcprd04.prod.outlook.com
+ ([fe80::e3dd:6f77:3be9:b71d%7]) with mapi id 15.21.0451.014; Thu, 24 Sep 2026
+ 10:31:12 +0000
+Message-ID: <KUZPR04MB8925D20F0AB4F4FCAE74793EF3812@KUZPR04MB8925.apcprd04.prod.outlook.com>
+Date: Thu, 24 Sep 2026 18:31:05 +0800
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] RISC-V: KVM: Fix IPI delivery for out-of-order vcpu_id
+To: Xiaofeng Yuan <yuanxiaofeng@eswincomputing.com>,
+ Anup Patel <anup@brainfault.org>
+Cc: Atish Patra <atish.patra@linux.dev>, kvm@vger.kernel.org,
+ kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org
+References: <20260917122012.2577-1-yuanxiaofeng@eswincomputing.com>
+Content-Language: en-US
+From: "Nutty.Liu" <nutty.liu@hotmail.com>
+In-Reply-To: <20260917122012.2577-1-yuanxiaofeng@eswincomputing.com>
+X-ClientProxiedBy: TP0P295CA0048.TWNP295.PROD.OUTLOOK.COM
+ (2603:1096:910:3::19) To KUZPR04MB8925.apcprd04.prod.outlook.com
+ (2603:1096:d10:46::5)
+X-Microsoft-Original-Message-ID: <e04ee895-1ed1-4829-8121-f355dd297566@hotmail.com>
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <93672B94-BB0C-4713-8F8A-3619D81DB7BB@nvidia.com>
+X-MS-Exchange-MessageSentRepresentingType: 1
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: KUZPR04MB8925:EE_|SI6PR04MB8221:EE_
+X-MS-Office365-Filtering-Correlation-Id: a95462f0-36ba-4bbd-da52-08df1a26f461
+X-MS-Exchange-SLBlob-MailProps: a+H6FLLcF3oArmUeIqZHaFYD1WEyA+laSdoDdnexXHsGONCAqpl+DsBQ/2tLa+uvO6MFpJfADjay2/+4V6RBkM5gCcEip2ZbVNzukfLtWK+bA8oeb46FEbMVfM5DAThRdFk39KJApneqWChwHQk7T5Of3Cyp98p6Wkj4BmGKqsGlVDD22njdKhjIic0+ur4qHm07d4xY5LTeRYQcP+3jvbrOCifvqDEnYE5hrbwJMt0woZMdS9FRcn8NWihpPbW3BbmK88q3t1D+1qB9g4vGtCvp0P5tL2kNol6jtm02s/J3qIgq0xCe08bGS7A/TD/kMJ/46zutxuns/y0qp//xovmuTrw8FbPUFKL1h1rpiprBkb2W5/nkqG0ProDUBygGYjh/YyKMum48obwqXCJF3RJHYu0Md2yJXrogD7S9ADnc2UgGogpt3/Ejf8uwSfPZL/baw7BND1HybS35rf+lu2I4Id/Z9Rm0hNXtgUgaCnB20GDhCQCVKeCWN795n/S7tldRsi05ned4d4bNOZAng6qqOn9htiHEN2Qkar7A9PYHAgMHHRGumJCIUNPTeyFD9qHBD3gAEAQuZizLnjDZFVivLYyoZJ6TDWWkWRsxqDYIC2ToP4lfE3zg/2cI1vtxRtT0gSwAd0yXBTUCot4Hid+RzuthuHum5pu5qBJAKahL2ynzYgeMwxhVS5XSsXPiNGPxEOlmpnKSG6lsixzDe9Yu9IGvNdOQyGUkjlXZSXlZ5AQFNoma0snQbNkFeahhOHhPoXt8bxVptXmtTDHksZJpoalefrGPRGgBMmY8xCu8FC3f0iqEDZn7WixDPgmS
+X-Microsoft-Antispam: BCL:0;ARA:14566002|6090799003|8060799015|5072599009|19110799012|4140399003|21061999006|23021999003|15080799012|22091999003|24121999003|55001999006|19101099003|25010399006|16041099003|3412199025|440099028|40105399003|53005399003|2607281247196008;
+X-Microsoft-Antispam-Message-Info: =?utf-8?B?WXI5RVhGWm1ZU3lrYzJNYzJhN2VxaVViTU1RWktzRk9ic2x5Wlp3ZnRSSUZh?=
+ =?utf-8?B?TGlhejY0WnRMTWZOLzNSczhLZ0hDQ2dhZU5pbWJ0RThrMVNtd2E3L0NPNU4r?=
+ =?utf-8?B?dnhOWkttd1ZEUFZEYjhQb0RNdldSaWFPQTVFeCt6SjdQd0FLQ2F1aUUwd2c2?=
+ =?utf-8?B?dVV1RFBLc3BJelJMVHFyeDEzK3ZBcDZYWXdlUzRqbmtYbC9UWTJNdnJpMDll?=
+ =?utf-8?B?Smhka2d4eXdmRXYyNlg2eFZTUUpJaUV0eUM5WnlvTXdnNGFucit0RFZpaTdI?=
+ =?utf-8?B?OXVwVmVtSzdzZTZCN1MvcExxaVVlU2libmtnMkFZS1crNU4zM2JTWEdpbzdN?=
+ =?utf-8?B?eVJhSXBzWFVlb0dMOVE3dGF2UzNXbStXNkZVQWdNLys2RmtlWWcxeGNpV0xy?=
+ =?utf-8?B?eEdyU3YydW5sc2FwQkZuRnRrNHZSWnllTFhVVm1uV3VnVlFYaDFsRElRNjdP?=
+ =?utf-8?B?dktDYkZzdUpSazZCeDd5Q2ZUSmFjWmlJU1JvN0E4V29nRjhkT0FUN3F5VEdT?=
+ =?utf-8?B?aTRRRVM0ZFlDMGZBdHpyRWRrNEt2RjZYMU1aUVhyRVpHeGpQMVpxdU1JaTk4?=
+ =?utf-8?B?L3VMVUl4aW9hc2lQdU1CVkZyQk10VUwycjlJWEFuckVHVEp2TDNqWlBOVmdv?=
+ =?utf-8?B?WU1YcEFFL2VyN3RRQjlhZGl1Ly9BUFdwTExpV3g3TlFiTExyWnY2cDFuc3RF?=
+ =?utf-8?B?RUJBQzlEQTJWOGE0YVU4UGJYS3NTU1BHZzg1M3pDL2sxQ1lUT05RWnFWL0ta?=
+ =?utf-8?B?SXdXa0x2SlZtcGlzam9EYUFUejRQb1lTd25BdGxiMldEOVFNNXBoMjllR0hI?=
+ =?utf-8?B?V0VRYjNPRVc3alRzcVNLa3dmRTRadTYwN2E5NkFCNjBuKzExajNxNE1ZOFhK?=
+ =?utf-8?B?NytKZVAveThDQUt6anh2eG1ieEJtYjlkMlBuTnJFbjlzWWNEemNTL1E4VjhQ?=
+ =?utf-8?B?dURwdFNUSzR6MTAvcE0wU3AyTHUzZVFZblY4Qk5tQmVadnB2TW95SWhqOFlH?=
+ =?utf-8?B?MnZtUkNGcks2c2tyZnYrZEoyVHgweUVleTh5ZG4rNjJBVnJrWlBDc1UyN2t0?=
+ =?utf-8?B?R0JDY2RxRzZNRi9FcWtadU9IVjJhTVZSYWY5VXJLVFFmODVHOHpxQXNNcFdV?=
+ =?utf-8?B?akNoaXlLbkJPMnFmSW1qSk8yYkJES1RRdWYzcGUrRTRyVjJjU2dsZkpMM1N1?=
+ =?utf-8?B?T0o4U3BFU0x4L2lFRXFzZTdxcng5SUZiOTF5azVGc0tZS0JMelUrOVNNS2Z3?=
+ =?utf-8?B?T01EYldyWWIvNHY0Tzg0VFlEbzFGbVhoNVVnVDdCdmhmeHRBNzcwbU5CSi9L?=
+ =?utf-8?B?Q2JDWlp4Ky9JYW05ZU9GenFyUFQ4aDNpNHRZRW9PTWxRUnREcHNxbDl3R05j?=
+ =?utf-8?B?VVRXcGRRc3dDeW1ONW8rdTZiN25jdmQwODcvaXpRZ0FEU3NFZmsvUXVNSUkw?=
+ =?utf-8?B?eUU0MjQrSGJhUm1jb3RML2xwU2lGUWxoNVBLbjNpWERpdHUzVW5OOW1NalJN?=
+ =?utf-8?Q?pH37vvPdwJhQllvTOX6rkbLhs5Z?=
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?U3AvaFlIRHZucjhXUVgyMFROWkpwWUJObnlzVUdjWHM1ZFhXOVFPeWp4a1ps?=
+ =?utf-8?B?VGltSThRWFVWNDMrZjJ0SU1UWEttMm9WZW9uenlmbnRibTAySGVtdjdjTVZ2?=
+ =?utf-8?B?aVIxL2NmRDg4c3pycG1NVmJqVGhLT0o3Q2Q0NysraTFHNDlwMFJrcWo0dDdG?=
+ =?utf-8?B?ZHNlb3F2UGlFVDArSGlxNmNwZjdXMGVDTlZqTlZLYkUrNHFxWGx5ZXJGckhB?=
+ =?utf-8?B?cE90T1JkS255dXVaZ2VCVzFreDZrM1NESWJMazVWNGFNRmFhbWQvWkFhcVlu?=
+ =?utf-8?B?czI1bkRYSXlaRmVTcTY0ckJvTDJ6RXRlakp1L2IrT09vL3A5d0pROWhLOUxD?=
+ =?utf-8?B?eVNiN3NiTTZkUW1mU05nZHlSVk5aU1VJZ1hmZVZCdkhVczI2T0lkME5ySERZ?=
+ =?utf-8?B?cWF6TUZxczRlTmUzd05FWTg0SElNbFV0c1oxaEdkcjdQdG9rd1hjYVRVOWZP?=
+ =?utf-8?B?cGpsVGRUQjl4N1pNb2ZoU2dxMWJZUlFsWFM2NkQ2NTc4aER6czhzSDEzZ0Ux?=
+ =?utf-8?B?ZWhzbTBWWk9KWEQ2M2Q0WUdZUlhDZXpSN0lJdHFHQUoyeUpOQnFEQTNzc1lU?=
+ =?utf-8?B?MjEzZWs5c1Rpa3JGcEUwWE1xOHk5RXpZc0tndlhQSGpFME1hOGozbHRzYmN2?=
+ =?utf-8?B?KzhRcjRFbHhCLy9BRlFiYUtEQmJ5amt3T29nYmRDbDh5dGp6SW9Nb1ZkcGVj?=
+ =?utf-8?B?TmxKamlPMGRPZ3BXeDE1bjV1RUthVHFXWmlJc1lQaHN2Nm1obGJ4TWozUGdJ?=
+ =?utf-8?B?VjBPTjg2T2pOM0lOdG4zU1FVdURkajlZUFRSdjNhcjFTRHZMV3NIbjlsdE56?=
+ =?utf-8?B?WDZQUGNzS3F4K2Z4MWJuTkxwOThLZFFTK25ZTTZLZWFYRHZkbmNGWit2Z1Jp?=
+ =?utf-8?B?ZHBNTHFxK3AvZjYzTDhpRG4wS1FjdU1EeFpheS8reUpYMFNTT29LWXdVT0hs?=
+ =?utf-8?B?VERoUHZJY1JWUkxub2NoOU5TdnVZSHBtN2xPTjNpUFlXbGRJK3d0TWE0Zk9T?=
+ =?utf-8?B?L0xGaThXZGJqNE04OFpTcjdqZzA5N1Ywa3BUS2JVUmxlWlRRY3lRYWVqclNE?=
+ =?utf-8?B?Y3YwcUlPeS9NaC9QbGtKMzZCYzhkejltN0NOTXJ0VzkwS21vRWF1VmxxM1l4?=
+ =?utf-8?B?NHQ2SGR1NnRTbnhFZVhkWjB1djBuWDBvUVdFSkpuOVNxVm5vWVpwcGFYYWhY?=
+ =?utf-8?B?MFk5emt2KzJMRVU0ODVrMWprTS9nMUJ6dHNyaVdIS0NEN2tjWEVhSmYrU2lq?=
+ =?utf-8?B?WFk5UDZ6S3Z1ampjSmRkcDdra2dta0Z2aGNHOExkZGEvdFoveEFVOG5EUEFJ?=
+ =?utf-8?B?V1VsbkxaZk9mOGJuUWFGUmN1ekZ4eGlINXBiKzBqMTdZRjVJNENOWFllWis5?=
+ =?utf-8?B?M3NpcHJqd1ZVbTVhL1QrcnF3TXBzRHU5NnhJQWo1Y3grZHFXNHo4bGx0S1Uz?=
+ =?utf-8?B?ZWRhQWpGL0p0NE1zMDc1Sy9GQU84czl4VzNEQ2hRaFgyc08ybTJzQWQyYUla?=
+ =?utf-8?B?czI5YnZzcy9WLzFEQUVBYmUweFpZbUFFeTZKYVdwamU4ZkxhRzRqdXRNNWVt?=
+ =?utf-8?B?NVJpOEJlVmVqdldLY2hySzdYWVRqTXBaTmlHSWp5VkJiMHA3a0liV2p2MWIz?=
+ =?utf-8?B?dmdSR1JwYk16VFdCd2gxakwvdHpMVXRBMjU0d1NqU09NdE1nSmg1S1hRWk52?=
+ =?utf-8?B?c3IvWkc5cWVDaXgzaE1uamJpV3lGSElLeUdCNVZEOVVnTFU1bDZuQWhtb20w?=
+ =?utf-8?B?M1FtV1hEUlZ1dm1GMTR1eTFqeUhkeWhpckh6b1NHN1d6VERuMHQramZzTXYy?=
+ =?utf-8?B?NFBJUXloeVBTUUw5ZUJua3dzV2U0UjZOQTZWZXh1ejJhOUhJQkxlV3AveGtJ?=
+ =?utf-8?Q?JX7BgoWSxenk1?=
+X-OriginatorOrg: sct-15-20-9412-4-msonline-outlook-c3e7a.templateTenant
+X-MS-Exchange-CrossTenant-Network-Message-Id: a95462f0-36ba-4bbd-da52-08df1a26f461
+X-MS-Exchange-CrossTenant-AuthSource: KUZPR04MB8925.apcprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 Sep 2026 10:31:12.8678
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
+X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SI6PR04MB8221
+X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
+X-CRM114-CacheID: sfid-20260924_033134_404752_F3E9DDAA 
+X-CRM114-Status: GOOD (  20.38  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -66,143 +156,77 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Wed, Sep 23, 2026 at 04:06:14PM -0400, Zi Yan wrote:
-> On 17 Sep 2026, at 12:22, Lorenzo Stoakes (ARM) wrote:
+
+On 9/17/2026 8:20 PM, Xiaofeng Yuan wrote:
+> The SBI IPI handler walks vCPUs with kvm_for_each_vcpu(), which
+> iterates by vcpu_idx (creation order) rather than vcpu_id order.
+> Since vcpu_id can be assigned out of order by userspace, a vCPU whose
+> hart_bit falls outside the XLEN-bit hart_mask range may be reached
+> before vCPUs the mask actually targets. In that case the handler jumps
+> to "done" and stops sending IPIs, leaving valid target vCPUs without
+> an interrupt.
 >
-> > When performing mlock() or munlock() otherwise normal VMAs have VMA_IO_BIT
-> > solely to fix a race with migration which might otherwise double-count
-> > mlock VMAs.
-> >
-> > This is unnecessary - at the point of applying folio mlock state, whether
-> > setting or clearing PG_mlocked, we know whether or not we are locking.
-> >
-> > Solve this in two ways - thread a boolean through the page table walk
-> > indicating whether a lock or unlock is being performed, and run a locking
-> > walk with VMA_LOCKONFAULT_BIT set and VMA_LOCKED_BIT cleared.
-> >
-> > This state never occurs otherwise, as VMA_LOCKONFAULT_BIT always implies
-> > VMA_LOCKED_BIT. These are also always cleared together.
-> >
-> > Then, update folio_add_lru_vma() and mlock_folio() to check only for
-> > VMA_LOCKED_BIT, and update try_to_unmap_one() to check for VMA_LOCKED_MASK
-> > instead.
-> >
-> > Also remove the useless invocation of allow_mlock_munlock() which simply
-> > returns true if unlocking and instead rename it to allow_mlock() and only
-> > call it when locking.
-> >
-> > Finally, with the other mlock abuse of VMA_IO_BIT addressed, update
-> > mlock_vma_folio() and folio_add_lru_vma() to simply test for
-> > VMA_LOCKED_BIT. munlock_vma_folio() tests VMA_LOCKED_MASK instead, as an
-> > unmap racing with the locking walk must still munlock folios the walk has
-> > already counted.
-> >
-> > While here, also replace some deprecated VMA flag predicates.
-> >
-> > Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
-> > ---
-> >  mm/folio.c    |  2 +-
-> >  mm/internal.h | 10 +++++++---
-> >  mm/mlock.c    | 51 +++++++++++++++++++--------------------------------
-> >  mm/rmap.c     |  4 +++-
-> >  4 files changed, 30 insertions(+), 37 deletions(-)
-> >
-> > diff --git a/mm/folio.c b/mm/folio.c
-> > index 47a437e0f7fd..35e242b48870 100644
-> > --- a/mm/folio.c
-> > +++ b/mm/folio.c
-> > @@ -505,7 +505,7 @@ void folio_add_lru_vma(struct folio *folio, struct vm_area_struct *vma)
-> >  {
-> >  	VM_BUG_ON_FOLIO(folio_test_lru(folio), folio);
-> >
-> > -	if (unlikely((vma->vm_flags & (VM_LOCKED | VM_SPECIAL)) == VM_LOCKED))
-> > +	if (vma_test(vma, VMA_LOCKED_BIT))
+> Replace the early "goto done" with "continue" so vCPUs outside the
+> hart_mask range are skipped without aborting the loop.
 >
-> I think it is worth documenting VMA_LOCKONFAULT_BIT alone means mlock in
-> progress, like you did in munlock_vma_folio(). Just to keep the protocol
-> explicit for all the readers.
-
-Well I'm not sure it's necessary here honestly, because this never checked
-VMA_LOCKED_MASK anyway, and VMA_LOCKONFAULT_BIT never made a difference.
-
-So the meaning of VMA_LOCKED_BIT here is strictly 'is it locked' and it's
-correctly handled.
-
-And I fear that it becomes whack-a-mole - the neat thing about this change is
-that you no longer have to special case the stupid VM_SPECIAL thing, and can in
-fact do the 'normal' thing of _just checking_ VMA_LOCKED_BIT :)
-
-So I think it's better not to.
-
+> Reproduced with a minimal userspace VMM driving KVM inside a QEMU
+> (RISC-V virt) guest: three vCPUs are created with ids 100, 0, 1 (in
+> creation order) and sbi_send_ipi(hart_mask=bit0, hbase=0) is called
+> from vcpu_id 1. Before this change the IPI is dropped and the ecall
+> returns SBI_ERR_INVALID_PARAM; with this change the IPI is delivered
+> and the ecall returns SBI_SUCCESS.
 >
-> >  		mlock_new_folio(folio);
-> >  	else
-> >  		folio_add_lru(folio);
-> > diff --git a/mm/internal.h b/mm/internal.h
-> > index b2c6c9435021..84aa3e6c8bac 100644
-> > --- a/mm/internal.h
-> > +++ b/mm/internal.h
-> > @@ -971,8 +971,7 @@ void mlock_folio(struct folio *folio);
-> >  static inline void mlock_vma_folio(struct folio *folio,
-> >  				struct vm_area_struct *vma)
-> >  {
-> > -	/* The VM_IO check prevents migration from double-counting during mlock. */
-> > -	if (unlikely((vma->vm_flags & (VM_LOCKED|VM_SPECIAL)) == VM_LOCKED))
-> > +	if (vma_test(vma, VMA_LOCKED_BIT))
+> Fixes: 0611f78f83c9 ("riscv: KVM: Fix SBI IPI error generation")
+> Cc: stable@vger.kernel.org
+> Suggested-by: Andrew Jones <ajones@ventanamicro.com>
+> Signed-off-by: Xiaofeng Yuan <yuanxiaofeng@eswincomputing.com>
+> ---
+>   arch/riscv/kvm/vcpu_sbi_replace.c | 12 ++++++++++--
+>   1 file changed, 10 insertions(+), 2 deletions(-)
 >
-> Ditto.
+> diff --git a/arch/riscv/kvm/vcpu_sbi_replace.c b/arch/riscv/kvm/vcpu_sbi_replace.c
+> index 506a510b6..c2f1f7f26 100644
+> --- a/arch/riscv/kvm/vcpu_sbi_replace.c
+> +++ b/arch/riscv/kvm/vcpu_sbi_replace.c
+> @@ -64,8 +64,17 @@ static int kvm_sbi_ext_ipi_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
+>   			if (tmp->vcpu_id < hbase)
+>   				continue;
+>   			hart_bit = tmp->vcpu_id - hbase;
+> +			/*
+> +			 * kvm_for_each_vcpu() walks kvm->vcpus[] by
+> +			 * vcpu_idx, i.e. the creation order, which has
+> +			 * nothing to do with the vcpu_id (hart id) space
+> +			 * that the SBI IPI operates on. vcpu_ids need not
+> +			 * increase along the iteration, so harts outside
+> +			 * the hart_mask window must be skipped instead of
+> +			 * aborting the loop.
+> +			 */
+>   			if (hart_bit >= __riscv_xlen)
+> -				goto done;
+> +				continue;
+>   			if (!(hmask & (1UL << hart_bit)))
+>   				continue;
+Seems the above two 'if' statements can be combined.
+Otherwise,
 
-Similar reasoning to above.
+Reviewed-by: Nutty Liu <nutty.liu@hotmail.com>
 
->
-> >  		mlock_folio(folio);
-> >  }
-> >
-> > @@ -989,7 +988,12 @@ static inline void munlock_vma_folio(struct folio *folio,
-> >  	 * always munlock the folio and page reclaim will correct it
-> >  	 * if it's wrong.
-> >  	 */
-> > -	if (unlikely(vma->vm_flags & VM_LOCKED))
-> > +	/*
-> > +	 * VMA_LOCKONFAULT_BIT alone marks an mlock walk in progress, see
-> > +	 * mlock_vma_pages_range(). An unmap racing with the walk must still
-> > +	 * munlock folios the walk has already counted.
-> > +	 */
-
-Here it's worth mentioning, as it's specifically relying on the new
-behaviour. Although it's neatly using the VMA_LOCKED_MASK to handle both the
-locked case and the 'being locked' case :)
-
-> > +	if (unlikely(vma_test_any_mask(vma, VMA_LOCKED_MASK)))
-> >  		munlock_folio(folio);
-> >  }
-> >
->
-> Why I am commenting in the middle of the series? Because I am taking
-> a quiz given by LLM based on this series to get myself enough background
-> knowledge to review this series. This mlock part came up at part E
-> and I only have part F left before I can do the full review. :)
-
-Thanks! :) I really appreciate you taking the time to look at this! Sorry it's
-so large.
-
-I held this series back from last cycle to help with review load, then spent
-some time fixing various AI-discovered things, and all the patches are necessary
-(well for the most part) to get where the series needs to go.
-
-I think the change is worth it though!
-
->
-> Best Regards,
-> Yan, Zi
-
---
-Cheers, Lorenzo
+Thanks,
+Nutty
+>   		}
+> @@ -76,7 +85,6 @@ static int kvm_sbi_ext_ipi_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
+>   		kvm_riscv_vcpu_pmu_incr_fw(tmp, SBI_PMU_FW_IPI_RCVD);
+>   	}
+>   
+> -done:
+>   	if (hbase != -1UL && (hmask ^ sentmask))
+>   		retdata->err_val = SBI_ERR_INVALID_PARAM;
+>   
 
 -- 
 kvm-riscv mailing list
