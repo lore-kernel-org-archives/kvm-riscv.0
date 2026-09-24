@@ -4,96 +4,41 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2637DC98321
-	for <kvm-riscv@archiver.kernel.org>; Thu, 24 Sep 2026 18:00:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 48B2CC9830E
+	for <kvm-riscv@archiver.kernel.org>; Thu, 24 Sep 2026 19:01:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
 	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=xbJfmU3jsYKJpvrtEbFxRW5L6N+fRVt+wbcQCR+hVa4=; b=MMhQd9af8T7qR9
-	0pHrBP+501hwJ7noohQONggkqH7N5etAbZ4GFYU8VdxFR4rOodeSeQRw45SQVGpLdHWK5L5xH6WFY
-	0Wyuy9Lrd3H0dQ37K4EoP1Tjpaxyye34lvM+k9iQXBlbZ15f/fTLfGzpG0jziM6zYbG/VVaIN69Th
-	QgdEBal/nF+2HwLLWCNBAO7Vg5rgN+k+2w9EKrKqv1Tnqw2x5c9UeUBH+ki8VdUdXH/vnNeCv1Sdh
-	uCnOEK1mj8s0yVU2m1EpgQtLt4NTZqk0HRH5KMQp5hFhektd9m5fkhehtdTpBGImtiBKmFFiBzYpE
-	xArUngYcsENLxSbHv5zg==;
+	List-Owner; bh=fTPwwZkcH2gzEGsyrHSfFBkbb1Mcbpbdkz26BlAKk+0=; b=xdOOpHy3YwykkD
+	XE5a9NpcWWZPmOp/X8cyMXw0cRtErv35c1PAE75M4KXCaWoobRX4Aed+b4tmcVPACedW/8hm8O80S
+	MtQbSWs3ZDR67XKqALwBjwfuLLlCnw9nO2AePJ5hyIgMg0OPaxh74z80xbumj5vD2uozybK4dtkDr
+	nN1JQMghq25pNshtsiEySrhig5/OdD2Xwtfgi6V3plYtbM5juFtLWp0IscLjeErJxX10eN8M5kOeU
+	hLu//VTCWgAbgyc8/zG7wF0CRCcD8cwV+5LwXIR7pJcSS2Y6LmZwgNfje4jcmPMAKQS5iJI4khaGq
+	paQDValKy+Q+XbLlLFLw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x9nk9-0000000BqyQ-2ju2;
-	Thu, 24 Sep 2026 18:00:25 +0000
-Received: from mail-qt1-x832.google.com ([2607:f8b0:4864:20::832])
-	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x9nk7-0000000BqxF-1MxF
-	for kvm-riscv@lists.infradead.org;
-	Thu, 24 Sep 2026 18:00:25 +0000
-Received: by mail-qt1-x832.google.com with SMTP id d75a77b69052e-52fa9c055b5so11364451cf.1
-        for <kvm-riscv@lists.infradead.org>; Thu, 24 Sep 2026 11:00:23 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gourry.net; s=google; t=1790272822; x=1790877622; darn=lists.infradead.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=yIrEACM/1hk8RvSSdnwytl7iIy1+VcppA4PP9Tt2BDk=;
-        b=EcdN7Q3rP776qc8wZL2iTjjhL/qGk5NmmrMk87vwYPWp9hV0fqAmtAtWeTgTlln7wP
-         EDp+TnSLgrKe1WGphYhPrl8Ak3VLf7nMpVYutpgDAjGKXB0S3Suho9UmkOT9URJv2m8D
-         mI8U+awCZqV4q9n1zGUxP4/q7mCVbnBvKJYjYWSWT7Q4+Rw9yS/p5hYYPvhaJLU0SCz4
-         m4YaZdVoyc2iV7S+ekT6dcpjBydEhS7bRsvw4QaNwJEb62ZDTXpzHnbX7jovxn4ekykq
-         aFdhuRsGj3GqVlY37/ID5IE7etNUCNR2VlmMwoR7AVWoFv0zAxCdCzpBMQwXlm3R/qpW
-         y+kA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790272822; x=1790877622;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=yIrEACM/1hk8RvSSdnwytl7iIy1+VcppA4PP9Tt2BDk=;
-        b=br4EW4bzLLmJZHB3xP/hLlky+e6FH/ru+nXBBMRJjVWxW3CJVNaTm6jT0PxlCw0pmS
-         3AUC6wOv9T/pgdiIwzUolxFoIp3yzaKUNWAg+KOGJs2wDGhRNAUwLf+MBymX7ZHSqyMe
-         4JUKi7cNV4lm+BBlNAuUqTdCgT3DdU3ddXdQ6RBK43RGAjvJ8pNOY/Fu2doAOINfDDfT
-         SgOSUKNBTby1wlWZsYXi/tAcTleSBkv4/XYFGjPrdkaN9etc0DRe1U3DFYe8WNcmDcbJ
-         MM7XInpJTnU9zLsavvqP5Xbt+oRkznQrfc6y235pjVATLpTCYAlaeBmXlbX1Ase8U6Ff
-         6/jQ==
-X-Forwarded-Encrypted: i=1; AKwUvByCEE8bKeJ/t/kv0HtQ76elJaV7OY/SNMOlryweO2ixrhD4bo4ZikPeUvxcx+003WymF3wtw8DtrKc=@lists.infradead.org
-X-Gm-Message-State: AFuF++kO3qMpH0KKOEBk2tCUep9PagVtL3QYsHDVnQrd4LCazpdHXKwU
-	1uS+K8t8dJIoyrsqXzQeUUKQbYLWWgngUM+4DjgQ4HyXEJUiBlhMm6KY0tZTeapI1Y8=
-X-Gm-Gg: AYBFou3c90uKD6QAsVAEPXoiZxjbppX21gfgYlURG4nfyAklaI7VA4ZOip/BjhhcWO4
-	ApXGm9Hv804p3CtTN9weWfkRUnwjc8Z+HSA17vcRqjUwxDkoSzfHsFcwGLP2hmj/boElxQtmxrN
-	Su+WxQkOjcWq8OLWzc4Y1nFd7CDuUHQ9UFXA/4FQCqwmtFNVV5fyqHqu1Kb7W+bEvSXSHrQReBp
-	bpRbyc1euJrjG4qc5HTyyoHoRQoT2bRrHD20CKPtCplA8i9CDH2DAdWi5fkFhFMTJBAYSCKisOs
-	FEJPUgaJVfI/DSSQ73JRwErUgRA1jV725ADGGRl56DGzabf0eIMkK218QnExyzbqwnxbZho7gn6
-	xmOYYQNFVtl6wBalXD0IV5ZrNW+gsbtyxpxarBgqmqkEdspowFFRa/6cltklThwm6VGaAQStfdE
-	UvyVAl0lBFCEIxUT0Y8M0xwKz+kPDKWXRWWKvKcX3hWz2TCQlH2VDqLpQD09HYsajvZnYXUZLc8
-	W8x4sI9dJMdqS/DlbrXJa8SQLk2Rcav/uo/Z8/hJOM4qirzgt/7xjA=
-X-Received: by 2002:ac8:5a46:0:b0:530:e682:87c with SMTP id d75a77b69052e-5330b6df434mr78501cf.33.1790272821894;
-        Thu, 24 Sep 2026 11:00:21 -0700 (PDT)
-Received: from gourry-fedora-PF4VCD3F (pool-173-79-60-52.washdc.fios.verizon.net. [173.79.60.52])
-        by smtp.gmail.com with ESMTPSA id d75a77b69052e-532eb38d347sm47450101cf.25.2026.09.24.11.00.20
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 24 Sep 2026 11:00:21 -0700 (PDT)
-Date: Thu, 24 Sep 2026 14:00:18 -0400
-From: Gregory Price <gourry@gourry.net>
+	id 1x9ogx-0000000BzRt-39jp;
+	Thu, 24 Sep 2026 19:01:11 +0000
+Received: from [38.23.173.23] (helo=localhost)
+	by bombadil.infradead.org with esmtpsa (Exim 4.99.1 #2 (Red Hat Linux))
+	id 1x9ogl-0000000BzNV-1nWv;
+	Thu, 24 Sep 2026 19:00:59 +0000
+Date: Thu, 24 Sep 2026 15:00:44 -0400
+From: "Liam R. Howlett" <liam@infradead.org>
 To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, 
-	linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, linux-usb@vger.kernel.org, 
-	linux-rdma@vger.kernel.org, selinux@vger.kernel.org, linux-sound@vger.kernel.org, 
-	bpf@vger.kernel.org, linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, linux-trace-kernel@vger.kernel.org, 
-	linux-perf-users@vger.kernel.org, linux-arch@vger.kernel.org, linux-fsdevel@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
-	kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
-	linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, fuse-devel@lists.linux.dev
-Subject: Re: [PATCH v3 05/40] mm/vma: ensure mmap_prepare doesn't set actions
- on a mergeable vma
-Message-ID: <arVkwC_wNoTLjRYf@gourry-fedora-PF4VCD3F>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Vlastimil Babka <vbabka@kernel.org>, Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, David Hildenbrand <david@kernel.org>, Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Jonathan Corbet <corbet@lwn.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>, Paul Moore <paul@paul-moore.com>, Stephen Smalley <stephen.smalley.work@gmail.com>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>, Kumar Kartikeya Dwivedi <memxor@gmail.com>, Zi Yan <ziy@nvidia.com>, Baolin Wang <baolin.wang@linux.alibaba.com>, Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, Doug Gilbert <dgilbert@interlog.com>, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, "Martin K. Petersen" <mkp@kernel.org>, Jaya Kumar <jayalk@intworks.biz>, Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>, Sebastian Reichel <sre@kernel.org>, John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rik van Riel <riel@surriel.com>, Harry Yoo <harry@kernel.org>, Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Will Deacon <will@kernel.org>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin <npiggin@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>, "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, "David S. Miller" <davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Christian Brauner <brauner@kernel.org>, Matthew Brost <matthew.brost@intel.com>, Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>, Byungchul Park <byungchul@sk.com>, Gregory Price <gourry@gourry.net>, Ying Huang <ying.huang@linux.alibaba.com>, Alistair Popple <apopple@nvidia.com>, Chris Li <chrisl@kernel.org>, Kairui Song <kasong@tencent.com>, Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>, Youngjun Park <youngjun.park@lge.com>, Johannes Weiner <hannes@cmpxchg.org>, Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>, Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>, Chengming Zhou <chengming.zhou@linux.dev>, Michal Hocko <mhocko@kernel.org>, Miklos Szeredi <miklos@szeredi.hu>, Xu Xin <xu.xin@linux.dev>, linux-mm@kvack.org, 
+ linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, linux-usb@vger.kernel.org, linux-rdma@vger.kernel.org, selinux@vger.kernel.org, linux-sound@vger.kernel.org, bpf@vger.kernel.org, linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-trace-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-arch@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, fuse-devel@lists.linux.dev
+Subject: Re: [PATCH v3 01/40] mm/vma: fix mmap_prepare file handling, remove
+ file_doesnt_need_get
+Message-ID: <qpkcjtl5jbip46zxcpyogsk4phmhetfvrvgftxhsxlbxjhucnn@h3a64dfoxcmj>
 References: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org>
- <20260917-b4-mmap-prepare-vma-flag-sanify-v3-5-4583d8a23bca@kernel.org>
+ <20260917-b4-mmap-prepare-vma-flag-sanify-v3-1-4583d8a23bca@kernel.org>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-5-4583d8a23bca@kernel.org>
-X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260924_110023_375458_6D8BA8F9 
-X-CRM114-Status: GOOD (  20.43  )
+In-Reply-To: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-1-4583d8a23bca@kernel.org>
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -110,61 +55,366 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Thu, Sep 17, 2026 at 05:22:14PM +0100, Lorenzo Stoakes (ARM) wrote:
-> When a user requests an mmap_action be performed in mmap_prepare, this
-> involves populating the VMA range with data.
+On 26/09/17 05:22PM, Lorenzo Stoakes (ARM) wrote:
+> The map->file_doesnt_need_get flag is confusing and the existing
+> implementation has holes.
 > 
-> However, if the VMA is mergeable, it might then mistakenly be merged with
-> another VMA without having populated the range.
+> Drivers are permitted to change the owning file of a mapping. If they do
+> so, they are required to take a reference on that file.
 > 
-> Every mmap action currently available sets VMA flags such that the VMA
-> cannot be merged.
+> The mmap() operation which ultimately invokes __mmap_region() is guaranteed
+> to drop the refcount for the original file the mapping was made under, but
+> this is not true for the replaced file.
 > 
-> However, to ensure that no future mmap action falls foul of this, assert
-> that this is the case upon mmap_prepare validation.
+> This has been addressed so far by tracking map->file_doesnt_need_get, which
+> is rather poorly named and unfortunately fails to correctly track whether
+> or not an additional put were needed in a number of cases.
+> 
+> Make life easier by removing this flag, and instead drop the reference for
+> both mmap_prepare and the deprecated mmap callback in a new function
+> put_map().
+> 
+> Track whether this needs to be done by aligning mmap_state with
+> vm_area_desc and store the original file in the map->file field, keeping
+> the updated file in map->vm_file.
+> 
+> In order to have the same behaviour for both types of hooks, only drop the
+> reference __mmap_new_file_vma() itself took in its error path, deferring
+> the replaced file's reference to put_map().
+> 
+> To make this work correctly, map->vm_file has to be updated before any
+> error handling, so update __mmap_new_file_vma() and call_mmap_prepare() to
+> set this field first.
+> 
+> Also when mmap_prepare() changes the file and is then merged, the reference
+> count also must be decremented, so update the logic to call put_map() in
+> this case too.
+> 
+> Also update __compat_vma_mmap() to manually perform this step for stacked
+> file systems using the compatibility layer, and update
+> compat_set_vma_from_desc() to replace vma_set_file() with a correct
+> refcount/file update.
+> 
+> No in-tree driver is impacted by the incorrect implementation of this
+> currently (no driver that does this is mergeable for one), so this does not
+> need to be a fix.
 > 
 > Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 > ---
->  mm/vma.c | 9 +++++++++
->  1 file changed, 9 insertions(+)
+>  mm/internal.h |  1 +
+>  mm/util.c     |  5 +++-
+>  mm/vma.c      | 83 +++++++++++++++++++++++++++++++++++------------------------
+>  mm/vma.h      |  6 +++--
+>  4 files changed, 59 insertions(+), 36 deletions(-)
 > 
+> diff --git a/mm/internal.h b/mm/internal.h
+> index 0dca33db068f..fe576d468af4 100644
+> --- a/mm/internal.h
+> +++ b/mm/internal.h
+> @@ -7,6 +7,7 @@
+>  #ifndef __MM_INTERNAL_H
+>  #define __MM_INTERNAL_H
+>  
+> +#include <linux/file.h>
+>  #include <linux/fs.h>
+>  #include <linux/khugepaged.h>
+>  #include <linux/mm.h>
+> diff --git a/mm/util.c b/mm/util.c
+> index bf0513d1d3d0..016932780925 100644
+> --- a/mm/util.c
+> +++ b/mm/util.c
+> @@ -1228,8 +1228,11 @@ int __compat_vma_mmap(struct vm_area_desc *desc,
+>  
+>  	/* Perform any preparatory tasks for mmap action. */
+>  	err = mmap_action_prepare(desc);
+> -	if (err)
+> +	if (err) {
+> +		if (desc->vm_file != vma->vm_file)
+> +			fput(desc->vm_file);
+>  		return err;
+> +	}
+>  	/* Update the VMA from the descriptor. */
+>  	compat_set_vma_from_desc(vma, desc);
+>  	/* Complete any specified mmap actions. */
 > diff --git a/mm/vma.c b/mm/vma.c
-> index d6ed10cefc8f..62f2ce1ad5a1 100644
+> index 55917d097933..fa784f069da4 100644
 > --- a/mm/vma.c
 > +++ b/mm/vma.c
-> @@ -2809,6 +2809,15 @@ static int mmap_validate(unsigned long prev_start, unsigned long prev_end,
->  int mmap_prepare_validate(const struct vm_area_desc *prev_desc,
->  			  const struct vm_area_desc *desc)
+> @@ -24,7 +24,8 @@ struct mmap_state {
+>  		vm_flags_t vm_flags;
+>  		vma_flags_t vma_flags;
+>  	};
+> -	struct file *file;
+> +	struct file *file;	/* mmap()-specified file. */
+
+I guess renaming file to mmaped_file would be a lot more changes.
+
+> +	struct file *vm_file;	/* May be updated by mmap_prepare. */
+>  	pgprot_t page_prot;
+>  
+>  	/* User-defined fields, perhaps updated by .mmap_prepare(). */
+> @@ -43,8 +44,6 @@ struct mmap_state {
+>  
+>  	/* Determine if we can check KSM flags early in mmap() logic. */
+>  	bool check_ksm_early :1;
+> -	/* If .mmap_prepare changed the file, we don't need to pin. */
+> -	bool file_doesnt_need_get :1;
+>  };
+>  
+>  #define MMAP_STATE(name, mm_, vmi_, addr_, len_, pgoff_, anon_pgoff_, vma_flags_, file_) \
+> @@ -58,6 +57,7 @@ struct mmap_state {
+>  		.pglen = PHYS_PFN(len_),				\
+>  		.vma_flags = vma_flags_,				\
+>  		.file = file_,						\
+> +		.vm_file = file_,					\
+>  		.page_prot = vma_flags_to_page_prot(vma_flags_),	\
+>  	}
+>  
+> @@ -70,7 +70,7 @@ struct mmap_state {
+>  		.vma_flags = (map_)->vma_flags,				\
+>  		.pgoff = (map_)->pgoff,					\
+>  		.anon_pgoff = (map_)->anon_pgoff,			\
+> -		.file = (map_)->file,					\
+> +		.file = (map_)->vm_file,				\
+>  		.prev = (map_)->prev,					\
+>  		.middle = vma_,						\
+>  		.next = (vma_) ? NULL : (map_)->next,			\
+> @@ -2447,7 +2447,7 @@ void mm_drop_all_locks(struct mm_struct *mm)
+>   */
+>  static bool accountable_mapping(struct mmap_state *map)
 >  {
-> +	/*
-> +	 * It is not valid to execute mmap actions for VMAs which can be merged,
-> +	 * as any such merge would leave portions of the mapping incorrectly
-> +	 * unmapped.
-> +	 */
-> +	if (vma_flags_can_merge(&desc->vma_flags) &&
-> +	    WARN_ON_ONCE(desc->action.type != MMAP_NOTHING))
-> +		return -EINVAL;
+> -	const struct file *file = map->file;
+> +	const struct file *file = map->vm_file;
+>  
+>  	/*
+>  	 * hugetlb has its own accounting separate from the core VM
+> @@ -2496,7 +2496,7 @@ static void vms_abort_munmap_vmas(struct vma_munmap_struct *vms,
+>  
+>  static void update_ksm_flags(struct mmap_state *map)
+>  {
+> -	map->vma_flags = ksm_vma_flags(map->mm, map->file, map->vma_flags);
+> +	map->vma_flags = ksm_vma_flags(map->mm, map->vm_file, map->vma_flags);
+>  }
+>  
+>  static void set_desc_from_map(struct vm_area_desc *desc,
+> @@ -2506,7 +2506,7 @@ static void set_desc_from_map(struct vm_area_desc *desc,
+>  	desc->end = map->end;
+>  
+>  	desc->pgoff = map->pgoff;
+> -	desc->vm_file = map->file;
+> +	desc->vm_file = map->vm_file;
+>  	desc->vma_flags = map->vma_flags;
+>  	desc->page_prot = map->page_prot;
+>  }
+> @@ -2586,6 +2586,10 @@ static int __mmap_setup(struct mmap_state *map, struct vm_area_desc *desc,
+>  	return 0;
+>  }
+>  
+> +static bool map_same_file(struct mmap_state *map)
+> +{
+> +	return map->vm_file == map->file;
+> +}
+>  
+>  static int __mmap_new_file_vma(struct mmap_state *map,
+>  			       struct vm_area_struct *vma)
+> @@ -2593,20 +2597,23 @@ static int __mmap_new_file_vma(struct mmap_state *map,
+>  	struct vma_iterator *vmi = map->vmi;
+>  	int error;
+>  
+> -	vma->vm_file = map->file;
+> -	if (!map->file_doesnt_need_get)
+> -		get_file(map->file);
+> +	vma->vm_file = map->vm_file;
+> +	if (map_same_file(map))
+> +		get_file(map->vm_file);
+>  
+> -	if (!map->file->f_op->mmap)
+> +	if (!map->vm_file->f_op->mmap)
+>  		return 0;
+>  
+>  	error = mmap_file(vma->vm_file, vma);
+> +	map->vm_file = vma->vm_file;
 > +
 
-If you wanted to make this unit-testable, you could pull it out into a
-separate function:
+You set vma->vm_file to map->vm_file unconditionally above, is this
+necessary?
 
-static bool mmap_action_is_valid(const struct vm_area_desc *desc)
-{
-	return desc->action.type == MMAP_NOTHING ||
-		!vma_flags_can_merge(&desc->vma_flags);
-}
+>  	if (error) {
+>  		UNMAP_STATE(unmap, vmi, vma, vma->vm_start, vma->vm_end,
+>  			    map->prev, map->next);
+> -		fput(vma->vm_file);
+> -		vma->vm_file = NULL;
+> +		if (map_same_file(map))
+> +			fput(map->vm_file);
+>  
+> +		vma->vm_file = NULL;
+>  		vma_iter_set(vmi, vma->vm_end);
+>  		/* Undo any partial mapping done by a device driver. */
+>  		unmap_region(&unmap);
+> @@ -2623,7 +2630,6 @@ static int __mmap_new_file_vma(struct mmap_state *map,
+>  			!vma_flags_test(&map->vma_flags, VMA_MAYWRITE_BIT) &&
+>  			vma_test(vma, VMA_MAYWRITE_BIT));
+>  
+> -	map->file = vma->vm_file;
+>  	map->vma_flags = vma->flags;
+>  
+>  	return 0;
+> @@ -2631,7 +2637,7 @@ static int __mmap_new_file_vma(struct mmap_state *map,
+>  
+>  static void map_set_anon(struct mmap_state *map)
+>  {
+> -	map->file = NULL;
+> +	map->vm_file = NULL;
+>  	map->vm_ops = NULL;
+>  	map->pgoff = map->addr >> PAGE_SHIFT;
+>  }
+> @@ -2643,7 +2649,7 @@ static bool map_is_private(const struct mmap_state *map)
+>  
+>  static bool map_is_anon(const struct mmap_state *map)
+>  {
+> -	return map_is_private(map) && !map->file;
+> +	return map_is_private(map) && !map->vm_file;
+>  }
+>  
+>  /*
+> @@ -2688,7 +2694,7 @@ static int __mmap_new_vma(struct mmap_state *map, struct vm_area_struct **vmap,
+>  	}
+>  
+>  	/* Invoke callbacks. */
+> -	if (map->file)
+> +	if (map->vm_file)
+>  		error = __mmap_new_file_vma(map, vma);
+>  	else if (!is_anon)
+>  		error = shmem_zero_setup(vma);
+> @@ -2797,11 +2803,15 @@ static int call_mmap_prepare(struct mmap_state *map,
+>  	int err;
+>  
+>  	/* Invoke the hook. */
+> -	err = vfs_mmap_prepare(map->file, desc);
+> +	err = vfs_mmap_prepare(map->vm_file, desc);
+>  	if (err)
+>  		return err;
+>  
+> -	/* It's invalid for mmap_preprare hooks to clear vm_ops. */
+> +	/* Update first so file refcount tracked correctly. */
+> +	if (desc->vm_file != map->vm_file)
+> +		map->vm_file = desc->vm_file;
+> +
+> +	/* It's invalid for mmap_prepare hooks to clear vm_ops. */
 
-then write:
+The less rare of prepare ;)
 
-if (WARN_ON_ONCE(!mmap_action_is_valid(desc)))
-	return -EINVAL;
+>  	if (!desc->vm_ops)
+>  		return -EINVAL;
+>  
+> @@ -2811,10 +2821,6 @@ static int call_mmap_prepare(struct mmap_state *map,
+>  
+>  	/* Update fields permitted to be changed. */
+>  	map->pgoff = desc->pgoff;
+> -	if (desc->vm_file != map->file) {
+> -		map->file_doesnt_need_get = true;
+> -		map->file = desc->vm_file;
+> -	}
+>  	map->vma_flags = desc->vma_flags;
+>  	map->page_prot = desc->page_prot;
+>  	/* User-defined fields. */
+> @@ -2826,7 +2832,7 @@ static int call_mmap_prepare(struct mmap_state *map,
+>  	 * anonymous mappings. Rather than allowing these mappings to be odd
+>  	 * outliers, simply make them truly anonymous.
+>  	 */
+> -	if (map_is_private(map) && file_is_dev_zero(map->file))
+> +	if (map_is_private(map) && file_is_dev_zero(map->vm_file))
+>  		map_set_anon(map);
+>  
+>  	return 0;
+> @@ -2845,7 +2851,7 @@ static void set_vma_user_defined_fields(struct vm_area_struct *vma,
+>   */
+>  static bool can_set_ksm_flags_early(struct mmap_state *map)
+>  {
+> -	struct file *file = map->file;
+> +	struct file *file = map->vm_file;
+>  
+>  	/* Anonymous mappings have no driver which can change them. */
+>  	if (!file)
+> @@ -2868,6 +2874,20 @@ static bool can_set_ksm_flags_early(struct mmap_state *map)
+>  	return false;
+>  }
+>  
+> +static void put_map(struct mmap_state *map)
 
-And you can write a unit test directly against mmap_action_is_valid
 
-otherwise
+I like the put_map_file() instead, like Suren suggested.. but maybe
+put_map_vm_file(), especially since it could be read as put to the file
+pointer instead of vm_file.
 
-Reviewed-by: Gregory Price (Meta) <gourry@gourry.net>
+
+> +{
+> +	/*
+> +	 * An error occurred or the VMA was merged.
+> +	 *
+> +	 * If the file was changed by the driver (which is required to increment
+> +	 * the replacement file's reference count), drop its reference count.
+> +	 *
+> +	 * On error, the caller always drops the original file regardless.
+> +	 */
+> +	if (map->vm_file && !map_same_file(map))
+> +		fput(map->vm_file);
+> +}
+> +
+>  static unsigned long __mmap_region(struct file *file, unsigned long addr,
+>  		unsigned long len, vma_flags_t vma_flags,
+>  		unsigned long pgoff, struct list_head *uf)
+> @@ -2922,7 +2942,10 @@ static unsigned long __mmap_region(struct file *file, unsigned long addr,
+>  
+>  	__mmap_complete(&map, vma);
+>  
+> -	if (have_mmap_prepare && allocated_new) {
+> +	if (!allocated_new) {
+> +		/* Merged, so need to drop refcount. */
+> +		put_map(&map);
+> +	} else if (have_mmap_prepare) {
+>  		error = mmap_action_complete(vma, &desc.action,
+>  					     /*is_compat=*/false);
+>  		if (error)
+> @@ -2936,13 +2959,7 @@ static unsigned long __mmap_region(struct file *file, unsigned long addr,
+>  	if (map.charged)
+>  		vm_unacct_memory(map.charged);
+>  abort_munmap:
+> -	/*
+> -	 * This indicates that .mmap_prepare has set a new file, differing from
+> -	 * desc->vm_file. But since we're aborting the operation, only the
+> -	 * original file will be cleaned up. Ensure we clean up both.
+> -	 */
+> -	if (map.file_doesnt_need_get)
+> -		fput(map.file);
+> +	put_map(&map);
+>  	vms_abort_munmap_vmas(&map.vms, &map.mas_detach);
+>  	return error;
+>  }
+> diff --git a/mm/vma.h b/mm/vma.h
+> index e97bd2dfa786..f15faa83f3d6 100644
+> --- a/mm/vma.h
+> +++ b/mm/vma.h
+> @@ -394,8 +394,10 @@ static inline void compat_set_vma_from_desc(struct vm_area_struct *vma,
+>  
+>  	/* Mutable fields. Populated with initial state. */
+>  	vma_set_pgoff(vma, desc->pgoff);
+> -	if (desc->vm_file != vma->vm_file)
+> -		vma_set_file(vma, desc->vm_file);
+> +	if (desc->vm_file != vma->vm_file) {
+> +		fput(vma->vm_file);
+> +		vma->vm_file = desc->vm_file;
+
+This isn't going to be racy somehow, right?
+
+> +	}
+>  	vma->flags = desc->vma_flags;
+>  	vma->vm_page_prot = desc->page_prot;
+>  
+> 
+> -- 
+> 2.55.0
+> 
 
 -- 
 kvm-riscv mailing list
