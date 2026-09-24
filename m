@@ -4,60 +4,125 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0AF6CC9830E
-	for <kvm-riscv@archiver.kernel.org>; Thu, 24 Sep 2026 14:10:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F2B79C98321
+	for <kvm-riscv@archiver.kernel.org>; Thu, 24 Sep 2026 15:50:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=0L9zDxmZUZRvEG4TxG5TPBfuosNRVPDId2NqX2Eaf80=; b=dzjVISx3PcMGB7
-	L0LqsMOIo7mgOqhSJ9lxtuU7cwqrTeMISv/8OmxvHvCJb69rEx+iQpVTRdH/mOtbIykGQUVI7udht
-	xwu0kUqzTswyxOjXsC8v8fG4wgTi8k2LqBzTJduaGxBEDXC6H08AxPwXIBHspS3KNPrLTxCVmNJkt
-	9Zso1yQvwmUBM2q0Losh+EIS0hyK6A5p3PSKuoTa33GsPo+SzEbUPxEs/yszP0QpuA+wdqQeePIER
-	NGXAZRx9Gnxgp5CC7qPZ/CGkwIDEAHm/1y6jY1pmD0nOIch2aPCxzdx9ov71cLWiQTu9aNJiIs7vj
-	F52e/N0wf8cUNA8HV2Ww==;
+	List-Owner; bh=/LHTGwg3U7rJeqhMrRmIJS1xHL6G1lRHoCTanEKBBOQ=; b=W2/6aB7BHW+w0o
+	gaQhj1e8OvDluZyZsl7r6xFzJtF82U/hmHDFb/H6043ZgmklOYReNjeklYvK+3F4uuuhjVCpx3FZu
+	myUNvWmXErHaIZ45zMp9htzrdjA97tQYL3BQNlRSoD0FDvXkigv+VYgyCAkRHbeqVu0cezCIBqJus
+	YfIa38dGsNP+QXCFLOwhNSe834s+oX8KuYXp274exhh3fj8BcwpfxOMfAMakVZOabhVh/WrUscibI
+	3H7OryghBuSp64qHg8lnRYBCWU1Kcne4Tgk5mFbyUMUQnMEpJ1yNs794kmjodVsxe4SF9X9eEVxIA
+	LlULheBzzMchY5qnB9vA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x9kA1-0000000BDbi-1fNB;
-	Thu, 24 Sep 2026 14:10:53 +0000
-Received: from mail.8bytes.org ([2a01:238:42d9:3f00:e505:6202:4f0c:f051])
-	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x9k9y-0000000BDb0-1TDb
-	for kvm-riscv@lists.infradead.org;
-	Thu, 24 Sep 2026 14:10:51 +0000
-Received: from 8bytes.org (p200300f6af404a00e4ccc4fdbbd66590.dip0.t-ipconnect.de [IPv6:2003:f6:af40:4a00:e4cc:c4fd:bbd6:6590])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.8bytes.org (Postfix) with ESMTPSA id 561341C7465;
-	Thu, 24 Sep 2026 16:10:47 +0200 (CEST)
-Date: Thu, 24 Sep 2026 16:10:46 +0200
-From: =?utf-8?B?SsO2cmcgUsO2ZGVs?= <joro@8bytes.org>
-To: James Bottomley <James.Bottomley@hansenpartnership.com>
-Cc: Paolo Bonzini <pbonzini@redhat.com>, 
-	Sean Christopherson <seanjc@google.com>, Tom Lendacky <thomas.lendacky@amd.com>, ashish.kalra@amd.com, 
-	michael.roth@amd.com, nsaenz@amazon.com, anelkz@amazon.de, 
-	Melody Wang <huibo.wang@amd.com>, kvm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	kvmarm@lists.linux.dev, loongarch@lists.linux.dev, linux-mips@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, kvm-riscv@lists.infradead.org, x86@kernel.org, 
-	coconut-svsm@lists.linux.dev, joerg.roedel@amd.com
-Subject: Re: [PATCH 35/60] kvm: Add VCPU plane-scheduling state and helpers
-Message-ID: <arUtYyK25eKQYY7j@8bytes.org>
-References: <20260608144252.351443-1-joro@8bytes.org>
- <20260608144252.351443-36-joro@8bytes.org>
- <e7eb0dba-790a-4644-9895-5c9a7420d7fe@redhat.com>
- <aib8n5lO6HKbLC4Y@8bytes.org>
- <CABgObfbUsDeStnZF-7oyR-W-Bvd4qTMoeUwGizgn10UTdKtZ2A@mail.gmail.com>
- <aigE2EvJyZlYDz0V@8bytes.org>
- <570f82e8b8bc968a31a4ba859145f6c324e41247.camel@HansenPartnership.com>
+	id 1x9lib-0000000BUIt-2KFh;
+	Thu, 24 Sep 2026 15:50:41 +0000
+Received: from mail-eastus2azlp170110003.outbound.protection.outlook.com ([2a01:111:f403:c110::3] helo=BN8PR05CU002.outbound.protection.outlook.com)
+	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
+	id 1x9liX-0000000BUHo-3oFN;
+	Thu, 24 Sep 2026 15:50:41 +0000
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=V0m6eg89kopQFl3u4IGUBlxCnRazbDM7W04AjUEYr82pv8x3G4EpPCeTJFTnq9Z3QRmF5PXWl55elFHrnYrWUn4x5FE12iIiO6F9A11TvvNhobLjyHxWiEU8biVfMLJHjaUZfYMiPQG9Tjbu3uZGBc/a1ulAl7XApQL/xa77nCyvqRRPPrCSxI27K8aewe8Q06odz3SUDH4abSX3Uv9yIJ2GcjQiQvjWGNT9gOuoa9rYWRzqHKthceT7n+BjEvtY0s+MlDIQulvEGA4DWoKN6n2l2paRfjj9tf1Hams1uPpHxnc1a4GsvHQNkMF3OK6h58qYgat5rnU5xII5t6dUYw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=xiYwQEGkKM+tsHhc5VwTwt7K0S2UtKAK9YfSG0KXgVg=;
+ b=Gf3FvOtghUQBfr7F4QG4XyIMI6foJRQhNGdy256hkHEMKvApKl/Of58X25Zuuuzy3BEVB2afSZGGqyJqyr1C/R2ODJioj14x1TKCZ5Qb6o0sD40/IppygmWTsZt89iHlxYLmMoFxiZz66TNpkEJPZara/pzNkKCbXhofbpNOxybxN7+EHTKRSupSl9SE5TsvNrVMH4CdZ2H+NEor58jKQo+fTWTMQfUnb0ZZxMqRAgRmAVcn5GNG8yOpEQHS9DA0gordDSezG/XdQTJB2OxIdp/FAvbD3YwsetFAhId3D11+o+2yVzckZMpgi0gI0ZckCxVxultg+HkeNXlzgeCRow==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=xiYwQEGkKM+tsHhc5VwTwt7K0S2UtKAK9YfSG0KXgVg=;
+ b=IF6Z6NTAI6zMdc80b8hHyu7XZ5ItC6YPpawMOAVwcEXXe/HtfKdW/gsVcwLD+HrX36GiVCpcWjLZi/UStlcuKnjO0ZGkxW9pqUjtKCYYykoW0RRZg8+DnC9YkFnYrMSy5sCZiq7DBPrQPnl8EofbQbCdDniNBexe5pkQUwe6nsLpvFCPRHs+u4GHzd36hLuuGS2IGhtOi5ilhY4PerGPsLd8mMnp/gdjmjKCO/IE+eMh5dQbSfJypmCakvvDzVi4IO6nerwHidZSF1SABPm0pOtAApXStVwUTsOSzqdGm5SvNctqL0x556wcEN/PDxWUMOjN/iwxYkT8tZxciJlx0Q==
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from IA0PR12MB8374.namprd12.prod.outlook.com (2603:10b6:208:40e::7)
+ by MW6PR12MB8916.namprd12.prod.outlook.com (2603:10b6:303:24b::14) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.451.18; Thu, 24 Sep
+ 2026 15:50:20 +0000
+Received: from IA0PR12MB8374.namprd12.prod.outlook.com
+ ([fe80::d85f:4c87:ae84:3f16]) by IA0PR12MB8374.namprd12.prod.outlook.com
+ ([fe80::d85f:4c87:ae84:3f16%6]) with mapi id 15.21.0451.014; Thu, 24 Sep 2026
+ 15:50:20 +0000
+From: Zi Yan <ziy@nvidia.com>
+To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, David Hildenbrand <david@kernel.org>, Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Jonathan Corbet <corbet@lwn.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>, Paul Moore <paul@paul-moore.com>, Stephen Smalley <stephen.smalley.work@gmail.com>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>, Kumar Kartikeya Dwivedi <memxor@gmail.com>, Baolin Wang <baolin.wang@linux.alibaba.com>, Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, Doug Gilbert <dgilbert@interlog.com>, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, "Martin K. Petersen" <mkp@kernel.org>, Jaya Kumar <jayalk@intworks.biz>, Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>, Sebastian Reichel <sre@kernel.org>, John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rik van Riel <riel@surriel.com>, Harry Yoo <harry@kernel.org>, Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Will Deacon <will@kernel.org>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin <npiggin@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>, "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, "David S. Miller" <davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Christian Brauner <brauner@kernel.org>, Matthew Brost <matthew.brost@intel.com>, Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>, Byungchul Park <byungchul@sk.com>, Gregory Price <gourry@gourry.net>, Ying Huang <ying.huang@linux.alibaba.com>, Alistair Popple <apopple@nvidia.com>, Chris Li <chrisl@kernel.org>, Kairui Song <kasong@tencent.com>, Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>, Youngjun Park <youngjun.park@lge.com>, Johannes Weiner <hannes@cmpxchg.org>, Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>, Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>, Chengming Zhou <chengming.zhou@linux.dev>, Michal Hocko <mhocko@kernel.org>, Miklos Szeredi <miklos@szeredi.hu>,
+ Xu Xin <xu.xin@linux.dev>, linux-mm@kvack.org, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, linux-usb@vger.kernel.org, linux-rdma@vger.kernel.org, selinux@vger.kernel.org, linux-sound@vger.kernel.org, bpf@vger.kernel.org, linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-trace-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-arch@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, fuse-devel@lists.linux.dev
+Subject: Re: [PATCH v3 24/40] mm/mlock: eliminate weird VMA_IO_BIT abuse and
+ simplify
+Date: Thu, 24 Sep 2026 11:50:14 -0400
+X-Mailer: MailMate (3.0r7032)
+Message-ID: <CBD619D6-8717-4C81-B5EA-D1D0771BDA3A@nvidia.com>
+In-Reply-To: <arT3K71l86fUVldk@gremlin>
+References: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org>
+ <20260917-b4-mmap-prepare-vma-flag-sanify-v3-24-4583d8a23bca@kernel.org>
+ <93672B94-BB0C-4713-8F8A-3619D81DB7BB@nvidia.com> <arT3K71l86fUVldk@gremlin>
+X-MS-Reactions: disallow
+X-ClientProxiedBy: BN9PR03CA0293.namprd03.prod.outlook.com
+ (2603:10b6:408:f5::28) To IA0PR12MB8374.namprd12.prod.outlook.com
+ (2603:10b6:208:40e::7)
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <570f82e8b8bc968a31a4ba859145f6c324e41247.camel@HansenPartnership.com>
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: IA0PR12MB8374:EE_|MW6PR12MB8916:EE_
+X-MS-Office365-Filtering-Correlation-Id: 3951ee8a-f586-4cea-8c7e-08df1a538978
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|7416014|376014|23010399003|366016|1800799024|4143699003|11063799006|56012099006|10067099003|18002099003|22082099003|3023799007;
+X-Microsoft-Antispam-Message-Info: /DYJt0aMJ6rftIKDZrc71LKGQ4W8+lcZLcsIYkbZGdwY2zccTnAXJPeDfYA+Nziv5GZkLnvQvTmx1APX7yJ3Z0fM+V/7rX4pRa1ELWppgvJS/vG9tUooAjm7RWGR7HIdd0fcLYEG+/l3W162rN6m82GQSKUzJJe0duMhzZpruk33ZhmtId0c59DpSkdTmwVwC7/EWHgvCrExEXpc1Wp0I9Yn/uWNm7PUK+B2F7BKf6VjN1ye91ceps1/+oKvvFFzACjuuiRwo/gatru1OqVKDO3Kw8dQlO/I5gV1eOxQRErokp0seL+Cr2Xu/yNCTbSDW3xrNqUzxXfA9QtQheVpGMMcdElcfVoYBNVYyWrdLEPIq2FySzJ8Lt98mN4Zl7/CuafIDohKB+7KDJuqFf4h2bI/92aGToe+hrIIbvaXOtTcqWziVak3sSDBxhLv+eTzciaUZCg0Fdqs5PCgy+8107nhabOQpkmMYDtABZhWaTFtsTvILoUSJfnOL0Pgol1NQrb3cSe5L3Nokxc7mf6OhuEi8lLzCUzOF2g6a6iWcbNIfeAtS42t/GmePumu8JZUjyDTvdhBrF8zUIrYov9hPRmGQnPFRWxf2BIHY48qxD0KAo0giYL6nCSgM5SUFXYSb8SQqPqIwTUM9jAX+BuUHU/esSPwNYZhC91uhPadmSI=
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:IA0PR12MB8374.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(23010399003)(366016)(1800799024)(4143699003)(11063799006)(56012099006)(10067099003)(18002099003)(22082099003)(3023799007);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?JeJopQ5lfzE2bWSt/Rmd4DJiBX+xQ19R2cjS+3FNRB+VOfKsUyKVeiFNfFto?=
+ =?us-ascii?Q?T1itSYQafYF82gHn8U/jUnW67ukMkUbFi8Vu9CYzq1vn+3bWo4drKKtbALjw?=
+ =?us-ascii?Q?KhfgmQ6QO49d4xP6qbULxYFHNd3rJfmlsPDTynTfcj3eYuHBpbNZ/FHpvuuW?=
+ =?us-ascii?Q?jx8R/J8gwSksEqNxwNHHWqCRJaSqzpQUvQD1uYeRxCuMVwhnaGTmmmhXaJ8B?=
+ =?us-ascii?Q?GpnPmHPbShhZt0cD5onLQVoSD2RQxTcZ1wtiUfDNMoZkjWs9HeIHSCdM8LnT?=
+ =?us-ascii?Q?bWk9ZSa8RsOPzvBbh6t++9lCMFGWE+lxd7KOgmnhH+Z/e2pyIGslV/2XCH3p?=
+ =?us-ascii?Q?10qTuQyYf46q1PWd+O+DpXx/OiPIRgz8QgCI3xAU2KoZuG7E4sFdIdAuU/YK?=
+ =?us-ascii?Q?of8TmfHniOwk4udbD+3+WEpEZ1jAgLASY3Mn2rq+ax5W2mti4qKiv76ax1Bi?=
+ =?us-ascii?Q?9xh15nVXYneJTZbzYrXbmQyLdMe11FsPqUrdO/WrifsHtJjJzU1wKLK6Qu+Q?=
+ =?us-ascii?Q?mCbA9fO5wRlkM0KBUwsrjpfAQOy3JmuuXU+wlQ+YGtVN7DzGQHfEohi19cpz?=
+ =?us-ascii?Q?zwCeZvmO3V2UlMi5Jz0Kou33OUISZfBL5F7BWfZnl0b0K4/9KKFF2TQOiXv9?=
+ =?us-ascii?Q?+QnbqDy+2Tr2KB8Ecsi5gbY3Kf8g2fyyN7Q7w99XI8HcacYOsvIwckOjl/IJ?=
+ =?us-ascii?Q?os5jKc40ERkR5sbb3+ESbwM0hYcqv5xoqEZfQrGWfsW3ohtHKPgjXK7KIR/Y?=
+ =?us-ascii?Q?RZL1hmRqnyloks/PznSICTu+x1FzulX1U/OrjHJyVHTUVRzb+dmI8vhrZq+/?=
+ =?us-ascii?Q?iRX9w0H6ioRV//gYIFyrlLEu8TnyFPGUJzFyq7dU72ahIq9qwYCOyfbbXXH4?=
+ =?us-ascii?Q?WnzHlO2Yut+2wTg1HvNOFxR56rQzcUVaMUov+qmIs8g5RD6E4JduQR2l/MHP?=
+ =?us-ascii?Q?rtQCOcvitugM8YnO2pvWw+csx8n6oAWxf9rShnPLlbtiy6nzSeKh1JJnUVEX?=
+ =?us-ascii?Q?BKu/1bACk6Pv2yK1ULFYmtgqUn4blD14c6U/LyvB90zdqt+2OO4K0xUO7plR?=
+ =?us-ascii?Q?Y+AANLdWHtQcQWlsnzy8uZP3hAfZAbukv/aeu8Vd9pjWHQp4Q4/uGoL1MO3B?=
+ =?us-ascii?Q?J3AvVrB0dcjCT1Oq/Y7YjXUFsfneZZLLzzjqZCXFv1GlspsxXGS9JT8PfVam?=
+ =?us-ascii?Q?X50c5hH2anHbHVX65jlJqPa4y8jQbciLyrW5LjjfTVo8jTBUXqd0B4nRNySH?=
+ =?us-ascii?Q?H5W37HtIv9R9zRrkAy3Y2WlUgHG/Ar0b76YR/gKmiPEBSoTYakyg8J8W1IyU?=
+ =?us-ascii?Q?lDrhzr0q5X4PqS6vEhYdqHU85i+knwTMxAko+Py+Yvjt+ZBmipxC3Tytglqa?=
+ =?us-ascii?Q?RcdCNcGHT55EDiB6IUqUL5/j/Xt80zy+FaNXnuuojKXc6xQjwhynj9qHW68z?=
+ =?us-ascii?Q?+wQ2KlVlj8zp+J7MEpam2sp4fniY1miJYDZnd80O5AJO0Zo1a4P+YCCZg9uq?=
+ =?us-ascii?Q?iNW5w23JZ7nokJfdxTTPHyo1W6+E2TYT3XtDWlY0JD0IUxmjduxz3jS9y4oX?=
+ =?us-ascii?Q?blHc8YtDIVKjGyNgi7wOCpytbjdw2TN3Du5S93jmTOTFHq8xmrbOPTcnrcOc?=
+ =?us-ascii?Q?aKBYmVL0VeNadD7HwwdJJMzUEHIrCihidb0S2x3tUv/NsceCCg5RfuIeFfd0?=
+ =?us-ascii?Q?7Vy3JTwd09vU9/v86yNsbGr1jdC72MzbQfSI1ldMp2FAgNAFWSfgJddGaviK?=
+ =?us-ascii?Q?PZRpuHwfVA=3D=3D?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 3951ee8a-f586-4cea-8c7e-08df1a538978
+X-MS-Exchange-CrossTenant-AuthSource: IA0PR12MB8374.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 Sep 2026 15:50:20.2851
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: zN/2ejWQwO24ocq4CdeF4UkGV6z628t5mCXiPUme/B7EMRlZTdImbbwwAf3STLlS
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW6PR12MB8916
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260924_071050_552646_4580D0E9 
-X-CRM114-Status: GOOD (  22.52  )
+X-CRM114-CacheID: sfid-20260924_085039_747871_F71B19A7 
+X-CRM114-Status: GOOD (  20.58  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -74,50 +139,150 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Hi James,
+On 24 Sep 2026, at 6:21, Lorenzo Stoakes (ARM) wrote:
 
-On Fri, Jul 17, 2026 at 10:35:10AM -0400, James Bottomley wrote:
-> So this all depends how the planes are started.  If you're starting
-> them from an IGVM file that loads the most privileged code and then
-> runs the guest in a different plane, absolutely, it can work as you
-> describe.  However, the common use case for serviceable security
-> enclaves is you start the kernel first (necessarily in plane 0) and
-> then bring up the enclaves later which means the planes > 0 are
-> technically higher privilege since they're running hidden security
-> code.  HOWEVER, there's no reason at all to trust a security enclave
-> that's doing something like guarding private keys to be able to poke
-> anywhere it wants in the guest ... that's a security breach waiting to
-> happen, so it would really be better if the model were not
-> hierarchical, but more akin to the ability to seal planes off from each
-> other, so the kernel can start the enclave, which would then set itself
-> and the communication area up, but then the plane 0 kernel would remove
-> access to most memory from the enclave.
-> 
-> In this sealing model, there's no absolute privilege levels; each plane
-> would decide what the other planes can see of its memory space and, on
-> security grounds, we'd likely configure the enclaves to have the least
-> possible privilege.
-> 
-> Now, Windows applications expect VSM to be strictly hierarchical in
-> terms of privilege, but if we create a sealing primitive as described
-> above, we can get it to build the strict VSM privilege hierarchy in the
-> hyper-v driver.
+> On Wed, Sep 23, 2026 at 04:06:14PM -0400, Zi Yan wrote:
+>> On 17 Sep 2026, at 12:22, Lorenzo Stoakes (ARM) wrote:
+>>
+>>> When performing mlock() or munlock() otherwise normal VMAs have VMA_IO_BIT
+>>> solely to fix a race with migration which might otherwise double-count
+>>> mlock VMAs.
+>>>
+>>> This is unnecessary - at the point of applying folio mlock state, whether
+>>> setting or clearing PG_mlocked, we know whether or not we are locking.
+>>>
+>>> Solve this in two ways - thread a boolean through the page table walk
+>>> indicating whether a lock or unlock is being performed, and run a locking
+>>> walk with VMA_LOCKONFAULT_BIT set and VMA_LOCKED_BIT cleared.
+>>>
+>>> This state never occurs otherwise, as VMA_LOCKONFAULT_BIT always implies
+>>> VMA_LOCKED_BIT. These are also always cleared together.
+>>>
+>>> Then, update folio_add_lru_vma() and mlock_folio() to check only for
+>>> VMA_LOCKED_BIT, and update try_to_unmap_one() to check for VMA_LOCKED_MASK
+>>> instead.
+>>>
+>>> Also remove the useless invocation of allow_mlock_munlock() which simply
+>>> returns true if unlocking and instead rename it to allow_mlock() and only
+>>> call it when locking.
+>>>
+>>> Finally, with the other mlock abuse of VMA_IO_BIT addressed, update
+>>> mlock_vma_folio() and folio_add_lru_vma() to simply test for
+>>> VMA_LOCKED_BIT. munlock_vma_folio() tests VMA_LOCKED_MASK instead, as an
+>>> unmap racing with the locking walk must still munlock folios the walk has
+>>> already counted.
+>>>
+>>> While here, also replace some deprecated VMA flag predicates.
+>>>
+>>> Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+>>> ---
+>>>  mm/folio.c    |  2 +-
+>>>  mm/internal.h | 10 +++++++---
+>>>  mm/mlock.c    | 51 +++++++++++++++++++--------------------------------
+>>>  mm/rmap.c     |  4 +++-
+>>>  4 files changed, 30 insertions(+), 37 deletions(-)
+>>>
+>>> diff --git a/mm/folio.c b/mm/folio.c
+>>> index 47a437e0f7fd..35e242b48870 100644
+>>> --- a/mm/folio.c
+>>> +++ b/mm/folio.c
+>>> @@ -505,7 +505,7 @@ void folio_add_lru_vma(struct folio *folio, struct vm_area_struct *vma)
+>>>  {
+>>>  	VM_BUG_ON_FOLIO(folio_test_lru(folio), folio);
+>>>
+>>> -	if (unlikely((vma->vm_flags & (VM_LOCKED | VM_SPECIAL)) == VM_LOCKED))
+>>> +	if (vma_test(vma, VMA_LOCKED_BIT))
+>>
+>> I think it is worth documenting VMA_LOCKONFAULT_BIT alone means mlock in
+>> progress, like you did in munlock_vma_folio(). Just to keep the protocol
+>> explicit for all the readers.
+>
+> Well I'm not sure it's necessary here honestly, because this never checked
+> VMA_LOCKED_MASK anyway, and VMA_LOCKONFAULT_BIT never made a difference.
+>
+> So the meaning of VMA_LOCKED_BIT here is strictly 'is it locked' and it's
+> correctly handled.
+>
+> And I fear that it becomes whack-a-mole - the neat thing about this change is
+> that you no longer have to special case the stupid VM_SPECIAL thing, and can in
+> fact do the 'normal' thing of _just checking_ VMA_LOCKED_BIT :)
+>
+> So I think it's better not to.
 
-I mostly agree with this and have to say that my statement in the cover letter
-about plane hierarchies was a bit broad.
+Your reasoning makes sense to me.
 
-The main assumption this patch-set makes about plane 0 is that it is the plane
-which does the IRQ scheduling. Say a VM has Plane 0,1, and 2. A VCPU runs plane
-2 and KVM wants to inject an IRQ into plane 1 of that VCPU. Now KVM needs the
-VCPU to decide whether it wants to run plane 1 to handle the IRQ or continue
-with plane 2 because it currently has higher-priority work to do.
+>
+>>
+>>>  		mlock_new_folio(folio);
+>>>  	else
+>>>  		folio_add_lru(folio);
+>>> diff --git a/mm/internal.h b/mm/internal.h
+>>> index b2c6c9435021..84aa3e6c8bac 100644
+>>> --- a/mm/internal.h
+>>> +++ b/mm/internal.h
+>>> @@ -971,8 +971,7 @@ void mlock_folio(struct folio *folio);
+>>>  static inline void mlock_vma_folio(struct folio *folio,
+>>>  				struct vm_area_struct *vma)
+>>>  {
+>>> -	/* The VM_IO check prevents migration from double-counting during mlock. */
+>>> -	if (unlikely((vma->vm_flags & (VM_LOCKED|VM_SPECIAL)) == VM_LOCKED))
+>>> +	if (vma_test(vma, VMA_LOCKED_BIT))
+>>
+>> Ditto.
+>
+> Similar reasoning to above.
+>
+>>
+>>>  		mlock_folio(folio);
+>>>  }
+>>>
+>>> @@ -989,7 +988,12 @@ static inline void munlock_vma_folio(struct folio *folio,
+>>>  	 * always munlock the folio and page reclaim will correct it
+>>>  	 * if it's wrong.
+>>>  	 */
+>>> -	if (unlikely(vma->vm_flags & VM_LOCKED))
+>>> +	/*
+>>> +	 * VMA_LOCKONFAULT_BIT alone marks an mlock walk in progress, see
+>>> +	 * mlock_vma_pages_range(). An unmap racing with the walk must still
+>>> +	 * munlock folios the walk has already counted.
+>>> +	 */
+>
+> Here it's worth mentioning, as it's specifically relying on the new
+> behaviour. Although it's neatly using the VMA_LOCKED_MASK to handle both the
+> locked case and the 'being locked' case :)
+>
+>>> +	if (unlikely(vma_test_any_mask(vma, VMA_LOCKED_MASK)))
+>>>  		munlock_folio(folio);
+>>>  }
+>>>
+>>
+>> Why I am commenting in the middle of the series? Because I am taking
+>> a quiz given by LLM based on this series to get myself enough background
+>> knowledge to review this series. This mlock part came up at part E
+>> and I only have part F left before I can do the full review. :)
+>
+> Thanks! :) I really appreciate you taking the time to look at this! Sorry it's
+> so large.
 
-This decision is made on plane 0 in this patch-set, which it needs to be for
-VMPLs. Does VSM have a similar concept for IRQ scheduling between VTLs or will
-the hypervisor take care to run a VTL when it has IRQs?
+Sure. It is great learning material for me. Thank you for the patches.
+
+>
+> I held this series back from last cycle to help with review load, then spent
+> some time fixing various AI-discovered things, and all the patches are necessary
+> (well for the most part) to get where the series needs to go.
+>
+> I think the change is worth it though!
+
+Of course, great to see hacky code being removed by this series.
+
+For this patch, feel free to add
+
+Reviewed-by: Zi Yan <ziy@nvidia.com>
 
 
--Joerg
+
+Best Regards,
+Yan, Zi
 
 -- 
 kvm-riscv mailing list
