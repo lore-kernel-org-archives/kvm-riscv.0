@@ -4,115 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DF13BC98314
-	for <kvm-riscv@archiver.kernel.org>; Thu, 24 Sep 2026 08:10:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7D47DC9830E
+	for <kvm-riscv@archiver.kernel.org>; Thu, 24 Sep 2026 10:03:57 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:Message-Id:MIME-Version:Subject:
-	Date:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=E0cr+Y4lxB3IlAKjwrkiDg9dX0YvcA7CAY7Odzrt8/8=; b=QmCIGMe8iRPVyN
-	suczQ2WXMfpQHH+FG72vImTWbVM0Y3H79FFqlESyu5EmyyZjL8e00iJmLn6XvofQViT7DKbVwPcQ3
-	5AqsDGlBVXqOXv2mCoV3VYhGjWGoHmksmTPFbq82bRWxY/zE3Fl15EfSNVh1HnQ/aVNv7e350wMvX
-	fDO3dXts/oHzkZv2wYXCTomPd79k3xSS1hN7Rqqw5e+acPMOecg2CYuXeV9SkKb8oAvZDin4/LA9g
-	53US/LXR2cccgZUN01PpbYm/DuYUEtcIddulHLQKxwyRJoRUng9FBlKAuIEa5UEIKBNiX+/srdvDH
-	4ptyoAcopuQcixRys4TQ==;
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
+	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=1GJp8QM1velSpMbzVgtyaLrKgg4QStzuEbLH0yZvEQ0=; b=bzs11DryRZBQh3
+	sV2NqjFS5IcL1ui95mjH4/Isu4L1Xw8+Nkl3AY8adr3F+eD9JIhLRHnQRfECURkxxVdNeKlf8w4xD
+	eJ+Ipfd90fy8ZQoZ1KCb/Piu2qSYd8gc5nPgJ4kRQPhsEHZlUSewR98QbhNGuEZhkNIUZstk1H/uD
+	ngRWKRefr5pl7Mf620r2NiCYWcztvknRxRN/dxicPo3OpSHIgxYS1QKEYKVEhQxhq20sX4VkhbAZL
+	JGBm7Ip7l1vaqrshk5IyF5DRJsq9C+8QbkiX+85DrYs7EywHNBRFVVwZXEYXLFnZ5X5tyE+odi0/L
+	40dA9eB7Qywivpqj1/vQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x9eX7-0000000AOT5-2F9n;
-	Thu, 24 Sep 2026 08:10:21 +0000
-Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+	id 1x9gJ3-0000000Af0l-08zb;
+	Thu, 24 Sep 2026 10:03:57 +0000
+Received: from tor.source.kernel.org ([2600:3c04:e001:324:0:1991:8:25])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1x9eX5-0000000AOSZ-10eR
-	for kvm-riscv@bombadil.infradead.org;
-	Thu, 24 Sep 2026 08:10:19 +0000
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=Cc:To:Message-Id:
-	Content-Transfer-Encoding:Content-Type:MIME-Version:Subject:Date:From:Sender:
-	Reply-To:Content-ID:Content-Description:In-Reply-To:References;
-	bh=qskrl8FoTONerp5XUUFpCXSU5ueWew9f+qB/NK4x0zg=; b=fSth7Kh5c755weaDih5T8J82b1
-	2tDd1pFIIW/Ab8C5qgdo3hY4TX+rSAL5ZW5cshDxfgCkSXvByAMdDu76oGt8Ji0IUKO6jE23sArZb
-	KpjiCmulQdHKVE64fUyQsEQ7d35lAaQ6VHdDxJ6C5xtWK5gwI505VrVSXL1UJek4SZNj7Xyi2d6g+
-	XH5bvQHD27n7g9ew7XiPf91etqHXSMJHCVL1K+RSeqZlr1hRdG2QmNNsSkJswt3vP6W2pYuKiSEej
-	hIMSuy8Fv8zqoczbj94jnfEdgewWjmpnIXyRtndCEFold5QfC/MGAyBPwSOXYrUKUMM33lcxVxeUA
-	qZ1obQSA==;
-Received: from mail-dl2-x28.google.com ([2607:f8b0:4864:38::28])
-	by desiato.infradead.org with esmtps (Exim 4.99.2 #2 (Red Hat Linux))
-	id 1x9eX2-0000000Fhcy-0BNN
-	for kvm-riscv@lists.infradead.org;
-	Thu, 24 Sep 2026 08:10:17 +0000
-Received: by mail-dl2-x28.google.com with SMTP id a92af1059eb24-14373bcc010so1917163c88.1
-        for <kvm-riscv@lists.infradead.org>; Thu, 24 Sep 2026 01:10:14 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=sifive.com; s=google; t=1790237413; x=1790842213; darn=lists.infradead.org;
-        h=cc:to:message-id:content-transfer-encoding:content-type
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=qskrl8FoTONerp5XUUFpCXSU5ueWew9f+qB/NK4x0zg=;
-        b=Fz2XwYHVCwGa/kFCihjHt0PZMnB1Mv1RRHbVI/o7MjNycnaVTcmFUsIKoMzPZ3fJgB
-         lKy1afSitVcA0e0H6bsuxsGnALcTz2wtIice8Gbxi75LmdLqd5Nl+rOOSE9wcfPsVJ6O
-         roSKD3x6jUuy4XzZNLo97onmWO3QIvpGzLG292J1R0wYYUjNKGv7KiXSf9/8hpbZbTz1
-         s9NyuJwsPKDgVhz6qt+D9Kx0rYqVJjw14laBkNXPF09QzOEQZ9FGPq6WBp6A7JO8pSLO
-         wxhFh67rkfgwLBNXzajN2dOYXYwobhZMyLizYNuDLbai53WhK9a0XrhKy+MIhBLUrMVa
-         GZJw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790237413; x=1790842213;
-        h=cc:to:message-id:content-transfer-encoding:content-type
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=qskrl8FoTONerp5XUUFpCXSU5ueWew9f+qB/NK4x0zg=;
-        b=xK4sUXxNYPFtIrBWWFkdSltAf/I3priMOB4HdXwqQs6khyd3oayhOP74rKEqJf2dr1
-         DV9+L+M9tFsghzKkg4h4fGaD4H4+gugLQ2BDKXL/TCjzhG04IeSSpwc3e80eM1pA1TWR
-         vG5KmlnpsZ3R46oBYNXk7JJa7bYPFb3rLYIDGJ9Pzd9qzbOc7xznOqoyQ31FtxePyzl0
-         HUPPavrSB3nDoF645VJbW5HGdQJo50B2FfCvCllUcr2sJRiEidrsS4ZqCk3UWk1pWwtF
-         jUhmeXL35nD55IblctkT/6Id5SyaYMaj+PFv/r2jdpNBkp/COLIu77bwJz2nksx78ZEX
-         6jjQ==
-X-Forwarded-Encrypted: i=1; AKwUvBzISXyHHAeZ4uzydFYyqvj/QWpDZZuwiqVoYkus4mE5lEWi/flWdHEDjE5yvP2Xq8JUB7eqHowYhxc=@lists.infradead.org
-X-Gm-Message-State: AFuF++khOmgfo7hSPwevoXa0rNKJ4FpZyzdS5mfnrYw7WK9TU11axKjG
-	VrDqScszZu8NYvKYZFKW7dZYe8pF7ZXpRAOvKxEZABDhc+B30U/lXqXjUQbMTpcwzi0=
-X-Gm-Gg: AYBFou21WJlVn3gqaCLpoX9riDdSR96r1CSQVABAbW6X95I1cqsl95vygJhBkKYXY7e
-	u92J+EpghVhTrm2HyeKi7D9q3SoKN1EhpvQ8sc6z/qDUyt4eGUv+NF4We0NBEs8ZtYZaUL5CAIB
-	VdaUvb/uzZwLSvIrsXYrcSNVoWSqOwL6WHo183f/yCIeFlTkb1EMpyxahUBxiPrbMQG1RQ8ymok
-	GQVV2kSgCeifkRcHG2GFm9uI2uyrwPG9VOrEAtKCRz6vtvALyHjrtCdzEkCEQAWYNvjRlVLwhRW
-	uTpPPjWVqAJR3smRk3wQK7OgYCpdZzPIAm/qVOczM8fsGcFfxxv69AH4ngtriwbYLzPz0m5rcyo
-	g2Dmma+c5FSysgJlCwtS9Nn8mNeGelbtzjNb6kWGWXBAsh5681IIheTbPyPFKpixgiBgCr/c9C4
-	f6QChvKIy8hh7PgWTXOVJE+PgSiN64t9PsKsb4Q5bWWsxNB+QQ8Iof/OwftknH9B7Z6N+yJ6oZR
-	US2xyvbZECYDmJO5Rk=
-X-Received: by 2002:a05:701b:42c5:20b0:143:298f:33b6 with SMTP id a92af1059eb24-14503fe4a39mr1479373c88.46.1790237413336;
-        Thu, 24 Sep 2026 01:10:13 -0700 (PDT)
-Received: from sw07.internal.sifive.com ([4.53.31.132])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-144f9390183sm10838473c88.0.2026.09.24.01.10.12
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 24 Sep 2026 01:10:12 -0700 (PDT)
-From: Yong-Xuan Wang <yongxuan.wang@sifive.com>
-Date: Thu, 24 Sep 2026 01:10:10 -0700
-Subject: [PATCH] RISC-V: KVM: fix the Zicbo[m|z|p] block sizes in
- GET_ONE_REG
+	id 1x9gJ2-0000000Af0G-0K2Y;
+	Thu, 24 Sep 2026 10:03:56 +0000
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 983A5601FE;
+	Thu, 24 Sep 2026 10:03:54 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 097291F000FF;
+	Thu, 24 Sep 2026 10:03:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1790244234;
+	bh=Q6qe1GeJ9XQcp2Qtuu+QjoS116ZDPXf6D3ecAVzIRhY=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=DMbxskamLqIuQ517s1qWGAAn1E+xsD1IWLYGPnumbRx6pTv8bCwHJNooLP/0Y9MmF
+	 ewyfTQFlrtMHi0vbNbmoGXeP02wTiKXQwMUnfW6BJPnwha3F6zTor4G266x5NCtrLZ
+	 UINk2FfnnrWpmI4AgQSRtCEaaer/qXtOU6XcHLmcrADLmAXvRTfOudurStBkH10L0j
+	 cHXvTwq8BsOo1ESnuzegeDjHk5jwPxjbI7VL3VpDQNaTCWwI1ExYzT3hhqIHmtSCUY
+	 phCcWTevzoeBg5AakjX55gtjhS7DlK4HJYPRuO/TGOEmjyYP86Mnf1i03HAWs2ule+
+	 sZHwPnp+ZmfYA==
+Date: Thu, 24 Sep 2026 11:03:23 +0100
+From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+To: Zi Yan <ziy@nvidia.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, David Hildenbrand <david@kernel.org>, Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Jonathan Corbet <corbet@lwn.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>, Paul Moore <paul@paul-moore.com>, Stephen Smalley <stephen.smalley.work@gmail.com>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>, Kumar Kartikeya Dwivedi <memxor@gmail.com>, Baolin Wang <baolin.wang@linux.alibaba.com>, Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, Doug Gilbert <dgilbert@interlog.com>, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, "Martin K. Petersen" <mkp@kernel.org>, Jaya Kumar <jayalk@intworks.biz>, Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>, Sebastian Reichel <sre@kernel.org>, John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rik van Riel <riel@surriel.com>, Harry Yoo <harry@kernel.org>, Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Will Deacon <will@kernel.org>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin <npiggin@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>, "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, "David S. Miller" <davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Christian Brauner <brauner@kernel.org>, Matthew Brost <matthew.brost@intel.com>, Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>, Byungchul Park <byungchul@sk.com>, Gregory Price <gourry@gourry.net>, Ying Huang <ying.huang@linux.alibaba.com>, Alistair Popple <apopple@nvidia.com>, Chris Li <chrisl@kernel.org>, Kairui Song <kasong@tencent.com>, Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>, Youngjun Park <youngjun.park@lge.com>, Johannes Weiner <hannes@cmpxchg.org>, Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>, Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>, Chengming Zhou <chengming.zhou@linux.dev>, Michal Hocko <mhocko@kernel.org>, Miklos Szeredi <miklos@szeredi.hu>, Xu Xin <xu.xin@linux.dev>, linux-mm@kvack.org, 
+ linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, linux-usb@vger.kernel.org, linux-rdma@vger.kernel.org, selinux@vger.kernel.org, linux-sound@vger.kernel.org, bpf@vger.kernel.org, linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-trace-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-arch@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, fuse-devel@lists.linux.dev
+Subject: Re: [PATCH v3 01/40] mm/vma: fix mmap_prepare file handling, remove
+ file_doesnt_need_get
+Message-ID: <arTvHhdoxZi_LslN@gremlin>
+References: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org>
+ <20260917-b4-mmap-prepare-vma-flag-sanify-v3-1-4583d8a23bca@kernel.org>
+ <26EB9785-2909-4D49-A755-09A72BA94BD0@nvidia.com>
 MIME-Version: 1.0
-Message-Id: <20260924-kvm_fix_cbosize-v1-1-e57eec1b19cb@sifive.com>
-X-B4-Tracking: v=1; b=H4sIAOLatGoC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
- vPSU3UzU4B8JSMDIzMDSyMT3eyy3Pi0zIr45KT84syqVF3DpDSj5JQUIwuj5CQloK6ColSgNNj
- E6FgIv7g0KSs1uQRkjFJtLQCMNJxCcwAAAA==
-X-Change-ID: 20260924-kvm_fix_cbosize-1bf2cdd282cb
-To: Anup Patel <anup@brainfault.org>, Atish Patra <atish.patra@linux.dev>, 
- Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
- Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>
-Cc: greentime.hu@sifive.com, vincent.chen@sifive.com, zong.li@sifive.com, 
- Anup Patel <anup.patel@oss.qualcomm.com>, kvm@vger.kernel.org, 
- kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
- linux-kernel@vger.kernel.org, Yong-Xuan Wang <yongxuan.wang@sifive.com>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1790237412; l=1573;
- i=yongxuan.wang@sifive.com; s=20260424; h=from:subject:message-id;
- bh=EbRsjy+izD4FGJar3RutZAfTClGR/6Al7JWVZmKxHY4=;
- b=ktuwHwkl+sNKmTBsvPQ0ePdlIJCd1cN4B/8rlGZcLD78YaixmZ3+Sr9zf3M4Ve+OkLZfg1JZ5
- NDnGj8FH/u6AD44JXwxKm5xyMK8rr/ydh0aXz4LawdWbz5iOAe6oTgj
-X-Developer-Key: i=yongxuan.wang@sifive.com; a=ed25519;
- pk=+8NCHB1ZJvZthQAmZspOAaqjo+/snaW8mFSiDx45HxY=
-X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260924_091016_503363_39EE3250 
-X-CRM114-Status: GOOD (  10.27  )
+Content-Disposition: inline
+In-Reply-To: <26EB9785-2909-4D49-A755-09A72BA94BD0@nvidia.com>
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -129,41 +71,139 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-The kvm_riscv_vcpu_get_reg_config() should return the block size when
-the host supports the corresponding extensions.
+On Wed, Sep 23, 2026 at 10:20:43PM -0400, Zi Yan wrote:
+> On 17 Sep 2026, at 12:22, Lorenzo Stoakes (ARM) wrote:
+>
+> > The map->file_doesnt_need_get flag is confusing and the existing
+> > implementation has holes.
+> >
+> > Drivers are permitted to change the owning file of a mapping. If they do
+> > so, they are required to take a reference on that file.
+> >
+> > The mmap() operation which ultimately invokes __mmap_region() is guaranteed
+> > to drop the refcount for the original file the mapping was made under, but
+> > this is not true for the replaced file.
+> >
+> > This has been addressed so far by tracking map->file_doesnt_need_get, which
+> > is rather poorly named and unfortunately fails to correctly track whether
+> > or not an additional put were needed in a number of cases.
+> >
+> > Make life easier by removing this flag, and instead drop the reference for
+> > both mmap_prepare and the deprecated mmap callback in a new function
+> > put_map().
+> >
+> > Track whether this needs to be done by aligning mmap_state with
+> > vm_area_desc and store the original file in the map->file field, keeping
+> > the updated file in map->vm_file.
+> >
+> > In order to have the same behaviour for both types of hooks, only drop the
+> > reference __mmap_new_file_vma() itself took in its error path, deferring
+> > the replaced file's reference to put_map().
+> >
+> > To make this work correctly, map->vm_file has to be updated before any
+> > error handling, so update __mmap_new_file_vma() and call_mmap_prepare() to
+> > set this field first.
+> >
+> > Also when mmap_prepare() changes the file and is then merged, the reference
+> > count also must be decremented, so update the logic to call put_map() in
+> > this case too.
+> >
+> > Also update __compat_vma_mmap() to manually perform this step for stacked
+> > file systems using the compatibility layer, and update
+> > compat_set_vma_from_desc() to replace vma_set_file() with a correct
+> > refcount/file update.
+> >
+> > No in-tree driver is impacted by the incorrect implementation of this
+> > currently (no driver that does this is mergeable for one), so this does not
+> > need to be a fix.
+> >
+> > Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+> > ---
+> >  mm/internal.h |  1 +
+> >  mm/util.c     |  5 +++-
+> >  mm/vma.c      | 83 +++++++++++++++++++++++++++++++++++------------------------
+> >  mm/vma.h      |  6 +++--
+> >  4 files changed, 59 insertions(+), 36 deletions(-)
+> >
+> > diff --git a/mm/internal.h b/mm/internal.h
+> > index 0dca33db068f..fe576d468af4 100644
+> > --- a/mm/internal.h
+> > +++ b/mm/internal.h
+> > @@ -7,6 +7,7 @@
+> >  #ifndef __MM_INTERNAL_H
+> >  #define __MM_INTERNAL_H
+> >
+> > +#include <linux/file.h>
+> >  #include <linux/fs.h>
+> >  #include <linux/khugepaged.h>
+> >  #include <linux/mm.h>
+> > diff --git a/mm/util.c b/mm/util.c
+> > index bf0513d1d3d0..016932780925 100644
+> > --- a/mm/util.c
+> > +++ b/mm/util.c
+> > @@ -1228,8 +1228,11 @@ int __compat_vma_mmap(struct vm_area_desc *desc,
+> >
+> >  	/* Perform any preparatory tasks for mmap action. */
+> >  	err = mmap_action_prepare(desc);
+> > -	if (err)
+> > +	if (err) {
+> > +		if (desc->vm_file != vma->vm_file)
+> > +			fput(desc->vm_file);
+> >  		return err;
+> > +	}
+> >  	/* Update the VMA from the descriptor. */
+> >  	compat_set_vma_from_desc(vma, desc);
+> >  	/* Complete any specified mmap actions. */
+> > diff --git a/mm/vma.c b/mm/vma.c
+> > index 55917d097933..fa784f069da4 100644
+> > --- a/mm/vma.c
+> > +++ b/mm/vma.c
+> > @@ -24,7 +24,8 @@ struct mmap_state {
+> >  		vm_flags_t vm_flags;
+> >  		vma_flags_t vma_flags;
+> >  	};
+> > -	struct file *file;
+> > +	struct file *file;	/* mmap()-specified file. */
+>
+> IIUC, file is never assigned other than MMAP_STATE() and should not
+> change after mmap(). Could it be made const to prevent any change?
+> I assume mmap_state will not need to handle the nesting issue like
+> vm_area_desc, so file can be const.
 
-Fixes: 298276da73ca ("RISC-V: KVM: Zicbo[m|z|p] block sizes should be always present in ONE_REG")
-Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
----
- arch/riscv/kvm/vcpu_onereg.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+Oh I had assumed that this couldn't be const and I thought I'd checked that, but
+seems not, it can be :)
 
-diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
-index 877ba823fc74..f2b125569449 100644
---- a/arch/riscv/kvm/vcpu_onereg.c
-+++ b/arch/riscv/kvm/vcpu_onereg.c
-@@ -50,13 +50,13 @@ static int kvm_riscv_vcpu_get_reg_config(struct kvm_vcpu *vcpu,
- 		reg_val = vcpu->arch.isa[0] & KVM_RISCV_BASE_ISA_MASK;
- 		break;
- 	case KVM_REG_RISCV_CONFIG_REG(zicbom_block_size):
--		reg_val = (kvm_riscv_isa_check_host(ZICBOM)) ? 0 : riscv_cbom_block_size;
-+		reg_val = (kvm_riscv_isa_check_host(ZICBOM)) ? riscv_cbom_block_size : 0;
- 		break;
- 	case KVM_REG_RISCV_CONFIG_REG(zicboz_block_size):
--		reg_val = (kvm_riscv_isa_check_host(ZICBOZ)) ? 0 : riscv_cboz_block_size;
-+		reg_val = (kvm_riscv_isa_check_host(ZICBOZ)) ? riscv_cboz_block_size : 0;
- 		break;
- 	case KVM_REG_RISCV_CONFIG_REG(zicbop_block_size):
--		reg_val = (kvm_riscv_isa_check_host(ZICBOP)) ? 0 : riscv_cbop_block_size;
-+		reg_val = (kvm_riscv_isa_check_host(ZICBOP)) ? riscv_cbop_block_size : 0;
- 		break;
- 	case KVM_REG_RISCV_CONFIG_REG(mvendorid):
- 		reg_val = vcpu->arch.mvendorid;
+Will fix that up for v4 thanks!
 
----
-base-commit: b5060a4aa33d7d78a8c1837ab08ef0c81ea96650
-change-id: 20260924-kvm_fix_cbosize-1bf2cdd282cb
+>
+> > +	struct file *vm_file;	/* May be updated by mmap_prepare. */
+> >  	pgprot_t page_prot;
+> >
+> >  	/* User-defined fields, perhaps updated by .mmap_prepare(). */
+> > @@ -43,8 +44,6 @@ struct mmap_state {
+> >
+> >  	/* Determine if we can check KSM flags early in mmap() logic. */
+> >  	bool check_ksm_early :1;
+> > -	/* If .mmap_prepare changed the file, we don't need to pin. */
+> > -	bool file_doesnt_need_get :1;
+> >  };
+> >
+> >  #define MMAP_STATE(name, mm_, vmi_, addr_, len_, pgoff_, anon_pgoff_, vma_flags_, file_) \
+> > @@ -58,6 +57,7 @@ struct mmap_state {
+> >  		.pglen = PHYS_PFN(len_),				\
+> >  		.vma_flags = vma_flags_,				\
+> >  		.file = file_,						\
+> > +		.vm_file = file_,					\
+> >  		.page_prot = vma_flags_to_page_prot(vma_flags_),	\
+> >  	}
+> >
+>
+>
+> Best Regards,
+> Yan, Zi
 
+--
+Cheers, Lorenzo
 
 -- 
 kvm-riscv mailing list
