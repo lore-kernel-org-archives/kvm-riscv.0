@@ -4,89 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AE3C0C9831E
-	for <kvm-riscv@archiver.kernel.org>; Sat, 26 Sep 2026 05:18:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 85ADDC98318
+	for <kvm-riscv@archiver.kernel.org>; Sat, 26 Sep 2026 05:52:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
-	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=GyUp7O2Idr/zDMhs6Kkkxc5iIKGnS9r+9A12UH3Tdcs=; b=wzBqYAVj0Ckc+M
-	HIItSmgg79SsZ4NHdE8AZWocy3Yqu+POhm6fHH9fSHf/jzpZi1lTab2gBG9BOxT9x/1PR4AdDqgBc
-	+XyTCfzwNrPHBNdaWOA4ftMOlihAtculTFOjsnIH0L9lbZ80exuYv7sU+R1W9F6NrJUHVdP7whkHZ
-	pEfaAd3Zr1mtfuFz/VTcRD5AsUAVAZQS2V09+wDNH04i8832Xs5NHLmHKhi7QjVaDxzuwoGXVo6En
-	Ogg4Is9Yj4c2ikNBi4tr8+xiZLcINR6oKEKRfs1r14PeI+ZMF3RcK3jXk8wN+AzkgPXxWyz6d8ujd
-	t98oc4bAbrN4lbkU1u8Q==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=1YlL9NwYQ2L75clkPcHeJOAwRfWjzmZsuJyRKRxjD3Y=; b=DItcbXvBlx1Yk1
+	KbB8swQuAGzW5/v81HzSI2HLzMCIPJCfspp04ZuSJaH5znhRQGJjj19g71D59JAEW/CTpjotR2ek4
+	Uaj/g6N2DH4h2clh1MlrQWOsICBK/QJ++mxI++HrGJxBxC7FtEcAONrkayAcP4/GYHVCBwlp3aiYi
+	kAcvMlBUCWaO6NHHttY+DFZHk+dWlHNaw3FA34kXcG58NCyXpWYoqahpYC9r1zN+9kzgwNpC7PxcP
+	Y6E86EO0QRz/Et5GFcTRC93in0ceecJ3zptlnhpO7k4SDIvNjkIm1AR9BqJRN0r0EOxqboFew2Bv9
+	GZ+oB9iB2VC4gvg9kWSg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1xAKo4-0000000F0rq-1M5l;
-	Sat, 26 Sep 2026 05:18:40 +0000
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.129.124])
+	id 1xALKt-0000000F3HD-3AWB;
+	Sat, 26 Sep 2026 05:52:35 +0000
+Received: from mail-pj2-x0e.google.com ([2607:f8b0:4864:39::e])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1xAKo0-0000000F0r3-2KM2
+	id 1xALKp-0000000F3GQ-3hKm
 	for kvm-riscv@lists.infradead.org;
-	Sat, 26 Sep 2026 05:18:38 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1790399913;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=cyh9GNwkSeiWX8VVWJet6cmrStrv1Y1BhHYKMAKCy08=;
-	b=ZpmBgmKUzC2rwgWLp1KZsgs+sTv8qROomCw2vynZFymPNyrC45PUBLDMFP3xEIf35I2F87
-	BMSjlFpHZKvL2Opxiff+O4HruWAtA8EnnRhYfdhVHSnBQs42KPhKzR2EE5RkfT+2/cAjWq
-	Kzu6L+rfwAps0fKKBYY43/R1wDoDG6g=
-Received: from mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-43-j_rOfgzlNsqWzvsOBAFx3Q-1; Sat,
- 26 Sep 2026 01:18:30 -0400
-X-MC-Unique: j_rOfgzlNsqWzvsOBAFx3Q-1
-X-Mimecast-MFC-AGG-ID: j_rOfgzlNsqWzvsOBAFx3Q_1790399908
-Received: from mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.93])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 271711955F29;
-	Sat, 26 Sep 2026 05:18:27 +0000 (UTC)
-Received: from virtlab1023.virt.eng.rdu2.dc.redhat.com (virtlab1023.virt.eng.rdu2.dc.redhat.com [10.18.48.26])
-	by mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id A9392180036E;
-	Sat, 26 Sep 2026 05:18:22 +0000 (UTC)
-From: Paolo Bonzini <pbonzini@redhat.com>
-To: Sean Christopherson <seanjc@google.com>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Anup Patel <anup@brainfault.org>,
-	Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Kiryl Shutsemau <kas@kernel.org>,
-	Rick Edgecombe <rick.p.edgecombe@intel.com>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Atish Patra <atish.patra@linux.dev>,
-	Alexandre Ghiti <alex@ghiti.fr>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	linuxppc-dev@lists.ozlabs.org,
+	Sat, 26 Sep 2026 05:52:33 +0000
+Received: by mail-pj2-x0e.google.com with SMTP id 98e67ed59e1d1-396ccb1a990so1210267a91.3
+        for <kvm-riscv@lists.infradead.org>; Fri, 25 Sep 2026 22:52:31 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1790401951; x=1791006751; darn=lists.infradead.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=/Q+AEMs+1c3HlByet+UhGr0L4v7ZQfIIBKxcOD9TNJ4=;
+        b=eKIA2oo3DieC7axAZbbyeLSefQ7/L9U1NTgUyx1hykAokE7ctwR4LRpl7KZTZzKyiZ
+         WSvKzJj7NxeII+VkDkyxIbxT/cDtjlhK64hz/ikaY0DBjFdqmUDHfV9iCrUm4XzH7MXS
+         G2Xcj0bmnEnmnj5QhtYzfkbHg6klw9jcgp7wpPtOtTvkh1XziVuyrQ2BaRVV4wTNWVsM
+         NhruUq+0n5K3/EuoeX0zAtIC+Bb8cYi5Q3bxeCVBdFb72rmTyzeeN0goNgTsbQek95JE
+         ZEF5NvHVVNU68Sd05FLhQv+UJqnUvdsWrw7IetUJnHx/SWO+nh2O7FJj2Zib63TpYIKw
+         eHdA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790401951; x=1791006751;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=/Q+AEMs+1c3HlByet+UhGr0L4v7ZQfIIBKxcOD9TNJ4=;
+        b=hMWACByA6wgvhPM+oNbMstIwTEnvzbf0CiqG6NLYi/kspxxYcMwnkTg+zmTWN17jo4
+         gxYDhyTSl3XzxYzVRHQLROoEw7OHSU+uiYbdTdOTvsz46tiBoVubBOInD/XhnGKS8/3L
+         kSyenkQdCGhhQGC1p1q9/CkyHtMo+Dsw4n4yGGK+RvXWn7sJJePqL6xAtD89YZ/jpTQ5
+         x+ssjrUoqav2ZGEg7FZAU+U7YRX6bR+aWnh9ENJa5Sg09JK6NuZ1LVoaQADblNVvrswt
+         HrBKarpAJnFX+vLPf7761i7RET6Zx4xck08IHlpB1EUUsCetDKge0o69XkD6Ekc3ZAn9
+         /3GQ==
+X-Forwarded-Encrypted: i=1; AKwUvBzBldujd4k0AC/cHMyALV0hou1lYzA0yrIUqDZcp4RpTdHWye2ld3t/Sj5ZP7QEUIYSLZxVrCe0Z3E=@lists.infradead.org
+X-Gm-Message-State: AFuF++m+cyrH9+HuKFF3ZKHcpZSgJ1bWwRwUEAXZkBsifcjCCtexD4yt
+	7+c/c0XRsh/sgnGRG/wGVee33b/0euZiV8zZTBW++m9XcpNnfNQKUlbbiuivLTIf
+X-Gm-Gg: AYBFou19LVKLzVgxayJ4RDCrcUTElougFw84beedo91q+gbMs2uXOmVjazFml1x3pjL
+	9CvPmtxD5ncA4vNb8ErtB6VfoOBiGdEA8vqpvqV2Xgq3lRLrqK3OY7xeA7wKst/1AJTGShb4Ey0
+	fJRMCteQFyrhNtZXiVTsMHhQorUmk2YCTKMwAbA7YWeZ0bSHJsOrkGCyqNe3AMx2ZZUlPsHJXui
+	H3XZHZzENNuVVY1eaihgSu8d2+8llXEL7Jax78l/l2h3Oa73viAGE+qE6HXp9gEHqb3AzFSU3jf
+	Ruk9Za1ckc9/XHEijeEaso8ailRKxffTnBht38jf3OFYm0xqIKkELrIjHCtH7tLZFuY/1Px1Zkh
+	bgDvCx2xuKjMNPT3QNqMFvIczra5YXol2FUaBw8pohz4LPPHAzig3FpVqPipN9CKHZyFmC91dgl
+	pk9VB5oDpMXdwXXlHR34eBry4IvGw6b/PkIjaSMzzTPKERtevaVpy2WhKTsmMuDjR+Wv3PntuD3
+	wRLZnupAmKVmWtgEaOMZK0lPhXGWnF8kLdCDvbm1MaVdTBNPQxG7J1DsWpqBMBInL1nlnwd/akG
+	RpWhzALW3b8LvA/EAkvF8SX+XMfYxcC07jP0UbZSAoNW+Z1uK9JhBGUi9cc=
+X-Received: by 2002:a17:90b:570e:b0:39e:6c6a:6580 with SMTP id 98e67ed59e1d1-3a0bb662a35mr2868982a91.67.1790401950853;
+        Fri, 25 Sep 2026 22:52:30 -0700 (PDT)
+Received: from spider.bream-herring.ts.net ([103.6.151.236])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3a0b99917besm7897504a91.14.2026.09.25.22.52.29
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 25 Sep 2026 22:52:30 -0700 (PDT)
+From: Matthias Goergens <matthias.goergens@gmail.com>
+To: Anup Patel <anup@brainfault.org>
+Cc: Atish Patra <atish.patra@linux.dev>,
 	kvm@vger.kernel.org,
 	kvm-riscv@lists.infradead.org,
-	linux-riscv@lists.infradead.org,
-	x86@kernel.org,
-	linux-coco@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	Jean-Christophe Guillain <jean-christophe@guillain.net>,
-	=?UTF-8?q?Pawe=C5=82=20S?= <spawel523@gmail.com>
-Subject: Re: [PATCH v2 0/7] KVM: Serialize vCPU creation and revert vcpu_ids tracking
-Date: Sat, 26 Sep 2026 01:18:20 -0400
-Message-ID: <20260926051820.192707-1-pbonzini@redhat.com>
-In-Reply-To: <20260921174445.911676-1-seanjc@google.com>
-References: 
+	linux-riscv@lists.infradead.org
+Subject: [PATCH] MAINTAINERS: name the kvm-riscv/linux riscv_kvm_next branch
+Date: Sat, 26 Sep 2026 13:52:27 +0800
+Message-ID: <20260926055227.3678332-1-matthias.goergens@gmail.com>
+X-Mailer: git-send-email 2.55.0
 MIME-Version: 1.0
-X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.93
-X-Mimecast-MFC-PROC-ID: jj9dy4llqwLuzEEAlSzoWhrPOaN6TT0aqYjDPdkBzRo_1790399908
-X-Mimecast-Originator: redhat.com
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260925_221836_712064_D3E1A9B9 
-X-CRM114-Status: UNSURE (   3.72  )
+X-CRM114-CacheID: sfid-20260925_225232_517006_77E88F6A 
+X-CRM114-Status: UNSURE (   9.75  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -104,10 +101,41 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Queued, thanks.
+The T: entry for KERNEL VIRTUAL MACHINE FOR RISC-V (KVM/riscv) names
+github.com/kvm-riscv/linux without a branch.  The repository's HEAD
+points to branch master, which mainline already contains.  linux-next
+merges the riscv_kvm_next branch of this repository (Next/Trees).  Name
+that branch in the entry.
 
-Paolo
+Signed-off-by: Matthias Goergens <matthias.goergens@gmail.com>
+---
+This is part of a cleanup of all T: entries whose repository HEAD is
+not where development happens: one patch per repository, sent in small
+batches.  The plan is at [1], and why it goes out in batches at [2].
 
+[1] https://lore.kernel.org/all/20260924033200.3615554-1-matthias.goergens@gmail.com/
+[2] https://lore.kernel.org/all/20260924101844.2403008-1-matthias.goergens@gmail.com/
+
+ MAINTAINERS | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 140eafcbbd78..16f6b306adf2 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -14357,7 +14357,7 @@ L:	kvm@vger.kernel.org
+ L:	kvm-riscv@lists.infradead.org
+ L:	linux-riscv@lists.infradead.org
+ S:	Maintained
+-T:	git https://github.com/kvm-riscv/linux.git
++T:	git https://github.com/kvm-riscv/linux.git riscv_kvm_next
+ F:	arch/riscv/include/asm/kvm*
+ F:	arch/riscv/include/uapi/asm/kvm*
+ F:	arch/riscv/kvm/
+
+base-commit: 62f4c998b297cf233997a2b4cd6fc2d2df0319c9
+-- 
+2.55.0
 
 
 -- 
