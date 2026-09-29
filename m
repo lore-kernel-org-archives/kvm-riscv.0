@@ -4,135 +4,142 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 07D5FCA5FA7
-	for <kvm-riscv@archiver.kernel.org>; Mon, 28 Sep 2026 14:40:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ED794CA5FAB
+	for <kvm-riscv@archiver.kernel.org>; Tue, 29 Sep 2026 02:12:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
-	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:In-Reply-To:References:Cc:
+	Subject:From:To:Message-Id:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=Oa9IkojYidF1QrK+m2jVQH4nnrBKFoHMRuYiaDHlYK0=; b=b+pQ1RV8v2Tyqr
-	e5NGuARkyvheZQnmFCvTTLIkVONFvjasKy8mvM0P0+HHH35Z/65777Vp6/6qsyaciUi+QBe6ia3xc
-	OZMAc5icbpd3nlF5c0uCp/jhFRHm53RIzIAVxrcKNxV6HcXhzZI/fDTy1AEkIZKt39C/um1Ws0KwH
-	GLGfKwl+6TtTCpJwUtD75t7TUuX64dRuXhJ3/hEWZO8T/9Ps0DgwxUDy1qj1Zx2WpWzYRzY6cbK11
-	6IB4Mn0KwMSSVWYT4W+GQCrutW296TT7MDq/nUePQVZuKJ2hWZbzJRjdWt395h2seHoHGzq9QFuju
-	uUckx+FFRJw9PmiJcbeg==;
+	List-Owner; bh=nkzuVzeXWBGeyPvl/mj9MAIg5Vcg2fou41Yym7TFstk=; b=JwedEoAYgqp8qL
+	KzWDybxIWBCHuTYlnI6bk+/ODhffo+SnWXJJr9GSCVcQwgsHtnYNaRLd/+cVzPDxKgPcDlMqk8TCY
+	zWBdkD0RFwz8UkQcEKgh+mjrjQH2zNLSTOZ0gZsGvt5VHzrwfhcQqILXUm9B2Jf93qnHIiieynldz
+	gJICFYX2pmIasKjzWFSGhSzm8nta0gFE7Q36Ju56nLNmpDiLmlQbAJeISbMljDLIwSulfmTJVD1eP
+	/+AboFC5mlU7rJyG1f80/v5dwpXfOV9VJCsbRa1vaoSchVVm9DGG7jEdpvIySxv1HuF3E5fOdVvIy
+	y5Ecs9qiSszczDEoULKg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1xBCWp-00000000nsm-32ML;
-	Mon, 28 Sep 2026 14:40:27 +0000
-Received: from mx0a-0031df01.pphosted.com ([205.220.168.131])
+	id 1xBNKU-000000026qn-0wEV;
+	Tue, 29 Sep 2026 02:12:26 +0000
+Received: from mail-westus3azon11011003.outbound.protection.outlook.com ([40.107.208.3] helo=PH0PR06CU001.outbound.protection.outlook.com)
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1xBCWn-00000000nrW-2vB5
-	for kvm-riscv@lists.infradead.org;
-	Mon, 28 Sep 2026 14:40:26 +0000
-Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68SEdsOI1895242
-	for <kvm-riscv@lists.infradead.org>; Mon, 28 Sep 2026 14:40:25 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=qcppdkim1; bh=GRnT15XNTnT
-	hRrBqENhdYd5BF9k1QXVVKb1KnU2gCEA=; b=WoWqgFa0/f0SN3SxSiWmUYkaO6R
-	1oUPDoF+umGUVOzH8Iad152juDLgd09JrFVAoyVqzgKDeuVTc0SofRQLlaq/r2jj
-	AZOuJuxqL/LJm6+Ql53rM8Tu1gQ8PVh9S50+ip25xjUGERpRkidq5Lnb+44pGtsj
-	zW/v/K9crCbqVwiv6MqJ/1B24qVLQG2E2BSxZmdrMkh7dafVV5239BDB9qj0v9FU
-	cnlBFAPlrIcg08lMKPnlQBDW4yxuxvljDet6l/Mr6PXArm2yZ0H3vuaEoffiD1tD
-	/P6GAPhY417P4dxn//WksCEIQAQW/58B99QxTOwGltQ5alIzz882n1cq2wQ==
-Received: from mail-oi1-f197.google.com (mail-oi1-f197.google.com [209.85.167.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gyj2s20vq-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <kvm-riscv@lists.infradead.org>; Mon, 28 Sep 2026 14:40:25 +0000 (GMT)
-Received: by mail-oi1-f197.google.com with SMTP id 5614622812f47-4b2f2b8d88fso5146217b6e.2
-        for <kvm-riscv@lists.infradead.org>; Mon, 28 Sep 2026 07:40:25 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1790606424; x=1791211224; darn=lists.infradead.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=GRnT15XNTnThRrBqENhdYd5BF9k1QXVVKb1KnU2gCEA=;
-        b=S+6ueXY40qzuRflV56hNAKuZ8gku4YLfJT/VvfKB6FbbCpGWGu2ADGbhgXkU99S51G
-         JJ9dKQolaI4AZ9UbG7GVTE3KpvaXuse2dmj+QDlFF+ccxE6iV6hEaD6FX+dhoNSXeJd2
-         OJFGe2ySIduXf/D5Ef4KXhVsHGkaa3oCBPEvXAk3YYvVMXXjRrcTaTz45LtuA4quLhpU
-         ZWjzNw97VzOWE62C16k+Yv+z8BNm+dWAmgbiBpm0XL3wvDvX+VFBatC743vqUjlmJYqJ
-         JtyoP2McYoLMgCZL+fxSj5/sHsML7rTeGQrhQDkWaezEe6qFR5mSm7Yo/WHyexHAy96b
-         cqdQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790606424; x=1791211224;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=GRnT15XNTnThRrBqENhdYd5BF9k1QXVVKb1KnU2gCEA=;
-        b=eNqyH1typzMa5dyzCkQ4MLER1NnwPkuSvnK1C0HF93DR2H3/Ms4Ew5pUecTRzPX5UM
-         z9N6LHZsMzwUGegSfwKp4K8Dkx9rY4XPE9DFu/qgSJMsuUUV3OF81IfWj1s3fKwaBpHw
-         LrnZxH9bJIY8J+w40AmeE0Hr+fTsse9OKuz9ns7/bpD20WufHVPrz/wDQgTuqTDyqLLS
-         iv+bqjRo6mMKZA/FVBSMtW4MNZtU08LBtBAVRCuE8fThXoSCJUfl3xtA8CNw1B6WWXKh
-         2QqzswCCnK3nhNb7Kb7eRIFn/PG9l/eFPx2vUZ9qeIdHha0vx0ubMBPoGsax7WObX/BY
-         z4lQ==
-X-Forwarded-Encrypted: i=1; AKwUvBxeny4wFthG9UEx7xOB8x5BpiSO3M62A2MO5LlulAsXpcBwHxpSxjTX0JajUNZ66z9t1dARWLvsl8w=@lists.infradead.org
-X-Gm-Message-State: AFuF++mC22Y6gODjuYd18CLHkxzJ8VcbP9MjBZF4h8fJd16RS8sr3Cuz
-	BIDyYQEXizmX7WH5p9hqNwpXaP0D2N9lnK0VVZE56PS2vAont75Kayouhq+beJPHmZwSXJkHGr8
-	oco0zRc8ukqFRyv6xQmumGAm0+PUckAbUwdkqb9OvZ6r6rz7YLYmGYcy8IFfBtaWR1mASB9Tz4d
-	Fu
-X-Gm-Gg: AYBFou2kRiQjbdimib3SeyoMpG0X7jZJj+ZF65W3+T5y5gjNbUWursEyMkRIsIGmL8l
-	KSsNklQ7Qtj3+7FBsFF+wWmr4AlfwjehF9rP1jFWL66jdaAADF0JytuzgLBC48ChmuPYkdfUmeY
-	7c0PriaXyFGwYXXE2ZzBuGTs9XMLBT3wX0MjGXGBaU0O4wqsFHwzUoeamVbwqmGaMKB4tSSRd17
-	J6Qz/nRavrc+UdQ5VKSlqce2JkNNaEl/yPJtISMrDWJL+2QPiPxobB5SupIUtgat3fU31QcZqmS
-	lPsuo+EI+YsqSEaiE4LOMuxbefMAAvhsKnEb0qZBDwupn7cSCDqIAeyteailbwbUsaUk/Teelqm
-	Oep32zSmfEp+2YmzS7R5DsLvb8V73Mia50nqW3Q==
-X-Received: by 2002:a05:6808:1811:b0:4cb:f21c:a799 with SMTP id 5614622812f47-4d72ac45fd2mr17716287b6e.33.1790606424333;
-        Mon, 28 Sep 2026 07:40:24 -0700 (PDT)
-X-Received: by 2002:a05:6102:c12:b0:7a1:f7d2:e823 with SMTP id ada2fe7eead31-7af1ecf6d75mr5364910137.28.1790605939177;
-        Mon, 28 Sep 2026 07:32:19 -0700 (PDT)
-Received: from localhost (ip-86-49-245-11.bb.vodafone.cz. [86.49.245.11])
-        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-6aae5dc0cddsm4296359a12.14.2026.09.28.07.32.18
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 28 Sep 2026 07:32:18 -0700 (PDT)
-From: Andrew Jones <andrew.jones@oss.qualcomm.com>
-To: iommu@lists.linux.dev, kvm-riscv@lists.infradead.org, kvm@vger.kernel.org,
-        linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org
-Cc: tomasz.jeznach@linux.dev, jgg@ziepe.ca, jgg@nvidia.com, joro@8bytes.org,
-        will@kernel.org, robin.murphy@arm.com, pjw@kernel.org,
-        palmer@dabbelt.com, tglx@kernel.org, anup@brainfault.org,
-        atish.patra@linux.dev, fangyu.yu@linux.alibaba.com,
-        zhangzhanpeng.jasper@bytedance.com, zong.li@sifive.com
-Subject: [RFC PATCH v3 12/14] iommu/riscv: Prepare interrupt remapping for IRQ bypass
-Date: Mon, 28 Sep 2026 16:31:11 +0200
-Message-ID: <20260928143113.49838-13-andrew.jones@oss.qualcomm.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260928143113.49838-1-andrew.jones@oss.qualcomm.com>
-References: <20260928143113.49838-1-andrew.jones@oss.qualcomm.com>
+	id 1xBNKR-000000026px-1EG7;
+	Tue, 29 Sep 2026 02:12:24 +0000
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=leeJ8nG6kj+Isq6S32I/3jiDio4VD8pSbkms/J2QD/IoX8aLjHdso07oB/5c35shMYDpTwrel4o7mU4I1FWDN1AFAmeR/3R/NWNSVOl8pcMqS6kOgC5pT9tYA8/Ofn+tXn7rhqOudPS9JUhFuMNxboeOVhrACy5P6LkekpgZv3i5dw80SaSNAGPAMLPxZtg2+iT2IQxUpebjAPr9T0CIrXgCYf8Dqe0eh0+kNpenBcJ9k3zaXNia9AT/8Ieewx7u1VGQb19YkesBEYCMdnAf9p6qVUTkQHMWowi+2t9pL8nWE5ZUz5brT9TpM4o4VOzL/uCBGqII4umw7zkax/LubA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=Rvbe69xBIpzGsOrw6VbYQRORSyH1zSp/rLtFmlWZcCQ=;
+ b=BrZGvAynJ4ponUIVOC/cXDvrF1+Etamv2w8qVqOlmhTL8aiE49f6Fr+pOZGCxpsZ8U5TWZJeYCRTF0JCQRuPP55AJVZuwoRVfyelTWQbndJxpUDeg27fFcjsLvOWUBI2Lppn2TBIn+kkt+PdquLDl+M2IX9quoD3CNvn6dG+bzbCQcY8jNjTrlvky7Kvf2JnQ3oXOrvRgEnO3TC7qBz+Li/Di6Uy5qjKJrHOPmtgB+xJpTRvLbcJxCi2zqCf+Oif/79m+P6CKx8IGZcMsnRlxfrvt6nscsBQs4/yY6DxAyUtoYbi9lMgkjHr5wnZKQfQr9weeVUnEx3FaP0LAf7nfw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=Rvbe69xBIpzGsOrw6VbYQRORSyH1zSp/rLtFmlWZcCQ=;
+ b=nbSi06XgCR12RiFIHX53tm05VV6tvR8/+VLSfACKpV0nx74Nc/5S3tSezV1wqhbi0cq7fG5akeV+5ugVQEXZx8Ie72mN77tyNZKtIUXyfDpSyG/LqGOli/zt8QYC6byGtv4stGz12SOqQoiRkvlmC5mA4TMRiAQjpdyH1OJDE8LjQT4riv3BdU3C10yuHgc7649NY12R+CP4T1Tx1zYNsnEdcUpL0LVGqJ3HBYH4wwX1QmohJ86A9KA7M9mf/oIfEsTLcjSvbAqkkynzOcQySH2+tGANArdLXGiXQ1vmHAEC4/c4SlOl4OsmwIK78JCfEw4GrAkf2wlBAgXZBE6c6Q==
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from IA0PR12MB8374.namprd12.prod.outlook.com (2603:10b6:208:40e::7)
+ by SA1PR12MB8161.namprd12.prod.outlook.com (2603:10b6:806:330::7) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.451.24; Tue, 29 Sep
+ 2026 02:12:09 +0000
+Received: from IA0PR12MB8374.namprd12.prod.outlook.com
+ ([fe80::d85f:4c87:ae84:3f16]) by IA0PR12MB8374.namprd12.prod.outlook.com
+ ([fe80::d85f:4c87:ae84:3f16%6]) with mapi id 15.21.0451.022; Tue, 29 Sep 2026
+ 02:12:09 +0000
+Date: Mon, 28 Sep 2026 22:12:02 -0400
+Message-Id: <DLRFPN5JH235.34HHA5QDQGSBT@nvidia.com>
+To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>, "Andrew Morton" <akpm@linux-foundation.org>, "Liam R. Howlett" <liam@infradead.org>, "Vlastimil Babka" <vbabka@kernel.org>, "Jann Horn" <jannh@google.com>, "Pedro Falcato" <pfalcato@suse.de>, "David Hildenbrand" <david@kernel.org>, "Mike Rapoport" <rppt@kernel.org>, "Suren Baghdasaryan" <surenb@google.com>, "Michal Hocko" <mhocko@suse.com>, "Jonathan Corbet" <corbet@lwn.net>, "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>, "Dennis Dalessandro" <dennis.dalessandro@cornelisnetworks.com>, "Jason Gunthorpe" <jgg@ziepe.ca>, "Leon Romanovsky" <leon@kernel.org>, "Paul Moore" <paul@paul-moore.com>, "Stephen Smalley" <stephen.smalley.work@gmail.com>, "Jaroslav Kysela" <perex@perex.cz>, "Takashi Iwai" <tiwai@suse.com>, "Alexei Starovoitov" <ast@kernel.org>, "Daniel Borkmann" <daniel@iogearbox.net>, "Andrii Nakryiko" <andrii@kernel.org>, "Eduard Zingerman" <eddyz87@gmail.com>, "Kumar Kartikeya Dwivedi" <memxor@gmail.com>, "Baolin Wang" <baolin.wang@linux.alibaba.com>, "Nico Pache" <nico.pache@linux.dev>, "Ryan Roberts" <ryan.roberts@arm.com>, "Dev Jain" <dev.jain@arm.com>, "Barry Song" <baohua@kernel.org>, "Lance Yang" <lance.yang@linux.dev>, "Usama Arif" <usama.arif@linux.dev>, "Kiryl Shutsemau" <kas@kernel.org>, "Doug Gilbert" <dgilbert@interlog.com>, "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, "Martin K. Petersen" <mkp@kernel.org>, "Jaya Kumar" <jayalk@intworks.biz>, "Simona Vetter" <simona@ffwll.ch>, "Helge Deller" <deller@gmx.de>, "Sebastian Reichel" <sre@kernel.org>, "John Hubbard" <jhubbard@nvidia.com>, "Peter Xu" <peterx@redhat.com>, "Masami Hiramatsu" <mhiramat@kernel.org>, "Oleg Nesterov" <oleg@redhat.com>, "Peter Zijlstra" <peterz@infradead.org>, "Thomas Gleixner" <tglx@kernel.org>, "Ingo Molnar" <mingo@redhat.com>, "Borislav Petkov" <bp@alien8.de>, "Dave Hansen" <dave.hansen@linux.intel.com>, <x86@kernel.org>, "Arnaldo Carvalho de Melo" <acme@kernel.org>, "Namhyung Kim" <namhyung@kernel.org>, "Mark Rutland" <mark.rutland@arm.com>, "Rik van Riel" <riel@surriel.com>, "Harry Yoo" <harry@kernel.org>, "Juri Lelli" <juri.lelli@redhat.com>, "Vincent Guittot" <vincent.guittot@linaro.org>, "Maarten Lankhorst" <maarten.lankhorst@linux.intel.com>, "Maxime Ripard" <mripard@kernel.org>, "Thomas Zimmermann" <tzimmermann@suse.de>, "David Airlie" <airlied@gmail.com>, "Will Deacon" <will@kernel.org>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, "Nick Piggin" <npiggin@gmail.com>, "Arnd Bergmann" <arnd@arndb.de>, "Muchun Song" <muchun.song@linux.dev>, "Oscar Salvador" <osalvador@suse.de>, "Matthew Wilcox (Oracle)" <willy@infradead.org>, "Jan Kara" <jack@suse.cz>, "Marc Zyngier" <maz@kernel.org>, "Oliver Upton" <oupton@kernel.org>, "Catalin Marinas" <catalin.marinas@arm.com>, "Madhavan Srinivasan" <maddy@linux.ibm.com>, "Anup Patel" <anup@brainfault.org>, "Paul Walmsley" <pjw@kernel.org>, "Palmer Dabbelt" <palmer@dabbelt.com>, "Albert Ou" <aou@eecs.berkeley.edu>, "Christian Borntraeger" <borntraeger@linux.ibm.com>, "Janosch Frank" <frankja@linux.ibm.com>, "Claudio Imbrenda" <imbrenda@linux.ibm.com>, "Alexander Gordeev" <agordeev@linux.ibm.com>, "Gerald Schaefer" <gerald.schaefer@linux.ibm.com>, "Heiko Carstens" <hca@linux.ibm.com>, "Vasily Gorbik" <gor@linux.ibm.com>, "David S. Miller" <davem@davemloft.net>, "Andreas Larsson" <andreas@gaisler.com>, "Alexander Viro" <viro@zeniv.linux.org.uk>, "Christian Brauner" <brauner@kernel.org>, "Matthew Brost" <matthew.brost@intel.com>, "Joshua Hahn" <joshua.hahnjy@gmail.com>, "Rakie Kim" <rakie.kim@sk.com>, "Byungchul Park" <byungchul@sk.com>, "Gregory Price" <gourry@gourry.net>, "Ying Huang" <ying.huang@linux.alibaba.com>, "Alistair Popple" <apopple@nvidia.com>, "Chris Li" <chrisl@kernel.org>, "Kairui Song" <kasong@tencent.com>, "Kemeng Shi" <shikemeng@huaweicloud.com>, "Nhat Pham" <nphamcs@gmail.com>, "Baoquan He" <baoquan.he@linux.dev>, "Youngjun Park" <youngjun.park@lge.com>, "Johannes Weiner" <hannes@cmpxchg.org>, "Qi Zheng" <qi.zheng@linux.dev>, "Shakeel Butt" <shakeel.butt@linux.dev>, "Axel Rasmussen"
+ <axelrasmussen@google.com>, "Yuanchu Xie" <yuanchu@google.com>, "Wei Xu" <weixugc@google.com>, "Chengming Zhou" <chengming.zhou@linux.dev>, "Michal Hocko" <mhocko@kernel.org>, "Miklos Szeredi" <miklos@szeredi.hu>, "Xu Xin" <xu.xin@linux.dev>
+From: "Zi Yan" <ziy@nvidia.com>
+Subject: Re: [PATCH v3 25/40] mm/vma: enforce that only kernel-owned
+ mappings may set VMA_IO_BIT
+Cc: <linux-mm@kvack.org>, <linux-kernel@vger.kernel.org>,
+ <linux-doc@vger.kernel.org>, <linux-usb@vger.kernel.org>,
+ <linux-rdma@vger.kernel.org>, <selinux@vger.kernel.org>,
+ <linux-sound@vger.kernel.org>, <bpf@vger.kernel.org>,
+ <linux-scsi@vger.kernel.org>, <linux-fbdev@vger.kernel.org>,
+ <dri-devel@lists.freedesktop.org>, <linux-trace-kernel@vger.kernel.org>,
+ <linux-perf-users@vger.kernel.org>, <linux-arch@vger.kernel.org>,
+ <linux-fsdevel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+ <kvmarm@lists.linux.dev>, <linuxppc-dev@lists.ozlabs.org>,
+ <kvm@vger.kernel.org>, <kvm-riscv@lists.infradead.org>,
+ <linux-riscv@lists.infradead.org>, <linux-s390@vger.kernel.org>,
+ <sparclinux@vger.kernel.org>, <fuse-devel@lists.linux.dev>
+X-Mailer: aerc 0.22.0
+References: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org> <20260917-b4-mmap-prepare-vma-flag-sanify-v3-25-4583d8a23bca@kernel.org>
+In-Reply-To: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-25-4583d8a23bca@kernel.org>
+X-ClientProxiedBy: YQBPR0101CA0340.CANPRD01.PROD.OUTLOOK.COM
+ (2603:10b6:c01:6b::17) To IA0PR12MB8374.namprd12.prod.outlook.com
+ (2603:10b6:208:40e::7)
 MIME-Version: 1.0
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTI4MDA1OCBTYWx0ZWRfXy73z/9OrO9K4
- XuVNDsRKb6OPc4DShRxW39jSZBTPkaBP2inEDW3PwdQnaiujDxEV7Ln0p9YT3kh8b721BMaVxK3
- sIca5bkujFCL6XR4JEZKbxp5K2z8X2C5JO76yLTgh1dQ6zW4Lo1/owOeMTckAbIAsWDb5imMgiZ
- Ho5d1Kx59CgqaPItV+zzt80bnPZe5/ogiOa+e+FSFxq3+4fzDnyeZbD2hxDlZu9KgXrsHrzntVQ
- fZPUtukWkUb+R5DUSksUZJ2rmf5AANlfB6wPUmumClD2eGNw+yaOCveVCXIZ5qjpkNFco20BGbj
- v3U5mGc7fgIkfNcZoCIn8jE73BrF0E01MHLClao3JWEPtXzJQF56+Vnc6pqxeNAhwoIdwYcx6Zp
- /Xm8YCY9hHRBcmkZjFcXTgYUbVpwHjMKyeF8MPrhWn42c7uZS8MasUX3dRPKwuuahh6SHr134qs
- dC3SWsWZ8C/dP9aA9yA==
-X-Proofpoint-ORIG-GUID: xP0Vx7DcJ5unCao1ZYLA2aP4NEJZjSJD
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTI4MDA1OCBTYWx0ZWRfX4eg/h+xb6Q+y
- tpw6PtnYp5MWpvYcz46RMWMdJ4qbeMSWqVDb7a0jRsqjF0V3jex00mfEWupq4D9kCYmXe3ePsmE
- GjnAqJdUP0u7j49sW5yaSZkuSA0Qlu0=
-X-Proofpoint-GUID: xP0Vx7DcJ5unCao1ZYLA2aP4NEJZjSJD
-X-Authority-Analysis: v=2.4 cv=TptzFzXh c=1 sm=1 tr=0 ts=6aba7c59 cx=c_pps
- a=WJcna6AvsNCxL/DJwPP1KA==:117 a=4CXLxsOAgPM/krjtHEZQyA==:17
- a=VdqzKS8jKosA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=yOCtJkima9RkubShWh1s:22 a=EUspDBNiAAAA:8
- a=E4clnSanGcVZL-NzkHIA:9 a=_Y9Zt4tPzoBS9L09Snn2:22
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-28_04,2026-09-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 priorityscore=1501 adultscore=0 lowpriorityscore=0
- bulkscore=0 phishscore=0 suspectscore=0 clxscore=1015 malwarescore=0
- spamscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
- adjust=0 reason=mlx scancount=1 engine=8.22.0-2609040000
- definitions=main-2609280058
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: IA0PR12MB8374:EE_|SA1PR12MB8161:EE_
+X-MS-Office365-Filtering-Correlation-Id: 929b79cd-7fd3-4fe7-b0ea-08df1dcf10e1
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|1800799024|366016|23010399003|376014|7416014|921020|10067099003|4143699003|11063799006|56012099006|22082099003|18002099003;
+X-Microsoft-Antispam-Message-Info: 55V5jLLqnKa+bap2rTDpyXvJ3MS2KeCN1v66hI6BgDtw24iIHyBtnFcsj40HGTzEsTDv6VVOvLjR+3RKHA13ORaZjm94lG+Mm6zU/Gi5YMuUYQVpJFkYr14j9O2JEahCemsUkSAvCXrpWSlLjvgVYmWUWb2pMyw+ENNOeNu9ib40HzVvAlZ1hnYPKjBOGJmIhdSQahYFF2kBaQUuxI+GQ4Ggj6FQYrR3/VE+qJZJpfwcECIAFB4twVQa+hLHa0Ve0J3DSJT24HEHLYU4q4AkQdTVE/lEl/AIeXhgOUupKjHD9yu256BAbRce7VT6kw5gebvfaLB6PeRavLv8twn1I6OdyXfs2CsChLXJoeTSySz6laOIKou7jk9lJDIHvpn2NJ5j7FFWDYru8bNGIOYxS1D+oJOd1no8EYCKcS4FoVqOMZu8SxD6nI5W5LesieW6vo4Z8G5btadzb3CVLJi4YBw3XHQLNI+VkzVKhIJ3Kfq7hEkvvjn5jzX89cxCQekRNonJwLSUjc/eR/gZhHhBjnF7/pvLR4MhCfy5mos6X7sd77iTwY9mB+IEyGRt4oEGSOqPdlvWFtngelGgsZMcvRpKdOIJw9eZjxzu9+i3vf8mLI9h8wzHVv4jGxA0NzZEI8IofRgVaKEHJFZm2obMyU03kiQn9zErw/yXQeNHOCl8QWdt64j6Ft1G9PwSg+AhwwMh3EGQOYEH+UNFKOBvCw==
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:IA0PR12MB8374.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(23010399003)(376014)(7416014)(921020)(10067099003)(4143699003)(11063799006)(56012099006)(22082099003)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?ZmpGRzdZTUhYUEpidGovM2ltbThTWDBuQlNLbW1uZHRGTXl4Y05XRWxVcDVz?=
+ =?utf-8?B?YXh6OFhPd3JhNTdtSytoMm91Yi9lVlp0NWJueS9wM3RRMW80QURYV29RUWg1?=
+ =?utf-8?B?dnlVRWpVN1pMS2lkZlFOb0U1UGtzeVNkZjFUdFdXcEZTOEVGcWdzcU5zdlpv?=
+ =?utf-8?B?QnJnL0JXQjBDVHVsNWt1SFB6LzZGWjlzRWdXTVYvNC9EVFJBTVlSRE9iQUJh?=
+ =?utf-8?B?b3cvcWV6NTZXT2dOS1VmVUk2NHBHeE5NbGlYdithNC9VUHV4c1FMcnM3MXpX?=
+ =?utf-8?B?cExGellJTFBXOU4xUlpwWkNnSTM1dzU0WkpRTytlNTQydUw2WGtTbHdJSEc4?=
+ =?utf-8?B?M0dudWh6d2JMQUVKWWlZajhGMGhHZU9DWUNYckVUWG1YWDA2TFU0SEliL0RN?=
+ =?utf-8?B?dERYNHEvQVJzWkNma3hSVndMVCtoc3o1MGhWdVNET3F1MGRjQUxPQmdaRmZC?=
+ =?utf-8?B?Nzc5WFhkbVRkcldBdmVvZjF2T2tKVG1iRXdqWGVmdzYxaS80N0U0RWczNkpC?=
+ =?utf-8?B?OWFjamVLOVBsVTNJR0U4V2lWVFRxSDJVSGZFZkhrY3BPTmRKei9YbXFuZ21L?=
+ =?utf-8?B?UGx4R2VkM0sxMnZhd0RsejdGbTEzcUUxdmRyY2J3Ry9DWXc3Q2lVSHozbng3?=
+ =?utf-8?B?c3hQMEJpWWdPdFpqZ3dybUxabmdOK1JQSE5UM0RyOGxRSVBwQzVneXF5UzRi?=
+ =?utf-8?B?bEhJM3NMcjNiK1Evd2Y1eFNVRHQ3WnQ3c2RJNTNPZWwzM1dBTDN0RzZZQU1D?=
+ =?utf-8?B?QWw2SDNwbCtsa010aEd2aVZoYnBXN1BKd3NxeW42WCtLUmFtdnRzVnkwbVlR?=
+ =?utf-8?B?OWxkL1RQNlUrSTBkRTBsZ04zbG9iUy9jYTdqRjVudmg5RDlmWkhwNDRQUFlp?=
+ =?utf-8?B?a2l0ZkFOdStOL1V4OVIzbDRFVFB6TWViQVc3OWRUZDducUlDMTZBZTNMcmVD?=
+ =?utf-8?B?Ry90emRCTHd3NnQxZWFxelZDM2ttY2xrMklDd3M4dXJwV0Y3b2hhd0lnQnlr?=
+ =?utf-8?B?bXlyOWt1NkNJZXc0VjNHLzFFT0NsQ1hwLzgwUzZKQ1VsNkk5eU5rR3F0cWRH?=
+ =?utf-8?B?T3Zkc2Q4ZHh0cWhMbkwvQ3JCc0J0OWtuaTRVa1RFbnFBT1BQckJkS1FGN1ZV?=
+ =?utf-8?B?QzM3Q2JSVzBzUzFJQWNZN3dOSEErZ2Q2dVl3WEk5dnBFRmxTc0RLWHFtNUZa?=
+ =?utf-8?B?V01xWTI0R2hEbnp6d1RiekZGL0wwUzdkVjZ2RFVhTFU1OU5qZ1J2SXZQL05t?=
+ =?utf-8?B?SzZSRzRiWWtDZ3MrL1FEVnVNUE1TZzh4UnV4a2w5R2RiQktjdmhWMEo5Y1Yz?=
+ =?utf-8?B?YXoyYUQxd2J4WUo5Q0d1TUw0YVBDbUxjbEQwbEZpQStPZjVOQmZTakdTdVkw?=
+ =?utf-8?B?elU2ZkZod2JERHpXek94UUJDTFZMVjF1Rnd5bVNTSUJ5bUVQRlpCamtCWkdq?=
+ =?utf-8?B?bVJLbG1JS1BCS1dhQ0hMUTJNc3A5UFliOTkrWmdhMzFjbTh6OXZyMk9sa1p4?=
+ =?utf-8?B?R2pyelhlU1BMZDg2VFN4SW5XbGdrWmQwOWdHV0l1ejBKS0hzK1AvMmJjRW5q?=
+ =?utf-8?B?clh4cjhkb3VNdDA5T3pVNTc4dUFCUEJ2ZzZiSjlhY0pYRmF5Y1RDU1F3OVkw?=
+ =?utf-8?B?VG1SdDdFTFRKU2FFL241cnhWNEFKWnRHdW15OXhaTUp2UjF0TnpiMUt4REdE?=
+ =?utf-8?B?T01ETHRmdHRXcmpBcThpUE9ocFgrK2huT2N6bElBNWc2MkVEL2YvdHR1Z1M0?=
+ =?utf-8?B?UXBkdTc0cVdjWEw4Sld2RHlFUkJnellpaUR5ZGUxNnIwRGJIa0RxY2pGWkFa?=
+ =?utf-8?B?aGphNUFOL3c5dG1Lb0w5Y29DampLbGNIbHg4OThUY2NCRG1FTHdxaFg2OG0w?=
+ =?utf-8?B?MkoyanMyY3BTVUl6dUZmcjF0MmZLNFZNSGpKY0w0NGtsVWYwOWJZbk9Xb2sy?=
+ =?utf-8?B?NTE1Z2ZWZDZjMFVFdnZ5VUJmVmRyV1JDN1ErZFBwZ1E2VlJGQUYrck1WRzRa?=
+ =?utf-8?B?aVROVjZRMW5mb1lWY1lZSlh3aVVzeEpWNmp3NGw2RG5oczIrS1YrUTlIYXNX?=
+ =?utf-8?B?Zk9XRWt2VFVYc211ZVR4dUwzendWSkg3WWRKYkljWk5pUFNTcGxFMDd6UXE1?=
+ =?utf-8?B?WmNHcVJlR1ZSYmRNWHFHdzVyeGJGQ1pRVVQyanhJUmpvUjRNb2dId1k3TDAr?=
+ =?utf-8?B?T29MU2QrYTEyMWhudFFBN2FGQTd2ekZDMnJ4c2pubzBOdk9kcTBxSVFRSnJi?=
+ =?utf-8?B?K3Y2QWJVRVZ4YmZHbGhFazFSdDdadkp2cEUyMmVQRUdMdzNVaENVd2hFUmxC?=
+ =?utf-8?Q?nxE//RYebAqK4lZhk9?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 929b79cd-7fd3-4fe7-b0ea-08df1dcf10e1
+X-MS-Exchange-CrossTenant-AuthSource: IA0PR12MB8374.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 29 Sep 2026 02:12:09.0376
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: iGPiS2Ywd+V6AhZ66j60qQ5UQnjbvbizvRjnGHh57Z10grwgY/ZHiviWZgnay2r+
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA1PR12MB8161
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20260928_074025_743354_A52ED578 
-X-CRM114-Status: GOOD (  21.68  )
+X-CRM114-CacheID: sfid-20260928_191223_341882_979629D6 
+X-CRM114-Status: GOOD (  16.38  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -149,195 +156,45 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-IRQ bypass changes the meaning of an interrupt from host delivery to
-delivery through the guest's MSI table. The transition therefore has to
-follow the device's current IOMMU domain and must not race with a domain
-replacement.
+On Thu Sep 17, 2026 at 12:22 PM EDT, Lorenzo Stoakes (ARM) wrote:
+> It makes no sense for a mapping whose contents the kernel does not own to
+> specify that the range is MMIO.
+>
+> Prior to this patch, all in-tree drivers which did so have been updated
+> such that they are marked as kernel-owned. The check WARNs and fails the
+> mmap for any out-of-tree driver that still sets VMA_IO_BIT without a kernel
+> mapping.
+>
+> No functional change intended for in-tree code.
+>
+> Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+> ---
+>  mm/vma.c | 6 ++++++
+>  1 file changed, 6 insertions(+)
+>
+> diff --git a/mm/vma.c b/mm/vma.c
+> index 1db8b218fe64..56a0cd154419 100644
+> --- a/mm/vma.c
+> +++ b/mm/vma.c
+> @@ -2787,6 +2787,12 @@ static int mmap_validate_vma_flags(const vma_flags_t *flags)
+>  		return -EINVAL;
+>  #endif
+>  
+> +	if (!vma_flags_test_any(flags, VMA_PFNMAP_BIT, VMA_MIXEDMAP_BIT)) {
 
-Wire the interrupt-remapping irqdomain into irq_set_vcpu_affinity() and
-serialize the callback with MSI-table publication and attachment. Since
-one table is shared by every device in the domain, also require all
-forwarded interrupts to agree on its owner and address layout.
+I thought why not just using vma_flags_is_kernel_owned(), then realize
+that function is still checking VMA_IO_BIT. And you convert it in the
+next patch.
 
-Leave the hardware operations as stubs so the locking and state-machine
-requirements are established before MSI PTE programming is added.
+LGTM.
 
-Signed-off-by: Andrew Jones <andrew.jones@oss.qualcomm.com>
----
- drivers/iommu/riscv/iommu-ir.c | 140 ++++++++++++++++++++++++++++++++-
- drivers/iommu/riscv/iommu.h    |   1 +
- 2 files changed, 140 insertions(+), 1 deletion(-)
+Reviewed-by: Zi Yan <ziy@nvidia.com>
 
-diff --git a/drivers/iommu/riscv/iommu-ir.c b/drivers/iommu/riscv/iommu-ir.c
-index c5603cb9f258..22da76987c7c 100644
---- a/drivers/iommu/riscv/iommu-ir.c
-+++ b/drivers/iommu/riscv/iommu-ir.c
-@@ -11,12 +11,150 @@
- 
- #include "iommu.h"
- 
-+static int riscv_iommu_ir_irq_set_affinity(struct irq_data *data,
-+					   const struct cpumask *mask, bool force)
-+{
-+	if (irqd_is_forwarded_to_vcpu(data))
-+		return -EINVAL;
-+
-+	return irq_chip_set_affinity_parent(data, mask, force);
-+}
-+
-+static int riscv_iommu_ir_activate(struct riscv_iommu_msi_table *msi_table,
-+				   struct riscv_iommu_ir_vcpu_info *vcpu_info)
-+{
-+	return -EOPNOTSUPP;
-+}
-+
-+static int riscv_iommu_ir_deactivate(struct riscv_iommu_msi_table *msi_table)
-+{
-+	return -EOPNOTSUPP;
-+}
-+
-+static int riscv_iommu_ir_update_target(struct riscv_iommu_msi_table *msi_table,
-+					struct riscv_iommu_ir_vcpu_info *vcpu_info)
-+{
-+	return -EOPNOTSUPP;
-+}
-+
-+static int riscv_iommu_ir_irq_set_vcpu_affinity_locked(struct irq_data *data,
-+						       struct riscv_iommu_info *info,
-+						       struct riscv_iommu_ir_vcpu_info *vcpu_info,
-+						       struct riscv_iommu_msi_table *msi_table)
-+{
-+	int ret;
-+
-+	if (!vcpu_info) {
-+		if (WARN_ON_ONCE(!msi_table->nr_forwarded_irqs || !info->nr_forwarded_irqs))
-+			return -EINVAL;
-+
-+		if (msi_table->nr_forwarded_irqs == 1) {
-+			ret = riscv_iommu_ir_deactivate(msi_table);
-+			if (ret)
-+				return ret;
-+		}
-+
-+		msi_table->nr_forwarded_irqs--;
-+		info->nr_forwarded_irqs--;
-+		irqd_clr_forwarded_to_vcpu(data);
-+
-+		if (!msi_table->nr_forwarded_irqs) {
-+			msi_table->owner = NULL;
-+			msi_table->msi_addr_mask = 0;
-+			msi_table->msi_addr_pattern = 0;
-+		}
-+
-+		return 0;
-+	}
-+
-+	if (!msi_table->nr_forwarded_irqs) {
-+		if (vcpu_info->cmd == RISCV_IOMMU_IR_UPDATE_TARGET ||
-+		    irqd_is_forwarded_to_vcpu(data))
-+			return -EINVAL;
-+
-+		ret = riscv_iommu_ir_activate(msi_table, vcpu_info);
-+		if (ret)
-+			return ret;
-+
-+		msi_table->nr_forwarded_irqs++;
-+		info->nr_forwarded_irqs++;
-+		irqd_set_forwarded_to_vcpu(data);
-+
-+		return 0;
-+	}
-+
-+	if (msi_table->owner != vcpu_info->owner ||
-+	    msi_table->msi_addr_mask != vcpu_info->msi_addr_mask ||
-+	    msi_table->msi_addr_pattern != vcpu_info->msi_addr_pattern)
-+		return -EOPNOTSUPP;
-+
-+	if (vcpu_info->cmd == RISCV_IOMMU_IR_FORWARD) {
-+		if (!irqd_is_forwarded_to_vcpu(data)) {
-+			msi_table->nr_forwarded_irqs++;
-+			info->nr_forwarded_irqs++;
-+			irqd_set_forwarded_to_vcpu(data);
-+		}
-+		return 0;
-+	}
-+
-+	return riscv_iommu_ir_update_target(msi_table, vcpu_info);
-+}
-+
-+static int riscv_iommu_ir_irq_set_vcpu_affinity(struct irq_data *data, void *arg)
-+{
-+	struct riscv_iommu_ir_vcpu_info *vcpu_info = arg;
-+	struct riscv_iommu_msi_table *msi_table;
-+	struct riscv_iommu_info *info;
-+	struct msi_desc *desc;
-+	struct device *dev;
-+	int ret;
-+
-+	if (!vcpu_info && !irqd_is_forwarded_to_vcpu(data))
-+		return 0;
-+
-+	if (vcpu_info && vcpu_info->cmd != RISCV_IOMMU_IR_FORWARD &&
-+	    (vcpu_info->cmd != RISCV_IOMMU_IR_UPDATE_TARGET || !irqd_is_forwarded_to_vcpu(data)))
-+		return -EINVAL;
-+
-+	desc = irq_data_get_msi_desc(data);
-+	if (WARN_ON_ONCE(!desc))
-+		return -EINVAL;
-+
-+	dev = msi_desc_to_dev(desc);
-+	info = dev_iommu_priv_get(dev);
-+	if (WARN_ON_ONCE(!info))
-+		return -EINVAL;
-+
-+	scoped_guard(rcu) {
-+		/*
-+		 * RCU keeps the table alive, but the device may switch domains before
-+		 * the table is locked. Recheck the association under the lock.
-+		 */
-+		for (;;) {
-+			msi_table = riscv_iommu_msi_table_rcu(info);
-+			if (!msi_table || !msi_table->root)
-+				return -EOPNOTSUPP;
-+
-+			raw_spin_lock(&msi_table->lock);
-+			if (msi_table == riscv_iommu_msi_table_rcu(info))
-+				break;
-+			raw_spin_unlock(&msi_table->lock);
-+		}
-+	}
-+
-+	ret = riscv_iommu_ir_irq_set_vcpu_affinity_locked(data, info, vcpu_info, msi_table);
-+	raw_spin_unlock(&msi_table->lock);
-+
-+	return ret;
-+}
-+
- static struct irq_chip riscv_iommu_ir_irq_chip = {
- 	.name			= "IOMMU-IR",
- 	.irq_ack		= irq_chip_ack_parent,
- 	.irq_mask		= irq_chip_mask_parent,
- 	.irq_unmask		= irq_chip_unmask_parent,
--	.irq_set_affinity	= irq_chip_set_affinity_parent,
-+	.irq_set_affinity	= riscv_iommu_ir_irq_set_affinity,
-+	.irq_set_vcpu_affinity	= riscv_iommu_ir_irq_set_vcpu_affinity,
- };
- 
- static int riscv_iommu_ir_irq_domain_alloc_irqs(struct irq_domain *irqdomain,
-diff --git a/drivers/iommu/riscv/iommu.h b/drivers/iommu/riscv/iommu.h
-index ed973979d795..a42f0b6a88d4 100644
---- a/drivers/iommu/riscv/iommu.h
-+++ b/drivers/iommu/riscv/iommu.h
-@@ -82,6 +82,7 @@ struct riscv_iommu_msi_table {
- 	struct riscv_iommu_msipte *root;
- 	u64 msi_addr_mask;
- 	u64 msi_addr_pattern;
-+	const void *owner;
- };
- 
- /* Private IOMMU data for managed devices, dev_iommu_priv_* */
+
+
 -- 
-2.43.0
+Best Regards,
+Yan, Zi
 
 
 -- 
