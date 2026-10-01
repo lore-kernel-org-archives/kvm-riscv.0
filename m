@@ -4,64 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B434ECA5FCB
-	for <kvm-riscv@archiver.kernel.org>; Thu,  1 Oct 2026 12:09:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7F36ACA5FB3
+	for <kvm-riscv@archiver.kernel.org>; Thu,  1 Oct 2026 12:11:57 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:
 	Subject:MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=WTmdftB4bdI/boLuJC9NLJBSdhAP4eozF5bVz0g1ZDA=; b=NKVk79FbsKpL7p
-	6NHSagSjIn+nn1l+0ETjq8grLen9Mjem+i9XG11imcXuCmgktE1eBwkWPnnRn30oYWpvGUes+L5Ci
-	PtaRSzrmrkprJYnVN/JMFSL/FIvHpIeltnG+wDrUe0Rc0+2jGVHxTZ6/adC4EI/i7XGQgRxcyYSIe
-	BzjodYbUjgfnzUC0t6wlrykV+s1ZdsDG+LkdAgyQpkH0WNjdWkBh31nkDwtbQm3vdNvAwJqjotsf6
-	xxf0UMF6mg47mqVp2VU/UCtXKcY7xodXvESdb43RNlhQV3Jud9iKzIToLoWQ359xBa/z+AFwDCGcx
-	lCKou8Kb1etz6ge4jVFA==;
+	List-Owner; bh=Fgy7VofPOPwi/sbiCcWQNcKWDwao1Y0J0xul3agBBwE=; b=qe3IyLTgyzzpZQ
+	HLBASKLOlKxu/QVgLf9qRpTay0+esv07/vNWIbb8pdLEy60mtHcUdRXkgysEzTjjHLGkfyY3b5IXN
+	KCWxx+sRvuw/TP9hjUilWoRw+AJMQ0G/aSCEB2ucVKa4pq+shzZ5SrV3NyFTivRKLG3c2ZW6JYx+u
+	DC19NrtFwXjijfhc7qHuveuc9Bbqg5l2skHqfa56L2F2GRcjUvX+NOozCRzrGaHDB/v+xIRQtmynt
+	N+cfh8T0y1IwyCG4BFEnq56EujFDUjb6xcEVagz8/puOaNhk/ZZrwENWEakszqQXlf2QZmKcuLcoF
+	FzA0/Kkt7Gsane7FbnNw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1xCFb6-00000008yaq-0KB9;
-	Thu, 01 Oct 2026 12:09:12 +0000
+	id 1xCFdl-00000009224-0oLS;
+	Thu, 01 Oct 2026 12:11:57 +0000
 Received: from tor.source.kernel.org ([172.105.4.254])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1xCFWW-00000008oBZ-1DlF;
-	Thu, 01 Oct 2026 12:04:28 +0000
+	id 1xCFdj-0000000921d-3oC0;
+	Thu, 01 Oct 2026 12:11:56 +0000
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 5D8DD60A52;
-	Thu,  1 Oct 2026 12:04:27 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B39C71F00898;
-	Thu,  1 Oct 2026 12:03:48 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 19B3F60A55;
+	Thu,  1 Oct 2026 12:11:55 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D21261F000FF;
+	Thu,  1 Oct 2026 12:11:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790856267;
-	bh=16tuaIAAfr4wGiFPpZL2QS3b7vOItbJPvdfgt9EFjWY=;
+	s=k20260515; t=1790856714;
+	bh=KUH7OP4iWerRy/EG23fSkrllMLjJHrglwjsFo+POc+k=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=jzEc16QpT6y5z85CoNqayXJTgj/zcV8+4j43vVNREEjYgKaYaARNlkINFh+o2cgFo
-	 sN3NMoR6fbvOc+m/lxGiWC6qUmK/W2sqF5PMeqx+QkX9s3sVMnzDWZ/M2mm0MYJz41
-	 S3cSgkKzqx/7bn79m4vmUxCXlXwbjLyAsEIqKIlF/mizbYzyQzRqhlcK0ve8U5iSJn
-	 jaobTqj+k1b/C4rk1yKhopNUeonw8tSEDLii1LybOClMulCnzymBzlP7Dt9SdjRJKW
-	 6NQE2pAYnLiSAfrqMon7C3+Tw8a0f45b0g+nJiXE+3PnL55rzlVV8mocIqh7q0QmOr
-	 ffT/Y1YtPvXzw==
-Message-ID: <14bb5577-ee28-4770-8566-f586f3840a8d@kernel.org>
-Date: Thu, 1 Oct 2026 14:03:45 +0200
+	b=aTTG82SemKTBXalZAmyFggcAXHDZ3Rsp4Cmfpknx90oZs6SjaSeN6xwh0MitYl62A
+	 KbssxTzqFSUEaggtmL6jMvB86LHa2jnsZFHU/xrFBjAVC+9Vtp/rgHsKyXKeBH1VQF
+	 9FeHXun8+ubEbhMVwacSZzjlGMqbT+bDhQDFsP36vzpqNZmSFxVhkJxegmT5trTh2S
+	 WTJrAzj4QhQv4yAGrgeBv/EjE3x6hX29NRXk7FHaMci8pJd/RkHk6Oi6wu97anKLlR
+	 xjZeUVyQJ4+Imjtns2I7vZIcC7bQJHhg68rEr35+FgQQDLatQ4Ka6FVZa7YRWF+qhX
+	 EShwAA+rZgLzQ==
+Message-ID: <119abf62-6fd8-424f-ad26-18fda1bea269@kernel.org>
+Date: Thu, 1 Oct 2026 14:11:14 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 03/40] mm/vma: introduce and use
- vma_[flags_]can_merge()
-To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Jonathan Corbet <corbet@lwn.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>, Paul Moore <paul@paul-moore.com>, Stephen Smalley <stephen.smalley.work@gmail.com>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>, Kumar Kartikeya Dwivedi <memxor@gmail.com>, Zi Yan <ziy@nvidia.com>, Baolin Wang <baolin.wang@linux.alibaba.com>, Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, Doug Gilbert <dgilbert@interlog.com>, "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, "Martin K. Petersen" <mkp@kernel.org>, Jaya Kumar <jayalk@intworks.biz>, Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>, Sebastian Reichel <sre@kernel.org>, John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rik van Riel <riel@surriel.com>, Harry Yoo <harry@kernel.org>, Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Will Deacon <will@kernel.org>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin <npiggin@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>, "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, "David S. Miller" <davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Christian Brauner <brauner@kernel.org>, Matthew Brost <matthew.brost@intel.com>, Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>, Byungchul Park <byungchul@sk.com>, Gregory Price <gourry@gourry.net>, Ying Huang <ying.huang@linux.alibaba.com>, Alistair Popple <apopple@nvidia.com>, Chris Li <chrisl@kernel.org>, Kairui Song <kasong@tencent.com>, Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>, Youngjun Park <youngjun.park@lge.com>, Johannes Weiner <hannes@cmpxchg.org>, Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>, Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>, Chengming Zhou <chengming.zhou@linux.dev>, Michal Hocko <mhocko@kernel.org>, Miklos Szeredi <miklos@szeredi.hu>, Xu Xin <xu.xin@linux.dev>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- linux-doc@vger.kernel.org, linux-usb@vger.kernel.org,
- linux-rdma@vger.kernel.org, selinux@vger.kernel.org,
- linux-sound@vger.kernel.org, bpf@vger.kernel.org,
- linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-trace-kernel@vger.kernel.org,
- linux-perf-users@vger.kernel.org, linux-arch@vger.kernel.org,
- linux-fsdevel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
- kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
- linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
- fuse-devel@lists.linux.dev
+Subject: Re: [PATCH v3 05/40] mm/vma: ensure mmap_prepare doesn't set actions
+ on a mergeable vma
+To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>,
+ Suren Baghdasaryan <surenb@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, Mike Rapoport <rppt@kernel.org>, Michal Hocko <mhocko@suse.com>, Jonathan Corbet <corbet@lwn.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>, Paul Moore <paul@paul-moore.com>, Stephen Smalley <stephen.smalley.work@gmail.com>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>, Kumar Kartikeya Dwivedi <memxor@gmail.com>, Zi Yan <ziy@nvidia.com>, Baolin Wang <baolin.wang@linux.alibaba.com>, Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, Doug Gilbert <dgilbert@interlog.com>, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, "Martin K. Petersen" <mkp@kernel.org>, Jaya Kumar <jayalk@intworks.biz>, Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>, Sebastian Reichel <sre@kernel.org>, John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rik van Riel <riel@surriel.com>, Harry Yoo <harry@kernel.org>, Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Will Deacon <will@kernel.org>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin <npiggin@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>, "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, "David S. Miller" <davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Christian Brauner <brauner@kernel.org>, Matthew Brost <matthew.brost@intel.com>, Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>, Byungchul Park <byungchul@sk.com>, Gregory Price <gourry@gourry.net>, Ying Huang <ying.huang@linux.alibaba.com>, Alistair Popple <apopple@nvidia.com>, Chris Li <chrisl@kernel.org>, Kairui Song <kasong@tencent.com>, Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>, Youngjun Park <youngjun.park@lge.com>, Johannes Weiner <hannes@cmpxchg.org>, Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>, Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>, Chengming Zhou <chengming.zhou@linux.dev>, Michal Hocko <mhocko@kernel.org>, Miklos Szeredi <miklos@szeredi.hu>, Xu Xin <xu.xin@linux.dev>, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ linux-doc@vger.kernel.org, linux-usb@vger.kernel.org, linux-rdma@vger.kernel.org, selinux@vger.kernel.org, linux-sound@vger.kernel.org, bpf@vger.kernel.org, linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-trace-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-arch@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, fuse-devel@lists.linux.dev
 References: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org>
- <20260917-b4-mmap-prepare-vma-flag-sanify-v3-3-4583d8a23bca@kernel.org>
+ <20260917-b4-mmap-prepare-vma-flag-sanify-v3-5-4583d8a23bca@kernel.org>
+ <CAJuCfpF2U9rgHmhaDoXX1hxsuuS=s-oWK9Nk19TDQ6CLpjhFVA@mail.gmail.com>
+ <arZEKkLGpHNQX3Jg@gremlin>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -108,7 +101,7 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-3-4583d8a23bca@kernel.org>
+In-Reply-To: <arZEKkLGpHNQX3Jg@gremlin>
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -120,37 +113,52 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On 9/17/26 18:22, Lorenzo Stoakes (ARM) wrote:
-> Replace the open-coded VMA_SPECIAL_FLAGS check in the VMA merge logic with
-> two new functions vma_flags_can_merge() and vma_can_merge() and update the
-> merge logic to use the former.
-> 
-> This abstracts the check and expresses it in terms of the desired behaviour
-> rather than an arbitrary and confusing VMA flag.
-> 
-> This also lays the groundwork for making further improvements in VMA flag
-> usage.
-> 
-> Also update the userland VMA tests to reflect the change.
-> 
-> No functional change intended.
-> 
-> Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
-> ---
-
-Acked-by: David Hildenbrand (Arm) <david@kernel.org>
-
--- 
-Cheers,
-
-David
-
--- 
-kvm-riscv mailing list
-kvm-riscv@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/kvm-riscv
+T24gOS8yNS8yNiAxMTo1MywgTG9yZW56byBTdG9ha2VzIChBUk0pIHdyb3RlOgo+IE9uIEZyaSwg
+U2VwIDI1LCAyMDI2IGF0IDEyOjI4OjQ5QU0gLTA3MDAsIFN1cmVuIEJhZ2hkYXNhcnlhbiB3cm90
+ZToKPj4gT24gVGh1LCBTZXAgMTcsIDIwMjYgYXQgOToyNeKAr0FNIExvcmVuem8gU3RvYWtlcyAo
+QVJNKSA8bGpzQGtlcm5lbC5vcmc+IHdyb3RlOgo+Pj4KPj4+IFdoZW4gYSB1c2VyIHJlcXVlc3Rz
+IGFuIG1tYXBfYWN0aW9uIGJlIHBlcmZvcm1lZCBpbiBtbWFwX3ByZXBhcmUsIHRoaXMKPj4+IGlu
+dm9sdmVzIHBvcHVsYXRpbmcgdGhlIFZNQSByYW5nZSB3aXRoIGRhdGEuCj4+Pgo+Pj4gSG93ZXZl
+ciwgaWYgdGhlIFZNQSBpcyBtZXJnZWFibGUsIGl0IG1pZ2h0IHRoZW4gbWlzdGFrZW5seSBiZSBt
+ZXJnZWQgd2l0aAo+Pj4gYW5vdGhlciBWTUEgd2l0aG91dCBoYXZpbmcgcG9wdWxhdGVkIHRoZSBy
+YW5nZS4KPj4+Cj4+PiBFdmVyeSBtbWFwIGFjdGlvbiBjdXJyZW50bHkgYXZhaWxhYmxlIHNldHMg
+Vk1BIGZsYWdzIHN1Y2ggdGhhdCB0aGUgVk1BCj4+PiBjYW5ub3QgYmUgbWVyZ2VkLgo+Pj4KPj4+
+IEhvd2V2ZXIsIHRvIGVuc3VyZSB0aGF0IG5vIGZ1dHVyZSBtbWFwIGFjdGlvbiBmYWxscyBmb3Vs
+IG9mIHRoaXMsIGFzc2VydAo+Pj4gdGhhdCB0aGlzIGlzIHRoZSBjYXNlIHVwb24gbW1hcF9wcmVw
+YXJlIHZhbGlkYXRpb24uCj4+Pgo+Pj4gU2lnbmVkLW9mZi1ieTogTG9yZW56byBTdG9ha2VzIChB
+Uk0pIDxsanNAa2VybmVsLm9yZz4KPj4KPj4gUmV2aWV3ZWQtYnk6IFN1cmVuIEJhZ2hkYXNhcnlh
+biA8c3VyZW5iQGdvb2dsZS5jb20+Cj4gCj4gVGhhbmtzIQo+IAo+Pgo+Pj4gLS0tCj4+PiAgbW0v
+dm1hLmMgfCA5ICsrKysrKysrKwo+Pj4gIDEgZmlsZSBjaGFuZ2VkLCA5IGluc2VydGlvbnMoKykK
+Pj4+Cj4+PiBkaWZmIC0tZ2l0IGEvbW0vdm1hLmMgYi9tbS92bWEuYwo+Pj4gaW5kZXggZDZlZDEw
+Y2VmYzhmLi42MmYyY2UxYWQ1YTEgMTAwNjQ0Cj4+PiAtLS0gYS9tbS92bWEuYwo+Pj4gKysrIGIv
+bW0vdm1hLmMKPj4+IEBAIC0yODA5LDYgKzI4MDksMTUgQEAgc3RhdGljIGludCBtbWFwX3ZhbGlk
+YXRlKHVuc2lnbmVkIGxvbmcgcHJldl9zdGFydCwgdW5zaWduZWQgbG9uZyBwcmV2X2VuZCwKPj4+
+ICBpbnQgbW1hcF9wcmVwYXJlX3ZhbGlkYXRlKGNvbnN0IHN0cnVjdCB2bV9hcmVhX2Rlc2MgKnBy
+ZXZfZGVzYywKPj4+ICAgICAgICAgICAgICAgICAgICAgICAgICAgY29uc3Qgc3RydWN0IHZtX2Fy
+ZWFfZGVzYyAqZGVzYykKPj4+ICB7Cj4+PiArICAgICAgIC8qCj4+PiArICAgICAgICAqIEl0IGlz
+IG5vdCB2YWxpZCB0byBleGVjdXRlIG1tYXAgYWN0aW9ucyBmb3IgVk1BcyB3aGljaCBjYW4gYmUg
+bWVyZ2VkLAo+Pj4gKyAgICAgICAgKiBhcyBhbnkgc3VjaCBtZXJnZSB3b3VsZCBsZWF2ZSBwb3J0
+aW9ucyBvZiB0aGUgbWFwcGluZyBpbmNvcnJlY3RseQo+Pj4gKyAgICAgICAgKiB1bm1hcHBlZC4K
+Pj4+ICsgICAgICAgICovCj4+PiArICAgICAgIGlmICh2bWFfZmxhZ3NfY2FuX21lcmdlKCZkZXNj
+LT52bWFfZmxhZ3MpICYmCj4+PiArICAgICAgICAgICBXQVJOX09OX09OQ0UoZGVzYy0+YWN0aW9u
+LnR5cGUgIT0gTU1BUF9OT1RISU5HKSkKPj4KPj4gQW55IHJlYXNvbiB5b3UgY2hvc2UgdGhpcyAi
+aWYgKEEgJiYgV0FSTl9PTl9PTkNFKEIpKSIgcGF0dGVybiBpbnN0ZWFkCj4+IG9mIGEgc2ltcGxl
+ciAiaWYgKFdBUk5fT05fT05DRShBICYmIEIpKSI/IFVubGVzcyB0aGVyZSBhcmUgcmFjZXMKPj4g
+YmV0d2VlbiBBIGFuZCBCIHVwZGF0ZXMsIEkgdGhpbmsgdGhlc2Ugd291bGQgYmUgZXF1aXZhbGVu
+dCwgcmlnaHQ/Cj4gCj4gVGhleSBhcmUgZXF1aXZhbGVudCB5ZXMhCj4gCj4gU28gaXQncyBtb3Jl
+IG9mIGEgc3R5bGUgdGhpbmcsIGFzIHRoYXQgcmVhZHMgbGVzcyBjbGVhcmx5IHRvIG1lOgo+IAo+
+IAlpZiAoV0FSTl9PTl9PTkNFKHZtYV9mbGFnc19jYW5fbWVyZ2UoJmRlc2MtPnZtYV9mbGFncykg
+JiYKPiAJCQkgZGVzYy0+YWN0aW9uLnR5cGUgIT0gTU1BUF9OT1RISU5HKSkKPiAKPiBBbmQgdGhp
+cyB2ZXJzaW9uIGhpZ2hsaWdodHMgd2hhdCBpcyB0aGUgYnJva2VuIHRoaW5nIGhlcmUgKGFjdGlv
+biB0eXBlIHNldCkgYQo+IGxpdHRsZSBtb3JlIGNsZWFybHkgdGhvdWdoIG9idmlvdXNseSB0aGF0
+J3Mgb25seSBpZiBtZXJnZWFibGUgc28gYXJndWFibGUuCj4gCj4gSSBkb24ndCBoYXZlIGEgcmVh
+bGx5IHN0cm9uZyBvcGluaW9uIHRob3VnaCBJIGNhbiBjaGFuZ2UgaXQgaWYgeW91IHByZWZlcj8K
+Ckxvb2tzIGNsZWFyZXIgdG8gbWUgbGlrZSB0aGF0CgpBY2tlZC1ieTogRGF2aWQgSGlsZGVuYnJh
+bmQgKEFybSkgPGRhdmlkQGtlcm5lbC5vcmc+CgotLSAKQ2hlZXJzLAoKRGF2aWQKCi0tIAprdm0t
+cmlzY3YgbWFpbGluZyBsaXN0Cmt2bS1yaXNjdkBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9s
+aXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8va3ZtLXJpc2N2Cg==
