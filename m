@@ -4,48 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 76ECBCA5FC4
-	for <kvm-riscv@archiver.kernel.org>; Fri,  2 Oct 2026 07:10:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 09980CA5FD4
+	for <kvm-riscv@archiver.kernel.org>; Fri,  2 Oct 2026 07:12:07 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:
 	Subject:MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=GSqJbYVeSkXVs6rMfzzmu6UF54Sa6QhSRD0Hb8gA5YU=; b=s24Jxjq/hWUg01
-	n93NJ9ktMzC4Wi9/EKxqjPdWBNywAf0HUz8Q+4g5tRNVOBX4+v5LuUFaOryKw1xMYmNG5zIA1mgBw
-	ry1ehicN46ofyOFGLp8+w5xy2OPTWXcH3h/sXspSyDTZwnz9tYXfRGHR6LEis1G5KWCNvkf+cXmZ+
-	1Azu4X0gdI0UZ3davP+yLOHCUrDtUxerjWmxWzIG3sjgOI/a+RhXSA0nYxG6pDO1zZ6gLeU4HRAMO
-	BxvSiU/dJ1ftbHo9mW4YD2//iQSZTYZva5BM7KDUSV2bHcAsgI1OVtOyfyaf4rLrwgkbrXFg6H2iL
-	nce02PezMPXy93NZnPXA==;
+	List-Owner; bh=skfixXDDydz2okyRLRTbq+lrPKwg+8ZhRcSr5n7L4rU=; b=ctRP5s4kIxfJNw
+	fE/MfYed9QnYuj8la4P+vJ9Xv5d7+imPJWwQ6QSbx1iHRq/1+y43IWJ9l73A/NVf/4hCyLNAwWOyf
+	8f3WwtUhTxlstVjZrvVziZEHk3a8W43XcqGLR/NUjbd2MvwcfKtfUG84rR7o0zgNGPrpz1nPw9+IP
+	Y6gv+3snhNZbBhdmSgtGTuLjpNiADivtNDtH2DdX/B/GoH9n+fp9aZBq5D2KL/weYP+KfMIgqGPio
+	pZ3Jld1l+KleEau81hBw9FZuwxg8tDntAT6SZq9txqp54MUYU5uMYiaFuH8Km9Q1/3z4tSDII/v6K
+	tziOmZEVCIdsPrCaVjig==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1xCXPR-0000000AmbV-0B7N;
-	Fri, 02 Oct 2026 07:10:21 +0000
+	id 1xCXR8-0000000AmnJ-2Zyt;
+	Fri, 02 Oct 2026 07:12:06 +0000
 Received: from sea.source.kernel.org ([172.234.252.31])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1xCXPP-0000000Amaw-2Qid;
-	Fri, 02 Oct 2026 07:10:19 +0000
+	id 1xCXR7-0000000Amn5-1OBV;
+	Fri, 02 Oct 2026 07:12:05 +0000
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 3BB2A43048;
-	Fri,  2 Oct 2026 07:10:19 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 986B21F000FF;
-	Fri,  2 Oct 2026 07:09:39 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id DFE0643463;
+	Fri,  2 Oct 2026 07:12:04 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 950E91F000FF;
+	Fri,  2 Oct 2026 07:11:23 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790925019;
-	bh=z0R+AFuLfT7LW4bS8vfoemEDpRx0M25PpnJ7rizmkeQ=;
+	s=k20260515; t=1790925124;
+	bh=cedB2m3RAchjlfQYkaoIE7J7vyn1KCp2q8/Q5Rls3zo=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=jAQYjN8cqx2Chonfaa3UgRC+q9FNer11ZTc3ym7gN4EzSUnN9yctP+HSUzPW7Na8T
-	 XhXLG91INpSlxd1n8jme4BLqq8xlMmw9OyKrnwO/SeJSsiJsgHVqyQYRHY8JwXl4W1
-	 JBfwx5JRCqHlYGZTghTyJgnt+WhRxlmjtx1r5DTj0z3Wkm0FuPnE6IssCOmqCWX0WN
-	 i018WlOPFgg2mhJfBffqsM+y+RA+yPh22TTQPO3V2PJS5zyGxn2clBuLnsYWtkLEwW
-	 Azz54A0Xm+rXoq6gG2ZN1AUO3VP2I2JSQJCTgseE8QLMDwldkpQMvF1Okha2kXwxVR
-	 /ImSq7OK+twiw==
-Message-ID: <799f9f13-1462-468a-a6e6-6b8bd06c0fb8@kernel.org>
-Date: Fri, 2 Oct 2026 09:09:36 +0200
+	b=L8MEP/YKI8YHXtEpt1bt3ZVJY+fYQqqHYKcsB+22zDD7/Lcwip51/6ddFK4DhwYbK
+	 lvEFm9zfBhouolD0zO+zdPPcTbK/08BQl+89us0SMmB91+bFfvUlccZ+9aa/m1Pwk6
+	 Xy9LVd72bQIhr4LEKfimoj1LvYPuWsqMtZGARImX5TI0Hdzl6B7soQhEdXvUmtVBJ+
+	 tfI3G5IjeM4zQ8ogf1+2dF1+ALtEBoYAaeu1p6kG08GOAuAtJKCY0LIqVcWZKxmVvc
+	 SOZ3zOet+EA+8fNEyHAZ/v1BIRxjrQU3ip4sRMQ/abdOUJmDWOexjMq7gKGLm19G61
+	 VzRRqqC5DEtkQ==
+Message-ID: <fda08732-f500-4bbd-bb1a-af096e33002f@kernel.org>
+Date: Fri, 2 Oct 2026 09:11:20 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 38/40] fuse: dax: do not set VM_MIXEDMAP
+Subject: Re: [PATCH v3 39/40] mm/huge_memory: remove vma_is_special_huge()
 To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Jonathan Corbet <corbet@lwn.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>, Paul Moore <paul@paul-moore.com>, Stephen Smalley <stephen.smalley.work@gmail.com>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>, Kumar Kartikeya Dwivedi <memxor@gmail.com>, Zi Yan <ziy@nvidia.com>, Baolin Wang <baolin.wang@linux.alibaba.com>, Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, Doug Gilbert <dgilbert@interlog.com>, "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, "Martin K. Petersen" <mkp@kernel.org>, Jaya Kumar <jayalk@intworks.biz>, Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>, Sebastian Reichel <sre@kernel.org>, John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rik van Riel <riel@surriel.com>, Harry Yoo <harry@kernel.org>, Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Will Deacon <will@kernel.org>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin <npiggin@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>, "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, "David S. Miller" <davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Christian Brauner <brauner@kernel.org>, Matthew Brost <matthew.brost@intel.com>, Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>, Byungchul Park <byungchul@sk.com>, Gregory Price <gourry@gourry.net>, Ying Huang <ying.huang@linux.alibaba.com>, Alistair Popple <apopple@nvidia.com>, Chris Li <chrisl@kernel.org>, Kairui Song <kasong@tencent.com>, Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>, Youngjun Park <youngjun.park@lge.com>, Johannes Weiner <hannes@cmpxchg.org>, Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>, Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>, Chengming Zhou <chengming.zhou@linux.dev>, Michal Hocko <mhocko@kernel.org>, Miklos Szeredi <miklos@szeredi.hu>, Xu Xin <xu.xin@linux.dev>
 Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linux-doc@vger.kernel.org, linux-usb@vger.kernel.org,
@@ -60,7 +60,7 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
  fuse-devel@lists.linux.dev
 References: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org>
- <20260917-b4-mmap-prepare-vma-flag-sanify-v3-38-4583d8a23bca@kernel.org>
+ <20260917-b4-mmap-prepare-vma-flag-sanify-v3-39-4583d8a23bca@kernel.org>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -107,7 +107,7 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-38-4583d8a23bca@kernel.org>
+In-Reply-To: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-39-4583d8a23bca@kernel.org>
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -125,46 +125,88 @@ Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 On 9/17/26 18:22, Lorenzo Stoakes (ARM) wrote:
-> Commit e1fb4a086495 ("dax: remove VM_MIXEDMAP for fsdax and device dax")
-> prevented fsdax and device-dax from setting VM_MIXEDMAP, as DAX no longer
-> relies on it to direct core mm paths.
+> vma_is_special_huge() tests whether either the VMA_PFNMAP_BIT or
+> VMA_MIXEDMAP_BIT is set (i.e. whether the VMA is a kernel-owned mapping),
+> but with a DAX carve-out.
 > 
-> The fuse DAX implementation, added later, copied the old pattern and still
-> sets it.
+> DAX however no longer sets VMA_MIXEDMAP_BIT, so this carve-out is no longer
+> required.
 > 
-> Fuse DAX maps pages the same way fsdax does, via dax_iomap_fault() and
-> ultimately vmf_insert_page_mkwrite() and vmf_insert_folio_pmd(), which
-> insert ordinary refcounted pages and so do not require VM_MIXEDMAP.
+> Therefore test for vma_is_kernel_owned() instead and also drop the
+> VMA_IO_BIT check, as it is now redundant since it is enforced that only
+> kernel-owned mappings can set this flag.
 > 
-> Setting it only serves to mark the mapping as kernel-owned, making fuse DAX
-> the sole DAX implementation whose mappings are unmergeable, cannot be
-> mlock()'d, eagerly copy page tables on fork and reject MADV_DOFORK and
-> MADV_DODUMP.
+> This also eliminates another overloaded use of 'special' within mm.
 > 
-> It also requires vma_is_special_huge() in mm/huge_memory.c to carve DAX out
-> of its kernel-owned check explicitly.
-> 
-> There is no reason for fuse DAX to keep on using this flag so drop it.
+> No functional change intended.
 > 
 > Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 > ---
->  fs/fuse/dax.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  mm/huge_memory.c | 18 ++++--------------
+>  1 file changed, 4 insertions(+), 14 deletions(-)
 > 
-> diff --git a/fs/fuse/dax.c b/fs/fuse/dax.c
-> index 85cdf0199bc0..a5994f1c637d 100644
-> --- a/fs/fuse/dax.c
-> +++ b/fs/fuse/dax.c
-> @@ -826,7 +826,7 @@ int fuse_dax_mmap(struct file *file, struct vm_area_struct *vma)
+> diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+> index c3c98ea672c3..3cb8e2d4d65c 100644
+> --- a/mm/huge_memory.c
+> +++ b/mm/huge_memory.c
+> @@ -110,14 +110,6 @@ static inline bool file_thp_enabled(const struct vm_area_struct *vma)
+>  	return S_ISREG(inode->i_mode);
+>  }
+>  
+> -/* If returns true, we are unable to access the VMA's folios. */
+> -static bool vma_is_special_huge(const struct vm_area_struct *vma)
+> -{
+> -	if (vma_is_dax(vma))
+> -		return false;
+> -	return vma_test_any(vma, VMA_PFNMAP_BIT, VMA_MIXEDMAP_BIT);
+> -}
+> -
+>  static bool vma_file_bypass_thp_tuneables(const struct vm_area_struct *vma,
+>  		enum tva_type type)
 >  {
->  	file_accessed(file);
->  	vma->vm_ops = &fuse_dax_vm_ops;
-> -	vm_flags_set(vma, VM_MIXEDMAP | VM_HUGEPAGE);
-> +	vma_set_flags(vma, VMA_HUGEPAGE_BIT);
+> @@ -192,7 +184,7 @@ unsigned long __thp_vma_allowable_orders(struct vm_area_struct *vma,
+>  	/* Check the intersection of requested and supported orders. */
+>  	if (vma_is_anonymous(vma))
+>  		supported_orders = THP_ORDERS_ALL_ANON;
+> -	else if (vma_is_dax(vma) || vma_is_special_huge(vma))
+> +	else if (vma_is_dax(vma) || vma_is_kernel_owned(vma))
+>  		supported_orders = THP_ORDERS_ALL_SPECIAL_DAX;
+>  	else
+>  		supported_orders = THP_ORDERS_ALL_FILE_DEFAULT;
+> @@ -3066,7 +3058,7 @@ int zap_huge_pud(struct mmu_gather *tlb, struct vm_area_struct *vma,
+>  	orig_pud = pudp_huge_get_and_clear_full(vma, addr, pud, tlb->fullmm);
+>  	arch_check_zapped_pud(vma, orig_pud);
+>  	tlb_remove_pud_tlb_entry(tlb, pud, addr);
+> -	if (vma_is_special_huge(vma)) {
+> +	if (vma_is_kernel_owned(vma)) {
+>  		spin_unlock(ptl);
+>  		/* No zero page support yet */
+>  	} else {
+> @@ -3222,7 +3214,7 @@ static void __split_huge_pmd_locked(struct vm_area_struct *vma, pmd_t *pmd,
+>  		 */
+>  		if (arch_needs_pgtable_deposit())
+>  			zap_deposited_table(mm, pmd);
+> -		if (vma_is_special_huge(vma))
+> +		if (vma_is_kernel_owned(vma))
+>  			return;
+>  		if (unlikely(pmd_is_migration_entry(old_pmd))) {
+>  			const softleaf_t old_entry = softleaf_from_pmd(old_pmd);
+> @@ -4765,9 +4757,7 @@ static inline bool vma_not_suitable_for_thp_split(struct vm_area_struct *vma)
+>  {
+>  	if (vma_is_dax(vma))
+>  		return true;
+> -	if (vma_is_special_huge(vma))
+> -		return true;
+> -	if (vma_test(vma, VMA_IO_BIT))
+> +	if (vma_is_kernel_owned(vma))
+>  		return true;
+>  	if (vma_is_hugetlb(vma))
+>  		return true;
+> 
 
-Yes, I think I stumbled over that in the past as well:
+So good to see that horrible shit (sorry :) ) go away.
 
-Acked-by: David Hildenbrand (Arm) <david@kernel.org>
+It was too hugely special.
 
 -- 
 Cheers,
