@@ -4,112 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 141F4CA5FE3
-	for <kvm-riscv@archiver.kernel.org>; Sat,  3 Oct 2026 10:02:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0ACBCA5FEC
+	for <kvm-riscv@archiver.kernel.org>; Sat,  3 Oct 2026 13:17:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:Subject:Message-ID:Date:From:
-	In-Reply-To:References:MIME-Version:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
+	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=IJ+ZnsNgw9xOU+lEplgw5F0jso06gvCSDLlBxvAWk6A=; b=nxhuH50/95vVDo
-	riHGV6SDN3cwZ4yjoBeJ9ezcrfByXL2DooaVLhI4PXrkSEGG+73Mv0cLQB5xzpOo0uQQqLc2faQky
-	96WqFUw3zLRalm/afmazdkqC+XoFRwipI65QqemNnn57JLDhPJ5l7ASClJKlebyjW5OFPV1EM8VgS
-	ngqYHvuw7KHvFPrQ1g94lRVjyEzh3w6+167ZA2RWLWGqJx86ziP1pzXREiiFiSt5Wqb9Le+3zBKRG
-	BkZhPFhhyPRzZknsL+7waFgavt4EThrKxj2XFYHHDmh8reInTZHx+ZVa7AizIPauY39YRdIsuc8R+
-	t4Dd564wAkSA/vyo06AA==;
+	List-Owner; bh=79/kSf9HqykMc4WhBeTVYUd8b9ft/PH1QE4meqYJGUM=; b=T/dkJj7jATpJrE
+	Mmj5NxWDlhL3DcEgchmIF6je5xdLJvGswGgq6dQzILEtOF7Zcw5Nfe8aPY2s7GxLuyeR2+HHzDJdv
+	Jxbhpkx8XH09P6Mj4ON5m4eTOtPyzox60fgwP4gLkpoIlhLkW1HnbcTREXfQAefnr9QEA1f0osggT
+	apiXAi6Io1VpsN/o499YhZy4IgMImtU0balxho1H+ZaChuj3NRlrF2qnUQ9AuXD67M+/tkoHZ6Rm+
+	Btki5ENcZJ3dAKxS0WUsqwcAcQHXW1Vo58k8WpcS2q2mbGOrmxdGKogHRJktwBGB4ZKq6WeW0novs
+	hQVS40dFwCSPB8ek8szg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1xCwZE-0000000DKkg-3HiH;
-	Sat, 03 Oct 2026 10:02:08 +0000
-Received: from mail-wr2-x10.google.com ([2a00:1450:4864:30::10])
+	id 1xCzc8-0000000DWmG-2xl3;
+	Sat, 03 Oct 2026 13:17:20 +0000
+Received: from tor.source.kernel.org ([172.105.4.254])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1xCwZB-0000000DKiI-2qK3
-	for kvm-riscv@lists.infradead.org;
-	Sat, 03 Oct 2026 10:02:07 +0000
-Received: by mail-wr2-x10.google.com with SMTP id ffacd0b85a97d-482f6350f91so93403f8f.1
-        for <kvm-riscv@lists.infradead.org>; Sat, 03 Oct 2026 03:02:05 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1791021724; cv=none;
-        d=google.com; s=arc-20260327;
-        b=LyvO6Fr5WiCd4piF/RHFAv+3bRLNe0/+OyoufzBXxHuPgUZJQm74E6Kmy6Nl6jA2pY
-         ZLQJ09JvCdfPIE1HMNditiNcfeCfxyc3gYBtr2pEExnozepwg8kb9pNpMhwygiHwc7A8
-         1MMmk4WNi6vdwWtfimCW2NcCBvcgmDujOicYiGhgO71Mubt+Tk8/d5StXdzuNsd+Wsgp
-         qP27+2aiLOha1pZa8EcIjEiEC6C/dPnLhmJCwEsK6mXlF6ImHSHCtUep2e1liaitVcX7
-         /sc39mwCPunQWej95l59dWiTRhbCOZi/gmMfa1FoT+jORsvgzLNZ2EJkVuB3PjMnYosS
-         +r9Q==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=MP8Sqa2CEbzPapCdfasmIP+eBvUM/xKkRDsl2sHLpvE=;
-        fh=tJq/R9f69kqGW3XdIB3g59wLfslL8RYj5N4ZflxPElo=;
-        b=r4eNRfk2Lq+JTJIJKsH0Odvcb8tD1851h4rtRbz8YpQd94kJrCUZyxXKxEUo8PgMuG
-         sapak7EazKPhSkhmHyksxNbvZywpN+pfSdao1u4E2L7MD1/+dbcw6S0d/b7RwlO2vgMA
-         UYLnL+wJddlu3ZqwPI79OXnILjU7eWt8+bfjgRKm6+VGsXGXlSuFWdibi3gFVGBNhOM2
-         AzzKuPj6b8NwqGWIANnGZwtDpZsHDYrVxPxawsOI1pQtsSzB7ngWJgwhvX2IVbYxTLuY
-         1DAR475sCuh+j49J5l2zytxFM8H4q0yZppQwxX3HeyEcwjDN/m9dJdrxNf68CT1FJ8L8
-         xoMQ==;
-        darn=lists.infradead.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=brainfault.org; s=google; t=1791021724; x=1791626524; darn=lists.infradead.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=MP8Sqa2CEbzPapCdfasmIP+eBvUM/xKkRDsl2sHLpvE=;
-        b=cJsVVMQ8YhPXotxy1FMZdrICrk45lPoEGKt6SF8vbQMyp7nFqRJLKaicSpsyBtMEub
-         dzkADMXTmTCVFYaZZVocBpT3iF75R5zsAWyXzq3vGazPoLIS/8DcWWDBRLn7JlSLBPrq
-         ZngRCMqswD70cK9LkeNRjyb98nIud/0t22L2jzm3mWJJGAJS9rQho9O7QMa4HrT3uohv
-         vGuQ/jPUBkjDZcUTf99YmO2e2p1wQXcnSC5SK7u5BHu43UUOXpz7n5XlUQDxxJVdfMHX
-         vj1J1oWvWVbf/e8iBSIpZ3i66Gi8HmsIOBziiKXXAcx1WFEf7G22764JQcgs7m9l54oX
-         9rpg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791021724; x=1791626524;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=MP8Sqa2CEbzPapCdfasmIP+eBvUM/xKkRDsl2sHLpvE=;
-        b=drcNTRNHlPC5XrWnHNmaSP4pWphi+UJSMhUM5JVlycCwze6A8umyZJiplPet8Shct0
-         oVD6H66hWYE1letnNtIub9zvYh5y8fT0tZ4BOKNE1YP4wyMUsosotr3I+O3fGE0KryGc
-         GwO0JTF2IUFuc5COI45m8ln4PMrY1i4DO1Pq+iM3Ep0tN3xy9xV81XB/tm+TMM3fXi29
-         17pj2D0CfgthtK4eUabIiz4uSsPl36fBZ3mR3CTmr/ENIGuvRP2IwTayPCErSNCmgxaz
-         cFWz/HBEWMqsAPDnb1gmkwaIbyXeYnX5W6/DljKMVn910rDKXu5qmFmHx3qMWNvD4tNx
-         jFIg==
-X-Forwarded-Encrypted: i=1; AKwUvByXTTIpV2f9Hg9fJHIe744vNa9bMbe3wYxp41uHFKLxo0PulmhYsRz7fj5jW7dQqmNRMhLjestk0yw=@lists.infradead.org
-X-Gm-Message-State: AFq9FYL/sqQVNpVFajycBlmHPnEppVKM769fMUaSX9yBsgKG+EZC3zEn
-	yzrT5xmbRCPSyUr/NUIiZFYRjDojB+A49LngNsLHHy+bDJwnnJu3Q2+rEHZTlP3ZU/Lh9VnmkI7
-	PPYL5Ks0bdqCwvslABPWDiGFcnGi7+SMu+gpQsU+7QQ==
-X-Gm-Gg: AYBFou0xVEC6/4pEW+wvzHdTypwVq46rbxtXc2Fs6gwr/4yAXRRSityDxsbruPznHGO
-	V+UENoBOhoARMWYqXn9KAKHGB1ENGUL9TC3yRMd1PH/0wA19lHAMTMYS719NWOj7e6iTU+M6YGu
-	rG2poZVeK7CT4oql8Wod457uDj7Cxdps+RV7SoEpuPoacUVq2j4tah+uhSrayXUh6LaHQ+J1guZ
-	Kr9XWf/jo+oPQZKIbthvVHhkJzEBEiO+cnsZiQF3WmwCCq8vIvAI4UKCKrwkX25HyjXEOUjt5sj
-	Rpm6FKvehWyPF2+PqteHgHYz739jzUGHARZkGFyFegSV6tjtyopcFeznnIhvYTE3HMGb5E7pY7b
-	J0pUQb52peEsxd6bCHvaS7w6JQOCohKpiQEldOJcON24ra8rgfin+25k54uxjuaeEb4j1b2VIZZ
-	I=
-X-Received: by 2002:a05:6000:1846:b0:48b:1bf:ffb1 with SMTP id
- ffacd0b85a97d-48b12775c61mr10366149f8f.54.1791021723743; Sat, 03 Oct 2026
- 03:02:03 -0700 (PDT)
+	id 1xCzc6-0000000DWm2-373u;
+	Sat, 03 Oct 2026 13:17:18 +0000
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id D3A1D60D8D;
+	Sat,  3 Oct 2026 13:17:17 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 98E6A1F0089B;
+	Sat,  3 Oct 2026 13:16:49 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1791033437;
+	bh=/jEE4HcLwsM6TWLGremQKfzztE+rwvfFYJGPZmoq8a8=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=EgLBtik0WJzJCXWY/9/TI+W7fRx1wIZ9UfQuWfc+RhMCCFMM/xZJ03UyprLnrZDIx
+	 +hSP6z4pIAKExuSJlxbZygGALgGCQywzqqoPN2+Boz6NDgyFCoTr0xtw8XwpV2ytvg
+	 iOEb69EMyCjSZk8NVHT0gmIKW0rVbZ0F8RMvb9s4VF2Dbo0UftiN8tf9aa6rRRTzuW
+	 Fpm1LnU0F8ufx8E3b1Xf3T36YgbMjc4jOyHoaXzj2tW9/dfBgzxbHqld35pMVHgUgN
+	 4zsEh/CAz3fCIdmxhWutMDOLIRfajy8aGYLGHSvm01TwlgzafI+V3dGI5soFrbsjYq
+	 SFWdbxe9eRGJQ==
+Date: Sat, 3 Oct 2026 14:16:46 +0100
+From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+To: "David Hildenbrand (Arm)" <david@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Jonathan Corbet <corbet@lwn.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>, Paul Moore <paul@paul-moore.com>, Stephen Smalley <stephen.smalley.work@gmail.com>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>, Kumar Kartikeya Dwivedi <memxor@gmail.com>, Zi Yan <ziy@nvidia.com>, Baolin Wang <baolin.wang@linux.alibaba.com>, Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, Doug Gilbert <dgilbert@interlog.com>, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, "Martin K. Petersen" <mkp@kernel.org>, Jaya Kumar <jayalk@intworks.biz>, Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>, Sebastian Reichel <sre@kernel.org>, John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rik van Riel <riel@surriel.com>, Harry Yoo <harry@kernel.org>, Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Will Deacon <will@kernel.org>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin <npiggin@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>, "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, "David S. Miller" <davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Christian Brauner <brauner@kernel.org>, Matthew Brost <matthew.brost@intel.com>, Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>, Byungchul Park <byungchul@sk.com>, Gregory Price <gourry@gourry.net>, Ying Huang <ying.huang@linux.alibaba.com>, Alistair Popple <apopple@nvidia.com>, Chris Li <chrisl@kernel.org>, Kairui Song <kasong@tencent.com>, Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>, Youngjun Park <youngjun.park@lge.com>, Johannes Weiner <hannes@cmpxchg.org>, Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>, Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>, Chengming Zhou <chengming.zhou@linux.dev>, Michal Hocko <mhocko@kernel.org>, Miklos Szeredi <miklos@szeredi.hu>, Xu Xin <xu.xin@linux.dev>, linux-mm@kvack.org, 
+ linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, linux-usb@vger.kernel.org, linux-rdma@vger.kernel.org, selinux@vger.kernel.org, linux-sound@vger.kernel.org, bpf@vger.kernel.org, linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-trace-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-arch@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, fuse-devel@lists.linux.dev
+Subject: Re: [PATCH v3 31/40] mm/vma: introduce vma[_flags]_is_persistent()
+Message-ID: <asD6cgnNVJhZA98p@gremlin>
+References: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-31-4583d8a23bca@kernel.org>
+ <9bbdf4e8-6984-4477-a183-f0b236047381@kernel.org>
+ <3557015d-23dd-41ef-9832-78b58587f3f4@kernel.org>
+ <81e1e5ae-0aab-4584-81e6-3fc9c2634d07@kernel.org>
+ <ar-b_Ug__TBzIZsb@gremlin>
+ <2e5a4e6c-8f9c-4050-8998-454b83f4823b@kernel.org>
+ <ar-luB9QVCRshtIw@gremlin>
+ <3387642b-c39f-4f19-ba0c-267bbd2fe91d@kernel.org>
+ <ar-ux41ILjI1Px9S@gremlin>
+ <a202523f-a696-4a8e-be77-7170c3913cdf@kernel.org>
 MIME-Version: 1.0
-References: <20260814114507.583424-1-jinyu.tang@linux.dev> <20260814114507.583424-4-jinyu.tang@linux.dev>
-In-Reply-To: <20260814114507.583424-4-jinyu.tang@linux.dev>
-From: Anup Patel <anup@brainfault.org>
-Date: Sat, 3 Oct 2026 15:31:52 +0530
-X-Gm-Features: AclHuK-r6E6EOJLR4dsLSLuGmbe9Jaf0ZQFpEhYpdE-Qre9_eJHe2jf_2nwa2RI
-Message-ID: <CAAhSdy3D+4Oh9mD+MFP8RwoeTDB855ZQoGRgjEnYJQwRH4K4=g@mail.gmail.com>
-Subject: Re: [PATCH v3 3/3] KVM: selftests: Enable pre_fault_memory_test for RISC-V
-To: Jinyu Tang <jinyu.tang@linux.dev>
-Cc: Anup Patel <apatel@ventanamicro.com>, Sean Christopherson <seanjc@google.com>, 
-	Paolo Bonzini <pbonzini@redhat.com>, kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
-	linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, 
-	Atish Patra <atish.patra@linux.dev>, Paul Walmsley <pjw@kernel.org>, 
-	Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt <palmer@dabbelt.com>, 
-	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, 
-	Andrew Jones <andrew.jones@oss.qualcomm.com>, Conor Dooley <conor.dooley@microchip.com>, 
-	Yong-Xuan Wang <yongxuan.wang@sifive.com>, Nutty Liu <nutty.liu@hotmail.com>, 
-	Jinyu Tang <tjytimi@163.com>
-X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261003_030206_286277_0E477752 
-X-CRM114-Status: GOOD (  13.98  )
+Content-Disposition: inline
+In-Reply-To: <a202523f-a696-4a8e-be77-7170c3913cdf@kernel.org>
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -121,49 +72,156 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-T24gRnJpLCBBdWcgMTQsIDIwMjYgYXQgNToxNuKAr1BNIEppbnl1IFRhbmcgPGppbnl1LnRhbmdA
-bGludXguZGV2PiB3cm90ZToKPgo+IFJJU0MtViBub3cgc3VwcG9ydHMgS1ZNX1BSRV9GQVVMVF9N
-RU1PUlksIHNvIGluY2x1ZGUgdGhlIGdlbmVyaWMKPiBwcmVfZmF1bHRfbWVtb3J5X3Rlc3QgaW4g
-dGhlIFJJU0MtViBLVk0gc2VsZnRlc3QgYnVpbGQuCj4KPiBUaGUgdGVzdCB1c2VzIFBBR0VfU0la
-RSBmcm9tIHRoZSBhcmNoaXRlY3R1cmUgcHJvY2Vzc29yIGhlYWRlci4gRGVmaW5lCj4gdGhlIG5v
-cm1hbCA0SyBSSVNDLVYgc2VsZnRlc3QgcGFnZSBzaXplIHNvIHRoZSBnZW5lcmljIHRlc3QgY2Fu
-IGJ1aWxkCj4gZm9yIFJJU0MtVi4KPgo+IFJldmlld2VkLWJ5OiBOdXR0eSBMaXUgPG51dHR5Lmxp
-dUBob3RtYWlsLmNvbT4KPiBTaWduZWQtb2ZmLWJ5OiBKaW55dSBUYW5nIDxqaW55dS50YW5nQGxp
-bnV4LmRldj4KCkxHVE0uCgpSZXZpZXdlZC1ieTogQW51cCBQYXRlbCA8YW51cEBicmFpbmZhdWx0
-Lm9yZz4KClF1ZXVlZCB0aGlzIHBhdGNoIGZvciBMaW51eC03LjQKClRoYW5rcywKQW51cAoKCj4g
-LS0tCj4gdjEgLT4gdjI6Cj4gLSBEcm9wIHRoZSBwZXItdGVzdCBndWVzdF9tb2Rlc19hcHBlbmRf
-ZGVmYXVsdCgpIGNhbGwgZnJvbQo+ICAgcHJlX2ZhdWx0X21lbW9yeV90ZXN0LmMuICBSSVNDLVYg
-YWxyZWFkeSBpbml0aWFsaXplcyBzdXBwb3J0ZWQgYW5kCj4gICBkZWZhdWx0IGd1ZXN0IG1vZGVz
-IGZyb20ga3ZtX3NlbGZ0ZXN0X2FyY2hfaW5pdCgpLCB3aGljaCBpcyBjYWxsZWQgYnkKPiAgIHRo
-ZSBjb21tb24ga3ZtX3NlbGZ0ZXN0X2luaXQoKSBjb25zdHJ1Y3RvciwgYXMgc3VnZ2VzdGVkIGJ5
-IFNlYW4uCj4KPiAgdG9vbHMvdGVzdGluZy9zZWxmdGVzdHMva3ZtL01ha2VmaWxlLmt2bSAgICAg
-ICAgICAgICAgfCAxICsKPiAgdG9vbHMvdGVzdGluZy9zZWxmdGVzdHMva3ZtL2luY2x1ZGUvcmlz
-Y3YvcHJvY2Vzc29yLmggfCAzICsrKwo+ICAyIGZpbGVzIGNoYW5nZWQsIDQgaW5zZXJ0aW9ucygr
-KQo+Cj4gZGlmZiAtLWdpdCBhL3Rvb2xzL3Rlc3Rpbmcvc2VsZnRlc3RzL2t2bS9NYWtlZmlsZS5r
-dm0gYi90b29scy90ZXN0aW5nL3NlbGZ0ZXN0cy9rdm0vTWFrZWZpbGUua3ZtCj4gaW5kZXggNmZj
-MzRlOWJmOGUxLi5hYzY0YWM5MmZkNGIgMTAwNjQ0Cj4gLS0tIGEvdG9vbHMvdGVzdGluZy9zZWxm
-dGVzdHMva3ZtL01ha2VmaWxlLmt2bQo+ICsrKyBiL3Rvb2xzL3Rlc3Rpbmcvc2VsZnRlc3RzL2t2
-bS9NYWtlZmlsZS5rdm0KPiBAQCAtMjI1LDYgKzIyNSw3IEBAIFRFU1RfR0VOX1BST0dTX3Jpc2N2
-ICs9IGNvYWxlc2NlZF9pb190ZXN0Cj4gIFRFU1RfR0VOX1BST0dTX3Jpc2N2ICs9IGRpcnR5X2xv
-Z19wZXJmX3Rlc3QKPiAgVEVTVF9HRU5fUFJPR1NfcmlzY3YgKz0gZ2V0LXJlZy1saXN0Cj4gIFRF
-U1RfR0VOX1BST0dTX3Jpc2N2ICs9IG1tdV9zdHJlc3NfdGVzdAo+ICtURVNUX0dFTl9QUk9HU19y
-aXNjdiArPSBwcmVfZmF1bHRfbWVtb3J5X3Rlc3QKPiAgVEVTVF9HRU5fUFJPR1NfcmlzY3YgKz0g
-cnNlcV90ZXN0Cj4gIFRFU1RfR0VOX1BST0dTX3Jpc2N2ICs9IHN0ZWFsX3RpbWUKPgo+IGRpZmYg
-LS1naXQgYS90b29scy90ZXN0aW5nL3NlbGZ0ZXN0cy9rdm0vaW5jbHVkZS9yaXNjdi9wcm9jZXNz
-b3IuaCBiL3Rvb2xzL3Rlc3Rpbmcvc2VsZnRlc3RzL2t2bS9pbmNsdWRlL3Jpc2N2L3Byb2Nlc3Nv
-ci5oCj4gaW5kZXggYWJkZTNjNzFjODkxLi43MDQ4N2M4ZWQxNTUgMTAwNjQ0Cj4gLS0tIGEvdG9v
-bHMvdGVzdGluZy9zZWxmdGVzdHMva3ZtL2luY2x1ZGUvcmlzY3YvcHJvY2Vzc29yLmgKPiArKysg
-Yi90b29scy90ZXN0aW5nL3NlbGZ0ZXN0cy9rdm0vaW5jbHVkZS9yaXNjdi9wcm9jZXNzb3IuaAo+
-IEBAIC0xMiw2ICsxMiw5IEBACj4gICNpbmNsdWRlIDxhc20vdmRzby9wcm9jZXNzb3IuaD4KPiAg
-I2luY2x1ZGUgImt2bV91dGlsLmgiCj4KPiArI2RlZmluZSBQQUdFX1NISUZUICAgICAgICAgICAg
-IDEyCj4gKyNkZWZpbmUgUEFHRV9TSVpFICAgICAgICAgICAgICBCSVRfVUxMKFBBR0VfU0hJRlQp
-Cj4gKwo+ICAjZGVmaW5lIElOU05fT1BDT0RFX01BU0sgICAgICAgMHgwMDdjCj4gICNkZWZpbmUg
-SU5TTl9PUENPREVfU0hJRlQgICAgICAyCj4gICNkZWZpbmUgSU5TTl9PUENPREVfU1lTVEVNICAg
-ICAyOAo+IC0tCj4gMi40My4wCgotLSAKa3ZtLXJpc2N2IG1haWxpbmcgbGlzdAprdm0tcmlzY3ZA
-bGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xp
-c3RpbmZvL2t2bS1yaXNjdgo=
+On Fri, Oct 02, 2026 at 11:43:53PM +0200, David Hildenbrand (Arm) wrote:
+> On 10/2/26 15:59, Lorenzo Stoakes (ARM) wrote:
+> > On Fri, Oct 02, 2026 at 03:11:27PM +0200, David Hildenbrand (Arm) wrote:
+> >> I'd be very happy if we could find a clear way to describe "this is what we call
+> >> user memory: anon+pagecache", if that could come handy in such a context.
+> >
+> > Rather than arguing about it, how about shifting things to 'what backs the
+> > mapping' and something like:
+> >
+> > /* big long kdoc... */
+> > static inline bool vma_flags_is_mm_backed(const vma_flags_t *flags)
+> > {
+> > 	/* hugetlb is a fixed mapping, but the mm owns it entirely. */
+> > 	if (vma_flags_is_hugetlb(flags))
+> > 		return true;
+> >
+> > 	/*
+> > 	 * Kernel-owned mappings are populated by their owner, and fixed mappings
+> > 	 * have a layout the mm cannot assume ordinary fault semantics over.
+> > 	 */
+> > 	if (vma_flags_is_kernel_owned(flags) ||
+> > 	    vma_flags_is_fixed_mapping(flags))
+> > 		return false;
+> >
+> > 	/* The mm has promised it may discard droppable memory at any time. */
+> > 	return !vma_flags_test_single_mask(flags, VMA_DROPPABLE);
+> > }
+>
+> In my other mail I was wondering whether we could use vma_is_mm_managed() to
+> express !vma_is_kernel_owned(). Maybe vma_is_mm_backed() could fit into that
+> picture.
+
+Yeah, vma_is_mm_backed() = 'and the mm actually keeps it there' in effect :)
+
+>
+> Reading above I am still confused why something that expresses "backed" talks
+> about "fixed mappings and ownership", sorry :(
+
+I'll rework the kdoc to be clearer - I think with vma_is_mm_managed() the
+picture actually becomes clearer.
+
+>
+> It's late here, and this is a hard nut to crack.
+
+Yes :)
+
+Thanks for taking the time with this, I know some of it is pretty heavy going.
+
+>
+> What we have here is:
+>
+> 1) Is this an ordinary MM-managed VMA. So far so good, I understand that. (with
+>    a twist what I just learned about things that map random allocated pages
+>    through -> fault, but so far so good)
+
+Ack yeah. And ack on ->fault.
+
+It feels like we let ->fault be FAR too permissive. In retrospect, arbitrarily
+being able to put WHATEVER YOU WANT there was... unwise shall we say.
+
+>
+> 2) Is this MM "fixed" that makes expand/merge tricky, except if it's hugetlb
+>    where we can still handle it.
+
+Yeah the trickiest bit is the 'don't expand'.
+
+The hugetlb exception is ugh, but hugetlb was engineered terribly,
+essentially 'stick something in with total disregard for everything in core
+mm and make it an exception you just have to remember for everything'.
+
+I hope we all learn some lessons about what not to do from hugetlb and uffd
+:)
+
+>
+> I think VM_DONTEXPAND is also rather misnamed :( I assume it really means, using
+> sel_mmap_policy_ops() as an example: the MM manages the things that are getting
+> mapped in here (->fault), but the pages are not really pagecache/anon, but some
+> other shit. So we cannot expand the mapping.
+
+Yeah. And it is terribly named.
+
+>
+> Gah, so complicated.
+>
+> 3) Can the MM drop the pages at any time.
+>
+>
+> I still think that 3) does not quite fit into that picture. Using something like
+
+If you look at what the callers do it makes more sense - mlock pins pages,
+ksm merges them, dump writes them out and uffd hands their faults to userspace.
+
+All four need the page behind the mapping to be the mm's own and _still
+there the next time they look_.
+
+With that in place it's not stable so it's not right to let such callers
+have access, and all the callers have to remember to check that.
+
+>
+> "vma_is_mm_backed" to say "this is mm-managed, but all things in there come from
+> core-mm and not some other random shit people punch into ->fault" would work for me.
+
+Yeah agreed, I will update the kdoc to be clear about that.
+
+>
+> (not sure if there is still some other way how someone could get random pages
+> into a VMA ... or how to catch someone not setting the DONTEXPAND flag)
+
+vm_insert_pages() + friends sets VMA_MIXEDMAP_BIT now and
+vmf_insert_page_mkwrite() is DAX only (a follow up will make that a thing)
+so it's the damn ->fault that's the only thing left now.
+
+Right now I think that everyone that does something weird sets
+VMA_DONTEXPAND_BIT.
+
+It needs renaming to something like VMA_CUSTOM_FAULTED_BIT or
+something. That's probably a terrible name but you get the idea... :)
+
+>
+> God, this is all such a confusing mess with so many ways of getting stuff messed
+> up by other parts of the system. Thanks for working on cleaning that up.
+
+No worries :)
+
+The whole point of the series is to stop treating these flags as vague
+things (which VM_SPECIAL symbolised the most) so a. we can make sensible
+assumptions about flag combinations and b. people can use meaningful
+semantic checks rather than guessing (sometimes wrong).
+
+Hopefully the pain here is all worth it :)
+
+Thanks again for reviewing!
+
+I will respin with kdoc changes.
+
+>
+> --
+> Cheers,
+>
+> David
+
+--
+Cheers, Lorenzo
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
