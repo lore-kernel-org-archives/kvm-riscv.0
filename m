@@ -4,49 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9092CA5FED
-	for <kvm-riscv@archiver.kernel.org>; Sat,  3 Oct 2026 16:43:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 244A5CA5FED
+	for <kvm-riscv@archiver.kernel.org>; Sat,  3 Oct 2026 16:43:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Message-Id
 	:MIME-Version:Subject:Date:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=RIg2Rjfb1Glf1Wq2/+RWCsA+Fq/eZO5bTLkuJ3RYgSw=; b=ygRCRhxnnWlnKV
-	OR2Exo9Ayu7jgNm40oODb5E6NfdzRSv7NHVHE3bimM0EehsV0TpDCvBLGeHZVquIMSSNzpp7UDA6D
-	64YIZgW3F6sU7564OTRSvvb3miZwzf5X4a9TR1ck1UAqH3xD6z6BMH50R2j29VcAzJ+Io6Lb8nIPQ
-	VMxhjwSel0+Czngs++BGSizcxVLZO5s8zq7CTvcameJrKIsyD4ONgjO9vYQMBTR5MdTrlUbJq294R
-	zwYcttloloV32ED9Q2SSutq+IeU0YAz2RDw+1DbN1SntIN5KTJL5VvOJByteSkYgVa6Utz/1bJhGE
-	z4qNZGJ5L750jolh2VKg==;
+	List-Owner; bh=pDcMN8tkzT6L53JsilFUfUwRKi+4XbDYLD4zrQm0iU8=; b=2QRh7VLrXCquH4
+	PpOK7esRXqCkSWlIli2qlPpkigwZGUDoE5j1r4bG8Pgh8BWE6tqbJ0dRK6ZvlM/JmlGPTEvzsqGmd
+	Xh86M9jh8hH2af2G6QVeKsFm+XpbVVskEyywFvpWutMjmvRy/nNQeH5Ei70642Cr7FHNC7o0SJ+wp
+	D8xzJ6r2N6X4k180gS/mYtGJZrv4Ow6tVScWKz5+S28bENnGCFSiSHf6PZdg7VirCiPfqhdJodOnf
+	ngn+6HfOcfecdFn+wMAiiROUCGTD3W/DDsrQ82suyQBX8QGIJOVyyHGkRAGo8GtRNbQCQEQNiqZ7D
+	JlAWTjr0I/lbOqB/UiGA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1xD2pZ-0000000Dmmh-1ojn;
-	Sat, 03 Oct 2026 16:43:25 +0000
-Received: from tor.source.kernel.org ([2600:3c04:e001:324:0:1991:8:25])
+	id 1xD2pv-0000000DmpS-2VYC;
+	Sat, 03 Oct 2026 16:43:47 +0000
+Received: from tor.source.kernel.org ([172.105.4.254])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1xD2pY-0000000DmmU-15px;
-	Sat, 03 Oct 2026 16:43:24 +0000
+	id 1xD2pt-0000000Dmp7-2JHj;
+	Sat, 03 Oct 2026 16:43:45 +0000
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id AE4B260DA2;
+	by tor.source.kernel.org (Postfix) with ESMTP id CCBE260D9B;
+	Sat,  3 Oct 2026 16:43:44 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C1A6B1F0089E;
 	Sat,  3 Oct 2026 16:43:23 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 856251F00923;
-	Sat,  3 Oct 2026 16:43:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791045803;
-	bh=2WAPq/01IfLjO2S8vhrYpwSzi1RQ9xk+b3YXsmkfaS4=;
+	s=k20260515; t=1791045824;
+	bh=1kIT+NSwzB8WFQk8dJPoNJK+jJx3kX+5/gdc7Ft1Lo4=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=Lt9ylkZ/ftM6mAC73f0pVsl4NsXM/3k688zNIjGBmez6SyxyKJwYukGr06xy4VhyQ
-	 kjuSRSzoYHYJwaR+49yBaE1OC2Xf0VkaOUWtP38nthk7noBB5my8nTYk+u18B39n9c
-	 4bIfO2w4in5tah9zdOfeLjTZuehc8jc/UXYwoImEsSNqIXetZcmNErglpFynb+lNU5
-	 ZNXVhyiOD3lQCFgOASfftrSuLI4Kq0mGaKzcjSGxldxrr8xwHu6TehJnOLGjEBrq7U
-	 HiS7nVQX+t4nV7xROxKeeZXB49jYjVknwrEI9OCf9NNx52EXXxK2aNYnaAPzlCpSqU
-	 DPWYK8Wmjv1Cw==
+	b=cTINW59l1yamg7P7y051kd6liz+p1e90x7b0p1DJmHp11hWoOckeQtyu+6Av6fzfS
+	 d/olY3OpCS+V5OKZAidIkZ3YKIJt4ckFPZz6+0ZyJ58rzZ5Jprtva/0MalgasNcaHE
+	 6hyyZ0rlxwPDdq0tAOkUMMOMNDK8ntQjodyMNQ0MknKCPBDRxrVxeyh9fncHHK0rc+
+	 SVziT51qN9CAi20BkeO323yGJZeVmIQQ+VyrOZ1CGVxCoNWWugy81kmGEoaZ1kde7A
+	 px47qdDkeZKgT9AccNQi8kIhwHKT7eLTuD7KG94yvjy0gVhf/prx/YSpP2dQqcLz3L
+	 9X8w9Vgv9ousg==
 From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Date: Sat, 03 Oct 2026 17:33:00 +0100
-Subject: [PATCH v4 29/38] mm/madvise: update is_valid_guard_vma() to use
- vma_can_merge()
+Date: Sat, 03 Oct 2026 17:33:01 +0100
+Subject: [PATCH v4 30/38] mm/vma: introduce vma[_flags]_is_mm_backed()
 MIME-Version: 1.0
-Message-Id: <20261003-b4-mmap-prepare-vma-flag-sanify-v4-29-a1f052500fd7@kernel.org>
+Message-Id: <20261003-b4-mmap-prepare-vma-flag-sanify-v4-30-a1f052500fd7@kernel.org>
 References: <20261003-b4-mmap-prepare-vma-flag-sanify-v4-0-a1f052500fd7@kernel.org>
 In-Reply-To: <20261003-b4-mmap-prepare-vma-flag-sanify-v4-0-a1f052500fd7@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>, "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, David Hildenbrand <david@kernel.org>, Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Jonathan Corbet <corbet@lwn.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>, Paul Moore <paul@paul-moore.com>, Stephen Smalley <stephen.smalley.work@gmail.com>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>, Kumar Kartikeya Dwivedi <memxor@gmail.com>, Zi Yan <ziy@nvidia.com>, Baolin Wang <baolin.wang@linux.alibaba.com>, Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, Doug Gilbert <dgilbert@interlog.com>, "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, "Martin K. Petersen" <mkp@kernel.org>, Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>, Sebastian Reichel <sre@kernel.org>, John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rik van Riel <riel@surriel.com>, Harry Yoo <harry@kernel.org>, Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Will Deacon <will@kernel.org>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin <npiggin@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>, "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, "David S. Miller" <davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Christian Brauner <brauner@kernel.org>, Matthew Brost <matthew.brost@intel.com>, Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>, Byungchul Park <byungchul@sk.com>, Gregory Price <gourry@gourry.net>, Ying Huang <ying.huang@linux.alibaba.com>, Alistair Popple <apopple@nvidia.com>, Chris Li <chrisl@kernel.org>, Kairui Song <kasong@tencent.com>, Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>, Youngjun Park <youngjun.park@lge.com>, Johannes Weiner <hannes@cmpxchg.org>, Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>, Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>, Chengming Zhou <chengming.zhou@linux.dev>, Michal Hocko <mhocko@kernel.org>, Miklos Szeredi <miklos@szeredi.hu>, Xu Xin <xu.xin@linux.dev>
@@ -63,12 +62,12 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, 
  fuse-devel@lists.linux.dev, "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2028; i=ljs@kernel.org;
- h=from:subject:message-id; bh=lESe6gCmDf4+F4pdn3o7bqurkD1VaVSfNfkAaTS9RAY=;
- b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLIO6ml//Oaa5q/4zZVb0lOdy7DCek6Xbp3KzWW7K6bvK
- 13toDi5o5SFQYyLQVZMkeX5F/H9QSJh8zov+LvBzGFlAhnCwMUpABMpusrIMKF586wtL5cVetrM
- EbTy6K29mJ5YcqnCvGCpjJaEkGnHU0aG3lcBbJz39m5i57xW786/9rr6TO7Jhv+KguxOrP9xd/V
- vTgA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=4160; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=Y3b8xUgToSJog4n58D2kDCliQEWnfU/R2ucO/6ABcQ8=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLIO6mn7Mi75P2nhk3mRIaYqhq2/LjJYHK3meei++0HeC
+ xmnxDU6HaUsDGJcDLJiiizPv4jvDxIJm9d5wd8NZg4rE8gQBi5OAZjI/FpGhrMTGZTLLVz1r/d3
+ XDl8a9uXw1vv7H1rbf4zUkv7smZX9wJGhrPOdyzvBtaVWN7vv8u0gberu8FE6Tb/pSVLlvxdl+b
+ 4mh0A
 X-Developer-Key: i=ljs@kernel.org; a=openpgp;
  fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 X-BeenThere: kvm-riscv@lists.infradead.org
@@ -87,65 +86,117 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-We currently disallow the installation of lightweight guard regions in VMAs
-whose flags intersect VMA_SPECIAL_FLAGS or VMA_HUGETLB_BIT, or
-VMA_LOCKED_BIT unless allow_locked is set.
+Introduce vma[_flags]_is_mm_backed() for the purposes of identifying
+mappings which are mm-managed and whose contents were placed there by core
+mm's own fault path - rather than a custom ->fault handler - and which core
+mm has not reserved the right to discard.
 
-hugetlb VMAs set VMA_DONTEXPAND_BIT so this was already redundant,
-VMA_SPECIAL_FLAGS already sufficed.
+Mappings not managed by core mm do not fall into this category, as they are
+populated by their owner, and nor of course does memory-mapped I/O.
 
-However, now that VMA_IO_BIT is only set if VMA_PFNMAP or VMA_MIXEDMAP_BIT
-is set, this check collapses to being the equivalent of
-!vma_can_merge().
+We exclude fixed mappings as these have a layout core mm cannot assume
+ordinary fault semantics over.
 
-Update is_valid_guard_vma() to reflect this.
+hugetlb mappings are fixed mappings, but core mm owns them entirely, so
+they are explicitly carved out as mm-backed, as the MADV_DODUMP check
+already does.
+
+Droppable mappings are excluded as core mm has promised it may discard them
+at any time.
+
+Use this functionality to update the madvise MADV_DODUMP check to test for
+this rather than open-coding it.
+
+This replaces the VM_SPECIAL check which means it no longer checks for
+VMA_IO_BIT, however this is safe as we have established the invariant that
+mm-managed mappings may not set VMA_IO_BIT, so we implicitly include
+these.
 
 No functional change intended.
 
 Acked-by: Zi Yan <ziy@nvidia.com>
-Acked-by: David Hildenbrand (Arm) <david@kernel.org>
 Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 ---
- mm/madvise.c | 20 +++++++++++++-------
- 1 file changed, 13 insertions(+), 7 deletions(-)
+ include/linux/mm.h | 50 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ mm/madvise.c       |  4 ++--
+ 2 files changed, 52 insertions(+), 2 deletions(-)
 
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 2ce68713e4c3..55320cf2c525 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -1738,6 +1738,56 @@ static inline bool vma_can_merge(const struct vm_area_struct *vma)
+ 	return vma_flags_can_merge(&vma->flags);
+ }
+ 
++/**
++ * vma_flags_is_mm_backed() - Do the specified VMA flags imply the mapping is
++ * backed by core mm?
++ * @flags: The VMA flags to test.
++ *
++ * An mm-backed mapping is one managed by core mm (see
++ * vma_flags_is_mm_managed()) for which two further things are true:
++ *
++ * 1. Everything mapped was placed there by core mm's fault path (no custom
++ *    ->fault).
++ * 2. What is mapped stays there until it is zapped or unmapped by the user.
++ *
++ * These mappings are the only ones which can be sensibly locked, merged, dumped
++ * or be subject to uffd faulting, as all of these assume core mm and core mm
++ * alone manages these, and that the mappings will remain there.
++ *
++ * Returns: true if the flags imply an mm-backed mapping, otherwise false.
++ */
++static inline bool vma_flags_is_mm_backed(const vma_flags_t *flags)
++{
++	/* hugetlb is a fixed mapping, but core mm owns it entirely. */
++	if (vma_flags_is_hugetlb(flags))
++		return true;
++	/*
++	 * Mappings not managed by core mm are populated by their owner.
++	 *
++	 * Fixed mappings may be mm-managed, but their contents are established
++	 * by a custom ->fault handler, so core mm cannot assume ordinary fault
++	 * semantics over them.
++	 */
++	if (!vma_flags_is_mm_managed(flags) ||
++	    vma_flags_is_fixed_mapping(flags))
++		return false;
++	/* Core mm may discard droppable memory at any time. */
++	return !vma_flags_test_single_mask(flags, VMA_DROPPABLE);
++}
++
++/**
++ * vma_is_mm_backed() - Is @vma backed by core mm?
++ * @vma: The VMA to test.
++ *
++ * See vma_flags_is_mm_backed() for details.
++ *
++ * Returns: true if the VMA is mm-backed, otherwise false.
++ */
++static inline bool vma_is_mm_backed(const struct vm_area_struct *vma)
++{
++	return vma_flags_is_mm_backed(&vma->flags);
++}
++
+ /**
+  * vma_kernel_pagesize - Default page size granularity for this VMA.
+  * @vma: The user mapping.
 diff --git a/mm/madvise.c b/mm/madvise.c
-index 467601a8525b..0922d5f07a12 100644
+index 0922d5f07a12..9d0cde25da61 100644
 --- a/mm/madvise.c
 +++ b/mm/madvise.c
-@@ -1221,19 +1221,25 @@ static long madvise_remove(struct madvise_behavior *madv_behavior)
- 	return error;
- }
- 
--static bool is_valid_guard_vma(struct vm_area_struct *vma, bool allow_locked)
-+static bool is_valid_guard_vma(const struct vm_area_struct *vma,
-+			       bool allow_locked)
- {
--	vm_flags_t disallowed = VM_SPECIAL | VM_HUGETLB;
--
- 	/*
--	 * A user could lock after setting a guard range but that's fine, as
-+	 * A user could lock after setting a guard range but that's fine as
- 	 * they'd not be able to fault in. The issue arises when we try to zap
- 	 * existing locked VMAs. We don't want to do that.
- 	 */
--	if (!allow_locked)
--		disallowed |= VM_LOCKED;
-+	if (!allow_locked && vma_test(vma, VMA_LOCKED_BIT))
-+		return false;
-+	/*
-+	 * Guard regions require a VMA whose page tables are managed solely by
-+	 * the core, which is also what merging requires, so disallow any flags
-+	 * that would prevent a merge.
-+	 */
-+	if (!vma_can_merge(vma))
-+		return false;
- 
--	return !(vma->vm_flags & disallowed);
-+	return true;
- }
- 
- static bool is_guard_pte_marker(pte_t ptent)
+@@ -1584,8 +1584,8 @@ static int madvise_vma_behavior(struct madvise_behavior *madv_behavior)
+ 		new_flags |= VM_DONTDUMP;
+ 		break;
+ 	case MADV_DODUMP:
+-		if ((!vma_is_hugetlb(vma) && (new_flags & VM_SPECIAL)) ||
+-		    (new_flags & VM_DROPPABLE))
++		/* Only mm-backed memory can be meaningfully dumped. */
++		if (!vma_is_mm_backed(vma))
+ 			return -EINVAL;
+ 		new_flags &= ~VM_DONTDUMP;
+ 		break;
 
 -- 
 2.55.0
