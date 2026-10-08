@@ -4,7 +4,7 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 15F07CA6007
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 191BBCA600C
 	for <kvm-riscv@archiver.kernel.org>; Thu,  8 Oct 2026 14:00:34 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
@@ -12,29 +12,29 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=C5RQgMioWOhA0s08Nt3hdQFeOMakc6Pal1Yf5x+Aoyw=; b=U6g14HDNO1fi54
-	1VJiBU9Qto09Pm8OMhthZpUuy79ZpADLS53KzV11HuUmgdC+LbCELUp/jSlbn3vOvKbdZX1vALiWd
-	S78/0CsTYUoBloeS5naKqLY1B/qQ14bKzNPzVdywFZrblwwCqdQ9QmxIy3VdN8kjfsZHUBy+YVz9W
-	SoxoJ7hwUimmHvaKAzo96aPrPbqm/Q4HPjhJFaCM+ZOtXfn2nJF7gF/0XWQUhGAhG2hteEM1tJivN
-	ZoxtZvO9ML1utuRDwtUNOTiOsQsk30Qhmz/JcVrxUg2BuvPoabVoWPLbLSpEUk4QpH1ol+3oVsUPB
-	bLj781zJIgXUrHjqKReA==;
+	List-Owner; bh=wP3ZYHLrUxlR47gh9RxvssTNu+ZauvKROl5VTT/NTaU=; b=OdpFTBYFTgL2hi
+	8OboMAmOsSWfKtHssk6SK3E4Kh8wp7f4KUcuLbkdApJc5jnDWEV7asjeGMtICqkjeOLuyjDQbtDaL
+	hyrhkFAy0zfdxlgVQTmM9VcwhvDAvqlf7zcx45b7oIAqgpdOx0BfGaP0Yy061ojLnvbYuEOqv0RTZ
+	Jh4XhesfAFU15i6hAhK3CLT54S1/SjcORFyaqEvJ/jhJ/uuWKVZ7Yiw6WD7qQekMBLcJYgQ0g0cka
+	7zh8l4YqPDD+3uiShwSyM5Ce0jpmIiPvCw9RgduXWOJLbUSEzaqWGj+eF5nG2XNcg1algUYiaAQ+m
+	/8i7aGGP2aqU0+2sbOvQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1xEofg-00000004Uw7-3PRV;
-	Thu, 08 Oct 2026 14:00:32 +0000
-Received: from out30-98.freemail.mail.aliyun.com ([115.124.30.98])
+	id 1xEofh-00000004UwW-0ZSV;
+	Thu, 08 Oct 2026 14:00:33 +0000
+Received: from out30-110.freemail.mail.aliyun.com ([115.124.30.110])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1xEofc-00000004UuK-167m;
-	Thu, 08 Oct 2026 14:00:31 +0000
+	id 1xEofc-00000004UuL-05A4;
+	Thu, 08 Oct 2026 14:00:32 +0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
 	d=linux.alibaba.com; s=default;
-	t=1791468024; h=From:To:Subject:Date:Message-Id:MIME-Version;
-	bh=FBuc6cEA3FSukWGLiG7pSKsJM1xn0XaUlxaBeMxT7xM=;
-	b=E9DbqZePubd15kiyoibpupwl1JHanuhxa7e+NMmEo0BSlQHN1fRgq21eukhM6BzkCW3dLtQViaECmD/AjZh2B203+bYPDZ9ymmRuqmiuNU4c7tiTw8nwS57CgSdqxH55bYf/SCOM4RfEdWnpV4drlJy9QAhvaY1Pi8LgLKt9PyY=
-X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R531e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam011083073210;MF=fangyu.yu@linux.alibaba.com;NM=1;PH=DS;RN=19;SR=0;TI=SMTPD_---0XCQTvmE_1791468022;
-Received: from localhost.localdomain(mailfrom:fangyu.yu@linux.alibaba.com fp:SMTPD_---0XCQTvmE_1791468022 cluster:ay36)
+	t=1791468025; h=From:To:Subject:Date:Message-Id:MIME-Version;
+	bh=93BVwpudh4+6W0qoTe/2j6yMDK/FgOj3lLkwHPIbyr4=;
+	b=Ev0mUcAuGUkkJHF4h0IFVQJpWiY/7DxdZv41uiY6oG/2J+uOxdE1ukVqEssJM8C+p89rAiQ+htCW5V9+KbPo2aecQt234hR8X9D4vMJjv2CFShuEitYpC4hrk/pvuOnIXVcYicfKE+x0LEZBgCalNSzTNxjOGCpklYq23TS0j7s=
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R181e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam033037009110;MF=fangyu.yu@linux.alibaba.com;NM=1;PH=DS;RN=19;SR=0;TI=SMTPD_---0XCQTvmZ_1791468023;
+Received: from localhost.localdomain(mailfrom:fangyu.yu@linux.alibaba.com fp:SMTPD_---0XCQTvmZ_1791468023 cluster:ay36)
           by smtp.aliyun-inc.com;
-          Thu, 08 Oct 2026 22:00:23 +0800
+          Thu, 08 Oct 2026 22:00:24 +0800
 From: fangyu.yu@linux.alibaba.com
 To: tomasz.jeznach@linux.dev,
 	joro@8bytes.org,
@@ -55,17 +55,16 @@ Cc: fangyu.yu@linux.alibaba.com,
 	linux-kernel@vger.kernel.org,
 	linux-riscv@lists.infradead.org,
 	kvm-riscv@lists.infradead.org
-Subject: [RFC PATCH 2/3] iommu/riscv: Extract IRQ forwarding payload validation
-Date: Thu,  8 Oct 2026 22:00:00 +0800
-Message-Id: <20261008140001.94508-3-fangyu.yu@linux.alibaba.com>
+Subject: [RFC PATCH 3/3] iommu/riscv: Support IRQ forwarding without MSI page tables
+Date: Thu,  8 Oct 2026 22:00:01 +0800
+Message-Id: <20261008140001.94508-4-fangyu.yu@linux.alibaba.com>
 X-Mailer: git-send-email 2.39.3 (Apple Git-146)
 In-Reply-To: <20261008140001.94508-1-fangyu.yu@linux.alibaba.com>
 References: <20261008140001.94508-1-fangyu.yu@linux.alibaba.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261008_070028_564323_12F94DA9 
-X-CRM114-Status: UNSURE (   7.89  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20261008_070028_563118_44945941 
+X-CRM114-Status: GOOD (  16.88  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -84,58 +83,232 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 From: Fangyu Yu <fangyu.yu@linux.alibaba.com>
 
-Move the owner and MSI address mask/pattern checks from
-riscv_iommu_ir_activate() into a separate helper so a second forwarding
-backend can validate the same fields. No functional change.
+IOMMU implementations without the MSI_FLAT capability have no MSI page
+table, and their MSI writes are translated by the second-stage page
+table. Forward interrupts there by mapping the guest IMSIC GPA to the
+host IMSIC HPA in the second-stage domain, so device MSI writes reach
+the vCPU's interrupt file directly.
+
+Dispatch on the IOMMU capabilities in the IRQ forwarding entry: with
+MSI_FLAT nothing changes; without it, validate that every target is an
+IMSIC page in the guest MSI address window, install the GPA mappings,
+and replace the leaf PTE when a vCPU migration moves the VS-file host
+page. Mappings persist for the lifetime of the domain; disabling
+forwarding or a failed operation only drops the per-IRQ state so the
+IRQ falls back to host delivery.
 
 Signed-off-by: Fangyu Yu <fangyu.yu@linux.alibaba.com>
 ---
- drivers/iommu/riscv/iommu-ir.c | 22 ++++++++++++++++------
- 1 file changed, 16 insertions(+), 6 deletions(-)
+ drivers/iommu/riscv/iommu-ir.c | 157 ++++++++++++++++++++++++++++++++-
+ 1 file changed, 154 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/iommu/riscv/iommu-ir.c b/drivers/iommu/riscv/iommu-ir.c
-index b3f0a56475ed..b96baff9986d 100644
+index b96baff9986d..5f3a909c2206 100644
 --- a/drivers/iommu/riscv/iommu-ir.c
 +++ b/drivers/iommu/riscv/iommu-ir.c
-@@ -104,15 +104,10 @@ static void riscv_iommu_ir_set_target(struct riscv_iommu_msipte *msipte,
- 	}
+@@ -271,14 +271,160 @@ static int riscv_iommu_ir_update_target(struct riscv_iommu_msi_table *msi_table,
+ 	return 0;
  }
  
--static int riscv_iommu_ir_activate(struct riscv_iommu_msi_table *msi_table,
--				   struct riscv_iommu_device *iommu,
--				   struct riscv_iommu_ir_vcpu_info *vcpu_info)
-+static int riscv_iommu_ir_validate_vcpu_info(const struct riscv_iommu_ir_vcpu_info *vcpu_info)
- {
- 	u64 pattern = vcpu_info->msi_addr_pattern;
- 	u64 mask = vcpu_info->msi_addr_mask;
--	u64 required_caps = 0;
--	size_t nr_ptes;
--	int ret;
- 
- 	if (!vcpu_info->owner || (pattern & mask) ||
- 	    ((pattern | mask) & ~RISCV_IOMMU_DC_MSI_ADDR_MASK))
-@@ -129,6 +124,21 @@ static int riscv_iommu_ir_activate(struct riscv_iommu_msi_table *msi_table,
- 			return -EINVAL;
- 	}
- 
+-static int riscv_iommu_ir_irq_set_vcpu_affinity_locked(struct irq_data *data,
++static int riscv_iommu_ir_validate_noflat_target(const struct riscv_iommu_ir_vcpu_info *vcpu_info,
++						 const struct riscv_iommu_ir_target *target)
++{
++	u64 addr = target->gpa >> IMSIC_MMIO_PAGE_SHIFT;
++
++	if (!IS_ALIGNED(target->gpa, IMSIC_MMIO_PAGE_SZ) ||
++	    (addr & ~vcpu_info->msi_addr_mask) != vcpu_info->msi_addr_pattern)
++		return -EINVAL;
++
++	/* Without MSI_FLAT there is no MSI page table, so only IMSIC targets work. */
++	if (target->type != RISCV_IOMMU_IR_TARGET_IMSIC)
++		return -EOPNOTSUPP;
++
++	if (!IS_ALIGNED(target->hpa, IMSIC_MMIO_PAGE_SZ) ||
++	    (target->hpa >> IMSIC_MMIO_PAGE_SHIFT) > FIELD_MAX(RISCV_IOMMU_MSIPTE_PPN))
++		return -EINVAL;
++
 +	return 0;
 +}
 +
-+static int riscv_iommu_ir_activate(struct riscv_iommu_msi_table *msi_table,
-+				   struct riscv_iommu_device *iommu,
-+				   struct riscv_iommu_ir_vcpu_info *vcpu_info)
++/* Caller must hold msi_table->lock. */
++static int riscv_iommu_ir_map_guest_imsic(struct riscv_iommu_msi_table *msi_table,
++					  const struct riscv_iommu_ir_target *target)
 +{
-+	u64 required_caps = 0;
-+	size_t nr_ptes;
++	unsigned long index = target->gpa >> IMSIC_MMIO_PAGE_SHIFT;
++	struct riscv_iommu_noflat_imsic *imsic;
++	int ret;
++
++	imsic = xa_load(&msi_table->noflat_imsics, index);
++	if (imsic) {
++		if (imsic->hpa == target->hpa)
++			return 0;
++
++		ret = riscv_iommu_msi_table_replace_gpa_leaf(msi_table, target->gpa,
++							     imsic->hpa, target->hpa);
++		if (ret)
++			return ret;
++	} else {
++		imsic = kzalloc_obj(*imsic, GFP_ATOMIC);
++		if (!imsic)
++			return -ENOMEM;
++
++		ret = xa_err(xa_store(&msi_table->noflat_imsics, index, imsic,
++				      GFP_ATOMIC));
++		if (ret) {
++			kfree(imsic);
++			return ret;
++		}
++
++		ret = riscv_iommu_msi_table_map_gpa(msi_table, target->gpa, target->hpa);
++		if (ret) {
++			xa_erase(&msi_table->noflat_imsics, index);
++			kfree(imsic);
++			return ret;
++		}
++	}
++
++	imsic->hpa = target->hpa;
++	riscv_iommu_msi_table_inval(msi_table, target->gpa);
++	return 0;
++}
++
++static int riscv_iommu_ir_activate_noflat(struct riscv_iommu_msi_table *msi_table,
++					  struct riscv_iommu_ir_vcpu_info *vcpu_info)
++{
 +	int ret;
 +
 +	ret = riscv_iommu_ir_validate_vcpu_info(vcpu_info);
 +	if (ret)
 +		return ret;
 +
- 	nr_ptes = riscv_iommu_ir_nr_ptes(vcpu_info);
++	if (!vcpu_info->targets || !vcpu_info->nr_targets)
++		return -EINVAL;
++
++	for (unsigned int i = 0; i < vcpu_info->nr_targets; i++) {
++		ret = riscv_iommu_ir_validate_noflat_target(vcpu_info, &vcpu_info->targets[i]);
++		if (ret)
++			return ret;
++	}
++
++	for (unsigned int i = 0; i < vcpu_info->nr_targets; i++) {
++		ret = riscv_iommu_ir_map_guest_imsic(msi_table, &vcpu_info->targets[i]);
++		if (ret)
++			return ret;
++	}
++
++	return 0;
++}
++
++static int riscv_iommu_ir_update_target_noflat(struct riscv_iommu_msi_table *msi_table,
++					       struct riscv_iommu_ir_vcpu_info *vcpu_info)
++{
++	const struct riscv_iommu_ir_target *target = &vcpu_info->target;
++	int ret;
++
++	ret = riscv_iommu_ir_validate_vcpu_info(vcpu_info);
++	if (ret)
++		return ret;
++
++	ret = riscv_iommu_ir_validate_noflat_target(vcpu_info, target);
++	if (ret)
++		return ret;
++
++	if (!xa_load(&msi_table->noflat_imsics, target->gpa >> IMSIC_MMIO_PAGE_SHIFT))
++		return -EINVAL;
++
++	return riscv_iommu_ir_map_guest_imsic(msi_table, target);
++}
++
++static int riscv_iommu_ir_irq_set_vcpu_affinity_noflat(struct irq_data *data,
+ 						       struct riscv_iommu_info *info,
+ 						       struct riscv_iommu_ir_vcpu_info *vcpu_info,
+ 						       struct riscv_iommu_msi_table *msi_table)
++{
++	int ret;
++
++	if (!vcpu_info) {
++		/* Mappings persist; only the per-IRQ forwarding state is dropped. */
++		if (irqd_is_forwarded_to_vcpu(data)) {
++			irqd_clr_forwarded_to_vcpu(data);
++			info->nr_forwarded_irqs--;
++		}
++		return 0;
++	}
++
++	ret = vcpu_info->cmd == RISCV_IOMMU_IR_FORWARD ?
++		riscv_iommu_ir_activate_noflat(msi_table, vcpu_info) :
++		riscv_iommu_ir_update_target_noflat(msi_table, vcpu_info);
++	if (!ret) {
++		if (!irqd_is_forwarded_to_vcpu(data)) {
++			irqd_set_forwarded_to_vcpu(data);
++			info->nr_forwarded_irqs++;
++		}
++	} else if (irqd_is_forwarded_to_vcpu(data)) {
++		irqd_clr_forwarded_to_vcpu(data);
++		info->nr_forwarded_irqs--;
++	}
++
++	return ret;
++}
++
++static int riscv_iommu_ir_irq_set_vcpu_affinity_locked(struct irq_data *data,
++						       struct riscv_iommu_info *info,
++						       struct riscv_iommu_ir_vcpu_info *vcpu_info,
++						       struct riscv_iommu_msi_table *msi_table,
++						       bool noflat)
+ {
+ 	struct riscv_iommu_device *iommu = data->domain->host_data;
+ 	int ret;
  
- 	ret = riscv_iommu_ir_validate_targets(vcpu_info, nr_ptes, &required_caps);
++	if (noflat)
++		return riscv_iommu_ir_irq_set_vcpu_affinity_noflat(data, info,
++								    vcpu_info, msi_table);
++
+ 	if (!vcpu_info) {
+ 		if (WARN_ON_ONCE(!msi_table->nr_forwarded_irqs || !info->nr_forwarded_irqs))
+ 			return -EINVAL;
+@@ -332,10 +478,12 @@ static int riscv_iommu_ir_irq_set_vcpu_affinity_locked(struct irq_data *data,
+ static int riscv_iommu_ir_irq_set_vcpu_affinity(struct irq_data *data, void *arg)
+ {
+ 	struct riscv_iommu_ir_vcpu_info *vcpu_info = arg;
++	struct riscv_iommu_device *iommu = data->domain->host_data;
+ 	struct riscv_iommu_msi_table *msi_table;
+ 	struct riscv_iommu_info *info;
+ 	struct msi_desc *desc;
+ 	struct device *dev;
++	bool noflat;
+ 	int ret;
+ 
+ 	if (!vcpu_info && !irqd_is_forwarded_to_vcpu(data))
+@@ -354,6 +502,8 @@ static int riscv_iommu_ir_irq_set_vcpu_affinity(struct irq_data *data, void *arg
+ 	if (WARN_ON_ONCE(!info))
+ 		return -EINVAL;
+ 
++	noflat = !(iommu->caps & RISCV_IOMMU_CAPABILITIES_MSI_FLAT);
++
+ 	scoped_guard(rcu) {
+ 		/*
+ 		 * RCU keeps the table alive, but the device may switch domains before
+@@ -361,7 +511,7 @@ static int riscv_iommu_ir_irq_set_vcpu_affinity(struct irq_data *data, void *arg
+ 		 */
+ 		for (;;) {
+ 			msi_table = riscv_iommu_msi_table_rcu(info);
+-			if (!msi_table || !msi_table->root)
++			if (!msi_table || (!noflat && !msi_table->root))
+ 				return -EOPNOTSUPP;
+ 
+ 			raw_spin_lock(&msi_table->lock);
+@@ -371,7 +521,8 @@ static int riscv_iommu_ir_irq_set_vcpu_affinity(struct irq_data *data, void *arg
+ 		}
+ 	}
+ 
+-	ret = riscv_iommu_ir_irq_set_vcpu_affinity_locked(data, info, vcpu_info, msi_table);
++	ret = riscv_iommu_ir_irq_set_vcpu_affinity_locked(data, info, vcpu_info,
++							  msi_table, noflat);
+ 	raw_spin_unlock(&msi_table->lock);
+ 
+ 	return ret;
 -- 
 2.50.1
 
