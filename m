@@ -4,49 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9FB41CA601F
-	for <kvm-riscv@archiver.kernel.org>; Fri,  9 Oct 2026 18:16:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3621FCA601E
+	for <kvm-riscv@archiver.kernel.org>; Fri,  9 Oct 2026 18:16:31 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Message-Id
 	:MIME-Version:Subject:Date:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=XqxO6i2aOvZQvZ7PhoF/lXIEagFha6RGFSm37Zqu+T4=; b=lu3Ofsiwvl4fKn
-	8E6o0vfsxBdbMNj4y5yKqKkXH3mf3fquqX0ydELnAmSEaNmuBvZycUtTKkcZuna0EBpU1tuFydWJl
-	LOWPbtKn4qmufdrykghisuiqRJZGmQLrtUvFk/trOZRv0hJQnir+MCvK8oVIiX3Mg0nYGKN0Fvn5s
-	EmMAJQ5yemSOhBTXFJ2C+bgl4AkQvtj1k+ibqJssELAhcKM1zuy99Na5tr96DlM11r3LfufM1NqRr
-	XHGefsFFCQqu03TIgp8ASmIDfN/CMtp4laX7pM5HxoM8TgXy/lDAl/tNkOhojADGmU+C6Lg4DCVZ+
-	AzZEY8PjxvAkaY99wEVg==;
+	List-Owner; bh=zSDnSnEUTNPLp2etlud48hxwslXWT/4SAZ/T6ME+Y6E=; b=tDe9YOVmaDbFO9
+	7DqftholJbVT1te5BIpHCYC5UNkYIHJDn+JmGRGoyVIGZA5udOrvLfKRyk9+02KMn8N4IPNhSsug2
+	b//RUEk9ffoHsNEJcWLg8B6pMkMhQcZlmXJyms/sT2aS6lbr8sBt5MwWeH+BoRgB/wUknrnhgHTIU
+	Fe9WJDzoQns/Tp6rJDxeBhKvQjo3vWTu6RRwmGwLvU70rBwoY21l+zshUDhikQPFbQv9YFPUrtoHL
+	pxthwqiVbiRS8ZEd8qjs4VAf+CbCdDFn2ysvrfDvXbkoK+SFFRGsoYe1nc/QVKjOhrg+o+B8tiR/X
+	WzMz/4ngmKjFmOKtjyOg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1xFF8b-00000006uza-1NCi;
-	Fri, 09 Oct 2026 18:16:09 +0000
+	id 1xFF8w-00000006vBK-3fzt;
+	Fri, 09 Oct 2026 18:16:30 +0000
 Received: from sea.source.kernel.org ([172.234.252.31])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1xFF8a-00000006uzI-3Lzv;
-	Fri, 09 Oct 2026 18:16:08 +0000
+	id 1xFF8v-00000006vAi-37G1;
+	Fri, 09 Oct 2026 18:16:29 +0000
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 7D646434CD;
+	by sea.source.kernel.org (Postfix) with ESMTP id 6CF1441093;
+	Fri,  9 Oct 2026 18:16:29 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BA8E51F000FF;
 	Fri,  9 Oct 2026 18:16:08 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BC2E21F0089A;
-	Fri,  9 Oct 2026 18:15:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791569768;
-	bh=7yzjjlSzlbX51F4Uds4bBqm2u/xB0/1FIMGl/ApzD2g=;
+	s=k20260515; t=1791569789;
+	bh=sNxRxaa4FCG/PyGcafpOW4Vhq6S2764syPChNm7Rjt0=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=ZIC3TEMsbPYeSKHn0ifT8ANm/XzNERdMqJErbEgbnnYG9UI14KKN8CWn0EWSBSUW5
-	 vYjx/P7IktTDWxK1od8PNBmxET6SMAQDw8/q5PNJZKbw4hl/ZK3I90PRkEG+e5rg9p
-	 yp9V7dDjXlOKZdm2+FxEDRiCQpX+3veCrT5EwoBMVdOgdu8WLiPz1eWpFfZmVEvX7y
-	 8iSt5ygzKSpmPmxFgXQ/H8OVr0eKW+GwvO9EcVGdsHVXl0CDWm14HIaQ3vn+z44RMW
-	 JY+k5q3DVczHqP3o+4wYm8na0WrzYXWNBt/7Kz6kPDBZkeRehrVWN8QxUIbcVlqpyl
-	 64NcF5Wnfqpvw==
+	b=m018Hjmfn/pxYuj3+eTlmGklX9bJP9V7GcFJt+kUpcCntKb6FCNazqjZw0N5gPxR/
+	 m/N1FNcfoPguGqAtl31eQTqnrPuvibp2WpHFLGmOZsyzlXkq7R5pmrahmaCAHUI/ZK
+	 +MwQE6km+nqBMC+iMAvBvOjXenS1+gXhieyp58nOmdxiWiVNnZ0Q/S6DyA/NGmdyTH
+	 ylTPlouva0ci0VABvaemvPL5bADRItMnL2sHTG37mxxDfBhKjrye0CwAWytflxgnFC
+	 rPb7OPGYZqacFV1D4jx1z/bKXZZgevuxdcoa30kQBqjIopi4v0wU8NBTbXS/y+LNyw
+	 BqzS+8gamX6Cw==
 From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Date: Fri, 09 Oct 2026 19:04:27 +0100
-Subject: [PATCH v5 33/38] mm: eliminate VMA_SPECIAL_FLAGS usage when
- hugetlb explicitly tested
+Date: Fri, 09 Oct 2026 19:04:28 +0100
+Subject: [PATCH v5 34/38] mm: eliminate VMA_SPECIAL_FLAGS check in
+ lru_gen_look_around()
 MIME-Version: 1.0
-Message-Id: <20261009-b4-mmap-prepare-vma-flag-sanify-v5-33-923b70125b1e@kernel.org>
+Message-Id: <20261009-b4-mmap-prepare-vma-flag-sanify-v5-34-923b70125b1e@kernel.org>
 References: <20261009-b4-mmap-prepare-vma-flag-sanify-v5-0-923b70125b1e@kernel.org>
 In-Reply-To: <20261009-b4-mmap-prepare-vma-flag-sanify-v5-0-923b70125b1e@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>, "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, David Hildenbrand <david@kernel.org>, Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Jonathan Corbet <corbet@lwn.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>, Paul Moore <paul@paul-moore.com>, Stephen Smalley <stephen.smalley.work@gmail.com>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>, Kumar Kartikeya Dwivedi <memxor@gmail.com>, Zi Yan <ziy@nvidia.com>, Baolin Wang <baolin.wang@linux.alibaba.com>, Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, Doug Gilbert <dgilbert@interlog.com>, "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, "Martin K. Petersen" <mkp@kernel.org>, Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>, Sebastian Reichel <sre@kernel.org>, John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rik van Riel <riel@surriel.com>, Harry Yoo <harry@kernel.org>, Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Will Deacon <will@kernel.org>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin <npiggin@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>, "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, "David S. Miller" <davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Christian Brauner <brauner@kernel.org>, Matthew Brost <matthew.brost@intel.com>, Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>, Byungchul Park <byungchul@sk.com>, Gregory Price <gourry@gourry.net>, Ying Huang <ying.huang@linux.alibaba.com>, Alistair Popple <apopple@nvidia.com>, Chris Li <chrisl@kernel.org>, Kairui Song <kasong@tencent.com>, Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>, Youngjun Park <youngjun.park@lge.com>, Johannes Weiner <hannes@cmpxchg.org>, Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>, Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>, Chengming Zhou <chengming.zhou@linux.dev>, Michal Hocko <mhocko@kernel.org>, Miklos Szeredi <miklos@szeredi.hu>, Xu Xin <xu.xin@linux.dev>
@@ -64,12 +64,12 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  fuse-devel@lists.linux.dev, Ihor Solodrai <ihor.solodrai@linux.dev>, 
  Bert Karwatzki <spasswolf@web.de>, "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2586; i=ljs@kernel.org;
- h=from:subject:message-id; bh=VzpMBnGSH2RNHu5Mv4xiPliY+l+0YLYMpytCFKUc+Kk=;
- b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLJO6swrniJ87IlG4rTlWpr9OjIN3+cmvQwVXxRpmtXRH
- rdDL02so5SFQYyLQVZMkeX5F/H9QSJh8zov+LvBzGFlAhnCwMUpABPJ7Wb4p//89U9p388dqt0t
- d9kYTx+ZZp/zSFTqwMy1Vz+n34zn/8LIMGPBz9BzgSslFYKidLSmKl0WUJj4r9Sre7XCacZZtw4
- c5wIA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1268; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=HkTbLGiMaDy9mSSm1Y8681jTpkwBcd1ymOGev1wsVuw=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLJO6sxbMTVXVcSGa8rCEpmcR2sqHz4PmPrzjd+9a5P09
+ rEu2VR8tqOUhUGMi0FWTJHl+Rfx/UEiYfM6L/i7wcxhZQIZwsDFKQATmX+dkaH//9VUNo22rJTP
+ 6xl37bKf3BvxwOZaJ6ebyKrIfee/cncz/E/i/7Hh5+ygwwn9pRHbYjacDSp9JVHd23ni0NKma2U
+ JtWwA
 X-Developer-Key: i=ljs@kernel.org; a=openpgp;
  fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 X-BeenThere: kvm-riscv@lists.infradead.org
@@ -88,76 +88,38 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-It is now an invariant that VMA_IO_BIT is not set by mm-managed mappings,
-so each existing VMA_SPECIAL_FLAGS test need only test for
-VMA_DONTEXPAND_BIT, VMA_PFNMAP_BIT and VMA_MIXEDMAP_BIT.
+A fixed or non-mm-managed mapping is one which sets VMA_PFNMAP_BIT,
+VMA_MIXEDMAP_BIT or VMA_DONTEXPAND_BIT, which is precisely what
+VMA_SPECIAL_FLAGS tests for other than VMA_IO_BIT, which is safe to drop as
+mm-managed mappings may not set it.
 
-This is precisely a test for a fixed or non-mm-managed mapping.
-
-Update a number of callsites which already explicitly handle hugetlb
-mappings.
-
-vma_supports_mlock() and ksm_compatible() also explicitly bail on droppable
-mappings - excluding non-mm-managed, fixed or droppable mappings is exactly
-what vma_is_mm_backed() tests for, so in these cases use this predicate.
-
-should_skip_vma() tests for locked, fixed or non-mm-managed memory (having
-already excluded hugetlb mappings) so simply test for those there.
+Using these predicates rather than VMA_SPECIAL_FLAGS makes the check
+self-documenting and helps eliminate the confusion around 'special' flags.
 
 No functional change intended.
 
 Reviewed-by: Zi Yan <ziy@nvidia.com>
+Acked-by: David Hildenbrand (Arm) <david@kernel.org>
 Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 ---
- mm/internal.h | 4 +---
- mm/ksm.c      | 4 +---
- mm/vmscan.c   | 3 ++-
- 3 files changed, 4 insertions(+), 7 deletions(-)
+ mm/vmscan.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/mm/internal.h b/mm/internal.h
-index b5f7be8f65d8..e57c35e5f90b 100644
---- a/mm/internal.h
-+++ b/mm/internal.h
-@@ -1112,9 +1112,7 @@ static inline struct file *maybe_unlock_mmap_for_io(struct vm_fault *vmf,
- 
- static inline bool vma_supports_mlock(const struct vm_area_struct *vma)
- {
--	if (vma_test_any_mask(vma, VMA_SPECIAL_FLAGS))
--		return false;
--	if (vma_test_single_mask(vma, VMA_DROPPABLE))
-+	if (!vma_is_mm_backed(vma))
- 		return false;
- 	if (vma_is_dax(vma) || vma_is_hugetlb(vma))
- 		return false;
-diff --git a/mm/ksm.c b/mm/ksm.c
-index 624f37975e12..ed66a90e0031 100644
---- a/mm/ksm.c
-+++ b/mm/ksm.c
-@@ -747,9 +747,7 @@ static bool ksm_compatible(const struct file *file, vma_flags_t vma_flags)
- 	if (vma_flags_test_any(&vma_flags, VMA_SHARED_BIT, VMA_MAYSHARE_BIT,
- 			       VMA_HUGETLB_BIT))
- 		return false;
--	if (vma_flags_test_single_mask(&vma_flags, VMA_DROPPABLE))
--		return false;
--	if (vma_flags_test_any_mask(&vma_flags, VMA_SPECIAL_FLAGS))
-+	if (!vma_flags_is_mm_backed(&vma_flags))
- 		return false;
- 	if (file_is_dax(file))
- 		return false;
 diff --git a/mm/vmscan.c b/mm/vmscan.c
-index 12ed3388ee41..3b318efa2916 100644
+index 3b318efa2916..7adffe8182b3 100644
 --- a/mm/vmscan.c
 +++ b/mm/vmscan.c
-@@ -3477,7 +3477,8 @@ static int should_skip_vma(unsigned long start, unsigned long end, struct mm_wal
- 	if (!vma_has_recency(vma))
+@@ -4418,8 +4418,8 @@ bool lru_gen_look_around(struct page_vma_mapped_walk *pvmw, unsigned int nr)
+ 	if (spin_is_contended(pvmw->ptl))
  		return true;
  
--	if (vma->vm_flags & (VM_LOCKED | VM_SPECIAL))
-+	if (vma_test(vma, VMA_LOCKED_BIT) || !vma_is_mm_managed(vma) ||
-+	    vma_is_fixed_mapping(vma))
+-	/* exclude special VMAs containing anon pages from COW */
+-	if (vma->vm_flags & VM_SPECIAL)
++	/* exclude fixed and non-mm-managed VMAs containing anon pages from COW */
++	if (!vma_is_mm_managed(vma) || vma_is_fixed_mapping(vma))
  		return true;
  
- 	if (vma == get_gate_vma(vma->vm_mm))
+ 	/* avoid taking the LRU lock under the PTL when possible */
 
 -- 
 2.55.0
