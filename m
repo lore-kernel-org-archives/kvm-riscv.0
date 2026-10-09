@@ -4,77 +4,109 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E22A3CA5FED
-	for <kvm-riscv@archiver.kernel.org>; Fri,  9 Oct 2026 09:14:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F0FA5CA6019
+	for <kvm-riscv@archiver.kernel.org>; Fri,  9 Oct 2026 10:07:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
-	Date:Subject:Cc:To:From:Message-Id:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:Subject:Message-ID:Date:From:
+	In-Reply-To:References:MIME-Version:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=SPPIP45QG334c8TZs+5KQcOb/S0anSrhbr+IEBZp7NA=; b=HJysOu2xFnz2cm
-	UECVLv0F1y2iqLmI1krLmF1X3NdZGai0F/QbO3ElNp4aP2sDSExx7y2bNsj2l6jI8KwP9EO3pKby2
-	UCL/P8MzBMi2aMJe2ayfbAv2+E95U7uY6p2ky/FlBER2i3mS4Xc6uLK2trMINoeMIf7ZqQE9cqY23
-	DmufYMDBeZsRw2Gw1oQFWv2mgcxPLnhsaT2lS+OHU5C7elh1LZ/3r4epi6/AQ/PjSbpTmU6XVHjzQ
-	kWSA4ljSsV4fchD06Qeo24YTUiNxe7NPk9pwNYN9avSg3nvPb9TtMaZKAPDjhxA49ANXCI/UdFt12
-	YzCWQklK85O39rn2pcMg==;
+	List-Owner; bh=bwHGTCgPgSolUOEPM+3BCBw/EsqUP5Ye7BBlgtWx5HA=; b=V5k5dohgQYGQfI
+	mzodnMWnpUvI+G5cifoCOgXpZC5DlCw6uudx+81V9tQ4ceerffPCU7z2HB3UcxCuAAoFkndM8Zhh7
+	q72HbNpI7mU9buS65OzgFWMlk51WYAdKjIKy8V2jmNa+EaVoUGyh1ZkhOzS2hhFzULfSiJizUCWzq
+	r9diH2YeT6g+FqQx1oO6ApNSwtKLyuKPpwBmgBMKCTq4auwhtD/lOyuKzkjw2cSSKOE+WXn+DMyC5
+	zokbF2r+VxuPmjb65Oaqz+H0yAh+ZDFzjcMT4odIkmdVBYJiSHgEOCGNM0EcrMqUJ5CbQlIn07GNK
+	N3hvpRXi4/04S2mytWSw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1xF6gj-00000005tZ8-2BgP;
-	Fri, 09 Oct 2026 09:14:49 +0000
-Received: from mxhk.zte.com.cn ([160.30.148.34])
+	id 1xF7Vx-00000005ymd-01S0;
+	Fri, 09 Oct 2026 10:07:45 +0000
+Received: from mail-wr1-x434.google.com ([2a00:1450:4864:20::434])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1xF6gh-00000005tYi-1C6v;
-	Fri, 09 Oct 2026 09:14:48 +0000
-Received: from mse-fl1.zte.com.cn (unknown [10.5.228.132])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mxhk.zte.com.cn (FangMail) with ESMTPS id 4j1Lm45T4rz4yjjH;
-	Fri, 09 Oct 2026 17:14:44 +0800 (CST)
-Received: (from root@localhost)
-	by mse-fl1.zte.com.cn id 6999EfSj006317;
-	Fri, 9 Oct 2026 17:14:41 +0800 (+08)
-	(envelope-from gong.shuai@sanechips.com.cn)
-Message-Id: <202610090914.6999EfSj006317@mse-fl1.zte.com.cn>
-Received: from szxlzmapp04.zte.com.cn ([10.5.231.166])
-	by mse-fl2.zte.com.cn with SMTP id 69995Y26078728;
-	Fri, 9 Oct 2026 17:05:34 +0800 (+08)
-	(envelope-from gong.shuai@sanechips.com.cn)
-Received: from localhost.localdomain (unknown [10.230.214.35])
-	by smtp (Zmail) with SMTP;
-	Fri, 9 Oct 2026 17:05:36 +0800
-X-Zmail-TransId: 3e816ac8ae5a022-c22f1
-X-Zmail-LocalSMTP: 1
-X-Zmail-RealSender: gong.shuai@sanechips.com.cn
-From: Gong Shuai <gong.shuai@sanechips.com.cn>
-To: andrew.jones@oss.qualcomm.com
-Cc: anup@brainfault.org, atish.patra@linux.dev, fangyu.yu@linux.alibaba.com,
-        iommu@lists.linux.dev, jgg@nvidia.com, jgg@ziepe.ca, joro@8bytes.org,
-        kvm-riscv@lists.infradead.org, kvm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
-        palmer@dabbelt.com, pjw@kernel.org, robin.murphy@arm.com,
-        tglx@kernel.org, tomasz.jeznach@linux.dev, will@kernel.org,
-        zhangzhanpeng.jasper@bytedance.com, zong.li@sifive.com,
-        gong.shuai@sanechips.com.cn, gsh517025@gmail.com
-Subject: Re: [RFC PATCH v3 04/14] iommu/riscv: Reject live S2 replacement with forwarded IRQs
-Date: Fri,  9 Oct 2026 17:05:30 +0800
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260928143113.49838-5-andrew.jones@oss.qualcomm.com>
-References: <20260928143113.49838-5-andrew.jones@oss.qualcomm.com>
+	id 1xF7Vt-00000005ylN-0vPO
+	for kvm-riscv@lists.infradead.org;
+	Fri, 09 Oct 2026 10:07:42 +0000
+Received: by mail-wr1-x434.google.com with SMTP id ffacd0b85a97d-48bbb06e746so3352313f8f.3
+        for <kvm-riscv@lists.infradead.org>; Fri, 09 Oct 2026 03:07:40 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1791540459; cv=none;
+        d=google.com; s=arc-20260327;
+        b=ZQlBT2cRy+jqfslxz6gIhOI6lQvwSoTUP6qWH+LXYV2T0CCxiTSn5QLIWN2dJpXUwE
+         FDVcFcfBarmqfKKZuwaC0nyIUpvlaRXxTgDVab+YWiTt/vv3LIpFV6KjvABs0NXX1Fil
+         Zt7VvyXo/v/R9y3daGUnZL0gW3h12ugA8Cd6/+wUHH/9GxBpCvgbWd90/qqi/dpKysjt
+         m5MrIR97JkYZfcYk0no08+u5SO+GyNOZauog/ehPXT5HOEebsop8HcmmDyJ3BVkaDGMu
+         wHb9mdzuCY+7SNmNWHMBoP5WlKIKbRaqzCLI/h00yHUruaR8QwSURngDGTo++btkVYIC
+         Nsng==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=YhlTmiSSnyAhAbjv/VolTrl3XZ08TdurV9y8UvnnMXY=;
+        fh=EFnNigN4mGaUPIDKzKwL7JZh6oKxxpf7HBr736iM0SA=;
+        b=SmbgiMIROqciv++46H/rffIciHdnvf+93DS2kvw/ujyrBnO96P+8pAY9K3A5cCNsI2
+         yuyKAT/DaWgMNApQr9gQyAZMLoKj1ud0HL9C4UX0YkEthPKLMbbpHFm3A77GTOrXqqLN
+         /KarZ1vol11+D1lVwKoxq8pe3kcI2XxXCjkUXFlZk1N84eq+SJbVJX9teqG8qtRdgTsn
+         A2WeziZKp8HwbrcETXSfe1pkxDZtppiJxBaMD5qzL3+usUHG8z5uAPNGJM9gyOTbhtYg
+         39fumMJVvMduzgYZgzW25GcnmqHqQ6BR6ZBl1ki08mfJvpaTx8Q2pHUWPa6LNFp6lRlB
+         20YQ==;
+        darn=lists.infradead.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=brainfault.org; s=google; t=1791540459; x=1792145259; darn=lists.infradead.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=YhlTmiSSnyAhAbjv/VolTrl3XZ08TdurV9y8UvnnMXY=;
+        b=eB15jw7BTdKp/h7LPkvyMZtiPsj17fb14H5qNFJlDkBhiGqtNLu6TZeVKya/OTpfuo
+         fsJKOZl4zJ/zDXSW7vpkUGHCX3+ZfKeVcYEDFDzI7zsCMMvCG62HW8ZsznG4OGH3OFfp
+         FGQ3brj0AFHKLHZd4ybyskk8++D2iclasT87hxtEvsSyRUUXDqROWmEdC3BdD5jq6co6
+         o4Q9UiR45HoI8J2KlimJZ8KNRAoJ5HJeq1rmAGLL+93EM732PTXdVYsdQtEWkKK3hwY5
+         emIWL6hbk3MlK23NJD8iFYPsaiAxWQoy0dKiwZU7wC9ac4rAbmvup2/MXU7FdA1fmjZX
+         IybA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1791540459; x=1792145259;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=YhlTmiSSnyAhAbjv/VolTrl3XZ08TdurV9y8UvnnMXY=;
+        b=EGgfWRL02h6m0GNf0/0ZK/g5L/8cJYMGVeCmYe8zdmMualvFz9uUBS3sKT5Kuddx+B
+         yYXyIA8Xqb9Ut9Xlx2kxtoyNN+Bb5batBM5HA9w7C52AflNstZEhZ6eOEwU1AUCDHKVe
+         6WUxHcUFRlUtlZORg8+I0TbKILPnK2INRYTK95AuRbIZJ0MGjtqVyd2/78Ddf84P2zzJ
+         DTA/+OnD0Mf9mIvTj0FJ3mnn4EBxJfCUEBlFMstza8wU/uSy1CTEi1tdy00tIlWbORJK
+         +j64liNk/IjMA24Tr+PFmDPpy5yPnV100FQsSgbIXiLEJMTJ03JMMPZBotT9zqDMKPud
+         KH5g==
+X-Forwarded-Encrypted: i=1; AKwUvBzjok/Dgzb8Zq1kOQIBf8hsYSojjYj1etLI+AfBB3POdOLsmz7FfKdWjyvjjIXO6eV6fu5D+3uXuwg=@lists.infradead.org
+X-Gm-Message-State: AFq9FYIauqmi5iklACD/tvqgHPnwoOBvul3PUPBeg1t06bfOd/4XDAgX
+	r2S/Upofu9fGbW97WrTKxEGDbUZW+P0KdYjABs2pQkixShXxyMUoAvXxMkkq7qyHo4RhnhkHVes
+	rAmSjCT+uCpGafAEZEAYB567SnkpousMVYa3jHJ1KXQ==
+X-Gm-Gg: AYBFou0wVFtKJ7V2mllB2+wL8U8OmPgk7nn1mKuGTi1tlvy4oj9QwboeW7TybCYk3Qi
+	lhl/FlD2ZmAyXtRO76bCJCE1lHfz6IdydQcax3R+HFhUa6Uls/mSF/nTTM/abEe+p01KnZgRkkc
+	AkBvBREPqjAgqHQLNNPFH0Nk/kpUDdgRAEI2pSG20j458hXybjuUwwrdTTHVaUE+5XIQb3+8SZX
+	/Migun4Nh8L8SrKJpNEyT+RJ+EX34z2Q0ftocpURvibrC7jL3NNwgmA2TiTKGz+YPj8BnocDf+L
+	PLu48+EyFgKvKJuAiyPujZ24auU081YWFOfQ2nwporjidki0VR272BHv8CfbEAyrQqN8p0C25xV
+	h4dHB/LSMr9qT+PIozls+gXlFS4GdDH6cp9z8oME8W9XA7aeUbHlyINsPWvva1G5EQ1kJGKcRng
+	==
+X-Received: by 2002:a5d:5d83:0:b0:48a:efed:ac97 with SMTP id
+ ffacd0b85a97d-48dba9d326amr2435668f8f.33.1791540458537; Fri, 09 Oct 2026
+ 03:07:38 -0700 (PDT)
 MIME-Version: 1.0
-X-ZMAIL-USEORIGINALEMLTOOUTBOUND: 1
-X-MAIL: mse-fl1.zte.com.cn 6999EfSj006317
-X-MSS: AUDITRELEASE@mse-fl1.zte.com.cn
-X-TLS: YES
-X-ENVELOPE-SENDER: gong.shuai@sanechips.com.cn
-X-SOURCE-IP: 10.5.228.132 unknown Fri, 09 Oct 2026 17:14:44 +0800
-X-CLEAN: YES
-X-Fangmail-Anti-Spam-Filtered: true
-X-Fangmail-MID-QID: 6AC8B084.001/4j1Lm45T4rz4yjjH
+References: <20260831-kvm_kselftest_dump-v1-1-55b022c6ef8e@sifive.com>
+In-Reply-To: <20260831-kvm_kselftest_dump-v1-1-55b022c6ef8e@sifive.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Fri, 9 Oct 2026 12:07:26 +0200
+X-Gm-Features: AclHuK8s2qRUsbqTNG8YPqEmgy3yDujBoTHugKHr0lrqk5zZyltW7DxQdyuRR9k
+Message-ID: <CAAhSdy3TOK6B5SUpFs+dQBzfLDy3-otMxTPEPwzOsoNsqY3cKg@mail.gmail.com>
+Subject: Re: [PATCH] KVM: riscv: selftests: Dump sepc/scause/stval on vcpu_arch_dump()
+To: Yong-Xuan Wang <yongxuan.wang@sifive.com>
+Cc: Atish Patra <atish.patra@linux.dev>, Paolo Bonzini <pbonzini@redhat.com>, 
+	Shuah Khan <shuah@kernel.org>, Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
+	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, greentime.hu@sifive.com, 
+	vincent.chen@sifive.com, zong.li@sifive.com, kvm@vger.kernel.org, 
+	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
+	linux-kselftest@vger.kernel.org, linux-kernel@vger.kernel.org
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261009_021447_648727_DA8BF565 
-X-CRM114-Status: GOOD (  24.83  )
+X-CRM114-CacheID: sfid-20261009_030741_293412_5BD9EE7D 
+X-CRM114-Status: GOOD (  13.78  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -86,119 +118,53 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Hi Drew,
-
-> MSI forwarding state is tied to the S2 domain MSI table. Replacing a
-> device's S2 domain while one of its IRQs is forwarded would leave the
-> IRQ state referring to the detached table.
-> 
-> Reject direct S2-to-S2 replacement when the moving device has forwarded
-> IRQs. Introduce a per-device nr_forwarded_irqs counter, rather than
-> domain-wide accounting, so other devices in the same IOMMU group can
-> still move and can be rolled back if a later device fails.
-> 
-> Later patches which introduce interrupt remapping support will manage
-> the newly introduced nr_forwarded_irqs counter.
-> 
-> Signed-off-by: Andrew Jones <andrew.jones@oss.qualcomm.com>
-> ---
->  drivers/iommu/riscv/iommu.c | 36 ++++++++++++++++++++++++++++++++++++
->  1 file changed, 36 insertions(+)
-> 
-> diff --git a/drivers/iommu/riscv/iommu.c b/drivers/iommu/riscv/iommu.c
-> index 57f2884dec42..d48667112cd9 100644
-> --- a/drivers/iommu/riscv/iommu.c
-> +++ b/drivers/iommu/riscv/iommu.c
-> @@ -872,6 +872,7 @@ PT_IOMMU_CHECK_DOMAIN(struct riscv_iommu_domain, riscvpt.iommu, domain);
->  /* Private IOMMU data for managed devices, dev_iommu_priv_* */
->  struct riscv_iommu_info {
->  	struct riscv_iommu_domain *domain;
-> +	unsigned int nr_forwarded_irqs;
->  };
->  
->  static struct riscv_iommu_msi_table *riscv_iommu_domain_msi_table(struct iommu_domain *iommu_domain)
-> @@ -1432,6 +1433,36 @@ static int riscv_iommu_msi_table_alloc(struct riscv_iommu_domain *domain,
->  	return 0;
->  }
->  
-> +static bool riscv_iommu_can_attach_paging_domain(struct iommu_domain *iommu_domain,
-> +						 struct device *dev,
-> +						 struct iommu_domain *old)
-> +{
-> +	struct riscv_iommu_domain *domain = iommu_domain_to_riscv(iommu_domain);
-> +	struct riscv_iommu_info *info = dev_iommu_priv_get(dev);
-> +	bool new_is_s2 = domain->gscid;
-> +	struct riscv_iommu_msi_table *new_msi_table, *old_msi_table;
-> +
-> +	if (iommu_domain == old)
-> +		return true;
-> +
-> +	new_msi_table = riscv_iommu_domain_msi_table(iommu_domain);
-> +	old_msi_table = riscv_iommu_domain_msi_table(old);
-> +
-> +	if (new_msi_table)
-> +		lockdep_assert_held(&new_msi_table->lock);
-> +	if (old_msi_table)
-> +		lockdep_assert_held(&old_msi_table->lock);
-> +
-> +	/*
-> +	 * Per-device accounting allows other devices in the same IOMMU group
-> +	 * to move or roll back while this device has forwarded interrupts.
-> +	 */
-> +	if (new_is_s2 && old_msi_table && info->nr_forwarded_irqs)
-
-This check might miss one case. old_msi_table comes from this
-attach's old domain, so only a direct S2 to S2 swap is caught.
-A device with live forwarded IRQs can still be moved to blocking
-and then to a different S2 domain, and on that second attach old
-is the blocking domain, so old_msi_table is NULL and the check
-passes. This is only from reading the code, I have no test program
-that triggers it.
-
-If you think this is a real gap, one idea would be to record the
-table the forwarding was set up on in riscv_iommu_info(a pointer to
-riscv_iommu_msi_table), set when the first IRQ of the device is
-forwarded and cleared when the last one is unforwarded. The pointer
-survives the blocking hop, since attaching to blocking domain only
-clears info->domain. Then can_attach here will reject when the new
-domain's table differs from it. That covers both the direct and the
-blocking case, and the PCI reset path still works because the device
-returns to the same S2 domain. The unforward path can use the pointer
-instead of info->domain. Note that the S2 domain owning the table
-must not be freed while a device still points at that table.
-
-Thanks,
-Shuai
-
-> +		return false;
-> +
-> +	return true;
-> +}
-> +
->  static int riscv_iommu_attach_paging_domain(struct iommu_domain *iommu_domain,
->  					    struct device *dev,
->  					    struct iommu_domain *old)
-> @@ -1477,6 +1508,11 @@ static int riscv_iommu_attach_paging_domain(struct iommu_domain *iommu_domain,
->  	bond->dev = dev;
->  
->  	flags = riscv_iommu_msi_tables_lock(old, iommu_domain);
-> +	if (!riscv_iommu_can_attach_paging_domain(iommu_domain, dev, old)) {
-> +		riscv_iommu_msi_tables_unlock(old, iommu_domain, flags);
-> +		kfree(bond);
-> +		return -EBUSY;
-> +	}
->  	riscv_iommu_bond_link(domain, bond);
->  	riscv_iommu_iodir_update(iommu, dev, &dc);
->  	riscv_iommu_bond_unlink(info->domain, dev);
-> -- 
-> 2.43.0
-
--- 
-kvm-riscv mailing list
-kvm-riscv@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/kvm-riscv
+T24gVHVlLCBTZXAgMSwgMjAyNiBhdCA1OjU34oCvQU0gWW9uZy1YdWFuIFdhbmcgPHlvbmd4dWFu
+LndhbmdAc2lmaXZlLmNvbT4gd3JvdGU6Cj4KPiB2Y3B1X2FyY2hfZHVtcCgpIG9taXRzIHRyYXAt
+cmVsYXRlZCBDU1JzLCBtYWtpbmcgaXQgaGFyZCB0byBkaWFnbm9zZQo+IHVuZXhwZWN0ZWQgZ3Vl
+c3QgZXhjZXB0aW9ucyBmcm9tIHRoZSBkdW1wIG91dHB1dCBhbG9uZS4KPgo+IFByaW50IHNlcGMs
+IHNjYXVzZSwgYW5kIHN0dmFsIGFsb25nc2lkZSB0aGUgZXhpc3RpbmcgcmVnaXN0ZXIgZHVtcC4K
+Pgo+IFNpZ25lZC1vZmYtYnk6IFlvbmctWHVhbiBXYW5nIDx5b25neHVhbi53YW5nQHNpZml2ZS5j
+b20+CgpMR1RNLgoKUmV2aWV3ZWQtYnk6IEFudXAgUGF0ZWwgPGFudXBAYnJhaW5mYXVsdC5vcmc+
+CgpRdWV1ZWQgdGhpcyBwYXRjaCBmb3IgTGludXgtNy40CgpUaGFua3MsCkFudXAKCgo+IC0tLQo+
+ICB0b29scy90ZXN0aW5nL3NlbGZ0ZXN0cy9rdm0vbGliL3Jpc2N2L3Byb2Nlc3Nvci5jIHwgOCAr
+KysrKysrKwo+ICAxIGZpbGUgY2hhbmdlZCwgOCBpbnNlcnRpb25zKCspCj4KPiBkaWZmIC0tZ2l0
+IGEvdG9vbHMvdGVzdGluZy9zZWxmdGVzdHMva3ZtL2xpYi9yaXNjdi9wcm9jZXNzb3IuYyBiL3Rv
+b2xzL3Rlc3Rpbmcvc2VsZnRlc3RzL2t2bS9saWIvcmlzY3YvcHJvY2Vzc29yLmMKPiBpbmRleCBk
+ZWQ1NDI5ZjM0NDguLmJmMzU1YWZhODQ4NiAxMDA2NDQKPiAtLS0gYS90b29scy90ZXN0aW5nL3Nl
+bGZ0ZXN0cy9rdm0vbGliL3Jpc2N2L3Byb2Nlc3Nvci5jCj4gKysrIGIvdG9vbHMvdGVzdGluZy9z
+ZWxmdGVzdHMva3ZtL2xpYi9yaXNjdi9wcm9jZXNzb3IuYwo+IEBAIC0yMzUsNiArMjM1LDcgQEAg
+dm9pZCByaXNjdl92Y3B1X21tdV9zZXR1cChzdHJ1Y3Qga3ZtX3ZjcHUgKnZjcHUpCj4gIHZvaWQg
+dmNwdV9hcmNoX2R1bXAoRklMRSAqc3RyZWFtLCBzdHJ1Y3Qga3ZtX3ZjcHUgKnZjcHUsIHU4IGlu
+ZGVudCkKPiAgewo+ICAgICAgICAgc3RydWN0IGt2bV9yaXNjdl9jb3JlIGNvcmU7Cj4gKyAgICAg
+ICBzdHJ1Y3Qga3ZtX3Jpc2N2X2NzciBnZW5lcmFsX2NzcjsKPgo+ICAgICAgICAgY29yZS5tb2Rl
+ID0gdmNwdV9nZXRfcmVnKHZjcHUsIFJJU0NWX0NPUkVfUkVHKG1vZGUpKTsKPiAgICAgICAgIGNv
+cmUucmVncy5wYyA9IHZjcHVfZ2V0X3JlZyh2Y3B1LCBSSVNDVl9DT1JFX1JFRyhyZWdzLnBjKSk7
+Cj4gQEAgLTI3MCw2ICsyNzEsMTAgQEAgdm9pZCB2Y3B1X2FyY2hfZHVtcChGSUxFICpzdHJlYW0s
+IHN0cnVjdCBrdm1fdmNwdSAqdmNwdSwgdTggaW5kZW50KQo+ICAgICAgICAgY29yZS5yZWdzLnQ1
+ID0gdmNwdV9nZXRfcmVnKHZjcHUsIFJJU0NWX0NPUkVfUkVHKHJlZ3MudDUpKTsKPiAgICAgICAg
+IGNvcmUucmVncy50NiA9IHZjcHVfZ2V0X3JlZyh2Y3B1LCBSSVNDVl9DT1JFX1JFRyhyZWdzLnQ2
+KSk7Cj4KPiArICAgICAgIGdlbmVyYWxfY3NyLnNlcGMgPSB2Y3B1X2dldF9yZWcodmNwdSwgUklT
+Q1ZfR0VORVJBTF9DU1JfUkVHKHNlcGMpKTsKPiArICAgICAgIGdlbmVyYWxfY3NyLnNjYXVzZSA9
+IHZjcHVfZ2V0X3JlZyh2Y3B1LCBSSVNDVl9HRU5FUkFMX0NTUl9SRUcoc2NhdXNlKSk7Cj4gKyAg
+ICAgICBnZW5lcmFsX2Nzci5zdHZhbCA9IHZjcHVfZ2V0X3JlZyh2Y3B1LCBSSVNDVl9HRU5FUkFM
+X0NTUl9SRUcoc3R2YWwpKTsKPiArCj4gICAgICAgICBmcHJpbnRmKHN0cmVhbSwKPiAgICAgICAg
+ICAgICAgICAgIiBNT0RFOiAgMHglbHhcbiIsIGNvcmUubW9kZSk7Cj4gICAgICAgICBmcHJpbnRm
+KHN0cmVhbSwKPiBAQCAtMjk2LDYgKzMwMSw5IEBAIHZvaWQgdmNwdV9hcmNoX2R1bXAoRklMRSAq
+c3RyZWFtLCBzdHJ1Y3Qga3ZtX3ZjcHUgKnZjcHUsIHU4IGluZGVudCkKPiAgICAgICAgIGZwcmlu
+dGYoc3RyZWFtLAo+ICAgICAgICAgICAgICAgICAiIFQzOiAweCUwMTZseCAgIFQ0OiAweCUwMTZs
+eCBUNTogMHglMDE2bHggVDY6IDB4JTAxNmx4XG4iLAo+ICAgICAgICAgICAgICAgICBjb3JlLnJl
+Z3MudDMsIGNvcmUucmVncy50NCwgY29yZS5yZWdzLnQ1LCBjb3JlLnJlZ3MudDYpOwo+ICsgICAg
+ICAgZnByaW50ZihzdHJlYW0sCj4gKyAgICAgICAgICAgICAgICJTRVBDOiAweCUwMTZseCBTQ0FV
+U0U6IDB4JTAxNmx4IFNUVkFMOiAweCUwMTZseFxuIiwKPiArICAgICAgICAgICAgICAgZ2VuZXJh
+bF9jc3Iuc2VwYywgZ2VuZXJhbF9jc3Iuc2NhdXNlLCBnZW5lcmFsX2Nzci5zdHZhbCk7Cj4gIH0K
+Pgo+ICBzdGF0aWMgdm9pZCBfX2FsaWduZWQoMTYpIGd1ZXN0X3VuZXhwX3RyYXAodm9pZCkKPgo+
+IC0tLQo+IGJhc2UtY29tbWl0OiBiNTA2MGE0YWEzM2Q3ZDc4YThjMTgzN2FiMDhlZjBjODFlYTk2
+NjUwCj4gY2hhbmdlLWlkOiAyMDI2MDgzMS1rdm1fa3NlbGZ0ZXN0X2R1bXAtM2Y4ZDRkYWY1YzYw
+Cj4KCi0tIAprdm0tcmlzY3YgbWFpbGluZyBsaXN0Cmt2bS1yaXNjdkBsaXN0cy5pbmZyYWRlYWQu
+b3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8va3ZtLXJpc2N2
+Cg==
