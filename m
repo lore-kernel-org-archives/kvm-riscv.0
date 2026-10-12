@@ -4,49 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 48B72CA9EC5
-	for <kvm-riscv@archiver.kernel.org>; Mon, 12 Oct 2026 15:06:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B46E7CA9ED1
+	for <kvm-riscv@archiver.kernel.org>; Mon, 12 Oct 2026 15:08:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:
 	Subject:MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=22sH5+h8/x6AC3yRuoVko3TIL4+C/CszWsxCHz2kleA=; b=FLtvi3kx1HIkHM
-	foLAcghO2f+JCWZugGoxo1tSxxsZ7wc9G+LNEPWIt7D8xwieVR1L7GgTl1YhcwAcp3dy7Jeu3ZMZ5
-	lFHzUpCUmFUbKu0LgzaewiIiSMX+Ok01k3Ubv+w5hUhBQ1gTRw0frGcaYSeRnfbIz4sAgO7+mL/Zi
-	hHzNL7Wf92Ku3HfJy7hpb5NSHK/jdUtmdTxpZUu4h8lwVa2CZSXSROtx96WuAAH6jULh1Xc2vBAv5
-	pLKZPlol0Z4vZOdcSJKPdLQ0UDpRRxzLS8ivemfmOy7vT1x1m1I3MfWqGDPm3lHA/xWOjwYGPoY3+
-	WI8wTUsOhME2yW5icEJg==;
+	List-Owner; bh=b8x4ljXV5uOgU36SAqCto309IYChcmeL2RkPtkNiNHw=; b=JI3tt799PPTM3I
+	1WRpgh2SvVLH6ddJUcVGEL0pwJ2eFTLLbYgsfIn6I7KaV1gNY9eYFIAmIHMCPh+b2CaJ2w8L+aXnA
+	hkCj2exnoQ0KrHqz8niqpq/REReNrHIgCZfcpLlElH32ajCrsHa4lw7P1eWa9sV0IaEv4a2nxfObm
+	tqkzDzLYsIwpgqH4JciGZmQeMjNPDRxU66D7tBvRHmgrZJQxBpSsm+uQj/A3eGyBeRt14MWhe/4bE
+	55VsobmjolTQvQRz/2N4XUZ6+6TQQYST52VBYxU8WvN47eMNNY4rWDCYSwp9X2Mo39j6x1YL8KyL0
+	3xbRDLEHsVkLLKoWLlfw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1xGHbs-0000000AkqQ-3YjG;
-	Mon, 12 Oct 2026 15:06:40 +0000
-Received: from tor.source.kernel.org ([2600:3c04:e001:324:0:1991:8:25])
+	id 1xGHdw-0000000Al4E-1Ee9;
+	Mon, 12 Oct 2026 15:08:48 +0000
+Received: from tor.source.kernel.org ([172.105.4.254])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1xGHbr-0000000AkqB-1qLl;
-	Mon, 12 Oct 2026 15:06:39 +0000
+	id 1xGHdu-0000000Al3j-0iNL;
+	Mon, 12 Oct 2026 15:08:46 +0000
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 79F22601FB;
-	Mon, 12 Oct 2026 15:06:38 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 05D391F0089D;
-	Mon, 12 Oct 2026 15:06:03 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 3F38F600D4;
+	Mon, 12 Oct 2026 15:08:45 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 954511F0089B;
+	Mon, 12 Oct 2026 15:08:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791817598;
-	bh=+fwk8Fzg9As63QxslE7FFTAR8w3HhELt7wLLL/Vq43E=;
+	s=k20260515; t=1791817724;
+	bh=5Lqz7Co/6WmIoZTvSUyXdeYqdXkwprOlXMUykscbViU=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=e5RGRP0nwBgCPjhy9NB/ds3xyGnyicrGAHf+JIIXqPvb8xcIe3yPzo0f/SDZ0nQck
-	 5LadVxqyRrVSJewB7Y13xf8imY+HiKWl35Li2dG5MeEodaw0ZhX2awp/szISHE0yZh
-	 zwD8hS8dQu1UPTS1zTh7//vnMz26H5e8L9DZLUZegDZ0PQfA1TNwG4sE53llBGlgEh
-	 uvVblq3VsJRFftCZRllEyQdaQYht0l4PW98viZbump8TDubyttPFim9TR1Bz5DZ9tt
-	 ouWdJgcGMrdwgnAwv/j+WQpa6hdpTB7VoUiUqAmKtkL111nem7AxiJmpcCoq3hUMCm
-	 7WED4cTbH+GdA==
-Message-ID: <6eb2b306-b386-4955-9469-5cd5bf05a315@kernel.org>
-Date: Mon, 12 Oct 2026 17:06:01 +0200
+	b=moBBKhZ10bYCqL5QecW09xYvPbQHaZDR7WGJEDODITEshC7evVHvSpjAoH6glmxjB
+	 j5qq25frOQf1OQOUgMeuWBpPgH0xTZwNZhIl/cdfqON2DmOOhDyCWAnxv9HUxAb58G
+	 UBAe3u4J3Eg+8VQMPcD/kAaKX2xWIbQvxTSwSTSaw41wCpUZshy3Kz47BxbJeOuQQ/
+	 z7yDOIhsT6JrN+4uYpMlUxNCd9n9ubBCEvCaje5nabNyNDYdrRQ6UDAB6LOpwN6fdy
+	 Xwo+Ef8jUxCUhzu0fTriVqllspREkaMJXtHSPrTfLXJJ5VKOU2B/63imbqYcy1tbaW
+	 C6iTd0iiF0+vA==
+Message-ID: <5b8ef0ce-7429-4d74-b4da-a0561c59b1e2@kernel.org>
+Date: Mon, 12 Oct 2026 17:08:09 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 11/38] selinux: reject writable opens of policy file,
- drop mmap shared/write check
+Subject: Re: [PATCH v5 13/38] bpf: arena: mark arena_map_mmap() mappings
+ VM_MIXEDMAP
 To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Jonathan Corbet <corbet@lwn.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>, Paul Moore <paul@paul-moore.com>, Stephen Smalley <stephen.smalley.work@gmail.com>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>, Kumar Kartikeya Dwivedi <memxor@gmail.com>, Zi Yan <ziy@nvidia.com>, Baolin Wang <baolin.wang@linux.alibaba.com>, Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, Doug Gilbert <dgilbert@interlog.com>, "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, "Martin K. Petersen" <mkp@kernel.org>, Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>, Sebastian Reichel <sre@kernel.org>, John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rik van Riel <riel@surriel.com>, Harry Yoo <harry@kernel.org>, Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Will Deacon <will@kernel.org>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin <npiggin@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>, "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, "David S. Miller" <davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Christian Brauner <brauner@kernel.org>, Matthew Brost <matthew.brost@intel.com>, Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>, Byungchul Park <byungchul@sk.com>, Gregory Price <gourry@gourry.net>, Ying Huang <ying.huang@linux.alibaba.com>, Alistair Popple <apopple@nvidia.com>, Chris Li <chrisl@kernel.org>, Kairui Song <kasong@tencent.com>, Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>, Youngjun Park <youngjun.park@lge.com>, Johannes Weiner <hannes@cmpxchg.org>, Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>, Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>, Chengming Zhou <chengming.zhou@linux.dev>, Michal Hocko <mhocko@kernel.org>, Miklos Szeredi <miklos@szeredi.hu>, Xu Xin <xu.xin@linux.dev>
 Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linux-doc@vger.kernel.org, linux-usb@vger.kernel.org,
@@ -60,9 +60,9 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
  linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
  fuse-devel@lists.linux.dev, Ihor Solodrai <ihor.solodrai@linux.dev>,
- Bert Karwatzki <spasswolf@web.de>
+ Bert Karwatzki <spasswolf@web.de>, Emil Tsalapatis <emil@etsalapatis.com>
 References: <20261009-b4-mmap-prepare-vma-flag-sanify-v5-0-923b70125b1e@kernel.org>
- <20261009-b4-mmap-prepare-vma-flag-sanify-v5-11-923b70125b1e@kernel.org>
+ <20261009-b4-mmap-prepare-vma-flag-sanify-v5-13-923b70125b1e@kernel.org>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -109,7 +109,7 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <20261009-b4-mmap-prepare-vma-flag-sanify-v5-11-923b70125b1e@kernel.org>
+In-Reply-To: <20261009-b4-mmap-prepare-vma-flag-sanify-v5-13-923b70125b1e@kernel.org>
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -127,25 +127,64 @@ Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 On 10/9/26 20:04, Lorenzo Stoakes (ARM) wrote:
-> The policy file has no write method and is exposed read-only (S_IRUGO in
-> selinux_files[]), yet sel_open_policy() performs no open mode check, so a
-> CAP_DAC_OVERRIDE caller can open it O_RDWR. Reject FMODE_WRITE at open, as
-> kernfs does.
+> The bpf_map->ops->map_mmap callback invoked by bpf_map_mmap() can be set to
+> one of ringbuf_map_mmap_kern(), ringbuf_map_mmap_user(), array_map_mmap()
+> or arena_map_mmap().
 > 
-> The file can then never be mapped with FMODE_WRITE, so do_mmap() always
-> clears VM_MAYWRITE and VM_SHARED for MAP_SHARED mappings and the VM_SHARED
-> check in sel_mmap_policy() cannot be reached. Remove it.
+> It is convention in mm to mark mappings whose pages the kernel manages
+> itself with VM_MIXEDMAP, so core mm knows not to treat them as ordinary
+> page cache or anonymous memory.
 > 
-> This also stops sel_mmap_policy() clearing VM_MAYWRITE on a mapping that is
-> neither a PFN map nor a mixed map, ahead of the core enforcing that only
-> such mappings may do so.
+> The map_mmap callbacks ringbuf_map_mmap_kern() and ringbuf_map_mmap_user()
+> use remap_vmalloc_range(), which ultimately invokes vm_insert_page() and so
+> marks the ranges VM_MIXEDMAP, and array_map_mmap() sets VM_MIXEDMAP
+> explicitly.
 > 
-> Acked-by: Stephen Smalley <stephen.smalley.work@gmail.com>
-> Reviewed-by: Jann Horn <jannh@google.com>
-> Acked-by: Paul Moore <paul@paul-moore.com>
+> However, the exception to this is arena_map_mmap(), which doesn't set the
+> flag.
+> 
+> This patch corrects this and updates the comment to reflect it.
+> 
+> The pages are refcounted and vm_normal_page() finds them regardless of the
+> flag, and VM_DONTEXPAND remains set (marking the memory as VM_SPECIAL and
+> thus unmergeable). The one effect is that NUMA balancing now skips these
+> VMAs, as it already does for the other bpf map mappings, which is the
+> reason array_map_mmap() gives for setting the flag.
+> 
+> The intent of this patch is to be able to establish the invariant that only
+> PFN-mapped or mixed map ranges may clear the VM_MAYWRITE flag, as is done
+> in bpf_map_mmap().
+> 
+> Reviewed-by: Emil Tsalapatis <emil@etsalapatis.com>
 > Reviewed-by: Suren Baghdasaryan <surenb@google.com>
 > Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 > ---
+>  kernel/bpf/arena.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/kernel/bpf/arena.c b/kernel/bpf/arena.c
+> index 7b6847200b43..b69fe5e34339 100644
+> --- a/kernel/bpf/arena.c
+> +++ b/kernel/bpf/arena.c
+> @@ -620,8 +620,9 @@ static int arena_map_mmap(struct bpf_map *map, struct vm_area_struct *vma)
+>  	 * clears VM_MAYEXEC. Set VM_DONTEXPAND to avoid potential change
+>  	 * of user_vm_start. Set VM_DONTCOPY to prevent arena VMA from
+>  	 * being copied into the child process on fork.
+> +	 * This is a kernel page so set VM_MIXEDMAP.
+>  	 */
+> -	vm_flags_set(vma, VM_DONTEXPAND | VM_DONTCOPY);
+> +	vm_flags_set(vma, VM_MIXEDMAP | VM_DONTEXPAND | VM_DONTCOPY);
+>  	vma->vm_ops = &arena_vm_ops;
+>  	return 0;
+>  }
+> 
+
+Historically, VM_MIXEDMAP really just means: can contain refcounted and
+non-refcounted things. Everything with a struct page is refcounted.
+
+I think we are now changing the semantics to mean "maps kernel pages". I think
+this is fine, but we really have to update the documentation (and possibly
+rename this thing to something more expressive?)
 
 Acked-by: David Hildenbrand (Arm) <david@kernel.org>
 
