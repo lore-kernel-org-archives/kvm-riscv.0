@@ -4,48 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5078BCA9EDE
-	for <kvm-riscv@archiver.kernel.org>; Mon, 12 Oct 2026 18:48:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8EA0BCA9EDE
+	for <kvm-riscv@archiver.kernel.org>; Mon, 12 Oct 2026 18:49:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:
 	Subject:MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=qjPMy2IsVVaMbOYAXgtOltl6rXSqmlY3bk3IVQoNhRE=; b=sgh0z31S6866KW
-	V6AWWo869rTts2tB1jY2kL3YUaUEi1zjNIzI8X0E+W8hPczjJv5qNfMUKL/qD6IVVIOr1RsT7jQhx
-	zno0gDu0mQYOZZrwPhPYPzLhqeVM15yGKnPQ/gxo2+Zmzuyf82ApERZfGfpEhP3QWj9dxd55tIa+x
-	p0+HaWDZYZlGNd1MwX4nkdegDkE7YyI66eVeYI/jEHo06XV4GXs1MEPSWDdTCE2Xva34yjoHWPGv0
-	NLUbQ3+FQ8PS1vhm7z4F9JJcgJbyHu928favXoAOYhNvVGIoNWRppdazaq1OBj1mCHxUaaXF1/oXm
-	hkzDAUnMftNrhanA5JPw==;
+	List-Owner; bh=50NqYACtU8lTFnE8tX4i6QVY4QFk85RB9HHR7Qkm15s=; b=JVoDkRxVMD4v/P
+	VPwsbBYJwUjsqGtd9vqg9583okJNktd5AYm+1cgI0bxqVPFukizZ7NJ3weEcUSM1H6113Ux3C37YF
+	2R8PIh2kz2UeSx1Zl2ATa/tcoxA6PmaZyhGrlYGM0PILv85qywALZb0I1rIkCeE3A4IlxO1LZD2VL
+	6ZLuB2TK+mFOFY+GmaFSGUfy08Lso2OL9U3AivmZQD/qnGIihJW0/P8kA7yCd0AioiSu45tbeQJ4U
+	mNlJ6Tt54cov3tTI3OnfICGiRX8g+OAdUl7pdy1kIr07CePrERbRnmfJRxoriC2iOy88MFmbBCais
+	XvrN3knC1j4sUaPHyz8w==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1xGL4m-0000000BHuh-3uAY;
-	Mon, 12 Oct 2026 18:48:44 +0000
+	id 1xGL5N-0000000BI2R-0hDe;
+	Mon, 12 Oct 2026 18:49:21 +0000
 Received: from tor.source.kernel.org ([172.105.4.254])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1xGL4l-0000000BHu7-0AZ7;
-	Mon, 12 Oct 2026 18:48:43 +0000
+	id 1xGL5M-0000000BI1t-0Z24;
+	Mon, 12 Oct 2026 18:49:20 +0000
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 461C7601E4;
-	Mon, 12 Oct 2026 18:48:42 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 005E71F0089B;
-	Mon, 12 Oct 2026 18:48:06 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 8C832602BE;
+	Mon, 12 Oct 2026 18:49:19 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7BB4E1F008A3;
+	Mon, 12 Oct 2026 18:48:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791830922;
-	bh=ijruh+t9dzYY6Mr1fVs8kL4G0u+bj6+pBN+DbXhWvj4=;
+	s=k20260515; t=1791830959;
+	bh=wjF42amL6Dxyn7QE+tOpdln0eb7clnjUQooAdiVZf+0=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=VAsqz4f3FQayrttLKzdN4ho5Htk2cDvUUzMpalm1X8JKw56c86EO+42U/YkJHXChl
-	 Xk8ELZsh/F8GOx9Di8xSJsibbLFl9NfGM4NBg+sagDMH8lJ6Baavuf3Ai80/cqbRP4
-	 xxbScNu9ZoyrJ4s++pvjVu6bcwXMKVw0ESPz1NAyQoEujN0FosplAeUhdHDjzWs737
-	 6XP3BdPpBTLCtt5wpxYLWXsff1hrIBhUDjXVehMUl90LZh+/AJ00aqHMdwqmHOXHJX
-	 ut+dLIWa2z/7tlRotSRzD0ebbzlbIsJv57v6/ntj0AWJfaXTTI+vNkf6yDkIW7RGVW
-	 tINF/sb5DiRbQ==
-Message-ID: <b8a6a344-ad2c-4355-adbe-be7325e7371d@kernel.org>
-Date: Mon, 12 Oct 2026 20:48:04 +0200
+	b=S5Kydjjv9MS5+ikIdcZLMtuInYdV4t+V4R8UcdwFfxkBeySjLpbFVJq8LB6YxCqkr
+	 WeAECYnx1xgOH4BCK5UKPqhA6vX63IsVR+EXTybK7br7NLZ0u33YyIJ0w63zopC1kg
+	 GU+kcsTw0LbmCgEp5zsbb6LxKiUHFIKAoePc0l+qoejVs3yioGigw3j4rdpAoRlJ3I
+	 /cUbiiAInDyjl1r0HL5sbja+XefiWr/RVW0+MJ3r/tslGXWsYEcvK/wwGhtCVMUb4u
+	 wvTis4aZ/ONKs/Wu0zQSkB08hCtETluDlUNZP//epzAHhx9+9SCh4NVSRJMN9uvwGR
+	 v4bYjBEhcFCPw==
+Message-ID: <a8ec0313-544f-4c8f-a161-5200d1cffe13@kernel.org>
+Date: Mon, 12 Oct 2026 20:48:21 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 31/38] mm/uffd: use predicates for userfaultfd checks
+Subject: Re: [PATCH v5 32/38] mm/madvise: use predicates for madvise(...,
+ MADV_DOFORK)
 To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Jonathan Corbet <corbet@lwn.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>, Paul Moore <paul@paul-moore.com>, Stephen Smalley <stephen.smalley.work@gmail.com>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>, Kumar Kartikeya Dwivedi <memxor@gmail.com>, Zi Yan <ziy@nvidia.com>, Baolin Wang <baolin.wang@linux.alibaba.com>, Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, Doug Gilbert <dgilbert@interlog.com>, "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, "Martin K. Petersen" <mkp@kernel.org>, Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>, Sebastian Reichel <sre@kernel.org>, John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rik van Riel <riel@surriel.com>, Harry Yoo <harry@kernel.org>, Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Will Deacon <will@kernel.org>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin <npiggin@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>, "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, "David S. Miller" <davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Christian Brauner <brauner@kernel.org>, Matthew Brost <matthew.brost@intel.com>, Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>, Byungchul Park <byungchul@sk.com>, Gregory Price <gourry@gourry.net>, Ying Huang <ying.huang@linux.alibaba.com>, Alistair Popple <apopple@nvidia.com>, Chris Li <chrisl@kernel.org>, Kairui Song <kasong@tencent.com>, Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>, Youngjun Park <youngjun.park@lge.com>, Johannes Weiner <hannes@cmpxchg.org>, Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>, Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>, Chengming Zhou <chengming.zhou@linux.dev>, Michal Hocko <mhocko@kernel.org>, Miklos Szeredi <miklos@szeredi.hu>, Xu Xin <xu.xin@linux.dev>
 Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linux-doc@vger.kernel.org, linux-usb@vger.kernel.org,
@@ -61,7 +62,7 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  fuse-devel@lists.linux.dev, Ihor Solodrai <ihor.solodrai@linux.dev>,
  Bert Karwatzki <spasswolf@web.de>
 References: <20261009-b4-mmap-prepare-vma-flag-sanify-v5-0-923b70125b1e@kernel.org>
- <20261009-b4-mmap-prepare-vma-flag-sanify-v5-31-923b70125b1e@kernel.org>
+ <20261009-b4-mmap-prepare-vma-flag-sanify-v5-32-923b70125b1e@kernel.org>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -108,7 +109,7 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <20261009-b4-mmap-prepare-vma-flag-sanify-v5-31-923b70125b1e@kernel.org>
+In-Reply-To: <20261009-b4-mmap-prepare-vma-flag-sanify-v5-32-923b70125b1e@kernel.org>
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -126,60 +127,28 @@ Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 On 10/9/26 20:04, Lorenzo Stoakes (ARM) wrote:
-> Rather than directly checking VMA flags, use the newly introduced
-> vma_is_mm_managed() and vma_is_mm_backed() helpers in userfaultfd
-> when assessing VMA suitability for userfaultfd and UFFDIO_MOVE.
+> Make it clear what we're blocking in MADV_DOFORK. Previously we simply
+> disallowed VM_SPECIAL i.e. mappings not managed by core mm, fixed mappings
+> and
+> VMA_IO_BIT.
 > 
-> Update vma_move_compatible() so it's expressed in terms of VMA
-> characteristics rather than arbitrary flags.
+> Now the invariant is established that mm-managed mappings may not set
+> VMA_IO_BIT, the VMA_IO_BIT check is redundant.
 > 
-> Additionally, update the use of the deprecated VMA flag API when checking
-> VMA_SHADOW_STACK_BIT.
+> The rest is equivalent to testing for a fixed or non-mm-managed mapping,
+> i.e. exactly the same check as whether the VMA is permitted to be merged.
 > 
-> A VMA_IO_BIT check is no longer required but that is fine as a hard
-> invariant has been established that mm-managed mappings may not set
-> VMA_IO_BIT so the check is now redundant.
+> This was established by commit 0b2758f48f22 ("Require (reasonably) normal
+> mappings for MADV_DOFORK") containing my hands-down favourite call out of
+> all time.
+> 
+> Express the same thing differently - if we wouldn't be allowed to merge it,
+> then we aren't allowed to manipulate CoW behaviour on fork.
+> 
+> No functional change intended.
 > 
 > Acked-by: Zi Yan <ziy@nvidia.com>
 > Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
-> ---
->  mm/userfaultfd.c | 19 +++++++++++++------
->  1 file changed, 13 insertions(+), 6 deletions(-)
-> 
-> diff --git a/mm/userfaultfd.c b/mm/userfaultfd.c
-> index 949017e60608..f33b04700838 100644
-> --- a/mm/userfaultfd.c
-> +++ b/mm/userfaultfd.c
-> @@ -1754,10 +1754,16 @@ static inline bool move_splits_huge_pmd(unsigned long dst_addr,
->  }
->  #endif
->  
-> -static inline bool vma_move_compatible(struct vm_area_struct *vma)
-> +static inline bool vma_move_compatible(const struct vm_area_struct *vma)
->  {
-> -	return !(vma->vm_flags & (VM_PFNMAP | VM_IO |  VM_HUGETLB |
-> -				  VM_MIXEDMAP | VM_SHADOW_STACK));
-> +	/* uffd is generally incompatible with mappings not managed by core mm. */
-> +	if (!vma_is_mm_managed(vma))
-> +		return false;
-> +	/* The shadow stack should not be written to by userspace. */
-> +	if (vma_test_single_mask(vma, VMA_SHADOW_STACK))
-> +		return false;
-> +	/* hugetlb mappings cannot be safely moved. */
-> +	return !vma_is_hugetlb(vma);
->  }
->  
->  static int validate_move_areas(struct userfaultfd_ctx *ctx,
-> @@ -2146,10 +2152,11 @@ static bool vma_can_userfault(struct vm_area_struct *vma, vm_flags_t vm_flags,
->  {
->  	const struct vm_uffd_ops *ops = vma_uffd_ops(vma);
->  
-> -	if (vma->vm_flags & (VM_DROPPABLE | VM_SHADOW_STACK))
-> +	/* Only mm-backed memory can have its faults handled by userspace. */
-> +	if (!vma_is_mm_backed(vma))
->  		return false;
-
-Again, for both I would prefer keeping the droppable check separate.
 
 Acked-by: David Hildenbrand (Arm) <david@kernel.org>
 
