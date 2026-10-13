@@ -4,49 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C9C44CC6B12
-	for <kvm-riscv@archiver.kernel.org>; Tue, 13 Oct 2026 15:27:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B334BCC6B16
+	for <kvm-riscv@archiver.kernel.org>; Tue, 13 Oct 2026 15:31:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:
 	Subject:MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=Tfralh/UYe3cMj3Yxh2gJD8BbgiIsCNWOt8a3Zyavmg=; b=4J/7qZQXb1wYxe
-	0KqRI7lnX3f0/C34GCZizYeoEwHW+mhT51uc7xAKihN+8Qx5zsG0q9YWY0yYB1ajGGaWTQFrXHmId
-	6rEiLtoL+XlLOeM1nBez4+N11GXYIgPgIFHB0NxnlrrIYDY3wu9cw7EzhWMHbDsEikrfYbhttmc9y
-	Dw2Bp8pErcu7B+fNnPMta2Wo/B3LSz6H8TPg0kMmaozaA7cAwatYesoy/x6doBroE+4tpbjdNrHsI
-	612hi0ITYJUn0twyZJhby5wuj22IDg82c1rKR5GQO37y6LcglHzvB9GvZNkNELCyjGV9vvmq3xT2J
-	HdGLMe+ao4KUa7NfGCew==;
+	List-Owner; bh=1hrRMI/3jkwQOGko2+7vuwgQ/f+CzYl3KLnTQRoMzCU=; b=U+QLGoyzMHT6bJ
+	xh83cTAQhiVuVaxI+Vluc5uefjC9F2tQrFUVn7NZRnmGGRf9oZpsp9Vm1dcxEt7UcaiHXzIeqqSif
+	hst2vf1m6LKu+VeWuHq+3j3X9Gv6P9DCb1ONxFYyzvw0zUC4Hml5lWN0GFG+7qC7JiVwVqFMtOQU8
+	9bnKw3wFOJ7/jmg/Veys4+cyvYDp/6otivBM5kPE+SyuDol2huFXYMiRm6tjIkYyugFxdIe0hqdHx
+	bbmez3xA2PVobsbyhNfvN+XM8sv0KfweGLmOCmyURx1NKrIJkHeQtb6V65ks675rbQTPyj/xZkcWT
+	jXGr4QrU683hoSU1QTgQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1xGePE-0000000DKsM-2AMi;
-	Tue, 13 Oct 2026 15:27:08 +0000
-Received: from sea.source.kernel.org ([2600:3c0a:e001:78e:0:1991:8:25])
+	id 1xGeTo-0000000DLpW-1cbE;
+	Tue, 13 Oct 2026 15:31:52 +0000
+Received: from tor.source.kernel.org ([2600:3c04:e001:324:0:1991:8:25])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1xGePA-0000000DKry-3o6y;
-	Tue, 13 Oct 2026 15:27:04 +0000
+	id 1xGeTm-0000000DLov-433f;
+	Tue, 13 Oct 2026 15:31:51 +0000
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 9ACF54028B;
-	Tue, 13 Oct 2026 15:27:04 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E24491F00893;
-	Tue, 13 Oct 2026 15:26:33 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id EC5C660A56;
+	Tue, 13 Oct 2026 15:31:48 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0ABA81F000FF;
+	Tue, 13 Oct 2026 15:31:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791905224;
-	bh=JFRmswrWQ2n04rYSnKT8D1jfOItHBdqj8eE5N7elmN8=;
+	s=k20260515; t=1791905508;
+	bh=ABcU0W+nIwCqZSTy0PPdZy1uyj317pAS/O9WDDdnQZw=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=C07bGAwThgZOGMqZm00i73ln3bSOOWcywnwLS4jB4SWUfvtudnbQo92JkbSYqpXl3
-	 +vQOBwMrVTtSCIfl2ZFeqghmkQVGEsnbujJzairialXRUFRuou0T2HzWkSMX1GWAL/
-	 ZwMvFrpzptQlNZOidqs8RDCirQjwS3pKQH19PI6nvZCX/vLrERr7d36qE/4FKIkb5f
-	 wnd+AjHe3lTCYybtNyKRVjOoyXfdRDx9MAVWirQcMvfbynVBov0rHtryZph4ryzBTE
-	 opdSFbvoEiAqKSvM9eBxqg0oY35BYx1LbjQsgqwdsfxjM0Fyjtwi2gGzkJfWZ1rIzt
-	 SGb+3hlZdSHQA==
-Message-ID: <fbd47b50-ce30-42ed-8b05-85ee07c43efe@kernel.org>
-Date: Tue, 13 Oct 2026 17:26:30 +0200
+	b=D5BClKMkyjHNOoeNuUKWF6HwQ8es4HwocZa/1vk5hPJxYK0OE2MtOdN0S2gmcH6lC
+	 h2bS5ASLQ2jbvKrWro4RUW2U8G5muKxncrLmF+Jou2z0+IhaAxzQhCEY/LrmDDFWT6
+	 M6xKr2R3fPo+unNvnMZSc2FKExJxWD5IMaBvhhbtafRSFGB4ueb89jIBT5sOdDSJZN
+	 GDOdloqs53ZQ9vDKS7F/ry5KwOabJqSqdFue4yGsWFChcPdcnrWzVPTjRyPqdUgvoo
+	 j9GhCWKrZ4bFEjuUrlQ3XmGuaXcGd+p+mRRvlVf6aiAfRoUGE+Fx6LYN+MBnX0qWdK
+	 WFMXQD15T+n7w==
+Message-ID: <7bf5a2dc-f7be-425b-99e3-75b4546c8e19@kernel.org>
+Date: Tue, 13 Oct 2026 17:31:13 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v6 25/39] mm/vma: enforce that mm-managed mappings may not
- set VMA_IO_BIT
+Subject: Re: [PATCH v6 30/39] mm/vma: introduce vma[_flags]_is_mm_backed()
 To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Jonathan Corbet <corbet@lwn.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>, Paul Moore <paul@paul-moore.com>, Stephen Smalley <stephen.smalley.work@gmail.com>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>, Kumar Kartikeya Dwivedi <memxor@gmail.com>, Zi Yan <ziy@nvidia.com>, Baolin Wang <baolin.wang@linux.alibaba.com>, Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, Doug Gilbert <dgilbert@interlog.com>, "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, "Martin K. Petersen" <mkp@kernel.org>, Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>, Sebastian Reichel <sre@kernel.org>, John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rik van Riel <riel@surriel.com>, Harry Yoo <harry@kernel.org>, Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Will Deacon <will@kernel.org>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin <npiggin@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>, "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, "David S. Miller" <davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Christian Brauner <brauner@kernel.org>, Matthew Brost <matthew.brost@intel.com>, Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>, Byungchul Park <byungchul@sk.com>, Gregory Price <gourry@gourry.net>, Ying Huang <ying.huang@linux.alibaba.com>, Alistair Popple <apopple@nvidia.com>, Chris Li <chrisl@kernel.org>, Kairui Song <kasong@tencent.com>, Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>, Youngjun Park <youngjun.park@lge.com>, Johannes Weiner <hannes@cmpxchg.org>, Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>, Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>, Chengming Zhou <chengming.zhou@linux.dev>, Michal Hocko <mhocko@kernel.org>, Miklos Szeredi <miklos@szeredi.hu>, Xu Xin <xu.xin@linux.dev>
 Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linux-doc@vger.kernel.org, linux-usb@vger.kernel.org,
@@ -62,7 +61,7 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  fuse-devel@lists.linux.dev, Ihor Solodrai <ihor.solodrai@linux.dev>,
  Bert Karwatzki <spasswolf@web.de>
 References: <20261013-b4-mmap-prepare-vma-flag-sanify-v6-0-1aa3c9b139f9@kernel.org>
- <20261013-b4-mmap-prepare-vma-flag-sanify-v6-25-1aa3c9b139f9@kernel.org>
+ <20261013-b4-mmap-prepare-vma-flag-sanify-v6-30-1aa3c9b139f9@kernel.org>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -109,7 +108,7 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <20261013-b4-mmap-prepare-vma-flag-sanify-v6-25-1aa3c9b139f9@kernel.org>
+In-Reply-To: <20261013-b4-mmap-prepare-vma-flag-sanify-v6-30-1aa3c9b139f9@kernel.org>
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -127,26 +126,40 @@ Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 On 10/13/26 17:05, Lorenzo Stoakes (ARM) wrote:
-> It makes no sense for a mapping whose contents the kernel does not own to
-> specify that the range is MMIO.
+> Introduce vma[_flags]_is_mm_backed() for the purposes of identifying
+> mappings which are mm-managed and whose contents were placed there by core
+> mm's own fault path - rather than a custom ->fault handler.
 > 
-> Prior to this patch, all in-tree drivers which did so have been updated
-> such that they are marked as not being mm-managed. The check WARNs and
-> fails the mmap for any out-of-tree driver that still sets VMA_IO_BIT
-> without a kernel mapping.
+> Mappings not managed by core mm do not fall into this category, as they are
+> populated by their owner, and nor of course does memory-mapped I/O.
 > 
-> Here VMA_PFNMAP_BIT, VMA_MIXEDMAP are tested individually rather than using
-> vma_flags_is_mm_managed().
+> We exclude fixed mappings as these have a layout core mm cannot assume
+> ordinary fault semantics over.
 > 
-> This is because vma_flags_is_mm_managed() still checks for VMA_IO_BIT.
+> hugetlb mappings are fixed mappings, but core mm owns them entirely, so
+> they are explicitly carved out as mm-backed, as the MADV_DODUMP check
+> already does.
 > 
-> The very next commit in this series removes this, and the check is then
-> converted to use vma_flags_is_mm_managed().
+> Use this functionality to update the madvise MADV_DODUMP check to test for
+> this rather than open-coding it.
 > 
-> No functional change intended for in-tree code.
+> Also update vma_flags_can_merge() so it is written in terms of
+> vma_flags_is_mm_backed() - all mm-backed mappings can be merged except
+> hugetlb mappings, whose flags and fields do not completely describe them.
 > 
-> Reviewed-by: Zi Yan <ziy@nvidia.com>
+> Also update __thp_vma_allowable_orders() to use vma_is_mm_backed() rather
+> than testing for mergeability, which is irrelevant to this function.
+> 
+> This replaces the VM_SPECIAL check which means it no longer checks for
+> VMA_IO_BIT, however this is safe as we have established the invariant that
+> mm-managed mappings may not set VMA_IO_BIT, so we implicitly include
+> these.
+> 
+> No functional change intended.
+> 
+> Acked-by: Zi Yan <ziy@nvidia.com>
 > Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+> ---
 
 Acked-by: David Hildenbrand (Arm) <david@kernel.org>
 
