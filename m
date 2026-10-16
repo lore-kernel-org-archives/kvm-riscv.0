@@ -4,42 +4,42 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D363CCCA462
-	for <kvm-riscv@archiver.kernel.org>; Fri, 16 Oct 2026 07:44:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 18A96CCA462
+	for <kvm-riscv@archiver.kernel.org>; Fri, 16 Oct 2026 09:16:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=ZB6KzDORZbwo2for5TD5cUSsCl9QO7lPR8xjvGghVeo=; b=4l9tGVtAomv44w
-	p8If6q2C5lc1+QEmdJCUChzzB+utzz/WczvNpzswJDwX6FaUsy5M9+CY+FFEGxBb2F5g7D5kRLAlb
-	0FZdR1KntUBQ1HOwsWfa+OcLpkks5xcaRPuMHA7KPuK0OcsDecNpZYnMAB0GiYLd6gjofr16mNpHQ
-	wXdMthXIGbiwVOtTSzEVvDl2u9nwRLlzbRZEiemaW6KCPc/WyNg33VZ7FeARM6mhNYngDfXxSWVOP
-	dm9NNXK5eaLjJZRCvg+RDmsFBbMDHd+LHRoepAoQ8kabbXZArrmU6JwALrPV58CGZO05mHrDf0Ouy
-	KinV3ZSJlJunsWqu/KGg==;
+	List-Owner; bh=XBCrQzKnxSq90EBBujc94Ny9kASx/Yky1DYbHADgnOM=; b=yC5XAmuCwXYB7U
+	1DcaNTvHTDhwxSbgUkByIeFV6t1XQEh+3Q7HNOx0VhvOPPvTsj6KGjU/LDJBlnTjTXgmlp1HyDNDp
+	C+UtVrZXDDAk8QBBzObKK8XXSW6+Pp4pLuIqULJnOX0RZK6Tp6Wq2shLbaxK+OXId7Njql8Hv3Os+
+	P0RVg+8O28s+s229FU2EgqjKPtah6GihJ1GdXcwwk6Y6YuOZFeGwB6q40BR2SqpdUNa4cvHnraVpN
+	c7wAXFFc8xiHtlF+/xCC1B5wfRj2SoTyiUSyLUyvokNNtj9lZsYALI/XcuRVqyqtqaG8aM57shfD1
+	u8765GRnUfgtJmibDBZw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1xHcbi-00000002Ftf-42m0;
-	Fri, 16 Oct 2026 07:44:02 +0000
+	id 1xHe3H-00000002SFW-3AZw;
+	Fri, 16 Oct 2026 09:16:35 +0000
 Received: from mxhk.zte.com.cn ([160.30.148.35])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1xHcbg-00000002FrX-0c8s;
-	Fri, 16 Oct 2026 07:44:01 +0000
+	id 1xHe3F-00000002SEy-2I79;
+	Fri, 16 Oct 2026 09:16:34 +0000
 Received: from mse-fl2.zte.com.cn (unknown [10.5.228.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mxhk.zte.com.cn (FangMail) with ESMTPS id 4j5cQ00PmPz8XrrJ;
-	Fri, 16 Oct 2026 15:43:52 +0800 (CST)
-Received: from szxlzmapp01.zte.com.cn ([10.5.231.85])
-	by mse-fl2.zte.com.cn with SMTP id 69G7hiin088882;
-	Fri, 16 Oct 2026 15:43:44 +0800 (+08)
+	by mxhk.zte.com.cn (FangMail) with ESMTPS id 4j5fSq2WzTz8Xrnw;
+	Fri, 16 Oct 2026 17:16:27 +0800 (CST)
+Received: from szxl2zmapp07.zte.com.cn ([10.1.32.52])
+	by mse-fl2.zte.com.cn with SMTP id 69G9GElv040441;
+	Fri, 16 Oct 2026 17:16:14 +0800 (+08)
 	(envelope-from gong.shuai@sanechips.com.cn)
 Received: from ubuntu-35-gs (unknown [10.230.214.35])
 	by smtp (Zmail) with SMTP;
-	Fri, 16 Oct 2026 15:43:45 +0800
-X-Zmail-TransId: 3e816ad1d59f024-b85a8
+	Fri, 16 Oct 2026 17:16:17 +0800
+X-Zmail-TransId: 3e816ad1eb5a024-bff28
 X-Zmail-LocalSMTP: 1
 X-Zmail-RealSender: gong.shuai@sanechips.com.cn
 From: Gong Shuai <gong.shuai@sanechips.com.cn>
@@ -54,25 +54,24 @@ Cc: alex@ghiti.fr, andrew.jones@oss.qualcomm.com, anup@brainfault.org,
         pbonzini@redhat.com, pjw@kernel.org, robin.murphy@arm.com,
         seanjc@google.com, tomasz.jeznach@linux.dev, will@kernel.org,
         wu.fei9@sanechips.com.cn, zhao.qingye@sanechips.com.cn
-Subject: Re: [RFC PATCH 07/12] iommufd: Add RISC-V IOMMU hardware info type
-Date: Fri, 16 Oct 2026 15:43:27 +0800
-Message-ID: <20261016074327.10809-1-gong.shuai@sanechips.com.cn>
+Subject: Re: [RFC PATCH 0/12] iommu/riscv: Add nested translation (vIOMMU) support
+Date: Fri, 16 Oct 2026 17:16:10 +0800
+Message-ID: <20261016091610.13912-1-gong.shuai@sanechips.com.cn>
 X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20261015235534.GA14213@ziepe.ca>
-References: <20261015235534.GA14213@ziepe.ca>
+In-Reply-To: <20261016000004.GB14213@ziepe.ca>
+References: <20261016000004.GB14213@ziepe.ca>
 MIME-Version: 1.0
 X-ZMAIL-USEORIGINALEMLTOOUTBOUND: 1
-X-MAIL: mse-fl2.zte.com.cn 69G7hiin088882
+X-MAIL: mse-fl2.zte.com.cn 69G9GElv040441
 X-TLS: YES
 X-ENVELOPE-SENDER: gong.shuai@sanechips.com.cn
-X-SOURCE-IP: 10.5.228.133 unknown Fri, 16 Oct 2026 15:43:52 +0800
+X-SOURCE-IP: 10.5.228.133 unknown Fri, 16 Oct 2026 17:16:27 +0800
 X-CLEAN: YES
 X-Fangmail-Anti-Spam-Filtered: true
-X-Fangmail-MID-QID: 6AD1D5B8.000/4j5cQ00PmPz8XrrJ
+X-Fangmail-MID-QID: 6AD1EB6B.001/4j5fSq2WzTz8Xrnw
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261016_004400_335892_24B1D599 
-X-CRM114-Status: UNSURE (   5.13  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20261016_021633_743802_D76EF305 
+X-CRM114-Status: GOOD (  17.15  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -91,28 +90,43 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 Hi Jason,
 
-> > +/**
-> > + * struct iommu_hw_info_riscv - RISC-V IOMMU device info
-> > + * @capabilities: Value of RISC-V IOMMU Capabilities register
-> > + */
-> > +struct iommu_hw_info_riscv {
-> > +	__u64 capabilities;
-> > +};
-> > +
->
-> Same here, spec reference.
->
-> Also be careful to always use __aligned_u64, check all the patches.
+Thanks for the review again.
 
-Will add the spec reference ("IOMMU capabilities (capabilities)") and
-switch to __aligned_u64. I checked the uAPI structures touched by this
-series, and this is the only place that used __u64.
+> > Add nested translation support to the RISC-V IOMMU driver, so a KVM guest
+> > with its own vIOMMU can own the first stage of a device context while the
+> > host keeps the second stage, and add the interrupt support. This is an RFC
+> > and comments on the design are welcome.
+>
+> The iommufd parts looked reasonable to me
+>
+> I feel some mild skepticism about all the MSI parts, it would be good
+> to get more of the interrupt stuff actually landed before posting this
+> again.
+
+Agreed on the MSI parts. They are a working proof to exercise the
+nested flow end to end, not a finished design. The reason they are
+in this series at all is that the NVMe device we use for testing
+depends on MSI interrupts. Without this support, DMA succeeds but
+the MSIs fault, so the driver ends up polling for completions after
+timeouts.
+
+We will keep following the irqbypass groundwork as it evolves, and
+continue this work once it has landed.
+
+>
+> Please try harder on the commit messages, do not use AI to write them
+> like this. They need to explain why this patch exists and what problem
+> it is solving not some inscrutible description of what it contains.
+
+I will rewrite all of them.
 
 Thanks,
 Shuai
 
 >
-> JAson
+> You'll need other riscv people to help you with reviewing it.
+>
+> Jason
 
 -- 
 kvm-riscv mailing list
