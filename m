@@ -4,111 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BF4C1CCF2C7
-	for <kvm-riscv@archiver.kernel.org>; Sat, 17 Oct 2026 11:03:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B2674CCF2C4
+	for <kvm-riscv@archiver.kernel.org>; Sat, 17 Oct 2026 12:29:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
-	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
+	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=zXk/azUS8RiNx2o8ruiYuy4Vp6Brc45Nv4HHjdlM1n4=; b=F+eaTt4D7zQeaV
-	b6pBZc+NFXfxz4QAuy2ktwhM9STyLazIATM1975KaV0rruqPmACk5ckVd7WMY9RYjabDb7qNfs4oT
-	z1Vh250DBCX8M3kyUlPBMZGefO7r4qePpWkkh3ntMunmwF8BdMZbllGF9cI5v24vBz5m4/QiPAJJ+
-	3Zc3R9DFI7pGu1h14m1Ocs2lwf5Q9t/e2FQ6x95sI/1sM6EDlglZTRy6y3kMMbyDOhTVGOUVxbWdG
-	sUVyOk7T1263EzyxGheroExlSk3EUPHQE7hk3F2QxEUFyuCiUbcjRTpUtLkcGjYeZ1gp/kEJbHQQD
-	aOR5mOEq21UBxRK4ZWzA==;
+	List-Owner; bh=UZfuqqpj0acP+TZ78oFBFjQ3viEqF3GWFUTkEAuwr0U=; b=nKBYr/ea8GAC2/
+	yM3Gdift8n7IXZ8KkLPIDv63xOljP4ZrgqXwK167l7IwkTi4eBm9PNoRiiyygJUVedZoknssDGvN5
+	L9/QEra2uEky3jNNmnsDEC43/HPwdZIWsKUecQ+Ank6pwNkB+rERQhCdCO5vYAEjQZQM1lrIb7aSL
+	Ydb95uZVn4+1EcUOiQl+ycuzA1lIlwVIfNuIDvfriUu1jkb3nxorpgi6wQhJ3Ot+lPInDeSqTY+yq
+	onL0+as1ai4YbBEgNAy9lLJF0iPlr0JEclPsSBY2v6PNwvfKnqFJXUER2VQo2CWZkW7AAaiFrLXEc
+	1YgVXYK36jd4lJEAgS5Q==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1xI2CR-00000004hcs-1cd4;
-	Sat, 17 Oct 2026 11:03:39 +0000
-Received: from mail-pl1-x62b.google.com ([2607:f8b0:4864:20::62b])
+	id 1xI3XH-00000004kw4-3u3q;
+	Sat, 17 Oct 2026 12:29:15 +0000
+Received: from out-67.mta0.migadu.com ([2001:41d0:1004:224b::43] helo=mta0.migadu.com)
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1xI2CK-00000004hX2-3HKL
+	id 1xI3XC-00000004kv7-2wjv
 	for kvm-riscv@lists.infradead.org;
-	Sat, 17 Oct 2026 11:03:37 +0000
-Received: by mail-pl1-x62b.google.com with SMTP id d9443c01a7336-2e5378b281aso2896965ad.2
-        for <kvm-riscv@lists.infradead.org>; Sat, 17 Oct 2026 04:03:32 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792235012; x=1792839812; darn=lists.infradead.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=Tf4fy3DAykjNBLlmTR7a2o12P+Rb24NlY7yvH7wOMkE=;
-        b=jK+0Sjrqpju1AkuXLTRUyuKjIDC4qhrN2fR7xsnfuHWijU3ZNlY36894EawAU5OTj0
-         6+j51KmhE3lIuQsJyaFKLIvU9Sgg/PFuhKkgyULxWgHutsWBl5X0aPoGGS+2VbZnnptJ
-         C+hQy0iBPDTtQurKwDtuVF82yII92RBa9au9NBv252Q91MiZoE6D0Au37O70tcSzWbNI
-         qg8PbapbkCOqY7Et9E0Xm8NM8k5WP8a3E6/FkyPcJzZZV9GFkCMxm+5EBWCdQOGfKFAw
-         LMP1hfJhE5snrLPvqbUULK9YbIAXdrWCxPktZlqCwO+9e7sfZwrJ/JVrZB/KUN8nZQUI
-         KNvA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792235012; x=1792839812;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=Tf4fy3DAykjNBLlmTR7a2o12P+Rb24NlY7yvH7wOMkE=;
-        b=sYOqhp+xx+MpYJLtnAffPlUKVNU2EObbX2zbJ3krp/OmC3p3iCTAZ7t6gTcwcC1Chb
-         yLTkeJze0tr9bPeiCCy24PyGfFRjw3DwLJysw4nDz3SzKQhknwJzSGLELLksgp9rjYWz
-         PO6usuqPnIDAfx0c4LX+58Rkt8xAYSclzuL0Aq2tolDG8sVcHPMW1lsxroXOghChwdK8
-         ld1rUQNHwy8PammbDvs6/DAdaZeLQgN0eMgGulUd+Ln59+n2SYL2hhLOH+w6O3gwX9eh
-         0W6BMdI3SWSjGnE4FvRIKSnM6KLLoWyiicTNdmqJz/aPumJ9ia4/mp/4muMVTOWJr/qx
-         1TsA==
-X-Forwarded-Encrypted: i=1; AKwUvBxw0CW3G+kZj7d9JwGorBV51GCU8eiaFOGG5OB4QuyqlFJ4E1jpphSMeVVJ3UrHQigSt6FXbK+PQ7g=@lists.infradead.org
-X-Gm-Message-State: AFq9FYJhiDw/6lpJPdA23HY5yn/vJ3ynPpAL8P2eIZoJZByMaMM+bp9p
-	XwcqkpsD1ZB5CXK+VxMSXg6S2Q2QKAxmEYhTxpNE1UlwXo4r3vR8OPEE
-X-Gm-Gg: AYBFou36IftIPLTi70WQIuRvtAWcZK3dnjUmrbCJFFgrJJfOaH2nXUWCGo3I/89PE9O
-	Z2AeatuA/7uYUoLicePO2+lbTJfQSKJJto86EDcNXYEOTSM1Ml2pTSBAiGCpXiTJ1qCWsvwHMQL
-	IYT8Df1iZLqqYhbiYpAfuldnDoG37Wheb+8nwDw0zHJ1OFBB4Mo841iUdxvNI8eHLwQBchHBL8P
-	kP91PekhmTAviFO0bvXmskKIfejZaZ6iIsLI1eKTbYppc5oUeuwRxfW9J1DjDc1Oj6FW59fTRiu
-	fl6PLUCSEQXRIpIY4vMAKJkhmjW3ygVga/Ht3+pbH8eh0IfsXW4qmGi9Ac95N8vERJyTJOu7XjI
-	2G78iH/hmw65gv133+PgB0AwUi1yssMPSt4RYlzuizGPrVKXCGPwQg4sGECE3peI9D97HZJhw/8
-	JDeSnCvHR4iytPBvjfNVhP7ITk3tJ0IpShzH3S/PPP+yo70tuEq7vyNrbeIJWA7sdJ5sBETbmAB
-	XYQiI/SqfB5OYEUo8rRDw==
-X-Received: by 2002:a17:902:e84c:b0:2e9:6b5b:3db6 with SMTP id d9443c01a7336-2e9a69e93d4mr22504755ad.30.1792235011936;
-        Sat, 17 Oct 2026 04:03:31 -0700 (PDT)
-Received: from x1c ([2405:9800:b670:b64b:7c65:ff3e:80ba:b06])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2e97e804dd9sm20559955ad.16.2026.10.17.04.03.22
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 17 Oct 2026 04:03:31 -0700 (PDT)
-From: Tharit Tangkijwanichakul <tharitt97@gmail.com>
-To: Paolo Bonzini <pbonzini@redhat.com>,
-	Sean Christopherson <seanjc@google.com>
-Cc: Shuah Khan <shuah@kernel.org>,
-	Marc Zyngier <maz@kernel.org>,
-	Oliver Upton <oupton@kernel.org>,
-	Fuad Tabba <fuad.tabba@linux.dev>,
-	Joey Gouly <joey.gouly@arm.com>,
-	Steffen Eiden <seiden@linux.ibm.com>,
-	Suzuki K Poulose <suzuki.poulose@arm.com>,
-	Zenghui Yu <yuzenghui@huawei.com>,
-	Anup Patel <anup@brainfault.org>,
-	Atish Patra <atish.patra@linux.dev>,
-	Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Alexandre Ghiti <alex@ghiti.fr>,
-	kvm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-kselftest@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	kvmarm@lists.linux.dev,
-	kvm-riscv@lists.infradead.org,
-	linux-riscv@lists.infradead.org,
-	linux-kernel-mentees@lists.linux.dev,
-	skhan@linuxfoundation.org,
-	me@brighamcampbell.com,
-	jkoolstra@xs4all.nl,
-	Tharit Tangkijwanichakul <tharitt97@gmail.com>
-Subject: [PATCH 5/5] KVM: selftests: Test protection of the ucall MMIO region
-Date: Sat, 17 Oct 2026 18:02:13 +0700
-Message-ID: <20261017110213.46199-6-tharitt97@gmail.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20261017110213.46199-1-tharitt97@gmail.com>
-References: <20261017110213.46199-1-tharitt97@gmail.com>
+	Sat, 17 Oct 2026 12:29:14 +0000
+X-Envelope-To: kvm-riscv@lists.infradead.org
+DKIM-Signature: a=rsa-sha256; bh=7cgiKM+zDuDnTZJRzu5yT4bUih3KcyLUsgr/rzH4uiM=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1792240147; v=1; x=1792844947;
+ b=uEPEzbwHu/tt5chmzaFb5qbVqI83ww2eE1GF8KosR6AjlTOwmdTEqJ94CSeZ1UR51kiAx4qU
+ CQ6i+LLjOUvmP5QAsneUi7HxbRTR4MpxqAxhRPKJiUN89DM6oNRSjQvW2EtOVpxuAxoyEjCMvhc
+ HMVUxPFgifG0cH94YLDLxAvg=
+X-Envelope-To: kvm-riscv@lists.infradead.org
+Received: by smtp.migadu.com with ESMTPS id 4ced6db5906c4a15;
+	Sat, 17 Oct 2026 12:29:07 +0000
+X-Mizu-Trace-ID: 4ced6db5906c4a15
+X-Migadu-Flow: FLOW_OUT
+Date: Sat, 17 Oct 2026 14:29:06 +0200
+From: Andrew Jones <andrew.jones@linux.dev>
+To: Anup Patel <anup@brainfault.org>
+Cc: Andrew Jones <andrew.jones@oss.qualcomm.com>, 
+	kvm-riscv@lists.infradead.org, atish.patra@linux.dev, pjw@kernel.org, palmer@dabbelt.com, 
+	kvm@vger.kernel.org, linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] RISC-V: KVM: Use a raw lock for IMSIC wakeup state
+Message-ID: <atNpO4nRuijDH6l-@orel>
+References: <20260925155116.465203-1-andrew.jones@oss.qualcomm.com>
+ <CAAhSdy0Y8kQ=gsiX0QX6Ntq=fL89METhA0s7G3niBBJrHpue7A@mail.gmail.com>
+ <7zy352odf4hekcibmio3atunubffzxfcsqnn55q6sfkksnynfj@5bx263nnizdm>
+ <CAAhSdy2mAs6UgTk-hbGd3DX_1242Jpy9WLnOp6kmPvVVtABWHw@mail.gmail.com>
 MIME-Version: 1.0
+Content-Disposition: inline
+In-Reply-To: <CAAhSdy2mAs6UgTk-hbGd3DX_1242Jpy9WLnOp6kmPvVVtABWHw@mail.gmail.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261017_040334_087761_C52536C2 
-X-CRM114-Status: GOOD (  12.83  )
+X-CRM114-CacheID: sfid-20261017_052911_819861_671DAFEA 
+X-CRM114-Status: GOOD (  15.36  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -120,106 +69,37 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Verify that creating a memslot overlapping the ucall MMIO region
-fails with EEXIST and that ucalls work before and after the
-attempt. Skip when MMIO ucalls or read-only memory are unsupported.
-
-Signed-off-by: Tharit Tangkijwanichakul <tharitt97@gmail.com>
----
- tools/testing/selftests/kvm/Makefile.kvm      |  1 +
- .../selftests/kvm/reserved_slot_test.c        | 61 +++++++++++++++++++
- 2 files changed, 62 insertions(+)
- create mode 100644 tools/testing/selftests/kvm/reserved_slot_test.c
-
-diff --git a/tools/testing/selftests/kvm/Makefile.kvm b/tools/testing/selftests/kvm/Makefile.kvm
-index 1f4bc2a1322d..ff4a5e9733e9 100644
---- a/tools/testing/selftests/kvm/Makefile.kvm
-+++ b/tools/testing/selftests/kvm/Makefile.kvm
-@@ -68,6 +68,7 @@ TEST_GEN_PROGS_COMMON += set_memory_region_test
- TEST_GEN_PROGS_COMMON += memslot_modification_stress_test
- TEST_GEN_PROGS_COMMON += memslot_perf_test
- TEST_GEN_PROGS_COMMON += vm_types_test
-+TEST_GEN_PROGS_COMMON += reserved_slot_test
- 
- # Compiled test targets
- TEST_GEN_PROGS_x86 = $(TEST_GEN_PROGS_COMMON)
-diff --git a/tools/testing/selftests/kvm/reserved_slot_test.c b/tools/testing/selftests/kvm/reserved_slot_test.c
-new file mode 100644
-index 000000000000..4a908017ca73
---- /dev/null
-+++ b/tools/testing/selftests/kvm/reserved_slot_test.c
-@@ -0,0 +1,61 @@
-+// SPDX-License-Identifier: GPL-2.0
-+#include "kvm_util.h"
-+#include "processor.h"
-+#include "test_util.h"
-+
-+#define CLOBBERED_SLOT		TEST_MEM_SLOT_BASE
-+
-+static void guest_code(void)
-+{
-+	GUEST_SYNC(1);
-+	GUEST_SYNC(2);
-+}
-+
-+static void test_slot1_protected(void)
-+{
-+	struct kvm_vcpu *vcpu;
-+	struct kvm_run *run;
-+	struct kvm_vm *vm;
-+	struct ucall uc;
-+	u32 nr_pages;
-+	size_t slot_size;
-+	void *slot_mem;
-+	int ret;
-+
-+	vm = vm_create_with_one_vcpu(&vcpu, guest_code);
-+	nr_pages = vm_adjust_num_guest_pages(vm->mode, 1);
-+	slot_size = (size_t)nr_pages * vm->page_size;
-+
-+	run = vcpu->run;
-+	vcpu_run(vcpu);
-+	TEST_ASSERT(run->exit_reason == KVM_EXIT_MMIO,
-+		    "Unexpected exit reason = %u", run->exit_reason);
-+	TEST_ASSERT(get_ucall(vcpu, &uc) == UCALL_SYNC && uc.args[1] == 1,
-+		    "Expected the first sync before clobbering the ucall GPA");
-+
-+	slot_mem = kvm_mmap(slot_size, PROT_READ | PROT_WRITE,
-+			    MAP_PRIVATE | MAP_ANONYMOUS, -1);
-+	ret = __vm_set_user_memory_region2(vm, CLOBBERED_SLOT, 0,
-+					   vm->ucall_mmio_addr, slot_size, slot_mem, 0, 0);
-+	TEST_ASSERT(ret == -1 && errno == EEXIST,
-+		    "Expected the ucall GPA overlap to be rejected: ret=%d errno=%d",
-+		    ret, errno);
-+
-+	vcpu_run(vcpu);
-+	TEST_ASSERT(run->exit_reason == KVM_EXIT_MMIO,
-+		    "Unexpected exit reason = %u", run->exit_reason);
-+	TEST_ASSERT(get_ucall(vcpu, &uc) == UCALL_SYNC && uc.args[1] == 2,
-+		    "Expected the second sync after attempting to clobber the ucall GPA");
-+
-+	kvm_vm_free(vm);
-+	TEST_ASSERT(!munmap(slot_mem, slot_size), "munmap() failed, errno=%d", errno);
-+}
-+
-+int main(void)
-+{
-+	TEST_REQUIRE(UCALL_EXIT_REASON == KVM_EXIT_MMIO);
-+	TEST_REQUIRE(kvm_has_cap(KVM_CAP_READONLY_MEM));
-+
-+	test_slot1_protected();
-+	return 0;
-+}
--- 
-2.53.0
-
-
--- 
-kvm-riscv mailing list
-kvm-riscv@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/kvm-riscv
+T24gRnJpLCBPY3QgMDksIDIwMjYgYXQgMDY6Mzc6MTNQTSArMDIwMCwgQW51cCBQYXRlbCB3cm90
+ZToKPiBPbiBGcmksIE9jdCA5LCAyMDI2IGF0IDM6NDTigK9QTSBBbmRyZXcgSm9uZXMKPiA8YW5k
+cmV3LmpvbmVzQG9zcy5xdWFsY29tbS5jb20+IHdyb3RlOgo+ID4KPiA+IEhpIEFudXAsCj4gPgo+
+ID4gT24gRnJpLCBPY3QgMDksIDIwMjYgYXQgMDE6NDU6MjBQTSArMDIwMCwgQW51cCBQYXRlbCB3
+cm90ZToKPiA+ID4gT24gRnJpLCBTZXAgMjUsIDIwMjYgYXQgNTo1MeKAr1BNIEFuZHJldyBKb25l
+cwo+ID4gPiA8YW5kcmV3LmpvbmVzQG9zcy5xdWFsY29tbS5jb20+IHdyb3RlOgo+ID4gPiA+Cj4g
+PiA+ID4ga3ZtX3Jpc2N2X3ZjcHVfYWlhX2ltc2ljX3B1dCgpIGNhbiBydW4gZnJvbSB0aGUgc2No
+ZWR1bGVyIHByZWVtcHRpb24KPiA+ID4gPiBub3RpZmllciB3aGlsZSB0aGUgcmF3IHJ1bnF1ZXVl
+IGxvY2sgaXMgaGVsZC4gVGFraW5nIHZzZmlsZV9sb2NrLCBhbgo+ID4gPiA+IHJ3bG9ja190LCB0
+aGVyZSB2aW9sYXRlcyB0aGUgbG9ja2RlcCB3YWl0LWNvbnRleHQgcnVsZXMuCj4gPiA+ID4KPiA+
+ID4gPiBQcm90ZWN0IHRoZSBDUFUvSEdFSSBwYWlyIHdpdGggYSBzZXBhcmF0ZSByYXcgc3Bpbmxv
+Y2suIEFsbCB1cGRhdGVzIHRvCj4gPiA+ID4gdGhhdCBwYWlyIHJldGFpbiB2c2ZpbGVfbG9jayBh
+bmQgdGFrZSB0aGUgbmV3IGxvY2ssIHdoaWxlIHNjaGVkdWxlci1vdXQKPiA+ID4gPiB1c2VzIG9u
+bHkgdGhlIG5ldyBsb2NrIGFyb3VuZCB0aGUgSEdFSUUgdXBkYXRlLiBUaGlzIGtlZXBzIHRoZSB3
+YWtldXAKPiA+ID4gPiBzZXR1cCBzZXJpYWxpemVkIHdpdGggVlMtZmlsZSBwdWJsaWNhdGlvbiBh
+bmQgcmVsZWFzZSB3aXRob3V0IGJyaW5naW5nCj4gPiA+ID4gd2lkZXIgSU1TSUMgb3BlcmF0aW9u
+cyBpbnRvIGEgcmF3IGNyaXRpY2FsIHNlY3Rpb24uCj4gPiA+Cj4gPiA+IEluc3RlYWQgb2YgaW50
+cm9kdWNpbmcgYW5vdGhlciBsb2NrLCB3aHkgbm90IHJlcGxhY2UKPiA+ID4gcmVhZF9sb2NrX2ly
+cXNhdmUoJmltc2ljLT52c2ZpbGVfbG9jaywgZmxhZ3MpIHdpdGgKPiA+ID4gd3JpdGVfbG9ja19p
+cnFzYXZlKCZpbXNpYy0+dnNmaWxlX2xvY2ssIGZsYWdzKSBpbgo+ID4gPiBrdm1fcmlzY3ZfdmNw
+dV9haWFfaW1zaWNfcHV0KCkgPz8KPiA+Cj4gPiBVbmZvcnR1bmF0ZWx5LCB3cml0ZV9sb2NrX2ly
+cXNhdmUoKSBoYXMgdGhlIHNhbWUgUFJFRU1QVF9SVCBpc3N1ZSwgc2luY2UKPiA+IHJ3bG9ja190
+IGlzIHNsZWVwYWJsZSBvbiBSVCBpbiBib3RoIG1vZGVzLgo+ID4KPiAKPiBJIGFtIG5vdCBmb25k
+IG9mIG5lc3RlZCBsb2NraW5nLCB3aHkgbm90IGNvbnZlcnQgdnNmaWxlX2xvY2sgaW50byByYXcK
+PiBzcGlubG9jayA/Pwo+CgpXZSBjYW4gZG8gdGhhdC4gVGhlIHJlYWRlciBjb25jdXJyZW5jeSB0
+aGUgcndsb2NrIGdhdmUgdXMgd2FzIG9ubHkgZm9yCnRpbnkgc2VjdGlvbnMgYW55d2F5LiBJJ2xs
+IHNlbmQgYSB2Mi4KClRoYW5rcywKZHJldyAKCi0tIAprdm0tcmlzY3YgbWFpbGluZyBsaXN0Cmt2
+bS1yaXNjdkBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21h
+aWxtYW4vbGlzdGluZm8va3ZtLXJpc2N2Cg==
