@@ -4,98 +4,109 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6757CC6B2A
-	for <kvm-riscv@archiver.kernel.org>; Sat, 17 Oct 2026 03:09:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A8D4CCF2C7
+	for <kvm-riscv@archiver.kernel.org>; Sat, 17 Oct 2026 11:02:34 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
 	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
 	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=9g7CtOEcbbvzLbLrqW1tCJK8gTV1csbye6zVWqZajrA=; b=CNWulF0ETngX58
-	8SA+tm7sYdCcRwZlHo2oVNZAC3gH5NQVfwHzs/zLeCVB50WWf31QrJMo2bxHY7wPoHVjpPxvEL0d5
-	H6xXnyPFitMTIpnwB0WUhDFngv6MbTzechAG2NeV9TYBdPKnWZ8OCLdH1wUBjORkudyQP6mV6r5kO
-	TfnmqSpZdnmxJaBuB0OWCZDVbUkE1YkA6sCMcg2m5P3MN1Hxf+6xBH1yPNXgSdIq6TTQbsLHLu0EB
-	Odf6kxHeevRdFw5S6RxuinnevQQTUfXNepsvapIZXGS0xE5VMrFy8Hv8gI8I4SWNpyS1NGhRZtNFc
-	JQkj3TMOwPka+2O1go8w==;
+	List-Owner; bh=cH4O7wWO5g8nFEPwqF+KJxk7CtSNtr9CZ5zQWCl0Rhs=; b=iTkFsw6fyRmkW+
+	uFalBrB3DMrzZNw/XXsp+vXE9VVdUWmais6OCXZQs/SpQfFpNqNya9pBGXYRJSnGzvUjvXIGz9dC9
+	r5U+9u5rUf3U5khx5eOJaoFJHPUdAjSawBnYyQ/UDleX+62+hz6ZeLGj7zQGitM8foMW9ug5VL4Fw
+	g2BVL8riWQj4E6dEFcRMWXlcSjN3jepCeCFxxtUt0EO2Pm8+5QehaMOJ/X6FsH7DmsQf2OIxcY+oo
+	B+OVSXffvOxLoOXumrzsebh6M589+6PqIZGXMNx444o34xE6cJbTH1B2Ttu9R8Ih9/t/kPPU+/CAY
+	GSHqqlGeMGRQ0w8ltySQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1xHunq-00000004Mpg-45dI;
-	Sat, 17 Oct 2026 03:09:46 +0000
-Received: from mail-pg1-x532.google.com ([2607:f8b0:4864:20::532])
+	id 1xI2BN-00000004h1X-0XGr;
+	Sat, 17 Oct 2026 11:02:33 +0000
+Received: from mail-pl1-x630.google.com ([2607:f8b0:4864:20::630])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1xHuno-00000004Mox-2M9O
+	id 1xI2BK-00000004h0a-34ab
 	for kvm-riscv@lists.infradead.org;
-	Sat, 17 Oct 2026 03:09:46 +0000
-Received: by mail-pg1-x532.google.com with SMTP id 41be03b00d2f7-ca766c1c9ccso230384a12.0
-        for <kvm-riscv@lists.infradead.org>; Fri, 16 Oct 2026 20:09:44 -0700 (PDT)
+	Sat, 17 Oct 2026 11:02:31 +0000
+Received: by mail-pl1-x630.google.com with SMTP id d9443c01a7336-2e987b4a710so7892795ad.1
+        for <kvm-riscv@lists.infradead.org>; Sat, 17 Oct 2026 04:02:29 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792206583; x=1792811383; darn=lists.infradead.org;
+        d=gmail.com; s=20251104; t=1792234949; x=1792839749; darn=lists.infradead.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=enK3RSWvXdgqwIVRPBvjJmOYoe9F1G7CwzrwYjBwBdA=;
-        b=Xkg1dCTnj3rKYH1pG2Z0zej9DKUgA09SRlaNWLMNY5NCvTp1oLkcXdUlP7BWMnUjTq
-         CG9SO2YqxcWJHs6OSsaYnbburOWEKevDXDWOxkKEWsKSfOMT0AnFtH9WDyj/KXQKxEbl
-         fzzxg3huQkRyVXmhyQ6cpGLcCAe5tLEeFg7fBDUUuKKxaF3OiERErm8FXkuQARQBcEwX
-         84lc/qtyycQG6jkWXTak+bV7GDHOg9ueO9LtfyLDx7vLaxB9Lzr9S4oaJt+4hVsx8hor
-         mZde3Tuw+6ezd0xZgYOr15Cg64N1083nWQ+VtDK+e2HwbzpTpo7Zvj7nnXF0Hzx5/fiY
-         +01A==
+        bh=EooerGosbt9uNoLNk2R3r8CmWtmPXhr2JTyWgkAeP44=;
+        b=eyPN9INruwfMbeQ860L/JWHxU9aABGGNzDVeuvxwwZlYvlT6m/o7wr2xFrB+xAr8AM
+         SPiW+ynVKiPaI+L32T3hT3N+lFV6tpM3ImhfkOJPcJIj5S9/oIS8CHB4hkhxmhaSf1Jo
+         HJtmzQ1t+OZdtSaS2Q/YLesvNrdaji7PzdtERSanzaIcasSz5LxTnJAYzCEWOv7A+K5D
+         0LkFZNPiXDuUqCu+krWaF8I50r2zjyTmvoL4xmZRdFIgLm8NqbvHUJBySXoqUm88bxKe
+         36gXriPTZfm2Q1uQUD5xZ2JxrWtX0inpzpcXV1qd7AxbSxN6sP5J0tue3tuDiEhNTWMp
+         SKmA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792206583; x=1792811383;
+        d=1e100.net; s=20260707; t=1792234949; x=1792839749;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=enK3RSWvXdgqwIVRPBvjJmOYoe9F1G7CwzrwYjBwBdA=;
-        b=nXeHTZ68SiuvVVl/crqmJXxMKQOzNwCPaZoyMvuKRJaGmdiBJqjtioxOhKwtfv6nVE
-         QkqgRTKq1ptDPUsMf3fLxZD8Ku74M1BUo2G0yqTZP2A+FHjZ+rznNDd6CfGOWdz0HtPH
-         s69EM3CJzPpGUZqXzbiobDjPiFN3OLBpkUPmKBDYdeoKU12DGdCWZgNXY9GXSvMtzvOi
-         NAIRDIMFipajXE0PBMl8D/iw4iBIZcimY4D1Ily9tU4p/v+GzxQHORdmIVQ+1wTf/zNP
-         ACd1pNwPK/EXub7s+UcEuWrhVGFHHVq7ZhpzCOyp+GfD9kVqhNnPfpGTf6L+fU+tNs+K
-         HZXg==
-X-Forwarded-Encrypted: i=1; AKwUvBwtZLB+rvQM6tOVh2GZh9fF0Q7gBSIZkFr53auTTykxD4LwuEXtanD0P6a6Rtb9UlMjXNnZrkcD5zs=@lists.infradead.org
-X-Gm-Message-State: AFq9FYIsczDCQ1t6Do0pd1nQ4YbXJIc9QnbQh9qyfoLCO2c1mAB3BB8v
-	Yql8BNW/XKjSUQiuCpRU6YA7vG1j4yF5qDiOv2tPp+fZ52LOlw8kom9i
-X-Gm-Gg: AYBFou1CdCjVxvKgwNGsdcFuwGYXpCEaoWhIwDwR9kEdGoh7mofC9LOodmSVrQPVd4k
-	I/BAoYkc85vgLY4hFPsc+FF24QMjvLAxAIUn4zcnaCtntIb9rvRj/sw/xuhTophub3PzGsTHMsj
-	ju1FJqI0EMFL4VkCkXEkmBjnFI1hXmEv06W67uyJMWPORswJseV4br2fY94G5CRWfEVaY82NpZc
-	4Kz/uc0AT5PRvUrDGlkmPz7jLdDamvqFH9Do3sMgMXoo/Ek9Hml8e+kfjF9UAG2dPWM56lXLjtU
-	xzpR90Cd0axhCXbp5FhKhRa1MxOj9YuY75kdequ9cfjeUKtakVogyIhr6wuq4Da0Q+trH2gnGEe
-	8scVQzG57hATmOqRjCPykvhfdPX5Q6pnduvHJC/U4XJDXmlHZDR5pxJ8b7/NilK95C4BM0Ly8u1
-	TpPJ7JNaaBD7+vH1/8Yk+JFDK5sTgAVyONPXwAIkWJTXt9tLlci6afpuLABo0EXiSg5dRidj7ow
-	yByVHd7i8xf9l8FMtXLXRTWkpJ40iR78Q==
-X-Received: by 2002:a17:90b:5803:b0:3ab:9c73:12e with SMTP id 98e67ed59e1d1-3acee29303bmr1411650a91.6.1792206583320;
-        Fri, 16 Oct 2026 20:09:43 -0700 (PDT)
-Received: from fedora ([61.74.238.173])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-cd6549b6171sm1795406a12.14.2026.10.16.20.09.39
+        bh=EooerGosbt9uNoLNk2R3r8CmWtmPXhr2JTyWgkAeP44=;
+        b=PKTZ2Bxl48kJIEsS1WVSkGM9W+TPorcyliDDZV774CxewJSNb+mUcJUUne9lbqfUut
+         CvHUm1ZKMeirWWX8w4XRK0bt+8hg+W1UEone7mMYgJyEyTsXEGuBbp+snxYPUMwmUtrU
+         mWO/gK9pUebpGQnw+2V0ObTh3YXsCifBTWGhSy5/O11zOLFgoLn726EawKBH6rw1wy/4
+         NUWSW4+Kam4+JpeCv2KZtTrAGUpRMc2iFPZa/FxBiaLhdesSko10ksjjQ3B/j2xeizmq
+         0eJR+t+ppGSk2pWuC2BdUV9yxi2dGn1QxHdH8udsfVQCY0BedCz+Ltj2iYXRVkJhxhV1
+         bFxA==
+X-Forwarded-Encrypted: i=1; AKwUvByVJNqKCg8cx8126/aGDf9li7TlJFxoG7qupbNVj3p5kpDOSPK0WDXe7HDaA03yJF20B4jVU8Qps0k=@lists.infradead.org
+X-Gm-Message-State: AFq9FYLPm2V9uqcYeMbIj3fs9wnIQZKNCcWKI1gOorSqyyE5/CvCNwFo
+	HEqlPZt3CFn+DD4Hcq4fAa5pqaJMlqD5DdF+4HalkgCSjDK2X0CsMWDg
+X-Gm-Gg: AYBFou3pS10jg2bZIpg5kMg2zLHpM7xYBUr3ULnBJATKKL+YiMbKppDHMz9rcD46oko
+	Ak4vZ3fCML/dk39ooWNqv43kWekgmFmp5dbR9tmsj/3W4ZBhhAxyvUMaRu8h+PRQQcEFeLmlYg2
+	13U8F429exmyjnR9BYvfOd05QPXIblILtWHI6K4iD9rFyKq0sgQcNzq+D5kROt1Td6EWFT8VIMn
+	gOTDC8rpy49EsThzVliip70Gr0fxK9WHTBEueN7tFVlL9kMVS1FcA9R8yw0s2Q3Lf2eDg8s+Xad
+	LeswPYWOlELRQXKbnxeBYu/9t8bd415HkGjMNsfigIIdYDpevfXr4JbJb+z32g/aiHxQh2Il9oV
+	wN/15uAp8/xQsRRDDcPeORFeW17RL3ToxvxQ10JyFDc3WXdxNQEgQpPf4Q3jjFSlRYHbPGofPJQ
+	rVlFcbzOK43Qv9kM5YxMu82Y2b8GN9T6t3uNh5t3V9aeyLhpDp5GwNIYyDtzMTFiiPAEuEIWd+o
+	NbPC01Cl2fJihkGl95FAg==
+X-Received: by 2002:a17:903:1a10:b0:2df:a0d4:71de with SMTP id d9443c01a7336-2e9a66ebc71mr15900275ad.0.1792234948529;
+        Sat, 17 Oct 2026 04:02:28 -0700 (PDT)
+Received: from x1c ([2405:9800:b670:b64b:7c65:ff3e:80ba:b06])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2e97e804dd9sm20559955ad.16.2026.10.17.04.02.18
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 16 Oct 2026 20:09:42 -0700 (PDT)
-From: SeungJu Cheon <suunj1331@gmail.com>
-To: anup@brainfault.org,
-	atish.patra@linux.dev
-Cc: tjytimi@163.com,
-	inochiama@gmail.com,
-	pjw@kernel.org,
-	palmer@dabbelt.com,
-	aou@eecs.berkeley.edu,
-	alex@ghiti.fr,
-	andrew.jones@linux.dev,
-	pbonzini@redhat.com,
-	seanjc@google.com,
-	kvm-riscv@lists.infradead.org,
+        Sat, 17 Oct 2026 04:02:28 -0700 (PDT)
+From: Tharit Tangkijwanichakul <tharitt97@gmail.com>
+To: Paolo Bonzini <pbonzini@redhat.com>,
+	Sean Christopherson <seanjc@google.com>
+Cc: Shuah Khan <shuah@kernel.org>,
+	Marc Zyngier <maz@kernel.org>,
+	Oliver Upton <oupton@kernel.org>,
+	Fuad Tabba <fuad.tabba@linux.dev>,
+	Joey Gouly <joey.gouly@arm.com>,
+	Steffen Eiden <seiden@linux.ibm.com>,
+	Suzuki K Poulose <suzuki.poulose@arm.com>,
+	Zenghui Yu <yuzenghui@huawei.com>,
+	Anup Patel <anup@brainfault.org>,
+	Atish Patra <atish.patra@linux.dev>,
+	Paul Walmsley <pjw@kernel.org>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>,
+	Alexandre Ghiti <alex@ghiti.fr>,
 	kvm@vger.kernel.org,
-	linux-riscv@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org,
-	SeungJu Cheon <suunj1331@gmail.com>,
-	Sashiko <sashiko-bot@kernel.org>
-Subject: [PATCH] KVM: riscv: Only fast-path dirty-log write faults on host-writable leaves
-Date: Sat, 17 Oct 2026 12:09:26 +0900
-Message-ID: <20261017030927.345454-1-suunj1331@gmail.com>
-X-Mailer: git-send-email 2.52.0
+	linux-kselftest@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	kvmarm@lists.linux.dev,
+	kvm-riscv@lists.infradead.org,
+	linux-riscv@lists.infradead.org,
+	linux-kernel-mentees@lists.linux.dev,
+	skhan@linuxfoundation.org,
+	me@brighamcampbell.com,
+	jkoolstra@xs4all.nl,
+	Tharit Tangkijwanichakul <tharitt97@gmail.com>
+Subject: [PATCH 0/5] KVM: selftests: Reserve memslot 1 for ucall MMIO
+Date: Sat, 17 Oct 2026 18:02:08 +0700
+Message-ID: <20261017110213.46199-1-tharitt97@gmail.com>
+X-Mailer: git-send-email 2.53.0
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261016_200944_632598_7551C82B 
-X-CRM114-Status: GOOD (  16.67  )
+X-CRM114-CacheID: sfid-20261017_040230_783716_8FC24A5C 
+X-CRM114-Status: UNSURE (   8.69  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -112,145 +123,61 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-The dirty-log write fault fast path sets _PAGE_WRITE without checking
-whether the backing page is host-writable. A read fault can install
-a read-only mapping to the shared zero page. A subsequent guest write
-then takes the fast path and writes into the zero page instead of
-going through the slow path to break CoW.
+This series addresses the TODO in __vm_create() to reserve memslot 1
+for the ucall MMIO region. It introduces a shared base for test
+memslots, migrates existing test users, and adds a read-only region to
+prevent overlapping allocations.
 
-Use RSW bit 9 to record host writability before dirty logging forces
-the mapping read-only. Preserve this bit across write-protection and
-fall back to the slow path when it is clear.
+A regression test verifies overlap rejection and continued ucall
+operation.
 
-Reported-by: Sashiko <sashiko-bot@kernel.org>
-Closes: https://lore.kernel.org/all/sashiko-outbox-174168@kernel.org/
-Fixes: 7705be59eb2d ("KVM: riscv: Fast-path dirty logging write faults")
-Cc: stable@vger.kernel.org # 7.2+
-Signed-off-by: SeungJu Cheon <suunj1331@gmail.com>
----
 Testing:
+- Intel Core i5-10210U and Rockchip RK3588 (arm64).
 
-1. HiFive Premier P550
+These tests are changed but not tested: 
+- arm64/sea_to_user.c: not enough memory allocation.
+- x86/nested_vmsave_vmload_test.c: requires X86_FEATURE_SVM.
+- riscv/sbi_pmu_test.c: riscv hardware unavailability.
 
-   A selftest makes the guest read an untouched page, then write to
-   it with dirty logging enabled. Before the fix, the write corrupts
-   the host zero page. After the fix, CoW allocates a private page
-   and the zero page stays zero.
+The following test failures reproduce on both the unmodified base
+<8edffbc1f6272db167037e1a8c49b99e9cd04803> with host kernel 
+7.3.0-rc1-gd4b7fb647204 on RK3588 and with this series applied:
+- arm64/vgic_its_save.c
+- arm64/hypercalls.c
 
-   dirty_log_perf_test -v 3 -b 256M -i 3 shows no noticeable
-   regression (14-21s per iteration before and after).
+These failures are unchanged by this series.
 
-2. QEMU (-cpu rv64,h=true)
+Tharit Tangkijwanichakul (5):
+  KVM: selftests: Introduce a shared base for test memslots
+  KVM: selftests: Use the shared memslot base in memslot_perf_test
+  KVM: selftests: Use the shared memslot base in memstress
+  KVM: selftests: Reserve memslot 1 for the ucall MMIO address
+  KVM: selftests: Test protection of the ucall MMIO region
 
-   The same selftest reproduces the zero-page corruption before the
-   fix and passes after it.
+ tools/testing/selftests/kvm/Makefile.kvm      |  1 +
+ .../testing/selftests/kvm/arm64/hypercalls.c  |  3 +-
+ .../testing/selftests/kvm/arm64/sea_to_user.c |  2 +-
+ .../kvm/arm64/stage2_block_transitions.c      |  2 +-
+ .../selftests/kvm/arm64/vgic_its_save.c       |  2 +-
+ .../selftests/kvm/arm64/vgic_lpi_stress.c     |  2 +-
+ tools/testing/selftests/kvm/dirty_log_test.c  |  2 +-
+ .../testing/selftests/kvm/guest_memfd_test.c  |  2 +-
+ .../testing/selftests/kvm/include/kvm_util.h  |  1 +
+ .../testing/selftests/kvm/include/memstress.h |  2 +-
+ .../selftests/kvm/kvm_page_table_test.c       |  2 +-
+ tools/testing/selftests/kvm/lib/kvm_util.c    | 19 ++++--
+ .../testing/selftests/kvm/memslot_perf_test.c | 62 +++++++++++--------
+ tools/testing/selftests/kvm/mmu_stress_test.c |  2 +-
+ .../selftests/kvm/reserved_slot_test.c        | 61 ++++++++++++++++++
+ .../selftests/kvm/riscv/sbi_pmu_test.c        |  3 +-
+ tools/testing/selftests/kvm/steal_time.c      |  3 +-
+ .../selftests/kvm/x86/nested_dirty_log_test.c |  2 +-
+ .../kvm/x86/nested_vmsave_vmload_test.c       |  2 +-
+ 19 files changed, 128 insertions(+), 47 deletions(-)
+ create mode 100644 tools/testing/selftests/kvm/reserved_slot_test.c
 
-This patch applies on top of the Accessed-bit fix [1].
-
-[1] https://lore.kernel.org/all/20261016101458.221648-1-suunj1331@gmail.com/
-
- arch/riscv/include/asm/kvm_gstage.h |  5 ++++-
- arch/riscv/kvm/gstage.c             |  5 ++++-
- arch/riscv/kvm/mmu.c                | 15 +++++++++++++--
- 3 files changed, 21 insertions(+), 4 deletions(-)
-
-diff --git a/arch/riscv/include/asm/kvm_gstage.h b/arch/riscv/include/asm/kvm_gstage.h
-index aaf080ba1b77..0d19ad6d7dfe 100644
---- a/arch/riscv/include/asm/kvm_gstage.h
-+++ b/arch/riscv/include/asm/kvm_gstage.h
-@@ -35,6 +35,9 @@ extern unsigned long kvm_riscv_gstage_max_pgd_levels;
- #define kvm_riscv_gstage_pgd_xbits	2
- #define kvm_riscv_gstage_pgd_size	(1UL << (HGATP_PAGE_SHIFT + kvm_riscv_gstage_pgd_xbits))
- 
-+/* RSW bit 9: the host mapping behind this leaf is writable. */
-+#define KVM_GSTAGE_PTE_HOST_WRITABLE	BIT(9)
-+
- static inline unsigned long kvm_riscv_gstage_gpa_bits(unsigned long pgd_levels)
- {
- 	return (HGATP_PAGE_SHIFT +
-@@ -61,7 +64,7 @@ bool kvm_riscv_gstage_try_update_pte(struct kvm_gstage *gstage, u32 level,
- int kvm_riscv_gstage_map_page(struct kvm_gstage *gstage,
- 			      struct kvm_mmu_memory_cache *pcache,
- 			      gpa_t gpa, phys_addr_t hpa, unsigned long page_size,
--			      bool page_rdonly, bool page_exec,
-+			      bool page_rdonly, bool page_exec, bool host_writable,
- 			      struct kvm_gstage_mapping *out_map);
- 
- bool kvm_riscv_gstage_split_huge(struct kvm_gstage *gstage,
-diff --git a/arch/riscv/kvm/gstage.c b/arch/riscv/kvm/gstage.c
-index be70607a33ea..d9bfd0c6d5fd 100644
---- a/arch/riscv/kvm/gstage.c
-+++ b/arch/riscv/kvm/gstage.c
-@@ -207,7 +207,7 @@ static void kvm_riscv_gstage_update_pte_prot(struct kvm_gstage *gstage, u32 leve
- int kvm_riscv_gstage_map_page(struct kvm_gstage *gstage,
- 			      struct kvm_mmu_memory_cache *pcache,
- 			      gpa_t gpa, phys_addr_t hpa, unsigned long page_size,
--			      bool page_rdonly, bool page_exec,
-+			      bool page_rdonly, bool page_exec, bool host_writable,
- 			      struct kvm_gstage_mapping *out_map)
- {
- 	bool found_leaf;
-@@ -246,6 +246,9 @@ int kvm_riscv_gstage_map_page(struct kvm_gstage *gstage,
- 			prot = PAGE_WRITE;
- 	}
- 
-+	if (host_writable)
-+		prot = __pgprot(pgprot_val(prot) | KVM_GSTAGE_PTE_HOST_WRITABLE);
-+
- 	found_leaf = kvm_riscv_gstage_get_leaf(gstage, gpa, &ptep, &ptep_level);
- 	if (found_leaf) {
- 		/*
-diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-index 042d1e3b3547..196cde6c40cd 100644
---- a/arch/riscv/kvm/mmu.c
-+++ b/arch/riscv/kvm/mmu.c
-@@ -586,6 +586,12 @@ static bool kvm_riscv_mmu_dirty_log_write_fault_fast(struct kvm *kvm,
- 			break;
- 		}
- 
-+		/* Let the slow path handle host-side write protection and CoW. */
-+		if (!(pte_val(old_pte) & KVM_GSTAGE_PTE_HOST_WRITABLE)) {
-+			ret = false;
-+			break;
-+		}
-+
- 		if (!dirty_marked) {
- 			mark_page_dirty_in_slot(kvm, memslot, gfn);
- 			dirty_marked = true;
-@@ -630,6 +636,7 @@ int kvm_riscv_mmu_map(struct kvm_vcpu *vcpu, struct kvm_memory_slot *memslot,
- 	bool is_hugetlb;
- 	bool unused = false;
- 	bool writable;
-+	bool host_writable;
- 	unsigned int vma_pageshift;
- 	gfn_t gfn = gpa >> PAGE_SHIFT;
- 	struct vm_area_struct *vma;
-@@ -714,6 +721,8 @@ int kvm_riscv_mmu_map(struct kvm_vcpu *vcpu, struct kvm_memory_slot *memslot,
- 	if (is_error_noslot_pfn(hfn))
- 		return -EFAULT;
- 
-+	host_writable = writable;
-+
- 	/*
- 	 * If logging is active then we allow writable pages only
- 	 * for write faults.
-@@ -739,10 +748,12 @@ int kvm_riscv_mmu_map(struct kvm_vcpu *vcpu, struct kvm_memory_slot *memslot,
- 	if (writable) {
- 		mark_page_dirty_in_slot(kvm, memslot, gfn);
- 		ret = kvm_riscv_gstage_map_page(&gstage, pcache, gpa, hfn << PAGE_SHIFT,
--						vma_pagesize, false, true, out_map);
-+						vma_pagesize, false, true, host_writable,
-+						out_map);
- 	} else {
- 		ret = kvm_riscv_gstage_map_page(&gstage, pcache, gpa, hfn << PAGE_SHIFT,
--						vma_pagesize, true, true, out_map);
-+						vma_pagesize, true, true, host_writable,
-+						out_map);
- 	}
- 
- 	if (ret)
 -- 
-2.52.0
+2.53.0
 
 
 -- 
