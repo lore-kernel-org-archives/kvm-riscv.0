@@ -4,59 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8AB73CCF2DE
-	for <kvm-riscv@archiver.kernel.org>; Mon, 19 Oct 2026 13:47:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70136CCF2E7
+	for <kvm-riscv@archiver.kernel.org>; Mon, 19 Oct 2026 14:43:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
 	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
 	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=7tnUj1KKd4vZd8koz9ffIMxvSEQupbeCO7Np+RUwUVY=; b=Il6pFFST6ZkfFu
-	mNYF5OuV2AbElL0aPvUgx42hRF3cYrgKX0WV+dCs4zOQ24PktQQQMat0YD6byAiZW2hCGhuOHdu/T
-	FWOVwrXLyEB1CmuHKc3n2WzzZ53rpiagG/3/dFPiYaq/YX5fKW0PFu5HbhzOtaH7atk30+2yXn2fh
-	BdRxHJVJyP70FMU+oPLFYENOH428uC6q7UktGDQvy7XLxIWAdwyJ6sXpG5+TYUm7ftKrePViADL7b
-	FlNz43c1MBKsmWziLPio7nGyYePXJ7I7Tr1c9eRb+x+1pLr3Ls58MalJpEvBJvs0j4gS47n0vQrXG
-	vUMMykswU6E20uTpNQxA==;
+	List-Owner; bh=oBYfwEhNzMZgWvG6tDKQc3JgzD9SlfKOAVIXvsrf4zM=; b=U2l9Zqcuybycfn
+	NF1vqr7wHm+BSSC8Od6lY3aKzGmlp4iH8PyHN/VjsyYr+DHM44G8V/6akoT8J53c449TYu90pCvjZ
+	kLDFSoSHY8KSe6DbYOvFBgYAUOFp1TuxWu+Yeyc9eEmRUDxuRsowBu2+kqqLIGPxXDiKb0bYSugQO
+	Gykr8xq2kv/lemjyxCgRp4LEYu9p2Nm3g95dvKaPHPkOhH1qQmwcMWwPWUXszXrAmhtqRGJYdHKLS
+	iN+rRa1908ewV4c/PvpLF+oFs5rhbJOQUsRkl0FoD5XUGSbKgrfkNnWKEMQJZlXUUK0XaKWL5wnY6
+	ZkaAtaO+DJ7PUKrOe+cA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1xInhw-00000007Yec-0Z1H;
-	Mon, 19 Oct 2026 13:47:20 +0000
-Received: from out-51.mta1.migadu.com ([2001:41d0:203:375::33] helo=mta1.migadu.com)
+	id 1xIoa4-00000007llv-2L7h;
+	Mon, 19 Oct 2026 14:43:16 +0000
+Received: from out-192.mta0.migadu.com ([2001:41d0:1004:224b::c0] helo=mta0.migadu.com)
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1xInht-00000007YdN-1DhR
+	id 1xIoa0-00000007lkU-3zn5
 	for kvm-riscv@lists.infradead.org;
-	Mon, 19 Oct 2026 13:47:18 +0000
+	Mon, 19 Oct 2026 14:43:15 +0000
 X-Envelope-To: kvm-riscv@lists.infradead.org
-DKIM-Signature: a=rsa-sha256; bh=/qaWoZI/YGAqceCwDucx/imq3smJTVtLSwTEScGWq70=;
+DKIM-Signature: a=rsa-sha256; bh=yAzZlMG9yyqlRb+Q8VS1SI9X4mbkrMtuzvvRVXOI/o4=;
  c=simple/simple; d=linux.dev;
  h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1792417633; v=1; x=1793022433;
- b=lNb6ba9bmT8idF2PNhbo07YN+szjH79RwQTeTMMaqL3Aj2Ll3UKNHunejiX4C4brXaTZBeki
- Gvnv47F6yXX7bZIEueY4UWUlJ8qtnK+lgH2MhKfSJLis6GxYnWi0hRcHttl8l8K8nDSqMNFXpKE
- rKiD1cj8s7F+KK9A1EJtDfP4=
+ t=1792420988; v=1; x=1793025788;
+ b=EeixoLsvfxN2IB7iC71wEDZAumblq92s58yrMZAabJc4xB9TrQtdzYZY2sgfcr+N+/m1u69E
+ 2hO51OxinP6ERSSwp2Jh68Xn+FYmhg2JqrbjbghBkGHY6T+chXOsB2aWXu02XV09H//RM7UQhVD
+ RMSniv3FlkB5SGNmWdeqFYfA=
 X-Envelope-To: kvm-riscv@lists.infradead.org
-Received: by smtp.migadu.com with ESMTPS id 5640194636ea6c18;
-	Mon, 19 Oct 2026 13:47:13 +0000
-X-Mizu-Trace-ID: 5640194636ea6c18
+Received: by smtp.migadu.com with ESMTPS id 609bfc4a7ea223cb;
+	Mon, 19 Oct 2026 14:43:08 +0000
+X-Mizu-Trace-ID: 609bfc4a7ea223cb
 X-Migadu-Flow: FLOW_OUT
 From: Andrew Jones <andrew.jones@linux.dev>
-To: kvm-riscv@lists.infradead.org
-Cc: anup@brainfault.org,
-	atish.patra@linux.dev,
-	pjw@kernel.org,
-	palmer@dabbelt.com,
-	kvm@vger.kernel.org,
-	linux-riscv@lists.infradead.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH v2] RISC-V: KVM: Convert IMSIC vsfile_lock to a raw spinlock
-Date: Mon, 19 Oct 2026 15:47:09 +0200
-Message-ID: <20261019134709.2610129-1-andrew.jones@linux.dev>
+To: kvm@vger.kernel.org,
+	will@kernel.org,
+	julien.thierry.kdev@gmail.com
+Cc: kvm-riscv@lists.infradead.org,
+	Anup Patel <anup@brainfault.org>
+Subject: [PATCH kvmtool] riscv: Place the FDT after the kernel's image_size
+Date: Mon, 19 Oct 2026 16:43:04 +0200
+Message-ID: <20261019144304.2678066-1-andrew.jones@linux.dev>
 X-Mailer: git-send-email 2.56.0
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261019_064717_472002_89849328 
-X-CRM114-Status: GOOD (  14.40  )
+X-CRM114-CacheID: sfid-20261019_074313_149166_88EB92FC 
+X-CRM114-Status: GOOD (  17.35  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -73,170 +70,126 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-kvm_riscv_vcpu_aia_imsic_put() runs from the scheduler preemption
-notifier with the raw runqueue lock held, so it must not take
-vsfile_lock, an rwlock_t, which sleeps on PREEMPT_RT. All vsfile_lock
-critical sections are short, so a raw spinlock is fine.
+The FDT is placed relative to the end of the kernel image file, but a
+kernel's memory footprint includes its BSS, which isn't in the file. When
+the BSS is large enough, e.g. with lockdep enabled, the FDT lands inside
+it and is wiped when the kernel clears BSS, leaving the guest hung with no
+console output. Use the image_size from the Image header, as arm64 does.
 
-Fixes: 4cec89db80ba ("RISC-V: KVM: Move HGEI[E|P] CSR access to IMSIC virtualization")
 Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
 ---
-v2:
- - Convert vsfile_lock to raw_spinlock_t instead of adding a separate
-   hgei_lock [Anup]
----
- arch/riscv/kvm/aia_imsic.c | 36 ++++++++++++++++++------------------
- 1 file changed, 18 insertions(+), 18 deletions(-)
+ riscv/include/asm/image.h | 40 +++++++++++++++++++++++++++++++++++++++
+ riscv/kvm.c               | 26 ++++++++++++++++++++++---
+ 2 files changed, 63 insertions(+), 3 deletions(-)
+ create mode 100644 riscv/include/asm/image.h
 
-diff --git a/arch/riscv/kvm/aia_imsic.c b/arch/riscv/kvm/aia_imsic.c
-index f17dc559a709..bad0ce20edc1 100644
---- a/arch/riscv/kvm/aia_imsic.c
-+++ b/arch/riscv/kvm/aia_imsic.c
-@@ -47,7 +47,7 @@ struct imsic {
- 	 */
+diff --git a/riscv/include/asm/image.h b/riscv/include/asm/image.h
+new file mode 100644
+index 000000000000..0deb74ddd9d4
+--- /dev/null
++++ b/riscv/include/asm/image.h
+@@ -0,0 +1,40 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++
++#ifndef __ASM_IMAGE_H
++#define __ASM_IMAGE_H
++
++#define RISCV_IMAGE_MAGIC	"RISCV\0\0\0"
++#define RISCV_IMAGE_MAGIC2	"RSC\x05"
++
++/*
++ * struct riscv_image_header - riscv kernel image header
++ * See Documentation/arch/riscv/boot-image-header.rst for details
++ *
++ * @code0:		Executable code
++ * @code1:		Executable code
++ * @text_offset:	Image load offset (little endian)
++ * @image_size:		Effective Image size (little endian)
++ * @flags:		kernel flags (little endian)
++ * @version:		version
++ * @res1:		reserved
++ * @res2:		reserved
++ * @magic:		Magic number (RISC-V specific; deprecated)
++ * @magic2:		Magic number 2 (to match the ARM64 'magic' field pos)
++ * @res3:		reserved (will be used for PE COFF offset)
++ */
++
++struct riscv_image_header {
++	u32 code0;
++	u32 code1;
++	__le64 text_offset;
++	__le64 image_size;
++	__le64 flags;
++	u32 version;
++	u32 res1;
++	u64 res2;
++	u64 magic;
++	u32 magic2;
++	u32 res3;
++};
++
++#endif /* __ASM_IMAGE_H */
+diff --git a/riscv/kvm.c b/riscv/kvm.c
+index 1d494792de79..fc192af34435 100644
+--- a/riscv/kvm.c
++++ b/riscv/kvm.c
+@@ -4,9 +4,11 @@
+ #include "kvm/virtio-console.h"
+ #include "kvm/fdt.h"
  
- 	/* IMSIC VS-file */
--	rwlock_t vsfile_lock;
-+	raw_spinlock_t vsfile_lock;
- 	int vsfile_cpu;
- 	int vsfile_hgei;
- 	void __iomem *vsfile_va;
-@@ -593,13 +593,13 @@ static void imsic_vsfile_cleanup(struct imsic *imsic)
- 	 * VCPU is being destroyed.
- 	 */
++#include <linux/byteorder.h>
+ #include <linux/kernel.h>
+ #include <linux/kvm.h>
+ #include <linux/sizes.h>
++#include <asm/image.h>
  
--	write_lock_irqsave(&imsic->vsfile_lock, flags);
-+	raw_spin_lock_irqsave(&imsic->vsfile_lock, flags);
- 	old_vsfile_hgei = imsic->vsfile_hgei;
- 	old_vsfile_cpu = imsic->vsfile_cpu;
- 	imsic->vsfile_cpu = imsic->vsfile_hgei = -1;
- 	imsic->vsfile_va = NULL;
- 	imsic->vsfile_pa = 0;
--	write_unlock_irqrestore(&imsic->vsfile_lock, flags);
-+	raw_spin_unlock_irqrestore(&imsic->vsfile_lock, flags);
- 
- 	memset(imsic->swfile, 0, sizeof(*imsic->swfile));
- 
-@@ -687,7 +687,7 @@ bool kvm_riscv_vcpu_aia_imsic_has_interrupt(struct kvm_vcpu *vcpu)
- 	 * only check for interrupt when IMSIC VS-file is being used.
- 	 */
- 
--	read_lock_irqsave(&imsic->vsfile_lock, flags);
-+	raw_spin_lock_irqsave(&imsic->vsfile_lock, flags);
- 	if (imsic->vsfile_cpu > -1) {
- 		/*
- 		 * This function is typically called from kvm_vcpu_block() via
-@@ -702,7 +702,7 @@ bool kvm_riscv_vcpu_aia_imsic_has_interrupt(struct kvm_vcpu *vcpu)
- 		else
- 			ret = !!(csr_read(CSR_HGEIP) & BIT(imsic->vsfile_hgei));
- 	}
--	read_unlock_irqrestore(&imsic->vsfile_lock, flags);
-+	raw_spin_unlock_irqrestore(&imsic->vsfile_lock, flags);
- 
- 	return ret;
+ struct kvm_ext kvm_req_ext[] = {
+ 	{ DEFINE_KVM_EXT(KVM_CAP_ONE_REG) },
+@@ -100,6 +102,22 @@ void kvm__arch_init(struct kvm *kvm)
+ 	riscv__irqchip_create(kvm);
  }
-@@ -727,10 +727,10 @@ void kvm_riscv_vcpu_aia_imsic_put(struct kvm_vcpu *vcpu)
- 	if (!kvm_vcpu_is_blocking(vcpu))
- 		return;
  
--	read_lock_irqsave(&imsic->vsfile_lock, flags);
-+	raw_spin_lock_irqsave(&imsic->vsfile_lock, flags);
- 	if (imsic->vsfile_cpu > -1)
- 		csr_set(CSR_HGEIE, BIT(imsic->vsfile_hgei));
--	read_unlock_irqrestore(&imsic->vsfile_lock, flags);
-+	raw_spin_unlock_irqrestore(&imsic->vsfile_lock, flags);
- }
- 
- void kvm_riscv_vcpu_aia_imsic_release(struct kvm_vcpu *vcpu)
-@@ -744,13 +744,13 @@ void kvm_riscv_vcpu_aia_imsic_release(struct kvm_vcpu *vcpu)
- 		return;
- 
- 	/* Read and clear IMSIC VS-file details */
--	write_lock_irqsave(&imsic->vsfile_lock, flags);
-+	raw_spin_lock_irqsave(&imsic->vsfile_lock, flags);
- 	old_vsfile_hgei = imsic->vsfile_hgei;
- 	old_vsfile_cpu = imsic->vsfile_cpu;
- 	imsic->vsfile_cpu = imsic->vsfile_hgei = -1;
- 	imsic->vsfile_va = NULL;
- 	imsic->vsfile_pa = 0;
--	write_unlock_irqrestore(&imsic->vsfile_lock, flags);
-+	raw_spin_unlock_irqrestore(&imsic->vsfile_lock, flags);
- 
- 	/* Do nothing, if no IMSIC VS-file to release */
- 	if (old_vsfile_cpu < 0)
-@@ -807,10 +807,10 @@ int kvm_riscv_vcpu_aia_imsic_update(struct kvm_vcpu *vcpu)
- 		return 1;
- 
- 	/* Read old IMSIC VS-file details */
--	read_lock_irqsave(&imsic->vsfile_lock, flags);
-+	raw_spin_lock_irqsave(&imsic->vsfile_lock, flags);
- 	old_vsfile_hgei = imsic->vsfile_hgei;
- 	old_vsfile_cpu = imsic->vsfile_cpu;
--	read_unlock_irqrestore(&imsic->vsfile_lock, flags);
-+	raw_spin_unlock_irqrestore(&imsic->vsfile_lock, flags);
- 
- 	/* Do nothing if we are continuing on same CPU */
- 	if (old_vsfile_cpu == vcpu->cpu)
-@@ -860,12 +860,12 @@ int kvm_riscv_vcpu_aia_imsic_update(struct kvm_vcpu *vcpu)
- 	/* TODO: Update the IOMMU mapping ??? */
- 
- 	/* Update new IMSIC VS-file details in IMSIC context */
--	write_lock_irqsave(&imsic->vsfile_lock, flags);
-+	raw_spin_lock_irqsave(&imsic->vsfile_lock, flags);
- 	imsic->vsfile_hgei = new_vsfile_hgei;
- 	imsic->vsfile_cpu = vcpu->cpu;
- 	imsic->vsfile_va = new_vsfile_va;
- 	imsic->vsfile_pa = new_vsfile_pa;
--	write_unlock_irqrestore(&imsic->vsfile_lock, flags);
-+	raw_spin_unlock_irqrestore(&imsic->vsfile_lock, flags);
++/*
++ * The kernel's memory footprint, including BSS, is the image_size in the
++ * Image header, which may be larger than the file.
++ */
++static u64 kvm__arch_get_kernel_size(void *kernel, ssize_t file_size)
++{
++	struct riscv_image_header *hdr = kernel;
++
++	if ((size_t)file_size < sizeof(*hdr) ||
++	    (memcmp(&hdr->magic2, RISCV_IMAGE_MAGIC2, sizeof(hdr->magic2)) &&
++	     memcmp(&hdr->magic, RISCV_IMAGE_MAGIC, sizeof(hdr->magic))))
++		return file_size;
++
++	return max_t(u64, le64_to_cpu(hdr->image_size), file_size);
++}
++
+ #define FDT_ALIGN	SZ_4M
+ #define INITRD_ALIGN	8
+ bool kvm__arch_load_kernel_image(struct kvm *kvm, int fd_kernel, int fd_initrd,
+@@ -108,6 +126,7 @@ bool kvm__arch_load_kernel_image(struct kvm *kvm, int fd_kernel, int fd_initrd,
+ 	void *pos, *kernel_end, *limit;
+ 	unsigned long guest_addr, kernel_offset;
+ 	ssize_t file_size;
++	u64 kernel_size;
  
  	/*
- 	 * At this point, all interrupt producers have been moved
-@@ -975,7 +975,7 @@ int kvm_riscv_aia_imsic_rw_attr(struct kvm *kvm, unsigned long type,
+ 	 * Linux requires the initrd and dtb to be mapped inside lowmem,
+@@ -132,9 +151,10 @@ bool kvm__arch_load_kernel_image(struct kvm *kvm, int fd_kernel, int fd_initrd,
+ 
+ 		die_perror("kernel read");
  	}
- 	isel = KVM_DEV_RISCV_AIA_IMSIC_GET_ISEL(type);
+-	kernel_end = pos + file_size;
+-	pr_debug("Loaded kernel to 0x%llx (%zd bytes)",
+-		 kvm->arch.kern_guest_start, file_size);
++	kernel_size = kvm__arch_get_kernel_size(pos, file_size);
++	kernel_end = pos + kernel_size;
++	pr_debug("Loaded kernel to 0x%llx (%zd bytes, %llu in memory)",
++		 kvm->arch.kern_guest_start, file_size, kernel_size);
  
--	read_lock_irqsave(&imsic->vsfile_lock, flags);
-+	raw_spin_lock_irqsave(&imsic->vsfile_lock, flags);
- 
- 	rc = 0;
- 	vsfile_hgei = imsic->vsfile_hgei;
-@@ -990,7 +990,7 @@ int kvm_riscv_aia_imsic_rw_attr(struct kvm *kvm, unsigned long type,
- 					    isel, val, 0, 0);
- 	}
- 
--	read_unlock_irqrestore(&imsic->vsfile_lock, flags);
-+	raw_spin_unlock_irqrestore(&imsic->vsfile_lock, flags);
- 
- 	if (!rc && vsfile_cpu >= 0)
- 		rc = imsic_vsfile_rw(vsfile_hgei, vsfile_cpu, imsic->nr_eix,
-@@ -1052,7 +1052,7 @@ int kvm_riscv_vcpu_aia_imsic_inject(struct kvm_vcpu *vcpu,
- 	if (imsic->nr_msis <= iid)
- 		return -EINVAL;
- 
--	read_lock_irqsave(&imsic->vsfile_lock, flags);
-+	raw_spin_lock_irqsave(&imsic->vsfile_lock, flags);
- 
- 	if (imsic->vsfile_cpu >= 0) {
- 		writel(iid, imsic->vsfile_va + IMSIC_MMIO_SETIPNUM_LE);
-@@ -1062,7 +1062,7 @@ int kvm_riscv_vcpu_aia_imsic_inject(struct kvm_vcpu *vcpu,
- 		imsic_swfile_extirq_update(vcpu);
- 	}
- 
--	read_unlock_irqrestore(&imsic->vsfile_lock, flags);
-+	raw_spin_unlock_irqrestore(&imsic->vsfile_lock, flags);
- 
- 	return 0;
- }
-@@ -1118,7 +1118,7 @@ int kvm_riscv_vcpu_aia_imsic_init(struct kvm_vcpu *vcpu)
- 
- 	/* Setup IMSIC context  */
- 	imsic->nr_msis = kvm->arch.aia.nr_ids + 1;
--	rwlock_init(&imsic->vsfile_lock);
-+	raw_spin_lock_init(&imsic->vsfile_lock);
- 	imsic->nr_eix = BITS_TO_U64(imsic->nr_msis);
- 	imsic->nr_hw_eix = BITS_TO_U64(kvm_riscv_aia_max_ids);
- 	imsic->vsfile_hgei = imsic->vsfile_cpu = -1;
+ 	/* Place FDT just after kernel at FDT_ALIGN address */
+ 	pos = kernel_end + FDT_ALIGN;
 -- 
 2.56.0
 
