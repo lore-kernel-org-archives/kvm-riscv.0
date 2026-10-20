@@ -2,40 +2,40 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 25681606A31B
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5B8FB60A2619
 	for <kvm-riscv@archiver.kernel.org>; Tue, 20 Oct 2026 09:41:24 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=cNd4nmq7;
-	dkim=fail reason="signature verification failed" (1024-bit key, unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=oOrn0Mel
+	dkim=pass (2048-bit key, unprotected) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=aJqKkvpa;
+	dkim=fail reason="signature verification failed" (1024-bit key, unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=xbbLont9
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-Id:Date:Subject:Cc
-	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=msSCA6Ek3i8zQTJXxsia1mp6mRUChdw/oRezpaN6fFE=; b=cNd4nmq7qgdBLZ
-	+xkJ/VmQskGbDNrAllE6uIRUaKgicLxrhhwIkiOEiapeUvs/Nh1X5JyUY9mwHumCviUJM/i+9BELx
-	2ljlMFe4CjPAA4F93CjM+hC8O3RG7r2HAf0hUGraFquZSNhM8rUKLSY9dh7c+oPEu8OxDozvNjOdX
-	DZlLFVzotMro3uQjnXshoJmh6IowJiiRygxAhpUL8G/DN9GmM3i3m35p0Ayoh4drHfU9VGk6a9zw4
-	y/0qUIfTkpgEoyX7RlX/hjt3KDraxhk1Ffj9v6aAMzLjcArXWwtx9nHrgY5bb7yfcp5K9m+g03Bu7
-	iEEAWRwPRZ0DG8v8ZPTg==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=uoCeBvc3nMtqTCNmXVxdpiHaHBWFaxTFdg3gJsvUCSA=; b=aJqKkvpa+AE9dO
+	b1EbZWSYjbRmLkmsXvG4G8jq84fPlfh9z6Ir2/YLGNmrySWyGzV4A3tmMk7ke7ninTBWvhUci/i+q
+	2JTzj63EU7ZpbkeENN+KQbJlvhim/x24rq5Q4AnTc7EI54bYT93iw9jZ70IGxTr/PxB7iMqa0NcW/
+	euuqamExnypFcda0bHM2h0JkXnD1ib+IuZdKIZAg5IIb4xtuMb9eEe7Y42HgAQ4wIF8AKvV2m0Mpx
+	Pr2kP58DKtbkt4wfx7v3YSSRSg2b7eDPCFr1sgcsP33t0Yl0V+EKmgYx2pVpqYWroiuTb1Iko2gAb
+	gJONAIq35b/Kgf5DA1AQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1xJ6LS-00000009L5z-1nfc;
-	Tue, 20 Oct 2026 09:41:23 +0000
-Received: from out30-118.freemail.mail.aliyun.com ([115.124.30.118])
+	id 1xJ6LU-00000009L6T-0JtP;
+	Tue, 20 Oct 2026 09:41:24 +0000
+Received: from out30-133.freemail.mail.aliyun.com ([115.124.30.133])
 	by bombadil.infradead.org with esmtps (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1xJ6LO-00000009L3n-2eMn;
-	Tue, 20 Oct 2026 09:41:20 +0000
+	id 1xJ6LP-00000009L42-2nj8;
+	Tue, 20 Oct 2026 09:41:21 +0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
 	d=linux.alibaba.com; s=default;
-	t=1792489275; h=From:To:Subject:Date:Message-Id:MIME-Version:Content-Type;
-	bh=kcaNBbiUMzKXzNSISjdYUCG67KZVrDK5XLEKTAvzTD8=;
-	b=oOrn0MellT+LylF9SfCLBr2TKQo1lm3UOX+pEOgSkAxLn3LLfG7oMi2Dtml2H987gSw8ERputZM1elyz3UW+/A9lM7/6dTq/1bi13sqZNymQ4W035xk33PRnhHqZ0lHy4sf/rEFIJb0DixQmNEPWeS4wdmDvUH0FbrhF9VTr+Ss=
-X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R181e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam033045133197;MF=fangyu.yu@linux.alibaba.com;NM=1;PH=DS;RN=28;SR=0;TI=SMTPD_---0XDCspNU_1792489269;
-Received: from localhost.localdomain(mailfrom:fangyu.yu@linux.alibaba.com fp:SMTPD_---0XDCspNU_1792489269 cluster:ay36)
+	t=1792489277; h=From:To:Subject:Date:Message-Id:MIME-Version;
+	bh=vV2Y5T1kVnTXHiV+qTqs8GbZEVnLFhK5H2hev57N6Io=;
+	b=xbbLont9+DZBpNUKgAdTyGhLTPZEGA7sbS4I/VIMw0IXKkx7md5Nx9NZw/d112bIYXNC9wyTGIaM5PX0HchCj3SMKsrT23tdyDBUcZJDsoG44yYtxeBEYsrP/Sj+ZxU/o/pRZgrNzwF7xMM//spgWsVl8BsAcr7C7R0Pdm7qR5I=
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R101e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam033032089153;MF=fangyu.yu@linux.alibaba.com;NM=1;PH=DS;RN=28;SR=0;TI=SMTPD_---0XDCspQX_1792489273;
+Received: from localhost.localdomain(mailfrom:fangyu.yu@linux.alibaba.com fp:SMTPD_---0XDCspQX_1792489273 cluster:ay36)
           by smtp.aliyun-inc.com;
-          Tue, 20 Oct 2026 17:41:12 +0800
+          Tue, 20 Oct 2026 17:41:15 +0800
 From: fangyu.yu@linux.alibaba.com
 To: tomasz.jeznach@linux.dev,
 	joro@8bytes.org,
@@ -65,15 +65,17 @@ Cc: fangyu.yu@linux.alibaba.com,
 	linux-kernel@vger.kernel.org,
 	linux-riscv@lists.infradead.org,
 	kvm-riscv@lists.infradead.org
-Subject: [RFC PATCH v5 00/10] iommu/riscv: Add hardware dirty tracking for second-stage domains
-Date: Tue, 20 Oct 2026 17:40:56 +0800
-Message-Id: <20261020094106.92722-1-fangyu.yu@linux.alibaba.com>
+Subject: [RFC PATCH v5 01/10] iommupt: Add RISC-V Second-stage (iohgatp) page table support
+Date: Tue, 20 Oct 2026 17:40:57 +0800
+Message-Id: <20261020094106.92722-2-fangyu.yu@linux.alibaba.com>
 X-Mailer: git-send-email 2.39.3 (Apple Git-146)
+In-Reply-To: <20261020094106.92722-1-fangyu.yu@linux.alibaba.com>
+References: <20261020094106.92722-1-fangyu.yu@linux.alibaba.com>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261020_024119_353095_6720A548 
-X-CRM114-Status: GOOD (  13.13  )
+X-CRM114-CacheID: sfid-20261020_024119_875101_51653BB5 
+X-CRM114-Status: GOOD (  15.96  )
 X-Spam-Score: -17.6 (-----------------)
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -84,119 +86,245 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
-X-Spam-Status: No, score=-12.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-17.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	UNPARSEABLE_RELAY,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=4.0.1
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-RnJvbTogRmFuZ3l1IFl1IDxmYW5neXUueXVAbGludXguYWxpYmFiYS5jb20+CgpUaGUgUklTQy1W
-IElPTU1VIGFyY2hpdGVjdHVyZSBkZWZpbmVzIGFuIEFNT19IV0FEIGNhcGFiaWxpdHkgKEhhcmR3
-YXJlCkFjY2Vzcy9EaXJ0eSB1cGRhdGUpIHRoYXQgYWxsb3dzIHRoZSBJT01NVSB0byBhdG9taWNh
-bGx5IHNldCB0aGUgQS9EIGJpdHMKaW4gc2Vjb25kLXN0YWdlIFBURXMgb24gRE1BIGFjY2Vzcy4g
-IFdoZW4gREMudGMuR0FERSBpcyBhc3NlcnRlZCwgdGhlIElPTU1VCmF1dG9ub21vdXNseSBzZXRz
-IEQgb24gdGhlIGZpcnN0IHdyaXRlIHRvIGEgcGFnZSBtYXBwZWQgYnkgYW4gaW9oZ2F0cApkb21h
-aW4uICBUaGlzIHNlcmllcyB3aXJlcyB0aGF0IGNhcGFiaWxpdHkgdXAgdG8gdGhlIGlvbW11ZmQg
-ZGlydHktdHJhY2tpbmcKaW50ZXJmYWNlIChJT01NVV9IV1BUX1NFVF9ESVJUWV9UUkFDS0lORyAv
-IElPTU1VX0hXUFRfR0VUX0RJUlRZX0JJVE1BUCkgYW5kCnJlcG9ydHMgSU9NTVVfQ0FQX0RJUlRZ
-X1RSQUNLSU5HLgoKRGVzaWduIG5vdGVzCi0tLS0tLS0tLS0tLQoKKiBUaGUgZmVhdHVyZSBpcyBz
-Y29wZWQgdG8gc2Vjb25kLXN0YWdlIChpb2hnYXRwKSBkb21haW5zIG9ubHk7IHRoZXNlIGFyZQog
-IHRoZSBkb21haW5zIGNyZWF0ZWQgZm9yIEtWTSAvIFZGSU8gZGV2aWNlIHBhc3MtdGhyb3VnaCB3
-aGVuIHVzZXJzcGFjZQogIGFsbG9jYXRlcyBhbiBIV1BUIHdpdGggSU9NTVVfSFdQVF9BTExPQ19O
-RVNUX1BBUkVOVCBvcgogIElPTU1VX0hXUFRfQUxMT0NfRElSVFlfVFJBQ0tJTkcuICBGaXJzdC1z
-dGFnZSAoaW9zYXRwKSBkb21haW5zIGFyZSBub3QKICB0b3VjaGVkIGJ5IHRoaXMgc2VyaWVzLgoK
-KiBUaGUgcGFnZS10YWJsZSBzaWRlIHBsdWdzIGludG8gdGhlIGV4aXN0aW5nIGdlbmVyaWNfcHQg
-ZGlydHkgaG9vawogIGZyYW1ld29yayAoYW1kdjEgLyB2dGRzcyBzdHlsZSkuICBSSVNDLVYgYWRk
-cyB0aGUgdGhyZWUgcmVxdWlyZWQgUFRFCiAgb3BzIOKAkyBpc193cml0ZV9kaXJ0eSAvIG1ha2Vf
-d3JpdGVfY2xlYW4gLyBtYWtlX3dyaXRlX2RpcnR5LgoKVGVzdGluZwotLS0tLS0tCgoqIFRlc3Qg
-b24gUUVNVSBSSVNDLVYsIGEgbnZtZSBhbmQgYW4gZTEwMDBlIGRldmljZSB3YXMgcGFzc2VkIHRo
-cm91Z2gKICB0byBhbiBMMiBndWVzdCB2aWEgdmZpby1wY2kgKyBpb21tdWZkLgoKKiBnZW5lcmlj
-X3B0IEtVbml0OiB0aGUgZXhpc3RpbmcgdGVzdF9kaXJ0eSBjYXNlIG5vdyBydW5zIGFuZCBwYXNz
-ZXMgZm9yCiAgdGhlIFJJU0MtViA2NC1iaXQgZm9ybWF0LgoKRm9sbG93LXVwIHdvcmsKLS0tLS0t
-LS0tLS0tLS0KKiBCdWlsZCBhIGRlZGljYXRlZCBlbmQtdG8tZW5kIHRlc3QgY2FzZSB0aGF0IGRy
-aXZlcyB0aGUgZnVsbCBmbG93CiAgKEhXUFRfQUxMT0Mgd2l0aCBESVJUWV9UUkFDS0lORyAtPiBh
-dHRhY2ggLT4gSU9BU19NQVAgLT4gZ2VuZXJhdGUgcmVhbAogIERNQSAtPiBTRVRfRElSVFlfVFJB
-Q0tJTkcgLT4gR0VUX0RJUlRZX0JJVE1BUCAtPiB2ZXJpZnkgYml0bWFwIGFnYWluc3QKICBleHBl
-Y3RlZCBJT1ZBIGZvb3RwcmludCkgc28gdGhhdCB0aGUgYmVoYXZpb3VyIGNhbiBiZSByZWdyZXNz
-aW9uLXRlc3RlZAogIGJleW9uZCB0aGUgS1VuaXQgUFRFLWxldmVsIGNvdmVyYWdlLgoKKiBJZiBw
-b3NzaWJsZSwgcmViYXNlIGFuZCByZXRlc3Qgb24gdG9wIG9mIHRoZSB1cGRhdGVkICJpb21tdSBp
-cnFieXBhc3MiCiAgcGF0Y2hzZXQuCgpMTE0tYmFzZWQgY29kaW5nIGFzc2lzdGFudHMgd2VyZSB1
-c2VkIGZvciBjb2RlIGV4cGxvcmF0aW9uLCBwYXRjaApyZXZpZXcsIHRlc3QgZXhlY3V0aW9uLCBh
-bmQgZHJhZnRpbmcvZWRpdGluZyBtZXNzYWdlcyBhbmQgdGhpcyBjb3ZlcgpsZXR0ZXIuIEkgcmV2
-aWV3ZWQgYW5kIGZpbmFsaXplZCBhbGwgcmVzdWx0aW5nIGNvZGUgYW5kIHRleHQuCgotLS0KQ2hh
-bmdlcyBpbiB2NToKICAgIC0gUHJvcGFnYXRlIHRoZSBHQURFIGJpdCBmcm9tIHRoZSBuZXcgZGV2
-aWNlIGNvbnRleHQgaW50byB0aGUgaGFyZHdhcmUKICAgICAgREMgaW4gcmlzY3ZfaW9tbXVfaW9k
-aXJfdXBkYXRlKCksIHNvIHRoZSBwcmUtZW5hYmxlZCBHQURFIGFjdHVhbGx5CiAgICAgIHJlYWNo
-ZXMgdGhlIGhhcmR3YXJlLiAoUGVyIEdvbmcgU2h1YWkpCiAgICAtIElzc3VlIGEgZ2xvYmFsIElP
-VElOVkFMLkdWTUEgaW4gcmlzY3ZfaW9tbXVfaW9kaXJfc2V0X21vZGUoKSwgc28gdGhhdAogICAg
-ICBzZWNvbmQtc3RhZ2UgdHJhbnNsYXRpb25zIGNhY2hlZCBiZWZvcmUgYSBERFRQIG1vZGUgY2hh
-bmdlIChlLmcuIGJ5CiAgICAgIGEgcHJldmlvdXMga2VybmVsIGFmdGVyIGtleGVjKSBhcmUgZmx1
-c2hlZCBhcyB0aGUgc3BlY2lmaWNhdGlvbgogICAgICByZXF1aXJlcy4gKFBlciBUYW4gQ2hpKQog
-ICAgLSBSZWJhc2VkIG9uIHRvcCBvZiB2Ny4zLCB3aXRoIFsxXSBhbmQgWzJdIGFwcGxpZWQuCiAg
-ICAtIExpbmsgdG8gdjQ6CiAgICAgIGh0dHBzOi8vbG9yZS5rZXJuZWwub3JnL2xpbnV4LXJpc2N2
-LzIwMjYwOTE1MDMyODI4LjExMjUwLTEtZmFuZ3l1Lnl1QGxpbnV4LmFsaWJhYmEuY29tLwpDaGFu
-Z2VzIGluIHY0IChKYXNvbidzIHN1Z2dlc3Rpb25zKToKICAgIC0gUmViYXNlZCB0aGUgc2VyaWVz
-IG9uIHRvcCBvZiBbMV0gYW5kIFsyXS4KICAgIC0gRHJvcCB0aGUgUklTQy1WLXNwZWNpZmljIHB0
-X251bV9pdGVtc19sZzIoKSB0b3AtbGV2ZWwgc3BlY2lhbCBjYXNlLgogICAgLSBWYWxpZGF0ZSBw
-YWdlLXRhYmxlIGFkZHJlc3Mgd2lkdGhzIGJ5IHRyYW5zbGF0aW9uIHN0YWdlOiBhY2NlcHQgb25s
-eQogICAgICBTdjM5L1N2NDgvU3Y1NyB3aWR0aHMgZm9yIGZpcnN0LXN0YWdlIHRhYmxlcyBhbmQg
-b25seSBTdjM5eDQvU3Y0OHg0LwogICAgICBTdjU3eDQgd2lkdGhzIGZvciBzZWNvbmQtc3RhZ2Ug
-dGFibGVzLgogICAgLSBSZXBsYWNlIHRoZSBhbGlhc2VkIGZpcnN0LXN0YWdlL3NlY29uZC1zdGFn
-ZSBNT0RFIHVuaW9uIHdpdGgKICAgICAgaW5kZXBlbmRlbnQgRlNDL0lPU0FUUCBhbmQgSU9IR0FU
-UCBNT0RFIGZpZWxkcy4KICAgIC0gQWRkIHB0X2RpcnR5X3N1cHBvcnRlZCgpIHRvIHJlc3RyaWN0
-IFJJU0MtViBnZW5lcmljX3B0IGRpcnR5IHRyYWNraW5nCiAgICAgIHRvIHNlY29uZC1zdGFnZSB0
-YWJsZXMuCiAgICAtIExpbmsgdG8gdjM6CiAgICAgIGh0dHBzOi8vbG9yZS5rZXJuZWwub3JnL2xp
-bnV4LXJpc2N2LzIwMjYwODIxMTMyNzQ5LjgyMDcwLTEtZmFuZ3l1Lnl1QGxpbnV4LmFsaWJhYmEu
-Y29tLwpDaGFuZ2VzIGluIHYzIChBbmRyZXcgSm9uZXMncyBzdWdnZXN0aW9ucyk6CiAgICAtIFJl
-YmFzZWQgdGhlIHNlcmllcyBvbiB0b3Agb2YgQW5kcmV3IEpvbmVzJyBnZW5lcmljX3B0IFJJU0Mt
-ViBzdXBwb3J0ZWQKICAgICAgZmVhdHVyZSBtYXNrIGZpeCwgd2hpY2ggYWRkcyBQVF9GRUFUX1JJ
-U0NWX1NWUEJNVCB0byB0aGUgc3VwcG9ydGVkIGZlYXR1cmUKICAgICAgc2V0LgogICAgLSBBZGRl
-ZCBQVF9GRUFUX1JJU0NWX1MyIHRvIHRoZSBSSVNDLVYgZ2VuZXJpY19wdCBzdXBwb3J0ZWQgZmVh
-dHVyZSBtYXNrIGFuZAogICAgICBLVW5pdCBmZWF0dXJlIG1hdHJpeC4KICAgIC0gS2VwdCBQVF9G
-RUFUX1NJR05fRVhURU5EIG9ubHkgZm9yIGZpcnN0LXN0YWdlIFJJU0MtViBLVW5pdCBjb25maWdz
-OyBzZWNvbmQKICAgICAgc3RhZ2UgY29uZmlncyBub3cgdXNlIFBUX0ZFQVRfUklTQ1ZfUzIgd2l0
-aG91dCBzaWduLWV4dGVuc2lvbiBzZW1hbnRpY3MuCiAgICAtIFNwbGl0IFJJU0MtViBJT01NVSBj
-YXBhYmlsaXR5IGNoZWNrcyBpbnRvIGZpcnN0LXN0YWdlIEZTQyBhbmQgc2Vjb25kLXN0YWdlCiAg
-ICAgIElPSEdBVFAgaGVscGVycy4KICAgIC0gVXBkYXRlZCBzZWNvbmQtc3RhZ2UgcGFnaW5nIGRv
-bWFpbiBzZXR1cCB0byB1c2UgR1BBIHdpZHRocyA0MS81MC81OSBhbmQgdG8KICAgICAgYXZvaWQg
-UFRfRkVBVF9TSUdOX0VYVEVORC4KICAgIC0gTGluayB0byB2MjoKICAgICAgaHR0cHM6Ly9sb3Jl
-Lmtlcm5lbC5vcmcvbGludXgtcmlzY3YvMjAyNjA1MDcxMTM3MDYuMTE0MDAtMS1mYW5neXUueXVA
-bGludXguYWxpYmFiYS5jb20vCkNoYW5nZXMgaW4gdjIgKEphc29uJ3Mgc3VnZ2VzdGlvbnMpOgog
-ICAgLSBJbnRyb2R1Y2VkIGEgc2luZ2xlIFBUX0ZFQVRfUklTQ1ZfUzI6IHNlY29uZC1zdGFnZSBz
-ZWxlY3Rpb24gaXMgZHJpdmVuCiAgICAgIHB1cmVseSBieSB0aGlzIGZlYXR1cmUgYml0LgogICAg
-LSBTd2l0Y2hlZCBmcm9tIGR5bmFtaWMgREMudGMuR0FERSB0b2dnbGluZyB0byBzdGF0aWMgcHJl
-LWVuYWJsZS4KICAgIC0gZG9tYWluX2FsbG9jX3BhZ2luZ19mbGFnczogZm9sbG93IHRoZSBzd2l0
-Y2gvY2FzZSBkZXNpZ24gZnJvbSBvdGhlcgogICAgICBkcml2ZXJzLgogICAgLSBEcm9wIElPTU1V
-X0NBUF9ERUZFUlJFRF9GTFVTSCBpbiByaXNjdl9pb21tdV9jYXBhYmxlLgogICAgLSBSZW1vdmUg
-dGhlIC5od19pbmZvLXJlbGF0ZWQgcGF0Y2guCiAgICAtIExpbmsgdG8gdjE6CiAgICAgIGh0dHBz
-Oi8vbG9yZS5rZXJuZWwub3JnL2xpbnV4LXJpc2N2LzIwMjYwNDI4MTMxMzU5LjM0ODcyLTEtZmFu
-Z3l1Lnl1QGxpbnV4LmFsaWJhYmEuY29tLwoKWzFdIGh0dHBzOi8vbG9yZS5rZXJuZWwub3JnL2xp
-bnV4LWlvbW11LzEtdjItNTYzZWU2Mzg4NmYwKzEyMDktaW9tbXVwdF9hcm12OF9qZ2dAbnZpZGlh
-LmNvbS8KWzJdIGh0dHBzOi8vbG9yZS5rZXJuZWwub3JnL2xpbnV4LWlvbW11LzIwMjYwODE4MDky
-NDQ0LjQyNzU1LTEtYW5kcmV3LmpvbmVzQG9zcy5xdWFsY29tbS5jb20vCgpGYW5neXUgWXUgKDYp
-OgogIGlvbW11cHQ6IEFkZCBSSVNDLVYgU2Vjb25kLXN0YWdlIChpb2hnYXRwKSBwYWdlIHRhYmxl
-IHN1cHBvcnQKICBpb21tdXB0OiBBZGQgUklTQy1WIGRpcnR5IHRyYWNraW5nIFBURSBvcHMKICBp
-b21tdS9yaXNjdjogQWRkIGRvbWFpbl9hbGxvY19wYWdpbmdfZmxhZ3MgZm9yIHNlY29uZC1zdGFn
-ZSBkb21haW4KICBpb21tdS9yaXNjdjogUHJlLWVuYWJsZSBHQURFIGZvciBzZWNvbmQtc3RhZ2Ug
-ZG9tYWlucwogIGlvbW11L3Jpc2N2OiBBZGQgZGlydHkgdHJhY2tpbmcgc3VwcG9ydCBmb3Igc2Vj
-b25kLXN0YWdlIGRvbWFpbnMKICBpb21tdS9yaXNjdjogQWRkIElPVElOVkFMLkdWTUEgaW52YWxp
-ZGF0aW9ucwoKVG9tYXN6IEplem5hY2ggKDIpOgogIGlvbW11L3Jpc2N2OiByZXBvcnQgaW9tbXUg
-Y2FwYWJpbGl0aWVzCiAgUklTQy1WOiBLVk06IEVuYWJsZSBLVk1fVkZJTyBpbnRlcmZhY2VzIG9u
-IFJJU0MtViBhcmNoCgpab25nIExpICgyKToKICBpb21tdS9yaXNjdjogdXNlIGRhdGEgc3RydWN0
-dXJlIGluc3RlYWQgb2YgaW5kaXZpZHVhbCB2YWx1ZXMKICBpb21tdS9yaXNjdjogc3VwcG9ydCBH
-U0NJRCBhbmQgR1ZNQSBpbnZhbGlkYXRpb24gY29tbWFuZAoKIGFyY2gvcmlzY3Yva3ZtL0tjb25m
-aWcgICAgICAgICAgICAgICAgICAgICAgIHwgICAyICsKIGRyaXZlcnMvaW9tbXUvZ2VuZXJpY19w
-dC9mbXQvaW9tbXVfcmlzY3Y2NC5jIHwgICAyICstCiBkcml2ZXJzL2lvbW11L2dlbmVyaWNfcHQv
-Zm10L3Jpc2N2LmggICAgICAgICB8IDE1OCArKysrKysrKysrKy0tCiBkcml2ZXJzL2lvbW11L3Jp
-c2N2L2lvbW11LWJpdHMuaCAgICAgICAgICAgICB8ICAgNyArCiBkcml2ZXJzL2lvbW11L3Jpc2N2
-L2lvbW11LmMgICAgICAgICAgICAgICAgICB8IDIzNSArKysrKysrKysrKysrKystLS0tCiBpbmNs
-dWRlL2xpbnV4L2dlbmVyaWNfcHQvY29tbW9uLmggICAgICAgICAgICB8ICAgNCArCiBpbmNsdWRl
-L2xpbnV4L2dlbmVyaWNfcHQvaW9tbXUuaCAgICAgICAgICAgICB8ICAgMTEgKwogNyBmaWxlcyBj
-aGFuZ2VkLCAzNDcgaW5zZXJ0aW9ucygrKSwgNzIgZGVsZXRpb25zKC0pCgotLSAKMi41MC4xCgoK
-LS0gCmt2bS1yaXNjdiBtYWlsaW5nIGxpc3QKa3ZtLXJpc2N2QGxpc3RzLmluZnJhZGVhZC5vcmcK
-aHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9rdm0tcmlzY3YK
+From: Fangyu Yu <fangyu.yu@linux.alibaba.com>
+
+Add support for Sv39x4/Sv48x4/Sv57x4 Second-stage page tables used by
+the RISC-V IOMMU iohgatp register. The x4 root page table is 16 KiB
+instead of the usual 4 KiB, covering 2 extra GPA bits (hw_max_vasz_lg2
+= 41/50/59).
+
+Signed-off-by: Fangyu Yu <fangyu.yu@linux.alibaba.com>
+---
+ drivers/iommu/generic_pt/fmt/iommu_riscv64.c |   2 +-
+ drivers/iommu/generic_pt/fmt/riscv.h         | 109 +++++++++++++++----
+ include/linux/generic_pt/common.h            |   4 +
+ include/linux/generic_pt/iommu.h             |  11 ++
+ 4 files changed, 102 insertions(+), 24 deletions(-)
+
+diff --git a/drivers/iommu/generic_pt/fmt/iommu_riscv64.c b/drivers/iommu/generic_pt/fmt/iommu_riscv64.c
+index 1bb74114fb02..fa61839e5599 100644
+--- a/drivers/iommu/generic_pt/fmt/iommu_riscv64.c
++++ b/drivers/iommu/generic_pt/fmt/iommu_riscv64.c
+@@ -8,7 +8,7 @@
+ 	(BIT(PT_FEAT_SIGN_EXTEND) | BIT(PT_FEAT_FLUSH_RANGE) | \
+ 	 BIT(PT_FEAT_RISCV_SVNAPOT_64K) |                      \
+ 	 BIT(PT_FEAT_DETAILED_GATHER) |                        \
+-	 BIT(PT_FEAT_RISCV_SVPBMT))
++	 BIT(PT_FEAT_RISCV_SVPBMT) | BIT(PT_FEAT_RISCV_S2))
+ #define PT_FORCE_ENABLED_FEATURES BIT(PT_FEAT_DETAILED_GATHER)
+ 
+ #include "iommu_template.h"
+diff --git a/drivers/iommu/generic_pt/fmt/riscv.h b/drivers/iommu/generic_pt/fmt/riscv.h
+index ae9a76514416..d4445e463fa9 100644
+--- a/drivers/iommu/generic_pt/fmt/riscv.h
++++ b/drivers/iommu/generic_pt/fmt/riscv.h
+@@ -37,7 +37,16 @@ enum {
+ 	PT_MAX_OUTPUT_ADDRESS_LG2 = 34,
+ 	PT_MAX_TOP_LEVEL = 1,
+ #else
+-	PT_MAX_VA_ADDRESS_LG2 = 57,
++	/*
++	 * PT_MAX_VA_ADDRESS_LG2 is the upper bound accepted by the generic
++	 * pt_iommu_init() range check.  It must cover both first-stage and
++	 * second-stage (G-stage) modes:
++	 *
++	 *   First-stage  (fsc/iosatp): Sv39=39, Sv48=48, Sv57=57
++	 *   Second-stage (iohgatp):    Sv39x4=41, Sv48x4=50, Sv57x4=59
++	 *
++	 */
++	PT_MAX_VA_ADDRESS_LG2 = 59,
+ 	PT_MAX_OUTPUT_ADDRESS_LG2 = 56,
+ 	PT_MAX_TOP_LEVEL = 4,
+ #endif
+@@ -126,6 +135,12 @@ riscvpt_entry_num_contig_lg2(const struct pt_state *pts)
+ 
+ static inline unsigned int riscvpt_num_items_lg2(const struct pt_state *pts)
+ {
++	/*
++	 * It is not allowed to call pt_num_items_lg2() at the top level, this
++	 * API restriction is specifically an optimization avoid overheads
++	 * dealing with concatenated tables here.
++	 */
++	PT_WARN_ON(pts->level == pts->range->top_level);
+ 	return PT_TABLEMEM_LG2SZ - ilog2(sizeof(u64));
+ }
+ #define pt_num_items_lg2 riscvpt_num_items_lg2
+@@ -261,20 +276,41 @@ riscvpt_iommu_fmt_init(struct pt_iommu_riscv_64 *iommu_table,
+ 		       const struct pt_iommu_riscv_64_cfg *cfg)
+ {
+ 	struct pt_riscv *table = &iommu_table->riscv_64pt;
+-
+-	switch (cfg->common.hw_max_vasz_lg2) {
+-	case 39:
+-		pt_top_set_level(&table->common, 2);
+-		break;
+-	case 48:
+-		pt_top_set_level(&table->common, 3);
+-		break;
+-	case 57:
+-		pt_top_set_level(&table->common, 4);
+-		break;
+-	default:
+-		return -EINVAL;
++	unsigned int top_level;
++
++	if (pt_feature(&table->common, PT_FEAT_RISCV_S2)) {
++		/* Second-stage (iohgatp): Sv39x4 / Sv48x4 / Sv57x4. */
++		switch (cfg->common.hw_max_vasz_lg2) {
++		case 41:
++			top_level = 2;
++			break;
++		case 50:
++			top_level = 3;
++			break;
++		case 59:
++			top_level = 4;
++			break;
++		default:
++			return -EINVAL;
++		}
++	} else {
++		/* First-stage (fsc/iosatp): Sv39 / Sv48 / Sv57. */
++		switch (cfg->common.hw_max_vasz_lg2) {
++		case 39:
++			top_level = 2;
++			break;
++		case 48:
++			top_level = 3;
++			break;
++		case 57:
++			top_level = 4;
++			break;
++		default:
++			return -EINVAL;
++		}
+ 	}
++
++	pt_top_set_level(&table->common, top_level);
+ 	table->common.max_oasz_lg2 =
+ 		min(PT_MAX_OUTPUT_ADDRESS_LG2, cfg->common.hw_max_oasz_lg2);
+ 	return 0;
+@@ -292,30 +328,57 @@ riscvpt_iommu_fmt_hw_info(struct pt_iommu_riscv_64 *table,
+ 	PT_WARN_ON(top_phys & ~PT_TOP_PHYS_MASK);
+ 
+ 	/*
+-	 * See Table 3. Encodings of iosatp.MODE field" for DC.tx.SXL = 0:
+-	 *  8 = Sv39 = top level 2
+-	 *  9 = Sv38 = top level 3
+-	 *  10 = Sv57 = top level 4
++	 * Both first-stage (fsc/iosatp) and second-stage (iohgatp) share the
++	 * same MODE numeric values for a given top level:
++	 *   top_level 2 -> MODE 8  (Sv39 / Sv39x4)
++	 *   top_level 3 -> MODE 9  (Sv48 / Sv48x4)
++	 *   top_level 4 -> MODE 10 (Sv57 / Sv57x4)
++	 *
++	 * See "Table 3. Encodings of iosatp.MODE field" (DC.tc.SXL = 0) and
++	 * "Table 2. Encoding of iohgatp.MODE field" in the RISC-V IOMMU spec.
+ 	 */
+-	info->fsc_iosatp_mode = top_range->top_level + 6;
++	if (pt_feature(&table->riscv_64pt.common, PT_FEAT_RISCV_S2))
++		info->iohgatp_mode = top_range->top_level + 6;
++	else
++		info->fsc_iosatp_mode = top_range->top_level + 6;
+ }
+ #define pt_iommu_fmt_hw_info riscvpt_iommu_fmt_hw_info
+ 
+ #if defined(GENERIC_PT_KUNIT)
+ static const struct pt_iommu_riscv_64_cfg riscv_64_kunit_fmt_cfgs[] = {
+-	[0] = { .common.features = BIT(PT_FEAT_RISCV_SVNAPOT_64K),
++	/* First-stage (fsc/iosatp): Sv39 / Sv48 / Sv57 */
++	[0] = { .common.features = BIT(PT_FEAT_SIGN_EXTEND) |
++				      BIT(PT_FEAT_RISCV_SVNAPOT_64K),
+ 		.common.hw_max_oasz_lg2 = 56,
+ 		.common.hw_max_vasz_lg2 = 39 },
+-	[1] = { .common.features = 0,
++	[1] = { .common.features = BIT(PT_FEAT_SIGN_EXTEND),
+ 		.common.hw_max_oasz_lg2 = 56,
+ 		.common.hw_max_vasz_lg2 = 48 },
+-	[2] = { .common.features = BIT(PT_FEAT_RISCV_SVNAPOT_64K),
++	[2] = { .common.features = BIT(PT_FEAT_SIGN_EXTEND) |
++				      BIT(PT_FEAT_RISCV_SVNAPOT_64K),
+ 		.common.hw_max_oasz_lg2 = 56,
+ 		.common.hw_max_vasz_lg2 = 57 },
++	/*
++	 * Second-stage (iohgatp): Sv39x4 / Sv48x4 / Sv57x4.
++	 */
++	[3] = { .common.features = BIT(PT_FEAT_RISCV_S2) |
++				      BIT(PT_FEAT_RISCV_SVNAPOT_64K),
++		.common.hw_max_oasz_lg2 = 56,
++		.common.hw_max_vasz_lg2 = 41 },
++	[4] = { .common.features = BIT(PT_FEAT_RISCV_S2),
++		.common.hw_max_oasz_lg2 = 56,
++		.common.hw_max_vasz_lg2 = 50 },
++	[5] = { .common.features = BIT(PT_FEAT_RISCV_S2) |
++				      BIT(PT_FEAT_RISCV_SVNAPOT_64K),
++		.common.hw_max_oasz_lg2 = 56,
++		.common.hw_max_vasz_lg2 = 59 },
+ };
+ #define kunit_fmt_cfgs riscv_64_kunit_fmt_cfgs
++/* Sign extension is only valid for first-stage configs, not S2. */
+ enum {
+-	KUNIT_FMT_FEATURES = BIT(PT_FEAT_RISCV_SVNAPOT_64K),
++	KUNIT_FMT_FEATURES = BIT(PT_FEAT_SIGN_EXTEND) |
++			     BIT(PT_FEAT_RISCV_SVNAPOT_64K) |
++			     BIT(PT_FEAT_RISCV_S2),
+ };
+ #endif
+ 
+diff --git a/include/linux/generic_pt/common.h b/include/linux/generic_pt/common.h
+index 07ef1c8341a4..f2e130c2b804 100644
+--- a/include/linux/generic_pt/common.h
++++ b/include/linux/generic_pt/common.h
+@@ -197,6 +197,10 @@ enum {
+ 	 * Support Svpbmt extension: encode page-based memory type (PBMT) in PTEs.
+ 	 */
+ 	PT_FEAT_RISCV_SVPBMT,
++	/*
++	 * Using second-stage / iohgatp address translation.
++	 */
++	PT_FEAT_RISCV_S2,
+ 
+ };
+ 
+diff --git a/include/linux/generic_pt/iommu.h b/include/linux/generic_pt/iommu.h
+index dd0edd02a48a..2eed9b78f56c 100644
+--- a/include/linux/generic_pt/iommu.h
++++ b/include/linux/generic_pt/iommu.h
+@@ -328,7 +328,18 @@ struct pt_iommu_riscv_64_cfg {
+ 
+ struct pt_iommu_riscv_64_hw_info {
+ 	u64 ppn;
++	/*
++	 * First-stage (fsc/iosatp) MODE encoding:
++	 *   8 = Sv39, 9 = Sv48, 10 = Sv57
++	 * Used to program DC.fsc.iosatp.MODE.
++	 */
+ 	u8 fsc_iosatp_mode;
++	/*
++	 * Second-stage (iohgatp) MODE encoding:
++	 *   8 = Sv39x4, 9 = Sv48x4, 10 = Sv57x4
++	 * Used to program DC.iohgatp.MODE.
++	 */
++	u8 iohgatp_mode;
+ };
+ 
+ IOMMU_FORMAT(riscv_64, riscv_64pt);
+-- 
+2.50.1
+
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
