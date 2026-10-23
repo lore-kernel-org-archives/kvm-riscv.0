@@ -2,103 +2,91 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3AB2D606A31A
-	for <kvm-riscv@archiver.kernel.org>; Thu, 22 Oct 2026 14:52:16 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C16CF606A319
+	for <kvm-riscv@archiver.kernel.org>; Fri, 23 Oct 2026 03:04:56 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=Y9TfBGEQ;
-	dkim=fail reason="signature verification failed" (1024-bit key, unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=TRFleATB
+	dkim=pass (2048-bit key, unprotected) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=RSoyQGtA;
+	dkim=fail reason="signature verification failed" (2048-bit key, unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=KNakYSyp
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:Subject:Message-ID:Date:From:
-	In-Reply-To:References:MIME-Version:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-Id:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
 	List-Unsubscribe-Post:List-Owner;
-	bh=lnLvDsCQcCp1xbpFyxQVmknF+aLbM3gwjT7XFogyUPQ=; b=Y9TfBGEQiKysDvgYhJjfOT2PYy
-	sZ/olYel1K1w04O72aTYV0KclcW/5mfXhu/aGwUSXkUMWlHElnKVLDCJ5OILg+QLdmkfOxk8dQIJP
-	JNGbfg+P/j8exmfLmq8LzFUbynO+gLfqJzhmfIDGDPAGkD3glEdP8K7Yq9D2YAACFhvygqYruQj+r
-	EZCbuP4yXhuHbKK4l33nfgA9N4ogzQpqwSXxt/AUVhlzcgNsyjcQOjdv9uVYtr1qkGHOgTiNYbCbT
-	C4NMy2nHooBi2Hj0bdM7pSrB7E5RkNdF5SKFOTQaHfVbLHB1GBEfTfE0XcbpY609stf6fmxIbcp+P
-	USe+PbTg==;
+	bh=1cyy060wwA9o1mEYgWDqNiZGEaGF5a5GgTQrJLeWkcY=; b=RSoyQGtA7WCrukc/KYj3wIgCTF
+	no9HL5+SUzsEIoX+D9b/Ri1oM4wkbnRczHZfWNNP802xYV3mHbPGgWWz3SS0PCHA7CymsMCUdTkEH
+	Zd4lhrTBaUsAsZ2rxdLg3jQmnSi+s5azIm7yV/dTM+qUbCdLAOmbY1wKSCQtl2o80bM0EyUrxJ16c
+	wYYv2P+P8buhgIitkRCZlcRndiRLPcUtldxTdGqzCGJZvJIGvEnftAjRoBDGGMSNg2+WLa2hg/Nen
+	oZfxwVftno8whzE/zs52FRnhVLdXquyE6fc4c2VDTiIhlrcvT+agXXfH1ROU5Iucvs5vt9g4k4zab
+	n06447kQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xJu9P-0000000ELtv-3eNd;
-	Thu, 22 Oct 2026 14:52:15 +0000
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.129.124])
+	id 1xK5aS-0000000FMuF-1Pq9;
+	Fri, 23 Oct 2026 03:04:56 +0000
+Received: from mail-pj1-x102b.google.com ([2607:f8b0:4864:20::102b])
 	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xJu9M-0000000ELt1-3W19
+	id 1xK5aP-0000000FMt4-39Ba
 	for kvm-riscv@lists.infradead.org;
-	Thu, 22 Oct 2026 14:52:14 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1792680731;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=wqyTtRBZvnyrEsl379QgY7jQoqueXCh5qRvjx+WApRM=;
-	b=TRFleATBeicZeLerWJX05YeIRhOOEF/xhAAY88WY9sxHgS0nQSDDY4ykJmqz7r753awC1V
-	nUIpbSo8/rJ4al1PlqVsfUAEimaTHPPyuNHgi8NG4E6xe5L5rj0fvls6uBVD2n/OrLIPf6
-	v6BTBp3kEzphU+kFEfBt8snLFmv7ugg=
-Received: from mail-wr1-f72.google.com (mail-wr1-f72.google.com
- [209.85.221.72]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-633-tMIuK4AIPQi-PYfal_11xQ-1; Thu, 22 Oct 2026 10:52:09 -0400
-X-MC-Unique: tMIuK4AIPQi-PYfal_11xQ-1
-X-Mimecast-MFC-AGG-ID: tMIuK4AIPQi-PYfal_11xQ_1792680728
-Received: by mail-wr1-f72.google.com with SMTP id ffacd0b85a97d-48dea677afcso768906f8f.1
-        for <kvm-riscv@lists.infradead.org>; Thu, 22 Oct 2026 07:52:09 -0700 (PDT)
+	Fri, 23 Oct 2026 03:04:54 +0000
+Received: by mail-pj1-x102b.google.com with SMTP id 98e67ed59e1d1-3ab60ff4273so386621a91.0
+        for <kvm-riscv@lists.infradead.org>; Thu, 22 Oct 2026 20:04:50 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=bytedance.com; s=google; t=1792724690; x=1793329490; darn=lists.infradead.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=3ApuWDp5M/WoLyzPayp9OLv7sPY8GOMyShINb8lA2F0=;
+        b=KNakYSyp384QuKnWmRtZgcdtfJ5WHTto9jM/OTF4M3rCr17Ki5NQmlS4/36P6Yp9VO
+         goKSC0nD5rcGQ7tklC//X9B2SnU6wz/O854lTH7JSlzIH6rGKHhITp8tdYeSKnw4Aa+X
+         2HwsgS1bqixYIMR9+GesHY+S2GnO+CdyV9a1sIEsWK8jAiRTXmykgX9mzDlJTVnX6P+j
+         YGG9mFOldrP0X4yqnk5rAUhzIKoiPjtDkQQZlfnHVdsGrx6YRX8zJOHGNnubqEd8SlTR
+         tO+So35F4IV56zuaRvuyUpc9g9SwxKpJ/2JnRoMG4aC8nSWPnO7QB7vkPlxKD0nFCE+I
+         6nWQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792680728; x=1793285528;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=wqyTtRBZvnyrEsl379QgY7jQoqueXCh5qRvjx+WApRM=;
-        b=nH2Zx8UdzM8eJNq4KRAWzeKDTm05MM13I5RXpA5GiLKdlUsSoqq2C8gXH5dpyfPyFS
-         2HIqW3zQAccwUgA+tsGvQ4ITxGMMzfZKVL4tLDP9E0rBAAc6lVKOOOhqlUVYeMKLy7Fp
-         lYrYZxRvQCt0Hw4ovoyLmch/0VCWlko/pExmbAeMvcgy9+ZkJ33fhUj87AEvega0+nVF
-         k+ZMhznG6XnkoRCOcpq+c8Ijn7FSGiw1KVavT6mQvXXuwR5eoQBwBj7kSK3sekdyx3hj
-         3RPRSP0oYiBtI5L6xzrvI/xe2KhFI7KGh2hyBgEQfKqx0y7iWP9iqVB2sFPU3/Z+uNiT
-         382A==
-X-Forwarded-Encrypted: i=1; AKwUvByX/sPyjcRhBR6OWigotWMmVfHNan58WglaJleAal61IPIkfFnGMoFkSgHICdRD0iM8oQe9DEWE1Dg=@lists.infradead.org
-X-Gm-Message-State: AFq9FYLgsVBWNGZObPAdftTaBJukfxUZtuxo8ZalkmX7F61pjNvRMH2V
-	Tv5HXGa5XoPab8aSjbpZtG7l4UDOtB3v05eUie1XvKNwjexhS72x3xr8JA0fd6G4umOsM89RfAn
-	nxSHpfO9KoIe1FisAYX0rf7s7QH9xd3iylLSleeUoeAt2DX7YskyGxDtyRp/C+Av9MnuzP6M/DZ
-	VX8AEnMzEC2mVq8KRrAuuMxsf8aEfvctIceZ2LfcPPbg==
-X-Gm-Gg: AYBFou19s5Q29QNMm0gEOqkmxtiXBQ0fu4sRHSY3C1XCFYFL10LxI7eR4KQR4rO7QSk
-	SGNWngDPqKf2so6r3D8RKrQNkpl6hWSaHnJ7cdrjWg0otDB22YJGvfufnOHnOdGDvTQCZSuhBHU
-	jKkiyregJwMF3aPg1Ew+67VJd4OEY61NO+CFt+lLOK8GRXdtF4FtP1B8BnSB3pWmsVN00JqhiY0
-	n44sBbZS6/tEs7UCRIKJjL6hUNrx6LwPDghng8ItnDtgY7Fars30jwi5gXnqQ==
-X-Received: by 2002:a5d:584e:0:b0:488:8347:a110 with SMTP id ffacd0b85a97d-48e2d102cb0mr5941229f8f.7.1792680728039;
-        Thu, 22 Oct 2026 07:52:08 -0700 (PDT)
-X-Received: by 2002:a5d:584e:0:b0:488:8347:a110 with SMTP id
- ffacd0b85a97d-48e2d102cb0mr5941198f8f.7.1792680727670; Thu, 22 Oct 2026
- 07:52:07 -0700 (PDT)
+        d=1e100.net; s=20260707; t=1792724690; x=1793329490;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=3ApuWDp5M/WoLyzPayp9OLv7sPY8GOMyShINb8lA2F0=;
+        b=ez+pnXjcWZmEi6hMXfEW0K/20HWLd35mOxZ0SNT7editlJNxjRK8UvHYGt5HijO8wa
+         YtkpYP52NBEW770mOSlpavXhwHc/KXDsuLNdgHHTQQE9z6ZkDn/VzuzJVF7PsFzuBCIf
+         kD+qVsuW5MFDJRqy56QzjPeJR8Q2gz4APsnVCdPNRRjgcTd/i8hXVCh2ZYiuoyBRQlVq
+         BxqBrzmh1b6szkPCL2wjMBs515rT4Nq8M89wKfB1w99btFDKz7umbCTumTOnL/zLVRdC
+         oPrrtwij63Vs29t0ekLaKWldjeb6gVnUw2f9TUtyr7VW/Oo1P1SjgyS5eCIAfn4BUWxk
+         zlqA==
+X-Forwarded-Encrypted: i=1; AKwUvBw99MDznC4YBn9cPh6bRID8o/bScUAI62W0g2OcrFDV32dtiR7tbQvQe5/e5qw3X4J9sautPf+6g/k=@lists.infradead.org
+X-Gm-Message-State: AFq9FYKQ2mRi4OPdCLCPAufyCmvyBO1PxrFwPcsQR4/E5WRP39OUMMq2
+	vPsEtZHH/Y3FUnl3U+e7U77TTBTjM11ANaJD/xqv8yDjW7XyIKtUbjl5z1nKrA9Rztk=
+X-Gm-Gg: AYBFou11cowqci2ko0BHwOvINUsXO8R5nY57A2Y4i+4947b3TFkm62w6bdohSyvZ23e
+	9t+TpafUPYpbrm+D+Q8xCbOtRaO8H/OqkBdQQ0oCUhrbmiRTdPJfUtQeG85hcTfsaj7v4W2+Ctu
+	xuaVsKOFbZW/rbCoJB/Jg8ZQageoaG1Qehg3LIX/C46eGBYqV9M7rVFP7ms82hvb/JucUrvSibz
+	ap1qw6BLe2aSJVMJftWNCt3lBUVJBnXtkmEj7BxzVEX8TcD0isGko4kJV2MQTNaOD1Zu+Uxj7La
+	Gkc/6nuWiGRBKJMMO9WsthEhZ6FtySA7bIf6+74D5M1h9iMGmwuhUCtTDDegJRE56xtn1QnVFfc
+	JkhzswtNoO/I9Wc5ygt9Wgqoj/JWQ9VNG9XuSLIX+g7qA3z+C7qn8JHsw6MyACeWA6EjkdES7mD
+	T8q/jqfTvjfYvwpy5qZBRjwxNCbGxReynw0KzlFVZy3tM02dscywhm3iEPXZyyQEXMzvKsdjjxp
+	vvCl2QBE0Si4DF9Pu4q+npsAJF6z/ruV7iGKGfG1FAoOvO3Nr7cEql3sqCe8y/xF6P5nP22lT8=
+X-Received: by 2002:a17:90b:5185:b0:3ac:8897:7b92 with SMTP id 98e67ed59e1d1-3adce873fcamr721378a91.57.1792724689764;
+        Thu, 22 Oct 2026 20:04:49 -0700 (PDT)
+Received: from n37-012-226.byted.org ([115.190.40.13])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3ada49544f1sm6687270a91.16.2026.10.22.20.04.47
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 22 Oct 2026 20:04:49 -0700 (PDT)
+From: Qingwei Hu <qingwei.hu@bytedance.com>
+To: kvm@vger.kernel.org
+Cc: Andrew Jones <andrew.jones@linux.dev>,
+	kvm-riscv@lists.infradead.org,
+	James Raphael Tiovalen <jamestiotio@gmail.com>,
+	Qingwei Hu <qingwei.hu@bytedance.com>
+Subject: [kvm-unit-tests PATCH] riscv: sbi: Fix timer delay measurement race
+Date: Fri, 23 Oct 2026 11:04:42 +0800
+Message-Id: <20261023030442.3709880-1-qingwei.hu@bytedance.com>
+X-Mailer: git-send-email 2.39.5
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-References: <CABgObfaH4-Ud4VR=GC8giDmWGJWS-tvYSmPOs4TtWg2hm4ocqw@mail.gmail.com>
- <36adc119db9b30984c0df4d1846c0f29e4e46c07.1792679974.git.sashal@kernel.org>
-In-Reply-To: <36adc119db9b30984c0df4d1846c0f29e4e46c07.1792679974.git.sashal@kernel.org>
-From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Thu, 22 Oct 2026 16:51:55 +0200
-X-Gm-Features: AclHuK_FNMnKU9XQXzMyqQJBnCAE8EKPJnl7xQPFMv72VXmRnTfH3i81qFyOj9g
-Message-ID: <CABgObfYuP+jeOZhZYaUrUX2-z0zWMH2Ch=hdizkzmKHLB6KALw@mail.gmail.com>
-Subject: Re: [PATCH] KVM: riscv: Implement kvm_arch_pre_fault_allowed()
-To: Sasha Levin <sashal@kernel.org>
-Cc: Anup Patel <anup@brainfault.org>, Mark Brown <broonie@kernel.org>, 
-	Lorenzo Stoakes <ljs@kernel.org>, Marc Zyngier <maz@kernel.org>, Jinyu Tang <jinyu.tang@linux.dev>, 
-	Atish Patra <atish.patra@linux.dev>, Palmer Dabbelt <palmer@dabbelt.com>, 
-	Paul Walmsley <pjw@kernel.org>, Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, 
-	kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
-	linux-riscv@lists.infradead.org, linux-next@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: 59yUZl0ni9CpylowWFfi-hx-6v1UhILJ4KUVlBaJPeU_1792680728
-X-Mimecast-Originator: redhat.com
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261022_075212_951091_57AF578A 
+X-CRM114-CacheID: sfid-20261022_200453_796978_D9E4CE45 
 X-CRM114-Status: GOOD (  11.01  )
-X-Spam-Score: -2.8 (--)
+X-Spam-Score: -2.1 (--)
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -108,38 +96,65 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
-X-Spam-Status: No, score=-8.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-17.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=4.0.1
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-T24gVGh1LCBPY3QgMjIsIDIwMjYgYXQgNDo0MuKAr1BNIFNhc2hhIExldmluIDxzYXNoYWxAa2Vy
-bmVsLm9yZz4gd3JvdGU6Cj4KPiBDb21taXQgY2FhNjM2MjBmOWUzICgiS1ZNOiBBbGxvdyBhcmNo
-aXRlY3R1cmVzIHRvIGRpc2FsbG93IHByZS1mYXVsdCIpCj4gcmVxdWlyZXMgZXZlcnkgYXJjaGl0
-ZWN0dXJlIHRoYXQgc2VsZWN0cyBLVk1fR0VORVJJQ19QUkVfRkFVTFRfTUVNT1JZIHRvCj4gaW1w
-bGVtZW50IGt2bV9hcmNoX3ByZV9mYXVsdF9hbGxvd2VkKCksIGFuZCB0aGVyZSBpcyBubyBnZW5l
-cmljIGRlZmF1bHQuCj4KPiBDb21taXQgZThiMzJlMzc3OTUxICgiS1ZNOiByaXNjdjogSW1wbGVt
-ZW50IEtWTV9QUkVfRkFVTFRfTUVNT1JZIikgd2FzCj4gd3JpdHRlbiBiZWZvcmUgdGhhdCBob29r
-IGV4aXN0ZWQsIHNvIGl0IHNlbGVjdHMgdGhlIG9wdGlvbiB3aXRob3V0Cj4gaW1wbGVtZW50aW5n
-IHRoZSBob29rLiBXaXRoIGJvdGggY29tbWl0cyBpbiB0aGUgc2FtZSB0cmVlLCByaXNjdiBidWls
-ZHMKPiB3aXRoIEtWTSBlbmFibGVkIGZhaWwgdG8gbGluazoKPgo+ICAgbGQubGxkOiBlcnJvcjog
-dW5kZWZpbmVkIHN5bWJvbDoga3ZtX2FyY2hfcHJlX2ZhdWx0X2FsbG93ZWQKPiAgID4+PiByZWZl
-cmVuY2VkIGJ5IGt2bV9tYWluLmMKPiAgID4+PiAgICAgICAgICAgICAgIHZpcnQva3ZtL2t2bV9t
-YWluLm86KGt2bV92Y3B1X3ByZV9mYXVsdF9tZW1vcnkpIGluIGFyY2hpdmUgdm1saW51eC5hCj4K
-PiBUaGUgcmlzY3YgaW1wbGVtZW50YXRpb24gZG9lcyBub3QgcmVmdXNlIHByZS1mYXVsdGluZyBp
-biBhbnkgc3RhdGUsIHNvCj4gcmV0dXJuIDAgdG8ga2VlcCBpdHMgY3VycmVudCBiZWhhdmlvdXIu
-Cj4KPiBGaXhlczogZThiMzJlMzc3OTUxICgiS1ZNOiByaXNjdjogSW1wbGVtZW50IEtWTV9QUkVf
-RkFVTFRfTUVNT1JZIikKPiBTaWduZWQtb2ZmLWJ5OiBTYXNoYSBMZXZpbiA8c2FzaGFsQGtlcm5l
-bC5vcmc+Cj4gLS0tCj4gUGFvbG8sIHRoaXMgaXMgbmVlZGVkIHdoZW4ga3ZtLXJpc2N2LTcuNC0x
-IGlzIG1lcmdlZCBpbnRvIGt2bS9uZXh0Lgo+IEZlZWwgZnJlZSB0byBzcXVhc2ggaXQgaW50byB0
-aGUgbWVyZ2UgaW5zdGVhZC4KCll1cCwgZG9uZS4gSXQgd2lsbCBiZSBpbiB0b21vcnJvdydzIGxp
-bnV4LW5leHQgdmlhIGt2bS9uZXh0LgoKSSdsbCBzZW5kIHRoZSBSSVNDLVYgUFIgdG8gTGludXMg
-bmV4dCB3ZWVrLCBzbyBpZiBoZSBjb21wbGFpbnMgaXQgd2lsbApiZSB0aGVyZSBpbiBrdm0vbmV4
-dCByZWFkeSBmb3IgNy41LiA6KQoKUGFvbG8KCgotLSAKa3ZtLXJpc2N2IG1haWxpbmcgbGlzdApr
-dm0tcmlzY3ZAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9t
-YWlsbWFuL2xpc3RpbmZvL2t2bS1yaXNjdgo=
+The timer test samples the counter before checking timer_works in the
+wait loop. If the timer interrupt arrives between these operations, the
+handler sets timer_works and the loop exits with a timestamp taken before
+the interrupt. That timestamp can precede the deadline, causing a false
+"timer delay honored" failure in both the normal and masked IRQ tests.
+
+Record the counter at the start of timer_irq_handler() and use it to
+calculate the elapsed time. Keep the loop timestamp for timeout detection.
+
+Fixes: 14fa12b1351c ("riscv: sbi: Add test for timer extension")
+Signed-off-by: Qingwei Hu <qingwei.hu@bytedance.com>
+---
+ riscv/sbi.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/riscv/sbi.c b/riscv/sbi.c
+index 3b8aadce..a298228b 100644
+--- a/riscv/sbi.c
++++ b/riscv/sbi.c
+@@ -245,6 +245,7 @@ struct timer_info {
+ 	bool timer_irq_set;
+ 	bool timer_irq_cleared;
+ 	unsigned long timer_irq_count;
++	unsigned long irq_cycles;
+ };
+ 
+ static struct timer_info timer_info;
+@@ -256,6 +257,7 @@ static bool timer_irq_pending(void)
+ 
+ static void timer_irq_handler(struct pt_regs *regs)
+ {
++	timer_info.irq_cycles = timer_get_cycles();
+ 	timer_info.timer_works = true;
+ 
+ 	if (timer_info.timer_irq_count < ULONG_MAX)
+@@ -304,7 +306,7 @@ static void timer_check_set_timer(bool mask_timer_irq)
+ 	}
+ 
+ 	if (timer_info.timer_works) {
+-		duration = end - begin;
++		duration = timer_info.irq_cycles - begin;
+ 		report(duration >= d && duration <= (d + margin), "timer delay honored%s", mask_test_str);
+ 	}
+ 
+-- 
+2.39.5
+
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
