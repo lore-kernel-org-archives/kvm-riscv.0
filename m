@@ -2,98 +2,76 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 695DE60A2602
-	for <kvm-riscv@archiver.kernel.org>; Mon, 26 Oct 2026 03:44:35 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 55201606A31A
+	for <kvm-riscv@archiver.kernel.org>; Mon, 26 Oct 2026 08:06:34 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=dCz6k8jI;
-	dkim=fail reason="signature verification failed" (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=C24m/7sU
+	dkim=pass (2048-bit key, unprotected) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=JAtUTpmN
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
-	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
 	List-Unsubscribe-Post:List-Owner;
-	bh=bm3Kpko7MScx8dYL/wWq+f4en12QCgpkkTcs9p7rPrg=; b=dCz6k8jIvXKemoxraVrnieZ4nh
-	kSddREzY1gnBPAkyNmpcA1XvIISOl50JFJ36uvTCIamxavVVKkzFls0rg9HSt60m+c3TaWfaBx5IA
-	2k71XYROSlgaN5Ksv+I8GnliVIvzupVEv3n+sU2BV/INR21BAy12jvndfU5cwODVMifuDz5UtqDJu
-	14Q6+WWAz37prB4+V8NWUvqsOflBuRmuQqTVdbJ0WNRPujY40XDcfjpWRvCnLGN7lM6A0gA/Lbna2
-	z4/4JZFqf8ha305lI5WYpqY0eYCEHgKG+KRTu4kBbah5rJHmiSxDNFvm2SXxtX3QM4tMimhOq+sgP
-	QxTX/qcA==;
+	bh=FF/ejPnHATNshkBQ8mEiAwtNKvXzlVSnl5i3fAM81h4=; b=JAtUTpmNQudZ5Hnu/AyX3GADiJ
+	VJkrlW8cpL9R1juLZmIyHyi6tQDhgThoHmao0jdjeqtovgNnVSaVPA50iiLSTAek4boO3oPL06Elb
+	BIPT8WAQcNDITJA5l/mZ2eIqtmMuVtwyr+/r6ZMM4WVoNF/8FMtVrB/UIleioOJOcgC9VtWgMCt+F
+	Md71tHNoYsJqoD8x0ze+XUechZZqOeaOH2vBPqF/IGHbmNZz145fptMxBI3JU8jCBp9XIcQmosxJU
+	cjeLCrLEZafqjlfUIEQPJeNuqLyuzW4xASNmLTdjglRy7cC9jERXzILaQDw1b3A300Aq+foSThDlc
+	/aOZA34w==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xLBdS-00000001fpV-4A4L;
-	Mon, 26 Oct 2026 03:44:35 +0000
-Received: from mail-qt1-x835.google.com ([2607:f8b0:4864:20::835])
+	id 1xLFj0-00000001vL8-0AM0;
+	Mon, 26 Oct 2026 08:06:34 +0000
+Received: from mxhk.zte.com.cn ([160.30.148.34])
 	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xLBdQ-00000001fne-1OPU
-	for kvm-riscv@lists.infradead.org;
-	Mon, 26 Oct 2026 03:44:33 +0000
-Received: by mail-qt1-x835.google.com with SMTP id d75a77b69052e-5364c951da4so23660271cf.1
-        for <kvm-riscv@lists.infradead.org>; Sun, 25 Oct 2026 20:44:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792986270; x=1793591070; darn=lists.infradead.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=FuZU9Bm4L1tjpR5OE6ZUvzPtHgo0PRLa1bH4/fzLGaA=;
-        b=C24m/7sUHKZVbj3+vBdPzl8+UkklUV22nk+HzKV/nuO1l/M264pFRqof/JURC31usj
-         TF3N4S5Jx0x+ANcPxgrZwYTLbof7YN8XHK1dSZVn10uIdtEmZGlRfFe2R05zUeTMMva7
-         19+M8BqO/Aa1EDF56ocusPbjdhiQLUKIANkytXslAAgk/ZCcBe3VrDHyMVSAuEFxI2bX
-         VGtKtcpkYpX9r2mvDlfn598Jza8zjzCUJmbHHvQpeE41UbfaFYta28z/Z9uRmK99TRLN
-         PP0AsAeTxnyPOnqAQL4bXi1rpsJexYcw+0EqldMusehGIBs1on9BKj0HKVn4Jeo8sGQF
-         pV+A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792986270; x=1793591070;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=FuZU9Bm4L1tjpR5OE6ZUvzPtHgo0PRLa1bH4/fzLGaA=;
-        b=GNucWMv5CjOBPtPUt0oNhnloGtxxhvq+8lNZGBkEGk7fLOi8xS0m1yAjS+MWHehR/2
-         0KdAkKby/xMCA8aLeMMEo2WAYQAh0LI89KnSaKPr85Yq91eb68FzBzQzif/d0hJE4Tzd
-         iPjRKJLj3advlOYozMJbz0WPkVKfHKQRA088jYDcEaD648bK+D+YsORfPCNhVcsHaNmU
-         0mCj84Bh77lutQhsjU0fc2KoMJt4AHfzLNngXI3J2vQH9OV2Z5zo4CYXSgRjJDzEPHSd
-         Z36flUB7QxFxb5E65nuRsRMz7A9Ga7mFCrAzRUjkJ8u2lPc64BgjTGjjGf2CIh/npAnl
-         +Lsw==
-X-Forwarded-Encrypted: i=1; AKwUvBx47Bu+kTD6FOWL2NXV+ZEmzuQR2jjgvZaiLLl3Gq/63Dln7e4FKYR/pt6cL3Di/Fxl1Ifraaexjls=@lists.infradead.org
-X-Gm-Message-State: AFq9FYKPqaeWRxOWSWmF6aZ1KY00yoEHt0VB7NmXIccFrpjz5efiFlsQ
-	yrmbOnTFctKGZDGPM81JJVnprBgVQbfvvk7WxU4EiUQbnyl2Mj3HIdlR
-X-Gm-Gg: AYBFou3fvBkmiDwoTJQBjiTrhqTMMyVpFi52ar+U9bROavDVLbB/6VPVoCIyzEU4RKk
-	enOwxCLuDCSS+I84FDF92jOYSn9ymyr3ddFw86iypfLiC2d6RuHWTzIACjemmMyZU+9PL2SbnBk
-	LHj7CqV7gfKK9JlhNlUhA8Z/ZaAUVbwrrjHhth1Mzjvse33RWw5yBDXGIex/mIvl/v5nb/Vvbap
-	4kYIecYVin0qOgunJspVYQet90E/aSJ20wkImQip/4ElonV0XUUrx705jALOjfiT3IJH0c6WonE
-	rxXU2F6oDQAZKGsp1ZAnWYYxHQL4vpxRulB7UgFV7bddwlQ5rbTpQphC7R4oJNinDQ5dS2PRHws
-	NYGwqsIAr64/71kg96o0SvuGDMaHPC5FVQrusKlZRgDrFJmwknnwpYYXZSkWGlcFCaJa7DXiNgd
-	xPcaX5qU35U3GuwWq6r1AfUBZYhT1gDcJAAskX8Ov77Skep8ZDol4Q9sdSIRYEwz/pH6y+abtfu
-	m+EbBSnym3PS6+4ZueyAHb2flQwvHgtUzcqKxukKmywE/pxE1yUA+NO+bhPW/RoISb1TAwzKRNv
-	+iIUIwil2U8UKPUydHnlvHcE0lbjqYSGvEFrev5/OlA4IRg9Ajq0F5AyR5zd
-X-Received: by 2002:ac8:6546:0:b0:536:699d:9a1c with SMTP id d75a77b69052e-5383b3509cdmr79585421cf.2.1792986270529;
-        Sun, 25 Oct 2026 20:44:30 -0700 (PDT)
-Received: from paul-white-HP-Pavilion-Laptop-15-cs1xxx.mynetworksettings.com ([2600:4040:ad65:1c00:4cc4:d0be:4ab6:9a0b])
-        by smtp.gmail.com with ESMTPSA id d75a77b69052e-538394c5273sm46202121cf.9.2026.10.25.20.44.29
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 25 Oct 2026 20:44:30 -0700 (PDT)
-From: Paul White <paul.white.kernel@gmail.com>
-To: anup@brainfault.org,
-	atish.patra@linux.dev,
-	pjw@kernel.org,
-	palmer@dabbelt.com,
-	aou@eecs.berkeley.edu,
-	alex@ghiti.fr
-Cc: kvm@vger.kernel.org,
-	kvm-riscv@lists.infradead.org,
-	linux-riscv@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	Paul White <paul.white.kernel@gmail.com>
-Subject: [PATCH 0/2] KVM: riscv: Unify and optimize FP register loops
-Date: Sun, 25 Oct 2026 23:41:25 -0400
-Message-ID: <cover.1792982932.git.paul.white.kernel@gmail.com>
+	id 1xLFix-00000001vKa-1CfH;
+	Mon, 26 Oct 2026 08:06:32 +0000
+Received: from mse-fl1.zte.com.cn (unknown [10.5.228.132])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mxhk.zte.com.cn (FangMail) with ESMTPS id 4jCmRL3fzxz4yjSf;
+	Mon, 26 Oct 2026 16:06:22 +0800 (CST)
+Received: from szxl2zmapp06.zte.com.cn ([10.1.32.108])
+	by mse-fl1.zte.com.cn with SMTP id 69Q865A0064039;
+	Mon, 26 Oct 2026 16:06:05 +0800 (+08)
+	(envelope-from gong.shuai@sanechips.com.cn)
+Received: from ubuntu-35-gs (unknown [10.230.214.35])
+	by smtp (Zmail) with SMTP;
+	Mon, 26 Oct 2026 16:06:07 +0800
+X-Zmail-TransId: 3e816adf09e6027-1935f
+X-Zmail-LocalSMTP: 1
+X-Zmail-RealSender: gong.shuai@sanechips.com.cn
+From: Gong Shuai <gong.shuai@sanechips.com.cn>
+To: fangyu.yu@linux.alibaba.com
+Cc: alex@ghiti.fr, andrew.jones@oss.qualcomm.com, aou@eecs.berkeley.edu,
+        gsh517025@gmail.com, guoren@kernel.org, iommu@lists.linux.dev,
+        jgg@nvidia.com, jgg@ziepe.ca, joro@8bytes.org, jroedel@suse.de,
+        kvm-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-riscv@lists.infradead.org, palmer@dabbelt.com, pjw@kernel.org,
+        robin.murphy@arm.com, tomasz.jeznach@linux.dev, will@kernel.org,
+        zong.li@sifive.com, Gong Shuai <gong.shuai@sanechips.com.cn>
+Subject: Re: [RFC PATCH v2 3/4] iommu/riscv: Add guest IMSIC GPA mapping helpers
+Date: Mon, 26 Oct 2026 16:06:04 +0800
+Message-ID: <20261026080604.184574-1-gong.shuai@sanechips.com.cn>
 X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20261016030138.91675-1-fangyu.yu@linux.alibaba.com>
+References: <20261016030138.91675-1-fangyu.yu@linux.alibaba.com>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
+X-ZMAIL-USEORIGINALEMLTOOUTBOUND: 1
+X-MAIL: mse-fl1.zte.com.cn 69Q865A0064039
+X-TLS: YES
+X-ENVELOPE-SENDER: gong.shuai@sanechips.com.cn
+X-SOURCE-IP: 10.5.228.132 unknown Mon, 26 Oct 2026 16:06:22 +0800
+X-CLEAN: YES
+X-Fangmail-Anti-Spam-Filtered: true
+X-Fangmail-MID-QID: 6ADF09FE.001/4jCmRL3fzxz4yjSf
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261025_204432_379616_B0C7160A 
-X-CRM114-Status: GOOD (  15.52  )
-X-Spam-Score: -1.1 (-)
+X-CRM114-CacheID: sfid-20261026_010631_485496_CACBD8CD 
+X-CRM114-Status: GOOD (  18.94  )
+X-Spam-Score: -1.9 (-)
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -106,56 +84,79 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
-X-Spam-Status: No, score=-7.8 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,FORGED_GMAIL_RCVD,
-	FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,T_SPF_TEMPERROR,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-7.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-The change to both patches in this series is a 
-structural/architectural one. Both functions set_reg and get_reg use 
-identical code to locate the register the application specified in the 
-token even though they do different things with that location 
-information: the set_reg function adds data the application requested 
-to send to that identified location  (in the copy_from_user function) 
-while the get_reg function retrieves what data is at that identified 
-location and sends it to the application (using the copy_to_user 
-function). Everything else is the same. That is the only difference 
-between the code. 
+Hi Fangyu,
 
-Therefore I was able to apply the same solution to both of the 
-function's finding-the-requested-register parts (which is everything 
-up until the final if statement) which were filled with redundancy. 
-The solution I came up with is to create local variables for the 
-entire function for all the variables of the original code that would 
-be different, depending on the floating point type. Then once I ask 
-whether it is a double floating point or single floating point mode, I 
-assign the aforementioned variables to the values they should have for 
-that mode so that when I go through the if statements that ask whether 
-the requested register number is a status control register or data 
-register, I only have to go through it once because the respective 
-floating point values/addresses would have been assigned to the 
-aforementioned local variables, so the whole code kind of changes or 
-is tailored to the floating point type. 
+> >Andrew has moved well past a v3
+> >
+> >I shouldn't be seeing code in iommu or irq drivers directly mapping into
+> >domains. That doesn't work, Andrew's latest series don't do this.
+> >
+> >It still needs to use the SW_MSI mechanism and related.
+> >
+>
+> Andrew has posted two patch series in the community: one is the
+> MSI remap v6 series[1], and another is the IRQ bypass v3 series[2].
+> I think you are referring to the MSI remap v6 series. My patch was
+> based on the IRQ bypass v3 series, and I added this patch on top
+> of it.
+>
+> [1] https://lore.kernel.org/linux-iommu/179209292714.4133959.5997128071302263244.b4-review@b4/T/#t
+> [2] https://lore.kernel.org/linux-riscv/20260928143113.49838-1-andrew.jones@oss.qualcomm.com/
+>
+> >Nothing in the commit messages clearly explained what this is actually for
+> >without having to go dig up the riscv manuals again. Please explain how the
+> >interrupt translation works and what actual user visible problem this is
+> >trying to solve is.
+> >
+>
+> The interrupt translation is based on Andrew's irq bypass patch
+> description.
+>
+> RISC-V IOMMU defines an optional MSI page table feature, which can
+> be used to implement irq bypass by translating the vIMSIC GPA to
+> the pIMSIC HPA.
+>
+> My patch complements that design. If the RISC-V IOMMU hardware does
+> not implement the MSI page table, then the second-stage page table
+> can be used instead to map vIMSIC GPA to pIMSIC HPA.
 
-This architectural change/solution will make the cpu execute the code 
-faster (as the cpu will have less decisions to make and the bare-metal 
-math used to figure out the address of the register is executed faster 
-by the cpu than looking up object properties and array indexes), is 
-more maintainable, and is more readable.
+Using the regular stage-2 page table to translate MSI target
+addresses seems reasonable to me as a fallback for hardware without
+MSI_FLAT.
 
-Paul White (2):
-  KVM: riscv: Eliminate redundancy in get_reg function via pointers
-  KVM: riscv: Eliminate redundancy in set_reg function via pointers
+I would like to share my personal understanding of Jason's review.
+Please correct me if I missed his point.
 
- arch/riscv/kvm/vcpu_fp.c | 128 +++++++++++++++++++++++----------------
- 1 file changed, 76 insertions(+), 52 deletions(-)
+His concern seems to be about who owns and maintains these mappings.
+When the RISC-V IOMMU driver calls iommu_map directly on a paging
+domain managed by iommufd, the mappings are not visible to the domain
+owner. This makes it difficult to handle mapping lifetime and
+hardware page table replacement correctly.
 
--- 
-2.53.0
+The current SW_MSI support does not appear to cover this use case
+directly. It allocates IOVAs for host MSI pages and records the
+resulting mappings. Guest forwarding instead requires mappings at
+fixed guest GPAs, with their target HPAs changing when vCPUs migrate.
+Supporting this through SW_MSI would therefore seem to require a
+nontrivial extension.
 
+Best regards,
+Shuai
+
+>
+> Thanks,
+> Fangyu
+>
+> >--
+> >Jason
+>
 
 -- 
 kvm-riscv mailing list
