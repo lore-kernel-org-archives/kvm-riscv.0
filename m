@@ -2,95 +2,94 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1F17460A2621
-	for <kvm-riscv@archiver.kernel.org>; Wed, 28 Oct 2026 19:03:40 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CBFBE60A3816
+	for <kvm-riscv@archiver.kernel.org>; Wed, 28 Oct 2026 19:06:09 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=BRDjueiS;
-	dkim=fail reason="signature verification failed" (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=nki9NboK
+	dkim=pass (2048-bit key, unprotected) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=cNc+UD7Y;
+	dkim=fail reason="signature verification failed" (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=AU1f67xN
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
-	Content-Transfer-Encoding:Content-Type:Reply-To:List-Subscribe:List-Help:
-	List-Post:List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID
-	:References:Mime-Version:In-Reply-To:Date:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
 	List-Unsubscribe-Post:List-Owner;
-	bh=PlVOI/ruW+h0rF+eTmIlRuWDQwhNoapSOX/tG7qeTd0=; b=BRDjueiSJYlh/40Q+ru7TeXlsA
-	LtXXbe7Q7q3NtY2I2M3E0H1auZj8wQfDQ5nQ0j9YdQytS8pQGXED/RmnE4vwpobt0zoFoMXYHyheD
-	Cw7Ou4OhlcyIUAjm3c7HQ4RTuwOMl1WD3TbU3s1jPiPqzGSjKL6fcFQOiXg5t7qGFxzG8V30TeIjX
-	caTXcmW2TgSd51HIEb7/5sFtm8q7VwuQw2pKdyvkbBWWqbgIIgJaIQZMqdkTx7/TVZCDcv/3ySaXL
-	hz3+HLTzJsmOdzFJJV3ubSNKo0fr6AoRj1MLGE85UZIszuUpVCfqITHO7uzf0riHXObO4SdLrIulQ
-	dFAe2+bg==;
+	bh=Xt3fg4W1zwMC1kcfWsvDtaLEicpRMKaDJbW6BoClJbg=; b=cNc+UD7Y/nV72towiLYBf/lrPf
+	3IgKdLJUERZLxM4Ycn+EEmR+DKrDRde68CjHp8fvOhPvzfS9OeIH9byrdmqudDUnw3+JGhK8cv0HD
+	fqGS9xMveqr1MDEFSvNYb9XapYvo9dfRB6d1C5ytXum8uhGXy8rGQrtJ2PSnTZRuHi40kUwCA5BDh
+	eQsa0fRbsMoBUEiqAcU2YzPWzPNVkhtD5MFaIqJNfrGPz/ha2cTizh8xxVt+jMNmQdJhRtF9q8fKx
+	ALXdLuiOKyacA7WmCveXiaKPQ6/NjVLaPkSn2wE+IElLyFU33dzVh4/1xjNuJNcUSZVHutg7C/3Yr
+	INKBtYFw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xM8vz-00000007oET-3Dt0;
-	Wed, 28 Oct 2026 19:03:39 +0000
-Received: from mail-pj1-x1046.google.com ([2607:f8b0:4864:20::1046])
+	id 1xM8yP-00000007pFk-1z6G;
+	Wed, 28 Oct 2026 19:06:09 +0000
+Received: from mail-wm1-x330.google.com ([2a00:1450:4864:20::330])
 	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xM8vX-00000007nZM-3g1U
+	id 1xM8yN-00000007pFN-2Lgg
 	for kvm-riscv@lists.infradead.org;
-	Wed, 28 Oct 2026 19:03:12 +0000
-Received: by mail-pj1-x1046.google.com with SMTP id 98e67ed59e1d1-3ac76132001so1031231a91.0
-        for <kvm-riscv@lists.infradead.org>; Wed, 28 Oct 2026 12:03:11 -0700 (PDT)
+	Wed, 28 Oct 2026 19:06:08 +0000
+Received: by mail-wm1-x330.google.com with SMTP id 5b1f17b1804b1-4a20bde60a0so11393715e9.3
+        for <kvm-riscv@lists.infradead.org>; Wed, 28 Oct 2026 12:06:06 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20260707; t=1793214191; x=1793818991; darn=lists.infradead.org;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:reply-to:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=jCCEmu80ia44kI2vyDb6i59VDXRIs93I0WproZ1Xw/A=;
-        b=nki9NboKYqDh08ELnKVIwhQbr4z1h8wBKd5PZcwSai4LcJrgeluQ9ONw0FRMTU0uTo
-         AJYVqze2qCBLkhk/GkSiWYc4bV9rU+yNXbyYs82Fq1jrP3/8k31mymshTJZIR4LKHomh
-         MJukydeRaCP5icsULlNbT8QsAJ7YLlfFlJ2rDu3HAN0XqprAFl5UNYS/BDQ+QcUwjWcY
-         5FINNDlIr/nGxKPJ1qWSkTPvR83EIlcfEKsqEb50XJGiwNq7VShHWqdRlSbF8j3I0vCG
-         EnH3CQISGnxTgrBIg5Muyxk6bX58ISr51+IRCnInF2SWnAtlgAXghWtUvJvLq40B9c9j
-         mITA==
+        d=gmail.com; s=20260707; t=1793214365; x=1793819165; darn=lists.infradead.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=Dd4IpeHUiNMizEyX8fWF380+R7v+Vhvdf5n0i5pAf0U=;
+        b=AU1f67xN52NeAlgDCwXZBy1YAL6kaQUuJogzKTOMufNsm+w7lslg6XQcSG4p1SToV4
+         5PO9gIAF+kPYdEPm50BfA5Jm0ky3HBETqFNhIHO5TasmoL3BpidHb4A5BcCjuBvdROOD
+         +nxyxBqDYpqM7ne3twVIHr3t+zcNLYpF3x4zNxcYbbo2OPouU0ndKlXwC3eiFdKBP9Xe
+         vmpuL2dfI0331VQVH2PLsM0UJUKqIR5tE9zXvFkMKmZeXr26YO42+q2wOterewMvJYDa
+         xE9F4ZS6NU79m242JOT1aLwVhKaw8Z+K3n065+ZiQt2g63uLL4+CD6bkxIXZ4e3o9Oda
+         HqqQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793214191; x=1793818991;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:reply-to:x-gm-message-state:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=jCCEmu80ia44kI2vyDb6i59VDXRIs93I0WproZ1Xw/A=;
-        b=uvMVvsW2l/Xl3Y8+Wa1ku8+jgi8eoqSkVftO177HZIFYT2sztgvp00L6uQbW2ldSYC
-         U+Ia0rRrMHttQP4Hz5xCjB3ibSd/ow5T57tAwPvxDzqVWZb2O7ARBlmkFY/VMAwVTRg9
-         y3anSMve2VxL55LCPOxpYSzJXnq7K+T8nXni78I0950jmJyMIGbLlQfTse/oBvy2JuqW
-         Rxl40hbNQyytufvvjF95O9evWFdgVsZG8T/AprjItQWIIPa8N53iQp+9peG26Dfb4qhF
-         JocZikX81sm+dVkhDVr0ixvDXccO+RFYfk+x6kjSclQmaQQFXh74zaK6MrKEhTQ9jYj8
-         0QuA==
-X-Forwarded-Encrypted: i=1; AKwUvByJPx8VkaZBYolB92umzRrgXZibbjWAnO56fPck/cNJz4VtwOTGJFSpH3pQVlfu9nE0v/2T5riu6W4=@lists.infradead.org
-X-Gm-Message-State: AFq9FYKpRzPftcmsw7Q6Y4uLhehJGpT/wzfcWDhe4FvlEw3/OJrlWpDY
-	l3AT9ANJ5OG9zLNTXv5Y8iTK3K0aFRxyT7TkGw+SUMFUrjZwvJx2eFbIg53q26yuetH2Jbdqsba
-	tHU9v7Q==
-X-Received: from pghv3.prod.google.com ([2002:a63:f203:0:b0:cd6:b233:e4aa])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:4b06:b0:3ab:b64:5893
- with SMTP id 98e67ed59e1d1-3ae581bc654mr2418362a91.53.1793214190430; Wed, 28
- Oct 2026 12:03:10 -0700 (PDT)
-Date: Wed, 28 Oct 2026 12:02:59 -0700
-In-Reply-To: <20261028190259.1819571-1-seanjc@google.com>
+        d=1e100.net; s=20260707; t=1793214365; x=1793819165;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=Dd4IpeHUiNMizEyX8fWF380+R7v+Vhvdf5n0i5pAf0U=;
+        b=Y55UjJZu92M29Ez4CADbFhuMHS8XTFJT+dZi3OHxhKHaDRmfbrZn97xeDesheSzGwL
+         6Y9z06rCDt+bGe/WLFaD36d+FXvM47sAMzUWD4B6QnfCtf2pPqdnLxOvLUWdvKMWsNb2
+         0IUy21ALms3xkzjcTd65YkRCUvEVE/HaRWP3ACpu4x6QQGm4ge/Hl3ohoH865vFPRC0Y
+         vhbuytoN/5dCriU8gW4GOclu0lq8D1q9y/tP5T0WXnJIb9SDxX0H3+VaB+mbj7U/+AKF
+         pH4A/+Ow1Dam1/tNQKriTUg4RDnxyCfroKOU677iPTBINOLtD2W5FmgZ61RdjtDorRTu
+         SIZQ==
+X-Forwarded-Encrypted: i=1; AKwUvBwgYQLfRK1gXrtj4VfyCoGALpZEJj3mXh9aAB9PqaMoAaZ4yuiDtnTHAkixfmKgijUywZPzfGZUBSE=@lists.infradead.org
+X-Gm-Message-State: AFq9FYKwAoQYGL/DmW4VhMuTvs94MPJZ2qB14Soe0iPXozgWPJ/BMWH7
+	PndtwfIL7OnJlqT/go07N+J6JrTQESwlHxRlyYo22wimwbLLJ4ENzAog
+X-Gm-Gg: AYBFou0ceBgI3jc40ek83eEWt0A7LgoC306DTmOBM21i7eG+yJQGUJk+ayPXBLqactc
+	rzL/Qhumll+EuK+ckQ8cjVPNi1B1boXyDR0YoOC0cNUbxDXgdB8+9S3PcnkNsErHyefiNYz8zrb
+	D16EZJ2zWD1QG9ArKIWImXi9/2yo20IS6mhkmQWyDQdqN/cyjLTo+hUTddkVyCiIbiuuBIXWvw7
+	C4e59/TvTUhOaGqIQ4bmZQHXtbyQFo33Ou2Y1JRDVvx/FEwZERYsDpSv698nuqztCOT7O01WOpr
+	i4y6XeKrvZPxwb69Su9wdIidX7kjLD8KfFMYQ6IyCMfitdYI9dWPQlU8VLAOcT0u8HEaNumS5JQ
+	D9S7DrFAfmmxw2oDDaRXLttc35FmRLQxBmDgdyNEQBhgl0DXfhLo2GNt/cBWAi+jzaHDFzlwoDa
+	p14ivWMSMh8a37n+hKrqkAIJveuXc8OLL7YrBFWZ+O8ATGQ5Tw1R5jqMDS4A9rK1pUxO5T1X9rz
+	DmJnV+42a2dZnDtejwWMbnJMn6xDud4U0rm7Qe6o8eva9SsZHxNT0gzH+r8rSic4ozj5992RsTN
+	90t1fLaUz2odzniolQPNlgh/trTaEkdF5arJaiUqhw==
+X-Received: by 2002:a05:600c:4f55:b0:4a2:1398:dd05 with SMTP id 5b1f17b1804b1-4a9661ab508mr72013285e9.16.1793214364715;
+        Wed, 28 Oct 2026 12:06:04 -0700 (PDT)
+Received: from IsoOmenaM3 ([91.136.216.14])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4aa80f047bfsm10688455e9.3.2026.10.28.12.06.03
+        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+        Wed, 28 Oct 2026 12:06:03 -0700 (PDT)
+From: Mika Tammi <mikatammi@gmail.com>
+To: Will Deacon <will@kernel.org>,
+	Julien Thierry <julien.thierry.kdev@gmail.com>
+Cc: kvm@vger.kernel.org,
+	Anup Patel <apatel@ventanamicro.com>,
+	Andrew Jones <andrew.jones@oss.qualcomm.com>,
+	kvm-riscv@lists.infradead.org,
+	Mika Tammi <mikatammi@gmail.com>
+Subject: [PATCH kvmtool] riscv, arm64, powerpc: Align the FDT staging buffer to 8 bytes
+Date: Wed, 28 Oct 2026 20:05:31 +0100
+Message-ID: <20261028190531.48302-1-mikatammi@gmail.com>
+X-Mailer: git-send-email 2.54.0
 X-Archived-By: <archiver.kernel.org>
-Mime-Version: 1.0
-References: <20261028190259.1819571-1-seanjc@google.com>
-X-Mailer: git-send-email 2.56.0.313.g2479322e68-goog
-Message-ID: <20261028190259.1819571-8-seanjc@google.com>
-Subject: [PATCH 7/7] KVM: Drop kvm_vcpu_should_kick() and use kvm_request_needs_ipi()
-From: Sean Christopherson <seanjc@google.com>
-To: Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, 
-	Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>, 
-	Huacai Chen <chenhuacai@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, 
-	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
-	Sean Christopherson <seanjc@google.com>, Paolo Bonzini <pbonzini@redhat.com>
-Cc: Fuad Tabba <fuad.tabba@linux.dev>, Joey Gouly <joey.gouly@arm.com>, 
-	Steffen Eiden <seiden@linux.ibm.com>, Suzuki K Poulose <suzuki.poulose@arm.com>, 
-	Zenghui Yu <yuzenghui@huawei.com>, Nicholas Piggin <npiggin@gmail.com>, 
-	Atish Patra <atish.patra@linux.dev>, Alexandre Ghiti <alex@ghiti.fr>, 
-	linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, 
-	kvm@vger.kernel.org, loongarch@lists.linux.dev, linux-mips@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, kvm-riscv@lists.infradead.org, 
-	linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, 
-	Stefan Teodorescu <fane@google.com>
+MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261028_120311_918011_8141DE13 
-X-CRM114-Status: GOOD (  17.94  )
-X-Spam-Score: -9.5 (---------)
+X-CRM114-CacheID: sfid-20261028_120607_616400_2B7D028F 
+X-CRM114-Status: GOOD (  16.25  )
+X-Spam-Score: -2.1 (--)
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -100,95 +99,104 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Reply-To: Sean Christopherson <seanjc@google.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
-X-Spam-Status: No, score=-16.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,
 	DKIM_ADSP_CUSTOM_MED,DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=4.0.1
+	FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Drop kvm_vcpu_should_kick() in favor of kvm_request_needs_ipi() to fix a
-bug where KVM will fail to wait for a vCPU to exit guest mode if the vCPU
-was already marked as EXITING_GUEST_MODE by a concurrent non-waiting kick.
-Because kvm_vcpu_should_kick() (was kvm_arch_vcpu_should_kick()) only waits
-(and sends an IPI to do so) if the target vCPU is fully IN_GUEST_MODE, the
-sending task will proceed even though it hasn't actually guaranteed the
-vCPU as fully exited the guest.
+setup_fdt() creates the guest's device tree in staging_fdt, a u8 array
+on the stack, and then copies it into guest memory with fdt_open_into().
 
-The flaw is most problematic for SNP VMSA invalidation with in-place gmem
-conversion, as KVM invokes kvm_gmem_invalidate_start() => rmp_make_shared()
-(via kvm_gmem_make_shared() in quick succession when in-place conversion is
-enabled.  I.e. if the target has been marked as EXITING_GUEST_MODE but has
-not yet received the other kicker's IPI, then updating the RMP will fail as
-the VMSA is still in-use and subsequent accesses to the page will encounter
-unexpected RMP #PFs.
+The Devicetree Specification requires the blob to be at an 8-byte
+aligned address [1], and libfdt has checked this since dtc v1.6.1:
+fdt_ro_probe_() fails with -FDT_ERR_ALIGNMENT for any other address.
+The sequential-write functions don't call it, so the tree is created
+without errors and fdt_open_into() is the first call to fail.
 
-Note, the bug exists and affects VMSA invalidation even without in-place
-conversion, but is significantly more difficult to hit as PUNCH_HOLE and
-.release() have to wade through a lot more code and several locks to get
-from invalidation to kvm_gmem_free_folio().
+A u8 array has no alignment requirement beyond its element type, so
+whether staging_fdt is 8-byte aligned depends on how the compiler lays
+out the stack frame. In lkvm built for 32-bit RISC-V with GCC 15 and
+musl, it isn't, and lkvm fails every time:
 
-Note #2, currently only x86 uses kvm_make_request_and_kick(), i.e. this is
-a glorified nop for all other architectures as the KVM_REQUEST_WAIT path is
-never taken.
+  Fatal: Error creating device tree: fdt_open_into(fdt, fdt_dest, FDT_MAX_SIZE): FDT_ERR_ALIGNMENT
 
-Fixes: 309d28576f0a ("KVM: SVM: Fix SNP AP destroy race with VMRUN")
-Fixes: d1a3c2162334 ("KVM: SEV: Forcefully invalidate SNP VMSA if its backing gmem page is zapped")
-Reported-by: Stefan Teodorescu <fane@google.com>
-Signed-off-by: Sean Christopherson <seanjc@google.com>
+arm64 and powerpc create their device trees the same way. Nothing
+guarantees the alignment there either, though it hasn't been seen to
+fail.
+
+Ask the compiler for the alignment that the specification requires.
+
+[1] Devicetree Specification v0.4, section 5.6 "Alignment": "The
+    devicetree blob shall be located at an 8-byte-aligned address."
+    https://github.com/devicetree-org/devicetree-specification/releases/download/v0.4/devicetree-specification-v0.4.pdf
+
+Fixes: 7c9aac003925 ("riscv: Generate FDT at runtime for Guest/VM")
+Assisted-by: Claude:claude-opus-5-5
+Signed-off-by: Mika Tammi <mikatammi@gmail.com>
 ---
- virt/kvm/kvm_main.c | 10 ++--------
- 1 file changed, 2 insertions(+), 8 deletions(-)
+I used Claude Opus 5.5 to track down the failure, write this patch
+and its description, and run the tests below; I have reviewed the
+result.
 
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index f1792256576b..f99a714698e3 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -191,7 +191,6 @@ void vcpu_put(struct kvm_vcpu *vcpu)
- }
- EXPORT_SYMBOL_FOR_KVM_INTERNAL(vcpu_put);
- 
--/* TODO: merge with kvm_vcpu_should_kick */
- static bool kvm_request_needs_ipi(struct kvm_vcpu *vcpu, unsigned req)
+Tested with QEMU rv32 and rv64 machines with the H extension as KVM
+hosts, running a guest with lkvm built with GCC 15.3, musl 1.2.5 and
+libfdt 1.7.2. Without this patch, lkvm on rv32 fails with the error
+above; with it, the guest boots on both. Build-tested for x86_64,
+arm64, riscv64 and ppc64le.
+
+ arm64/fdt.c   | 2 +-
+ powerpc/kvm.c | 2 +-
+ riscv/fdt.c   | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/arm64/fdt.c b/arm64/fdt.c
+index 3cbd36e..ec83caa 100644
+--- a/arm64/fdt.c
++++ b/arm64/fdt.c
+@@ -115,7 +115,7 @@ static struct psci_fns psci_0_2_aarch64_fns = {
+ static int setup_fdt(struct kvm *kvm)
  {
- 	int mode = kvm_vcpu_exiting_guest_mode(vcpu);
-@@ -209,11 +208,6 @@ static bool kvm_request_needs_ipi(struct kvm_vcpu *vcpu, unsigned req)
- 	return mode == IN_GUEST_MODE;
- }
- 
--static int kvm_vcpu_should_kick(struct kvm_vcpu *vcpu)
--{
--	return kvm_vcpu_exiting_guest_mode(vcpu) == IN_GUEST_MODE;
--}
--
- static void ack_kick(void *_completed)
+ 	struct device_header *dev_hdr;
+-	u8 staging_fdt[FDT_MAX_SIZE];
++	u8 staging_fdt[FDT_MAX_SIZE] __attribute__((aligned(8)));
+ 	u64 resv_mem_prop, mem_reg_prop[] = {
+ 		cpu_to_fdt64(kvm->arch.memory_guest_start),
+ 		cpu_to_fdt64(kvm->ram_size),
+diff --git a/powerpc/kvm.c b/powerpc/kvm.c
+index 7b0d066..fb374dd 100644
+--- a/powerpc/kvm.c
++++ b/powerpc/kvm.c
+@@ -296,7 +296,7 @@ static int setup_fdt(struct kvm *kvm)
+ 		"hcall-splpar\0hcall-bulk\0hcall-set-mode";
+ 	int 		i, j;
+ 	char 		cpu_name[30];
+-	u8		staging_fdt[FDT_MAX_SIZE];
++	u8		staging_fdt[FDT_MAX_SIZE] __attribute__((aligned(8)));
+ 	struct cpu_info *cpu_info = find_cpu_info(kvm);
+ 	struct fdt_prop segment_page_sizes;
+ 	u32 segment_sizes_1T[] = {cpu_to_be32(0x1c), cpu_to_be32(0x28), 0xffffffff, 0xffffffff};
+diff --git a/riscv/fdt.c b/riscv/fdt.c
+index 1eb45fc..4a2c456 100644
+--- a/riscv/fdt.c
++++ b/riscv/fdt.c
+@@ -341,7 +341,7 @@ static void generate_cpu_nodes(void *fdt, struct kvm *kvm)
+ static int setup_fdt(struct kvm *kvm)
  {
- }
-@@ -3935,7 +3929,7 @@ void __kvm_vcpu_kick(struct kvm_vcpu *vcpu, int req, bool force)
- 
- 	/*
- 	 * Note, the vCPU could get migrated to a different pCPU at any point
--	 * after kvm_vcpu_should_kick(), which could result in sending an
-+	 * after kvm_request_needs_ipi(), which could result in sending an
- 	 * IPI to the previous pCPU.  But, that's ok because the purpose of the
- 	 * IPI is to force the vCPU to leave IN_GUEST_MODE, and migrating the
- 	 * vCPU also requires it to leave IN_GUEST_MODE
-@@ -3944,7 +3938,7 @@ void __kvm_vcpu_kick(struct kvm_vcpu *vcpu, int req, bool force)
- 	 * check also modifies vcpu->mode and KVM PPC needs to avoid that side
- 	 * effect for unknown historical reasons.
- 	 */
--	if (force || kvm_vcpu_should_kick(vcpu)) {
-+	if (force || kvm_request_needs_ipi(vcpu, req)) {
- 		cpu = READ_ONCE(vcpu->cpu);
- 		if (cpu != me && (unsigned int)cpu < nr_cpu_ids && cpu_online(cpu)) {
- 			/*
+ 	struct device_header *dev_hdr;
+-	u8 staging_fdt[FDT_MAX_SIZE];
++	u8 staging_fdt[FDT_MAX_SIZE] __attribute__((aligned(8)));
+ 	u64 mem_reg_prop[]	= {
+ 		cpu_to_fdt64(kvm->arch.memory_guest_start),
+ 		cpu_to_fdt64(kvm->ram_size),
 -- 
-2.56.0.313.g2479322e68-goog
+2.54.0 (Apple Git-157)
 
 
 -- 
