@@ -2,102 +2,83 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 581E160A261F
-	for <kvm-riscv@archiver.kernel.org>; Wed, 28 Oct 2026 22:43:31 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 01559606A31D
+	for <kvm-riscv@archiver.kernel.org>; Thu, 29 Oct 2026 01:41:40 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=iBytNfGx;
-	dkim=fail reason="signature verification failed" (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=xfekL2eJ
+	dkim=pass (2048-bit key, unprotected) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=GIJ/tV0z;
+	dkim=fail reason="signature verification failed" (1024-bit key, unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=v/6d4aMX
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
-	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
+	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
 	List-Unsubscribe-Post:List-Owner;
-	bh=soXJOedQAWjGdGBXk/yc8y9AVGRQ7B77wqoboTE8npI=; b=iBytNfGxVGNXNSkOeZ2TTLXUET
-	Oxav9hWpI9ROEZ8ylTi4vp67slzVTwFI9sFzJi9o/h3alnyD3f4mDyNcXL/BO97SAful9KYMok3+M
-	4DtgC8VZ3jRgcOewwnaO4fCbI29rqnqz21lg7H+gwSWBifVVtxZpfWbX7CyarJMYmYVr63P/fXRCh
-	OIFRkawo+ULX7wVL51fi+IxGuOneovgA/9qCsLBFQDvLbjuJKVQ3q97PBYGfkrUw4jTHmkDHw+M/5
-	e1kIHdLxjqKEc4MmmshnfZEoSBkjMk3v68q1UV5hiHTXDin04hfeB0i1RSVOMErajObwN8by/9UF/
-	UuLfknpw==;
+	bh=uh6VlGLUVdEmwb40h4+oKv1yzRPfuG1qoqcLj3DgLZM=; b=GIJ/tV0zyh4GCpKX+OxEuKhqSs
+	oBbdpnLrgGiTOS28V3nv3medKFuuUn92e+Ii6YD2zeM5FjZ7z/uhhM3CZ81isN8njMcpXI4brHlx+
+	FCXY0pgJbH60Gtt7aLWiA5Bh1O4nlipGAHGfyhbWfUo9mayjAZCBd+BLXFa/y66xdeOkadIobjMWP
+	XKIHkreED6wv1Uh+GURbHHBlwnwCnrl4mnX5PtfrQz8QRBSSt4QaX9tP2yPJV9kRSNn5LIgNvzWlw
+	h+4iZpXlPCAwAYN7d9HSBwDG1MZp76mrhF85Eswwv69hv2nhcdmsLo0Ld+bcyDfVWud0Yr7oC3kF8
+	L5qIhMOQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xMCMk-000000081wb-3VPi;
-	Wed, 28 Oct 2026 22:43:30 +0000
-Received: from mail-qv1-xf2c.google.com ([2607:f8b0:4864:20::f2c])
+	id 1xMF98-000000089FL-1wiV;
+	Thu, 29 Oct 2026 01:41:38 +0000
+Received: from out30-130.freemail.mail.aliyun.com ([115.124.30.130])
 	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xMCMh-000000081ty-3Csm
-	for kvm-riscv@lists.infradead.org;
-	Wed, 28 Oct 2026 22:43:29 +0000
-Received: by mail-qv1-xf2c.google.com with SMTP id 6a1803df08f44-91b54d1e9cdso12379946d6.1
-        for <kvm-riscv@lists.infradead.org>; Wed, 28 Oct 2026 15:43:26 -0700 (PDT)
+	id 1xMF94-000000089EO-0oeX;
+	Thu, 29 Oct 2026 01:41:36 +0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793227406; x=1793832206; darn=lists.infradead.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=qy3A1Vkwd/cDXLut21ZiXnCP/BKq6y64SvmrcYwH9Tc=;
-        b=xfekL2eJk9Gjz+5JItAtLWGNJOkMG9y4zdtbIZi0Nq/q2f3QY+AqgSe++eYIb2sdkh
-         k/V9/vWsOKOmssDgS7F9t/rKI5k8sTn49hwCC4VRurSAjvYP9BjILg+iCMS7AdJMCLUX
-         8VdTSKpmPG5O3H0sT6Vrnwd0AjcyY0HNb7yTO4pHU+dWcHCAGtYejCjO2Aa9HLK+P4Hd
-         kaXZbx/lCG/pMWkwtbfuTTcE+XfnZMPgZOFSj70s3haCtvMlSx/aNnf/6SJ6WrBhUxgx
-         p4/Y8rM3vD6Ielq52T5IivCsi/sOmVlw+GxQQu+ZX8NbkVXhwy+reENBSGIw46YZuN1/
-         58Tw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793227406; x=1793832206;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=qy3A1Vkwd/cDXLut21ZiXnCP/BKq6y64SvmrcYwH9Tc=;
-        b=bFTc6NU7rGjjVs9HwHX7fv5ih2WhVeVIcQEz+soh9B6OZKU2zQKpKQLoESabTVwvhd
-         gK/A1gosVj5zHhoV3Xxd/OVCo3cM1GJ85X9fWBiXmKUOL7Ca42/CjBBdws9cC5csVkhL
-         FWprgjq/E2wfnfdZIkRY7wz1pcDzN1ggCLsmhvRPQWAdJCpJ/LERxzMKrxcFUpAY0vPO
-         o7HuoArrmBqqzcL0nUwZfwhun/rdkZ234il5BMhuuAwKHz1qfpw2R22++YEsdWZtzELP
-         e3wMOZXqhz+33EEHXEBL3kOiU7EfrSOFHL3Qqa8T+4ZhV8O7xFdET/vH3rTs1ph3Ajnc
-         R/3Q==
-X-Forwarded-Encrypted: i=1; AKwUvBxHChgzvgAqKHYKzqcKzjvQISCQalBJrMH/u2Bg/KTTPoWCzgePSIYKEuMoNdeujVf4vQYikH1A2fM=@lists.infradead.org
-X-Gm-Message-State: AFq9FYLWNHTohtnUYd0EhlFR7HBY1/jvf1VPUid9qzrrKRKiytneU55c
-	xtek4Gg/5QLqx6z7AYqZ1fEJjCryp+RCA0oUjwib8WOjXh7Vokzih+pZ
-X-Gm-Gg: AYBFou12DD5iICnDFybz6yG/gc4EWUy7i0+bEuugJ1gdUNTNNnQVBfBGfaFgxfHEwsF
-	7oiqbgfeoqGn73bJVhJccOK5slJlCaEMfcVNWvWgqdIWj1ReYxNQ05w2m4ItPSBpR/GfDYtt2ZP
-	vUAjFyJo2obrxiVbbseSV8uOFe8az/90SbiBkVlUFRsCE4dCl482BKycuZgiMCQV4CAFHaXSdF5
-	N6bu6+bD+kEiBXAHmYvNyaCn9YVFHJl/XED9/be2wwHFZW7uo0EUFCGY4nwgEdEBnY1/aBs+kyp
-	Wo5OU/DKwou9CjOM1KMB2uwku/eIwKwuzWsg+5SwSd5VQCigTRMOCM7lWBP6W74GRf9Z3pubBSN
-	Ob9xoofgUVeU+nyZWNUOCeQmtfORgCCPwaEGP4wj7VLhF38KBBnGJEP3wH41nSIDQvW3q4COWkM
-	D19/L456RpdrVFLu7PnD+G80D9hWiPiJ7gCdWUEZCFKY2F73hBGykSQxbj/wFSplXVE1MR7gJO7
-	WMzV+qKBZ0hBeZozpgKKkkIteIHxV72AZEKo462VBx3x4VDsowAXeVRBt36HmZ3ezbJe3GgSw7E
-	JkuWKsma9nXKOinVsOSWVqOOIZ2Kt8ILucrk1ZGfmYUt5gF5lsdYHV0KVhYH5FYaEIq2P7JxC/f
-	1fb2MyghzKvEoZyv0ssqtUt2YKeN3el4LummcCL9Y82Py1b/1Xrw=
-X-Received: by 2002:a05:620a:2629:b0:93e:c12c:9b77 with SMTP id af79cd13be357-94408d68de4mr575691585a.82.1793227405973;
-        Wed, 28 Oct 2026 15:43:25 -0700 (PDT)
-Received: from paul-white-HP-Pavilion-Laptop-15-cs1xxx.mynetworksettings.com ([2600:4040:ad65:1c00:b8:5aeb:4bda:886])
-        by smtp.gmail.com with ESMTPSA id af79cd13be357-940f0787d96sm1370085685a.28.2026.10.28.15.43.25
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 28 Oct 2026 15:43:25 -0700 (PDT)
-From: Paul White <paul.white.kernel@gmail.com>
-To: anup@brainfault.org,
-	atish.patra@linux.dev,
-	pjw@kernel.org,
-	palmer@dabbelt.com,
+	d=linux.alibaba.com; s=default;
+	t=1793238085; h=From:To:Subject:Date:Message-Id:MIME-Version;
+	bh=C7QU0MynSPZH9XIFESMQueT1x5DIy1wAFQgauvOVdHE=;
+	b=v/6d4aMXYaOr7ue/G5H372yJbrktzf5kEgEBixMVm2NoqF425JpYLJpAZd0vge3HGNtMIQIC2oGEZb0MzdSGQttU+wZ4mjZJTCnokkViqFnxerl7AFgzVpjCT+4s24jAEX8+x6LbZPpJY0e+qe3auCwfFCUx7Nxg2pq2UG+OWI0=
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R171e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam033032089153;MF=fangyu.yu@linux.alibaba.com;NM=1;PH=DS;RN=28;SR=0;TI=SMTPD_---0XDhzCnt_1793238081;
+Received: from localhost.localdomain(mailfrom:fangyu.yu@linux.alibaba.com fp:SMTPD_---0XDhzCnt_1793238081 cluster:ay36)
+          by smtp.aliyun-inc.com;
+          Thu, 29 Oct 2026 09:41:23 +0800
+From: fangyu.yu@linux.alibaba.com
+To: jgg@nvidia.com
+Cc: alex@ghiti.fr,
+	andrew.jones@linux.dev,
+	anup@brainfault.org,
 	aou@eecs.berkeley.edu,
-	alex@ghiti.fr
-Cc: kvm@vger.kernel.org,
+	atish.patra@linux.dev,
+	baolu.lu@linux.intel.com,
+	fangyu.yu@linux.alibaba.com,
+	gong.shuai@sanechips.com.cn,
+	guoren@kernel.org,
+	iommu@lists.linux.dev,
+	jgg@ziepe.ca,
+	joerg.roedel@amd.com,
+	joro@8bytes.org,
+	jroedel@suse.de,
+	kevin.tian@intel.com,
 	kvm-riscv@lists.infradead.org,
-	linux-riscv@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
-	Paul White <paul.white.kernel@gmail.com>
-Subject: [PATCH v2 1/2] KVM: riscv: Eliminate redundancy in get_reg function via pointers
-Date: Wed, 28 Oct 2026 18:43:08 -0400
-Message-ID: <072bcc0994a5d2a0c21778a7a6f9e395395535c6.1793223506.git.paul.white.kernel@gmail.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <cover.1793223506.git.paul.white.kernel@gmail.com>
-References: <cover.1793223506.git.paul.white.kernel@gmail.com>
+	linux-riscv@lists.infradead.org,
+	palmer@dabbelt.com,
+	pjw@kernel.org,
+	robin.murphy@arm.com,
+	skhawaja@google.com,
+	tanchi25@mails.ucas.ac.cn,
+	tomasz.jeznach@linux.dev,
+	vasant.hegde@amd.com,
+	will@kernel.org,
+	zong.li@sifive.com
+Subject: Re: [RFC PATCH v5 07/10] iommu/riscv: Add domain_alloc_paging_flags for second-stage domain  
+Date: Thu, 29 Oct 2026 09:41:17 +0800
+Message-Id: <20261029014117.80953-1-fangyu.yu@linux.alibaba.com>
+X-Mailer: git-send-email 2.39.3 (Apple Git-146)
+In-Reply-To: <179320128834.2412245.6365239689333877950.b4-review@b4>
+References: <179320128834.2412245.6365239689333877950.b4-review@b4>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261028_154327_823469_346B8FCC 
-X-CRM114-Status: GOOD (  24.42  )
-X-Spam-Score: -2.1 (--)
+X-CRM114-CacheID: sfid-20261028_184134_883471_94C442A4 
+X-CRM114-Status: UNSURE (   9.89  )
+X-CRM114-Notice: Please train this message.
+X-Spam-Score: -17.6 (-----------------)
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -110,173 +91,88 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
-	DKIM_ADSP_CUSTOM_MED,DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,
-	FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	UNPARSEABLE_RELAY,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-The original code is essentially asking: for each possible floating
-point mode, ask if reg_num is a status control register or a data
-register. It is redundant to ask those same questions for every
-possible floating point mode case.
+>> [ ... 22 lines skipped ... ]
+>> -static struct iommu_domain *riscv_iommu_alloc_paging_domain(struct device *dev)
+>> +static struct iommu_domain *
+>> +riscv_iommu_domain_alloc_paging_flags(struct device *dev, u32 flags,
+>> +				      const struct iommu_user_data *user_data)
+>>  {
+>>  	struct pt_iommu_riscv_64_cfg cfg = {};
+>>  	struct riscv_iommu_domain *domain;
+>>  	struct riscv_iommu_device *iommu;
+>>  	int ret;
+>> +	const u32 supported_flags = IOMMU_HWPT_ALLOC_DIRTY_TRACKING |
+>> +				    IOMMU_HWPT_ALLOC_NEST_PARENT;
+>>
+>> -	iommu = dev_to_iommu(dev);
+>> -	if (iommu->caps & RISCV_IOMMU_CAPABILITIES_SV57) {
+>> -		cfg.common.hw_max_vasz_lg2 = 57;
+>> -	} else if (iommu->caps & RISCV_IOMMU_CAPABILITIES_SV48) {
+>> -		cfg.common.hw_max_vasz_lg2 = 48;
+>> -	} else if (iommu->caps & RISCV_IOMMU_CAPABILITIES_SV39) {
+>> -		cfg.common.hw_max_vasz_lg2 = 39;
+>> -	} else {
+>> -		dev_err(dev, "cannot find supported page table mode\n");
+>> -		return ERR_PTR(-ENODEV);
+>> -	}
+>> -	cfg.common.hw_max_oasz_lg2 = 56;
+>> +	if (flags & ~supported_flags)
+>> +		return ERR_PTR(-EOPNOTSUPP);
+>
+>This probably isn't needed since the switch checks it?
+>
 
-In order to only ask the "status control register or data register"
-question once, the variables in the status control if statement and
-the data register if statement that would be different depending on
-the type of floating point mode (for example,
-KVM_REG_RISCV_FP_F_REG(fcsr) would be KVM_REG_RISCV_FP_D_REG(fcsr) if
-the floating point mode was double) were made local variables of the
-entire function so that once the cpu passes the if statement inquiring
-whether it is double point mode or single point mode, all the
-variables that change depending on the type in the status control if
-statements and data register if statements will be set to the
-appropriate values they should be when in that mode before/when it
-enters the status control and data register if statements, allowing me
-to only have to ask those questions once and creating a dynamic code
-that changes based on the information. This results in a "asking the
-type then asking status control or data register question once"
-structure rather than a type-questions, type-questions redundant
-structure like before.
+Right, the switch already enumerates all valid combinations, and
+the default case returns -EOPNOTSUPP, so this check is
+redundant. I'll drop it, along with supported_flags, in v6.
 
-This results in faster cpu execution because despite the longer lines
-of code the cpu has to make less decisions, which saves time in case,
-due to its tendency to make assumptions about what an if statement will
-evaluate to, it has to backpedal because it realized it needed to go
-down a different if statement/path. Finding an address via my
-bare-metal approach is also faster than looking up an object properties
-and then an array. It is also more maintainable in the future. If the
-original code needed to be changed, you would have to remember to do
-the same thing to both type blocks whereas mine would just require a
-change in the beginning if statements. If a new floating point mode was
-added you have to ask those same questions all over again, which may
-make the code longer in the long run.
+>> [ ... 30 lines skipped ... ]
+>> +	switch (flags) {
+>> +	case 0:
+>> +		cfg.common.features |= BIT(PT_FEAT_SIGN_EXTEND);
+>> +		if (iommu->caps & RISCV_IOMMU_CAPABILITIES_SV57) {
+>> +			cfg.common.hw_max_vasz_lg2 = 57;
+>> +		} else if (iommu->caps & RISCV_IOMMU_CAPABILITIES_SV48) {
+>> +			cfg.common.hw_max_vasz_lg2 = 48;
+>> +		} else if (iommu->caps & RISCV_IOMMU_CAPABILITIES_SV39) {
+>> +			cfg.common.hw_max_vasz_lg2 = 39;
+>> +		} else {
+>> +			ret = -ENODEV;
+>> +			goto err_free;
+>> +		}
+>> +		domain->pscid = ida_alloc_range(&riscv_iommu_pscids, 1,
+>> +						RISCV_IOMMU_MAX_PSCID, GFP_KERNEL);
+>> +		if (domain->pscid < 0) {
+>> +			ret = -ENOMEM;
+>> +			goto err_free;
+>> +		}
+>> +		break;
+>
+>I'd prefer you make functions riscv_iommu_init_domain_s1/s2() to put
+>this in, it will be clearer
+>
 
-I also renamed reg_num to token_reg_num in my code as I felt it made
-it clearer that it was the register number the application wants and
-requested in a token. It differentiated it from the many other
-variables with the word reg in it.
+Agreed. In v6, I will move the page table mode selection, the
+PSCID/GSCID allocation, and the stage-specific feature bits
+into riscv_iommu_init_domain_s1/s2().
 
-Signed-off-by: Paul White <paul.white.kernel@gmail.com>
----
-v2:
-- Only checked whether size token listed was 32 or 64 bits, which could
-  create/allow tokens with mismatched sizes and types to pass.
-  Should've checked if token's size was correct for its FP type. Did
-  this by replacing u32 and u64 parts with byte_offset because it is
-  mode-dependent local variable.
----
- arch/riscv/kvm/vcpu_fp.c | 68 +++++++++++++++++++++++-----------------
- 1 file changed, 39 insertions(+), 29 deletions(-)
+Thanks,
+Fangyu
 
-diff --git a/arch/riscv/kvm/vcpu_fp.c b/arch/riscv/kvm/vcpu_fp.c
-index bb11e6757d34..da4f83be6b19 100644
---- a/arch/riscv/kvm/vcpu_fp.c
-+++ b/arch/riscv/kvm/vcpu_fp.c
-@@ -83,41 +83,51 @@ int kvm_riscv_vcpu_get_reg_fp(struct kvm_vcpu *vcpu,
- 	struct kvm_cpu_context *cntx = &vcpu->arch.guest_context;
- 	unsigned long __user *uaddr =
- 			(unsigned long __user *)(unsigned long)reg->addr;
--	unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
-+	unsigned long token_reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
- 					    KVM_REG_SIZE_MASK |
- 					    rtype);
- 	void *reg_val;
- 
-+	u32 *fcsr_addr;
-+	void *f_array_addr;
-+	size_t byte_offset = 0;
-+	unsigned long offical_fcsr_num = 0;
-+	unsigned long offical_first_reg = 0;
-+	unsigned long offical_last_reg = 0;
-+
- 	if ((rtype == KVM_REG_RISCV_FP_F) &&
- 	    riscv_isa_extension_available(vcpu->arch.isa, F)) {
-+		fcsr_addr = &cntx->fp.f.fcsr;
-+		f_array_addr = &cntx->fp.f.f;
-+		byte_offset = 4;
-+		offical_fcsr_num = KVM_REG_RISCV_FP_F_REG(fcsr);
-+		offical_first_reg = KVM_REG_RISCV_FP_F_REG(f[0]);
-+		offical_last_reg = KVM_REG_RISCV_FP_F_REG(f[31]);
-+	} else if  ((rtype == KVM_REG_RISCV_FP_D) &&
-+			   riscv_isa_extension_available(vcpu->arch.isa, D)) {
-+		fcsr_addr = &cntx->fp.d.fcsr;
-+		f_array_addr = &cntx->fp.d.f;
-+		byte_offset = 8;
-+		offical_fcsr_num = KVM_REG_RISCV_FP_D_REG(fcsr);
-+		offical_first_reg = KVM_REG_RISCV_FP_D_REG(f[0]);
-+		offical_last_reg = KVM_REG_RISCV_FP_D_REG(f[31]);
-+	} else {
-+		return -ENOENT;
-+	}
-+
-+	if (token_reg_num == offical_fcsr_num) {
- 		if (KVM_REG_SIZE(reg->id) != sizeof(u32))
- 			return -EINVAL;
--		if (reg_num == KVM_REG_RISCV_FP_F_REG(fcsr))
--			reg_val = &cntx->fp.f.fcsr;
--		else if ((KVM_REG_RISCV_FP_F_REG(f[0]) <= reg_num) &&
--			  reg_num <= KVM_REG_RISCV_FP_F_REG(f[31])) {
--			reg_num = array_index_nospec(reg_num,
--					ARRAY_SIZE(cntx->fp.f.f));
--			reg_val = &cntx->fp.f.f[reg_num];
--		} else
--			return -ENOENT;
--	} else if ((rtype == KVM_REG_RISCV_FP_D) &&
--		   riscv_isa_extension_available(vcpu->arch.isa, D)) {
--		if (reg_num == KVM_REG_RISCV_FP_D_REG(fcsr)) {
--			if (KVM_REG_SIZE(reg->id) != sizeof(u32))
--				return -EINVAL;
--			reg_val = &cntx->fp.d.fcsr;
--		} else if ((KVM_REG_RISCV_FP_D_REG(f[0]) <= reg_num) &&
--			   reg_num <= KVM_REG_RISCV_FP_D_REG(f[31])) {
--			if (KVM_REG_SIZE(reg->id) != sizeof(u64))
--				return -EINVAL;
--			reg_num = array_index_nospec(reg_num,
--					ARRAY_SIZE(cntx->fp.d.f));
--			reg_val = &cntx->fp.d.f[reg_num];
--		} else
--			return -ENOENT;
--	} else
-+		reg_val = fcsr_addr;
-+	} else if ((offical_first_reg <= token_reg_num) && (token_reg_num <= offical_last_reg)) {
-+		if (KVM_REG_SIZE(reg->id) != byte_offset)
-+			return -EINVAL;
-+		token_reg_num = array_index_nospec(token_reg_num,
-+						   32);
-+		reg_val = (u8 *)f_array_addr + (token_reg_num * byte_offset);
-+	} else {
- 		return -ENOENT;
-+	}
- 
- 	if (copy_to_user(uaddr, reg_val, KVM_REG_SIZE(reg->id)))
- 		return -EFAULT;
-@@ -144,9 +154,9 @@ int kvm_riscv_vcpu_set_reg_fp(struct kvm_vcpu *vcpu,
- 		if (reg_num == KVM_REG_RISCV_FP_F_REG(fcsr))
- 			reg_val = &cntx->fp.f.fcsr;
- 		else if ((KVM_REG_RISCV_FP_F_REG(f[0]) <= reg_num) &&
--			  reg_num <= KVM_REG_RISCV_FP_F_REG(f[31])) {
-+			 reg_num <= KVM_REG_RISCV_FP_F_REG(f[31])) {
- 			reg_num = array_index_nospec(reg_num,
--					ARRAY_SIZE(cntx->fp.f.f));
-+						     ARRAY_SIZE(cntx->fp.f.f));
- 			reg_val = &cntx->fp.f.f[reg_num];
- 		} else
- 			return -ENOENT;
-@@ -161,7 +171,7 @@ int kvm_riscv_vcpu_set_reg_fp(struct kvm_vcpu *vcpu,
- 			if (KVM_REG_SIZE(reg->id) != sizeof(u64))
- 				return -EINVAL;
- 			reg_num = array_index_nospec(reg_num,
--					ARRAY_SIZE(cntx->fp.d.f));
-+						     ARRAY_SIZE(cntx->fp.d.f));
- 			reg_val = &cntx->fp.d.f[reg_num];
- 		} else
- 			return -ENOENT;
--- 
-2.53.0
-
+>It looks ok otherwise
+>
+>Reviewed-by: Jason Gunthorpe <jgg@nvidia.com>
+>
+>--
+>Jason
 
 -- 
 kvm-riscv mailing list
