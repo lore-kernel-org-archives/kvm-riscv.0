@@ -2,102 +2,95 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 684D2606A31A
-	for <kvm-riscv@archiver.kernel.org>; Fri, 30 Oct 2026 18:36:59 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 42E1D606A31A
+	for <kvm-riscv@archiver.kernel.org>; Fri, 30 Oct 2026 18:57:18 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=f+jH189A;
-	dkim=fail reason="signature verification failed" (2048-bit key, unprotected) header.d=tenstorrent.com header.i=@tenstorrent.com header.a=rsa-sha256 header.s=google header.b=CM5SjNC/
+	dkim=pass (2048-bit key, unprotected) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=WTuhCd1G;
+	dkim=fail reason="signature verification failed" (2048-bit key, unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=aTmUcgIn
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Unsubscribe-Post:List-Owner;
-	bh=+WhQpT6dUh+PnsHPprt8kAccuZrA2kowAcsBlgUTeWQ=; b=f+jH189A5fEct2/Fnc2sruQbLj
-	Pyof1VEaW5uD6WmElFYDNkYEwqDzv7qf7q4+999ocZ6Syd7o+dPIcKeHKb7Fm8zDI/7DUyg6ddfqE
-	1fx+xrfd0Ins6ehSJNHN+K15oLuy1/xtUYgoiLqia0EcCCe16Q/OSglb7F49VcriSutLWOlDigssY
-	SmODqMCwYVW7e+0NqRezUPVsAVUt0c/w1xbgiOkpuTeeJInlDDEyLMLC79+9SsQgZ8KLlvEMnu/Wt
-	VGvbZ4VkS4JAs4j7kETK+KqL+1JUYhuJypqofKzAq5KPFId/6+ThkI3acrGV5Yr26tVSoNBNLcecQ
-	Ep4uMZjA==;
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID:
+	References:Mime-Version:In-Reply-To:Date:Reply-To:Content-ID:
+	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+	:Resent-Message-ID:List-Unsubscribe-Post:List-Owner;
+	bh=stkOAQzPzFUJ0OuMr9iGyzyny72gAhzYmv/GFQt5hQM=; b=WTuhCd1GaSKlQ9NQfsXHFUMIph
+	CPL5d7yuS+uU/Gq1kL7+tYRHENaV1XSpFeWmn/BVjTa2KsBorHwXaiudxbUPyB8iuer3YznLAQFlM
+	c7UDs7ZCKk4Ob/plUfBxTYxmYW8k017OHIUGMmrLTITzkMU4TQwfIN5/sL61+PrU4XwcFP+GbDcX5
+	FQKofAGFzoUtZJoiCXvCOAKP6aeyNURTsSTr4/tVDDptvGlDHt9LxDxnB3GhibVongodge0u7dgf4
+	7txDOwMPudId651WTSnDbsWO51bey8an+nxOwTu7NiCa8zHH2y6Rin7c4FbQXo3LOvfahUvFDjink
+	lZ7Mq0dg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xMrTF-0000000CPk8-3UOa;
-	Fri, 30 Oct 2026 18:36:58 +0000
-Received: from mail-yx1-xb129.google.com ([2607:f8b0:4864:20::b129])
+	id 1xMrmv-0000000CRDS-0R5S;
+	Fri, 30 Oct 2026 18:57:17 +0000
+Received: from mail-pj1-x1047.google.com ([2607:f8b0:4864:20::1047])
 	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xMrTC-0000000CPit-0BV4
+	id 1xMrmr-0000000CRC2-30x4
 	for kvm-riscv@lists.infradead.org;
-	Fri, 30 Oct 2026 18:36:56 +0000
-Received: by mail-yx1-xb129.google.com with SMTP id 956f58d0204a3-67a2efec15cso1061069d50.0
-        for <kvm-riscv@lists.infradead.org>; Fri, 30 Oct 2026 11:36:52 -0700 (PDT)
+	Fri, 30 Oct 2026 18:57:16 +0000
+Received: by mail-pj1-x1047.google.com with SMTP id 98e67ed59e1d1-3ab1e771632so1661900a91.1
+        for <kvm-riscv@lists.infradead.org>; Fri, 30 Oct 2026 11:57:11 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=tenstorrent.com; s=google; t=1793385411; x=1793990211; darn=lists.infradead.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=lnreq8dc1kXyWMWD+2wEJ3SBKmyDtG659lWmXyFpFB8=;
-        b=CM5SjNC//RLrfeNV/4hdBMSyN/gyd0aecXZToXYX1lL86OH0jyqNiYfSzm4k/mNg05
-         nh7RUlU9gnKUGKBW+BLdupJdDZfxqL3UpgA47537kZXamSnXZJF/x4rW0KSS/mea2z8l
-         UWkdwc7mBwEFYQVkmSIsh1FqWs5BVjit7LrdYaZM2fsUoZ+Tc2Rum4ayJre+PXCxfPuZ
-         652K88+nKf2mBC6V4p32cZ/hh7VjBqLfoLymCKYsIc/kLyE7+aEzJnmmHRBQ2B+wmRvV
-         CN06ds+/ljvG1uPmub57PSHSOEtTajC/155YLkiGMtNKJ6Umpa5z/SQAx0UmqWdQtHNS
-         iu1g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793385412; x=1793990212;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+        d=google.com; s=20260707; t=1793386631; x=1793991431; darn=lists.infradead.org;
+        h=content-type:cc:to:from:subject:message-id:references:mime-version
+         :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=lnreq8dc1kXyWMWD+2wEJ3SBKmyDtG659lWmXyFpFB8=;
-        b=uM0hg2D2sduKFgtdKfNkLXmh6snReVxxxtQuwStR6EiWWl0Mrxn6Zgdx6I5mDHoObP
-         vExUUTkFrmX4NjwxK3Mtbgy4prrjCdVLTLsVcj0CxzdNkwOXdvm6J7HzvbIPriWHOVUl
-         E3KlBUtucnahPEgG5+i68ObgxzYfsikfO59Tgsjr2tW3ILX8g2pRsLx/ZZIZWyWHSwVb
-         HdUV3pcuMnkcwI8xlySO+SSWSJLC2nDAlp8ByeDH4N9AAQ2CGlRKtyhnbmdizXM3r2Af
-         tPVrCp8sol1apARluW+MX0rp2HHrmh1ktu8spvHHR8xDBcQdq33er/5RAr4cr26XmUWI
-         hB8w==
-X-Forwarded-Encrypted: i=1; AKwUvBwFWIm1lIJNkYdYL/7IkV3yQy6517ocspoBAwP+O/oDSuZniLZ/bMHxQ1B/Mp4rryUcIn3UhjSY7B8=@lists.infradead.org
-X-Gm-Message-State: AFq9FYL0VsvwrjW6RnmYQ51ERgaY3ScsTWvziSVdgUBl+p3E0CdLEmJS
-	1rPS3oP6Pwa5jirdXuzj9pKGIOz0PiESovq8iugb/dqB6f6SURPQ6malrvnY3wVkMdw=
-X-Gm-Gg: AYBFou3Sp8lxoj69g3DVvYB99biWBfhk6KHlM5H4v4B2vSEPBdLB+u1d6Fg6lO1gKX8
-	jrerFMS0pcZaG772NftHk7CawOKLflu4ynEuxxGoedJfcUROSwHPmbabFf1O+QjPVlBYucJqpKp
-	EuL5qCmnAkSkP9pm9YhAo9hk2mFcC1gbUL98i7rCgiUjxfun1E38VBNoZRrYvKu90oj50VmZRPw
-	4fp1yIooNiq5CmdJIE4Z1Q6Bx0sJ8I0S/p2dLTzcHlyiEV3xWH/K9EpjoCfLwtnqLKq1Q6rkCgz
-	2+/SDykSQ+A+JjOzkNxz53yq8zjuemX0kE0jl5LW+P4WbkLUQ34VxpFq080roGWZOx8HBI7dlFJ
-	SlYl3X0dD6+JtDryb8PN7h31tyAd5NfL2LLv92XNS8KUVe0cXrCS8u6N+ZIdN9PciA6ayjWZv58
-	rQOMYWeqXBwc39Mpbag/HeRXeHNEneUwXghdiNCiOFmkCNjag8Ye3jkyc1NgBUH8SfHtyD7U7Ws
-	Y+aEgWzneazOtnlnC1mk6ZIC22r8V9XrsJVdVo8b2D6SgXRcS+fZ2JT61/aNtltlD8DERSiIRNW
-	MF8wTB05BF7oow2ztKqQ/SveMgP3EGz3KPs8GfhOHgxeUsaAqsJP5NJmEWEclw==
-X-Received: by 2002:a53:b4c3:0:b0:672:c99f:5f5a with SMTP id 956f58d0204a3-67a8d398a79mr3576548d50.8.1793385411605;
-        Fri, 30 Oct 2026 11:36:51 -0700 (PDT)
-Received: from localhost ([12.55.13.134])
-        by smtp.gmail.com with ESMTPSA id 956f58d0204a3-67baf344b20sm454126d50.20.2026.10.30.11.36.50
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 30 Oct 2026 11:36:51 -0700 (PDT)
-Date: Fri, 30 Oct 2026 13:36:49 -0500
-From: Andy Chiu <tchiu@tenstorrent.com>
-To: Samuel Holland <samuel.holland@sifive.com>
-Cc: Samuel Holland <samuel.holland@sifive.com>,
-	Paul Walmsley <pjw@kernel.org>, Anup Patel <anup@brainfault.org>,
-	Atish Patra <atish.patra@linux.dev>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"kvm-riscv@lists.infradead.org" <kvm-riscv@lists.infradead.org>,
-	"linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>,
-	linux-riscv <linux-riscv-bounces@lists.infradead.org>
-Subject: Re:  riscv: Deprecate vector state prctl/sysctl
-Message-ID: <auTjwQoRqV5ayKdx@Tao-Chiu's-Mac>
-References: <20261007085126.222688-1-samuel.holland@sifive.com>
- <20261007085126.222688-3-samuel.holland@sifive.com>
- <DM9V74ODA23L.36WJYLIGDDVMG@qti.qualcomm.com>
+        bh=AqsM43MOtFOSSZV0EEwrjw089w0rw12SYsGwf7bUH9w=;
+        b=aTmUcgInJWzGDcA3hBhixPsoo7/pcFOLe2gkbrlA2VVGFh2Cjrl6NL1VUv3GmGHr94
+         Pb2mDoXopi4e0069911wwauOZzNlqi5DLSrqaRNc1NFHotcI3FCuBJ7rQ1MN96g9UCxK
+         txxd63MRtsUyuoc7aS3d0bR/18XfQzIQgndopwIAKm6xX1VvLLbdqwujnhQwMFlHSSMQ
+         sbooExNv4RvxHPjTYmJ8gM5NPqkt/CbAzWSNbwn+kMsRZS1VqPFua6IaxcKDfm7XMdb4
+         /EO0Jgb1tbTMeuWvzExe4NOwuVH8yl9k6Jeg1o3qWz3z011zayN4duzg9r4QmjDxWI4T
+         tXZg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793386631; x=1793991431;
+        h=content-type:cc:to:from:subject:message-id:references:mime-version
+         :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=AqsM43MOtFOSSZV0EEwrjw089w0rw12SYsGwf7bUH9w=;
+        b=DI6jBsbyxUlRUJMeNhS6pOZUXgb5Pr8rQOZ4CJS871RKq72cYefcHsHiwis9+aC0Dw
+         FwxTWpLp1MaKeJhMijNmRimqJExVjEs0gqGD+qlQBmVGTabEvoTVHCbqx0/2mxLHnJ7z
+         aomMK4ooXon/xugaXJcabDNo+dfuE9T1AjC5u6bRb+ZdbQc7N4TAVhnlY9l9q3Kxn8mT
+         VP9D/QeqUVeAU9z7VmbN8pmPKTCBMFgREkH11RpwDGeZn5XlSuSkmfLtZFoVNYnKOAh2
+         XVgA1+2S0b92C/zxCPDGATm0YE2//F2F4IbSqqouUzs0PmwBOAtS8tQZj2eL+GjO4P+j
+         fMBg==
+X-Forwarded-Encrypted: i=1; AKwUvBww5sikKoydvUD9yTDGeH0GeY7NNVCFgFr3GsGgyhkk4hq8xq4aJXyWyivXNnjNfnERbHEGO1bMn2g=@lists.infradead.org
+X-Gm-Message-State: AFq9FYL76lLLNcX5SDMxxpVK3hKKL4g3WaxjsulCT6LeECnYSel0KLJW
+	oUwPxJqIfT4bRtCh/DQFfXbFaReVP46KZGUunFbdIOSrKdyOWqGGWJv7nd068Z7ZIHVAxRRTDJI
+	ye1vhzA==
+X-Received: from pjbbo5.prod.google.com ([2002:a17:90b:905:b0:3ac:24b3:3484])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90a:c2c6:b0:3ac:b3c7:de04
+ with SMTP id 98e67ed59e1d1-3ae897aa752mr1800362a91.34.1793386630946; Fri, 30
+ Oct 2026 11:57:10 -0700 (PDT)
+Date: Fri, 30 Oct 2026 11:57:10 -0700
+In-Reply-To: <auStM0rbFol79h5o@li-fbf77acc-29ba-11b2-a85c-e8e934f50a46.ibm.com>
 X-Archived-By: <archiver.kernel.org>
-MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <DM9V74ODA23L.36WJYLIGDDVMG@qti.qualcomm.com>
+Mime-Version: 1.0
+References: <20261028190259.1819571-1-seanjc@google.com> <20261028190259.1819571-4-seanjc@google.com>
+ <auStM0rbFol79h5o@li-fbf77acc-29ba-11b2-a85c-e8e934f50a46.ibm.com>
+Message-ID: <auTohixp3V5-vNsB@google.com>
+Subject: Re: [PATCH 3/7] KVM: PPC: Explicitly force IPIs when directly kicking vCPUs
+From: Sean Christopherson <seanjc@google.com>
+To: Gautam Menghani <gautam@linux.ibm.com>
+Cc: Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, 
+	Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>, 
+	Huacai Chen <chenhuacai@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, 
+	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+	Paolo Bonzini <pbonzini@redhat.com>, Fuad Tabba <fuad.tabba@linux.dev>, 
+	Joey Gouly <joey.gouly@arm.com>, Steffen Eiden <seiden@linux.ibm.com>, 
+	Suzuki K Poulose <suzuki.poulose@arm.com>, Zenghui Yu <yuzenghui@huawei.com>, 
+	Nicholas Piggin <npiggin@gmail.com>, Atish Patra <atish.patra@linux.dev>, 
+	Alexandre Ghiti <alex@ghiti.fr>, linux-arm-kernel@lists.infradead.org, 
+	kvmarm@lists.linux.dev, kvm@vger.kernel.org, loongarch@lists.linux.dev, 
+	linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
+	linux-kernel@vger.kernel.org, Stefan Teodorescu <fane@google.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261030_113654_097376_8F6178C7 
-X-CRM114-Status: GOOD (  22.73  )
-X-Spam-Score: -2.1 (--)
+X-CRM114-CacheID: sfid-20261030_115713_753944_684893E0 
+X-CRM114-Status: GOOD (  22.78  )
+X-Spam-Score: -9.5 (---------)
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -110,73 +103,71 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
-X-Spam-Status: No, score=-8.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_ADSP_CUSTOM_MED,DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Hi Samuel and Radim,
-
-On Tue, Oct 20, 2026 at 06:08:10PM +0000, Radim Krcmar wrote:
-> 2026-10-07T01:51:17-07:00, Samuel Holland <samuel.holland@sifive.com>:
-> > The ability to prevent userspace from executing vector instructions was
-> > provided as a escape hatch for software that was broken by adding vector
-> > state to the signal context. This appears to be unused in practice, and
-> > creates confusion in the extension support returned by hwprobe(), as in
-> > this one special case an extension reported as present by hwprobe() is
-> > unusable.
-> >
-> > Since we believe it is safe to always allow vector usage, hide the prctl
-> > and sysctl behind a Kconfig option and mark them as deprecated, so they
-> > can be removed in the future. Note that significant userspace software
-> > like glibc already considers these controls explicitly unsupported.
-> 
-> KVM on QEMU breaks because of -EINVAL:
-> 
->   static bool kvm_cpu_realize(CPUState *cs, Error **errp)
->   { [...]
->       if (riscv_has_ext(&cpu->env, RVV)) {
->           ret = prctl(PR_RISCV_V_SET_CONTROL, PR_RISCV_V_VSTATE_CTRL_ON);
->           if (ret) {
->               error_setg_errno(errp, errno,
->                                "Error in prctl PR_RISCV_V_SET_CONTROL");
->               return false;
->           }
->       }
-> 
-> We could have somewhat softer deprecations by defining that the vector
-> prctls succeed when user intent matches the current state and deny any
-> change.
-
-Thanks for spotting this, after discussing with the team, we would
-suggest the following moving forward:
-
- - The prctl and sysctl interface should remain, and PR_RISCV_V_GET_CONTROL
-   always returns the enablement status.
- - Turning on vector with prctl(PR_RISCV_V_SET_CONTROL, PR_RISCV_V_VSTATE_CTRL_ON)
-   should always success on a platform that supports vector.
- - Turning off vector with prctl, or sysctl interface should return
-   -EINVAL, and must not turn off vector at next execv. A pr_warn here
-   could be helpful to inform system administrator that this operation
-   is deprecated.
- - Selftest should be updated and verify that turning off vector with
-   prctl does not take any effect.
-
-I am happy to help on any part of the work if needed, just let me know.
-
-> 
-> Or is RISC-V still bold enough to "fix" userspace and hope for the best?
-> (High chance of Linus.)
-> 
-> >
-> > Signed-off-by: Samuel Holland <samuel.holland@sifive.com>
+On Fri, Oct 30, 2026, Gautam Menghani wrote:
+> On Wed, Oct 28, 2026 at 12:02:55PM -0700, Sean Christopherson wrote:
+> > Explicitly force an IPI when invoking kvm_vcpu_kick() directly instead of
+> > relying on kvm_arch_vcpu_should_kick() to unconditionally return 1/true.
+> > This will allow dropping kvm_arch_vcpu_should_kick() in favor of
+> > kvm_request_needs_ipi().
+> > 
+> > No functional change intended (1 || 1 == true).
+> > 
+> > Signed-off-by: Sean Christopherson <seanjc@google.com>
 > > ---
+> >  arch/powerpc/include/asm/kvm_ppc.h | 13 ++++++++++++-
+> >  arch/powerpc/kvm/book3s.c          |  4 ++--
+> >  arch/powerpc/kvm/book3s_pr.c       |  2 +-
+> >  arch/powerpc/kvm/booke.c           |  6 +++---
+> >  arch/powerpc/kvm/e500_emulate.c    |  2 +-
+> >  arch/powerpc/kvm/powerpc.c         |  2 +-
+> >  6 files changed, 20 insertions(+), 9 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+> > index 169ea6a7fbad..bbe7378ad0ef 100644
+> > --- a/arch/powerpc/include/asm/kvm_ppc.h
+> > +++ b/arch/powerpc/include/asm/kvm_ppc.h
+> > @@ -30,6 +30,17 @@
+> >  #endif
+> >  #include <asm/inst.h>
+> >  
+> > +/*
+> > + * TODO: For unknown reasons, KVM PPC has historically ignored vcpu->mode when
+> > + *       determining if kicking a vCPU needs an IPI.  Either document why that
+> > + *       behavior is necessary, or drop this helper and the @force param from
+> > + *       __kvm_vcpu_kick().
+> > + */
+> > +static inline void kvmppc_vcpu_kick(struct kvm_vcpu *vcpu)
+> > +{
+> > +	__kvm_vcpu_kick(vcpu, false, true);
+> > +}
+> > +
 > 
-> Would be nice to also update selftests and vector.rst.
+> AFAICS, there is no reason for PPC to always return 1. I was looking at
+> the old patches on mailing list and found this - https://lore.kernel.org/kvm/0FEE585F-5E21-47F2-A3F0-AD0DE05EBB43@suse.de
 > 
-> Thanks.
+> ```
+> How about we return 1 for kvm_arch_vcpu_in_guest_mode() on !x86 always, just
+> like it's done today basically? Then we can worry about needless IPIs later
+> and don't regress from the respective current kick implementations.
+> ```
+
+FWIW, I found that as well, but there are a metric ton of kvm_vcpu_kick() calls
+that have been added since then, and they scared me.
+
+> However, I'll do some testing and get back by mid next week to make sure
+> there are no suprises.
+
+Thanks!  If we can drop the PPC behavior, that would be wonderful!  Though if
+we do that, it should be for 7.5 in a follow-up (this series really should go
+into 7.4 due to the SNP issue).
 
 -- 
 kvm-riscv mailing list
