@@ -2,84 +2,107 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1F217606A32F
-	for <kvm-riscv@archiver.kernel.org>; Sat, 31 Oct 2026 08:30:54 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6A2AA60A2627
+	for <kvm-riscv@archiver.kernel.org>; Sun,  1 Nov 2026 22:15:57 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=1hXkatab;
-	dkim=fail reason="signature verification failed" (1024-bit key, unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=Fgf1Ut1M
+	dkim=pass (2048-bit key, unprotected) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=4QdJ27Be;
+	dkim=fail reason="signature verification failed" (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kSuQm1gi
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
-	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Date:
+	Message-Id:From:Subject:MIME-Version:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
 	List-Unsubscribe-Post:List-Owner;
-	bh=o9VArjuVNWSybT9AzQgXSkytYHeFI3W5noHCYVr0M78=; b=1hXkatabp3zGEgvOJlZFiQipgx
-	d5G6hUFvbMGQoe224iIS/icT27z5m6yWAq6bD36drNkiyRqzLwLjtdV2nJsNkabeEEe4gR4ISnLDz
-	XaZMjfRfw8zuhPgT+jw2Czr5cul8/Rdog9beyxtI97y7lCpsJ33hGJH9Uv5JW7OOBC65LQcV48Hrd
-	C4ArwFkx/pMxcrEsu6yxS7pAqz5NYShwLj5Z/o+e2/XNINoY55VsMLRuW7Bb3Y53JFKDtUoDNbTV+
-	Z5ss0kaaFACwNFgij0dtXZHK0Io+Q9Rp4Zna1qdXdu6LNdtgyJACcatKUPuKGw829MGgF5ZppL31C
-	XAnPSGMg==;
+	bh=VYN659++QhU+pekXHg5IJUlV37OkGmb/UzFb6Xa5Di4=; b=4QdJ27BeuXaUJ6x/dN+hHqyapM
+	aCjSVJlakKRHR+pzuDhGjZfAaUoeC3SVxImFqTnUZjItzxXuQpMnG4WiO4/uMxKyskQtqF53vXaUm
+	aKQkkl0VThHHUkLyJd3ZbKdgAcS25lryY7OzZ+7cJq/QAgDuU6qKBmoHBzhkq1l6YhKtIJcoIIQec
+	6Bi60IjlYVt/4w+6lUgCri5jeN0WCjrBKqXxNK4Tjg3c0pbh1AzyDVMhhfNTdpk/IzROF+ZXqpl5J
+	RNHPDzKLuG5xkizuY0ItflBjdZ+FCSi5SYchT777V413TP5xlwlzeTbBJ1jOaYb8Yfvo0n9nN2a6W
+	n0wh4sTQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xN4UH-0000000D3tS-2rHN;
-	Sat, 31 Oct 2026 08:30:53 +0000
-Received: from out30-113.freemail.mail.aliyun.com ([115.124.30.113])
+	id 1xNdqG-0000000Ez2b-31Os;
+	Sun, 01 Nov 2026 22:15:56 +0000
+Received: from sea.source.kernel.org ([2600:3c0a:e001:78e:0:1991:8:25])
 	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xN4U4-0000000D3au-2wYV;
-	Sat, 31 Oct 2026 08:30:43 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux.alibaba.com; s=default;
-	t=1793435437; h=From:To:Subject:Date:Message-Id:MIME-Version;
-	bh=11EZsZQc/6GCS8JBX6hOIFtCcJazynSKhMoTlW4DEkk=;
-	b=Fgf1Ut1M55KuTVDf6TpnEqUbAfHX+vA9opzTWJBniyV7KFaraMzpObO6BoKNKmvVn1ZZQna6Sql1HySydL9w4eploM4+3VQyNSega74z8GxOYuEDTIWn4P+Kxjztreyn0lW7b5SMAzXyIJWhuhcS2Xi+CaQqbVdXAtPAOBwpR28=
-X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R161e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam033045133197;MF=fangyu.yu@linux.alibaba.com;NM=1;PH=DS;RN=29;SR=0;TI=SMTPD_---0XDo-2nW_1793435433;
-Received: from localhost.localdomain(mailfrom:fangyu.yu@linux.alibaba.com fp:SMTPD_---0XDo-2nW_1793435433 cluster:ay36)
-          by smtp.aliyun-inc.com;
-          Sat, 31 Oct 2026 16:30:34 +0800
-From: fangyu.yu@linux.alibaba.com
-To: tomasz.jeznach@linux.dev,
-	joro@8bytes.org,
-	will@kernel.org,
-	robin.murphy@arm.com,
-	pjw@kernel.org,
-	palmer@dabbelt.com,
-	aou@eecs.berkeley.edu,
-	alex@ghiti.fr,
-	baolu.lu@linux.intel.com,
-	jroedel@suse.de,
-	zong.li@sifive.com,
-	andrew.jones@linux.dev,
-	anup@brainfault.org,
-	jgg@nvidia.com,
-	jgg@ziepe.ca,
-	kevin.tian@intel.com,
-	atish.patra@linux.dev,
-	skhawaja@google.com,
-	vasant.hegde@amd.com,
-	joerg.roedel@amd.com,
-	tanchi25@mails.ucas.ac.cn,
-	gong.shuai@sanechips.com.cn
-Cc: fangyu.yu@linux.alibaba.com,
-	guoren@kernel.org,
-	iommu@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	linux-riscv@lists.infradead.org,
-	kvm-riscv@lists.infradead.org,
-	Nutty Liu <nutty.liu@hotmail.com>
-Subject: [PATCH v6 08/10] iommu/riscv: Pre-enable GADE for second-stage domains
-Date: Sat, 31 Oct 2026 16:30:12 +0800
-Message-Id: <20261031083014.15040-9-fangyu.yu@linux.alibaba.com>
-X-Mailer: git-send-email 2.39.3 (Apple Git-146)
-In-Reply-To: <20261031083014.15040-1-fangyu.yu@linux.alibaba.com>
-References: <20261031083014.15040-1-fangyu.yu@linux.alibaba.com>
+	id 1xNdqD-0000000Eyva-2TiJ;
+	Sun, 01 Nov 2026 22:15:53 +0000
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 5095E44009;
+	Sun,  1 Nov 2026 22:15:53 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 155181F00A1F;
+	Sun,  1 Nov 2026 22:15:53 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793571353;
+	bh=FTHI4iJKGW8nTdZJYWi2ZEsJRVp05NwkVgRYnkQTnQI=;
+	h=Subject:From:Date:References:In-Reply-To:To:Cc;
+	b=kSuQm1gig26F3a5hbFrlCEgTV6KZdAUm8pVgji64pGU9IHFtmj1+0lqa6FjFwtpwY
+	 RQDDMAWpx0nuTd442k2/dkXZmO3ak6/b0bODbLMMOiXHR7sqan7+OYTSomVvsVhatc
+	 5sO4YlxH84ZbDrCWiv6NIlf3enn6ckTlaSH0A2hbLwanZ7TAw2vRzqI9LjdgxD9mYw
+	 rVyzHjy74WbfzuCKilIc61p8YM/etpQQgk31aiPP5AoELP2cxYQDze2rDXYJz/8udp
+	 9mbnMTtDK0Vamho7QvOMgWKAobDTF7XMy60kwODafcPU8OakiOi1fCrlQV4kt03Hd9
+	 bPj8B6YTEsy3w==
+Received: from [10.30.226.235] (localhost [IPv6:::1])
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 032DA38003B8;
+	Sun,  1 Nov 2026 22:15:53 +0000 (UTC)
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261031_013040_912176_98E25740 
-X-CRM114-Status: UNSURE (   8.04  )
-X-CRM114-Notice: Please train this message.
-X-Spam-Score: -17.6 (-----------------)
+Subject: Re: [PATCH v6 00/39] mm: make VMA flag semantics explicit, eliminate
+ VM_SPECIAL
+From: patchwork-bot+linux-riscv@kernel.org
+Message-Id: <179357135155.2624073.13862678489444424470.git-patchwork-notify@kernel.org>
+Date: Sun, 01 Nov 2026 22:15:51 +0000
+References: <20261013-b4-mmap-prepare-vma-flag-sanify-v6-0-1aa3c9b139f9@kernel.org>
+In-Reply-To: <20261013-b4-mmap-prepare-vma-flag-sanify-v6-0-1aa3c9b139f9@kernel.org>
+To: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+Cc: linux-riscv@lists.infradead.org, akpm@linux-foundation.org,
+ liam@infradead.org, vbabka@kernel.org, jannh@google.com, pfalcato@suse.de,
+ david@kernel.org, rppt@kernel.org, surenb@google.com, mhocko@suse.com,
+ corbet@lwn.net, gregkh@linuxfoundation.org,
+ dennis.dalessandro@cornelisnetworks.com, jgg@ziepe.ca, leon@kernel.org,
+ paul@paul-moore.com, stephen.smalley.work@gmail.com, perex@perex.cz,
+ tiwai@suse.com, ast@kernel.org, daniel@iogearbox.net, andrii@kernel.org,
+ eddyz87@gmail.com, memxor@gmail.com, ziy@nvidia.com,
+ baolin.wang@linux.alibaba.com, nico.pache@linux.dev, ryan.roberts@arm.com,
+ dev.jain@arm.com, baohua@kernel.org, lance.yang@linux.dev,
+ usama.arif@linux.dev, kas@kernel.org, dgilbert@interlog.com,
+ James.Bottomley@HansenPartnership.com, mkp@kernel.org, simona@ffwll.ch,
+ deller@gmx.de, sre@kernel.org, jhubbard@nvidia.com, peterx@redhat.com,
+ mhiramat@kernel.org, oleg@redhat.com, peterz@infradead.org, tglx@kernel.org,
+ mingo@redhat.com, bp@alien8.de, dave.hansen@linux.intel.com, x86@kernel.org,
+ acme@kernel.org, namhyung@kernel.org, mark.rutland@arm.com, riel@surriel.com,
+ harry@kernel.org, juri.lelli@redhat.com, vincent.guittot@linaro.org,
+ maarten.lankhorst@linux.intel.com, mripard@kernel.org, tzimmermann@suse.de,
+ airlied@gmail.com, will@kernel.org, aneesh.kumar@kernel.org,
+ npiggin@gmail.com, arnd@arndb.de, muchun.song@linux.dev, osalvador@suse.de,
+ willy@infradead.org, jack@suse.cz, maz@kernel.org, oupton@kernel.org,
+ catalin.marinas@arm.com, maddy@linux.ibm.com, anup@brainfault.org,
+ pjw@kernel.org, palmer@dabbelt.com, aou@eecs.berkeley.edu,
+ borntraeger@linux.ibm.com, frankja@linux.ibm.com, imbrenda@linux.ibm.com,
+ agordeev@linux.ibm.com, gerald.schaefer@linux.ibm.com, hca@linux.ibm.com,
+ gor@linux.ibm.com, davem@davemloft.net, andreas@gaisler.com,
+ viro@zeniv.linux.org.uk, brauner@kernel.org, matthew.brost@intel.com,
+ joshua.hahnjy@gmail.com, rakie.kim@sk.com, byungchul@sk.com,
+ gourry@gourry.net, ying.huang@linux.alibaba.com, apopple@nvidia.com,
+ chrisl@kernel.org, kasong@tencent.com, shikemeng@huaweicloud.com,
+ nphamcs@gmail.com, baoquan.he@linux.dev, youngjun.park@lge.com,
+ hannes@cmpxchg.org, qi.zheng@linux.dev, shakeel.butt@linux.dev,
+ axelrasmussen@google.com, yuanchu@google.com, weixugc@google.com,
+ chengming.zhou@linux.dev, mhocko@kernel.org, miklos@szeredi.hu,
+ xu.xin@linux.dev, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ linux-doc@vger.kernel.org, linux-usb@vger.kernel.org,
+ linux-rdma@vger.kernel.org, selinux@vger.kernel.org,
+ linux-sound@vger.kernel.org, bpf@vger.kernel.org, linux-scsi@vger.kernel.org,
+ linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-trace-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev,
+ linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+ kvm-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+ sparclinux@vger.kernel.org, fuse-devel@lists.linux.dev,
+ ihor.solodrai@linux.dev, spasswolf@web.de, tiwai@suse.de,
+ emil@etsalapatis.com
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -92,58 +115,117 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-8.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	T_SPF_TEMPERROR,UNPARSEABLE_RELAY,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=4.0.1
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
+	autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-From: Fangyu Yu <fangyu.yu@linux.alibaba.com>
+Hello:
 
-Pre-enable RISCV_IOMMU_DC_TC_GADE in the device context when
-attaching a second-stage domain, if the IOMMU supports AMO_HWAD.
+This series was applied to riscv/linux.git (fixes)
+by Andrew Morton <akpm@linux-foundation.org>:
 
-Software pre-populates second-stage page tables with D set, so
-enabling GADE by default does not change normal behavior. When
-dirty tracking is enabled, iommufd clears the pre-set D bits and
-GADE becomes necessary for hardware to update the dirty bit on
-write access.
+On Tue, 13 Oct 2026 16:04:40 +0100 you wrote:
+> The VM_SPECIAL / VMA_SPECIAL_FLAGS mask conflates several unrelated
+> properties:
+> 
+> * Is this managed by core mm, or by a driver mapping MMIO, kernel-allocated
+>   pages, or even ordinary pages itself?
+> * Can it be expanded or merged?
+> * Is this a 'weird' case like mlock where migration might race and we
+>   'have' to set invalid flags to notify?
+> * Is it another 'weird' case where we just want to stop GUP from touching
+>   it?
+> 
+> [...]
 
-This avoids toggling GADE dynamically and keeps device context
-setup consistent with second-stage domain attachment.
+Here is the summary with links:
+  - [v6,01/39] mm/vma: fix mmap_prepare file handling, remove file_doesnt_need_get
+    (no matching commit)
+  - [v6,02/39] mm/vma: introduce and use vma_[flags_]can_merge()
+    https://git.kernel.org/riscv/c/86a779c53204
+  - [v6,03/39] mm: consistently validate VMA state after mmap[_prepare] hooks
+    https://git.kernel.org/riscv/c/9cae38dc11da
+  - [v6,04/39] mm/vma: ensure mmap_prepare doesn't set actions on a mergeable vma
+    https://git.kernel.org/riscv/c/6335c786299f
+  - [v6,05/39] mm: make map_kernel_pages_[prepare,complete] internal and unexported
+    https://git.kernel.org/riscv/c/2a234f79d416
+  - [v6,06/39] mm/vma: tidy up map kernel pages enum values
+    https://git.kernel.org/riscv/c/4852f3421456
+  - [v6,07/39] mm: assert mmap lock held, use new flags API in vm_insert_page[s]
+    https://git.kernel.org/riscv/c/dad8e88fcfce
+  - [v6,08/39] mm: add mmap action for discontiguous kernel page mapping
+    https://git.kernel.org/riscv/c/b7b4d8f37a4f
+  - [v6,09/39] docs: filesystems: update mmap_prepare docs for discontig kernel pgs
+    https://git.kernel.org/riscv/c/ae60723abb65
+  - [v6,10/39] drivers/usb/mon: update to use mmap_prepare + map kernel pages
+    https://git.kernel.org/riscv/c/5323bb5f6ef3
+  - [v6,11/39] infiniband: update hfi1 to use remap_vmalloc_range()
+    (no matching commit)
+  - [v6,12/39] selinux: reject writable opens of policy file, drop mmap shared/write check
+    https://git.kernel.org/riscv/c/c6ce4378f20a
+  - [v6,13/39] ALSA: pcm: use vm_insert_page() to map PCM status page
+    https://git.kernel.org/riscv/c/ceb0de27371f
+  - [v6,14/39] bpf: arena: mark arena_map_mmap() mappings VM_MIXEDMAP
+    https://git.kernel.org/riscv/c/0c2c9885c5e9
+  - [v6,15/39] mm/vma: add vma[_flags]_is_mm_managed() predicates
+    https://git.kernel.org/riscv/c/7fdbc26b69c0
+  - [v6,16/39] mm/vma: only allow mmap to clear VMA_MAYWRITE_BIT if not mm-managed
+    https://git.kernel.org/riscv/c/d99c4a302c5a
+  - [v6,17/39] mm/vma: add and use vma_[flags]_is_fixed_mapping
+    https://git.kernel.org/riscv/c/9201d0f5b9d5
+  - [v6,18/39] scsi: sg: convert mmap hook to mmap_prepare and rework
+    https://git.kernel.org/riscv/c/abdd54cef5fc
+  - [v6,19/39] fbdev: defio: assert FBINFO_VIRTFB, drop VM_IO, add VM_MIXEDMAP
+    https://git.kernel.org/riscv/c/19458d015fcc
+  - [v6,20/39] HSI: cmt_speech: convert mmap hook to mmap_prepare, refactor
+    https://git.kernel.org/riscv/c/5605c40895fc
+  - [v6,21/39] mm/gup: error out early on !VMA_MAYREAD_BIT VMAs
+    https://git.kernel.org/riscv/c/2d2b1c508f21
+  - [v6,22/39] uprobes: remove VM_IO, set VM_MIXEDMAP for mapped kernel pages
+    https://git.kernel.org/riscv/c/0d219bc3cb88
+  - [v6,23/39] mm/mlock: clear VMA_LOCKED_MASK over mmap callback
+    https://git.kernel.org/riscv/c/61e012ab9a1c
+  - [v6,24/39] mm/mlock: eliminate weird VMA_IO_BIT abuse and simplify
+    https://git.kernel.org/riscv/c/aea83f2694ed
+  - [v6,25/39] mm/vma: enforce that mm-managed mappings may not set VMA_IO_BIT
+    https://git.kernel.org/riscv/c/99fd6bf43d5d
+  - [v6,26/39] mm: remove VMA_IO_BIT check in vma[_flags]_is_mm_managed()
+    https://git.kernel.org/riscv/c/88d77002e1a1
+  - [v6,27/39] mm: remove hugetlb_inline.h
+    https://git.kernel.org/riscv/c/94c86564538e
+  - [v6,28/39] mm: rename is_vm_hugetlb_page() to vma_is_hugetlb()
+    (no matching commit)
+  - [v6,29/39] mm: drop some redundant checks around hugetlb VMAs
+    (no matching commit)
+  - [v6,30/39] mm/vma: introduce vma[_flags]_is_mm_backed()
+    https://git.kernel.org/riscv/c/44debd840ec9
+  - [v6,31/39] mm/madvise: update is_valid_guard_vma() to use vma_is_mm_backed()
+    https://git.kernel.org/riscv/c/fc95d1cf4a13
+  - [v6,32/39] mm/uffd: use predicates for userfaultfd checks
+    https://git.kernel.org/riscv/c/fb700342f506
+  - [v6,33/39] mm/madvise: use predicates for madvise(..., MADV_DOFORK)
+    https://git.kernel.org/riscv/c/1d1104fe6dc6
+  - [v6,34/39] mm: eliminate VMA_SPECIAL_FLAGS usage when hugetlb explicitly tested
+    https://git.kernel.org/riscv/c/531e56359ffb
+  - [v6,35/39] mm: eliminate VMA_SPECIAL_FLAGS check in lru_gen_look_around()
+    https://git.kernel.org/riscv/c/5997da57a09b
+  - [v6,36/39] mm: avoid use of VMA_SPECIAL_FLAGS in migrate_vma_setup()
+    https://git.kernel.org/riscv/c/8bf792b7afcb
+  - [v6,37/39] mm: eliminate VM_SPECIAL, VMA_SPECIAL_FLAGS
+    https://git.kernel.org/riscv/c/72a993449cb0
+  - [v6,38/39] fuse: dax: do not set VM_MIXEDMAP
+    https://git.kernel.org/riscv/c/b0d88bfa7515
+  - [v6,39/39] mm/huge_memory: remove vma_is_special_huge()
+    https://git.kernel.org/riscv/c/e2a1d080f510
 
-Signed-off-by: Fangyu Yu <fangyu.yu@linux.alibaba.com>
-Reviewed-by: Nutty Liu <nutty.liu@hotmail.com>
----
- drivers/iommu/riscv/iommu.c | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/drivers/iommu/riscv/iommu.c b/drivers/iommu/riscv/iommu.c
-index 082f55c44d20..fc7a80393833 100644
---- a/drivers/iommu/riscv/iommu.c
-+++ b/drivers/iommu/riscv/iommu.c
-@@ -1237,6 +1237,8 @@ static void riscv_iommu_iodir_update(struct riscv_iommu_device *iommu,
- 	for (i = 0; i < fwspec->num_ids; i++) {
- 		dc = riscv_iommu_get_dc(iommu, fwspec->ids[i]);
- 		tc = READ_ONCE(dc->tc);
-+		tc &= ~RISCV_IOMMU_DC_TC_GADE;
-+		tc |= new_dc->tc & RISCV_IOMMU_DC_TC_GADE;
- 		tc |= new_dc->ta & RISCV_IOMMU_DC_TC_V;
- 
- 		WRITE_ONCE(dc->fsc, new_dc->fsc);
-@@ -1353,6 +1355,8 @@ static int riscv_iommu_attach_paging_domain(struct iommu_domain *iommu_domain,
- 			FIELD_PREP(RISCV_IOMMU_DC_IOHGATP_MODE, pt_info.iohgatp_mode) |
- 			FIELD_PREP(RISCV_IOMMU_DC_IOHGATP_GSCID, domain->gscid) |
- 			FIELD_PREP(RISCV_IOMMU_DC_IOHGATP_PPN, pt_info.ppn);
-+		if (iommu->caps & RISCV_IOMMU_CAPABILITIES_AMO_HWAD)
-+			dc.tc |= RISCV_IOMMU_DC_TC_GADE;
- 	} else {
- 		if (!riscv_iommu_fsc_supported(iommu, pt_info.fsc_iosatp_mode))
- 			return -ENODEV;
+You are awesome, thank you!
 -- 
-2.50.1
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
+
 
 
 -- 
