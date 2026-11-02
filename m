@@ -2,109 +2,82 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CB435606A339
-	for <kvm-riscv@archiver.kernel.org>; Mon,  2 Nov 2026 13:14:06 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 271F2606A33A
+	for <kvm-riscv@archiver.kernel.org>; Mon,  2 Nov 2026 13:22:14 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=sIBRM+GA;
-	dkim=fail reason="signature verification failed" (2048-bit key, unprotected) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=hYheTBp3
+	dkim=pass (2048-bit key, unprotected) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=4Pry6G9X;
+	dkim=fail reason="signature verification failed" (1024-bit key, unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=QeYoBMKD
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:From:In-Reply-To:MIME-Version:
-	References:Message-ID:Subject:Cc:To:Date:Reply-To:Content-ID:
-	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
-	:Resent-Message-ID:List-Unsubscribe-Post:List-Owner;
-	bh=X9PqJQ2sWYkcSwp1azG79DU3SnEksJpfV3F/kwg9MfY=; b=sIBRM+GA0UcMsd/PnuM6KyiXlr
-	FWh/dnzBg1vD1NqgCt4jLtgFGtW3McLSMCe5Pi/OdNPWX6ooMONOd0Ukf0p0g4sT5HO2yYf37Jqnr
-	xy3cJRFL45AHs0T5jr6Yo8MwW9r+69uwEwl34tWFsnmC6QvJ0uWxSzEmw7wcRX6n6oknYHUi3d9rn
-	9jsA9FmTh+G86n+mHyWUJ0ISCWtdxjhYInlfM5k2nv/uZ8agspmX7xFid+ERFplzeCOsI6syOV5KM
-	xuMaReuzjMBmu+RxAVhD6YE2Bp5hCHapS+qXFdD5AzTixfMYvZI6e3lrmBCnwfprytZHtjE8NsMNU
-	+IrD9omQ==;
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Unsubscribe-Post:List-Owner;
+	bh=GlQ1iUx+6gDFjWsQ2vFXm5c84rlIVyOuhWdsuxgUoas=; b=4Pry6G9X74zsUHNQWddKCiQle1
+	NIb6y+BQFaW3y989nEGmxg21Z0bd7aIWVhwTKvYVvPArZrp2zQg+sL5gQxidfApyH4RsLLdDIsdE0
+	ptAO43BP2cIUJ+E+//gJhmlXy8BB/D4qweOLtZnvcHKaVmBQqWgLhwLEBO8b+JBEKueclDFiQwBs8
+	X5NzPI3RisHV2cAUiq05sf6qcOMKd3Kdziiq+H9XD8jZm7sPKiIorBH98xwzhoph6ebdEx+i2ig1K
+	HhQidGBXXmr6i8ccJZan7piCIUMVF4ggRZuWvepAY5h5hY+VVEheErEXJB41bLRdncQeWQxT5w7k0
+	A5Afcxdw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xNrrS-0000000GZoI-0AtB;
-	Mon, 02 Nov 2026 13:14:06 +0000
-Received: from mail-qt1-x830.google.com ([2607:f8b0:4864:20::830])
+	id 1xNrzJ-0000000GagH-2XX8;
+	Mon, 02 Nov 2026 13:22:13 +0000
+Received: from out30-111.freemail.mail.aliyun.com ([115.124.30.111])
 	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xNrrO-0000000GZnK-3tHa
-	for kvm-riscv@lists.infradead.org;
-	Mon, 02 Nov 2026 13:14:04 +0000
-Received: by mail-qt1-x830.google.com with SMTP id d75a77b69052e-5361e313e63so35293411cf.3
-        for <kvm-riscv@lists.infradead.org>; Mon, 02 Nov 2026 05:14:01 -0800 (PST)
+	id 1xNrzF-0000000Gado-43zp;
+	Mon, 02 Nov 2026 13:22:12 +0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ziepe.ca; s=google; t=1793625241; x=1794230041; darn=lists.infradead.org;
-        h=from:rom:in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:date:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=xQ6t+GMfhU5C0Rvm61dIpYM5RO8AvEBQYn2+KfQV/CM=;
-        b=hYheTBp3IzfTgNhE+KBl9hokesHafIVQWqOtCsQ7TgS6YeerBNcr/5CyN285aPmRWE
-         F35AaO8Yn3/YGMdDDWLfo1RqMna5FAbYTr8KZKmxFs6Br75tgm5faaEBdyeINrUrrpRc
-         Moekigwv8QuQg5O6uiyzLBnc4xDmBL2ThUdEieIarIJRnYNRruz+NbN72ZRGatYbnQGN
-         pn5ioY604c5ZN3hr8Etu//U7+gIw6uuOA2HtVD76ju4261WMhcDbm87X/Aj7gyPHtz5a
-         wHUslbAvCEY//gd+snvMC9VY6602BeGEdnmBHv5h/N6Ml+R4X1s36UtgT8xgRdUd8Y+u
-         Jlfw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793625241; x=1794230041;
-        h=from:rom:in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:date:x-gm-gg:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=xQ6t+GMfhU5C0Rvm61dIpYM5RO8AvEBQYn2+KfQV/CM=;
-        b=taYy8ne0ZTKbw/ImXKHkwc6ODx3tUX27slDY3uWHhlCTyLxdLu97dvZ0WtXpy0tYZq
-         LhnyVPmAZBHtMPUwQ+HqWZ3uzSLTBdpAWiIJ4NY5DFoM5KBj+j6MmqwiimpukSRzsvck
-         4RzfWqbF7O2uq8+95LJhQmfahXsgwSl/7wolfFDTJ6UurcmEuqSAsaPhbZJI5ll1Wdmc
-         o0XDKRcS8Ez5ceaii48k837hlWc5fpl37i8xxuU84NqShRB05l/xJ2D58UwMhlux1M+g
-         gWpIEMK1kxytEg+p8UEG8odYGniGb4FsO/KzwwxAVUl9O+rjCU33h3CJ15jxlvuewSTh
-         rYbA==
-X-Forwarded-Encrypted: i=1; AKwUvBy/bzf8rHA5ciQCIez+W5XRo/QXxnb+dw2gGs2QLdWOvfcwM0tSNwQpKm9a7C3YArMQ6pmOrwucX2w=@lists.infradead.org
-X-Gm-Message-State: AFq9FYKJboABekTl8K4m4iavLL2eCKfVcF7xNhEzXXMu2+9dO/dJs2hq
-	P2OoflG8QOOy6yRj+RBAsCTVvU4nMEMhsp6Iweva1DhyUFJjFoaUlzmv6B9K/iqoc6Y=
-X-Gm-Gg: AYBFou2zeCpAYAmLy1hZYddRywJgNONGazHVI9BUXjBojGMHvZaJ0xZcpgs9zdUfw9r
-	mTU3aZVF6LwJ04VsX99CFyOGnvW8JffqQjV+oitHLoBDy/KCL5NcruW5Hs+woBF4voyWSsyN97J
-	u5cuxTc0XTeMz+3yz8aQvqGNw089PG0BfLz3YNVJwnP85ndB1+68GSPR4ipmu80c3OE5dfeAFBK
-	87xXbsriZB3Tj2BysN0bGv37Ryow9XTFfjQ8FB17wuCOj6z2FwFm7xFz/Xf7pFydwsqGTWCtjI3
-	ec3zBUtjFhpai9RPJ9qIkAICEmmT62Qrm00yCDV7fFBmL7yaUOgdNvjAOSgtndbJG+sO7MpFvVf
-	AmP1aYybyj3lM+v80CnDw4vKIsACP/qN85ie2wwPuzeLT4iM6Lg7NqMZv1RUDjl6YxOsUt0lvD2
-	BCxqQLGr9Yi2kABl5Qhf68xX/DYJp6Tq+eC8pkCsDjnJ6jNVMveOSJDQVGH0zm9a5IX/jBVtz12
-	Ynq0kKtYg6lT0IoW5Hf68uBzxOIz/5jjk+4qWB/zlR4VA838WBrHHSUWBK1WBPwpIDw6P+/HXfI
-	nA+PHG9yGWBAp+n0nPBVwJXrOMt6QeDgFkMMHFrY+ksQs9VeWUxhzhXUSdkoINM5whY4a87laqB
-	0JJPHrlsDOhnUJhqC4xRbXG0U9y+fQPw=
-X-Received: by 2002:a05:622a:a07:b0:533:3fc2:8b19 with SMTP id d75a77b69052e-542b658df3cmr161864101cf.20.1793625240711;
-        Mon, 02 Nov 2026 05:14:00 -0800 (PST)
-Received: from ziepe.ca (hlfxns010zw-159-2-239-150.pppoe-dynamic.high-speed.ns.bellaliant.net. [159.2.239.150])
-        by smtp.gmail.com with ESMTPSA id d75a77b69052e-5431246c7basm85036611cf.18.2026.11.02.05.13.57
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 02 Nov 2026 05:13:57 -0800 (PST)
-Received: from jgg by wakko with local (Exim 4.97)
-	(envelope-from <jgg@ziepe.ca>)
-	id 1xNrrI-00000009is5-3yQf;
-	Mon, 02 Nov 2026 09:13:56 -0400
-Date: Mon, 2 Nov 2026 09:13:56 -0400
-To: Gong Shuai <gong.shuai@sanechips.com.cn>
-Cc: fangyu.yu@linux.alibaba.com, alex@ghiti.fr, andrew.jones@linux.dev,
-	anup@brainfault.org, aou@eecs.berkeley.edu, atish.patra@linux.dev,
-	baolu.lu@linux.intel.com, guoren@kernel.org, iommu@lists.linux.dev,
-	joerg.roedel@amd.com, joro@8bytes.org, jroedel@suse.de,
-	kevin.tian@intel.com, kvm-riscv@lists.infradead.org,
-	linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
-	nutty.liu@hotmail.com, palmer@dabbelt.com, pjw@kernel.org,
-	robin.murphy@arm.com, skhawaja@google.com,
-	tanchi25@mails.ucas.ac.cn, tomasz.jeznach@linux.dev,
-	vasant.hegde@amd.com, will@kernel.org, zong.li@sifive.com
-Subject: Re: [PATCH v6 09/10] iommu/riscv: Add dirty tracking support for
- second-stage domains
-Message-ID: <20261102131356.GA274202@nvidia.com>
-References: <20261031083014.15040-10-fangyu.yu@linux.alibaba.com>
- <20261102091823.54287-1-gong.shuai@sanechips.com.cn>
+	d=linux.alibaba.com; s=default;
+	t=1793625722; h=From:To:Subject:Date:Message-Id:MIME-Version;
+	bh=djgnkC1S9SsBayDDJz8CWP9esVizW3/CZWCKQKY14tA=;
+	b=QeYoBMKDxKRDUaZMQ2pg46rSklZLQJDoZ37hFSoyJ011TG0wTvNDqpCbRi2tgSbtxn/praKpXn+5A/IkUd2UNPs63sqpB3ZbeEnSHtXDYX+1N+zsK2ueEBKzqt6khF2dSFaEeNi2G5xWwdCyP7gEpX7oum/4rlNSxhcPX22Ef0E=
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R931e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam033037033178;MF=fangyu.yu@linux.alibaba.com;NM=1;PH=DS;RN=28;SR=0;TI=SMTPD_---0XE-KG9J_1793625716;
+Received: from localhost.localdomain(mailfrom:fangyu.yu@linux.alibaba.com fp:SMTPD_---0XE-KG9J_1793625716 cluster:ay36)
+          by smtp.aliyun-inc.com;
+          Mon, 02 Nov 2026 21:21:58 +0800
+From: fangyu.yu@linux.alibaba.com
+To: jgg@ziepe.ca
+Cc: alex@ghiti.fr,
+	andrew.jones@linux.dev,
+	anup@brainfault.org,
+	aou@eecs.berkeley.edu,
+	atish.patra@linux.dev,
+	baolu.lu@linux.intel.com,
+	fangyu.yu@linux.alibaba.com,
+	gong.shuai@sanechips.com.cn,
+	guoren@kernel.org,
+	iommu@lists.linux.dev,
+	joerg.roedel@amd.com,
+	joro@8bytes.org,
+	jroedel@suse.de,
+	kevin.tian@intel.com,
+	kvm-riscv@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	linux-riscv@lists.infradead.org,
+	nutty.liu@hotmail.com,
+	palmer@dabbelt.com,
+	pjw@kernel.org,
+	robin.murphy@arm.com,
+	skhawaja@google.com,
+	tanchi25@mails.ucas.ac.cn,
+	tomasz.jeznach@linux.dev,
+	vasant.hegde@amd.com,
+	will@kernel.org,
+	zong.li@sifive.com
+Subject: Re: [PATCH v6 09/10] iommu/riscv: Add dirty tracking support for second-stage domains 
+Date: Mon,  2 Nov 2026 21:21:51 +0800
+Message-Id: <20261102132151.52507-1-fangyu.yu@linux.alibaba.com>
+X-Mailer: git-send-email 2.39.3 (Apple Git-146)
+In-Reply-To: <20261102131356.GA274202@nvidia.com>
+References: <20261102131356.GA274202@nvidia.com>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <20261102091823.54287-1-gong.shuai@sanechips.com.cn>
-rom: Jason Gunthorpe <jgg@nvidia.com>
-From: Jason Gunthorpe <jgg@ziepe.ca>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261102_051403_115549_570303FD 
-X-CRM114-Status: GOOD (  13.88  )
-X-Spam-Score: -2.1 (--)
+X-CRM114-CacheID: sfid-20261102_052211_039195_3CF21BE9 
+X-CRM114-Status: GOOD (  10.17  )
+X-Spam-Score: -17.6 (-----------------)
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -117,37 +90,52 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
-X-Spam-Status: No, score=-8.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham
-	autolearn_force=no version=4.0.1
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	UNPARSEABLE_RELAY,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Mon, Nov 02, 2026 at 05:18:23PM +0800, Gong Shuai wrote:
-> >@@ -1439,6 +1454,9 @@ static int riscv_iommu_init_domain_s2(struct device *dev,
-> > 	if (domain->gscid < 0)
-> > 		return -ENOMEM;
-> > 
-> >+	if (iommu->caps & RISCV_IOMMU_CAPABILITIES_AMO_HWAD)
-> >+		domain->domain.dirty_ops = &riscv_iommu_dirty_ops;
-> 
-> This sets dirty_ops based on whether the allocating device's IOMMU
-> supports AMO_HWAD. As I understand it, the domain/HWPT is not tied
-> to that IOMMU instance. A later attach may target a device behind
-> another instance without AMO_HWAD, and the attach can still succeed
-> with GADE disabled, potentially causing guest page faults.
-> 
-> Shouldn't we therefore revalidate AMO_HWAD cap for domains with
-> dirty_ops and reject this combination?
-> 
-> FYI, both AMD and Intel have attach-time dirty-tracking checks. See
-> drivers/iommu/intel/iommu.c:3195 and drivers/iommu/amd/iommu.c:3221.
+>> >@@ -1439,6 +1454,9 @@ static int riscv_iommu_init_domain_s2(struct device *dev,
+>> > 	if (domain->gscid < 0)
+>> > 		return -ENOMEM;
+>> >
+>> >+	if (iommu->caps & RISCV_IOMMU_CAPABILITIES_AMO_HWAD)
+>> >+		domain->domain.dirty_ops = &riscv_iommu_dirty_ops;
+>>
+>> This sets dirty_ops based on whether the allocating device's IOMMU
+>> supports AMO_HWAD. As I understand it, the domain/HWPT is not tied
+>> to that IOMMU instance. A later attach may target a device behind
+>> another instance without AMO_HWAD, and the attach can still succeed
+>> with GADE disabled, potentially causing guest page faults.
+>>
+>> Shouldn't we therefore revalidate AMO_HWAD cap for domains with
+>> dirty_ops and reject this combination?
+>>
+>> FYI, both AMD and Intel have attach-time dirty-tracking checks. See
+>> drivers/iommu/intel/iommu.c:3195 and drivers/iommu/amd/iommu.c:3221.
+>
+>Right, need to check on every domain attach that the domain is
+>compatible with the iommu instance.
+>
 
-Right, need to check on every domain attach that the domain is
-compatible with the iommu instance.
+Hi Shuai, Jason:
 
-Jason
+Thanks for pointing that out.
+
+The domain is not tied to the allocating IOMMU instance, and
+riscv_iommu_attach_paging_domain() only sets GADE when the target
+instance advertises AMO_HWAD. As a result, attaching a dirty-tracking
+domain to a device behind an instance without AMO_HWAD would silently
+succeed. 
+I'll fix this in the next version.
+
+Thanks,
+Fangyu
+
+>Jason
 
 -- 
 kvm-riscv mailing list
