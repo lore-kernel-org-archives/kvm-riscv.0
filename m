@@ -2,11 +2,11 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 76C61606B393
-	for <kvm-riscv@archiver.kernel.org>; Mon,  2 Nov 2026 11:23:02 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0715A60A6F4C
+	for <kvm-riscv@archiver.kernel.org>; Mon,  2 Nov 2026 11:22:59 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=0RK1tbsb;
-	dkim=fail reason="signature verification failed" (1024-bit key, unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=OL6q65xC
+	dkim=pass (2048-bit key, unprotected) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=abkwKKcW;
+	dkim=fail reason="signature verification failed" (1024-bit key, unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=KZZ2pULE
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
@@ -14,39 +14,39 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	:MIME-Version:Subject:Date:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
 	List-Unsubscribe-Post:List-Owner;
-	bh=NKTn9qzI6HtmXhkgt4Fei/CbjGiWBXUndBU/S62ENZo=; b=0RK1tbsb18jI+Wc3skiFxvynfe
-	SMVjHuA/y8J1IKDthpBfUORfcd5o+yk+7/JMHu6Op7LOmGALYt8t8QsxMWf+JvBFVspx8qXzhGe+u
-	IEWuRMIq3X7vJ/MpLMIa1dfxhmxhwqMfx/RUAYargd3HTgFoUkkAj1Ts3CvT6B8m+yAfeDExFk2VS
-	LNQMnLnq1BzQSVcQfVZJlNTTnrwH5qh/96OVeHhyvzq3uhONxPxs+rcUCINl+zP1stk+ozwHk1ysU
-	2WjyWVhezq1lJfhtmpFCU27fMTv30kEsVbFtyZuCGwKdpKrCqZMp0CSWgLpYIHpqn71Dm/mML2lw7
-	WN3kvsTQ==;
+	bh=zCO/hEzaDcwo5EO0ftX6/+PRcfFLu38hQYEHEhyokLo=; b=abkwKKcWR1UblwsGeYpZ7DTXaE
+	c5xn84Jvhx4s+NKyEV9r9VmP/b2RU+6Ql4iDzuqpLZBVnDrwi5uKvWasGHHtNCVrNRaMgn5J59Js1
+	9CAo6BLDqq6V+v9hTxQ9E5P/Op7/DNQFH4bcn0tAgnQFAGLjZw+zp6tgT7QYmVSek3uWJ5cHxSHZv
+	YSqR1n/+uvMrGtOPy8Ca3vH4CJMeykQ1l1OC5NqyQjNUpLub4+C9Qz+YFpx8qVHDoNZJdfsPQLIUk
+	Q4SNJP6Xqmc0UIsHvhk02rnAuObhaqmndFtMrtBJMfGQz2GEYPLzaaePMlk6RvVIFDbRQvuGi4t+k
+	PzCN3PLg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xNq7y-0000000GJUm-0Wy5;
-	Mon, 02 Nov 2026 11:23:02 +0000
+	id 1xNq7u-0000000GJPt-36r7;
+	Mon, 02 Nov 2026 11:22:58 +0000
 Received: from foss.arm.com ([217.140.110.172])
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xNq7v-0000000GJQp-2Tng;
-	Mon, 02 Nov 2026 11:23:01 +0000
+	id 1xNq7p-0000000GJLZ-0NTQ;
+	Mon, 02 Nov 2026 11:22:57 +0000
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id C05B22972;
-	Mon,  2 Nov 2026 03:22:55 -0800 (PST)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 42E7A2A31;
+	Mon,  2 Nov 2026 03:22:49 -0800 (PST)
 Received: from e129823.arm.com (e129823.arm.com [10.2.213.3])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 9B2FB3F632;
-	Mon,  2 Nov 2026 03:22:52 -0800 (PST)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 37B4F3F632;
+	Mon,  2 Nov 2026 03:22:46 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1793618578; bh=bEX3sSqEnQKAQjL0B+MI6TFOYIMgpmFaiG2QcWnZ5UQ=;
+	t=1793618572; bh=60Xa9B2iUtyR3r8ioE+XTXe+blj+2dKI9yzxVIZr1t0=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=OL6q65xCnF2Tz4ITltDKgFLNBYVVrj82d5jxdji1GVBZb75n9gPi0z1tfCET6eB7u
-	 4s4rCEiwCIn3qlysbR++0NoFqJK82k/WXfZq11aTvIy0cVuMV3M4EHp2+WOGymGRhI
-	 8T0sz25bKGSqnXOGGxivwKApdCmjhFNLN3gptB4o=
+	b=KZZ2pULEBctEsGAXVrvXT+Vel6lV2ylQM7v0lus5odxyD77t9mWOEHrZc49tBaniz
+	 nQ+V1k58GA0+D6TwKZwG0X5N6Rgew97i5ygFK83+IXfvCKtCKCzyF/kY02GLCg4Hkk
+	 VwkyuVCUKrSmbbb+nsizpCRap0p4iBkAG7tU2GwE=
 From: Yeoreum Yun <yeoreum.yun@arm.com>
-Date: Mon, 02 Nov 2026 11:21:26 +0000
-Subject: [PATCH RESEND v2 13/21] x86/mm: Introduce helper for checking
- direct map 1G page support
+Date: Mon, 02 Nov 2026 11:21:25 +0000
+Subject: [PATCH RESEND v2 12/21] mm/pgtable: redefine PGTABLE_LEVEL enum
+ with ascend order from PGD
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Message-Id: <20261102-dummy_ptxp3-v2-13-78840b2ec73c@arm.com>
+Message-Id: <20261102-dummy_ptxp3-v2-12-78840b2ec73c@arm.com>
 References: <20261102-dummy_ptxp3-v2-0-78840b2ec73c@arm.com>
 In-Reply-To: <20261102-dummy_ptxp3-v2-0-78840b2ec73c@arm.com>
 To: Russell King <linux@armlinux.org.uk>, 
@@ -77,25 +77,24 @@ Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
  loongarch@lists.linux.dev, linux-mips@vger.kernel.org, 
  linux-arch@vger.kernel.org, linux-mm@kvack.org, kvm@vger.kernel.org, 
  kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
- linux-openrisc@vger.kernel.org, Yeoreum Yun <yeoreum.yun@arm.com>, 
- Sohil Mehta <sohil.mehta@intel.com>
+ linux-openrisc@vger.kernel.org, Yeoreum Yun <yeoreum.yun@arm.com>
 X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=5614; i=yeoreum.yun@arm.com;
- h=from:subject:message-id; bh=ArnDgja24P54ewtxWlKChMWDZmg5SmpxwVJZIltWfVo=;
- b=owEB7QES/pANAwAKAW3Vw9FaxTEzAcsmYgBq6HI1RIbrWXEKJzjwjPKklaXB5ULDRFe5CQCSy
- l3tJmaWOOyJAbMEAAEKAB0WIQQtg+CS3QUzuFh1pJ1t1cPRWsUxMwUCauhyNQAKCRBt1cPRWsUx
- M5ZHC/4tf/XkQKbv2sSjxw7u2qbrKs9afdYINdi0Ck9j09hNi8AocMbGW9v/Vi9jdTVJhqvjeM+
- 0sYVgbLZ7S1NsxmWc+vOyzpYCgCWM8FI1l7ZGEf/tFHGBxVsXiPh2p0/5rAlHtJmpZBBY45cONO
- yJ0kAXibS0A3hvLaJbkw6PSC3kLvxObC5zVc/nyVKFvByL2NL/jYQbYUtgZ/G8X7idCTR5++VqV
- 5FCMJ61PnZtwooqTgFZaz96tdLnXBgid9Tx5+ZQ1lySgDzMx2h5UE9MRTNLZOgaPd/QARaBHgER
- 9GeJyNqO+4m2xPCIhjFa9rk63IaIQ3oNhZxMaZFbnq8TlJ4mud1USfX8U/LQk8IVQw02LEOokQJ
- IVbwwNYeY+sXQc0PostpjU9MZCnD10kjbGu0XjEb1ifkhYYkn8eIiQNghYQZ0Aie5KTCSuT2hLO
- SuYDXUuJF3Zd1utQ8h1lmnOikT85YsrZp+E5Rb1mpROYDHK+aMhG5EmJyA/gSFehyrnws=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1282; i=yeoreum.yun@arm.com;
+ h=from:subject:message-id; bh=60Xa9B2iUtyR3r8ioE+XTXe+blj+2dKI9yzxVIZr1t0=;
+ b=owEB7QES/pANAwAKAW3Vw9FaxTEzAcsmYgBq6HI0QV4ojpgcFbw7NYJO5M3UEa0V4ttsQ5fcX
+ PLtIuFXA9+JAbMEAAEKAB0WIQQtg+CS3QUzuFh1pJ1t1cPRWsUxMwUCauhyNAAKCRBt1cPRWsUx
+ M5ZvDADXVkFHHBDnee5VQHc1URqbVSLnRmZQGtwzLqlg+CacOzVx4f7Diht4dzRAiiK+1m9UF01
+ wRfNSyqT67w0dI1bwZt6KHNKRN+XFKnks05m3unYkdsH3JMDguBAe8SXxh/WUsURKuHCFf/9FHS
+ JE5HMbsaUR8G6yz3LC36b96W0UCpRr/7EQOLZ6PHOYoCayzJauK/OB58CtSVxuWSzi2sNEjL164
+ 3edL/DfNEjgvKH6m2eaH35w6admU/hQvZmWxMa6KbJN8bT5DZyzVo3tNRhmJGQkqGAaAW4egus2
+ Ew8qNAr2sofw58ojK3Wec9idGsNAMVs5eaDhV/V+4XtuXB9aUY4wNVPUTouQtD+hOIM7bgv5msO
+ M7P5Xb6PZcHXVtsDFOZFKgoj69nU3EGPXYrfSQ7shRw9Mc+7k0eqPaSEEIlD1mUn0Cs9peZCsro
+ zWNQBVLh7Nn3TSK8C1Y/FKdh3N26DPsAkAb/jVrnq8PoxftkHncsqMLPSsZNp68ShBSVE=
 X-Developer-Key: i=yeoreum.yun@arm.com; a=openpgp;
  fpr=2D83E092DD0533B85875A49D6DD5C3D15AC53133
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261102_032259_737358_A7AD4E30 
-X-CRM114-Status: GOOD (  22.87  )
+X-CRM114-CacheID: sfid-20261102_032253_218040_943D5896 
+X-CRM114-Status: GOOD (  11.95  )
 X-Spam-Score: -4.4 (----)
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -116,152 +115,44 @@ X-Spam-Status: No, score=-16.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-From: Dave Hansen <dave.hansen@linux.intel.com>
+The PGTABLE_LEVEL enum values appear to be ordered in the opposite direction
+from their intended usage.
 
-There is an existing variable (direct_gbpages) that says whether the
-kernel can and should use 1G pages in the direct map. It is driven
-by a bunch of other machinery. At least:
+Intuitively, higher page table levels should have smaller enum values,
+but PTE is currently assigned 0.
 
- 1. Hardware support for 1G pages
- 2. Kconfig support for 1G direct mappings
- 3. Kernel command line overrides
+For consistency and cleanup, reverse the enum value ordering.
 
-Most code just checks the 'direct_gbpages' variable itself.  But there
-are cases where 1G mappings are compile-time disabled (via
-X86_DIRECT_GBPAGES) and 'direct_gbpages' is always 0. Unfortunately,
-that constraint is invisible to the compiler.
+Since there is no current user relies on these numbers to be ascending from
+PTE->PGD, so it can be changed to be ascending from PGD->PTE, in the
+direction of the page table walk.
 
-This opacity has been historically functionally harmless; it only
-leaves a bit of dead code. But, there are plans to tigthen up the
-compile-time checks around folded page table levels. The build will
-break if that dead code appears reachable to the compiler. Making
-the compile-time config visible to the compiler fixes the build.
-
-Add a helper to replace 'direct_gbpages' checks. Check the Kconfig
-option and base CPU support before looking at the variable.
-
-This lets the compiler optimize things better, especially
-collapse_pud_page() where most of the function can now be optimized
-out when the PUD level is folded.
-
-Notes:
-
-Use boot_cpu_has() instead of cpu_feature_enabled(). There's no
-required/disabled features for 1G pages themselves
-(X86_DIRECT_GBPAGES is for kernel mappings only) and the
-static_cpu_has() infrastructure is just gets in the compiler's way.
-
-This makes 64-bit build marginally larger (20 bytes in one compile)
-and 32-bit builds less marginally _smaller_ (~700 bytes).
-
-Signed-off-by: Dave Hansen <dave.hansen@linux.intel.com>
-Reviewed-by: Yeoreum Yun <yeoreum.yun@arm.com>
-Tested-by: Yeoreum Yun <yeoreum.yun@arm.com>
-Link: https://lore.kernel.org/all/20260902-dummy_ptxp3-v3-15-5d8f5b17c25c@arm.com/ [1]
-Reviewed-by: Sohil Mehta <sohil.mehta@intel.com>
+Reviewed-by: David Hildenbrand (Arm) <david@kernel.org>
+Signed-off-by: Yeoreum Yun <yeoreum.yun@arm.com>
 ---
- arch/x86/include/asm/pgtable.h     | 14 ++++++++++++++
- arch/x86/kernel/cpu/common.c       |  2 +-
- arch/x86/kernel/machine_kexec_64.c |  2 +-
- arch/x86/mm/init.c                 |  2 +-
- arch/x86/mm/pat/set_memory.c       |  6 +++---
- 5 files changed, 20 insertions(+), 6 deletions(-)
+ include/linux/pgtable.h | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/include/asm/pgtable.h b/arch/x86/include/asm/pgtable.h
-index 000fc6c1ca37c..a277082121878 100644
---- a/arch/x86/include/asm/pgtable.h
-+++ b/arch/x86/include/asm/pgtable.h
-@@ -1167,6 +1167,20 @@ static inline int pgd_none(pgd_t pgd)
- #ifndef __ASSEMBLER__
+diff --git a/include/linux/pgtable.h b/include/linux/pgtable.h
+index 780fe849ff8b7..a032f95943357 100644
+--- a/include/linux/pgtable.h
++++ b/include/linux/pgtable.h
+@@ -2288,11 +2288,11 @@ static inline bool arch_has_pfn_modify_check(void)
+ typedef unsigned int pgtbl_mod_mask;
  
- extern int direct_gbpages;
-+static inline bool direct_gbpages_enabled(void)
-+{
-+	/* Check the direct map config option: */
-+	if (!IS_ENABLED(CONFIG_X86_DIRECT_GBPAGES))
-+		return false;
-+
-+	/* Check the CPU feature: */
-+	if (!boot_cpu_has(X86_FEATURE_GBPAGES))
-+		return false;
-+
-+	/* Check the command-line and early setup variable: */
-+	return direct_gbpages;
-+}
-+
- void init_mem_mapping(void);
- void early_alloc_pgt_buf(void);
- void __init poking_init(void);
-diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index 9bd50c68cd7e5..12a51dba16627 100644
---- a/arch/x86/kernel/cpu/common.c
-+++ b/arch/x86/kernel/cpu/common.c
-@@ -2655,7 +2655,7 @@ void __init arch_cpu_finalize_init(void)
- 		 * Right now we don't do that with gbpages because there seems
- 		 * very little benefit for that case.
- 		 */
--		if (!direct_gbpages)
-+		if (!direct_gbpages_enabled())
- 			set_memory_4k((unsigned long)__va(0), 1);
- 	} else {
- 		fpu__init_check_bugs();
-diff --git a/arch/x86/kernel/machine_kexec_64.c b/arch/x86/kernel/machine_kexec_64.c
-index c3f4a389992da..0da0e89f2611a 100644
---- a/arch/x86/kernel/machine_kexec_64.c
-+++ b/arch/x86/kernel/machine_kexec_64.c
-@@ -257,7 +257,7 @@ static int init_pgtable(struct kimage *image, unsigned long control_page)
- 		info.kernpg_flag |= _PAGE_ENC;
- 	}
+ enum pgtable_level {
+-	PGTABLE_LEVEL_PTE = 0,
+-	PGTABLE_LEVEL_PMD,
+-	PGTABLE_LEVEL_PUD,
++	PGTABLE_LEVEL_PGD = 0,
+ 	PGTABLE_LEVEL_P4D,
+-	PGTABLE_LEVEL_PGD,
++	PGTABLE_LEVEL_PUD,
++	PGTABLE_LEVEL_PMD,
++	PGTABLE_LEVEL_PTE,
+ };
  
--	if (direct_gbpages)
-+	if (direct_gbpages_enabled())
- 		info.direct_gbpages = true;
- 
- 	for (i = 0; i < nr_pfn_mapped; i++) {
-diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
-index 079f8c7e9e3cd..f0f4a06584c61 100644
---- a/arch/x86/mm/init.c
-+++ b/arch/x86/mm/init.c
-@@ -251,7 +251,7 @@ static void __init probe_page_size_mask(void)
- 		__default_kernel_pte_mask &= ~_PAGE_GLOBAL;
- 
- 	/* Enable 1 GB linear kernel mappings if available: */
--	if (direct_gbpages && boot_cpu_has(X86_FEATURE_GBPAGES)) {
-+	if (direct_gbpages_enabled()) {
- 		printk(KERN_INFO "Using GB pages for direct mapping\n");
- 		page_size_mask |= 1 << PG_LEVEL_1G;
- 	} else {
-diff --git a/arch/x86/mm/pat/set_memory.c b/arch/x86/mm/pat/set_memory.c
-index b1d5c5a0ffb41..f27811e6e00bd 100644
---- a/arch/x86/mm/pat/set_memory.c
-+++ b/arch/x86/mm/pat/set_memory.c
-@@ -130,7 +130,7 @@ void arch_report_meminfo(struct seq_file *m)
- 	seq_printf(m, "DirectMap4M:    %8lu kB\n",
- 			direct_pages_count[PG_LEVEL_2M] << 12);
- #endif
--	if (direct_gbpages)
-+	if (direct_gbpages_enabled())
- 		seq_printf(m, "DirectMap1G:    %8lu kB\n",
- 			direct_pages_count[PG_LEVEL_1G] << 20);
- }
-@@ -1355,7 +1355,7 @@ static int collapse_pud_page(pud_t *pud, unsigned long addr,
- 	pmd_t *pmd, first;
- 	int i;
- 
--	if (!direct_gbpages)
-+	if (!direct_gbpages_enabled())
- 		return 0;
- 
- 	addr &= PUD_MASK;
-@@ -1737,7 +1737,7 @@ static int populate_pud(struct cpa_data *cpa, unsigned long start, p4d_t *p4d,
- 	/*
- 	 * Map everything starting from the Gb boundary, possibly with 1G pages
- 	 */
--	while (boot_cpu_has(X86_FEATURE_GBPAGES) && end - start >= PUD_SIZE) {
-+	while (direct_gbpages_enabled() && end - start >= PUD_SIZE) {
- 		set_pud(pud, pud_mkhuge(pfn_pud(cpa->pfn,
- 				   canon_pgprot(pud_pgprot))));
- 
+ static inline const char *pgtable_level_to_str(enum pgtable_level level)
 
 -- 
 2.43.0
