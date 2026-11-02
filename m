@@ -2,100 +2,109 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0FEFD606CEED
-	for <kvm-riscv@archiver.kernel.org>; Mon,  2 Nov 2026 11:23:55 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CB435606A339
+	for <kvm-riscv@archiver.kernel.org>; Mon,  2 Nov 2026 13:14:06 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=ByIyHDjb;
-	dkim=fail reason="signature verification failed" (1024-bit key, unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=BrPb0hXu
+	dkim=pass (2048-bit key, unprotected) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=sIBRM+GA;
+	dkim=fail reason="signature verification failed" (2048-bit key, unprotected) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=hYheTBp3
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Message-Id
-	:MIME-Version:Subject:Date:From:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Unsubscribe-Post:List-Owner;
-	bh=6YpeRhw0yG1QI4m2WhpAwP27lfaYl6kf5UV8rZpCgs0=; b=ByIyHDjbvyxA7TYZZYRnuOkjuw
-	2EUWE9S8Pfzc/A/vbKq3WfYsKEdCc7LBjyNCxlz3BGOt7ECU6MjqDs9OjYbwj4OS6tu0mj0DkCBtG
-	oN7Orp+uD1E3LY5GtheSzZ4MIlCBz4UQeJEjP/BOrV0ROFODLT0n213brYFptjT7WeiTWaeQsSuju
-	aviaEyAM3zEurSmvDUFey5BdglmpLgnLH67xIOvMGwGxfXInTk+bbA37mOcq0ecA40w4xdyDShOQb
-	EHgh9ahrI3vR+FH2JEQmV9AJlPKz8yDKreRpKqdAknFZXH6YZUapmUcdMd03CGVPxNtVegNp4qBaE
-	jA6g+dUg==;
+	List-Archive:List-Unsubscribe:List-Id:From:In-Reply-To:MIME-Version:
+	References:Message-ID:Subject:Cc:To:Date:Reply-To:Content-ID:
+	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+	:Resent-Message-ID:List-Unsubscribe-Post:List-Owner;
+	bh=X9PqJQ2sWYkcSwp1azG79DU3SnEksJpfV3F/kwg9MfY=; b=sIBRM+GA0UcMsd/PnuM6KyiXlr
+	FWh/dnzBg1vD1NqgCt4jLtgFGtW3McLSMCe5Pi/OdNPWX6ooMONOd0Ukf0p0g4sT5HO2yYf37Jqnr
+	xy3cJRFL45AHs0T5jr6Yo8MwW9r+69uwEwl34tWFsnmC6QvJ0uWxSzEmw7wcRX6n6oknYHUi3d9rn
+	9jsA9FmTh+G86n+mHyWUJ0ISCWtdxjhYInlfM5k2nv/uZ8agspmX7xFid+ERFplzeCOsI6syOV5KM
+	xuMaReuzjMBmu+RxAVhD6YE2Bp5hCHapS+qXFdD5AzTixfMYvZI6e3lrmBCnwfprytZHtjE8NsMNU
+	+IrD9omQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xNq8o-0000000GKTM-3GYT;
-	Mon, 02 Nov 2026 11:23:54 +0000
-Received: from foss.arm.com ([217.140.110.172])
-	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xNq8k-0000000GKNt-1TIi;
-	Mon, 02 Nov 2026 11:23:53 +0000
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 91B02293B;
-	Mon,  2 Nov 2026 03:23:46 -0800 (PST)
-Received: from e129823.arm.com (e129823.arm.com [10.2.213.3])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id A4ED03F632;
-	Mon,  2 Nov 2026 03:23:43 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1793618629; bh=iiExwLtobXiDRkDzhCd4KbgedHi6eyqTW5J2A3p/GoY=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=BrPb0hXuYg5FDqnQoxAoQEPqwy35W9QWkiKSZbg3KsrD0XEabz16DkjubK7JqGSV0
-	 OPWT8B5k/j69iFU4lw32ZN1FbqKVhYkgINnZSpuVpHWynTxUVdsXn3n2gXh0w8vpHx
-	 C1xoy3anV4D+fDsKAX6O+jB+JolHrc1sf7sWdpz8=
-From: Yeoreum Yun <yeoreum.yun@arm.com>
-Date: Mon, 02 Nov 2026 11:21:34 +0000
-Subject: [PATCH RESEND v2 21/21] Documentation: mm: clarify behaviour of
- compile-time folded page tables
+	id 1xNrrS-0000000GZoI-0AtB;
+	Mon, 02 Nov 2026 13:14:06 +0000
+Received: from mail-qt1-x830.google.com ([2607:f8b0:4864:20::830])
+	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
+	id 1xNrrO-0000000GZnK-3tHa
+	for kvm-riscv@lists.infradead.org;
+	Mon, 02 Nov 2026 13:14:04 +0000
+Received: by mail-qt1-x830.google.com with SMTP id d75a77b69052e-5361e313e63so35293411cf.3
+        for <kvm-riscv@lists.infradead.org>; Mon, 02 Nov 2026 05:14:01 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ziepe.ca; s=google; t=1793625241; x=1794230041; darn=lists.infradead.org;
+        h=from:rom:in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:date:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=xQ6t+GMfhU5C0Rvm61dIpYM5RO8AvEBQYn2+KfQV/CM=;
+        b=hYheTBp3IzfTgNhE+KBl9hokesHafIVQWqOtCsQ7TgS6YeerBNcr/5CyN285aPmRWE
+         F35AaO8Yn3/YGMdDDWLfo1RqMna5FAbYTr8KZKmxFs6Br75tgm5faaEBdyeINrUrrpRc
+         Moekigwv8QuQg5O6uiyzLBnc4xDmBL2ThUdEieIarIJRnYNRruz+NbN72ZRGatYbnQGN
+         pn5ioY604c5ZN3hr8Etu//U7+gIw6uuOA2HtVD76ju4261WMhcDbm87X/Aj7gyPHtz5a
+         wHUslbAvCEY//gd+snvMC9VY6602BeGEdnmBHv5h/N6Ml+R4X1s36UtgT8xgRdUd8Y+u
+         Jlfw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793625241; x=1794230041;
+        h=from:rom:in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:date:x-gm-gg:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=xQ6t+GMfhU5C0Rvm61dIpYM5RO8AvEBQYn2+KfQV/CM=;
+        b=taYy8ne0ZTKbw/ImXKHkwc6ODx3tUX27slDY3uWHhlCTyLxdLu97dvZ0WtXpy0tYZq
+         LhnyVPmAZBHtMPUwQ+HqWZ3uzSLTBdpAWiIJ4NY5DFoM5KBj+j6MmqwiimpukSRzsvck
+         4RzfWqbF7O2uq8+95LJhQmfahXsgwSl/7wolfFDTJ6UurcmEuqSAsaPhbZJI5ll1Wdmc
+         o0XDKRcS8Ez5ceaii48k837hlWc5fpl37i8xxuU84NqShRB05l/xJ2D58UwMhlux1M+g
+         gWpIEMK1kxytEg+p8UEG8odYGniGb4FsO/KzwwxAVUl9O+rjCU33h3CJ15jxlvuewSTh
+         rYbA==
+X-Forwarded-Encrypted: i=1; AKwUvBy/bzf8rHA5ciQCIez+W5XRo/QXxnb+dw2gGs2QLdWOvfcwM0tSNwQpKm9a7C3YArMQ6pmOrwucX2w=@lists.infradead.org
+X-Gm-Message-State: AFq9FYKJboABekTl8K4m4iavLL2eCKfVcF7xNhEzXXMu2+9dO/dJs2hq
+	P2OoflG8QOOy6yRj+RBAsCTVvU4nMEMhsp6Iweva1DhyUFJjFoaUlzmv6B9K/iqoc6Y=
+X-Gm-Gg: AYBFou2zeCpAYAmLy1hZYddRywJgNONGazHVI9BUXjBojGMHvZaJ0xZcpgs9zdUfw9r
+	mTU3aZVF6LwJ04VsX99CFyOGnvW8JffqQjV+oitHLoBDy/KCL5NcruW5Hs+woBF4voyWSsyN97J
+	u5cuxTc0XTeMz+3yz8aQvqGNw089PG0BfLz3YNVJwnP85ndB1+68GSPR4ipmu80c3OE5dfeAFBK
+	87xXbsriZB3Tj2BysN0bGv37Ryow9XTFfjQ8FB17wuCOj6z2FwFm7xFz/Xf7pFydwsqGTWCtjI3
+	ec3zBUtjFhpai9RPJ9qIkAICEmmT62Qrm00yCDV7fFBmL7yaUOgdNvjAOSgtndbJG+sO7MpFvVf
+	AmP1aYybyj3lM+v80CnDw4vKIsACP/qN85ie2wwPuzeLT4iM6Lg7NqMZv1RUDjl6YxOsUt0lvD2
+	BCxqQLGr9Yi2kABl5Qhf68xX/DYJp6Tq+eC8pkCsDjnJ6jNVMveOSJDQVGH0zm9a5IX/jBVtz12
+	Ynq0kKtYg6lT0IoW5Hf68uBzxOIz/5jjk+4qWB/zlR4VA838WBrHHSUWBK1WBPwpIDw6P+/HXfI
+	nA+PHG9yGWBAp+n0nPBVwJXrOMt6QeDgFkMMHFrY+ksQs9VeWUxhzhXUSdkoINM5whY4a87laqB
+	0JJPHrlsDOhnUJhqC4xRbXG0U9y+fQPw=
+X-Received: by 2002:a05:622a:a07:b0:533:3fc2:8b19 with SMTP id d75a77b69052e-542b658df3cmr161864101cf.20.1793625240711;
+        Mon, 02 Nov 2026 05:14:00 -0800 (PST)
+Received: from ziepe.ca (hlfxns010zw-159-2-239-150.pppoe-dynamic.high-speed.ns.bellaliant.net. [159.2.239.150])
+        by smtp.gmail.com with ESMTPSA id d75a77b69052e-5431246c7basm85036611cf.18.2026.11.02.05.13.57
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 02 Nov 2026 05:13:57 -0800 (PST)
+Received: from jgg by wakko with local (Exim 4.97)
+	(envelope-from <jgg@ziepe.ca>)
+	id 1xNrrI-00000009is5-3yQf;
+	Mon, 02 Nov 2026 09:13:56 -0400
+Date: Mon, 2 Nov 2026 09:13:56 -0400
+To: Gong Shuai <gong.shuai@sanechips.com.cn>
+Cc: fangyu.yu@linux.alibaba.com, alex@ghiti.fr, andrew.jones@linux.dev,
+	anup@brainfault.org, aou@eecs.berkeley.edu, atish.patra@linux.dev,
+	baolu.lu@linux.intel.com, guoren@kernel.org, iommu@lists.linux.dev,
+	joerg.roedel@amd.com, joro@8bytes.org, jroedel@suse.de,
+	kevin.tian@intel.com, kvm-riscv@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
+	nutty.liu@hotmail.com, palmer@dabbelt.com, pjw@kernel.org,
+	robin.murphy@arm.com, skhawaja@google.com,
+	tanchi25@mails.ucas.ac.cn, tomasz.jeznach@linux.dev,
+	vasant.hegde@amd.com, will@kernel.org, zong.li@sifive.com
+Subject: Re: [PATCH v6 09/10] iommu/riscv: Add dirty tracking support for
+ second-stage domains
+Message-ID: <20261102131356.GA274202@nvidia.com>
+References: <20261031083014.15040-10-fangyu.yu@linux.alibaba.com>
+ <20261102091823.54287-1-gong.shuai@sanechips.com.cn>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Message-Id: <20261102-dummy_ptxp3-v2-21-78840b2ec73c@arm.com>
-References: <20261102-dummy_ptxp3-v2-0-78840b2ec73c@arm.com>
-In-Reply-To: <20261102-dummy_ptxp3-v2-0-78840b2ec73c@arm.com>
-To: Russell King <linux@armlinux.org.uk>, 
- Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>, 
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, 
- Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>, 
- Kairui Song <kasong@tencent.com>, Qi Zheng <qi.zheng@linux.dev>, 
- Shakeel Butt <shakeel.butt@linux.dev>, Barry Song <baohua@kernel.org>, 
- Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>, 
- Wei Xu <weixugc@google.com>, Johannes Weiner <hannes@cmpxchg.org>, 
- David Hildenbrand <david@kernel.org>, Michal Hocko <mhocko@kernel.org>, 
- Lorenzo Stoakes <ljs@kernel.org>, Tianrui Zhao <zhaotianrui@loongson.cn>, 
- Bibo Mao <maobibo@loongson.cn>, Anup Patel <anup@brainfault.org>, 
- Atish Patra <atish.patra@linux.dev>, Paul Walmsley <pjw@kernel.org>, 
- Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
- Alexandre Ghiti <alex@ghiti.fr>, Dave Hansen <dave.hansen@linux.intel.com>, 
- Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>, 
- Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, 
- Borislav Petkov <bp@alien8.de>, x86@kernel.org, 
- "H. Peter Anvin" <hpa@zytor.com>, "Liam R. Howlett" <liam@infradead.org>, 
- Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>, 
- Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, 
- Jonas Bonn <jonas@southpole.se>, 
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, 
- Stafford Horne <shorne@gmail.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
- loongarch@lists.linux.dev, linux-mips@vger.kernel.org, 
- linux-arch@vger.kernel.org, linux-mm@kvack.org, kvm@vger.kernel.org, 
- kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
- linux-openrisc@vger.kernel.org
-X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=5250; i=yeoreum.yun@arm.com;
- h=from:subject:message-id; bh=we33pLaWTEXUzxN2eli55cmCuITu+4r4z0c6wIrOlvY=;
- b=owEB7QES/pANAwAKAW3Vw9FaxTEzAcsmYgBq6HI5puhw5lGPEsqL2+0oxYQ14ZUvSogy1dQY7
- mbhixVweFqJAbMEAAEKAB0WIQQtg+CS3QUzuFh1pJ1t1cPRWsUxMwUCauhyOQAKCRBt1cPRWsUx
- M0LeC/9Cq0L+HoSCeEcxKHvRuuTb6eN/i826KAV+hkrcMfVFIULPPvwRKY9kYk3gsbK8opHg/qM
- eDSlKtSYplqrFvRLwGt/ddDHCU47Hi1VZGw8A2j1HDaCHffEGl6C5FzzdErrZCIBrMIUlrZZARQ
- u4fy1wwWXQu9IYjXnyF3BI07Y05Is6jHXzw5ApmalBxBp85sr1oFlR45kHuQxi8Ma67ye23pU+i
- 0ZfEc1HgiqWjEanyJvQQFiIUwn7+lmt+sYCHqncaafdCYo3KHgQaHetYAneCx7X14vidrudgq+u
- C2LEDT0pu3GVJlMya52voqvBocPv07v+yrOMkc2yrVlibFvy72hf8cXhXucoMOtYi9Ac6p0nTbH
- UBsr8OB8/MJYoiHCzkYACf6uE2qyNGCqCwApVpfGBocJ8Tm4THZDDTv79sd4Sr7B2Fo2BrLYn9V
- xgmHiHS71tqPIlx4VRSha2GekLQlQUXLnzYAP7xJLSeoiFrOZwyfxUMXye+TMGvJSDGiQ=
-X-Developer-Key: i=yeoreum.yun@arm.com; a=openpgp;
- fpr=2D83E092DD0533B85875A49D6DD5C3D15AC53133
+Content-Disposition: inline
+In-Reply-To: <20261102091823.54287-1-gong.shuai@sanechips.com.cn>
+rom: Jason Gunthorpe <jgg@nvidia.com>
+From: Jason Gunthorpe <jgg@ziepe.ca>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261102_032350_536629_7C7E3244 
-X-CRM114-Status: GOOD (  20.61  )
-X-Spam-Score: -4.4 (----)
+X-CRM114-CacheID: sfid-20261102_051403_115549_570303FD 
+X-CRM114-Status: GOOD (  13.88  )
+X-Spam-Score: -2.1 (--)
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -108,126 +117,37 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
-X-Spam-Status: No, score=-16.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-8.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-From: "David Hildenbrand (Arm)" <david@kernel.org>
+On Mon, Nov 02, 2026 at 05:18:23PM +0800, Gong Shuai wrote:
+> >@@ -1439,6 +1454,9 @@ static int riscv_iommu_init_domain_s2(struct device *dev,
+> > 	if (domain->gscid < 0)
+> > 		return -ENOMEM;
+> > 
+> >+	if (iommu->caps & RISCV_IOMMU_CAPABILITIES_AMO_HWAD)
+> >+		domain->domain.dirty_ops = &riscv_iommu_dirty_ops;
+> 
+> This sets dirty_ops based on whether the allocating device's IOMMU
+> supports AMO_HWAD. As I understand it, the domain/HWPT is not tied
+> to that IOMMU instance. A later attach may target a device behind
+> another instance without AMO_HWAD, and the attach can still succeed
+> with GADE disabled, potentially causing guest page faults.
+> 
+> Shouldn't we therefore revalidate AMO_HWAD cap for domains with
+> dirty_ops and reject this combination?
+> 
+> FYI, both AMD and Intel have attach-time dirty-tracking checks. See
+> drivers/iommu/intel/iommu.c:3195 and drivers/iommu/amd/iommu.c:3221.
 
-Compile-time folded page tables are not necessarily easy to understand, and even
-people the were once familiar with the concept might need to refresh their memory.
+Right, need to check on every domain attach that the domain is
+compatible with the iommu instance.
 
-Add proper documentation, including a nice diagram, for the current design.
-Mention details about dummy functions, including the recently changed pXdp_get()
-helpers.
-
-Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
----
- Documentation/mm/page_tables.rst | 84 +++++++++++++++++++++++++++++++++++-----
- 1 file changed, 75 insertions(+), 9 deletions(-)
-
-diff --git a/Documentation/mm/page_tables.rst b/Documentation/mm/page_tables.rst
-index 126c876282509..d4f3e2e343ca2 100644
---- a/Documentation/mm/page_tables.rst
-+++ b/Documentation/mm/page_tables.rst
-@@ -143,15 +143,81 @@ pointers on each level is architecture-defined.::
- Page Table Folding
- ==================
- 
--If the architecture does not use all the page table levels, they can be *folded*
--which means skipped, and all operations performed on page tables will be
--compile-time augmented to just skip a level when accessing the next lower
--level.
--
--Page table handling code that wishes to be architecture-neutral, such as the
--virtual memory manager, will need to be written so that it traverses all of the
--currently five levels. This style should also be preferred for
--architecture-specific code, so as to be robust to future changes.
-+Not all architectures support 5-level page tables; while for some of them
-+the exact number of supported page table levels is known at compile time,
-+others can determine the number of page table levels at runtime based on
-+hardware support and address space sizes.
-+
-+Generic page table walking code always assumes that 5 levels of page table
-+exist. To make page table walking code not have to worry about that,
-+`compile-time folding` and `runtime folding` of page tables are used.
-+Compile-time folding is mostly handled in common code, whereas runtime folding
-+is exclusively handled in architecture code.
-+
-+This description focuses on generic compile-time folded page tables; for
-+architecture-specific variants, some details can vary, however, without
-+affecting common page table walkers.
-+
-+When walking folded page tables, all upper page table levels up to the supported
-+level are skipped in page table walkers: this is achieved by (a) treating
-+entries in upper page table levels as present and pointing at a page table; and
-+(b) having page table walkers cast the entry pointer to the next-level entry
-+instead of dereferencing that table. From the perspective of a page table
-+walker, the entry points at itself.
-+
-+Assuming compile-time folded 4-level page tables, to achieve (a), pgd_present()
-+and pgd_leaf() are hard-coded to indicate a present page table entry that
-+points at a page table, and to achieve (b) p4d_offset() and
-+p4d_offset_lockless() simply cast the page table entry pointer to the next
-+lower level.
-+
-+In the current design, this is further modeled by having the P4D have a
-+single page table entry::
-+
-+        PGD
-+  --> +------+          NOP4D
-+      | ptr0 |-------> +------+           PUD
-+      | ptr1 |-        | ptr0 |-------> +-----+
-+      | ptr2 | \       +------+         | ptr |-------> ...
-+      | ptr3 |  \                       | ptr |
-+        ...      \                        ..
-+                  \        NOP4D
-+                   +----> +------+           PUD
-+                          | ptr1 |-------> +-----+
-+                          +------+         | ptr |-------> ...
-+                                           | ptr |
-+                                             ...
-+
-+Note that the arrows from PGD to NOP4D represent page-table-walker
-+transitions, not pointers stored in the pgd entries.
-+
-+Using p4d as an example, `nop4d`/`p4d folded` translates to the following:
-+
-+- p4d is considered folded into pgd; both are operating on the same page
-+  table.
-+
-+- Most pgd_* helpers are hard-coded dummy functions that ignore the passed
-+  pgd_t values entirely. Exceptions are pgd_val() and low-level helpers
-+  set_pgd() + pgd_page_vaddr(), which effectively translate to set_p4d()/
-+  p4d_pgtable() to keep existing arch code working.
-+
-+  Architectures must provide p4d_* helpers (unless further common
-+  compile-time folding applies).
-+
-+- PTRS_PER_P4D is hard-coded to 1. Architectures must define PTRS_PER_PGD.
-+
-+To avoid reading a value that will never be used but cannot be entirely
-+optimized out, compile-time folded page table code also makes pXdp_get()
-+return a constant dummy value.
-+
-+In common code, this only affects pXd_val() when used for printing page
-+table entries for debugging purposes. As we don't want architecture code
-+that uses set_pXd(), pgd_page_vaddr() or pXd_pgtable() to accidentally
-+operate on dummy values, the compiler will error out if it detects that the
-+helpers are used with dummy values. For a folded level, pXd_page() must not
-+be used and unconditionally triggers a compiler error. Architecture code must
-+instead call the helpers on the proper first page table level: e.g., set_p4d()
-+instead of set_pgd().
- 
- 
- MMU, TLB, and Page Faults
-
--- 
-2.43.0
-
+Jason
 
 -- 
 kvm-riscv mailing list
