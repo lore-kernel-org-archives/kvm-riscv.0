@@ -2,82 +2,131 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 271F2606A33A
-	for <kvm-riscv@archiver.kernel.org>; Mon,  2 Nov 2026 13:22:14 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E830E607B446
+	for <kvm-riscv@archiver.kernel.org>; Mon,  2 Nov 2026 14:39:06 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=4Pry6G9X;
-	dkim=fail reason="signature verification failed" (1024-bit key, unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=QeYoBMKD
+	dkim=pass (2048-bit key, unprotected) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=Q7fvr9dj;
+	dkim=fail reason="signature verification failed" (2048-bit key, unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jrsDzUSF
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
-	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
+	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
 	List-Unsubscribe-Post:List-Owner;
-	bh=GlQ1iUx+6gDFjWsQ2vFXm5c84rlIVyOuhWdsuxgUoas=; b=4Pry6G9X74zsUHNQWddKCiQle1
-	NIb6y+BQFaW3y989nEGmxg21Z0bd7aIWVhwTKvYVvPArZrp2zQg+sL5gQxidfApyH4RsLLdDIsdE0
-	ptAO43BP2cIUJ+E+//gJhmlXy8BB/D4qweOLtZnvcHKaVmBQqWgLhwLEBO8b+JBEKueclDFiQwBs8
-	X5NzPI3RisHV2cAUiq05sf6qcOMKd3Kdziiq+H9XD8jZm7sPKiIorBH98xwzhoph6ebdEx+i2ig1K
-	HhQidGBXXmr6i8ccJZan7piCIUMVF4ggRZuWvepAY5h5hY+VVEheErEXJB41bLRdncQeWQxT5w7k0
-	A5Afcxdw==;
+	bh=Tm0TWhTtRk9ojH3O5FggE8TjcMBe0lvc2QhbV6/EvxA=; b=Q7fvr9djEeIXBBM8bGUwBwLro7
+	U2grZNggpL3Lhvbi3nHKb17A4iULQeNSGZVzleAbhSn4UO8xMhQGiZKCZ7gd63SlUwlAxb1ToqWzt
+	QeGQuWv5QWvbhfKxQoTfEw2SbXoUMTNRwtAT+ifvWctqV/t9m9Zv0/g3L++Ecpu80xWEI0s/1IZ2n
+	ZYyJK2enuryPgzwoWTNSooe7b1ORGciRkOC3O1uhXWL5ERontbWfjmRt3fQnvds6+NiSrUF6/0wQ6
+	JZSS9A3YNwH0laaIUGIE3GiRL73ynpKEOKrLo8aleDzeZq5W+y1L8KDbWZB278WqU1cjM4E4A8/JS
+	WHdCmByg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xNrzJ-0000000GagH-2XX8;
-	Mon, 02 Nov 2026 13:22:13 +0000
-Received: from out30-111.freemail.mail.aliyun.com ([115.124.30.111])
+	id 1xNtBi-0000000Gr8B-2VBK;
+	Mon, 02 Nov 2026 14:39:06 +0000
+Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1])
 	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xNrzF-0000000Gado-43zp;
-	Mon, 02 Nov 2026 13:22:12 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux.alibaba.com; s=default;
-	t=1793625722; h=From:To:Subject:Date:Message-Id:MIME-Version;
-	bh=djgnkC1S9SsBayDDJz8CWP9esVizW3/CZWCKQKY14tA=;
-	b=QeYoBMKDxKRDUaZMQ2pg46rSklZLQJDoZ37hFSoyJ011TG0wTvNDqpCbRi2tgSbtxn/praKpXn+5A/IkUd2UNPs63sqpB3ZbeEnSHtXDYX+1N+zsK2ueEBKzqt6khF2dSFaEeNi2G5xWwdCyP7gEpX7oum/4rlNSxhcPX22Ef0E=
-X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R931e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam033037033178;MF=fangyu.yu@linux.alibaba.com;NM=1;PH=DS;RN=28;SR=0;TI=SMTPD_---0XE-KG9J_1793625716;
-Received: from localhost.localdomain(mailfrom:fangyu.yu@linux.alibaba.com fp:SMTPD_---0XE-KG9J_1793625716 cluster:ay36)
-          by smtp.aliyun-inc.com;
-          Mon, 02 Nov 2026 21:21:58 +0800
-From: fangyu.yu@linux.alibaba.com
-To: jgg@ziepe.ca
-Cc: alex@ghiti.fr,
-	andrew.jones@linux.dev,
-	anup@brainfault.org,
-	aou@eecs.berkeley.edu,
-	atish.patra@linux.dev,
-	baolu.lu@linux.intel.com,
-	fangyu.yu@linux.alibaba.com,
-	gong.shuai@sanechips.com.cn,
-	guoren@kernel.org,
-	iommu@lists.linux.dev,
-	joerg.roedel@amd.com,
-	joro@8bytes.org,
-	jroedel@suse.de,
-	kevin.tian@intel.com,
-	kvm-riscv@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	linux-riscv@lists.infradead.org,
-	nutty.liu@hotmail.com,
-	palmer@dabbelt.com,
-	pjw@kernel.org,
-	robin.murphy@arm.com,
-	skhawaja@google.com,
-	tanchi25@mails.ucas.ac.cn,
-	tomasz.jeznach@linux.dev,
-	vasant.hegde@amd.com,
-	will@kernel.org,
-	zong.li@sifive.com
-Subject: Re: [PATCH v6 09/10] iommu/riscv: Add dirty tracking support for second-stage domains 
-Date: Mon,  2 Nov 2026 21:21:51 +0800
-Message-Id: <20261102132151.52507-1-fangyu.yu@linux.alibaba.com>
-X-Mailer: git-send-email 2.39.3 (Apple Git-146)
-In-Reply-To: <20261102131356.GA274202@nvidia.com>
-References: <20261102131356.GA274202@nvidia.com>
+	id 1xNtBf-0000000Gr7I-1t1r;
+	Mon, 02 Nov 2026 14:39:05 +0000
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6A2EEEvg3103442;
+	Mon, 2 Nov 2026 14:38:35 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=t3uMzKFF0fpXKNPzeuZqcP8SHbCjBI
+	Lits3drrR5UAs=; b=jrsDzUSF/OggKdN81wWhb4EQ3nK8LML9mgaSnR8qAY70jz
+	0DbJXtS4PJuv8PQiLy7abs+fG7sndfj6ShOJulStFvMaB4jzVmChtTE0sAet0Vm3
+	A1+30vWOdajDQi0XubC1JRA8+Z0IFqBUkwIt3tZHqrS7135+dwCfgEZ9oFFGPewC
+	l25ok0YfFnDEr9VN3wS8SYboK6sKCmQ6lfAwbRcX9ljp4AV5DyeSlhrCxiJoEWty
+	Y1DzMBTvPDR+g06pwD9FhYxvyUDi1W8x+t9hc8THVHlowf7A2mNVTcdtd7GnSpo3
+	aFq1FAonyVk3KK0s0pDgB8L2nMIRTSxdOjGsR3jA==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hn826h1td-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Mon, 02 Nov 2026 14:38:33 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6A2E5w6Q1034496;
+	Mon, 2 Nov 2026 14:38:32 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4hnu1vebv3-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 02 Nov 2026 14:38:32 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6A2EcS5845613524
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 2 Nov 2026 14:38:28 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id A89912004D;
+	Mon,  2 Nov 2026 14:38:28 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 0A5D02004E;
+	Mon,  2 Nov 2026 14:38:22 +0000 (GMT)
+Received: from li-fbf77acc-29ba-11b2-a85c-e8e934f50a46.ibm.com (unknown [9.39.25.78])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Mon,  2 Nov 2026 14:38:21 +0000 (GMT)
+Date: Mon, 2 Nov 2026 20:08:19 +0530
+From: Gautam Menghani <gautam@linux.ibm.com>
+To: Sean Christopherson <seanjc@google.com>
+Cc: Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>,
+        Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>,
+        Huacai Chen <chenhuacai@kernel.org>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>,
+        Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
+        Paolo Bonzini <pbonzini@redhat.com>, Fuad Tabba <fuad.tabba@linux.dev>,
+        Joey Gouly <joey.gouly@arm.com>, Steffen Eiden <seiden@linux.ibm.com>,
+        Suzuki K Poulose <suzuki.poulose@arm.com>,
+        Zenghui Yu <yuzenghui@huawei.com>, Nicholas Piggin <npiggin@gmail.com>,
+        Atish Patra <atish.patra@linux.dev>, Alexandre Ghiti <alex@ghiti.fr>,
+        linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev,
+        kvm@vger.kernel.org, loongarch@lists.linux.dev,
+        linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
+        linux-kernel@vger.kernel.org, Stefan Teodorescu <fane@google.com>
+Subject: Re: [PATCH 3/7] KVM: PPC: Explicitly force IPIs when directly
+ kicking vCPUs
+Message-ID: <auiZYdVzhFbnj0iy@li-fbf77acc-29ba-11b2-a85c-e8e934f50a46.ibm.com>
+References: <20261028190259.1819571-1-seanjc@google.com>
+ <20261028190259.1819571-4-seanjc@google.com>
+ <auStM0rbFol79h5o@li-fbf77acc-29ba-11b2-a85c-e8e934f50a46.ibm.com>
+ <auTohixp3V5-vNsB@google.com>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
+Content-Disposition: inline
+In-Reply-To: <auTohixp3V5-vNsB@google.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-ORIG-GUID: MVuzkhZ7vtCvo0_kidGaNnCzUH4z2Q5t
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTAyMDA1NiBTYWx0ZWRfX9NPC/owi16S7
+ 9yPcxDuxCXAVRis8gROnpHUQtX1lgGRd8hAKUnleFK3QWlX1SdAjhFR8oEvK54MRQDdismPxh+K
+ SQ8loUK3UQRzfSLpS9uRj+aWjubkYTlbIquMNg8PhpfWVJkZ76O3xxEXr80qfN6IOD19XJfjKtr
+ 634hKk5awadYPmt24Ux7BsSNM3cqVRZujAolWeljDDPrwops7bov/t92bCk4p83QwKy6YXStSnl
+ 0VsEIPP7bIE5T7r4zJSL0tKzTIgSYx+WFY3Qwo3DYgWTx5sTM9UVeBsh0rxrl31K1IM0pQFj1A7
+ gw+VtvRxiUYjK/87Jg4SStypE42sXR/2o22pNseu+/r/yDHR8uGSsjBtiHv4st3RTmohj8hx7JP
+ UCE4D1U1IEi/wr/eFIXPrL9wTCpxRXnB0VIgaijskvnY1QOUMWWKwaAo3sk8IykSUxckF0V1iQL
+ y3XMeya+tQcv90pkeiQ==
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTAyMDA1NiBTYWx0ZWRfX/Jv0f66eb8FC
+ gBsCZTcz1I/pV05gMEXUAwMes48ABsD2pbDotd5Qxpz6XqvBunVHHDSaqleBJACDat+c8lSkusL
+ mmZ2c5c7i5Q1tgycd0AKgoXZ+Q680vQ=
+X-Proofpoint-GUID: 3_YY6ZYXsy9uBgG-NjaOA9L9V7gYRG4x
+X-Authority-Analysis: v=2.4 cv=EsJHPicA c=1 sm=1 tr=0 ts=6ae8a06a cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=kj9zAlcOel0A:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8
+ a=1XWaLZrsAAAA:8 a=VnNF1IyMAAAA:8 a=duh_M4KPJp97uAtK-N0A:9 a=CjuIK1q_8ugA:10
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-02_04,2026-11-02_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 clxscore=1015 lowpriorityscore=0 malwarescore=0
+ priorityscore=1501 adultscore=0 impostorscore=0 phishscore=0 spamscore=0
+ suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610300000
+ definitions=main-2611020056
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261102_052211_039195_3CF21BE9 
-X-CRM114-Status: GOOD (  10.17  )
-X-Spam-Score: -17.6 (-----------------)
+X-CRM114-CacheID: sfid-20261102_063903_494433_D26AA3D3 
+X-CRM114-Status: GOOD (  31.19  )
+X-Spam-Score: -2.6 (--)
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -90,52 +139,79 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
-X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-13.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	UNPARSEABLE_RELAY,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=4.0.1
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
->> >@@ -1439,6 +1454,9 @@ static int riscv_iommu_init_domain_s2(struct device *dev,
->> > 	if (domain->gscid < 0)
->> > 		return -ENOMEM;
->> >
->> >+	if (iommu->caps & RISCV_IOMMU_CAPABILITIES_AMO_HWAD)
->> >+		domain->domain.dirty_ops = &riscv_iommu_dirty_ops;
->>
->> This sets dirty_ops based on whether the allocating device's IOMMU
->> supports AMO_HWAD. As I understand it, the domain/HWPT is not tied
->> to that IOMMU instance. A later attach may target a device behind
->> another instance without AMO_HWAD, and the attach can still succeed
->> with GADE disabled, potentially causing guest page faults.
->>
->> Shouldn't we therefore revalidate AMO_HWAD cap for domains with
->> dirty_ops and reject this combination?
->>
->> FYI, both AMD and Intel have attach-time dirty-tracking checks. See
->> drivers/iommu/intel/iommu.c:3195 and drivers/iommu/amd/iommu.c:3221.
->
->Right, need to check on every domain attach that the domain is
->compatible with the iommu instance.
->
+On Fri, Oct 30, 2026 at 11:57:10AM -0700, Sean Christopherson wrote:
+> On Fri, Oct 30, 2026, Gautam Menghani wrote:
+> > On Wed, Oct 28, 2026 at 12:02:55PM -0700, Sean Christopherson wrote:
+> > > Explicitly force an IPI when invoking kvm_vcpu_kick() directly instead of
+> > > relying on kvm_arch_vcpu_should_kick() to unconditionally return 1/true.
+> > > This will allow dropping kvm_arch_vcpu_should_kick() in favor of
+> > > kvm_request_needs_ipi().
+> > > 
+> > > No functional change intended (1 || 1 == true).
+> > > 
+> > > Signed-off-by: Sean Christopherson <seanjc@google.com>
+> > > ---
+> > >  arch/powerpc/include/asm/kvm_ppc.h | 13 ++++++++++++-
+> > >  arch/powerpc/kvm/book3s.c          |  4 ++--
+> > >  arch/powerpc/kvm/book3s_pr.c       |  2 +-
+> > >  arch/powerpc/kvm/booke.c           |  6 +++---
+> > >  arch/powerpc/kvm/e500_emulate.c    |  2 +-
+> > >  arch/powerpc/kvm/powerpc.c         |  2 +-
+> > >  6 files changed, 20 insertions(+), 9 deletions(-)
+> > > 
+> > > diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+> > > index 169ea6a7fbad..bbe7378ad0ef 100644
+> > > --- a/arch/powerpc/include/asm/kvm_ppc.h
+> > > +++ b/arch/powerpc/include/asm/kvm_ppc.h
+> > > @@ -30,6 +30,17 @@
+> > >  #endif
+> > >  #include <asm/inst.h>
+> > >  
+> > > +/*
+> > > + * TODO: For unknown reasons, KVM PPC has historically ignored vcpu->mode when
+> > > + *       determining if kicking a vCPU needs an IPI.  Either document why that
+> > > + *       behavior is necessary, or drop this helper and the @force param from
+> > > + *       __kvm_vcpu_kick().
+> > > + */
+> > > +static inline void kvmppc_vcpu_kick(struct kvm_vcpu *vcpu)
+> > > +{
+> > > +	__kvm_vcpu_kick(vcpu, false, true);
+> > > +}
+> > > +
+> > 
+> > AFAICS, there is no reason for PPC to always return 1. I was looking at
+> > the old patches on mailing list and found this - https://lore.kernel.org/kvm/0FEE585F-5E21-47F2-A3F0-AD0DE05EBB43@suse.de
+> > 
+> > ```
+> > How about we return 1 for kvm_arch_vcpu_in_guest_mode() on !x86 always, just
+> > like it's done today basically? Then we can worry about needless IPIs later
+> > and don't regress from the respective current kick implementations.
+> > ```
+> 
+> FWIW, I found that as well, but there are a metric ton of kvm_vcpu_kick() calls
+> that have been added since then, and they scared me.
+> 
+> > However, I'll do some testing and get back by mid next week to make sure
+> > there are no suprises.
+> 
+> Thanks!  If we can drop the PPC behavior, that would be wonderful!  Though if
+> we do that, it should be for 7.5 in a follow-up (this series really should go
+> into 7.4 due to the SNP issue).
 
-Hi Shuai, Jason:
 
-Thanks for pointing that out.
+Yeah I looked into it and realized that the newer variants of KVM on PPC
+are not even using vcpu->mode at all. So that has to be fixed from our
+end.
 
-The domain is not tied to the allocating IOMMU instance, and
-riscv_iommu_attach_paging_domain() only sets GADE when the target
-instance advertises AMO_HWAD. As a result, attaching a dirty-tracking
-domain to a device behind an instance without AMO_HWAD would silently
-succeed. 
-I'll fix this in the next version.
-
-Thanks,
-Fangyu
-
->Jason
+For this series,
+Reviewed-by: Gautam Menghani <gautam@linux.ibm.com> # PPC
 
 -- 
 kvm-riscv mailing list
