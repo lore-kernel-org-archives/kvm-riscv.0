@@ -2,130 +2,80 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8FD12606A336
-	for <kvm-riscv@archiver.kernel.org>; Tue,  3 Nov 2026 11:46:25 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AC85F606A324
+	for <kvm-riscv@archiver.kernel.org>; Tue,  3 Nov 2026 12:03:07 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=h4A38/hW;
-	dkim=fail reason="signature verification failed" (2048-bit key, unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XBPDSV6U
+	dkim=pass (2048-bit key, unprotected) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=x54H6DyN;
+	dkim=fail reason="signature verification failed" (1024-bit key, unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=eZBwy/iA
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-Id:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
 	List-Unsubscribe-Post:List-Owner;
-	bh=Gm3KXpab2kRd/WmyqiHX+7DVE2h0Jcnn8LEHYzvBDEk=; b=h4A38/hWQ++7DRkwzFf2lKPJl8
-	zKrvoGJTSpCUWXja+9RryXfnsLnxKWJSeqFUYFmFp/lzH7dYsbPyooSyFasp/vrZVdkM1zB0+83go
-	LFmlRpj6oRAcq86zhE4q7Zmv4r2V5TWzgLLmTqlnskCp3hKib5ZN8oDvYkgSeTKLeKkMpSyA3V6n/
-	Bl7G6SRIgy/v5V0QJ73V3HXejKEO7HkyIDYUq0+DuPSy7/HAp+s3V0ud6DSAyJGAKCdVSjO7rWD9p
-	lR4+J0ZvL8pNKy8aRMGsR2Gq7UXawnwg3RpKU41W3xbLNE7+pgYcGPFrAqJ+N+rRl+Nx+1lYWdLru
-	cE4Xm2iQ==;
+	bh=yhIAYeCzfwzuLnALTbVHYCoyTtElL6RSgDvTyqWX5Dc=; b=x54H6DyNoIqks0LNuMWiXv8XpR
+	uDxTaTeHvU+408EtzdAzTUV+kuxGlKmCVZEfkflkqEryJa9pi3S7ydTfvKKEOH7g9oPjCX8f+THf+
+	gMesmESm73XIvZH9bwVl15xTcqii3DjsAp7/6Y3fgw5GrWsz4F12x5jZz8q1Tf0/H0hAWpqi6ccCs
+	31wkDQhUWkT3rd5w+M9HWwFBxVkyAAHAtASByu7WliynEPpJdz3/1UhIpev5wdcZBOVMHYxWaZIgd
+	+RRJ057MoLNdHTvBE/P3lHQ5+r/XSOz1hNcZDsMzJBS+Ico2SZ8KH4qvyLvqVWxSvWcGqLkhEGt7n
+	f+Y0B3lQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xOCy9-00000002FuQ-0nqd;
-	Tue, 03 Nov 2026 11:46:25 +0000
-Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1])
+	id 1xODEJ-00000002J0l-1UFY;
+	Tue, 03 Nov 2026 12:03:07 +0000
+Received: from out30-99.freemail.mail.aliyun.com ([115.124.30.99])
 	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xOCy6-00000002FsQ-1uKG;
-	Tue, 03 Nov 2026 11:46:23 +0000
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6A3AEnqC4045893;
-	Tue, 3 Nov 2026 11:45:58 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=rQNgYgRzwbgahGLohNvZBfs82BLnKv
-	w2G9BPFntd+2Y=; b=XBPDSV6U1ByAfT/2HXWiYPBImtoE06l1RsLvOPr+Mg1Wdg
-	5bb7Q4UvH0mEeFRj51IZNVX9NifoIpA9L056gpcpDJYHk5VjyO/RQmX944rPTcqT
-	lza8DMAA2sFbSnKXHJIeLKs+Q8G1+3X9B+dEQMrLtkOkjp4pNJTbzJPAiDcZXVUE
-	p6Db6wAKv27p8hT6TDeMeXOr4Vk2Xpp7upRB50EYJzqoLgx5W9PMpVDKF0KnA/eX
-	bnd0mHKF4Ty7FsZMzKSxZD1WU4h6XYV6jH6M4KptIOxivjveMfPtf8UA4FEmQ1NM
-	hLDM5ogor5Zfi+YhNntcsukL5xZcXKcEJ/fYDveQ==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hn80snd8h-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Tue, 03 Nov 2026 11:45:57 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6A3AK5Iq2350043;
-	Tue, 3 Nov 2026 11:45:56 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4hqbqk8stp-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 03 Nov 2026 11:45:56 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6A3BjoS127460120
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 3 Nov 2026 11:45:50 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 770852004D;
-	Tue,  3 Nov 2026 11:45:50 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9A1B320040;
-	Tue,  3 Nov 2026 11:45:49 +0000 (GMT)
-Received: from osiris (unknown [9.111.24.158])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Tue,  3 Nov 2026 11:45:49 +0000 (GMT)
-Date: Tue, 3 Nov 2026 12:45:48 +0100
-From: Steffen Eiden <seiden@linux.ibm.com>
-To: Sean Christopherson <seanjc@google.com>
-Cc: Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>,
-        Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>,
-        Huacai Chen <chenhuacai@kernel.org>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>,
-        Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
-        Paolo Bonzini <pbonzini@redhat.com>, Fuad Tabba <fuad.tabba@linux.dev>,
-        Joey Gouly <joey.gouly@arm.com>,
-        Suzuki K Poulose <suzuki.poulose@arm.com>,
-        Zenghui Yu <yuzenghui@huawei.com>, Nicholas Piggin <npiggin@gmail.com>,
-        Atish Patra <atish.patra@linux.dev>, Alexandre Ghiti <alex@ghiti.fr>,
-        linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev,
-        kvm@vger.kernel.org, loongarch@lists.linux.dev,
-        linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
-        linux-kernel@vger.kernel.org, Stefan Teodorescu <fane@google.com>
-Subject: Re: [PATCH 1/7] KVM: s390: Drop unused and unreachable
- kvm_arch_vcpu_should_kick()
-Message-ID: <20261103114548.119911-B-seiden@linux.ibm.com>
-References: <20261028190259.1819571-1-seanjc@google.com>
- <20261028190259.1819571-2-seanjc@google.com>
- <20261102153228.240804-H-seiden@linux.ibm.com>
- <auitiPKnFueBJzPA@google.com>
+	id 1xODEF-00000002Izs-3Bzf;
+	Tue, 03 Nov 2026 12:03:06 +0000
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=linux.alibaba.com; s=default;
+	t=1793707380; h=From:To:Subject:Date:Message-Id:MIME-Version;
+	bh=oihiPgZWnjREhKyfAFkgXB6XfYS7c0fg+jCEEL4F86s=;
+	b=eZBwy/iAsZWLvxLIiJ9RPjky5Jl2n1laAPwk2LVwRVlp5JjoVX605mnI8gRtIEAbx36l+YUN2B+ybdJkGaSTGm35EJ32TP9zfH7WrzUSiic3ba9gOCqDmZOMwyh98x0H06cJE7yD/ZPB/iquAhHSLTssL6hEmrSuZxoCRCvwMcQ=
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R241e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam033045133197;MF=fangyu.yu@linux.alibaba.com;NM=1;PH=DS;RN=28;SR=0;TI=SMTPD_---0XE2qGxD_1793707376;
+Received: from localhost.localdomain(mailfrom:fangyu.yu@linux.alibaba.com fp:SMTPD_---0XE2qGxD_1793707376 cluster:ay36)
+          by smtp.aliyun-inc.com;
+          Tue, 03 Nov 2026 20:02:58 +0800
+From: fangyu.yu@linux.alibaba.com
+To: tomasz.jeznach@linux.dev,
+	joro@8bytes.org,
+	will@kernel.org,
+	robin.murphy@arm.com,
+	pjw@kernel.org,
+	palmer@dabbelt.com,
+	aou@eecs.berkeley.edu,
+	alex@ghiti.fr,
+	baolu.lu@linux.intel.com,
+	jroedel@suse.de,
+	zong.li@sifive.com,
+	andrew.jones@linux.dev,
+	anup@brainfault.org,
+	jgg@nvidia.com,
+	jgg@ziepe.ca,
+	kevin.tian@intel.com,
+	atish.patra@linux.dev,
+	skhawaja@google.com,
+	vasant.hegde@amd.com,
+	joerg.roedel@amd.com,
+	tanchi25@mails.ucas.ac.cn,
+	gong.shuai@sanechips.com.cn
+Cc: fangyu.yu@linux.alibaba.com,
+	guoren@kernel.org,
+	iommu@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	linux-riscv@lists.infradead.org,
+	kvm-riscv@lists.infradead.org
+Subject: [PATCH v7 00/10] iommu/riscv: Add hardware dirty tracking for second-stage domains
+Date: Tue,  3 Nov 2026 20:02:26 +0800
+Message-Id: <20261103120236.53474-1-fangyu.yu@linux.alibaba.com>
+X-Mailer: git-send-email 2.39.3 (Apple Git-146)
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <auitiPKnFueBJzPA@google.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: pVpgdP1XGIbnstN6hf1_H30Mry2kEc8w
-X-Proofpoint-ORIG-GUID: l9khr2_nw7GEkBcFn3H6-NSEwUfuIP0C
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTAzMDA0NiBTYWx0ZWRfX1XmGS9lHsUL0
- R/pqFn7OS4O6sIvO6xkJJLw7ub5XYBJJ8rT4n7ytkLsrM+nXxJ8ALAk6IZ7cxaLgxzx/sz6YekU
- QUQNLzCc+AcEIzFSIIId4SI+3jZ4xWcemIVFHv+lYM846eTlTDBy/sVfsO3lwE4suzbkGudS2Kb
- gxPBGGgvMaIVdytp/A39MMoe5QDoT7CkGj5SGrkaqTAe4eTeD+SzsmTdUt/UyjY9TJC3JseqnJa
- QEo75BJzfvgqw3u+U+2wRBpyO7uPflzaZ5caj2HokpnoTurGkxzXBgpUXpjVDxTHjuBmXjI8rPa
- vxWDAmBlV9AhIXjL/sn+6LcGLT5sIIA/1vfGnxBH9hGUn2tSE9JXdCrUFdxql4RE+ZLXgJZ4H1I
- Kt9BEBx2jKRF/wavIUPm0bKdaAiukt/xqjNHAoSCxYurQjxD+KTis8S/8SmPNJktwNxtQkMBgIp
- 7SZvF2lkFSgtvQ77a7g==
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTAzMDA0NiBTYWx0ZWRfX8KXTgj3ZDXIb
- rszJKiaYCEhjwddi22AWOUixDabzaYbTZeZqW4OyLHY9z/7j8facbJ5/xv2IRGOBpQn4thL/pQY
- S1fxrlzI0e+Xs7MM8Gx7oKdd53KSVec=
-X-Authority-Analysis: v=2.4 cv=FIqOVOos c=1 sm=1 tr=0 ts=6ae9c975 cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=kj9zAlcOel0A:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=14yfDfNcGX1pIiSJYtUA:9
- a=CjuIK1q_8ugA:10
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-03_02,2026-11-02_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 malwarescore=0 impostorscore=0 spamscore=0 lowpriorityscore=0
- bulkscore=0 suspectscore=0 clxscore=1015 priorityscore=1501 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2610300000 definitions=main-2611030046
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261103_034622_501999_A616F7BB 
-X-CRM114-Status: GOOD (  17.59  )
-X-Spam-Score: -2.6 (--)
+X-CRM114-CacheID: sfid-20261103_040304_557193_C6FB0ACC 
+X-CRM114-Status: GOOD (  14.87  )
+X-Spam-Score: -17.6 (-----------------)
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -138,32 +88,169 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
-X-Spam-Status: No, score=-3.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-11.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no
-	autolearn_force=no version=4.0.1
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	UNPARSEABLE_RELAY,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Mon, Nov 02, 2026 at 07:34:32AM -0800, Sean Christopherson wrote:
-> On Mon, Nov 02, 2026, Steffen Eiden wrote:
-> > On Wed, Oct 28, 2026 at 12:02:53PM -0700, Sean Christopherson wrote:
-> > > Drop s390's kvm_arch_vcpu_should_kick() stub as the one and only call site
-> > > is wrapped with "#ifndef CONFIG_S390".
-> > 
-> > In the somehow near future I'll remove those #ifdefs and use the kick
-> > stuff for kvm_arm64. The native s390 KVM then must at least keep an
-> > (unused) symbol at hand. It seems that the compiler could not optimize
-> > those calls away. So let's keep it there so I do not have to re-add it
-> > soon.
-> 
-> Please read the rest of the series.  kvm_arch_vcpu_should_kick() goes away
-> entirely.
+From: Fangyu Yu <fangyu.yu@linux.alibaba.com>
 
-Sorry for that. This patch just jumped to my attention and I had no time
-yet to read the rest. 
+The RISC-V IOMMU architecture defines an AMO_HWAD capability (Hardware
+Access/Dirty update) that allows the IOMMU to atomically set the A/D bits
+in second-stage PTEs on DMA access.  When DC.tc.GADE is asserted, the IOMMU
+autonomously sets D on the first write to a page mapped by an iohgatp
+domain.  This series wires that capability up to the iommufd dirty-tracking
+interface (IOMMU_HWPT_SET_DIRTY_TRACKING / IOMMU_HWPT_GET_DIRTY_BITMAP) and
+reports IOMMU_CAP_DIRTY_TRACKING.
 
-	Steffen
+Design notes
+============
+
+* The feature is scoped to second-stage (iohgatp) domains only; these are
+  the domains created for KVM / VFIO device pass-through when userspace
+  allocates an HWPT with IOMMU_HWPT_ALLOC_NEST_PARENT or
+  IOMMU_HWPT_ALLOC_DIRTY_TRACKING.  First-stage (iosatp) domains are not
+  touched by this series.
+
+* The page-table side plugs into the existing generic_pt dirty hook
+  framework (amdv1 / vtdss style).  RISC-V adds the three required PTE
+  ops - is_write_dirty / make_write_clean / make_write_dirty.
+
+Testing
+=======
+
+* Test on QEMU RISC-V, a nvme and an e1000e device was passed through
+  to an L2 guest via vfio-pci + iommufd.
+
+* generic_pt KUnit: the existing test_dirty case now runs and passes for
+  the RISC-V 64-bit format.
+
+Follow-up work
+==============
+* Build a dedicated end-to-end test case that drives the full flow
+  (HWPT_ALLOC with DIRTY_TRACKING -> attach -> IOAS_MAP -> generate real
+  DMA -> SET_DIRTY_TRACKING -> GET_DIRTY_BITMAP -> verify bitmap against
+  expected IOVA footprint) so that the behaviour can be regression-tested
+  beyond the KUnit PTE-level coverage.
+
+LLM-based coding assistants were used for code exploration, patch
+review, test execution, and drafting/editing messages and this cover
+letter. I reviewed and finalized all resulting code and text.
+
+This series functionally depends on [1], which has been posted but is not
+yet in mainline.
+
+---
+Changes in v7:
+    - Rebased on top of v7.4-rc1 (6628e7d4c6b2).
+    - Return -EINVAL instead of -ENODEV when the IOMMU does not support
+      the iohgatp mode of a second-stage domain, following the attach_dev
+      errno semantics and allowing callers such as QEMU to try another
+      domain or allocate a new compatible one.
+    - Assign dirty_ops only when IOMMU_HWPT_ALLOC_DIRTY_TRACKING is
+      requested, and reject attaching a dirty-tracking domain to an IOMMU
+      without AMO_HWAD with -EINVAL. (Per Gong Shuai)
+    - Link to v6:
+      https://lore.kernel.org/linux-iommu/20261031083014.15040-1-fangyu.yu@linux.alibaba.com/
+Changes in v6:
+    - Drop the RFC tag.
+    - Rebased on top of mainline (390febb5805d).
+    - Carry the unmerged prerequisite [2] as patch 1.
+    - Drop "iommu/riscv: report iommu capabilities"; mainline commit
+      3069e8f3e1e9 ("iommu/riscv: Report cache coherency capability")
+      already adds riscv_iommu_capable().
+    - domain_alloc_paging_flags: drop the redundant flags pre-check and
+      supported_flags, and split the per-stage setup into
+      riscv_iommu_init_domain_s1() / riscv_iommu_init_domain_s2().
+      (Per Jason)
+    - Link to v5:
+      https://lore.kernel.org/linux-iommu/20261020094106.92722-1-fangyu.yu@linux.alibaba.com/
+Changes in v5:
+    - Propagate the GADE bit from the new device context into the hardware
+      DC in riscv_iommu_iodir_update(), so the pre-enabled GADE actually
+      reaches the hardware. (Per Gong Shuai)
+    - Issue a global IOTINVAL.GVMA in riscv_iommu_iodir_set_mode(), so that
+      second-stage translations cached before a DDTP mode change (e.g. by
+      a previous kernel after kexec) are flushed as the specification
+      requires. (Per Tan Chi)
+    - Rebased on top of v7.3, with [1] and [2] applied.
+    - Link to v4:
+      https://lore.kernel.org/linux-riscv/20260915032828.11250-1-fangyu.yu@linux.alibaba.com/
+Changes in v4 (Jason's suggestions):
+    - Rebased the series on top of [1] and [2].
+    - Drop the RISC-V-specific pt_num_items_lg2() top-level special case.
+    - Validate page-table address widths by translation stage: accept only
+      Sv39/Sv48/Sv57 widths for first-stage tables and only Sv39x4/Sv48x4/
+      Sv57x4 widths for second-stage tables.
+    - Replace the aliased first-stage/second-stage MODE union with
+      independent FSC/IOSATP and IOHGATP MODE fields.
+    - Add pt_dirty_supported() to restrict RISC-V generic_pt dirty tracking
+      to second-stage tables.
+    - Link to v3:
+      https://lore.kernel.org/linux-riscv/20260821132749.82070-1-fangyu.yu@linux.alibaba.com/
+Changes in v3 (Andrew Jones's suggestions):
+    - Rebased the series on top of Andrew Jones' generic_pt RISC-V supported
+      feature mask fix, which adds PT_FEAT_RISCV_SVPBMT to the supported feature
+      set.
+    - Added PT_FEAT_RISCV_S2 to the RISC-V generic_pt supported feature mask and
+      KUnit feature matrix.
+    - Kept PT_FEAT_SIGN_EXTEND only for first-stage RISC-V KUnit configs; second
+      stage configs now use PT_FEAT_RISCV_S2 without sign-extension semantics.
+    - Split RISC-V IOMMU capability checks into first-stage FSC and second-stage
+      IOHGATP helpers.
+    - Updated second-stage paging domain setup to use GPA widths 41/50/59 and to
+      avoid PT_FEAT_SIGN_EXTEND.
+    - Link to v2:
+      https://lore.kernel.org/linux-riscv/20260507113706.11400-1-fangyu.yu@linux.alibaba.com/
+Changes in v2 (Jason's suggestions):
+    - Introduced a single PT_FEAT_RISCV_S2: second-stage selection is driven
+      purely by this feature bit.
+    - Switched from dynamic DC.tc.GADE toggling to static pre-enable.
+    - domain_alloc_paging_flags: follow the switch/case design from other
+      drivers.
+    - Drop IOMMU_CAP_DEFERRED_FLUSH in riscv_iommu_capable.
+    - Remove the .hw_info-related patch.
+    - Link to v1:
+      https://lore.kernel.org/linux-riscv/20260428131359.34872-1-fangyu.yu@linux.alibaba.com/
+
+[1] https://lore.kernel.org/linux-iommu/1-v2-563ee63886f0+1209-iommupt_armv8_jgg@nvidia.com/
+[2] https://lore.kernel.org/linux-iommu/20260818092444.42755-1-andrew.jones@oss.qualcomm.com/
+
+Andrew Jones (1):
+  iommu/generic_pt: Fix the RISC-V supported feature mask
+
+Fangyu Yu (6):
+  iommupt: Add RISC-V Second-stage (iohgatp) page table support
+  iommupt: Add RISC-V dirty tracking PTE ops
+  iommu/riscv: Add domain_alloc_paging_flags for second-stage domain
+  iommu/riscv: Pre-enable GADE for second-stage domains
+  iommu/riscv: Add dirty tracking support for second-stage domains
+  iommu/riscv: Add IOTINVAL.GVMA invalidations
+
+Tomasz Jeznach (1):
+  RISC-V: KVM: Enable KVM_VFIO interfaces on RISC-V arch
+
+Zong Li (2):
+  iommu/riscv: use data structure instead of individual values
+  iommu/riscv: support GSCID and GVMA invalidation command
+
+ arch/riscv/kvm/Kconfig                       |   2 +
+ drivers/iommu/generic_pt/fmt/iommu_riscv64.c |   3 +-
+ drivers/iommu/generic_pt/fmt/riscv.h         | 158 ++++++++++--
+ drivers/iommu/riscv/iommu-bits.h             |   7 +
+ drivers/iommu/riscv/iommu.c                  | 244 +++++++++++++++----
+ include/linux/generic_pt/common.h            |   4 +
+ include/linux/generic_pt/iommu.h             |  11 +
+ 7 files changed, 359 insertions(+), 70 deletions(-)
+
+
+base-commit: 6628e7d4c6b25c8d18f1345e3a20d21829aae7e4
+-- 
+2.50.1
+
 
 -- 
 kvm-riscv mailing list
