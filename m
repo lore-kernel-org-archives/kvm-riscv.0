@@ -2,84 +2,81 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F03A4606D829
-	for <kvm-riscv@archiver.kernel.org>; Tue,  3 Nov 2026 12:03:30 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 071E4606A31B
+	for <kvm-riscv@archiver.kernel.org>; Wed,  4 Nov 2026 06:46:09 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=NcOZ0uUN;
-	dkim=fail reason="signature verification failed" (1024-bit key, unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=PwoQat0r
+	dkim=pass (2048-bit key, unprotected) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=JTczvItg
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
-	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
+	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
 	List-Unsubscribe-Post:List-Owner;
-	bh=Ax/CS2Kch8xEErTxhhkLruI0KL9rFtWjVsdWb0zW+TQ=; b=NcOZ0uUNcCuDErPXOiiNnp0Cxg
-	5nGKbRLxki4skyoOfNfd2yVp/9unMJlu4RGZJEm/3qkp8MJbNAdHhD9ezDTldbmEb9MJWAInnVwq8
-	Ywy5CGCJ9qO1Cl5zyP5+S+cLgqR8VjrktQRmsltWMerCQ43QbVIdJE1TxPdlOD0ywHlMfhafYxFYa
-	jT93oTpoaydwYiJtgZ9jukPpWWCNunAguAforTxa67Vep2nk5JaJZ57IGcrXGhqzfp39RUi7Z4COV
-	zrpwnH2QSAFwxCxgnqOP0fgIR2+Qmaky6T3B0zBovceikrCReDbIi488Wch3pA8oM0KWfD+FtrlhJ
-	C9SX6YsA==;
+	bh=VvhpJQQ7XsjwVH5KYdnVmk13BbtM8uRIhoU+Oq1VNFk=; b=JTczvItgf4rLas2ysmnlqSONyM
+	f1BR5ajIW6tCSWVOy5LsTk7J4JqigrtNmbnzNeX5aSHKedc+GD80RXqcb8XHfddVK4EHdvPpmzLiT
+	nS6N8j3ZdBlT5f8WCw6K47h/rwgn7UXnxFC0swDHsqR/uRw20lvBRKjbU3tlC7tbAcu6Xl8hjG0v6
+	iBQaY2evCo0gGkiBiU5GCpGbVUpvKEZD+hVIrYAWRZ/kRdbW2S/UgMIBDo3hM1aMbbgcW6AkPpVQ0
+	FLI/jsAsJ8NwBEsnUBSCI6Ro+u2wyBJ9FOh9/xPObg8uF5nh4TDs8ERfUB8kOaI6ceLh76mOC0wIK
+	Ihu+riqQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xODEg-00000002JPD-2mk1;
-	Tue, 03 Nov 2026 12:03:30 +0000
-Received: from out30-119.freemail.mail.aliyun.com ([115.124.30.119])
+	id 1xOUl6-00000004R6y-1Frk;
+	Wed, 04 Nov 2026 06:46:08 +0000
+Received: from mxhk.zte.com.cn ([160.30.148.35])
 	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xODEa-00000002JE5-03ri;
-	Tue, 03 Nov 2026 12:03:28 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux.alibaba.com; s=default;
-	t=1793707401; h=From:To:Subject:Date:Message-Id:MIME-Version;
-	bh=NOxToOaRCWHOshJgMcU31n+bkp0++VjZYWL+rK/hMio=;
-	b=PwoQat0rStQKNniXm2CLGOpw/39cEiOdRNQClpTmPwSoSIewwVcxfqwI5DdAYMzEGDSIHdgwJoSap3iNUYAVzNJDr9Yrm/1Z1XJEL8SHPqOVgn658/FyUEHvwhnfeeuZl7C1DMvC+d148A+0roZS+CX8iiJtzxDVsVL5MgUTa80=
-X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R861e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam033037009110;MF=fangyu.yu@linux.alibaba.com;NM=1;PH=DS;RN=29;SR=0;TI=SMTPD_---0XE2qH0l_1793707398;
-Received: from localhost.localdomain(mailfrom:fangyu.yu@linux.alibaba.com fp:SMTPD_---0XE2qH0l_1793707398 cluster:ay36)
-          by smtp.aliyun-inc.com;
-          Tue, 03 Nov 2026 20:03:19 +0800
-From: fangyu.yu@linux.alibaba.com
-To: tomasz.jeznach@linux.dev,
-	joro@8bytes.org,
-	will@kernel.org,
-	robin.murphy@arm.com,
-	pjw@kernel.org,
-	palmer@dabbelt.com,
-	aou@eecs.berkeley.edu,
-	alex@ghiti.fr,
-	baolu.lu@linux.intel.com,
-	jroedel@suse.de,
-	zong.li@sifive.com,
-	andrew.jones@linux.dev,
-	anup@brainfault.org,
-	jgg@nvidia.com,
-	jgg@ziepe.ca,
-	kevin.tian@intel.com,
-	atish.patra@linux.dev,
-	skhawaja@google.com,
-	vasant.hegde@amd.com,
-	joerg.roedel@amd.com,
-	tanchi25@mails.ucas.ac.cn,
-	gong.shuai@sanechips.com.cn
-Cc: fangyu.yu@linux.alibaba.com,
-	guoren@kernel.org,
-	iommu@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	linux-riscv@lists.infradead.org,
-	kvm-riscv@lists.infradead.org,
-	Nutty Liu <nutty.liu@hotmail.com>
-Subject: [PATCH v7 10/10] iommu/riscv: Add IOTINVAL.GVMA invalidations
-Date: Tue,  3 Nov 2026 20:02:36 +0800
-Message-Id: <20261103120236.53474-11-fangyu.yu@linux.alibaba.com>
-X-Mailer: git-send-email 2.39.3 (Apple Git-146)
-In-Reply-To: <20261103120236.53474-1-fangyu.yu@linux.alibaba.com>
-References: <20261103120236.53474-1-fangyu.yu@linux.alibaba.com>
+	id 1xOUl3-00000004R6H-1PeK;
+	Wed, 04 Nov 2026 06:46:06 +0000
+Received: from mse-fl2.zte.com.cn (unknown [10.5.228.133])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mxhk.zte.com.cn (FangMail) with ESMTPS id 4jKGDJ0s8Cz8Xrrf;
+	Wed, 04 Nov 2026 14:45:52 +0800 (CST)
+Received: from szxlzmapp04.zte.com.cn ([10.5.231.166])
+	by mse-fl2.zte.com.cn with SMTP id 6A46jiZE066518;
+	Wed, 4 Nov 2026 14:45:44 +0800 (+08)
+	(envelope-from gong.shuai@sanechips.com.cn)
+Received: from ubuntu-35-gs (unknown [10.230.214.35])
+	by smtp (Zmail) with SMTP;
+	Wed, 4 Nov 2026 14:45:46 +0800
+X-Zmail-TransId: 3e816aead493029-bd580
+X-Zmail-LocalSMTP: 1
+X-Zmail-RealSender: gong.shuai@sanechips.com.cn
+From: Gong Shuai <gong.shuai@sanechips.com.cn>
+To: fangyu.yu@linux.alibaba.com
+Cc: ajones@ventanamicro.com, alex@ghiti.fr, andrew.jones@linux.dev,
+        anup@brainfault.org, aou@eecs.berkeley.edu, atish.patra@linux.dev,
+        baolu.lu@linux.intel.com, gong.shuai@sanechips.com.cn,
+        guoren@kernel.org, iommu@lists.linux.dev, jgg@nvidia.com, jgg@ziepe.ca,
+        joerg.roedel@amd.com, joro@8bytes.org, jroedel@suse.de,
+        kevin.tian@intel.com, kvm-riscv@lists.infradead.org,
+        linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
+        palmer@dabbelt.com, pjw@kernel.org, robin.murphy@arm.com,
+        skhawaja@google.com, tanchi25@mails.ucas.ac.cn, tjeznach@rivosinc.com,
+        tomasz.jeznach@linux.dev, vasant.hegde@amd.com, will@kernel.org,
+        zong.li@sifive.com
+Subject: Re: [PATCH v7 06/10] RISC-V: KVM: Enable KVM_VFIO interfaces on RISC-V arch
+Date: Wed,  4 Nov 2026 14:45:40 +0800
+Message-ID: <20261104064540.115560-1-gong.shuai@sanechips.com.cn>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20261103120236.53474-7-fangyu.yu@linux.alibaba.com>
+References: <20261103120236.53474-7-fangyu.yu@linux.alibaba.com>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
+X-ZMAIL-USEORIGINALEMLTOOUTBOUND: 1
+X-MAIL: mse-fl2.zte.com.cn 6A46jiZE066518
+X-TLS: YES
+X-ENVELOPE-SENDER: gong.shuai@sanechips.com.cn
+X-SOURCE-IP: 10.5.228.133 unknown Wed, 04 Nov 2026 14:45:52 +0800
+X-CLEAN: YES
+X-Fangmail-Anti-Spam-Filtered: true
+X-Fangmail-MID-QID: 6AEAD4A0.000/4jKGDJ0s8Cz8Xrrf
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261103_040324_869641_BB93113E 
-X-CRM114-Status: UNSURE (   7.42  )
+X-CRM114-CacheID: sfid-20261103_224605_543481_41EFDAEC 
+X-CRM114-Status: UNSURE (   9.73  )
 X-CRM114-Notice: Please train this message.
-X-Spam-Score: -17.6 (-----------------)
+X-Spam-Score: -1.9 (-)
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -95,63 +92,48 @@ Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 X-Spam-Status: No, score=-16.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=4.0.1
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-From: Fangyu Yu <fangyu.yu@linux.alibaba.com>
+Hi Fangyu,
 
-Previously, only IOTINVAL.VMA was issued, which is insufficient for
-second-stage address translation consistency.
+> From: Tomasz Jeznach <tjeznach@rivosinc.com>
+> 
+> Enable KVM/VFIO support on RISC-V architecture.
+> 
+> Signed-off-by: Tomasz Jeznach <tjeznach@rivosinc.com>
+> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+> Signed-off-by: Fangyu Yu <fangyu.yu@linux.alibaba.com>
+> ---
+>  arch/riscv/kvm/Kconfig | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/arch/riscv/kvm/Kconfig b/arch/riscv/kvm/Kconfig
+> index f7e4d0f9b156..13552cfc2cd3 100644
+> --- a/arch/riscv/kvm/Kconfig
+> +++ b/arch/riscv/kvm/Kconfig
+> @@ -28,8 +28,10 @@ config KVM
+>  	select KVM_GENERIC_HARDWARE_ENABLING
+>  	select KVM_GENERIC_PRE_FAULT_MEMORY
+>  	select VIRT_XFER_TO_GUEST_WORK
+> +	select KVM_VFIO
+>  	select SCHED_INFO
+>  	select GUEST_PERF_EVENTS if PERF_EVENTS
+> +	select SRCU
 
-Signed-off-by: Fangyu Yu <fangyu.yu@linux.alibaba.com>
-Reviewed-by: Nutty Liu <nutty.liu@hotmail.com>
----
- drivers/iommu/riscv/iommu.c | 18 +++++++++++++++---
- 1 file changed, 15 insertions(+), 3 deletions(-)
+This option is now meaningless, please remove it.
+See:
+https://lore.kernel.org/linux-riscv/20230105003813.1770367-5-paulmck@kernel.org/
 
-diff --git a/drivers/iommu/riscv/iommu.c b/drivers/iommu/riscv/iommu.c
-index ff1043afe973..8c15710d60b6 100644
---- a/drivers/iommu/riscv/iommu.c
-+++ b/drivers/iommu/riscv/iommu.c
-@@ -831,6 +831,15 @@ static int riscv_iommu_iodir_set_mode(struct riscv_iommu_device *iommu,
- 	riscv_iommu_cmd_inval_vma(&cmd);
- 	riscv_iommu_cmd_send(iommu, &cmd);
- 
-+	/*
-+	 * Per the RISC-V IOMMU spec (sec. 5.5), the IOMMU may retain
-+	 * cached translations across mode switches. IOTINVAL.VMA only
-+	 * covers first-stage leaf PTEs, so use a global IOTINVAL.GVMA
-+	 * to flush stale second-stage translations.
-+	 */
-+	riscv_iommu_cmd_inval_gvma(&cmd);
-+	riscv_iommu_cmd_send(iommu, &cmd);
-+
- 	/* IOFENCE.C */
- 	riscv_iommu_cmd_sync(iommu, RISCV_IOMMU_IOTINVAL_TIMEOUT);
- 
-@@ -1176,12 +1185,15 @@ static void riscv_iommu_iodir_iotinval(struct riscv_iommu_device *iommu,
- 		/*
- 		 * else: IOTINVAL.VMA with GV=1,AV=PSCV=0,and
- 		 * GSCID=DC.iohgatp.GSCID
--		 *
-+		 */
-+		riscv_iommu_cmd_send(iommu, &cmd);
-+		/*
- 		 * IOTINVAL.GVMA with GV=1,AV=0,and
- 		 * GSCID=DC.iohgatp.GSCID
--		 * TODO: For now, the Second-Stage feature have not yet been merged,
--		 * also issue IOTINVAL.GVMA once second-stage support is merged.
- 		 */
-+		riscv_iommu_cmd_inval_gvma(&cmd);
-+		riscv_iommu_cmd_inval_set_gscid(&cmd,
-+			FIELD_GET(RISCV_IOMMU_DC_IOHGATP_GSCID, iohgatp));
- 	}
- 	riscv_iommu_cmd_send(iommu, &cmd);
- }
--- 
-2.50.1
+Thanks,
+Shuai
+
+>  	help
+>  	  Support hosting virtualized guest machines.
+>  
+> -- 
+> 2.50.1
 
 
 -- 
