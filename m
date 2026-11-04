@@ -2,83 +2,63 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7F611606D806
-	for <kvm-riscv@archiver.kernel.org>; Wed,  4 Nov 2026 11:50:18 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F31AD606A328
+	for <kvm-riscv@archiver.kernel.org>; Wed,  4 Nov 2026 11:54:29 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=lrLUrlSr;
-	dkim=fail reason="signature verification failed" (1024-bit key, unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=qcEj/cNz
+	dkim=pass (2048-bit key, unprotected) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=WeSHNBQ+;
+	dkim=fail reason="signature verification failed" (2048-bit key, unprotected) header.d=picoheart.com header.i=@picoheart.com header.a=rsa-sha256 header.s=feishu2604151535 header.b=TaN2tZpP
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
-	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Unsubscribe-Post:List-Owner;
-	bh=Tc69g3pYoR/1L2JxGCyHkQQCSCV9DNm3OHkaaSMuk3k=; b=lrLUrlSrnikEVXAYWHOy+1ZDvU
-	GFU0didiWvVl6Rdc/LCgC1/5tfD2wfrKDELwD0KLuwphN+lysz44opImyw/YHeaE8NBvwg12iFfjQ
-	TnTAEP1JQjM70Rbc+bT5MY2LgEJBLryGp4GkjM048UX/kGAmoREX+Pzr16v7OpX6RTCc/6CYAwDJ9
-	VZ52adJUl3BjVxNDCLWFKisrz3+ehexkFkb8iaxLyklrAOff8UVuI+UkosyH+tjMYNlo4mCLDWtA7
-	s5t7z0vQgOZ9VCLO2sAhuqdKMa5We9kaPgUrLB/ZeMGk/sb6NuDzKpWazfv9Dn5DIZVBx6Ek0dNgG
-	kxicDC5Q==;
+	List-Archive:List-Unsubscribe:List-Id:Message-Id:From:Subject:To:Date:
+	Mime-Version:Cc:Reply-To:Content-ID:Content-Description:Resent-Date:
+	Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:
+	References:List-Unsubscribe-Post:List-Owner;
+	bh=olkBiVY5G509CYUfR/3huisjd8sRXZ4T/xA6/hiYLto=; b=WeSHNBQ+Ye4lQQrBEsm4z/pLky
+	ic8inferGB4kTw4czcg+9TfuEWqGT6aHI8h9UqZ8Uw4MfXRZrQbfBgZpxTJc/hMcx4cogPmBQGUrt
+	6Hgg9nS2y2jVxdhLy+dyhWNtjuCpykUqc+nzyp/m3LCF6i3dTIjE4l/dXe5gbqQf9Kz4lnisrm5Z8
+	3B87uA7bNBIvxwAUFbwwOKLaxtJjkI/Px/kCoTf79AEP9Ia25FuKnsclJanTSEwdiEjdh73nZSslX
+	LnNb1pX+xGnZKBhH89HYFqdiPTL2NkF9uCEMjyjQPPIlrrl+IMXWVvzg+ZVkS+TFx/+6nOGFoOTBr
+	1xL4T/zA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xOZVS-00000005E17-07oL;
-	Wed, 04 Nov 2026 11:50:18 +0000
-Received: from out30-124.freemail.mail.aliyun.com ([115.124.30.124])
+	id 1xOZZV-00000005EQs-36mu;
+	Wed, 04 Nov 2026 11:54:29 +0000
+Received: from va-2-58.ptr.blmpb.com ([209.127.231.58])
 	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xOZVO-00000005Dzx-0Fej;
-	Wed, 04 Nov 2026 11:50:16 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux.alibaba.com; s=default;
-	t=1793793010; h=From:To:Subject:Date:Message-Id:MIME-Version;
-	bh=dHmMS48ILVn+iA6DDXmhdMJgbhJve1Nt2JIcHMkfueY=;
-	b=qcEj/cNz6Sp3dAVjfmkj6NnLl1p+uvmSeulbHGWBbf0Q6ciz1rLjSIyufkallqr+0TVoCsyCo1pXvlZVha9hT7ij66IQlpEoDyVUcuRQDQXWuwoOY096etNPP3DHMKoL7PX1aARzh3NiV+AhkmlpEx5g+UaqK7AOvS2mOLpCSBQ=
-X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R651e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam033037033178;MF=fangyu.yu@linux.alibaba.com;NM=1;PH=DS;RN=29;SR=0;TI=SMTPD_---0XE5lrbG_1793793006;
-Received: from localhost.localdomain(mailfrom:fangyu.yu@linux.alibaba.com fp:SMTPD_---0XE5lrbG_1793793006 cluster:ay36)
-          by smtp.aliyun-inc.com;
-          Wed, 04 Nov 2026 19:50:08 +0800
-From: fangyu.yu@linux.alibaba.com
-To: gong.shuai@sanechips.com.cn
-Cc: alex@ghiti.fr,
-	andrew.jones@linux.dev,
-	anup@brainfault.org,
-	aou@eecs.berkeley.edu,
-	atish.patra@linux.dev,
-	baolu.lu@linux.intel.com,
-	fangyu.yu@linux.alibaba.com,
-	guoren@kernel.org,
-	iommu@lists.linux.dev,
-	jgg@nvidia.com,
-	jgg@ziepe.ca,
-	joerg.roedel@amd.com,
-	joro@8bytes.org,
-	jroedel@suse.de,
-	kevin.tian@intel.com,
-	kvm-riscv@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	linux-riscv@lists.infradead.org,
-	nutty.liu@hotmail.com,
-	palmer@dabbelt.com,
-	pjw@kernel.org,
-	robin.murphy@arm.com,
-	skhawaja@google.com,
-	tanchi25@mails.ucas.ac.cn,
-	tomasz.jeznach@linux.dev,
-	vasant.hegde@amd.com,
-	will@kernel.org,
-	zong.li@sifive.com
-Subject: Re: [PATCH v7 09/10] iommu/riscv: Add dirty tracking support for second-stage domains 
-Date: Wed,  4 Nov 2026 19:50:01 +0800
-Message-Id: <20261104115001.71362-1-fangyu.yu@linux.alibaba.com>
-X-Mailer: git-send-email 2.39.3 (Apple Git-146)
-In-Reply-To: <20261104084503.118083-1-gong.shuai@sanechips.com.cn>
-References: <20261104084503.118083-1-gong.shuai@sanechips.com.cn>
+	id 1xOZZT-00000005EQ5-14tS
+	for kvm-riscv@lists.infradead.org;
+	Wed, 04 Nov 2026 11:54:28 +0000
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ s=feishu2604151535; d=picoheart.com; t=1793793261; h=from:subject:
+ mime-version:from:date:message-id:subject:to:cc:reply-to:content-type:
+ mime-version:in-reply-to:message-id;
+ bh=+ZEA0oGZz6CMFDihVUR4dSmQNj+xSRWkZ7se790XjnI=;
+ b=TaN2tZpPbIpr+iYd2h8BO8woW6Tc2HxufvaVIFUJXJkpAhUMAONuWS8/Zc27YXfH2l9Vnt
+ F79xBWgzJ4k/e9TKqDh2XdU+Dx9ZY3X6kpy1CHhFhriDa9lH+YJo7ydHjooF6DAoRWdvoy
+ nQcdH3FSQizCdt98xY0FHxmgGXY1PwXXHFiyuy7jKFJ/DlR1sk9ub5UxuP+c1arYupy1Vv
+ e14hpKVUpJ8GSWzeNeZyLYHLHBcA9Hc0kebTotObyqUdhbF0AkR2hoJltDAUR7SMe6SgIv
+ EShzQ8IBhhVKfu7Nqm/tvQYyTmKTM0ohYahK628MzJ3OvSR6lEbubuDhYAVIFA==
+Cc: <atish.patra@linux.dev>, <pjw@kernel.org>, <palmer@dabbelt.com>, 
+	<aou@eecs.berkeley.edu>, <geshijian@picoheart.com>, 
+	<shenyang.young@picoheart.com>, <yang.yicong@picoheart.com>, 
+	<qingwei.hu@picoheart.com>
+X-Original-From: Yicong Yang <yang.yicong@picoheart.com>
 X-Archived-By: <archiver.kernel.org>
-MIME-Version: 1.0
+Mime-Version: 1.0
+Date: Wed,  4 Nov 2026 19:54:16 +0800
+X-Lms-Return-Path: <lba+26aeb1ceb+c5b3b4+lists.infradead.org+yang.yicong@picoheart.com>
+To: <anup@brainfault.org>, <kvm-riscv@lists.infradead.org>, 
+	<linux-riscv@lists.infradead.org>
+Subject: [PATCH] RISC-V: KVM: Redirect misaligned MMIO fault to guest
+Received: from G9WYR9K0VW.bytedance.net ([120.234.91.237]) by smtp.feishu.cn with ESMTPS; Wed, 04 Nov 2026 19:54:18 +0800
+X-Mailer: git-send-email 2.54.0
+From: "Yicong Yang" <yang.yicong@picoheart.com>
+Message-Id: <20261104115416.64769-1-yang.yicong@picoheart.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261104_035014_626366_5B40D873 
-X-CRM114-Status: GOOD (  19.84  )
-X-Spam-Score: -17.6 (-----------------)
+X-CRM114-CacheID: sfid-20261104_035427_518384_B9FCF23A 
+X-CRM114-Status: GOOD (  11.58  )
+X-Spam-Score: -2.1 (--)
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -94,167 +74,161 @@ Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 X-Spam-Status: No, score=-16.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=4.0.1
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
->Hi Fangyu,
->
->> From: Fangyu Yu <fangyu.yu@linux.alibaba.com>
->> 
->> Add hardware dirty tracking support for second-stage (iohgatp) domains
->> used in KVM VFIO device pass-through.
->> 
->> The RISC-V IOMMU can automatically set the dirty bit in PTEs on write
->> access when DC.tc.GADE is set and the hardware has AMO_HWAD capability.
->> Wire this up to the iommufd dirty tracking interface:
->> 
->>   - riscv_iommu_set_dirty_tracking(): Return success without toggling GADE.
->> 
->>   - riscv_iommu_dirty_ops: Exposes set_dirty_tracking and the generic
->>     page-table read_and_clear_dirty via IOMMU_PT_DIRTY_OPS(riscv_64).
->> 
->>   - domain_alloc_paging_flags: Assigns dirty_ops to second-stage domains
->>     when IOMMU_HWPT_ALLOC_DIRTY_TRACKING is requested.
->> 
->>   - riscv_iommu_capable: Reports IOMMU_CAP_DIRTY_TRACKING when
->>     AMO_HWAD is present.
->> 
->> Signed-off-by: Fangyu Yu <fangyu.yu@linux.alibaba.com>
->> Reviewed-by: Nutty Liu <nutty.liu@hotmail.com>
->> ---
->>  drivers/iommu/riscv/iommu.c | 32 ++++++++++++++++++++++++++++++--
->>  1 file changed, 30 insertions(+), 2 deletions(-)
->> 
->> diff --git a/drivers/iommu/riscv/iommu.c b/drivers/iommu/riscv/iommu.c
->> index b3f05dfdf278..ff1043afe973 100644
->> --- a/drivers/iommu/riscv/iommu.c
->> +++ b/drivers/iommu/riscv/iommu.c
->> @@ -1350,6 +1350,10 @@ static int riscv_iommu_attach_paging_domain(struct iommu_domain *iommu_domain,
->>  	if (domain->gscid) {
->>  		if (!riscv_iommu_iohgatp_supported(iommu, pt_info.iohgatp_mode))
->>  			return -EINVAL;
->> +		/* Dirty tracking requires AMO_HWAD on every attached IOMMU */
->> +		if (iommu_domain->dirty_ops &&
->> +		    !(iommu->caps & RISCV_IOMMU_CAPABILITIES_AMO_HWAD))
->> +			return -EINVAL;
->>  
->>  		dc.iohgatp =
->>  			FIELD_PREP(RISCV_IOMMU_DC_IOHGATP_MODE, pt_info.iohgatp_mode) |
->> @@ -1377,6 +1381,21 @@ static int riscv_iommu_attach_paging_domain(struct iommu_domain *iommu_domain,
->>  	return 0;
->>  }
->>  
->> +static int riscv_iommu_set_dirty_tracking(struct iommu_domain *iommu_domain,
->> +					  bool enable)
->> +{
->> +	/*
->> +	 * Always enabled and the dirty bitmap is cleared prior to
->> +	 * set_dirty_tracking().
->> +	 */
->> +	return 0;
->> +}
->> +
->> +static const struct iommu_dirty_ops riscv_iommu_dirty_ops = {
->> +	IOMMU_PT_DIRTY_OPS(riscv_64),
->> +	.set_dirty_tracking = riscv_iommu_set_dirty_tracking,
->> +};
->> +
->>  static const struct iommu_domain_ops riscv_iommu_paging_domain_ops = {
->>  	IOMMU_PT_DOMAIN_OPS(riscv_64),
->>  	.attach_dev = riscv_iommu_attach_paging_domain,
->> @@ -1418,7 +1437,8 @@ static int riscv_iommu_init_domain_s1(struct device *dev,
->>   */
->>  static int riscv_iommu_init_domain_s2(struct device *dev,
->>  				      struct riscv_iommu_domain *domain,
->> -				      struct pt_iommu_riscv_64_cfg *cfg)
->> +				      struct pt_iommu_riscv_64_cfg *cfg,
->> +				      u32 flags)
->>  {
->>  	struct riscv_iommu_device *iommu = dev_to_iommu(dev);
->>  
->> @@ -1439,6 +1459,10 @@ static int riscv_iommu_init_domain_s2(struct device *dev,
->>  	if (domain->gscid < 0)
->>  		return -ENOMEM;
->>  
->> +	/* AMO_HWAD is checked by iommufd via IOMMU_CAP_DIRTY_TRACKING */
->> +	if (flags & IOMMU_HWPT_ALLOC_DIRTY_TRACKING)
->> +		domain->domain.dirty_ops = &riscv_iommu_dirty_ops;
->> +
->>  	return 0;
->>  }
->>  
->> @@ -1481,7 +1505,7 @@ riscv_iommu_domain_alloc_paging_flags(struct device *dev, u32 flags,
->>  	case IOMMU_HWPT_ALLOC_NEST_PARENT:
->>  	case IOMMU_HWPT_ALLOC_DIRTY_TRACKING:
->>  	case IOMMU_HWPT_ALLOC_DIRTY_TRACKING | IOMMU_HWPT_ALLOC_NEST_PARENT:
->> -		ret = riscv_iommu_init_domain_s2(dev, domain, &cfg);
->> +		ret = riscv_iommu_init_domain_s2(dev, domain, &cfg, flags);
->>  		break;
->>  	default:
->>  		ret = -EOPNOTSUPP;
->> @@ -1559,9 +1583,13 @@ static struct iommu_group *riscv_iommu_device_group(struct device *dev)
->>  
->>  static bool riscv_iommu_capable(struct device *dev, enum iommu_cap cap)
->>  {
->> +	struct riscv_iommu_device *iommu = dev_to_iommu(dev);
->> +
->>  	switch (cap) {
->>  	case IOMMU_CAP_CACHE_COHERENCY:
->>  		return dev_is_dma_coherent(dev);
->> +	case IOMMU_CAP_DIRTY_TRACKING:
->> +		return !!(iommu->caps & RISCV_IOMMU_CAPABILITIES_AMO_HWAD);
->
->I'm not quite sure about this. Could there be a device that supports
->AMO_HWAD but not any of the S2 modes? GET_HW_INFO would report
->DIRTY_TRACKING as supported, but HWPT_ALLOC would then fail in
->riscv_iommu_init_domain_s2(). Should this check also include the
->S2 modes, like
->
->    AMO_HWAD && (SV39X4|SV48X4|SV57X4) ?
->
+Currently a misaligned emulated MMIO access will cause
+VM abort as the KVM simply return to the userspace
+with -EIO. VMM doesn't (and cannot) handle this and
+usually just abort the VM. No valid exit reason filled
+in this case either.
 
-Good question, I had also considered this.
+Per riscv-priv spec, non-idempotent regions might not
+support misaligned access. If it's not supported,
+misaligned access should raise access-fault exception
+rather than misaligned exceptions.
 
-From the IOMMU spec alone, I could not confirm whether
-AMO_HWAD implies support for S2 modes.
+As we're not going to handle this, it's more proper
+to inject a misaligned fault and leave the handling
+to the guest.
 
-However, I found this statement in the IOMMU spec:
+Signed-off-by: Yicong Yang <yang.yicong@picoheart.com>
+---
+ arch/riscv/include/asm/kvm_vcpu_insn.h |  4 +--
+ arch/riscv/kvm/vcpu_exit.c             |  4 +--
+ arch/riscv/kvm/vcpu_insn.c             | 41 +++++++++++++++++++++-----
+ 3 files changed, 37 insertions(+), 12 deletions(-)
 
-"The IOMMU must support all the virtual memory
-extensions that are supported by any of the harts in
-the system."
-
-For virtualization scenarios, we assume the CPU hart
-must support at least one S2 mode (hgatp). From this
-perspective, the IOMMU should support at least one S2
-mode in a virtualization setup, regardless of
-AMO_HWAD.
-
->BTW, in riscv_iommu_init_domain_s1/s2, why not return -EOPNOTSUPP
->instead of -ENODEV for "cannot find supported page table mode"?
->
-
-I used -ENODEV to follow the existing S1 behavior:
-no compatible paging mode is available on this IOMMU.
-
-While -EOPNOTSUPP would also be reasonable, I suggest
-keeping S1 and S2 consistent and leaving this unchanged
-in this series.
-
-Thanks,
-Fangyu
-
->Thanks,
->Shuai
->
->>  	default:
->>  		return false;
->>  	}
->> -- 
->> 2.50.1
->> 
+diff --git a/arch/riscv/include/asm/kvm_vcpu_insn.h b/arch/riscv/include/asm/kvm_vcpu_insn.h
+index a5c50dd4a884..cbb83743a1d3 100644
+--- a/arch/riscv/include/asm/kvm_vcpu_insn.h
++++ b/arch/riscv/include/asm/kvm_vcpu_insn.h
+@@ -38,10 +38,10 @@ int kvm_riscv_vcpu_virtual_insn(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ 				struct kvm_cpu_trap *trap);
+ 
+ int kvm_riscv_vcpu_mmio_load(struct kvm_vcpu *vcpu, struct kvm_run *run,
+-			     gpa_t fault_addr,
++			     struct kvm_cpu_trap *trap, gpa_t fault_addr,
+ 			     unsigned long htinst);
+ int kvm_riscv_vcpu_mmio_store(struct kvm_vcpu *vcpu, struct kvm_run *run,
+-			      gpa_t fault_addr,
++			      struct kvm_cpu_trap *trap, gpa_t fault_addr,
+ 			      unsigned long htinst);
+ int kvm_riscv_vcpu_mmio_return(struct kvm_vcpu *vcpu, struct kvm_run *run);
+ 
+diff --git a/arch/riscv/kvm/vcpu_exit.c b/arch/riscv/kvm/vcpu_exit.c
+index abe0dab60ca5..cbf3530e73d8 100644
+--- a/arch/riscv/kvm/vcpu_exit.c
++++ b/arch/riscv/kvm/vcpu_exit.c
+@@ -84,11 +84,11 @@ static int gstage_page_fault(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ 	    (trap->scause == EXC_STORE_GUEST_PAGE_FAULT && !writable)) {
+ 		switch (trap->scause) {
+ 		case EXC_LOAD_GUEST_PAGE_FAULT:
+-			return kvm_riscv_vcpu_mmio_load(vcpu, run,
++			return kvm_riscv_vcpu_mmio_load(vcpu, run, trap,
+ 							fault_addr,
+ 							trap->htinst);
+ 		case EXC_STORE_GUEST_PAGE_FAULT:
+-			return kvm_riscv_vcpu_mmio_store(vcpu, run,
++			return kvm_riscv_vcpu_mmio_store(vcpu, run, trap,
+ 							 fault_addr,
+ 							 trap->htinst);
+ 		case EXC_INST_GUEST_PAGE_FAULT: {
+diff --git a/arch/riscv/kvm/vcpu_insn.c b/arch/riscv/kvm/vcpu_insn.c
+index 2a8dc2b88ba8..0aac89e9638d 100644
+--- a/arch/riscv/kvm/vcpu_insn.c
++++ b/arch/riscv/kvm/vcpu_insn.c
+@@ -359,11 +359,37 @@ int kvm_riscv_vcpu_virtual_insn(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ 	}
+ }
+ 
++/*
++ * Per riscv-priv spec, non-idempotent regions might not support misaligned
++ * access. If it's not supported, misaligned access should raise access-fault
++ * exception rather than misaligned exceptions.
++ *
++ * Check for misaligned MMIO access. Inject an access fault if it's misalgined.
++ */
++static bool kvm_riscv_check_misaligned_mmio(struct kvm_vcpu *vcpu,
++					    struct kvm_cpu_trap *trap,
++					    bool write, gpa_t fault_addr, int len)
++{
++	struct kvm_cpu_trap misalign_trap = { 0 };
++
++	if (fault_addr & (len - 1)) {
++		misalign_trap.scause = write ? EXC_STORE_ACCESS : EXC_LOAD_ACCESS;
++		misalign_trap.stval = trap->stval;
++		misalign_trap.sepc = trap->sepc;
++
++		kvm_riscv_vcpu_trap_redirect(vcpu, &misalign_trap);
++		return true;
++	}
++
++	return false;
++}
++
+ /**
+  * kvm_riscv_vcpu_mmio_load -- Emulate MMIO load instruction
+  *
+  * @vcpu: The VCPU pointer
+  * @run:  The VCPU run struct containing the mmio data
++ * @trap: The VCPU trap context of this fault
+  * @fault_addr: Guest physical address to load
+  * @htinst: Transformed encoding of the load instruction
+  *
+@@ -372,7 +398,7 @@ int kvm_riscv_vcpu_virtual_insn(struct kvm_vcpu *vcpu, struct kvm_run *run,
+  * Returns < 0 to report failure and exit run-loop
+  */
+ int kvm_riscv_vcpu_mmio_load(struct kvm_vcpu *vcpu, struct kvm_run *run,
+-			     gpa_t fault_addr,
++			     struct kvm_cpu_trap *trap, gpa_t fault_addr,
+ 			     unsigned long htinst)
+ {
+ 	u8 data_buf[8];
+@@ -451,9 +477,8 @@ int kvm_riscv_vcpu_mmio_load(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ 		return -EOPNOTSUPP;
+ 	}
+ 
+-	/* Fault address should be aligned to length of MMIO */
+-	if (fault_addr & (len - 1))
+-		return -EIO;
++	if (kvm_riscv_check_misaligned_mmio(vcpu, trap, false, fault_addr, len))
++		return 1;
+ 
+ 	trace_kvm_mmio_emulate(vcpu->vcpu_id, ct->sepc, raw_insn, fault_addr,
+ 			       false, len);
+@@ -491,6 +516,7 @@ int kvm_riscv_vcpu_mmio_load(struct kvm_vcpu *vcpu, struct kvm_run *run,
+  *
+  * @vcpu: The VCPU pointer
+  * @run:  The VCPU run struct containing the mmio data
++ * @trap: The VCPU trap context of this fault
+  * @fault_addr: Guest physical address to store
+  * @htinst: Transformed encoding of the store instruction
+  *
+@@ -499,7 +525,7 @@ int kvm_riscv_vcpu_mmio_load(struct kvm_vcpu *vcpu, struct kvm_run *run,
+  * Returns < 0 to report failure and exit run-loop
+  */
+ int kvm_riscv_vcpu_mmio_store(struct kvm_vcpu *vcpu, struct kvm_run *run,
+-			      gpa_t fault_addr,
++			      struct kvm_cpu_trap *trap, gpa_t fault_addr,
+ 			      unsigned long htinst)
+ {
+ 	u8 data8;
+@@ -572,9 +598,8 @@ int kvm_riscv_vcpu_mmio_store(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ 		return -EOPNOTSUPP;
+ 	}
+ 
+-	/* Fault address should be aligned to length of MMIO */
+-	if (fault_addr & (len - 1))
+-		return -EIO;
++	if (kvm_riscv_check_misaligned_mmio(vcpu, trap, true, fault_addr, len))
++		return 1;
+ 
+ 	trace_kvm_mmio_emulate(vcpu->vcpu_id, ct->sepc, raw_insn, fault_addr,
+ 			       true, len);
+-- 
+2.54.0 (Apple Git-157)
 
 -- 
 kvm-riscv mailing list
