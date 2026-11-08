@@ -2,102 +2,150 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D313E606EE83
-	for <kvm-riscv@archiver.kernel.org>; Fri,  6 Nov 2026 14:03:22 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 803EF606A321
+	for <kvm-riscv@archiver.kernel.org>; Sun,  8 Nov 2026 09:42:22 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=cvv8gINg;
-	dkim=fail reason="signature verification failed" (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=OzcD3iuV
+	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=Wf/IwMMB;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=lv4FsRl6;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=bVtAt0re
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
-	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:Message-Id:MIME-Version:Subject:
+	Date:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
 	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
 	List-Unsubscribe-Post:List-Owner;
-	bh=G5RdD/djeDGPE1Nzbrkd8XKJb0EVF+BJVj4PFbUmM/Y=; b=cvv8gINgrSaYV3aLXhmYm95fsS
-	i0sklgTdMKWbTORioJi57EfmVuvpmWhKa/FqPn+W1Wv0RREYENu11OIrRNXeu0y3wx7xrIfrbm5hc
-	/x93JJBI+m06+YD+hGhQ1Xm1DqnWyS2++MbhUZnRoXfbu3k/lPwBGAw+GcXTt8NAXKhPPtWDoqFAR
-	U3JfpeyJRkMpqHZ5D49zZO0+ug6sVGab0yoZVUIDrQrJCpwq4fZq7qdg5+tUIVFGmZe/Ge4VkRTKs
-	OKly8BkubwCqchhzszosm/um6j/ie7D3RnYAa2xUyNKCqmjys41A4GSXKE8l0QT8gERlsL9ku5Yl0
-	TDBVFaRA==;
+	bh=vmGrY274z1yU0w8GYMUpsg0L12ZMLST9fDeexJJI0gU=; b=Wf/IwMMBgEl6Sd9Yy6Y9I+kJMs
+	J6+Kk/JM/IcsnS+/kKhMgmdoJ64e/8UGUFOSOog1XlbPaZIDDT+W1PmrS3Oq/zap4oH/mNh+/ZFod
+	hZQCv7cJFpct8QQ6Xo3iXvapQ/lh+Z+227tqKH8N/d26V0E6gpD8mILYO4SvFVDoYkEV6WWvgn8OS
+	xHPI9x1h61GVS8yXtQXDuxNnBRxVA8dwDsxXzpU1M5TWfQwg6UzRig0QhIa7vHzDQaWov8PWA86kr
+	QAk+Ki9Vo5wrHQZKFP6gReYkmw8IkIT7rN7H2UE2aifJTYnQa3Vk29aDdV5YOSNFGBFQmZAuRNVNS
+	nvBYuTSg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xPKXK-0000000Cala-28jR;
-	Fri, 06 Nov 2026 14:03:22 +0000
-Received: from mail-dy1-x132e.google.com ([2607:f8b0:4864:20::132e])
+	id 1xPzPp-0000000FvM1-3hVV;
+	Sun, 08 Nov 2026 09:42:21 +0000
+Received: from mx0a-0031df01.pphosted.com ([205.220.168.131])
 	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xPKXG-0000000CahR-34Kx
+	id 1xPzPm-0000000FvLF-40GG
 	for kvm-riscv@lists.infradead.org;
-	Fri, 06 Nov 2026 14:03:21 +0000
-Received: by mail-dy1-x132e.google.com with SMTP id 5a478bee46e88-36f6295304dso654518eec.1
-        for <kvm-riscv@lists.infradead.org>; Fri, 06 Nov 2026 06:03:18 -0800 (PST)
+	Sun, 08 Nov 2026 09:42:20 +0000
+Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6A87fZJg1922127
+	for <kvm-riscv@lists.infradead.org>; Sun, 8 Nov 2026 09:42:18 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=qcppdkim1; bh=3JMAeNplX11HP8M7OpoZXw
+	AtKWg3fKqmyi8RRJKR7Ns=; b=lv4FsRl6WqhX0fKESJFByQaCUzZAh5CleLcSpR
+	yR20lSJyJX0FcCn1R9MiLTBSA/9Jy0BDGVQi2hWGE+3mbayfAEtrb8Ok40AH0bdc
+	1vbJVManIJCLl3ZfXIvs+AhzaI65YV4htXx2XaC3AplIxzHTJn7U+X7HdE/taSmQ
+	xlUgHg8DhORNn/aJYQPHZgYkUKpNArXcS4070L3qBJWpyUUCO1kjDuKkLFExf+BX
+	mNtPWOYXb3S/ydMnY6DYI5N9k/KpvW+1fgUlwUG9U4kVIl40xmxskAxo3d+1prJ0
+	o5Rxs97cfqKqmukGLGWxtUTThNX5rbtOJ7e9IfXrsGU5FeDw==
+Received: from mail-yw1-f197.google.com (mail-yw1-f197.google.com [209.85.128.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hstxsatnp-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <kvm-riscv@lists.infradead.org>; Sun, 08 Nov 2026 09:42:18 +0000 (GMT)
+Received: by mail-yw1-f197.google.com with SMTP id 00721157ae682-8b346e49674so989587b3.0
+        for <kvm-riscv@lists.infradead.org>; Sun, 08 Nov 2026 01:42:18 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793973798; x=1794578598; darn=lists.infradead.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=55So9WQ/WyrADhzVx1hdq8ywmTf+r85oSbdNInvKBS8=;
-        b=OzcD3iuVhYA9zhHAtr/8HyNHG8SCJz7ij0aNZRYELsi0lsqzNVMPzegxBcbCOwnJvs
-         /IvcnOnDXB37Vku6nTuhgCec1ruysJRdw22b1t9ylB/b37IGIJ6oS2ESWb1U9vFoazmE
-         KrFw6tayUbR2kPXAfff0zEhB/Zbn5HdIK90y5KTNU9Z0c9siQjdMyl66krCSk0fbl1Ek
-         Z0VoE5S2PIGwEwDjwsLWhDHL+wOyhFz+9rjyaiAUUt0VySiy1hQiibvzTCBZIZXz1PqX
-         g+kO3Ca957LWBf7Pp1I5ukSMLHGpFDSDyiFSuUvHrLHJZFefuRA7o/8u5kEoG4R+uQh9
-         MINw==
+        d=oss.qualcomm.com; s=google; t=1794130937; x=1794735737; darn=lists.infradead.org;
+        h=cc:to:message-id:content-transfer-encoding:content-type
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=3JMAeNplX11HP8M7OpoZXwAtKWg3fKqmyi8RRJKR7Ns=;
+        b=bVtAt0reYGd0vlMJLLsSLxMIOCm70fKhjxOM2bS8Xdgv3pNiCOM8sSX8qVu2pGCYjn
+         IxoyYg4nN8W/SDct1irgJCmc3BRmKeQ3ik93uWjSocSHcuKWWhp7WhAJlbm10Ou2C+z9
+         I9MxX+rZBfxkTv5Mez2lnmdhzupTHYz+2fKI/CP3yniQpm48AB30Ru7tByWf+wOoKx5T
+         J8HjSfE6ieKt0y/+KEsSDJwdSrrjyxhZb5wSVdhC1unoadU10NnQt7MMWD42pliijWx9
+         cTtQsHHga4K+K6Kr8dqDCW24VN6Jn9rGTr5vq3lCtPj862F7y3JVdprBVGNBFkVQDG0Z
+         0yQg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793973798; x=1794578598;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=55So9WQ/WyrADhzVx1hdq8ywmTf+r85oSbdNInvKBS8=;
-        b=d2460Pzdo8XUq5kwfvufCR8p02IU2viyQKoKAITMw6Qb9uDhEfGLHzik3uQCZK7HLH
-         svcy3wwWGFp37cPB6uQCcgUx+TulWjsuzzr2hREMYQPn97H6aBL6mr6Gv1UVwC1lbOH9
-         w6SVjUacz5TAA6Ki2EFUh8S3Q9HDYQH9UDJO5tGHG36ATPjQbC4qP86or7GKRPCu8xGW
-         cVKnJ93bjHjv4j+PMAPnJGqRbrC8ylRciu36oSUu9h16s7wzmBeExVioP7jvlKTl8+o8
-         c2XL6Vxn3+MHDMm4viUiEv+FFHlXBTWiMuC3oV539WmPKGM1+VigA4fGGxH/OR0MX8Dc
-         mAVw==
-X-Forwarded-Encrypted: i=1; AL+hErFKJo8WrllpOqLQV9a50TmYHD6SrOEmuZH6iVesghC4tk1jQ0ODyEza+snj/C1mufNcU25UQSEm6J8=@lists.infradead.org
-X-Gm-Message-State: APuU4Z8IhZ60TslzFeiMFB4Smxs+s+GRVPH8aIfxJNkAMHu0RUQWjAMO
-	4XseT4RdEklU7AxFH7MYsoM1GlhiJY2mJr5FRQMgOqHR13Wev9qfD4MK
-X-Gm-Gg: AYBFou3iWls6cZ+9ryW02WML2zOpq8zvhYEqW6YBJI5NsHrPDsnHvvVAQh6cASr9VlA
-	WMgqSvIkTEnOH4K6fTPjD4CXdUKfXGIRpYKdpph8TTLjw1Tog/1tmZytEgmpUV4RMWOoi78nkP+
-	FHzNoFgX3dMjyVFq+k43QPwWs7kacLpkRE3wG6LP9I76PLUx4Wx4WHWoNu6ykQH+5ejWiwb2rwd
-	6bTIKzqk3l6boFCz7sEq9ZZJSoZ1nPyOyDP6AnBl6uXjBRVLj7JcnEJyfMSE+Tse4pZcQ/wZxhs
-	sud9ilX6fSGZHKGDXlE/yUyQiwpLKMmAEIcmePCR4e0lN4lSbWHSSpi53dJf7pDvUmqlZ0Jq7Vv
-	Tr1JxspQprDgJdRYq4um7/9iNEJdX2qXXyibShwiUd/DadAaXE3PPtLd5wRx4wMwv+pNX46vPaJ
-	Qkr7SbM5OqKV8SksMNLG1m7x9oPEPcbwEOh7/kdQaIgU2bkehxLF+69CQztv4GmKI1jl4YvkEIB
-	vl1PqvkhkTDsq8R8vTAQvcZ+ndIOmjGHfABxIPoz17JAC2V0pEUTBM6TSno1PNDKe0O2rgwKVMK
-	ax3q6FuQ7EypKfR0Y0XXRdqd9h3rMbLn/P6vg0hwNnpfcHkzP6wD
-X-Received: by 2002:a05:7301:1887:b0:361:6884:78b1 with SMTP id 5a478bee46e88-36f7671a78cmr3700143eec.28.1793973792971;
-        Fri, 06 Nov 2026 06:03:12 -0800 (PST)
-Received: from fedora ([124.51.157.51])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-36faa4b4680sm7004358eec.20.2026.11.06.06.03.08
+        d=1e100.net; s=20260707; t=1794130937; x=1794735737;
+        h=cc:to:message-id:content-transfer-encoding:content-type
+         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to:content-type;
+        bh=3JMAeNplX11HP8M7OpoZXwAtKWg3fKqmyi8RRJKR7Ns=;
+        b=M+ydHYnAkH+XhL+osy5BcWcpAgEvZiraOMmQM15XgXyVZH7pMYeLauLgw8bgI+kKY4
+         DwN17HBEUJZOQ71W1wPdcj9p+dOtFZYvf6sMhyv0CpUK0T8LVuMWNzfzqvQVfUulWZct
+         2ozIB3Z2N8qYSx2NYXQFAhbTtNr2IdiVUPRmSvW4bZIwQpiurFmC7wDUgZw6f0VnbmMx
+         dlVYmaXKemN9VJSSuafm65rssf2XAFc5nYNLCcP8wT/Z28Nh/qoW+TRsua0VCQWex7nR
+         VBksilaN5a1bo9b++aLI/8kmmTtY151e7Mrx3M34oLgoK5naZ2ajuOcpWNmIpvGhoxrM
+         dKPQ==
+X-Forwarded-Encrypted: i=1; AL+hErHqPmaawYemQ7mZfdZXCS/h4plR30sF6yWSW9HyDWEyPLtooLtKLG2XNx7HOZGmfbEnCZWqSD/oRqA=@lists.infradead.org
+X-Gm-Message-State: APuU4Z/8TeAxUmfO+k3Qw3GlyKNeLPXy9KmN+I0hxArNiGA26UzIHOI9
+	LHOlw9FJffo4DKFp3uDBL7+AjnjvxEoUddVRNM2VgwLV/zeJ10UVuVAYQpVSrDlJNMfky2s0oWE
+	F4bW5ReelzNfqwCXvsLA5YphXXw+JGlWM571Y2V6JZA1apmaLwE27Fwp7y5vK7IPZY0Ik
+X-Gm-Gg: AYBFou0SyizpBHOuhRDXNQxf1R0PwCQCTKGOXElN2zXiwEKjisW7x3lCpeELdgVUaWD
+	Ng5rUWpUQ6/IF5bIRgfLlaacQyKPZV4hWnVqc733GrJG+ThGl/rGy75GpDBn5BenQ4OQ/O7REzo
+	zcTxIpq2avi6bH+Q6F/530CRKN3t+dXeAxlHGo6t5KZnOszKXFN5GwnLS8JAEJVVpzSdZOHig9P
+	32JNMkiB+Vqqcd2fvvoGfN8BZnsgs8j9xtk7BzpsOU42MQyRWUIAAjjbZuDyZQQZTo7MjSM3u8n
+	XFjRp4JKrcufbeGNvyWoO5MRvhzTZ6OGM0ci+tHIBSBeWlpX69FTdS04M8ubP6ZJb/G86k3cNAj
+	7T5hLJg7PK42Ycdfsjqb7hGpuyGcqnxFY+1yXQTlSaCtZJDslIOFKtGs/+M/xW2cJXj3vGHu1gz
+	//hh2sOc3GHA==
+X-Received: by 2002:a05:690c:5601:20b0:8b3:209d:f8ce with SMTP id 00721157ae682-8b356638309mr19995487b3.11.1794130937134;
+        Sun, 08 Nov 2026 01:42:17 -0800 (PST)
+X-Received: by 2002:a05:690c:5601:20b0:8b3:209d:f8ce with SMTP id 00721157ae682-8b356638309mr19995407b3.11.1794130936526;
+        Sun, 08 Nov 2026 01:42:16 -0800 (PST)
+Received: from localhost ([120.244.9.94])
+        by smtp.gmail.com with ESMTPSA id 00721157ae682-8b36b63226asm11509677b3.2.2026.11.08.01.42.15
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 06 Nov 2026 06:03:12 -0800 (PST)
-From: SeungJu Cheon <suunj1331@gmail.com>
-To: anup@brainfault.org,
-	atish.patra@linux.dev
-Cc: pjw@kernel.org,
-	palmer@dabbelt.com,
-	aou@eecs.berkeley.edu,
-	alex@ghiti.fr,
-	jinyu.tang@linux.dev,
-	inochiama@gmail.com,
-	kvm@vger.kernel.org,
-	kvm-riscv@lists.infradead.org,
-	linux-riscv@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	SeungJu Cheon <suunj1331@gmail.com>,
-	Sashiko <sashiko-bot@kernel.org>,
-	stable@vger.kernel.org
-Subject: [PATCH v2] KVM: riscv: Only fast-path dirty-log write faults on host-writable leaves
-Date: Fri,  6 Nov 2026 23:02:47 +0900
-Message-ID: <20261106140247.155817-1-suunj1331@gmail.com>
-X-Mailer: git-send-email 2.56.0
+        Sun, 08 Nov 2026 01:42:15 -0800 (PST)
+From: Guodong Xu <guodong.xu@oss.qualcomm.com>
+Date: Sun, 08 Nov 2026 04:42:01 -0500
+Subject: [PATCH] riscv: cfi: parse riscv_nousercfi before
+ riscv_fill_hwcap()
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
+Message-Id: <20261108-nousercfi-early-param-v1-1-ea22d3a60683@oss.qualcomm.com>
+X-B4-Tracking: v=1; b=H4sIAOhD8GoC/yXMTQ6CMBBA4auQWTsJJfw0XsW4qMMUhkAhU2skh
+ Ltbdfkt3jsgsgpHuBYHKL8kyhoyzKUAGl0YGKXPhqqsWmNKi2FNOSEvyE7nHTenbkGqre/6pib
+ TWsjtpuzl/fve7n/H9JiYnt8ZnOcHHaHGw3kAAAA=
+X-Change-ID: 20261108-nousercfi-early-param-c48f7d54c168
+To: Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>,
+        Randy Dunlap <rdunlap@infradead.org>, Paul Walmsley <pjw@kernel.org>,
+        Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
+        Alexandre Ghiti <alex@ghiti.fr>, Deepak Gupta <debug@rivosinc.com>
+Cc: linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-riscv@lists.infradead.org,
+        Radim Krcmar <radim.krcmar@oss.qualcomm.com>,
+        Conor Dooley <conor@kernel.org>,
+        Charlie Jenkins <thecharlesjenkins@gmail.com>,
+        Andy Chiu <tchiu@tenstorrent.com>, Anup Patel <anup@brainfault.org>,
+        kvm-riscv@lists.infradead.org,
+        Guodong Xu <guodong.xu@oss.qualcomm.com>
+X-Mailer: b4 0.15.1
+X-Proofpoint-ORIG-GUID: pHf7E5Sbz4bGjgkwPZJCDUxzvKKmygEj
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTA4MDAzOCBTYWx0ZWRfX0AZYCBgSzPOq
+ N0p9R5OGw4pkadMSEsv8LajFyVeQ5aLcR+nGujeIvo2tVfuVVFW7HfS1EGCg6H8yG+OdDNbHrBV
+ aUcuZltAquUT04pACAI/svP2OecdgMM=
+X-Authority-Analysis: v=2.4 cv=dZMVTnXe c=1 sm=1 tr=0 ts=6af043fa cx=c_pps
+ a=0mLRTIufkjop4KoA/9S1MA==:117 a=ZvHX9x23NDWH3CQeJ2oX1w==:17
+ a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=Um2Pa8k9VHT-vaBCBUpS:22
+ a=EUspDBNiAAAA:8 a=aMo5A786GrU2q0vqzhgA:9 a=QEXdDO2ut3YA:10
+ a=WgItmB6HBUc_1uVUp3mg:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTA4MDAzOCBTYWx0ZWRfXxDC50EerxnMQ
+ x8jXBzG+ycefcOD79LKoMh4wnO8kfNcY/jiQtMP1t+pbtayjdLJLzoGKqPIW+wnIKWI5nP9NlCx
+ IGds1JkSfyy1uAcClFWcQ6L1VrHtM+1lsLPyOKxRDoptm2Hyg49IiviLk4pAoiHZSX78VDOwX/f
+ AbuBxZYrvBJQHAL4aqiRv8eR8DvLMRRzCMusqbwTvxHtLVfzeGVUv+z3iMfZMIvR/JYP35gsy4U
+ LYx5IN4sHrdRzbhJbdTAXqU+6iy0p1n6Ide+EM9NvEvLg6ci2Hkp85OUi5ga0qE90xRf7lL9Kaf
+ iNZnXEw0zy3Yuu6y6W4AXQel8n3Oq9BppHxkYpGcfWkUjx+h437ZSHqBdQOUqftm8MaDgJpefca
+ QiKbp4Q/E1K0UwivbGR6osof4k0Et1SWgxQ0Ik7CMmZj4WlS8VKWwtLp8QgxE9pHj92786UVhH1
+ eNk5vhKwDXSCxlNK6WA==
+X-Proofpoint-GUID: pHf7E5Sbz4bGjgkwPZJCDUxzvKKmygEj
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-08_03,2026-11-06_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 malwarescore=0 spamscore=0 priorityscore=1501 adultscore=0
+ lowpriorityscore=0 clxscore=1011 bulkscore=0 suspectscore=0 impostorscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611080038
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261106_060318_779065_6F7C8F9F 
-X-CRM114-Status: GOOD (  17.91  )
-X-Spam-Score: -1.9 (-)
+X-CRM114-CacheID: sfid-20261108_014219_038902_424EB561 
+X-CRM114-Status: GOOD (  16.80  )
+X-Spam-Score: -2.8 (--)
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -110,168 +158,87 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
-	DKIM_ADSP_CUSTOM_MED,DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,
-	FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-16.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
 	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-The dirty-log write fault fast path sets _PAGE_WRITE without checking
-whether the backing page is host-writable. A read fault can install
-a read-only mapping to the shared zero page. A subsequent guest write
-then takes the fast path and writes into the zero page instead of
-going through the slow path to break CoW.
+ISA bitmaps don't honour riscv_nousercfi because the ISA bitmaps are
+composed during setup_arch(), while riscv_nousercfi is a __setup()
+parameter, and those are parsed from start_kernel() after setup_arch()
+has returned.
 
-Use RSW bit 9 to record host writability before dirty logging forces
-the mapping read-only. Preserve this bit across write-protection and
-fall back to the slow path when it is clear.
+As a consequence, the riscv_nousercfi test in riscv_cfilp_validate() and
+riscv_cfiss_validate() always sees zero, and Zicfilp and Zicfiss stay in
+the ISA bitmaps even when user CFI is disabled on the kernel command
+line.
 
-Reported-by: Sashiko <sashiko-bot@kernel.org>
-Closes: https://lore.kernel.org/all/sashiko-outbox-174168@kernel.org/
-Fixes: 7705be59eb2d ("KVM: riscv: Fast-path dirty logging write faults")
-Cc: stable@vger.kernel.org # 7.2+
-Reviewed-by: Jinyu Tang <jinyu.tang@linux.dev>
-Signed-off-by: SeungJu Cheon <suunj1331@gmail.com>
+Register the option with early_param() instead. The handler now returns
+0 on success, as early_param() expects. Also in this patch, reject a
+bare "riscv_nousercfi" without a value, which early_param() passes in as
+a NULL string.
+
+Fixes: c9b859c4d8f5 ("riscv: add kernel command line option to opt out of user CFI")
+Signed-off-by: Guodong Xu <guodong.xu@oss.qualcomm.com>
 ---
-v2:
- - Pass host_writable to kvm_release_faultin_page() as well
-   (Inochi Amaoto, Sashiko)
-v1: https://lore.kernel.org/all/20261017030927.345454-1-suunj1331@gmail.com/
+Tested on QEMU (rva23s64 with zicfilp and zicfiss, 4 harts).
 
-Testing (v2, QEMU -cpu rv64,h=true, 4 vCPUs):
+qemu-system-riscv64 -M virt -smp 4 -cpu rva23s64,zicfilp=true,zicfiss=true
 
-  A selftest makes the guest read an untouched page, then write to it
-  with dirty logging enabled. Before the fix, the host zero page is
-  corrupted (0x5a5a5a5a5a5a5a5a != 0). After the fix, CoW allocates a
-  private page and the zero page stays zero.
+Without the patch, with 'riscv_nousercfi=all', cpuinfo and hwprobe keep
+reporting the disabled extensions.
+---
+ Documentation/admin-guide/kernel-parameters.txt | 2 +-
+ arch/riscv/kernel/usercfi.c                     | 7 +++++--
+ 2 files changed, 6 insertions(+), 3 deletions(-)
 
-  dirty_log_perf_test -v 2 -b 128M -i 3 completes for Sv39/Sv48/Sv57
-  with no warnings in dmesg.
-
-v1 was additionally tested on a HiFive Premier P550 (no noticeable
-regression in dirty_log_perf_test -v 3 -b 256M -i 3). The board is
-not available for v2.
-
-This patch applies on top of the Accessed-bit fix [1].
-
-[1] https://lore.kernel.org/all/20261016101458.221648-1-suunj1331@gmail.com/
-
- arch/riscv/include/asm/kvm_gstage.h |  5 ++++-
- arch/riscv/kvm/gstage.c             |  5 ++++-
- arch/riscv/kvm/mmu.c                | 17 ++++++++++++++---
- 3 files changed, 22 insertions(+), 5 deletions(-)
-
-diff --git a/arch/riscv/include/asm/kvm_gstage.h b/arch/riscv/include/asm/kvm_gstage.h
-index aaf080ba1b7..0d19ad6d7df 100644
---- a/arch/riscv/include/asm/kvm_gstage.h
-+++ b/arch/riscv/include/asm/kvm_gstage.h
-@@ -35,6 +35,9 @@ extern unsigned long kvm_riscv_gstage_max_pgd_levels;
- #define kvm_riscv_gstage_pgd_xbits	2
- #define kvm_riscv_gstage_pgd_size	(1UL << (HGATP_PAGE_SHIFT + kvm_riscv_gstage_pgd_xbits))
+diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+index 0b3c140babd9..b8d9db39497e 100644
+--- a/Documentation/admin-guide/kernel-parameters.txt
++++ b/Documentation/admin-guide/kernel-parameters.txt
+@@ -6714,7 +6714,7 @@ Kernel parameters
+ 			replacement properties are not found. See the Kconfig
+ 			entry for RISCV_ISA_FALLBACK.
  
-+/* RSW bit 9: the host mapping behind this leaf is writable. */
-+#define KVM_GSTAGE_PTE_HOST_WRITABLE	BIT(9)
-+
- static inline unsigned long kvm_riscv_gstage_gpa_bits(unsigned long pgd_levels)
+-	riscv_nousercfi=
++	riscv_nousercfi=	[RISCV,EARLY]
+ 		all	Disable user CFI ABI to userspace even if cpu extension
+ 			are available.
+ 		bcfi	Disable user backward CFI ABI to userspace even if
+diff --git a/arch/riscv/kernel/usercfi.c b/arch/riscv/kernel/usercfi.c
+index 86141e5bab82..a3446d706cf1 100644
+--- a/arch/riscv/kernel/usercfi.c
++++ b/arch/riscv/kernel/usercfi.c
+@@ -508,6 +508,9 @@ bool is_user_lpad_enabled(void)
+ 
+ static int __init setup_global_riscv_enable(char *str)
  {
- 	return (HGATP_PAGE_SHIFT +
-@@ -61,7 +64,7 @@ bool kvm_riscv_gstage_try_update_pte(struct kvm_gstage *gstage, u32 level,
- int kvm_riscv_gstage_map_page(struct kvm_gstage *gstage,
- 			      struct kvm_mmu_memory_cache *pcache,
- 			      gpa_t gpa, phys_addr_t hpa, unsigned long page_size,
--			      bool page_rdonly, bool page_exec,
-+			      bool page_rdonly, bool page_exec, bool host_writable,
- 			      struct kvm_gstage_mapping *out_map);
- 
- bool kvm_riscv_gstage_split_huge(struct kvm_gstage *gstage,
-diff --git a/arch/riscv/kvm/gstage.c b/arch/riscv/kvm/gstage.c
-index be70607a33e..d9bfd0c6d5f 100644
---- a/arch/riscv/kvm/gstage.c
-+++ b/arch/riscv/kvm/gstage.c
-@@ -207,7 +207,7 @@ static void kvm_riscv_gstage_update_pte_prot(struct kvm_gstage *gstage, u32 leve
- int kvm_riscv_gstage_map_page(struct kvm_gstage *gstage,
- 			      struct kvm_mmu_memory_cache *pcache,
- 			      gpa_t gpa, phys_addr_t hpa, unsigned long page_size,
--			      bool page_rdonly, bool page_exec,
-+			      bool page_rdonly, bool page_exec, bool host_writable,
- 			      struct kvm_gstage_mapping *out_map)
- {
- 	bool found_leaf;
-@@ -246,6 +246,9 @@ int kvm_riscv_gstage_map_page(struct kvm_gstage *gstage,
- 			prot = PAGE_WRITE;
- 	}
- 
-+	if (host_writable)
-+		prot = __pgprot(pgprot_val(prot) | KVM_GSTAGE_PTE_HOST_WRITABLE);
++	if (!str)
++		return -EINVAL;
 +
- 	found_leaf = kvm_riscv_gstage_get_leaf(gstage, gpa, &ptep, &ptep_level);
- 	if (found_leaf) {
- 		/*
-diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-index 5664383a1a3..b41534dd500 100644
---- a/arch/riscv/kvm/mmu.c
-+++ b/arch/riscv/kvm/mmu.c
-@@ -586,6 +586,12 @@ static bool kvm_riscv_mmu_dirty_log_write_fault_fast(struct kvm *kvm,
- 			break;
- 		}
+ 	if (strcmp(str, "all") == 0)
+ 		riscv_nousercfi = CMDLINE_DISABLE_RISCV_USERCFI;
  
-+		/* Let the slow path handle host-side write protection and CoW. */
-+		if (!(pte_val(old_pte) & KVM_GSTAGE_PTE_HOST_WRITABLE)) {
-+			ret = false;
-+			break;
-+		}
-+
- 		if (!dirty_marked) {
- 			mark_page_dirty_in_slot(kvm, memslot, gfn);
- 			dirty_marked = true;
-@@ -630,6 +636,7 @@ int kvm_riscv_mmu_map(struct kvm_vcpu *vcpu, struct kvm_memory_slot *memslot,
- 	bool is_hugetlb;
- 	bool unused = false;
- 	bool writable;
-+	bool host_writable;
- 	unsigned int vma_pageshift;
- 	gfn_t gfn = gpa >> PAGE_SHIFT;
- 	struct vm_area_struct *vma;
-@@ -714,6 +721,8 @@ int kvm_riscv_mmu_map(struct kvm_vcpu *vcpu, struct kvm_memory_slot *memslot,
- 	if (is_error_noslot_pfn(hfn))
- 		return -EFAULT;
+@@ -522,7 +525,7 @@ static int __init setup_global_riscv_enable(char *str)
+ 			str_disabled_enabled(riscv_nousercfi & CMDLINE_DISABLE_RISCV_USERCFI_BCFI),
+ 			str_disabled_enabled(riscv_nousercfi & CMDLINE_DISABLE_RISCV_USERCFI_FCFI));
  
-+	host_writable = writable;
-+
- 	/*
- 	 * If logging is active then we allow writable pages only
- 	 * for write faults.
-@@ -739,10 +748,12 @@ int kvm_riscv_mmu_map(struct kvm_vcpu *vcpu, struct kvm_memory_slot *memslot,
- 	if (writable) {
- 		mark_page_dirty_in_slot(kvm, memslot, gfn);
- 		ret = kvm_riscv_gstage_map_page(&gstage, pcache, gpa, hfn << PAGE_SHIFT,
--						vma_pagesize, false, true, out_map);
-+						vma_pagesize, false, true, host_writable,
-+						out_map);
- 	} else {
- 		ret = kvm_riscv_gstage_map_page(&gstage, pcache, gpa, hfn << PAGE_SHIFT,
--						vma_pagesize, true, true, out_map);
-+						vma_pagesize, true, true, host_writable,
-+						out_map);
- 	}
- 
- 	if (ret)
-@@ -750,7 +761,7 @@ int kvm_riscv_mmu_map(struct kvm_vcpu *vcpu, struct kvm_memory_slot *memslot,
- 
- out_unlock:
- 	kvm_release_faultin_page(kvm, page,
--				 unused || (ret && ret != -EEXIST), writable);
-+				 unused || (ret && ret != -EEXIST), host_writable);
- 	write_unlock(&kvm->mmu_lock);
- 	return ret;
+-	return 1;
++	return 0;
  }
+ 
+-__setup("riscv_nousercfi=", setup_global_riscv_enable);
++early_param("riscv_nousercfi", setup_global_riscv_enable);
 
+---
 base-commit: 6628e7d4c6b25c8d18f1345e3a20d21829aae7e4
-prerequisite-patch-id: aea68332f05283074bb715e7dde093a2a316a51a
--- 
-2.52.0
+change-id: 20261108-nousercfi-early-param-c48f7d54c168
+
+Best regards,
+--  
+Guodong Xu <guodong.xu@oss.qualcomm.com>
 
 
 -- 
