@@ -2,11 +2,11 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0C94F606A336
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 39A5C60A263F
 	for <kvm-riscv@archiver.kernel.org>; Wed, 11 Nov 2026 22:29:19 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=BphxL5vy;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=nWz1gFPi
+	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=jL5l7RV9;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=GTTbU0sn
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
@@ -14,37 +14,37 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
 	List-Unsubscribe-Post:List-Owner;
-	bh=iXRGj2gr263YN56kssgs/uTQ4tVqHm4EQaTF9toqA0k=; b=BphxL5vyy4tJdKXhrf0Rywy7Od
-	6T7t4MXIMv58vWf4K6XbaHdfepxGfDnZFULrd2GcZn/oVdMt+FT54hqsxsdK99E4fB1py6onV72Oy
-	kDRiFkWyQpRepFtLD9LVkGEaNBQYJQ493cPlUmTddXa7dnUllJQ5DAjMPoYIlSAWwlrzQL7WEK8vS
-	2HK/xuOF0nT55WV2/lae3+e3lQm2bs+SbzQJZK+KUrn7FeZU2BzpkXljM1tdY63uHNt52IE8G+9DP
-	zLJMDZrqLl0LRokGBX8FR/NlYCy62QQn/UgT69sE7RrO5COWbIdGFWgqRc9JrIE2MB9qroNFFJ7wE
-	jI6ajXfQ==;
+	bh=/etfNV6OogGlMEzjAAJyuDMcR7+ViGk60SP2DjrArTA=; b=jL5l7RV995XmNVb6tsvtXtr874
+	8AjJ+bLqgaWGud9WaZ5dAMuYbQeOVF0EU6Y8m1q/2cL4dRAHY9KOgCujOx21awH1aB5CSJyeKpaPF
+	Ps4KybiqV1rdmdAm79IQdbScE208Oa9Y4dQX3taTWpKAinJLnkxiHeaaQYko2agp9RCRAs2MdvZkX
+	gS0IDp3/K4jDGkW34nXlONr1Az/4PMaXf8wTxoFNNOddWZbIuWgHw4XO8A1QOhbnt37JLa/VS9Nb+
+	/BQttHdPbVU8Er+dN2E/i9YrAwTim4pI9K7TYtNZGKnPvlNzdh/7n1ySr8+nS9V8Oz7XGQ7EScaUA
+	TP945BJQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xRGog-00000007xMS-0VFz;
+	id 1xRGog-00000007xMz-25dW;
 	Wed, 11 Nov 2026 22:29:18 +0000
 Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xRGoe-00000007xIR-1wHC
+	id 1xRGoe-00000007xIT-25UA
 	for kvm-riscv@bombadil.infradead.org;
 	Wed, 11 Nov 2026 22:29:16 +0000
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=desiato.20200630; h=Sender:Content-Transfer-Encoding:
-	Content-Type:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:
-	To:From:Reply-To:Content-ID:Content-Description;
-	bh=hNcFDdx6SEsMQ2wb+0TdBub7tg0kF/xbhNU9Q5R/+fI=; b=nWz1gFPieTMjS6ZWY7nAHM/nOJ
-	syw4NbeMkSO0aHt+eO0M1dMge7tZNU7ehYKvmryl84z8rwj+DmAtGbpkvydeEKAcnNNw7+jYyD5t4
-	5sxuulgOozKiHvuBZx2/ltbcOJucbl3aEMjTjPGGZtuwMFAUW+4UIl/9RnjpEs5wzYs//JOQCxVfe
-	Z5vV95kf3tW2bfUmND973isg/ref1Y14Ui9VcW5OAU9bFdTYvOD/IO7iUOyLzG5ENC+BD8ktH62+N
-	CNhTo0V4MYK/g3P3FYB65jEOYAjZy162p7oL8xg+UySIOd4jizNQ1HXVfvs38/yhP7RmuPdZR+eB6
-	2JplI6gg==;
+	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
+	Reply-To:Content-Type:Content-ID:Content-Description;
+	bh=8qybenYqvG8G9PhMhPtpqHZ056gMFT0pwcSnxKT9iyE=; b=GTTbU0snO/nUQajge+xBq1MFqg
+	QCVuIo3EK60swCUZBbdORPP9nzonwyf38wVn5CkrR4E+VbSwxUtREevKSLliFB6FkoA4U0PawrBC6
+	21DVG1UqXCWYh8595L2Ac34v8l+N9Em9XG6MOE7cPxBGxDpGLbck/jzBxXsBA9L5afdyIarQH8c0Z
+	w7w29b0ah/iBIIRVSrPjcp4hF3oE56z6pIjvpaUGM9Nyjm6z4yMxONuU0qhp079dLqajLEtUPtKCU
+	wOMpaAYrFNfqQZpOFD++SIM+GIlqjp42fskxCot1POq9AKgO20oFdAjP691kKLoqXW6LMXgwjthK6
+	Idrz/Zwg==;
 Received: from [2001:8b0:10b:1::425] (helo=i7.infradead.org)
 	by desiato.infradead.org with esmtpsa (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xRGoc-00000009dbX-29VX;
+	id 1xRGoc-00000009dba-29nz;
 	Wed, 11 Nov 2026 22:29:14 +0000
 Received: from dwoodhou by i7.infradead.org with local (Exim 4.99.5 #2 (Red Hat Linux))
-	id 1xRGoZ-0000000007o-1y0L;
+	id 1xRGoZ-00000000081-2lp5;
 	Wed, 11 Nov 2026 22:29:11 +0000
 From: David Woodhouse <dwmw2@infradead.org>
 To: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
@@ -70,12 +70,13 @@ Cc: Paolo Bonzini <pbonzini@redhat.com>,
 	Mushahid Hussain <hmushi@amazon.co.uk>,
 	Sriram Nambakam <snambakam@linux.microsoft.com>,
 	David Woodhouse <dwmw@amazon.co.uk>
-Subject: [PATCH 00/16] KVM: Fixes for the Planes + SEV-SNP series
-Date: Wed, 11 Nov 2026 14:28:55 -0800
-Message-ID: <20261111222911.477-1-dwmw2@infradead.org>
+Subject: [PATCH 04/16] KVM: Guard the per-plane KVM_SIGNAL_MSI cases with __KVM_HAVE_MSI
+Date: Wed, 11 Nov 2026 14:28:59 -0800
+Message-ID: <20261111222911.477-5-dwmw2@infradead.org>
 X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20260608144252.351443-1-joro@8bytes.org>
+In-Reply-To: <20261111222911.477-1-dwmw2@infradead.org>
 References: <20260608144252.351443-1-joro@8bytes.org>
+ <20261111222911.477-1-dwmw2@infradead.org>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by desiato.infradead.org. See http://www.infradead.org/rpr.html
@@ -88,100 +89,69 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 X-Spam-Status: No, score=-17.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=4.0.1
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-RnJvbTogRGF2aWQgV29vZGhvdXNlIDxkd213QGFtYXpvbi5jby51az4KCkkgcmViYXNlZCBKw7Zy
-ZydzIEtWTSBQbGFuZXMgKyBTRVYtU05QIHNlcmllc8K5IHRvIDcuNC1yYzLCsiBhbmQgdXNlZCBp
-dAp0byBhZGQgVlNNIHN1cHBvcnTCsy4gSGVyZSdzIGEgYmF0Y2ggb2YgZml4ZXMuCgpUaGlydGVl
-biBvZiB0aGUgc2l4dGVlbiBhcHBseSBpbiBvcmRlciwgd2l0aG91dCBjb25mbGljdHMsIHRvIHRo
-ZQprdm0tcGxhbmVzLXY3LjEgYnJhbmNoLiBUaGUgb3RoZXIgdGhyZWUgbmVlZCB3aGF0IGhhcyBs
-YW5kZWQgdXBzdHJlYW0Kc2luY2UgdjcuMTogcGF0Y2ggMSBmaXhlcyB0aGUgczM5MCBhcm02NCBL
-Vk0gbW9kdWxlLCB3aGljaCBvbmx5CmFycml2ZWQgaW4gNy40OyBwYXRjaCAxMiB0b3VjaGVzIHRo
-ZSBQSUQtdGFibGUgY2xlYXJpbmcgaW4Kdm14X3ZjcHVfZnJlZSgpIGZyb20gYjQxZjJjYTZjMDYw
-OyBhbmQgcGF0Y2ggMTYgZXh0ZW5kcyB0aGUgVk1TQQppbnZhbGlkYXRpb24gZnJvbSBkMWEzYzIx
-NjIzMzQuCgpUaGUgb25lcyB0aGF0IG1hdHRlcjoKCiAtIDAxIHMzOTA6IGFybTY0OiBQYXNzIHBs
-YW5lX2xldmVsIHRvIHRoZSBrdm1fc2V0X3JvdXRpbmdfZW50cnkoKSBzdHViCiAgIFRoZSBhcm02
-NCBLVk0gbW9kdWxlIG9uIHMzOTAga2VwdCB0aGUgb2xkIHByb3RvdHlwZTsgdGhlIGtlcm5lbAog
-ICB0ZXN0IHJvYm90IGNhdWdodCBpdCBvbiB0aGUgcmViYXNlZCB0cmVlLgoKIC0gMDUgSW5pdGlh
-bGlzZSBIeXBlci1WIHN0YXRlIG9uIGV2ZXJ5IHBsYW5lIHZDUFUKICAga3ZtX3NldF9jcHVpZCgp
-IHBhc3NlZCB0aGUgcGxhbmUgMCB2Q1BVIHRvIGt2bV9odl92Y3B1X2luaXQoKSBmb3IKICAgZXZl
-cnkgcGxhbmUsIGFuZCBhIHR3aW4gY3JlYXRlZCBsYXRlIGdvdCB2cF9pbmRleCAtMS4KCiAtIDA4
-IFB1Ymxpc2ggYSBuZXcgcGxhbmUgb25seSBvbmNlIEtWTV9DUkVBVEVfUExBTkUgY2Fubm90IGZh
-aWwKICAgQSBmYWlsZWQgY3JlYXRlIGxlZnQgYSBmcmVlZCBwbGFuZSBpbiBrdm0tPnBsYW5lc1td
-LCB3aGVyZSB0aGUgU05QCiAgIFZNUEwgc3dpdGNoIGNvdWxkIHN0aWxsIGZpbmQgaXQsIGFuZCBW
-TSB0ZWFyZG93biBmcmVlZCBpdCBhZ2Fpbi4KCiAtIDEwIEtlZXAgY3VycmVudF92Y3B1IGluIHN5
-bmMgaW4gdmNwdV9sb2FkKCkKICAgQSByZXNjaGVkdWxlIGluc2lkZSBhbiBpb2N0bCBvbiBhIHBs
-YW5lIGZkIHB1dCBhbmQgbG9hZGVkIHRoZSB3cm9uZwogICB0d2luLCBhbmQgYSBmYWlsZWQgdHdp
-biBjcmVhdGUgbGVmdCBjdXJyZW50X3ZjcHUgZGFuZ2xpbmcuCgogLSAxMSBMb2FkIGVhY2ggcGxh
-bmUgdHdpbiB3aGlsZSB1cGRhdGluZyBpdCBhZnRlciBLVk1fU0VUX0NQVUlECiAgIE9uIFZNWCB0
-aGUgdmVuZG9yIGNhbGxiYWNrIHdyb3RlIHRoZSB0d2lucycgY29udHJvbHMgaW50byB0aGUKICAg
-Y2FsbGVyJ3MgVk1DUy4KCiAtIDEyIExlYXZlIHRoZSBJUEl2IFBJRC10YWJsZSBlbnRyeSB0byB0
-aGUgcGxhbmUgMCB2Q1BVCiAgIEEgdHdpbiBoYXMgdGhlIHNhbWUgdkNQVSBJRCBhcyBwbGFuZSAw
-LCBzbyBjcmVhdGluZyBvciBmcmVlaW5nIG9uZQogICByZXBvaW50ZWQgb3IgY2xlYXJlZCBwbGFu
-ZSAwJ3MgZW50cnkuIExhdGVudCBmb3Igbm93LCBzaW5jZSBwbGFuZXMKICAgaW5oaWJpdCBBUElD
-di4KCiAtIDEzIExlYXZlIFRTQyBtYXRjaGluZyB0byB0aGUgcGxhbmUgMCB2Q1BVcwogICBFYWNo
-IHR3aW4gY291bnRlZCBhcyBhbm90aGVyIHZDUFUgd2l0aCBhIG1hdGNoaW5nIFRTQywgc28gdGhl
-IG1hc3RlcgogICBjbG9jayBjb3VsZCBuZXZlciBjb21lIGJhY2sgb24uCgogLSAxNCBEZXJpdmUg
-cnVudGltZSBDUFVJRCBiaXRzIGZyb20gdGhlIGV4ZWN1dGluZyBwbGFuZQogICBPU1hTQVZFLCBP
-U1BLRSwgQVBJQywgTVdBSVQgYW5kIHRoZSBYU0FWRSBzaXplcyBmb2xsb3cgcGVyLXBsYW5lCiAg
-IHJlZ2lzdGVycywgYnV0IHRoZSB0YWJsZSB0aGV5IGxpdmUgaW4gaXMgc2hhcmVkLgoKVGhyZWUg
-dGhpbmdzIEkndmUgbm90aWNlZCBhbmQgKm5vdCogZml4ZWQgaGVyZToKCiAtIFRoZSBBVklDIHBo
-eXNpY2FsIElEIHRhYmxlIGlzIGluZGV4ZWQgYnkgdkNQVSBJRCB0b28sIHNvIGl0IGhhcyB0aGUK
-ICAgc2FtZSBjb2xsaXNpb24gYXMgdGhlIElQSXYgUElEIHRhYmxlIGluIHBhdGNoIDEyLiBJdCdz
-IG1hc2tlZCB3aGlsZQogICBBUElDdiBpcyBpbmhpYml0ZWQgZm9yIHBsYW5lcywgYXMgaXQgaXMg
-dG9kYXkuCgogLSBBIGhvc3Qtc2lkZSBUU0Mgd3JpdGUgb24gcGxhbmUgMCAob3IgS1ZNX1NFVF9U
-U0NfS0haKSBhZnRlciB0aGUKICAgdHdpbnMgZXhpc3QgZG9lc24ndCByZWFjaCB0aGVtLiBGaXhp
-bmcgdGhhdCBtZWFucyBsb2FkaW5nIGVhY2ggdHdpbiwKICAgYW5kIEknZCByYXRoZXIgYWdyZWUg
-aG93IGJlZm9yZSBkb2luZyBpdC4KCiAtIEZvciBKw7ZyZyBhbmQgVG9tOiB0aGUgU05QIFZNUEwg
-c3dpdGNoIHN0b3BzIHRoZSBjdXJyZW50IHBsYW5lIHdpdGgKICAga3ZtX3ZjcHVfc2V0X3BsYW5l
-X3N0b3BwZWQoKSBhbmQgbm8gbGF0Y2gsIHNvIEtWTV9HRVRfUExBTkVfUlVOX1NUQVRFCiAgIHJl
-cG9ydHMgaXQgYXMgU1RPUFBFRCwgYW5kIGEgVk1NIHRoYXQgc2F2ZXMgYW5kIHJlc3RvcmVzIHRo
-YXQgdmFsdWUKICAgdHVybnMgaXQgaW50byBhIHVzZXJzcGFjZSBzdG9wLiBEb2VzIFZNUEwgd2Fu
-dCBhIG5vdGlvbiBvZgogICBLVk0taW5pdGlhdGVkIHN1c3BlbnNpb24gb2YgaXRzIG93biwgb3Ig
-aXMgdGhhdCB0aGUgaW50ZW5kZWQKICAgY29udHJhY3Q/CgrCuSBodHRwczovL2xvcmUua2VybmVs
-Lm9yZy9hbGwvMjAyNjA2MDgxNDQyNTIuMzUxNDQzLTEtam9yb0A4Ynl0ZXMub3JnLwrCsiBodHRw
-czovL2dpdC5pbmZyYWRlYWQub3JnLz9wPXVzZXJzL2R3bXcyL2xpbnV4LmdpdDthPXNob3J0bG9n
-O2g9cmVmcy9oZWFkcy92c20yL3BsYW5lcy1maXhlcwrCsyBodHRwczovL2xvcmUua2VybmVsLm9y
-Zy9rdm0vMjAyNjEwMTcxMjI1MDEuNjEwMjQ4LTEtZHdtdzJAaW5mcmFkZWFkLm9yZy8KCkRhdmlk
-IFdvb2Rob3VzZSAoMTQpOgogIEtWTTogczM5MDogYXJtNjQ6IFBhc3MgcGxhbmVfbGV2ZWwgdG8g
-dGhlIGt2bV9zZXRfcm91dGluZ19lbnRyeSgpIHN0dWIKICBLVk06IFNWTTogRGVyaXZlIHRoZSBw
-bGFuZSBsaW1pdCBmcm9tIHRoZSBpbW11dGFibGUgVk0gdHlwZQogIEtWTTogcGxhbmVzOiBSZXBv
-cnQgS1ZNX01BWF9QTEFORVMgZnJvbSB0aGUgc3lzdGVtIGZkCiAgS1ZNOiBHdWFyZCB0aGUgcGVy
-LXBsYW5lIEtWTV9TSUdOQUxfTVNJIGNhc2VzIHdpdGggX19LVk1fSEFWRV9NU0kKICBLVk06IHg4
-NjogSW5pdGlhbGlzZSBIeXBlci1WIHN0YXRlIG9uIGV2ZXJ5IHBsYW5lIHZDUFUKICBLVk06IHg4
-NjogV2lkZW4gdGhlIHBsYW5lIHZDUFUgZmQgaW9jdGwgYWxsb3dsaXN0CiAgS1ZNOiB4ODYvbW11
-OiBGcmVlIG9ic29sZXRlIHJvb3RzIG9mIGFsbCBwbGFuZXMKICBLVk06IHBsYW5lczogUHVibGlz
-aCBhIG5ldyBwbGFuZSBvbmx5IG9uY2UgS1ZNX0NSRUFURV9QTEFORSBjYW5ub3QKICAgIGZhaWwK
-ICBLVk06IHBsYW5lczogS2ljayB0aGUgcnVubmluZyB0d2luJ3MgcENQVSwgbm90IHRoZSByZXF1
-ZXN0IHRhcmdldCdzCiAgS1ZNOiBwbGFuZXM6IEtlZXAgY3VycmVudF92Y3B1IGluIHN5bmMgaW4g
-dmNwdV9sb2FkKCkKICBLVk06IHg4NjogTG9hZCBlYWNoIHBsYW5lIHR3aW4gd2hpbGUgdXBkYXRp
-bmcgaXQgYWZ0ZXIgS1ZNX1NFVF9DUFVJRAogIEtWTTogVk1YOiBMZWF2ZSB0aGUgSVBJdiBQSUQt
-dGFibGUgZW50cnkgdG8gdGhlIHBsYW5lIDAgdkNQVQogIEtWTTogcGxhbmVzOiBBbm5vdGF0ZSB0
-aGUgbG9ja2xlc3MgdHdpbi1wdWJsaWNhdGlvbiBwcm90b2NvbAogIEtWTTogU1ZNOiBNYWtlIEtW
-TV9SRVFfVk1TQV9QQUdFX1JFTE9BRCBwZXIgcGxhbmUKCk11c2hhaGlkIEh1c3NhaW4gKDIpOgog
-IEtWTTogeDg2OiBMZWF2ZSBUU0MgbWF0Y2hpbmcgdG8gdGhlIHBsYW5lIDAgdkNQVXMKICBLVk06
-IHg4NjogRGVyaXZlIHJ1bnRpbWUgQ1BVSUQgYml0cyBmcm9tIHRoZSBleGVjdXRpbmcgcGxhbmUK
-CiBEb2N1bWVudGF0aW9uL3ZpcnQva3ZtL2FwaS5yc3QgIHwgIDIxICsrKystLQogYXJjaC9zMzkw
-L2t2bS9hcm02NC9hcm0uYyAgICAgICB8ICAgMyArLQogYXJjaC94ODYvaW5jbHVkZS9hc20va3Zt
-X2hvc3QuaCB8ICAgMyArLQogYXJjaC94ODYva3ZtL2NwdWlkLmMgICAgICAgICAgICB8IDEyOCAr
-KysrKysrKysrKysrKysrKysrKysrKy0tLS0tLS0tLQogYXJjaC94ODYva3ZtL2NwdWlkLmggICAg
-ICAgICAgICB8ICAgNiArLQogYXJjaC94ODYva3ZtL2h5cGVydi5jICAgICAgICAgICB8ICAgNyAr
-LQogYXJjaC94ODYva3ZtL2lycS5jICAgICAgICAgICAgICB8ICAgNSArLQogYXJjaC94ODYva3Zt
-L21tdS9tbXUuYyAgICAgICAgICB8ICAxNiArKystCiBhcmNoL3g4Ni9rdm0vc3ZtL3Nldi5jICAg
-ICAgICAgIHwgIDI5ICsrKysrKy0tCiBhcmNoL3g4Ni9rdm0vc3ZtL3N2bS5jICAgICAgICAgIHwg
-IDEwICsrLQogYXJjaC94ODYva3ZtL3N2bS9zdm0uaCAgICAgICAgICB8ICAgMiAtCiBhcmNoL3g4
-Ni9rdm0vdm14L3ZteC5jICAgICAgICAgIHwgIDEwICsrLQogYXJjaC94ODYva3ZtL3g4Ni5jICAg
-ICAgICAgICAgICB8ICA4NyArKysrKysrKysrKysrKysrKysrKy0tCiBpbmNsdWRlL2xpbnV4L2t2
-bV9ob3N0LmggICAgICAgIHwgICA3ICstCiB2aXJ0L2t2bS9rdm1fbWFpbi5jICAgICAgICAgICAg
-IHwgMTE1ICsrKysrKysrKysrKysrKysrKysrKysrLS0tLS0KIDE1IGZpbGVzIGNoYW5nZWQsIDM2
-NSBpbnNlcnRpb25zKCspLCA4NCBkZWxldGlvbnMoLSkKCi0tIAoyLjUwLjEKCgotLSAKa3ZtLXJp
-c2N2IG1haWxpbmcgbGlzdAprdm0tcmlzY3ZAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlz
-dHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2t2bS1yaXNjdgo=
+From: David Woodhouse <dwmw@amazon.co.uk>
+
+KVM_SIGNAL_MSI fails with -ENOTTY on both the VM fd and plane fds,
+while KVM_CHECK_EXTENSION still reports KVM_CAP_SIGNAL_MSI. A VMM that
+sends MSIs through the ioctl, such as QEMU with a split irqchip, cannot
+inject device interrupts at all.
+
+The new cases in kvm_vm_ioctl() and __kvm_plane_ioctl() test
+CONFIG_HAVE_KVM_MSI, which no Kconfig defines; the macro architectures
+set is __KVM_HAVE_MSI, as the old VM-fd case used. So both compile
+away. Use __KVM_HAVE_MSI.
+
+test_plane_msi in the x86 planes selftest, added later in this series,
+catches this.
+
+Fixes the per-plane KVM_SIGNAL_MSI cases added by "kvm: Make
+KVM_SIGNAL_MSI per plane".
+
+Fixes: https://lore.kernel.org/all/20260608144252.351443-39-joro@8bytes.org/
+Reported-by: Sriram Nambakam <snambakam@linux.microsoft.com>
+Closes: https://lore.kernel.org/all/20261104065536.15232-1-snambakam@linux.microsoft.com/
+Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
+---
+ virt/kvm/kvm_main.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 0136156df252..95de904f0c61 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -5016,7 +5016,7 @@ static long __kvm_plane_ioctl(struct kvm_plane *plane, unsigned int ioctl, unsig
+ 	case KVM_CREATE_VCPU:
+ 		r = kvm_plane_ioctl_create_vcpu(plane, arg);
+ 		break;
+-#ifdef CONFIG_HAVE_KVM_MSI
++#ifdef __KVM_HAVE_MSI
+ 	case KVM_SIGNAL_MSI: {
+ 		void __user *argp = (void __user *)arg;
+ 		struct kvm_msi msi;
+@@ -5662,7 +5662,7 @@ static long kvm_vm_ioctl(struct file *filp,
+ 		r = kvm_vm_ioctl_create_plane(kvm, arg);
+ 		break;
+ 	case KVM_CREATE_VCPU:
+-#ifdef CONFIG_HAVE_KVM_MSI
++#ifdef __KVM_HAVE_MSI
+ 	case KVM_SIGNAL_MSI:
+ #endif
+ #ifdef CONFIG_HAVE_KVM_IRQ_ROUTING
+-- 
+2.50.1
+
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
