@@ -2,11 +2,11 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D6CAF606A338
-	for <kvm-riscv@archiver.kernel.org>; Wed, 11 Nov 2026 22:29:18 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0C94F606A336
+	for <kvm-riscv@archiver.kernel.org>; Wed, 11 Nov 2026 22:29:19 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=0UsnqOyD;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=Fn8DRH0P
+	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=BphxL5vy;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=nWz1gFPi
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
@@ -14,37 +14,37 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
 	List-Unsubscribe-Post:List-Owner;
-	bh=rqklKeVPd/VFr8A039obS2qiXmbsbndqpxQy7NKds4I=; b=0UsnqOyDPp8ZFDzo3cmREQBTwl
-	jSFrt8bvXjGJW0e/HHB6WydsJlcgnnOtW2l6yKuGoqhxTk+b6qlwzrmNeIA4O34Qy8Cy9+Cw4Ge1G
-	E3eYpbuWe23+liJta1XYGsC3fHjkOeI8X5ogj/an/SSjjT/62SbDc6cXT2h+qkZkiNqy9QDwAyNWd
-	0MjpJ2AAEhbHIfDLgxV5LdsydzfuHVW2t3L2nPbXCkZsJwMKjUeBWm6cArDRIrAvILvpVrEtWmzp9
-	1uZMIEAPwqX3UmZ9uzy3K9BF/Tg7+tHhpI8k0p2+KF/IZf+vMUr1x75Iz/+V8InhxBI9ZTBF5C+80
-	4sF7t9rg==;
+	bh=iXRGj2gr263YN56kssgs/uTQ4tVqHm4EQaTF9toqA0k=; b=BphxL5vyy4tJdKXhrf0Rywy7Od
+	6T7t4MXIMv58vWf4K6XbaHdfepxGfDnZFULrd2GcZn/oVdMt+FT54hqsxsdK99E4fB1py6onV72Oy
+	kDRiFkWyQpRepFtLD9LVkGEaNBQYJQ493cPlUmTddXa7dnUllJQ5DAjMPoYIlSAWwlrzQL7WEK8vS
+	2HK/xuOF0nT55WV2/lae3+e3lQm2bs+SbzQJZK+KUrn7FeZU2BzpkXljM1tdY63uHNt52IE8G+9DP
+	zLJMDZrqLl0LRokGBX8FR/NlYCy62QQn/UgT69sE7RrO5COWbIdGFWgqRc9JrIE2MB9qroNFFJ7wE
+	jI6ajXfQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xRGog-00000007xMg-1Li9;
+	id 1xRGog-00000007xMS-0VFz;
 	Wed, 11 Nov 2026 22:29:18 +0000
 Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xRGoe-00000007xIV-1zWf
+	id 1xRGoe-00000007xIR-1wHC
 	for kvm-riscv@bombadil.infradead.org;
 	Wed, 11 Nov 2026 22:29:16 +0000
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=desiato.20200630; h=Sender:Content-Transfer-Encoding:
-	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
-	Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=AUQ62nciiYmS/RrmAlFykNNXWeaUW8xe6NLNrO4/KVo=; b=Fn8DRH0PTa38iOsEBJZ/OUfQD9
-	aVZwxWfunFhokJy6jRyVHWPE/SZdTjjj5mS9P2dtOOLB3kbsMqfPtHSYU0xq5yFTXxypah/+XGGF3
-	N7afAQPYvUbY7RUt5lHYO35uK6t/cDCciZlbe2O7VZ77kmR80C63VDqTvGpmKNideEtKb35aBaAqt
-	WS7ginmGocYjO7UmBWs5LSafERe671Ua1SyM1nWc61zjSDsOiHVocC7I/f7g+cvnWlbSsZAaBEP5b
-	Auf6I4HOU2j0UGGaLlz81j6WnSg4SK4hOpG9efS2EaLrMu1RwHm/QiT0S3Leo3+0kZa/NBi8xQBeP
-	VFGEwBGQ==;
+	Content-Type:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:
+	To:From:Reply-To:Content-ID:Content-Description;
+	bh=hNcFDdx6SEsMQ2wb+0TdBub7tg0kF/xbhNU9Q5R/+fI=; b=nWz1gFPieTMjS6ZWY7nAHM/nOJ
+	syw4NbeMkSO0aHt+eO0M1dMge7tZNU7ehYKvmryl84z8rwj+DmAtGbpkvydeEKAcnNNw7+jYyD5t4
+	5sxuulgOozKiHvuBZx2/ltbcOJucbl3aEMjTjPGGZtuwMFAUW+4UIl/9RnjpEs5wzYs//JOQCxVfe
+	Z5vV95kf3tW2bfUmND973isg/ref1Y14Ui9VcW5OAU9bFdTYvOD/IO7iUOyLzG5ENC+BD8ktH62+N
+	CNhTo0V4MYK/g3P3FYB65jEOYAjZy162p7oL8xg+UySIOd4jizNQ1HXVfvs38/yhP7RmuPdZR+eB6
+	2JplI6gg==;
 Received: from [2001:8b0:10b:1::425] (helo=i7.infradead.org)
 	by desiato.infradead.org with esmtpsa (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xRGoc-00000009dbY-2AQN;
+	id 1xRGoc-00000009dbX-29VX;
 	Wed, 11 Nov 2026 22:29:14 +0000
 Received: from dwoodhou by i7.infradead.org with local (Exim 4.99.5 #2 (Red Hat Linux))
-	id 1xRGoZ-0000000007y-2Xj3;
+	id 1xRGoZ-0000000007o-1y0L;
 	Wed, 11 Nov 2026 22:29:11 +0000
 From: David Woodhouse <dwmw2@infradead.org>
 To: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
@@ -70,13 +70,12 @@ Cc: Paolo Bonzini <pbonzini@redhat.com>,
 	Mushahid Hussain <hmushi@amazon.co.uk>,
 	Sriram Nambakam <snambakam@linux.microsoft.com>,
 	David Woodhouse <dwmw@amazon.co.uk>
-Subject: [PATCH 03/16] KVM: planes: Report KVM_MAX_PLANES from the system fd
-Date: Wed, 11 Nov 2026 14:28:58 -0800
-Message-ID: <20261111222911.477-4-dwmw2@infradead.org>
+Subject: [PATCH 00/16] KVM: Fixes for the Planes + SEV-SNP series
+Date: Wed, 11 Nov 2026 14:28:55 -0800
+Message-ID: <20261111222911.477-1-dwmw2@infradead.org>
 X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20261111222911.477-1-dwmw2@infradead.org>
+In-Reply-To: <20260608144252.351443-1-joro@8bytes.org>
 References: <20260608144252.351443-1-joro@8bytes.org>
- <20261111222911.477-1-dwmw2@infradead.org>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by desiato.infradead.org. See http://www.infradead.org/rpr.html
@@ -89,104 +88,100 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 X-Spam-Status: No, score=-17.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-From: David Woodhouse <dwmw@amazon.co.uk>
-
-KVM_CHECK_EXTENSION(KVM_CAP_PLANES) on the system fd returns a
-hardcoded 1. The KVM_CAP_PLANES opt-in added later in this series takes
-its ceiling from exactly that query, so a VMM following the documented
-negotiation concludes it may request one plane, and never enables VSM
-at all. Return KVM_MAX_PLANES there instead.
-
-While there, move the id bound check in kvm_vm_ioctl_create_plane()
-under kvm->lock. Every KVM_ENABLE_CAP path that changes
-kvm_arch_max_planes() takes that lock, and the limit only ever grows,
-so an unlocked check could at worst spuriously reject a create racing
-KVM_CAP_SPLIT_IRQCHIP. Checking under the lock just makes the bound the
-one the plane is actually installed against.
-
-Found by a local Sashiko review.
-
-Fixes the system-fd KVM_CAP_PLANES query in "kvm: Implement
-KVM_CAP_PLANES".
-
-Fixes: https://lore.kernel.org/all/20260608144252.351443-29-joro@8bytes.org/
-Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
----
- arch/x86/kvm/svm/svm.c |  5 ++---
- virt/kvm/kvm_main.c    | 15 +++++++++++++--
- 2 files changed, 15 insertions(+), 5 deletions(-)
-
-diff --git a/arch/x86/kvm/svm/svm.c b/arch/x86/kvm/svm/svm.c
-index 1848136f3bb9..1c63eb3fcdc0 100644
---- a/arch/x86/kvm/svm/svm.c
-+++ b/arch/x86/kvm/svm/svm.c
-@@ -5522,9 +5522,8 @@ static unsigned svm_max_planes(struct kvm *kvm)
- 	 * state: KVM_CHECK_EXTENSION(KVM_CAP_PLANES) reaches here with no
- 	 * lock held, while __sev_guest_init() sets and rolls back
- 	 * sev->active/es_active/SNP_ACTIVE under kvm->lock.  The VM type
--	 * is fixed at creation, so the lockless read neither races the
--	 * rollback nor lets the limit change under KVM_CREATE_PLANE's
--	 * pre-lock bound check.
-+	 * is fixed at creation, so the lockless read cannot race the
-+	 * rollback.
- 	 */
- 	if (kvm->arch.vm_type == KVM_X86_SNP_VM)
- 		return sev_snp_max_planes(kvm);
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 8550303f5757..0136156df252 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -5375,7 +5375,12 @@ static int kvm_vm_ioctl_check_extension_generic(struct kvm *kvm, long arg)
- 	case KVM_CAP_PLANES:
- 		if (kvm)
- 			return kvm_arch_max_planes(kvm);
--		return 1;
-+		/*
-+		 * The system fd reports the ceiling a VM may opt in to via
-+		 * KVM_ENABLE_CAP(KVM_CAP_PLANES); a VM fd reports what the
-+		 * VM actually has.
-+		 */
-+		return KVM_MAX_PLANES;
- 	default:
- 		break;
- 	}
-@@ -5587,6 +5592,13 @@ static int kvm_vm_ioctl_create_plane(struct kvm *kvm, unsigned id)
- 	struct file *file;
- 	int r, fd;
- 
-+	guard(mutex)(&kvm->lock);
-+
-+	/*
-+	 * Check the limit under kvm->lock, where KVM_ENABLE_CAP sets it,
-+	 * so a concurrent cap enable cannot change it between this check
-+	 * and the installation below.
-+	 */
- 	if (id >= kvm_arch_max_planes(kvm) ||
- 	    WARN_ON_ONCE(id >= KVM_MAX_PLANES))
- 		return -EINVAL;
-@@ -5595,7 +5607,6 @@ static int kvm_vm_ioctl_create_plane(struct kvm *kvm, unsigned id)
- 	if (!kvm_arch_irqchip_in_kernel(kvm))
- 		return -EINVAL;
- 
--	guard(mutex)(&kvm->lock);
- 	if (kvm->planes[id])
- 		return -EEXIST;
- 
--- 
-2.50.1
-
-
--- 
-kvm-riscv mailing list
-kvm-riscv@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/kvm-riscv
+RnJvbTogRGF2aWQgV29vZGhvdXNlIDxkd213QGFtYXpvbi5jby51az4KCkkgcmViYXNlZCBKw7Zy
+ZydzIEtWTSBQbGFuZXMgKyBTRVYtU05QIHNlcmllc8K5IHRvIDcuNC1yYzLCsiBhbmQgdXNlZCBp
+dAp0byBhZGQgVlNNIHN1cHBvcnTCsy4gSGVyZSdzIGEgYmF0Y2ggb2YgZml4ZXMuCgpUaGlydGVl
+biBvZiB0aGUgc2l4dGVlbiBhcHBseSBpbiBvcmRlciwgd2l0aG91dCBjb25mbGljdHMsIHRvIHRo
+ZQprdm0tcGxhbmVzLXY3LjEgYnJhbmNoLiBUaGUgb3RoZXIgdGhyZWUgbmVlZCB3aGF0IGhhcyBs
+YW5kZWQgdXBzdHJlYW0Kc2luY2UgdjcuMTogcGF0Y2ggMSBmaXhlcyB0aGUgczM5MCBhcm02NCBL
+Vk0gbW9kdWxlLCB3aGljaCBvbmx5CmFycml2ZWQgaW4gNy40OyBwYXRjaCAxMiB0b3VjaGVzIHRo
+ZSBQSUQtdGFibGUgY2xlYXJpbmcgaW4Kdm14X3ZjcHVfZnJlZSgpIGZyb20gYjQxZjJjYTZjMDYw
+OyBhbmQgcGF0Y2ggMTYgZXh0ZW5kcyB0aGUgVk1TQQppbnZhbGlkYXRpb24gZnJvbSBkMWEzYzIx
+NjIzMzQuCgpUaGUgb25lcyB0aGF0IG1hdHRlcjoKCiAtIDAxIHMzOTA6IGFybTY0OiBQYXNzIHBs
+YW5lX2xldmVsIHRvIHRoZSBrdm1fc2V0X3JvdXRpbmdfZW50cnkoKSBzdHViCiAgIFRoZSBhcm02
+NCBLVk0gbW9kdWxlIG9uIHMzOTAga2VwdCB0aGUgb2xkIHByb3RvdHlwZTsgdGhlIGtlcm5lbAog
+ICB0ZXN0IHJvYm90IGNhdWdodCBpdCBvbiB0aGUgcmViYXNlZCB0cmVlLgoKIC0gMDUgSW5pdGlh
+bGlzZSBIeXBlci1WIHN0YXRlIG9uIGV2ZXJ5IHBsYW5lIHZDUFUKICAga3ZtX3NldF9jcHVpZCgp
+IHBhc3NlZCB0aGUgcGxhbmUgMCB2Q1BVIHRvIGt2bV9odl92Y3B1X2luaXQoKSBmb3IKICAgZXZl
+cnkgcGxhbmUsIGFuZCBhIHR3aW4gY3JlYXRlZCBsYXRlIGdvdCB2cF9pbmRleCAtMS4KCiAtIDA4
+IFB1Ymxpc2ggYSBuZXcgcGxhbmUgb25seSBvbmNlIEtWTV9DUkVBVEVfUExBTkUgY2Fubm90IGZh
+aWwKICAgQSBmYWlsZWQgY3JlYXRlIGxlZnQgYSBmcmVlZCBwbGFuZSBpbiBrdm0tPnBsYW5lc1td
+LCB3aGVyZSB0aGUgU05QCiAgIFZNUEwgc3dpdGNoIGNvdWxkIHN0aWxsIGZpbmQgaXQsIGFuZCBW
+TSB0ZWFyZG93biBmcmVlZCBpdCBhZ2Fpbi4KCiAtIDEwIEtlZXAgY3VycmVudF92Y3B1IGluIHN5
+bmMgaW4gdmNwdV9sb2FkKCkKICAgQSByZXNjaGVkdWxlIGluc2lkZSBhbiBpb2N0bCBvbiBhIHBs
+YW5lIGZkIHB1dCBhbmQgbG9hZGVkIHRoZSB3cm9uZwogICB0d2luLCBhbmQgYSBmYWlsZWQgdHdp
+biBjcmVhdGUgbGVmdCBjdXJyZW50X3ZjcHUgZGFuZ2xpbmcuCgogLSAxMSBMb2FkIGVhY2ggcGxh
+bmUgdHdpbiB3aGlsZSB1cGRhdGluZyBpdCBhZnRlciBLVk1fU0VUX0NQVUlECiAgIE9uIFZNWCB0
+aGUgdmVuZG9yIGNhbGxiYWNrIHdyb3RlIHRoZSB0d2lucycgY29udHJvbHMgaW50byB0aGUKICAg
+Y2FsbGVyJ3MgVk1DUy4KCiAtIDEyIExlYXZlIHRoZSBJUEl2IFBJRC10YWJsZSBlbnRyeSB0byB0
+aGUgcGxhbmUgMCB2Q1BVCiAgIEEgdHdpbiBoYXMgdGhlIHNhbWUgdkNQVSBJRCBhcyBwbGFuZSAw
+LCBzbyBjcmVhdGluZyBvciBmcmVlaW5nIG9uZQogICByZXBvaW50ZWQgb3IgY2xlYXJlZCBwbGFu
+ZSAwJ3MgZW50cnkuIExhdGVudCBmb3Igbm93LCBzaW5jZSBwbGFuZXMKICAgaW5oaWJpdCBBUElD
+di4KCiAtIDEzIExlYXZlIFRTQyBtYXRjaGluZyB0byB0aGUgcGxhbmUgMCB2Q1BVcwogICBFYWNo
+IHR3aW4gY291bnRlZCBhcyBhbm90aGVyIHZDUFUgd2l0aCBhIG1hdGNoaW5nIFRTQywgc28gdGhl
+IG1hc3RlcgogICBjbG9jayBjb3VsZCBuZXZlciBjb21lIGJhY2sgb24uCgogLSAxNCBEZXJpdmUg
+cnVudGltZSBDUFVJRCBiaXRzIGZyb20gdGhlIGV4ZWN1dGluZyBwbGFuZQogICBPU1hTQVZFLCBP
+U1BLRSwgQVBJQywgTVdBSVQgYW5kIHRoZSBYU0FWRSBzaXplcyBmb2xsb3cgcGVyLXBsYW5lCiAg
+IHJlZ2lzdGVycywgYnV0IHRoZSB0YWJsZSB0aGV5IGxpdmUgaW4gaXMgc2hhcmVkLgoKVGhyZWUg
+dGhpbmdzIEkndmUgbm90aWNlZCBhbmQgKm5vdCogZml4ZWQgaGVyZToKCiAtIFRoZSBBVklDIHBo
+eXNpY2FsIElEIHRhYmxlIGlzIGluZGV4ZWQgYnkgdkNQVSBJRCB0b28sIHNvIGl0IGhhcyB0aGUK
+ICAgc2FtZSBjb2xsaXNpb24gYXMgdGhlIElQSXYgUElEIHRhYmxlIGluIHBhdGNoIDEyLiBJdCdz
+IG1hc2tlZCB3aGlsZQogICBBUElDdiBpcyBpbmhpYml0ZWQgZm9yIHBsYW5lcywgYXMgaXQgaXMg
+dG9kYXkuCgogLSBBIGhvc3Qtc2lkZSBUU0Mgd3JpdGUgb24gcGxhbmUgMCAob3IgS1ZNX1NFVF9U
+U0NfS0haKSBhZnRlciB0aGUKICAgdHdpbnMgZXhpc3QgZG9lc24ndCByZWFjaCB0aGVtLiBGaXhp
+bmcgdGhhdCBtZWFucyBsb2FkaW5nIGVhY2ggdHdpbiwKICAgYW5kIEknZCByYXRoZXIgYWdyZWUg
+aG93IGJlZm9yZSBkb2luZyBpdC4KCiAtIEZvciBKw7ZyZyBhbmQgVG9tOiB0aGUgU05QIFZNUEwg
+c3dpdGNoIHN0b3BzIHRoZSBjdXJyZW50IHBsYW5lIHdpdGgKICAga3ZtX3ZjcHVfc2V0X3BsYW5l
+X3N0b3BwZWQoKSBhbmQgbm8gbGF0Y2gsIHNvIEtWTV9HRVRfUExBTkVfUlVOX1NUQVRFCiAgIHJl
+cG9ydHMgaXQgYXMgU1RPUFBFRCwgYW5kIGEgVk1NIHRoYXQgc2F2ZXMgYW5kIHJlc3RvcmVzIHRo
+YXQgdmFsdWUKICAgdHVybnMgaXQgaW50byBhIHVzZXJzcGFjZSBzdG9wLiBEb2VzIFZNUEwgd2Fu
+dCBhIG5vdGlvbiBvZgogICBLVk0taW5pdGlhdGVkIHN1c3BlbnNpb24gb2YgaXRzIG93biwgb3Ig
+aXMgdGhhdCB0aGUgaW50ZW5kZWQKICAgY29udHJhY3Q/CgrCuSBodHRwczovL2xvcmUua2VybmVs
+Lm9yZy9hbGwvMjAyNjA2MDgxNDQyNTIuMzUxNDQzLTEtam9yb0A4Ynl0ZXMub3JnLwrCsiBodHRw
+czovL2dpdC5pbmZyYWRlYWQub3JnLz9wPXVzZXJzL2R3bXcyL2xpbnV4LmdpdDthPXNob3J0bG9n
+O2g9cmVmcy9oZWFkcy92c20yL3BsYW5lcy1maXhlcwrCsyBodHRwczovL2xvcmUua2VybmVsLm9y
+Zy9rdm0vMjAyNjEwMTcxMjI1MDEuNjEwMjQ4LTEtZHdtdzJAaW5mcmFkZWFkLm9yZy8KCkRhdmlk
+IFdvb2Rob3VzZSAoMTQpOgogIEtWTTogczM5MDogYXJtNjQ6IFBhc3MgcGxhbmVfbGV2ZWwgdG8g
+dGhlIGt2bV9zZXRfcm91dGluZ19lbnRyeSgpIHN0dWIKICBLVk06IFNWTTogRGVyaXZlIHRoZSBw
+bGFuZSBsaW1pdCBmcm9tIHRoZSBpbW11dGFibGUgVk0gdHlwZQogIEtWTTogcGxhbmVzOiBSZXBv
+cnQgS1ZNX01BWF9QTEFORVMgZnJvbSB0aGUgc3lzdGVtIGZkCiAgS1ZNOiBHdWFyZCB0aGUgcGVy
+LXBsYW5lIEtWTV9TSUdOQUxfTVNJIGNhc2VzIHdpdGggX19LVk1fSEFWRV9NU0kKICBLVk06IHg4
+NjogSW5pdGlhbGlzZSBIeXBlci1WIHN0YXRlIG9uIGV2ZXJ5IHBsYW5lIHZDUFUKICBLVk06IHg4
+NjogV2lkZW4gdGhlIHBsYW5lIHZDUFUgZmQgaW9jdGwgYWxsb3dsaXN0CiAgS1ZNOiB4ODYvbW11
+OiBGcmVlIG9ic29sZXRlIHJvb3RzIG9mIGFsbCBwbGFuZXMKICBLVk06IHBsYW5lczogUHVibGlz
+aCBhIG5ldyBwbGFuZSBvbmx5IG9uY2UgS1ZNX0NSRUFURV9QTEFORSBjYW5ub3QKICAgIGZhaWwK
+ICBLVk06IHBsYW5lczogS2ljayB0aGUgcnVubmluZyB0d2luJ3MgcENQVSwgbm90IHRoZSByZXF1
+ZXN0IHRhcmdldCdzCiAgS1ZNOiBwbGFuZXM6IEtlZXAgY3VycmVudF92Y3B1IGluIHN5bmMgaW4g
+dmNwdV9sb2FkKCkKICBLVk06IHg4NjogTG9hZCBlYWNoIHBsYW5lIHR3aW4gd2hpbGUgdXBkYXRp
+bmcgaXQgYWZ0ZXIgS1ZNX1NFVF9DUFVJRAogIEtWTTogVk1YOiBMZWF2ZSB0aGUgSVBJdiBQSUQt
+dGFibGUgZW50cnkgdG8gdGhlIHBsYW5lIDAgdkNQVQogIEtWTTogcGxhbmVzOiBBbm5vdGF0ZSB0
+aGUgbG9ja2xlc3MgdHdpbi1wdWJsaWNhdGlvbiBwcm90b2NvbAogIEtWTTogU1ZNOiBNYWtlIEtW
+TV9SRVFfVk1TQV9QQUdFX1JFTE9BRCBwZXIgcGxhbmUKCk11c2hhaGlkIEh1c3NhaW4gKDIpOgog
+IEtWTTogeDg2OiBMZWF2ZSBUU0MgbWF0Y2hpbmcgdG8gdGhlIHBsYW5lIDAgdkNQVXMKICBLVk06
+IHg4NjogRGVyaXZlIHJ1bnRpbWUgQ1BVSUQgYml0cyBmcm9tIHRoZSBleGVjdXRpbmcgcGxhbmUK
+CiBEb2N1bWVudGF0aW9uL3ZpcnQva3ZtL2FwaS5yc3QgIHwgIDIxICsrKystLQogYXJjaC9zMzkw
+L2t2bS9hcm02NC9hcm0uYyAgICAgICB8ICAgMyArLQogYXJjaC94ODYvaW5jbHVkZS9hc20va3Zt
+X2hvc3QuaCB8ICAgMyArLQogYXJjaC94ODYva3ZtL2NwdWlkLmMgICAgICAgICAgICB8IDEyOCAr
+KysrKysrKysrKysrKysrKysrKysrKy0tLS0tLS0tLQogYXJjaC94ODYva3ZtL2NwdWlkLmggICAg
+ICAgICAgICB8ICAgNiArLQogYXJjaC94ODYva3ZtL2h5cGVydi5jICAgICAgICAgICB8ICAgNyAr
+LQogYXJjaC94ODYva3ZtL2lycS5jICAgICAgICAgICAgICB8ICAgNSArLQogYXJjaC94ODYva3Zt
+L21tdS9tbXUuYyAgICAgICAgICB8ICAxNiArKystCiBhcmNoL3g4Ni9rdm0vc3ZtL3Nldi5jICAg
+ICAgICAgIHwgIDI5ICsrKysrKy0tCiBhcmNoL3g4Ni9rdm0vc3ZtL3N2bS5jICAgICAgICAgIHwg
+IDEwICsrLQogYXJjaC94ODYva3ZtL3N2bS9zdm0uaCAgICAgICAgICB8ICAgMiAtCiBhcmNoL3g4
+Ni9rdm0vdm14L3ZteC5jICAgICAgICAgIHwgIDEwICsrLQogYXJjaC94ODYva3ZtL3g4Ni5jICAg
+ICAgICAgICAgICB8ICA4NyArKysrKysrKysrKysrKysrKysrKy0tCiBpbmNsdWRlL2xpbnV4L2t2
+bV9ob3N0LmggICAgICAgIHwgICA3ICstCiB2aXJ0L2t2bS9rdm1fbWFpbi5jICAgICAgICAgICAg
+IHwgMTE1ICsrKysrKysrKysrKysrKysrKysrKysrLS0tLS0KIDE1IGZpbGVzIGNoYW5nZWQsIDM2
+NSBpbnNlcnRpb25zKCspLCA4NCBkZWxldGlvbnMoLSkKCi0tIAoyLjUwLjEKCgotLSAKa3ZtLXJp
+c2N2IG1haWxpbmcgbGlzdAprdm0tcmlzY3ZAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlz
+dHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2t2bS1yaXNjdgo=
