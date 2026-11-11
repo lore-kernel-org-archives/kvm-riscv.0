@@ -2,11 +2,11 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 76B5D60A260E
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D6CAF606A338
 	for <kvm-riscv@archiver.kernel.org>; Wed, 11 Nov 2026 22:29:18 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=JLvMaC3Q;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=S89Ev5TO
+	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=0UsnqOyD;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=Fn8DRH0P
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
@@ -14,37 +14,37 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
 	List-Unsubscribe-Post:List-Owner;
-	bh=obdBoLlm+ZVxhvJ77hnU/INBq4HhYSx2f5AcSHpTXFc=; b=JLvMaC3QXJ+WDHhIrsBFPxaPn1
-	R2Ri52bDx2DXTO4kvZJI/bD9fH9nU8RUCWelLO1KjcSXO12gNTdNzctvNQEypIJh2iMuG/y8wp3uB
-	7ZUprtMZSy7zpOGbbMQ+8oVwdoO86O7ISbn4Egrw1uKBhIezTenWgzebY0a1aV5BJDidga4S3e7xI
-	COSqZfEVxk13M6LyxeQfJ8/WLSWKQVCZXvx6HrJxD4bHakuo8mvk96dQDFJFlAvgQSfT70nvMnbbC
-	Lu/8Jbqyb3OkfFKqpUhELjhjw6y8/gdW+J5rcfuGDfqpnU0VX9YKsMOq5kyr1OH4HwvMUX+nqcDzI
-	tfjCciWA==;
+	bh=rqklKeVPd/VFr8A039obS2qiXmbsbndqpxQy7NKds4I=; b=0UsnqOyDPp8ZFDzo3cmREQBTwl
+	jSFrt8bvXjGJW0e/HHB6WydsJlcgnnOtW2l6yKuGoqhxTk+b6qlwzrmNeIA4O34Qy8Cy9+Cw4Ge1G
+	E3eYpbuWe23+liJta1XYGsC3fHjkOeI8X5ogj/an/SSjjT/62SbDc6cXT2h+qkZkiNqy9QDwAyNWd
+	0MjpJ2AAEhbHIfDLgxV5LdsydzfuHVW2t3L2nPbXCkZsJwMKjUeBWm6cArDRIrAvILvpVrEtWmzp9
+	1uZMIEAPwqX3UmZ9uzy3K9BF/Tg7+tHhpI8k0p2+KF/IZf+vMUr1x75Iz/+V8InhxBI9ZTBF5C+80
+	4sF7t9rg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xRGof-00000007xLs-4B41;
+	id 1xRGog-00000007xMg-1Li9;
 	Wed, 11 Nov 2026 22:29:18 +0000
 Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xRGoe-00000007xIQ-1xbf
+	id 1xRGoe-00000007xIV-1zWf
 	for kvm-riscv@bombadil.infradead.org;
 	Wed, 11 Nov 2026 22:29:16 +0000
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=desiato.20200630; h=Sender:Content-Transfer-Encoding:
 	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
 	Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=W87fSQlkCnHCOpy3utcFbD7aEeTD91fXvM7EUGmB8/Y=; b=S89Ev5TOPgWtVFvcEZ+48OAJIO
-	XHz1eDA+g6T6JYfr9wgyxYW44qIPA8sMuP2LBy3drm3Mq6Z16AUPK4cIEXJctn0e5AK/C/ii/1BPF
-	I8sHywp0m+SfQ0xUp4Ii92OiXPKnlcRyDIBGQF+a6OjjCamoqWClM6iPFWN+CGsFU0S6T+6yXOAEm
-	eOqyw+qJlVgYyC6BY/D3zJSWLRDxFfI0oJ4GoGkSwhknnUlc2HminKTDEuO4NmygkjAg2Fwc9SFRK
-	RWREfWfDrkmvA1BXZou0ErgSnapYQD/h+818v2lfgDVsrjTdwXB80aHIrnGH8dGLlsf4QdWgSC6r2
-	vKOpUNOg==;
+	bh=AUQ62nciiYmS/RrmAlFykNNXWeaUW8xe6NLNrO4/KVo=; b=Fn8DRH0PTa38iOsEBJZ/OUfQD9
+	aVZwxWfunFhokJy6jRyVHWPE/SZdTjjj5mS9P2dtOOLB3kbsMqfPtHSYU0xq5yFTXxypah/+XGGF3
+	N7afAQPYvUbY7RUt5lHYO35uK6t/cDCciZlbe2O7VZ77kmR80C63VDqTvGpmKNideEtKb35aBaAqt
+	WS7ginmGocYjO7UmBWs5LSafERe671Ua1SyM1nWc61zjSDsOiHVocC7I/f7g+cvnWlbSsZAaBEP5b
+	Auf6I4HOU2j0UGGaLlz81j6WnSg4SK4hOpG9efS2EaLrMu1RwHm/QiT0S3Leo3+0kZa/NBi8xQBeP
+	VFGEwBGQ==;
 Received: from [2001:8b0:10b:1::425] (helo=i7.infradead.org)
 	by desiato.infradead.org with esmtpsa (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xRGoc-00000009dbZ-2ABi;
+	id 1xRGoc-00000009dbY-2AQN;
 	Wed, 11 Nov 2026 22:29:14 +0000
 Received: from dwoodhou by i7.infradead.org with local (Exim 4.99.5 #2 (Red Hat Linux))
-	id 1xRGoZ-0000000007r-26M1;
+	id 1xRGoZ-0000000007y-2Xj3;
 	Wed, 11 Nov 2026 22:29:11 +0000
 From: David Woodhouse <dwmw2@infradead.org>
 To: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
@@ -70,9 +70,9 @@ Cc: Paolo Bonzini <pbonzini@redhat.com>,
 	Mushahid Hussain <hmushi@amazon.co.uk>,
 	Sriram Nambakam <snambakam@linux.microsoft.com>,
 	David Woodhouse <dwmw@amazon.co.uk>
-Subject: [PATCH 01/16] KVM: s390: arm64: Pass plane_level to the kvm_set_routing_entry() stub
-Date: Wed, 11 Nov 2026 14:28:56 -0800
-Message-ID: <20261111222911.477-2-dwmw2@infradead.org>
+Subject: [PATCH 03/16] KVM: planes: Report KVM_MAX_PLANES from the system fd
+Date: Wed, 11 Nov 2026 14:28:58 -0800
+Message-ID: <20261111222911.477-4-dwmw2@infradead.org>
 X-Mailer: git-send-email 2.55.0
 In-Reply-To: <20261111222911.477-1-dwmw2@infradead.org>
 References: <20260608144252.351443-1-joro@8bytes.org>
@@ -101,40 +101,87 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 
 From: David Woodhouse <dwmw@amazon.co.uk>
 
-kvm_set_routing_entry() gained a plane_level argument, and every
-architecture's implementation was converted except the stub in the
-arm64 KVM module on s390, which arrived in the same release. An s390
-build with that module then fails:
+KVM_CHECK_EXTENSION(KVM_CAP_PLANES) on the system fd returns a
+hardcoded 1. The KVM_CAP_PLANES opt-in added later in this series takes
+its ceiling from exactly that query, so a VMM following the documented
+negotiation concludes it may request one plane, and never enables VSM
+at all. Return KVM_MAX_PLANES there instead.
 
-  arch/s390/kvm/arm64/arm.c:745:5: error: conflicting types for 'kvm_set_routing_entry'
+While there, move the id bound check in kvm_vm_ioctl_create_plane()
+under kvm->lock. Every KVM_ENABLE_CAP path that changes
+kvm_arch_max_planes() takes that lock, and the limit only ever grows,
+so an unlocked check could at worst spuriously reject a create racing
+KVM_CAP_SPLIT_IRQCHIP. Checking under the lock just makes the bound the
+one the plane is actually installed against.
 
-Give the stub the new signature. It still refuses every routing entry.
+Found by a local Sashiko review.
 
-Fixes the s390 arm64 stub that "kvm: Pass plane_level to
-kvm_set_routing_entry()" did not convert.
+Fixes the system-fd KVM_CAP_PLANES query in "kvm: Implement
+KVM_CAP_PLANES".
 
-Fixes: https://lore.kernel.org/all/20260608144252.351443-38-joro@8bytes.org/
-Reported-by: kernel test robot <lkp@intel.com>
-Closes: https://lore.kernel.org/oe-kbuild-all/202611102242.ywP1yvPR-lkp@intel.com/
+Fixes: https://lore.kernel.org/all/20260608144252.351443-29-joro@8bytes.org/
 Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
 ---
- arch/s390/kvm/arm64/arm.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/x86/kvm/svm/svm.c |  5 ++---
+ virt/kvm/kvm_main.c    | 15 +++++++++++++--
+ 2 files changed, 15 insertions(+), 5 deletions(-)
 
-diff --git a/arch/s390/kvm/arm64/arm.c b/arch/s390/kvm/arm64/arm.c
-index 64a609f087a8..0f0fab76e71a 100644
---- a/arch/s390/kvm/arm64/arm.c
-+++ b/arch/s390/kvm/arm64/arm.c
-@@ -744,7 +744,8 @@ int kvm_set_msi(struct kvm_kernel_irq_routing_entry *e, struct kvm *kvm,
+diff --git a/arch/x86/kvm/svm/svm.c b/arch/x86/kvm/svm/svm.c
+index 1848136f3bb9..1c63eb3fcdc0 100644
+--- a/arch/x86/kvm/svm/svm.c
++++ b/arch/x86/kvm/svm/svm.c
+@@ -5522,9 +5522,8 @@ static unsigned svm_max_planes(struct kvm *kvm)
+ 	 * state: KVM_CHECK_EXTENSION(KVM_CAP_PLANES) reaches here with no
+ 	 * lock held, while __sev_guest_init() sets and rolls back
+ 	 * sev->active/es_active/SNP_ACTIVE under kvm->lock.  The VM type
+-	 * is fixed at creation, so the lockless read neither races the
+-	 * rollback nor lets the limit change under KVM_CREATE_PLANE's
+-	 * pre-lock bound check.
++	 * is fixed at creation, so the lockless read cannot race the
++	 * rollback.
+ 	 */
+ 	if (kvm->arch.vm_type == KVM_X86_SNP_VM)
+ 		return sev_snp_max_planes(kvm);
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 8550303f5757..0136156df252 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -5375,7 +5375,12 @@ static int kvm_vm_ioctl_check_extension_generic(struct kvm *kvm, long arg)
+ 	case KVM_CAP_PLANES:
+ 		if (kvm)
+ 			return kvm_arch_max_planes(kvm);
+-		return 1;
++		/*
++		 * The system fd reports the ceiling a VM may opt in to via
++		 * KVM_ENABLE_CAP(KVM_CAP_PLANES); a VM fd reports what the
++		 * VM actually has.
++		 */
++		return KVM_MAX_PLANES;
+ 	default:
+ 		break;
+ 	}
+@@ -5587,6 +5592,13 @@ static int kvm_vm_ioctl_create_plane(struct kvm *kvm, unsigned id)
+ 	struct file *file;
+ 	int r, fd;
  
- int kvm_set_routing_entry(struct kvm *kvm,
- 			  struct kvm_kernel_irq_routing_entry *e,
--			  const struct kvm_irq_routing_entry *ue)
-+			  const struct kvm_irq_routing_entry *ue,
-+			  unsigned plane_level)
- {
- 	return -EINVAL;
- }
++	guard(mutex)(&kvm->lock);
++
++	/*
++	 * Check the limit under kvm->lock, where KVM_ENABLE_CAP sets it,
++	 * so a concurrent cap enable cannot change it between this check
++	 * and the installation below.
++	 */
+ 	if (id >= kvm_arch_max_planes(kvm) ||
+ 	    WARN_ON_ONCE(id >= KVM_MAX_PLANES))
+ 		return -EINVAL;
+@@ -5595,7 +5607,6 @@ static int kvm_vm_ioctl_create_plane(struct kvm *kvm, unsigned id)
+ 	if (!kvm_arch_irqchip_in_kernel(kvm))
+ 		return -EINVAL;
+ 
+-	guard(mutex)(&kvm->lock);
+ 	if (kvm->planes[id])
+ 		return -EEXIST;
+ 
 -- 
 2.50.1
 
