@@ -2,11 +2,11 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B9121606A331
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ACB30606A32D
 	for <kvm-riscv@archiver.kernel.org>; Fri, 13 Nov 2026 18:26:10 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=sC9kxV/2;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=MDoVmDfF
+	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=TupZQH21;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=SN+d9u9J
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
@@ -14,37 +14,37 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
 	List-Unsubscribe-Post:List-Owner;
-	bh=y2nwBIkK5gx/5ov74QaNcuHUd3Zxwwjs4aCxFuPa06Q=; b=sC9kxV/2b6cX7te9ZufT2fN+vv
-	BvpLNiLb/cphfJ0I16G6aP8AdR/KwcYiMMW391WCunuvc+AtmQSBSN+gdRRgTHJDDnwmgEY+Lml5n
-	0rvNLMJqfbiLGH4/2YF11gMK+muu0/rTyTGtZLtygfbO6wDz0+qu3aVKHHfIPrRVVF1wprZeQRoAh
-	4gyvpp6OHecuy77ghxuJABxNOil8Uxkl/MxSjCF5NI7ygAjJ6kEhQlVPQpT/qxHG3GY4FhOsJkvmG
-	czg1obGz7GKqvxT10ujNKHRhJsWVsZM5KoEX8BLB9UmkatYpg0aOh+cY/mYGHnL8vM22/+iWoHvKO
-	5za7vuaw==;
+	bh=3KvRC1knjlAuir7mxLvTGvaq4oPNjy9mUwKdDDRq7/Q=; b=TupZQH21yuksjMGuPQBJ7D0DMh
+	ma46yd1IEEbTVU7+IQ8hskSVpEt0jj5hDehB0Type68Zsbi36qM9kZ3Y/oc1QqdHF5rO54/EngWGT
+	ckS7LIdYEXuRzgGg7w8xptLmMkYYWO9gKfpUn2mRIAxWcUVJxj5q6sPFtrviwQMBpXLyAKDe9pm5+
+	NuWiHqLGvapJ4SwGfZr/WYEZasqxxFCf0BsMgK3KzplgTV0Z4DRqWDTr/OavgJrqmuHHtyLI/rdW6
+	jhzfol9be156F6jlkcT9KIKG0GVncNUvZYdWejSTEipKcmLS6teHQ3XmBpi6GzWYVzLESCMRHJ1GV
+	5WDkQGeA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xRvyU-0000000Dvfr-1zU9;
+	id 1xRvyU-0000000Dvfb-1nRI;
 	Fri, 13 Nov 2026 18:26:10 +0000
 Received: from casper.infradead.org ([2001:8b0:10b:1236::1])
 	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xRvyT-0000000Dvek-2af7
+	id 1xRvyT-0000000Dveo-2c9P
 	for kvm-riscv@bombadil.infradead.org;
 	Fri, 13 Nov 2026 18:26:09 +0000
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=casper.20170209; h=Sender:Content-Transfer-Encoding:
 	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
 	Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=L0/xkeoaYWQSJNfGfg1c3/dC03KyiBSAIbTg/u+AAuc=; b=MDoVmDfFjbP858b/jFt58GtX4T
-	Pxy1Co3vnlEUbk6lLShLJOcmUhsZrj4d9zQHs4e7mkpiMrPurWdpF9wqXbeKrEQWjptNTCF3XyqRT
-	HgqxSr+qjqEk08qIbpPIVurxch4WPFz2iiIG6rIN9CB8J1ovmvuI8A0zghVqWjzGdyOtyrjJXZY2+
-	Gwo7aOsrT0F6KzJ0IC2orRGtUs0Q3hK/bAIhDmLJaufaFUDNuUUjzWNwjNcIYk/oZ3ktc86/eIL1s
-	EWY7sWZlLutzgIuBacYRikb5udeNwuxXAoe8MahzU7+lBv+p4k96n1QqjcoDIP/3NyhDuk6DfRHtz
-	pLgKmx7g==;
+	bh=FJlTkZ/+iGrc2on2sDv49DKbHeUd0ygGYuQcqQHw4O4=; b=SN+d9u9JFQzBGQf4NAy7qocbuh
+	0u7FgiaAx4+xKinMjXCbFmNXxBYZwqp1PbHkFFEAwMi/92Pxm5LWltQuv/fa/pF00zpn4HZuVA2DH
+	t4QVa94FAMgTh7vK7Vl91fkp/MbV6B4nrCJS8qP20fQ7gGOCdQctg5UpiUeLaA2HfDcpAuRnkgmnq
+	WRSmBzqeS2sIKrET1fJth6ATFydSlEsESFwrfoD6k/rvO02kf5M7I5ExzEdSB+tmG9W01vwQpMgQI
+	2cwflpfBsvALHtC+r0o9GwiZFmrpPjE7U4J5f1ubxCLVMdK9xnLy0cQsPjDcXmJ0ufxrO/45Z9Njg
+	TTK9Y63A==;
 Received: from [2001:8b0:10b:1::425] (helo=i7.infradead.org)
 	by casper.infradead.org with esmtpsa (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xRvyR-00000004cSs-2gKx;
-	Fri, 13 Nov 2026 18:26:07 +0000
+	id 1xRvyS-00000004cT5-0AX8;
+	Fri, 13 Nov 2026 18:26:08 +0000
 Received: from dwoodhou by i7.infradead.org with local (Exim 4.99.5 #2 (Red Hat Linux))
-	id 1xRvyR-00000000LXz-1tUE;
+	id 1xRvyR-00000000LYV-3HIa;
 	Fri, 13 Nov 2026 18:26:07 +0000
 From: David Woodhouse <dwmw2@infradead.org>
 To: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
@@ -70,9 +70,9 @@ Cc: Paolo Bonzini <pbonzini@redhat.com>,
 	Mushahid Hussain <hmushi@amazon.co.uk>,
 	Sriram Nambakam <snambakam@linux.microsoft.com>,
 	David Woodhouse <dwmw@amazon.co.uk>
-Subject: [RFC PATCH 03/13] KVM: selftests: Add x86 planes lifecycle test
-Date: Fri, 13 Nov 2026 11:25:57 -0700
-Message-ID: <20261113182607.82813-4-dwmw2@infradead.org>
+Subject: [RFC PATCH 11/13] KVM: planes: Let plane twins share DR6
+Date: Fri, 13 Nov 2026 11:26:05 -0700
+Message-ID: <20261113182607.82813-12-dwmw2@infradead.org>
 X-Mailer: git-send-email 2.55.0
 In-Reply-To: <20261113182607.82813-1-dwmw2@infradead.org>
 References: <20260608144252.351443-1-joro@8bytes.org>
@@ -101,174 +101,159 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 
 From: David Woodhouse <dwmw@amazon.co.uk>
 
-Cover KVM_CAP_PLANES argument validation against the system fd's
-ceiling, its split-irqchip and ordering requirements, plane creation
-bounds, plane vCPU creation, and per-plane isolation of vCPU register
-state. Skip on hosts that cannot give a VM more than one plane, such
-as those without TDP.
+The TLFS leaves DR6 sharing between VTLs processor-dependent and tells
+the guest which way it went in HvRegisterVsmCapabilities.Dr6Shared. KVM
+cannot know what the VMM advertises there, so make it a share bit and
+let the VMM keep the two consistent: KVM_PLANE_SHARE_DR6.
+
+The twins keep their own arch.dr6, kept equal whenever no plane is in
+the guest:
+
+ - after each plane's run in the KVM_RUN plane loop, its DR6 is copied
+   to the twins. By then the exit has synced any DR6 the guest owned in
+   hardware back into arch.dr6 (sync_dirty_debug_regs() on VMX and SVM,
+   under KVM_DEBUGREG_WONT_EXIT); otherwise DR accesses are intercepted
+   and arch.dr6 is the only copy. A VTL switch done in the kernel
+   returns through the same loop;
+ - KVM_SET_DEBUGREGS copies the new value to the twins at once;
+ - a twin created later starts with plane 0's DR6, as for XCR0.
+
+Converting every arch.dr6 user to a shared location instead would touch
+the vendor, nested, SMM and exception code for no gain. Writers audited
+for the copy-after-run rule:
+
+ - MOV to DR6 (emulated, or direct under KVM_DEBUGREG_WONT_EXIT), #DB
+   payload delivery (kvm_deliver_exception_payload()), RSM, INIT and
+   nested VMRUN on SVM all write the DR6 of the plane that is running,
+   so the next copy carries them;
+ - a #DB still pending on a plane that is switched away from updates
+   DR6 when that plane next takes it, which matches a debug exception
+   that has not been delivered yet;
+ - host-side debugging (KVM_SET_GUEST_DEBUG) reports in
+   kvm_run->debug.arch.dr6 and leaves arch.dr6 alone;
+ - vCPU ioctls on twins take the shared vCPU mutex, so none of them can
+   observe a plane mid-run.
+
+DR0-DR3 and DR7 stay per plane.
 
 Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
 ---
- tools/testing/selftests/kvm/Makefile.kvm      |   1 +
- tools/testing/selftests/kvm/x86/planes_test.c | 137 ++++++++++++++++++
- 2 files changed, 138 insertions(+)
- create mode 100644 tools/testing/selftests/kvm/x86/planes_test.c
+ Documentation/virt/kvm/api.rst  |  5 +++++
+ arch/x86/include/uapi/asm/kvm.h |  1 +
+ arch/x86/kvm/regs.c             |  1 +
+ arch/x86/kvm/x86.c              | 25 +++++++++++++++++++++++++
+ arch/x86/kvm/x86.h              |  4 +++-
+ 5 files changed, 35 insertions(+), 1 deletion(-)
 
-diff --git a/tools/testing/selftests/kvm/Makefile.kvm b/tools/testing/selftests/kvm/Makefile.kvm
-index cdc6039d32d2..2926817baad0 100644
---- a/tools/testing/selftests/kvm/Makefile.kvm
-+++ b/tools/testing/selftests/kvm/Makefile.kvm
-@@ -111,6 +111,7 @@ TEST_GEN_PROGS_x86 += x86/nested_vmsave_vmload_test
- TEST_GEN_PROGS_x86 += x86/nested_x2apic_test
- TEST_GEN_PROGS_x86 += x86/platform_info_test
- TEST_GEN_PROGS_x86 += x86/plane_x86_test
-+TEST_GEN_PROGS_x86 += x86/planes_test
- TEST_GEN_PROGS_x86 += x86/pmu_counters_test
- TEST_GEN_PROGS_x86 += x86/pmu_event_filter_test
- TEST_GEN_PROGS_x86 += x86/private_mem_conversions_test
-diff --git a/tools/testing/selftests/kvm/x86/planes_test.c b/tools/testing/selftests/kvm/x86/planes_test.c
-new file mode 100644
-index 000000000000..f7db6cb6807d
---- /dev/null
-+++ b/tools/testing/selftests/kvm/x86/planes_test.c
-@@ -0,0 +1,137 @@
-+// SPDX-License-Identifier: GPL-2.0-only
+diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.rst
+index 22dc3c793bc4..351cc7448fe1 100644
+--- a/Documentation/virt/kvm/api.rst
++++ b/Documentation/virt/kvm/api.rst
+@@ -9353,6 +9353,11 @@ is set once.  The bits are:
+ - KVM_PLANE_SHARE_XCR0: XCR0, whether written by the guest with XSETBV or
+   with KVM_SET_XCRS on any plane's vCPU fd.  A plane vCPU created later
+   starts with plane 0's value.
++- KVM_PLANE_SHARE_DR6: DR6.  A guest write, or a debug exception, in one
++  plane is seen by the others once that plane returns from KVM_RUN or
++  switches to another plane; a KVM_SET_DEBUGREGS on any plane's vCPU fd is
++  seen at once.  A plane vCPU created later starts with plane 0's value.
++  DR0-DR3 and DR7 stay per plane.
+ 
+ 8. Other capabilities.
+ ======================
+diff --git a/arch/x86/include/uapi/asm/kvm.h b/arch/x86/include/uapi/asm/kvm.h
+index edec00979acf..dbfdc1188c20 100644
+--- a/arch/x86/include/uapi/asm/kvm.h
++++ b/arch/x86/include/uapi/asm/kvm.h
+@@ -924,6 +924,7 @@ struct kvm_sev_snp_launch_finish {
+ 
+ /* KVM_CAP_PLANES args[1]: state the planes of a vCPU share */
+ #define KVM_PLANE_SHARE_XCR0				_BITULL(0)
++#define KVM_PLANE_SHARE_DR6				_BITULL(1)
+ 
+ struct kvm_hyperv_eventfd {
+ 	__u32 conn_id;
+diff --git a/arch/x86/kvm/regs.c b/arch/x86/kvm/regs.c
+index 3621f1a47d37..8a856e478095 100644
+--- a/arch/x86/kvm/regs.c
++++ b/arch/x86/kvm/regs.c
+@@ -876,6 +876,7 @@ int kvm_vcpu_ioctl_x86_set_debugregs(struct kvm_vcpu *vcpu,
+ 
+ 	kvm_update_dr0123(vcpu);
+ 	vcpu->arch.dr6 = dbgregs->dr6;
++	kvm_plane_share_dr6(vcpu);
+ 	vcpu->arch.dr7 = dbgregs->dr7;
+ 	kvm_update_dr7(vcpu);
+ 
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index ceec10d116a9..7206ee889e9b 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -9362,6 +9362,26 @@ static int __kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu, bool held)
+ 	return r;
+ }
+ 
 +/*
-+ * Test the KVM_CAP_PLANES opt-in and the plane lifecycle uAPI: plane
-+ * creation bounds, plane vCPU creation, and the independence of
-+ * per-plane vCPU register state.
++ * With KVM_PLANE_SHARE_DR6, every twin holds the same DR6 whenever no plane
++ * is in the guest.  Copy it from @vcpu to its twins after @vcpu changed it:
++ * after an ioctl write, or after @vcpu ran, by which time its exit has
++ * synced any guest-owned hardware DR6 back into arch.dr6
++ * (sync_dirty_debug_regs() on both vendors).
 + */
-+#include <errno.h>
-+#include <string.h>
-+
-+#include "kvm_util.h"
-+
-+/*
-+ * Whether this host lets a VM have more than one plane: the opt-in also
-+ * fails without two-dimensional paging, which the system fd cannot show.
-+ */
-+static bool have_multiple_planes(void)
++void kvm_plane_share_dr6(struct kvm_vcpu *vcpu)
 +{
-+	struct kvm_vm *vm = vm_create_barebones_irqchip(true);
-+	bool ok = !__vm_enable_cap(vm, KVM_CAP_PLANES, 2);
++	struct kvm_vcpu *twin;
++	int i;
 +
-+	kvm_vm_free(vm);
-+	return ok;
++	if (!kvm_plane_shares(vcpu->kvm, KVM_PLANE_SHARE_DR6) ||
++	    vcpu->common->vcpus[vcpu->plane_level] != vcpu)
++		return;
++
++	vcpu_for_each_plane(vcpu->common, i, twin)
++		twin->arch.dr6 = vcpu->arch.dr6;
 +}
 +
-+static void test_enable_cap_bounds(void)
-+{
-+	int max_planes = kvm_check_cap(KVM_CAP_PLANES);
-+	struct kvm_vm *vm;
+ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu_plane0)
+ {
+ 	struct kvm_vcpu_common *common = vcpu_plane0->common;
+@@ -9374,6 +9394,7 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu_plane0)
+ 		common->plane_switch = false;
+ 
+ 		ret = __kvm_arch_vcpu_ioctl_run(vcpu, held);
++		kvm_plane_share_dr6(vcpu);
+ 		if (ret)
+ 		       break;
+ 	} while (vcpu_plane0->common->plane_switch);
+@@ -9854,6 +9875,10 @@ int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
+ 	if (kvm_plane_shares(vcpu->kvm, KVM_PLANE_SHARE_XCR0) &&
+ 	    vcpu->plane_level && vcpu->common->vcpus[0])
+ 		vcpu->arch.xcr0 = vcpu->common->vcpus[0]->arch.xcr0;
++	/* Likewise for a shared DR6. */
++	if (kvm_plane_shares(vcpu->kvm, KVM_PLANE_SHARE_DR6) &&
++	    vcpu->plane_level && vcpu->common->vcpus[0])
++		vcpu->arch.dr6 = vcpu->common->vcpus[0]->arch.dr6;
+ 	kvm_init_mmu(vcpu);
+ 	vcpu_put(vcpu);
+ 	return 0;
+diff --git a/arch/x86/kvm/x86.h b/arch/x86/kvm/x86.h
+index aa8abd219507..4da224eb1745 100644
+--- a/arch/x86/kvm/x86.h
++++ b/arch/x86/kvm/x86.h
+@@ -927,11 +927,13 @@ unsigned kvm_x86_default_max_planes(struct kvm *kvm);
+  * The per-vCPU state that userspace may ask the planes of a vCPU to share,
+  * in args[1] of KVM_ENABLE_CAP(KVM_CAP_PLANES).
+  */
+-#define KVM_PLANE_SHARE_VALID	KVM_PLANE_SHARE_XCR0
++#define KVM_PLANE_SHARE_VALID	(KVM_PLANE_SHARE_XCR0 | KVM_PLANE_SHARE_DR6)
+ 
+ static inline bool kvm_plane_shares(struct kvm *kvm, u64 state)
+ {
+ 	return READ_ONCE(kvm->arch.plane_share) & state;
+ }
+ 
++void kvm_plane_share_dr6(struct kvm_vcpu *vcpu);
 +
-+	/* Planes require a split irqchip: without one the opt-in fails. */
-+	vm = vm_create_barebones();
-+	TEST_ASSERT_EQ(__vm_enable_cap(vm, KVM_CAP_PLANES, 2), -1);
-+	TEST_ASSERT_EQ(errno, EINVAL);
-+	kvm_vm_free(vm);
-+
-+	/*
-+	 * With one, the system fd's value is the most a VM may be given,
-+	 * and a full in-kernel irqchip cannot replace the split one later.
-+	 */
-+	vm = vm_create_barebones_irqchip(true);
-+
-+	TEST_ASSERT_EQ(__vm_enable_cap(vm, KVM_CAP_PLANES, 0), -1);
-+	TEST_ASSERT_EQ(errno, EINVAL);
-+
-+	TEST_ASSERT(max_planes > 1 && max_planes <= KVM_MAX_PLANES,
-+		    "system fd KVM_CAP_PLANES ceiling %d", max_planes);
-+	TEST_ASSERT_EQ(__vm_enable_cap(vm, KVM_CAP_PLANES, max_planes + 1), -1);
-+	TEST_ASSERT_EQ(errno, EINVAL);
-+
-+	vm_enable_cap(vm, KVM_CAP_PLANES, max_planes);
-+	TEST_ASSERT_EQ(vm_check_cap(vm, KVM_CAP_PLANES), max_planes);
-+
-+	/* ENOTTY where KVM_CREATE_IRQCHIP is compiled out (KVM_IOAPIC=n). */
-+	TEST_ASSERT_EQ(__vm_ioctl(vm, KVM_CREATE_IRQCHIP, NULL), -1);
-+	TEST_ASSERT(errno == EEXIST || errno == ENOTTY,
-+		    "KVM_CREATE_IRQCHIP after the opt-in: errno %d", errno);
-+
-+	kvm_vm_free(vm);
-+}
-+
-+static void test_enable_cap_too_late(void)
-+{
-+	struct kvm_vm *vm = vm_create_barebones_irqchip(true);
-+
-+	__vm_vcpu_add(vm, 0);
-+
-+	TEST_ASSERT_EQ(__vm_enable_cap(vm, KVM_CAP_PLANES, 2), -1);
-+	TEST_ASSERT_EQ(errno, EEXIST);
-+
-+	kvm_vm_free(vm);
-+}
-+
-+static void test_plane_lifecycle(void)
-+{
-+	struct kvm_vm *vm = vm_create_barebones();
-+	struct kvm_plane_vcpu *vcpu1;
-+	struct kvm_regs regs0, regs1;
-+	struct kvm_plane *plane;
-+	struct kvm_vcpu *vcpu0;
-+	int r;
-+
-+	vm_enable_split_irqchip(vm);
-+
-+	/* Without the opt-in a VM has a single plane. */
-+	TEST_ASSERT_EQ(vm_check_cap(vm, KVM_CAP_PLANES), 1);
-+	TEST_ASSERT_EQ(__vm_ioctl(vm, KVM_CREATE_PLANE, (void *)1UL), -1);
-+	TEST_ASSERT_EQ(errno, EINVAL);
-+
-+	vm_enable_cap(vm, KVM_CAP_PLANES, 2);
-+	TEST_ASSERT_EQ(vm_check_cap(vm, KVM_CAP_PLANES), 2);
-+
-+	/* The configured count is a hard bound, and reconfiguration a hard no. */
-+	TEST_ASSERT_EQ(__vm_ioctl(vm, KVM_CREATE_PLANE, (void *)2UL), -1);
-+	TEST_ASSERT_EQ(errno, EINVAL);
-+
-+	plane = vm_plane_add(vm, 1);
-+
-+	TEST_ASSERT_EQ(__vm_enable_cap(vm, KVM_CAP_PLANES, 3), -1);
-+	TEST_ASSERT_EQ(errno, EEXIST);
-+
-+	/* A plane fd takes plane ioctls only; capabilities are a VM matter. */
-+	r = __plane_ioctl(plane, KVM_CHECK_EXTENSION, (void *)KVM_CAP_PLANES);
-+	TEST_ASSERT(r == -1 && errno == ENOTTY,
-+		    "KVM_CHECK_EXTENSION on a plane fd, expecting ENOTTY. ret: %d, errno: %d",
-+		    r, errno);
-+
-+	vcpu0 = __vm_vcpu_add(vm, 0);
-+	vcpu1 = __vm_plane_vcpu_add(vcpu0, plane);
-+
-+	/* Register state is per plane: write plane 1, plane 0 unaffected. */
-+	plane_vcpu_ioctl(vcpu1, KVM_GET_REGS, &regs1);
-+	regs1.rbx = 0x5157ca11;	/* arbitrary marker */
-+	plane_vcpu_ioctl(vcpu1, KVM_SET_REGS, &regs1);
-+
-+	vcpu_ioctl(vcpu0, KVM_GET_REGS, &regs0);
-+	TEST_ASSERT(regs0.rbx != 0x5157ca11,
-+		    "plane 0 RBX changed by plane 1 KVM_SET_REGS");
-+
-+	memset(&regs1, 0, sizeof(regs1));
-+	plane_vcpu_ioctl(vcpu1, KVM_GET_REGS, &regs1);
-+	TEST_ASSERT_EQ(regs1.rbx, 0x5157ca11);
-+
-+	kvm_vm_free(vm);
-+}
-+
-+int main(int argc, char *argv[])
-+{
-+	TEST_REQUIRE(kvm_has_cap(KVM_CAP_PLANES));
-+	TEST_REQUIRE(kvm_has_cap(KVM_CAP_SPLIT_IRQCHIP));
-+	TEST_REQUIRE(have_multiple_planes());
-+
-+	test_enable_cap_bounds();
-+	test_enable_cap_too_late();
-+	test_plane_lifecycle();
-+
-+	return 0;
-+}
+ #endif
 -- 
 2.50.1
 
