@@ -2,65 +2,63 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F18D5606A8B7
-	for <kvm-riscv@archiver.kernel.org>; Fri, 13 Nov 2026 08:26:47 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E4B26606B110
+	for <kvm-riscv@archiver.kernel.org>; Fri, 13 Nov 2026 10:14:28 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=eIe67tQn;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=lanxincomputing-com.20200927.dkim.feishu.cn header.i=@lanxincomputing-com.20200927.dkim.feishu.cn header.a=rsa-sha256 header.s=s1 header.b=qpsAmbpn
+	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=NtK5zQ9o;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=lanxincomputing-com.20200927.dkim.feishu.cn header.i=@lanxincomputing-com.20200927.dkim.feishu.cn header.a=rsa-sha256 header.s=s1 header.b=CS5T5Imy
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:From:Date:Cc:In-Reply-To:References:
-	Mime-Version:Subject:Message-Id:To:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Archive:List-Unsubscribe:List-Id:Date:Subject:Mime-Version:Message-Id:
+	From:Cc:To:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
 	List-Unsubscribe-Post:List-Owner;
-	bh=ZLjdWs0CottBeKEECkjxr1SZZfTsDvIJatzM402tVw4=; b=eIe67tQnpnn8Qg0RNTF92CLa+x
-	JiovPKDAyBhulPIRPoeLfwn5I9T8xIqRQTSEeHuJkTHlGz/ft/GhJNaN5NmtmVqAwKr1vaOJfgdQZ
-	j53JcZAHn85ku4LyY6oQvGthLPhyydA9TLyT0LbBA8dN6RnGOAv+L9NoC5spQUPnn4JsxPgQNFkfN
-	Im/nZD5td/ZH86O19x6qXgVvH3xxPuDN9PyxxkeNZMa7LQOjQylwH/ATABXcuSXXWtgbr5PvlIM/+
-	7xlsnEnHK94sbkx5HsB0oafjcLQlFPXf7FElaseK53MaZOtNoY3UDlShZybTYU95+TKyEa+DAA01/
-	6Xwu1FqQ==;
+	bh=nLNnVwgKQMPGzPsvO5CsOUEgnWBqlTH7z/ntVBPw1r8=; b=NtK5zQ9oQ7l87Kl1AObmlwFsx8
+	B8ESAPaEa8ty9HufTjvlLCLJMt/si6u0ZrN5Jq0NRYNa5q32Ba53ZOo4fZJgH6WtKkGOSKqo7xfjN
+	wO2W/GD7lkqFf0MWhMclD9AWrlbIlJbjWQf6EibjfVCCii/jBVG/l4BYQwZ4rZqmck85eUpmKVjhS
+	Ff7vnGig6PFyj9xjL+AkZlMnK9BDQS0uSlMJmz5xJQy+u6z5uPrUPDhA0Vhzuu3mtVRLTJZ6NI56Q
+	RF16QE1PLiqnrvHbGEaVoAjAhkyD7bnXFOqOu7HJ5817bq7Vp6495Ys7wtXiVDfyowl246WcV8tgt
+	eOgTnHwA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xRmcR-0000000C2dv-1rCs;
-	Fri, 13 Nov 2026 08:26:47 +0000
-Received: from va-2-43.ptr.blmpb.com ([209.127.231.43])
+	id 1xRoIe-0000000CJyn-0CCU;
+	Fri, 13 Nov 2026 10:14:28 +0000
+Received: from va-2-30.ptr.blmpb.com ([209.127.231.30])
 	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xRmcC-0000000C2YN-1aKS
+	id 1xRoIa-0000000CJwp-1Nsv
 	for kvm-riscv@lists.infradead.org;
-	Fri, 13 Nov 2026 08:26:37 +0000
+	Fri, 13 Nov 2026 10:14:27 +0000
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- s=s1; d=lanxincomputing-com.20200927.dkim.feishu.cn; t=1794558381;
+ s=s1; d=lanxincomputing-com.20200927.dkim.feishu.cn; t=1794564858;
   h=from:subject:mime-version:from:date:message-id:subject:to:cc:
  reply-to:content-type:mime-version:in-reply-to:message-id;
- bh=8ix6MDEBpxMuClm/bHkXYW8egmY9AdoXZ7WOLRic6sg=;
- b=qpsAmbpnd4R4oDuwIY/jn6tQXofqh1JH0Dc8PGrCeXRAibQmH3TBSavgyOsIlhqUvUzsRv
- Jctc5bvUOKitKVKP0eLQBlTqAV8jFRJsPqLvdwIbTcjJ17WSNdQGNxtDq0eb3ZymRiZtMB
- PzsAWReqbvM5/agd9aYi0vDsfCRnHw67xdmzHChDM2b9A6XBFxj2CsI2EvDjxpBBFaZYIY
- J4Y3TxaSHtTCXkk/F/sVZDxsvcz/cV8rDfRlRnJiEu+EOxRx0Egm88x6zMA08g9hyw7abd
- rtBNVBBi+dzOnYqu2WJlO04wJLCKCYcTMFzwK7NjCjDfr40Oty4Rq1R3+c2NXQ==
-To: "Anup Patel" <anup@brainfault.org>
-Message-Id: <7434d1a7-c5d8-4d97-a8f6-ab9bf881d299@lanxincomputing.com>
-X-Original-From: BillXiang <xiangwencheng@lanxincomputing.com>
-Received: from [127.0.0.1] ([123.120.4.67]) by smtp.feishu.cn with ESMTPS; Fri, 13 Nov 2026 16:26:15 +0800
-Subject: Re: [PATCH v3] RISC-V: KVM: Serialize and atomize the IMSIC's TOPEI read-and-clear operation
-X-Archived-By: <archiver.kernel.org>
-Mime-Version: 1.0
-References: <20260923091658.1421475-1-xiangwencheng@lanxincomputing.com> <CAAhSdy0Fp5R9v1O7gEoVriBBfnSapTgQ52ZLn5+QJOMxnn1z3w@mail.gmail.com>
-In-Reply-To: <CAAhSdy0Fp5R9v1O7gEoVriBBfnSapTgQ52ZLn5+QJOMxnn1z3w@mail.gmail.com>
-Content-Language: en-US
+ bh=I1JA9FJ/SP/+WEbDXsjWk6ef9MGFbfHr+CbxzhoP4+E=;
+ b=CS5T5ImyRIr7b9g1zL7JIDLKYCSNavpZovZeZfKFsTTz2qkF/fSo8VehDdsombFhc6eYHE
+ VT/Vy8AtKrp7Y2kWdb0r4O3KHbTOqTIgZyx0XeW/a6jTVre4IbBkv9TJ+NcPYp7TBtLebv
+ /07cA6xrKMm0ra52s58PBUlnXG6LZm4+Dj5M37R81jkuM7rw8niYpJ1jZ3OZXPEPBsi+1C
+ ssZOA4iWHlNErtVNNvLdB3HZg2vafSuagslKjhx85ZOhA2w7U0BFFCEU52IKtj/Ev22iF7
+ U2/0S7mJHhb3waclcFl4jmNxbfHGYCyG63f//zRIcuQNCtWmMrdk12UnaBVqcw==
+To: <anup@brainfault.org>
 Cc: <xb@ultrarisc.com>, <atish.patra@linux.dev>, <pjw@kernel.org>, 
 	<palmer@dabbelt.com>, <aou@eecs.berkeley.edu>, <alex@ghiti.fr>, 
 	<pbonzini@redhat.com>, <graf@amazon.com>, 
 	<kvm-riscv@lists.infradead.org>, <kvm@vger.kernel.org>, 
-	<linux-riscv@lists.infradead.org>, <linux-kernel@vger.kernel.org>
-Date: Fri, 13 Nov 2026 16:26:13 +0800
+	<linux-riscv@lists.infradead.org>, <linux-kernel@vger.kernel.org>, 
+	<xiangwencheng@lanxincomputing.com>
 From: "BillXiang" <xiangwencheng@lanxincomputing.com>
-User-Agent: Mozilla Thunderbird
-X-Lms-Return-Path: <lba+26af6c9a9+5ab791+lists.infradead.org+xiangwencheng@lanxincomputing.com>
+Message-Id: <20261113101358.3007601-1-xiangwencheng@lanxincomputing.com>
+X-Archived-By: <archiver.kernel.org>
+Mime-Version: 1.0
+X-Original-From: BillXiang <xiangwencheng@lanxincomputing.com>
+Subject: [PATCH v4] RISC-V: KVM: Serialize and atomize the IMSIC's TOPEI read-and-clear operation
+Received: from lanxin-ThinkBook-16-G5-IRH.lan ([123.120.4.67]) by smtp.feishu.cn with ESMTP; Fri, 13 Nov 2026 18:14:16 +0800
+X-Mailer: git-send-email 2.53.0
+Date: Fri, 13 Nov 2026 18:13:57 +0800
+X-Lms-Return-Path: <lba+26af6e2f8+719607+lists.infradead.org+xiangwencheng@lanxincomputing.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261113_002635_108310_6CA92AAB 
-X-CRM114-Status: GOOD (  15.85  )
+X-CRM114-CacheID: sfid-20261113_021424_952647_9ED541ED 
+X-CRM114-Status: GOOD (  11.86  )
 X-Spam-Score: -1.9 (-)
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -71,112 +69,151 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
-X-Spam-Status: No, score=-15.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-16.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MSGID_FROM_MTA_HEADER,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	MSGID_FROM_MTA_HEADER,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-T24gMTEvMTMvMjAyNiAxOjM2IFBNLCBBbnVwIFBhdGVsIHdyb3RlOgo+IE9uIFdlZCwgU2VwIDIz
-LCAyMDI2IGF0IDI6NDfigK9QTSBCaWxsWGlhbmcKPiA8eGlhbmd3ZW5jaGVuZ0BsYW54aW5jb21w
-dXRpbmcuY29tPiB3cm90ZToKPj4KPj4gVGhlIFRPUEVJIHJlYWQtYW5kLWNsZWFyIG11c3QgYmUg
-YXRvbWljIHdpdGggcmVzcGVjdCB0bwo+PiBpbnRlcnJ1cHQgaW5qZWN0aW9uIChzZXRfYml0IGlu
-IEVJUCkuIE90aGVyd2lzZSBhbgo+PiBpbnRlcnJ1cHQgaW5qZWN0ZWQgYmV0d2VlbiB0aGUgdG9w
-ZWkgcmVhZCBhbmQgdGhlCj4+IGNsZWFyX2JpdCBjb3VsZCBiZSBzaWxlbnRseSBkcm9wcGVkLgo+
-Pgo+PiB2MzoKPj4gICAtIGZpeCB1bmRlZmluZWQgZWZsYWdzCj4+Cj4+IHYyOgo+PiAgIC0gZml4
-IHBhdGNoIGZpbGUgY3VycnVwdGlvbgo+Pgo+PiB2MTogaHR0cHM6Ly9sb3JlLmtlcm5lbC5vcmcv
-a3ZtLXJpc2N2LzIwMjYwOTIzMDcwMzMyLjEzNzYxMzItMS14aWFuZ3dlbmNoZW5nQGxhbnhpbmNv
-bXB1dGluZy5jb20vCj4+Cj4+IFNpZ25lZC1vZmYtYnk6IEJpbGxYaWFuZyA8eGlhbmd3ZW5jaGVu
-Z0BsYW54aW5jb21wdXRpbmcuY29tPgo+PiAtLS0KPj4gICBhcmNoL3Jpc2N2L2t2bS9haWFfaW1z
-aWMuYyB8IDQyICsrKysrKysrKysrKysrKysrKysrKysrKystLS0tLS0tLS0tLS0tCj4+ICAgMSBm
-aWxlIGNoYW5nZWQsIDI4IGluc2VydGlvbnMoKyksIDE0IGRlbGV0aW9ucygtKQo+Pgo+PiBkaWZm
-IC0tZ2l0IGEvYXJjaC9yaXNjdi9rdm0vYWlhX2ltc2ljLmMgYi9hcmNoL3Jpc2N2L2t2bS9haWFf
-aW1zaWMuYwo+PiBpbmRleCBjMWFmMjNlNzlhZTAuLmM0NDAwODg2NTFlYyAxMDA2NDQKPj4gLS0t
-IGEvYXJjaC9yaXNjdi9rdm0vYWlhX2ltc2ljLmMKPj4gKysrIGIvYXJjaC9yaXNjdi9rdm0vYWlh
-X2ltc2ljLmMKPj4gQEAgLTYwNywyNiArNjA3LDI1IEBAIHN0YXRpYyB2b2lkIGltc2ljX3ZzZmls
-ZV9jbGVhbnVwKHN0cnVjdCBpbXNpYyAqaW1zaWMpCj4+ICAgICAgICAgICAgICAgICAga3ZtX3Jp
-c2N2X2FpYV9mcmVlX2hnZWkob2xkX3ZzZmlsZV9jcHUsIG9sZF92c2ZpbGVfaGdlaSk7Cj4+ICAg
-fQo+Pgo+PiAtc3RhdGljIHZvaWQgaW1zaWNfc3dmaWxlX2V4dGlycV91cGRhdGUoc3RydWN0IGt2
-bV92Y3B1ICp2Y3B1KQo+PiArc3RhdGljIHZvaWQgX19pbXNpY19zd2ZpbGVfZXh0aXJxX3VwZGF0
-ZShzdHJ1Y3Qga3ZtX3ZjcHUgKnZjcHUpCj4+ICAgewo+PiAgICAgICAgICBzdHJ1Y3QgaW1zaWMg
-Kmltc2ljID0gdmNwdS0+YXJjaC5haWFfY29udGV4dC5pbXNpY19zdGF0ZTsKPj4gICAgICAgICAg
-c3RydWN0IGltc2ljX21yaWYgKm1yaWYgPSBpbXNpYy0+c3dmaWxlOwo+PiAtICAgICAgIHVuc2ln
-bmVkIGxvbmcgZmxhZ3M7Cj4+IC0KPj4gLSAgICAgICAvKgo+PiAtICAgICAgICAqIFRoZSBjcml0
-aWNhbCBzZWN0aW9uIGlzIG5lY2Vzc2FyeSBkdXJpbmcgZXh0ZXJuYWwgaW50ZXJydXB0Cj4+IC0g
-ICAgICAgICogdXBkYXRlcyB0byBhdm9pZCB0aGUgcmlzayBvZiBsb3NpbmcgaW50ZXJydXB0cyBk
-dWUgdG8gcG90ZW50aWFsCj4+IC0gICAgICAgICogaW50ZXJydXB0aW9ucyBiZXR3ZWVuIHJlYWRp
-bmcgdG9wZWkgYW5kIHVwZGF0aW5nIHBlbmRpbmcgc3RhdHVzLgo+PiAtICAgICAgICAqLwo+PiAt
-Cj4+IC0gICAgICAgcmF3X3NwaW5fbG9ja19pcnFzYXZlKCZpbXNpYy0+c3dmaWxlX2V4dGlycV9s
-b2NrLCBmbGFncyk7Cj4+Cj4+ICAgICAgICAgIGlmIChpbXNpY19tcmlmX2F0b21pY19yZWFkKG1y
-aWYsICZtcmlmLT5laWRlbGl2ZXJ5KSAmJgo+PiAgICAgICAgICAgICAgaW1zaWNfbXJpZl90b3Bl
-aShtcmlmLCBpbXNpYy0+bnJfZWl4LCBpbXNpYy0+bnJfbXNpcykpCj4+ICAgICAgICAgICAgICAg
-ICAga3ZtX3Jpc2N2X3ZjcHVfc2V0X2ludGVycnVwdCh2Y3B1LCBJUlFfVlNfRVhUKTsKPj4gICAg
-ICAgICAgZWxzZQo+PiAgICAgICAgICAgICAgICAgIGt2bV9yaXNjdl92Y3B1X3Vuc2V0X2ludGVy
-cnVwdCh2Y3B1LCBJUlFfVlNfRVhUKTsKPj4gK30KPj4gKwo+PiArc3RhdGljIHZvaWQgaW1zaWNf
-c3dmaWxlX2V4dGlycV91cGRhdGUoc3RydWN0IGt2bV92Y3B1ICp2Y3B1KQo+PiArewo+PiArICAg
-ICAgIHN0cnVjdCBpbXNpYyAqaW1zaWMgPSB2Y3B1LT5hcmNoLmFpYV9jb250ZXh0Lmltc2ljX3N0
-YXRlOwo+PiArICAgICAgIHVuc2lnbmVkIGxvbmcgZmxhZ3M7Cj4+Cj4+ICsgICAgICAgcmF3X3Nw
-aW5fbG9ja19pcnFzYXZlKCZpbXNpYy0+c3dmaWxlX2V4dGlycV9sb2NrLCBmbGFncyk7Cj4+ICsg
-ICAgICAgX19pbXNpY19zd2ZpbGVfZXh0aXJxX3VwZGF0ZSh2Y3B1KTsKPj4gICAgICAgICAgcmF3
-X3NwaW5fdW5sb2NrX2lycXJlc3RvcmUoJmltc2ljLT5zd2ZpbGVfZXh0aXJxX2xvY2ssIGZsYWdz
-KTsKPj4gICB9Cj4+Cj4+IEBAIC05MTIsMTIgKzkxMSwxNSBAQCBpbnQga3ZtX3Jpc2N2X3ZjcHVf
-YWlhX2ltc2ljX3JtdyhzdHJ1Y3Qga3ZtX3ZjcHUgKnZjcHUsIHVuc2lnbmVkIGxvbmcgaXNlbCwK
-Pj4gICAgICAgICAgc3RydWN0IGltc2ljX21yaWZfZWl4ICplaXg7Cj4+ICAgICAgICAgIGludCBy
-LCByYyA9IEtWTV9JTlNOX0NPTlRJTlVFX05FWFRfU0VQQzsKPj4gICAgICAgICAgc3RydWN0IGlt
-c2ljICppbXNpYyA9IHZjcHUtPmFyY2guYWlhX2NvbnRleHQuaW1zaWNfc3RhdGU7Cj4+ICsgICAg
-ICAgdW5zaWduZWQgbG9uZyBmbGFnczsKPj4KPj4gICAgICAgICAgLyogSWYgSU1TSUMgdkNQVSBz
-dGF0ZSBub3QgaW5pdGlhbGl6ZWQgdGhlbiBmb3J3YXJkIHRvIHVzZXIgc3BhY2UgKi8KPj4gICAg
-ICAgICAgaWYgKCFpbXNpYykKPj4gICAgICAgICAgICAgICAgICByZXR1cm4gS1ZNX0lOU05fRVhJ
-VF9UT19VU0VSX1NQQUNFOwo+Pgo+PiAgICAgICAgICBpZiAoaXNlbCA9PSBLVk1fUklTQ1ZfQUlB
-X0lNU0lDX1RPUEVJKSB7Cj4+ICsgICAgICAgICAgICAgICByYXdfc3Bpbl9sb2NrX2lycXNhdmUo
-Jmltc2ljLT5zd2ZpbGVfZXh0aXJxX2xvY2ssIGZsYWdzKTsKPj4gKwo+PiAgICAgICAgICAgICAg
-ICAgIC8qIFJlYWQgcGVuZGluZyBhbmQgZW5hYmxlZCBpbnRlcnJ1cHQgd2l0aCBoaWdoZXN0IHBy
-aW9yaXR5ICovCj4+ICAgICAgICAgICAgICAgICAgdG9wZWkgPSBpbXNpY19tcmlmX3RvcGVpKGlt
-c2ljLT5zd2ZpbGUsIGltc2ljLT5ucl9laXgsCj4+ICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgIGltc2ljLT5ucl9tc2lzKTsKPj4gQEAgLTkzNCwxNiArOTM2LDIwIEBA
-IGludCBrdm1fcmlzY3ZfdmNwdV9haWFfaW1zaWNfcm13KHN0cnVjdCBrdm1fdmNwdSAqdmNwdSwg
-dW5zaWduZWQgbG9uZyBpc2VsLAo+PiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgZWl4LT5laXApOwo+PiAgICAgICAgICAgICAgICAgICAgICAgICAgfQo+PiAgICAg
-ICAgICAgICAgICAgIH0KPj4gKyAgICAgICAgICAgICAgIGlmICh3cl9tYXNrKQo+PiArICAgICAg
-ICAgICAgICAgICAgICAgICBfX2ltc2ljX3N3ZmlsZV9leHRpcnFfdXBkYXRlKHZjcHUpOwo+IAo+
-IFRoZSBfX2ltc2ljX3N3ZmlsZV9leHRpcnFfdXBkYXRlKCkgYWxzbyBjYWxscyBpbXNpY19tcmlm
-X3RvcGVpKCkgc28gaXQgaXMKPiBiZXR0ZXIgdG8gcGFzcyB0b3BlaSB2YWx1ZSB0byBfX2ltc2lj
-X3N3ZmlsZV9leHRpcnFfdXBkYXRlKCkuCgpUaGFua3MgZm9yIHRoZSByZXZpZXcuIEknbGwgaW5j
-b3Jwb3JhdGUgaXQgaW50byB2NC4KClJlZ2FyZHMsCkJpbGwKCj4gCj4+ICsKPj4gKyAgICAgICAg
-ICAgICAgIHJhd19zcGluX3VubG9ja19pcnFyZXN0b3JlKCZpbXNpYy0+c3dmaWxlX2V4dGlycV9s
-b2NrLCBmbGFncyk7Cj4+ICAgICAgICAgIH0gZWxzZSB7Cj4+ICAgICAgICAgICAgICAgICAgciA9
-IGltc2ljX21yaWZfcm13KGltc2ljLT5zd2ZpbGUsIGltc2ljLT5ucl9laXgsIGlzZWwsCj4+ICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHZhbCwgbmV3X3ZhbCwgd3JfbWFzayk7
-Cj4+ICAgICAgICAgICAgICAgICAgLyogRm9yd2FyZCB1bmtub3duIElNU0lDIHJlZ2lzdGVyIHRv
-IHVzZXItc3BhY2UgKi8KPj4gICAgICAgICAgICAgICAgICBpZiAocikKPj4gICAgICAgICAgICAg
-ICAgICAgICAgICAgIHJjID0gKHIgPT0gLUVOT0VOVCkgPyAwIDogS1ZNX0lOU05fSUxMRUdBTF9U
-UkFQOwo+PiAtICAgICAgIH0KPj4KPj4gLSAgICAgICBpZiAod3JfbWFzaykKPj4gLSAgICAgICAg
-ICAgICAgIGltc2ljX3N3ZmlsZV9leHRpcnFfdXBkYXRlKHZjcHUpOwo+PiArICAgICAgICAgICAg
-ICAgaWYgKHdyX21hc2spCj4+ICsgICAgICAgICAgICAgICAgICAgICAgIGltc2ljX3N3ZmlsZV9l
-eHRpcnFfdXBkYXRlKHZjcHUpOwo+PiArICAgICAgIH0KPj4KPj4gICAgICAgICAgcmV0dXJuIHJj
-Owo+PiAgIH0KPj4gQEAgLTEwNTAsOSArMTA1NiwxNyBAQCBpbnQga3ZtX3Jpc2N2X3ZjcHVfYWlh
-X2ltc2ljX2luamVjdChzdHJ1Y3Qga3ZtX3ZjcHUgKnZjcHUsCj4+ICAgICAgICAgIGlmIChpbXNp
-Yy0+dnNmaWxlX2NwdSA+PSAwKSB7Cj4+ICAgICAgICAgICAgICAgICAgd3JpdGVsKGlpZCwgaW1z
-aWMtPnZzZmlsZV92YSArIElNU0lDX01NSU9fU0VUSVBOVU1fTEUpOwo+PiAgICAgICAgICB9IGVs
-c2Ugewo+PiArICAgICAgICAgICAgICAgLyoKPj4gKyAgICAgICAgICAgICAgICAqIFNlcmlhbGl6
-ZSB0aGUgRUlQIHNldCArIGV4dGVybmFsLWlycSB1cGRhdGUgYWdhaW5zdCB0aGUKPj4gKyAgICAg
-ICAgICAgICAgICAqIFRPUEVJIHJlYWQtYW5kLWNsZWFyIHBhdGggc28gdGhhdCBhbiBpbmplY3Rl
-ZCBpbnRlcnJ1cHQKPj4gKyAgICAgICAgICAgICAgICAqIGNhbm5vdCBiZSBzaWxlbnRseSBsb3N0
-IHdoZW4gdGhlIGd1ZXN0IGFja25vd2xlZGdlcyBhCj4+ICsgICAgICAgICAgICAgICAgKiBkaWZm
-ZXJlbnQgKG9yIHRoZSBzYW1lKSBpbnRlcnJ1cHQgY29uY3VycmVudGx5Lgo+PiArICAgICAgICAg
-ICAgICAgICovCj4+ICsgICAgICAgICAgICAgICByYXdfc3Bpbl9sb2NrKCZpbXNpYy0+c3dmaWxl
-X2V4dGlycV9sb2NrKTsKPj4gICAgICAgICAgICAgICAgICBlaXggPSAmaW1zaWMtPnN3ZmlsZS0+
-ZWl4W2lpZCAvIEJJVFNfUEVSX1RZUEUodTY0KV07Cj4+ICAgICAgICAgICAgICAgICAgc2V0X2Jp
-dChpaWQgJiAoQklUU19QRVJfVFlQRSh1NjQpIC0gMSksIGVpeC0+ZWlwKTsKPj4gLSAgICAgICAg
-ICAgICAgIGltc2ljX3N3ZmlsZV9leHRpcnFfdXBkYXRlKHZjcHUpOwo+PiArICAgICAgICAgICAg
-ICAgX19pbXNpY19zd2ZpbGVfZXh0aXJxX3VwZGF0ZSh2Y3B1KTsKPj4gKyAgICAgICAgICAgICAg
-IHJhd19zcGluX3VubG9jaygmaW1zaWMtPnN3ZmlsZV9leHRpcnFfbG9jayk7Cj4+ICAgICAgICAg
-IH0KPj4KPj4gICAgICAgICAgcmVhZF91bmxvY2tfaXJxcmVzdG9yZSgmaW1zaWMtPnZzZmlsZV9s
-b2NrLCBmbGFncyk7Cj4+IC0tCj4+IDIuNTMuMAo+IAo+IFJlZ2FyZHMsCj4gQW51cAoKLS0gCmt2
-bS1yaXNjdiBtYWlsaW5nIGxpc3QKa3ZtLXJpc2N2QGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDov
-L2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9rdm0tcmlzY3YK
+The TOPEI read-and-clear must be atomic with respect to
+interrupt injection (set_bit in EIP). Otherwise an
+interrupt injected between the topei read and the
+clear_bit could be silently dropped.
+
+Signed-off-by: BillXiang <xiangwencheng@lanxincomputing.com>
+---
+v4:
+ - pass topei value to __imsic_swfile_extirq_update()
+
+v3:
+ - fix undefined eflags
+
+v2:
+ - fix patch file curruption
+
+v1: https://lore.kernel.org/kvm-riscv/20260923070332.1376132-1-xiangwencheng@lanxincomputing.com/
+---
+ arch/riscv/kvm/aia_imsic.c | 47 +++++++++++++++++++++++++-------------
+ 1 file changed, 31 insertions(+), 16 deletions(-)
+
+diff --git a/arch/riscv/kvm/aia_imsic.c b/arch/riscv/kvm/aia_imsic.c
+index c1af23e79ae0..0a6b20f3a28d 100644
+--- a/arch/riscv/kvm/aia_imsic.c
++++ b/arch/riscv/kvm/aia_imsic.c
+@@ -607,26 +607,25 @@ static void imsic_vsfile_cleanup(struct imsic *imsic)
+ 		kvm_riscv_aia_free_hgei(old_vsfile_cpu, old_vsfile_hgei);
+ }
+ 
+-static void imsic_swfile_extirq_update(struct kvm_vcpu *vcpu)
++static void __imsic_swfile_extirq_update(struct kvm_vcpu *vcpu, u32 topei)
+ {
+ 	struct imsic *imsic = vcpu->arch.aia_context.imsic_state;
+ 	struct imsic_mrif *mrif = imsic->swfile;
+-	unsigned long flags;
+-
+-	/*
+-	 * The critical section is necessary during external interrupt
+-	 * updates to avoid the risk of losing interrupts due to potential
+-	 * interruptions between reading topei and updating pending status.
+-	 */
+-
+-	raw_spin_lock_irqsave(&imsic->swfile_extirq_lock, flags);
+ 
+-	if (imsic_mrif_atomic_read(mrif, &mrif->eidelivery) &&
+-	    imsic_mrif_topei(mrif, imsic->nr_eix, imsic->nr_msis))
++	if (imsic_mrif_atomic_read(mrif, &mrif->eidelivery) && topei)
+ 		kvm_riscv_vcpu_set_interrupt(vcpu, IRQ_VS_EXT);
+ 	else
+ 		kvm_riscv_vcpu_unset_interrupt(vcpu, IRQ_VS_EXT);
++}
++
++static void imsic_swfile_extirq_update(struct kvm_vcpu *vcpu)
++{
++	struct imsic *imsic = vcpu->arch.aia_context.imsic_state;
++	struct imsic_mrif *mrif = imsic->swfile;
++	unsigned long flags;
+ 
++	raw_spin_lock_irqsave(&imsic->swfile_extirq_lock, flags);
++	__imsic_swfile_extirq_update(vcpu, imsic_mrif_topei(mrif, imsic->nr_eix, imsic->nr_msis));
+ 	raw_spin_unlock_irqrestore(&imsic->swfile_extirq_lock, flags);
+ }
+ 
+@@ -912,12 +911,15 @@ int kvm_riscv_vcpu_aia_imsic_rmw(struct kvm_vcpu *vcpu, unsigned long isel,
+ 	struct imsic_mrif_eix *eix;
+ 	int r, rc = KVM_INSN_CONTINUE_NEXT_SEPC;
+ 	struct imsic *imsic = vcpu->arch.aia_context.imsic_state;
++	unsigned long flags;
+ 
+ 	/* If IMSIC vCPU state not initialized then forward to user space */
+ 	if (!imsic)
+ 		return KVM_INSN_EXIT_TO_USER_SPACE;
+ 
+ 	if (isel == KVM_RISCV_AIA_IMSIC_TOPEI) {
++		raw_spin_lock_irqsave(&imsic->swfile_extirq_lock, flags);
++
+ 		/* Read pending and enabled interrupt with highest priority */
+ 		topei = imsic_mrif_topei(imsic->swfile, imsic->nr_eix,
+ 					 imsic->nr_msis);
+@@ -934,16 +936,20 @@ int kvm_riscv_vcpu_aia_imsic_rmw(struct kvm_vcpu *vcpu, unsigned long isel,
+ 					  eix->eip);
+ 			}
+ 		}
++		if (wr_mask)
++			__imsic_swfile_extirq_update(vcpu, topei);
++
++		raw_spin_unlock_irqrestore(&imsic->swfile_extirq_lock, flags);
+ 	} else {
+ 		r = imsic_mrif_rmw(imsic->swfile, imsic->nr_eix, isel,
+ 				   val, new_val, wr_mask);
+ 		/* Forward unknown IMSIC register to user-space */
+ 		if (r)
+ 			rc = (r == -ENOENT) ? 0 : KVM_INSN_ILLEGAL_TRAP;
+-	}
+ 
+-	if (wr_mask)
+-		imsic_swfile_extirq_update(vcpu);
++		if (wr_mask)
++			imsic_swfile_extirq_update(vcpu);
++	}
+ 
+ 	return rc;
+ }
+@@ -1034,6 +1040,7 @@ int kvm_riscv_vcpu_aia_imsic_inject(struct kvm_vcpu *vcpu,
+ 	unsigned long flags;
+ 	struct imsic_mrif_eix *eix;
+ 	struct imsic *imsic = vcpu->arch.aia_context.imsic_state;
++	struct imsic_mrif *mrif = imsic->swfile;
+ 
+ 	/* We only emulate one IMSIC MMIO page for each Guest VCPU */
+ 	if (!imsic || !iid || guest_index ||
+@@ -1050,9 +1057,17 @@ int kvm_riscv_vcpu_aia_imsic_inject(struct kvm_vcpu *vcpu,
+ 	if (imsic->vsfile_cpu >= 0) {
+ 		writel(iid, imsic->vsfile_va + IMSIC_MMIO_SETIPNUM_LE);
+ 	} else {
++		/*
++		 * Serialize the EIP set + external-irq update against the
++		 * TOPEI read-and-clear path so that an injected interrupt
++		 * cannot be silently lost when the guest acknowledges a
++		 * different (or the same) interrupt concurrently.
++		 */
++		raw_spin_lock(&imsic->swfile_extirq_lock);
+ 		eix = &imsic->swfile->eix[iid / BITS_PER_TYPE(u64)];
+ 		set_bit(iid & (BITS_PER_TYPE(u64) - 1), eix->eip);
+-		imsic_swfile_extirq_update(vcpu);
++		__imsic_swfile_extirq_update(vcpu, imsic_mrif_topei(mrif, imsic->nr_eix, imsic->nr_msis));
++		raw_spin_unlock(&imsic->swfile_extirq_lock);
+ 	}
+ 
+ 	read_unlock_irqrestore(&imsic->vsfile_lock, flags);
+-- 
+2.53.0
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
