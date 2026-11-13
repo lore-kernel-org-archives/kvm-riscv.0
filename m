@@ -2,11 +2,11 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 08143606A8BF
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1450F606FEBD
 	for <kvm-riscv@archiver.kernel.org>; Fri, 13 Nov 2026 18:26:37 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=fk1rjBJx;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=hEmKYu4c
+	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=G1MTU2WO;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=duVHnfjj
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
@@ -14,37 +14,37 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
 	List-Unsubscribe-Post:List-Owner;
-	bh=DatwqTFVBJR5bw/86kJevQ+FLSMb4DRWWXy4HbHSGOk=; b=fk1rjBJxXQQ1/XtrHW7yhDpRF7
-	dJ+jviBqnPHPf0GLJELflq7J0dRNOdYdND05AMONLt5snjtRbE4RviMBh0Lu7al/iFUgAjbScEyCI
-	ihOKJSbI7KRBE6+9+F5QdYeDxT/W9WHjSTYzPFmtW6Wo7RBhbmmBZyrxlBSZGVe0gWXL2ifwwCv1h
-	y4AH22uazeh1qfJg5wkDfvZtA8hci01JFh0SLpr3Qz68jBlWpkIxdQkkUwfFUB+6QcZLpIJu3dRsT
-	k7svUdbRZsMLBhyo1SY00v/eaIBQ5tkUoBMB+47gqIpgVoukd4OWQ2wzAY+UwzsdliUdvqAbI2lMe
-	R5HdUDmw==;
+	bh=5rG4DnM59ePB7kwZ0zqiTmD75HvLBqLPRunuVBl224Q=; b=G1MTU2WOduAjJFSqw3hh+DlNji
+	N5hdavYi4zA63c0XJxbftgDcEnutjW/XyvgA5Ca5s6myWhvUUUlqvyjOTb4oQ6TX3GP9kKjHfkRxW
+	bgrYLldkNEbX8kHciE1Sbq9FIm/NIA1gxQCZVdkw89VKv/CQGhaLa78ZAQC0Bfb1DvhkaUOi7FAHd
+	f7ZXm0uowmv3xkbffvQ430UuaAadnTwuw6usHabteO38eQCOErrGUHOe/Lsgm+mcJ0lYyJjoyEIAp
+	5Y4n2OlaKeZCjNq0FgqzJSu9Fd8IxUBSsTBZROj4KvSuYhEgCcEA4Fj5vuxohc+HV8SeBmhcIrCTj
+	uHxjxTPQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xRvyu-0000000Dw67-33CA;
+	id 1xRvyu-0000000Dw6J-3LLg;
 	Fri, 13 Nov 2026 18:26:36 +0000
 Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xRvys-0000000Dw0c-2eno
+	id 1xRvys-0000000Dw0d-2dz8
 	for kvm-riscv@bombadil.infradead.org;
 	Fri, 13 Nov 2026 18:26:34 +0000
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=desiato.20200630; h=Sender:Content-Transfer-Encoding:
 	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
 	Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=1AnoyR0j7y5hdrymYbL+ph5cczEf+Al0Tzoil8ZfR/Q=; b=hEmKYu4crsHN6alaS6gx4febeC
-	bBb2NUhbMZ5nWRl3GR3qDIUZZj9V3hZFviUpX5E2SmikEwTum+wkvcL4hR0+ud4EXfbfT1pTv97r7
-	H4nSpPnODolqqQyw81YXnMDLl0QPwSyDqGfhmTW7fXZZ8+vwMO0rVE5rjn8OPd9mCSstFbUmL8VKp
-	C4gP2NpnmJg/mzEAIWov1vU4Y6mRSlilz+pPxacK8RJLR6siF04H7xrN0yrsJXKReF40AqvkNEXAM
-	L+zp+1MsgIWI5PCEqROMMPtxAiLdq0lcO2na+uqUF9pTLSSafp6xbLjyHWyynqv6BPqWFTL6CBVCY
-	e26pXl9g==;
+	bh=nsZl3tFZmRcUaiRHX00B61/eCfNM8JCwY3bqxS7ggUE=; b=duVHnfjjfs7oZIGcTSBEDN7BNU
+	+cYQZ68uDPNzEHtoy0wTiqM12shQl3WiudyVcXLMZ5JfrLLc/zcuwzr1DSGCcMz5EYFJCQB/W0QR5
+	feZ+OM4FK9lA1tFv4a7xkrtJcyGngKC6uF8pkuNN1ru+ELeg0U+f69g5faSG1/9yUiftmZ2MRn0MP
+	1QJ4iZLPmTpEjGjOjeswUs7vsZ9WG5g2SqN6tymcJiyS1/rZGnng23j1AIMCL8nNITcujDAKFdTaL
+	bxTtvvd/LyjSdqkmtXUKrLYTHHqU0v1oYx0TxelJmv7ug3Ys96UW0Lc9+/TEtHD1LoqvOw4+P6USi
+	wGdBArpw==;
 Received: from [2001:8b0:10b:1::425] (helo=i7.infradead.org)
 	by desiato.infradead.org with esmtpsa (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xRvyU-0000000BeOY-15uE;
+	id 1xRvyU-0000000BeOX-16Ec;
 	Fri, 13 Nov 2026 18:26:30 +0000
 Received: from dwoodhou by i7.infradead.org with local (Exim 4.99.5 #2 (Red Hat Linux))
-	id 1xRvyR-00000000LY7-2B60;
+	id 1xRvyR-00000000LXr-1c4N;
 	Fri, 13 Nov 2026 18:26:07 +0000
 From: David Woodhouse <dwmw2@infradead.org>
 To: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
@@ -70,9 +70,9 @@ Cc: Paolo Bonzini <pbonzini@redhat.com>,
 	Mushahid Hussain <hmushi@amazon.co.uk>,
 	Sriram Nambakam <snambakam@linux.microsoft.com>,
 	David Woodhouse <dwmw@amazon.co.uk>
-Subject: [RFC PATCH 05/13] KVM: selftests: Cover plane run-state ioctls in planes_test
-Date: Fri, 13 Nov 2026 11:25:59 -0700
-Message-ID: <20261113182607.82813-6-dwmw2@infradead.org>
+Subject: [RFC PATCH 01/13] KVM: x86: Let userspace opt in to multiple planes with KVM_CAP_PLANES
+Date: Fri, 13 Nov 2026 11:25:55 -0700
+Message-ID: <20261113182607.82813-2-dwmw2@infradead.org>
 X-Mailer: git-send-email 2.55.0
 In-Reply-To: <20261113182607.82813-1-dwmw2@infradead.org>
 References: <20260608144252.351443-1-joro@8bytes.org>
@@ -101,258 +101,242 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 
 From: David Woodhouse <dwmw@amazon.co.uk>
 
-Assert that a new plane-1 vCPU starts with KVM_PLANE_RUN_STATE_INACTIVE
-and plane 0's with no flags, that every valid combination of
-KVM_PLANE_RUN_STATE_USER_HOLD, KVM_PLANE_RUN_STATE_SUSPENDED and
-KVM_PLANE_RUN_STATE_INACTIVE reads back as written (so a saved state
-restores), and that clearing them reads back as runnable. INACTIVE on
-plane 0, INACTIVE together with SUSPENDED and the lowest undefined bit
-are refused with EINVAL, and a refused SET leaves an existing hold in
-place. On a VM that did not enable more than one plane both ioctls fail
-with EINVAL.
+A VMM implementing a software privilege model such as Hyper-V VSM
+needs more than one plane, but kvm_arch_max_planes() returns the
+vendor ceiling, which is 1 everywhere except SEV-SNP (where VMPLs are
+guest-architectural), so KVM_CREATE_PLANE rejects every id above zero.
 
-With plane 0 held and nothing runnable, KVM_RUN still honours
-immediate_exit with EINTR, and otherwise exits with KVM_EXIT_PLANE_EVENT
-and cause KVM_PLANE_EVENT_HELD, with kvm_run's if_flag and apic_base
-filled in as on any other exit. That exit leaves registers marked in
-kvm_dirty_regs unconsumed and unrefreshed, and once plane 1 is released
-they land in plane 1, not plane 0. If plane 0 holds a pending I/O
-completion, here from a real-mode OUT, a held KVM_RUN fails with EBUSY,
-with or without immediate_exit, leaves the KVM_EXIT_IO in kvm_run and
-plane 0's RIP on the OUT, and the OUT retires once plane 0 is released.
+Make KVM_CAP_PLANES a VM enable capability taking the number of planes
+userspace is going to manage, up to KVM_MAX_USER_PLANES (4), which the
+system fd now reports. It must be set before any vCPU or extra plane
+exists, so nothing is sized against the old limit, and cannot be changed
+once set. It also needs a split irqchip, which kvm_arch_max_planes()
+already requires before it reports more than one plane, so enabling it
+without one fails instead of silently granting a single plane, and
+KVM_CREATE_IRQCHIP is refused afterwards. Non-default VM types are
+rejected: SEV-SNP keeps deriving its count from the supported VMPLs,
+and protected-state VM types need their own audit first. So is more
+than one plane without TDP: with shadow paging every plane would
+write-track the guest page tables, and the per-gfn write-track count
+is only 16 bits wide. The same count is why the opt-in stops at four
+planes even with TDP: nested guests still have write-tracked shadow
+pages, each plane can add its own for a gfn, and four planes is the
+most that keeps the count below 2^16. KVM_MAX_PLANES stays 16, the
+bound for plane ids. A VM that does not enable the capability keeps
+reporting a single plane.
 
 Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
 ---
- tools/testing/selftests/kvm/x86/planes_test.c | 198 +++++++++++++++++-
- 1 file changed, 196 insertions(+), 2 deletions(-)
+ Documentation/virt/kvm/api.rst  | 36 +++++++++++++++++++++
+ arch/x86/include/asm/kvm_host.h |  1 +
+ arch/x86/kvm/x86.c              | 55 +++++++++++++++++++++++++++++++--
+ include/linux/kvm_host.h        | 12 +++++++
+ virt/kvm/kvm_main.c             | 11 ++++---
+ 5 files changed, 108 insertions(+), 7 deletions(-)
 
-diff --git a/tools/testing/selftests/kvm/x86/planes_test.c b/tools/testing/selftests/kvm/x86/planes_test.c
-index f7db6cb6807d..968f1b099b8e 100644
---- a/tools/testing/selftests/kvm/x86/planes_test.c
-+++ b/tools/testing/selftests/kvm/x86/planes_test.c
-@@ -8,6 +8,10 @@
- #include <string.h>
+diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.rst
+index 9aa09d8a39dc..25ce35d5361a 100644
+--- a/Documentation/virt/kvm/api.rst
++++ b/Documentation/virt/kvm/api.rst
+@@ -6834,6 +6834,12 @@ See also: :ref:`KVM_SET_MEMORY_ATTRIBUTES`.
  
- #include "kvm_util.h"
-+#include "processor.h"
+ Creates a new *plane*, i.e. a separate privilege level for the virtual machine.
+ 
++The range of valid plane ids is [0, N) where N is the value returned by
++KVM_CHECK_EXTENSION(KVM_CAP_PLANES) on the VM file descriptor.  Plane 0 is
++the VM itself; for VM types where the plane count is not guest-architectural,
++ids above 0 only become valid after userspace enables KVM_CAP_PLANES with
++the number of planes it is going to manage (see :ref:`KVM_CAP_PLANES`).
 +
-+/* Where the run-state test puts plane 0's one instruction. */
-+#define CODE_GPA	0x1000
+ Each plane has a numeric id that is used when communicating with KVM.  While
+ KVM is currently agnostic to whether low ids are more or less privileged, it is
+ expected that this will not always be the case in the future.  For example KVM
+@@ -9234,6 +9240,36 @@ enabled, cmma can't be enabled anymore and pfmfi and the storage key
+ interpretation are disabled. If cmma has already been enabled or the
+ hpage_2g module parameter is not set to 1, -EINVAL is returned.
  
- /*
-  * Whether this host lets a VM have more than one plane: the opt-in also
-@@ -61,12 +65,22 @@ static void test_enable_cap_bounds(void)
- static void test_enable_cap_too_late(void)
++.. _KVM_CAP_PLANES:
++
++7.48 KVM_CAP_PLANES
++-------------------
++
++:Architectures: x86
++:Target: VM
++:Parameters: args[0] contains the number of planes to make available
++
++Opts the VM in to using multiple planes, raising the limit on plane ids
++that KVM_CREATE_PLANE accepts to args[0], which must be between 1 and the
++value KVM_CHECK_EXTENSION(KVM_CAP_PLANES) returns on the system fd.  That
++ceiling is currently 4: on x86 every plane can add its own shadow pages for
++a gfn, and the per-gfn write-tracking count is only 16 bits wide.
++
++Planes other than plane 0 only exist when userspace manages them, so by
++default a VM reports and accepts a single plane.  VM types whose plane
++count is guest-architectural (such as SEV-SNP, where it reflects the
++supported VMPLs) report that count without this capability, and enabling
++it on them fails with -EINVAL.  Multiple planes also require two-dimensional
++paging: without TDP, enabling more than one plane fails with -EINVAL.
++
++Planes require a split irqchip.  Enable KVM_CAP_SPLIT_IRQCHIP first;
++otherwise enabling this capability fails with -EINVAL.  Once it is
++enabled, KVM_CREATE_IRQCHIP fails as well.
++
++This capability must be enabled before any vCPU or extra plane has been
++created, and the chosen count cannot be changed afterwards; otherwise
++-EEXIST is returned.
++
+ 8. Other capabilities.
+ ======================
+ 
+diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+index a4912735ad3d..d4628ab99197 100644
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -1193,6 +1193,7 @@ struct kvm_arch {
+ 	bool has_protected_eoi;
+ 	bool has_protected_pmu;
+ 	bool pre_fault_allowed;
++	unsigned int user_max_planes;
+ 	struct hlist_head *mmu_page_hash;
+ 	struct list_head active_mmu_pages;
+ 	struct kvm_possible_nx_huge_pages possible_nx_huge_pages[KVM_NR_MMU_TYPES];
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 29beb5791c15..79ea075eceec 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -320,11 +320,29 @@ EXPORT_SYMBOL_FOR_KVM_INTERNAL(kvm_x86_default_max_planes);
+ 
+ unsigned kvm_arch_max_planes(struct kvm *kvm)
  {
- 	struct kvm_vm *vm = vm_create_barebones_irqchip(true);
--
--	__vm_vcpu_add(vm, 0);
-+	struct kvm_vcpu *vcpu = __vm_vcpu_add(vm, 0);
- 
- 	TEST_ASSERT_EQ(__vm_enable_cap(vm, KVM_CAP_PLANES, 2), -1);
- 	TEST_ASSERT_EQ(errno, EEXIST);
- 
-+	/* Without more than one user-managed plane there is no run state. */
-+	{
-+		u64 flags;
++	unsigned int vendor_planes;
 +
-+		TEST_ASSERT_EQ(__vcpu_ioctl(vcpu, KVM_GET_PLANE_RUN_STATE, &flags), -1);
-+		TEST_ASSERT_EQ(errno, EINVAL);
-+		flags = 0;
-+		TEST_ASSERT_EQ(__vcpu_ioctl(vcpu, KVM_SET_PLANE_RUN_STATE, &flags), -1);
-+		TEST_ASSERT_EQ(errno, EINVAL);
-+	}
+ 	/* For now, planes are only supported with irqchip=split */
+ 	if (!irqchip_split(kvm))
+ 		return 1;
+ 
+-	return kvm_x86_call(max_planes)(kvm);
++	vendor_planes = kvm_x86_call(max_planes)(kvm);
 +
- 	kvm_vm_free(vm);
++	/*
++	 * When the plane count is guest-architectural (SEV-SNP VMPLs),
++	 * the vendor module owns it.  Otherwise planes are a software
++	 * construct and only exist when userspace has opted in to the
++	 * number of planes it is going to manage, via KVM_CAP_PLANES.
++	 */
++	if (vendor_planes > 1)
++		return vendor_planes;
++
++	/*
++	 * Lockless readers (KVM_CHECK_EXTENSION) race the KVM_ENABLE_CAP
++	 * store; the value is set once, so a torn-free read is all that
++	 * is needed.
++	 */
++	return READ_ONCE(kvm->arch.user_max_planes) ? : 1;
  }
  
-@@ -107,6 +121,186 @@ static void test_plane_lifecycle(void)
- 	vcpu0 = __vm_vcpu_add(vm, 0);
- 	vcpu1 = __vm_plane_vcpu_add(vcpu0, plane);
+ struct kvm_plane *x86_alloc_plane(void)
+@@ -4146,6 +4164,38 @@ int kvm_vm_ioctl_enable_cap(struct kvm *kvm,
+ 		mutex_unlock(&kvm->lock);
+ 		break;
+ 	}
++	case KVM_CAP_PLANES: {
++		mutex_lock(&kvm->lock);
++		r = -EINVAL;
++		if (cap->args[0] < 1 || cap->args[0] > KVM_MAX_USER_PLANES)
++			goto planes_unlock;
++		/* Planes are only supported with a split irqchip. */
++		if (!irqchip_split(kvm))
++			goto planes_unlock;
++		/*
++		 * Only ordinary VMs for now.  SEV-SNP VMs get their plane
++		 * count from the architectural VMPL support, and VM types
++		 * with protected state need per-plane audits first.
++		 */
++		if (kvm->arch.vm_type != KVM_X86_DEFAULT_VM)
++			goto planes_unlock;
++		/*
++		 * Every plane builds its own MMU roots.  With shadow paging
++		 * each one would also write-track the guest page tables, and
++		 * the per-gfn write-track count is only 16 bits wide.
++		 */
++		if (cap->args[0] > 1 && !tdp_enabled)
++			goto planes_unlock;
++		r = -EEXIST;
++		if (kvm->created_vcpus || kvm->has_planes ||
++		    kvm->arch.user_max_planes)
++			goto planes_unlock;
++		WRITE_ONCE(kvm->arch.user_max_planes, cap->args[0]);
++		r = 0;
++planes_unlock:
++		mutex_unlock(&kvm->lock);
++		break;
++	}
+ 	case KVM_CAP_X2APIC_API:
+ 		r = -EINVAL;
+ 		if (cap->args[0] & ~KVM_X2APIC_API_VALID_FLAGS)
+@@ -4594,7 +4644,8 @@ int kvm_arch_vm_ioctl(struct file *filp, unsigned int ioctl, unsigned long arg)
+ 			goto create_irqchip_unlock;
  
-+	/*
-+	 * A new plane-1 vCPU is inactive, and plane 0's has no flags.
-+	 * Every valid combination reads back as written, so a saved state
-+	 * restores; unknown bits, INACTIVE on plane 0 and INACTIVE together
-+	 * with SUSPENDED are refused.
-+	 */
-+	{
-+		static const u64 states[] = {
-+			KVM_PLANE_RUN_STATE_USER_HOLD,
-+			KVM_PLANE_RUN_STATE_SUSPENDED,
-+			KVM_PLANE_RUN_STATE_USER_HOLD |
-+				KVM_PLANE_RUN_STATE_SUSPENDED,
-+			KVM_PLANE_RUN_STATE_INACTIVE,
-+			KVM_PLANE_RUN_STATE_USER_HOLD |
-+				KVM_PLANE_RUN_STATE_INACTIVE,
-+			0,
-+		};
-+		u64 flags = ~0ULL;
-+		int i;
+ 		r = -EINVAL;
+-		if (kvm->created_vcpus || kvm->has_planes)
++		if (kvm->created_vcpus || kvm->has_planes ||
++		    kvm->arch.user_max_planes)
+ 			goto create_irqchip_unlock;
+ 
+ 		r = kvm_pic_init(kvm);
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index 6922e3063ad8..562489ab444d 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -1195,6 +1195,18 @@ void kvm_unlock_all_vcpus(struct kvm *kvm);
+ void vcpu_load(struct kvm_vcpu *vcpu);
+ void vcpu_put(struct kvm_vcpu *vcpu);
+ 
++/*
++ * The most planes userspace may enable with KVM_ENABLE_CAP(KVM_CAP_PLANES).
++ * KVM_MAX_PLANES (16, the Hyper-V VTL limit) stays the bound for plane ids
++ * and per-plane arrays.  The opt-in is lower because on x86 each plane can
++ * shadow a gfn with its own upper-level shadow pages: the per-gfn count of
++ * those is a bit less than 2^14 per plane (see union kvm_mmu_page_role),
++ * and the per-gfn write-track count is 16 bits wide, so four planes is the
++ * most that keeps it from overflowing.  The architecture defines 4 SEV-SNP
++ * VMPLs, so 4 is also the most planes any x86 VM can have.
++ */
++#define KVM_MAX_USER_PLANES	4
 +
-+		plane_vcpu_ioctl(vcpu1, KVM_GET_PLANE_RUN_STATE, &flags);
-+		TEST_ASSERT_EQ(flags, KVM_PLANE_RUN_STATE_INACTIVE);
-+		flags = ~0ULL;
-+		vcpu_ioctl(vcpu0, KVM_GET_PLANE_RUN_STATE, &flags);
-+		TEST_ASSERT_EQ(flags, 0);
-+
-+		flags = KVM_PLANE_RUN_STATE_INACTIVE;
-+		TEST_ASSERT_EQ(__vcpu_ioctl(vcpu0, KVM_SET_PLANE_RUN_STATE,
-+					    &flags), -1);
-+		TEST_ASSERT_EQ(errno, EINVAL);
-+
-+		for (i = 0; i < ARRAY_SIZE(states); i++) {
-+			flags = states[i];
-+			plane_vcpu_ioctl(vcpu1, KVM_SET_PLANE_RUN_STATE, &flags);
-+			flags = ~0ULL;
-+			plane_vcpu_ioctl(vcpu1, KVM_GET_PLANE_RUN_STATE, &flags);
-+			TEST_ASSERT_EQ(flags, states[i]);
-+		}
-+
-+		/* A refused SET leaves the hold in place. */
-+		flags = KVM_PLANE_RUN_STATE_USER_HOLD;
-+		plane_vcpu_ioctl(vcpu1, KVM_SET_PLANE_RUN_STATE, &flags);
-+
-+		flags = KVM_PLANE_RUN_STATE_INACTIVE | KVM_PLANE_RUN_STATE_SUSPENDED;
-+		TEST_ASSERT_EQ(__plane_vcpu_ioctl(vcpu1, KVM_SET_PLANE_RUN_STATE,
-+						  &flags), -1);
-+		TEST_ASSERT_EQ(errno, EINVAL);
-+
-+		/* The lowest bit that no flag defines. */
-+		flags = ~(u64)(KVM_PLANE_RUN_STATE_USER_HOLD |
-+			       KVM_PLANE_RUN_STATE_SUSPENDED |
-+			       KVM_PLANE_RUN_STATE_INACTIVE);
-+		flags &= -flags;
-+		TEST_ASSERT_EQ(__plane_vcpu_ioctl(vcpu1, KVM_SET_PLANE_RUN_STATE,
-+						  &flags), -1);
-+		TEST_ASSERT_EQ(errno, EINVAL);
-+		flags = ~0ULL;
-+		plane_vcpu_ioctl(vcpu1, KVM_GET_PLANE_RUN_STATE, &flags);
-+		TEST_ASSERT_EQ(flags, KVM_PLANE_RUN_STATE_USER_HOLD);
-+	}
-+
-+	/*
-+	 * Plane 1 is held from above.  With plane 0 held too, nothing is
-+	 * runnable, and KVM_RUN hands that back to userspace instead of
-+	 * running the held plane 0.
-+	 */
-+	{
-+		u64 flags = KVM_PLANE_RUN_STATE_USER_HOLD;
-+		struct kvm_regs regs;
-+
-+		vcpu_ioctl(vcpu0, KVM_SET_PLANE_RUN_STATE, &flags);
-+
-+		/* immediate_exit yields EINTR, as on any KVM_RUN. */
-+		vcpu0->run->immediate_exit = 1;
-+		TEST_ASSERT_EQ(__vcpu_run(vcpu0), -1);
-+		TEST_ASSERT_EQ(errno, EINTR);
-+		vcpu0->run->immediate_exit = 0;
-+
-+		/* The exit fills in kvm_run like any other: poison two fields. */
-+		vcpu0->run->if_flag = 0xff;
-+		vcpu0->run->apic_base = 0;
-+		TEST_ASSERT_EQ(__vcpu_run(vcpu0), 0);
-+		TEST_ASSERT_EQ(vcpu0->run->exit_reason, KVM_EXIT_PLANE_EVENT);
-+		TEST_ASSERT_EQ(vcpu0->run->plane_event.cause, KVM_PLANE_EVENT_HELD);
-+		TEST_ASSERT_EQ(vcpu0->run->plane_event.plane, 0);
-+		TEST_ASSERT_EQ(vcpu0->run->if_flag, 0);
-+		TEST_ASSERT_EQ(vcpu0->run->apic_base,
-+			       vcpu_get_msr(vcpu0, MSR_IA32_APICBASE));
-+
-+		/*
-+		 * Registers userspace marks dirty are for the plane that runs
-+		 * next: the held exit neither consumes nor overwrites them.
-+		 */
-+		plane_vcpu_ioctl(vcpu1, KVM_GET_REGS, &vcpu0->run->s.regs.regs);
-+		vcpu0->run->s.regs.regs.rdx = 0x5ca1ab1e;	/* arbitrary marker */
-+		vcpu0->run->kvm_valid_regs = KVM_SYNC_X86_REGS;
-+		vcpu0->run->kvm_dirty_regs = KVM_SYNC_X86_REGS;
-+		TEST_ASSERT_EQ(__vcpu_run(vcpu0), 0);
-+		TEST_ASSERT_EQ(vcpu0->run->exit_reason, KVM_EXIT_PLANE_EVENT);
-+		TEST_ASSERT_EQ(vcpu0->run->kvm_dirty_regs, KVM_SYNC_X86_REGS);
-+		TEST_ASSERT_EQ(vcpu0->run->s.regs.regs.rdx, 0x5ca1ab1e);
-+
-+		/*
-+		 * Released, plane 1 is next and takes them; immediate_exit
-+		 * stops it before entry, after the registers are applied.
-+		 */
-+		flags = 0;
-+		plane_vcpu_ioctl(vcpu1, KVM_SET_PLANE_RUN_STATE, &flags);
-+		vcpu0->run->immediate_exit = 1;
-+		TEST_ASSERT_EQ(__vcpu_run(vcpu0), -1);
-+		TEST_ASSERT_EQ(errno, EINTR);
-+		vcpu0->run->immediate_exit = 0;
-+		TEST_ASSERT_EQ(vcpu0->run->kvm_dirty_regs, 0);
-+		vcpu0->run->kvm_valid_regs = 0;
-+
-+		plane_vcpu_ioctl(vcpu1, KVM_GET_REGS, &regs);
-+		TEST_ASSERT_EQ(regs.rdx, 0x5ca1ab1e);
-+		vcpu_ioctl(vcpu0, KVM_GET_REGS, &regs);
-+		TEST_ASSERT(regs.rdx != 0x5ca1ab1e,
-+			    "plane 0 took the registers dirtied while it was held");
-+
-+		vcpu_ioctl(vcpu0, KVM_SET_PLANE_RUN_STATE, &flags);
-+	}
-+
-+	/*
-+	 * A completion plane 0 still owes its last exit stays pending while
-+	 * plane 0 is held: KVM_RUN fails with EBUSY and leaves the exit in
-+	 * kvm_run, and the completion runs once plane 0 runs again.  The
-+	 * exit is a real-mode OUT at CODE_GPA, which userspace handles.
-+	 */
-+	{
-+		static const u8 out_insn[] = { 0xe6, 0x10 };	/* out %al, $0x10 */
-+		u64 flags = KVM_PLANE_RUN_STATE_USER_HOLD;
-+		struct kvm_sregs sregs;
-+		struct kvm_regs regs;
-+
-+		vm_userspace_mem_region_add(vm, VM_MEM_SRC_ANONYMOUS, CODE_GPA,
-+					    1, 1, 0);
-+		memcpy(addr_gpa2hva(vm, CODE_GPA), out_insn, sizeof(out_insn));
-+
-+		vcpu_sregs_get(vcpu0, &sregs);
-+		sregs.cs.selector = 0;
-+		sregs.cs.base = 0;
-+		vcpu_sregs_set(vcpu0, &sregs);
-+		vcpu_regs_get(vcpu0, &regs);
-+		regs.rip = CODE_GPA;
-+		vcpu_regs_set(vcpu0, &regs);
-+
-+		/* Plane 1 stays held, so only plane 0 can run. */
-+		plane_vcpu_ioctl(vcpu1, KVM_SET_PLANE_RUN_STATE, &flags);
-+		TEST_ASSERT_EQ(__vcpu_run(vcpu0), 0);
-+		TEST_ASSERT_EQ(vcpu0->run->exit_reason, KVM_EXIT_IO);
-+		TEST_ASSERT_EQ(vcpu0->run->io.direction, KVM_EXIT_IO_OUT);
-+		TEST_ASSERT_EQ(vcpu0->run->io.port, 0x10);
-+
-+		vcpu_ioctl(vcpu0, KVM_SET_PLANE_RUN_STATE, &flags);
-+		vcpu0->run->immediate_exit = 1;
-+		TEST_ASSERT_EQ(__vcpu_run(vcpu0), -1);
-+		TEST_ASSERT_EQ(errno, EBUSY);
-+		vcpu0->run->immediate_exit = 0;
-+		TEST_ASSERT_EQ(__vcpu_run(vcpu0), -1);
-+		TEST_ASSERT_EQ(errno, EBUSY);
-+		TEST_ASSERT_EQ(vcpu0->run->exit_reason, KVM_EXIT_IO);
-+		TEST_ASSERT_EQ(vcpu0->run->io.port, 0x10);
-+		vcpu_regs_get(vcpu0, &regs);
-+		TEST_ASSERT_EQ(regs.rip, CODE_GPA);
-+
-+		/* Released, plane 0 retires the OUT before immediate_exit. */
-+		flags = 0;
-+		vcpu_ioctl(vcpu0, KVM_SET_PLANE_RUN_STATE, &flags);
-+		vcpu0->run->immediate_exit = 1;
-+		TEST_ASSERT_EQ(__vcpu_run(vcpu0), -1);
-+		TEST_ASSERT_EQ(errno, EINTR);
-+		vcpu0->run->immediate_exit = 0;
-+		vcpu_regs_get(vcpu0, &regs);
-+		TEST_ASSERT_EQ(regs.rip, CODE_GPA + sizeof(out_insn));
-+
-+		plane_vcpu_ioctl(vcpu1, KVM_SET_PLANE_RUN_STATE, &flags);
-+	}
-+
- 	/* Register state is per plane: write plane 1, plane 0 unaffected. */
- 	plane_vcpu_ioctl(vcpu1, KVM_GET_REGS, &regs1);
- 	regs1.rbx = 0x5157ca11;	/* arbitrary marker */
+ unsigned kvm_arch_max_planes(struct kvm *kvm);
+ struct kvm_plane *kvm_alloc_plane(void);
+ void kvm_free_plane(struct kvm_plane *plane);
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 62d33f24dd7f..75ceab2d4838 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -5438,10 +5438,11 @@ static int kvm_vm_ioctl_check_extension_generic(struct kvm *kvm, long arg)
+ 		if (kvm)
+ 			return kvm_arch_max_planes(kvm);
+ 		/*
+-		 * The system fd reports the ceiling a VM may be given; a VM
+-		 * fd reports what the VM actually has.
++		 * The system fd reports the ceiling a VM may opt in to via
++		 * KVM_ENABLE_CAP(KVM_CAP_PLANES); a VM fd reports what the
++		 * VM actually has.
+ 		 */
+-		return KVM_MAX_PLANES;
++		return KVM_MAX_USER_PLANES;
+ 	default:
+ 		break;
+ 	}
+@@ -5656,8 +5657,8 @@ static int kvm_vm_ioctl_create_plane(struct kvm *kvm, unsigned id)
+ 	guard(mutex)(&kvm->lock);
+ 
+ 	/*
+-	 * Check the limit under kvm->lock, which KVM_CAP_SPLIT_IRQCHIP (and
+-	 * later the KVM_CAP_PLANES opt-in) take when they raise the limit.
++	 * Check the limit under kvm->lock, which KVM_CAP_SPLIT_IRQCHIP and
++	 * the KVM_CAP_PLANES opt-in take when they raise the limit.
+ 	 */
+ 	if (id >= kvm_arch_max_planes(kvm) ||
+ 	    WARN_ON_ONCE(id >= KVM_MAX_PLANES))
 -- 
 2.50.1
 
