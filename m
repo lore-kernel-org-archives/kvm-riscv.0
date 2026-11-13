@@ -2,102 +2,84 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 49DFD606A6F8
-	for <kvm-riscv@archiver.kernel.org>; Fri, 13 Nov 2026 18:19:50 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D6021606A323
+	for <kvm-riscv@archiver.kernel.org>; Fri, 13 Nov 2026 18:26:10 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=QtSJRPua;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=ZWnJxiDE
+	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=u00q5mw3;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=Zx4HqS+o
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
-	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
-	List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:Subject:
-	MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
 	List-Unsubscribe-Post:List-Owner;
-	bh=tzpGpQdTo6LsUqD1HCuHCN9XXGA5+OjIIj6Ev5+gZpw=; b=QtSJRPuarLcLwyKQaP/Ch4j4no
-	n7fSYQQFEeqUetI5WGUXotG3cP7PYFy+fZFSqfGbwiWArZOucaO4sWHt3UqCCIYv9fZdA+EFFql2k
-	c62IGYXHRgK/JAjPt9EGCHPBtj/ujA1ZA9szIyd86YTeAGYDic6wiljsYiN150Rk+D+xKT9EvJqH0
-	kMu00QB9FsiNgMCwAuv316CxkEu2FaMq/wb3VzVvcDdC5FQ5oj9UYo1caLsc0/9M2AJRuWcrIIUjx
-	R1Dco5C45ZVcFMwqV35bfpX6mkyUqOkpgdGYFmdCTChpWAO+6vjMatybdifznKHRGAL926fVXYn3R
-	+ft7eSqg==;
+	bh=hiL9M8Nae22xmeylcuqLPZAAlYqiVNalZ78rDTO3hXQ=; b=u00q5mw38PJAOWwNX2+p9xRc8S
+	pqXRU/ybW/waEB/p0uTj4awQ7ehLQD41kfbPd+ztIXVCNEar7ID41GvhfO8sTcikMQ8phKRD7zCgk
+	MBquVO2Xr/vAQ4LEc/xPlMu5/d/q+4+GMFFOJVVUnB/F16dZEOfEN2Aom8Mxovpzvt/9bvLdkw+Z2
+	vEmkFbLLARNGFKE2J48Mwdait+haEMjR8hF7/+3WukEs0fY0MFZurcXZuNDLSco0U6jVPJP1a7NKP
+	Tlql37M4qX/XAfkYEwJqJeJYQop1OBOjc8FHTA8gSsowX6I7sBRtyLVFcngP78apaMbTWZB1jWbD5
+	jckKMHKA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xRvsL-0000000Duk1-41hE;
-	Fri, 13 Nov 2026 18:19:49 +0000
-Received: from mail-wm1-x335.google.com ([2a00:1450:4864:20::335])
+	id 1xRvyU-0000000Dvfz-2EPr;
+	Fri, 13 Nov 2026 18:26:10 +0000
+Received: from casper.infradead.org ([2001:8b0:10b:1236::1])
 	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xRvsH-0000000Dugo-1Xfh
-	for kvm-riscv@lists.infradead.org;
-	Fri, 13 Nov 2026 18:19:48 +0000
-Received: by mail-wm1-x335.google.com with SMTP id 5b1f17b1804b1-4a35d5d4a20so22329235e9.2
-        for <kvm-riscv@lists.infradead.org>; Fri, 13 Nov 2026 10:19:39 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794593978; x=1795198778; darn=lists.infradead.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=CENXtX1/W/MRp/DcAqbUbrZhUcyfT59CNNpcWDlZbsw=;
-        b=ZWnJxiDEdyPuQx71rCxmhO/ToaPYTQjNzcBSs3GJoJ7eo7+f40flRuwyhh/JDl/LeZ
-         Ii8kucCoWyVm4kmrnn6hSl6oHmiZ3PrZB1kEWvV0wG86fqATAB0XgaaIZCjeXp86/zDG
-         2itN7GUpcvLd6HEZPyfIY0GuECE3AC0fYb8D5Eilo9BNIz0/zkwsM4s1u33b7kPqNjxo
-         lktnVbM7VILGjWhNWaw/tkO1PBI/EKXHZI1o2CnJR+EAcf9bGcc2z8BsF0HG32IUcXob
-         3sMxQVYiKYFzXBuhqi5PQZHRRbsXFZfFSXqOwLLjKBIPl7JXixxYcXbv4As+PfKCUcj4
-         p6BQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794593978; x=1795198778;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=CENXtX1/W/MRp/DcAqbUbrZhUcyfT59CNNpcWDlZbsw=;
-        b=sRLity4HdH4pUoj/xJEcyDAe4SuYyhqtzJ9jPGz9v1fsfcQqo1tqCCMiHnVLR0wHM2
-         lNaH4mgzss+AU4n9Z1P7Cm+yPFEodd/Oj09g8HAqSnGhyxK+wayQaNOLw6rXrbDAY+Le
-         vo8eY5Qz+uphVxo/USfdnEFK9HE88bllfkbTTY9ARBNC8LWqN+2/V8izHEhne3PuRoN/
-         Vs4RPyCjfe2FMhwhR6ZsMzKEfpeLWPSuHT/1oC36knxHSWMzrToJS7cymN4LtSPJX9QA
-         Ek8zo3vUavPLvBmXHpsnQYic54v+rvoVF8OwU3m10GrRpiJ52atF41t3r9OTyXapWN5N
-         j/XA==
-X-Forwarded-Encrypted: i=1; AL+hErGqfs31HwbP5DKY28O+BCzPTVkdVNESDDCluTp6JD56QSrfVfeb/q4OEjVQSzTEHim+NeV0lnNA5L8=@lists.infradead.org
-X-Gm-Message-State: APuU4Z+8frQIGM6MnodDTzmkOCMjm3B0hKngOkEDbSlzCY8fW32Fr9Q5
-	l6elZBAW5CcTTylvffZSgvhGCf2ShCvFR+W9wybbvOHYzpbFv06x7yTf3OG1CQ==
-X-Gm-Gg: AYBFou1/7GlKUwd2Hk8RtdEvxk7jB1WZIXohME1wx7HKJNIZPmmMfDRUuigCxxG7qdg
-	w1ao6Z5zcEhsFmPBfWY6xrNQrJyND0Eb7EMEfLrjDThlDVsVdrBNvm1xRjHpkvGEWsfsRMTMnUf
-	YFbrxODCYE4lv4gCFzYUyDTr7ngSzoZstRQ7XXrCalWU+5kD/QticVBHtCa9IITkzRECzlkTeqM
-	LjHbxhT+uzpA26QS1J6/f7dzAp8F3WKcQR5jtF3MSiiKi2iiPUTuGMmuFYtw4LlpnZ0NCkx2CW5
-	yBFo0DdTqzscdIeEBtt7NFQjKX4DdsaCOwq9QUbTi5S6tniGXNQ+/oHulUCYSAjQPY4PJ+hUmBV
-	VjLuQVZLIDO693t1nINCQZIcp1ZQzwdqsLbpWM/28CrKurp/NX5ogatOjNBbjhq2nKMznrNrWwJ
-	JnPmhjQtwX2euoBR3QONFQnFfNwUoLj6h9XCFsu/WOV/3pMgUYHbL8ILfw8t4Q6oUHOgGwLTdMl
-	TMSeLRK8T88jxan46GQ/Gi+CtztqUQykppSmBmXOh1M3vmKJ5bof9bNLhP6pSbrb+KCT4o2wIaO
-	Fg2nv6tsmYKvkke5CwFMRYvHauCcRn/Yi06e00uRwdx3EsAUZlMDwav9Rj7AxVRLOCbcQTJjfQb
-	wFQ==
-X-Received: by 2002:a05:600c:34d0:b0:4a2:133:45e1 with SMTP id 5b1f17b1804b1-4bb55a59f41mr72807635e9.24.1794593978271;
-        Fri, 13 Nov 2026 10:19:38 -0800 (PST)
-Received: from [192.168.1.6] (user-109-243-65-71.play-internet.pl. [109.243.65.71])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4bb5667a8aesm54253275e9.1.2026.11.13.10.19.36
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 13 Nov 2026 10:19:37 -0800 (PST)
-Message-ID: <7e634bef-6d23-4a57-b3e6-b5585045ca19@gmail.com>
-Date: Fri, 13 Nov 2026 19:19:36 +0100
+	id 1xRvyT-0000000Dvep-2dPZ
+	for kvm-riscv@bombadil.infradead.org;
+	Fri, 13 Nov 2026 18:26:09 +0000
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=casper.20170209; h=Sender:Content-Transfer-Encoding:
+	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
+	Reply-To:Content-Type:Content-ID:Content-Description;
+	bh=msKkdHtgD2b3oR0fa9FcUaIRWkyCYgWeMc0j/s9P6i0=; b=Zx4HqS+ofJPysjuxqvHILtgMFz
+	fztLdc4K36XPZ6PZLoefYSbw5DvHM+1xg5D4gEN2t8LvGnjxeeCHChs5cqiQU8+1x/zFQnXQm646l
+	vCozneNrBYMFTQebLmimVaDmt9AlOhKnN8aFK8Ck5mwgxEamqEAohOcXnHxWiAo4ctWEEbIWq232P
+	PtDivBQLBUReqXJ/pN+aqrdQ2PA79OVflNncjbceKvt52DZsZpvaOD+W/NZ8oVFHu11SdZ8Du2CMf
+	BEorl+Ej/aumtFZWUFZU87deTHDoGnNf8xcR6AYFSQsO4S2/ugiQhV9+n/AGOGTMttC3B7jF72eYy
+	/Ez7yqiA==;
+Received: from [2001:8b0:10b:1::425] (helo=i7.infradead.org)
+	by casper.infradead.org with esmtpsa (Exim 4.100.1 #2 (Red Hat Linux))
+	id 1xRvyS-00000004cT7-0Gm0;
+	Fri, 13 Nov 2026 18:26:08 +0000
+Received: from dwoodhou by i7.infradead.org with local (Exim 4.99.5 #2 (Red Hat Linux))
+	id 1xRvyR-00000000LYZ-3bgH;
+	Fri, 13 Nov 2026 18:26:07 +0000
+From: David Woodhouse <dwmw2@infradead.org>
+To: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
+Cc: Paolo Bonzini <pbonzini@redhat.com>,
+	Sean Christopherson <seanjc@google.com>,
+	Tom Lendacky <thomas.lendacky@amd.com>,
+	ashish.kalra@amd.com,
+	michael.roth@amd.com,
+	nsaenz@amazon.com,
+	anelkz@amazon.de,
+	James.Bottomley@HansenPartnership.com,
+	Melody Wang <huibo.wang@amd.com>,
+	kvm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	kvmarm@lists.linux.dev,
+	loongarch@lists.linux.dev,
+	linux-mips@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	kvm-riscv@lists.infradead.org,
+	x86@kernel.org,
+	coconut-svsm@lists.linux.dev,
+	joerg.roedel@amd.com,
+	Mushahid Hussain <hmushi@amazon.co.uk>,
+	Sriram Nambakam <snambakam@linux.microsoft.com>,
+	David Woodhouse <dwmw@amazon.co.uk>
+Subject: [RFC PATCH 12/13] KVM: selftests: Check CPUID handling of plane twins
+Date: Fri, 13 Nov 2026 11:26:06 -0700
+Message-ID: <20261113182607.82813-13-dwmw2@infradead.org>
+X-Mailer: git-send-email 2.55.0
+In-Reply-To: <20261113182607.82813-1-dwmw2@infradead.org>
+References: <20260608144252.351443-1-joro@8bytes.org>
+ <20261113182607.82813-1-dwmw2@infradead.org>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] RISC-V: KVM: Order IMSIC VS-file write before releasing
- vsfile_lock
-To: Anup Patel <anup.patel@oss.qualcomm.com>
-Cc: Anup Patel <anup@brainfault.org>, Atish Patra <atish.patra@linux.dev>,
- Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
- Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
- kvm@vger.kernel.org, kvm-riscv@lists.infradead.org,
- linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org
-References: <20261023142550.148604-1-oleksii.kurochko@gmail.com>
- <CABBgwmuBBbyBytwRBTeAqF=0c1m+TFK8E3yPopGNQAsrMFO2vg@mail.gmail.com>
-Content-Language: en-US
-From: Oleksii Kurochko <oleksii.kurochko@gmail.com>
-In-Reply-To: <CABBgwmuBBbyBytwRBTeAqF=0c1m+TFK8E3yPopGNQAsrMFO2vg@mail.gmail.com>
-X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261113_101945_462177_761A5E1C 
-X-CRM114-Status: GOOD (  35.55  )
-X-Spam-Score: -2.1 (--)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -107,149 +89,201 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
-X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,
-	DKIM_ADSP_CUSTOM_MED,DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,
-	FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-17.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-CgpPbiAxMS8xMy8yNiA5OjAwIEFNLCBBbnVwIFBhdGVsIHdyb3RlOgo+IE9uIEZyaSwgT2N0IDIz
-LCAyMDI2IGF0IDc6NTbigK9QTSBPbGVrc2lpIEt1cm9jaGtvCj4gPG9sZWtzaWkua3Vyb2Noa29A
-Z21haWwuY29tPiB3cm90ZToKPj4KPj4ga3ZtX3Jpc2N2X3ZjcHVfYWlhX2ltc2ljX2luamVjdCgp
-IHdyaXRlcyB0aGUgaW50ZXJydXB0IGlkZW50aXR5IHRvIHRoZQo+PiBTRVRJUE5VTSByZWdpc3Rl
-ciBvZiB0aGUgdkNQVSdzIElNU0lDIFZTLWZpbGUgd2hpbGUgaG9sZGluZyB2c2ZpbGVfbG9jawo+
-PiBmb3IgcmVhZGluZy4gVGhlIGxvY2sga2VlcHMgdGhlIFZTLWZpbGUgZnJvbSBiZWluZyBzd2l0
-Y2hlZCB1bmRlciB0aGUKPj4gaW5qZWN0b3I6IGt2bV9yaXNjdl92Y3B1X2FpYV9pbXNpY191cGRh
-dGUoKSBhbmQKPj4ga3ZtX3Jpc2N2X3ZjcHVfYWlhX2ltc2ljX3JlbGVhc2UoKSB0YWtlIGl0IGZv
-ciB3cml0aW5nIHRvIG1vdmUgdGhlIHZDUFUKPj4gdG8gYSBuZXcgVlMtZmlsZSBvciB0byB0aGUg
-U1ctZmlsZSwgdGhlbiByZWFkIGFuZCBjbGVhciB0aGUgb2xkIFZTLWZpbGUKPj4gYW5kIGZyZWUg
-aXRzIEhHRUkgbGluZS4KPj4KPj4gT24gUklTQy1WLCB3cml0ZWwoKSBpcyBmb2xsb3dlZCBvbmx5
-IGJ5IG1taW93Yl9zZXRfcGVuZGluZygpLiBUaGUKPj4gdHJhaWxpbmcgImZlbmNlIG8sdyIgaXMg
-ZGVmZXJyZWQgdG8gc3Bpbl91bmxvY2soKSBieSB0aGUgbW1pb3diKCkKPj4gdHJhY2tpbmcsIGFu
-ZCByd2xvY2tzIGRvbid0IHRha2UgcGFydCBpbiB0aGF0IHRyYWNraW5nOgo+PiBxdWV1ZWRfcmVh
-ZF91bmxvY2soKSBpc3N1ZXMganVzdCAiZmVuY2UgcncsdyIgYmVmb3JlIHRoZSBBTU8sIHdoaWNo
-Cj4+IGRvZXNuJ3Qgb3JkZXIgZGV2aWNlIG91dHB1dC4gU28gdGhlIFNFVElQTlVNIHdyaXRlIGNh
-biBzdGlsbCBiZSBpbgo+PiBmbGlnaHQgYWZ0ZXIgYW5vdGhlciBoYXJ0IGhhcyBvYnNlcnZlZCB2
-c2ZpbGVfbG9jayBiZWluZyByZWxlYXNlZC4gSWYKPj4gdGhlIG9sZCBWUy1maWxlIGlzIHJlYWQg
-YW5kIGNsZWFyZWQgYmVmb3JlIHRoZSB3cml0ZSBsYW5kcywgdGhlCj4+IGludGVycnVwdCBpcyBs
-b3N0LiBJZiB0aGUgSEdFSSBsaW5lIGhhcyBhbHJlYWR5IGJlZW4gaGFuZGVkIG91dAo+PiBhZ2Fp
-biwgdGhlIGludGVycnVwdCBlbmRzIHVwIGluIGFub3RoZXIgdkNQVSdzIFZTLWZpbGUuCj4+Cj4+
-IEFkZCBhbiBleHBsaWNpdCBSSVNDVl9GRU5DRShvLCB3KSBhZnRlciB0aGUgd3JpdGUgdG8gdGhl
-IFZTLWZpbGUsIHdoaWNoCj4+IGlzIHdoYXQgc3Bpbl91bmxvY2soKSB3b3VsZCBpc3N1ZSB2aWEg
-bW1pb3diKCkuCj4+Cj4+IEZpeGVzOiBkYjhiN2U5N2Q2MTMgKCJSSVNDLVY6IEtWTTogQWRkIGlu
-LWtlcm5lbCB2aXJ0dWFsaXphdGlvbiBvZiBBSUEgSU1TSUMiKQo+PiBTaWduZWQtb2ZmLWJ5OiBP
-bGVrc2lpIEt1cm9jaGtvIDxvbGVrc2lpLmt1cm9jaGtvQGdtYWlsLmNvbT4KPj4gLS0tCj4+IFdo
-eSBSSVNDVl9GRU5DRShvLCB3KSBhbmQgbm90IG1taW93YigpOgo+Pgo+PiAtIFNpbmNlIHRoZSBt
-bWlvd2IoKSByZXdvcmsgaW4gdjUuMiAoZS5nLiBjb21taXQgNjBjYTFlNWEyMDBjCj4+ICAgICgi
-bW1pb3diOiBIb29rIHVwIG1taW93YiBoZWxwZXJzIHRvIHNwaW5sb2NrcyBhbmQgZ2VuZXJpYyBJ
-L08KPj4gICAgYWNjZXNzb3JzIikpLCBtbWlvd2IoKSBpcyBhbiBpbXBsZW1lbnRhdGlvbiBkZXRh
-aWwgb2YgdGhlIHNwaW5sb2NrCj4+ICAgIGNvZGUuIEV4cGxpY2l0IGludm9jYXRpb25zIHdlcmUg
-cmVtb3ZlZCBmcm9tIGRyaXZlcnMgYnkgY29tbWl0Cj4+ICAgIGZiMjRlYTUyZjc4ZSAoImRyaXZl
-cnM6IFJlbW92ZSBleHBsaWNpdCBpbnZvY2F0aW9ucyBvZiBtbWlvd2IoKSIpIGFuZAo+PiAgICBm
-cm9tIHRoZSBkb2N1bWVudGF0aW9uIGJ5IGNvbW1pdCA5MTU1MzAzOTZjNzggKCJEb2N1bWVudGF0
-aW9uOiBLaWxsCj4+ICAgIGFsbCByZWZlcmVuY2VzIHRvIG1taW93YigpIiksIHNvIGFkZGluZyBh
-IG5ldyBkaXJlY3QgY2FsbGVyIHdvdWxkIGdvCj4+ICAgIGFnYWluc3QgdGhhdC4KPj4KPj4gLSBS
-SVNDVl9GRU5DRShvLCB3KSBzdGF0ZXMgZXhhY3RseSB0aGUgb3JkZXJpbmcgbmVlZGVkIGhlcmUg
-KGRldmljZQo+PiAgICBvdXRwdXQgYmVmb3JlIHRoZSBzdG9yZSB0aGF0IHJlbGVhc2VzIHRoZSBs
-b2NrKSwgd2hpY2ggaXMgZmluZSBmb3IKPj4gICAgYXJjaC1zcGVjaWZpYyBjb2RlLCBhbmQgaXQg
-aXMgdGhlIHNhbWUgaW5zdHJ1Y3Rpb24gbW1pb3diKCkgZXhwYW5kcyB0bwo+PiAgICBvbiBSSVND
-LVYuIHdtYigpICgiZmVuY2Ugb3csb3ciKSB3b3VsZCBhbHNvIHdvcmsgYnV0IGlzIHN0cm9uZ2Vy
-IHRoYW4KPj4gICAgcmVxdWlyZWQuCj4+Cj4+IFNjb3BlOiB0aGlzIG9ubHkgb3JkZXJzIHRoZSB3
-cml0ZSBiZWZvcmUgdGhlIGxvY2sgcmVsZWFzZS4gV2hldGhlciBhCj4+IHdyaXRlIHRoYXQgaXMg
-YWxyZWFkeSBpbiBnbG9iYWwgbWVtb3J5IG9yZGVyIGlzIGd1YXJhbnRlZWQgdG8gaGF2ZQo+PiB0
-YWtlbiBlZmZlY3QgaW4gdGhlIG9sZCBWUy1maWxlIGJlZm9yZSBrdm1fcmlzY3ZfdmNwdV9haWFf
-aW1zaWNfdXBkYXRlKCkKPj4gb3Iga3ZtX3Jpc2N2X3ZjcHVfYWlhX2ltc2ljX3JlbGVhc2UoKSBy
-ZWFkcyBhbmQgY2xlYXJzIGl0IGlzIGEgc2VwYXJhdGUKPj4gcXVlc3Rpb24sIHNlZSBodHRwczov
-L2dpdGh1Yi5jb20vcmlzY3YvcmlzY3YtYWlhL2lzc3Vlcy8xNzIuIElmIGl0Cj4+IGlzbid0LCB0
-aGVzZSBwYXRocyB3aWxsIGFsc28gbmVlZCB0byBkcmFpbiB0aGUgb2xkIFZTLWZpbGUsIGFuZCBz
-dWNoIGEKPj4gZHJhaW4gZGVwZW5kcyBvbiB0aGUgb3JkZXJpbmcgYWRkZWQgaGVyZS4KPj4gLS0t
-Cj4+ICAgYXJjaC9yaXNjdi9rdm0vYWlhX2ltc2ljLmMgfCA3ICsrKysrKysKPj4gICAxIGZpbGUg
-Y2hhbmdlZCwgNyBpbnNlcnRpb25zKCspCj4+Cj4+IGRpZmYgLS1naXQgYS9hcmNoL3Jpc2N2L2t2
-bS9haWFfaW1zaWMuYyBiL2FyY2gvcmlzY3Yva3ZtL2FpYV9pbXNpYy5jCj4+IGluZGV4IGYxN2Rj
-NTU5YTcwOS4uODA3YmI3M2ExMjlhIDEwMDY0NAo+PiAtLS0gYS9hcmNoL3Jpc2N2L2t2bS9haWFf
-aW1zaWMuYwo+PiArKysgYi9hcmNoL3Jpc2N2L2t2bS9haWFfaW1zaWMuYwo+PiBAQCAtMTA1Niw2
-ICsxMDU2LDEzIEBAIGludCBrdm1fcmlzY3ZfdmNwdV9haWFfaW1zaWNfaW5qZWN0KHN0cnVjdCBr
-dm1fdmNwdSAqdmNwdSwKPj4KPj4gICAgICAgICAgaWYgKGltc2ljLT52c2ZpbGVfY3B1ID49IDAp
-IHsKPj4gICAgICAgICAgICAgICAgICB3cml0ZWwoaWlkLCBpbXNpYy0+dnNmaWxlX3ZhICsgSU1T
-SUNfTU1JT19TRVRJUE5VTV9MRSk7Cj4+ICsgICAgICAgICAgICAgICAvKgo+PiArICAgICAgICAg
-ICAgICAgICogcndsb2NrcyBkb24ndCBwYXJ0aWNpcGF0ZSBpbiBtbWlvd2IoKSB0cmFja2luZywg
-c28gb3JkZXIKPj4gKyAgICAgICAgICAgICAgICAqIHRoZSB3cml0ZSB0byB0aGUgVlMtZmlsZSBi
-ZWZvcmUgcmVsZWFzaW5nIHZzZmlsZV9sb2NrLAo+PiArICAgICAgICAgICAgICAgICogaS5lLiBi
-ZWZvcmUgdGhlIHZDUFUgY2FuIGJlIG1vdmVkIG9mZiB0aGlzIFZTLWZpbGUgYW5kCj4+ICsgICAg
-ICAgICAgICAgICAgKiB0aGUgVlMtZmlsZSByZWFkIGFuZCBjbGVhcmVkLgo+PiArICAgICAgICAg
-ICAgICAgICovCj4+ICsgICAgICAgICAgICAgICBSSVNDVl9GRU5DRShvLCB3KTsKPiAKPiBBbm90
-aGVyIGZlbmNlIGFmdGVyIGV2ZXJ5IHdyaXRlbCgpIGlzIGEgYmlnIGhhbW1lciBpbiB0aGUgcGF0
-aC4KPiAKPiBJZiB0aGUgaW50ZW50aW9uIGlzIHRvIGhhdmUgY29ycmVjdCBjb250ZW50cyB3aGVu
-IFZTLWZpbGUgaXMgcmVhZCB0aGVuCj4gYmV0dGVyIHBsYWNlIHRvIGFkZCBhIGZlbmNlIGlzIGF0
-IHRoZSBzdGFydCBvZiBpbXNpY192c2ZpbGVfbG9jYWxfcmVhZCgpLgpUaGFua3MgZm9yIHRoZSBy
-ZXZpZXcuCgpJIGRvbid0IHRoaW5rIGEgZmVuY2UgaW4gaW1zaWNfdnNmaWxlX2xvY2FsX3JlYWQo
-KSBoZWxwcyBoZXJlLiBUaGUKcHJvYmxlbSBpcyBvbiB0aGUgd3JpdGVyJ3Mgc2lkZSwgYW5kIGlt
-c2ljX3ZzZmlsZV9sb2NhbF9yZWFkKCkgcnVucyBvbgphIGRpZmZlcmVudCBoYXJ0LgoKVGhlIFNF
-VElQTlVNIHdyaXRlIGlzIGRvbmUgYnkgd2hpY2hldmVyIGhhcnQgY2FsbHMKa3ZtX3Jpc2N2X3Zj
-cHVfYWlhX2ltc2ljX2luamVjdCgpLCB3aGljaCBjYW4gYmUgYW55IENQVSAoaXJxZmQsCmlvY3Rs
-LCAuLi4pLiBpbXNpY192c2ZpbGVfbG9jYWxfcmVhZCgpIHJ1bnMgb24gdGhlIG9sZCB2c2ZpbGVf
-Y3B1LCB2aWEKdGhlIElQSSBmcm9tIGltc2ljX3ZzZmlsZV9yZWFkKCkuIEEgZmVuY2Ugb25seSBv
-cmRlcnMgdGhlIGFjY2Vzc2VzIG9mCnRoZSBoYXJ0IHRoYXQgZXhlY3V0ZXMgaXQsIHNvIGEgZmVu
-Y2Ugb24gdGhlIHJlYWRpbmcgaGFydCBjYW4ndCBtYWtlCmFub3RoZXIgaGFydCdzIE1NSU8gc3Rv
-cmUgbGFuZC4KCldpdGhvdXQgdGhlIGZlbmNlLCB0aGlzIGNhbiBoYXBwZW46CgogICBoYXJ0IEEg
-KGluamVjdCkgICAgICAgICAgICBoYXJ0IEIgKHVwZGF0ZS9yZWxlYXNlKSAgICBoYXJ0IEMgKG9s
-ZCAKdnNmaWxlX2NwdSkKICAgcmVhZF9sb2NrKCkKICAgd3JpdGVsKFNFVElQTlVNKQogICAgIChz
-dG9yZSBzdGlsbCBpbiBmbGlnaHQpCiAgIHJlYWRfdW5sb2NrKCkKICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgd3JpdGVfbG9jaygpCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHN3
-aXRjaCBWUy1maWxlCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHdyaXRlX3VubG9jaygp
-CiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIElQSSAtLS0tLS0tLS0tLS0tLS0tLS0tPgog
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGZl
-bmNlICA8LXByb3Bvc2VkCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgcmVhZCtjbGVhciBWU2ZpbGUKICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgZnJlZSBIR0VJCiAgIFNFVElQTlVNIGxhbmRzOiB0aGUgaW50ZXJydXB0CiAgIGlzIGxv
-c3QsIG9yIGVuZHMgdXAgaW4gYW5vdGhlcgogICB2Q1BVJ3MgVlMtZmlsZSBpZiB0aGUgSEdFSSB3
-YXMKICAgYWxyZWFkeSByZXVzZWQKCkhhcnQgQSdzIHVubG9jayBjYW4gYmVjb21lIHZpc2libGUg
-YmVmb3JlIGl0cyBTRVRJUE5VTSB3cml0ZSBoYXMKcmVhY2hlZCB0aGUgSU1TSUMsIGJlY2F1c2Ug
-cmVhZF91bmxvY2soKSBkb2Vzbid0IG9yZGVyIGRldmljZSBvdXRwdXQuCk5vdGhpbmcgdGhhdCBo
-YXJ0IEIgb3IgaGFydCBDIGRvZXMgYWZ0ZXJ3YXJkcyBjYW4gd2FpdCBmb3IgdGhhdCB3cml0ZS4K
-T25seSBoYXJ0IEEgY2FuIGhvbGQgYmFjayBpdHMgdW5sb2NrIHVudGlsIHRoZSB3cml0ZSBpcyBv
-cmRlcmVkLCBhbmQKdGhhdCBpcyB3aGF0IHRoZSBmZW5jZSBvLHcgYWZ0ZXIgd3JpdGVsKCkgZG9l
-cy4KCldpdGggdGhlIGZlbmNlOgoKICAgaGFydCBBIChpbmplY3QpICAgICAgICAgICAgaGFydCBC
-ICh1cGRhdGUvcmVsZWFzZSkgICAgaGFydCBDIChvbGQgCnZzZmlsZV9jcHUpCiAgIHJlYWRfbG9j
-aygpCiAgIHdyaXRlbChTRVRJUE5VTSkKICAgZmVuY2Ugbyx3CiAgIHJlYWRfdW5sb2NrKCkKICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgd3JpdGVfbG9jaygpCiAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgIHN3aXRjaCBWUy1maWxlCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-IHdyaXRlX3VubG9jaygpCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIElQSSAtLS0tLS0t
-LS0tLS0tLS0tLS0tPgogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgcmVhZCtjbGVhciBWUy1maWxlCiAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgIGZyZWUgSEdFSQoKVGhlIFNFVElQTlVNIHdyaXRlIGlzIG5vdyBvcmRlcmVkIGJlZm9yZSB0
-aGUgdW5sb2NrLCBzbyBpdCBpcyBhbHNvCm9yZGVyZWQgYmVmb3JlIGV2ZXJ5dGhpbmcgaGFydCBC
-IGRvZXMgYWZ0ZXIgdGFraW5nIHRoZSBsb2NrLCBhbmQsCnRocm91Z2ggdGhlIElQSSwgYmVmb3Jl
-IGhhcnQgQyByZWFkcyB0aGUgb2xkIFZTLWZpbGUuIEl0IGNhbiBubyBsb25nZXIKYXJyaXZlIGFm
-dGVyIHRoZSByZWFkIG9yIGFmdGVyIHRoZSBIR0VJIGlzIGZyZWVkLgoKQWJvdXQgdGhlIGNvc3Q6
-IHRoaXMgaXMgdGhlIHNhbWUgZmVuY2UgdGhhdCBldmVyeSB3cml0ZWwoKSB1bmRlciBhCnNwaW5s
-b2NrIGFscmVhZHkgZ2V0cy4gT24gUklTQy1WLCB3cml0ZWwoKSBvbmx5IHNldHMgbW1pb3diIHBl
-bmRpbmcgYW5kCnNwaW5fdW5sb2NrKCkgdGhlbiBpc3N1ZXMgImZlbmNlIG8sdyIuIFdlIG5lZWQg
-aXQgZXhwbGljaXRseSBoZXJlIG9ubHkKYmVjYXVzZSB2c2ZpbGVfbG9jayBpcyBhbiByd2xvY2su
-IEl0IHJ1bnMgb25jZSBwZXIgaW5qZWN0ZWQgTVNJLCBhbmQKb25seSB3aGVuIHRoZSB2Q1BVIGhh
-cyBhIFZTLWZpbGUuCgpUaGUgb25seSB3YXkgSSBzZWUgdG8ga2VlcCBpdCBvdXQgb2YgdGhlIGlu
-amVjdCBwYXRoIGlzIGZvcgp1cGRhdGUvcmVsZWFzZSB0byBJUEkgZXZlcnkgQ1BVIHRoYXQgbWln
-aHQgYmUgaW5qZWN0aW5nIGFuZCBydW4KImZlbmNlIG8sdyIgdGhlcmUgYmVmb3JlIHRoZSBvbGQg
-VlMtZmlsZSBpcyByZWFkLiBUaGF0IGlzIG11Y2ggaGVhdmllcgphbmQgbW92ZXMgdGhlIGNvc3Qg
-dG8gdkNQVSBtaWdyYXRpb24sIHNvIEknZCByYXRoZXIga2VlcCB0aGUgZmVuY2UgaW4KaW5qZWN0
-LiBMZXQgbWUga25vdyBpZiB5b3UnZCBzdGlsbCBwcmVmZXIgdGhlIG90aGVyIHdheS4KCk9uZSBt
-b3JlIHRoaW5nLCBub3QgZGlyZWN0bHkgY29ubmVjdGVkIHRvIHRoaXMgcGF0Y2g6IGNvdWxkIHlv
-dSBwbGVhc2UKYWxzbyB0YWtlIGEgbG9vayBhdCBodHRwczovL2dpdGh1Yi5jb20vcmlzY3Yvcmlz
-Y3YtYWlhL2lzc3Vlcy8xNzI/ClRoZSBmZW5jZSBtYWtlcyBzdXJlIHRoYXQgdGhlIFNFVElQTlVN
-IHdyaXRlIGlzIG9yZGVyZWQgYmVmb3JlIGhhcnQgQwpyZWFkcyB0aGUgb2xkIFZTLWZpbGUsIGJ1
-dCBoYXJ0IEMgcmVhZHMgaXQgdGhyb3VnaCBDU1JzCih2c2lzZWxlY3QvdnNpcmVnKSwgbm90IHRo
-cm91Z2ggbWVtb3J5LiBBcyBmYXIgYXMgSSBjYW4gdGVsbCwgdGhlIHNwZWMKZG9lc24ndCBzYXkg
-d2hldGhlciBhIHdyaXRlIHRoYXQgaXMgYWxyZWFkeSBpbiBnbG9iYWwgbWVtb3J5IG9yZGVyIGlz
-Cmd1YXJhbnRlZWQgdG8gYmUgdmlzaWJsZSBpbiBlaXAgYXQgdGhhdCBwb2ludC4gSWYgaXQgaXNu
-J3QsCnVwZGF0ZS9yZWxlYXNlIHdpbGwgYWxzbyBuZWVkIHRvIGRyYWluIHRoZSBvbGQgVlMtZmls
-ZSBiZWZvcmUgcmVhZGluZwppdC4gU3VjaCBhIGRyYWluIHdvdWxkIGJ1aWxkIG9uIHRoaXMgZmVu
-Y2UgcmF0aGVyIHRoYW4gcmVwbGFjZSBpdCwgc2luY2UKaXQgb25seSB3b3JrcyBpZiB0aGUgd3Jp
-dGUgaXMgb3JkZXJlZCBiZWZvcmUgdGhlIHVubG9jay4KCn4gT2xla3NpaQoKLS0gCmt2bS1yaXNj
-diBtYWlsaW5nIGxpc3QKa3ZtLXJpc2N2QGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3Rz
-LmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9rdm0tcmlzY3YK
+From: David Woodhouse <dwmw@amazon.co.uk>
+
+Two checks of how plane twins follow the CPUID they share.
+
+A plane vCPU created after KVM_SET_CPUID gets its Hyper-V context in
+kvm_arch_vcpu_create(), before its vCPU index is assigned, and used to
+latch a VP index of 0xFFFFFFFF. Create two vCPUs, give them a Hyper-V
+CPUID, then create their plane-1 twins and check that
+HV_X64_MSR_VP_INDEX on each twin reads its vCPU index.
+
+Once a twin has run, KVM_SET_CPUID2 must accept only the CPUID already
+set, even on a plane 0 that has never run. Run plane 1 with plane 0
+held (a real-mode OUT, then retired), and check that identical CPUID is
+accepted and that CPUID with XTILE added to leaf 0xD fails with EINVAL.
+Before kvm_set_cpuid() checked every twin, that call went on to the
+fpstate code, which failed it with EPERM, or resized the twin that ran
+if the process had AMX permission.
+
+Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
+---
+ tools/testing/selftests/kvm/x86/planes_test.c | 125 +++++++++++++++++-
+ 1 file changed, 122 insertions(+), 3 deletions(-)
+
+diff --git a/tools/testing/selftests/kvm/x86/planes_test.c b/tools/testing/selftests/kvm/x86/planes_test.c
+index 968f1b099b8e..dd3c251f0b7a 100644
+--- a/tools/testing/selftests/kvm/x86/planes_test.c
++++ b/tools/testing/selftests/kvm/x86/planes_test.c
+@@ -1,16 +1,19 @@
+ // SPDX-License-Identifier: GPL-2.0-only
+ /*
+  * Test the KVM_CAP_PLANES opt-in and the plane lifecycle uAPI: plane
+- * creation bounds, plane vCPU creation, and the independence of
+- * per-plane vCPU register state.
++ * creation bounds, plane vCPU creation, the independence of
++ * per-plane vCPU register state, the Hyper-V VP index of a plane
++ * vCPU created after KVM_SET_CPUID, and KVM_SET_CPUID2 once a twin
++ * has run.
+  */
+ #include <errno.h>
+ #include <string.h>
+ 
+ #include "kvm_util.h"
+ #include "processor.h"
++#include "hyperv.h"
+ 
+-/* Where the run-state test puts plane 0's one instruction. */
++/* Where the tests that enter a plane put its one instruction. */
+ #define CODE_GPA	0x1000
+ 
+ /*
+@@ -317,6 +320,120 @@ static void test_plane_lifecycle(void)
+ 	kvm_vm_free(vm);
+ }
+ 
++/*
++ * A plane vCPU created after KVM_SET_CPUID gets its Hyper-V context at
++ * creation, and its default VP index must be its vCPU index like any
++ * other vCPU's, not the -1 the vCPU carries until it is published.
++ */
++static void test_late_twin_vp_index(void)
++{
++	struct kvm_plane_vcpu *twin;
++	struct kvm_vcpu *vcpu[2];
++	struct kvm_plane *plane;
++	struct kvm_vm *vm;
++	int i;
++
++	if (!kvm_has_cap(KVM_CAP_SYS_HYPERV_CPUID)) {
++		print_skip("KVM_CAP_SYS_HYPERV_CPUID not supported");
++		return;
++	}
++
++	vm = vm_create_barebones_irqchip(true);
++	vm_enable_cap(vm, KVM_CAP_PLANES, 2);
++	plane = vm_plane_add(vm, 1);
++
++	for (i = 0; i < 2; i++) {
++		vcpu[i] = __vm_vcpu_add(vm, i);
++		vcpu_set_hv_cpuid(vcpu[i]);
++	}
++
++	for (i = 0; i < 2; i++) {
++		twin = __vm_plane_vcpu_add(vcpu[i], plane);
++		TEST_ASSERT_EQ(plane_vcpu_get_msr(twin, HV_X64_MSR_VP_INDEX), i);
++	}
++
++	kvm_vm_free(vm);
++}
++
++/*
++ * CPUID is shared between plane twins, so once any twin has run,
++ * KVM_SET_CPUID2 on plane 0 only accepts the CPUID already set, even
++ * while plane 0 itself has never run.  Without that, an enlarged
++ * dynamic xfeature would resize the fpstate of the twin that ran.
++ * Plane 1 runs here with plane 0 held: a real-mode OUT at CODE_GPA,
++ * which is then retired.
++ */
++static void test_cpuid_after_twin_ran(void)
++{
++	static const u8 out_insn[] = { 0xe6, 0x10 };	/* out %al, $0x10 */
++	u64 hold = KVM_PLANE_RUN_STATE_USER_HOLD, none = 0;
++	struct kvm_cpuid_entry2 *leaf_d = NULL;
++	struct kvm_plane_vcpu *vcpu1;
++	struct kvm_cpuid2 *enlarged;
++	struct kvm_plane *plane;
++	struct kvm_sregs sregs;
++	struct kvm_vcpu *vcpu0;
++	struct kvm_regs regs;
++	struct kvm_vm *vm;
++	u32 i;
++
++	vm = vm_create_barebones_irqchip(true);
++	vm_enable_cap(vm, KVM_CAP_PLANES, 2);
++	plane = vm_plane_add(vm, 1);
++	vcpu0 = __vm_vcpu_add(vm, 0);
++	vcpu1 = __vm_plane_vcpu_add(vcpu0, plane);
++	vcpu_init_cpuid(vcpu0, kvm_get_supported_cpuid());
++
++	vm_userspace_mem_region_add(vm, VM_MEM_SRC_ANONYMOUS, CODE_GPA, 1, 1, 0);
++	memcpy(addr_gpa2hva(vm, CODE_GPA), out_insn, sizeof(out_insn));
++
++	plane_vcpu_ioctl(vcpu1, KVM_GET_SREGS, &sregs);
++	sregs.cs.selector = 0;
++	sregs.cs.base = 0;
++	plane_vcpu_ioctl(vcpu1, KVM_SET_SREGS, &sregs);
++	plane_vcpu_ioctl(vcpu1, KVM_GET_REGS, &regs);
++	regs.rip = CODE_GPA;
++	plane_vcpu_ioctl(vcpu1, KVM_SET_REGS, &regs);
++
++	vcpu_ioctl(vcpu0, KVM_SET_PLANE_RUN_STATE, &hold);
++	plane_vcpu_ioctl(vcpu1, KVM_SET_PLANE_RUN_STATE, &none);
++	TEST_ASSERT_EQ(__vcpu_run(vcpu0), 0);
++	TEST_ASSERT_EQ(vcpu0->run->exit_reason, KVM_EXIT_IO);
++	TEST_ASSERT_EQ(vcpu0->run->io.port, 0x10);
++
++	/* Retire the OUT without entering again. */
++	vcpu0->run->immediate_exit = 1;
++	TEST_ASSERT_EQ(__vcpu_run(vcpu0), -1);
++	TEST_ASSERT_EQ(errno, EINTR);
++	vcpu0->run->immediate_exit = 0;
++
++	/* Identical CPUID is still accepted. */
++	TEST_ASSERT_EQ(__vcpu_ioctl(vcpu0, KVM_SET_CPUID2, vcpu0->cpuid), 0);
++
++	/*
++	 * An enlarged dynamic xfeature is refused by the has-run check
++	 * (EINVAL), before the fpstate code could fail it for lack of
++	 * permission (EPERM).
++	 */
++	enlarged = allocate_kvm_cpuid2(vcpu0->cpuid->nent);
++	memcpy(enlarged, vcpu0->cpuid, kvm_cpuid2_size(vcpu0->cpuid->nent));
++	for (i = 0; i < enlarged->nent; i++) {
++		if (enlarged->entries[i].function == 0xd &&
++		    enlarged->entries[i].index == 0)
++			leaf_d = &enlarged->entries[i];
++	}
++	if (leaf_d) {
++		leaf_d->eax |= XFEATURE_MASK_XTILE;
++		TEST_ASSERT_EQ(__vcpu_ioctl(vcpu0, KVM_SET_CPUID2, enlarged), -1);
++		TEST_ASSERT_EQ(errno, EINVAL);
++	} else {
++		print_skip("no CPUID leaf 0xD, enlarged-xfeature check");
++	}
++	free(enlarged);
++
++	kvm_vm_free(vm);
++}
++
+ int main(int argc, char *argv[])
+ {
+ 	TEST_REQUIRE(kvm_has_cap(KVM_CAP_PLANES));
+@@ -326,6 +443,8 @@ int main(int argc, char *argv[])
+ 	test_enable_cap_bounds();
+ 	test_enable_cap_too_late();
+ 	test_plane_lifecycle();
++	test_late_twin_vp_index();
++	test_cpuid_after_twin_ran();
+ 
+ 	return 0;
+ }
+-- 
+2.50.1
+
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
