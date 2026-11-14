@@ -2,103 +2,105 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E1623606A323
-	for <kvm-riscv@archiver.kernel.org>; Sat, 14 Nov 2026 13:51:11 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A4B26606A33F
+	for <kvm-riscv@archiver.kernel.org>; Sat, 14 Nov 2026 17:57:54 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=qX+GBwt2;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=dvTk+BCl
+	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=V2F9nppx;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=H+qn2Wli
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
-	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
-	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
+	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
+	List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:Subject:
+	MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
 	List-Unsubscribe-Post:List-Owner;
-	bh=J4h/h/csQIvkIZqv8Z55f5iKh8e+98BAY8V7Y+rMrHE=; b=qX+GBwt27OBa9ek4eqo+dR2tzK
-	2mjQgVxa3pxHiqzrHmQAHbHyysfpvJ2f0LDWGSgG0eeB6q0fnR7FZlQMcJ14BuqIHAW/x68vV3SLB
-	b16GshVwFSUA5jdH+nA/WCcd9sfoJKUuLn+z26Vbds0MMLWlsWdUnEdjuVa6MrRep7HRkxBFReCqm
-	NBXX7g73dlLsf6aGXv45+4VgWPj4BKTlihsae5DqsaqlPY9Gf/2TBIxKoWeoP5q9QslcYFIWDVBdK
-	+jibw3KBswPUkx9CqTqlUmoKp/F4EHlMfQccwyzGscNhquHnUS+pmGkgZQ+STr014pMGiwjGZM0B1
-	P4hAM2ag==;
+	bh=TjWTSOnzB+/3PRquYv22jq+p421X8p+InehV5RIKRJo=; b=V2F9nppxKlnjoLjihs1rIYZ+p8
+	OECfEMWH/Q/48ohX3FUz7foq6xeG1C5hsE7hFqrt/X4jaN5+3x/vtwrcAyHwIwILqLYgMRzaaWXya
+	IMlzW+BfG6uceHhN1t4fTosWMWLeK955nS+IMTVDBY7J9GMion+P9pgcA3OgW+3ayoyhC9bdHcY2J
+	IWFKrKK13L2SIuEwen+8epR3EkNl6XWyk9bj2Jux9HR9k4XIZvQuvcErktJXz9CFQqfy+N8aR3aLF
+	UdIxI0G0XlmbhSy+XbpMue6xtBq5Shy1THWbkxO7KJJrMVTinHcEkwik9ksxYlUWO5lgiHD+0xIf6
+	bLWKgIiA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xSE9v-0000000GAag-2WyS;
-	Sat, 14 Nov 2026 13:51:11 +0000
-Received: from mx0a-0031df01.pphosted.com ([205.220.168.131])
+	id 1xSI0f-0000000GZAf-49wL;
+	Sat, 14 Nov 2026 17:57:53 +0000
+Received: from mail-wm1-x334.google.com ([2a00:1450:4864:20::334])
 	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xSE9t-0000000GAZz-0qRt;
-	Sat, 14 Nov 2026 13:51:10 +0000
-Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AEDk4x84114866;
-	Sat, 14 Nov 2026 13:51:02 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=qcppdkim1; bh=qqG2NJCc3JWi40GBILYwMhO94PZlOObFL01
-	RUJTaOOg=; b=dvTk+BClL+cnnkARh7sbqeGlV+Zbp3/rSkdLsBlVXcC0Rcr1M8u
-	FU5wUay9SnIXcyZMr5wu8tgXeUiht1BzBtI7VJvjI2c4N1sjqIR+bHH/gZKTsnwV
-	m/dReyVwLjdorbreiPECyoR62i/Z8fTxS0dFaxHSgxcpYF44uYcOXgvxrz1bQtH+
-	GdeG0w6fZYGv0BNZcRQwRD5wMBpdpD2TZ07MpXzWVzDXaXMcRW6HWTg21zhrPTt7
-	ynUrrE0juNO/YGqOkwX1HpDSiC/OlGQWV6ZzIeL/MsvO5klNGBTDUQgXhZMeXSKN
-	BUB9hNJ4B1C9tQWHCdp9LhUDKCtoH87hI+Q==
-Received: from apblrppmta01.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hxhhjrx38-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Sat, 14 Nov 2026 13:51:02 +0000 (GMT)
-Received: from pps.filterd (apblrppmta01.qualcomm.com [127.0.0.1])
-	by APBLRPPMTA01.qualcomm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AEDoxKU2649580;
-	Sat, 14 Nov 2026 13:50:59 GMT
-Received: from hu-devc-blr-u24-a.qualcomm.com (hu-anuppate-blr.qualcomm.com [10.131.36.165])
-	by APBLRPPMTA01.qualcomm.com (PPS) with ESMTPS id 6AEDoxe62649574
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Sat, 14 Nov 2026 13:50:59 +0000 (GMT)
-Received: by hu-devc-blr-u24-a.qualcomm.com (Postfix, from userid 486687)
-	id B561F248E3; Sat, 14 Nov 2026 19:20:58 +0530 (+0530)
-From: Anup Patel <anup.patel@oss.qualcomm.com>
-To: Palmer Dabbelt <palmer@dabbelt.com>, Paul Walmsley <pjw@kernel.org>,
-        Atish Patra <atish.patra@linux.dev>,
-        Andrew Jones <andrew.jones@linux.dev>
-Cc: Paolo Bonzini <pbonzini@redhat.com>, Anup Patel <anup@brainfault.org>,
-        kvm@vger.kernel.org, kvm-riscv@lists.infradead.org,
-        linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
-        Anup Patel <anup.patel@oss.qualcomm.com>
-Subject: [PATCH] RISC-V: KVM: Convert IMSIC vsfile_lock to a raw spinlock
-Date: Sat, 14 Nov 2026 19:20:56 +0530
-Message-ID: <20261114135056.202556-1-anup.patel@oss.qualcomm.com>
-X-Mailer: git-send-email 2.43.0
+	id 1xSI0c-0000000GZ9g-2qep
+	for kvm-riscv@lists.infradead.org;
+	Sat, 14 Nov 2026 17:57:52 +0000
+Received: by mail-wm1-x334.google.com with SMTP id 5b1f17b1804b1-49d05d51553so11223505e9.2
+        for <kvm-riscv@lists.infradead.org>; Sat, 14 Nov 2026 09:57:50 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1794679069; x=1795283869; darn=lists.infradead.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=Oeu8fRL3y/S5bZyksCXvYqJHykgbAKegGBLalUwV/PE=;
+        b=H+qn2Wli+siTANVuGwpi8jTgWp+snoXOmghfB91kMcEzyeYhsD4a0i3yRljUj6t6LD
+         vGWAJJ/7GKvHBT1Dem0efGTWxAHAO4Yk7ucMnz7yc5T7TGRuqwH9gY8AU4+9138QCL3X
+         INuIOfUXmkBzy67Zji96PE3sXYe8KirvJ6kOccsjFtRWpYQ6osUMFhz/QKFWfHMR3KIs
+         6zN/gxnyl92KcJN4hjCXRDmTuahFgiPvcCUaO/9GiyMvuawzdSWpjv+vfBx3Dm4+s8P8
+         /paWqZAOdyUsFd/7uwNhK8ItVuX5gcNQxoNmpV8BxFbqg9qFyUSbH+P5TAS1dTp9DF1P
+         XbuA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794679069; x=1795283869;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=Oeu8fRL3y/S5bZyksCXvYqJHykgbAKegGBLalUwV/PE=;
+        b=ypIA7MQ8daNRy2FiBbkVJf5GEqTu85XcMgSpsrdETcxUn97Si9yx0kqMVT3XGeSuqL
+         oAOfdwtuncuV9EF1Q5LiFqPFGosV7RAtEzf9FZjIUkAzpyXpaZUAyuKPdrnWRLR2ys5u
+         Y+7Skm5k1wV4SFWNJ3PALOx9od6ZvnN7qttwT9aVribzO74hNDnv129YN8xX1VmcyXnQ
+         BZfcBX76ensa3QXoWzmZbO98FvSCUtx5RzCFsdf/p1VGJNOYL35moJooZqVX+ClFWyKZ
+         RXJFHfmj4ils9I4QRYY6cM9x8Mzuj8m9nvvwmPbj8oWaTEgpLXxrE/6B7ubOMR2JyOyF
+         Pt5Q==
+X-Forwarded-Encrypted: i=1; AL+hErGICZc3dY8QCtR5owZLNiGBNPPUK+9k9T7TkO+ec6n0ap2VZEVsg9P5aUgoTltFotYT5nSMeiys2nM=@lists.infradead.org
+X-Gm-Message-State: APuU4Z8A3cbRhjA4/cZ2ZpfNNz/aj589xi+HEk5rcZPsm9sOxEak19lo
+	AhPe9dHpk5ps+VWLVsRTHAu//oS4O8zSDgpKltXmXNg+KpVT4Z2uiR9S
+X-Gm-Gg: AYBFou3394wIYtkH9bMEyuugTgt7wPmV3ytorYsTvFg89OWc7bjsBYfO3n9M4NSZnbL
+	1W8GSjzRsp7jXQAOQgEmixdjhyeAVjHRTqlivGkNJ7de68/Yob4fhyf8F6VJFNyZ+lAP2JU7oo7
+	Y48LsmVFfCd443s9PXCnkm1KjmEOp/eHTMelz2ABCNi8IHeUCRGwKMsmztmCWOK8q+qI1vbtkye
+	ntRzqNg+7hhwAyL0ZuN0uu0unvdLRDreKq7wRIlt/1JsXPyuEp6Y69rherOwsbz/0RGp9RilvY1
+	wS0iU5aGe2M2dKoiSkC0frqY1OGW/e/+ocUeTTEFisuZb5TndpQqr/Ox2fUNf9zf9j9LPCiBaUS
+	LcjpIPUZ/zZV13OizflWC0f6+29h55WeXsTKxxQTDUJTj+egkWAmfnsJeUqZl7QnCMMZ91Uzcyv
+	XXRte0WnnxHVcIdzusAnk3fIWmyXuNxEIdTS0cLa1nspy+61LxkM63phRhbnjVMFsuiqombfDnH
+	2PVbhP02QE71YD15YXMr15IHsyhp8ZWcOr4ztgAv3oxe5eT8xSaqXssWAHfFARQEFFK8ytEtbHM
+	gtgyvmEB7oOD10T7hEtHd1gQ5nm4//m06pIKioNN7+ZUZ9HQmZSPkMPpLnD22hezIcxULdsx4cO
+	xIHg=
+X-Received: by 2002:a05:600c:b86:b0:4a1:811c:8078 with SMTP id 5b1f17b1804b1-4bb55a67c61mr134469755e9.26.1794679068535;
+        Sat, 14 Nov 2026 09:57:48 -0800 (PST)
+Received: from [192.168.1.6] (user-109-243-65-71.play-internet.pl. [109.243.65.71])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4bb68c00b10sm14350715e9.0.2026.11.14.09.57.47
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sat, 14 Nov 2026 09:57:48 -0800 (PST)
+Message-ID: <a5170ee5-ccf6-4f19-8ecf-1bc82e3d54d1@gmail.com>
+Date: Sat, 14 Nov 2026 18:57:46 +0100
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-QCInternal: smtphost
-X-QCInternal: smtphost
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTE0MDA1NSBTYWx0ZWRfX9BAvxvMAehan
- IK1cbACB3iXuuEMfkX1Cjsrn85urvCZrgH6EjlDvX4GLMUHudgJTCJchwx2+RwZg4kxYd5bJC8H
- TY63RXKYEoxryKoQ6vkobwqTCtxavgDu0rfJW/aWK8J3q0kVMY6QgSSnRZJY2kyxLTgcMykBme0
- qpK1c6mGMyOlddfhTTirwfYVSvzpjZJMvAU4B2eqWd5L8Q4Afp9H5M1lc0Ud1umF6x96Ykibf2u
- aJ82UzpU2PTcUWZD1OgbWUCpeZxmXZ7VIy0RzeaFCvcapeCThooTKgy6gqT9RqGANWGvH0rR5u7
- QVslEKoA92nfi0JJL6YgteS3/mMvJdNv5Aq6LGu3WH8ClSUwnZdeLqZfxsQWRxwtEzohuyfLRrP
- Dy/BMcSEufnS2V1q5CMpM/G/8xIDQ1sA2ranD8ZD6j3edkDzxejNdofzLANAFkhRHelDrSwwT6i
- /64PuR+gVma2uk8lQvw==
-X-Proofpoint-ORIG-GUID: ppqplaSz09GqRES1YyfPrhQeGEsw5BYC
-X-Proofpoint-GUID: ppqplaSz09GqRES1YyfPrhQeGEsw5BYC
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTE0MDA1NSBTYWx0ZWRfX+pxHc+D0Yn8A
- UTVNoyIScB+eQo60VTQSMqOKjeHiknhJ9B2002oB8ET4M8giNwRCPxQgaQPIe9vAmAuU87q3+oq
- xjKPE2ipyUuxZ76Di9GYlBir1g+fl4k=
-X-Authority-Analysis: v=2.4 cv=X9rHu2Te c=1 sm=1 tr=0 ts=6af86746 cx=c_pps
- a=Ou0eQOY4+eZoSc0qltEV5Q==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
- a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
- a=yOCtJkima9RkubShWh1s:22 a=EUspDBNiAAAA:8 a=wOdddZgVwB2pSmFxpusA:9
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-14_04,2026-11-11_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 impostorscore=0 bulkscore=0 clxscore=1011 priorityscore=1501
- adultscore=0 malwarescore=0 lowpriorityscore=0 suspectscore=0 spamscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611140055
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] RISC-V: KVM: Order IMSIC VS-file write before releasing
+ vsfile_lock
+To: Anup Patel <anup@brainfault.org>
+Cc: Anup Patel <anup.patel@oss.qualcomm.com>,
+ Atish Patra <atish.patra@linux.dev>, Paul Walmsley <pjw@kernel.org>,
+ Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
+ Alexandre Ghiti <alex@ghiti.fr>, kvm@vger.kernel.org,
+ kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
+ linux-kernel@vger.kernel.org
+References: <20261023142550.148604-1-oleksii.kurochko@gmail.com>
+ <CABBgwmuBBbyBytwRBTeAqF=0c1m+TFK8E3yPopGNQAsrMFO2vg@mail.gmail.com>
+ <7e634bef-6d23-4a57-b3e6-b5585045ca19@gmail.com>
+ <CAAhSdy2cL6u_pAinYFU64nfqespQU+2x3GTeiqvjFUbJyYLLMA@mail.gmail.com>
+Content-Language: en-US
+From: Oleksii Kurochko <oleksii.kurochko@gmail.com>
+In-Reply-To: <CAAhSdy2cL6u_pAinYFU64nfqespQU+2x3GTeiqvjFUbJyYLLMA@mail.gmail.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261114_055109_248616_3A09407C 
-X-CRM114-Status: GOOD (  19.57  )
-X-Spam-Score: -2.7 (--)
+X-CRM114-CacheID: sfid-20261114_095750_797469_2CAD807A 
+X-CRM114-Status: GOOD (  34.78  )
+X-Spam-Score: -2.1 (--)
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -108,252 +110,156 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
-X-Spam-Status: No, score=-16.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,
+	FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-The kvm_riscv_vcpu_aia_imsic_put() runs from the scheduler preemption
-notifier with the raw runqueue lock held, so it must not take vsfile_lock,
-an rwlock_t, which sleeps on PREEMPT_RT. All vsfile_lock critical sections
-are short, so a raw spinlock is fine.
-
-In addition, converting vsfile_lock to raw spinlock allows us to drop
-the vsfile_hgei_lock and also allows us to use writel_relaxed() in
-kvm_riscv_vcpu_aia_imsic_inject() since raw_spin_unlock() internally
-does mmiowb_spin_unlock() which in-turn drains the write-buffer.
-
-Co-developed-by: Andrew Jones <andrew.jones@linux.dev>
-Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
-Signed-off-by: Anup Patel <anup.patel@oss.qualcomm.com>
----
- arch/riscv/kvm/aia_imsic.c | 79 ++++++++++++++++++++------------------
- 1 file changed, 41 insertions(+), 38 deletions(-)
-
-diff --git a/arch/riscv/kvm/aia_imsic.c b/arch/riscv/kvm/aia_imsic.c
-index 302938972aa0..0b9d15721d52 100644
---- a/arch/riscv/kvm/aia_imsic.c
-+++ b/arch/riscv/kvm/aia_imsic.c
-@@ -47,9 +47,7 @@ struct imsic {
- 	 */
- 
- 	/* IMSIC VS-file */
--	rwlock_t vsfile_lock;
--	/* Writers hold both locks; scheduler-out only takes vsfile_hgei_lock. */
--	raw_spinlock_t vsfile_hgei_lock;
-+	raw_spinlock_t vsfile_lock;
- 	int vsfile_cpu;
- 	int vsfile_hgei;
- 	void __iomem *vsfile_va;
-@@ -490,17 +488,6 @@ static void imsic_vsfile_local_update(int vsfile_hgei, u32 nr_eix,
- 	csr_write(CSR_VSISELECT, old_vsiselect);
- }
- 
--static void imsic_vsfile_set_hgei(struct imsic *imsic, int cpu, int hgei)
--{
--	unsigned long flags;
--
--	/* Serialize the CPU/HGEI pair with scheduler-out's wakeup setup. */
--	raw_spin_lock_irqsave(&imsic->vsfile_hgei_lock, flags);
--	imsic->vsfile_cpu = cpu;
--	imsic->vsfile_hgei = hgei;
--	raw_spin_unlock_irqrestore(&imsic->vsfile_hgei_lock, flags);
--}
--
- static void imsic_vsfile_cleanup(struct imsic *imsic)
- {
- 	int old_vsfile_hgei, old_vsfile_cpu;
-@@ -512,13 +499,14 @@ static void imsic_vsfile_cleanup(struct imsic *imsic)
- 	 * VCPU is being destroyed.
- 	 */
- 
--	write_lock_irqsave(&imsic->vsfile_lock, flags);
-+	raw_spin_lock_irqsave(&imsic->vsfile_lock, flags);
- 	old_vsfile_hgei = imsic->vsfile_hgei;
- 	old_vsfile_cpu = imsic->vsfile_cpu;
--	imsic_vsfile_set_hgei(imsic, -1, -1);
-+	imsic->vsfile_cpu = -1;
-+	imsic->vsfile_hgei = -1;
- 	imsic->vsfile_va = NULL;
- 	imsic->vsfile_pa = 0;
--	write_unlock_irqrestore(&imsic->vsfile_lock, flags);
-+	raw_spin_unlock_irqrestore(&imsic->vsfile_lock, flags);
- 
- 	memset(imsic->swfile, 0, sizeof(*imsic->swfile));
- 
-@@ -606,7 +594,7 @@ bool kvm_riscv_vcpu_aia_imsic_has_interrupt(struct kvm_vcpu *vcpu)
- 	 * only check for interrupt when IMSIC VS-file is being used.
- 	 */
- 
--	read_lock_irqsave(&imsic->vsfile_lock, flags);
-+	raw_spin_lock_irqsave(&imsic->vsfile_lock, flags);
- 	if (imsic->vsfile_cpu > -1) {
- 		/*
- 		 * This function is typically called from kvm_vcpu_block() via
-@@ -621,7 +609,7 @@ bool kvm_riscv_vcpu_aia_imsic_has_interrupt(struct kvm_vcpu *vcpu)
- 		else
- 			ret = !!(csr_read(CSR_HGEIP) & BIT(imsic->vsfile_hgei));
- 	}
--	read_unlock_irqrestore(&imsic->vsfile_lock, flags);
-+	raw_spin_unlock_irqrestore(&imsic->vsfile_lock, flags);
- 
- 	return ret;
- }
-@@ -646,10 +634,10 @@ void kvm_riscv_vcpu_aia_imsic_put(struct kvm_vcpu *vcpu)
- 	if (!kvm_vcpu_is_blocking(vcpu))
- 		return;
- 
--	raw_spin_lock_irqsave(&imsic->vsfile_hgei_lock, flags);
-+	raw_spin_lock_irqsave(&imsic->vsfile_lock, flags);
- 	if (imsic->vsfile_cpu > -1)
- 		csr_set(CSR_HGEIE, BIT(imsic->vsfile_hgei));
--	raw_spin_unlock_irqrestore(&imsic->vsfile_hgei_lock, flags);
-+	raw_spin_unlock_irqrestore(&imsic->vsfile_lock, flags);
- }
- 
- void kvm_riscv_vcpu_aia_imsic_release(struct kvm_vcpu *vcpu)
-@@ -663,13 +651,14 @@ void kvm_riscv_vcpu_aia_imsic_release(struct kvm_vcpu *vcpu)
- 		return;
- 
- 	/* Read and clear IMSIC VS-file details */
--	write_lock_irqsave(&imsic->vsfile_lock, flags);
-+	raw_spin_lock_irqsave(&imsic->vsfile_lock, flags);
- 	old_vsfile_hgei = imsic->vsfile_hgei;
- 	old_vsfile_cpu = imsic->vsfile_cpu;
--	imsic_vsfile_set_hgei(imsic, -1, -1);
-+	imsic->vsfile_cpu = -1;
-+	imsic->vsfile_hgei = -1;
- 	imsic->vsfile_va = NULL;
- 	imsic->vsfile_pa = 0;
--	write_unlock_irqrestore(&imsic->vsfile_lock, flags);
-+	raw_spin_unlock_irqrestore(&imsic->vsfile_lock, flags);
- 
- 	/* Do nothing, if no IMSIC VS-file to release */
- 	if (old_vsfile_cpu < 0)
-@@ -726,10 +715,10 @@ int kvm_riscv_vcpu_aia_imsic_update(struct kvm_vcpu *vcpu)
- 		return 1;
- 
- 	/* Read old IMSIC VS-file details */
--	read_lock_irqsave(&imsic->vsfile_lock, flags);
-+	raw_spin_lock_irqsave(&imsic->vsfile_lock, flags);
- 	old_vsfile_hgei = imsic->vsfile_hgei;
- 	old_vsfile_cpu = imsic->vsfile_cpu;
--	read_unlock_irqrestore(&imsic->vsfile_lock, flags);
-+	raw_spin_unlock_irqrestore(&imsic->vsfile_lock, flags);
- 
- 	/* Do nothing if we are continuing on same CPU */
- 	if (old_vsfile_cpu == vcpu->cpu)
-@@ -779,11 +768,12 @@ int kvm_riscv_vcpu_aia_imsic_update(struct kvm_vcpu *vcpu)
- 	/* TODO: Update the IOMMU mapping ??? */
- 
- 	/* Update new IMSIC VS-file details in IMSIC context */
--	write_lock_irqsave(&imsic->vsfile_lock, flags);
--	imsic_vsfile_set_hgei(imsic, vcpu->cpu, new_vsfile_hgei);
-+	raw_spin_lock_irqsave(&imsic->vsfile_lock, flags);
-+	imsic->vsfile_cpu = vcpu->cpu;
-+	imsic->vsfile_hgei = new_vsfile_hgei;
- 	imsic->vsfile_va = new_vsfile_va;
- 	imsic->vsfile_pa = new_vsfile_pa;
--	write_unlock_irqrestore(&imsic->vsfile_lock, flags);
-+	raw_spin_unlock_irqrestore(&imsic->vsfile_lock, flags);
- 
- 	/*
- 	 * At this point, all interrupt producers have been moved
-@@ -874,6 +864,7 @@ int kvm_riscv_aia_imsic_rw_attr(struct kvm *kvm, unsigned long type,
- 	struct imsic *imsic;
- 	struct kvm_vcpu *vcpu;
- 	int rc, vsfile_hgei, vsfile_cpu;
-+	bool swfile_update = false;
- 
- 	if (!kvm_riscv_aia_initialized(kvm))
- 		return -ENODEV;
-@@ -893,7 +884,7 @@ int kvm_riscv_aia_imsic_rw_attr(struct kvm *kvm, unsigned long type,
- 	}
- 	isel = KVM_DEV_RISCV_AIA_IMSIC_GET_ISEL(type);
- 
--	read_lock_irqsave(&imsic->vsfile_lock, flags);
-+	raw_spin_lock_irqsave(&imsic->vsfile_lock, flags);
- 
- 	rc = 0;
- 	vsfile_hgei = imsic->vsfile_hgei;
-@@ -902,13 +893,16 @@ int kvm_riscv_aia_imsic_rw_attr(struct kvm *kvm, unsigned long type,
- 		if (write) {
- 			rc = imsic_mrif_rmw(imsic->swfile, imsic->nr_eix,
- 					    isel, NULL, *val, -1UL);
--			imsic_swfile_extirq_update(vcpu);
-+			swfile_update = true;
- 		} else
- 			rc = imsic_mrif_rmw(imsic->swfile, imsic->nr_eix,
- 					    isel, val, 0, 0);
- 	}
- 
--	read_unlock_irqrestore(&imsic->vsfile_lock, flags);
-+	raw_spin_unlock_irqrestore(&imsic->vsfile_lock, flags);
-+
-+	if (swfile_update)
-+		imsic_swfile_extirq_update(vcpu);
- 
- 	if (!rc && vsfile_cpu >= 0)
- 		rc = imsic_vsfile_rw(vsfile_hgei, vsfile_cpu, imsic->nr_eix,
-@@ -959,6 +953,7 @@ int kvm_riscv_vcpu_aia_imsic_inject(struct kvm_vcpu *vcpu,
- 	unsigned long flags;
- 	struct imsic_mrif_eix *eix;
- 	struct imsic *imsic = vcpu->arch.aia_context.imsic_state;
-+	bool swfile_update = false;
- 
- 	/* We only emulate one IMSIC MMIO page for each Guest VCPU */
- 	if (!imsic || !iid || guest_index ||
-@@ -970,17 +965,26 @@ int kvm_riscv_vcpu_aia_imsic_inject(struct kvm_vcpu *vcpu,
- 	if (imsic->nr_msis <= iid)
- 		return -EINVAL;
- 
--	read_lock_irqsave(&imsic->vsfile_lock, flags);
-+	raw_spin_lock_irqsave(&imsic->vsfile_lock, flags);
- 
- 	if (imsic->vsfile_cpu >= 0) {
--		writel(iid, imsic->vsfile_va + IMSIC_MMIO_SETIPNUM_LE);
-+		/*
-+		 * We can use writel_relaxed() over here because the
-+		 * raw_spin_unlock() below will do mmiowb_spin_unlock()
-+		 * which in-turn drains the write-buffer ensuring the
-+		 * write is visible to the CPU owning the IMSIC VS-file.
-+		 */
-+		writel_relaxed(iid, imsic->vsfile_va + IMSIC_MMIO_SETIPNUM_LE);
- 	} else {
- 		eix = &imsic->swfile->eix[iid / BITS_PER_TYPE(u64)];
- 		set_bit(iid & (BITS_PER_TYPE(u64) - 1), eix->eip);
--		imsic_swfile_extirq_update(vcpu);
-+		swfile_update = true;
- 	}
- 
--	read_unlock_irqrestore(&imsic->vsfile_lock, flags);
-+	raw_spin_unlock_irqrestore(&imsic->vsfile_lock, flags);
-+
-+	if (swfile_update)
-+		imsic_swfile_extirq_update(vcpu);
- 
- 	return 0;
- }
-@@ -1036,8 +1040,7 @@ int kvm_riscv_vcpu_aia_imsic_init(struct kvm_vcpu *vcpu)
- 
- 	/* Setup IMSIC context  */
- 	imsic->nr_msis = kvm->arch.aia.nr_ids + 1;
--	rwlock_init(&imsic->vsfile_lock);
--	raw_spin_lock_init(&imsic->vsfile_hgei_lock);
-+	raw_spin_lock_init(&imsic->vsfile_lock);
- 	imsic->nr_eix = BITS_TO_U64(imsic->nr_msis);
- 	imsic->nr_hw_eix = BITS_TO_U64(kvm_riscv_aia_max_ids);
- 	imsic->vsfile_hgei = imsic->vsfile_cpu = -1;
--- 
-2.43.0
-
-
--- 
-kvm-riscv mailing list
-kvm-riscv@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/kvm-riscv
+CgpPbiAxMS8xNC8yNiAyOjM1IFBNLCBBbnVwIFBhdGVsIHdyb3RlOgo+IE9uIEZyaSwgTm92IDEz
+LCAyMDI2IGF0IDExOjQ54oCvUE0gT2xla3NpaSBLdXJvY2hrbwo+IDxvbGVrc2lpLmt1cm9jaGtv
+QGdtYWlsLmNvbT4gd3JvdGU6Cj4+Cj4+Cj4+Cj4+IE9uIDExLzEzLzI2IDk6MDAgQU0sIEFudXAg
+UGF0ZWwgd3JvdGU6Cj4+PiBPbiBGcmksIE9jdCAyMywgMjAyNiBhdCA3OjU24oCvUE0gT2xla3Np
+aSBLdXJvY2hrbwo+Pj4gPG9sZWtzaWkua3Vyb2Noa29AZ21haWwuY29tPiB3cm90ZToKPj4+Pgo+
+Pj4+IGt2bV9yaXNjdl92Y3B1X2FpYV9pbXNpY19pbmplY3QoKSB3cml0ZXMgdGhlIGludGVycnVw
+dCBpZGVudGl0eSB0byB0aGUKPj4+PiBTRVRJUE5VTSByZWdpc3RlciBvZiB0aGUgdkNQVSdzIElN
+U0lDIFZTLWZpbGUgd2hpbGUgaG9sZGluZyB2c2ZpbGVfbG9jawo+Pj4+IGZvciByZWFkaW5nLiBU
+aGUgbG9jayBrZWVwcyB0aGUgVlMtZmlsZSBmcm9tIGJlaW5nIHN3aXRjaGVkIHVuZGVyIHRoZQo+
+Pj4+IGluamVjdG9yOiBrdm1fcmlzY3ZfdmNwdV9haWFfaW1zaWNfdXBkYXRlKCkgYW5kCj4+Pj4g
+a3ZtX3Jpc2N2X3ZjcHVfYWlhX2ltc2ljX3JlbGVhc2UoKSB0YWtlIGl0IGZvciB3cml0aW5nIHRv
+IG1vdmUgdGhlIHZDUFUKPj4+PiB0byBhIG5ldyBWUy1maWxlIG9yIHRvIHRoZSBTVy1maWxlLCB0
+aGVuIHJlYWQgYW5kIGNsZWFyIHRoZSBvbGQgVlMtZmlsZQo+Pj4+IGFuZCBmcmVlIGl0cyBIR0VJ
+IGxpbmUuCj4+Pj4KPj4+PiBPbiBSSVNDLVYsIHdyaXRlbCgpIGlzIGZvbGxvd2VkIG9ubHkgYnkg
+bW1pb3diX3NldF9wZW5kaW5nKCkuIFRoZQo+Pj4+IHRyYWlsaW5nICJmZW5jZSBvLHciIGlzIGRl
+ZmVycmVkIHRvIHNwaW5fdW5sb2NrKCkgYnkgdGhlIG1taW93YigpCj4+Pj4gdHJhY2tpbmcsIGFu
+ZCByd2xvY2tzIGRvbid0IHRha2UgcGFydCBpbiB0aGF0IHRyYWNraW5nOgo+Pj4+IHF1ZXVlZF9y
+ZWFkX3VubG9jaygpIGlzc3VlcyBqdXN0ICJmZW5jZSBydyx3IiBiZWZvcmUgdGhlIEFNTywgd2hp
+Y2gKPj4+PiBkb2Vzbid0IG9yZGVyIGRldmljZSBvdXRwdXQuIFNvIHRoZSBTRVRJUE5VTSB3cml0
+ZSBjYW4gc3RpbGwgYmUgaW4KPj4+PiBmbGlnaHQgYWZ0ZXIgYW5vdGhlciBoYXJ0IGhhcyBvYnNl
+cnZlZCB2c2ZpbGVfbG9jayBiZWluZyByZWxlYXNlZC4gSWYKPj4+PiB0aGUgb2xkIFZTLWZpbGUg
+aXMgcmVhZCBhbmQgY2xlYXJlZCBiZWZvcmUgdGhlIHdyaXRlIGxhbmRzLCB0aGUKPj4+PiBpbnRl
+cnJ1cHQgaXMgbG9zdC4gSWYgdGhlIEhHRUkgbGluZSBoYXMgYWxyZWFkeSBiZWVuIGhhbmRlZCBv
+dXQKPj4+PiBhZ2FpbiwgdGhlIGludGVycnVwdCBlbmRzIHVwIGluIGFub3RoZXIgdkNQVSdzIFZT
+LWZpbGUuCj4+Pj4KPj4+PiBBZGQgYW4gZXhwbGljaXQgUklTQ1ZfRkVOQ0UobywgdykgYWZ0ZXIg
+dGhlIHdyaXRlIHRvIHRoZSBWUy1maWxlLCB3aGljaAo+Pj4+IGlzIHdoYXQgc3Bpbl91bmxvY2so
+KSB3b3VsZCBpc3N1ZSB2aWEgbW1pb3diKCkuCj4+Pj4KPj4+PiBGaXhlczogZGI4YjdlOTdkNjEz
+ICgiUklTQy1WOiBLVk06IEFkZCBpbi1rZXJuZWwgdmlydHVhbGl6YXRpb24gb2YgQUlBIElNU0lD
+IikKPj4+PiBTaWduZWQtb2ZmLWJ5OiBPbGVrc2lpIEt1cm9jaGtvIDxvbGVrc2lpLmt1cm9jaGtv
+QGdtYWlsLmNvbT4KPj4+PiAtLS0KPj4+PiBXaHkgUklTQ1ZfRkVOQ0UobywgdykgYW5kIG5vdCBt
+bWlvd2IoKToKPj4+Pgo+Pj4+IC0gU2luY2UgdGhlIG1taW93YigpIHJld29yayBpbiB2NS4yIChl
+LmcuIGNvbW1pdCA2MGNhMWU1YTIwMGMKPj4+PiAgICAgKCJtbWlvd2I6IEhvb2sgdXAgbW1pb3di
+IGhlbHBlcnMgdG8gc3BpbmxvY2tzIGFuZCBnZW5lcmljIEkvTwo+Pj4+ICAgICBhY2Nlc3NvcnMi
+KSksIG1taW93YigpIGlzIGFuIGltcGxlbWVudGF0aW9uIGRldGFpbCBvZiB0aGUgc3BpbmxvY2sK
+Pj4+PiAgICAgY29kZS4gRXhwbGljaXQgaW52b2NhdGlvbnMgd2VyZSByZW1vdmVkIGZyb20gZHJp
+dmVycyBieSBjb21taXQKPj4+PiAgICAgZmIyNGVhNTJmNzhlICgiZHJpdmVyczogUmVtb3ZlIGV4
+cGxpY2l0IGludm9jYXRpb25zIG9mIG1taW93YigpIikgYW5kCj4+Pj4gICAgIGZyb20gdGhlIGRv
+Y3VtZW50YXRpb24gYnkgY29tbWl0IDkxNTUzMDM5NmM3OCAoIkRvY3VtZW50YXRpb246IEtpbGwK
+Pj4+PiAgICAgYWxsIHJlZmVyZW5jZXMgdG8gbW1pb3diKCkiKSwgc28gYWRkaW5nIGEgbmV3IGRp
+cmVjdCBjYWxsZXIgd291bGQgZ28KPj4+PiAgICAgYWdhaW5zdCB0aGF0Lgo+Pj4+Cj4+Pj4gLSBS
+SVNDVl9GRU5DRShvLCB3KSBzdGF0ZXMgZXhhY3RseSB0aGUgb3JkZXJpbmcgbmVlZGVkIGhlcmUg
+KGRldmljZQo+Pj4+ICAgICBvdXRwdXQgYmVmb3JlIHRoZSBzdG9yZSB0aGF0IHJlbGVhc2VzIHRo
+ZSBsb2NrKSwgd2hpY2ggaXMgZmluZSBmb3IKPj4+PiAgICAgYXJjaC1zcGVjaWZpYyBjb2RlLCBh
+bmQgaXQgaXMgdGhlIHNhbWUgaW5zdHJ1Y3Rpb24gbW1pb3diKCkgZXhwYW5kcyB0bwo+Pj4+ICAg
+ICBvbiBSSVNDLVYuIHdtYigpICgiZmVuY2Ugb3csb3ciKSB3b3VsZCBhbHNvIHdvcmsgYnV0IGlz
+IHN0cm9uZ2VyIHRoYW4KPj4+PiAgICAgcmVxdWlyZWQuCj4+Pj4KPj4+PiBTY29wZTogdGhpcyBv
+bmx5IG9yZGVycyB0aGUgd3JpdGUgYmVmb3JlIHRoZSBsb2NrIHJlbGVhc2UuIFdoZXRoZXIgYQo+
+Pj4+IHdyaXRlIHRoYXQgaXMgYWxyZWFkeSBpbiBnbG9iYWwgbWVtb3J5IG9yZGVyIGlzIGd1YXJh
+bnRlZWQgdG8gaGF2ZQo+Pj4+IHRha2VuIGVmZmVjdCBpbiB0aGUgb2xkIFZTLWZpbGUgYmVmb3Jl
+IGt2bV9yaXNjdl92Y3B1X2FpYV9pbXNpY191cGRhdGUoKQo+Pj4+IG9yIGt2bV9yaXNjdl92Y3B1
+X2FpYV9pbXNpY19yZWxlYXNlKCkgcmVhZHMgYW5kIGNsZWFycyBpdCBpcyBhIHNlcGFyYXRlCj4+
+Pj4gcXVlc3Rpb24sIHNlZSBodHRwczovL2dpdGh1Yi5jb20vcmlzY3YvcmlzY3YtYWlhL2lzc3Vl
+cy8xNzIuIElmIGl0Cj4+Pj4gaXNuJ3QsIHRoZXNlIHBhdGhzIHdpbGwgYWxzbyBuZWVkIHRvIGRy
+YWluIHRoZSBvbGQgVlMtZmlsZSwgYW5kIHN1Y2ggYQo+Pj4+IGRyYWluIGRlcGVuZHMgb24gdGhl
+IG9yZGVyaW5nIGFkZGVkIGhlcmUuCj4+Pj4gLS0tCj4+Pj4gICAgYXJjaC9yaXNjdi9rdm0vYWlh
+X2ltc2ljLmMgfCA3ICsrKysrKysKPj4+PiAgICAxIGZpbGUgY2hhbmdlZCwgNyBpbnNlcnRpb25z
+KCspCj4+Pj4KPj4+PiBkaWZmIC0tZ2l0IGEvYXJjaC9yaXNjdi9rdm0vYWlhX2ltc2ljLmMgYi9h
+cmNoL3Jpc2N2L2t2bS9haWFfaW1zaWMuYwo+Pj4+IGluZGV4IGYxN2RjNTU5YTcwOS4uODA3YmI3
+M2ExMjlhIDEwMDY0NAo+Pj4+IC0tLSBhL2FyY2gvcmlzY3Yva3ZtL2FpYV9pbXNpYy5jCj4+Pj4g
+KysrIGIvYXJjaC9yaXNjdi9rdm0vYWlhX2ltc2ljLmMKPj4+PiBAQCAtMTA1Niw2ICsxMDU2LDEz
+IEBAIGludCBrdm1fcmlzY3ZfdmNwdV9haWFfaW1zaWNfaW5qZWN0KHN0cnVjdCBrdm1fdmNwdSAq
+dmNwdSwKPj4+Pgo+Pj4+ICAgICAgICAgICBpZiAoaW1zaWMtPnZzZmlsZV9jcHUgPj0gMCkgewo+
+Pj4+ICAgICAgICAgICAgICAgICAgIHdyaXRlbChpaWQsIGltc2ljLT52c2ZpbGVfdmEgKyBJTVNJ
+Q19NTUlPX1NFVElQTlVNX0xFKTsKPj4+PiArICAgICAgICAgICAgICAgLyoKPj4+PiArICAgICAg
+ICAgICAgICAgICogcndsb2NrcyBkb24ndCBwYXJ0aWNpcGF0ZSBpbiBtbWlvd2IoKSB0cmFja2lu
+Zywgc28gb3JkZXIKPj4+PiArICAgICAgICAgICAgICAgICogdGhlIHdyaXRlIHRvIHRoZSBWUy1m
+aWxlIGJlZm9yZSByZWxlYXNpbmcgdnNmaWxlX2xvY2ssCj4+Pj4gKyAgICAgICAgICAgICAgICAq
+IGkuZS4gYmVmb3JlIHRoZSB2Q1BVIGNhbiBiZSBtb3ZlZCBvZmYgdGhpcyBWUy1maWxlIGFuZAo+
+Pj4+ICsgICAgICAgICAgICAgICAgKiB0aGUgVlMtZmlsZSByZWFkIGFuZCBjbGVhcmVkLgo+Pj4+
+ICsgICAgICAgICAgICAgICAgKi8KPj4+PiArICAgICAgICAgICAgICAgUklTQ1ZfRkVOQ0Uobywg
+dyk7Cj4+Pgo+Pj4gQW5vdGhlciBmZW5jZSBhZnRlciBldmVyeSB3cml0ZWwoKSBpcyBhIGJpZyBo
+YW1tZXIgaW4gdGhlIHBhdGguCj4+Pgo+Pj4gSWYgdGhlIGludGVudGlvbiBpcyB0byBoYXZlIGNv
+cnJlY3QgY29udGVudHMgd2hlbiBWUy1maWxlIGlzIHJlYWQgdGhlbgo+Pj4gYmV0dGVyIHBsYWNl
+IHRvIGFkZCBhIGZlbmNlIGlzIGF0IHRoZSBzdGFydCBvZiBpbXNpY192c2ZpbGVfbG9jYWxfcmVh
+ZCgpLgo+PiBUaGFua3MgZm9yIHRoZSByZXZpZXcuCj4+Cj4+IEkgZG9uJ3QgdGhpbmsgYSBmZW5j
+ZSBpbiBpbXNpY192c2ZpbGVfbG9jYWxfcmVhZCgpIGhlbHBzIGhlcmUuIFRoZQo+PiBwcm9ibGVt
+IGlzIG9uIHRoZSB3cml0ZXIncyBzaWRlLCBhbmQgaW1zaWNfdnNmaWxlX2xvY2FsX3JlYWQoKSBy
+dW5zIG9uCj4+IGEgZGlmZmVyZW50IGhhcnQuCj4+Cj4+IFRoZSBTRVRJUE5VTSB3cml0ZSBpcyBk
+b25lIGJ5IHdoaWNoZXZlciBoYXJ0IGNhbGxzCj4+IGt2bV9yaXNjdl92Y3B1X2FpYV9pbXNpY19p
+bmplY3QoKSwgd2hpY2ggY2FuIGJlIGFueSBDUFUgKGlycWZkLAo+PiBpb2N0bCwgLi4uKS4gaW1z
+aWNfdnNmaWxlX2xvY2FsX3JlYWQoKSBydW5zIG9uIHRoZSBvbGQgdnNmaWxlX2NwdSwgdmlhCj4+
+IHRoZSBJUEkgZnJvbSBpbXNpY192c2ZpbGVfcmVhZCgpLiBBIGZlbmNlIG9ubHkgb3JkZXJzIHRo
+ZSBhY2Nlc3NlcyBvZgo+PiB0aGUgaGFydCB0aGF0IGV4ZWN1dGVzIGl0LCBzbyBhIGZlbmNlIG9u
+IHRoZSByZWFkaW5nIGhhcnQgY2FuJ3QgbWFrZQo+PiBhbm90aGVyIGhhcnQncyBNTUlPIHN0b3Jl
+IGxhbmQuCj4+Cj4+IFdpdGhvdXQgdGhlIGZlbmNlLCB0aGlzIGNhbiBoYXBwZW46Cj4+Cj4+ICAg
+ICBoYXJ0IEEgKGluamVjdCkgICAgICAgICAgICBoYXJ0IEIgKHVwZGF0ZS9yZWxlYXNlKSAgICBo
+YXJ0IEMgKG9sZAo+PiB2c2ZpbGVfY3B1KQo+PiAgICAgcmVhZF9sb2NrKCkKPj4gICAgIHdyaXRl
+bChTRVRJUE5VTSkKPj4gICAgICAgKHN0b3JlIHN0aWxsIGluIGZsaWdodCkKPiAKPiBPdmVyIGhl
+cmUgdGhlIE1NSU8gd3JpdGUgdGFyZ2V0cyBoYXJ0IEMgSU1TSUMKPiAKPj4gICAgIHJlYWRfdW5s
+b2NrKCkKPj4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHdyaXRlX2xvY2soKQo+PiAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgc3dpdGNoIFZTLWZpbGUKPj4gICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgIHdyaXRlX3VubG9jaygpCj4+ICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICBJUEkgLS0tLS0tLS0tLS0tLS0tLS0tLT4KPj4gICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgZmVuY2UgIDwtcHJvcG9z
+ZWQKPj4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgcmVhZCtjbGVhciBWU2ZpbGUKPj4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+IGZyZWUgSEdFSQo+PiAgICAgU0VUSVBOVU0gbGFuZHM6IHRoZSBpbnRlcnJ1cHQKPj4gICAgIGlz
+IGxvc3QsIG9yIGVuZHMgdXAgaW4gYW5vdGhlcgo+PiAgICAgdkNQVSdzIFZTLWZpbGUgaWYgdGhl
+IEhHRUkgd2FzCj4+ICAgICBhbHJlYWR5IHJldXNlZAo+Pgo+PiBIYXJ0IEEncyB1bmxvY2sgY2Fu
+IGJlY29tZSB2aXNpYmxlIGJlZm9yZSBpdHMgU0VUSVBOVU0gd3JpdGUgaGFzCj4+IHJlYWNoZWQg
+dGhlIElNU0lDLCBiZWNhdXNlIHJlYWRfdW5sb2NrKCkgZG9lc24ndCBvcmRlciBkZXZpY2Ugb3V0
+cHV0Lgo+PiBOb3RoaW5nIHRoYXQgaGFydCBCIG9yIGhhcnQgQyBkb2VzIGFmdGVyd2FyZHMgY2Fu
+IHdhaXQgZm9yIHRoYXQgd3JpdGUuCj4+IE9ubHkgaGFydCBBIGNhbiBob2xkIGJhY2sgaXRzIHVu
+bG9jayB1bnRpbCB0aGUgd3JpdGUgaXMgb3JkZXJlZCwgYW5kCj4+IHRoYXQgaXMgd2hhdCB0aGUg
+ZmVuY2Ugbyx3IGFmdGVyIHdyaXRlbCgpIGRvZXMuCj4+Cj4+IFdpdGggdGhlIGZlbmNlOgo+Pgo+
+PiAgICAgaGFydCBBIChpbmplY3QpICAgICAgICAgICAgaGFydCBCICh1cGRhdGUvcmVsZWFzZSkg
+ICAgaGFydCBDIChvbGQKPj4gdnNmaWxlX2NwdSkKPj4gICAgIHJlYWRfbG9jaygpCj4+ICAgICB3
+cml0ZWwoU0VUSVBOVU0pCj4+ICAgICBmZW5jZSBvLHcKPj4gICAgIHJlYWRfdW5sb2NrKCkKPj4g
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHdyaXRlX2xvY2soKQo+PiAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgc3dpdGNoIFZTLWZpbGUKPj4gICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgIHdyaXRlX3VubG9jaygpCj4+ICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICBJUEkgLS0tLS0tLS0tLS0tLS0tLS0tLT4KPj4gICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICByZWFkK2NsZWFyIFZTLWZpbGUKPj4gICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgIGZyZWUgSEdFSQo+Pgo+PiBUaGUgU0VUSVBOVU0g
+d3JpdGUgaXMgbm93IG9yZGVyZWQgYmVmb3JlIHRoZSB1bmxvY2ssIHNvIGl0IGlzIGFsc28KPj4g
+b3JkZXJlZCBiZWZvcmUgZXZlcnl0aGluZyBoYXJ0IEIgZG9lcyBhZnRlciB0YWtpbmcgdGhlIGxv
+Y2ssIGFuZCwKPj4gdGhyb3VnaCB0aGUgSVBJLCBiZWZvcmUgaGFydCBDIHJlYWRzIHRoZSBvbGQg
+VlMtZmlsZS4gSXQgY2FuIG5vIGxvbmdlcgo+PiBhcnJpdmUgYWZ0ZXIgdGhlIHJlYWQgb3IgYWZ0
+ZXIgdGhlIEhHRUkgaXMgZnJlZWQuCj4+Cj4+IEFib3V0IHRoZSBjb3N0OiB0aGlzIGlzIHRoZSBz
+YW1lIGZlbmNlIHRoYXQgZXZlcnkgd3JpdGVsKCkgdW5kZXIgYQo+PiBzcGlubG9jayBhbHJlYWR5
+IGdldHMuIE9uIFJJU0MtViwgd3JpdGVsKCkgb25seSBzZXRzIG1taW93YiBwZW5kaW5nIGFuZAo+
+PiBzcGluX3VubG9jaygpIHRoZW4gaXNzdWVzICJmZW5jZSBvLHciLiBXZSBuZWVkIGl0IGV4cGxp
+Y2l0bHkgaGVyZSBvbmx5Cj4+IGJlY2F1c2UgdnNmaWxlX2xvY2sgaXMgYW4gcndsb2NrLiBJdCBy
+dW5zIG9uY2UgcGVyIGluamVjdGVkIE1TSSwgYW5kCj4+IG9ubHkgd2hlbiB0aGUgdkNQVSBoYXMg
+YSBWUy1maWxlLgo+IAo+IEkgYW0gc3RpbGwgbm90IG9uLWJvYXJkIGFkZGluZyBhIGJhcnJpZXIg
+aW4gaG90LXBhdGguIEFsc28sIGFueSBiYXJyaWVyCj4gd2UgYWRkIG11c3QgYmUgcGFpcmVkIHdp
+dGggYSBiYXJyaWVyIGVsc2Ugd2hlcmUgd2l0aCBwcm9wZXIgY29tbWVudHMKPiBzbyB0aGlzIHNp
+bmdsZSBiYXJyaWVyIGFueXdheXMgZG9lcyBub3Qgc2F0aWZ5IHRoaXMgcmVxdWlyZW1lbnQuCgpP
+aCwgcmlnaHQsIEkgbWlzc2VkIHRoYXQuCgo+IAo+IEluc3RlYWQgb2YgdGhpcywgSSB0aGluayBh
+IG11Y2ggY2xlYW5lciBhcHByb2FjaCBpcyB0byBjb252ZXJ0IHZzZmlsZV9sb2NrCj4gdG8gcmF3
+X3NwaW5sb2NrX3QuIFRoZSBjdXJyZW50IHZzZmlsZV9sb2NrIGJlaW5nIGEgcndsb2NrX3QgaXMg
+Y3JlYXRlIG90aGVyCj4gaXNzdWVzIGFzIHdlbGwgWzFdLiBUaGlzIHdpbGwgYWxzbyBhbGxvdyB1
+cyB0byB1c2Ugd3JpdGVsX3JlbGF4ZWQoKSBpbiB0aGUKPiBrdm1fcmlzY3ZfdmNwdV9haWFfaW1z
+aWNfaW5qZWN0KCkgc2luY2UgcmF3X3NwaW5fdW5sb2NrKCkgd2lsbCB0YWtlCj4gY2FyZSBvZiBk
+cmFpbmluZyB0aGUgd3JpdGUgYnVmZmVyLgoKVG90YWxseSBhZ3JlZSwgcmF3X3NwaW5sb2NrX3Qg
+d2lsbCB3b3JrIGhlcmUgYW5kIHdpbGwgYmUgY2xlYW5lci4KCj4gCj4gSSB3aWxsIHBvc3Qgc29t
+ZXRoaW5nIGFsb25nIHRoZXNlIGxpbmVzLgoKVGhhbmtzIQoKPiAKPiBbMV0gaHR0cHM6Ly9sb3Jl
+Lmtlcm5lbC5vcmcvci8yMDI2MDkyNTE1NTExNi40NjUyMDMtMS1hbmRyZXcuam9uZXNAb3NzLnF1
+YWxjb21tLmNvbQoKfiBPbGVrc2lpCgotLSAKa3ZtLXJpc2N2IG1haWxpbmcgbGlzdAprdm0tcmlz
+Y3ZAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFu
+L2xpc3RpbmZvL2t2bS1yaXNjdgo=
