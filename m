@@ -2,126 +2,70 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 09AB3606A338
-	for <kvm-riscv@archiver.kernel.org>; Wed, 18 Nov 2026 17:59:01 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 440C3606A320
+	for <kvm-riscv@archiver.kernel.org>; Wed, 18 Nov 2026 19:10:11 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=19HkjoJN;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=A6XxPmmW
+	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=Yg7Ep7tK;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=i6T5OkA6
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
-	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
-	List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:Subject:
-	MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:References:
+	In-Reply-To:Subject:CC:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
 	List-Unsubscribe-Post:List-Owner;
-	bh=GES9gUo9tSVwd0bfXaLEo/LxxS42B+0wF3JuU7nU+wU=; b=19HkjoJNEibj8GaveBhy98BLr4
-	qtH6/0p/kgG8t1M+yz3F9GzNuXnRTtJVXHhwUy9EWS7yBLb0C8Y2C9oqA9h/Xxe5Qfgp7IT+tTSkf
-	q2RgZ7oXkrWGunmiAo79wjyZo9pEx92q4N3oEZVEdAe0N3btCt3L/TC00bY/8kqvLGhKFllfkk+Xz
-	08DXByrB40h7zhVdZd/BeQD4rEweJbZ2i1e8QFr5wFesz4s1EAmPRFzKXA1ugrN73RZL2l3imEocH
-	BlP/Jx6xT8bTdoS4swdSy9/rsLUMFQ5KNBP6D8d034gVVn2kbDnZ6SZwbPjrteZVILKnFj6Zl+UQ5
-	u/wxMmhg==;
+	bh=wk8P2/ll5uM3jJ1SdD/BAJBf5FwqKkFOHO/+z+aLSjg=; b=Yg7Ep7tKtZ8IrDLSsrNrOEfthe
+	ZS8VXcS6BMt6CFVX8IyrazPcJr6NJSg3bnJQR9r3CCNGabVLYs15F2xwoQu1zYM9F98qsJ+fotuaK
+	xie+AH28DgKw0BiT4tOagpNMIpUSk0VklnND7AjojpRoegx2gNsJJJFX5V4eB06j2Yf/J1X6iTuPp
+	4ZFARcgH0q8jOWJ2bgfUU1bayh5N7UIfDaq6CwdpAAJLCAqFZ4YfNphDUga+70jIIg/TvldAo9G7q
+	S9HOtE3iqn14/57AAdecqdPscsJOlbhLffHeUmqhKvMyz2ztzIG2wZl5FD4dRzhVO3HQ3K0aJD2Pr
+	6RHl5bCA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xTjvw-00000009qHs-2YpE;
-	Wed, 18 Nov 2026 17:59:00 +0000
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124])
+	id 1xTl2o-0000000A5E6-3fZl;
+	Wed, 18 Nov 2026 19:10:10 +0000
+Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xTjvt-00000009qH2-1iQg
-	for kvm-riscv@lists.infradead.org;
-	Wed, 18 Nov 2026 17:58:58 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1795024734;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=/aEvVPN2vkIpoOGbqbjwslntOnXXcoUrCbDoxZ9fqIU=;
-	b=A6XxPmmWoyeTy2abljIMXp4q/TYXVIv8pbsV4XToNHM0wQdW13zXa8ZRw3pyYCJgD/EHz7
-	vCQWaD9b0Ea4PjuM4OCCmN8fbi0h85w3Q/7Ynf0jbBJ0g+qDwgy+0b7X3TPZRf7Wvkqr49
-	ZqGgp4s33mSI/ziJ+8auy+rIAET4H8Y=
-Received: from mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-454-eKEYaacdP5iXcYIWe_UR6A-1; Wed,
- 18 Nov 2026 12:58:49 -0500
-X-MC-Unique: eKEYaacdP5iXcYIWe_UR6A-1
-X-Mimecast-MFC-AGG-ID: eKEYaacdP5iXcYIWe_UR6A_1795024724
-Received: from mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.93])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id A7C8C1954B09;
-	Wed, 18 Nov 2026 17:58:42 +0000 (UTC)
-Received: from [100.90.222.41] (headnet04.pony-001.prod.iad2.dc.redhat.com [10.2.32.116])
-	by mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id ED59A18004F5;
-	Wed, 18 Nov 2026 17:58:35 +0000 (UTC)
-Message-ID: <4e4fb011-9171-42c1-b499-27b0333a2fd6@redhat.com>
-Date: Wed, 18 Nov 2026 18:58:33 +0100
-X-Archived-By: <archiver.kernel.org>
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 06/16] KVM: x86: Widen the plane vCPU fd ioctl allowlist
-To: David Woodhouse <dwmw2@infradead.org>, =?UTF-8?B?SsO2cmcgUsO2ZGVs?=
- <joro@8bytes.org>
-Cc: Sean Christopherson <seanjc@google.com>,
+	id 1xTl2n-0000000A5Dd-2ZxU
+	for kvm-riscv@bombadil.infradead.org;
+	Wed, 18 Nov 2026 19:10:09 +0000
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:Content-Type
+	:MIME-Version:Message-ID:References:In-Reply-To:Subject:CC:To:From:Date:
+	Sender:Reply-To:Content-ID:Content-Description;
+	bh=YxWsOpaN6CU+fFgVMclUNy68ZrjNu1idGsKCVJ6O9Z4=; b=i6T5OkA6HB7NG25CMcQ8Te4Ltr
+	KxIOzXx/mNFMONQ4ViCWFPNmIrUOuZVTIe8TZnkkJlz9SvrT7bF+8x41WWOLI8qO2kRjpz3bGORzX
+	iZXB3H/1+181sDQQBjKkDX3Ecxc0BS+EsdKOocrWt+stbQmWHtKIf0QpLepBumkQf/831tPfnEejg
+	Mn0K+Y6S4HnvTOy97cfE4cJl/H97wFiYDnoEOJ+PmptkQJL2VFtvIU9o0jXrb7h8DKMAaRLOBo6Ic
+	75Zv3gjRNJV25Ap9P2B/c6B1/SSOXgveIKaxkIQi9zRBBjJ2Hb8o/hzhGZMKQfHMsaX3VVDtMH58Q
+	ZlneSFqw==;
+Received: from [2a00:23ee:2910:16f:a90:4999:d4c:f045] (helo=ehlo.thunderbird.net)
+	by desiato.infradead.org with esmtpsa (Exim 4.100.1 #2 (Red Hat Linux))
+	id 1xTl2l-0000000GRW5-1yMX;
+	Wed, 18 Nov 2026 19:10:07 +0000
+Date: Wed, 18 Nov 2026 19:10:01 +0000
+From: David Woodhouse <dwmw2@infradead.org>
+To: Paolo Bonzini <pbonzini@redhat.com>,
+ =?ISO-8859-1?Q?J=F6rg_R=F6del?= <joro@8bytes.org>
+CC: Sean Christopherson <seanjc@google.com>,
  Tom Lendacky <thomas.lendacky@amd.com>, ashish.kalra@amd.com,
  michael.roth@amd.com, nsaenz@amazon.com, anelkz@amazon.de,
  James.Bottomley@HansenPartnership.com, Melody Wang <huibo.wang@amd.com>,
  kvm@vger.kernel.org, linux-kernel@vger.kernel.org, kvmarm@lists.linux.dev,
  loongarch@lists.linux.dev, linux-mips@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, kvm-riscv@lists.infradead.org,
- x86@kernel.org, coconut-svsm@lists.linux.dev, joerg.roedel@amd.com,
+ linuxppc-dev@lists.ozlabs.org, kvm-riscv@lists.infradead.org, x86@kernel.org,
+ coconut-svsm@lists.linux.dev, joerg.roedel@amd.com,
  Mushahid Hussain <hmushi@amazon.co.uk>,
  Sriram Nambakam <snambakam@linux.microsoft.com>,
  David Woodhouse <dwmw@amazon.co.uk>
-References: <20260608144252.351443-1-joro@8bytes.org>
- <20261111222911.477-1-dwmw2@infradead.org>
- <20261111222911.477-7-dwmw2@infradead.org>
-From: Paolo Bonzini <pbonzini@redhat.com>
-Autocrypt: addr=pbonzini@redhat.com; keydata=
- xsEhBFRCcBIBDqDGsz4K0zZun3jh+U6Z9wNGLKQ0kSFyjN38gMqU1SfP+TUNQepFHb/Gc0E2
- CxXPkIBTvYY+ZPkoTh5xF9oS1jqI8iRLzouzF8yXs3QjQIZ2SfuCxSVwlV65jotcjD2FTN04
- hVopm9llFijNZpVIOGUTqzM4U55sdsCcZUluWM6x4HSOdw5F5Utxfp1wOjD/v92Lrax0hjiX
- DResHSt48q+8FrZzY+AUbkUS+Jm34qjswdrgsC5uxeVcLkBgWLmov2kMaMROT0YmFY6A3m1S
- P/kXmHDXxhe23gKb3dgwxUTpENDBGcfEzrzilWueOeUWiOcWuFOed/C3SyijBx3Av/lbCsHU
- Vx6pMycNTdzU1BuAroB+Y3mNEuW56Yd44jlInzG2UOwt9XjjdKkJZ1g0P9dwptwLEgTEd3Fo
- UdhAQyRXGYO8oROiuh+RZ1lXp6AQ4ZjoyH8WLfTLf5g1EKCTc4C1sy1vQSdzIRu3rBIjAvnC
- tGZADei1IExLqB3uzXKzZ1BZ+Z8hnt2og9hb7H0y8diYfEk2w3R7wEr+Ehk5NQsT2MPI2QBd
- wEv1/Aj1DgUHZAHzG1QN9S8wNWQ6K9DqHZTBnI1hUlkp22zCSHK/6FwUCuYp1zcAEQEAAc0j
- UGFvbG8gQm9uemluaSA8cGJvbnppbmlAcmVkaGF0LmNvbT7CwU0EEwECACMFAlRCcBICGwMH
- CwkIBwMCAQYVCAIJCgsEFgIDAQIeAQIXgAAKCRB+FRAMzTZpsbceDp9IIN6BIA0Ol7MoB15E
- 11kRz/ewzryFY54tQlMnd4xxfH8MTQ/mm9I482YoSwPMdcWFAKnUX6Yo30tbLiNB8hzaHeRj
- jx12K+ptqYbg+cevgOtbLAlL9kNgLLcsGqC2829jBCUTVeMSZDrzS97ole/YEez2qFpPnTV0
- VrRWClWVfYh+JfzpXmgyhbkuwUxNFk421s4Ajp3d8nPPFUGgBG5HOxzkAm7xb1cjAuJ+oi/K
- CHfkuN+fLZl/u3E/fw7vvOESApLU5o0icVXeakfSz0LsygEnekDbxPnE5af/9FEkXJD5EoYG
- SEahaEtgNrR4qsyxyAGYgZlS70vkSSYJ+iT2rrwEiDlo31MzRo6Ba2FfHBSJ7lcYdPT7bbk9
- AO3hlNMhNdUhoQv7M5HsnqZ6unvSHOKmReNaS9egAGdRN0/GPDWr9wroyJ65ZNQsHl9nXBqE
- AukZNr5oJO5vxrYiAuuTSd6UI/xFkjtkzltG3mw5ao2bBpk/V/YuePrJsnPFHG7NhizrxttB
- nTuOSCMo45pfHQ+XYd5K1+Cv/NzZFNWscm5htJ0HznY+oOsZvHTyGz3v91pn51dkRYN0otqr
- bQ4tlFFuVjArBZcapSIe6NV8C4cEiSTOwE0EVEJx7gEIAMeHcVzuv2bp9HlWDp6+RkZe+vtl
- KwAHplb/WH59j2wyG8V6i33+6MlSSJMOFnYUCCL77bucx9uImI5nX24PIlqT+zasVEEVGSRF
- m8dgkcJDB7Tps0IkNrUi4yof3B3shR+vMY3i3Ip0e41zKx0CvlAhMOo6otaHmcxr35sWq1Jk
- tLkbn3wG+fPQCVudJJECvVQ//UAthSSEklA50QtD2sBkmQ14ZryEyTHQ+E42K3j2IUmOLriF
- dNr9NvE1QGmGyIcbw2NIVEBOK/GWxkS5+dmxM2iD4Jdaf2nSn3jlHjEXoPwpMs0KZsgdU0pP
- JQzMUMwmB1wM8JxovFlPYrhNT9MAEQEAAcLBMwQYAQIACQUCVEJx7gIbDAAKCRB+FRAMzTZp
- sadRDqCctLmYICZu4GSnie4lKXl+HqlLanpVMOoFNnWs9oRP47MbE2wv8OaYh5pNR9VVgyhD
- OG0AU7oidG36OeUlrFDTfnPYYSF/mPCxHttosyt8O5kabxnIPv2URuAxDByz+iVbL+RjKaGM
- GDph56ZTswlx75nZVtIukqzLAQ5fa8OALSGum0cFi4ptZUOhDNz1onz61klD6z3MODi0sBZN
- Aj6guB2L/+2ZwElZEeRBERRd/uommlYuToAXfNRdUwrwl9gRMiA0WSyTb190zneRRDfpSK5d
- usXnM/O+kr3Dm+Ui+UioPf6wgbn3T0o6I5BhVhs4h4hWmIW7iNhPjX1iybXfmb1gAFfjtHfL
- xRUr64svXpyfJMScIQtBAm0ihWPltXkyITA92ngCmPdHa6M1hMh4RDX+Jf1fiWubzp1voAg0
- JBrdmNZSQDz0iKmSrx8xkoXYfA3bgtFN8WJH2xgFL28XnqY4M6dLhJwV3z08tPSRqYFm4NMP
- dRsn0/7oymhneL8RthIvjDDQ5ktUjMe8LtHr70OZE/TT88qvEdhiIVUogHdo4qBrk41+gGQh
- b906Dudw5YhTJFU3nC6bbF2nrLlB4C/XSiH76ZvqzV0Z/cAMBo5NF/w=
-In-Reply-To: <20261111222911.477-7-dwmw2@infradead.org>
-X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.93
-X-Mimecast-MFC-PROC-ID: 6FPpX2Iz0I7tvfpdFAX5Ocur4Qa7XHWMKPphT1GRZ3E_1795024724
-X-Mimecast-Originator: redhat.com
-Content-Language: en-US
-X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261118_095857_605703_7A285E3B 
-X-CRM114-Status: GOOD (  11.37  )
-X-Spam-Score: 0.5 (/)
+Subject: Re: [PATCH 06/16] KVM: x86: Widen the plane vCPU fd ioctl allowlist
+User-Agent: K-9 Mail for Android
+In-Reply-To: <4e4fb011-9171-42c1-b499-27b0333a2fd6@redhat.com>
+References: <20260608144252.351443-1-joro@8bytes.org> <20261111222911.477-1-dwmw2@infradead.org> <20261111222911.477-7-dwmw2@infradead.org> <4e4fb011-9171-42c1-b499-27b0333a2fd6@redhat.com>
+Message-ID: <D0EE54A9-3FF3-4005-875B-A9AF04EB1341@infradead.org>
+X-Archived-By: <archiver.kernel.org>
+MIME-Version: 1.0
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by desiato.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -131,47 +75,53 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
-X-Spam-Status: No, score=-5.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-4.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On 11/11/26 23:29, David Woodhouse wrote:
-> From: David Woodhouse <dwmw@amazon.co.uk>
-> 
-> A VMM that puts an initial VTL context on a higher plane cannot finish
-> the job through the plane vCPU's fd. kvm_arch_is_vcpu_plane_ioctl()
-> refuses the ioctls it needs, while the one capability ioctl it does
-> admit, KVM_ENABLE_CAP, reaches *every* vCPU capability handler.
-> 
->   - KVM_GET/SET_MP_STATE: a plane vCPU for an AP starts in
->     wait-for-INIT like any non-boot x86 vCPU, and nothing ever sends
->     INIT/SIPI to the higher plane of an AP. The VMM has to mark it
->     runnable itself.
->   - KVM_SET_GUEST_DEBUG: single-step and breakpoints on a non-zero
->     plane. The debug exits surface through the plane-0 KVM_RUN loop
->     like any other plane exit.
->   - KVM_X86_SETUP_MCE: mcg_cap is per vCPU and every twin starts with
->     the KVM_MAX_MCE_BANKS default, so programming plane 0 alone leaves
->     the planes disagreeing. Hyper-V shares MCG state across VTLs.
->   - KVM_ENABLE_CAP: accept only the audited capabilities on a plane fd,
->     the SynIC pair and the two CPUID-enforcement toggles, which change
->     state that each twin keeps separately. Anything else gets -EINVAL, as
->     non-allowlisted ioctls already do. The nested paths behind
->     enlightened VMCS and direct TLB flush have never been audited for
->     plane_level > 0, and without the filter any future vCPU cap would
->     work on planes without anyone having decided that it should.
+On 18 November 2026 17:58:33 GMT, Paolo Bonzini <pbonzini@redhat.com> wrote:
+>On 11/11/26 23:29, David Woodhouse wrote:
+>> From: David Woodhouse <dwmw@amazon.co.uk>
+>> 
+>> A VMM that puts an initial VTL context on a higher plane cannot finish
+>> the job through the plane vCPU's fd. kvm_arch_is_vcpu_plane_ioctl()
+>> refuses the ioctls it needs, while the one capability ioctl it does
+>> admit, KVM_ENABLE_CAP, reaches *every* vCPU capability handler.
+>> 
+>>   - KVM_GET/SET_MP_STATE: a plane vCPU for an AP starts in
+>>     wait-for-INIT like any non-boot x86 vCPU, and nothing ever sends
+>>     INIT/SIPI to the higher plane of an AP. The VMM has to mark it
+>>     runnable itself.
+>>   - KVM_SET_GUEST_DEBUG: single-step and breakpoints on a non-zero
+>>     plane. The debug exits surface through the plane-0 KVM_RUN loop
+>>     like any other plane exit.
+>>   - KVM_X86_SETUP_MCE: mcg_cap is per vCPU and every twin starts with
+>>     the KVM_MAX_MCE_BANKS default, so programming plane 0 alone leaves
+>>     the planes disagreeing. Hyper-V shares MCG state across VTLs.
+>>   - KVM_ENABLE_CAP: accept only the audited capabilities on a plane fd,
+>>     the SynIC pair and the two CPUID-enforcement toggles, which change
+>>     state that each twin keeps separately. Anything else gets -EINVAL, as
+>>     non-allowlisted ioctls already do. The nested paths behind
+>>     enlightened VMCS and direct TLB flush have never been audited for
+>>     plane_level > 0, and without the filter any future vCPU cap would
+>>     work on planes without anyone having decided that it should.
+>
+>Not sure about KVM_ENABLE_CAP, the other seem sane.
+>
+>BTW at some point I'll rewrite these commit messages, they're infuriating...
 
-Not sure about KVM_ENABLE_CAP, the other seem sane.
+Yeah. I've grown kind of immune to them now. Even found myself typing "load-bearing" with my actual meat fingers the other day.
 
-BTW at some point I'll rewrite these commit messages, they're infuriating...
+I've also been looking harder at the completion thing. We *can't* (well, I don't want to) enter another plane while there's still a completion waiting on the first plane.
 
-Paolo
+Which means any control register or MSR interception which needs to be handed to another plane has to completed first.
+
+I think we need to be able to complete them with the RIP unchanged (not advanced over the instruction). Then for VSM, it's VTL1 which will handle them and then advance RIP for its VTL0. VTL1 wants to be told the instruction length too; I could make QEMU find it but since KVM tends to have it anyway, I'm looking at how I can export that.
 
 
 -- 
