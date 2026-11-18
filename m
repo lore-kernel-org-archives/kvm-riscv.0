@@ -2,136 +2,75 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AD27D606A881
-	for <kvm-riscv@archiver.kernel.org>; Wed, 18 Nov 2026 06:23:02 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F1AE7606A325
+	for <kvm-riscv@archiver.kernel.org>; Wed, 18 Nov 2026 07:13:25 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=f530Ii2x;
-	dkim=fail reason="signature verification failed" (1024-bit key, unprotected) header.d=valinux.co.jp header.i=@valinux.co.jp header.a=rsa-sha256 header.s=selector1 header.b=LmPIO5yB
+	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=yTgtSedi;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=wLzpbgMd;
+	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=i7OvvaGZ
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
-	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
+	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
 	List-Unsubscribe-Post:List-Owner;
-	bh=H6z+7uP5kVW1sE9X01EyJhy1xLUwJkr6r+bqErughG8=; b=f530Ii2xS764OAmdbrmU8VvgM3
-	V6Ea3VaiFWQXGmS4uD6dkxSok7MWnUiIV9hNk67MsqO0JR2cFtCgunw82RPTrXDrEg22vgD7IPrhH
-	5QYkyBba3R70vL58Zj95Q2hyrMeAZLQcoSFcLF/Rvt14bP4Ry4z0ay2qgEo2hqmjfLt8O/8GgykIR
-	KTTtja0rzsbhRq88OOSudYoru68z/UOS9AJYakprm62QpQbmMXtXYZnCd8DcwBu3+jOTgpSrHHQUH
-	aa8OZwiDnlMvoDZczc0MPwq1hYOV36hCeppq9HYNkJLLvuBrI/IDTCd1Q6klT1qwDwLRWFZ/maR4h
-	qYGX4nZQ==;
+	bh=iFM5SKiCAugtSaP5n08v+MjVc4UNfxRObcmOrYbioz8=; b=yTgtSediKRnoWwy8kjWGCF8QmN
+	crwo4BSRp8UJ/W6u6oNhtx3ZagRe3XtAoZiMA9/4/5JAiVtJfJHG0L/pfj5iLy9diFBBrXsRef6qM
+	xTeq759voc7jaJrH18YGoLqkohW5SVw0O/Nvzr2EewOR/nWtor9gzsX+ORauGE4IQeZWDoUSxxpYb
+	Vj9grvPNoQVQ7TI6cQc3COJ8ZJc1Kshl4afZVv7eit9R5RkDLhWkNRHIrkvwE0ZwcUsaJeSympBV9
+	t6SRAhli8aSA9U+RBF+xBX2EjxMVM7s0DDrIKYfI0KvR3TjhXH9U1p/N9A/ilkJwPIv2TPOxebxXT
+	xZ0GghQA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xTZ4Q-00000007tQi-1dS8;
-	Wed, 18 Nov 2026 06:23:02 +0000
-Received: from mail-japanwestazon11021132.outbound.protection.outlook.com ([40.107.74.132] helo=OS0P286CU010.outbound.protection.outlook.com)
+	id 1xTZrB-00000007yrn-2kq5;
+	Wed, 18 Nov 2026 07:13:25 +0000
+Received: from galois.linutronix.de ([193.142.43.55])
 	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xTZ4O-00000007tLK-0diM;
-	Wed, 18 Nov 2026 06:23:01 +0000
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=pAHcKFIhou6BuDgQzPC6jmt2OK4O190pbAlvljORW1ZVKpwA6yXdRImAofbbZMSL/z5d7ZszGVkSKZDBwKUiobOx3c/s18ab5kWS7n1Ls2cqcP4JRsGYddTxy6DtolDh+wtcgmH0IoeeaW+vU8jMK4LFgFVTxTSMj64FkI01LXnES9f/g6uuGtH275+XQn2WNu18l7W8q85CrftKrDlAsum8SpQ1qyeD3I+IS66bc1n/+3zgli1sDvulKVqtmDyrH4ukGq9bFQqJFL8gr3g1c3Cnu0I5sPiZDup9hKBox4AxPXNIj09bWQUiVzolqLv+bdye2yDnHuDPhuK4hQHhKw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=NwFY9JKXIhc9qtEfHK23P9LsP+f13ZF4zeEyPN0y2bY=;
- b=cU+Gwu8yAkHSgDatSqmveFadpmW/GREFXU31Uq9Ccua6kBQY4guUqc80fapYqcz8g0pI5kfOp9WnTicJCJe4xnsZsLoaLPWg/bZan4EQd4MtwZq39bET0leBuvEvq9ASU9z5FpnnLGqYLRouxcLsYyKJJhVSbr72+vRihfVzpa1Iye0HcRwJA0RqoFZMjGfH0FSDvdQEupP/fjqr/0i6+d/y3QNpmd3nJGXlfnhBX5LjpqMKJIFeDD3Zm92J/q7ccQu63F0qv2toZHFVduHmoekNLCkgU7G58kTfaOKbGGQZhnXlPQ4DJ4zZYDvSGFvDyC8ergFBWoAQxzKftRQrnw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=valinux.co.jp; dmarc=pass action=none
- header.from=valinux.co.jp; dkim=pass header.d=valinux.co.jp; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=valinux.co.jp;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=NwFY9JKXIhc9qtEfHK23P9LsP+f13ZF4zeEyPN0y2bY=;
- b=LmPIO5yBjFITDmFsRiZV1FFoZHOw1CP52bs3tP/3NzQyo4D0NkO9AuOmaZdj0Ldy7JGRd6d88Y160KQUJYJiHfcVAM9WhGk5KA+m3FPIJ3/x1bVvV3awGXKvXnBmAXUWLmhaSZeX2vpNd5Mmi6zA8h2clCpkdu+oP0qxod7P/SQ=
-Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=valinux.co.jp;
-Received: from TY7P286MB6866.JPNP286.PROD.OUTLOOK.COM (2603:1096:405:325::11)
- by OS9P286MB6324.JPNP286.PROD.OUTLOOK.COM (2603:1096:604:40b::11) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.615.14; Wed, 18 Nov
- 2026 06:22:53 +0000
-Received: from TY7P286MB6866.JPNP286.PROD.OUTLOOK.COM
- ([fe80::cce5:2aa8:53f9:dba9]) by TY7P286MB6866.JPNP286.PROD.OUTLOOK.COM
- ([fe80::cce5:2aa8:53f9:dba9%5]) with mapi id 15.21.0615.013; Wed, 18 Nov 2026
- 06:22:53 +0000
-From: Koichiro Den <den@valinux.co.jp>
-To: Anup Patel <anup@brainfault.org>,
-	Atish Patra <atish.patra@linux.dev>
-Cc: Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Alexandre Ghiti <alex@ghiti.fr>,
-	Bingyu Xian <shanbeeyoo@gmail.com>,
-	kvm@vger.kernel.org,
-	kvm-riscv@lists.infradead.org,
-	linux-riscv@lists.infradead.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] RISC-V: KVM: Skip steal-time updates when run_delay is unchanged
-Date: Wed, 18 Nov 2026 15:22:42 +0900
-Message-ID: <20261118062242.2914385-3-den@valinux.co.jp>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20261118062242.2914385-1-den@valinux.co.jp>
-References: <20261118062242.2914385-1-den@valinux.co.jp>
-X-ClientProxiedBy: TY4PR01CA0007.jpnprd01.prod.outlook.com
- (2603:1096:405:26e::10) To TY7P286MB6866.JPNP286.PROD.OUTLOOK.COM
- (2603:1096:405:325::11)
+	id 1xTZr8-00000007yqX-2PzU;
+	Wed, 18 Nov 2026 07:13:24 +0000
+Date: Wed, 18 Nov 2026 08:13:14 +0100
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020; t=1794985997;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=8pB+MXPNtH9n1jK/JmpiYpmW0motvJ1fOUd08yC+k48=;
+	b=wLzpbgMdmN1snhABK51fJE0hhG87MbcpKkOXh8RBHFftRMW2bTofPHTFD4FNmaEpkOG84N
+	tOyICaCBvc+wl88K1KiwhCyg9W4NOpxL81mmWTnYhJOExB8rWr7Dvv4nOTpLc5JspN9xaq
+	0UTXkvQ+VT3PgET8DALpawp+ef/JQ4YuJZQK8sNXJAd+Z+qjL4B2Um6pWU3gg7q6CAFOOw
+	A6eo+E4PXAjgTbmsh5Hr1EitsrL13B1q6aSfTQ5pINc36L8qfSGIOCUj31MbKrh271VGdn
+	bgRi2Cu907bpMvs6yZt+7Om5P/Dytc/UCbmsWFLsllwI2TsN+rmxa7cBq7xZhQ==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020e; t=1794985997;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=8pB+MXPNtH9n1jK/JmpiYpmW0motvJ1fOUd08yC+k48=;
+	b=i7OvvaGZhMMfJFYOaboeajhrsvueAErjBNBKv+3b9msb0fwcQnWLXZ2yUaOa1lHyP9M3/I
+	8Jr+H67IMA0LulAg==
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+To: Koichiro Den <den@valinux.co.jp>
+Cc: Anup Patel <anup@brainfault.org>, Atish Patra <atish.patra@linux.dev>,
+	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+	Clark Williams <clrkwllms@kernel.org>,
+	Steven Rostedt <rostedt@goodmis.org>, kvm@vger.kernel.org,
+	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linux-rt-devel@lists.linux.dev
+Subject: Re: [PATCH] RISC-V: KVM: Run vCPU timer callbacks in hardirq context
+ on RT
+Message-ID: <20261118071314.NJWhnli-@linutronix.de>
+References: <20261118062104.2912910-1-den@valinux.co.jp>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: TY7P286MB6866:EE_|OS9P286MB6324:EE_
-X-MS-Office365-Filtering-Correlation-Id: 043cb4fd-4e35-42f4-c05d-08df453c60b9
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;ARA:13230040|7416014|1800799024|10070799003|376014|366016|23010399003|56012099006|261022105027099003|261021121427099003|10067099003|261026140227099003|261028144727099003|261102123227099003|261021123027099003|261009223027099003|18002099003|22082099003;
-X-Microsoft-Antispam-Message-Info: +a1JoSfp/CVG3NFCNmrQu0fO+615ydaRRGfQabuKVqKLGRWJly8vN5oSyVoW/Cu1L/zTexP3Zxpy+1OA51Dh5ZDzdIMX+XIjFiM/dLbZnmTfgKnqDkF8iB2CFr9Tr1Z4lmjaZL/+wIAuedEJQNJCmKHAW+P7Eo5cq8d919M7GhzgoNLEZ/w3p4eFVefNOv3fwUO9Hoh9ivsEDBxReE3IOdDqxp+zhcxt2c3XOCJUl9Xr+2I7Qe7dqykcnM54xIgODDKU1qMP4/O7EE3DTlTuDttYwlBEghQeGJ/39su/v4102d+nlgFvI6e4n7RFV1lluNCOc5XC8ZSmGM15ZWxf0E8mr2fgZUrrRex5kiMHgq9+Di/KVhldcCEK5A1uv8jlBgTExMJw0wLnrw7Saf5LX8KTg+DTCGTrGOdgynRJUrNhyebYA3cXCkmIi+Bmcjg29U1mGA4nKxY6eZJAeAJbWBP/dnlbP8/aX6Pg/9WFKsjYNvmXqISAkbnxtZsTbsAfY6h+y3LsW/SiWx22AbcJ5nCIk1lnXNULm8WmfzxdH6vD2MNj/a5n6S3CpLjKFCqcnXTUCLg90oFwcWlqh+ScN0+EumNaQOXRgq25Irl41YAQCWD6tVfNrr6scNrurbYcroZBbXhnIz/a0ucHgvINdSioKMJRDMpJY65KU6xMMLs=
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:TY7P286MB6866.JPNP286.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(7416014)(1800799024)(10070799003)(376014)(366016)(23010399003)(56012099006)(261022105027099003)(261021121427099003)(10067099003)(261026140227099003)(261028144727099003)(261102123227099003)(261021123027099003)(261009223027099003)(18002099003)(22082099003);DIR:OUT;SFP:1102;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?oGrmiOhEuVUe/W1s97HJPXNhaLSYJUE0FcgKDjwf2NWsO1uUBZnk9/giGOLH?=
- =?us-ascii?Q?E+U8k4gOEAfaxeUT3EtS50vNtrFKDwsJzPPTOthJ2hG25emFKRXgHEVSnw2J?=
- =?us-ascii?Q?5UMqv1sg/bXA6e4eSJTdrFTxKlNStmplRKEXJRTdwxDyKdJ2Mpy6a8eDeBm+?=
- =?us-ascii?Q?fs3y2HBOb7f8JKPwuCIstr4zQs0bHifc5wGmTH/SBBxgUHTN4wbODubCEcWq?=
- =?us-ascii?Q?fOv8EB5qq6/vTOACq5j1CwnXPwUrjewIo987lKToW4oG63K7WRqWAS3ABAwA?=
- =?us-ascii?Q?TzinOvSAJexc9DB32psy2bCC6YrhsHpCnnR4h70ISKhkwb5SY0lZilBp9T02?=
- =?us-ascii?Q?nvV06ZXLMc0bQYYFNPP/zGCqFtt1qkMa1qalIgzKocm30aQ3JPsWWwcTIVsf?=
- =?us-ascii?Q?F70nkSwUe55F4lJwRXZ3g9jx/naL0r3TylF5f1IjyuwKEr+L5bsvcVztYd1c?=
- =?us-ascii?Q?TLUHyCrY+7TIaUJFYqRNHMoK1orH26mNbnoMJ5y9qOphq85FFyBkWpw8VMpC?=
- =?us-ascii?Q?+c83DIQrT1cuJESBe+12Pa3uG79fNumXBuqpnue8l7gg09u5UGuxdTffEfFv?=
- =?us-ascii?Q?EIpcr2MyaR/NPCB/yHCXbwkS15wSxNNnzGVELgW9V39qYtuCni2JYT0G3wO+?=
- =?us-ascii?Q?zGfpvW9nnettk0uVq1hwm8fxxAyM1zE+IrC5niwawRwHO5VxX4DIgS44C7/v?=
- =?us-ascii?Q?wt9hGV+uzI35WqSZfqNP7MB3fR6rUp4nBIi+/rLt7Jzv0iFF94uIg9YNF2n0?=
- =?us-ascii?Q?w+Hqq1luG7pPX0BQ6lZd0PJrITPdVH/J8p+4dzVRD+jsBE1YYkj1dX0Bj4Ci?=
- =?us-ascii?Q?neT0P7/cXHdM8U7M1tlyo4pPH0hpXtW4J1edUceC+fSkrHzAClLJdUGtZuPr?=
- =?us-ascii?Q?AbDn7898PMU26KZusQSLr3avxR5JEt8H3VLidpzbjJzjl4VSa0RlsGKE9bqX?=
- =?us-ascii?Q?D9wxLK5XUW296bWOHKm6DhvM+mjlAl5meFDjLAey9JnrxAyVCxdWs64f3++l?=
- =?us-ascii?Q?tXAP52DEsuLIhC5Ichaq6+vus3F4xEoC1fv62CA84KUa40Ndw4jl1U+IzCHZ?=
- =?us-ascii?Q?kfaVAKFPJJM+xM4nROJUeEg7+Nx9K9982CaTLUJeuI6C5YAlWhj0ZHGcHjl+?=
- =?us-ascii?Q?P4QQtW8qahdEtqNSb3P2W2deLIfPXDhHISCfuMMJI5BfrVsglNnUNUsvIrbE?=
- =?us-ascii?Q?zGFqeiRgTNadBFPU57skCmLm9bXafYhLQdN2Xx+VnQbHgAncFPdAmLYHyMN1?=
- =?us-ascii?Q?TnfMQTz6EkARcGdNna18x3QBBpojiO0d7Xg/fOfT3fiD4Cec+dzNVDoIajsJ?=
- =?us-ascii?Q?H3TzVmGWrt8Iv2zKrLc1Nio6gbgQhC7wRc9Mc4BSCJXGgXkHjtFnkQAtExZQ?=
- =?us-ascii?Q?s8CDvuftTPFsZo9H/4aMPsdsmk1vphhH6dLZdm1OUWgTRFAvlFpgaCGbsw1w?=
- =?us-ascii?Q?d/wmmxD9OPi1aVxFgQj49R3vMXjr30Dn2VgP+zUgz3Fpoiftzd77cpu44ves?=
- =?us-ascii?Q?4ESItbxrftvl6mfQPLfPE0kKhUIpM5Hz9joAFkt/m3ba9gJ7jERTsb5rQgMX?=
- =?us-ascii?Q?lzzuFhYTg703DQ+qMA75QunX5c3jb4pTk3z/ODV1kdcSXsFz70rhmb40uyIH?=
- =?us-ascii?Q?Rj/PRqMb0ZnQgJaU0x2AJ8QXpqumIUtXwXabftSW0MHtMBviHjkT8NppVsjr?=
- =?us-ascii?Q?WU5ZCfZ3b0SP5zcCl1Vj/N3ZoabgPAQVPCG6fg2v1qqYuzix0e6yxf5ngwVC?=
- =?us-ascii?Q?eSbYfjUYZcXE4xWGL5JtDc2gf+fVSSO4rc6oDIK8Brk1mvpWNN3R?=
-X-OriginatorOrg: valinux.co.jp
-X-MS-Exchange-CrossTenant-Network-Message-Id: 043cb4fd-4e35-42f4-c05d-08df453c60b9
-X-MS-Exchange-CrossTenant-AuthSource: TY7P286MB6866.JPNP286.PROD.OUTLOOK.COM
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Nov 2026 06:22:53.4278
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 7a57bee8-f73d-4c5f-a4f7-d72c91c8c111
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: UuHGnNSD7EB2pZObyo8sHh2oi5xCYRlMqRAHfcyrqrL440kb/fUKECFNTS8ACG7IeTe+tTxp1en2k4W3zxZaSA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: OS9P286MB6324
+Content-Disposition: inline
+In-Reply-To: <20261118062104.2912910-1-den@valinux.co.jp>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261117_222300_211285_09630DA5 
-X-CRM114-Status: UNSURE (   9.78  )
+X-CRM114-CacheID: sfid-20261117_231322_790088_31573730 
+X-CRM114-Status: UNSURE (   8.06  )
 X-CRM114-Notice: Please train this message.
-X-Spam-Score: -2.1 (--)
+X-Spam-Score: -4.4 (----)
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -144,58 +83,36 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
-X-Spam-Status: No, score=-16.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-8.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Check run_delay against last_steal and skip the update if they match.
-This avoids accessing the SBI STA shared structure and marking its page
-dirty on vCPU loads with no new steal time to report.
+On 2026-11-18 15:21:04 [+0900], Koichiro Den wrote:
+> On hosts with Sstc, kvm_arch_vcpu_load() cancels the vCPU wakeup hrtimer
+> with preemption disabled, including when called from sched-in preemption
+> notifier. The vCPU reset path also cancels the timer under get_cpu(),
+> with or without Sstc.
+> 
+> On PREEMPT_RT, these callbacks run in softirq thread context, so
+> hrtimer_cancel() may sleep waiting for a running callback, which is
+> invalid with preemption disabled.
+> 
+> Let the callbacks run in hardirq context on -RT. They only rearm the
+> timer, update interrupt state under a raw spinlock, and kick the vCPU.
+> Similar to commit 9090825fa997 ("KVM: arm/arm64: Let the timer expire in
+> hardirq context on RT").
+> 
+> Cc: stable@vger.kernel.org
+> Fixes: 3e1d86569c21 ("RISC-V: KVM: Add SBI HSM extension in KVM")
+> Fixes: 8f5cb44b1bae ("RISC-V: KVM: Support sstc extension")
+> Signed-off-by: Koichiro Den <den@valinux.co.jp>
 
-Signed-off-by: Koichiro Den <den@valinux.co.jp>
----
- arch/riscv/kvm/vcpu_sbi_sta.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+Reviewed-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 
-diff --git a/arch/riscv/kvm/vcpu_sbi_sta.c b/arch/riscv/kvm/vcpu_sbi_sta.c
-index cfc6f22c3e33..8b2499876fb4 100644
---- a/arch/riscv/kvm/vcpu_sbi_sta.c
-+++ b/arch/riscv/kvm/vcpu_sbi_sta.c
-@@ -31,7 +31,7 @@ void kvm_riscv_vcpu_record_steal_time(struct kvm_vcpu *vcpu)
- 	__le32 sequence_le;
- 	__le64 steal_le;
- 	u32 sequence;
--	u64 steal;
-+	u64 steal, run_delay;
- 	unsigned long hva;
- 	bool dirty = false, success = false;
- 	gfn_t gfn;
-@@ -52,6 +52,10 @@ void kvm_riscv_vcpu_record_steal_time(struct kvm_vcpu *vcpu)
- 		return;
- 	}
- 
-+	run_delay = READ_ONCE(current->sched_info.run_delay);
-+	if (run_delay == last_steal)
-+		return;
-+
- 	st = (struct sbi_sta_struct __user *)(hva + offset_in_page(shmem));
- 	might_fault();
- 	if (WARN_ON(!user_access_begin(st, sizeof(*st))))
-@@ -66,7 +70,7 @@ void kvm_riscv_vcpu_record_steal_time(struct kvm_vcpu *vcpu)
- 	smp_wmb();
- 	unsafe_get_user(steal_le, &st->steal, update_sequence);
- 	steal = le64_to_cpu(steal_le);
--	vcpu->arch.sta.last_steal = READ_ONCE(current->sched_info.run_delay);
-+	vcpu->arch.sta.last_steal = run_delay;
- 	steal += vcpu->arch.sta.last_steal - last_steal;
- 	unsafe_put_user(cpu_to_le64(steal), &st->steal, update_sequence);
- 	success = true;
--- 
-2.54.0
-
+Sebastian
 
 -- 
 kvm-riscv mailing list
