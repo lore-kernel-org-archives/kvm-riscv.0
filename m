@@ -2,12 +2,11 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F1AE7606A325
-	for <kvm-riscv@archiver.kernel.org>; Wed, 18 Nov 2026 07:13:25 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4A086606A320
+	for <kvm-riscv@archiver.kernel.org>; Wed, 18 Nov 2026 17:53:17 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=yTgtSedi;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=wLzpbgMd;
-	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=i7OvvaGZ
+	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=DaazUXr9;
+	dkim=fail reason="signature verification failed" (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=kKrkgOt9
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
@@ -15,62 +14,55 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
 	List-Unsubscribe-Post:List-Owner;
-	bh=iFM5SKiCAugtSaP5n08v+MjVc4UNfxRObcmOrYbioz8=; b=yTgtSediKRnoWwy8kjWGCF8QmN
-	crwo4BSRp8UJ/W6u6oNhtx3ZagRe3XtAoZiMA9/4/5JAiVtJfJHG0L/pfj5iLy9diFBBrXsRef6qM
-	xTeq759voc7jaJrH18YGoLqkohW5SVw0O/Nvzr2EewOR/nWtor9gzsX+ORauGE4IQeZWDoUSxxpYb
-	Vj9grvPNoQVQ7TI6cQc3COJ8ZJc1Kshl4afZVv7eit9R5RkDLhWkNRHIrkvwE0ZwcUsaJeSympBV9
-	t6SRAhli8aSA9U+RBF+xBX2EjxMVM7s0DDrIKYfI0KvR3TjhXH9U1p/N9A/ilkJwPIv2TPOxebxXT
-	xZ0GghQA==;
+	bh=HnUHcuNWFMwV7iq0ZoOSKMKdCGnqQxrZluKx/jHdkyE=; b=DaazUXr91fA6KFH9eOk/hBPsZl
+	d2cL2GFAp4/6VLxskznGusBXb9RYfnxs5Gi56nARyegGYpTfUjUoZQ06jKqgCSJ97fjEw35NmHZNK
+	F9iUyZy3UIBl41hGvf4vOU3oVmOaCdIdj8fFPYWiPllPtGZu93nNhe+O8z07CpcX8zQhDH62E3zp8
+	FEugRAT42OTr0cZ/jmXq+gRBxjQR1Kq7Z1VXbIwsC/C/OjnfelT1PGxPSNxL1NXVp+MGOalDZAl46
+	rtqfnfGlYwNmRcGpDz8KnrEcCFqYWLQ2HXt1DrZIpJm3F1nd0l7qTDXw/fyKCrK15ZNCLci/WjP1z
+	zZHzn2NQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xTZrB-00000007yrn-2kq5;
-	Wed, 18 Nov 2026 07:13:25 +0000
-Received: from galois.linutronix.de ([193.142.43.55])
+	id 1xTjqP-00000009pjU-04Wt;
+	Wed, 18 Nov 2026 17:53:17 +0000
+Received: from out-185.mta0.migadu.com ([2001:41d0:1004:224b::b9] helo=mta0.migadu.com)
 	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xTZr8-00000007yqX-2PzU;
-	Wed, 18 Nov 2026 07:13:24 +0000
-Date: Wed, 18 Nov 2026 08:13:14 +0100
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1794985997;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=8pB+MXPNtH9n1jK/JmpiYpmW0motvJ1fOUd08yC+k48=;
-	b=wLzpbgMdmN1snhABK51fJE0hhG87MbcpKkOXh8RBHFftRMW2bTofPHTFD4FNmaEpkOG84N
-	tOyICaCBvc+wl88K1KiwhCyg9W4NOpxL81mmWTnYhJOExB8rWr7Dvv4nOTpLc5JspN9xaq
-	0UTXkvQ+VT3PgET8DALpawp+ef/JQ4YuJZQK8sNXJAd+Z+qjL4B2Um6pWU3gg7q6CAFOOw
-	A6eo+E4PXAjgTbmsh5Hr1EitsrL13B1q6aSfTQ5pINc36L8qfSGIOCUj31MbKrh271VGdn
-	bgRi2Cu907bpMvs6yZt+7Om5P/Dytc/UCbmsWFLsllwI2TsN+rmxa7cBq7xZhQ==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1794985997;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=8pB+MXPNtH9n1jK/JmpiYpmW0motvJ1fOUd08yC+k48=;
-	b=i7OvvaGZhMMfJFYOaboeajhrsvueAErjBNBKv+3b9msb0fwcQnWLXZ2yUaOa1lHyP9M3/I
-	8Jr+H67IMA0LulAg==
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-To: Koichiro Den <den@valinux.co.jp>
-Cc: Anup Patel <anup@brainfault.org>, Atish Patra <atish.patra@linux.dev>,
-	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
-	Clark Williams <clrkwllms@kernel.org>,
-	Steven Rostedt <rostedt@goodmis.org>, kvm@vger.kernel.org,
-	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
-	linux-kernel@vger.kernel.org, linux-rt-devel@lists.linux.dev
-Subject: Re: [PATCH] RISC-V: KVM: Run vCPU timer callbacks in hardirq context
- on RT
-Message-ID: <20261118071314.NJWhnli-@linutronix.de>
-References: <20261118062104.2912910-1-den@valinux.co.jp>
+	id 1xTjqK-00000009phB-1lHI
+	for kvm-riscv@lists.infradead.org;
+	Wed, 18 Nov 2026 17:53:15 +0000
+X-Envelope-To: kvm-riscv@lists.infradead.org
+DKIM-Signature: a=rsa-sha256; bh=+m7k99GokHGG2Xt0WNDUpUu/POJp/u8hXMkzLb7HkPI=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1795024385; v=1; x=1795629185;
+ b=kKrkgOt9Z0+Uxd0OLSeRAMXHHLAwszcLDUbKbF12OkJtRBtdtWKPCEIzYjNBS/HTPbsasfAS
+ uB5YRPSbid1q4JNdkyBI3GN/ci90xJ1VOlf8DjQgJu1KHxicG+32bBCr18ovse2tMz48PwuBhzD
+ 9MA0algsT312UDIoJhrsXcmk=
+X-Envelope-To: kvm-riscv@lists.infradead.org
+Received: by smtp.migadu.com with ESMTPS id 55e39e18abac30ad;
+	Wed, 18 Nov 2026 17:53:05 +0000
+X-Mizu-Trace-ID: 55e39e18abac30ad
+X-Migadu-Flow: FLOW_OUT
+Date: Wed, 18 Nov 2026 18:52:30 +0100
+From: Andrew Jones <andrew.jones@linux.dev>
+To: Thomas Huth <thuth@redhat.com>
+Cc: Paolo Bonzini <pbonzini@redhat.com>, kvm@vger.kernel.org, 
+	Laurent Vivier <lvivier@redhat.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, 
+	Janosch Frank <frankja@linux.ibm.com>, Nico =?utf-8?B?QsO2aHI=?= <nrb@linux.ibm.com>, 
+	Chinmay Rath <rathc@linux.ibm.com>, kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
+	kvm-riscv@lists.infradead.org, linux-s390@vger.kernel.org, 
+	Amit Machhiwal <amachhiw@linux.ibm.com>
+Subject: Re: [kvm-unit-tests PATCH] Move position-independant code flags into
+ the target specific Makefiles
+Message-ID: <av3l0ZC64ouIp4KN@orel>
+References: <20261113120101.145183-1-thuth@redhat.com>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20261118062104.2912910-1-den@valinux.co.jp>
+In-Reply-To: <20261113120101.145183-1-thuth@redhat.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261117_231322_790088_31573730 
-X-CRM114-Status: UNSURE (   8.06  )
-X-CRM114-Notice: Please train this message.
-X-Spam-Score: -4.4 (----)
+X-CRM114-CacheID: sfid-20261118_095314_299323_5D861F42 
+X-CRM114-Status: GOOD (  16.28  )
+X-Spam-Score: -2.1 (--)
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -83,36 +75,41 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
-X-Spam-Status: No, score=-8.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-13.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=4.0.1
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On 2026-11-18 15:21:04 [+0900], Koichiro Den wrote:
-> On hosts with Sstc, kvm_arch_vcpu_load() cancels the vCPU wakeup hrtimer
-> with preemption disabled, including when called from sched-in preemption
-> notifier. The vCPU reset path also cancels the timer under get_cpu(),
-> with or without Sstc.
+On Fri, Nov 13, 2026 at 01:01:01PM +0100, Thomas Huth wrote:
+> The settings for position-independant code are currently quite a mess:
+> It depends on the target whether we need the flags or rather should even
+> disable PIC / PIE, but currently the settings are spread between the
+> main Makefile (-fno-pic is the default, unless CONFIG_EFI has been set)
+> and the target specific Makefiles.
+> This leads to some weird situations where we have -fno-pic in the CFLAGS,
+> but link with -pie in the LDFLAGS since we still want to get a relocation
+> table, but then again need to add a "-z notext" to the linker flags to
+> avoid warnings about relocation entries in the text segment.
+> Let's face it: Always adding -fno-pic / -no-pie in the main Makefile is
+> a bad idea. Move the settings to the target specific Makefiles instead
+> where we know what we really want, and then we can finally drop the
+> "-z notext" settings, too.
 > 
-> On PREEMPT_RT, these callbacks run in softirq thread context, so
-> hrtimer_cancel() may sleep waiting for a running callback, which is
-> invalid with preemption disabled.
-> 
-> Let the callbacks run in hardirq context on -RT. They only rearm the
-> timer, update interrupt state under a raw spinlock, and kick the vCPU.
-> Similar to commit 9090825fa997 ("KVM: arm/arm64: Let the timer expire in
-> hardirq context on RT").
-> 
-> Cc: stable@vger.kernel.org
-> Fixes: 3e1d86569c21 ("RISC-V: KVM: Add SBI HSM extension in KVM")
-> Fixes: 8f5cb44b1bae ("RISC-V: KVM: Support sstc extension")
-> Signed-off-by: Koichiro Den <den@valinux.co.jp>
+> Signed-off-by: Thomas Huth <thuth@redhat.com>
+> ---
+>  Makefile            | 6 +-----
+>  arm/Makefile.arm    | 2 ++
+>  arm/Makefile.arm64  | 3 +--
+>  powerpc/Makefile    | 5 ++++-
+>  riscv/Makefile      | 1 +
+>  s390x/Makefile      | 3 +++
+>  x86/Makefile.common | 5 +++++
+>  7 files changed, 17 insertions(+), 8 deletions(-)
+>
 
-Reviewed-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-
-Sebastian
+Acked-by: Andrew Jones <andrew.jones@linux.dev>
 
 -- 
 kvm-riscv mailing list
