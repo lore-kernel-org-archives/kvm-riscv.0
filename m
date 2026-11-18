@@ -2,67 +2,126 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4A086606A320
-	for <kvm-riscv@archiver.kernel.org>; Wed, 18 Nov 2026 17:53:17 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 09AB3606A338
+	for <kvm-riscv@archiver.kernel.org>; Wed, 18 Nov 2026 17:59:01 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=DaazUXr9;
-	dkim=fail reason="signature verification failed" (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=kKrkgOt9
+	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=19HkjoJN;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=A6XxPmmW
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
-	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
+	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
+	List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:Subject:
+	MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
 	List-Unsubscribe-Post:List-Owner;
-	bh=HnUHcuNWFMwV7iq0ZoOSKMKdCGnqQxrZluKx/jHdkyE=; b=DaazUXr91fA6KFH9eOk/hBPsZl
-	d2cL2GFAp4/6VLxskznGusBXb9RYfnxs5Gi56nARyegGYpTfUjUoZQ06jKqgCSJ97fjEw35NmHZNK
-	F9iUyZy3UIBl41hGvf4vOU3oVmOaCdIdj8fFPYWiPllPtGZu93nNhe+O8z07CpcX8zQhDH62E3zp8
-	FEugRAT42OTr0cZ/jmXq+gRBxjQR1Kq7Z1VXbIwsC/C/OjnfelT1PGxPSNxL1NXVp+MGOalDZAl46
-	rtqfnfGlYwNmRcGpDz8KnrEcCFqYWLQ2HXt1DrZIpJm3F1nd0l7qTDXw/fyKCrK15ZNCLci/WjP1z
-	zZHzn2NQ==;
+	bh=GES9gUo9tSVwd0bfXaLEo/LxxS42B+0wF3JuU7nU+wU=; b=19HkjoJNEibj8GaveBhy98BLr4
+	qtH6/0p/kgG8t1M+yz3F9GzNuXnRTtJVXHhwUy9EWS7yBLb0C8Y2C9oqA9h/Xxe5Qfgp7IT+tTSkf
+	q2RgZ7oXkrWGunmiAo79wjyZo9pEx92q4N3oEZVEdAe0N3btCt3L/TC00bY/8kqvLGhKFllfkk+Xz
+	08DXByrB40h7zhVdZd/BeQD4rEweJbZ2i1e8QFr5wFesz4s1EAmPRFzKXA1ugrN73RZL2l3imEocH
+	BlP/Jx6xT8bTdoS4swdSy9/rsLUMFQ5KNBP6D8d034gVVn2kbDnZ6SZwbPjrteZVILKnFj6Zl+UQ5
+	u/wxMmhg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xTjqP-00000009pjU-04Wt;
-	Wed, 18 Nov 2026 17:53:17 +0000
-Received: from out-185.mta0.migadu.com ([2001:41d0:1004:224b::b9] helo=mta0.migadu.com)
+	id 1xTjvw-00000009qHs-2YpE;
+	Wed, 18 Nov 2026 17:59:00 +0000
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124])
 	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xTjqK-00000009phB-1lHI
+	id 1xTjvt-00000009qH2-1iQg
 	for kvm-riscv@lists.infradead.org;
-	Wed, 18 Nov 2026 17:53:15 +0000
-X-Envelope-To: kvm-riscv@lists.infradead.org
-DKIM-Signature: a=rsa-sha256; bh=+m7k99GokHGG2Xt0WNDUpUu/POJp/u8hXMkzLb7HkPI=;
- c=simple/simple; d=linux.dev;
- h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1795024385; v=1; x=1795629185;
- b=kKrkgOt9Z0+Uxd0OLSeRAMXHHLAwszcLDUbKbF12OkJtRBtdtWKPCEIzYjNBS/HTPbsasfAS
- uB5YRPSbid1q4JNdkyBI3GN/ci90xJ1VOlf8DjQgJu1KHxicG+32bBCr18ovse2tMz48PwuBhzD
- 9MA0algsT312UDIoJhrsXcmk=
-X-Envelope-To: kvm-riscv@lists.infradead.org
-Received: by smtp.migadu.com with ESMTPS id 55e39e18abac30ad;
-	Wed, 18 Nov 2026 17:53:05 +0000
-X-Mizu-Trace-ID: 55e39e18abac30ad
-X-Migadu-Flow: FLOW_OUT
-Date: Wed, 18 Nov 2026 18:52:30 +0100
-From: Andrew Jones <andrew.jones@linux.dev>
-To: Thomas Huth <thuth@redhat.com>
-Cc: Paolo Bonzini <pbonzini@redhat.com>, kvm@vger.kernel.org, 
-	Laurent Vivier <lvivier@redhat.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, 
-	Janosch Frank <frankja@linux.ibm.com>, Nico =?utf-8?B?QsO2aHI=?= <nrb@linux.ibm.com>, 
-	Chinmay Rath <rathc@linux.ibm.com>, kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
-	kvm-riscv@lists.infradead.org, linux-s390@vger.kernel.org, 
-	Amit Machhiwal <amachhiw@linux.ibm.com>
-Subject: Re: [kvm-unit-tests PATCH] Move position-independant code flags into
- the target specific Makefiles
-Message-ID: <av3l0ZC64ouIp4KN@orel>
-References: <20261113120101.145183-1-thuth@redhat.com>
+	Wed, 18 Nov 2026 17:58:58 +0000
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1795024734;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=/aEvVPN2vkIpoOGbqbjwslntOnXXcoUrCbDoxZ9fqIU=;
+	b=A6XxPmmWoyeTy2abljIMXp4q/TYXVIv8pbsV4XToNHM0wQdW13zXa8ZRw3pyYCJgD/EHz7
+	vCQWaD9b0Ea4PjuM4OCCmN8fbi0h85w3Q/7Ynf0jbBJ0g+qDwgy+0b7X3TPZRf7Wvkqr49
+	ZqGgp4s33mSI/ziJ+8auy+rIAET4H8Y=
+Received: from mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-454-eKEYaacdP5iXcYIWe_UR6A-1; Wed,
+ 18 Nov 2026 12:58:49 -0500
+X-MC-Unique: eKEYaacdP5iXcYIWe_UR6A-1
+X-Mimecast-MFC-AGG-ID: eKEYaacdP5iXcYIWe_UR6A_1795024724
+Received: from mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.93])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id A7C8C1954B09;
+	Wed, 18 Nov 2026 17:58:42 +0000 (UTC)
+Received: from [100.90.222.41] (headnet04.pony-001.prod.iad2.dc.redhat.com [10.2.32.116])
+	by mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id ED59A18004F5;
+	Wed, 18 Nov 2026 17:58:35 +0000 (UTC)
+Message-ID: <4e4fb011-9171-42c1-b499-27b0333a2fd6@redhat.com>
+Date: Wed, 18 Nov 2026 18:58:33 +0100
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <20261113120101.145183-1-thuth@redhat.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 06/16] KVM: x86: Widen the plane vCPU fd ioctl allowlist
+To: David Woodhouse <dwmw2@infradead.org>, =?UTF-8?B?SsO2cmcgUsO2ZGVs?=
+ <joro@8bytes.org>
+Cc: Sean Christopherson <seanjc@google.com>,
+ Tom Lendacky <thomas.lendacky@amd.com>, ashish.kalra@amd.com,
+ michael.roth@amd.com, nsaenz@amazon.com, anelkz@amazon.de,
+ James.Bottomley@HansenPartnership.com, Melody Wang <huibo.wang@amd.com>,
+ kvm@vger.kernel.org, linux-kernel@vger.kernel.org, kvmarm@lists.linux.dev,
+ loongarch@lists.linux.dev, linux-mips@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, kvm-riscv@lists.infradead.org,
+ x86@kernel.org, coconut-svsm@lists.linux.dev, joerg.roedel@amd.com,
+ Mushahid Hussain <hmushi@amazon.co.uk>,
+ Sriram Nambakam <snambakam@linux.microsoft.com>,
+ David Woodhouse <dwmw@amazon.co.uk>
+References: <20260608144252.351443-1-joro@8bytes.org>
+ <20261111222911.477-1-dwmw2@infradead.org>
+ <20261111222911.477-7-dwmw2@infradead.org>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Autocrypt: addr=pbonzini@redhat.com; keydata=
+ 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
+In-Reply-To: <20261111222911.477-7-dwmw2@infradead.org>
+X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.93
+X-Mimecast-MFC-PROC-ID: 6FPpX2Iz0I7tvfpdFAX5Ocur4Qa7XHWMKPphT1GRZ3E_1795024724
+X-Mimecast-Originator: redhat.com
+Content-Language: en-US
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261118_095314_299323_5D861F42 
-X-CRM114-Status: GOOD (  16.28  )
-X-Spam-Score: -2.1 (--)
+X-CRM114-CacheID: sfid-20261118_095857_605703_7A285E3B 
+X-CRM114-Status: GOOD (  11.37  )
+X-Spam-Score: 0.5 (/)
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -72,44 +131,48 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
-X-Spam-Status: No, score=-13.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-5.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Fri, Nov 13, 2026 at 01:01:01PM +0100, Thomas Huth wrote:
-> The settings for position-independant code are currently quite a mess:
-> It depends on the target whether we need the flags or rather should even
-> disable PIC / PIE, but currently the settings are spread between the
-> main Makefile (-fno-pic is the default, unless CONFIG_EFI has been set)
-> and the target specific Makefiles.
-> This leads to some weird situations where we have -fno-pic in the CFLAGS,
-> but link with -pie in the LDFLAGS since we still want to get a relocation
-> table, but then again need to add a "-z notext" to the linker flags to
-> avoid warnings about relocation entries in the text segment.
-> Let's face it: Always adding -fno-pic / -no-pie in the main Makefile is
-> a bad idea. Move the settings to the target specific Makefiles instead
-> where we know what we really want, and then we can finally drop the
-> "-z notext" settings, too.
+On 11/11/26 23:29, David Woodhouse wrote:
+> From: David Woodhouse <dwmw@amazon.co.uk>
 > 
-> Signed-off-by: Thomas Huth <thuth@redhat.com>
-> ---
->  Makefile            | 6 +-----
->  arm/Makefile.arm    | 2 ++
->  arm/Makefile.arm64  | 3 +--
->  powerpc/Makefile    | 5 ++++-
->  riscv/Makefile      | 1 +
->  s390x/Makefile      | 3 +++
->  x86/Makefile.common | 5 +++++
->  7 files changed, 17 insertions(+), 8 deletions(-)
->
+> A VMM that puts an initial VTL context on a higher plane cannot finish
+> the job through the plane vCPU's fd. kvm_arch_is_vcpu_plane_ioctl()
+> refuses the ioctls it needs, while the one capability ioctl it does
+> admit, KVM_ENABLE_CAP, reaches *every* vCPU capability handler.
+> 
+>   - KVM_GET/SET_MP_STATE: a plane vCPU for an AP starts in
+>     wait-for-INIT like any non-boot x86 vCPU, and nothing ever sends
+>     INIT/SIPI to the higher plane of an AP. The VMM has to mark it
+>     runnable itself.
+>   - KVM_SET_GUEST_DEBUG: single-step and breakpoints on a non-zero
+>     plane. The debug exits surface through the plane-0 KVM_RUN loop
+>     like any other plane exit.
+>   - KVM_X86_SETUP_MCE: mcg_cap is per vCPU and every twin starts with
+>     the KVM_MAX_MCE_BANKS default, so programming plane 0 alone leaves
+>     the planes disagreeing. Hyper-V shares MCG state across VTLs.
+>   - KVM_ENABLE_CAP: accept only the audited capabilities on a plane fd,
+>     the SynIC pair and the two CPUID-enforcement toggles, which change
+>     state that each twin keeps separately. Anything else gets -EINVAL, as
+>     non-allowlisted ioctls already do. The nested paths behind
+>     enlightened VMCS and direct TLB flush have never been audited for
+>     plane_level > 0, and without the filter any future vCPU cap would
+>     work on planes without anyone having decided that it should.
 
-Acked-by: Andrew Jones <andrew.jones@linux.dev>
+Not sure about KVM_ENABLE_CAP, the other seem sane.
+
+BTW at some point I'll rewrite these commit messages, they're infuriating...
+
+Paolo
+
 
 -- 
 kvm-riscv mailing list
