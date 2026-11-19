@@ -2,85 +2,66 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 190EB606AA55
-	for <kvm-riscv@archiver.kernel.org>; Thu, 19 Nov 2026 13:28:31 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 351EE606E870
+	for <kvm-riscv@archiver.kernel.org>; Thu, 19 Nov 2026 13:50:10 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=J2zhWAGn
+	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=yHojSliV;
+	dkim=fail reason="signature verification failed" (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=XPqVjGWH
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
-	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
+	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
 	List-Unsubscribe-Post:List-Owner;
-	bh=Amw1fS1XfiTeMTqc1Cu798J9a9rOr5rpBCsgkAvG0x8=; b=J2zhWAGn/sjYRd7ty7a65YaPX2
-	dQHQpCO0vfsOf6qoKncdepenq+MaplOphRfgA5RCMl4EnkzMlyFr6F3H4nMY90r7DpzOCIFmr1pqe
-	92eFBN58tP41S0ZyDxDLcmiOF0Y02a3mNhm9+v6QaoWlJ2YMlPxPd1tX+wfNJAmVXwbOknrzR6RlO
-	JK6Xzef+sCRGu+JTOf8HLNOsg98OrS3kz4ydwzTk3W4tWS4OJ74Ax5w9NNYYH+LxCW712b/O7UYXF
-	0jHpqUBXAU5+sYeEOf1bTBmRNnV8R8A28hKuphPGVSp3LPsyRVVbBietxB9ajncsoEz6CIQhBFE3j
-	wBtAE75g==;
+	bh=QtiyNAOvot3E56GAhlf+cF89sD0xzPwkA4uFYgVVUjc=; b=yHojSliVFHhUrko2yEO+R7eozg
+	giyhr76OVyVQr8EziLQldnNhXCk1lIoav5fHPl6UgR29oSwolHkQlBzea/w6n+FCbCtfiVFFNh8lS
+	+gSnRde89hXZQIGGlLWmvSJpUngeS0APxiVt/ndUCYFFwPuhr5hNxRBqgGF/PlOAZzV0DQgR7kQsJ
+	KkI7qOv+BIdI/TftDkt/wz+IvUbXW8gZe0oZa1D0AjCbM0fzSRgZbKHj5Zd6NDILYN5cvnMpwOisW
+	r1rHwaNmqVYIsB/JVHcFmrzGVVD9SqtCbzHzjeTaKSnA78+qdMhI+Dbz2syfs6uQyMrsY3LFeFSTs
+	kMcZV3eQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xU2Bi-0000000C2gv-2JHq;
-	Thu, 19 Nov 2026 13:28:30 +0000
-Received: from mxct.zte.com.cn ([183.62.165.209])
+	id 1xU2Wf-0000000C7jE-3bZR;
+	Thu, 19 Nov 2026 13:50:09 +0000
+Received: from out-226.mta0.migadu.com ([2001:41d0:1004:224b::e2] helo=mta0.migadu.com)
 	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xU2BX-0000000C2Qd-2WLd;
-	Thu, 19 Nov 2026 13:28:21 +0000
-Received: from mse-fl1.zte.com.cn (unknown [10.5.228.132])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mxct.zte.com.cn (FangMail) with ESMTPS id 4jVfRK1ktVz52SG3;
-	Thu, 19 Nov 2026 21:27:57 +0800 (CST)
-Received: from szxlzmapp03.zte.com.cn ([10.5.231.207])
-	by mse-fl1.zte.com.cn with SMTP id 6AJDRsH9086413;
-	Thu, 19 Nov 2026 21:27:54 +0800 (+08)
-	(envelope-from gong.shuai@sanechips.com.cn)
-Received: from ubuntu-35-gs (unknown [10.230.214.35])
-	by smtp (Zmail) with SMTP;
-	Thu, 19 Nov 2026 21:27:58 +0800
-X-Zmail-TransId: 3e816afef95d02f-56508
-X-Zmail-LocalSMTP: 1
-X-Zmail-RealSender: gong.shuai@sanechips.com.cn
-From: Gong Shuai <gong.shuai@sanechips.com.cn>
-To: kvm@vger.kernel.org, kvm-riscv@lists.infradead.org,
-        linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
-        iommu@lists.linux.dev
-Cc: Anup Patel <anup@brainfault.org>, Atish Patra <atish.patra@linux.dev>,
-        Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
-        Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
-        Tomasz Jeznach <tomasz.jeznach@linux.dev>,
-        "Joerg Roedel (AMD)" <joro@8bytes.org>, Will Deacon <will@kernel.org>,
-        Robin Murphy <robin.murphy@arm.com>,
-        Paolo Bonzini <pbonzini@redhat.com>,
-        Sean Christopherson <seanjc@google.com>,
-        Jason Gunthorpe <jgg@ziepe.ca>, Kevin Tian <kevin.tian@intel.com>,
-        Andrew Jones <andrew.jones@oss.qualcomm.com>,
-        Fangyu Yu <fangyu.yu@linux.alibaba.com>,
-        Tan Chi <tanchi25@mails.ucas.ac.cn>, Wu Fei <wu.fei9@sanechips.com.cn>,
-        Zhao Qingye <zhao.qingye@sanechips.com.cn>,
-        Gong Shuai <gong.shuai@sanechips.com.cn>
-Subject: [RFC PATCH v3 07/10] iommufd: Add RISC-V IOMMU hardware info type
-Date: Thu, 19 Nov 2026 21:27:41 +0800
-Message-ID: <20261119132744.396426-8-gong.shuai@sanechips.com.cn>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20261119132744.396426-1-gong.shuai@sanechips.com.cn>
-References: <20261119132744.396426-1-gong.shuai@sanechips.com.cn>
+	id 1xU2Wc-0000000C7i5-3nMr
+	for kvm-riscv@lists.infradead.org;
+	Thu, 19 Nov 2026 13:50:08 +0000
+X-Envelope-To: kvm-riscv@lists.infradead.org
+DKIM-Signature: a=rsa-sha256; bh=+aZWzXaOnWazBZdRZqNBkG1WS4ZSuBwHsa7ZQ3CC1Aw=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1795096204; v=1; x=1795701004;
+ b=XPqVjGWHGrOnqkQp0gMob0gDixPWXXVQ+MKg8Om7wQnbuX0/+h8w28kTJNqmLfbTDBPvEQfI
+ bUzG9c8d2SdCxKzNwX1drgzjrtDH28uojfuenOriEyjlVfpFXivDJgPUpRnNHrG9YvBoo+/wL6E
+ gup0E5kl/69C9WTB7uJ2W3XA=
+X-Envelope-To: kvm-riscv@lists.infradead.org
+Received: by smtp.migadu.com with ESMTPS id 1dd83dad7dfadc2b;
+	Thu, 19 Nov 2026 13:50:02 +0000
+X-Mizu-Trace-ID: 1dd83dad7dfadc2b
+X-Migadu-Flow: FLOW_OUT
+Date: Thu, 19 Nov 2026 14:49:25 +0100
+From: Andrew Jones <andrew.jones@linux.dev>
+To: "Bingyu.Xian" <shanbeeyoo@gmail.com>
+Cc: anup@brainfault.org, atish.patra@linux.dev, pjw@kernel.org, 
+	palmer@dabbelt.com, aou@eecs.berkeley.edu, alex@ghiti.fr, kvm@vger.kernel.org, 
+	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	zhouquan@iscas.ac.cn, linux-kselftest@vger.kernel.org, shuah@kernel.org, 
+	pbonzini@redhat.com, seanjc@google.com
+Subject: Re: [PATCH] KVM: selftests: riscv: Test the SBI STA shared memory
+ lifecycle
+Message-ID: <av77j8rN593sxIDh@orel>
+References: <20261115085457.889873-1-shanbeeyoo@gmail.com>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-X-ZMAIL-USEORIGINALEMLTOOUTBOUND: 1
-X-MAIL: mse-fl1.zte.com.cn 6AJDRsH9086413
-X-TLS: YES
-X-ENVELOPE-SENDER: gong.shuai@sanechips.com.cn
-X-SOURCE-IP: 10.5.228.132 unknown Thu, 19 Nov 2026 21:27:57 +0800
-X-CLEAN: YES
-X-Fangmail-Anti-Spam-Filtered: true
-X-Fangmail-MID-QID: 6AFEF95D.000/4jVfRK1ktVz52SG3
+Content-Disposition: inline
+In-Reply-To: <20261115085457.889873-1-shanbeeyoo@gmail.com>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261119_052819_865891_F90DE283 
-X-CRM114-Status: GOOD (  12.13  )
-X-Spam-Score: -4.2 (----)
+X-CRM114-CacheID: sfid-20261119_055007_144772_3EEF1C8E 
+X-CRM114-Status: GOOD (  29.48  )
+X-Spam-Score: -2.1 (--)
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -93,78 +74,257 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
-X-Spam-Status: No, score=-16.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-13.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+	SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-From: Wu Fei <wu.fei9@sanechips.com.cn>
+On Sun, Nov 15, 2026 at 04:54:57PM +0800, Bingyu.Xian wrote:
+> The RISC-V steal-time test checks the UAPI alignment constraints and
+> compares stolen time with the host run delay. It does not exercise
+> changes to the shared page after accounting has been enabled.
+> 
+> Extend the existing test to check that disabling STA stops shared-page
+> updates and that reconfiguring it leaves the old shared page unchanged.
+> Place the second STA structure at the end of another page and verify
+> that updates mark the appropriate page dirty.
+> 
+> Discard the second backing page with MADV_DONTNEED and check that a
+> subsequent KVM_RUN resumes STA updates on the replacement page and
+> marks it dirty. Read the replacement page before KVM_RUN so that a
+> stale write into the old backing page cannot satisfy the assertions.
+> 
+> Keep these checks in steal_time instead of adding another test binary.
+> The test does not depend on a gfn-to-pfn cache implementation.
+> 
+> Assisted-by: YuanSheng: deepseek-v4-pro
+> Co-developed-by: Quan Zhou <zhouquan@iscas.ac.cn>
+> Signed-off-by: Quan Zhou <zhouquan@iscas.ac.cn>
+> Signed-off-by: bingyu.xian <shanbeenyoo@gmail.com>
+> ---
+> Tested with a freshly built RISC-V kernel and KVM module from the base
+> commit below, running as a QEMU TCG guest with H extension enabled:
+>   - steal_time: 4 lifecycle checks and the existing 4 vCPU cases pass
+>   - CONFIG_DEBUG_ATOMIC_SLEEP=y and CONFIG_PROVE_LOCKING=y
+>   - no kernel diagnostics observed
+>   - x86 steal_time build also passes (not run)
+> 
+> This exercises baseline STA behavior and does not depend on an STA
+> caching implementation. The lifecycle checks also apply cleanly to
+> riscv_kvm_next at 633b3931a87438282d6454646ff40c669a6896cb.
+> 
+> Test logs (verbatim excerpt from the 2026-11-15 QEMU run):
+>   STA_LIFECYCLE_KERNEL=7.4.0-rc2-sta-lifecycle+
+>   Random seed: 0x35d6f94c
+>   TAP version 13
+>   1..8
+>   ok 1 STA shared page updates and is marked dirty
+>   ok 2 STA disable stops shared page updates
+>   ok 3 STA reconfiguration updates only the new page
+>   ok 4 STA updates recover after backing page invalidation
 
-A VMM needs the physical IOMMU capabilities to decide which features
-it can expose to a guest. Define IOMMU_HW_INFO_TYPE_RISCV and struct
-iommu_hw_info_riscv so IOMMU_GET_HW_INFO can return the RISC-V
-capabilities register.
+I'm having trouble understanding what real world scenario these tests are
+trying to model. VM migration?
 
-Signed-off-by: Wu Fei <wu.fei9@sanechips.com.cn>
-Signed-off-by: Gong Shuai <gong.shuai@sanechips.com.cn>
----
- include/uapi/linux/iommufd.h | 24 ++++++++++++++++++++++++
- 1 file changed, 24 insertions(+)
+>   # VCPU0: total-stolen-time=3269800 test-stolen-time=3269800
+>   VCPU0:
+>       sequence:  6
+>       flags:     0
+>       steal:     3269800
+>       preempted: 0
+>       pad:      00000000000000000000000000000000000000000000000
+>   ok 5 vcpu0
+>   # VCPU1: total-stolen-time=898700 test-stolen-time=898700 (BONUS: guest test-stolen-time even exactly matches test-run_delay)
+>   VCPU1:
+>       sequence:  4
+>       flags:     0
+>       steal:     898700
+>       preempted: 0
+>       pad:      00000000000000000000000000000000000000000000000
+>   ok 6 vcpu1
+>   # VCPU2: total-stolen-time=654000 test-stolen-time=654000 (BONUS: guest test-stolen-time even exactly matches test-run_delay)
+>   VCPU2:
+>       sequence:  4
+>       flags:     0
+>       steal:     654000
+>       preempted: 0
+>       pad:      00000000000000000000000000000000000000000000000
+>   ok 7 vcpu2
+>   # VCPU3: total-stolen-time=800700 test-stolen-time=800700 (BONUS: guest test-stolen-time even exactly matches test-run_delay)
+>   VCPU3:
+>       sequence:  4
+>       flags:     0
+>       steal:     800700
+>       preempted: 0
+>       pad:      00000000000000000000000000000000000000000000000
+>   ok 8 vcpu3
+>   # Totals: pass:8 fail:0 xfail:0 xpass:0 skip:0 error:0
+>   STA_LIFECYCLE_STATUS=0
+>   STA_LIFECYCLE_PASS
+> 
+>  tools/testing/selftests/kvm/steal_time.c | 113 +++++++++++++++++++++++
+>  1 file changed, 113 insertions(+)
+> 
+> diff --git a/tools/testing/selftests/kvm/steal_time.c b/tools/testing/selftests/kvm/steal_time.c
+> index 82b94a82d..059f7fa60 100644
+> --- a/tools/testing/selftests/kvm/steal_time.c
+> +++ b/tools/testing/selftests/kvm/steal_time.c
+> @@ -8,6 +8,7 @@
+>  #include <time.h>
+>  #include <sched.h>
+>  #include <pthread.h>
+> +#include <sys/mman.h>
+>  #include <linux/kernel.h>
+>  #include <asm/kvm.h>
+>  #ifdef __riscv
+> @@ -329,6 +330,111 @@ static void steal_time_dump(struct kvm_vm *vm, u32 vcpu_idx)
+>  	pr_info("\n");
+>  }
+>  
+> +static gpa_t lifecycle_second_gpa;
+> +
+> +static void sta_lifecycle_guest(void)
+> +{
+> +	sta_set_shmem(ST_GPA_BASE, 0);
+> +	GUEST_SYNC(0);
+> +	/* The first update takes place on the next KVM_RUN. */
+> +	GUEST_SYNC(1);
+> +
+> +	sta_set_shmem(INVALID_GPA, 0);
+> +	GUEST_SYNC(2);
+> +	GUEST_SYNC(3);
+> +
+> +	sta_set_shmem(lifecycle_second_gpa, 0);
+> +	GUEST_SYNC(4);
+> +	GUEST_SYNC(5);
+> +
+> +	/* Userspace discards the second backing page before resuming us. */
+> +	GUEST_SYNC(6);
+> +	sta_set_shmem(INVALID_GPA, 0);
+> +	GUEST_DONE();
+> +}
+> +
+> +static void sta_lifecycle_run(struct kvm_vcpu *vcpu, unsigned int stage)
+> +{
+> +	struct ucall uc;
+> +
+> +	vcpu_run(vcpu);
+> +	switch (get_ucall(vcpu, &uc)) {
+> +	case UCALL_SYNC:
+> +		TEST_ASSERT_EQ(uc.args[1], stage);
+> +		break;
+> +	case UCALL_DONE:
+> +		TEST_ASSERT_EQ(stage, 7);
+> +		break;
+> +	case UCALL_ABORT:
+> +		REPORT_GUEST_ASSERT(uc);
+> +	default:
+> +		TEST_FAIL("Unexpected STA lifecycle exit at stage %u", stage);
+> +	}
+> +}
+> +
+> +static void check_sta_page(struct sta_struct *st)
+> +{
+> +	TEST_ASSERT(st->sequence && !(st->sequence & 1),
+> +		    "Expected a completed STA update, sequence=%u", st->sequence);
+> +	TEST_ASSERT_EQ(st->flags, 0);
+> +	TEST_ASSERT_EQ(st->preempted, 0);
+> +}
+> +
+> +static void check_sta_lifecycle(void)
+> +{
+> +	struct sta_struct snapshot, *first, *second;
+> +	struct kvm_vcpu *vcpu;
+> +	struct kvm_vm *vm;
+> +	unsigned long dirty = 0;
+> +	void *second_page;
+> +
+> +	vm = vm_create_with_one_vcpu(&vcpu, sta_lifecycle_guest);
+> +	vm_userspace_mem_region_add(vm, VM_MEM_SRC_ANONYMOUS, ST_GPA_BASE,
+> +				    1, 2, KVM_MEM_LOG_DIRTY_PAGES);
+> +	/* Also exercise an STA structure ending exactly at a page boundary. */
+> +	WRITE_AND_SYNC_TO_GUEST(vm, lifecycle_second_gpa,
+> +				ST_GPA_BASE + 2 * vm->page_size - sizeof(struct sta_struct));
+> +	first = addr_gpa2hva(vm, ST_GPA_BASE);
+> +	second = addr_gpa2hva(vm, lifecycle_second_gpa);
+> +	second_page = addr_gpa2hva(vm, ST_GPA_BASE + vm->page_size);
+> +
+> +	sta_lifecycle_run(vcpu, 0);
+> +	sta_lifecycle_run(vcpu, 1);
+> +	check_sta_page(first);
+> +	kvm_vm_get_dirty_log(vm, 1, &dirty);
+> +	TEST_ASSERT(dirty & BIT(0), "STA update did not dirty the first page");
+> +	ksft_test_result_pass("STA shared page updates and is marked dirty\n");
+> +
+> +	sta_lifecycle_run(vcpu, 2);
+> +	snapshot = *first;
+> +	sta_lifecycle_run(vcpu, 3);
+> +	TEST_ASSERT(!memcmp(first, &snapshot, sizeof(snapshot)),
+> +		    "Disabled STA shared page was modified");
+> +	ksft_test_result_pass("STA disable stops shared page updates\n");
+> +
+> +	sta_lifecycle_run(vcpu, 4);
+> +	sta_lifecycle_run(vcpu, 5);
+> +	check_sta_page(second);
+> +	TEST_ASSERT(!memcmp(first, &snapshot, sizeof(snapshot)),
+> +		    "Old STA shared page was modified after reconfiguration");
+> +	dirty = 0;
+> +	kvm_vm_get_dirty_log(vm, 1, &dirty);
+> +	TEST_ASSERT(dirty & BIT(1), "STA update did not dirty the new page");
+> +	ksft_test_result_pass("STA reconfiguration updates only the new page\n");
+> +
+> +	TEST_ASSERT_EQ(madvise(second_page, vm->page_size, MADV_DONTNEED), 0);
+> +	TEST_ASSERT_EQ(second->sequence, 0);
+> +	sta_lifecycle_run(vcpu, 6);
+> +	check_sta_page(second);
+> +	dirty = 0;
+> +	kvm_vm_get_dirty_log(vm, 1, &dirty);
+> +	TEST_ASSERT(dirty & BIT(1), "Recovered STA update did not dirty the page");
+> +	ksft_test_result_pass("STA updates recover after backing page invalidation\n");
+> +
+> +	sta_lifecycle_run(vcpu, 7);
+> +	kvm_vm_free(vm);
+> +}
+> +
+>  static void check_steal_time_uapi(void)
+>  {
+>  	struct kvm_vm *vm;
+> @@ -535,9 +641,16 @@ int main(int ac, char **av)
+>  
+>  	ksft_print_header();
+>  	TEST_REQUIRE(is_steal_time_supported(vcpus[0]));
+> +#ifdef __riscv
+> +	ksft_set_plan(NR_VCPUS + 4);
+> +#else
+>  	ksft_set_plan(NR_VCPUS);
+> +#endif
+>  
+>  	check_steal_time_uapi();
+> +#ifdef __riscv
+> +	check_sta_lifecycle();
+> +#endif
 
-diff --git a/include/uapi/linux/iommufd.h b/include/uapi/linux/iommufd.h
-index fee63e6cbb7a..adc7f30b2b18 100644
---- a/include/uapi/linux/iommufd.h
-+++ b/include/uapi/linux/iommufd.h
-@@ -733,6 +733,28 @@ struct iommu_hw_info_amd {
- 	__aligned_u64 efr2;
- };
- 
-+/**
-+ * struct iommu_hw_info_riscv - RISC-V IOMMU device info
-+ *                              (IOMMU_HW_INFO_TYPE_RISCV)
-+ *
-+ * @capabilities: Value of the RISC-V IOMMU capabilities register, defined
-+ *                in "IOMMU capabilities (capabilities)" of the RISC-V
-+ *                IOMMU Architecture Specification. The value is reported
-+ *                raw by the hardware.
-+ *
-+ * The VMM is responsible to determine the appropriate fields to be
-+ * exposed to the VM since certain features are not currently supported
-+ * by the kernel for nested domains. Current list of supported fields:
-+ * - capabilities[Sv39, Sv48, Sv57, END, AMO_HWAD]
-+ *
-+ * This list may expand in the future. It is important that VMMs do not
-+ * expose bits outside the list to the VM, to allow for compatibility
-+ * with future kernels.
-+ */
-+struct iommu_hw_info_riscv {
-+	__aligned_u64 capabilities;
-+};
-+
- /**
-  * enum iommu_hw_info_type - IOMMU Hardware Info Types
-  * @IOMMU_HW_INFO_TYPE_NONE: Output by the drivers that do not report hardware
-@@ -743,6 +765,7 @@ struct iommu_hw_info_amd {
-  * @IOMMU_HW_INFO_TYPE_TEGRA241_CMDQV: NVIDIA Tegra241 CMDQV (extension for ARM
-  *                                     SMMUv3) info type
-  * @IOMMU_HW_INFO_TYPE_AMD: AMD IOMMU info type
-+ * @IOMMU_HW_INFO_TYPE_RISCV: RISC-V IOMMU info type
-  */
- enum iommu_hw_info_type {
- 	IOMMU_HW_INFO_TYPE_NONE = 0,
-@@ -751,6 +774,7 @@ enum iommu_hw_info_type {
- 	IOMMU_HW_INFO_TYPE_ARM_SMMUV3 = 2,
- 	IOMMU_HW_INFO_TYPE_TEGRA241_CMDQV = 3,
- 	IOMMU_HW_INFO_TYPE_AMD = 4,
-+	IOMMU_HW_INFO_TYPE_RISCV = 5,
- };
- 
- /**
--- 
-2.53.0
+The #ifdefs aren't nice. Again, what are the tests trying to prove? And
+why wouldn't the other architectures need the same coverage?
 
+Thanks,
+drew
+
+>  
+>  	/* Run test on each VCPU */
+>  	for (i = 0; i < NR_VCPUS; ++i) {
+> 
+> base-commit: 23c62304dde29abe92013d85910d03a77dada35d
+> -- 
+> 2.34.1
+> 
+> 
+> -- 
+> kvm-riscv mailing list
+> kvm-riscv@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kvm-riscv
 
 -- 
 kvm-riscv mailing list
