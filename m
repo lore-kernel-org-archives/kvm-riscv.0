@@ -2,10 +2,10 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 28FCB606AA51
-	for <kvm-riscv@archiver.kernel.org>; Thu, 19 Nov 2026 13:28:29 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 190EB606AA55
+	for <kvm-riscv@archiver.kernel.org>; Thu, 19 Nov 2026 13:28:31 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=oe2hd+yZ
+	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=J2zhWAGn
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
@@ -13,34 +13,34 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
 	List-Unsubscribe-Post:List-Owner;
-	bh=qjemxJpQgRLo8J8fmPW653apt51VFUBdevfEx3AVebw=; b=oe2hd+yZGZSQRNAWz1r1n8cryo
-	gF/OXE6bdkDVFFFo1RD9owLXtL1On3TCzI2n9z9+jOCwLbRw0UbemHlsrHmOKz3g8fbi/1AHQCmLD
-	UXwHR8B/KKg+UVZ0JhOjdrsyni65NKgUt70NyFAloOd6RXxjYrfITQwgBe26evpKDDUVOb3clM3Pw
-	fYOQMM5oZO4z+COd76lz6Q9I4q0DwOwWOqiU6H4WYOjkU9rnJFqFSC3B7K4a50FBoX1sPzzGswu2y
-	Ffxkx6b2IIf27EjS4OnBO6rn1P5PT6bQU2mFJSK1O4k4aw2v6c/9cLJcOaivf+tdq7xpdNW+LQ1LU
-	PKpHg4Ig==;
+	bh=Amw1fS1XfiTeMTqc1Cu798J9a9rOr5rpBCsgkAvG0x8=; b=J2zhWAGn/sjYRd7ty7a65YaPX2
+	dQHQpCO0vfsOf6qoKncdepenq+MaplOphRfgA5RCMl4EnkzMlyFr6F3H4nMY90r7DpzOCIFmr1pqe
+	92eFBN58tP41S0ZyDxDLcmiOF0Y02a3mNhm9+v6QaoWlJ2YMlPxPd1tX+wfNJAmVXwbOknrzR6RlO
+	JK6Xzef+sCRGu+JTOf8HLNOsg98OrS3kz4ydwzTk3W4tWS4OJ74Ax5w9NNYYH+LxCW712b/O7UYXF
+	0jHpqUBXAU5+sYeEOf1bTBmRNnV8R8A28hKuphPGVSp3LPsyRVVbBietxB9ajncsoEz6CIQhBFE3j
+	wBtAE75g==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xU2Bg-0000000C2eN-2p4u;
-	Thu, 19 Nov 2026 13:28:28 +0000
+	id 1xU2Bi-0000000C2gv-2JHq;
+	Thu, 19 Nov 2026 13:28:30 +0000
 Received: from mxct.zte.com.cn ([183.62.165.209])
 	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xU2BU-0000000C2N8-2VzG;
-	Thu, 19 Nov 2026 13:28:18 +0000
-Received: from mse-fl2.zte.com.cn (unknown [10.5.228.133])
+	id 1xU2BX-0000000C2Qd-2WLd;
+	Thu, 19 Nov 2026 13:28:21 +0000
+Received: from mse-fl1.zte.com.cn (unknown [10.5.228.132])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mxct.zte.com.cn (FangMail) with ESMTPS id 4jVfRQ3Cr7z52SGK;
-	Thu, 19 Nov 2026 21:28:02 +0800 (CST)
-Received: from szxl2zmapp06.zte.com.cn ([10.1.32.108])
-	by mse-fl2.zte.com.cn with SMTP id 6AJDRrRi070477;
-	Thu, 19 Nov 2026 21:27:53 +0800 (+08)
+	by mxct.zte.com.cn (FangMail) with ESMTPS id 4jVfRK1ktVz52SG3;
+	Thu, 19 Nov 2026 21:27:57 +0800 (CST)
+Received: from szxlzmapp03.zte.com.cn ([10.5.231.207])
+	by mse-fl1.zte.com.cn with SMTP id 6AJDRsH9086413;
+	Thu, 19 Nov 2026 21:27:54 +0800 (+08)
 	(envelope-from gong.shuai@sanechips.com.cn)
 Received: from ubuntu-35-gs (unknown [10.230.214.35])
 	by smtp (Zmail) with SMTP;
-	Thu, 19 Nov 2026 21:27:56 +0800
-X-Zmail-TransId: 3e816afef95b02f-564cc
+	Thu, 19 Nov 2026 21:27:58 +0800
+X-Zmail-TransId: 3e816afef95d02f-56508
 X-Zmail-LocalSMTP: 1
 X-Zmail-RealSender: gong.shuai@sanechips.com.cn
 From: Gong Shuai <gong.shuai@sanechips.com.cn>
@@ -61,25 +61,25 @@ Cc: Anup Patel <anup@brainfault.org>, Atish Patra <atish.patra@linux.dev>,
         Tan Chi <tanchi25@mails.ucas.ac.cn>, Wu Fei <wu.fei9@sanechips.com.cn>,
         Zhao Qingye <zhao.qingye@sanechips.com.cn>,
         Gong Shuai <gong.shuai@sanechips.com.cn>
-Subject: [RFC PATCH v3 05/10] iommu/riscv: Add nested domain allocation
-Date: Thu, 19 Nov 2026 21:27:39 +0800
-Message-ID: <20261119132744.396426-6-gong.shuai@sanechips.com.cn>
+Subject: [RFC PATCH v3 07/10] iommufd: Add RISC-V IOMMU hardware info type
+Date: Thu, 19 Nov 2026 21:27:41 +0800
+Message-ID: <20261119132744.396426-8-gong.shuai@sanechips.com.cn>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20261119132744.396426-1-gong.shuai@sanechips.com.cn>
 References: <20261119132744.396426-1-gong.shuai@sanechips.com.cn>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 X-ZMAIL-USEORIGINALEMLTOOUTBOUND: 1
-X-MAIL: mse-fl2.zte.com.cn 6AJDRrRi070477
+X-MAIL: mse-fl1.zte.com.cn 6AJDRsH9086413
 X-TLS: YES
 X-ENVELOPE-SENDER: gong.shuai@sanechips.com.cn
-X-SOURCE-IP: 10.5.228.133 unknown Thu, 19 Nov 2026 21:28:02 +0800
+X-SOURCE-IP: 10.5.228.132 unknown Thu, 19 Nov 2026 21:27:57 +0800
 X-CLEAN: YES
 X-Fangmail-Anti-Spam-Filtered: true
-X-Fangmail-MID-QID: 6AFEF962.000/4jVfRQ3Cr7z52SGK
+X-Fangmail-MID-QID: 6AFEF95D.000/4jVfRK1ktVz52SG3
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261119_052817_005077_0ABC03E9 
-X-CRM114-Status: GOOD (  16.04  )
+X-CRM114-CacheID: sfid-20261119_052819_865891_F90DE283 
+X-CRM114-Status: GOOD (  12.13  )
 X-Spam-Score: -4.2 (----)
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -102,186 +102,66 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 
 From: Wu Fei <wu.fei9@sanechips.com.cn>
 
-A nested domain describes two-stage translation through guest and
-host page tables. Iommufd exposes this domain as a nested hwpt.
-
-User space needs to provide the guest stage 1 configuration when
-allocating a nested hwpt. Validate the configuration before storing
-it for use in a physical device context.
+A VMM needs the physical IOMMU capabilities to decide which features
+it can expose to a guest. Define IOMMU_HW_INFO_TYPE_RISCV and struct
+iommu_hw_info_riscv so IOMMU_GET_HW_INFO can return the RISC-V
+capabilities register.
 
 Signed-off-by: Wu Fei <wu.fei9@sanechips.com.cn>
-Co-developed-by: Gong Shuai <gong.shuai@sanechips.com.cn>
 Signed-off-by: Gong Shuai <gong.shuai@sanechips.com.cn>
 ---
- drivers/iommu/riscv/iommu.c | 153 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 153 insertions(+)
+ include/uapi/linux/iommufd.h | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
 
-diff --git a/drivers/iommu/riscv/iommu.c b/drivers/iommu/riscv/iommu.c
-index f2305b953f71..4f8ce579ef08 100644
---- a/drivers/iommu/riscv/iommu.c
-+++ b/drivers/iommu/riscv/iommu.c
-@@ -1698,8 +1698,161 @@ static void riscv_viommu_destroy(struct iommufd_viommu *viommu)
- 	ida_free(&riscv_iommu_gscids, rv_viommu->gscid);
- }
- 
-+struct riscv_iommu_nested_domain {
-+	struct iommu_domain domain;
-+	struct riscv_viommu *viommu;
-+
-+	u64 tc;
-+	u64 ta;
-+	u64 iosatp;
-+};
-+
-+#define to_riscv_iommu_nested_domain(domain) \
-+	container_of(domain, struct riscv_iommu_nested_domain, domain)
-+
-+static void riscv_iommu_domain_nested_free(struct iommu_domain *domain)
-+{
-+	kfree(to_riscv_iommu_nested_domain(domain));
-+}
-+
-+static const struct iommu_domain_ops riscv_iommu_nested_ops = {
-+	.free = riscv_iommu_domain_nested_free,
-+};
-+
-+static int riscv_iommu_validate_vdc(struct riscv_iommu_device *iommu,
-+				    struct iommu_hwpt_riscv *arg)
-+{
-+	u64 tc = arg->dc[0];
-+	u64 fsc = arg->dc[3];
-+	u64 mode;
-+
-+	if (!(tc & RISCV_IOMMU_DC_TC_V)) {
-+		arg->dc[0] = 0;
-+		arg->dc[3] = 0;
-+		return 0;
-+	}
-+
-+	/*
-+	 * Reject reserved/custom bits, the physical IOMMU may treat the
-+	 * DC as misconfigured.
-+	 */
-+	if (tc & ~RISCV_IOMMU_DC_TC_DEFINED)
-+		return -EINVAL;
-+	if (fsc & ~(RISCV_IOMMU_DC_FSC_PPN | RISCV_IOMMU_DC_FSC_MODE))
-+		return -EINVAL;
-+
-+	/* Process directory tables are not supported now. */
-+	if (tc & RISCV_IOMMU_DC_TC_PDTV)
-+		return -EOPNOTSUPP;
-+
-+	/* With PDTV=0 the DPE bit is reserved for future use. */
-+	if (tc & RISCV_IOMMU_DC_TC_DPE)
-+		return -EINVAL;
-+
-+	/* Only 64-bit (SXL=0) stage-1 is supported. */
-+	if (tc & RISCV_IOMMU_DC_TC_SXL)
-+		return -EOPNOTSUPP;
-+
-+	/* ATS/PRI/T2GPA/PRPR consistency. */
-+	if (!(iommu->caps & RISCV_IOMMU_CAPABILITIES_ATS) &&
-+	    (tc & (RISCV_IOMMU_DC_TC_EN_ATS | RISCV_IOMMU_DC_TC_EN_PRI |
-+		   RISCV_IOMMU_DC_TC_PRPR)))
-+		return -EINVAL;
-+	if ((tc & RISCV_IOMMU_DC_TC_EN_PRI) &&
-+	    !(tc & RISCV_IOMMU_DC_TC_EN_ATS))
-+		return -EINVAL;
-+	if ((tc & RISCV_IOMMU_DC_TC_PRPR) &&
-+	    !(tc & RISCV_IOMMU_DC_TC_EN_PRI))
-+		return -EINVAL;
-+	if ((tc & RISCV_IOMMU_DC_TC_T2GPA) &&
-+	    (!(iommu->caps & RISCV_IOMMU_CAPABILITIES_T2GPA) ||
-+	     !(tc & RISCV_IOMMU_DC_TC_EN_ATS)))
-+		return -EINVAL;
-+
-+	/*
-+	 * A/D update behavior on stage-2 PTEs is owned by the host,
-+	 * decide it's value from the AMO_HWAD capability.
-+	 */
-+	tc &= ~RISCV_IOMMU_DC_TC_GADE;
-+	if (iommu->caps & RISCV_IOMMU_CAPABILITIES_AMO_HWAD)
-+		tc |= RISCV_IOMMU_DC_TC_GADE;
-+
-+	/*
-+	 * A/D update behavior on stage-1 PTEs is owned by the guest but
-+	 * needs AMO_HWAD support.
-+	 */
-+	if ((tc & RISCV_IOMMU_DC_TC_SADE) &&
-+	    !(iommu->caps & RISCV_IOMMU_CAPABILITIES_AMO_HWAD))
-+		return -EOPNOTSUPP;
-+
-+	/* SBE must match the IOMMU byte order unless END is supported. */
-+	if (!(iommu->caps & RISCV_IOMMU_CAPABILITIES_END) &&
-+	    (!!(tc & RISCV_IOMMU_DC_TC_SBE) !=
-+	     !!(iommu->fctl & RISCV_IOMMU_FCTL_BE)))
-+		return -EINVAL;
-+
-+	/* Validate the stage-1 mode. */
-+	mode = FIELD_GET(RISCV_IOMMU_DC_FSC_MODE, fsc);
-+	if (mode == RISCV_IOMMU_DC_FSC_MODE_BARE) {
-+		/* No stage-1 translation, root pointer is unused. */
-+		fsc = 0;
-+	} else {
-+		switch (mode) {
-+		case RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV39:
-+		case RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV48:
-+		case RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV57:
-+			break;
-+		default:
-+			return -EINVAL;
-+		}
-+		if (!riscv_iommu_fsc_supported(iommu, mode))
-+			return -EOPNOTSUPP;
-+	}
-+
-+	arg->dc[0] = tc;
-+	arg->dc[3] = fsc;
-+
-+	return 0;
-+}
-+
-+static struct iommu_domain *
-+riscv_viommu_alloc_domain_nested(struct iommufd_viommu *viommu, u32 flags,
-+				 const struct iommu_user_data *user_data)
-+{
-+	struct riscv_viommu *rv_viommu = container_of(viommu, struct riscv_viommu, core);
-+	struct riscv_iommu_nested_domain *nested_domain;
-+	struct iommu_hwpt_riscv arg;
-+	int ret;
-+
-+	if (flags)
-+		return ERR_PTR(-EOPNOTSUPP);
-+
-+	ret = iommu_copy_struct_from_user(&arg, user_data,
-+					  IOMMU_HWPT_DATA_RISCV_S1, dc);
-+	if (ret)
-+		return ERR_PTR(ret);
-+
-+	ret = riscv_iommu_validate_vdc(rv_viommu->iommu, &arg);
-+	if (ret)
-+		return ERR_PTR(ret);
-+
-+	nested_domain = kzalloc_obj(*nested_domain, GFP_KERNEL_ACCOUNT);
-+	if (!nested_domain)
-+		return ERR_PTR(-ENOMEM);
-+
-+	nested_domain->domain.type = IOMMU_DOMAIN_NESTED;
-+	nested_domain->domain.ops = &riscv_iommu_nested_ops;
-+	nested_domain->viommu = rv_viommu;
-+	nested_domain->tc = arg.dc[0];
-+	nested_domain->ta = arg.dc[2] & RISCV_IOMMU_DC_TA_PSCID;
-+	nested_domain->iosatp = arg.dc[3];
-+
-+	return &nested_domain->domain;
-+}
-+
- static const struct iommufd_viommu_ops riscv_viommu_ops = {
- 	.destroy = riscv_viommu_destroy,
-+	.alloc_domain_nested = riscv_viommu_alloc_domain_nested,
+diff --git a/include/uapi/linux/iommufd.h b/include/uapi/linux/iommufd.h
+index fee63e6cbb7a..adc7f30b2b18 100644
+--- a/include/uapi/linux/iommufd.h
++++ b/include/uapi/linux/iommufd.h
+@@ -733,6 +733,28 @@ struct iommu_hw_info_amd {
+ 	__aligned_u64 efr2;
  };
  
- static size_t riscv_iommu_get_viommu_size(struct device *dev,
++/**
++ * struct iommu_hw_info_riscv - RISC-V IOMMU device info
++ *                              (IOMMU_HW_INFO_TYPE_RISCV)
++ *
++ * @capabilities: Value of the RISC-V IOMMU capabilities register, defined
++ *                in "IOMMU capabilities (capabilities)" of the RISC-V
++ *                IOMMU Architecture Specification. The value is reported
++ *                raw by the hardware.
++ *
++ * The VMM is responsible to determine the appropriate fields to be
++ * exposed to the VM since certain features are not currently supported
++ * by the kernel for nested domains. Current list of supported fields:
++ * - capabilities[Sv39, Sv48, Sv57, END, AMO_HWAD]
++ *
++ * This list may expand in the future. It is important that VMMs do not
++ * expose bits outside the list to the VM, to allow for compatibility
++ * with future kernels.
++ */
++struct iommu_hw_info_riscv {
++	__aligned_u64 capabilities;
++};
++
+ /**
+  * enum iommu_hw_info_type - IOMMU Hardware Info Types
+  * @IOMMU_HW_INFO_TYPE_NONE: Output by the drivers that do not report hardware
+@@ -743,6 +765,7 @@ struct iommu_hw_info_amd {
+  * @IOMMU_HW_INFO_TYPE_TEGRA241_CMDQV: NVIDIA Tegra241 CMDQV (extension for ARM
+  *                                     SMMUv3) info type
+  * @IOMMU_HW_INFO_TYPE_AMD: AMD IOMMU info type
++ * @IOMMU_HW_INFO_TYPE_RISCV: RISC-V IOMMU info type
+  */
+ enum iommu_hw_info_type {
+ 	IOMMU_HW_INFO_TYPE_NONE = 0,
+@@ -751,6 +774,7 @@ enum iommu_hw_info_type {
+ 	IOMMU_HW_INFO_TYPE_ARM_SMMUV3 = 2,
+ 	IOMMU_HW_INFO_TYPE_TEGRA241_CMDQV = 3,
+ 	IOMMU_HW_INFO_TYPE_AMD = 4,
++	IOMMU_HW_INFO_TYPE_RISCV = 5,
+ };
+ 
+ /**
 -- 
 2.53.0
 
