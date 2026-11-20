@@ -2,11 +2,11 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E6426606A320
-	for <kvm-riscv@archiver.kernel.org>; Fri, 20 Nov 2026 16:41:14 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AC9BC606A60F
+	for <kvm-riscv@archiver.kernel.org>; Fri, 20 Nov 2026 16:45:53 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=opSWh3Kq;
-	dkim=fail reason="signature verification failed" (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=bJNgXs/n
+	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=hTYcqM7Y;
+	dkim=fail reason="signature verification failed" (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=IUmdIXLO
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
@@ -14,35 +14,35 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
 	List-Unsubscribe-Post:List-Owner;
-	bh=b4Vr9gzQC/3ABIBEtOwiACgELz1eizltTnh+1ZYB+ro=; b=opSWh3KqRrrsO8IepxsPsaF7Jx
-	6D4qKnITRaxsTwqMpNPEK+rEPXAXOE3WUIcZRebumN4zX1sOFe4zcy575ZQKPo/aGR1WaNyiDYmKR
-	yCFY9T6xKD4tOAAjTO0rfX3DgzW9uXMOYGbhCtHfFx7eHUfBwbzKCjFpRMbrCleEyXQI5PPWJ+oIF
-	U1u+XIvKtxC8ao7ZmXSliw23mPkJGyONd4uLNO8MSI0fW/8dza26ioHDw+q/E+NhsXXBXDP9fLBe/
-	7KUDQNybhYqylZp08wNmt3nwF2ahd86CfAD+rCm0qLqAwqLIwW+14YljMk5/OuKjwjqoymhvIAW2Q
-	lxuhi2/Q==;
+	bh=mIgecDKQ4fjLedGAA2vHTZdGAQY0V7t1lszvYH4z6HE=; b=hTYcqM7YQHQK5RUOo7PFjE93d+
+	+uPfEVpAI9S8n0+P7nwR9cBicfwLtY+8+CtUThqUoUAWIeaQoxYtE6IUhB6F/Aw7PHLbagLTpAky6
+	n7YnRNK5RA5mhnG88YaCyInQF48C/9MP0nR6kkJbFhkNmVPk48ERxnEe9nSX1EV2Xrsw0jmTP5x4A
+	cyfxl3YoFGtReT6LwU7b3DXl+d8hswx0Y+UonKgpOPOELIcIO5GTBTVcBaUWH+mFQbGiZstiuuCn1
+	VfLm0ypn34OXvQtsFK+0yPyL5WFVEioyEr1WJDG9gi/Y4Zm8YqbnfnHGJb/tbcg5IMJRoDugkXU3G
+	0BlTgmPw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xURfm-0000000FZoG-28W0;
-	Fri, 20 Nov 2026 16:41:14 +0000
-Received: from out-202.mta1.migadu.com ([95.215.58.202] helo=mta1.migadu.com)
+	id 1xURkH-0000000FaCW-1k9q;
+	Fri, 20 Nov 2026 16:45:53 +0000
+Received: from out-105.mta1.migadu.com ([95.215.58.105] helo=mta1.migadu.com)
 	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xURfe-0000000FZmI-3iO1
+	id 1xURk7-0000000FaAy-49AX
 	for kvm-riscv@lists.infradead.org;
-	Fri, 20 Nov 2026 16:41:12 +0000
+	Fri, 20 Nov 2026 16:45:48 +0000
 X-Envelope-To: kvm-riscv@lists.infradead.org
-DKIM-Signature: a=rsa-sha256; bh=ZoM2yf3MA8k5sZbw96Hh1V2kwRR1l1ZCz3uIHytu5jY=;
+DKIM-Signature: a=rsa-sha256; bh=YDYRuiqu28FARVRycYUTo1yCu3WrQdKNTM4EinGTQu4=;
  c=simple/simple; d=linux.dev;
  h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1795192864; v=1; x=1795797664;
- b=bJNgXs/n1QT3IoJuJIbKvzdSmhhdwzylK2Sj7kxe2/0hHFFfJyWva9lJHMhWlt1dxYYqWpz4
- IB+fG3eztkt5lXlMnmK3H7g9/dIsemLKV5O99g6qXR6goFI5VLkjhu2I28PIbtErTczMU5ui1eo
- 5rkqrgpOrrDhDpzG5McbIsbI=
+ t=1795193141; v=1; x=1795797941;
+ b=IUmdIXLOLZJAcDHLhA6tijmSJT/IIjTV4JEhVpDYEe+W646jUacK2MwNXkRvdPJjCNlg9Vs9
+ KhHiuN8cvLrGb1lxYd+nQlBxaLGPHo1a1mJhVYxiKjDNDRzm64Q+oQzDxu225AB3eDl/TfuyIN7
+ R/kEaWOmKPS7ZQ2wHfzjxPrY=
 X-Envelope-To: kvm-riscv@lists.infradead.org
-Received: by smtp.migadu.com with ESMTPS id 883b19b9dfbc7c0f;
-	Fri, 20 Nov 2026 16:41:04 +0000
-X-Mizu-Trace-ID: 883b19b9dfbc7c0f
+Received: by smtp.migadu.com with ESMTPS id 41424811bc9a0852;
+	Fri, 20 Nov 2026 16:45:39 +0000
+X-Mizu-Trace-ID: 41424811bc9a0852
 X-Migadu-Flow: FLOW_OUT
-Date: Fri, 20 Nov 2026 17:40:29 +0100
+Date: Fri, 20 Nov 2026 17:45:09 +0100
 From: Andrew Jones <andrew.jones@linux.dev>
 To: Koichiro Den <den@valinux.co.jp>
 Cc: Anup Patel <anup@brainfault.org>, Atish Patra <atish.patra@linux.dev>, 
@@ -50,18 +50,18 @@ Cc: Anup Patel <anup@brainfault.org>, Atish Patra <atish.patra@linux.dev>,
 	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, 
 	Bingyu Xian <shanbeeyoo@gmail.com>, kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
 	linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] RISC-V: KVM: Batch user accesses when updating steal
- time
-Message-ID: <awB1hZGh3LYztjqL@orel>
+Subject: Re: [PATCH 2/2] RISC-V: KVM: Skip steal-time updates when run_delay
+ is unchanged
+Message-ID: <awB4BxCHBu6nacbO@orel>
 References: <20261118062242.2914385-1-den@valinux.co.jp>
- <20261118062242.2914385-2-den@valinux.co.jp>
+ <20261118062242.2914385-3-den@valinux.co.jp>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20261118062242.2914385-2-den@valinux.co.jp>
+In-Reply-To: <20261118062242.2914385-3-den@valinux.co.jp>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261120_084108_835173_506AB8DE 
-X-CRM114-Status: GOOD (  20.05  )
+X-CRM114-CacheID: sfid-20261120_084546_516387_20B6E723 
+X-CRM114-Status: GOOD (  15.35  )
 X-Spam-Score: -2.8 (--)
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -82,128 +82,53 @@ X-Spam-Status: No, score=-13.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Wed, Nov 18, 2026 at 03:22:41PM +0900, Koichiro Den wrote:
-> Updating the SBI STA shared structure performs 2x get_user() + 3x
-> put_user() calls, each of which toggles sstatus.SUM.
-> 
-> Keep SUM enabled across all five accesses to the shared structure.
-> 
-> Note that write barriers are added to order the odd sequence store
-> before the steal-time update and the even sequence store after it.
-
-The barrier additions should probably be posted separately with a Fixes
-tag.
-
+On Wed, Nov 18, 2026 at 03:22:42PM +0900, Koichiro Den wrote:
+> Check run_delay against last_steal and skip the update if they match.
+> This avoids accessing the SBI STA shared structure and marking its page
+> dirty on vCPU loads with no new steal time to report.
 > 
 > Signed-off-by: Koichiro Den <den@valinux.co.jp>
 > ---
-> To reviewers: please let me know if you'd prefer
-> scoped_user_rw_access() here.
-> 
->  arch/riscv/kvm/vcpu_sbi_sta.c | 59 ++++++++++++++++++++---------------
->  1 file changed, 34 insertions(+), 25 deletions(-)
+>  arch/riscv/kvm/vcpu_sbi_sta.c | 8 ++++++--
+>  1 file changed, 6 insertions(+), 2 deletions(-)
 > 
 > diff --git a/arch/riscv/kvm/vcpu_sbi_sta.c b/arch/riscv/kvm/vcpu_sbi_sta.c
-> index 60e50296a008..cfc6f22c3e33 100644
+> index cfc6f22c3e33..8b2499876fb4 100644
 > --- a/arch/riscv/kvm/vcpu_sbi_sta.c
 > +++ b/arch/riscv/kvm/vcpu_sbi_sta.c
-> @@ -8,13 +8,14 @@
->  #include <linux/kvm_host.h>
->  #include <linux/mm.h>
->  #include <linux/sizes.h>
-> +#include <linux/uaccess.h>
->  
-> +#include <asm/barrier.h>
->  #include <asm/bug.h>
->  #include <asm/current.h>
->  #include <asm/kvm_vcpu_sbi.h>
->  #include <asm/page.h>
->  #include <asm/sbi.h>
-> -#include <asm/uaccess.h>
->  
->  static void kvm_riscv_vcpu_sbi_sta_reset(struct kvm_vcpu *vcpu)
->  {
-> @@ -26,13 +27,13 @@ void kvm_riscv_vcpu_record_steal_time(struct kvm_vcpu *vcpu)
->  {
->  	gpa_t shmem = vcpu->arch.sta.shmem;
->  	u64 last_steal = vcpu->arch.sta.last_steal;
-> -	__le32 __user *sequence_ptr;
-> -	__le64 __user *steal_ptr;
-> +	struct sbi_sta_struct __user *st;
+> @@ -31,7 +31,7 @@ void kvm_riscv_vcpu_record_steal_time(struct kvm_vcpu *vcpu)
 >  	__le32 sequence_le;
 >  	__le64 steal_le;
 >  	u32 sequence;
->  	u64 steal;
+> -	u64 steal;
+> +	u64 steal, run_delay;
 >  	unsigned long hva;
-> +	bool dirty = false, success = false;
+>  	bool dirty = false, success = false;
 >  	gfn_t gfn;
->  
->  	if (shmem == INVALID_GPA)
-> @@ -51,31 +52,39 @@ void kvm_riscv_vcpu_record_steal_time(struct kvm_vcpu *vcpu)
+> @@ -52,6 +52,10 @@ void kvm_riscv_vcpu_record_steal_time(struct kvm_vcpu *vcpu)
 >  		return;
 >  	}
 >  
-> -	sequence_ptr = (__le32 __user *)(hva + offset_in_page(shmem) +
-> -			       offsetof(struct sbi_sta_struct, sequence));
-> -	steal_ptr = (__le64 __user *)(hva + offset_in_page(shmem) +
-> -			    offsetof(struct sbi_sta_struct, steal));
-> -
-> -	if (WARN_ON(get_user(sequence_le, sequence_ptr)))
-> -		return;
-> -
-> -	sequence = le32_to_cpu(sequence_le);
-> -	sequence += 1;
-> -
-> -	if (WARN_ON(put_user(cpu_to_le32(sequence), sequence_ptr)))
-> +	st = (struct sbi_sta_struct __user *)(hva + offset_in_page(shmem));
-> +	might_fault();
+> +	run_delay = READ_ONCE(current->sched_info.run_delay);
+> +	if (run_delay == last_steal)
+> +		return;
+> +
 
-We're probably safe to drop this might_fault(). But either way it's fine.
+If we move the new check to just below the 'if (shmem == INVALID_GPA)'
+check then we also avoid a memslot lookup.
 
-> +	if (WARN_ON(!user_access_begin(st, sizeof(*st))))
->  		return;
->  
-> -	if (!WARN_ON(get_user(steal_le, steal_ptr))) {
-> -		steal = le64_to_cpu(steal_le);
-> -		vcpu->arch.sta.last_steal = READ_ONCE(current->sched_info.run_delay);
-> -		steal += vcpu->arch.sta.last_steal - last_steal;
-> -		WARN_ON(put_user(cpu_to_le64(steal), steal_ptr));
-> -	}
-> -
-> +	unsafe_get_user(sequence_le, &st->sequence, fault);
-> +	sequence = le32_to_cpu(sequence_le) + 1;
-> +	unsafe_put_user(cpu_to_le32(sequence), &st->sequence, fault);
-> +	dirty = true;
-> +
-> +	/* Publish the odd sequence before updating stolen time. */
-> +	smp_wmb();
-> +	unsafe_get_user(steal_le, &st->steal, update_sequence);
-> +	steal = le64_to_cpu(steal_le);
-> +	vcpu->arch.sta.last_steal = READ_ONCE(current->sched_info.run_delay);
-> +	steal += vcpu->arch.sta.last_steal - last_steal;
-> +	unsafe_put_user(cpu_to_le64(steal), &st->steal, update_sequence);
-> +	success = true;
-> +
-> +update_sequence:
-> +	/* Publish stolen time before completing the update. */
-> +	smp_wmb();
->  	sequence += 1;
-> -	WARN_ON(put_user(cpu_to_le32(sequence), sequence_ptr));
-> -
-> -	kvm_vcpu_mark_page_dirty(vcpu, gfn);
-> +	unsafe_put_user(cpu_to_le32(sequence), &st->sequence, fault);
-> +	goto out;
-> +
-> +fault:
-> +	success = false;
-> +out:
-> +	user_access_end();
-> +	WARN_ON(!success);
-> +	if (dirty)
-> +		kvm_vcpu_mark_page_dirty(vcpu, gfn);
->  }
->  
->  static int kvm_sbi_sta_steal_time_set_shmem(struct kvm_vcpu *vcpu)
+>  	st = (struct sbi_sta_struct __user *)(hva + offset_in_page(shmem));
+>  	might_fault();
+>  	if (WARN_ON(!user_access_begin(st, sizeof(*st))))
+> @@ -66,7 +70,7 @@ void kvm_riscv_vcpu_record_steal_time(struct kvm_vcpu *vcpu)
+>  	smp_wmb();
+>  	unsafe_get_user(steal_le, &st->steal, update_sequence);
+>  	steal = le64_to_cpu(steal_le);
+> -	vcpu->arch.sta.last_steal = READ_ONCE(current->sched_info.run_delay);
+> +	vcpu->arch.sta.last_steal = run_delay;
+>  	steal += vcpu->arch.sta.last_steal - last_steal;
+>  	unsafe_put_user(cpu_to_le64(steal), &st->steal, update_sequence);
+>  	success = true;
 > -- 
 > 2.54.0
 >
