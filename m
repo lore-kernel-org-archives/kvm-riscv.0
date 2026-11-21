@@ -2,69 +2,135 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 193D8606A333
-	for <kvm-riscv@archiver.kernel.org>; Sat, 21 Nov 2026 17:02:26 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 103CE606A6B8
+	for <kvm-riscv@archiver.kernel.org>; Sat, 21 Nov 2026 17:35:43 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=XllwW2lm;
-	dkim=fail reason="signature verification failed" (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=BdeUELnF
+	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=WzVpO8aV;
+	dkim=fail reason="signature verification failed" (1024-bit key, unprotected) header.d=valinux.co.jp header.i=@valinux.co.jp header.a=rsa-sha256 header.s=selector1 header.b=VHD8uZjs
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
 	List-Unsubscribe-Post:List-Owner;
-	bh=T5731yiSmggAZulazLwy8kKCqUoCF60pNJhUXjjIdIc=; b=XllwW2lmCSWn1rBl/EfmZoq4T2
-	vF+BadJkIps4uJKu5DAi+N5EiqEqtk7UAN8U+9mBYak6ptwTGkgVDq0sa4/5X71P9ot4OVeMS+3iS
-	lcgW6Hggv/K4Ue5XM9lrAqYUHa+YKmgin44WbJ6QRadFweFDUa56enYgCUb5Dr9uzccarkSs5piiB
-	TYunbPotY7/PA2lAkd/Y+Vl4ItrD+NGQQbTXIojh4TXyMqqx7jjeqT758l7sOPbHwTsxYaKAu2MvE
-	UGoxFggWqA10eY8H9HnvcMV1N+TwBTGbhy9T7DtFOqk951bf/Q2eyX8d2Z+cgK75XZ/7/FpNPlrUO
-	DG1mxa4w==;
+	bh=SuIeUQhgvi3uWSekQTFxTOWvHaKbvU9/Bzc64S2T9Bo=; b=WzVpO8aVP7oNbLW7OuTTxYmUXD
+	Z/2sTuAKl7eGpcIOob2gQLu6iXTA9AWPXpq0nFwvMQPN+EEVvS5aWBnT9nLxQJqH4Q42aZRzDvBj4
+	FtYGnBI52ULDFzCiBWhhCv4t31KG22v4c8sQP7QTxvHEPfbYZwuPaMfnLIKAMvBu4Lesvrl0wMB5B
+	V3maoQ7rBQagzyGW+kOf7sm9K29ES2tOf7jv+FJmo1iJ3yIvNrNCc0ZE1T6yZ5ExsTTiyTDOaSp76
+	U6UXUiFgUwTQ4MQN1pE3b+JKMAaLPAbKf93zVJTpc6t88/+Ip3gnNlrUg1maoyBaCw+FLjKiJr3OH
+	virjHK9w==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xUoTp-0000000HXco-1zca;
-	Sat, 21 Nov 2026 17:02:25 +0000
-Received: from out-64.mta1.migadu.com ([95.215.58.64] helo=mta1.migadu.com)
+	id 1xUp02-0000000Hb7O-2viz;
+	Sat, 21 Nov 2026 17:35:42 +0000
+Received: from mail-japaneastazon11020086.outbound.protection.outlook.com ([52.101.229.86] helo=TY3P286CU002.outbound.protection.outlook.com)
 	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xUoTm-0000000HXbT-1fZg
-	for kvm-riscv@lists.infradead.org;
-	Sat, 21 Nov 2026 17:02:24 +0000
-X-Envelope-To: kvm-riscv@lists.infradead.org
-DKIM-Signature: a=rsa-sha256; bh=120vruIvVuVMsi4eadSo5mQWHm7BqnKtIE9tM2dix/Y=;
- c=simple/simple; d=linux.dev;
- h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1795280539; v=1; x=1795885339;
- b=BdeUELnFusdi4TW9ZcGg2IqmMKk+d2Lx+lb15psooUk/UHZRLaRFZHQAKz7A3vAYT39yaa7s
- xSiAlEk6skdrxvRoG+dnpjUlpMu1f5zECSw6No1SkbS6Opvr6igsAVgSIbbuAQ/fvUU8DBZbOmU
- XFB2QttYodDmae0e4merQxus=
-X-Envelope-To: kvm-riscv@lists.infradead.org
-Received: by smtp.migadu.com with ESMTPS id 66ce02f06bdb1801;
-	Sat, 21 Nov 2026 17:02:19 +0000
-X-Mizu-Trace-ID: 66ce02f06bdb1801
-X-Migadu-Flow: FLOW_OUT
-Date: Sat, 21 Nov 2026 18:01:46 +0100
-From: Andrew Jones <andrew.jones@linux.dev>
-To: Gong Shuai <gong.shuai@sanechips.com.cn>
-Cc: andrew.jones@oss.qualcomm.com, anup@brainfault.org, 
-	atish.patra@linux.dev, fangyu.yu@linux.alibaba.com, iommu@lists.linux.dev, 
-	jgg@nvidia.com, jgg@ziepe.ca, joro@8bytes.org, kvm-riscv@lists.infradead.org, 
-	kvm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org, 
-	palmer@dabbelt.com, pjw@kernel.org, robin.murphy@arm.com, tglx@kernel.org, 
-	tomasz.jeznach@linux.dev, will@kernel.org, zhangzhanpeng.jasper@bytedance.com, 
-	zong.li@sifive.com, gsh517025@gmail.com
-Subject: Re: [RFC PATCH v3 04/14] iommu/riscv: Reject live S2 replacement
- with forwarded IRQs
-Message-ID: <awHLO6bWYw5V0k4p@orel>
-References: <20260928143113.49838-5-andrew.jones@oss.qualcomm.com>
- <202610090914.6999EfSj006317@mse-fl1.zte.com.cn>
+	id 1xUozz-0000000Hb66-1Gz5;
+	Sat, 21 Nov 2026 17:35:40 +0000
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=Ms2bg7u8Ih7hRzEl53w0ebPQq7u/2W05MCY+YS2RHpPbjaGwLoASSoxKiDzEtoKARDd3HoKoKlZcA9/pvsJ+B8rZoihYxMoUZFNUp/PBSfWtPkw4P8OyNruuZgUK+V//DTIzoBlu5hTmu3QXuEWZndvK7RRqqxjBrDlB4t9/yiS7Zq8Qvza0PcTp95KiRbWZfk8EUIUfLtXG9w/OnmTK3irlhIOfJqSX3gFUTfAIu21aCbko+/G0AOOe4YIgKT2UFdRGqVxufVYRzb+LLTG8ymMVV4ldxS5Z3OCrQgzwifuBCDauPKKx8oIY+2NDULJ8HIvXPRlQ/Ooli+8aB/w09Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=2CmVX3mHznKL42+UvNvVHMd56rdYAOHtrtm1B1OsuQA=;
+ b=CaHVhRNi7pQZ1zLB5uRwY3LzP3jthMLZ9FSOCK4W6ywlQgVJTtsedn5wXI9zKhCLX+sYcwcEGrmMUoHVaF0ZpAd3WJnVYQnZje0x3z3GjPMdqwKRxsEgzA8/DxFRUGHaUDiw418MjnOfKtmN0Ue0QSa8xyolgr4lKalLKUq85FD0pMIkLkHK0JJYhGTiLMHd7X9N/okd+Y9iUs1KmvwyDUZVBloRK8JpRCznXh91ML2e6Py2eusQ3C9eqck+VkwSLW6oi1DfAcCCSZctua0gfI8nJvim9xXuQgGq6hIvZtPuj3Nu7Hdf3nGjdM+k439ja64r3LFfN3OzAyRGxB3X9w==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=valinux.co.jp; dmarc=pass action=none
+ header.from=valinux.co.jp; dkim=pass header.d=valinux.co.jp; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=valinux.co.jp;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=2CmVX3mHznKL42+UvNvVHMd56rdYAOHtrtm1B1OsuQA=;
+ b=VHD8uZjsME5qnUI7/yv7I2c6bJKhIxTvbCFEzIvzQJPEhIkiAXK/G7qk+J4u7PBIcZZVzeeuAWe8Lp3IvQt0kYofBpSWcGEpT/kknhKc9NqAMRMREo+8FT0BKKP2iOmxd5FtKkLDeN/muzwHM31idvp4esem3N3B5AGK0XO5e8M=
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=valinux.co.jp;
+Received: from TY7P286MB6866.JPNP286.PROD.OUTLOOK.COM (2603:1096:405:325::11)
+ by OS9P286MB5134.JPNP286.PROD.OUTLOOK.COM (2603:1096:604:30f::13) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.639.13; Sat, 21 Nov
+ 2026 17:35:30 +0000
+Received: from TY7P286MB6866.JPNP286.PROD.OUTLOOK.COM
+ ([fe80::cce5:2aa8:53f9:dba9]) by TY7P286MB6866.JPNP286.PROD.OUTLOOK.COM
+ ([fe80::cce5:2aa8:53f9:dba9%5]) with mapi id 15.21.0639.012; Sat, 21 Nov 2026
+ 17:35:30 +0000
+From: Koichiro Den <den@valinux.co.jp>
+To: Anup Patel <anup@brainfault.org>,
+	Atish Patra <atish.patra@linux.dev>,
+	Andrew Jones <andrew.jones@linux.dev>
+Cc: Paul Walmsley <pjw@kernel.org>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>,
+	Alexandre Ghiti <alex@ghiti.fr>,
+	Bingyu Xian <shanbeeyoo@gmail.com>,
+	kvm@vger.kernel.org,
+	kvm-riscv@lists.infradead.org,
+	linux-riscv@lists.infradead.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v2 0/3] RISC-V: KVM: Lessen steal time update overhead
+Date: Sun, 22 Nov 2026 02:35:23 +0900
+Message-ID: <20261121173526.892344-1-den@valinux.co.jp>
+X-Mailer: git-send-email 2.54.0
+X-ClientProxiedBy: TY4P301CA0081.JPNP301.PROD.OUTLOOK.COM
+ (2603:1096:405:36f::15) To TY7P286MB6866.JPNP286.PROD.OUTLOOK.COM
+ (2603:1096:405:325::11)
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <202610090914.6999EfSj006317@mse-fl1.zte.com.cn>
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: TY7P286MB6866:EE_|OS9P286MB5134:EE_
+X-MS-Office365-Filtering-Correlation-Id: 37ac5348-3e79-4bf2-9f13-08df47f5d6a4
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|376014|366016|7416014|10070799003|1800799024|23010399003|18002099003|6133799003|56012099006|260925022911599003|260925021911599003|260925021311599003|261028144727099003|261102123227099003|261022105027099003|261021123027099003|261021121427099003|261022075727099003|261026135527099003|261026140227099003|261009223027099003|10067099003;
+X-Microsoft-Antispam-Message-Info: 5alztBNy4pRSuaoHW4Ouwe/cKyP5sPpBofXy8xUIiQ3UwOlqzA5BVGL/qYi8uXWF8Kkb/gnfeYYY2LHBQRXP6TuesVvddlwFzB+wcXsHhtH9LD+quMXQBQzA5reK9IB+BeNt38Jb786y9PCtQBTKpxwN25lMTtGBn60zFwDDA+TNSuPLDvW2u96/EA2oBlDgXc+MH/nT1PFoPoXOCR1fH6THMp8xT6aCbQyp02tnIK+eh4vWdvz/NCUrKn4u2KrC2fkr1+WVfP8iSEbDT3PiogxASli13bqwhmESDQK3nvnFfmDp6tSyj+YBwPK7EPuFStHVRy8MCbzDmLTiueNsXnG2lf96bkzrWsn5RTBOTFk2+7EgSTH/6kQBxEnpy0b8qszstQ48lEntmds2E6zFXyzvtu93/L1nR996XdUAhvHit4TYGtPm76vkM+7IACkEoM9hbcXAmgV59liiJQd1020IhpGx2q8xBxumh7N1YvNlVIs3NqEhl7SG/pQzPj60RcYpUnMBplvI+i80tVTzMEiW/FUXGHbywauRGiWNHcoPzkyHOxFfw7v7FolJF20BAjLlD9/R/reRodL6BOEgo5dZMLqak/mZYfqxS8P1cew=
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:TY7P286MB6866.JPNP286.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(376014)(366016)(7416014)(10070799003)(1800799024)(23010399003)(18002099003)(6133799003)(56012099006)(260925022911599003)(260925021911599003)(260925021311599003)(261028144727099003)(261102123227099003)(261022105027099003)(261021123027099003)(261021121427099003)(261022075727099003)(261026135527099003)(261026140227099003)(261009223027099003)(10067099003);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?RDxpraYI62/zEOJ+3f6W0KODSs1hlLb3s1RhWXNjR5bWHIJYObA4mKO91dUG?=
+ =?us-ascii?Q?bU/kjAfKtwhQw4GhbecDgOTWl/RBubDGQj0lrAfgpPqBnGkao6a8/aukqATa?=
+ =?us-ascii?Q?vd68tsE4Va2WJDflJ8wq2sMX62ORtuGhbeBQHMNua+FPLtm5ZVqMlM6PmLWj?=
+ =?us-ascii?Q?Ggp0b2MHKEjsVra/u4Bvp41xUbYBM/DjED4zExHoIhAc67UMyQNVnaQMO83R?=
+ =?us-ascii?Q?QAQxYWfYTXzDUIHEi85Ftlkk8ob1Oy5OEF7i91oh6tuEhvFZVzHnss8kN3/s?=
+ =?us-ascii?Q?qCjfdN5iPceiyLzeTvknESj7lJUQ3+B6+GavjyNoNePsQNpzVL6cY7f4cKpH?=
+ =?us-ascii?Q?YLO9fN4zYHJ3coaIn6zSuR0YATpHkc5PPFHlpHbBXSbSDf1sEXtM2M+D1DQE?=
+ =?us-ascii?Q?k8MPPOdhi1ch78pB0XGUijM5tjCjy5W/R+ScKCf+/ZA0PeSKNSJDvA2vehDN?=
+ =?us-ascii?Q?hB2hNC2QLb6XNv6o3ToVUuBd9ezWAW8xFOPXZ60/qW/CbdfJwot75o/aQyla?=
+ =?us-ascii?Q?h1b+w4/D0hzBzBx2b1DdYW0r44Uer/6fzDC/cHI7NjnFTVuxLhIXFNCEH+eA?=
+ =?us-ascii?Q?k5sOp8bYouOjSbjuo7pgIj48efIeqn5kiwqV1RrwzNw9lxyoqagUbMRYbD8e?=
+ =?us-ascii?Q?Urr1aAYo09p7R82AiIQN8rhw+7DtDA5Z4KfQrpD/eES/9UGKz7jJyJNW2d8d?=
+ =?us-ascii?Q?iiJ8aDOrIGO9iprbCq584Y44DYpDXq7KI1y0/N5INYZkneEDqza1+6oXwZyb?=
+ =?us-ascii?Q?XCHmfCfJULkeSaVPMBeuT7bkCsyYKVannUyEv0PEz+3FSuDJA67yPlbiTUTy?=
+ =?us-ascii?Q?PdwN4YPSot7yYdJwbPmhxmNweZzR/Fdq1ZnWgTza6FekZzyMs5ujhMMcQj7q?=
+ =?us-ascii?Q?CEIORirdwCv1RfyuL42yg9NgMMXuUBtf5rQfwQI0MSnf4YjPLxADI2TeCI2h?=
+ =?us-ascii?Q?lhJamvOfhIq+jMRQqxqF2K6o/gPl4xhjAdcnR9Xgc7ZFUJR0IT3m+VZ364BK?=
+ =?us-ascii?Q?o8PENBjy5BPswjNiM+G9o43Situn1f4vAm/1WXyOteKYEpgoAsveHUHa2xD9?=
+ =?us-ascii?Q?GgfwVsf6yY5IVUsc8xmTRBcg7uzV0SiLgp54Jcduqoy4hcq9bZsNn5hrIo2G?=
+ =?us-ascii?Q?HboWAvF8+rf/oUuDfL/fLwMmy49jmB2mcLrsc566HgIeLKpPituwqj5kLhZT?=
+ =?us-ascii?Q?G7JNzzTyKUpyMllqJVVg+8Q5geOLh+bB2mbJBKgod/vZ9u+aDv8SThr7D73b?=
+ =?us-ascii?Q?VBHktL42oKpXINahLsOb2qs+Wn1iIQCW2Oq6SaOwq2rl5EDvCahgr6J4kzpo?=
+ =?us-ascii?Q?RvVHhmJ5LAoWkYDw9kQb/iDSVeFkGMVPJvhW17AAxkN9zgwqZFY5OdZPJy+Z?=
+ =?us-ascii?Q?LOtlu6QkAU10/PM71luX8MiHBEL3XtwkiKe3qRjnsw6I+wBd2q1kP8XMD/bS?=
+ =?us-ascii?Q?/v2fAyqkMZ51oQbfxno0sIj9uZ6AC/md0lc7kViqBdqczfG4ISbw0dWH7374?=
+ =?us-ascii?Q?S46jrtvyom4G0aiLg9pzstVv5JIIwX2r1znjLC+lkS5chKJsXs8MbDZXroxF?=
+ =?us-ascii?Q?jgyjWAYKo4RLhO+ZLT4GqPcP+L2elZAwukDI5wSkZPM7afO4hQlEWkpjcp/p?=
+ =?us-ascii?Q?uEZAEYTZM4/2EeCj5OCEmO8Q2bNgRYj4SvcUPBIPHFBV1SPWWPBqSX6PHT58?=
+ =?us-ascii?Q?L+r4i71X+K0non+9Nox++B4WajCwJxPeCT/VR34ZBoU8LkxC6QQ9GGa6q7Tn?=
+ =?us-ascii?Q?bhH0Z1ps+fXvLGrtPUbf6ySoDyGChMtgaG3pD+3ziqc5WAetEPsR?=
+X-OriginatorOrg: valinux.co.jp
+X-MS-Exchange-CrossTenant-Network-Message-Id: 37ac5348-3e79-4bf2-9f13-08df47f5d6a4
+X-MS-Exchange-CrossTenant-AuthSource: TY7P286MB6866.JPNP286.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 21 Nov 2026 17:35:30.7096
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 7a57bee8-f73d-4c5f-a4f7-d72c91c8c111
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: APsquEpMtuTDBmgyyN0yrv0NDJpXUZjwszveyBTcyT51oNZ7/XQYC5DQXpXY0WYbzd8Md7Pt8UGiUTiGEwfWFA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: OS9P286MB5134
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261121_090222_879964_326D645F 
-X-CRM114-Status: GOOD (  34.36  )
-X-Spam-Score: -2.8 (--)
+X-CRM114-CacheID: sfid-20261121_093539_352184_74D2D297 
+X-CRM114-Status: UNSURE (   8.81  )
+X-CRM114-Notice: Please train this message.
+X-Spam-Score: -2.1 (--)
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -77,106 +143,62 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
-X-Spam-Status: No, score=-13.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-11.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Fri, Oct 09, 2026 at 05:05:30PM +0800, Gong Shuai wrote:
-> Hi Drew,
-> 
-> > MSI forwarding state is tied to the S2 domain MSI table. Replacing a
-> > device's S2 domain while one of its IRQs is forwarded would leave the
-> > IRQ state referring to the detached table.
-> > 
-> > Reject direct S2-to-S2 replacement when the moving device has forwarded
-> > IRQs. Introduce a per-device nr_forwarded_irqs counter, rather than
-> > domain-wide accounting, so other devices in the same IOMMU group can
-> > still move and can be rolled back if a later device fails.
-> > 
-> > Later patches which introduce interrupt remapping support will manage
-> > the newly introduced nr_forwarded_irqs counter.
-> > 
-> > Signed-off-by: Andrew Jones <andrew.jones@oss.qualcomm.com>
-> > ---
-> >  drivers/iommu/riscv/iommu.c | 36 ++++++++++++++++++++++++++++++++++++
-> >  1 file changed, 36 insertions(+)
-> > 
-> > diff --git a/drivers/iommu/riscv/iommu.c b/drivers/iommu/riscv/iommu.c
-> > index 57f2884dec42..d48667112cd9 100644
-> > --- a/drivers/iommu/riscv/iommu.c
-> > +++ b/drivers/iommu/riscv/iommu.c
-> > @@ -872,6 +872,7 @@ PT_IOMMU_CHECK_DOMAIN(struct riscv_iommu_domain, riscvpt.iommu, domain);
-> >  /* Private IOMMU data for managed devices, dev_iommu_priv_* */
-> >  struct riscv_iommu_info {
-> >  	struct riscv_iommu_domain *domain;
-> > +	unsigned int nr_forwarded_irqs;
-> >  };
-> >  
-> >  static struct riscv_iommu_msi_table *riscv_iommu_domain_msi_table(struct iommu_domain *iommu_domain)
-> > @@ -1432,6 +1433,36 @@ static int riscv_iommu_msi_table_alloc(struct riscv_iommu_domain *domain,
-> >  	return 0;
-> >  }
-> >  
-> > +static bool riscv_iommu_can_attach_paging_domain(struct iommu_domain *iommu_domain,
-> > +						 struct device *dev,
-> > +						 struct iommu_domain *old)
-> > +{
-> > +	struct riscv_iommu_domain *domain = iommu_domain_to_riscv(iommu_domain);
-> > +	struct riscv_iommu_info *info = dev_iommu_priv_get(dev);
-> > +	bool new_is_s2 = domain->gscid;
-> > +	struct riscv_iommu_msi_table *new_msi_table, *old_msi_table;
-> > +
-> > +	if (iommu_domain == old)
-> > +		return true;
-> > +
-> > +	new_msi_table = riscv_iommu_domain_msi_table(iommu_domain);
-> > +	old_msi_table = riscv_iommu_domain_msi_table(old);
-> > +
-> > +	if (new_msi_table)
-> > +		lockdep_assert_held(&new_msi_table->lock);
-> > +	if (old_msi_table)
-> > +		lockdep_assert_held(&old_msi_table->lock);
-> > +
-> > +	/*
-> > +	 * Per-device accounting allows other devices in the same IOMMU group
-> > +	 * to move or roll back while this device has forwarded interrupts.
-> > +	 */
-> > +	if (new_is_s2 && old_msi_table && info->nr_forwarded_irqs)
-> 
-> This check might miss one case. old_msi_table comes from this
-> attach's old domain, so only a direct S2 to S2 swap is caught.
-> A device with live forwarded IRQs can still be moved to blocking
-> and then to a different S2 domain, and on that second attach old
-> is the blocking domain, so old_msi_table is NULL and the check
-> passes. This is only from reading the code, I have no test program
-> that triggers it.
-> 
-> If you think this is a real gap, one idea would be to record the
-> table the forwarding was set up on in riscv_iommu_info(a pointer to
-> riscv_iommu_msi_table), set when the first IRQ of the device is
-> forwarded and cleared when the last one is unforwarded. The pointer
-> survives the blocking hop, since attaching to blocking domain only
-> clears info->domain. Then can_attach here will reject when the new
-> domain's table differs from it. That covers both the direct and the
-> blocking case, and the PCI reset path still works because the device
-> returns to the same S2 domain. The unforward path can use the pointer
-> instead of info->domain. Note that the S2 domain owning the table
-> must not be freed while a device still points at that table.
-> 
+Hi,
 
-Hi Shuai,
+For guests that register an SBI STA shared-memory area, this small patch
+set reduces update overhead by batching user accesses and also skipping
+updates when run_delay is unchanged.
 
-Yes, this is a gap and I agree we should track and check the association
-for the fix. For v4, I'm looking at moving the MSI table configuration
-into a VM-wide object which S2 domains reference, similar to GICv4's
-its_vm. The recorded pointer would then be to that object, which the
-hypervisor keeps alive until every forward is undone.
+Tested on SpacemiT K3:
+The benchmark uses KVM selftest helpers. The guest registers its STA
+shared memory and calls GUEST_UCALL_NONE() in a loop. The vCPU thread is
+pinned to one host CPU and re-enters KVM_RUN after each exit.
 
-Thanks,
-drew
+The table shows the median vCPU thread CPU time per round trip (from
+host userspace to the guest and back), measured with
+CLOCK_THREAD_CPUTIME_ID. Each case has five runs of 1,000,000
+iterations, preceded by 10,000 warm-up iterations per run.
+Below, "contended" adds a busy loop on that CPU.
+
+                Before      After
+  ------------  ----------  -------------------
+  uncontended   2900.01 ns  2669.59 ns (-7.95%)
+  contended     2876.42 ns  2670.01 ns (-7.18%)
+
+Based off of riscv_kvm_next, commit e9bf49bbc422 ("RISC-V: KVM: Fix
+G-stage page table memory leak on VM destroy")
+
+Best regards,
+Koichiro Den
+---
+v1->v2 changes:
+  - Address Andrew's feedback. See the individual patches for details.
+  - Rerun the benchmark on SpacemiT K3 and update the results.
+  - Add Andrew's Reviewed-by to patch 3.
+
+v1: https://lore.kernel.org/r/20261118062242.2914385-1-den@valinux.co.jp/
+
+
+Koichiro Den (3):
+  RISC-V: KVM: Order writes to the SBI STA shared structure
+  RISC-V: KVM: Batch user accesses when updating steal time
+  RISC-V: KVM: Skip steal-time updates when run_delay is unchanged
+
+ arch/riscv/kvm/vcpu_sbi_sta.c | 68 ++++++++++++++++++++---------------
+ 1 file changed, 39 insertions(+), 29 deletions(-)
+
+
+base-commit: e9bf49bbc4227048685c78f97e1446845760df4f
+-- 
+2.54.0
+
 
 -- 
 kvm-riscv mailing list
