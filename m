@@ -2,69 +2,81 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 74AE8606A31F
-	for <kvm-riscv@archiver.kernel.org>; Mon, 23 Nov 2026 15:09:48 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 656B6606A31E
+	for <kvm-riscv@archiver.kernel.org>; Mon, 23 Nov 2026 15:24:42 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=J7n08E90;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=B9x6wQRX
+	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=xWcHzW5H;
+	dkim=fail reason="signature verification failed" (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=YNNY+6HD
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:Subject:Message-ID:Date:From:
+	In-Reply-To:References:MIME-Version:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
 	List-Unsubscribe-Post:List-Owner;
-	bh=xfqswxh2rva+UxqURsK/HwHvsTRGY0FLRGO+r/nteHs=; b=J7n08E90v2hW15Xki5l3CaPnfX
-	pThpQ3NIQ/IKZyS4+LTXCfuZ5JT7V7Y1tFobdf4NAcunIg1KsX7KgRT69DeZhY6yhgxD73nHuEMpa
-	s6wxJdbD4yCzquFgejS+l7+dDycZ03zF8VdffNGT8n1Os7NaByYAYKD8IIlb1rvpTCZ6NfaRvH/FS
-	VFcTJL/GKvvawdwYgpHp+Or+eORdus2fuSjzya+Y9ljqkdqByNUBQRpamQqd0Jpk2YCiAMw/LACdA
-	XEYIS8cR8Xy+Z87L3Aj1cSoHEvoS80y5fqdDzw2VscxfEACDCbp3VWRwhwJwFZIrpfS2mWecEDAvf
-	TrOUk7NA==;
+	bh=QFWtXi9dbe498qumyR5P7gUek+9Wwgd+eODGwKeaIvc=; b=xWcHzW5HiLAd6b+uVxT1m7k7RD
+	jxRK83h47lFM+pEwnVrypPBslaOApf1n4kqPhMC/5wEBVi8VqxAtDE+Xdwf6ycuxoq8txLQ5pnMGN
+	c2QquKJDACnxJRZyMasamio4C3qTSKAfBhDLPXibZE27iIHR2AYadOGmT5HR8+rlHqW8l7+qW4NIN
+	ka3NSmsH4PmjgF5wk3tcH1tdgkykTb2lNbWTAzN7ojXdVWNQ4Ili/iQohzyGnLXy7PNQYg/Xefxfv
+	GSgCtFyqvEWQ3ef4+mkOFOU6iT1++Lrao3rW477a0PNm4aUZGeh25jyLcyLzvrwZNHOiJSAa8PyIF
+	FrmGJLTA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xVVfw-00000003ubi-0MO6;
-	Mon, 23 Nov 2026 15:09:48 +0000
-Received: from tor.source.kernel.org ([172.105.4.254])
+	id 1xVVuL-00000003xr7-3y1c;
+	Mon, 23 Nov 2026 15:24:41 +0000
+Received: from out-45.mta1.migadu.com ([2001:41d0:203:375::2d] helo=mta1.migadu.com)
 	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xVVfv-00000003ubb-1WrQ
+	id 1xVVuI-00000003xqa-4C3p
 	for kvm-riscv@lists.infradead.org;
-	Mon, 23 Nov 2026 15:09:47 +0000
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id C951962264;
-	Mon, 23 Nov 2026 15:09:46 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B4A2F1F000C6;
-	Mon, 23 Nov 2026 15:09:40 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795446586;
-	bh=dnrRfjLKmIHDzHFw2YMyKPd3bYE0BLJV4hjG0NzpuHY=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=B9x6wQRXV+lRd06FkMrkTcZJeaS8e3jKOIyXDTANXZqBMOvrR7KOjDyWtCjEChBDL
-	 j5Y71qINNgguMOorYNzL7fKWDS1xnps2HarzILPgiCJxVqW9l/EC7xCStdAaT/eej2
-	 RJyu8K2qXQou6Nv7kib6MPEB7zCBTWIZYIEwOLADYEg6x/lWkemMCtYlnUVk+utNKl
-	 LWINkzV/1Ome0GRNKk4Mwe/dZFz44LhqCnu7ys9jz8oLXgsulh3anRrU76m0FTriFc
-	 32562AhcsRlcrH3xdfq4ALU+mZnwxHQP766Mmn+QFltMAR685VD564pFHboFGfb1qm
-	 s/gtz/HsAkX0g==
-Date: Mon, 23 Nov 2026 15:09:37 +0000
-From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-To: Fuad Tabba <fuad.tabba@linux.dev>
-Cc: Paolo Bonzini <pbonzini@redhat.com>, 
-	Sean Christopherson <seanjc@google.com>, kvm@vger.kernel.org, linux-kselftest@vger.kernel.org, 
-	linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, 
+	Mon, 23 Nov 2026 15:24:40 +0000
+X-Envelope-To: kvm-riscv@lists.infradead.org
+DKIM-Signature: a=rsa-sha256; bh=gnvbL4VdHXSgoWEMo9YirAKMsnzbccETpFKUkQOB1eY=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1795447477; v=1; x=1796052277;
+ b=YNNY+6HDN8A/oIucaZkxPKlhAxoHLYqaQK9ndlIhZvkqUJcHYVmZmmzWcUZcX9IgKPtkktRc
+ NoZ+cS+qPyapENo40L6wMAmC3/ZpUy/4Z/mKGT/q34La7zGrdiDQb5HPtW1V6tDu7ju2DVubfFy
+ xWV1L7ABUe6OYxPiai3QvjIU=
+X-Envelope-To: kvm-riscv@lists.infradead.org
+Received: by smtp.migadu.com with ESMTPS id f661298bd1ffef35;
+	Mon, 23 Nov 2026 15:24:36 +0000
+X-Mizu-Trace-ID: f661298bd1ffef35
+X-Migadu-Flow: FLOW_OUT
+Received: by mail-lf1-f53.google.com with SMTP id 2adb3069b0e04-5c14bc5a743so12489e87.0
+        for <kvm-riscv@lists.infradead.org>; Mon, 23 Nov 2026 07:24:35 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AL+hErEQn17Xbb0vgTtyqwVi4KubnLgM1etfLcxnlDYHVOttsja5nG1YJrv4QDHxBtW4to371ZrhKNfvi4A=@lists.infradead.org
+X-Gm-Message-State: APuU4Z+ulcYq9L79f9IdHP0c+tqilnRPIgGxOWV/9D+L95pgoOb2E/YY
+	8+hgecZZp9Ql7V5bJ5n5qCAwjgB/74LVAi/bWh7sJIFgMxIQ9BbuKjT4RDVTWyKrkAwW4QfgP4S
+	/k+exWftoGPaRr4klKsnjK2BqDoQCceK8zWsHFsz2
+X-Received: by 2002:a05:6512:1591:b0:5c1:4cc8:2f22 with SMTP id
+ 2adb3069b0e04-5c21a249d31mr226456e87.8.1795447474671; Mon, 23 Nov 2026
+ 07:24:34 -0800 (PST)
+X-Archived-By: <archiver.kernel.org>
+MIME-Version: 1.0
+References: <20261123113435.1170711-1-fuad.tabba@linux.dev>
+ <20261123113435.1170711-3-fuad.tabba@linux.dev> <awRKhCne0gG1gKZN@gremlin>
+In-Reply-To: <awRKhCne0gG1gKZN@gremlin>
+From: Fuad Tabba <fuad.tabba@linux.dev>
+Date: Mon, 23 Nov 2026 15:23:58 +0000
+X-Gmail-Original-Message-ID: <CA+EHjTyM4_P5v0cHEiarq5XAb2A0Esshb762BLuuKnyBvH=y+w@mail.gmail.com>
+X-Gm-Features: Aa3M54ohqjfMpFnSPURFY6Wicp7yckb5JMX6NA8ywvncNdbk8_vZnEW0TzRhLu0
+Message-ID: <CA+EHjTyM4_P5v0cHEiarq5XAb2A0Esshb762BLuuKnyBvH=y+w@mail.gmail.com>
+Subject: Re: [PATCH v3 2/3] KVM: Warn userspace against ioctls while an exit
+ is pending
+To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+Cc: Paolo Bonzini <pbonzini@redhat.com>, Sean Christopherson <seanjc@google.com>, kvm@vger.kernel.org, 
+	linux-kselftest@vger.kernel.org, linux-doc@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, 
 	Shuah Khan <skhan@linuxfoundation.org>, Isaku Yamahata <isaku.yamahata@intel.com>, 
 	Rick Edgecombe <rick.p.edgecombe@intel.com>, Alexandru Elisei <alexandru.elisei@arm.com>, 
 	Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, kvmarm@lists.linux.dev, 
 	Wei-Lin Chang <weilin.chang@arm.com>, Anup Patel <anup@brainfault.org>, 
-	Atish Patra <atish.patra@linux.dev>, kvm-riscv@lists.infradead.org, Will Deacon <will@kernel.org>, 
-	Fuad Tabba <tabba@google.com>
-Subject: Re: [PATCH v3 2/3] KVM: Warn userspace against ioctls while an exit
- is pending
-Message-ID: <awRKhCne0gG1gKZN@gremlin>
-References: <20261123113435.1170711-1-fuad.tabba@linux.dev>
- <20261123113435.1170711-3-fuad.tabba@linux.dev>
-X-Archived-By: <archiver.kernel.org>
-MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <20261123113435.1170711-3-fuad.tabba@linux.dev>
+	Atish Patra <atish.patra@linux.dev>, kvm-riscv@lists.infradead.org, 
+	Will Deacon <will@kernel.org>
+X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
+X-CRM114-CacheID: sfid-20261123_072439_480614_4CC61795 
+X-CRM114-Status: GOOD (  22.15  )
+X-Spam-Score: -2.1 (--)
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -84,76 +96,64 @@ X-Spam-Status: No, score=-13.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Mon, Nov 23, 2026 at 11:34:34AM +0000, Fuad Tabba wrote:
-> KVM_PRE_FAULT_MEMORY sets run->exit_reason to KVM_EXIT_DIRTY_RING_FULL
-> when it stops on a full dirty ring. If an MMIO exit is pending at that
-> point, the next KVM_RUN on arm64 and riscv doesn't complete it. Rather
-> than document that case alone, which could suggest that other ioctls
-> are safe, warn against invoking any ioctl other than KVM_RUN before a
-> pending exit is completed.
+On Mon, 23 Nov 2026 at 15:09, Lorenzo Stoakes (ARM) <ljs@kernel.org> wrote:
+[...]
+> Very much agree with Sean's take here that we should instil sufficient fear in
+> users at doing silly things (also in general not only KVM :).
 >
-> Suggested-by: Sean Christopherson <seanjc@google.com>
-> Signed-off-by: Fuad Tabba <fuad.tabba@linux.dev>
-
-Very much agree with Sean's take here that we should instil sufficient fear in
-users at doing silly things (also in general not only KVM :).
-
-I wonder if we could add some specific examples or broad description of why it's
-unwise for better effect, though? Comments below.
-
-In general though:
-
-Reviewed-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
-
-> ---
->  Documentation/virt/kvm/api.rst | 11 +++++++----
->  1 file changed, 7 insertions(+), 4 deletions(-)
+> I wonder if we could add some specific examples or broad description of why it's
+> unwise for better effect, though? Comments below.
 >
-> diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.rst
-> index 89eb6be9bc6e3..980ef0cdc1c91 100644
-> --- a/Documentation/virt/kvm/api.rst
-> +++ b/Documentation/virt/kvm/api.rst
-> @@ -6974,10 +6974,13 @@ to the byte array.
+> In general though:
 >
->        The pending state of the operation is not preserved in state which is
->        visible to userspace, thus userspace should ensure that the operation is
-> -      completed before performing a live migration.  Userspace can re-enter the
-> -      guest with an unmasked signal pending or with the immediate_exit field set
-> -      to complete pending operations without allowing any further instructions
-> -      to be executed.
-> +      completed before performing a live migration.  In general, userspace should
-> +      exercise extreme caution when invoking ioctls other than KVM_RUN prior to
-> +      completing the original operation.
+> Reviewed-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 
-Perhaps worth saying why? E.g. (as I understand it) that for these exits the
-operation is only completed on the next KVM_RUN, and that KVM relies on state
-left over from the exit (including parts of struct kvm_run such as exit_reason)
-to do so, so any ioctl invoked in between might clobber that state?
+Thanks!
 
-I see you intentionally avoided documenting the pre-fault case on its own, but
-with the above stated I think a concrete example might be example here, like
-e.g.:
-
-"For example, if you were to ... that would result in ... which would absolutely
-ruin your day because ..."
-
-Kinda thing :)
-
-
-> +
-> +      Userspace can re-enter the guest with an unmasked signal pending or with
-> +      the immediate_exit field set to complete pending operations without
-> +      allowing any further instructions to be executed.
+> > ---
+> >  Documentation/virt/kvm/api.rst | 11 +++++++----
+> >  1 file changed, 7 insertions(+), 4 deletions(-)
+> >
+> > diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.rst
+> > index 89eb6be9bc6e3..980ef0cdc1c91 100644
+> > --- a/Documentation/virt/kvm/api.rst
+> > +++ b/Documentation/virt/kvm/api.rst
+> > @@ -6974,10 +6974,13 @@ to the byte array.
+> >
+> >        The pending state of the operation is not preserved in state which is
+> >        visible to userspace, thus userspace should ensure that the operation is
+> > -      completed before performing a live migration.  Userspace can re-enter the
+> > -      guest with an unmasked signal pending or with the immediate_exit field set
+> > -      to complete pending operations without allowing any further instructions
+> > -      to be executed.
+> > +      completed before performing a live migration.  In general, userspace should
+> > +      exercise extreme caution when invoking ioctls other than KVM_RUN prior to
+> > +      completing the original operation.
 >
->  ::
+> Perhaps worth saying why? E.g. (as I understand it) that for these exits the
+> operation is only completed on the next KVM_RUN, and that KVM relies on state
+> left over from the exit (including parts of struct kvm_run such as exit_reason)
+> to do so, so any ioctl invoked in between might clobber that state?
 >
-> --
-> 2.47.3
+> I see you intentionally avoided documenting the pre-fault case on its own, but
+> with the above stated I think a concrete example might be example here, like
+> e.g.:
 >
+> "For example, if you were to ... that would result in ... which would absolutely
+> ruin your day because ..."
 >
+> Kinda thing :)
 
---
-Cheers, Lorenzo
+:)
+
+I'm not sure it would help, tbh. I think a reason or an example would
+have the effect Sean wanted to avoid [1], where a reader takes an
+ioctl that doesn't match it to be safe.
+
+Cheers,
+/fuad
+
+[1] https://lore.kernel.org/all/av5CBjbeidUUWiLq@seanjc-mac.roam.internal/
 
 -- 
 kvm-riscv mailing list
