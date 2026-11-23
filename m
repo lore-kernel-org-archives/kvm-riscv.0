@@ -2,41 +2,41 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 11D4E606A31A
-	for <kvm-riscv@archiver.kernel.org>; Mon, 23 Nov 2026 05:52:18 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3D07F606A31E
+	for <kvm-riscv@archiver.kernel.org>; Mon, 23 Nov 2026 06:50:52 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=oTDZVfsx;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=LQkGug8+
+	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=IBGoRVpk;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=D751r6Q3
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-Id:Date:Subject:Cc
-	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
 	List-Unsubscribe-Post:List-Owner;
-	bh=8wKOuiSCsJ0++7TT/ExNW8SEcNExJ1AhVnCqC0eqSnk=; b=oTDZVfsxK4V0XXHlgTeIkDEJnx
-	19UPPvoc4tQpjO/UB4J/lLRNkQpi2yR36U3lT/9mHaoEL8uVCDUFzkoMqcadoExftsumRUXBLMq7h
-	1pE/SQTzhYma8S8W6Aq5Z57gpaHrnlzYNR3Otm+EXAunw+IzZ4B4ftdWWjgxcbv2TBQ8LsL+jPgzt
-	Dd/KkWE02i7obsnE2MAkzAAAkiO3vNwPOLVMhq+jVCMJOfjYsBOze3L9LNe9aFWQqwjWZBRQ2vKLR
-	hw0CojpDcNclfM7IztWQ4w5s5i73iA98/EgenGf//qksLcadZA+ZNWXGAe0SApCzdYvoGwja+nZWa
-	wJYZdqWQ==;
+	bh=7Us+uoNO3PX+iZfLEpow2GIyhlzn5k2MmiSF2BBGOFw=; b=IBGoRVpkuBid+1FFnNTVxByvvL
+	0S4jfZ2sjse7iTvjUJ/VnW+uKBTRLyhHnSVxKnKaQS+ZmDZncbYMgWi7zyaq8PU+cAnc8eU8NhZpP
+	eVRmciZr+7hJmTqrijPHKm7KzWdrumVaIYT/S4AgOhqkcWnxaOnL+7tfNOXuSrogXVC9dYFiEuxa6
+	xGLzZeHk5sKgzffpLkxw6rMtoRkoFReTR0jPst/SNZvyCn9vEgCJpknTdhdA3HViAP1Ndbsxtulgk
+	Hks2gF2t9hnRJkHa6VH0g7eHb2IPhL9kDs5d38gHfXtRt1QmM9P8tBQ9Cs2GDJ37k0kPFHMnJzW0J
+	Fwq4jHtQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xVMyP-00000002LFO-2jzA;
-	Mon, 23 Nov 2026 05:52:17 +0000
-Received: from [117.135.210.2] (helo=m16.mail.163.com)
+	id 1xVNt5-00000002Oe9-3K98;
+	Mon, 23 Nov 2026 06:50:51 +0000
+Received: from m16.mail.163.com ([220.197.31.2])
 	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xVMyM-00000002LEh-06RR;
-	Mon, 23 Nov 2026 05:52:16 +0000
+	id 1xVNsz-00000002Ocr-1jwg;
+	Mon, 23 Nov 2026 06:50:47 +0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=PE
-	pLyYGaW8XTvipr4v9SRAOm8z54JI15yo3XGY9QH44=; b=LQkGug8+0JPFJAMCan
-	TIARoMeKaZ3kaT0JrlPmJRQ6jxXC2IYxMnOSYwtZzNzs7XL1PhFwYFbfJOpsgWgs
-	wSqYrDti7yVcitB9goa/28sBKjRYYW/JG1X5i4Tgus6DvVMfIDJmpT90XeVNIZUk
-	f/MpNvJmSqUmk3O64BPGq7DJg=
+	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=tH
+	lnf2LKqk1x9hZynTXX0rVO585CVFuslk9OIJSwAIA=; b=D751r6Q3TtrOXCGLX8
+	3/AQ+Qfj+tI7R26aqwn/l+X3JeK/q06PtvCVkkg76WLbnHC+oBjpmQlbB4Z2TF7D
+	gZ6YSQBdT/XrNOpDP7opMPI85iHskLApqYEG27kveD8bWquKgreHEnBECg2/G1/v
+	qsdf67ASzh/w/BRKIC5uKQiKQ=
 Received: from leoqi-System-Product-Name.. (unknown [])
-	by gzga-smtp-mtada-g0-4 (Coremail) with SMTP id _____wD33xEs1ANrqn5EKQ--.4784S2;
-	Mon, 23 Nov 2026 13:50:45 +0800 (CST)
+	by gzsmtp1 (Coremail) with SMTP id PCgvCgDnF4b_4QNrsN4_Gw--.61939S2;
+	Mon, 23 Nov 2026 14:49:42 +0800 (CST)
 From: Can Qi <qican5708@163.com>
 To: anup@brainfault.org
 Cc: atish.patra@linux.dev,
@@ -48,22 +48,24 @@ Cc: atish.patra@linux.dev,
 	kvm@vger.kernel.org,
 	linux-riscv@lists.infradead.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH] KVM: riscv: Allow rescheduling during G-stage unmap
-Date: Mon, 23 Nov 2026 13:50:36 +0800
-Message-Id: <20261123055036.1554937-1-qican5708@163.com>
+Subject: [PATCH v2] KVM: riscv: Allow rescheduling during G-stage unmap
+Date: Mon, 23 Nov 2026 14:49:35 +0800
+Message-Id: <20261123064935.1608890-1-qican5708@163.com>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20261123055036.1554937-1-qican5708@163.com>
+References: <20261123055036.1554937-1-qican5708@163.com>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-X-CM-TRANSID: _____wD33xEs1ANrqn5EKQ--.4784S2
-X-Coremail-Antispam: 1Uf129KBjvAXoWfJF17CF1fKF4xurWxGr48Zwb_yoW8GF1DJo
-	W0va1rWF48ury0yFy8Aw17tFyjqrW0krZxXF15XFWYqryjq348uryjkrZ8Ja47Wr1UuFyf
-	ZFWfXr17XF18G3Wxn29KB7ZKAUJUUUU8529EdanIXcx71UUUUU7v73VFW2AGmfu7bjvjm3
-	AaLaJ3UbIYCTnIWIevJa73UjIFyTuYvjxUoKZXDUUUU
-X-CM-SenderInfo: ptlft0avxqmqqrwthudrp/xtbCzhXdm2sD1DV4kgAA3+
+X-CM-TRANSID: PCgvCgDnF4b_4QNrsN4_Gw--.61939S2
+X-Coremail-Antispam: 1Uf129KBjvAXoWfGF4fGrWfKF13Ar4kJFy8uFg_yoW8XrW8uo
+	W0va1ruF48ury0yFy8Aw17tFyjqFW0krZxWF15XFWYgryjq348uryjkrZ8Ja47Wr1UuFyf
+	ZFWfXr17XF18G3Wfn29KB7ZKAUJUUUU8529EdanIXcx71UUUUU7v73VFW2AGmfu7bjvjm3
+	AaLaJ3UbIYCTnIWIevJa73UjIFyTuYvjxUrnmRDUUUU
+X-CM-SenderInfo: ptlft0avxqmqqrwthudrp/xtbCzQZVE2sD4gbMPgAA3z
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261122_215214_916143_1702FD4A 
-X-CRM114-Status: GOOD (  19.32  )
-X-Spam-Score: -1.1 (-)
+X-CRM114-CacheID: sfid-20261122_225046_308124_ADF6A7D1 
+X-CRM114-Status: GOOD (  21.88  )
+X-Spam-Score: -1.8 (-)
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -94,14 +96,19 @@ has been detached while the lock was dropped. Flush pending batches
 before yielding so a concurrent invalidation cannot miss PTEs cleared
 by the current walker. Finish memslot invalidation under the write
 lock and synchronize the VM before releasing a detached root.
+Return whether any cleared PTEs still need a flush at the end of the
+walk, so callers can skip a second flush when the batches have
+already been synchronized.
 
 Free the VM-owned split-page cache in kvm_arch_destroy_vm(), after
 notifier callbacks have completed. Notifier release can be invoked
 by both address-space teardown and notifier unregister.
 
-Validated with RISC-V KVM selftests in QEMU TCG, including MMU stress
-with two vCPUs, KASAN and lockdep runs, and traces of rescheduling and
-remote TLB request handling.
+The first revision passed the QEMU KVM selftests, KASAN and lockdep
+runs, and tracing of rescheduling and remote TLB request handling.
+For v2, rebuild the kernel and modules and rerun the two-vCPU MMU
+stress selftest. Tracing confirms the full flush still runs on root
+detach even when the walker returns with no pending invalidations.
 
 Codex assisted with implementation and validation. Sashiko identified
 the pending-flush ordering concern in an earlier revision.
@@ -110,17 +117,31 @@ Co-developed-by: Quan Zhou <zhouquan@iscas.ac.cn>
 Signed-off-by: Quan Zhou <zhouquan@iscas.ac.cn>
 Signed-off-by: Can Qi <qican5708@163.com>
 ---
- arch/riscv/include/asm/kvm_gstage.h | 10 ++-
- arch/riscv/kvm/gstage.c             | 29 +++++++--
- arch/riscv/kvm/mmu.c                | 95 ++++++++++++++---------------
- arch/riscv/kvm/vm.c                 |  3 +
- 4 files changed, 83 insertions(+), 54 deletions(-)
+Changes in v2
+
+- Return only pending TLB work from kvm_riscv_gstage_unmap_range(), so
+  callers can skip the final range flush if earlier batches already
+  synchronized all cleared PTEs. Keep the full flush on root detach.
+
+ arch/riscv/include/asm/kvm_gstage.h | 11 ++++-
+ arch/riscv/kvm/gstage.c             | 31 +++++++++---
+ arch/riscv/kvm/mmu.c                | 95 ++++++++++++++++++-------------------
+ arch/riscv/kvm/vm.c                 |  3 ++
+ 4 files changed, 84 insertions(+), 56 deletions(-)
 
 diff --git a/arch/riscv/include/asm/kvm_gstage.h b/arch/riscv/include/asm/kvm_gstage.h
-index aaf080ba1..0df2c2a54 100644
+index aaf080ba1..ea57df965 100644
 --- a/arch/riscv/include/asm/kvm_gstage.h
 +++ b/arch/riscv/include/asm/kvm_gstage.h
-@@ -104,13 +104,21 @@ static inline unsigned long kvm_riscv_gstage_mode(unsigned long pgd_levels)
+@@ -77,6 +77,7 @@ enum kvm_riscv_gstage_op {
+ bool kvm_riscv_gstage_op_pte(struct kvm_gstage *gstage, gpa_t addr,
+ 			     pte_t *ptep, u32 ptep_level, enum kvm_riscv_gstage_op op);
+ 
++/* Returns true if cleared PTEs still need a TLB flush. */
+ bool kvm_riscv_gstage_unmap_range(struct kvm_gstage *gstage,
+ 				  gpa_t start, gpa_t size, bool may_block);
+ 
+@@ -104,13 +105,21 @@ static inline unsigned long kvm_riscv_gstage_mode(unsigned long pgd_levels)
  	}
  }
  
@@ -144,15 +165,15 @@ index aaf080ba1..0df2c2a54 100644
  
  #endif
 diff --git a/arch/riscv/kvm/gstage.c b/arch/riscv/kvm/gstage.c
-index be70607a3..ea7a156ec 100644
+index be70607a3..47b906769 100644
 --- a/arch/riscv/kvm/gstage.c
 +++ b/arch/riscv/kvm/gstage.c
-@@ -423,9 +423,20 @@ bool kvm_riscv_gstage_unmap_range(struct kvm_gstage *gstage,
+@@ -423,9 +423,19 @@ bool kvm_riscv_gstage_unmap_range(struct kvm_gstage *gstage,
  	bool found_leaf;
  	unsigned long page_size;
  	gpa_t addr = start, end = start + size;
+-	bool flush = false;
 +	gfn_t last_flush_gfn = start >> PAGE_SHIFT;
- 	bool flush = false;
 +	bool pending_flush = false;
 +
 +	if (!(gstage->flags & KVM_GSTAGE_FLAGS_LOCAL))
@@ -168,7 +189,7 @@ index be70607a3..ea7a156ec 100644
  		found_leaf = kvm_riscv_gstage_get_leaf(gstage, addr, &ptep, &ptep_level);
  		ret = gstage_level_to_page_size(gstage, ptep_level, &page_size);
  		if (ret)
-@@ -434,10 +445,11 @@ bool kvm_riscv_gstage_unmap_range(struct kvm_gstage *gstage,
+@@ -434,10 +444,10 @@ bool kvm_riscv_gstage_unmap_range(struct kvm_gstage *gstage,
  		if (!found_leaf) {
  			addr = ALIGN(addr + 1, page_size);
  		} else {
@@ -178,12 +199,11 @@ index be70607a3..ea7a156ec 100644
 +				pending_flush |= kvm_riscv_gstage_op_pte(gstage, addr, ptep,
  								 ptep_level, GSTAGE_OP_CLEAR);
 -			else {
-+				flush |= pending_flush;
 +			} else {
  				WARN_ONCE(1, "Skip unmap range addr: %#llx, end: %#llx, page_size: %#lx\n",
  						addr, end, page_size);
  			}
-@@ -448,9 +460,18 @@ bool kvm_riscv_gstage_unmap_range(struct kvm_gstage *gstage,
+@@ -448,12 +458,21 @@ bool kvm_riscv_gstage_unmap_range(struct kvm_gstage *gstage,
  		/*
  		 * If the range is too large, release the kvm->mmu_lock
  		 * to prevent starvation and lockup detector warnings.
@@ -202,7 +222,11 @@ index be70607a3..ea7a156ec 100644
 +		}
  	}
  
- 	return flush;
+-	return flush;
++	return pending_flush;
+ }
+ 
+ bool kvm_riscv_gstage_wp_range(struct kvm_gstage *gstage, gpa_t start, gpa_t end)
 diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
 index 738d9ee1e..0d0ab1127 100644
 --- a/arch/riscv/kvm/mmu.c
