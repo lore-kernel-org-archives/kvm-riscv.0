@@ -2,11 +2,11 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BE2B0606A31A
-	for <kvm-riscv@archiver.kernel.org>; Mon, 23 Nov 2026 15:27:12 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 444FF606A338
+	for <kvm-riscv@archiver.kernel.org>; Mon, 23 Nov 2026 15:32:04 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=JhRlS0t8;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=e9Uq4Xe1
+	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=RU2NEnfZ;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FTdZLh/o
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
@@ -14,37 +14,37 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
 	List-Unsubscribe-Post:List-Owner;
-	bh=91fkAUeJJ1/MO2xCR6jI7FrUvLp20iwXs3g5mw7q25w=; b=JhRlS0t84H+JuwAr3eqPrDtM8K
-	SydXZaMBsotRT3V4r63IjicgpHpG4k3iJjtfMpUu8zLFxKFn/hIm3zeKd8734Pxmh/6bImxjD5ZRj
-	jPiG2IvUZsxROOSWzBhgeZbB7EiWwn3RIfuvogqjR9d8mUwywnTJhK5VROk9kuZXGPKRiqIpngGs4
-	5RcwBmtAJGIzSXi4UFh8as0PuwJIgMTp4MEcM2UY2SFya2rcCb2cxumT9XTyH6b95plMj6anbFB5a
-	UinGm4kH4eVt/JZ65QQYEMXijOfAbzry7BZHnUcb8l8v9KRzZexWM0u4gBFzvKlpvkkcWivCFnwhq
-	UuBPYNpw==;
+	bh=8Z+VYLQfGLe4CfQw1ZAlZLzCIuD/dgjVc1W1tKs9W6Y=; b=RU2NEnfZ5GoMr00dS5HGPJKLFH
+	3J+0AnYEHe2RFZgEH+HVPOMx+VKbxjG8ryLwA8dU3rKh2F7zUV55VVlq1OYQnus6od9q/LRGmtV6Q
+	5UnjHVWmvEvGihB0j2sb7rVPUV9BUnkp5NGe59P3lIZOe4norQ1dBMqaBeQdh7IOZpyNWmqm7Akv6
+	sxF1qXcHi8sa6F0yhZ5f317m7iclCJ+O1+LrL7qNS3DBrcMT3HjwSz+YfVHjok4rCRQ66JRbZJldP
+	gCUyKB6uVILCTt+/1fZop5tGwJlNJOKvXNYdYQbw8Ao+2FvLQiz1Ck2MJxmkqKXWEaCCaQ/aIwMIG
+	LJslgNIw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xVVwm-00000003ytR-2BG2;
-	Mon, 23 Nov 2026 15:27:12 +0000
-Received: from tor.source.kernel.org ([172.105.4.254])
+	id 1xVW1T-00000003zst-3k5a;
+	Mon, 23 Nov 2026 15:32:03 +0000
+Received: from tor.source.kernel.org ([2600:3c04:e001:324:0:1991:8:25])
 	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xVVwl-00000003ysu-0i8k
+	id 1xVW1T-00000003zsW-0Hij
 	for kvm-riscv@lists.infradead.org;
-	Mon, 23 Nov 2026 15:27:11 +0000
+	Mon, 23 Nov 2026 15:32:03 +0000
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 546BA622DC;
-	Mon, 23 Nov 2026 15:27:10 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1F14A1F000CA;
-	Mon, 23 Nov 2026 15:27:03 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 816E3622F4;
+	Mon, 23 Nov 2026 15:32:02 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D83C61F000CF;
+	Mon, 23 Nov 2026 15:31:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795447629;
-	bh=9TZM6XuQCVdejYnoblYTNL9KeRxvPg2JJEEUf+a0CiE=;
+	s=k20260515; t=1795447922;
+	bh=IcrKa5wszJlz7KzbvkJ6LYVb8H5e9hHDr4RZJLHWMyM=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=e9Uq4Xe1qpaATaiDo5wOIGfM+EwwcSQCdX2R2WULHbjBs1ZKYHp5YWudfo93wnIy5
-	 /EhRUZq0GSxcIuK9YxYvHnRR5XYYZ4V2QQ7T4acP62KJQSB0P4u2p+GsiWTqdMR5Fi
-	 z+ih5lmoVRpbnEDzOThc0xJ4cyzHo+8go0bQAqSuS2gcJiuVz/EZRvD5IQWJa8vj0J
-	 Dvg9kXq7oPJFI6klRrQcc37C/KER5hExgJomgHTE/a0s4Zfgc9yNZhTDqX/6URCxR3
-	 ti4Ppj9+UFttR1Ut9xW8NOhqoUUxbYhCt7YJZHZFqIEDcO9rh1rdwELZoH2asAErZr
-	 KGA11e44z4i3Q==
-Date: Mon, 23 Nov 2026 15:27:01 +0000
+	b=FTdZLh/oKelhDZHb27a8Rjnsbjd5T8QMS1HZ8GXSbzFfWDBRtRlPqH4ej2BHiOxGp
+	 WYaG6MaU2vMTrbJ2jSAAcXK9hewWa08MSj8aSICWcGhhEsVOS7vtEyJuqDySVj2hk2
+	 Dkbnv40jW4fYWr27uMMqSLIBFptb63TGD5lwieU/2Yct6tGqap3hZNpP0fJ8syioa/
+	 Bcv7nFUbzMX561fxkGAC1Fjoy5qVB1c4rTAaAEm4FZQKOlm8aqCDLyYqU9w5h9LWcw
+	 0CHylaAYpxeKP3qe2jsGkle32VHGhSGNKBQ2rXU8WUrZTF9cqIvapDfYcuIc2A7kih
+	 sWlm3f0Xg74pw==
+Date: Mon, 23 Nov 2026 15:31:54 +0000
 From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
 To: Fuad Tabba <fuad.tabba@linux.dev>
 Cc: Paolo Bonzini <pbonzini@redhat.com>, 
@@ -54,17 +54,18 @@ Cc: Paolo Bonzini <pbonzini@redhat.com>,
 	Rick Edgecombe <rick.p.edgecombe@intel.com>, Alexandru Elisei <alexandru.elisei@arm.com>, 
 	Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, kvmarm@lists.linux.dev, 
 	Wei-Lin Chang <weilin.chang@arm.com>, Anup Patel <anup@brainfault.org>, 
-	Atish Patra <atish.patra@linux.dev>, kvm-riscv@lists.infradead.org, Will Deacon <will@kernel.org>, 
-	Fuad Tabba <tabba@google.com>, stable@vger.kernel.org
-Subject: Re: [PATCH v3 1/3] KVM: Stop KVM_PRE_FAULT_MEMORY when the vCPU's
- dirty ring is full
-Message-ID: <awRaeD7ut2Y5Lv8n@gremlin>
+	Atish Patra <atish.patra@linux.dev>, kvm-riscv@lists.infradead.org, Will Deacon <will@kernel.org>
+Subject: Re: [PATCH v3 2/3] KVM: Warn userspace against ioctls while an exit
+ is pending
+Message-ID: <awRcDlU6vFaL3uKt@gremlin>
 References: <20261123113435.1170711-1-fuad.tabba@linux.dev>
- <20261123113435.1170711-2-fuad.tabba@linux.dev>
+ <20261123113435.1170711-3-fuad.tabba@linux.dev>
+ <awRKhCne0gG1gKZN@gremlin>
+ <CA+EHjTyM4_P5v0cHEiarq5XAb2A0Esshb762BLuuKnyBvH=y+w@mail.gmail.com>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20261123113435.1170711-2-fuad.tabba@linux.dev>
+In-Reply-To: <CA+EHjTyM4_P5v0cHEiarq5XAb2A0Esshb762BLuuKnyBvH=y+w@mail.gmail.com>
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -84,124 +85,73 @@ X-Spam-Status: No, score=-13.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Mon, Nov 23, 2026 at 11:34:33AM +0000, Fuad Tabba wrote:
-> Pre-faulting can map a dirty-logged page writable, which pushes it to
-> the vCPU's dirty ring. KVM_RUN exits with KVM_EXIT_DIRTY_RING_FULL
-> before the ring overflows, but the pre-fault loop never checks it, so
-> one call can push more entries than the ring has free, which trips the
-> WARN in kvm_dirty_ring_push() and overwrites entries userspace hasn't
-> harvested. On x86:
+On Mon, Nov 23, 2026 at 03:23:58PM +0000, Fuad Tabba wrote:
+> On Mon, 23 Nov 2026 at 15:09, Lorenzo Stoakes (ARM) <ljs@kernel.org> wrote:
+> [...]
+> > Very much agree with Sean's take here that we should instil sufficient fear in
+> > users at doing silly things (also in general not only KVM :).
+> >
+> > I wonder if we could add some specific examples or broad description of why it's
+> > unwise for better effect, though? Comments below.
+> >
+> > In general though:
+> >
+> > Reviewed-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 >
->   WARNING: arch/x86/kvm/../../../virt/kvm/dirty_ring.c:225 at kvm_dirty_ring_push+0x7a/0xd0
->   Call Trace:
->    make_spte+0x2cc/0x450
->    kvm_tdp_mmu_map+0x5e1/0x7f0
->    kvm_tdp_page_fault+0x12c/0x1b0
->    kvm_mmu_do_page_fault+0x181/0x250
->    kvm_arch_vcpu_pre_fault_memory+0x136/0x1d0
->    kvm_vcpu_pre_fault_memory+0xcf/0x180
->    kvm_vcpu_ioctl+0x455/0x770
+> Thanks!
 >
-> Stop the loop once the ring is soft full, with the check KVM_RUN makes
-> before entering the guest. Return the pages already processed, or
-> -ENOSPC when there aren't any, since a retry can't succeed until
-> userspace harvests and resets the ring. s390 has the ioctl but no ring,
-> so give kvm_dirty_ring_check_request() a stub.
+> > > ---
+> > >  Documentation/virt/kvm/api.rst | 11 +++++++----
+> > >  1 file changed, 7 insertions(+), 4 deletions(-)
+> > >
+> > > diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.rst
+> > > index 89eb6be9bc6e3..980ef0cdc1c91 100644
+> > > --- a/Documentation/virt/kvm/api.rst
+> > > +++ b/Documentation/virt/kvm/api.rst
+> > > @@ -6974,10 +6974,13 @@ to the byte array.
+> > >
+> > >        The pending state of the operation is not preserved in state which is
+> > >        visible to userspace, thus userspace should ensure that the operation is
+> > > -      completed before performing a live migration.  Userspace can re-enter the
+> > > -      guest with an unmasked signal pending or with the immediate_exit field set
+> > > -      to complete pending operations without allowing any further instructions
+> > > -      to be executed.
+> > > +      completed before performing a live migration.  In general, userspace should
+> > > +      exercise extreme caution when invoking ioctls other than KVM_RUN prior to
+> > > +      completing the original operation.
+> >
+> > Perhaps worth saying why? E.g. (as I understand it) that for these exits the
+> > operation is only completed on the next KVM_RUN, and that KVM relies on state
+> > left over from the exit (including parts of struct kvm_run such as exit_reason)
+> > to do so, so any ioctl invoked in between might clobber that state?
+> >
+> > I see you intentionally avoided documenting the pre-fault case on its own, but
+> > with the above stated I think a concrete example might be example here, like
+> > e.g.:
+> >
+> > "For example, if you were to ... that would result in ... which would absolutely
+> > ruin your day because ..."
+> >
+> > Kinda thing :)
 >
-> The check also sets run->exit_reason to KVM_EXIT_DIRTY_RING_FULL. On
-> arm64, KVM_RUN completes a pending MMIO exit only if exit_reason is
-> still KVM_EXIT_MMIO, and on riscv KVM_RUN does the same for its MMIO,
-> SBI and CSR exits. If a pre-fault stops on a full ring while such an
-> exit is pending, the next KVM_RUN doesn't complete it and the guest
-> repeats the instruction that caused the exit. Userspace can avoid that
-> by completing the exit with KVM_RUN before pre-faulting.
+> :)
+>
+> I'm not sure it would help, tbh. I think a reason or an example would
+> have the effect Sean wanted to avoid [1], where a reader takes an
+> ioctl that doesn't match it to be safe.
 
-Thanks for adding!
+Ah fair enough, I missed the bit about purposeful fear-inducing vagueness :)
+
+I guess the retort to my suggestion is that a user may think 'oh well I'm not
+doing that so it's fine'.
+
+Fine line to tread I guess!
 
 >
-> Fixes: bc1a5cd002116 ("KVM: Add KVM_PRE_FAULT_MEMORY vcpu ioctl to pre-populate guest memory")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Fuad Tabba <fuad.tabba@linux.dev>
-
-Thanks! LGTM so:
-
-Reviewed-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
-
-> ---
->  Documentation/virt/kvm/api.rst | 9 +++++++--
->  include/linux/kvm_dirty_ring.h | 5 +++++
->  virt/kvm/kvm_main.c            | 5 +++++
->  3 files changed, 17 insertions(+), 2 deletions(-)
+> Cheers,
+> /fuad
 >
-> diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.rst
-> index e95c9cda085d9..89eb6be9bc6e3 100644
-> --- a/Documentation/virt/kvm/api.rst
-> +++ b/Documentation/virt/kvm/api.rst
-> @@ -6544,6 +6544,7 @@ Errors:
->    ENOENT     The specified `gpa` is outside defined memslots.
->    ENOEXEC    The vCPU has not been initialised (arm64).
->    EINTR      An unmasked signal is pending and no page was processed.
-> +  ENOSPC     The vCPU's dirty ring is full and no page was processed.
->    EFAULT     The parameter address was invalid.
->    EHWPOISON  A poisoned host page was encountered.
->    EOPNOTSUPP Mapping memory for a GPA is unsupported by the
-> @@ -6588,7 +6589,9 @@ case, the ioctl can be called in parallel.
->
->  When the ioctl returns, the input values are updated to point to the
->  remaining range.  If `size` > 0 on return, the caller can just issue
-> -the ioctl again with the same `struct kvm_map_memory` argument.
-> +the ioctl again with the same `struct kvm_pre_fault_memory` argument.
-> +If that fails with ENOSPC, the vCPU's dirty ring has to be harvested
-> +and reset first.
->
->  On x86, shadow page tables cannot support this ioctl because they
->  are indexed by virtual address or nested guest physical address.
-> @@ -8957,7 +8960,9 @@ Therefore, the ioctl must be called *before* reading the content of
->  the dirty pages.
->
->  The dirty ring can get full.  When it happens, the KVM_RUN of the
-> -vcpu will return with exit reason KVM_EXIT_DIRTY_RING_FULL.
-> +vcpu will return with exit reason KVM_EXIT_DIRTY_RING_FULL, and
-> +KVM_PRE_FAULT_MEMORY on the vcpu will process no more pages until the
-> +ring has been harvested and reset.
->
->  The dirty ring interface has a major difference comparing to the
->  KVM_GET_DIRTY_LOG interface in that, when reading the dirty ring from
-> diff --git a/include/linux/kvm_dirty_ring.h b/include/linux/kvm_dirty_ring.h
-> index eb10d87adf7d5..729615ae0cf4d 100644
-> --- a/include/linux/kvm_dirty_ring.h
-> +++ b/include/linux/kvm_dirty_ring.h
-> @@ -60,6 +60,11 @@ static inline void kvm_dirty_ring_push(struct kvm_vcpu *vcpu,
->  {
->  }
->
-> +static inline bool kvm_dirty_ring_check_request(struct kvm_vcpu *vcpu)
-> +{
-> +	return false;
-> +}
-> +
->  static inline struct page *kvm_dirty_ring_get_page(struct kvm_dirty_ring *ring,
->  						   u32 offset)
->  {
-> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> index cf4cb586f1407..ac8b94a386e4a 100644
-> --- a/virt/kvm/kvm_main.c
-> +++ b/virt/kvm/kvm_main.c
-> @@ -4461,6 +4461,11 @@ static int kvm_vcpu_pre_fault_memory(struct kvm_vcpu *vcpu,
->  			break;
->  		}
->
-> +		if (kvm_dirty_ring_check_request(vcpu)) {
-> +			r = -ENOSPC;
-> +			break;
-> +		}
-> +
->  		r = kvm_arch_vcpu_pre_fault_memory(vcpu, range);
->  		if (WARN_ON_ONCE(r == 0 || r == -EIO))
->  			break;
-> --
-> 2.47.3
->
+> [1] https://lore.kernel.org/all/av5CBjbeidUUWiLq@seanjc-mac.roam.internal/
 >
 
 --
