@@ -2,45 +2,45 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8CAF1606A681
-	for <kvm-riscv@archiver.kernel.org>; Mon, 23 Nov 2026 11:34:49 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B1D71606A321
+	for <kvm-riscv@archiver.kernel.org>; Mon, 23 Nov 2026 11:34:51 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=3bn4LVbR;
-	dkim=fail reason="signature verification failed" (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=LJyZfoTK
+	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=YwPyCl5/;
+	dkim=fail reason="signature verification failed" (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=G0TQwbQf
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
-	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
 	List-Unsubscribe-Post:List-Owner;
-	bh=LZtwlTHiFFoFU1uFELo+npyinXjOx7DsnYnvzC0IQjM=; b=3bn4LVbR9X3JZUw86pIUa7MP3Z
-	464Gop94h4SgM8Ur8cWAPj1yJYZgPRSt8eNEtZil8I5LBO93B9NmcDJql3ySmic1LadaXt3Xn2Rsg
-	iopjwnIlQg7z9UZyX/eVjAH7kkU8dSUWxxPMxp/8F5VWmtOsgeBa/+CfF6OLMsIz8tWSwk+5jxQeq
-	PBEzlTm1+j0CzWewyA+CfOlas8/Mt7fF1Z27AV0ZzpK0JsNSmky1ahtRxkklBbKSuuSpS2TvArlcB
-	Q41Lq9h+ejG3R3yZ90Mn2qYk7jDAchZ4+1hH9KZk+0A3Fjwz2mNkZcKKjWmYNqO5ZOrwTVbTZjuqf
-	CUgInAlw==;
+	bh=Y0m5fXLVjJIXeMC6ke/8kQzFQu64MQedzDmKbomR3To=; b=YwPyCl5/OtREUCI+oXm32nxNjI
+	gDOowi29D6hXh9ydl4IKGIGBLeNhK2uUSHVi2GdgmniS2qNvLN15CDdjz7shKHmanI+olPMWtcm73
+	sxXt6KTcA/Y+kkJW7S2m+Heaq4aNK+As0xwaHW+dEI9XZCyUinWCUS/CkXDpMrLWJU15l/1SQfvbL
+	g/WgLTRcS5pKY8o9TnW4Je2NI0kRXRpFIYML33ggMTrzOZmYqwBRCw+LW6C5H4ykbFe1ekwi9yU4y
+	knexFcP35XqcjBkFjoUtpbcP5yDM+WH+EakBqVVFehLF0iWhZ51QthEERfVioJUjMKCo+SeClP9sr
+	GZreIW2w==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xVSJs-00000003Bua-3g7e;
-	Mon, 23 Nov 2026 11:34:49 +0000
-Received: from out-113.mta1.migadu.com ([2001:41d0:203:375::71] helo=mta1.migadu.com)
+	id 1xVSJv-00000003Bw5-1jR5;
+	Mon, 23 Nov 2026 11:34:51 +0000
+Received: from out-10.mta0.migadu.com ([2001:41d0:1004:224b::a] helo=mta0.migadu.com)
 	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xVSJm-00000003Brn-2lXn
+	id 1xVSJp-00000003Bt2-2sCM
 	for kvm-riscv@lists.infradead.org;
-	Mon, 23 Nov 2026 11:34:44 +0000
+	Mon, 23 Nov 2026 11:34:50 +0000
 X-Envelope-To: kvm-riscv@lists.infradead.org
-DKIM-Signature: a=rsa-sha256; bh=sjV6qrYMC8GhJztUOTln5L8ygixllt0tnTT6CrNeYyI=;
+DKIM-Signature: a=rsa-sha256; bh=kJVYvwnmwcWNzEw2JdWH14aPDZC8p2gGMQyighOKNqY=;
  c=simple/simple; d=linux.dev;
  h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1795433680; v=1; x=1796038480;
- b=LJyZfoTK8ZtIYq9wmTcSMfhlUK4V/QQiyUq0/16fublnXDwgzY+bHufptb+40LP4Btx/jvBA
- tgXKmtXeFKVh5OcpvJu9iiFbyoBSjybXUlU/ZuYeQdOrleefE2eqzdiLKQDG/oSAAlKgTUANJKM
- GQzMMepdx6XCOdQtir/HYZbE=
+ t=1795433683; v=1; x=1796038483;
+ b=G0TQwbQf7Kj4y/R6ox6nny9M8jPCzE187Ty8ReY69/nju2wzoC+y5I9ya0vYj9QW/3FWlWyH
+ G25nR7EQEz3etHUljY+sBKLfq+jmR6sCb2TE89hKrsEC2encTA8VdM4IZNCEMihAEQlDswljmJj
+ inhMt+6tpk4fOfwl+SEyyLPs=
 X-Envelope-To: kvm-riscv@lists.infradead.org
-Received: by smtp.migadu.com with ESMTPS id b141b18848b98b72;
-	Mon, 23 Nov 2026 11:34:40 +0000
-X-Mizu-Trace-ID: b141b18848b98b72
+Received: by smtp.migadu.com with ESMTPS id 9a34595c63725e53;
+	Mon, 23 Nov 2026 11:34:43 +0000
+X-Mizu-Trace-ID: 9a34595c63725e53
 X-Migadu-Flow: FLOW_OUT
 From: Fuad Tabba <fuad.tabba@linux.dev>
 To: Paolo Bonzini <pbonzini@redhat.com>,
@@ -64,15 +64,17 @@ Cc: kvm@vger.kernel.org,
 	kvm-riscv@lists.infradead.org,
 	Will Deacon <will@kernel.org>,
 	Fuad Tabba <tabba@google.com>
-Subject: [PATCH v3 0/3] KVM: Bound KVM_PRE_FAULT_MEMORY by the vCPU's dirty ring
-Date: Mon, 23 Nov 2026 11:34:32 +0000
-Message-ID: <20261123113435.1170711-1-fuad.tabba@linux.dev>
+Subject: [PATCH v3 2/3] KVM: Warn userspace against ioctls while an exit is pending
+Date: Mon, 23 Nov 2026 11:34:34 +0000
+Message-ID: <20261123113435.1170711-3-fuad.tabba@linux.dev>
 X-Mailer: git-send-email 2.47.3
+In-Reply-To: <20261123113435.1170711-1-fuad.tabba@linux.dev>
+References: <20261123113435.1170711-1-fuad.tabba@linux.dev>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261123_033442_840282_64EDA387 
-X-CRM114-Status: GOOD (  14.02  )
+X-CRM114-CacheID: sfid-20261123_033448_451520_D2A63EBD 
+X-CRM114-Status: GOOD (  10.42  )
 X-Spam-Score: -2.1 (--)
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -86,67 +88,48 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
-X-Spam-Status: No, score=-11.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-16.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Hi folks,
+KVM_PRE_FAULT_MEMORY sets run->exit_reason to KVM_EXIT_DIRTY_RING_FULL
+when it stops on a full dirty ring. If an MMIO exit is pending at that
+point, the next KVM_RUN on arm64 and riscv doesn't complete it. Rather
+than document that case alone, which could suggest that other ioctls
+are safe, warn against invoking any ioctl other than KVM_RUN before a
+pending exit is completed.
 
-Changes since v2 [1]:
-  - Added patch 2, which warns in api.rst against calling ioctls other
-    than KVM_RUN while an exit is pending. (Sean)
-  - Mentioned riscv as well as arm64 in patch 1's exit_reason
-    paragraph. (Lorenzo)
-  - Collected Lorenzo's Acked-by on patch 3. (thanks!)
+Suggested-by: Sean Christopherson <seanjc@google.com>
+Signed-off-by: Fuad Tabba <fuad.tabba@linux.dev>
+---
+ Documentation/virt/kvm/api.rst | 11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
 
-KVM_PRE_FAULT_MEMORY never checks the vCPU's dirty ring, so one call
-over a large enough range of populated, dirty-logged pages overflows
-it. The first patch stops the loop at the soft limit, as KVM_RUN does.
-The second warns userspace against calling ioctls other than
-KVM_RUN while an exit is pending. The third adds the case to
-pre_fault_memory_test.
-
-Pre-faulting isn't the only ioctl that can push past the ring's
-reserve. On x86, KVM_SET_MSRS does too when it writes the wall clock or
-the Hyper-V hypercall page. A guest can also push past the reserve
-within one exit, for example through the arm64 ITS. What those paths
-should do when the ring fills is an open question for the dirty ring
-API, which I don't think belongs in this series.
-
-I didn't include the kvm_dirty_ring_check_request() rewrite that Sean
-sketched on v1, since I think it can lose a request. It tests the
-request first and clears it afterwards. If the vCPU is scheduled out in
-between, loongarch sets the PV preempted flag in guest memory and x86
-updates a Xen guest's runstate area, either of which pushes an entry.
-When that push makes the ring soft full, the request it makes is then
-cleared, and the vCPU runs with the ring soft full until its next push.
-Clearing first and re-setting, as the code does now, doesn't have that
-window.
-
-Based on Linux 7.4-rc2 (7475ea8b58616; also applies to kvm-x86/next
-cbe54fc3462b3 with git am -3).
-
-Cheers,
-/fuad
-
-[1] https://lore.kernel.org/all/20261117074428.7544-1-fuad.tabba@linux.dev/
-
-Fuad Tabba (3):
-  KVM: Stop KVM_PRE_FAULT_MEMORY when the vCPU's dirty ring is full
-  KVM: Warn userspace against ioctls while an exit is pending
-  KVM: selftests: Test KVM_PRE_FAULT_MEMORY against a full dirty ring
-
- Documentation/virt/kvm/api.rst                |  20 ++--
- include/linux/kvm_dirty_ring.h                |   5 +
- .../selftests/kvm/pre_fault_memory_test.c     | 102 ++++++++++++++++++
- virt/kvm/kvm_main.c                           |   5 +
- 4 files changed, 126 insertions(+), 6 deletions(-)
-
-
-base-commit: 7475ea8b58616b33c04afb976cf0fbaad9dd63fb
+diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.rst
+index 89eb6be9bc6e3..980ef0cdc1c91 100644
+--- a/Documentation/virt/kvm/api.rst
++++ b/Documentation/virt/kvm/api.rst
+@@ -6974,10 +6974,13 @@ to the byte array.
+ 
+       The pending state of the operation is not preserved in state which is
+       visible to userspace, thus userspace should ensure that the operation is
+-      completed before performing a live migration.  Userspace can re-enter the
+-      guest with an unmasked signal pending or with the immediate_exit field set
+-      to complete pending operations without allowing any further instructions
+-      to be executed.
++      completed before performing a live migration.  In general, userspace should
++      exercise extreme caution when invoking ioctls other than KVM_RUN prior to
++      completing the original operation.
++
++      Userspace can re-enter the guest with an unmasked signal pending or with
++      the immediate_exit field set to complete pending operations without
++      allowing any further instructions to be executed.
+ 
+ ::
+ 
 -- 
 2.47.3
 
