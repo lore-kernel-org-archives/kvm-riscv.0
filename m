@@ -2,117 +2,85 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 345F2606A332
-	for <kvm-riscv@archiver.kernel.org>; Wed, 25 Nov 2026 05:50:44 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C20A1606A323
+	for <kvm-riscv@archiver.kernel.org>; Wed, 25 Nov 2026 12:51:18 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=rmyRSE73;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=brainfault.org header.i=@brainfault.org header.a=rsa-sha256 header.s=google header.b=IOhal8xJ
+	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=BA2KV+Uy
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:Subject:Message-ID:Date:From:
-	In-Reply-To:References:MIME-Version:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
 	List-Unsubscribe-Post:List-Owner;
-	bh=fPuCib+DYg6cgIvYql9p5LFHDLOecLq17iCsnRxlRHs=; b=rmyRSE738ezyuX7AANdwQz1yc7
-	gcW6k9lUgubDPT9BjvToQfdgrbK4L5M4wQkO7dD8m3JUAglLE698ss6gEuBazODd290rcmRfAsCe6
-	wZIpa7VewcTklfgsdgAR80E8UV/Inng5v/Ym0D0y3tOF4YU1khm+gWnxTm0mgt9AnT/4XSMpCwLY/
-	y/LZGwhwkKS8ZYnWiPaOLu/qSroOV74qBMMaHR7qH/yB2pZSdpocdyq3SNeKFUz3r85xj+La/W8JG
-	YOSsE49ffNf/aF7nvsIHFvWWghj78PBFezaG00aSjP9TrIig2+8Y7wABdmzFuVKKn91QFpm99PyvB
-	Pachkazw==;
+	bh=yjP9RPQsLRgG9GgexYkvhffrNr7iUnDjQrWd7aM+cHY=; b=BA2KV+UyHCjSqQ3sumNHBY1WSz
+	/al5lD+7NNtFLkWFFFgGnnD04Ii5QdgoOszWES9Uw5a/+4I8dNwuR4yQyXnEnkyOEW6/aibk1smgk
+	zeY+mvBuKPKU5GE5fUplYWlbHKim0GDkGTqAvgUr77jlgyY2OAU00FREjaK0LeMFO5SRGq8HHo4YU
+	6ZUPB01HwtWoLRsFzY0rkIvfw3A/AZo98RVAkZB6/7eeMuvlh8Jm3jBEH2sD+6D4RUi1U9ywZYw42
+	YFXM148VPOQvaOTd494r/p7+Ep+GW87Y0gKWuToYSNABs46sr1avko21Cj4BQepeXhnpw4uoiTBrH
+	RZqg3cwA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xW5tz-00000008Ug4-40ed;
-	Wed, 25 Nov 2026 05:50:43 +0000
-Received: from mail-wm1-x329.google.com ([2a00:1450:4864:20::329])
+	id 1xWCT0-00000009tSH-1573;
+	Wed, 25 Nov 2026 12:51:18 +0000
+Received: from smtp21.cstnet.cn ([159.226.251.21] helo=cstnet.cn)
 	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xW5tw-00000008Ucr-3jWm
-	for kvm-riscv@lists.infradead.org;
-	Wed, 25 Nov 2026 05:50:42 +0000
-Received: by mail-wm1-x329.google.com with SMTP id 5b1f17b1804b1-4ba013938d7so48994435e9.2
-        for <kvm-riscv@lists.infradead.org>; Tue, 24 Nov 2026 21:50:40 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1795585839; cv=none;
-        d=google.com; s=arc-20260327;
-        b=Z0yeIEOEwBCEx8vWFJwkiwYFMz/L2m55j+dHP52SyxOb0/LqqZSxeUBhebdYWDA2B0
-         tvAPshNwH5XVt1+aCKgJuvAHcIAxdvXUsmiTv0PEoBYcUHVuSvPvPC4FU1WGyuhMK4ih
-         PT+XLyPiS1cUgPeTqV69zTHOX9imvqJmIgAaPv/49qfq5k7rrUK3IoNFKtph1ed0CcX+
-         4NDrpPOytP8p+zJehX9U+Yn2Rxn+d8m6W+c+1iOHkWU1OMex850H6qgTHk8GN34qjsJF
-         r3FbRLZUgcqoiVy09/FKQEwQCvWuCH901sFDSyQ2OjEFVJJ3LeYkx7tI3PUuoP4QGDbk
-         T7gQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=/ey3VoMnoIASJUisM8PXIjosjBIaHmMcX0osRpbhk3U=;
-        fh=735I4n/xdHuw7k5/0CfYjnEqd/92J2ZE/heWaaLpaIM=;
-        b=jCVE0uGPwPY0nYSGp3nHwmheRMJpvS5HZD+FQ8INUJP9NGOJfL16yIS/eK8MokRCox
-         gnHsKW0ZJv+x1+eillGDOejf8WSXS0ZeGqjk8ErayutBWHn83wRMEyaE2fOzRtDLr8Y4
-         Dm4UG6pVG1Nz2/f8YLAMjdbUorEJL+VXxdJil7e4MtKeQlsqStvBANUoZ5CJH8QMGKjZ
-         sxOPCfRFJeHDmy/DzxkC405sJGPTjP9MAv43MtBDSfYAao1+zAJvLepEoBo1464AhB1g
-         IV19ubODfkGZ5prP9MMialMgps78td11GpX7P1AYk95ejgwiIxCsOBUf8EkGgCN8oPQm
-         +eBQ==;
-        darn=lists.infradead.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=brainfault.org; s=google; t=1795585839; x=1796190639; darn=lists.infradead.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=/ey3VoMnoIASJUisM8PXIjosjBIaHmMcX0osRpbhk3U=;
-        b=IOhal8xJguzQ9zkq0SLHRHdvzPVDFcMf3bORlMOIiT97VjUQJIdvJ90NHukr6rme2N
-         p4SZ46EDtWgtVwRmn4cocydFquctQUzQWr0jUT39SyQrnw6eHhIhW0ckHfhPyVLK4i0M
-         yk4cABvv8DNVFJWgi6j3qXfFNSmgBMI0MEbiwaGASotfPZytHsFftDhgT91XcZQQcsj1
-         rN0nHw+r0GwB2SmUXCcysQCm7uQ6isV9J8AHWTbylqVDx2d2WpAn95zimD8Xan84B7ne
-         O0pMnA9g37AMaTHw30jUvvxO8aDg3kp5HqdD82YTV1KDE8CsgcEVc7HrMWw96YmT3vR+
-         Wyxw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795585839; x=1796190639;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=/ey3VoMnoIASJUisM8PXIjosjBIaHmMcX0osRpbhk3U=;
-        b=SLhT5ggtzn7Nbuj+0XNF6rltWOlRuxUJy8FZGyJuP0jkg6+89h8p6o4HUYTbE+cfRb
-         TNsZ9+4dDyzYxVfb2QZLas6bi2VfqatdEdPNw6TSz/XuuF0mI2xoiPGE+Sum7aNqhz3X
-         tvSgpb0jSy+fywngR3Oa+nwjayvEt5t9ojFPp+xBqxI2PvJWaEOIQ9bc3DXKvBc5su41
-         pDmq3fhLD5n49VgydJBNuMQcUeBDRqSvOZkZJDOeXbquU95pXDgUkYhWohWCaWI/7OW+
-         8qw63t3vSYP+pmkTylgl/1mfrnb+ppIxb6zkHiUKDZv84JRwAqKcg6nPo/QszR6Hfd1l
-         3JJQ==
-X-Forwarded-Encrypted: i=1; AL+hErHvyukhxuaiP8xi+zytVIlrhOlQkV53IOpR/r13cnt0DawepOE2iDLdeMZ9XJXBXzAUM0pYC0KeU74=@lists.infradead.org
-X-Gm-Message-State: APuU4Z8p84CQ+TZTrstGhpZM9J48ZGJvMy27S+HVXmi0nuflykRAz2R/
-	tFzJnXTL9SKY8d8kJEwrPwKyhmmBOlysb9JT3yN8M+NwbVWNDUHDg9Y0duJgEmCDuBGZw3D9k2v
-	sL9Bqi4WNps/c0ISOhXI7gr46PIz6CpTknejItuyonQ==
-X-Gm-Gg: AZFdTZc/WeAMVbiTn/MpzoCodeb+A3o77JBOowhqc19M+9iAu9B64Reo51uxfQV5K3y
-	D0ognnMToymeUmvMcKp/oAJRYAVlJbBRpOZb6GBeJ3VMpirm0HWF643zbdfW2m0Kk1i+77RGojU
-	424rgCRbkxTVTUX+o8KbbqiyZvrSUqAr9Vin5VC/NRS6AOErU/RkrT7njgMEwdfDQDoEMgBUtAw
-	6T7obhuq1IfWScKJx00jr0k2MD+ed8sDEfA7orSIcFXpIUG0HukslNwjF+8qosris9Fo5+tgHSW
-	Z46I83w3o08Yi6w5I3x3ICD0Rj4SXu9Iam81dvzcAwzss5Gar9d9/8iYUUHgxTpSapA3xINH+CE
-	WLnAFAmeWoLsvEfwqBSO9igzGJj/YVHrlUAGv52gsLboRT7mIlBlvZzKdlar+fat7QeQwOkFO1T
-	+8KZe9NnWrEE7vNxZUclc9ElNJ/WF9/wtghgUmgU/AZMVeUn6/g6UgqTbBgxg7Lu0WsSJuu4RK8
-	WQz
-X-Received: by 2002:a05:600c:46cc:b0:4bb:69b3:2b42 with SMTP id
- 5b1f17b1804b1-4bb888277b3mr355988315e9.16.1795585838954; Tue, 24 Nov 2026
- 21:50:38 -0800 (PST)
+	id 1xWCSv-00000009tPH-2gRa;
+	Wed, 25 Nov 2026 12:51:16 +0000
+Received: from k3-03 (unknown [159.226.43.8])
+	by APP-01 (Coremail) with SMTP id qwCowABXgfuY2QZrsdirAQ--.2368S2;
+	Wed, 25 Nov 2026 20:50:43 +0800 (CST)
+From: Tan Chi <tanchi25@mails.ucas.ac.cn>
+To: anup@brainfault.org
+Cc: atish.patra@linux.dev,
+	pjw@kernel.org,
+	palmer@dabbelt.com,
+	aou@eecs.berkeley.edu,
+	alex@ghiti.fr,
+	tj@kernel.org,
+	hannes@cmpxchg.org,
+	mkoutny@suse.com,
+	corbet@lwn.net,
+	skhan@linuxfoundation.org,
+	rdunlap@infradead.org,
+	yosry@kernel.org,
+	kvm@vger.kernel.org,
+	kvm-riscv@lists.infradead.org,
+	linux-riscv@lists.infradead.org,
+	cgroups@vger.kernel.org,
+	linux-doc@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Tan Chi <tanchi25@mails.ucas.ac.cn>
+Subject: [PATCH] RISC-V: KVM: Account G-stage page table memory
+Date: Wed, 25 Nov 2026 20:50:23 +0800
+Message-ID: <20261125125024.1983082-1-tanchi25@mails.ucas.ac.cn>
+X-Mailer: git-send-email 2.53.0
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-References: <20260921111402.120911-1-suunj1331@gmail.com>
-In-Reply-To: <20260921111402.120911-1-suunj1331@gmail.com>
-From: Anup Patel <anup@brainfault.org>
-Date: Wed, 25 Nov 2026 11:20:26 +0530
-X-Gm-Features: Aa3M54qb1blyKaEVtKNBi5ctu8cJHJ3FLqTUOGiPqQSapaUrHW7z2azgq7gQGnk
-Message-ID: <CAAhSdy2BkWEY3+FDpcLwFtrP+03GSfJHCmsCmu5513M8AMyPpg@mail.gmail.com>
-Subject: Re: [PATCH v1 0/5] KVM: riscv: Age G-stage PTEs locklessly
-To: SeungJu Cheon <suunj1331@gmail.com>
-Cc: Atish Patra <atish.patra@linux.dev>, Paul Walmsley <pjw@kernel.org>, 
-	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
-	Alexandre Ghiti <alex@ghiti.fr>, Paolo Bonzini <pbonzini@redhat.com>, 
-	Andrew Jones <ajones@ventanamicro.com>, Jinyu Tang <tjytimi@163.com>, 
-	Wang Yechao <wang.yechao255@zte.com.cn>, kvm-riscv@lists.infradead.org, 
-	kvm@vger.kernel.org, linux-riscv@lists.infradead.org, 
-	linux-kernel@vger.kernel.org
+X-CM-TRANSID: qwCowABXgfuY2QZrsdirAQ--.2368S2
+X-Coremail-Antispam: 1UD129KBjvJXoWxCrW8JrWUCr48Zr17ur4xCrg_yoWrKw47pF
+	1DCryS9r1rtr93Cr13twn2vr17Ga95Wr45Jr9F9a45ZFsxtrySywnYq3sFvF15XFykZayf
+	ZrZIgFy5Zrs2ywUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUUPj14x267AKxVW5JVWrJwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
+	1l84ACjcxK6xIIjxv20xvE14v26F1j6w1UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26F4j
+	6r4UJwA2z4x0Y4vEx4A2jsIE14v26rxl6s0DM28EF7xvwVC2z280aVCY1x0267AKxVW0oV
+	Cq3wAac4AC62xK8xCEY4vEwIxC4wAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40EFcxC
+	0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AKxVWUGVWUXwAv7VC2z280aVAFwI0_Gr0_Cr
+	1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48IcxkI7VAKI48JM4x0x7Aq67IIx4CEVc8vx2IE
+	rcIFxwACI402YVCY1x02628vn2kIc2xKxwCY1x0262kKe7AKxVW8ZVWrXwCY02Avz4vE14
+	v_Xr1l42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67AK
+	xVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r4a6rW5MIIYrx
+	kI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7IYx2IY6xkF7I0E14v2
+	6r4j6F4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVWUJVW8Jw
+	CI42IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIYCTnIWIevJa73UjIFyTuYvjTRWeHgUUUU
+	U
+X-CM-SenderInfo: pwdquxrlsvqzpdlo2hpxfd2hldfou0/
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261124_215040_975327_7C4364F1 
-X-CRM114-Status: GOOD (  21.59  )
-X-Spam-Score: -2.1 (--)
+X-CRM114-CacheID: sfid-20261125_045114_075879_58BA3A45 
+X-CRM114-Status: GOOD (  13.66  )
+X-Spam-Score: -4.2 (----)
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -122,90 +90,145 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
-X-Spam-Status: No, score=-3.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-16.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no
-	autolearn_force=no version=4.0.1
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-T24gTW9uLCBTZXAgMjEsIDIwMjYgYXQgNDo0NOKAr1BNIFNldW5nSnUgQ2hlb24gPHN1dW5qMTMz
-MUBnbWFpbC5jb20+IHdyb3RlOgo+Cj4gQWdpbmcgRy1zdGFnZSBQVEVzIGN1cnJlbnRseSBydW5z
-IHdpdGggbW11X2xvY2sgaGVsZCBmb3Igd3JpdGUsIHRha2VuCj4gYnkgdGhlIGNvbW1vbiBNTVUg
-bm90aWZpZXIgY29kZS4gV2hlbiBNR0xSVSBvciBrc3dhcGQgYWdlcyBhIGxhcmdlCj4gcmFuZ2Us
-IGV2ZXJ5IHZDUFUgdGFraW5nIGEgRy1zdGFnZSBmYXVsdCBibG9ja3Mgb24gdGhlIGxvY2ssIGFu
-ZCB0aGUKPiBkaXJ0eS1sb2dnaW5nIHJlYWQtc2lkZSBmYXN0IHBhdGggYmxvY2tzIGJlaGluZCBh
-Z2luZyBhcyB3ZWxsLgo+Cj4gVGhpcyBzZXJpZXMgbGV0cyBSSVNDLVYgc2VsZWN0IEtWTV9NTVVf
-TE9DS0xFU1NfQUdJTkcsIHNvIEctc3RhZ2UKPiBhZ2luZyBjYW4gcnVuIHdpdGhvdXQgbW11X2xv
-Y2sgd2hpbGUgcHJvdGVjdGluZyBwYWdlLXRhYmxlIHdhbGtzIHdpdGgKPiBSQ1UuCj4KPiAgIDEu
-IEFnZSBhbGwgRy1zdGFnZSBQVEVzIGluIGEgR0ZOIHJhbmdlCj4gICAgICBCdWcgZml4LCBwb3N0
-ZWQgc2VwYXJhdGVseSBbMV0gYW5kIGluY2x1ZGVkIHVuY2hhbmdlZCBzbyB0aGUKPiAgICAgIHNl
-cmllcyBhcHBsaWVzIG9uIHJpc2N2X2t2bV9xdWV1ZS4gRHJvcCBpdCBpZiBhbHJlYWR5IGFwcGxp
-ZWQuCj4KPiAgIDIuIFJlYWQgRy1zdGFnZSBQVEVzIG9uY2Ugd2hlbiB3YWxraW5nIHBhZ2UgdGFi
-bGVzCj4gICAgICBBIGxvY2tsZXNzIHdhbGtlciBtdXN0IGRlcml2ZSBwcmVzZW5jZSwgbGVhZi1u
-ZXNzIGFuZCB0aGUgY2hpbGQKPiAgICAgIGFkZHJlc3MgZnJvbSBhIHNpbmdsZSBzbmFwc2hvdCBv
-ZiBlYWNoIGVudHJ5Lgo+Cj4gICAzLiBXcml0ZS1wcm90ZWN0IEctc3RhZ2UgUFRFcyBhdG9taWNh
-bGx5Cj4gICAgICBBZ2luZyB3aWxsIGNsZWFyIHRoZSBBY2Nlc3NlZCBiaXQgd2l0aG91dCBtbXVf
-bG9jazsgdGhlIHBsYWluCj4gICAgICByZWFkLW1vZGlmeS13cml0ZSBpbiBHU1RBR0VfT1BfV1Ag
-Y291bGQgY2xvYmJlciB0aGF0IHVwZGF0ZS4KPgo+ICAgNC4gRnJlZSBHLXN0YWdlIHBhZ2UgdGFi
-bGVzIGFmdGVyIGFuIFJDVSBncmFjZSBwZXJpb2QKPiAgICAgIFRhYmxlIHBhZ2VzIGFuZCB0aGUg
-cm9vdCBvdXRsaXZlIGFueSBSQ1UgcmVhZGVyLiBSb290IHRlYXJkb3duCj4gICAgICBrZWVwcyBw
-Z2RfbGV2ZWxzIGludGFjdCBzbyBhIHdhbGtlciBob2xkaW5nIHRoZSBvbGQgcm9vdCBzZWVzCj4g
-ICAgICBjb25zaXN0ZW50IG1ldGFkYXRhLgo+Cj4gICA1LiBBZ2UgRy1zdGFnZSBQVEVzIGxvY2ts
-ZXNzbHkKPiAgICAgIFNlbGVjdCBLVk1fTU1VX0xPQ0tMRVNTX0FHSU5HIGFuZCB3YWxrIHVuZGVy
-IHJjdV9yZWFkX2xvY2soKS4KPgo+IFRoaXMgYnVpbGRzIG9uIEppbnl1IFRhbmcncyByd2xvY2sg
-YW5kIGNtcHhjaGcgaGVscGVycyBhbHJlYWR5IGluCj4gcmlzY3Zfa3ZtX3F1ZXVlLiBXYW5nIFll
-Y2hhbydzIGh1Z2UgcGFnZSByZWNvdmVyeSBzZXJpZXMgWzJdIGFkZHMgYQo+IHNlY29uZCBwYWdl
-LXRhYmxlIGZyZWUgc2l0ZSBpbiBrdm1fcmlzY3ZfZ3N0YWdlX3JlY292ZXJfaHVnZSgpOwo+IHdo
-aWNoZXZlciBsYW5kcyBzZWNvbmQgd2lsbCBuZWVkIHRvIHN3aXRjaCB0aGF0IHB1dF9wYWdlKCkg
-dG8KPiBnc3RhZ2VfZnJlZV9wYWdlX3RhYmxlKCkuIEkgY2FuIHJlYmFzZSB0aGUgc2VyaWVzIGFz
-IG5lZWRlZC4KPgo+IEEgcG9zc2libGUgZm9sbG93LXVwIGlzIHRvIHJ1biBjbGVhci1kaXJ0eS1s
-b2cgYW5kIHRoZSBnZW5lcmFsIGZhdWx0Cj4gcGF0aCB1bmRlciB0aGUgcmVhZCBzaWRlIG9mIG1t
-dV9sb2NrLCBhcyBhcm02NCBhbmQgeDg2IGRvLiBQYXRjaCAzCj4gcHJvdmlkZXMgdGhlIGF0b21p
-YyB3cml0ZS1wcm90ZWN0aW9uIG5lZWRlZCBmb3IgdGhlIGZvcm1lci4KPgo+IFRlc3RpbmcKPiAt
-LS0tLS0tCj4gUUVNVSB2aXJ0LCAtY3B1IHJ2NjQsaD10cnVlIChTdmFkdSksIDQgdkNQVXMsIFRD
-Ry4gVGhlIGhvc3Qga2VybmVsCj4gd2FzIGJ1aWx0IHdpdGggS0FTQU4sIFBST1ZFX0xPQ0tJTkcs
-IFBST1ZFX1JDVSwgTE9DS19TVEFUIGFuZCBMUlVfR0VOLgo+Cj4gQWZ0ZXIgZWFjaCBwYXRjaDoK
-PiAgIC0gZGlydHlfbG9nX3BlcmZfdGVzdCAtdiAyIC1iIDI1Nk0gLWkgMwo+ICAgLSBhY2Nlc3Nf
-dHJhY2tpbmdfcGVyZl90ZXN0IC12IDIgLWIgMjU2TSAtcyBhbm9ueW1vdXNfdGhwCj4gICAgICgy
-TSBUSFAgZGlzYWJsZWQgYW5kIDY0SyBtVEhQIGVuYWJsZWQpCj4gICAtIDIwIFZNIGNyZWF0ZS9k
-ZXN0cm95IGl0ZXJhdGlvbnMKPgo+IFdpdGggTUdMUlUgYWdpbmcgZm9yY2VkIG9uIHRoZSBWTSdz
-IGNncm91cCBldmVyeSA1MC0xMDBtczoKPiAgIC0gZGlydHlfbG9nX3BlcmZfdGVzdCAtdiAzIC1i
-IDI1Nk0gLWkgMwo+ICAgLSAzMCBWTSBjcmVhdGUvZGVzdHJveSBpdGVyYXRpb25zCj4KPiBXaXRo
-IENPTkZJR19LVk09bSwgNSBtb2R1bGUgbG9hZC91bmxvYWQgY3ljbGVzLCBlYWNoIHdpdGggYSBW
-TSBjcmVhdGVkCj4gYW5kIGRlc3Ryb3llZCBpbW1lZGlhdGVseSBiZWZvcmUgbW9kdWxlIHVubG9h
-ZCwgdG8gZXhlcmNpc2UgbW9kdWxlCj4gdGVhcmRvd24gYWZ0ZXIgcXVldWluZyBSQ1UgZnJlZXMu
-Cj4KPiBObyBXQVJOLCBLQVNBTiwgbG9ja2RlcCBvciBSQ1UgcmVwb3J0cyB3ZXJlIG9ic2VydmVk
-LiBUaGUga3ZtX2FnZV9odmEKPiB0cmFjZXBvaW50IHJlY29yZGVkIGFwcHJveGltYXRlbHkgNjVr
-IGV2ZW50cyBwZXIgYWdpbmcgcGFzcy4KPgo+IFBlcmZvcm1hbmNlIHJlc3VsdHMgZnJvbSBkaXJ0
-eV9sb2dfcGVyZl90ZXN0IC12IDMgLWIgMjU2TSAtaSAzLCB3aXRoCj4gbG9ja19zdGF0IGVuYWJs
-ZWQgZm9yIG1tdV9sb2NrIGFuZCA4NiBhZ2luZyBwYXNzZXM6Cj4KPiAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICBubyBhZ2luZyAgICAgICAgICBhZ2luZwo+ICAgICAgICAgICAgICAgICAgICAg
-ICAgICBiZWZvcmUgIGFmdGVyICAgICBiZWZvcmUgICBhZnRlcgo+ICAgZ3Vlc3QgZGlydHkgdGlt
-ZSAgICAgICAxMi41cyAgIDEyLjRzICAgICAxOC42cyAgICAxNi43cwo+ICAgbW11X2xvY2sgVyB3
-YWl0IHRvdGFsICAwLjE1cyAgIDAuMTdzICAgICA0NC40cyAgICAwLjE1cwo+ICAgbW11X2xvY2sg
-VyBjb250ZW50aW9ucyAgMzVrICAgICAzNWsgICAgICAxLjBNICAgICAzMGsKPiAgIG1tdV9sb2Nr
-IFIgd2FpdCB0b3RhbCAgIDAgICAgICAgMCAgICAgICAgNy41cyAgICAgMAo+Cj4gQmVmb3JlIHRo
-ZSBzZXJpZXMsIDkzJSBvZiB3cml0ZS1sb2NrIHdhaXRlcnMgd2VyZSBmcm9tCj4ga3ZtX21tdV9u
-b3RpZmllcl9jbGVhcl95b3VuZygpLCBhbmQgdGhlIGRpcnR5LWxvZyByZWFkLXNpZGUgZmFzdCBw
-YXRoCj4gd2FpdGVkIGZvciBtbXVfbG9jayAzNTJrIHRpbWVzLiBBZnRlciB0aGUgc2VyaWVzLCBh
-Z2luZyBkb2VzIG5vdAo+IGFjcXVpcmUgbW11X2xvY2suCj4KPiBBYnNvbHV0ZSBudW1iZXJzIGFy
-ZSBpbmZsYXRlZCBieSBUQ0c7IG9ubHkgdGhlIHJlbGF0aXZlIGNoYW5nZSBpcwo+IG1lYW5pbmdm
-dWwuIFVuZGVyIFRDRywgdGhlIGF0b21pYyB3cml0ZS1wcm90ZWN0IGNoYW5nZSBpbiBwYXRjaCAz
-Cj4gaW5jcmVhc2VkIHRoZSBjbGVhci1kaXJ0eS1sb2cgdGltZSBmcm9tIGFwcHJveGltYXRlbHkg
-MTZtcyB0byAzMG1zLAo+IGFzIFRDRyBzZXJpYWxpc2VzIEFNTyBpbnN0cnVjdGlvbnM7IGhhcmR3
-YXJlIG51bWJlcnMgd291bGQgYmUgd2VsY29tZS4KPgo+IFsxXSBodHRwczovL2xvcmUua2VybmVs
-Lm9yZy9hbGwvMjAyNjA5MTgwNzI2MjIuMjg0MTg4LTEtc3V1bmoxMzMxQGdtYWlsLmNvbS8KPiBb
-Ml0gaHR0cHM6Ly9sb3JlLmtlcm5lbC5vcmcva3ZtLXJpc2N2LzIwMjYwOTE0MDU1OTM2LjM2NzI3
-NTgtMS13YW5nLnllY2hhbzI1NUB6dGUuY29tLmNuLwo+Cj4gU2V1bmdKdSBDaGVvbiAoNSk6Cj4g
-ICBLVk06IHJpc2N2OiBBZ2UgYWxsIEctc3RhZ2UgUFRFcyBpbiBhIEdGTiByYW5nZQo+ICAgS1ZN
-OiByaXNjdjogUmVhZCBHLXN0YWdlIFBURXMgb25jZSB3aGVuIHdhbGtpbmcgcGFnZSB0YWJsZXMK
-PiAgIEtWTTogcmlzY3Y6IFdyaXRlLXByb3RlY3QgRy1zdGFnZSBQVEVzIGF0b21pY2FsbHkKPiAg
-IEtWTTogcmlzY3Y6IEZyZWUgRy1zdGFnZSBwYWdlIHRhYmxlcyBhZnRlciBhbiBSQ1UgZ3JhY2Ug
-cGVyaW9kCj4gICBLVk06IHJpc2N2OiBBZ2UgRy1zdGFnZSBQVEVzIGxvY2tsZXNzbHkKPgoKUXVl
-dWVkIHRoaXMgc2VyaWVzIGZvciBMaW51eC03LjUKClRoYW5rcywKQW51cAoKLS0gCmt2bS1yaXNj
-diBtYWlsaW5nIGxpc3QKa3ZtLXJpc2N2QGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3Rz
-LmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9rdm0tcmlzY3YK
+RISC-V KVM currently does not account G-stage page table memory
+in NR_SECONDARY_PAGETABLE.
+
+Use kvm_account_pgtable_pages() to account for the allocation and
+freeing of the root and lower-level page tables, including those
+allocated when splitting huge page mappings.
+
+This makes G-stage page table memory usage visible through
+SecPageTables in /proc/meminfo and sec_pagetables in the cgroup
+memory.stat interface.
+
+Update the documentation accordingly.
+
+Tested on a RISC-V KVM host running under QEMU TCG with Sv57x4.
+The observed G-stage page table memory usage was:
+
+  100 empty VMs:                         1600 KiB
+  8 GiB sparsely mapped with 4 KiB pages: 16448 KiB
+  256 MiB mapped with 2 MiB pages:          36 KiB
+  After enabling dirty logging:           548 KiB
+
+The accounting in /proc/meminfo, /proc/vmstat and cgroup
+memory.stat matched the expected values and returned to zero
+after destroying the VMs.
+
+This reimplements the work originally proposed by Yosry Ahmed
+in 2022, adapted to the current G-stage MMU code.
+
+Link: https://lore.kernel.org/r/20220426053904.3684293-6-yosryahmed@google.com
+
+Signed-off-by: Tan Chi <tanchi25@mails.ucas.ac.cn>
+---
+ Documentation/admin-guide/cgroup-v2.rst | 4 ++--
+ Documentation/filesystems/proc.rst      | 2 +-
+ arch/riscv/kvm/gstage.c                 | 6 +++++-
+ arch/riscv/kvm/mmu.c                    | 7 ++++++-
+ 4 files changed, 14 insertions(+), 5 deletions(-)
+
+diff --git a/Documentation/admin-guide/cgroup-v2.rst b/Documentation/admin-guide/cgroup-v2.rst
+index 9e3c67b02ae2..c79d6432ecc3 100644
+--- a/Documentation/admin-guide/cgroup-v2.rst
++++ b/Documentation/admin-guide/cgroup-v2.rst
+@@ -1591,8 +1591,8 @@ The following nested keys are defined.
+ 
+ 	  sec_pagetables
+ 		Amount of memory allocated for secondary page tables,
+-		this currently includes KVM mmu allocations on x86
+-		and arm64 and IOMMU page tables.
++		this currently includes KVM mmu allocations on x86,
++		arm64 and riscv and IOMMU page tables.
+ 
+ 	  percpu (npn)
+ 		Amount of memory used for storing per-cpu kernel
+diff --git a/Documentation/filesystems/proc.rst b/Documentation/filesystems/proc.rst
+index fa7a468e8edf..cd1a74da287c 100644
+--- a/Documentation/filesystems/proc.rst
++++ b/Documentation/filesystems/proc.rst
+@@ -1208,7 +1208,7 @@ PageTables
+               Memory consumed by userspace page tables
+ SecPageTables
+               Memory consumed by secondary page tables, this currently includes
+-              KVM mmu and IOMMU allocations on x86 and arm64.
++              KVM mmu and IOMMU allocations on x86, arm64 and riscv.
+ NFS_Unstable
+               Always zero. Previously counted pages which had been written to
+               the server, but has not been committed to stable storage.
+diff --git a/arch/riscv/kvm/gstage.c b/arch/riscv/kvm/gstage.c
+index 0aace3215d3e..f8841136d852 100644
+--- a/arch/riscv/kvm/gstage.c
++++ b/arch/riscv/kvm/gstage.c
+@@ -162,6 +162,7 @@ int kvm_riscv_gstage_set_pte(struct kvm_gstage *gstage,
+ 				return -ENOMEM;
+ 			set_pte(ptep, pfn_pte(PFN_DOWN(__pa(next_ptep)),
+ 					      __pgprot(_PAGE_TABLE)));
++			kvm_account_pgtable_pages(next_ptep, 1);
+ 		} else {
+ 			if (gstage_pte_leaf(ptep))
+ 				return -EEXIST;
+@@ -357,6 +358,7 @@ bool kvm_riscv_gstage_split_huge(struct kvm_gstage *gstage,
+ 
+ 		set_pte(ptep, pfn_pte(PFN_DOWN(__pa(next_ptep)),
+ 				__pgprot(_PAGE_TABLE)));
++		kvm_account_pgtable_pages(next_ptep, 1);
+ 
+ 		if (flush)
+ 			gstage_tlb_flush(gstage, current_level, addr);
+@@ -399,8 +401,10 @@ bool kvm_riscv_gstage_op_pte(struct kvm_gstage *gstage, gpa_t addr,
+ 		for (i = 0; i < PTRS_PER_PTE; i++)
+ 			flush |= kvm_riscv_gstage_op_pte(gstage, addr + i * next_page_size,
+ 							 &next_ptep[i], next_ptep_level, op);
+-		if (op == GSTAGE_OP_CLEAR)
++		if (op == GSTAGE_OP_CLEAR) {
++			kvm_account_pgtable_pages(next_ptep, -1);
+ 			put_page(virt_to_page(next_ptep));
++		}
+ 	} else {
+ 		old_pte = *ptep;
+ 		if (op == GSTAGE_OP_CLEAR)
+diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
+index 6861c0e2728d..c7141395b9e3 100644
+--- a/arch/riscv/kvm/mmu.c
++++ b/arch/riscv/kvm/mmu.c
+@@ -816,6 +816,8 @@ int kvm_riscv_mmu_alloc_pgd(struct kvm *kvm)
+ 	if (!pgd_page)
+ 		return -ENOMEM;
+ 	kvm->arch.pgd = page_to_virt(pgd_page);
++	kvm_account_pgtable_pages(kvm->arch.pgd,
++				kvm_riscv_gstage_pgd_size >> PAGE_SHIFT);
+ 	kvm->arch.pgd_phys = page_to_phys(pgd_page);
+ 	kvm->arch.pgd_levels = kvm_riscv_gstage_max_pgd_levels;
+ 	kvm->arch.pgd_split_page_cache.gfp_zero = __GFP_ZERO;
+@@ -843,8 +845,11 @@ void kvm_riscv_mmu_free_pgd(struct kvm *kvm)
+ 	if (flush)
+ 		kvm_flush_remote_tlbs(kvm);
+ 
+-	if (pgd)
++	if (pgd) {
++		kvm_account_pgtable_pages(pgd,
++				-(kvm_riscv_gstage_pgd_size >> PAGE_SHIFT));
+ 		free_pages((unsigned long)pgd, get_order(kvm_riscv_gstage_pgd_size));
++	}
+ }
+ 
+ void kvm_riscv_mmu_update_hgatp(struct kvm_vcpu *vcpu)
+-- 
+2.53.0
+
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
