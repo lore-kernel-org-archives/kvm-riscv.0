@@ -2,75 +2,113 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 98C81606A31E
-	for <kvm-riscv@archiver.kernel.org>; Wed, 25 Nov 2026 14:19:14 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3D836606A323
+	for <kvm-riscv@archiver.kernel.org>; Wed, 25 Nov 2026 15:06:56 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=FrOn/IGP
+	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=a5u6E+fS;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=brainfault.org header.i=@brainfault.org header.a=rsa-sha256 header.s=google header.b=GQC4XNx8
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
-	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:Subject:Message-ID:Date:From:
+	In-Reply-To:References:MIME-Version:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
 	List-Unsubscribe-Post:List-Owner;
-	bh=fBS4VV7Z/OTG7p5NKbXaNjLYvUEJVFYKN2i4QS1OUiU=; b=FrOn/IGPV8nrVuAGgoH60FiRZS
-	Tx90ptUe6u8TIOZZ0dppaeovG8g/Kmoei+g6O7+pR0Si8RnaC7UO7nGUn7nIyw9lbLHxRO0uPCFTb
-	5jAVLxBHzL3NeVp0xXc2eXoyBBPrsNiUjis6+kp6jpl+lSMzdZCr2XkbWmFRTM77Q2I/PxVeNckex
-	H/rYIIADsunq0ELwn2qr7HFiHvJu91lS9IJKcfRuHG3zpRS2cprKMth5zVi5QtOAyQ7qDHHv1nNA3
-	4u3g4ckwEuLehzBMc2vTPiXp1Lyn7he61bECSXXRxHR+HHre0c70iu4hhzx7MpKXXl0fxt/jRQNcG
-	MOICfKvw==;
+	bh=1OYiYI5UN4Df2n9PM2sQ+J32U22bk/hDNXtvkbCvyKE=; b=a5u6E+fSPsCmX9PswMJ7ZWvuhj
+	6cQBqHICJLRV+s3zm7toFi+mep9Ja1EjnK8svu3PmVDzG+j7sGw/byJG9vliuqjSz/P6jFeTYCG/S
+	OfBUtPdGpjeu69h9VYlNnsWtz6FcFyVOmvQPOw+6EPJ3H5pQXb06z43rJ9m8bVBkToxNCVbeXJv1P
+	UO9brj2XCgLlpDBLE2+yHAAUAU8Ie/eILg3vaVcJS/MVNFW9Ug8Yy5QpBJF5+0BzadQo7BrTNM86p
+	yQs5U+DbWZp+gYRAA44DIEAG8lbb6BlUZBJ/KgZ5m8uuaObLln0+NSVqVQi9N+RttOPvPInEtho/M
+	KTgrpdMQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xWDq6-0000000A80m-14sy;
-	Wed, 25 Nov 2026 14:19:14 +0000
-Received: from smtp81.cstnet.cn ([159.226.251.81] helo=cstnet.cn)
+	id 1xWEaF-0000000AIEH-1fPe;
+	Wed, 25 Nov 2026 15:06:55 +0000
+Received: from mail-wm1-x32e.google.com ([2a00:1450:4864:20::32e])
 	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xWDpu-0000000A7yg-2Z0u;
-	Wed, 25 Nov 2026 14:19:13 +0000
-Received: from k3-03 (unknown [159.226.43.8])
-	by APP-03 (Coremail) with SMTP id rQCowACHlpdC7gZrNoDHAQ--.9257S2;
-	Wed, 25 Nov 2026 22:18:43 +0800 (CST)
-From: Tan Chi <tanchi25@mails.ucas.ac.cn>
-To: anup@brainfault.org
-Cc: atish.patra@linux.dev,
-	pjw@kernel.org,
-	palmer@dabbelt.com,
-	aou@eecs.berkeley.edu,
-	alex@ghiti.fr,
-	kvm@vger.kernel.org,
-	kvm-riscv@lists.infradead.org,
-	linux-riscv@lists.infradead.org,
-	Tan Chi <tanchi25@mails.ucas.ac.cn>
-Subject: [PATCH] RISC-V: KVM: Add missing write barrier when linking G-stage page tables
-Date: Wed, 25 Nov 2026 22:18:40 +0800
-Message-ID: <20261125141840.2047392-1-tanchi25@mails.ucas.ac.cn>
-X-Mailer: git-send-email 2.53.0
+	id 1xWEa9-0000000AIBl-2gO0
+	for kvm-riscv@lists.infradead.org;
+	Wed, 25 Nov 2026 15:06:53 +0000
+Received: by mail-wm1-x32e.google.com with SMTP id 5b1f17b1804b1-4bba5e17728so7592425e9.2
+        for <kvm-riscv@lists.infradead.org>; Wed, 25 Nov 2026 07:06:47 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1795619206; cv=none;
+        d=google.com; s=arc-20260327;
+        b=k/rvkUGrxBGR+ngdLsncqVKq3v2sU2d/qTirnVwGDmpGwpIp74gPhGy4+pGpqSh2qv
+         ep8vVb0bEnroaYLjmzQXY/glNJpX07tGzugCzI+ieDfAZrpH3+99oC5FwBoctutcf9xT
+         vSEa5Of8qLJpo8OjJt/gwXzRhXDrRMo1xofLCf70nbcmbCUxY8zK6y5hNraB9BuPN4z7
+         5tSnkhM6Lwgu1z78NqK1dH9kC4e6dslHzpf+Q/oZc7LRwbDBpTxnX7CNT7peuOd17mwv
+         2VvluX427IzVsQX6LMbl6cx+yl3A4pjyGCxaCiPMWTAC53vbeJoNanAe5sKrAwwnjoA9
+         9Ykw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=wQhYGWbmYRpOsQh048VImHZFZtKvuW+wybi1/wHnwY8=;
+        fh=2Bfwb+L5a0WshwierqP7WJveA28A2ppmTY3QZMfEiqY=;
+        b=sSsKQlauXJ01VxPHOzbIdGcRR0J7WUeRc/sDsj9httlSO2ZTYL1doaX3bqBwWCWyF1
+         khgLksdNZfBXfgA/3YVNtDYDNvHhoYYJgWJ05ypqbgYr1Co1BBTFCQvzadPcwpdAO41E
+         s0p+gEdRSHf36bwkejnJlwM5FXx5kGAssnqUd3dydDK0SEO1B0OvKchxrO6VD7BWPXgW
+         8fXareCaoK3Qr9qEfvTjYA1DurwbaaV7ICIox4JKy2+2Fi9578rg4/zOWnuH9yzz/QEL
+         Fw6PZE39PzCUCpuIvnU2TrQ1PCdonbskCoegUXgblCWK5OhdA+ILSwV5rFV5hM+Lzj55
+         NcFQ==;
+        darn=lists.infradead.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=brainfault.org; s=google; t=1795619206; x=1796224006; darn=lists.infradead.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=wQhYGWbmYRpOsQh048VImHZFZtKvuW+wybi1/wHnwY8=;
+        b=GQC4XNx8xv2jzqMwAUuwfvFFTTPpTlpUQbDBQKgpqc7gAPA6ytWmRG7ZN9F1xzWL33
+         k8XQ02skWX6EX9yoJ4iYLpQV5nYNFyKg7meb832ZeQ6UleHBwQcCmC2x+w+RNxdGbeCv
+         zLy5kBkRqMc+Pn+cPUhAVcUKqEsFRqRZq11TqOTBL25IKYgJso62ZUO/9fRHH7QMeTb3
+         NJqwNfz9hz8C3gXGZhln+vWpYRffctC3DpkOZ02kRuCZKFbJntsx2nB6oOm2nqDB54WX
+         hDqr/3QXEMOAsHhFnF/IJ3ZyPNDn6kJ+v4p3w5dvQkZk8eV3n8DjXzUi4O6QuWNbIVfM
+         7JyQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795619206; x=1796224006;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=wQhYGWbmYRpOsQh048VImHZFZtKvuW+wybi1/wHnwY8=;
+        b=0+cqpqueHups/pga4FhpPgKSxLNnPsxATRHrrZAbHvkUvUg9Rn3SrA0x5bm8Tv9fYL
+         z2AEFn9JW7NMWaDaARdPsUFprGoPLvTwTMrXwCy6TV9BgUwxrNJkkwiT9pqxesF8fWsm
+         9IjroY9O+NyG/ybGpYu+WbEJhXxlAZPydWMAn0J60EXtTIhFxAbiNEfSluq9K1vqJsGO
+         6k8FZUaWObdXBfC8uyJlj4MZUR48N3l7nivM+rqvzeiwZIfvEQ81FKR1SMhLkX+yJJea
+         xgmsi7KjzM594E8RBVoG3+rPgXn+mHFuC5oc8+VerA0wwC6dBIIxHSEym/MAQqLazTg2
+         2P2w==
+X-Forwarded-Encrypted: i=1; AL+hErG2qvfxRg2cLGphDgNcWW3wReRJDKJdjZBU6welf+OzDSqdtlSIp0QieCbsZQdvUZUM1DplalV0hgU=@lists.infradead.org
+X-Gm-Message-State: APuU4Z9B9mojue/PgWVGLMsXITC7thVbCO4gQpdDtiLjxImXX8OE465p
+	lXB37FehxqNcWqh//FkOBQRYZL6vAsMZBo4f7HKrxEUT6t+VzA6iwXrsjPyYGxNiatTpeFbIDHW
+	W4WnLRLq+ixmKPOHyJUBX6awMOvh/J/s9SbaJkZfBwQ==
+X-Gm-Gg: AZFdTZfupOx2R7iNFo10r7iMOTxj/EjCYRXhrisDrAgucmRLFCVEucikqBYZpQCNs2U
+	sCOhaOof7h3/RPNCNYCsaMtiYD4rRcypQvSXqOpoTDTZgJLEE6z0Dcd8tdqu5TjP3Fs87RvUA1T
+	8tGf9/YgAGXtgsF923mcth8quz9Cyttckqooed4JFRjbQ1yKDv9lvQwCKzfBP8WyXrIRk9hsJkC
+	8gz71TCEJAYfj48rzJqaMN2JsgrkIotYv6Ap+mYSDkCjicd8EtNG3Au5sIyNPnGRhc3HXABwkOq
+	uNSUz6tzoQCUID60ueYwxiszdzNQTJyiurqWi8+1U181mS3GtcTuH4VUtkTMGcD19kpCHG6rKsE
+	bJMCBXb+VtaukduYPxHiLLQWPCn5j2Jb/dTdcrARfUPGg7an+9gsMRPfA97em/gajutyw+kpbdj
+	yzGNseFloeBpnPKipO/oZZSkaVISGrQ++DLUsw98jDIFAjSSc9ELuh
+X-Received: by 2002:a05:600c:828e:b0:4a1:cd83:b23e with SMTP id
+ 5b1f17b1804b1-4bb88786ddemr337232595e9.0.1795619205644; Wed, 25 Nov 2026
+ 07:06:45 -0800 (PST)
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-X-CM-TRANSID: rQCowACHlpdC7gZrNoDHAQ--.9257S2
-X-Coremail-Antispam: 1UD129KBjvJXoW7KF43Ar48Zry3JF43GF1DAwb_yoW8Xr1kpF
-	Z7G3sa9r1rt3sagrnxtas2vrn3Wan3Gr13JrZ3CF1UZr4aqryjywnYg39FkFy5Gr9Yy34U
-	ZrWUKF1kur4DA37anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUUBE14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
-	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
-	1l84ACjcxK6xIIjxv20xvE14v26ryj6F1UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4j
-	6F4UM28EF7xvwVC2z280aVAFwI0_GcCE3s1l84ACjcxK6I8E87Iv6xkF7I0E14v26rxl6s
-	0DM2vYz4IE04k24VAvwVAKI4IrM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI
-	64kE6c02F40Ex7xfMcIj6xIIjxv20xvE14v26r1Y6r17McIj6I8E87Iv67AKxVW8JVWxJw
-	Am72CE4IkC6x0Yz7v_Jr0_Gr1lF7xvr2IYc2Ij64vIr41lF7I21c0EjII2zVCS5cI20VAG
-	YxC7M4IIrI8v6xkF7I0E8cxan2IY04v7MxkF7I0En4kS14v26r1q6r43MxkIecxEwVAFwV
-	W5XwCF04k20xvY0x0EwIxGrwCFx2IqxVCFs4IE7xkEbVWUJVW8JwC20s026c02F40E14v2
-	6r1j6r18MI8I3I0E7480Y4vE14v26r106r1rMI8E67AF67kF1VAFwI0_Jw0_GFylIxkGc2
-	Ij64vIr41lIxAIcVC0I7IYx2IY67AKxVWUJVWUCwCI42IY6xIIjxv20xvEc7CjxVAFwI0_
-	Jr0_Gr1lIxAIcVCF04k26cxKx2IYs7xG6r1j6r1xMIIF0xvEx4A2jsIE14v26r1j6r4UMI
-	IF0xvEx4A2jsIEc7CjxVAFwI0_Gr0_Gr1UYxBIdaVFxhVjvjDU0xZFpf9x0JUhdbbUUUUU
-	=
-X-CM-SenderInfo: pwdquxrlsvqzpdlo2hpxfd2hldfou0/
+References: <20260914055936.3672758-1-wang.yechao255@zte.com.cn> <20260914055936.3672758-2-wang.yechao255@zte.com.cn>
+In-Reply-To: <20260914055936.3672758-2-wang.yechao255@zte.com.cn>
+From: Anup Patel <anup@brainfault.org>
+Date: Wed, 25 Nov 2026 20:36:34 +0530
+X-Gm-Features: Aa3M54rWb_qwV0lybeTg4v6ZPTlnIV7_ygoXoP0dqWuArNVCCcEttr1PQxaya24
+Message-ID: <CAAhSdy2-HGNfbBCJeXPS0wyTaSt+C9rHw08K6dn5DcJCLWy+rw@mail.gmail.com>
+Subject: Re: [PATCH v5 1/2] RISC-V: KVM: add tracepoint for guest page faults
+To: Wang Yechao <wang.yechao255@zte.com.cn>
+Cc: kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
+	linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+	Atish Patra <atish.patra@linux.dev>, Alexandre Ghiti <alex@ghiti.fr>
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261125_061909_847288_F3BB156C 
-X-CRM114-Status: UNSURE (   7.45  )
-X-CRM114-Notice: Please train this message.
-X-Spam-Score: -4.2 (----)
+X-CRM114-CacheID: sfid-20261125_070649_721840_F9634215 
+X-CRM114-Status: GOOD (  14.06  )
+X-Spam-Score: -2.1 (--)
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -80,61 +118,53 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
-X-Spam-Status: No, score=-16.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-13.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+	SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-kvm_riscv_gstage_set_pte() links a newly allocated page table
-to its parent PTE without a write memory barrier.
-
-A concurrent hardware page table walker may observe the parent
-PTE before the child page table is fully initialized, potentially
-interpreting stale contents as valid PTEs.
-
-Add an smp_wmb() before linking the child page table, as is
-already done in kvm_riscv_gstage_split_huge().
-
-Sashiko reported this pre-existing issue while reviewing my
-G-stage page table accounting patch. LLM assistance was used
-to analyze the issue and prepare the changelog.
-
-Fixes: 9d05c1fee837 ("RISC-V: KVM: Implement stage2 page table programming")
-Link: https://sashiko.dev/#/bug/linux-9339e577-5f31-42a2-a5ea-9844d30b43f8
-
-Signed-off-by: Tan Chi <tanchi25@mails.ucas.ac.cn>
----
- arch/riscv/kvm/gstage.c | 7 +++++++
- 1 file changed, 7 insertions(+)
-
-diff --git a/arch/riscv/kvm/gstage.c b/arch/riscv/kvm/gstage.c
-index 0aace3215d3e..61ab60adb616 100644
---- a/arch/riscv/kvm/gstage.c
-+++ b/arch/riscv/kvm/gstage.c
-@@ -160,6 +160,13 @@ int kvm_riscv_gstage_set_pte(struct kvm_gstage *gstage,
- 			next_ptep = kvm_mmu_memory_cache_alloc(pcache);
- 			if (!next_ptep)
- 				return -ENOMEM;
-+
-+			/*
-+			 * Ensure the initialization of the new page table is visible
-+			 * before linking it to the parent PTE.
-+			 */
-+			smp_wmb();
-+
- 			set_pte(ptep, pfn_pte(PFN_DOWN(__pa(next_ptep)),
- 					      __pgprot(_PAGE_TABLE)));
- 		} else {
--- 
-2.53.0
-
-
--- 
-kvm-riscv mailing list
-kvm-riscv@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/kvm-riscv
+T24gTW9uLCBTZXAgMTQsIDIwMjYgYXQgMTE6MzfigK9BTSBXYW5nIFllY2hhbyA8d2FuZy55ZWNo
+YW8yNTVAenRlLmNvbS5jbj4gd3JvdGU6Cj4KPiBBZGQgdGhlIGt2bV9wYWdlX2ZhdWx0IGV2ZW50
+IHRyYWNlcG9pbnQgdG8gY291bnQgdGhlIG51bWJlciBvZiBLVk0KPiBndWVzdCBwYWdlIGZhdWx0
+cy4KPgo+IFNpZ25lZC1vZmYtYnk6IFdhbmcgWWVjaGFvIDx3YW5nLnllY2hhbzI1NUB6dGUuY29t
+LmNuPgo+IC0tLQo+ICBhcmNoL3Jpc2N2L2t2bS90cmFjZS5oICAgICB8IDIyICsrKysrKysrKysr
+KysrKysrKysrKysKPiAgYXJjaC9yaXNjdi9rdm0vdmNwdV9leGl0LmMgfCAgMiArKwo+ICAyIGZp
+bGVzIGNoYW5nZWQsIDI0IGluc2VydGlvbnMoKykKPgo+IGRpZmYgLS1naXQgYS9hcmNoL3Jpc2N2
+L2t2bS90cmFjZS5oIGIvYXJjaC9yaXNjdi9rdm0vdHJhY2UuaAo+IGluZGV4IDIzYTVmZDFiNjg2
+ZS4uMDdmY2Y1YjYwNTliIDEwMDY0NAo+IC0tLSBhL2FyY2gvcmlzY3Yva3ZtL3RyYWNlLmgKPiAr
+KysgYi9hcmNoL3Jpc2N2L2t2bS90cmFjZS5oCj4gQEAgLTEzMyw2ICsxMzMsMjggQEAgVFJBQ0Vf
+RVZFTlQoa3ZtX3ZjcHVfaXJxLAo+ICAgICAgICAgICAgICAgICAgIF9fZW50cnktPnZjcHVfaWQs
+IF9fZW50cnktPmlycSwgX19lbnRyeS0+bGV2ZWwpCj4gICk7Cj4KPiArVFJBQ0VfRVZFTlQoa3Zt
+X3BhZ2VfZmF1bHQsCj4gKyAgICAgICBUUF9QUk9UTyhzdHJ1Y3Qga3ZtX3ZjcHUgKnZjcHUsIHU2
+NCBmYXVsdF9hZGRyZXNzLCB1NjQgZXJyb3JfY29kZSksCj4gKyAgICAgICBUUF9BUkdTKHZjcHUs
+IGZhdWx0X2FkZHJlc3MsIGVycm9yX2NvZGUpLAo+ICsKPiArICAgICAgIFRQX1NUUlVDVF9fZW50
+cnkoCj4gKyAgICAgICAgICAgICAgIF9fZmllbGQodW5zaWduZWQgaW50LCAgIHZjcHVfaWQpCj4g
+KyAgICAgICAgICAgICAgIF9fZmllbGQodTY0LCAgICAgICAgICAgIGZhdWx0X2FkZHJlc3MpCj4g
+KyAgICAgICAgICAgICAgIF9fZmllbGQodTY0LCAgICAgICAgICAgIGVycm9yX2NvZGUpCj4gKyAg
+ICAgICApLAo+ICsKPiArICAgICAgIFRQX2Zhc3RfYXNzaWduKAo+ICsgICAgICAgICAgICAgICBf
+X2VudHJ5LT52Y3B1X2lkICAgICAgICA9IHZjcHUtPnZjcHVfaWQ7Cj4gKyAgICAgICAgICAgICAg
+IF9fZW50cnktPmZhdWx0X2FkZHJlc3MgID0gZmF1bHRfYWRkcmVzczsKPiArICAgICAgICAgICAg
+ICAgX19lbnRyeS0+ZXJyb3JfY29kZSAgICAgPSBlcnJvcl9jb2RlOwo+ICsgICAgICAgKSwKPiAr
+Cj4gKyAgICAgICBUUF9wcmludGsoInZjcHUgJXUgYWRkcmVzcyAweCUwMTZsbHggZXJyb3JfY29k
+ZSAweCVsbHgiLAo+ICsgICAgICAgICAgICAgICBfX2VudHJ5LT52Y3B1X2lkLAo+ICsgICAgICAg
+ICAgICAgICBfX2VudHJ5LT5mYXVsdF9hZGRyZXNzLAo+ICsgICAgICAgICAgICAgICBfX2VudHJ5
+LT5lcnJvcl9jb2RlKQo+ICspOwo+ICsKPiAgI2VuZGlmIC8qIF9UUkFDRV9LVk1fSCAqLwo+Cj4g
+ICN1bmRlZiBUUkFDRV9JTkNMVURFX1BBVEgKPiBkaWZmIC0tZ2l0IGEvYXJjaC9yaXNjdi9rdm0v
+dmNwdV9leGl0LmMgYi9hcmNoL3Jpc2N2L2t2bS92Y3B1X2V4aXQuYwo+IGluZGV4IDg4ZTBjMzY5
+YjM1NC4uZGUwMjYyZDBmZDk1IDEwMDY0NAo+IC0tLSBhL2FyY2gvcmlzY3Yva3ZtL3ZjcHVfZXhp
+dC5jCj4gKysrIGIvYXJjaC9yaXNjdi9rdm0vdmNwdV9leGl0LmMKPiBAQCAtMjksNiArMjksOCBA
+QCBzdGF0aWMgaW50IGdzdGFnZV9wYWdlX2ZhdWx0KHN0cnVjdCBrdm1fdmNwdSAqdmNwdSwgc3Ry
+dWN0IGt2bV9ydW4gKnJ1biwKPiAgICAgICAgIG1lbXNsb3QgPSBnZm5fdG9fbWVtc2xvdCh2Y3B1
+LT5rdm0sIGdmbik7Cj4gICAgICAgICBodmEgPSBnZm5fdG9faHZhX21lbXNsb3RfcHJvdChtZW1z
+bG90LCBnZm4sICZ3cml0YWJsZSk7Cj4KPiArICAgICAgIHRyYWNlX2t2bV9wYWdlX2ZhdWx0KHZj
+cHUsIGZhdWx0X2FkZHIsIHRyYXAtPnNjYXVzZSk7Cj4gKwoKVGhlIHRyYWNlX2t2bV92Y3B1X2V4
+aXQoKSBpbiBrdm1fcmlzY3ZfdmNwdV9leGl0KCkgYWxyZWFkeSBjb3ZlcnMKYWxsIHRyYXBzIHNv
+IEkgZG9uJ3QgdGhpbmsgd2UgbmVlZCBzZXBhcmF0ZSB0cmFjZSBwb2ludCBmb3IgRy1zdGFnZQpw
+YWdlIGZhdWx0cy4KClJlZ2FyZHMsCkFudXAKCi0tIAprdm0tcmlzY3YgbWFpbGluZyBsaXN0Cmt2
+bS1yaXNjdkBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21h
+aWxtYW4vbGlzdGluZm8va3ZtLXJpc2N2Cg==
