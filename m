@@ -2,98 +2,72 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C1A8A606A31E
-	for <kvm-riscv@archiver.kernel.org>; Tue, 24 Nov 2026 18:52:16 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 610B1606A31E
+	for <kvm-riscv@archiver.kernel.org>; Wed, 25 Nov 2026 01:19:13 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=CViiyPlp;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=HxpQmHpN
+	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=Ep6r3/Tg
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
+	Date:Cc:To:From:Subject:Message-ID:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
 	List-Unsubscribe-Post:List-Owner;
-	bh=jwK+artgTJVjUajQMu+EM6fEoOndPNK0En87kDB2E7o=; b=CViiyPlpug1ZkQwBYKzILLRhc5
-	JEIhYAt+BFBB4hcmBMBedYzQRMQPVqOtArF2/cwUXjt/af6WRps82m4g7nQXppn4AZyGB4aALhv2D
-	NctfAhMfDpCKnSni3KoEpdaiS0uyZ7MtDh/MAm83tSYer7mXDnIVgMFHn2TgbbujU52x4sh/9UITB
-	EoZJoM+OetmoZUTXui/wiIyGVyhE8Y/2mcZeW1KTucnoRSfd3osLw1HPWKIySc+qTSvzVVbk0g31A
-	PSIJQmytdOh0JzNzaZI67se1M6EH4fqrSb0qNt6S66JW/v8rQkJ4WysLO/ufUXCvhLgvxxXd2KTMw
-	AKCczzkA==;
+	bh=KJlMsm5k1GEn9YLWeBxNRaR6ilevBuGD0TIUnosdKnY=; b=Ep6r3/Tgbu1YijM+dpfRlhf5wA
+	fV1sj3o4SMEyOgK8L8Wvxs2BSQXQcfn/cWg6ArrBdBIOnyPwQyCCWn86x5kC/UnATxxbEUuPELL1S
+	fr7GjMZ+bNl9Qj2NXo2lVDzAjDl0AZ04xMG199oE1W7axiqOi3bJB1QNl2maXBFmhszKtrCduiwWq
+	SzoPOLQtxB8libR3L2jTZNum6yYZPTys/rU+BAaP4gFJmU74axBAhE60xRr8rO60qVU4bm/04tc1n
+	Nqx9cT6aESZAYHrSgfLQ47HRc5Up+GaaMUbnmSrGICxoeXfS+mtS+bFQVRuF02ZQZywlJzttlkvQ5
+	NPhUW0XQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xVvcm-00000007Y2t-1gij;
-	Tue, 24 Nov 2026 18:52:16 +0000
-Received: from foss.arm.com ([217.140.110.172])
-	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xVvcj-00000007Y15-3jdi;
-	Tue, 24 Nov 2026 18:52:15 +0000
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 1019F497;
-	Tue, 24 Nov 2026 10:52:08 -0800 (PST)
-Received: from e129823.arm.com (e129823.arm.com [10.2.213.3])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 7EAC33F86C;
-	Tue, 24 Nov 2026 10:52:03 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1795546330; bh=cEx0NNr4v9OqxertlfeaIBCZsjK0gqeBlEmSznQ0QE4=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=HxpQmHpNrqXVqUfjE0HPfLK3ewOjjeolAx23daMcxTI88aKM+hL6rA2Fg+4rqd8+R
-	 qMFVk/rzRBXFpbU1Dfr/ftkZEjuXw3RMnNovsFD1RM3+rwaFKpdU0NBWTD4cVkNWWE
-	 Ki55UEoYDf7IlCgUAL9LE2jIQWyjvIsSNBfWze2I=
-Date: Tue, 24 Nov 2026 18:52:00 +0000
-From: Yeoreum Yun <yeoreum.yun@arm.com>
-To: Mike Rapoport <rppt@kernel.org>
-Cc: Yeoreum Yun <yeoreum.yun@arm.com>, Russell King <linux@armlinux.org.uk>,
-	Huacai Chen <chenhuacai@kernel.org>,
-	WANG Xuerui <kernel@xen0n.name>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Kairui Song <kasong@tencent.com>, Qi Zheng <qi.zheng@linux.dev>,
-	Shakeel Butt <shakeel.butt@linux.dev>,
-	Barry Song <baohua@kernel.org>,
-	Axel Rasmussen <axelrasmussen@google.com>,
-	Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>,
-	Johannes Weiner <hannes@cmpxchg.org>,
-	David Hildenbrand <david@kernel.org>,
-	Michal Hocko <mhocko@kernel.org>, Lorenzo Stoakes <ljs@kernel.org>,
-	Tianrui Zhao <zhaotianrui@loongson.cn>,
-	Bibo Mao <maobibo@loongson.cn>, Anup Patel <anup@brainfault.org>,
-	Atish Patra <atish.patra@linux.dev>, Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	Andy Lutomirski <luto@kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>, x86@kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	"Liam R. Howlett" <liam@infradead.org>,
-	Vlastimil Babka <vbabka@kernel.org>,
-	Suren Baghdasaryan <surenb@google.com>,
-	Michal Hocko <mhocko@suse.com>, Jonas Bonn <jonas@southpole.se>,
-	Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
-	Stafford Horne <shorne@gmail.com>,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	loongarch@lists.linux.dev, linux-mips@vger.kernel.org,
-	linux-arch@vger.kernel.org, linux-mm@kvack.org, kvm@vger.kernel.org,
-	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
-	linux-openrisc@vger.kernel.org
-Subject: Re: [PATCH RESEND v2 12/21] mm/pgtable: redefine PGTABLE_LEVEL enum
- with ascend order from PGD
-Message-ID: <awXc0MSZl9t9VW8e@e129823.arm.com>
-References: <20261102-dummy_ptxp3-v2-0-78840b2ec73c@arm.com>
- <20261102-dummy_ptxp3-v2-12-78840b2ec73c@arm.com>
- <awXD4i47F-VAG1tD@kernel.org>
+	id 1xW1fE-00000008B68-3Oi3;
+	Wed, 25 Nov 2026 01:19:12 +0000
+Received: from smtp81.cstnet.cn ([159.226.251.81] helo=cstnet.cn)
+	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
+	id 1xW1fA-00000008B5o-2zNi
+	for kvm-riscv@lists.infradead.org;
+	Wed, 25 Nov 2026 01:19:11 +0000
+Received: from [127.0.0.1] (unknown [122.194.100.240])
+	by APP-03 (Coremail) with SMTP id rQCowABncJGENwZr0nO8AQ--.444S2;
+	Wed, 25 Nov 2026 09:19:02 +0800 (CST)
+Message-ID: <a9e29922b006ee2c5b89870f6730cc7ea6fcff48.camel@iscas.ac.cn>
+Subject: Re: [kvm-unit-tests PATCH v2 8/8] riscv: Add BRS SBI requirement
+ tests
+From: Xiang W <wangxiang@iscas.ac.cn>
+To: Andrew Jones <andrew.jones@linux.dev>
+Cc: kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, pbonzini@redhat.com,
+ 	thuth@redhat.com
+Date: Wed, 25 Nov 2026 09:19:00 +0800
+In-Reply-To: <awXH92cKFHKZKPFp@orel>
+References: <20261105082035.133680-1-wangxiang@iscas.ac.cn>
+	 <20261105082035.133680-9-wangxiang@iscas.ac.cn> <awAxIHVLgbqTIYq5@orel>
+	 <be563f376884fa46178aa4f78468aeb13272506f.camel@iscas.ac.cn>
+	 <awXH92cKFHKZKPFp@orel>
+User-Agent: Evolution 3.56.2-0+deb13u1 
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <awXD4i47F-VAG1tD@kernel.org>
+X-CM-TRANSID: rQCowABncJGENwZr0nO8AQ--.444S2
+X-Coremail-Antispam: 1UD129KBjvdXoWrXFWDXF4DCF45tryrWr18Grg_yoWxWwc_uF
+	W0yr18Cwsrt3Wjkan3tF4Svrn3KFs2g3W8ZrWUt39aqF45AF93CrsYg34Sy3ZxGr4kGFsF
+	gr4Y939rCryjgjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+	9fnUUIcSsGvfJTRUUUb2AYjsxI4VWDJwAYFVCjjxCrM7AC8VAFwI0_Jr0_Gr1l1xkIjI8I
+	6I8E6xAIw20EY4v20xvaj40_Wr0E3s1l1IIY67AEw4v_Jr0_Jr4l8cAvFVAK0II2c7xJM2
+	8CjxkF64kEwVA0rcxSw2x7M28EF7xvwVC0I7IYx2IY67AKxVW5JVW7JwA2z4x0Y4vE2Ix0
+	cI8IcVCY1x0267AKxVWxJVW8Jr1l84ACjcxK6I8E87Iv67AKxVW8Jr0_Cr1UM28EF7xvwV
+	C2z280aVCY1x0267AKxVW8Jr0_Cr1UM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVAC
+	Y4xI64kE6c02F40Ex7xfMcIj6xIIjxv20xvE14v26r1j6r18McIj6I8E87Iv67AKxVWUJV
+	W8JwAm72CE4IkC6x0Yz7v_Jr0_Gr1lF7xvr2IY64vIr41lc7CjxVAaw2AFwI0_JF0_Jw1l
+	42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67AKxVWUJV
+	WUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r126r1DMIIYrxkI7VAK
+	I48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7IYx2IY6xkF7I0E14v26r1j6r
+	4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVWUJVW8JwCI42IY
+	6I8E87Iv6xkF7I0E14v26r1j6r4UYxBIdaVFxhVjvjDU0xZFpf9x07jrYFAUUUUU=
+X-CM-SenderInfo: pzdqw5pldqwq5lvft2wodfhubq/
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261124_105214_015127_99A6788E 
-X-CRM114-Status: GOOD (  24.86  )
-X-Spam-Score: -4.4 (----)
+X-CRM114-CacheID: sfid-20261124_171909_145227_1B04798E 
+X-CRM114-Status: GOOD (  11.05  )
+X-Spam-Score: -4.2 (----)
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -103,88 +77,27 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
-X-Spam-Status: No, score=-13.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-3.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Tue, Nov 24, 2026 at 07:05:38PM +0200, Mike Rapoport wrote:
-> On Mon, Nov 02, 2026 at 11:21:25AM +0000, Yeoreum Yun wrote:
-> > The PGTABLE_LEVEL enum values appear to be ordered in the opposite direction
-> > from their intended usage.
-> > 
-> > Intuitively, higher page table levels should have smaller enum values,
-> > but PTE is currently assigned 0.
-> 
-> That's not what x86 thinks :)
-> They even expose it in /proc/vmstat with smaller numbers meaning lower levels
-> 
-> $ grep direct_map /proc/vmstat 
-> direct_map_level2_splits 152
-> direct_map_level3_splits 4
-> direct_map_level2_collapses 0
-> direct_map_level3_collapses 0
-> 
-> Just an observation, I don't mind either order.
-
-Right. I made this change because a depth-based scheme seems more intuitive.
-
-As you pointed out, though, the x86 specification uses smaller
-numbers (0) for lower levels (pte), so I think we can leave the
-x86-specific direct_map_* entries as they are.
-
->  
-> > For consistency and cleanup, reverse the enum value ordering.
-> > 
-> > Since there is no current user relies on these numbers to be ascending from
-> > PTE->PGD, so it can be changed to be ascending from PGD->PTE, in the
-> > direction of the page table walk.
-> > 
-> > Reviewed-by: David Hildenbrand (Arm) <david@kernel.org>
-> > Signed-off-by: Yeoreum Yun <yeoreum.yun@arm.com>
-> > ---
-> >  include/linux/pgtable.h | 8 ++++----
-> >  1 file changed, 4 insertions(+), 4 deletions(-)
-> > 
-> > diff --git a/include/linux/pgtable.h b/include/linux/pgtable.h
-> > index 780fe849ff8b7..a032f95943357 100644
-> > --- a/include/linux/pgtable.h
-> > +++ b/include/linux/pgtable.h
-> > @@ -2288,11 +2288,11 @@ static inline bool arch_has_pfn_modify_check(void)
-> >  typedef unsigned int pgtbl_mod_mask;
-> >  
-> >  enum pgtable_level {
-> > -	PGTABLE_LEVEL_PTE = 0,
-> > -	PGTABLE_LEVEL_PMD,
-> > -	PGTABLE_LEVEL_PUD,
-> > +	PGTABLE_LEVEL_PGD = 0,
-> >  	PGTABLE_LEVEL_P4D,
-> > -	PGTABLE_LEVEL_PGD,
-> > +	PGTABLE_LEVEL_PUD,
-> > +	PGTABLE_LEVEL_PMD,
-> > +	PGTABLE_LEVEL_PTE,
-> >  };
-> >  
-> >  static inline const char *pgtable_level_to_str(enum pgtable_level level)
-> > 
-> > -- 
-> > 2.43.0
-> > 
-> 
-> -- 
-> Sincerely yours,
-> Mike.
-
--- 
-Sincerely,
-Yeoreum Yun
-
--- 
-kvm-riscv mailing list
-kvm-riscv@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/kvm-riscv
+5ZyoIDIwMjYtMTEtMjTkuoznmoQgMTg6MjQgKzAxMDDvvIxBbmRyZXcgSm9uZXPlhpnpgZPvvJoK
+PiBPbiBUdWUsIE5vdiAyNCwgMjAyNiBhdCAwODo1MDoyMFBNICswODAwLCBYaWFuZyBXIHdyb3Rl
+Ogo+ID4gPiAKPiA+ID4gSSd2ZSBzZW50IGh0dHBzOi8vbG9yZS5rZXJuZWwub3JnL2FsbC8yMDI2
+MTEyMDEzNTYxMy4xMzg4NjQ3LTEtYW5kcmV3LmpvbmVzQGxpbnV4LmRldi8KPiA+ID4gdG8gYXZv
+aWQgaGF2aW5nIHRvIGRvIGFsbCB0aGlzIERUIHBhcnNpbmcgaW4gdGhlIHRlc3QgY29kZS4gWW91
+ciBuZXh0Cj4gPiA+IHZlcnNpb24gc2hvdWxkIGFkZCBhIHBhdGNoIHRoYXQgYWRkcyB0aGUgQUNQ
+SSBzdXBwb3J0IGZvciBzZXR0aW5nCj4gPiA+IHRocmVhZF9pbmZvLmltc2ljX2FkZHIgYW5kIHRo
+ZW4gdGhpcyBwYXRjaCBzaG91bGQgdXNlIGl0Lgo+ID4gPiAKPiA+IFRoYW5rcyBmb3Igd3JpdGlu
+ZyB0aGF0IGhlbHBlci4KPiA+IAo+ID4gdjMgd2lsbCBjYXJyeSB5b3VyIERUIHBhdGNoIGFuZCBh
+ZGQgdGhlIEFDUEkgc2lkZS4gVGhlIEJSUyB0ZXN0cyB0aGVuwqAKPiA+IGp1c3QgcmVhZCBjcHVz
+W10uaW1zaWNfYWRkci4KPiAKPiBMZXQncyByZW5hbWUgaW1zaWNfYWRkciB0byBpbXNpY19wYQpP
+SwoKVGhhbmtzLApYaWFuZwo+IAo+IFRoYW5rcywKPiBkcmV3CgoKLS0gCmt2bS1yaXNjdiBtYWls
+aW5nIGxpc3QKa3ZtLXJpc2N2QGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJh
+ZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9rdm0tcmlzY3YK
