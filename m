@@ -2,10 +2,10 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4F353606A323
-	for <kvm-riscv@archiver.kernel.org>; Wed, 25 Nov 2026 01:44:33 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 310E1606A321
+	for <kvm-riscv@archiver.kernel.org>; Wed, 25 Nov 2026 01:44:34 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=FZZyIoQ2
+	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=ifopWMqj
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
@@ -13,24 +13,24 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
 	List-Unsubscribe-Post:List-Owner;
-	bh=wDViGRIt4poHhrCIXWWmwfpEPl8UlVJWjaanpSSGj7Q=; b=FZZyIoQ2Nfy5LIF74F6p7oJDcT
-	cS0WjUAK4mnQYUeNi9CcB1SCVU6OekbEBr+l6K/5C/TNeDd3f322T/30kpBr6ceNSkXc49xwqFl7U
-	uYH0I/kEEl+UpeZnlRt6Fiyujo/TRah/oC1HcPMFkzqmob2VazgdhWjNUId90zoxBwblgBQZhphos
-	5eVwxrcOPqB8dj5CytX5iXZeGPywx4ZTwvEg647VZyIdCsPxIN/Amv1B9/KeoiXVTRs2ZQLbAX9m3
-	tSWo/2sXdyvhSYRsEWl0m+RcFaTXXlv4J0rh/jw7b1rD63eJiuqR6iFk2ocXFataNPU/ZiY9YswSt
-	Pq0akAxg==;
+	bh=NlZv7hMUppo02GQ/JWU3kEl84FVoGYXiNmy7DZOFPIE=; b=ifopWMqjA57L5CJ08+dut4m1bC
+	Rltk5oJkcrgErVTcJHbXn4kofltcgWqSQeUZ+xITwXhuuI3W+jQqH3OdIW/SF54vz/va/8y9thRMI
+	nIAhMcqXBD30dTDG3gpulIFzfWn9vhSZIaC3ThVFjaHOal/4fEiaxxF0UOwCytVAiA/S8Of6hLT1/
+	0r5W/wdLCvH77D3deR8DtWrcHh0K1gDNO8DJXR7zmamGif+3/VmWGuPWnzsozJ/IJGXfyBsJO2kCt
+	fyl7ODd1Rnghttqy1GC8S+qSJrjM+dbT4OYA1IS7FjUNcVq0/EgdKt6twdG6jxNK4q8ZM/f0IxPU/
+	fHdp3a4w==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xW23k-00000008Cof-3mWs;
-	Wed, 25 Nov 2026 01:44:32 +0000
+	id 1xW23l-00000008CpP-3wAf;
+	Wed, 25 Nov 2026 01:44:33 +0000
 Received: from smtp81.cstnet.cn ([159.226.251.81] helo=cstnet.cn)
 	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xW23i-00000008CnD-45zD
+	id 1xW23j-00000008CnS-3IzC
 	for kvm-riscv@lists.infradead.org;
-	Wed, 25 Nov 2026 01:44:32 +0000
+	Wed, 25 Nov 2026 01:44:33 +0000
 Received: from localhost (unknown [122.194.100.240])
-	by APP-03 (Coremail) with SMTP id rQCowABXYZJ6PQZrudm8AQ--.23020S2;
-	Wed, 25 Nov 2026 09:44:26 +0800 (CST)
+	by APP-03 (Coremail) with SMTP id rQCowADXqZp8PQZr0tm8AQ--.25273S2;
+	Wed, 25 Nov 2026 09:44:28 +0800 (CST)
 From: Xiang W <wangxiang@iscas.ac.cn>
 To: kvm@vger.kernel.org,
 	kvm-riscv@lists.infradead.org
@@ -38,35 +38,35 @@ Cc: andrew.jones@linux.dev,
 	Xiang W <wangxiang@iscas.ac.cn>,
 	pbonzini@redhat.com,
 	thuth@redhat.com
-Subject: [kvm-unit-tests PATCH v3 3/9] riscv: Add ACPI support for timer frequency discovery
-Date: Wed, 25 Nov 2026 09:44:03 +0800
-Message-ID: <20261125014409.79852-4-wangxiang@iscas.ac.cn>
+Subject: [kvm-unit-tests PATCH v3 7/9] riscv: Initialize ISA extensions for all harts at CPU setup
+Date: Wed, 25 Nov 2026 09:44:07 +0800
+Message-ID: <20261125014409.79852-8-wangxiang@iscas.ac.cn>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <20261125014409.79852-1-wangxiang@iscas.ac.cn>
 References: <20261125014409.79852-1-wangxiang@iscas.ac.cn>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-X-CM-TRANSID: rQCowABXYZJ6PQZrudm8AQ--.23020S2
-X-Coremail-Antispam: 1UD129KBjvJXoWxXr4UCrWfCw13Jr45XrW7XFb_yoW5Gw43pF
-	s3KF43Jry7ta4fWwnxXrn8trn5tw1vkF18Kr42yrZxuF4DJa4DJa1Yqrn2qFyfX3yDAay3
-	Kr1rGFZIgr4YgrJanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+X-CM-TRANSID: rQCowADXqZp8PQZr0tm8AQ--.25273S2
+X-Coremail-Antispam: 1UD129KBjvJXoW7tw45ZFyfKrWUtr15ArWfGrg_yoW8AFyfpF
+	yDC3W5KrZ8WFs7J3s7trnYk34fK3W7Ca1xtFW8A34Fva1UJws8JrWDG3s09F17JFW8Xa1a
+	93ykGry5AF45ZF7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
 	9KBjDU0xBIdaVrnRJUUUvG14x267AKxVWUJVW8JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
 	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
 	1l84ACjcxK6xIIjxv20xvE14v26ryj6F1UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4U
 	JVWxJr1l84ACjcxK6I8E87Iv67AKxVW8Jr0_Cr1UM28EF7xvwVC2z280aVCY1x0267AKxV
 	WxJr0_GcWle2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2Wl
-	Yx0E2Ix0cI8IcVAFwI0_Jrv_JF1lYx0Ex4A2jsIE14v26r1j6r4UMcvjeVCFs4IE7xkEbV
+	Yx0E2Ix0cI8IcVAFwI0_JF0_Jw1lYx0Ex4A2jsIE14v26r1j6r4UMcvjeVCFs4IE7xkEbV
 	WUJVW8JwACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1lc7CjxVAaw2AF
 	wI0_JF0_Jw1lc2xSY4AK67AK6w4l42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr
 	0_Gr1lx2IqxVAqx4xG67AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY
-	17CE14v26r126r1DMIIYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAIcV
+	17CE14v26r126r1DMIIYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_JFI_Gr1lIxAIcV
 	C0I7IYx2IY6xkF7I0E14v26r4j6F4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY
 	6I8E87Iv67AKxVWUJVW8JwCI42IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIYCTnIWIevJa
-	73UjIFyTuYvjfUe_MaUUUUU
+	73UjIFyTuYvjfUeQ6pDUUUU
 X-CM-SenderInfo: pzdqw5pldqwq5lvft2wodfhubq/
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261124_174431_411920_307F7539 
-X-CRM114-Status: GOOD (  11.73  )
+X-CRM114-CacheID: sfid-20261124_174432_230989_5CB004AC 
+X-CRM114-Status: GOOD (  10.41  )
 X-Spam-Score: -4.2 (----)
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -87,99 +87,60 @@ X-Spam-Status: No, score=-16.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-When a DT is not provided, read the system time base frequency from
-the RHCT instead of aborting in timer_get_frequency().
+Move isa_init() from thread_info_init() into cpu_set_fdt() and
+cpu_set_acpi().
 
-RHCT Time Base Frequency is the ACPI equivalent of the DT
-/cpus timebase-frequency property and is the same for all harts.
-Keep DT as the preferred path when one is available.
+thread_info_init() only promotes sscratch to the current hart's
+thread_info. cpu_has_extension() reads cpus[].isa from the boot
+hart, including for secondaries that have not started yet, so ISA
+parsing has to happen while enumerating CPUs.
 
 Signed-off-by: Xiang W <wangxiang@iscas.ac.cn>
 ---
- lib/acpi.h        |  9 +++++++++
- lib/riscv/timer.c | 35 +++++++++++++++++++++++------------
- 2 files changed, 32 insertions(+), 12 deletions(-)
+ lib/riscv/processor.c | 1 -
+ lib/riscv/setup.c     | 3 +++
+ 2 files changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/lib/acpi.h b/lib/acpi.h
-index f6c92d28..0589669b 100644
---- a/lib/acpi.h
-+++ b/lib/acpi.h
-@@ -20,6 +20,7 @@
- #define MADT_SIGNATURE ACPI_SIGNATURE('A','P','I','C')
- #define SPCR_SIGNATURE ACPI_SIGNATURE('S','P','C','R')
- #define GTDT_SIGNATURE ACPI_SIGNATURE('G','T','D','T')
-+#define RHCT_SIGNATURE ACPI_SIGNATURE('R','H','C','T')
+diff --git a/lib/riscv/processor.c b/lib/riscv/processor.c
+index b055acc9..ddecc25e 100644
+--- a/lib/riscv/processor.c
++++ b/lib/riscv/processor.c
+@@ -81,7 +81,6 @@ void thread_info_init(void)
+ 	unsigned long hartid = csr_read(CSR_SSCRATCH);
+ 	int cpu = hartid_to_cpu(hartid);
  
- #define ACPI_SIGNATURE_8BYTE(c1, c2, c3, c4, c5, c6, c7, c8) \
- 	(((uint64_t)(ACPI_SIGNATURE(c1, c2, c3, c4))) |	     \
-@@ -325,6 +326,14 @@ struct acpi_table_gtdt {
- 	u32 virtual_el2_timer_flags;
- };
- 
-+struct acpi_table_rhct {
-+	ACPI_TABLE_HEADER_DEF
-+	u32 flags;
-+	u64 time_base_freq;
-+	u32 node_count;
-+	u32 node_offset;
-+};
-+
- /* Reset to default packing */
- #pragma pack()
- 
-diff --git a/lib/riscv/timer.c b/lib/riscv/timer.c
-index 18063b7e..4400b6dc 100644
---- a/lib/riscv/timer.c
-+++ b/lib/riscv/timer.c
-@@ -12,25 +12,36 @@
- #include <asm/setup.h>
- #include <asm/smp.h>
- #include <asm/timer.h>
-+#include <acpi.h>
- 
- void timer_get_frequency(void)
- {
--	const struct fdt_property *prop;
--	u32 *data;
--	int cpus, len;
-+	if (dt_available()) {
-+		const struct fdt_property *prop;
-+		const void *fdt;
-+		u32 *data;
-+		int cpus, len;
- 
--	assert_msg(dt_available(), "ACPI not yet supported");
-+		fdt = dt_fdt();
-+		cpus = fdt_path_offset(fdt, "/cpus");
-+		assert(cpus >= 0);
- 
--	const void *fdt = dt_fdt();
-+		prop = fdt_get_property(fdt, cpus, "timebase-frequency", &len);
-+		assert(prop != NULL && len == 4);
- 
--	cpus = fdt_path_offset(fdt, "/cpus");
--	assert(cpus >= 0);
--
--	prop = fdt_get_property(fdt, cpus, "timebase-frequency", &len);
--	assert(prop != NULL && len == 4);
-+		data = (u32 *)prop->data;
-+		timebase_frequency = fdt32_to_cpu(*data);
-+	} else {
-+#ifdef CONFIG_EFI
-+		struct acpi_table_rhct *rhct;
- 
--	data = (u32 *)prop->data;
--	timebase_frequency = fdt32_to_cpu(*data);
-+		rhct = find_acpi_table_addr(RHCT_SIGNATURE);
-+		assert_msg(rhct, "Cannot find ACPI RHCT");
-+		timebase_frequency = rhct->time_base_freq;
-+#else
-+		assert_msg(false, "ACPI not available");
-+#endif
-+	}
+-	isa_init(&cpus[cpu]);
+ 	csr_write(CSR_SSCRATCH, &cpus[cpu]);
  }
  
- void timer_start(unsigned long duration_us)
+diff --git a/lib/riscv/setup.c b/lib/riscv/setup.c
+index f1121573..547851f5 100644
+--- a/lib/riscv/setup.c
++++ b/lib/riscv/setup.c
+@@ -16,6 +16,7 @@
+ #include <on-cpus.h>
+ #include <vmalloc.h>
+ #include <asm/csr.h>
++#include <asm/isa.h>
+ #include <asm/mmu.h>
+ #include <asm/page.h>
+ #include <asm/processor.h>
+@@ -61,6 +62,7 @@ static int cpu_set_acpi(struct acpi_subtable_header *header)
+ 	cpus[cpu].cpu = cpu;
+ 	cpus[cpu].hartid = intc->hart_id;
+ 	cpus[cpu].uid = intc->uid;
++	isa_init(&cpus[cpu]);
+ 
+ 	if (intc->flags & ACPI_MADT_ENABLED) {
+ 		if (!sbi_hart_get_status(cpus[cpu].hartid).error)
+@@ -79,6 +81,7 @@ static void cpu_set_fdt(int fdtnode __unused, u64 regval, void *info __unused)
+ 
+ 	cpus[cpu].cpu = cpu;
+ 	cpus[cpu].hartid = regval;
++	isa_init(&cpus[cpu]);
+ 
+ 	if (!sbi_hart_get_status(cpus[cpu].hartid).error)
+ 		set_cpu_present(cpu, true);
 -- 
 2.47.3
 
