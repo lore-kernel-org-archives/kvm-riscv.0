@@ -2,51 +2,51 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 80CA5606A323
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8F05D606A327
 	for <kvm-riscv@archiver.kernel.org>; Wed, 25 Nov 2026 01:44:44 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=HXQ+PB2h;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=BxsmqQKq
+	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=04HNQIUv;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=BiMs2UCl
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
-	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
 	List-Unsubscribe-Post:List-Owner;
-	bh=oG9rW9R/UoomyGsKDD+97UYkNxc1W61FWbEs4DoFY48=; b=HXQ+PB2hklfFq7IL4Orojt1pEU
-	w2srwJzJ5t4Zo9Gbg81Wp/zVc29nGbFLxTxmd85JmV4ZzC27AKHlpBtFG309yfeJ3RcB90S3y5zvO
-	a4HwNKNQTB5Gbhl61cJCu2RaKQ/kVZDjBF/5oltrb3D5ZumZ6n9NjhBjoWFGwtp2K9hr0KDBeooWH
-	YR19a+1O+gNUdpChE3rSDuMUwaa6qn3UhaCC3+llZgBt/5GmDBWoAy882yjdwYPWOIdlfC6ISeJuH
-	LHVFcNPwCDd5Zf/O8TtjsGti5lQDqD/MP1yfO2PRH6JVLt5+DXTpu3Kw1OvWCv+jFEYI+szAJI0bm
-	V20j8Eqg==;
+	bh=qgMkA+dV3qfX2zeSWVsUlM82OhNA6uiRY6Vxz+GYtaw=; b=04HNQIUvoV0n5QB45JkbJaYOAh
+	wJ4hbfNiE/OKjaruozQE+KaKjw4mvRqBWPe2ApmgrVjn+FXFi8+aONt4B8jJoJAu3m4u6i34LWNdx
+	oZhzfQOYdQUk2Nf6xaf7+IFaQlmyEwRUZCCBMhaRA70ykY6YM2IATt8UJ8NZvEQi1nylaM+ni5Z4i
+	aFOlR4ww6pvXJonaBixAvOn04OZ48eSSuKwLaP4mtNrYcjiweMpafe+hgE8U2Kui4GCymqqqrAmwH
+	3G+cU/Jxeiz5aGAUDguMX0tAX23vHqrayhBHKTSI3hPXejaZodmlWWyjzD3Ib23W7hYF2vV0WpbaU
+	oOKglAJw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xW23w-00000008Cu9-112K;
+	id 1xW23w-00000008CuL-1HRl;
 	Wed, 25 Nov 2026 01:44:44 +0000
 Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xW23v-00000008CtF-1LxF
+	id 1xW23v-00000008CtG-1LIr
 	for kvm-riscv@bombadil.infradead.org;
 	Wed, 25 Nov 2026 01:44:43 +0000
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:MIME-Version
-	:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:
-	Content-Type:Content-ID:Content-Description;
-	bh=DQ2noZm5zCHHb7/oSScqzeGGuAbrQQoSEmOlcfHGp20=; b=BxsmqQKqmUUYQAAWyXJmFYMey3
-	nOneRimmoNefZF/VmKiBDqA9tRX0UVWhfG/D1i9VWy/9vlF0PGNyFAq08IS0v2e1G/87VRF/7B9X/
-	biroy9uSt9eifS9Cc1POdj06/H5tqviDw945WOKj/o4BJisF16nmaheNDpOasOrQHVYuVHh33Sb01
-	zExIeRFt//284DaY3ixwEp8e6Dc65yiJjjzR+qYwwqjpvdgJkHVmfmhSQNii7/0pOF9XbtlLORo0F
-	qTfakdhbGC8zoyZlVKXX2kbd2zwajn73eIch41+mJ8LMxZntG0aBQ9z19uKkZSZBw7ANnRAW5h879
-	unoUiXOg==;
+	:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:
+	Content-Description:In-Reply-To:References;
+	bh=pxBQm/dFc4CBZiJZ31NoNTLOKC8VnahQcUsRg90O64E=; b=BiMs2UCljNpQKRanxHkihsKnGY
+	NiUyi5oQumwYv3xfSpletCFQMSdM689bdOGL27G4tJbCs1l6zOfvYvYkkMUJ7NLYo6MChOpcm1gf+
+	VBfWeFEu6KgBPfNNsmPfEN7Cts4DJDihIDCg+IJOz9HXt7nxOdtd9odF8L1L/p3hGsVFV83tI8AcC
+	5B98LCPyzFwo5giYFNjjG+MU2O9FZgOGR5w3sptwLzk2tv2XKwixANoqlq7Q2kf1ZOzil8jm2hAkA
+	EOnxZtTClCiDdTL9E+AsQ6bsDg8uwxrX2pvMVRXYc7LeXSVeijygUDKWsAX25D4Ae1Uu9gler4uDT
+	hYxE6exQ==;
 Received: from smtp81.cstnet.cn ([159.226.251.81] helo=cstnet.cn)
 	by desiato.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xW23q-00000004jXZ-1N4x
+	id 1xW23q-00000004jXW-10w8
 	for kvm-riscv@lists.infradead.org;
 	Wed, 25 Nov 2026 01:44:41 +0000
 Received: from localhost (unknown [122.194.100.240])
-	by APP-03 (Coremail) with SMTP id rQCowADn8JF7PQZrw9m8AQ--.22523S2;
-	Wed, 25 Nov 2026 09:44:27 +0800 (CST)
+	by APP-03 (Coremail) with SMTP id rQCowACXp5h3PQZrj9m8AQ--.815S2;
+	Wed, 25 Nov 2026 09:44:25 +0800 (CST)
 From: Xiang W <wangxiang@iscas.ac.cn>
 To: kvm@vger.kernel.org,
 	kvm-riscv@lists.infradead.org
@@ -54,35 +54,33 @@ Cc: andrew.jones@linux.dev,
 	Xiang W <wangxiang@iscas.ac.cn>,
 	pbonzini@redhat.com,
 	thuth@redhat.com
-Subject: [kvm-unit-tests PATCH v3 5/9] riscv: Fall back to SBI DBCN when no UART is available
-Date: Wed, 25 Nov 2026 09:44:05 +0800
-Message-ID: <20261125014409.79852-6-wangxiang@iscas.ac.cn>
+Subject: [kvm-unit-tests PATCH v3 0/9] riscv: ACPI boot and BRS-I SBI tests
+Date: Wed, 25 Nov 2026 09:44:00 +0800
+Message-ID: <20261125014409.79852-1-wangxiang@iscas.ac.cn>
 X-Mailer: git-send-email 2.47.3
-In-Reply-To: <20261125014409.79852-1-wangxiang@iscas.ac.cn>
-References: <20261125014409.79852-1-wangxiang@iscas.ac.cn>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-X-CM-TRANSID: rQCowADn8JF7PQZrw9m8AQ--.22523S2
-X-Coremail-Antispam: 1UD129KBjvJXoWxAF18AFWDKw43Jr1fZF1kXwb_yoW5uw18pF
-	ZIgFsxtry5GFnYq3Z7tr1kCw4rGr48W3ykKryxJw1xZw4DJrZ8Xw4fta1av343WFy3AF4Y
-	yFsFvFyfCF4UZ3DanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUUvG14x267AKxVWUJVW8JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+X-CM-TRANSID: rQCowACXp5h3PQZrj9m8AQ--.815S2
+X-Coremail-Antispam: 1UD129KBjvJXoW3JrWUuFWkuw4DCw1rGFWUCFg_yoW7GFy5pF
+	ZxWrySkr93GFyxZws3Zw18GryrAr1rua13tr1xXw45u3yxGrWDXrs3Kw4jyFn8GF1rAa12
+	9F4F9F4rCrn8G3DanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUUvl14x267AKxVWUJVW8JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
 	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
-	1l84ACjcxK6xIIjxv20xvE14v26ryj6F1UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4U
-	JVWxJr1l84ACjcxK6I8E87Iv67AKxVW8Jr0_Cr1UM28EF7xvwVC2z280aVCY1x0267AKxV
-	WxJr0_GcWle2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2Wl
-	Yx0E2Ix0cI8IcVAFwI0_JF0_Jw1lYx0Ex4A2jsIE14v26r1j6r4UMcvjeVCFs4IE7xkEbV
-	WUJVW8JwACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1lc7CjxVAaw2AF
-	wI0_JF0_Jw1lc2xSY4AK67AK6w4l42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr
-	0_Gr1lx2IqxVAqx4xG67AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY
-	17CE14v26r126r1DMIIYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_JFI_Gr1lIxAIcV
-	C0I7IYx2IY6xkF7I0E14v26r4j6F4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY
-	6I8E87Iv67AKxVWUJVW8JwCI42IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIYCTnIWIevJa
-	73UjIFyTuYvjfUeQ6pDUUUU
+	1l84ACjcxK6xIIjxv20xvE14v26ryj6F1UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26F4j
+	6r4UJwA2z4x0Y4vEx4A2jsIE14v26r4UJVWxJr1l84ACjcxK6I8E87Iv6xkF7I0E14v26F
+	4UJVW0owAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40EFcxC0VAKzVAqx4xG6I80ewAv
+	7VC0I7IYx2IY67AKxVWUJVWUGwAv7VC2z280aVAFwI0_Jr0_Gr1lOx8S6xCaFVCjc4AY6r
+	1j6r4UM4x0Y48IcxkI7VAKI48JM4x0x7Aq67IIx4CEVc8vx2IErcIFxwCY1x0262kKe7AK
+	xVWUAVWUtwCY02Avz4vE14v_KwCF04k20xvY0x0EwIxGrwCFx2IqxVCFs4IE7xkEbVWUJV
+	W8JwC20s026c02F40E14v26r1j6r18MI8I3I0E7480Y4vE14v26r106r1rMI8E67AF67kF
+	1VAFwI0_JF0_Jw1lIxkGc2Ij64vIr41lIxAIcVC0I7IYx2IY67AKxVWUJVWUCwCI42IY6x
+	IIjxv20xvEc7CjxVAFwI0_Jr0_Gr1lIxAIcVCF04k26cxKx2IYs7xG6r1j6r1xMIIF0xvE
+	x4A2jsIE14v26r1j6r4UMIIF0xvEx4A2jsIEc7CjxVAFwI0_Gr0_Gr1UYxBIdaVFxhVjvj
+	DU0xZFpf9x0JUfR6wUUUUU=
 X-CM-SenderInfo: pzdqw5pldqwq5lvft2wodfhubq/
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261125_014438_845302_AAB1E21F 
-X-CRM114-Status: GOOD (  14.50  )
+X-CRM114-CacheID: sfid-20261125_014438_845304_B1BBCEAA 
+X-CRM114-Status: GOOD (  18.20  )
 X-Spam-Score: -2.3 (--)
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -98,144 +96,139 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 X-Spam-Status: No, score=-16.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,
 	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Console setup currently relies on UART initialization. On EFI/ACPI
-systems without a supported MMIO UART, initialization fails even when
-the SBI DBCN console is available.
+Hi,
 
-Probe SBI_EXT_DBCN during console initialization. Use the UART when it
-is successfully initialized; if no UART is available, fall back to
-SBI_EXT_DBCN_CONSOLE_WRITE when DBCN is supported. Report when early
-printing may not work because the initialized UART differs from the
-early UART base, or because DBCN is used instead.
+This series lets RISC-V kvm-unit-tests boot on BRS-I platforms that
+describe the system with UEFI + ACPI instead of a device tree, and adds
+a first unit test for the SBI rules in the RISC-V Boot and Runtime
+Services specification [1].
 
-Rename uart_lock to console_lock, since it protects both console
-backends.
+The RISC-V port currently assumes a DT for CPU bring-up, timer
+frequency, ISA-string parsing and console setup. BRS-I firmware
+typically does not provide a usable DT, and often has no MMIO UART
+either. Without these changes the existing tests abort in setup before
+they can exercise SBI.
 
-Signed-off-by: Xiang W <wangxiang@iscas.ac.cn>
----
- lib/riscv/io.c | 52 ++++++++++++++++++++++++++++++++------------------
- 1 file changed, 33 insertions(+), 19 deletions(-)
+Patches 1-4 teach the RISC-V library to initialize from ACPI when a DT
+is absent:
 
-diff --git a/lib/riscv/io.c b/lib/riscv/io.c
-index b1163404..45fe93f5 100644
---- a/lib/riscv/io.c
-+++ b/lib/riscv/io.c
-@@ -28,7 +28,8 @@
- static volatile u8 *uart0_base = UART_EARLY_BASE;
- static u32 uart0_reg_width = 1;
- static u32 uart0_reg_shift;
--static struct spinlock uart_lock;
-+static struct spinlock console_lock;
-+static bool prefer_dbcn;
- 
- static u32 uart0_read(u32 num)
- {
-@@ -71,16 +72,15 @@ static void uart0_init_fdt(void)
- 				break;
- 		}
- 
--#ifdef CONFIG_SBI_CONSOLE
--		uart0_base = NULL;
--		return;
--#else
- 		if (ret) {
-+			if (prefer_dbcn) {
-+				uart0_base = NULL;
-+				return;
-+			}
- 			printf("%s: Compatible uart not found in the device tree, aborting...\n",
- 			       __func__);
- 			abort();
- 		}
--#endif
- 	} else {
- 		const fdt32_t *val;
- 		int len;
-@@ -102,20 +102,33 @@ static void uart0_init_fdt(void)
- 
- static void uart0_init_acpi(void)
- {
--	assert_msg(false, "ACPI not available");
-+	if (prefer_dbcn)
-+		uart0_base = NULL;
-+	else
-+		assert_msg(false, "ACPI UART not supported");
- }
- 
- void io_init(void)
- {
-+	prefer_dbcn = sbi_probe(SBI_EXT_DBCN);
-+
- 	if (dt_available())
- 		uart0_init_fdt();
- 	else
- 		uart0_init_acpi();
- 
-+	if (!uart0_base && !prefer_dbcn)
-+		assert_msg(false, "No console available");
-+
- 	if (uart0_base != UART_EARLY_BASE) {
--		printf("WARNING: early print support may not work. "
--		       "Found uart at %p, but early base is %p.\n",
--		       uart0_base, UART_EARLY_BASE);
-+		if (uart0_base)
-+			printf("WARNING: early print support may not work. "
-+			       "Found uart at %p, but early base is %p.\n",
-+			       uart0_base, UART_EARLY_BASE);
-+		else
-+			printf("WARNING: early print support may not work. "
-+			       "Found DBCN console, but early base is %p.\n",
-+			       UART_EARLY_BASE);
- 	}
- }
- 
-@@ -126,31 +139,32 @@ void sbi_puts(const char *s)
- 	unsigned long hi = upper_32_bits(addr);
- 	unsigned long lo = lower_32_bits(addr);
- 
--	spin_lock(&uart_lock);
-+	spin_lock(&console_lock);
- 	sbi_ecall(SBI_EXT_DBCN, SBI_EXT_DBCN_CONSOLE_WRITE, strlen(s), lo, hi, 0, 0, 0);
--	spin_unlock(&uart_lock);
-+	spin_unlock(&console_lock);
- }
- 
- void uart0_puts(const char *s);
- void uart0_puts(const char *s)
- {
- 	assert(uart0_base);
--	spin_lock(&uart_lock);
-+	spin_lock(&console_lock);
- 	while (*s) {
- 		while (!(uart0_read(UART_LSR_OFFSET) & UART_LSR_THRE))
- 			;
- 		uart0_write(0, *s++);
- 	}
--	spin_unlock(&uart_lock);
-+	spin_unlock(&console_lock);
- }
- 
- void puts(const char *s)
- {
--#ifdef CONFIG_SBI_CONSOLE
--	sbi_puts(s);
--#else
--	uart0_puts(s);
--#endif
-+	if (uart0_base)
-+		uart0_puts(s);
-+	else if (prefer_dbcn)
-+		sbi_puts(s);
-+	else
-+		assert_msg(false, "No console available");
- }
- 
- /*
+- locate the ACPI 2.0 RSDP via the EFI configuration table
+- parse MADT RINTC entries for hart / CPU bring-up
+- read the timebase frequency from RHCT
+- parse the ISA string from RHCT Hart Info nodes (match by ACPI UID)
+
+Patch 5 falls back to the SBI DBCN console when UART initialization
+fails, so ACPI guests without an MMIO UART can still print. Patch 6
+drops the early exit in the EFI runner that previously rejected
+EFI_USE_ACPI=y.
+
+Patch 7 moves isa_init() into cpu_set_fdt() and cpu_set_acpi() so
+cpu_has_extension() can read every hart's ISA bits from the boot hart,
+including secondaries that have not started yet.
+
+Patch 8 captures S-mode IMSIC interrupt file addresses at boot time.
+The DT path is Andrew's posted patch [2]; the ACPI path copies
+RINTC.imsic_addr only when an IMSIC structure is present in the MADT,
+as ACPI requires OSPM to ignore that field otherwise.
+
+Patch 9 adds riscv-brs, a unit test that checks the SBI requirements
+from the BRS specification (version, HSM, TIME/Sstc, IPI/IMSIC,
+RFENCE/IMSIC, PMU/Sscsrind+Ssccfg, and DBCN when SPCR type is 0x15).
+
+v3 changes
+==========
+Address review comments from Andrew Jones on v2, except the three
+points in the next section.
+
+- call isa_init() from cpu_set_fdt() / cpu_set_acpi() rather than
+  looping in cpu_init()
+- RHCT parsing: (void *)node, reverse fir tree, assert_msg, treat a
+  bad offset as an assert
+- drop unnecessary CONFIG_EFI guards around <acpi.h>
+- check Sstc and Sscsrind+Ssccfg on all present harts
+- use thread_info.imsic_addr instead of parsing IMSIC in the test
+- ACPI IMSIC: ignore RINTC.imsic_addr unless an IMSIC MADT structure
+  is present
+- coding-style nits (braces, SBI enum alignment, report_skip wrapping,
+  "Initialize" capitalization)
+
+Differences from the v2 review
+==============================
+1. Console policy (patch 5)
+
+   The suggested diff prefers SBI DBCN whenever CONFIG_SBI_CONSOLE is
+   set and DBCN probes successfully, with UART as a fallback.
+
+   This version keeps UART when initialization succeeds and uses DBCN
+   only if there is no usable UART. Each DBCN write is an SBI ecall,
+   which is slower than an MMIO UART store, so the fast path should
+   stay on UART when one is present. Guests without an MMIO UART still
+   print via DBCN.
+
+2. SBI_010 version comparison (patch 9)
+
+   The review asked to compare (ret.value & SBI_SPEC_VERSION_MASK)
+   against sbi_mk_version(2, 0). The test already decodes major and
+   minor for the report string, so it compares
+   sbi_mk_version(major, minor) instead. That drops the reserved bit
+   the same way and avoids encoding the version a second time.
+
+3. SBI_040 / SBI_050 IMSIC check (patch 9)
+
+   v2 parsed DT/ACPI on every call, and the review asked to cache
+   all_harts_have_imsic(). After patch 8 the check is a walk of
+   cpus[].isa and cpus[].imsic_pa, so the two tests keep their own
+   loops rather than sharing a cached helper.
+
+Tested with QEMU virt:
+
+  ./configure --arch=riscv64 \
+              --cross-prefix=riscv64-linux-gnu- \
+              --console=sbi --enable-efi && make
+
+  EFI_USE_ACPI=y EFI_UEFI=/path/to/RISCV_VIRT_CODE.fd \
+    ./riscv/efi/run riscv/riscv-brs.efi
+
+[1] https://github.com/riscv-non-isa/riscv-brs
+[2] https://lore.kernel.org/all/20261120135613.1388647-1-andrew.jones@linux.dev/
+
+
+Xiang W (9):
+  riscv: Initialize the ACPI RSDP from the EFI system table
+  riscv: Add ACPI support for CPU initialization
+  riscv: Add ACPI support for timer frequency discovery
+  riscv: Add ACPI support for ISA string discovery
+  riscv: Fall back to SBI DBCN when no UART is available
+  riscv: efi: Allow ACPI boots
+  riscv: Initialize ISA extensions for all harts at CPU setup
+  riscv: Capture IMSIC addresses at boot time
+  riscv: Add BRS SBI requirement tests
+
+ lib/acpi.h                |  64 ++++++++++++-
+ lib/riscv/asm/imsic.h     |   8 ++
+ lib/riscv/asm/isa.h       |   3 +
+ lib/riscv/asm/processor.h |   2 +
+ lib/riscv/asm/sbi.h       |   8 +-
+ lib/riscv/imsic.c         |  86 +++++++++++++++++
+ lib/riscv/io.c            |  52 +++++++----
+ lib/riscv/isa.c           |  96 ++++++++++++++++---
+ lib/riscv/processor.c     |   1 -
+ lib/riscv/setup.c         |  71 ++++++++++++++
+ lib/riscv/timer.c         |  35 ++++---
+ riscv/Makefile            |   2 +
+ riscv/efi/run             |   5 -
+ riscv/riscv-brs.c         | 192 ++++++++++++++++++++++++++++++++++++++
+ riscv/unittests.cfg       |   4 +
+ 15 files changed, 577 insertions(+), 52 deletions(-)
+ create mode 100644 lib/riscv/asm/imsic.h
+ create mode 100644 lib/riscv/imsic.c
+ create mode 100644 riscv/riscv-brs.c
+
 -- 
 2.47.3
 
