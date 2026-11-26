@@ -2,86 +2,86 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BED67606A332
-	for <kvm-riscv@archiver.kernel.org>; Wed, 25 Nov 2026 17:59:36 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ED765606A321
+	for <kvm-riscv@archiver.kernel.org>; Thu, 26 Nov 2026 01:38:27 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=gg/yVq7p;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=jnYqXGhh
+	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=jNbHjIp6
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
 	List-Unsubscribe-Post:List-Owner;
-	bh=1Lsg/W4vognZLzwuw40aCLAyhzkCeKdABWwNOtja1Vs=; b=gg/yVq7pcUnc1zyxwNW7XCArqf
-	Wp9GFUOOVapRAuwXxCFNFtr7FNYGyfYbeySKt5nClB49PaMyL4hbP7JhyV7UriZ+4OKEH+qft4+Bq
-	a1SNs0nuWfMK69TTHp/LCfiSoyV1D3Dy3Z3aXvLhlgLiOVxRS86EJHfvN0rKPCZHU2Ox+ERgKzLsr
-	a6bigOBmjAAi1jbKuW4MLXXT169vFFA13/bFm9TUNsflpaMatg16R5gKcH+E6Wed2WHOnmnsldFxY
-	qyMZpahgMzKJ1WdVm/vyppSzZTbWNRV0Viq4JkaB/I7HKw+oaw35AFlZQ02R2pgMCk7jfSdpQUbSa
-	5MKie2Bg==;
+	bh=2gnVVSGoHYLIzec13JkZ1CYYo8P67QToWfjYn5NYVnQ=; b=jNbHjIp6/pMk2suOV+bXFKxk06
+	2BeHHAVXjqIbvTSN5AEclhjK44dXa/JDYh8ZH9RMwYbi72d8KcjZpkfetd7/iT3mhhptEwllE519D
+	RgaxJhIdcqDwH8Vq6fv+Np6mvIRzDX72H0SizBbZtw8RCGCMZ+Xl1MmPSZ36jgYsxPI/AyoUtrvJr
+	RIIRWlzNvmOhRB8lB99ejSfuTnol9iroYeR1M78u/aA5tiAit+jwsGHdXSkMNBzVs9ctVCP7JwFUn
+	spG8zUaasSjlerriUKOzb8RTk1lrMm0ycB/zfCxU54uLTKVPr9CiLiF5KsQcgkKm/XdQun9RMyRus
+	thb+EZwA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xWHHM-0000000AuAM-1oMH;
-	Wed, 25 Nov 2026 17:59:36 +0000
-Received: from mgamail.intel.com ([192.198.163.14])
+	id 1xWORP-0000000BoPB-0Dgd;
+	Thu, 26 Nov 2026 01:38:27 +0000
+Received: from smtp25.cstnet.cn ([159.226.251.25] helo=cstnet.cn)
 	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xWHH6-0000000Au2s-06XB;
-	Wed, 25 Nov 2026 17:59:25 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1795629560; x=1827165560;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=3Q0eWoH0hqjK/+AffASRnzPWdWve09RRdkIHSFgQxy4=;
-  b=jnYqXGhhmXJ8BHq7/KPNjlc36O9TkkitxPtdTpnrAFLzh4trl5fVKmCK
-   WRw5dgTFCQIofLwCmsmBGqZNwCaYh5roRfOPxrG9h/9aByF2hsRiOmqvm
-   Vmk/qFoq9Ku0QQ5F1Il+m5h+6cZ49NMXz7mvmIFYMjyh1s0hu1eZA2S10
-   xwZIssLH5xsqYL7wQVaUtUSlxC/En/aziyVTJHw0V9VyyxMbmuXb1IiJ7
-   xaCd4u0iMTfMQn2ArtOAmH30T6x4DnYNG63LWX1i3UAVEY4gFiUfPYyNr
-   KpPdpdbdnkP2M8ZJvbNXMP2hAEIzQjRzNHCg9Dlm7DqBSpIh7S9d1pUzw
-   A==;
-X-CSE-ConnectionGUID: GSHuaEvrSBeLan9F24KVnw==
-X-CSE-MsgGUID: cALOGvh+QOKgh5/USLGB7g==
-X-IronPort-AV: E=McAfee;i="6800,10657,11977"; a="4462400"
-X-IronPort-AV: E=Sophos;i="6.27,233,1787036400"; 
-   d="scan'208";a="4462400"
-Received: from fmviesa012.fm.intel.com ([10.60.135.152])
-  by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Nov 2026 09:59:19 -0800
-X-CSE-ConnectionGUID: 6a6LIVAHRomgpZJMlg93nw==
-X-CSE-MsgGUID: A0u+DZzIQwOjdpZxlfyO0w==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,233,1787036400"; 
-   d="scan'208";a="13597397"
-Received: from lkp-server01.sh.intel.com (HELO 0caa9d2d175c) ([10.239.97.150])
-  by fmviesa012.fm.intel.com with ESMTP; 25 Nov 2026 09:59:14 -0800
-Received: from kbuild by 0caa9d2d175c with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1xWHGw-00000001SGM-3o5J;
-	Wed, 25 Nov 2026 17:59:10 +0000
-Date: Thu, 26 Nov 2026 01:58:18 +0800
-From: kernel test robot <lkp@intel.com>
-To: Tan Chi <tanchi25@mails.ucas.ac.cn>, anup@brainfault.org
-Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
-	atish.patra@linux.dev, pjw@kernel.org, palmer@dabbelt.com,
-	aou@eecs.berkeley.edu, alex@ghiti.fr, tj@kernel.org,
-	hannes@cmpxchg.org, mkoutny@suse.com, corbet@lwn.net,
-	skhan@linuxfoundation.org, rdunlap@infradead.org, yosry@kernel.org,
-	kvm@vger.kernel.org, kvm-riscv@lists.infradead.org,
-	linux-riscv@lists.infradead.org, cgroups@vger.kernel.org,
-	linux-doc@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Tan Chi <tanchi25@mails.ucas.ac.cn>
-Subject: Re: [PATCH] RISC-V: KVM: Account G-stage page table memory
-Message-ID: <20261126015340.s7bzBtEB-lkp@intel.com>
-References: <20261125125024.1983082-1-tanchi25@mails.ucas.ac.cn>
+	id 1xWORK-0000000BoO3-1o27;
+	Thu, 26 Nov 2026 01:38:25 +0000
+Received: from k3-03 (unknown [159.226.43.8])
+	by APP-05 (Coremail) with SMTP id zQCowACXLrRqjQdrOdr2AQ--.256S2;
+	Thu, 26 Nov 2026 09:37:50 +0800 (CST)
+From: Tan Chi <tanchi25@mails.ucas.ac.cn>
+To: anup@brainfault.org
+Cc: atish.patra@linux.dev,
+	pjw@kernel.org,
+	palmer@dabbelt.com,
+	aou@eecs.berkeley.edu,
+	alex@ghiti.fr,
+	tj@kernel.org,
+	hannes@cmpxchg.org,
+	mkoutny@suse.com,
+	corbet@lwn.net,
+	skhan@linuxfoundation.org,
+	rdunlap@infradead.org,
+	yosry@kernel.org,
+	kvm@vger.kernel.org,
+	kvm-riscv@lists.infradead.org,
+	linux-riscv@lists.infradead.org,
+	cgroups@vger.kernel.org,
+	linux-doc@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	tanchi25@mails.ucas.ac.cn,
+	lkp@intel.com
+Subject: [PATCH v2] RISC-V: KVM: Account G-stage page table memory
+Date: Thu, 26 Nov 2026 09:37:23 +0800
+Message-ID: <20261126013724.2533363-1-tanchi25@mails.ucas.ac.cn>
+X-Mailer: git-send-email 2.53.0
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <20261125125024.1983082-1-tanchi25@mails.ucas.ac.cn>
+X-CM-TRANSID: zQCowACXLrRqjQdrOdr2AQ--.256S2
+X-Coremail-Antispam: 1UD129KBjvJXoWxuFW5Xry7Kw13Cw4fJF4Utwb_yoW7uw13pF
+	WkC34S9w1rtr93Cr13JwnF9r13Ga95Gr45Ary29a45ZFsxtr9aywnYq342vF15Xr95Zayf
+	XrZIgFyYvr4vywUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUUPF14x267AKxVW5JVWrJwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
+	1l84ACjcxK6xIIjxv20xvE14v26F1j6w1UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4U
+	JVWxJr1l84ACjcxK6I8E87Iv67AKxVW8Jr0_Cr1UM28EF7xvwVC2z280aVCY1x0267AKxV
+	WxJr0_GcWlnxkEFVAIw20F6cxK64vIFxWle2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG
+	64xvF2IEw4CE5I8CrVC2j2WlYx0E2Ix0cI8IcVAFwI0_Jr0_Jr4lYx0Ex4A2jsIE14v26r
+	1j6r4UMcvjeVCFs4IE7xkEbVWUJVW8JwACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAq
+	YI8I648v4I1lFIxGxcIEc7CjxVA2Y2ka0xkIwI1lc7CjxVAaw2AFwI0_GFv_Wrylc2xSY4
+	AK67AK6w4l42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4xG
+	67AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r4a6rW5MI
+	IYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7IYx2IY6xkF7I0E
+	14v26r4j6F4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVWUJV
+	W8JwCI42IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIYCTnIWIevJa73UjIFyTuYvjTRK38n
+	DUUUU
+X-CM-SenderInfo: pwdquxrlsvqzpdlo2hpxfd2hldfou0/
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261125_095920_149815_4BA26774 
-X-CRM114-Status: GOOD (  11.74  )
-X-Spam-Score: -4.4 (----)
+X-CRM114-CacheID: sfid-20261125_173822_866674_C1CADE55 
+X-CRM114-Status: GOOD (  14.66  )
+X-Spam-Score: -1.9 (-)
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -94,81 +94,168 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
-X-Spam-Status: No, score=-8.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-16.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=4.0.1
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Hi Tan,
+RISC-V KVM currently does not account G-stage page table memory
+in NR_SECONDARY_PAGETABLE.
 
-kernel test robot noticed the following build warnings:
+Use kvm_account_pgtable_pages() to account for the allocation and
+freeing of the root and lower-level page tables, including those
+allocated when splitting huge page mappings.
 
-[auto build test WARNING on kvm-riscv/riscv_kvm_next]
-[also build test WARNING on linus/master next-20261124]
-[cannot apply to tj-cgroup/for-next kvm/queue kvm/next mst-vhost/linux-next kvm/linux-next v7.4-rc4]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+This makes G-stage page table memory usage visible through
+SecPageTables in /proc/meminfo and sec_pagetables in the cgroup
+memory.stat interface.
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Tan-Chi/RISC-V-KVM-Account-G-stage-page-table-memory/20261125-205023
-base:   https://github.com/kvm-riscv/linux.git riscv_kvm_next
-patch link:    https://lore.kernel.org/r/20261125125024.1983082-1-tanchi25%40mails.ucas.ac.cn
-patch subject: [PATCH] RISC-V: KVM: Account G-stage page table memory
-config: riscv-defconfig (https://download.01.org/0day-ci/archive/20261126/20261126015340.s7bzBtEB-lkp@intel.com/config)
-compiler: clang version 24.0.0git (https://github.com/llvm/llvm-project 2012344e5da8e03ea4b8283ecd6fad6e13f09d64)
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20261126/20261126015340.s7bzBtEB-lkp@intel.com/reproduce)
+Update the documentation accordingly.
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/20261126015340.s7bzBtEB-lkp@intel.com/
+Tested on a RISC-V KVM host running under QEMU TCG with Sv57x4.
+The observed G-stage page table memory usage was:
 
-All warnings (new ones prefixed by >>):
+  100 empty VMs:                         1600 KiB
+  8 GiB sparsely mapped with 4 KiB pages: 16448 KiB
+  256 MiB mapped with 2 MiB pages:          36 KiB
+  After enabling dirty logging:           548 KiB
 
->> arch/riscv/kvm/mmu.c:850:5: warning: implicit conversion from 'unsigned long' to 'int' changes value from 18446744073709551612 to -4 [-Wconstant-conversion]
-     849 |                 kvm_account_pgtable_pages(pgd,
-         |                 ~~~~~~~~~~~~~~~~~~~~~~~~~
-     850 |                                 -(kvm_riscv_gstage_pgd_size >> PAGE_SHIFT));
-         |                                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   1 warning generated.
+The accounting in /proc/meminfo, /proc/vmstat and cgroup
+memory.stat matched the expected values and returned to zero
+after destroying the VMs.
 
+This reimplements the work originally proposed by Yosry Ahmed
+in 2022, adapted to the current G-stage MMU code.
 
-vim +850 arch/riscv/kvm/mmu.c
+Link: https://lore.kernel.org/r/20220426053904.3684293-6-yosryahmed@google.com
 
-   827	
-   828	void kvm_riscv_mmu_free_pgd(struct kvm *kvm)
-   829	{
-   830		struct kvm_gstage gstage;
-   831		void *pgd = NULL;
-   832		bool flush = false;
-   833	
-   834		write_lock(&kvm->mmu_lock);
-   835		if (kvm->arch.pgd) {
-   836			kvm_riscv_gstage_init(&gstage, kvm);
-   837			flush = kvm_riscv_gstage_unmap_all(&gstage);
-   838			pgd = READ_ONCE(kvm->arch.pgd);
-   839			kvm->arch.pgd = NULL;
-   840			kvm->arch.pgd_phys = 0;
-   841			kvm->arch.pgd_levels = 0;
-   842		}
-   843		write_unlock(&kvm->mmu_lock);
-   844	
-   845		if (flush)
-   846			kvm_flush_remote_tlbs(kvm);
-   847	
-   848		if (pgd) {
-   849			kvm_account_pgtable_pages(pgd,
- > 850					-(kvm_riscv_gstage_pgd_size >> PAGE_SHIFT));
-   851			free_pages((unsigned long)pgd, get_order(kvm_riscv_gstage_pgd_size));
-   852		}
-   853	}
-   854	
+Signed-off-by: Tan Chi <tanchi25@mails.ucas.ac.cn>
+---
+Changes in v2:
+- Use the allocation order to calculate the number of root page
+  table pages, fixing a Clang warning reported by the kernel test
+  robot.
+  https://lore.kernel.org/oe-kbuild-all/20261126015340.s7bzBtEB-lkp@intel.com/
 
+ Documentation/admin-guide/cgroup-v2.rst |  4 ++--
+ Documentation/filesystems/proc.rst      |  2 +-
+ arch/riscv/kvm/gstage.c                 |  6 +++++-
+ arch/riscv/kvm/mmu.c                    | 12 ++++++++----
+ 4 files changed, 16 insertions(+), 8 deletions(-)
+
+diff --git a/Documentation/admin-guide/cgroup-v2.rst b/Documentation/admin-guide/cgroup-v2.rst
+index 9e3c67b02ae2..c79d6432ecc3 100644
+--- a/Documentation/admin-guide/cgroup-v2.rst
++++ b/Documentation/admin-guide/cgroup-v2.rst
+@@ -1591,8 +1591,8 @@ The following nested keys are defined.
+ 
+ 	  sec_pagetables
+ 		Amount of memory allocated for secondary page tables,
+-		this currently includes KVM mmu allocations on x86
+-		and arm64 and IOMMU page tables.
++		this currently includes KVM mmu allocations on x86,
++		arm64 and riscv and IOMMU page tables.
+ 
+ 	  percpu (npn)
+ 		Amount of memory used for storing per-cpu kernel
+diff --git a/Documentation/filesystems/proc.rst b/Documentation/filesystems/proc.rst
+index fa7a468e8edf..cd1a74da287c 100644
+--- a/Documentation/filesystems/proc.rst
++++ b/Documentation/filesystems/proc.rst
+@@ -1208,7 +1208,7 @@ PageTables
+               Memory consumed by userspace page tables
+ SecPageTables
+               Memory consumed by secondary page tables, this currently includes
+-              KVM mmu and IOMMU allocations on x86 and arm64.
++              KVM mmu and IOMMU allocations on x86, arm64 and riscv.
+ NFS_Unstable
+               Always zero. Previously counted pages which had been written to
+               the server, but has not been committed to stable storage.
+diff --git a/arch/riscv/kvm/gstage.c b/arch/riscv/kvm/gstage.c
+index 0aace3215d3e..f8841136d852 100644
+--- a/arch/riscv/kvm/gstage.c
++++ b/arch/riscv/kvm/gstage.c
+@@ -162,6 +162,7 @@ int kvm_riscv_gstage_set_pte(struct kvm_gstage *gstage,
+ 				return -ENOMEM;
+ 			set_pte(ptep, pfn_pte(PFN_DOWN(__pa(next_ptep)),
+ 					      __pgprot(_PAGE_TABLE)));
++			kvm_account_pgtable_pages(next_ptep, 1);
+ 		} else {
+ 			if (gstage_pte_leaf(ptep))
+ 				return -EEXIST;
+@@ -357,6 +358,7 @@ bool kvm_riscv_gstage_split_huge(struct kvm_gstage *gstage,
+ 
+ 		set_pte(ptep, pfn_pte(PFN_DOWN(__pa(next_ptep)),
+ 				__pgprot(_PAGE_TABLE)));
++		kvm_account_pgtable_pages(next_ptep, 1);
+ 
+ 		if (flush)
+ 			gstage_tlb_flush(gstage, current_level, addr);
+@@ -399,8 +401,10 @@ bool kvm_riscv_gstage_op_pte(struct kvm_gstage *gstage, gpa_t addr,
+ 		for (i = 0; i < PTRS_PER_PTE; i++)
+ 			flush |= kvm_riscv_gstage_op_pte(gstage, addr + i * next_page_size,
+ 							 &next_ptep[i], next_ptep_level, op);
+-		if (op == GSTAGE_OP_CLEAR)
++		if (op == GSTAGE_OP_CLEAR) {
++			kvm_account_pgtable_pages(next_ptep, -1);
+ 			put_page(virt_to_page(next_ptep));
++		}
+ 	} else {
+ 		old_pte = *ptep;
+ 		if (op == GSTAGE_OP_CLEAR)
+diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
+index 6861c0e2728d..ab8d8c94a866 100644
+--- a/arch/riscv/kvm/mmu.c
++++ b/arch/riscv/kvm/mmu.c
+@@ -805,17 +805,18 @@ long kvm_arch_vcpu_pre_fault_memory(struct kvm_vcpu *vcpu,
+ int kvm_riscv_mmu_alloc_pgd(struct kvm *kvm)
+ {
+ 	struct page *pgd_page;
++	int order = get_order(kvm_riscv_gstage_pgd_size);
+ 
+ 	if (kvm->arch.pgd != NULL) {
+ 		kvm_err("kvm_arch already initialized?\n");
+ 		return -EINVAL;
+ 	}
+ 
+-	pgd_page = alloc_pages(GFP_KERNEL_ACCOUNT | __GFP_ZERO,
+-			       get_order(kvm_riscv_gstage_pgd_size));
++	pgd_page = alloc_pages(GFP_KERNEL_ACCOUNT | __GFP_ZERO, order);
+ 	if (!pgd_page)
+ 		return -ENOMEM;
+ 	kvm->arch.pgd = page_to_virt(pgd_page);
++	kvm_account_pgtable_pages(kvm->arch.pgd, 1 << order);
+ 	kvm->arch.pgd_phys = page_to_phys(pgd_page);
+ 	kvm->arch.pgd_levels = kvm_riscv_gstage_max_pgd_levels;
+ 	kvm->arch.pgd_split_page_cache.gfp_zero = __GFP_ZERO;
+@@ -828,6 +829,7 @@ void kvm_riscv_mmu_free_pgd(struct kvm *kvm)
+ 	struct kvm_gstage gstage;
+ 	void *pgd = NULL;
+ 	bool flush = false;
++	int order = get_order(kvm_riscv_gstage_pgd_size);
+ 
+ 	write_lock(&kvm->mmu_lock);
+ 	if (kvm->arch.pgd) {
+@@ -843,8 +845,10 @@ void kvm_riscv_mmu_free_pgd(struct kvm *kvm)
+ 	if (flush)
+ 		kvm_flush_remote_tlbs(kvm);
+ 
+-	if (pgd)
+-		free_pages((unsigned long)pgd, get_order(kvm_riscv_gstage_pgd_size));
++	if (pgd) {
++		kvm_account_pgtable_pages(pgd, -(1 << order));
++		free_pages((unsigned long)pgd, order);
++	}
+ }
+ 
+ void kvm_riscv_mmu_update_hgatp(struct kvm_vcpu *vcpu)
+
+base-commit: 4dce97c6c265544342e716e62fd24bbb232590c5
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.53.0
+
 
 -- 
 kvm-riscv mailing list
