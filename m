@@ -2,11 +2,11 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6EC18606A327
-	for <kvm-riscv@archiver.kernel.org>; Thu, 26 Nov 2026 17:14:54 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6B09D606A32A
+	for <kvm-riscv@archiver.kernel.org>; Thu, 26 Nov 2026 17:15:10 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=DNnMA5sD;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bfnc/BMs
+	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=Y5vuWNIV;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JZRQ8XMP
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
@@ -14,52 +14,53 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
 	List-Unsubscribe-Post:List-Owner;
-	bh=S3+2x4WPvnmSO+oH5BPwQHcAibVgzr7keUHqbRJU4vw=; b=DNnMA5sD9ExrPxlX4GVvFjEpmx
-	93bo18p+SomzeELjNLc3JjPZucoyJoxD8sLKCWd4k5RDgHtz1WpKoo8EzuFIJTyRS/royRy+G0Jrg
-	5jkjFiT1leGf24IAy7F1IeGgnyqc0woD9JUBEMB0HVk8RqEdhhIEWCfRMidgy4rrpa0twgePBpLQG
-	iQsGeg2ub0dx6dZwlNgkMqK0J9JsPN99/ebusP1aElgj80ELnh21KBkQk9RBza+CRo9q1QOvNQPl/
-	NrHfqJBzbYd2j7HB0YYsZegUN31zZgVTEraIq4lZiTHROK76u2nWnWQWTkHKRlkqECSadBgSI1kQx
-	LiFpIdvg==;
+	bh=K0jprj/2Js68I7h+5qW7PxFWFq5cGuOIOpdNEwS0fKY=; b=Y5vuWNIV5Kz9PPcXbUWM47p7YZ
+	M/L9JPeOV9Gm+Yaoxe7z1NKozFP8y9ygjBHN5Ax6HgqLgisFECJPMnvtxpvfz3er4z2QdLXJ3nirS
+	BZ9UwwG9PHLxsSMdegWYH9Zk21MfrRM49s/4dipP26ia68V9pw0+V65yYqtosKkAboyII7pQbkdDq
+	AU3QsvKEiBRJjbtvk8aRTvWuDMmgikro4Y6oHjhQ2AQRo1NnC8di2EvmYF5mNgxfXPX/jQ3hwpcyL
+	/fteP55XaD1SDKQ2fzUBG+LsaX8jI5vSYYFmGC9vNhs8UTdu9FkRZBomtJ2I9Y1zTQsgo7TJRqGZA
+	iILp3arg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xWd3e-0000000E1h4-0EoR;
-	Thu, 26 Nov 2026 17:14:54 +0000
-Received: from tor.source.kernel.org ([172.105.4.254])
+	id 1xWd3u-0000000E1jl-0UvG;
+	Thu, 26 Nov 2026 17:15:10 +0000
+Received: from sea.source.kernel.org ([2600:3c0a:e001:78e:0:1991:8:25])
 	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xWd3c-0000000E1gd-2TfD
+	id 1xWd3s-0000000E1jY-0QvH
 	for kvm-riscv@lists.infradead.org;
-	Thu, 26 Nov 2026 17:14:52 +0000
+	Thu, 26 Nov 2026 17:15:08 +0000
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id B4A8260229;
-	Thu, 26 Nov 2026 17:14:51 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 89B861F000C4;
-	Thu, 26 Nov 2026 17:14:49 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id D800945386;
+	Thu, 26 Nov 2026 17:15:07 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7BE1C1F000C6;
+	Thu, 26 Nov 2026 17:15:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795713291;
-	bh=TQwlNEzbmht4hnnX8BCTGxhRsczcBut+0fxv15UgHBM=;
+	s=k20260515; t=1795713307;
+	bh=ACwThbHhdyubLgbGG8BlT9YALy16BOCqO3d8ao1PpM4=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=bfnc/BMsSmca+5qiho/vQXFWa8NAWkgC+lynnXTrjDF2vYFdGz/P9AffZYCRv9C8w
-	 fHbgqAzGHfTfTMpxv+iILy9o13OI6WnornOjbGavMbMqfQukUIwvdqtT9OTZCcZ/hV
-	 6hzAdT7/+SDSruc1i2IMoKSXNk2dUYa59/AMtzpLputj7Q+wqkju9IRTL+lSTR0EV9
-	 d3gG2Jg9sHAVScYPLyLObMYkFBOn/Wt31riJk6TTaWfNi0SKAXfIp9E6ExU1EvpQY4
-	 t7QHrdcJi1mc0LMd9ldEednm17l7hQ9RheS91pK0Oy00vDKrGNLFTV16krOSrG17IF
-	 uJ4E7OMhq9+jQ==
+	b=JZRQ8XMPv43uPWp1uQsQh5tT8GVHv7TD3cz9gE9JPhxgn7xl4AniQSdquMh8Yvg46
+	 yVPqMVHUclpkPjRZTLtmTW5aF3wpw0yIXRreNeXU23dQHoBoXgcZKYcrENFkIHve34
+	 Y4TQ9Rh9RapKYmTQFH832rTnZ42ObV4OIvCTPd/dtNrw37X5DBw8gAH1KOlh4nlAf2
+	 C079li9IqpHo3mOdaDO4F/mTQ+LHztyYWW0Yrc2dKg7l1k1ws6xQOQjoO55JwzfLqE
+	 3AWVKnMRXtUvHsQQQ4MBpMPyEGVBdEC2x1CHvOMMWeKTkfpav0pW9T7crDwfO6UKAY
+	 fbZasCOPfNv5w==
 From: Will Deacon <will@kernel.org>
-To: kvm@vger.kernel.org,
-	julien.thierry.kdev@gmail.com,
-	Andrew Jones <andrew.jones@linux.dev>
+To: Julien Thierry <julien.thierry.kdev@gmail.com>,
+	Mika Tammi <mikatammi@gmail.com>
 Cc: catalin.marinas@arm.com,
 	mark.rutland@arm.com,
 	kernel-team@android.com,
 	Will Deacon <will@kernel.org>,
-	kvm-riscv@lists.infradead.org,
-	Anup Patel <anup@brainfault.org>
-Subject: Re: [PATCH kvmtool] riscv: Place the FDT after the kernel's image_size
-Date: Thu, 26 Nov 2026 17:14:30 +0000
-Message-ID: <179570915035.2893259.9450274384721456114.b4-ty@kernel.org>
+	kvm@vger.kernel.org,
+	Anup Patel <apatel@ventanamicro.com>,
+	Andrew Jones <andrew.jones@oss.qualcomm.com>,
+	kvm-riscv@lists.infradead.org
+Subject: Re: [PATCH kvmtool] riscv, arm64, powerpc: Align the FDT staging buffer to 8 bytes
+Date: Thu, 26 Nov 2026 17:14:36 +0000
+Message-ID: <179570952413.2896399.3729150509718337186.b4-ty@kernel.org>
 X-Mailer: git-send-email 2.47.3
-In-Reply-To: <20261019144304.2678066-1-andrew.jones@linux.dev>
-References: <20261019144304.2678066-1-andrew.jones@linux.dev>
+In-Reply-To: <20261028190531.48302-1-mikatammi@gmail.com>
+References: <20261028190531.48302-1-mikatammi@gmail.com>
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 X-BeenThere: kvm-riscv@lists.infradead.org
@@ -81,20 +82,22 @@ X-Spam-Status: No, score=-11.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Mon, 19 Oct 2026 16:43:04 +0200, Andrew Jones wrote:
-> The FDT is placed relative to the end of the kernel image file, but a
-> kernel's memory footprint includes its BSS, which isn't in the file. When
-> the BSS is large enough, e.g. with lockdep enabled, the FDT lands inside
-> it and is wiped when the kernel clears BSS, leaving the guest hung with no
-> console output. Use the image_size from the Image header, as arm64 does.
+On Wed, 28 Oct 2026 20:05:31 +0100, Mika Tammi wrote:
+> setup_fdt() creates the guest's device tree in staging_fdt, a u8 array
+> on the stack, and then copies it into guest memory with fdt_open_into().
 > 
+> The Devicetree Specification requires the blob to be at an 8-byte
+> aligned address [1], and libfdt has checked this since dtc v1.6.1:
+> fdt_ro_probe_() fails with -FDT_ERR_ALIGNMENT for any other address.
+> The sequential-write functions don't call it, so the tree is created
+> without errors and fdt_open_into() is the first call to fail.
 > 
 > [...]
 
 Applied to kvmtool (master), thanks!
 
-[1/1] riscv: Place the FDT after the kernel's image_size
-      https://git.kernel.org/will/kvmtool/c/fcaa9485b7a9
+[1/1] riscv, arm64, powerpc: Align the FDT staging buffer to 8 bytes
+      https://git.kernel.org/will/kvmtool/c/6ad12e755313
 
 Cheers,
 -- 
