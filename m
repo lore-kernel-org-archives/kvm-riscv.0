@@ -2,86 +2,132 @@ Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ED765606A321
-	for <kvm-riscv@archiver.kernel.org>; Thu, 26 Nov 2026 01:38:27 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F3235606A327
+	for <kvm-riscv@archiver.kernel.org>; Thu, 26 Nov 2026 14:19:38 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=jNbHjIp6
+	dkim=pass (2048-bit key) header.d=lists.infradead.org header.i=@lists.infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=yWEkQ8SR;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BLUHY1S2
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-ID:Date:Subject:Cc
-	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:
+	Subject:MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
 	List-Unsubscribe-Post:List-Owner;
-	bh=2gnVVSGoHYLIzec13JkZ1CYYo8P67QToWfjYn5NYVnQ=; b=jNbHjIp6/pMk2suOV+bXFKxk06
-	2BeHHAVXjqIbvTSN5AEclhjK44dXa/JDYh8ZH9RMwYbi72d8KcjZpkfetd7/iT3mhhptEwllE519D
-	RgaxJhIdcqDwH8Vq6fv+Np6mvIRzDX72H0SizBbZtw8RCGCMZ+Xl1MmPSZ36jgYsxPI/AyoUtrvJr
-	RIIRWlzNvmOhRB8lB99ejSfuTnol9iroYeR1M78u/aA5tiAit+jwsGHdXSkMNBzVs9ctVCP7JwFUn
-	spG8zUaasSjlerriUKOzb8RTk1lrMm0ycB/zfCxU54uLTKVPr9CiLiF5KsQcgkKm/XdQun9RMyRus
-	thb+EZwA==;
+	bh=JmosVY7DsMZ6LNEkdoPSXq0HSD1ixvacMKz1ABG/WI4=; b=yWEkQ8SR4EyjmhK4tPFWTLbfdN
+	oUFT9xsb6kCglzQXB7gEYbd80rhzaUknoAPYefufdnUGqJ5WD0/5FRA2tC5eXi6xDU2/FpKSIVkJs
+	fWtPDi0KLODGe978wclJTYSbMDBU9EtCiLdu+r/fJaGL+qyMS8VYTjwREMgs852srZ4lwShe9gP3W
+	0EVHNNaee6vy/6Bl3gJdc0jCkH7ap7hZ+C9b0upxvMS0vebKyT5bggFnkMpYQPD1ar0YV1k+3jtkZ
+	FejiSHBHq2jXwfeuLcOrNmYlUwkXNvjV3HkWqqXxq1oAtJ/n7sMOrJkHt7D3Wk+vfuoLYjHhSFFOw
+	YyeI75EA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xWORP-0000000BoPB-0Dgd;
-	Thu, 26 Nov 2026 01:38:27 +0000
-Received: from smtp25.cstnet.cn ([159.226.251.25] helo=cstnet.cn)
+	id 1xWaK2-0000000DWaM-1XIY;
+	Thu, 26 Nov 2026 14:19:38 +0000
+Received: from tor.source.kernel.org ([2600:3c04:e001:324:0:1991:8:25])
 	by bombadil.infradead.org with esmtps (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xWORK-0000000BoO3-1o27;
-	Thu, 26 Nov 2026 01:38:25 +0000
-Received: from k3-03 (unknown [159.226.43.8])
-	by APP-05 (Coremail) with SMTP id zQCowACXLrRqjQdrOdr2AQ--.256S2;
-	Thu, 26 Nov 2026 09:37:50 +0800 (CST)
-From: Tan Chi <tanchi25@mails.ucas.ac.cn>
-To: anup@brainfault.org
-Cc: atish.patra@linux.dev,
-	pjw@kernel.org,
-	palmer@dabbelt.com,
-	aou@eecs.berkeley.edu,
-	alex@ghiti.fr,
-	tj@kernel.org,
-	hannes@cmpxchg.org,
-	mkoutny@suse.com,
-	corbet@lwn.net,
-	skhan@linuxfoundation.org,
-	rdunlap@infradead.org,
-	yosry@kernel.org,
-	kvm@vger.kernel.org,
-	kvm-riscv@lists.infradead.org,
-	linux-riscv@lists.infradead.org,
-	cgroups@vger.kernel.org,
-	linux-doc@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	tanchi25@mails.ucas.ac.cn,
-	lkp@intel.com
-Subject: [PATCH v2] RISC-V: KVM: Account G-stage page table memory
-Date: Thu, 26 Nov 2026 09:37:23 +0800
-Message-ID: <20261126013724.2533363-1-tanchi25@mails.ucas.ac.cn>
-X-Mailer: git-send-email 2.53.0
+	id 1xWaJy-0000000DWZp-1URy;
+	Thu, 26 Nov 2026 14:19:34 +0000
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 9C28B63396;
+	Thu, 26 Nov 2026 14:19:33 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E06551F000C0;
+	Thu, 26 Nov 2026 14:19:16 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1795702773;
+	bh=0nlSHi0qFWi9gf0za/z/P+1+DL2gKRC6mZXAm1Oyf3Y=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=BLUHY1S2iF3IL/wCA6mm5j/UjKahg2kQz/XXqkCTlo45D8VOEi7G9QdsNEr9Wjspb
+	 f+sOX/wPQDZkC5aKMS5/mHYD5jT9u3LELLqDi1VkFSswNUTcTF84fd6TILyZlnKUQX
+	 az4k1Fhc398rwL0UL5/povcxQDycmhXbfAL11CxmERtfSYkbUfMNgPk2SDsx2LRoDn
+	 N1jeNgBWAf0q9fzPlzhuw6pd/MC08l2FQsl3AwKBZSqLsiNr8EuujbbjiJnYV/41Dh
+	 zMPRKzSu2x+L0FxiCikBccBJWrJJinfS8fCVjF6ipHLHZndP/d2nUx/v6dwpvPBdCD
+	 Xk2IwgWgvK91A==
+Message-ID: <682c765f-332f-4ac2-b448-4201c8fae6fc@kernel.org>
+Date: Thu, 26 Nov 2026 15:19:13 +0100
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-X-CM-TRANSID: zQCowACXLrRqjQdrOdr2AQ--.256S2
-X-Coremail-Antispam: 1UD129KBjvJXoWxuFW5Xry7Kw13Cw4fJF4Utwb_yoW7uw13pF
-	WkC34S9w1rtr93Cr13JwnF9r13Ga95Gr45Ary29a45ZFsxtr9aywnYq342vF15Xr95Zayf
-	XrZIgFyYvr4vywUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUUPF14x267AKxVW5JVWrJwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
-	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
-	1l84ACjcxK6xIIjxv20xvE14v26F1j6w1UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4U
-	JVWxJr1l84ACjcxK6I8E87Iv67AKxVW8Jr0_Cr1UM28EF7xvwVC2z280aVCY1x0267AKxV
-	WxJr0_GcWlnxkEFVAIw20F6cxK64vIFxWle2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG
-	64xvF2IEw4CE5I8CrVC2j2WlYx0E2Ix0cI8IcVAFwI0_Jr0_Jr4lYx0Ex4A2jsIE14v26r
-	1j6r4UMcvjeVCFs4IE7xkEbVWUJVW8JwACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAq
-	YI8I648v4I1lFIxGxcIEc7CjxVA2Y2ka0xkIwI1lc7CjxVAaw2AFwI0_GFv_Wrylc2xSY4
-	AK67AK6w4l42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4xG
-	67AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r4a6rW5MI
-	IYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7IYx2IY6xkF7I0E
-	14v26r4j6F4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVWUJV
-	W8JwCI42IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIYCTnIWIevJa73UjIFyTuYvjTRK38n
-	DUUUU
-X-CM-SenderInfo: pwdquxrlsvqzpdlo2hpxfd2hldfou0/
-X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.9.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20261125_173822_866674_C1CADE55 
-X-CRM114-Status: GOOD (  14.66  )
-X-Spam-Score: -1.9 (-)
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH RESEND v2 12/21] mm/pgtable: redefine PGTABLE_LEVEL enum
+ with ascend order from PGD
+To: Yeoreum Yun <yeoreum.yun@arm.com>, Mike Rapoport <rppt@kernel.org>
+Cc: Russell King <linux@armlinux.org.uk>, Huacai Chen
+ <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
+ Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>,
+ Kairui Song <kasong@tencent.com>, Qi Zheng <qi.zheng@linux.dev>,
+ Shakeel Butt <shakeel.butt@linux.dev>, Barry Song <baohua@kernel.org>,
+ Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>,
+ Wei Xu <weixugc@google.com>, Johannes Weiner <hannes@cmpxchg.org>,
+ Michal Hocko <mhocko@kernel.org>, Lorenzo Stoakes <ljs@kernel.org>,
+ Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>,
+ Anup Patel <anup@brainfault.org>, Atish Patra <atish.patra@linux.dev>,
+ Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+ Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+ Dave Hansen <dave.hansen@linux.intel.com>, Andy Lutomirski
+ <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+ Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, x86@kernel.org,
+ "H. Peter Anvin" <hpa@zytor.com>, "Liam R. Howlett" <liam@infradead.org>,
+ Vlastimil Babka <vbabka@kernel.org>, Suren Baghdasaryan <surenb@google.com>,
+ Michal Hocko <mhocko@suse.com>, Jonas Bonn <jonas@southpole.se>,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ Stafford Horne <shorne@gmail.com>, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, loongarch@lists.linux.dev,
+ linux-mips@vger.kernel.org, linux-arch@vger.kernel.org, linux-mm@kvack.org,
+ kvm@vger.kernel.org, kvm-riscv@lists.infradead.org,
+ linux-riscv@lists.infradead.org, linux-openrisc@vger.kernel.org
+References: <20261102-dummy_ptxp3-v2-0-78840b2ec73c@arm.com>
+ <20261102-dummy_ptxp3-v2-12-78840b2ec73c@arm.com>
+ <awXD4i47F-VAG1tD@kernel.org> <awXc0MSZl9t9VW8e@e129823.arm.com>
+From: "David Hildenbrand (Arm)" <david@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=david@kernel.org; keydata=
+ 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
+ qIws/H2t
+In-Reply-To: <awXc0MSZl9t9VW8e@e129823.arm.com>
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -94,168 +140,45 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
-X-Spam-Status: No, score=-16.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-5.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_EF,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-RISC-V KVM currently does not account G-stage page table memory
-in NR_SECONDARY_PAGETABLE.
+On 11/24/26 19:52, Yeoreum Yun wrote:
+> On Tue, Nov 24, 2026 at 07:05:38PM +0200, Mike Rapoport wrote:
+>> On Mon, Nov 02, 2026 at 11:21:25AM +0000, Yeoreum Yun wrote:
+>>> The PGTABLE_LEVEL enum values appear to be ordered in the opposite direction
+>>> from their intended usage.
+>>>
+>>> Intuitively, higher page table levels should have smaller enum values,
+>>> but PTE is currently assigned 0.
+>>
+>> That's not what x86 thinks :)
+>> They even expose it in /proc/vmstat with smaller numbers meaning lower levels
+>>
+>> $ grep direct_map /proc/vmstat 
+>> direct_map_level2_splits 152
+>> direct_map_level3_splits 4
+>> direct_map_level2_collapses 0
+>> direct_map_level3_collapses 0
+>>
+>> Just an observation, I don't mind either order.
+> 
+> Right. I made this change because a depth-based scheme seems more intuitive.
+> 
+> As you pointed out, though, the x86 specification uses smaller
+> numbers (0) for lower levels (pte), so I think we can leave the
+> x86-specific direct_map_* entries as they are.
 
-Use kvm_account_pgtable_pages() to account for the allocation and
-freeing of the root and lower-level page tables, including those
-allocated when splitting huge page mappings.
+patch #14 depends on this, no?
 
-This makes G-stage page table memory usage visible through
-SecPageTables in /proc/meminfo and sec_pagetables in the cgroup
-memory.stat interface.
-
-Update the documentation accordingly.
-
-Tested on a RISC-V KVM host running under QEMU TCG with Sv57x4.
-The observed G-stage page table memory usage was:
-
-  100 empty VMs:                         1600 KiB
-  8 GiB sparsely mapped with 4 KiB pages: 16448 KiB
-  256 MiB mapped with 2 MiB pages:          36 KiB
-  After enabling dirty logging:           548 KiB
-
-The accounting in /proc/meminfo, /proc/vmstat and cgroup
-memory.stat matched the expected values and returned to zero
-after destroying the VMs.
-
-This reimplements the work originally proposed by Yosry Ahmed
-in 2022, adapted to the current G-stage MMU code.
-
-Link: https://lore.kernel.org/r/20220426053904.3684293-6-yosryahmed@google.com
-
-Signed-off-by: Tan Chi <tanchi25@mails.ucas.ac.cn>
----
-Changes in v2:
-- Use the allocation order to calculate the number of root page
-  table pages, fixing a Clang warning reported by the kernel test
-  robot.
-  https://lore.kernel.org/oe-kbuild-all/20261126015340.s7bzBtEB-lkp@intel.com/
-
- Documentation/admin-guide/cgroup-v2.rst |  4 ++--
- Documentation/filesystems/proc.rst      |  2 +-
- arch/riscv/kvm/gstage.c                 |  6 +++++-
- arch/riscv/kvm/mmu.c                    | 12 ++++++++----
- 4 files changed, 16 insertions(+), 8 deletions(-)
-
-diff --git a/Documentation/admin-guide/cgroup-v2.rst b/Documentation/admin-guide/cgroup-v2.rst
-index 9e3c67b02ae2..c79d6432ecc3 100644
---- a/Documentation/admin-guide/cgroup-v2.rst
-+++ b/Documentation/admin-guide/cgroup-v2.rst
-@@ -1591,8 +1591,8 @@ The following nested keys are defined.
- 
- 	  sec_pagetables
- 		Amount of memory allocated for secondary page tables,
--		this currently includes KVM mmu allocations on x86
--		and arm64 and IOMMU page tables.
-+		this currently includes KVM mmu allocations on x86,
-+		arm64 and riscv and IOMMU page tables.
- 
- 	  percpu (npn)
- 		Amount of memory used for storing per-cpu kernel
-diff --git a/Documentation/filesystems/proc.rst b/Documentation/filesystems/proc.rst
-index fa7a468e8edf..cd1a74da287c 100644
---- a/Documentation/filesystems/proc.rst
-+++ b/Documentation/filesystems/proc.rst
-@@ -1208,7 +1208,7 @@ PageTables
-               Memory consumed by userspace page tables
- SecPageTables
-               Memory consumed by secondary page tables, this currently includes
--              KVM mmu and IOMMU allocations on x86 and arm64.
-+              KVM mmu and IOMMU allocations on x86, arm64 and riscv.
- NFS_Unstable
-               Always zero. Previously counted pages which had been written to
-               the server, but has not been committed to stable storage.
-diff --git a/arch/riscv/kvm/gstage.c b/arch/riscv/kvm/gstage.c
-index 0aace3215d3e..f8841136d852 100644
---- a/arch/riscv/kvm/gstage.c
-+++ b/arch/riscv/kvm/gstage.c
-@@ -162,6 +162,7 @@ int kvm_riscv_gstage_set_pte(struct kvm_gstage *gstage,
- 				return -ENOMEM;
- 			set_pte(ptep, pfn_pte(PFN_DOWN(__pa(next_ptep)),
- 					      __pgprot(_PAGE_TABLE)));
-+			kvm_account_pgtable_pages(next_ptep, 1);
- 		} else {
- 			if (gstage_pte_leaf(ptep))
- 				return -EEXIST;
-@@ -357,6 +358,7 @@ bool kvm_riscv_gstage_split_huge(struct kvm_gstage *gstage,
- 
- 		set_pte(ptep, pfn_pte(PFN_DOWN(__pa(next_ptep)),
- 				__pgprot(_PAGE_TABLE)));
-+		kvm_account_pgtable_pages(next_ptep, 1);
- 
- 		if (flush)
- 			gstage_tlb_flush(gstage, current_level, addr);
-@@ -399,8 +401,10 @@ bool kvm_riscv_gstage_op_pte(struct kvm_gstage *gstage, gpa_t addr,
- 		for (i = 0; i < PTRS_PER_PTE; i++)
- 			flush |= kvm_riscv_gstage_op_pte(gstage, addr + i * next_page_size,
- 							 &next_ptep[i], next_ptep_level, op);
--		if (op == GSTAGE_OP_CLEAR)
-+		if (op == GSTAGE_OP_CLEAR) {
-+			kvm_account_pgtable_pages(next_ptep, -1);
- 			put_page(virt_to_page(next_ptep));
-+		}
- 	} else {
- 		old_pte = *ptep;
- 		if (op == GSTAGE_OP_CLEAR)
-diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-index 6861c0e2728d..ab8d8c94a866 100644
---- a/arch/riscv/kvm/mmu.c
-+++ b/arch/riscv/kvm/mmu.c
-@@ -805,17 +805,18 @@ long kvm_arch_vcpu_pre_fault_memory(struct kvm_vcpu *vcpu,
- int kvm_riscv_mmu_alloc_pgd(struct kvm *kvm)
- {
- 	struct page *pgd_page;
-+	int order = get_order(kvm_riscv_gstage_pgd_size);
- 
- 	if (kvm->arch.pgd != NULL) {
- 		kvm_err("kvm_arch already initialized?\n");
- 		return -EINVAL;
- 	}
- 
--	pgd_page = alloc_pages(GFP_KERNEL_ACCOUNT | __GFP_ZERO,
--			       get_order(kvm_riscv_gstage_pgd_size));
-+	pgd_page = alloc_pages(GFP_KERNEL_ACCOUNT | __GFP_ZERO, order);
- 	if (!pgd_page)
- 		return -ENOMEM;
- 	kvm->arch.pgd = page_to_virt(pgd_page);
-+	kvm_account_pgtable_pages(kvm->arch.pgd, 1 << order);
- 	kvm->arch.pgd_phys = page_to_phys(pgd_page);
- 	kvm->arch.pgd_levels = kvm_riscv_gstage_max_pgd_levels;
- 	kvm->arch.pgd_split_page_cache.gfp_zero = __GFP_ZERO;
-@@ -828,6 +829,7 @@ void kvm_riscv_mmu_free_pgd(struct kvm *kvm)
- 	struct kvm_gstage gstage;
- 	void *pgd = NULL;
- 	bool flush = false;
-+	int order = get_order(kvm_riscv_gstage_pgd_size);
- 
- 	write_lock(&kvm->mmu_lock);
- 	if (kvm->arch.pgd) {
-@@ -843,8 +845,10 @@ void kvm_riscv_mmu_free_pgd(struct kvm *kvm)
- 	if (flush)
- 		kvm_flush_remote_tlbs(kvm);
- 
--	if (pgd)
--		free_pages((unsigned long)pgd, get_order(kvm_riscv_gstage_pgd_size));
-+	if (pgd) {
-+		kvm_account_pgtable_pages(pgd, -(1 << order));
-+		free_pages((unsigned long)pgd, order);
-+	}
- }
- 
- void kvm_riscv_mmu_update_hgatp(struct kvm_vcpu *vcpu)
-
-base-commit: 4dce97c6c265544342e716e62fd24bbb232590c5
 -- 
-2.53.0
+Cheers,
 
+David
 
 -- 
 kvm-riscv mailing list
